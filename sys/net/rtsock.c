@@ -1,4 +1,34 @@
-/*	$NetBSD: rtsock.c,v 1.16 1995/08/19 07:48:14 cgd Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.20 2002/03/14 01:27:10 millert Exp $	*/
+/*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
+
+/*
+ * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the project nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE PROJECT OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
 
 /*
  * Copyright (c) 1988, 1991, 1993
@@ -44,9 +74,14 @@
 #include <sys/domain.h>
 #include <sys/protosw.h>
 
+#include <uvm/uvm_extern.h>
+#include <sys/sysctl.h>
+
 #include <net/if.h>
 #include <net/route.h>
 #include <net/raw_cb.h>
+
+#include <machine/stdarg.h>
 
 struct	sockaddr route_dst = { 2, PF_ROUTE, };
 struct	sockaddr route_src = { 2, PF_ROUTE, };
@@ -58,10 +93,10 @@ struct walkarg {
 };
 
 static struct mbuf *
-		rt_msg1 __P((int, struct rt_addrinfo *));
-static int	rt_msg2 __P((int,
-		    struct rt_addrinfo *, caddr_t, struct walkarg *));
-static void	rt_xaddrs __P((caddr_t, caddr_t, struct rt_addrinfo *));
+		rt_msg1(int, struct rt_addrinfo *);
+static int	rt_msg2(int,
+		    struct rt_addrinfo *, caddr_t, struct walkarg *);
+static void	rt_xaddrs(caddr_t, caddr_t, struct rt_addrinfo *);
 
 /* Sleazy use of local variables throughout file, warning!!!! */
 #define dst	info.rti_info[RTAX_DST]
@@ -85,14 +120,15 @@ route_usrreq(so, req, m, nam, control)
 
 	if (req == PRU_ATTACH) {
 		MALLOC(rp, struct rawcb *, sizeof(*rp), M_PCB, M_WAITOK);
-		if (so->so_pcb = rp)
-			bzero((caddr_t)so->so_pcb, sizeof(*rp));
-
+		so->so_pcb = rp;
+		bzero(so->so_pcb, sizeof(*rp));
 	}
 	if (req == PRU_DETACH && rp) {
 		int af = rp->rcb_proto.sp_protocol;
 		if (af == AF_INET)
 			route_cb.ip_count--;
+		else if (af == AF_INET6)
+			route_cb.ip6_count--;
 		else if (af == AF_NS)
 			route_cb.ns_count--;
 		else if (af == AF_ISO)
@@ -100,7 +136,19 @@ route_usrreq(so, req, m, nam, control)
 		route_cb.any_count--;
 	}
 	s = splsoftnet();
-	error = raw_usrreq(so, req, m, nam, control);
+	/*
+	 * Don't call raw_usrreq() in the attach case, because
+	 * we want to allow non-privileged processes to listen on
+	 * and send "safe" commands to the routing socket.
+	 */
+	if (req == PRU_ATTACH) {
+		if (curproc == 0)
+			error = EACCES;
+		else
+			error = raw_attach(so, (int)(long)nam);
+	} else
+		error = raw_usrreq(so, req, m, nam, control);
+
 	rp = sotorawcb(so);
 	if (req == PRU_ATTACH && rp) {
 		int af = rp->rcb_proto.sp_protocol;
@@ -111,6 +159,8 @@ route_usrreq(so, req, m, nam, control)
 		}
 		if (af == AF_INET)
 			route_cb.ip_count++;
+		else if (af == AF_INET6)
+			route_cb.ip6_count++;
 		else if (af == AF_NS)
 			route_cb.ns_count++;
 		else if (af == AF_ISO)
@@ -126,11 +176,10 @@ route_usrreq(so, req, m, nam, control)
 
 /*ARGSUSED*/
 int
-route_output(m, so)
-	register struct mbuf *m;
-	struct socket *so;
+route_output(struct mbuf *m, ...)
 {
 	register struct rt_msghdr *rtm = 0;
+	register struct radix_node *rn = 0;
 	register struct rtentry *rt = 0;
 	struct rtentry *saved_nrt = 0;
 	struct radix_node_head *rnh;
@@ -138,8 +187,14 @@ route_output(m, so)
 	int len, error = 0;
 	struct ifnet *ifp = 0;
 	struct ifaddr *ifa = 0;
+	struct socket *so;
+	va_list ap;
 
-#define senderr(e) { error = e; goto flush;}
+	va_start(ap, m);
+	so = va_arg(ap, struct socket *);
+	va_end(ap);
+
+#define senderr(e) do { error = e; goto flush;} while (0)
 	if (m == 0 || ((m->m_len < sizeof(int32_t)) &&
 		       (m = m_pullup(m, sizeof(int32_t))) == 0))
 		return (ENOBUFS);
@@ -162,52 +217,66 @@ route_output(m, so)
 		senderr(EPROTONOSUPPORT);
 	}
 	rtm->rtm_pid = curproc->p_pid;
+	bzero(&info, sizeof(info));
 	info.rti_addrs = rtm->rtm_addrs;
 	rt_xaddrs((caddr_t)(rtm + 1), len + (caddr_t)rtm, &info);
-	if (dst == 0)
+	info.rti_flags = rtm->rtm_flags;
+	if (dst == 0 || (dst->sa_family >= AF_MAX))
+		senderr(EINVAL);
+	if (gate != 0 && (gate->sa_family >= AF_MAX))
 		senderr(EINVAL);
 	if (genmask) {
 		struct radix_node *t;
 		t = rn_addmask((caddr_t)genmask, 0, 1);
-		if (t && Bcmp(genmask, t->rn_key, *(u_char *)genmask) == 0)
+		if (t && genmask->sa_len >= ((struct sockaddr *)t->rn_key)->sa_len &&
+		    Bcmp((caddr_t *)genmask + 1, (caddr_t *)t->rn_key + 1,
+		    ((struct sockaddr *)t->rn_key)->sa_len) - 1)
 			genmask = (struct sockaddr *)(t->rn_key);
 		else
 			senderr(ENOBUFS);
 	}
+
+	/*
+	 * Verify that the caller has the appropriate privilege; RTM_GET
+	 * is the only operation the non-superuser is allowed.
+	 */
+	if (rtm->rtm_type != RTM_GET &&
+	    suser(curproc->p_ucred, &curproc->p_acflag) != 0)
+		senderr(EACCES);
 	switch (rtm->rtm_type) {
 
-	case RTM_ADD:
-		if (gate == 0)
-			senderr(EINVAL);
-		error = rtrequest(RTM_ADD, dst, gate, netmask,
-					rtm->rtm_flags, &saved_nrt);
-		if (error == 0 && saved_nrt) {
-			rt_setmetrics(rtm->rtm_inits,
-				&rtm->rtm_rmx, &saved_nrt->rt_rmx);
-			saved_nrt->rt_refcnt--;
-			saved_nrt->rt_genmask = genmask;
-		}
-		break;
-
 	case RTM_DELETE:
-		error = rtrequest(RTM_DELETE, dst, gate, netmask,
-				rtm->rtm_flags, &saved_nrt);
+		error = rtrequest1(rtm->rtm_type, &info, &saved_nrt);
 		if (error == 0) {
 			(rt = saved_nrt)->rt_refcnt++;
 			goto report;
 		}
 		break;
 
+	case RTM_ADD:
+		if (gate == 0)
+			senderr(EINVAL);
+		error = rtrequest1(rtm->rtm_type, &info, &saved_nrt);
+		if (error == 0 && saved_nrt) {
+			rt_setmetrics(rtm->rtm_inits,
+				&rtm->rtm_rmx, &saved_nrt->rt_rmx);
+			saved_nrt->rt_refcnt--;
+			saved_nrt->rt_genmask = genmask;
+		}
+		/* FALLTHROUGH */
 	case RTM_GET:
 	case RTM_CHANGE:
 	case RTM_LOCK:
 		if ((rnh = rt_tables[dst->sa_family]) == 0) {
 			senderr(EAFNOSUPPORT);
-		} else if (rt = (struct rtentry *)
-				rnh->rnh_lookup(dst, netmask, rnh))
-			rt->rt_refcnt++;
-		else
+		}
+		rn = rnh->rnh_lookup(dst, netmask, rnh);
+		if (rn == NULL || (rn->rn_flags & RNF_ROOT) != 0) {
 			senderr(ESRCH);
+		}
+		rt = (struct rtentry *)rn;
+		rt->rt_refcnt++;
+
 		switch(rtm->rtm_type) {
 
 		case RTM_GET:
@@ -217,8 +286,9 @@ route_output(m, so)
 			netmask = rt_mask(rt);
 			genmask = rt->rt_genmask;
 			if (rtm->rtm_addrs & (RTA_IFP | RTA_IFA)) {
-				if (ifp = rt->rt_ifp) {
-					ifpaddr = ifp->if_addrlist.tqh_first->ifa_addr;
+				if ((ifp = rt->rt_ifp) != NULL) {
+					ifpaddr =
+					    TAILQ_FIRST(&ifp->if_addrlist)->ifa_addr;
 					ifaaddr = rt->rt_ifa->ifa_addr;
 					if (ifp->if_flags & IFF_POINTOPOINT)
 						brdaddr = rt->rt_ifa->ifa_dstaddr;
@@ -228,7 +298,7 @@ route_output(m, so)
 				} else {
 					ifpaddr = 0;
 					ifaaddr = 0;
-			    }
+				}
 			}
 			len = rt_msg2(rtm->rtm_type, &info, (caddr_t)0,
 				(struct walkarg *)0);
@@ -248,25 +318,29 @@ route_output(m, so)
 			break;
 
 		case RTM_CHANGE:
+			/*
+			 * new gateway could require new ifaddr, ifp;
+			 * flags may also be different; ifp may be specified
+			 * by ll sockaddr when protocol address is ambiguous
+			 */
+			if ((error = rt_getifa(&info)) != 0)
+				senderr(error);
 			if (gate && rt_setgate(rt, rt_key(rt), gate))
 				senderr(EDQUOT);
-			/* new gateway could require new ifaddr, ifp;
-			   flags may also be different; ifp may be specified
-			   by ll sockaddr when protocol address is ambiguous */
 			if (ifpaddr && (ifa = ifa_ifwithnet(ifpaddr)) &&
-			    (ifp = ifa->ifa_ifp))
+			    (ifp = ifa->ifa_ifp) && (ifaaddr || gate))
 				ifa = ifaof_ifpforaddr(ifaaddr ? ifaaddr : gate,
 							ifp);
 			else if ((ifaaddr && (ifa = ifa_ifwithaddr(ifaaddr))) ||
-				 (ifa = ifa_ifwithroute(rt->rt_flags,
-							rt_key(rt), gate)))
+				 (gate && (ifa = ifa_ifwithroute(rt->rt_flags,
+							rt_key(rt), gate))))
 				ifp = ifa->ifa_ifp;
 			if (ifa) {
 				register struct ifaddr *oifa = rt->rt_ifa;
 				if (oifa != ifa) {
 				    if (oifa && oifa->ifa_rtrequest)
-					oifa->ifa_rtrequest(RTM_DELETE,
-								rt, gate);
+					oifa->ifa_rtrequest(RTM_DELETE, rt,
+					    &info);
 				    IFAFREE(rt->rt_ifa);
 				    rt->rt_ifa = ifa;
 				    ifa->ifa_refcnt++;
@@ -276,12 +350,13 @@ route_output(m, so)
 			rt_setmetrics(rtm->rtm_inits, &rtm->rtm_rmx,
 					&rt->rt_rmx);
 			if (rt->rt_ifa && rt->rt_ifa->ifa_rtrequest)
-			       rt->rt_ifa->ifa_rtrequest(RTM_ADD, rt, gate);
+			       rt->rt_ifa->ifa_rtrequest(RTM_ADD, rt, &info);
 			if (genmask)
 				rt->rt_genmask = genmask;
 			/*
 			 * Fall into
 			 */
+		case RTM_ADD:
 		case RTM_LOCK:
 			rt->rt_rmx.rmx_locks &= ~(rtm->rtm_inits);
 			rt->rt_rmx.rmx_locks |=
@@ -320,13 +395,19 @@ flush:
 	}
 	if (rtm) {
 		m_copyback(m, 0, rtm->rtm_msglen, (caddr_t)rtm);
+		if (m->m_pkthdr.len < rtm->rtm_msglen) {
+			m_freem(m);
+			m = NULL;
+		} else if (m->m_pkthdr.len > rtm->rtm_msglen)
+			m_adj(m, rtm->rtm_msglen - m->m_pkthdr.len);
 		Free(rtm);
 	}
 	if (rp)
 		rp->rcb_proto.sp_family = 0; /* Avoid us */
 	if (dst)
 		route_proto.sp_protocol = dst->sa_family;
-	raw_input(m, &route_proto, &route_src, &route_dst);
+	if (m)
+		raw_input(m, &route_proto, &route_src, &route_dst);
 	if (rp)
 		rp->rcb_proto.sp_family = PF_ROUTE;
     }
@@ -351,7 +432,7 @@ rt_setmetrics(which, in, out)
 }
 
 #define ROUNDUP(a) \
-	((a) > 0 ? (1 + (((a) - 1) | (sizeof(int32_t) - 1))) : sizeof(int32_t))
+	((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
 #define ADVANCE(x, n) (x += ROUNDUP((n)->sa_len))
 
 static void
@@ -374,7 +455,8 @@ rt_xaddrs(cp, cplim, rtinfo)
 /*
  * Copy data from a buffer back into the indicated mbuf chain,
  * starting "off" bytes from the beginning, extending the mbuf
- * chain if necessary.
+ * chain if necessary. The mbuf needs to be properly initalized
+ * including the setting of m_len.
  */
 void
 m_copyback(m0, off, len, cp)
@@ -435,9 +517,6 @@ rt_msg1(type, rtinfo)
 	register struct sockaddr *sa;
 	int len, dlen;
 
-	m = m_gethdr(M_DONTWAIT, MT_DATA);
-	if (m == 0)
-		return (m);
 	switch (type) {
 
 	case RTM_DELADDR:
@@ -452,8 +531,18 @@ rt_msg1(type, rtinfo)
 	default:
 		len = sizeof(struct rt_msghdr);
 	}
-	if (len > MHLEN)
+	if (len > MCLBYTES)
 		panic("rt_msg1");
+	m = m_gethdr(M_DONTWAIT, MT_DATA);
+	if (m && len > MHLEN) {
+		MCLGET(m, M_DONTWAIT);
+		if ((m->m_flags & M_EXT) == 0) {
+			m_free(m);
+			m = NULL;
+		}
+	}
+	if (m == 0)
+		return (m);
 	m->m_pkthdr.len = m->m_len = len;
 	m->m_pkthdr.rcvif = 0;
 	rtm = mtod(m, struct rt_msghdr *);
@@ -503,7 +592,7 @@ again:
 	default:
 		len = sizeof(struct rt_msghdr);
 	}
-	if (cp0 = cp)
+	if ((cp0 = cp) != NULL)
 		cp += len;
 	for (i = 0; i < RTAX_MAX; i++) {
 		register struct sockaddr *sa;
@@ -526,8 +615,9 @@ again:
 			if (rw->w_tmemsize < len) {
 				if (rw->w_tmem)
 					free(rw->w_tmem, M_RTABLE);
-				if (rw->w_tmem = (caddr_t)
-						malloc(len, M_RTABLE, M_NOWAIT))
+				rw->w_tmem = (caddr_t) malloc(len, M_RTABLE,
+							      M_NOWAIT);
+				if (rw->w_tmem)
 					rw->w_tmemsize = len;
 			}
 			if (rw->w_tmem) {
@@ -550,7 +640,7 @@ again:
 
 /*
  * This routine is called to generate a message from the routing
- * socket indicating that a redirect has occured, a routing lookup
+ * socket indicating that a redirect has occurred, a routing lookup
  * has failed, or that a protocol has detected timeouts to a particular
  * destination.
  */
@@ -618,9 +708,9 @@ rt_newaddrmsg(cmd, ifa, error, rt)
 	register struct rtentry *rt;
 {
 	struct rt_addrinfo info;
-	struct sockaddr *sa;
+	struct sockaddr *sa = NULL;
 	int pass;
-	struct mbuf *m;
+	struct mbuf *m = NULL;
 	struct ifnet *ifp = ifa->ifa_ifp;
 
 	if (route_cb.any_count == 0)
@@ -633,7 +723,7 @@ rt_newaddrmsg(cmd, ifa, error, rt)
 			int ncmd = cmd == RTM_ADD ? RTM_NEWADDR : RTM_DELADDR;
 
 			ifaaddr = sa = ifa->ifa_addr;
-			ifpaddr = ifp->if_addrlist.tqh_first->ifa_addr;
+			ifpaddr = TAILQ_FIRST(&ifp->if_addrlist)->ifa_addr;
 			netmask = ifa->ifa_netmask;
 			brdaddr = ifa->ifa_dstaddr;
 			if ((m = rt_msg1(ncmd, &info)) == NULL)
@@ -670,10 +760,11 @@ rt_newaddrmsg(cmd, ifa, error, rt)
  * This is used in dumping the kernel table via sysctl().
  */
 int
-sysctl_dumpentry(rn, w)
+sysctl_dumpentry(rn, v)
 	struct radix_node *rn;
-	register struct walkarg *w;
+	register void *v;
 {
+	register struct walkarg *w = v;
 	register struct rtentry *rt = (struct rtentry *)rn;
 	int error = 0, size;
 	struct rt_addrinfo info;
@@ -686,7 +777,7 @@ sysctl_dumpentry(rn, w)
 	netmask = rt_mask(rt);
 	genmask = rt->rt_genmask;
 	if (rt->rt_ifp) {
-		ifpaddr = rt->rt_ifp->if_addrlist.tqh_first->ifa_addr;
+		ifpaddr = TAILQ_FIRST(&rt->rt_ifp->if_addrlist)->ifa_addr;
 		ifaaddr = rt->rt_ifa->ifa_addr;
 		if (rt->rt_ifp->if_flags & IFF_POINTOPOINT)
 			brdaddr = rt->rt_ifa->ifa_dstaddr;
@@ -701,7 +792,7 @@ sysctl_dumpentry(rn, w)
 		rtm->rtm_index = rt->rt_ifp->if_index;
 		rtm->rtm_errno = rtm->rtm_pid = rtm->rtm_seq = 0;
 		rtm->rtm_addrs = info.rti_addrs;
-		if (error = copyout((caddr_t)rtm, w->w_where, size))
+		if ((error = copyout((caddr_t)rtm, w->w_where, size)) != 0)
 			w->w_where = NULL;
 		else
 			w->w_where += size;
@@ -720,10 +811,10 @@ sysctl_iflist(af, w)
 	int	len, error = 0;
 
 	bzero((caddr_t)&info, sizeof(info));
-	for (ifp = ifnet.tqh_first; ifp != 0; ifp = ifp->if_list.tqe_next) {
+	TAILQ_FOREACH(ifp, &ifnet, if_list) {
 		if (w->w_arg && w->w_arg != ifp->if_index)
 			continue;
-		ifa = ifp->if_addrlist.tqh_first;
+		ifa = TAILQ_FIRST(&ifp->if_addrlist);
 		ifpaddr = ifa->ifa_addr;
 		len = rt_msg2(RTM_IFINFO, &info, (caddr_t)0, w);
 		ifpaddr = 0;
@@ -735,11 +826,13 @@ sysctl_iflist(af, w)
 			ifm->ifm_flags = ifp->if_flags;
 			ifm->ifm_data = ifp->if_data;
 			ifm->ifm_addrs = info.rti_addrs;
-			if (error = copyout((caddr_t)ifm, w->w_where, len))
+			error = copyout((caddr_t)ifm, w->w_where, len);
+			if (error)
 				return (error);
 			w->w_where += len;
 		}
-		while (ifa = ifa->ifa_list.tqe_next) {
+		while ((ifa = TAILQ_NEXT(ifa, ifa_list)) !=
+		    TAILQ_END(&ifp->if_addrlist)) {
 			if (af && af != ifa->ifa_addr->sa_family)
 				continue;
 			ifaaddr = ifa->ifa_addr;
@@ -754,7 +847,8 @@ sysctl_iflist(af, w)
 				ifam->ifam_flags = ifa->ifa_flags;
 				ifam->ifam_metric = ifa->ifa_metric;
 				ifam->ifam_addrs = info.rti_addrs;
-				if (error = copyout(w->w_tmem, w->w_where, len))
+				error = copyout(w->w_tmem, w->w_where, len);
+				if (error)
 					return (error);
 				w->w_where += len;
 			}
@@ -767,10 +861,10 @@ sysctl_iflist(af, w)
 int
 sysctl_rtable(name, namelen, where, given, new, newlen)
 	int	*name;
-	int	namelen;
-	caddr_t	where;
+	u_int	namelen;
+	void 	*where;
 	size_t	*given;
-	caddr_t	*new;
+	void	*new;
 	size_t	newlen;
 {
 	register struct radix_node_head *rnh;
@@ -797,8 +891,9 @@ sysctl_rtable(name, namelen, where, given, new, newlen)
 	case NET_RT_FLAGS:
 		for (i = 1; i <= AF_MAX; i++)
 			if ((rnh = rt_tables[i]) && (af == 0 || af == i) &&
-			    (error = rnh->rnh_walktree(rnh,
-							sysctl_dumpentry, &w)))
+			    (error = (*rnh->rnh_walktree)(rnh,
+							  sysctl_dumpentry,
+							  &w)))
 				break;
 		break;
 
@@ -810,7 +905,7 @@ sysctl_rtable(name, namelen, where, given, new, newlen)
 		free(w.w_tmem, M_RTABLE);
 	w.w_needed += w.w_given;
 	if (where) {
-		*given = w.w_where - where;
+		*given = w.w_where - (caddr_t) where;
 		if (*given < w.w_needed)
 			return (ENOMEM);
 	} else {

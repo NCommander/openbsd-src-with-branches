@@ -1,4 +1,5 @@
-/*	$NetBSD: if_bah.c,v 1.12 1995/10/09 15:20:25 chopps Exp $ */
+/*	$OpenBSD: if_bah.c,v 1.9 2001/08/20 19:35:18 miod Exp $ */
+/*	$NetBSD: if_bah.c,v 1.30 1997/04/04 06:27:32 is Exp $ */
 
 /*
  * Copyright (c) 1994, 1995 Ignatios Souvatzis
@@ -37,8 +38,15 @@
 
 #define BAHASMCOPY /**/
 #define BAHSOFTCOPY /**/
-/* #define BAHTIMINGS /**/
-/* #define BAH_DEBUG 3 /**/
+#define BAHRETRANSMIT /**/
+/* #define BAHTIMINGS */
+/* #define BAH_DEBUG 3 */
+
+/* zeroth version of M68060 support */
+
+#if defined(M68060) && defined(BAHASMCOPY)
+#undef BAHASMCOPY
+#endif
 
 #include "bpfilter.h"
 
@@ -52,6 +60,7 @@
 #include <sys/syslog.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>
+#include <sys/timeout.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
@@ -151,14 +160,13 @@ struct bah_softc {
 	struct	arccom	sc_arccom;	/* Common arcnet structures */
 	struct	isr	sc_isr;
 	struct	a2060	*sc_base;
+	struct	timeout	sc_tmo;
 	u_long	sc_recontime;		/* seconds only, I'm lazy */
 	u_long	sc_reconcount;		/* for the above */
 	u_long	sc_reconcount_excessive; /* for the above */
 #define ARC_EXCESSIVE_RECONS 20
 #define ARC_EXCESSIVE_RECONS_REWARN 400
-	u_char	sc_bufstat[4];		/* use for packet no for rx */
 	u_char	sc_intmask;
-	u_char	sc_rx_packetno;
 	u_char	sc_rx_act;		/* 2..3 */
 	u_char	sc_tx_act;		/* 0..1 */
 	u_char	sc_rx_fillcount;
@@ -170,30 +178,32 @@ struct bah_softc {
 #endif
 };
 
-int	bahmatch __P((struct device *, void *, void *));
-void	bahattach __P((struct device *, struct device *, void *));
-void	bah_init __P((struct bah_softc *));
-void	bah_reset __P((struct bah_softc *));
-void	bah_stop __P((struct bah_softc *));
-void	bah_start __P((struct ifnet *));
-int	bahintr __P((struct bah_softc *sc));
-int	bah_ioctl __P((struct ifnet *, unsigned long, caddr_t));
-void	bah_watchdog __P((int));
-void	movepout __P((u_char *from, u_char __volatile *to, int len));
-void	movepin __P((u_char __volatile *from, u_char *to, int len));
-void	bah_srint __P((struct bah_softc *sc, void *dummy));
-void	callstart __P((struct bah_softc *sc, void *dummy));
+int	bah_zbus_match(struct device *, void *, void *);
+void	bah_zbus_attach(struct device *, struct device *, void *);
+void	bah_init(struct bah_softc *);
+void	bah_reset(struct bah_softc *);
+void	bah_stop(struct bah_softc *);
+void	bah_start(struct ifnet *);
+int	bahintr(void *);
+int	bah_ioctl(struct ifnet *, unsigned long, caddr_t);
+void	bah_watchdog(struct ifnet *);
+void	movepout(u_char *from, u_char __volatile *to, int len);
+void	movepin(u_char __volatile *from, u_char *to, int len);
+void	bah_srint(void *vsc, void *dummy);
+void	callstart(void *vsc, void *dummy);
+__inline static void bah_tint(struct bah_softc *, int);
+void	bah_reconwatch(void *);
 
-#ifdef BAHTIMINGS
-int	clkread();
-#endif
+struct cfattach bah_zbus_ca = {
+	sizeof(struct bah_softc), bah_zbus_match, bah_zbus_attach
+};
 
-struct cfdriver bahcd = {
-	NULL, "bah", bahmatch, bahattach, DV_IFNET, sizeof(struct bah_softc)
+struct cfdriver bah_cd = {
+	NULL, "bah", DV_IFNET
 };
 
 int
-bahmatch(parent, match, aux)
+bah_zbus_match(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
@@ -206,14 +216,14 @@ bahmatch(parent, match, aux)
 }
 
 void
-bahattach(parent, self, aux)
+bah_zbus_attach(parent, self, aux)
 	struct device *parent, *self;
 	void *aux;
 {
 	struct bah_softc *sc = (void *)self;
 	struct zbus_args *zap = aux;
 	struct ifnet *ifp = &sc->sc_arccom.ac_if;
-	int i, s, linkaddress;
+	int s, linkaddress;
 
 #if (defined(BAH_DEBUG) && (BAH_DEBUG > 2))
 	printf("\n%s: attach(0x%x, 0x%x, 0x%x)\n",
@@ -228,12 +238,12 @@ bahattach(parent, self, aux)
 
 	sc->sc_base->kick1 = 0x0;
 	sc->sc_base->kick2 = 0x0;
-	DELAY(120);
+	DELAY(200);
 
 	sc->sc_base->kick1 = 0xFF;
 	sc->sc_base->kick2 = 0xFF;
 	do {
-		DELAY(120);
+		DELAY(200);
 	} while (!(sc->sc_base->status & ARC_POR)); 
 
 	linkaddress = sc->sc_base->dipswitches;
@@ -242,7 +252,7 @@ bahattach(parent, self, aux)
 	printf(": link addr 0x%02x(%ld), with timer\n",
 	    linkaddress, linkaddress);
 #else
-	printf(": link addr 0x%02x(%ld)\n", linkaddress, linkaddress);
+	printf(": link addr 0x%02x(%d)\n", linkaddress, linkaddress);
 #endif
 
 	sc->sc_arccom.ac_anaddr = linkaddress;
@@ -263,8 +273,8 @@ bahattach(parent, self, aux)
 	 */
 	bah_stop(sc); 
 
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = bahcd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_output = arc_output;
 	ifp->if_start = bah_start;
 	ifp->if_ioctl = bah_ioctl;
@@ -282,13 +292,13 @@ bahattach(parent, self, aux)
 #if NBPFILTER > 0
 	bpfattach(&ifp->if_bpf, ifp, DLT_ARCNET, ARC_HDRLEN);
 #endif
-
 	/* under heavy load we need four of them: */
 	alloc_sicallback();
 	alloc_sicallback();
 	alloc_sicallback();
 	alloc_sicallback();
 
+	timeout_set(&sc->sc_tmo, bah_reconwatch, sc);
 	sc->sc_isr.isr_intr = bahintr;
 	sc->sc_isr.isr_arg = sc;
 	sc->sc_isr.isr_ipl = 2;
@@ -309,7 +319,7 @@ bah_init(sc)
 	ifp = &sc->sc_arccom.ac_if;
 
 	if ((ifp->if_flags & IFF_RUNNING) == 0) {
-		s = splimp();
+		s = splnet();
 		ifp->if_flags |= IFF_RUNNING;
 		bah_reset(sc);
 		bah_start(ifp);
@@ -328,7 +338,7 @@ bah_reset(sc)
 	struct bah_softc *sc;
 {
 	struct ifnet *ifp;
-	int i, s, linkaddress;
+	int linkaddress;
 
 	ifp = &sc->sc_arccom.ac_if;
 
@@ -339,21 +349,21 @@ bah_reset(sc)
 
 	sc->sc_base->kick1 = 0;
 	sc->sc_base->kick2 = 0;
-	DELAY(120);
+	DELAY(200);
 
 	/* and restart it */
 	sc->sc_base->kick1 = 0xFF;
 	sc->sc_base->kick2 = 0xFF;
 
 	do {
-		DELAY(120);
+		DELAY(200);
 	} while (!(sc->sc_base->status & ARC_POR)); 
 
 	linkaddress = sc->sc_base->dipswitches;
 
 #if defined(BAH_DEBUG) && (BAH_DEBUG > 2)
-	printf("bah%ld: reset: card reset, link addr = 0x%02x (%ld)\n",
-	    ifp->if_unit, linkaddress, linkaddress);
+	printf("%s: reset: card reset, link addr = 0x%02x (%ld)\n",
+	    sc->sc_dev.dv_xname, linkaddress, linkaddress);
 #endif
 	sc->sc_arccom.ac_anaddr = linkaddress;
 
@@ -382,12 +392,7 @@ bah_reset(sc)
 	/* start receiver */
 
 	sc->sc_intmask  |= ARC_RI;
-
-	sc->sc_bufstat[2] =
-	    sc->sc_bufstat[3] =
-	    sc->sc_rx_packetno = 
-	    sc->sc_rx_fillcount = 0;
-
+	sc->sc_rx_fillcount = 0;
 	sc->sc_rx_act = 2;
 
 	sc->sc_base->command = ARC_RXBC(2);
@@ -422,8 +427,6 @@ void
 bah_stop(sc)
 	struct bah_softc *sc;
 {
-	int s;
-	
 	/* Stop the interrupts */
 	sc->sc_base->status = 0;
 
@@ -534,12 +537,12 @@ bah_start(ifp)
 	struct bah_softc *sc;
 	struct mbuf *m,*mp;
 	__volatile u_char *bah_ram_ptr;
-	int i, len, tlen, offset, s, buffer;
+	int len, tlen, offset, s, buffer;
 #ifdef BAHTIMINGS
 	u_long copystart, lencopy, perbyte;
 #endif
 
-	sc = bahcd.cd_devs[ifp->if_unit];
+	sc = ifp->if_softc;
 
 #if defined(BAH_DEBUG) && (BAH_DEBUG > 3)
 	printf("%s: start(0x%x)\n", sc->sc_dev.dv_xname, ifp);
@@ -548,7 +551,7 @@ bah_start(ifp)
 	if ((ifp->if_flags & IFF_RUNNING) == 0)
 		return;
 
-	s = splimp();
+	s = splnet();
 
 	if (sc->sc_tx_fillcount >= 2) {
 		splx(s);
@@ -575,10 +578,6 @@ bah_start(ifp)
 		bpf_mtap(ifp->if_bpf, m);
 #endif
 
-	/* we need the data length beforehand */
-	for (mp = m, tlen=0; mp; mp = mp->m_next)
-		tlen += mp->m_len;
-
 #ifdef BAH_DEBUG
 	m = m_pullup(m,3);	/* gcc does structure padding */
 	printf("%s: start: filling %ld from %ld to %ld type %ld\n",
@@ -599,29 +598,29 @@ bah_start(ifp)
 	bah_ram_ptr[1 * 2] = mtod(m, u_char *)[1];
 	m_adj(m, 2);
 		
-	/* correct total length for that */
-	tlen -= 2;
+	/* get total length left at this point */
+	tlen = m->m_pkthdr.len;
 	if (tlen < ARC_MIN_FORBID_LEN) {
 		offset = 256 - tlen;
 		bah_ram_ptr[2 * 2] = offset;
 	} else {
-		if (tlen <= ARC_MAX_FORBID_LEN) 
-			offset = 512 - 3 - tlen;
+		bah_ram_ptr[2 * 2] = 0;
+		if (tlen <= ARC_MAX_FORBID_LEN)
+			offset = 255;		/* !!! */
 		else {
 			if (tlen > ARC_MAX_LEN)
 				tlen = ARC_MAX_LEN;
 			offset = 512 - tlen;
 		}
-
-		bah_ram_ptr[2 * 2] = 0;
 		bah_ram_ptr[3 * 2] = offset;
+
 	}
 	bah_ram_ptr += offset * 2;
 
-	/* lets loop again through the mbuf chain */
+	/* lets loop through the mbuf chain */
 
 	for (mp = m; mp; mp = mp->m_next) {
-		if (len = mp->m_len) {		/* YAMS */
+		if ((len = mp->m_len)) {		/* YAMS */
 #ifdef BAHTIMINGS
 			lencopy = len;
 			copystart = clkread();
@@ -643,7 +642,7 @@ bah_start(ifp)
 	sc->sc_retransmits[buffer] = (m->m_flags & M_BCAST) ? 1 : 5;
 
 	/* actually transmit the packet */
-	s = splimp();
+	s = splnet();
 
 	if (++sc->sc_tx_fillcount > 1) { 
 		/*
@@ -690,11 +689,12 @@ bah_start(ifp)
 }
 
 void 
-callstart(sc, dummy)
-	struct bah_softc *sc;
-	void *dummy;
+callstart(vsc, dummy)
+	void *vsc, *dummy;
 {
+	struct bah_softc *sc;
 
+	sc = (struct bah_softc *)vsc;
 	bah_start(&sc->sc_arccom.ac_if);
 }
 
@@ -764,11 +764,11 @@ movepin(from, to, len)
  * get the stuff out of any filled buffer we find.
  */
 void
-bah_srint(sc, dummy)
-	struct bah_softc *sc;
-	void *dummy;
+bah_srint(vsc, dummy)
+	void *vsc, *dummy;
 {
-	int buffer, buffer1, len, len1, amount, offset, s, i, type;
+	struct bah_softc *sc;
+	int buffer, len, len1, amount, offset, s, type;
 	u_char __volatile *bah_ram_ptr;
 	struct mbuf *m, *dst, *head;
 	struct arc_header *ah;
@@ -776,31 +776,12 @@ bah_srint(sc, dummy)
 #ifdef BAHTIMINGS
 	u_long copystart, lencopy, perbyte;
 #endif
-
-	head = 0;
+	sc = (struct bah_softc *)vsc;
 	ifp = &sc->sc_arccom.ac_if;
+	head = 0;
 
-	s = splimp();
-	if (sc->sc_rx_fillcount <= 1)
-		buffer = sc->sc_rx_act ^ 1;
-	else {
-
-		i = ((unsigned)(sc->sc_bufstat[2] - sc->sc_bufstat[3])) % 256;
-		if (i < 64)
-			buffer = 3;
-		else if (i > 192)
-			buffer = 2;
-		else {
-			log(LOG_WARNING,
-			    "%s: rx srint: which is older, %ld or %ld?\nn",
-			    sc->sc_dev.dv_xname,
-			    sc->sc_bufstat[2], sc->sc_bufstat[3]);
-			log(LOG_WARNING, "%s: (filled %ld)\n",
-			    sc->sc_dev.dv_xname, sc->sc_rx_fillcount);
-			splx(s);
-			return;
-		}
-	}
+	s = splnet();
+	buffer = sc->sc_rx_act ^ 1;
 	splx(s);
 
 	/* Allocate header mbuf */
@@ -906,12 +887,14 @@ bah_srint(sc, dummy)
 	
 cleanup:
 
-	if (head == NULL)
+	if (head != NULL)
 		m_freem(head);
 
-	s = splimp();
+	/* mark buffer as invalid by source id 0 */
+	sc->sc_base->buffers[buffer*512*2] = 0;
+	s = splnet();
 
-	if (--sc->sc_rx_fillcount == 1) {
+	if (--sc->sc_rx_fillcount == 2 - 1) {
 
 		/* was off, restart it on buffer just emptied */
 		sc->sc_rx_act = buffer;
@@ -930,28 +913,41 @@ cleanup:
 }
 
 __inline static void
-bah_tint(sc)
+bah_tint(sc, isr)
 	struct bah_softc *sc;
-{
-	int buffer;
-	u_char __volatile *bah_ram_ptr;
 	int isr;
-	int clknow;
+{
+	struct ifnet *ifp;
 
+	int buffer;
+#ifdef BAHTIMINGS
+	int clknow;
+#endif
+
+	ifp = &(sc->sc_arccom.ac_if);
 	buffer = sc->sc_tx_act;
-	isr = sc->sc_base->status;
 
 	/*
-	 * XXX insert retransmit code etc. here; and dont forget
-	 * to not retransmit if this is a timeout int.
-	 * For now just: 
+	 * retransmit code:  
+	 * Normal situtations first for fast path:
+	 * If acknowledgement received ok or broadcast, we're ok.
+	 * else if 
 	 */ 
 
-	if (!(isr & ARC_TMA) && !(sc->sc_broadcast[buffer]))
-		sc->sc_arccom.ac_if.if_oerrors++;
-	else
+	if (isr & ARC_TMA || sc->sc_broadcast[buffer])
 		sc->sc_arccom.ac_if.if_opackets++;
-
+#ifdef BAHRETRANSMIT
+	else if (ifp->if_flags & IFF_LINK2 && ifp->if_timer > 0 
+	    && --sc->sc_retransmits[buffer] > 0) {
+		/* retransmit same buffer */
+		sc->sc_base->command = ARC_TX(buffer);
+		return;
+	}
+#endif
+	else
+		ifp->if_oerrors++;
+		
+		
 #ifdef BAHTIMINGS
 	clknow = clkread();
 
@@ -963,7 +959,7 @@ bah_tint(sc)
 #endif
 
 	/* We know we can accept another buffer at this point. */
-	sc->sc_arccom.ac_if.if_flags &= ~IFF_OACTIVE;
+	ifp->if_flags &= ~IFF_OACTIVE;
 
 	if (--sc->sc_tx_fillcount > 0) {
 
@@ -981,7 +977,7 @@ bah_tint(sc)
 		 */
 		sc->sc_base->command = ARC_TX(buffer);
 		/* init watchdog timer */
-		sc->sc_arccom.ac_if.if_timer = ARCTIMEOUT;
+		ifp->if_timer = ARCTIMEOUT;
 
 #ifdef BAHTIMINGS
 		bcopy((caddr_t)&time,
@@ -1000,7 +996,7 @@ bah_tint(sc)
 		sc->sc_intmask &= ~ARC_TA;
 		sc->sc_base->status = sc->sc_intmask;
 		/* ... and watchdog timer */
-		sc->sc_arccom.ac_if.if_timer = 0;
+		ifp->if_timer = 0;
 
 #ifdef BAH_DEBUG
 		printf("%s: tint: no more buffers to send, status 0x%02x\n",
@@ -1021,12 +1017,12 @@ bah_tint(sc)
  * Our interrupt routine
  */
 int
-bahintr(sc)
-	struct bah_softc *sc;
+bahintr(arg)
+	void *arg;
 {
+	struct bah_softc *sc = arg;
 	u_char isr, maskedisr;
 	int buffer;
-	int unit;
 	u_long newsec;
 
 	isr = sc->sc_base->status;
@@ -1040,7 +1036,11 @@ bahintr(sc)
 #endif
 
 	if (maskedisr & ARC_POR) {
-		sc->sc_arccom.ac_anaddr = sc->sc_base->dipswitches;
+	  	/* 
+		 * XXX We should never see this. Don't bother to store
+		 * the address.
+		 * sc->sc_arccom.ac_anaddr = sc->sc_base->dipswitches;
+		 */
 		sc->sc_base->command = ARC_CLR(CLR_POR);
 		log(LOG_WARNING, "%s: intr: got spurious power on reset int\n",
 		    sc->sc_dev.dv_xname);
@@ -1055,10 +1055,8 @@ bahintr(sc)
 		sc->sc_arccom.ac_if.if_collisions++;
 
 		/*
-		 * If more than 2 seconds per reconfig:
-		 *	Reset time and counter.
-		 * else:
-		 *	If more than ARC_EXCESSIVE_RECONFIGS reconfigs
+		 * If less than 2 seconds per reconfig:
+		 *	If ARC_EXCESSIVE_RECONFIGS
 		 *	since last burst, complain and set treshold for
 		 *	warnings to ARC_EXCESSIVE_RECONS_REWARN.
 		 *
@@ -1070,69 +1068,90 @@ bahintr(sc)
 		 * time if necessary.
 		 */
 
+		timeout_del(&sc->sc_tmo);
 		newsec = time.tv_sec;
-		if (newsec - sc->sc_recontime > 2 * sc->sc_reconcount) {
-			sc->sc_recontime = newsec;
-			sc->sc_reconcount = 0;
-			sc->sc_reconcount_excessive = ARC_EXCESSIVE_RECONS;
-		} else if (++sc->sc_reconcount > sc->sc_reconcount_excessive) {
-			sc->sc_reconcount_excessive = 
-			    ARC_EXCESSIVE_RECONS_REWARN;
+		if ((newsec - sc->sc_recontime <= 2) && 
+		    (++sc->sc_reconcount == ARC_EXCESSIVE_RECONS)) {
 			log(LOG_WARNING,
 			    "%s: excessive token losses, cable problem?\n",
 			    sc->sc_dev.dv_xname);
-			sc->sc_recontime = newsec;
-			sc->sc_reconcount = 0;
 		}
+		sc->sc_recontime = newsec;
+		timeout_add(&sc->sc_tmo, 15 * hz);
 	}
 
 	if (maskedisr & ARC_RI) {
-
 #if defined(BAH_DEBUG) && (BAH_DEBUG > 1)
-		printf("%s: intr: hard rint, act %ld 2:%ld 3:%ld\n",
-		    sc->sc_dev.dv_xname,
-		    sc->sc_rx_act, sc->sc_bufstat[2], sc->sc_bufstat[3]);
+		printf("%s: intr: hard rint, act %ld\n",
+		    sc->sc_dev.dv_xname, sc->sc_rx_act);
 #endif
 	
 		buffer = sc->sc_rx_act;
-		sc->sc_rx_packetno = (sc->sc_rx_packetno+1)%256;
-		sc->sc_bufstat[buffer] = sc->sc_rx_packetno;
-
-		if (++sc->sc_rx_fillcount > 1) {
-			sc->sc_intmask &= ~ARC_RI;
-			sc->sc_base->status = sc->sc_intmask;
-		} else {
-
-			buffer ^= 1;
-			sc->sc_rx_act = buffer;
-
+		/* look if buffer is marked invalid: */
+		if (sc->sc_base->buffers[buffer*512*2] == 0) {
 			/*
-			 * Start receiver on other receive buffer.
-			 * This also clears the RI interupt flag.
+			 * invalid marked buffer (or illegally configured
+			 * sender)
+			 */
+			log(LOG_WARNING, 
+			    "%s: spurious RX interrupt or sender 0 (ignored)\n",
+			    sc->sc_dev.dv_xname);
+			/*
+			 * restart receiver on same buffer.
+			 * XXX maybe better reset interface?
 			 */
 			sc->sc_base->command = ARC_RXBC(buffer);
-			/* we are in the RX intr, so mask is ok for RX */
+		} else {
+			if (++sc->sc_rx_fillcount > 1) {
+				sc->sc_intmask &= ~ARC_RI;
+				sc->sc_base->status = sc->sc_intmask;
+			} else {
 
+				buffer ^= 1;
+				sc->sc_rx_act = buffer;
+
+				/*
+				 * Start receiver on other receive buffer.
+				 * This also clears the RI interupt flag.
+				 */
+				sc->sc_base->command = ARC_RXBC(buffer);
+				/* in the RX intr, so mask is ok for RX */
+	
 #ifdef BAH_DEBUG
-			printf("%s: started rx for buffer %ld, status 0x%02x\n",
-			    sc->sc_dev.dv_xname, sc->sc_rx_act,
-			    sc->sc_base->status);
+				printf("%s: strt rx for buf %ld, stat 0x%02x\n",
+				    sc->sc_dev.dv_xname, sc->sc_rx_act,
+				    sc->sc_base->status);
+#endif
+			}
+	
+#ifdef BAHSOFTCOPY
+			/* this one starts a soft int to copy out of the hw */
+			add_sicallback((sifunc_t)bah_srint, sc,NULL);
+#else
+			/* this one does the copy here */
+			bah_srint(sc,NULL);
 #endif
 		}
-
-#ifdef BAHSOFTCOPY
-		/* this one starts a soft int to copy out of the hw */
-		add_sicallback((sifunc_t)bah_srint, sc,NULL);
-#else
-		/* this one does the copy here */
-		bah_srint(sc,NULL);
-#endif
+	}
+	if (maskedisr & ARC_TA) {
+		bah_tint(sc, isr);
 	}
 
-	if (maskedisr & ARC_TA) 
-		bah_tint(sc);
-
 	return (1);
+}
+
+void
+bah_reconwatch(arg)
+	void *arg;
+{
+	struct bah_softc *sc = arg;
+
+	if (sc->sc_reconcount >= ARC_EXCESSIVE_RECONS) {
+		sc->sc_reconcount = 0;
+		log(LOG_WARNING, "%s: token valid again.\n",
+		    sc->sc_dev.dv_xname);
+	}
+	sc->sc_reconcount = 0;
 }
 
 /*
@@ -1147,12 +1166,14 @@ bah_ioctl(ifp, command, data)
 {
 	struct bah_softc *sc;
 	register struct ifaddr *ifa;
+	struct ifreq *ifr;
 	int s, error;
 
 	error = 0;
-	sc = bahcd.cd_devs[ifp->if_unit];
+	sc = ifp->if_softc;
 	ifa = (struct ifaddr *)data;
-	s = splimp();
+	ifr = (struct ifreq *)data;
+	s = splnet();
 
 #if defined(BAH_DEBUG) && (BAH_DEBUG > 2) 
 	printf("%s: ioctl() called, cmd = 0x%x\n",
@@ -1166,8 +1187,6 @@ bah_ioctl(ifp, command, data)
 #ifdef INET
 		case AF_INET:
 			bah_init(sc);
-			sc->sc_arccom.ac_ipaddr = IA_SIN(ifa)->sin_addr;
-			/*arpwhohas(&sc->sc_arccom, &IA_SIN(ifa)->sin_addr);*/
 			break;
 #endif
 		default:
@@ -1194,7 +1213,13 @@ bah_ioctl(ifp, command, data)
 		} 
 		break;
 
-		/* Multicast not supported */
+	case SIOCADDMULTI:
+	case SIOCDELMULTI:
+		if (ifr->ifr_addr.sa_family == AF_INET)
+			error = 0;
+		else
+			error = EAFNOSUPPORT;
+		break;
 
 	default:
 		error = EINVAL;
@@ -1215,18 +1240,14 @@ bah_ioctl(ifp, command, data)
  * and the int handler will have to decide not to retransmit (in case
  * retransmission is implemented).
  *
- * This one assumes being called inside splimp(), and that imp >= ipl2
+ * This one assumes being called inside splnet(), and that net >= ipl2
  */
 
 void
-bah_watchdog(unit)
-int unit;
-{
-	struct bah_softc *sc;
+bah_watchdog(ifp)
 	struct ifnet *ifp;
-
-	sc = bahcd.cd_devs[unit];
-	ifp = &(sc->sc_arccom.ac_if);
+{
+	struct bah_softc *sc = ifp->if_softc;;
 
 	sc->sc_base->command = ARC_TXDIS;
 	return;

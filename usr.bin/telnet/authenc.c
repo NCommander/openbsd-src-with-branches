@@ -1,3 +1,6 @@
+/*	$OpenBSD: authenc.c,v 1.4 2001/05/25 10:24:25 hin Exp $	*/
+/*	$NetBSD: authenc.c,v 1.5 1996/02/28 21:03:52 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,25 +34,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)authenc.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: authenc.c,v 1.3 1994/02/25 03:00:20 cgd Exp $";
-#endif /* not lint */
+/*
+RCSID("$Id: authenc.c,v 1.11.4.1 2002/02/06 03:40:13 assar Exp $");
+*/
 
-#if	defined(AUTHENTICATION)
-#include <sys/types.h>
-#include <arpa/telnet.h>
-#include <libtelnet/encrypt.h>
-#include <libtelnet/misc.h>
+#include "telnet_locl.h"
 
-#include "general.h"
-#include "ring.h"
-#include "externs.h"
-#include "defines.h"
-#include "types.h"
+#if	defined(AUTHENTICATION) || defined(ENCRYPTION)
 
 	int
-net_write(str, len)
+telnet_net_write(str, len)
 	unsigned char *str;
 	int len;
 {
@@ -65,17 +59,30 @@ net_write(str, len)
 	void
 net_encrypt()
 {
+#if    defined(ENCRYPTION)
+       if (encrypt_output)
+               ring_encrypt(&netoring, encrypt_output);
+       else
+               ring_clearto(&netoring);
+#endif
 }
 
 	int
 telnet_spin()
 {
-	return(-1);
+    extern int scheduler_lockout_tty;
+
+    scheduler_lockout_tty = 1;
+    Scheduler(0);
+    scheduler_lockout_tty = 0;
+    
+    return 0;
+
 }
 
 	char *
 telnet_getenv(val)
-	char *val;
+	const char *val;
 {
 	return((char *)env_getvalue((unsigned char *)val));
 }
@@ -96,7 +103,7 @@ telnet_gets(prompt, result, length, echo)
 	if (echo) {
 		printf("%s", prompt);
 		res = fgets(result, length, stdin);
-	} else if (res = getpass(prompt)) {
+	} else if ((res = getpass(prompt))) {
 		strncpy(result, res, length);
 		res = result;
 	}

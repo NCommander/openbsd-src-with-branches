@@ -1,4 +1,4 @@
-/*      $OpenBSD: rtld.c,v 1.16 2000/02/03 17:19:07 millert Exp $       */
+/*      $OpenBSD: sod.c,v 1.7 2001/09/22 04:58:18 drahn Exp $       */
 /*  
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -43,9 +43,10 @@
 #include <unistd.h>
 #include <syscall.h>
 
+#include "archdep.h"
+#include "util.h"
+
 #define PAGSIZ	__LDPGSZ
-char * _dl_strdup(const char *);
-void _dl_free(void *);
 int _dl_hinthash(char *cp, int vmajor, int vminor);
 
 /*
@@ -66,7 +67,7 @@ _dl_build_sod(name, sodp)
 	sodp->sod_major = sodp->sod_minor = 0;
 
 	/* does it look like /^lib/ ? */
-	if (strncmp((char *)sodp->sod_name, "lib", 3) != 0)
+	if (_dl_strncmp((char *)sodp->sod_name, "lib", 3) != 0)
 		return;
 
 	/* is this a filename? */
@@ -77,7 +78,7 @@ _dl_build_sod(name, sodp)
 	cp = (char *)sodp->sod_name + 3;
 
 	/* dot guardian */
-	if ((strchr(cp, '.') == NULL) || (*(cp+strlen(cp)-1) == '.'))
+	if ((strchr(cp, '.') == NULL) || (*(cp+_dl_strlen(cp)-1) == '.'))
 		return;
 
 	/* default */
@@ -139,15 +140,15 @@ _dl_maphints()
 {
 	caddr_t		addr;
 
-	if ((hfd = _dl_open(_PATH_LD_HINTS, O_RDONLY)) == -1) {
+	if ((hfd = _dl_open(_PATH_LD_HINTS, O_RDONLY)) < 0) {
 		hheader = (struct hints_header *)-1;
 		return;
 	}
 
 	hsize = PAGSIZ;
-	addr = (void *) _dl_mmap(0, hsize, PROT_READ, MAP_COPY, hfd, 0);
+	addr = (void *) _dl_mmap(0, hsize, PROT_READ, MAP_PRIVATE, hfd, 0);
 
-	if (addr == (caddr_t)-1) {
+	if (addr == MAP_FAILED) {
 		_dl_close(hfd);
 		hheader = (struct hints_header *)-1;
 		return;
@@ -171,7 +172,7 @@ _dl_maphints()
 
 	if (hheader->hh_ehints > hsize) {
 		if ((caddr_t)_dl_mmap(addr+hsize, hheader->hh_ehints - hsize,
-				PROT_READ, MAP_COPY|MAP_FIXED,
+				PROT_READ, MAP_PRIVATE|MAP_FIXED,
 				hfd, hsize) != (caddr_t)(addr+hsize)) {
 
 			_dl_munmap((caddr_t)hheader, hsize);
@@ -185,17 +186,9 @@ _dl_maphints()
 	hstrtab = (char *)(addr + hheader->hh_strtab);
 	if (hheader->hh_version >= LD_HINTS_VERSION_2)
 		hint_search_path = hstrtab + hheader->hh_dirlist;
-}
 
-void
-_dl_unmaphints()
-{
-
-	if (HINTS_VALID) {
-		_dl_munmap((caddr_t)hheader, hsize);
-		_dl_close(hfd);
-		hheader = (void *)-1;
-	}
+	/* close the file descriptor, leaving the hints mapped */
+	_dl_close(hfd);
 }
 
 char *
@@ -241,7 +234,7 @@ _dl_findhint(name, major, minor, prefered_path)
 					if (prefered_path == NULL ||
 					    strncmp(prefered_path,
 						hstrtab + bp->hi_pathx,
-						strlen(prefered_path)) == 0) {
+						_dl_strlen(prefered_path)) == 0) {
 						return hstrtab + bp->hi_pathx;
 					}
 			}

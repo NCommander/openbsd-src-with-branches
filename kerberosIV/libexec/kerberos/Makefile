@@ -1,0 +1,18 @@
+# $OpenBSD: Makefile,v 1.7 2001/07/09 16:45:26 deraadt Exp $
+
+PROG	= kerberos
+
+KRBDEPTH=../..
+.include "../../Makefile.inc"
+
+.PATH:	${KRBSRC}/server
+
+CFLAGS	+= -I. -I${KRBSRC}/lib/kadm -I${KRBSRC}/lib/acl -I${KRBSRC}/lib/kdb
+LDADD	+= -lkafs -lkrb5 -lkdb -lkrb -lkadm -ldes -lasn1 -lcom_err \
+	    -lacl -lcrypto ${LIBROKEN}
+
+SRCS	= kerberos.c
+
+MAN	= ${PROG}.8 ${PROG}.1
+
+.include <bsd.prog.mk>

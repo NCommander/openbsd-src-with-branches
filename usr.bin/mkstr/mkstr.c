@@ -1,3 +1,4 @@
+/*	$OpenBSD: mkstr.c,v 1.4 2001/11/19 19:02:15 mpech Exp $	*/
 /*	$NetBSD: mkstr.c,v 1.4 1995/09/28 06:22:20 tls Exp $	*/
 
 /*
@@ -43,10 +44,12 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mkstr.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: mkstr.c,v 1.4 1995/09/28 06:22:20 tls Exp $";
+static char rcsid[] = "$OpenBSD: mkstr.c,v 1.4 2001/11/19 19:02:15 mpech Exp $";
 #endif
 #endif /* not lint */
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -85,6 +88,15 @@ char	*progname;
 char	usagestr[] =	"usage: %s [ - ] mesgfile prefix file ...\n";
 char	name[100], *np;
 
+void inithash(void);
+void process(void);
+int match(char *);
+void copystr(void);
+int octdigit(char);
+unsigned hashit(char *, char, unsigned);
+int fgetNUL(char *, int, FILE *);
+
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
@@ -116,13 +128,13 @@ main(argc, argv)
 		process();
 		argc--, argv++;
 	} while (argc > 0);
-	exit(0);
+	return 0;
 }
 
+void
 process()
 {
-	register char *cp;
-	register c;
+	int c;
 
 	for (;;) {
 		c = getchar();
@@ -143,11 +155,12 @@ process()
 	}
 }
 
+int
 match(ocp)
 	char *ocp;
 {
-	register char *cp;
-	register c;
+	char *cp;
+	int c;
 
 	for (cp = ocp + 1; *cp; cp++) {
 		c = getchar();
@@ -161,11 +174,12 @@ match(ocp)
 	return (1);
 }
 
+void
 copystr()
 {
-	register c, ch;
+	int c, ch;
 	char buf[512];
-	register char *cp = buf;
+	char *cp = buf;
 
 	for (;;) {
 		c = getchar();
@@ -221,9 +235,10 @@ copystr()
 	}
 out:
 	*cp = 0;
-	printf("%d", hashit(buf, 1, NULL));
+	printf("%d", hashit(buf, 1, 0));
 }
 
+int
 octdigit(c)
 	char c;
 {
@@ -231,13 +246,14 @@ octdigit(c)
 	return (c >= '0' && c <= '7');
 }
 
+void
 inithash()
 {
 	char buf[512];
 	int mesgpt = 0;
 
 	rewind(mesgread);
-	while (fgetNUL(buf, sizeof buf, mesgread) != NULL) {
+	while (fgetNUL(buf, sizeof buf, mesgread) != 0) {
 		hashit(buf, 0, mesgpt);
 		mesgpt += strlen(buf) + 2;
 	}
@@ -251,16 +267,17 @@ struct	hash {
 	struct	hash *hnext;
 } *bucket[NBUCKETS];
 
+unsigned
 hashit(str, really, fakept)
 	char *str;
 	char really;
 	unsigned fakept;
 {
 	int i;
-	register struct hash *hp;
+	struct hash *hp;
 	char buf[512];
 	long hashval = 0;
-	register char *cp;
+	char *cp;
 
 	if (really)
 		fflush(mesgwrite);
@@ -297,20 +314,18 @@ hashit(str, really, fakept)
 	return (hp->hpt);
 }
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
+int
 fgetNUL(obuf, rmdr, file)
 	char *obuf;
-	register int rmdr;
+	int rmdr;
 	FILE *file;
 {
-	register c;
-	register char *buf = obuf;
+	int c;
+	char *buf = obuf;
 
 	while (--rmdr > 0 && (c = getc(file)) != 0 && c != EOF)
 		*buf++ = c;
 	*buf++ = 0;
 	getc(file);
-	return ((feof(file) || ferror(file)) ? NULL : 1);
+	return ((feof(file) || ferror(file)) ? 0 : 1);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: fhpibreg.h,v 1.4 1994/10/26 07:23:45 cgd Exp $	*/
 
 /*

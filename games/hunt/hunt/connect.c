@@ -1,3 +1,4 @@
+/*	$OpenBSD: connect.c,v 1.4 1999/02/01 06:53:55 d Exp $	*/
 /*	$NetBSD: connect.c,v 1.3 1997/10/11 08:13:40 lukem Exp $	*/
 /*
  *  Hunt
@@ -5,44 +6,44 @@
  *  San Francisco, California
  */
 
-#include <sys/cdefs.h>
-#ifndef lint
-__RCSID("$NetBSD: connect.c,v 1.3 1997/10/11 08:13:40 lukem Exp $");
-#endif /* not lint */
-
-# include	"hunt.h"
-# include	<signal.h>
-# include	<unistd.h>
+#include <signal.h>
+#include <unistd.h>
+#include <string.h>
+#include "hunt.h"
+#include "client.h"
 
 void
 do_connect(name, team, enter_status)
-	char	*name;
-	char	team;
-	long	enter_status;
+	char *		name;
+	u_int8_t	team;
+	u_int32_t	enter_status;
 {
-	static long	uid;
-	static long	mode;
+	u_int32_t	uid;
+	u_int32_t	mode;
+	char *		Ttyname;
+	char		buf[NAMELEN];
 
-	if (uid == 0)
-		uid = htonl(getuid());
-	(void) write(Socket, (char *) &uid, LONGLEN);
-	(void) write(Socket, name, NAMELEN);
-	(void) write(Socket, &team, 1);
-	enter_status = htonl(enter_status);
-	(void) write(Socket, (char *) &enter_status, LONGLEN);
-	(void) strcpy(Buf, ttyname(fileno(stderr)));
-	(void) write(Socket, Buf, NAMELEN);
-# ifdef INTERNET
 	if (Send_message != NULL)
 		mode = C_MESSAGE;
-	else
-# endif
-# ifdef MONITOR
-	if (Am_monitor)
+	else if (Am_monitor)
 		mode = C_MONITOR;
 	else
-# endif
 		mode = C_PLAYER;
+
+	Ttyname = ttyname(STDOUT_FILENO);
+	if (Ttyname == NULL)
+		Ttyname = "not a tty";
+	memset(buf, '\0', sizeof buf);
+	(void) strlcpy(buf, Ttyname, sizeof buf);
+
+	uid = htonl(getuid());
+	enter_status = htonl(enter_status);
 	mode = htonl(mode);
-	(void) write(Socket, (char *) &mode, sizeof mode);
+
+	(void) write(Socket, &uid, sizeof uid);
+	(void) write(Socket, name, NAMELEN);
+	(void) write(Socket, &team, sizeof team);
+	(void) write(Socket, &enter_status, sizeof enter_status);
+	(void) write(Socket, buf, NAMELEN);
+	(void) write(Socket, &mode, sizeof mode);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: grf_rh.c,v 1.9 1995/08/20 15:09:25 chopps Exp $	*/
+/*	$OpenBSD: grf_rh.c,v 1.13 1997/09/18 13:39:52 niklas Exp $	*/
+/*	$NetBSD: grf_rh.c,v 1.27 1997/07/29 17:52:05 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Markus Wild
@@ -39,6 +40,7 @@
 */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/device.h>
@@ -52,13 +54,13 @@
 
 enum mode_type { MT_TXTONLY, MT_GFXONLY, MT_BOTH };
 
-int rh_mondefok __P((struct MonDef *));
+int rh_mondefok(struct MonDef *);
 
-u_short CompFQ __P((u_int fq));
-int rh_load_mon __P((struct grf_softc *gp, struct MonDef *md));
-int rh_getvmode __P((struct grf_softc *gp, struct grfvideo_mode *vm));
-int rh_setvmode __P((struct grf_softc *gp, unsigned int mode, 
-                     enum mode_type type));
+u_short rh_CompFQ(u_int fq);
+int rh_load_mon(struct grf_softc *gp, struct MonDef *md);
+int rh_getvmode(struct grf_softc *gp, struct grfvideo_mode *vm);
+int rh_setvmode(struct grf_softc *gp, unsigned int mode, 
+                     enum mode_type type);
 
 /* make it patchable, and settable by kernel config option */
 #ifndef RH_MEMCLK
@@ -88,13 +90,13 @@ extern unsigned char kernel_font_8x11[];
  * initial driver, has made an agreement with MS not to document
  * the driver source (see also his comment below).
  * -> ALL comments after
- * -> "/* -------------- START OF CODE -------------- * /"
+ * -> " -------------- START OF CODE -------------- "
  * -> have been added by myself (mw) from studying the publically
  * -> available "NCR 77C32BLT" Data Manual
  */
 /*
  * This code offers low-level routines to access the Retina BLT Z3
- * graphics-board manufactured by MS MacroSystem GmbH from within NetBSD
+ * graphics-board manufactured by MS MacroSystem GmbH from within OpenBSD
  * for the Amiga.
  *
  * Thanks to MacroSystem for providing me with the neccessary information
@@ -590,22 +592,18 @@ RZ3SetPalette (gp, colornum, red, green, blue)
 
 }
 
-/* XXXXXXXXX !! */
-static unsigned short xpan;
-static unsigned short ypan;
-
 void
 RZ3SetPanning (gp, xoff, yoff)
 	struct grf_softc *gp;
 	unsigned short xoff, yoff;
 {
 	volatile unsigned char *ba = gp->g_regkva;
+	struct grfinfo *gi = &gp->g_display;
 	const struct MonDef * md = (struct MonDef *) gp->g_data;
 	unsigned long off;
 
-	xpan = xoff;
-	ypan = yoff;
-
+	gi->gd_fbx = xoff;
+	gi->gd_fby = yoff;
 
         if (md->DEP > 8 && md->DEP <= 16) xoff *= 2;
         else if (md->DEP > 16) xoff *= 3;
@@ -638,31 +636,39 @@ RZ3SetHWCloc (gp, x, y)
 {
 	volatile unsigned char *ba = gp->g_regkva;
 	const struct MonDef *md = (struct MonDef *) gp->g_data;
-	volatile unsigned char *acm = ba + ACM_OFFSET;
+	/*volatile unsigned char *acm = ba + ACM_OFFSET;*/
+	struct grfinfo *gi = &gp->g_display;
 
-	if (x < xpan)
-		RZ3SetPanning(gp, x, ypan);
+	if (x < gi->gd_fbx)
+		RZ3SetPanning(gp, x, gi->gd_fby);
 
-	if (x >= (xpan+md->MW))
-		RZ3SetPanning(gp, (1 + x - md->MW) , ypan);
+	if (x >= (gi->gd_fbx+md->MW))
+		RZ3SetPanning(gp, (1 + x - md->MW) , gi->gd_fby);
 
-	if (y < ypan)
-		RZ3SetPanning(gp, xpan, y);
+	if (y < gi->gd_fby)
+		RZ3SetPanning(gp, gi->gd_fbx, y);
 
-	if (y >= (ypan+md->MH))
-		RZ3SetPanning(gp, xpan, (1 + y - md->MH));
+	if (y >= (gi->gd_fby+md->MH))
+		RZ3SetPanning(gp, gi->gd_fbx, (1 + y - md->MH));
 
-	x -= xpan;
-	y -= ypan;
+	x -= gi->gd_fbx;
+	y -= gi->gd_fby;
 
-	*(acm + (ACM_CURSOR_POSITION+0)) = x & 0xff;
+#if 1
+	WSeq(ba, SEQ_ID_CURSOR_X_LOC_HI, x >> 8);
+	WSeq(ba, SEQ_ID_CURSOR_X_LOC_LO, x & 0xff);
+	WSeq(ba, SEQ_ID_CURSOR_Y_LOC_HI, y >> 8);
+	WSeq(ba, SEQ_ID_CURSOR_Y_LOC_LO, y & 0xff);
+#else
 	*(acm + (ACM_CURSOR_POSITION+1)) = x >> 8;
-	*(acm + (ACM_CURSOR_POSITION+2)) = y & 0xff;
+	*(acm + (ACM_CURSOR_POSITION+0)) = x & 0xff;
 	*(acm + (ACM_CURSOR_POSITION+3)) = y >> 8;
+	*(acm + (ACM_CURSOR_POSITION+2)) = y & 0xff;
+#endif
 }
 
 u_short
-CompFQ(fq)
+rh_CompFQ(fq)
 	u_int fq;
 {
  	/* yuck... this sure could need some explanation.. */
@@ -720,15 +726,15 @@ rh_mondefok(mdp)
 	struct MonDef *mdp;
 {
 	switch(mdp->DEP) {
-	case 8:
-	case 16:
-        case 24:
+	    case 8:
+	    case 16:
+            case 24:
 		return(1);
-	case 4:
+	    case 4:
 		if (mdp->FX == 4 || (mdp->FX >= 7 && mdp->FX <= 16))
 			return(1);
 		/*FALLTHROUGH*/
-	default:
+	    default:
 		return(0);
 	}
 }
@@ -740,9 +746,9 @@ rh_load_mon(gp, md)
 	struct MonDef *md;
 {
 	struct grfinfo *gi = &gp->g_display;
-	volatile unsigned char *ba;
-	volatile unsigned char *fb;
-	short FW, clksel, HDE, VDE;
+	volatile caddr_t ba;
+	volatile caddr_t fb;
+	short FW, clksel, HDE = 0, VDE;
 	unsigned short *c, z;
 	const unsigned char *f;
 
@@ -786,40 +792,40 @@ rh_load_mon(gp, md)
 	FW =0;
 	if (md->DEP == 4) {		/* XXX some text-mode! */
 		switch (md->FX) {
-		case 4:
+		    case 4:
 			FW = 0;
 			break;
-		case 7:
+		    case 7:
 			FW = 1;
 			break;
-		case 8:
+		    case 8:
 			FW = 2;
 			break;
-		case 9:
+		    case 9:
 			FW = 3;
 			break;
-		case 10:
+		    case 10:
 			FW = 4;
 			break;
-		case 11:
+		    case 11:
 			FW = 5;
 			break;
-		case 12:
+		    case 12:
 			FW = 6;
 			break;
-		case 13:
+		    case 13:
 			FW = 7;
 			break;
-		case 14:
+		    case 14:
 			FW = 8;
 			break;
-		case 15:
+		    case 15:
 			FW = 9;
 			break;
-		case 16:
+		    case 16:
 			FW = 11;
 			break;
-		default:
+		    default:
 			return(0);
 			break;
 		}
@@ -888,7 +894,7 @@ rh_load_mon(gp, md)
 	WSeq(ba, SEQ_ID_ACM_APERTURE_1, 0x00);
 	WSeq(ba, SEQ_ID_ACM_APERTURE_2, 0x30);
 	WSeq(ba, SEQ_ID_ACM_APERTURE_3, 0x00);
-	WSeq(ba, SEQ_ID_MEMORY_MAP_CNTL, 0x07);
+	WSeq(ba, SEQ_ID_MEMORY_MAP_CNTL, 0x03);	/* was 7, but stupid cursor */
 
 	WCrt(ba, CRT_ID_END_VER_RETR, (md->VSE & 0xf) | 0x20);
 	WCrt(ba, CRT_ID_HOR_TOTAL, md->HT    & 0xff);
@@ -1001,9 +1007,9 @@ rh_load_mon(gp, md)
 	WCrt(ba, CRT_ID_MONITOR_POWER, 0x00);
 
 	{
-		unsigned short tmp = CompFQ(md->FQ);
+		unsigned short tmp = rh_CompFQ(md->FQ);
 		WPLL(ba, 2   , tmp);
-                tmp = CompFQ(rh_memclk);
+                tmp = rh_CompFQ(rh_memclk);
 		WPLL(ba,10   , tmp);
 		WPLL(ba,14   , 0x22);
 	}
@@ -1150,8 +1156,8 @@ rh_load_mon(gp, md)
 
 		RZ3BitBlit(gp, &bb);
 
-		xpan = 0;
-		ypan = 0;
+		gi->gd_fbx = 0;
+		gi->gd_fby = 0;
 
 		return(1);
 	} else if (md->DEP == 16) {
@@ -1166,8 +1172,8 @@ rh_load_mon(gp, md)
 
 		RZ3BitBlit16(gp, &bb);
 
-		xpan = 0;
-		ypan = 0;
+		gi->gd_fbx = 0;
+		gi->gd_fby = 0;
 
 		return(1);
         } else if (md->DEP == 24) {
@@ -1182,8 +1188,8 @@ rh_load_mon(gp, md)
                 
                 RZ3BitBlit24(gp, &bb );
                 
-                xpan = 0;
-                ypan = 0;
+		gi->gd_fbx = 0;
+		gi->gd_fby = 0;
                 
                 return 1;
 	} else
@@ -1274,6 +1280,8 @@ static struct MonDef monitor_defs[] = {
      match the physical ones
    */
 
+#ifdef RH_HARDWARECURSOR
+
   /* 640 x 480, 8 Bit, 31862 Hz, 63 Hz */
   { 26000000,  0,  640, 480,  161,175,188,200,199, 481, 483, 491, 502, 502,
       8, RZ3StdPalette,1280,1024,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
@@ -1307,9 +1315,11 @@ static struct MonDef monitor_defs[] = {
   {104000000, 0, 1280,1024,  321,323,348,399,398,1025,1026,1043,1073,1073,
      8, RZ3StdPalette,1280,1024,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
 
-/* WARNING: THE FOLLOWING MONITOR MODE EXCEEDS THE 110-MHz LIMIT THE PROCESSOR
-            HAS BEEN SPECIFIED FOR. USE AT YOUR OWN RISK (AND THINK ABOUT
-            MOUNTING SOME COOLING DEVICE AT THE PROCESSOR AND RAMDAC)!     */
+/*
+ * WARNING: THE FOLLOWING MONITOR MODE EXCEEDS THE 110-MHz LIMIT THE PROCESSOR
+ *          HAS BEEN SPECIFIED FOR. USE AT YOUR OWN RISK (AND THINK ABOUT
+ *          MOUNTING SOME COOLING DEVICE AT THE PROCESSOR AND RAMDAC)!
+ */
   /* 1280 x 1024, 8 Bit, 75436 Hz, 70 Hz */
   {121000000, 0, 1280,1024,  321,322,347,397,396,1025,1026,1043,1073,1073,
      8, RZ3StdPalette,1280,1024,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
@@ -1333,9 +1343,11 @@ static struct MonDef monitor_defs[] = {
   {109000000,  0,  864, 648,  433,434,468,537,536, 649, 650, 661, 678, 678,
       16,           0,1280, 1024,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
 
-/* WARNING: THE FOLLOWING MONITOR MODE EXCEEDS THE 110-MHz LIMIT THE PROCESSOR
-            HAS BEEN SPECIFIED FOR. USE AT YOUR OWN RISK (AND THINK ABOUT
-            MOUNTING SOME COOLING DEVICE AT THE PROCESSOR AND RAMDAC)!     */
+/*
+ * WARNING: THE FOLLOWING MONITOR MODE EXCEEDS THE 110-MHz LIMIT THE PROCESSOR
+ *          HAS BEEN SPECIFIED FOR. USE AT YOUR OWN RISK (AND THINK ABOUT
+ *          MOUNTING SOME COOLING DEVICE AT THE PROCESSOR AND RAMDAC)!
+ */
   /* 1024 x 768, 16 Bit, 48437 Hz, 60 Hz */
   {124000000,  0, 1024, 768,  513,537,577,636,635, 769, 770, 783, 804, 804,
       16,           0,1280, 1024,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
@@ -1366,6 +1378,107 @@ static struct MonDef monitor_defs[] = {
   /*1024 x 768, 24 Bit, 32051 Hz, 79 Hz i */
   {110000000,  2, 1024, 768,  769,770,824,854,853, 385, 386, 392, 401, 401,
       24,           0,1280, 1024,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+#else /* RH_HARDWARECURSOR */
+
+  /* 640 x 480, 8 Bit, 31862 Hz, 63 Hz */
+  { 26000000,  0,  640, 480,  161,175,188,200,199, 481, 483, 491, 502, 502,
+      8, RZ3StdPalette,  640,  480,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+  /* This is the logical  ^     ^    screen size */
+
+  /* 640 x 480, 8 Bit, 38366 Hz, 76 Hz */
+ { 31000000,  0,  640, 480,  161,169,182,198,197, 481, 482, 490, 502, 502,
+     8, RZ3StdPalette,  640,  480,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 800 x 600, 8 Bit, 38537 Hz, 61 Hz */
+  { 39000000,  0,  800, 600,  201,211,227,249,248, 601, 603, 613, 628, 628,
+      8, RZ3StdPalette,  800,  600,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 1024 x 768, 8 Bit, 63862 Hz, 79 Hz */
+  { 82000000,  0, 1024, 768,  257,257,277,317,316, 769, 771, 784, 804, 804,
+      8, RZ3StdPalette, 1024,  768,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 1120 x 896, 8 Bit, 64000 Hz, 69 Hz */
+  { 97000000,  0, 1120, 896,  281,283,306,369,368, 897, 898, 913, 938, 938,
+      8, RZ3StdPalette, 1120,  896,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 1152 x 910, 8 Bit, 76177 Hz, 79 Hz */
+  {110000000,  0, 1152, 910,  289,310,333,357,356, 911, 923, 938, 953, 953,
+      8, RZ3StdPalette, 1152,  910,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 1184 x 848, 8 Bit, 73529 Hz, 82 Hz */
+  {110000000,  0, 1184, 848,  297,319,342,370,369, 849, 852, 866, 888, 888,
+      8, RZ3StdPalette, 1184,  848,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 1280 x 1024, 8 Bit, 64516 Hz, 60 Hz */
+  {104000000, 0, 1280,1024,  321,323,348,399,398,1025,1026,1043,1073,1073,
+     8, RZ3StdPalette, 1280, 1024,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+
+/*
+ * WARNING: THE FOLLOWING MONITOR MODE EXCEEDS THE 110-MHz LIMIT THE PROCESSOR
+ *            HAS BEEN SPECIFIED FOR. USE AT YOUR OWN RISK (AND THINK ABOUT
+ *            MOUNTING SOME COOLING DEVICE AT THE PROCESSOR AND RAMDAC)!
+ */
+  /* 1280 x 1024, 8 Bit, 75436 Hz, 70 Hz */
+  {121000000, 0, 1280,1024,  321,322,347,397,396,1025,1026,1043,1073,1073,
+     8, RZ3StdPalette, 1280, 1024,  5120,   FX,    FY, KERNEL_FONT,   32,  255},
+
+
+  /* 16-bit gfx-mode definitions */
+
+  /* 640 x 480, 16 Bit, 31795 Hz, 63 Hz */
+  { 51000000, 0,  640, 480,  321,344,369,397,396, 481, 482, 490, 502, 502,
+      16,           0,  640,  480,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 800 x 600, 16 Bit, 38500 Hz, 61 Hz */
+  { 77000000, 0,  800, 600,  401,418,449,496,495, 601, 602, 612, 628, 628,
+      16,           0,  800,  600,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 1024 x 768, 16 Bit, 42768 Hz, 53 Hz */
+  {110000000,  0, 1024, 768,  513,514,554,639,638, 769, 770, 783, 804, 804,
+      16,           0, 1024,  768,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 864 x 648, 16 Bit, 50369 Hz, 74 Hz */
+  {109000000,  0,  864, 648,  433,434,468,537,536, 649, 650, 661, 678, 678,
+      16,           0,  864,  648,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+/*
+ * WARNING: THE FOLLOWING MONITOR MODE EXCEEDS THE 110-MHz LIMIT THE PROCESSOR
+ *          HAS BEEN SPECIFIED FOR. USE AT YOUR OWN RISK (AND THINK ABOUT
+ *          MOUNTING SOME COOLING DEVICE AT THE PROCESSOR AND RAMDAC)!
+ */
+  /* 1024 x 768, 16 Bit, 48437 Hz, 60 Hz */
+  {124000000,  0, 1024, 768,  513,537,577,636,635, 769, 770, 783, 804, 804,
+      16,           0, 1024,  768,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+
+  /* 24-bit gfx-mode definitions */
+
+  /* 320 x 200, 24 Bit, 35060 Hz, 83 Hz d */
+  { 46000000,  1,  320, 200,  241,268,287,324,323, 401, 405, 412, 418, 418,
+      24,           0,  320,  200,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 640 x 400, 24 Bit, 31404 Hz, 75 Hz */
+  { 76000000,  0,  640, 400,  481,514,552,601,600, 401, 402, 409, 418, 418,
+      24,           0,  640,  400,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 724 x 482, 24 Bit, 36969 Hz, 73 Hz */
+  {101000000,  0,  724, 482,  544,576,619,682,678, 483, 487, 495, 495, 504,
+      24,           0,  724,  482,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 800 x 600, 24 Bit, 37826 Hz, 60 Hz */
+  {110000000,  0,  800, 600,  601,602,647,723,722, 601, 602, 612, 628, 628,
+      24,           0,  800,  600,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /* 800 x 600, 24 Bit, 43824 Hz, 69 Hz */ 
+  {132000000,  0,  800, 600,  601,641,688,749,748, 601, 611, 621, 628, 628,  
+      24,           0,  800,  600,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+  /*1024 x 768, 24 Bit, 32051 Hz, 79 Hz i */
+  {110000000,  2, 1024, 768,  769,770,824,854,853, 385, 386, 392, 401, 401,
+      24,           0, 1024,  768,  7200,   FX,    FY, KERNEL_FONT,   32,  255},
+
+#endif /* RH_HARDWARECURSOR */
 };
 #undef KERNEL_FONT
 #undef FX
@@ -1412,27 +1525,30 @@ int rh_mon_max = sizeof (monitor_defs)/sizeof (monitor_defs[0]);
 int rh_default_mon = 0;
 int rh_default_gfx = 4;
 
-static struct MonDef *current_mon;
+static struct MonDef *current_mon;	/* EVIL */
 
-int  rh_mode     __P((struct grf_softc *, int, void *, int, int));
-void grfrhattach __P((struct device *, struct device *, void *));
-int  grfrhprint  __P((void *, char *));
-int  grfrhmatch  __P((struct device *, struct cfdata *, void *));
+int  rh_mode(struct grf_softc *, u_long, void *, u_long, int);
+void grfrhattach(struct device *, struct device *, void *);
+int  grfrhprint(void *, const char *);
+int  grfrhmatch(struct device *, void *, void *);
 
-struct cfdriver grfrhcd = {
-	NULL, "grfrh", (cfmatch_t)grfrhmatch, grfrhattach,
-	DV_DULL, sizeof(struct grf_softc), NULL, 0
+struct cfattach grfrh_ca = {
+	sizeof(struct grf_softc), grfrhmatch, grfrhattach
 };
 
-static struct cfdata *cfdata;
+struct cfdriver grfrh_cd = {
+	NULL, "grfrh", DV_DULL, NULL, 0
+};
+
+static struct cfdata *grfrh_cfdata;
 
 int
-grfrhmatch(pdp, cfp, auxp)
+grfrhmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cfp;
-	void *auxp;
+	void *match, *auxp;
 {
 #ifdef RETINACONSOLE
+	struct cfdata *cfp = match;
 	static int rhconunit = -1;
 #endif
 	struct zbus_args *zap;
@@ -1444,7 +1560,8 @@ grfrhmatch(pdp, cfp, auxp)
 		if (rhconunit != -1)
 #endif
 			return(0);
-	if (zap->manid != 18260 || zap->prodid != 16)
+	if (zap->manid != 18260 || 
+			((zap->prodid != 16) && (zap->prodid != 19)))
 		return(0);
 #ifdef RETINACONSOLE
 	if (amiga_realconfig == 0 || rhconunit != cfp->cf_unit) {
@@ -1458,7 +1575,7 @@ grfrhmatch(pdp, cfp, auxp)
 #ifdef RETINACONSOLE
 		if (amiga_realconfig == 0) {
 			rhconunit = cfp->cf_unit;
-			cfdata = cfp;
+			grfrh_cfdata = cfp;
 		}
 	}
 #endif
@@ -1471,7 +1588,6 @@ grfrhattach(pdp, dp, auxp)
 	void *auxp;
 {
 	static struct grf_softc congrf;
-	static int coninited;
 	struct zbus_args *zap;
 	struct grf_softc *gp;
 
@@ -1502,13 +1618,13 @@ grfrhattach(pdp, dp, auxp)
 	/*
 	 * attach grf
 	 */
-	amiga_config_found(cfdata, &gp->g_device, gp, grfrhprint);
+	amiga_config_found(grfrh_cfdata, &gp->g_device, gp, grfrhprint);
 }
 
 int
 grfrhprint(auxp, pnp)
 	void *auxp;
-	char *pnp;
+	const char *pnp;
 {
 	if (pnp)
 		printf("ite at %s", pnp);
@@ -1521,6 +1637,7 @@ rh_getvmode(gp, vm)
 	struct grfvideo_mode *vm;
 {
 	struct MonDef *md;
+	int vmul;
 
 	if (vm->mode_num && vm->mode_num > rh_mon_max)
 		return(EINVAL);
@@ -1529,22 +1646,57 @@ rh_getvmode(gp, vm)
 		vm->mode_num = (current_mon - monitor_defs) + 1;
 
 	md = monitor_defs + (vm->mode_num - 1);
-	strncpy (vm->mode_descr, monitor_descr + (vm->mode_num - 1),
+	strncpy (vm->mode_descr, monitor_descr[vm->mode_num - 1],
 	   sizeof (vm->mode_descr));
 	vm->pixel_clock  = md->FQ;
         vm->disp_width   = (md->DEP == 4) ? md->MW : md->TX;
         vm->disp_height  = (md->DEP == 4) ? md->MH : md->TY;
 	vm->depth        = md->DEP;
-	vm->hblank_start = md->HBS;
-	vm->hblank_stop  = md->HBE;
-	vm->hsync_start  = md->HSS;
-	vm->hsync_stop   = md->HSE;
-	vm->htotal       = md->HT;
-	vm->vblank_start = md->VBS;
-	vm->vblank_stop  = md->VBE;
-	vm->vsync_start  = md->VSS;
-	vm->vsync_stop   = md->VSE;
-	vm->vtotal       = md->VT;
+
+	/* 
+	 * From observation of the monitor definition table above, I guess
+	 * that the horizontal timings are in units of longwords. Hence, I 
+	 * get the pixels by multiplication with 32 and division by the depth.
+	 * The text modes, apparently marked by depth == 4, are even more 
+	 * wierd. According to a comment above, they are computed from a 
+	 * depth==8 mode thats for us: * 32 / 8) by applying another factor 
+	 * of 4 / font width.
+	 * Reverse applying the latter formula most of the constants cancel	
+	 * themselves and we are left with a nice (* font width).
+	 * That is, internal timings are in units of longwords for graphics 
+	 * modes, or in units of characters widths for text modes.
+	 * We better don't WRITE modes until this has been real live checked.
+	 *                    - Ignatios Souvatzis
+	 */
+          
+	if (md->DEP != 4) {
+		vm->hblank_start = md->HBS * 32 / md->DEP;
+		vm->hsync_start  = md->HSS * 32 / md->DEP;    
+		vm->hsync_stop   = md->HSE * 32 / md->DEP;
+		vm->htotal       = md->HT * 32 / md->DEP;
+	} else {
+		vm->hblank_start = md->HBS * md->FX;
+		vm->hsync_start  = md->HSS * md->FX;
+		vm->hsync_stop   = md->HSE * md->FX;
+		vm->htotal       = md->HT * md->FX;    
+	}
+
+	/* XXX move vm->disp_flags and vmul to rh_load_mon
+	 * if rh_setvmode can add new modes with grfconfig */
+	vm->disp_flags = 0;
+	vmul = 2;
+	if (md->FLG & MDF_DBL) {
+		vm->disp_flags |= GRF_FLAGS_DBLSCAN;
+		vmul = 4;
+	}
+	if (md->FLG & MDF_LACE) {
+		vm->disp_flags |= GRF_FLAGS_LACE;
+		vmul = 1;
+	}
+	vm->vblank_start = md->VBS * vmul / 2;
+	vm->vsync_start  = md->VSS * vmul / 2;
+	vm->vsync_stop   = md->VSE * vmul / 2;
+	vm->vtotal       = md->VT * vmul / 2;
 
 	return(0);
 }
@@ -1556,7 +1708,6 @@ rh_setvmode(gp, mode, type)
 	unsigned mode;
         enum mode_type type;
 {
-	struct MonDef *md;
 	int error;
 
 	if (!mode || mode > rh_mon_max)
@@ -1578,45 +1729,47 @@ rh_setvmode(gp, mode, type)
  * Change the mode of the display.
  * Return a UNIX error number or 0 for success.
  */
+int
 rh_mode(gp, cmd, arg, a2, a3)
 	register struct grf_softc *gp;
-	int cmd;
+	u_long cmd;
 	void *arg;
-	int a2, a3;
+	u_long a2;
+	int a3;
 {
 	switch (cmd) {
-	case GM_GRFON:
+	    case GM_GRFON:
                 rh_setvmode (gp, rh_default_gfx + 1, MT_GFXONLY);
 		return(0);
 
-	case GM_GRFOFF:
+	    case GM_GRFOFF:
                 rh_setvmode (gp, rh_default_mon + 1, MT_TXTONLY);
 		return(0);
 
-	case GM_GRFCONFIG:
+	    case GM_GRFCONFIG:
 		return(0);
 
-	case GM_GRFGETVMODE:
+	    case GM_GRFGETVMODE:
 		return(rh_getvmode (gp, (struct grfvideo_mode *) arg));
 
-	case GM_GRFSETVMODE:
+	    case GM_GRFSETVMODE:
                 return(rh_setvmode (gp, *(unsigned *) arg, 
                                     (gp->g_flags & GF_GRFON) ? MT_GFXONLY : MT_TXTONLY));
 
-	case GM_GRFGETNUMVM:
+	    case GM_GRFGETNUMVM:
 		*(int *)arg = rh_mon_max;
 		return(0);
 
 #ifdef BANKEDDEVPAGER
-	case GM_GRFGETBANK:
-	case GM_GRFGETCURBANK:
-	case GM_GRFSETBANK:
+	    case GM_GRFGETBANK:
+	    case GM_GRFGETCURBANK:
+	    case GM_GRFSETBANK:
 		return(EINVAL);
 #endif
-	case GM_GRFIOCTL:
-		return(rh_ioctl (gp, (u_long) arg, (caddr_t) a2));
+	    case GM_GRFIOCTL:
+		return(rh_ioctl (gp, a2, arg));
 
-	default:
+	    default:
 		break;
 	}
 
@@ -1630,29 +1783,40 @@ rh_ioctl (gp, cmd, data)
 	void *data;
 {
 	switch (cmd) {
-	case GRFIOCGSPRITEPOS:
+#ifdef RH_HARDWARECURSOR
+	    case GRFIOCGSPRITEPOS:
 		return(rh_getspritepos (gp, (struct grf_position *) data));
 
-	case GRFIOCSSPRITEPOS:
+	    case GRFIOCSSPRITEPOS:
 		return(rh_setspritepos (gp, (struct grf_position *) data));
 
-	case GRFIOCSSPRITEINF:
+	    case GRFIOCSSPRITEINF:
 		return(rh_setspriteinfo (gp, (struct grf_spriteinfo *) data));
 
-	case GRFIOCGSPRITEINF:
+	    case GRFIOCGSPRITEINF:
 		return(rh_getspriteinfo (gp, (struct grf_spriteinfo *) data));
 
-	case GRFIOCGSPRITEMAX:
+	    case GRFIOCGSPRITEMAX:
 		return(rh_getspritemax (gp, (struct grf_position *) data));
+#else /* RH_HARDWARECURSOR */
+	    case GRFIOCGSPRITEPOS:
+	    case GRFIOCSSPRITEPOS:
+	    case GRFIOCSSPRITEINF:
+	    case GRFIOCGSPRITEMAX:
+		break;
+#endif /* RH_HARDWARECURSOR */
 
-	case GRFIOCGETCMAP:
+	    case GRFIOCGETCMAP:
 		return(rh_getcmap (gp, (struct grf_colormap *) data));
 
-	case GRFIOCPUTCMAP:
+	    case GRFIOCPUTCMAP:
 		return(rh_putcmap (gp, (struct grf_colormap *) data));
 
-	case GRFIOCBITBLT:
+	    case GRFIOCBITBLT:
 		return(rh_bitblt (gp, (struct grf_bitblt *) data));
+
+	    case GRFIOCBLANK:
+		return (rh_blank(gp, (int *)data));
 	}
 
 	return(EINVAL);
@@ -1740,15 +1904,24 @@ rh_getspritepos (gp, pos)
 	struct grf_softc *gp;
 	struct grf_position *pos;
 {
+	struct grfinfo *gi = &gp->g_display;
+#if 1
+	volatile unsigned char *ba = gp->g_regkva;
+
+	pos->x = (RSeq(ba, SEQ_ID_CURSOR_X_LOC_HI) << 8) |
+	    RSeq(ba, SEQ_ID_CURSOR_X_LOC_LO);
+	pos->y = (RSeq(ba, SEQ_ID_CURSOR_Y_LOC_HI) << 8) |
+	    RSeq(ba, SEQ_ID_CURSOR_Y_LOC_LO);
+#else
 	volatile unsigned char *acm = gp->g_regkva + ACM_OFFSET;
 
 	pos->x = acm[ACM_CURSOR_POSITION + 0] +
 	    (acm[ACM_CURSOR_POSITION + 1] << 8);
 	pos->y = acm[ACM_CURSOR_POSITION + 2] +
 	    (acm[ACM_CURSOR_POSITION + 3] << 8);
-
-	pos->x += xpan;
-	pos->y += ypan;
+#endif
+	pos->x += gi->gd_fbx;
+	pos->y += gi->gd_fby;
 
 	return(0);
 }
@@ -1861,7 +2034,9 @@ rh_setspriteinfo (gp, info)
 	struct grf_spriteinfo *info;
 {
 	volatile unsigned char *ba, *fb;
+#if 0
 	u_char control;
+#endif
 
 	ba = gp->g_regkva;
 	fb = gp->g_fbkva;
@@ -2011,5 +2186,24 @@ rh_bitblt (gp, bb)
 		RZ3BitBlit16(gp, bb);
         else
                 RZ3BitBlit24(gp, bb);
+
+	return(0);
 }
+
+
+int
+rh_blank(gp, on)
+	struct grf_softc *gp;
+	int *on;
+{
+	struct MonDef *md = (struct MonDef *)gp->g_data;
+	int r;
+
+	r = 0x01 | ((md->FLG & MDF_CLKDIV2)/ MDF_CLKDIV2 * 8);
+
+	WSeq(gp->g_regkva, SEQ_ID_CLOCKING_MODE, *on > 0 ? r : 0x21);
+
+	return(0);
+}
+
 #endif	/* NGRF */

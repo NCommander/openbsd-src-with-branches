@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.21 2002/02/16 21:27:30 millert Exp $	*/
+
 /*-
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)main.c	8.1 (Berkeley) 6/20/93";*/
-static char rcsid[] = "$Id: main.c,v 1.15 1995/08/13 04:08:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.21 2002/02/16 21:27:30 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -54,13 +56,13 @@ static char rcsid[] = "$Id: main.c,v 1.15 1995/08/13 04:08:27 cgd Exp $";
 #include <time.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <setjmp.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+#include <stdio.h>
 #include <time.h>
 #include <unistd.h>
+#include <util.h>
 
 #include "gettytab.h"
 #include "pathnames.h"
@@ -72,13 +74,23 @@ static char rcsid[] = "$Id: main.c,v 1.15 1995/08/13 04:08:27 cgd Exp $";
  */
 #define GETTY_TIMEOUT	60 /* seconds */
 
+/* defines for auto detection of incoming PPP calls (->PAP/CHAP) */
+
+#define PPP_FRAME	    0x7e  /* PPP Framing character */
+#define PPP_STATION	    0xff  /* "All Station" character */
+#define PPP_ESCAPE	    0x7d  /* Escape Character */
+#define PPP_CONTROL	    0x03  /* PPP Control Field */
+#define PPP_CONTROL_ESCAPED 0x23  /* PPP Control Field, escaped */
+#define PPP_LCP_HI	    0xc0  /* LCP protocol - high byte */
+#define PPP_LCP_LOW	    0x21  /* LCP protocol - low byte */
+
 struct termios tmode, omode;
 
 int crmod, digit, lower, upper;
 
 char	hostname[MAXHOSTNAMELEN];
 struct	utsname kerninfo;
-char	name[16];
+char	name[MAXLOGNAME];
 char	dev[] = _PATH_DEV;
 char	ttyn[32];
 char	*portselector();
@@ -115,25 +127,24 @@ char partab[] = {
 #define	KILL	tmode.c_cc[VKILL]
 #define	EOT	tmode.c_cc[VEOF]
 
-jmp_buf timeout;
-
 static void
 dingdong()
 {
-
-	alarm(0);
-	signal(SIGALRM, SIG_DFL);
-	longjmp(timeout, 1);
+	tmode.c_ispeed = tmode.c_ospeed = 0;
+	(void)tcsetattr(0, TCSANOW, &tmode);
+	_exit(1);
 }
 
-jmp_buf	intrupt;
+volatile sig_atomic_t interrupt_flag;
 
 static void
 interrupt()
 {
+	int save_errno = errno;
 
+	interrupt_flag = 1;
 	signal(SIGINT, interrupt);
-	longjmp(intrupt, 1);
+	errno = save_errno;
 }
 
 /*
@@ -143,18 +154,20 @@ void
 timeoverrun(signo)
 	int signo;
 {
+	struct syslog_data sdata = SYSLOG_DATA_INIT;
 
-	syslog(LOG_ERR, "getty exiting due to excessive running time\n");
-	exit(1);
+	syslog_r(LOG_ERR, &sdata,
+	    "getty exiting due to excessive running time");
+	_exit(1);
 }
 
-static int	getname __P((void));
-static void	oflush __P((void));
-static void	prompt __P((void));
-static void	putchr __P((int));
-static void	putf __P((char *));
-static void	putpad __P((char *));
-static void	puts __P((char *));
+static int	getname(void);
+static void	oflush(void);
+static void	prompt(void);
+static void	putchr(int);
+static void	putf(char *);
+static void	putpad(char *);
+static void	xputs(char *);
 
 int
 main(argc, argv)
@@ -163,9 +176,9 @@ main(argc, argv)
 {
 	extern char **environ;
 	char *tname;
-	long allflags;
 	int repcnt = 0, failopenlogged = 0;
 	struct rlimit limit;
+	int rval;
 
 	signal(SIGINT, SIG_IGN);
 /*
@@ -192,33 +205,32 @@ main(argc, argv)
 	 * that the file descriptors are already set up for us. 
 	 * J. Gettys - MIT Project Athena.
 	 */
-	if (argc <= 2 || strcmp(argv[2], "-") == 0)
-	    strcpy(ttyn, ttyname(0));
-	else {
-	    int i;
+	if (argc <= 2 || strcmp(argv[2], "-") == 0) {
+		snprintf(ttyn, sizeof ttyn, "%s", ttyname(0));
+	} else {
+		int i;
 
-	    strcpy(ttyn, dev);
-	    strncat(ttyn, argv[2], sizeof(ttyn)-sizeof(dev));
-	    if (strcmp(argv[0], "+") != 0) {
-		chown(ttyn, 0, 0);
-		chmod(ttyn, 0600);
-		revoke(ttyn);
-		/*
-		 * Delay the open so DTR stays down long enough to be detected.
-		 */
-		sleep(2);
-		while ((i = open(ttyn, O_RDWR)) == -1) {
-			if ((repcnt % 10 == 0) &&
-			    (errno != ENXIO || !failopenlogged)) {
-				syslog(LOG_ERR, "%s: %m", ttyn);
-				closelog();
-				failopenlogged = 1;
+		snprintf(ttyn, sizeof ttyn, "%s%s", dev, argv[2]);
+		if (strcmp(argv[0], "+") != 0) {
+			chown(ttyn, 0, 0);
+			chmod(ttyn, 0600);
+			revoke(ttyn);
+			/*
+			 * Delay the open so DTR stays down long enough to be detected.
+			 */
+			sleep(2);
+			while ((i = open(ttyn, O_RDWR)) == -1) {
+				if ((repcnt % 10 == 0) &&
+				    (errno != ENXIO || !failopenlogged)) {
+					syslog(LOG_ERR, "%s: %m", ttyn);
+					closelog();
+					failopenlogged = 1;
+				}
+				repcnt++;
+				sleep(60);
 			}
-			repcnt++;
-			sleep(60);
+			login_tty(i);
 		}
-		login_tty(i);
-	    }
 	}
 
 	/* Start with default tty settings */
@@ -274,23 +286,25 @@ main(argc, argv)
 		edithost(HE);
 		if (IM && *IM)
 			putf(IM);
-		if (setjmp(timeout)) {
-			tmode.c_ispeed = tmode.c_ospeed = 0;
-			(void)tcsetattr(0, TCSANOW, &tmode);
-			exit(1);
-		}
 		if (TO) {
 			signal(SIGALRM, dingdong);
 			alarm(TO);
 		}
-		if (getname()) {
-			register int i;
+		if ((rval = getname()) == 2) {
+			oflush();
+			alarm(0);
+			signal(SIGALRM, SIG_DFL);
+			execle(PP, "ppplogin", ttyn, (char *) 0, env);
+			syslog(LOG_ERR, "%s: %m", PP);
+			exit(1);
+		} else if (rval) {
+			int i;
 
 			oflush();
 			alarm(0);
 			signal(SIGALRM, SIG_DFL);
 			if (name[0] == '-') {
-				puts("user names may not start with '-'.");
+				xputs("user names may not start with '-'.");
 				continue;
 			}
 			if (!(upper || lower || digit))
@@ -300,12 +314,16 @@ main(argc, argv)
 				tmode.c_iflag |= ICRNL;
 				tmode.c_oflag |= ONLCR;
 			}
-#if XXX
-			if (upper || UC)
-				tmode.sg_flags |= LCASE;
-			if (lower || LC)
-				tmode.sg_flags &= ~LCASE;
-#endif
+			if (upper || UC) {
+				tmode.c_iflag |= IUCLC;
+				tmode.c_oflag |= OLCUC;
+				tmode.c_lflag |= XCASE;
+			}
+			if (lower || LC) {
+				tmode.c_iflag &= ~IUCLC;
+				tmode.c_oflag &= ~OLCUC;
+				tmode.c_lflag &= ~XCASE;
+			}
 			if (tcsetattr(0, TCSANOW, &tmode) < 0) {
 				syslog(LOG_ERR, "%s: %m", ttyn);
 				exit(1);
@@ -318,7 +336,7 @@ main(argc, argv)
 			limit.rlim_max = RLIM_INFINITY;
 			limit.rlim_cur = RLIM_INFINITY;
 			(void)setrlimit(RLIMIT_CPU, &limit);
-			execle(LO, "login", "-p", name, (char *) 0, env);
+			execle(LO, "login", "-p", "--", name, (char *)0, env);
 			syslog(LOG_ERR, "%s: %m", LO);
 			exit(1);
 		}
@@ -333,17 +351,14 @@ main(argc, argv)
 static int
 getname()
 {
-	register int c;
-	register char *np;
-	char cs;
+	int ppp_state = 0, ppp_connection = 0;
+	unsigned char cs;
+	int c, r;
+	char *np;
 
 	/*
 	 * Interrupt may happen if we use CBREAK mode
 	 */
-	if (setjmp(intrupt)) {
-		signal(SIGINT, SIG_IGN);
-		return (0);
-	}
 	signal(SIGINT, interrupt);
 	setflags(1);
 	prompt();
@@ -360,13 +375,47 @@ getname()
 	np = name;
 	for (;;) {
 		oflush();
-		if (read(STDIN_FILENO, &cs, 1) <= 0)
+		r = read(STDIN_FILENO, &cs, 1);
+		if (r <= 0) {
+			if (r == -1 && errno == EINTR && interrupt_flag) {
+				interrupt_flag = 0;
+				return (0);
+			}
 			exit(0);
+		}
 		if ((c = cs&0177) == 0)
 			return (0);
+
+		/*
+		 * PPP detection state machine..
+		 * Look for sequences:
+		 * PPP_FRAME, PPP_STATION, PPP_ESCAPE, PPP_CONTROL_ESCAPED or
+		 * PPP_FRAME, PPP_STATION, PPP_CONTROL (deviant from RFC)
+		 * See RFC1662.
+		 * Derived from code from Michael Hancock <michaelh@cet.co.jp>
+		 * and Erik 'PPP' Olson <eriko@wrq.com>
+		 */
+		if (PP && cs == PPP_FRAME) {
+			ppp_state = 1;
+		} else if (ppp_state == 1 && cs == PPP_STATION) {
+			ppp_state = 2;
+		} else if (ppp_state == 2 && cs == PPP_ESCAPE) {
+			ppp_state = 3;
+		} else if ((ppp_state == 2 && cs == PPP_CONTROL) ||
+		    (ppp_state == 3 && cs == PPP_CONTROL_ESCAPED)) {
+			ppp_state = 4;
+		} else if (ppp_state == 4 && cs == PPP_LCP_HI) {
+			ppp_state = 5;
+		} else if (ppp_state == 5 && cs == PPP_LCP_LOW) {
+			ppp_connection = 1;
+			break;
+		} else {
+			ppp_state = 0;
+		}
+
 		if (c == EOT)
 			exit(1);
-		if (c == '\r' || c == '\n' || np >= &name[sizeof name]) {
+		if (c == '\r' || c == '\n' || np >= name + sizeof name -1) {
 			putf("\r\n");
 			break;
 		}
@@ -378,7 +427,7 @@ getname()
 			if (np > name) {
 				np--;
 				if (cfgetospeed(&tmode) >= 1200)
-					puts("\b \b");
+					xputs("\b \b");
 				else
 					putchr(cs);
 			}
@@ -390,7 +439,7 @@ getname()
 				putchr('\n');
 			/* this is the way they do it down under ... */
 			else if (np > name)
-				puts("                                     \r");
+				xputs("                                     \r");
 			prompt();
 			np = name;
 			continue;
@@ -402,6 +451,10 @@ getname()
 		putchr(cs);
 	}
 	signal(SIGINT, SIG_IGN);
+	if (interrupt_flag) {
+		interrupt_flag = 0;
+		return (0);
+	}
 	*np = 0;
 	if (c == '\r')
 		crmod = 1;
@@ -409,14 +462,14 @@ getname()
 		for (np = name; *np; np++)
 			if (isupper(*np))
 				*np = tolower(*np);
-	return (1);
+	return (1 + ppp_connection);
 }
 
 static void
 putpad(s)
-	register char *s;
+	char *s;
 {
-	register pad = 0;
+	int pad = 0;
 	speed_t ospeed = cfgetospeed(&tmode);
 
 	if (isdigit(*s)) {
@@ -431,7 +484,7 @@ putpad(s)
 		}
 	}
 
-	puts(s);
+	xputs(s);
 	/*
 	 * If no delay needed, or output speed is
 	 * not comprehensible, then don't try to delay.
@@ -451,8 +504,8 @@ putpad(s)
 }
 
 static void
-puts(s)
-	register char *s;
+xputs(s)
+	char *s;
 {
 	while (*s)
 		putchr(*s++);
@@ -500,11 +553,11 @@ prompt()
 
 static void
 putf(cp)
-	register char *cp;
+	char *cp;
 {
 	extern char editedhost[];
-	time_t t;
 	char *slash, db[100];
+	time_t t;
 
 	while (*cp) {
 		if (*cp != '%') {
@@ -516,13 +569,13 @@ putf(cp)
 		case 't':
 			slash = strrchr(ttyn, '/');
 			if (slash == (char *) 0)
-				puts(ttyn);
+				xputs(ttyn);
 			else
-				puts(&slash[1]);
+				xputs(&slash[1]);
 			break;
 
 		case 'h':
-			puts(editedhost);
+			xputs(editedhost);
 			break;
 
 		case 'd': {
@@ -531,25 +584,25 @@ putf(cp)
 			fmt[4] = 'M';		/* I *hate* SCCS... */
 			(void)time(&t);
 			(void)strftime(db, sizeof(db), fmt, localtime(&t));
-			puts(db);
+			xputs(db);
 			break;
+		}
 
 		case 's':
-			puts(kerninfo.sysname);
+			xputs(kerninfo.sysname);
 			break;
 
 		case 'm':
-			puts(kerninfo.machine);
+			xputs(kerninfo.machine);
 			break;
 
 		case 'r':
-			puts(kerninfo.release);
+			xputs(kerninfo.release);
 			break;
 
 		case 'v':
-			puts(kerninfo.version);
+			xputs(kerninfo.version);
 			break;
-		}
 
 		case '%':
 			putchr('%');

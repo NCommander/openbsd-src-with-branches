@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2002 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * This code is derived from software contributed by Chris Jepeway
@@ -37,20 +37,29 @@
 
 #include "config.h"
 
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #ifdef STDC_HEADERS
 # include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
 #endif /* STDC_HEADERS */
+#ifdef HAVE_STRING_H
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
+#endif /* HAVE_STRING_H */
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif /* HAVE_UNISTD_H */
-#ifdef HAVE_STRING_H
-# include <string.h>
-#endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-# include <strings.h>
-#endif /* HAVE_STRINGS_H */
-#if defined(HAVE_FNMATCH) && defined(HAVE_FNMATCH_H)
+#ifdef HAVE_FNMATCH
 # include <fnmatch.h>
 #endif /* HAVE_FNMATCH_H */
 #ifdef HAVE_NETGROUP_H
@@ -59,25 +68,22 @@
 #include <ctype.h>
 #include <pwd.h>
 #include <grp.h>
-#include <sys/param.h>
-#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <sys/stat.h>
-#if HAVE_DIRENT_H
+#ifdef HAVE_DIRENT_H
 # include <dirent.h>
 # define NAMLEN(dirent) strlen((dirent)->d_name)
 #else
 # define dirent direct
 # define NAMLEN(dirent) (dirent)->d_namlen
-# if HAVE_SYS_NDIR_H
+# ifdef HAVE_SYS_NDIR_H
 #  include <sys/ndir.h>
 # endif
-# if HAVE_SYS_DIR_H
+# ifdef HAVE_SYS_DIR_H
 #  include <sys/dir.h>
 # endif
-# if HAVE_NDIR_H
+# ifdef HAVE_NDIR_H
 #  include <ndir.h>
 # endif
 #endif
@@ -91,13 +97,14 @@
 #endif /* HAVE_FNMATCH */
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: parse.c,v 1.121 1999/08/28 10:00:22 millert Exp $";
+static const char rcsid[] = "$Sudo: parse.c,v 1.136 2002/01/08 15:00:18 millert Exp $";
 #endif /* lint */
 
 /*
  * Globals
  */
 int parse_error = FALSE;
+extern int keepall;
 extern FILE *yyin, *yyout;
 
 /*
@@ -111,10 +118,12 @@ static int has_meta	__P((char *));
  * allowed to run the specified command on this host as the target user.
  */
 int
-sudoers_lookup(check_cmnd)
-    int check_cmnd;
+sudoers_lookup(pwflag)
+    int pwflag;
 {
     int error;
+    int pwcheck;
+    int nopass;
 
     /* Become sudoers file owner */
     set_perms(PERM_SUDOERS, 0);
@@ -126,6 +135,10 @@ sudoers_lookup(check_cmnd)
 
     /* Allocate space for data structures in the parser. */
     init_parser();
+
+    /* If pwcheck *could* be PWCHECK_ALL or PWCHECK_ANY, keep more state. */
+    if (pwflag > 0)
+	keepall = TRUE;
 
     /* Need to be root while stat'ing things in the parser. */
     set_perms(PERM_ROOT, 0);
@@ -139,34 +152,58 @@ sudoers_lookup(check_cmnd)
 	return(VALIDATE_ERROR);
 
     /*
+     * The pw options may have changed during sudoers parse so we
+     * wait until now to set this.
+     */
+    if (pwflag)
+	pwcheck = (pwflag == -1) ? PWCHECK_NEVER : def_ival(pwflag);
+    else
+	pwcheck = 0;
+
+    /*
      * Assume the worst.  If the stack is empty the user was
      * not mentioned at all.
      */
-    error = VALIDATE_NOT_OK;
-    if (check_cmnd == TRUE) {
+    if (def_flag(I_AUTHENTICATE))
+	error = VALIDATE_NOT_OK;
+    else
+	error = VALIDATE_NOT_OK | FLAG_NOPASS;
+    if (pwcheck) {
+	error |= FLAG_NO_CHECK;
+    } else {
 	error |= FLAG_NO_HOST;
 	if (!top)
 	    error |= FLAG_NO_USER;
-    } else
-	error |= FLAG_NO_CHECK;
+    }
 
     /*
-     * Only check the actual command if the check_cmnd flag is set.
-     * It is not set for the "validate" and "list" pseudo-commands.
+     * Only check the actual command if pwcheck flag is not set.
+     * It is set for the "validate", "list" and "kill" pseudo-commands.
      * Always check the host and user.
      */
-    if (check_cmnd == FALSE)
+    nopass = -1;
+    if (pwcheck) {
+	int found;
+
+	if (pwcheck == PWCHECK_NEVER || !def_flag(I_AUTHENTICATE))
+	    nopass = FLAG_NOPASS;
+	found = 0;
 	while (top) {
 	    if (host_matches == TRUE) {
-		/* User may always validate or list on allowed hosts */
-		if (no_passwd == TRUE)
-		    return(VALIDATE_OK | FLAG_NOPASS);
-		else
-		    return(VALIDATE_OK);
+		found = 1;
+		if (pwcheck == PWCHECK_ANY && no_passwd == TRUE)
+		    nopass = FLAG_NOPASS;
+		else if (pwcheck == PWCHECK_ALL && nopass != 0)
+		    nopass = (no_passwd == TRUE) ? FLAG_NOPASS : 0;
 	    }
 	    top--;
 	}
-    else
+	if (found) {
+	    if (nopass == -1)
+		nopass = 0;
+	    return(VALIDATE_OK | nopass);
+	}
+    } else {
 	while (top) {
 	    if (host_matches == TRUE) {
 		error &= ~FLAG_NO_HOST;
@@ -193,11 +230,14 @@ sudoers_lookup(check_cmnd)
 	    }
 	    top--;
 	}
+    }
 
     /*
      * The user was not explicitly granted nor denied access.
      */
-    return(error);
+    if (nopass == -1)
+	nopass = 0;
+    return(error | nopass);
 }
 
 /*
@@ -343,8 +383,13 @@ addr_matches(n)
 	addr.s_addr = inet_addr(n);
 	if (strchr(m, '.'))
 	    mask.s_addr = inet_addr(m);
-	else
-	    mask.s_addr = (1 << atoi(m)) - 1;	/* XXX - better way? */
+	else {
+	    i = 32 - atoi(m);
+	    mask.s_addr = 0xffffffff;
+	    mask.s_addr >>= i;
+	    mask.s_addr <<= i;
+	    mask.s_addr = htonl(mask.s_addr);
+	}
 	*(m - 1) = '/';
 
 	for (i = 0; i < num_interfaces; i++)
@@ -361,6 +406,28 @@ addr_matches(n)
     }
 
     return(FALSE);
+}
+
+/*
+ * Returns 0 if the hostname matches the pattern and non-zero otherwise.
+ */
+int
+hostname_matches(shost, lhost, pattern)
+    char *shost;
+    char *lhost;
+    char *pattern;
+{
+    if (has_meta(pattern)) {
+	if (strchr(pattern, '.'))
+	    return(fnmatch(pattern, lhost, FNM_CASEFOLD));
+	else
+	    return(fnmatch(pattern, shost, FNM_CASEFOLD));
+    } else {
+	if (strchr(pattern, '.'))
+	    return(strcasecmp(lhost, pattern));
+	else
+	    return(strcasecmp(shost, pattern));
+    }
 }
 
 /*
@@ -402,13 +469,14 @@ usergr_matches(group, user)
 
 /*
  * Returns TRUE if "host" and "user" belong to the netgroup "netgr",
- * else return FALSE.  Either of "host" or "user" may be NULL
+ * else return FALSE.  Either of "host", "shost" or "user" may be NULL
  * in which case that argument is not checked...
  */
 int
-netgr_matches(netgr, host, user)
+netgr_matches(netgr, host, shost, user)
     char *netgr;
     char *host;
+    char *shost;
     char *user;
 {
 #ifdef HAVE_GETDOMAINNAME
@@ -433,10 +501,13 @@ netgr_matches(netgr, host, user)
 #endif /* HAVE_GETDOMAINNAME */
 
 #ifdef HAVE_INNETGR
-    return(innetgr(netgr, host, user, domain));
-#else
-    return(FALSE);
+    if (innetgr(netgr, host, user, domain))
+	return(TRUE);
+    else if (host != shost && innetgr(netgr, shost, user, domain))
+	return(TRUE);
 #endif /* HAVE_INNETGR */
+
+    return(FALSE);
 }
 
 /*
@@ -447,7 +518,7 @@ static int
 has_meta(s)
     char *s;
 {
-    register char *t;
+    char *t;
     
     for (t = s; *t; t++) {
 	if (*t == '\\' || *t == '?' || *t == '*' || *t == '[' || *t == ']')

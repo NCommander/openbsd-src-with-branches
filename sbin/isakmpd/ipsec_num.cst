@@ -1,4 +1,5 @@
-#	$Id: ipsec_num.cst,v 1.1 1998/07/25 11:19:11 niklas Exp $
+#	$OpenBSD: ipsec_num.cst,v 1.7 2000/10/16 23:27:55 niklas Exp $
+#	$EOM: ipsec_num.cst,v 1.5 2000/10/13 17:56:52 angelos Exp $
 
 #
 # Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -72,6 +73,10 @@ IPSEC_AUTH
   HMAC_SHA				2
   DES_MAC				3
   KPDK					4
+  HMAC_SHA2_256                         5
+  HMAC_SHA2_384                         6
+  HMAC_SHA2_512                         7
+  HMAC_RIPEMD                           8
 .
 
 # IPSEC ID types.
@@ -91,19 +96,19 @@ IPSEC_ID
 
 # IKE SA attributes
 IKE_ATTR
-  ENCRYPTION_ALGORITHM			1
-  HASH_ALGORITHM			2
-  AUTHENTICATION_METHOD			3
-  GROUP_DESCRIPTION			4
-  GROUP_TYPE				5
+  ENCRYPTION_ALGORITHM			1	ike_encrypt_cst
+  HASH_ALGORITHM			2	ike_hash_cst
+  AUTHENTICATION_METHOD			3	ike_auth_cst
+  GROUP_DESCRIPTION			4	ike_group_desc_cst
+  GROUP_TYPE				5	ike_group_cst
   GROUP_PRIME				6
   GROUP_GENERATOR_1			7
   GROUP_GENERATOR_2			8
   GROUP_CURVE_A				9
   GROUP_CURVE_B				10
-  LIFE_TYPE				11
+  LIFE_TYPE				11	ike_duration_cst
   LIFE_DURATION				12
-  PRF					13
+  PRF					13	ike_prf_cst
   KEY_LENGTH				14
   FIELD_SIZE				15
   GROUP_ORDER				16
@@ -119,6 +124,7 @@ IKE_ENCRYPT
   RC5_R16_B64_CBC			4
   3DES_CBC				5
   CAST_CBC				6
+  AES_CBC                               7
 .
 
 # IKE hash algorithm.
@@ -126,6 +132,9 @@ IKE_HASH
   MD5					1
   SHA					2
   TIGER					3
+  SHA2_256                              4
+  SHA2_384                              5
+  SHA2_512                              6
 .
 
 # IKE authentication method.
@@ -143,6 +152,7 @@ IKE_GROUP_DESC
   MODP_1024				2
   EC2N_155				3
   EC2N_185				4
+  MODP_1536				5
 .
 
 # IKE Group type.
@@ -186,6 +196,10 @@ IPSEC_AH
   MD5					2
   SHA					3
   DES					4
+  SHA2_256                              5
+  SHA2_384                              6
+  SHA2_512                              7
+  RIPEMD                                8
 .
 
 # IPSEC ESP transform IDs.
@@ -201,6 +215,12 @@ IPSEC_ESP
   DES_IV32				9
   RC4					10
   NULL					11
+  AES                                   12
+  AES_MARS				249
+  AES_RC6				250
+  AES_RIJNDAEL				251
+  AES_SERPENT				252
+  AES_TWOFISH				253
 .
 
 # IPSEC IPCOMP transform IDs

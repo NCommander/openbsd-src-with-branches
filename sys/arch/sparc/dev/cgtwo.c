@@ -1,4 +1,5 @@
-/*	$NetBSD: cgtwo.c,v 1.5 1995/10/08 01:39:15 pk Exp $ */
+/*	$OpenBSD: cgtwo.c,v 1.19 2002/03/14 01:26:42 millert Exp $	*/
+/*	$NetBSD: cgtwo.c,v 1.22 1997/05/24 20:16:12 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -53,14 +54,16 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/mman.h>
 #include <sys/tty.h>
+#include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/fbio.h>
 #include <machine/autoconf.h>
@@ -69,16 +72,16 @@
 #if defined(SUN4)
 #include <machine/eeprom.h>
 #endif
-
+#include <machine/conf.h>
 #include <machine/cgtworeg.h>
-#include <sparc/dev/sbusvar.h>
+
 
 /* per-display variables */
 struct cgtwo_softc {
 	struct	device sc_dev;		/* base device */
-	struct	sbusdev sc_sd;		/* sbus device */
 	struct	fbdevice sc_fb;		/* frame buffer device */
-	caddr_t	sc_phys;		/* display RAM (phys addr) */
+	struct rom_reg	sc_phys;	/* display RAM (phys addr) */
+	int	sc_bustype;		/* type of bus we live on */
 	volatile struct cg2statusreg *sc_reg;	/* CG2 control registers */
 	volatile u_short *sc_cmap;
 #define sc_redmap(sc)	((sc)->sc_cmap)
@@ -89,15 +92,16 @@ struct cgtwo_softc {
 /* autoconfiguration driver */
 static void	cgtwoattach(struct device *, struct device *, void *);
 static int	cgtwomatch(struct device *, void *, void *);
-int		cgtwoopen __P((dev_t, int, int, struct proc *));
-int		cgtwoclose __P((dev_t, int, int, struct proc *));
-int		cgtwoioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
-int		cgtwommap __P((dev_t, int, int));
 static void	cgtwounblank(struct device *);
+int		cgtwogetcmap(struct cgtwo_softc *, struct fbcmap *);
+int		cgtwoputcmap(struct cgtwo_softc *, struct fbcmap *);
 
-struct cfdriver cgtwocd = {
-	NULL, "cgtwo", cgtwomatch, cgtwoattach,
-	DV_DULL, sizeof(struct cgtwo_softc)
+struct cfattach cgtwo_ca = {
+	sizeof(struct cgtwo_softc), cgtwomatch, cgtwoattach
+};
+
+struct cfdriver cgtwo_cd = {
+	NULL, "cgtwo", DV_DULL
 };
 
 /* frame buffer generic driver */
@@ -107,10 +111,6 @@ static struct fbdriver cgtwofbdriver = {
 
 extern int fbnode;
 extern struct tty *fbconstty;
-extern int nullop();
-static int cgtwo_cnputc();
-
-static void cgtwoloadcmap __P((struct cgtwo_softc *, int, int));
 
 /*
  * Match a cgtwo.
@@ -123,8 +123,14 @@ cgtwomatch(parent, vcf, aux)
 	struct cfdata *cf = vcf;
 	struct confargs *ca = aux;
 	struct romaux *ra = &ca->ca_ra;
-	int probe;
+#if defined(SUN4)
 	caddr_t tmp;
+#endif
+
+	/*
+	 * Mask out invalid flags from the user.
+	 */
+	cf->cf_flags &= FB_USERMASK;
 
 	if (ca->ca_bustype != BUS_VME16)
 		return (0);
@@ -133,12 +139,12 @@ cgtwomatch(parent, vcf, aux)
 		return (0);
 
 #if defined(SUN4)
-	if (cputyp != CPU_SUN4 || cf->cf_unit != 0)
+	if (!CPU_ISSUN4 || cf->cf_unit != 0)
 		return (0);
 
 	/* XXX - Must do our own mapping at CG2_CTLREG_OFF */
 	bus_untmp();
-	tmp = (caddr_t)bus_tmp(ra->ra_paddr + CG2_CTLREG_OFF, ca->ca_bustype);
+	tmp = (caddr_t)mapdev(ra->ra_reg, TMPMAP_VA, CG2_CTLREG_OFF, NBPG);
 	if (probeget(tmp, 2) != -1)
 		return 1;
 #endif
@@ -155,19 +161,18 @@ cgtwoattach(parent, self, args)
 {
 	register struct cgtwo_softc *sc = (struct cgtwo_softc *)self;
 	register struct confargs *ca = args;
-	register int node, i;
-	register struct cgtwo_all *p;
-	int isconsole;
-	int sbus = 1;
-	char *nam;
+	register int node = 0;
+	int isconsole = 0;
+	char *nam = NULL;
 
 	sc->sc_fb.fb_driver = &cgtwofbdriver;
 	sc->sc_fb.fb_device = &sc->sc_dev;
 	sc->sc_fb.fb_type.fb_type = FBTYPE_SUN2COLOR;
+	sc->sc_fb.fb_flags = sc->sc_dev.dv_cfdata->cf_flags;
 
 	switch (ca->ca_bustype) {
 	case BUS_VME16:
-		sbus = node = 0;
+		node = 0;
 		nam = "cgtwo";
 		break;
 
@@ -181,7 +186,7 @@ cgtwoattach(parent, self, args)
 	    1152, 900, node, ca->ca_bustype);
 
 	sc->sc_fb.fb_type.fb_cmsize = 256;
-	sc->sc_fb.fb_type.fb_size = roundup(CG2_MAPPED_SIZE, NBPG);
+	sc->sc_fb.fb_type.fb_size = round_page(CG2_MAPPED_SIZE);
 	printf(": %s, %d x %d", nam,
 	    sc->sc_fb.fb_type.fb_width, sc->sc_fb.fb_type.fb_height);
 
@@ -192,7 +197,7 @@ cgtwoattach(parent, self, args)
 	 * going to print characters via rconsole.
 	 */
 #if defined(SUN4)
-	if (cputyp == CPU_SUN4) {
+	if (CPU_ISSUN4) {
 		struct eeprom *eep = (struct eeprom *)eeprom_va;
 		/*
 		 * Assume this is the console if there's no eeprom info
@@ -204,30 +209,26 @@ cgtwoattach(parent, self, args)
 			isconsole = 0;
 	}
 #endif
-#if defined(SUN4C) || defined(SUN4M)
-	if (cputyp == CPU_SUN4C || cputyp == CPU_SUN4M)
-		isconsole = node == fbnode && fbconstty != NULL;
-#endif
-	sc->sc_phys = (caddr_t)ca->ca_ra.ra_paddr;
+	sc->sc_phys = ca->ca_ra.ra_reg[0];
+	/* Apparently, the pixels are 32-bit data space */
+	sc->sc_phys.rr_iospace = PMAP_VME32;
+	sc->sc_bustype = ca->ca_bustype;
+
 	if ((sc->sc_fb.fb_pixels = ca->ca_ra.ra_vaddr) == NULL && isconsole) {
 		/* this probably cannot happen, but what the heck */
-		sc->sc_fb.fb_pixels = mapiodev(sc->sc_phys + CG2_PIXMAP_OFF,
-					       CG2_PIXMAP_SIZE,
-					       ca->ca_bustype);
+		sc->sc_fb.fb_pixels = mapiodev(&sc->sc_phys, CG2_PIXMAP_OFF,
+					       CG2_PIXMAP_SIZE);
 	}
-#ifndef offsetof
-#define	offsetof(type, member)  ((size_t)(&((type *)0)->member))
-#endif
 
 	sc->sc_reg = (volatile struct cg2statusreg *)
-	    mapiodev((caddr_t)sc->sc_phys +
+	    mapiodev(ca->ca_ra.ra_reg,
 		     CG2_ROPMEM_OFF + offsetof(struct cg2fb, status.reg),
-		     sizeof(struct cg2statusreg), ca->ca_bustype);
+		     sizeof(struct cg2statusreg));
 
 	sc->sc_cmap = (volatile u_short *)
-	    mapiodev((caddr_t)sc->sc_phys +
+	    mapiodev(ca->ca_ra.ra_reg,
 		     CG2_ROPMEM_OFF + offsetof(struct cg2fb, redmap[0]),
-		     3 * CG2_CMSIZE, ca->ca_bustype);
+		     3 * CG2_CMSIZE);
 
 	if (isconsole) {
 		printf(" (console)\n");
@@ -236,10 +237,9 @@ cgtwoattach(parent, self, args)
 #endif
 	} else
 		printf("\n");
-	if (sbus)
-		sbus_establish(&sc->sc_sd, &sc->sc_dev);
-	if (node == fbnode)
-		fb_attach(&sc->sc_fb);
+
+	if (node == fbnode || CPU_ISSUN4)
+		fb_attach(&sc->sc_fb, isconsole);
 }
 
 int
@@ -250,7 +250,7 @@ cgtwoopen(dev, flags, mode, p)
 {
 	int unit = minor(dev);
 
-	if (unit >= cgtwocd.cd_ndevs || cgtwocd.cd_devs[unit] == NULL)
+	if (unit >= cgtwo_cd.cd_ndevs || cgtwo_cd.cd_devs[unit] == NULL)
 		return (ENXIO);
 	return (0);
 }
@@ -273,9 +273,8 @@ cgtwoioctl(dev, cmd, data, flags, p)
 	int flags;
 	struct proc *p;
 {
-	register struct cgtwo_softc *sc = cgtwocd.cd_devs[minor(dev)];
+	register struct cgtwo_softc *sc = cgtwo_cd.cd_devs[minor(dev)];
 	register struct fbgattr *fba;
-	int error;
 
 	switch (cmd) {
 
@@ -296,17 +295,17 @@ cgtwoioctl(dev, cmd, data, flags, p)
 		break;
 
 	case FBIOGETCMAP:
-		return cgtwogetcmap(sc, data);
+		return cgtwogetcmap(sc, (struct fbcmap *) data);
 
 	case FBIOPUTCMAP:
-		return cgtwoputcmap(sc, data);
+		return cgtwoputcmap(sc, (struct fbcmap *) data);
 
 	case FBIOGVIDEO:
 		*(int *)data = sc->sc_reg->video_enab;
 		break;
 
 	case FBIOSVIDEO:
-		sc->sc_reg->video_enab = (*(int*)data) & 1;
+		sc->sc_reg->video_enab = (*(int *)data) & 1;
 		break;
 
 	default:
@@ -334,7 +333,8 @@ cgtwogetcmap(sc, cmap)
 	register struct fbcmap *cmap;
 {
 	u_char red[CG2_CMSIZE], green[CG2_CMSIZE], blue[CG2_CMSIZE];
-	int error, start, count, ecount;
+	int error;
+	u_int start, count, ecount;
 	register u_int i;
 	register volatile u_short *p;
 
@@ -376,7 +376,8 @@ cgtwoputcmap(sc, cmap)
 	register struct fbcmap *cmap;
 {
 	u_char red[CG2_CMSIZE], green[CG2_CMSIZE], blue[CG2_CMSIZE];
-	int error, start, count, ecount;
+	int error;
+	u_int start, count, ecount;
 	register u_int i;
 	register volatile u_short *p;
 
@@ -414,18 +415,21 @@ cgtwoputcmap(sc, cmap)
  * Return the address that would map the given device at the given
  * offset, allowing for the given protection, or return -1 for error.
  */
-int
+paddr_t
 cgtwommap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
-	register struct cgtwo_softc *sc = cgtwocd.cd_devs[minor(dev)];
+	register struct cgtwo_softc *sc = cgtwo_cd.cd_devs[minor(dev)];
 
 	if (off & PGOFSET)
 		panic("cgtwommap");
 
+	if (off < 0)
+		return (-1);
 	if ((unsigned)off >= sc->sc_fb.fb_type.fb_size)
 		return (-1);
 
-	return ((int)sc->sc_phys + off + PMAP_VME16 + PMAP_NC);
+	return (REG2PHYS(&sc->sc_phys, off) | PMAP_NC);
 }

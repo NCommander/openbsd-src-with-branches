@@ -1,3 +1,4 @@
+/*	$OpenBSD: asm.h,v 1.4 2000/08/05 22:07:31 niklas Exp $	*/
 /*	$NetBSD: asm.h,v 1.7 1994/10/27 04:15:56 cgd Exp $	*/
 
 /*-
@@ -47,7 +48,7 @@
 	call	1f;	\
 1:			\
 	popl	%ebx;	\
-	addl	$_GLOBAL_OFFSET_TABLE_+[.-1b], %ebx
+	addl	$__GLOBAL_OFFSET_TABLE_+[.-1b], %ebx
 #define PIC_EPILOGUE	\
 	popl	%ebx
 #define PIC_PLT(x)	x@PLT
@@ -68,10 +69,15 @@
 #endif
 #define	_ASM_LABEL(x)	x
 
-#define _ENTRY(x) \
-	.text; .align 2; .globl x; .type x,@function; x:
+/* let kernels and others override entrypoint alignment */
+#ifndef _ALIGN_TEXT
+# define _ALIGN_TEXT .align 2, 0x90
+#endif
 
-#ifdef PROF
+#define _ENTRY(x) \
+	.text; _ALIGN_TEXT; .globl x; .type x,@function; x:
+
+#ifdef GPROF
 # define _PROF_PROLOGUE	\
 	pushl %ebp; movl %esp,%ebp; call PIC_PLT(mcount); popl %ebp
 #else
@@ -79,7 +85,10 @@
 #endif
 
 #define	ENTRY(y)	_ENTRY(_C_LABEL(y)); _PROF_PROLOGUE
+#define	NENTRY(y)	_ENTRY(_C_LABEL(y))
 #define	ASENTRY(y)	_ENTRY(_ASM_LABEL(y)); _PROF_PROLOGUE
+
+#define	ALTENTRY(name)	.globl _C_LABEL(name); _C_LABEL(name):
 
 #define	ASMSTR		.asciz
 

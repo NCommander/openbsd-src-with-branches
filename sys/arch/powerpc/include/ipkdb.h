@@ -1,4 +1,4 @@
-/*	$NetBSD: ipkdb.h,v 1.1 1996/10/16 19:33:04 ws Exp $	*/
+/*	$OpenBSD: ipkdb.h,v 1.1 2001/06/26 21:57:46 smurph Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.

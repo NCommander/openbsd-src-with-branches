@@ -1,3 +1,4 @@
+/*	$OpenBSD: testldt.c,v 1.4 2001/05/11 15:51:59 art Exp $	*/
 /*	$NetBSD: testldt.c,v 1.4 1995/04/20 22:42:38 cgd Exp $	*/
 
 #include <stdio.h>
@@ -136,7 +137,7 @@ print_ldt(union descriptor *dp)
 static void busfault(int signal, int code, struct sigcontext *sc)
 {
 	fprintf(stderr, "\nbus fault - investigate.\n");
-	exit(1);
+	_exit(1);
 }
 
 static void usage(int status)
@@ -161,7 +162,7 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-	while ((ch = getopt(argc, argv, "v")) != EOF) {
+	while ((ch = getopt(argc, argv, "v")) != -1) {
 		switch (ch) {
 		case 'v':
 		    verbose++;
@@ -197,7 +198,7 @@ main(int argc, char *argv[])
 	data = (void *) mmap( (char *)0x005f0000, 0x0fff,
 			     PROT_EXEC | PROT_READ | PROT_WRITE,
 			     MAP_FIXED | MAP_PRIVATE | MAP_ANON, -1, 0);
-	if (data == NULL) {
+	if (data == MAP_FAILED) {
 		perror("mmap");
 		exit(1);
 	}

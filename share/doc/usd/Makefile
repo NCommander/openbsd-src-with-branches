@@ -1,4 +1,5 @@
-#	@(#)Makefile	8.2 (Berkeley) 4/20/94
+#	$OpenBSD$
+
 
 # The following modules do not build/install:
 # 08.mh
@@ -11,7 +12,7 @@
 # 12.exref 16.awk 17.msmacros 21.troff 22.trofftut 23.eqn 24.eqnguide
 # 25.tbl 26.refer 27.invert 29.diction
 
-BINDIR=	/usr/share/doc/usd
+DOCDIR=	/usr/share/doc/usd
 FILES=	00.contents Makefile Title
 SUBDIR=	18.msdiffs 19.memacros 20.meref
 .if exists(04.csh)
@@ -25,7 +26,7 @@ contents.ps: ${FILES}
 	groff -ms 00.contents > ${.TARGET}
 
 beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${FILES} \
-	    ${DESTDIR}${BINDIR}
+	install -c -o ${DOCOWN} -g ${DOCGRP} -m ${DOCMODE} ${FILES} \
+	    ${DESTDIR}${DOCDIR}
 
 .include <bsd.subdir.mk>

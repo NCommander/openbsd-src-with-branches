@@ -1,4 +1,3 @@
-/*	$NetBSD: sigsetjmp.S,v 1.2 1995/03/11 20:28:59 pk Exp $	*/
 /*
  * Copyright (c) 1995 Paul Kranenburg
  * All rights reserved.
@@ -29,6 +28,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 #include "SYS.h"
 

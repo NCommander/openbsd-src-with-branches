@@ -35,8 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)realpath.c	8.1 (Berkeley) 2/16/94";*/
-static char *rcsid = "$Id: realpath.c,v 1.1.1.1 1994/05/17 12:42:31 mycroft Exp $";
+static char *rcsid = "$OpenBSD: realpath.c,v 1.5 2001/06/27 00:58:56 lebel Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -63,12 +62,17 @@ realpath(path, resolved)
 	struct stat sb;
 	int fd, n, rootd, serrno;
 	char *p, *q, wbuf[MAXPATHLEN];
+	int symlinks = 0;
 
 	/* Save the starting point. */
 	if ((fd = open(".", O_RDONLY)) < 0) {
 		(void)strcpy(resolved, ".");
 		return (NULL);
 	}
+
+	/* Convert "." -> "" to optimize away a needless lstat() and chdir() */
+	if (path[0] == '.' && path[1] == '\0')
+		path = "";
 
 	/*
 	 * Find the dirname and basename from the path to be resolved.
@@ -78,8 +82,7 @@ realpath(path, resolved)
 	 *     if it is a directory, then change to that directory.
 	 * get the current directory name and append the basename.
 	 */
-	(void)strncpy(resolved, path, MAXPATHLEN - 1);
-	resolved[MAXPATHLEN - 1] = '\0';
+	strlcpy(resolved, path, MAXPATHLEN);
 loop:
 	q = strrchr(resolved, '/');
 	if (q != NULL) {
@@ -99,9 +102,13 @@ loop:
 		p = resolved;
 
 	/* Deal with the last component. */
-	if (lstat(p, &sb) == 0) {
+	if (*p != '\0' && lstat(p, &sb) == 0) {
 		if (S_ISLNK(sb.st_mode)) {
-			n = readlink(p, resolved, MAXPATHLEN);
+			if (++symlinks > MAXSYMLINKS) {
+				errno = ELOOP;
+				goto err1;
+			}
+			n = readlink(p, resolved, MAXPATHLEN-1);
 			if (n < 0)
 				goto err1;
 			resolved[n] = '\0';

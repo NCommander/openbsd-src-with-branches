@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rtld_machine.c,v 1.4 2001/03/30 01:35:21 drahn Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -35,6 +35,7 @@
 #define _DYN_LOADER
 
 #include <sys/types.h>
+#include <sys/mman.h>
 
 #include <nlist.h>
 #include <link.h>
@@ -61,6 +62,7 @@ _dl_md_reloc(elf_object_t *object, int rel, int relasz)
 	int	i;
 	int	numrela;
 	int	fails = 0;
+	load_list_t *load_list;
 	Elf32_Addr loff;
 	Elf32_Rela  *relas;
 	/* for jmp table relocations */
@@ -73,7 +75,7 @@ _dl_md_reloc(elf_object_t *object, int rel, int relasz)
 	numrela = object->Dyn.info[relasz] / sizeof(Elf32_Rela);
 	relas = (Elf32_Rela *)(object->Dyn.info[rel]);
 
-#if 0
+#ifdef DL_PRINTF_DEBUG
 _dl_printf("object relocation size %x, numrela %x\n",
 	object->Dyn.info[relasz], numrela);
 #endif
@@ -91,7 +93,7 @@ _dl_printf("object relocation size %x, numrela %x\n",
 			+ loff);
 		/* Need to construct table to do jumps */
 		pltcall = (Elf32_Addr *)(first_rela) - 12;
-#if 0
+#ifdef DL_PRINTF_DEBUG
 _dl_printf("creating pltcall at %x\n", pltcall);
 _dl_printf("md_reloc( jumprel %x\n", first_rela );
 #endif
@@ -100,7 +102,7 @@ _dl_printf("md_reloc( jumprel %x\n", first_rela );
 			(object->Dyn.info[DT_PLTRELSZ]/sizeof(Elf32_Rela))
 			);
 
-#if 0
+#ifdef DL_PRINTF_DEBUG
 _dl_printf("md_reloc:  plttbl size %x\n", 
 			(object->Dyn.info[DT_PLTRELSZ]/sizeof(Elf32_Rela))
 );
@@ -119,6 +121,19 @@ _dl_printf("md_reloc: plttable %x\n", plttable);
 	} else {
 		first_rela = NULL;
 	}
+
+	/*
+	 * Change protection of all write protected segments in the object
+	 * so we can do relocations such as REL24, REL16 etc. After
+	 * relocation restore protection.
+	 */
+	load_list = object->load_list;
+	while(load_list != NULL) {
+		_dl_mprotect(load_list->start, load_list->size,
+			load_list->prot|PROT_WRITE);
+		load_list = load_list->next;
+	}
+
 
 	for(i = 0; i < numrela; i++, relas++) {
 		Elf32_Addr *r_addr = (Elf32_Addr *)(relas->r_offset + loff);
@@ -139,7 +154,7 @@ _dl_printf("md_reloc: plttable %x\n", plttable);
 		   !(ELF32_ST_BIND(sym->st_info) == STB_LOCAL &&
 		     ELF32_ST_TYPE (sym->st_info) == STT_NOTYPE)) {
 			
-			ooff = _dl_find_symbol(symn, _dl_objects, &this, 0, 1);
+			ooff = _dl_find_symbol(symn, _dl_objects, &this, 0, 0);
 			if(!this && ELF32_ST_BIND(sym->st_info) == STB_GLOBAL) {
 				_dl_printf("%s:"
 					" %s :can't resolve reference '%s'\n",
@@ -169,7 +184,7 @@ _dl_printf("md_reloc: plttable %x\n", plttable);
 			    ELF32_ST_TYPE(sym->st_info) == STT_NOTYPE) ) {
 				*r_addr = loff + relas->r_addend;
 
-#if 0
+#ifdef DL_PRINTF_DEBUG
 _dl_printf("rel1 r_addr %x val %x loff %x ooff %x addend %x\n", r_addr,
 loff + relas->r_addend, loff, ooff, relas->r_addend);
 #endif
@@ -187,7 +202,7 @@ loff + relas->r_addend, loff, ooff, relas->r_addend);
 				((val &  0xfe000000) == 0xfe000000)))
 			{
 				int index;
-#if 0
+#ifdef DL_PRINTF_DEBUG
 _dl_printf(" ooff %x, sym val %x, addend %x"
 	" r_addr %x symn [%s] -> %x\n",
 	ooff, this->st_value, relas->r_addend,
@@ -210,7 +225,7 @@ _dl_printf(" ooff %x, sym val %x, addend %x"
 					r_addr[2] = val;
 
 				} else {
-#if 0
+#ifdef DL_PRINTF_DEBUG
 	_dl_printf("  index %d, pltcall %x r_addr %x\n",
 		index, pltcall, r_addr);
 #endif
@@ -227,7 +242,7 @@ _dl_printf(" ooff %x, sym val %x, addend %x"
 				_dl_dcbf(&r_addr[2]);
 				val= ooff + this->st_value +
 					relas->r_addend;
-#if 0
+#ifdef DL_PRINTF_DEBUG
 		_dl_printf(" symn [%s] val 0x%x\n", symn, val);
 #endif
 				plttable[index] = val;
@@ -246,26 +261,61 @@ _dl_printf(" ooff %x, sym val %x, addend %x"
 		case RELOC_GLOB_DAT:
 			*r_addr = ooff + this->st_value + relas->r_addend;
 			break;
-#if 0
+#if 1
 		/* should not be supported ??? */
 		case RELOC_REL24:
-			{
+		  {
 			Elf32_Addr val = ooff + this->st_value +
 				relas->r_addend - (Elf32_Addr)r_addr;
 			if ((val & 0xfe000000 != 0) &&
-				(val & 0xfe000000 != 0xfe000000))
-			{
+				(val & 0xfe000000 != 0xfe000000)) {
 				/* invalid offset */
 				_dl_exit(20);
 			}
 			val &= ~0xfc000003;
 			val |=  (*r_addr & 0xfc000003);
 			*r_addr = val;	
-				
-			_dl_dcbf(r_addr);
-			}
+
+_dl_dcbf(r_addr);
+		  }
+		break;
 #endif
-			break;
+#if 1
+		case RELOC_16_LO:
+		  {
+			Elf32_Addr val;
+
+			val = loff + relas->r_addend;
+			*(Elf32_Half *)r_addr = val;
+
+			_dl_dcbf(r_addr);
+		  }
+		break;
+#endif
+#if 1
+		case RELOC_16_HI:
+		  {
+			Elf32_Addr val;
+
+			val = loff + relas->r_addend;
+			*(Elf32_Half *)r_addr = (val >> 16);
+
+			_dl_dcbf(r_addr);
+		  }
+		break;
+#endif
+#if 1
+		case RELOC_16_HA:
+		  {
+			Elf32_Addr val;
+
+			val = loff + relas->r_addend;
+			*(Elf32_Half *)r_addr = ((val + 0x8000) >> 16);
+
+			_dl_dcbf(r_addr);
+		  }
+		break;
+#endif                      
 		case RELOC_REL14_TAKEN:
 			/* val |= 1 << (31-10) XXX? */
 		case RELOC_REL14:
@@ -282,7 +332,7 @@ _dl_printf(" ooff %x, sym val %x, addend %x"
 			val &= ~0xffff0003;
 			val |=  (*r_addr & 0xffff0003);
 			*r_addr = val;	
-#if 0
+#ifdef DL_PRINTF_DEBUG
 			_dl_printf("rel 14 %x val %x\n", 
 				r_addr, val);
 #endif
@@ -291,7 +341,7 @@ _dl_printf(" ooff %x, sym val %x, addend %x"
 			}
 			break;
 		case RELOC_COPY:
-#if 0
+#ifdef DL_PRINTF_DEBUG
 			_dl_printf("copy r_addr %x, sym %x [%s] size %d val %x\n",
 				r_addr, sym, symn, sym->st_size,
 				(ooff + this->st_value+
@@ -328,7 +378,7 @@ _dl_printf(" ooff %x, sym val %x, addend %x"
 			size = sym->st_size < cpysrc->st_size ?
 				sym->st_size : cpysrc->st_size;
 		}
-#if 0
+#ifdef DL_PRINTF_DEBUG
 _dl_printf(" found other symbol at %x size %d\n", 
 		src_loff + cpysrc->st_value,  cpysrc->st_size);
 #endif
@@ -350,6 +400,11 @@ _dl_printf(" found other symbol at %x size %d\n",
 		}
 	}
 	object->status |= STAT_RELOC_DONE;
+	load_list = object->load_list;
+	while(load_list != NULL) {
+		_dl_mprotect(load_list->start, load_list->size, load_list->prot);
+		load_list = load_list->next;
+	}
 	return(fails);
 }
 
@@ -366,4 +421,23 @@ void
 _dl_md_reloc_got(elf_object_t *object, int lazy)
 {
 	/* relocations all done via rela relocations above */
+}
+
+/* should not be defined here, but is is 32 for all powerpc 603-G4 */
+#define CACHELINESIZE 32
+void
+_dl_syncicache(char *from, size_t len)
+{
+	unsigned int off = 0;
+	int l = len + ((int)from & (CACHELINESIZE-1));
+
+	while (off < l) {
+		asm volatile ("dcbst %1,%0" :: "r"(from), "r"(off));
+		asm volatile ("sync");
+		asm volatile ("icbi %1, %0" :: "r"(from), "r"(off));
+		asm volatile ("sync");
+		asm volatile ("isync");
+
+		off += CACHELINESIZE;
+	}
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: gprof.c,v 1.9 2001/11/19 19:02:14 mpech Exp $	*/
 /*	$NetBSD: gprof.c,v 1.8 1995/04/19 07:15:59 cgd Exp $	*/
 
 /*
@@ -43,13 +44,11 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)gprof.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: gprof.c,v 1.8 1995/04/19 07:15:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: gprof.c,v 1.9 2001/11/19 19:02:14 mpech Exp $";
 #endif
 #endif /* not lint */
 
 #include "gprof.h"
-
-char	*whoami = "gprof";
 
     /*
      *	things which get -E excluded by default.
@@ -57,7 +56,9 @@ char	*whoami = "gprof";
 char	*defaultEs[] = { "mcount" , "__mcleanup" , 0 };
 
 static struct gmonhdr	gmonhdr;
+extern char *__progname;
 
+int
 main(argc, argv)
     int argc;
     char **argv;
@@ -83,10 +84,10 @@ main(argc, argv)
 	    cyclethreshold = atoi( *++argv );
 	    break;
 	case 'c':
-#if defined(vax) || defined(tahoe) || defined(sparc)
+#if defined(__i386__) || defined(__vax__) || defined(__tahoe__) || defined(__sparc__)
 	    cflag = TRUE;
 #else
-	    fprintf(stderr, "gprof: -c isn't supported on this architecture yet\n");
+	    fprintf(stderr, "%s: -c isn't supported on this architecture yet\n", __progname);
 	    exit(1);
 #endif
 	    break;
@@ -97,9 +98,9 @@ main(argc, argv)
 	    debug |= ANYDEBUG;
 #	    ifdef DEBUG
 		printf("[main] debug = %d\n", debug);
-#	    else not DEBUG
-		printf("%s: -d ignored\n", whoami);
-#	    endif DEBUG
+#	    else /* not DEBUG */
+		warnx("-d ignored");
+#	    endif /* DEBUG */
 	    break;
 	case 'E':
 	    ++argv;
@@ -177,7 +178,7 @@ main(argc, argv)
 	 */
     if (hz == 0) {
 	hz = 1;
-	fprintf(stderr, "time is in ticks, not seconds\n");
+	warnx("time is in ticks, not seconds");
     }
 	/*
 	 *	dump out a gmon.sum file if requested
@@ -205,7 +206,8 @@ main(argc, argv)
 	 *	print the index
 	 */
     printindex();	
-    done();
+
+    return (0);
 }
 
     /*
@@ -213,21 +215,18 @@ main(argc, argv)
      *	and optionally the text space.
      * On return symbol table is sorted by value.
      */
+void
 getnfile()
 {
     FILE	*nfile;
     int		valcmp();
 
     nfile = fopen( a_outname ,"r");
-    if (nfile == NULL) {
-	perror( a_outname );
-	done();
-    }
+    if (nfile == NULL)
+	err(1, "fopen: %s", a_outname);
     fread(&xbuf, 1, sizeof(xbuf), nfile);
-    if (N_BADMAG(xbuf)) {
-	fprintf(stderr, "%s: %s: bad format\n", whoami , a_outname );
-	done();
-    }
+    if (N_BADMAG(xbuf))
+	errx(1, "%s: bad format", a_outname );
     getstrtab(nfile);
     getsymtab(nfile);
     gettextspace( nfile );
@@ -235,45 +234,38 @@ getnfile()
     fclose(nfile);
 #   ifdef DEBUG
 	if ( debug & AOUTDEBUG ) {
-	    register int j;
+	    int j;
 
 	    for (j = 0; j < nname; j++){
 		printf("[getnfile] 0X%08x\t%s\n", nl[j].value, nl[j].name);
 	    }
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
 }
 
+void
 getstrtab(nfile)
     FILE	*nfile;
 {
 
     fseek(nfile, (long)(N_SYMOFF(xbuf) + xbuf.a_syms), 0);
-    if (fread(&ssiz, sizeof (ssiz), 1, nfile) == 0) {
-	fprintf(stderr, "%s: %s: no string table (old format?)\n" ,
-		whoami , a_outname );
-	done();
-    }
+    if (fread(&ssiz, sizeof (ssiz), 1, nfile) == 0)
+	errx(1, "%s: no string table (old format?)" , a_outname);
     strtab = calloc(ssiz, 1);
-    if (strtab == NULL) {
-	fprintf(stderr, "%s: %s: no room for %d bytes of string table\n",
-		whoami , a_outname , ssiz);
-	done();
-    }
-    if (fread(strtab+sizeof(ssiz), ssiz-sizeof(ssiz), 1, nfile) != 1) {
-	fprintf(stderr, "%s: %s: error reading string table\n",
-		whoami , a_outname );
-	done();
-    }
+    if (strtab == NULL)
+	errx(1, "%s: no room for %ld bytes of string table", a_outname , ssiz);
+    if (fread(strtab+sizeof(ssiz), ssiz-sizeof(ssiz), 1, nfile) != 1)
+	err(1, "%s: reading string table", a_outname);
 }
 
     /*
      * Read in symbol table
      */
+void
 getsymtab(nfile)
     FILE	*nfile;
 {
-    register long	i;
+    long		i;
     int			askfor;
     struct nlist	nbuf;
 
@@ -287,17 +279,13 @@ getsymtab(nfile)
 	}
 	nname++;
     }
-    if (nname == 0) {
-	fprintf(stderr, "%s: %s: no symbols\n", whoami , a_outname );
-	done();
-    }
+    if (nname == 0)
+	errx(1, "%s: no symbols", a_outname);
     askfor = nname + 1;
     nl = (nltype *) calloc( askfor , sizeof(nltype) );
-    if (nl == 0) {
-	fprintf(stderr, "%s: No room for %d bytes of symbol table\n",
-		whoami, askfor * sizeof(nltype) );
-	done();
-    }
+    if (nl == 0)
+	errx(1, "No room for %d bytes of symbol table",
+	    askfor * sizeof(nltype));
 
     /* pass2 - read symbols */
     fseek(nfile, (long)N_SYMOFF(xbuf), 0);
@@ -311,7 +299,7 @@ getsymtab(nfile)
 		    printf( "[getsymtab] rejecting: 0x%x %s\n" ,
 			    nbuf.n_type , strtab + nbuf.n_un.n_strx );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    continue;
 	}
 	npe->value = nbuf.n_value;
@@ -321,7 +309,7 @@ getsymtab(nfile)
 		printf( "[getsymtab] %d %s 0x%08x\n" ,
 			nname , npe -> name , npe -> value );
 	    }
-#	endif DEBUG
+#	endif /* DEBUG */
 	npe++;
 	nname++;
     }
@@ -331,6 +319,7 @@ getsymtab(nfile)
     /*
      *	read in the text space of an a.out file
      */
+void
 gettextspace( nfile )
     FILE	*nfile;
 {
@@ -340,17 +329,14 @@ gettextspace( nfile )
     }
     textspace = (u_char *) malloc( xbuf.a_text );
     if ( textspace == 0 ) {
-	fprintf( stderr , "%s: ran out room for %d bytes of text space:  " ,
-			whoami , xbuf.a_text );
-	fprintf( stderr , "can't do -c\n" );
+	warnx("ran out room for %d bytes of text space: can't do -c", xbuf.a_text );
 	return;
     }
     (void) fseek( nfile , N_TXTOFF( xbuf ) , 0 );
     if ( fread( textspace , 1 , xbuf.a_text , nfile ) != xbuf.a_text ) {
-	fprintf( stderr , "%s: couldn't read text space:  " , whoami );
-	fprintf( stderr , "can't do -c\n" );
+	warnx("couldn't read text space: can't do -c");
 	free( textspace );
-	textspace = 0;
+	textspace = NULL;
 	return;
     }
 }
@@ -359,6 +345,7 @@ gettextspace( nfile )
      *	an array of sampling hits within pc ranges,
      *	and the arcs.
      */
+void
 getpfile(filename)
     char *filename;
 {
@@ -378,7 +365,7 @@ getpfile(filename)
 		printf( "[getpfile] frompc 0x%x selfpc 0x%x count %d\n" ,
 			arc.raw_frompc , arc.raw_selfpc , arc.raw_count );
 	    }
-#	endif DEBUG
+#	endif /* DEBUG */
 	    /*
 	     *	add this arc
 	     */
@@ -396,16 +383,12 @@ openpfile(filename)
     int			size;
     int			rate;
 
-    if((pfile = fopen(filename, "r")) == NULL) {
-	perror(filename);
-	done();
-    }
+    if((pfile = fopen(filename, "r")) == NULL)
+	err(1, "fopen: %s", filename);
     fread(&tmp, sizeof(struct gmonhdr), 1, pfile);
     if ( s_highpc != 0 && ( tmp.lpc != gmonhdr.lpc ||
-	 tmp.hpc != gmonhdr.hpc || tmp.ncnt != gmonhdr.ncnt ) ) {
-	fprintf(stderr, "%s: incompatible with first gmon file\n", filename);
-	done();
-    }
+	 tmp.hpc != gmonhdr.hpc || tmp.ncnt != gmonhdr.ncnt))
+	errx(1, "%s: incompatible with first gmon file", filename);
     gmonhdr = tmp;
     if ( gmonhdr.version == GMONVERSION ) {
 	rate = gmonhdr.profrate;
@@ -418,12 +401,9 @@ openpfile(filename)
     }
     if (hz == 0) {
 	hz = rate;
-    } else if (hz != rate) {
-	fprintf(stderr,
-	    "%s: profile clock rate (%d) %s (%d) in first gmon file\n",
-	    filename, rate, "incompatible with clock rate", hz);
-	done();
-    }
+    } else if (hz != rate)
+	errx(1, "%s: profile clock rate (%d) incompatible with clock rate "
+	    "(%ld) in first gmon file", filename, rate, hz);
     s_lowpc = (unsigned long) gmonhdr.lpc;
     s_highpc = (unsigned long) gmonhdr.hpc;
     lowpc = (unsigned long)gmonhdr.lpc / sizeof(UNIT);
@@ -442,10 +422,11 @@ openpfile(filename)
 		sampbytes , nsamples );
 	    printf( "[openpfile] sample rate %d\n" , hz );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
     return(pfile);
 }
 
+void
 tally( rawp )
     struct rawarc	*rawp;
 {
@@ -467,39 +448,34 @@ tally( rawp )
 	    printf( "[tally] arc from %s to %s traversed %d times\n" ,
 		    parentp -> name , childp -> name , rawp -> raw_count );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
     addarc( parentp , childp , rawp -> raw_count );
 }
 
 /*
  * dump out the gmon.sum file
  */
+void
 dumpsum( sumfile )
     char *sumfile;
 {
-    register nltype *nlp;
-    register arctype *arcp;
+    nltype *nlp;
+    arctype *arcp;
     struct rawarc arc;
     FILE *sfile;
 
-    if ( ( sfile = fopen ( sumfile , "w" ) ) == NULL ) {
-	perror( sumfile );
-	done();
-    }
+    if ( ( sfile = fopen ( sumfile , "w" ) ) == NULL )
+	err(1, "fopen: %s", sumfile);
     /*
      * dump the header; use the last header read in
      */
-    if ( fwrite( &gmonhdr , sizeof gmonhdr , 1 , sfile ) != 1 ) {
-	perror( sumfile );
-	done();
-    }
+    if ( fwrite( &gmonhdr , sizeof gmonhdr , 1 , sfile ) != 1 )
+	err(1, "fwrite: %s", sumfile);
     /*
      * dump the samples
      */
-    if (fwrite(samples, sizeof (UNIT), nsamples, sfile) != nsamples) {
-	perror( sumfile );
-	done();
-    }
+    if (fwrite(samples, sizeof (UNIT), nsamples, sfile) != nsamples)
+	err(1, "fwrite: %s", sumfile);
     /*
      * dump the normalized raw arc information
      */
@@ -508,21 +484,20 @@ dumpsum( sumfile )
 	    arc.raw_frompc = arcp -> arc_parentp -> value;
 	    arc.raw_selfpc = arcp -> arc_childp -> value;
 	    arc.raw_count = arcp -> arc_count;
-	    if ( fwrite ( &arc , sizeof arc , 1 , sfile ) != 1 ) {
-		perror( sumfile );
-		done();
-	    }
+	    if (fwrite ( &arc , sizeof arc , 1 , sfile ) != 1)
+	        err(1, "fwrite: %s", sumfile);
 #	    ifdef DEBUG
 		if ( debug & SAMPLEDEBUG ) {
 		    printf( "[dumpsum] frompc 0x%x selfpc 0x%x count %d\n" ,
 			    arc.raw_frompc , arc.raw_selfpc , arc.raw_count );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	}
     }
     fclose( sfile );
 }
 
+int
 valcmp(p1, p2)
     nltype *p1, *p2;
 {
@@ -535,19 +510,17 @@ valcmp(p1, p2)
     return EQUALTO;
 }
 
+void
 readsamples(pfile)
     FILE	*pfile;
 {
-    register i;
     UNIT	sample;
+    int i;
     
     if (samples == 0) {
 	samples = (UNIT *) calloc(sampbytes, sizeof (UNIT));
-	if (samples == 0) {
-	    fprintf( stderr , "%s: No room for %d sample pc's\n", 
-		whoami , sampbytes / sizeof (UNIT));
-	    done();
-	}
+	if (samples == 0)
+	    errx(1, "No room for %d sample pc's", sampbytes / sizeof (UNIT));
     }
     for (i = 0; i < nsamples; i++) {
 	fread(&sample, sizeof (UNIT), 1, pfile);
@@ -555,12 +528,8 @@ readsamples(pfile)
 		break;
 	samples[i] += sample;
     }
-    if (i != nsamples) {
-	fprintf(stderr,
-	    "%s: unexpected EOF after reading %d/%d samples\n",
-		whoami , --i , nsamples );
-	done();
-    }
+    if (i != nsamples)
+	errx(1, "unexpected EOF after reading %d/%d samples", i, nsamples );
 }
 
 /*
@@ -595,13 +564,14 @@ readsamples(pfile)
  *	only one sample for every four bytes of text space and never
  *	have any overlap (the two end cases, above).
  */
+void
 asgnsamples()
 {
-    register int	j;
+    int	j;
     UNIT		ccnt;
     double		time;
     unsigned long	pcl, pch;
-    register int	i;
+    int	i;
     unsigned long	overlap;
     unsigned long	svalue0, svalue1;
 
@@ -621,7 +591,7 @@ asgnsamples()
 		printf( "[asgnsamples] pcl 0x%x pch 0x%x ccnt %d\n" ,
 			pcl , pch , ccnt );
 	    }
-#	endif DEBUG
+#	endif /* DEBUG */
 	totime += time;
 	for (j = j - 1; j < nname; j++) {
 	    svalue0 = nl[j].svalue;
@@ -647,7 +617,7 @@ asgnsamples()
 				nl[j].name, 
 				overlap * time / scale, overlap);
 		    }
-#		endif DEBUG
+#		endif /* DEBUG */
 		nl[j].time += overlap * time / scale;
 	    }
 	}
@@ -656,7 +626,7 @@ asgnsamples()
 	if (debug & SAMPLEDEBUG) {
 	    printf("[asgnsamples] totime %f\n", totime);
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
 }
 
 
@@ -684,9 +654,10 @@ max(a, b)
      *	if it turns out that the entry point is in one bucket and the code
      *	for a routine is in the next bucket.
      */
+void
 alignentries()
 {
-    register struct nl	*nlp;
+    struct nl		*nlp;
     unsigned long	bucket_of_entry;
     unsigned long	bucket_of_code;
 
@@ -700,7 +671,7 @@ alignentries()
 		    printf("[alignentries] pushing svalue 0x%x to 0x%x\n",
 			    nlp->svalue, nlp->svalue + UNITS_TO_CODE);
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    nlp->svalue += UNITS_TO_CODE;
 	}
     }
@@ -724,13 +695,12 @@ funcsymbol( nlistp )
     }
 	/*
 	 *	can't have any `funny' characters in name,
-	 *	where `funny' includes	`.', .o file names
-	 *			and	`$', pascal labels.
+	 *	where `funny' means `.', .o file names
 	 *	need to make an exception for sparc .mul & co.
 	 *	perhaps we should just drop this code entirely...
 	 */
     name = strtab + nlistp -> n_un.n_strx;
-#ifdef sparc
+#ifdef __sparc__
     if (nlistp -> n_value & 3)
 	return FALSE;
     if ( *name == '.' ) {
@@ -742,16 +712,9 @@ funcsymbol( nlistp )
 		return TRUE;
     }
 #endif
-    while ( c = *name++ ) {
-	if ( c == '.' || c == '$' ) {
+    while ((c = *name++))
+	if (c == '.')
 	    return FALSE;
-	}
-    }
+
     return TRUE;
-}
-
-done()
-{
-
-    exit(0);
 }

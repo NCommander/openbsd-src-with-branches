@@ -1,3 +1,4 @@
+/*	$OpenBSD: ttymsg.c,v 1.8 2001/09/04 23:44:19 millert Exp $	*/
 /*	$NetBSD: ttymsg.c,v 1.3 1994/11/17 07:17:55 jtc Exp $	*/
 
 /*
@@ -35,9 +36,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)ttymsg.c	8.2 (Berkeley) 11/16/93";
+static const char sccsid[] = "@(#)ttymsg.c	8.2 (Berkeley) 11/16/93";
 #endif
-static char rcsid[] = "$NetBSD: ttymsg.c,v 1.3 1994/11/17 07:17:55 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: ttymsg.c,v 1.8 2001/09/04 23:44:19 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -51,6 +52,7 @@ static char rcsid[] = "$NetBSD: ttymsg.c,v 1.3 1994/11/17 07:17:55 jtc Exp $";
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 /*
  * Display the contents of a uio structure on a terminal.  Used by wall(1),
@@ -68,12 +70,21 @@ ttymsg(iov, iovcnt, line, tmout)
 {
 	static char device[MAXNAMLEN] = _PATH_DEV;
 	static char errbuf[1024];
-	register int cnt, fd, left, wret;
+	int cnt, fd, left, wret;
 	struct iovec localiov[6];
 	int forked = 0;
+	struct stat st;
+	sigset_t mask;
 
 	if (iovcnt > sizeof(localiov) / sizeof(localiov[0]))
 		return ("too many iov's (change code in wall/ttymsg.c)");
+
+	/*
+	 * Ignore lines that start with "ftp" or "uucp".
+	 */
+	if ((strncmp(line, "ftp", 3) == 0)
+	    || (strncmp(line, "uucp", 4) == 0))
+		return (NULL);
 
 	(void) strcpy(device + sizeof(_PATH_DEV) - 1, line);
 	if (strchr(device + sizeof(_PATH_DEV) - 1, '/')) {
@@ -81,6 +92,13 @@ ttymsg(iov, iovcnt, line, tmout)
 		(void) snprintf(errbuf, sizeof(errbuf), "'/' in \"%s\"",
 		    device);
 		return (errbuf);
+	}
+
+	if (getuid()) {
+		if (stat(device, &st) < 0)
+			return (NULL);
+		if ((st.st_mode & S_IWGRP) == 0)
+			return (NULL);
 	}
 
 	/*
@@ -142,7 +160,8 @@ ttymsg(iov, iovcnt, line, tmout)
 			/* wait at most tmout seconds */
 			(void) signal(SIGALRM, SIG_DFL);
 			(void) signal(SIGTERM, SIG_DFL); /* XXX */
-			(void) sigsetmask(0);
+			(void) sigemptyset(&mask);
+			(void) sigprocmask(SIG_SETMASK, &mask, NULL);
 			(void) alarm((u_int)tmout);
 			(void) fcntl(fd, O_NONBLOCK, &off);
 			continue;

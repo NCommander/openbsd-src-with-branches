@@ -1,3 +1,4 @@
+/* *	$OpenBSD: config.h,v 1.5 2001/01/28 23:41:42 niklas Exp $*/
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  *
@@ -6,7 +7,7 @@
 
 #include "pathnames.h"
 
-#ifndef CONFIG	/* make sure the compiler doesnt see the typedefs twice */
+#ifndef CONFIG	/* make sure the compiler doesn't see the typedefs twice */
 
 #define	CONFIG
 #define	UNIX		/* delete if no fork(), exec() available */
@@ -19,8 +20,6 @@
  * <sys/time.h>		<time.h>
  * <sgtty.h>		<termio.h>
  * Some routines are called differently
- * index		strchr
- * rindex		strrchr
  * Also, the code for suspend and various ioctls is only given for BSD4.2
  * (I do not have access to a SYSV system.)
  */
@@ -67,8 +66,8 @@
 
 #ifdef BSD
 #define	SUSPEND		/* let ^Z suspend the game */
-#endif BSD
-#endif UNIX
+#endif /* BSD */
+#endif /* UNIX */
 
 #ifdef CHDIR
 /*
@@ -77,9 +76,9 @@
  */
 #ifdef QUEST
 #define HACKDIR _PATH_QUEST
-#else QUEST
+#else /* QUEST */
 #define HACKDIR	_PATH_HACK
-#endif QUEST
+#endif /* QUEST */
 
 /*
  * Some system administrators are stupid enough to make Hack suid root
@@ -95,7 +94,7 @@
  * simultaneously, define HACKDIR, SECURE and MAX_NR_OF_PLAYERS.
  * #define MAX_NR_OF_PLAYERS	100
  */
-#endif CHDIR
+#endif /* CHDIR */
 
 /* size of terminal screen is (at least) (ROWNO+2) by COLNO */
 #define	COLNO	80
@@ -107,7 +106,11 @@
  * will do when you have signed characters; otherwise use
  *	typedef	short int schar;
  */
+#ifdef __CHAR_UNSIGNED__
+typedef	short int	schar;
+#else
 typedef	char	schar;
+#endif
 
 /*
  * small unsigned integers (8 bits suffice - but 7 bits do not)
@@ -130,7 +133,7 @@ typedef	xchar	boolean;		/* 0 or 1 */
 
 /*
  * Declaration of bitfields in various structs; if your C compiler
- * doesnt handle bitfields well, e.g., if it is unable to initialize
+ * doesn't handle bitfields well, e.g., if it is unable to initialize
  * structs containing bitfields, then you might use
  *	#define Bitfield(x,n)	uchar x
  * since the bitfields used never have more than 7 bits. (Most have 1 bit.)
@@ -139,4 +142,4 @@ typedef	xchar	boolean;		/* 0 or 1 */
 
 #define	SIZE(x)	(int)(sizeof(x) / sizeof(x[0]))
 
-#endif CONFIG
+#endif /* CONFIG */

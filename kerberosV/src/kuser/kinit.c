@@ -643,7 +643,23 @@ main (int argc, char **argv)
 	krb5_afslog(context, ccache, NULL, NULL);
 #endif
     if(argc > 1) {
-	simple_execvp(argv[1], argv+1);
+	pid_t pid = fork();
+	if(pid == 0) {
+	    execvp(argv[1], argv+1);
+	    exit(1);
+	}
+	while(1) {
+	    int status;
+	    while(waitpid(pid, &status, 0) < 0)
+		if(errno != EINTR)
+		    break;
+	    if(WIFSTOPPED(status))
+		continue;
+	    if(WIFEXITED(status))
+		break;
+	    if(WIFSIGNALED(status))
+		break;
+	}
 	krb5_cc_destroy(context, ccache);
 #ifdef KRB4
 	dest_tkt();

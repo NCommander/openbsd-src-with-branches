@@ -163,17 +163,11 @@ extern int lineno;
 extern int err_count;
 extern char line[], *lineptr;
 
-#if defined(sparc) && !defined(__NetBSD__)
+#if defined(sparc) && !(defined(__NetBSD__) || defined(__OpenBSD__))
 #include <alloca.h>
 #else
 #ifdef __GNUC__
 #define alloca __builtin_alloca
-#endif
-#endif
-
-#ifndef BSD
-#ifndef amiga
-#define bcopy(s, d, l) memcpy(d, s, l)
 #endif
 #endif
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: cg2.c,v 1.4 1995/04/10 07:05:57 mycroft Exp $	*/
+/*	$OpenBSD: cg2.c,v 1.10 2002/03/14 01:26:46 millert Exp $	*/
+/*	$NetBSD: cg2.c,v 1.7 1996/10/13 03:47:26 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -53,14 +54,17 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/mman.h>
 #include <sys/tty.h>
+#include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
+#include <machine/conf.h>
 #include <machine/fbio.h>
 #include <machine/autoconf.h>
 #include <machine/pmap.h>
@@ -91,29 +95,30 @@ struct cg2_softc {
 };
 
 /* autoconfiguration driver */
-static void	cg2attach __P((struct device *, struct device *, void *));
-static int	cg2match __P((struct device *, void *, void *));
+static void	cg2attach(struct device *, struct device *, void *);
+static int	cg2match(struct device *, void *, void *);
 
-struct cfdriver cgtwocd = {
-	NULL, "cgtwo", cg2match, cg2attach,
-	DV_DULL, sizeof(struct cg2_softc) };
+struct cfattach cgtwo_ca = {
+	sizeof(struct cg2_softc), cg2match, cg2attach
+};
 
-/* frame buffer generic driver */
-int cg2open(), cg2close(), cg2mmap();
+struct cfdriver cgtwo_cd = {
+	NULL, "cgtwo", DV_DULL
+};
 
-static int  cg2gattr __P((struct fbdevice *, struct fbgattr *));
-static int  cg2gvideo __P((struct fbdevice *, int *));
-static int	cg2svideo __P((struct fbdevice *, int *));
-static int	cg2getcmap __P((struct fbdevice *, struct fbcmap *));
-static int	cg2putcmap __P((struct fbdevice *, struct fbcmap *));
+static int	cg2gattr(struct fbdevice *, struct fbgattr *);
+static int	cg2gvideo(struct fbdevice *, int *);
+static int	cg2svideo(struct fbdevice *, int *);
+static int	cg2getcmap(struct fbdevice *, struct fbcmap *);
+static int	cg2putcmap(struct fbdevice *, struct fbcmap *);
 
 static struct fbdriver cg2fbdriver = {
 	cg2open, cg2close, cg2mmap, cg2gattr,
 	cg2gvideo, cg2svideo,
-	cg2getcmap, cg2putcmap };
+	cg2getcmap, cg2putcmap
+};
 
-static void cg2loadcmap __P((struct cg2_softc *, int, int));
-static int cg2intr __P((void*));
+static int	cg2intr(void *);
 
 /*
  * Match a cg2.
@@ -154,7 +159,6 @@ cg2attach(parent, self, args)
 	struct fbdevice *fb = &sc->sc_fb;
 	struct confargs *ca = args;
 	struct fbtype *fbt;
-	int i, ramsize, pa;
 
 	sc->sc_phys = ca->ca_paddr;
 	sc->sc_pmtype = PMAP_NC | PMAP_VME16;
@@ -162,7 +166,7 @@ cg2attach(parent, self, args)
 	sc->sc_ctlreg = (struct cg2fb *) bus_mapin(ca->ca_bustype,
 			ca->ca_paddr + CTLREGS_OFF, CTLREGS_SIZE);
 
-	isr_add_vectored(cg2intr, (void*)sc,
+	isr_add_vectored(cg2intr, (void *)sc,
 					 ca->ca_intpri, ca->ca_intvec);
 
 	/*
@@ -196,7 +200,7 @@ cg2open(dev, flags, mode, p)
 {
 	int unit = minor(dev);
 
-	if (unit >= cgtwocd.cd_ndevs || cgtwocd.cd_devs[unit] == NULL)
+	if (unit >= cgtwo_cd.cd_ndevs || cgtwo_cd.cd_devs[unit] == NULL)
 		return (ENXIO);
 	return (0);
 }
@@ -219,7 +223,7 @@ cg2ioctl(dev, cmd, data, flags, p)
 	int flags;
 	struct proc *p;
 {
-	struct cg2_softc *sc = cgtwocd.cd_devs[minor(dev)];
+	struct cg2_softc *sc = cgtwo_cd.cd_devs[minor(dev)];
 
 	return (fbioctlfb(&sc->sc_fb, cmd, data));
 }
@@ -228,13 +232,13 @@ cg2ioctl(dev, cmd, data, flags, p)
  * Return the address that would map the given device at the given
  * offset, allowing for the given protection, or return -1 for error.
  */
-int
+paddr_t
 cg2mmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
-	struct cg2_softc *sc = cgtwocd.cd_devs[minor(dev)];
-	int realoff;
+	struct cg2_softc *sc = cgtwo_cd.cd_devs[minor(dev)];
 
 	if (off & PGOFSET)
 		panic("cg2mmap");
@@ -254,7 +258,8 @@ cg2mmap(dev, off, prot)
  */
 
 /* FBIOGATTR: */
-static int  cg2gattr(fb, fba)
+static int
+cg2gattr(fb, fba)
 	struct fbdevice *fb;
 	struct fbgattr *fba;
 {
@@ -271,7 +276,8 @@ static int  cg2gattr(fb, fba)
 }
 
 /* FBIOGVIDEO: */
-static int  cg2gvideo(fb, on)
+static int
+cg2gvideo(fb, on)
 	struct fbdevice *fb;
 	int *on;
 {
@@ -294,13 +300,15 @@ static int cg2svideo(fb, on)
 }
 
 /* FBIOGETCMAP: */
-static int cg2getcmap(fb, cmap)
+static int
+cg2getcmap(fb, cmap)
 	struct fbdevice *fb;
 	struct fbcmap *cmap;
 {
 	struct cg2_softc *sc = fb->fb_private;
 	u_char red[CMSIZE], green[CMSIZE], blue[CMSIZE];
-	int error, start, count, ecount;
+	int error;
+	u_int start, count, ecount;
 	register u_int i;
 	register u_short *p;
 
@@ -335,13 +343,15 @@ static int cg2getcmap(fb, cmap)
 }
 
 /* FBIOPUTCMAP: */
-static int cg2putcmap(fb, cmap)
+static int
+cg2putcmap(fb, cmap)
 	struct fbdevice *fb;
 	struct fbcmap *cmap;
 {
 	struct cg2_softc *sc = fb->fb_private;
 	u_char red[CMSIZE], green[CMSIZE], blue[CMSIZE];
-	int error, start, count, ecount;
+	int error;
+	u_int start, count, ecount;
 	register u_int i;
 	register u_short *p;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD	*/
+/*	$OpenBSD: main.c,v 1.14 2002/03/08 11:06:17 mpech Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -38,6 +38,8 @@ char copyright[] =
 	The Regents of the University of California.  All rights reserved.\n";
 #if !defined(lint)
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/5/93";
+#else
+static char rcsid[] = "$OpenBSD: main.c,v 1.14 2002/03/08 11:06:17 mpech Exp $";
 #endif
 
 #include "defs.h"
@@ -45,14 +47,15 @@ static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/5/93";
 #ifdef sgi
 #include "math.h"
 #endif
-#include <signal.h>
-#include <fcntl.h>
 #include <sys/file.h>
+#include <fcntl.h>
+#include <err.h>
+#include <signal.h>
 
 pid_t	mypid;
 
 naddr	myaddr;				/* system address */
-char	myname[MAXHOSTNAMELEN+1];
+char	myname[MAXHOSTNAMELEN];
 
 int	supplier;			/* supply or broadcast updates */
 int	supplier_set;
@@ -75,7 +78,7 @@ time_t	now_garbage;
 struct timeval next_bcast;		/* next general broadcast */
 struct timeval no_flash = {EPOCH+SUPPLY_INTERVAL};  /* inhibit flash update */
 
-fd_set	fdbits;
+fd_set	*fdbitsp;
 int	sock_max;
 int	rip_sock = -1;			/* RIP socket */
 struct interface *rip_sock_mcast;	/* current multicast interface */
@@ -95,7 +98,7 @@ main(int argc,
 	char *p, *q;
 	struct timeval wtime, t2;
 	time_t dt;
-	fd_set ibits;
+	fd_set *ibitsp = NULL;
 	naddr p_addr, p_mask;
 	struct interface *ifp;
 	struct parm parm;
@@ -115,10 +118,10 @@ main(int argc,
 	now_garbage = EPOCH - GARBAGE_TIME;
 	wtime.tv_sec = 0;
 
-	(void)gethostname(myname, sizeof(myname)-1);
+	(void)gethostname(myname, sizeof(myname));
 	(void)gethost(myname, &myaddr);
 
-	while ((n = getopt(argc, argv, "sqdghmpAtT:F:P:")) != EOF) {
+	while ((n = getopt(argc, argv, "sqdghmpAtT:F:P:")) != -1) {
 		switch (n) {
 		case 's':
 			supplier = 1;
@@ -248,6 +251,16 @@ usage:
 	}
 
 
+	signal(SIGALRM, sigalrm);
+	if (!background)
+		signal(SIGHUP, sigterm);    /* SIGHUP fatal during debugging */
+	else
+		signal(SIGHUP, SIG_IGN);
+	signal(SIGTERM, sigterm);
+	signal(SIGINT, sigterm);
+	signal(SIGUSR1, sigtrace_on);
+	signal(SIGUSR2, sigtrace_off);
+
 	/* get into the background */
 	if (background) {
 #ifdef sgi
@@ -263,7 +276,6 @@ usage:
 	}
 
 	mypid = getpid();
-	srandom((int)(clk.tv_sec ^ clk.tv_usec ^ mypid));
 
 	/* prepare socket connected to the kernel.
 	 */
@@ -304,13 +316,6 @@ usage:
 	age_timer.tv_sec = EPOCH+MIN_WAITTIME;
 	rdisc_timer = next_bcast;
 	ifinit_timer.tv_usec = next_bcast.tv_usec;
-
-	signal(SIGALRM, sigalrm);
-	signal(SIGHUP, sigterm);
-	signal(SIGTERM, sigterm);
-	signal(SIGINT, sigterm);
-	signal(SIGUSR1, sigtrace_on);
-	signal(SIGUSR2, sigtrace_off);
 
 	/* Collect an initial view of the world by checking the interface
 	 * configuration and the kludge file.
@@ -451,30 +456,37 @@ usage:
 		/* wait for input or a timer to expire.
 		 */
 		trace_flush();
-		ibits = fdbits;
-		n = select(sock_max, &ibits, 0, 0, &wtime);
+		if (ibitsp)
+			free(ibitsp);
+		ibitsp = (fd_set *)calloc(howmany(sock_max, NFDBITS),
+		    sizeof(fd_mask));
+		if (ibitsp == NULL)
+			err(1, "calloc");
+		memcpy(ibitsp, fdbitsp, howmany(sock_max, NFDBITS) *
+		    sizeof(fd_mask));
+		n = select(sock_max, ibitsp, 0, 0, &wtime);
 		if (n <= 0) {
 			if (n < 0 && errno != EINTR && errno != EAGAIN)
 				BADERR(1,"select");
 			continue;
 		}
 
-		if (FD_ISSET(rt_sock, &ibits)) {
+		if (FD_ISSET(rt_sock, ibitsp)) {
 			read_rt();
 			n--;
 		}
-		if (rdisc_sock >= 0 && FD_ISSET(rdisc_sock, &ibits)) {
+		if (rdisc_sock >= 0 && FD_ISSET(rdisc_sock, ibitsp)) {
 			read_d();
 			n--;
 		}
-		if (rip_sock >= 0 && FD_ISSET(rip_sock, &ibits)) {
+		if (rip_sock >= 0 && FD_ISSET(rip_sock, ibitsp)) {
 			read_rip(rip_sock, 0);
 			n--;
 		}
 
 		for (ifp = ifnet; n > 0 && 0 != ifp; ifp = ifp->int_next) {
 			if (ifp->int_rip_sock >= 0
-			    && FD_ISSET(ifp->int_rip_sock, &ibits)) {
+			    && FD_ISSET(ifp->int_rip_sock, ibitsp)) {
 				read_rip(ifp->int_rip_sock, ifp);
 				n--;
 			}
@@ -491,7 +503,7 @@ sigalrm(int sig)
 	 * new and broken interfaces.
 	 */
 	ifinit_timer.tv_sec = now.tv_sec;
-	trace_act("SIGALRM\n");
+	trace_act("SIGALRM\n");		/* XXX signal race */
 }
 
 
@@ -509,30 +521,35 @@ fix_select(void)
 {
 	struct interface *ifp;
 
-
-	FD_ZERO(&fdbits);
 	sock_max = 0;
 
-	FD_SET(rt_sock, &fdbits);
 	if (sock_max <= rt_sock)
 		sock_max = rt_sock+1;
-	if (rip_sock >= 0) {
-		FD_SET(rip_sock, &fdbits);
-		if (sock_max <= rip_sock)
-			sock_max = rip_sock+1;
-	}
+	if (rip_sock >= 0 && sock_max <= rip_sock)
+		sock_max = rip_sock+1;
 	for (ifp = ifnet; 0 != ifp; ifp = ifp->int_next) {
-		if (ifp->int_rip_sock >= 0) {
-			FD_SET(ifp->int_rip_sock, &fdbits);
-			if (sock_max <= ifp->int_rip_sock)
-				sock_max = ifp->int_rip_sock+1;
-		}
+		if (ifp->int_rip_sock >= 0 && sock_max <= ifp->int_rip_sock)
+			sock_max = ifp->int_rip_sock+1;
 	}
-	if (rdisc_sock >= 0) {
-		FD_SET(rdisc_sock, &fdbits);
-		if (sock_max <= rdisc_sock)
-			sock_max = rdisc_sock+1;
+	if (rdisc_sock >= 0 && sock_max <= rdisc_sock)
+		sock_max = rdisc_sock+1;
+
+	if (fdbitsp)
+		free(fdbitsp);
+	fdbitsp = (fd_set *)calloc(howmany(sock_max, NFDBITS),
+	    sizeof(fd_mask));
+	if (fdbitsp == NULL)
+		err(1, "calloc");
+
+	FD_SET(rt_sock, fdbitsp);
+	if (rip_sock >= 0)
+		FD_SET(rip_sock, fdbitsp);
+	for (ifp = ifnet; 0 != ifp; ifp = ifp->int_next) {
+		if (ifp->int_rip_sock >= 0)
+			FD_SET(ifp->int_rip_sock, fdbitsp);
 	}
+	if (rdisc_sock >= 0)
+		FD_SET(rdisc_sock, fdbitsp);
 }
 
 
@@ -616,7 +633,7 @@ void
 rip_off(void)
 {
 	struct interface *ifp;
-	register naddr addr;
+	naddr addr;
 
 
 	if (rip_sock >= 0 && !mhome) {
@@ -753,8 +770,8 @@ intvl_random(struct timeval *tp,	/* put value here */
 {
 	tp->tv_sec = (time_t)(hi == lo
 			      ? lo
-			      : (lo + random() % ((hi - lo))));
-	tp->tv_usec = random() % 1000000;
+			      : (lo + arc4random() % ((1 + hi - lo))));
+	tp->tv_usec = arc4random() % 1000000;
 }
 
 
@@ -795,11 +812,14 @@ msglog(char *p, ...)
 
 	va_start(args, p);
 	vsyslog(LOG_ERR, p, args);
+	va_end(args);
 
 	if (ftrace != 0) {
 		if (ftrace == stdout)
 			(void)fputs("routed: ", ftrace);
+		va_start(args, p);
 		(void)vfprintf(ftrace, p, args);
+		va_end(args);
 		(void)fputc('\n', ftrace);
 	}
 }
@@ -814,9 +834,12 @@ logbad(int dump, char *p, ...)
 
 	va_start(args, p);
 	vsyslog(LOG_ERR, p, args);
+	va_end(args);
 
 	(void)fputs("routed: ", stderr);
+	va_start(args, p);
 	(void)vfprintf(stderr, p, args);
+	va_end(args);
 	(void)fputs("; giving up\n",stderr);
 	(void)fflush(stderr);
 

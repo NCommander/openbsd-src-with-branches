@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -15,12 +14,7 @@
  *    notice, this list of conditions and the following disclaimer in the 
  *    documentation and/or other materials provided with the distribution. 
  *
- * 3. All advertising materials mentioning features or use of this software 
- *    must display the following acknowledgement: 
- *      This product includes software developed by Kungliga Tekniska 
- *      Högskolan and its contributors. 
- *
- * 4. Neither the name of the Institute nor the names of its contributors 
+ * 3. Neither the name of the Institute nor the names of its contributors 
  *    may be used to endorse or promote products derived from this software 
  *    without specific prior written permission. 
  *
@@ -39,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: parse_units.c,v 1.3 1998/03/21 14:51:05 assar Exp $");
+RCSID("$Id: parse_units.c,v 1.6 2000/08/16 01:23:43 lha Exp $");
 #endif
 
 #include <stdio.h>
@@ -84,19 +78,19 @@ parse_something (const char *s, const struct units *units,
 	const struct units *u, *partial_unit;
 	size_t u_len;
 	unsigned partial;
+	int no_val_p = 0;
 
-	while(isspace(*p) || *p == ',')
+	while(isspace((unsigned char)*p) || *p == ',')
 	    ++p;
 
 	val = strtod (p, &next); /* strtol(p, &next, 0); */
 	if (val == 0 && p == next) {
-	    if(accept_no_val_p)
-		val = 1;
-	    else
+	    if(!accept_no_val_p)
 		return -1;
+	    no_val_p = 1;
 	}
 	p = next;
-	while (isspace(*p))
+	while (isspace((unsigned char)*p))
 	    ++p;
 	if (*p == '\0') {
 	    res = (*func)(res, val, def_mult);
@@ -105,10 +99,13 @@ parse_something (const char *s, const struct units *units,
 	    break;
 	} else if (*p == '+') {
 	    ++p;
+	    val = 1;
 	} else if (*p == '-') {
 	    ++p;
 	    val = -1;
 	}
+	if (no_val_p && val == 0)
+	    val = 1;
 	u_len = strcspn (p, ", \t");
 	partial = 0;
 	partial_unit = NULL;
@@ -174,6 +171,8 @@ acc_flags(int res, int val, unsigned mult)
 	return res | mult;
     else if(val == -1)
 	return res & ~mult;
+    else if (val == 0)
+	return mult;
     else
 	return -1;
 }

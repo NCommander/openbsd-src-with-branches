@@ -1,3 +1,4 @@
+.\"	$OpenBSD: atanh.3,v 1.6 1999/07/07 10:50:05 aaron Exp $
 .\" Copyright (c) 1985, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,14 +31,14 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)atanh.3	5.2 (Berkeley) 5/6/91
-.\"	$Id: atanh.3,v 1.6 1995/04/14 18:40:01 jtc Exp $
 .\"
 .Dd May 6, 1991
 .Dt ATANH 3
-.Os BSD 4.3
+.Os
 .Sh NAME
-.Nm atanh
-.Nd inverse hyperbolic tangent function
+.Nm atanh ,
+.Nm atanhf
+.Nd inverse hyperbolic tangent functions
 .Sh SYNOPSIS
 .Fd #include <math.h>
 .Ft double
@@ -54,15 +55,19 @@ of the real
 argument
 .Ar x .
 .Sh RETURN VALUES
-Exceptional conditions are handled by
-.Xr matherr 3 .
+If |x|>=1,
+.Fn atanh "x"
+and
+.Fn atanhf "x"
+return +inf, -inf or NaN, and sets the global variable
+.Va errno
+to EDOM.
 .Sh SEE ALSO
 .Xr acosh 3 ,
 .Xr asinh 3 ,
 .Xr exp 3 ,
 .Xr infnan 3 ,
-.Xr math 3 ,
-.Xr matherr 3
+.Xr math 3
 .Sh HISTORY
 The
 .Fn atanh

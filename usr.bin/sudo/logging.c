@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1994-1996,1998-1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1994-1996,1998-2001 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,32 +34,38 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
-#include <pwd.h>
-#include <signal.h>
-#include <time.h>
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <stdio.h>
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+#endif /* STDC_HEADERS */
+#ifdef HAVE_STRING_H
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
+#endif /* HAVE_STRING_H */
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
+#include <pwd.h>
+#include <signal.h>
+#include <time.h>
+#include <errno.h>
 
 #include "sudo.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: logging.c,v 1.139 1999/10/09 05:01:48 millert Exp $";
+static const char rcsid[] = "$Sudo: logging.c,v 1.153 2002/01/16 21:28:25 millert Exp $";
 #endif /* lint */
 
 static void do_syslog		__P((int, char *));
@@ -67,33 +73,60 @@ static void do_logfile		__P((char *));
 static void send_mail		__P((char *));
 static void mail_auth		__P((int, char *));
 static char *get_timestr	__P((void));
+static void mysyslog		__P((int, const char *, ...));
 
-#ifdef BROKEN_SYSLOG
-# define MAXSYSLOGTRIES	16	/* num of retries for broken syslogs */
-# define SYSLOG		syslog_wrapper
-
-static void syslog_wrapper	__P((int, char *, char *, char *));
+#define MAXSYSLOGTRIES	16	/* num of retries for broken syslogs */
 
 /*
- * Some versions of syslog(3) don't guarantee success and return
- * an int (notably HP-UX < 10.0).  So, if at first we don't succeed,
- * try, try again...
+ * We do an openlog(3)/closelog(3) for each message because some
+ * authentication methods (notably PAM) use syslog(3) for their
+ * own nefarious purposes and may call openlog(3) and closelog(3).
+ * Note that because we don't want to assume that all systems have
+ * vsyslog(3) (HP-UX doesn't) "%m" will not be expanded.
+ * Sadly this is a maze of #ifdefs.
  */
 static void
-syslog_wrapper(pri, fmt, ap)
+#ifdef __STDC__
+mysyslog(int pri, const char *fmt, ...)
+#else
+mysyslog(pri, fmt, va_alist)
     int pri;
     const char *fmt;
-    va_list ap;
+    va_dcl
+#endif
 {
+#ifdef BROKEN_SYSLOG
     int i;
+#endif
+    char buf[MAXSYSLOGLEN+1];
+    va_list ap;
 
-    for (i = 0; i < MAXSYSLOGTRIES; i++)
-	if (vsyslog(pri, fmt, ap) == 0)
-	    break;
-}
+#ifdef __STDC__
+    va_start(ap, fmt);
 #else
-# define SYSLOG		syslog
+    va_start(ap);
+#endif
+#ifdef LOG_NFACILITIES
+    openlog(Argv[0], 0, def_ival(I_LOGFAC));
+#else
+    openlog(Argv[0], 0);
+#endif
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+#ifdef BROKEN_SYSLOG
+    /*
+     * Some versions of syslog(3) don't guarantee success and return
+     * an int (notably HP-UX < 10.0).  So, if at first we don't succeed,
+     * try, try again...
+     */
+    for (i = 0; i < MAXSYSLOGTRIES; i++)
+	if (syslog(pri, "%s", buf) == 0)
+	    break;
+#else
+    syslog(pri, "%s", buf);
 #endif /* BROKEN_SYSLOG */
+    va_end(ap);
+    closelog();
+}
 
 /*
  * Log a message to syslog, pre-pending the username and splitting the
@@ -112,7 +145,8 @@ do_syslog(pri, msg)
     /*
      * Log the full line, breaking into multiple syslog(3) calls if necessary
      */
-    for (p = msg, count = 0; count < strlen(msg) / MAXSYSLOGLEN + 1; count++) {
+    for (p = msg, count = 0; *p && count < strlen(msg) / MAXSYSLOGLEN + 1;
+	count++) {
 	if (strlen(p) > MAXSYSLOGLEN) {
 	    /*
 	     * Break up the line into what will fit on one syslog(3) line
@@ -128,20 +162,20 @@ do_syslog(pri, msg)
 	    *tmp = '\0';
 
 	    if (count == 0)
-		SYSLOG(pri, "%8.8s : %s", user_name, p);
+		mysyslog(pri, "%8.8s : %s", user_name, p);
 	    else
-		SYSLOG(pri, "%8.8s : (command continued) %s", user_name, p);
+		mysyslog(pri, "%8.8s : (command continued) %s", user_name, p);
 
 	    *tmp = save;			/* restore saved character */
 
 	    /* Eliminate leading whitespace */
-	    for (p = tmp; *p != ' '; p++)
+	    for (p = tmp; *p != ' ' && *p !='\0'; p++)
 		;
 	} else {
 	    if (count == 0)
-		SYSLOG(pri, "%8.8s : %s", user_name, p);
+		mysyslog(pri, "%8.8s : %s", user_name, p);
 	    else
-		SYSLOG(pri, "%8.8s : (command continued) %s", user_name, p);
+		mysyslog(pri, "%8.8s : (command continued) %s", user_name, p);
 	}
     }
 }
@@ -154,7 +188,7 @@ do_logfile(msg)
     char *beg, *oldend, *end;
     FILE *fp;
     mode_t oldmask;
-    int maxlen = def_ival(I_LOGLEN);
+    int maxlen = def_ival(I_LOGLINELEN);
 
     oldmask = umask(077);
     fp = fopen(def_str(I_LOGFILE), "a");
@@ -170,7 +204,7 @@ do_logfile(msg)
 	send_mail(full_line);
 	free(full_line);
     } else {
-	if (def_ival(I_LOGLEN) == 0) {
+	if (def_ival(I_LOGLINELEN) == 0) {
 	    /* Don't pretty-print long log file lines (hard to grep) */
 	    if (def_flag(I_LOG_HOST))
 		(void) fprintf(fp, "%s : %s : HOST=%s : %s\n", get_timestr(),
@@ -298,7 +332,7 @@ log_auth(status, inform_user)
     /*
      * Log via syslog and/or a file.
      */
-    if (def_str(I_LOGFACSTR))
+    if (def_str(I_SYSLOG))
 	do_syslog(pri, logline);
     if (def_str(I_LOGFILE))
 	do_logfile(logline);
@@ -379,14 +413,14 @@ log_error(va_alist)
     /*
      * Log to syslog and/or a file.
      */
-    if (def_str(I_LOGFACSTR))
+    if (def_str(I_SYSLOG))
 	do_syslog(def_ival(I_BADPRI), logline);
     if (def_str(I_LOGFILE))
 	do_logfile(logline);
 
-    free(logline);
-    if (message != logline);
-	free(message);
+    free(message);
+    if (logline != message)
+	free(logline);
 
     if (!(flags & NO_EXIT))
 	exit(1);
@@ -403,103 +437,119 @@ send_mail(line)
 {
     FILE *mail;
     char *p;
-    int pfd[2], pid;
+    int pfd[2], pid, status;
+    sigset_t set, oset;
+#ifndef NO_ROOT_MAILER
+    static char *root_envp[] = {
+	"HOME=/",
+	"PATH=/usr/bin:/bin",
+	"LOGNAME=root",
+	"USER=root",
+	NULL
+    };
+#endif
 
     /* Just return if mailer is disabled. */
     if (!def_str(I_MAILERPATH) || !def_str(I_MAILTO))
 	return;
 
-    if ((pid = fork()) > 0) {	/* Child. */
+    (void) sigemptyset(&set);
+    (void) sigaddset(&set, SIGCHLD);
+    (void) sigprocmask(SIG_BLOCK, &set, &oset);
 
-	/* We do an explicit wait() later on... */
-	(void) signal(SIGCHLD, SIG_IGN);
+    if (pipe(pfd) == -1) {
+	(void) fprintf(stderr, "%s: cannot open pipe: %s\n",
+	    Argv[0], strerror(errno));
+	exit(1);
+    }
 
-	if (pipe(pfd) == -1) {
-	    (void) fprintf(stderr, "%s: cannot open pipe: %s\n",
-		Argv[0], strerror(errno));
-	    exit(1);
-	}
-
-	switch (pid = fork()) {
-	    case -1:
-		/* Error. */
-		/* XXX - parent will continue, return an exit val to
-		   let parent know and abort? */
-		(void) fprintf(stderr, "%s: cannot fork: %s\n",
-		    Argv[0], strerror(errno));
-		exit(1);
-		break;
-	    case 0:
-		{
-		    char *argv[MAX_MAILFLAGS + 1];
-		    char *mpath, *mflags;
-		    int i;
-
-		    /* Grandchild. */
-		    (void) close(pfd[1]);
-		    (void) dup2(pfd[0], STDIN_FILENO);
-		    (void) close(pfd[0]);
-
-		    /* Build up an argv based the mailer path and flags */
-		    mflags = estrdup(def_str(I_MAILERFLAGS));
-		    mpath = estrdup(def_str(I_MAILERPATH));
-		    if ((argv[0] = strrchr(mpath, ' ')))
-			argv[0]++;
-		    else
-			argv[0] = mpath;
-
-		    i = 1;
-		    if ((p = strtok(mflags, " \t"))) {
-			do {
-			    argv[i] = p;
-			} while (++i < MAX_MAILFLAGS && (p = strtok(NULL, " \t")));
-		    }
-		    argv[i] = NULL;
-
-		    /* Run mailer as root so user cannot kill it. */
-		    set_perms(PERM_ROOT, 0);
-		    execv(mpath, argv);
-		    _exit(127);
-		}
-		break;
-	}
-
-	mail = fdopen(pfd[1], "w");
-	(void) close(pfd[0]);
-
-	/* Pipes are all setup, send message via sendmail. */
-	(void) fprintf(mail, "To: %s\nFrom: %s\nSubject: ",
-	    def_str(I_MAILTO), user_name);
-	for (p = def_str(I_MAILSUB); *p; p++) {
-	    /* Expand escapes in the subject */
-	    if (*p == '%' && *(p+1) != '%') {
-		switch (*(++p)) {
-		    case 'h':
-			(void) fputs(user_host, mail);
-			break;
-		    case 'u':
-			(void) fputs(user_name, mail);
-			break;
-		    default:
-			p--;
-			break;
-		}
-	    } else
-		(void) fputc(*p, mail);
-	}
-	(void) fprintf(mail, "\n\n%s : %s : %s : %s\n\n", user_host,
-	    get_timestr(), user_name, line);
-	fclose(mail);
-	reapchild(0);
-	_exit(0);
-    } else {
-	/* Parent, just return unless there is an error. */
-	if (pid == -1) {
+    switch (pid = fork()) {
+	case -1:
+	    /* Error. */
 	    (void) fprintf(stderr, "%s: cannot fork: %s\n",
 		Argv[0], strerror(errno));
 	    exit(1);
-	}
+	    break;
+	case 0:
+	    {
+		char *argv[MAX_MAILFLAGS + 1];
+		char *mpath, *mflags;
+		int i;
+
+		/* Child, set stdin to output side of the pipe */
+		if (pfd[0] != STDIN_FILENO) {
+		    (void) dup2(pfd[0], STDIN_FILENO);
+		    (void) close(pfd[0]);
+		}
+		(void) close(pfd[1]);
+
+		/* Build up an argv based the mailer path and flags */
+		mflags = estrdup(def_str(I_MAILERFLAGS));
+		mpath = estrdup(def_str(I_MAILERPATH));
+		if ((argv[0] = strrchr(mpath, ' ')))
+		    argv[0]++;
+		else
+		    argv[0] = mpath;
+
+		i = 1;
+		if ((p = strtok(mflags, " \t"))) {
+		    do {
+			argv[i] = p;
+		    } while (++i < MAX_MAILFLAGS && (p = strtok(NULL, " \t")));
+		}
+		argv[i] = NULL;
+
+		/* Close password file so we don't leak the fd. */
+		endpwent();
+
+		/*
+		 * Depending on the config, either run the mailer as root
+		 * (so user cannot kill it) or as the user (for the paranoid).
+		 */
+#ifndef NO_ROOT_MAILER
+		set_perms(PERM_FULL_ROOT, 0);
+		execve(mpath, argv, root_envp);
+#else
+		set_perms(PERM_FULL_USER, 0);
+		execv(mpath, argv);
+#endif /* NO_ROOT_MAILER */
+		_exit(127);
+	    }
+	    break;
     }
+
+    (void) close(pfd[0]);
+    mail = fdopen(pfd[1], "w");
+
+    /* Pipes are all setup, send message via sendmail. */
+    (void) fprintf(mail, "To: %s\nFrom: %s\nSubject: ",
+	def_str(I_MAILTO), user_name);
+    for (p = def_str(I_MAILSUB); *p; p++) {
+	/* Expand escapes in the subject */
+	if (*p == '%' && *(p+1) != '%') {
+	    switch (*(++p)) {
+		case 'h':
+		    (void) fputs(user_host, mail);
+		    break;
+		case 'u':
+		    (void) fputs(user_name, mail);
+		    break;
+		default:
+		    p--;
+		    break;
+	    }
+	} else
+	    (void) fputc(*p, mail);
+    }
+    (void) fprintf(mail, "\n\n%s : %s : %s : %s\n\n", user_host,
+	get_timestr(), user_name, line);
+    fclose(mail);
+
+    /* If mailer is done, wait for it now.  If not reapchild will get it.  */
+#ifdef sudo_waitpid
+    (void) sudo_waitpid(pid, &status, WNOHANG);
+#endif
+    (void) sigprocmask(SIG_SETMASK, &oset, NULL);
 }
 
 /*
@@ -518,11 +568,11 @@ mail_auth(status, line)
 	    VALIDATE_ERROR|VALIDATE_OK|FLAG_NO_USER|FLAG_NO_HOST|VALIDATE_NOT_OK;
     else {
 	mail_mask = VALIDATE_ERROR;
-	if (def_flag(I_MAIL_NOUSER))
+	if (def_flag(I_MAIL_NO_USER))
 	    mail_mask |= FLAG_NO_USER;
-	if (def_flag(I_MAIL_NOHOST))
+	if (def_flag(I_MAIL_NO_HOST))
 	    mail_mask |= FLAG_NO_HOST;
-	if (def_flag(I_MAIL_NOPERMS))
+	if (def_flag(I_MAIL_NO_PERMS))
 	    mail_mask |= VALIDATE_NOT_OK;
     }
 
@@ -540,14 +590,11 @@ reapchild(sig)
     int status, serrno = errno;
 
 #ifdef sudo_waitpid
-    while (sudo_waitpid(-1, &status, WNOHANG) != -1)
+    while (sudo_waitpid(-1, &status, WNOHANG) != -1 && errno == EINTR)
 	;
 #else
     (void) wait(&status);
 #endif
-#ifndef POSIX_SIGNALS
-    (void) signal(SIGCHLD, reapchild);
-#endif /* POSIX_SIGNALS */
     errno = serrno;
 }
 

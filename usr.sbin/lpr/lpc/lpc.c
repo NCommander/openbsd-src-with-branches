@@ -1,3 +1,5 @@
+/*	$OpenBSD: lpc.c,v 1.11 2001/12/06 03:12:30 ericj Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,29 +35,39 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)lpc.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static const char sccsid[] = "@(#)lpc.c	8.3 (Berkeley) 4/28/95";
+#else
+static const char rcsid[] = "$OpenBSD: lpc.c,v 1.11 2001/12/06 03:12:30 ericj Exp $";
+#endif
 #endif /* not lint */
 
 #include <sys/param.h>
 
 #include <dirent.h>
 #include <signal.h>
-#include <setjmp.h>
 #include <syslog.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 #include <ctype.h>
 #include <string.h>
+#include <grp.h>
+#include <sys/param.h>
 #include "lp.h"
 #include "lpc.h"
 #include "extern.h"
+
+#ifndef LPR_OPER
+#define LPR_OPER	"operator"	/* group name of lpr operators */
+#endif
 
 /*
  * lpc -- line printer control program
@@ -68,27 +80,24 @@ int	fromatty;
 char	cmdline[MAX_CMDLINE];
 int	margc;
 char	*margv[MAX_MARGV];
-int	top;
 uid_t	uid, euid;
 
-jmp_buf	toplevel;
-
-static void		 cmdscanner __P((int));
-static struct cmd	*getcmd __P((char *));
-static void		 intr __P((int));
-static void		 makeargv __P((void));
+void		 cmdscanner(void);
+struct cmd	*getcmd(char *);
+void		 intr(int);
+void		 makeargv(void);
+int		 ingroup(char *);
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register struct cmd *c;
+	struct cmd *c;
 
 	euid = geteuid();
 	uid = getuid();
 	seteuid(uid);
-	name = argv[0];
 	openlog("lpd", 0, LOG_LPR);
 
 	if (--argc > 0) {
@@ -101,7 +110,7 @@ main(argc, argv)
 			printf("?Invalid command\n");
 			exit(1);
 		}
-		if (c->c_priv && getuid()) {
+		if (c->c_priv && getuid() && ingroup(LPR_OPER) == 0) {
 			printf("?Privileged command\n");
 			exit(1);
 		}
@@ -109,42 +118,51 @@ main(argc, argv)
 		exit(0);
 	}
 	fromatty = isatty(fileno(stdin));
-	top = setjmp(toplevel) == 0;
-	if (top)
-		signal(SIGINT, intr);
-	for (;;) {
-		cmdscanner(top);
-		top = 1;
-	}
+	signal(SIGINT, intr);
+	for (;;)
+		cmdscanner();
 }
 
-static void
+volatile sig_atomic_t gotintr;
+
+void
 intr(signo)
 	int signo;
 {
 	if (!fromatty)
-		exit(0);
-	longjmp(toplevel, 1);
+		_exit(0);
+	gotintr = 1;
 }
 
 /*
  * Command parser.
  */
-static void
-cmdscanner(top)
-	int top;
+void
+cmdscanner(void)
 {
-	register struct cmd *c;
+	struct cmd *c;
 
-	if (!top)
-		putchar('\n');
 	for (;;) {
+		if (gotintr) {
+			putchar('\n');
+			gotintr = 0;
+		}
 		if (fromatty) {
 			printf("lpc> ");
 			fflush(stdout);
 		}
-		if (fgets(cmdline, MAX_CMDLINE, stdin) == 0)
+
+		siginterrupt(SIGINT, 1);
+		if (fgets(cmdline, MAX_CMDLINE, stdin) == NULL) {
+			if (errno == EINTR && gotintr) {
+				siginterrupt(SIGINT, 0);
+				return;
+			}
+			siginterrupt(SIGINT, 0);
 			quit(0, NULL);
+		}
+		siginterrupt(SIGINT, 0);
+
 		if (cmdline[0] == 0 || cmdline[0] == '\n')
 			break;
 		makeargv();
@@ -157,27 +175,26 @@ cmdscanner(top)
 			printf("?Invalid command\n");
 			continue;
 		}
-		if (c->c_priv && getuid()) {
+		if (c->c_priv && getuid() && ingroup(LPR_OPER) == 0) {
 			printf("?Privileged command\n");
 			continue;
 		}
 		(*c->c_handler)(margc, margv);
 	}
-	longjmp(toplevel, 0);
 }
 
 struct cmd *
 getcmd(name)
-	register char *name;
+	char *name;
 {
-	register char *p, *q;
-	register struct cmd *c, *found;
-	register int nmatches, longest;
+	char *p, *q;
+	struct cmd *c, *found;
+	int nmatches, longest;
 
 	longest = 0;
 	nmatches = 0;
 	found = 0;
-	for (c = cmdtab; p = c->c_name; c++) {
+	for (c = cmdtab; (p = c->c_name); c++) {
 		for (q = name; *q == *p++; q++)
 			if (*q == 0)		/* exact match? */
 				return(c);
@@ -198,15 +215,16 @@ getcmd(name)
 /*
  * Slice a string up into argc/argv.
  */
-static void
+void
 makeargv()
 {
-	register char *cp;
-	register char **argp = margv;
-	register int n = 0;
+	char *cp;
+	char **argp = margv;
+	int n = 0;
 
 	margc = 0;
-	for (cp = cmdline; *cp && n < MAX_MARGV; n++) {
+	for (cp = cmdline; *cp && (cp - cmdline) < sizeof(cmdline) &&
+	    n < MAX_MARGV; n++) {
 		while (isspace(*cp))
 			cp++;
 		if (*cp == '\0')
@@ -232,10 +250,10 @@ help(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register struct cmd *c;
+	struct cmd *c;
 
 	if (argc == 1) {
-		register int i, j, w;
+		int i, j, w;
 		int columns, width = 0, lines;
 		extern int NCMDS;
 
@@ -270,7 +288,7 @@ help(argc, argv)
 		return;
 	}
 	while (--argc > 0) {
-		register char *arg;
+		char *arg;
 		arg = *++argv;
 		c = getcmd(arg);
 		if (c == (struct cmd *)-1)
@@ -281,4 +299,35 @@ help(argc, argv)
 			printf("%-*s\t%s\n", HELPINDENT,
 				c->c_name, c->c_help);
 	}
+}
+
+/*
+ * return non-zero if the user is a member of the given group
+ */
+int
+ingroup(grname)
+	char *grname;
+{
+	gid_t gid;
+	int i;
+	static struct group *gptr = NULL;
+	static gid_t groups[NGROUPS];
+	static int maxgroups;
+
+	if (gptr == NULL) {
+		if ((gptr = getgrnam(grname)) == NULL) {
+			fprintf(stderr, "Warning: unknown group '%s'\n",
+				grname);
+			return(0);
+		}
+		if ((maxgroups = getgroups(NGROUPS, groups)) < 0) {
+			perror("getgroups");
+			exit(1);
+		}
+	}
+	gid = gptr->gr_gid;
+	for (i = 0; i < maxgroups; i++)
+		if (gid == groups[i])
+			return(1);
+	return(0);
 }

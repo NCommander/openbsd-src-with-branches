@@ -1,3 +1,4 @@
+/*	$OpenBSD: nlist.c,v 1.7 2001/06/03 04:18:22 angelos Exp $	*/
 /*	$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)nlist.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $";
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.7 2001/06/03 04:18:22 angelos Exp $";
 #endif
 #endif /* not lint */
 
@@ -45,6 +46,7 @@ static char rcsid[] = "$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $";
 #include <sys/time.h>
 #include <sys/proc.h>
 #include <sys/resource.h>
+#include <sys/sysctl.h>
 
 #include <err.h>
 #include <errno.h>
@@ -56,24 +58,15 @@ static char rcsid[] = "$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $";
 
 #include "ps.h"
 
-#ifdef P_PPWAIT
-#define NEWVM
-#endif
-
 struct	nlist psnl[] = {
 	{"_fscale"},
 #define	X_FSCALE	0
 	{"_ccpu"},
 #define	X_CCPU		1
-#ifdef NEWVM
-	{"_avail_start"},
-#define	X_AVAILSTART	2
-	{"_avail_end"},
-#define	X_AVAILEND	3
-#else
-	{"_ecmx"},
-#define	X_ECMX		2
-#endif
+	{"_physmem"},
+#define	X_PHYSMEM	2
+	{"_maxslp"},
+#define X_MAXSLP	3
 	{NULL}
 };
 
@@ -81,51 +74,74 @@ fixpt_t	ccpu;				/* kernel _ccpu variable */
 int	nlistread;			/* if nlist already read. */
 int	mempages;			/* number of pages of phys. memory */
 int	fscale;				/* kernel _fscale variable */
+int	maxslp;
 
 extern kvm_t *kd;
 
 #define kread(x, v) \
-	kvm_read(kd, psnl[x].n_value, (char *)&v, sizeof v) != sizeof(v)
+	kvm_read(kd, psnl[x].n_value, &v, sizeof v) != sizeof(v)
 
 int
 donlist()
 {
-	int rval;
-#ifdef NEWVM
-	int tmp;
-#endif
+	int rval, mib[2];
+	size_t siz;
 
 	rval = 0;
 	nlistread = 1;
-	if (kvm_nlist(kd, psnl)) {
-		nlisterr(psnl);
-		eval = 1;
-		return (1);
+
+	if (kd != NULL) {
+		if (kvm_nlist(kd, psnl)) {
+			nlisterr(psnl);
+			eval = 1;
+			return (1);
+		}
+		if (kread(X_FSCALE, fscale)) {
+			warnx("fscale: %s", kvm_geterr(kd));
+			eval = rval = 1;
+		}
+		if (kread(X_PHYSMEM, mempages)) {
+			warnx("avail_start: %s", kvm_geterr(kd));
+			eval = rval = 1;
+		}
+		if (kread(X_CCPU, ccpu)) {
+			warnx("ccpu: %s", kvm_geterr(kd));
+			eval = rval = 1;
+		}
+		if (kread(X_MAXSLP, maxslp)) {
+			warnx("maxslp: %s", kvm_geterr(kd));
+			eval = rval = 1;
+		}
 	}
-	if (kread(X_FSCALE, fscale)) {
-		warnx("fscale: %s", kvm_geterr(kd));
-		eval = rval = 1;
-	}
-#ifdef NEWVM
-	if (kread(X_AVAILEND, mempages)) {
-		warnx("avail_start: %s", kvm_geterr(kd));
-		eval = rval = 1;
-	}
-	if (kread(X_AVAILSTART, tmp)) {
-		warnx("avail_end: %s", kvm_geterr(kd));
-		eval = rval = 1;
-	}
-	mempages -= tmp;
-	mempages /= getpagesize();
-#else
-	if (kread(X_ECMX, mempages)) {
-		warnx("ecmx: %s", kvm_geterr(kd));
-		eval = rval = 1;
-	}
-#endif
-	if (kread(X_CCPU, ccpu)) {
-		warnx("ccpu: %s", kvm_geterr(kd));
-		eval = rval = 1;
+	else {
+		siz = sizeof (fscale);
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_FSCALE;
+		if (sysctl(mib, 2, &fscale, &siz, NULL, 0) < 0) {
+			warnx("fscale: failed to get kern.fscale");
+			eval = rval = 1;
+		}
+		siz = sizeof (mempages);
+		mib[0] = CTL_HW;
+		mib[1] = HW_PHYSMEM;
+		if (sysctl(mib, 2, &mempages, &siz, NULL, 0) < 0) {
+			warnx("avail_start: failed to get hw.physmem");
+			eval = rval = 1;
+		}
+		siz = sizeof (ccpu);
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_CCPU;
+		if (sysctl(mib, 2, &ccpu, &siz, NULL, 0) < 0) {
+			warnx("ccpu: failed to get kern.ccpu");
+			eval = rval = 1;
+		}
+		siz = sizeof (maxslp);
+		mib[0] = CTL_VM;
+		mib[1] = VM_MAXSLP;
+		if (sysctl(mib, 2, &maxslp, &siz, NULL, 0) < 0) {
+			warnx("maxslp: failed to get vm.maxslp");
+			eval = rval = 1;
+		}
 	}
 	return (rval);
 }

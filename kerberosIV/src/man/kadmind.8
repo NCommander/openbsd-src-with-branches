@@ -115,19 +115,21 @@ A principal is always granted authorization to change its own password.
 /var/log/admin_server.syslog
 Default log file.
 .TP 
-/var/kerberos
+/etc/kerberosIV
 Default access control list directory.
 .TP
 admin_acl.{add,get,mod,del}
 Access control list files (within the directory)
 .TP
-/var/kerberos/principal.pag, /var/kerberos/principal.dir
+/etc/kerberosIV/principal.pag, /etc/kerberosIV/principal.dir
 Default DBM files containing database
 .TP
 /.k
 Master key cache file.
 .SH "SEE ALSO"
-kerberos(1), kpasswd(1), kadmin(8), acl_check(3)
+.Xr kerberos 1 ,
+.Xr kadmin 8 ,
+.Xr acl_check 3
 .SH AUTHORS
 Douglas A. Church, MIT Project Athena
 .br

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: main.c,v 1.3 1995/04/22 10:27:41 cgd Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.3 1995/04/22 10:27:41 cgd Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -64,11 +65,10 @@ static char rcsid[] = "$NetBSD: main.c,v 1.3 1995/04/22 10:27:41 cgd Exp $";
 
 #include "rogue.h"
 
-extern short party_room;
-
+int
 main(argc, argv)
-int argc;
-char *argv[];
+	int argc;
+	char *argv[];
 {
 	if (init(argc, argv)) {		/* restored game */
 		goto PL;

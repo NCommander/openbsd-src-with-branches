@@ -1,23 +1,19 @@
-#	from @(#)Makefile.inc	8.1 (Berkeley) 6/1/93
-#	$Id$
+# $OpenBSD: Makefile.inc,v 1.13 2001/06/28 04:53:44 hin Exp $
 
-CFLAGS+=-I${.CURDIR}/../include
-BINDIR?=/usr/sbin
+KRBDIR	= ${.CURDIR}/${KRBDEPTH}
+KRBSRC	= ${.CURDIR}/${KRBDEPTH}/src
 
-.if exists(${.CURDIR}/../mk_cmds/obj)
-MK_CMDS=${.CURDIR}/../mk_cmds/obj/mk_cmds
-.else
-MK_CMDS=${.CURDIR}/../mk_cmds/mk_cmds
-.endif
+CFLAGS	+= -DHAVE_CONFIG_H -DBINDIR=\"/usr/bin\" -DSBINDIR=\"/usr/sbin\" \
+	   -I${DESTDIR}/usr/include/kerberosIV \
+	   -I${KRBSRC}/include -I${KRBSRC}/lib/roken \
+	   -I${KRBDIR}/lib/roken -I${KRBSRC}/lib/sl 
+CFLAGS+=-Wall
 
-.if exists(${.CURDIR}/../compile_et/obj)
-COMPILE_ET=${.CURDIR}/../compile_et/obj/compile_et
-.else
-COMPILE_ET=${.CURDIR}/../compile_et/compile_et
-.endif
+LIBROKEN= -L${KRBDEPTH}/lib/roken -lroken
+LIBSL	= -L${KRBDEPTH}/lib/sl -lsl
 
-.if exists(${.CURDIR}/../com_err/obj)
-COM_ERR=-L${.CURDIR}/../com_err/obj -lcom_err_pic
-.else
-COM_ERR=-L${.CURDIR}/../com_err -lcom_err_pic
-.endif
+.PATH:	${KRBSRC}/man
+
+COMPILE_ET	= /usr/bin/compile_et
+
+COM_ERR=	-lcom_err_pic

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: domainname.1,v 1.11 2000/04/12 21:47:47 aaron Exp $
 .\"	$NetBSD: domainname.1,v 1.7 1995/07/25 19:36:57 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1988, 1990, 1993
@@ -35,7 +36,7 @@
 .\"
 .Dd May 31, 1993
 .Dt DOMAINNAME 1
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm domainname
 .Nd set or print YP domain of current host system
@@ -43,25 +44,27 @@
 .Nm domainname
 .Op Ar name-of-domain
 .Sh DESCRIPTION
-.Nm Domainname
-prints the YP domain name of the current host.  The super-user can
-set the domain name by supplying an argument; this is usually done in the
-network initialization script
-.Pa /etc/netstart ,
-normally run at boot
-time.
+The
+.Nm
+utility prints the YP domain name of the current host.
+The superuser can set the domain name by supplying a
+.Pa /etc/defaultdomain
+file.
+This is used at system boot time by
+.Xr rc 8
+to initialize the domainname.
 .Sh SEE ALSO
 .Xr hostname 1 ,
-.Xr getdomainname 2 ,
-.Xr setdomainname 2
+.Xr getdomainname 3 ,
+.Xr setdomainname 3
 .Sh HISTORY
 The
-.Nm domainname
+.Nm
 utility is derived from the
-.Nm hostname
-utility , which appeared in
+.Xr hostname 1
+utility, which appeared in
 .Bx 4.2 .
 The
-.Nm domainname
+.Nm
 utility appeared in
 .Nx 0.8 .

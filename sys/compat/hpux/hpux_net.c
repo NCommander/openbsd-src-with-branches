@@ -1,4 +1,5 @@
-/*	$NetBSD: hpux_net.c,v 1.12 1995/10/07 06:26:37 mycroft Exp $	*/
+/*	$OpenBSD: hpux_net.c,v 1.7 2002/02/12 13:05:31 art Exp $	*/
+/*	$NetBSD: hpux_net.c,v 1.14 1997/04/01 19:59:02 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -53,6 +54,7 @@
 #include <sys/errno.h>
 #include <sys/proc.h>
 #include <sys/file.h>
+#include <sys/filedesc.h>
 #include <sys/mbuf.h>
 #include <sys/mount.h>
 #include <sys/socket.h>
@@ -64,9 +66,6 @@
 #include <compat/hpux/hpux.h>
 #include <compat/hpux/hpux_syscallargs.h>
 #include <compat/hpux/hpux_util.h>
-
-
-#define syscallarg(x)   union { x datum; register_t pad; }
 
 struct hpux_sys_setsockopt_args {
 	syscallarg(int) s;
@@ -84,8 +83,10 @@ struct hpux_sys_getsockopt_args {
 	syscallarg(int *) avalsize;
 };
 
-int	hpux_sys_setsockopt	__P((struct proc *, void *, register_t *));
-int	hpux_sys_getsockopt	__P((struct proc *, void *, register_t *));
+int	hpux_sys_setsockopt(struct proc *, void *, register_t *);
+int	hpux_sys_getsockopt(struct proc *, void *, register_t *);
+
+void	socksetsize(int, struct mbuf *);
 
 
 #define MINBSDIPCCODE	0x3EE
@@ -97,7 +98,7 @@ int	hpux_sys_getsockopt	__P((struct proc *, void *, register_t *));
  */
 
 struct hpuxtobsdipc {
-	int (*rout)();
+	int (*rout)(struct proc *, void *, register_t *);
 	int nargs;
 } hpuxtobsdipc[NUMBSDIPC] = {
 	{ sys_socket,			3 }, /* 3ee */
@@ -146,7 +147,7 @@ hpux_sys_netioctl(p, v, retval)
 {
 	struct hpux_sys_netioctl_args *uap = v;
 	int *args, i;
-	register int code;
+	int code;
 	int error;
 
 	args = SCARG(uap, args);
@@ -157,7 +158,7 @@ hpux_sys_netioctl(p, v, retval)
 	    (error = copyin((caddr_t)args, (caddr_t)uap, (u_int)i))) {
 #ifdef KTRACE
                 if (KTRPOINT(p, KTR_SYSCALL))
-                        ktrsyscall(p->p_tracep, code + MINBSDIPCCODE,
+                        ktrsyscall(p, code + MINBSDIPCCODE,
 				   hpuxtobsdipc[code].nargs,
 				   (register_t *)uap);
 #endif
@@ -165,19 +166,19 @@ hpux_sys_netioctl(p, v, retval)
 	}
 #ifdef KTRACE
         if (KTRPOINT(p, KTR_SYSCALL))
-                ktrsyscall(p->p_tracep, code + MINBSDIPCCODE,
+                ktrsyscall(p, code + MINBSDIPCCODE,
 			   hpuxtobsdipc[code].nargs,
 			   (register_t *)uap);
 #endif
 	return ((*hpuxtobsdipc[code].rout)(p, uap, retval));
 }
 
-int
+void
 socksetsize(size, m)
 	int size;
 	struct mbuf *m;
 {
-	register int tmp;
+	int tmp;
 
 	if (size < sizeof(int)) {
 		switch(size) {
@@ -188,6 +189,7 @@ socksetsize(size, m)
 			tmp = (int) *mtod(m, short *);
 			break;
 	    	case 3:
+		default:	/* XXX uh, what if sizeof(int) > 4? */
 			tmp = (((int) *mtod(m, int *)) >> 8) & 0xffffff;
 			break;
 		}
@@ -199,6 +201,7 @@ socksetsize(size, m)
 }
 
 /* ARGSUSED */
+int
 hpux_sys_setsockopt(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -209,16 +212,16 @@ hpux_sys_setsockopt(p, v, retval)
 	struct mbuf *m = NULL;
 	int tmp, error;
 
-	if (error = getsock(p->p_fd, SCARG(uap, s), &fp))
+	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)))
 		return (error);
 	if (SCARG(uap, valsize) > MLEN)
 		return (EINVAL);
+	FREF(fp);
 	if (SCARG(uap, val)) {
 		m = m_get(M_WAIT, MT_SOOPTS);
-		if (m == NULL)
-			return (ENOBUFS);
-		if (error = copyin(SCARG(uap, val), mtod(m, caddr_t),
-		    (u_int)SCARG(uap, valsize))) {
+		if ((error = copyin(SCARG(uap, val), mtod(m, caddr_t),
+		    (u_int)SCARG(uap, valsize)))) {
+			FRELE(fp);
 			(void) m_free(m);
 			return (error);
 		}
@@ -231,14 +234,14 @@ hpux_sys_setsockopt(p, v, retval)
 			socksetsize(SCARG(uap, valsize), m);
 	} else if (SCARG(uap, name) == ~SO_LINGER) {
 		m = m_get(M_WAIT, MT_SOOPTS);
-		if (m) {
-			SCARG(uap, name) = SO_LINGER;
-			mtod(m, struct linger *)->l_onoff = 0;
-			m->m_len = sizeof(struct linger);
-		}
+		SCARG(uap, name) = SO_LINGER;
+		mtod(m, struct linger *)->l_onoff = 0;
+		m->m_len = sizeof(struct linger);
 	}
-	return (sosetopt((struct socket *)fp->f_data, SCARG(uap, level),
-	    SCARG(uap, name), m));
+	error = sosetopt((struct socket *)fp->f_data, SCARG(uap, level),
+	    SCARG(uap, name), m);
+	FRELE(fp);
+	return (error);
 }
 
 /* ARGSUSED */
@@ -248,28 +251,30 @@ hpux_sys_setsockopt2(p, v, retval)
 	void *v;
 	register_t *retval;
 {
-	register struct hpux_sys_setsockopt2_args *uap = v;
+	struct hpux_sys_setsockopt2_args *uap = v;
 	struct file *fp;
 	struct mbuf *m = NULL;
 	int error;
 
-	if (error = getsock(p->p_fd, SCARG(uap, s), &fp))
+	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)))
 		return (error);
 	if (SCARG(uap, valsize) > MLEN)
 		return (EINVAL);
+	FREF(fp);
 	if (SCARG(uap, val)) {
 		m = m_get(M_WAIT, MT_SOOPTS);
-		if (m == NULL)
-			return (ENOBUFS);
-		if (error = copyin(SCARG(uap, val), mtod(m, caddr_t),
-		    (u_int)SCARG(uap, valsize))) {
+		if ((error = copyin(SCARG(uap, val), mtod(m, caddr_t),
+		    (u_int)SCARG(uap, valsize)))) {
+			FRELE(fp);
 			(void) m_free(m);
 			return (error);
 		}
 		socksetsize(SCARG(uap, valsize), m);
 	}
-	return (sosetopt((struct socket *)fp->f_data, SCARG(uap, level),
-	    SCARG(uap, name), m));
+	error = sosetopt((struct socket *)fp->f_data, SCARG(uap, level),
+	    SCARG(uap, name), m);
+	FRELE(fp);
+	return (error);
 }
 
 int
@@ -283,16 +288,19 @@ hpux_sys_getsockopt(p, v, retval)
 	struct mbuf *m = NULL;
 	int valsize, error;
 
-	if (error = getsock(p->p_fd, SCARG(uap, s), &fp))
+	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)))
 		return (error);
+	FREF(fp);
 	if (SCARG(uap, val)) {
-		if (error = copyin((caddr_t)SCARG(uap, avalsize),
-		    (caddr_t)&valsize, sizeof (valsize)))
+		if ((error = copyin((caddr_t)SCARG(uap, avalsize),
+		    (caddr_t)&valsize, sizeof (valsize)))) {
+			FRELE(fp);
 			return (error);
+		}
 	} else
 		valsize = 0;
-	if (error = sogetopt((struct socket *)fp->f_data, SCARG(uap, level),
-	    SCARG(uap, name), &m))
+	if ((error = sogetopt((struct socket *)fp->f_data, SCARG(uap, level),
+	    SCARG(uap, name), &m)))
 		goto bad;
 	if (SCARG(uap, val) && valsize && m != NULL) {
 		if (SCARG(uap, name) == SO_LINGER) {
@@ -311,6 +319,7 @@ hpux_sys_getsockopt(p, v, retval)
 			    (caddr_t)SCARG(uap, avalsize), sizeof (valsize));
 	}
 bad:
+	FRELE(fp);
 	if (m != NULL)
 		(void) m_free(m);
 	return (error);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ctl_transact.c,v 1.6 1999/03/03 20:43:30 millert Exp $	*/
 /*	$NetBSD: ctl_transact.c,v 1.3 1994/12/09 02:14:12 jtc Exp $	*/
 
 /*
@@ -37,37 +38,38 @@
 #if 0
 static char sccsid[] = "@(#)ctl_transact.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: ctl_transact.c,v 1.3 1994/12/09 02:14:12 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ctl_transact.c,v 1.6 1999/03/03 20:43:30 millert Exp $";
 #endif /* not lint */
 
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "talk.h"
 #include <sys/time.h>
-#include <netinet/in.h>
-#include <protocols/talkd.h>
 #include <errno.h>
+#include <unistd.h>
 #include "talk_ctl.h"
 
 #define CTL_WAIT 2	/* time to wait for a response, in seconds */
 
 /*
  * SOCKDGRAM is unreliable, so we must repeat messages if we have
- * not recieved an acknowledgement within a reasonable amount
+ * not received an acknowledgement within a reasonable amount
  * of time
  */
+void
 ctl_transact(target, msg, type, rp)
 	struct in_addr target;
 	CTL_MSG msg;
 	int type;
 	CTL_RESPONSE *rp;
 {
-	int read_mask, ctl_mask, nready, cc;
+	fd_set read_mask, ctl_mask;
+	int nready, cc;
 	struct timeval wait;
 
 	msg.type = type;
 	daemon_addr.sin_addr = target;
 	daemon_addr.sin_port = daemon_port;
-	ctl_mask = 1 << ctl_sockt;
+	FD_ZERO(&ctl_mask);
+	FD_SET(ctl_sockt, &ctl_mask);
 
 	/*
 	 * Keep sending the message until a response of
@@ -84,18 +86,18 @@ ctl_transact(target, msg, type, rp)
 			if (cc != sizeof (msg)) {
 				if (errno == EINTR)
 					continue;
-				p_error("Error on write to talk daemon");
+				quit("Error on write to talk daemon", 1);
 			}
 			read_mask = ctl_mask;
-			nready = select(32, &read_mask, 0, 0, &wait);
+			nready = select(ctl_sockt + 1, &read_mask, 0, 0, &wait);
 			if (nready < 0) {
 				if (errno == EINTR)
 					continue;
-				p_error("Error waiting for daemon response");
+				quit("Error waiting for daemon response", 1);
 			}
 		} while (nready == 0);
 		/*
-		 * Keep reading while there are queued messages 
+		 * Keep reading while there are queued messages
 		 * (this is not necessary, it just saves extra
 		 * request/acknowledgements being sent)
 		 */
@@ -104,15 +106,14 @@ ctl_transact(target, msg, type, rp)
 			if (cc < 0) {
 				if (errno == EINTR)
 					continue;
-				p_error("Error on read from talk daemon");
+				quit("Error on read from talk daemon", 1);
 			}
 			read_mask = ctl_mask;
 			/* an immediate poll */
 			timerclear(&wait);
-			nready = select(32, &read_mask, 0, 0, &wait);
+			nready = select(ctl_sockt + 1, &read_mask, 0, 0, &wait);
 		} while (nready > 0 && (rp->vers != TALK_VERSION ||
 		    rp->type != type));
 	} while (rp->vers != TALK_VERSION || rp->type != type);
 	rp->id_num = ntohl(rp->id_num);
-	rp->addr.sa_family = ntohs(rp->addr.sa_family);
 }

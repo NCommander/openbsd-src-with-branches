@@ -1,7 +1,9 @@
+/*	$OpenBSD$	*/
+
 #include "iostream.h"
 #include "a.h"
 
-AA b;
+AA c("c");
 main()
 {
 }

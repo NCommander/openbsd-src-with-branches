@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: client.c,v 1.13 2002/02/16 21:28:07 millert Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -58,37 +58,31 @@
 
 #include "pppoe.h"
 
-#define	PPP_PROG	"/usr/sbin/ppp"
-
 #define	STATE_EXPECT_PADO	1
 #define	STATE_EXPECT_PADS	2
 #define	STATE_EXPECT_SESSION	3
 
-u_int32_t client_cookie = 0;
-u_int16_t client_sessionid = 0xffff;
-int pppfd = -1;
-int client_state = -1;
-u_int8_t etherremoteaddr[6], etherlocaladdr[6];
+u_int32_t client_cookie;
+u_int16_t client_sessionid;
+int pppfd, client_state;
 
-static int getpackets __P((int, char *, char *, struct ether_addr *,
-    struct ether_addr *));
-static int send_padi __P((int, struct ether_addr *, u_int8_t *));
-static int send_padr __P((int, char *, struct ether_addr *,
+static int getpackets(int, char *, char *, struct ether_addr *,
+    struct ether_addr *);
+static int send_padi(int, struct ether_addr *, u_int8_t *);
+static int send_padr(int, char *, struct ether_addr *, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, struct tag_list *);
+static int recv_pado(int, char *, struct ether_addr *, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static int recv_pads(int, char *, char *, struct ether_addr *,
     struct ether_addr *, struct ether_header *, struct pppoe_header *,
-    struct tag_list *));
-static int recv_pado __P((int, char *, struct ether_addr *,
-    struct ether_addr *, struct ether_header *, struct pppoe_header *,
-    u_long, u_int8_t *));
-static int recv_pads __P((int, char *, char *, struct ether_addr *,
-    struct ether_addr *, struct ether_header *, struct pppoe_header *,
-    u_long, u_int8_t *));
-static int recv_padt __P((int, struct ether_addr *, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
+    u_long, u_int8_t *);
+static int recv_padt(int, struct ether_addr *, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
 
-void timer_handler __P((int));
-int timer_set __P((u_int));
-int timer_clr __P((void));
-int timer_hit __P((void));
+void timer_handler(int);
+int timer_set(u_int);
+int timer_clr(void);
+int timer_hit(void);
 
 int
 client_mode(bfd, sysname, srvname, myea)
@@ -97,27 +91,41 @@ client_mode(bfd, sysname, srvname, myea)
 	struct ether_addr *myea;
 {
 	struct ether_addr rmea;
-	fd_set fds;
-	int r = 0, max;
+	fd_set *fdsp = NULL;
+	int r = 0, max, oldmax = 0;
 
 	pppfd = -1;
 	client_sessionid = 0xffff;
+	client_state = -1;
 
 	r = send_padi(bfd, myea, srvname);
 	if (r <= 0)
 		return (r);
 
-	FD_ZERO(&fds);
 	for (;;) {
-		FD_SET(bfd, &fds);
-		max = bfd + 1;
-		if (pppfd >= 0) {
-			if (pppfd >= max)
-				max = pppfd + 1;
-			FD_SET(pppfd, &fds);
-		}
+		max = bfd;
+		if (pppfd >= 0 && pppfd >= max)
+			max = pppfd;
+		max++;
 
-		r = select(max, &fds, NULL, NULL, NULL);
+		if (max > oldmax) {
+			if (fdsp != NULL)
+				free(fdsp);
+			fdsp = (fd_set *)malloc(howmany(max, NFDBITS) *
+			    sizeof(fd_mask));
+			if (fdsp == NULL) {
+				r = -1;
+				break;
+			}
+			oldmax = max;
+		}
+		bzero(fdsp, howmany(max, NFDBITS) * sizeof(fd_mask));
+
+		if (pppfd >= 0)
+			FD_SET(pppfd, fdsp);
+		FD_SET(bfd, fdsp);
+
+		r = select(max, fdsp, NULL, NULL, NULL);
 		if (r < 0) {
 			if (errno == EINTR) {
 				if (timer_hit())
@@ -126,12 +134,12 @@ client_mode(bfd, sysname, srvname, myea)
 			}
 			break;
 		}
-		if (FD_ISSET(bfd, &fds)) {
+		if (FD_ISSET(bfd, fdsp)) {
 			r = getpackets(bfd, srvname, sysname, myea, &rmea);
 			if (r <= 0)
 				break;
 		}
-		if (pppfd >= 0 && FD_ISSET(pppfd, &fds)) {
+		if (pppfd >= 0 && FD_ISSET(pppfd, fdsp)) {
 			r = ppp_to_bpf(bfd, pppfd, myea, &rmea,
 			    client_sessionid);
 			if (r < 0)
@@ -141,9 +149,12 @@ client_mode(bfd, sysname, srvname, myea)
 
 	if (pppfd >= 0) {
 		send_padt(bfd, myea, &rmea, client_sessionid);
-		close(pppfd);
 		pppfd = -1;
 	}
+
+	if (fdsp != NULL)
+		free(fdsp);
+
 	return (r);
 }
 
@@ -222,7 +233,6 @@ send_padr(bfd, srv, myea, rmea, eh, ph, tl)
 	int idx = 0, slen;
 
 	timer_set(5);
-	client_state = STATE_EXPECT_PADS;
 
 	iov[idx].iov_base = rmea;
 	iov[idx++].iov_len = ETHER_ADDR_LEN;
@@ -284,6 +294,7 @@ send_padr(bfd, srv, myea, rmea, eh, ph, tl)
 	ph->len = htons(ph->len);
 	tag_hton(tl);
 
+	client_state = STATE_EXPECT_PADS;
 	return (writev(bfd, iov, idx));
 }
 
@@ -320,8 +331,6 @@ getpackets(bfd, srv, sysname, myea, rmea)
 		bh = (struct bpf_hdr *)pkt;
 		len = bh->bh_caplen;
 		mpkt = pkt + bh->bh_hdrlen;
-
-		debug_packet(mpkt, len);
 
 		/* Pull out ethernet header */
 		if (len < sizeof(struct ether_header))
@@ -363,7 +372,6 @@ getpackets(bfd, srv, sysname, myea, rmea)
 				    len, mpkt);
 				break;
 			default:
-				recv_debug(bfd, myea, &eh, &ph, len, mpkt);
 				r = 0;
 			}
 			if (r < 0)
@@ -374,10 +382,14 @@ getpackets(bfd, srv, sysname, myea, rmea)
 				goto next;
 			if (bcmp(rmea, &eh.ether_shost[0], ETHER_ADDR_LEN))
 				goto next;
-			if (pppfd <= 0)
+			if (pppfd < 0)
 				goto next;
-			if (bpf_to_ppp(pppfd, len, mpkt) <= 0)
+			if (client_sessionid != ph.sessionid)
+				goto next;
+			if ((r = bpf_to_ppp(pppfd, len, mpkt)) < 0)
 				return (-1);
+			if (r == 0)
+				continue;
 		}
 next:
 		pkt += BPF_WORDALIGN(bh->bh_hdrlen + bh->bh_caplen);
@@ -490,7 +502,7 @@ recv_pads(bfd, srv, sysname, myea, rmea, eh, ph, len, pkt)
 
 	timer_clr();
 
-	pppfd = runppp(bfd, sysname);
+	pppfd = fileno(stdin);
 	if (pppfd < 0) {
 		send_padt(bfd, myea, rmea, ph->sessionid);
 		return (-1);
@@ -522,7 +534,7 @@ recv_padt(bfd, myea, rmea, eh, ph, len, pkt)
 	return (0);
 }
 
-static volatile int timer_alarm;
+volatile sig_atomic_t timer_alarm;
 static struct sigaction timer_oact;
 
 void
@@ -537,6 +549,7 @@ timer_set(sec)
 	u_int sec;
 {
 	struct sigaction act;
+	struct itimerval it;
 
 	timer_alarm = 0;
 	if (sigemptyset(&act.sa_mask) < 0)
@@ -545,17 +558,32 @@ timer_set(sec)
 	act.sa_handler = timer_handler;
 	if (sigaction(SIGALRM, &act, &timer_oact) < 0)
 		return (-1);
-	alarm(sec);
+
+	timerclear(&it.it_interval);
+	timerclear(&it.it_value);
+	it.it_value.tv_sec = sec;
+	if (setitimer(ITIMER_REAL, &it, NULL) == -1) {
+		sigaction(SIGALRM, &timer_oact, NULL);
+		return (-1);
+	}
+
 	return (0);
 }
 
 int
 timer_clr(void)
 {
-	alarm(0);
-	if (sigaction(SIGALRM, &timer_oact, NULL) < 0)
-		return (-1);
+	struct itimerval it;
+	int r1, r2;
+
+	timerclear(&it.it_interval);
+	timerclear(&it.it_value);
+	r1 = setitimer(ITIMER_REAL, &it, NULL);
+	r2 = sigaction(SIGALRM, &timer_oact, NULL);
 	timer_alarm = 0;
+
+	if (r1 || r2)
+		return (-1);
 	return (0);
 }
 

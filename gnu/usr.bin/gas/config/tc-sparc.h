@@ -1,3 +1,5 @@
+/*	$OpenBSD: tc-sparc.h,v 1.2 1997/02/17 09:03:32 niklas Exp $	*/
+
 /* tc-sparc.h - Macros and type defines for the sparc.
    Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
    
@@ -17,16 +19,12 @@
    License along with GAS; see the file COPYING.  If not, write
    to the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
 
-/*
- * $Id: tc-sparc.h,v 1.3 1994/08/24 20:04:50 pk Exp $
- */
-
 #define TC_SPARC 1
 
 #define LOCAL_LABELS_FB
 #define WORKING_DOT_WORD
 
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #define AOUT_MACHTYPE	138
 #endif
 

@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.cmd.c,v 1.3 2001/01/28 23:41:43 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.cmd.c,v 1.3 1995/03/23 08:29:52 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.cmd.c,v 1.3 2001/01/28 23:41:43 niklas Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -17,10 +19,10 @@ doprring(),doprgold(),dodiscovered(),dotypeinv(),dolook(),doset(),
 doup(), dodown(), done1(), donull(), dothrow(), doextcmd(), dodip(), dopray();
 #ifdef SHELL
 int dosh();
-#endif SHELL
+#endif /* SHELL */
 #ifdef SUSPEND
 int dosuspend();
-#endif SUSPEND
+#endif /* SUSPEND */
 
 struct func_tab cmdlist[]={
 	'\020', doredotopl,
@@ -28,7 +30,7 @@ struct func_tab cmdlist[]={
 	'\024', dotele,
 #ifdef SUSPEND
 	'\032', dosuspend,
-#endif SUSPEND
+#endif /* SUSPEND */
 	'a', doapply,
 /*	'A' : UNUSED */
 /*	'b', 'B' : go sw */
@@ -71,7 +73,7 @@ struct func_tab cmdlist[]={
 	'?', dohelp,
 #ifdef SHELL
 	'!', dosh,
-#endif SHELL
+#endif /* SHELL */
 	'.', donull,
 	' ', donull,
 	',', dopickup,
@@ -132,7 +134,7 @@ register char *cmd;
 			u.ux0 = u.ux + u.dx;
 			u.uy0 = u.uy + u.dy;
 		}
-#endif QUEST
+#endif /* QUEST */
 		domove();
 		return;
 	}
@@ -161,7 +163,7 @@ register char *cmd;
 		if(cmd[2] == '-') flags.run += 1;
 		goto rush;
 	}
-#endif QUEST
+#endif /* QUEST */
 	while(tlist->f_char) {
 		if(*cmd == tlist->f_char){
 			res = (*(tlist->f_funct))();
@@ -234,7 +236,7 @@ char sym;
 	register char *dp;
 
 	u.dz = 0;
-	if(!(dp = index(sdir, sym))) return(0);
+	if(!(dp = strchr(sdir, sym))) return(0);
 	u.dx = xdir[dp-sdir];
 	u.dy = ydir[dp-sdir];
 	u.dz = zdir[dp-sdir];
@@ -249,7 +251,7 @@ boolean s;
 	if(s) pline("In what direction?");
 	dirsym = readchar();
 	if(!movecmd(dirsym) && !u.dz) {
-		if(!index(quitchars, dirsym))
+		if(!strchr(quitchars, dirsym))
 			pline("What a strange direction!");
 		return(0);
 	}
@@ -299,7 +301,7 @@ isroom(x,y)  register x,y; {		/* what about POOL? */
 	return(isok(x,y) && (levl[x][y].typ == ROOM ||
 				(levl[x][y].typ >= LDOOR && flags.run >= 6)));
 }
-#endif QUEST
+#endif /* QUEST */
 
 isok(x,y) register x,y; {
 	/* x corresponds to curx, so x==1 is the first column. Ach. %% */

@@ -60,8 +60,8 @@
 
 #undef SECONDS
 #define SECONDS		3	
-#define RSA_SECONDS	10	
-#define DSA_SECONDS	10	
+#define RSA_SECONDS	10
+#define DSA_SECONDS	10
 
 /* 11-Sep-92 Andrew Daviel   Support for Silicon Graphics IRIX added */
 /* 06-Apr-92 Luke Brennan    Support for VMS and add extra signal calls */
@@ -78,83 +78,102 @@
 #ifdef NO_STDIO
 #define APPS_WIN16
 #endif
-#include "crypto.h"
-#include "rand.h"
-#include "err.h"
+#include <openssl/crypto.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
+#include <openssl/engine.h>
 
-#ifndef MSDOS
-#define TIMES
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+# define USE_TOD
+#elif !defined(MSDOS) && (!defined(VMS) || defined(__DECC))
+# define TIMES
+#endif
+#if !defined(_UNICOS) && !defined(__OpenBSD__) && !defined(sgi) && !defined(__FreeBSD__) && !(defined(__bsdi) || defined(__bsdi__)) && !defined(_AIX) && !defined(MPE) && !defined(__NetBSD__)
+# define TIMEB
 #endif
 
-#ifndef VMS
 #ifndef _IRIX
-#include <time.h>
+# include <time.h>
 #endif
 #ifdef TIMES
-#include <sys/types.h>
-#include <sys/times.h>
+# include <sys/types.h>
+# include <sys/times.h>
 #endif
-#else /* VMS */
-#include <types.h>
-struct tms {
-	time_t tms_utime;
-	time_t tms_stime;
-	time_t tms_uchild;	/* I dunno...  */
-	time_t tms_uchildsys;	/* so these names are a guess :-) */
-	}
+#ifdef USE_TOD
+# include <sys/time.h>
+# include <sys/resource.h>
 #endif
-#ifndef TIMES
+
+/* Depending on the VMS version, the tms structure is perhaps defined.
+   The __TMS macro will show if it was.  If it wasn't defined, we should
+   undefine TIMES, since that tells the rest of the program how things
+   should be handled.				-- Richard Levitte */
+#if defined(VMS) && defined(__DECC) && !defined(__TMS)
+#undef TIMES
+#endif
+
+#ifdef TIMEB
 #include <sys/timeb.h>
 #endif
 
-#ifdef sun
+#if !defined(TIMES) && !defined(TIMEB) && !defined(USE_TOD)
+#error "It seems neither struct tms nor struct timeb is supported in this platform!"
+#endif
+
+#if defined(sun) || defined(__ultrix)
+#define _POSIX_SOURCE
 #include <limits.h>
 #include <sys/param.h>
 #endif
 
 #ifndef NO_DES
-#include "des.h"
+#include <openssl/des.h>
 #endif
 #ifndef NO_MD2
-#include "md2.h"
+#include <openssl/md2.h>
 #endif
 #ifndef NO_MDC2
-#include "mdc2.h"
+#include <openssl/mdc2.h>
+#endif
+#ifndef NO_MD4
+#include <openssl/md4.h>
 #endif
 #ifndef NO_MD5
-#include "md5.h"
-#include "hmac.h"
-#include "evp.h"
+#include <openssl/md5.h>
 #endif
-#ifndef NO_SHA1
-#include "sha.h"
+#ifndef NO_HMAC
+#include <openssl/hmac.h>
 #endif
-#ifndef NO_RMD160
-#include "ripemd.h"
+#include <openssl/evp.h>
+#ifndef NO_SHA
+#include <openssl/sha.h>
+#endif
+#ifndef NO_RIPEMD
+#include <openssl/ripemd.h>
 #endif
 #ifndef NO_RC4
-#include "rc4.h"
+#include <openssl/rc4.h>
 #endif
 #ifndef NO_RC5
-#include "rc5.h"
+#include <openssl/rc5.h>
 #endif
 #ifndef NO_RC2
-#include "rc2.h"
+#include <openssl/rc2.h>
 #endif
 #ifndef NO_IDEA
-#include "idea.h"
+#include <openssl/idea.h>
 #endif
-#ifndef NO_BLOWFISH
-#include "blowfish.h"
+#ifndef NO_BF
+#include <openssl/blowfish.h>
 #endif
 #ifndef NO_CAST
-#include "cast.h"
+#include <openssl/cast.h>
 #endif
 #ifndef NO_RSA
-#include "rsa.h"
-#endif
-#include "x509.h"
+#include <openssl/rsa.h>
 #include "./testrsa.h"
+#endif
+#include <openssl/x509.h>
 #ifndef NO_DSA
 #include "./testdsa.h"
 #endif
@@ -163,11 +182,7 @@ struct tms {
 #ifndef HZ
 # ifndef CLK_TCK
 #  ifndef _BSD_CLK_TCK_ /* FreeBSD hack */
-#   ifndef VMS
-#    define HZ	100.0
-#   else /* VMS */
-#    define HZ	100.0
-#   endif
+#   define HZ	100.0
 #  else /* _BSD_CLK_TCK_ */
 #   define HZ ((double)_BSD_CLK_TCK_)
 #  endif
@@ -180,16 +195,9 @@ struct tms {
 #define BUFSIZE	((long)1024*8+1)
 int run=0;
 
-#ifndef NOPROTO
-static double Time_F(int s);
+static double Time_F(int s, int usertime);
 static void print_message(char *s,long num,int length);
 static void pkey_print_message(char *str,char *str2,long num,int bits,int sec);
-#else
-static double Time_F();
-static void print_message();
-static void pkey_print_message();
-#endif
-
 #ifdef SIGALRM
 #if defined(__STDC__) || defined(sgi) || defined(_AIX)
 #define SIGRETTYPE void
@@ -197,14 +205,8 @@ static void pkey_print_message();
 #define SIGRETTYPE int
 #endif 
 
-#ifndef NOPROTO
 static SIGRETTYPE sig_done(int sig);
-#else
-static SIGRETTYPE sig_done();
-#endif
-
-static SIGRETTYPE sig_done(sig)
-int sig;
+static SIGRETTYPE sig_done(int sig)
 	{
 	signal(SIGALRM,sig_done);
 	run=0;
@@ -217,69 +219,125 @@ int sig;
 #define START	0
 #define STOP	1
 
-static double Time_F(s)
-int s;
+static double Time_F(int s, int usertime)
 	{
 	double ret;
-#ifdef TIMES
-	static struct tms tstart,tend;
 
-	if (s == START)
-		{
-		times(&tstart);
-		return(0);
+#ifdef USE_TOD
+	if(usertime)
+	    {
+		static struct rusage tstart,tend;
+
+		if (s == START)
+			{
+			getrusage(RUSAGE_SELF,&tstart);
+			return(0);
+			}
+		else
+			{
+			long i;
+
+			getrusage(RUSAGE_SELF,&tend);
+			i=(long)tend.ru_utime.tv_usec-(long)tstart.ru_utime.tv_usec;
+			ret=((double)(tend.ru_utime.tv_sec-tstart.ru_utime.tv_sec))
+			  +((double)i)/1000000.0;
+			return((ret < 0.001)?0.001:ret);
+			}
 		}
 	else
 		{
-		times(&tend);
-		ret=((double)(tend.tms_utime-tstart.tms_utime))/HZ;
-		return((ret < 1e-3)?1e-3:ret);
-		}
-#else /* !times() */
-	static struct timeb tstart,tend;
-	long i;
+		static struct timeval tstart,tend;
+		long i;
 
-	if (s == START)
-		{
-		ftime(&tstart);
-		return(0);
+		if (s == START)
+			{
+			gettimeofday(&tstart,NULL);
+			return(0);
+			}
+		else
+			{
+			gettimeofday(&tend,NULL);
+			i=(long)tend.tv_usec-(long)tstart.tv_usec;
+			ret=((double)(tend.tv_sec-tstart.tv_sec))+((double)i)/1000000.0;
+			return((ret < 0.001)?0.001:ret);
+			}
 		}
+#else  /* ndef USE_TOD */
+		
+# ifdef TIMES
+	if (usertime)
+		{
+		static struct tms tstart,tend;
+
+		if (s == START)
+			{
+			times(&tstart);
+			return(0);
+			}
+		else
+			{
+			times(&tend);
+			ret=((double)(tend.tms_utime-tstart.tms_utime))/HZ;
+			return((ret < 1e-3)?1e-3:ret);
+			}
+		}
+# endif /* times() */
+# if defined(TIMES) && defined(TIMEB)
 	else
+# endif
+# ifdef TIMEB
 		{
-		ftime(&tend);
-		i=(long)tend.millitm-(long)tstart.millitm;
-		ret=((double)(tend.time-tstart.time))+((double)i)/1000.0;
-		return((ret < 0.001)?0.001:ret);
+		static struct timeb tstart,tend;
+		long i;
+
+		if (s == START)
+			{
+			ftime(&tstart);
+			return(0);
+			}
+		else
+			{
+			ftime(&tend);
+			i=(long)tend.millitm-(long)tstart.millitm;
+			ret=((double)(tend.time-tstart.time))+((double)i)/1000.0;
+			return((ret < 0.001)?0.001:ret);
+			}
 		}
+# endif
 #endif
 	}
 
-int MAIN(argc,argv)
-int argc;
-char **argv;
+int MAIN(int, char **);
+
+int MAIN(int argc, char **argv)
 	{
+	ENGINE *e;
 	unsigned char *buf=NULL,*buf2=NULL;
-	int ret=1;
-#define ALGOR_NUM	14
+	int mret=1;
+#define ALGOR_NUM	15
 #define SIZE_NUM	5
 #define RSA_NUM		4
 #define DSA_NUM		3
 	long count,rsa_count;
-	int i,j,k,rsa_num,rsa_num2;
+	int i,j,k;
+	unsigned rsa_num;
 #ifndef NO_MD2
 	unsigned char md2[MD2_DIGEST_LENGTH];
 #endif
 #ifndef NO_MDC2
 	unsigned char mdc2[MDC2_DIGEST_LENGTH];
 #endif
+#ifndef NO_MD4
+	unsigned char md4[MD4_DIGEST_LENGTH];
+#endif
 #ifndef NO_MD5
 	unsigned char md5[MD5_DIGEST_LENGTH];
 	unsigned char hmac[MD5_DIGEST_LENGTH];
 #endif
-#ifndef NO_SHA1
+#ifndef NO_SHA
 	unsigned char sha[SHA_DIGEST_LENGTH];
 #endif
-#ifndef NO_RMD160
+#ifndef NO_RIPEMD
 	unsigned char rmd160[RIPEMD160_DIGEST_LENGTH];
 #endif
 #ifndef NO_RC4
@@ -294,7 +352,7 @@ char **argv;
 #ifndef NO_IDEA
 	IDEA_KEY_SCHEDULE idea_ks;
 #endif
-#ifndef NO_BLOWFISH
+#ifndef NO_BF
 	BF_KEY bf_ks;
 #endif
 #ifndef NO_CAST
@@ -305,6 +363,7 @@ char **argv;
 		 0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0,0x12};
 	unsigned char iv[8];
 #ifndef NO_DES
+	des_cblock *buf_as_des_cblock = NULL;
 	static des_cblock key ={0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0};
 	static des_cblock key2={0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0,0x12};
 	static des_cblock key3={0x56,0x78,0x9a,0xbc,0xde,0xf0,0x12,0x34};
@@ -312,23 +371,24 @@ char **argv;
 #endif
 #define	D_MD2		0
 #define	D_MDC2		1
-#define	D_MD5		2
-#define	D_HMAC		3
-#define	D_SHA1		4
-#define D_RMD160	5
-#define	D_RC4		6
-#define	D_CBC_DES	7
-#define	D_EDE3_DES	8
-#define	D_CBC_IDEA	9
-#define	D_CBC_RC2	10
-#define	D_CBC_RC5	11
-#define	D_CBC_BF	12
-#define	D_CBC_CAST	13
+#define	D_MD4		2
+#define	D_MD5		3
+#define	D_HMAC		4
+#define	D_SHA1		5
+#define D_RMD160	6
+#define	D_RC4		7
+#define	D_CBC_DES	8
+#define	D_EDE3_DES	9
+#define	D_CBC_IDEA	10
+#define	D_CBC_RC2	11
+#define	D_CBC_RC5	12
+#define	D_CBC_BF	13
+#define	D_CBC_CAST	14
 	double d,results[ALGOR_NUM][SIZE_NUM];
 	static int lengths[SIZE_NUM]={8,64,256,1024,8*1024};
 	long c[ALGOR_NUM][SIZE_NUM];
 	static char *names[ALGOR_NUM]={
-		"md2","mdc2","md5","hmac(md5)","sha1","rmd160","rc4",
+		"md2","mdc2","md4","md5","hmac(md5)","sha1","rmd160","rc4",
 		"des cbc","des ede3","idea cbc",
 		"rc2 cbc","rc5-32/12 cbc","blowfish cbc","cast cbc"};
 #define	R_DSA_512	0
@@ -338,9 +398,9 @@ char **argv;
 #define	R_RSA_1024	1
 #define	R_RSA_2048	2
 #define	R_RSA_4096	3
+#ifndef NO_RSA
 	RSA *rsa_key[RSA_NUM];
 	long rsa_c[RSA_NUM][2];
-#ifndef NO_RSA
 	double rsa_results[RSA_NUM][2];
 	static unsigned int rsa_bits[RSA_NUM]={512,1024,2048,4096};
 	static unsigned char *rsa_data[RSA_NUM]=
@@ -359,22 +419,37 @@ char **argv;
 	int dsa_doit[DSA_NUM];
 	int doit[ALGOR_NUM];
 	int pr_header=0;
+	int usertime=1;
+
+#ifndef TIMES
+	usertime=-1;
+#endif
 
 	apps_startup();
+	memset(results, 0, sizeof(results));
+#ifndef NO_DSA
+	memset(dsa_key,0,sizeof(dsa_key));
+#endif
 
 	if (bio_err == NULL)
 		if ((bio_err=BIO_new(BIO_s_file())) != NULL)
 			BIO_set_fp(bio_err,stderr,BIO_NOCLOSE|BIO_FP_TEXT);
 
+#ifndef NO_RSA
+	memset(rsa_key,0,sizeof(rsa_key));
 	for (i=0; i<RSA_NUM; i++)
 		rsa_key[i]=NULL;
+#endif
 
-	if ((buf=(unsigned char *)Malloc((int)BUFSIZE)) == NULL)
+	if ((buf=(unsigned char *)OPENSSL_malloc((int)BUFSIZE)) == NULL)
 		{
 		BIO_printf(bio_err,"out of memory\n");
 		goto end;
 		}
-	if ((buf2=(unsigned char *)Malloc((int)BUFSIZE)) == NULL)
+#ifndef NO_DES
+	buf_as_des_cblock = (des_cblock *)buf;
+#endif
+	if ((buf2=(unsigned char *)OPENSSL_malloc((int)BUFSIZE)) == NULL)
 		{
 		BIO_printf(bio_err,"out of memory\n");
 		goto end;
@@ -395,12 +470,49 @@ char **argv;
 	argv++;
 	while (argc)
 		{
+		if	((argc > 0) && (strcmp(*argv,"-elapsed") == 0))
+			usertime = 0;
+		else
+		if	((argc > 0) && (strcmp(*argv,"-engine") == 0))
+			{
+			argc--;
+			argv++;
+			if(argc == 0)
+				{
+				BIO_printf(bio_err,"no engine given\n");
+				goto end;
+				}
+			if((e = ENGINE_by_id(*argv)) == NULL)
+				{
+				BIO_printf(bio_err,"invalid engine \"%s\"\n",
+					*argv);
+				goto end;
+				}
+			if(!ENGINE_set_default(e, ENGINE_METHOD_ALL))
+				{
+				BIO_printf(bio_err,"can't use that engine\n");
+				goto end;
+				}
+			BIO_printf(bio_err,"engine \"%s\" set.\n", *argv);
+			/* Free our "structural" reference. */
+			ENGINE_free(e);
+			/* It will be increased again further down.  We just
+			   don't want speed to confuse an engine with an
+			   algorithm, especially when none is given (which
+			   means all of them should be run) */
+			j--;
+			}
+		else
 #ifndef NO_MD2
 		if	(strcmp(*argv,"md2") == 0) doit[D_MD2]=1;
 		else
 #endif
 #ifndef NO_MDC2
 			if (strcmp(*argv,"mdc2") == 0) doit[D_MDC2]=1;
+		else
+#endif
+#ifndef NO_MD4
+			if (strcmp(*argv,"md4") == 0) doit[D_MD4]=1;
 		else
 #endif
 #ifndef NO_MD5
@@ -411,13 +523,13 @@ char **argv;
 			if (strcmp(*argv,"hmac") == 0) doit[D_HMAC]=1;
 		else
 #endif
-#ifndef NO_SHA1
+#ifndef NO_SHA
 			if (strcmp(*argv,"sha1") == 0) doit[D_SHA1]=1;
 		else
 			if (strcmp(*argv,"sha") == 0) doit[D_SHA1]=1;
 		else
 #endif
-#ifndef NO_RMD160
+#ifndef NO_RIPEMD
 			if (strcmp(*argv,"ripemd") == 0) doit[D_RMD160]=1;
 		else
 			if (strcmp(*argv,"rmd160") == 0) doit[D_RMD160]=1;
@@ -429,7 +541,7 @@ char **argv;
 			if (strcmp(*argv,"rc4") == 0) doit[D_RC4]=1;
 		else 
 #endif
-#ifndef NO_DEF
+#ifndef NO_DES
 			if (strcmp(*argv,"des-cbc") == 0) doit[D_CBC_DES]=1;
 		else	if (strcmp(*argv,"des-ede3") == 0) doit[D_EDE3_DES]=1;
 		else
@@ -438,17 +550,19 @@ char **argv;
 #ifdef RSAref
 			if (strcmp(*argv,"rsaref") == 0) 
 			{
-			RSA_set_default_method(RSA_PKCS1_RSAref());
+			RSA_set_default_openssl_method(RSA_PKCS1_RSAref());
 			j--;
 			}
 		else
 #endif
-			if (strcmp(*argv,"ssleay") == 0) 
+#ifndef RSA_NULL
+			if (strcmp(*argv,"openssl") == 0) 
 			{
-			RSA_set_default_method(RSA_PKCS1_SSLeay());
+			RSA_set_default_openssl_method(RSA_PKCS1_SSLeay());
 			j--;
 			}
 		else
+#endif
 #endif /* !NO_RSA */
 		     if (strcmp(*argv,"dsa512") == 0) dsa_doit[R_DSA_512]=2;
 		else if (strcmp(*argv,"dsa1024") == 0) dsa_doit[R_DSA_1024]=2;
@@ -473,7 +587,7 @@ char **argv;
 		else if (strcmp(*argv,"idea") == 0) doit[D_CBC_IDEA]=1;
 		else
 #endif
-#ifndef NO_BLOWFISH
+#ifndef NO_BF
 		     if (strcmp(*argv,"bf-cbc") == 0) doit[D_CBC_BF]=1;
 		else if (strcmp(*argv,"blowfish") == 0) doit[D_CBC_BF]=1;
 		else if (strcmp(*argv,"bf") == 0) doit[D_CBC_BF]=1;
@@ -512,8 +626,34 @@ char **argv;
 		else
 #endif
 			{
-			BIO_printf(bio_err,"bad value, pick one of\n");
-			BIO_printf(bio_err,"md2      mdc2	md5      hmac      sha1    rmd160\n");
+			BIO_printf(bio_err,"Error: bad option or value\n");
+			BIO_printf(bio_err,"\n");
+			BIO_printf(bio_err,"Available values:\n");
+#ifndef NO_MD2
+			BIO_printf(bio_err,"md2      ");
+#endif
+#ifndef NO_MDC2
+			BIO_printf(bio_err,"mdc2     ");
+#endif
+#ifndef NO_MD4
+			BIO_printf(bio_err,"md4      ");
+#endif
+#ifndef NO_MD5
+			BIO_printf(bio_err,"md5      ");
+#ifndef NO_HMAC
+			BIO_printf(bio_err,"hmac     ");
+#endif
+#endif
+#ifndef NO_SHA1
+			BIO_printf(bio_err,"sha1     ");
+#endif
+#ifndef NO_RIPEMD160
+			BIO_printf(bio_err,"rmd160");
+#endif
+#if !defined(NO_MD2) || !defined(NO_MDC2) || !defined(NO_MD4) || !defined(NO_MD5) || !defined(NO_SHA1) || !defined(NO_RIPEMD160)
+			BIO_printf(bio_err,"\n");
+#endif
+
 #ifndef NO_IDEA
 			BIO_printf(bio_err,"idea-cbc ");
 #endif
@@ -523,23 +663,52 @@ char **argv;
 #ifndef NO_RC5
 			BIO_printf(bio_err,"rc5-cbc  ");
 #endif
-#ifndef NO_BLOWFISH
+#ifndef NO_BF
 			BIO_printf(bio_err,"bf-cbc");
 #endif
-#if !defined(NO_IDEA) && !defined(NO_RC2) && !defined(NO_BLOWFISH) && !defined(NO_RC5)
+#if !defined(NO_IDEA) || !defined(NO_RC2) || !defined(NO_BF) || !defined(NO_RC5)
 			BIO_printf(bio_err,"\n");
 #endif
+
 			BIO_printf(bio_err,"des-cbc  des-ede3 ");
 #ifndef NO_RC4
 			BIO_printf(bio_err,"rc4");
 #endif
+			BIO_printf(bio_err,"\n");
+
 #ifndef NO_RSA
-			BIO_printf(bio_err,"\nrsa512   rsa1024  rsa2048  rsa4096\n");
+			BIO_printf(bio_err,"rsa512   rsa1024  rsa2048  rsa4096\n");
 #endif
+
 #ifndef NO_DSA
-			BIO_printf(bio_err,"\ndsa512   dsa1024  dsa2048\n");
+			BIO_printf(bio_err,"dsa512   dsa1024  dsa2048\n");
 #endif
-			BIO_printf(bio_err,"idea     rc2      des      rsa    blowfish\n");
+
+#ifndef NO_IDEA
+			BIO_printf(bio_err,"idea     ");
+#endif
+#ifndef NO_RC2
+			BIO_printf(bio_err,"rc2      ");
+#endif
+#ifndef NO_DES
+			BIO_printf(bio_err,"des      ");
+#endif
+#ifndef NO_RSA
+			BIO_printf(bio_err,"rsa      ");
+#endif
+#ifndef NO_BF
+			BIO_printf(bio_err,"blowfish");
+#endif
+#if !defined(NO_IDEA) || !defined(NO_RC2) || !defined(NO_DES) || !defined(NO_RSA) || !defined(NO_BF)
+			BIO_printf(bio_err,"\n");
+#endif
+
+			BIO_printf(bio_err,"\n");
+			BIO_printf(bio_err,"Available options:\n");
+#ifdef TIMES
+			BIO_printf(bio_err,"-elapsed        measure time in real time instead of CPU user time.\n");
+#endif
+			BIO_printf(bio_err,"-engine e       use engine e, possibly a hardware device.\n");
 			goto end;
 			}
 		argc--;
@@ -559,10 +728,13 @@ char **argv;
 	for (i=0; i<ALGOR_NUM; i++)
 		if (doit[i]) pr_header++;
 
-#ifndef TIMES
-	BIO_printf(bio_err,"To get the most accurate results, try to run this\n");
-	BIO_printf(bio_err,"program when this computer is idle.\n");
-#endif
+	if (usertime == 0)
+		BIO_printf(bio_err,"You have chosen to measure elapsed time instead of user CPU time.\n");
+	if (usertime <= 0)
+		{
+		BIO_printf(bio_err,"To get the most accurate results, try to run this\n");
+		BIO_printf(bio_err,"program when this computer is idle.\n");
+		}
 
 #ifndef NO_RSA
 	for (i=0; i<RSA_NUM; i++)
@@ -594,9 +766,9 @@ char **argv;
 #endif
 
 #ifndef NO_DES
-	des_set_key((C_Block *)key,sch);
-	des_set_key((C_Block *)key2,sch2);
-	des_set_key((C_Block *)key3,sch3);
+	des_set_key_unchecked(&key,sch);
+	des_set_key_unchecked(&key2,sch2);
+	des_set_key_unchecked(&key3,sch3);
 #endif
 #ifndef NO_IDEA
 	idea_set_encrypt_key(key16,&idea_ks);
@@ -610,28 +782,31 @@ char **argv;
 #ifndef NO_RC5
 	RC5_32_set_key(&rc5_ks,16,key16,12);
 #endif
-#ifndef NO_BLOWFISH
+#ifndef NO_BF
 	BF_set_key(&bf_ks,16,key16);
 #endif
 #ifndef NO_CAST
 	CAST_set_key(&cast_ks,16,key16);
 #endif
-
+#ifndef NO_RSA
 	memset(rsa_c,0,sizeof(rsa_c));
+#endif
 #ifndef SIGALRM
+#ifndef NO_DES
 	BIO_printf(bio_err,"First we calculate the approximate speed ...\n");
 	count=10;
 	do	{
 		long i;
 		count*=2;
-		Time_F(START);
+		Time_F(START,usertime);
 		for (i=count; i; i--)
-			des_ecb_encrypt((C_Block *)buf,(C_Block *)buf,
+			des_ecb_encrypt(buf_as_des_cblock,buf_as_des_cblock,
 				&(sch[0]),DES_ENCRYPT);
-		d=Time_F(STOP);
+		d=Time_F(STOP,usertime);
 		} while (d <3);
 	c[D_MD2][0]=count/10;
 	c[D_MDC2][0]=count/10;
+	c[D_MD4][0]=count;
 	c[D_MD5][0]=count;
 	c[D_HMAC][0]=count;
 	c[D_SHA1][0]=count;
@@ -649,6 +824,7 @@ char **argv;
 		{
 		c[D_MD2][i]=c[D_MD2][0]*4*lengths[0]/lengths[i];
 		c[D_MDC2][i]=c[D_MDC2][0]*4*lengths[0]/lengths[i];
+		c[D_MD4][i]=c[D_MD4][0]*4*lengths[0]/lengths[i];
 		c[D_MD5][i]=c[D_MD5][0]*4*lengths[0]/lengths[i];
 		c[D_HMAC][i]=c[D_HMAC][0]*4*lengths[0]/lengths[i];
 		c[D_SHA1][i]=c[D_SHA1][0]*4*lengths[0]/lengths[i];
@@ -669,6 +845,7 @@ char **argv;
 		c[D_CBC_BF][i]=c[D_CBC_BF][i-1]*l0/l1;
 		c[D_CBC_CAST][i]=c[D_CBC_CAST][i-1]*l0/l1;
 		}
+#ifndef NO_RSA
 	rsa_c[R_RSA_512][0]=count/2000;
 	rsa_c[R_RSA_512][1]=count/400;
 	for (i=1; i<RSA_NUM; i++)
@@ -679,14 +856,16 @@ char **argv;
 			rsa_doit[i]=0;
 		else
 			{
-			if (rsa_c[i] == 0)
+			if (rsa_c[i][0] == 0)
 				{
 				rsa_c[i][0]=1;
 				rsa_c[i][1]=20;
 				}
 			}				
 		}
+#endif
 
+#ifndef NO_DSA
 	dsa_c[R_DSA_512][0]=count/1000;
 	dsa_c[R_DSA_512][1]=count/1000/2;
 	for (i=1; i<DSA_NUM; i++)
@@ -704,14 +883,19 @@ char **argv;
 				}
 			}				
 		}
+#endif
 
 #define COND(d)	(count < (d))
 #define COUNT(d) (d)
 #else
+/* not worth fixing */
+# error "You cannot disable DES on systems without SIGALRM."
+#endif /* NO_DES */
+#else
 #define COND(c)	(run)
 #define COUNT(d) (count)
 	signal(SIGALRM,sig_done);
-#endif
+#endif /* SIGALRM */
 
 #ifndef NO_MD2
 	if (doit[D_MD2])
@@ -719,10 +903,10 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_MD2],c[D_MD2][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_MD2][j]); count++)
 				MD2(buf,(unsigned long)lengths[j],&(md2[0]));
-			d=Time_F(STOP);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_MD2],d);
 			results[D_MD2][j]=((double)count)/d*lengths[j];
@@ -735,13 +919,30 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_MDC2],c[D_MDC2][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_MDC2][j]); count++)
 				MDC2(buf,(unsigned long)lengths[j],&(mdc2[0]));
-			d=Time_F(STOP);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_MDC2],d);
 			results[D_MDC2][j]=((double)count)/d*lengths[j];
+			}
+		}
+#endif
+
+#ifndef NO_MD4
+	if (doit[D_MD4])
+		{
+		for (j=0; j<SIZE_NUM; j++)
+			{
+			print_message(names[D_MD4],c[D_MD4][j],lengths[j]);
+			Time_F(START,usertime);
+			for (count=0,run=1; COND(c[D_MD4][j]); count++)
+				MD4(&(buf[0]),(unsigned long)lengths[j],&(md4[0]));
+			d=Time_F(STOP,usertime);
+			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
+				count,names[D_MD4],d);
+			results[D_MD4][j]=((double)count)/d*lengths[j];
 			}
 		}
 #endif
@@ -752,10 +953,10 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_MD5],c[D_MD5][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_MD5][j]); count++)
 				MD5(&(buf[0]),(unsigned long)lengths[j],&(md5[0]));
-			d=Time_F(STOP);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_MD5],d);
 			results[D_MD5][j]=((double)count)/d*lengths[j];
@@ -763,7 +964,7 @@ char **argv;
 		}
 #endif
 
-#ifndef NO_MD5
+#if !defined(NO_MD5) && !defined(NO_HMAC)
 	if (doit[D_HMAC])
 		{
 		HMAC_CTX hctx;
@@ -773,46 +974,46 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_HMAC],c[D_HMAC][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_HMAC][j]); count++)
 				{
 				HMAC_Init(&hctx,NULL,0,NULL);
                                 HMAC_Update(&hctx,buf,lengths[j]);
                                 HMAC_Final(&hctx,&(hmac[0]),NULL);
 				}
-			d=Time_F(STOP);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_HMAC],d);
 			results[D_HMAC][j]=((double)count)/d*lengths[j];
 			}
 		}
 #endif
-#ifndef NO_SHA1
+#ifndef NO_SHA
 	if (doit[D_SHA1])
 		{
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_SHA1],c[D_SHA1][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_SHA1][j]); count++)
 				SHA1(buf,(unsigned long)lengths[j],&(sha[0]));
-			d=Time_F(STOP);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_SHA1],d);
 			results[D_SHA1][j]=((double)count)/d*lengths[j];
 			}
 		}
 #endif
-#ifndef NO_RMD160
+#ifndef NO_RIPEMD
 	if (doit[D_RMD160])
 		{
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_RMD160],c[D_RMD160][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_RMD160][j]); count++)
 				RIPEMD160(buf,(unsigned long)lengths[j],&(rmd160[0]));
-			d=Time_F(STOP);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_RMD160],d);
 			results[D_RMD160][j]=((double)count)/d*lengths[j];
@@ -825,11 +1026,11 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_RC4],c[D_RC4][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_RC4][j]); count++)
 				RC4(&rc4_ks,(unsigned int)lengths[j],
 					buf,buf);
-			d=Time_F(STOP);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_RC4],d);
 			results[D_RC4][j]=((double)count)/d*lengths[j];
@@ -842,13 +1043,11 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_CBC_DES],c[D_CBC_DES][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_CBC_DES][j]); count++)
-				des_ncbc_encrypt((C_Block *)buf,
-					(C_Block *)buf,
-					(long)lengths[j],sch,
-					(C_Block *)&(iv[0]),DES_ENCRYPT);
-			d=Time_F(STOP);
+				des_ncbc_encrypt(buf,buf,lengths[j],sch,
+						 &iv,DES_ENCRYPT);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_CBC_DES],d);
 			results[D_CBC_DES][j]=((double)count)/d*lengths[j];
@@ -860,13 +1059,12 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_EDE3_DES],c[D_EDE3_DES][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_EDE3_DES][j]); count++)
-				des_ede3_cbc_encrypt((C_Block *)buf,
-					(C_Block *)buf,
-					(long)lengths[j],sch,sch2,sch3,
-					(C_Block *)&(iv[0]),DES_ENCRYPT);
-			d=Time_F(STOP);
+				des_ede3_cbc_encrypt(buf,buf,lengths[j],
+						     sch,sch2,sch3,
+						     &iv,DES_ENCRYPT);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_EDE3_DES],d);
 			results[D_EDE3_DES][j]=((double)count)/d*lengths[j];
@@ -879,12 +1077,12 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_CBC_IDEA],c[D_CBC_IDEA][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_CBC_IDEA][j]); count++)
 				idea_cbc_encrypt(buf,buf,
 					(unsigned long)lengths[j],&idea_ks,
-					(unsigned char *)&(iv[0]),IDEA_ENCRYPT);
-			d=Time_F(STOP);
+					iv,IDEA_ENCRYPT);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_CBC_IDEA],d);
 			results[D_CBC_IDEA][j]=((double)count)/d*lengths[j];
@@ -897,12 +1095,12 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_CBC_RC2],c[D_CBC_RC2][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_CBC_RC2][j]); count++)
 				RC2_cbc_encrypt(buf,buf,
 					(unsigned long)lengths[j],&rc2_ks,
-					(unsigned char *)&(iv[0]),RC2_ENCRYPT);
-			d=Time_F(STOP);
+					iv,RC2_ENCRYPT);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_CBC_RC2],d);
 			results[D_CBC_RC2][j]=((double)count)/d*lengths[j];
@@ -915,30 +1113,30 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_CBC_RC5],c[D_CBC_RC5][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_CBC_RC5][j]); count++)
 				RC5_32_cbc_encrypt(buf,buf,
 					(unsigned long)lengths[j],&rc5_ks,
-					(unsigned char *)&(iv[0]),RC5_ENCRYPT);
-			d=Time_F(STOP);
+					iv,RC5_ENCRYPT);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_CBC_RC5],d);
 			results[D_CBC_RC5][j]=((double)count)/d*lengths[j];
 			}
 		}
 #endif
-#ifndef NO_BLOWFISH
+#ifndef NO_BF
 	if (doit[D_CBC_BF])
 		{
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_CBC_BF],c[D_CBC_BF][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_CBC_BF][j]); count++)
 				BF_cbc_encrypt(buf,buf,
 					(unsigned long)lengths[j],&bf_ks,
-					(unsigned char *)&(iv[0]),BF_ENCRYPT);
-			d=Time_F(STOP);
+					iv,BF_ENCRYPT);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_CBC_BF],d);
 			results[D_CBC_BF][j]=((double)count)/d*lengths[j];
@@ -951,12 +1149,12 @@ char **argv;
 		for (j=0; j<SIZE_NUM; j++)
 			{
 			print_message(names[D_CBC_CAST],c[D_CBC_CAST][j],lengths[j]);
-			Time_F(START);
+			Time_F(START,usertime);
 			for (count=0,run=1; COND(c[D_CBC_CAST][j]); count++)
 				CAST_cbc_encrypt(buf,buf,
 					(unsigned long)lengths[j],&cast_ks,
-					(unsigned char *)&(iv[0]),CAST_ENCRYPT);
-			d=Time_F(STOP);
+					iv,CAST_ENCRYPT);
+			d=Time_F(STOP,usertime);
 			BIO_printf(bio_err,"%ld %s's in %.2fs\n",
 				count,names[D_CBC_CAST],d);
 			results[D_CBC_CAST][j]=((double)count)/d*lengths[j];
@@ -964,53 +1162,80 @@ char **argv;
 		}
 #endif
 
-	RAND_bytes(buf,30);
+	RAND_pseudo_bytes(buf,36);
 #ifndef NO_RSA
 	for (j=0; j<RSA_NUM; j++)
 		{
+		int ret;
 		if (!rsa_doit[j]) continue;
-		pkey_print_message("private","rsa",rsa_c[j][0],rsa_bits[j],
-			RSA_SECONDS);
-/*		RSA_blinding_on(rsa_key[j],NULL); */
-		Time_F(START);
-		for (count=0,run=1; COND(rsa_c[j][0]); count++)
+		ret=RSA_sign(NID_md5_sha1, buf,36, buf2, &rsa_num, rsa_key[j]);
+		if (ret == 0)
 			{
-			rsa_num=RSA_private_encrypt(30,buf,buf2,rsa_key[j],
-				RSA_PKCS1_PADDING);
-			if (rsa_num <= 0)
-				{
-				BIO_printf(bio_err,"RSA private encrypt failure\n");
-				ERR_print_errors(bio_err);
-				count=1;
-				break;
-				}
+			BIO_printf(bio_err,"RSA sign failure.  No RSA sign will be done.\n");
+			ERR_print_errors(bio_err);
+			rsa_count=1;
 			}
-		d=Time_F(STOP);
-		BIO_printf(bio_err,"%ld %d bit private RSA's in %.2fs\n",
-			count,rsa_bits[j],d);
-		rsa_results[j][0]=d/(double)count;
-		rsa_count=count;
+		else
+			{
+			pkey_print_message("private","rsa",
+				rsa_c[j][0],rsa_bits[j],
+				RSA_SECONDS);
+/*			RSA_blinding_on(rsa_key[j],NULL); */
+			Time_F(START,usertime);
+			for (count=0,run=1; COND(rsa_c[j][0]); count++)
+				{
+				ret=RSA_sign(NID_md5_sha1, buf,36, buf2,
+					&rsa_num, rsa_key[j]);
+				if (ret == 0)
+					{
+					BIO_printf(bio_err,
+						"RSA sign failure\n");
+					ERR_print_errors(bio_err);
+					count=1;
+					break;
+					}
+				}
+			d=Time_F(STOP,usertime);
+			BIO_printf(bio_err,
+				"%ld %d bit private RSA's in %.2fs\n",
+				count,rsa_bits[j],d);
+			rsa_results[j][0]=d/(double)count;
+			rsa_count=count;
+			}
 
 #if 1
-		pkey_print_message("public","rsa",rsa_c[j][1],rsa_bits[j],
-			RSA_SECONDS);
-		Time_F(START);
-		for (count=0,run=1; COND(rsa_c[j][1]); count++)
+		ret=RSA_verify(NID_md5_sha1, buf,36, buf2, rsa_num, rsa_key[j]);
+		if (ret <= 0)
 			{
-			rsa_num2=RSA_public_decrypt(rsa_num,buf2,buf,rsa_key[j],
-				RSA_PKCS1_PADDING);
-			if (rsa_num2 <= 0)
-				{
-				BIO_printf(bio_err,"RSA public encrypt failure\n");
-				ERR_print_errors(bio_err);
-				count=1;
-				break;
-				}
+			BIO_printf(bio_err,"RSA verify failure.  No RSA verify will be done.\n");
+			ERR_print_errors(bio_err);
+			rsa_doit[j] = 0;
 			}
-		d=Time_F(STOP);
-		BIO_printf(bio_err,"%ld %d bit public RSA's in %.2fs\n",
-			count,rsa_bits[j],d);
-		rsa_results[j][1]=d/(double)count;
+		else
+			{
+			pkey_print_message("public","rsa",
+				rsa_c[j][1],rsa_bits[j],
+				RSA_SECONDS);
+			Time_F(START,usertime);
+			for (count=0,run=1; COND(rsa_c[j][1]); count++)
+				{
+				ret=RSA_verify(NID_md5_sha1, buf,36, buf2,
+					rsa_num, rsa_key[j]);
+				if (ret == 0)
+					{
+					BIO_printf(bio_err,
+						"RSA verify failure\n");
+					ERR_print_errors(bio_err);
+					count=1;
+					break;
+					}
+				}
+			d=Time_F(STOP,usertime);
+			BIO_printf(bio_err,
+				"%ld %d bit public RSA's in %.2fs\n",
+				count,rsa_bits[j],d);
+			rsa_results[j][1]=d/(double)count;
+			}
 #endif
 
 		if (rsa_count <= 1)
@@ -1022,55 +1247,87 @@ char **argv;
 		}
 #endif
 
-	RAND_bytes(buf,20);
+	RAND_pseudo_bytes(buf,20);
 #ifndef NO_DSA
+	if (RAND_status() != 1)
+		{
+		RAND_seed(rnd_seed, sizeof rnd_seed);
+		rnd_fake = 1;
+		}
 	for (j=0; j<DSA_NUM; j++)
 		{
 		unsigned int kk;
+		int ret;
 
 		if (!dsa_doit[j]) continue;
 		DSA_generate_key(dsa_key[j]);
 /*		DSA_sign_setup(dsa_key[j],NULL); */
-		pkey_print_message("sign","dsa",dsa_c[j][0],dsa_bits[j],
-			DSA_SECONDS);
-		Time_F(START);
-		for (count=0,run=1; COND(dsa_c[j][0]); count++)
+		ret=DSA_sign(EVP_PKEY_DSA,buf,20,buf2,
+			&kk,dsa_key[j]);
+		if (ret == 0)
 			{
-			rsa_num=DSA_sign(EVP_PKEY_DSA,buf,20,buf2,
-				&kk,dsa_key[j]);
-			if (rsa_num <= 0)
-				{
-				BIO_printf(bio_err,"DSA sign failure\n");
-				ERR_print_errors(bio_err);
-				count=1;
-				break;
-				}
+			BIO_printf(bio_err,"DSA sign failure.  No DSA sign will be done.\n");
+			ERR_print_errors(bio_err);
+			rsa_count=1;
 			}
-		d=Time_F(STOP);
-		BIO_printf(bio_err,"%ld %d bit DSA signs in %.2fs\n",
-			count,dsa_bits[j],d);
-		dsa_results[j][0]=d/(double)count;
-		rsa_count=count;
+		else
+			{
+			pkey_print_message("sign","dsa",
+				dsa_c[j][0],dsa_bits[j],
+				DSA_SECONDS);
+			Time_F(START,usertime);
+			for (count=0,run=1; COND(dsa_c[j][0]); count++)
+				{
+				ret=DSA_sign(EVP_PKEY_DSA,buf,20,buf2,
+					&kk,dsa_key[j]);
+				if (ret == 0)
+					{
+					BIO_printf(bio_err,
+						"DSA sign failure\n");
+					ERR_print_errors(bio_err);
+					count=1;
+					break;
+					}
+				}
+			d=Time_F(STOP,usertime);
+			BIO_printf(bio_err,"%ld %d bit DSA signs in %.2fs\n",
+				count,dsa_bits[j],d);
+			dsa_results[j][0]=d/(double)count;
+			rsa_count=count;
+			}
 
-		pkey_print_message("verify","dsa",dsa_c[j][1],dsa_bits[j],
-			DSA_SECONDS);
-		Time_F(START);
-		for (count=0,run=1; COND(dsa_c[j][1]); count++)
+		ret=DSA_verify(EVP_PKEY_DSA,buf,20,buf2,
+			kk,dsa_key[j]);
+		if (ret <= 0)
 			{
-			rsa_num2=DSA_verify(EVP_PKEY_DSA,buf,20,buf2,
-				kk,dsa_key[j]);
-			if (rsa_num2 <= 0)
-				{
-				BIO_printf(bio_err,"DSA verify failure\n");
-				ERR_print_errors(bio_err);
-				count=1;
-				break;
-				}
+			BIO_printf(bio_err,"DSA verify failure.  No DSA verify will be done.\n");
+			ERR_print_errors(bio_err);
+			dsa_doit[j] = 0;
 			}
-		d=Time_F(STOP);
-		BIO_printf(bio_err,"%ld %d bit DSA verify in %.2fs\n",
-			count,dsa_bits[j],d);
-		dsa_results[j][1]=d/(double)count;
+		else
+			{
+			pkey_print_message("verify","dsa",
+				dsa_c[j][1],dsa_bits[j],
+				DSA_SECONDS);
+			Time_F(START,usertime);
+			for (count=0,run=1; COND(dsa_c[j][1]); count++)
+				{
+				ret=DSA_verify(EVP_PKEY_DSA,buf,20,buf2,
+					kk,dsa_key[j]);
+				if (ret <= 0)
+					{
+					BIO_printf(bio_err,
+						"DSA verify failure\n");
+					ERR_print_errors(bio_err);
+					count=1;
+					break;
+					}
+				}
+			d=Time_F(STOP,usertime);
+			BIO_printf(bio_err,"%ld %d bit DSA verify in %.2fs\n",
+				count,dsa_bits[j],d);
+			dsa_results[j][1]=d/(double)count;
+			}
 
 		if (rsa_count <= 1)
 			{
@@ -1079,6 +1336,7 @@ char **argv;
 				dsa_doit[j]=0;
 			}
 		}
+	if (rnd_fake) RAND_cleanup();
 #endif
 
 	fprintf(stdout,"%s\n",SSLeay_version(SSLEAY_VERSION));
@@ -1097,7 +1355,7 @@ char **argv;
 #ifndef NO_IDEA
 	printf("%s ",idea_options());
 #endif
-#ifndef NO_BLOWFISH
+#ifndef NO_BF
 	printf("%s ",BF_options());
 #endif
 	fprintf(stdout,"\n%s\n",SSLeay_version(SSLEAY_CFLAGS));
@@ -1134,7 +1392,7 @@ char **argv;
 			printf("%18ssign    verify    sign/s verify/s\n"," ");
 			j=0;
 			}
-		fprintf(stdout,"rsa %4d bits %8.4fs %8.4fs %8.1f %8.1f",
+		fprintf(stdout,"rsa %4u bits %8.4fs %8.4fs %8.1f %8.1f",
 			rsa_bits[k],rsa_results[k][0],rsa_results[k][1],
 			1.0/rsa_results[k][0],1.0/rsa_results[k][1]);
 		fprintf(stdout,"\n");
@@ -1149,16 +1407,17 @@ char **argv;
 			printf("%18ssign    verify    sign/s verify/s\n"," ");
 			j=0;
 			}
-		fprintf(stdout,"dsa %4d bits %8.4fs %8.4fs %8.1f %8.1f",
+		fprintf(stdout,"dsa %4u bits %8.4fs %8.4fs %8.1f %8.1f",
 			dsa_bits[k],dsa_results[k][0],dsa_results[k][1],
 			1.0/dsa_results[k][0],1.0/dsa_results[k][1]);
 		fprintf(stdout,"\n");
 		}
 #endif
-	ret=0;
+	mret=0;
 end:
-	if (buf != NULL) Free(buf);
-	if (buf2 != NULL) Free(buf2);
+	ERR_print_errors(bio_err);
+	if (buf != NULL) OPENSSL_free(buf);
+	if (buf2 != NULL) OPENSSL_free(buf2);
 #ifndef NO_RSA
 	for (i=0; i<RSA_NUM; i++)
 		if (rsa_key[i] != NULL)
@@ -1169,41 +1428,34 @@ end:
 		if (dsa_key[i] != NULL)
 			DSA_free(dsa_key[i]);
 #endif
-	EXIT(ret);
+	EXIT(mret);
 	}
 
-static void print_message(s,num,length)
-char *s;
-long num;
-int length;
+static void print_message(char *s, long num, int length)
 	{
 #ifdef SIGALRM
 	BIO_printf(bio_err,"Doing %s for %ds on %d size blocks: ",s,SECONDS,length);
-	BIO_flush(bio_err);
+	(void)BIO_flush(bio_err);
 	alarm(SECONDS);
 #else
 	BIO_printf(bio_err,"Doing %s %ld times on %d size blocks: ",s,num,length);
-	BIO_flush(bio_err);
+	(void)BIO_flush(bio_err);
 #endif
 #ifdef LINT
 	num=num;
 #endif
 	}
 
-static void pkey_print_message(str,str2,num,bits,tm)
-char *str;
-char *str2;
-long num;
-int bits;
-int tm;
+static void pkey_print_message(char *str, char *str2, long num, int bits,
+	     int tm)
 	{
 #ifdef SIGALRM
 	BIO_printf(bio_err,"Doing %d bit %s %s's for %ds: ",bits,str,str2,tm);
-	BIO_flush(bio_err);
+	(void)BIO_flush(bio_err);
 	alarm(RSA_SECONDS);
 #else
 	BIO_printf(bio_err,"Doing %ld %d bit %s %s's: ",num,bits,str,str2);
-	BIO_flush(bio_err);
+	(void)BIO_flush(bio_err);
 #endif
 #ifdef LINT
 	num=num;

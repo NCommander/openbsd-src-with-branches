@@ -1,4 +1,5 @@
-/*	$NetBSD: nubus.h,v 1.11 1995/09/24 14:13:56 briggs Exp $	*/
+/*	$OpenBSD: nubus.h,v 1.16 1997/05/08 16:36:37 gene Exp $	*/
+/*	$NetBSD: nubus.h,v 1.25 1997/05/02 00:54:28 briggs Exp $	*/
 
 /*
  * Copyright (c) 1995 Allen Briggs.  All rights reserved.
@@ -43,6 +44,7 @@
  * and DrHW     1 (TFB).
  */
 
+#include <machine/bus.h>
 #include <machine/cpu.h>
 
 #define NUBUS_CATEGORY_BOARD	0x0001
@@ -51,20 +53,36 @@
 #define  NUBUS_TYPE_VIDEO	0x0001
 #define  NUBUS_TYPE_LCD		0x0002
 #define   NUBUS_DRSW_APPLE	0x0001
-#define    NUBUS_DRHW_TFB	0x0001
-#define    NUBUS_DRHW_M2HRVC	0x0013
+#define    NUBUS_DRHW_TFB	0x0001	/* Apple Toby Frame Buffer */
+#define    NUBUS_DRHW_WVC	0x0006	/* Apple Workstation Video Card */
+#define    NUBUS_DRHW_SE30	0x0009
+#define    NUBUS_DRHW_M2HRVC	0x0013	/* Apple Mac II High-Res Video Card */
+#define    NUBUS_DRHW_CB264	0x013B	/* RasterOps ColorBoard 264 */
 #define    NUBUS_DRHW_MICRON	0x0146
+#define    NUBUS_DRHW_CB364	0x026F	/* RasterOps ColorBoard 364 */
+#define    NUBUS_DRHW_THUNDER24	0x02CB	/* SuperMac Thunder/24 */
+#define	   NUBUS_DRHW_RPC8XJ	0x040B	/* Radius PrecisionColor 8xj */
+#define	   NUBUS_DRHW_FIILX	0x0417	/* Futura II LX */
+#define	   NUBUS_DRHW_FIISXDSP	0x042F	/* Futura II SX/DSP */
+
+/* False DrHW values for video cards masquerading as other cards */
+#define    NUBUS_DRHW_SAM768	0x10000	/* Cornerstone/Samsung 768x1006 */
 
 #define NUBUS_CATEGORY_NETWORK	0x0004
 #define  NUBUS_TYPE_ETHERNET	0x0001
 #define   NUBUS_DRSW_3COM	0x0000
 #define   NUBUS_DRSW_GATOR	0x0103
-#define    NUBUS_DRHW_INTERLAN	0x0100
-#define    NUBUS_DRHW_KINETICS	0x0106
 #define   NUBUS_DRSW_ASANTE	0x0104
 #define   NUBUS_DRSW_TECHWORKS	0x0109
-#define    NUBUS_DRHW_SONIC	0x0110
+#define	  NUBUS_DRSW_DAYNA	0x010B
 #define   NUBUS_DRSW_FARALLON	0x010C
+#define   NUBUS_DRSW_FOCUS	0x011A
+#define    NUBUS_DRHW_INTERLAN	0x0100
+#define    NUBUS_DRHW_KINETICS	0x0106
+#define    NUBUS_DRHW_CABLETRON	0x0109
+#define    NUBUS_DRHW_SONIC	0x0110
+#define    NUBUS_DRHW_APPLE_SNT	0x0118
+#define    NUBUS_DRHW_APPLE_SN	0x0119
 
 #define NUBUS_CATEGORY_COMMUNICATIONS	0x0006
 #define  NUBUS_TYPE_RS232	0x0002
@@ -97,6 +115,7 @@ typedef struct _nubus_slot {
 	u_int32_t	crc;
 	u_int32_t	length;
 	u_int32_t	directory_offset;
+	vm_offset_t	virtual_base;
 } nubus_slot;
 
 /*
@@ -218,29 +237,37 @@ typedef struct _NUBUS_EXEC_BLOCK {
 
 #define NUBUS_MIN_SLOT		0x9
 #define NUBUS_MAX_SLOT		0xE
-#define	NUBUS_INT_VIDEO_PSUEDO_SLOT 0xF
 #define NUBUS_ROM_TEST_PATTERN	0x5A932BC7
 
-#define NUBUS_BASE_TO_SLOT(x)	(((((x)-NuBusBase) >> 24) & 0x0F) + \
-				 NUBUS_MIN_SLOT)
-#define NUBUS_SLOT_TO_BASE(x)	(NuBusBase + \
-				 ((((x)-NUBUS_MIN_SLOT) & 0xF) << 24))
-#define NUBUS_VIRT_TO_PHYS(x)	((x - NuBusBase) + \
-				 ((0xF0 | NUBUS_MIN_SLOT) << 24))
+#define NUBUS_SLOT2PA(x)	(0xf9000000 + \
+				 ((((x) - NUBUS_MIN_SLOT) & 0xf) << 24))
+
+struct nubus_attach_args {
+	bus_space_tag_t	na_tag;
+	int		slot;
+	int		rsrcid;
+	u_int16_t	category;
+	u_int16_t	type;
+	u_int16_t	drsw;
+	u_int16_t	drhw;
+	nubus_slot	*fmt;
+};
 
 struct nubus_softc {
 	struct	device	sc_dev;
 };
 
-void	nubus_get_main_dir __P((nubus_slot *slot, nubus_dir *dir_return));
-int	nubus_find_rsrc __P((nubus_slot *slot, nubus_dir *dir, u_int8_t rsrcid,
-			     nubus_dirent *dirent_return));
-void	nubus_get_dir_from_rsrc __P((nubus_slot *slot, nubus_dirent *dirent,
-				     nubus_dir *dir_return));
-int	nubus_get_ind_data __P((nubus_slot *slot, nubus_dirent *dirent,
-				caddr_t data_return, int nbytes));
-int	nubus_get_c_string __P((nubus_slot *slot, nubus_dirent *dirent,
-				caddr_t data_return, int max_bytes));
-char	*nubus_get_vendor __P((nubus_slot *slot, int rsrc));
-char	*nubus_get_card_name __P((nubus_slot *slot));
+void	nubus_get_main_dir(nubus_slot *slot, nubus_dir *dir_return);
+int	nubus_find_rsrc(nubus_slot *slot, nubus_dir *dir, u_int8_t rsrcid,
+			     nubus_dirent *dirent_return);
+void	nubus_get_dir_from_rsrc(nubus_slot *slot, nubus_dirent *dirent,
+				     nubus_dir *dir_return);
+int	nubus_get_ind_data(nubus_slot *slot, nubus_dirent *dirent,
+				caddr_t data_return, int nbytes);
+int	nubus_get_c_string(nubus_slot *slot, nubus_dirent *dirent,
+				caddr_t data_return, int max_bytes);
+char	*nubus_get_vendor(nubus_slot *slot, int rsrc);
+char	*nubus_get_card_name(nubus_slot *slot);
+char	*nubus_mapin(int paddr, int sz);
+	int paddr, sz;
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: shutdown.c,v 1.23 2001/11/05 07:39:17 mpech Exp $	*/
 /*	$NetBSD: shutdown.c,v 1.9 1995/03/18 15:01:09 cgd Exp $	*/
 
 /*
@@ -43,25 +44,30 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)shutdown.c	8.2 (Berkeley) 2/16/94";
 #else
-static char rcsid[] = "$NetBSD: shutdown.c,v 1.9 1995/03/18 15:01:09 cgd Exp $";
+static char rcsid[] = "$OpenBSD: shutdown.c,v 1.23 2001/11/05 07:39:17 mpech Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/param.h>
-#include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/syslog.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <ctype.h>
 #include <fcntl.h>
+#include <sys/termios.h>
 #include <pwd.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <tzfile.h>
 #include <unistd.h>
+#include <errno.h>
+#include <err.h>
 
 #include "pathnames.h"
 
@@ -79,37 +85,44 @@ static char rcsid[] = "$NetBSD: shutdown.c,v 1.9 1995/03/18 15:01:09 cgd Exp $";
 struct interval {
 	int timeleft, timetowait;
 } tlist[] = {
-	10 H,  5 H,	 5 H,  3 H,	 2 H,  1 H,	1 H, 30 M,
-	30 M, 10 M,	20 M, 10 M,	10 M,  5 M,	5 M,  3 M,
-	 2 M,  1 M,	 1 M, 30 S,	30 S, 30 S,
-	 0, 0,
+	{ 10 H,  5 H },
+	{  5 H,  3 H },
+	{  2 H,  1 H },
+	{  1 H, 30 M },
+	{ 30 M, 10 M },
+	{ 20 M, 10 M },
+	{ 10 M,  5 M },
+	{  5 M,  3 M },
+	{  2 M,  1 M },
+	{  1 M, 30 S },
+	{ 30 S, 30 S },
+	{    0,    0 }
 };
 #undef H
 #undef M
 #undef S
 
 static time_t offset, shuttime;
-static int dofast, dohalt, doreboot, killflg, mbuflen;
-static char *nosync, *whom, mbuf[BUFSIZ];
+static int dofast, dohalt, doreboot, dopower, dodump, killflg, mbuflen, nosync;
+static char *whom, mbuf[BUFSIZ];
 
-void badtime __P((void));
-void die_you_gravy_sucking_pig_dog __P((void));
-void doitfast __P((void));
-void finish __P((int));
-void getoffset __P((char *));
-void loop __P((void));
-void nolog __P((void));
-void timeout __P((int));
-void timewarn __P((int));
-void usage __P((void));
+void badtime(void);
+void __attribute ((noreturn)) die_you_gravy_sucking_pig_dog(void);
+void doitfast(void);
+void __attribute ((noreturn)) finish(int);
+void getoffset(char *);
+void __attribute ((noreturn)) loop(void);
+void nolog(void);
+void timeout(int);
+void timewarn(int);
+void usage(void);
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	extern int optind;
-	register char *p, *endp;
+	char *p, *endp;
 	struct passwd *pw;
 	int arglen, ch, len, readstdin;
 
@@ -119,12 +132,14 @@ main(argc, argv)
 		exit(1);
 	}
 #endif
-	nosync = NULL;
 	readstdin = 0;
-	while ((ch = getopt(argc, argv, "-fhknr")) != EOF)
+	while ((ch = getopt(argc, argv, "-dfhknpr")) != -1)
 		switch (ch) {
 		case '-':
 			readstdin = 1;
+			break;
+		case 'd':
+			dodump = 1;
 			break;
 		case 'f':
 			dofast = 1;
@@ -136,7 +151,10 @@ main(argc, argv)
 			killflg = 1;
 			break;
 		case 'n':
-			nosync = "-n";
+			nosync = 1;
+			break;
+		case 'p':
+			dopower = 1;
 			break;
 		case 'r':
 			doreboot = 1;
@@ -159,6 +177,11 @@ main(argc, argv)
 	if (doreboot && dohalt) {
 		(void)fprintf(stderr,
 		    "shutdown: incompatible switches -h and -r.\n");
+		usage();
+	}
+	if (dopower && !dohalt) {
+		(void)fprintf(stderr,
+		    "shutdown: switch -p must be used with -h.\n");
 		usage();
 	}
 	getoffset(*argv++);
@@ -209,15 +232,14 @@ main(argc, argv)
 		int forkpid;
 
 		forkpid = fork();
-		if (forkpid == -1) {
-			perror("shutdown: fork");
-			exit(1);
-		}
+		if (forkpid == -1)
+			err(1, "fork");
 		if (forkpid) {
 			(void)printf("shutdown: [pid %d]\n", forkpid);
 			exit(0);
 		}
 	}
+	setsid();
 #endif
 	openlog("shutdown", LOG_CONS, LOG_AUTH);
 	loop();
@@ -247,7 +269,7 @@ loop()
 		 * Warn now, if going to sleep more than a fifth of
 		 * the next wait time.
 		 */
-		if (sltime = offset - tp->timeleft) {
+		if ((sltime = offset - tp->timeleft)) {
 			if (sltime > tp->timetowait / 5)
 				timewarn(offset);
 			(void)sleep(sltime);
@@ -268,20 +290,27 @@ loop()
 
 static jmp_buf alarmbuf;
 
+static char *restricted_environ[] = {
+	"PATH=" _PATH_STDPATH,
+	NULL
+};
+
 void
 timewarn(timeleft)
 	int timeleft;
 {
 	static int first;
-	static char hostname[MAXHOSTNAMELEN + 1];
+	static char hostname[MAXHOSTNAMELEN];
 	FILE *pf;
 	char wcmd[MAXPATHLEN + 4];
+	extern char **environ;
 
 	if (!first++)
 		(void)gethostname(hostname, sizeof(hostname));
 
 	/* undoc -n option to wall suppresses normal wall banner */
 	(void)snprintf(wcmd, sizeof(wcmd), "%s -n", _PATH_WALL);
+	environ = restricted_environ;
 	if (!(pf = popen(wcmd, "w"))) {
 		syslog(LOG_ERR, "shutdown: can't find %s: %m", _PATH_WALL);
 		return;
@@ -322,7 +351,7 @@ void
 timeout(signo)
 	int signo;
 {
-	longjmp(alarmbuf, 1);
+	longjmp(alarmbuf, 1);		/* XXX signal/longjmp resource leaks */
 }
 
 void
@@ -349,17 +378,57 @@ die_you_gravy_sucking_pig_dog()
 		(void)printf(" no sync");
 	if (dofast)
 		(void)printf(" no fsck");
+	if (dodump)
+		(void)printf(" with dump");
 	(void)printf("\nkill -HUP 1\n");
 #else
 	if (doreboot) {
-		execle(_PATH_REBOOT, "reboot", "-l", nosync, 0);
+		execle(_PATH_REBOOT, "reboot", "-l",
+		    (nosync ? "-n" : (dodump ? "-d" : NULL)),
+		    (dodump ? "-d" : NULL), NULL, NULL);
 		syslog(LOG_ERR, "shutdown: can't exec %s: %m.", _PATH_REBOOT);
-		perror("shutdown");
+		warn(_PATH_REBOOT);
 	}
 	else if (dohalt) {
-		execle(_PATH_HALT, "halt", "-l", nosync, 0);
+		execle(_PATH_HALT, "halt", "-l",
+		    (dopower ? "-p" : (nosync ? "-n" : (dodump ? "-d" : NULL))),
+		    (nosync ? "-n" : (dodump ? "-d" : NULL)),
+		    (dodump ? "-d" : NULL), NULL, NULL);
 		syslog(LOG_ERR, "shutdown: can't exec %s: %m.", _PATH_HALT);
-		perror("shutdown");
+		warn(_PATH_HALT);
+	}
+	if (access(_PATH_RC, R_OK) != -1) {
+		pid_t pid;
+		struct termios t;
+		int fd;
+
+		switch ((pid = fork())) {
+		case -1:
+			break;
+		case 0:
+			if (revoke(_PATH_CONSOLE) == -1)
+				perror("revoke");
+			if (setsid() == -1)
+				perror("setsid");
+			fd = open(_PATH_CONSOLE, O_RDWR);
+			if (fd == -1)
+				perror("open");
+			dup2(fd, 0);
+			dup2(fd, 1);
+			dup2(fd, 2);
+			if (fd > 2)
+				close(fd);
+
+			/* At a minimum... */
+			tcgetattr(0, &t);
+			t.c_oflag |= (ONLCR | OPOST);
+			tcsetattr(0, TCSANOW, &t);
+
+			execl(_PATH_BSHELL, "sh", _PATH_RC, "shutdown", (char *)NULL);
+			_exit(1);
+		default:
+			waitpid(pid, NULL, 0);
+		}
 	}
 	(void)kill(1, SIGTERM);		/* to single user */
 #endif
@@ -370,11 +439,12 @@ die_you_gravy_sucking_pig_dog()
 
 void
 getoffset(timearg)
-	register char *timearg;
+	char *timearg;
 {
-	register struct tm *lt;
-	register char *p;
+	struct tm *lt;
+	char *p;
 	time_t now;
+	int this_year;
 
 	if (!strcasecmp(timearg, "now")) {		/* now */
 		offset = 0;
@@ -391,22 +461,33 @@ getoffset(timearg)
 	}
 
 	/* handle hh:mm by getting rid of the colon */
-	for (p = timearg; *p; ++p)
-		if (!isascii(*p) || !isdigit(*p))
+	for (p = timearg; *p; ++p) {
+		if (!isascii(*p) || !isdigit(*p)) {
 			if (*p == ':' && strlen(p) == 3) {
 				p[0] = p[1];
 				p[1] = p[2];
 				p[2] = '\0';
-			}
-			else
+			} else
 				badtime();
+		}
+	}
 
 	unsetenv("TZ");					/* OUR timezone */
 	lt = localtime(&now);				/* current time val */
 
 	switch(strlen(timearg)) {
 	case 10:
+		this_year = lt->tm_year;
 		lt->tm_year = ATOI2(timearg);
+		/*
+		 * check if the specified year is in the next century.
+		 * allow for one year of user error as many people will
+		 * enter n - 1 at the start of year n.
+		 */
+		if (lt->tm_year < (this_year % 100) - 1)
+			lt->tm_year += 100;
+		/* adjust for the year 2000 and beyond */
+		lt->tm_year += (this_year - (this_year % 100));
 		/* FALLTHROUGH */
 	case 8:
 		lt->tm_mon = ATOI2(timearg);
@@ -481,19 +562,21 @@ finish(signo)
 {
 	if (!killflg)
 		(void)unlink(_PATH_NOLOGIN);
-	exit(0);
+	if (signo == 0)
+		exit(0);
+	else
+		_exit(0);
 }
 
 void
 badtime()
 {
-	(void)fprintf(stderr, "shutdown: bad time format.\n");
-	exit(1);
+	errx(1, "bad time format.");
 }
 
 void
 usage()
 {
-	fprintf(stderr, "usage: shutdown [-fhknr] shutdowntime [ message ]\n");
+	fprintf(stderr, "usage: shutdown [-dfhknpr] shutdowntime [ message ]\n");
 	exit(1);
 }

@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: pcc.c,v 1.6 2000/03/26 23:31:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt. 
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -40,7 +41,6 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
@@ -54,19 +54,22 @@
 
 struct pccsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
-	caddr_t		sc_paddr;
+	void		*sc_vaddr;
+	void		*sc_paddr;
 	struct pccreg	*sc_pcc;
 	struct intrhand	sc_nmiih;
 };
 
-void pccattach __P((struct device *, struct device *, void *));
-int  pccmatch __P((struct device *, void *, void *));
-int  pccabort __P((struct frame *));
+void pccattach(struct device *, struct device *, void *);
+int  pccmatch(struct device *, void *, void *);
+int  pccabort(struct frame *);
 
-struct cfdriver pcccd = {
-	NULL, "pcc", pccmatch, pccattach,
-	DV_DULL, sizeof(struct pccsoftc), 0
+struct cfattach pcc_ca = {
+	sizeof(struct pccsoftc), pccmatch, pccattach
+};
+
+struct cfdriver pcc_cd = {
+	NULL, "pcc", DV_DULL, 0
 };
 
 struct pccreg *sys_pcc = NULL;
@@ -88,7 +91,7 @@ pccmatch(parent, vcf, args)
 int
 pcc_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
@@ -121,13 +124,13 @@ pcc_scan(parent, child, args)
 		oca.ca_vaddr = sc->sc_vaddr + oca.ca_offset;
 		oca.ca_paddr = sc->sc_paddr + oca.ca_offset;
 	} else {
-		oca.ca_vaddr = (caddr_t)-1;
-		oca.ca_paddr = (caddr_t)-1;
+		oca.ca_vaddr = (void *)-1;
+		oca.ca_paddr = (void *)-1;
 	}	
 	oca.ca_bustype = BUS_PCC;
 	oca.ca_master = (void *)sc->sc_pcc;
 	oca.ca_name = cf->cf_driver->cd_name;
-	if ((*cf->cf_driver->cd_match)(parent, cf, &oca) == 0)
+	if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0)
 		return (0);
 	config_attach(parent, cf, &oca, pcc_print);
 	return (1);
@@ -150,7 +153,7 @@ pccattach(parent, self, args)
 	 * we must adjust our address
 	 */
 	sc->sc_paddr = ca->ca_paddr;
-	sc->sc_vaddr = (caddr_t)IIOV(sc->sc_paddr);
+	sc->sc_vaddr = (void *)IIOV(sc->sc_paddr);
 	sc->sc_pcc = (struct pccreg *)(sc->sc_vaddr + PCCSPACE_PCCCHIP_OFF);
 	sys_pcc = sc->sc_pcc;
 

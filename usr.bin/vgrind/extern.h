@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.2 1996/06/26 05:42:28 deraadt Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1994/11/17 08:27:59 jtc Exp $	*/
 
 /*
@@ -60,8 +61,8 @@ extern char    *language;              /* the language indicator */
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern int      STRNCMP __P((char *, char *, int));
-extern char    *convexp __P((char *));
-extern char    *expmatch __P((char *, char *, char *));
+extern int      STRNCMP(char *, char *, int);
+extern char    *convexp(char *);
+extern char    *expmatch(char *, char *, char *);
 __END_DECLS
 

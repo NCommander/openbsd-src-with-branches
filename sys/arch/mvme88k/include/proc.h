@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.h,v 1.7 2001/01/14 20:25:24 smurph Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -42,9 +43,11 @@
  *	@(#)proc.h	8.1 (Berkeley) 6/11/93
  *
  * from: Header: proc.h,v 1.6 92/11/26 02:04:41 torek Exp  (LBL)
- * $Id: proc.h,v 1.3 1995/06/30 03:10:32 build Exp build $
+ * $Id: proc.h,v 1.7 2001/01/14 20:25:24 smurph Exp $
  */
 
+#ifndef __MACHINE_PROC_H__
+#define __MACHINE_PROC_H__
 #include <machine/pcb.h>
 #include <machine/mmu.h>
 
@@ -52,7 +55,13 @@
  * Machine-dependent part of the proc structure for VME1X7.
  */
 struct mdproc {
-	struct	trapframe *md_tf;	/* trap/syscall registers */
-	struct	fpstate *md_fpstate;	/* fpu state, if any; always resident */
-	int 	md_upte[UPAGES];	/* ptes for mapping u page */
+	struct   trapframe *md_tf;    /* trap/syscall registers */
+	struct   fpstate *md_fpstate; /* fpu state, if any; always resident */
+	int      md_upte[UPAGES];     /* ptes for mapping u page */
+	unsigned md_ss_addr;          /* single step address for ptrace */
+	unsigned md_ss_instr;         /* single step instruction for ptrace */
+	unsigned md_ss_taken_addr;    /* single step address for ptrace */
+	unsigned md_ss_taken_instr;   /* single step instruction for ptrace */
 };
+#endif /* __MACHINE_PROC_H__ */
+

@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NOWHERE: libsa.h,v 2.2 1998/06/22 19:34:47 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.8 2002/03/02 09:36:43 miod Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -33,28 +32,56 @@
 
 #include <lib/libsa/stand.h>
 
-void pdc_init __P((void));
-void getbinfo __P((void));
+#define	EXEC_ELF
+/* #define	EXEC_ECOFF */
+#define	EXEC_SOM
 
-int ctstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
-int ctopen __P((struct open_file *, ...));
-int ctclose __P((struct open_file *));
-int ctioctl __P((struct open_file *, u_long, void *));
+#define	DEFAULT_KERNEL_ADDRESS	0x12000
 
-int dkstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
-int dkopen __P((struct open_file *, ...));
-int dkclose __P((struct open_file *));
-int dkioctl __P((struct open_file *, u_long, void *));
+extern dev_t bootdev;
 
-void ite_probe __P((struct consdev *));
-void ite_init __P((struct consdev *));
-int ite_getc __P((dev_t));
-void ite_putc __P((dev_t, int));
-void ite_pollc __P((dev_t, int));
+void pdc_init(void);
+struct pz_device;
+struct pz_device *pdc_findev(int, int);
 
-void machdep __P((void));
-void devboot __P((dev_t, char *));
-void fcacheall __P((void));
-void sync_caches __P((void));
+int iodcstrategy(void *, int, daddr_t, size_t, void *, size_t *);
+
+int ctopen(struct open_file *, ...);
+int ctclose(struct open_file *);
+
+int dkopen(struct open_file *, ...);
+int dkclose(struct open_file *);
+
+int lfopen(struct open_file *, ...);
+int lfstrategy(void *, int, daddr_t, size_t, void *, size_t *);
+int lfclose(struct open_file *);
+
+void ite_probe(struct consdev *);
+void ite_init(struct consdev *);
+int ite_getc(dev_t);
+void ite_putc(dev_t, int);
+void ite_pollc(dev_t, int);
+
+void machdep(void);
+void devboot(dev_t, char *);
+void fcacheall(void);
+
+int     lif_open(char *path, struct open_file *f);
+int     lif_close(struct open_file *f);
+int     lif_read(struct open_file *f, void *buf,
+                size_t size, size_t *resid);
+int     lif_write(struct open_file *f, void *buf,
+		size_t size, size_t *resid);
+off_t   lif_seek(struct open_file *f, off_t offset, int where);
+int     lif_stat(struct open_file *f, struct stat *sb);
+int     lif_readdir(struct open_file *f, char *name);
+
+union x_header;
+struct x_param;
+int	som_probe(int, union x_header *);
+int	som_load(int, struct x_param *);
+int	som_ldsym(int, struct x_param *);
 
 extern int debug;
+
+#define	MACHINE_CMD	cmd_machine	/* we have hppa specific commands */

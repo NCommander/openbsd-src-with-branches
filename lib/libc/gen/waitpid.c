@@ -1,5 +1,3 @@
-/*	$NetBSD: waitpid.c,v 1.4 1995/02/25 15:40:17 cgd Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)waitpid.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: waitpid.c,v 1.4 1995/02/25 15:40:17 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: waitpid.c,v 1.3 1997/07/25 20:30:06 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -47,14 +41,7 @@ static char rcsid[] = "$NetBSD: waitpid.c,v 1.4 1995/02/25 15:40:17 cgd Exp $";
 #include <sys/resource.h>
 
 pid_t
-#if __STDC__
 waitpid(pid_t pid, int *istat, int options)
-#else
-waitpid(pid, istat, options)
-	pid_t pid;
-	int *istat;
-	int options;
-#endif
 {
 	return (wait4(pid, istat, options, (struct rusage *)0));
 }

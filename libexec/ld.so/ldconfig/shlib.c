@@ -1,4 +1,4 @@
-/*	$OpenBSD: shlib.c,v 1.8 2000/01/16 14:31:26 espie Exp $	*/
+/*	$OpenBSD: shlib.c,v 1.2 2001/01/30 02:39:06 brad Exp $	*/
 /*	$NetBSD: shlib.c,v 1.13 1998/04/04 01:00:29 fvdl Exp $	*/
 
 /*
@@ -77,26 +77,47 @@ void
 add_search_dir(name)
 	char	*name;
 {
+	int i, len;
+
+	len = strlen(name);
+
+	while (len > 1 && name[len - 1] == '/')
+		--len;
+
+	for (i = 0; i < n_search_dirs; i++)
+		if (strlen(search_dirs[i]) == len &&
+			!strncmp(search_dirs[i], name, len))
+				return;
 	n_search_dirs++;
 	search_dirs = (char **)
 		xrealloc(search_dirs, n_search_dirs * sizeof search_dirs[0]);
-	search_dirs[n_search_dirs - 1] = strdup(name);
+	search_dirs[n_search_dirs - 1] = xmalloc(++len);
+	(void)strlcpy(search_dirs[n_search_dirs - 1], name, len);
 }
 
 void
 remove_search_dir(name)
 	char	*name;
 {
-	int	n;
+	int	i, len;
 
-	for (n = 0; n < n_search_dirs; n++) {
-		if (strcmp(search_dirs[n], name))
+	len = strlen(name);
+
+	while (len > 1 && name[len - 1] == '/')
+		--len;
+
+	for (i = 0; i < n_search_dirs; i++) {
+		if (strlen(search_dirs[i]) != len ||
+		    strncmp(search_dirs[i], name, len))
 			continue;
-		free(search_dirs[n]);
-		if (n < (n_search_dirs - 1))
-			bcopy(&search_dirs[n+1], &search_dirs[n],
-			      (n_search_dirs - n - 1) * sizeof search_dirs[0]);
+		free(search_dirs[i]);
+		if (i < (n_search_dirs - 1))
+			bcopy(&search_dirs[i+1], &search_dirs[i],
+			      (n_search_dirs - i - 1) * sizeof search_dirs[0]);
 		n_search_dirs--;
+		search_dirs = (char **)xrealloc(search_dirs,
+			n_search_dirs * sizeof search_dirs[0]);
+		break;
 	}
 }
 
@@ -104,7 +125,7 @@ void
 add_search_path(path)
 char	*path;
 {
-	register char	*cp, *dup;
+	char	*cp, *dup;
 
 	if (path == NULL)
 		return;
@@ -120,7 +141,7 @@ void
 remove_search_path(path)
 char	*path;
 {
-	register char	*cp, *dup;
+	char	*cp, *dup;
 
 	if (path == NULL)
 		return;
@@ -185,7 +206,7 @@ cmpndewey(d1, n1, d2, n2)
 int	d1[], d2[];
 int	n1, n2;
 {
-	register int	i;
+	int	i;
 
 	for (i = 0; i < n1 && i < n2; i++) {
 		if (d1[i] < d2[i])

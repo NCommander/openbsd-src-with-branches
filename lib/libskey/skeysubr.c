@@ -1,120 +1,279 @@
-/* S/KEY v1.1b (skeysubr.c)
+/* OpenBSD S/Key (skeysubr.c)
  *
  * Authors:
  *          Neil M. Haller <nmh@thumper.bellcore.com>
  *          Philip R. Karn <karn@chicago.qualcomm.com>
  *          John S. Walden <jsw@thumper.bellcore.com>
- *
- * Modifications: 
  *          Scott Chasin <chasin@crimelab.com>
+ *          Todd C. Miller <Todd.Miller@courtesan.com>
  *
- * S/KEY misc routines.
+ * S/Key misc routines.
  *
- * $Id: skeysubr.c,v 1.5 1995/06/19 22:47:37 jtc Exp $
+ * $OpenBSD: skeysubr.c,v 1.22 2002/01/24 23:01:19 millert Exp $
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <signal.h>
 #include <termios.h>
+#include <unistd.h>
+#include <md4.h>
+#include <md5.h>
+#include <sha1.h>
+#include <rmd160.h>
 
-#include "md4.h"
 #include "skey.h"
 
-struct termios newtty;
-struct termios oldtty;
+/* Default hash function to use (index into skey_hash_types array) */
+#ifndef SKEY_HASH_DEFAULT
+#define SKEY_HASH_DEFAULT	1
+#endif
 
-static void trapped __ARGS((int sig));
-static void set_term __ARGS((void));
-static void unset_term __ARGS((void));
-static void echo_off __ARGS((void));
+static int keycrunch_md4(char *, char *, char *);
+static int keycrunch_md5(char *, char *, char *);
+static int keycrunch_sha1(char *, char *, char *);
+static int keycrunch_rmd160(char *, char *, char *);
+static void lowcase(char *);
+static void skey_echo(int);
+static void trapped(int);
 
-/* Crunch a key:
- * concatenate the seed and the password, run through MD4 and
+/* Current hash type (index into skey_hash_types array) */
+static int skey_hash_type = SKEY_HASH_DEFAULT;
+
+/*
+ * Hash types we support.
+ * Each has an associated keycrunch() and f() function.
+ */
+#define SKEY_ALGORITH_LAST	4
+struct skey_algorithm_table {
+	const char *name;
+	int (*keycrunch)(char *, char *, char *);
+};
+static struct skey_algorithm_table skey_algorithm_table[] = {
+	{ "md4", keycrunch_md4 },
+	{ "md5", keycrunch_md5 },
+	{ "sha1", keycrunch_sha1 },
+	{ "rmd160", keycrunch_rmd160 }
+};
+
+
+/*
+ * Crunch a key:
+ * concatenate the seed and the password, run through hash function and
  * collapse to 64 bits. This is defined as the user's starting key.
  */
 int
-keycrunch(result,seed,passwd)
-char *result;	/* 8-byte result */
-char *seed;	/* Seed, any length */
-char *passwd;	/* Password, any length */
+keycrunch(result, seed, passwd)
+	char *result;	/* SKEY_BINKEY_SIZE result */
+	char *seed;	/* Seed, any length */
+	char *passwd;	/* Password, any length */
 {
-	char *buf;
-	MDstruct md;
-	unsigned int buflen;
-	int i;
-	register long tmp;
-	
-	buflen = strlen(seed) + strlen(passwd);
-	if ((buf = (char *)malloc(buflen+1)) == NULL)
-		return -1;
-	strcpy(buf,seed);
-	strcat(buf,passwd);
-
-	/* Crunch the key through MD4 */
-	sevenbit(buf);
-	MDbegin(&md);
-	MDupdate(&md,(unsigned char *)buf,8*buflen);
-
-	free(buf);
-
-	/* Fold result from 128 to 64 bits */
-	md.buffer[0] ^= md.buffer[2];
-	md.buffer[1] ^= md.buffer[3];
-
-	/* Default (but slow) code that will convert to
-	 * little-endian byte ordering on any machine
-	 */
-	for (i=0; i<2; i++) {
-		tmp = md.buffer[i];
-		*result++ = tmp;
-		tmp >>= 8;
-		*result++ = tmp;
-		tmp >>= 8;
-		*result++ = tmp;
-		tmp >>= 8;
-		*result++ = tmp;
-	}
-
-	return 0;
+	return(skey_algorithm_table[skey_hash_type].keycrunch(result, seed, passwd));
 }
 
-/* The one-way function f(). Takes 8 bytes and returns 8 bytes in place */
+static int
+keycrunch_md4(result, seed, passwd)
+	char *result;	/* SKEY_BINKEY_SIZE result */
+	char *seed;	/* Seed, any length */
+	char *passwd;	/* Password, any length */
+{
+	char *buf = NULL;
+	MD4_CTX md;
+	u_int32_t results[4];
+	unsigned int buflen;
+
+	/*
+	 * If seed and passwd are defined we are in keycrunch() mode,
+	 * else we are in f() mode.
+	 */
+	if (seed && passwd) {
+		buflen = strlen(seed) + strlen(passwd);
+		if ((buf = (char *)malloc(buflen + 1)) == NULL)
+			return(-1);
+		(void)strcpy(buf, seed);
+		lowcase(buf);
+		(void)strcat(buf, passwd);
+		sevenbit(buf);
+	} else {
+		buf = result;
+		buflen = SKEY_BINKEY_SIZE;
+	}
+
+	/* Crunch the key through MD4 */
+	MD4Init(&md);
+	MD4Update(&md, (unsigned char *)buf, buflen);
+	MD4Final((unsigned char *)results, &md);
+
+	/* Fold result from 128 to 64 bits */
+	results[0] ^= results[2];
+	results[1] ^= results[3];
+
+	(void)memcpy((void *)result, (void *)results, SKEY_BINKEY_SIZE);
+
+	if (buf != result)
+		(void)free(buf);
+
+	return(0);
+}
+
+static int
+keycrunch_md5(result, seed, passwd)
+	char *result;	/* SKEY_BINKEY_SIZE result */
+	char *seed;	/* Seed, any length */
+	char *passwd;	/* Password, any length */
+{
+	char *buf;
+	MD5_CTX md;
+	u_int32_t results[4];
+	unsigned int buflen;
+
+	/*
+	 * If seed and passwd are defined we are in keycrunch() mode,
+	 * else we are in f() mode.
+	 */
+	if (seed && passwd) {
+		buflen = strlen(seed) + strlen(passwd);
+		if ((buf = (char *)malloc(buflen + 1)) == NULL)
+			return(-1);
+		(void)strcpy(buf, seed);
+		lowcase(buf);
+		(void)strcat(buf, passwd);
+		sevenbit(buf);
+	} else {
+		buf = result;
+		buflen = SKEY_BINKEY_SIZE;
+	}
+
+	/* Crunch the key through MD5 */
+	MD5Init(&md);
+	MD5Update(&md, (unsigned char *)buf, buflen);
+	MD5Final((unsigned char *)results, &md);
+
+	/* Fold result from 128 to 64 bits */
+	results[0] ^= results[2];
+	results[1] ^= results[3];
+
+	(void)memcpy((void *)result, (void *)results, SKEY_BINKEY_SIZE);
+
+	if (buf != result)
+		(void)free(buf);
+
+	return(0);
+}
+
+static int
+keycrunch_sha1(result, seed, passwd)
+	char *result;	/* SKEY_BINKEY_SIZE result */
+	char *seed;	/* Seed, any length */
+	char *passwd;	/* Password, any length */
+{
+	char *buf;
+	SHA1_CTX sha;
+	unsigned int buflen;
+	int i, j;
+
+	/*
+	 * If seed and passwd are defined we are in keycrunch() mode,
+	 * else we are in f() mode.
+	 */
+	if (seed && passwd) {
+		buflen = strlen(seed) + strlen(passwd);
+		if ((buf = (char *)malloc(buflen + 1)) == NULL)
+			return(-1);
+		(void)strcpy(buf, seed);
+		lowcase(buf);
+		(void)strcat(buf, passwd);
+		sevenbit(buf);
+	} else {
+		buf = result;
+		buflen = SKEY_BINKEY_SIZE;
+	}
+
+	/* Crunch the key through SHA1 */
+	SHA1Init(&sha);
+	SHA1Update(&sha, (unsigned char *)buf, buflen);
+	SHA1Final(NULL, &sha);
+
+	/* Fold 160 to 64 bits */
+	sha.state[0] ^= sha.state[2];
+	sha.state[1] ^= sha.state[3];
+	sha.state[0] ^= sha.state[4];
+
+	/*
+	 * SHA1 is a big endian algorithm but RFC2289 mandates that
+	 * the result be in little endian form, so we copy to the
+	 * result buffer manually.
+	 */
+	for (i = 0, j = 0; j < 8; i++, j += 4) {
+		result[j]   = (u_char)(sha.state[i] & 0xff);
+		result[j+1] = (u_char)((sha.state[i] >> 8)  & 0xff);
+		result[j+2] = (u_char)((sha.state[i] >> 16) & 0xff);
+		result[j+3] = (u_char)((sha.state[i] >> 24) & 0xff);
+	}
+
+	if (buf != result)
+		(void)free(buf);
+
+	return(0);
+}
+
+static int
+keycrunch_rmd160(result, seed, passwd)
+	char *result;	/* SKEY_BINKEY_SIZE result */
+	char *seed;	/* Seed, any length */
+	char *passwd;	/* Password, any length */
+{
+	char *buf;
+	RMD160_CTX rmd;
+	u_int32_t results[5];
+	unsigned int buflen;
+
+	/*
+	 * If seed and passwd are defined we are in keycrunch() mode,
+	 * else we are in f() mode.
+	 */
+	if (seed && passwd) {
+		buflen = strlen(seed) + strlen(passwd);
+		if ((buf = (char *)malloc(buflen + 1)) == NULL)
+			return(-1);
+		(void)strcpy(buf, seed);
+		lowcase(buf);
+		(void)strcat(buf, passwd);
+		sevenbit(buf);
+	} else {
+		buf = result;
+		buflen = SKEY_BINKEY_SIZE;
+	}
+
+	/* Crunch the key through RMD-160 */
+	RMD160Init(&rmd);
+	RMD160Update(&rmd, (unsigned char *)buf, buflen);
+	RMD160Final((unsigned char *)results, &rmd);
+
+	/* Fold 160 to 64 bits */
+	results[0] ^= results[2];
+	results[1] ^= results[3];
+	results[0] ^= results[4];
+
+	(void)memcpy((void *)result, (void *)results, SKEY_BINKEY_SIZE);
+
+	if (buf != result)
+		(void)free(buf);
+
+	return(0);
+}
+
+/*
+ * The one-way hash function f().
+ * Takes SKEY_BINKEY_SIZE bytes and returns SKEY_BINKEY_SIZE bytes in place.
+ */
 void
 f(x)
 	char *x;
 {
-	MDstruct md;
-	register long tmp;
-
-	MDbegin(&md);
-	MDupdate(&md,(unsigned char *)x,64);
-
-	/* Fold 128 to 64 bits */
-	md.buffer[0] ^= md.buffer[2];
-	md.buffer[1] ^= md.buffer[3];
-
-	/* Default (but slow) code that will convert to
-	 * little-endian byte ordering on any machine
-	 */
-	tmp = md.buffer[0];
-	*x++ = tmp;
-	tmp >>= 8;
-	*x++ = tmp;
-	tmp >>= 8;
-	*x++ = tmp;
-	tmp >>= 8;
-	*x++ = tmp;
-
-	tmp = md.buffer[1];
-	*x++ = tmp;
-	tmp >>= 8;
-	*x++ = tmp;
-	tmp >>= 8;
-	*x++ = tmp;
-	tmp >>= 8;
-	*x = tmp;
+	(void)skey_algorithm_table[skey_hash_type].keycrunch(x, NULL, NULL);
 }
 
 /* Strip trailing cr/lf from a line of text */
@@ -122,164 +281,150 @@ void
 rip(buf)
 	char *buf;
 {
-	char *cp;
+	buf += strcspn(buf, "\r\n");
 
-	if ((cp = strchr(buf,'\r')) != NULL)
-		*cp = '\0';
-
-	if ((cp = strchr(buf,'\n')) != NULL)
-		*cp = '\0';
+	if (*buf)
+		*buf = '\0';
 }
 
+/* Read in secret password (turns off echo) */
 char *
-readpass (buf,n)
+readpass(buf, n)
 	char *buf;
 	int n;
 {
-	set_term();
-	echo_off();
+	void (*old_handler)();
 
-	fgets(buf, n, stdin);
+	/* Turn off echoing */
+	skey_echo(0);
 
+	/* Catch SIGINT and save old signal handler */
+	old_handler = signal(SIGINT, trapped);
+
+	(void)fgets(buf, n, stdin);
 	rip(buf);
-	printf("\n");
+
+	(void)putc('\n', stderr);
+	(void)fflush(stderr);
+
+	/* Restore signal handler and turn echo back on */
+	if (old_handler != SIG_ERR)
+		(void)signal(SIGINT, old_handler);
+	skey_echo(1);
 
 	sevenbit(buf);
 
-	unset_term();
-	return buf;
+	return(buf);
 }
 
+/* Read in an s/key OTP (does not turn off echo) */
 char *
 readskey(buf, n)
 	char *buf;
 	int n;
 {
-	fgets (buf, n, stdin);
-
+	(void)fgets(buf, n, stdin);
 	rip(buf);
-	printf ("\n");
 
-	sevenbit (buf);
+	sevenbit(buf);
 
-	return buf;
+	return(buf);
 }
 
-static void
-set_term() 
-{
-	fflush(stdout);
-	tcgetattr(fileno(stdin), &newtty);
-	tcgetattr(fileno(stdin), &oldtty);
- 
-	signal (SIGINT, trapped);
-}
-
-static void
-echo_off()
-{
-	newtty.c_lflag &= ~(ICANON | ECHO | ECHONL);
-	newtty.c_cc[VMIN] = 1;
-	newtty.c_cc[VTIME] = 0;
-	newtty.c_cc[VINTR] = 3;
-
-	tcsetattr(fileno(stdin), TCSADRAIN, &newtty);
-}
-
-static void
-unset_term()
-{
-	tcsetattr(fileno(stdin), TCSADRAIN, &oldtty);
-}
-
+/* Signal handler for trapping ^C */
 static void
 trapped(sig)
 	int sig;
 {
-	signal(SIGINT, trapped);
-	printf("^C\n");
-	unset_term();
-	exit(-1);
+	write(STDERR_FILENO, "^C\n", 3);
+
+	/* Turn on echo if necessary */
+	skey_echo(1);
+
+	_exit(-1);
 }
 
-/* Convert 8-byte hex-ascii string to binary array
+/*
+ * Convert 8-byte hex-ascii string to binary array
  * Returns 0 on success, -1 on error
  */
 int
 atob8(out, in)
-	register char *out, *in;
+	char *out;
+	char *in;
 {
-	register int i;
-	register int val;
+	int i;
+	int val;
 
 	if (in == NULL || out == NULL)
-		return -1;
+		return(-1);
 
-	for (i=0; i<8; i++) {
+	for (i=0; i < 8; i++) {
 		if ((in = skipspace(in)) == NULL)
-			return -1;
+			return(-1);
 		if ((val = htoi(*in++)) == -1)
-			return -1;
+			return(-1);
 		*out = val << 4;
 
 		if ((in = skipspace(in)) == NULL)
-			return -1;
+			return(-1);
 		if ((val = htoi(*in++)) == -1)
-			return -1;
+			return(-1);
 		*out++ |= val;
 	}
-	return 0;
+	return(0);
 }
 
 /* Convert 8-byte binary array to hex-ascii string */
 int
 btoa8(out, in)
-	register char *out, *in;
+	char *out;
+	char *in;
 {
-	register int i;
+	int i;
 
 	if (in == NULL || out == NULL)
-		return -1;
+		return(-1);
 
-	for (i=0;i<8;i++) {
-		sprintf(out,"%02x",*in++ & 0xff);
+	for (i=0; i < 8; i++) {
+		(void)sprintf(out, "%02x", *in++ & 0xff);
 		out += 2;
 	}
-	return 0;
+	return(0);
 }
-
 
 /* Convert hex digit to binary integer */
 int
 htoi(c)
-	register char c;
+	int c;
 {
 	if ('0' <= c && c <= '9')
-		return c - '0';
+		return(c - '0');
 	if ('a' <= c && c <= 'f')
-		return 10 + c - 'a';
+		return(10 + c - 'a');
 	if ('A' <= c && c <= 'F')
-		return 10 + c - 'A';
-	return -1;
+		return(10 + c - 'A');
+	return(-1);
 }
 
+/* Skip leading spaces from the string */
 char *
 skipspace(cp)
-	register char *cp;
+	char *cp;
 {
 	while (*cp == ' ' || *cp == '\t')
 		cp++;
 
 	if (*cp == '\0')
-		return NULL;
+		return(NULL);
 	else
-		return cp;
+		return(cp);
 }
 
-/* removebackspaced over charaters from the string */
+/* Remove backspaced over characters from the string */
 void
 backspace(buf)
-char *buf;
+	char *buf;
 {
 	char bs = 0x8;
 	char *cp = buf;
@@ -290,10 +435,9 @@ char *buf;
 			if (out == buf) {
 				cp++;
 				continue;
-			}
-			else {
-			  cp++;
-			  out--;
+			} else {
+				cp++;
+				out--;
 			}
 		} else {
 			*out++ = *cp++;
@@ -303,15 +447,70 @@ char *buf;
 	*out = '\0';
 }
 
-/* sevenbit ()
- *
- * Make sure line is all seven bits.
- */
- 
+/* Make sure line is all seven bits */
 void
 sevenbit(s)
 	char *s;
 {
 	while (*s)
 		*s++ &= 0x7f;
+}
+
+/* Set hash algorithm type */
+char *
+skey_set_algorithm(new)
+	char *new;
+{
+	int i;
+
+	for (i = 0; i < SKEY_ALGORITH_LAST; i++) {
+		if (strcmp(new, skey_algorithm_table[i].name) == 0) {
+			skey_hash_type = i;
+			return(new);
+		}
+	}
+
+	return(NULL);
+}
+
+/* Get current hash type */
+const char *
+skey_get_algorithm()
+{
+	return(skey_algorithm_table[skey_hash_type].name);
+}
+
+/* Turn echo on/off */
+static void
+skey_echo(action)
+	int action;
+{
+	static struct termios term;
+	static int echo = 0;
+
+	if (action == 0) {
+		/* Turn echo off */
+		(void) tcgetattr(fileno(stdin), &term);
+		if ((echo = (term.c_lflag & ECHO))) {
+			term.c_lflag &= ~ECHO;
+			(void) tcsetattr(fileno(stdin), TCSAFLUSH|TCSASOFT, &term);
+		}
+	} else if (action && echo) {
+		/* Turn echo on */
+		term.c_lflag |= ECHO;
+		(void) tcsetattr(fileno(stdin), TCSAFLUSH|TCSASOFT, &term);
+		echo = 0;
+	}
+}
+
+/* Convert string to lower case */
+static void
+lowcase(s)
+	char *s;
+{
+	char *p;
+
+	for (p = s; *p; p++)
+		if (isupper(*p))
+			*p = tolower(*p);
 }

@@ -1,8 +1,9 @@
-/*	$NetBSD: vm_machdep.c,v 1.31 1995/09/26 04:02:30 gwr Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.22 2001/12/08 02:24:07 art Exp $	*/
+/*	$NetBSD: vm_machdep.c,v 1.35 1996/04/26 18:38:06 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
- * Copyright (c) 1993 Adam Glass 
+ * Copyright (c) 1993 Adam Glass
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -46,6 +47,8 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
+#include <sys/ptrace.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/vnode.h>
@@ -53,21 +56,13 @@
 #include <sys/core.h>
 #include <sys/exec.h>
 
-#include <vm/vm.h>
-#include <vm/vm_kern.h>
-/* #include <vm/vm_map.h> */
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
-#include <machine/reg.h>
-#include <machine/pte.h>
+#include <machine/machdep.h>
 #include <machine/pmap.h>
-
-#include "cache.h"
-
-extern int fpu_type;
-
-/* XXX - Put this in some header file? */
-void cpu_set_kpc __P((struct proc *p, u_long func));
+#include <machine/pte.h>
+#include <machine/reg.h>
 
 
 /*
@@ -76,29 +71,39 @@ void cpu_set_kpc __P((struct proc *p, u_long func));
  * ready to run, and marking it so that it can return differently
  * than the parent.  Returns 1 in the child process, 0 in the parent.
  */
-int
-cpu_fork(p1, p2)
-	register struct proc *p1, *p2;
+void
+cpu_fork(p1, p2, stack, stacksize, func, arg)
+	struct proc *p1, *p2;
+	void *stack;
+	size_t stacksize;
+	void (*func)(void *);
+	void *arg;
 {
-	register struct pcb *pcb2 = &p2->p_addr->u_pcb;
-	register struct trapframe *p2tf;
-	register struct switchframe *p2sf;
-	extern void proc_do_uret(), child_return();
+	struct pcb *p1pcb = &p1->p_addr->u_pcb;
+	struct pcb *p2pcb = &p2->p_addr->u_pcb;
+	struct trapframe *p2tf;
+	struct switchframe *p2sf;
+	struct ksigframe {
+		struct switchframe sf;
+		void (*func) (void *);
+		void *arg;
+	} *ksfp;
 
 	/*
 	 * Before copying the PCB from the current process,
 	 * make sure it is up-to-date.  (p1 == curproc)
 	 */
-	savectx(curproc->p_addr);
+	if (p1 == curproc)
+		savectx(p1pcb);
 
 	/* copy over the machdep part of struct proc */
 	p2->p_md.md_flags = p1->p_md.md_flags;
 
 	/* Copy pcb from proc p1 to p2. */
-	bcopy(&p1->p_addr->u_pcb, pcb2, sizeof(*pcb2));
+	bcopy(p1pcb, p2pcb, sizeof(*p2pcb));
 
 	/* Child can start with low IPL (XXX - right?) */
-	pcb2->pcb_ps = PSL_LOWIPL;
+	p2pcb->pcb_ps = PSL_LOWIPL;
 
 	/*
 	 * Our cpu_switch MUST always call PMAP_ACTIVATE on a
@@ -114,9 +119,15 @@ cpu_fork(p1, p2)
 	 * Leave one word unused at the end of the kernel stack
 	 * so the system stack pointer stays within its stack.
 	 */
-	p2tf = (struct trapframe *)((char*)p2->p_addr + USPACE-4) - 1;
+	p2tf = (struct trapframe *)((char *)p2->p_addr + USPACE-4) - 1;
 	p2->p_md.md_regs = (int *)p2tf;
 	bcopy(p1->p_md.md_regs, p2tf, sizeof(*p2tf));
+
+	/*
+	 * If specified, give the child a different stack.
+	 */
+	if (stack != NULL)
+		p2tf->tf_regs[15] = (u_int)stack + stacksize;
 
 	/*
 	 * Create a "switch frame" such that when cpu_switch returns,
@@ -124,63 +135,16 @@ cpu_fork(p1, p2)
 	 */
 	p2sf = (struct switchframe *)p2tf - 1;
 	p2sf->sf_pc = (u_int)proc_do_uret;
-	pcb2->pcb_regs[11] = (int)p2sf;		/* SSP */
-
-	/*
-	 * This will "push a call" to an arbitrary kernel function
-	 * onto the stack of p2, very much like signal delivery.
-	 * When p2 runs, it will find itself in child_return().
-	 */
-	cpu_set_kpc(p2, (long)child_return);
-
-	return (0);
-}
-
-/*
- * cpu_set_kpc:
- *
- * Arrange for in-kernel execution of a process to continue in the
- * named function, as if that function were called with one argument,
- * the current process's process pointer.
- *
- * Note that it's assumed that when the named process returns,
- * rei() should be invoked, to return to user mode.  That is
- * accomplished by having cpu_fork set the initial frame with a
- * return address pointing to proc_do_uret() which does the rte.
- *
- * The design allows this function to be implemented as a general
- * "kernel sendsig" utility, that can "push" a call to a kernel
- * function onto any other process kernel stack, in a way very
- * similar to how signal delivery works on a user stack.  When
- * the named process is switched to, it will call the function
- * we "pushed" and then proc_trampoline will pop the args that
- * were pushed here and return to where it would have returned
- * before we "pushed" this call.
- */
-void
-cpu_set_kpc(proc, func)
-	struct proc *proc;
-	u_long func;
-{
-	struct pcb *pcbp;
-	struct switchframe *sf;
-	extern void proc_trampoline();
-	struct ksigframe {
-		struct switchframe sf;
-		u_long func;
-		void *proc;
-	} *ksfp;
-
-	pcbp = &proc->p_addr->u_pcb;
+	p2pcb->pcb_regs[11] = (int)p2sf;		/* SSP */
 
 	/* Push a ksig frame onto the kernel stack. */
-	ksfp = (struct ksigframe *)pcbp->pcb_regs[11] - 1;
-	pcbp->pcb_regs[11] = (int)ksfp;
+	ksfp = (struct ksigframe *)p2pcb->pcb_regs[11] - 1;
+	p2pcb->pcb_regs[11] = (int)ksfp;
 
 	/* Now fill it in for proc_trampoline. */
 	ksfp->sf.sf_pc = (u_int)proc_trampoline;
 	ksfp->func = func;
-	ksfp->proc = proc;
+	ksfp->arg = arg;
 }
 
 /*
@@ -196,10 +160,8 @@ cpu_exit(p)
 	struct proc *p;
 {
 
-	vmspace_free(p->p_vmspace);
-
 	(void) splimp();
-	cnt.v_swtch++;
+	uvmexp.swtch++;
 	switch_exit(p);
 	/* NOTREACHED */
 }
@@ -240,7 +202,6 @@ cpu_coredump(p, vp, cred, chdr)
 	struct md_core md_core;
 	struct coreseg cseg;
 	int error;
-	register i;
 
 	/* XXX: Make sure savectx() was done? */
 
@@ -265,13 +226,13 @@ cpu_coredump(p, vp, cred, chdr)
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cseg, chdr->c_seghdrsize,
 	    (off_t)chdr->c_hdrsize, UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, (int *)0, p);
+	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	if (error)
 		return error;
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&md_core, sizeof(md_core),
 	    (off_t)(chdr->c_hdrsize + chdr->c_seghdrsize), UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, (int *)0, p);
+	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	if (error)
 		return error;
 
@@ -284,34 +245,34 @@ cpu_coredump(p, vp, cred, chdr)
  * Both addresses are assumed to reside in the kernel map,
  * and size must be a multiple of CLSIZE.
  */
+void
 pagemove(from, to, size)
 	register caddr_t from, to;
-	int size;
+	size_t size;
 {
-	register vm_offset_t pa;
+	vm_offset_t pa;
 
 #ifdef DIAGNOSTIC
-	if (size & CLOFSET || (int)from & CLOFSET || (int)to & CLOFSET)
+	if ((size & PAGE_MASK) != 0 ||
+	    ((vaddr_t)from & PAGE_MASK) != 0 ||
+	    ((vaddr_t)to & PAGE_MASK) != 0)
 		panic("pagemove 1");
 #endif
 	while (size > 0) {
-		pa = pmap_extract(pmap_kernel(), (vm_offset_t)from);
-#ifdef DIAGNOSTIC
-		if (pa == 0)
+		if (pmap_extract(pmap_kernel(), (vm_offset_t)from, &pa) == FALSE)
 			panic("pagemove 2");
-#endif
 		/* this does the cache flush work itself */
 		pmap_remove(pmap_kernel(),
 			(vm_offset_t)from, (vm_offset_t)from + NBPG);
 		pmap_enter(pmap_kernel(),
-			(vm_offset_t)to, pa, VM_PROT_READ|VM_PROT_WRITE, 1);
+			(vm_offset_t)to, pa, VM_PROT_READ|VM_PROT_WRITE,
+			VM_PROT_READ|VM_PROT_WRITE|PMAP_WIRED);
 		from += NBPG;
 		to += NBPG;
 		size -= NBPG;
 	}
+	pmap_update(pmap_kernel());
 }
-
-extern vm_map_t phys_map;
 
 /*
  * Map an IO request into kernel virtual address space.
@@ -328,8 +289,7 @@ extern vm_map_t phys_map;
  *	B_PHYS:		User "raw" IO request.
  *			Address is VA in user's address space.
  *
- * All requests are (re)mapped into kernel VA space via the phys_map
- * (a name with only slightly more meaning than "kernelmap")
+ * All requests are (re)mapped into kernel VA space via the kernel_map
  *
  * This routine has user context and can sleep
  * (called only by physio).
@@ -339,45 +299,51 @@ extern vm_map_t phys_map;
  * is a total crock, the multiple mappings of these physical pages should
  * be reflected in the higher-level VM structures to avoid problems.
  */
-vmapbuf(bp)
+void
+vmapbuf(bp, sz)
 	register struct buf *bp;
+	vm_size_t sz;
 {
+	register vm_offset_t addr, kva;
+	vm_offset_t pa;
+	register vm_size_t size, off;
 	register int npf;
-	register caddr_t addr;
-	register long flags = bp->b_flags;
 	struct proc *p;
-	int off;
-	vm_offset_t kva;
-	register vm_offset_t pa;
+	register struct vm_map *map;
 
-	if ((flags & B_PHYS) == 0)
+	if ((bp->b_flags & B_PHYS) == 0)
 		panic("vmapbuf");
-	addr = bp->b_saveaddr = bp->b_data;
-	off = (int)addr & PGOFSET;
 	p = bp->b_proc;
-	npf = btoc(round_page(bp->b_bcount + off));
-	kva = kmem_alloc_wait(phys_map, ctob(npf));
-	bp->b_data = (caddr_t) (kva + off);
+	map = &p->p_vmspace->vm_map;
+	bp->b_saveaddr = bp->b_data;
+	addr = (vm_offset_t)bp->b_saveaddr;
+	off = addr & PGOFSET;
+	addr = trunc_page(addr);
+	size = round_page(bp->b_bcount + off);
+	kva = uvm_km_valloc_wait(kernel_map, size);
+	bp->b_data = (caddr_t)(kva + off);
+
+	npf = btoc(size);
 	while (npf--) {
-		pa = pmap_extract(vm_map_pmap(&p->p_vmspace->vm_map),
-		    (vm_offset_t)addr);
-		if (pa == 0)
+		if (pmap_extract(vm_map_pmap(map), (vm_offset_t)addr,
+		    &pa) == FALSE)
 			panic("vmapbuf: null page frame");
+		pa = trunc_page(pa);	/* page type in low bits? */
 #ifdef	HAVECACHE
 		/* flush write-back on old mappings */
 		if (cache_size)
 			cache_flush_page((vm_offset_t)addr);
 #endif
-		pmap_enter(vm_map_pmap(phys_map), kva,
-			trunc_page(pa) | PMAP_NC,
-			VM_PROT_READ|VM_PROT_WRITE, TRUE);
-		addr += PAGE_SIZE;
-		kva += PAGE_SIZE;
+		pmap_enter(pmap_kernel(), kva,
+			pa | PMAP_NC,
+			VM_PROT_READ|VM_PROT_WRITE, PMAP_WIRED);
+		addr += NBPG;
+		kva  += NBPG;
 	}
 }
 
 /*
- * Free the io map PTEs associated with this I/O operation.
+ * Free the io mappings associated with this I/O operation.
  * The mappings in the I/O map (phys_map) were non-cached,
  * so there are no write-back modifications to flush.
  * Also note, kmem_free_wakeup will remove the mappings.
@@ -385,21 +351,32 @@ vmapbuf(bp)
  * This routine has user context and can sleep
  * (called only by physio).
  */
-vunmapbuf(bp)
+void
+vunmapbuf(bp, sz)
 	register struct buf *bp;
+	vm_size_t sz;
 {
-	register caddr_t addr;
-	vm_offset_t pgva;
-	register int off, npf;
+	register vm_offset_t kva, pgva;
+	register vm_size_t size, off;
 
 	if ((bp->b_flags & B_PHYS) == 0)
 		panic("vunmapbuf");
-	addr = bp->b_data;
-	off = (int)addr & PGOFSET;
-	pgva = (vm_offset_t)((int)addr & ~PGOFSET);
 
-	npf = btoc(round_page(bp->b_bcount + off));
-	kmem_free_wakeup(phys_map, pgva, ctob(npf));
+	kva = (vm_offset_t)bp->b_data;
+	off = kva & PGOFSET;
+	pgva = trunc_page(kva);
+	size = round_page(bp->b_bcount + off);
+
+	/* Actually remove mappings, which does cache flush. */
+	pmap_remove(pmap_kernel(), pgva, pgva + size);
+	pmap_update(pmap_kernel());
+
+	/*
+	 * Now remove the map entry, which may also call
+	 * pmap_remove but that will do nothing since we
+	 * already removed the actual mappings.
+	 */
+	uvm_km_free_wakeup(kernel_map, pgva, size);
 	bp->b_data = bp->b_saveaddr;
 	bp->b_saveaddr = NULL;
 }

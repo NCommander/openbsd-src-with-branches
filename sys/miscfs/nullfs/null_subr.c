@@ -1,4 +1,5 @@
-/*	$NetBSD: null_subr.c,v 1.4 1994/09/20 06:43:00 cgd Exp $	*/
+/*	$OpenBSD: null_subr.c,v 1.9 1999/04/28 09:28:15 art Exp $	*/
+/*	$NetBSD: null_subr.c,v 1.6 1996/05/10 22:50:52 jtk Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -41,6 +42,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/vnode.h>
@@ -66,16 +68,24 @@
 LIST_HEAD(null_node_hashhead, null_node) *null_node_hashtbl;
 u_long null_node_hash;
 
+static struct vnode *
+	null_node_find(struct mount *, struct vnode *);
+static int
+	null_node_alloc(struct mount *, struct vnode *, struct vnode **);
 /*
  * Initialise cache headers
  */
-nullfs_init()
+/*ARGSUSED*/
+int
+nullfs_init(vfsp)
+	struct vfsconf *vfsp;
 {
 
 #ifdef NULLFS_DIAGNOSTIC
 	printf("nullfs_init\n");		/* printed during system boot */
 #endif
-	null_node_hashtbl = hashinit(NNULLNODECACHE, M_CACHE, &null_node_hash);
+	null_node_hashtbl = hashinit(NNULLNODECACHE, M_CACHE, M_WAITOK, &null_node_hash);
+	return (0);
 }
 
 /*
@@ -89,6 +99,7 @@ null_node_find(mp, lowervp)
 	struct null_node_hashhead *hd;
 	struct null_node *a;
 	struct vnode *vp;
+	struct proc *p = curproc;
 
 	/*
 	 * Find hash base, and then search the (two-way) linked
@@ -106,7 +117,7 @@ loop:
 			 * stuff, but we don't want to lock
 			 * the lower node.
 			 */
-			if (vget(vp, 0)) {
+			if (vget(vp, 0, p)) {
 				printf ("null_node_find: vget failed.\n");
 				goto loop;
 			};
@@ -114,7 +125,7 @@ loop:
 		}
 	}
 
-	return NULL;
+	return NULLVP;
 }
 
 
@@ -133,14 +144,21 @@ null_node_alloc(mp, lowervp, vpp)
 	struct null_node *xp;
 	struct vnode *vp, *nvp;
 	int error;
-	extern int (**dead_vnodeop_p)();
+	extern int (**dead_vnodeop_p)(void *);
+	struct proc *p = curproc;
 
-	if (error = getnewvnode(VT_NULL, mp, null_vnodeop_p, &vp))
-		return (error);
-	vp->v_type = lowervp->v_type;
 
 	MALLOC(xp, struct null_node *, sizeof(struct null_node), M_TEMP,
 	    M_WAITOK);
+
+	if ((error = getnewvnode(VT_NULL, mp, null_vnodeop_p, vpp)) != 0) {
+		FREE (xp, M_TEMP);
+		return (error);
+	}
+
+	vp = *vpp;
+	vp->v_type = lowervp->v_type;
+
 	if (vp->v_type == VBLK || vp->v_type == VCHR) {
 		MALLOC(vp->v_specinfo, struct specinfo *,
 		    sizeof(struct specinfo), M_VNODE, M_WAITOK);
@@ -155,7 +173,7 @@ null_node_alloc(mp, lowervp, vpp)
 	 * check to see if someone else has beaten us to it.
 	 * (We could have slept in MALLOC.)
 	 */
-	if (nvp = null_node_find(lowervp)) {
+	if ((nvp = null_node_find(mp, lowervp)) != NULL) {
 		*vpp = nvp;
 
 		/* free the substructures we've allocated. */
@@ -194,14 +212,14 @@ loop:
 				vgone(cvp);
 				goto loop;
 			}
-			if (vget(cvp, 0))	/* can't lock; will die! */
+			if (vget(cvp, 0, p))	/* can't lock; will die! */
 				goto loop;
 			break;
 		}
 
 		vp->v_hashchain = cvpp;
 		vp->v_specnext = *cvpp;
-		vp->v_specflags = 0;
+		vp->v_specmountpoint = NULL;
 		*cvpp = vp;
 #ifdef DIAGNOSTIC
 		if (cvp == NULLVP)
@@ -213,7 +231,6 @@ loop:
 	}
 	/* XXX end of transmogrified checkalias() */
 
-	*vpp = vp;
 	VREF(lowervp);	/* Extra VREF will be vrele'd in null_node_create */
 	hd = NULL_NHASH(lowervp);
 	LIST_INSERT_HEAD(hd, xp, null_hash);
@@ -225,22 +242,26 @@ loop:
  * Try to find an existing null_node vnode refering
  * to it, otherwise make a new null_node vnode which
  * contains a reference to the lower vnode.
+ *
+ * >>> we assume that the lower node is already locked upon entry, so we mark
+ * the upper node as locked too (if caller requests it). <<<
  */
 int
-null_node_create(mp, lowervp, newvpp)
+null_node_create(mp, lowervp, newvpp, takelock)
 	struct mount *mp;
 	struct vnode *lowervp;
 	struct vnode **newvpp;
+	int takelock;
 {
 	struct vnode *aliasvp;
 
-	if (aliasvp = null_node_find(mp, lowervp)) {
+	if ((aliasvp = null_node_find(mp, lowervp)) != NULL) {
 		/*
 		 * null_node_find has taken another reference
 		 * to the alias vnode.
 		 */
 #ifdef NULLFS_DIAGNOSTIC
-		vprint("null_node_create: exists", NULLTOV(ap));
+		vprint("null_node_create: exists", aliasvp);
 #endif
 		/* VREF(aliasvp); --- done in null_node_find */
 	} else {
@@ -256,7 +277,7 @@ null_node_create(mp, lowervp, newvpp)
 		/*
 		 * Make new vnode reference the null_node.
 		 */
-		if (error = null_node_alloc(mp, lowervp, &aliasvp))
+		if ((error = null_node_alloc(mp, lowervp, &aliasvp)) != 0)
 			return error;
 
 		/*
@@ -270,20 +291,20 @@ null_node_create(mp, lowervp, newvpp)
 	if (lowervp->v_usecount < 1) {
 		/* Should never happen... */
 		vprint("null_node_create: alias", aliasvp);
-		vprint("null_node_create: lower", lowervp);
 		panic("null_node_create: lower has 0 usecount.");
 	};
 #endif
 
 #ifdef NULLFS_DIAGNOSTIC
 	vprint("null_node_create: alias", aliasvp);
-	vprint("null_node_create: lower", lowervp);
 #endif
 
 	*newvpp = aliasvp;
 	return (0);
 }
+
 #ifdef NULLFS_DIAGNOSTIC
+int null_checkvp_barrier = 1;
 struct vnode *
 null_checkvp(vp, fil, lno)
 	struct vnode *vp;
@@ -305,9 +326,9 @@ null_checkvp(vp, fil, lno)
 	if (a->null_lowervp == NULL) {
 		/* Should never happen */
 		int i; u_long *p;
-		printf("vp = %x, ZERO ptr\n", vp);
+		printf("vp = %p, ZERO ptr\n", vp);
 		for (p = (u_long *) a, i = 0; i < 8; i++)
-			printf(" %x", p[i]);
+			printf(" %lx", p[i]);
 		printf("\n");
 		/* wait for debugger */
 		while (null_checkvp_barrier) /*WAIT*/ ;
@@ -315,16 +336,16 @@ null_checkvp(vp, fil, lno)
 	}
 	if (a->null_lowervp->v_usecount < 1) {
 		int i; u_long *p;
-		printf("vp = %x, unref'ed lowervp\n", vp);
+		printf("vp = %p, unref'ed lowervp\n", vp);
 		for (p = (u_long *) a, i = 0; i < 8; i++)
-			printf(" %x", p[i]);
+			printf(" %lx", p[i]);
 		printf("\n");
 		/* wait for debugger */
 		while (null_checkvp_barrier) /*WAIT*/ ;
 		panic ("null with unref'ed lowervp");
 	};
 #ifdef notyet
-	printf("null %x/%d -> %x/%d [%s, %d]\n",
+	printf("null %p/%d -> %p/%d [%s, %d]\n",
 	        NULLTOV(a), NULLTOV(a)->v_usecount,
 		a->null_lowervp, a->null_lowervp->v_usecount,
 		fil, lno);

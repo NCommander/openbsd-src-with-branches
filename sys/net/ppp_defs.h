@@ -1,3 +1,4 @@
+/*	$OpenBSD: ppp_defs.h,v 1.11 2001/06/09 06:16:39 angelos Exp $	*/
 /*	$NetBSD: ppp_defs.h,v 1.1 1995/07/04 06:28:26 paulus Exp $	*/
 
 /*
@@ -44,25 +45,33 @@
 /*
  * Significant octet values.
  */
-#define	PPP_ALLSTATIONS	0xff	/* All-Stations broadcast address */
-#define	PPP_UI		0x03	/* Unnumbered Information */
-#define	PPP_FLAG	0x7e	/* Flag Sequence */
-#define	PPP_ESCAPE	0x7d	/* Asynchronous Control Escape */
-#define	PPP_TRANS	0x20	/* Asynchronous transparency modifier */
+#define PPP_ALLSTATIONS	0xff	/* All-Stations broadcast address */
+#define PPP_UI		0x03	/* Unnumbered Information */
+#define PPP_FLAG	0x7e	/* Flag Sequence */
+#define PPP_ESCAPE	0x7d	/* Asynchronous Control Escape */
+#define PPP_TRANS	0x20	/* Asynchronous transparency modifier */
 
 /*
  * Protocol field values.
  */
 #define PPP_IP		0x21	/* Internet Protocol */
-#define	PPP_VJC_COMP	0x2d	/* VJ compressed TCP */
-#define	PPP_VJC_UNCOMP	0x2f	/* VJ uncompressed TCP */
+#define PPP_XNS		0x25	/* Xerox NS */
+#define PPP_AT		0x29	/* AppleTalk Protocol */
+#define PPP_IPX		0x2b	/* Internetwork Packet Exchange */
+#define PPP_VJC_COMP	0x2d	/* VJ compressed TCP */
+#define PPP_VJC_UNCOMP	0x2f	/* VJ uncompressed TCP */
+#define PPP_IPV6	0x57	/* Internet Protocol Version 6 */
 #define PPP_COMP	0xfd	/* compressed packet */
 #define PPP_IPCP	0x8021	/* IP Control Protocol */
+#define PPP_ATCP	0x8029	/* AppleTalk Control Protocol */
+#define PPP_IPXCP	0x802b	/* IPX Control Protocol */
+#define PPP_IPV6CP	0x8057	/* IPv6 Control Protocol */
 #define PPP_CCP		0x80fd	/* Compression Control Protocol */
 #define PPP_LCP		0xc021	/* Link Control Protocol */
 #define PPP_PAP		0xc023	/* Password Authentication Protocol */
 #define PPP_LQR		0xc025	/* Link Quality Report protocol */
 #define PPP_CHAP	0xc223	/* Cryptographic Handshake Auth. Protocol */
+#define PPP_CBCP	0xc029	/* Callback Control Protocol */
 
 /*
  * Values for FCS calculations.
@@ -79,6 +88,7 @@
 typedef UINT32_T	u_int32_t;
 #else
 typedef unsigned int	u_int32_t;
+typedef unsigned short	u_int16_t;
 #endif
 #endif
 
@@ -148,13 +158,5 @@ struct ppp_idle {
     time_t xmit_idle;		/* time since last NP packet sent */
     time_t recv_idle;		/* time since last NP packet received */
 };
-
-#ifndef __P
-#ifdef __STDC__
-#define __P(x)	x
-#else
-#define __P(x)	()
-#endif
-#endif
 
 #endif /* _PPP_DEFS_H_ */

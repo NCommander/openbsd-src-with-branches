@@ -1,4 +1,5 @@
-/*	$NetBSD: db_machdep.h,v 1.1 1995/06/16 15:17:27 ragge Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.8 2001/11/06 19:53:17 miod Exp $	*/
+/*	$NetBSD: db_machdep.h,v 1.6 1998/08/10 14:33:33 ragge Exp $	*/
 
 /* 
  * Mach Operating System
@@ -35,11 +36,12 @@
  */
 
 #include <sys/param.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <machine/trap.h>
+#include <machine/psl.h>
 
 typedef	vm_offset_t	db_addr_t;	/* address - unsigned */
-typedef	int		db_expr_t;	/* expression - signed */
+typedef	long		db_expr_t;	/* expression - signed */
 
 typedef struct trapframe db_regs_t;
 db_regs_t	ddb_regs;	/* register state */
@@ -51,7 +53,7 @@ db_regs_t	ddb_regs;	/* register state */
 #define	BKPT_SIZE	(1)		/* size of breakpoint inst */
 #define	BKPT_SET(inst)	(BKPT_INST)
 
-#define	FIXUP_PC_AFTER_BREAK		ddb_regs.pc -= BKPT_SIZE;
+#define	FIXUP_PC_AFTER_BREAK(regs)	((regs)->pc -= BKPT_SIZE)
 
 #define	db_clear_single_step(regs)	((regs)->psl &= ~PSL_T)
 #define	db_set_single_step(regs)	((regs)->psl |=  PSL_T)
@@ -69,5 +71,13 @@ db_regs_t	ddb_regs;	/* register state */
 
 #define inst_load(ins)		0
 #define inst_store(ins)		0
+
+/* Prototypes */
+void	kdb_trap(struct trapframe *);
+
+/*
+ * We use a.out symbols in DDB.
+ */
+#define	DB_AOUT_SYMBOLS
 
 #endif	/* _VAX_DB_MACHDEP_H_ */

@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: memc.c,v 1.5 2000/03/26 23:31:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -42,7 +43,6 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
@@ -56,20 +56,23 @@
 
 struct memcsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
+	void *		sc_vaddr;
 	struct memcreg *sc_memc;
 	struct intrhand	sc_ih;
 };
 
-void memcattach __P((struct device *, struct device *, void *));
-int  memcmatch __P((struct device *, void *, void *));
+void memcattach(struct device *, struct device *, void *);
+int  memcmatch(struct device *, void *, void *);
 
-struct cfdriver memccd = {
-	NULL, "memc", memcmatch, memcattach,
-	DV_DULL, sizeof(struct memcsoftc), 0
+struct cfattach memc_ca = {
+	sizeof(struct memcsoftc), memcmatch, memcattach
 };
 
-int memcintr __P((struct frame *frame));
+struct cfdriver memc_cd = {
+	NULL, "memc", DV_DULL, 0
+};
+
+int memcintr(struct frame *frame);
 
 int
 memcmatch(parent, vcf, args)

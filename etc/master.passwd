@@ -1,10 +1,11 @@
-root::0:0::0:0:Charlie &:/root:/bin/csh
-toor:*:0:0::0:0:Bourne-again Superuser:/root:
-daemon:*:1:31::0:0:The devil himself:/root:
-operator:*:2:20::0:0:System &:/usr/guest/operator:/bin/csh
-bin:*:3:7::0:0:Binaries Commands and Source,,,:/:/dev/null
-games:*:7:13::0:0:Games pseudo-user:/usr/games:
+root::0:0:daemon:0:0:Charlie &:/root:/bin/csh
+daemon:*:1:1::0:0:The devil himself:/root:/sbin/nologin
+operator:*:2:5::0:0:System &:/operator:/sbin/nologin
+bin:*:3:7::0:0:Binaries Commands and Source,,,:/:/sbin/nologin
+smmsp:*:25:25::0:0:Sendmail Message Submission Program:/nonexistent:/sbin/nologin
+popa3d:*:26:26::0:0:POP3 server:/var/empty:/sbin/nologin
 uucp:*:66:1::0:0:UNIX-to-UNIX Copy:/var/spool/uucppublic:/usr/libexec/uucp/uucico
-nobody:*:32767:9999::0:0:Unprivileged user:/nonexistent:/dev/null
-ingres:*:267:74::0:0:& Group:/usr/ingres:/bin/csh
-falken:*:32766:31::0:0:Prof. Stephen &:/usr/games:/usr/games/wargames
+www:*:67:67::0:0:HTTP server:/var/www:/sbin/nologin
+named:*:70:70::0:0:BIND Name Service Daemon:/var/named:/sbin/nologin
+proxy:*:71:71::0:0:Proxy Services:/nonexistent:/sbin/nologin
+nobody:*:32767:32767::0:0:Unprivileged user:/nonexistent:/sbin/nologin

@@ -1,3 +1,5 @@
+/*	$OpenBSD: rc.h,v 1.3 2001/08/12 12:03:03 heko Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: rc.h,v 1.4 1995/10/13 19:26:03 moj Exp $
+ *	$OpenBSD: rc.h,v 1.3 2001/08/12 12:03:03 heko Exp $
  *
  */
 
@@ -37,8 +39,8 @@
 void	mopDumpRC        (/* FILE *, u_char *, int */);
 #else
 __BEGIN_DECLS
-void	mopDumpRC        __P((FILE *, u_char *, int));
+void	mopDumpRC(FILE *, u_char *, int);
 __END_DECLS
 #endif
 
-#endif _RC_H_
+#endif /* _RC_H_ */

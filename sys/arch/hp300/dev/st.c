@@ -1,6 +1,8 @@
-/*	$NetBSD: st.c,v 1.11.2.1 1995/10/16 09:01:38 thorpej Exp $	*/
+/*	$OpenBSD: st.c,v 1.11 1999/09/18 22:48:28 downsj Exp $	*/
+/*	$NetBSD: st.c,v 1.22 1997/04/02 22:37:38 scottr Exp $	*/
 
 /*
+ * Copyright (c) 1996, 1997 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1990 University of Utah.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -74,9 +76,6 @@
  * support for the block device not implemented 
  */
 
-#include "st.h"
-#if NST > 0
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
@@ -87,74 +86,14 @@
 #include <sys/mtio.h>
 #include <sys/kernel.h>
 #include <sys/tprintf.h>
+#include <sys/device.h>
 
-#include <hp300/dev/device.h>
 #include <hp300/dev/scsireg.h>
+#include <hp300/dev/scsivar.h>
 #include <hp300/dev/stvar.h>
 
-extern int scsi_test_unit_rdy();
-extern int scsi_request_sense();
-extern int scsiustart();
-extern int scsigo();
-extern void scsifree();
-extern void scsireset();
-extern void scsi_delay();
-extern int scsi_tt_oddio();
-extern void scsi_str __P((char *, char *, size_t));
-
-extern int scsi_immed_command();
-
-int	stinit(), ststart(), stgo(), stintr();
-struct	driver stdriver = {
-	stinit, "st", ststart, stgo, stintr,
-};
-
-struct	st_softc {
-	struct	hp_device *sc_hd;
-	struct	devqueue sc_dq;
-	long	sc_blkno;       /* (possible block device support?) */
-	long	sc_resid;	/* (possible block device support?) */
-	int	sc_flags;
-	int	sc_blklen;	/* 0 = variable len records */
-	int	sc_filepos;	/* file position on tape */
-	long	sc_numblks;	/* number of blocks on tape */
-	short	sc_type;	/* ansi scsi type */
-	short	sc_punit;	/* physical unit (scsi lun) */
-	short	sc_tapeid;	/* tape drive id */
-	char	sc_datalen[32];	/* additional data length on some commands */
-	short	sc_tticntdwn;	/* interrupts between TTi display updates */
-	tpr_t	sc_ctty;
-	struct	buf *sc_bp;
-	u_char	sc_cmd;
-} st_softc[NST];
-
-/* softc flags */
-#define STF_ALIVE	0x0001
-#define STF_OPEN	0x0002
-#define STF_WMODE	0x0004
-#define STF_WRTTN	0x0008
-#define STF_CMD		0x0010
-#define STF_LEOT	0x0020
-#define STF_MOVED	0x0040
-
-struct	st_mode st_mode[NST];
-
-/*
- * Maybe this should not be global, but gives chance to get
- * tape remaining, Rewrites/ECC, etc outside the driver 
- */
-static struct st_xsense {
-	struct	scsi_xsense sc_xsense;	/* data from sense */
-	struct	exb_xsense exb_xsense;	/* additional info from exabyte */
-} st_xsense[NST];
-
-static struct scsi_fmt_cdb stcmd[NST];
-
-static struct scsi_fmt_cdb st_read_cmd = { 6, CMD_READ };
-static struct scsi_fmt_cdb st_write_cmd = { 6, CMD_WRITE };
-
-struct buf sttab[NST];
-struct buf stbuf[NST];
+static struct scsi_fmt_cdb st_read_cmd = { 6, { CMD_READ } };
+static struct scsi_fmt_cdb st_write_cmd = { 6, { CMD_WRITE } };
 
 #define UNIT(x)		(minor(x) & 3)
 #define stpunit(x)	((x) & 7)
@@ -223,67 +162,50 @@ int st_extti = 0x01;		/* bitmask of unit numbers, do extra */
 				/* sensing so TTi display gets updated */
 #endif
 
-stinit(hd)
-	register struct hp_device *hd;
+/* bdev_decl(st); */
+/* cdev_decl(st); */
+/* XXX we should use macros to do these... */
+int	stopen(dev_t, int, int, struct proc *);
+int	stclose(dev_t, int, int, struct proc *);
+
+int	stioctl(dev_t, u_long, caddr_t, int, struct proc *);
+int	stread(dev_t, struct uio *, int);
+int	stwrite(dev_t, struct uio *, int);
+
+void	ststrategy(struct buf *);
+int	stdump(dev_t);
+
+#ifdef DEBUG
+void	dumpxsense(struct st_xsense *);
+void	prtmodsel(struct mode_select_data *, int);
+void	prtmodstat(struct mode_sense *);
+#endif /* DEBUG */
+
+static void	stfinish(struct st_softc *, struct buf *);
+static void	sterror(struct st_softc *, int);
+static int	stmatch(struct device *, void *, void *);
+static void	stattach(struct device *, struct device *, void *);
+
+struct cfattach st_ca = {
+	sizeof(struct st_softc), stmatch, stattach
+};
+
+struct cfdriver st_cd = {
+	NULL, "st", DV_TAPE
+};
+
+static int
+stmatch(parent, match, aux)
+	struct device *parent;
+	void *match, *aux;
 {
-	register struct st_softc *sc = &st_softc[hd->hp_unit];
-	register struct buf *bp;
+	struct oscsi_attach_args *osa = aux;
 
-	for (bp = sttab; bp < &sttab[NST]; bp++)
-		bp->b_actb = &bp->b_actf;
-	sc->sc_hd = hd;
-	sc->sc_punit = stpunit(hd->hp_flags);
-	sc->sc_type = stident(sc, hd);
-	if (sc->sc_type < 0)
-		return(0);
-	sc->sc_dq.dq_ctlr = hd->hp_ctlr;
-	sc->sc_dq.dq_unit = hd->hp_unit;
-	sc->sc_dq.dq_slave = hd->hp_slave;
-	sc->sc_dq.dq_driver = &stdriver;
-	sc->sc_blkno = 0;
-	sc->sc_flags = STF_ALIVE;
-	return(1);
-}
-
-stident(sc, hd)
-	register struct st_softc *sc;
-	register struct hp_device *hd;
-{
-	int unit;
-	int ctlr, slave;
-	int i, stat, inqlen;
-	char vendor[9], product[17], revision[5];
-	static int havest = 0;
-	struct st_inquiry {
-		struct	scsi_inquiry inqbuf;
-		struct  exb_inquiry exb_inquiry;
-	} st_inqbuf;
-	static struct scsi_fmt_cdb st_inq = {
-		6,
-		CMD_INQUIRY, 0, 0, 0, sizeof(st_inqbuf), 0
-	};
-
-	ctlr = hd->hp_ctlr;
-	slave = hd->hp_slave;
-	unit = sc->sc_punit;
-	scsi_delay(-1);
-
-	inqlen = 0x05; /* min */
-	st_inq.cdb[4] = 0x05;
-	stat = scsi_immed_command(ctlr, slave, unit, &st_inq, 
-				  (u_char *)&st_inqbuf, inqlen, B_READ);
-	/* do twice as first command on some scsi tapes always fails */
-	stat = scsi_immed_command(ctlr, slave, unit, &st_inq, 
-				  (u_char *)&st_inqbuf, inqlen, B_READ);
-	if (stat == -1)
-		goto failed;
-
-	if ((st_inqbuf.inqbuf.type != 0x01 ||  /* sequential access device */
-	    st_inqbuf.inqbuf.qual != 0x80 ||  /* removable media */
-	    (st_inqbuf.inqbuf.version != 0x01 && /* current ANSI SCSI spec */
-	     st_inqbuf.inqbuf.version != 0x02)) /* 0x02 is for HP DAT */
-	    &&
-	    (st_inqbuf.inqbuf.type != 0x01 ||	/* M4 ??! */
+	if ((osa->osa_inqbuf->type != 0x01 ||	/* sequential access device */
+	    osa->osa_inqbuf->qual != 0x80 ||	/* removable media */
+	    (osa->osa_inqbuf->version != 0x01 &&
+	     osa->osa_inqbuf->version != 0x02)) &&
+	    (osa->osa_inqbuf->type != 0x01 ||	/* M4 ??! */
 	     /*
 	      * the M4 is a little too smart (ass?) for its own good:
 	      * qual codes:
@@ -291,38 +213,48 @@ stident(sc, hd)
 	      * 0xf8: online and at 6250bpi
 	      * 0xf9: online and at 1600bpi
 	      */
-	     st_inqbuf.inqbuf.version != 0x09))	/* M4 tape */
-{
-printf("st: wrong specs: type %x qual %x version %d\n", st_inqbuf.inqbuf.type,
-st_inqbuf.inqbuf.qual, st_inqbuf.inqbuf.version);
-		goto failed;
+	     osa->osa_inqbuf->version != 0x09))	/* M4 tape */
+		return (0);
+
+	return (1);
 }
 
-	/* now get additonal info */
-	inqlen = 0x05 + st_inqbuf.inqbuf.len;
-	st_inq.cdb[4] = inqlen;
-	bzero(&st_inqbuf, sizeof(st_inqbuf));
-	stat = scsi_immed_command(ctlr, slave, unit, &st_inq, 
-				  (u_char *)&st_inqbuf, inqlen, B_READ);
+static void
+stattach(parent, self, aux)
+	struct device *parent, *self;
+	void *aux;
+{
+	struct st_softc *sc = (struct st_softc *)self;
+	struct oscsi_attach_args *osa = aux;
+	char vendor[9], product[17], revision[5];
+	int stat;
+	static int havest = 0;
+
+	printf("\n");
+
+	sc->sc_tab.b_actb = &sc->sc_tab.b_actf;
 
 	bzero(vendor, sizeof(vendor));
 	bzero(product, sizeof(product));
 	bzero(revision, sizeof(revision));
-	if (st_inqbuf.inqbuf.len >= 28) {
-		scsi_str(st_inqbuf.inqbuf.vendor_id, vendor,
-		    sizeof(st_inqbuf.inqbuf.vendor_id));
-		scsi_str(st_inqbuf.inqbuf.product_id, product,
-		    sizeof(st_inqbuf.inqbuf.product_id));
-		scsi_str(st_inqbuf.inqbuf.rev, revision,
-		    sizeof(st_inqbuf.inqbuf.rev));
-		printf("st%d: %s, %s rev %s\n", hd->hp_unit, vendor, product,
-		    revision);
-	}
 
-	if (stat == 0xff) { 
-		printf("st%d: Cant handle this tape drive\n", hd->hp_unit);
-		goto failed;
-	}
+	scsi_str(osa->osa_inqbuf->vendor_id, vendor,
+	    sizeof(osa->osa_inqbuf->vendor_id));
+	scsi_str(osa->osa_inqbuf->product_id, product,
+	    sizeof(osa->osa_inqbuf->product_id));
+	scsi_str(osa->osa_inqbuf->rev, revision,
+	    sizeof(osa->osa_inqbuf->rev));
+
+	sc->sc_target = osa->osa_target;
+	sc->sc_lun = osa->osa_lun;
+
+	/* Initialize SCSI queue entry. */
+	sc->sc_sq.sq_softc = sc;
+	sc->sc_sq.sq_target = sc->sc_target;
+	sc->sc_sq.sq_lun = sc->sc_lun;
+	sc->sc_sq.sq_start = ststart;
+	sc->sc_sq.sq_go = stgo;
+	sc->sc_sq.sq_intr = stintr;
 
 	if (bcmp("EXB-8200", product, 8) == 0) {
 		sc->sc_tapeid = MT_ISEXABYTE;
@@ -337,7 +269,8 @@ st_inqbuf.inqbuf.qual, st_inqbuf.inqbuf.version);
 		sc->sc_datalen[CMD_INQUIRY] = 36;
 		sc->sc_datalen[CMD_MODE_SELECT] = 12;
 		sc->sc_datalen[CMD_MODE_SENSE] = 12;
-	} else if (bcmp("Python 25501", product, 12) == 0) {
+	} else if (bcmp("Python 25501", product, 12) == 0 ||
+		   bcmp("Python 28849", product, 12) == 0) {
 		sc->sc_tapeid = MT_ISPYTHON;
 		sc->sc_datalen[CMD_REQUEST_SENSE] = 14;
 		sc->sc_datalen[CMD_INQUIRY] = 36;
@@ -345,7 +278,8 @@ st_inqbuf.inqbuf.qual, st_inqbuf.inqbuf.version);
 		sc->sc_datalen[CMD_MODE_SENSE] = 12;
 	} else if (bcmp("HP35450A", product, 8) == 0) {
 		/* XXX "extra" stat makes the HP drive happy at boot time */
-		stat = scsi_test_unit_rdy(ctlr, slave, unit);
+		stat = scsi_test_unit_rdy(sc->sc_dev.dv_parent->dv_unit,
+		    sc->sc_target, sc->sc_lun);
 		sc->sc_tapeid = MT_ISHPDAT;
 		sc->sc_datalen[CMD_REQUEST_SENSE] = 14;
 		sc->sc_datalen[CMD_INQUIRY] = 36;
@@ -359,8 +293,8 @@ st_inqbuf.inqbuf.qual, st_inqbuf.inqbuf.version);
 		sc->sc_datalen[CMD_MODE_SELECT] = 12;
 		sc->sc_datalen[CMD_MODE_SENSE] = 12;
 	} else {
-		printf("st%d: Unsupported tape device, faking it\n",
-		    hd->hp_unit);
+		printf("%s: Unsupported tape device, faking it\n",
+		    sc->sc_dev.dv_xname);
 		sc->sc_tapeid = MT_ISAR;
 		sc->sc_datalen[CMD_REQUEST_SENSE] = 8;
 		sc->sc_datalen[CMD_INQUIRY] = 5;
@@ -371,29 +305,30 @@ st_inqbuf.inqbuf.qual, st_inqbuf.inqbuf.version);
 	sc->sc_filepos = 0;
 	
 	/* load xsense */
-	stxsense(ctlr, slave, unit, sc);
-
+	scsi_delay(-1);
+	stxsense(sc->sc_dev.dv_parent->dv_unit, sc->sc_target, sc->sc_lun, sc);
 	scsi_delay(0);
+
 	/* XXX if we have a tape, we must up the delays in the HA driver */
 	if (!havest) {
 		havest = 1;
 		scsi_delay(20000);
 	}
-	return(st_inqbuf.inqbuf.type);
-failed:
-	scsi_delay(0);
-	return(-1);
+
+	sc->sc_blkno = 0;
+	sc->sc_flags = STF_ALIVE;
 }
 
+int
 stopen(dev, flag, type, p)
 	dev_t dev;
 	int flag, type;
 	struct proc *p;
 {
-	register struct st_softc *sc = &st_softc[UNIT(dev)];
-	register struct st_xsense *xsense;
-	register int count;
-	register int stat;
+	struct st_softc *sc;
+	struct st_xsense *xsense;
+	int count;
+	int stat;
 	int ctlr, slave, unit;
 	struct mode_select_data msd;
 	struct mode_sense mode;
@@ -401,22 +336,25 @@ stopen(dev, flag, type, p)
 	int error;
 	static struct scsi_fmt_cdb modsel = {
 		6,
-		CMD_MODE_SELECT, 0, 0, 0, sizeof(msd), 0
+		{ CMD_MODE_SELECT, 0, 0, 0, sizeof(msd), 0 }
 	};
 	static struct scsi_fmt_cdb modsense = {
 		6,
-		CMD_MODE_SENSE, 0, 0, 0, sizeof(mode), 0
+		{ CMD_MODE_SENSE, 0, 0, 0, sizeof(mode), 0 }
 	};
 
-	ctlr = sc->sc_dq.dq_ctlr;
-	slave = sc->sc_dq.dq_slave;
-	unit = sc->sc_punit;
-	xsense = &st_xsense[UNIT(dev)];
+	if (UNIT(dev) >= st_cd.cd_ndevs ||
+	    (sc = st_cd.cd_devs[UNIT(dev)]) == NULL ||
+	    (sc->sc_flags & STF_ALIVE) == 0)
+		return (ENXIO);
 
-	if (UNIT(dev) > NST || (sc->sc_flags & STF_ALIVE) == 0)
-		return(ENXIO);
 	if (sc->sc_flags & STF_OPEN)
-		return(EBUSY);
+		return (EBUSY);
+
+	ctlr = sc->sc_dev.dv_parent->dv_unit;
+	slave = sc->sc_target;
+	unit = sc->sc_lun;
+	xsense = &sc->sc_sense;
 
 	/*
 	 * Be prepared to print error messages
@@ -547,7 +485,7 @@ retryselect:
 #endif
 		if (stat == STS_CHECKCOND) {
 			stxsense(ctlr, slave, unit, sc);
-			prtkey(UNIT(dev), sc);
+			prtkey(sc);
 		}
 		if (stat)
 			return(EIO);
@@ -566,8 +504,8 @@ retryselect:
 			uprintf("SCSI bus timeout\n");
 			return(EBUSY);
 		}
-		if (error = tsleep((caddr_t)&lbolt, PZERO | PCATCH, 
-		    "st_scsiwait", 0))
+		if ((error = tsleep((caddr_t)&lbolt, PZERO | PCATCH, 
+		    "st_scsiwait", 0)))
 			return (error);
 		goto retryselect;
 	}
@@ -591,7 +529,7 @@ retryselect:
 				   xsense->exb_xsense.tnp)
 				uprintf("cartridge unloading\n");
 			else 
-				prtkey(UNIT(dev), sc);
+				prtkey(sc);
 			break;
 		case MT_ISMFOUR:
 		case MT_ISAR:
@@ -600,7 +538,7 @@ retryselect:
 			if (stat == STS_CHECKCOND) {
 				stxsense(ctlr, slave, unit, sc);
 				if (xsense->sc_xsense.key)
-					prtkey(UNIT(dev), sc);
+					prtkey(sc);
 			} else { 
 				sc->sc_filepos = 0; /* new tape */
 				stat = 0;
@@ -614,12 +552,12 @@ retryselect:
 			if (stat == STS_CHECKCOND) {
 				stxsense(ctlr, slave, unit, sc);
 				if (xsense->sc_xsense.key)
-					prtkey(UNIT(dev), sc);
+					prtkey(sc);
 			}
 			break;
 		default:
-			uprintf("st%d: not ready\n", UNIT(dev));
-			prtkey(UNIT(dev), sc);
+			uprintf("%s: not ready\n", sc->sc_dev.dv_xname);
+			prtkey(sc);
 			break;
 		}
 	}
@@ -660,7 +598,8 @@ retryselect:
 		sc->sc_filepos = 0;
 #ifdef DEBUG
 	if (st_debug & ST_FMKS)
-		printf("st%d: open filepos = %d\n", UNIT(dev), sc->sc_filepos);
+		printf("%s: open filepos = %d\n", sc->sc_dev.dv_xname,
+		    sc->sc_filepos);
 #endif
 
 	sc->sc_flags |= (STF_OPEN);
@@ -678,12 +617,14 @@ retryselect:
 }
 
 /*ARGSUSED*/
-stclose(dev, flag)
+int
+stclose(dev, flag, mode, p)
 	dev_t dev;
-	int flag;
+	int flag, mode;
+	struct proc *p;
 {
-	register struct st_softc *sc = &st_softc[UNIT(dev)];
-	register int hit = 0;
+	struct st_softc *sc = st_cd.cd_devs[UNIT(dev)];
+	int hit = 0;
 
 	if ((sc->sc_flags & (STF_WMODE|STF_WRTTN)) == (STF_WMODE|STF_WRTTN)) {
 		/*
@@ -708,7 +649,7 @@ stclose(dev, flag)
 		stcommand(dev, MTFSR, 0); 
 #endif
 	/* make stats available */
-	stxsense(sc->sc_dq.dq_ctlr, sc->sc_dq.dq_slave, sc->sc_punit, sc);
+	stxsense(sc->sc_dev.dv_parent->dv_unit, sc->sc_target, sc->sc_lun, sc);
 
 	sc->sc_flags &= ~(STF_OPEN|STF_WMODE|STF_WRTTN);
 	tprintf_close(sc->sc_ctty);
@@ -717,13 +658,16 @@ stclose(dev, flag)
 
 void
 ststrategy(bp)
-	register struct buf *bp;
+	struct buf *bp;
 {
+	struct st_softc *sc;
 	struct buf *dp;
 	int unit, s;
 
 	unit = UNIT(bp->b_dev);
-	dp = &sttab[unit];
+	sc = st_cd.cd_devs[unit];
+
+	dp = &sc->sc_tab;
 	bp->b_actf = NULL;
 	s = splbio();
 	bp->b_actb = dp->b_actb;
@@ -736,34 +680,38 @@ ststrategy(bp)
 	splx(s);
 }
 
+void
 stustart(unit)
 	int unit;
 {
-	if (scsireq(&st_softc[unit].sc_dq))
-		ststart(unit);
+	struct st_softc *sc = st_cd.cd_devs[unit];
+
+	if (scsireq(sc->sc_dev.dv_parent, &sc->sc_sq))
+		ststart(sc);
 }
 
-ststart(unit)
-	int unit;
+void
+ststart(arg)
+	void *arg;
 {
-	struct hp_device *hp = st_softc[unit].sc_hd;
+	struct st_softc *sc = arg;
 
-	if (scsiustart(hp->hp_ctlr))
-		stgo(unit);
+	if (scsiustart(sc->sc_dev.dv_parent->dv_unit))
+		stgo(arg);
 }
 
-stgo(unit)
-	int unit;
+void
+stgo(arg)
+	void *arg;
 {
-	register struct st_softc *sc = &st_softc[unit];
-	register struct scsi_fmt_cdb *cmd;
-	register struct buf *bp = sttab[unit].b_actf;
-	struct hp_device *hp = sc->sc_hd;
+	struct st_softc *sc = arg;
+	struct scsi_fmt_cdb *cmd;
+	struct buf *bp = sc->sc_tab.b_actf;
 	int pad, stat;
 	long nblks;
 
 	if (sc->sc_flags & STF_CMD) {
-		cmd = &stcmd[unit];
+		cmd = &sc->sc_cmdstore;
 		pad = 0;
 	} else {
 		cmd = bp->b_flags & B_READ ? &st_read_cmd : &st_write_cmd;
@@ -780,8 +728,9 @@ stgo(unit)
 			nblks = bp->b_bcount / sc->sc_blklen;
 			if (bp->b_bcount % sc->sc_blklen) {
 				tprintf(sc->sc_ctty,
-					"st%d: I/O not block aligned %d/%ld\n",
-					unit, sc->sc_blklen, bp->b_bcount);
+					"%s: I/O not block aligned %d/%ld\n",
+					sc->sc_dev.dv_xname, sc->sc_blklen,
+					bp->b_bcount);
 				cmd->cdb[1] &= 0xfe; /* force error */
 			}
 		} else	/* variable len */
@@ -810,48 +759,48 @@ stgo(unit)
 	if (bp->b_bcount & 1) {
 #ifdef DEBUG
 		if (st_debug & ST_ODDIO)
-			printf("stgo%d: odd count %d using manual transfer\n",
-			       unit, bp->b_bcount);
+			printf("%s: stgo: odd count %ld using manual transfer\n",
+			       sc->sc_dev.dv_xname, bp->b_bcount);
 #endif
-		stat = scsi_tt_oddio(hp->hp_ctlr, hp->hp_slave, sc->sc_punit,
-				     bp->b_un.b_addr, bp->b_bcount,
-				     bp->b_flags, 1);
+		stat = scsi_tt_oddio(sc->sc_dev.dv_parent->dv_unit,
+		    sc->sc_target, sc->sc_lun, bp->b_un.b_addr, bp->b_bcount,
+		    bp->b_flags, 1);
 		if (stat == 0) {
 			bp->b_resid = 0;
-			stfinish(unit, sc, bp);
+			stfinish(sc, bp);
 		}
 	} else
-		stat = scsigo(hp->hp_ctlr, hp->hp_slave, sc->sc_punit,
-			      bp, cmd, pad);
+		stat = scsigo(sc->sc_dev.dv_parent->dv_unit,
+		    sc->sc_target, sc->sc_lun, bp, cmd, pad);
 	if (stat) {
 		bp->b_error = EIO;
 		bp->b_flags |= B_ERROR;
-		stxsense(sc->sc_dq.dq_ctlr, sc->sc_dq.dq_slave, 
-			 sc->sc_punit, sc);
-		sterror(unit, sc, stat);
-		stfinish(unit, sc, bp);
+		stxsense(sc->sc_dev.dv_parent->dv_unit, sc->sc_target,
+		    sc->sc_lun, sc);
+		sterror(sc, stat);
+		stfinish(sc, bp);
 	}
 }
 
-stfinish(unit, sc, bp)
-	int unit;
+static void
+stfinish(sc, bp)
 	struct st_softc *sc;
 	struct buf *bp;
 {
-	register struct buf *dp;
+	struct buf *dp;
 
-	sttab[unit].b_errcnt = 0;
-	if (dp = bp->b_actf)
+	sc->sc_tab.b_errcnt = 0;
+	if ((dp = bp->b_actf))
 		dp->b_actb = bp->b_actb;
 	else
-		sttab[unit].b_actb = bp->b_actb;
+		sc->sc_tab.b_actb = bp->b_actb;
 	*bp->b_actb = dp;
 	iodone(bp);
-	scsifree(&sc->sc_dq);
-	if (sttab[unit].b_actf)
-		stustart(unit);
+	scsifree(sc->sc_dev.dv_parent, &sc->sc_sq);
+	if (sc->sc_tab.b_actf)
+		stustart(sc->sc_dev.dv_unit);
 	else
-		sttab[unit].b_active = 0;
+		sc->sc_tab.b_active = 0;
 }
 
 int
@@ -876,6 +825,7 @@ stwrite(dev, uio, flags)
 }
 
 /*ARGSUSED*/
+int
 stdump(dev)
 	dev_t dev;
 {
@@ -883,19 +833,20 @@ stdump(dev)
 }
 
 /*ARGSUSED*/
+int
 stioctl(dev, cmd, data, flag, p)
 	dev_t dev;
-	int cmd;
+	u_long cmd;
 	caddr_t data; 
 	int flag;
 	struct proc *p;
 {
-	register struct st_softc *sc = &st_softc[UNIT(dev)];
-	register int cnt;
-	register struct mtget *mtget;
-	register struct st_xsense *xp = &st_xsense[UNIT(dev)];
-	register struct mtop *op;
-	long resid;
+	struct st_softc *sc = st_cd.cd_devs[UNIT(dev)];
+	int cnt;
+	struct mtget *mtget;
+	struct st_xsense *xp = &sc->sc_sense;
+	struct mtop *op;
+	long resid = 0;	/* XXX compiler complains needlessly :-( */
 
 	switch (cmd) {
 
@@ -932,8 +883,8 @@ stioctl(dev, cmd, data, flag, p)
 	/* drive status */
 	case MTIOCGET:
 		mtget = (struct mtget *)data;
-		stxsense(sc->sc_dq.dq_ctlr, sc->sc_dq.dq_slave, 
-			 sc->sc_punit, sc);
+		stxsense(sc->sc_dev.dv_parent->dv_unit, sc->sc_target,
+		    sc->sc_lun, sc);
 		mtget->mt_type = sc->sc_tapeid;
 		mtget->mt_dsreg = 0;
 		mtget->mt_erreg = ((xp->sc_xsense.valid << 15) |
@@ -970,17 +921,18 @@ stioctl(dev, cmd, data, flag, p)
 	return(0);
 }
 
-stintr(unit, stat)
-	int unit, stat;
+void
+stintr(arg, stat)
+	void *arg;
+	int stat;
 {
-	register struct st_softc *sc = &st_softc[unit];
-	register struct st_xsense *xp = &st_xsense[unit];
-	register struct buf *bp = sttab[unit].b_actf;
-	struct hp_device *hp = sc->sc_hd;
+	struct st_softc *sc = arg;
+	struct st_xsense *xp = &sc->sc_sense;
+	struct buf *bp = sc->sc_tab.b_actf;
 
 #ifdef DEBUG
 	if (bp == NULL) {
-		printf("st%d: bp == NULL\n", unit);
+		printf("%s: bp == NULL\n", sc->sc_dev.dv_xname);
 		return;
 	}
 #endif
@@ -992,8 +944,8 @@ stintr(unit, stat)
 
 	/* more status */
 	case STS_CHECKCOND:
-		stxsense(sc->sc_dq.dq_ctlr, sc->sc_dq.dq_slave, 
-			 sc->sc_punit, sc);
+		stxsense(sc->sc_dev.dv_parent->dv_unit, sc->sc_target,
+		    sc->sc_lun, sc);
 		if (xp->sc_xsense.valid) {
 			bp->b_resid = (u_long)((xp->sc_xsense.info1 << 24) |
 					      (xp->sc_xsense.info2 << 16) |
@@ -1010,7 +962,7 @@ stintr(unit, stat)
 		    && xp->sc_xsense.key != XSK_NOTUSED1
 		    && xp->sc_xsense.key != XSK_NOTUSEDC
 		    && xp->sc_xsense.key != XSK_NOTUSEDE) {
-			sterror(unit, sc, stat);
+			sterror(sc, stat);
 			bp->b_flags |= B_ERROR;
 			bp->b_error = EIO;
 			break;
@@ -1021,8 +973,9 @@ stintr(unit, stat)
 			 */
 			if (sc->sc_blklen) {
 				tprintf(sc->sc_ctty,
-					"st%d: Incorrect Length Indicator, blkcnt diff %d\n",
-					unit, sc->sc_blklen - bp->b_resid);
+					"%s: Incorrect Length Indicator, blkcnt diff %ld\n",
+					sc->sc_dev.dv_xname,
+					sc->sc_blklen - bp->b_resid);
 				bp->b_flags |= B_ERROR;
 				bp->b_error = EIO;
 				break;
@@ -1047,8 +1000,8 @@ stintr(unit, stat)
 				 */
 				if (!st_dmaoddretry) {
 					tprintf(sc->sc_ctty,
-						"st%d: Odd length read %d\n", 
-						UNIT(bp->b_dev),
+						"%s: Odd length read %ld\n", 
+						sc->sc_dev.dv_xname,
 						bp->b_bcount - bp->b_resid);
 					bp->b_error = EIO;
 					bp->b_flags |= B_ERROR;
@@ -1059,25 +1012,26 @@ stintr(unit, stat)
 				 */
 #ifdef DEBUG
 				if (st_debug & ST_ODDIO)
-					printf("st%d: stintr odd count %d, do BSR then oddio\n",
-					       UNIT(bp->b_dev),
+					printf("%s: stintr odd count %ld, do BSR then oddio\n",
+					       sc->sc_dev.dv_xname,
 					       bp->b_bcount - bp->b_resid);
 #endif
-				stat = scsi_tt_oddio(hp->hp_ctlr, hp->hp_slave,
-						     sc->sc_punit, 0, -1, 0, 0);
+				stat =
+				  scsi_tt_oddio(sc->sc_dev.dv_parent->dv_unit,
+				  sc->sc_target, sc->sc_lun, 0, -1, 0, 0);
 				if (stat == 0)
-					stat = scsi_tt_oddio(hp->hp_ctlr,
-							     hp->hp_slave,
-							     sc->sc_punit,
-							     bp->b_un.b_addr,
-							     bp->b_bcount - bp->b_resid,
-							     bp->b_flags, 0);
+					stat = scsi_tt_oddio(
+					    sc->sc_dev.dv_parent->dv_unit,
+					    sc->sc_target, sc->sc_lun,
+					    bp->b_un.b_addr,
+					    bp->b_bcount - bp->b_resid,
+					    bp->b_flags, 0);
 				if (stat) {
 					bp->b_error = EIO;
 					bp->b_flags |= B_ERROR;
-					stxsense(sc->sc_dq.dq_ctlr, sc->sc_dq.dq_slave,
-						 sc->sc_punit, sc);
-					sterror(unit, sc, stat);
+					stxsense(sc->sc_dev.dv_parent->dv_unit,
+					    sc->sc_target, sc->sc_lun, sc);
+					sterror(sc, stat);
 				}
 			}
 			break;
@@ -1087,18 +1041,20 @@ stintr(unit, stat)
 			bp->b_error = ENOSPC;
 			break;
 		}
-		tprintf(sc->sc_ctty, "st%d: unknown scsi error\n", unit);
+		tprintf(sc->sc_ctty, "%s: unknown scsi error\n",
+		    sc->sc_dev.dv_xname);
 		bp->b_flags |= B_ERROR;
 		bp->b_error = EIO;
 		break;
 
 	default:
-		printf("st%d: stintr unknown stat 0x%x\n", unit, stat);
+		printf("%s: stintr unknown stat 0x%x\n", sc->sc_dev.dv_xname,
+		    stat);
 		break;
 	}
 #ifdef DEBUG
 	if ((st_debug & ST_BRESID) && bp->b_resid != 0)
-		printf("b_resid %d b_flags 0x%x b_error 0x%x\n", 
+		printf("b_resid %u b_flags 0x%lx b_error 0x%x\n", 
 		       bp->b_resid, bp->b_flags, bp->b_error);
 #endif
 	/* asked for more filemarks then on tape */
@@ -1110,7 +1066,7 @@ stintr(unit, stat)
 	}
 
 #ifdef TTI
-	if (st_extti & (1<<unit) &&
+	if (st_extti & (1 << sc->sc_dev.dv_unit) &&
 	    sc->sc_type == MT_ISEXABYTE) /* to make display lit up */
 		/*
 		 * XXX severe performance penality for this.
@@ -1118,28 +1074,28 @@ stintr(unit, stat)
 		 * Mostly for TTi we, get a stxsense call in open and close.
 		 */
 		if (sc->sc_tticntdwn-- == 0) {
-			stxsense(sc->sc_dq.dq_ctlr, sc->sc_dq.dq_slave,
-				 sc->sc_punit, sc);
+			stxsense(sc->sc_dev.dv_parent->dv_unit,
+			    sc->sc_target, sc->sc_lun, sc);
 			sc->sc_tticntdwn = 100;
 		}
 #endif
 
-	stfinish(unit, sc, bp);
+	stfinish(sc, bp);
 }
 
+void
 stcommand(dev, command, cnt)
 	dev_t dev;
 	u_int command;
 	int cnt;
 {
-	register struct st_softc *sc = &st_softc[UNIT(dev)];
-	register struct buf *bp = &stbuf[UNIT(dev)];
-	register struct scsi_fmt_cdb *cmd = &stcmd[UNIT(dev)];
-	register cmdcnt;
-	int s;
+	struct st_softc *sc = st_cd.cd_devs[UNIT(dev)];
+	struct buf *bp = &sc->sc_bufstore;
+	struct scsi_fmt_cdb *cmd = &sc->sc_cmdstore;
+	int cmdcnt, s;
 
 	cmd->len = 6; /* all tape commands are cdb6 */
-	cmd->cdb[1] = sc->sc_punit;
+	cmd->cdb[1] = sc->sc_lun;
 	cmd->cdb[2] = cmd->cdb[3] = cmd->cdb[4] = cmd->cdb[5] = 0;
 	cmdcnt = 0;
 
@@ -1205,8 +1161,8 @@ stcommand(dev, command, cnt)
 		sc->sc_filepos = 0;
 		break;
 	default:
-		printf("st%d: stcommand bad command 0x%x\n", 
-		       UNIT(dev), command);
+		printf("%s: stcommand bad command 0x%x\n", 
+		       sc->sc_dev.dv_xname, command);
 	}
 
 	sc->sc_flags |= STF_CMD;
@@ -1216,8 +1172,8 @@ stcommand(dev, command, cnt)
 again:
 #ifdef DEBUG
 	if (st_debug & ST_FMKS)
-		printf("st%d: stcommand filepos %d cmdcnt %d cnt %d\n", 
-		       UNIT(dev), sc->sc_filepos, cmdcnt, cnt);
+		printf("%s: stcommand filepos %d cmdcnt %d cnt %d\n", 
+		       sc->sc_dev.dv_xname, sc->sc_filepos, cmdcnt, cnt);
 #endif
 	s = splbio();
 	while (bp->b_flags & B_BUSY) {
@@ -1249,38 +1205,39 @@ again:
 	sc->sc_flags &= ~(STF_CMD|STF_WRTTN);
 }
 
-sterror(unit, sc, stat)
-	int unit, stat;
+static void
+sterror(sc, stat)
 	struct st_softc *sc;
+	int stat;
 {
 	/* stxsense must have been called before sterror() */
 	if (stat & STS_CHECKCOND)
-		prtkey(unit, sc);
+		prtkey(sc);
 	else if (stat)
 		tprintf(sc->sc_ctty,
-			"st%d: bad scsi status 0x%x\n", unit, stat);
+			"%s: bad scsi status 0x%x\n", sc->sc_dev.dv_xname,
+			    stat);
 
 	if ((sc->sc_flags & STF_CMD) && sc->sc_cmd == CMD_SPACE) /* fsf */
 		sc->sc_filepos--;
 }
 
+void
 stxsense(ctlr, slave, unit, sc)
 	int ctlr, slave, unit;
 	struct st_softc *sc;
 {
-	u_char *sensebuf;
 	unsigned len;
 
-	sensebuf = (u_char *)&st_xsense[sc->sc_dq.dq_unit];
 	len = sc->sc_datalen[CMD_REQUEST_SENSE];
-	scsi_request_sense(ctlr, slave, unit, sensebuf, len);
+	scsi_request_sense(ctlr, slave, unit, (u_char *)&sc->sc_sense, len);
 }
 
-prtkey(unit, sc)
-	int unit;
+void
+prtkey(sc)
 	struct st_softc *sc;
 {
-	register struct st_xsense *xp = &st_xsense[unit];
+	struct st_xsense *xp = &sc->sc_sense;
 
 	switch (xp->sc_xsense.key) {
 	case XSK_NOSENCE:
@@ -1290,32 +1247,36 @@ prtkey(unit, sc)
 	case XSK_NOTUSEDE:
 		break;
 	case XSK_REVERVED:
-		tprintf(sc->sc_ctty, "st%d: Reserved sense key 0x%x\n",
-			unit, xp->sc_xsense.key);
+		tprintf(sc->sc_ctty, "%s: Reserved sense key 0x%x\n",
+			sc->sc_dev.dv_xname, xp->sc_xsense.key);
 		break;
 	case XSK_NOTRDY:
-		tprintf(sc->sc_ctty, "st%d: NOT READY\n", unit);
+		tprintf(sc->sc_ctty, "%s: NOT READY\n", sc->sc_dev.dv_xname);
 		break;
 	case XSK_MEDERR:
-		tprintf(sc->sc_ctty, "st%d: MEDIUM ERROR\n", unit);
+		tprintf(sc->sc_ctty, "%s: MEDIUM ERROR\n", sc->sc_dev.dv_xname);
 		break;
 	case XSK_HRDWERR:
-		tprintf(sc->sc_ctty, "st%d: HARDWARE ERROR\n", unit);
+		tprintf(sc->sc_ctty, "%s: HARDWARE ERROR\n",
+		    sc->sc_dev.dv_xname);
 		break;
 	case XSK_ILLREQ:
-		tprintf(sc->sc_ctty, "st%d: ILLEGAL REQUEST\n", unit);
+		tprintf(sc->sc_ctty, "%s: ILLEGAL REQUEST\n",
+		    sc->sc_dev.dv_xname);
 		break;
 	case XSK_UNTATTEN:
-		tprintf(sc->sc_ctty, "st%d: UNIT ATTENTION\n", unit);
+		tprintf(sc->sc_ctty, "%s: UNIT ATTENTION\n",
+		    sc->sc_dev.dv_xname);
 		break;
 	case XSK_DATAPROT:
-		tprintf(sc->sc_ctty, "st%d: DATA PROTECT\n", unit);
+		tprintf(sc->sc_ctty, "%s: DATA PROTECT\n", sc->sc_dev.dv_xname);
 		break;
 	case XSK_BLNKCHK:
-		tprintf(sc->sc_ctty, "st%d: BLANK CHECK\n", unit);
+		tprintf(sc->sc_ctty, "%s: BLANK CHECK\n", sc->sc_dev.dv_xname);
 		break;
 	case XSK_VENDOR:
-		tprintf(sc->sc_ctty, "st%d: VENDER UNIQUE SENSE KEY ", unit);
+		tprintf(sc->sc_ctty, "%s: VENDER UNIQUE SENSE KEY ",
+		    sc->sc_dev.dv_xname);
 		switch (sc->sc_tapeid) {
 		case MT_ISEXABYTE:
 			tprintf(sc->sc_ctty, "Exabyte: ");
@@ -1331,53 +1292,63 @@ prtkey(unit, sc)
 		}
 		break;
 	case XSK_CPYABORT:
-		tprintf(sc->sc_ctty, "st%d: COPY ABORTED\n", unit);
+		tprintf(sc->sc_ctty, "%s: COPY ABORTED\n", sc->sc_dev.dv_xname);
 		break;
 	case XSK_ABORTCMD:
-		tprintf(sc->sc_ctty, "st%d: ABORTED COMMAND\n", unit);
+		tprintf(sc->sc_ctty, "%s: ABORTED COMMAND\n",
+		    sc->sc_dev.dv_xname);
 		break;
 	case XSK_VOLOVER:
-		tprintf(sc->sc_ctty, "st%d: VOLUME OVERFLOW\n", unit);
+		tprintf(sc->sc_ctty, "%s: VOLUME OVERFLOW\n",
+		    sc->sc_dev.dv_xname);
 		break;
 	default:
-		tprintf(sc->sc_ctty, "st%d: unknown sense key 0x%x\n",
-			unit, xp->sc_xsense.key);
+		tprintf(sc->sc_ctty, "%s: unknown sense key 0x%x\n",
+			sc->sc_dev.dv_xname, xp->sc_xsense.key);
 	}
 	if (sc->sc_tapeid == MT_ISEXABYTE) {
 		if (xp->exb_xsense.bpe)
-			tprintf(sc->sc_ctty, "st%d: Bus Parity Errorn", unit);
+			tprintf(sc->sc_ctty, "%s: Bus Parity Error",
+			    sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.fpe)
 			tprintf(sc->sc_ctty,
-				"st%d: Formatted Buffer Parity Errorn", unit);
+				"%s: Formatted Buffer Parity Error",
+				sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.eco)
-			tprintf(sc->sc_ctty, "st%d: Error Counter Overflown",
-				unit);
+			tprintf(sc->sc_ctty, "%s: Error Counter Overflow",
+				sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.tme)
-			tprintf(sc->sc_ctty, "st%d: Tape Motion Errorn", unit);
+			tprintf(sc->sc_ctty, "%s: Tape Motion Error",
+			    sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.xfr)
-			tprintf(sc->sc_ctty, "st%d: Transfer About Errorn",
-				unit);
+			tprintf(sc->sc_ctty, "%s: Transfer About Error",
+				sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.tmd)
-			tprintf(sc->sc_ctty, "st%d: Tape Mark Detect Errorn",
-				unit);
+			tprintf(sc->sc_ctty, "%s: Tape Mark Detect Error",
+				sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.fmke)
-			tprintf(sc->sc_ctty, "st%d: Filemark Errorn", unit);
+			tprintf(sc->sc_ctty, "%s: Filemark Error",
+			    sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.ure)
-			tprintf(sc->sc_ctty, "st%d: Under Run Errorn", unit);
+			tprintf(sc->sc_ctty, "%s: Under Run Error",
+			    sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.sse)
-			tprintf(sc->sc_ctty, "st%d: Servo System Errorn",
-				unit);
+			tprintf(sc->sc_ctty, "%s: Servo System Error",
+				sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.fe)
-			tprintf(sc->sc_ctty, "st%d: Formatter Errorn", unit);
+			tprintf(sc->sc_ctty, "%s: Formatter Error",
+			    sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.wseb)
-			tprintf(sc->sc_ctty, "st%d: WSEB Errorn", unit);
+			tprintf(sc->sc_ctty, "%s: WSEB Error",
+			    sc->sc_dev.dv_xname);
 		if (xp->exb_xsense.wseo)
-			tprintf(sc->sc_ctty, "st%d: WSEO Errorn", unit);
+			tprintf(sc->sc_ctty, "%s: WSEO Error",
+			    sc->sc_dev.dv_xname);
 	}
 }
 
 #ifdef DEBUG
-
+void
 dumpxsense(sensebuf)
 	struct st_xsense *sensebuf;
 {
@@ -1420,6 +1391,7 @@ dumpxsense(sensebuf)
 			(xp->exb_xsense.tplft0)) );
 }
 
+void
 prtmodsel(msd, modlen)
 	struct mode_select_data *msd;
 	int modlen;
@@ -1433,6 +1405,7 @@ prtmodsel(msd, modlen)
 	       msd->vupb,msd->rsvd5,msd->p5,msd->motionthres,msd->reconthres,msd->gapthres);
 }
 
+void
 prtmodstat(mode)
 	struct mode_sense *mode;
 {
@@ -1451,5 +1424,3 @@ prtmodstat(mode)
 	       mode->ex.motionthres, mode->ex.reconthres,  mode->ex.gapthres);
 }
 #endif /* DEBUG */
-
-#endif

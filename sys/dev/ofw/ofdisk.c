@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofdisk.c,v 1.4 1998/10/03 21:19:01 millert Exp $	*/
 /*	$NetBSD: ofdisk.c,v 1.3 1996/10/13 01:38:13 christos Exp $	*/
 
 /*
@@ -53,8 +54,8 @@ struct ofd_softc {
 	char sc_name[16];
 };
 
-static int ofdprobe __P((struct device *, void *, void *));
-static void ofdattach __P((struct device *, struct device *, void *));
+static int ofdprobe(struct device *, void *, void *);
+static void ofdattach(struct device *, struct device *, void *);
 
 struct cfattach ofdisk_ca = {
 	sizeof(struct ofd_softc), ofdprobe, ofdattach
@@ -64,7 +65,7 @@ struct cfdriver ofdisk_cd = {
 	NULL, "ofdisk", DV_DISK
 };
 
-void ofdstrategy __P((struct buf *));
+void ofdstrategy(struct buf *);
 
 struct dkdriver ofdkdriver = { ofdstrategy };
 
@@ -175,8 +176,8 @@ ofdopen(dev, flags, fmt, p)
 		lp->d_partitions[RAW_PART].p_offset = 0;
 		lp->d_partitions[RAW_PART].p_size = lp->d_secperunit;
 		
-		readdisklabel(MAKEDISKDEV(major(dev), unit, RAW_PART), ofdstrategy,
-			      lp, of->sc_dk.dk_cpulabel);
+		readdisklabel(MAKEDISKDEV(major(dev), unit, RAW_PART),
+		    ofdstrategy, lp, of->sc_dk.dk_cpulabel, 0);
 	}
 
 	switch (fmt) {
@@ -243,7 +244,8 @@ ofdstrategy(bp)
 	OF_io = bp->b_flags & B_READ ? OF_read : OF_write;
 
 	if (DISKPART(bp->b_dev) != RAW_PART) {
-		if (bounds_check_with_label(bp, of->sc_dk.dk_label, 0) <= 0) {
+		if (bounds_check_with_label(bp, of->sc_dk.dk_label,
+		    of->sc_dk.dk_cpulabel, 0) <= 0) {
 			bp->b_resid = bp->b_bcount;
 			goto done;
 		}

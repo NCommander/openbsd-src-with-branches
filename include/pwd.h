@@ -1,4 +1,5 @@
-/*	$NetBSD: pwd.h,v 1.8 1995/07/28 05:30:52 phil Exp $	*/
+/*	$OpenBSD: pwd.h,v 1.12 2001/08/26 03:28:30 millert Exp $	*/
+/*	$NetBSD: pwd.h,v 1.9 1996/05/15 21:36:45 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -8,7 +9,7 @@
  * to the University of California by American Telephone and Telegraph
  * Co. or Unix System Laboratories, Inc. and are reproduced herein with
  * the permission of UNIX System Laboratories, Inc.
- * Portions Copyright(C) 1995, Jason Downs.  All rights reserved.
+ * Portions Copyright(C) 1995, 1996, Jason Downs.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -48,7 +49,9 @@
 
 #ifndef _POSIX_SOURCE
 #define	_PATH_PASSWD		"/etc/passwd"
+#define _PATH_PASSWDCONF	"/etc/passwd.conf"
 #define	_PATH_MASTERPASSWD	"/etc/master.passwd"
+#define	_PATH_MASTERPASSWD_LOCK	"/etc/ptmp"
 
 #define	_PATH_MP_DB		"/etc/pwd.db"
 #define	_PATH_SMP_DB		"/etc/spwd.db"
@@ -59,22 +62,30 @@
 #define	_PW_KEYBYNUM		'2'	/* stored by entry in the "file" */
 #define	_PW_KEYBYUID		'3'	/* stored by uid */
 
+#define _PW_YPTOKEN		"__YP!"
+
 #define	_PASSWORD_EFMT1		'_'	/* extended encryption format */
 
-#define	_PASSWORD_LEN		128	/* max length, not counting NULL */
+#define	_PASSWORD_LEN		128	/* max length, not counting NUL */
+#define	_PW_NAME_LEN		31	/* max length, not counting NUL */
+					/* Should be MAXLOGNAME - 1 */
 
 #define _PASSWORD_NOUID		0x01	/* flag for no specified uid. */
 #define _PASSWORD_NOGID		0x02	/* flag for no specified gid. */
 #define _PASSWORD_NOCHG		0x04	/* flag for no specified change. */
 #define _PASSWORD_NOEXP		0x08	/* flag for no specified expire. */
 
+/* Flags for pw_mkdb(3) */
+#define	_PASSWORD_SECUREONLY	0x01	/* only generate spwd.db file */
+#define	_PASSWORD_OMITV7	0x02	/* don't generate v7 passwd file */
+
 #endif
 
 struct passwd {
 	char	*pw_name;		/* user name */
 	char	*pw_passwd;		/* encrypted password */
-	int	pw_uid;			/* user uid */
-	int	pw_gid;			/* user gid */
+	uid_t	pw_uid;			/* user uid */
+	uid_t	pw_gid;			/* user gid */
 	time_t	pw_change;		/* password change time */
 	char	*pw_class;		/* user access class */
 	char	*pw_gecos;		/* Honeywell login info */
@@ -86,16 +97,18 @@ struct passwd {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-struct passwd	*getpwuid __P((uid_t));
-struct passwd	*getpwnam __P((const char *));
+struct passwd	*getpwuid(uid_t);
+struct passwd	*getpwnam(const char *);
 #ifndef _POSIX_SOURCE
-struct passwd	*getpwent __P((void));
+struct passwd	*getpwent(void);
 #ifndef _XOPEN_SOURCE
-int		 setpassent __P((int));
-char		*user_from_uid __P((uid_t, int));
+int		 setpassent(int);
+char		*user_from_uid(uid_t, int);
+char		*bcrypt_gensalt(u_int8_t);
+struct passwd	*pw_dup(const struct passwd *);
 #endif
-void		 setpwent __P((void));
-void		 endpwent __P((void));
+void		 setpwent(void);
+void		 endpwent(void);
 #endif
 __END_DECLS
 

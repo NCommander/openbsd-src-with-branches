@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.5 2001/08/22 10:41:46 art Exp $
 #	$NetBSD: Makefile,v 1.2 2001/03/04 14:50:05 mrg Exp $
 
 CURDIR=	${.CURDIR}
@@ -10,12 +11,13 @@ S=	${CURDIR}/../../../..
 WARNS=		0
 
 PROG?=		ofwboot
+NOMAN=		ja, man!
 SRCS=		srt0.s Locore.c boot.c ofdev.c alloc.c net.c netif_of.c vers.c
 .PATH:		${S}/arch/sparc64/sparc64
 
 CWARNFLAGS+=	-Wno-main
 CFLAGS+=	${COPTS} ${CEXTRAFLAGS}
-CPPFLAGS+=	-D_STANDALONE -DSUN4U
+CPPFLAGS+=	-D_STANDALONE -DSUN4U -nostdinc
 #CPPFLAGS+=	-DNETIF_DEBUG 
 
 MKMAN=		no
@@ -49,16 +51,10 @@ CPPFLAGS+=	-DSPARC_BOOT_UFS
 CPPFLAGS+=	-DSPARC_BOOT_NFS
 #CPPFLAGS+=	-DSPARC_BOOT_HSFS
 
-.NOPATH: machine sparc64
-${SRCS}: machine sparc64
-
-machine:
-	rm -f machine
-	ln -s sparc64 machine
-
-sparc64:
-	rm -f sparc64
-	ln -s ${.CURDIR}/../../../sparc64/include sparc64
+.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(kernlibdir) && !make(obj)
+.BEGIN:
+	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
+.endif
 
 vers.c: version
 	sh ${S}/conf/newvers.sh ${CURDIR}/version "sparc64" ${NEWVERSWHAT}

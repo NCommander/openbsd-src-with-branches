@@ -1,3 +1,5 @@
+/*	$OpenBSD: ite_cl.c,v 1.4 2000/12/15 17:41:45 espie Exp $	*/
+/*	$NetBSD: ite_cl.c,v 1.3.2.1 1999/06/28 23:22:17 perry Exp $	*/
 
 /*
  * Copyright (c) 1995 Ezra Story
@@ -56,13 +58,13 @@ int cl_console = 1;
 int cl_console = 0;
 #endif
 
-void cl_init __P((struct ite_softc *ip));
-void cl_cursor __P((struct ite_softc *ip, int flag));
-void cl_deinit __P((struct ite_softc *ip));
-void cl_putc __P((struct ite_softc *ip, int c, int dy, int dx, int mode));
-void cl_clear __P((struct ite_softc *ip, int sy, int sx, int h, int w));
-void cl_scroll __P((struct ite_softc *ip, int sy, int sx, int count,
-    int dir));
+void cl_init(struct ite_softc *ip);
+void cl_cursor(struct ite_softc *ip, int flag);
+void cl_deinit(struct ite_softc *ip);
+void cl_putc(struct ite_softc *ip, int c, int dy, int dx, int mode);
+void cl_clear(struct ite_softc *ip, int sy, int sx, int h, int w);
+void cl_scroll(struct ite_softc *ip, int sy, int sx, int count,
+    int dir);
 
 
 /*
@@ -159,16 +161,40 @@ cl_putc(ip, c, dy, dx, mode)
 	unsigned char attr;
 	unsigned char *cp;
 
+	if (ip->flags & ITE_INGRF)
+		return;
+
+#if 0
 	attr =(unsigned char) ((mode & ATTR_INV) ? (0x70) : (0x07));
 	if (mode & ATTR_UL)     attr  = 0x01;	/* ???????? */
 	if (mode & ATTR_BOLD)   attr |= 0x08;
 	if (mode & ATTR_BLINK)  attr |= 0x80;
+#endif
+	attr = 2;
+	switch (mode & (ATTR_UL | ATTR_BLINK)) {
+	case 0:
+		break;
+        case ATTR_UL:
+		attr += 2;
+		break;
+	case ATTR_BLINK:
+		attr += 4;
+		break;
+	case ATTR_BLINK | ATTR_UL:
+		attr += 7;
+		break;
+	}
+	if (mode & ATTR_BOLD)
+		attr++;
+
+	if (mode & ATTR_INV)
+		attr <<= 4;
 
 	cp = fb + ((dy * ip->cols) + dx);
 	SetTextPlane(ba,0x00);
 	*cp = (unsigned char) c;
 	SetTextPlane(ba,0x01);
-	*cp = (unsigned char) attr;
+	*cp = attr;
 }
 
 void
@@ -186,6 +212,9 @@ cl_clear(ip, sy, sx, h, w)
     	unsigned char *src, *dst;
     	volatile unsigned char *ba = ip->grf->g_regkva;
     	int len;
+
+	if (ip->flags & ITE_INGRF)
+		return;
 
     	dst = ip->grf->g_fbkva + (sy * ip->cols) + sx;
     	src = dst + (ip->rows*ip->cols); 
@@ -207,6 +236,9 @@ cl_scroll(ip, sy, sx, count, dir)
 {
     	unsigned char *fb;
     	volatile unsigned char *ba = ip->grf->g_regkva;
+
+	if (ip->flags & ITE_INGRF)
+		return;
 
     	fb = ip->grf->g_fbkva + sy * ip->cols;
     	SetTextPlane(ba, 0x00);

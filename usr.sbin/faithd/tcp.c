@@ -1,7 +1,10 @@
+/*	$OpenBSD: tcp.c,v 1.9 2001/11/17 19:49:38 deraadt Exp $	*/
+/*	$KAME: tcp.c,v 1.6 2001/07/02 14:36:49 itojun Exp $	*/
+
 /*
  * Copyright (C) 1997 and 1998 WIDE Project.
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +16,7 @@
  * 3. Neither the name of the project nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -56,15 +59,15 @@ static fd_set readfds, writefds, exceptfds;
 static char atmark_buf[2];
 static pid_t cpid = (pid_t)0;
 static pid_t ppid = (pid_t)0;
-static time_t child_lastactive = (time_t)0;
+volatile time_t child_lastactive = (time_t)0;
 static time_t parent_lastactive = (time_t)0;
 
-static void sig_ctimeout __P((int));
-static void sig_child __P((int));
-static void notify_inactive __P((void));
-static void notify_active __P((void));
-static void send_data __P((int, int, const char *, int));
-static void relay __P((int, int, const char *, int));
+static void sig_ctimeout(int);
+static void sig_child(int);
+static void notify_inactive(void);
+static void notify_active(void);
+static void send_data(int, int, const char *, int);
+static void relay(int, int, const char *, int);
 
 /*
  * Inactivity timer:
@@ -75,23 +78,29 @@ static void relay __P((int, int, const char *, int));
 static void
 sig_ctimeout(int sig)
 {
+	int save_errno = errno;
+	struct syslog_data sdata = SYSLOG_DATA_INIT;
+
 	/* parent side: record notification from the child */
 	if (dflag)
-		syslog(LOG_DEBUG, "activity timer from child");
+		syslog_r(LOG_DEBUG, &sdata, "activity timer from child");
 	child_lastactive = time(NULL);
+	errno = save_errno;
 }
 
 /* parent will terminate if child dies. */
 static void
 sig_child(int sig)
 {
+	struct syslog_data sdata = SYSLOG_DATA_INIT;
 	int status;
 	pid_t pid;
 
 	pid = wait3(&status, WNOHANG, (struct rusage *)0);
-	if (pid && status)
-		syslog(LOG_WARNING, "child %d exit status 0x%x", pid, status);
-	exit_failure("terminate connection due to child termination");
+	if (pid > 0 && WEXITSTATUS(status))
+		syslog_r(LOG_WARNING, &sdata,
+		    "child %d exit status 0x%x", pid, status);
+	exit_success("terminate connection due to child termination");
 }
 
 static void
@@ -175,7 +184,7 @@ send_data(int s_rcv, int s_snd, const char *service, int direction)
 	return;
     retry_or_err:
 	if (errno != EAGAIN)
-		exit_failure("writing relay data failed: %s", ERRSTR);
+		exit_failure("writing relay data failed: %s", strerror(errno));
 	FD_SET(s_snd, &writefds);
 }
 
@@ -191,7 +200,8 @@ relay(int s_rcv, int s_snd, const char *service, int direction)
 	FD_ZERO(&exceptfds);
 	fcntl(s_snd, F_SETFD, O_NONBLOCK);
 	oreadfds = readfds; owritefds = writefds; oexceptfds = exceptfds;
-	FD_SET(s_rcv, &readfds); FD_SET(s_rcv, &exceptfds);
+	FD_SET(s_rcv, &readfds);
+	FD_SET(s_rcv, &exceptfds);
 	oob_exists = 0;
 	maxfd = (s_rcv > s_snd) ? s_rcv : s_snd;
 
@@ -205,7 +215,7 @@ relay(int s_rcv, int s_snd, const char *service, int direction)
 		if (error == -1) {
 			if (errno == EINTR)
 				continue;
-			exit_failure("select: %s", ERRSTR);
+			exit_failure("select: %s", strerror(errno));
 		} else if (error == 0) {
 			readfds = oreadfds;
 			writefds = owritefds;
@@ -232,7 +242,7 @@ relay(int s_rcv, int s_snd, const char *service, int direction)
 						goto oob_read_retry;
 					exit_failure("reading oob data failed"
 						     ": %s",
-						     ERRSTR);
+						     strerror(errno));
 				}
 			}
 		}
@@ -246,7 +256,7 @@ relay(int s_rcv, int s_snd, const char *service, int direction)
 				if (errno == EINTR)
 					goto relaydata_read_retry;
 				exit_failure("reading relay data failed: %s",
-					     ERRSTR);
+					     strerror(errno));
 				/* NOTREACHED */
 			case 0:
 				/* to close opposite-direction relay process */
@@ -277,7 +287,8 @@ tcp_relay(int s_src, int s_dst, const char *service)
 	cpid = fork();
 	switch (cpid) {
 	case -1:
-		exit_failure("tcp_relay: can't fork grand child: %s", ERRSTR);
+		exit_failure("tcp_relay: can't fork grand child: %s",
+		    strerror(errno));
 		/* NOTREACHED */
 	case 0:
 		/* child process: relay going traffic */

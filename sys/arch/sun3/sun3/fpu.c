@@ -1,8 +1,12 @@
-/*	$NetBSD: fpu.c,v 1.2 1995/06/27 14:40:14 gwr Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.7 1997/04/05 20:24:24 kstailey Exp $	*/
+/*	$NetBSD: fpu.c,v 1.9 1996/11/20 18:57:29 gwr Exp $	*/
 
-/*
- * Copyright (c) 1995 Gordon W. Ross
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Gordon W. Ross.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,22 +16,25 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- * 4. All advertising materials mentioning features or use of this software
+ * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Gordon Ross
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -41,41 +48,14 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 
-#include <machine/autoconf.h>
-#include <machine/psl.h>
+#include <machine/control.h>
 #include <machine/cpu.h>
 #include <machine/frame.h>
+#include <machine/machdep.h>
 #include <machine/mon.h>
-#include <machine/control.h>
-
-#include <setjmp.h>
+#include <machine/psl.h>
 
 #include "interreg.h"
-
-extern int fpu_type;
-extern long *nofault;
-
-int fpu_match __P((struct device *, void *vcf, void *args));
-void fpu_attach __P((struct device *, struct device *, void *));
-int fpu_probe();
-
-struct cfdriver fpucd = {
-	NULL, "fpu", fpu_match, fpu_attach,
-	DV_DULL, sizeof(struct device), 0 };
-
-int fpu_match(parent, vcf, args)
-    struct device *parent;
-    void *vcf, *args;
-{
-    struct cfdata *cf = vcf;
-	struct confargs *ca = args;
-
-	/* This driver only supports one unit. */
-	if (cf->cf_unit != 0)
-		return (0);
-
-	return (1);
-}
 
 static char *fpu_descr[] = {
 #ifdef	FPU_EMULATE
@@ -87,12 +67,11 @@ static char *fpu_descr[] = {
 	"mc68882",			/* 2 */
 	"?" };
 
-void fpu_attach(parent, self, args)
-	struct device *parent;
-	struct device *self;
-	void *args;
+static int fpu_probe(void);
+
+void
+initfpu()
 {
-	struct confargs *ca = args;
 	char *descr;
 	int enab_reg;
 
@@ -101,15 +80,15 @@ void fpu_attach(parent, self, args)
 	enab_reg |= SYSTEM_ENAB_FPP;
 	set_control_byte((char *) SYSTEM_ENAB, enab_reg);
 
-	fpu_type = fpu_probe();
-	if ((0 <= fpu_type) && (fpu_type <= 2))
-		descr = fpu_descr[fpu_type];
+	fputype = fpu_probe();
+	if ((0 <= fputype) && (fputype <= 2))
+		descr = fpu_descr[fputype];
 	else
 		descr = "unknown type";
 
-	printf(" (%s)\n", descr);
+	printf("fpu: %s\n", descr);
 
-	if (fpu_type == 0) {
+	if (fputype == 0) {
 		/* Might as well turn the enable bit back off. */
 		enab_reg = get_control_byte((char *) SYSTEM_ENAB);
 		enab_reg &= ~SYSTEM_ENAB_FPP;
@@ -117,19 +96,19 @@ void fpu_attach(parent, self, args)
 	}
 }
 
-int fpu_probe()
+static int
+fpu_probe()
 {
-	jmp_buf	faultbuf;
-	int null_fpframe[2];
+	label_t	faultbuf;
+	struct fpframe null_fpframe;
 
-	nofault = (long *) &faultbuf;
-	if (setjmp(nofault)) {
+	nofault = &faultbuf;
+	if (setjmp(&faultbuf)) {
 		nofault = NULL;
 		return(0);
 	}
-	null_fpframe[0] = 0;
-	null_fpframe[1] = 0;
-	m68881_restore(null_fpframe);
+	bzero(&null_fpframe, sizeof(null_fpframe));
+	m68881_restore(&null_fpframe);
 	nofault = NULL;
 	return(1);
 }

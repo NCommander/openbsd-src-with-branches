@@ -1,3 +1,5 @@
+/*	$OpenBSD: env.c,v 1.6 2001/03/01 20:21:10 aaron Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)env.c	8.3 (Berkeley) 4/2/94";*/
-static char rcsid[] = "$NetBSD: env.c,v 1.8 1995/09/28 07:34:39 perry Exp $";
+static char rcsid[] = "$OpenBSD: env.c,v 1.6 2001/03/01 20:21:10 aaron Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -50,7 +52,7 @@ static char rcsid[] = "$NetBSD: env.c,v 1.8 1995/09/28 07:34:39 perry Exp $";
 #include <locale.h>
 #include <errno.h>
 
-static void usage __P((void));
+void usage(void);
 
 int
 main(argc, argv)
@@ -58,9 +60,8 @@ main(argc, argv)
 	char **argv;
 {
 	extern char **environ;
-	extern int errno, optind;
+	extern int optind;
 	char **ep, *p;
-	char *cleanenv[1];
 	int ch;
 
 	setlocale(LC_ALL, "");
@@ -69,8 +70,8 @@ main(argc, argv)
 		switch((char)ch) {
 		case '-':			/* obsolete */
 		case 'i':
-			environ = cleanenv;
-			cleanenv[0] = NULL;
+			if ((environ = (char **)calloc(1, sizeof(char *))) == NULL)
+				err(126, "calloc");
 			break;
 		case '?':
 		default:
@@ -78,12 +79,17 @@ main(argc, argv)
 		}
 
 	for (argv += optind; *argv && (p = strchr(*argv, '=')); ++argv)
-		(void)setenv(*argv, ++p, 1);
+		if (setenv(*argv, ++p, 1) == -1) {
+			/* reuse 126, it matches the problem most */
+			exit(126);
+		}
 
 	if (*argv) {
-		/* return 127 if the command to be run could not be found; 126
-		   if the command was was found but could not be invoked */
-
+		/*
+		 * return 127 if the command to be run could not be
+		 * found; 126 if the command was found but could
+		 * not be invoked
+		 */
 		execvp(*argv, argv);
 		err((errno == ENOENT) ? 127 : 126, "%s", *argv);
 		/* NOTREACHED */
@@ -95,9 +101,10 @@ main(argc, argv)
 	exit(0);
 }
 
-static void
-usage ()
+void
+usage()
 {
-	(void) fprintf(stderr, "usage: env [-i] [name=value ...] [command]\n");
+	(void)fprintf(stderr, "usage: env [-i] [name=value ...] "
+	    "[utility [argument ...]]\n");
 	exit (1);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: ite_ul.c,v 1.1 1995/08/18 16:15:48 chopps Exp $	*/
+/*	$OpenBSD: ite_ul.c,v 1.4 1997/01/16 09:24:52 niklas Exp $	*/
+/*	$NetBSD: ite_ul.c,v 1.7 1996/10/13 03:07:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Ignatios Souvatzis
@@ -14,7 +15,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Lutz Vieweg.
+ *      This product includes software developed by Ignatios Souvatzis for
+ *	the NetBSD project.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
@@ -84,15 +86,15 @@ extern u_int8_t kernel_font[], kernel_cursor[];
 
 int ulowell_console = 1;
 
-void ulowell_cursor __P((struct ite_softc *,int));
-void ulowell_scroll __P((struct ite_softc *,int,int,int,int));
-void ulowell_deinit __P((struct ite_softc *));
-void ulowell_clear __P((struct ite_softc *,int,int,int,int));
-void ulowell_putc __P((struct ite_softc *,int,int,int,int));
-void ulowell_init __P((struct ite_softc *));
+void ulowell_cursor(struct ite_softc *,int);
+void ulowell_scroll(struct ite_softc *,int,int,int,int);
+void ulowell_deinit(struct ite_softc *);
+void ulowell_clear(struct ite_softc *,int,int,int,int);
+void ulowell_putc(struct ite_softc *,int,int,int,int);
+void ulowell_init(struct ite_softc *);
 
 #ifdef DEBUG_UL
-void gsp_dump __P((u_int16_t *,int));
+void gsp_dump(u_int16_t *,int);
 #endif
 
 /* Text always on overlay plane, so: */
@@ -226,7 +228,6 @@ void ulowell_cursor(struct ite_softc *ip, int flag)
 {
 	struct gspregs *ba;
 	u_int16_t cmd[7];
-	int pos;
 
 	ba = (struct gspregs *)ip->grf->g_regkva;
 
@@ -375,7 +376,6 @@ void ulowell_deinit(struct ite_softc *ip)
 void ulowell_putc(struct ite_softc *ip, int c, int dy, int dx, int mode)
 {
 	struct gspregs *ba;
-	register u_int8_t attr;
 	u_int16_t cmd[8];
 	
 	ba = (struct gspregs *)ip->grf->g_regkva;
@@ -416,8 +416,6 @@ void ulowell_clear(struct ite_softc *ip, int sy, int sx, int h, int w)
 void ulowell_scroll(struct ite_softc *ip, int sy, int sx, int count, int dir)
 {
 	struct gspregs *ba;
-
-	register int height, dy, i;
 	u_int16_t cmd[7];
 
 	ba = (struct gspregs *)ip->grf->g_regkva;

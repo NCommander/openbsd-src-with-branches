@@ -1,4 +1,5 @@
-/*	$NetBSD: syslog.h,v 1.9 1995/03/26 20:24:51 jtc Exp $	*/
+/*	$OpenBSD: syslog.h,v 1.6 2001/10/24 08:16:42 jjbg Exp $	*/
+/*	$NetBSD: syslog.h,v 1.14 1996/04/03 20:46:44 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993
@@ -35,6 +36,9 @@
  *	@(#)syslog.h	8.1 (Berkeley) 6/2/93
  */
 
+#ifndef _SYS_SYSLOG_H_
+#define _SYS_SYSLOG_H_
+
 #define	_PATH_LOG	"/dev/log"
 
 /*
@@ -70,19 +74,19 @@ typedef struct _code {
 } CODE;
 
 CODE prioritynames[] = {
-	"alert",	LOG_ALERT,
-	"crit",		LOG_CRIT,
-	"debug",	LOG_DEBUG,
-	"emerg",	LOG_EMERG,
-	"err",		LOG_ERR,
-	"error",	LOG_ERR,		/* DEPRECATED */
-	"info",		LOG_INFO,
-	"none",		INTERNAL_NOPRI,		/* INTERNAL */
-	"notice",	LOG_NOTICE,
-	"panic", 	LOG_EMERG,		/* DEPRECATED */
-	"warn",		LOG_WARNING,		/* DEPRECATED */
-	"warning",	LOG_WARNING,
-	NULL,		-1,
+	{ "alert",	LOG_ALERT },
+	{ "crit",	LOG_CRIT },
+	{ "debug",	LOG_DEBUG },
+	{ "emerg",	LOG_EMERG },
+	{ "err",	LOG_ERR },
+	{ "error",	LOG_ERR },		/* DEPRECATED */
+	{ "info",	LOG_INFO },
+	{ "none",	INTERNAL_NOPRI },	/* INTERNAL */
+	{ "notice",	LOG_NOTICE },
+	{ "panic", 	LOG_EMERG },		/* DEPRECATED */
+	{ "warn",	LOG_WARNING },		/* DEPRECATED */
+	{ "warning",	LOG_WARNING },
+	{ NULL,		-1 },
 };
 #endif
 
@@ -117,31 +121,45 @@ CODE prioritynames[] = {
 
 #ifdef SYSLOG_NAMES
 CODE facilitynames[] = {
-	"auth",		LOG_AUTH,
-	"authpriv",	LOG_AUTHPRIV,
-	"cron", 	LOG_CRON,
-	"daemon",	LOG_DAEMON,
-	"ftp",		LOG_FTP,
-	"kern",		LOG_KERN,
-	"lpr",		LOG_LPR,
-	"mail",		LOG_MAIL,
-	"mark", 	INTERNAL_MARK,		/* INTERNAL */
-	"news",		LOG_NEWS,
-	"security",	LOG_AUTH,		/* DEPRECATED */
-	"syslog",	LOG_SYSLOG,
-	"user",		LOG_USER,
-	"uucp",		LOG_UUCP,
-	"local0",	LOG_LOCAL0,
-	"local1",	LOG_LOCAL1,
-	"local2",	LOG_LOCAL2,
-	"local3",	LOG_LOCAL3,
-	"local4",	LOG_LOCAL4,
-	"local5",	LOG_LOCAL5,
-	"local6",	LOG_LOCAL6,
-	"local7",	LOG_LOCAL7,
-	NULL,		-1,
+	{ "auth",	LOG_AUTH },
+	{ "authpriv",	LOG_AUTHPRIV },
+	{ "cron", 	LOG_CRON },
+	{ "daemon",	LOG_DAEMON },
+	{ "ftp",	LOG_FTP },
+	{ "kern",	LOG_KERN },
+	{ "lpr",	LOG_LPR },
+	{ "mail",	LOG_MAIL },
+	{ "mark", 	INTERNAL_MARK },	/* INTERNAL */
+	{ "news",	LOG_NEWS },
+	{ "security",	LOG_AUTH },		/* DEPRECATED */
+	{ "syslog",	LOG_SYSLOG },
+	{ "user",	LOG_USER },
+	{ "uucp",	LOG_UUCP },
+	{ "local0",	LOG_LOCAL0 },
+	{ "local1",	LOG_LOCAL1 },
+	{ "local2",	LOG_LOCAL2 },
+	{ "local3",	LOG_LOCAL3 },
+	{ "local4",	LOG_LOCAL4 },
+	{ "local5",	LOG_LOCAL5 },
+	{ "local6",	LOG_LOCAL6 },
+	{ "local7",	LOG_LOCAL7 },
+	{ NULL,		-1 },
 };
 #endif
+
+/* Used by reentrant functions */
+
+struct syslog_data {
+	int	log_file;
+	int	connected;
+	int	opened;
+	int	log_stat;
+	const char 	*log_tag;
+	int 	log_fac;
+	int 	log_mask;
+};
+
+#define SYSLOG_DATA_INIT {-1, 0, 0, 0, NULL, LOG_USER, 0xff}
 
 #ifdef _KERNEL
 #define	LOG_PRINTF	-1	/* pseudo-priority to indicate use of printf */
@@ -179,17 +197,30 @@ CODE facilitynames[] = {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void	closelog __P((void));
-void	openlog __P((const char *, int, int));
-int	setlogmask __P((int));
-void	syslog __P((int, const char *, ...));
-void	vsyslog __P((int, const char *, _BSD_VA_LIST_));
+void	closelog(void);
+void	openlog(const char *, int, int);
+int	setlogmask(int);
+void	syslog(int, const char *, ...)
+    __attribute__((__format__(__printf__,2,3)));
+void	vsyslog(int, const char *, _BSD_VA_LIST_);
+void	closelog_r(struct syslog_data *);
+void	openlog_r(const char *, int, int, struct syslog_data *);
+int	setlogmask_r(int, struct syslog_data *);
+void	syslog_r(int, struct syslog_data *, const char *, ...)
+     __attribute__((__format__(__printf__,3,4)));
+void	vsyslog_r(int, struct syslog_data *, const char *, 
+     _BSD_VA_LIST_);
 __END_DECLS
 
 #else /* !_KERNEL */
 
-void	logpri __P((int));
-void	log __P((int, const char *, ...));
-void	addlog __P((const char *, ...));
+void	logpri(int);
+void	log(int, const char *, ...)
+    __kprintf_attribute__((__format__(__kprintf__,2,3)));
+int	addlog(const char *, ...)
+    __kprintf_attribute__((__format__(__kprintf__,1,2)));
+void	logwakeup(void);
 
 #endif /* !_KERNEL */
+#endif /* !_SYS_SYSLOG_H_ */
+

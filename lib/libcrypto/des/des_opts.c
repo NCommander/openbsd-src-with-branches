@@ -59,19 +59,19 @@
 /* define PART1, PART2, PART3 or PART4 to build only with a few of the options.
  * This is for machines with 64k code segment size restrictions. */
 
-#ifndef MSDOS
+#if !defined(MSDOS) && (!defined(VMS) || defined(__DECC))
 #define TIMES
 #endif
 
 #include <stdio.h>
 #ifndef MSDOS
-#include <unistd.h>
+#include <openssl/e_os2.h>
+#include OPENSSL_UNISTD
 #else
 #include <io.h>
 extern void exit();
 #endif
 #include <signal.h>
-#ifndef VMS
 #ifndef _IRIX
 #include <time.h>
 #endif
@@ -79,25 +79,27 @@ extern void exit();
 #include <sys/types.h>
 #include <sys/times.h>
 #endif
-#else /* VMS */
-#include <types.h>
-struct tms {
-	time_t tms_utime;
-	time_t tms_stime;
-	time_t tms_uchild;	/* I dunno...  */
-	time_t tms_uchildsys;	/* so these names are a guess :-) */
-	}
+
+/* Depending on the VMS version, the tms structure is perhaps defined.
+   The __TMS macro will show if it was.  If it wasn't defined, we should
+   undefine TIMES, since that tells the rest of the program how things
+   should be handled.				-- Richard Levitte */
+#if defined(VMS) && defined(__DECC) && !defined(__TMS)
+#undef TIMES
 #endif
+
 #ifndef TIMES
 #include <sys/timeb.h>
 #endif
 
-#ifdef sun
+
+#if defined(sun) || defined(__ultrix)
+#define _POSIX_SOURCE
 #include <limits.h>
 #include <sys/param.h>
 #endif
 
-#include "des.h"
+#include <openssl/des.h>
 #include "spr.h"
 
 #define DES_DEFAULT_OPTIONS
@@ -116,7 +118,7 @@ struct tms {
 #undef DES_RISC2
 #undef DES_PTR
 #undef D_ENCRYPT
-#define des_encrypt  des_encrypt_u4_cisc_idx
+#define des_encrypt1 des_encrypt_u4_cisc_idx
 #define des_encrypt2 des_encrypt2_u4_cisc_idx
 #define des_encrypt3 des_encrypt3_u4_cisc_idx
 #define des_decrypt3 des_decrypt3_u4_cisc_idx
@@ -128,11 +130,11 @@ struct tms {
 #undef DES_RISC2
 #undef DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u16_cisc_idx
+#define des_encrypt1 des_encrypt_u16_cisc_idx
 #define des_encrypt2 des_encrypt2_u16_cisc_idx
 #define des_encrypt3 des_encrypt3_u16_cisc_idx
 #define des_decrypt3 des_decrypt3_u16_cisc_idx
@@ -144,11 +146,11 @@ struct tms {
 #undef DES_RISC2
 #undef DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u4_risc1_idx
+#define des_encrypt1 des_encrypt_u4_risc1_idx
 #define des_encrypt2 des_encrypt2_u4_risc1_idx
 #define des_encrypt3 des_encrypt3_u4_risc1_idx
 #define des_decrypt3 des_decrypt3_u4_risc1_idx
@@ -164,11 +166,11 @@ struct tms {
 #define DES_RISC2
 #undef DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u4_risc2_idx
+#define des_encrypt1 des_encrypt_u4_risc2_idx
 #define des_encrypt2 des_encrypt2_u4_risc2_idx
 #define des_encrypt3 des_encrypt3_u4_risc2_idx
 #define des_decrypt3 des_decrypt3_u4_risc2_idx
@@ -180,11 +182,11 @@ struct tms {
 #undef DES_RISC2
 #undef DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u16_risc1_idx
+#define des_encrypt1 des_encrypt_u16_risc1_idx
 #define des_encrypt2 des_encrypt2_u16_risc1_idx
 #define des_encrypt3 des_encrypt3_u16_risc1_idx
 #define des_decrypt3 des_decrypt3_u16_risc1_idx
@@ -196,11 +198,11 @@ struct tms {
 #define DES_RISC2
 #undef DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u16_risc2_idx
+#define des_encrypt1 des_encrypt_u16_risc2_idx
 #define des_encrypt2 des_encrypt2_u16_risc2_idx
 #define des_encrypt3 des_encrypt3_u16_risc2_idx
 #define des_decrypt3 des_decrypt3_u16_risc2_idx
@@ -216,11 +218,11 @@ struct tms {
 #undef DES_RISC2
 #define DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u4_cisc_ptr
+#define des_encrypt1 des_encrypt_u4_cisc_ptr
 #define des_encrypt2 des_encrypt2_u4_cisc_ptr
 #define des_encrypt3 des_encrypt3_u4_cisc_ptr
 #define des_decrypt3 des_decrypt3_u4_cisc_ptr
@@ -232,11 +234,11 @@ struct tms {
 #undef DES_RISC2
 #define DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u16_cisc_ptr
+#define des_encrypt1 des_encrypt_u16_cisc_ptr
 #define des_encrypt2 des_encrypt2_u16_cisc_ptr
 #define des_encrypt3 des_encrypt3_u16_cisc_ptr
 #define des_decrypt3 des_decrypt3_u16_cisc_ptr
@@ -248,11 +250,11 @@ struct tms {
 #undef DES_RISC2
 #define DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u4_risc1_ptr
+#define des_encrypt1 des_encrypt_u4_risc1_ptr
 #define des_encrypt2 des_encrypt2_u4_risc1_ptr
 #define des_encrypt3 des_encrypt3_u4_risc1_ptr
 #define des_decrypt3 des_decrypt3_u4_risc1_ptr
@@ -268,11 +270,11 @@ struct tms {
 #define DES_RISC2
 #define DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u4_risc2_ptr
+#define des_encrypt1 des_encrypt_u4_risc2_ptr
 #define des_encrypt2 des_encrypt2_u4_risc2_ptr
 #define des_encrypt3 des_encrypt3_u4_risc2_ptr
 #define des_decrypt3 des_decrypt3_u4_risc2_ptr
@@ -284,11 +286,11 @@ struct tms {
 #undef DES_RISC2
 #define DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u16_risc1_ptr
+#define des_encrypt1 des_encrypt_u16_risc1_ptr
 #define des_encrypt2 des_encrypt2_u16_risc1_ptr
 #define des_encrypt3 des_encrypt3_u16_risc1_ptr
 #define des_decrypt3 des_decrypt3_u16_risc1_ptr
@@ -300,11 +302,11 @@ struct tms {
 #define DES_RISC2
 #define DES_PTR
 #undef D_ENCRYPT
-#undef des_encrypt
+#undef des_encrypt1
 #undef des_encrypt2
 #undef des_encrypt3
 #undef des_decrypt3
-#define des_encrypt  des_encrypt_u16_risc2_ptr
+#define des_encrypt1 des_encrypt_u16_risc2_ptr
 #define des_encrypt2 des_encrypt2_u16_risc2_ptr
 #define des_encrypt3 des_encrypt3_u16_risc2_ptr
 #define des_decrypt3 des_decrypt3_u16_risc2_ptr
@@ -317,11 +319,7 @@ struct tms {
 #ifndef HZ
 # ifndef CLK_TCK
 #  ifndef _BSD_CLK_TCK_ /* FreeBSD fix */
-#   ifndef VMS
-#    define HZ	100.0
-#   else /* VMS */
-#    define HZ	100.0
-#   endif
+#   define HZ	100.0
 #  else /* _BSD_CLK_TCK_ */
 #   define HZ ((double)_BSD_CLK_TCK_)
 #  endif
@@ -333,12 +331,7 @@ struct tms {
 #define BUFSIZE	((long)1024)
 long run=0;
 
-#ifndef NOPROTO
 double Time_F(int s);
-#else
-double Time_F();
-#endif
-
 #ifdef SIGALRM
 #if defined(__STDC__) || defined(sgi)
 #define SIGRETTYPE void
@@ -346,14 +339,8 @@ double Time_F();
 #define SIGRETTYPE int
 #endif
 
-#ifndef NOPROTO
 SIGRETTYPE sig_done(int sig);
-#else
-SIGRETTYPE sig_done();
-#endif
-
-SIGRETTYPE sig_done(sig)
-int sig;
+SIGRETTYPE sig_done(int sig)
 	{
 	signal(SIGALRM,sig_done);
 	run=0;
@@ -366,8 +353,7 @@ int sig;
 #define START	0
 #define STOP	1
 
-double Time_F(s)
-int s;
+double Time_F(int s)
 	{
 	double ret;
 #ifdef TIMES
@@ -425,9 +411,7 @@ int s;
 	fprintf(stderr,"%s bytes per sec = %12.2f (%5.1fuS)\n",name, \
 		tm[index]*8,1.0e6/tm[index]);
 
-int main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 	{
 	long count;
 	static unsigned char buf[BUFSIZE];
@@ -450,17 +434,17 @@ char **argv;
 		}
 
 #ifndef TIMES
-	fprintf(stderr,"To get the most acurate results, try to run this\n");
+	fprintf(stderr,"To get the most accurate results, try to run this\n");
 	fprintf(stderr,"program when this computer is idle.\n");
 #endif
 
-	des_set_key((C_Block *)key,sch);
-	des_set_key((C_Block *)key2,sch2);
-	des_set_key((C_Block *)key3,sch3);
+	des_set_key_unchecked(&key,sch);
+	des_set_key_unchecked(&key2,sch2);
+	des_set_key_unchecked(&key3,sch3);
 
 #ifndef SIGALRM
 	fprintf(stderr,"First we calculate the approximate speed ...\n");
-	des_set_key((C_Block *)key,sch);
+	des_set_key_unchecked(&key,sch);
 	count=10;
 	do	{
 		long i;
@@ -469,7 +453,7 @@ char **argv;
 		count*=2;
 		Time_F(START);
 		for (i=count; i; i--)
-			des_encrypt(data,&(sch[0]),DES_ENCRYPT);
+			des_encrypt1(data,&(sch[0]),DES_ENCRYPT);
 		d=Time_F(STOP);
 		} while (d < 3.0);
 	ca=count;

@@ -143,12 +143,12 @@ changequote([,])dnl
 
       alpha*-*-*vms*)	    fmt=evax ;;
       alpha*-*-netware*)    fmt=ecoff ;;
-      alpha*-*-openbsd*)    fmt=ecoff ;;
       alpha*-*-osf*)        fmt=ecoff ;;
       alpha*-*-linuxecoff*) fmt=ecoff ;;
       alpha*-*-linux-gnu*)  fmt=elf em=linux ;;
       alpha*-*-freebsd*)    fmt=elf em=freebsd ;;
       alpha*-*-netbsd*)     fmt=elf em=nbsd ;;
+      alpha*-*-openbsd*)    fmt=elf em=obsd ;;
 
       arc-*-elf*)           fmt=elf bfd_gas=yes ;;
 
@@ -159,6 +159,7 @@ changequote([,])dnl
       arm-*-linux*aout*)	        fmt=aout em=linux ;;
       arm*-*-linux-gnu*)		fmt=elf  em=linux ;;
       arm-*-netbsd*)	                fmt=aout em=nbsd bfd_gas=yes ;;
+      arm-*-openbsd*)			fmt=aout em=nbsd bfd_gas=yes ;;
       arm-*-oabi | thumb-*-oabi)        fmt=elf ;;
       arm-epoc-pe | thumb-epoc-pe)      fmt=coff em=epoc-pe ;;
       arm-*-wince)          fmt=coff em=wince-pe bfd_gas=yes;;
@@ -276,7 +277,6 @@ changequote([,])dnl
 
       # don't change em like *-*-bsd does
       mips-dec-netbsd*)	    fmt=elf endian=little ;;
-      mips-dec-openbsd*)    fmt=elf endian=little ;;
       mips-dec-bsd*)        fmt=aout endian=little ;;
       mips-sony-bsd*)       fmt=ecoff ;;
       mips-*-bsd*)          AC_MSG_ERROR(Unknown vendor for mips-bsd configuration.) ;;
@@ -360,8 +360,12 @@ changequote([,])dnl
                                 sparc64) fmt=elf ;;
                             esac
                             ;;
-      sparc-*-openbsd*)     fmt=aout em=nbsd ;;
-
+      sparc-*-openbsd*)     em=nbsd
+			    case ${cpu} in
+				sparc) fmt=aout ;;
+				sparc64) fmt=elf ;;
+                            esac
+			    ;;
       strongarm-*-coff)     fmt=coff ;;
       strongarm-*-elf)      fmt=elf ;;
 

@@ -1,35 +1,44 @@
-/*	$NetBSD: fsdb.c,v 1.2 1995/10/08 23:18:10 thorpej Exp $	*/
+/*	$OpenBSD: fsdb.c,v 1.9 2002/02/16 21:27:34 millert Exp $	*/
+/*	$NetBSD: fsdb.c,v 1.7 1997/01/11 06:50:53 lukem Exp $	*/
 
-/*
- *  Copyright (c) 1995 John T. Kohl
- *  All rights reserved.
- * 
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *  1. Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *  2. Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *  3. The name of the author may not be used to endorse or promote products
- *     derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR `AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by John T. Kohl.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: fsdb.c,v 1.2 1995/10/08 23:18:10 thorpej Exp $";
+static char rcsid[] = "$NetBSD: fsdb.c,v 1.4 1996/03/21 17:56:15 jtc Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -38,6 +47,7 @@ static char rcsid[] = "$NetBSD: fsdb.c,v 1.2 1995/10/08 23:18:10 thorpej Exp $";
 #include <sys/time.h>
 #include <sys/mount.h>
 #include <ctype.h>
+#include <err.h>
 #include <fcntl.h>
 #include <grp.h>
 #include <histedit.h>
@@ -54,19 +64,31 @@ static char rcsid[] = "$NetBSD: fsdb.c,v 1.2 1995/10/08 23:18:10 thorpej Exp $";
 
 #include "fsdb.h"
 #include "fsck.h"
+#include "extern.h"
 
 extern char *__progname;	/* from crt0.o */
 
-void usage __P((void));
-int cmdloop __P((void));
-
-void 
-usage()
-{
-	errx(1, "usage: %s [-d] -f <fsname>", __progname);
-}
+int main(int, char *[]);
+static void usage(void);
+static int cmdloop(void);
+static int helpfn(int, char *[]);
+static char *prompt(EditLine *);
+static int scannames(struct inodesc *);
+static int dolookup(char *);
+static int chinumfunc(struct inodesc *);
+static int chnamefunc(struct inodesc *);
+static int dotime(char *, int32_t *, int32_t *);
 
 int returntosingle = 0;
+struct dinode *curinode;
+ino_t curinum;
+
+static void 
+usage()
+{
+	fprintf(stderr, "usage: %s [-d] -f <fsname>\n", __progname);
+	exit(1);
+}
 
 /*
  * We suck in lots of fsck code, and just pick & choose the stuff we want.
@@ -74,14 +96,13 @@ int returntosingle = 0;
  * fsreadfd is set up to read from the file system, fswritefd to write to
  * the file system.
  */
-void
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
 	int ch, rval;
 	char *fsys = NULL;
-	struct stat stb;
 
 	while (-1 != (ch = getopt(argc, argv, "f:d"))) {
 		switch (ch) {
@@ -111,8 +132,8 @@ main(argc, argv)
 	exit(rval);
 }
 
-#define CMDFUNC(func) int func __P((int argc, char *argv[]))
-#define CMDFUNCSTART(func) int func(argc, argv)		\
+#define CMDFUNC(func) static int func(int argc, char *argv[])
+#define CMDFUNCSTART(func) static int func(argc, argv)		\
 				int argc;		\
 				char *argv[];
 
@@ -130,6 +151,7 @@ CMDFUNC(rm);				/* remove name */
 CMDFUNC(ln);				/* add name */
 CMDFUNC(newtype);			/* change type */
 CMDFUNC(chmode);			/* change mode */
+CMDFUNC(chlen);				/* change length */
 CMDFUNC(chaflags);			/* change flags */
 CMDFUNC(chgen);				/* change generation */
 CMDFUNC(chowner);			/* change owner */
@@ -141,7 +163,7 @@ CMDFUNC(chatime);			/* Change atime */
 CMDFUNC(chinum);			/* Change inode # of dirent */
 CMDFUNC(chname);			/* Change dirname of dirent */
 
-struct cmdtable cmds[] = {
+static struct cmdtable cmds[] = {
 	{ "help", "Print out help", 1, 1, helpfn },
 	{ "?", "Print out help", 1, 1, helpfn },
 	{ "inode", "Set active inode to INUM", 2, 2, focus },
@@ -163,6 +185,7 @@ struct cmdtable cmds[] = {
 	{ "chtype", "Change type of current inode to TYPE", 2, 2, newtype },
 	{ "chmod", "Change mode of current inode to MODE", 2, 2, chmode },
 	{ "chown", "Change owner of current inode to OWNER", 2, 2, chowner },
+	{ "chlen", "Change length of current inode to LENGTH", 2, 2, chlen },
 	{ "chgrp", "Change group of current inode to GROUP", 2, 2, chgroup },
 	{ "chflags", "Change flags of current inode to FLAGS", 2, 2, chaflags },
 	{ "chgen", "Change generation number of current inode to GEN", 2, 2, chgen },
@@ -175,12 +198,12 @@ struct cmdtable cmds[] = {
 	{ NULL, 0, 0, 0 },
 };
 
-int
+static int
 helpfn(argc, argv)
 	int argc;
 	char *argv[];
 {
-    register struct cmdtable *cmdtp;
+    struct cmdtable *cmdtp;
 
     printf("Commands are:\n%-10s %5s %5s   %s\n",
 	   "command", "min argc", "max argc", "what");
@@ -191,7 +214,7 @@ helpfn(argc, argv)
     return 0;
 }
 
-char *
+static char *
 prompt(el)
 	EditLine *el;
 {
@@ -201,10 +224,10 @@ prompt(el)
 }
 
 
-int
+static int
 cmdloop()
 {
-    char *line;
+    char *line = NULL;
     const char *elline;
     int cmd_argc, rval = 0, known;
 #define scratch known
@@ -234,13 +257,13 @@ cmdloop()
 
 	line = strdup(elline);
 	cmd_argv = crack(line, &cmd_argc);
-	/*
-	 * el_parse returns -1 to signal that it's not been handled
-	 * internally.
-	 */
-	if (el_parse(elptr, cmd_argc, cmd_argv) != -1)
-	    continue;
 	if (cmd_argc) {
+	    /*
+	     * el_parse returns -1 to signal that it's not been handled
+	     * internally.
+	     */
+	    if (el_parse(elptr, cmd_argc, cmd_argv) != -1)
+		continue;
 	    known = 0;
 	    for (cmdp = cmds; cmdp->cmd; cmdp++) {
 		if (!strcmp(cmdp->cmd, cmd_argv[0])) {
@@ -268,8 +291,7 @@ cmdloop()
     return rval;
 }
 
-struct dinode *curinode;
-ino_t curinum, ocurrent;
+static ino_t ocurrent;
 
 #define GETINUM(ac,inum)    inum = strtoul(argv[ac], &cp, 0); \
     if (inum < ROOTINO || inum > maxino || cp == argv[ac] || *cp != '\0' ) { \
@@ -347,7 +369,7 @@ CMDFUNCSTART(downlink)
     return 0;
 }
 
-const char *typename[] = {
+static const char *typename[] = {
     "unknown",
     "fifo",
     "char special",
@@ -365,13 +387,13 @@ const char *typename[] = {
     "whiteout",
 };
     
-int slot;
+static int slot;
 
-int
+static int
 scannames(idesc)
 	struct inodesc *idesc;
 {
-	register struct direct *dirp = idesc->id_dirp;
+	struct direct *dirp = idesc->id_dirp;
 
 	printf("slot %d ino %d reclen %d: %s, `%.*s'\n",
 	       slot++, dirp->d_ino, dirp->d_reclen, typename[dirp->d_type],
@@ -394,9 +416,6 @@ CMDFUNCSTART(ls)
 
     return 0;
 }
-
-int findino __P((struct inodesc *idesc)); /* from fsck */
-static int dolookup __P((char *name));
 
 static int
 dolookup(name)
@@ -455,7 +474,6 @@ CMDFUNCSTART(focusname)
 CMDFUNCSTART(ln)
 {
     ino_t inum;
-    struct dinode *dp;
     int rval;
     char *cp;
 
@@ -488,13 +506,13 @@ CMDFUNCSTART(rm)
     }
 }
 
-long slotcount, desired;
+static long slotcount, desired;
 
-int
+static int
 chinumfunc(idesc)
 	struct inodesc *idesc;
 {
-	register struct direct *dirp = idesc->id_dirp;
+	struct direct *dirp = idesc->id_dirp;
 
 	if (slotcount++ == desired) {
 	    dirp->d_ino = idesc->id_parent;
@@ -505,7 +523,6 @@ chinumfunc(idesc)
 
 CMDFUNCSTART(chinum)
 {
-    int rval;
     char *cp;
     ino_t inum;
     struct inodesc idesc;
@@ -535,11 +552,11 @@ CMDFUNCSTART(chinum)
     }
 }
 
-int
+static int
 chnamefunc(idesc)
 	struct inodesc *idesc;
 {
-	register struct direct *dirp = idesc->id_dirp;
+	struct direct *dirp = idesc->id_dirp;
 	struct direct testdir;
 
 	if (slotcount++ == desired) {
@@ -559,7 +576,6 @@ CMDFUNCSTART(chname)
 {
     int rval;
     char *cp;
-    ino_t inum;
     struct inodesc idesc;
     
     slotcount = 0;
@@ -582,7 +598,7 @@ CMDFUNCSTART(chname)
     if ((rval & (FOUND|ALTERED)) == (FOUND|ALTERED))
 	return 0;
     else if (rval & FOUND) {
-	warnx("new name `%s' does not fit in slot %s\n", argv[2], argv[1]);
+	warnx("new name `%s' does not fit in slot %s", argv[2], argv[1]);
 	return 1;
     } else {
 	warnx("no %sth slot in current directory", argv[1]);
@@ -590,7 +606,7 @@ CMDFUNCSTART(chname)
     }
 }
 
-struct typemap {
+static struct typemap {
     const char *typename;
     int typebits;
 } typenamemap[]  = {
@@ -602,7 +618,6 @@ struct typemap {
 
 CMDFUNCSTART(newtype)
 {
-    int rval = 1;
     int type;
     struct typemap *tp;
 
@@ -652,6 +667,27 @@ CMDFUNCSTART(chmode)
     return rval;
 }
 
+CMDFUNCSTART(chlen)
+{
+    int rval = 1;
+    long len;
+    char *cp;
+
+    if (!checkactive())
+	return 1;
+
+    len = strtol(argv[1], &cp, 0);
+    if (cp == argv[1] || *cp != '\0' || len < 0) {
+	warnx("bad length '%s'", argv[1]);
+	return 1;
+    }
+
+    curinode->di_size = len;
+    inodirty();
+    printactive();
+    return rval;
+}
+
 CMDFUNCSTART(chaflags)
 {
     int rval = 1;
@@ -668,7 +704,7 @@ CMDFUNCSTART(chaflags)
     }
     
     if (flags > UINT_MAX) {
-	warnx("flags set beyond 32-bit range of field (%lx)\n", flags);
+	warnx("flags set beyond 32-bit range of field (%lx)", flags);
 	return(1);
     }
     curinode->di_flags = flags;
@@ -693,7 +729,7 @@ CMDFUNCSTART(chgen)
     }
     
     if (gen > INT_MAX || gen < INT_MIN) {
-	warnx("gen set beyond 32-bit range of field (%lx)\n", gen);
+	warnx("gen set beyond 32-bit range of field (%lx)", gen);
 	return(1);
     }
     curinode->di_gen = gen;
@@ -717,7 +753,7 @@ CMDFUNCSTART(linkcount)
 	return 1;
     }
     if (lcnt > USHRT_MAX || lcnt < 0) {
-	warnx("max link count is %d\n", USHRT_MAX);
+	warnx("max link count is %d", USHRT_MAX);
 	return 1;
     }
     
@@ -730,7 +766,7 @@ CMDFUNCSTART(linkcount)
 CMDFUNCSTART(chowner)
 {
     int rval = 1;
-    unsigned long uid;
+    uid_t uid;
     char *cp;
     struct passwd *pwd;
 
@@ -740,7 +776,7 @@ CMDFUNCSTART(chowner)
     uid = strtoul(argv[1], &cp, 0);
     if (cp == argv[1] || *cp != '\0' ) { 
 	/* try looking up name */
-	if (pwd = getpwnam(argv[1])) {
+	if ((pwd = getpwnam(argv[1]))) {
 	    uid = pwd->pw_uid;
 	} else {
 	    warnx("bad uid `%s'", argv[1]);
@@ -757,7 +793,7 @@ CMDFUNCSTART(chowner)
 CMDFUNCSTART(chgroup)
 {
     int rval = 1;
-    unsigned long gid;
+    gid_t gid;
     char *cp;
     struct group *grp;
 
@@ -766,7 +802,7 @@ CMDFUNCSTART(chgroup)
 
     gid = strtoul(argv[1], &cp, 0);
     if (cp == argv[1] || *cp != '\0' ) { 
-	if (grp = getgrnam(argv[1])) {
+	if ((grp = getgrnam(argv[1]))) {
 	    gid = grp->gr_gid;
 	} else {
 	    warnx("bad gid `%s'", argv[1]);
@@ -780,7 +816,7 @@ CMDFUNCSTART(chgroup)
     return rval;
 }
 
-int
+static int
 dotime(name, rsec, rnsec)
 	char *name;
 	int32_t *rsec, *rnsec;
@@ -839,7 +875,7 @@ badformat:
 
 CMDFUNCSTART(chmtime)
 {
-    if (dotime(argv[1], &curinode->di_ctime, &curinode->di_ctimensec))
+    if (dotime(argv[1], &curinode->di_mtime, &curinode->di_mtimensec))
 	return 1;
     inodirty();
     printactive();
@@ -848,7 +884,7 @@ CMDFUNCSTART(chmtime)
 
 CMDFUNCSTART(chatime)
 {
-    if (dotime(argv[1], &curinode->di_ctime, &curinode->di_ctimensec))
+    if (dotime(argv[1], &curinode->di_atime, &curinode->di_atimensec))
 	return 1;
     inodirty();
     printactive();

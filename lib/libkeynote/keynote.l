@@ -1,6 +1,5 @@
 %{
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote.l,v 1.12 2000/08/11 20:51:38 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -9,7 +8,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -21,20 +20,38 @@
  * PURPOSE.
  */
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
-#include <unistd.h>
 #include <ctype.h>
-#ifndef PILOT
-#include <time.h>
-#endif /* PILOT */
+
+#if STDC_HEADERS
 #include <string.h>
+#endif /* STDC_HEADERS */
+
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif /* HAVE_UNISTD_H */
+
+#if TIME_WITH_SYS_TIME
+#include <sys/time.h>
+#include <time.h>
+#else
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+#endif
+
 #include "k.tab.h"
-#include "environment.h"
+#include "header.h"
+#include "keynote.h"
 #include "assertion.h"
-#include "signature.h"
 
 static void mystrncpy(char *, char *, int);
-extern int knparse();
 
 struct lex_list
 {
@@ -46,31 +63,19 @@ static struct lex_list *keynote_lex_list = (struct lex_list *) NULL;
 static int    keynote_max_lex_list = 32;
 static int    keynote_lex_counter = 0;
 static int    first_tok = 0;
-
-int keynote_used_variable = 0;
-int keynote_exceptionflag = 0;
-int keynote_donteval = 0;
-
-char *keynote_privkey = (char *) NULL;
- 
-struct environment *keynote_init_list = (struct environment *) NULL;
-struct environment *keynote_temp_list = (struct environment *) NULL;
-struct keylist *keynote_keypred_keylist = (struct keylist *) NULL;
 %}
 digit		[0-9]
 specnumber      [1-9][0-9]*
-number		({digit}+)
-flt		({digit}+"."{digit}+)
+number		{digit}+
+flt		{digit}+"."{digit}+
 vstring		[a-zA-Z_][a-zA-Z0-9_]*
-white           ((\\[\n][[:space:]]*))
-litstring	\"(([^\"\n])|(\\[\"\n\f\r\t.]))*\"
+litstring	\"(((\\\n)|(\\.)|([^\\\n\"]))*)\"
 variable	{vstring}
 comment		"#"[^\n]*
 %s ACTIONSTRING LOCALINIT KEYPREDICATE SIGNERINIT KEYNOTEVERSION
 %pointer
 %option noyywrap never-interactive yylineno
 %%
-
 %{
     /*
      * Return a preset token, so we can have more than one grammars
@@ -201,6 +206,7 @@ comment		"#"[^\n]*
 [ \t\n]
 .                             { keynote_errno = ERROR_SYNTAX; 
                                 return -1;
+				REJECT; /* Avoid -Wall warning. Not reached */
                               }
 %%
 
@@ -291,6 +297,7 @@ keynote_lex_add(void *s, int type)
 		break;
 	}
 
+        keynote_max_lex_list /= 2;
 	keynote_errno = ERROR_MEMORY;
         return -1;
     }
@@ -413,7 +420,7 @@ mystrncpy(char *s1, char *s2, int len)
 
 	    if (*s2 == '\n')
 	    {
-		while (isspace(*(++s2)) && (len-- > 0))
+		while (isspace((int) *(++s2)) && (len-- > 0))
 		  ;
 	    }
 	    else
@@ -503,7 +510,7 @@ keynote_evaluate_assertion(struct assertion *as)
 
     keynote_env_cleanup(&keynote_temp_list, 1);
     keynote_lex_zap();
-    kn_delete_buffer(keynote_bs);	/* Free the space */
+    kn_delete_buffer(keynote_bs);
 
     keynote_used_variable = 0;
     keynote_returnvalue = 0;
@@ -518,7 +525,7 @@ keynote_evaluate_assertion(struct assertion *as)
 
 /* 
  * Parse/evaluate a key predicate field. 
- * Store keys in key predicate as keylist in as->as_keylist, if third
+ * Store keys in key predicate as keylist in as->as_keylist, if second
  * argument is true.
  */
 int
@@ -548,7 +555,7 @@ keynote_parse_keypred(struct assertion *as, int record)
       if (keynote_errno == 0)
 	keynote_errno = ERROR_SYNTAX;
 
-    kn_delete_buffer(keypred_state);  /* Free memory */
+    kn_delete_buffer(keypred_state);
     keynote_lex_zap(); 
     keynote_cleanup_kth();
 
@@ -573,7 +580,9 @@ keynote_parse_keypred(struct assertion *as, int record)
 		keynote_used_variable = 0;
 		as->as_internalflags |= ASSERT_IFLAG_WEIRDLICS;
 	    }
-	    
+
+	    if (as->as_keylist)
+              keynote_keylist_free(as->as_keylist);
 	    as->as_keylist = keynote_keypred_keylist;
 	    keynote_keypred_keylist = (struct keylist *) NULL;
 	    return RESULT_TRUE;
@@ -625,7 +634,7 @@ keynote_evaluate_authorizer(struct assertion *as, int flag)
     if ((err != 0) && (keynote_errno == 0))
       keynote_errno = ERROR_SYNTAX;
 
-    kn_delete_buffer(authorizer_state);  /* Free memory */
+    kn_delete_buffer(authorizer_state);
     keynote_lex_zap();
 
     keynote_justrecord = 0;
@@ -664,7 +673,16 @@ keynote_evaluate_authorizer(struct assertion *as, int flag)
 }
 
 /*
- * Parse a private key.
+ * Exportable front-end to keynote_get_private_key().
+ */
+char *
+kn_get_string(char *buf)
+{
+    return keynote_get_private_key(buf);
+}
+
+/*
+ * Parse a private key -- actually, it can deal with any kind of string.
  */
 char *
 keynote_get_private_key(char *buf)
@@ -743,6 +761,13 @@ keynote_get_envlist(char *buf, char *bufend, int whichfield)
 	  en = keynote_init_list;
 
     	keynote_init_list = (struct environment *) NULL;
+    }
+
+    /* Avoid compiler (-Wall) warnings. Never reached. */
+    if (0)
+    {
+	yyunput(0, NULL);
+	yy_flex_realloc(0, NULL);
     }
 
     return en;

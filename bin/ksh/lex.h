@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lex.h,v 1.5 1999/06/15 01:18:35 millert Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -12,16 +12,17 @@ typedef struct source Source;
 struct source {
 	const char *str;	/* input pointer */
 	int	type;		/* input type */
-	char const *start;	/* start of current buffer */
+	const char *start;	/* start of current buffer */
 	union {
-		char ugbuf[2];	/* buffer for ungetsc() (SREREAD) */
 		char **strv;	/* string [] */
 		struct shf *shf; /* shell file */
-		struct tbl *tblp; /* alias */
+		struct tbl *tblp; /* alias (SALIAS) */
 		char *freeme;	/* also for SREREAD */
 	} u;
+	char	ugbuf[2];	/* buffer for ungetsc() (SREREAD) and
+				 * alias (SALIAS) */
 	int	line;		/* line number */
-	int	errline;	/* line the error occured on (0 if not set) */
+	int	errline;	/* line the error occurred on (0 if not set) */
 	const char *file;	/* input file name */
 	int	flags;		/* SF_* */
 	Area	*areap;
@@ -51,13 +52,15 @@ struct source {
  */
 #define	SBASE	0		/* outside any lexical constructs */
 #define	SWORD	1		/* implicit quoting for substitute() */
-#define	SDPAREN	2		/* inside (( )), implicit quoting */
+#ifdef KSH
+#define	SLETPAREN 2		/* inside (( )), implicit quoting */
+#endif /* KSH */
 #define	SSQUOTE	3		/* inside '' */
 #define	SDQUOTE	4		/* inside "" */
 #define	SBRACE	5		/* inside ${} */
-#define	SPAREN	6		/* inside $() */
+#define	SCSPAREN 6		/* inside $() */
 #define	SBQUOTE	7		/* inside `` */
-#define	SDDPAREN 8		/* inside $(( )) */
+#define	SASPAREN 8		/* inside $(( )) */
 #define SHEREDELIM 9		/* parsing <<,<<- delimiter */
 #define SHEREDQUOTE 10		/* parsing " in <<,<<- delimiter */
 #define SPATTERN 11		/* parsing *(...|...) pattern (*+?@!) */
@@ -93,7 +96,9 @@ typedef union {
 #define	FUNCTION 274
 #define	TIME	275
 #define	REDIR	276
+#ifdef KSH
 #define MDPAREN	277		/* (( )) */
+#endif /* KSH */
 #define BANG	278		/* ! */
 #define DBRACKET 279		/* [[ .. ]] */
 #define COPROC	280		/* |& */
@@ -115,7 +120,6 @@ typedef union {
 
 EXTERN	Source *source;		/* yyparse/yylex source */
 EXTERN	YYSTYPE	yylval;		/* result from yylex */
-EXTERN	int	yynerrs;
 EXTERN	struct ioword *heres [HERES], **herep;
 EXTERN	char	ident [IDENT+1];
 

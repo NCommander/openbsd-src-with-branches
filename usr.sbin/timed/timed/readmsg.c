@@ -1,3 +1,5 @@
+/*	$OpenBSD: readmsg.c,v 1.8 2001/05/05 05:10:04 mickey Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,7 @@ static char sccsid[] = "@(#)readmsg.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
 
 #ifdef sgi
-#ident "$Revision: 1.5 $"
+#ident "$Revision: 1.8 $"
 #endif
 
 #include "globals.h"
@@ -50,7 +52,7 @@ extern char *tsptype[];
 #define LOOKAT(msg, mtype, mfrom, netp, froms) \
 	(((mtype) == TSP_ANY || (mtype) == (msg).tsp_type) &&		\
 	 ((mfrom) == 0 || !strcmp((mfrom), (msg).tsp_name)) &&		\
-	 ((netp) == 0 || 						\
+	 ((netp) == 0 ||						\
 	  ((netp)->mask & (froms).sin_addr.s_addr) == (netp)->net.s_addr))
 
 struct timeval rtime, rwait, rtout;
@@ -83,8 +85,9 @@ readmsg(int type, char *machfrom, struct timeval *intvl,
 	static struct tsplist *tail = &msgslist;
 	static int msgcnt = 0;
 	struct tsplist *prev;
-	register struct netinfo *ntp;
-	register struct tsplist *ptr;
+	struct netinfo *ntp;
+	struct tsplist *ptr;
+	ssize_t n;
 
 	if (trace) {
 		fprintf(fd, "readmsg: looking for %s from %s, %s\n",
@@ -203,11 +206,17 @@ again:
 			continue;
 		}
 		length = sizeof(from);
-		if (recvfrom(sock, (char *)&msgin, sizeof(struct tsp), 0,
-			     (struct sockaddr*)&from, &length) < 0) {
+		if ((n = recvfrom(sock, (char *)&msgin, sizeof(struct tsp), 0,
+			     (struct sockaddr*)&from, &length)) < 0) {
 			syslog(LOG_ERR, "recvfrom: %m");
 			exit(1);
 		}
+		if (n < sizeof(struct tsp)) {
+			syslog(LOG_NOTICE, "short packet (%u/%u bytes) from %s",
+			    n, sizeof(struct tsp), inet_ntoa(from.sin_addr));
+			continue;
+		}
+
 		(void)gettimeofday(&from_when, (struct timezone *)0);
 		bytehostorder(&msgin);
 
@@ -216,6 +225,13 @@ again:
 			    fprintf(fd,"readmsg: version mismatch\n");
 			    /* should do a dump of the packet */
 			}
+			continue;
+		}
+
+		if (memchr(msgin.tsp_name, '\0', sizeof msgin.tsp_name) ==
+		    NULL) {
+			syslog(LOG_NOTICE, "hostname field not NUL terminated "
+			    "in packet from %s", inet_ntoa(from.sin_addr));
 			continue;
 		}
 
@@ -390,7 +406,7 @@ masterack()
 
 	resp = msgin;
 	resp.tsp_vers = TSPVERSION;
-	(void)strcpy(resp.tsp_name, hostname);
+	strlcpy(resp.tsp_name, hostname, sizeof resp.tsp_name);
 
 	switch(msgin.tsp_type) {
 
@@ -434,6 +450,12 @@ struct sockaddr_in *addr;
 	char tm[26];
 	time_t msgtime;
 
+	if (msg->tsp_type >= TSPTYPENUMBER) {
+		fprintf(fd, "bad type (%u) on packet from %s\n",
+		    msg->tsp_type, inet_ntoa(addr->sin_addr));
+		return;
+	}
+
 	switch (msg->tsp_type) {
 
 	case TSP_LOOP:
@@ -453,8 +475,7 @@ struct sockaddr_in *addr;
 		(void)cftime(tm, "%D %T", &msg->tsp_time.tv_sec);
 #else
 		msgtime = msg->tsp_time.tv_sec;
-		strncpy(tm, ctime(&msgtime)+3+1, sizeof(tm));
-		tm[15] = '\0';		/* ugh */
+		strftime(tm, sizeof(tm), "%D %T", localtime(&msgtime));
 #endif /* sgi */
 		fprintf(fd, "%s %d %-6u %s %-15s %s\n",
 			tsptype[msg->tsp_type],
@@ -466,7 +487,7 @@ struct sockaddr_in *addr;
 		break;
 
 	case TSP_ADJTIME:
-		fprintf(fd, "%s %d %-6u (%ld,%ld) %-15s %s\n",
+		fprintf(fd, "%s %d %-6u (%d,%d) %-15s %s\n",
 			tsptype[msg->tsp_type],
 			msg->tsp_vers,
 			msg->tsp_seq,

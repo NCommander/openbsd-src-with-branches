@@ -1,3 +1,4 @@
+/*	$OpenBSD: fortran.c,v 1.3 2000/07/25 19:28:30 deraadt Exp $	*/
 /*	$NetBSD: fortran.c,v 1.3 1995/03/26 20:14:08 glass Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)fortran.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: fortran.c,v 1.3 1995/03/26 20:14:08 glass Exp $";
+static char rcsid[] = "$OpenBSD: fortran.c,v 1.3 2000/07/25 19:28:30 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,7 +49,7 @@ static char rcsid[] = "$NetBSD: fortran.c,v 1.3 1995/03/26 20:14:08 glass Exp $"
 
 #include "ctags.h"
 
-static void takeprec __P((void));
+static void takeprec(void);
 
 char *lbp;				/* line buffer pointer */
 
@@ -125,10 +126,10 @@ PF_funcs()
 			continue;
 		for (cp = lbp + 1; *cp && intoken(*cp); ++cp)
 			continue;
-		if (cp = lbp + 1)
+		if ((cp = lbp + 1))
 			continue;
 		*cp = EOS;
-		(void)strcpy(tok, lbp);
+		(void)strlcpy(tok, lbp, sizeof tok);	/* possible trunc */
 		getline();			/* process line for ex(1) */
 		pfnote(tok, lineno);
 		pfcnt = YES;

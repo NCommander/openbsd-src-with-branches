@@ -1,8 +1,12 @@
-#	$PMDB: Makefile,v 1.10 2002/03/07 14:27:08 art Exp $
+#	$OpenBSD: Makefile,v 1.4 2002/03/15 16:45:10 drahn Exp $
 
 .include <bsd.own.mk>
 
-BINDIR=/usr/local/bin
+.if (!exists(arch/${MACHINE}/Makefile.inc) && \
+    !exists(arch/${MACHINE_ARCH}/Makefile.inc))
+NOMAN=no, man
+NOPROG=no, man
+.else
 
 PROG=pmdb
 SRCS=pmdb.c symbol.c clit.c process.c signal.c break.c
@@ -37,10 +41,12 @@ CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE}
 
 .if (${MACHINE_ARCH} != ${MACHINE}) && exists(arch/${MACHINE_ARCH}/Makefile.inc)
 .PATH: ${.CURDIR}/arch/${MACHINE_ARCH}
-.include arch/${MACHINE_ARCH}/Makefile.inc
+.include "arch/${MACHINE_ARCH}/Makefile.inc"
 CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE_ARCH}
 .endif
 
 COPTS=-Wall -Wno-uninitialized
+
+.endif
 
 .include <bsd.prog.mk>

@@ -1,3 +1,5 @@
+/*	$OpenBSD: subr.c,v 1.14 2001/11/19 01:08:14 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)subr.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$Id: subr.c,v 1.18 1995/10/05 08:51:31 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: subr.c,v 1.14 2001/11/19 01:08:14 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -52,7 +54,7 @@ static char rcsid[] = "$Id: subr.c,v 1.18 1995/10/05 08:51:31 mycroft Exp $";
 
 extern	struct termios tmode, omode;
 
-static void	compatflags __P((long));
+static void	compatflags(long);
 
 /*
  * Get a table entry.
@@ -61,9 +63,9 @@ void
 gettable(name, buf)
 	char *name, *buf;
 {
-	register struct gettystrs *sp;
-	register struct gettynums *np;
-	register struct gettyflags *fp;
+	struct gettystrs *sp;
+	struct gettynums *np;
+	struct gettyflags *fp;
 	long n;
 	char *dba[2];
 	dba[0] = _PATH_GETTYTAB;
@@ -97,8 +99,8 @@ gettable(name, buf)
 	for (np = gettynums; np->field; np++)
 		printf("cgetnum: %s=%d\n", np->field, np->value);
 	for (fp = gettyflags; fp->field; fp++)
-		printf("cgetflags: %s='%c' set='%c'\n", fp->field, 
-		       fp->value + '0', fp->set + '0');
+		printf("cgetflags: %s='%c' set='%c'\n", fp->field,
+		    fp->value + '0', fp->set + '0');
 	exit(1);
 #endif /* DEBUG */
 }
@@ -106,9 +108,9 @@ gettable(name, buf)
 void
 gendefaults()
 {
-	register struct gettystrs *sp;
-	register struct gettynums *np;
-	register struct gettyflags *fp;
+	struct gettystrs *sp;
+	struct gettynums *np;
+	struct gettyflags *fp;
 
 	for (sp = gettystrs; sp->field; sp++)
 		if (sp->value)
@@ -126,9 +128,9 @@ gendefaults()
 void
 setdefaults()
 {
-	register struct gettystrs *sp;
-	register struct gettynums *np;
-	register struct gettyflags *fp;
+	struct gettystrs *sp;
+	struct gettynums *np;
+	struct gettyflags *fp;
 
 	for (sp = gettystrs; sp->field; sp++)
 		if (!sp->value)
@@ -159,8 +161,8 @@ charvars[] = {
 void
 setchars()
 {
-	register int i;
-	register char *p;
+	int i;
+	char *p;
 
 	for (i = 0; charnames[i]; i++) {
 		p = *charnames[i];
@@ -180,7 +182,7 @@ void
 setflags(n)
 	int n;
 {
-	register tcflag_t iflag, oflag, cflag, lflag;
+	tcflag_t iflag, oflag, cflag, lflag;
 
 #ifdef COMPAT_43
 	switch (n) {
@@ -258,16 +260,17 @@ setflags(n)
 			CLR(cflag, PARODD);
 			if (AP)
 				CLR(iflag, INPCK);
-		} else if (AP || EP && OP) {
+		} else if (AP || (EP && OP)) {
 			CLR(iflag, INPCK|IGNPAR);
 			CLR(cflag, PARODD);
 		}
 	} /* else, leave as is */
 
-#if 0
-	if (UC)
-		f |= LCASE;
-#endif
+	if (UC) {
+		SET(iflag, IUCLC);
+		SET(oflag, OLCUC);
+		SET(lflag, XCASE);
+	}
 
 	if (HC)
 		SET(cflag, HUPCL);
@@ -360,9 +363,9 @@ out:
  */
 void
 compatflags(flags)
-register long flags;
+long flags;
 {
-	register tcflag_t iflag, oflag, cflag, lflag;
+	tcflag_t iflag, oflag, cflag, lflag;
 
 	iflag = BRKINT|ICRNL|IMAXBEL|IXON|IXANY;
 	oflag = OPOST|ONLCR|OXTABS;
@@ -388,15 +391,27 @@ register long flags;
 		SET(oflag, OXTABS);
 	else
 		CLR(oflag, OXTABS);
+	if (ISSET(flags, LCASE)) {
+		SET(iflag, IUCLC);
+		SET(oflag, OLCUC);
+		SET(lflag, XCASE);
+	}
+	else {
+		CLR(iflag, IUCLC);
+		CLR(oflag, OLCUC);
+		CLR(lflag, XCASE);
+	}
 
 
 	if (ISSET(flags, RAW)) {
 		iflag &= IXOFF;
-		CLR(lflag, ISIG|ICANON|IEXTEN);
+		CLR(lflag, ISIG|ICANON|IEXTEN|XCASE);
 		CLR(cflag, PARENB);
 	} else {
 		SET(iflag, BRKINT|IXON|IMAXBEL);
 		SET(lflag, ISIG|IEXTEN);
+		if (ISSET(iflag, IUCLC) && ISSET(oflag, OLCUC))
+			SET(lflag, XCASE);
 		if (ISSET(flags, CBREAK))
 			CLR(lflag, ICANON);
 		else
@@ -529,7 +544,7 @@ struct delayval	tbdelay[] = {
 int
 delaybits()
 {
-	register int f;
+	int f;
 
 	f  = adelay(CD, crdelay);
 	f |= adelay(ND, nldelay);
@@ -541,8 +556,8 @@ delaybits()
 
 int
 adelay(ms, dp)
-	register ms;
-	register struct delayval *dp;
+	ms;
+	struct delayval *dp;
 {
 	if (ms == 0)
 		return (0);
@@ -552,14 +567,14 @@ adelay(ms, dp)
 }
 #endif
 
-char	editedhost[32];
+char	editedhost[48];
 
 void
 edithost(pat)
-	register char *pat;
+	char *pat;
 {
-	register char *host = HN;
-	register char *res = editedhost;
+	char *host = HN;
+	char *res = editedhost;
 
 	if (!pat)
 		pat = "";
@@ -588,10 +603,9 @@ edithost(pat)
 		pat++;
 	}
 	if (*host)
-		strncpy(res, host, sizeof editedhost - (res - editedhost) - 1);
+		strlcpy(res, host, sizeof editedhost - (res - editedhost));
 	else
 		*res = '\0';
-	editedhost[sizeof editedhost - 1] = '\0';
 }
 
 void
@@ -599,17 +613,17 @@ makeenv(env)
 	char *env[];
 {
 	static char termbuf[128] = "TERM=";
-	register char *p, *q;
-	register char **ep;
+	char *p, *q;
+	char **ep;
 
 	ep = env;
 	if (TT && *TT) {
-		strcat(termbuf, TT);
+		strlcat(termbuf, TT, sizeof(termbuf));
 		*ep++ = termbuf;
 	}
-	if (p = EV) {
+	if ((p = EV)) {
 		q = p;
-		while (q = strchr(q, ',')) {
+		while ((q = strchr(q, ','))) {
 			*q++ = '\0';
 			*ep++ = p;
 			p = q;
@@ -647,7 +661,7 @@ char *
 portselector()
 {
 	char c, baud[20], *type = "default";
-	register struct portselect *ps;
+	struct portselect *ps;
 	int len;
 
 	alarm(5*60);
@@ -681,22 +695,22 @@ portselector()
 char *
 autobaud()
 {
-	int rfds;
+	fd_set rfds;
 	struct timeval timeout;
 	char c, *type = "9600-baud";
 
 	(void)tcflush(0, TCIOFLUSH);
-	rfds = 1 << 0;
+	FD_ZERO(&rfds);
+	FD_SET(0, &rfds);
 	timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
-	if (select(32, (fd_set *)&rfds, (fd_set *)NULL,
-	    (fd_set *)NULL, &timeout) <= 0)
+	if (select(1, &rfds, (fd_set *)NULL, (fd_set *)NULL, &timeout) <= 0)
 		return (type);
 	if (read(STDIN_FILENO, &c, sizeof(char)) != sizeof(char))
 		return (type);
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 20;
-	(void) select(32, (fd_set *)NULL, (fd_set *)NULL,
+	(void) select(0, (fd_set *)NULL, (fd_set *)NULL,
 	    (fd_set *)NULL, &timeout);
 	(void)tcflush(0, TCIOFLUSH);
 	switch (c & 0377) {

@@ -1,4 +1,5 @@
-/*	$NetBSD: conf.c,v 1.9 1995/08/17 17:40:42 thorpej Exp $	*/
+/*	$OpenBSD: conf.c,v 1.36 2002/01/23 05:06:39 ericj Exp $	*/
+/*	$NetBSD: conf.c,v 1.16 1996/10/18 21:26:57 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -43,35 +44,29 @@
 #include <sys/conf.h>
 #include <sys/vnode.h>
 
-int	ttselect	__P((dev_t, int, struct proc *));
-
-#ifndef LKM
-#define	lkmenodev	enodev
-#else
-int	lkmenodev();
-#endif
-
-bdev_decl(sw);
+#include "wd.h"
+bdev_decl(wd);
+#include "fd.h"
+bdev_decl(fd);
 #include "st.h"
-bdev_decl(st);
 #include "cd.h"
-bdev_decl(cd);
 #include "sd.h"
-bdev_decl(sd);
+#include "ss.h"
+#include "uk.h"
 #include "vnd.h"
-bdev_decl(vnd);
+#include "raid.h"
 #include "ccd.h"
-bdev_decl(ccd);
+#include "rd.h"
 
 struct bdevsw	bdevsw[] =
 {
-	bdev_notdef(),			/* 0 */
+	bdev_disk_init(NWD,wd),	        /* 0: ST506/ESDI/IDE disk */
 	bdev_swap_init(1,sw),		/* 1: swap pseudo-device */
 	bdev_tape_init(NST,st),		/* 2: SCSI tape */
 	bdev_disk_init(NCD,cd),		/* 3: SCSI CD-ROM */
-	bdev_notdef(),			/* 4 */
+	bdev_disk_init(NFD,fd),		/* 4: Floppy disk */
 	bdev_notdef(),			/* 5 */
-	bdev_notdef(),			/* 6 */
+	bdev_disk_init(NRD,rd),		/* 6: ram disk driver */
 	bdev_disk_init(NCCD,ccd),	/* 7: concatenated disk driver */
 	bdev_disk_init(NSD,sd),		/* 8: SCSI disk */
 	bdev_disk_init(NVND,vnd),	/* 9: vnode disk driver */
@@ -81,51 +76,74 @@ struct bdevsw	bdevsw[] =
 	bdev_lkm_dummy(),		/* 13 */
 	bdev_lkm_dummy(),		/* 14 */
 	bdev_lkm_dummy(),		/* 15 */
+	bdev_disk_init(NRAID,raid),	/* 16 */
 };
 int	nblkdev = sizeof (bdevsw) / sizeof (bdevsw[0]);
 
-cdev_decl(cn);
-cdev_decl(ctty);
+/* open, close, write, ioctl */
+#define cdev_lpt_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
+	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
+	0, seltrue, (dev_type_mmap((*))) enodev }
+
 #define	mmread  mmrw
 #define	mmwrite mmrw
 cdev_decl(mm);
-cdev_decl(sw);
 #include "pty.h"
-#define	ptstty		ptytty
-#define	ptsioctl	ptyioctl
-cdev_decl(pts);
-#define	ptctty		ptytty
-#define	ptcioctl	ptyioctl
-cdev_decl(ptc);
-cdev_decl(log);
 #include "tun.h"
-cdev_decl(tun);
-cdev_decl(sd);
-cdev_decl(vnd);
-cdev_decl(ccd);
-dev_type_open(fdopen);
 #include "bpfilter.h"
-cdev_decl(bpf);
-cdev_decl(st);
-cdev_decl(cd);
+#include "iop.h"
 #include "ch.h"
-cdev_decl(ch);
 #include "scc.h"
 cdev_decl(scc);
-#ifdef LKM
-#define	NLKM	1
-#else
-#define	NLKM	0
-#endif
-cdev_decl(lkm);
 #include "audio.h"
-cdev_decl(audio);
-#include "wsc.h"
-cdev_decl(wsc);
 #include "com.h"
 cdev_decl(com);
+#include "wsdisplay.h"
+#include "wskbd.h"
+#include "wsmouse.h"
+#include "midi.h"
+cdev_decl(midi);
+#include "sequencer.h"
+cdev_decl(music);
 
+#include "spkr.h"
+cdev_decl(spkr);
+
+#include "lpt.h"
+cdev_decl(lpt);
 cdev_decl(prom);			/* XXX XXX XXX */
+cdev_decl(wd);
+cdev_decl(fd);
+#include "cy.h"
+cdev_decl(cy);
+#ifdef XFS
+#include <xfs/nxfs.h>
+cdev_decl(xfs_dev);
+#endif
+#include "ksyms.h"
+cdev_decl(ksyms);
+
+/* USB Devices */
+#include "usb.h"
+cdev_decl(usb);
+#include "uhid.h"
+cdev_decl(uhid);
+#include "ugen.h"
+cdev_decl(ugen);
+#include "ulpt.h"
+cdev_decl(ulpt);
+#include "ucom.h"
+cdev_decl(ucom);
+#include "ugen.h"
+cdev_decl(ugen);
+#include "pf.h"
+#ifdef USER_PCICONF
+#include "pci.h"
+cdev_decl(pci);
+#endif
+
+#include <altq/altqconf.h>
 
 struct cdevsw	cdevsw[] =
 {
@@ -139,7 +157,7 @@ struct cdevsw	cdevsw[] =
 	cdev_bpftun_init(NTUN,tun),	/* 7: network tunnel */
 	cdev_disk_init(NSD,sd),		/* 8: SCSI disk */
 	cdev_disk_init(NVND,vnd),	/* 9: vnode disk driver */
-	cdev_fd_init(1,fd),		/* 10: file descriptor pseudo-dev */
+	cdev_fd_init(1,filedesc),	/* 10: file descriptor pseudo-dev */
 	cdev_bpftun_init(NBPFILTER,bpf),/* 11: Berkeley packet filter */
 	cdev_tape_init(NST,st),		/* 12: SCSI tape */
 	cdev_disk_init(NCD,cd),		/* 13: SCSI CD-ROM */
@@ -154,9 +172,44 @@ struct cdevsw	cdevsw[] =
 	cdev_lkm_dummy(),		/* 22 */
 	cdev_tty_init(1,prom),          /* 23: XXX prom console */
 	cdev_audio_init(NAUDIO,audio),	/* 24: generic audio I/O */
-	cdev_tty_init(NWSC,wsc),	/* 25: workstation console */
+	cdev_wsdisplay_init(NWSDISPLAY,wsdisplay), /* 25: workstation console */
 	cdev_tty_init(NCOM,com),	/* 26: ns16550 UART */
 	cdev_disk_init(NCCD,ccd),	/* 27: concatenated disk driver */
+	cdev_disk_init(NRD,rd),		/* 28: ram disk driver */
+	cdev_mouse_init(NWSKBD,wskbd),	/* 29: /dev/kbd XXX */
+	cdev_mouse_init(NWSMOUSE,wsmouse),	/* 30: /dev/mouse XXX */
+	cdev_lpt_init(NLPT,lpt),	/* 31: parallel printer */
+	cdev_scanner_init(NSS,ss),	/* 32: SCSI scanner */
+	cdev_uk_init(NUK,uk),		/* 33: SCSI unknown */
+	cdev_random_init(1,random),	/* 34: random data source */
+	cdev_pf_init(NPF, pf),		/* 35: packet filter */
+	cdev_disk_init(NWD,wd), 	/* 36: ST506/ESDI/IDE disk */
+	cdev_disk_init(NFD,fd),		/* 37: Floppy disk */
+        cdev_tty_init(NCY,cy),          /* 38: Cyclom serial port */
+	cdev_ksyms_init(NKSYMS,ksyms),	/* 39: Kernel symbols device */
+	cdev_spkr_init(NSPKR,spkr),	/* 40: PC speaker */
+	cdev_midi_init(NMIDI,midi),     /* 41: MIDI I/O */
+        cdev_midi_init(NSEQUENCER,sequencer),   /* 42: sequencer I/O */
+	cdev_disk_init(NRAID,raid),	/* 43: RAIDframe disk driver */
+	cdev_notdef(),			/* 44 */
+	cdev_usb_init(NUSB,usb),	/* 45: USB controller */
+	cdev_usbdev_init(NUHID,uhid),	/* 46: USB generic HID */
+	cdev_lpt_init(NULPT,ulpt),	/* 47: USB printer */
+	cdev_ugen_init(NUGEN,ugen),	/* 48: USB generic driver */
+	cdev_tty_init(NUCOM, ucom),	/* 49: USB tty */
+	cdev_notdef(),			/* 50 */
+#ifdef XFS
+	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
+#else
+	cdev_notdef(),			/* 51 */
+#endif
+#ifdef USER_PCICONF
+	cdev_pci_init(NPCI,pci),	/* 52: PCI user */
+#else
+	cdev_notdef(),
+#endif
+	cdev_altq_init(NALTQ, altq),	/* 53: ALTQ control interface */
+	cdev_iop_init(NIOP, iop),	/* 54: I2O IOP control interface */
 };
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);
 
@@ -176,6 +229,7 @@ dev_t	swapdev = makedev(1, 0);
 /*
  * Returns true if dev is /dev/mem or /dev/kmem.
  */
+int
 iskmemdev(dev)
 	dev_t dev;
 {
@@ -186,11 +240,18 @@ iskmemdev(dev)
 /*
  * Returns true if dev is /dev/zero.
  */
+int
 iszerodev(dev)
 	dev_t dev;
 {
 
 	return (major(dev) == mem_no && minor(dev) == 12);
+}
+
+dev_t
+getnulldev()
+{
+	return makedev(mem_no, 2);
 }
 
 static int chrtoblktbl[] = {
@@ -204,12 +265,12 @@ static int chrtoblktbl[] = {
 	/*  5 */	NODEV,
 	/*  6 */	NODEV,
 	/*  7 */	NODEV,
-	/*  8 */	8,
-	/*  9 */	9,
+	/*  8 */	8,		/* sd */
+	/*  9 */	9,		/* vnd */
 	/* 10 */	NODEV,
 	/* 11 */	NODEV,
-	/* 12 */	NODEV,
-	/* 13 */	3,
+	/* 12 */	2,		/* st */
+	/* 13 */	3,		/* cd */
 	/* 14 */	NODEV,
 	/* 15 */	NODEV,
 	/* 16 */	NODEV,
@@ -223,21 +284,65 @@ static int chrtoblktbl[] = {
 	/* 24 */	NODEV,
 	/* 25 */	NODEV,
 	/* 26 */	NODEV,
-	/* 27 */	7,
+	/* 27 */	7,		/* ccd */
+	/* 28 */	6,		/* rd */
+	/* 29 */	NODEV,
+	/* 30 */	NODEV,
+	/* 31 */	NODEV,
+	/* 32 */	NODEV,
+	/* 33 */	NODEV,
+	/* 34 */	NODEV,
+	/* 35 */	NODEV,
+	/* 36 */	0,
+	/* 37 */	4,		/* fd */
+	/* 38 */	NODEV,
+	/* 39 */	NODEV,
+	/* 40 */	NODEV,
+	/* 41 */	NODEV,
+	/* 42 */	NODEV,
+	/* 43 */	16,		/* raid */
+	/* 44 */	NODEV,
+	/* 45 */	NODEV,
+	/* 46 */	NODEV,
+	/* 47 */	NODEV,
+	/* 48 */	NODEV,
+	/* 49 */	NODEV,
+	/* 50 */	NODEV,
+	/* 51 */	NODEV,
 };
 
 /*
  * Convert a character device number to a block device number.
  */
+dev_t
 chrtoblk(dev)
 	dev_t dev;
 {
 	int blkmaj;
 
-	if (major(dev) >= nchrdev)
+	if (major(dev) >= nchrdev ||
+	    major(dev) > sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]))
 		return (NODEV);
 	blkmaj = chrtoblktbl[major(dev)];
 	if (blkmaj == NODEV)
 		return (NODEV);
 	return (makedev(blkmaj, minor(dev)));
+}
+
+/*
+ * Convert a block device number to a character device number.
+ */
+dev_t
+blktochr(dev)
+	dev_t dev;
+{
+	int blkmaj = major(dev);
+	int i;
+
+	if (blkmaj >= nblkdev)
+		return (NODEV);
+	for (i = 0; i < sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]); i++)
+		if (blkmaj == chrtoblktbl[i])
+			return (makedev(i, minor(dev)));
+	return (NODEV);
 }

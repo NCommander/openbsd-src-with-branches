@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: stats.c,v 8.47 2001/08/24 17:01:47 ca Exp $")
+SM_RCSID("@(#)$Sendmail: stats.c,v 8.52 2001/11/21 13:39:14 gshapiro Exp $")
 
 #include <sendmail/mailstats.h>
 
@@ -24,13 +24,13 @@ static bool	GotStats = false;	/* set when we have stats to merge */
 /* See http://physics.nist.gov/cuu/Units/binary.html */
 #define ONE_K		1000		/* one thousand (twenty-four?) */
 #define KBYTES(x)	(((x) + (ONE_K - 1)) / ONE_K)
-/*
+/*
 **  MARKSTATS -- mark statistics
 **
 **	Parameters:
 **		e -- the envelope.
 **		to -- to address.
-**		reject -- whether this is a rejection.
+**		type -- type of stats this represents.
 **
 **	Returns:
 **		none.
@@ -40,13 +40,21 @@ static bool	GotStats = false;	/* set when we have stats to merge */
 */
 
 void
-markstats(e, to, reject)
+markstats(e, to, type)
 	register ENVELOPE *e;
 	register ADDRESS *to;
-	bool reject;
+	int type;
 {
-	if (reject)
+	switch (type)
 	{
+#if _FFR_QUARANTINE
+	  case STATS_QUARANTINE:
+		if (e->e_from.q_mailer != NULL)
+			Stat.stat_nq[e->e_from.q_mailer->m_mno]++;
+		break;
+#endif /* _FFR_QUARANTINE */
+
+	  case STATS_REJECT:
 		if (e->e_from.q_mailer != NULL)
 		{
 			if (bitset(EF_DISCARD, e->e_flags))
@@ -55,28 +63,36 @@ markstats(e, to, reject)
 				Stat.stat_nr[e->e_from.q_mailer->m_mno]++;
 		}
 		Stat.stat_cr++;
-	}
-	else if (to == NULL)
-	{
-		Stat.stat_cf++;
-		if (e->e_from.q_mailer != NULL)
+		break;
+
+	  case STATS_NORMAL:
+		if (to == NULL)
 		{
-			Stat.stat_nf[e->e_from.q_mailer->m_mno]++;
-			Stat.stat_bf[e->e_from.q_mailer->m_mno] +=
-				KBYTES(e->e_msgsize);
+			Stat.stat_cf++;
+			if (e->e_from.q_mailer != NULL)
+			{
+				Stat.stat_nf[e->e_from.q_mailer->m_mno]++;
+				Stat.stat_bf[e->e_from.q_mailer->m_mno] +=
+					KBYTES(e->e_msgsize);
+			}
 		}
-	}
-	else
-	{
-		Stat.stat_ct++;
-		Stat.stat_nt[to->q_mailer->m_mno]++;
-		Stat.stat_bt[to->q_mailer->m_mno] += KBYTES(e->e_msgsize);
+		else
+		{
+			Stat.stat_ct++;
+			Stat.stat_nt[to->q_mailer->m_mno]++;
+			Stat.stat_bt[to->q_mailer->m_mno] += KBYTES(e->e_msgsize);
+		}
+		break;
+
+	  default:
+		/* Silently ignore bogus call */
+		return;
 	}
 
 
 	GotStats = true;
 }
-/*
+/*
 **  CLEARSTATS -- clear statistics structure
 **
 **	Parameters:
@@ -96,7 +112,7 @@ clearstats()
 	memset(&Stat, '\0', sizeof Stat);
 	GotStats = false;
 }
-/*
+/*
 **  POSTSTATS -- post statistics in the statistics file
 **
 **	Parameters:
@@ -159,6 +175,9 @@ poststats(sfile)
 			stats.stat_bt[i] += Stat.stat_bt[i];
 			stats.stat_nr[i] += Stat.stat_nr[i];
 			stats.stat_nd[i] += Stat.stat_nd[i];
+#if _FFR_QUARANTINE
+			stats.stat_nq[i] += Stat.stat_nq[i];
+#endif /* _FFR_QUARANTINE */
 		}
 		stats.stat_cr += Stat.stat_cr;
 		stats.stat_ct += Stat.stat_ct;

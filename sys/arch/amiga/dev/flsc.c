@@ -1,3 +1,6 @@
+/*	$OpenBSD: flsc.c,v 1.11 2001/11/30 22:08:16 miod Exp $	*/
+/*	$NetBSD: flsc.c,v 1.14 1996/12/23 09:10:00 veego Exp $	*/
+
 /*
  * Copyright (c) 1995 Daniel Widenfalk
  * Copyright (c) 1994 Christian E. Hopps
@@ -41,10 +44,7 @@
 #include <sys/device.h>
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
-#include <vm/vm.h>
-#include <vm/vm_kern.h>
-#include <vm/vm_page.h>
-#include <machine/pmap.h>
+#include <uvm/uvm_extern.h>
 #include <amiga/amiga/custom.h>
 #include <amiga/amiga/cc.h>
 #include <amiga/amiga/device.h>
@@ -55,9 +55,8 @@
 #include <amiga/dev/flscreg.h>
 #include <amiga/dev/flscvar.h>
 
-int  flscprint  __P((void *auxp, char *));
-void flscattach __P((struct device *, struct device *, void *));
-int  flscmatch  __P((struct device *, struct cfdata *, void *));
+void flscattach(struct device *, struct device *, void *);
+int  flscmatch(struct device *, void *, void *);
 
 struct scsi_adapter flsc_scsiswitch = {
 	sfas_scsicmd,
@@ -73,27 +72,32 @@ struct scsi_device flsc_scsidev = {
 	NULL,		/* Use default done routine */
 };
 
+struct cfattach flsc_ca = {
+	sizeof(struct flsc_softc), flscmatch, flscattach
+};
 
-struct cfdriver flsccd = {
-	NULL, "flsc", (cfmatch_t)flscmatch, flscattach, 
-	DV_DULL, sizeof(struct flsc_softc), NULL, 0 };
+struct cfdriver flsc_cd = {
+	NULL, "flsc", DV_DULL, NULL, 0
+};
 
-int flsc_intr		 __P((struct sfas_softc *dev));
-int flsc_setup_dma	 __P((struct sfas_softc *sc, void *ptr, int len,
-			      int mode));
-int flsc_build_dma_chain __P((struct sfas_softc *sc,
-			      struct sfas_dma_chain *chain, void *p, int l));
-int flsc_need_bump	 __P((struct sfas_softc *sc, void *ptr, int len));
-void flsc_led		 __P((struct sfas_softc *sc, int mode));
+int flsc_intr(void *);
+void flsc_set_dma_adr(struct sfas_softc *sc, vm_offset_t ptr);
+void flsc_set_dma_tc(struct sfas_softc *sc, unsigned int len);
+void flsc_set_dma_mode(struct sfas_softc *sc, int mode);
+int flsc_setup_dma(struct sfas_softc *sc, vm_offset_t ptr, int len,
+			      int mode);
+int flsc_build_dma_chain(struct sfas_softc *sc,
+			      struct sfas_dma_chain *chain, void *p, int l);
+int flsc_need_bump(struct sfas_softc *sc, vm_offset_t ptr, int len);
+void flsc_led(struct sfas_softc *sc, int mode);
 
 /*
  * if we are an Advanced Systems & Software FastlaneZ3
  */
 int
-flscmatch(pdp, cdp, auxp)
+flscmatch(pdp, match, auxp)
 	struct device	*pdp;
-	struct cfdata	*cdp;
-	void		*auxp;
+	void		*match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -101,7 +105,8 @@ flscmatch(pdp, cdp, auxp)
 		return(0);
 
 	zap = auxp;
-	if (zap->manid == 0x2140 && zap->prodid == 11)
+	if (zap->manid == 0x2140 && zap->prodid == 11
+	    && iszthreepa(zap->pa))
 		return(1);
 
 	return(0);
@@ -182,25 +187,14 @@ flscattach(pdp, dp, auxp)
 	printf("\n");
 
 /* attach all scsi units on us */
-	config_found(dp, &sc->sc_softc.sc_link, flscprint);
-}
-
-/* print diag if pnp is NULL else just extra */
-int
-flscprint(auxp, pnp)
-	void *auxp;
-	char *pnp;
-{
-	if (pnp == NULL)
-		return(UNCONF);
-
-	return(QUIET);
+	config_found(dp, &sc->sc_softc.sc_link, scsiprint);
 }
 
 int
-flsc_intr(dev)
-	struct sfas_softc *dev;
+flsc_intr(arg)
+	void *arg;
 {
+	struct sfas_softc *dev = arg;
 	flsc_regmap_p	      rp;
 	struct flsc_specific *flspec;
 	int		      quickints;
@@ -243,7 +237,7 @@ flsc_intr(dev)
 void
 flsc_set_dma_adr(sc, ptr)
 	struct sfas_softc *sc;
-	void		 *ptr;
+	vm_offset_t	  ptr;
 {
 	flsc_regmap_p	rp;
 	unsigned int   *p;
@@ -287,7 +281,7 @@ flsc_set_dma_mode(sc, mode)
 int
 flsc_setup_dma(sc, ptr, len, mode)
 	struct sfas_softc *sc;
-	void		 *ptr;
+	vm_offset_t	  ptr;
 	int		  len;
 	int		  mode;
 {
@@ -327,19 +321,18 @@ flsc_setup_dma(sc, ptr, len, mode)
 int
 flsc_need_bump(sc, ptr, len)
 	struct sfas_softc *sc;
-	void		 *ptr;
+	vm_offset_t	  ptr;
 	int		  len;
 {
 	int	p;
 
-	p = (int)ptr & 0x03;
-
-	if (p) {
-		p = 4-p;
-	    
-		if (len < 256)
+	if (((int)ptr & 0x03) || (len & 0x03)) {
+		if (len < 256) 
 			p = len;
-	}
+		else
+			p = 256;
+	} else 
+		p = 0;
 
 	return(p);
 }
@@ -354,7 +347,7 @@ flsc_build_dma_chain(sc, chain, p, l)
 {
 	vm_offset_t  pa, lastpa;
 	char	    *ptr;
-	int	     len, prelen, postlen, max_t, n;
+	int	     len, prelen, max_t, n;
 
 	if (l == 0)
 		return(0);
@@ -367,8 +360,8 @@ do { chain[n].ptr = (p); chain[n].len = (l); chain[n++].flg = (f); } while(0)
 	if (l < 512)
 		set_link(n, (vm_offset_t)p, l, SFAS_CHAIN_BUMP);
 	else if ((p >= (void *)0xFF000000)
-#if M68040
-		 && ((mmutype == MMU_68040) && (p >= (void *)0xFFFC0000))
+#if defined(M68040) || defined(M68060)
+		 && ((mmutype <= MMU_68040) && (p >= (void *)0xFFFC0000))
 #endif
 		 ) {
 		while(l != 0) {

@@ -1,3 +1,6 @@
+/*	$OpenBSD: terminal.c,v 1.3 1998/03/12 04:57:45 art Exp $	*/
+/*	$NetBSD: terminal.c,v 1.5 1996/02/28 21:04:17 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,18 +34,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)terminal.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: terminal.c,v 1.3 1994/02/25 03:00:47 cgd Exp $";
-#endif /* not lint */
-
-#include <arpa/telnet.h>
-#include <sys/types.h>
-
-#include "ring.h"
-
-#include "externs.h"
-#include "types.h"
+#include "telnet_locl.h"
 
 Ring		ttyoring, ttyiring;
 unsigned char	ttyobuf[2*BUFSIZ], ttyibuf[BUFSIZ];
@@ -117,7 +109,7 @@ init_terminal()
 ttyflush(drop)
     int drop;
 {
-    register int n, n0, n1;
+    int n, n0, n1;
 
     n0 = ring_full_count(&ttyoring);
     if ((n1 = n = ring_full_consecutive(&ttyoring)) > 0) {
@@ -125,7 +117,7 @@ ttyflush(drop)
 	    TerminalFlushOutput();
 	    /* we leave 'n' alone! */
 	} else {
-	    n = TerminalWrite(ttyoring.consume, n);
+	    n = TerminalWrite((char *)ttyoring.consume, n);
 	}
     }
     if (n > 0) {
@@ -141,7 +133,8 @@ ttyflush(drop)
 		n1 = n0 - n;
 		if (!drop)
 			n1 = TerminalWrite(ttyoring.bottom, n1);
-		n += n1;
+		if (n1 > 0)
+			n += n1;
 	}
 	ring_consumed(&ttyoring, n);
     }
@@ -180,9 +173,11 @@ getconnmode()
     if (localflow)
 	mode |= MODE_FLOW;
 
-    if (my_want_state_is_will(TELOPT_BINARY))
+    if ((eight & 1) || my_want_state_is_will(TELOPT_BINARY))
 	mode |= MODE_INBIN;
 
+    if (eight & 2)
+	mode |= MODE_OUT8;
     if (his_want_state_is_will(TELOPT_BINARY))
 	mode |= MODE_OUTBIN;
 
@@ -206,12 +201,29 @@ getconnmode()
 setconnmode(force)
     int force;
 {
-    register int newmode;
+    int newmode;
+#ifdef ENCRYPTION
+    static int enc_passwd = 0;
+#endif
 
     newmode = getconnmode()|(force?MODE_FORCE:0);
 
     TerminalNewMode(newmode);
 
+#ifdef  ENCRYPTION
+    if ((newmode & (MODE_ECHO|MODE_EDIT)) == MODE_EDIT) {
+	if (my_want_state_is_will(TELOPT_ENCRYPT)
+	    && (enc_passwd == 0) && !encrypt_output) {
+	    encrypt_request_start(0, 0);
+	    enc_passwd = 1;
+	}
+    } else {
+	if (enc_passwd) {
+	    encrypt_request_end();
+	    enc_passwd = 0;
+	}
+    }
+#endif
 
 }
 

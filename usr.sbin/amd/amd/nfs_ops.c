@@ -1,3 +1,5 @@
+/*	$OpenBSD: nfs_ops.c,v 1.8 2001/06/25 21:29:31 niklas Exp $	*/
+
 /*-
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -38,7 +40,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)nfs_ops.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: nfs_ops.c,v 1.4 1995/03/22 17:15:08 mycroft Exp $";
+static char *rcsid = "$OpenBSD: nfs_ops.c,v 1.8 2001/06/25 21:29:31 niklas Exp $";
 #endif /* not lint */
 
 #include "am.h"
@@ -54,7 +56,6 @@ typedef nfs_fh fhandle_t;
 #ifdef NFS_HDR
 #include NFS_HDR
 #endif /* NFS_HDR */
-#include <sys/mount.h>
 #include "mount.h"
 
 /*
@@ -96,7 +97,7 @@ struct fh_cache {
 	int	fh_error;		/* Valid data? */
 	int	fh_id;			/* Unique id */
 	int	fh_cid;			/* Callout id */
-	struct fhstatus fh_handle;	/* Handle on filesystem */
+	fhstatus fh_handle;		/* Handle on filesystem */
 	struct sockaddr_in fh_sin;	/* Address of mountd */
 	fserver *fh_fs;			/* Server holding filesystem */
 	char	*fh_path;		/* Filesystem on host */
@@ -125,7 +126,8 @@ voidp idv;
 int done;
 {
 	fh_cache *fp, *fp2 = 0;
-	int id = (int) idv;
+	/* XXX EVIL XXX */
+	int id = (int) ((long)idv);
 
 	ITER(fp, fh_cache, &fh_head) {
 		if (fp->fh_id == id) {
@@ -164,6 +166,9 @@ int done;
 {
 	fh_cache *fp = find_nfs_fhandle_cache(idv, done);
 	if (fp) {
+#if NFS_PROTOCOL_VERSION >= 3
+		fp->fh_handle.fhs_vers = MOUNTVERS;
+#endif
 		fp->fh_error = pickup_rpc_reply(pkt, len, (voidp) &fp->fh_handle, xdr_fhstatus);
 		if (!fp->fh_error) {
 #ifdef DEBUG
@@ -211,11 +216,11 @@ fh_cache *fp;
 /*
  * Determine the file handle for a node
  */
-static int prime_nfs_fhandle_cache P((char *path, fserver *fs, struct fhstatus *fhbuf, voidp wchan));
+static int prime_nfs_fhandle_cache P((char *path, fserver *fs, fhstatus *fhbuf, voidp wchan));
 static int prime_nfs_fhandle_cache(path, fs, fhbuf, wchan)
 char *path;
 fserver *fs;
-struct fhstatus *fhbuf;
+fhstatus *fhbuf;
 voidp wchan;
 {
 	fh_cache *fp, *fp_save = 0;
@@ -233,7 +238,7 @@ voidp wchan;
 		if (fs == fp->fh_fs && strcmp(path, fp->fh_path) == 0) {
 			switch (fp->fh_error) {
 			case 0:
-				error = fp->fh_error = unx_error(fp->fh_handle.fhs_status);
+				error = fp->fh_error = unx_error(fp->fh_handle.fhs_stat);
 				if (error == 0) {
 					if (fhbuf)
 						bcopy((voidp) &fp->fh_handle, (voidp) fhbuf,
@@ -384,9 +389,13 @@ voidp wchan;
 	len = make_rpc_packet(iobuf, sizeof(iobuf), proc,
 			&mnt_msg, (voidp) &fp->fh_path, xdr_nfspath,  nfs_auth);
 
+	/*
+	 * XXX EVIL!  We cast fh_id to a pointer, then back to an int
+	 * XXX later.
+	 */
 	if (len > 0) {
 		error = fwd_packet(MK_RPC_XID(RPC_XID_MOUNTD, fp->fh_id),
-			(voidp) iobuf, len, &fp->fh_sin, &fp->fh_sin, (voidp) fp->fh_id, f);
+			(voidp) iobuf, len, &fp->fh_sin, &fp->fh_sin, (voidp) ((long)fp->fh_id), f);
 	} else {
 		error = -len;
 	}
@@ -446,7 +455,7 @@ mntfs *mf;
 {
 	if (!mf->mf_private) {
 		int error;
-		struct fhstatus fhs;
+		fhstatus fhs;
 	
 		char *colon = strchr(mf->mf_info, ':');
 		if (colon == 0)
@@ -464,9 +473,9 @@ mntfs *mf;
 	return 0;
 }
 
-int mount_nfs_fh P((struct fhstatus *fhp, char *dir, char *fs_name, char *opts, mntfs *mf));
+int mount_nfs_fh P((fhstatus *fhp, char *dir, char *fs_name, char *opts, mntfs *mf));
 int mount_nfs_fh(fhp, dir, fs_name, opts, mf)
-struct fhstatus *fhp;
+fhstatus *fhp;
 char *dir;
 char *fs_name;
 char *opts;
@@ -527,8 +536,12 @@ mntfs *mf;
 	/*
 	 * set mount args
 	 */
-	NFS_FH_DREF(nfs_args.fh, (NFS_FH_TYPE) fhp->fhstatus_u.fhs_fhandle);
+	NFS_FH_DREF(nfs_args.fh, (NFS_FH_TYPE) fhp->fhs_fhandle);
 
+#if NFS_PROTOCOL_VERSION >= 3
+	nfs_args.fhsize = fhp->fhs_size;
+	nfs_args.version = NFS_ARGSVERSION;
+#endif
 #ifdef ULTRIX_HACK
 	nfs_args.optstr = mnt.mnt_opts;
 #endif /* ULTRIX_HACK */
@@ -543,16 +556,25 @@ mntfs *mf;
 		strcpy(host + HOSTNAMESZ - 3, "..");
 #endif /* HOSTNAMESZ */
 
-	if (nfs_args.rsize = hasmntval(&mnt, "rsize"))
+	if ((nfs_args.rsize = hasmntval(&mnt, "rsize")))
 		nfs_args.flags |= NFSMNT_RSIZE;
 
-	if (nfs_args.wsize = hasmntval(&mnt, "wsize"))
+#ifdef NFSMNT_READDIRSIZE
+	if ((nfs_args.readdirsize = hasmntval(&mnt, "readdirsize"))) {
+		nfs_args.flags |= NFSMNT_READDIRSIZE;
+	} else if (nfs_args.rsize) {
+		nfs_args.readdirsize = nfs_args.rsize;
+		nfs_args.flags |= NFSMNT_READDIRSIZE;
+	}
+#endif
+
+	if ((nfs_args.wsize = hasmntval(&mnt, "wsize")))
 		nfs_args.flags |= NFSMNT_WSIZE;
 
-	if (nfs_args.timeo = hasmntval(&mnt, "timeo"))
+	if ((nfs_args.timeo = hasmntval(&mnt, "timeo")))
 		nfs_args.flags |= NFSMNT_TIMEO;
 
-	if (nfs_args.retrans = hasmntval(&mnt, "retrans"))
+	if ((nfs_args.retrans = hasmntval(&mnt, "retrans")))
 		nfs_args.flags |= NFSMNT_RETRANS;
 
 #ifdef NFSMNT_BIODS
@@ -562,9 +584,14 @@ mntfs *mf;
 #endif /* NFSMNT_BIODS */
 
 #ifdef NFSMNT_MAXGRPS
-	if (nfs_args.maxgrouplist = hasmntval(&mnt, "maxgroups"))
+	if ((nfs_args.maxgrouplist = hasmntval(&mnt, "maxgroups")))
 		nfs_args.flags |= NFSMNT_MAXGRPS;
 #endif /* NFSMNT_MAXGRPS */
+
+#ifdef NFSMNT_READAHEAD
+	if (nfs_args.readahead = hasmntval(&mnt, "readahead"))
+		nfs_args.flags |= NFSMNT_READAHEAD;
+#endif /* NFSMNT_READAHEAD */
 
 #ifdef notdef
 /*
@@ -614,6 +641,15 @@ mntfs *mf;
 	if (hasmntopt(&mnt, MNTOPT_RESVPORT) != NULL)
 		nfs_args.flags |= NFSMNT_RESVPORT;
 #endif /* MNTOPT_RESVPORT */
+
+#ifdef MNTOPT_NQNFS
+	if (hasmntopt(&mnt, MNTOPT_NQNFS) != NULL)
+		nfs_args.flags |= NFSMNT_NQNFS;
+#ifdef NFSMNT_NQLOOKLEASE
+	if (hasmntopt(&mnt, "nolooklease") == NULL)
+		nfs_args.flags |= NFSMNT_NQLOOKLEASE;
+#endif /* NFSMNT_NQLOOKLEASE */
+#endif /* MNTOPT_NQNFS */
 
 #ifdef NFSMNT_PGTHRESH
 	if (nfs_args.pg_thresh = hasmntval(&mnt, "pgthresh"))
@@ -665,7 +701,7 @@ mntfs *mf;
 {
 #ifdef notdef
 	int error;
-	struct fhstatus fhs;
+	fhstatus fhs;
 	char *colon;
 
 	if (!(colon = strchr(fs_name, ':')))
@@ -686,7 +722,7 @@ mntfs *mf;
 		return EINVAL;
 	}
 
-	return mount_nfs_fh((struct fhstatus *) mf->mf_private, dir, fs_name, opts, mf);
+	return mount_nfs_fh((fhstatus *) mf->mf_private, dir, fs_name, opts, mf);
 }
 
 static int nfs_fmount(mf)
@@ -758,7 +794,7 @@ am_node *mp;
 		f.fh_fs = fs;
 		f.fh_id = 0;
 		f.fh_error = 0;
-		(void) prime_nfs_fhandle_cache(colon+1, mf->mf_server, (struct fhstatus *) 0, (voidp) mf);
+		(void) prime_nfs_fhandle_cache(colon+1, mf->mf_server, (fhstatus *) 0, (voidp) mf);
 		(void) call_mountd(&f, MOUNTPROC_UMNT, (fwd_fun) 0, (voidp) 0);
 		*colon = ':';
 	}

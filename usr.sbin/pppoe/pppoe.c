@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pppoe.c,v 1.6 2002/01/10 18:21:38 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -59,12 +59,12 @@
 int option_verbose = 0;
 u_char etherbroadcastaddr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-int main __P((int, char **));
-void usage __P((char *));
-int getifhwaddr __P((char *, char *, struct ether_addr *));
-int setupfilter __P((char *, struct ether_addr *, int));
-void child_handler __P((int));
-int signal_init __P((void));
+int main(int, char **);
+void usage(void);
+int getifhwaddr(char *, char *, struct ether_addr *);
+int setupfilter(char *, struct ether_addr *, int);
+void child_handler(int);
+int signal_init(void);
 
 int
 main(int argc, char **argv) {
@@ -77,28 +77,28 @@ main(int argc, char **argv) {
 		switch (c) {
 		case 'i':
 			if (ifname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
 			ifname = optarg;
 			break;
 		case 'n':
 			if (srvname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
 			srvname = optarg;
 			break;
 		case 'p':
 			if (sysname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
 			sysname = optarg;
 			break;
 		case 's':
 			if (smode) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
 			smode = 1;
@@ -107,14 +107,14 @@ main(int argc, char **argv) {
 			option_verbose++;
 			break;
 		default:
-			usage(argv[0]);
+			usage();
 			return (EX_USAGE);
 		}
 	}
 
 	argc -= optind;
 	if (argc != 0) {
-		usage(argv[0]);
+		usage();
 		return (EX_USAGE);
 	}
 
@@ -186,7 +186,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = ep[4] << 8 | ep[5];
+	insns[idx].k = (ep[4] << 8) | (ep[5] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 1;
 	idx++;
@@ -223,7 +223,8 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = (ep[0]) | (ep[1] << 8) | (ep[3] << 16) | (ep[3] << 24);
+	insns[idx].k =
+	    (ep[0] << 24) | (ep[1] << 16) | (ep[2] << 8) | (ep[3] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 3;
 	idx++;
@@ -234,7 +235,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = (ep[4]) | (ep[5] << 8);
+	insns[idx].k = (ep[4] << 8) | (ep[5] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 1;
 	idx++;
@@ -245,16 +246,14 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_RET | BPF_K;
-	insns[idx].k = (u_int)-1;
-	insns[idx].jt = 0;
-	insns[idx].jf = 0;
+	insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
 	idx++;
 
 	filter.bf_len = idx;
 	filter.bf_insns = insns;
 
-	for (i = 0; 1; i++) {
-		snprintf(device, sizeof(device), "/dev/bpf%d", i++);
+	for (i = 0; ; i++) {
+		snprintf(device, sizeof(device), "/dev/bpf%d", i);
 		fd = open(device, O_RDWR);
 		if (fd < 0) {
 			if (errno != EBUSY)
@@ -276,8 +275,7 @@ setupfilter(ifn, ea, server_mode)
 		err(EX_IOERR, "set immediate");
 	}
 
-	strncpy(ifr.ifr_name, ifn, sizeof(ifr.ifr_name));
-	ifr.ifr_name[sizeof(ifr.ifr_name)-1] = '\0';
+	strlcpy(ifr.ifr_name, ifn, IFNAMSIZ);
 	if (ioctl(fd, BIOCSETIF, &ifr) < 0) {
 		close(fd);
 		err(EX_IOERR, "set interface");
@@ -341,8 +339,7 @@ getifhwaddr(ifnhint, ifnambuf, ea)
 		    sizeof(ifrp->ifr_name)))
 			continue;
 		if (ifnhint == NULL) {
-			strncpy(req.ifr_name, ifrp->ifr_name, IFNAMSIZ);
-			req.ifr_name[IFNAMSIZ-1] = '\0';
+			strlcpy(req.ifr_name, ifrp->ifr_name, IFNAMSIZ);
 			if (ioctl(s, SIOCGIFFLAGS, &req) < 0)
 				err(EX_IOERR, "get flags");
 			if ((req.ifr_flags & IFF_UP) == 0)
@@ -366,8 +363,7 @@ getifhwaddr(ifnhint, ifnambuf, ea)
 			return (-1);
 		}
 		bcopy(dl->sdl_data + dl->sdl_nlen, ea, sizeof(*ea));
-		strncpy(ifnambuf, ifrp->ifr_name, IFNAMSIZ);
-		ifnambuf[IFNAMSIZ-1] = '\0';
+		strlcpy(ifnambuf, ifrp->ifr_name, IFNAMSIZ);
 		free(inbuf);
 		close(s);
 		return (0);
@@ -382,19 +378,24 @@ getifhwaddr(ifnhint, ifnambuf, ea)
 }
 
 void
-usage(progname)
-	char *progname;
+usage()
 {
-	fprintf(stderr, "%s [-s] [-v] [-p system] [-i interface]\n", progname);
+	extern char *__progname;
+
+	fprintf(stderr,"%s [-sv] [-i interface] [-n service] [-p system]\n",
+	    __progname);
 }
 
 void
 child_handler(sig)
 	int sig;
 {
+	int save_errno = errno;
 	int status;
 
-	while (wait3(&status, WNOHANG, NULL) > 0);
+	while (wait3(&status, WNOHANG, NULL) > 0)
+		;
+	errno = save_errno;
 }
 
 int

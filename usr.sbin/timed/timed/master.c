@@ -1,3 +1,5 @@
+/*	$OpenBSD: master.c,v 1.5 2001/03/31 19:40:58 fgsch Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -48,6 +50,7 @@ static char sccsid[] = "@(#)master.c	5.1 (Berkeley) 5/11/93";
 #include <sys/schedctl.h>
 #include <utmpx.h>	/* includes utmp.h */
 #else
+#include <util.h>
 #include <utmp.h>
 #endif /* sgi */
 
@@ -154,7 +157,8 @@ loop:
 				to.tsp_vers = TSPVERSION;
 				to.tsp_seq = sequence++;
 				to.tsp_hopcnt = MAX_HOPCNT;
-				(void)strcpy(to.tsp_name, hostname);
+				strlcpy(to.tsp_name, hostname,
+				    sizeof to.tsp_name);
 				bytenetorder(&to);
 				if (sendto(sock, (char *)&to,
 					   sizeof(struct tsp), 0,
@@ -184,7 +188,7 @@ loop:
 			(void)cftime(newdate, "%D %T", &msg->tsp_time.tv_sec);
 #else
 			tmpt = msg->tsp_time.tv_sec;
-			(void)strcpy(newdate, ctime(&tmpt));
+			strlcpy(newdate, ctime(&tmpt), sizeof newdate);
 #endif /* sgi */
 			if (!good_host_name(msg->tsp_name)) {
 				syslog(LOG_NOTICE,
@@ -206,7 +210,7 @@ loop:
 			(void)cftime(newdate, "%D %T", &msg->tsp_time.tv_sec);
 #else
 			tmpt = msg->tsp_time.tv_sec;
-			(void)strcpy(newdate, ctime(&tmpt));
+			strlcpy(newdate, ctime(&tmpt), sizeof newdate);
 #endif /* sgi */
 			htp = findhost(msg->tsp_name);
 			if (htp == 0) {
@@ -254,9 +258,9 @@ loop:
 				(void)addmach(msg->tsp_name, &from,fromnet);
 			}
 			taddr = from;
-			(void)strcpy(tname, msg->tsp_name);
+			strlcpy(tname, msg->tsp_name, sizeof tname);
 			to.tsp_type = TSP_QUIT;
-			(void)strcpy(to.tsp_name, hostname);
+			strlcpy(to.tsp_name, hostname, sizeof to.tsp_name);
 			answer = acksend(&to, &taddr, tname,
 					 TSP_ACK, 0, 1);
 			if (answer == NULL) {
@@ -273,7 +277,7 @@ loop:
 			 */
 			if (!fromnet || fromnet->status != MASTER)
 				break;
-			(void)strcpy(to.tsp_name, hostname);
+			strlcpy(to.tsp_name, hostname, sizeof to.tsp_name);
 
 			/* The other master often gets into the same state,
 			 * with boring results if we stay at it forever.
@@ -281,7 +285,8 @@ loop:
 			ntp = fromnet;	/* (acksend() can leave fromnet=0 */
 			for (i = 0; i < 3; i++) {
 				to.tsp_type = TSP_RESOLVE;
-				(void)strcpy(to.tsp_name, hostname);
+				strlcpy(to.tsp_name, hostname,
+				    sizeof to.tsp_name);
 				answer = acksend(&to, &ntp->dest_addr,
 						 ANYADDR, TSP_MASTERACK,
 						 ntp, 0);
@@ -326,7 +331,7 @@ loop:
 			 */
 			htp = addmach(msg->tsp_name, &from,fromnet);
 			to.tsp_type = TSP_QUIT;
-			(void)strcpy(to.tsp_name, hostname);
+			strlcpy(to.tsp_name, hostname, sizeof to.tsp_name);
 			answer = acksend(&to, &htp->addr, htp->name,
 					 TSP_ACK, 0, 1);
 			if (!answer) {
@@ -367,13 +372,13 @@ mchgdate(struct tsp *msg)
 {
 	char tname[MAXHOSTNAMELEN];
 	char olddate[32];
-	struct timeval otime, ntime;
+	struct timeval otime, ntime, tmptv;
 
-	(void)strcpy(tname, msg->tsp_name);
+	strlcpy(tname, msg->tsp_name, sizeof tname);
 
 	xmit(TSP_DATEACK, msg->tsp_seq, &from);
 
-	(void)strcpy(olddate, date());
+	strlcpy(olddate, date(), sizeof olddate);
 
 	/* adjust time for residence on the queue */
 	(void)gettimeofday(&otime, 0);
@@ -394,8 +399,10 @@ mchgdate(struct tsp *msg)
 		logwtmp(&otime, &msg->tsp_time);
 #else
 		logwtmp("|", "date", "");
-		(void)settimeofday(&msg->tsp_time, 0);
-		logwtmp("}", "date", "");
+		tmptv.tv_sec = msg->tsp_time.tv_sec;
+		tmptv.tv_usec = msg->tsp_time.tv_usec;
+		(void)settimeofday(&tmptv, 0);
+		logwtmp("{", "date", "");
 #endif /* sgi */
 		spreadtime();
 	}
@@ -500,6 +507,7 @@ spreadtime()
 	struct hosttbl *htp;
 	struct tsp to;
 	struct tsp *answer;
+	struct timeval tmptv;
 
 /* Do not listen to the consensus after forcing the time.  This is because
  *	the consensus takes a while to reach the time we are dictating.
@@ -507,8 +515,10 @@ spreadtime()
 	dictate = 2;
 	for (htp = self.l_fwd; htp != &self; htp = htp->l_fwd) {
 		to.tsp_type = TSP_SETTIME;
-		(void)strcpy(to.tsp_name, hostname);
-		(void)gettimeofday(&to.tsp_time, 0);
+		strlcpy(to.tsp_name, hostname, sizeof to.tsp_name);
+		(void)gettimeofday(&tmptv, 0);
+		to.tsp_time.tv_sec = tmptv.tv_sec;
+		to.tsp_time.tv_usec = tmptv.tv_usec;
 		answer = acksend(&to, &htp->addr, htp->name,
 				 TSP_ACK, 0, htp->noanswer);
 		if (answer == 0) {
@@ -766,7 +776,7 @@ newslave(struct tsp *msg)
 {
 	struct hosttbl *htp;
 	struct tsp *answer, to;
-	struct timeval now;
+	struct timeval now, tmptv;
 
 	if (!fromnet || fromnet->status != MASTER)
 		return;
@@ -784,8 +794,10 @@ newslave(struct tsp *msg)
 	if (now.tv_sec >= fromnet->slvwait.tv_sec+3
 	    || now.tv_sec < fromnet->slvwait.tv_sec) {
 		to.tsp_type = TSP_SETTIME;
-		(void)strcpy(to.tsp_name, hostname);
-		(void)gettimeofday(&to.tsp_time, 0);
+		strlcpy(to.tsp_name, hostname, sizeof to.tsp_name);
+		(void)gettimeofday(&tmptv, 0);
+		to.tsp_time.tv_sec = tmptv.tv_sec;
+		to.tsp_time.tv_usec = tmptv.tv_usec;
 		answer = acksend(&to, &htp->addr,
 				 htp->name, TSP_ACK,
 				 0, htp->noanswer);

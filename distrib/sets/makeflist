@@ -1,25 +1,15 @@
-#!/bin/csh -f
+#!/bin/sh
+#	$OpenBSD: makeflist,v 1.5 2000/03/01 22:10:08 todd Exp $
 
-set arch=`uname -m`
-set listsdir=`pwd`/lists
+arch=`machine`
 
-set TMPFILE=/tmp/_LIST.$$
+TMP=`mktemp /tmp/_mkr.XXXXXX` || exit 1
+trap 'rm -f $TMP' 0 1 15
 
-set lists=(base comp etc games text)
-# SPECIAL: man misc
-# EXTRA SPECIAL (not done here): secr
+for i in base comp etc game; do
+	cat ./lists/$i/mi ./lists/$i/md.${arch} >> $TMP
+done
+cat ./lists/man/mi ./lists/man/md.${arch} >> $TMP
+cat ./lists/misc/mi ./lists/misc/md.${arch} >> $TMP
 
-foreach setname ($lists)
-	cat $listsdir/$setname/mi $listsdir/$setname/md.${arch} >>! $TMPFILE
-end
-
-set setname=man
-grep ${arch} $listsdir/man/md_share | \
-    cat $listsdir/$setname/mi $listsdir/$setname/md.${arch} - >>! $TMPFILE
-
-set setname=misc
-grep -v ${arch} $listsdir/man/md_share | \
-    cat $listsdir/$setname/mi $listsdir/$setname/md.${arch} - >>! $TMPFILE
-
-sort $TMPFILE
-/bin/rm $TMPFILE
+sort $TMP

@@ -1,4 +1,5 @@
-.\"	$NetBSD: listen.2,v 1.6 1995/02/27 12:34:05 cgd Exp $
+.\"	$OpenBSD: listen.2,v 1.6 1999/05/25 13:06:46 aaron Exp $
+.\"	$NetBSD: listen.2,v 1.7 1996/02/16 20:38:45 phil Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -35,11 +36,12 @@
 .\"
 .Dd December 11, 1993
 .Dt LISTEN 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm listen
 .Nd listen for connections on a socket
 .Sh SYNOPSIS
+.Fd #include <sys/types.h>
 .Fd #include <sys/socket.h>
 .Ft int
 .Fn listen "int s" "int backlog"
@@ -58,7 +60,7 @@ The
 call applies only to sockets of type
 .Dv SOCK_STREAM
 or
-.Dv SOCK_SEQPACKET.
+.Dv SOCK_SEQPACKET .
 .Pp
 The
 .Fa backlog
@@ -71,9 +73,9 @@ receive an error with an indication of
 or, if the underlying protocol supports retransmission,
 the request may be ignored so that retries may succeed.
 .Sh RETURN VALUES
-A 0 return value indicates success; -1 indicates an error.
+A 0 return value indicates success; \-1 indicates an error.
 .Sh ERRORS
-.Fn Listen
+.Fn listen
 will fail if:
 .Bl -tag -width Er
 .It Bq Er EBADF
@@ -95,7 +97,7 @@ The socket is not of a type that supports the operation
 .Sh BUGS
 The
 .Fa backlog
-is currently limited (silently) to 5.
+is currently limited (silently) to 128.
 .Sh HISTORY
 The
 .Fn listen

@@ -1,4 +1,5 @@
-/*	$NetBSD: pass2.c,v 1.12 1995/03/18 14:55:52 cgd Exp $	*/
+/*	$OpenBSD: pass2.c,v 1.11 2001/11/05 07:39:16 mpech Exp $	*/
+/*	$NetBSD: pass2.c,v 1.17 1996/09/27 22:45:15 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)pass2.c	8.6 (Berkeley) 10/27/94";
 #else
-static char rcsid[] = "$NetBSD: pass2.c,v 1.12 1995/03/18 14:55:52 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pass2.c,v 1.11 2001/11/05 07:39:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,18 +51,42 @@ static char rcsid[] = "$NetBSD: pass2.c,v 1.12 1995/03/18 14:55:52 cgd Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "fsck.h"
+#include "fsutil.h"
 #include "extern.h"
 
 #define MINDIRSIZE	(sizeof (struct dirtemplate))
 
-int	pass2check(), blksort();
+static int pass2check(struct inodesc *);
+static int blksort(const void *, const void *);
+
+static int info_max;
+static int info_pos;
+
+static int
+pass2_info1(buf, buflen)
+	char	*buf;
+	int	buflen;
+{
+	return snprintf(buf, buflen, "phase 2, directory %d/%d", 
+		info_pos, info_max);
+}
+
+static int
+pass2_info2(buf, buflen)
+	char	*buf;
+	int	buflen;
+{
+	return snprintf(buf, buflen, "phase 2, parent directory %d/%d", 
+		info_pos, info_max);
+}
 
 void
 pass2()
 {
-	register struct dinode *dp;
-	register struct inoinfo **inpp, *inp;
+	struct dinode *dp;
+	struct inoinfo **inpp, *inp, *pinp;
 	struct inoinfo **inpend;
 	struct inodesc curino;
 	struct dinode dino;
@@ -71,8 +96,10 @@ pass2()
 
 	case USTATE:
 		pfatal("ROOT INODE UNALLOCATED");
-		if (reply("ALLOCATE") == 0)
-			errexit("");
+		if (reply("ALLOCATE") == 0) {
+			ckfini(0);
+			errexit("%s", "");
+		}
 		if (allocdir(ROOTINO, ROOTINO, 0755) != ROOTINO)
 			errexit("CANNOT ALLOCATE ROOT INODE\n");
 		break;
@@ -85,8 +112,10 @@ pass2()
 				errexit("CANNOT ALLOCATE ROOT INODE\n");
 			break;
 		}
-		if (reply("CONTINUE") == 0)
-			errexit("");
+		if (reply("CONTINUE") == 0) {
+			ckfini(0);
+			errexit("%s", "");
+		}
 		break;
 
 	case FSTATE:
@@ -98,8 +127,10 @@ pass2()
 				errexit("CANNOT ALLOCATE ROOT INODE\n");
 			break;
 		}
-		if (reply("FIX") == 0)
-			errexit("");
+		if (reply("FIX") == 0) {
+			ckfini(0);
+			errexit("%s", "");
+		}
 		dp = ginode(ROOTINO);
 		dp->di_mode &= ~IFMT;
 		dp->di_mode |= IFDIR;
@@ -127,10 +158,13 @@ pass2()
 	memset(&curino, 0, sizeof(struct inodesc));
 	curino.id_type = DATA;
 	curino.id_func = pass2check;
-	dp = &dino;
 	inpend = &inpsort[inplast];
+	info_pos = 0;
+	info_max = inpend - inpsort;
+	info_fn = pass2_info1;
 	for (inpp = inpsort; inpp < inpend; inpp++) {
 		inp = *inpp;
+		info_pos ++;
 		if (inp->i_isize == 0)
 			continue;
 		if (inp->i_isize < MINDIRSIZE) {
@@ -140,41 +174,45 @@ pass2()
 				dp = ginode(inp->i_number);
 				dp->di_size = inp->i_isize;
 				inodirty();
-				dp = &dino;
 			}
 		} else if ((inp->i_isize & (DIRBLKSIZ - 1)) != 0) {
 			getpathname(pathbuf, inp->i_number, inp->i_number);
-			pwarn("DIRECTORY %s: LENGTH %d NOT MULTIPLE OF %d",
-				pathbuf, inp->i_isize, DIRBLKSIZ);
+			if (usedsoftdep)
+			        pfatal("%s %s: LENGTH %ld NOT MULTIPLE of %d",
+				       "DIRECTORY", pathbuf, (long)inp->i_isize,
+				       DIRBLKSIZ);
+			else
+				pwarn("%s %s: LENGTH %ld NOT MULTIPLE OF %d",
+				      "DIRECTORY", pathbuf, (long)inp->i_isize,
+				      DIRBLKSIZ);
 			if (preen)
 				printf(" (ADJUSTED)\n");
 			inp->i_isize = roundup(inp->i_isize, DIRBLKSIZ);
 			if (preen || reply("ADJUST") == 1) {
 				dp = ginode(inp->i_number);
-				dp->di_size = roundup(inp->i_isize, DIRBLKSIZ);
+				dp->di_size = inp->i_isize;
 				inodirty();
-				dp = &dino;
 			}
 		}
 		memset(&dino, 0, sizeof(struct dinode));
 		dino.di_mode = IFDIR;
-		dp->di_size = inp->i_isize;
-		memcpy(&dp->di_db[0], &inp->i_blks[0], (size_t)inp->i_numblks);
+		dino.di_size = inp->i_isize;
+		memcpy(&dino.di_db[0], &inp->i_blks[0], (size_t)inp->i_numblks);
 		curino.id_number = inp->i_number;
 		curino.id_parent = inp->i_parent;
-		(void)ckinode(dp, &curino);
+		(void)ckinode(&dino, &curino);
 	}
 	/*
 	 * Now that the parents of all directories have been found,
 	 * make another pass to verify the value of `..'
 	 */
+	info_pos = 0;
+	info_fn = pass2_info2;
 	for (inpp = inpsort; inpp < inpend; inpp++) {
 		inp = *inpp;
+		info_pos++;
 		if (inp->i_parent == 0 || inp->i_isize == 0)
 			continue;
-		if (statemap[inp->i_parent] == DFOUND &&
-		    statemap[inp->i_number] == DSTATE)
-			statemap[inp->i_number] = DFOUND;
 		if (inp->i_dotdot == inp->i_parent ||
 		    inp->i_dotdot == (ino_t)-1)
 			continue;
@@ -196,18 +234,33 @@ pass2()
 		inp->i_dotdot = inp->i_parent;
 		(void)changeino(inp->i_number, "..", inp->i_parent);
 	}
+	info_fn = NULL;
+	/*
+	 * Create a list of children for each directory.
+	 */
+	inpend = &inpsort[inplast];
+	for (inpp = inpsort; inpp < inpend; inpp++) {
+		inp = *inpp;
+		if (inp->i_parent == 0 ||
+		    inp->i_number == ROOTINO)
+			continue;
+		pinp = getinoinfo(inp->i_parent);
+		inp->i_parentp = pinp;
+		inp->i_sibling = pinp->i_child;
+		pinp->i_child = inp;
+	}
 	/*
 	 * Mark all the directories that can be found from the root.
 	 */
-	propagate();
+	propagate(ROOTINO);
 }
 
-int
+static int
 pass2check(idesc)
 	struct inodesc *idesc;
 {
-	register struct direct *dirp = idesc->id_dirp;
-	register struct inoinfo *inp;
+	struct direct *dirp = idesc->id_dirp;
+	struct inoinfo *inp;
 	int n, entrysize, ret = 0;
 	struct dinode *dp;
 	char *errmsg;
@@ -399,7 +452,7 @@ again:
 				break;
 			if (statemap[dirp->d_ino] == FCLEAR)
 				errmsg = "DUP/BAD";
-			else if (!preen)
+			else if (!preen && !usedsoftdep)
 				errmsg = "ZERO LENGTH DIRECTORY";
 			else {
 				n = 1;
@@ -415,10 +468,6 @@ again:
 			goto again;
 
 		case DSTATE:
-			if (statemap[idesc->id_number] == DFOUND)
-				statemap[dirp->d_ino] = DFOUND;
-			/* fall through */
-
 		case DFOUND:
 			inp = getinoinfo(dirp->d_ino);
 			if (inp->i_parent != 0 && idesc->id_entryno > 2) {
@@ -428,9 +477,12 @@ again:
 				pwarn("%s %s %s\n", pathbuf,
 				    "IS AN EXTRANEOUS HARD LINK TO DIRECTORY",
 				    namebuf);
-				if (preen)
-					printf(" (IGNORED)\n");
-				else if ((n = reply("REMOVE")) == 1)
+				if (preen) {
+					printf (" (REMOVED)\n");
+					n = 1;
+					break;
+				}
+				if ((n = reply("REMOVE")) == 1)
 					break;
 			}
 			if (idesc->id_entryno > 2)
@@ -462,10 +514,10 @@ again:
 /*
  * Routine to sort disk blocks.
  */
-int
+static int
 blksort(inpp1, inpp2)
-	struct inoinfo **inpp1, **inpp2;
+	const void *inpp1, *inpp2;
 {
-
-	return ((*inpp1)->i_blks[0] - (*inpp2)->i_blks[0]);
+	return ((* (struct inoinfo **) inpp1)->i_blks[0] -
+		(* (struct inoinfo **) inpp2)->i_blks[0]);
 }

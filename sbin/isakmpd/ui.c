@@ -1,7 +1,9 @@
-/*	$Id: ui.c,v 1.20 1998/11/12 13:01:19 niklas Exp $	*/
+/*	$OpenBSD: ui.c,v 1.27 2002/03/17 21:48:06 angelos Exp $	*/
+/*	$EOM: ui.c,v 1.43 2000/10/05 09:25:12 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999, 2000 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1999, 2000, 2001 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,107 +41,154 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
-#define BUF_SZ 256
+#include "sysdep.h"
 
+#include "conf.h"
+#include "connection.h"
 #include "doi.h"
 #include "exchange.h"
+#include "init.h"
 #include "isakmp.h"
 #include "log.h"
 #include "sa.h"
+#include "timer.h"
 #include "transport.h"
 #include "ui.h"
 #include "util.h"
+
+#define BUF_SZ 256
+
+/* from isakmpd.c */
+void daemon_shutdown_now (int);
+
+/* Report all SA configuration information. */
+void ui_report_sa (char *cmd);
 
 char *ui_fifo = FIFO;
 int ui_socket;
 
 /* Create and open the FIFO used for user control.  */
 void
-ui_init ()
+ui_init (void)
 {
+  struct stat st;
+
   /* -f- means control messages comes in via stdin.  */
   if (strcmp (ui_fifo, "-") == 0)
     ui_socket = 0;
   else
     {
+      /* Don't overwrite a file, i.e '-f /etc/isakmpd/isakmpd.conf'.  */
+      if (lstat (ui_fifo, &st) == 0)
+	if ((st.st_mode & S_IFMT) == S_IFREG)
+	  {
+	    errno = EEXIST;
+	    log_fatal ("ui_init: could not create FIFO \"%s\"", ui_fifo);
+	  }
+
       /* No need to know about errors.  */
       unlink (ui_fifo);
       if (mkfifo (ui_fifo, 0600) == -1)
-	log_fatal ("mkfifo");
+	log_fatal ("ui_init: mkfifo (\"%s\", 0600) failed", ui_fifo);
 
-      /* XXX Is O_RDWR needed on some OSes?  Photurisd seems to imply that.  */
-      ui_socket = open (ui_fifo, O_RDONLY | O_NONBLOCK, 0);
+      ui_socket = open (ui_fifo, O_RDWR | O_NONBLOCK, 0);
       if (ui_socket == -1)
-	log_fatal (ui_fifo);
+	log_fatal ("ui_init: open (\"%s\", O_RDWR | O_NONBLOCK, 0) failed",
+		   ui_fifo);
     }
 }
 
-/* Parse the connect command found in CMD.  */
+/*
+ * Setup a phase 2 connection.
+ * XXX Maybe phase 1 works too, but teardown won't work then, fix?
+ */
 static void
 ui_connect (char *cmd)
 {
-  char trpt[11];
-  char addr[81];
-  struct transport *transport = 0;
-  int exchange, doi;
-  struct sa *isakmp_sa = 0;
-  u_int8_t cookies[ISAKMP_HDR_COOKIES_LEN];
+  char name[81];
 
-  if (sscanf (cmd, "c %10s %80s %d %d", trpt, addr, &exchange, &doi) != 4)
+  if (sscanf (cmd, "c %80s", name) != 1)
     {
       log_print ("ui_connect: command \"%s\" malformed", cmd);
       return;
     }
+  log_print ("ui_connect: setup connection \"%s\"", name);
+  connection_setup (name);
+}
 
-  if (strcasecmp (trpt, "isakmp") == 0)
+/* Tear down a phase 2 connection.  */
+static void
+ui_teardown (char *cmd)
+{
+  char name[81];
+  struct sa *sa;
+
+  if (sscanf (cmd, "t %80s", name) != 1)
     {
-      if (hex2raw (addr, cookies, ISAKMP_HDR_COOKIES_LEN) == -1)
-	{
-	  log_print ("ui_connect: cookiepair \"%s\" malformed", addr);
-	  return;
-	}
-      isakmp_sa = sa_lookup (cookies, 0);
-      if (!isakmp_sa)
-	{
-	  log_print ("ui_connect: transport \"%s %s\" could not be found",
-		     trpt, addr);
-	  return;
-	}
+      log_print ("ui_teardown: command \"%s\" malformed", cmd);
+      return;
+    }
+  log_print ("ui_teardown: teardown connection \"%s\"", name);
+  connection_teardown (name);
+  while ((sa = sa_lookup_by_name (name, 2)) != 0)
+    sa_delete (sa, 1);
+}
 
-      /* XXX Fill in the args argument.  */
-      exchange_establish_p2 (isakmp_sa, exchange, 0);
+/* Tear down all phase 2 connections.  */
+static void
+ui_teardown_all (char *cmd)
+{
+  /* Skip 'cmd' as arg. */
+  sa_teardown_all();
+}
+
+/*
+ * Call the configuration API.
+ * XXX Error handling!  How to do multi-line transactions?  Too short arbitrary
+ * limit on the parameters?
+ */
+static void
+ui_config (char *cmd)
+{
+  char subcmd[81], section[81], tag[81], value[81];
+  int override, trans = 0;
+
+  if (sscanf (cmd, "C %80s", subcmd) != 1)
+    goto fail;
+
+  trans = conf_begin ();
+  if (strcasecmp (subcmd, "set") == 0)
+    {
+      if (sscanf (cmd, "C %*s [%80[^]]]:%80[^=]=%80s %d", section, tag, value,
+		  &override) != 4)
+	goto fail;
+      conf_set (trans, section, tag, value, override, 0);
+    }
+  else if (strcasecmp (subcmd, "rm") == 0)
+    {
+      if (sscanf (cmd, "C %*s [%80[^]]]:%80s", section, tag) != 2)
+	goto fail;
+      conf_remove (trans, section, tag);
+    }
+  else if (strcasecmp (subcmd, "rms") == 0)
+    {
+      if (sscanf (cmd, "C %*s [%80[^]]]", section) != 1)
+	goto fail;
+      conf_remove_section (trans, section);
     }
   else
-    {
-      transport = transport_create (trpt, addr);
-      if (!transport)
-	{
-	  log_print ("ui_connect: transport \"%s %s\" could not be created",
-		     trpt, addr);
-	  return;
-	}
+    goto fail;
 
-      /* XXX This validity check seems to be a bit dumb.  */
-#if 0
-      /* Only ISAKMP exchange types can be given.  */
-      if (exchange < ISAKMP_EXCH_BASE || exchange >= ISAKMP_EXCH_FUTURE_MIN)
-	{
-	  log_print ("exchange %d is not valid", exchange);
-	  return;
-	}
-#endif
+  log_print ("ui_config: \"%s\"", cmd);
+  conf_end (trans, 1);
+  return;
 
-      /* Only valid DOIs can be given.  XXX Uninteresting for phase 2.  */
-      if (!doi_lookup (doi))
-	{
-	  log_print ("DOI %d is not valid", doi);
-	  return;
-	}
-
-      /* XXX Fill in the args argument.  */
-      exchange_establish_p1 (transport, exchange, doi, 0);
-    }
+    fail:
+  if (trans)
+    conf_end (trans, 0);
+  log_print ("ui_config: command \"%s\" malformed", cmd);
 }
 
 static void
@@ -175,29 +224,106 @@ ui_delete (char *cmd)
       log_print ("ui_delete: command \"%s\" found no SA", cmd);
       return;
     }
+  log_print ("ui_delete: deleting SA for cookie \"%s\" msgid \"%s\"",
+	     cookies_str, message_id_str);
   sa_delete (sa, 1);
 }
 
+#ifdef USE_DEBUG
 /* Parse the debug command found in CMD.  */
 static void
 ui_debug (char *cmd)
 {
   int cls, level;
+  char subcmd[3];
 
-  if (sscanf (cmd, "d %d %d", &cls, &level) != 2)
+  if (sscanf (cmd, "D %d %d", &cls, &level) == 2)
     {
-      log_print ("ui_debug: command \"%s\" malformed", cmd);
+      log_debug_cmd (cls, level);
       return;
     }
-  log_debug_cmd (cls, level);
+  else if (sscanf (cmd, "D %2s %d", subcmd, &level) == 2)
+    {
+      switch (subcmd[0])
+	{
+	case 'A':
+	  for (cls = 0; cls < LOG_ENDCLASS; cls++)
+	    log_debug_cmd (cls, level);
+	  return;
+	}
+    }
+  else if (sscanf (cmd, "D %2s", subcmd) == 1)
+    {
+      switch (subcmd[0])
+	{
+	case 'T':
+	  log_debug_toggle ();
+	  return;
+	}
+    }
+
+  log_print ("ui_debug: command \"%s\" malformed", cmd);
+  return;
+}
+
+static void
+ui_packetlog (char *cmd)
+{
+  char subcmd[81];
+
+  if (sscanf (cmd, "p %80s", subcmd) != 1)
+    goto fail;
+
+  if (strncasecmp (subcmd, "on=", 3) == 0)
+    {
+      /* Start capture to a new file.  */
+      if (subcmd[strlen (subcmd) - 1] == '\n')
+	subcmd[strlen (subcmd) - 1] = 0;
+      log_packet_restart (subcmd + 3);
+    }
+  else if (strcasecmp (subcmd, "on") == 0)
+    log_packet_restart (NULL);
+  else if (strcasecmp (subcmd, "off") == 0)
+    log_packet_stop ();
+
+  return;
+
+ fail:
+  log_print ("ui_packetlog: command \"%s\" malformed", cmd);
+}
+#endif /* USE_DEBUG */
+
+static void
+ui_shutdown_daemon (char *cmd)
+{
+  if (strlen (cmd) == 1)
+    {
+      log_print ("ui_shutdown_daemon: received shutdown command");
+      daemon_shutdown_now (0);
+    }
+  else
+    log_print ("ui_shutdown_daemon: command \"%s\" malformed", cmd);
 }
 
 /* Report SAs and ongoing exchanges.  */
-static void
+void
 ui_report (char *cmd)
 {
+  /* XXX Skip 'cmd' as arg? */
   sa_report ();
   exchange_report ();
+  transport_report ();
+  connection_report ();
+  timer_report ();
+  conf_report ();
+}
+
+/* Report all SA configuration information.  */
+void
+ui_report_sa (char *cmd)
+{
+  /* Skip 'cmd' as arg? */
+  sa_report_all ();
 }
 
 /*
@@ -214,16 +340,46 @@ ui_handle_command (char *line)
       ui_connect (line);
       break;
 
+    case 'C':
+      ui_config (line);
+      break;
+
     case 'd':
       ui_delete (line);
       break;
 
+#ifdef USE_DEBUG
     case 'D':
       ui_debug (line);
       break;
 
+    case 'p':
+      ui_packetlog (line);
+      break;
+#endif
+
+    case 'Q':
+      ui_shutdown_daemon (line);
+      break;
+
+    case 'R':
+      reinit ();
+      break;
+
+    case 'S':
+      ui_report_sa (line);
+      break;
+
     case 'r':
       ui_report (line);
+      break;
+
+    case 't':
+      ui_teardown (line);
+      break;
+
+    case 'T':
+      ui_teardown_all (line);
       break;
 
     default:
@@ -237,7 +393,7 @@ ui_handle_command (char *line)
  * troubles with non-blocking fifos.
  */
 void
-ui_handler ()
+ui_handler (void)
 {
   static char *buf = 0;
   static char *p;
@@ -253,7 +409,7 @@ ui_handler ()
       buf = malloc (sz);
       if (!buf)
 	{
-	  log_print ("malloc (%d) failed", sz);
+	  log_print ("ui_handler: malloc (%d) failed", sz);
 	  return;
 	}
       p = buf;
@@ -266,7 +422,7 @@ ui_handler ()
       new_buf = realloc (buf, sz * 2);
       if (!new_buf)
 	{
-	  log_print ("realloc (%p, %d) failed", buf, sz * 2);
+	  log_print ("ui_handler: realloc (%p, %d) failed", buf, sz * 2);
 	  free (buf);
 	  buf = 0;
 	  return;
@@ -280,7 +436,7 @@ ui_handler ()
   n = read (ui_socket, p, resid);
   if (n == -1)
     {
-      log_error ("read (%d, %p, %d)", ui_socket, p, resid);
+      log_error ("ui_handler: read (%d, %p, %d)", ui_socket, p, resid);
       return;
     }
 

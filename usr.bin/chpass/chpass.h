@@ -1,4 +1,5 @@
-/*	$NetBSD: chpass.h,v 1.3 1995/03/26 04:55:26 glass Exp $	*/
+/*	$OpenBSD: chpass.h,v 1.4 1998/03/30 06:59:29 deraadt Exp $	*/
+/*	$NetBSD: chpass.h,v 1.4 1996/05/15 21:50:44 jtc Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -53,20 +54,20 @@ typedef struct _entry {
 extern ENTRY list[];
 extern uid_t uid;
 
-int	 atot __P((char *, time_t *));
-void	 display __P((int, struct passwd *));
-void	 edit __P((struct passwd *));
-char    *ok_shell __P((char *));
-int	 p_change __P((char *, struct passwd *, ENTRY *));
-int	 p_class __P((char *, struct passwd *, ENTRY *));
-int	 p_expire __P((char *, struct passwd *, ENTRY *));
-int	 p_gecos __P((char *, struct passwd *, ENTRY *));
-int	 p_gid __P((char *, struct passwd *, ENTRY *));
-int	 p_hdir __P((char *, struct passwd *, ENTRY *));
-int	 p_login __P((char *, struct passwd *, ENTRY *));
-int	 p_login __P((char *, struct passwd *, ENTRY *));
-int	 p_passwd __P((char *, struct passwd *, ENTRY *));
-int	 p_shell __P((char *, struct passwd *, ENTRY *));
-int	 p_uid __P((char *, struct passwd *, ENTRY *));
-char    *ttoa __P((time_t));
-int	 verify __P((struct passwd *));
+int	 atot(char *, time_t *);
+void	 display(char *, int, struct passwd *);
+void	 edit(char *, struct passwd *);
+char    *ok_shell(char *);
+int	 p_change(char *, struct passwd *, ENTRY *);
+int	 p_class(char *, struct passwd *, ENTRY *);
+int	 p_expire(char *, struct passwd *, ENTRY *);
+int	 p_gecos(char *, struct passwd *, ENTRY *);
+int	 p_gid(char *, struct passwd *, ENTRY *);
+int	 p_hdir(char *, struct passwd *, ENTRY *);
+int	 p_login(char *, struct passwd *, ENTRY *);
+int	 p_login(char *, struct passwd *, ENTRY *);
+int	 p_passwd(char *, struct passwd *, ENTRY *);
+int	 p_shell(char *, struct passwd *, ENTRY *);
+int	 p_uid(char *, struct passwd *, ENTRY *);
+char    *ttoa(char *, size_t, time_t);
+int	 verify(char *, struct passwd *);

@@ -1,4 +1,6 @@
-/*	$NetBSD: SYS.h,v 1.1 1995/04/17 12:23:34 ragge Exp $ */
+/*	$OpenBSD: SYS.h,v 1.7 2002/02/19 19:39:36 millert Exp $ */
+/*	$NetBSD: SYS.h,v 1.4 1997/05/02 18:15:32 kleink Exp $ */
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,23 +32,61 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)SYS.h	8.1 (Berkeley) 6/4/93
  */
 
+#include <machine/asm.h>
 #include <sys/syscall.h>
 
-#ifdef PROF
-#define	ENTRY(x)	.globl _ ## x; .align 2; _ ## x ## : .word 0; \
-			.data; 1:; .long 0; .text; moval 1b,r0; jsb mcount
+#ifdef __STDC__
+#define	_CAT(x,y)	x##y
+#define	__ENTRY(p,x)	ENTRY(p##x,0)
+#define	__DO_SYSCALL(x)	chmk $ SYS_ ## x
 #else
-#define	ENTRY(x)	.globl _ ## x; .align 2; _ ## x ## : .word 0
-#endif PROF
-#define	SYSCALL(x)	err: jmp cerror; ENTRY(x); chmk $ SYS_ ## x; jcs err
-#define	RSYSCALL(x)	SYSCALL(x); ret
-#define	PSEUDO(x,y)	ENTRY(x); chmk $ SYS_ ## y; ret
-#define	CALL(x,y)	calls $ ## x, _ ## y
+#define	_CAT(x,y)	x/**/y
+#define	__ENTRY(p,x)	ENTRY(p/**/x,0)
+#define	__DO_SYSCALL(x)	chmk $ SYS_/**/x
+#endif
 
-#define	ASMSTR		.asciz
+#define	__SYSCALL(p,x,y)						\
+	err:	jmp cerror;						\
+	__ENTRY(p,x);							\
+		__DO_SYSCALL(y);					\
+		jcs err
+
+#define	__PSEUDO(p,x,y)							\
+	err:	jmp cerror;						\
+	__ENTRY(p,x);							\
+		__DO_SYSCALL(y);					\
+		jcs err;						\
+		ret
+
+#define	__PSEUDO_NOERROR(p,x,y)						\
+	__ENTRY(p,x);							\
+		__DO_SYSCALL(y);					\
+		ret
+
+#ifdef _THREAD_SAFE
+/*
+ * For the thread_safe versions, we prepend _thread_sys_ to the function
+ * name so that the 'C' wrapper can go around the real name.
+ */
+#define	SYSCALL(x)		__SYSCALL(_thread_sys_,x,x)
+#define	RSYSCALL(x)		__PSEUDO(_thread_sys_,x,x)
+#define	PSEUDO(x,y)		__PSEUDO(_thread_sys_,x,y)
+#define	PSEUDO_NOERROR(x,y)	__PSEUDO_NOERROR(_thread_sys_,x,y)
+#define	SYSENTRY(x)		__ENTRY(_thread_sys_,x)
+#define	SYSNAME(x)		_CAT(__thread_sys_,x)
+#else _THREAD_SAFE
+/*
+ * The non-threaded library defaults to traditional syscalls where
+ * the function name matches the syscall name.
+ */
+#define	SYSCALL(x)		__SYSCALL(,x,x)
+#define	RSYSCALL(x)		__PSEUDO(,x,x)
+#define	PSEUDO(x,y)		__PSEUDO(,x,y)
+#define	PSEUDO_NOERROR(x,y)	__PSEUDO_NOERROR(,x,y)
+#define	SYSENTRY(x)		__ENTRY(,x)
+#define	SYSNAME(x)		_CAT(_,x)
+#endif _THREAD_SAFE
 
 	.globl	cerror

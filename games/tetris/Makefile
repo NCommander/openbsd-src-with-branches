@@ -1,11 +1,18 @@
-#	$NetBSD: Makefile,v 1.3 1995/04/22 07:42:31 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.4 1998/07/24 00:10:44 millert Exp $
 
 PROG=	tetris
 SRCS=	input.c screen.c shapes.c scores.c tetris.c
 MAN=	tetris.6
-DPADD=	${LIBTERM}
-LDADD=	-ltermcap
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 HIDEGAME=hidegame
+
+beforeinstall:
+	@if [ ! -f ${DESTDIR}/var/games/tetris.scores ]; then \
+	    ${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 664 \
+		/dev/null ${DESTDIR}/var/games/tetris.scores ; \
+	else \
+		true ; \
+	fi
 
 .include <bsd.prog.mk>

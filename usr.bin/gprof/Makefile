@@ -1,13 +1,27 @@
-#	$NetBSD: Makefile,v 1.14 1995/04/19 07:24:08 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/29/93
+#	$OpenBSD: Makefile,v 1.11 2001/09/10 23:03:20 jason Exp $
 
+TARGET_MACHINE_ARCH?=	${MACHINE_ARCH}
+
+.if (${TARGET_MACHINE_ARCH} == "alpha") || \
+    (${TARGET_MACHINE_ARCH} == "powerpc") || \
+    (${TARGET_MACHINE_ARCH} == "sparc64") || \
+    (${TARGET_MACHINE_ARCH} == "hppa")
+NOPROG=
+.else
 PROG=	gprof
-SRCS=	gprof.c arcs.c dfn.c lookup.c ${MACHINE_ARCH}.c hertz.c \
+SRCS=	gprof.c arcs.c dfn.c lookup.c machine.c hertz.c \
 	printgprof.c printlist.c
-CFLAGS+= -D${MACHINE_ARCH}
+CFLAGS+= -I${.CURDIR} -I.
+.endif
+
+.if defined(PROG)
+beforedepend:
+	ln -sf ${.CURDIR}/${TARGET_MACHINE_ARCH}.h machine.h
+	ln -sf ${.CURDIR}/${TARGET_MACHINE_ARCH}.c machine.c
+.endif # defined (PROG)
 
 beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
 	    ${.CURDIR}/gprof.flat ${.CURDIR}/gprof.callg \
 	    ${DESTDIR}/usr/share/misc
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: misc.c,v 1.6 2001/11/17 19:50:53 millert Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)misc.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: misc.c,v 1.3 1993/12/30 21:15:28 jtc Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.6 2001/11/17 19:50:53 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -48,6 +50,7 @@ static char rcsid[] = "$Id: misc.c,v 1.3 1993/12/30 21:15:28 jtc Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "find.h"
  
@@ -60,11 +63,11 @@ brace_subst(orig, store, path, len)
 	char *orig, **store, *path;
 	int len;
 {
-	register int plen;
-	register char ch, *p;
+	int plen;
+	char ch, *p;
 
 	plen = strlen(path);
-	for (p = *store; ch = *orig; ++orig)
+	for (p = *store; (ch = *orig); ++orig)
 		if (ch == '{' && orig[1] == '}') {
 			while ((p - *store) + plen > len)
 				if (!(*store = realloc(*store, len *= 2)))
@@ -84,7 +87,7 @@ brace_subst(orig, store, path, len)
  */
 int
 queryuser(argv)
-	register char **argv;
+	char **argv;
 {
 	int ch, first, nl;
 
@@ -122,7 +125,27 @@ emalloc(len)
 {
 	void *p;
 
-	if (p = malloc(len))
+	if ((p = malloc(len)))
 		return (p);
 	err(1, NULL);
+}
+
+/*
+ * show_path --
+ *	called on SIGINFO
+ */
+/* ARGSUSED */
+void
+show_path(sig)
+	int sig;
+{
+	int save_errno = errno;
+	extern FTSENT *entry;
+
+	if (entry != NULL) {
+		write(STDERR_FILENO, "find path: ", 11);
+		write(STDERR_FILENO, entry->fts_path, entry->fts_pathlen);
+		write(STDERR_FILENO, "\n", 1);
+		errno = save_errno;
+	}
 }

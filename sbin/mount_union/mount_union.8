@@ -1,8 +1,9 @@
+.\"	$OpenBSD: mount_union.8,v 1.11 2001/06/08 13:46:52 aaron Exp $
 .\"	$NetBSD: mount_union.8,v 1.4 1995/09/29 06:44:02 jtc Exp $
 .\"
 .\" Copyright (c) 1994
 .\" The Regents of the University of California.  All rights reserved.
-.\" 
+.\"
 .\" This code is derived from software donated to Berkeley by
 .\" Jan-Simon Pendry.
 .\"
@@ -38,7 +39,7 @@
 .\"
 .Dd March 27, 1994
 .Dt MOUNT_UNION 8
-.Os BSD 4.4
+.Os
 .Sh NAME
 .Nm mount_union
 .Nd mount union filesystems
@@ -50,7 +51,7 @@
 .Ar uniondir
 .Sh DESCRIPTION
 The
-.Nm mount_union
+.Nm
 command
 attaches
 .Ar directory
@@ -68,7 +69,7 @@ becomes the
 layer.
 .Pp
 The options are as follows:
-.Bl -tag -width indent
+.Bl -tag -width Ds
 .It Fl b
 Invert the default position, so that
 .Ar directory
@@ -78,7 +79,7 @@ becomes the upper layer.
 However,
 .Ar uniondir
 remains the mount point.
-.It Fl o
+.It Fl o Ar options
 Options are specified with a
 .Fl o
 flag followed by a comma separated string of options.
@@ -87,8 +88,6 @@ See the
 man page for possible options and their meanings.
 .It Fl r
 Hide the lower layer completely in the same way as mounting with
-.Xr mount_lofs 8
-or
 .Xr mount_null 8 .
 .El
 .Pp
@@ -149,8 +148,8 @@ and then only for lookups.
 .Sh EXAMPLES
 The commands
 .Bd -literal -offset indent
-mount -t cd9660 -o ro /dev/cd0a /usr/src
-mount -t union /var/obj /usr/src
+# mount -t cd9660 -o ro /dev/cd0a /usr/src
+# mount -t union /var/obj /usr/src
 .Ed
 .Pp
 mount the CD-ROM drive
@@ -166,7 +165,7 @@ even though it is stored on a CD-ROM.
 .Pp
 The command
 .Bd -literal -offset indent
-mount -t union -o -b /sys $HOME/sys
+# mount -t union -o -b /sys $HOME/sys
 .Ed
 .Pp
 attaches the system source tree below the
@@ -184,14 +183,18 @@ accessible via
 .Xr unmount 2 ,
 .Xr fstab 5 ,
 .Xr mount 8 ,
-.Xr mount_lofs 8 ,
 .Xr mount_null 8
+.Sh HISTORY
+The
+.Nm
+command first appeared in
+.Bx 4.4 .
 .Sh BUGS
 Without whiteout support from the filesystem backing the upper layer,
 there is no way that delete and rename operations on lower layer
 objects can be done.
 .Dv EROFS
-is returned for this kind of operations along with any others
+is returned for these kind of operations along with any others
 which would make modifications to the lower layer, such as
 .Xr chmod 1 .
 .Pp
@@ -199,8 +202,3 @@ Running
 .Xr find 1
 over a union tree has the side-effect of creating
 a tree of shadow directories in the upper layer.
-.Sh HISTORY
-The
-.Nm mount_union
-command first appeared in
-.Bx 4.4 .

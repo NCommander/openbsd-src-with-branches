@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 #
 # The inner loop instruction sequence and the IP/FP modifications are from
 # Svend Olaf Mikkelsen <svolaf@inet.uni-c.dk>
@@ -20,11 +20,11 @@ $L="edi";
 $R="esi";
 
 &external_label("des_SPtrans");
-&des_encrypt("des_encrypt",1);
+&des_encrypt("des_encrypt1",1);
 &des_encrypt("des_encrypt2",0);
 &des_encrypt3("des_encrypt3",1);
 &des_encrypt3("des_decrypt3",0);
-&cbc("des_ncbc_encrypt","des_encrypt","des_encrypt",0,4,5,3,5,-1);
+&cbc("des_ncbc_encrypt","des_encrypt1","des_encrypt1",0,4,5,3,5,-1);
 &cbc("des_ede3_cbc_encrypt","des_encrypt3","des_decrypt3",0,6,7,3,4,5);
 
 &asm_finish();
@@ -187,6 +187,8 @@ sub R_PERM_OP
 	&mov(	$tt,		$a		);
 	&xor(	$a,		$b		);
 	&and(	$a,		$mask		);
+	# This can never succeed, and besides it is difficult to see what the
+	# idea was - Ben 13 Feb 99
 	if (!$last eq $b)
 		{
 		&xor(	$b,		$a		);

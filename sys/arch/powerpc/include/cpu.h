@@ -1,3 +1,4 @@
+/*	$OpenBSD: cpu.h,v 1.8 2001/09/01 15:49:05 drahn Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -30,21 +31,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef	_MACHINE_CPU_H_
-#define	_MACHINE_CPU_H_
+#ifndef	_POWERPC_CPU_H_
+#define	_POWERPC_CPU_H_
 
 #include <machine/frame.h>
 
-struct machvec {
-	void (*splx) __P((int));
-	void (*irq_establish) __P((int, int, void (*)(void *), void *));
-};
-extern struct machvec machine_interface;
-
 #include <machine/psl.h>
-
-#define	irq_establish(irq, level, handler, arg)	\
-	((*machine_interface.irq_establish)((irq), (level), (handler), (arg)))
 
 #define	CLKF_USERMODE(frame)	(((frame)->srr1 & PSL_PR) != 0)
 #define	CLKF_BASEPRI(frame)	((frame)->pri == 0)
@@ -54,7 +46,7 @@ extern struct machvec machine_interface;
 #define	cpu_swapout(p)
 #define cpu_wait(p)
 
-extern void delay __P((unsigned));
+void	delay(unsigned);
 #define	DELAY(n)		delay(n)
 
 extern volatile int want_resched;
@@ -64,28 +56,6 @@ extern volatile int astpending;
 #define	need_proftick(p)	((p)->p_flag |= P_OWEUPC, astpending = 1)
 #define	signotify(p)		(astpending = 1)
 
-#define	CACHELINESIZE	32			/* For now		XXX */
-
-extern __inline void
-syncicache(from, len)
-	void *from;
-	int len;
-{
-	int l = len;
-	void *p = from;
-	
-	do {
-		asm volatile ("dcbst 0,%0" :: "r"(p));
-		p += CACHELINESIZE;
-	} while ((l -= CACHELINESIZE) > 0);
-	asm volatile ("sync");
-	do {
-		asm volatile ("icbi 0,%0" :: "r"(from));
-		from += CACHELINESIZE;
-	} while ((len -= CACHELINESIZE) > 0);
-	asm volatile ("isync");
-}
-
 extern char *bootpath;
 
-#endif	/* _MACHINE_CPU_H_ */
+#endif	/* _POWERPC_CPU_H_ */

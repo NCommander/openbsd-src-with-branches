@@ -1,3 +1,4 @@
+/*	$OpenBSD: log.c,v 1.4 2001/07/12 05:17:24 deraadt Exp $	*/
 /*	$NetBSD: log.c,v 1.4 1994/12/24 17:56:28 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)log.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: log.c,v 1.4 1994/12/24 17:56:28 cgd Exp $";
+static char rcsid[] = "$OpenBSD: log.c,v 1.4 2001/07/12 05:17:24 deraadt Exp $";
 #endif /* not lint */
 
 #include "tip.h"
@@ -48,7 +49,7 @@ static	FILE *flog = NULL;
 /*
  * Log file maintenance routines
  */
-
+void
 logent(group, num, acu, message)
 	char *group, *num, *acu, *message;
 {
@@ -59,14 +60,15 @@ logent(group, num, acu, message)
 	if (flog == NULL)
 		return;
 	if (flock(fileno(flog), LOCK_EX) < 0) {
-		perror("tip: flock");
+		perror("flock");
 		return;
 	}
-	if ((user = getlogin()) == NOSTR)
+	if ((user = getlogin()) == NOSTR) {
 		if ((pwd = getpwuid(getuid())) == NOPWD)
 			user = "???";
 		else
 			user = pwd->pw_name;
+	}
 	t = time(0);
 	timestamp = ctime(&t);
 	timestamp[24] = '\0';
@@ -82,6 +84,7 @@ logent(group, num, acu, message)
 	(void) flock(fileno(flog), LOCK_UN);
 }
 
+void
 loginit()
 {
 	flog = fopen(value(LOG), "a");

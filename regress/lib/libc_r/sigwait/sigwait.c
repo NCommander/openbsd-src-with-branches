@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sigwait.c,v 1.3 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: sigwait.c,v 1.1.1.1 2001/08/15 14:37:16 fgsch Exp $	*/
 /*
  * Copyright (c) 1998 Daniel M. Eischen <eischen@vigrid.com>
  * All rights reserved.
@@ -80,11 +80,17 @@ sigwaiter (void *arg)
 static void
 sighandler (int signo)
 {
-	printf ("  -> Signal handler caught signal %d (%s) in thread %p\n",
+	int save_errno = errno;
+	char buf[8192];
+
+	snprintf(buf, sizeof buf,
+	    "  -> Signal handler caught signal %d (%s) in thread %p\n",
 	    signo, strsignal(signo), pthread_self());
+	write(STDOUT_FILENO, buf, strlen(buf));
 
 	if ((signo >= 0) && (signo <= NSIG))
 		sigcounts[signo]++;
+	errno = save_errno;
 }
 
 int main (int argc, char *argv[])

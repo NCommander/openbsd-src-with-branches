@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.19 1995/08/13 22:51:24 mycroft Exp $	*/
+/*	$OpenBSD: signal.h,v 1.12 2002/03/14 03:16:12 millert Exp $	*/
+/*	$NetBSD: signal.h,v 1.21 1996/02/09 18:25:32 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -43,6 +44,7 @@
 #ifndef	_SYS_SIGNAL_H_
 #define	_SYS_SIGNAL_H_
 
+#include <sys/cdefs.h>
 #include <machine/signal.h>	/* sigcontext; codes for SIGILL, SIGFPE */
 
 #define _NSIG	32		/* counting 0; could be 33 (mask is 1-32) */
@@ -96,7 +98,6 @@
 #define SIGUSR1 30	/* user defined signal 1 */
 #define SIGUSR2 31	/* user defined signal 2 */
 
-#if defined(_ANSI_SOURCE) || defined(__cplusplus)
 /*
  * Language spec sez we must list exactly one parameter, even though we
  * actually supply three.  Ugh!
@@ -104,33 +105,40 @@
 #define	SIG_DFL		(void (*)(int))0
 #define	SIG_IGN		(void (*)(int))1
 #define	SIG_ERR		(void (*)(int))-1
-#else
-#define	SIG_DFL		(void (*)())0
-#define	SIG_IGN		(void (*)())1
-#define	SIG_ERR		(void (*)())-1
-#endif
 
 #ifndef _ANSI_SOURCE
 typedef unsigned int sigset_t;
+
+#include <sys/siginfo.h>
 
 /*
  * Signal vector "template" used in sigaction call.
  */
 struct	sigaction {
-	void	(*sa_handler)();	/* signal handler */
+	union {		/* signal handler */
+		void	(*__sa_handler)(int);
+		void	(*__sa_sigaction)(int, siginfo_t *, void *);
+	} __sigaction_u;
 	sigset_t sa_mask;		/* signal mask to apply */
 	int	sa_flags;		/* see signal options below */
 };
+
+/* if SA_SIGINFO is set, sa_sigaction is to be used instead of sa_handler. */
+#define sa_handler      __sigaction_u.__sa_handler
+#define sa_sigaction    __sigaction_u.__sa_sigaction
+
 #ifndef _POSIX_SOURCE
 #define SA_ONSTACK	0x0001	/* take signal on signal stack */
 #define SA_RESTART	0x0002	/* restart system on signal return */
 #define SA_RESETHAND	0x0004	/* reset to SIG_DFL when taking signal */
 #define SA_NODEFER	0x0010	/* don't mask the signal we're delivering */
+#define SA_NOCLDWAIT	0x0020	/* don't create zombies (assign to pid 1) */
 #ifdef COMPAT_SUNOS
 #define	SA_USERTRAMP	0x0100	/* do not bounce off kernel's sigtramp */
 #endif
 #endif
 #define SA_NOCLDSTOP	0x0008	/* do not generate SIGCHLD on child stop */
+#define SA_SIGINFO	0x0040	/* generate siginfo_t */
 
 /*
  * Flags for sigprocmask:
@@ -140,16 +148,13 @@ struct	sigaction {
 #define	SIG_SETMASK	3	/* set specified signal set */
 
 #ifndef _POSIX_SOURCE
-#ifndef _KERNEL
-#include <sys/cdefs.h>
-#endif
-typedef	void (*sig_t) __P((int));	/* type of signal function */
+typedef	void (*sig_t)(int);	/* type of signal function */
 
 /*
  * Structure used in sigaltstack call.
  */
 struct	sigaltstack {
-	char	*ss_base;		/* signal stack base */
+	void	*ss_sp;			/* signal stack base */
 	int	ss_size;		/* signal stack length */
 	int	ss_flags;		/* SS_DISABLE and/or SS_ONSTACK */
 };
@@ -163,20 +168,20 @@ struct	sigaltstack {
  * Signal vector "template" used in sigvec call.
  */
 struct	sigvec {
-	void	(*sv_handler)();	/* signal handler */
+	void	(*sv_handler)(int);	/* signal handler */
 	int	sv_mask;		/* signal mask to apply */
 	int	sv_flags;		/* see signal options below */
 };
 #define SV_ONSTACK	SA_ONSTACK
 #define SV_INTERRUPT	SA_RESTART	/* same bit, opposite sense */
 #define SV_RESETHAND	SA_RESETHAND
-#define sv_onstack sv_flags	/* isn't compatibility wonderful! */
+#define sv_onstack	sv_flags	/* isn't compatibility wonderful! */
 
 /*
  * Structure used in sigstack call.
  */
 struct	sigstack {
-	char	*ss_sp;			/* signal stack pointer */
+	void	*ss_sp;			/* signal stack pointer */
 	int	ss_onstack;		/* current status */
 };
 
@@ -196,6 +201,6 @@ struct	sigstack {
  * defined by <sys/signal.h>.
  */
 __BEGIN_DECLS
-void	(*signal __P((int, void (*) __P((int))))) __P((int));
+void	(*signal(int, void (*)(int)))(int);
 __END_DECLS
 #endif	/* !_SYS_SIGNAL_H_ */

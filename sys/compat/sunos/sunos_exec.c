@@ -1,4 +1,5 @@
-/*	$NetBSD: sunos_exec.c,v 1.9 1995/06/25 14:15:08 briggs Exp $	*/
+/*	$OpenBSD: sunos_exec.c,v 1.15 2001/11/15 06:22:30 art Exp $	*/
+/*	$NetBSD: sunos_exec.c,v 1.11 1996/05/05 12:01:47 briggs Exp $	*/
 
 /*
  * Copyright (c) 1993 Theo de Raadt
@@ -43,38 +44,39 @@
 #include <sys/wait.h>
 
 #include <sys/mman.h>
-#include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/vm_map.h>
-#include <vm/vm_kern.h>
-#include <vm/vm_pager.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/reg.h>
 #include <machine/exec.h>
 
-#include <compat/sunos/exec.h>
+#include <compat/sunos/sunos.h>
+#include <compat/sunos/sunos_exec.h>
 #include <compat/sunos/sunos_syscall.h>
 
-#ifdef sparc
+#ifdef __sparc__
 #define	sunos_exec_aout_prep_zmagic exec_aout_prep_zmagic
 #define	sunos_exec_aout_prep_nmagic exec_aout_prep_nmagic
 #define	sunos_exec_aout_prep_omagic exec_aout_prep_omagic
 #endif
+
+int sunos_exec_aout_makecmds(struct proc *, struct exec_package *);
+int sunos_exec_aout_prep_zmagic(struct proc *, struct exec_package *);
+int sunos_exec_aout_prep_nmagic(struct proc *, struct exec_package *);
+int sunos_exec_aout_prep_omagic(struct proc *, struct exec_package *);
 
 extern int nsunos_sysent;
 extern struct sysent sunos_sysent[];
 #ifdef SYSCALL_DEBUG
 extern char *sunos_syscallnames[];
 #endif
-extern void sunos_sendsig __P((sig_t, int, int, u_long));
 extern char sigcode[], esigcode[];
 const char sunos_emul_path[] = "/emul/sunos";
 
 struct emul emul_sunos = {
 	"sunos",
 	NULL,
-#ifdef sparc
+#ifdef __sparc__
 	sendsig,
 #else
 	sunos_sendsig,
@@ -90,6 +92,7 @@ struct emul emul_sunos = {
 	0,
 	copyargs,
 	setregs,
+	NULL,
 	sigcode,
 	esigcode,
 };
@@ -124,7 +127,7 @@ sunos_exec_aout_makecmds(p, epp)
 /*
  * the code below is only needed for sun3 emulation.
  */
-#ifndef sparc
+#ifndef __sparc__
 
 /* suns keep data seg aligned to SEGSIZ because of sun custom mmu */
 #define SEGSIZ		0x20000
@@ -152,7 +155,6 @@ sunos_exec_aout_prep_zmagic(p, epp)
 	struct exec_package *epp;
 {
 	struct exec *execp = epp->ep_hdr;
-	struct exec_vmcmd *ccmdp;
 
 	epp->ep_taddr = SUNOS_N_TXTADDR(*execp, ZMAGIC);
 	epp->ep_tsize = execp->a_text;
@@ -169,11 +171,11 @@ sunos_exec_aout_prep_zmagic(p, epp)
 	    epp->ep_vp->v_writecount != 0) {
 #ifdef DIAGNOSTIC
 		if (epp->ep_vp->v_flag & VTEXT)
-			panic("exec: a VTEXT vnode has writecount != 0\n");
+			panic("exec: a VTEXT vnode has writecount != 0");
 #endif
 		return ETXTBSY;
 	}
-	epp->ep_vp->v_flag |= VTEXT;
+	vn_marktext(epp->ep_vp);
 
 	/* set up command for text segment */
 	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_pagedvn, execp->a_text,
@@ -190,7 +192,7 @@ sunos_exec_aout_prep_zmagic(p, epp)
 	    epp->ep_daddr + execp->a_data, NULLVP, 0,
 	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
 /*
@@ -202,7 +204,6 @@ sunos_exec_aout_prep_nmagic(p, epp)
 	struct exec_package *epp;
 {
 	struct exec *execp = epp->ep_hdr;
-	struct exec_vmcmd *ccmdp;
 	long bsize, baddr;
 
 	epp->ep_taddr = SUNOS_N_TXTADDR(*execp, NMAGIC);
@@ -222,13 +223,13 @@ sunos_exec_aout_prep_nmagic(p, epp)
 	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
 	/* set up command for bss segment */
-	baddr = roundup(epp->ep_daddr + execp->a_data, NBPG);
+	baddr = round_page(epp->ep_daddr + execp->a_data);
 	bsize = epp->ep_daddr + epp->ep_dsize - baddr;
 	if (bsize > 0)
 		NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, bsize, baddr,
 		    NULLVP, 0, VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
 /*
@@ -240,7 +241,6 @@ sunos_exec_aout_prep_omagic(p, epp)
 	struct exec_package *epp;
 {
 	struct exec *execp = epp->ep_hdr;
-	struct exec_vmcmd *ccmdp;
 	long bsize, baddr;
 
 	epp->ep_taddr = SUNOS_N_TXTADDR(*execp, OMAGIC);
@@ -255,12 +255,12 @@ sunos_exec_aout_prep_omagic(p, epp)
 	    SUNOS_N_TXTOFF(*execp, OMAGIC), VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
 	/* set up command for bss segment */
-	baddr = roundup(epp->ep_daddr + execp->a_data, NBPG);
+	baddr = round_page(epp->ep_daddr + execp->a_data);
 	bsize = epp->ep_daddr + epp->ep_dsize - baddr;
 	if (bsize > 0)
 		NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, bsize, baddr,
 		    NULLVP, 0, VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
-#endif /* !sparc */
+#endif /* !__sparc__ */

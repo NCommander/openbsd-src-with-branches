@@ -1,3 +1,4 @@
+/*	$OpenBSD: init_disp.c,v 1.10 1999/03/23 17:00:38 millert Exp $	*/
 /*	$NetBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)init_disp.c	8.2 (Berkeley) 2/16/94";
 #endif
-static char rcsid[] = "$NetBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $";
+static char rcsid[] = "$OpenBSD: init_disp.c,v 1.10 1999/03/23 17:00:38 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -45,33 +46,33 @@ static char rcsid[] = "$NetBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $"
  * as well as the signal handling routines.
  */
 
+#include "talk.h"
 #include <sys/ioctl.h>
 #include <sys/ioctl_compat.h>
-
-#include <termios.h>
-#include <signal.h>
 #include <err.h>
-#include "talk.h"
+#include <signal.h>
+#include <termios.h>
+#include <unistd.h>
 
-/* 
+/*
  * Set up curses, catch the appropriate signals,
  * and build the various windows.
  */
+void
 init_display()
 {
-	void sig_sent();
-	struct sigvec sigv;
+	struct sigaction sa;
 
 	if (initscr() == NULL)
 		errx(1, "Terminal type unset or lacking necessary features.");
-	(void) sigvec(SIGTSTP, (struct sigvec *)0, &sigv);
-	sigv.sv_mask |= sigmask(SIGALRM);
-	(void) sigvec(SIGTSTP, &sigv, (struct sigvec *)0);
+	(void) sigaction(SIGTSTP, NULL, &sa);
+	sigaddset(&sa.sa_mask, SIGALRM);
+	(void) sigaction(SIGTSTP, &sa, NULL);
 	curses_initialized = 1;
 	clear();
 	refresh();
 	noecho();
-	crmode();
+	cbreak();
 	signal(SIGINT, sig_sent);
 	signal(SIGPIPE, sig_sent);
 	/* curses takes care of ^Z */
@@ -89,7 +90,11 @@ init_display()
 	wclear(his_win.x_win);
 
 	line_win = newwin(1, COLS, my_win.x_nlines, 0);
+#if defined(NCURSES_VERSION) || defined(whline)
+	whline(line_win, '-', COLS);
+#else
 	box(line_win, '-', '-');
+#endif
 	wrefresh(line_win);
 	/* let them know we are working on it */
 	current_state = "No connection yet";
@@ -100,45 +105,46 @@ init_display()
  * the first three characters each talk transmits after
  * connection are the three edit characters.
  */
+void
 set_edit_chars()
 {
-	char buf[3];
+	u_char buf[3];
 	int cc;
 	struct termios tty;
 	
 	tcgetattr(0, &tty);
-	my_win.cerase = tty.c_cc[VERASE];
-	my_win.kill = tty.c_cc[VKILL];
-	if (tty.c_cc[VWERASE] == (unsigned char) -1)
-		my_win.werase = '\027';	 /* control W */
-	else
-		my_win.werase = tty.c_cc[VWERASE];
-	buf[0] = my_win.cerase;
-	buf[1] = my_win.kill;
-	buf[2] = my_win.werase;
+	buf[0] = my_win.cerase = (tty.c_cc[VERASE] == (u_char)_POSIX_VDISABLE)
+	    ? CERASE : tty.c_cc[VERASE];
+	buf[1] = my_win.kill = (tty.c_cc[VKILL] == (u_char)_POSIX_VDISABLE)
+	    ? CKILL : tty.c_cc[VKILL];
+	buf[2] = my_win.werase = (tty.c_cc[VWERASE] == (u_char)_POSIX_VDISABLE)
+	    ? CWERASE : tty.c_cc[VWERASE];
 	cc = write(sockt, buf, sizeof(buf));
 	if (cc != sizeof(buf) )
-		p_error("Lost the connection");
+		quit("Lost the connection", 1);
 	cc = read(sockt, buf, sizeof(buf));
 	if (cc != sizeof(buf) )
-		p_error("Lost the connection");
+		quit("Lost the connection", 1);
 	his_win.cerase = buf[0];
 	his_win.kill = buf[1];
 	his_win.werase = buf[2];
 }
 
 void
-sig_sent()
+sig_sent(dummy)
+	int dummy;
 {
 
-	message("Connection closing. Exiting");
-	quit();
+	quit("Connection closing.  Exiting", 0);
 }
 
 /*
  * All done talking...hang up the phone and reset terminal thingy's
  */
-quit()
+void
+quit(warning, do_perror)
+	char *warning;
+	int do_perror;
 {
 
 	if (curses_initialized) {
@@ -149,5 +155,11 @@ quit()
 	}
 	if (invitation_waiting)
 		send_delete();
+	if (warning) {
+		if (do_perror)
+			warn("%s", warning);
+		else
+			warnx("%s", warning);
+	}
 	exit(0);
 }

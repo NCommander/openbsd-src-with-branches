@@ -790,7 +790,7 @@ E Protocol error: Root says \"%s\" but pserver says \"%s\"",
 	return;
     }
     (void) sprintf (path, "%s/%s", current_parsed_root->directory, CVSROOTADM);
-    if (!isaccessible (path, R_OK | X_OK))
+    if (readonlyfs == 0 && !isaccessible (path, R_OK | X_OK))
     {
 	int save_errno = errno;
 	if (alloc_pending (80 + strlen (path)))
@@ -4839,9 +4839,12 @@ static void wait_sig (sig)
      int sig;
 {
     int status;
+    int save_errno = errno;
+
     pid_t r = wait (&status);
     if (r == command_pid)
 	command_pid_is_dead++;
+    errno = save_errno;
 }
 #endif /* SUNOS_KLUDGE */
 
@@ -5349,7 +5352,10 @@ error 0 %s: no such user\n", username);
     /* Set LOGNAME, USER and CVS_USER in the environment, in case they
        are already set to something else.  */
     {
-	char *env, *cvs_user;
+	char *env;
+#ifdef AUTH_SERVER_SUPPORT
+	char *cvs_user;
+#endif
 
 	env = xmalloc (sizeof "LOGNAME=" + strlen (username));
 	(void) sprintf (env, "LOGNAME=%s", username);
@@ -5359,10 +5365,12 @@ error 0 %s: no such user\n", username);
 	(void) sprintf (env, "USER=%s", username);
 	(void) putenv (env);
 
+#ifdef AUTH_SERVER_SUPPORT
         cvs_user = NULL != CVS_Username ? CVS_Username : "";
         env = xmalloc (sizeof "CVS_USER=" + strlen (cvs_user));
         (void) sprintf (env, "CVS_USER=%s", cvs_user);
         (void) putenv (env);
+#endif
     }
 #endif /* HAVE_PUTENV */
 }

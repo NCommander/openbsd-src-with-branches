@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)sched.c	8.1 (Berkeley) 6/6/93
- *	$Id: sched.c,v 1.3 1994/06/13 20:48:00 mycroft Exp $
+ *	$Id: sched.c,v 1.3 2001/03/02 06:22:04 deraadt Exp $
  */
 
 /*
@@ -44,7 +44,7 @@
  */
 
 #include "am.h"
-#include <sys/signal.h>
+#include <signal.h>
 #include WAIT
 #include <setjmp.h>
 extern jmp_buf select_intr;
@@ -110,14 +110,16 @@ cb_fun cf;
 voidp ca;
 {
 	pjob *p = sched_job(cf, ca);
-	int mask;
+	sigset_t mask, omask;
 
 	p->wchan = (voidp) p;
 
-	mask = sigblock(sigmask(SIGCHLD));
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
 
-	if (p->pid = background()) {
-		sigsetmask(mask);
+	if ((p->pid = background())) {
+		sigprocmask(SIG_SETMASK, &omask, NULL);
 		return;
 	}
 
@@ -202,6 +204,7 @@ void sigchld(sig)
 int sig;
 {
 	union wait w;
+	int save_errno = errno;
 	int pid;
 
 #ifdef SYS5_SIGNALS
@@ -240,6 +243,7 @@ int sig;
 #endif /* SYS5_SIGNALS */
 	if (select_intr_valid)
 		longjmp(select_intr, sig);
+	errno = save_errno;
 }
 
 /*
@@ -273,51 +277,3 @@ void do_task_notify(P_void)
 		free((voidp) p);
 	}
 }
-
-#ifdef HAS_SVR3_SIGNALS
-/*
- * 4.2 signal library based on svr3 (4.1+ bsd) interface
- * From Stephen C. Pope <scp@acl.lanl.gov).
- */
-
-static int current_mask = 0;
-
-int sigblock(mask)
-int mask;
-{
-    int sig;
-    int m;
-    int oldmask;
-
-    oldmask = current_mask;
-    for ( sig = 1, m = 1; sig <= MAXSIG; sig++, m <<= 1 ) {
-        if (mask & m)  {
-	    sighold(sig);
-            current_mask |= m;
-        }
-    }
-    return oldmask;
-}
-
-int sigsetmask(mask)
-int mask;
-{
-    int sig;
-    int m;
-    int oldmask;
-
-    oldmask = current_mask;
-    for ( sig = 1, m = 1; sig <= MAXSIG; sig++, m <<= 1 ) {
-        if (mask & m)  {
-            sighold(sig);
-            current_mask |= m;
-        }
-        else  {
-            sigrelse(sig);
-            current_mask &= ~m;
-        }
-    }
-    return oldmask;
-}
-
-#endif /* HAS_SVR3_SIGNALS */

@@ -1,4 +1,5 @@
-/*	$NetBSD: ms.c,v 1.6 1995/10/08 23:40:44 gwr Exp $	*/
+/*	$OpenBSD: ms.c,v 1.4 1997/08/19 23:09:34 kstailey Exp $	*/
+/*	$NetBSD: ms.c,v 1.6 1996/05/17 19:32:09 gwr Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -45,20 +46,48 @@
  */
 
 /*
- * Mouse driver.
+ * Mouse driver (/dev/mouse)
+ */
+
+/*
+ * Zilog Z8530 Dual UART driver (mouse interface)
+ *
+ * This is the "slave" driver that will be attached to
+ * the "zsc" driver for a Sun mouse.
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/proc.h>
+#include <sys/device.h>
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/syslog.h>
-#include <sys/systm.h>
-#include <sys/tty.h>
 
+#include <dev/ic/z8530reg.h>
+#include <machine/z8530var.h>
 #include <machine/vuid_event.h>
-#include "event_var.h"
+
+#include "../../../dev/sun/event_var.h"
+
+/*
+ * How many input characters we can buffer.
+ * The port-specific var.h may override this.
+ * Note: must be a power of two!
+ */
+#define	MS_RX_RING_SIZE	256
+#define MS_RX_RING_MASK (MS_RX_RING_SIZE-1)
+/*
+ * Output buffer.  Only need a few chars.
+ */
+#define	MS_TX_RING_SIZE	16
+#define MS_TX_RING_MASK (MS_TX_RING_SIZE-1)
+/*
+ * Keyboard serial line speed is fixed at 1200 bps.
+ */
+#define MS_BPS 1200
 
 /*
  * Mouse state.  A Mouse Systems mouse is a fairly simple device,
@@ -72,38 +101,259 @@
  * us sync up with the mouse after an error.)
  */
 struct ms_softc {
+	struct	device ms_dev;		/* required first: base device */
+	struct	zs_chanstate *ms_cs;
+
+	/* Flags to communicate with ms_softintr() */
+	volatile int ms_intr_flags;
+#define	INTR_RX_OVERRUN 1
+#define INTR_TX_EMPTY   2
+#define INTR_ST_CHECK   4
+
+	/*
+	 * The receive ring buffer.
+	 */
+	u_int	ms_rbget;	/* ring buffer `get' index */
+	volatile u_int	ms_rbput;	/* ring buffer `put' index */
+	u_short	ms_rbuf[MS_RX_RING_SIZE]; /* rr1, data pairs */
+
+	/*
+	 * State of input translator
+	 */
 	short	ms_byteno;		/* input byte number, for decode */
 	char	ms_mb;			/* mouse button state */
 	char	ms_ub;			/* user button state */
 	int	ms_dx;			/* delta-x */
 	int	ms_dy;			/* delta-y */
-	struct	tty *ms_mouse;		/* downlink for output to mouse */
-	void	(*ms_open) __P((struct tty *));	/* enable dataflow */
-	void	(*ms_close) __P((struct tty *));/* disable dataflow */
+
+	/*
+	 * State of upper interface.
+	 */
 	volatile int ms_ready;		/* event queue is ready */
 	struct	evvar ms_events;	/* event queue state */
 } ms_softc;
 
-/*
- * Attach the mouse serial (down-link) interface.
- */
-void
-ms_serial(tp, iopen, iclose)
-	struct tty *tp;
-	void (*iopen)(), (*iclose)();
-{
+cdev_decl(ms);	/* open, close, read, write, ioctl, stop, ... */
 
-	ms_softc.ms_mouse = tp;
-	ms_softc.ms_open = iopen;
-	ms_softc.ms_close = iclose;
+struct zsops zsops_ms;
+
+/****************************************************************
+ * Definition of the driver for autoconfig.
+ ****************************************************************/
+
+static int	ms_match(struct device *, void *, void *);
+static void	ms_attach(struct device *, struct device *, void *);
+
+static void	ms_input(register struct ms_softc *, register int);
+static void	ms_rxint(register struct zs_chanstate *);
+static void	ms_txint(register struct zs_chanstate *);
+static void	ms_stint(register struct zs_chanstate *);
+static void	ms_softint(struct zs_chanstate *);
+
+struct cfattach ms_ca = {
+	sizeof(struct ms_softc), ms_match, ms_attach
+};
+
+struct cfdriver ms_cd = {
+	NULL, "ms", DV_DULL
+};
+
+
+/*
+ * ms_match: how is this zs channel configured?
+ */
+int 
+ms_match(parent, match, aux)
+	struct device *parent;
+	void   *match, *aux;
+{
+	struct cfdata *cf = match;
+	struct zsc_attach_args *args = aux;
+
+	/* Exact match required for keyboard. */
+	if (cf->cf_loc[0] == args->channel)
+		return 2;
+
+	return 0;
 }
 
+void 
+ms_attach(parent, self, aux)
+	struct device *parent, *self;
+	void   *aux;
+
+{
+	struct zsc_softc *zsc = (void *) parent;
+	struct ms_softc *ms = (void *) self;
+	struct zsc_attach_args *args = aux;
+	struct zs_chanstate *cs;
+	struct cfdata *cf;
+	int channel, ms_unit;
+	int reset, s, tconst;
+
+	cf = ms->ms_dev.dv_cfdata;
+	ms_unit = ms->ms_dev.dv_unit;
+	channel = args->channel;
+	cs = &zsc->zsc_cs[channel];
+	cs->cs_private = ms;
+	cs->cs_ops = &zsops_ms;
+	ms->ms_cs = cs;
+
+	printf("\n");
+
+	/* Initialize the speed, etc. */
+	tconst = BPS_TO_TCONST(cs->cs_brg_clk, MS_BPS);
+	s = splzs();
+	/* May need reset... */
+	reset = (channel == 0) ?
+		ZSWR9_A_RESET : ZSWR9_B_RESET;
+	zs_write_reg(cs, 9, reset);
+	/* These are OK as set by zscc: WR3, WR4, WR5 */
+	cs->cs_preg[5] |= ZSWR5_DTR | ZSWR5_RTS;
+	cs->cs_preg[12] = tconst;
+	cs->cs_preg[13] = tconst >> 8;
+	zs_loadchannelregs(cs);
+	splx(s);
+
+	/* Initialize translator. */
+	ms->ms_byteno = -1;
+}
+
+/****************************************************************
+ *  Entry points for /dev/mouse
+ *  (open,close,read,write,...)
+ ****************************************************************/
+
+int
+msopen(dev, flags, mode, p)
+	dev_t dev;
+	int flags, mode;
+	struct proc *p;
+{
+	struct ms_softc *ms;
+	int unit;
+
+	unit = minor(dev);
+	if (unit >= ms_cd.cd_ndevs)
+		return (ENXIO);
+	ms = ms_cd.cd_devs[unit];
+	if (ms == NULL)
+		return (ENXIO);
+
+	/* This is an exclusive open device. */
+	if (ms->ms_events.ev_io)
+		return (EBUSY);
+	ms->ms_events.ev_io = p;
+	ev_init(&ms->ms_events);	/* may cause sleep */
+
+	ms->ms_ready = 1;		/* start accepting events */
+	return (0);
+}
+
+int
+msclose(dev, flags, mode, p)
+	dev_t dev;
+	int flags, mode;
+	struct proc *p;
+{
+	struct ms_softc *ms;
+
+	ms = ms_cd.cd_devs[minor(dev)];
+	ms->ms_ready = 0;		/* stop accepting events */
+	ev_fini(&ms->ms_events);
+
+	ms->ms_events.ev_io = NULL;
+	return (0);
+}
+
+int
+msread(dev, uio, flags)
+	dev_t dev;
+	struct uio *uio;
+	int flags;
+{
+	struct ms_softc *ms;
+
+	ms = ms_cd.cd_devs[minor(dev)];
+	return (ev_read(&ms->ms_events, uio, flags));
+}
+
+/* this routine should not exist, but is convenient to write here for now */
+int
+mswrite(dev, uio, flags)
+	dev_t dev;
+	struct uio *uio;
+	int flags;
+{
+
+	return (EOPNOTSUPP);
+}
+
+int
+msioctl(dev, cmd, data, flag, p)
+	dev_t dev;
+	u_long cmd;
+	register caddr_t data;
+	int flag;
+	struct proc *p;
+{
+	struct ms_softc *ms;
+
+	ms = ms_cd.cd_devs[minor(dev)];
+
+	switch (cmd) {
+
+	case FIONBIO:		/* we will remove this someday (soon???) */
+		return (0);
+
+	case FIOASYNC:
+		ms->ms_events.ev_async = *(int *)data != 0;
+		return (0);
+
+	case TIOCSPGRP:
+		if (*(int *)data != ms->ms_events.ev_io->p_pgid)
+			return (EPERM);
+		return (0);
+
+	case VUIDGFORMAT:
+		/* we only do firm_events */
+		*(int *)data = VUID_FIRM_EVENT;
+		return (0);
+
+	case VUIDSFORMAT:
+		if (*(int *)data != VUID_FIRM_EVENT)
+			return (EINVAL);
+		return (0);
+	}
+	return (ENOTTY);
+}
+
+int
+msselect(dev, rw, p)
+	dev_t dev;
+	int rw;
+	struct proc *p;
+{
+	struct ms_softc *ms;
+
+	ms = ms_cd.cd_devs[minor(dev)];
+	return (ev_select(&ms->ms_events, rw, p));
+}
+
+
+/****************************************************************
+ * Middle layer (translator)
+ ****************************************************************/
+
+/*
+ * Called by our ms_softint() routine on input.
+ */
 void
-ms_rint(c)
+ms_input(ms, c)
+	register struct ms_softc *ms;
 	register int c;
 {
 	register struct firm_event *fe;
-	register struct ms_softc *ms = &ms_softc;
 	register int mb, ub, d, get, put, any;
 	static const char to_one[] = { 1, 2, 2, 4, 4, 4, 4 };
 	static const int to_id[] = { MS_RIGHT, MS_MIDDLE, 0, MS_LEFT };
@@ -114,13 +364,11 @@ ms_rint(c)
 	 */
 	if (ms->ms_ready == 0)
 		return;
-	if (c & (TTY_FE|TTY_PE)) {
-		log(LOG_WARNING,
-		    "mouse input parity or framing error (0x%x)\n", c);
+	if (c == -1) {
 		ms->ms_byteno = -1;
 		return;
 	}
-	if ((unsigned)(c - 0x80) < 8)	/* if in 0x80..0x87 */
+	if ((c & ~7) == 0x80)	/* if in 0x80..0x87 */
 		ms->ms_byteno = 0;
 
 	/*
@@ -234,125 +482,157 @@ out:
 	}
 }
 
-int
-msopen(dev, flags, mode, p)
-	dev_t dev;
-	int flags, mode;
-	struct proc *p;
+/****************************************************************
+ * Interface to the lower layer (zscc)
+ ****************************************************************/
+
+static void
+ms_rxint(cs)
+	register struct zs_chanstate *cs;
 {
-	int s, error;
-	struct tty *tp;
+	register struct ms_softc *ms;
+	register int put, put_next;
+	register u_char c, rr1;
 
-#if 1	/* XXX - temporary hack */
-	/* XXX - Should make login chown devices in /etc/fbtab */
-	/* Require root or same UID as the kd session leader. */
-	if (p->p_ucred->cr_uid) {
-		struct tty *kd_tp;
-		struct proc *kd_p;
-		extern struct tty *kdtty();
+	ms = cs->cs_private;
+	put = ms->ms_rbput;
 
-		/* Make sure kd is attached and open. */
-		kd_tp = kdtty(0);
-		if ((kd_tp == NULL) || (kd_tp->t_session == NULL))
-			return (EPERM);
-		kd_p = kd_tp->t_session->s_leader;
-		if (p->p_ucred->cr_uid != kd_p->p_ucred->cr_uid)
-			return (EACCES);
+	/*
+	 * First read the status, because reading the received char
+	 * destroys the status of this char.
+	 */
+	rr1 = zs_read_reg(cs, 1);
+	c = zs_read_data(cs);
+
+	if (rr1 & (ZSRR1_FE | ZSRR1_DO | ZSRR1_PE)) {
+		/* Clear the receive error. */
+		zs_write_csr(cs, ZSWR0_RESET_ERRORS);
 	}
-#endif
 
-	/* This is an exclusive open device. */
-	if (ms_softc.ms_events.ev_io)
-		return (EBUSY);
-	ms_softc.ms_events.ev_io = p;
-	ev_init(&ms_softc.ms_events);	/* may cause sleep */
+	ms->ms_rbuf[put] = (c << 8) | rr1;
+	put_next = (put + 1) & MS_RX_RING_MASK;
 
-	tp = ms_softc.ms_mouse;
-	tp->t_ispeed = tp->t_ospeed = 1200;
-	(*ms_softc.ms_open)(tp);
-
-	ms_softc.ms_ready = 1;		/* start accepting events */
-	return (0);
-}
-
-int
-msclose(dev, flags, mode, p)
-	dev_t dev;
-	int flags, mode;
-	struct proc *p;
-{
-
-	ms_softc.ms_ready = 0;		/* stop accepting events */
-	ev_fini(&ms_softc.ms_events);
-	(*ms_softc.ms_close)(ms_softc.ms_mouse);
-	ms_softc.ms_events.ev_io = NULL;
-	return (0);
-}
-
-int
-msread(dev, uio, flags)
-	dev_t dev;
-	struct uio *uio;
-	int flags;
-{
-
-	return (ev_read(&ms_softc.ms_events, uio, flags));
-}
-
-/* this routine should not exist, but is convenient to write here for now */
-int
-mswrite(dev, uio, flags)
-	dev_t dev;
-	struct uio *uio;
-	int flags;
-{
-
-	return (EOPNOTSUPP);
-}
-
-int
-msioctl(dev, cmd, data, flag, p)
-	dev_t dev;
-	u_long cmd;
-	register caddr_t data;
-	int flag;
-	struct proc *p;
-{
-	int s;
-
-	switch (cmd) {
-
-	case FIONBIO:		/* we will remove this someday (soon???) */
-		return (0);
-
-	case FIOASYNC:
-		ms_softc.ms_events.ev_async = *(int *)data != 0;
-		return (0);
-
-	case TIOCSPGRP:
-		if (*(int *)data != ms_softc.ms_events.ev_io->p_pgid)
-			return (EPERM);
-		return (0);
-
-	case VUIDGFORMAT:
-		/* we only do firm_events */
-		*(int *)data = VUID_FIRM_EVENT;
-		return (0);
-
-	case VUIDSFORMAT:
-		if (*(int *)data != VUID_FIRM_EVENT)
-			return (EINVAL);
-		return (0);
+	/* Would overrun if increment makes (put==get). */
+	if (put_next == ms->ms_rbget) {
+		ms->ms_intr_flags |= INTR_RX_OVERRUN;
+	} else {
+		/* OK, really increment. */
+		put = put_next;
 	}
-	return (ENOTTY);
+
+	/* Done reading. */
+	ms->ms_rbput = put;
+
+	/* Ask for softint() call. */
+	cs->cs_softreq = 1;
 }
 
-int
-msselect(dev, rw, p)
-	dev_t dev;
-	int rw;
-	struct proc *p;
+
+static void
+ms_txint(cs)
+	register struct zs_chanstate *cs;
 {
+	register struct ms_softc *ms;
 
-	return (ev_select(&ms_softc.ms_events, rw, p));
+	ms = cs->cs_private;
+	zs_write_csr(cs, ZSWR0_RESET_TXINT);
+	ms->ms_intr_flags |= INTR_TX_EMPTY;
+	/* Ask for softint() call. */
+	cs->cs_softreq = 1;
 }
+
+
+static void
+ms_stint(cs)
+	register struct zs_chanstate *cs;
+{
+	register struct ms_softc *ms;
+	register int rr0;
+
+	ms = cs->cs_private;
+
+	rr0 = zs_read_csr(cs);
+	zs_write_csr(cs, ZSWR0_RESET_STATUS);
+
+	cs->cs_rr0_delta |= (cs->cs_rr0 ^ rr0);
+	cs->cs_rr0 = rr0;
+	ms->ms_intr_flags |= INTR_ST_CHECK;
+
+	/* Ask for softint() call. */
+	cs->cs_softreq = 1;
+}
+
+
+static void
+ms_softint(cs)
+	struct zs_chanstate *cs;
+{
+	register struct ms_softc *ms;
+	register int get, c, s;
+	int intr_flags;
+	register u_short ring_data;
+
+	ms = cs->cs_private;
+
+	/* Atomically get and clear flags. */
+	s = splzs();
+	intr_flags = ms->ms_intr_flags;
+	ms->ms_intr_flags = 0;
+
+	/* Now lower to spltty for the rest. */
+	(void) spltty();
+
+	/*
+	 * Copy data from the receive ring to the event layer.
+	 */
+	get = ms->ms_rbget;
+	while (get != ms->ms_rbput) {
+		ring_data = ms->ms_rbuf[get];
+		get = (get + 1) & MS_RX_RING_MASK;
+
+		/* low byte of ring_data is rr1 */
+		c = (ring_data >> 8) & 0xff;
+
+		if (ring_data & ZSRR1_DO)
+			intr_flags |= INTR_RX_OVERRUN;
+		if (ring_data & (ZSRR1_FE | ZSRR1_PE)) {
+			log(LOG_ERR, "%s: input error (0x%x)\n",
+				ms->ms_dev.dv_xname, ring_data);
+			c = -1;	/* signal input error */
+		}
+
+		/* Pass this up to the "middle" layer. */
+		ms_input(ms, c);
+	}
+	if (intr_flags & INTR_RX_OVERRUN) {
+		log(LOG_ERR, "%s: input overrun\n",
+		    ms->ms_dev.dv_xname);
+	}
+	ms->ms_rbget = get;
+
+	if (intr_flags & INTR_TX_EMPTY) {
+		/*
+		 * Transmit done.  (Not expected.)
+		 */
+		log(LOG_ERR, "%s: transmit interrupt?\n",
+		    ms->ms_dev.dv_xname);
+	}
+
+	if (intr_flags & INTR_ST_CHECK) {
+		/*
+		 * Status line change.  (Not expected.)
+		 */
+		log(LOG_ERR, "%s: status interrupt?\n",
+		    ms->ms_dev.dv_xname);
+		cs->cs_rr0_delta = 0;
+	}
+
+	splx(s);
+}
+
+struct zsops zsops_ms = {
+	ms_rxint,	/* receive char available */
+	ms_stint,	/* external/status */
+	ms_txint,	/* xmit buffer empty */
+	ms_softint,	/* process software interrupt */
+};

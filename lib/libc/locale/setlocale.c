@@ -1,3 +1,4 @@
+/*	$OpenBSD: setlocale.c,v 1.7 2001/06/27 00:58:54 lebel Exp $	*/
 /*
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,16 +36,17 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)setlocale.c	8.1 (Berkeley) 7/4/93";
+static char rcsid[] = "$OpenBSD: setlocale.c,v 1.7 2001/06/27 00:58:54 lebel Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
 #include <locale.h>
 #include <limits.h>
+#include <paths.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <paths.h>
+#include <unistd.h>
 
 /*
  * Category names for getenv()
@@ -80,8 +82,8 @@ static char new_categories[_LC_LAST][32];
 static char current_locale_string[_LC_LAST * 33];
 static char *PathLocale;
 
-static char	*currentlocale __P((void));
-static char	*loadlocale __P((int));
+static char	*currentlocale(void);
+static char	*loadlocale(int);
 
 char *
 setlocale(category, locale)
@@ -91,7 +93,9 @@ setlocale(category, locale)
 	int found, i, len;
 	char *env, *r;
 
-	if (!PathLocale && !(PathLocale = getenv("PATH_LOCALE")))
+	if (issetugid() != 0 ||
+	    ((!PathLocale && !(PathLocale = getenv("PATH_LOCALE"))) ||
+	     !*PathLocale))
 		PathLocale = _PATH_LOCALE;
 
 	if (category < 0 || category >= _LC_LAST)
@@ -113,33 +117,29 @@ setlocale(category, locale)
 	if (!*locale) {
 		env = getenv(categories[category]);
 
-		if (!env)
+		if (!env || !*env)
 			env = getenv(categories[0]);
 
-		if (!env)
+		if (!env || !*env)
 			env = getenv("LANG");
 
-		if (!env)
+		if (!env || !*env)
 			env = "C";
 
-		(void) strncpy(new_categories[category], env, 31);
-		new_categories[category][31] = 0;
+		strlcpy(new_categories[category], env, 32);
 		if (!category) {
 			for (i = 1; i < _LC_LAST; ++i) {
-				if (!(env = getenv(categories[i])))
+				if (!(env = getenv(categories[i])) || !*env)
 					env = new_categories[0];
-				(void)strncpy(new_categories[i], env, 31);
-				new_categories[i][31] = 0;
+				strlcpy(new_categories[i], env, 32);
 			}
 		}
 	} else if (category)  {
-		(void)strncpy(new_categories[category], locale, 31);
-		new_categories[category][31] = 0;
+		strlcpy(new_categories[category], locale, 32);
 	} else {
 		if ((r = strchr(locale, '/')) == 0) {
 			for (i = 1; i < _LC_LAST; ++i) {
-				(void)strncpy(new_categories[i], locale, 31);
-				new_categories[i][31] = 0;
+				strlcpy(new_categories[i], locale, 32);
 			}
 		} else {
 			for (i = 1; r[1] == '/'; ++r);
@@ -147,8 +147,7 @@ setlocale(category, locale)
 				return (NULL);	/* Hmm, just slashes... */
 			do {
 				len = r - locale > 31 ? 31 : r - locale;
-				(void)strncpy(new_categories[i++], locale, len);
-				new_categories[i++][len] = 0;
+				strlcpy(new_categories[i++], locale, len + 1);
 				locale = r;
 				while (*locale == '/')
 				    ++locale;
@@ -163,13 +162,16 @@ setlocale(category, locale)
 	if (category)
 		return (loadlocale(category));
 
-	found = 0;
-	for (i = 1; i < _LC_LAST; ++i)
+	for (found = 0, i = 1; i < _LC_LAST; ++i) {
 		if (loadlocale(i) != NULL)
 			found = 1;
-	if (found)
-	    return (currentlocale());
-	return (NULL);
+		else if (!category) {
+			found = 0;
+			break;
+		}
+	}
+
+	return (found ? currentlocale() : NULL);
 }
 
 static char *
@@ -229,4 +231,5 @@ loadlocale(category)
 		case LC_TIME:
 			return (NULL);
 	}
+	return (NULL);
 }

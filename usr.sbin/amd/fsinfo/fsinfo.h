@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)fsinfo.h	8.1 (Berkeley) 6/6/93
- *	$Id: fsinfo.h,v 1.3 1994/06/13 20:50:20 mycroft Exp $
+ *	$Id: fsinfo.h,v 1.2 1997/01/31 14:42:11 graichen Exp $
  */
 
 /*
@@ -82,11 +82,12 @@ typedef char *voidp;
 #include <net/if.h>
 #include <netinet/if_ether.h>
 
+#include <string.h>
+#include <stdlib.h>
+#include <err.h>
+
 #include "fsi_data.h"
 
-extern char* strchr P((Const char*, int)); /* C */
-extern char* strrchr P((Const char*, int)); /* C */
-extern char *strdup P((char*)); /* C */
 extern void fatal();
 extern void warning();
 extern void error();
@@ -123,7 +124,7 @@ extern char *fsmount_strings[];
 extern char *host_strings[];
 extern char *ether_if_strings[];
 extern char *autodir;
-extern char *progname;
+extern char *__progname;
 extern char hostname[];
 extern char *username;
 extern char **g_argv;

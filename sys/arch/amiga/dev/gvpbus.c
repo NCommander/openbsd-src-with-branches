@@ -1,4 +1,5 @@
-/*	$NetBSD: gvpbus.c,v 1.9 1995/08/18 15:27:54 chopps Exp $	*/
+/*	$OpenBSD: gvpbus.c,v 1.5 1997/01/16 09:24:32 niklas Exp $	*/
+/*	$NetBSD: gvpbus.c,v 1.15 1996/12/23 09:10:12 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -31,25 +32,29 @@
  */
 #include <sys/param.h>
 #include <sys/device.h>
+#include <sys/systm.h>
 #include <amiga/amiga/device.h>
 #include <amiga/dev/zbusvar.h>
 #include <amiga/dev/gvpbusvar.h>
 
-void gvpbusattach __P((struct device *, struct device *, void *));
-int gvpbusmatch __P((struct device *, struct cfdata *, void *));
-int gvpbusprint __P((void *auxp, char *));
+void gvpbusattach(struct device *, struct device *, void *);
+int gvpbusmatch(struct device *, void *, void *);
+int gvpbusprint(void *auxp, const char *); 
 
 extern int sbic_no_dma;		/* Kludge for A1291 - mlh */
 
-struct cfdriver gvpbuscd = {
-	NULL, "gvpbus", (cfmatch_t)gvpbusmatch, gvpbusattach, 
-	DV_DULL, sizeof(struct device), NULL, 0 };
+struct cfattach gvpbus_ca = {
+	sizeof(struct device), gvpbusmatch, gvpbusattach
+};
+
+struct cfdriver gvpbus_cd = {
+	NULL, "gvpbus", DV_DULL, NULL, 0
+};
 
 int
-gvpbusmatch(pdp, cdp, auxp)
+gvpbusmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -74,7 +79,6 @@ gvpbusattach(pdp, dp, auxp)
 {
 	struct zbus_args *zap;
 	struct gvpbus_args ga;
-	u_char *idreg;
 
 	zap = auxp;
 	bcopy(zap, &ga.zargs, sizeof(struct zbus_args));
@@ -151,7 +155,7 @@ gvpbusattach(pdp, dp, auxp)
 int
 gvpbusprint(auxp, pnp)
 	void *auxp;
-	char *pnp;
+	const char *pnp;
 {
 	struct gvpbus_args *gap;
 

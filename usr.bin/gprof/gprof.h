@@ -1,4 +1,5 @@
-/*	$NetBSD: gprof.h,v 1.12 1995/04/19 07:22:59 cgd Exp $	*/
+/*	$OpenBSD: gprof.h,v 1.6 2001/03/22 05:18:30 mickey Exp $	*/
+/*	$NetBSD: gprof.h,v 1.13 1996/04/01 21:54:06 mark Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -42,40 +43,9 @@
 #include <a.out.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
 
-#if alpha
-#   include "alpha.h"
-#endif
-#if i386
-#   include "i386.h"
-#endif
-#if m68k
-#   include "m68k.h"
-#endif
-#if mips
-#   include "mips.h"
-#endif
-#if ns32k
-#   include "ns32k.h"
-#endif
-#if pmax
-#   include "pmax.h"
-#endif
-#if sparc
-#   include "sparc.h"
-#endif
-#if tahoe
-#   include "tahoe.h"
-#endif
-#if vax
-#   include "vax.h"
-#endif
-
-
-    /*
-     *	who am i, for error messages.
-     */
-char	*whoami;
+#include "machine.h"
 
     /*
      * booleans
@@ -265,76 +235,72 @@ struct stringlist	*ktolist;
     /*
      *	function declarations
      */
-/*
-		addarc();
-*/
+void		addarc();
+int		addcycle(arctype **, arctype **);
+void		addlist(struct stringlist *listp, char *funcname);
 int		arccmp();
 arctype		*arclookup();
-/*
-		asgnsamples();
-		printblurb();
-		cyclelink();
-		dfn();
-*/
+void		asgnsamples();
+void		alignentries();
+void		printblurb();
+int		cycleanalyze(void);
+void		cyclelink(void);
+void		cycletime(void);
+void		compresslist(void);
+int		descend(nltype *node, arctype **stkstart, arctype **stkp);
+void		dfn();
 bool		dfn_busy();
-/*
-		dfn_findcycle();
-*/
+void		dfn_findcycle();
+void		dfn_init();
 bool		dfn_numbered();
-/*
-		dfn_post_visit();
-		dfn_pre_visit();
-		dfn_self_cycle();
-*/
+void		dfn_post_visit();
+void		dfn_pre_visit();
+void		dfn_self_cycle();
 nltype		**doarcs();
-/*
-		done();
-		findcalls();
-		flatprofheader();
-		flatprofline();
-*/
+void		doflags(void);
+void		dotime(void);
+void		dumpsum();
+void		findcall(nltype *, u_long, u_long);
+void		flatprofheader();
+void		flatprofline();
 bool		funcsymbol();
-/*
-		getnfile();
-		getpfile();
-		getstrtab();
-		getsymtab();
-		gettextspace();
-		gprofheader();
-		gprofline();
-		main();
-*/
+void		getnfile();
+void		getpfile();
+void		getstrtab();
+void		getsymtab();
+void		gettextspace();
+void		gprofheader();
+void		gprofline();
+int		hertz();
+void		inheritflags(nltype *childp);
 unsigned long	max();
 int		membercmp();
 unsigned long	min();
 nltype		*nllookup();
+bool		onlist();
 FILE		*openpfile();
 long		operandlength();
 operandenum	operandmode();
 char		*operandname();
-/*
-		printchildren();
-		printcycle();
-		printgprof();
-		printmembers();
-		printname();
-		printparents();
-		printprof();
-		readsamples();
-*/
+void		printchildren();
+void		printcycle();
+void		printgprof();
+void		printindex();
+void		printmembers();
+void		printname();
+void		printparents();
+void		printprof();
+void		readsamples(FILE *);
 unsigned long	reladdr();
-/*
-		sortchildren();
-		sortmembers();
-		sortparents();
-		tally();
-		timecmp();
-		topcmp();
-*/
+void		sortchildren();
+void		sortmembers();
+void		sortparents();
+void		tally();
+int		timecmp();
+void		timepropagate(nltype *);
+int		topcmp();
 int		totalcmp();
-/*
-		valcmp();
-*/
+int		valcmp(nltype *p1, nltype *p2);
 
 #define	LESSTHAN	-1
 #define	EQUALTO		0

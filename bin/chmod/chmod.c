@@ -1,3 +1,4 @@
+/*	$OpenBSD: chmod.c,v 1.12 2000/07/31 19:02:38 ericj Exp $	*/
 /*	$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $	*/
 
 /*
@@ -13,7 +14,7 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
+ *    must display the following acknowledgment:
  *	This product includes software developed by the University of
  *	California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
@@ -43,23 +44,31 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)chmod.c	8.8 (Berkeley) 4/1/94";
 #else
-static char rcsid[] = "$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $";
+static char rcsid[] = "$OpenBSD: chmod.c,v 1.12 2000/07/31 19:02:38 ericj Exp $";
 #endif
 #endif /* not lint */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <err.h>
 #include <errno.h>
 #include <fts.h>
+#include <pwd.h>
+#include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
+#include <locale.h>
 
-void usage __P((void));
+int ischflags, ischown, ischgrp, ischmod;
+extern char *__progname;
+
+gid_t a_gid(const char *);
+uid_t a_uid(const char *);
+void usage(void);
 
 int
 main(argc, argv)
@@ -72,10 +81,26 @@ main(argc, argv)
 	long val;
 	int oct, omode;
 	int Hflag, Lflag, Pflag, Rflag, ch, fflag, fts_options, hflag, rval;
-	char *ep, *mode;
+	uid_t uid;
+	gid_t gid;
+	u_int32_t fclear, fset;
+	char *ep, *mode, *cp, *flags;
+#ifdef lint
+	set = NULL;
+	oct = omode = 0;
+#endif
 
+	setlocale(LC_ALL, "");
+
+	ischown = __progname[2] == 'o';
+	ischgrp = __progname[2] == 'g';
+	ischmod = __progname[2] == 'm';
+	ischflags = __progname[2] == 'f';
+
+	uid = -1;
+	gid = -1;
 	Hflag = Lflag = Pflag = Rflag = fflag = hflag = 0;
-	while ((ch = getopt(argc, argv, "HLPRXfgorstuwx")) != -1)
+	while ((ch = getopt(argc, argv, "HLPRXfghorstuwx")) != -1)
 		switch (ch) {
 		case 'H':
 			Hflag = 1;
@@ -113,12 +138,13 @@ main(argc, argv)
 		 */
 		case 'g': case 'o': case 'r': case 's':
 		case 't': case 'u': case 'w': case 'X': case 'x':
+			if (!ischmod)
+				usage();
 			if (argv[optind - 1][0] == '-' &&
 			    argv[optind - 1][1] == ch &&
 			    argv[optind - 1][2] == '\0')
 				--optind;
 			goto done;
-		case '?':
 		default:
 			usage();
 		}
@@ -141,23 +167,57 @@ done:	argv += optind;
 		}
 	}
 
-	mode = *argv;
-	if (*mode >= '0' && *mode <= '7') {
-		errno = 0;
-		val = strtol(mode, &ep, 8);
-		if (val > INT_MAX || val < 0)
-			errno = ERANGE;
-		if (errno)
-			err(1, "invalid file mode: %s", mode);
-		if (*ep)
-			errx(1, "invalid file mode: %s", mode);
-		omode = val;
-		oct = 1;
-	} else {
-		if ((set = setmode(mode)) == NULL)
-			errx(1, "invalid file mode: %s", mode);
-		oct = 0;
-	}
+	if (ischflags) {
+		flags = *argv;
+		if (*flags >= '0' && *flags <= '7') {
+			errno = 0;
+			val = strtoul(flags, &ep, 8);
+			if (val > UINT_MAX)
+				errno = ERANGE;
+			if (errno)
+				err(1, "invalid flags: %s", flags);
+			if (*ep)
+				errx(1, "invalid flags: %s", flags);
+			fset = val;
+			oct = 1;
+		} else {
+			if (strtofflags(&flags, &fset, &fclear))
+				errx(1, "invalid flag: %s", flags);
+			fclear = ~fclear;
+			oct = 0;
+		}
+	} else if (ischmod) {
+		mode = *argv;
+		if (*mode >= '0' && *mode <= '7') {
+			errno = 0;
+			val = strtol(mode, &ep, 8);
+			if (val > INT_MAX || val < 0)
+				errno = ERANGE;
+			if (errno)
+				err(1, "invalid file mode: %s", mode);
+			if (*ep)
+				errx(1, "invalid file mode: %s", mode);
+			omode = val;
+			oct = 1;
+		} else {
+			if ((set = setmode(mode)) == NULL)
+				errx(1, "invalid file mode: %s", mode);
+			oct = 0;
+		}
+	} else if (ischown) {
+		if ((cp = strchr(*argv, ':')) != NULL) {
+			*cp++ = '\0';
+			gid = a_gid(cp);
+		}
+#ifdef SUPPORT_DOT
+		else if ((cp = strchr(*argv, '.')) != NULL) {
+			*cp++ = '\0';
+			gid = a_gid(cp);
+		}
+#endif
+		uid = a_uid(*argv);
+	} else
+		gid = a_gid(*argv);
 
 	if ((ftsp = fts_open(++argv, fts_options, 0)) == NULL)
 		err(1, NULL);
@@ -166,13 +226,19 @@ done:	argv += optind;
 		case FTS_D:
 			if (!Rflag)
 				fts_set(ftsp, p, FTS_SKIP);
-			break;
+			if (ischmod)
+				break;
+			else
+				continue;
 		case FTS_DNR:			/* Warn, chmod, continue. */
 			warnx("%s: %s", p->fts_path, strerror(p->fts_errno));
 			rval = 1;
 			break;
 		case FTS_DP:			/* Already changed at FTS_D. */
-			continue;
+			if (ischmod)
+				continue;
+			else
+				break;
 		case FTS_ERR:			/* Warn, continue. */
 		case FTS_NS:
 			warnx("%s: %s", p->fts_path, strerror(p->fts_errno));
@@ -185,13 +251,31 @@ done:	argv += optind;
 			 * don't point to anything and ones that we found
 			 * doing a physical walk.
 			 */
-			continue;
+			if (ischflags || ischmod || !hflag)
+				continue;
 		default:
 			break;
 		}
-		if (chmod(p->fts_accpath, oct ? omode :
+		if (ischflags) {
+			if (oct) {
+				if (!chflags(p->fts_accpath, fset))
+					continue;
+			} else {
+				p->fts_statp->st_flags |= fset;
+				p->fts_statp->st_flags &= fclear;
+				if (!chflags(p->fts_accpath, p->fts_statp->st_flags))
+					continue;
+			}
+			warn("%s", p->fts_path);
+			rval = 1;
+		} else if (ischmod && chmod(p->fts_accpath, oct ? omode :
 		    getmode(set, p->fts_statp->st_mode)) && !fflag) {
-			warn(p->fts_path);
+			warn("%s", p->fts_path);
+			rval = 1;
+		} else if (!ischmod && !ischflags &&
+		    (hflag ? lchown(p->fts_accpath, uid, gid) :
+		    chown(p->fts_accpath, uid, gid)) && !fflag) {
+			warn("%s", p->fts_path);
 			rval = 1;
 		}
 	}
@@ -200,10 +284,61 @@ done:	argv += optind;
 	exit(rval);
 }
 
+uid_t
+a_uid(s)
+	const char *s;
+{
+	struct passwd *pw;
+	char *ep;
+	u_long ul;
+
+	if (*s == '\0')			/* Argument was "gid[:.]". */
+		return -1;
+
+	if ((pw = getpwnam(s)) != NULL) {
+		return pw->pw_uid;
+	} else {
+		if ((ul = strtoul(s, &ep, 10)) == ULONG_MAX)
+			err(1, "%s", s);
+		if (*ep != '\0')
+			errx(1, "%s: invalid user name", s);
+		return (uid_t)ul;
+	}
+}
+
+gid_t
+a_gid(s)
+	const char *s;
+{
+	struct group *gr;
+	char *ep;
+	u_long ul;
+
+	if (*s == '\0')			/* Argument was "gid[:.]". */
+		return -1;
+
+	if ((gr = getgrnam(s)) != NULL) {
+		return gr->gr_gid;
+	} else {
+		if ((ul = strtoul(s, &ep, 10)) == ULONG_MAX)
+			err(1, "%s", s);
+		if (*ep != '\0')
+			errx(1, "%s: invalid group name", s);
+		return (gid_t)ul;
+	}
+}
+
 void
 usage()
 {
-	(void)fprintf(stderr,
-	    "usage: chmod [-R [-H | -L | -P]] mode file ...\n");
+	if (ischmod || ischflags)
+		fprintf(stderr,
+		    "usage: %s [-R [-H | -L | -P]] %s file ...\n",
+		    __progname, (ischmod? "mode" : "flags"));
+	else
+		fprintf(stderr,
+		    "usage: %s [-R [-H | -L | -P]] [-f] [-h] %s file ...\n",
+		    __progname, ischown ? "[owner][:group]" : "group");
+
 	exit(1);
 }

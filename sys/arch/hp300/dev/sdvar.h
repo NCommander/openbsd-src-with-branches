@@ -1,4 +1,5 @@
-/*	$NetBSD: sdvar.h,v 1.2.2.1 1995/10/15 10:11:06 thorpej Exp $	*/
+/*	$OpenBSD: sdvar.h,v 1.9 1998/10/04 01:02:25 millert Exp $	*/
+/*	$NetBSD: sdvar.h,v 1.7 1997/03/31 07:40:07 scottr Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -38,27 +39,30 @@
  *	@(#)sdvar.h	8.1 (Berkeley) 6/10/93
  */
 
-struct sdinfo {
-	struct	disklabel si_label;	/* label */
-	int	si_bopen;		/* mask of open block devs */
-	int	si_copen;		/* mask of open char devs */
-	int	si_open;		/* composite mask of open devs */
+struct sdstats {
+	long	sdresets;
+	long	sdtransfers;
+	long	sdpartials;
 };
 
 struct	sd_softc {
-	struct	hp_device *sc_hd;
-	struct	devqueue sc_dq;
+	struct	device sc_dev;
+	struct	disk sc_dkdev;
+	struct	scsiqueue sc_sq;
 	int	sc_format_pid;	/* process using "format" mode */
 	short	sc_flags;
 	short	sc_type;	/* drive type */
-	short	sc_punit;	/* physical unit (scsi lun) */
+	int	sc_target;	/* SCSI target */
+	int	sc_lun;		/* SCSI lun */
 	u_short	sc_bshift;	/* convert device blocks to DEV_BSIZE blks */
 	u_int	sc_blks;	/* number of blocks on device */
 	int	sc_blksize;	/* device block size in bytes */
 	u_int	sc_heads;	/* number of heads (tracks) */
 	u_int	sc_cyls;	/* number of cylinders */
-	u_int	sc_wpms;	/* average xfer rate in 16 bit wds/sec. */
-	struct	sdinfo sc_info;	/* disklabel and related info */
+	struct buf sc_tab;	/* buffer queue */
+	struct sdstats sc_stats; /* debugging stats */
+	struct scsi_fmt_cdb sc_cmdstore;
+	struct scsi_fmt_sense sc_sensestore;
 };
 
 /* sc_flags values */
@@ -70,17 +74,25 @@ struct	sd_softc {
 #define SDF_RMEDIA	0x20
 #define SDF_ERROR	0x40
 
-struct sdstats {
-	long	sdresets;
-	long	sdtransfers;
-	long	sdpartials;
-};
-
-#define	sdunit(x)	(minor(x) >> 3)
-#define sdpart(x)	(minor(x) & 0x7)
-#define	sdpunit(x)	((x) & 7)
-#define sdlabdev(d)	(dev_t)(((int)(d)&~7)|2)	/* sd?c */
+#define	sdunit(x)	DISKUNIT(x)
+#define sdpart(x)	DISKPART(x)
+#define sdlabdev(d)	MAKEDISKDEV(major(d), sdunit(d), RAW_PART)
 
 #define	b_cylin		b_resid
 
 #define	SDRETRY		2
+
+#ifdef _KERNEL
+/* sd.c */
+void	sdustart(int);
+
+void	sdstart(void *);
+void	sdgo(void *);
+void	sdintr(void *, int);
+
+int	sdgetcapacity(struct sd_softc *, dev_t);
+int	sdgetinfo(dev_t, struct sd_softc *, struct disklabel *, int);
+
+/* sd_compat.c */
+void	sdmakedisklabel(int, struct disklabel *);
+#endif /* _KERNEL */

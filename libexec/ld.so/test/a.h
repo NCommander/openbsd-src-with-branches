@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 class B {
 public:
 	B();
@@ -7,8 +9,9 @@ public:
 
 class AA {
 	B b;
+	char *argstr;
 public:
-	AA();
+	AA(char *arg);
 	~AA();
 	int i;
 };

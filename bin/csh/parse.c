@@ -1,3 +1,4 @@
+/*	$OpenBSD: parse.c,v 1.4 2002/02/16 21:27:06 millert Exp $	*/
 /*	$NetBSD: parse.c,v 1.6 1995/03/21 09:03:10 cgd Exp $	*/
 
 /*-
@@ -37,39 +38,35 @@
 #if 0
 static char sccsid[] = "@(#)parse.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: parse.c,v 1.6 1995/03/21 09:03:10 cgd Exp $";
+static char rcsid[] = "$OpenBSD: parse.c,v 1.4 2002/02/16 21:27:06 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
 
-static void	 asyntax __P((struct wordent *, struct wordent *));
-static void	 asyn0 __P((struct wordent *, struct wordent *));
-static void	 asyn3 __P((struct wordent *, struct wordent *));
+static void	 asyntax(struct wordent *, struct wordent *);
+static void	 asyn0(struct wordent *, struct wordent *);
+static void	 asyn3(struct wordent *, struct wordent *);
 static struct wordent 
-		*freenod __P((struct wordent *, struct wordent *));
+		*freenod(struct wordent *, struct wordent *);
 static struct command 
-		*syn0 __P((struct wordent *, struct wordent *, int));
+		*syn0(struct wordent *, struct wordent *, int);
 static struct command 
-		*syn1 __P((struct wordent *, struct wordent *, int));
+		*syn1(struct wordent *, struct wordent *, int);
 static struct command 
-		*syn1a __P((struct wordent *, struct wordent *, int));
+		*syn1a(struct wordent *, struct wordent *, int);
 static struct command 
-		*syn1b __P((struct wordent *, struct wordent *, int));
+		*syn1b(struct wordent *, struct wordent *, int);
 static struct command 
-		*syn2 __P((struct wordent *, struct wordent *, int));
+		*syn2(struct wordent *, struct wordent *, int);
 static struct command 
-		*syn3 __P((struct wordent *, struct wordent *, int));
+		*syn3(struct wordent *, struct wordent *, int);
 
 #define ALEFT	21		/* max of 20 alias expansions	 */
 #define HLEFT	11		/* max of 10 history expansions	 */

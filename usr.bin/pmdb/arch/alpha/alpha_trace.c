@@ -1,4 +1,4 @@
-/*	$PMDB: alpha_trace.c,v 1.5 2002/03/10 10:52:16 art Exp $	*/
+/*	$OpenBSD: alpha_trace.c,v 1.5 2002/03/10 10:52:16 art Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 

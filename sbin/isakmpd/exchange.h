@@ -1,7 +1,8 @@
-/*	$Id: exchange.h,v 1.15 1998/08/13 21:43:57 provos Exp $	*/
+/*	$OpenBSD: exchange.h,v 1.19 2001/05/31 20:23:52 angelos Exp $	*/
+/*	$EOM: exchange.h,v 1.28 2000/09/28 12:54:28 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999, 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -60,6 +61,21 @@ struct exchange {
   /* Link to exchanges with the same hash value.  */
   LIST_ENTRY (exchange) link;
 
+  /* A name of the SAs this exchange will result in.  XXX non unique?  */
+  char *name;
+
+  /* A name of the major policy deciding offers and acceptable proposals.  */
+  char *policy;
+
+  /*
+   * A function with a polymorphic argument called after the exchange
+   * has been run to its end, successfully.  The 2nd argument is true
+   * if the finalization hook is called due to the exchange not running
+   * to its end normally.
+   */
+  void (*finalize) (struct exchange *, void *, int);
+  void *finalize_arg;
+
   /* When several SA's are being negotiated we keep them here.  */
   TAILQ_HEAD (sa_head, sa) sa_list;
 
@@ -109,6 +125,12 @@ struct exchange {
   struct message *last_sent;
 
   /*
+   * If some message is queued up for sending, we want to be able to remove
+   * it from the queue, when the exchange is deleted.
+   */
+  struct message *in_transit;
+
+  /*
    * Initiator's & responder's nonces respectively, with lengths.
    * XXX Should this be in the DOI-specific parts instead?
    */
@@ -117,18 +139,64 @@ struct exchange {
   u_int8_t *nonce_r;
   size_t nonce_r_len;
 
-  /* XXX Do we want to save these in the exchange at all?  */
+  /* The ID payload contents for the initiator & responder, respectively.  */
   u_int8_t *id_i;
   size_t id_i_len;
   u_int8_t *id_r;
   size_t id_r_len;
+
+  /* Policy session identifier, where applicable.  */
+  int policy_id;
 
   /* Crypto info needed to encrypt/decrypt packets in this exchange.  */
   struct crypto_xf *crypto;
   int key_length;
   struct keystate *keystate;
 
-  /* Acceptable authorities for cert requests */
+  /* Used only by KeyNote, to cache the key used to authenticate Phase 1 */
+  char *keynote_key; /* printable format */
+
+  /* 
+   * Received certificate - used to verify signatures on packet,
+   * stored here for later policy processing. 
+   *
+   * The rules for the recv_* and sent_* fields are:
+   * - recv_cert stores the credential (if any) received from the peer;
+   *   the kernel may pass us one, but we ignore it. We pass it to the
+   *   kernel so processes can peek at it. When doing passphrase
+   *   authentication in Phase 1, this is empty.
+   * - recv_key stores the key (public or private) used by the peer
+   *   to authenticate. Otherwise, same properties as recv_cert except
+   *   that we don't tell the kernel about passphrases (so we don't
+   *   reveal system-wide passphrases). Processes that used passphrase
+   *   authentication already know the passphrase! We ignore it if/when
+   *   received from the kernel (meaningless).
+   * - sent_cert stores the credential, if any, we used to authenticate
+   *   with the peer. It may be passed to us by the kernel, or we may
+   *   have found it in our certificate storage. In either case, there's
+   *   no point passing it to the kernel, so we don't.
+   * - sent key stores the private key we used for authentication with
+   *   the peer (private key or passphrase). This may have been received
+   *   from the kernel, or may be a system-wide setting. In either case,
+   *   we don't pass it to the kernel, to avoid revealing such information
+   *   to processes (processes either already know it, or have no business
+   *   knowing it).
+   */
+  int recv_certtype, recv_keytype;
+  void *recv_cert; /* Certificate received from peer, native format */
+  void *recv_key; /* Key peer used to authenticate, native format */
+
+  /* Likewise, for certificates/keys we use. */
+  int sent_certtype, sent_keytype;
+  void *sent_cert; /* Certificate (to be) sent to peer, native format */
+  void *sent_key; /* Key we'll use to authenticate to peer, native format */
+
+  /* ACQUIRE sequence number.  */
+  u_int32_t seq;
+
+  /* XXX This is no longer necessary, it is covered by policy.  */
+
+  /* Acceptable authorities for cert requests.  */
   TAILQ_HEAD (aca_head, certreq_aca) aca_list;
 
   /* DOI-specific opaque data.  */
@@ -142,21 +210,29 @@ struct exchange {
 					 | EXCHANGE_FLAG_HE_COMMITTED)
 #define EXCHANGE_FLAG_ENCRYPT		4
 
+extern int exchange_add_certs (struct message *);
 extern void exchange_finalize (struct message *);
 extern void exchange_free (struct exchange *);
+extern void exchange_free_aca_list (struct exchange *);
+extern void exchange_establish (char *name,
+				void (*) (struct exchange *, void *, int),
+				void *);
 extern void exchange_establish_p1 (struct transport *, u_int8_t, u_int32_t,
+				   char *, void *,
+				   void (*) (struct exchange *, void *, int),
 				   void *);
-extern void exchange_establish_p2 (struct sa *, u_int8_t, void *);
+extern void exchange_establish_p2 (struct sa *, u_int8_t, char *, void *,
+				   void (*) (struct exchange *, void *, int),
+				   void *);
 extern int exchange_gen_nonce (struct message *, size_t);
 extern void exchange_init (void);
 extern struct exchange *exchange_lookup (u_int8_t *, int);
+extern struct exchange *exchange_lookup_by_name (char *, int);
 extern struct exchange *exchange_lookup_from_icookie (u_int8_t *);
 extern void exchange_report (void);
 extern void exchange_run (struct message *);
 extern int exchange_save_nonce (struct message *);
 extern int exchange_save_certreq (struct message *);
-extern void exchange_free_aca_list (struct exchange *);
-extern int exchange_add_certs (struct message *);
 extern u_int16_t *exchange_script (struct exchange *);
 extern struct exchange *exchange_setup_p1 (struct message *, u_int32_t);
 extern struct exchange *exchange_setup_p2 (struct message *, u_int8_t);

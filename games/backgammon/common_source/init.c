@@ -1,4 +1,4 @@
-/*	$NetBSD: init.c,v 1.4 1995/04/29 00:44:12 mycroft Exp $	*/
+/*	$OpenBSD: init.c,v 1.4 2001/02/18 03:32:52 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -37,35 +37,67 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: init.c,v 1.4 1995/04/29 00:44:12 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.4 2001/02/18 03:32:52 pjanzen Exp $";
 #endif
 #endif /* not lint */
-
-#include <termios.h>
 
 /*
  * variable initialization.
  */
 
-				/* name of executable object programs */
-char	EXEC[] = "/usr/games/backgammon";
-char	TEACH[] = "/usr/games/teachgammon";
+#ifdef DEBUG
+#include <stdio.h>
+FILE	*trace;
+#endif
 
-int	pnum	= 2;		/* color of player:
-					-1 = white
-					 1 = red
-					 0 = both
-					 2 = not yet init'ed */
-int	acnt	= 0;		/* length of args */
-int	aflag	= 1;		/* flag to ask for rules or instructions */
-int	bflag	= 0;		/* flag for automatic board printing */
-int	cflag	= 0;		/* case conversion flag */
-int	hflag	= 1;		/* flag for cleaning screen */
-int	mflag	= 0;		/* backgammon flag */
-int	raflag	= 0;		/* 'roll again' flag for recovered game */
-int	rflag	= 0;		/* recovered game flag */
-int	tflag	= 0;		/* cursor addressing flag */
-int	iroll	= 0;		/* special flag for inputting rolls */
-int	rfl	= 0;
+/* name of executable object programs */
+const char    EXEC[] = "/usr/games/backgammon";
+const char    TEACH[] = "/usr/games/teachgammon";
 
-char	*color[] = {"White","Red","white","red"};
+int     pnum = 2;		/* color of player:
+						-1 = white
+						 1 = red
+						 0 = both
+						 2 = not yet init'ed */
+int     acnt = 0;		/* length of args */
+int     aflag = 1;		/* flag to ask for rules or instructions */
+int     cflag = 0;		/* case conversion flag */
+int     hflag = 1;		/* flag for cleaning screen */
+int     mflag = 0;		/* backgammon flag */
+int     raflag = 0;		/* 'roll again' flag for recovered game */
+int     rflag = 0;		/* recovered game flag */
+int     iroll = 0;		/* special flag for inputting rolls */
+int     rfl = 0;
+
+const char   *const color[] = {"White", "Red", "white", "red"};
+
+
+const char	*const *Colorptr;
+const char	*const *colorptr;
+int	*inopp;
+int	*inptr;
+int	*offopp;
+int	*offptr;
+char	args[100];
+int	bar;
+int	begscr;
+int	board[26];
+char	cin[100];
+int	colen;
+int	cturn;
+int	d0;
+int	dice[2];
+int	dlast;
+int	g[5];
+int	gvalue;
+int	h[4];
+int	home;
+int	in[2];
+int	mvl;
+int	mvlim;
+int	ncin;
+int	off[2];
+int	p[5];
+int	rscore;
+int	table[6][6];
+int	wscore;

@@ -1,3 +1,5 @@
+/*	$OpenBSD: crunchide.c,v 1.13 2001/05/11 14:08:19 art Exp $	*/
+
 /*
  * Copyright (c) 1994 University of Maryland
  * All Rights Reserved.
@@ -63,18 +65,35 @@
 #include <fcntl.h>
 #include <a.out.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/errno.h>
+#ifdef _NLIST_DO_ECOFF
+#include <sys/exec_ecoff.h>
+#endif
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+/*
+ * The alpha and mips based ports define _NLIST_DO_AOUT although it doesn't
+ * fully support a.out.
+ */
+#if defined(_NLIST_DO_AOUT) && !(defined(__alpha__) || defined(__mips__))
+#define DO_AOUT
+#endif
 
 char *pname = "crunchide";
 
 void usage(void);
 
-void add_to_keep_list(char *symbol);
-void add_file_to_keep_list(char *filename);
+void add_to_keep_list(char *);
+void add_file_to_keep_list(char *);
 
-void hide_syms(char *filename);
-
+void hide_syms(char *);
+#ifdef _NLIST_DO_ECOFF
+void ecoff_hide(int, char *);
+#endif
+#ifdef _NLIST_DO_ELF
+void elf_hide(int, char *);
+#endif
 
 int main(argc, argv)
 int argc;
@@ -84,7 +103,7 @@ char **argv;
 
     if(argc > 0) pname = argv[0];
 
-    while ((ch = getopt(argc, argv, "k:f:")) != EOF)
+    while ((ch = getopt(argc, argv, "k:f:")) != -1)
 	switch(ch) {
 	case 'k':
 	    add_to_keep_list(optarg);
@@ -135,7 +154,7 @@ void add_to_keep_list(char *symbol)
     if(curp && cmp == 0)
 	return;	/* already in table */
 
-    newp = (struct keep *) malloc(sizeof(struct keep));
+    newp = (struct keep *) calloc(1,sizeof(struct keep));
     if(newp) newp->sym = strdup(symbol);
     if(newp == NULL || newp->sym == NULL) {
 	fprintf(stderr, "%s: out of memory for keep list\n", pname);
@@ -192,11 +211,19 @@ struct nlist *symbase;
 
 /* is the symbol a global symbol defined in the current file? */
 #define IS_GLOBAL_DEFINED(sp) \
-                  (((sp)->n_type & N_EXT) && ((sp)->n_type & N_TYPE) != N_UNDF)
+		  (((sp)->n_type & N_EXT) && ((sp)->n_type & N_TYPE) != N_UNDF)
 
+#if defined(__sparc__) && !defined(__sparc64__)
 /* is the relocation entry dependent on a symbol? */
 #define IS_SYMBOL_RELOC(rp)   \
-                  ((rp)->r_extern||(rp)->r_baserel||(rp)->r_jmptable)
+	((rp)->r_extern || \
+	((rp)->r_type >= RELOC_BASE10 && (rp)->r_type <= RELOC_BASE22) || \
+	(rp)->r_type == RELOC_JMP_TBL)
+#else
+/* is the relocation entry dependent on a symbol? */
+#define IS_SYMBOL_RELOC(rp)   \
+		  ((rp)->r_extern||(rp)->r_baserel||(rp)->r_jmptable)
+#endif
 
 void check_reloc(char *filename, struct relocation_info *relp);
 
@@ -206,6 +233,8 @@ void hide_syms(char *filename)
     struct stat infstat;
     struct relocation_info *relp;
     struct nlist *symp;
+    char *buf;
+    u_char zero = 0;
 
     /*
      * Open the file and do some error checking.
@@ -228,23 +257,32 @@ void hide_syms(char *filename)
 	return;
     }
 
-    /*
-     * Read the entire file into memory.  XXX - Really, we only need to
-     * read the header and from TRELOFF to the end of the file.
-     */
-
-    if((aoutdata = (char *) malloc(infstat.st_size)) == NULL) {
-	fprintf(stderr, "%s: too big to read into memory\n", filename);
+    if((buf = mmap(NULL, infstat.st_size, PROT_READ|PROT_WRITE,
+		   MAP_FILE|MAP_SHARED, inf, 0)) == MAP_FAILED) {
+	fprintf(stderr, "%s: cannot map\n", filename);
 	close(inf);
 	return;
     }
 
-    if((rc = read(inf, aoutdata, infstat.st_size)) < infstat.st_size) {
-	fprintf(stderr, "%s: read error: %s\n", filename,
-		rc == -1? strerror(errno) : "short read");
-	close(inf);
+#ifdef _NLIST_DO_ELF
+    if(buf[0] == 0x7f && (buf[1] == 'E' || buf[1] == 'O') &&
+       buf[2] == 'L' && buf[3] == 'F') {
+	printf("processing elf/olf file\n");
+	elf_hide(inf, buf);
 	return;
     }
+#endif /* _NLIST_DO_ELF */
+
+#ifdef _NLIST_DO_ECOFF
+    if(!ECOFF_BADMAG((struct ecoff_exechdr *)buf)) {
+	printf("processing ecoff file\n");
+	ecoff_hide(inf, buf);
+	return;
+    }
+#endif /* _NLIST_DO_ECOFF */
+
+#ifdef DO_AOUT
+    aoutdata = buf;
 
     /*
      * Check the header and calculate offsets and sizes from it.
@@ -253,7 +291,8 @@ void hide_syms(char *filename)
     hdrp = (struct exec *) aoutdata;
 
     if(N_BADMAG(*hdrp)) {
-	fprintf(stderr, "%s: bad magic: not an a.out file\n", filename);
+	fprintf(stderr, "%s: bad magic: not an a.out, ecoff or elf  file\n",
+		filename);
 	close(inf);
 	return;
     }
@@ -280,8 +319,15 @@ void hide_syms(char *filename)
      */
 
     for(symp = symbase; symp < symbase + nsyms; symp++)
-	if(IS_GLOBAL_DEFINED(symp) && !in_keep_list(SYMSTR(symp)))
+	if(IS_GLOBAL_DEFINED(symp) && !in_keep_list(SYMSTR(symp))) {
+	    /*
+	     * XXX Our VM system has some problems, so
+	     * avoid the VM system....
+	     */
+	    lseek(inf, (off_t)((void *)&symp->n_type - (void *)buf), SEEK_SET);
+	    write(inf, &zero, sizeof zero);
 	    symp->n_type = 0;
+	}
 
     /*
      * Check whether the relocation entries reference any symbols that we
@@ -295,20 +341,13 @@ void hide_syms(char *filename)
     for(relp = datarel; relp < datarel + ndatarel; relp++)
 	check_reloc(filename, relp);
 
-    /*
-     * Write the .o file back out to disk.  XXX - Really, we only need to
-     * write the symbol table entries back out.
-     */
-    lseek(inf, 0, SEEK_SET);
-    if((rc = write(inf, aoutdata, infstat.st_size)) < infstat.st_size) {
-	fprintf(stderr, "%s: write error: %s\n", filename,
-		rc == -1? strerror(errno) : "short write");
-    }
-
+    msync(buf, infstat.st_size, MS_SYNC);
+    munmap(buf, infstat.st_size);
     close(inf);
+#endif /* DO_AOUT */
 }
 
-
+#ifdef DO_AOUT
 void check_reloc(char *filename, struct relocation_info *relp)
 {
     /* bail out if we zapped a symbol that is needed */
@@ -319,3 +358,4 @@ void check_reloc(char *filename, struct relocation_info *relp)
 	exit(1);
     }
 }
+#endif /* DO_AOUT */

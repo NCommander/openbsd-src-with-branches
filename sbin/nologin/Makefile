@@ -1,10 +1,6 @@
-#	$NetBSD: Makefile,v 1.4 1995/03/18 14:59:08 cgd Exp $
-#	@(#)Makefile	8.2 (Berkeley) 4/22/94
+#	$OpenBSD: Makefile,v 1.4 1996/12/08 14:37:24 downsj Exp $
 
+PROG=	nologin
 MAN=	nologin.8
-
-beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-	    ${.CURDIR}/nologin.sh ${DESTDIR}/sbin/nologin
 
 .include <bsd.prog.mk>

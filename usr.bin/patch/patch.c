@@ -1,13 +1,33 @@
+/*	$OpenBSD: patch.c,v 1.13 1999/12/04 01:01:06 provos Exp $	*/
+
 /* patch - a program to apply diffs to original files
  *
  * Copyright 1986, Larry Wall
  *
- * This program may be copied as long as you don't try to make any
- * money off of it, or pretend that you wrote it.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following condition
+ * is met:
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this condition and the following disclaimer.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * -C option added in 1998, original code by Marc Espie,
+ * based on FreeBSD behaviour
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: patch.c,v 1.2 1993/08/02 17:55:19 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: patch.c,v 1.13 1999/12/04 01:01:06 provos Exp $";
 #endif /* not lint */
 
 #include "INTERN.h"
@@ -34,13 +54,20 @@ void dump_line();
 bool patch_match();
 bool similar();
 void re_input();
+#ifdef __GNUC__
+void my_exit() __attribute__((noreturn));
+#else
 void my_exit();
+#endif
 
 /* TRUE if -E was specified on command line.  */
 static int remove_empty_files = FALSE;
 
 /* TRUE if -R was specified on command line.  */
 static int reverse_flag_specified = FALSE;
+
+/* TRUE if -C was specified on command line.  */
+bool check_only = FALSE;
 
 /* Apply a set of diffs as appropriate. */
 
@@ -56,6 +83,7 @@ char **argv;
     int hunk = 0;
     int failed = 0;
     int failtotal = 0;
+    int patch_seen = 0;
     int i;
 
     setbuf(stderr, serrbuf);
@@ -79,22 +107,30 @@ char **argv;
       TMPOUTNAME = (char *) malloc (tmpname_len);
       strcpy (TMPOUTNAME, tmpdir);
       strcat (TMPOUTNAME, "/patchoXXXXXX");
-      Mktemp(TMPOUTNAME);
+      if ((i = mkstemp(TMPOUTNAME)) < 0)
+	pfatal2("can't create %s", TMPOUTNAME);
+      Close(i);
 
       TMPINNAME = (char *) malloc (tmpname_len);
       strcpy (TMPINNAME, tmpdir);
       strcat (TMPINNAME, "/patchiXXXXXX");
-      Mktemp(TMPINNAME);
+      if ((i = mkstemp(TMPINNAME)) < 0)
+	pfatal2("can't create %s", TMPINNAME);
+      Close(i);
 
       TMPREJNAME = (char *) malloc (tmpname_len);
       strcpy (TMPREJNAME, tmpdir);
       strcat (TMPREJNAME, "/patchrXXXXXX");
-      Mktemp(TMPREJNAME);
+      if ((i = mkstemp(TMPREJNAME)) < 0)
+	pfatal2("can't create %s", TMPREJNAME);
+      Close(i);
 
       TMPPATNAME = (char *) malloc (tmpname_len);
       strcpy (TMPPATNAME, tmpdir);
       strcat (TMPPATNAME, "/patchpXXXXXX");
-      Mktemp(TMPPATNAME);
+      if ((i = mkstemp(TMPPATNAME)) < 0)
+	pfatal2("can't create %s", TMPPATNAME);
+      Close(i);
     }
 
     {
@@ -124,6 +160,7 @@ char **argv;
 	there_is_another_patch();
 	reinitialize_almost_everything()
     ) {					/* for each patch in patch file */
+	patch_seen = TRUE;
 
 	if (outname == Nullch)
 	    outname = savestr(filearg[0]);
@@ -268,19 +305,21 @@ char **argv;
 	    struct stat statbuf;
 	    char *realout = outname;
 
-	    if (move_file(TMPOUTNAME, outname) < 0) {
-		toutkeep = TRUE;
-		realout = TMPOUTNAME;
-		chmod(TMPOUTNAME, filemode);
-	    }
-	    else
-		chmod(outname, filemode);
+	    if (!check_only) {	
+		if (move_file(TMPOUTNAME, outname) < 0) {
+		    toutkeep = TRUE;
+		    realout = TMPOUTNAME;
+		    chmod(TMPOUTNAME, filemode);
+		}
+		else
+		    chmod(outname, filemode);
 
-	    if (remove_empty_files && stat(realout, &statbuf) == 0
-		&& statbuf.st_size == 0) {
-		if (verbose)
-		    say2("Removing %s (empty after patching).\n", realout);
-	        while (unlink(realout) >= 0) ; /* while is for Eunice.  */
+		if (remove_empty_files && stat(realout, &statbuf) == 0
+		    && statbuf.st_size == 0) {
+		    if (verbose)
+			say2("Removing %s (empty after patching).\n", realout);
+		    while (unlink(realout) >= 0) ; /* while is for Eunice.  */
+		}
 	    }
 	}
 	Fclose(rejfp);
@@ -288,10 +327,12 @@ char **argv;
 	if (failed) {
 	    failtotal += failed;
 	    if (!*rejname) {
-		Strcpy(rejname, outname);
+		if (strlcpy(rejname, outname, sizeof(rejname)) >= sizeof(rejname))
+		    fatal2("filename %s is too long\n", outname);
+		    
 #ifndef FLEXFILENAMES
 		{
-		    char *s = rindex(rejname,'/');
+		    char *s = strrchr(rejname,'/');
 
 		    if (!s)
 			s = rejname;
@@ -301,7 +342,8 @@ char **argv;
 			s[13] = '\0';
 		}
 #endif
-		Strcat(rejname, REJEXT);
+		if (strlcat(rejname, REJEXT, sizeof(rejname)) >= sizeof(rejname))
+		    fatal2("filename %s is too long\n", outname);
 	    }
 	    if (skip_rest_of_patch) {
 		say4("%d out of %d hunks ignored--saving rejects to %s\n",
@@ -311,12 +353,15 @@ char **argv;
 		say4("%d out of %d hunks failed--saving rejects to %s\n",
 		    failed, hunk, rejname);
 	    }
-	    if (move_file(TMPREJNAME, rejname) < 0)
+	    if (!check_only && move_file(TMPREJNAME, rejname) < 0)
 		trejkeep = TRUE;
 	}
 	set_signals(1);
     }
+    if (!patch_seen)
+    	failtotal++;
     my_exit(failtotal);
+    /* NOTREACHED */
 }
 
 /* Prepare to find the next patch to do in the patch file. */
@@ -367,6 +412,64 @@ nextarg()
     return *++Argv;
 }
 
+/* Module for handling of long options.  */
+
+struct option {
+    char *long_opt;
+    char short_opt;
+};
+
+int
+optcmp(a, b)
+    struct option *a, *b;
+{
+    return strcmp (a->long_opt, b->long_opt);
+}
+
+/* Decode Long options beginning with "--" to their short equivalents.  */
+
+char
+decode_long_option(opt)
+    char *opt;
+{
+    /* This table must be sorted on the first field.  We also decode
+       unimplemented options as those will be handled later anyway.  */
+    static struct option options[] = {
+      { "batch",		't' },
+      { "check",		'C' },
+      { "context",		'c' },
+      { "debug",		'x' },
+      { "directory",		'd' },
+      { "ed",			'e' },
+      { "force",		'f' },
+      { "forward",		'N' },
+      { "fuzz",			'F' },
+      { "ifdef",		'D' },
+      { "ignore-whitespace",	'l' },
+      { "normal",		'n' },
+      { "output",		'o' },
+      { "prefix",		'B' },
+      { "quiet",		's' },
+      { "reject-file",		'r' },
+      { "remove-empty-files",	'E' },
+      { "reverse",		'R' },
+      { "silent",		's' },
+      { "skip",			'S' },
+      { "strip",		'p' },
+      { "suffix",		'b' },
+      { "unified",		'u' },
+      { "version",		'v' },
+      { "version-control",	'V' },
+    };
+    struct option key, *found;
+
+    key.long_opt = opt;
+    found = (struct option *)bsearch(&key, options,
+				     sizeof(options) / sizeof(options[0]),
+				     sizeof(options[0]), optcmp);
+    return found ? found->short_opt : '\0';
+}
+
 /* Process switches and filenames up to next '+' or end of list. */
 
 void
@@ -390,7 +493,15 @@ get_some_switches()
 	    filearg[filec++] = savestr(s);
 	}
 	else {
-	    switch (*++s) {
+	    char opt;
+
+	    if (*(s + 1) == '-') {
+	        opt = decode_long_option(s + 2);
+		s += strlen(s) - 1;
+	    }
+	    else
+	        opt = *++s;
+	    switch (opt) {
 	    case 'b':
 		simple_backup_suffix = savestr(nextarg());
 		break;
@@ -399,6 +510,9 @@ get_some_switches()
 		break;
 	    case 'c':
 		diff_type = CONTEXT_DIFF;
+		break;
+	    case 'C':
+	    	check_only = TRUE;
 		break;
 	    case 'd':
 		if (!*++s)
@@ -412,9 +526,9 @@ get_some_switches()
 		    s = nextarg();
 		if (!isalpha(*s) && '_' != *s)
 		    fatal1("argument to -D is not an identifier\n");
-		Sprintf(if_defined, "#ifdef %s\n", s);
-		Sprintf(not_defined, "#ifndef %s\n", s);
-		Sprintf(end_defined, "#endif /* %s */\n", s);
+		Snprintf(if_defined, sizeof if_defined, "#ifdef %s\n", s);
+		Snprintf(not_defined, sizeof not_defined, "#ifndef %s\n", s);
+		Snprintf(end_defined, sizeof end_defined, "#endif /* %s */\n", s);
 		break;
 	    case 'e':
 		diff_type = ED_DIFF;
@@ -426,7 +540,9 @@ get_some_switches()
 		force = TRUE;
 		break;
 	    case 'F':
-		if (*++s == '=')
+		if (!*++s)
+		    s = nextarg();
+		else if (*s == '=')
 		    s++;
 		maxfuzz = atoi(s);
 		break;
@@ -443,12 +559,15 @@ get_some_switches()
 		outname = savestr(nextarg());
 		break;
 	    case 'p':
-		if (*++s == '=')
+		if (!*++s)
+		    s = nextarg();
+		else if (*s == '=')
 		    s++;
 		strippath = atoi(s);
 		break;
 	    case 'r':
-		Strcpy(rejname, nextarg());
+		if (strlcpy(rejname, nextarg(), sizeof(rejname)) >= sizeof(rejname))
+		    fatal1("argument for -r is too long\n");
 		break;
 	    case 'R':
 		reverse = TRUE;
@@ -476,7 +595,9 @@ get_some_switches()
 		break;
 #ifdef DEBUGGING
 	    case 'x':
-		debug = atoi(s+1);
+		if (!*++s)
+		    s = nextarg();
+		debug = atoi(s);
 		break;
 #endif
 	    default:
@@ -484,7 +605,7 @@ get_some_switches()
 		fprintf(stderr, "\
 Usage: patch [options] [origfile [patchfile]] [+ [options] [origfile]]...\n\
 Options:\n\
-       [-ceEflnNRsStuv] [-b backup-ext] [-B backup-prefix] [-d directory]\n\
+       [-cCeEflnNRsStuv] [-b backup-ext] [-B backup-prefix] [-d directory]\n\
        [-D symbol] [-Fmax-fuzz] [-o out-file] [-p[strip-count]]\n\
        [-r rej-name] [-V {numbered,existing,simple}]\n");
 		my_exit(1);

@@ -1,3 +1,5 @@
+/*	$OpenBSD: screen.c,v 1.7 2001/01/29 01:58:04 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -107,6 +109,7 @@ static char
 	*sc_deinit;		/* Exit terminal de-initialization */
 
 static int init_done = 0;
+static int tty_fd = -1;
 
 public int auto_wrap;		/* Terminal does \r\n when write past margin */
 public int ignaw;		/* Terminal ignores \n immediately after wrap */
@@ -136,6 +139,8 @@ extern int know_dumb;		/* Don't complain about a dumb terminal */
 extern int back_scroll;
 extern int swindow;
 extern int no_init;
+extern int quit_at_eof;
+extern int more_mode;
 #if HILITE_SEARCH
 extern int hilite_search;
 #endif
@@ -163,6 +168,10 @@ raw_mode(on)
 
 	if (on == curr_on)
 		return;
+
+	if (tty_fd == -1 && (tty_fd = open("/dev/tty", O_RDWR)) < 0)
+		tty_fd = 2;
+
 #if OS2
 	signal(SIGINT, SIG_IGN);
 	erase_char = '\b';
@@ -178,7 +187,8 @@ raw_mode(on)
 		/*
 		 * Get terminal modes.
 		 */
-		tcgetattr(2, &s);
+		if (tcgetattr(tty_fd, &s) == -1)
+			return;
 
 		/*
 		 * Save modes and set certain variables dependent on modes.
@@ -316,7 +326,8 @@ raw_mode(on)
 		 */
 		s = save_term;
 	}
-	tcsetattr(2, TCSADRAIN, &s);
+	if (tcsetattr(tty_fd, TCSANOW, &s) == -1)
+		return;
     }
 #else
 #ifdef TCGETA
@@ -329,7 +340,7 @@ raw_mode(on)
 		/*
 		 * Get terminal modes.
 		 */
-		ioctl(2, TCGETA, &s);
+		ioctl(tty_fd, TCGETA, &s);
 
 		/*
 		 * Save modes and set certain variables dependent on modes.
@@ -361,7 +372,7 @@ raw_mode(on)
 		 */
 		s = save_term;
 	}
-	ioctl(2, TCSETAW, &s);
+	ioctl(tty_fd, TCSETAW, &s);
     }
 #else
     {
@@ -373,7 +384,7 @@ raw_mode(on)
 		/*
 		 * Get terminal modes.
 		 */
-		ioctl(2, TIOCGETP, &s);
+		ioctl(tty_fd, TIOCGETP, &s);
 
 		/*
 		 * Save modes and set certain variables dependent on modes.
@@ -398,7 +409,7 @@ raw_mode(on)
 		 */
 		s = save_term;
 	}
-	ioctl(2, TIOCSETN, &s);
+	ioctl(tty_fd, TIOCSETN, &s);
     }
 #endif
 #endif
@@ -412,9 +423,10 @@ cannot(s)
 {
 	PARG parg;
 
-	if (know_dumb)
+	if (know_dumb || more_mode)
 		/* 
 		 * User knows this is a dumb terminal, so don't tell him.
+		 * more doesn't complain about these, either.
 		 */
 		return;
 
@@ -441,7 +453,7 @@ scrsize()
 	public void
 scrsize()
 {
-	register char *s;
+	char *s;
 #ifdef TIOCGWINSZ
 	struct winsize w;
 #else
@@ -450,13 +462,16 @@ scrsize()
 #endif
 #endif
 
+	if (tty_fd == -1 && (tty_fd = open("/dev/tty", O_RDWR)) < 0)
+		tty_fd = 2;
+
 #ifdef TIOCGWINSZ
-	if (ioctl(2, TIOCGWINSZ, &w) == 0 && w.ws_row > 0)
+	if (ioctl(tty_fd, TIOCGWINSZ, &w) == 0 && w.ws_row > 0)
 		sc_height = w.ws_row;
 	else
 #else
 #ifdef WIOCGETD
-	if (ioctl(2, WIOCGETD, &w) == 0 && w.uw_height > 0)
+	if (ioctl(tty_fd, WIOCGETD, &w) == 0 && w.uw_height > 0)
 		sc_height = w.uw_height/w.uw_vs;
 	else
 #endif
@@ -470,11 +485,11 @@ scrsize()
 		sc_height = 24;
 
 #ifdef TIOCGWINSZ
- 	if (ioctl(2, TIOCGWINSZ, &w) == 0 && w.ws_col > 0)
+ 	if (ioctl(tty_fd, TIOCGWINSZ, &w) == 0 && w.ws_col > 0)
 		sc_width = w.ws_col;
 	else
 #ifdef WIOCGETD
-	if (ioctl(2, WIOCGETD, &w) == 0 && w.uw_width > 0)
+	if (ioctl(tty_fd, WIOCGETD, &w) == 0 && w.uw_width > 0)
 		sc_width = w.uw_width/w.uw_hs;
 	else
 #endif
@@ -658,8 +673,8 @@ get_debug_term()
 get_term()
 {
 	char *sp;
-	register char *t1, *t2;
-	register int hard;
+	char *t1, *t2;
+	int hard;
 	char *term;
 	char termbuf[2048];
 
@@ -755,11 +770,17 @@ get_term()
 	if (sc_e_keypad == NULL)
 		sc_e_keypad = "";
 		
-	sc_init = tgetstr("ti", &sp);
+	/*
+	 * This loses for terminals with termcap entries with ti/te strings
+	 * that switch to/from an alternate screen, and we're in quit_at_eof
+	 * (eg, more(1)).
+	 */
+	if (!quit_at_eof && !more_mode) {
+		sc_init = tgetstr("ti", &sp);
+		sc_deinit = tgetstr("te", &sp);
+	}
 	if (sc_init == NULL)
 		sc_init = "";
-
-	sc_deinit= tgetstr("te", &sp);
 	if (sc_deinit == NULL)
 		sc_deinit = "";
 

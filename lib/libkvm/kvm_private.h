@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_private.h,v 1.5 2001/05/18 09:08:38 art Exp $ */
+/*	$NetBSD: kvm_private.h,v 1.7 1996/05/05 04:32:15 gwr Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -59,13 +62,23 @@ struct __kvm {
 	int	arglen;		/* length of the above */
 	char	**argv;		/* (dynamic) storage for argv pointers */
 	int	argc;		/* length of above (not actual # present) */
+
+	/*
+	 * Header structures for kernel dumps. Only gets filled in for
+	 * dead kernels.
+	 */
+	struct kcore_hdr	*kcore_hdr;
+	size_t	cpu_dsize;
+	void	*cpu_data;
+	off_t	dump_off;	/* Where the actual dump starts	*/
+
 	/*
 	 * Kernel virtual address translation state.  This only gets filled
 	 * in for dead kernels; otherwise, the running kernel (i.e. kmem)
 	 * will do the translations for us.  It could be big, so we
 	 * only allocate it if necessary.
 	 */
-	struct vmstate *vmst;
+	struct vmstate *vmst; /* XXX: should become obsoleted */
 	/*
 	 * These kernel variables are used for looking up user addresses,
 	 * and are cached for efficiency.
@@ -77,12 +90,18 @@ struct __kvm {
 /*
  * Functions used internally by kvm, but across kvm modules.
  */
-void	 _kvm_err __P((kvm_t *kd, const char *program, const char *fmt, ...));
-void	 _kvm_freeprocs __P((kvm_t *kd));
-void	 _kvm_freevtop __P((kvm_t *));
-int	 _kvm_initvtop __P((kvm_t *));
-int	 _kvm_kvatop __P((kvm_t *, u_long, u_long *));
-void	*_kvm_malloc __P((kvm_t *kd, size_t));
-void	*_kvm_realloc __P((kvm_t *kd, void *, size_t));
+void	 _kvm_err(kvm_t *kd, const char *program, const char *fmt, ...);
+int	 _kvm_dump_mkheader(kvm_t *kd_live, kvm_t *kd_dump);
+void	 _kvm_freeprocs(kvm_t *kd);
+void	 _kvm_freevtop(kvm_t *);
+int	 _kvm_initvtop(kvm_t *);
+int	 _kvm_kvatop(kvm_t *, u_long, u_long *);
+void	*_kvm_malloc(kvm_t *kd, size_t);
+off_t	 _kvm_pa2off(kvm_t *, u_long);
+void	*_kvm_realloc(kvm_t *kd, void *, size_t);
 void	 _kvm_syserr
-	    __P((kvm_t *kd, const char *program, const char *fmt, ...));
+(kvm_t *kd, const char *program, const char *fmt, ...);
+ssize_t	_kvm_pread
+(kvm_t *, int, void *, size_t, off_t);
+ssize_t	_kvm_pwrite
+(kvm_t *, int, void *, size_t, off_t);

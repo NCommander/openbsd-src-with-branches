@@ -1,3 +1,4 @@
+/*	$OpenBSD: tetris.h,v 1.5 2000/01/03 23:22:45 pjanzen Exp $	*/
 /*	$NetBSD: tetris.h,v 1.2 1995/04/22 07:42:48 cgd Exp $	*/
 
 /*-
@@ -58,7 +59,7 @@
 #define	B_SIZE	(B_ROWS * B_COLS)
 
 typedef unsigned char cell;
-cell	board[B_SIZE];		/* 1 => occupied, 0 => empty */
+extern cell	board[B_SIZE];	/* 1 => occupied, 0 => empty */
 
 	/* the displayed area (rows) */
 #define	D_FIRST	1
@@ -74,7 +75,7 @@ cell	board[B_SIZE];		/* 1 => occupied, 0 => empty */
 #define	MINROWS	23
 #define	MINCOLS	40
 
-int	Rows, Cols;		/* current screen size */
+extern int	Rows, Cols;	/* current screen size */
 
 /*
  * Translations from board coordinates to display coordinates.
@@ -130,7 +131,9 @@ struct shape {
 };
 
 extern struct shape shapes[];
-#define	randshape() (&shapes[random() % 7])
+
+extern struct shape *curshape;
+extern struct shape *nextshape;
 
 /*
  * Shapes fall at a rate faster than once per second.
@@ -142,7 +145,7 @@ extern struct shape shapes[];
  * The value eventually reaches a limit, and things stop going faster,
  * but by then the game is utterly impossible.
  */
-long	fallrate;		/* less than 1 million; smaller => faster */
+extern long	fallrate;	/* less than 1 million; smaller => faster */
 #define	faster() (fallrate -= fallrate / 3000)
 
 /*
@@ -161,11 +164,17 @@ long	fallrate;		/* less than 1 million; smaller => faster */
  * and we score a point for each row it falls (plus one more as soon as
  * we find that it is at rest and integrate it---until then, it can
  * still be moved or rotated).
+ *
+ * If previewing has been turned on, the score is multiplied by PRE_PENALTY.
  */
-int	score;			/* the obvious thing */
+#define PRE_PENALTY 0.75
 
-char	key_msg[100];
+extern int	score;		/* the obvious thing */
+extern gid_t	gid, egid;
 
-int	fits_in __P((struct shape *, int));
-void	place __P((struct shape *, int, int));
-void	stop __P((char *));
+extern char	key_msg[100];
+extern int	showpreview;
+
+int	fits_in(struct shape *, int);
+void	place(struct shape *, int, int);
+void	stop(char *);

@@ -1,5 +1,3 @@
-/*	$NetBSD: svc_tcp.c,v 1.6 1995/06/03 22:37:27 mycroft Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_tcp.c 1.21 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_tcp.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_tcp.c,v 1.6 1995/06/03 22:37:27 mycroft Exp $";
-#endif
+static char *rcsid = "$OpenBSD: svc_tcp.c,v 1.20 2001/09/15 13:51:01 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * svc_tcp.c, Server side for TCP/IP based RPC. 
@@ -48,9 +44,15 @@ static char *rcsid = "$NetBSD: svc_tcp.c,v 1.6 1995/06/03 22:37:27 mycroft Exp $
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <errno.h>
+
+#include <netinet/in_systm.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/ip_var.h>
 
 /*
  * Ops vector for TCP/IP based rpc service handle
@@ -80,9 +82,9 @@ static enum xprt_stat	rendezvous_stat();
 static struct xp_ops svctcp_rendezvous_op = {
 	rendezvous_request,
 	rendezvous_stat,
-	(bool_t (*)())abort,
-	(bool_t (*)())abort,
-	(bool_t (*)())abort,
+	(bool_t (*)())abort,	/* XXX abort illegal in library */
+	(bool_t (*)())abort,	/* XXX abort illegal in library */
+	(bool_t (*)())abort,	/* XXX abort illegal in library */
 	svctcp_destroy
 };
 
@@ -123,13 +125,13 @@ struct tcp_conn {  /* kept in xprt->xp_p1 */
  */
 SVCXPRT *
 svctcp_create(sock, sendsize, recvsize)
-	register int sock;
+	int sock;
 	u_int sendsize;
 	u_int recvsize;
 {
 	bool_t madesock = FALSE;
-	register SVCXPRT *xprt;
-	register struct tcp_rendezvous *r;
+	SVCXPRT *xprt;
+	struct tcp_rendezvous *r;
 	struct sockaddr_in addr;
 	int len = sizeof(struct sockaddr_in);
 
@@ -151,19 +153,24 @@ svctcp_create(sock, sendsize, recvsize)
 	    (listen(sock, 2) != 0)) {
 		perror("svctcp_.c - cannot getsockname or listen");
 		if (madesock)
-		       (void)close(sock);
+			(void)close(sock);
 		return ((SVCXPRT *)NULL);
 	}
 	r = (struct tcp_rendezvous *)mem_alloc(sizeof(*r));
 	if (r == NULL) {
-		(void) fprintf(stderr, "svctcp_create: out of memory\n");
+		(void)fprintf(stderr, "svctcp_create: out of memory\n");
+		if (madesock)
+			(void)close(sock);
 		return (NULL);
 	}
 	r->sendsize = sendsize;
 	r->recvsize = recvsize;
 	xprt = (SVCXPRT *)mem_alloc(sizeof(SVCXPRT));
 	if (xprt == NULL) {
-		(void) fprintf(stderr, "svctcp_create: out of memory\n");
+		(void)fprintf(stderr, "svctcp_create: out of memory\n");
+		if (madesock)
+			(void)close(sock);
+		free(r);
 		return (NULL);
 	}
 	xprt->xp_p2 = NULL;
@@ -172,7 +179,13 @@ svctcp_create(sock, sendsize, recvsize)
 	xprt->xp_ops = &svctcp_rendezvous_op;
 	xprt->xp_port = ntohs(addr.sin_port);
 	xprt->xp_sock = sock;
-	xprt_register(xprt);
+	if (__xprt_register(xprt) == 0) {
+		if (madesock)
+			(void)close(sock);
+		free(r);
+		free(xprt);
+		return (NULL);
+	}
 	return (xprt);
 }
 
@@ -196,8 +209,8 @@ makefd_xprt(fd, sendsize, recvsize)
 	u_int sendsize;
 	u_int recvsize;
 {
-	register SVCXPRT *xprt;
-	register struct tcp_conn *cd;
+	SVCXPRT *xprt;
+	struct tcp_conn *cd;
  
 	xprt = (SVCXPRT *)mem_alloc(sizeof(SVCXPRT));
 	if (xprt == (SVCXPRT *)NULL) {
@@ -221,14 +234,18 @@ makefd_xprt(fd, sendsize, recvsize)
 	xprt->xp_ops = &svctcp_op;  /* truely deals with calls */
 	xprt->xp_port = 0;  /* this is a connection, not a rendezvouser */
 	xprt->xp_sock = fd;
-	xprt_register(xprt);
+	if (__xprt_register(xprt) == 0) {
+		free(xprt);
+		free(cd);
+		return (NULL);
+	}
     done:
 	return (xprt);
 }
 
 static bool_t
 rendezvous_request(xprt)
-	register SVCXPRT *xprt;
+	SVCXPRT *xprt;
 {
 	int sock;
 	struct tcp_rendezvous *r;
@@ -244,6 +261,39 @@ rendezvous_request(xprt)
 			goto again;
 	       return (FALSE);
 	}
+
+#ifdef IP_OPTIONS
+	{
+		struct ipoption opts;
+		int optsize = sizeof(opts), i;
+
+		if (!getsockopt(sock, IPPROTO_IP, IP_OPTIONS, (char *)&opts,
+		    &optsize) && optsize != 0) {
+			for (i = 0; (char *)&opts.ipopt_list[i] - (char *)&opts <
+			    optsize; ) {	
+				u_char c = (u_char)opts.ipopt_list[i];
+				if (c == IPOPT_LSRR || c == IPOPT_SSRR) {
+					close(sock);
+					return (FALSE);
+				}
+				if (c == IPOPT_EOL)
+					break;
+				i += (c == IPOPT_NOP) ? 1 :
+				    (u_char)opts.ipopt_list[i+1];
+			}
+		}
+	}
+#endif
+
+	/*
+	 * XXX careful for ftp bounce attacks. If discovered, close the
+	 * socket and look for another connection.
+	 */
+	if (addr.sin_port == htons(20)) {
+		close(sock);
+		return (FALSE);
+	}
+
 	/*
 	 * make a new transporter (re-uses xprt)
 	 */
@@ -262,12 +312,14 @@ rendezvous_stat()
 
 static void
 svctcp_destroy(xprt)
-	register SVCXPRT *xprt;
+	SVCXPRT *xprt;
 {
-	register struct tcp_conn *cd = (struct tcp_conn *)xprt->xp_p1;
+	struct tcp_conn *cd = (struct tcp_conn *)xprt->xp_p1;
 
 	xprt_unregister(xprt);
-	(void)close(xprt->xp_sock);
+	if (xprt->xp_sock != -1)
+		(void)close(xprt->xp_sock);
+	xprt->xp_sock = -1;
 	if (xprt->xp_port != 0) {
 		/* a rendezvouser socket */
 		xprt->xp_port = 0;
@@ -292,31 +344,68 @@ static struct timeval wait_per_try = { 35, 0 };
  */
 static int
 readtcp(xprt, buf, len)
-	register SVCXPRT *xprt;
+	SVCXPRT *xprt;
 	caddr_t buf;
-	register int len;
+	int len;
 {
-	register int sock = xprt->xp_sock;
-	fd_set mask;
-	fd_set readfds;
+	int sock = xprt->xp_sock;
+	struct timeval start, delta;
+	struct timeval tmp1, tmp2;
+	fd_set *fds = NULL;
+	int prevbytes = 0, bytes;
+	extern int __svc_fdsetsize;
+	extern fd_set *__svc_fdset;
 
-	FD_ZERO(&mask);
-	FD_SET(sock, &mask);
+	delta = wait_per_try;
+	gettimeofday(&start, NULL);
 	do {
-		readfds = mask;
-		if (select(sock+1, &readfds, (int*)NULL, (int*)NULL, 
-			   &wait_per_try) <= 0) {
-			if (errno == EINTR) {
+		bytes = howmany(__svc_fdsetsize, NFDBITS) * sizeof(fd_mask);
+		if (bytes != prevbytes) {
+			if (fds)
+				free(fds);
+			fds = (fd_set *)malloc(bytes);
+			prevbytes = bytes;
+		}
+		if (fds == NULL)
+			goto fatal_err;
+		memcpy(fds, __svc_fdset, bytes);
+
+		FD_SET(sock, fds);
+		switch (select(svc_maxfd+1, fds, NULL, NULL, &delta)) {
+		case -1:
+			if (errno != EINTR)
+				goto fatal_err;
+			gettimeofday(&tmp1, NULL);
+			timersub(&tmp1, &start, &tmp2);
+			timersub(&wait_per_try, &tmp2, &tmp1);
+			if (tmp1.tv_sec < 0 || !timerisset(&tmp1))
+				goto fatal_err;
+			delta = tmp1;
+			continue;
+		case 0:
+			goto fatal_err;
+		default:
+			if (!FD_ISSET(sock, fds)) {
+				svc_getreqset2(fds, svc_maxfd+1);
+				gettimeofday(&tmp1, NULL);
+				timersub(&tmp1, &start, &tmp2);
+				timersub(&wait_per_try, &tmp2, &tmp1);
+				if (tmp1.tv_sec < 0 || !timerisset(&tmp1))
+					goto fatal_err;
+				delta = tmp1;
 				continue;
 			}
-			goto fatal_err;
 		}
-	} while (!FD_ISSET(sock, &readfds));
+	} while (!FD_ISSET(sock, fds));
 	if ((len = read(sock, buf, len)) > 0) {
+		if (fds)
+			free(fds);
 		return (len);
 	}
 fatal_err:
 	((struct tcp_conn *)(xprt->xp_p1))->strm_stat = XPRT_DIED;
+	if (fds)
+		free(fds);
 	return (-1);
 }
 
@@ -326,11 +415,11 @@ fatal_err:
  */
 static int
 writetcp(xprt, buf, len)
-	register SVCXPRT *xprt;
+	SVCXPRT *xprt;
 	caddr_t buf;
 	int len;
 {
-	register int i, cnt;
+	int i, cnt;
 
 	for (cnt = len; cnt > 0; cnt -= i, buf += i) {
 		if ((i = write(xprt->xp_sock, buf, cnt)) < 0) {
@@ -346,7 +435,7 @@ static enum xprt_stat
 svctcp_stat(xprt)
 	SVCXPRT *xprt;
 {
-	register struct tcp_conn *cd =
+	struct tcp_conn *cd =
 	    (struct tcp_conn *)(xprt->xp_p1);
 
 	if (cd->strm_stat == XPRT_DIED)
@@ -359,11 +448,11 @@ svctcp_stat(xprt)
 static bool_t
 svctcp_recv(xprt, msg)
 	SVCXPRT *xprt;
-	register struct rpc_msg *msg;
+	struct rpc_msg *msg;
 {
-	register struct tcp_conn *cd =
+	struct tcp_conn *cd =
 	    (struct tcp_conn *)(xprt->xp_p1);
-	register XDR *xdrs = &(cd->xdrs);
+	XDR *xdrs = &(cd->xdrs);
 
 	xdrs->x_op = XDR_DECODE;
 	(void)xdrrec_skiprecord(xdrs);
@@ -371,6 +460,7 @@ svctcp_recv(xprt, msg)
 		cd->x_id = msg->rm_xid;
 		return (TRUE);
 	}
+	cd->strm_stat = XPRT_DIED;	/* XXX */
 	return (FALSE);
 }
 
@@ -390,7 +480,7 @@ svctcp_freeargs(xprt, xdr_args, args_ptr)
 	xdrproc_t xdr_args;
 	caddr_t args_ptr;
 {
-	register XDR *xdrs =
+	XDR *xdrs =
 	    &(((struct tcp_conn *)(xprt->xp_p1))->xdrs);
 
 	xdrs->x_op = XDR_FREE;
@@ -400,12 +490,12 @@ svctcp_freeargs(xprt, xdr_args, args_ptr)
 static bool_t
 svctcp_reply(xprt, msg)
 	SVCXPRT *xprt;
-	register struct rpc_msg *msg;
+	struct rpc_msg *msg;
 {
-	register struct tcp_conn *cd =
+	struct tcp_conn *cd =
 	    (struct tcp_conn *)(xprt->xp_p1);
-	register XDR *xdrs = &(cd->xdrs);
-	register bool_t stat;
+	XDR *xdrs = &(cd->xdrs);
+	bool_t stat;
 
 	xdrs->x_op = XDR_ENCODE;
 	msg->rm_xid = cd->x_id;

@@ -1,4 +1,5 @@
-/*	$NetBSD: nfsd.c,v 1.17 1995/05/28 05:31:45 jtc Exp $	*/
+/*	$OpenBSD: nfsd.c,v 1.15 2001/08/12 12:03:02 heko Exp $	*/
+/*	$NetBSD: nfsd.c,v 1.19 1996/02/18 23:18:56 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -40,18 +41,17 @@
 static char copyright[] =
 "@(#) Copyright (c) 1989, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n";
-#endif not lint
+#endif /* not lint */
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)nfsd.c	8.7 (Berkeley) 2/22/94";
+static char sccsid[] = "@(#)nfsd.c	8.9 (Berkeley) 3/29/95";
 #else
-static char rcsid[] = "$NetBSD: nfsd.c,v 1.17 1995/05/28 05:31:45 jtc Exp $";
+static char rcsid[] = "$NetBSD: nfsd.c,v 1.19 1996/02/18 23:18:56 mycroft Exp $";
 #endif
-#endif not lint
+#endif /* not lint */
 
 #include <sys/param.h>
-#include <syslog.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -69,11 +69,11 @@ static char rcsid[] = "$NetBSD: nfsd.c,v 1.17 1995/05/28 05:31:45 jtc Exp $";
 #include <netiso/iso.h>
 #endif
 #include <nfs/rpcv2.h>
-#include <nfs/nfsv2.h>
+#include <nfs/nfsproto.h>
 #include <nfs/nfs.h>
 
-#ifdef KERBEROS
-#include <kerberosIV/des.h>
+#ifdef NFSKERB
+#include <des.h>
 #include <kerberosIV/krb.h>
 #endif
 
@@ -85,7 +85,8 @@ static char rcsid[] = "$NetBSD: nfsd.c,v 1.17 1995/05/28 05:31:45 jtc Exp $";
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
+#include <syslog.h>
 #include <unistd.h>
 
 /* Global defs */
@@ -98,16 +99,21 @@ int	debug = 0;
 
 struct	nfsd_srvargs nsd;
 
-#ifdef KERBEROS
+#ifdef NFSKERB
 char		lnam[ANAME_SZ];
 KTEXT_ST	kt;
-AUTH_DAT	auth;
+AUTH_DAT	kauth;
 char		inst[INST_SZ];
+struct nfsrpc_fullblock kin, kout;
+struct nfsrpc_fullverf kverf;
+NFSKERBKEY_T	kivec;
+struct timeval	ktv;
+NFSKERBKEYSCHED_T kerb_keysched;
 #endif
 
-void	nonfs __P((int));
-void	reapchild __P((int));
-void	usage __P((void));
+void	nonfs(int);
+void	reapchild(int);
+void	usage(void);
 
 /*
  * Nfs server daemon mostly just a user context for nfssvc()
@@ -133,26 +139,29 @@ main(argc, argv, envp)
 	int argc;
 	char *argv[], *envp[];
 {
-	extern int optind;
-	struct group *grp;
 	struct nfsd_args nfsdargs;
-	struct passwd *pwd;
-	struct ucred *cr;
 	struct sockaddr_in inetaddr, inetpeer;
 #ifdef ISO
 	struct sockaddr_iso isoaddr, isopeer;
 #endif
 	fd_set ready, sockbits;
-	int ch, cltpflag, connect_type_cnt, i, len, maxsock, msgsock;
+	int ch, cltpflag, connect_type_cnt, i, len, maxsock = 0, msgsock;
 	int nfsdcnt, nfssvc_flag, on, reregister, sock, tcpflag, tcpsock;
-	int tp4cnt, tp4flag, tp4sock, tpipcnt, tpipflag, tpipsock, udpflag;
+	int tp4cnt, tpipcnt, udpflag;
+#ifdef NFSKERB
+	struct ucred *cr;
 	char *cp, **cpp;
+	int tpipflag = 0, tp4flag = 0, tpipsock = 0, tp4sock;
+	struct timeval ktv;
+	struct passwd *pwd;
+	struct group *grp;
+#endif
 
 #define	MAXNFSDCNT	20
 #define	DEFNFSDCNT	 4
 	nfsdcnt = DEFNFSDCNT;
-	cltpflag = reregister = tcpflag = tp4cnt = tp4flag = tpipcnt = 0;
-	tpipflag = udpflag = 0;
+	cltpflag = reregister = tcpflag = tp4cnt = tpipcnt = 0;
+	tcpsock = udpflag = 0;
 #ifdef ISO
 #define	GETOPT	"cn:rtu"
 #define	USAGE	"[-crtu] [-n num_servers]"
@@ -160,12 +169,13 @@ main(argc, argv, envp)
 #define	GETOPT	"n:rtu"
 #define	USAGE	"[-rtu] [-n num_servers]"
 #endif
-	while ((ch = getopt(argc, argv, GETOPT)) != EOF)
+	while ((ch = getopt(argc, argv, GETOPT)) != -1)
 		switch (ch) {
 		case 'n':
 			nfsdcnt = atoi(optarg);
 			if (nfsdcnt < 1 || nfsdcnt > MAXNFSDCNT) {
-				warnx("nfsd count %d; reset to %d", DEFNFSDCNT);
+				warnx("nfsd count %d; reset to %d",
+				    nfsdcnt, DEFNFSDCNT);
 				nfsdcnt = DEFNFSDCNT;
 			}
 			break;
@@ -207,7 +217,8 @@ main(argc, argv, envp)
 	if (argc == 1) {
 		nfsdcnt = atoi(argv[0]);
 		if (nfsdcnt < 1 || nfsdcnt > MAXNFSDCNT) {
-			warnx("nfsd count %d; reset to %d", DEFNFSDCNT);
+			warnx("nfsd count %d; reset to %d",
+			    nfsdcnt, DEFNFSDCNT);
 			nfsdcnt = DEFNFSDCNT;
 		}
 	}
@@ -218,18 +229,19 @@ main(argc, argv, envp)
 		(void)signal(SIGINT, SIG_IGN);
 		(void)signal(SIGQUIT, SIG_IGN);
 		(void)signal(SIGSYS, nonfs);
-		(void)signal(SIGTERM, SIG_IGN);
 	}
 	(void)signal(SIGCHLD, reapchild);
 
 	if (reregister) {
 		if (udpflag &&
-		    !pmap_set(RPCPROG_NFS, NFS_VER2, IPPROTO_UDP, NFS_PORT))
+		    (!pmap_set(RPCPROG_NFS, 2, IPPROTO_UDP, NFS_PORT) ||
+		     !pmap_set(RPCPROG_NFS, 3, IPPROTO_UDP, NFS_PORT)))
 			err(1, "can't register with portmap for UDP.");
 		if (tcpflag &&
-		    !pmap_set(RPCPROG_NFS, NFS_VER2, IPPROTO_TCP, NFS_PORT))
+		    (!pmap_set(RPCPROG_NFS, 2, IPPROTO_TCP, NFS_PORT) ||
+		     !pmap_set(RPCPROG_NFS, 3, IPPROTO_TCP, NFS_PORT)))
 			err(1, "can't register with portmap for TCP.");
-		exit(0);
+		return (0);
 	}
 	openlog("nfsd:", LOG_PID, LOG_DAEMON);
 
@@ -237,7 +249,7 @@ main(argc, argv, envp)
 		switch (fork()) {
 		case -1:
 			syslog(LOG_ERR, "fork: %m");
-			exit (1);
+			return (1);
 		case 0:
 			break;
 		default:
@@ -247,23 +259,42 @@ main(argc, argv, envp)
 		setproctitle("server");
 		nfssvc_flag = NFSSVC_NFSD;
 		nsd.nsd_nfsd = NULL;
-#ifdef KERBEROS
-		nsd.nsd_authstr = (char *)kt.dat;
+#ifdef NFSKERB
+		if (sizeof (struct nfsrpc_fullverf) != RPCX_FULLVERF ||
+		    sizeof (struct nfsrpc_fullblock) != RPCX_FULLBLOCK)
+		    syslog(LOG_ERR, "Yikes NFSKERB structs not packed!");
+		nsd.nsd_authstr = (u_char *)&kt;
+		nsd.nsd_authlen = sizeof (kt);
+		nsd.nsd_verfstr = (u_char *)&kverf;
+		nsd.nsd_verflen = sizeof (kverf);
 #endif
 		while (nfssvc(nfssvc_flag, &nsd) < 0) {
 			if (errno != ENEEDAUTH) {
 				syslog(LOG_ERR, "nfssvc: %m");
-				exit(1);
+				return (1);
 			}
 			nfssvc_flag = NFSSVC_NFSD | NFSSVC_AUTHINFAIL;
-#ifdef KERBEROS
-			kt.length = nsd.nsd_authlen;
-			kt.mbz = 0;
-			(void)strcpy(inst, "*");
-			if (krb_rd_req(&kt, "rcmd",
-			    inst, nsd.nsd_haddr, &auth, "") == RD_AP_OK &&
-			    krb_kntoln(&auth, lnam) == KSUCCESS &&
-			    (pwd = getpwnam(lnam)) != NULL) {
+#ifdef NFSKERB
+			/*
+			 * Get the Kerberos ticket out of the authenticator
+			 * verify it and convert the principal name to a user
+			 * name. The user name is then converted to a set of
+			 * user credentials via the password and group file.
+			 * Finally, decrypt the timestamp and validate it.
+			 * For more info see the IETF Draft "Authentication
+			 * in ONC RPC".
+			 */
+			kt.length = ntohl(kt.length);
+			if (gettimeofday(&ktv, NULL) == 0 &&
+			    kt.length > 0 && kt.length <=
+			    (RPCAUTH_MAXSIZ - 3 * NFSX_UNSIGNED)) {
+			    kin.w1 = NFS_KERBW1(kt);
+			    kt.mbz = 0;
+			    (void)strcpy(inst, "*");
+			    if (krb_rd_req(&kt, NFS_KERBSRV,
+				inst, nsd.nsd_haddr, &kauth, "") == RD_AP_OK &&
+				krb_kntoln(&kauth, lnam) == KSUCCESS &&
+				(pwd = getpwnam(lnam)) != NULL) {
 				cr = &nsd.nsd_cr;
 				cr->cr_uid = pwd->pw_uid;
 				cr->cr_groups[0] = pwd->pw_gid;
@@ -284,19 +315,46 @@ main(argc, argv, envp)
 						break;
 				}
 				endgrent();
-				nfssvc_flag = NFSSVC_NFSD | NFSSVC_AUTHIN;
+
+				/*
+				 * Get the timestamp verifier out of the
+				 * authenticator and verifier strings.
+				 */
+				kin.t1 = kverf.t1;
+				kin.t2 = kverf.t2;
+				kin.w2 = kverf.w2;
+				memset((caddr_t)kivec, 0, sizeof (kivec));
+				memmove((caddr_t)nsd.nsd_key,
+				    (caddr_t)kauth.session,
+				    sizeof(kauth.session));
+
+				/*
+				 * Decrypt the timestamp verifier in CBC mode.
+				 */
+				XXX
+
+				/*
+				 * Validate the timestamp verifier, to
+				 * check that the session key is ok.
+				 */
+				nsd.nsd_timestamp.tv_sec = ntohl(kout.t1);
+				nsd.nsd_timestamp.tv_usec = ntohl(kout.t2);
+				nsd.nsd_ttl = ntohl(kout.w1);
+				if ((nsd.nsd_ttl - 1) == ntohl(kout.w2))
+				    nfssvc_flag = NFSSVC_NFSD | NFSSVC_AUTHIN;
 			}
-#endif /* KERBEROS */
+#endif /* NFSKERB */
 		}
-		exit(0);
+		return (0);
 	}
 
 	/* If we are serving udp, set up the socket. */
 	if (udpflag) {
 		if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 			syslog(LOG_ERR, "can't create udp socket");
-			exit(1);
+			return (1);
 		}
+		memset(&inetaddr, 0, sizeof inetaddr);
 		inetaddr.sin_family = AF_INET;
 		inetaddr.sin_addr.s_addr = INADDR_ANY;
 		inetaddr.sin_port = htons(NFS_PORT);
@@ -304,18 +362,19 @@ main(argc, argv, envp)
 		if (bind(sock,
 		    (struct sockaddr *)&inetaddr, sizeof(inetaddr)) < 0) {
 			syslog(LOG_ERR, "can't bind udp addr");
-			exit(1);
+			return (1);
 		}
-		if (!pmap_set(RPCPROG_NFS, NFS_VER2, IPPROTO_UDP, NFS_PORT)) {
+		if (!pmap_set(RPCPROG_NFS, 2, IPPROTO_UDP, NFS_PORT) ||
+		    !pmap_set(RPCPROG_NFS, 3, IPPROTO_UDP, NFS_PORT)) {
 			syslog(LOG_ERR, "can't register with udp portmap");
-			exit(1);
+			return (1);
 		}
 		nfsdargs.sock = sock;
 		nfsdargs.name = NULL;
 		nfsdargs.namelen = 0;
 		if (nfssvc(NFSSVC_ADDSOCK, &nfsdargs) < 0) {
 			syslog(LOG_ERR, "can't Add UDP socket");
-			exit(1);
+			return (1);
 		}
 		(void)close(sock);
 	}
@@ -325,7 +384,7 @@ main(argc, argv, envp)
 	if (cltpflag) {
 		if ((sock = socket(AF_ISO, SOCK_DGRAM, 0)) < 0) {
 			syslog(LOG_ERR, "can't create cltp socket");
-			exit(1);
+			return (1);
 		}
 		memset(&isoaddr, 0, sizeof(isoaddr));
 		isoaddr.siso_family = AF_ISO;
@@ -337,7 +396,7 @@ main(argc, argv, envp)
 		if (bind(sock,
 		    (struct sockaddr *)&isoaddr, sizeof(isoaddr)) < 0) {
 			syslog(LOG_ERR, "can't bind cltp addr");
-			exit(1);
+			return (1);
 		}
 #ifdef notyet
 		/*
@@ -347,7 +406,7 @@ main(argc, argv, envp)
 		 */
 		if (!pmap_set(RPCPROG_NFS, NFS_VER2, IPPROTO_UDP, NFS_PORT)) {
 			syslog(LOG_ERR, "can't register with udp portmap");
-			exit(1);
+			return (1);
 		}
 #endif /* notyet */
 		nfsdargs.sock = sock;
@@ -355,7 +414,7 @@ main(argc, argv, envp)
 		nfsdargs.namelen = 0;
 		if (nfssvc(NFSSVC_ADDSOCK, &nfsdargs) < 0) {
 			syslog(LOG_ERR, "can't add UDP socket");
-			exit(1);
+			return (1);
 		}
 		close(sock);
 	}
@@ -368,11 +427,12 @@ main(argc, argv, envp)
 	if (tcpflag) {
 		if ((tcpsock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 			syslog(LOG_ERR, "can't create tcp socket");
-			exit(1);
+			return (1);
 		}
 		if (setsockopt(tcpsock,
 		    SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) < 0)
 			syslog(LOG_ERR, "setsockopt SO_REUSEADDR: %m");
+		memset(&inetaddr, 0, sizeof inetaddr);
 		inetaddr.sin_family = AF_INET;
 		inetaddr.sin_addr.s_addr = INADDR_ANY;
 		inetaddr.sin_port = htons(NFS_PORT);
@@ -380,15 +440,16 @@ main(argc, argv, envp)
 		if (bind(tcpsock,
 		    (struct sockaddr *)&inetaddr, sizeof (inetaddr)) < 0) {
 			syslog(LOG_ERR, "can't bind tcp addr");
-			exit(1);
+			return (1);
 		}
 		if (listen(tcpsock, 5) < 0) {
 			syslog(LOG_ERR, "listen failed");
-			exit(1);
+			return (1);
 		}
-		if (!pmap_set(RPCPROG_NFS, NFS_VER2, IPPROTO_TCP, NFS_PORT)) {
+		if (!pmap_set(RPCPROG_NFS, 2, IPPROTO_TCP, NFS_PORT) ||
+		    !pmap_set(RPCPROG_NFS, 3, IPPROTO_TCP, NFS_PORT)) {
 			syslog(LOG_ERR, "can't register tcp with portmap");
-			exit(1);
+			return (1);
 		}
 		FD_SET(tcpsock, &sockbits);
 		maxsock = tcpsock;
@@ -400,7 +461,7 @@ main(argc, argv, envp)
 	if (tp4flag) {
 		if ((tp4sock = socket(AF_ISO, SOCK_SEQPACKET, 0)) < 0) {
 			syslog(LOG_ERR, "can't create tp4 socket");
-			exit(1);
+			return (1);
 		}
 		if (setsockopt(tp4sock,
 		    SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) < 0)
@@ -415,11 +476,11 @@ main(argc, argv, envp)
 		if (bind(tp4sock,
 		    (struct sockaddr *)&isoaddr, sizeof(isoaddr)) < 0) {
 			syslog(LOG_ERR, "can't bind tp4 addr");
-			exit(1);
+			return (1);
 		}
 		if (listen(tp4sock, 5) < 0) {
 			syslog(LOG_ERR, "listen failed");
-			exit(1);
+			return (1);
 		}
 		/*
 		 * XXX
@@ -428,7 +489,7 @@ main(argc, argv, envp)
 		 */
 		if (!pmap_set(RPCPROG_NFS, NFS_VER2, IPPROTO_TCP, NFS_PORT)) {
 			syslog(LOG_ERR, "can't register tcp with portmap");
-			exit(1);
+			return (1);
 		}
 		FD_SET(tp4sock, &sockbits);
 		maxsock = tp4sock;
@@ -439,11 +500,12 @@ main(argc, argv, envp)
 	if (tpipflag) {
 		if ((tpipsock = socket(AF_INET, SOCK_SEQPACKET, 0)) < 0) {
 			syslog(LOG_ERR, "can't create tpip socket");
-			exit(1);
+			return (1);
 		}
 		if (setsockopt(tpipsock,
 		    SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) < 0)
 			syslog(LOG_ERR, "setsockopt SO_REUSEADDR: %m");
+		memset(&inetaddr, 0, sizeof inetaddr);
 		inetaddr.sin_family = AF_INET;
 		inetaddr.sin_addr.s_addr = INADDR_ANY;
 		inetaddr.sin_port = htons(NFS_PORT);
@@ -451,11 +513,11 @@ main(argc, argv, envp)
 		if (bind(tpipsock,
 		    (struct sockaddr *)&inetaddr, sizeof (inetaddr)) < 0) {
 			syslog(LOG_ERR, "can't bind tcp addr");
-			exit(1);
+			return (1);
 		}
 		if (listen(tpipsock, 5) < 0) {
 			syslog(LOG_ERR, "listen failed");
-			exit(1);
+			return (1);
 		}
 		/*
 		 * XXX
@@ -464,7 +526,7 @@ main(argc, argv, envp)
 		 */
 		if (!pmap_set(RPCPROG_NFS, NFS_VER2, IPPROTO_TCP, NFS_PORT)) {
 			syslog(LOG_ERR, "can't register tcp with portmap");
-			exit(1);
+			return (1);
 		}
 		FD_SET(tpipsock, &sockbits);
 		maxsock = tpipsock;
@@ -473,7 +535,7 @@ main(argc, argv, envp)
 #endif /* notyet */
 
 	if (connect_type_cnt == 0)
-		exit(0);
+		return (0);
 
 	setproctitle("master");
 
@@ -487,7 +549,7 @@ main(argc, argv, envp)
 			if (select(maxsock + 1,
 			    &ready, NULL, NULL, NULL) < 1) {
 				syslog(LOG_ERR, "select failed: %m");
-				exit(1);
+				return (1);
 			}
 		}
 		if (tcpflag && FD_ISSET(tcpsock, &ready)) {
@@ -495,7 +557,7 @@ main(argc, argv, envp)
 			if ((msgsock = accept(tcpsock,
 			    (struct sockaddr *)&inetpeer, &len)) < 0) {
 				syslog(LOG_ERR, "accept failed: %m");
-				exit(1);
+				return (1);
 			}
 			memset(inetpeer.sin_zero, 0, sizeof(inetpeer.sin_zero));
 			if (setsockopt(msgsock, SOL_SOCKET,
@@ -514,7 +576,7 @@ main(argc, argv, envp)
 			if ((msgsock = accept(tp4sock,
 			    (struct sockaddr *)&isopeer, &len)) < 0) {
 				syslog(LOG_ERR, "accept failed: %m");
-				exit(1);
+				return (1);
 			}
 			if (setsockopt(msgsock, SOL_SOCKET,
 			    SO_KEEPALIVE, (char *)&on, sizeof(on)) < 0)
@@ -531,7 +593,7 @@ main(argc, argv, envp)
 			if ((msgsock = accept(tpipsock,
 			    (struct sockaddr *)&inetpeer, &len)) < 0) {
 				syslog(LOG_ERR, "Accept failed: %m");
-				exit(1);
+				return (1);
 			}
 			if (setsockopt(msgsock, SOL_SOCKET,
 			    SO_KEEPALIVE, (char *)&on, sizeof(on)) < 0)
@@ -549,7 +611,6 @@ main(argc, argv, envp)
 void
 usage()
 {
-
 	(void)fprintf(stderr, "usage: nfsd %s\n", USAGE);
 	exit(1);
 }
@@ -558,7 +619,7 @@ void
 nonfs(signo)
 	int signo;
 {
-
+	/* XXX signal race */
 	syslog(LOG_ERR, "missing system call: NFS not available.");
 }
 
@@ -566,6 +627,9 @@ void
 reapchild(signo)
 	int signo;
 {
+	int save_errno = errno;
 
-	while (wait3((int *)0, WNOHANG, (struct rusage *)0) > 0);
+	while (wait3(NULL, WNOHANG, NULL) > 0)
+		;
+	errno = save_errno;
 }

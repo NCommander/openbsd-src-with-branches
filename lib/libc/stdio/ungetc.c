@@ -1,5 +1,3 @@
-/*	$NetBSD: ungetc.c,v 1.4 1995/02/02 02:10:47 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ungetc.c	8.2 (Berkeley) 11/3/93";
-#endif
-static char rcsid[] = "$NetBSD: ungetc.c,v 1.4 1995/02/02 02:10:47 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ungetc.c,v 1.3 2001/07/09 06:57:45 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -48,15 +43,16 @@ static char rcsid[] = "$NetBSD: ungetc.c,v 1.4 1995/02/02 02:10:47 jtc Exp $";
 #include <string.h>
 #include "local.h"
 
+static int __submore(FILE *);
 /*
  * Expand the ungetc buffer `in place'.  That is, adjust fp->_p when
  * the buffer moves, so that it points the same distance from the end,
  * and move the bytes in the buffer around as necessary so that they
  * are all at the end (stack-style).
  */
-static
+static int
 __submore(fp)
-	register FILE *fp;
+	FILE *fp;
 {
 	register int i;
 	register unsigned char *p;
@@ -87,6 +83,7 @@ __submore(fp)
 	return (0);
 }
 
+int
 ungetc(c, fp)
 	int c;
 	register FILE *fp;

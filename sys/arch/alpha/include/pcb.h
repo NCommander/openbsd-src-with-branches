@@ -1,7 +1,8 @@
-/*	$NetBSD: pcb.h,v 1.1 1995/02/13 23:07:43 cgd Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.4 1997/01/24 19:57:15 niklas Exp $	*/
+/*	$NetBSD: pcb.h,v 1.5 1996/11/13 22:21:00 cgd Exp $	*/
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -30,9 +31,7 @@
 #include <machine/frame.h>
 #include <machine/reg.h>
 
-/*
- * XXX where did this info come from?
- */
+#include <machine/alpha_cpu.h>
 
 /*
  * PCB: process control block
@@ -48,17 +47,11 @@
  * So we cache the physical address of the pcb in the md_proc struct.
  */
 struct pcb {
-	u_int64_t	pcb_ksp;		/* kernel stack ptr	[HW] */
-	u_int64_t	pcb_usp;		/* user stack ptr	[HW] */
-	u_int64_t	pcb_ptbr;		/* page table base reg	[HW] */
-	u_int32_t	pcb_pcc;		/* process cycle cntr	[HW] */
-	u_int32_t	pcb_asn;		/* address space number	[HW] */
-	u_int64_t	pcb_unique;		/* process unique value	[HW] */
-	u_int64_t	pcb_fen;		/* FP enable (in bit 0)	[HW] */
-	u_int64_t	pcb_decrsv[2];		/* DEC reserved		[HW] */
-	u_int64_t	pcb_context[9];		/* s[0-6], ra, ps	[SW] */
+	struct alpha_pcb pcb_hw;		/* PALcode defined */
+	unsigned long	pcb_context[9];		/* s[0-6], ra, ps	[SW] */
 	struct fpreg	pcb_fp;			/* FP registers		[SW] */
-	caddr_t		pcb_onfault;		/* for copy faults	[SW] */
+	unsigned long	pcb_onfault;		/* for copy faults	[SW] */
+	unsigned long	pcb_accessaddr;		/* for [fs]uswintr	[SW] */
 };
 
 /*
@@ -68,4 +61,9 @@ struct pcb {
  */
 struct md_coredump {
 	struct	trapframe md_tf;
+	struct	fpreg md_fpstate;
 };
+
+#ifdef _KERNEL
+void savectx(struct pcb *);
+#endif

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: server.c,v 1.6 2002/02/16 21:28:07 millert Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -62,22 +62,22 @@
 
 static char ac_cookie_key[8];
 
-static void getpackets __P((int, char *, struct ether_addr *));
+static void getpackets(int, char *, struct ether_addr *);
 
-static void recv_padi __P((int, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
-static void recv_padr __P((int, char *, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
-static void recv_padt __P((int, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
+static void recv_padi(int, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static void recv_padr(int, char *, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static void recv_padt(int, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
 
-static void send_pado __P((int, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
-static void send_pads __P((int, char *, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
-static void key_gen __P((void));
-static u_int8_t *key_make __P((u_int8_t *, int, u_int8_t *, int));
-static int key_cmp __P((u_int8_t *, int, u_int8_t *, int, u_int8_t *, int));
+static void send_pado(int, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static void send_pads(int, char *, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static void key_gen(void);
+static u_int8_t *key_make(u_int8_t *, int, u_int8_t *, int);
+static int key_cmp(u_int8_t *, int, u_int8_t *, int, u_int8_t *, int);
 
 void
 server_mode(bpffd, sysname, srvname, ea)
@@ -86,45 +86,54 @@ server_mode(bpffd, sysname, srvname, ea)
 	struct ether_addr *ea;
 {
 	struct pppoe_session *ses;
-	fd_set rfds;
-	int n;
+	fd_set *fdsp = NULL;
+	int n, oldmax = 0;
 
 	key_gen();
 
 	while (1) {
-reselect:
-		FD_ZERO(&rfds);
-		FD_SET(bpffd, &rfds);
 		n = bpffd;
-		ses = LIST_FIRST(&session_master.sm_sessions);
-		while (ses) {
-			if (ses->s_fd != -1) {
-				FD_SET(ses->s_fd, &rfds);
-				if (ses->s_fd > n)
-					n = ses->s_fd;
-			}
-			ses = LIST_NEXT(ses, s_next);
+		LIST_FOREACH(ses, &session_master.sm_sessions, s_next) {
+			if (ses->s_fd != -1 && ses->s_fd > n)
+				n = ses->s_fd;
+		}
+		n++;
+
+		if (n > oldmax) {
+			if (fdsp != NULL)
+				free(fdsp);
+			fdsp = (fd_set *)malloc(howmany(n, NFDBITS) *
+			    sizeof(fd_mask));
+			if (fdsp == NULL)
+				break;
+			oldmax = n;
+		}
+		bzero(fdsp, howmany(n, NFDBITS) * sizeof(fd_mask));
+
+		FD_SET(bpffd, fdsp);
+		LIST_FOREACH(ses, &session_master.sm_sessions, s_next) {
+			if (ses->s_fd != -1)
+				FD_SET(ses->s_fd, fdsp);
 		}
 
-		n = select(n+1, &rfds, NULL, NULL, NULL);
+		n = select(n, fdsp, NULL, NULL, NULL);
 		if (n < 0) {
 			if (errno == EINTR)
-				goto reselect;
+				continue;
 			err(EX_IOERR, "select");
-			return;
+			break;
 		}
 		if (n == 0)
 			continue;
-		if (FD_ISSET(bpffd, &rfds)) {
+		if (FD_ISSET(bpffd, fdsp)) {
 			n--;
 			getpackets(bpffd, sysname, ea);
 		}
 		if (n == 0)
 			continue;
 
-		ses = LIST_FIRST(&session_master.sm_sessions);
-		while (ses) {
-			if (ses->s_fd != -1 && FD_ISSET(ses->s_fd, &rfds)) {
+		LIST_FOREACH(ses, &session_master.sm_sessions, s_next) {
+			if (ses->s_fd != -1 && FD_ISSET(ses->s_fd, fdsp)) {
 				if (ppp_to_bpf(bpffd, ses->s_fd, ea,
 					&ses->s_ea, ses->s_id) < 0) {
 					send_padt(bpffd, ea,
@@ -135,9 +144,11 @@ reselect:
 				if (n == 0)
 					break;
 			}
-			ses = LIST_NEXT(ses, s_next);
 		}
 	}
+
+	if (fdsp != NULL)
+		free(fdsp);
 }
 
 void
@@ -259,7 +270,6 @@ getpackets(bpffd, sysname, ea)
 				recv_padt(bpffd, ea, &eh, &ph, len, mpkt);
 				break;
 			default:
-				recv_debug(bpffd, ea, &eh, &ph, len, mpkt);
 			}
 		}
 		else if (eh.ether_type == ETHERTYPE_PPPOE) {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: scanner.c,v 1.3 1997/02/25 00:04:16 downsj Exp $	*/
 /*	$NetBSD: scanner.c,v 1.3 1995/09/28 10:34:36 tls Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)scanner.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: scanner.c,v 1.3 1995/09/28 10:34:36 tls Exp $";
+static char rcsid[] = "$OpenBSD: scanner.c,v 1.3 1997/02/25 00:04:16 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,7 +52,7 @@ static char rcsid[] = "$NetBSD: scanner.c,v 1.3 1995/09/28 10:34:36 tls Exp $";
 
 s_getc()
 {
-	register c;
+	int c;
 
 	switch (cx.x_type) {
 	case X_FILE:
@@ -92,9 +93,9 @@ s_ungetc(c)
 s_gettok()
 {
 	char buf[100];
-	register char *p = buf;
-	register c;
-	register state = 0;
+	char *p = buf;
+	int c;
+	int state = 0;
 
 loop:
 	c = s_getc();
@@ -537,8 +538,8 @@ loop:
 
 s_gettok1()
 {
-	register c;
-	register n;
+	int c;
+	int n;
 
 	c = s_getc();			/* got \ */
 	switch (c) {

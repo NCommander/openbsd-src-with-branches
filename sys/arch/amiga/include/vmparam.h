@@ -1,4 +1,5 @@
-/*	$NetBSD: vmparam.h,v 1.13 1994/10/26 02:06:47 cgd Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.18 2001/12/05 16:25:44 art Exp $	*/
+/*	$NetBSD: vmparam.h,v 1.16 1997/07/12 16:18:36 perry Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -47,7 +48,7 @@
 #include <machine/pte.h>
 
 /*
- * Machine dependent constants for HP300
+ * Machine dependent constants for amiga
  */
 /*
  * USRTEXT is the start of the user text/data space, while USRSTACK
@@ -60,10 +61,10 @@
  */
 
 /* Sun settings. Still hope, that I might get sun3 binaries to work... */
-#define	USRTEXT		0x2000
-#define	USRSTACK	0x0E000000
+#define	USRTEXT		(vm_offset_t)0x2000
+#define	USRSTACK	(vm_offset_t)0x0E000000
 #define	LOWPAGES	btoc(USRTEXT)
-#define KUSER_AREA	(-UPAGES*NBPG)
+
 /*
  * Virtual memory related constants, all in bytes
  */
@@ -75,30 +76,18 @@
 #define	DFLDSIZ		(32*1024*1024)		/* initial data size limit */
 #endif
 #ifndef MAXDSIZ
-#define	MAXDSIZ		(32*1024*1024)		/* max data size */
+#define	MAXDSIZ		(128*1024*1024)		/* max data size */
 #endif
 #ifndef	DFLSSIZ
 #define	DFLSSIZ		(2*1024*1024)		/* initial stack size limit */
 #endif
 #ifndef	MAXSSIZ
-#define	MAXSSIZ		MAXDSIZ			/* max stack size */
+#define	MAXSSIZ		(32*1024*1024)		/* max stack size */
 #endif
-
-/*
- * Default sizes of swap allocation chunks (see dmap.h).
- * The actual values may be changed in vminit() based on MAXDSIZ.
- * With MAXDSIZ of 16Mb and NDMAP of 38, dmmax will be 1024.
- * DMMIN should be at least ctod(1) so that vtod() works.
- * vminit() insures this.
- */
-#define	DMMIN	32			/* smallest swap allocation */
-#define	DMMAX	NBPG			/* largest potential swap allocation */
 
 /*
  * Sizes of the system and user portions of the system page table.
  */
-/* SYSPTSIZE IS SILLY; IT SHOULD BE COMPUTED AT BOOT TIME */
-#define	SYSPTSIZE	(2 * NPTEPG)	/* 16mb */
 #define	USRPTSIZE 	(1 * NPTEPG)	/* 16mb */
 
 /*
@@ -129,22 +118,6 @@
 #define	MAXSLP 		20
 
 /*
- * A swapped in process is given a small amount of core without being bothered
- * by the page replacement algorithm.  Basically this says that if you are
- * swapped in you deserve some resources.  We protect the last SAFERSS
- * pages against paging and will just swap you out rather than paging you.
- * Note that each process has at least UPAGES+CLSIZE pages which are not
- * paged anyways (this is currently 8+2=10 pages or 5k bytes), so this
- * number just means a swapped in process is given around 25k bytes.
- * Just for fun: current memory prices are 4600$ a megabyte on VAX (4/22/81),
- * so we loan each swapped in process memory worth 100$, or just admit
- * that we don't consider it worthwhile and swap it out to disk which costs
- * $30/mb or about $0.75.
- */
-#define	SAFERSS		4		/* nominal ``small'' resident set size
-					   protected against replacement */
-
-/*
  * user/kernel map constants
  */
 #define VM_MIN_ADDRESS		((vm_offset_t)0)
@@ -156,12 +129,34 @@
 /*
  * virtual sizes (bytes) for various kernel submaps
  */
-#define VM_MBUF_SIZE		(NMBCLUSTERS*MCLBYTES)
-#define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
-#define VM_PHYS_SIZE		(USRIOSIZE*CLBYTES)
+#define VM_PHYS_SIZE		(USRIOSIZE*PAGE_SIZE)
+
+#define VM_PHYSSEG_MAX		(16)
+#define VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
+#define VM_PHYSSEG_NOADD	/* XXX this should be done right later */
+
+/*
+ * Allow supporting Zorro-II memory as lower priority:
+ *
+ *     - DEFAULT for Zorro-III memory (presumably 32 bit)
+ *     - ZORROII for Zorro-II memory (16 bit, Zorro-II DMA)
+ */
+#define VM_NFREELIST		2
+#define VM_FREELIST_DEFAULT	0
+#define VM_FREELIST_ZORROII	1
+
+/* 
+ * pmap-specific data stored in the vm_physmem[] array.
+ */   
+#define __HAVE_PMAP_PHYSSEG
+struct pmap_physseg { 
+	struct pv_entry *pvent;         /* pv table for this seg */
+	char *attrs;                    /* page attributes for this seg */
+}; 
 
 /*
  * number of kernel PT pages (initial only, can grow dynamically)
  */
-#define VM_KERNEL_PT_PAGES	((vm_size_t)2)		/* XXX: SYSPTSIZE */
+#define VM_KERNEL_PT_PAGES	((vm_size_t)8)
+
 #endif /* !_MACHINE_VMPARAM_H_ */

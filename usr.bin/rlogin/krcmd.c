@@ -1,3 +1,4 @@
+/*	$OpenBSD: krcmd.c,v 1.9 2002/02/16 21:27:51 millert Exp $	*/
 /*	$NetBSD: krcmd.c,v 1.2 1995/03/21 07:58:36 cgd Exp $	*/
 
 /*
@@ -37,37 +38,34 @@
 #if 0
 static char sccsid[] = "@(#)krcmd.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: krcmd.c,v 1.2 1995/03/21 07:58:36 cgd Exp $";
+static char rcsid[] = "$OpenBSD: krcmd.c,v 1.9 2002/02/16 21:27:51 millert Exp $";
 #endif
 #endif /* not lint */
 
 /*
- *	$Source: /a/cvsroot/src/usr.bin/rlogin/krcmd.c,v 
  *	$Header: /mit/kerberos/ucb/mit/kcmd/RCS/krcmd.c,v 5.1
  *		89/07/25 15:38:44 kfall Exp Locker: kfall 
- * static char *rcsid_kcmd_c =
- * "$Header: /mit/kerberos/ucb/mit/kcmd/RCS/krcmd.c,v 5.1 89/07/25 15:38:44
- *	kfall Exp Locker: kfall ";
  */
 
 #ifdef KERBEROS
 #include <sys/types.h>
-#ifdef CRYPT
 #include <sys/socket.h>
-#endif
 
 #include <netinet/in.h>
 
-#include <kerberosIV/des.h>
+#include <des.h>
 #include <kerberosIV/krb.h>
 
 #include <stdio.h>
 
 #define	SERVICE_NAME	"rcmd"
 
-int	kcmd __P((int *, char **, u_short, char *, char *, char *, int *,
+int	kcmd(int *, char **, u_short, char *, char *, char *, int *,
 	    KTEXT, char *, char *, CREDENTIALS *, Key_schedule, MSG_DAT *,
-	    struct sockaddr_in *, struct sockaddr_in *, long));
+	    struct sockaddr_in *, struct sockaddr_in *, long);
+int	krcmd(char **, u_short, char *, char *, int *, char *);
+int	krcmd_mutual(char **, u_short, char *, char *, int *, char *,
+	    CREDENTIALS *, Key_schedule);
 
 /*
  * krcmd: simplified version of Athena's "kcmd"
@@ -86,6 +84,7 @@ krcmd(ahost, rport, remuser, cmd, fd2p, realm)
 	int		sock = -1, err = 0;
 	KTEXT_ST	ticket;
 	long		authopts = 0L;
+	char myrealm[REALM_SZ];
 
 	err = kcmd(
 		&sock,
@@ -99,7 +98,7 @@ krcmd(ahost, rport, remuser, cmd, fd2p, realm)
 		SERVICE_NAME,
 		realm,
 		(CREDENTIALS *)  NULL,		/* credentials not used */
-		(bit_64 *) NULL,		/* key schedule not used */
+		(void *) NULL,		/* key schedule not used */
 		(MSG_DAT *) NULL,		/* MSG_DAT not used */
 		(struct sockaddr_in *) NULL,	/* local addr not used */
 		(struct sockaddr_in *) NULL,	/* foreign addr not used */
@@ -107,7 +106,8 @@ krcmd(ahost, rport, remuser, cmd, fd2p, realm)
 	);
 
 	if (err > KSUCCESS && err < MAX_KRB_ERRORS) {
-		fprintf(stderr, "krcmd: %s\n", krb_err_txt[err]);
+		if (krb_get_lrealm(myrealm, 0) == KSUCCESS)
+			fprintf(stderr, "krcmd: %s\n", krb_err_txt[err]);
 		return(-1);
 	}
 	if (err < 0)
@@ -115,7 +115,6 @@ krcmd(ahost, rport, remuser, cmd, fd2p, realm)
 	return(sock);
 }
 
-#ifdef CRYPT
 int
 krcmd_mutual(ahost, rport, remuser, cmd, fd2p, realm, cred, sched)
 	char		**ahost;
@@ -131,6 +130,7 @@ krcmd_mutual(ahost, rport, remuser, cmd, fd2p, realm, cred, sched)
 	MSG_DAT		msg_dat;
 	struct sockaddr_in	laddr, faddr;
 	long authopts = KOPT_DO_MUTUAL;
+	char myrealm[REALM_SZ];
 
 	err = kcmd(
 		&sock,
@@ -152,7 +152,8 @@ krcmd_mutual(ahost, rport, remuser, cmd, fd2p, realm, cred, sched)
 	);
 
 	if (err > KSUCCESS && err < MAX_KRB_ERRORS) {
-		fprintf(stderr, "krcmd_mutual: %s\n", krb_err_txt[err]);
+		if (krb_get_lrealm(myrealm, 0) == KSUCCESS)
+			fprintf(stderr, "krcmd_mutual: %s\n", krb_err_txt[err]);
 		return(-1);
 	}
 
@@ -160,5 +161,4 @@ krcmd_mutual(ahost, rport, remuser, cmd, fd2p, realm, cred, sched)
 		return (-1);
 	return(sock);
 }
-#endif /* CRYPT */
 #endif /* KERBEROS */

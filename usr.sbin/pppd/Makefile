@@ -1,15 +1,20 @@
-#	$Id: Makefile,v 1.8 1995/07/04 23:47:29 paulus Exp $
+#	$OpenBSD: Makefile,v 1.13 1998/01/17 20:30:16 millert Exp $
+
+PCAPDIR=${.CURDIR}/../../lib/libpcap
 
 PROG=	pppd
-SRCS=	main.c magic.c fsm.c lcp.c ipcp.c upap.c chap.c md5.c ccp.c \
-	auth.c options.c sys-bsd.c
+SRCS=	auth.c cbcp.c ccp.c chap.c chap_ms.c demand.c fsm.c ipcp.c \
+	ipxcp.c lcp.c magic.c main.c options.c sys-bsd.c upap.c
+
+.PATH:	${.CURDIR}/../../lib/libpcap ${.CURDIR}/../../sys/net
 MAN=	pppd.8
 SUBDIR=	pppstats chat
-BINMODE=4555
+BINMODE=4550
 BINOWN=	root
+BINGRP=	dialer
 
-LDADD=	-lcrypt -lutil
-DPADD=	${LIBCRYPT} ${LIBUTIL}
-CFLAGS+= -DHAVE_PATHS_H
+LDADD=	-lpcap -lutil
+DPADD=	${LIBPCAP} ${LIBUTIL}
+CFLAGS+= -I. -I${PCAPDIR} -DHAVE_PATHS_H -DIPX_CHANGE -DPPP_FILTER -DUSE_CRYPT -DCHAPMS
 
 .include <bsd.prog.mk>

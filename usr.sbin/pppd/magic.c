@@ -1,3 +1,5 @@
+/*	$OpenBSD: magic.c,v 1.4 1998/05/08 04:52:26 millert Exp $	*/
+
 /*
  * magic.c - PPP Magic Number routines.
  *
@@ -18,22 +20,23 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: magic.c,v 1.3 1995/07/04 23:47:51 paulus Exp $";
+#if 0
+static char rcsid[] = "Id: magic.c,v 1.7 1998/03/25 03:07:49 paulus Exp $";
+#else
+static char rcsid[] = "$OpenBSD: magic.c,v 1.4 1998/05/08 04:52:26 millert Exp $";
+#endif
 #endif
 
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
 
 #include "pppd.h"
 #include "magic.h"
 
-static u_int32_t next;		/* Next value to return */
-
-extern int gethostid __P((void));
-extern long mrand48 __P((void));
-extern void srand48 __P((long));
-
+extern long mrand48(void);
+extern void srand48(long);
 
 /*
  * magic_init - Initialize the magic number generator.
@@ -49,7 +52,7 @@ magic_init()
     struct timeval t;
 
     gettimeofday(&t, NULL);
-    seed = gethostid() ^ t.tv_sec ^ t.tv_usec ^ getpid();
+    seed = get_host_seed() ^ t.tv_sec ^ t.tv_usec ^ getpid();
     srand48(seed);
 }
 

@@ -58,25 +58,12 @@
 
 #include <stdio.h>
 #include "cryptlib.h"
-#include "objects.h"
-#include "asn1_mac.h"
+#include <openssl/objects.h>
+#include <openssl/asn1_mac.h>
+#include <openssl/x509.h>
 
-/*
- * ASN1err(ASN1_F_D2I_X509_NAME,ASN1_R_LENGTH_MISMATCH);
- * ASN1err(ASN1_F_X509_NAME_NEW,ASN1_R_UNKNOWN_ATTRIBUTE_TYPE);
- * ASN1err(ASN1_F_D2I_X509_NAME_ENTRY,ASN1_R_LENGTH_MISMATCH);
- * ASN1err(ASN1_F_X509_NAME_ENTRY_NEW,ASN1_R_UNKNOWN_ATTRIBUTE_TYPE);
- */
-
-#ifndef NOPROTO
 static int i2d_X509_NAME_entries(X509_NAME *a);
-#else
-static int i2d_X509_NAME_entries();
-#endif
-
-int i2d_X509_NAME_ENTRY(a,pp)
-X509_NAME_ENTRY *a;
-unsigned char **pp;
+int i2d_X509_NAME_ENTRY(X509_NAME_ENTRY *a, unsigned char **pp)
 	{
 	M_ASN1_I2D_vars(a);
 
@@ -91,10 +78,8 @@ unsigned char **pp;
 	M_ASN1_I2D_finish();
 	}
 
-X509_NAME_ENTRY *d2i_X509_NAME_ENTRY(a,pp,length)
-X509_NAME_ENTRY **a;
-unsigned char **pp;
-long length;
+X509_NAME_ENTRY *d2i_X509_NAME_ENTRY(X509_NAME_ENTRY **a, unsigned char **pp,
+	     long length)
 	{
 	M_ASN1_D2I_vars(a,X509_NAME_ENTRY *,X509_NAME_ENTRY_new);
 
@@ -106,9 +91,7 @@ long length;
 	M_ASN1_D2I_Finish(a,X509_NAME_ENTRY_free,ASN1_F_D2I_X509_NAME_ENTRY);
 	}
 
-int i2d_X509_NAME(a,pp)
-X509_NAME *a;
-unsigned char **pp;
+int i2d_X509_NAME(X509_NAME *a, unsigned char **pp)
 	{
 	int ret;
 
@@ -128,11 +111,10 @@ unsigned char **pp;
 	return(ret);
 	}
 
-static int i2d_X509_NAME_entries(a)
-X509_NAME *a;
+static int i2d_X509_NAME_entries(X509_NAME *a)
 	{
 	X509_NAME_ENTRY *ne,*fe=NULL;
-	STACK *sk;
+	STACK_OF(X509_NAME_ENTRY) *sk;
 	BUF_MEM *buf=NULL;
 	int set=0,r,ret=0;
 	int i;
@@ -140,9 +122,9 @@ X509_NAME *a;
 	int size=0;
 
 	sk=a->entries;
-	for (i=0; i<sk_num(sk); i++)
+	for (i=0; i<sk_X509_NAME_ENTRY_num(sk); i++)
 		{
-		ne=(X509_NAME_ENTRY *)sk_value(sk,i);
+		ne=sk_X509_NAME_ENTRY_value(sk,i);
 		if (fe == NULL)
 			{
 			fe=ne;
@@ -159,10 +141,12 @@ X509_NAME *a;
 			}
 		size+=i2d_X509_NAME_ENTRY(ne,NULL);
 		}
-
-	ret+=ASN1_object_size(1,size,V_ASN1_SET);
 	if (fe != NULL)
+		{
+		/* SET OF needed only if entries is non empty */
+		ret+=ASN1_object_size(1,size,V_ASN1_SET);
 		fe->size=size;
+		}
 
 	r=ASN1_object_size(1,ret,V_ASN1_SEQUENCE);
 
@@ -173,9 +157,9 @@ X509_NAME *a;
 	ASN1_put_object(&p,1,ret,V_ASN1_SEQUENCE,V_ASN1_UNIVERSAL);
 
 	set= -1;
-	for (i=0; i<sk_num(sk); i++)
+	for (i=0; i<sk_X509_NAME_ENTRY_num(sk); i++)
 		{
-		ne=(X509_NAME_ENTRY *)sk_value(sk,i);
+		ne=sk_X509_NAME_ENTRY_value(sk,i);
 		if (set != ne->set)
 			{
 			set=ne->set;
@@ -190,10 +174,7 @@ err:
 	return(-1);
 	}
 
-X509_NAME *d2i_X509_NAME(a,pp,length)
-X509_NAME **a;
-unsigned char **pp;
-long length;
+X509_NAME *d2i_X509_NAME(X509_NAME **a, unsigned char **pp, long length)
 	{
 	int set=0,i;
 	int idx=0;
@@ -201,11 +182,11 @@ long length;
 	M_ASN1_D2I_vars(a,X509_NAME *,X509_NAME_new);
 
 	orig= *pp;
-	if (sk_num(ret->entries) > 0)
+	if (sk_X509_NAME_ENTRY_num(ret->entries) > 0)
 		{
-		while (sk_num(ret->entries) > 0)
-			X509_NAME_ENTRY_free((X509_NAME_ENTRY *)
-				sk_pop(ret->entries));
+		while (sk_X509_NAME_ENTRY_num(ret->entries) > 0)
+			X509_NAME_ENTRY_free(
+				       sk_X509_NAME_ENTRY_pop(ret->entries));
 		}
 
 	M_ASN1_D2I_Init();
@@ -213,11 +194,12 @@ long length;
 	for (;;)
 		{
 		if (M_ASN1_D2I_end_sequence()) break;
-		M_ASN1_D2I_get_set(ret->entries,d2i_X509_NAME_ENTRY);
-		for (; idx < sk_num(ret->entries); idx++)
+		M_ASN1_D2I_get_set_type(X509_NAME_ENTRY,ret->entries,
+					d2i_X509_NAME_ENTRY,
+					X509_NAME_ENTRY_free);
+		for (; idx < sk_X509_NAME_ENTRY_num(ret->entries); idx++)
 			{
-			((X509_NAME_ENTRY *)sk_value(ret->entries,idx))->set=
-				set;
+			sk_X509_NAME_ENTRY_value(ret->entries,idx)->set=set;
 			}
 		set++;
 		}
@@ -231,21 +213,24 @@ long length;
 	M_ASN1_D2I_Finish(a,X509_NAME_free,ASN1_F_D2I_X509_NAME);
 	}
 
-X509_NAME *X509_NAME_new()
+X509_NAME *X509_NAME_new(void)
 	{
 	X509_NAME *ret=NULL;
+	ASN1_CTX c;
 
 	M_ASN1_New_Malloc(ret,X509_NAME);
-	if ((ret->entries=sk_new(NULL)) == NULL) goto err2;
+	if ((ret->entries=sk_X509_NAME_ENTRY_new_null()) == NULL)
+		{ c.line=__LINE__; goto err2; }
 	M_ASN1_New(ret->bytes,BUF_MEM_new);
 	ret->modified=1;
 	return(ret);
 	M_ASN1_New_Error(ASN1_F_X509_NAME_NEW);
 	}
 
-X509_NAME_ENTRY *X509_NAME_ENTRY_new()
+X509_NAME_ENTRY *X509_NAME_ENTRY_new(void)
 	{
 	X509_NAME_ENTRY *ret=NULL;
+	ASN1_CTX c;
 
 	M_ASN1_New_Malloc(ret,X509_NAME_ENTRY);
 /*	M_ASN1_New(ret->object,ASN1_OBJECT_new);*/
@@ -256,26 +241,25 @@ X509_NAME_ENTRY *X509_NAME_ENTRY_new()
 	M_ASN1_New_Error(ASN1_F_X509_NAME_ENTRY_NEW);
 	}
 
-void X509_NAME_free(a)
-X509_NAME *a;
+void X509_NAME_free(X509_NAME *a)
 	{
+	if(a == NULL)
+	    return;
+
 	BUF_MEM_free(a->bytes);
-	sk_pop_free(a->entries,X509_NAME_ENTRY_free);
-	Free((char *)a);
+	sk_X509_NAME_ENTRY_pop_free(a->entries,X509_NAME_ENTRY_free);
+	OPENSSL_free(a);
 	}
 
-void X509_NAME_ENTRY_free(a)
-X509_NAME_ENTRY *a;
+void X509_NAME_ENTRY_free(X509_NAME_ENTRY *a)
 	{
 	if (a == NULL) return;
 	ASN1_OBJECT_free(a->object);
-	ASN1_BIT_STRING_free(a->value);
-	Free((char *)a);
+	M_ASN1_BIT_STRING_free(a->value);
+	OPENSSL_free(a);
 	}
 
-int X509_NAME_set(xn,name)
-X509_NAME **xn;
-X509_NAME *name;
+int X509_NAME_set(X509_NAME **xn, X509_NAME *name)
 	{
 	X509_NAME *in;
 
@@ -293,3 +277,5 @@ X509_NAME *name;
 	return(*xn != NULL);
 	}
 	
+IMPLEMENT_STACK_OF(X509_NAME_ENTRY)
+IMPLEMENT_ASN1_SET_OF(X509_NAME_ENTRY)

@@ -1,3 +1,5 @@
+.\"	$OpenBSD$
+.\"
 .\" Copyright (c) 1984 M. K. McKusick
 .\" Copyright (c) 1984 The Regents of the University of California.
 .\" All rights reserved.

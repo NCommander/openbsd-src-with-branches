@@ -1,5 +1,3 @@
-/*	$NetBSD: stdio.c,v 1.4 1995/02/02 02:10:40 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)stdio.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: stdio.c,v 1.4 1995/02/02 02:10:40 jtc Exp $";
+static char rcsid[] = "$OpenBSD: stdio.c,v 1.3 1997/11/09 23:40:41 flipk Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <fcntl.h>
@@ -52,6 +47,7 @@ static char rcsid[] = "$NetBSD: stdio.c,v 1.4 1995/02/02 02:10:40 jtc Exp $";
  * Small standard I/O/seek/close functions.
  * These maintain the `known seek offset' for seek optimisation.
  */
+int
 __sread(cookie, buf, n)
 	void *cookie;
 	char *buf;
@@ -69,6 +65,7 @@ __sread(cookie, buf, n)
 	return (ret);
 }
 
+int
 __swrite(cookie, buf, n)
 	void *cookie;
 	char const *buf;
@@ -92,7 +89,7 @@ __sseek(cookie, offset, whence)
 	register off_t ret;
 	
 	ret = lseek(fp->_file, (off_t)offset, whence);
-	if (ret == -1L)
+	if (ret == (off_t)-1)
 		fp->_flags &= ~__SOFF;
 	else {
 		fp->_flags |= __SOFF;
@@ -101,6 +98,7 @@ __sseek(cookie, offset, whence)
 	return (ret);
 }
 
+int
 __sclose(cookie)
 	void *cookie;
 {

@@ -1,4 +1,5 @@
-/*	$NetBSD: mixerctl.c,v 1.9 1997/10/19 07:46:04 augustss Exp $	*/
+/*	$OpenBSD: mixerctl.c,v 1.6 2002/01/09 18:12:24 mickey Exp $	*/
+/*	$NetBSD: mixerctl.c,v 1.11 1998/04/27 16:55:23 augustss Exp $	*/
 
 /*
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -44,10 +45,10 @@
 #include <sys/ioctl.h>
 #include <sys/audioio.h>
 
-char *catstr __P((char *p, char *q));
-struct field *findfield __P((char *name));
-void prfield __P((struct field *p, char *sep, int prvalset));
-int rdfield __P((struct field *p, char *q));
+char *catstr(char *p, char *q);
+struct field *findfield(char *name);
+void prfield(struct field *p, char *sep, int prvalset);
+int rdfield(struct field *p, char *q);
 int main(int argc, char **argv);
 
 FILE *out = stdout;
@@ -67,7 +68,7 @@ mixer_devinfo_t *infos;
 char *
 catstr(p, q)
 	char *p;
-        char *q;
+	char *q;
 {
 	char *r = malloc(strlen(p) + strlen(q) + 2);
 	strcpy(r, p);
@@ -90,8 +91,8 @@ findfield(name)
 void
 prfield(p, sep, prvalset)
 	struct field *p;
-        char *sep;
-        int prvalset;
+	char *sep;
+	int prvalset;
 {
 	mixer_ctrl_t *m;
 	int i, n;
@@ -128,7 +129,7 @@ prfield(p, sep, prvalset)
 		if (m->un.value.num_channels == 1)
 			fprintf(out, "%d", m->un.value.level[0]);
 		else
-			fprintf(out, "%d,%d", m->un.value.level[0], 
+			fprintf(out, "%d,%d", m->un.value.level[0],
 			       m->un.value.level[1]);
 		if (prvalset)
 			fprintf(out, " %s", p->infp->un.v.units.name);
@@ -142,7 +143,7 @@ prfield(p, sep, prvalset)
 int
 rdfield(p, q)
 	struct field *p;
-        char *q;
+	char *q;
 {
 	mixer_ctrl_t *m;
 	int v, v0, v1, mask;
@@ -168,7 +169,7 @@ rdfield(p, q)
 			s = strchr(q, ',');
 			if (s)
 				*s++ = 0;
-			for(i = 0; i < p->infp->un.s.num_mem; i++)
+			for (i = 0; i < p->infp->un.s.num_mem; i++)
 				if (strcmp(p->infp->un.s.member[i].label.name, q) == 0)
 					break;
 			if (i < p->infp->un.s.num_mem) {
@@ -183,17 +184,52 @@ rdfield(p, q)
 	case AUDIO_MIXER_VALUE:
 		if (m->un.value.num_channels == 1) {
 			if (sscanf(q, "%d", &v) == 1) {
-				m->un.value.level[0] = v;
+				switch (*q) {
+				case '+':
+				case '-':
+					m->un.value.level[0] += v;
+					break;
+				default:
+					m->un.value.level[0] = v;
+					break;
+				}
 			} else {
 				warnx("Bad number %s", q);
 				return 0;
 			}
 		} else {
 			if (sscanf(q, "%d,%d", &v0, &v1) == 2) {
-				m->un.value.level[0] = v0;
-				m->un.value.level[1] = v1;
+				switch (*q) {
+				case '+':
+				case '-':
+					m->un.value.level[0] += v0;
+					break;
+				default:
+					m->un.value.level[0] = v0;
+					break;
+				}
+				s = strchr(q, ',') + 1;
+				switch (*s) {
+				case '+':
+				case '-':
+					m->un.value.level[1] += v1;
+					break;
+				default:
+					m->un.value.level[1] = v1;
+					break;
+				}
 			} else if (sscanf(q, "%d", &v) == 1) {
-				m->un.value.level[0] = m->un.value.level[1] = v;
+				switch (*q) {
+				case '+':
+				case '-':
+					m->un.value.level[0] += v;
+					m->un.value.level[1] += v;
+					break;
+				default:
+					m->un.value.level[0] =
+					    m->un.value.level[1] = v;
+					break;
+				}
 			} else {
 				warnx("Bad numbers %s", q);
 				return 0;
@@ -210,15 +246,19 @@ rdfield(p, q)
 int
 main(argc, argv)
 	int argc;
-        char **argv;
+	char **argv;
 {
 	int fd, i, j, ch, pos;
 	int aflag = 0, wflag = 0, vflag = 0;
-	char *file = "/dev/mixer";
+	char *file;
 	char *sep = "=";
 	mixer_devinfo_t dinfo;
 	mixer_ctrl_t val;
 	int ndev;
+
+	file = getenv("MIXERDEVICE");
+	if (file == 0)
+		file = "/dev/mixer";
 
 	prog = *argv;
 
@@ -250,8 +290,8 @@ main(argc, argv)
 	}
 	argc -= optind;
 	argv += optind;
-    
-	fd = open(file, O_RDWR);
+
+	fd = open(file, wflag? O_RDWR : O_RDONLY);
 	if (fd < 0)
 		err(1, "%s", file);
 
@@ -260,6 +300,10 @@ main(argc, argv)
 		if (ioctl(fd, AUDIO_MIXER_DEVINFO, &dinfo) < 0)
 			break;
 	}
+
+	if (ndev == 0)
+		errx(1, "no mixer devices configured");
+
 	rfields = calloc(ndev, sizeof *rfields);
 	fields = calloc(ndev, sizeof *fields);
 	infos = calloc(ndev, sizeof *infos);
@@ -296,7 +340,7 @@ main(argc, argv)
 			for(pos = infos[i].next; pos != AUDIO_MIXER_LAST;
 			    pos = infos[pos].next) {
 				fields[j] = rfields[pos];
-				fields[j].name = catstr(rfields[i].name, 
+				fields[j].name = catstr(rfields[i].name,
 							infos[pos].label.name);
 				infos[pos].type = -1;
 				j++;
@@ -307,7 +351,7 @@ main(argc, argv)
 	for(i = 0; i < j; i++) {
 		int cls = fields[i].infp->mixer_class;
 		if (cls >= 0 && cls < ndev)
-			fields[i].name = catstr(infos[cls].label.name, 
+			fields[i].name = catstr(infos[cls].label.name,
 						fields[i].name);
 	}
 

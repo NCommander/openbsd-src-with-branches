@@ -1,3 +1,4 @@
+/*	$OpenBSD: leave.c,v 1.6 2001/11/19 19:02:14 mpech Exp $	*/
 /*	$NetBSD: leave.c,v 1.4 1995/07/03 16:50:13 phil Exp $	*/
 
 /*
@@ -43,13 +44,18 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)leave.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: leave.c,v 1.4 1995/07/03 16:50:13 phil Exp $";
+static char rcsid[] = "$OpenBSD: leave.c,v 1.6 2001/11/19 19:02:14 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/time.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+
+void	usage(void);
+void	doalarm(u_int secs);
 
 /*
  * leave [[+]hhmm]
@@ -58,25 +64,28 @@ static char rcsid[] = "$NetBSD: leave.c,v 1.4 1995/07/03 16:50:13 phil Exp $";
  * Leave prompts for input and goes away if you hit return.
  * It nags you like a mother hen.
  */
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	register u_int secs;
-	register int hours, minutes;
-	register char c, *cp;
-	struct tm *t, *localtime();
-	time_t now, time();
+	u_int secs;
+	int hours, minutes;
+	char c, *cp;
+	struct tm *t;
+	time_t now;
 	int plusnow;
 	char buf[50];
 
 	if (argc < 2) {
 #define	MSG1	"When do you have to leave? "
-		(void)write(1, MSG1, sizeof(MSG1) - 1);
+		(void)write(STDOUT_FILENO, MSG1, sizeof(MSG1) - 1);
 		cp = fgets(buf, sizeof(buf), stdin);
 		if (cp == NULL || *cp == '\n')
 			exit(0);
-	} else
+	} else if (argc > 2)
+		usage();
+	else
 		cp = argv[1];
 
 	if (*cp == '+') {
@@ -101,9 +110,17 @@ main(argc, argv)
 	if (plusnow)
 		secs = hours * 60 * 60 + minutes * 60;
 	else {
-		if (hours > 23 || t->tm_hour > hours ||
-		    t->tm_hour == hours && minutes <= t->tm_min)
+		if (hours > 23)
 			usage();
+		if (t->tm_hour > hours || 
+		    (t->tm_hour == hours && t->tm_min >= minutes)) {
+			/* determine 24 hours mode */
+		    	if (hours >= 13)
+				hours += 24;
+			else
+				hours += 12;
+		}
+
 		secs = (hours - t->tm_hour) * 60 * 60;
 		secs += (minutes - t->tm_min) * 60;
 	}
@@ -111,15 +128,15 @@ main(argc, argv)
 	exit(0);
 }
 
+void
 doalarm(secs)
 	u_int secs;
 {
-	register int bother;
-	time_t daytime, time();
+	int bother;
+	time_t daytime;
 	int pid;
-	char *ctime();
 
-	if (pid = fork()) {
+	if ((pid = fork())) {
 		(void)time(&daytime);
 		daytime += secs;
 		printf("Alarm set for %.16s. (pid %d)\n",
@@ -136,7 +153,7 @@ doalarm(secs)
 #define	MSG2	"\07\07You have to leave in 5 minutes.\n"
 	if (secs >= FIVEMIN) {
 		sleep(secs - FIVEMIN);
-		if (write(1, MSG2, sizeof(MSG2) - 1) != sizeof(MSG2) - 1)
+		if (write(STDOUT_FILENO, MSG2, sizeof(MSG2) - 1) != sizeof(MSG2) - 1)
 			exit(0);
 		secs = FIVEMIN;
 	}
@@ -145,22 +162,23 @@ doalarm(secs)
 #define	MSG3	"\07\07Just one more minute!\n"
 	if (secs >= ONEMIN) {
 		sleep(secs - ONEMIN);
-		if (write(1, MSG3, sizeof(MSG3) - 1) != sizeof(MSG3) - 1)
+		if (write(STDOUT_FILENO, MSG3, sizeof(MSG3) - 1) != sizeof(MSG3) - 1)
 			exit(0);
 	}
 
 #define	MSG4	"\07\07Time to leave!\n"
 	for (bother = 10; bother--;) {
 		sleep((u_int)ONEMIN);
-		if (write(1, MSG4, sizeof(MSG4) - 1) != sizeof(MSG4) - 1)
+		if (write(STDOUT_FILENO, MSG4, sizeof(MSG4) - 1) != sizeof(MSG4) - 1)
 			exit(0);
 	}
 
 #define	MSG5	"\07\07That was the last time I'll tell you.  Bye.\n"
-	(void)write(1, MSG5, sizeof(MSG5) - 1);
+	(void)write(STDOUT_FILENO, MSG5, sizeof(MSG5) - 1);
 	exit(0);
 }
 
+void
 usage()
 {
 	fprintf(stderr, "usage: leave [[+]hhmm]\n");

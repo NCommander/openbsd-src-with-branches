@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nhpibreg.h,v 1.5 1995/01/07 10:30:15 mycroft Exp $	*/
 
 /*

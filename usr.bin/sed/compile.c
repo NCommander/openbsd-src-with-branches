@@ -1,3 +1,5 @@
+/*	$OpenBSD: compile.c,v 1.10 2001/11/19 19:02:16 mpech Exp $	*/
+
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -36,8 +38,8 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)compile.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: compile.c,v 1.14 1995/03/09 11:19:24 mycroft Exp $";
+/* from: static char sccsid[] = "@(#)compile.c	8.2 (Berkeley) 4/28/95"; */
+static char *rcsid = "$OpenBSD: compile.c,v 1.10 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -64,22 +66,22 @@ static struct labhash {
 	int	lh_ref;
 } *labels[LHSZ];
 
-static char	 *compile_addr __P((char *, struct s_addr *));
-static char	 *compile_ccl __P((char **, char *));
-static char	 *compile_delimited __P((char *, char *));
-static char	 *compile_flags __P((char *, struct s_subst *));
-static char	 *compile_re __P((char *, regex_t **));
-static char	 *compile_subst __P((char *, struct s_subst *));
-static char	 *compile_text __P((void));
-static char	 *compile_tr __P((char *, char **));
+static char	 *compile_addr(char *, struct s_addr *);
+static char	 *compile_ccl(char **, char *);
+static char	 *compile_delimited(char *, char *);
+static char	 *compile_flags(char *, struct s_subst *);
+static char	 *compile_re(char *, regex_t **);
+static char	 *compile_subst(char *, struct s_subst *);
+static char	 *compile_text(void);
+static char	 *compile_tr(char *, char **);
 static struct s_command
-		**compile_stream __P((struct s_command **));
-static char	 *duptoeol __P((char *, char *));
-static void	  enterlabel __P((struct s_command *));
+		**compile_stream(struct s_command **);
+static char	 *duptoeol(char *, char *);
+static void	  enterlabel(struct s_command *);
 static struct s_command
-		 *findlabel __P((char *));
-static void	  fixuplabel __P((struct s_command *, struct s_command *));
-static void	  uselabel __P((void));
+		 *findlabel(char *);
+static void	  fixuplabel(struct s_command *, struct s_command *);
+static void	  uselabel(void);
 
 /*
  * Command specification.  This is used to drive the command parser.
@@ -149,7 +151,7 @@ static struct s_command **
 compile_stream(link)
 	struct s_command **link;
 {
-	register char *p;
+	char *p;
 	static char lbuf[_POSIX2_LINE_MAX + 1];	/* To save stack */
 	struct s_command *cmd, *cmd2, *stack;
 	struct s_format *fp;
@@ -611,12 +613,12 @@ compile_tr(p, transtab)
 }
 
 /*
- * Compile the text following an a or i command.
+ * Compile the text following an a, c, or i command.
  */
 static char *
 compile_text()
 {
-	int asize, size;
+	int asize, esc_nl, size;
 	char *text, *p, *op, *s;
 	char lbuf[_POSIX2_LINE_MAX + 1];
 
@@ -627,13 +629,13 @@ compile_text()
 		op = s = text + size;
 		p = lbuf;
 		EATSPACE();
-		for (; *p; p++) {
-			if (*p == '\\')
-				p++;
+		for (esc_nl = 0; *p != '\0'; p++) {
+			if (*p == '\\' && p[1] != '\0' && *++p == '\n')
+				esc_nl = 1;
 			*s++ = *p;
 		}
 		size += s - op;
-		if (p[-2] != '\\') {
+		if (!esc_nl) {
 			*s = '\0';
 			break;
 		}
@@ -642,6 +644,7 @@ compile_text()
 			text = xmalloc(asize);
 		}
 	}
+	text[size] = '\0';
 	return (xrealloc(text, size + 1));
 }
 
@@ -674,7 +677,7 @@ compile_addr(p, a)
 	case '0': case '1': case '2': case '3': case '4': 
 	case '5': case '6': case '7': case '8': case '9':
 		a->type = AT_LINE;
-		a->u.l = strtol(p, &end, 10);
+		a->u.l = strtoul(p, &end, 10);
 		return (end);
 	default:
 		err(COMPILE, "expected context address");
@@ -688,7 +691,7 @@ compile_addr(p, a)
  */
 static char *
 duptoeol(s, ctype)
-	register char *s;
+	char *s;
 	char *ctype;
 {
 	size_t len;
@@ -748,9 +751,9 @@ static void
 enterlabel(cp)
 	struct s_command *cp;
 {
-	register struct labhash **lhp, *lh;
-	register u_char *p;
-	register u_int h, c;
+	struct labhash **lhp, *lh;
+	u_char *p;
+	u_int h, c;
 
 	for (h = 0, p = (u_char *)cp->t; (c = *p) != 0; p++)
 		h = (h << 5) + h + c;
@@ -774,9 +777,9 @@ static struct s_command *
 findlabel(name)
 	char *name;
 {
-	register struct labhash *lh;
-	register u_char *p;
-	register u_int h, c;
+	struct labhash *lh;
+	u_char *p;
+	u_int h, c;
 
 	for (h = 0, p = (u_char *)name; (c = *p) != 0; p++)
 		h = (h << 5) + h + c;
@@ -796,8 +799,8 @@ findlabel(name)
 static void
 uselabel()
 {
-	register struct labhash *lh, *next;
-	register int i;
+	struct labhash *lh, *next;
+	int i;
 
 	for (i = 0; i < LHSZ; i++) {
 		for (lh = labels[i]; lh != NULL; lh = next) {

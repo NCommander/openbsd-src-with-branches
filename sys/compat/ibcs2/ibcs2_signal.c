@@ -1,4 +1,5 @@
-/*	$NetBSD: ibcs2_signal.c,v 1.7 1995/10/07 06:26:52 mycroft Exp $	*/
+/*	$OpenBSD: ibcs2_signal.c,v 1.6 1998/12/22 07:58:44 deraadt Exp $	*/
+/*	$NetBSD: ibcs2_signal.c,v 1.8 1996/05/03 17:05:27 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Scott Bartram
@@ -125,6 +126,12 @@ int ibcs2_to_bsd_sig[] = {
 	0,			/* 31 */
 };
 
+void ibcs2_to_bsd_sigset(const ibcs2_sigset_t *, sigset_t *);
+void bsd_to_ibcs2_sigset(const sigset_t *, ibcs2_sigset_t *);
+void ibcs2_to_bsd_sigaction(struct ibcs2_sigaction *,
+    struct sigaction *);
+void bsd_to_ibcs2_sigaction(struct sigaction *, struct ibcs2_sigaction *);
+
 void
 ibcs2_to_bsd_sigset(iss, bss)
 	const ibcs2_sigset_t *iss;
@@ -165,7 +172,7 @@ ibcs2_to_bsd_sigaction(isa, bsa)
 	struct sigaction *bsa;
 {
 
-	bsa->sa_handler = isa->sa_handler;
+	bsa->sa_handler = isa->sa__handler;
 	ibcs2_to_bsd_sigset(&isa->sa_mask, &bsa->sa_mask);
 	bsa->sa_flags = 0;
 	if ((isa->sa_flags & IBCS2_SA_NOCLDSTOP) != 0)
@@ -178,11 +185,11 @@ bsd_to_ibcs2_sigaction(bsa, isa)
 	struct ibcs2_sigaction *isa;
 {
 
-	isa->sa_handler = bsa->sa_handler;
+	isa->sa__handler = bsa->sa_handler;
 	bsd_to_ibcs2_sigset(&bsa->sa_mask, &isa->sa_mask);
 	isa->sa_flags = 0;
 	if ((bsa->sa_flags & SA_NOCLDSTOP) != 0)
-		isa->sa_flags |= SA_NOCLDSTOP;
+		isa->sa_flags |= IBCS2_SA_NOCLDSTOP;
 }
 
 int
@@ -201,6 +208,9 @@ ibcs2_sys_sigaction(p, v, retval)
 	struct sys_sigaction_args sa;
 	caddr_t sg;
 	int error;
+
+	if (SCARG(uap, signum) < 0 || SCARG(uap, signum) >= IBCS2_NSIG)
+		return (EINVAL);
 
 	sg = stackgap_init(p->p_emul);
 	nisa = SCARG(uap, nsa);
@@ -249,16 +259,17 @@ ibcs2_sys_sigsys(p, v, retval)
 		syscallarg(int) sig;
 		syscallarg(ibcs2_sig_t) fp;
 	} */ *uap = v;
-	int signum = ibcs2_to_bsd_sig[IBCS2_SIGNO(SCARG(uap, sig))];
-	int error;
+	int signum, error;
 	caddr_t sg = stackgap_init(p->p_emul);
 
-	if (signum <= 0 || signum >= IBCS2_NSIG) {
+	signum = IBCS2_SIGNO(SCARG(uap, sig));
+	if (signum < 0 || signum >= IBCS2_NSIG) {
 		if (IBCS2_SIGCALL(SCARG(uap, sig)) == IBCS2_SIGNAL_MASK ||
 		    IBCS2_SIGCALL(SCARG(uap, sig)) == IBCS2_SIGSET_MASK)
 			*retval = (int)IBCS2_SIG_ERR;
 		return EINVAL;
 	}
+	signum = ibcs2_to_bsd_sig[signum];
 	
 	switch (IBCS2_SIGCALL(SCARG(uap, sig))) {
 	/*
@@ -486,6 +497,8 @@ ibcs2_sys_kill(p, v, retval)
 	} */ *uap = v;
 	struct sys_kill_args ka;
 
+	if (SCARG(uap, signo) < 0 || SCARG(uap, signo) >= IBCS2_NSIG)
+		return (EINVAL);
 	SCARG(&ka, pid) = SCARG(uap, pid);
 	SCARG(&ka, signum) = ibcs2_to_bsd_sig[SCARG(uap, signo)];
 	return sys_kill(p, &ka, retval);

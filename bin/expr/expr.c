@@ -1,4 +1,5 @@
-/*	$NetBSD: expr.c,v 1.3 1995/04/28 23:27:15 jtc Exp $	*/
+/*	$OpenBSD: expr.c,v 1.9 1997/11/13 07:57:17 deraadt Exp $	*/
+/*	$NetBSD: expr.c,v 1.3.6.1 1996/06/04 20:41:47 cgd Exp $	*/
 
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
@@ -26,25 +27,25 @@ struct val {
 	} type;
 
 	union {
-		char           *s;
-		int             i;
+		char	       *s;
+		int		i;
 	} u;
 };
 
 enum token	token;
 struct val     *tokval;
-char          **av;
+char	      **av;
 
 
 struct val *
 make_int(i)
-	int             i;
+	int		i;
 {
 	struct val     *vp;
 
 	vp = (struct val *) malloc(sizeof(*vp));
 	if (vp == NULL) {
-		err(2, NULL);
+		err(3, NULL);
 	}
 	vp->type = integer;
 	vp->u.i = i;
@@ -54,13 +55,13 @@ make_int(i)
 
 struct val *
 make_str(s)
-	char           *s;
+	char	       *s;
 {
 	struct val     *vp;
 
 	vp = (struct val *) malloc(sizeof(*vp));
 	if (vp == NULL || ((vp->u.s = strdup(s)) == NULL)) {
-		err(2, NULL);
+		err(3, NULL);
 	}
 	vp->type = string;
 	return vp;
@@ -83,9 +84,9 @@ is_integer(vp, r)
 	struct val     *vp;
 	int	       *r;
 {
-	char           *s;
-	int             neg;
-	int             i;
+	char	       *s;
+	int		neg;
+	int		i;
 
 	if (vp->type == integer) {
 		*r = vp->u.i;
@@ -126,7 +127,7 @@ int
 to_integer(vp)
 	struct val     *vp;
 {
-	int             r;
+	int		r;
 
 	if (vp->type == integer)
 		return 1;
@@ -147,16 +148,16 @@ void
 to_string(vp)
 	struct val     *vp;
 {
-	char           *tmp;
+	char	       *tmp;
 
 	if (vp->type == string)
 		return;
 
 	tmp = malloc(25);
 	if (tmp == NULL) {
-		err(2, NULL);
+		err(3, NULL);
 	}
-	sprintf(tmp, "%d", vp->u.i);
+	snprintf(tmp, 25, "%d", vp->u.i);
 	vp->type = string;
 	vp->u.s = tmp;
 }
@@ -174,9 +175,10 @@ is_zero_or_null(vp)
 }
 
 void
-nexttoken()
+nexttoken(pat)
+	int pat;
 {
-	char           *p;
+	char	       *p;
 
 	if ((p = *av) == NULL) {
 		token = EOI;
@@ -184,10 +186,11 @@ nexttoken()
 	}
 	av++;
 
-	if (p[0] != '\0') {
+	
+	if (pat == 0 && p[0] != '\0') {
 		if (p[1] == '\0') {
 			const char     *x = "|&=<>+-*/%:()";
-			char           *i;	/* index */
+			char	       *i;	/* index */
 
 			if ((i = strchr(x, *p)) != NULL) {
 				token = i - x;
@@ -212,7 +215,7 @@ nexttoken()
 	return;
 }
 
-void
+__dead void
 error()
 {
 	errx(2, "syntax error");
@@ -222,22 +225,22 @@ error()
 struct val *
 eval6()
 {
-	struct val     *eval0 __P((void));
+	struct val     *eval0(void);
 	struct val     *v;
 
 	if (token == OPERAND) {
-		nexttoken();
+		nexttoken(0);
 		return tokval;
 
 	} else if (token == RP) {
-		nexttoken();
+		nexttoken(0);
 		v = eval0();
 
 		if (token != LP) {
 			error();
 			/* NOTREACHED */
 		}
-		nexttoken();
+		nexttoken(0);
 		return v;
 	} else {
 		error();
@@ -249,16 +252,16 @@ eval6()
 struct val *
 eval5()
 {
-	regex_t         rp;
-	regmatch_t      rm[2];
-	char            errbuf[256];
-	int             eval;
+	regex_t		rp;
+	regmatch_t	rm[2];
+	char		errbuf[256];
+	int		eval;
 	struct val     *l, *r;
 	struct val     *v;
 
 	l = eval6();
 	while (token == MATCH) {
-		nexttoken();
+		nexttoken(1);
 		r = eval6();
 
 		/* coerce to both arguments to strings */
@@ -309,7 +312,7 @@ eval4()
 
 	l = eval5();
 	while ((op = token) == MUL || op == DIV || op == MOD) {
-		nexttoken();
+		nexttoken(0);
 		r = eval5();
 
 		if (!to_integer(l) || !to_integer(r)) {
@@ -344,7 +347,7 @@ eval3()
 
 	l = eval4();
 	while ((op = token) == ADD || op == SUB) {
-		nexttoken();
+		nexttoken(0);
 		r = eval4();
 
 		if (!to_integer(l) || !to_integer(r)) {
@@ -369,11 +372,12 @@ eval2()
 {
 	struct val     *l, *r;
 	enum token	op;
-	int             v, li, ri;
+	int		v = 0, li, ri;
 
 	l = eval3();
-	while ((op = token) == EQ || op == NE || op == LT || op == GT || op == LE || op == GE) {
-		nexttoken();
+	while ((op = token) == EQ || op == NE || op == LT || op == GT ||
+	    op == LE || op == GE) {
+		nexttoken(0);
 		r = eval3();
 
 		if (is_integer(l, &li) && is_integer(r, &ri)) {
@@ -395,6 +399,8 @@ eval2()
 				break;
 			case NE:
 				v = (li != ri);
+				break;
+			default:
 				break;
 			}
 		} else {
@@ -420,8 +426,10 @@ eval2()
 			case NE:
 				v = (strcoll(l->u.s, r->u.s) != 0);
 				break;
+			default:
+				break;
 			}
-		} 
+		}
 
 		free_value(l);
 		free_value(r);
@@ -439,7 +447,7 @@ eval1()
 
 	l = eval2();
 	while (token == AND) {
-		nexttoken();
+		nexttoken(0);
 		r = eval2();
 
 		if (is_zero_or_null(l) || is_zero_or_null(r)) {
@@ -462,7 +470,7 @@ eval0()
 
 	l = eval1();
 	while (token == OR) {
-		nexttoken();
+		nexttoken(0);
 		r = eval1();
 
 		if (is_zero_or_null(l)) {
@@ -479,18 +487,15 @@ eval0()
 
 int
 main(argc, argv)
-	int             argc;
-	char          **argv;
+	int		argc;
+	char	      **argv;
 {
 	struct val     *vp;
 
-	if (!setlocale(LC_ALL, "")) {
-		fprintf(stderr,
-			"setlocale failed, continuing with \"C\" locale.");
-	}
+	(void) setlocale(LC_ALL, "");
 	av = argv + 1;
 
-	nexttoken();
+	nexttoken(0);
 	vp = eval0();
 
 	if (token != EOI) {

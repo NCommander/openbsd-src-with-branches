@@ -1,4 +1,5 @@
-/*	$NetBSD: installboot.c,v 1.3 1995/09/23 03:40:28 gwr Exp $ */
+/*	$OpenBSD: installboot.c,v 1.6 2001/07/04 08:33:46 niklas Exp $ */
+/*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
  * Copyright (c) 1994 Paul Kranenburg
@@ -64,11 +65,11 @@ daddr_t	*block_table;	/* block number array in prototype image */
 int	maxblocknum;		/* size of this array */
 
 
-char		*loadprotoblocks __P((char *, long *));
-int		loadblocknums __P((char *, int));
-static void	devread __P((int, void *, daddr_t, size_t, char *));
-static void	usage __P((void));
-int 		main __P((int, char *[]));
+char		*loadprotoblocks(char *, long *);
+int		loadblocknums(char *, int);
+static void	devread(int, void *, daddr_t, size_t, char *);
+static void	usage(void);
+int 		main(int, char *[]);
 
 
 static void
@@ -89,7 +90,7 @@ main(argc, argv)
 	char	*protostore;
 	long	protosize;
 
-	while ((c = getopt(argc, argv, "vnh")) != EOF) {
+	while ((c = getopt(argc, argv, "vnh")) != -1) {
 		switch (c) {
 		case 'h':
 			/* Don't strip a.out header */
@@ -292,14 +293,20 @@ int	devfd;
 	 * Open 2nd-level boot program and record the block numbers
 	 * it occupies on the filesystem represented by `devfd'.
 	 */
+
+	/* Make sure the (probably new) boot file is on disk. */
+	sync(); sleep(1);
+
 	if ((fd = open(boot, O_RDONLY)) < 0)
 		err(1, "open: %s", boot);
 
 	if (fstatfs(fd, &statfsbuf) != 0)
 		err(1, "statfs: %s", boot);
 
-	if (strncmp(statfsbuf.f_fstypename, "ufs", MFSNAMELEN))
-		errx(1, "%s: must be on a UFS filesystem", boot);
+	if (strncmp(statfsbuf.f_fstypename, "ffs", MFSNAMELEN) &&
+	    strncmp(statfsbuf.f_fstypename, "ufs", MFSNAMELEN) ) {
+		errx(1, "%s: must be on an FFS filesystem", boot);
+	}
 
 	if (fsync(fd) != 0)
 		err(1, "fsync: %s", boot);

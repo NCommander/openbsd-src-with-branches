@@ -1,5 +1,3 @@
-/*	$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $	*/
-
 /*
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getgrouplist.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getgrouplist.c,v 1.6 1997/08/19 16:24:42 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -51,14 +45,14 @@ static char rcsid[] = "$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp
 int
 getgrouplist(uname, agroup, groups, grpcnt)
 	const char *uname;
-	int agroup;
-	register int *groups;
+	gid_t agroup;
+	register gid_t *groups;
 	int *grpcnt;
 {
 	register struct group *grp;
-	register struct passwd *pw;
 	register int i, ngroups;
 	int ret, maxgroups;
+	int bail;
 
 	ret = 0;
 	ngroups = 0;
@@ -67,14 +61,23 @@ getgrouplist(uname, agroup, groups, grpcnt)
 	/*
 	 * install primary group
 	 */
+	if (ngroups >= maxgroups) {
+		*grpcnt = ngroups;
+		return (-1);
+	}
 	groups[ngroups++] = agroup;
 
 	/*
 	 * Scan the group file to find additional groups.
 	 */
 	setgrent();
-	while (grp = getgrent()) {
+	while ((grp = getgrent())) {
 		if (grp->gr_gid == agroup)
+			continue;
+		for (bail = 0, i = 0; bail == 0 && i < ngroups; i++)
+			if (groups[i] == grp->gr_gid)
+				bail = 1;
+		if (bail)
 			continue;
 		for (i = 0; grp->gr_mem[i]; i++) {
 			if (!strcmp(grp->gr_mem[i], uname)) {

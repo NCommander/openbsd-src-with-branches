@@ -1,4 +1,4 @@
-/*	$NetBSD: tutor.h,v 1.3 1995/03/21 15:06:30 cgd Exp $	*/
+/*	$OpenBSD: tutor.h,v 1.3 1999/07/31 21:57:41 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -35,7 +35,7 @@
  *	@(#)tutor.h	8.1 (Berkeley) 5/31/93
  */
 
-struct situatn  {
+struct situatn {
 	int	brd[26];
 	int	roll1;
 	int	roll2;
@@ -43,5 +43,29 @@ struct situatn  {
 	int	mg[4];
 	int	new1;
 	int	new2;
-	char	*(*com[8]);
+	const char *const (*com[8]);
+	const char *const (*ans[8]);
 };
+
+extern	const char	*const doubl[];
+extern	const char	*const endgame[];
+extern	const char	*const hello[];
+extern	const char	*const hits[];
+extern	const char	*const intro1[];
+extern	const char	*const intro2[];
+extern	const char	*const lastch[];
+extern	const char	*const list[];
+extern	int	 	maxmoves;
+extern	const char	*const moves[];
+extern	const char	*const opts;
+extern	const char	*const prog[];
+extern	const char	*const prompt;
+extern	const char	*const removepiece[];
+extern	const char	*const stragy[];
+extern	const struct situatn	test[];
+
+
+int	brdeq(const int *, const int *);
+void	clrest(void);
+void	leave(void);
+void	tutor(void);

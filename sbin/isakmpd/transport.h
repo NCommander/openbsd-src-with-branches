@@ -1,7 +1,9 @@
-/*	$Id: transport.h,v 1.10 1998/10/11 20:25:10 niklas Exp $	*/
+/*	$OpenBSD: transport.h,v 1.10 2001/08/23 23:11:02 angelos Exp $	*/
+/*	$EOM: transport.h,v 1.16 2000/07/17 18:57:59 provos Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -46,7 +48,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-struct message;
+#include "message.h"
+
 struct transport;
 
 /* This describes a tranport "method" like UDP or similar.  */
@@ -60,8 +63,17 @@ struct transport_vtbl {
   /* Create a transport instance of this method.  */
   struct transport *(*create) (char *);
 
+  /* Reinitialize specific transport.  */
+  void (*reinit) (void);
+
+  /* Remove a transport instance of this method.  */
+  void (*remove) (struct transport *);
+
+  /* Report status of given transport */
+  void (*report) (struct transport *);
+
   /* Let the given transport set it's bit in the fd_set passed in.  */
-  int (*fd_set) (struct transport *, fd_set *);
+  int (*fd_set) (struct transport *, fd_set *, int);
 
   /* Is the given transport ready for I/O?  */
   int (*fd_isset) (struct transport *, fd_set *);
@@ -77,15 +89,20 @@ struct transport_vtbl {
 
   /*
    * Fill out a sockaddr structure with the transport's destination end's
-   * address info.  XXX Why not size_t * as last arg?
+   * address info.
    */
-  void (*get_dst) (struct transport *, struct sockaddr **, int *);
+  void (*get_dst) (struct transport *, struct sockaddr **);
 
   /*
    * Fill out a sockaddr structure with the transport's source end's
-   * address info.  XXX Why not size_t * as last arg?
+   * address info.
    */
-  void (*get_src) (struct transport *, struct sockaddr **, int *);
+  void (*get_src) (struct transport *, struct sockaddr **);
+
+  /*
+   * Return a string with decoded src and dst information
+   */
+  char *(*decode_ids) (struct transport *);
 };
 
 struct transport {
@@ -96,14 +113,26 @@ struct transport {
   struct transport_vtbl *vtbl;
 
   /* The queue holding messages to send on this transport.  */
-  TAILQ_HEAD (msg_head, message) sendq;
+  struct msg_head sendq;
+
+  /*
+   * Prioritized send queue.  Messages in this queue will be transmitted 
+   * before the normal sendq, they will also all be transmitted prior
+   * to a daemon shutdown.  Currently only used for DELETE notifications.
+   */
+  struct msg_head prio_sendq;
 
   /* Flags describing the transport.  */
   int flags;
+
+  /* References counter.  */
+  int refcnt;
 };
 
 /* Set if this is a transport we want to listen on.  */
 #define TRANSPORT_LISTEN	1
+/* Used for mark-and-sweep-type garbage collection of transports */
+#define TRANSPORT_MARK		2
 
 extern void transport_add (struct transport *);
 extern struct transport *transport_create (char *, char *);
@@ -113,6 +142,10 @@ extern void transport_init (void);
 extern void transport_map (void (*) (struct transport *));
 extern void transport_method_add (struct transport_vtbl *);
 extern int transport_pending_wfd_set (fd_set *);
+extern void transport_reference (struct transport *);
+extern void transport_release (struct transport *);
+extern void transport_report (void);
 extern void transport_send_messages (fd_set *);
-
+extern void transport_reinit (void);
+extern int transport_prio_sendqs_empty (void);
 #endif /* _TRANSPORT_H_ */

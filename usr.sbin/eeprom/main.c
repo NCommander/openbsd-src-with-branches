@@ -1,8 +1,12 @@
-/*	$NetBSD: main.c,v 1.1 1995/07/13 18:15:44 thorpej Exp $	*/
+/*	$OpenBSD: main.c,v 1.7 2001/09/20 20:42:25 jason Exp $	*/
+/*	$NetBSD: main.c,v 1.3 1996/05/16 16:00:55 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,22 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <sys/param.h>
@@ -63,12 +68,20 @@ struct	keytabent eekeytab[] = {
 	{ "hwupdate",		0x10,	ee_hwupdate },
 	{ "memsize",		0x14,	ee_num8 },
 	{ "memtest",		0x15,	ee_num8 },
+#ifdef __sparc64__
+	{ "scrsize",		0x16,	ee_notsupp },
+#else
 	{ "scrsize",		0x16,	ee_screensize },
+#endif
 	{ "watchdog_reboot",	0x17,	ee_truefalse },
 	{ "default_boot",	0x18,	ee_truefalse },
 	{ "bootdev",		0x19,	ee_bootdev },
 	{ "kbdtype",		0x1e,	ee_kbdtype },
+#ifdef __sparc64__
+	{ "console",		0x1f,	ee_notsupp },
+#else
 	{ "console",		0x1f,	ee_constype },
+#endif
 	{ "keyclick",		0x21,	ee_truefalse },
 	{ "diagdev",		0x22,	ee_bootdev },
 	{ "diagpath",		0x28,	ee_diagpath },
@@ -87,11 +100,11 @@ struct	keytabent eekeytab[] = {
 	{ NULL,			0,	ee_notsupp },
 };
 
-static	void action __P((char *));
-static	void dump_prom __P((void));
-static	void usage __P((void));
+static	void action(char *);
+static	void dump_prom(void);
+static	void usage(void);
 #ifdef __sparc__
-static	int getcputype __P((void));
+static	int getcputype(void);
 #endif /* __sparc__ */
 
 char	*path_eeprom = "/dev/eeprom";
@@ -156,6 +169,10 @@ main(argc, argv)
 	argv += optind;
 
 #ifdef __sparc__
+	if (system != NULL) {
+		setegid(getgid());
+		setgid(getgid());
+	}
 	if (getcputype() != CPU_SUN4)
 		use_openprom = 1;
 #endif /* __sparc__ */
@@ -183,7 +200,7 @@ main(argc, argv)
 		}
 
 		while (argc) {
-			action(argv[argc - 1]);
+			action(*argv);
 			++argv;
 			--argc;
 		}
@@ -215,6 +232,9 @@ getcputype()
 
 	if ((kd = kvm_openfiles(system, NULL, NULL, O_RDONLY, errbuf)) == NULL)
 		errx(1, "can't open kvm: %s", errbuf);
+
+	setegid(getgid());
+	setgid(getgid());
 
 	if (kvm_nlist(kd, nl))
 		KVM_ABORT(kd, "can't read symbol table");
@@ -252,7 +272,7 @@ action(line)
 		 * the generic op_handler.
 		 */
 		if ((cp = op_handler(keyword, arg)) != NULL)
-			warnx(cp);
+			warnx("%s", cp);
 		return;
 	} else
 #endif /* __sparc__ */

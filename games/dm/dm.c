@@ -1,4 +1,5 @@
-/*	$NetBSD: dm.c,v 1.4 1995/03/21 15:09:05 cgd Exp $	*/
+/*	$OpenBSD: dm.c,v 1.13 1999/09/25 15:52:19 pjanzen Exp $	*/
+/*    $NetBSD: dm.c,v 1.5 1996/02/06 22:47:20 jtc Exp $       */
 
 /*
  * Copyright (c) 1987, 1993
@@ -43,19 +44,21 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dm.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: dm.c,v 1.4 1995/03/21 15:09:05 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dm.c,v 1.13 1999/09/25 15:52:19 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/param.h>
-#include <sys/file.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
 #include <ctype.h>
-#include <nlist.h>
+#include <err.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -63,11 +66,24 @@ static char rcsid[] = "$NetBSD: dm.c,v 1.4 1995/03/21 15:09:05 cgd Exp $";
 
 #include "pathnames.h"
 
-extern int errno;
 static time_t	now;			/* current time value */
 static int	priority = 0;		/* priority game runs at */
 static char	*game,			/* requested game */
 		*gametty;		/* from tty? */
+
+void	c_day(const char *, const char *, const char *);
+void	c_game(const char *, const char  *, const char *, const char *);
+void	c_tty(const char *);
+const char *hour(int);
+double	load(void);
+int	main(int, char *[]);
+void	nogamefile(void);
+void	play(char **);
+void	read_config(void);
+int	users(void);
+#ifdef LOG
+void	logfile(void);
+#endif
 
 int
 main(argc, argv)
@@ -77,12 +93,13 @@ main(argc, argv)
 	char *cp;
 
 	nogamefile();
-	game = (cp = rindex(*argv, '/')) ? ++cp : *argv;
+	game = (cp = strrchr(*argv, '/')) ? ++cp : *argv;
 
 	if (!strcmp(game, "dm"))
 		exit(0);
 
 	gametty = ttyname(0);
+	unsetenv("TZ");
 	(void)time(&now);
 	read_config();
 #ifdef LOG
@@ -96,18 +113,27 @@ main(argc, argv)
  * play --
  *	play the game
  */
+void
 play(args)
 	char **args;
 {
 	char pbuf[MAXPATHLEN];
 
+	if (sizeof(_PATH_HIDE) + strlen(game) > sizeof(pbuf)) {
+		(void)fprintf(stderr, "dm: %s/%s: %s\n", _PATH_HIDE, game,
+			strerror(ENAMETOOLONG));
+		exit(1);
+	}
 	(void)strcpy(pbuf, _PATH_HIDE);
 	(void)strcpy(pbuf + sizeof(_PATH_HIDE) - 1, game);
 	if (priority > 0)	/* < 0 requires root */
 		(void)setpriority(PRIO_PROCESS, 0, priority);
-	setgid(getgid());	/* we run setgid kmem; lose it */
 	execv(pbuf, args);
 	(void)fprintf(stderr, "dm: %s: %s\n", pbuf, strerror(errno));
+	/* use fprintf(stderr, "dm: ...) for error conditions in dm.
+	 * use err() and family for denied games, since then you get
+	 *	the actual name of the game in the output message.
+	 */
 	exit(1);
 }
 
@@ -115,29 +141,30 @@ play(args)
  * read_config --
  *	read through config file, looking for key words.
  */
+void
 read_config()
 {
 	FILE *cfp;
-	char lbuf[BUFSIZ], f1[40], f2[40], f3[40], f4[40], f5[40];
+	char lbuf[BUFSIZ], f1[41], f2[41], f3[41], f4[41], f5[41];
 
 	if (!(cfp = fopen(_PATH_CONFIG, "r")))
 		return;
 	while (fgets(lbuf, sizeof(lbuf), cfp))
-		switch(*lbuf) {
+		switch (*lbuf) {
 		case 'b':		/* badtty */
-			if (sscanf(lbuf, "%s%s", f1, f2) != 2 ||
+			if (sscanf(lbuf, "%40s%40s", f1, f2) != 2 ||
 			    strcasecmp(f1, "badtty"))
 				break;
 			c_tty(f2);
 			break;
 		case 'g':		/* game */
-			if (sscanf(lbuf, "%s%s%s%s%s",
+			if (sscanf(lbuf, "%40s%40s%40s%40s%40s",
 			    f1, f2, f3, f4, f5) != 5 || strcasecmp(f1, "game"))
 				break;
 			c_game(f2, f3, f4, f5);
 			break;
 		case 't':		/* time */
-			if (sscanf(lbuf, "%s%s%s%s", f1, f2, f3, f4) != 4 ||
+			if (sscanf(lbuf, "%40s%40s%40s%40s", f1, f2, f3, f4) != 4 ||
 			    strcasecmp(f1, "time"))
 				break;
 			c_day(f2, f3, f4);
@@ -149,10 +176,11 @@ read_config()
  * c_day --
  *	if day is today, see if okay to play
  */
+void
 c_day(s_day, s_start, s_stop)
-	char *s_day, *s_start, *s_stop;
+	const char *s_day, *s_start, *s_stop;
 {
-	static char *days[] = {
+	static const char *const days[] = {
 		"sunday", "monday", "tuesday", "wednesday",
 		"thursday", "friday", "saturday",
 	};
@@ -168,12 +196,11 @@ c_day(s_day, s_start, s_stop)
 	start = atoi(s_start);
 	stop = atoi(s_stop);
 	if (ct->tm_hour >= start && ct->tm_hour < stop) {
-		fputs("dm: Sorry, games are not available from ", stderr);
-		hour(start);
-		fputs(" to ", stderr);
-		hour(stop);
-		fputs(" today.\n", stderr);
-		exit(0);
+		if (start == 0 && stop == 24)
+			errx(0, "Sorry, games are not available today.");
+		else
+			errx(0, "Sorry, games are not available from %s to %s today.",
+			    hour(start), hour(stop));
 	}
 }
 
@@ -181,46 +208,41 @@ c_day(s_day, s_start, s_stop)
  * c_tty --
  *	decide if this tty can be used for games.
  */
+void
 c_tty(tty)
-	char *tty;
+	const char *tty;
 {
 	static int first = 1;
 	static char *p_tty;
 
 	if (first) {
-		p_tty = rindex(gametty, '/');
+		p_tty = strrchr(gametty, '/');
 		first = 0;
 	}
 
-	if (!strcmp(gametty, tty) || p_tty && !strcmp(p_tty, tty)) {
-		fprintf(stderr, "dm: Sorry, you may not play games on %s.\n", gametty);
-		exit(0);
-	}
+	if (!strcmp(gametty, tty) || (p_tty && !strcmp(p_tty, tty)))
+		errx(0, "Sorry, you may not play games on %s.", gametty);
 }
 
 /*
  * c_game --
  *	see if game can be played now.
  */
+void
 c_game(s_game, s_load, s_users, s_priority)
-	char *s_game, *s_load, *s_users, *s_priority;
+	const char *s_game, *s_load, *s_users, *s_priority;
 {
 	static int found;
-	double load();
 
 	if (found)
 		return;
 	if (strcmp(game, s_game) && strcasecmp("default", s_game))
 		return;
 	++found;
-	if (isdigit(*s_load) && atoi(s_load) < load()) {
-		fputs("dm: Sorry, the load average is too high right now.\n", stderr);
-		exit(0);
-	}
-	if (isdigit(*s_users) && atoi(s_users) <= users()) {
-		fputs("dm: Sorry, there are too many users logged on right now.\n", stderr);
-		exit(0);
-	}
+	if (isdigit(*s_load) && atoi(s_load) < load())
+		errx(0, "Sorry, the load average is too high right now.");
+	if (isdigit(*s_users) && atoi(s_users) <= users())
+		errx(0, "Sorry, there are too many users logged on right now.");
 	if (isdigit(*s_priority))
 		priority = atoi(s_priority);
 }
@@ -235,10 +257,10 @@ load()
 	double avenrun[3];
 
 	if (getloadavg(avenrun, sizeof(avenrun)/sizeof(avenrun[0])) < 0) {
-		fputs("dm: getloadavg() failed.\n", stderr);
+		(void)fputs("dm: getloadavg() failed.\n", stderr);
 		exit(1);
 	}
-	return(avenrun[2]);
+	return (avenrun[2]);
 }
 
 /*
@@ -247,10 +269,11 @@ load()
  *	todo: check idle time; if idle more than X minutes, don't
  *	count them.
  */
+int
 users()
 {
 	
-	register int nusers, utmp;
+	int nusers, utmp;
 	struct utmp buf;
 
 	if ((utmp = open(_PATH_UTMP, O_RDONLY, 0)) < 0) {
@@ -261,12 +284,13 @@ users()
 	for (nusers = 0; read(utmp, (char *)&buf, sizeof(struct utmp)) > 0;)
 		if (buf.ut_name[0] != '\0')
 			++nusers;
-	return(nusers);
+	return (nusers);
 }
 
+void
 nogamefile()
 {
-	register int fd, n;
+	int fd, n;
 	char buf[BUFSIZ];
 
 	if ((fd = open(_PATH_NOGAMES, O_RDONLY, 0)) >= 0) {
@@ -282,22 +306,20 @@ nogamefile()
  * hour --
  *	print out the hour in human form
  */
+const char *
 hour(h)
 	int h;
 {
-	switch(h) {
-	case 0:
-		fputs("midnight", stderr);
-		break;
-	case 12:
-		fputs("noon", stderr);
-		break;
-	default:
-		if (h > 12)
-			fprintf(stderr, "%dpm", h - 12);
-		else
-			fprintf(stderr, "%dam", h);
-	}
+	static const char *const hours[] = {
+	    "midnight", "1am", "2am", "3am", "4am", "5am",
+	    "6am", "7am", "8am", "9am", "10am", "11am",
+	    "noon", "1pm", "2pm", "3pm", "4pm", "5pm",
+	    "6pm", "7pm", "8pm", "9pm", "10pm", "11pm", "midnight" };
+
+	if (h < 0 || h > 24)
+		return ("BAD TIME");
+	else
+		return (hours[h]);
 }
 
 #ifdef LOG
@@ -305,6 +327,7 @@ hour(h)
  * logfile --
  *	log play of game
  */
+void
 logfile()
 {
 	struct passwd *pw;
@@ -324,12 +347,12 @@ logfile()
 			sleep((u_int)1);
 		}
 		if (pw = getpwuid(uid = getuid()))
-			fputs(pw->pw_name, lp);
+			(void)fputs(pw->pw_name, lp);
 		else
-			fprintf(lp, "%u", uid);
-		fprintf(lp, "\t%s\t%s\t%s", game, gametty, ctime(&now));
-		(void)fclose(lp);
+			(void)fprintf(lp, "%u", uid);
+		(void)fprintf(lp, "\t%s\t%s\t%s", game, gametty, ctime(&now));
 		(void)flock(fileno(lp), LOCK_UN);
+		(void)fclose(lp);
 	}
 }
 #endif /* LOG */

@@ -63,8 +63,8 @@
 #define APPS_WIN16
 #endif
 #include "apps.h"
-#include "err.h"
-#include "ssl.h"
+#include <openssl/err.h>
+#include <openssl/ssl.h>
 
 #undef PROG
 #define PROG	ciphers_main
@@ -74,22 +74,24 @@ static char *ciphers_usage[]={
 " -v          - verbose mode, a textual listing of the ciphers in SSLeay\n",
 " -ssl2       - SSL2 mode\n",
 " -ssl3       - SSL3 mode\n",
+" -tls1       - TLS1 mode\n",
 NULL
 };
 
-int MAIN(argc, argv)
-int argc;
-char **argv;
+int MAIN(int, char **);
+
+int MAIN(int argc, char **argv)
 	{
 	int ret=1,i;
 	int verbose=0;
-	char **pp,*p;
+	char **pp;
+	const char *p;
 	int badops=0;
 	SSL_CTX *ctx=NULL;
 	SSL *ssl=NULL;
 	char *ciphers=NULL;
 	SSL_METHOD *meth=NULL;
-	STACK *sk;
+	STACK_OF(SSL_CIPHER) *sk;
 	char buf[512];
 	BIO *STDout=NULL;
 
@@ -106,6 +108,12 @@ char **argv;
 	if (bio_err == NULL)
 		bio_err=BIO_new_fp(stderr,BIO_NOCLOSE);
 	STDout=BIO_new_fp(stdout,BIO_NOCLOSE);
+#ifdef VMS
+	{
+	BIO *tmpbio = BIO_new(BIO_f_linebuffer());
+	STDout = BIO_push(tmpbio, STDout);
+	}
+#endif
 
 	argc--;
 	argv++;
@@ -120,6 +128,10 @@ char **argv;
 #ifndef NO_SSL3
 		else if (strcmp(*argv,"-ssl3") == 0)
 			meth=SSLv3_client_method();
+#endif
+#ifndef NO_TLS1
+		else if (strcmp(*argv,"-tls1") == 0)
+			meth=TLSv1_client_method();
 #endif
 		else if ((strncmp(*argv,"-h",2) == 0) ||
 			 (strcmp(*argv,"-?") == 0))
@@ -142,12 +154,16 @@ char **argv;
 		goto end;
 		}
 
-	SSLeay_add_ssl_algorithms();
+	OpenSSL_add_ssl_algorithms();
 
 	ctx=SSL_CTX_new(meth);
 	if (ctx == NULL) goto err;
-	if (ciphers != NULL)
-		SSL_CTX_set_cipher_list(ctx,ciphers);
+	if (ciphers != NULL) {
+		if(!SSL_CTX_set_cipher_list(ctx,ciphers)) {
+			BIO_printf(bio_err, "Error in cipher list\n");
+			goto err;
+		}
+	}
 	ssl=SSL_new(ctx);
 	if (ssl == NULL) goto err;
 
@@ -167,10 +183,10 @@ char **argv;
 		{
 		sk=SSL_get_ciphers(ssl);
 
-		for (i=0; i<sk_num(sk); i++)
+		for (i=0; i<sk_SSL_CIPHER_num(sk); i++)
 			{
 			BIO_puts(STDout,SSL_CIPHER_description(
-				(SSL_CIPHER *)sk_value(sk,i),
+				sk_SSL_CIPHER_value(sk,i),
 				buf,512));
 			}
 		}
@@ -185,7 +201,7 @@ err:
 end:
 	if (ctx != NULL) SSL_CTX_free(ctx);
 	if (ssl != NULL) SSL_free(ssl);
-	if (STDout != NULL) BIO_free(STDout);
+	if (STDout != NULL) BIO_free_all(STDout);
 	EXIT(ret);
 	}
 

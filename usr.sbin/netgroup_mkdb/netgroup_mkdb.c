@@ -1,3 +1,5 @@
+/*	$OpenBSD: netgroup_mkdb.c,v 1.9 2002/02/16 21:28:06 millert Exp $	*/
+
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -29,7 +31,7 @@
  * SUCH DAMAGE.
  */
 #ifndef lint
-static char *rcsid = "$Id: netgroup_mkdb.c,v 1.3 1995/06/02 21:40:51 christos Exp $";
+static char *rcsid = "$OpenBSD: netgroup_mkdb.c,v 1.9 2002/02/16 21:28:06 millert Exp $";
 #endif
 
 #include <sys/types.h>
@@ -44,11 +46,14 @@ static char *rcsid = "$Id: netgroup_mkdb.c,v 1.3 1995/06/02 21:40:51 christos Ex
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#define _NETGROUP_PRIVATE
 #include <netgroup.h>
 #include <assert.h>
 
 #include "str.h"
 #include "util.h"
+
+#define DEBUG_NG
 
 #define NEW(a)	(a *) emalloc(sizeof(a))
 
@@ -65,34 +70,25 @@ struct nentry {
 };
 
 
-struct stringlist;
+static DB       *ng_insert(DB *, const char *);
+static void	 ng_reventry(DB *, DB *, struct nentry *, char *,
+		    size_t, struct stringlist *);
 
-extern struct stringlist
-		*_ng_sl_init __P((void));
-extern void      _ng_sl_add __P((struct stringlist *, char *));
-extern void    	 _ng_sl_free __P((struct stringlist *, int));
-extern char    	*_ng_sl_find __P((struct stringlist *, char *));
-
-extern char     *_ng_makekey __P((const char *, const char *, size_t));
-extern int       _ng_parse __P((char **, char **, struct netgroup **));
-
-static DB       *ng_insert __P((DB *, const char *));
-static void	 ng_reventry __P((DB *, DB *, struct nentry *, char *,
-				  size_t, struct stringlist *));
-
-static void	 ng_print __P((struct nentry *, struct string *));
-static void	 ng_rprint __P((DB *, struct string *));
-static DB	*ng_reverse __P((DB *, size_t));
-static DB	*ng_load __P((const char *));
-static void	 ng_write __P((DB *, DB *, int));
-static void	 ng_rwrite __P((DB *, DB *, int));
-static void	 usage __P((void));
-static void	 cleanup __P((void));
+static void	 ng_print(struct nentry *, struct string *);
+static void	 ng_rprint(DB *, struct string *);
+static DB	*ng_reverse(DB *, size_t);
+static DB	*ng_load(const char *);
+static void	 ng_write(DB *, DB *, int);
+static void	 ng_rwrite(DB *, DB *, int);
+static void	 usage(void);
+static void	 cleanup(void);
 
 #ifdef DEBUG_NG
-static void	 ng_dump __P((DB *));
-static void	 ng_rdump __P((DB *));
+static int 	 debug = 0;
+static void	 ng_dump(DB *);
+static void	 ng_rdump(DB *);
 #endif /* DEBUG_NG */
+
 
 static const char ng_empty[] = "";
 #define NG_EMPTY(a)	((a) ? (a) : ng_empty)
@@ -110,8 +106,13 @@ main(argc, argv)
 	char		 *fname = _PATH_NETGROUP;
 
 
-	while ((ch = getopt(argc, argv, "o:")) != EOF)
+	while ((ch = getopt(argc, argv, "do:")) != -1)
 		switch (ch) {
+#ifdef DEBUG_NG
+		case 'd':
+			debug++;
+			break;
+#endif
 		case 'o':
 			dbname = optarg;
 			break;
@@ -135,22 +136,28 @@ main(argc, argv)
 	/* Read and parse the netgroup file */
 	ndb = ng_load(fname);
 #ifdef DEBUG_NG
-	(void) fprintf(stderr, "#### Database\n");
-	ng_dump(ndb);
+	if (debug) {
+		(void) fprintf(stderr, "#### Database\n");
+		ng_dump(ndb);
+	}
 #endif
 
 	/* Reverse the database by host */
 	hdb = ng_reverse(ndb, offsetof(struct netgroup, ng_host));
 #ifdef DEBUG_NG
-	(void) fprintf(stderr, "#### Reverse by host\n");
-	ng_rdump(hdb);
+	if (debug) {
+		(void) fprintf(stderr, "#### Reverse by host\n");
+		ng_rdump(hdb);
+	}
 #endif
 
 	/* Reverse the database by user */
 	udb = ng_reverse(ndb, offsetof(struct netgroup, ng_user));
 #ifdef DEBUG_NG
-	(void) fprintf(stderr, "#### Reverse by user\n");
-	ng_rdump(udb);
+	if (debug) {
+		(void) fprintf(stderr, "#### Reverse by user\n");
+		ng_rdump(udb);
+	}
 #endif
 
 	(void) snprintf(buf, sizeof(buf), "%s.tmp", dbname);
@@ -158,7 +165,7 @@ main(argc, argv)
 	db = dbopen(buf, O_RDWR | O_CREAT | O_EXCL,
 		    (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), DB_HASH, NULL);
 	if (!db)
-		err(1, buf);
+		err(1, "%s", buf);
 
 	ng_write(db, ndb, _NG_KEYBYNAME);
 	ng_rwrite(db, udb, _NG_KEYBYUSER);
@@ -205,7 +212,7 @@ ng_load(fname)
 
 	/* Open the netgroup file */
 	if ((fp = fopen(fname, "r")) == NULL)
-		err(1, fname);
+		err(1, "%s", fname);
 
 	db = dbopen(NULL, O_RDWR | O_CREAT | O_EXCL, 0, DB_HASH, NULL);
 
@@ -235,7 +242,7 @@ ng_load(fname)
 					break;
 
 				case 1:
-					warnx("Duplicate entry netgroup `%s'\n",
+					warnx("Duplicate entry netgroup `%s'",
 					      head->n_name);
 					break;
 
@@ -264,8 +271,11 @@ ng_load(fname)
 				break;
 
 			case _NG_GROUP:
-				if (tail == NULL)
-					errx(1, "no netgroup key");
+				if (tail == NULL) {
+					char fmt[BUFSIZ];
+					_ng_print(fmt, sizeof(fmt), ng);
+					errx(1, "no netgroup key for %s", fmt);
+				}
 				else {
 					e = NEW(struct nentry);
 					e->n_type = _NG_GROUP;
@@ -356,14 +366,15 @@ ng_reventry(db, udb, fe, name, s, ss)
 	DBT             key, data;
 	struct nentry  *e;
 	struct netgroup *ng;
+	struct nentry *rfe;
 	char           *p;
 	DB             *xdb;
 
-	if (_ng_sl_find(ss, name) != NULL) {
+	if (_ng_sl_find(ss, fe->n_name) != NULL) {
 		warnx("Cycle in netgroup `%s'", name);
 		return;
 	}
-	_ng_sl_add(ss, name);
+	_ng_sl_add(ss, fe->n_name);
 
 	for (e = fe->n_next; e != NULL; e = e->n_next)
 		switch (e->n_type) {
@@ -397,8 +408,8 @@ ng_reventry(db, udb, fe, name, s, ss)
 			key.size = strlen(e->n_name) + 1;
 			switch ((db->get)(db, &key, &data, 0)) {
 			case 0:
-				memcpy(&fe, data.data, sizeof(fe));
-				ng_reventry(db, udb, fe, e->n_name, s, ss);
+				(void) memcpy(&rfe, data.data, sizeof(rfe));
+				ng_reventry(db, udb, rfe, name, s, ss);
 				break;
 
 			case 1:
@@ -470,6 +481,11 @@ ng_print(e, str)
 {
 	char           *ptr = emalloc(e->n_size);
 
+	if (e->n_next == NULL) {
+		str_append(str, "", ' ');
+		return;
+	}
+
 	for (e = e->n_next; e != NULL; e = e->n_next) {
 		switch (e->n_type) {
 		case _NG_NAME:
@@ -484,7 +500,7 @@ ng_print(e, str)
 			break;
 
 		default:
-			errx(1, "Internal error: Bad netgroup type\n");
+			errx(1, "Internal error: Bad netgroup type");
 			break;
 		}
 		str_append(str, ptr, ' ');

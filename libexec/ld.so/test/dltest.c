@@ -1,13 +1,14 @@
+/*	$OpenBSD: dltest.c,v 1.4 2001/09/25 21:51:16 drahn Exp $	*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <dlfcn.h>
 #include <ctype.h>
 #include <elf_abi.h>
-#include <machine/reloc.h>
 #include <nlist.h>
-#include "../powerpc/archdep.h"
-#include "../resolve.h"
+#include "archdep.h"
+#include "resolve.h"
 
 typedef void (*func_t)(const char *);
 
@@ -34,7 +35,7 @@ main(int argc, char **argv)
 	int ch;
 	int mode;
 
-	while((ch = getopt(argc, argv, "a:b:f:l:")) != EOF) {
+	while((ch = getopt(argc, argv, "a:b:f:l:")) != -1) {
 		switch(ch) {
 		case 'a':
 			param = optarg;

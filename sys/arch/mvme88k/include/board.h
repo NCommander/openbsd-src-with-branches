@@ -1,3 +1,4 @@
+/*	$OpenBSD: board.h,v 1.13 2001/12/16 23:49:46 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -41,8 +42,8 @@
  * thereof, and that both notices appear in supporting documentation.
  *
  */
-#ifndef _MACHINE_BOARD_H
-#define _MACHINE_BOARD_H
+#ifndef __MACHINE_BOARD_H__
+#define __MACHINE_BOARD_H__
 /*
  *      VME187 CPU board constants - derived from Luna88k
  */
@@ -51,76 +52,77 @@
  * Something to put append a 'U' to a long constant if it's C so that
  * it'll be unsigned in both ANSI and traditional.
  */
-#if defined(ASSEMBLER)
-#	define U(num)	num
+#if defined(_LOCORE)
+#define U(num)	num
+#elif defined(__STDC__)
+#define U(num)	num ## U
 #else
-#  if defined(__STDC__)
-#	define U(num)	num ## U
-#  else
-#	define U(num)	num/**/U
-#  endif
+#define U(num)	num/**/U
 #endif
+#define UDEFINED
 
-#define	MAX_CPUS	1		/* no. of CPUs */
-#define MAX_CMMUS	2		/* 2 CMMUs - 1 data and 1 code */
+#define MAX_CPUS	4	/* no. of CPUs */
+#define MAX_CMMUS	8	/* 2 CMMUs per CPU - 1 data and 1 code */
 
-#define	SYSV_BASE	U(0x00000000) 	/* system virtual base */
+#define SYSV_BASE	U(0x00000000)	/* system virtual base */
 
-#define	MAXU_ADDR	U(0x40000000) 	/* size of user virtual space */
-#define MAXPHYSMEM	U(0x10000000) 	/* max physical memory */
+#define MAXU_ADDR	U(0x40000000)	/* size of user virtual space */
+#define MAXPHYSMEM	U(0x10000000)	/* max physical memory */
 
-#define BUGROM_START	U(0xFF800000)	/* start of BUG PROM */
-#define BUGROM_SIZE	U(0x003FFFFF)	/* size of BUG PROM */
-#define SRAM_START	U(0xFFE00000)	/* start of sram used by bug */
-#define SRAM_SIZE	U(0x0001FFFF)	/* size of sram */
-#define OBIO_START	U(0xFFF00000)	/* start of local IO */
-#define OBIO_SIZE	U(0x000EFFFF)	/* size of obio space */
-
-#define INT_PRI_LEVEL	U(0xFFF4203E)	/* interrupt priority level */
-#define INT_MASK_LEVEL	U(0xFFF4203F)	/* interrupt mask level */
-
-#define LOCAL_IO_DEVS	U(0xFFF00000)	/* local IO devices */
 #define VMEA16		U(0xFFFF0000)	/* VMEbus A16 */
+#define VMEA16_SIZE	U(0x0000EFFF)	/* VMEbus A16 size */
+#define VMEA32D16    	U(0xFF000000)	/* VMEbus A32/D16 */
+#define VMEA32D16_SIZE	U(0x007FFFFF)	/* VMEbus A32/D16 size */
 
-#define	PCC2_ADDR	U(0xFFF42000)	/* PCCchip2 Regs */
-#define	MEM_CTLR	U(0xFFF43000)	/* MEMC040 mem controller */
-#define SCC_ADDR	U(0xFFF45000) 	/* Cirrus Chip */
-#define LANCE_ADDR	U(0xFFF46000) 	/* 82596CA */
-#define SCSI_ADDR	U(0xFFF47000) 	/* NCR 710 address */
-#define NCR710_SIZE	U(0x00000040) 	/* NCR 710 size */
-#define MK48T08_ADDR	U(0xFFFC0000) 	/* BBRAM, TOD */
 
-#define	TOD_CAL_CTL	U(0xFFFC1FF8) 	/* calendar control register */
-#define TOD_CAL_SEC	U(0xFFFC1FF9) 	/* seconds */
-#define TOD_CAL_MIN	U(0xFFFC1FFA) 	/* minutes */
-#define TOD_CAL_HOUR	U(0xFFFC1FFB) 	/* hours */
-#define TOD_CAL_DOW	U(0xFFFC1FFC) 	/* Day Of the Week */
-#define TOD_CAL_DAY	U(0xFFFC1FFD) 	/* days */
-#define TOD_CAL_MON	U(0xFFFC1FFE) 	/* months */
-#define TOD_CAL_YEAR	U(0xFFFC1FFF) 	/* years */
-
-#define CMMU_I		U(0xFFF77000) 	/* CMMU instruction  */
-#define CMMU_D		U(0xFFF7F000) 	/* CMMU data */
+/* These need to be here because of the way m18x_cmmu.c 
+   handles the CMMU's. */
 #define CMMU_SIZE	0x1000
 
-#if 0
-/* interrupt vectors */
+#ifndef CMMU_DEFS
+#define CMMU_DEFS
+#define SBC_CMMU_I	U(0xFFF77000) 	/* Single Board Computer code CMMU */
+#define SBC_CMMU_D	U(0xFFF7F000) 	/* Single Board Computer data CMMU */
 
-#define PPBSY		0x50		/* printer port busy */
-#define PPPE		0x51		/* printer port PE   */
-#define PPSEL		0x52		/* printer port select */
-#define PPFLT		0x53		/* printer port fault */
-#define PPACK		0x54		/* printer port ack */
-#define SCSIIRQ		0x55		/* SCSI IRQ */
-#define LANCERR		0x56		/* LANC ERR */
-#define LANCIRQ		0x57		/* LANC IRQ */
-#define TIMER2IRQ	0x58		/* Tick Timer 2 vec */
-#define TIMER1IRQ	0x59		/* Tick Timer 1 vec */
-#define GPIOIRQ		0x5A		/* GPIO IRQ */
-#define SRXEXIRQ	0x5C		/* Serial RX Exception IRQ */
-#define SRMIRQ		0x5D		/* Serial Modem IRQ */
-#define STXIRQ		0x5E		/* Serial TX IRQ */
-#define SRXIRQ		0x5F		/* Serial RX IRQ */
-#endif /* 0 */
+#define VME_CMMU_I0	U(0xFFF7E000) 	/* MVME188 code CMMU 0 */
+#define VME_CMMU_I1	U(0xFFF7D000) 	/* MVME188 code CMMU 1 */
+#define VME_CMMU_I2	U(0xFFF7B000) 	/* MVME188 code CMMU 2 */
+#define VME_CMMU_I3	U(0xFFF77000) 	/* MVME188 code CMMU 3 */
+#define VME_CMMU_D0	U(0xFFF6F000) 	/* MVME188 data CMMU 0 */
+#define VME_CMMU_D1	U(0xFFF5F000) 	/* MVME188 data CMMU 1 */
+#define VME_CMMU_D2	U(0xFFF3F000) 	/* MVME188 data CMMU 2 */
+#define VME_CMMU_D3	U(0xFFF7F000) 	/* MVME188 data CMMU 3 */
+#endif /* CMMU_DEFS */
 
-#endif /* _MACHINE_BOARD_H */
+/* These are the hardware exceptions. */
+#define INT_BIT		0x1		/* interrupt exception		*/
+#define IACC_BIT	0x2		/* instruction access exception	*/
+#define DACC_BIT	0x4		/* data access exception	*/
+#define MACC_BIT	0x8		/* misaligned access exception	*/
+#define UOPC_BIT	0x10		/* unimplemented opcode exception*/
+#define PRIV_BIT	0x20		/* priviledge violation exception*/
+#define BND_BIT		0x40		/* bounds check violation	*/
+#define IDE_BIT		0x80		/* illegal integer divide	*/
+#define IOV_BIT		0x100		/* integer overflow exception	*/
+#define ERR_BIT		0x200		/* error exception		*/
+#define FPUP_BIT	0x400		/* FPU precise exception	*/
+#define FPUI_BIT	0x800		/* FPU imprecise exception	*/
+
+/* machine dependant definitions */
+
+#if defined(MVME187) || defined(MVME197)
+#include <machine/mvme1x7.h>
+#endif
+#ifdef MVME187
+#include <machine/mvme187.h>
+#endif 
+#ifdef MVME188
+#include <machine/mvme188.h>
+#endif
+#ifdef MVME197
+#include <machine/mvme197.h>
+#endif
+
+#endif /* __MACHINE_BOARD_H__ */
+
+

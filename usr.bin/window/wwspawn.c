@@ -1,4 +1,5 @@
-/*	$NetBSD: wwspawn.c,v 1.3 1995/09/28 10:35:55 tls Exp $	*/
+/*	$OpenBSD: wwspawn.c,v 1.5 1997/02/25 00:05:09 downsj Exp $	*/
+/*	$NetBSD: wwspawn.c,v 1.4 1995/12/21 08:39:57 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwspawn.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwspawn.c,v 1.3 1995/09/28 10:35:55 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwspawn.c,v 1.5 1997/02/25 00:05:09 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,16 +53,19 @@ static char rcsid[] = "$NetBSD: wwspawn.c,v 1.3 1995/09/28 10:35:55 tls Exp $";
  * So we have to be sneaky about error reporting.
  */
 wwspawn(wp, file, argv)
-register struct ww *wp;
+struct ww *wp;
 char *file;
 char **argv;
 {
 	int pid;
 	int ret;
 	char erred = 0;
-	int s;
+	sigset_t sigset, osigset;
 
-	s = sigblock(sigmask(SIGCHLD));
+	sigemptyset(&sigset);
+	sigaddset(&sigset, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &sigset, &osigset);
+
 	switch (pid = vfork()) {
 	case -1:
 		wwerrno = WWE_SYS;
@@ -82,7 +86,9 @@ char **argv;
 			ret = pid;
 		}
 	}
-	(void) sigsetmask(s);
+
+	sigprocmask(SIG_SETMASK, &osigset, (sigset_t *)0);
+
 	if (wp->ww_socket >= 0) {
 		(void) close(wp->ww_socket);
 		wp->ww_socket = -1;

@@ -1,4 +1,5 @@
-/*	$NetBSD: db_trace.c,v 1.17 1995/10/11 04:19:35 mycroft Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.4 1997/03/21 02:10:42 niklas Exp $	*/
+/*	$NetBSD: db_trace.c,v 1.18 1996/05/03 19:42:01 christos Exp $	*/
 
 /* 
  * Mach Operating System
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,37 +23,40 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
 
 #include <machine/db_machdep.h>
 
-#include <ddb/db_access.h>
 #include <ddb/db_sym.h>
+#include <ddb/db_access.h>
 #include <ddb/db_variables.h>
+#include <ddb/db_output.h>
+#include <ddb/db_interface.h>
 
 /*
  * Machine register set.
  */
 struct db_variable db_regs[] = {
-	"es",	  &ddb_regs.tf_es,     FCN_NULL,
-	"ds",	  &ddb_regs.tf_ds,     FCN_NULL,
-	"edi",	  &ddb_regs.tf_edi,    FCN_NULL,
-	"esi",	  &ddb_regs.tf_esi,    FCN_NULL,
-	"ebp",	  &ddb_regs.tf_ebp,    FCN_NULL,
-	"ebx",	  &ddb_regs.tf_ebx,    FCN_NULL,
-	"edx",	  &ddb_regs.tf_edx,    FCN_NULL,
-	"ecx",	  &ddb_regs.tf_ecx,    FCN_NULL,
-	"eax",	  &ddb_regs.tf_eax,    FCN_NULL,
-	"eip",	  &ddb_regs.tf_eip,    FCN_NULL,
-	"cs",	  &ddb_regs.tf_cs,     FCN_NULL,
-	"eflags", &ddb_regs.tf_eflags, FCN_NULL,
-	"esp",	  &ddb_regs.tf_esp,    FCN_NULL,
-	"ss",	  &ddb_regs.tf_ss,     FCN_NULL,
+	{ "es",		(long *)&ddb_regs.tf_es,     FCN_NULL },
+	{ "ds",		(long *)&ddb_regs.tf_ds,     FCN_NULL },
+	{ "edi",	(long *)&ddb_regs.tf_edi,    FCN_NULL },
+	{ "esi",	(long *)&ddb_regs.tf_esi,    FCN_NULL },
+	{ "ebp",	(long *)&ddb_regs.tf_ebp,    FCN_NULL },
+	{ "ebx",	(long *)&ddb_regs.tf_ebx,    FCN_NULL },
+	{ "edx",	(long *)&ddb_regs.tf_edx,    FCN_NULL },
+	{ "ecx",	(long *)&ddb_regs.tf_ecx,    FCN_NULL },
+	{ "eax",	(long *)&ddb_regs.tf_eax,    FCN_NULL },
+	{ "eip",	(long *)&ddb_regs.tf_eip,    FCN_NULL },
+	{ "cs",		(long *)&ddb_regs.tf_cs,     FCN_NULL },
+	{ "eflags",	(long *)&ddb_regs.tf_eflags, FCN_NULL },
+	{ "esp",	(long *)&ddb_regs.tf_esp,    FCN_NULL },
+	{ "ss",		(long *)&ddb_regs.tf_ss,     FCN_NULL },
 };
 struct db_variable *db_eregs = db_regs + sizeof(db_regs)/sizeof(db_regs[0]);
 
@@ -76,6 +80,10 @@ db_addr_t	db_trap_symbol_value = 0;
 db_addr_t	db_syscall_symbol_value = 0;
 db_addr_t	db_kdintr_symbol_value = 0;
 boolean_t	db_trace_symbols_found = FALSE;
+
+void db_find_trace_symbols(void);
+int db_numargs(struct i386_frame *);
+void db_nextframe(struct i386_frame **, db_addr_t *, int *, int);
 
 void
 db_find_trace_symbols()
@@ -177,7 +185,7 @@ db_stack_trace_cmd(addr, have_addr, count, modif)
 	struct i386_frame *frame, *lastframe;
 	int		*argp;
 	db_addr_t	callpc;
-	int		is_trap;
+	int		is_trap = 0;
 	boolean_t	kernel_only = TRUE;
 	boolean_t	trace_thread = FALSE;
 
@@ -205,7 +213,7 @@ db_stack_trace_cmd(addr, have_addr, count, modif)
 		frame = (struct i386_frame *)ddb_regs.tf_ebp;
 		callpc = (db_addr_t)ddb_regs.tf_eip;
 	} else if (trace_thread) {
-		printf ("db_trace.c: can't trace thread\n");
+		db_printf ("db_trace.c: can't trace thread\n");
 	} else {
 		frame = (struct i386_frame *)addr;
 		callpc = (db_addr_t)
@@ -307,7 +315,7 @@ db_stack_trace_cmd(addr, have_addr, count, modif)
 		if (INKERNEL((int)frame)) {
 			/* staying in kernel */
 			if (frame <= lastframe) {
-				db_printf("Bad frame pointer: 0x%x\n", frame);
+				db_printf("Bad frame pointer: %p\n", frame);
 				break;
 			}
 		} else if (INKERNEL((int)lastframe)) {
@@ -317,7 +325,7 @@ db_stack_trace_cmd(addr, have_addr, count, modif)
 		} else {
 			/* in user */
 			if (frame <= lastframe) {
-				db_printf("Bad user frame pointer: 0x%x\n",
+				db_printf("Bad user frame pointer: %p\n",
 					  frame);
 				break;
 			}

@@ -1,5 +1,5 @@
+/* * $OpenBSD: lib.c,v 1.3 2001/08/30 10:42:01 espie Exp $	- library routines*/
 /*
- * $Id: lib.c,v 1.16 1995/06/04 21:33:14 pk Exp $	- library routines
  */
 
 #include <sys/param.h>
@@ -730,6 +730,12 @@ read_shared_object(fd, entry)
 				subentry->filename = strdup(name);
 				subentry->local_sym_name = strdup(name);
 			}
+			/* Sanity check */
+			if (strcmp(subentry->filename, 
+			    subentry->superfile->filename) == 0)
+				errx(1, "loop in library dependencies: %s",
+				    subentry->filename);
+
 			read_file_symbols(subentry);
 
 			if (prev)
@@ -811,7 +817,7 @@ struct file_entry	*p;
 
 	fname = findshlib(p->filename, &major, &minor, 1);
 
-	if (fname && (fd = open(fname, O_RDONLY, 0)) > 0) {
+	if (fname && (fd = open(fname, O_RDONLY, 0)) >= 0) {
 		p->filename = fname;
 		p->lib_major = major;
 		p->lib_minor = minor;
@@ -833,7 +839,7 @@ dot_a:
 		register char *path
 			= concat(search_dirs[i], "/", fname);
 		fd = open(path, O_RDONLY, 0);
-		if (fd > 0) {
+		if (fd >= 0) {
 			p->filename = path;
 			p->flags &= ~E_SEARCH_DIRS;
 			break;

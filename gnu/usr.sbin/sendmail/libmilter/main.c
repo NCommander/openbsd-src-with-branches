@@ -9,7 +9,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: main.c,v 8.49 2001/04/21 01:18:16 ca Exp $")
+SM_RCSID("@(#)$Sendmail: main.c,v 8.53 2001/11/29 02:21:02 ca Exp $")
 
 #define _DEFINE	1
 #include "libmilter.h"
@@ -68,7 +68,7 @@ smfi_register(smfilter)
 	return MI_SUCCESS;
 }
 
-/*
+/*
 **  SMFI_STOP -- stop milter
 **
 **	Parameters:
@@ -177,6 +177,7 @@ smfi_setbacklog(obacklog)
 	return MI_SUCCESS;
 }
 
+
 /*
 **  SMFI_MAIN -- setup milter connnection and start listener.
 **
@@ -190,6 +191,8 @@ smfi_setbacklog(obacklog)
 int
 smfi_main()
 {
+	int r;
+
 	(void) signal(SIGPIPE, SIG_IGN);
 	if (conn == NULL)
 	{
@@ -206,10 +209,11 @@ smfi_main()
 			smfi->xxfi_name);
 		return MI_FAILURE;
 	}
+	r = MI_SUCCESS;
 
 	/* Startup the listener */
 	if (mi_listener(conn, dbg, smfi, timeout, backlog) != MI_SUCCESS)
-		return MI_FAILURE;
+		r = MI_FAILURE;
 
-	return MI_SUCCESS;
+	return r;
 }

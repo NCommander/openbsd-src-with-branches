@@ -58,23 +58,10 @@
 
 #include <stdio.h>
 #include "cryptlib.h"
-#include "asn1_mac.h"
+#include <openssl/asn1_mac.h>
 
-/* ASN1err(ASN1_F_ASN1_TYPE_NEW,ASN1_R_ERROR_STACK);
- * ASN1err(ASN1_F_D2I_ASN1_BYTES,ASN1_R_ERROR_STACK);
- * ASN1err(ASN1_F_D2I_ASN1_BYTES,ASN1_R_WRONG_TAG);
- * ASN1err(ASN1_F_ASN1_COLLATE_PRIMATIVE,ASN1_R_WRONG_TAG);
- */
-
-#ifndef NOPROTO
 static void ASN1_TYPE_component_free(ASN1_TYPE *a);
-#else
-static void ASN1_TYPE_component_free();
-#endif
-
-int i2d_ASN1_TYPE(a,pp)
-ASN1_TYPE *a;
-unsigned char **pp;
+int i2d_ASN1_TYPE(ASN1_TYPE *a, unsigned char **pp)
 	{
 	int r=0;
 
@@ -90,6 +77,10 @@ unsigned char **pp;
 	case V_ASN1_INTEGER:
 	case V_ASN1_NEG_INTEGER:
 		r=i2d_ASN1_INTEGER(a->value.integer,pp);
+		break;
+	case V_ASN1_ENUMERATED:
+	case V_ASN1_NEG_ENUMERATED:
+		r=i2d_ASN1_ENUMERATED(a->value.enumerated,pp);
 		break;
 	case V_ASN1_BIT_STRING:
 		r=i2d_ASN1_BIT_STRING(a->value.bit_string,pp);
@@ -115,14 +106,25 @@ unsigned char **pp;
 	case V_ASN1_UNIVERSALSTRING:
 		r=M_i2d_ASN1_UNIVERSALSTRING(a->value.universalstring,pp);
 		break;
+	case V_ASN1_UTF8STRING:
+		r=M_i2d_ASN1_UTF8STRING(a->value.utf8string,pp);
+		break;
+	case V_ASN1_VISIBLESTRING:
+		r=M_i2d_ASN1_VISIBLESTRING(a->value.visiblestring,pp);
+		break;
 	case V_ASN1_BMPSTRING:
 		r=M_i2d_ASN1_BMPSTRING(a->value.bmpstring,pp);
 		break;
 	case V_ASN1_UTCTIME:
 		r=i2d_ASN1_UTCTIME(a->value.utctime,pp);
 		break;
+	case V_ASN1_GENERALIZEDTIME:
+		r=i2d_ASN1_GENERALIZEDTIME(a->value.generalizedtime,pp);
+		break;
 	case V_ASN1_SET:
 	case V_ASN1_SEQUENCE:
+	case V_ASN1_OTHER:
+	default:
 		if (a->value.set == NULL)
 			r=0;
 		else
@@ -139,10 +141,7 @@ unsigned char **pp;
 	return(r);
 	}
 
-ASN1_TYPE *d2i_ASN1_TYPE(a,pp,length)
-ASN1_TYPE **a;
-unsigned char **pp;
-long length;
+ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **a, unsigned char **pp, long length)
 	{
 	ASN1_TYPE *ret=NULL;
 	unsigned char *q,*p,*max;
@@ -162,6 +161,8 @@ long length;
 
 	inf=ASN1_get_object(&q,&len,&tag,&xclass,length);
 	if (inf & 0x80) goto err;
+	/* If not universal tag we've no idea what it is */
+	if(xclass != V_ASN1_UNIVERSAL) tag = V_ASN1_OTHER;
 	
 	ASN1_TYPE_component_free(ret);
 
@@ -176,6 +177,11 @@ long length;
 			d2i_ASN1_INTEGER(NULL,&p,max-p)) == NULL)
 			goto err;
 		break;
+	case V_ASN1_ENUMERATED:
+		if ((ret->value.enumerated=
+			d2i_ASN1_ENUMERATED(NULL,&p,max-p)) == NULL)
+			goto err;
+		break;
 	case V_ASN1_BIT_STRING:
 		if ((ret->value.bit_string=
 			d2i_ASN1_BIT_STRING(NULL,&p,max-p)) == NULL)
@@ -184,6 +190,16 @@ long length;
 	case V_ASN1_OCTET_STRING:
 		if ((ret->value.octet_string=
 			d2i_ASN1_OCTET_STRING(NULL,&p,max-p)) == NULL)
+			goto err;
+		break;
+	case V_ASN1_VISIBLESTRING:
+		if ((ret->value.visiblestring=
+			d2i_ASN1_VISIBLESTRING(NULL,&p,max-p)) == NULL)
+			goto err;
+		break;
+	case V_ASN1_UTF8STRING:
+		if ((ret->value.utf8string=
+			d2i_ASN1_UTF8STRING(NULL,&p,max-p)) == NULL)
 			goto err;
 		break;
 	case V_ASN1_OBJECT:
@@ -226,8 +242,15 @@ long length;
 			d2i_ASN1_UTCTIME(NULL,&p,max-p)) == NULL)
 			goto err;
 		break;
+	case V_ASN1_GENERALIZEDTIME:
+		if ((ret->value.generalizedtime=
+			d2i_ASN1_GENERALIZEDTIME(NULL,&p,max-p)) == NULL)
+			goto err;
+		break;
 	case V_ASN1_SET:
 	case V_ASN1_SEQUENCE:
+	case V_ASN1_OTHER:
+	default:
 		/* Sets and sequences are left complete */
 		if ((ret->value.set=ASN1_STRING_new()) == NULL) goto err;
 		ret->value.set->type=tag;
@@ -235,9 +258,6 @@ long length;
 		if (!ASN1_STRING_set(ret->value.set,p,(int)len)) goto err;
 		p+=len;
 		break;
-	default:
-		ASN1err(ASN1_F_D2I_ASN1_TYPE,ASN1_R_BAD_TYPE);
-		goto err;
 		}
 
 	ret->type=tag;
@@ -249,9 +269,10 @@ err:
 	return(NULL);
 	}
 
-ASN1_TYPE *ASN1_TYPE_new()
+ASN1_TYPE *ASN1_TYPE_new(void)
 	{
 	ASN1_TYPE *ret=NULL;
+	ASN1_CTX c;
 
 	M_ASN1_New_Malloc(ret,ASN1_TYPE);
 	ret->type= -1;
@@ -260,16 +281,14 @@ ASN1_TYPE *ASN1_TYPE_new()
 	M_ASN1_New_Error(ASN1_F_ASN1_TYPE_NEW);
 	}
 
-void ASN1_TYPE_free(a)
-ASN1_TYPE *a;
+void ASN1_TYPE_free(ASN1_TYPE *a)
 	{
 	if (a == NULL) return;
 	ASN1_TYPE_component_free(a);
-	Free((char *)(char *)a);
+	OPENSSL_free(a);
 	}
 
-int ASN1_TYPE_get(a)
-ASN1_TYPE *a;
+int ASN1_TYPE_get(ASN1_TYPE *a)
 	{
 	if (a->value.ptr != NULL)
 		return(a->type);
@@ -277,10 +296,7 @@ ASN1_TYPE *a;
 		return(0);
 	}
 
-void ASN1_TYPE_set(a,type,value)
-ASN1_TYPE *a;
-int type;
-char *value;
+void ASN1_TYPE_set(ASN1_TYPE *a, int type, void *value)
 	{
 	if (a->value.ptr != NULL)
 		ASN1_TYPE_component_free(a);
@@ -288,8 +304,7 @@ char *value;
 	a->value.ptr=value;
 	}
 
-static void ASN1_TYPE_component_free(a)
-ASN1_TYPE *a;
+static void ASN1_TYPE_component_free(ASN1_TYPE *a)
 	{
 	if (a == NULL) return;
 
@@ -300,22 +315,32 @@ ASN1_TYPE *a;
 		case V_ASN1_OBJECT:
 			ASN1_OBJECT_free(a->value.object);
 			break;
+		case V_ASN1_NULL:
+			break;
 		case V_ASN1_INTEGER:
 		case V_ASN1_NEG_INTEGER:
+		case V_ASN1_ENUMERATED:
+		case V_ASN1_NEG_ENUMERATED:
 		case V_ASN1_BIT_STRING:
 		case V_ASN1_OCTET_STRING:
+		case V_ASN1_SEQUENCE:
+		case V_ASN1_SET:
+		case V_ASN1_NUMERICSTRING:
 		case V_ASN1_PRINTABLESTRING:
 		case V_ASN1_T61STRING:
+		case V_ASN1_VIDEOTEXSTRING:
 		case V_ASN1_IA5STRING:
-		case V_ASN1_UNIVERSALSTRING:
-		case V_ASN1_GENERALSTRING:
 		case V_ASN1_UTCTIME:
-		case V_ASN1_SET:
-		case V_ASN1_SEQUENCE:
-			ASN1_STRING_free((ASN1_STRING *)a->value.ptr);
-			break;
+		case V_ASN1_GENERALIZEDTIME:
+		case V_ASN1_GRAPHICSTRING:
+		case V_ASN1_VISIBLESTRING:
+		case V_ASN1_GENERALSTRING:
+		case V_ASN1_UNIVERSALSTRING:
+		case V_ASN1_BMPSTRING:
+		case V_ASN1_UTF8STRING:
+		case V_ASN1_OTHER:
 		default:
-			/* MEMORY LEAK */
+			ASN1_STRING_free((ASN1_STRING *)a->value.ptr);
 			break;
 			}
 		a->type=0;
@@ -323,3 +348,5 @@ ASN1_TYPE *a;
 		}
 	}
 
+IMPLEMENT_STACK_OF(ASN1_TYPE)
+IMPLEMENT_ASN1_SET_OF(ASN1_TYPE)

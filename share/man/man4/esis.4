@@ -1,3 +1,4 @@
+.\"	$OpenBSD: esis.4,v 1.6 2001/06/22 12:15:45 mpech Exp $
 .\"	$NetBSD: esis.4,v 1.3 1994/11/30 16:22:12 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
@@ -40,8 +41,7 @@
 .Nm es-is
 .Nd End System to Intermediate System Routing Protocol
 .Sh SYNOPSIS
-.Sy pseudo-device
-.Nm ether
+.Sy pseudo-device Nm ether
 .Sh DESCRIPTION
 The
 .Nm ES-IS
@@ -51,7 +51,7 @@ addresses and
 .Tn ISO SNPA
 addresses; to permit End and Intermediate Systems
 to learn of each other's existence; and to allow Intermediate Systems
-to inform End Systems of (potentially) better routes to use when 
+to inform End Systems of (potentially) better routes to use when
 forwarding
 .Tn NPDU Ns s
 to a particular destination.
@@ -63,7 +63,8 @@ addresses and
 addresses is accomplished by
 transmitting hello
 .Tn PDU Ns s
-between the cooperating Systems. These
+between the cooperating Systems.
+These
 .Tn PDU Ns s
 are transmitted whenever the
 .Em configuration
@@ -76,7 +77,8 @@ address that it conveys is stored in the routing table for as long as the
 .Em holding time
 in the
 .Tn PDU
-suggests. The default
+suggests.
+The default
 .Em holding time
 (120 seconds) placed in the hello
 .Tn PDU ,
@@ -86,7 +88,7 @@ issuing an
 .Dv SIOCSSTYPE
 .Xr ioctl 2 ,
 which is defined in
-.Pa /sys/netiso/iso_snpac.h.
+.Pa /sys/netiso/iso_snpac.h .
 .Pp
 The protocol behaves differently depending on whether the System is
 configured as an End System or an Intermediate System.
@@ -94,12 +96,13 @@ configured as an End System or an Intermediate System.
 When an interface requests a mapping for an address not in the cache,
 the
 .Tn SNPA
-of any known Intermediate System is returned. If an Intermediate
-System is not known, then the
+of any known Intermediate System is returned.
+If an Intermediate System is not known, then the
 .Em all end systems
 multicast address
-is returned. It is assumed that the intended recipient of the NPDU will
-immediately transmit a hello
+is returned.
+It is assumed that the intended recipient of the NPDU will immediately
+transmit a hello
 .Tn PDU
 back to the originator of the
 .Tn NPDU .
@@ -112,10 +115,10 @@ will not be
 generated.
 However, redirect
 .Tn PDU Ns s
-received will be processed. This processing
-consists of adding an entry in the routing table. If the
-redirect is towards an Intermediate System, then an entry is made in the
-routing table as well.
+received will be processed.
+This processing consists of adding an entry in the routing table.
+If the redirect is towards an Intermediate System, then an entry is
+made in the routing table as well.
 The entry in the routing table will mark the
 .Tn NSAP
 address contained in the redirect
@@ -158,7 +161,6 @@ a redirect
 .Tn PDU
 is generated.
 .Sh MANUAL ROUTING TABLE MODIFICATION
-.Pp
 To facilitate communications with systems which do not use
 .Nm ES-IS,
 one may add a route whose destination is a sockaddr_iso containing
@@ -169,8 +171,7 @@ either by writing a special purpose program, or using the
 .Xr route 8
 command e.g.:
 .Bd -literal
-route add -iface -osi 49.0.4.8.0.2b.b.83.bf \
-	-link qe0:8.0.2b.b.83.bf
+route add -iface -osi 49.0.4.8.0.2b.b.83.bf -link qe0:8.0.2b.b.83.bf
 .Ed
 .Pp
 If the
@@ -181,7 +182,7 @@ it is necessary to manually configure the location of an
 using the route command in a similar way.
 There, the destination address should be
 .Dq default
-(spelled 
+(spelled
 out literally as 7
 .Tn ASCII
 characters), and the gateway should be
@@ -190,10 +191,9 @@ once again be a link-level sockaddr specifying the
 of the
 .Tn IS .
 .Sh SEE ALSO
-.Xr un 4 ,
 .Xr iso 4 ,
-.Xr route 8 ,
-.Xr ifconfig 8
+.Xr ifconfig 8 ,
+.Xr route 8
 .Rs
 .%T "End system to Intermediate system routing exchange protocol for use in conjunction with the Protocol for providing the connectionless-mode network service"
 .%R ISO
@@ -205,12 +205,13 @@ Redirect
 do not contain options from the forwarded
 .Tn NPDU
 which generated
-the redirect. The multicast address used on the 802.3 network is taken from
-the
+the redirect.
+The multicast address used on the 802.3 network is taken from the
 .Tn NBS
-December 1987 agreements. This multicast address is not compatible
-with the 802.5 (Token Ring) multicast addresses format. Therefore, broadcast
-addresses are used on the 802.5 subnetwork.
+December 1987 agreements.
+This multicast address is not compatible with the 802.5 (Token Ring)
+multicast addresses format.
+Therefore, broadcast addresses are used on the 802.5 subnetwork.
 Researchers at the University of Wisconsin are constructing an implementation
 of the
 .Tn IS-IS

@@ -35,12 +35,12 @@
 static char copyright[] =
 "@(#) Copyright (c) 1980, 1986, 1988, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
-#endif not lint
+#endif /* not lint */
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)bad144.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: bad144.c,v 1.8 1995/06/10 21:01:08 mycroft Exp $";
-#endif not lint
+static char *rcsid = "$Id: bad144.c,v 1.10 2002/02/16 21:28:01 millert Exp $";
+#endif /* not lint */
 
 /*
  * bad144
@@ -63,18 +63,15 @@ static char *rcsid = "$Id: bad144.c,v 1.8 1995/06/10 21:01:08 mycroft Exp $";
 #include <sys/disklabel.h>
 #include <ufs/ffs/fs.h>
 
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <paths.h>
+#include <string.h>
 
 #define RETRIES	10		/* number of retries on reading old sectors */
-#ifdef i386 /* XXX */
-#define	RAWPART	"d"		/* disk partition containing badsector tables */
-#else
-#define	RAWPART	"c"		/* disk partition containing badsector tables */
-#endif
 
 int	fflag, add, copy, verbose, nflag;
-int	compare();
 int	dups;
 int	badfile = -1;		/* copy of badsector table to use, -1 if any */
 #define MAXSECSIZE	1024
@@ -82,17 +79,25 @@ struct	dkbad curbad, oldbad;
 #define	DKBAD_MAGIC	0x4321
 
 char	label[BBSIZE];
-daddr_t	size, getold(), badsn();
+daddr_t	size;
 struct	disklabel *dp;
 char	name[BUFSIZ];
-char	*malloc();
-off_t	lseek();
 
+void	Perror(const char *);
+daddr_t	badsn(const struct bt_bad *);
+int	blkcopy(int, daddr_t, daddr_t);
+void	blkzero(int, daddr_t);
+int	checkold(void);
+int	compare(const void *, const void *);
+daddr_t	getold(int, struct dkbad *);
+void	shift(int, int, int);
+
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register struct bt_bad *bt;
+	struct bt_bad *bt;
 	daddr_t	sn, bn[126];
 	int i, f, nbad, new, bad, errs;
 
@@ -101,7 +106,7 @@ main(argc, argv)
 		(*argv)++;
 		while (**argv) {
 			switch (**argv) {
-#if vax
+#if __vax__
 			    case 'f':
 				fflag++;
 				break;
@@ -145,9 +150,10 @@ usage:
 		exit(1);
 	}
 	if (argv[0][0] != '/')
-		(void)sprintf(name, "%sr%s%s", _PATH_DEV, argv[0], RAWPART);
+		(void)snprintf(name, sizeof(name), "%sr%s%c", _PATH_DEV,
+		    argv[0], 'a' + RAW_PART);
 	else
-		strcpy(name, argv[0]);
+		strlcpy(name, argv[0], MAXPATHLEN);
 	f = open(name, argc == 1? O_RDONLY : O_RDWR);
 	if (f < 0)
 		Perror(name);
@@ -176,7 +182,7 @@ usage:
 			dp->d_secsize);
 		exit(7);
 	}
-#ifdef i386
+#ifdef __i386__
 	if (dp->d_type == DTYPE_SCSI) {
 		fprintf(stderr, "SCSI disks don't use bad144!\n");
 		exit(1);
@@ -218,7 +224,7 @@ usage:
 			    bt->bt_cyl, bt->bt_trksec>>8, bt->bt_trksec&0xff);
 			bt++;
 		}
-		(void) checkold(&oldbad);
+		(void) checkold();
 		exit(0);
 	}
 	if (add) {
@@ -228,7 +234,7 @@ usage:
 		 * are in order.  Copy the old table to the new one.
 		 */
 		(void) getold(f, &oldbad);
-		i = checkold(&oldbad);
+		i = checkold();
 		if (verbose)
 			printf("Had %d bad sectors, adding %d\n", i, argc);
 		if (i + argc > 126) {
@@ -297,7 +303,7 @@ usage:
 		i = badfile * 2;
 	for (; i < 10 && i < dp->d_nsectors; i += 2) {
 		if (lseek(f, dp->d_secsize * (size - dp->d_nsectors + i),
-		    L_SET) < 0)
+		    SEEK_SET) < 0)
 			Perror("lseek");
 		if (verbose)
 			printf("write badsect file at %d\n",
@@ -337,7 +343,7 @@ daddr_t
 getold(f, bad)
 struct dkbad *bad;
 {
-	register int i;
+	int i;
 	daddr_t sn;
 	char msg[80];
 
@@ -347,7 +353,7 @@ struct dkbad *bad;
 		i = badfile * 2;
 	for (; i < 10 && i < dp->d_nsectors; i += 2) {
 		sn = size - dp->d_nsectors + i;
-		if (lseek(f, sn * dp->d_secsize, L_SET) < 0)
+		if (lseek(f, sn * dp->d_secsize, SEEK_SET) < 0)
 			Perror("lseek");
 		if (read(f, (char *) bad, dp->d_secsize) == dp->d_secsize) {
 			if (i > 0)
@@ -364,11 +370,12 @@ struct dkbad *bad;
 	/*NOTREACHED*/
 }
 
+int
 checkold()
 {
-	register int i;
-	register struct bt_bad *bt;
-	daddr_t sn, lsn;
+	int i;
+	struct bt_bad *bt;
+	daddr_t sn, lsn = 0;
 	int errors = 0, warned = 0;
 
 	if (oldbad.bt_flag != DKBAD_MAGIC) {
@@ -421,6 +428,7 @@ checkold()
  * to make room for the new bad sectors.
  * new is the new number of bad sectors, old is the previous count.
  */
+void
 shift(f, new, old)
 {
 	daddr_t repl;
@@ -457,10 +465,11 @@ char *buf;
 /*
  *  Copy disk sector s1 to s2.
  */
+int
 blkcopy(f, s1, s2)
 daddr_t s1, s2;
 {
-	register tries, n;
+	int tries, n;
 
 	if (buf == (char *)NULL) {
 		buf = malloc((unsigned)dp->d_secsize);
@@ -470,7 +479,7 @@ daddr_t s1, s2;
 		}
 	}
 	for (tries = 0; tries < RETRIES; tries++) {
-		if (lseek(f, dp->d_secsize * s1, L_SET) < 0)
+		if (lseek(f, dp->d_secsize * s1, SEEK_SET) < 0)
 			Perror("lseek");
 		if ((n = read(f, buf, dp->d_secsize)) == dp->d_secsize)
 			break;
@@ -481,7 +490,7 @@ daddr_t s1, s2;
 			perror((char *)0);
 		return(0);
 	}
-	if (lseek(f, dp->d_secsize * s2, L_SET) < 0)
+	if (lseek(f, dp->d_secsize * s2, SEEK_SET) < 0)
 		Perror("lseek");
 	if (verbose)
 		printf("copying %d to %d\n", s1, s2);
@@ -496,6 +505,7 @@ daddr_t s1, s2;
 
 char *zbuf;
 
+void
 blkzero(f, sn)
 daddr_t sn;
 {
@@ -507,7 +517,7 @@ daddr_t sn;
 			exit(20);
 		}
 	}
-	if (lseek(f, dp->d_secsize * sn, L_SET) < 0)
+	if (lseek(f, dp->d_secsize * sn, SEEK_SET) < 0)
 		Perror("lseek");
 	if (verbose)
 		printf("zeroing %d\n", sn);
@@ -518,9 +528,12 @@ daddr_t sn;
 	}
 }
 
-compare(b1, b2)
-register struct bt_bad *b1, *b2;
+int
+compare(v1, v2)
+	const void *v1, *v2;
 {
+	const struct bt_bad *b1 = v1, *b2 = v2;
+
 	if (b1->bt_cyl > b2->bt_cyl)
 		return(1);
 	if (b1->bt_cyl < b2->bt_cyl)
@@ -532,7 +545,7 @@ register struct bt_bad *b1, *b2;
 
 daddr_t
 badsn(bt)
-register struct bt_bad *bt;
+	const struct bt_bad *bt;
 {
 	return ((bt->bt_cyl*dp->d_ntracks + (bt->bt_trksec>>8)) * dp->d_nsectors
 		+ (bt->bt_trksec&0xff));
@@ -621,7 +634,7 @@ format(fd, blk)
 	int fd;
 	daddr_t blk;
 {
-	register struct formats *fp;
+	struct formats *fp;
 	static char *buf;
 	static char bufsize;
 	struct format_op fop;
@@ -686,10 +699,11 @@ format(fd, blk)
 }
 #endif
 
+void
 Perror(op)
-	char *op;
+	const char *op;
 {
-
-	fprintf(stderr, "bad144: "); perror(op);
+	fprintf(stderr, "bad144: ");
+	perror(op);
 	exit(4);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_union.c,v 1.2 1995/03/18 14:58:24 cgd Exp $	*/
+/*	$OpenBSD: mount_union.c,v 1.6 1997/08/24 06:52:01 deraadt Exp $	*/
+/*	$NetBSD: mount_union.c,v 1.3 1996/04/13 01:32:11 jtc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994
@@ -46,7 +47,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_union.c	8.5 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_union.c,v 1.2 1995/03/18 14:58:24 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_union.c,v 1.6 1997/08/24 06:52:01 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,6 +57,7 @@ static char rcsid[] = "$NetBSD: mount_union.c,v 1.2 1995/03/18 14:58:24 cgd Exp 
 #include <miscfs/union/union.h>
 
 #include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,13 +65,13 @@ static char rcsid[] = "$NetBSD: mount_union.c,v 1.2 1995/03/18 14:58:24 cgd Exp 
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
 
-int	subdir __P((const char *, const char *));
-void	usage __P((void));
+int	subdir(const char *, const char *);
+void	usage(void);
 
 int
 main(argc, argv)
@@ -82,7 +84,7 @@ main(argc, argv)
 
 	mntflags = 0;
 	args.mntflags = UNMNT_ABOVE;
-	while ((ch = getopt(argc, argv, "bo:r")) != EOF)
+	while ((ch = getopt(argc, argv, "bo:r")) != -1)
 		switch (ch) {
 		case 'b':
 			args.mntflags &= ~UNMNT_OPMASK;
@@ -115,8 +117,13 @@ main(argc, argv)
 
 	args.target = target;
 
-	if (mount(MOUNT_UNION, argv[1], mntflags, &args))
-		err(1, NULL);
+	if (mount(MOUNT_UNION, argv[1], mntflags, &args)) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel",
+			    argv[1]);
+		else
+			err(1, "%s", argv[1]);
+	}
 	exit(0);
 }
 

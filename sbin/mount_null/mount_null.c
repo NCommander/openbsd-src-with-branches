@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_null.c,v 1.2 1995/03/18 14:57:48 cgd Exp $	*/
+/*	$OpenBSD: mount_null.c,v 1.6 1997/08/24 08:07:14 downsj Exp $	*/
+/*	$NetBSD: mount_null.c,v 1.3 1996/04/13 01:31:49 jtc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994
@@ -46,7 +47,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_null.c	8.5 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_null.c,v 1.2 1995/03/18 14:57:48 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_null.c,v 1.6 1997/08/24 08:07:14 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,6 +56,7 @@ static char rcsid[] = "$NetBSD: mount_null.c,v 1.2 1995/03/18 14:57:48 cgd Exp $
 #include <miscfs/nullfs/null.h>
 
 #include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -62,13 +64,13 @@ static char rcsid[] = "$NetBSD: mount_null.c,v 1.2 1995/03/18 14:57:48 cgd Exp $
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
 
-int	subdir __P((const char *, const char *));
-void	usage __P((void));
+int	subdir(const char *, const char *);
+void	usage(void);
 
 int
 main(argc, argv)
@@ -80,7 +82,7 @@ main(argc, argv)
 	char target[MAXPATHLEN];
 
 	mntflags = 0;
-	while ((ch = getopt(argc, argv, "o:")) != EOF)
+	while ((ch = getopt(argc, argv, "o:")) != -1)
 		switch(ch) {
 		case 'o':
 			getmntopts(optarg, mopts, &mntflags);
@@ -104,8 +106,13 @@ main(argc, argv)
 
 	args.target = target;
 
-	if (mount(MOUNT_NULL, argv[1], mntflags, &args))
-		err(1, NULL);
+	if (mount(MOUNT_NULL, argv[1], mntflags, &args)) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel",
+			    argv[1]);
+		else
+			err(1, "%s", argv[1]);
+	}
 	exit(0);
 }
 

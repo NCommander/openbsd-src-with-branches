@@ -1,4 +1,4 @@
-.\"	$NetBSD: ferror.3,v 1.5 1995/02/02 01:15:35 jtc Exp $
+.\"	$OpenBSD: ferror.3,v 1.4 1999/07/09 13:35:23 aaron Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -35,8 +35,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)ferror.3	8.2 (Berkeley) 4/19/94
-.\"
 .Dd April 19, 1994
 .Dt FERROR 3
 .Os
@@ -59,8 +57,7 @@
 .Sh DESCRIPTION
 The function
 .Fn clearerr
-clears the end-of-file and error indicators for the stream pointed
-to by
+clears the end-of-file and error indicators for the stream pointed to by
 .Fa stream .
 .Pp
 The function
@@ -84,7 +81,7 @@ The function
 .Fn fileno
 examines the argument
 .Fa stream
-and returns its integer descriptor.
+and returns its integer file descriptor.
 .Sh ERRORS
 These functions should not fail and do not set the external
 variable
@@ -102,5 +99,5 @@ conform to
 .St -ansiC .
 The function
 .Fn fileno
-conforms to 
+conforms to
 .St -p1003.1-90 .

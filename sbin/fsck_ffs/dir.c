@@ -1,4 +1,5 @@
-/*	$NetBSD: dir.c,v 1.17 1995/03/18 14:55:40 cgd Exp $	*/
+/*	$OpenBSD: dir.c,v 1.10 2001/11/05 07:39:16 mpech Exp $	*/
+/*	$NetBSD: dir.c,v 1.20 1996/09/27 22:45:11 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)dir.c	8.5 (Berkeley) 12/8/94";
 #else
-static char rcsid[] = "$NetBSD: dir.c,v 1.17 1995/03/18 14:55:40 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dir.c,v 1.10 2001/11/05 07:39:16 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,10 +53,11 @@ static char rcsid[] = "$NetBSD: dir.c,v 1.17 1995/03/18 14:55:40 cgd Exp $";
 #include <string.h>
 
 #include "fsck.h"
+#include "fsutil.h"
 #include "extern.h"
 
 char	*lfname = "lost+found";
-int	lfmode = 01777;
+int	lfmode = 01700;
 struct	dirtemplate emptydir = { 0, DIRBLKSIZ };
 struct	dirtemplate dirhead = {
 	0, 12, DT_DIR, 1, ".",
@@ -66,36 +68,38 @@ struct	odirtemplate odirhead = {
 	0, DIRBLKSIZ - 12, 2, ".."
 };
 
-int expanddir __P((struct dinode *, char *));
-void freedir __P((ino_t, ino_t));
-struct direct *fsck_readdir();
-struct bufarea *getdirblk();
-int lftempname __P((char *, ino_t));
+static int expanddir(struct dinode *, char *);
+static void freedir(ino_t, ino_t);
+static struct direct *fsck_readdir(struct inodesc *);
+static struct bufarea *getdirblk(daddr_t, long);
+static int lftempname(char *, ino_t);
+static int mkentry(struct inodesc *);
+static int chgino(struct  inodesc *);
 
 /*
  * Propagate connected state through the tree.
  */
 void
-propagate()
+propagate(inumber)
+	ino_t	inumber;
 {
-	register struct inoinfo **inpp, *inp;
-	struct inoinfo **inpend;
-	long change;
+	struct	inoinfo *inp;
+	char	state;
 
-	inpend = &inpsort[inplast];
-	do {
-		change = 0;
-		for (inpp = inpsort; inpp < inpend; inpp++) {
-			inp = *inpp;
-			if (inp->i_parent == 0)
-				continue;
-			if (statemap[inp->i_parent] == DFOUND &&
-			    statemap[inp->i_number] == DSTATE) {
-				statemap[inp->i_number] = DFOUND;
-				change++;
-			}
-		}
-	} while (change > 0);
+	inp = getinoinfo(inumber);
+	state = statemap[inp->i_number];
+	for (;;) {
+		statemap[inp->i_number] = state;
+		if (inp->i_child &&
+		    statemap[inp->i_child->i_number] != state)
+			inp = inp->i_child;
+		else if (inp->i_number == inumber)
+			break;
+		else if (inp->i_sibling)
+			inp = inp->i_sibling;
+		else
+			inp = inp->i_parentp;
+	}
 }
 
 /*
@@ -103,10 +107,10 @@ propagate()
  */
 int
 dirscan(idesc)
-	register struct inodesc *idesc;
+	struct inodesc *idesc;
 {
-	register struct direct *dp;
-	register struct bufarea *bp;
+	struct direct *dp;
+	struct bufarea *bp;
 	int dsize, n;
 	long blksiz;
 	char dbuf[DIRBLKSIZ];
@@ -163,12 +167,12 @@ dirscan(idesc)
 /*
  * get next entry in a directory.
  */
-struct direct *
+static struct direct *
 fsck_readdir(idesc)
-	register struct inodesc *idesc;
+	struct inodesc *idesc;
 {
-	register struct direct *dp, *ndp;
-	register struct bufarea *bp;
+	struct direct *dp, *ndp;
+	struct bufarea *bp;
 	long size, blksiz, fix, dploc;
 
 	blksiz = idesc->id_numfrags * sblock.fs_fsize;
@@ -228,10 +232,10 @@ dpok:
 int
 dircheck(idesc, dp)
 	struct inodesc *idesc;
-	register struct direct *dp;
+	struct direct *dp;
 {
-	register int size;
-	register char *cp;
+	int size;
+	char *cp;
 	u_char namlen, type;
 	int spaceleft;
 
@@ -283,7 +287,7 @@ fileerror(cwd, ino, errmesg)
 	ino_t cwd, ino;
 	char *errmesg;
 {
-	register struct dinode *dp;
+	struct dinode *dp;
 	char pathbuf[MAXPATHLEN + 1];
 
 	pwarn("%s ", errmesg);
@@ -304,10 +308,10 @@ fileerror(cwd, ino, errmesg)
 
 void
 adjust(idesc, lcnt)
-	register struct inodesc *idesc;
+	struct inodesc *idesc;
 	short lcnt;
 {
-	register struct dinode *dp;
+	struct dinode *dp;
 
 	dp = ginode(idesc->id_number);
 	if (dp->di_nlink == lcnt) {
@@ -319,12 +323,13 @@ adjust(idesc, lcnt)
 		pinode(idesc->id_number);
 		printf(" COUNT %d SHOULD BE %d",
 			dp->di_nlink, dp->di_nlink - lcnt);
-		if (preen) {
+		if (preen || usedsoftdep) {
 			if (lcnt < 0) {
 				printf("\n");
 				pfatal("LINK COUNT INCREASING");
 			}
-			printf(" (ADJUSTED)\n");
+			if (preen)
+				printf(" (ADJUSTED)\n");
 		}
 		if (preen || reply("ADJUST") == 1) {
 			dp->di_nlink -= lcnt;
@@ -333,11 +338,11 @@ adjust(idesc, lcnt)
 	}
 }
 
-int
+static int
 mkentry(idesc)
 	struct inodesc *idesc;
 {
-	register struct direct *dirp = idesc->id_dirp;
+	struct direct *dirp = idesc->id_dirp;
 	struct direct newent;
 	int newlen, oldlen;
 
@@ -378,11 +383,11 @@ mkentry(idesc)
 	return (ALTERED|STOP);
 }
 
-int
+static int
 chgino(idesc)
 	struct inodesc *idesc;
 {
-	register struct direct *dirp = idesc->id_dirp;
+	struct direct *dirp = idesc->id_dirp;
 
 	if (memcmp(dirp->d_name, idesc->id_name, (int)dirp->d_namlen + 1))
 		return (KEEPON);
@@ -399,7 +404,7 @@ linkup(orphan, parentdir)
 	ino_t orphan;
 	ino_t parentdir;
 {
-	register struct dinode *dp;
+	struct dinode *dp;
 	int lostdir;
 	ino_t oldlfdir;
 	struct inodesc idesc;
@@ -410,7 +415,7 @@ linkup(orphan, parentdir)
 	lostdir = (dp->di_mode & IFMT) == IFDIR;
 	pwarn("UNREF %s ", lostdir ? "DIR" : "FILE");
 	pinode(orphan);
-	if (preen && dp->di_size == 0)
+	if ((preen || usedsoftdep) && dp->di_size == 0)
 		return (0);
 	if (preen)
 		printf(" (RECONNECTED)\n");
@@ -489,9 +494,18 @@ linkup(orphan, parentdir)
 		dp->di_nlink++;
 		inodirty();
 		lncntp[lfdir]++;
-		pwarn("DIR I=%lu CONNECTED. ", orphan);
-		if (parentdir != (ino_t)-1)
-			printf("PARENT WAS I=%lu\n", parentdir);
+		pwarn("DIR I=%u CONNECTED. ", orphan);
+		if (parentdir != (ino_t)-1) {
+			printf("PARENT WAS I=%u\n", parentdir);
+			/*
+			 * The parent directory, because of the ordering
+			 * guarantees, has had the link count incremented
+			 * for the child, but no entry was made.  This
+			 * fixes the parent link count so that fsck does
+			 * not need to be rerun.
+			 */
+			lncntp[parentdir]++;
+		}
 		if (preen == 0)
 			printf("\n");
 	}
@@ -558,13 +572,13 @@ makeentry(parent, ino, name)
 /*
  * Attempt to expand the size of a directory
  */
-int
+static int
 expanddir(dp, name)
-	register struct dinode *dp;
+	struct dinode *dp;
 	char *name;
 {
 	daddr_t lastbn, newblk;
-	register struct bufarea *bp;
+	struct bufarea *bp;
 	char *cp, firstblk[DIRBLKSIZ];
 
 	lastbn = lblkno(&sblock, dp->di_size);
@@ -623,8 +637,9 @@ allocdir(parent, request, mode)
 	ino_t ino;
 	char *cp;
 	struct dinode *dp;
-	register struct bufarea *bp;
+	struct bufarea *bp;
 	struct dirtemplate *dirp;
+	struct inoinfo *inp;
 
 	ino = allocino(request, IFDIR|mode);
 	if (newinofmt)
@@ -657,6 +672,9 @@ allocdir(parent, request, mode)
 		return (0);
 	}
 	cacheino(dp, ino);
+	inp = getinoinfo(ino);
+	inp->i_parent = parent;
+	inp->i_dotdot = parent;
 	statemap[ino] = statemap[parent];
 	if (statemap[ino] == DSTATE) {
 		lncntp[ino] = dp->di_nlink;
@@ -671,7 +689,7 @@ allocdir(parent, request, mode)
 /*
  * free a directory inode
  */
-void
+static void
 freedir(ino, parent)
 	ino_t ino, parent;
 {
@@ -688,13 +706,13 @@ freedir(ino, parent)
 /*
  * generate a temporary name for the lost+found directory.
  */
-int
+static int
 lftempname(bufp, ino)
 	char *bufp;
 	ino_t ino;
 {
-	register ino_t in;
-	register char *cp;
+	ino_t in;
+	char *cp;
 	int namlen;
 
 	cp = bufp + 2;
@@ -715,7 +733,7 @@ lftempname(bufp, ino)
  * Get a directory block.
  * Insure that it is held until another is requested.
  */
-struct bufarea *
+static struct bufarea *
 getdirblk(blkno, size)
 	daddr_t blkno;
 	long size;

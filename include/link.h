@@ -1,4 +1,5 @@
-/*	$NetBSD: link.h,v 1.9 1995/09/23 22:26:15 pk Exp $	*/
+/*	$OpenBSD: link.h,v 1.8 2001/06/08 07:45:18 art Exp $	*/
+/*	$NetBSD: link.h,v 1.10 1996/01/09 00:00:11 pk Exp $	*/
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -41,8 +42,13 @@
 #ifndef _LINK_H_
 #define _LINK_H_
 
+/* XXXART - ? */
+#ifndef DT_PROCNUM
+#define DT_PROCNUM 0
+#endif
+
 /*
- * A `Shared Object Descriptor' descibes a shared object that is needed
+ * A `Shared Object Descriptor' describes a shared object that is needed
  * to complete the link edit process of the object containing it.
  * A list of such objects (chained through `sod_next') is pointed at
  * by `sdt_sods' in the section_dispatch_table structure.
@@ -163,15 +169,45 @@ struct so_debug {
 };
 
 /*
+ *	Debug rendezvous struct. Pointer to this is set up in the
+ *	target code pointed by the DT_DEBUG tag. If it is
+ *	defined.
+ */
+struct r_debug {
+	int	r_version;		/* Protocol version. */
+	struct link_map *r_map;		/* Head of list of loaded objects. */
+
+	/*
+	 * This is the address of a function internal to the run-time linker,
+	 * that will always be called when the linker begins to map in a
+	 * library or unmap it, and again when the mapping change is complete.
+	 * The debugger can set a breakpoint at this address if it wants to
+	 * notice shared object mapping changes.
+	 */
+	unsigned long r_brk;
+	enum {
+		/*
+		 * This state value describes the mapping change taking place
+		 * when the `r_brk' address is called.
+		 */
+		RT_CONSISTENT,		/* Mapping change is complete.  */
+		RT_ADD,			/* Adding a new object.  */
+		RT_DELETE,		/* Removing an object mapping.  */
+	} r_state;
+
+	unsigned long r_ldbase;		/* Base address the linker is loaded at.  */
+};
+
+/*
  * Entry points into ld.so - user interface to the run-time linker.
  */
 struct ld_entry {
-	void	*(*dlopen) __P((char *, int));
-	int	(*dlclose) __P((void *));
-	void	*(*dlsym) __P((void *, char *));
-	int	(*dlctl) __P((void *, int, void *));
-	void	(*dlexit) __P((void));
-	void	(*dlrsrvd[3]) __P((void));
+	void	*(*dlopen)(const char *, int);
+	int	(*dlclose)(void *);
+	void	*(*dlsym)(void *, const char *);
+	int	(*dlctl)(void *, int, void *);
+	void	(*dlexit)(void);
+	void	(*dlrsrvd[3])(void);
 };
 
 /*
@@ -254,11 +290,13 @@ struct hints_header {
 #define HH_MAGIC	011421044151
 	long		hh_version;	/* Interface version number */
 #define LD_HINTS_VERSION_1	1
+#define LD_HINTS_VERSION_2	2
 	long		hh_hashtab;	/* Location of hash table */
 	long		hh_nbucket;	/* Number of buckets in hashtab */
 	long		hh_strtab;	/* Location of strings */
 	long		hh_strtab_sz;	/* Size of strings */
 	long		hh_ehints;	/* End of hints (max offset in file) */
+	long		hh_dirlist;	/* Colon-separated list of srch dirs */
 };
 
 #define HH_BADMAG(hdr)	((hdr).hh_magic != HH_MAGIC)

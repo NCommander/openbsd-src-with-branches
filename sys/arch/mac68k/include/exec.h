@@ -1,4 +1,5 @@
-/*	$NetBSD: exec.h,v 1.7 1994/10/26 08:46:29 cgd Exp $	*/
+/*	$OpenBSD: exec.h,v 1.6 1997/11/30 06:12:25 gene Exp $	*/
+/*	$NetBSD: exec.h,v 1.8 1996/05/05 06:17:40 briggs Exp $	*/
 
 /*-
  * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
@@ -33,8 +34,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef _MACHINE_EXEC_H
-#define _MACHINE_EXEC_H
+#ifndef _MAC68K_EXEC_H_
+#define _MAC68K_EXEC_H_
 
 #define __LDPGSZ	8192
 
@@ -54,4 +55,18 @@ struct relocation_info_mac68k {
 };
 #define relocation_info	relocation_info_mac68k
 
+#define ARCH_ELFSIZE		32
+
+#define ELF_TARG_CLASS		ELFCLASS32
+#define ELF_TARG_DATA		ELFDATA2MSB
+#define ELF_TARG_MACH		EM_68K
+
+#define _NLIST_DO_AOUT
+#define _NLIST_DO_ELF
+
+#define _KERN_DO_AOUT
+#if defined(COMPAT_LINUX) || defined(COMPAT_SVR4)
+#define _KERN_DO_ELF
 #endif
+
+#endif /* _MAC68K_EXEC_H_ */

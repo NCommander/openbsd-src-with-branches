@@ -1,3 +1,4 @@
+/*	$OpenBSD: testsyscall.c,v 1.2 2000/03/02 14:46:39 todd Exp $	*/
 /*
  * testsyscall.c
  *
@@ -36,27 +37,25 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: testsyscall.c,v 1.1 1993/06/08 03:53:42 cgd Exp $
  */
 #include <stdio.h>
 
-main()
+int
+main(argc, argv)
+	int argc;
+	char* argv[];
 {
-	char	buf[ 80];
-	int	err = 0;
+	char buf[80];
+	int err = 0;
 
-	printf( "Table offset as reported by modstat: ");
-	if( gets( buf) == NULL) {
-		printf( "[ABORT]\n");
-		exit( 1);
+	printf("Table offset as reported by modstat: ");
+	if (fgets(buf, sizeof(buf), stdin) == NULL) {
+		printf("[ABORT]\n");
+		exit(1);
 	}
 
-	if( err = syscall( atoi( buf) /* no arguments*/))
-		perror( "syscall");
+	if(err = syscall(atoi(buf) /* no arguments*/))
+		perror("syscall");
 
-	exit( err);
+	exit(err);
 }
-
-/*
- * EOF -- This file has not been truncated
- */

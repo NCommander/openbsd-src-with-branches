@@ -1,3 +1,5 @@
+/*	$OpenBSD: process.h,v 1.3 2001/08/12 12:03:03 heko Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: process.h,v 1.5 1995/10/03 12:13:51 moj Exp $
+ *	$OpenBSD: process.h,v 1.3 2001/08/12 12:03:03 heko Exp $
  *
  */
 
@@ -40,11 +42,11 @@ void	mopProcessRC (/* FILE *, struct if_info *, u_char *, int *,
 			 u_char *, u_char *, int, u_short */);
 #else
 __BEGIN_DECLS
-void	mopProcessDL __P((FILE *, struct if_info *, u_char *, int *,
-			  u_char *, u_char *, int, u_short));
-void	mopProcessRC __P((FILE *, struct if_info *, u_char *, int *,
-			  u_char *, u_char *, int, u_short));
+void	mopProcessDL(FILE *, struct if_info *, u_char *, int *,
+		     u_char *, u_char *, int, u_short);
+void	mopProcessRC(FILE *, struct if_info *, u_char *, int *,
+		     u_char *, u_char *, int, u_short);
 __END_DECLS
 #endif
 
-#endif _PROCESS_H_
+#endif /* _PROCESS_H_ */

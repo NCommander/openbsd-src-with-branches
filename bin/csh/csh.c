@@ -1,3 +1,4 @@
+/*	$OpenBSD: csh.c,v 1.15 2002/02/16 21:27:06 millert Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -43,13 +44,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)csh.c	8.2 (Berkeley) 10/12/93";
 #else
-static char rcsid[] = "$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: csh.c,v 1.15 2002/02/16 21:27:06 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <pwd.h>
@@ -58,11 +60,7 @@ static char rcsid[] = "$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $";
 #include <locale.h>
 #include <unistd.h>
 #include <vis.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "proc.h"
@@ -102,16 +100,16 @@ bool    tellwhat = 0;
 
 extern char **environ;
 
-static int	readf __P((void *, char *, int));
-static fpos_t	seekf __P((void *, fpos_t, int));
-static int	writef __P((void *, const char *, int));
-static int	closef __P((void *));
-static int	srccat __P((Char *, Char *));
-static int	srcfile __P((char *, bool, bool));
-static void	phup __P((int));
-static void	srcunit __P((int, bool, bool));
-static void	mailchk __P((void));
-static Char   **defaultpath __P((void));
+static int	readf(void *, char *, int);
+static fpos_t	seekf(void *, fpos_t, int);
+static int	writef(void *, const char *, int);
+static int	closef(void *);
+static int	srccat(Char *, Char *);
+static int	srcfile(char *, bool, bool);
+static void	phup(int);
+static void	srcunit(int, bool, bool);
+static void	mailchk(void);
+static Char   **defaultpath(void);
 
 int
 main(argc, argv)
@@ -232,7 +230,7 @@ main(argc, argv)
      */
     set(STRstatus, Strsave(STR0));
 
-    if ((tcp = getenv("HOME")) != NULL)
+    if ((tcp = getenv("HOME")) != NULL && strlen(tcp) < MAXPATHLEN)
 	cp = SAVE(tcp);
     else
 	cp = NULL;
@@ -249,22 +247,21 @@ main(argc, argv)
      */
     if ((tcp = getenv("LOGNAME")) != NULL ||
 	(tcp = getenv("USER")) != NULL)
-	set(STRuser, SAVE(tcp));
+	set(STRuser, quote(SAVE(tcp)));
     if ((tcp = getenv("TERM")) != NULL)
-	set(STRterm, SAVE(tcp));
+	set(STRterm, quote(SAVE(tcp)));
 
     /*
      * Re-initialize path if set in environment
      */
     if ((tcp = getenv("PATH")) == NULL)
-	set1(STRpath, defaultpath(), &shvhed);
+	setq(STRpath, defaultpath(), &shvhed);
     else
-	importpath(SAVE(tcp));
+	importpath(str2short(tcp));
 
     set(STRshell, Strsave(STR_SHELLPATH));
 
     doldol = putn((int) getpid());	/* For $$ */
-    shtemp = Strspl(STRtmpsh, doldol);	/* For << */
 
     /*
      * Record the interrupt states from the parent process. If the parent is
@@ -520,6 +517,7 @@ notty:
      * start-up scripts.
      */
     reenter = setexit();	/* PWP */
+    exitset++;
     haderr = 0;			/* In case second time through */
     if (!fast && reenter == 0) {
 	/* Will have value(STRhome) here because set fast if don't */
@@ -557,7 +555,7 @@ notty:
 	if ((cp = value(STRhistfile)) != STRNULL)
 	    loadhist[2] = cp;
 	dosource(loadhist, NULL);
-        if (loginsh)
+	if (loginsh)
 	      (void) srccat(value(STRhome), STRsldotlogin);
     }
 
@@ -639,7 +637,7 @@ importpath(cp)
 	    dp++;
 	}
     pv[i] = 0;
-    set1(STRpath, pv, &shvhed);
+    setq(STRpath, pv, &shvhed);
 }
 
 /*
@@ -879,6 +877,8 @@ static void
 phup(sig)
 int sig;
 {
+    /* XXX sigh, everything after this is a signal race */
+
     rechist();
 
     /*
@@ -928,7 +928,10 @@ void
 pintr(notused)
 	int notused;
 {
+    int save_errno = errno;
+
     pintr1(1);
+    errno = save_errno;
 }
 
 void
@@ -1233,7 +1236,7 @@ gethdir(home)
 
 /*
  * When didfds is set, we do I/O from 0, 1, 2 otherwise from 15, 16, 17
- * We also check if the shell has already changed the decriptor to point to
+ * We also check if the shell has already changed the descriptor to point to
  * 0, 1, 2 when didfds is set.
  */
 #define DESC(a) (*((int *) (a)) - (didfds && *((int *) a) >= FSHIN ? FSHIN : 0))
@@ -1283,7 +1286,7 @@ vis_fputc(ch, fp)
     int ch;
     FILE *fp;
 {
-    char uenc[5];	/* 4 + NULL */
+    char uenc[5];	/* 4 + NUL */
 
     if (ch & QUOTE) 
 	return fputc(ch & TRIM, fp);

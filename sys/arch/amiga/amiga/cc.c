@@ -1,4 +1,5 @@
-/*	$NetBSD: cc.c,v 1.7 1994/10/26 02:01:36 cgd Exp $	*/
+/*	$OpenBSD: cc.c,v 1.7 1998/03/01 16:06:00 niklas Exp $	*/
+/*	$NetBSD: cc.c,v 1.11 1997/06/23 23:46:23 is Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -36,12 +37,15 @@
 
 #include <amiga/amiga/custom.h>
 #include <amiga/amiga/cc.h>
+#include "audio.h"
 
 #if defined (__GNUC__)
 #define INLINE inline
 #else
 #define INLINE
 #endif
+
+void	defchannel_handler(int);
 
 /* init all the "custom chips" */
 void
@@ -322,13 +326,9 @@ copper_handler()
  * Audio stuff.
  */
 
-struct audio_channel {
-	u_short  play_count;
-};
-
 /* - channel[4] */
 /* the data for each audio channel and what to do with it. */
-static struct audio_channel channel[4];
+struct audio_channel channel[4];
 
 /* audio vbl node for vbl function  */
 struct vbl_node audio_vbl_node;    
@@ -346,8 +346,11 @@ cc_init_audio()
 	/*
 	 * initialize audio channels to off.
 	 */
-	for (i=0; i < 4; i++)
+	for (i=0; i < 4; i++) {
 		channel[i].play_count = 0;
+		channel[i].isaudio = 0;
+		channel[i].handler = defchannel_handler;
+	}
 }
 
 
@@ -366,12 +369,12 @@ audio_handler()
 	/*
 	 * only check channels who have DMA enabled.
 	 */
-	audio_dma &= (DMAF_AUD0|DMAF_AUD1|DMAF_AUD2|DMAF_AUD3);
+	audio_dma &= AUCC_ALLDMAF;
 
 	/*
 	 * disable all audio interupts with DMA set
 	 */
-	custom.intena = (audio_dma << 7);
+	custom.intena = (audio_dma << INTB_AUD0) & AUCC_ALLINTF;
 
 	/*
 	 * if no audio dma enabled then exit quick.
@@ -380,42 +383,65 @@ audio_handler()
 		/*
 		 * clear all interrupts.
 		 */
-		custom.intreq = INTF_AUD0|INTF_AUD1|INTF_AUD2|INTF_AUD3; 
+		custom.intreq = AUCC_ALLINTF;
 		goto out;
 	}
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < AUCC_MAXINT; i++) {
 		flag = (1 << i);
 		ir = custom.intreqr;
 		/*
 		 * is this channel's interrupt is set?
 		 */
-		if ((ir & (flag << 7)) == 0)
+		if ((ir & (flag << INTB_AUD0)) == 0)
 			continue;
 
-		if (channel[i].play_count)
-			channel[i].play_count--;
-		else {
-			/*
-			 * disable DMA to this channel and
-			 * disable interrupts to this channel
-			 */
-			custom.dmacon = flag;
-			custom.intena = (flag << 7);
-		}
+#if NAUDIO>0
+		custom.intreq = (flag << INTB_AUD0);
+		/* call audio handler with channel number */
+		if (channel[i].isaudio == 1)
+			if (channel[i].handler)
+				(*channel[i].handler)(i);
+#endif
+
+		if (channel[i].handler)
+			channel[i].handler(i);
+
 		/*
 		 * clear this channels interrupt.
 		 */
-		custom.intreq = (flag << 7);
+		custom.intreq = (flag << INTB_AUD0);
 	}
-
 out:
 	/*
 	 * enable audio interupts with dma still set.
 	 */
 	audio_dma = custom.dmaconr;
-	audio_dma &= (DMAF_AUD0|DMAF_AUD1|DMAF_AUD2|DMAF_AUD3);
-	custom.intena = INTF_SETCLR | (audio_dma << 7);
+	audio_dma &= AUCC_ALLDMAF;
+	custom.intena = INTF_SETCLR | (audio_dma << INTB_AUD0);
+}
+
+/*
+ * this is the channel handler used by the system
+ * other software modules are free to install their own
+ * handler
+ */
+void
+defchannel_handler(i)
+	int i;
+{
+	if (channel[i].play_count)
+		channel[i].play_count--;
+	else {
+		/*
+		 * disable DMA to this channel and
+		 * disable interrupts to this channel
+		 */
+		custom.dmacon = (1 << i);
+		custom.intena = (1 << (i + INTB_AUD0));
+		if (channel[i].isaudio == -1)
+			channel[i].isaudio = 0;
+	}
 }
 
 void
@@ -424,13 +450,28 @@ play_sample(len, data, period, volume, channels, count)
 	u_long count;
 {
 	u_short dmabits, ch;
+	int i;
 
 	dmabits = channels & 0xf;
+
+	/* check to see, whether all channels are free */
+	for (i=0; i < 4; i++) {
+		if ((1 << i) & dmabits) {
+			if (channel[i].isaudio)
+				return; /* allocated */
+			else
+				channel[i].isaudio = -1; /* allocate */
+		}
+	}
+
 	custom.dmacon = dmabits;	/* turn off the correct channels */
 
 	/* load the channels */
 	for (ch = 0; ch < 4; ch++) {
-		if ((dmabits & (ch << ch)) == 0)
+		if ((dmabits & (1 << ch)) == 0)
+			continue;
+		/* busy */
+		if (channel[ch].handler != defchannel_handler)
 			continue;
 		custom.aud[ch].len = len;
 		custom.aud[ch].lc = data;
@@ -441,8 +482,8 @@ play_sample(len, data, period, volume, channels, count)
 	/*
 	 * turn on interrupts and enable dma for channels and
 	 */
-	custom.intena = INTF_SETCLR | (dmabits << 7);
-	custom.dmacon = DMAF_SETCLR | dmabits;
+	custom.intena = INTF_SETCLR | (dmabits << INTB_AUD0);
+	custom.dmacon = DMAF_SETCLR | DMAF_MASTER | dmabits;
 }
 
 /*
@@ -478,7 +519,6 @@ void *
 alloc_chipmem(size)
 	u_long size;
 {
-	void *mem;
 	int s;
 	struct mem_node *mn, *new;
 

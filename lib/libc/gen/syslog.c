@@ -1,5 +1,3 @@
-/*	$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1983, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,17 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)syslog.c	8.4 (Berkeley) 3/18/94";
-#else
-static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: syslog.c,v 1.15 2002/02/18 00:07:56 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/syslog.h>
 #include <sys/uio.h>
+#include <sys/un.h>
 #include <netdb.h>
 
 #include <errno.h>
@@ -54,42 +49,27 @@ static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp 
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-
-#if __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
-static int	LogFile = -1;		/* fd for log */
-static int	connected;		/* have done connect */
-static int	LogStat = 0;		/* status bits, set by openlog() */
-static const char *LogTag = NULL;	/* string to tag the entry with */
-static int	LogFacility = LOG_USER;	/* default facility code */
-static int	LogMask = 0xff;		/* mask of priorities to be logged */
+static struct syslog_data sdata = SYSLOG_DATA_INIT;
+
 extern char	*__progname;		/* Program name, from crt0. */
+
+static void	disconnectlog(void);	/* disconnect from syslogd */
+static void	connectlog(void);	/* (re)connect to syslogd */
+static void	disconnectlog_r(struct syslog_data *); 
+static void	connectlog_r(struct syslog_data *); 
 
 /*
  * syslog, vsyslog --
  *	print message on log file; output is intended for syslogd(8).
  */
 void
-#if __STDC__
 syslog(int pri, const char *fmt, ...)
-#else
-syslog(pri, fmt, va_alist)
-	int pri;
-	char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
 
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	vsyslog(pri, fmt, ap);
 	va_end(ap);
 }
@@ -100,8 +80,64 @@ vsyslog(pri, fmt, ap)
 	register const char *fmt;
 	va_list ap;
 {
-	register int cnt;
-	register char ch, *p, *t;
+	vsyslog_r(pri, &sdata, fmt, ap);
+}
+
+static void
+disconnectlog()
+{
+	disconnectlog_r(&sdata);
+}
+
+static void
+connectlog()
+{
+	connectlog_r(&sdata);
+}
+
+void
+openlog(ident, logstat, logfac)
+	const char *ident;
+	int logstat, logfac;
+{
+	openlog_r(ident, logstat, logfac, &sdata);
+}
+
+void
+closelog()
+{
+	closelog_r(&sdata);
+}
+
+/* setlogmask -- set the log mask level */
+int
+setlogmask(pmask)
+	int pmask;
+{
+	return setlogmask_r(pmask, &sdata);
+}
+
+/* Reentrant version of syslog, i.e. syslog_r() */
+
+void
+syslog_r(int pri, struct syslog_data *data, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsyslog_r(pri, data, fmt, ap);
+	va_end(ap);
+}
+
+void
+vsyslog_r(pri, data, fmt, ap)
+	int pri;
+	struct syslog_data *data;
+	const char *fmt;
+	va_list ap;
+{
+	int cnt;
+	char ch, *p, *t;
 	time_t now;
 	int fd, saved_errno;
 #define	TBUF_LEN	2048
@@ -112,38 +148,37 @@ vsyslog(pri, fmt, ap)
 #define	INTERNALLOG	LOG_ERR|LOG_CONS|LOG_PERROR|LOG_PID
 	/* Check for invalid bits. */
 	if (pri & ~(LOG_PRIMASK|LOG_FACMASK)) {
-		syslog(INTERNALLOG,
-		    "syslog: unknown facility/priority: %x", pri);
+		if (data == &sdata) {
+			syslog(INTERNALLOG,
+			    "syslog: unknown facility/priority: %x", pri);
+		} else {
+			syslog_r(INTERNALLOG, data,
+			    "syslog_r: unknown facility/priority: %x", pri);
+		}
 		pri &= LOG_PRIMASK|LOG_FACMASK;
 	}
 
 	/* Check priority against setlogmask values. */
-	if (!(LOG_MASK(LOG_PRI(pri)) & LogMask))
+	if (!(LOG_MASK(LOG_PRI(pri)) & data->log_mask))
 		return;
 
 	saved_errno = errno;
 
 	/* Set default facility if none specified. */
 	if ((pri & LOG_FACMASK) == 0)
-		pri |= LogFacility;
+		pri |= data->log_fac;
 
-	/* Build the message. */
-	
-	/*
- 	 * Although it's tempting, we can't ignore the possibility of
-	 * overflowing the buffer when assembling the "fixed" portion
-	 * of the message.  Strftime's "%h" directive expands to the
-	 * locale's abbreviated month name, but if the user has the
-	 * ability to construct to his own locale files, it may be
-	 * arbitrarily long.
-	 */
-	(void)time(&now);
+	/* If we have been called through syslog(), no need for reentrancy. */
+	if (data == &sdata)
+		(void)time(&now);
 
-	p = tbuf;  
+	p = tbuf;
 	tbuf_left = TBUF_LEN;
-	
+
 #define	DEC()	\
 	do {					\
+		if (prlen < 0)			\
+			prlen = 0;		\
 		if (prlen >= tbuf_left)		\
 			prlen = tbuf_left - 1;	\
 		p += prlen;			\
@@ -153,22 +188,28 @@ vsyslog(pri, fmt, ap)
 	prlen = snprintf(p, tbuf_left, "<%d>", pri);
 	DEC();
 
-	prlen = strftime(p, tbuf_left, "%h %e %T ", localtime(&now));
-	DEC();
-
-	if (LogStat & LOG_PERROR)
-		stdp = p;
-	if (LogTag == NULL)
-		LogTag = __progname;
-	if (LogTag != NULL) {
-		prlen = snprintf(p, tbuf_left, "%s", LogTag);
+	/* 
+	 * syslogd will expand time automagically for reentrant case, and
+	 * for normal case, just do like before
+	 */
+	if (data == &sdata) {
+		prlen = strftime(p, tbuf_left, "%h %e %T ", localtime(&now));
 		DEC();
 	}
-	if (LogStat & LOG_PID) {
+
+	if (data->log_stat & LOG_PERROR)
+		stdp = p;
+	if (data->log_tag == NULL)
+		data->log_tag = __progname;
+	if (data->log_tag != NULL) {
+		prlen = snprintf(p, tbuf_left, "%s", data->log_tag);
+		DEC();
+	}
+	if (data->log_stat & LOG_PID) {
 		prlen = snprintf(p, tbuf_left, "[%d]", getpid());
 		DEC();
 	}
-	if (LogTag != NULL) {
+	if (data->log_tag != NULL) {
 		if (tbuf_left > 1) {
 			*p++ = ':';
 			tbuf_left--;
@@ -179,15 +220,18 @@ vsyslog(pri, fmt, ap)
 		}
 	}
 
-	/* 
-	 * We wouldn't need this mess if printf handled %m, or if 
-	 * strerror() had been invented before syslog().
-	 */
-	for (t = fmt_cpy, fmt_left = FMT_LEN; ch = *fmt; ++fmt) {
+	/* strerror() is not reentrant */
+
+	for (t = fmt_cpy, fmt_left = FMT_LEN; (ch = *fmt); ++fmt) {
 		if (ch == '%' && fmt[1] == 'm') {
 			++fmt;
-			prlen = snprintf(t, fmt_left, "%s",
-			    strerror(saved_errno));
+			if (data == &sdata) {
+				prlen = snprintf(t, fmt_left, "%s",
+				    strerror(saved_errno)); 
+			} else {
+				prlen = snprintf(t, fmt_left, "Error %d",
+				    saved_errno); 
+			}
 			if (prlen >= fmt_left)
 				prlen = fmt_left - 1;
 			t += prlen;
@@ -206,7 +250,7 @@ vsyslog(pri, fmt, ap)
 	cnt = p - tbuf;
 
 	/* Output to stderr if requested. */
-	if (LogStat & LOG_PERROR) {
+	if (data->log_stat & LOG_PERROR) {
 		struct iovec iov[2];
 
 		iov[0].iov_base = stdp;
@@ -217,18 +261,28 @@ vsyslog(pri, fmt, ap)
 	}
 
 	/* Get connected, output the message to the local logger. */
-	if (!connected)
-		openlog(LogTag, LogStat | LOG_NDELAY, 0);
-	if (send(LogFile, tbuf, cnt, 0) >= 0)
+	if (!data->opened)
+		openlog_r(data->log_tag, data->log_stat, 0, data);
+	connectlog_r(data);
+	if (send(data->log_file, tbuf, cnt, 0) >= 0)
 		return;
 
 	/*
-	 * Output the message to the console; don't worry about blocking,
-	 * if console blocks everything will.  Make sure the error reported
-	 * is the one from the syslogd failure.
+	 * If the send() failed, the odds are syslogd was restarted.
+	 * Make one (only) attempt to reconnect to /dev/log.
 	 */
-	if (LogStat & LOG_CONS &&
-	    (fd = open(_PATH_CONSOLE, O_WRONLY, 0)) >= 0) {
+	disconnectlog_r(data);
+	connectlog_r(data);
+	if (send(data->log_file, tbuf, cnt, 0) >= 0)
+		return;
+
+	/*
+	 * Output the message to the console; try not to block
+	 * as a blocking console should not stop other processes.
+	 * Make sure the error reported is the one from the syslogd failure.
+	 */
+	if (data->log_stat & LOG_CONS &&
+	    (fd = open(_PATH_CONSOLE, O_WRONLY|O_NONBLOCK, 0)) >= 0) {
 		struct iovec iov[2];
 		
 		p = strchr(tbuf, '>') + 1;
@@ -241,54 +295,85 @@ vsyslog(pri, fmt, ap)
 	}
 }
 
-static struct sockaddr SyslogAddr;	/* AF_UNIX address of local logger */
-
-void
-openlog(ident, logstat, logfac)
-	const char *ident;
-	int logstat, logfac;
+static void
+disconnectlog_r(data)
+	struct syslog_data *data;
 {
-	if (ident != NULL)
-		LogTag = ident;
-	LogStat = logstat;
-	if (logfac != 0 && (logfac &~ LOG_FACMASK) == 0)
-		LogFacility = logfac;
-
-	if (LogFile == -1) {
-		SyslogAddr.sa_family = AF_UNIX;
-		(void)strncpy(SyslogAddr.sa_data, _PATH_LOG,
-		    sizeof(SyslogAddr.sa_data));
-		if (LogStat & LOG_NDELAY) {
-			if ((LogFile = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
-				return;
-			(void)fcntl(LogFile, F_SETFD, 1);
-		}
+	/*
+	 * If the user closed the FD and opened another in the same slot,
+	 * that's their problem.  They should close it before calling on
+	 * system services.
+	 */
+	if (data->log_file != -1) {
+		close(data->log_file);
+		data->log_file = -1;
 	}
-	if (LogFile != -1 && !connected)
-		if (connect(LogFile, &SyslogAddr, sizeof(SyslogAddr)) == -1) {
-			(void)close(LogFile);
-			LogFile = -1;
+	data->connected = 0;		/* retry connect */
+}
+
+static void
+connectlog_r(data)
+	struct syslog_data *data;
+{
+	struct sockaddr_un SyslogAddr;	/* AF_UNIX address of local logger */
+
+	if (data->log_file == -1) {
+		if ((data->log_file = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
+			return;
+		(void)fcntl(data->log_file, F_SETFD, 1);
+	}
+	if (data->log_file != -1 && !data->connected) {
+		memset(&SyslogAddr, '\0', sizeof(SyslogAddr));
+		SyslogAddr.sun_len = sizeof(SyslogAddr);
+		SyslogAddr.sun_family = AF_UNIX;
+		strlcpy(SyslogAddr.sun_path, _PATH_LOG,
+		    sizeof(SyslogAddr.sun_path));
+		if (connect(data->log_file, (struct sockaddr *)&SyslogAddr,
+		    sizeof(SyslogAddr)) == -1) {
+			(void)close(data->log_file);
+			data->log_file = -1;
 		} else
-			connected = 1;
+			data->connected = 1;
+	}
 }
 
 void
-closelog()
+openlog_r(ident, logstat, logfac, data)
+	const char *ident;
+	int logstat, logfac;
+	struct syslog_data *data;
 {
-	(void)close(LogFile);
-	LogFile = -1;
-	connected = 0;
+	if (ident != NULL)
+		data->log_tag = ident;
+	data->log_stat = logstat;
+	if (logfac != 0 && (logfac &~ LOG_FACMASK) == 0)
+		data->log_fac = logfac;
+
+	if (data->log_stat & LOG_NDELAY)	/* open immediately */
+		connectlog_r(data);
+
+	data->opened = 1;	/* ident and facility has been set */
+}
+
+void
+closelog_r(data)
+	struct syslog_data *data;
+{
+	(void)close(data->log_file);
+	data->log_file = -1;
+	data->connected = 0;
 }
 
 /* setlogmask -- set the log mask level */
 int
-setlogmask(pmask)
+setlogmask_r(pmask, data)
 	int pmask;
+	struct syslog_data *data;
 {
 	int omask;
 
-	omask = LogMask;
+	omask = data->log_mask;
 	if (pmask != 0)
-		LogMask = pmask;
+		data->log_mask = pmask;
 	return (omask);
 }

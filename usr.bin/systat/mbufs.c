@@ -1,3 +1,4 @@
+/*	$OpenBSD: mbufs.c,v 1.7 2001/11/23 22:20:06 deraadt Exp $	*/
 /*	$NetBSD: mbufs.c,v 1.2 1995/01/20 08:52:02 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mbufs.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: mbufs.c,v 1.2 1995/01/20 08:52:02 jtc Exp $";
+static char rcsid[] = "$OpenBSD: mbufs.c,v 1.7 2001/11/23 22:20:06 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -47,6 +48,7 @@ static char rcsid[] = "$NetBSD: mbufs.c,v 1.2 1995/01/20 08:52:02 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <nlist.h>
+#include <err.h>
 #include <paths.h>
 #include "systat.h"
 #include "extern.h"
@@ -100,14 +102,14 @@ labelmbufs()
 void
 showmbufs()
 {
-	register int i, j, max, index;
-	char buf[10];
+	int i, j, max, index;
+	char buf[13];
 
 	if (mb == 0)
 		return;
-	for (j = 0; j < wnd->maxy; j++) {
-		max = 0, index = -1; 
-		for (i = 0; i < wnd->maxy; i++)
+	for (j = 0; j < wnd->_maxy; j++) {
+		max = 0, index = -1;
+		for (i = 0; i < wnd->_maxy; i++)
 			if (mb->m_mtypes[i] > max) {
 				max = mb->m_mtypes[i];
 				index = i;
@@ -120,7 +122,7 @@ showmbufs()
 			mvwprintw(wnd, 1+j, 0, "%-10.10s", mtnames[index]);
 		wmove(wnd, 1 + j, 10);
 		if (max > 60) {
-			sprintf(buf, " %d", max);
+			snprintf(buf, sizeof buf, " %d", max);
 			max = 60;
 			while (max--)
 				waddch(wnd, 'X');
@@ -144,11 +146,13 @@ static struct nlist namelist[] = {
 int
 initmbufs()
 {
+	int ret;
+
 	if (namelist[X_MBSTAT].n_type == 0) {
-		if (kvm_nlist(kd, namelist)) {
+		if ((ret = kvm_nlist(kd, namelist)) == -1)
+			errx(1, "%s", kvm_geterr(kd));
+		else if (ret)
 			nlisterr(namelist);
-			return(0);
-		}
 		if (namelist[X_MBSTAT].n_type == 0) {
 			error("namelist on %s failed", _PATH_UNIX);
 			return(0);

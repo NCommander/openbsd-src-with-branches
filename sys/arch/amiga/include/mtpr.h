@@ -1,4 +1,5 @@
-/*	$NetBSD: mtpr.h,v 1.9 1995/03/28 18:15:09 jtc Exp $	*/
+/*	$OpenBSD: mtpr.h,v 1.5 2002/03/14 01:26:29 millert Exp $	*/
+/*	$NetBSD: mtpr.h,v 1.10 1996/05/09 20:31:53 is Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -55,6 +56,9 @@
  * <amiga/amiga/mtpr.h> ?
  */
 #include <amiga/amiga/custom.h>
+#ifdef DRACO
+#include <amiga/amiga/drcustom.h>
+#endif
 
 extern unsigned char ssir;
 
@@ -63,11 +67,22 @@ extern unsigned char ssir;
 #define	SIR_CBACK	0x4	/* walk the sicallback-chain */
 
 #define siroff(x)	ssir &= ~(x)
+#ifdef DRACO
+#define setsoftint()	(is_draco()? (*draco_intfrc |= DRIRQ_SOFT) :\
+			    (custom.intreq = INTF_SETCLR|INTF_SOFTINT))
+#define clrsoftint()	(is_draco()? (*draco_intfrc &= ~DRIRQ_SOFT) :\
+			    (custom.intreq = INTF_SOFTINT))
+#else
 #define setsoftint()	(custom.intreq = INTF_SETCLR|INTF_SOFTINT)
 #define clrsoftint()	(custom.intreq = INTF_SOFTINT)
+#endif
+
 #define setsoftnet()	(ssir |= SIR_NET, setsoftint())
 #define setsoftclock()	(ssir |= SIR_CLOCK, setsoftint())
 #define setsoftcback()	(ssir |= SIR_CBACK, setsoftint())
+
+void softintr_schedule(void *);
+void *softintr_establish(int,  void (*)(void *), void *);
 
 #endif /* _KERNEL */
 

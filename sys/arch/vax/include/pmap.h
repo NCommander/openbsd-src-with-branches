@@ -1,4 +1,5 @@
-/*      $NetBSD: pmap.h,v 1.10 1995/05/11 16:53:14 jtc Exp $     */
+/*      $OpenBSD: pmap.h,v 1.15 2001/12/04 23:22:42 art Exp $     */
+/*	$NetBSD: pmap.h,v 1.37 1999/08/01 13:48:07 ragge Exp $	   */
 
 /* 
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -43,28 +44,37 @@
  */
 
 
-#ifndef	PMAP_H
-#define	PMAP_H
+#ifndef PMAP_H
+#define PMAP_H
 
-#include "machine/mtpr.h"
-
-
-#define VAX_PAGE_SIZE	NBPG
-#define VAX_SEG_SIZE	NBSEG
+#include <machine/types.h>
+#include <machine/pte.h>
+#include <machine/mtpr.h>
+#include <machine/pcb.h>
 
 /*
- *  Pmap structure
- *
- * p0br == PR_P0BR in user struct, p0br is also == SBR in pmap_kernel()
- * p1br is the same for stack space, stack is base of alloced pte mem
+ * Some constants to make life easier.
+ */
+#define LTOHPS		(PGSHIFT - VAX_PGSHIFT)
+#define LTOHPN		(1 << LTOHPS)
+#define USRPTSIZE ((MAXTSIZ + MAXDSIZ + MAXSSIZ + MMAPSPACE) / VAX_NBPG)
+#define	NPTEPGS	(USRPTSIZE / (sizeof(struct pte) * LTOHPN))
+
+/*
+ * Pmap structure
+ *  pm_stack holds lowest allocated memory for the process stack.
  */
 
 typedef struct pmap {
-	vm_offset_t		 pm_stack; /* Base of alloced p1 pte space */
-	struct pcb		*pm_pcb; /* Pointer to PCB for this pmap */
-	int                      ref_count;   /* reference count        */
-	struct pmap_statistics   stats;       /* statistics             */
-	simple_lock_data_t       lock;        /* lock on pmap           */
+	vaddr_t	pm_stack;	/* Base of alloced p1 pte space */
+	int		 ref_count;	/* reference count	  */
+	struct pte	*pm_p0br;	/* page 0 base register */
+	long		 pm_p0lr;	/* page 0 length register */
+	struct pte	*pm_p1br;	/* page 1 base register */
+	long		 pm_p1lr;	/* page 1 length register */
+	int		 pm_lock;	/* Lock entry in MP environment */
+	struct pmap_statistics	 pm_stats;	/* Some statistics */
+	u_char		 pm_refcnt[NPTEPGS];	/* Refcount per pte page */
 } *pmap_t;
 
 /*
@@ -72,36 +82,70 @@ typedef struct pmap {
  * mappings of that page.  An entry is a pv_entry_t, the list is pv_table.
  */
 
-typedef struct pv_entry {
-	struct pv_entry	*pv_next;	/* next pv_entry */
-	struct pmap	*pv_pmap;/* if not NULL, pmap where mapping lies */
-	vm_offset_t	 pv_va;		/* virtual address for mapping */
-	int		 pv_flags;	/* flags */
-} *pv_entry_t;
+struct pv_entry {
+	struct pv_entry *pv_next;	/* next pv_entry */
+	struct pte	*pv_pte;	/* pte for this physical page */
+	struct pmap	*pv_pmap;	/* pmap this entry belongs to */
+	int		 pv_attr;	/* write/modified bits */
+};
 
-#define	PV_REF	0x00000001	/* Simulated phys ref bit */
+/* ROUND_PAGE used before vm system is initialized */
+#define ROUND_PAGE(x)	(((uint)(x) + PGOFSET) & ~PGOFSET)
+#define TRUNC_PAGE(x)	((uint)(x) & ~PGOFSET)
 
-#define PHYS_TO_PV(phys_page) (&pv_table[((phys_page)>>PAGE_SHIFT)])
+/* Mapping macros used when allocating SPT */
+#define MAPVIRT(ptr, count)					\
+	(vm_offset_t)ptr = virtual_avail;			\
+	virtual_avail += (count) * VAX_NBPG;
+
+#define MAPPHYS(ptr, count, perm)				\
+	(vm_offset_t)ptr = avail_start + KERNBASE;		\
+	avail_start += (count) * VAX_NBPG;
 
 #ifdef	_KERNEL
-pv_entry_t	pv_table;		/* array of entries, 
-					   one per LOGICAL page */
-struct pmap	kernel_pmap_store;
 
-#define pa_index(pa)	                atop(pa)
-#define pa_to_pvh(pa)	                (&pv_table[atop(pa)])
+extern	struct pmap kernel_pmap_store;
 
-#define	pmap_kernel()			(&kernel_pmap_store)
+#define pmap_kernel()			(&kernel_pmap_store)
+
+/*
+ * Real nice (fast) routines to get the virtual address of a physical page
+ * (and vice versa).
+ */
+#define PMAP_MAP_POOLPAGE(pa)	((pa) | KERNBASE)
+#define PMAP_UNMAP_POOLPAGE(va) ((va) & ~KERNBASE)
+
+#define PMAP_STEAL_MEMORY
+
+/*
+ * This is the by far most used pmap routine. Make it inline.
+ */
+
+/* Routines that are best to define as macros */
+#define pmap_phys_address(phys)		((u_int)(phys) << PGSHIFT)
+#define pmap_copy(a,b,c,d,e)		/* Dont do anything */
+#define pmap_update(pm)			/* nothing */
+#define pmap_collect(pmap)		/* No need so far */
+#define pmap_remove(pmap, start, slut)	pmap_protect(pmap, start, slut, 0)
+#define pmap_resident_count(pmap)	((pmap)->pm_stats.resident_count)
+#define pmap_deactivate(p)		/* Dont do anything */
+#define pmap_reference(pmap)		(pmap)->ref_count++
+
+/* These can be done as efficient inline macros */
+#define pmap_copy_page(src, dst)				\
+	__asm__("addl3 $0x80000000,%0,r0;addl3 $0x80000000,%1,r1;	\
+	    movc3 $4096,(r0),(r1)"				\
+	    :: "r"(src),"r"(dst):"r0","r1","r2","r3","r4","r5");
+
+#define pmap_zero_page(phys)					\
+	__asm__("addl3 $0x80000000,%0,r0;movc5 $0,(r0),$0,$4096,(r0)" \
+	    :: "r"(phys): "r0","r1","r2","r3","r4","r5");
+
+/* Prototypes */
+void	pmap_bootstrap(void);
+vaddr_t pmap_map(vm_offset_t, vm_offset_t, vm_offset_t, int);
+void	pmap_pinit(pmap_t);
 
 #endif	/* _KERNEL */
 
-/* Routines that are best to define as macros */
-#define	pmap_copy(a,b,c,d,e) 		/* Dont do anything */
-#define	pmap_update()	mtpr(0,PR_TBIA)	/* Update buffes */
-#define	pmap_pageable(a,b,c,d)		/* Dont do anything */
-#define	pmap_collect(pmap)		/* No need so far */
-#define	pmap_reference(pmap)	if(pmap) (pmap)->ref_count++
-#define	pmap_pinit(pmap)	(pmap)->ref_count=1;
-#define	pmap_phys_address(phys) ((u_int)(phys)<<PAGE_SIZE)
-
-#endif PMAP_H
+#endif /* PMAP_H */

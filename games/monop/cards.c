@@ -1,3 +1,4 @@
+/*	$OpenBSD: cards.c,v 1.4 2000/06/30 16:00:04 millert Exp $	*/
 /*	$NetBSD: cards.c,v 1.3 1995/03/23 08:34:35 cgd Exp $	*/
 
 /*
@@ -37,61 +38,83 @@
 #if 0
 static char sccsid[] = "@(#)cards.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: cards.c,v 1.3 1995/03/23 08:34:35 cgd Exp $";
+static char rcsid[] = "$OpenBSD: cards.c,v 1.4 2000/06/30 16:00:04 millert Exp $";
 #endif
 #endif /* not lint */
 
-# include	"monop.ext"
-# include	"pathnames.h"
+#include	<err.h>
+#include	"monop.ext"
+#include	"pathnames.h"
 
 /*
  *	These routine deal with the card decks
  */
 
-# define	GOJF	'F'	/* char for get-out-of-jail-free cards	*/
+#define	GOJF	'F'	/* char for get-out-of-jail-free cards	*/
 
-# ifndef DEV
+#ifndef DEV
 static char	*cardfile	= _PATH_CARDS;
-# else
+#else
 static char	*cardfile	= "cards.pck";
-# endif
+#endif
 
 static FILE	*deckf;
+
+static void set_up(DECK *);
+static void printmes(void);
 
 /*
  *	This routine initializes the decks from the data file,
  * which it opens.
  */
-init_decks() {
-
-	if ((deckf=fopen(cardfile, "r")) == NULL) {
+void
+init_decks()
+{
+	if ((deckf = fopen(cardfile, "r")) == NULL)
 file_err:
-		perror(cardfile);
-		exit(1);
-	}
-	if (fread(deck, sizeof (DECK), 2, deckf) != 2)
+		err(1, "%s", cardfile);
+	if (fread(&deck[0].num_cards, sizeof(deck[0].num_cards), 1, deckf) != 1)
 		goto file_err;
+	if (fread(&deck[0].last_card, sizeof(deck[0].last_card), 1, deckf) != 1)
+		goto file_err;
+	if (fread(&deck[0].gojf_used, sizeof(deck[0].gojf_used), 1, deckf) != 1)
+		goto file_err;
+	deck[0].num_cards = ntohs(deck[0].num_cards);
+	deck[0].last_card = ntohs(deck[0].last_card);
+
+	if (fread(&deck[1].num_cards, sizeof(deck[1].num_cards), 1, deckf) != 1)
+		goto file_err;
+	if (fread(&deck[1].last_card, sizeof(deck[1].last_card), 1, deckf) != 1)
+		goto file_err;
+	if (fread(&deck[1].gojf_used, sizeof(deck[1].gojf_used), 1, deckf) != 1)
+		goto file_err;
+	deck[1].num_cards = ntohs(deck[1].num_cards);
+	deck[1].last_card = ntohs(deck[1].last_card);
+
 	set_up(&CC_D);
 	set_up(&CH_D);
 }
 /*
  *	This routine sets up the offset pointers for the given deck.
  */
+static void
 set_up(dp)
-DECK	*dp; {
-
-	reg int	r1, r2;
+	DECK	*dp;
+{
+	int	r1, r2;
 	int	i;
 
-	dp->offsets = (long *) calloc(sizeof (long), dp->num_cards);
-	if (fread(dp->offsets, sizeof(long), dp->num_cards, deckf) != dp->num_cards) {
-		perror(cardfile);
-		exit(1);
+	if ((dp->offsets = (int32_t *) calloc(sizeof (int32_t), dp->num_cards)) == NULL)
+		errx(1, "malloc");
+	for (i = 0 ; i < dp->num_cards ; i++) {
+		if (fread(&dp->offsets[i], sizeof(dp->offsets[i]), 1, deckf) != 1)
+			err(1, "%s", cardfile);
+		dp->offsets[i] = ntohl(dp->offsets[i]);
 	}
 	dp->last_card = 0;
 	dp->gojf_used = FALSE;
 	for (i = 0; i < dp->num_cards; i++) {
-		reg long	temp;
+		long	temp;
 
 		r1 = roll(1, dp->num_cards) - 1;
 		r2 = roll(1, dp->num_cards) - 1;
@@ -103,13 +126,14 @@ DECK	*dp; {
 /*
  *	This routine draws a card from the given deck
  */
+void
 get_card(dp)
-DECK	*dp; {
-
-	reg char	type_maj, type_min;
-	reg int		num;
-	int		i, per_h, per_H, num_h, num_H;
-	OWN		*op;
+	DECK	*dp;
+{
+	char	type_maj, type_min;
+	int16_t	num;
+	int	i, per_h, per_H, num_h, num_H;
+	OWN	*op;
 
 	do {
 		fseek(deckf, dp->offsets[dp->last_card], 0);
@@ -117,7 +141,8 @@ DECK	*dp; {
 		type_maj = getc(deckf);
 	} while (dp->gojf_used && type_maj == GOJF);
 	type_min = getc(deckf);
-	num = getw(deckf);
+	fread(&num, sizeof(num), 1, deckf);
+	num = ntohs(num);
 	printmes();
 	switch (type_maj) {
 	  case '+':		/* get money		*/
@@ -179,11 +204,12 @@ DECK	*dp; {
 		}
 		num_h = num_H = 0;
 		for (op = cur_p->own_list; op; op = op->next)
-			if (op->sqr->type == PRPTY)
+			if (op->sqr->type == PRPTY) {
 				if (op->sqr->desc->houses == 5)
 					++num_H;
 				else
 					num_h += op->sqr->desc->houses;
+			}
 		num = per_h * num_h + per_H * num_H;
 		printf("You had %d Houses and %d Hotels, so that cost you $%d\n", num_h, num_H, num);
 		if (num == 0)
@@ -201,9 +227,10 @@ DECK	*dp; {
 /*
  *	This routine prints out the message on the card
  */
-printmes() {
-
-	reg char	c;
+static void
+printmes()
+{
+	char	c;
 
 	printline();
 	fflush(stdout);

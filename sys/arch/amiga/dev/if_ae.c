@@ -1,4 +1,5 @@
-/*	$NetBSD: if_ae.c,v 1.3 1995/10/07 18:12:42 chopps Exp $	*/
+/*	$OpenBSD: if_ae.c,v 1.13 2001/02/20 19:39:30 mickey Exp $	*/
+/*	$NetBSD: if_ae.c,v 1.14 1997/03/18 18:44:53 veego Exp $	*/
 
 /*
  * Copyright (c) 1995 Bernd Ernesti and Klaus Burkert. All rights reserved.
@@ -47,9 +48,6 @@
  *	WORD or LONG, BYTE-access is prohibited!!
  */
 
-#include "ae.h"
-#if NAE > 0
-
 #include "bpfilter.h"
 
 /*
@@ -91,7 +89,13 @@
 #if defined(CCITT) && defined(LLC)
 #include <sys/socketvar.h>  
 #include <netccitt/x25.h>
-extern llc_ctlinput(), cons_rtrequest();
+#include <net/if_dl.h>
+#include <net/if_llc.h>
+#include <netccitt/dll.h>
+#include <netccitt/llc_var.h>
+#include <netccitt/pk.h> 
+#include <netccitt/pk_var.h>
+#include <netccitt/pk_extern.h>
 #endif  
 
 #if NBPFILTER > 0
@@ -123,34 +127,38 @@ struct	ae_softc {
 	int	sc_rmd;		/* predicted next rmd to process */
 	int	sc_tmd;		/* next tmd to use */
 	int	sc_no_td;	/* number of tmds in use */
+	u_int16_t	ae_rev;	/* revision of the lance chip */
 } ae_softc[NAE];
 
 /* offsets for:	   ID,   REGS,    MEM */
 int	aestd[] = { 0, 0x0370, 0x8000 };
-static u_int16_t	revision;
 
-int	aematch __P((struct device *, void *, void *));
-void	aeattach __P((struct device *, struct device *, void *));
-void	aewatchdog __P((int));
-void	aestop __P((struct ae_softc *));
-void	aememinit __P((struct ae_softc *));
-void	aereset __P((struct ae_softc *));
-void	aeinit __P((struct ae_softc *));
-void	aestart __P((struct ifnet *));
-int	aeintr __P((struct ae_softc *));
-void	aetint __P((struct ae_softc *));
-void	aerint __P((struct ae_softc *));
-void	aeread __P((struct ae_softc *, u_char *, int));
-static	void wcopyfrom __P((char *, char *, int));
-static	void wcopyto __P((char *, char *, int));
-static	void wzero __P((char *, int));
-int	aeput __P((char *, struct mbuf *));
-struct	mbuf *aeget __P((struct ae_softc *,u_char *, int));
-int	aeioctl __P((struct ifnet *, u_long, caddr_t));
-void	aesetladrf __P((struct arpcom *, u_int16_t *));
+int	aematch(struct device *, void *, void *);
+void	aeattach(struct device *, struct device *, void *);
+void	aewatchdog(struct ifnet *);
+void	aestop(struct ae_softc *);
+void	aememinit(struct ae_softc *);
+void	aereset(struct ae_softc *);
+void	aeinit(struct ae_softc *);
+void	aestart(struct ifnet *);
+int	aeintr(void *);
+void	aetint(struct ae_softc *);
+void	aerint(struct ae_softc *);
+void	aeread(struct ae_softc *, u_char *, int);
+static	void wcopyfrom(char *, char *, int);
+static	void wcopyto(char *, char *, int);
+static	void wzero(char *, int);
+int	aeput(char *, struct mbuf *);
+struct	mbuf *aeget(struct ae_softc *, u_char *, int);
+int	aeioctl(struct ifnet *, u_long, caddr_t);
+void	aesetladrf(struct arpcom *, u_int16_t *);
 
-struct cfdriver aecd = {
-	NULL, "ae", aematch, aeattach, DV_IFNET, sizeof(struct ae_softc)
+struct cfattach ae_ca = {
+	sizeof(struct ae_softc), aematch, aeattach
+};
+
+struct cfdriver ae_cd = {
+	NULL, "ae", DV_IFNET
 };
 
 int
@@ -206,18 +214,13 @@ aeattach(parent, self, aux)
 	 * Manufacturer decides the 3 first bytes, i.e. ethernet vendor ID.
 	 */
 
-	/*
-	 * currently borrowed from C= 
-	 * the next four lines will soon have to be altered 
-	 */
-
 	sc->sc_arpcom.ac_enaddr[0] = 0x00;
-	sc->sc_arpcom.ac_enaddr[1] = 0x80;
-	sc->sc_arpcom.ac_enaddr[2] = 0x10;
+	sc->sc_arpcom.ac_enaddr[1] = 0x60;
+	sc->sc_arpcom.ac_enaddr[2] = 0x30;
 
-	sc->sc_arpcom.ac_enaddr[3] = ((ser >> 16) & 0x0f) | 0xf0; /* to diff from A2065 */
-	sc->sc_arpcom.ac_enaddr[4] = (ser >>  8 ) & 0xff;
-	sc->sc_arpcom.ac_enaddr[5] = (ser       ) & 0xff;
+	sc->sc_arpcom.ac_enaddr[3] = (ser >> 16) & 0xff;
+	sc->sc_arpcom.ac_enaddr[4] = (ser >> 8) & 0xff;
+	sc->sc_arpcom.ac_enaddr[5] = ser & 0xff;
 
 	printf("%s: hardware address %s 32K", sc->sc_dev.dv_xname,
 		ether_sprintf(sc->sc_arpcom.ac_enaddr));
@@ -227,13 +230,13 @@ aeattach(parent, self, aux)
 
 	/* get the chip version of the lance chip */
 	sc->sc_r1->aer1_rap = 0x5900;
-	revision = ((sc->sc_r1->aer1_rdp >> 4) -2);
-	printf("  chip-revision: B%x\n", revision);
+	sc->ae_rev = ((sc->sc_r1->aer1_rdp >> 4) -2);
+	printf("  chip-revision: B%x\n", sc->ae_rev);
 
 	splx (s);
 
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = aecd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_ioctl = aeioctl;
 	ifp->if_watchdog = aewatchdog;
 	ifp->if_output = ether_output;
@@ -243,10 +246,6 @@ aeattach(parent, self, aux)
 	if_attach(ifp);
 	ether_ifattach(ifp);
 
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
-
 	sc->sc_isr.isr_intr = aeintr;
 	sc->sc_isr.isr_arg = sc;
 	sc->sc_isr.isr_ipl = 2;
@@ -255,10 +254,10 @@ aeattach(parent, self, aux)
 }
 
 void
-aewatchdog(unit)
-	short unit;
+aewatchdog(ifp)
+	struct ifnet *ifp;
 {
-	struct ae_softc *sc = aecd.cd_devs[unit];
+	struct ae_softc *sc = ifp->if_softc;
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 	++sc->sc_arpcom.ac_if.if_oerrors;
@@ -282,7 +281,9 @@ void
 aememinit(sc)
 	register struct ae_softc *sc;
 {        
+#if NBPFILTER > 0
 	register struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+#endif
 	/*
 	 * This structure is referenced from the CARD's/PCnet-ISA's point
 	 * of view, thus the 0x8000 address which is the buffer RAM area
@@ -319,9 +320,9 @@ aememinit(sc)
 
 	for (i = 0; i < AERBUF; i++) {  
 		aer2->aer2_rmd[i].rmd0 = SWAP((int)aemem->aer2_rbuf[i]);
-		aer2->aer2_rmd[i].rmd1 = AE_OWN; 
 		aer2->aer2_rmd[i].rmd2 = SWAP(-ETHER_MAX_LEN);
 		aer2->aer2_rmd[i].rmd3 = 0;
+		aer2->aer2_rmd[i].rmd1 = AE_OWN; 
 	}
 
 	for (i = 0; i < AETBUF; i++) {
@@ -338,7 +339,7 @@ aereset(sc)
 {
 	int s;
 
-	s = splimp();
+	s = splnet();
 	aeinit(sc);
 	splx(s);
 }
@@ -443,7 +444,7 @@ void
 aestart(ifp)
 	struct ifnet *ifp;
 {
-	register struct ae_softc *sc = aecd.cd_devs[ifp->if_unit];
+	register struct ae_softc *sc = ifp->if_softc;
 	register int bix;
 	register struct aetmd *tmd;
 	register struct mbuf *m;
@@ -482,9 +483,9 @@ aestart(ifp)
 
 		ifp->if_timer = 5;
 
-		tmd->tmd1 = AE_OWN | AE_STP | AE_ENP;
 		tmd->tmd2 = SWAP(-len);
 		tmd->tmd3 = 0;
+		tmd->tmd1 = AE_OWN | AE_STP | AE_ENP;
 
 		sc->sc_r1->aer1_rdp = AE_INEA | AE_TDMD;
 
@@ -495,9 +496,10 @@ aestart(ifp)
 }
 
 int
-aeintr(sc)
-	register struct ae_softc *sc;
+aeintr(arg)
+	void *arg;
 {
+	register struct ae_softc *sc = arg;
 	register struct aereg1 *aer1;
 	register struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 	register u_int16_t stat;
@@ -657,11 +659,11 @@ aerint(sc)
 		sc->sc_r1->aer1_rdp =  AE_RINT | AE_INEA;
 		if (rmd->rmd1 & (AE_FRAM | AE_OFLO | AE_CRC | AE_RBUFF)) {
 			ifp->if_ierrors++;
-			if ((rmd->rmd1 & (AE_FRAM | AE_OFLO | AE_ENP)) == (AE_FRAM | AE_ENP))
-				printf("%s: framing error\n", sc->sc_dev.dv_xname);
 			if ((rmd->rmd1 & (AE_OFLO | AE_ENP)) == AE_OFLO)
 				printf("%s: overflow\n", sc->sc_dev.dv_xname);
-			if ((rmd->rmd1 & (AE_CRC | AE_OFLO | AE_ENP)) == (AE_CRC | AE_ENP))
+			else if ((rmd->rmd1 & (AE_FRAM | AE_OFLO | AE_ENP)) == (AE_FRAM | AE_ENP))
+				printf("%s: framing error\n", sc->sc_dev.dv_xname);
+			else if ((rmd->rmd1 & (AE_CRC | AE_OFLO | AE_ENP)) == (AE_CRC | AE_ENP))
 				printf("%s: crc mismatch\n", sc->sc_dev.dv_xname);
 			if (rmd->rmd1 & AE_RBUFF)
 				printf("%s: receive buffer error\n", sc->sc_dev.dv_xname);
@@ -681,9 +683,9 @@ aerint(sc)
 		} else
 			aeread(sc, sc->sc_r2->aer2_rbuf[bix], SWAP(rmd->rmd3) - 4);
 
-		rmd->rmd1 = AE_OWN;
-		rmd->rmd2 = SWAP(-ETHER_MAX_LEN);
 		rmd->rmd3 = 0;
+		rmd->rmd2 = SWAP(-ETHER_MAX_LEN);
+		rmd->rmd1 = AE_OWN;
 
 		AENEXTRMP;
 	} while ((rmd->rmd1 & AE_OWN) == 0);
@@ -726,22 +728,8 @@ aeread(sc, buf, len)
 	 * If so, hand off the raw packet to bpf, which must deal with
 	 * trailers in its own way.
 	 */
-	if (ifp->if_bpf) {
+	if (ifp->if_bpf)
 		bpf_mtap(ifp->if_bpf, m);
-
-		/*
-		 * Note that the interface cannot be in promiscuous mode if
-		 * there are no bpf listeners.  And if we are in promiscuous
-		 * mode, we have to check if this packet is really ours.
-		 */
-		if ((ifp->if_flags & IFF_PROMISC) &&
-		    (eh->ether_dhost[0] & 1) == 0 && /* !mcast and !bcast */
-		    bcmp(eh->ether_dhost, sc->sc_arpcom.ac_enaddr,
-			sizeof(eh->ether_dhost)) != 0) {
-			    m_freem(m);
-			    return;
-		    }
-	}
 #endif
 
 	/* We assume that the header fit entirely in one mbuf. */
@@ -823,7 +811,7 @@ wcopyto(a1, a2, length) /* bcopy() word-wise */
 		*b2++ = *b1++;
 
 	if (length & 0x0001) {
-		i = (*b2 & 0x00ff) | (*b1 & 0xff00);	/* copy trailing byte */
+		i = (*b2 & 0x00ff) | (a1[length-1] & 0x00ff)<<8;	/* copy trailing byte */
 		*b2 = i;
 	}
 }
@@ -953,12 +941,17 @@ aeioctl(ifp, cmd, data)
 	u_long cmd;
 	caddr_t data;
 {
-	struct ae_softc *sc = aecd.cd_devs[ifp->if_unit];
+	struct ae_softc *sc = ifp->if_softc;
 	struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (cmd) {
 
@@ -997,7 +990,7 @@ aeioctl(ifp, cmd, data)
 #if defined(CCITT) && defined(LLC)
 	case SIOCSIFCONF_X25:
 		ifp->if_flags |= IFF_UP;
-		ifa->ifa_rtrequest = (void (*)())cons_rtrequest; /* XXX */
+		ifa->ifa_rtrequest = cons_rtrequest; /* XXX */
 		error = x25_llcglue(PRC_IFUP, ifa->ifa_addr);
 		if (error == 0)
 			aeinit(sc);
@@ -1123,5 +1116,3 @@ allmulti:
 	ifp->if_flags |= IFF_ALLMULTI;
 	af[0] = af[1] = af[2] = af[3] = 0xffff;
 }
-
-#endif /* NAE > 0 */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: lpc.h,v 1.2 1997/01/17 16:12:38 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -40,6 +42,6 @@ struct	cmd {
 	char	*c_name;		/* command name */
 	char	*c_help;		/* help message */
 					/* routine to do the work */
-	void	(*c_handler) __P((int, char *[]));
+	void	(*c_handler)(int, char *[]);
 	int	c_priv;			/* privileged command */
 };

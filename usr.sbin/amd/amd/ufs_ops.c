@@ -1,3 +1,5 @@
+/*	$OpenBSD: ufs_ops.c,v 1.2 1996/03/25 15:54:50 niklas Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -36,7 +38,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)ufs_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: ufs_ops.c,v 1.5 1994/06/13 20:48:06 mycroft Exp $
  */
 
 #include "am.h"
@@ -51,8 +52,6 @@ typedef nfs_fh fhandle_t;
 #ifdef UFS_HDR
 #include UFS_HDR
 #endif /* UFS_HDR */
-
-#include <sys/mount.h>
 
 /*
  * UN*X file system
@@ -81,7 +80,8 @@ am_opts *fo;
 	return strdup(fo->opt_dev);
 }
 
-static mount_ufs(dir, fs_name, opts)
+static int
+mount_ufs(dir, fs_name, opts)
 char *dir;
 char *fs_name;
 char *opts;

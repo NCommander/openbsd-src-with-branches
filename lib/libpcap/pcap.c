@@ -1,7 +1,7 @@
-/*	$NetBSD: pcap.c,v 1.2 1995/03/06 11:39:05 mycroft Exp $	*/
+/*	$OpenBSD: pcap.c,v 1.6 1999/07/20 04:49:55 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1993, 1994
+ * Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,32 +34,50 @@
  */
 
 #ifndef lint
-static char rcsid[] =
-    "@(#) Header: pcap.c,v 1.12 94/06/12 14:32:23 leres Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/lib/libpcap/pcap.c,v 1.6 1999/07/20 04:49:55 deraadt Exp $ (LBL)";
 #endif
 
 #include <sys/types.h>
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
+#endif
 
 #include "pcap-int.h"
 
 int
 pcap_dispatch(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 {
+
 	if (p->sf.rfile != NULL)
 		return (pcap_offline_read(p, cnt, callback, user));
-	else
-		return (pcap_read(p, cnt, callback, user));
+	return (pcap_read(p, cnt, callback, user));
 }
 
 int
 pcap_loop(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 {
+	register int n;
+
 	for (;;) {
-		int n = pcap_dispatch(p, cnt, callback, user);
-		if (n < 0)
+		if (p->sf.rfile != NULL)
+			n = pcap_offline_read(p, cnt, callback, user);
+		else {
+			/*
+			 * XXX keep reading until we get something
+			 * (or an error occurs)
+			 */
+			do {
+				n = pcap_read(p, cnt, callback, user);
+			} while (n == 0);
+		}
+		if (n <= 0)
 			return (n);
 		if (cnt > 0) {
 			cnt -= n;
@@ -89,7 +107,7 @@ pcap_next(pcap_t *p, struct pcap_pkthdr *h)
 	struct singleton s;
 
 	s.hdr = h;
-	if (pcap_dispatch(p, 1, pcap_oneshot, (u_char*)&s) < 0)
+	if (pcap_dispatch(p, 1, pcap_oneshot, (u_char*)&s) <= 0)
 		return (0);
 	return (s.pkt);
 }
@@ -154,8 +172,18 @@ pcap_geterr(pcap_t *p)
 char *
 pcap_strerror(int errnum)
 {
-
+#ifdef HAVE_STRERROR
 	return (strerror(errnum));
+#else
+	extern int sys_nerr;
+	extern const char *const sys_errlist[];
+	static char ebuf[20];
+
+	if ((unsigned int)errnum < sys_nerr)
+		return ((char *)sys_errlist[errnum]);
+	(void)snprintf(ebuf, sizeof ebuf, "Unknown error: %d", errnum);
+	return(ebuf);
+#endif
 }
 
 void
@@ -165,11 +193,15 @@ pcap_close(pcap_t *p)
 	if (p->fd >= 0)
 		close(p->fd);
 	if (p->sf.rfile != NULL) {
-		fclose(p->sf.rfile);
+		(void)fclose(p->sf.rfile);
 		if (p->sf.base != NULL)
 			free(p->sf.base);
 	} else if (p->buffer != NULL)
 		free(p->buffer);
-	
+#ifdef linux
+	if (p->md.device != NULL)
+		free(p->md.device);
+#endif
+	pcap_freecode(&p->fcode);
 	free(p);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_ados.c,v 1.4 1995/03/18 14:57:10 cgd Exp $	*/
+/*	$OpenBSD: mount_ados.c,v 1.7 1997/08/24 08:07:05 downsj Exp $	*/
+/*	$NetBSD: mount_ados.c,v 1.5 1996/04/13 01:30:59 jtc Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -31,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: mount_ados.c,v 1.4 1995/03/18 14:57:10 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_ados.c,v 1.7 1997/08/24 08:07:05 downsj Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -40,6 +41,7 @@ static char rcsid[] = "$NetBSD: mount_ados.c,v 1.4 1995/03/18 14:57:10 cgd Exp $
 #include <sys/stat.h>
 #include <ctype.h>
 #include <err.h>
+#include <errno.h>
 #include <grp.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -49,15 +51,15 @@ static char rcsid[] = "$NetBSD: mount_ados.c,v 1.4 1995/03/18 14:57:10 cgd Exp $
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
 
-gid_t	a_gid __P((char *));
-uid_t	a_uid __P((char *));
-mode_t	a_mask __P((char *));
-void	usage __P((void));
+gid_t	a_gid(char *);
+uid_t	a_uid(char *);
+mode_t	a_mask(char *);
+void	usage(void);
 
 int
 main(argc, argv)
@@ -72,7 +74,7 @@ main(argc, argv)
 	mntflags = set_gid = set_uid = set_mask = 0;
 	(void)memset(&args, '\0', sizeof(args));
 
-	while ((c = getopt(argc, argv, "u:g:m:o:")) != EOF) {
+	while ((c = getopt(argc, argv, "u:g:m:o:")) != -1) {
 		switch (c) {
 		case 'u':
 			args.uid = a_uid(optarg);
@@ -105,8 +107,8 @@ main(argc, argv)
 		warnx("\"%s\" is a relative path.", dir);
 		if (getcwd(ndir, sizeof(ndir)) == NULL)
 			err(1, "getcwd");
-		strncat(ndir, "/", sizeof(ndir) - strlen(ndir) - 1);
-		strncat(ndir, dir, sizeof(ndir) - strlen(ndir) - 1);
+		strncat(ndir, "/", sizeof(ndir) - strlen(ndir));
+		strncat(ndir, dir, sizeof(ndir) - strlen(ndir));
 		dir = ndir;
 		warnx("using \"%s\" instead.", dir);
 	}
@@ -129,9 +131,12 @@ main(argc, argv)
 			args.mask = sb.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
 	}
 
-	if (mount(MOUNT_ADOSFS, dir, mntflags, &args) < 0)
-		err(1, "mount");
-
+	if (mount(MOUNT_ADOSFS, dir, mntflags, &args) < 0) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel", dir);
+		else
+			err(1, "%s", dir);
+	}
 	exit (0);
 }
 

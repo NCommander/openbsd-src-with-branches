@@ -1,4 +1,5 @@
-/*	$NetBSD: isr.h,v 1.7 1995/10/09 15:19:58 chopps Exp $	*/
+/*	$OpenBSD: isr.h,v 1.3 1996/05/02 06:43:18 niklas Exp $	*/
+/*	$NetBSD: isr.h,v 1.8 1996/04/21 21:07:02 veego Exp $	*/
 
 /*
  * Copyright (c) 1982 Regents of the University of California.
@@ -38,19 +39,32 @@
 struct isr {
 	struct	isr *isr_forw;
 	struct	isr *isr_back;
-	int	(*isr_intr)();
+	int	(*isr_intr)(void *);
 	void	*isr_arg;
 	int	isr_ipl;
+#if defined(IPL_REMAP_1) || defined(IPL_REMAP_2)
+	int	isr_mapped_ipl;
+#ifdef IPL_REMAP_2
+	void	(*isr_ackintr)();
+	int	isr_status;
+#endif
+#endif
 };
 
 #define	NISR		3
 #define	ISRIPL(x)	((x) - 3)
 
 #ifdef _KERNEL
-void add_isr __P((struct isr *));
-void remove_isr __P((struct isr *));
-typedef void (*sifunc_t) __P((void *, void *));
-void alloc_sicallback __P((void));
-void add_sicallback __P((sifunc_t, void *, void *));
-void rem_sicallback __P((sifunc_t));
+void add_isr(struct isr *);
+void remove_isr(struct isr *);
+typedef void (*sifunc_t)(void *, void *);
+void alloc_sicallback(void);
+void add_sicallback(sifunc_t, void *, void *);
+void rem_sicallback(sifunc_t);
+#endif
+
+#ifdef IPL_REMAP2
+#define ISR_IDLE	0
+#define ISR_WAITING	1
+#define ISR_BUSY	2
 #endif

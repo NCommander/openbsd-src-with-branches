@@ -1,7 +1,10 @@
-/*	$Id: rsakeygen.c,v 1.5 1998/10/07 16:40:51 niklas Exp $	*/
+/*	$OpenBSD: rsakeygen.c,v 1.13 2001/01/27 12:03:38 niklas Exp $	*/
+/*	$EOM: rsakeygen.c,v 1.10 2000/12/21 15:18:53 ho Exp $	*/
 
 /*
- * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niels Provos.  All rights reserved.
+ * Copyright (c) 1999, 2001 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,84 +41,109 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <gmp.h>
 
+#include "libcrypto.h"
 #include "log.h"
-#include "gmp_util.h"
-#include "asn.h"
-#include "pkcs.h"
+#include "math_mp.h"
 
-#define nibble2bin(y) (tolower((y)) < 'a' ? (y) - '0': tolower((y)) - 'a' + 10)
-#define hexchar2bin(x) ((nibble2bin((x)[0]) << 4) + nibble2bin((x)[1]))
-#define nibble2c(x) ((x) >= 10 ? ('a'-10+(x)) : ('0' + (x)))
+#define nibble2bin(y) (tolower (y) < 'a' ? (y) - '0' : tolower (y) - 'a' + 10)
+#define hexchar2bin(x) ((nibble2bin ((x)[0]) << 4) + nibble2bin ((x)[1]))
+#define nibble2c(x) ((x) >= 10 ? ('a' - 10 + (x)) : ('0' + (x)))
+
+#define TEST_STRING "!Dies ist ein Test"
 
 void asc2bin (u_int8_t *bin, u_int8_t *asc, u_int16_t len)
 {
   int i;
 
   for (i = 0; i < len; i += 2, asc += 2)
-    {
-      *bin++ = hexchar2bin(asc);
-    }
+    *bin++ = hexchar2bin (asc);
 }
 
 int
 main (void)
 {
-  char *data = "Niels ist ein Luser!";
-  u_int8_t *enc, *dec, *asn;
-  u_int32_t enclen;
-  u_int16_t len;
+  u_int8_t enc[256], dec[256], *asn, *foo;
+  int len;
   FILE *fd;
   int erg = 0;
+  RSA *key;
 
-  struct rsa_public_key key;
-  struct rsa_private_key priv;
+  libcrypto_init ();
 
-  log_debug_cmd ((enum log_classes)LOG_CRYPTO, 99);
-  pkcs_generate_rsa_keypair (&key, &priv, 1024);
+#ifndef USE_LIBCRYPTO
+  if (!libcrypto)
+    {
+      fprintf (stderr, "I did not find the RSA support, giving up...");
+      exit (1);
+    }
+#endif
 
-  printf ("n: 0x"); mpz_out_str (stdout, 16, key.n);
-  printf ("\ne: 0x"); mpz_out_str (stdout, 16, key.e);
+  log_debug_cmd (LOG_CRYPTO, 99);
+  memset (dec, '\0', sizeof dec);
+  strlcpy (dec, TEST_STRING, 256);
+
+  key = LC (RSA_generate_key, (1024, RSA_F4, NULL, NULL));
+  if (key == NULL) 
+    {
+      printf("Failed to generate key\n");
+      return 0;
+    }
+
+  printf ("n: 0x");
+  LC (BN_print_fp, (stdout, key->n));
+  printf ("\ne: 0x");
+  LC (BN_print_fp, (stdout, key->e));
   printf ("\n");
 
-  printf ("n: 0x"); mpz_out_str (stdout, 16, priv.n);
-  printf ("\ne: 0x"); mpz_out_str (stdout, 16, priv.e);
-  printf ("\nd: 0x"); mpz_out_str (stdout, 16, priv.d);
-  printf ("\np: 0x"); mpz_out_str (stdout, 16, priv.p);
-  printf ("\nq: 0x"); mpz_out_str (stdout, 16, priv.q);
+  printf ("n: 0x");
+  LC (BN_print_fp, (stdout, key->n));
+  printf ("\ne: 0x");
+  LC (BN_print_fp, (stdout, key->e));
+  printf ("\nd: 0x");
+  LC (BN_print_fp, (stdout, key->d));
+  printf ("\np: 0x");
+  LC (BN_print_fp, (stdout, key->p));
+  printf ("\nq: 0x");
+  LC (BN_print_fp, (stdout, key->q));
   printf ("\n");
 
   printf ("Testing Signing/Verifying: ");
   /* Sign with Private Key */
-  if (!pkcs_rsa_encrypt (PKCS_PRIVATE, priv.n, priv.d, data, strlen(data)+1,
-			 &enc, &enclen))
-    printf ("FAILED ");
+  len = LC (RSA_private_encrypt, (strlen (dec) + 1, dec, enc, key,
+				  RSA_PKCS1_PADDING));
+  if (len == -1)
+    printf ("SIGN FAILED ");
   else
-    /* Decrypt/Verify with Public Key */
-    erg = pkcs_rsa_decrypt (PKCS_PRIVATE, key.n, key.e, enc, &dec, &len);
+    {
+      /* Decrypt/Verify with Public Key */
+      erg = LC (RSA_public_decrypt, (len, enc, dec, key, RSA_PKCS1_PADDING));
 
-  if (!erg || strcmp(data,dec))
-    printf ("FAILED ");
-  else
-    printf ("OKAY ");
+      if (erg == -1 || strcmp (dec, TEST_STRING))
+	printf ("VERIFY FAILED");
+      else
+	printf ("OKAY");
+    }
 
   printf ("\n");
 
-  asn = pkcs_public_key_to_asn (&key);
+  len = LC (i2d_RSAPublicKey, (key, NULL));
+  foo = asn = malloc (len);
+  len = LC (i2d_RSAPublicKey, (key, &foo));
   fd = fopen ("isakmpd_key.pub", "w");
-  fwrite (asn, asn_get_len (asn), 1, fd);
+  fwrite (asn, len, 1, fd);
   fclose (fd);
   free (asn);
 
-  asn = pkcs_private_key_to_asn (&priv);
+  len = LC (i2d_RSAPrivateKey, (key, NULL));
+  foo = asn = malloc (len);
+  len = LC (i2d_RSAPrivateKey, (key, &foo));
   fd = fopen ("isakmpd_key", "w");
-  fwrite (asn, asn_get_len (asn), 1, fd);
+  fwrite (asn, len, 1, fd);
   fclose (fd);
   free (asn);
 
-  pkcs_free_public_key (&key);
-  pkcs_free_private_key (&priv);
+  LC (RSA_free, (key));
 
   return 1;
 }

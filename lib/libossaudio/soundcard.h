@@ -1,9 +1,12 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: soundcard.h,v 1.4 1997/10/29 20:23:27 augustss Exp $	*/
+/*	$OpenBSD: soundcard.h,v 1.7 2002/02/16 21:27:27 millert Exp $	*/
+/*	$NetBSD: soundcard.h,v 1.11 2001/05/09 21:49:58 augustss Exp $	*/
 
-/*
+/*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Lennart Augustsson.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,10 +44,14 @@
  * only for compiling Linux programs.
  */
 
-#ifndef _soundcard_h_
-#define _soundcard_h_
+#ifndef _SOUNDCARD_H_
+#define _SOUNDCARD_H_
 
-#define SOUND_VERSION	0x030000
+#ifndef	_SYS_IOCTL_H_
+#include <sys/ioctl.h>
+#endif	/* !_SYS_IOCTL_H_ */
+
+#define SOUND_VERSION	0x030001
 
 #define	SNDCTL_DSP_RESET		_IO  ('P', 0)
 #define	SNDCTL_DSP_SYNC			_IO  ('P', 1)
@@ -106,8 +113,13 @@
  * include all of endian.h because it contains a lot
  * junk symbols.  [augustss]
  */
+#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE		/* avoid dragging in a lot of junk */
 #include <machine/endian.h>
+#undef _POSIX_SOURCE
+#else
+#include <machine/endian.h>
+#endif
 #if _QUAD_LOWWORD == 0
 #define  AFMT_S16_NE AFMT_S16_LE
 #else
@@ -257,6 +269,21 @@
 #define SOUND_MASK_LINE2	(1 << SOUND_MIXER_LINE2)
 #define SOUND_MASK_LINE3	(1 << SOUND_MIXER_LINE3)
 
+typedef struct mixer_info {
+	char id[16];
+	char name[32];
+	int  modify_counter;
+	int  fillers[10];
+} mixer_info;
+
+typedef struct _old_mixer_info {
+	char id[16];
+	char name[32];
+} _old_mixer_info;
+
+#define SOUND_MIXER_INFO		_IOR ('M', 101, mixer_info)
+#define SOUND_OLD_MIXER_INFO		_IOR ('M', 101, _old_mixer_info)
+
 #define OSS_GETVERSION			_IOR ('M', 118, int)
 
 typedef struct audio_buf_info {
@@ -277,8 +304,17 @@ typedef struct buffmem_desc {
 	int size;
 } buffmem_desc;
 
-#define ioctl(fd, com, argp) _oss_ioctl(fd, com, argp)
-
-int _oss_ioctl(int fd, unsigned long com, void *argp);
-
+#if 0
+/* This is what we'd like to have, but it causes prototype conflicts. */
+#define ioctl _oss_ioctl
+#else
+#define ioctl(x,y,z) _oss_ioctl(x,y,z)
 #endif
+
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+int _oss_ioctl(int fd, unsigned long com, void *argp);
+__END_DECLS
+
+#endif /* !_SOUNDCARD_H_ */

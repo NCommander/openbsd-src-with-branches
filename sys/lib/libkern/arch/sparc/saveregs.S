@@ -1,3 +1,4 @@
+/*	$OpenBSD: saveregs.S,v 1.2 1994/10/26 06:40:07 cgd Exp $	*/
 /*	$NetBSD: saveregs.S,v 1.2 1994/10/26 06:40:07 cgd Exp $	*/
 
 /*

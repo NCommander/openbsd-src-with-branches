@@ -1,4 +1,4 @@
-/*	$NetBSD: ppp-comp.h,v 1.1 1995/07/04 06:28:24 paulus Exp $	*/
+/*	$OpenBSD: ppp-comp.h,v 1.5 2001/06/09 06:16:39 angelos Exp $	*/
 
 /*
  * ppp-comp.h - Definitions for doing PPP packet compression.
@@ -26,11 +26,11 @@
  * OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS,
  * OR MODIFICATIONS.
  *
- * $Id: ppp-comp.h,v 1.1 1995/07/04 06:28:24 paulus Exp $
+ * Id: ppp-comp.h,v 1.11 1998/03/25 03:33:34 paulus Exp $
  */
 
-#ifndef _NET_PPP_COMP_H
-#define _NET_PPP_COMP_H
+#ifndef _NET_PPP_COMP_H_
+#define _NET_PPP_COMP_H_
 
 /*
  * The following symbols control whether we include code for
@@ -39,6 +39,11 @@
 #ifndef DO_BSD_COMPRESS
 #define DO_BSD_COMPRESS	1	/* by default, include BSD-Compress */
 #endif
+#ifndef DO_DEFLATE
+#define DO_DEFLATE	1	/* by default, include Deflate */
+#endif
+#define DO_PREDICTOR_1	0
+#define DO_PREDICTOR_2	0
 
 /*
  * Structure giving methods for compression/decompression.
@@ -48,36 +53,36 @@ struct compressor {
 	int	compress_proto;	/* CCP compression protocol number */
 
 	/* Allocate space for a compressor (transmit side) */
-	void	*(*comp_alloc) __P((u_char *options, int opt_len));
+	void	*(*comp_alloc)(u_char *options, int opt_len);
 	/* Free space used by a compressor */
-	void	(*comp_free) __P((void *state));
+	void	(*comp_free)(void *state);
 	/* Initialize a compressor */
-	int	(*comp_init) __P((void *state, u_char *options, int opt_len,
-				  int unit, int hdrlen, int debug));
+	int	(*comp_init)(void *state, u_char *options, int opt_len,
+				  int unit, int hdrlen, int debug);
 	/* Reset a compressor */
-	void	(*comp_reset) __P((void *state));
+	void	(*comp_reset)(void *state);
 	/* Compress a packet */
-	int	(*compress) __P((void *state, PACKETPTR *mret,
-				 PACKETPTR mp, int orig_len, int max_len));
+	int	(*compress)(void *state, PACKETPTR *mret,
+				 PACKETPTR mp, int orig_len, int max_len);
 	/* Return compression statistics */
-	void	(*comp_stat) __P((void *state, struct compstat *stats));
+	void	(*comp_stat)(void *state, struct compstat *stats);
 
 	/* Allocate space for a decompressor (receive side) */
-	void	*(*decomp_alloc) __P((u_char *options, int opt_len));
+	void	*(*decomp_alloc)(u_char *options, int opt_len);
 	/* Free space used by a decompressor */
-	void	(*decomp_free) __P((void *state));
+	void	(*decomp_free)(void *state);
 	/* Initialize a decompressor */
-	int	(*decomp_init) __P((void *state, u_char *options, int opt_len,
-				    int unit, int hdrlen, int mru, int debug));
+	int	(*decomp_init)(void *state, u_char *options, int opt_len,
+				    int unit, int hdrlen, int mru, int debug);
 	/* Reset a decompressor */
-	void	(*decomp_reset) __P((void *state));
+	void	(*decomp_reset)(void *state);
 	/* Decompress a packet. */
-	int	(*decompress) __P((void *state, PACKETPTR mp,
-				   PACKETPTR *dmpp));
+	int	(*decompress)(void *state, PACKETPTR mp,
+				   PACKETPTR *dmpp);
 	/* Update state for an incompressible packet received */
-	void	(*incomp) __P((void *state, PACKETPTR mp));
+	void	(*incomp)(void *state, PACKETPTR mp);
 	/* Return decompression statistics */
-	void	(*decomp_stat) __P((void *state, struct compstat *stats));
+	void	(*decomp_stat)(void *state, struct compstat *stats);
 };
 #endif /* PACKETPTR */
 
@@ -135,4 +140,28 @@ struct compressor {
 #define BSD_MIN_BITS		9	/* smallest code size supported */
 #define BSD_MAX_BITS		15	/* largest code size supported */
 
-#endif /* _NET_PPP_COMP_H */
+/*
+ * Definitions for Deflate.
+ */
+#define CI_DEFLATE		26	/* config option for Deflate */
+#define CI_DEFLATE_DRAFT	24	/* value used in original draft RFC */
+#define CILEN_DEFLATE		4	/* length of its config option */
+
+#define DEFLATE_MIN_SIZE	8
+#define DEFLATE_MAX_SIZE	15
+#define DEFLATE_METHOD_VAL	8
+#define DEFLATE_SIZE(x)		(((x) >> 4) + DEFLATE_MIN_SIZE)
+#define DEFLATE_METHOD(x)	((x) & 0x0F)
+#define DEFLATE_MAKE_OPT(w)	((((w) - DEFLATE_MIN_SIZE) << 4) \
+				 + DEFLATE_METHOD_VAL)
+#define DEFLATE_CHK_SEQUENCE	0
+
+/*
+ * Definitions for other, as yet unsupported, compression methods.
+ */
+#define CI_PREDICTOR_1		1	/* config option for Predictor-1 */
+#define CILEN_PREDICTOR_1	2	/* length of its config option */
+#define CI_PREDICTOR_2		2	/* config option for Predictor-2 */
+#define CILEN_PREDICTOR_2	2	/* length of its config option */
+
+#endif /* _NET_PPP_COMP_H_ */

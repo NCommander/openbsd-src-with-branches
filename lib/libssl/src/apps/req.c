@@ -64,22 +64,27 @@
 #define APPS_WIN16
 #endif
 #include "apps.h"
-#include "bio.h"
-#include "evp.h"
-#include "rand.h"
-#include "conf.h"
-#include "err.h"
-#include "asn1.h"
-#include "x509.h"
-#include "objects.h"
-#include "pem.h"
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/conf.h>
+#include <openssl/err.h>
+#include <openssl/asn1.h>
+#include <openssl/x509.h>
+#include <openssl/x509v3.h>
+#include <openssl/objects.h>
+#include <openssl/pem.h>
+#include <openssl/engine.h>
 
 #define SECTION		"req"
 
 #define BITS		"default_bits"
 #define KEYFILE		"default_keyfile"
+#define PROMPT		"prompt"
 #define DISTINGUISHED_NAME	"distinguished_name"
 #define ATTRIBUTES	"attributes"
+#define V3_EXTENSIONS	"x509_extensions"
+#define REQ_EXTENSIONS	"req_extensions"
+#define STRING_MASK	"string_mask"
 
 #define DEFAULT_KEY_LENGTH	512
 #define MIN_KEY_LENGTH		384
@@ -87,7 +92,7 @@
 #undef PROG
 #define PROG	req_main
 
-/* -inform arg	- input format - default PEM (one of DER, TXT or PEM)
+/* -inform arg	- input format - default PEM (DER or PEM)
  * -outform arg - output format - default PEM
  * -in arg	- input file - default stdin
  * -out arg	- output file - default stdout
@@ -98,6 +103,7 @@
  * -config file	- Load configuration file.
  * -key file	- make a request using key in file (or use it for verification).
  * -keyform	- key file format.
+ * -rand file(s) - load the file(s) into the PRNG.
  * -newkey	- make a key and a request.
  * -modulus	- print RSA modulus.
  * -x509	- output a self signed X509 structure instead.
@@ -105,22 +111,22 @@
  *		  require.  This format is wrong
  */
 
-#ifndef NOPROTO
 static int make_REQ(X509_REQ *req,EVP_PKEY *pkey,int attribs);
-static int add_attribute_object(STACK *n, char *text, char *def, 
-	char *value, int nid,int min,int max);
+static int prompt_info(X509_REQ *req,
+		STACK_OF(CONF_VALUE) *dn_sk, char *dn_sect,
+		STACK_OF(CONF_VALUE) *attr_sk, char *attr_sect, int attribs);
+static int auto_info(X509_REQ *req, STACK_OF(CONF_VALUE) *sk,
+				STACK_OF(CONF_VALUE) *attr, int attribs);
+static int add_attribute_object(X509_REQ *req, char *text,
+				char *def, char *value, int nid, int min,
+				int max);
 static int add_DN_object(X509_NAME *n, char *text, char *def, char *value,
 	int nid,int min,int max);
-static void MS_CALLBACK req_cb(int p,int n,char *arg);
-static int req_fix_data(int nid,int *type,int len,int min,int max);
-#else
-static int make_REQ();
-static int add_attribute_object();
-static int add_DN_object();
-static void MS_CALLBACK req_cb();
-static int req_fix_data();
+#ifndef NO_RSA
+static void MS_CALLBACK req_cb(int p,int n,void *arg);
 #endif
-
+static int req_check_len(int len,int min,int max);
+static int check_end(char *str, char *end);
 #ifndef MONOLITH
 static char *default_config_file=NULL;
 static LHASH *config=NULL;
@@ -131,10 +137,11 @@ static LHASH *req_conf=NULL;
 #define TYPE_DSA	2
 #define TYPE_DH		3
 
-int MAIN(argc, argv)
-int argc;
-char **argv;
+int MAIN(int, char **);
+
+int MAIN(int argc, char **argv)
 	{
+	ENGINE *e = NULL;
 #ifndef NO_DSA
 	DSA *dsa_params=NULL;
 #endif
@@ -145,16 +152,23 @@ char **argv;
 	int i,badops=0,newreq=0,newkey= -1,pkey_type=0;
 	BIO *in=NULL,*out=NULL;
 	int informat,outformat,verify=0,noout=0,text=0,keyform=FORMAT_PEM;
-	int nodes=0,kludge=0;
+	int nodes=0,kludge=0,newhdr=0;
 	char *infile,*outfile,*prog,*keyfile=NULL,*template=NULL,*keyout=NULL;
+	char *engine=NULL;
+	char *extensions = NULL;
+	char *req_exts = NULL;
 	EVP_CIPHER *cipher=NULL;
 	int modulus=0;
+	char *inrand=NULL;
+	char *passargin = NULL, *passargout = NULL;
+	char *passin = NULL, *passout = NULL;
 	char *p;
-	EVP_MD *md_alg=NULL,*digest=EVP_md5();
+	const EVP_MD *md_alg=NULL,*digest=EVP_md5();
 #ifndef MONOLITH
 	MS_STATIC char config_name[256];
 #endif
 
+	req_conf = NULL;
 #ifndef NO_DES
 	cipher=EVP_des_ede3_cbc();
 #endif
@@ -183,6 +197,11 @@ char **argv;
 			{
 			if (--argc < 1) goto bad;
 			outformat=str2fmt(*(++argv));
+			}
+		else if (strcmp(*argv,"-engine") == 0)
+			{
+			if (--argc < 1) goto bad;
+			engine= *(++argv);
 			}
 		else if (strcmp(*argv,"-key") == 0)
 			{
@@ -219,15 +238,33 @@ char **argv;
 			if (--argc < 1) goto bad;
 			keyout= *(++argv);
 			}
-		else if (strcmp(*argv,"-newkey") == 0)
+		else if (strcmp(*argv,"-passin") == 0)
 			{
 			if (--argc < 1) goto bad;
+			passargin= *(++argv);
+			}
+		else if (strcmp(*argv,"-passout") == 0)
+			{
+			if (--argc < 1) goto bad;
+			passargout= *(++argv);
+			}
+		else if (strcmp(*argv,"-rand") == 0)
+			{
+			if (--argc < 1) goto bad;
+			inrand= *(++argv);
+			}
+		else if (strcmp(*argv,"-newkey") == 0)
+			{
+			int is_numeric;
+
+			if (--argc < 1) goto bad;
 			p= *(++argv);
-			if ((strncmp("rsa:",p,4) == 0) ||
-				((p[0] >= '0') && (p[0] <= '9')))
+			is_numeric = p[0] >= '0' && p[0] <= '9';
+			if (strncmp("rsa:",p,4) == 0 || is_numeric)
 				{
 				pkey_type=TYPE_RSA;
-				p+=4;
+				if(!is_numeric)
+				    p+=4;
 				newkey= atoi(p);
 				}
 			else
@@ -244,21 +281,20 @@ char **argv;
 					perror(p);
 					goto end;
 					}
-				if ((dsa_params=PEM_read_bio_DSAparams(in,NULL,NULL)) == NULL)
+				if ((dsa_params=PEM_read_bio_DSAparams(in,NULL,NULL,NULL)) == NULL)
 					{
 					ERR_clear_error();
-					BIO_reset(in);
-					if ((xtmp=PEM_read_bio_X509(in,NULL,NULL)) == NULL)
+					(void)BIO_reset(in);
+					if ((xtmp=PEM_read_bio_X509(in,NULL,NULL,NULL)) == NULL)
 						{
 						BIO_printf(bio_err,"unable to load DSA parameters from file\n");
 						goto end;
 						}
 
-					/* This will 'disapear'
-					 * when we free xtmp */
 					dtmp=X509_get_pubkey(xtmp);
 					if (dtmp->type == EVP_PKEY_DSA)
 						dsa_params=DSAparams_dup(dtmp->pkey.dsa);
+					EVP_PKEY_free(dtmp);
 					X509_free(xtmp);
 					if (dsa_params == NULL)
 						{
@@ -284,6 +320,8 @@ char **argv;
 
 			newreq=1;
 			}
+		else if (strcmp(*argv,"-newhdr") == 0)
+			newhdr=1;
 		else if (strcmp(*argv,"-modulus") == 0)
 			modulus=1;
 		else if (strcmp(*argv,"-verify") == 0)
@@ -311,8 +349,17 @@ char **argv;
 			/* ok */
 			digest=md_alg;
 			}
+		else if (strcmp(*argv,"-extensions") == 0)
+			{
+			if (--argc < 1) goto bad;
+			extensions = *(++argv);
+			}
+		else if (strcmp(*argv,"-reqexts") == 0)
+			{
+			if (--argc < 1) goto bad;
+			req_exts = *(++argv);
+			}
 		else
-
 			{
 			BIO_printf(bio_err,"unknown option %s\n",*argv);
 			badops=1;
@@ -327,45 +374,59 @@ char **argv;
 bad:
 		BIO_printf(bio_err,"%s [options] <infile >outfile\n",prog);
 		BIO_printf(bio_err,"where options  are\n");
-		BIO_printf(bio_err," -inform arg    input format - one of DER TXT PEM\n");
-		BIO_printf(bio_err," -outform arg   output format - one of DER TXT PEM\n");
-		BIO_printf(bio_err," -in arg        inout file\n");
+		BIO_printf(bio_err," -inform arg    input format - DER or PEM\n");
+		BIO_printf(bio_err," -outform arg   output format - DER or PEM\n");
+		BIO_printf(bio_err," -in arg        input file\n");
 		BIO_printf(bio_err," -out arg       output file\n");
 		BIO_printf(bio_err," -text          text form of request\n");
 		BIO_printf(bio_err," -noout         do not output REQ\n");
 		BIO_printf(bio_err," -verify        verify signature on REQ\n");
 		BIO_printf(bio_err," -modulus       RSA modulus\n");
 		BIO_printf(bio_err," -nodes         don't encrypt the output key\n");
+		BIO_printf(bio_err," -engine e      use engine e, possibly a hardware device.\n");
 		BIO_printf(bio_err," -key file	use the private key contained in file\n");
 		BIO_printf(bio_err," -keyform arg   key file format\n");
 		BIO_printf(bio_err," -keyout arg    file to send the key to\n");
+		BIO_printf(bio_err," -rand file%cfile%c...\n", LIST_SEPARATOR_CHAR, LIST_SEPARATOR_CHAR);
+		BIO_printf(bio_err,"                load the file (or the files in the directory) into\n");
+		BIO_printf(bio_err,"                the random number generator\n");
 		BIO_printf(bio_err," -newkey rsa:bits generate a new RSA key of 'bits' in size\n");
 		BIO_printf(bio_err," -newkey dsa:file generate a new DSA key, parameters taken from CA in 'file'\n");
 
 		BIO_printf(bio_err," -[digest]      Digest to sign with (md5, sha1, md2, mdc2)\n");
-		BIO_printf(bio_err," -config file   request templace file.\n");
+		BIO_printf(bio_err," -config file   request template file.\n");
 		BIO_printf(bio_err," -new           new request.\n");
 		BIO_printf(bio_err," -x509          output a x509 structure instead of a cert. req.\n");
 		BIO_printf(bio_err," -days          number of days a x509 generated by -x509 is valid for.\n");
+		BIO_printf(bio_err," -newhdr        output \"NEW\" in the header lines\n");
 		BIO_printf(bio_err," -asn1-kludge   Output the 'request' in a format that is wrong but some CA's\n");
 		BIO_printf(bio_err,"                have been reported as requiring\n");
-		BIO_printf(bio_err,"                [ It is now always turned on but can be turned off with -no-asn1-kludge ]\n");
+		BIO_printf(bio_err," -extensions .. specify certificate extension section (override value in config file)\n");
+		BIO_printf(bio_err," -reqexts ..    specify request extension section (override value in config file)\n");
 		goto end;
 		}
 
 	ERR_load_crypto_strings();
+	if(!app_passwd(bio_err, passargin, passargout, &passin, &passout)) {
+		BIO_printf(bio_err, "Error getting passwords\n");
+		goto end;
+	}
 
-#ifndef MONOLITH
+#ifndef MONOLITH /* else this has happened in openssl.c (global `config') */
 	/* Lets load up our environment a little */
-	p=getenv("SSLEAY_CONF");
+	p=getenv("OPENSSL_CONF");
+	if (p == NULL)
+		p=getenv("SSLEAY_CONF");
 	if (p == NULL)
 		{
 		strcpy(config_name,X509_get_default_cert_area());
-		strcat(config_name,"/lib/");
-		strcat(config_name,SSLEAY_CONF);
+#ifndef VMS
+		strcat(config_name,"/");
+#endif
+		strcat(config_name,OPENSSL_CONF);
 		p=config_name;
 		}
-        default_config_file=p;
+	default_config_file=p;
 	config=CONF_load(config,p,NULL);
 #endif
 
@@ -392,6 +453,30 @@ bad:
 			}
 		}
 
+	if (req_conf != NULL)
+		{
+		p=CONF_get_string(req_conf,NULL,"oid_file");
+		if (p != NULL)
+			{
+			BIO *oid_bio;
+
+			oid_bio=BIO_new_file(p,"r");
+			if (oid_bio == NULL) 
+				{
+				/*
+				BIO_printf(bio_err,"problems opening %s for extra oid's\n",p);
+				ERR_print_errors(bio_err);
+				*/
+				}
+			else
+				{
+				OBJ_create_objects(oid_bio);
+				BIO_free(oid_bio);
+				}
+			}
+		}
+		if(!add_oid_section(bio_err, req_conf)) goto end;
+
 	if ((md_alg == NULL) &&
 		((p=CONF_get_string(req_conf,SECTION,"default_md")) != NULL))
 		{
@@ -399,28 +484,102 @@ bad:
 			digest=md_alg;
 		}
 
+	if(!extensions)
+		extensions = CONF_get_string(req_conf, SECTION, V3_EXTENSIONS);
+	if(extensions) {
+		/* Check syntax of file */
+		X509V3_CTX ctx;
+		X509V3_set_ctx_test(&ctx);
+		X509V3_set_conf_lhash(&ctx, req_conf);
+		if(!X509V3_EXT_add_conf(req_conf, &ctx, extensions, NULL)) {
+			BIO_printf(bio_err,
+			 "Error Loading extension section %s\n", extensions);
+			goto end;
+		}
+	}
+
+	if(!passin)
+		passin = CONF_get_string(req_conf, SECTION, "input_password");
+
+	if(!passout)
+		passout = CONF_get_string(req_conf, SECTION, "output_password");
+
+	p = CONF_get_string(req_conf, SECTION, STRING_MASK);
+
+	if(p && !ASN1_STRING_set_default_mask_asc(p)) {
+		BIO_printf(bio_err, "Invalid global string mask setting %s\n", p);
+		goto end;
+	}
+
+	if(!req_exts)
+		req_exts = CONF_get_string(req_conf, SECTION, REQ_EXTENSIONS);
+	if(req_exts) {
+		/* Check syntax of file */
+		X509V3_CTX ctx;
+		X509V3_set_ctx_test(&ctx);
+		X509V3_set_conf_lhash(&ctx, req_conf);
+		if(!X509V3_EXT_add_conf(req_conf, &ctx, req_exts, NULL)) {
+			BIO_printf(bio_err,
+			 "Error Loading request extension section %s\n",
+								req_exts);
+			goto end;
+		}
+	}
+
 	in=BIO_new(BIO_s_file());
 	out=BIO_new(BIO_s_file());
 	if ((in == NULL) || (out == NULL))
 		goto end;
 
-	if (keyfile != NULL)
+	if (engine != NULL)
 		{
-		if (BIO_read_filename(in,keyfile) <= 0)
+		if((e = ENGINE_by_id(engine)) == NULL)
 			{
-			perror(keyfile);
+			BIO_printf(bio_err,"invalid engine \"%s\"\n",
+				engine);
 			goto end;
 			}
+		if(!ENGINE_set_default(e, ENGINE_METHOD_ALL))
+			{
+			BIO_printf(bio_err,"can't use that engine\n");
+			goto end;
+			}
+		BIO_printf(bio_err,"engine \"%s\" set.\n", engine);
+		/* Free our "structural" reference. */
+		ENGINE_free(e);
+		}
 
-/*		if (keyform == FORMAT_ASN1)
-			rsa=d2i_RSAPrivateKey_bio(in,NULL);
-		else */
-		if (keyform == FORMAT_PEM)
-			pkey=PEM_read_bio_PrivateKey(in,NULL,NULL);
+	if (keyfile != NULL)
+		{
+		if (keyform == FORMAT_ENGINE)
+			{
+			if (!e)
+				{
+				BIO_printf(bio_err,"no engine specified\n");
+				goto end;
+				}
+			pkey = ENGINE_load_private_key(e, keyfile, NULL);
+			}
 		else
 			{
-			BIO_printf(bio_err,"bad input format specified for X509 request\n");
-			goto end;
+			if (BIO_read_filename(in,keyfile) <= 0)
+				{
+				perror(keyfile);
+				goto end;
+				}
+
+			if (keyform == FORMAT_ASN1)
+				pkey=d2i_PrivateKey_bio(in,NULL);
+			else if (keyform == FORMAT_PEM)
+				{
+				pkey=PEM_read_bio_PrivateKey(in,NULL,NULL,
+					passin);
+				}
+			else
+				{
+				BIO_printf(bio_err,"bad input format specified for X509 request\n");
+				goto end;
+				}
 			}
 
 		if (pkey == NULL)
@@ -428,29 +587,20 @@ bad:
 			BIO_printf(bio_err,"unable to load Private key\n");
 			goto end;
 			}
+                if (EVP_PKEY_type(pkey->type) == EVP_PKEY_DSA)
+			{
+			char *randfile = CONF_get_string(req_conf,SECTION,"RANDFILE");
+			app_RAND_load_file(randfile, bio_err, 0);
+                	}
 		}
 
 	if (newreq && (pkey == NULL))
 		{
-		char *randfile;
-		char buffer[200];
-
-		if ((randfile=CONF_get_string(req_conf,SECTION,"RANDFILE")) == NULL)
-			randfile=RAND_file_name(buffer,200);
-#ifdef WINDOWS
-		BIO_printf(bio_err,"Loading 'screen' into random state -");
-		BIO_flush(bio_err);
-		RAND_screen();
-		BIO_printf(bio_err," done\n");
-#endif
-		if ((randfile == NULL) || !RAND_load_file(randfile,1024L*1024L))
-			{
-			BIO_printf(bio_err,"unable to load 'random state'\n");
-			BIO_printf(bio_err,"What this means is that the random number generator has not been seeded\n");
-			BIO_printf(bio_err,"with much random data.\n");
-			BIO_printf(bio_err,"Consider setting the RANDFILE environment variable to point at a file that\n");
-			BIO_printf(bio_err,"'random' data can be kept in.\n");
-			}
+		char *randfile = CONF_get_string(req_conf,SECTION,"RANDFILE");
+		app_RAND_load_file(randfile, bio_err, 0);
+		if (inrand)
+			app_RAND_load_files(inrand);
+	
 		if (newkey <= 0)
 			{
 			newkey=(int)CONF_get_number(req_conf,SECTION,BITS);
@@ -474,7 +624,7 @@ bad:
 			{
 			if (!EVP_PKEY_assign_RSA(pkey,
 				RSA_generate_key(newkey,0x10001,
-					req_cb,(char *)bio_err)))
+					req_cb,bio_err)))
 				goto end;
 			}
 		else
@@ -488,8 +638,7 @@ bad:
 			}
 #endif
 
-		if ((randfile == NULL) || (RAND_write_file(randfile) == 0))
-			BIO_printf(bio_err,"unable to write 'random state'\n");
+		app_RAND_write_file(randfile, bio_err);
 
 		if (pkey == NULL) goto end;
 
@@ -500,6 +649,12 @@ bad:
 			{
 			BIO_printf(bio_err,"writing new private key to stdout\n");
 			BIO_set_fp(out,stdout,BIO_NOCLOSE);
+#ifdef VMS
+			{
+			BIO *tmpbio = BIO_new(BIO_f_linebuffer());
+			out = BIO_push(tmpbio, out);
+			}
+#endif
 			}
 		else
 			{
@@ -521,7 +676,7 @@ bad:
 		i=0;
 loop:
 		if (!PEM_write_bio_PrivateKey(out,pkey,cipher,
-			NULL,0,NULL))
+			NULL,0,NULL,passout))
 			{
 			if ((ERR_GET_REASON(ERR_peek_error()) ==
 				PEM_R_PROBLEMS_GETTING_PASSWORD) && (i < 3))
@@ -555,7 +710,7 @@ loop:
 		if	(informat == FORMAT_ASN1)
 			req=d2i_X509_REQ_bio(in,NULL);
 		else if (informat == FORMAT_PEM)
-			req=PEM_read_bio_X509_REQ(in,NULL,NULL);
+			req=PEM_read_bio_X509_REQ(in,NULL,NULL,NULL);
 		else
 			{
 			BIO_printf(bio_err,"bad input format specified for X509 request\n");
@@ -570,16 +725,15 @@ loop:
 
 	if (newreq || x509)
 		{
-#ifndef NO_DSA
-		if (pkey->type == EVP_PKEY_DSA)
-			digest=EVP_dss1();
-#endif
-
 		if (pkey == NULL)
 			{
 			BIO_printf(bio_err,"you need to specify a private key\n");
 			goto end;
 			}
+#ifndef NO_DSA
+		if (pkey->type == EVP_PKEY_DSA)
+			digest=EVP_dss1();
+#endif
 		if (req == NULL)
 			{
 			req=X509_REQ_new();
@@ -599,12 +753,12 @@ loop:
 			}
 		if (x509)
 			{
+			EVP_PKEY *tmppkey;
+			X509V3_CTX ext_ctx;
 			if ((x509ss=X509_new()) == NULL) goto end;
 
-			/* don't set the version number, for starters
-			 * the field is null and second, null is v0 
-			 * if (!ASN1_INTEGER_set(ci->version,0L)) goto end;
-			 */
+			/* Set version to V3 */
+			if(!X509_set_version(x509ss, 2)) goto end;
 			ASN1_INTEGER_set(X509_get_serialNumber(x509ss),0L);
 
 			X509_set_issuer_name(x509ss,
@@ -614,13 +768,46 @@ loop:
 				(long)60*60*24*days);
 			X509_set_subject_name(x509ss,
 				X509_REQ_get_subject_name(req));
-			X509_set_pubkey(x509ss,X509_REQ_get_pubkey(req));
+			tmppkey = X509_REQ_get_pubkey(req);
+			X509_set_pubkey(x509ss,tmppkey);
+			EVP_PKEY_free(tmppkey);
+
+			/* Set up V3 context struct */
+
+			X509V3_set_ctx(&ext_ctx, x509ss, x509ss, NULL, NULL, 0);
+			X509V3_set_conf_lhash(&ext_ctx, req_conf);
+
+			/* Add extensions */
+			if(extensions && !X509V3_EXT_add_conf(req_conf, 
+				 	&ext_ctx, extensions, x509ss))
+			    {
+			    BIO_printf(bio_err,
+				       "Error Loading extension section %s\n",
+				       extensions);
+			    goto end;
+			    }
 
 			if (!(i=X509_sign(x509ss,pkey,digest)))
 				goto end;
 			}
 		else
 			{
+			X509V3_CTX ext_ctx;
+
+			/* Set up V3 context struct */
+
+			X509V3_set_ctx(&ext_ctx, NULL, NULL, req, NULL, 0);
+			X509V3_set_conf_lhash(&ext_ctx, req_conf);
+
+			/* Add extensions */
+			if(req_exts && !X509V3_EXT_REQ_add_conf(req_conf, 
+				 	&ext_ctx, req_exts, req))
+			    {
+			    BIO_printf(bio_err,
+				       "Error Loading extension section %s\n",
+				       req_exts);
+			    goto end;
+			    }
 			if (!(i=X509_REQ_sign(req,pkey,digest)))
 				goto end;
 			}
@@ -638,7 +825,10 @@ loop:
 			}
 
 		i=X509_REQ_verify(req,pkey);
-		if (tmp) pkey=NULL;
+		if (tmp) {
+			EVP_PKEY_free(pkey);
+			pkey=NULL;
+		}
 
 		if (i < 0)
 			{
@@ -659,7 +849,15 @@ loop:
 		}
 
 	if (outfile == NULL)
+		{
 		BIO_set_fp(out,stdout,BIO_NOCLOSE);
+#ifdef VMS
+		{
+		BIO *tmpbio = BIO_new(BIO_f_linebuffer());
+		out = BIO_push(tmpbio, out);
+		}
+#endif
+		}
 	else
 		{
 		if ((keyout != NULL) && (strcmp(outfile,keyout) == 0))
@@ -695,9 +893,11 @@ loop:
 			goto end; 
 			}
 		fprintf(stdout,"Modulus=");
+#ifndef NO_RSA
 		if (pubkey->type == EVP_PKEY_RSA)
 			BN_print(out,pubkey->pkey.rsa->n);
 		else
+#endif
 			fprintf(stdout,"Wrong Algorithm type");
 		fprintf(stdout,"\n");
 		}
@@ -706,9 +906,10 @@ loop:
 		{
 		if 	(outformat == FORMAT_ASN1)
 			i=i2d_X509_REQ_bio(out,req);
-		else if (outformat == FORMAT_PEM)
-			i=PEM_write_bio_X509_REQ(out,req);
-		else	{
+		else if (outformat == FORMAT_PEM) {
+			if(newhdr) i=PEM_write_bio_X509_REQ_NEW(out,req);
+			else i=PEM_write_bio_X509_REQ(out,req);
+		} else {
 			BIO_printf(bio_err,"bad output format specified for outfile\n");
 			goto end;
 			}
@@ -741,60 +942,84 @@ end:
 		ERR_print_errors(bio_err);
 		}
 	if ((req_conf != NULL) && (req_conf != config)) CONF_free(req_conf);
-	if (in != NULL) BIO_free(in);
-	if (out != NULL) BIO_free(out);
-	if (pkey != NULL) EVP_PKEY_free(pkey);
-	if (req != NULL) X509_REQ_free(req);
-	if (x509ss != NULL) X509_free(x509ss);
+	BIO_free(in);
+	BIO_free_all(out);
+	EVP_PKEY_free(pkey);
+	X509_REQ_free(req);
+	X509_free(x509ss);
+	if(passargin && passin) OPENSSL_free(passin);
+	if(passargout && passout) OPENSSL_free(passout);
+	OBJ_cleanup();
 #ifndef NO_DSA
 	if (dsa_params != NULL) DSA_free(dsa_params);
 #endif
 	EXIT(ex);
 	}
 
-static int make_REQ(req,pkey,attribs)
-X509_REQ *req;
-EVP_PKEY *pkey;
-int attribs;
+static int make_REQ(X509_REQ *req, EVP_PKEY *pkey, int attribs)
 	{
-	int ret=0,i,j;
-	unsigned char *p,*q;
-	X509_REQ_INFO *ri;
-	char buf[100];
-	int nid,min,max;
-	char *type,*def,*tmp,*value,*tmp_attr;
-	STACK *sk,*attr=NULL;
-	CONF_VALUE *v;
-	
-	tmp=CONF_get_string(req_conf,SECTION,DISTINGUISHED_NAME);
-	if (tmp == NULL)
+	int ret=0,i;
+	char no_prompt = 0;
+	STACK_OF(CONF_VALUE) *dn_sk, *attr_sk = NULL;
+	char *tmp, *dn_sect,*attr_sect;
+
+	tmp=CONF_get_string(req_conf,SECTION,PROMPT);
+	if((tmp != NULL) && !strcmp(tmp, "no")) no_prompt = 1;
+
+	dn_sect=CONF_get_string(req_conf,SECTION,DISTINGUISHED_NAME);
+	if (dn_sect == NULL)
 		{
 		BIO_printf(bio_err,"unable to find '%s' in config\n",
 			DISTINGUISHED_NAME);
 		goto err;
 		}
-	sk=CONF_get_section(req_conf,tmp);
-	if (sk == NULL)
+	dn_sk=CONF_get_section(req_conf,dn_sect);
+	if (dn_sk == NULL)
 		{
-		BIO_printf(bio_err,"unable to get '%s' section\n",tmp);
+		BIO_printf(bio_err,"unable to get '%s' section\n",dn_sect);
 		goto err;
 		}
 
-	tmp_attr=CONF_get_string(req_conf,SECTION,ATTRIBUTES);
-	if (tmp_attr == NULL)
-		attr=NULL;
+	attr_sect=CONF_get_string(req_conf,SECTION,ATTRIBUTES);
+	if (attr_sect == NULL)
+		attr_sk=NULL;
 	else
 		{
-		attr=CONF_get_section(req_conf,tmp_attr);
-		if (attr == NULL)
+		attr_sk=CONF_get_section(req_conf,attr_sect);
+		if (attr_sk == NULL)
 			{
-			BIO_printf(bio_err,"unable to get '%s' section\n",tmp_attr);
+			BIO_printf(bio_err,"unable to get '%s' section\n",attr_sect);
 			goto err;
 			}
 		}
 
-	ri=req->req_info;
+	/* setup version number */
+	if (!X509_REQ_set_version(req,0L)) goto err; /* version 1 */
 
+	if(no_prompt) i = auto_info(req, dn_sk, attr_sk, attribs);
+	else i = prompt_info(req, dn_sk, dn_sect, attr_sk, attr_sect, attribs);
+	if(!i) goto err;
+
+	X509_REQ_set_pubkey(req,pkey);
+
+	ret=1;
+err:
+	return(ret);
+	}
+
+
+static int prompt_info(X509_REQ *req,
+		STACK_OF(CONF_VALUE) *dn_sk, char *dn_sect,
+		STACK_OF(CONF_VALUE) *attr_sk, char *attr_sect, int attribs)
+	{
+	int i;
+	char *p,*q;
+	char buf[100];
+	int nid,min,max;
+	char *type,*def,*value;
+	CONF_VALUE *v;
+	X509_NAME *subj;
+	subj = X509_REQ_get_subject_name(req);
 	BIO_printf(bio_err,"You are about to be asked to enter information that will be incorporated\n");
 	BIO_printf(bio_err,"into your certificate request.\n");
 	BIO_printf(bio_err,"What you are about to enter is what is called a Distinguished Name or a DN.\n");
@@ -803,83 +1028,60 @@ int attribs;
 	BIO_printf(bio_err,"If you enter '.', the field will be left blank.\n");
 	BIO_printf(bio_err,"-----\n");
 
-	/* setup version number */
-	if (!ASN1_INTEGER_set(ri->version,0L)) goto err; /* version 1 */
 
-	if (sk_num(sk))
+	if (sk_CONF_VALUE_num(dn_sk))
 		{
 		i= -1;
 start:		for (;;)
 			{
 			i++;
-			if ((int)sk_num(sk) <= i) break;
+			if (sk_CONF_VALUE_num(dn_sk) <= i) break;
 
-			v=(CONF_VALUE *)sk_value(sk,i);
+			v=sk_CONF_VALUE_value(dn_sk,i);
 			p=q=NULL;
 			type=v->name;
-			/* Allow for raw OIDs */
-			/* [n.mm.ooo.ppp] */
-			for (j=0; type[j] != '\0'; j++)
-				{
-				if (	(type[j] == ':') ||
-					(type[j] == ',') ||
-					(type[j] == '.'))
-					p=(unsigned char *)&(type[j+1]);
-				if (type[j] == '[')
-					{
-					p=(unsigned char *)&(type[j+1]);
-					for (j++; type[j] != '\0'; j++)
-						if (type[j] == ']')
-							{
-							q=(unsigned char *)&(type[j]);
-							break;
-							}
+			if(!check_end(type,"_min") || !check_end(type,"_max") ||
+				!check_end(type,"_default") ||
+					 !check_end(type,"_value")) continue;
+			/* Skip past any leading X. X: X, etc to allow for
+			 * multiple instances 
+			 */
+			for(p = v->name; *p ; p++) 
+				if ((*p == ':') || (*p == ',') ||
+							 (*p == '.')) {
+					p++;
+					if(*p) type = p;
 					break;
-					}
 				}
-			if (p != NULL)
-				type=(char *)p;
-			if ((nid=OBJ_txt2nid(type)) == NID_undef)
-				{
-				/* Add a new one if possible */
-				if ((p != NULL) && (q != NULL) && (*q == ']'))
-					{
-					*q='\0';
-					nid=OBJ_create((char *)p,NULL,NULL);
-					*q=']';
-					if (nid == NID_undef) goto start;
-					}
-				else
-					goto start;
-				}
-
+			/* If OBJ not recognised ignore it */
+			if ((nid=OBJ_txt2nid(type)) == NID_undef) goto start;
 			sprintf(buf,"%s_default",v->name);
-			if ((def=CONF_get_string(req_conf,tmp,buf)) == NULL)
+			if ((def=CONF_get_string(req_conf,dn_sect,buf)) == NULL)
 				def="";
 				
 			sprintf(buf,"%s_value",v->name);
-			if ((value=CONF_get_string(req_conf,tmp,buf)) == NULL)
+			if ((value=CONF_get_string(req_conf,dn_sect,buf)) == NULL)
 				value=NULL;
 
 			sprintf(buf,"%s_min",v->name);
-			min=(int)CONF_get_number(req_conf,tmp,buf);
+			min=(int)CONF_get_number(req_conf,dn_sect,buf);
 
 			sprintf(buf,"%s_max",v->name);
-			max=(int)CONF_get_number(req_conf,tmp,buf);
+			max=(int)CONF_get_number(req_conf,dn_sect,buf);
 
-			if (!add_DN_object(ri->subject,v->value,def,value,nid,
+			if (!add_DN_object(subj,v->value,def,value,nid,
 				min,max))
-				goto err;
+				return 0;
 			}
-		if (sk_num(ri->subject->entries) == 0)
+		if (X509_NAME_entry_count(subj) == 0)
 			{
 			BIO_printf(bio_err,"error, no objects specified in config file\n");
-			goto err;
+			return 0;
 			}
 
 		if (attribs)
 			{
-			if ((attr != NULL) && (sk_num(attr) > 0))
+			if ((attr_sk != NULL) && (sk_CONF_VALUE_num(attr_sk) > 0))
 				{
 				BIO_printf(bio_err,"\nPlease enter the following 'extra' attributes\n");
 				BIO_printf(bio_err,"to be sent with your certificate request\n");
@@ -889,64 +1091,107 @@ start:		for (;;)
 start2:			for (;;)
 				{
 				i++;
-				if ((attr == NULL) || ((int)sk_num(attr) <= i))
+				if ((attr_sk == NULL) ||
+					    (sk_CONF_VALUE_num(attr_sk) <= i))
 					break;
 
-				v=(CONF_VALUE *)sk_value(attr,i);
+				v=sk_CONF_VALUE_value(attr_sk,i);
 				type=v->name;
 				if ((nid=OBJ_txt2nid(type)) == NID_undef)
 					goto start2;
 
 				sprintf(buf,"%s_default",type);
-				if ((def=CONF_get_string(req_conf,tmp_attr,buf))
+				if ((def=CONF_get_string(req_conf,attr_sect,buf))
 					== NULL)
 					def="";
 				
 				sprintf(buf,"%s_value",type);
-				if ((value=CONF_get_string(req_conf,tmp_attr,buf))
+				if ((value=CONF_get_string(req_conf,attr_sect,buf))
 					== NULL)
 					value=NULL;
 
 				sprintf(buf,"%s_min",type);
-				min=(int)CONF_get_number(req_conf,tmp_attr,buf);
+				min=(int)CONF_get_number(req_conf,attr_sect,buf);
 
 				sprintf(buf,"%s_max",type);
-				max=(int)CONF_get_number(req_conf,tmp_attr,buf);
+				max=(int)CONF_get_number(req_conf,attr_sect,buf);
 
-				if (!add_attribute_object(ri->attributes,
+				if (!add_attribute_object(req,
 					v->value,def,value,nid,min,max))
-					goto err;
+					return 0;
 				}
 			}
 		}
 	else
 		{
 		BIO_printf(bio_err,"No template, please set one up.\n");
-		goto err;
+		return 0;
 		}
 
-	X509_REQ_set_pubkey(req,pkey);
+	return 1;
 
-	ret=1;
-err:
-	return(ret);
 	}
 
-static int add_DN_object(n,text,def,value,nid,min,max)
-X509_NAME *n;
-char *text;
-char *def;
-char *value;
-int nid;
-int min;
-int max;
+static int auto_info(X509_REQ *req, STACK_OF(CONF_VALUE) *dn_sk,
+			STACK_OF(CONF_VALUE) *attr_sk, int attribs)
 	{
-	int i,j,ret=0;
-	X509_NAME_ENTRY *ne=NULL;
-	MS_STATIC char buf[1024];
+	int i;
+	char *p,*q;
+	char *type;
+	CONF_VALUE *v;
+	X509_NAME *subj;
 
+	subj = X509_REQ_get_subject_name(req);
+
+	for (i = 0; i < sk_CONF_VALUE_num(dn_sk); i++)
+		{
+		v=sk_CONF_VALUE_value(dn_sk,i);
+		p=q=NULL;
+		type=v->name;
+		/* Skip past any leading X. X: X, etc to allow for
+		 * multiple instances 
+		 */
+		for(p = v->name; *p ; p++) 
+#ifndef CHARSET_EBCDIC
+			if ((*p == ':') || (*p == ',') || (*p == '.')) {
+#else
+			if ((*p == os_toascii[':']) || (*p == os_toascii[',']) || (*p == os_toascii['.'])) {
+#endif
+				p++;
+				if(*p) type = p;
+				break;
+			}
+		if (!X509_NAME_add_entry_by_txt(subj,type, MBSTRING_ASC,
+				(unsigned char *) v->value,-1,-1,0)) return 0;
+
+		}
+
+		if (!X509_NAME_entry_count(subj))
+			{
+			BIO_printf(bio_err,"error, no objects specified in config file\n");
+			return 0;
+			}
+		if (attribs)
+			{
+			for (i = 0; i < sk_CONF_VALUE_num(attr_sk); i++)
+				{
+				v=sk_CONF_VALUE_value(attr_sk,i);
+				if(!X509_REQ_add1_attr_by_txt(req, v->name, MBSTRING_ASC,
+					(unsigned char *)v->value, -1)) return 0;
+				}
+			}
+	return 1;
+	}
+
+
+static int add_DN_object(X509_NAME *n, char *text, char *def, char *value,
+	     int nid, int min, int max)
+	{
+	int i,ret=0;
+	MS_STATIC char buf[1024];
+start:
 	BIO_printf(bio_err,"%s [%s]:",text,def);
-	BIO_flush(bio_err);
+	(void)BIO_flush(bio_err);
 	if (value != NULL)
 		{
 		strcpy(buf,value);
@@ -977,39 +1222,27 @@ int max;
 		}
 	buf[--i]='\0';
 
-	j=ASN1_PRINTABLE_type((unsigned char *)buf,-1);
-	if (req_fix_data(nid,&j,i,min,max) == 0)
-		goto err;
-	if ((ne=X509_NAME_ENTRY_create_by_NID(NULL,nid,j,(unsigned char *)buf,
-		strlen(buf)))
-		== NULL) goto err;
-	if (!X509_NAME_add_entry(n,ne,X509_NAME_entry_count(n),0))
-		goto err;
-
+#ifdef CHARSET_EBCDIC
+	ebcdic2ascii(buf, buf, i);
+#endif
+	if(!req_check_len(i, min, max)) goto start;
+	if (!X509_NAME_add_entry_by_NID(n,nid, MBSTRING_ASC,
+				(unsigned char *) buf, -1,-1,0)) goto err;
 	ret=1;
 err:
-	if (ne != NULL) X509_NAME_ENTRY_free(ne);
 	return(ret);
 	}
 
-static int add_attribute_object(n,text,def,value,nid,min,max)
-STACK *n;
-char *text;
-char *def;
-char *value;
-int nid;
-int min;
-int max;
+static int add_attribute_object(X509_REQ *req, char *text,
+				char *def, char *value, int nid, int min,
+				int max)
 	{
-	int i,z;
-	X509_ATTRIBUTE *xa=NULL;
+	int i;
 	static char buf[1024];
-	ASN1_BIT_STRING *bs=NULL;
-	ASN1_TYPE *at=NULL;
 
 start:
 	BIO_printf(bio_err,"%s [%s]:",text,def);
-	BIO_flush(bio_err);
+	(void)BIO_flush(bio_err);
 	if (value != NULL)
 		{
 		strcpy(buf,value);
@@ -1039,54 +1272,25 @@ start:
 		return(0);
 		}
 	buf[--i]='\0';
+#ifdef CHARSET_EBCDIC
+	ebcdic2ascii(buf, buf, i);
+#endif
+	if(!req_check_len(i, min, max)) goto start;
 
-	/* add object plus value */
-	if ((xa=X509_ATTRIBUTE_new()) == NULL)
+	if(!X509_REQ_add1_attr_by_NID(req, nid, MBSTRING_ASC,
+					(unsigned char *)buf, -1)) {
+		BIO_printf(bio_err, "Error adding attribute\n");
+		ERR_print_errors(bio_err);
 		goto err;
-	if ((xa->value.set=sk_new_null()) == NULL)
-		goto err;
-	xa->set=1;
+	}
 
-	if (xa->object != NULL) ASN1_OBJECT_free(xa->object);
-	xa->object=OBJ_nid2obj(nid);
-
-	if ((bs=ASN1_BIT_STRING_new()) == NULL) goto err;
-
-	bs->type=ASN1_PRINTABLE_type((unsigned char *)buf,-1);
-
-	z=req_fix_data(nid,&bs->type,i,min,max);
-	if (z == 0)
-		{
-		if (value == NULL)
-			goto start;
-		else	goto err;
-		}
-
-	if (!ASN1_STRING_set(bs,(unsigned char *)buf,i+1))
-		{ BIO_printf(bio_err,"Malloc failure\n"); goto err; }
-
-	if ((at=ASN1_TYPE_new()) == NULL)
-		{ BIO_printf(bio_err,"Malloc failure\n"); goto err; }
-
-	ASN1_TYPE_set(at,bs->type,(char *)bs);
-	sk_push(xa->value.set,(char *)at);
-	bs=NULL;
-	at=NULL;
-	/* only one item per attribute */
-
-	if (!sk_push(n,(char *)xa)) goto err;
 	return(1);
 err:
-	if (xa != NULL) X509_ATTRIBUTE_free(xa);
-	if (at != NULL) ASN1_TYPE_free(at);
-	if (bs != NULL) ASN1_BIT_STRING_free(bs);
 	return(0);
 	}
 
-static void MS_CALLBACK req_cb(p,n,arg)
-int p;
-int n;
-char *arg;
+#ifndef NO_RSA
+static void MS_CALLBACK req_cb(int p, int n, void *arg)
 	{
 	char c='*';
 
@@ -1095,34 +1299,15 @@ char *arg;
 	if (p == 2) c='*';
 	if (p == 3) c='\n';
 	BIO_write((BIO *)arg,&c,1);
-	BIO_flush((BIO *)arg);
+	(void)BIO_flush((BIO *)arg);
 #ifdef LINT
 	p=n;
 #endif
 	}
+#endif
 
-static int req_fix_data(nid,type,len,min,max)
-int nid;
-int *type;
-int len,min,max;
+static int req_check_len(int len, int min, int max)
 	{
-	if (nid == NID_pkcs9_emailAddress)
-		*type=V_ASN1_IA5STRING;
-	if ((nid == NID_commonName) && (*type == V_ASN1_IA5STRING))
-		*type=V_ASN1_T61STRING;
-	if ((nid == NID_pkcs9_challengePassword) &&
-		(*type == V_ASN1_IA5STRING))
-		*type=V_ASN1_T61STRING;
-
-	if ((nid == NID_pkcs9_unstructuredName) &&
-		(*type == V_ASN1_T61STRING))
-		{
-		BIO_printf(bio_err,"invalid characters in string, please re-enter the string\n");
-		return(0);
-		}
-	if (nid == NID_pkcs9_unstructuredName)
-		*type=V_ASN1_IA5STRING;
-
 	if (len < min)
 		{
 		BIO_printf(bio_err,"string is too short, it needs to be at least %d bytes long\n",min);
@@ -1135,3 +1320,15 @@ int len,min,max;
 		}
 	return(1);
 	}
+
+/* Check if the end of a string matches 'end' */
+static int check_end(char *str, char *end)
+{
+	int elen, slen;	
+	char *tmp;
+	elen = strlen(end);
+	slen = strlen(str);
+	if(elen > slen) return 1;
+	tmp = str + slen - elen;
+	return strcmp(tmp, end);
+}

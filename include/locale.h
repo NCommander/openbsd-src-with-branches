@@ -1,3 +1,4 @@
+/*	$OpenBSD: locale.h,v 1.3 1999/06/11 22:47:48 espie Exp $	*/
 /*	$NetBSD: locale.h,v 1.6 1994/10/26 00:56:02 cgd Exp $	*/
 
 /*
@@ -60,7 +61,11 @@ struct lconv {
 };
 
 #ifndef NULL
+#ifdef 	__GNUG__
+#define NULL	__null
+#else
 #define	NULL	0
+#endif
 #endif
 
 #define	LC_ALL		0
@@ -76,8 +81,8 @@ struct lconv {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-struct lconv	*localeconv __P((void));
-char		*setlocale __P((int, const char *));
+struct lconv	*localeconv(void);
+char		*setlocale(int, const char *);
 __END_DECLS
 
 #endif /* _LOCALE_H_ */

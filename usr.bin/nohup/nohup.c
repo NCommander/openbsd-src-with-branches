@@ -1,3 +1,4 @@
+/*	$OpenBSD: nohup.c,v 1.7 2001/08/19 18:54:47 mickey Exp $	*/
 /*	$NetBSD: nohup.c,v 1.6 1995/08/31 23:35:25 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)nohup.c	5.4 (Berkeley) 6/1/90";
 #endif
-static char rcsid[] = "$NetBSD: nohup.c,v 1.6 1995/08/31 23:35:25 jtc Exp $";
+static char rcsid[] = "$OpenBSD: nohup.c,v 1.7 2001/08/19 18:54:47 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -56,13 +57,14 @@ static char rcsid[] = "$NetBSD: nohup.c,v 1.6 1995/08/31 23:35:25 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <err.h>
 
 static void dofile();
 static void usage();
 
 /* nohup shall exit with one of the following values:
    126 - The utility was found but could not be invoked.
-   127 - An error occured in the nohup utility, or the utility could
+   127 - An error occurred in the nohup utility, or the utility could
          not be found. */
 #define EXIT_NOEXEC	126
 #define EXIT_NOTFOUND	127
@@ -91,9 +93,8 @@ main(argc, argv)
 	(void)signal(SIGHUP, SIG_IGN);
 
 	execvp(argv[1], &argv[1]);
-	exit_status = (errno = ENOENT) ? EXIT_NOTFOUND : EXIT_NOEXEC;
-	(void)fprintf(stderr, "nohup: %s: %s\n", argv[1], strerror(errno));
-	exit(exit_status);
+	exit_status = (errno == ENOENT) ? EXIT_NOTFOUND : EXIT_NOEXEC;
+	err(exit_status, argv[1]);
 }
 
 static void
@@ -102,11 +103,11 @@ dofile()
 	int fd;
 	char *p, path[MAXPATHLEN];
 
-	/* If the standard output is a terminal, all output written to 
+	/* If the standard output is a terminal, all output written to
 	   its standard output shall be appended to the end of the file
 	   nohup.out in the current directory.  If nohup.out cannot be
 	   created or opened for appending, the output shall be appended
-	   to the end of the file nohup.out in the directory specified 
+	   to the end of the file nohup.out in the directory specified
 	   by the HOME environment variable.
 
 	   If a file is created, the file's permission bits shall be
@@ -115,21 +116,19 @@ dofile()
 	p = FILENAME;
 	if ((fd = open(p, O_RDWR|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR)) >= 0)
 		goto dupit;
-	if ((p = getenv("HOME")) != NULL) {
+	if ((p = getenv("HOME")) != NULL && *p != '\0' &&
+	    (strlen(p) + strlen(FILENAME) + 1) < sizeof(path)) {
 		(void)strcpy(path, p);
 		(void)strcat(path, "/");
 		(void)strcat(path, FILENAME);
 		if ((fd = open(p = path, O_RDWR|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR)) >= 0)
 			goto dupit;
 	}
-	(void)fprintf(stderr, "nohup: can't open a nohup.out file.\n");
-	exit(EXIT_MISC);
+	errx(EXIT_MISC, "can't open a nohup.out file");
 
-dupit:	(void)lseek(fd, 0L, SEEK_END);
-	if (dup2(fd, STDOUT_FILENO) == -1) {
-		(void)fprintf(stderr, "nohup: %s\n", strerror(errno));
-		exit(EXIT_MISC);
-	}
+dupit:	(void)lseek(fd, 0, SEEK_END);
+	if (dup2(fd, STDOUT_FILENO) == -1)
+		err(EXIT_MISC, NULL);
 	(void)fprintf(stderr, "sending output to %s\n", p);
 }
 

@@ -251,6 +251,13 @@ arg_should_not_be_sent_to_server (arg)
 	    this_root = Name_Root ((char *) NULL, (char *) NULL);
 	}
 
+	/*
+	 * This is so bogus!  Means if you have checked out from
+	 * a replica of a repository, and then when you want to
+	 * check it in to the real (read/write) repository, the
+	 * file will be skipped!
+	 */
+#if 0
 	/* Now check the value for root. */
 	if (this_root && current_parsed_root
 	    && (strcmp (this_root, current_parsed_root->original) != 0))
@@ -259,6 +266,7 @@ arg_should_not_be_sent_to_server (arg)
 	    free (this_root);
 	    return 1;
 	}
+#endif
 	free (this_root);
     }
     
@@ -3708,7 +3716,7 @@ get_port_number (envname, portname, defaultport)
 	if (port <= 0)
 	{
 	    error (0, 0, "%s must be a positive integer!  If you", envname);
-	    error (0, 0, "are trying to force a connection via rsh, please");
+	    error (0, 0, "are trying to force a connection via ssh, please");
 	    error (0, 0, "put \":server:\" at the beginning of your CVSROOT");
 	    error (1, 0, "variable.");
 	}
@@ -4099,7 +4107,7 @@ start_tcp_server (tofdp, fromfdp)
     const char *portenv;
     int port;
     struct hostent *hp;
-    struct sockaddr_in sin;
+    struct sockaddr_in client_sai;
     char *hname;
 
     s = socket (AF_INET, SOCK_STREAM, 0);
@@ -4108,7 +4116,7 @@ start_tcp_server (tofdp, fromfdp)
 
     port = get_cvs_port_number (current_parsed_root);
 
-    hp = init_sockaddr (&sin, current_parsed_root->hostname, port);
+    hp = init_sockaddr (&client_sai, current_parsed_root->hostname, port);
 
     hname = xmalloc (strlen (hp->h_name) + 1);
     strcpy (hname, hp->h_name);
@@ -4120,7 +4128,7 @@ start_tcp_server (tofdp, fromfdp)
 		 inet_ntoa (client_sai.sin_addr), port);
     }
 
-    if (connect (s, (struct sockaddr *) &sin, sizeof sin) < 0)
+    if (connect (s, (struct sockaddr *) &client_sai, sizeof client_sai) < 0)
 	error (1, 0, "connect to %s(%s):%d failed: %s",
 	       current_parsed_root->hostname,
 	       inet_ntoa (client_sai.sin_addr),
@@ -4144,7 +4152,7 @@ start_tcp_server (tofdp, fromfdp)
 	/* We don't care about the checksum, and pass it as zero.  */
 	status = krb_sendauth (KOPT_DO_MUTUAL, s, &ticket, "rcmd",
 			       hname, realm, (unsigned long) 0, &msg_data,
-			       &cred, sched, &laddr, &sin, "KCVSV1.0");
+			       &cred, sched, &laddr, &client_sai, "KCVSV1.0");
 	if (status != KSUCCESS)
 	    error (1, 0, "kerberos authentication failed: %s",
 		   krb_get_err_text (status));
@@ -4806,8 +4814,11 @@ start_rsh_server (tofdp, fromfdp)
 	   remain "rsh", and tell HPUX users to specify remsh, for
 	   example in CVS_RSH or other such mechanisms to be devised,
 	   if that is what they want (the manual already tells them
-	   that).  */
-	cvs_rsh = "rsh";
+	   that).
+	   Nowadays, however, ssh is pretty much everywhere, so we start
+	   to default to ssh instead.
+        */
+	cvs_rsh = "ssh";
     if (!cvs_server)
 	cvs_server = "cvs";
 
@@ -4844,7 +4855,7 @@ start_rsh_server (tofdp, fromfdp)
     /* Do the deed. */
     rsh_pid = popenRW (rsh_argv, pipes);
     if (rsh_pid < 0)
-	error (1, errno, "cannot start server via rsh");
+	error (1, errno, "cannot start server via ssh");
 
     /* Give caller the file descriptors. */
     *tofdp   = pipes[0];
@@ -4866,7 +4877,7 @@ start_rsh_server (tofdp, fromfdp)
     char *command;
 
     if (!cvs_rsh)
-	cvs_rsh = "rsh";
+	cvs_rsh = "ssh";
     if (!cvs_server)
 	cvs_server = "cvs";
 
@@ -4915,7 +4926,7 @@ start_rsh_server (tofdp, fromfdp)
 	rsh_pid = piped_child (argv, tofdp, fromfdp);
 
 	if (rsh_pid < 0)
-	    error (1, errno, "cannot start server via rsh");
+	    error (1, errno, "cannot start server via ssh");
     }
     free (command);
 }

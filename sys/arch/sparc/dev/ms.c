@@ -1,4 +1,5 @@
-/*	$NetBSD: ms.c,v 1.5 1995/08/29 22:15:35 pk Exp $ */
+/*	$OpenBSD: ms.c,v 1.7 1999/09/05 16:27:58 jason Exp $	*/
+/*	$NetBSD: ms.c,v 1.10 1996/09/12 01:36:18 mrg Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -49,16 +50,21 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/syslog.h>
 #include <sys/systm.h>
 #include <sys/tty.h>
+#include <sys/signalvar.h>
+#include <sys/conf.h>
 
 #include <machine/vuid_event.h>
-#include <sparc/dev/event_var.h>
+#include <machine/cpu.h>
+#include <machine/kbd.h>
+#include <machine/conf.h>
+
+#include <dev/sun/event_var.h>
 
 /*
  * Mouse state.  A Mouse Systems mouse is a fairly simple device,
@@ -78,8 +84,8 @@ struct ms_softc {
 	int	ms_dx;			/* delta-x */
 	int	ms_dy;			/* delta-y */
 	struct	tty *ms_mouse;		/* downlink for output to mouse */
-	void	(*ms_open) __P((struct tty *));	/* enable dataflow */
-	void	(*ms_close) __P((struct tty *));/* disable dataflow */
+	void	(*ms_open)(struct tty *);	/* enable dataflow */
+	void	(*ms_close)(struct tty *);/* disable dataflow */
 	volatile int ms_ready;		/* event queue is ready */
 	struct	evvar ms_events;	/* event queue state */
 } ms_softc;
@@ -92,7 +98,8 @@ struct ms_softc {
 void
 ms_serial(tp, iopen, iclose)
 	struct tty *tp;
-	void (*iopen)(), (*iclose)();
+	void (*iopen)(struct tty *);
+	void (*iclose)(struct tty *);
 {
 
 	ms_softc.ms_mouse = tp;
@@ -122,8 +129,12 @@ ms_rint(c)
 		ms->ms_byteno = -1;
 		return;
 	}
-	if ((unsigned)(c - 0x80) < 8)	/* if in 0x80..0x87 */
-		ms->ms_byteno = 0;
+	if ((c & ~0x0f) == 0x80) {	/* if in 0x80..0x8f */
+		if (c & 8)
+			ms->ms_byteno = 1;	/* short form (3 bytes) */
+		else
+			ms->ms_byteno = 0;	/* long form (5 bytes) */
+	}
 
 	/*
 	 * Run the decode loop, adding to the current information.
@@ -136,31 +147,37 @@ ms_rint(c)
 		return;
 
 	case 0:
-		/* buttons */
-		ms->ms_byteno = 1;
+		/* buttons (long form) */
+		ms->ms_byteno = 2;
 		ms->ms_mb = (~c) & 0x7;
 		return;
 
 	case 1:
-		/* first delta-x */
-		ms->ms_byteno = 2;
-		ms->ms_dx += (char)c;
+		/* buttons (short form) */
+		ms->ms_byteno = 4;
+		ms->ms_mb = (~c) & 0x07;
 		return;
 
 	case 2:
-		/* first delta-y */
+		/* first delta-x */
 		ms->ms_byteno = 3;
-		ms->ms_dy += (char)c;
+		ms->ms_dx += (char)c;
 		return;
 
 	case 3:
-		/* second delta-x */
+		/* first delta-y */
 		ms->ms_byteno = 4;
-		ms->ms_dx += (char)c;
+		ms->ms_dy += (char)c;
 		return;
 
 	case 4:
 		/* second delta-x */
+		ms->ms_byteno = 5;
+		ms->ms_dx += (char)c;
+		break;
+
+	case 5:
+		/* second delta-y */
 		ms->ms_byteno = -1;	/* wait for button-byte again */
 		ms->ms_dy += (char)c;
 		break;
@@ -242,20 +259,17 @@ msopen(dev, flags, mode, p)
 	int flags, mode;
 	struct proc *p;
 {
-	int s, error;
 
 	if (ms_softc.ms_events.ev_io)
 		return (EBUSY);
 	ms_softc.ms_events.ev_io = p;
 	ev_init(&ms_softc.ms_events);	/* may cause sleep */
 
-#if defined(SUN4)
-	if (cputyp == CPU_SUN4) {
+	if (CPU_ISSUN4) {
 		/* We need to set the baud rate on the mouse. */
 		ms_softc.ms_mouse->t_ispeed =
 		    ms_softc.ms_mouse->t_ospeed = 1200;
 	}
-#endif
 
 	(*ms_softc.ms_open)(ms_softc.ms_mouse);
 	ms_softc.ms_ready = 1;		/* start accepting events */
@@ -305,8 +319,6 @@ msioctl(dev, cmd, data, flag, p)
 	int flag;
 	struct proc *p;
 {
-	int s;
-
 	switch (cmd) {
 
 	case FIONBIO:		/* we will remove this someday (soon???) */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathnames.h,v 1.3 1996/08/22 00:35:02 deraadt Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.6 1995/09/29 00:27:55 cgd Exp $	*/
 
 /*
@@ -48,8 +49,8 @@
 #define	UNIQUE		3			/* unique char location */
 #endif
 
-#if defined(unix) || defined(__NetBSD__)
-#define _PATH_DIVNAME	"/tmp/m4.0XXXXXX"	/* unix diversion files */
+#if defined(unix) || defined(__NetBSD__) || defined(__OpenBSD__)
+#define _PATH_DIVNAME	"/tmp/m4.0XXXXXXXXXX"	/* unix diversion files */
 #define UNIQUE		8			/* unique char location */
 #endif
 

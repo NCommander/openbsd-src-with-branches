@@ -1,3 +1,4 @@
+/*	$OpenBSD: decl.c,v 1.6 2001/11/19 19:22:43 deraadt Exp $	*/
 /*	$NetBSD: decl.c,v 1.11 1995/10/02 17:34:16 jpo Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: decl.c,v 1.11 1995/10/02 17:34:16 jpo Exp $";
+static char rcsid[] = "$OpenBSD: decl.c,v 1.6 2001/11/19 19:22:43 deraadt Exp $";
 #endif
 
 #include <sys/param.h>
@@ -59,25 +60,25 @@ int	enumval;
  */
 dinfo_t	*dcs;
 
-static	type_t	*tdeferr __P((type_t *, tspec_t));
-static	void	settdsym __P((type_t *, sym_t *));
-static	tspec_t	mrgtspec __P((tspec_t, tspec_t));
-static	void	align __P((int, int));
-static	sym_t	*newtag __P((sym_t *, scl_t, int, int));
-static	int	eqargs __P((type_t *, type_t *, int *));
-static	int	mnoarg __P((type_t *, int *));
-static	int	chkosdef __P((sym_t *, sym_t *));
-static	int	chkptdecl __P((sym_t *, sym_t *));
-static	sym_t	*nsfunc __P((sym_t *, sym_t *));
-static	void	osfunc __P((sym_t *, sym_t *));
-static	void	ledecl __P((sym_t *));
-static	int	chkinit __P((sym_t *));
-static	void	chkausg __P((int, sym_t *));
-static	void	chkvusg __P((int, sym_t *));
-static	void	chklusg __P((sym_t *));
-static	void	chktusg __P((sym_t *));
-static	void	chkglvar __P((sym_t *));
-static	void	glchksz __P((sym_t *));
+static	type_t	*tdeferr(type_t *, tspec_t);
+static	void	settdsym(type_t *, sym_t *);
+static	tspec_t	mrgtspec(tspec_t, tspec_t);
+static	void	align(int, int);
+static	sym_t	*newtag(sym_t *, scl_t, int, int);
+static	int	eqargs(type_t *, type_t *, int *);
+static	int	mnoarg(type_t *, int *);
+static	int	chkosdef(sym_t *, sym_t *);
+static	int	chkptdecl(sym_t *, sym_t *);
+static	sym_t	*nsfunc(sym_t *, sym_t *);
+static	void	osfunc(sym_t *, sym_t *);
+static	void	ledecl(sym_t *);
+static	int	chkinit(sym_t *);
+static	void	chkausg(int, sym_t *);
+static	void	chkvusg(int, sym_t *);
+static	void	chklusg(sym_t *);
+static	void	chktusg(sym_t *);
+static	void	chkglvar(sym_t *);
+static	void	glchksz(sym_t *);
 
 /*
  * initializes all global vars used in declarations
@@ -394,7 +395,7 @@ addtype(tp)
 		/* remeber specifiers "signed" and "unsigned" in dcs->d_smod */
 		if (dcs->d_smod != NOTSPEC)
 			/*
-			 * more then one "signed" and/or "unsigned"; print
+			 * more than one "signed" and/or "unsigned"; print
 			 * an error in deftyp()
 			 */
 			dcs->d_terr = 1;
@@ -492,7 +493,7 @@ tdeferr(td, t)
  * or enum tag if the typedef name is the first defined for this tag.
  *
  * If the tag is unnamed, the typdef name is used for identification
- * of this tag in lint2. Although its possible that more then one typedef
+ * of this tag in lint2. Although its possible that more than one typedef
  * name is defined for one tag, the first name defined should be unique
  * if the tag is unnamed.
  */
@@ -1426,7 +1427,7 @@ sym_t *
 dname(sym)
 	sym_t	*sym;
 {
-	scl_t	sc;
+	scl_t	sc = NOSCL;
 
 	if (sym->s_scl == NOSCL) {
 		dcs->d_rdcsym = NULL;
@@ -1556,7 +1557,7 @@ mktag(tag, kind, decl, semi)
 	tspec_t	kind;
 	int	decl, semi;
 {
-	scl_t	scl;
+	scl_t	scl = NOSCL;
 	type_t	*tp;
 
 	if (kind == STRUCT) {
@@ -2003,7 +2004,7 @@ isredec(dsym, warn)
  * Checks if two types are compatible. Returns 0 if not, otherwise 1.
  *
  * ignqual	ignore qualifiers of type; used for function params
- * promot	promote left type; used for comparision of params of
+ * promot	promote left type; used for comparison of params of
  *		old style function definitions with params of prototypes.
  * *warn	set to 1 if an old style function declaration is not
  *		compatible with a prototype
@@ -3089,7 +3090,7 @@ glchksz(sym)
 	if (sym->s_def == TDEF) {
 		if (sym->s_type->t_tspec == FUNC)
 			/*
-			 * this can happen if an syntax error occured
+			 * this can happen if an syntax error occurred
 			 * after a function declaration
 			 */
 			return;

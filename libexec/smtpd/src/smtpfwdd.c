@@ -1,10 +1,11 @@
+/* $OpenBSD: smtpfwdd.c,v 1.7 2001/08/23 14:17:08 aaron Exp $*/
+
 /*
  * smtpfwdd, Obtuse SMTP forward daemon, master process watches spool
  * directory for files spooled by smtpd. On seeing one, spawns a child
  * to pick it up and invokes sendmail (or sendmail-like agent) to
  * deliver it.
  *
- * $Id: smtpfwdd.c,v 1.35 1997/12/12 04:07:49 beck Exp $
  * 
  * Copyright (c) 1996, 1997 Obtuse Systems Corporation. All rights
  * reserved.
@@ -41,7 +42,7 @@
  */
 char *obtuse_copyright =
 "Copyright 1996 - Obtuse Systems Corporation - All rights reserved.";
-char *obtuse_rcsid = "$Id: smtpfwdd.c,v 1.35 1997/12/12 04:07:49 beck Exp $";
+char *obtuse_rcsid = "$OpenBSD: smtpfwdd.c,v 1.7 2001/08/23 14:17:08 aaron Exp $";
 
 #include <stdio.h>
 #include <signal.h>
@@ -122,6 +123,8 @@ int children = 0;
 int maxchildren = MAXCHILDREN;
 int poll_time = POLL_TIME;
 int gc_int = COMPLETION_WAIT;
+int VerboseSyslog = 1;
+
 
 #ifdef SUNOS_GETOPT
 extern char *optarg;
@@ -343,7 +346,7 @@ show_usage()
 }
 
 /*
- * forward a mail message recieved by smtpd contained in file fname.
+ * forward a mail message received by smtpd contained in file fname.
  * file is expected to be as follows:
  * -------------------
  * FROM addr
@@ -591,6 +594,9 @@ forward(char *fname)
   body = ftell(f);
   victim = victims;
   sentout = 0;
+  if (!VerboseSyslog) {
+    accumlog(LOG_INFO, "Forwading %s", fname);
+  }
   while (victim != NULL) {
     int status, pid, pidw, i, rstart;
     struct smtp_victim *sv = victim;
@@ -616,7 +622,11 @@ forward(char *fname)
     av[i++] = from;
     rstart = i;
     while (i < MAXARGS - 2) {
-      syslog(LOG_INFO, "forwarding to recipient %s", victim->name);
+      if (VerboseSyslog) {      
+	syslog(LOG_INFO, "forwarding to recipient %s", victim->name);
+      } else {
+	accumlog(LOG_INFO, " to=%s", victim->name);
+      }
       av[i++] = victim->name;
       victim = victim->next;
       if (victim == NULL) {
@@ -635,6 +645,19 @@ forward(char *fname)
 	syslog(LOG_ERR, "Couldn't dup open %s to stdin (%m)", fname);
 	exit(EX_OSERR);
       }
+
+      /*
+       * Open /dev/null as stdout and as stderr so sendmail 8.12.1 (and
+       * above ?) won't complain about missing file descriptors.
+       */
+      if (open("/dev/null", O_WRONLY | O_APPEND) < 0) {
+	syslog(LOG_ERR, "Couldn't open /dev/null as stdout (%m)");
+	exit (EX_OSERR);
+      }
+      if (open("/dev/null", O_RDWR | O_APPEND) < 0) {
+	syslog(LOG_ERR, "Couldn't open /dev/null as stderr (%m)");
+	exit (EX_OSERR);
+      } 
 
       fclose(f);
       closelog();
@@ -671,7 +694,6 @@ forward(char *fname)
       case EX_OSERR:
       case EX_OSFILE:
       case EX_IOERR:	
-      case EX_UNAVAILABLE:
       case EX_TEMPFAIL:
 	syslog(LOG_INFO, "Temporary sendmail failure (status %d), will retry later", status);
 	fail_retry(f, fname);
@@ -731,8 +753,12 @@ forward(char *fname)
   /*
    * All seems to have worked 
    */
-
-  syslog(LOG_INFO, "%s forwarded to %d recipients", fname, sentout);
+  if (VerboseSyslog) {
+    syslog(LOG_INFO, "%s forwarded to %d recipients", fname, sentout);
+  } else {
+    accumlog(LOG_INFO, ", forwarded to %d recipients", sentout);
+    accumlog(LOG_INFO, 0);		/* flush */
+  }    
   if (unlink(fname) != 0) {
     syslog(LOG_CRIT, "Couldn't remove spool file %s! (%m)", fname);
     exit(EX_CONFIG);
@@ -760,11 +786,11 @@ forward(char *fname)
  * The brains of this operation
  */
 
-void
+int
 main(int argc, char **argv)
 {
   int opt;
-  char *optstring = "u:g:d:s:C:M:P:";
+  char *optstring = "qu:g:d:s:M:P:";
   int pid;
 
   char *username = SMTP_USER;
@@ -780,9 +806,12 @@ main(int argc, char **argv)
 #ifdef GETOPT_EOF
   while ((opt = getopt(argc, argv, optstring)) != EOF) {
 #else
-  while ((opt = getopt(argc, argv, optstring)) > 0) {
+  while ((opt = getopt(argc, argv, optstring)) != -1) {
 #endif
     switch (opt) {
+    case 'q':
+      VerboseSyslog = 0;
+      break;    
     case 'd':
       if (optarg[0] != '/') {
 	fprintf(stderr, "The \"-d\" option requires an absolute pathname argument, \"%s\" is bogus\n", optarg);
@@ -1101,6 +1130,10 @@ main(int argc, char **argv)
 	  }
 	  sleep(1);
 	  reap_children();
+	}
+ 	if (!VerboseSyslog) {
+	  /* should be empty - but just in case */
+	  accumlog(LOG_INFO, 0);
 	}
 	/*
 	 * If we have a file with an appropriate name and it is

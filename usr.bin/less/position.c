@@ -1,3 +1,5 @@
+/*	$OpenBSD: position.c,v 1.3 2001/01/29 01:58:03 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -56,6 +58,9 @@ extern int sc_width, sc_height;
 position(where)
 	int where;
 {
+	if (where >= table_size)
+		where = BOTTOM;
+
 	switch (where)
 	{
 	case BOTTOM:
@@ -77,7 +82,7 @@ position(where)
 add_forw_pos(pos)
 	POSITION pos;
 {
-	register int i;
+	int i;
 
 	/*
 	 * Scroll the position table up.
@@ -94,7 +99,7 @@ add_forw_pos(pos)
 add_back_pos(pos)
 	POSITION pos;
 {
-	register int i;
+	int i;
 
 	/*
 	 * Scroll the position table down.
@@ -110,7 +115,7 @@ add_back_pos(pos)
 	public void
 pos_clear()
 {
-	register int i;
+	int i;
 
 	for (i = 0;  i < sc_height;  i++)
 		table[i] = NULL_POSITION;
@@ -152,7 +157,7 @@ pos_init()
 onscreen(pos)
 	POSITION pos;
 {
-	register int i;
+	int i;
 
 	if (pos < table[0])
 		return (-1);
@@ -176,7 +181,7 @@ empty_lines(s, e)
 	int s;
 	int e;
 {
-	register int i;
+	int i;
 
 	for (i = s;  i <= e;  i++)
 		if (table[i] != NULL_POSITION)
@@ -196,7 +201,7 @@ empty_lines(s, e)
 get_scrpos(scrpos)
 	struct scrpos *scrpos;
 {
-	register int i;
+	int i;
 
 	/*
 	 * Find the first line on the screen which has something on it,

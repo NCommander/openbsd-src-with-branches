@@ -1,3 +1,4 @@
+/*      $OpenBSD: apropos.c,v 1.7 2000/11/20 14:03:31 deraadt Exp $      */
 /*      $NetBSD: apropos.c,v 1.5 1995/09/04 20:46:20 tls Exp $      */
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)apropos.c	8.8 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$NetBSD: apropos.c,v 1.5 1995/09/04 20:46:20 tls Exp $";
+static char rcsid[] = "$OpenBSD: apropos.c,v 1.7 2000/11/20 14:03:31 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -63,10 +64,12 @@ static char rcsid[] = "$NetBSD: apropos.c,v 1.5 1995/09/04 20:46:20 tls Exp $";
 
 static int *found, foundman;
 
-void apropos __P((char **, char *, int));
-void lowstr __P((char *, char *));
-int match __P((char *, char *));
-void usage __P((void));
+#define	MAXLINELEN	8192		/* max line handled */
+
+void apropos(char **, char *, int);
+void lowstr(char *, char *);
+int match(char *, char *);
+void usage(void);
 
 int
 main(argc, argv)
@@ -80,7 +83,7 @@ main(argc, argv)
 
 	conffile = NULL;
 	p_augment = p_path = NULL;
-	while ((ch = getopt(argc, argv, "C:M:m:P:")) != EOF)
+	while ((ch = getopt(argc, argv, "C:M:m:P:")) != -1)
 		switch (ch) {
 		case 'C':
 			conffile = optarg;
@@ -139,16 +142,16 @@ apropos(argv, path, buildpath)
 	int buildpath;
 {
 	char *end, *name, **p;
-	char buf[LINE_MAX + 1], wbuf[LINE_MAX + 1];
+	char buf[MAXLINELEN + 1], wbuf[MAXLINELEN + 1];
+	char hold[MAXPATHLEN];
 
 	for (name = path; name; name = end) {	/* through name list */
-		if (end = strchr(name, ':'))
+		if ((end = strchr(name, ':')))
 			*end++ = '\0';
 
 		if (buildpath) {
-			char hold[MAXPATHLEN + 1];
-
-			(void)sprintf(hold, "%s/%s", name, _PATH_WHATIS);
+			(void)snprintf(hold, sizeof(hold), "%s/%s", name,
+			    _PATH_WHATIS);
 			name = hold;
 		}
 
@@ -225,6 +228,6 @@ usage()
 {
 
 	(void)fprintf(stderr,
-	    "usage: apropos [-C file] [-M path] [-m path] keyword ...\n");
+	    "usage: apropos [-C file] [-M path] [-m path] keyword [...]\n");
 	exit(1);
 }

@@ -1,4 +1,4 @@
-/*	$PMDB: pmdb.c,v 1.41 2002/03/12 14:24:30 art Exp $	*/
+/*	$OpenBSD: pmdb.c,v 1.5 2002/03/19 23:10:57 drahn Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -65,18 +65,23 @@ struct clit cmds[] = {
 	{ "break", "set breakpoint", 1, 1, cmd_bkpt_add, (void *)-1 },
 	{ "step", "single step one insn", 0, 0, cmd_sstep, (void *)-1 },
 
+	/* symbols */
+	{ "sym_load", "load symbol table", 2, 2, cmd_sym_load, (void *)-1 },
+
 	/* misc commands. */
 	{ "help", "print help", 0, 1, cmd_help, NULL },
 	{ "quit", "quit", 0, 0, cmd_quit, (void *)-1 },
 	{ "exit", "quit", 0, 0, cmd_quit, (void *)-1 },
 };
 
+#define NCMDS	sizeof(cmds)/sizeof(cmds[0])
+
 int
 main(int argc, char **argv)
 {
 	extern const char *__progname;
 	struct pstate ps;
-	int i, ncmds;
+	int i;
 	int status;
 	void *cm;
 	char *pmenv;
@@ -110,9 +115,7 @@ main(int argc, char **argv)
 
 	signal(SIGINT, SIG_IGN);
 
-	ncmds = sizeof(cmds)/sizeof(cmds[0]);
-
-	for (i = 0; i < ncmds; i++)
+	for (i = 0; i < NCMDS; i++)
 		if (cmds[i].arg == (void *)-1)
 			cmds[i].arg = &ps;
 
@@ -121,7 +124,7 @@ main(int argc, char **argv)
 
 	process_load(&ps);
 
-	cm = cmdinit(cmds, ncmds);
+	cm = cmdinit(cmds, NCMDS);
 	while (ps.ps_state != TERMINATED) {
 		int signum;
 		int stopped;
@@ -181,7 +184,7 @@ read_from_pid(pid_t pid, off_t from, void *to, size_t size)
 	piod.piod_addr = to;
 	piod.piod_len = size;
 
-	return (ptrace(PT_IO, pid, (caddr_t)&piod, 0) != size);
+	return (ptrace(PT_IO, pid, (caddr_t)&piod, 0));
 }
 
 
@@ -195,7 +198,7 @@ write_to_pid(pid_t pid, off_t to, void *from, size_t size)
 	piod.piod_addr = from;
 	piod.piod_len = size;
 
-	return (ptrace(PT_IO, pid, (caddr_t)&piod, 0) != size);
+	return (ptrace(PT_IO, pid, (caddr_t)&piod, 0));
 }
 
 static int
@@ -250,6 +253,7 @@ cmd_show_backtrace(int argc, char **argv, void *arg)
 		if (name == NULL) {
 			snprintf(namebuf, sizeof(namebuf), "0x%lx", mfr.pc);
 			name = namebuf;
+			offs = 0;
 		}
 
 		printf("%s(", name);
@@ -258,7 +262,11 @@ cmd_show_backtrace(int argc, char **argv, void *arg)
 			if (j < mfr.nargs - 1)
 				printf(", ");
 		}
-		printf(")+0x%lx\n", offs);
+		if (offs == 0) {
+			printf(")\n");
+		} else {
+			printf(")+0x%lx\n", offs);
+		}
 	}
 	return 0;
 }

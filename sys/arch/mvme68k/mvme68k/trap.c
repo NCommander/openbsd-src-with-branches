@@ -1,7 +1,36 @@
-/*	$NetBSD: trap.c,v 1.36 1995/05/12 18:24:53 mycroft Exp $	*/
+/*	$OpenBSD: trap.c,v 1.41 2001/12/08 02:24:06 art Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * Copyright (c) 1999 Steve Murphree, Jr. (68060 support)
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -67,14 +96,14 @@
 extern struct emul emul_sunos;
 #endif
 
-#include <vm/vm.h>
-#include <vm/pmap.h>
+#include <uvm/uvm_extern.h>
+#include <uvm/uvm_pmap.h>
 
 #ifdef COMPAT_HPUX
 #include <compat/hpux/hpux.h>
 #endif
 
-char	*trap_type[] = {
+char  *trap_type[] = {
 	"Bus error",
 	"Address error",
 	"Illegal instruction",
@@ -90,31 +119,33 @@ char	*trap_type[] = {
 	"Coprocessor violation",
 	"Async system trap"
 };
-int	trap_types = sizeof trap_type / sizeof trap_type[0];
+int   trap_types = sizeof trap_type / sizeof trap_type[0];
 
 /*
  * Size of various exception stack frames (minus the standard 8 bytes)
  */
-short	exframesize[] = {
-	FMT0SIZE,	/* type 0 - normal (68020/030/040) */
+short exframesize[] = {
+	FMT0SIZE,	/* type 0 - normal (68020/030/040/060) */
 	FMT1SIZE,	/* type 1 - throwaway (68020/030/040) */
-	FMT2SIZE,	/* type 2 - normal 6-word (68020/030/040) */
-	FMT3SIZE,	/* type 3 - FP post-instruction (68040) */
-	-1, -1, -1,	/* type 4-6 - undefined */
+	FMT2SIZE,	/* type 2 - normal 6-word (68020/030/040/060) */
+	FMT3SIZE,	/* type 3 - FP post-instruction (68040/060) */
+	FMT4SIZE,	/* type 4 - access error/fp disabled (68060) */
+	-1, -1,		/* type 5-6 - undefined */
 	FMT7SIZE,	/* type 7 - access error (68040) */
-	58,		/* type 8 - bus fault (68010) */
+	58,			/* type 8 - bus fault (68010) */
 	FMT9SIZE,	/* type 9 - coprocessor mid-instruction (68020/030) */
 	FMTASIZE,	/* type A - short bus fault (68020/030) */
 	FMTBSIZE,	/* type B - long bus fault (68020/030) */
 	-1, -1, -1, -1	/* type C-F - undefined */
 };
 
-#ifdef M68040
-#define KDFAULT(c)    (mmutype == MMU_68040 ? \
-			    ((c) & SSW4_TMMASK) == SSW4_TMKD : \
+
+#if defined(M68040) || defined(M68060)
+#define KDFAULT(c)    (mmutype == MMU_68060 ? ((c) & FSLW_TM_SV) : \
+             mmutype == MMU_68040 ? ((c) & SSW4_TMMASK) == SSW4_TMKD : \
 			    ((c) & (SSW_DF|FC_SUPERD)) == (SSW_DF|FC_SUPERD))
-#define WRFAULT(c)    (mmutype == MMU_68040 ? \
-			    ((c) & SSW4_RW) == 0 : \
+#define WRFAULT(c)    (mmutype == MMU_68060 ? ((c) & FSLW_RW_W) : \
+             mmutype == MMU_68040 ? ((c) & SSW4_RW) == 0 : \
 			    ((c) & (SSW_DF|SSW_RW)) == SSW_DF)
 #else
 #define KDFAULT(c)	(((c) & (SSW_DF|SSW_FCMASK)) == (SSW_DF|FC_SUPERD))
@@ -135,11 +166,13 @@ void (*sir_routines[NSIR])();
 void *sir_args[NSIR];
 u_char next_sir;
 
+int  writeback(struct frame *fp, int docachepush);
+
 /*
  * trap and syscall both need the following work done before returning
  * to user mode.
  */
-static inline void
+void
 userret(p, fp, oticks, faultaddr, fromtrap)
 	register struct proc *p;
 	register struct frame *fp;
@@ -147,8 +180,8 @@ userret(p, fp, oticks, faultaddr, fromtrap)
 	u_int faultaddr;
 	int fromtrap;
 {
-	int sig, s;
-#ifdef M68040
+	int sig;
+#if defined(M68040) || defined(M68060)
 	int beenhere = 0;
 
 again:
@@ -159,18 +192,9 @@ again:
 	p->p_priority = p->p_usrpri;
 	if (want_resched) {
 		/*
-		 * Since we are curproc, clock will normally just change
-		 * our priority without moving us from one queue to another
-		 * (since the running process is not on a queue.)
-		 * If that happened after we put ourselves on the run queue
-		 * but before we mi_switch()'ed, we might not be on the queue
-		 * indicated by our priority.
+		 * We're being preempted.
 		 */
-		s = splstatclock();
-		setrunqueue(p);
-		p->p_stats->p_ru.ru_nivcsw++;
-		mi_switch();
-		splx(s);
+		preempt(NULL);
 		while ((sig = CURSIG(p)) != 0)
 			postsig(sig);
 	}
@@ -181,10 +205,10 @@ again:
 	if (p->p_flag & P_PROFIL) {
 		extern int psratio;
 
-		addupc_task(p, fp->f_pc,
+		addupc_task(p, fp->f_pc, 
 			    (int)(p->p_sticks - oticks) * psratio);
 	}
-#ifdef M68040
+#if defined(M68040)
 	/*
 	 * Deal with user mode writebacks (from trap, or from sigreturn).
 	 * If any writeback fails, go back and attempt signal delivery.
@@ -198,14 +222,17 @@ again:
 #ifdef DEBUG
 			if (mmudebug & MDB_WBFAILED)
 				printf(fromtrap ?
-		"pid %d(%s): writeback aborted, pc=%x, fa=%x\n" :
-		"pid %d(%s): writeback aborted in sigreturn, pc=%x\n",
-				    p->p_pid, p->p_comm, fp->f_pc, faultaddr);
+			 "pid %d(%s): writeback aborted, pc=%x, fa=%x\n" :
+			 "pid %d(%s): writeback aborted in sigreturn, pc=%x\n",
+				     p->p_pid, p->p_comm, fp->f_pc, faultaddr);
 #endif
 		} else if (sig = writeback(fp, fromtrap)) {
+			register union sigval sv;
+
 			beenhere = 1;
 			oticks = p->p_sticks;
-			trapsignal(p, sig, faultaddr);
+			sv.sival_int = faultaddr;
+			trapsignal(p, sig, VM_PROT_WRITE, SEGV_MAPERR, sv);
 			goto again;
 		}
 	}
@@ -216,7 +243,7 @@ again:
 /*
  * Trap is called from locore to handle most types of processor traps,
  * including events such as simulated software interrupts/AST's.
- * System calls are broken out for efficiency.
+ * System calls are broken out for efficiency. T_ADDRERR
  */
 /*ARGSUSED*/
 trap(type, code, v, frame)
@@ -226,22 +253,20 @@ trap(type, code, v, frame)
 	struct frame frame;
 {
 	extern char fubail[], subail[];
-#ifdef DDB
-	extern int trap0, trap1, trap2, trap12, trap15, illinst;
-#endif
 	register struct proc *p;
 	register int i;
 	u_int ucode;
 	u_quad_t sticks;
+	int typ = 0, bit;
 #ifdef COMPAT_HPUX
 	extern struct emul emul_hpux;
 #endif
-	int bit;
 #ifdef COMPAT_SUNOS
 	extern struct emul emul_sunos;
 #endif
+	register union sigval sv;
 
-	cnt.v_trap++;
+	uvmexp.traps++;
 	p = curproc;
 	ucode = 0;
 	if (USERMODE(frame.f_sr)) {
@@ -250,7 +275,6 @@ trap(type, code, v, frame)
 		p->p_md.md_regs = frame.f_regs;
 	}
 	switch (type) {
-
 	default:
 dopanic:
 		printf("trap type %d, code = %x, v = %x\n", type, code, v);
@@ -258,7 +282,7 @@ dopanic:
 		if (kdb_trap(type, &frame))
 			return;
 #endif
-		regdump(&frame, 128);
+		regdump(&(frame.F_t), 128);
 		type &= ~T_USER;
 		if ((unsigned)type < trap_types)
 			panic(trap_type[type]);
@@ -267,35 +291,38 @@ dopanic:
 	case T_BUSERR:		/* kernel bus error */
 		if (!p || !p->p_addr->u_pcb.pcb_onfault)
 			goto dopanic;
+copyfault:
 		/*
 		 * If we have arranged to catch this fault in any of the
 		 * copy to/from user space routines, set PC to return to
 		 * indicated location and set flag informing buserror code
 		 * that it may need to clean up stack frame.
 		 */
-copyfault:
-		frame.f_stackadj = exframesize[frame.f_format];
-		frame.f_format = frame.f_vector = 0;
-		frame.f_pc = (int) p->p_addr->u_pcb.pcb_onfault;
-		return;
+   		frame.f_stackadj = exframesize[frame.f_format];
+   		frame.f_format = frame.f_vector = 0;
+   		frame.f_pc = (int) p->p_addr->u_pcb.pcb_onfault;
+   		return;
 
 	case T_BUSERR|T_USER:	/* bus error */
+		typ = BUS_OBJERR;
+		ucode = code & ~T_USER;
+		i = SIGBUS;
+		break;
 	case T_ADDRERR|T_USER:	/* address error */
-		ucode = v;
+		typ = BUS_ADRALN;
+		ucode = code & ~T_USER;
 		i = SIGBUS;
 		break;
 
-#ifdef FPCOPROC
 	case T_COPERR:		/* kernel coprocessor violation */
-#endif
 	case T_FMTERR|T_USER:	/* do all RTE errors come in as T_USER? */
 	case T_FMTERR:		/* ...just in case... */
-	/*
-	 * The user has most likely trashed the RTE or FP state info
-	 * in the stack frame of a signal handler.
-	 */
+		/*
+		 * The user has most likely trashed the RTE or FP state info
+		 * in the stack frame of a signal handler.
+		 */
 		printf("pid %d: kernel %s exception\n", p->p_pid,
-		       type==T_COPERR ? "coprocessor" : "format");
+				 type==T_COPERR ? "coprocessor" : "format");
 		type |= T_USER;
 		p->p_sigacts->ps_sigact[SIGILL] = SIG_DFL;
 		i = sigmask(SIGILL);
@@ -304,60 +331,73 @@ copyfault:
 		p->p_sigmask &= ~i;
 		i = SIGILL;
 		ucode = frame.f_format;	/* XXX was ILL_RESAD_FAULT */
+		typ = ILL_COPROC;
+		v = frame.f_pc;
 		break;
 
-#ifdef FPCOPROC
 	case T_COPERR|T_USER:	/* user coprocessor violation */
-	/* What is a proper response here? */
+		/* What is a proper response here? */
+		typ = FPE_FLTINV;
 		ucode = 0;
 		i = SIGFPE;
 		break;
 
 	case T_FPERR|T_USER:	/* 68881 exceptions */
-	/*
-	 * We pass along the 68881 status register which locore stashed
-	 * in code for us.  Note that there is a possibility that the
-	 * bit pattern of this register will conflict with one of the
-	 * FPE_* codes defined in signal.h.  Fortunately for us, the
-	 * only such codes we use are all in the range 1-7 and the low
-	 * 3 bits of the status register are defined as 0 so there is
-	 * no clash.
-	 */
+		/*
+		 * We pass along the 68881 status register which locore stashed
+		 * in code for us.  Note that there is a possibility that the
+		 * bit pattern of this register will conflict with one of the
+		 * FPE_* codes defined in signal.h.  Fortunately for us, the
+		 * only such codes we use are all in the range 1-7 and the low
+		 * 3 bits of the status register are defined as 0 so there is
+		 * no clash.
+		 */
+		typ = FPE_FLTRES;
 		ucode = code;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
-#endif
 
-#ifdef M68040
+#if defined(M68040) || defined(M68060)
 	case T_FPEMULI|T_USER:	/* unimplemented FP instuction */
 	case T_FPEMULD|T_USER:	/* unimplemented FP data type */
 		/* XXX need to FSAVE */
 		printf("pid %d(%s): unimplemented FP %s at %x (EA %x)\n",
-		       p->p_pid, p->p_comm,
-		       frame.f_format == 2 ? "instruction" : "data type",
-		       frame.f_pc, frame.f_fmt2.f_iaddr);
+				 p->p_pid, p->p_comm,
+				 frame.f_format == 2 ? "instruction" : "data type",
+				 frame.f_pc, frame.f_fmt2.f_iaddr);
 		/* XXX need to FRESTORE */
+		typ = FPE_FLTINV;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
 #endif
 
 	case T_ILLINST|T_USER:	/* illegal instruction fault */
 #ifdef COMPAT_HPUX
 		if (p->p_emul == &emul_hpux) {
+			typ = 0;
 			ucode = HPUX_ILL_ILLINST_TRAP;
 			i = SIGILL;
 			break;
 		}
-		/* fall through */
 #endif
+		ucode = frame.f_format;	/* XXX was ILL_PRIVIN_FAULT */
+		typ = ILL_ILLOPC;
+		i = SIGILL;
+		v = frame.f_pc;
+		break;
+
 	case T_PRIVINST|T_USER:	/* privileged instruction fault */
 #ifdef COMPAT_HPUX
 		if (p->p_emul == &emul_hpux)
 			ucode = HPUX_ILL_PRIV_TRAP;
 		else
 #endif
-		ucode = frame.f_format;	/* XXX was ILL_PRIVIN_FAULT */
+		ucode	= frame.f_format;	/* XXX was ILL_PRIVIN_FAULT */
+		typ = ILL_PRVOPC;
 		i = SIGILL;
+		v = frame.f_pc;
 		break;
 
 	case T_ZERODIV|T_USER:	/* Divide by zero */
@@ -366,8 +406,10 @@ copyfault:
 			ucode = HPUX_FPE_INTDIV_TRAP;
 		else
 #endif
-		ucode = frame.f_format;	/* XXX was FPE_INTDIV_TRAP */
+		ucode	= frame.f_format;	/* XXX was FPE_INTDIV_TRAP */
+		typ = FPE_INTDIV;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
 
 	case T_CHKINST|T_USER:	/* CHK instruction trap */
@@ -380,7 +422,9 @@ copyfault:
 		}
 #endif
 		ucode = frame.f_format;	/* XXX was FPE_SUBRNG_TRAP */
+		typ = FPE_FLTSUB;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
 
 	case T_TRAPVINST|T_USER:	/* TRAPV instruction trap */
@@ -393,52 +437,51 @@ copyfault:
 		}
 #endif
 		ucode = frame.f_format;	/* XXX was FPE_INTOVF_TRAP */
-		i = SIGFPE;
+		typ = ILL_ILLTRP;
+		i = SIGILL;
+		v = frame.f_pc;
 		break;
 
-	/*
-	 * XXX: Trace traps are a nightmare.
-	 *
-	 *	HP-UX uses trap #1 for breakpoints,
-	 *	HPBSD uses trap #2,
-	 *	SUN 3.x uses trap #15,
-	 *	KGDB uses trap #15 (for kernel breakpoints; handled elsewhere).
-	 *
-	 * HPBSD and HP-UX traps both get mapped by locore.s into T_TRACE.
-	 * SUN 3.x traps get passed through as T_TRAP15 and are not really
-	 * supported yet.
-	 */
-	case T_TRACE:		/* kernel trace trap */
-	case T_TRAP15:		/* SUN trace trap */
-#ifdef DDB
-		if (type == T_TRAP15 ||
-		    (frame.f_pc != trap0 && frame.f_pc != trap1 &&
-		     frame.f_pc != trap2 && frame.f_pc != trap12 &&
-		     frame.f_pc != trap15 && frame.f_pc != illinst)) {
-			if (kdb_trap(type, &frame))
-				return;
-		}
+		/*
+		 * XXX: Trace traps are a nightmare.
+		 *
+		 *	HP-UX uses trap #1 for breakpoints,
+		 *	OpenBSD/m68k uses trap #2,
+		 *	SUN 3.x uses trap #15,
+		 *	KGDB uses trap #15 (for kernel breakpoints; handled elsewhere).
+		 *
+		 * OpenBSD and HP-UX traps both get mapped by locore.s into
+		 * T_TRACE.
+		 * SUN 3.x traps get passed through as T_TRAP15 and are not really
+		 * supported yet.
+		 */
+	case T_TRAP15:		/* kernel breakpoint */
+#ifdef DEBUG
+		printf("unexpected kernel trace trap, type = %d\n", type);
+		printf("program counter = 0x%x\n", frame.f_pc);
 #endif
 		frame.f_sr &= ~PSL_T;
-		i = SIGTRAP;
-		break;
+		return;
 
 	case T_TRACE|T_USER:	/* user trace trap */
-	case T_TRAP15|T_USER:	/* SUN user trace trap */
 #ifdef COMPAT_SUNOS
 		/*
-		 * XXX This comment/code is not consistent XXX
-		 * SunOS seems to use Trap #2 for some obscure
-		 * fpu operations.  So far, just ignore it, but
-		 * DONT trap on it..
+		 * SunOS uses Trap #2 for a "CPU cache flush"
+		 * Just flush the on-chip caches and return.
 		 */
 		if (p->p_emul == &emul_sunos) {
-			userret(p, frame.f_pc, sticks);
+			ICIA();
+			DCIU();
 			return;
 		}
 #endif
+		/* FALLTHROUGH */
+
+	case T_TRACE:
+	case T_TRAP15|T_USER:	/* SUN user trace trap */
 		frame.f_sr &= ~PSL_T;
 		i = SIGTRAP;
+		typ = TRAP_TRACE;
 		break;
 
 	case T_ASTFLT:		/* system async trap, cannot happen */
@@ -455,14 +498,14 @@ copyfault:
 		 * IPL while processing the SIR.
 		 */
 		spl1();
-		/* fall into... */
+		/* FALLTHROUGH */
 
 	case T_SSIR:		/* software interrupt */
 	case T_SSIR|T_USER:
 		while (bit = ffs(ssir)) {
 			--bit;
 			ssir &= ~(1 << bit);
-			cnt.v_soft++;
+			uvmexp.softs++;
 			if (sir_routines[bit])
 				sir_routines[bit](sir_args[bit]);
 		}
@@ -470,7 +513,7 @@ copyfault:
 		 * If this was not an AST trap, we are all done.
 		 */
 		if (type != (T_ASTFLT|T_USER)) {
-			cnt.v_trap--;
+			uvmexp.traps--;
 			return;
 		}
 		spl0();
@@ -488,117 +531,121 @@ copyfault:
 		if (p && (p->p_addr->u_pcb.pcb_onfault == fubail ||
 		    p->p_addr->u_pcb.pcb_onfault == subail))
 			goto copyfault;
-		/* fall into ... */
+		/* FALLTHROUGH */
 
 	case T_MMUFLT|T_USER:	/* page fault */
-	    {
-		register vm_offset_t va;
-		register struct vmspace *vm = NULL;
-		register vm_map_t map;
-		int rv;
-		vm_prot_t ftype;
-		extern vm_map_t kernel_map;
+		{
+			vm_offset_t va;
+			struct vmspace *vm = NULL;
+			struct vm_map *map;
+			int rv;
+			vm_prot_t ftype, vftype;
+			extern struct vm_map *kernel_map;
 
-		/* vmspace only significant if T_USER */
-		if (p)
-			vm = p->p_vmspace;
+			/* vmspace only significant if T_USER */
+			if (p)
+				vm = p->p_vmspace;
 
 #ifdef DEBUG
-		if ((mmudebug & MDB_WBFOLLOW) || MDB_ISPID(p->p_pid))
-		printf("trap: T_MMUFLT pid=%d, code=%x, v=%x, pc=%x, sr=%x\n",
-		       p->p_pid, code, v, frame.f_pc, frame.f_sr);
+			if ((mmudebug & MDB_WBFOLLOW) || MDB_ISPID(p->p_pid))
+				printf("trap: T_MMUFLT pid=%d, code=%x, v=%x, pc=%x, sr=%x\n",
+				    p->p_pid, code, v, frame.f_pc, frame.f_sr);
 #endif
-		/*
-		 * It is only a kernel address space fault iff:
-		 * 	1. (type & T_USER) == 0  and
-		 * 	2. pcb_onfault not set or
-		 *	3. pcb_onfault set but supervisor space data fault
-		 * The last can occur during an exec() copyin where the
-		 * argument space is lazy-allocated.
-		 */
-		if (type == T_MMUFLT &&
-		    ((p && !p->p_addr->u_pcb.pcb_onfault) || KDFAULT(code)))
-			map = kernel_map;
-		else
-			map = &vm->vm_map;
-		if (WRFAULT(code))
-			ftype = VM_PROT_READ | VM_PROT_WRITE;
-		else
-			ftype = VM_PROT_READ;
-		va = trunc_page((vm_offset_t)v);
+			/*
+			 * It is only a kernel address space fault iff:
+			 * 	1. (type & T_USER) == 0  and
+			 * 	2. pcb_onfault not set or
+			 *	3. pcb_onfault set but supervisor space data fault
+			 * The last can occur during an exec() copyin where the
+			 * argument space is lazy-allocated.
+			 */
+			if (type == T_MMUFLT &&
+			    ((p && !p->p_addr->u_pcb.pcb_onfault) || KDFAULT(code)))
+				map = kernel_map;
+			else
+				map = &vm->vm_map;
+			if (WRFAULT(code)) {
+				vftype = VM_PROT_WRITE;
+				ftype = VM_PROT_READ | VM_PROT_WRITE;
+			} else
+				vftype = ftype = VM_PROT_READ;
+			va = trunc_page((vm_offset_t)v);
 
-		if (map == kernel_map && va == 0) {
-			printf("trap: bad kernel access at %x\n", v);
-			goto dopanic;
-		}
+			if (map == kernel_map && va == 0) {
+				printf("trap: bad kernel access at %x\n", v);
+				goto dopanic;
+			}
 #ifdef COMPAT_HPUX
-		if (ISHPMMADDR(va)) {
-			vm_offset_t bva;
+			if (ISHPMMADDR(va)) {
+				vm_offset_t bva;
 
-			rv = pmap_mapmulti(map->pmap, va);
-			if (rv != KERN_SUCCESS) {
-				bva = HPMMBASEADDR(va);
-				rv = vm_fault(map, bva, ftype, FALSE);
-				if (rv == KERN_SUCCESS)
-					(void) pmap_mapmulti(map->pmap, va);
-			}
-		} else
+				rv = pmap_mapmulti(map->pmap, va);
+				if (rv) {
+					bva = HPMMBASEADDR(va);
+					rv = uvm_fault(map, bva, 0, ftype);
+					if (rv == 0)
+						(void) pmap_mapmulti(map->pmap, va);
+				}
+			} else
 #endif
-		rv = vm_fault(map, va, ftype, FALSE);
+			rv = uvm_fault(map, va, 0, ftype);
 #ifdef DEBUG
-		if (rv && MDB_ISPID(p->p_pid))
-			printf("vm_fault(%x, %x, %x, 0) -> %x\n",
-			       map, va, ftype, rv);
+			if (rv && MDB_ISPID(p->p_pid))
+				printf("uvm_fault(%x, %x, 0, %x) -> %x\n",
+					 map, va, ftype, rv);
 #endif
-		/*
-		 * If this was a stack access we keep track of the maximum
-		 * accessed stack size.  Also, if vm_fault gets a protection
-		 * failure it is due to accessing the stack region outside
-		 * the current limit and we need to reflect that as an access
-		 * error.
-		 */
-		if ((caddr_t)va >= vm->vm_maxsaddr && map != kernel_map) {
-			if (rv == KERN_SUCCESS) {
-				unsigned nss;
+			/*
+			 * If this was a stack access we keep track of the maximum
+			 * accessed stack size.  Also, if vm_fault gets a protection
+			 * failure it is due to accessing the stack region outside
+			 * the current limit and we need to reflect that as an access
+			 * error.
+			 */
+			if ((caddr_t)va >= vm->vm_maxsaddr && map != kernel_map) {
+				if (rv == 0) {
+					unsigned nss;
 
-				nss = clrnd(btoc(USRSTACK-(unsigned)va));
-				if (nss > vm->vm_ssize)
-					vm->vm_ssize = nss;
-			} else if (rv == KERN_PROTECTION_FAILURE)
-				rv = KERN_INVALID_ADDRESS;
-		}
-		if (rv == KERN_SUCCESS) {
-			if (type == T_MMUFLT) {
-#if defined(M68040)
-				if (mmutype == MMU_68040)
-					(void) writeback(&frame, 1);
-#endif
-				return;
+					nss = btoc(USRSTACK-(unsigned)va);
+					if (nss > vm->vm_ssize)
+						vm->vm_ssize = nss;
+				} else if (rv == EACCES)
+					rv = EFAULT;
 			}
-			goto out;
+			if (rv == 0) {
+				if (type == T_MMUFLT) {
+#if defined(M68040)
+					if (mmutype == MMU_68040)
+						(void) writeback(&frame, 1);
+#endif
+					return;
+				}
+				goto out;
+			}
+			if (type == T_MMUFLT) {
+				if (p && p->p_addr->u_pcb.pcb_onfault)
+					goto copyfault;
+				printf("uvm_fault(%x, %x, 0, %x) -> %x\n",
+					 map, va, ftype, rv);
+				printf("  type %x, code [mmu,,ssw]: %x\n",
+					 type, code);
+				goto dopanic;
+			}
+			frame.f_pad = code & 0xffff;
+			ucode = vftype;
+			typ = SEGV_MAPERR;
+			i = SIGSEGV;
+			break;
 		}
-		if (type == T_MMUFLT) {
-			if (p && p->p_addr->u_pcb.pcb_onfault)
-				goto copyfault;
-			printf("vm_fault(%x, %x, %x, 0) -> %x\n",
-			       map, va, ftype, rv);
-			printf("  type %x, code [mmu,,ssw]: %x\n",
-			       type, code);
-			goto dopanic;
-		}
-		ucode = v;
-		i = (rv == KERN_PROTECTION_FAILURE) ? SIGBUS : SIGSEGV;
-		break;
-	    }
 	}
-	trapsignal(p, i, ucode);
+	sv.sival_int = v;
+	trapsignal(p, i, ucode, typ, sv);
 	if ((type & T_USER) == 0)
 		return;
 out:
 	userret(p, &frame, sticks, v, 1);
 }
 
-#ifdef M68040
+#if defined(M68040)
 #ifdef DEBUG
 struct writebackstats {
 	int calls;
@@ -608,14 +655,15 @@ struct writebackstats {
 	int wbsize[4];
 } wbstats;
 
-char *f7sz[] = { "longword", "byte", "word", "line" };
-char *f7tt[] = { "normal", "MOVE16", "AFC", "ACK" };
+char *f7sz[] = { "longword", "byte", "word", "line"};
+char *f7tt[] = { "normal", "MOVE16", "AFC", "ACK"};
 char *f7tm[] = { "d-push", "u-data", "u-code", "M-data",
-		 "M-code", "k-data", "k-code", "RES" };
+	"M-code", "k-data", "k-code", "RES"};
 char wberrstr[] =
-	"WARNING: pid %d(%s) writeback [%s] failed, pc=%x fa=%x wba=%x wbd=%x\n";
+"WARNING: pid %d(%s) writeback [%s] failed, pc=%x fa=%x wba=%x wbd=%x\n";
 #endif
 
+int
 writeback(fp, docachepush)
 	struct frame *fp;
 	int docachepush;
@@ -645,11 +693,11 @@ writeback(fp, docachepush)
 #ifdef DEBUG
 		if ((mmudebug & MDB_WBFOLLOW) || MDB_ISPID(p->p_pid)) {
 			printf(" pushing %s to PA %x, data %x",
-			       f7sz[(f->f_ssw & SSW4_SZMASK) >> 5],
-			       f->f_fa, f->f_pd0);
+					 f7sz[(f->f_ssw & SSW4_SZMASK) >> 5],
+					 f->f_fa, f->f_pd0);
 			if ((f->f_ssw & SSW4_SZMASK) == SSW4_SZLN)
 				printf("/%x/%x/%x",
-				       f->f_pd1, f->f_pd2, f->f_pd3);
+						 f->f_pd1, f->f_pd2, f->f_pd3);
 			printf("\n");
 		}
 		if (f->f_wb1s & SSW4_WBSV)
@@ -661,16 +709,21 @@ writeback(fp, docachepush)
 		 * cache push after a signal handler has been called.
 		 */
 		if (docachepush) {
+			paddr_t pa;
+
 			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
-				   trunc_page(f->f_fa), VM_PROT_WRITE, TRUE);
+						  trunc_page(f->f_fa), VM_PROT_WRITE, VM_PROT_WRITE|PMAP_WIRED);
+			pmap_update(pmap_kernel());
 			fa = (u_int)&vmmap[(f->f_fa & PGOFSET) & ~0xF];
 			bcopy((caddr_t)&f->f_pd0, (caddr_t)fa, 16);
-			DCFL(pmap_extract(pmap_kernel(), (vm_offset_t)fa));
+			pmap_extract(pmap_kernel(), (vm_offset_t)fa, &pa);
+			DCFL(pa);
 			pmap_remove(pmap_kernel(), (vm_offset_t)vmmap,
-				    (vm_offset_t)&vmmap[NBPG]);
+							(vm_offset_t)&vmmap[NBPG]);
+			pmap_update(pmap_kernel());
 		} else
 			printf("WARNING: pid %d(%s) uid %d: CPUSH not done\n",
-			       p->p_pid, p->p_comm, p->p_ucred->cr_uid);
+					 p->p_pid, p->p_comm, p->p_ucred->cr_uid);
 	} else if ((f->f_ssw & (SSW4_RW|SSW4_TTMASK)) == SSW4_TTM16) {
 		/*
 		 * MOVE16 fault.
@@ -680,8 +733,8 @@ writeback(fp, docachepush)
 #ifdef DEBUG
 		if ((mmudebug & MDB_WBFOLLOW) || MDB_ISPID(p->p_pid))
 			printf(" MOVE16 to VA %x(%x), data %x/%x/%x/%x\n",
-			       f->f_fa, f->f_fa & ~0xF, f->f_pd0, f->f_pd1,
-			       f->f_pd2, f->f_pd3);
+					 f->f_fa, f->f_fa & ~0xF, f->f_pd0, f->f_pd1,
+					 f->f_pd2, f->f_pd3);
 		if (f->f_wb1s & SSW4_WBSV)
 			panic("writeback: MOVE16 with WB1S valid");
 		wbstats.move16s++;
@@ -695,8 +748,8 @@ writeback(fp, docachepush)
 #ifdef DEBUG
 			if (mmudebug & MDB_WBFAILED)
 				printf(wberrstr, p->p_pid, p->p_comm,
-				       "MOVE16", fp->f_pc, f->f_fa,
-				       f->f_fa & ~0xF, f->f_pd0);
+						 "MOVE16", fp->f_pc, f->f_fa,
+						 f->f_fa & ~0xF, f->f_pd0);
 #endif
 		}
 	} else if (f->f_wb1s & SSW4_WBSV) {
@@ -715,40 +768,40 @@ writeback(fp, docachepush)
 #endif
 		off = (f->f_wb1a & 3) * 8;
 		switch (f->f_wb1s & SSW4_SZMASK) {
-		case SSW4_SZLW:
-			if (off)
-				wb1d = (wb1d >> (32 - off)) | (wb1d << off);
-			if (KDFAULT(f->f_wb1s))
-				*(long *)f->f_wb1a = wb1d;
-			else
-				err = suword((caddr_t)f->f_wb1a, wb1d);
-			break;
-		case SSW4_SZB:
-			off = 24 - off;
-			if (off)
-				wb1d >>= off;
-			if (KDFAULT(f->f_wb1s))
-				*(char *)f->f_wb1a = wb1d;
-			else
-				err = subyte((caddr_t)f->f_wb1a, wb1d);
-			break;
-		case SSW4_SZW:
-			off = (off + 16) % 32;
-			if (off)
-				wb1d = (wb1d >> (32 - off)) | (wb1d << off);
-			if (KDFAULT(f->f_wb1s))
-				*(short *)f->f_wb1a = wb1d;
-			else
-				err = susword((caddr_t)f->f_wb1a, wb1d);
-			break;
+			case SSW4_SZLW:
+				if (off)
+					wb1d = (wb1d >> (32 - off)) | (wb1d << off);
+				if (KDFAULT(f->f_wb1s))
+					*(long *)f->f_wb1a = wb1d;
+				else
+					err = suword((caddr_t)f->f_wb1a, wb1d);
+				break;
+			case SSW4_SZB:
+				off = 24 - off;
+				if (off)
+					wb1d >>= off;
+				if (KDFAULT(f->f_wb1s))
+					*(char *)f->f_wb1a = wb1d;
+				else
+					err = subyte((caddr_t)f->f_wb1a, wb1d);
+				break;
+			case SSW4_SZW:
+				off = (off + 16) % 32;
+				if (off)
+					wb1d = (wb1d >> (32 - off)) | (wb1d << off);
+				if (KDFAULT(f->f_wb1s))
+					*(short *)f->f_wb1a = wb1d;
+				else
+					err = susword((caddr_t)f->f_wb1a, wb1d);
+				break;
 		}
 		if (err) {
 			fa = f->f_wb1a;
 #ifdef DEBUG
 			if (mmudebug & MDB_WBFAILED)
 				printf(wberrstr, p->p_pid, p->p_comm,
-				       "#1", fp->f_pc, f->f_fa,
-				       f->f_wb1a, f->f_wb1d);
+						 "#1", fp->f_pc, f->f_fa,
+						 f->f_wb1a, f->f_wb1d);
 #endif
 		}
 	}
@@ -759,7 +812,7 @@ writeback(fp, docachepush)
 	 * a MOVE16 was already dealt with above.  Ignore it.
 	 */
 	if (err == 0 && (f->f_wb2s & SSW4_WBSV) &&
-	    (f->f_wb2s & SSW4_SZMASK) != SSW4_SZLN) {
+		 (f->f_wb2s & SSW4_SZMASK) != SSW4_SZLN) {
 #ifdef DEBUG
 		if ((mmudebug & MDB_WBFOLLOW) || MDB_ISPID(p->p_pid))
 			dumpwb(2, f->f_wb2s, f->f_wb2a, f->f_wb2d);
@@ -767,32 +820,32 @@ writeback(fp, docachepush)
 		wbstats.wbsize[(f->f_wb2s&SSW4_SZMASK)>>5]++;
 #endif
 		switch (f->f_wb2s & SSW4_SZMASK) {
-		case SSW4_SZLW:
-			if (KDFAULT(f->f_wb2s))
-				*(long *)f->f_wb2a = f->f_wb2d;
-			else
-				err = suword((caddr_t)f->f_wb2a, f->f_wb2d);
-			break;
-		case SSW4_SZB:
-			if (KDFAULT(f->f_wb2s))
-				*(char *)f->f_wb2a = f->f_wb2d;
-			else
-				err = subyte((caddr_t)f->f_wb2a, f->f_wb2d);
-			break;
-		case SSW4_SZW:
-			if (KDFAULT(f->f_wb2s))
-				*(short *)f->f_wb2a = f->f_wb2d;
-			else
-				err = susword((caddr_t)f->f_wb2a, f->f_wb2d);
-			break;
+			case SSW4_SZLW:
+				if (KDFAULT(f->f_wb2s))
+					*(long *)f->f_wb2a = f->f_wb2d;
+				else
+					err = suword((caddr_t)f->f_wb2a, f->f_wb2d);
+				break;
+			case SSW4_SZB:
+				if (KDFAULT(f->f_wb2s))
+					*(char *)f->f_wb2a = f->f_wb2d;
+				else
+					err = subyte((caddr_t)f->f_wb2a, f->f_wb2d);
+				break;
+			case SSW4_SZW:
+				if (KDFAULT(f->f_wb2s))
+					*(short *)f->f_wb2a = f->f_wb2d;
+				else
+					err = susword((caddr_t)f->f_wb2a, f->f_wb2d);
+				break;
 		}
 		if (err) {
 			fa = f->f_wb2a;
 #ifdef DEBUG
 			if (mmudebug & MDB_WBFAILED) {
 				printf(wberrstr, p->p_pid, p->p_comm,
-				       "#2", fp->f_pc, f->f_fa,
-				       f->f_wb2a, f->f_wb2d);
+						 "#2", fp->f_pc, f->f_fa,
+						 f->f_wb2a, f->f_wb2d);
 				dumpssw(f->f_ssw);
 				dumpwb(2, f->f_wb2s, f->f_wb2a, f->f_wb2d);
 			}
@@ -807,27 +860,27 @@ writeback(fp, docachepush)
 		wbstats.wbsize[(f->f_wb3s&SSW4_SZMASK)>>5]++;
 #endif
 		switch (f->f_wb3s & SSW4_SZMASK) {
-		case SSW4_SZLW:
-			if (KDFAULT(f->f_wb3s))
-				*(long *)f->f_wb3a = f->f_wb3d;
-			else
-				err = suword((caddr_t)f->f_wb3a, f->f_wb3d);
-			break;
-		case SSW4_SZB:
-			if (KDFAULT(f->f_wb3s))
-				*(char *)f->f_wb3a = f->f_wb3d;
-			else
-				err = subyte((caddr_t)f->f_wb3a, f->f_wb3d);
-			break;
-		case SSW4_SZW:
-			if (KDFAULT(f->f_wb3s))
-				*(short *)f->f_wb3a = f->f_wb3d;
-			else
-				err = susword((caddr_t)f->f_wb3a, f->f_wb3d);
-			break;
+			case SSW4_SZLW:
+				if (KDFAULT(f->f_wb3s))
+					*(long *)f->f_wb3a = f->f_wb3d;
+				else
+					err = suword((caddr_t)f->f_wb3a, f->f_wb3d);
+				break;
+			case SSW4_SZB:
+				if (KDFAULT(f->f_wb3s))
+					*(char *)f->f_wb3a = f->f_wb3d;
+				else
+					err = subyte((caddr_t)f->f_wb3a, f->f_wb3d);
+				break;
+			case SSW4_SZW:
+				if (KDFAULT(f->f_wb3s))
+					*(short *)f->f_wb3a = f->f_wb3d;
+				else
+					err = susword((caddr_t)f->f_wb3a, f->f_wb3d);
+				break;
 #ifdef DEBUG
-		case SSW4_SZLN:
-			panic("writeback: wb3s indicates LINE write");
+			case SSW4_SZLN:
+				panic("writeback: wb3s indicates LINE write");
 #endif
 		}
 		if (err) {
@@ -835,33 +888,22 @@ writeback(fp, docachepush)
 #ifdef DEBUG
 			if (mmudebug & MDB_WBFAILED)
 				printf(wberrstr, p->p_pid, p->p_comm,
-				       "#3", fp->f_pc, f->f_fa,
-				       f->f_wb3a, f->f_wb3d);
+						 "#3", fp->f_pc, f->f_fa,
+						 f->f_wb3a, f->f_wb3d);
 #endif
 		}
 	}
 	p->p_addr->u_pcb.pcb_onfault = oonfault;
 	/*
-	 * Determine the cause of the failure if any translating to
-	 * a signal.  If the corresponding VA is valid and RO it is
-	 * a protection fault (SIGBUS) otherwise consider it an
-	 * illegal reference (SIGSEGV).
+	 * Any problems are SIGSEGV's
 	 */
-	if (err) {
-		if (vm_map_check_protection(&p->p_vmspace->vm_map,
-					    trunc_page(fa), round_page(fa),
-					    VM_PROT_READ) &&
-		    !vm_map_check_protection(&p->p_vmspace->vm_map,
-					     trunc_page(fa), round_page(fa),
-					     VM_PROT_WRITE))
-			err = SIGBUS;
-		else
-			err = SIGSEGV;
-	}
-	return(err);
+	if (err)
+		err = SIGSEGV;
+	return (err);
 }
 
 #ifdef DEBUG
+void
 dumpssw(ssw)
 	register u_short ssw;
 {
@@ -883,11 +925,12 @@ dumpssw(ssw)
 	if (ssw & SSW4_RW)
 		printf("RW,");
 	printf(" SZ=%s, TT=%s, TM=%s\n",
-	       f7sz[(ssw & SSW4_SZMASK) >> 5],
-	       f7tt[(ssw & SSW4_TTMASK) >> 3],
-	       f7tm[ssw & SSW4_TMMASK]);
+			 f7sz[(ssw & SSW4_SZMASK) >> 5],
+			 f7tt[(ssw & SSW4_TTMASK) >> 3],
+			 f7tm[ssw & SSW4_TMMASK]);
 }
 
+void
 dumpwb(num, s, a, d)
 	int num;
 	u_short s;
@@ -897,11 +940,10 @@ dumpwb(num, s, a, d)
 	vm_offset_t pa;
 
 	printf(" writeback #%d: VA %x, data %x, SZ=%s, TT=%s, TM=%s\n",
-	       num, a, d, f7sz[(s & SSW4_SZMASK) >> 5],
-	       f7tt[(s & SSW4_TTMASK) >> 3], f7tm[s & SSW4_TMMASK]);
+			 num, a, d, f7sz[(s & SSW4_SZMASK) >> 5],
+			 f7tt[(s & SSW4_TTMASK) >> 3], f7tm[s & SSW4_TMMASK]);
 	printf("	       PA ");
-	pa = pmap_extract(&p->p_vmspace->vm_pmap, (vm_offset_t)a);
-	if (pa == 0)
+	if (pmap_extract(p->p_vmspace->vm_map.pmap, (vm_offset_t)a, &pa) == FALSE)
 		printf("<invalid address>");
 	else
 		printf("%x, current value %x", pa, fuword((caddr_t)a));
@@ -927,8 +969,8 @@ syscall(code, frame)
 #ifdef COMPAT_SUNOS
 	extern struct emul emul_sunos;
 #endif
-
-	cnt.v_syscall++;
+	uvmexp.syscalls++;
+	
 	if (!USERMODE(frame.f_sr))
 		panic("syscall");
 	p = curproc;
@@ -956,7 +998,7 @@ syscall(code, frame)
 		 * on the stack to skip, the argument follows the syscall
 		 * number without a gap.
 		 */
-		if (code != SUNOS_SYS_sunos_sigreturn) {
+		if (code != SUNOS_SYS_sigreturn) {
 			frame.f_regs[SP] += sizeof (int);
 			/*
 			 * remember that we adjusted the SP,
@@ -1002,18 +1044,18 @@ syscall(code, frame)
 	if (code < 0 || code >= nsys)
 		callp += p->p_emul->e_nosys;		/* illegal */
 	else
-		callp += code;
+		callp	+= code;
 	argsize = callp->sy_argsize;
 	if (argsize)
 		error = copyin(params, (caddr_t)args, argsize);
 	else
-		error = 0;
+		error	= 0;
 #ifdef SYSCALL_DEBUG
 	scdebug_call(p, code, args);
 #endif
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSCALL))
-		ktrsyscall(p->p_tracep, code, argsize, args);
+		ktrsyscall(p, code, argsize, args);
 #endif
 	if (error)
 		goto bad;
@@ -1037,7 +1079,7 @@ syscall(code, frame)
 		/* nothing to do */
 		break;
 	default:
-	bad:
+bad:
 		if (p->p_emul->e_errno)
 			error = p->p_emul->e_errno[error];
 		frame.f_regs[D0] = error;
@@ -1053,27 +1095,10 @@ syscall(code, frame)
 	if (error == ERESTART && (p->p_md.md_flags & MDP_STACKADJ))
 		frame.f_regs[SP] -= sizeof (int);
 #endif
-	userret(p, &frame, sticks, (u_int)0, 0);
+	userret(p, &frame, sticks, 0, 0);
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p->p_tracep, code, error, rval[0]);
-#endif
-}
-
-void
-child_return(p, frame)
-	struct proc *p;
-	struct frame frame;
-{
-
-	frame.f_regs[D0] = 0;
-	frame.f_sr &= ~PSL_C;
-	frame.f_format = FMT0;
-
-	userret(p, &frame, 0, (u_int)0, 0);
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p->p_tracep, SYS_fork, 0, 0);
+		ktrsysret(p, code, error, rval[0]);
 #endif
 }
 
@@ -1121,18 +1146,46 @@ hardintr(pc, evec, frame)
 	int vec = (evec & 0xfff) >> 2;	/* XXX should be m68k macro? */
 	extern u_long intrcnt[];	/* XXX from locore */
 	struct intrhand *ih;
+	int count = 0;
 	int r;
 
-	cnt.v_intr++;
+	uvmexp.intrs++;
 /*	intrcnt[level]++; */
 	for (ih = intrs[vec]; ih; ih = ih->ih_next) {
-		r = (*ih->ih_fn)(ih->ih_wantframe ? frame : ih->ih_arg);
+#if 0
+		if (vec >= 0x70 && vec <= 0x73) {
+			zscnputc(0, '[');
+			zscnputc(0, '0' + (vec - 0x70));
+		}
+#endif
+		r = (*ih->ih_fn)(ih->ih_wantframe ? frame : ih->ih_arg, vec);
 		if (r > 0)
-			return;
+			count++;
 	}
-	return (straytrap(pc, evec));
+	if (count == 0)
+		return (straytrap(pc, evec));
 }
 #endif /* !INTR_ASM */
+
+/*
+ * find a useable interrupt vector in the range start, end. It starts at
+ * the end of the range, and searches backwards (to increase the chances
+ * of not conflicting with more normal users)
+ */
+int
+intr_findvec(start, end)
+	int start, end;
+{
+	extern u_long *vectab[], hardtrap, badtrap;
+	int vec;
+
+	if (start < 0 || end > 255 || start > end)
+		return (-1);
+	for (vec = end; vec > start; --vec)
+		if (vectab[vec] == &badtrap || vectab[vec] == &hardtrap)
+			return (vec);
+	return (-1);
+}
 
 /*
  * Chain the interrupt handler in. But first check if the vector
@@ -1166,24 +1219,6 @@ intr_establish(vec, ih)
 	return (0);
 }
 
-/*
- * find a useable vector for devices that don't specify one
- */
-int
-intr_freevec()
-{
-	extern u_long *vectab[], hardtrap, badtrap;
-	int i;
-
-	for (i = 255; i; --i)
-		if (vectab[i] == &badtrap)
-			return (i);
-	for (i = 255; i; --i)
-		if (vectab[i] == &hardtrap)
-			return (i);
-	return (-1);
-}
-
 #ifdef DDB
 #include <sys/reboot.h>
 #include <machine/db_machdep.h>
@@ -1196,8 +1231,8 @@ db_prom_cmd()
 }
 
 struct db_command db_machine_cmds[] = {
-	{ "prom",	db_prom_cmd,	0,	0 },
-	{ (char *)0, }
+	{ "prom",   db_prom_cmd,   0, 0},
+	{ (char *)0,}
 };
 
 void

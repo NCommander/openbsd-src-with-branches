@@ -1,3 +1,5 @@
+/*	$OpenBSD: rstatd.c,v 1.8 2002/02/16 21:27:31 millert Exp $	*/
+
 /*-
  * Copyright (c) 1993, John Brezak
  * All rights reserved.
@@ -32,16 +34,28 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rstatd.c,v 1.6 1995/01/13 06:14:31 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: rstatd.c,v 1.8 2002/02/16 21:27:31 millert Exp $";
 #endif /* not lint */
 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <stdio.h>
-#include <rpc/rpc.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <signal.h>
 #include <syslog.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <rpc/rpc.h>
 #include <rpcsvc/rstat.h>
 
-extern void rstat_service();
+extern int __svc_fdsetsize;
+extern fd_set *__svc_fdset;
+extern void svc_getreqset2(fd_set *, int);
+extern void rstat_service(struct svc_req *, SVCXPRT *);
+
+void my_svc_run(void);
 
 int from_inetd = 1;     /* started from inetd ? */
 int closedown = 20;	/* how long to wait before going dormant */
@@ -49,50 +63,49 @@ int closedown = 20;	/* how long to wait before going dormant */
 void
 cleanup()
 {
-        (void) pmap_unset(RSTATPROG, RSTATVERS_TIME);
-        (void) pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
-        (void) pmap_unset(RSTATPROG, RSTATVERS_ORIG);
-        exit(0);
+	(void) pmap_unset(RSTATPROG, RSTATVERS_TIME);	/* XXX signal races */
+	(void) pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
+	(void) pmap_unset(RSTATPROG, RSTATVERS_ORIG);
+	_exit(0);
 }
 
+int
 main(argc, argv)
-        int argc;
-        char *argv[];
+	int argc;
+	char *argv[];
 {
-	SVCXPRT *transp;
-        int sock = 0;
-        int proto = 0;
+	int sock = 0, proto = 0, fromlen;
 	struct sockaddr_in from;
-	int fromlen;
-        
-        if (argc == 2)
-                closedown = atoi(argv[1]);
-        if (closedown <= 0)
-                closedown = 20;
+	SVCXPRT *transp;
 
-        /*
-         * See if inetd started us
-         */
+	if (argc == 2)
+		closedown = atoi(argv[1]);
+	if (closedown <= 0)
+		closedown = 20;
+
+	/*
+	 * See if inetd started us
+	 */
 	fromlen = sizeof(from);
-        if (getsockname(0, (struct sockaddr *)&from, &fromlen) < 0) {
-                from_inetd = 0;
-                sock = RPC_ANYSOCK;
-                proto = IPPROTO_UDP;
-        }
+	if (getsockname(0, (struct sockaddr *)&from, &fromlen) < 0) {
+		from_inetd = 0;
+		sock = RPC_ANYSOCK;
+		proto = IPPROTO_UDP;
+	}
 
-        if (!from_inetd) {
-                daemon(0, 0);
+	if (!from_inetd) {
+		daemon(0, 0);
 
-                (void)pmap_unset(RSTATPROG, RSTATVERS_TIME);
-                (void)pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
-                (void)pmap_unset(RSTATPROG, RSTATVERS_ORIG);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_TIME);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_ORIG);
 
 		(void) signal(SIGINT, cleanup);
 		(void) signal(SIGTERM, cleanup);
 		(void) signal(SIGHUP, cleanup);
-        }
-        
-        openlog("rpc.rstatd", LOG_CONS|LOG_PID, LOG_DAEMON);
+	}
+
+	openlog("rpc.rstatd", LOG_CONS|LOG_PID, LOG_DAEMON);
 
 	transp = svcudp_create(sock);
 	if (transp == NULL) {
@@ -112,7 +125,49 @@ main(argc, argv)
 		exit(1);
 	}
 
-        svc_run();
+	my_svc_run();
 	syslog(LOG_ERR, "svc_run returned");
 	exit(1);
+}
+
+void
+my_svc_run()
+{
+	extern volatile sig_atomic_t wantupdatestat;
+	extern void updatestat(void);
+	fd_set *fds;
+
+	for (;;) {
+		if (wantupdatestat) {
+			updatestat();
+			wantupdatestat = 0;
+		}
+
+		if (__svc_fdset) {
+			int bytes = howmany(__svc_fdsetsize, NFDBITS) *
+			    sizeof(fd_mask);
+			fds = (fd_set *)malloc(bytes);  /* XXX */
+			memcpy(fds, __svc_fdset, bytes);
+		} else
+			fds = NULL;
+		switch (select(svc_maxfd+1, fds, 0, 0, (struct timeval *)0)) {
+		case -1:
+			if (errno == EINTR) {
+				if (fds)
+					free(fds);
+				continue;
+			}
+			perror("svc_run: - select failed");
+			if (fds)
+				free(fds);
+			return;
+		case 0:
+			if (fds)
+				free(fds);
+			continue;
+		default:
+			svc_getreqset2(fds, svc_maxfd+1);
+			free(fds);
+		}
+	}
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: candidate.c,v 1.3 2001/04/07 20:00:15 ho Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,7 @@ static char sccsid[] = "@(#)candidate.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
 
 #ifdef sgi
-#ident "$Revision: 1.4 $"
+#ident "$Revision: 1.3 $"
 #endif
 
 #include "globals.h"
@@ -80,7 +82,7 @@ again:
 		fprintf(fd, "This machine is a candidate time master\n");
 	msg.tsp_type = TSP_ELECTION;
 	msg.tsp_vers = TSPVERSION;
-	(void)strcpy(msg.tsp_name, hostname);
+	strlcpy(msg.tsp_name, hostname, sizeof msg.tsp_name);
 	bytenetorder(&msg);
 	if (sendto(sock, (char *)&msg, sizeof(struct tsp), 0,
 		   (struct sockaddr*)&net->dest_addr,
@@ -123,7 +125,7 @@ again:
 		case TSP_REFUSE:
 			/*
 			 * Collision: change value of election timer
-			 * using exponential backoff. 
+			 * using exponential backoff.
 			 *
 			 *  Fooey.
 			 * An exponential backoff on a delay starting at
@@ -139,7 +141,7 @@ again:
 			/* no master for another round */
 			htp = addmach(resp->tsp_name,&from,fromnet);
 			msg.tsp_type = TSP_REFUSE;
-			(void)strcpy(msg.tsp_name, hostname);
+			strlcpy(msg.tsp_name, hostname, sizeof msg.tsp_name);
 			answer = acksend(&msg, &htp->addr, htp->name,
 					 TSP_ACK, 0, htp->noanswer);
 			if (!answer) {

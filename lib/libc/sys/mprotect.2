@@ -1,4 +1,5 @@
-.\"	$NetBSD: mprotect.2,v 1.5 1995/02/27 12:34:56 cgd Exp $
+.\"	$OpenBSD: mprotect.2,v 1.7 1999/06/29 14:10:08 aaron Exp $
+.\"	$NetBSD: mprotect.2,v 1.6 1995/10/12 15:41:08 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -43,7 +44,7 @@
 .Fd #include <sys/types.h>
 .Fd #include <sys/mman.h>
 .Ft int
-.Fn mprotect "caddr_t addr" "int len" "int prot"
+.Fn mprotect "void *addr" "size_t len" "int prot"
 .Sh DESCRIPTION
 The
 .Fn mprotect
@@ -52,12 +53,36 @@ changes the specified pages to have protection
 .Fa prot .
 Not all implementations will guarantee protection on a page basis;
 the granularity of protection changes may be as large as an entire region.
+.Pp
+The protections (region accessibility) are specified in the
+.Fa prot
+argument by
+.Tn OR Ns 'ing
+the following values:
+.Pp
+.Bl -tag -width MAP_FIXEDX
+.It Dv PROT_EXEC
+Pages may be executed.
+.It Dv PROT_READ
+Pages may be read.
+.It Dv PROT_WRITE
+Pages may be written.
+.It Dv PROT_NONE
+No permissions.
+.El
+.Sh RETURN VALUES
+Upon successful completion,
+a value of 0 is returned.
+Otherwise, a value of \-1 is returned and
+.Va errno
+is set to indicate the error.
 .Sh SEE ALSO
-.Xr madvise 2 , 
-.Xr mincore 2 , 
+.Xr madvise 2 ,
+.Xr mincore 2 ,
 .Xr msync 2 ,
 .Xr munmap 2
 .Sh HISTORY
 The
 .Fn mprotect
-function first appeared in 4.4BSD.
+function first appeared in
+.Bx 4.4 .

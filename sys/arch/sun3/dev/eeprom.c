@@ -1,4 +1,5 @@
-/*	$NetBSD: eeprom.c,v 1.6 1995/05/24 20:47:41 gwr Exp $	*/
+/*	$OpenBSD: eeprom.c,v 1.8 2001/05/16 12:49:48 ho Exp $	*/
+/*	$NetBSD: eeprom.c,v 1.8 1996/03/26 15:16:06 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
@@ -36,70 +37,92 @@
  */
 
 #include <sys/param.h>
+#include <sys/kernel.h>
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/conf.h>
 #include <sys/buf.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
 
 #include <machine/autoconf.h>
 #include <machine/obio.h>
 #include <machine/eeprom.h>
 
-#define HZ 100	/* XXX */
-
 int ee_console;		/* for convenience of drivers */
-
-static int ee_update(caddr_t buf, int off, int cnt);
 
 static char *eeprom_va;
 static int ee_busy, ee_want;
 
-int eeprom_match __P((struct device *, void *vcf, void *args));
-void eeprom_attach __P((struct device *, struct device *, void *));
+static int  eeprom_match(struct device *, void *vcf, void *args);
+static void eeprom_attach(struct device *, struct device *, void *);
+static int  ee_update(caddr_t, int, int);
+static int  ee_take(void);
+static void ee_give(void);
+int ee_get_byte(int, int);
 
-struct cfdriver eepromcd = {
-	NULL, "eeprom", eeprom_match, eeprom_attach,
-	DV_DULL, sizeof(struct device), 0 };
+struct cfattach eeprom_ca = {
+	sizeof(struct device), eeprom_match, eeprom_attach
+};
+
+struct cfdriver eeprom_cd = {
+	NULL, "eeprom", DV_DULL
+};
 
 /* Called very early by internal_configure. */
-void eeprom_init()
+void
+eeprom_init()
 {
 	eeprom_va = obio_find_mapping(OBIO_EEPROM, OBIO_EEPROM_SIZE);
-	ee_console = ((struct eeprom *)eeprom_va)->eeConsole;
+	ee_console = ((struct eeprom *)eeprom_va)->ee_diag.eed_console;
 }
 
-int eeprom_match(parent, vcf, args)
-    struct device *parent;
-    void *vcf, *args;
+static int
+eeprom_match(parent, vcf, args)
+	struct device *parent;
+	void *vcf, *args;
 {
-    struct cfdata *cf = vcf;
+	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
+	int pa;
 
 	/* This driver only supports one unit. */
 	if (cf->cf_unit != 0)
 		return (0);
+
+	if ((pa = cf->cf_paddr) == -1) {
+		/* Use our default PA. */
+		pa = OBIO_EEPROM;
+	} else {
+		/* Validate the given PA. */
+		if (pa != OBIO_EEPROM)
+			return (0);
+	}
+	if (pa != ca->ca_paddr)
+		return (0);
+
 	if (eeprom_va == NULL)
 		return (0);
-	if (ca->ca_paddr == -1)
-		ca->ca_paddr = OBIO_EEPROM;
+
 	return (1);
 }
 
-void eeprom_attach(parent, self, args)
+static void
+eeprom_attach(parent, self, args)
 	struct device *parent;
 	struct device *self;
 	void *args;
 {
-	struct confargs *ca = args;
 
 	printf("\n");
 }
 
 
-static int ee_take()	/* Take the lock. */
+static int
+ee_take()	/* Take the lock. */
 {
 	int error = 0;
+
 	while (ee_busy) {
 		ee_want = 1;
 		error = tsleep(&ee_busy, PZERO | PCATCH, "eeprom", 0);
@@ -112,8 +135,10 @@ static int ee_take()	/* Take the lock. */
 	return error;
 }
 
-static void ee_give()	/* Give the lock. */
+static void
+ee_give()	/* Give the lock. */
 {
+
 	ee_busy = 0;
 	if (ee_want) {
 		ee_want = 0;
@@ -121,7 +146,9 @@ static void ee_give()	/* Give the lock. */
 	}
 }
 
-int eeprom_uio(struct uio *uio)
+int
+eeprom_uio(uio)
+	struct uio *uio;
 {
 	int error;
 	int off;	/* NOT off_t */
@@ -148,12 +175,7 @@ int eeprom_uio(struct uio *uio)
 	va = eeprom_va;
 	if (uio->uio_rw != UIO_READ) {
 		/* Write requires a temporary buffer. */
-		buf = malloc(OBIO_EEPROM_SIZE, M_DEVBUF, M_WAITOK);
-		if (!buf) {
-			error = EAGAIN;
-			goto out;
-		}
-		va = buf;
+		va = buf = malloc(OBIO_EEPROM_SIZE, M_DEVBUF, M_WAITOK);
 	}
 
 	if ((error = uiomove(va + off, (int)cnt, uio)) != 0)
@@ -172,7 +194,10 @@ int eeprom_uio(struct uio *uio)
 /*
  * Update the EEPROM from the passed buf.
  */
-static int ee_update(char *buf, int off, int cnt)
+static int
+ee_update(buf, off, cnt)
+	caddr_t buf;
+	int off, cnt;
 {
 	volatile char *ep;
 	char *bp;
@@ -197,7 +222,7 @@ static int ee_update(char *buf, int off, int cnt)
 			 * holding the lock to prevent all access to
 			 * the EEPROM while it recovers.
 			 */
-			(void)tsleep(eeprom_va, PZERO-1, "eeprom", HZ/50);
+			(void)tsleep(eeprom_va, PZERO-1, "eeprom", hz/50);
 		}
 		/* Make sure the write worked. */
 		if (*ep != *bp)
@@ -214,7 +239,9 @@ static int ee_update(char *buf, int off, int cnt)
  * things like the zs driver very early to find out
  * which device should be used as the console.
  */
-int ee_get_byte(int off, int canwait)
+int
+ee_get_byte(off, canwait)
+	int off, canwait;
 {
 	int c = -1;
 	if ((off < 0) || (off >= OBIO_EEPROM_SIZE))

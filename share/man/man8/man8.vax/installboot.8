@@ -1,3 +1,4 @@
+.\"	$OpenBSD: installboot.8,v 1.7 2001/04/18 11:14:23 bjc Exp $
 .\" Copyright (c) 1986, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,11 +31,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)installboot.8	7.2 (Berkeley) 3/16/91
-.\"	$Id: installboot.8,v 1.2 1993/08/01 07:34:42 mycroft Exp $
 .\"
 .Dd March 16, 1991
-.Dt INSTALLBOOT 8
-.Os BSD 4.3t
+.Dt INSTALLBOOT 8 vax
+.Os
 .Sh NAME
 .Nm installboot
 .Nd installs a boot program in a file system
@@ -43,7 +43,7 @@
 .Ar bootblock bootprog special
 .Sh DESCRIPTION
 .Xr Installboot
-concatentates
+concatenates
 .Ar bootblock
 and
 .Ar bootprog
@@ -60,22 +60,23 @@ boot blocks
 .It Pa /usr/mdec/boot??
 boot programs
 .El
-.Sh SEE ALSO
-.Xr newfs 8 ,
-.Xr dd 1
 .Sh EXAMPLES
 .Bd -literal -offset indent -compact
 cd /usr/mdec
 installboot raboot bootra /dev/ra0a
 .Ed
-.Sh BUGS
-There is no convenient way to determine the names of the boot blocks
-and boot programs without
-.Em a priori
-knowledge of one's make of disk.
+.Sh SEE ALSO
+.Xr dd 1 ,
+.Xr newfs 8
 .Sh HISTORY
 The
 .Nm
 command appeared in
 .Bx 4.3 tahoe .
+.Sh AUTHORS
 This manual page was written by Geoff Collyer.
+.Sh BUGS
+There is no convenient way to determine the names of the boot blocks
+and boot programs without
+.Em a priori
+knowledge of one's make of disk.

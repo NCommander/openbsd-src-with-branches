@@ -1,3 +1,5 @@
+.\"	$OpenBSD$
+.\"
 .\" Copyright (c) 1986, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -572,7 +574,7 @@ connect request initiates establishment of an end to end
 connection).  \fIAccept\fP and \fIlisten\fP are not
 used with datagram sockets.
 .PP
-While a datagram socket socket is connected,
+While a datagram socket is connected,
 errors from recent \fIsend\fP calls may be returned
 asynchronously.
 These errors may be reported on subsequent operations

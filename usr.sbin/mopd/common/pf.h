@@ -1,3 +1,5 @@
+/*	$OpenBSD: pf.h,v 1.3 2001/08/12 12:03:03 heko Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: pf.h,v 1.4 1995/10/13 19:30:46 moj Exp $
+ *	$OpenBSD: pf.h,v 1.3 2001/08/12 12:03:03 heko Exp $
  *
  */
 
@@ -43,14 +45,14 @@ int	pfRead     (/* int, u_char *, int */);
 int	pfWrite    (/* int, u_char *, int, int  */);
 #else
 __BEGIN_DECLS
-int	pfTrans	   __P((char *));
-int	pfInit     __P((char *, int, u_short, int));
-int	pfEthAddr  __P((int, u_char *));
-int	pfAddMulti __P((int, char *, char *));
-int	pfDelMulti __P((int, char *, char *));
-int	pfRead     __P((int, u_char *, int));
-int	pfWrite    __P((int, u_char *, int, int));
+int	pfTrans(char *);
+int	pfInit(char *, int, u_short, int);
+int	pfEthAddr(int, u_char *);
+int	pfAddMulti(int, char *, char *);
+int	pfDelMulti(int, char *, char *);
+int	pfRead(int, u_char *, int);
+int	pfWrite(int, u_char *, int, int);
 __END_DECLS
 #endif
 
-#endif _PF_H_
+#endif /* _PF_H_ */

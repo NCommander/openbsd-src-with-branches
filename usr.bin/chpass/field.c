@@ -1,3 +1,4 @@
+/*	$OpenBSD: field.c,v 1.2 1996/06/26 05:31:56 deraadt Exp $	*/
 /*	$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)field.c	8.4 (Berkeley) 4/2/94";
 #else 
-static char rcsid[] = "$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $";
+static char rcsid[] = "$OpenBSD: field.c,v 1.2 1996/06/26 05:31:56 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -247,7 +248,7 @@ p_shell(p, pw, ep)
 	struct passwd *pw;
 	ENTRY *ep;
 {
-	char *t, *ok_shell();
+	char *t;
 
 	if (!*p) {
 		pw->pw_shell = _PATH_BSHELL;

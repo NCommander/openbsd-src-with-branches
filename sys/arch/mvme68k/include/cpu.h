@@ -1,7 +1,35 @@
-/*	$NetBSD: cpu.h,v 1.4 1995/03/28 18:15:31 jtc Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.7 2000/01/06 03:21:43 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -43,9 +71,15 @@
  *	@(#)cpu.h	8.4 (Berkeley) 1/5/94
  */
 
+#ifndef _MVME68K_CPU_H_
+#define _MVME68K_CPU_H_
+
 /*
  * Exported definitions unique to mvme68k/68k cpu support.
  */
+
+#define M68K_MMU_MOTOROLA
+#include <m68k/cpu.h>
 
 /*
  * definitions of cpu-dependent requirements
@@ -53,7 +87,6 @@
  */
 #define	cpu_swapin(p)			/* nothing */
 #define	cpu_wait(p)			/* nothing */
-#define cpu_setstack(p, ap)		(p)->p_md.md_regs[SP] = ap
 #define cpu_swapout(p)			/* nothing */
 
 /*
@@ -103,19 +136,10 @@ struct clockframe {
 int	astpending;		/* need to trap before returning to user mode */
 int	want_resched;		/* resched() was called */
 
-
 /*
- * simulated software interrupt register
+ * Get interrupt glue.
  */
-extern unsigned char ssir;
-
-#define SIR_NET		0x1
-#define SIR_CLOCK	0x2
-
-#define setsoftint(x)	ssir |= (x)
-#define setsoftnet()	ssir |= SIR_NET
-#define setsoftclock()	ssir |= SIR_CLOCK
-u_long	allocate_sir __P((void (*proc)(), void *arg));
+#include <machine/intr.h>
 
 /*
  * CTL_MACHDEP definitions.
@@ -247,6 +271,7 @@ struct intrhand {
 
 struct haltvec {
 	struct haltvec *hv_next;
-	void	(*hv_fn) __P((void));
+	void	(*hv_fn)(void);
 	int	hv_pri;
 };
+#endif

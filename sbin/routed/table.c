@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: table.c,v 1.6 2001/07/07 18:26:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -621,7 +621,7 @@ masktrim(struct sockaddr_in *ap)
 masktrim(struct sockaddr_in_new *ap)
 #endif
 {
-	register char *cp;
+	char *cp;
 
 	if (ap->sin_addr.s_addr == 0) {
 		ap->sin_len = 0;
@@ -1660,12 +1660,8 @@ rtswitch(struct rt_entry *rt,
 
 
 	/* Do not change permanent routes */
-	if (0 != (rt->rt_state & RS_PERMANENT))
-		return;
-
-	/* Do not discard synthetic routes until they go bad */
-	if ((rt->rt_state & RS_NET_SYN)
-	    && rt->rt_metric < HOPCNT_INFINITY)
+	if (0 != (rt->rt_state & (RS_MHOME | RS_STATIC | RS_RDISC
+				  | RS_NET_SYN | RS_IF)))
 		return;
 
 	/* find the best alternative among the spares */
@@ -1678,7 +1674,7 @@ rtswitch(struct rt_entry *rt,
 		return;
 
 	swap = rt->rt_spares[0];
-	(void)sprintf(label, "Use #%d", rts - rt->rt_spares);
+	(void)sprintf(label, "Use #%d", (int)(rts - rt->rt_spares));
 	rtchange(rt, rt->rt_state & ~(RS_NET_SYN | RS_RDISC),
 		 rts->rts_gate, rts->rts_router, rts->rts_metric,
 		 rts->rts_tag, rts->rts_ifp, rts->rts_time, label);

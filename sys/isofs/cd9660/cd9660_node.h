@@ -1,4 +1,5 @@
-/*	$NetBSD: cd9660_node.h,v 1.10 1994/12/24 15:30:09 cgd Exp $	*/
+/*	$OpenBSD: cd9660_node.h,v 1.13 2001/12/19 08:58:06 art Exp $	*/
+/*	$NetBSD: cd9660_node.h,v 1.15 1997/04/11 21:52:01 kleink Exp $	*/
 
 /*-
  * Copyright (c) 1994
@@ -39,6 +40,8 @@
  *
  *	@(#)cd9660_node.h	8.4 (Berkeley) 12/5/94
  */
+
+#include <sys/buf.h>
 
 /*
  * Theoretically, directories can be more than 2Gb in length,
@@ -86,21 +89,20 @@ struct iso_node {
 	doff_t	i_diroff;	/* offset in dir, where we found last entry */
 	doff_t	i_offset;	/* offset of free space in directory */
 	ino_t	i_ino;		/* inode number of found directory */
-	pid_t	i_lockholder, i_lockwaiter;
+	struct  lock i_lock;    /* node lock */
 
 	long iso_extent;	/* extent of file */
 	long i_size;
 	long iso_start;		/* actual start of data of file (may be different */
 				/* from iso_extent, if file has extended attributes) */
 	ISO_RRIP_INODE  inode;
+	struct cluster_info i_ci; 
 };
 
 #define	i_forw		i_chain[0]
 #define	i_back		i_chain[1]
 
 /* flags */
-#define	IN_LOCKED	0x0001		/* inode is locked */
-#define	IN_WANTED	0x0002		/* some process waiting on lock */
 #define	IN_ACCESS	0x0020		/* inode access time to be updated */
 
 #define VTOI(vp) ((struct iso_node *)(vp)->v_data)
@@ -109,41 +111,47 @@ struct iso_node {
 /*
  * Prototypes for ISOFS vnode operations
  */
-int cd9660_lookup __P((struct vop_lookup_args *));
-int cd9660_open __P((struct vop_open_args *));
-int cd9660_close __P((struct vop_close_args *));
-int cd9660_access __P((struct vop_access_args *));
-int cd9660_getattr __P((struct vop_getattr_args *));
-int cd9660_read __P((struct vop_read_args *));
-int cd9660_ioctl __P((struct vop_ioctl_args *));
-int cd9660_select __P((struct vop_select_args *));
-int cd9660_mmap __P((struct vop_mmap_args *));
-int cd9660_seek __P((struct vop_seek_args *));
-int cd9660_readdir __P((struct vop_readdir_args *));
-int cd9660_readlink __P((struct vop_readlink_args *));
-int cd9660_abortop __P((struct vop_abortop_args *));
-int cd9660_inactive __P((struct vop_inactive_args *));
-int cd9660_reclaim __P((struct vop_reclaim_args *));
-int cd9660_bmap __P((struct vop_bmap_args *));
-int cd9660_lock __P((struct vop_lock_args *));
-int cd9660_unlock __P((struct vop_unlock_args *));
-int cd9660_strategy __P((struct vop_strategy_args *));
-int cd9660_print __P((struct vop_print_args *));
-int cd9660_islocked __P((struct vop_islocked_args *));
-int cd9660_pathconf __P((struct vop_pathconf_args *));
-int cd9660_blkatoff __P((struct vop_blkatoff_args *));
+int	cd9660_lookup(void *);
+int	cd9660_open(void *);
+int	cd9660_close(void *);
+int	cd9660_access(void *);
+int	cd9660_getattr(void *);
+int	cd9660_setattr(void *);
+int	cd9660_read(void *);
+int	cd9660_ioctl(void *);
+int	cd9660_select(void *);
+int	cd9660_mmap(void *);
+int	cd9660_seek(void *);
+int	cd9660_readdir(void *);
+int	cd9660_readlink(void *);
+int	cd9660_abortop(void *);
+int	cd9660_inactive(void *);
+int	cd9660_reclaim(void *);
+int	cd9660_link(void *);
+int	cd9660_symlink(void *);
+int	cd9660_bmap(void *);
+int	cd9660_lock(void *);
+int	cd9660_unlock(void *);
+int	cd9660_strategy(void *);
+int	cd9660_print(void *);
+int	cd9660_islocked(void *);
+int	cd9660_pathconf(void *);
 
-void cd9660_defattr __P((struct iso_directory_record *,
-			struct iso_node *, struct buf *));
-void cd9660_deftstamp __P((struct iso_directory_record *,
-			struct iso_node *, struct buf *));
-struct vnode *cd9660_ihashget __P((dev_t, ino_t));
-void cd9660_ihashins __P((struct iso_node *));
-void cd9660_ihashrem __P((struct iso_node *));
-int cd9660_tstamp_conv7 __P((u_char *, struct timespec *));
-int cd9660_tstamp_conv17 __P((u_char *, struct timespec *));
-ino_t isodirino __P((struct iso_directory_record *, struct iso_mnt *));
+int	cd9660_bufatoff(struct iso_node *, off_t, char **, struct buf **);
+
+void	cd9660_defattr(struct iso_directory_record *, struct iso_node *,
+    struct buf *);
+void	cd9660_deftstamp(struct iso_directory_record *, struct iso_node *,
+    struct buf *);
+struct	vnode *cd9660_ihashget(dev_t, ino_t);
+int	cd9660_ihashins(struct iso_node *);
+void	cd9660_ihashrem(struct iso_node *);
+int	cd9660_tstamp_conv7(u_char *, struct timespec *);
+int	cd9660_tstamp_conv17(u_char *, struct timespec *);
+int	cd9660_vget_internal(struct mount *, ino_t, struct vnode **, int,
+    struct iso_directory_record *);
+ino_t	isodirino(struct iso_directory_record *, struct iso_mnt *);
 #ifdef	ISODEVMAP
-struct iso_dnode *iso_dmap __P((dev_t, ino_t, int));
-void iso_dunmap __P((dev_t));
+struct	iso_dnode *iso_dmap(dev_t, ino_t, int);
+void	iso_dunmap(dev_t);
 #endif

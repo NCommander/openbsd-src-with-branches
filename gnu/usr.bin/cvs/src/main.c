@@ -41,6 +41,7 @@ int really_quiet = 0;
 int quiet = 0;
 int trace = 0;
 int noexec = 0;
+int readonlyfs = 0;
 int logoff = 0;
 
 /* Set if we should be writing CVSADM directories at top level.  At
@@ -49,6 +50,7 @@ int logoff = 0;
 int top_level_admin = 0;
 
 mode_t cvsumask = UMASK_DFLT;
+char *RCS_citag = NULL;
 
 char *CurDir;
 
@@ -251,6 +253,7 @@ static const char *const opt_usage[] =
     "    -n           Do not execute anything that will change the disk.\n",
     "    -t           Show trace of program execution -- try with -n.\n",
     "    -v           CVS version and copyright.\n",
+    "    -R           Read-only repository.\n",
     "    -T tmpdir    Use 'tmpdir' for temporary files.\n",
     "    -e editor    Use 'editor' for editing log information.\n",
     "    -d CVS_root  Overrides $CVSROOT as the root of the CVS tree.\n",
@@ -405,7 +408,7 @@ main (argc, argv)
     int help = 0;		/* Has the user asked for help?  This
 				   lets us support the `cvs -H cmd'
 				   convention to give help for cmd. */
-    static const char short_options[] = "+Qqrwtnlvb:T:e:d:Hfz:s:xa";
+    static const char short_options[] = "+Qqrwtnlvb:T:e:d:Hfz:s:xaR";
     static struct option long_options[] =
     {
         {"help", 0, NULL, 'H'},
@@ -468,6 +471,10 @@ main (argc, argv)
     }
     if (getenv (CVSREAD_ENV) != NULL)
 	cvswrite = 0;
+    if (getenv (CVSREADONLYFS_ENV)) {
+	readonlyfs = 1;
+	logoff = 1;
+    }
 
     /* Set this to 0 to force getopt initialization.  getopt() sets
        this to 1 internally.  */
@@ -537,6 +544,10 @@ main (argc, argv)
 		noexec = 1;
 	    case 'l':			/* Fall through */
 		logoff = 1;
+		break;
+	    case 'R':
+		logoff = 1;
+		readonlyfs = 1;
 		break;
 	    case 'v':
 		(void) fputs ("\n", stdout);
@@ -912,9 +923,9 @@ Copyright (c) 1989-2001 Brian Berliner, david d `zoo' zuhn, \n\
 
 		    path = xmalloc (strlen (current_parsed_root->directory)
 				    + sizeof (CVSROOTADM)
-				    + 2);
+				    + 20);
 		    (void) sprintf (path, "%s/%s", current_parsed_root->directory, CVSROOTADM);
-		    if (!isaccessible (path, R_OK | X_OK))
+		    if (readonlyfs == 0 && !isaccessible (path, R_OK | X_OK))
 		    {
 			save_errno = errno;
 			/* If this is "cvs init", the root need not exist yet.  */
@@ -1150,5 +1161,5 @@ usage (cpp)
     (void) fprintf (stderr, *cpp++, program_name, command_name);
     for (; *cpp; cpp++)
 	(void) fprintf (stderr, *cpp);
-    error_exit ();
+    error_exit();
 }

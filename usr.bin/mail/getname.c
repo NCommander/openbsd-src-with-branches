@@ -1,3 +1,6 @@
+/*	$OpenBSD: getname.c,v 1.4 1997/07/14 00:24:27 millert Exp $	*/
+/*	$NetBSD: getname.c,v 1.4 1996/06/08 19:48:23 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)getname.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: getname.c,v 1.3 1994/06/29 05:09:24 deraadt Exp $";
+#if 0
+static const char sccsid[] = "@(#)getname.c	8.1 (Berkeley) 6/6/93";
+#else
+static const char rcsid[] = "$OpenBSD: getname.c,v 1.4 1997/07/14 00:24:27 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -43,31 +49,28 @@ static char rcsid[] = "$Id: getname.c,v 1.3 1994/06/29 05:09:24 deraadt Exp $";
 /* Getname / getuserid for those with hashed passwd data base). */
 
 /*
- * Search the passwd file for a uid.  Return name through ref parameter
- * if found, indicating success with 0 return.  Return -1 on error.
+ * Search the passwd file for a uid.  Return name on success, NULL on failure
  */
 char *
-getname(uid)
-	int uid;
+getname(uid_t uid)
 {
 	struct passwd *pw;
 
 	if ((pw = getpwuid(uid)) == NULL)
-		return NOSTR;
-	return pw->pw_name;
+		return(NULL);
+	return(pw->pw_name);
 }
 
 /*
  * Convert the passed name to a user id and return it.  Return -1
  * on error.
  */
-int
-getuserid(name)
-	char name[];
+uid_t
+getuserid(char *name)
 {
 	struct passwd *pw;
 
 	if ((pw = getpwnam(name)) == NULL)
-		return -1;
-	return pw->pw_uid;
+		return(UID_MAX);
+	return(pw->pw_uid);
 }

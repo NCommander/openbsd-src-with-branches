@@ -1,3 +1,5 @@
+/*	$OpenBSD: common.c,v 1.15 2002/02/16 21:28:03 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,14 +39,20 @@
  */
 
 #ifndef lint
-static char sccsid[] = "@(#)common.c	8.2 (Berkeley) 1/21/94";
+#if 0
+static const char sccsid[] = "@(#)common.c	8.5 (Berkeley) 4/28/95";
+#else
+static const char rcsid[] = "$OpenBSD: common.c,v 1.15 2002/02/16 21:28:03 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 
 #include <dirent.h>
@@ -53,6 +61,7 @@ static char sccsid[] = "@(#)common.c	8.2 (Berkeley) 1/21/94";
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include "lp.h"
 #include "pathnames.h"
 
@@ -104,30 +113,31 @@ long	 XS;		/* flags to set for local mode */
 
 char	line[BUFSIZ];
 char	*bp;		/* pointer into printcap buffer. */
-char	*name;		/* program name */
 char	*printer;	/* printer name */
 			/* host machine name */
 char	host[MAXHOSTNAMELEN];
 char	*from = host;	/* client's machine name */
-int	sendtorem;	/* are we sending to a remote? */
+int	remote;		/* true if sending files to a remote host */
 char	*printcapdb[2] = { _PATH_PRINTCAP, 0 };
 
 extern uid_t	uid, euid;
 
-static int compar __P((const void *, const void *));
+static int compar(const void *, const void *);
 
 /*
- * Create a connection to the remote printer server.
+ * Create a TCP connection to host "rhost" at port "rport".
+ * If rport == 0, then use the printer service port.
  * Most of this code comes from rcmd.c.
  */
 int
-getport(rhost)
+getport(rhost, rport)
 	char *rhost;
+	int rport;
 {
 	struct hostent *hp;
 	struct servent *sp;
 	struct sockaddr_in sin;
-	int s, timo = 1, lport = IPPORT_RESERVED - 1;
+	int s, timo = 1, on = 1, lport = IPPORT_RESERVED - 1;
 	int err;
 
 	/*
@@ -135,30 +145,53 @@ getport(rhost)
 	 */
 	if (rhost == NULL)
 		fatal("no remote host to connect to");
-	hp = gethostbyname(rhost);
-	if (hp == NULL)
-		fatal("unknown host %s", rhost);
-	sp = getservbyname("printer", "tcp");
-	if (sp == NULL)
-		fatal("printer/tcp: unknown service");
 	bzero((char *)&sin, sizeof(sin));
-	bcopy(hp->h_addr, (caddr_t)&sin.sin_addr, hp->h_length);
-	sin.sin_family = hp->h_addrtype;
-	sin.sin_port = sp->s_port;
+	if (inet_aton(rhost, &sin.sin_addr) == 1)
+		sin.sin_family = AF_INET;
+	else {
+		siginterrupt(SIGINT, 1);
+		hp = gethostbyname(rhost);
+		if (hp == NULL) {
+			if (errno == EINTR && gotintr) {
+				siginterrupt(SIGINT, 0);
+				return (-1);
+			}
+			siginterrupt(SIGINT, 0);
+			fatal("unknown host %s", rhost);
+		}
+		siginterrupt(SIGINT, 0);
+		bcopy(hp->h_addr, (caddr_t)&sin.sin_addr, hp->h_length);
+		sin.sin_family = hp->h_addrtype;
+	}
+	if (rport == 0) {
+		sp = getservbyname("printer", "tcp");
+		if (sp == NULL)
+			fatal("printer/tcp: unknown service");
+		sin.sin_port = sp->s_port;
+	} else
+		sin.sin_port = htons(rport);
 
 	/*
 	 * Try connecting to the server.
 	 */
 retry:
 	seteuid(euid);
+	siginterrupt(SIGINT, 1);
 	s = rresvport(&lport);
+	siginterrupt(SIGINT, 0);
 	seteuid(uid);
 	if (s < 0)
 		return(-1);
+	siginterrupt(SIGINT, 1);
 	if (connect(s, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		err = errno;
 		(void) close(s);
+		siginterrupt(SIGINT, 0);
 		errno = err;
+		if (errno == EINTR && gotintr) {
+			close(s);
+			return (-1);
+		}
 		if (errno == EADDRINUSE) {
 			lport--;
 			goto retry;
@@ -170,6 +203,10 @@ retry:
 		}
 		return(-1);
 	}
+		siginterrupt(SIGINT, 0);
+	
+	/* Don't bother if we get an error here.  */
+	setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, (char *)&on, sizeof on);
 	return(s);
 }
 
@@ -182,18 +219,18 @@ int
 getline(cfp)
 	FILE *cfp;
 {
-	register int linel = 0;
-	register char *lp = line;
-	register c;
+	int linel = 0;
+	char *lp = line;
+	int c;
 
-	while ((c = getc(cfp)) != '\n') {
+	while ((c = getc(cfp)) != '\n' && linel+1<sizeof(line)) {
 		if (c == EOF)
 			return(0);
 		if (c == '\t') {
 			do {
 				*lp++ = ' ';
 				linel++;
-			} while ((linel & 07) != 0);
+			} while ((linel & 07) != 0 && linel+1<sizeof(line));
 			continue;
 		}
 		*lp++ = c;
@@ -212,19 +249,21 @@ int
 getq(namelist)
 	struct queue *(*namelist[]);
 {
-	register struct dirent *d;
-	register struct queue *q, **queue;
-	register int nitems;
+	struct dirent *d;
+	struct queue *q, **queue;
+	int nitems;
 	struct stat stbuf;
 	DIR *dirp;
 	int arraysz;
+	
 
 	seteuid(euid);
-	if ((dirp = opendir(SD)) == NULL)
+	dirp = opendir(SD);
+	seteuid(uid);
+	if (dirp== NULL)
 		return(-1);
 	if (fstat(dirp->dd_fd, &stbuf) < 0)
 		goto errdone;
-	seteuid(uid);
 
 	/*
 	 * Estimate the array size by taking the size of the directory file
@@ -240,8 +279,10 @@ getq(namelist)
 		if (d->d_name[0] != 'c' || d->d_name[1] != 'f')
 			continue;	/* daemon control files only */
 		seteuid(euid);
-		if (stat(d->d_name, &stbuf) < 0)
+		if (stat(d->d_name, &stbuf) < 0) {
+			seteuid(uid);
 			continue;	/* Doesn't exist */
+		}
 		seteuid(uid);
 		q = (struct queue *)malloc(sizeof(time_t)+strlen(d->d_name)+1);
 		if (q == NULL)
@@ -253,8 +294,9 @@ getq(namelist)
 		 * realloc the maximum size.
 		 */
 		if (++nitems > arraysz) {
+			arraysz *= 2;
 			queue = (struct queue **)realloc((char *)queue,
-				(stbuf.st_size/12) * sizeof(struct queue *));
+				arraysz * sizeof(struct queue *));
 			if (queue == NULL)
 				goto errdone;
 		}
@@ -293,21 +335,30 @@ char *
 checkremote()
 {
 	char name[MAXHOSTNAMELEN];
-	register struct hostent *hp;
+	struct hostent *hp;
 	static char errbuf[128];
+	char *rp, *rp_b;
 
-	sendtorem = 0;	/* assume printer is local */
-	if (RM != (char *)NULL) {
+	remote = 0;	/* assume printer is local */
+	if (RM != NULL) {
 		/* get the official name of the local host */
 		gethostname(name, sizeof(name));
 		name[sizeof(name)-1] = '\0';
+		siginterrupt(SIGINT, 1);
 		hp = gethostbyname(name);
 		if (hp == (struct hostent *) NULL) {
-		    (void) snprintf(errbuf, sizeof(errbuf),
-			"unable to get official name for local machine %s",
-			name);
-		    return errbuf;
-		} else (void) strcpy(name, hp->h_name);
+			if (errno == EINTR && gotintr) {
+				siginterrupt(SIGINT, 0);
+				return NULL;
+			}
+			siginterrupt(SIGINT, 0);
+			(void) snprintf(errbuf, sizeof(errbuf),
+			    "unable to get official name for local machine %s",
+			    name);
+			return errbuf;
+		} else
+			strlcpy(name, hp->h_name, sizeof name);
+		siginterrupt(SIGINT, 0);
 
 		/* get the official name of RM */
 		hp = gethostbyname(RM);
@@ -322,36 +373,49 @@ checkremote()
 		 * if the two hosts are not the same,
 		 * then the printer must be remote.
 		 */
-		if (strcmp(name, hp->h_name) != 0)
-			sendtorem = 1;
+		if (strcasecmp(name, hp->h_name) != 0)
+			remote = 1;
+		else if (cgetstr(bp, "rp", &rp) > 0) {
+			if (cgetent(&rp_b, printcapdb, rp) == 0) {
+				if (cgetmatch(rp_b, printer) != 0)
+					remote = 1;
+				free(rp_b);
+			} else {
+				(void) snprintf(errbuf, sizeof(errbuf),
+					"can't find (local) remote printer %s",
+					rp);
+					free(rp);
+					return errbuf;
+			}
+			free(rp);
+		}
 	}
-	return (char *)0;
+	return NULL;
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+/* sleep n milliseconds */
+void
+delay(n)
+{
+	struct timeval tdelay;
+
+	if (n <= 0 || n > 10000)
+		fatal("unreasonable delay period (%d)", n);
+	tdelay.tv_sec = n / 1000;
+	tdelay.tv_usec = n * 1000 % 1000000;
+	(void) select(0, (fd_set *)0, (fd_set *)0, (fd_set *)0, &tdelay);
+}
 
 void
-#if __STDC__
 fatal(const char *msg, ...)
-#else
-fatal(msg, va_alist)
-	char *msg;
-        va_dcl
-#endif
 {
+	extern char *__progname;
 	va_list ap;
-#if __STDC__
+
 	va_start(ap, msg);
-#else
-	va_start(ap);
-#endif
 	if (from != host)
 		(void)printf("%s: ", host);
-	(void)printf("%s: ", name);
+	(void)printf("%s: ", __progname);
 	if (printer)
 		(void)printf("%s: ", printer);
 	(void)vprintf(msg, ap);

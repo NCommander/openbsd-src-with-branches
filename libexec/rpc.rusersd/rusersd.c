@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  *  Copyright (c) 1993 John Brezak
  *  All rights reserved.
@@ -27,15 +29,20 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rusersd.c,v 1.8 1995/01/13 19:59:15 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: rusersd.c,v 1.4 2001/01/17 19:23:27 deraadt Exp $";
 #endif /* not lint */
 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <stdio.h>
-#include <rpc/rpc.h>
 #include <signal.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <syslog.h>
+#include <rpc/rpc.h>
 #include <rpcsvc/rusers.h>	/* New version */
 #include <rpcsvc/rnusers.h>	/* Old version */
+#include <rpc/pmap_clnt.h>
 
 extern void rusers_service();
 
@@ -44,11 +51,13 @@ int from_inetd = 1;
 void
 cleanup()
 {
-	(void) pmap_unset(RUSERSPROG, RUSERSVERS_3);
+	(void) pmap_unset(RUSERSPROG, RUSERSVERS_3);	/* XXX signal races */
 	(void) pmap_unset(RUSERSPROG, RUSERSVERS_IDLE);
-	exit(0);
+	(void) pmap_unset(RUSERSPROG, RUSERSVERS_ORIG);
+	_exit(0);
 }
 
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
@@ -74,6 +83,7 @@ main(argc, argv)
 
 		(void) pmap_unset(RUSERSPROG, RUSERSVERS_3);
 		(void) pmap_unset(RUSERSPROG, RUSERSVERS_IDLE);
+		(void) pmap_unset(RUSERSPROG, RUSERSVERS_ORIG);
 
 		(void) signal(SIGINT, cleanup);
 		(void) signal(SIGTERM, cleanup);
@@ -93,6 +103,10 @@ main(argc, argv)
 	}
 	if (!svc_register(transp, RUSERSPROG, RUSERSVERS_IDLE, rusers_service, proto)) {
 		syslog(LOG_ERR, "unable to register (RUSERSPROG, RUSERSVERS_IDLE, %s).", proto?"udp":"(inetd)");
+		exit(1);
+	}
+	if (!svc_register(transp, RUSERSPROG, RUSERSVERS_ORIG, rusers_service, proto)) {
+		syslog(LOG_ERR, "unable to register (RUSERSPROG, RUSERSVERS_ORIG, %s).", proto?"udp":"(inetd)");
 		exit(1);
 	}
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: fbio.h,v 1.3 1994/11/20 20:53:03 deraadt Exp $ */
+/*	$OpenBSD: fbio.h,v 1.3 1997/08/08 08:26:17 downsj Exp $	*/
+/*	$NetBSD: fbio.h,v 1.5 1996/09/30 23:45:11 abrown Exp $ */
 
 /*
  * Copyright (c) 1992 Regents of the University of California.
@@ -66,10 +67,12 @@
 #define	FBTYPE_RESERVED5	15	/* reserved, do not use */
 #define	FBTYPE_RESERVED4	16	/* reserved, do not use */
 #define	FBTYPE_RESERVED3	17	/* reserved, do not use */
-#define	FBTYPE_RESERVED2	18	/* reserved, do not use */
-#define	FBTYPE_RESERVED1	19	/* reserved, do not use */
+#define FBTYPE_SUNGP3           17      /* cg12 running gpsi microcode */
+#define FBTYPE_SUNGT            18      /* gt graphics accelerator */
+#define FBTYPE_SUNLEO           19      /* zx graphics accelerator */
+#define FBTYPE_MDICOLOR         20      /* cgfourteen framebuffer */
 
-#define	FBTYPE_LASTPLUSONE	20	/* max number of fbs (change as add) */
+#define	FBTYPE_LASTPLUSONE	21	/* max number of fbs (change as add) */
 
 /*
  * Frame buffer descriptor as returned by FBIOGTYPE.
@@ -104,8 +107,8 @@ struct fbinfo {
  * Color map I/O.
  */
 struct fbcmap {
-	int	index;		/* first element (0 origin) */
-	int	count;		/* number of elements */
+	u_int	index;		/* first element (0 origin) */
+	u_int	count;		/* number of elements */
 	u_char	*red;		/* red color map elements */
 	u_char	*green;		/* green color map elements */
 	u_char	*blue;		/* blue color map elements */
@@ -154,7 +157,7 @@ struct fbcurpos {
 	short x;
 	short y;
 };
- 
+
 #define FB_CUR_SETCUR   0x01
 #define FB_CUR_SETPOS   0x02
 #define FB_CUR_SETHOT   0x04
@@ -172,14 +175,14 @@ struct fbcursor {
 	char *image;		/* cursor's image bits */
 	char *mask;		/* cursor's mask bits */
 };
- 
+
 /* set/get cursor attributes/shape */
 #define FBIOSCURSOR	_IOW('F', 24, struct fbcursor)
 #define FBIOGCURSOR	_IOWR('F', 25, struct fbcursor)
- 
+
 /* set/get cursor position */
 #define FBIOSCURPOS	_IOW('F', 26, struct fbcurpos)
 #define FBIOGCURPOS	_IOW('F', 27, struct fbcurpos)
- 
+
 /* get max cursor size */
 #define FBIOGCURMAX	_IOR('F', 28, struct fbcurpos)

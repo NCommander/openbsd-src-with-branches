@@ -1,3 +1,4 @@
+/*	$OpenBSD: test.c,v 1.5 1997/09/01 18:30:38 deraadt Exp $	*/
 /*	$NetBSD: test.c,v 1.15 1995/03/21 07:04:06 cgd Exp $	*/
 
 /*
@@ -11,7 +12,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: test.c,v 1.15 1995/03/21 07:04:06 cgd Exp $";
+static char rcsid[] = "$OpenBSD: test.c,v 1.5 1997/09/01 18:30:38 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -180,7 +181,7 @@ main(argc, argv)
 		break;
 	case 4:
 		if (argv[1][0] != '!' || argv[1][1] != '\0') {
-			if (t_lex(argv[2]), 
+			if (t_lex(argv[2]),
 			    t_wp_op && t_wp_op->op_type == BINOP) {
 				t_wp = &argv[1];
 				return (binop() == 0);
@@ -189,7 +190,7 @@ main(argc, argv)
 		break;
 	case 5:
 		if (argv[1][0] == '!' && argv[1][1] == '\0') {
-			if (t_lex(argv[3]), 
+			if (t_lex(argv[3]),
 			    t_wp_op && t_wp_op->op_type == BINOP) {
 				t_wp = &argv[2];
 				return !(binop() == 0);
@@ -207,7 +208,7 @@ main(argc, argv)
 	return res;
 }
 
-static void
+static __dead void
 syntax(op, msg)
 	char	*op;
 	char	*msg;
@@ -285,7 +286,7 @@ primary(n)
 
 	if (t_lex(t_wp[1]), t_wp_op && t_wp_op->op_type == BINOP) {
 		return binop();
-	}	  
+	}
 
 	return strlen(*t_wp) > 0;
 }
@@ -293,16 +294,16 @@ primary(n)
 static int
 binop()
 {
-	register const char *opnd1, *opnd2;
+	const char *opnd1, *opnd2;
 	struct t_op const *op;
 
 	opnd1 = *t_wp;
 	(void) t_lex(*++t_wp);
 	op = t_wp_op;
 
-	if ((opnd2 = *++t_wp) == (char *)0)
+	if ((opnd2 = *++t_wp) == NULL)
 		syntax(op->op_text, "argument expected");
-		
+
 	switch (op->op_num) {
 	case STREQ:
 		return strcmp(opnd1, opnd2) == 0;
@@ -352,7 +353,7 @@ filstat(nm, mode)
 		return 0;
 	}
 
-	if (stat(nm, &s) != 0) 
+	if (stat(nm, &s) != 0)
 		return 0;
 
 	switch (mode) {
@@ -418,12 +419,12 @@ filebit:
 
 static enum token
 t_lex(s)
-	register char *s;
+	char *s;
 {
-	register struct t_op const *op = ops;
+	struct t_op const *op = ops;
 
 	if (s == 0) {
-		t_wp_op = (struct t_op *)0;
+		t_wp_op = NULL;
 		return EOI;
 	}
 	while (op->op_text) {
@@ -433,7 +434,7 @@ t_lex(s)
 		}
 		op++;
 	}
-	t_wp_op = (struct t_op *)0;
+	t_wp_op = NULL;
 	return OPERAND;
 }
 
@@ -453,7 +454,7 @@ getn(s)
 
 	while (isspace(*p))
 	  p++;
-	
+
 	if (*p)
 	  errx(2, "%s: bad number", s);
 

@@ -1,5 +1,3 @@
-/*	$NetBSD: getlogin.c,v 1.6 1995/02/27 04:12:47 cgd Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getlogin.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getlogin.c,v 1.6 1995/02/27 04:12:47 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getlogin.c,v 1.6 2002/01/23 21:02:41 fgsch Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -47,18 +41,70 @@ static char rcsid[] = "$NetBSD: getlogin.c,v 1.6 1995/02/27 04:12:47 cgd Exp $";
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
+#include "thread_private.h"
 
-int	__logname_valid;		/* known to setlogin() */
+_THREAD_PRIVATE_MUTEX(logname);
+static int  logname_valid = 0;
+static char logname[MAXLOGNAME + 1];
+
+int	_getlogin(char *, size_t);
+int	_setlogin(const char *);
 
 char *
 getlogin()
 {
-	static char logname[MAXLOGNAME + 1];
+	_THREAD_PRIVATE_KEY(getlogin);
+	char * name = (char *)_THREAD_PRIVATE(getlogin, logname, NULL);
 
-	if (__logname_valid == 0) {
-		if (_getlogin(logname, sizeof(logname) - 1) < 0)
-			return ((char *)NULL);
-		__logname_valid = 1;
+	if ((errno = getlogin_r(name, sizeof logname)) != 0)
+		return NULL;
+	if (*name == '\0') {
+		errno = ENOENT;  /* well? */
+		return NULL;
 	}
-	return (*logname ? logname : (char *)NULL);
+	return name;
+}
+
+int
+getlogin_r(name, namelen)
+	char *name;
+	size_t namelen;
+{
+	int logname_size;
+
+	if (name == NULL)
+		return EFAULT;
+
+	_THREAD_PRIVATE_MUTEX_LOCK(logname);
+	if (!logname_valid) {
+		if (_getlogin(logname, sizeof(logname) - 1) < 0) {
+			_THREAD_PRIVATE_MUTEX_UNLOCK(logname);
+			return errno;
+		}
+		logname_valid = 1;
+		logname[MAXLOGNAME] = '\0';	/* paranoia */
+	}
+	logname_size = strlen(logname) + 1;
+	if (namelen < logname_size) {
+		_THREAD_PRIVATE_MUTEX_UNLOCK(logname);
+		return ERANGE;
+	}
+	memcpy(name, logname, logname_size);
+	_THREAD_PRIVATE_MUTEX_UNLOCK(logname);
+	return 0;
+}
+
+int
+setlogin(name)
+	const char *name;
+{
+	int ret;
+
+	_THREAD_PRIVATE_MUTEX_LOCK(logname);
+	ret = _setlogin(name);
+	if (ret == 0)
+		logname_valid = 0;
+	_THREAD_PRIVATE_MUTEX_UNLOCK(logname);
+	return ret;
 }

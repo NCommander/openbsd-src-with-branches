@@ -1,3 +1,4 @@
+/*	$OpenBSD: cal.c,v 1.6 1998/04/25 01:09:15 deraadt Exp $	*/
 /*	$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cal.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $";
+static char rcsid[] = "$OpenBSD: cal.c,v 1.6 1998/04/25 01:09:15 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,6 +59,7 @@ static char rcsid[] = "$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <tzfile.h>
 #include <unistd.h>
 
 #define	THURSDAY		4		/* for reformation */
@@ -102,13 +104,13 @@ char *month_names[12] = {
 	"July", "August", "September", "October", "November", "December",
 };
 
-char *day_headings = " S  M Tu  W Th  F  S";
-char *j_day_headings = "  S   M  Tu   W  Th   F   S";
+char *day_headings = "Su Mo Tu We Th Fr Sa";
+char *j_day_headings = " Su  Mo  Tu  We  Th  Fr  Sa";
 
 /* leap year -- account for gregorian reformation in 1752 */
 #define	leap_year(yr) \
 	((yr) <= 1752 ? !((yr) % 4) : \
-	!((yr) % 4) && ((yr) % 100) || !((yr) % 400))
+	(!((yr) % 4) && ((yr) % 100)) || !((yr) % 400))
 
 /* number of centuries since 1700, not inclusive */
 #define	centuries_since_1700(yr) \
@@ -124,16 +126,16 @@ char *j_day_headings = "  S   M  Tu   W  Th   F   S";
 
 int julian;
 
-void	ascii_day __P((char *, int));
-void	center __P((char *, int, int));
-void	day_array __P((int, int, int *));
-int	day_in_week __P((int, int, int));
-int	day_in_year __P((int, int, int));
-void	j_yearly __P((int));
-void	monthly __P((int, int));
-void	trim_trailing_spaces __P((char *));
-void	usage __P((void));
-void	yearly __P((int));
+void	ascii_day(char *, int);
+void	center(char *, int, int);
+void	day_array(int, int, int *);
+int	day_in_week(int, int, int);
+int	day_in_year(int, int, int);
+void	j_yearly(int);
+void	monthly(int, int);
+void	trim_trailing_spaces(char *);
+void	usage(void);
+void	yearly(int);
 
 int
 main(argc, argv)
@@ -144,8 +146,8 @@ main(argc, argv)
 	time_t now;
 	int ch, month, year, yflag;
 
-	yflag = 0;
-	while ((ch = getopt(argc, argv, "jy")) != EOF)
+	yflag = year = 0;
+	while ((ch = getopt(argc, argv, "jy")) != -1)
 		switch(ch) {
 		case 'j':
 			julian = 1;
@@ -173,7 +175,7 @@ main(argc, argv)
 	case 0:
 		(void)time(&now);
 		local_time = localtime(&now);
-		year = local_time->tm_year + 1900;
+		year = local_time->tm_year + TM_YEAR_BASE;
 		if (!yflag)
 			month = local_time->tm_mon + 1;
 		break;
@@ -375,7 +377,8 @@ ascii_day(p, day)
 		return;
 	}
 	if (julian) {
-		if (val = day / 100) {
+		val = day / 100;
+		if (val) {
 			day %= 100;
 			*p++ = val + '0';
 			display = 1;

@@ -531,7 +531,7 @@ fi
 
 
 ac_aux_dir=
-for ac_dir in $srcdir $srcdir/.. $srcdir/../..; do
+for ac_dir in ${GNUSYSTEM_AUX_DIR} $srcdir $srcdir/.. $srcdir/../..; do
   if test -f $ac_dir/install-sh; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -725,7 +725,7 @@ if (aclocal --version) < /dev/null > /dev/null 2>&1; then
    ACLOCAL=aclocal
    echo "$ac_t""found" 1>&6
 else
-   ACLOCAL="$missing_dir/missing aclocal"
+   ACLOCAL="$SHELL $missing_dir/missing aclocal"
    echo "$ac_t""missing" 1>&6
 fi
 
@@ -738,7 +738,7 @@ if (autoconf --version) < /dev/null > /dev/null 2>&1; then
    AUTOCONF=autoconf
    echo "$ac_t""found" 1>&6
 else
-   AUTOCONF="$missing_dir/missing autoconf"
+   AUTOCONF="$SHELL $missing_dir/missing autoconf"
    echo "$ac_t""missing" 1>&6
 fi
 
@@ -751,7 +751,7 @@ if (automake --version) < /dev/null > /dev/null 2>&1; then
    AUTOMAKE=automake
    echo "$ac_t""found" 1>&6
 else
-   AUTOMAKE="$missing_dir/missing automake"
+   AUTOMAKE="$SHELL $missing_dir/missing automake"
    echo "$ac_t""missing" 1>&6
 fi
 
@@ -764,7 +764,7 @@ if (autoheader --version) < /dev/null > /dev/null 2>&1; then
    AUTOHEADER=autoheader
    echo "$ac_t""found" 1>&6
 else
-   AUTOHEADER="$missing_dir/missing autoheader"
+   AUTOHEADER="$SHELL $missing_dir/missing autoheader"
    echo "$ac_t""missing" 1>&6
 fi
 
@@ -777,7 +777,7 @@ if (makeinfo --version) < /dev/null > /dev/null 2>&1; then
    MAKEINFO=makeinfo
    echo "$ac_t""found" 1>&6
 else
-   MAKEINFO="$missing_dir/missing makeinfo"
+   MAKEINFO="$SHELL $missing_dir/missing makeinfo"
    echo "$ac_t""missing" 1>&6
 fi
 
@@ -4218,7 +4218,7 @@ echo "configure:4210: checking for catalogs to be installed" >&5
      fi
 
           if test -n "$LINGUAS"; then
-       for lang in $LINGUAS; do CATALOGS="$CATALOGS $lang$CATOBJEXT"; done
+       for lang in $LINGUAS; do CATALOGS="$CATALOGS $srcdir/po/$lang$CATOBJEXT"; done
      fi
    fi
 
@@ -4284,11 +4284,11 @@ fi
 
             MKINSTALLDIRS=
    if test -n "$ac_aux_dir"; then
-     MKINSTALLDIRS="$ac_aux_dir/mkinstalldirs"
+     MKINSTALLDIRS="$SHELL $ac_aux_dir/mkinstalldirs"
    fi
-   if test -z "$MKINSTALLDIRS"; then
-     MKINSTALLDIRS="\$(top_srcdir)/mkinstalldirs"
-   fi
+#   if test -z "$MKINSTALLDIRS"; then
+#     MKINSTALLDIRS="\$(top_srcdir)/mkinstalldirs"
+#   fi
    
 
       l=

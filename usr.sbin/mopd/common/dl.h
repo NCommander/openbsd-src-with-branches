@@ -1,3 +1,5 @@
+/*	$OpenBSD: dl.h,v 1.3 2001/08/12 12:03:03 heko Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: dl.h,v 1.4 1995/10/13 19:28:38 moj Exp $
+ *	$OpenBSD: dl.h,v 1.3 2001/08/12 12:03:03 heko Exp $
  *
  */
 
@@ -37,8 +39,8 @@
 void	mopDumpDL       (/* FILE *, u_char *, int */);
 #else
 __BEGIN_DECLS
-void	mopDumpDL       __P((FILE *, u_char *, int));
+void	mopDumpDL(FILE *, u_char *, int);
 __END_DECLS
 #endif
 
-#endif _DL_H_
+#endif /* _DL_H_ */

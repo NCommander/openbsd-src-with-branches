@@ -1,3 +1,5 @@
+.\"   $OpenBSD: tftpd.8,v 1.9 2001/03/08 02:24:28 deraadt Exp $
+.\"
 .\" Copyright (c) 1983, 1991 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,11 +32,11 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)tftpd.8	6.7 (Berkeley) 5/13/91
-.\"	$Id: tftpd.8,v 1.3 1994/01/10 16:29:46 mycroft Exp $
+.\"	$OpenBSD: tftpd.8,v 1.9 2001/03/08 02:24:28 deraadt Exp $
 .\"
-.Dd May 13, 1991
+.Dd June 11, 1997
 .Dt TFTPD 8
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm tftpd
 .Nd
@@ -44,10 +46,10 @@ Trivial File Transfer Protocol server
 .Nm tftpd
 .Op Ar directory ...
 .Nm tftpd
-.Fl s
+.Op Fl cs
 .Op Ar directory
 .Sh DESCRIPTION
-.Nm Tftpd
+.Nm
 is a server which supports the
 .Tn DARPA
 Trivial File Transfer
@@ -57,8 +59,7 @@ The
 server operates
 at the port indicated in the
 .Ql tftp
-service description;
-see
+service description; see
 .Xr services 5 .
 The server is normally started by
 .Xr inetd 8 .
@@ -66,10 +67,9 @@ The server is normally started by
 The use of
 .Xr tftp 1
 does not require an account or password on the remote system.
-Due to the lack of authentication information, 
-.Nm tftpd
-will allow only publicly readable files to be
-accessed.
+Due to the lack of authentication information,
+.Nm
+will allow only publicly readable files to be accessed.
 Files may be written only if they already exist and are publicly writable.
 Note that this extends the concept of
 .Dq public
@@ -80,20 +80,37 @@ should be considered before enabling tftp service.
 The server should have the user ID with the lowest possible privilege.
 .Pp
 Access to files may be restricted by invoking
-.Nm tftpd
+.Nm
 with a list of directories by including pathnames
 as server program arguments in
 .Pa /etc/inetd.conf .
 In this case access is restricted to files whose
 names are prefixed by the one of the given directories.
 .Pp
+If the
+.Fl c
+flag is used,
+.Nm
+will allow new files to be created; otherwise uploaded files must already
+exist.
+Files are created with default permissions allowing anyone to read
+or write to them.
+.Pp
 When using the
 .Fl s
-flag with a directory name, tftpd will
+flag with a directory name,
+.Nm
+will
 .Xr chroot 2
 on startup; therefore the remote host is not expected to pass the directory
-as part of the file name to transfer.  This option is intended primarily for
+as part of the file name to transfer.
+This option is intended primarily for
 compatibility with SunOS boot ROMs which do not include a directory name.
+.Sh BUGS
+Files larger than 33488896 octets (65535 blocks) cannot be transferred
+without client and server supporting blocksize negotiation (RFC1783).
+.Pp
+Many tftp clients will not transfer files over 16744448 octets (32767 blocks).
 .Sh SEE ALSO
 .Xr tftp 1 ,
 .Xr inetd 8
@@ -105,4 +122,10 @@ command appeared in
 .Pp
 The
 .Fl s
-flag appeared in NetBSD 0.9a.
+flag appeared in
+.Nx 0.9 a.
+.Pp
+The
+.Fl c
+flag was added in
+.Ox 2.1 .

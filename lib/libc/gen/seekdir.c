@@ -1,5 +1,3 @@
-/*	$NetBSD: seekdir.c,v 1.4 1995/02/25 08:51:44 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,15 +32,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)seekdir.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: seekdir.c,v 1.4 1995/02/25 08:51:44 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: seekdir.c,v 1.3 1997/09/22 05:09:39 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <dirent.h>
+
+void __seekdir(DIR *, long);
 
 /*
  * Seek to an entry in a directory.

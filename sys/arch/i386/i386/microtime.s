@@ -1,3 +1,4 @@
+/*	$OpenBSD: microtime.s,v 1.13 1998/08/27 05:00:34 deraadt Exp $	*/
 /*	$NetBSD: microtime.s,v 1.16 1995/04/17 12:06:47 cgd Exp $	*/
 
 /*-
@@ -22,7 +23,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * IMPLIED WArRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
@@ -46,9 +47,19 @@
  */
 #ifndef HZ
 ENTRY(microtime)
+
+#if (defined(I586_CPU) || defined(I686_CPU)) && defined(NTP) 
+	movl	_pentium_mhz, %ecx
+	testl	%ecx, %ecx
+	jne	pentium_microtime
+#else
+	xorl	%ecx,%ecx
+#endif
+	movb	$(TIMER_SEL0|TIMER_LATCH),%al
+
+	pushfl
 	cli				# disable interrupts
 
-	movb	$(TIMER_SEL0|TIMER_LATCH),%al
 	outb	%al,$TIMER_MODE		# latch timer 0's counter
 
 	# Read counter value into ecx, LSB first
@@ -62,7 +73,7 @@ ENTRY(microtime)
 	# timer chip doesn't let us atomically read the current counter
 	# value and the output state (i.e., overflow state).  We have
 	# to read the ICU interrupt request register (IRR) to see if the
-	# overflow has occured.  Because we lack atomicity, we use
+	# overflow has occurred.  Because we lack atomicity, we use
 	# the (very accurate) heuristic that we do not check for
 	# overflow if the value read is close to 0.
 	# E.g., if we just checked the IRR, we might read a non-overflowing
@@ -111,10 +122,11 @@ ENTRY(microtime)
 	leal	(%edx,%eax,8),%eax	# a = 8a + d = 3433d
 	shrl	$12,%eax		# a = a/4096 = 3433d/4096
 
+common_microtime:
 	movl	_time,%edx	# get time.tv_sec
 	addl	_time+4,%eax	# add time.tv_usec
 
-	sti			# enable interrupts
+	popfl			# enable interrupts
 	
 	cmpl	$1000000,%eax	# carry in timeval?
 	jb	3f
@@ -126,4 +138,34 @@ ENTRY(microtime)
 	movl	%eax,4(%ecx)	# tvp->tv_usec = usec
 
 	ret
+
+#if defined(I586_CPU) || defined(I686_CPU)
+	.data
+	.globl	_pentium_base_tsc
+	.comm	_pentium_base_tsc,8
+	.text
+
+#if defined (NTP)
+	.align	2, 0x90
+pentium_microtime:
+	pushfl
+	cli
+	.byte	0x0f, 0x31	# RDTSC
+	subl	_pentium_base_tsc,%eax
+	sbbl	_pentium_base_tsc+4,%edx
+	/*
+	 * correct the high word first so we won't
+	 * receive a result overflow aka div/0 fault
+	 */
+	pushl	%eax
+	movl	%edx, %eax
+	shll	$16, %edx
+	divw	%cx
+	movzwl	%dx, %edx
+	popl	%eax
+	divl	%ecx
+	jmp	common_microtime
+#endif
+#endif
+
 #endif

@@ -29,7 +29,7 @@
 #include <stdio.h>
 
 // for malloc() & free()
-#if !defined(__linux__) && !defined(__unix__)
+#if !defined(__linux__) && !defined(__unix__) || defined(__OpenBSD__)
 #include <stdlib.h>
 #else
 #include <malloc.h>
@@ -240,7 +240,7 @@ get_number_argument(char *prompt, long *number, long default_value)
 long
 get_number(int first_char)
 {
-    register int c;
+    int c;
     int base;
     int digit;
     int ret_value;

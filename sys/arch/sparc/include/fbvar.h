@@ -1,4 +1,5 @@
-/*	$NetBSD: fbvar.h,v 1.5 1995/10/08 01:40:25 pk Exp $ */
+/*	$OpenBSD: fbvar.h,v 1.4 2001/11/01 12:13:46 art Exp $	*/
+/*	$NetBSD: fbvar.h,v 1.9 1997/07/07 23:31:30 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -55,11 +56,11 @@
 
 struct fbdriver {
 	/* device unblank function (force kernel output to display) */
-	void	(*fbd_unblank) __P((struct device *));
-	int	(*fbd_open) __P((dev_t, int, int, struct proc *));
-	int	(*fbd_close) __P((dev_t, int, int, struct proc *));
-	int	(*fbd_ioctl) __P((dev_t, u_long, caddr_t, int, struct proc *));
-	int	(*fbd_mmap) __P((dev_t, int, int));
+	void	(*fbd_unblank)(struct device *);
+	int	(*fbd_open)(dev_t, int, int, struct proc *);
+	int	(*fbd_close)(dev_t, int, int, struct proc *);
+	int	(*fbd_ioctl)(dev_t, u_long, caddr_t, int, struct proc *);
+	paddr_t	(*fbd_mmap)(dev_t, off_t, int);
 #ifdef notyet
 	void	(*fbd_wrrop)();		/* `write region' rasterop */
 	void	(*fbd_cprop)();		/* `copy region' rasterop */
@@ -76,14 +77,29 @@ struct fbdevice {
 	struct	fbdriver *fb_driver;	/* pointer to driver */
 	struct	device *fb_device;	/* parameter for fbd_unblank */
 
+	int	fb_flags;		/* misc. flags */
+#define	FB_FORCE	0x00000001	/* force device into /dev/fb */
+#define	FB_PFOUR	0x00010000	/* indicates fb is a pfour fb */
+#define FB_USERMASK	(FB_FORCE)	/* flags that the user can set */
+
+	volatile u_int32_t *fb_pfour;	/* pointer to pfour register */
+
 #ifdef RASTERCONSOLE
 	/* Raster console emulator state */
 	struct	rconsole fb_rcons;
 #endif
 };
 
-void	fbattach __P((struct fbdevice *));
-void	fb_setsize __P((struct fbdevice *, int, int, int, int, int));
+void	fb_attach(struct fbdevice *, int);
+void	fb_setsize(struct fbdevice *, int, int, int, int, int);
 #ifdef RASTERCONSOLE
-void	fbrcons_init __P((struct fbdevice *));
+void	fbrcons_init(struct fbdevice *);
+int	fbrcons_rows(void);
+int	fbrcons_cols(void);
+#endif
+
+#if defined(SUN4)
+int	fb_pfour_id(void *);
+int	fb_pfour_get_video(struct fbdevice *);
+void	fb_pfour_set_video(struct fbdevice *, int);
 #endif

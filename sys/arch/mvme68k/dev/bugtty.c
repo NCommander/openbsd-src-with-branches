@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: bugtty.c,v 1.5 2002/02/15 20:45:30 nordin Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -14,7 +14,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
+ *	This product includes software developed by Dale Rahn.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -47,26 +47,29 @@
 
 #include "bugtty.h"
 
-int bugttymatch __P((struct device *parent, void *self, void *aux));
-void bugttyattach __P((struct device *parent, struct device *self, void *aux));
+int bugttymatch(struct device *parent, void *self, void *aux);
+void bugttyattach(struct device *parent, struct device *self, void *aux);
 
-struct cfdriver bugttycd = {
-	NULL, "bugtty", bugttymatch, bugttyattach,
-	DV_TTY, sizeof(struct device)
+struct cfattach bugtty_ca = {
+	sizeof(struct device), bugttymatch, bugttyattach
+};
+
+struct cfdriver bugtty_cd = {
+	NULL, "bugtty", DV_TTY, 0
 };
 
 /* prototypes */
-int bugttycnprobe __P((struct consdev *cp));
-int bugttycninit __P((struct consdev *cp));
-int bugttycngetc __P((dev_t dev));
-int bugttycnputc __P((dev_t dev, char c));
+int bugttycnprobe(struct consdev *cp);
+int bugttycninit(struct consdev *cp);
+int bugttycngetc(dev_t dev);
+int bugttycnputc(dev_t dev, char c);
 
-int bugttyopen __P((dev_t dev, int flag, int mode, struct proc *p));
-int bugttyclose __P((dev_t dev, int flag, int mode, struct proc *p));
-int bugttyread __P((dev_t dev, struct uio *uio, int flag));
-int bugttywrite __P((dev_t dev, struct uio *uio, int flag));
-int bugttyioctl __P((dev_t dev, int cmd, caddr_t data, int flag, struct proc *p));
-int bugttystop __P((struct tty *tp, int flag));
+int bugttyopen(dev_t dev, int flag, int mode, struct proc *p);
+int bugttyclose(dev_t dev, int flag, int mode, struct proc *p);
+int bugttyread(dev_t dev, struct uio *uio, int flag);
+int bugttywrite(dev_t dev, struct uio *uio, int flag);
+int bugttyioctl(dev_t dev, int cmd, caddr_t data, int flag, struct proc *p);
+int bugttystop(struct tty *tp, int flag);
 
 #define DIALOUT(x) ((x) & 0x80)
 #define SWFLAGS(dev) (bugttyswflags | (DIALOUT(dev) ? TIOCFLAG_SOFTCAR : 0))
@@ -113,7 +116,7 @@ bugttyattach(parent, self, aux)
 	printf("\n");
 }
 
-void bugttyoutput __P((struct tty *tp));
+void bugttyoutput(struct tty *tp);
 
 int bugttydefaultrate = TTYDEF_SPEED;
 int bugttyswflags;
@@ -141,7 +144,7 @@ bugttymctl(dev, bits, how)
 	case DMGET:
 		break;
 	}
-	(void)splx(s);
+	splx(s);
 
 	bits = 0;
 	/* proper defaults? */
@@ -174,6 +177,7 @@ bugttyopen(dev, flag, mode, p)
 		tp = bugtty_tty[unit];
 	} else {
 		tp = bugtty_tty[unit] = ttymalloc();
+		tty_attach(tp);
 	}
 	tp->t_oproc = bugttyoutput;
 	tp->t_param = NULL;

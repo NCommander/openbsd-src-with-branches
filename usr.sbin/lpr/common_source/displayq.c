@@ -1,3 +1,5 @@
+/*	$OpenBSD: displayq.c,v 1.14 2001/08/30 17:38:13 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,14 +34,20 @@
  */
 
 #ifndef lint
-static char sccsid[] = "@(#)displayq.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static const char sccsid[] = "@(#)displayq.c	8.4 (Berkeley) 4/28/95";
+#else
+static const char rcsid[] = "$OpenBSD: displayq.c,v 1.14 2001/08/30 17:38:13 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 
 #include <signal.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -67,9 +75,10 @@ extern int	users;		/* # of users in user array */
 
 extern uid_t	uid, euid;
 
+static int	termwidth;
 static int	col;		/* column on screen */
-static char	current[40];	/* current file being printed */
-static char	file[132];	/* print file name */
+static char	current[NAME_MAX]; /* current file being printed */
+static char	file[NAME_MAX];	/* print file name */
 static int	first;		/* first file in ``files'' column? */
 static int	garbage;	/* # of garbage cf files */
 static int	lflag;		/* long output option */
@@ -86,12 +95,22 @@ void
 displayq(format)
 	int format;
 {
-	register struct queue *q;
-	register int i, nitems, fd, ret;
-	register char	*cp;
+	struct queue *q;
+	int i, nitems, fd, ret, len;
+	char *cp, *ecp, *p;
 	struct queue **queue;
+	struct winsize win;
 	struct stat statb;
 	FILE *fp;
+
+	termwidth = 80;
+	if (isatty(STDOUT_FILENO)) {
+		if ((p = getenv("COLUMNS")) != NULL)
+			termwidth = atoi(p);
+		else if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) == 0 &&
+		    win.ws_col > 0)
+			termwidth = win.ws_col;
+	}
 
 	lflag = format;
 	totsize = 0;
@@ -113,7 +132,7 @@ displayq(format)
 	if (cgetstr(bp, "st", &ST) < 0)
 		ST = DEFSTAT;
 	cgetstr(bp, "rm", &RM);
-	if (cp = checkremote())
+	if ((cp = checkremote()))
 		printf("Warning: %s\n", cp);
 
 	/*
@@ -131,7 +150,7 @@ displayq(format)
 	seteuid(uid);
 	if (ret >= 0) {
 		if (statb.st_mode & 0100) {
-			if (sendtorem)
+			if (remote)
 				printf("%s: ", host);
 			printf("Warning: %s is down: ", printer);
 			seteuid(euid);
@@ -146,7 +165,7 @@ displayq(format)
 				putchar('\n');
 		}
 		if (statb.st_mode & 010) {
-			if (sendtorem)
+			if (remote)
 				printf("%s: ", host);
 			printf("Warning: %s queue is turned off\n", printer);
 		}
@@ -157,30 +176,39 @@ displayq(format)
 		fp = fopen(LO, "r");
 		seteuid(uid);
 		if (fp == NULL)
-			warn();
+			nodaemon();
 		else {
 			/* get daemon pid */
 			cp = current;
-			while ((*cp = getc(fp)) != EOF && *cp != '\n')
-				cp++;
+			ecp = cp + sizeof(current) - 1;
+			while ((i = getc(fp)) != EOF && i != '\n') {
+				if (cp < ecp)
+					*cp++ = i;
+			}
 			*cp = '\0';
 			i = atoi(current);
 			if (i <= 0) {
+				ret = -1;
+			} else {
 				seteuid(euid);
 				ret = kill(i, 0);
 				seteuid(uid);
 			}
-				ret = -1;
 			if (ret < 0) {
+				nodaemon();
+			} else {
 				/* read current file name */
 				cp = current;
-				while ((*cp = getc(fp)) != EOF && *cp != '\n')
-					cp++;
+		    		ecp = cp + sizeof(current) - 1;
+				while ((i = getc(fp)) != EOF && i != '\n') {
+					if (cp < ecp)
+						*cp++ = i;
+				}
 				*cp = '\0';
 				/*
 				 * Print the status file.
 				 */
-				if (sendtorem)
+				if (remote)
 					printf("%s: ", host);
 				seteuid(euid);
 				fd = open(ST, O_RDONLY);
@@ -208,7 +236,7 @@ displayq(format)
 		}
 		free(queue);
 	}
-	if (!sendtorem) {
+	if (!remote) {
 		if (nitems == 0)
 			puts("no entries");
 		return;
@@ -220,19 +248,30 @@ displayq(format)
 	 */
 	if (nitems)
 		putchar('\n');
-	(void) sprintf(line, "%c%s", format + '\3', RP);
+	(void) snprintf(line, sizeof line, "%c%s", format + '\3', RP);
 	cp = line;
-	for (i = 0; i < requests; i++) {
+	cp += strlen(cp);
+	for (i = 0; i < requests && cp-line < sizeof(line) - 1; i++) {
+		len = line + sizeof line - cp;
+		if (snprintf(cp, len, " %d", requ[i]) >= len) {
+			cp += strlen(cp);
+			break;
+		}
 		cp += strlen(cp);
-		(void) sprintf(cp, " %d", requ[i]);
 	}
-	for (i = 0; i < users; i++) {
-		cp += strlen(cp);
-		*cp++ = ' ';
-		(void) strcpy(cp, user[i]);
+	for (i = 0; i < users && cp-line < sizeof(line) - 1; i++) {
+		len = line + sizeof line - cp;
+		if (snprintf(cp, len, " %s", user[i]) >= len) {
+			cp += strlen(cp);
+			break;
+		}
 	}
-	strcat(line, "\n");
-	fd = getport(RM);
+	if (cp-line < sizeof(line) - 1) {
+		strcat(line, "\n");
+	} else {
+		line[sizeof line-2] = '\n';
+	}
+	fd = getport(RM, 0);
 	if (fd < 0) {
 		if (from != host)
 			printf("%s: ", host);
@@ -252,9 +291,9 @@ displayq(format)
  * Print a warning message if there is no daemon present.
  */
 void
-warn()
+nodaemon()
 {
-	if (sendtorem)
+	if (remote)
 		printf("\n%s: ", host);
 	puts("Warning: no daemon present");
 	current[0] = '\0';
@@ -268,7 +307,7 @@ header()
 {
 	printf(head0);
 	col = strlen(head0)+1;
-	blankfill(SIZCOL);
+	blankfill(termwidth - (80 - SIZCOL));
 	printf(head1);
 }
 
@@ -276,7 +315,7 @@ void
 inform(cf)
 	char *cf;
 {
-	register int j;
+	int j;
 	FILE *cfp;
 
 	/*
@@ -290,7 +329,7 @@ inform(cf)
 
 	if (rank < 0)
 		rank = 0;
-	if (sendtorem || garbage || strcmp(cf, current))
+	if (remote || garbage || strcmp(cf, current))
 		rank++;
 	j = 0;
 	while (getline(cfp)) {
@@ -318,8 +357,9 @@ inform(cf)
 		default: /* some format specifer and file name? */
 			if (line[0] < 'a' || line[0] > 'z')
 				continue;
-			if (j == 0 || strcmp(file, line+1) != 0)
-				(void) strcpy(file, line+1);
+			if (j == 0 || strcmp(file, line+1) != 0) {
+				(void) strlcpy(file, line+1, sizeof(file));
+			}
 			j++;
 			continue;
 		case 'N':
@@ -330,7 +370,7 @@ inform(cf)
 	}
 	fclose(cfp);
 	if (!lflag) {
-		blankfill(SIZCOL);
+		blankfill(termwidth - (80 - SIZCOL));
 		printf("%ld bytes\n", totsize);
 		totsize = 0;
 	}
@@ -340,8 +380,8 @@ int
 inlist(name, file)
 	char *name, *file;
 {
-	register int *r, n;
-	register char **u, *cp;
+	int *r, n;
+	char **u, *cp;
 
 	if (users == 0 && requests == 0)
 		return(1);
@@ -364,7 +404,7 @@ inlist(name, file)
 
 void
 show(nfile, file, copies)
-	register char *nfile, *file;
+	char *nfile, *file;
 	int copies;
 {
 	if (strcmp(nfile, " ") == 0)
@@ -380,7 +420,7 @@ show(nfile, file, copies)
  */
 void
 blankfill(n)
-	register int n;
+	int n;
 {
 	while (col++ < n)
 		putchar(' ');
@@ -394,7 +434,7 @@ dump(nfile, file, copies)
 	char *nfile, *file;
 	int copies;
 {
-	register short n, fill;
+	int n, fill;
 	struct stat lbuf;
 
 	/*
@@ -402,10 +442,11 @@ dump(nfile, file, copies)
 	 *  (leaving room for the total size)
 	 */
 	 fill = first ? 0 : 2;	/* fill space for ``, '' */
-	 if (((n = strlen(nfile)) + col + fill) >= SIZCOL-4) {
-		if (col < SIZCOL) {
+	 if (((n = strlen(nfile)) + col + fill) >=
+	     (termwidth - (80 - SIZCOL)) - 4) {
+		if (col < (termwidth - (80 - SIZCOL))) {
 			printf(" ..."), col += 4;
-			blankfill(SIZCOL);
+			blankfill(termwidth - (80 - SIZCOL));
 		}
 	} else {
 		if (first)

@@ -1,3 +1,4 @@
+/*	$OpenBSD: clri.c,v 1.5 2001/06/04 14:59:47 mickey Exp $	*/
 /*	$NetBSD: clri.c,v 1.9 1995/03/18 14:54:33 cgd Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)clri.c	8.2 (Berkeley) 9/23/93";
 #else
-static char rcsid[] = "$NetBSD: clri.c,v 1.9 1995/03/18 14:54:33 cgd Exp $";
+static char rcsid[] = "$OpenBSD: clri.c,v 1.5 2001/06/04 14:59:47 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,9 +70,9 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register struct fs *sbp;
-	register struct dinode *ip;
-	register int fd;
+	struct fs *sbp;
+	struct dinode *ip;
+	int fd;
 	struct dinode ibuf[MAXBSIZE / sizeof (struct dinode)];
 	int32_t generation;
 	off_t offset;
@@ -80,8 +81,8 @@ main(argc, argv)
 	char *fs, sblock[SBSIZE];
 
 	if (argc < 3) {
-		(void)fprintf(stderr, "usage: clri filesystem inode ...\n");
-		exit(1);
+		fprintf(stderr, "usage: clri filesystem inode ...\n");
+		return (1);
 	}
 
 	fs = *++argv;
@@ -132,7 +133,16 @@ main(argc, argv)
 		if (write(fd, ibuf, bsize) != bsize)
 			err(1, "%s", fs);
 		(void)fsync(fd);
+
+		if (sbp->fs_inodefmt >= FS_44INODEFMT) {
+			/* update after each inode cleared */
+			sbp->fs_clean = 0;
+			if (lseek(fd, (off_t)(SBLOCK * DEV_BSIZE), SEEK_SET) < 0)
+				err(1, "%s", fs);
+			if (write(fd, sblock, sizeof(sblock)) != sizeof(sblock))
+				errx(1, "%s: can't update superblock", fs);
+		}
 	}
-	(void)close(fd);
-	exit(0);
+
+	return close(fd);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: grf_cc.c,v 1.17 1995/02/16 21:57:34 chopps Exp $	*/
+/*	$OpenBSD: grf_cc.c,v 1.9 2001/11/06 19:53:14 miod Exp $	*/
+/*	$NetBSD: grf_cc.c,v 1.23 1996/12/23 09:10:02 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -37,11 +38,13 @@
  */
 
 #include <sys/param.h>
+#include <sys/proc.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/queue.h>
 #include <sys/device.h>
-#include <vm/vm_param.h>
+#include <sys/systm.h>
+#include <uvm/uvm_param.h>
 #include <machine/cpu.h>
 #include <amiga/amiga/color.h>	/* DEBUG */
 #include <amiga/amiga/device.h>
@@ -53,31 +56,40 @@
 #include <amiga/dev/grfabs_reg.h>
 #include <amiga/dev/viewioctl.h>
 
+#include <sys/conf.h>
+#include <machine/conf.h>
+#include <uvm/uvm_extern.h>
 
-int grfccmatch __P((struct device *, struct cfdata *, void *));
-int grfccprint __P((void *, char *));
-void grfccattach __P((struct device *, struct device *, void *));
-void grf_cc_on __P((struct grf_softc *));
+#include "view.h" 
 
-struct cfdriver grfcccd = {
-	NULL, "grfcc", (cfmatch_t)grfccmatch, grfccattach, 
-	DV_DULL, sizeof(struct grf_softc), NULL, 0 };
+int grfccmatch(struct device *, void *, void *);
+int grfccprint(void *, const char *);
+void grfccattach(struct device *, struct device *, void *);
+void grf_cc_on(struct grf_softc *);
+
+struct cfattach grfcc_ca = {
+	sizeof(struct grf_softc), grfccmatch, grfccattach
+};
+
+struct cfdriver grfcc_cd = {
+	NULL, "grfcc", DV_DULL, NULL, 0
+};
 
 /* 
  * only used in console init
  */
-static struct cfdata *cfdata;
+static struct cfdata *grfcc_cfdata;
 
 /*
  * we make sure to only init things once.  this is somewhat
  * tricky regarding the console.
  */
 int 
-grfccmatch(pdp, cfp, auxp)
+grfccmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cfp;
-	void *auxp;
+	void *match, *auxp;
 {
+	struct cfdata *cfp = match;
 	static int ccconunit = -1;
 	char *mainbus_name = auxp;
 
@@ -95,11 +107,11 @@ grfccmatch(pdp, cfp, auxp)
 		/*
 		 * XXX nasty hack. opens view[0] and never closes.
 		 */
-		if (viewopen(0, 0))
+		if (viewopen(0, 0, 0, NULL))
 			return(0);
 		if (amiga_realconfig == 0) {
 			ccconunit = cfp->cf_unit;
-			cfdata = cfp;
+			grfcc_cfdata = cfp;
 		}
 	}
 	return(1);
@@ -114,7 +126,6 @@ grfccattach(pdp, dp, auxp)
 	void *auxp;
 {
 	static struct grf_softc congrf;
-	static int coninited;
 	struct grf_softc *gp;
 
 	if (dp == NULL) 
@@ -142,13 +153,13 @@ grfccattach(pdp, dp, auxp)
 	/*
 	 * attach grf
 	 */
-	amiga_config_found(cfdata, &gp->g_device, gp, grfccprint);
+	amiga_config_found(grfcc_cfdata, &gp->g_device, gp, grfccprint);
 }
 
 int
 grfccprint(auxp, pnp)
 	void *auxp;
-	char *pnp;
+	const char *pnp;
 {
 	if (pnp)
 		printf("grf%d at %s", ((struct grf_softc *)auxp)->g_unit,
@@ -165,15 +176,18 @@ grfccprint(auxp, pnp)
 int
 cc_mode(gp, cmd, arg, a2, a3)
 	struct grf_softc *gp;
-	int cmd, a2, a3;
+	u_long cmd;
 	void *arg;
+	u_long a2;
+	int a3;
 {
+
 	switch (cmd) {
 	case GM_GRFON:
 		grf_cc_on(gp);
 		return(0);
 	case GM_GRFOFF:
-		viewioctl(0, VIOCREMOVE, NULL, 0, -1);
+		viewioctl(0, VIOCREMOVE, NULL, -1, NULL);
 		return(0);
 	case GM_GRFCONFIG:
 	default:
@@ -192,7 +206,7 @@ grf_cc_on(gp)
 
 	gi = &gp->g_display;
 
-	viewioctl(0, VIOCGBMAP, &bm, 0, -1);
+	viewioctl(0, VIOCGBMAP, (caddr_t)&bm, -1, NULL); /* XXX type of bm ? */
   
 	gp->g_data = (caddr_t) 0xDeadBeaf; /* not particularly clean.. */
   
@@ -201,7 +215,8 @@ grf_cc_on(gp)
 	gi->gd_fbaddr  = bm.hardware_address;
 	gi->gd_fbsize  = bm.depth*bm.bytes_per_row*bm.rows;
 
-	if (viewioctl (0, VIOCGSIZE, &vs, 0, -1)) {
+	if (viewioctl (0, VIOCGSIZE, (caddr_t)&vs, -1, NULL)) {
+		/* XXX type of vs ? */
 		/* fill in some default values... XXX */
 		vs.width = 640;
 		vs.height = 400;
@@ -222,7 +237,7 @@ grf_cc_on(gp)
 	gp->g_regkva = (void *)0xDeadBeaf;	/* builtin */
 	gp->g_fbkva = NULL;		/* not needed, view internal */
 
-	viewioctl(0, VIOCDISPLAY, NULL, 0, -1);
+	viewioctl(0, VIOCDISPLAY, NULL, -1, NULL);
 }    
 #endif
 

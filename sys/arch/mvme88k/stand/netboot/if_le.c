@@ -1,4 +1,4 @@
-/*	$Id: if_le.c,v 1.4 1995/12/26 17:44:43 deraadt Exp $ */
+/*	$OpenBSD: if_le.c,v 1.3 1999/01/11 05:11:46 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -66,7 +66,10 @@
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 
+#include <machine/prom.h>
+
 #include "stand.h"
+#include "libsa.h"
 #include "netif.h"
 #include "config.h"
 
@@ -74,15 +77,15 @@
 
 int     le_debug = 0;
 
-void le_end __P((struct netif *));
-void le_error __P((struct netif *, char *, volatile struct lereg1 *));
-int le_get __P((struct iodesc *, void *, size_t, time_t));
-void le_init __P((struct iodesc *, void *));
-int le_match __P((struct netif *, void *));
-int le_poll __P((struct iodesc *, void *, int));
-int le_probe __P((struct netif *, void *));
-int le_put __P((struct iodesc *, void *, size_t));
-void le_reset __P((struct netif *, u_char *));
+void le_end(struct netif *);
+void le_error(struct netif *, char *, volatile struct lereg1 *);
+int le_get(struct iodesc *, void *, size_t, time_t);
+void le_init(struct iodesc *, void *);
+int le_match(struct netif *, void *);
+int le_poll(struct iodesc *, void *, int);
+int le_probe(struct netif *, void *);
+int le_put(struct iodesc *, void *, size_t);
+void le_reset(struct netif *, u_char *);
 
 struct netif_stats le_stats;
 
@@ -129,10 +132,7 @@ le_match(nif, machdep_hint)
 {
 	char   *name;
 	int     i, val = 0;
-	extern int cputyp;
 
-	if (cputyp != CPU_147)
-		return (0);
 	name = machdep_hint;
 	if (name && !bcmp(le_driver.netif_bname, name, 2))
 		val += 10;
@@ -154,14 +154,11 @@ le_probe(nif, machdep_hint)
 	struct netif *nif;
 	void   *machdep_hint;
 {
-	extern int cputyp;
 
 	/* the set unit is the current unit */
 	if (le_debug)
 		printf("le%d: le_probe called\n", nif->nif_unit);
 
-	if (cputyp == CPU_147)
-		return 0;
 	return 1;
 }
 
@@ -173,7 +170,7 @@ le_error(nif, str, ler1)
 {
 	/* ler1->ler1_rap = LE_CSRO done in caller */
 	if (ler1->ler1_rdp & LE_C0_BABL)
-		panic("le%d: been babbling, found by '%s'\n", nif->nif_unit, str);
+		panic("le%d: been babbling, found by '%s'", nif->nif_unit, str);
 	if (ler1->ler1_rdp & LE_C0_CERR) {
 		le_stats.collision_error++;
 		ler1->ler1_rdp = LE_C0_CERR;
@@ -298,12 +295,12 @@ le_poll(desc, pkt, len)
 		goto cleanup;
 	}
 	if ((rmd->rmd1_bits & (LE_R1_STP | LE_R1_ENP)) != (LE_R1_STP | LE_R1_ENP))
-		panic("le_poll: chained packet\n");
+		panic("le_poll: chained packet");
 
 	length = rmd->rmd3;
 	if (length >= LEMTU) {
 		length = 0;
-		panic("csr0 when bad things happen: %x\n", ler1->ler1_rdp);
+		panic("csr0 when bad things happen: %x", ler1->ler1_rdp);
 		goto cleanup;
 	}
 	if (!length)

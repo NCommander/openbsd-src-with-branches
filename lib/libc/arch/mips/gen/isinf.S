@@ -34,17 +34,14 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)isinf.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: isinf.S,v 1.3 1994/12/15 17:24:48 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
-
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 #define DEXP_INF	0x7ff
-
-	.set	noreorder
 
 /*
  * isnan(x)
@@ -53,6 +50,7 @@
  * Return true if x is a NAN.
  */
 LEAF(isnan)
+	.set	noreorder
 	mfc1	v1, $f13		# get MSW of x
 	mfc1	t3, $f12		# get LSW of x
 	sll	t1, v1, 1		# get x exponent
@@ -78,6 +76,7 @@ END(isnan)
  * Return true if x is infinity.
  */
 LEAF(isinf)
+	.set	noreorder
 	mfc1	v1, $f13		# get MSW of x
 	mfc1	t3, $f12		# get LSW of x
 	sll	t1, v1, 1		# get x exponent

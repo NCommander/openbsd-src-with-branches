@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /* -*- C -*- */
 
 /*
@@ -39,7 +38,7 @@
  * SUCH DAMAGE.
  */
 
-/* @(#)$KTH: rxkad.h,v 1.7 1998/02/23 03:23:24 assar Exp $ */
+/* @(#)$Id: rxkad.h,v 1.3 2002/02/16 21:28:00 millert Exp $ */
 
 #ifndef __RXKAD_H
 #define __RXKAD_H
@@ -66,35 +65,31 @@ extern int rxkad_min_level;	/* enforce min level at client end */
 
 extern int rxkad_EpochWasSet;
 
-#ifndef __P
-#define __P(x) x
-#endif
-
-int32 rxkad_GetServerInfo __P((struct rx_connection *con,
-			       rxkad_level *level,
-			       u_int32 *expiration,
-			       char *name,
-			       char *instance,
-			       char *cell,
-			       int32 *kvno));
+int32 rxkad_GetServerInfo(struct rx_connection *con,
+			  rxkad_level *level,
+			  u_int32 *expiration,
+			  char *name,
+			  char *instance,
+			  char *cell,
+			  int32 *kvno);
 
 struct rx_securityClass *
-rxkad_NewServerSecurityObject __P((/*rxkad_level*/ int min_level,
-				   void *appl_data,
-				   int (*get_key)(void *appl_data,
-						  int kvno,
-						  des_cblock *key),
-				   int (*user_ok)(char *name,
-						  char *inst,
-						  char *realm,
-						  int kvno)));
+rxkad_NewServerSecurityObject(/*rxkad_level*/ int min_level,
+			      void *appl_data,
+			      int (*get_key)(void *appl_data,
+			      int kvno,
+			      des_cblock *key),
+			      int (*user_ok)(char *name,
+					     char *inst,
+					     char *realm,
+					     int kvno));
 
 struct rx_securityClass *
-rxkad_NewClientSecurityObject __P((/*rxkad_level*/ int level,
-				   void *sessionkey,
-				   int32 kvno,
-				   int ticketLen,
-				   char *ticket));
+rxkad_NewClientSecurityObject(/*rxkad_level*/ int level,
+			      void *sessionkey,
+			      int32 kvno,
+			      int ticketLen,
+			      char *ticket);
 
 #define RXKADINCONSISTENCY	(19270400L)
 #define RXKADPACKETSHORT	(19270401L)
@@ -138,32 +133,32 @@ struct ktc_principal {
   char cell[MAXKTCREALMLEN];
 };
 
-u_int32 life_to_time __P((u_int32 start, int life_));
+u_int32 life_to_time(u_int32 start, int life_);
 
-int time_to_life __P((u_int32 start, u_int32 end));
+int time_to_life(u_int32 start, u_int32 end);
 
-int tkt_CheckTimes __P((int32 begin, int32 end, int32 now));
-
-int
-tkt_MakeTicket __P((char *ticket,
-		    int *ticketLen,
-		    struct ktc_encryptionKey *key,
-		    char *name, char *inst, char *cell,
-		    u_int32 start, u_int32 end,
-		    struct ktc_encryptionKey *sessionKey,
-		    u_int32 host,
-		    char *sname, char *sinst));
+int tkt_CheckTimes(int32 begin, int32 end, int32 now);
 
 int
-tkt_DecodeTicket __P((char *asecret,
-		      int32 ticketLen,
-		      struct ktc_encryptionKey *key,
-		      char *name,
-		      char *inst,
-		      char *cell,
-		      char *sessionKey,
-		      int32 *host,
-		      int32 *start,
-		      int32 *end));
+tkt_MakeTicket(char *ticket,
+	       int *ticketLen,
+	       struct ktc_encryptionKey *key,
+	       char *name, char *inst, char *cell,
+	       u_int32 start, u_int32 end,
+	       struct ktc_encryptionKey *sessionKey,
+	       u_int32 host,
+	       char *sname, char *sinst);
+
+int
+tkt_DecodeTicket(char *asecret,
+		 int32 ticketLen,
+		 struct ktc_encryptionKey *key,
+		 char *name,
+		 char *inst,
+		 char *cell,
+		 char *sessionKey,
+		 int32 *host,
+		 int32 *start,
+		 int32 *end);
 
 #endif /* __RXKAD_H */

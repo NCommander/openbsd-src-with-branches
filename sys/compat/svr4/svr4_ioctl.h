@@ -1,4 +1,5 @@
-/*	$NetBSD: svr4_ioctl.h,v 1.4 1995/10/07 06:27:42 mycroft Exp $	 */
+/*	$OpenBSD: svr4_ioctl.h,v 1.4 1997/11/04 07:45:35 niklas Exp $	*/
+/*	$NetBSD: svr4_ioctl.h,v 1.5 1996/04/11 12:54:43 christos Exp $	 */
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -38,20 +39,26 @@
 #define	SVR4_IOC(inout,group,num,len) \
 	(inout | ((len & 0xff) << 16) | ((group) << 8) | (num))
 
+#define SVR4_XIOC	('X' << 8)
+
 #define	SVR4_IO(g,n)		SVR4_IOC(SVR4_IOC_VOID,	(g), (n), 0)
 #define	SVR4_IOR(g,n,t)		SVR4_IOC(SVR4_IOC_OUT,	(g), (n), sizeof(t))
 #define	SVR4_IOW(g,n,t)		SVR4_IOC(SVR4_IOC_IN,	(g), (n), sizeof(t))
 #define	SVR4_IOWR(g,n,t)	SVR4_IOC(SVR4_IOC_INOUT,(g), (n), sizeof(t))
 
-int	svr4_streamioctl __P((struct file *fp, u_long cmd, caddr_t data,
-			      struct proc *p, register_t *retval));
-int	svr4_termioctl __P((struct file *fp, u_long cmd, caddr_t data,
-			    struct proc *p, register_t *retval));
-int	svr4_ttoldioctl __P((struct file *fp, u_long cmd, caddr_t data,
-			     struct proc *p, register_t *retval));
-int	svr4_filioctl __P((struct file *fp, u_long cmd, caddr_t data,
-			   struct proc *p, register_t *retval));
-int	svr4_sockioctl __P((struct file *fp, u_long cmd, caddr_t data,
-			    struct proc *p, register_t *retval));
+int	svr4_stream_ti_ioctl(struct file *, struct proc *, register_t *,
+			          int, u_long, caddr_t);
+int	svr4_stream_ioctl(struct file *, struct proc *, register_t *,
+				  int, u_long, caddr_t);
+int	svr4_term_ioctl(struct file *, struct proc *, register_t *,
+				  int, u_long, caddr_t);
+int	svr4_ttold_ioctl(struct file *, struct proc *, register_t *,
+				  int, u_long, caddr_t);
+int	svr4_fil_ioctl(struct file *, struct proc *, register_t *,
+				  int, u_long, caddr_t);
+int	svr4_sock_ioctl(struct file *, struct proc *, register_t *,
+				  int, u_long, caddr_t);
+int	svr4_jerq_ioctl(struct file *, struct proc *, register_t *,
+				  int, u_long, caddr_t);
 
 #endif /* !_SVR4_IOCTL_H_ */

@@ -1,12 +1,11 @@
-#	@(#)Makefile	8.2 (Berkeley) 4/3/94
-#	$NetBSD: Makefile,v 1.6 1995/09/05 01:11:10 cgd Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:56:52 millert Exp $
 
 MAN=	pagesize.1
 
 SCRIPT=	pagesize.sh
 
 realinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
 	    ${.CURDIR}/${SCRIPT} ${DESTDIR}${BINDIR}/pagesize
 
 .include <bsd.prog.mk>

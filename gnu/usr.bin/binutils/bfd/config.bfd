@@ -57,7 +57,7 @@ esac
 case "${targ}" in
 # START OF targmatch.h
 #ifdef BFD64
-  alpha*-*-netbsd* | alpha*-*-freebsd*)
+  alpha*-*-netbsd* | alpha*-*-freebsd* | alpha*-*-openbsd*)
     targ_defvec=bfd_elf64_alpha_vec
     targ_selvecs=ecoffalpha_little_vec
     ;;
@@ -79,7 +79,7 @@ case "${targ}" in
   alpha*-*-*)
     targ_defvec=ecoffalpha_little_vec
     ;;
-  sparc64-*-netbsd*)
+  sparc64-*-netbsd* | sparc64-*-openbsd*)
     targ_defvec=bfd_elf64_sparc_vec
     targ_selvecs="bfd_elf32_sparc_vec sunos_big_vec"
     ;;
@@ -90,7 +90,7 @@ case "${targ}" in
     targ_selvecs=bfd_elf32_bigarc_vec
     ;;
 
-  arm-*-netbsd*)
+  arm-*-netbsd* | arm-*-openbsd*)
     targ_defvec=armnetbsd_vec
     targ_underscore=yes
     ;;
@@ -782,6 +782,11 @@ case "${targ}" in
     targ_underscore=yes
     ;;
 #endif
+
+  vax-*-openbsd*)
+    targ_defvec=vaxnetbsd_vec
+    targ_underscore=yes
+    ;;      
 
   vax*-*-*vms*)
     targ_defvec=vms_vax_vec

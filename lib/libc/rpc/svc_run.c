@@ -1,5 +1,3 @@
-/*	$NetBSD: svc_run.c,v 1.6 1995/02/25 03:02:00 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_run.c 1.1 87/10/13 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_run.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_run.c,v 1.6 1995/02/25 03:02:00 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: svc_run.c,v 1.11 1999/11/23 22:37:28 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * This is the rpc server side idle loop
@@ -41,26 +37,47 @@ static char *rcsid = "$NetBSD: svc_run.c,v 1.6 1995/02/25 03:02:00 cgd Exp $";
  */
 #include <rpc/rpc.h>
 #include <sys/errno.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+extern int __svc_fdsetsize;
+extern fd_set *__svc_fdset;
+
+void svc_getreqset2(fd_set *, int);
 
 void
 svc_run()
 {
-	fd_set readfds;
+	fd_set *fds;
 
 	for (;;) {
-		readfds = svc_fdset;
-		switch (select(svc_maxfd+1, &readfds, (int *)0, (int *)0,
-			       (struct timeval *)0)) {
+		if (__svc_fdset) {
+			int bytes = howmany(__svc_fdsetsize, NFDBITS) *
+			    sizeof(fd_mask);
+			fds = (fd_set *)malloc(bytes);	/* XXX */
+			memcpy(fds, __svc_fdset, bytes);
+		} else
+			fds = NULL;
+		switch (select(svc_maxfd+1, fds, 0, 0, (struct timeval *)0)) {
 		case -1:
 			if (errno == EINTR) {
+				if (fds)
+					free(fds);
 				continue;
 			}
 			perror("svc_run: - select failed");
+			if (fds)
+				free(fds);
 			return;
 		case 0:
+			if (fds)
+				free(fds);
 			continue;
 		default:
-			svc_getreqset(&readfds);
+			svc_getreqset2(fds, svc_maxfd+1);
+			free(fds);
 		}
 	}
 }

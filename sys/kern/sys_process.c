@@ -1,4 +1,5 @@
-/*	$NetBSD: sys_process.c,v 1.52 1995/10/07 06:28:36 mycroft Exp $	*/
+/*	$OpenBSD: sys_process.c,v 1.21 2002/03/12 14:37:40 art Exp $	*/
+/*	$NetBSD: sys_process.c,v 1.55 1996/05/15 06:17:47 tls Exp $	*/
 
 /*-
  * Copyright (c) 1994 Christopher G. Demetriou.  All rights reserved.
@@ -55,6 +56,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/errno.h>
 #include <sys/ptrace.h>
 #include <sys/uio.h>
@@ -63,12 +65,11 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/reg.h>
 
-/* Macros to clear/set/test flags. */
-#define	SET(t, f)	(t) |= (f)
-#define	CLR(t, f)	(t) &= ~(f)
-#define	ISSET(t, f)	((t) & (f))
+#include <miscfs/procfs/procfs.h>
 
 /*
  * Process debugging system call.
@@ -88,16 +89,22 @@ sys_ptrace(p, v, retval)
 	struct proc *t;				/* target process */
 	struct uio uio;
 	struct iovec iov;
+	struct ptrace_io_desc piod;
 	int error, write;
+	int temp;
 
 	/* "A foolish consistency..." XXX */
 	if (SCARG(uap, req) == PT_TRACE_ME)
 		t = p;
 	else {
+
 		/* Find the process we're supposed to be operating on. */
 		if ((t = pfind(SCARG(uap, pid))) == NULL)
 			return (ESRCH);
 	}
+
+	if ((t->p_flag & P_INEXEC) != 0)
+		return (EAGAIN);
 
 	/* Make sure we can operate on it. */
 	switch (SCARG(uap, req)) {
@@ -114,37 +121,56 @@ sys_ptrace(p, v, retval)
 			return (EINVAL);
 
 		/*
-		 *	(2) it's already being traced, or
+		 *	(2) it's a system process
+		 */
+		if (ISSET(t->p_flag, P_SYSTEM))
+			return (EPERM);
+
+		/*
+		 *	(3) it's already being traced, or
 		 */
 		if (ISSET(t->p_flag, P_TRACED))
 			return (EBUSY);
 
 		/*
-		 *	(3) it's not owned by you, or is set-id on exec
-		 *	    (unless you're root).
+		 *	(4) it's not owned by you, or the last exec
+		 *	    gave us setuid/setgid privs (unless
+		 *	    you're root), or...
+		 * 
+		 *      [Note: once P_SUGID gets set in execve(), it stays
+		 *	set until the process does another execve(). Hence
+		 *	this prevents a setuid process which revokes it's
+		 *	special privilidges using setuid() from being
+		 *	traced. This is good security.]
 		 */
 		if ((t->p_cred->p_ruid != p->p_cred->p_ruid ||
 			ISSET(t->p_flag, P_SUGID)) &&
 		    (error = suser(p->p_ucred, &p->p_acflag)) != 0)
 			return (error);
+
+		/*
+		 *	(5) ...it's init, which controls the security level
+		 *	    of the entire system, and the system was not
+		 *          compiled with permanently insecure mode turned
+		 *	    on.
+		 */
+		if ((t->p_pid == 1) && (securelevel > -1))
+			return (EPERM);
 		break;
 
 	case  PT_READ_I:
 	case  PT_READ_D:
 	case  PT_WRITE_I:
 	case  PT_WRITE_D:
+	case  PT_IO:
 	case  PT_CONTINUE:
 	case  PT_KILL:
 	case  PT_DETACH:
 #ifdef PT_STEP
 	case  PT_STEP:
 #endif
-#ifdef PT_GETREGS
 	case  PT_GETREGS:
-#endif
-#ifdef PT_SETREGS
 	case  PT_SETREGS:
-#endif
 #ifdef PT_GETFPREGS
 	case  PT_GETFPREGS:
 #endif
@@ -189,14 +215,14 @@ sys_ptrace(p, v, retval)
 		t->p_oppid = t->p_pptr->p_pid;
 		return (0);
 
-	case  PT_WRITE_I:		/* XXX no seperate I and D spaces */
+	case  PT_WRITE_I:		/* XXX no separate I and D spaces */
 	case  PT_WRITE_D:
 		write = 1;
-	case  PT_READ_I:		/* XXX no seperate I and D spaces */
+		temp = SCARG(uap, data);
+	case  PT_READ_I:		/* XXX no separate I and D spaces */
 	case  PT_READ_D:
 		/* write = 0 done above. */
-		iov.iov_base =
-		    write ? (caddr_t)&SCARG(uap, data) : (caddr_t)retval;
+		iov.iov_base = (caddr_t)&temp;
 		iov.iov_len = sizeof(int);
 		uio.uio_iov = &iov;
 		uio.uio_iovcnt = 1;
@@ -205,8 +231,38 @@ sys_ptrace(p, v, retval)
 		uio.uio_segflg = UIO_SYSSPACE;
 		uio.uio_rw = write ? UIO_WRITE : UIO_READ;
 		uio.uio_procp = p;
-		return (procfs_domem(p, t, NULL, &uio));
-
+		error = procfs_domem(p, t, NULL, &uio);
+		if (write == 0)
+			*retval = temp;
+		return (error);
+	case  PT_IO:
+		error = copyin(SCARG(uap, addr), &piod, sizeof(piod));
+		if (error)
+			return (error);
+		iov.iov_base = piod.piod_addr;
+		iov.iov_len = piod.piod_len;
+		uio.uio_iov = &iov;
+		uio.uio_iovcnt = 1;
+		uio.uio_offset = (off_t)(long)piod.piod_offs;
+		uio.uio_resid = piod.piod_len;
+		uio.uio_segflg = UIO_USERSPACE;
+		uio.uio_procp = p;
+		switch (piod.piod_op) {
+		case PIOD_READ_D:
+		case PIOD_READ_I:
+			uio.uio_rw = UIO_READ;
+			break;
+		case PIOD_WRITE_D:
+		case PIOD_WRITE_I:
+			uio.uio_rw = UIO_WRITE;
+			break;
+		default:
+			return (EINVAL);
+		}
+		error = procfs_domem(p, t, NULL, &uio);
+		piod.piod_len -= uio.uio_resid;
+		(void) copyout(&piod, SCARG(uap, addr), sizeof(piod));
+		return (error);
 #ifdef PT_STEP
 	case  PT_STEP:
 		/*
@@ -217,6 +273,39 @@ sys_ptrace(p, v, retval)
 		 */
 #endif
 	case  PT_CONTINUE:
+		/*
+		 * From the 4.4BSD PRM:
+		 * "The data argument is taken as a signal number and the
+		 * child's execution continues at location addr as if it
+		 * incurred that signal.  Normally the signal number will
+		 * be either 0 to indicate that the signal that caused the
+		 * stop should be ignored, or that value fetched out of
+		 * the process's image indicating which signal caused
+		 * the stop.  If addr is (int *)1 then execution continues
+		 * from where it stopped."
+		 */
+
+		/* Check that the data is a valid signal number or zero. */
+		if (SCARG(uap, data) < 0 || SCARG(uap, data) >= NSIG)
+			return (EINVAL);
+
+		PHOLD(t);
+		/* If the address paramter is not (int *)1, set the pc. */
+		if ((int *)SCARG(uap, addr) != (int *)1)
+			if ((error = process_set_pc(t, SCARG(uap, addr))) != 0)
+				goto relebad;
+
+#ifdef PT_STEP
+		/*
+		 * Arrange for a single-step, if that's requested and possible.
+		 */
+		error = process_sstep(t, SCARG(uap, req) == PT_STEP);
+		if (error)
+			goto relebad;
+#endif
+		PRELE(t);
+		goto sendsig;
+
 	case  PT_DETACH:
 		/*
 		 * From the 4.4BSD PRM:
@@ -235,35 +324,27 @@ sys_ptrace(p, v, retval)
 			return (EINVAL);
 
 		PHOLD(t);
-
 #ifdef PT_STEP
 		/*
 		 * Arrange for a single-step, if that's requested and possible.
 		 */
-		if (error = process_sstep(t, SCARG(uap, req) == PT_STEP))
+		error = process_sstep(t, SCARG(uap, req) == PT_STEP);
+		if (error)
 			goto relebad;
 #endif
-
-		/* If the address paramter is not (int *)1, set the pc. */
-		if ((int *)SCARG(uap, addr) != (int *)1)
-			if (error = process_set_pc(t, SCARG(uap, addr)))
-				goto relebad;
-
 		PRELE(t);
 
-		if (SCARG(uap, req) == PT_DETACH) {
-			/* give process back to original parent or init */
-			if (t->p_oppid != t->p_pptr->p_pid) {
-				struct proc *pp;
+		/* give process back to original parent or init */
+		if (t->p_oppid != t->p_pptr->p_pid) {
+			struct proc *pp;
 
-				pp = pfind(t->p_oppid);
-				proc_reparent(t, pp ? pp : initproc);
-			}
-
-			/* not being traced any more */
-			t->p_oppid = 0;
-			CLR(t->p_flag, P_TRACED|P_WAITED);
+			pp = pfind(t->p_oppid);
+			proc_reparent(t, pp ? pp : initproc);
 		}
+
+		/* not being traced any more */
+		t->p_oppid = 0;
+		CLR(t->p_flag, P_TRACED|P_WAITED);
 
 	sendsig:
 		/* Finally, deliver the requested signal (or none). */
@@ -302,16 +383,11 @@ sys_ptrace(p, v, retval)
 		SCARG(uap, data) = SIGSTOP;
 		goto sendsig;
 
-#ifdef PT_SETREGS
 	case  PT_SETREGS:
 		write = 1;
-#endif
-#ifdef PT_GETREGS
 	case  PT_GETREGS:
 		/* write = 0 done above. */
-#endif
-#if defined(PT_SETREGS) || defined(PT_GETREGS)
-		if (!procfs_validregs(t))
+		if (!procfs_validregs(t, NULL))
 			return (EINVAL);
 		else {
 			iov.iov_base = SCARG(uap, addr);
@@ -325,8 +401,6 @@ sys_ptrace(p, v, retval)
 			uio.uio_procp = p;
 			return (procfs_doregs(p, t, NULL, &uio));
 		}
-#endif
-
 #ifdef PT_SETFPREGS
 	case  PT_SETFPREGS:
 		write = 1;
@@ -336,7 +410,7 @@ sys_ptrace(p, v, retval)
 		/* write = 0 done above. */
 #endif
 #if defined(PT_SETFPREGS) || defined(PT_GETFPREGS)
-		if (!procfs_validfpregs(t))
+		if (!procfs_validfpregs(t, NULL))
 			return (EINVAL);
 		else {
 			iov.iov_base = SCARG(uap, addr);
@@ -356,12 +430,5 @@ sys_ptrace(p, v, retval)
 #ifdef DIAGNOSTIC
 	panic("ptrace: impossible");
 #endif
-}
-
-trace_req(a1)
-	struct proc *a1;
-{
-
-	/* just return 1 to keep other parts of the system happy */
-	return (1);
+	return 0;
 }

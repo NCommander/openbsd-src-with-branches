@@ -1,3 +1,5 @@
+/*	$OpenBSD: strip.c,v 1.15 2001/11/19 19:02:16 mpech Exp $	*/
+
 /*
  * Copyright (c) 1988 Regents of the University of California.
  * All rights reserved.
@@ -39,9 +41,10 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)strip.c	5.8 (Berkeley) 11/6/91";*/
-static char rcsid[] = "$Id: strip.c,v 1.13 1994/03/28 02:17:50 cgd Exp $";
+static char rcsid[] = "$OpenBSD: strip.c,v 1.15 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -52,32 +55,40 @@ static char rcsid[] = "$Id: strip.c,v 1.13 1994/03/28 02:17:50 cgd Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
+#include <ranlib.h>
+#include "byte.c"
+
+#ifdef MID_MACHINE_OVERRIDE
+#undef MID_MACHINE
+#define MID_MACHINE MID_MACHINE_OVERRIDE
+#endif
 
 typedef struct exec EXEC;
 typedef struct nlist NLIST;
 
 #define	strx	n_un.n_strx
 
-void err __P((const char *fmt, ...));
-int s_stab __P((const char *, int, EXEC *, struct stat *));
-int s_sym __P((const char *, int, EXEC *, struct stat *));
-void usage __P((void));
+int s_stab(const char *, int, EXEC *, struct stat *);
+int s_sym(const char *, int, EXEC *, struct stat *);
+void usage(void);
 
 int xflag = 0;
         
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register int fd, nb;
+	int fd;
 	EXEC *ep;
 	struct stat sb;
-	int (*sfcn)__P((const char *, int, EXEC *, struct stat *));
+	int (*sfcn)(const char *, int, EXEC *, struct stat *);
 	int ch, errors;
 	char *fn;
 
 	sfcn = s_sym;
-	while ((ch = getopt(argc, argv, "dx")) != EOF)
+	while ((ch = getopt(argc, argv, "dx")) != -1)
 		switch(ch) {
                 case 'x':
                         xflag = 1;
@@ -93,8 +104,8 @@ main(argc, argv)
 	argv += optind;
 
 	errors = 0;
-#define	ERROR(x) errors |= 1; err("%s: %s", fn, strerror(x)); continue;
-	while (fn = *argv++) {
+#define	ERROR(x) errors |= 1; warnx("%s: %s", fn, strerror(x)); continue;
+	while ((fn = *argv++)) {
 		if ((fd = open(fn, O_RDWR)) < 0) {
 			ERROR(errno);
 		}
@@ -107,16 +118,21 @@ main(argc, argv)
 			ERROR(EFTYPE);
 		}
 		if ((ep = (EXEC *)mmap(NULL, sb.st_size, PROT_READ|PROT_WRITE,
-		    MAP_SHARED, fd, (off_t)0)) == (EXEC *)-1) {
+		    MAP_SHARED, fd, (off_t)0)) == MAP_FAILED) {
 			(void)close(fd);
 			ERROR(errno);
 		}
-		if (N_BADMAG(*ep)) {
+		if (BAD_OBJECT(*ep)) {
 			munmap((caddr_t)ep, sb.st_size);
 			(void)close(fd);
 			ERROR(EFTYPE);
 		}
+		/* since we're dealing with an mmap there, we have to convert once
+		   for dealing with data in memory, and a second time for out
+		 */
+		fix_header_order(ep);
 		errors |= sfcn(fn, fd, ep, &sb);
+		fix_header_order(ep);
 		munmap((caddr_t)ep, sb.st_size);
 		if (close(fd)) {
 			ERROR(errno);
@@ -130,10 +146,13 @@ int
 s_sym(fn, fd, ep, sp)
 	const char *fn;
 	int fd;
-	register EXEC *ep;
+	EXEC *ep;
 	struct stat *sp;
 {
-	register char *neweof, *mineof;
+	char *neweof;
+#if	0
+	char *mineof;
+#endif
 	int zmagic;
 
 	zmagic = ep->a_data &&
@@ -185,7 +204,7 @@ s_sym(fn, fd, ep, sp)
 
 	/* Truncate the file. */
 	if (ftruncate(fd, neweof - (char *)ep)) {
-		err("%s: %s", fn, strerror(errno));
+		warn("%s", fn);
 		return 1;
 	}
 
@@ -199,9 +218,11 @@ s_stab(fn, fd, ep, sp)
 	EXEC *ep;
 	struct stat *sp;
 {
-	register int cnt, len, nsymcnt;
-	register char *nstr, *nstrbase, *p, *strbase;
-	register NLIST *sym, *nsym;
+	int cnt, len;
+	char *nstr, *nstrbase, *p, *strbase;
+	NLIST *sym, *nsym;
+	u_long allocsize;
+	int mid;
 	NLIST *symbase;
 
 	/* Quit if no symbols. */
@@ -209,9 +230,11 @@ s_stab(fn, fd, ep, sp)
 		return 0;
 
 	if (N_SYMOFF(*ep) >= sp->st_size) {
-		err("%s: bad symbol table", fn);
+		warnx("%s: bad symbol table", fn);
 		return 1;
 	}
+
+	mid = N_GETMID(*ep);
 
 	/*
 	 * Initialize old and new symbol pointers.  They both point to the
@@ -226,8 +249,9 @@ s_stab(fn, fd, ep, sp)
 	 * of the string table.
 	 */
 	strbase = (char *)ep + N_STROFF(*ep);
-	if ((nstrbase = malloc((u_int)*(u_long *)strbase)) == NULL) {
-		err("%s", strerror(ENOMEM));
+	allocsize = fix_long_order(*(u_long *)strbase, mid);
+	if ((nstrbase = malloc((u_int) allocsize)) == NULL) {
+		warnx("%s", strerror(ENOMEM));
 		return 1;
 	}
 	nstr = nstrbase + sizeof(u_long);
@@ -237,7 +261,8 @@ s_stab(fn, fd, ep, sp)
 	 * copy it and save its string in the new string table.  Keep
 	 * track of the number of symbols.
 	 */
-	for (cnt = ep->a_syms / sizeof(NLIST); cnt--; ++sym)
+	for (cnt = ep->a_syms / sizeof(NLIST); cnt--; ++sym) {
+		fix_nlist_order(sym, mid);
 		if (!(sym->n_type & N_STAB) && sym->strx) {
 			*nsym = *sym;
 			nsym->strx = nstr - nstrbase;
@@ -253,14 +278,16 @@ s_stab(fn, fd, ep, sp)
 			len = strlen(p) + 1;
 			bcopy(p, nstr, len);
 			nstr += len;
-			++nsym;
+			fix_nlist_order(nsym++, mid);
 		}
+	}
 
 	/* Fill in new symbol table size. */
 	ep->a_syms = (nsym - symbase) * sizeof(NLIST);
 
 	/* Fill in the new size of the string table. */
-	*(u_long *)nstrbase = len = nstr - nstrbase;
+	len = nstr - nstrbase;
+	*(u_long *)nstrbase = fix_long_order(len, mid);
 
 	/*
 	 * Copy the new string table into place.  Nsym should be pointing
@@ -271,7 +298,7 @@ s_stab(fn, fd, ep, sp)
 
 	/* Truncate to the current length. */
 	if (ftruncate(fd, (char *)nsym + len - (char *)ep)) {
-		err("%s: %s", fn, strerror(errno));
+		warn("%s", fn);
 		return 1;
 	}
 
@@ -285,29 +312,3 @@ usage()
 	exit(1);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(const char *fmt, ...)
-#else
-err(fmt, va_alist)
-	char *fmt;
-        va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "strip: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-}

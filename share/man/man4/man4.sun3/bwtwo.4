@@ -1,3 +1,4 @@
+.\"	$OpenBSD: bwtwo.4,v 1.5 2001/01/29 02:11:12 niklas Exp $
 .\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -46,10 +47,13 @@
 .Sh SYNOPSIS
 .Cd "bwtwo0 at obmem0 addr ?"
 .Sh DESCRIPTION
-The 
+The
 .Nm
 is a memory based black and white frame buffer.
-It supports the minimal ioctl's needed to run X11.
+It supports the minimal
+.Xr ioctl 2 Ns s
+needed to run
+.Xr X 1 .
 .Sh SEE ALSO
-.Xr cgtwo 4 ,
-.Xr cgfour 4
+.Xr cgfour 4 ,
+.Xr cgtwo 4

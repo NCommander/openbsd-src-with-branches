@@ -1,7 +1,6 @@
-/*	$NetBSD: trap.c,v 1.89.2.1 1995/10/15 06:54:03 mycroft Exp $	*/
+/*	$OpenBSD: trap.c,v 1.48 2002/02/21 23:27:12 deraadt Exp $	*/
+/*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
-#undef DEBUG
-#define DEBUG
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
  * Copyright (c) 1990 The Regents of the University of California.
@@ -48,6 +47,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/user.h>
 #include <sys/acct.h>
 #include <sys/kernel.h>
@@ -57,43 +57,56 @@
 #endif
 #include <sys/syscall.h>
 
-#include <vm/vm_param.h>
-#include <vm/pmap.h>
-#include <vm/vm_map.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/cpufunc.h>
 #include <machine/psl.h>
 #include <machine/reg.h>
 #include <machine/trap.h>
+#ifdef DDB
+#include <machine/db_machdep.h>
+#endif
+
+#ifdef KGDB
+#include <sys/kgdb.h>
+#endif
 
 #ifdef COMPAT_IBCS2
 #include <compat/ibcs2/ibcs2_errno.h>
 #include <compat/ibcs2/ibcs2_exec.h>
 extern struct emul emul_ibcs2;
 #endif
-#ifdef COMPAT_LINUX
 #include <sys/exec.h>
+#ifdef COMPAT_LINUX
 #include <compat/linux/linux_syscall.h>
 extern struct emul emul_linux_aout, emul_linux_elf;
 #endif
 #ifdef COMPAT_FREEBSD
-extern struct emul emul_freebsd;
+extern struct emul emul_aout_freebsd, emul_elf_freebsd;
+#endif
+#ifdef COMPAT_BSDOS
+extern struct emul emul_bsdos;
 #endif
 
 #include "npx.h"
+
+static __inline void userret(struct proc *, int, u_quad_t);
+void trap(struct trapframe);
+int trapwrite(unsigned);
+void syscall(struct trapframe);
 
 /*
  * Define the code needed before returning to user mode, for
  * trap and syscall.
  */
-static inline void
+static __inline void
 userret(p, pc, oticks)
 	register struct proc *p;
 	int pc;
 	u_quad_t oticks;
 {
-	int sig, s;
+	int sig;
 
 	/* take pending signals */
 	while ((sig = CURSIG(p)) != 0)
@@ -101,18 +114,9 @@ userret(p, pc, oticks)
 	p->p_priority = p->p_usrpri;
 	if (want_resched) {
 		/*
-		 * Since we are curproc, a clock interrupt could
-		 * change our priority without changing run queues
-		 * (the running process is not kept on a run queue).
-		 * If this happened after we setrunqueue ourselves but
-		 * before we switch()'ed, we might not be on the queue
-		 * indicated by our priority.
+		 * We're being preempted.
 		 */
-		s = splstatclock();
-		setrunqueue(p);
-		p->p_stats->p_ru.ru_nivcsw++;
-		mi_switch();
-		splx(s);
+		preempt(NULL);
 		while ((sig = CURSIG(p)) != 0)
 			postsig(sig);
 	}
@@ -144,11 +148,12 @@ char	*trap_type[] = {
 	"bounds check fault",			/* 11 T_BOUND */
 	"FPU not available fault",		/* 12 T_DNA */
 	"double fault",				/* 13 T_DOUBLEFLT */
-	"FPU operand fetch fault",		/* 14 T_FPOPFLT */
+	"FPU operand fetch fault",		/* 14 T_FPOPFLT (![P]Pro) */
 	"invalid TSS fault",			/* 15 T_TSSFLT */
 	"segment not present fault",		/* 16 T_SEGNPFLT */
 	"stack fault",				/* 17 T_STKFLT */
-	"reserved trap",			/* 18 T_RESERVED */
+	"machine check",			/* 18 T_MACHK ([P]Pro) */
+	"reserved trap",			/* 19 T_RESERVED */
 };
 int	trap_types = sizeof trap_type / sizeof trap_type[0];
 
@@ -172,20 +177,30 @@ trap(frame)
 	register struct proc *p = curproc;
 	int type = frame.tf_trapno;
 	u_quad_t sticks;
-	struct pcb *pcb;
+	struct pcb *pcb = NULL;
 	extern char fusubail[],
 		    resume_iret[], resume_pop_ds[], resume_pop_es[];
 	struct trapframe *vframe;
 	int resume;
+	vm_prot_t vftype, ftype;
+	union sigval sv;
+	caddr_t onfault;
 
-	cnt.v_trap++;
+	uvmexp.traps++;
+
+	/* SIGSEGV and SIGBUS need this */
+	if (frame.tf_err & PGEX_W) {
+		vftype = VM_PROT_WRITE;
+		ftype = VM_PROT_READ | VM_PROT_WRITE;
+	} else
+		ftype = vftype = VM_PROT_READ;
 
 #ifdef DEBUG
 	if (trapdebug) {
 		printf("trap %d code %x eip %x cs %x eflags %x cr2 %x cpl %x\n",
 		    frame.tf_trapno, frame.tf_err, frame.tf_eip, frame.tf_cs,
 		    frame.tf_eflags, rcr2(), cpl);
-		printf("curproc %x\n", curproc);
+		printf("curproc %p\n", curproc);
 	}
 #endif
 
@@ -193,12 +208,48 @@ trap(frame)
 		type |= T_USER;
 		sticks = p->p_sticks;
 		p->p_md.md_regs = &frame;
-	}
+	} else
+		sticks = 0;
 
 	switch (type) {
 
+	/* trace trap */
+	case T_TRCTRAP: {
+#if defined(DDB) || defined(KGDB)
+		/* Make sure nobody is single stepping into kernel land.
+		 * The syscall has to turn off the trace bit itself.  The
+		 * easiest way, is to simply not call the debugger, until
+		 * we are through the problematic "osyscall" stub.  This
+		 * is a hack, but it does seem to work.
+		 */
+		extern int Xosyscall, Xosyscall_end;
+
+		if (frame.tf_eip >= (int)&Xosyscall &&
+		    frame.tf_eip <= (int)&Xosyscall_end)
+			return;
+#else
+		return; /* Just return if no DDB */
+#endif
+	}
+	/* FALLTHROUGH */
+
 	default:
 	we_re_toast:
+#ifdef KGDB
+		if (kgdb_trap(type, &frame))
+			return;
+		else {
+			/*
+			 * If this is a breakpoint, don't panic
+			 * if we're not connected.
+			 */
+			if (type == T_BPTFLT) {
+				printf("kgdb: ignored %s\n", trap_type[type]);
+				return;
+			}
+		}
+#endif
+
 #ifdef DDB
 		if (kdb_trap(type, 0, &frame))
 			return;
@@ -211,18 +262,21 @@ trap(frame)
 		printf("trap type %d code %x eip %x cs %x eflags %x cr2 %x cpl %x\n",
 		    type, frame.tf_err, frame.tf_eip, frame.tf_cs, frame.tf_eflags, rcr2(), cpl);
 
-		panic("trap");
+		panic("trap type %d, code=%x, pc=%x",
+		    type, frame.tf_err, frame.tf_eip);
 		/*NOTREACHED*/
 
 	case T_PROTFLT:
 	case T_SEGNPFLT:
 	case T_ALIGNFLT:
 		/* Check for copyin/copyout fault. */
-		pcb = &p->p_addr->u_pcb;
-		if (pcb->pcb_onfault != 0) {
-		copyfault:
-			frame.tf_eip = (int)pcb->pcb_onfault;
-			return;
+		if (p && p->p_addr) {
+			pcb = &p->p_addr->u_pcb;
+			if (pcb->pcb_onfault != 0) {
+			copyfault:
+				frame.tf_eip = (int)pcb->pcb_onfault;
+				return;
+			}
 		}
 
 		/*
@@ -262,20 +316,45 @@ trap(frame)
 		frame.tf_eip = resume;
 		return;
 
+	case T_PROTFLT|T_USER:		/* protection fault */
+#ifdef VM86
+		if (frame.tf_eflags & PSL_VM) {
+			vm86_gpfault(p, type & ~T_USER);
+			goto out;
+		}
+#endif
+		sv.sival_int = rcr2();
+		trapsignal(p, SIGSEGV, vftype, SEGV_MAPERR, sv);
+		goto out;
+
+	case T_TSSFLT|T_USER:
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGBUS, vftype, BUS_OBJERR, sv);
+		goto out;
+
 	case T_SEGNPFLT|T_USER:
 	case T_STKFLT|T_USER:
-	case T_PROTFLT|T_USER:		/* protection fault */
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGSEGV, vftype, SEGV_MAPERR, sv);
+		goto out;
+
 	case T_ALIGNFLT|T_USER:
-		trapsignal(p, SIGBUS, type &~ T_USER);
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGBUS, vftype, BUS_ADRALN, sv);
 		goto out;
 
 	case T_PRIVINFLT|T_USER:	/* privileged instruction fault */
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGILL, type &~ T_USER, ILL_PRVOPC, sv);
+		goto out;
+
 	case T_FPOPFLT|T_USER:		/* coprocessor operand fault */
-		trapsignal(p, SIGILL, type &~ T_USER);
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGILL, type &~ T_USER, ILL_COPROC, sv);
 		goto out;
 
 	case T_ASTFLT|T_USER:		/* Allow process switch */
-		cnt.v_soft++;
+		uvmexp.softs++;
 		if (p->p_flag & P_OWEUPC) {
 			p->p_flag &= ~P_OWEUPC;
 			ADDUPROF(p);
@@ -283,35 +362,45 @@ trap(frame)
 		goto out;
 
 	case T_DNA|T_USER: {
-#ifdef MATH_EMULATE
+#if defined(MATH_EMULATE) || defined(GPL_MATH_EMULATE)
 		int rv;
 		if ((rv = math_emulate(&frame)) == 0) {
 			if (frame.tf_eflags & PSL_T)
 				goto trace;
 			return;
 		}
-		trapsignal(p, rv, type &~ T_USER);
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, rv, type &~ T_USER, FPE_FLTINV, sv);
 		goto out;
 #else
 		printf("pid %d killed due to lack of floating point\n",
 		    p->p_pid);
-		trapsignal(p, SIGKILL, type &~ T_USER);
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGKILL, type &~ T_USER, FPE_FLTINV, sv);
 		goto out;
 #endif
 	}
 
 	case T_BOUND|T_USER:
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGFPE, type &~ T_USER, FPE_FLTSUB, sv);
+		goto out;
 	case T_OFLOW|T_USER:
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGFPE, type &~ T_USER, FPE_INTOVF, sv);
+		goto out;
 	case T_DIVIDE|T_USER:
-		trapsignal(p, SIGFPE, type &~ T_USER);
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGFPE, type &~ T_USER, FPE_INTDIV, sv);
 		goto out;
 
 	case T_ARITHTRAP|T_USER:
-		trapsignal(p, SIGFPE, frame.tf_err);
+		sv.sival_int = frame.tf_eip;
+		trapsignal(p, SIGFPE, frame.tf_err, FPE_INTOVF, sv);
 		goto out;
 
 	case T_PAGEFLT:			/* allow page faults in kernel mode */
-		if (p == 0)
+		if (p == 0 || p->p_addr == 0)
 			goto we_re_toast;
 		pcb = &p->p_addr->u_pcb;
 		/*
@@ -328,15 +417,17 @@ trap(frame)
 		/* FALLTHROUGH */
 
 	case T_PAGEFLT|T_USER: {	/* page fault */
-		register vm_offset_t va;
-		register struct vmspace *vm = p->p_vmspace;
-		register vm_map_t map;
+		vm_offset_t va, fa;
+		struct vmspace *vm = p->p_vmspace;
+		struct vm_map *map;
 		int rv;
-		vm_prot_t ftype;
-		extern vm_map_t kernel_map;
-		unsigned nss, v;
+		extern struct vm_map *kernel_map;
+		unsigned nss;
 
-		va = trunc_page((vm_offset_t)rcr2());
+		if (vm == NULL)
+			goto we_re_toast;
+		fa = (vm_offset_t)rcr2();
+		va = trunc_page(fa);
 		/*
 		 * It is only a kernel address space fault iff:
 		 *	1. (type & T_USER) == 0  and
@@ -349,14 +440,10 @@ trap(frame)
 			map = kernel_map;
 		else
 			map = &vm->vm_map;
-		if (frame.tf_err & PGEX_W)
-			ftype = VM_PROT_READ | VM_PROT_WRITE;
-		else
-			ftype = VM_PROT_READ;
 
 #ifdef DIAGNOSTIC
 		if (map == kernel_map && va == 0) {
-			printf("trap: bad kernel access at %x\n", va);
+			printf("trap: bad kernel access at %lx\n", va);
 			goto we_re_toast;
 		}
 #endif
@@ -365,76 +452,82 @@ trap(frame)
 		if ((caddr_t)va >= vm->vm_maxsaddr
 		    && (caddr_t)va < (caddr_t)VM_MAXUSER_ADDRESS
 		    && map != kernel_map) {
-			nss = clrnd(btoc(USRSTACK-(unsigned)va));
+			nss = btoc(USRSTACK-(unsigned)va);
 			if (nss > btoc(p->p_rlimit[RLIMIT_STACK].rlim_cur)) {
-				rv = KERN_FAILURE;
-				goto nogo;
+				/*
+				 * We used to fail here. However, it may
+				 * just have been an mmap()ed page low
+				 * in the stack, which is legal. If it
+				 * wasn't, uvm_fault() will fail below.
+				 *
+				 * Set nss to 0, since this case is not
+				 * a "stack extension".
+				 */
+				nss = 0;
 			}
 		}
 
-		/* check if page table is mapped, if not, fault it first */
-		if ((PTD[pdei(va)] & PG_V) == 0) {
-			v = trunc_page(vtopte(va));
-			rv = vm_fault(map, v, ftype, FALSE);
-			if (rv != KERN_SUCCESS)
-				goto nogo;
-			/* check if page table fault, increment wiring */
-			vm_map_pageable(map, v, round_page(v+1), FALSE);
-		} else
-			v = 0;
-
-		rv = vm_fault(map, va, ftype, FALSE);
-		if (rv == KERN_SUCCESS) {
+		onfault = p->p_addr->u_pcb.pcb_onfault;
+		p->p_addr->u_pcb.pcb_onfault = NULL;
+		rv = uvm_fault(map, va, 0, ftype);
+		p->p_addr->u_pcb.pcb_onfault = onfault;
+		if (rv == 0) {
 			if (nss > vm->vm_ssize)
 				vm->vm_ssize = nss;
-			va = trunc_page(vtopte(va));
-			/* for page table, increment wiring as long as
-			   not a page table fault as well */
-			if (!v && map != kernel_map)
-				vm_map_pageable(map, va, round_page(va+1),
-				    FALSE);
 			if (type == T_PAGEFLT)
 				return;
 			goto out;
 		}
 
-	nogo:
 		if (type == T_PAGEFLT) {
 			if (pcb->pcb_onfault != 0)
 				goto copyfault;
-			printf("vm_fault(%x, %x, %x, 0) -> %x\n",
+			printf("uvm_fault(%p, 0x%lx, 0, %d) -> %x\n",
 			    map, va, ftype, rv);
 			goto we_re_toast;
 		}
-		trapsignal(p, (rv == KERN_PROTECTION_FAILURE)
-		    ? SIGBUS : SIGSEGV, T_PAGEFLT);
+		sv.sival_int = fa;
+		trapsignal(p, SIGSEGV, vftype, SEGV_MAPERR, sv);
 		break;
 	}
 
-#ifndef DDB
+#if 0  /* Should this be left out?  */
+#if !defined(DDB) && !defined(KGDB)
 	/* XXX need to deal with this when DDB is present, too */
-	case T_TRCTRAP:	/* kernel trace trap; someone single stepping lcall's */
+	case T_TRCTRAP: /* kernel trace trap; someone single stepping lcall's */
 			/* syscall has to turn off the trace bit itself */
 		return;
 #endif
+#endif
 
 	case T_BPTFLT|T_USER:		/* bpt instruction fault */
+		sv.sival_int = rcr2();
+		trapsignal(p, SIGTRAP, type &~ T_USER, TRAP_BRKPT, sv);
+		break;
 	case T_TRCTRAP|T_USER:		/* trace trap */
+#if defined(MATH_EMULATE) || defined(GPL_MATH_EMULATE)
 	trace:
-		frame.tf_eflags &= ~PSL_T;
-		trapsignal(p, SIGTRAP, type &~ T_USER);
+#endif
+		sv.sival_int = rcr2();
+		trapsignal(p, SIGTRAP, type &~ T_USER, TRAP_TRACE, sv);
 		break;
 
-#include "isa.h"
 #if	NISA > 0
 	case T_NMI:
 	case T_NMI|T_USER:
-#ifdef DDB
+#if defined(DDB) || defined(KGDB)
 		/* NMI can be hooked up to a pushbutton for debugging */
 		printf ("NMI ... going to debugger\n");
-		if (kdb_trap (type, 0, &frame))
+#ifdef KGDB
+		if (kgdb_trap(type, &frame))
 			return;
 #endif
+#ifdef DDB
+		if (kdb_trap(type, 0, &frame))
+			return;
+#endif
+			return;
+#endif /* DDB || KGDB */
 		/* machine/parity/power fail/"kitchen sink" faults */
 		if (isa_nmi() == 0)
 			return;
@@ -469,13 +562,12 @@ trapwrite(addr)
 	p = curproc;
 	vm = p->p_vmspace;
 	if ((caddr_t)va >= vm->vm_maxsaddr) {
-		nss = clrnd(btoc(USRSTACK-(unsigned)va));
+		nss = btoc(USRSTACK-(unsigned)va);
 		if (nss > btoc(p->p_rlimit[RLIMIT_STACK].rlim_cur))
-			return 1;
+			nss = 0;
 	}
 
-	if (vm_fault(&vm->vm_map, va, VM_PROT_READ | VM_PROT_WRITE, FALSE)
-	    != KERN_SUCCESS)
+	if (uvm_fault(&vm->vm_map, va, 0, VM_PROT_READ | VM_PROT_WRITE))
 		return 1;
 
 	if (nss > vm->vm_ssize)
@@ -497,14 +589,16 @@ syscall(frame)
 	register caddr_t params;
 	register struct sysent *callp;
 	register struct proc *p;
-	int error, opc, nsys;
+	int orig_error, error, opc, nsys;
 	size_t argsize;
 	register_t code, args[8], rval[2];
 	u_quad_t sticks;
 
-	cnt.v_syscall++;
+	uvmexp.syscalls++;
+#ifdef DIAGNOSTIC
 	if (!USERMODE(frame.tf_cs, frame.tf_eflags))
 		panic("syscall");
+#endif
 	p = curproc;
 	sticks = p->p_sticks;
 	p->p_md.md_regs = &frame;
@@ -520,6 +614,17 @@ syscall(frame)
 			code = IBCS2_CVT_HIGH_SYSCALL(code);
 #endif
 	params = (caddr_t)frame.tf_esp + sizeof(int);
+
+#ifdef VM86
+	/*
+	 * VM86 mode application found our syscall trap gate by accident; let
+	 * it get a SIGSYS and have the VM86 handler in the process take care
+	 * of it.
+	 */
+	if (frame.tf_eflags & PSL_VM)
+		code = -1;
+	else
+#endif
 
 	switch (code) {
 	case SYS_syscall:
@@ -540,12 +645,15 @@ syscall(frame)
 		 * Like syscall, but code is a quad, so as to maintain
 		 * quad alignment for the rest of the arguments.
 		 */
+		if (callp != sysent
 #ifdef COMPAT_FREEBSD
-		/* FreeBSD has a same function in SYS___syscall */
-		if (callp != sysent && p->p_emul != &emul_freebsd)
-#else
-		if (callp != sysent)
+		    && p->p_emul != &emul_aout_freebsd
+		    && p->p_emul != &emul_elf_freebsd
 #endif
+#ifdef COMPAT_BSDOS
+		    && p->p_emul != &emul_bsdos
+#endif
+		    )
 			break;
 		code = fuword(params + _QUAD_LOWWORD * sizeof(int));
 		params += sizeof(quad_t);
@@ -591,18 +699,19 @@ syscall(frame)
 		error = copyin(params, (caddr_t)args, argsize);
 	else
 		error = 0;
+	orig_error = error;
 #ifdef SYSCALL_DEBUG
 	scdebug_call(p, code, args);
 #endif
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSCALL))
-		ktrsyscall(p->p_tracep, code, argsize, args);
+		ktrsyscall(p, code, argsize, args);
 #endif
 	if (error)
 		goto bad;
 	rval[0] = 0;
 	rval[1] = frame.tf_edx;
-	error = (*callp->sy_call)(p, args, rval);
+	orig_error = error = (*callp->sy_call)(p, args, rval);
 	switch (error) {
 	case 0:
 		/*
@@ -635,36 +744,28 @@ syscall(frame)
 	}
 
 #ifdef SYSCALL_DEBUG
-	scdebug_ret(p, code, error, rval);
+	scdebug_ret(p, code, orig_error, rval);
 #endif
 	userret(p, frame.tf_eip, sticks);
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p->p_tracep, code, error, rval[0]);
+		ktrsysret(p, code, orig_error, rval[0]);
 #endif
 }
 
 void
-child_return(p, frame)
-	struct proc *p;
-	struct trapframe frame;
+child_return(arg)
+	void *arg;
 {
+	struct proc *p = (struct proc *)arg;
+	struct trapframe *tf = p->p_md.md_regs;
 
-#ifdef COMPAT_LINUX
-	if (p->p_emul == &emul_linux_aout || p->p_emul == &emul_linux_elf) {
-		frame.tf_eax = 0;
-		frame.tf_edx = 0;
-	} else
-#endif
-	{
-		frame.tf_eax = p->p_pid;
-		frame.tf_edx = 1;
-	}
-	frame.tf_eflags &= ~PSL_C;
+	tf->tf_eax = 0;
+	tf->tf_eflags &= ~PSL_C;
 
-	userret(p, frame.tf_eip, 0);
+	userret(p, tf->tf_eip, 0);
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p->p_tracep, SYS_fork, 0, 0);
+		ktrsysret(p, SYS_fork, 0, 0);
 #endif
 }

@@ -1,7 +1,8 @@
+/*	$OpenBSD: mknod.c,v 1.9 2001/07/07 18:26:14 deraadt Exp $	*/
 /*	$NetBSD: mknod.c,v 1.8 1995/08/11 00:08:18 jtc Exp $	*/
 
 /*
- * Copyright (c) 1989, 1993
+ * Copyright (c) 1989, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mknod.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: mknod.c,v 1.8 1995/08/11 00:08:18 jtc Exp $";
+static char rcsid[] = "$OpenBSD: mknod.c,v 1.9 2001/07/07 18:26:14 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,44 +55,156 @@ static char rcsid[] = "$NetBSD: mknod.c,v 1.8 1995/08/11 00:08:18 jtc Exp $";
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <locale.h>
 #include <err.h>
 
-static void usage();
+extern char *__progname;
+
+int domknod(int, char **, mode_t);
+int domkfifo(int, char **, mode_t);
+void usage(int);
 
 int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	mode_t mode;
+	int ch, ismkfifo = 0;
+	void *set = NULL;
+	mode_t mode = 0;
 
-	if (argc != 5) {
-		usage();
-		/* NOTREACHED */
+	setlocale (LC_ALL, "");
+
+	if (strcmp(__progname, "mkfifo") == 0)
+		ismkfifo = 1;
+
+	while ((ch = getopt(argc, argv, "m:")) != -1)
+		switch(ch) {
+		case 'm':
+			if (!(set = setmode(optarg))) {
+				errx(1, "invalid file mode.");
+				/* NOTREACHED */
+			}
+
+			/*
+			 * In symbolic mode strings, the + and - operators are
+			 * interpreted relative to an assumed initial mode of
+			 * a=rw.
+			 */
+			mode = getmode(set, DEFFILEMODE);
+			free(set);
+			break;
+		case '?':
+		default:
+			usage(ismkfifo);
+		}
+	argc -= optind;
+	argv += optind;
+
+	if (argv[0] == NULL)
+		usage(ismkfifo);
+	if (!ismkfifo) {
+		if (argc == 2 && argv[1][0] == 'p') {
+			ismkfifo = 2;
+			argc--;
+			argv[1] = NULL;
+		} else if (argc != 4) {
+			usage(ismkfifo);
+			/* NOTREACHED */
+		}
 	}
 
-	mode = 0666;
-	if (argv[2][0] == 'c')
+	/*
+	 * If the user specified a mode via `-m', don't allow the umask
+	 * to modified it.  If no `-m' flag was specified, the default
+	 * mode is the value of the bitwise inclusive or of S_IRUSR,
+	 * S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, and S_IWOTH as modified by
+	 * the umask.
+	 */
+	if (set)
+		(void)umask(0);
+	else
+		mode = DEFFILEMODE;
+
+	if (ismkfifo)
+		exit(domkfifo(argc, argv, mode));
+	else
+		exit(domknod(argc, argv, mode));
+}
+
+int
+domknod(argc, argv, mode)
+	int argc;
+	char **argv;
+	mode_t mode;
+{
+	dev_t dev;
+	char *endp;
+	u_int major, minor;
+
+	if (argv[1][0] == 'c')
 		mode |= S_IFCHR;
-	else if (argv[2][0] == 'b')
+	else if (argv[1][0] == 'b')
 		mode |= S_IFBLK;
 	else {
 		errx(1, "node must be type 'b' or 'c'.");
 		/* NOTREACHED */
 	}
 
-	if (mknod(argv[1], mode, makedev(atoi(argv[3]), atoi(argv[4]))) < 0) {
-		err(1, "%s", argv[1]);
+	major = (long)strtoul(argv[2], &endp, 0);
+	if (endp == argv[2] || *endp != '\0') {
+		errx(1, "non-numeric major number.");
 		/* NOTREACHED */
 	}
+	minor = (long)strtoul(argv[3], &endp, 0);
+	if (endp == argv[3] || *endp != '\0') {
+		errx(1, "non-numeric minor number.");
+		/* NOTREACHED */
+	}
+	dev = makedev(major, minor);
+	if (major(dev) != major || minor(dev) != minor) {
+		errx(1, "major or minor number too large");
+		/* NOTREACHED */
+	}
+	if (mknod(argv[0], mode, dev) < 0) {
+		err(1, "%s", argv[0]);
+		/* NOTREACHED */
+	}
+	return(0);
+}
 
-	exit(0);
+int
+domkfifo(argc, argv, mode)
+	int argc;
+	char **argv;
+	mode_t mode;
+{
+	int rv;
+
+	for (rv = 0; *argv; ++argv) {
+		if (mkfifo(*argv, mode) < 0) {  
+			warn("%s", *argv);
+			rv = 1;
+		}
+	}
+	return(rv);
 }
 
 void
-usage()
+usage(ismkfifo)
+	int ismkfifo;
 {
-	fprintf(stderr, "usage: mknod name [b | c] major minor\n");
+
+	if (ismkfifo == 1)
+		(void)fprintf(stderr, "usage: %s [-m mode] fifoname ...\n",
+		    __progname);
+	else {
+		(void)fprintf(stderr, "usage: %s [-m mode] name [b | c] major minor\n",
+		    __progname);
+		(void)fprintf(stderr, "usage: %s [-m mode] name p\n",
+		    __progname);
+	}
 	exit(1);
 }

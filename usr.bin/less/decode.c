@@ -1,3 +1,5 @@
+/*	$OpenBSD: decode.c,v 1.2 2001/01/29 01:58:01 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -226,7 +228,7 @@ add_cmd_table(tlist, buf, len)
 	char *buf;
 	int len;
 {
-	register struct tablelist *t;
+	struct tablelist *t;
 
 	if (len == 0)
 		return (0);
@@ -280,9 +282,9 @@ cmd_search(cmd, table, endtable, sp)
 	char *endtable;
 	char **sp;
 {
-	register char *p;
-	register char *q;
-	register int a;
+	char *p;
+	char *q;
+	int a;
 
 	for (p = table, q = cmd;  p < endtable;  p++, q++)
 	{
@@ -365,8 +367,8 @@ cmd_decode(tlist, cmd, sp)
 	char *cmd;
 	char **sp;
 {
-	register struct tablelist *t;
-	register int action = A_INVALID;
+	struct tablelist *t;
+	int action = A_INVALID;
 
 	/*
 	 * Search thru all the command tables.
@@ -439,9 +441,9 @@ new_lesskey(buf, len)
 	int len;
 {
 	char *p;
-	register int c;
-	register int done;
-	register int n;
+	int c;
+	int done;
+	int n;
 
 	/*
 	 * New-style lesskey file.
@@ -486,10 +488,10 @@ new_lesskey(buf, len)
 lesskey(filename)
 	char *filename;
 {
-	register char *buf;
-	register POSITION len;
-	register long n;
-	register int f;
+	char *buf;
+	POSITION len;
+	long n;
+	int f;
 
 	/*
 	 * Try to open the lesskey file.

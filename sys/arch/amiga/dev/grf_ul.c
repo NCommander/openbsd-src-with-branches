@@ -1,4 +1,6 @@
-/*	$NetBSD: grf_ul.c,v 1.7 1995/10/09 02:14:46 chopps Exp $	*/
+/*	$OpenBSD: grf_ul.c,v 1.13 1997/09/18 13:39:54 niklas Exp $	*/
+/*	$NetBSD: grf_ul.c,v 1.24 1997/07/29 17:50:01 veego Exp $	*/
+
 #define UL_DEBUG
 
 /*
@@ -15,8 +17,9 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Lutz Vieweg.
- * 4. The name of the author may not be used to endorse or promote products
+ *      This product includes software developed by Ignatios Souvatzis for
+ *      the NetBSD project.
+ * 4. The name of the authors may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
@@ -53,12 +56,21 @@
 #include <amiga/dev/grfvar.h>
 #include <amiga/dev/grf_ulreg.h>
 
-#include <grf_ultmscode.h>
+extern u_int16_t tmscode[];
 
-int ul_ioctl __P((struct grf_softc *, u_long, void *, dev_t));
-int ul_getcmap __P((struct grf_softc *, struct grf_colormap *, dev_t));
-int ul_putcmap __P((struct grf_softc *, struct grf_colormap *, dev_t));
-int ul_bitblt __P((struct grf_softc *, struct grf_bitblt *, dev_t));
+int ul_ioctl(struct grf_softc *, u_long, void *, dev_t);
+int ul_getcmap(struct grf_softc *, struct grf_colormap *, dev_t);
+int ul_putcmap(struct grf_softc *, struct grf_colormap *, dev_t);
+int ul_bitblt(struct grf_softc *, struct grf_bitblt *, dev_t);
+int ul_blank(struct grf_softc *, int *, dev_t);
+
+static int ulisr(void *);
+int ulowell_alive(struct grfvideo_mode *);
+static void ul_load_code(struct grf_softc *);
+static int ul_load_mon(struct grf_softc *, struct grfvideo_mode *);
+static int ul_getvmode(struct grf_softc *, struct grfvideo_mode *);
+static int ul_setvmode(struct grf_softc *, unsigned);
+static __inline void ul_setfb(struct grf_softc *, u_long);
 
 /*
  * marked true early so that ulowell_cnprobe() can tell if we are alive. 
@@ -79,49 +91,45 @@ u_int8_t ul_ovl_palette[] = {
 struct grfvideo_mode ul_monitor_defs[] = {
 
  	/*
-	 * Horizontal values are given in TMS units, that is, for the 
-	 * A2410 board, units of 16 pixels. The ioctl multiplies (when 
-	 * exporting) or divides (when importing) them by 2 to conform to
-	 * the other grfs.
+	 * We give all these values in MI units, that is:
+	 * horizontal timings in units of pixels
+	 * vertical timings in units of lines
+	 * point of reference is blanking end.
 	 *
-	 * XXX This should have been in units of pixels, IMHO. If you change 
-	 * this, you must also change amiga/stand/grfconfig/grfconfig.c, 
-	 * grf_{rt,rh,cl}.c and egsgrfconfig (the latter to generate the 
-	 * horizontal timings in units of pixels instead of 8 pixels.
-	 * You will also have to write warnings in BIG BOLD RED BLINKING 
-	 * LETTERS all over the docs, and still people will fry their monitors.
+	 * The ul_load_mon transforms these values right before loading
+	 * them into the chip.
 	 *
-	 * btw, the _totals are always sync_start+1, to compute the frequencies
-	 * correctly. (see TMS34010 manual)
+	 * This leaves us with a single point where things are transformed,
+	 * which should make life easier if we ever change things again.
 	 */
 
 	/* 1024x768, 60Hz */
-	{1, "1024x768",   66667000, 1024, 768, 8, 
-		82, 18, 86, 12, 87, 794, 26, 797, 2, 798},
+	{ 1, "1024x768", 66667000, 1024, 768, 8, 
+	  1024, 1008, 1296, 1392, 768, 771, 774, 798, 0 },
 
 	/* 864x648, 70Hz */
-	{2, "864x648",    50000000,  864, 648, 8,
-		61,  7, 65,  3, 66, 667, 19, 677, 4, 678},
+	{ 2, "864x648", 50000000, 864, 648, 8,
+	  864, 928, 992, 1056, 648, 658, 663, 678, 0 },
 
 	/* 800x600, 60Hz */
-	{3, "800x600",    36000000,  800, 600, 8,
-		57,  7, 61,  3, 62, 619, 19, 629, 4, 630},
+	{ 3, "800x600", 36000000, 800, 600, 8,
+	  800, 864, 928, 992, 600, 610, 615, 630, 0 },
 
-	/* 640x400, 60 Hz, interlaced */
-	{4, "640x400I",   14318000,  640, 400, 8,
-		48,  8, 56,  3, 57, 239, 39, 262, 2, 240},
+ 	/* 640x400, 60 Hz, interlaced */
+	{ 4, "640x400i", 14318000, 640, 400, 8,
+	  640, 768, 832, 912, 200, 223, 203, 240, 1 },
 
-	/* 1024x768, 65Hz interlaced, s.th. is strange */
-	{5, "1024x768?I", 44980000, 1024, 768, 8,
-		76, 12, 79,  3, 80, 512, 24, 533, 2, 534},
+ 	/* 1024x768, 65Hz interlaced, s.th. is strange */
+	{ 5, "1024x768?i", 44980000, 1024, 768, 8,
+	  1024, 1072, 1136, 1280, 488, 509, 512, 534, 1 },
 
-	/* 1024x1024, 60Hz */
-	{6, "1024x1024", 80000000, 1024,1024, 8,
-		77, 13, 78,  5, 78,1051, 27,1054, 2,1055},
+ 	/* 1024x1024, 60Hz */
+	{ 6, "1024x1024", 80000000, 1024, 1024, 8,
+	  1024, 1040, 1120, 1248, 1024, 1027, 1030, 1055, 0 },
 
-	/* 736x480, 60 Hz */
-	{7, "736x480", 28636300, 736, 480, 8,
-		54,  8, 57,  3, 58, 503, 23, 514, 3, 515},
+ 	/* 736x480, 60 Hz */
+	{ 7, "736x480", 28636300, 736, 480, 8,
+	  736, 784, 848, 928, 480, 491, 495, 515, 0 },
 };
 
 int ulowell_mon_max = sizeof (ul_monitor_defs)/sizeof (ul_monitor_defs[0]);
@@ -158,9 +166,10 @@ static struct grfvideo_mode *current_mon;
  */
 
 static int 
-ulisr(gp)
-struct grf_softc *gp;
+ulisr(arg)
+	void *arg;
 {
+	struct grf_softc *gp = arg;
 	struct gspregs *ba;
 	u_int16_t	thebits;
 
@@ -203,8 +212,10 @@ ul_load_code(gp)
 	struct grf_ul_softc *gup;
 	struct gspregs *ba;
 	struct grfinfo *gi;
-	struct grf_colormap gcm;
 	int i,j;
+#if 0
+	struct grf_colormap gcm;
+#endif
 
 	gup = (struct grf_ul_softc *)gp;
 	ba = (struct gspregs *)gp->g_regkva;
@@ -218,7 +229,7 @@ ul_load_code(gp)
 	gi->gd_fbheight	= 1024;
 	gi->gd_colors	= 256;
 
-	ba->ctrl = (ba->ctrl & ~INCR) | (LBL|INCW);
+	ba->ctrl = (ba->ctrl & ~INCR) | (LBL | INCW);
 	ba->hstadrh = 0xC000;
 	ba->hstadrl = 0x0080;
 	ba->data = 0x0;		/* disable screen refresh and video output */
@@ -274,10 +285,7 @@ ul_load_code(gp)
 
 	/* font info was uploaded in ite_ul.c(ite_ulinit). */
 
-	/* unflush cache, unhalt cpu -> nmi starts to run */
-	ba->ctrl &= ~(HLT|CF);	
-
-#if 0
+#if 1
 	/* XXX load image palette with some initial values, slightly hacky */
 
 	ba->hstadrh = 0xfe80;
@@ -294,16 +302,49 @@ ul_load_code(gp)
 
 	/* 
 	 * XXX load shadow overlay palette with what the TMS code will load 
-	 * into the real one some time after the TMS code is started above. 
-	 * This is a rude hack.
+	 * into the real one some time after the TMS code is started below. 
+	 * This might be considered a rude hack.
 	 */ 
 	bcopy(ul_ovl_palette, gup->gus_ovcmap, 3*4);
+
+	/* 
+	 * Unflush cache, unhalt cpu -> nmi starts to run. This MUST NOT BE 
+	 * DONE before the image color map initialization above, to guarantee
+	 * the index register in the BT458 is not used by more than one CPU
+	 * at once.
+	 *
+	 * XXX For the same reason, we'll have to rething ul_putcmap(). For
+	 * details, look at comment there.
+	 */
+	ba->ctrl &= ~(HLT|CF);	
+
 #else
-	/* XXX This version will work for the overlay, if our queue codes 
+	/*
+	 * XXX I wonder why this partially ever worked. 
+	 *
+	 * This can't possibly work this way, as we are copyin()ing data in
+	 * ul_putcmap.
+	 *
+	 * I guess this partially worked because SFC happened to point to 
+	 * to supervisor data space on 68030 machines coming from the old 
+	 * boot loader.
+	 *
+	 * While this looks more correct than the hack in the other part of the
+	 * loop, we would have to do our own version of the loop through 
+	 * colormap entries, set up command buffer, and call gsp_write(), or
+	 * factor out some code.
+	 */
+
+	/*
+	 * XXX This version will work for the overlay, if our queue codes 
 	 * initial conditions are set at load time (not start time).
 	 * It further assumes that ul_putcmap only uses the 
 	 * GRFIMDEV/GRFOVDEV bits of the dev parameter.
 	 */
+
+
+	/* unflush cache, unhalt cpu first -> nmi starts to run */
+	ba->ctrl &= ~(HLT|CF);	
 
 	gcm.index = 0;
 	gcm.count = 16;
@@ -343,18 +384,20 @@ ul_load_mon(gp, md)
 	gi->gd_dyn.gdi_dx	= 0;
 	gi->gd_dyn.gdi_dy	= 0;
 
-	ba->ctrl = (ba->ctrl & ~INCR) | (LBL|INCW);
+	ba->ctrl = (ba->ctrl & ~INCR) | (LBL | INCW); /* XXX */
 
 	ba->hstadrh = 0xC000;
 	ba->hstadrl = 0x0000;
-	ba->data = md->hsync_stop;
-	ba->data = md->hblank_stop;
-	ba->data = md->hblank_start;
-	ba->data = md->hsync_start;
-	ba->data = md->vsync_stop;
-	ba->data = md->vblank_stop;
-	ba->data = md->vblank_start;
-	ba->data = md->vsync_start;
+
+	ba->data = (md->hsync_stop - md->hsync_start)/16;
+	ba->data = (md->htotal - md->hsync_start)/16 - 1;
+	ba->data = (md->hblank_start + md->htotal - md->hsync_start)/16 - 1;
+	ba->data = md->htotal/16 - 1;
+
+	ba->data = md->vsync_stop - md->vsync_start;
+	ba->data = md->vtotal - md->vsync_start - 1;
+	ba->data = md->vblank_start + md->vtotal - md->vsync_start - 1;
+	ba->data = md->vtotal - 1;
 
 	ba->ctrl &= ~INCW;
 	ba->hstadrh = 0xFE90;
@@ -371,11 +414,10 @@ ul_load_mon(gp, md)
 		md->pixel_clock = ulowell_clock[0];
 	}
 
-	ba->ctrl |= LBL|INCW;
+	ba->ctrl |= LBL | INCW;
 	ba->hstadrh = 0xC000;
 	ba->hstadrl = 0x0080;
-	ba->data = (md->vblank_start - md->vblank_stop == md->disp_height ?
-	    0xf020 : 0xb020);
+	ba->data = md->disp_flags & GRF_FLAGS_LACE ? 0xb020 : 0xf020;
 
 	/* I guess this should be in the yet unimplemented mode select ioctl */
 	/* Hm.. maybe not. We always put the console on overlay plane no 0. */
@@ -394,32 +436,36 @@ ul_load_mon(gp, md)
 	return(1);
 }
 
-int ul_mode __P((struct grf_softc *, int, void *, int , int));
+int ul_mode(struct grf_softc *, u_long, void *, u_long, int);
 
-void grfulattach __P((struct device *, struct device *, void *));
-int grfulprint __P((void *, char *));
-int grfulmatch __P((struct device *, struct cfdata *, void *));
+void grfulattach(struct device *, struct device *, void *);
+int grfulprint(void *, const char *);
+int grfulmatch(struct device *, void *, void *);
  
-struct cfdriver grfulcd = {
-	NULL, "grful", (cfmatch_t)grfulmatch, grfulattach, 
-	DV_DULL, sizeof(struct grf_ul_softc), NULL, 0 };
+struct cfattach grful_ca = {
+	sizeof(struct grf_ul_softc), grfulmatch, grfulattach
+};
+
+struct cfdriver grful_cd = {
+	NULL, "grful", DV_DULL, NULL, 0
+};
 
 /*
  * only used in console init
  */
-static struct cfdata *cfdata;
+static struct cfdata *grful_cfdata;
 
 /*
  * we make sure to only init things once.  this is somewhat
  * tricky regarding the console.
  */
 int 
-grfulmatch(pdp, cfp, auxp)
+grfulmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cfp;
-	void *auxp;
+	void *match, *auxp;
 {
 #ifdef ULOWELLCONSOLE
+	struct cfdata *cfp = match;
 	static int ulconunit = -1;
 #endif
 	struct zbus_args *zap;
@@ -441,7 +487,7 @@ grfulmatch(pdp, cfp, auxp)
 #ifdef ULOWELLCONSOLE
 	if (amiga_realconfig == 0 || ulconunit != cfp->cf_unit) {
 #endif
-		if ((unsigned)ulowell_default_mon >= ulowell_mon_max)
+		if ((unsigned)ulowell_default_mon > ulowell_mon_max)
 			ulowell_default_mon = 1;
 
 		current_mon = ul_monitor_defs + ulowell_default_mon - 1;
@@ -450,7 +496,7 @@ grfulmatch(pdp, cfp, auxp)
 #ifdef ULOWELLCONSOLE 
 		if (amiga_realconfig == 0) {
 			ulconunit = cfp->cf_unit;
-			cfdata = cfp;
+			grful_cfdata = cfp;
 		} 
 	}
 #endif
@@ -519,13 +565,13 @@ grfulattach(pdp, dp, auxp)
 	/*
 	 * attach grf
 	 */
-	amiga_config_found(cfdata, &gp->g_device, gp, grfulprint);
+	amiga_config_found(grful_cfdata, &gp->g_device, gp, grfulprint);
 }
 
 int
 grfulprint(auxp, pnp)
 	void *auxp;
-	char *pnp;
+	const char *pnp;
 {
 	if (pnp)
 		printf("grf%d at %s", ((struct grf_softc *)auxp)->g_unit,
@@ -556,26 +602,17 @@ ul_getvmode (gp, vm)
 	vm->disp_height  = md->disp_height;
 	vm->depth        = md->depth;
 
-	/* XXX should use 16 instead of 2, but others use 1 instead of 8 */
+	vm->hblank_start = md->hblank_start;
+	vm->hsync_start  = md->hsync_start;
+	vm->hsync_stop   = md->hsync_stop;
+	vm->htotal       = md->htotal;
 
-	/*
-	 * XXX another idea: maybe we should transform the timings to
-	 * have blank stop as point of reference (like other grfs) instead
-	 * of sync start?
-	 */
-
-	vm->hblank_start = (md->hblank_start - md->hblank_stop) * 2;
-	vm->hblank_stop  = (md->htotal - 1) * 2;
-	vm->hsync_start  = (md->hsync_start  - md->hblank_stop) * 2;
-	vm->hsync_stop   = (md->hsync_stop + md->htotal - md->hblank_stop) * 2;
-	vm->htotal       = md->htotal * 2;
-
-	vm->vblank_start = md->vblank_start - md->vblank_stop;
-	vm->vblank_stop  = md->vtotal - 1;
-	vm->vsync_start  = md->vsync_start - md->vblank_stop;
-	vm->vsync_stop   = md->vsync_stop + md->vtotal - md->vblank_stop;
+	vm->vblank_start = md->vblank_start;
+	vm->vsync_start  = md->vsync_start;
+	vm->vsync_stop   = md->vsync_stop;
 	vm->vtotal       = md->vtotal;
 
+	vm->disp_flags	 = md->disp_flags;
 	return 0;
 }
 
@@ -609,7 +646,7 @@ ul_setvmode (gp, mode)
 static __inline void
 ul_setfb(gp, cmd)
 	struct grf_softc *gp;
-	int cmd;
+	u_long cmd;
 {
 	struct grf_ul_softc *gup;
 	struct gspregs *ba;
@@ -647,9 +684,10 @@ ul_setfb(gp, cmd)
 int
 ul_mode(gp, cmd, arg, a2, a3)
 	struct grf_softc *gp;
-	int cmd;
+	u_long cmd;
 	void *arg;
-	int a2, a3;
+	u_long a2;
+	int a3;
 {
 	int i;
 	struct grfdyninfo *gd;
@@ -682,7 +720,7 @@ ul_mode(gp, cmd, arg, a2, a3)
 		return 0;
 
 	case GM_GRFIOCTL:
-		return ul_ioctl (gp, (u_long)arg, (void *)a2, (dev_t)a3);
+		return ul_ioctl (gp, a2, arg, (dev_t)a3);
 
 	default:
 		break;
@@ -730,6 +768,9 @@ ul_ioctl (gp, cmd, data, dev)
 
 	case GRFIOCBITBLT:
 		return ul_bitblt (gp, (struct grf_bitblt *) data, dev);
+
+	case GRFIOCBLANK:
+		return ul_blank (gp, (int *) data, dev);
 	}
 
 	return EINVAL;
@@ -819,6 +860,14 @@ ul_putcmap (gp, cmap, dev)
 
 	/* then write from there to the hardware */
 	ba = (struct gspregs *)gp->g_regkva;
+	/*
+	 * XXX This is a bad thing to do.
+	 * We should always use the gsp call, or have a means to arbitrate 
+	 * the usage of the BT458 index register. Else there might be a 
+	 * race condition (when writing both colormaps at nearly the same
+	 * time), where one CPU changes the index register when the other
+	 * one has not finished using it.
+	 */
 	if (mxidx > 4) {
 		/* image color map: we can write, with a hack, directly */
 		ba->ctrl = LBL;
@@ -849,6 +898,25 @@ ul_putcmap (gp, cmap, dev)
 	return 0;
 }
 
+int
+ul_blank(gp, onoff, dev)
+	struct grf_softc *gp;
+	int *onoff;
+	dev_t dev;
+{
+	struct gspregs *gsp;
+
+	gsp = (struct gspregs *)gp->g_regkva;
+	gsp->ctrl = (gsp->ctrl & ~(INCR | INCW)) | LBL;
+	gsp->hstadrh = 0xC000;
+	gsp->hstadrl = 0x0080;
+	if (*onoff > 0)
+		gsp->data |= 0x9000;
+	else
+		gsp->data &= ~0x9000;
+		
+	return 0;
+}
 /*
  * !!! THIS AREA UNDER CONSTRUCTION !!!
  */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: upap.h,v 1.4 1997/09/05 04:32:46 millert Exp $	*/
+
 /*
  * upap.h - User/Password Authentication Protocol definitions.
  *
@@ -16,7 +18,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $Id: upap.h,v 1.5 1995/07/04 23:48:12 paulus Exp $
+ * Id: upap.h,v 1.6 1996/07/01 01:21:45 paulus Exp
  */
 
 /*
@@ -79,15 +81,9 @@ typedef struct upap_state {
 #define UPAP_DEFTIMEOUT	3	/* Timeout (seconds) for retransmitting req */
 #define UPAP_DEFREQTIME	30	/* Time to wait for auth-req from peer */
 
-
 extern upap_state upap[];
 
-void upap_init __P((int));
-void upap_authwithpeer __P((int, char *, char *));
-void upap_authpeer __P((int));
-void upap_lowerup __P((int));
-void upap_lowerdown __P((int));
-void upap_input __P((int, u_char *, int));
-void upap_protrej __P((int));
-int  upap_printpkt __P((u_char *, int,
-			void (*) __P((void *, char *, ...)), void *));
+void upap_authwithpeer(int, char *, char *);
+void upap_authpeer(int);
+
+extern struct protent pap_protent;

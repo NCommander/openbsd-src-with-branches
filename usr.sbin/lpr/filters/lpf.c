@@ -1,3 +1,5 @@
+/*	$OpenBSD: lpf.c,v 1.5 2001/08/30 17:38:13 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,13 +34,17 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)lpf.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static const char sccsid[] = "@(#)lpf.c	8.1 (Berkeley) 6/6/93";
+#else
+static const char rcsid[] = "$OpenBSD: lpf.c,v 1.5 2001/08/30 17:38:13 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -46,8 +52,6 @@ static char sccsid[] = "@(#)lpf.c	8.1 (Berkeley) 6/6/93";
  *	with ^H's to overwritten lines.  Thus this works like 'ul'
  *	but is much better: it can handle more than 2 overwrites
  *	and it is written with some style.
- *	modified by kls to use register references instead of arrays
- *	to try to gain a little speed.
  */
 
 #include <signal.h>
@@ -66,6 +70,7 @@ int	length = 66;	/* page length */
 int	indent;		/* indentation length */
 int	npages = 1;
 int	literal;	/* print control characters */
+int	onlcr;		/* map nl->cr-nl */
 char	*name;		/* user's login name */
 char	*host;		/* user's machine name */
 char	*acctfile;	/* accounting information file */
@@ -75,11 +80,11 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register FILE *p = stdin, *o = stdout;
-	register int i, col;
-	register char *cp;
-	int done, linedone, maxrep;
-	char ch, *limit;
+	FILE *p = stdin, *o = stdout;
+	int i, col;
+	char *cp;
+	int done, linedone, maxrep, ch;
+	char *limit;
 
 	while (--argc) {
 		if (*(cp = *++argv) == '-') {
@@ -105,6 +110,10 @@ main(argc, argv)
 
 			case 'i':
 				indent = atoi(&cp[2]);
+				break;
+
+			case 'r':	/* map nl->cr-nl */
+				onlcr++;
 				break;
 
 			case 'c':	/* Print control chars */
@@ -166,7 +175,7 @@ main(argc, argv)
 				}
 
 			default:
-				if (col >= width || !literal && ch < ' ') {
+				if ((col >= width) || (!literal && ch < ' ')) {
 					col++;
 					break;
 				}
@@ -195,8 +204,11 @@ main(argc, argv)
 			}
 			if (i < maxrep)
 				putc('\r', o);
-			else
+			else {
+				if (onlcr)
+					putc('\r', o);
 				putc(ch, o);
+			}
 			if (++lineno >= length) {
 				fflush(o);
 				npages++;

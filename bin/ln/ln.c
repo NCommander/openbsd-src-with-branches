@@ -1,3 +1,4 @@
+/*	$OpenBSD: ln.c,v 1.6 2001/08/09 03:33:17 millert Exp $	*/
 /*	$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $	*/
 
 /*
@@ -34,16 +35,16 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1987, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)ln.c	8.2 (Berkeley) 3/31/94";
+static const char sccsid[] = "@(#)ln.c	8.2 (Berkeley) 3/31/94";
 #else
-static char rcsid[] = "$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: ln.c,v 1.6 2001/08/09 03:33:17 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,12 +60,13 @@ static char rcsid[] = "$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $";
 
 int	dirflag;			/* Undocumented directory flag. */
 int	fflag;				/* Unlink existing files. */
+int	hflag;				/* Check new name for symlink first. */
 int	sflag;				/* Symbolic, not hard, link. */
 					/* System link call. */
-int (*linkf) __P((const char *, const char *));
+int (*linkf)(const char *, const char *);
 
-int	linkit __P((char *, char *, int));
-void	usage __P((void));
+int	linkit(char *, char *, int);
+void	usage(void);
 
 int
 main(argc, argv)
@@ -75,7 +77,7 @@ main(argc, argv)
 	int ch, exitval;
 	char *sourcedir;
 
-	while ((ch = getopt(argc, argv, "Ffs")) != -1)
+	while ((ch = getopt(argc, argv, "Ffhns")) != -1)
 		switch (ch) {
 		case 'F':
 			dirflag = 1;	/* XXX: deliberately undocumented. */
@@ -83,10 +85,13 @@ main(argc, argv)
 		case 'f':
 			fflag = 1;
 			break;
+		case 'h':
+		case 'n':
+			hflag = 1;
+			break;
 		case 's':
 			sflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -122,6 +127,7 @@ linkit(target, source, isdir)
 {
 	struct stat sb;
 	char *p, path[MAXPATHLEN];
+	int (*statf)(const char *, struct stat *);
 
 	if (!sflag) {
 		/* If target doesn't exist, quit now. */
@@ -136,8 +142,10 @@ linkit(target, source, isdir)
 		}
 	}
 
+	statf = hflag ? lstat : stat;
+
 	/* If the source is a directory, append the target's name. */
-	if (isdir || !stat(source, &sb) && S_ISDIR(sb.st_mode)) {
+	if (isdir || (!statf(source, &sb) && S_ISDIR(sb.st_mode))) {
 		if ((p = strrchr(target, '/')) == NULL)
 			p = target;
 		else
@@ -150,7 +158,7 @@ linkit(target, source, isdir)
 	 * If the file exists, and -f was specified, unlink it.
 	 * Attempt the link.
 	 */
-	if (fflag && unlink(source) < 0 && errno != ENOENT ||
+	if ((fflag && unlink(source) < 0 && errno != ENOENT) ||
 	    (*linkf)(target, source)) {
 		warn("%s", source);
 		return (1);
@@ -162,8 +170,10 @@ linkit(target, source, isdir)
 void
 usage()
 {
+	extern char *__progname;
 
 	(void)fprintf(stderr,
-	    "usage:\tln [-fs] file1 file2\n\tln [-fs] file ... directory\n");
+	    "usage: %s [-fhns] file1 file2\n\tln [-fs] file ... directory\n",
+	    __progname);
 	exit(1);
 }

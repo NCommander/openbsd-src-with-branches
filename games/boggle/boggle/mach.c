@@ -1,3 +1,4 @@
+/*	$OpenBSD: mach.c,v 1.3 1998/09/24 06:45:06 pjanzen Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)mach.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: mach.c,v 1.3 1998/09/24 06:45:06 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +50,8 @@ static char rcsid[] = "$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $";
  *
  * Input is raw and unechoed
  */
+#include <sys/ioctl.h>
+
 #include <ctype.h>
 #include <curses.h>
 #include <fcntl.h>
@@ -70,14 +73,14 @@ int ncols, nlines;
 extern char *pword[], *mword[];
 extern int ngames, nmwords, npwords, tnmwords, tnpwords;
 
-static void	cont_catcher __P((int));
-static int	prwidth __P((char *[], int));
-static void	prword __P((char *[], int));
-static void	stop_catcher __P((int));
-static void	tty_cleanup __P((void));
-static int	tty_setup __P((void));
-static void	tty_showboard __P((char *));
-static void	winch_catcher __P((int));
+static void	cont_catcher(int);
+static int	prwidth(char *[], int);
+static void	prword(char *[], int);
+static void	stop_catcher(int);
+static void	tty_cleanup(void);
+static int	tty_setup(void);
+static void	tty_showboard(char *);
+static void	winch_catcher(int);
 
 /*
  * Do system dependent initialization
@@ -97,7 +100,7 @@ setup(sflag, seed)
 		time(&seed);
 	srandom(seed);
 	if (debug)
-		(void) printf("seed = %ld\n", seed);
+		(void) printf("seed = %ld\n", (long) seed);
 	return(0);
 }
 
@@ -140,9 +143,9 @@ results()
  
 	move(SCORE_LINE, SCORE_COL);
 	printw("Percentage: %0.2f%% (%0.2f%% over %d game%s)\n",
-        denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
-        denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
-        ngames, ngames > 1 ? "s" : "");
+	denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
+	denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
+	ngames, ngames > 1 ? "s" : "");
 }
 
 static void

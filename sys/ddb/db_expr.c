@@ -1,8 +1,9 @@
-/*	$NetBSD: db_expr.c,v 1.4 1994/06/29 06:31:06 cgd Exp $	*/
+/*	$OpenBSD: db_expr.c,v 1.6 1997/07/19 22:31:17 niklas Exp $	*/
+/*	$NetBSD: db_expr.c,v 1.5 1996/02/05 01:56:58 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -32,11 +33,16 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/db_machdep.h>
 
 #include <ddb/db_lex.h>
 #include <ddb/db_access.h>
 #include <ddb/db_command.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_variables.h>
 
 boolean_t
 db_term(valuep)
@@ -53,7 +59,7 @@ db_term(valuep)
 	    return (TRUE);
 	}
 	if (t == tNUMBER) {
-	    *valuep = (db_expr_t)db_tok_number;
+	    *valuep = db_tok_number;
 	    return (TRUE);
 	}
 	if (t == tDOT) {

@@ -9,14 +9,14 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: config.c,v 1.19 2001/09/04 22:41:27 ca Exp $")
+SM_RCSID("@(#)$Sendmail: config.c,v 1.26 2001/12/14 00:26:18 ca Exp $")
 
 #include <stdlib.h>
 #include <sm/heap.h>
 #include <sm/string.h>
 #include <sm/conf.h>
 
-/*
+/*
 **  PUTENV -- emulation of putenv() in terms of setenv()
 **
 **	Not needed on Posix-compliant systems.
@@ -126,7 +126,7 @@ putenv(env)
 
 # endif /* NEEDPUTENV == 2 */
 #endif /* NEEDPUTENV */
-/*
+/*
 **  UNSETENV -- remove a variable from the environment
 **
 **	Not needed on newer systems.

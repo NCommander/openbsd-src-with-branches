@@ -1,30 +1,45 @@
-/*	$NetBSD: mapper.c,v 1.2 1995/10/03 23:16:56 thorpej Exp $	*/
+/*	$NetBSD: mapper.c,v 1.3 1995/12/10 11:12:04 mycroft Exp $	*/
 
 /* Mapper for connections between MRouteD multicast routers.
  * Written by Pavel Curtis <Pavel@PARC.Xerox.Com>
  */
 
 /*
- * Copyright (c) Xerox Corporation 1992. All rights reserved.
- *  
- * License is granted to copy, to use, and to make and to use derivative
- * works for research and evaluation purposes, provided that Xerox is
- * acknowledged in all documentation pertaining to any such copy or derivative
- * work. Xerox grants no other licenses expressed or implied. The Xerox trade
- * name should not be used in any advertising without its written permission.
- *  
- * XEROX CORPORATION MAKES NO REPRESENTATIONS CONCERNING EITHER THE
- * MERCHANTABILITY OF THIS SOFTWARE OR THE SUITABILITY OF THIS SOFTWARE
- * FOR ANY PARTICULAR PURPOSE.  The software is provided "as is" without
- * express or implied warranty of any kind.
- *  
- * These notices must be retained in any copies of any part of this software.
+ * Copyright (c) 1992, 2001 Xerox Corporation.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * Neither name of the Xerox, PARC, nor the names of its contributors may be used
+ * to endorse or promote products derived from this software 
+ * without specific prior written permission. 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS'' 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE XEROX CORPORATION OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include <string.h>
 #include <netdb.h>
 #include <sys/time.h>
 #include "defs.h"
+#include <arpa/inet.h>
+#include <stdarg.h>
 
 #define DEFAULT_TIMEOUT	2	/* How long to wait before retrying requests */
 #define DEFAULT_RETRIES 1	/* How many times to ask each router */
@@ -67,6 +82,23 @@ int	timeout = DEFAULT_TIMEOUT;
 int	show_names = TRUE;
 vifi_t  numvifs;		/* to keep loader happy */
 				/* (see COPY_TABLES macro called in kern.c) */
+
+Node *			find_node(u_int32_t addr, Node **ptr);
+Interface *		find_interface(u_int32_t addr, Node *node);
+Neighbor *		find_neighbor(u_int32_t addr, Node *node);
+int			main(int argc, char *argv[]);
+void			ask(u_int32_t dst);
+void			ask2(u_int32_t dst);
+int			retry_requests(Node *node);
+char *			inet_name(u_int32_t addr);
+void			print_map(Node *node);
+char *			graph_name(u_int32_t addr, char *buf, size_t len);
+void			graph_edges(Node *node);
+void			elide_aliases(Node *node);
+void			graph_map(void);
+int			get_number(int *var, int deflt, char ***pargv,
+			    int *pargc);
+u_int32_t		host_addr(char *name);
 
 
 Node *find_node(addr, ptr)
@@ -135,23 +167,24 @@ Neighbor *find_neighbor(addr, node)
  * message and the current debug level.  For errors of severity LOG_ERR or
  * worse, terminate the program.
  */
-void log(severity, syserr, format, a, b, c, d, e)
-    int severity, syserr;
-    char *format;
-    int a, b, c, d, e;
+void
+log(int severity, int syserr, char *format, ...)
 {
-    char fmt[100];
+    va_list ap;
+    char    fmt[100];
 
     switch (debug) {
 	case 0: if (severity > LOG_WARNING) return;
 	case 1: if (severity > LOG_NOTICE ) return;
 	case 2: if (severity > LOG_INFO   ) return;
 	default:
+	    va_start(ap, format);
 	    fmt[0] = '\0';
 	    if (severity == LOG_WARNING)
 		strcat(fmt, "warning - ");
 	    strncat(fmt, format, 80);
-	    fprintf(stderr, fmt, a, b, c, d, e);
+	    vfprintf(stderr, fmt, ap);
+	    va_end(ap);
 	    if (syserr == 0)
 		fprintf(stderr, "\n");
 	    else if (syserr < sys_nerr)
@@ -161,7 +194,7 @@ void log(severity, syserr, format, a, b, c, d, e)
     }
 
     if (severity <= LOG_ERR)
-	exit(-1);
+	exit(1);
 }
 
 
@@ -186,8 +219,9 @@ void ask2(dst)
 /*
  * Process an incoming group membership report.
  */
-void accept_group_report(src, dst, group)
+void accept_group_report(src, dst, group, r_type)
     u_int32_t src, dst, group;
+    int r_type;
 {
     log(LOG_INFO, 0, "ignoring IGMP group membership report from %s to %s",
 	inet_fmt(src, s1), inet_fmt(dst, s2));
@@ -197,8 +231,10 @@ void accept_group_report(src, dst, group)
 /*
  * Process an incoming neighbor probe message.
  */
-void accept_probe(src, dst)
-    u_int32_t src, dst;
+void accept_probe(src, dst, p, datalen, level)
+    u_int32_t src, dst, level;
+    char *p;
+    int datalen;
 {
     log(LOG_INFO, 0, "ignoring DVMRP probe from %s to %s",
 	inet_fmt(src, s1), inet_fmt(dst, s2));
@@ -208,8 +244,8 @@ void accept_probe(src, dst)
 /*
  * Process an incoming route report message.
  */
-void accept_report(src, dst, p, datalen)
-    u_int32_t src, dst;
+void accept_report(src, dst, p, datalen, level)
+    u_int32_t src, dst, level;
     char *p;
     int datalen;
 {
@@ -260,8 +296,8 @@ void accept_neighbors(src, dst, p, datalen, level)
 
     /* if node is running a recent mrouted, ask for additional info */
     if (level != 0) {
-	node->version = ntohl(level);
-	node->tries = 0;
+	node->version = level;
+	node->tries = 1;
 	ask2(src);
 	return;
     }
@@ -333,7 +369,7 @@ void accept_neighbors(src, dst, p, datalen, level)
 		    for (nb_n = old_neighbors; nb_n; nb_n = nb_n->next)
 			if (nb_i->addr == nb_n->addr) {
 			    if (nb_i->metric != nb_n->metric
-				|| nb_i->threshold != nb_i->threshold)
+				|| nb_i->threshold != nb_n->threshold)
 				log(LOG_WARNING, 0,
 				    "inconsistent %s for neighbor %s of %s",
 				    "metric/threshold",
@@ -404,12 +440,14 @@ void accept_neighbors(src, dst, p, datalen, level)
     }
 }
 
-void accept_neighbors2(src, dst, p, datalen)
-    u_int32_t src, dst;
+void accept_neighbors2(src, dst, p, datalen, level)
+    u_int32_t src, dst, level;
     u_char *p;
     int datalen;
 {
     Node       *node = find_node(src, &routers);
+    u_int broken_cisco = ((level & 0xffff) == 0x020a); /* 10.2 */
+    /* well, only possibly_broken_cisco, but that's too long to type. */
 
     if (node->tries == 0)	/* Never heard of 'em; must have hit them at */
 	node->tries = 1;	/* least once, though...*/
@@ -436,6 +474,11 @@ void accept_neighbors2(src, dst, p, datalen)
 	flags = *p++;
 	ncount = *p++;
 	datalen -= 4 + 4;
+
+	if (broken_cisco && ncount == 0)	/* dumb Ciscos */
+		ncount = 1;
+	if (broken_cisco && ncount > 15)	/* dumb Ciscos */
+		ncount = ncount & 0xf;
 
 	/* Fix up any alias information */
 	ifc_node = find_node(ifc_addr, &routers);
@@ -496,7 +539,7 @@ void accept_neighbors2(src, dst, p, datalen)
 	old_neighbors = ifc->neighbors;
 	
 	/* Add the neighbors for this interface */
-	while (ncount--) {
+	while (ncount-- && datalen > 0) {
 	    u_int32_t 	neighbor;
 	    Neighbor   *nb;
 	    Node       *n_node;
@@ -650,14 +693,15 @@ void print_map(node)
 }
 
 
-char *graph_name(addr, buf)
+char *graph_name(addr, buf, len)
     u_int32_t addr;
     char *buf;
+    size_t len;
 {
     char *name;
 
     if (show_names  &&  (name = inet_name(addr)))
-	strcpy(buf, name);
+	strlcpy(buf, name, len);
     else
 	inet_fmt(addr, buf);
 
@@ -670,7 +714,7 @@ void graph_edges(node)
 {
     Interface *ifc;
     Neighbor *nb;
-    char name[100];
+    char name[MAXHOSTNAMELEN];
 
     if (node) {
 	graph_edges(node->left);
@@ -678,7 +722,7 @@ void graph_edges(node)
 	    printf("  %d {$ NP %d0 %d0 $} \"%s%s\" \n",
 		   (int) node->addr,
 		   node->addr & 0xFF, (node->addr >> 8) & 0xFF,
-		   graph_name(node->addr, name),
+		   graph_name(node->addr, name, sizeof(name)),
 		   node->u.interfaces ? "" : "*");
 	    for (ifc = node->u.interfaces; ifc; ifc = ifc->next)
 		for (nb = ifc->neighbors; nb; nb = nb->next) {
@@ -796,16 +840,15 @@ int main(argc, argv)
 {
     int flood = FALSE, graph = FALSE;
     
-#ifdef SYSV
-    setvbuf(stderr, NULL, _IOLBF, 0);
-#else
-    setlinebuf(stderr);
-#endif
-
     if (geteuid() != 0) {
-	fprintf(stderr, "must be root\n");
-	exit(1);
+      fprintf(stderr, "map-mbone: must be root\n");
+      exit(1);
     }
+
+    init_igmp();
+    setuid(getuid());
+
+    setlinebuf(stderr);
 
     argv++, argc--;
     while (argc > 0 && argv[0][0] == '-') {
@@ -855,8 +898,6 @@ int main(argc, argv)
     if (debug)
 	fprintf(stderr, "Debug level %u\n", debug);
 
-    init_igmp();
-
     {				/* Find a good local address for us. */
 	int udp;
 	struct sockaddr_in addr;
@@ -872,7 +913,7 @@ int main(argc, argv)
 	    || connect(udp, (struct sockaddr *) &addr, sizeof(addr)) < 0
 	    || getsockname(udp, (struct sockaddr *) &addr, &addrlen) < 0) {
 	    perror("Determining local address");
-	    exit(-1);
+	    exit(1);
 	}
 	close(udp);
 	our_addr = addr.sin_addr.s_addr;
@@ -937,24 +978,54 @@ int main(argc, argv)
     exit(0);
 }
 
-void accept_prune()
+/* dummies */
+void accept_prune(src, dst, p, datalen)
+	u_int32_t src, dst;
+	char *p;
+	int datalen;
 {
 }
-void accept_graft()
+void accept_graft(src, dst, p, datalen)
+	u_int32_t src, dst;
+	char *p;
+	int datalen;
 {
 }
-void accept_g_ack()
+void accept_g_ack(src, dst, p, datalen)
+	u_int32_t src, dst;
+	char *p;
+	int datalen;
 {
 }
-void add_table_entry()
+void add_table_entry(origin, mcastgrp)
+	u_int32_t origin, mcastgrp;
 {
 }
-void accept_leave_message()
+void accept_leave_message(src, dst, group)
+	u_int32_t src, dst, group;
 {
 }
-void accept_mtrace()
+void accept_mtrace(src, dst, group, data, no, datalen)
+	u_int32_t src, dst, group;
+	char *data;
+	u_int no;
+	int datalen;
 {
 }
-void accept_membership_query()
+void accept_membership_query(src, dst, group, tmo)
+	u_int32_t src, dst, group;
+	int tmo;
+{
+}
+void accept_info_request(src, dst, p, datalen)
+	u_int32_t src, dst;
+	u_char *p;
+	int datalen;
+{
+}
+void accept_info_reply(src, dst, p, datalen)
+	u_int32_t src, dst;
+	u_char *p;
+	int datalen;
 {
 }

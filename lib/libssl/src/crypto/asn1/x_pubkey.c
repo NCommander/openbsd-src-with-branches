@@ -58,16 +58,10 @@
 
 #include <stdio.h>
 #include "cryptlib.h"
-#include "asn1_mac.h"
+#include <openssl/asn1_mac.h>
+#include <openssl/x509.h>
 
-/*
- * ASN1err(ASN1_F_D2I_X509_PUBKEY,ASN1_R_LENGTH_MISMATCH);
- * ASN1err(ASN1_F_X509_PUBKEY_NEW,ASN1_R_LENGTH_MISMATCH);
- */
-
-int i2d_X509_PUBKEY(a,pp)
-X509_PUBKEY *a;
-unsigned char **pp;
+int i2d_X509_PUBKEY(X509_PUBKEY *a, unsigned char **pp)
 	{
 	M_ASN1_I2D_vars(a);
 
@@ -82,10 +76,8 @@ unsigned char **pp;
 	M_ASN1_I2D_finish();
 	}
 
-X509_PUBKEY *d2i_X509_PUBKEY(a,pp,length)
-X509_PUBKEY **a;
-unsigned char **pp;
-long length;
+X509_PUBKEY *d2i_X509_PUBKEY(X509_PUBKEY **a, unsigned char **pp,
+	     long length)
 	{
 	M_ASN1_D2I_vars(a,X509_PUBKEY *,X509_PUBKEY_new);
 
@@ -101,31 +93,29 @@ long length;
 	M_ASN1_D2I_Finish(a,X509_PUBKEY_free,ASN1_F_D2I_X509_PUBKEY);
 	}
 
-X509_PUBKEY *X509_PUBKEY_new()
+X509_PUBKEY *X509_PUBKEY_new(void)
 	{
 	X509_PUBKEY *ret=NULL;
+	ASN1_CTX c;
 
 	M_ASN1_New_Malloc(ret,X509_PUBKEY);
 	M_ASN1_New(ret->algor,X509_ALGOR_new);
-	M_ASN1_New(ret->public_key,ASN1_BIT_STRING_new);
+	M_ASN1_New(ret->public_key,M_ASN1_BIT_STRING_new);
 	ret->pkey=NULL;
 	return(ret);
 	M_ASN1_New_Error(ASN1_F_X509_PUBKEY_NEW);
 	}
 
-void X509_PUBKEY_free(a)
-X509_PUBKEY *a;
+void X509_PUBKEY_free(X509_PUBKEY *a)
 	{
 	if (a == NULL) return;
 	X509_ALGOR_free(a->algor);
-	ASN1_BIT_STRING_free(a->public_key);
+	M_ASN1_BIT_STRING_free(a->public_key);
 	if (a->pkey != NULL) EVP_PKEY_free(a->pkey);
-	Free((char *)a);
+	OPENSSL_free(a);
 	}
 
-int X509_PUBKEY_set(x,pkey)
-X509_PUBKEY **x;
-EVP_PKEY *pkey;
+int X509_PUBKEY_set(X509_PUBKEY **x, EVP_PKEY *pkey)
 	{
 	int ok=0;
 	X509_PUBKEY *pk;
@@ -166,14 +156,14 @@ EVP_PKEY *pkey;
 		dsa->write_params=0;
 		ASN1_TYPE_free(a->parameter);
 		i=i2d_DSAparams(dsa,NULL);
-		p=(unsigned char *)Malloc(i);
+		p=(unsigned char *)OPENSSL_malloc(i);
 		pp=p;
 		i2d_DSAparams(dsa,&pp);
 		a->parameter=ASN1_TYPE_new();
 		a->parameter->type=V_ASN1_SEQUENCE;
 		a->parameter->value.sequence=ASN1_STRING_new();
 		ASN1_STRING_set(a->parameter->value.sequence,p,i);
-		Free(p);
+		OPENSSL_free(p);
 		}
 	else
 #endif
@@ -182,15 +172,21 @@ EVP_PKEY *pkey;
 		goto err;
 		}
 
-	i=i2d_PublicKey(pkey,NULL);
-	if ((s=(unsigned char *)Malloc(i+1)) == NULL) goto err;
+	if ((i=i2d_PublicKey(pkey,NULL)) <= 0) goto err;
+	if ((s=(unsigned char *)OPENSSL_malloc(i+1)) == NULL) goto err;
 	p=s;
 	i2d_PublicKey(pkey,&p);
-	if (!ASN1_BIT_STRING_set(pk->public_key,s,i)) goto err;
-	Free(s);
+	if (!M_ASN1_BIT_STRING_set(pk->public_key,s,i)) goto err;
+	/* Set number of unused bits to zero */
+	pk->public_key->flags&= ~(ASN1_STRING_FLAG_BITS_LEFT|0x07);
+	pk->public_key->flags|=ASN1_STRING_FLAG_BITS_LEFT;
 
+	OPENSSL_free(s);
+
+#if 0
 	CRYPTO_add(&pkey->references,1,CRYPTO_LOCK_EVP_PKEY);
 	pk->pkey=pkey;
+#endif
 
 	if (*x != NULL)
 		X509_PUBKEY_free(*x);
@@ -204,8 +200,7 @@ err:
 	return(ok);
 	}
 
-EVP_PKEY *X509_PUBKEY_get(key)
-X509_PUBKEY *key;
+EVP_PKEY *X509_PUBKEY_get(X509_PUBKEY *key)
 	{
 	EVP_PKEY *ret=NULL;
 	long j;
@@ -217,7 +212,11 @@ X509_PUBKEY *key;
 
 	if (key == NULL) goto err;
 
-	if (key->pkey != NULL) return(key->pkey);
+	if (key->pkey != NULL)
+	    {
+	    CRYPTO_add(&key->pkey->references,1,CRYPTO_LOCK_EVP_PKEY);
+	    return(key->pkey);
+	    }
 
 	if (key->public_key == NULL) goto err;
 
@@ -235,7 +234,7 @@ X509_PUBKEY *key;
 	a=key->algor;
 	if (ret->type == EVP_PKEY_DSA)
 		{
-		if (a->parameter->type == V_ASN1_SEQUENCE)
+		if (a->parameter && (a->parameter->type == V_ASN1_SEQUENCE))
 			{
 			ret->pkey.dsa->write_params=0;
 			p=a->parameter->value.sequence->data;
@@ -247,6 +246,7 @@ X509_PUBKEY *key;
 		}
 #endif
 	key->pkey=ret;
+	CRYPTO_add(&ret->references,1,CRYPTO_LOCK_EVP_PKEY);
 	return(ret);
 err:
 	if (ret != NULL)
@@ -254,3 +254,113 @@ err:
 	return(NULL);
 	}
 
+/* Now two pseudo ASN1 routines that take an EVP_PKEY structure
+ * and encode or decode as X509_PUBKEY
+ */
+
+EVP_PKEY *d2i_PUBKEY(EVP_PKEY **a, unsigned char **pp,
+	     long length)
+{
+	X509_PUBKEY *xpk;
+	EVP_PKEY *pktmp;
+	xpk = d2i_X509_PUBKEY(NULL, pp, length);
+	if(!xpk) return NULL;
+	pktmp = X509_PUBKEY_get(xpk);
+	X509_PUBKEY_free(xpk);
+	if(!pktmp) return NULL;
+	if(a) {
+		EVP_PKEY_free(*a);
+		*a = pktmp;
+	}
+	return pktmp;
+}
+
+int i2d_PUBKEY(EVP_PKEY *a, unsigned char **pp)
+{
+	X509_PUBKEY *xpk=NULL;
+	int ret;
+	if(!a) return 0;
+	if(!X509_PUBKEY_set(&xpk, a)) return 0;
+	ret = i2d_X509_PUBKEY(xpk, pp);
+	X509_PUBKEY_free(xpk);
+	return ret;
+}
+
+/* The following are equivalents but which return RSA and DSA
+ * keys
+ */
+#ifndef NO_RSA
+RSA *d2i_RSA_PUBKEY(RSA **a, unsigned char **pp,
+	     long length)
+{
+	EVP_PKEY *pkey;
+	RSA *key;
+	unsigned char *q;
+	q = *pp;
+	pkey = d2i_PUBKEY(NULL, &q, length);
+	if(!pkey) return NULL;
+	key = EVP_PKEY_get1_RSA(pkey);
+	EVP_PKEY_free(pkey);
+	if(!key) return NULL;
+	*pp = q;
+	if(a) {
+		RSA_free(*a);
+		*a = key;
+	}
+	return key;
+}
+
+int i2d_RSA_PUBKEY(RSA *a, unsigned char **pp)
+{
+	EVP_PKEY *pktmp;
+	int ret;
+	if(!a) return 0;
+	pktmp = EVP_PKEY_new();
+	if(!pktmp) {
+		ASN1err(ASN1_F_I2D_RSA_PUBKEY, ERR_R_MALLOC_FAILURE);
+		return 0;
+	}
+	EVP_PKEY_set1_RSA(pktmp, a);
+	ret = i2d_PUBKEY(pktmp, pp);
+	EVP_PKEY_free(pktmp);
+	return ret;
+}
+#endif
+
+#ifndef NO_DSA
+DSA *d2i_DSA_PUBKEY(DSA **a, unsigned char **pp,
+	     long length)
+{
+	EVP_PKEY *pkey;
+	DSA *key;
+	unsigned char *q;
+	q = *pp;
+	pkey = d2i_PUBKEY(NULL, &q, length);
+	if(!pkey) return NULL;
+	key = EVP_PKEY_get1_DSA(pkey);
+	EVP_PKEY_free(pkey);
+	if(!key) return NULL;
+	*pp = q;
+	if(a) {
+		DSA_free(*a);
+		*a = key;
+	}
+	return key;
+}
+
+int i2d_DSA_PUBKEY(DSA *a, unsigned char **pp)
+{
+	EVP_PKEY *pktmp;
+	int ret;
+	if(!a) return 0;
+	pktmp = EVP_PKEY_new();
+	if(!pktmp) {
+		ASN1err(ASN1_F_I2D_DSA_PUBKEY, ERR_R_MALLOC_FAILURE);
+		return 0;
+	}
+	EVP_PKEY_set1_DSA(pktmp, a);
+	ret = i2d_PUBKEY(pktmp, pp);
+	EVP_PKEY_free(pktmp);
+	return ret;
+}
+#endif

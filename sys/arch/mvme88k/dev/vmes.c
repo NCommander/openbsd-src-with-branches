@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: vmes.c,v 1.8 2002/03/14 01:26:39 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -37,6 +37,7 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
 #include <mvme88k/dev/vme.h>
@@ -47,13 +48,8 @@
  * functions will decide how many address bits are relevant.
  */
 
-void vmesattach __P((struct device *, struct device *, void *));
-int  vmesmatch __P((struct device *, void *, void *));
-
-struct vmessoftc {
-	struct device		sc_dev;
-	struct vmesoftc		*sc_vme;
-};
+void vmesattach(struct device *, struct device *, void *);
+int  vmesmatch(struct device *, void *, void *);
 
 struct cfattach vmes_ca = {
         sizeof(struct vmessoftc), vmesmatch, vmesattach
@@ -63,6 +59,13 @@ struct cfdriver vmes_cd = {
         NULL, "vmes", DV_DULL, 0
 };
 
+int vmesscan(struct device *, void *, void *);
+int vmesopen(dev_t, int, int);
+int vmesclose(dev_t, int, int);
+int vmesioctl(dev_t, int, caddr_t, int, struct proc *);
+int vmesread(dev_t, struct uio *, int);
+int vmeswrite(dev_t, struct uio *, int);
+paddr_t vmesmmap(dev_t, off_t, int);
 
 int
 vmesmatch(parent, cf, args)
@@ -124,8 +127,6 @@ vmesioctl(dev, cmd, data, flag, p)
 	int     cmd, flag;
 	struct proc *p;
 {
-	int unit = minor(dev);
-	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
 	int error = 0;
 
 	switch (cmd) {
@@ -160,18 +161,19 @@ vmeswrite(dev, uio, flags)
 	return (vmerw(sc->sc_vme, uio, flags, BUS_VMES));
 }
 
-int
+paddr_t
 vmesmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	int unit = minor(dev);
 	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
-	caddr_t pa;
+	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (caddr_t)off, NBPG, BUS_VMES);
+	pa = vmepmap(sc->sc_vme, off, NBPG, BUS_VMES);
 	printf("vmes %x pa %x\n", off, pa);
 	if (pa == NULL)
 		return (-1);
-	return (m88k_btop(pa));
+	return (atop(pa));
 }

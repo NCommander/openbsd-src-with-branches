@@ -1,3 +1,4 @@
+/*	$OpenBSD: icmp_var.h,v 1.6 2001/06/09 07:03:39 angelos Exp $	*/
 /*	$NetBSD: icmp_var.h,v 1.8 1995/03/26 20:32:19 jtc Exp $	*/
 
 /*
@@ -35,6 +36,9 @@
  *	@(#)icmp_var.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NETINET_ICMP_VAR_H_
+#define _NETINET_ICMP_VAR_H_
+
 /*
  * Variables related to this implementation
  * of the internet control message protocol.
@@ -46,11 +50,12 @@ struct	icmpstat {
 	u_long	icps_oldicmp;		/* no error 'cuz old was icmp */
 	u_long	icps_outhist[ICMP_MAXTYPE + 1];
 /* statistics related to input messages processed */
- 	u_long	icps_badcode;		/* icmp_code out of range */
+	u_long	icps_badcode;		/* icmp_code out of range */
 	u_long	icps_tooshort;		/* packet < ICMP_MINLEN */
 	u_long	icps_checksum;		/* bad checksum */
 	u_long	icps_badlen;		/* calculated bound mismatch */
 	u_long	icps_reflect;		/* number of responses */
+	u_long	icps_bmcastecho;	/* rejected broadcast icmps */
 	u_long	icps_inhist[ICMP_MAXTYPE + 1];
 };
 
@@ -58,13 +63,22 @@ struct	icmpstat {
  * Names for ICMP sysctl objects
  */
 #define	ICMPCTL_MASKREPL	1	/* allow replies to netmask requests */
-#define ICMPCTL_MAXID		2
+#define ICMPCTL_BMCASTECHO	2	/* reply to icmps to broadcast/mcast */
+#define ICMPCTL_ERRPPSLIMIT	3	/* ICMP error pps limitation */
+#define	ICMPCTL_REDIRACCEPT	4	/* Accept redirects from routers */
+#define	ICMPCTL_REDIRTIMEOUT	5	/* Remove routes added via redirects */
+#define ICMPCTL_MAXID		6
 
 #define ICMPCTL_NAMES { \
 	{ 0, 0 }, \
 	{ "maskrepl", CTLTYPE_INT }, \
+	{ "bmcastecho", CTLTYPE_INT }, \
+	{ "errppslimit", CTLTYPE_INT }, \
+	{ "rediraccept", CTLTYPE_INT }, \
+	{ "redirtimeout", CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL
 struct	icmpstat icmpstat;
-#endif
+#endif /* _KERNEL */
+#endif /* _NETINET_ICMP_VAR_H_ */

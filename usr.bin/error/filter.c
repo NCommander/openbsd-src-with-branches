@@ -1,3 +1,4 @@
+/*	$OpenBSD: filter.c,v 1.5 1999/12/04 00:16:52 deraadt Exp $	*/
 /*	$NetBSD: filter.c,v 1.3 1995/09/02 06:15:28 jtc Exp $	*/
 
 /*
@@ -37,10 +38,10 @@
 #if 0
 static char sccsid[] = "@(#)filter.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: filter.c,v 1.3 1995/09/02 06:15:28 jtc Exp $";
+static char rcsid[] = "$OpenBSD: filter.c,v 1.5 1999/12/04 00:16:52 deraadt Exp $";
 #endif /* not lint */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -57,22 +58,22 @@ char	*lint_libs[] = {
 	IG_FILE4,
 	0
 };
-extern	char*	processname;
 int	lexsort();
 /*
  *	Read the file ERRORNAME of the names of functions in lint
  *	to ignore complaints about.
  */
+void
 getignored(auxname)
 	char	*auxname;
 {
 	reg	int	i;
-		FILE	*fyle;
-		char	inbuffer[256];
-		int	uid;
-		char	filename[128];
-		char	*username;
-		struct	passwd *passwdentry;
+	FILE	*fyle;
+	char	inbuffer[256];
+	uid_t	uid;
+	char	filename[MAXPATHLEN];
+	char	*username;
+	struct	passwd *passwdentry;
 
 	nignored = 0;
 	if (auxname == 0){	/* use the default */
@@ -86,37 +87,37 @@ getignored(auxname)
 			if ( (passwdentry = (struct passwd *)getpwnam(username)) == NULL)
 				return;
 		}
-		strcpy(filename, passwdentry->pw_dir);
-		(void)strcat(filename, ERRORNAME);
+		strlcpy(filename, passwdentry->pw_dir, sizeof(filename));
+		(void)strlcat(filename, ERRORNAME, sizeof(filename));
 	} else
-		(void)strcpy(filename, auxname);
+		(void)strlcpy(filename, auxname, sizeof filename);
 #ifdef FULLDEBUG
 	printf("Opening file \"%s\" to read names to ignore.\n",
 		filename);
 #endif
 	if ( (fyle = fopen(filename, "r")) == NULL){
 #ifdef FULLDEBUG
-		fprintf(stderr, "%s: Can't open file \"%s\"\n",
-			processname, filename);
+		warn("Can't open file \"%s\"", filename);
 #endif
 		return;
 	}
 	/*
 	 *	Make the first pass through the file, counting lines
 	 */
-	for (nignored = 0; fgets(inbuffer, 255, fyle) != NULL; nignored++)
+	for (nignored = 0;
+	    fgets(inbuffer, sizeof(inbuffer)-1, fyle) != NULL; nignored++)
 		continue;
 	names_ignored = (char **)Calloc(nignored+1, sizeof (char *));
 	fclose(fyle);
 	if (freopen(filename, "r", fyle) == NULL){
 #ifdef FULLDEBUG
-		fprintf(stderr, "%s: Failure to open \"%s\" for second read.\n",
-			processname, filename);
+		warn("Failure to open \"%s\" for second read.", filename);
 #endif
 		nignored = 0;
 		return;
 	}
-	for (i=0; i < nignored && (fgets (inbuffer, 255, fyle) != NULL); i++){
+	for (i=0; i < nignored &&
+	    (fgets (inbuffer, sizeof(inbuffer)-1, fyle) != NULL); i++){
 		names_ignored[i] = strsave(inbuffer);
 		(void)substitute(names_ignored[i], '\n', '\0');
 	}
@@ -163,8 +164,9 @@ int search_ignore(key)
  *	and the linenumber the second.
  *	Return the new categorization of the error class.
  */
-Errorclass discardit(errorp)
-	reg	Eptr	errorp;
+Errorclass
+discardit(errorp)
+	Eptr	errorp;
 {
 		int	language;
 	reg	int	i;

@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_prof.c,v 1.7 1995/10/07 06:28:33 mycroft Exp $	*/
+/*	$OpenBSD: subr_prof.c,v 1.8 2001/09/19 20:50:59 mickey Exp $	*/
+/*	$NetBSD: subr_prof.c,v 1.12 1996/04/22 01:38:50 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -40,7 +41,6 @@
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
@@ -49,6 +49,7 @@
 #ifdef GPROF
 #include <sys/malloc.h>
 #include <sys/gmon.h>
+#include <uvm/uvm_extern.h>
 
 /*
  * Froms is actually a bunch of unsigned shorts indexing tos
@@ -57,10 +58,14 @@ struct gmonparam _gmonparam = { GMON_PROF_OFF };
 
 extern char etext[];
 
+
+void
 kmstartup()
 {
 	char *cp;
 	struct gmonparam *p = &_gmonparam;
+	int size;
+
 	/*
 	 * Round lowpc and highpc to multiples of the density we're using
 	 * so the rest of the scaling (here and in gprof) stays in ints.
@@ -68,7 +73,7 @@ kmstartup()
 	p->lowpc = ROUNDDOWN(KERNBASE, HISTFRACTION * sizeof(HISTCOUNTER));
 	p->highpc = ROUNDUP((u_long)etext, HISTFRACTION * sizeof(HISTCOUNTER));
 	p->textsize = p->highpc - p->lowpc;
-	printf("Profiling kernel, textsize=%d [%p..%p]\n",
+	printf("Profiling kernel, textsize=%ld [%lx..%lx]\n",
 	       p->textsize, p->lowpc, p->highpc);
 	p->kcountsize = p->textsize / HISTFRACTION;
 	p->hashfraction = HASHFRACTION;
@@ -79,13 +84,12 @@ kmstartup()
 	else if (p->tolimit > MAXARCS)
 		p->tolimit = MAXARCS;
 	p->tossize = p->tolimit * sizeof(struct tostruct);
-	cp = (char *)malloc(p->kcountsize + p->fromssize + p->tossize,
-	    M_GPROF, M_NOWAIT);
+	size = p->kcountsize + p->fromssize + p->tossize;
+	cp = (char *)uvm_km_zalloc(kernel_map, round_page(size));
 	if (cp == 0) {
 		printf("No memory for profiling.\n");
 		return;
 	}
-	bzero(cp, p->kcountsize + p->tossize + p->fromssize);
 	p->tos = (struct tostruct *)cp;
 	cp += p->tossize;
 	p->kcount = (u_short *)cp;
@@ -96,7 +100,8 @@ kmstartup()
 /*
  * Return kernel profiling information.
  */
-sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen, p)
+int
+sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen)
 	int *name;
 	u_int namelen;
 	void *oldp;
@@ -146,13 +151,14 @@ sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen, p)
  * 1.0 is represented as 0x10000.  A scale factor of 0 turns off profiling.
  */
 /* ARGSUSED */
+int
 sys_profil(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 {
 	register struct sys_profil_args /* {
-		syscallarg(caddr_t) samples;
+		syscallarg(char *) samples;
 		syscallarg(u_int) size;
 		syscallarg(u_int) offset;
 		syscallarg(u_int) scale;
@@ -172,7 +178,7 @@ sys_profil(p, v, retval)
 	s = splstatclock();
 	upp->pr_off = SCARG(uap, offset);
 	upp->pr_scale = SCARG(uap, scale);
-	upp->pr_base = SCARG(uap, samples);
+	upp->pr_base = (caddr_t)SCARG(uap, samples);
 	upp->pr_size = SCARG(uap, size);
 	startprofclock(p);
 	splx(s);

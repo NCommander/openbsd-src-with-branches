@@ -1,3 +1,4 @@
+/*	$OpenBSD: talk.h,v 1.6 2000/12/31 00:24:51 hugh Exp $	*/
 /*	$NetBSD: talk.h,v 1.3 1994/12/09 02:14:27 jtc Exp $	*/
 
 /*
@@ -35,11 +36,18 @@
  *	@(#)talk.h	8.1 (Berkeley) 6/6/93
  */
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <protocols/talkd.h>
 #include <curses.h>
+#include <string.h>
+#include <err.h>
 
 extern	int sockt;
 extern	int curses_initialized;
 extern	int invitation_waiting;
+extern	int high_print;
 
 extern	char *current_state;
 extern	int current_line;
@@ -58,3 +66,29 @@ typedef struct xwin {
 extern	xwin_t my_win;
 extern	xwin_t his_win;
 extern	WINDOW *line_win;
+
+void	announce_invite(void);
+int	check_local(void);
+void	ctl_transact(struct in_addr, CTL_MSG, int, CTL_RESPONSE *);
+void	display(xwin_t *, char *, int);
+void	disp_msg(int);
+void	end_msgs(void);
+void	get_addrs(char *, char *);
+void	get_names(int, char **);
+void	init_display(void);
+void	invite_remote(void);
+int	look_for_invite(CTL_RESPONSE *);
+int	max(int, int);
+void	message(char *);
+void	open_ctl(void);
+void	open_sockt(void);
+void	print_addr(struct sockaddr_in);
+void	quit(char *, int);
+int	readwin(WINDOW *, int, int);
+void	re_invite(int);
+void	send_delete(void);
+void	set_edit_chars(void);
+void	sig_sent(int);
+void	start_msgs(void);
+void	talk(void);
+void	xscroll(xwin_t *, int);

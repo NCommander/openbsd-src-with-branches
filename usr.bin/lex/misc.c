@@ -1,3 +1,5 @@
+/*	$OpenBSD: misc.c,v 1.5 2001/06/17 07:30:42 deraadt Exp $	*/
+
 /* misc - miscellaneous flex routines */
 
 /*-
@@ -11,22 +13,22 @@
  * to contract no. DE-AC03-76SF00098 between the United States
  * Department of Energy and the University of California.
  *
- * Redistribution and use in source and binary forms are permitted provided
- * that: (1) source distributions retain this entire copyright notice and
- * comment, and (2) distributions including binaries display the following
- * acknowledgement:  ``This product includes software developed by the
- * University of California, Berkeley and its contributors'' in the
- * documentation or other materials provided with the distribution and in
- * all advertising materials mentioning features or use of this software.
- * Neither the name of the University nor the names of its contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that: (1) source distributions
+ * retain this entire copyright notice and comment, and (2) distributions
+ * including binaries display the following acknowledgement:  ``This product
+ * includes software developed by the University of California, Berkeley
+ * and its contributors'' in the documentation or other materials provided
+ * with the distribution and in all advertising materials mentioning
+ * features or use of this software. Neither the name of the University nor
+ * the names of its contributors may be used to endorse or promote products
+ * derived from this software without specific prior written permission.
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/misc.c,v 1.7 1995/05/05 05:35:35 jtc Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/misc.c,v 1.5 2001/06/17 07:30:42 deraadt Exp $ */
 
 #include "flexdef.h"
 
@@ -82,7 +84,7 @@ void *allocate_array( size, element_size )
 int size;
 size_t element_size;
 	{
-	register void *mem;
+	void *mem;
 	size_t num_bytes = element_size * size;
 
 	mem = flex_alloc( num_bytes );
@@ -97,7 +99,7 @@ size_t element_size;
 /* all_lower - true if a string is all lower-case */
 
 int all_lower( str )
-register char *str;
+char *str;
 	{
 	while ( *str )
 		{
@@ -113,7 +115,7 @@ register char *str;
 /* all_upper - true if a string is all upper-case */
 
 int all_upper( str )
-register char *str;
+char *str;
 	{
 	while ( *str )
 		{
@@ -144,7 +146,7 @@ register char *str;
 void bubble( v, n )
 int v[], n;
 	{
-	register int i, j, k;
+	int i, j, k;
 
 	for ( i = n; i > 1; --i )
 		for ( j = 1; j < i; ++j )
@@ -180,7 +182,7 @@ int c;
 /* clower - replace upper-case letter to lower-case */
 
 Char clower( c )
-register int c;
+int c;
 	{
 	return (Char) ((isascii( c ) && isupper( c )) ? tolower( c ) : c);
 	}
@@ -189,10 +191,10 @@ register int c;
 /* copy_string - returns a dynamically allocated copy of a string */
 
 char *copy_string( str )
-register const char *str;
+const char *str;
 	{
-	register const char *c1;
-	register char *c2;
+	const char *c1;
+	char *c2;
 	char *copy;
 	unsigned int size;
 
@@ -218,9 +220,9 @@ register const char *str;
  */
 
 Char *copy_unsigned_string( str )
-register Char *str;
+Char *str;
 	{
-	register Char *c;
+	Char *c;
 	Char *copy;
 
 	/* find length */
@@ -538,7 +540,7 @@ Char array[];
 		case 'r': return '\r';
 		case 't': return '\t';
 
-#if __STDC__
+#ifdef __STDC__
 		case 'a': return '\a';
 		case 'v': return '\v';
 #else
@@ -653,7 +655,7 @@ unsigned int x;
 void out_line_count( str )
 const char str[];
 	{
-	register int i;
+	int i;
 
 	for ( i = 0; str[i]; ++i )
 		if ( str[i] == '\n' )
@@ -711,7 +713,7 @@ const char str[];
  */
 
 char *readable_form( c )
-register int c;
+int c;
 	{
 	static char rform[10];
 
@@ -725,7 +727,7 @@ register int c;
 			case '\r': return "\\r";
 			case '\t': return "\\t";
 
-#if __STDC__
+#ifdef __STDC__
 			case '\a': return "\\a";
 			case '\v': return "\\v";
 #endif
@@ -757,7 +759,7 @@ void *array;
 int size;
 size_t element_size;
 	{
-	register void *new_array;
+	void *new_array;
 	size_t num_bytes = element_size * size;
 
 	new_array = flex_realloc( array, num_bytes );
@@ -876,7 +878,7 @@ void zero_out( region_ptr, size_in_bytes )
 char *region_ptr;
 size_t size_in_bytes;
 	{
-	register char *rp, *rp_end;
+	char *rp, *rp_end;
 
 	rp = region_ptr;
 	rp_end = region_ptr + size_in_bytes;

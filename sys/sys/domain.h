@@ -1,4 +1,5 @@
-/*	$NetBSD: domain.h,v 1.8 1995/03/26 20:24:03 jtc Exp $	*/
+/*	$OpenBSD: domain.h,v 1.3 2002/03/14 01:27:14 millert Exp $	*/
+/*	$NetBSD: domain.h,v 1.10 1996/02/09 18:25:07 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -47,20 +48,20 @@ struct	mbuf;
 struct	domain {
 	int	dom_family;		/* AF_xxx */
 	char	*dom_name;
-	void	(*dom_init)		/* initialize domain data structures */
-		__P((void));
-	int	(*dom_externalize)	/* externalize access rights */
-		__P((struct mbuf *));
-	int	(*dom_dispose)		/* dispose of internalized rights */
-		__P((struct mbuf *));
+	void	(*dom_init)(void);	/* initialize domain data structures */
+					/* externalize access rights */
+	int	(*dom_externalize)(struct mbuf *);
+					/* dispose of internalized rights */
+	void	(*dom_dispose)(struct mbuf *);
 	struct	protosw *dom_protosw, *dom_protoswNPROTOSW;
 	struct	domain *dom_next;
-	int	(*dom_rtattach)		/* initialize routing table */
-		__P((void **, int));
+					/* initialize routing table */
+	int	(*dom_rtattach)(void **, int);
 	int	dom_rtoffset;		/* an arg to rtattach, in bits */
 	int	dom_maxrtkey;		/* for routing layer */
 };
 
 #ifdef _KERNEL
 struct	domain *domains;
+void domaininit(void);
 #endif

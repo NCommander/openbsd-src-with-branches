@@ -1,7 +1,9 @@
-/*	$Id: sa.h,v 1.37 1998/11/14 23:42:27 niklas Exp $	*/
+/*	$OpenBSD: sa.h,v 1.26 2002/03/17 21:48:06 angelos Exp $	*/
+/*	$EOM: sa.h,v 1.58 2000/10/10 12:39:01 provos Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999, 2001 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1999, 2001 Angelos D. Keromytis.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -70,7 +72,7 @@ struct proto {
   /* The protocol this SA is for.  */
   u_int8_t proto;
 
-  /* Security parameter index info.  Element 0 - responder, 1 - initiator.  */
+  /* Security parameter index info.  Element 0 - outgoing, 1 - incoming.  */
   u_int8_t spi_sz[2];
   u_int8_t *spi[2];
 
@@ -97,7 +99,10 @@ struct sa {
    */
   TAILQ_ENTRY (sa) next;
 
-  /* What transport does this SA denote (ISAKMP SA only).  */
+  /* A name of the major policy deciding offers and acceptable proposals.  */
+  char *name;
+
+  /* The transport this SA got negotiated over.  */
   struct transport *transport;
 
   /* Both initiator and responder cookies.  */
@@ -115,9 +120,9 @@ struct sa {
   /* Phase is 1 for ISAKMP SAs, and 2 for application ones.  */
   u_int8_t phase;
 
-  /* Save last message from setup, which can be retransmitted for dups */
-  struct message *last_sent_in_setup;
-  
+  /* A reference counter for this structure.  */
+  u_int16_t refcnt;
+
   /* Various flags, look below for descriptions.  */
   u_int32_t flags;
 
@@ -129,6 +134,44 @@ struct sa {
   int key_length;
   struct keystate *keystate;
 
+  /* IDs from Phase 1 */
+  u_int8_t *id_i;
+  size_t id_i_len;
+  u_int8_t *id_r;
+  size_t id_r_len;
+
+  /* Set if we were the initiator of the SA/exchange in Phase 1 */
+  int initiator;
+
+  /* Policy session ID, where applicable, copied over from the exchange */
+  int policy_id;
+
+  /*
+   * The key used to authenticate phase 1, in printable format, used only by
+   * KeyNote.
+   */
+  char *keynote_key;
+
+  /*
+   * Certificates or other information from Phase 1; these are copied from the
+   * exchange, so look at exchange.h for an explanation of their use.
+   */  
+  int recv_certtype, recv_keytype;
+  /* Certificate received from peer, native format.  */
+  void *recv_cert;
+  /* Key peer used to authenticate, native format.  */
+  void *recv_key;
+
+  /*
+   * Certificates or other information we used to authenticate to the peer,
+   * Phase 1.
+   */
+  int sent_certtype, sent_keytype;
+  /* Certificate (to be) sent to peer, native format.  */
+  void *sent_cert;
+  /* Key we'll use to authenticate to peer, native format.  */
+  void *sent_key;
+
   /* DOI-specific opaque data.  */
   void *data;
 
@@ -136,27 +179,60 @@ struct sa {
   u_int64_t seconds;
   u_int64_t kilobytes;
 
-  /* The event that will occur when an SA has timed out.  */
+  /* ACQUIRE sequence number */
+  u_int32_t seq;
+
+  /* The events that will occur when an SA has timed out.  */
+  struct event *soft_death;
   struct event *death;
 };
 
 /* This SA is alive.  */
-#define SA_FLAG_READY	1
+#define SA_FLAG_READY		0x01
+
+/* Renegotiate the SA at each expiry.  */
+#define SA_FLAG_STAYALIVE	0x02
+
+/* Establish the SA when it is needed.  */
+#define SA_FLAG_ONDEMAND	0x04
+
+/* This SA has been replaced by another newer one.  */
+#define SA_FLAG_REPLACED	0x08
+
+/* This SA has seen a soft timeout and wants to be renegotiated on use.  */
+#define SA_FLAG_FADING		0x10
+
+/* This SA should always be actively renegotiated (with us as initiator).  */
+#define SA_FLAG_ACTIVE_ONLY	0x20
+
+/* Outfile for detailed SA information. */
+#define SA_FILE "/var/run/isakmpd_sa"
 
 extern void proto_free (struct proto *proto);
 extern int sa_add_transform (struct sa *, struct payload *, int,
 			     struct proto **);
 extern int sa_create (struct exchange *, struct transport *);
+extern int sa_enter (struct sa *);
 extern void sa_delete (struct sa *, int);
+extern void sa_teardown_all (void);
+extern struct sa *sa_find (int (*) (struct sa *, void *), void *);
+extern int sa_flag (char *);
 extern void sa_free (struct sa *);
-extern void sa_free_aux (struct sa *);
 extern void sa_init (void);
-extern struct sa *sa_isakmp_lookup_by_peer (struct sockaddr *, size_t addr);
+extern struct sa *sa_isakmp_lookup_by_peer (struct sockaddr *, socklen_t);
 extern void sa_isakmp_upgrade (struct message *);
 extern struct sa *sa_lookup (u_int8_t *, u_int8_t *);
+extern struct sa *sa_lookup_by_peer (struct sockaddr *, socklen_t);
 extern struct sa *sa_lookup_by_header (u_int8_t *, int);
+extern struct sa *sa_lookup_by_name (char *, int);
 extern struct sa *sa_lookup_from_icookie (u_int8_t *);
-extern void sa_rekey_p1 (struct sa *);
+extern struct sa *sa_lookup_isakmp_sa (struct sockaddr *, u_int8_t *);
+extern void sa_mark_replaced (struct sa *);
+extern void sa_reference (struct sa *);
+extern void sa_release (struct sa *);
+extern void sa_remove (struct sa *);
 extern void sa_report (void);
-
+extern void sa_dump (int, int, char *, struct sa *);
+extern void sa_report_all (void);
+extern int sa_setup_expirations (struct sa *);
 #endif /* _SA_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: limits.h,v 1.8 2000/07/31 20:06:03 millert Exp $	*/
 /*	$NetBSD: limits.h,v 1.1 1996/09/30 16:34:28 ws Exp $	*/
 
 /*-
@@ -31,6 +32,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _POWERPC_LIMITS_H_
+#define _POWERPC_LIMITS_H_
+
 #define	CHAR_BIT	8		/* bits per char		*/
 #define	MB_LEN_MAX	1		/* no multibyte characters	*/
 #define	CHAR_MIN	0		/* min value in char		*/
@@ -52,12 +56,33 @@
 #define	ULONG_MAX	0xffffffff	/* max value in unsigned long	*/
 
 #if !defined(_ANSI_SOURCE)
+#define SSIZE_MAX	INT_MAX		/* max value for a ssize_t */  
 
 #if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
 
+#define	UID_MAX		UINT_MAX	/* max value for a uid_t */
+#define	GID_MAX		UINT_MAX	/* max value for a gid_t */
+
 #define	UQUAD_MAX	0xffffffffffffffffULL		/* max unsigned quad */
 #define	QUAD_MAX	0x7fffffffffffffffLL		/* max signed quad */
 #define	QUAD_MIN	(-0x7fffffffffffffffLL-1)	/* min signed quad */
+#define ULLONG_MAX	(UQUAD_MAX)	/* max value for unsigned long long */
+#define LLONG_MAX	(QUAD_MAX)	/* max value for a signed long long */
+#define LLONG_MIN	(QUAD_MIN)	/* min value for a signed long long */
 #endif	/* !_POSIX_SOURCE && !_XOPEN_SOURCE */
 #endif	/* !_ANSI_SOURCE */
+
+#if (!defined(_ANSI_SOURCE)&&!defined(_POSIX_SOURCE)) || defined(_XOPEN_SOURCE)
+#define LONG_BIT	32
+#define WORD_BIT	32
+
+#define DBL_DIG		15
+#define DBL_MAX		1.7976931348623157E+308
+#define DBL_MIN		2.2250738585072014E-308
+
+#define FLT_DIG		6
+#define FLT_MAX		3.40282347E+38F
+#define FLT_MIN		1.17549435E-38F
+#endif
+#endif /* _POWERPC_LIMITS_H_ */

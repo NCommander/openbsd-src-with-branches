@@ -1,3 +1,5 @@
+/*	$OpenBSD: rexecd.c,v 1.20 2002/03/16 18:44:48 millert Exp $	*/
+
 /*
  * Copyright (c) 1983 The Regents of the University of California.
  * All rights reserved.
@@ -39,26 +41,43 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rexecd.c	5.12 (Berkeley) 2/25/91";*/
-static char rcsid[] = "$Id: rexecd.c,v 1.2 1993/08/01 18:30:01 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: rexecd.c,v 1.20 2002/03/16 18:44:48 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+
 #include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <signal.h>
 #include <netdb.h>
 #include <pwd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <paths.h>
+#include <err.h>
+#include <login_cap.h>
+#include <bsd_auth.h>
 
 /*VARARGS1*/
-int error();
+void error();
+
+char	*remote;
+char	*envinit[1];
+extern char **environ;
+
+struct	sockaddr_in asin = { AF_INET };
+
+void doit(int, struct sockaddr_in *);
+void getstr(char *buf, int cnt, char *err);
 
 /*
  * remote execute server:
@@ -68,32 +87,36 @@ int error();
  *	data
  */
 /*ARGSUSED*/
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
 	struct sockaddr_in from;
+	struct hostent *hp;
 	int fromlen;
 
+	openlog(argv[0], LOG_PID, LOG_AUTH);
 	fromlen = sizeof (from);
 	if (getpeername(0, (struct sockaddr *)&from, &fromlen) < 0) {
 		(void)fprintf(stderr,
 		    "rexecd: getpeername: %s\n", strerror(errno));
 		exit(1);
 	}
+
+	hp = gethostbyaddr((char *) &from.sin_addr, sizeof(from.sin_addr),
+	    from.sin_family);
+	remote = strdup(hp ? hp->h_name : inet_ntoa(from.sin_addr));
+	if (remote == NULL) {
+		(void)fprintf(stderr, "rexecd: strdup: %s\n", strerror(errno));
+		exit(1);
+	}
+
 	doit(0, &from);
+	exit(0);
 }
 
-char	username[20] = "USER=";
-char	homedir[64] = "HOME=";
-char	shell[64] = "SHELL=";
-char	path[sizeof(_PATH_DEFPATH) + sizeof("PATH=")] = "PATH=";
-char	*envinit[] =
-	    {homedir, shell, path, username, 0};
-char	**environ;
-
-struct	sockaddr_in asin = { AF_INET };
-
+void
 doit(f, fromp)
 	int f;
 	struct sockaddr_in *fromp;
@@ -103,19 +126,23 @@ doit(f, fromp)
 	struct passwd *pwd;
 	int s;
 	u_short port;
-	int pv[2], pid, ready, readfrom, cc;
+	int pv[2], pid, cc;
+	fd_set ready, readfrom;
 	char buf[BUFSIZ], sig;
 	int one = 1;
+	int maxfd;
+	login_cap_t *lc;
+	auth_session_t *as;
 
 	(void) signal(SIGINT, SIG_DFL);
 	(void) signal(SIGQUIT, SIG_DFL);
 	(void) signal(SIGTERM, SIG_DFL);
 #ifdef DEBUG
-	{ int t = open(_PATH_TTY, 2);
-	  if (t >= 0) {
-		ioctl(t, TIOCNOTTY, (char *)0);
-		(void) close(t);
-	  }
+	{ int t = open(_PATH_TTY, O_RDWR);
+		if (t >= 0) {
+			ioctl(t, TIOCNOTTY, (char *)0);
+			(void) close(t);
+		}
 	}
 #endif
 	dup2(f, 0);
@@ -132,7 +159,49 @@ doit(f, fromp)
 		port = port * 10 + c - '0';
 	}
 	(void) alarm(0);
+	getstr(user, sizeof(user), "username");
+	getstr(pass, sizeof(pass), "password");
+	getstr(cmdbuf, sizeof(cmdbuf), "command");
+	setpwent();
+	pwd = getpwnam(user);
+	if (pwd == NULL) {
+		error("Permission denied.\n");
+		exit(1);
+	}
+	lc = login_getclass(pwd->pw_class);
+	if (lc == NULL) {
+		error("Login class incorrect.\n");
+		exit(1);
+	}
+	as = auth_open();
+	if (as == NULL || auth_setpwd(as, pwd) != 0) {
+		error("Unable to allocate memory.\n");
+		exit(1);
+	}
+	endpwent();
+	if (pwd->pw_uid)
+		auth_checknologin(lc);
+	if (*pwd->pw_passwd != '\0') {
+		namep = crypt(pass, pwd->pw_passwd);
+		if (strcmp(namep, pwd->pw_passwd)) {
+			error("Permission denied.\n");
+			exit(1);
+		}
+	}
+
+	syslog(LOG_INFO, "login from %s as %s", remote, user);
+
+	setegid(pwd->pw_gid);
+	seteuid(pwd->pw_uid);
+	if (chdir(pwd->pw_dir) < 0) {
+		error("No remote directory.\n");
+		exit(1);
+	}
 	if (port != 0) {
+		if (port < IPPORT_RESERVED) {
+			syslog(LOG_ERR, "client stderr port in reserved range");
+			exit(1); 
+		}
 		s = socket(AF_INET, SOCK_STREAM, 0);
 		if (s < 0)
 			exit(1);
@@ -144,27 +213,9 @@ doit(f, fromp)
 			exit(1);
 		(void) alarm(0);
 	}
-	getstr(user, sizeof(user), "username");
-	getstr(pass, sizeof(pass), "password");
-	getstr(cmdbuf, sizeof(cmdbuf), "command");
-	setpwent();
-	pwd = getpwnam(user);
-	if (pwd == NULL) {
-		error("Login incorrect.\n");
-		exit(1);
-	}
-	endpwent();
-	if (*pwd->pw_passwd != '\0') {
-		namep = crypt(pass, pwd->pw_passwd);
-		if (strcmp(namep, pwd->pw_passwd)) {
-			error("Password incorrect.\n");
-			exit(1);
-		}
-	}
-	if (chdir(pwd->pw_dir) < 0) {
-		error("No remote directory.\n");
-		exit(1);
-	}
+	seteuid(0);
+	setegid(0);	/* XXX use a saved gid instead? */
+
 	(void) write(2, "\0", 1);
 	if (port) {
 		(void) pipe(pv);
@@ -176,32 +227,47 @@ doit(f, fromp)
 		if (pid) {
 			(void) close(0); (void) close(1); (void) close(2);
 			(void) close(f); (void) close(pv[1]);
-			readfrom = (1<<s) | (1<<pv[0]);
+			FD_ZERO(&readfrom);
+			FD_SET(s, &readfrom);
+			FD_SET(pv[0], &readfrom);
+			maxfd = s;
+			if (pv[0] > maxfd)
+				maxfd = pv[0];
 			ioctl(pv[1], FIONBIO, (char *)&one);
 			/* should set s nbio! */
 			do {
 				ready = readfrom;
-				(void) select(16, (fd_set *)&ready,
+				switch (select(maxfd+1, &ready,
 				    (fd_set *)NULL, (fd_set *)NULL,
-				    (struct timeval *)NULL);
-				if (ready & (1<<s)) {
+				    (struct timeval *)NULL)) {
+				case 0:
+				case -1:
+					if (errno == EINTR)
+						continue;
+					exit(0);
+				default:
+					break;
+				}
+					
+				if (FD_ISSET(s, &ready)) {
 					if (read(s, &sig, 1) <= 0)
-						readfrom &= ~(1<<s);
+						FD_CLR(s, &readfrom);
 					else
 						killpg(pid, sig);
 				}
-				if (ready & (1<<pv[0])) {
+				if (FD_ISSET(pv[0], &ready)) {
 					cc = read(pv[0], buf, sizeof (buf));
 					if (cc <= 0) {
 						shutdown(s, 1+1);
-						readfrom &= ~(1<<pv[0]);
+						FD_CLR(pv[0], &readfrom);
 					} else
 						(void) write(s, buf, cc);
 				}
-			} while (readfrom);
+			} while (FD_ISSET(pv[0], &readfrom) ||
+			    FD_ISSET(s, &readfrom));
 			exit(0);
 		}
-		setpgrp(0, getpid());
+		setsid();
 		(void) close(s); (void)close(pv[0]);
 		dup2(pv[1], 2);
 	}
@@ -209,25 +275,33 @@ doit(f, fromp)
 		pwd->pw_shell = _PATH_BSHELL;
 	if (f > 2)
 		(void) close(f);
-	(void) setgid((gid_t)pwd->pw_gid);
-	initgroups(pwd->pw_name, pwd->pw_gid);
-	(void) setuid((uid_t)pwd->pw_uid);
-	(void)strcat(path, _PATH_DEFPATH);
+
 	environ = envinit;
-	strncat(homedir, pwd->pw_dir, sizeof(homedir)-6);
-	strncat(shell, pwd->pw_shell, sizeof(shell)-7);
-	strncat(username, pwd->pw_name, sizeof(username)-6);
-	cp = rindex(pwd->pw_shell, '/');
+	if (setenv("HOME", pwd->pw_dir, 1) == -1 ||
+	    setenv("SHELL", pwd->pw_shell, 1) == -1 ||
+	    setenv("LOGNAME", pwd->pw_name, 1) == -1 ||
+	    setenv("USER", pwd->pw_name, 1) == -1)
+		err(1, "unable to setup environment");
+	if (setusercontext(lc, pwd, pwd->pw_uid, LOGIN_SETALL))
+		err(1, "unable to set user context");
+	if (auth_approval(as, lc, pwd->pw_name, "rexec") <= 0)
+		err(1, "approval failure");
+	auth_close(as);
+	login_close(lc);
+
+	cp = strrchr(pwd->pw_shell, '/');
 	if (cp)
 		cp++;
 	else
 		cp = pwd->pw_shell;
-	execl(pwd->pw_shell, cp, "-c", cmdbuf, 0);
+	closelog();
+	execl(pwd->pw_shell, cp, "-c", cmdbuf, (char *)NULL);
 	perror(pwd->pw_shell);
 	exit(1);
 }
 
 /*VARARGS1*/
+void
 error(fmt, a1, a2, a3)
 	char *fmt;
 	int a1, a2, a3;
@@ -235,10 +309,11 @@ error(fmt, a1, a2, a3)
 	char buf[BUFSIZ];
 
 	buf[0] = 1;
-	(void) sprintf(buf+1, fmt, a1, a2, a3);
+	(void) snprintf(buf+1, sizeof buf-1, fmt, a1, a2, a3);
 	(void) write(2, buf, strlen(buf));
 }
 
+void
 getstr(buf, cnt, err)
 	char *buf;
 	int cnt;

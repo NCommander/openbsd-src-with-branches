@@ -1,3 +1,4 @@
+.\"	$OpenBSD: ceil.3,v 1.5 1999/07/01 00:06:40 deraadt Exp $
 .\" Copyright (c) 1991 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,14 +31,14 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)ceil.3	5.1 (Berkeley) 5/2/91
-.\"	$Id: ceil.3,v 1.8 1995/04/14 18:40:02 jtc Exp $
 .\"
 .Dd March 10, 1994
 .Dt CEIL 3
 .Os
 .Sh NAME
-.Nm ceil
-.Nd round to smallest integral value not greater than x
+.Nm ceil ,
+.Nm ceilf
+.Nd round to smallest integral value greater than or equal to x
 .Sh SYNOPSIS
 .Fd #include <math.h>
 .Ft double
@@ -57,8 +58,8 @@ greater than or equal to
 .Xr fabs 3 ,
 .Xr floor 3 ,
 .Xr ieee 3 ,
-.Xr rint 3 ,
-.Xr math 3
+.Xr math 3 ,
+.Xr rint 3
 .Sh STANDARDS
 The
 .Fn ceil

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rdisc.c,v 1.2 1996/09/22 20:48:12 millert Exp $	*/
 
 /*
  * Copyright (c) 1995

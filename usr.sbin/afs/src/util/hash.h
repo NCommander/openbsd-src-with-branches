@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -41,7 +40,7 @@
  * hash.h. Header file for hash table functions
  */
 
-/* $KTH: hash.h,v 1.4 1997/11/27 18:45:59 mho Exp $ */
+/* $Id: hash.h,v 1.5 1998/12/01 23:09:22 assar Exp $ */
 
 #include <bool.h>
 
@@ -74,8 +73,11 @@ void *hashtabsearch(Hashtab *htab, /* The hash table */
 		    void *ptr);	/*  The key */
 
 
-void *hashtabadd(Hashtab *htab,	/* The hash table */
-	       void *ptr);	/* The element */
+void *hashtabaddreplace(Hashtab *htab,	/* The hash table */
+			void *ptr);	/* The element */
+
+void *hashtabadd(Hashtab *htab,
+		 void *ptr);
 
 int _hashtabdel(Hashtab *htab,	/* The table */
 		void *ptr,	/* Key */

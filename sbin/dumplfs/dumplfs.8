@@ -1,3 +1,4 @@
+.\"	$OpenBSD: dumplfs.8,v 1.7 1998/12/15 01:20:29 aaron Exp $
 .\"	$NetBSD: dumplfs.8,v 1.2 1995/03/18 14:55:19 cgd Exp $
 .\"
 .\" Copyright (c) 1993
@@ -35,7 +36,7 @@
 .\"
 .Dd June 18, 1993
 .Dt DUMPLFS 8
-.Os BSD 4.4
+.Os
 .Sh NAME
 .Nm dumplfs
 .Nd dump file system information
@@ -43,19 +44,19 @@
 .Nm dumplfs
 .Op Ar filesys No \&| Ar device
 .Sh DESCRIPTION
-.Nm Dumplfs
+.Nm
 prints out the file system layout information for the
 LFS file system or special device specified.
 The listing is very long and detailed.
 This command is useful mostly for finding out certain file system
 information such as the file system block size.
 .Sh SEE ALSO
-.Xr fs 5 ,
 .Xr disktab 5 ,
+.Xr fs 5 ,
 .Xr disklabel 8 ,
-.Xr newlfs 8 ,
+.Xr newlfs 8
 .Sh HISTORY
 The
-.Nm dumplfs
+.Nm
 command appeared in
 .Bx 4.4 .

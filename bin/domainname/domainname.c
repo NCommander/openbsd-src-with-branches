@@ -1,3 +1,4 @@
+/*	$OpenBSD: domainname.c,v 1.4 2001/09/06 13:29:08 mpech Exp $	*/
 /*	$NetBSD: domainname.c,v 1.7 1995/03/21 09:04:22 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)hostname.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: domainname.c,v 1.7 1995/03/21 09:04:22 cgd Exp $";
+static char rcsid[] = "$OpenBSD: domainname.c,v 1.4 2001/09/06 13:29:08 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,7 +56,9 @@ static char rcsid[] = "$NetBSD: domainname.c,v 1.7 1995/03/21 09:04:22 cgd Exp $
 #include <string.h>
 #include <unistd.h>
 
-void usage __P((void));
+extern	char *__progname;
+
+void usage(void);
 
 int
 main(argc, argv)
@@ -67,7 +70,6 @@ main(argc, argv)
 
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch (ch) {
-		case '?':
 		default:
 			usage();
 		}
@@ -91,7 +93,6 @@ main(argc, argv)
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: domainname [name-of-domain]\n");
+	(void)fprintf(stderr, "usage: %s [name-of-domain]\n", __progname);
 	exit(1);
 }

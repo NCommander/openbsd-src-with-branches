@@ -1,3 +1,4 @@
+/*	$OpenBSD: common.c,v 1.7 2001/06/01 18:17:56 deraadt Exp $	*/
 /*	$NetBSD: common.c,v 1.4 1995/09/23 22:34:20 pk Exp $	*/
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -32,7 +33,7 @@
 
 #ifdef DYNAMIC
 
-typedef int (*rtld_entry_fn) __P((int, struct crt_ldso *));
+typedef int (*rtld_entry_fn)(int, struct crt_ldso *);
 static struct ld_entry	*ld_entry;
 
 static void
@@ -54,6 +55,11 @@ __load_rtld(dp)
 
 	crt.crt_ldfd = open(crt.crt_ldso, 0, 0);
 	if (crt.crt_ldfd == -1) {
+		/* If we don't need ld.so then just return instead bail out. */
+		if (!LD_NEED(dp)) {
+			ld_entry = 0;
+			return;
+		}
 		_FATAL("No ld.so\n");
 	}
 
@@ -86,7 +92,7 @@ __load_rtld(dp)
 	/* Map in ld.so */
 	crt.crt_ba = mmap(0, hdr.a_text+hdr.a_data+hdr.a_bss,
 			PROT_READ|PROT_EXEC,
-			MAP_COPY,
+			MAP_PRIVATE,
 			crt.crt_ldfd, N_TXTOFF(hdr));
 	if (crt.crt_ba == -1) {
 		_FATAL("Cannot map ld.so\n");
@@ -106,7 +112,7 @@ __load_rtld(dp)
 	/* Map in data segment of ld.so writable */
 	if (mmap(crt.crt_ba+N_DATADDR(hdr), hdr.a_data,
 			PROT_READ|PROT_WRITE,
-			MAP_FIXED|MAP_COPY,
+			MAP_FIXED|MAP_PRIVATE,
 			crt.crt_ldfd, N_DATOFF(hdr)) == -1) {
 		_FATAL("Cannot map ld.so\n");
 	}
@@ -114,7 +120,7 @@ __load_rtld(dp)
 	/* Map bss segment of ld.so zero */
 	if (hdr.a_bss && mmap(crt.crt_ba+N_BSSADDR(hdr), hdr.a_bss,
 			PROT_READ|PROT_WRITE,
-			MAP_FIXED|MAP_ANON|MAP_COPY,
+			MAP_FIXED|MAP_ANON|MAP_PRIVATE,
 			crt.crt_dzfd, 0) == -1) {
 		_FATAL("Cannot map ld.so\n");
 	}
@@ -159,8 +165,8 @@ __load_rtld(dp)
 
 void *
 dlopen(name, mode)
-	char	*name;
-	int	mode;
+	const char	*name;
+	int		mode;
 {
 	if (ld_entry == NULL)
 		return NULL;
@@ -180,8 +186,8 @@ dlclose(fd)
 
 void *
 dlsym(fd, name)
-	void	*fd;
-	char	*name;
+	void		*fd;
+	const char	*name;
 {
 	if (ld_entry == NULL)
 		return NULL;
@@ -200,7 +206,7 @@ int	cmd;
 	return (ld_entry->dlctl)(fd, cmd, arg);
 }
 
-char *
+const char *
 dlerror()
 {
 	int     error;
@@ -209,6 +215,8 @@ dlerror()
 	    (*ld_entry->dlctl)(NULL, DL_GETERRNO, &error) == -1)
 		return "Service unavailable";
 
+	if (error == 0)
+		return NULL;
 	return (char *)strerror(error);
 }
 

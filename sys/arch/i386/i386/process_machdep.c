@@ -1,7 +1,8 @@
-/*	$NetBSD: process_machdep.c,v 1.19 1995/10/11 04:19:47 mycroft Exp $	*/
+/*	$OpenBSD: process_machdep.c,v 1.9 2002/03/14 00:42:24 miod Exp $	*/
+/*	$NetBSD: process_machdep.c,v 1.22 1996/05/03 19:42:25 christos Exp $	*/
 
 /*
- * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
+ * Copyright (c) 1995, 1996 Charles M. Hannum.  All rights reserved.
  * Copyright (c) 1993 The Regents of the University of California.
  * Copyright (c) 1993 Jan-Simon Pendry
  * All rights reserved.
@@ -76,7 +77,14 @@
 #include <machine/reg.h>
 #include <machine/segments.h>
 
-static inline struct trapframe *
+#ifdef VM86
+#include <machine/vm86.h>
+#endif
+
+static __inline struct trapframe *process_frame(struct proc *);
+static __inline struct save87 *process_fpframe(struct proc *);
+
+static __inline struct trapframe *
 process_frame(p)
 	struct proc *p;
 {
@@ -84,12 +92,12 @@ process_frame(p)
 	return (p->p_md.md_regs);
 }
 
-static inline struct save87 *
+static __inline struct save87 *
 process_fpframe(p)
 	struct proc *p;
 {
 
-	return (&p->p_addr->u_pcb.pcb_savefpu);
+	return (&p->p_addr->u_pcb.pcb_savefpu.npx);
 }
 
 int
@@ -102,30 +110,31 @@ process_read_regs(p, regs)
 
 #ifdef VM86
 	if (tf->tf_eflags & PSL_VM) {
-		regs->r_gs = tf->tf_vm86_gs;
-		regs->r_fs = tf->tf_vm86_fs;
-		regs->r_es = tf->tf_vm86_es;
-		regs->r_ds = tf->tf_vm86_ds;
+		regs->r_gs = tf->tf_vm86_gs & 0xffff;
+		regs->r_fs = tf->tf_vm86_fs & 0xffff;
+		regs->r_es = tf->tf_vm86_es & 0xffff;
+		regs->r_ds = tf->tf_vm86_ds & 0xffff;
+		regs->r_eflags = get_vflags(p);
 	} else
 #endif
 	{
-		regs->r_gs = pcb->pcb_gs;
-		regs->r_fs = pcb->pcb_fs;
-		regs->r_es = tf->tf_es;
-		regs->r_ds = tf->tf_ds;
+		regs->r_gs = pcb->pcb_gs & 0xffff;
+		regs->r_fs = pcb->pcb_fs & 0xffff;
+		regs->r_es = tf->tf_es & 0xffff;
+		regs->r_ds = tf->tf_ds & 0xffff;
+		regs->r_eflags = tf->tf_eflags;
 	}
-	regs->r_edi    = tf->tf_edi;
-	regs->r_esi    = tf->tf_esi;
-	regs->r_ebp    = tf->tf_ebp;
-	regs->r_ebx    = tf->tf_ebx;
-	regs->r_edx    = tf->tf_edx;
-	regs->r_ecx    = tf->tf_ecx;
-	regs->r_eax    = tf->tf_eax;
-	regs->r_eip    = tf->tf_eip;
-	regs->r_cs     = tf->tf_cs;
-	regs->r_eflags = tf->tf_eflags;
-	regs->r_esp    = tf->tf_esp;
-	regs->r_ss     = tf->tf_ss;
+	regs->r_edi = tf->tf_edi;
+	regs->r_esi = tf->tf_esi;
+	regs->r_ebp = tf->tf_ebp;
+	regs->r_ebx = tf->tf_ebx;
+	regs->r_edx = tf->tf_edx;
+	regs->r_ecx = tf->tf_ecx;
+	regs->r_eax = tf->tf_eax;
+	regs->r_eip = tf->tf_eip;
+	regs->r_cs = tf->tf_cs & 0xffff;
+	regs->r_esp = tf->tf_esp;
+	regs->r_ss = tf->tf_ss & 0xffff;
 
 	return (0);
 }
@@ -151,6 +160,8 @@ process_read_fpregs(p, regs)
 	return (0);
 }
 
+#ifdef PTRACE
+
 int
 process_write_regs(p, regs)
 	struct proc *p;
@@ -159,19 +170,13 @@ process_write_regs(p, regs)
 	struct trapframe *tf = process_frame(p);
 	struct pcb *pcb = &p->p_addr->u_pcb;
 
-	/*
-	 * Check for security violations.
-	 */
-	if (((regs->r_eflags ^ tf->tf_eflags) & PSL_USERSTATIC) != 0 ||
-	    !USERMODE(regs->r_cs, regs->r_eflags))
-		return (EINVAL);
-
 #ifdef VM86
 	if (tf->tf_eflags & PSL_VM) {
-		tf->tf_vm86_gs = regs->r_gs;
-		tf->tf_vm86_fs = regs->r_fs;
-		tf->tf_vm86_es = regs->r_es;
-		tf->tf_vm86_ds = regs->r_ds;
+		tf->tf_vm86_gs = regs->r_gs & 0xffff;
+		tf->tf_vm86_fs = regs->r_fs & 0xffff;
+		tf->tf_vm86_es = regs->r_es & 0xffff;
+		tf->tf_vm86_ds = regs->r_ds & 0xffff;
+		set_vflags(p, regs->r_eflags);
 	} else
 #endif
 	{
@@ -191,29 +196,36 @@ process_write_regs(p, regs)
 #define	valid_sel(sel)	(ISPL(sel) == SEL_UPL && verr(sel))
 #define	null_sel(sel)	(!ISLDT(sel) && IDXSEL(sel) == 0)
 
+		/*
+		 * Check for security violations.
+		 */
+		if (((regs->r_eflags ^ tf->tf_eflags) & PSL_USERSTATIC) != 0 ||
+		    !USERMODE(regs->r_cs, regs->r_eflags))
+			return (EINVAL);
+
 		if ((regs->r_gs != pcb->pcb_gs && \
 		     !valid_sel(regs->r_gs) && !null_sel(regs->r_gs)) ||
 		    (regs->r_fs != pcb->pcb_fs && \
 		     !valid_sel(regs->r_fs) && !null_sel(regs->r_fs)))
 			return (EINVAL);
 
-		pcb->pcb_gs = regs->r_gs;
-		pcb->pcb_fs = regs->r_fs;
-		tf->tf_es   = regs->r_es;
-		tf->tf_ds   = regs->r_ds;
+		pcb->pcb_gs = regs->r_gs & 0xffff;
+		pcb->pcb_fs = regs->r_fs & 0xffff;
+		tf->tf_es = regs->r_es & 0xffff;
+		tf->tf_ds = regs->r_ds & 0xffff;
+		tf->tf_eflags = regs->r_eflags;
 	}
-	tf->tf_edi    = regs->r_edi;
-	tf->tf_esi    = regs->r_esi;
-	tf->tf_ebp    = regs->r_ebp;
-	tf->tf_ebx    = regs->r_ebx;
-	tf->tf_edx    = regs->r_edx;
-	tf->tf_ecx    = regs->r_ecx;
-	tf->tf_eax    = regs->r_eax;
-	tf->tf_eip    = regs->r_eip;
-	tf->tf_cs     = regs->r_cs;
-	tf->tf_eflags = regs->r_eflags;
-	tf->tf_esp    = regs->r_esp;
-	tf->tf_ss     = regs->r_ss;
+	tf->tf_edi = regs->r_edi;
+	tf->tf_esi = regs->r_esi;
+	tf->tf_ebp = regs->r_ebp;
+	tf->tf_ebx = regs->r_ebx;
+	tf->tf_edx = regs->r_edx;
+	tf->tf_ecx = regs->r_ecx;
+	tf->tf_eax = regs->r_eax;
+	tf->tf_eip = regs->r_eip;
+	tf->tf_cs = regs->r_cs & 0xffff;
+	tf->tf_esp = regs->r_esp;
+	tf->tf_ss = regs->r_ss & 0xffff;
 
 	return (0);
 }
@@ -261,3 +273,5 @@ process_set_pc(p, addr)
 
 	return (0);
 }
+
+#endif	/* PTRACE */

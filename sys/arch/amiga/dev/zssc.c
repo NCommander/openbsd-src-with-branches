@@ -1,4 +1,5 @@
-/*	$NetBSD: zssc.c,v 1.13 1995/10/09 15:20:38 chopps Exp $	*/
+/*	$OpenBSD: zssc.c,v 1.10 1997/01/18 12:26:37 niklas Exp $	*/
+/*	$NetBSD: zssc.c,v 1.22 1996/12/23 09:10:33 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -32,14 +33,14 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)dma.c
  */
 
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+#include <machine/psl.h>
+#include <machine/intr.h>
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 #include <amiga/amiga/custom.h>
@@ -50,11 +51,12 @@
 #include <amiga/dev/siopvar.h>
 #include <amiga/dev/zbusvar.h>
 
-int zsscprint __P((void *auxp, char *));
-void zsscattach __P((struct device *, struct device *, void *));
-int zsscmatch __P((struct device *, struct cfdata *, void *));
-int siopintr __P((struct siop_softc *));
-int zssc_dmaintr __P((struct siop_softc *));
+void zsscattach(struct device *, struct device *, void *);
+int  zsscmatch(struct device *, void *, void *);
+int  zssc_dmaintr(void *);
+#ifdef DEBUG
+void zssc_dump(void);
+#endif
 
 struct scsi_adapter zssc_scsiswitch = {
 	siop_scsicmd,
@@ -74,18 +76,21 @@ struct scsi_device zssc_scsidev = {
 #ifdef DEBUG
 #endif
 
-struct cfdriver zssccd = {
-	NULL, "zssc", (cfmatch_t)zsscmatch, zsscattach, 
-	DV_DULL, sizeof(struct siop_softc), NULL, 0 };
+struct cfattach zssc_ca = {
+	sizeof(struct siop_softc), zsscmatch, zsscattach
+};
+
+struct cfdriver zssc_cd = {
+	NULL, "zssc", DV_DULL, NULL, 0
+};
 
 /*
- * if we are an PPI Zeus
+ * if we are a PPI Zeus
  */
 int
-zsscmatch(pdp, cdp, auxp)
+zsscmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -116,6 +121,7 @@ zsscattach(pdp, dp, auxp)
 	 */
 	sc->sc_clock_freq = 66;		/* Clock = 66Mhz */
 	sc->sc_ctest7 = 0x00;
+	sc->sc_dcntl = 0x00;
 
 	alloc_sicallback();
 
@@ -130,27 +136,16 @@ zsscattach(pdp, dp, auxp)
 	sc->sc_isr.isr_intr = zssc_dmaintr;
 	sc->sc_isr.isr_arg = sc;
 	sc->sc_isr.isr_ipl = 6;
+#if defined(IPL_REMAP_1) || defined(IPL_REMAP_2)
+	sc->sc_isr.isr_mapped_ipl = IPL_BIO;
+#endif
 	add_isr(&sc->sc_isr);
 
 	/*
 	 * attach all scsi units on us
 	 */
-	config_found(dp, &sc->sc_link, zsscprint);
+	config_found(dp, &sc->sc_link, scsiprint);
 }
-
-/*
- * print diag if pnp is NULL else just extra
- */
-int
-zsscprint(auxp, pnp)
-	void *auxp;
-	char *pnp;
-{
-	if (pnp == NULL)
-		return(UNCONF);
-	return(QUIET);
-}
-
 
 /*
  * Level 6 interrupt processing for the Progressive Peripherals Inc
@@ -161,9 +156,10 @@ zsscprint(auxp, pnp)
  */
 
 int
-zssc_dmaintr(sc)
-	struct siop_softc *sc;
+zssc_dmaintr(arg)
+	void *arg;
 {
+	struct siop_softc *sc = arg;
 	siop_regmap_p rp;
 	int istat;
 
@@ -187,7 +183,11 @@ zssc_dmaintr(sc)
 	rp->siop_sien = 0;
 	rp->siop_dien = 0;
 	sc->sc_flags |= SIOP_INTDEFER | SIOP_INTSOFF;
+#if defined(IPL_REMAP_1) || defined(IPL_REMAP_2)
+	siopintr(sc);
+#else
 	add_sicallback((sifunc_t)siopintr, sc, NULL);
+#endif
 	return(1);
 }
 
@@ -197,8 +197,8 @@ zssc_dump()
 {
 	int i;
 
-	for (i = 0; i < zssccd.cd_ndevs; ++i)
-		if (zssccd.cd_devs[i])
-			siop_dump(zssccd.cd_devs[i]);
+	for (i = 0; i < zssc_cd.cd_ndevs; ++i)
+		if (zssc_cd.cd_devs[i])
+			siop_dump(zssc_cd.cd_devs[i]);
 }
 #endif

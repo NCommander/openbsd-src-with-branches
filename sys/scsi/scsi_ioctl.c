@@ -1,4 +1,5 @@
-/*	$NetBSD: scsi_ioctl.c,v 1.19 1995/09/26 19:26:58 thorpej Exp $	*/
+/*	$OpenBSD: scsi_ioctl.c,v 1.14 2002/01/07 19:04:46 mickey Exp $	*/
+/*	$NetBSD: scsi_ioctl.c,v 1.23 1996/10/12 23:23:17 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
@@ -40,10 +41,12 @@
 #include <sys/errno.h>
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/file.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
 #include <sys/device.h>
+#include <sys/fcntl.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
@@ -59,6 +62,11 @@ struct scsi_ioctl {
 };
 
 LIST_HEAD(, scsi_ioctl) si_head;
+
+struct scsi_ioctl *si_get(void);
+void si_free(struct scsi_ioctl *);
+struct scsi_ioctl *si_find(struct buf *);
+void scsistrategy(struct buf *);
 
 struct scsi_ioctl *
 si_get()
@@ -173,7 +181,7 @@ scsi_user_done(xs)
 
 /* Pseudo strategy function
  * Called by scsi_do_ioctl() via physio/physstrat if there is to
- * be data transfered, and directly if there is no data transfer.
+ * be data transferred, and directly if there is no data transfer.
  * 
  * Should I reorganize this so it returns to physio instead
  * of sleeping in scsiio_scsi_cmd?  Is there any advantage, other
@@ -282,6 +290,10 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 
 	SC_DEBUG(sc_link, SDEV_DB2, ("scsi_do_ioctl(0x%lx)\n", cmd));
 
+	/* If we don't have write access, just skip to the safe ones. */
+	if ((flag & FWRITE) == 0)
+		return scsi_do_safeioctl(sc_link, dev, cmd, addr, flag, p);
+
 	switch(cmd) {
 	case SCIOCCOMMAND: {
 		scsireq_t *screq = (scsireq_t *)addr;
@@ -335,6 +347,11 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 			sc_link->flags |= SDEV_DB4;
 		return 0;
 	}
+	case OSCIOCREPROBE: {
+		struct oscsi_addr *sca = (struct oscsi_addr *)addr;
+
+		return scsi_probe_busses(sca->scbus, sca->target, sca->lun);
+	}
 	case SCIOCREPROBE: {
 		struct scsi_addr *sca = (struct scsi_addr *)addr;
 
@@ -343,19 +360,66 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 	case SCIOCRECONFIG:
 	case SCIOCDECONFIG:
 		return EINVAL;
-	case SCIOCIDENTIFY: {
-		struct scsi_addr *sca = (struct scsi_addr *)addr;
+	case SCIOCRESET: {
+		if ((flag & FWRITE) == 0)
+			return EBADF;
+		scsi_scsi_cmd(sc_link, 0, 0, 0, 0, GENRETRY, 2000, NULL,
+		    SCSI_RESET);
+		return 0;
+	}
+	default:
+		return scsi_do_safeioctl(sc_link, dev, cmd, addr, flag, p);
+	}
+
+#ifdef DIAGNOSTIC
+	panic("scsi_do_ioctl: impossible");
+#endif
+}
+
+int
+scsi_do_safeioctl(sc_link, dev, cmd, addr, flag, p)
+	struct scsi_link *sc_link;
+	dev_t dev;
+	u_long cmd;
+	caddr_t addr;
+	int flag;
+	struct proc *p;
+{
+	SC_DEBUG(sc_link, SDEV_DB2, ("scsi_do_safeioctl(0x%lx)\n", cmd));
+
+	switch(cmd) {
+	case OSCIOCIDENTIFY: {
+		struct oscsi_addr *sca = (struct oscsi_addr *)addr;
 
 		sca->scbus = sc_link->scsibus;
 		sca->target = sc_link->target;
 		sca->lun = sc_link->lun;
 		return 0;
 	}
-	default:
-		return ENOTTY;
-	}
+	case SCIOCIDENTIFY: {
+		struct scsi_addr *sca = (struct scsi_addr *)addr;
 
-#ifdef DIAGNOSTIC
-	panic("scsi_do_ioctl: impossible");
-#endif
+		sca->type = (sc_link->flags & SDEV_ATAPI) 
+			? TYPE_ATAPI : TYPE_SCSI;
+		sca->scbus = sc_link->scsibus;
+		sca->target = sc_link->target;
+		sca->lun = sc_link->lun;
+		return 0;
+	}
+	case SCIOCCOMMAND:
+	case SCIOCDEBUG:
+	case SCIOCREPROBE:
+	case OSCIOCREPROBE:
+	case SCIOCRESET:
+		return EBADF;
+	case SCIOCRECONFIG:
+	case SCIOCDECONFIG:
+		return EINVAL;
+	default:
+		if (sc_link->adapter->ioctl)
+			return (sc_link->adapter->ioctl)(sc_link, cmd, addr, 
+			    flag, p);
+		else
+			return ENOTTY;
+	}
 }

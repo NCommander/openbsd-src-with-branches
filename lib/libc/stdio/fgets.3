@@ -1,4 +1,4 @@
-.\"	$NetBSD: fgets.3,v 1.5 1995/02/02 01:15:38 jtc Exp $
+.\"	$OpenBSD: fgets.3,v 1.12 2002/03/05 16:53:59 millert Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -35,8 +35,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)fgets.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd June 4, 1993
 .Dt FGETS 3
 .Os
@@ -47,14 +45,13 @@
 .Sh SYNOPSIS
 .Fd #include <stdio.h>
 .Ft char *
-.Fn fgets "char *str" "size_t size" "FILE *stream"
+.Fn fgets "char *str" "int size" "FILE *stream"
 .Ft char *
 .Fn gets "char *str"
 .Sh DESCRIPTION
 The
 .Fn fgets
-function
-reads at most one less than the number of characters specified by
+function reads at most one less than the number of characters specified by
 .Xr size
 from the given
 .Fa stream
@@ -69,8 +66,7 @@ character is appended to end the string.
 .Pp
 The
 .Fn gets
-function
-is equivalent to
+function is equivalent to
 .Fn fgets
 with an infinite
 .Xr size
@@ -82,20 +78,18 @@ except that the newline character (if any) is not stored in the string.
 It is the caller's responsibility to ensure that the input line,
 if any, is sufficiently short to fit in the string.
 .Sh RETURN VALUES
-.Pp
 Upon successful completion,
 .Fn fgets
-and 
+and
 .Fn gets
 return
 a pointer to the string.
-If end-of-file or an error occurs before any characters are read, 
+If end-of-file or an error occurs before any characters are read,
 they return
-.Dv NULL.
+.Dv NULL .
 The
 .Fn fgets
-and
-functions
+and functions
 .Fn gets
 do not distinguish between end-of-file and error, and callers must use
 .Xr feof 3
@@ -127,6 +121,51 @@ may also fail and set
 .Va errno
 for any of the errors specified for the routine
 .Xr getchar 3 .
+.Sh CAVEATS
+The following bit of code illustrates a case where the programmer assumes a
+string is too long if it does not contain a newline:
+.Bd -literal
+	char buf[1024], *p;
+
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		if ((p = strchr(buf, '\en')) != NULL) {
+			fprintf(stderr, "input line too long.\en");
+			exit(1);
+		}
+		*p = '\e0';
+		printf("%s\en", buf);
+	}
+.Ed
+.Pp
+While the error would be true if a line > 1023 characters were read, it would
+be false in two other cases:
+.Bl -enum -offset indent
+.It
+If the last line in a file does not contain a newline, the string returned by
+.Fn fgets
+will not contain a newline either.
+Thus
+.Fn strchr
+will return
+.Dv NULL
+and the program will terminate, even if the line was valid.
+.It
+All C string functions, including
+.Fn strchr ,
+correctly assume the end of the string is represented by a null
+.Pq Sq \e0
+character.
+If the first character of a line returned by
+.Fn fgets
+were null,
+.Fn strchr
+would immediately return without considering the rest of the returned text
+which may indeed include a newline.
+.El
+.Pp
+Consider using
+.Xr fgetln 3
+instead when dealing with untrusted input.
 .Sh SEE ALSO
 .Xr feof 3 ,
 .Xr ferror 3 ,
@@ -148,6 +187,5 @@ use
 .Fn gets .
 The
 .Fn gets
-function
-exists purely to conform to
+function exists purely to conform to
 .St -ansiC .

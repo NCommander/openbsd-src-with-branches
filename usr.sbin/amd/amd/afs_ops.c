@@ -1,3 +1,5 @@
+/*	$OpenBSD: afs_ops.c,v 1.2 1996/03/25 15:54:43 niklas Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -36,13 +38,14 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)afs_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: afs_ops.c,v 1.3 1994/06/13 20:46:51 mycroft Exp $
  */
 
 #include "am.h"
 
 #define NFS
 #define NFSCLIENT
+
+#include <unistd.h>
 
 #include <sys/stat.h>
 #ifdef NFS_3
@@ -51,7 +54,6 @@ typedef nfs_fh fhandle_t;
 #ifdef NFS_HDR
 #include NFS_HDR
 #endif /* NFS_HDR */
-#include <sys/mount.h>
 #include "mount.h"
 
 /*
@@ -141,6 +143,10 @@ char *opts;
 		return EINVAL;
 	}
 
+#if NFS_PROTOCOL_VERSION >= 3
+	nfs_args.fhsize = NFSX_V2FH;
+	nfs_args.version = NFS_ARGSVERSION;
+#endif
 	NFS_FH_DREF(nfs_args.fh, (NFS_FH_TYPE) fhp);
 
 	/*
@@ -151,7 +157,7 @@ char *opts;
 	bzero((voidp) &sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_addr = myipaddr;
-	if (port = hasmntval(&mnt, "port")) {
+	if ((port = hasmntval(&mnt, "port"))) {
 		sin.sin_port = htons(port);
 	} else {
 		plog(XLOG_ERROR, "no port number specified for %s", dir);
@@ -193,10 +199,10 @@ char *opts;
 	 * Parse a subset of the standard nfs options.  The
 	 * others are probably irrelevant for this application
 	 */
-	if (nfs_args.timeo = hasmntval(&mnt, "timeo"))
+	if ((nfs_args.timeo = hasmntval(&mnt, "timeo")))
 		nfs_args.flags |= NFSMNT_TIMEO;
 
-	if (nfs_args.retrans = hasmntval(&mnt, "retrans"))
+	if ((nfs_args.retrans = hasmntval(&mnt, "retrans")))
 		nfs_args.flags |= NFSMNT_RETRANS;
 
 #ifdef NFSMNT_BIODS
@@ -1025,29 +1031,30 @@ int mpe;
 			cp->retry = TRUE;
 		}
 
-		if (!this_error)
-		if (p->fs_flags & FS_MBACKGROUND) {
-			mf->mf_flags |= MFF_MOUNTING;	/*XXX*/
+		if (!this_error) {
+			if ((p->fs_flags & FS_MBACKGROUND)) {
+				mf->mf_flags |= MFF_MOUNTING;	/*XXX*/
 #ifdef DEBUG
-			dlog("backgrounding mount of \"%s\"", mf->mf_mount);
+				dlog("backgrounding mount of \"%s\"", mf->mf_mount);
 #endif /* DEBUG */
-			if (cp->callout) {
-				untimeout(cp->callout);
-				cp->callout = 0;
-			}
-			run_task(try_mount, (voidp) mp, afs_cont, (voidp) cp);
-			mf->mf_flags |= MFF_MKMNT;	/* XXX */
-			if (mf_retry) free_mntfs(mf_retry);
-			return -1;
-		} else {
+				if (cp->callout) {
+					untimeout(cp->callout);
+					cp->callout = 0;
+				}
+				run_task(try_mount, (voidp) mp, afs_cont, (voidp) cp);
+				mf->mf_flags |= MFF_MKMNT;	/* XXX */
+				if (mf_retry) free_mntfs(mf_retry);
+				return -1;
+			} else {
 #ifdef DEBUG
-			dlog("foreground mount of \"%s\" ...", mf->mf_info);
+				dlog("foreground mount of \"%s\" ...", mf->mf_info);
 #endif /* DEBUG */
-			this_error = try_mount((voidp) mp);
-			if (this_error < 0) {
-				if (!mf_retry)
-					mf_retry = dup_mntfs(mf);
-				cp->retry = TRUE;
+				this_error = try_mount((voidp) mp);
+				if (this_error < 0) {
+					if (!mf_retry)
+						mf_retry = dup_mntfs(mf);
+					cp->retry = TRUE;
+				}
 			}
 		}
 

@@ -1,4 +1,5 @@
-#	@(#)Makefile	8.1 (Berkeley) 6/8/93
+#	$OpenBSD$
+
 
 DIR=	usd/19.memacros
 SRCS=	intro.me

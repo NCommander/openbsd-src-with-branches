@@ -1,53 +1,36 @@
-# Generated automatically from Makefile.in by configure.
-#	@(#)Makefile	5.2 (Berkeley) 3/5/91
+#	$OpenBSD: Makefile,v 1.11 2000/01/06 21:19:10 d Exp $
+
+#
+# The pthread library is formed from the FreeBSD uthread sources of 
+# libc_r, and exploits weak symbols in libc.
 #
 
-LIB=pthread
-#NOPIC=
-#NOPROFILE=1
-CPPFLAGS+= -I${.CURDIR} -I${.CURDIR}/include -I${srcdir}/include -DPTHREAD_KERNEL
-CDEBUGFLAGS= -g -O2 -Werror
-CFLAGS+= ${CDEBUGFLAGS}
-# CFLAGS+= ${CPPFLAGS} <- done by bsd.lib.mk
-CFLAGS+= ${CPPFLAGS} 
-LIBDIR= $(exec_prefix)/lib
-BINDIR= $(exec_prefix)/bin
-INCDIR= $(exec_prefix)/include
-MANDIR= $(exec_prefix)/man
+LIBC_RSRCDIR=	${.CURDIR}/../libc_r
+LIBCSRCDIR=	${.CURDIR}/../libc
 
-.OBJDIR != if test -d ${.CURDIR}/obj ; then true ; else mkdir ${.CURDIR}/obj || exit 1 ; fi ; echo ${.CURDIR}/obj
+.PATH:		${LIBC_RSRCDIR}
 
-# Standard bsd install rules look for the "install" program, rather than
-# using some variable.  So, hack things so that that install rule works.
-BINGRP != echo " " `groups` " " | sed 's/ [0-9][0-9]* / /g' | awk '{print $$1}'
-BINOWN != echo $${USER}
-LIBMODE = 644 # so ranlib can run!
+LIB=		pthread
+LINTFLAGS=	-z
+CFLAGS+=	-DPTHREAD_KERNEL -D_POSIX_THREADS -D_THREAD_SAFE 
+CFLAGS+=	-D_PTHREADS_INVARIANTS
+CFLAGS+=	-DNOPOLL -I${LIBC_RSRCDIR}/uthread
+CFLAGS+=	-I${LIBC_RSRCDIR}/include
+CFLAGS+=	-I${LIBCSRCDIR}/include
+AINC+=		-I${LIBC_RSRCDIR}/uthread
 
-.include "config.flags"
+# Uncomment this if you want libc_r to contain debug information for
+# thread locking.
+CFLAGS+=	-D_LOCK_DEBUG
+DEBUG=		-ggdb -Wall
 
-# %!$@ pmake seems to automagically cd into the obj directory, so relative 
-# srcdir references are completely botched.  Try to figure out an absolute
-# pathname for srcdir here, and live with it.
-srcdir = $(srctop)
+.include "${LIBC_RSRCDIR}/include/Makefile.inc"
+.include "${LIBC_RSRCDIR}/sys/Makefile.inc"
+.include "${LIBC_RSRCDIR}/thread/Makefile.inc"
+.include "${LIBC_RSRCDIR}/uthread/Makefile.inc"
 
-beforeinstall: install-dirs
+# XXX enable when libc_r is not built
+#.include "${LIBC_RSRCDIR}/man/Makefile.inc"
 
-.include "${srcdir}/pthreads/Makefile.inc"
-.include "${srcdir}/stdlib/Makefile.inc"
-.include "${srcdir}/stdio/Makefile.inc"
-.include "${srcdir}/string/Makefile.inc"
-.include "${srcdir}/gen/Makefile.inc"
-.include "${srcdir}/net/Makefile.inc"
-.include "${srcdir}/scripts/Makefile.inc"
-
-$(OBJS) : $(config) $(types) $(paths)
-
-Makefile: ${srcdir}/config/Makefile.in
-	cd ${.CURDIR} && sh config.status
-
-all-lib : libpthread.a
-# Removed make install since mysql uses this in place.
-#install : install-bin install-include
-install:
-
+.include <bsd.own.mk>
 .include <bsd.lib.mk>

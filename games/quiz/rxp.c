@@ -1,3 +1,4 @@
+/*	$OpenBSD: rxp.c,v 1.4 1999/10/02 06:36:45 pjanzen Exp $	*/
 /*	$NetBSD: rxp.c,v 1.5 1995/04/22 10:17:00 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)rxp.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: rxp.c,v 1.5 1995/04/22 10:17:00 cgd Exp $";
+static char rcsid[] = "$OpenBSD: rxp.c,v 1.4 1999/10/02 06:36:45 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -84,28 +85,33 @@ typedef short Rxp_t;			/* type for regexp tokens */
 static Rxp_t rxpbuf[RXP_LINE_SZ];	/* compiled regular expression buffer */
 char rxperr[128];			/* parser error message */
 
-static int	 rxp__compile __P((char *, int));
-static char	*rxp__expand __P((int));
-static int	 rxp__match __P((char *, int, Rxp_t *, Rxp_t *, char *));
+static int	 rxp__compile(const char *, int);
+static char	*rxp__expand(int);
+static int	 rxp__match(const char *, int, Rxp_t *, Rxp_t *, const char *);
 
 int
 rxp_compile(s)
-	register char *	s;
+	const char *	s;
 {
 	return (rxp__compile(s, TRUE));
 }
 
 static int
 rxp__compile(s, first)
-	register char *s;
+	const char *s;
 	int first;
 {
 	static Rxp_t *rp;
-	static char *sp;
+	static const char *sp;
 	Rxp_t *grp_ptr;
 	Rxp_t *alt_ptr;
 	int esc, err;
 
+	if (s == NULL) {
+		(void)snprintf(rxperr, sizeof(rxperr),
+		    "null string sent to rxp_compile");
+		return(FALSE);
+	}
 	esc = 0;
 	if (first) {
 		rp = rxpbuf;
@@ -195,23 +201,23 @@ rxp__compile(s, first)
  */
 int
 rxp_match(s)
-	register char *	s;
+	const char *s;
 {
 	return (rxp__match(s, TRUE, NULL, NULL, NULL));
 }
 
 static int
 rxp__match(s, first, j_succ, j_fail, sp_fail)
-	char *s;
+	const char *s;
 	int first;
 	Rxp_t *j_succ;		/* jump here on successful alt match */
 	Rxp_t *j_fail;		/* jump here on failed match */
-	char *sp_fail;		/* reset sp to here on failed match */
+	const char *sp_fail;		/* reset sp to here on failed match */
 {
 	static Rxp_t *rp;
-	static char *sp;
-	register int ch;
-	Rxp_t *grp_end;
+	static const char *sp;
+	int ch;
+	Rxp_t *grp_end = NULL;
 	int err;
 
 	if (first) {

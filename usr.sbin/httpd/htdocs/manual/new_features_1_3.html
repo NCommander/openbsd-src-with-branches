@@ -9,7 +9,7 @@
 <DIV ALIGN="CENTER">
  <IMG SRC="images/sub.gif" ALT="[APACHE DOCUMENTATION]">
  <H3>
-  Apache HTTP Server Version 1.3
+  Apache HTTP Server
  </H3>
 </DIV>
 
@@ -43,12 +43,15 @@ the <A HREF="upgrading_to_1_3.html">upgrade notes</A>.
     modules can be loaded into the server process space only when necessary,
     thus overall memory usage by Apache will be significantly reduced.  DSO
     currently is supported on FreeBSD, OpenBSD, NetBSD, Linux, Solaris, SunOS,
-    Digital UNIX, IRIX, HP/UX, UnixWare, AIX, ReliantUnix and generic SVR4
-    platforms.
+    Digital UNIX, IRIX, HP/UX, UnixWare, NetWare, AIX, ReliantUnix and generic
+    SVR4 platforms.
 
 <DT><STRONG><A HREF="windows.html">Support for Windows NT/95</A></STRONG>
 <DD>Apache now experimentally supports the Windows NT and Windows 95
     operating systems.
+
+<DT><STRONG><A HREF="netware.html">Support for NetWare 5.x</A></STRONG>
+<DD>Apache now experimentally supports the NetWare 5.x operating systems.
 
 <DT><STRONG><A HREF="sourcereorg.html">Re-organized 
     Sources</A></STRONG>
@@ -70,7 +73,6 @@ the <A HREF="upgrading_to_1_3.html">upgrade notes</A>.
     it.  This opens up more opportunities for log rotation, hit
     filtering, real-time splitting of multiple vhosts into separate
     logs, and asynchronous DNS resolving on the fly.
-
 </DL>
 
 <P><HR>
@@ -131,6 +133,24 @@ documentation</A> for more information.
 <H2><A NAME="config">Configuration Enhancements</A></H2>
 
 <DL>
+<DT><STRONG>Unified Server Configuration Files</STRONG></DT>
+<DD><EM>(Apache 1.3.4)</EM> The contents of the three
+    server configuration files (<SAMP>httpd.conf</SAMP>,
+    <SAMP>srm.conf</SAMP>, and <SAMP>access.conf</SAMP>) have
+    been merged into a single <SAMP>httpd.conf</SAMP> file.
+    The <SAMP>srm.conf</SAMP> and <SAMP>access.conf</SAMP> files
+    are now empty except for comments directing the Webmaster
+    to look in <SAMP>httpd.conf</SAMP>.  In addition, the
+    merged <SAMP>httpd.conf</SAMP> file has been restructured
+    to allow directives to appear in a hopefully more
+    intuitive and meaningful order.
+</DD>
+<DT><STRONG>Continuation Lines in config files</STRONG></DT>
+<DD>Directive lines in the server configuration files may now be
+    split onto multiple lines by using the canonical Unix continuation
+    mechanism, namely a '\' as the last non-blank character on the
+    line to indicate that the next line should be concatenated.
+</DD>
 <DT><STRONG>Apache Autoconf-style Interface (APACI)</STRONG>
 <DD>Until Apache 1.3 there was no real out-of-the-box batch-capable
     build and installation procedure for the complete Apache
@@ -141,7 +161,10 @@ documentation</A> for more information.
     <CODE>src/Configure</CODE> stuff in batch and additionally
     installs the package with a GNU-conforming directory layout.  Any
     options from the old configuration scheme are available plus a lot
-    of new options for flexibly customizing Apache.
+    of new options for flexibly customizing Apache.<BR>
+    <STRONG>Note:</STRONG> The default installation layout has changed
+    for Apache 1.3.4.  See the files <CODE>README.configure</CODE> and
+    <CODE>INSTALL</CODE> for more information.
 
 <DT><STRONG>APache eXtenSion (APXS) support tool</STRONG>
 <DD>Now that Apache provides full support for loading modules under
@@ -186,6 +209,12 @@ documentation</A> for more information.
     <CODE>VirtualHost</CODE> sections.  This is useful for folks
     trying to debug their virtual host configuration.
 
+<DT><STRONG>Control of HTTP methods</STRONG>
+<DD><A HREF="mod/core.html#limitexcept">&lt;LimitExcept&gt; and
+    &lt;/LimitExcept&gt;</A> are used to enclose a group of access control
+    directives which will then apply to any HTTP access method not listed in
+    the arguments; i.e., it is the opposite of a <Limit> section and can be
+    used to control both standard and nonstandard/unrecognized methods.
 </DL>
 
 <P><HR>
@@ -193,6 +222,13 @@ documentation</A> for more information.
 <H3><A NAME="mod">Module Enhancements</A></H3>
 
 <DL>
+<DT><A HREF="mod/mod_negotiation.html"><STRONG>Improved mod_negotiation
+    </STRONG></A><BR>
+<DD>The optional content negotiation (MultiViews) module has been completely
+    overhauled for Apache 1.3.4, incorporating the latest HTTP/1.1
+    revisions and the experimental Transparent Content Negotion features
+    of RFC 2295 and RFC 2296.
+
 <DT><A HREF="mod/mod_speling.html"><STRONG>NEW - Spelling correction 
     module</STRONG></A><BR>
 <DD>This optional module corrects frequently occurring spelling and
@@ -288,18 +324,37 @@ MIME-typing</A></STRONG>
         HREF="mod/mod_autoindex.html#indexoptions">IndexOptions</A>
         keyword.
 
-    <LI><A HREF="mod/mod_autoindex.html#indexoptions">
+    <LI><A HREF="mod/mod_autoindex.html#indexoptions:suppresshtmlpreamble">
         <CODE><STRONG>SuppressHTMLPreamble</STRONG></CODE></A> can be used if
         your README.html file includes its own HTML header.
 
-    <LI><STRONG><CODE>IconHeight</CODE> and <CODE>IconWidth</CODE></STRONG> let
-        you set
-        height and width attributes to the <CODE>&lt;IMG&gt;</CODE> tag in
-        directory listings.
+    <LI>The <A HREF="mod/mod_autoindex.html#indexoptions">
+        <CODE><STRONG>IndexOptions</STRONG></CODE></A> directive now allows
+        the use of incremental prefixes (+/- to add/remove the respective
+        keyword feature, as was already possible for the
+        <A HREF="mod/core.html#options">Options</A> directive) to its
+        keyword arguments. Multiple IndexOptions directives applying
+        to the same directory will now be merged.
+
+    <LI><A HREF="mod/mod_autoindex.html#indexoptions:iconheight"
+        ><STRONG><CODE>IconHeight</CODE></STRONG></A> and
+	<A HREF="mod/mod_autoindex.html#indexoptions:iconwidth"
+        ><STRONG><CODE>IconWidth</CODE></STRONG></A>
+        let you set height and width attributes to the
+        <CODE>&lt;IMG&gt;</CODE> tag in directory listings.
+
+    <LI>The new <A HREF="mod/mod_autoindex.html#indexoptions:namewidth"
+        ><STRONG><CODE>NameWidth</CODE></STRONG></A> keyword to the
+        <A HREF="mod/mod_autoindex.html#indexoptions">IndexOptions</A>
+	directive lets you set the number of columns for
+	<A HREF="mod/mod_autoindex.html#indexoptions:fancyindexing">"fancy"
+	directory listings</A>. If set to an '*' asterisk, the name width
+	will be adjusted automatically.
 
     <LI>The <A HREF="mod/mod_autoindex.html#fancyindexing"
         ><SAMP>FancyIndexing</SAMP></A> directive now correctly has
-        the same impact as <SAMP>IndexOptions&nbsp;FancyIndexing</SAMP>
+        the same impact as 
+        <A HREF="mod/mod_autoindex.html#indexoptions:fancyindexing"><SAMP>IndexOptions&nbsp;FancyIndexing</SAMP></A>
 	without replacing the effect of any existing <SAMP>IndexOptions</SAMP>
 	directive.
 
@@ -353,6 +408,11 @@ MIME-typing</A></STRONG>
     HREF="mod/mod_log_config.html#customlog"
     ><CODE>CustomLog</CODE></A> directives, rather than having to
     spell out the complete log format string each time.
+
+<DT><STRONG>Conditional logging</STRONG>
+<DD><A HREF="mod/mod_log_config.html#customlog-conditional">mod_log_config</A>
+    now supports logging based upon environment variables.
+    mod_log_referer and mod_log_agent are now deprecated.
 
 <DT><STRONG>mod_cern_meta configurable per-directory</STRONG>
 <DD><A HREF="mod/mod_cern_meta.html">mod_cern_meta</A> is now
@@ -517,9 +577,9 @@ MIME-typing</A></STRONG>
     running BS2000/OSD</A></STRONG>
 <DD>As a premiere, this version of Apache comes with a beta version of
     a port to a mainframe machine which uses the EBCDIC character set
-    as its native codeset (It is the SIEMENS NIXDORF family of
-    mainframes running the BS2000/OSD operating system on a IBM/390
-    compatible processor This mainframe OS nowadays features a
+    as its native codeset (It is the SIEMENS family of mainframes
+    running the BS2000/OSD operating system on a IBM/390
+    compatible processor. This mainframe OS nowadays features a
     SVR4-like POSIX subsystem).
 
 <DT><STRONG><A HREF="mod/core.html#accessfilename"><CODE>AccessFileName</CODE>
@@ -560,7 +620,7 @@ MIME-typing</A></STRONG>
     config files.  So you will see errors in the config file.  This
     should make it easier to start Apache via rsh or crontab.
 
-<DT><STRONG>Year-2000 Improvements</STRONG>
+<DT><A NAME="y2k"><STRONG>Year-2000 Improvements</STRONG></A>
 <DD>The default <CODE>timefmt</CODE> string used by <A
     HREF="mod/mod_include.html"><CODE>mod_include</CODE></A> has been
     modified to display the year using four digits rather than the
@@ -624,9 +684,18 @@ MIME-typing</A></STRONG>
 
 </DL>
 
+<DT><STRONG>Support for Netscape style SHA1 encrypted passwords</STRONG><BR>
+<DD>To facilitate migration or integration of BasicAuth password
+    schemes where the password is encrypted using SHA1 (as opposed
+    to apache's build in MD5 and/or the OS specific crypt(3) function
+    ) passwords prefixed with with <CODE>{SHA1}</CODE> are taken
+    as Base64 encoded SHA1 passwords. More information and
+    some utilities to convert Netscape ldap/ldif entries can be
+    found in support/SHA1. 
+
 <HR>
  <H3 ALIGN="CENTER">
-  Apache HTTP Server Version 1.3
+  Apache HTTP Server
  </H3>
 
 <A HREF="./"><IMG SRC="images/index.gif" ALT="Index"></A>

@@ -1,8 +1,9 @@
-/*	$NetBSD: trap.c,v 1.55 1995/10/10 21:33:33 gwr Exp $	*/
+/*	$OpenBSD: trap.c,v 1.31 2001/11/28 16:13:29 art Exp $	*/
+/*	$NetBSD: trap.c,v 1.63-1.65ish 1997/01/16 15:41:40 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
- * Copyright (c) 1993 Adam Glass 
+ * Copyright (c) 1993 Adam Glass
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -57,32 +58,30 @@
 #include <sys/ktrace.h>
 #endif
 
-#include <vm/vm.h>
-#include <vm/pmap.h>
+#include <uvm/uvm_extern.h>
+#include <uvm/uvm_pmap.h>
 
 #include <machine/cpu.h>
+#include <machine/db_machdep.h>
 #include <machine/endian.h>
+#include <machine/machdep.h>
 #include <machine/psl.h>
-#include <machine/trap.h>
 #include <machine/reg.h>
+#include <machine/trap.h>
 
 #ifdef COMPAT_SUNOS
 #include <compat/sunos/sunos_syscall.h>
 extern struct emul emul_sunos;
 #endif
 
+/* Special labels in m68k/copy.s */
+extern char fubail[], subail[];
 
-/*
- * TODO:
- *        Chris's new syscall debug stuff 
- */
+/* These are called from locore.s */
+void syscall(register_t code, struct frame);
+void trap(int type, u_int code, u_int v, struct frame);
+int  nodb_trap(int type, struct frame *);
 
-extern int fubail(), subail();
-extern int *nofault;
-
-/* XXX - put these in some header file? */
-extern vm_offset_t virtual_avail;
-extern int pmap_fault_reload(pmap_t, vm_offset_t, vm_prot_t);
 
 int astpending;
 int want_resched;
@@ -113,12 +112,13 @@ u_int trap_types = sizeof(trap_type) / sizeof(trap_type[0]);
  * Size of various exception stack frames (minus the standard 8 bytes)
  */
 short	exframesize[] = {
-	FMT0SIZE,	/* type 0 - normal (68020/030/040) */
+	FMT0SIZE,	/* type 0 - normal (68020/030/040/060) */
 	FMT1SIZE,	/* type 1 - throwaway (68020/030/040) */
-	FMT2SIZE,	/* type 2 - normal 6-word (68020/030/040) */
-	-1,		/* type 3 - FP post-instruction (68040) */
-	-1, -1, -1,	/* type 4-6 - undefined */
-	-1,		/* type 7 - access error (68040) */
+	FMT2SIZE,	/* type 2 - normal 6-word (68020/030/040/060) */
+	FMT3SIZE,	/* type 3 - FP post-instruction (68040/060) */
+	FMT4SIZE,	/* type 4 - access error/fp disabled (68060) */
+	-1, -1, 	/* type 5-6 - undefined */
+	FMT7SIZE,	/* type 7 - access error (68040) */
 	58,		/* type 8 - bus fault (68010) */
 	FMT9SIZE,	/* type 9 - coprocessor mid-instruction (68020/030) */
 	FMTASIZE,	/* type A - short bus fault (68020/030) */
@@ -145,13 +145,16 @@ int mmupid = -1;
  * trap and syscall both need the following work done before
  * returning to user mode.
  */
-static void
-userret(p, fp, oticks)
-	register struct proc *p;
-	register struct frame *fp;
+/*ARGSUSED*/
+void
+userret(p, fp, oticks, faultaddr, fromtrap)
+	struct proc *p;
+	struct frame *fp;
 	u_quad_t oticks;
+	u_int faultaddr;
+	int fromtrap;
 {
-	int sig, s;
+	int sig;
 
 	/* take pending signals */
 	while ((sig = CURSIG(p)) != 0)
@@ -161,18 +164,9 @@ userret(p, fp, oticks)
 
 	if (want_resched) {
 		/*
-		 * Since we are curproc, clock will normally just change
-		 * our priority without moving us from one queue to another
-		 * (since the running process is not on a queue.)
-		 * If that happened after we put ourselves on the run queue
-		 * but before we mi_switch()'ed, we might not be on the queue
-		 * indicated by our priority.
+		 * We're being preempted.
 		 */
-		s = splstatclock();
-		setrunqueue(p);
-		p->p_stats->p_ru.ru_nivcsw++;
-		mi_switch();
-		splx(s);
+		preempt(NULL);
 		while ((sig = CURSIG(p)) != 0)
 			postsig(sig);
 	}
@@ -183,7 +177,7 @@ userret(p, fp, oticks)
 	if (p->p_flag & P_PROFIL) {
 		extern int psratio;
 		addupc_task(p, fp->f_pc,
-					(int)(p->p_sticks - oticks) * psratio);
+			    (int)(p->p_sticks - oticks) * psratio);
 	}
 
 	curpriority = p->p_priority;
@@ -195,20 +189,23 @@ userret(p, fp, oticks)
  * System calls are broken out for efficiency.
  */
 /*ARGSUSED*/
+void
 trap(type, code, v, frame)
 	int type;
 	u_int code, v;
 	struct frame frame;
 {
 	register struct proc *p;
-	register int sig;
+	register int sig, tmp;
 	u_int ucode;
 	u_quad_t sticks;
+	int si_type;
 
-	cnt.v_trap++;
+	uvmexp.traps++;
 	p = curproc;
 	ucode = 0;
 	sig = 0;
+	si_type = 0;
 
 	/* I have verified that this DOES happen! -gwr */
 	if (p == NULL)
@@ -222,36 +219,47 @@ trap(type, code, v, frame)
 		type |= T_USER;
 		sticks = p->p_sticks;
 		p->p_md.md_regs = frame.f_regs;
-	}
-
-#ifdef DDB
-	if (type == T_TRACE || type == T_BREAKPOINT) {
-		(void)splhigh();	/* XXX - return will restore it */
-		if (kdb_trap(type, &frame))
-			return;
-	}
-#endif
+	} else
+		sticks = 0;
 
 	switch (type) {
 	default:
 	dopanic:
 		printf("trap type=0x%x, code=0x%x, v=0x%x\n", type, code, v);
-#ifdef	DDB
-		if (kdb_trap(type, &frame))
-			return;
+		/*
+		 * Let the kernel debugger see the trap frame that
+		 * caused us to panic.  This is a convenience so
+		 * one can see registers at the point of failure.
+		 */
+		tmp = splhigh();
+#ifdef KGDB
+		/* If connected, step or cont returns 1 */
+		if (kgdb_trap(type, &frame))
+			goto kgdb_cont;
 #endif
+#ifdef	DDB
+		(void) kdb_trap(type, (db_regs_t *) &frame);
+#endif
+#ifdef KGDB
+	kgdb_cont:
+#endif
+		splx(tmp);
 		if (panicstr) {
-			printf("trap during panic!\n");
-			sun3_mon_abort();
+			/*
+			 * Note: panic is smart enough to do:
+			 *   boot(RB_AUTOBOOT | RB_NOSYNC, NULL)
+			 * if we call it again.
+			 */
+			panic("trap during panic!");
 		}
-		regdump(&frame, 128);
+		regdump((struct trapframe *)&frame, 128);
 		type &= ~T_USER;
 		if ((u_int)type < trap_types)
 			panic(trap_type[type]);
 		panic("trap type 0x%x", type);
 
 	case T_BUSERR:		/* kernel bus error */
-		if (p->p_addr->u_pcb.pcb_onfault == NULL)
+		if (p == NULL || p->p_addr->u_pcb.pcb_onfault == NULL)
 			goto dopanic;
 		/*FALLTHROUGH*/
 
@@ -268,8 +276,13 @@ trap(type, code, v, frame)
 		return;
 
 	case T_BUSERR|T_USER:	/* bus error */
+		si_type = BUS_OBJERR;
+		ucode = code & ~T_USER;
+		sig = SIGBUS;
+		break;
 	case T_ADDRERR|T_USER:	/* address error */
-		ucode = v;
+		si_type = BUS_ADRALN;
+		ucode = code & ~T_USER;
 		sig = SIGBUS;
 		break;
 
@@ -284,19 +297,22 @@ trap(type, code, v, frame)
 		       type==T_COPERR ? "coprocessor" : "format");
 		type |= T_USER;
 		p->p_sigacts->ps_sigact[SIGILL] = SIG_DFL;
-		/* temporary use of sig as mask */
-		sig = sigmask(SIGILL);
-		p->p_sigignore &= ~sig;
-		p->p_sigcatch  &= ~sig;
-		p->p_sigmask   &= ~sig;
-		sig = SIGILL;	/* back to normal */
+		tmp = sigmask(SIGILL);
+		p->p_sigignore &= ~tmp;
+		p->p_sigcatch  &= ~tmp;
+		p->p_sigmask   &= ~tmp;
+		sig = SIGILL;
 		ucode = frame.f_format;
+		si_type = ILL_COPROC;
+		v = frame.f_pc;
 		break;
 
 	case T_COPERR|T_USER:	/* user coprocessor violation */
 		/* What is a proper response here? */
 		ucode = 0;
 		sig = SIGFPE;
+		si_type = FPE_FLTINV;
+		v = frame.f_pc;
 		break;
 
 	case T_FPERR|T_USER:	/* 68881 exceptions */
@@ -311,6 +327,8 @@ trap(type, code, v, frame)
 		 */
 		ucode = code;
 		sig = SIGFPE;
+		si_type = FPE_FLTRES;
+		v = frame.f_pc;
 		break;
 
 	case T_FPEMULI:		/* FPU faults in supervisor mode */
@@ -323,10 +341,14 @@ trap(type, code, v, frame)
 	case T_FPEMULD|T_USER:	/* unimplemented FP data type */
 #ifdef	FPU_EMULATE
 		sig = fpu_emulate(&frame, &p->p_addr->u_pcb.pcb_fpregs);
+		si_type = 0;
 		/* XXX - Deal with tracing? (frame.f_sr & PSL_T) */
 #else
 		uprintf("pid %d killed: no floating point support\n", p->p_pid);
+		ucode = frame.f_format; /* XXX was ILL_PRIVIN_FAULT */
 		sig = SIGILL;
+		si_type = ILL_ILLOPC;
+		v = frame.f_pc;
 #endif
 		break;
 
@@ -334,43 +356,65 @@ trap(type, code, v, frame)
 	case T_PRIVINST|T_USER:	/* privileged instruction fault */
 		ucode = frame.f_format;
 		sig = SIGILL;
+		si_type = ILL_PRVOPC;
+		v = frame.f_pc;
 		break;
 
-	case T_ZERODIV|T_USER:	/* Divide by zero */
-	case T_CHKINST|T_USER:	/* CHK instruction trap */
-	case T_TRAPVINST|T_USER:	/* TRAPV instruction trap */
+	case T_ZERODIV|T_USER:		/* Divide by zero */
 		ucode = frame.f_format;
 		sig = SIGFPE;
+		si_type = FPE_INTDIV;
+		v = frame.f_pc;
+		break;
+
+	case T_CHKINST|T_USER:		/* CHK instruction trap */
+		ucode = frame.f_format;
+		sig = SIGFPE;
+		si_type = FPE_FLTSUB;
+		v = frame.f_pc;
+		break;
+
+	case T_TRAPVINST|T_USER:	/* TRAPV instruction trap */
+		ucode = frame.f_format;
+		sig = SIGILL;
+		si_type = ILL_ILLTRP;
+		v = frame.f_pc;
 		break;
 
 	/*
 	 * XXX: Trace traps are a nightmare.
 	 *
 	 *	HP-UX uses trap #1 for breakpoints,
-	 *	NetBSD/m68k uses trap #2,
+	 *	OpenBSD/m68k uses trap #2,
 	 *	SUN 3.x uses trap #15,
 	 *	KGDB uses trap #15 (for kernel breakpoints; handled elsewhere).
 	 *
-	 * HPBSD and HP-UX traps both get mapped by locore.s into T_TRACE.
+	 * OpenBSD and HP-UX traps both get mapped by locore.s into T_TRACE.
 	 * SUN 3.x traps get passed through as T_TRAP15 and are not really
 	 * supported yet.
+	 *
+	 * XXX: We should never get kernel-mode T_TRACE or T_TRAP15
+	 * XXX: because locore.s now gives them special treatment.
 	 */
 	case T_TRACE:		/* kernel trace trap */
-	case T_TRAP15:		/* SUN trace trap */
+	case T_TRAP15:		/* kernel breakpoint */
 		frame.f_sr &= ~PSL_T;
-		sig = SIGTRAP;
-		break;
+		return;
 
 	case T_TRACE|T_USER:	/* user trace trap */
 	case T_TRAP15|T_USER:	/* SUN user trace trap */
 #ifdef COMPAT_SUNOS
 		/*
-		 * SunOS seems to use Trap #2 for some obscure fpu operations.
-		 * So far, just ignore it, but DONT trap on it...
-		 * (i.e. do not deliver a signal for it)
-		 */
-		if (p->p_emul == &emul_sunos)
-		    break;
+		 * SunOS uses Trap #2 for a "CPU cache flush"
+		 * Just flush the on-chip caches and return.
+		 * XXX - Too bad OpenBSD uses trap 2...
+  		 */
+		if (p->p_emul == &emul_sunos) {
+			ICIA();
+			DCIU();
+			/* get out fast */
+			return;
+		}
 #endif
 		frame.f_sr &= ~PSL_T;
 		sig = SIGTRAP;
@@ -407,12 +451,16 @@ trap(type, code, v, frame)
 		/*FALLTHROUGH*/
 
 	case T_MMUFLT|T_USER: { 	/* page fault */
-		register vm_offset_t va;
-		register struct vmspace *vm = p->p_vmspace;
-		register vm_map_t map;
+		vm_offset_t va;
+		struct vmspace *vm = NULL;
+		struct vm_map *map;
 		int rv;
-		vm_prot_t ftype;
-		extern vm_map_t kernel_map;
+		vm_prot_t ftype, vftype;
+		extern struct vm_map *kernel_map;
+
+		/* vmspace only significant if T_USER */
+		if (p)
+			vm = p->p_vmspace;
 
 #ifdef DEBUG
 		if ((mmudebug & MDB_WBFOLLOW) || MDB_ISPID(p->p_pid))
@@ -435,10 +483,11 @@ trap(type, code, v, frame)
 				map = kernel_map;
 		}
 
-		if (WRFAULT(code))
+		if (WRFAULT(code)) {
+			vftype = VM_PROT_WRITE;
 			ftype = VM_PROT_READ | VM_PROT_WRITE;
-		else
-			ftype = VM_PROT_READ;
+		} else
+			vftype = ftype = VM_PROT_READ;
 		va = trunc_page((vm_offset_t)v);
 
 		/*
@@ -452,6 +501,7 @@ trap(type, code, v, frame)
 			/* Do not allow faults outside the "managed" space. */
 			if (va < virtual_avail) {
 				if (p->p_addr->u_pcb.pcb_onfault) {
+					/* XXX - Can this happen? -gwr */
 #ifdef	DEBUG
 					if (mmudebug & MDB_CPFAULT) {
 						printf("trap: copyfault kernel_map va < avail\n");
@@ -464,12 +514,12 @@ trap(type, code, v, frame)
 			}
 		} else {
 			/* User map.  Try shortcut. */
-			if (pmap_fault_reload(&vm->vm_pmap, va, ftype))
+			if (pmap_fault_reload(vm->vm_map.pmap, va, ftype))
 				goto finish;
 		}
 
 		/* OK, let the VM code handle the fault. */
-		rv = vm_fault(map, va, ftype, FALSE);
+		rv = uvm_fault(map, va, 0, ftype);
 #ifdef	DEBUG
 		if (rv && MDB_ISPID(p->p_pid)) {
 			printf("vm_fault(%x, %x, %x, 0) -> %x\n",
@@ -493,17 +543,17 @@ trap(type, code, v, frame)
 		 * the current limit and we need to reflect that as an access
 		 * error.
 		 */
-		if ((caddr_t)va >= vm->vm_maxsaddr && map != kernel_map) {
-			if (rv == KERN_SUCCESS) {
+		if ((map != kernel_map) && ((caddr_t)va >= vm->vm_maxsaddr)) {
+			if (rv == 0) {
 				unsigned nss;
 
-				nss = clrnd(btoc((u_int)(USRSTACK-va)));
+				nss = btoc((u_int)(USRSTACK-va));
 				if (nss > vm->vm_ssize)
 					vm->vm_ssize = nss;
-			} else if (rv == KERN_PROTECTION_FAILURE)
-				rv = KERN_INVALID_ADDRESS;
+			} else if (rv == EACCES)
+				rv = EFAULT;
 		}
-		if (rv == KERN_SUCCESS)
+		if (rv == 0)
 			goto finish;
 
 		if ((type & T_USER) == 0) {
@@ -517,12 +567,14 @@ trap(type, code, v, frame)
 #endif
 				goto copyfault;
 			}
-			printf("vm_fault(%x, %x, %x, 0) -> %x\n",
+			printf("vm_fault(%p, %lx, %x, 0) -> %x\n",
 			       map, va, ftype, rv);
 			goto dopanic;
 		}
-		ucode = v;
-		sig = (rv == KERN_PROTECTION_FAILURE) ? SIGBUS : SIGSEGV;
+		frame.f_pad = code & 0xffff;
+		ucode = vftype;
+		sig = SIGSEGV;
+		si_type = SEGV_MAPERR;
 		break;
 	} /* T_MMUFLT */
 	} /* switch */
@@ -532,15 +584,20 @@ finish:
 	if ((type & T_USER) == 0)
 		return;
 	/* Post a signal if necessary. */
-	if (sig != 0)
-		trapsignal(p, sig, ucode);
+	if (sig != 0) {
+		union sigval sv;
+
+		sv.sival_int = v;
+		trapsignal(p, sig, ucode, si_type, sv);
+	}
 douret:
-	userret(p, &frame, sticks);
+	userret(p, &frame, sticks, 0, 0);
 }
 
 /*
  * Process a system call.
  */
+void
 syscall(code, frame)
 	register_t code;
 	struct frame frame;
@@ -553,7 +610,7 @@ syscall(code, frame)
 	register_t args[8], rval[2];
 	u_quad_t sticks;
 
-	cnt.v_syscall++;
+	uvmexp.syscalls++;
 	if (!USERMODE(frame.f_sr))
 		panic("syscall");
 	p = curproc;
@@ -584,13 +641,16 @@ syscall(code, frame)
 		if (code != SUNOS_SYS_sigreturn) {
 			frame.f_regs[SP] += sizeof (int);
 			/*
-			 * remember that we adjusted the SP, 
+			 * remember that we adjusted the SP,
 			 * might have to undo this if the system call
 			 * returns ERESTART.
+			 * XXX - Use a local variable for this? -gwr
 			 */
 			p->p_md.md_flags |= MDP_STACKADJ;
-		} else
+		} else {
+			/* XXX - This may be redundant (see below). */
 			p->p_md.md_flags &= ~MDP_STACKADJ;
+		}
 	}
 #endif
 
@@ -638,7 +698,7 @@ syscall(code, frame)
 #endif
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSCALL))
-		ktrsyscall(p->p_tracep, code, argsize, args);
+		ktrsyscall(p, code, argsize, args);
 #endif
 	if (error)
 		goto bad;
@@ -647,12 +707,6 @@ syscall(code, frame)
 	error = (*callp->sy_call)(p, args, rval);
 	switch (error) {
 	case 0:
-		/*
-		 * Reinitialize proc pointer `p' as it may be different
-		 * if this is a child returning from fork syscall.
-		 * XXX - Still needed?  Not in hp300... -gwr
-		 */
-		p = curproc;
 		frame.f_regs[D0] = rval[0];
 		frame.f_regs[D1] = rval[1];
 		frame.f_sr &= ~PSL_C;	/* carry bit */
@@ -681,38 +735,38 @@ syscall(code, frame)
 #endif
 #ifdef COMPAT_SUNOS
 	/* need new p-value for this */
-	if (error == ERESTART && (p->p_md.md_flags & MDP_STACKADJ))
-		frame.f_regs[SP] -= sizeof (int);
+	if (p->p_md.md_flags & MDP_STACKADJ) {
+		p->p_md.md_flags &= ~MDP_STACKADJ;
+		if (error == ERESTART)
+			frame.f_regs[SP] -= sizeof (int);
+	}
 #endif
-	userret(p, &frame, sticks, (u_int)0, 0);
+	userret(p, &frame, sticks, 0, 0);
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p->p_tracep, code, error, rval[0]);
+		ktrsysret(p, code, error, rval[0]);
 #endif
 }
 
 /*
- * Set up return-value registers as fork() libc stub expects,
- * and do normal return-to-user-mode stuff.
+ * This is used if we hit a kernel breakpoint or trace trap
+ * when there is no debugger installed (or not attached).
+ * Drop into the PROM temporarily...
  */
-void
-child_return(p)
-	struct proc *p;
+int
+nodb_trap(type, fp)
+	int type;
+	struct frame *fp;
 {
-	struct frame *f;
 
-	f = (struct frame *)p->p_md.md_regs;
-	f->f_regs[D0] = 0;
-	f->f_sr &= ~PSL_C;
-	f->f_format = FMT0;
-
-	/*
-	 * Old ticks (3rd arg) is zero so we will charge the child
-	 * for any clock ticks that might happen before this point.
-	 */
-	userret(p, f, 0, (u_int)0, 0);
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p->p_tracep, SYS_fork, 0, 0);
-#endif
+	if ((0 <= type) && (type < trap_types))
+		printf("\r\nKernel %s,", trap_type[type]);
+	else
+		printf("\r\nKernel trap 0x%x,", type);
+	printf(" frame=%p\r\n", fp);
+	printf("\r\n*No debugger. Doing PROM abort...\r\n");
+	sun3_mon_abort();
+	/* OK then, just resume... */
+	fp->f_sr &= ~PSL_T;
+	return(1);
 }

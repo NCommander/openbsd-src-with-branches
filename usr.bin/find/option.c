@@ -1,3 +1,5 @@
+/*	$OpenBSD: option.c,v 1.13 2001/11/19 19:02:13 mpech Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)option.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: option.c,v 1.5 1993/12/30 21:15:32 jtc Exp $";
+static char rcsid[] = "$OpenBSD: option.c,v 1.13 2001/11/19 19:02:13 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -56,17 +58,29 @@ static OPTION options[] = {
 	{ "(",		N_OPENPAREN,	c_openparen,	O_ZERO },
 	{ ")",		N_CLOSEPAREN,	c_closeparen,	O_ZERO },
 	{ "-a",		N_AND,		NULL,		O_NONE },
+	{ "-amin",	N_AMIN,		c_amin,		O_ARGV },
 	{ "-and",	N_AND,		NULL,		O_NONE },
+	{ "-anewer",	N_ANEWER,	c_anewer,	O_ARGV },
 	{ "-atime",	N_ATIME,	c_atime,	O_ARGV },
+	{ "-cmin",	N_CMIN,		c_cmin,		O_ARGV },
+	{ "-cnewer",	N_CNEWER,	c_cnewer,	O_ARGV },
 	{ "-ctime",	N_CTIME,	c_ctime,	O_ARGV },
 	{ "-depth",	N_DEPTH,	c_depth,	O_ZERO },
+	{ "-empty",	N_EMPTY,	c_empty,	O_ZERO },
 	{ "-exec",	N_EXEC,		c_exec,		O_ARGVP },
+	{ "-execdir",	N_EXECDIR,	c_execdir,	O_ARGVP },
+	{ "-flags",	N_FLAGS,	c_flags,	O_ARGV },
 	{ "-follow",	N_FOLLOW,	c_follow,	O_ZERO },
 	{ "-fstype",	N_FSTYPE,	c_fstype,	O_ARGV },
 	{ "-group",	N_GROUP,	c_group,	O_ARGV },
+	{ "-iname",	N_INAME,	c_iname,	O_ARGV },
 	{ "-inum",	N_INUM,		c_inum,		O_ARGV },
 	{ "-links",	N_LINKS,	c_links,	O_ARGV },
 	{ "-ls",	N_LS,		c_ls,		O_ZERO },
+	{ "-maxdepth",	N_MAXDEPTH,	c_maxdepth,	O_ARGV },
+	{ "-mindepth",	N_MINDEPTH,	c_mindepth,	O_ARGV },
+	{ "-mmin",	N_MMIN,		c_mmin,		O_ARGV },
+	{ "-mount",	N_XDEV,		c_xdev,		O_ZERO },
 	{ "-mtime",	N_MTIME,	c_mtime,	O_ARGV },
 	{ "-name",	N_NAME,		c_name,		O_ARGV },
 	{ "-newer",	N_NEWER,	c_newer,	O_ARGV },
@@ -98,7 +112,7 @@ PLAN *
 find_create(argvp)
 	char ***argvp;
 {
-	register OPTION *p;
+	OPTION *p;
 	PLAN *new;
 	char **argv;
 
@@ -135,7 +149,7 @@ option(name)
 	char *name;
 {
 	OPTION tmp;
-	int typecompare __P((const void *, const void *));
+	int typecompare(const void *, const void *);
 
 	tmp.name = name;
 	return ((OPTION *)bsearch(&tmp, options,

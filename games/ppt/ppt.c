@@ -1,3 +1,4 @@
+/*	$OpenBSD: ppt.c,v 1.5 1998/08/19 08:18:15 pjanzen Exp $	*/
 /*	$NetBSD: ppt.c,v 1.4 1995/03/23 08:35:40 cgd Exp $	*/
 
 /*
@@ -43,14 +44,17 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ppt.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: ppt.c,v 1.4 1995/03/23 08:35:40 cgd Exp $";
+static char rcsid[] = "$OpenBSD: ppt.c,v 1.5 1998/08/19 08:18:15 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
+#include <sys/types.h>
 #include <stdio.h>
+#include <unistd.h>
 
-static void	putppt();
+static void	putppt(int);
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -58,11 +62,18 @@ main(argc, argv)
 	register int c;
 	register char *p;
 
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
 	(void) puts("___________");
 	if (argc > 1)
-		while (p = *++argv)
+		while ((p = *++argv)) {
 			for (; *p; ++p)
 				putppt((int)*p);
+			if ((*(argv + 1)))
+				putppt((int)' ');
+		}
 	else while ((c = getchar()) != EOF)
 		putppt(c);
 	(void) puts("___________");

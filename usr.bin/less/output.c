@@ -1,3 +1,5 @@
+/*	$OpenBSD: output.c,v 1.3 2001/01/29 01:58:03 niklas Exp $	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -46,8 +48,8 @@ extern int any_display;
 	public void
 put_line()
 {
-	register int c;
-	register int i;
+	int c;
+	int i;
 	int a;
 	int curr_attr;
 
@@ -126,8 +128,8 @@ static char *ob = obuf;
 	public void
 flush()
 {
-	register int n;
-	register int fd;
+	int n;
+	int fd;
 
 #if MSOFTC
 	*ob = '\0';
@@ -171,7 +173,7 @@ putchr(c)
  */
 	public void
 putstr(s)
-	register char *s;
+	char *s;
 {
 	while (*s != '\0')
 		putchr(*s++);
@@ -186,7 +188,7 @@ iprintnum(num, radix)
 	int num;
 	int radix;
 {
-	register char *s;
+	char *s;
 	int r;
 	int neg;
 	char buf[10];
@@ -215,12 +217,12 @@ iprintnum(num, radix)
  */
 	static int
 iprintf(fmt, parg)
-	register char *fmt;
+	char *fmt;
 	PARG *parg;
 {
-	register char *s;
-	register int n;
-	register int col;
+	char *s;
+	int n;
+	int col;
 
 	col = 0;
 	while (*fmt != '\0')
@@ -292,6 +294,8 @@ error(fmt, parg)
 		bell();
 #else
 	c = getchr();
+	if (c == 'q')
+		quit(QUIT_OK);
 	if (c != '\n' && c != '\r' && c != ' ' && c != READ_INTR)
 		ungetcc(c);
 #endif
@@ -339,7 +343,7 @@ query(fmt, parg)
 	char *fmt;
 	PARG *parg;
 {
-	register int c;
+	int c;
 	int col = 0;
 
 	if (any_display)

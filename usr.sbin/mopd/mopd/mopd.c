@@ -1,3 +1,5 @@
+/*	$OpenBSD: mopd.c,v 1.4 1998/03/04 20:21:59 deraadt Exp $ */
+
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
  *
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: mopd.c,v 1.14 1996/03/31 19:20:42 moj Exp $";
+static char rcsid[] = "$OpenBSD: mopd.c,v 1.4 1998/03/04 20:21:59 deraadt Exp $";
 #endif
 
 /*
@@ -61,9 +63,9 @@ void   Loop	     (/* void */);
 void   Usage         (/* void */);
 void   mopProcess    (/* struct if_info *, u_char * */);
 #else
-void   Loop	     __P((void));
-void   Usage         __P((void));
-void   mopProcess    __P((struct if_info *, u_char *));
+void   Loop(void);
+void   Usage(void);
+void   mopProcess(struct if_info *, u_char *);
 #endif
 
 int     AllFlag = 0;		/* listen on "all" interfaces */
@@ -75,7 +77,7 @@ int	Not4Flag = 0;		/* Not MOP V4 messages.       */
 int	promisc = 1;		/* Need promisc mode    */
 char    *Program;
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
@@ -94,7 +96,7 @@ main(argc, argv)
 	if (*Program == '-')
 		Program++;
 
-	while ((c = getopt(argc, argv, "34adfv")) != EOF)
+	while ((c = getopt(argc, argv, "34adfv")) != -1)
 		switch (c) {
 			case '3':
 				Not3Flag++;

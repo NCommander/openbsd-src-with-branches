@@ -1,3 +1,4 @@
+.\"     $OpenBSD: cmp.1,v 1.8 2000/03/05 20:09:21 aaron Exp $
 .\"     $NetBSD: cmp.1,v 1.4 1995/09/08 03:22:55 tls Exp $
 .\"
 .\" Copyright (c) 1987, 1990, 1993
@@ -48,7 +49,9 @@
 .Ar file1 file2
 .Op Ar skip1 Op Ar skip2
 .Sh DESCRIPTION
-The cmp utility compares two files of any type and writes the results
+The
+.Nm
+utility compares two files of any type and writes the results
 to the standard output.
 By default,
 .Nm
@@ -57,8 +60,8 @@ and line number at which the first difference occurred is reported.
 .Pp
 Bytes and lines are numbered beginning with one.
 .Pp
-The following options are available:
-.Bl -tag -width flag
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl l
 Print the byte number (decimal) and the differing
 byte values (octal) for each difference.
@@ -69,18 +72,21 @@ status only.
 .Pp
 The optional arguments
 .Ar skip1
-and 
+and
 .Ar skip2
 are the byte offsets from the beginning of
 .Ar file1
 and
 .Ar file2 ,
 respectively, where the comparison will begin.
-The offset is decimal by default, but may be expressed as an hexadecimal
-or octal value by preceding it with a leading ``0x'' or ``0''.
+The offset is decimal by default, but may be expressed as a hexadecimal
+or octal value by preceding it with a leading
+.Dq 0x
+or
+.Dq 0 .
 .Pp
 The
-.Nm cmp
+.Nm
 utility exits with one of the following values:
 .Bl -tag -width 4n
 .It 0
@@ -92,8 +98,10 @@ the other.
 In the latter case, if the
 .Fl s
 option has not been specified,
-.Nm cmp
-writes to standard output that EOF was reached in the shorter
+.Nm
+writes to standard error that
+.Dv EOF
+was reached in the shorter
 file (before any differences were found).
 .It >1
 An error occurred.
@@ -103,7 +111,12 @@ An error occurred.
 .Xr diff3 1
 .Sh STANDARDS
 The
-.Nm cmp
+.Nm
 utility is expected to be
 .St -p1003.2
 compatible.
+.Sh HISTORY
+A
+.Nm
+command appeared in
+.At v1 .

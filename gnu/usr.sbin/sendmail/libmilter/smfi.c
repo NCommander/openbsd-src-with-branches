@@ -9,9 +9,13 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: smfi.c,v 8.42 2001/08/27 18:09:16 gshapiro Exp $")
-
+SM_RCSID("@(#)$Sendmail: smfi.c,v 8.57 2001/11/20 18:47:49 ca Exp $")
+#include <sm/varargs.h>
 #include "libmilter.h"
+
+/* for smfi_set{ml}reply, let's be generous. 256/16 should be sufficient */
+#define MAXREPLYLEN	980	/* max. length of a reply string */
+#define MAXREPLIES	32	/* max. number of reply strings */
 
 /*
 **  SMFI_ADDHEADER -- send a new header to the MTA
@@ -107,7 +111,7 @@ smfi_chgheader(ctx, headerf, hdridx, headerv)
 	free(buf);
 	return r;
 }
-/*
+/*
 **  SMFI_ADDRCPT -- send an additional recipient to the MTA
 **
 **	Parameters:
@@ -135,7 +139,7 @@ smfi_addrcpt(ctx, rcpt)
 	len = strlen(rcpt) + 1;
 	return mi_wr_cmd(ctx->ctx_sd, &timeout, SMFIR_ADDRCPT, rcpt, len);
 }
-/*
+/*
 **  SMFI_DELRCPT -- send a recipient to be removed to the MTA
 **
 **	Parameters:
@@ -163,7 +167,7 @@ smfi_delrcpt(ctx, rcpt)
 	len = strlen(rcpt) + 1;
 	return mi_wr_cmd(ctx->ctx_sd, &timeout, SMFIR_DELRCPT, rcpt, len);
 }
-/*
+/*
 **  SMFI_REPLACEBODY -- send a body chunk to the MTA
 **
 **	Parameters:
@@ -206,7 +210,46 @@ smfi_replacebody(ctx, bodyp, bodylen)
 	}
 	return MI_SUCCESS;
 }
-/*
+#if _FFR_QUARANTINE
+/*
+**  SMFI_QUARANTINE -- quarantine an envelope
+**
+**	Parameters:
+**		ctx -- Opaque context structure
+**		reason -- why?
+**
+**	Returns:
+**		MI_SUCCESS/MI_FAILURE
+*/
+
+int
+smfi_quarantine(ctx, reason)
+	SMFICTX *ctx;
+	char *reason;
+{
+	size_t len;
+	int r;
+	char *buf;
+	struct timeval timeout;
+
+	if (reason == NULL || *reason == '\0')
+		return MI_FAILURE;
+	if (!mi_sendok(ctx, SMFIF_QUARANTINE))
+		return MI_FAILURE;
+	timeout.tv_sec = ctx->ctx_timeout;
+	timeout.tv_usec = 0;
+	len = strlen(reason) + 1;
+	buf = malloc(len);
+	if (buf == NULL)
+		return MI_FAILURE;
+	(void) memcpy(buf, reason, len);
+	r = mi_wr_cmd(ctx->ctx_sd, &timeout, SMFIR_QUARANTINE, buf, len);
+	free(buf);
+	return r;
+}
+#endif /* _FFR_QUARANTINE */
+
+/*
 **  MYISENHSC -- check whether a string contains an enhanced status code
 **
 **	Parameters:
@@ -245,7 +288,8 @@ myisenhsc(s, delim)
 		return 0;
 	return l + h;
 }
-/*
+
+/*
 **  SMFI_SETREPLY -- set the reply code for the next reply to the MTA
 **
 **	Parameters:
@@ -280,20 +324,30 @@ smfi_setreply(ctx, rcode, xcode, message)
 	    !isascii(rcode[2]) || !isdigit(rcode[2]))
 		return MI_FAILURE;
 	if (xcode != NULL)
+	{
+		if (!myisenhsc(xcode, '\0'))
+			return MI_FAILURE;
 		len += strlen(xcode) + 1;
+	}
 	if (message != NULL)
-		len += strlen(message) + 1;
+	{
+		size_t ml;
+
+		/* XXX check also for unprintable chars? */
+		if (strpbrk(message, "\r\n") != NULL)
+			return MI_FAILURE;
+		ml = strlen(message);
+		if (ml > MAXREPLYLEN)
+			return MI_FAILURE;
+		len += ml + 1;
+	}
 	buf = malloc(len);
 	if (buf == NULL)
 		return MI_FAILURE;		/* oops */
 	(void) sm_strlcpy(buf, rcode, len);
 	(void) sm_strlcat(buf, " ", len);
 	if (xcode != NULL)
-	{
-		if (!myisenhsc(xcode, '\0'))
-			return MI_FAILURE;
 		(void) sm_strlcat(buf, xcode, len);
-	}
 	if (message != NULL)
 	{
 		if (xcode != NULL)
@@ -305,7 +359,122 @@ smfi_setreply(ctx, rcode, xcode, message)
 	ctx->ctx_reply = buf;
 	return MI_SUCCESS;
 }
-/*
+
+#if _FFR_MULTILINE
+/*
+**  SMFI_SETMLREPLY -- set multiline reply code for the next reply to the MTA
+**
+**	Parameters:
+**		ctx -- Opaque context structure
+**		rcode -- The three-digit (RFC 821) SMTP reply code.
+**		xcode -- The extended (RFC 2034) reply code.
+**		txt, ... -- The text part of the SMTP reply,
+**			MUST be terminated with NULL.
+**
+**	Returns:
+**		MI_SUCCESS/MI_FAILURE
+*/
+
+int
+#if SM_VA_STD
+smfi_setmlreply(SMFICTX *ctx, const char *rcode, const char *xcode, ...)
+#else /* SM_VA_STD */
+smfi_setmlreply(ctx, rcode, xcode, va_alist)
+	SMFICTX *ctx;
+	const char *rcode;
+	const char *xcode;
+	va_dcl
+#endif /* SM_VA_STD */
+{
+	size_t len;
+	size_t rlen;
+	int args;
+	char *buf, *txt;
+	const char *xc;
+	char repl[16];
+	SM_VA_LOCAL_DECL
+
+	if (rcode == NULL || ctx == NULL)
+		return MI_FAILURE;
+
+	/* ### <sp> */
+	len = strlen(rcode) + 1;
+	if (len != 4)
+		return MI_FAILURE;
+	if ((rcode[0] != '4' && rcode[0] != '5') ||
+	    !isascii(rcode[1]) || !isdigit(rcode[1]) ||
+	    !isascii(rcode[2]) || !isdigit(rcode[2]))
+		return MI_FAILURE;
+	if (xcode != NULL)
+	{
+		if (!myisenhsc(xcode, '\0'))
+			return MI_FAILURE;
+		xc = xcode;
+	}
+	else
+	{
+		if (rcode[0] == '4')
+			xc = "4.0.0";
+		else
+			xc = "5.0.0";
+	}
+
+	/* add trailing space */
+	len += strlen(xc) + 1;
+	rlen = len;
+	args = 0;
+	SM_VA_START(ap, xcode);
+	while ((txt = SM_VA_ARG(ap, char *)) != NULL)
+	{
+		size_t tl;
+
+		tl = strlen(txt);
+		if (tl > MAXREPLYLEN)
+			break;
+
+		/* this text, reply codes, \r\n */
+		len += tl + 2 + rlen;
+		if (++args > MAXREPLIES)
+			break;
+
+		/* XXX check also for unprintable chars? */
+		if (strpbrk(txt, "\r\n") != NULL)
+			break;
+	}
+	SM_VA_END(ap);
+	if (txt != NULL)
+		return MI_FAILURE;
+
+	/* trailing '\0' */
+	++len;
+	buf = malloc(len);
+	if (buf == NULL)
+		return MI_FAILURE;		/* oops */
+	(void) sm_strlcpyn(buf, len, 3, rcode, args == 1 ? " " : "-", xc);
+	(void) sm_strlcpyn(repl, sizeof repl, 4, rcode, args == 1 ? " " : "-",
+			   xc, " ");
+	SM_VA_START(ap, xcode);
+	txt = SM_VA_ARG(ap, char *);
+	if (txt != NULL)
+	{
+		(void) sm_strlcat2(buf, " ", txt, len);
+		while ((txt = SM_VA_ARG(ap, char *)) != NULL)
+		{
+			if (--args <= 1)
+				repl[3] = ' ';
+			(void) sm_strlcat2(buf, "\r\n", repl, len);
+			(void) sm_strlcat(buf, txt, len);
+		}
+	}
+	if (ctx->ctx_reply != NULL)
+		free(ctx->ctx_reply);
+	ctx->ctx_reply = buf;
+	SM_VA_END(ap);
+	return MI_SUCCESS;
+}
+#endif /* _FFR_MULTILINE */
+
+/*
 **  SMFI_SETPRIV -- set private data
 **
 **	Parameters:
@@ -326,7 +495,7 @@ smfi_setpriv(ctx, privatedata)
 	ctx->ctx_privdata = privatedata;
 	return MI_SUCCESS;
 }
-/*
+/*
 **  SMFI_GETPRIV -- get private data
 **
 **	Parameters:
@@ -344,7 +513,7 @@ smfi_getpriv(ctx)
 		return NULL;
 	return ctx->ctx_privdata;
 }
-/*
+/*
 **  SMFI_GETSYMVAL -- get the value of a macro
 **
 **	See explanation in mfapi.h about layout of the structures.

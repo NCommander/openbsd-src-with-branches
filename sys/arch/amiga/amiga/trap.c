@@ -1,4 +1,5 @@
-/*	$NetBSD: trap.c,v 1.42 1995/10/09 04:34:08 chopps Exp $	*/
+/*	$OpenBSD: trap.c,v 1.31 2002/03/14 01:26:28 millert Exp $	*/
+/*	$NetBSD: trap.c,v 1.56 1997/07/16 00:01:47 is Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -55,9 +56,9 @@
 #include <sys/ktrace.h>
 #endif
 
-#include <vm/vm.h>
 #include <sys/user.h>
-#include <vm/pmap.h>
+#include <uvm/uvm_extern.h>
+#include <uvm/uvm_pmap.h>
 
 #include <machine/psl.h>
 #include <machine/trap.h>
@@ -65,6 +66,8 @@
 #include <machine/reg.h>
 #include <machine/mtpr.h>
 #include <machine/pte.h>
+
+#include <m68k/fpe/fpu_emulate.h>
 
 #ifdef COMPAT_SUNOS
 #include <compat/sunos/sunos_syscall.h>
@@ -125,6 +128,9 @@ extern struct emul emul_sunos;
 #define MMUSR_W		0x00000004
 #define MMUSR_T		0x00000002
 #define MMUSR_R		0x00000001
+
+#define FSLW_STRING	"\020\1SEE\3BPE\4TTR\5WE\6RE\7TWE\010WP\011SP" \
+			"\012PF\013IL\014PTB\015PTA\016SBE\017PBE"
 /*
  * XXX End hack
  */
@@ -150,11 +156,12 @@ int	trap_types = sizeof trap_type / sizeof trap_type[0];
  * Size of various exception stack frames (minus the standard 8 bytes)
  */
 short	exframesize[] = {
-	FMT0SIZE,	/* type 0 - normal (68020/030/040) */
+	FMT0SIZE,	/* type 0 - normal (68020/030/040/060) */
 	FMT1SIZE,	/* type 1 - throwaway (68020/030/040) */
-	FMT2SIZE,	/* type 2 - normal 6-word (68020/030/040) */
-	FMT3SIZE,	/* type 3 - FP post-instruction (68040) */
-	-1, -1, -1,	/* type 4-6 - undefined */
+	FMT2SIZE,	/* type 2 - normal 6-word (68020/030/040/060) */
+	FMT3SIZE,	/* type 3 - FP post-instruction (68040/060) */
+	FMT4SIZE,	/* type 4 - access error/fp disabled (68060) */
+	-1, -1,		/* type 5-6 - undefined */
 	FMT7SIZE,	/* type 7 - access error (68040) */
 	58,		/* type 8 - bus fault (68010) */
 	FMT9SIZE,	/* type 9 - coprocessor mid-instruction (68020/030) */
@@ -168,16 +175,34 @@ int mmudebug = 0;
 #endif
 
 extern struct pcb *curpcb;
-int fubail();
-int subail();
+extern char fubail[], subail[];
 
-static void
-userret(p, pc, oticks)
+/* XXX until we get it from m68k/cpu.h */
+extern void    regdump(struct trapframe *, int);
+
+int	_write_back(u_int, u_int, u_int, u_int, struct vm_map *);
+void	panictrap(int, u_int, u_int, struct frame *);
+void	trapcpfault(struct proc *, struct frame *);
+void	trapmmufault(int, u_int, u_int, struct frame *, struct proc *,
+    u_quad_t);
+void	trap(int, u_int, u_int, struct frame);
+#ifdef DDB
+#include <m68k/db_machdep.h>
+int	db_trap(int, db_regs_t *);
+#endif
+void	syscall(register_t, struct frame);
+void	_wb_fault(void);
+
+/*ARGSUSED*/
+void
+userret(p, fp, oticks, faultaddr, fromtrap)
 	struct proc *p;
-	int pc;
+	struct frame *fp;
 	u_quad_t oticks;
+	u_int faultaddr;
+	int fromtrap;
 {
-	int sig, s;
+	int sig;
 
 	while ((sig = CURSIG(p)) != 0)
 		postsig(sig);
@@ -186,18 +211,9 @@ userret(p, pc, oticks)
 
 	if (want_resched) {
 		/*
-		 * Since we are curproc, clock will normally just change
-		 * our priority without moving us from one queue to another
-		 * (since the running process is not on a queue.)
-		 * If that happened after we setrunqueue ourselves but before
-		 * we switch'ed, we might not be on the queue indicated by
-		 * our priority.
+		 * We're being preempted.
 		 */
-		s = splstatclock();
-		setrunqueue(p);
-		p->p_stats->p_ru.ru_nivcsw++;
-		mi_switch();
-		splx(s);
+		preempt(NULL);
 		while ((sig = CURSIG(p)) != 0)
 			postsig(sig);
 	}
@@ -207,7 +223,7 @@ userret(p, pc, oticks)
 	if (p->p_flag & P_PROFIL) {
 		extern int psratio;
 		
-		addupc_task(p, pc, (int)(p->p_sticks - oticks) * psratio);
+		addupc_task(p, fp->f_pc, (int)(p->p_sticks - oticks) * psratio);
 	}
 	curpriority = p->p_priority;
 }
@@ -221,7 +237,7 @@ panictrap(type, code, v, fp)
 	static int panicing = 0;
 	if (panicing++ == 0) {
 		printf("trap type %d, code = %x, v = %x\n", type, code, v);
-		regdump(fp, 128);
+		regdump((struct trapframe *)fp, 128);
 	}
 	type &= ~T_USER;
 #ifdef DEBUG
@@ -252,6 +268,8 @@ trapcpfault(p, fp)
 	fp->f_pc = (int) p->p_addr->u_pcb.pcb_onfault;
 }
 
+int donomore = 0;
+
 void 
 trapmmufault(type, code, v, fp, p, sticks)
 	int type;
@@ -260,13 +278,18 @@ trapmmufault(type, code, v, fp, p, sticks)
 	struct proc *p;
 	u_quad_t sticks;
 {
-	extern vm_map_t kernel_map;
-	struct vmspace *vm;
-	vm_prot_t ftype;
+#if defined(DEBUG) && defined(M68060)
+	static u_int oldcode=0, oldv=0;
+	static struct proc *oldp=0;
+#endif
+	extern struct vm_map *kernel_map;
+	struct vmspace *vm = NULL;
+	vm_prot_t ftype, vftype;
 	vm_offset_t va;
-	vm_map_t map;
+	struct vm_map *map;
 	u_int nss;
 	int rv;
+	union sigval sv;
 
 	/*
 	 * It is only a kernel address space fault iff:
@@ -280,44 +303,70 @@ trapmmufault(type, code, v, fp, p, sticks)
 	/*
 	 * Print out some data about the fault
 	 */
+#ifdef DEBUG_PAGE0
 	if (v < NBPG)					/* XXX PAGE0 */
 		mmudebug |= 0x100;			/* XXX PAGE0 */
-	if (mmudebug && mmutype == MMU_68040) {
-		printf ("68040 access error: pc %x, code %x,"
+#endif
+	if (mmudebug && mmutype <= MMU_68040) {
+#ifdef M68060
+		if (mmutype == MMU_68060) {
+			if (--donomore == 0 || mmudebug & 1)
+				printf ("68060 access error: pc %x, code %b,"
+				     " ea %x\n", fp->f_pc, 
+				     code, FSLW_STRING, v);
+			if (p == oldp && v == oldv && code == oldcode)
+				panic("Identical fault backtoback!");
+			if (donomore == 0) 
+				panic("Tired of faulting.");
+			oldp = p;
+			oldv = v;
+			oldcode = code;
+		} else
+#endif
+		printf("68040 access error: pc %x, code %x,"
 		    " ea %x, fa %x\n", fp->f_pc, code, fp->f_fmt7.f_ea, v);
 		if (curpcb)
-			printf (" curpcb %x ->pcb_ustp %x / %x\n",
-			    curpcb, curpcb->pcb_ustp, 
-			    curpcb->pcb_ustp << PG_SHIFT);
+			printf(" curpcb %p\n", curpcb);
+				
+
 #ifdef DDB						/* XXX PAGE0 */
 		if (v < NBPG)				/* XXX PAGE0 */
 			Debugger();			/* XXX PAGE0 */
 #endif							/* XXX PAGE0 */
 	}
+#ifdef DEBUG_PAGE0
 	mmudebug &= ~0x100;				/* XXX PAGE0 */
+#endif
 #endif
 
 	if (p)
 		vm = p->p_vmspace;
 
 	if (type == T_MMUFLT && 
-	    (!p || !p->p_addr || p->p_addr->u_pcb.pcb_onfault == 0 ||
-	    (mmutype == MMU_68040 && (code & SSW_TMMASK) == FC_SUPERD) ||
-	    (mmutype != MMU_68040 && (code & (SSW_DF|FC_SUPERD)) == (SSW_DF|FC_SUPERD))))
+	    (!p || !p->p_addr || p->p_addr->u_pcb.pcb_onfault == 0 || (
+#ifdef M68060
+	     mmutype == MMU_68060 ? code & FSLW_TM_SV :
+#endif
+	     mmutype == MMU_68040 ? (code & SSW_TMMASK) == FC_SUPERD :
+	     (code & (SSW_DF|FC_SUPERD)) == (SSW_DF|FC_SUPERD))))
 		map = kernel_map;
 	else
 		map = &vm->vm_map;
+
 	if (
-	    (mmutype == MMU_68040 && (code & SSW_RW040) == 0) ||
-	    (mmutype != MMU_68040 && (code & (SSW_DF|SSW_RW)) ==
-	    SSW_DF))	/* what about RMW? */
+#ifdef M68060
+	    mmutype == MMU_68060 ? code & FSLW_RW_W :
+#endif
+	    mmutype == MMU_68040 ? (code & SSW_RW040) == 0 :
+	    (code & (SSW_DF|SSW_RW)) == SSW_DF) {	/* what about RMW? */
+		vftype = VM_PROT_WRITE;
 		ftype = VM_PROT_READ | VM_PROT_WRITE;
-	else
-		ftype = VM_PROT_READ;
+	} else
+		vftype = ftype = VM_PROT_READ;
 	va = trunc_page((vm_offset_t)v);
 #ifdef DEBUG
 	if (map == kernel_map && va == 0) {
-		printf("trap: bad kernel access at %x\n", v);
+		printf("trap: bad kernel access at %x pc %x\n", v, fp->f_pc);
 		panictrap(type, code, v, fp);
 	}
 #endif
@@ -327,9 +376,9 @@ trapmmufault(type, code, v, fp, p, sticks)
 	 */
 	nss = 0;
 	if (map != kernel_map && (caddr_t)va >= vm->vm_maxsaddr) {
-		nss = clrnd(btoc(USRSTACK - (unsigned)va));
+		nss = btoc(USRSTACK - (unsigned)va);
 		if (nss > btoc(p->p_rlimit[RLIMIT_STACK].rlim_cur)) {
-			rv = KERN_FAILURE;
+			rv = EFAULT;
 			goto nogo;
 		}
 	}
@@ -337,18 +386,18 @@ trapmmufault(type, code, v, fp, p, sticks)
 
 #ifdef DEBUG
 	if (mmudebug)
-		printf("vm_fault(%x,%x,%d,0)\n", map, va, ftype);
+		printf("vm_fault(%p,%lx,%d,0)\n", map, va, ftype);
 #endif
 
-	rv = vm_fault(map, va, ftype, FALSE);
+	rv = uvm_fault(map, va, 0, ftype);
 
 #ifdef DEBUG
 	if (mmudebug)
-		printf("vmfault %s %x returned %d\n",
+		printf("vmfault %s %lx returned %d\n",
 		    map == kernel_map ? "kernel" : "user", va, rv);
 #endif
-	if (mmutype == MMU_68040) {
-		if(rv != KERN_SUCCESS) {
+	if (mmutype == MMU_68040) {	/* explicitely NOT MMU_68060 */
+		if (rv) {
 			goto nogo;
 		}
 
@@ -377,11 +426,10 @@ trapmmufault(type, code, v, fp, p, sticks)
 		 * Check WB2
 		 * skip if it's for a move16 instruction 
 		 */
-		if(fp->f_fmt7.f_wb2s & WBS_VALID &&
+		if (fp->f_fmt7.f_wb2s & WBS_VALID &&
 		   ((fp->f_fmt7.f_wb2s & WBS_TTMASK)==WBS_TT_MOVE16) == 0) {
 			if (_write_back(2, fp->f_fmt7.f_wb2s, 
-			    fp->f_fmt7.f_wb2d, fp->f_fmt7.f_wb2a, map)
-			    != KERN_SUCCESS)
+			    fp->f_fmt7.f_wb2d, fp->f_fmt7.f_wb2a, map))
 				goto nogo;
 			if ((fp->f_fmt7.f_wb2s & WBS_TMMASK) 
 			    != (code & SSW_TMMASK))
@@ -390,15 +438,14 @@ trapmmufault(type, code, v, fp, p, sticks)
 
 		/* Check WB3 */
 		if(fp->f_fmt7.f_wb3s & WBS_VALID) {
-			vm_map_t wb3_map;
+			struct vm_map *wb3_map;
 
 			if ((fp->f_fmt7.f_wb3s & WBS_TMMASK) == WBS_TM_SDATA)
 				wb3_map = kernel_map;
 			else
 				wb3_map = &vm->vm_map;
 			if (_write_back(3, fp->f_fmt7.f_wb3s, 
-			    fp->f_fmt7.f_wb3d, fp->f_fmt7.f_wb3a, wb3_map)
-			    != KERN_SUCCESS)
+			    fp->f_fmt7.f_wb3d, fp->f_fmt7.f_wb3a, wb3_map))
 				goto nogo;
 		}
 	}
@@ -412,22 +459,22 @@ trapmmufault(type, code, v, fp, p, sticks)
 	 * error.
 	 */
 	if (map != kernel_map && (caddr_t)va >= vm->vm_maxsaddr) {
-		if (rv == KERN_SUCCESS) {
-			nss = clrnd(btoc(USRSTACK-(unsigned)va));
+		if (rv == 0) {
+			nss = btoc(USRSTACK-(unsigned)va);
 			if (nss > vm->vm_ssize)
 				vm->vm_ssize = nss;
-		} else if (rv == KERN_PROTECTION_FAILURE)
-			rv = KERN_INVALID_ADDRESS;
+		} else if (rv == EACCES)
+			rv = EFAULT;
 	}
 
-	if (rv == KERN_SUCCESS) {
+	if (rv == 0) {
 		if (type == T_MMUFLT)
 			return;
-		userret(p, fp->f_pc, sticks); 
-		reutrn;
+		userret(p, fp, sticks, 0, 0); 
+		return;
 	}
 #else /* use hacky 386bsd_code */
-	if (rv == KERN_SUCCESS) {
+	if (rv == 0) {
 		/*
 		 * XXX: continuation of rude stack hack
 		 */
@@ -435,49 +482,51 @@ trapmmufault(type, code, v, fp, p, sticks)
 			vm->vm_ssize = nss;
 		if (type == T_MMUFLT)
 			return;
-		userret(p, fp->f_pc, sticks); 
+		userret(p, fp, sticks, 0, 0); 
 		return;
 	}
 nogo:
 #endif
 	if (type == T_MMUFLT) {
-		if (p->p_addr->u_pcb.pcb_onfault) {
+		if (p && p->p_addr && p->p_addr->u_pcb.pcb_onfault) {
 			trapcpfault(p, fp);
 			return;
 		}
-		printf("vm_fault(%x, %x, %x, 0) -> %x\n",
-		       map, va, ftype, rv);
-		printf("  type %x, code [mmu,,ssw]: %x\n",
-		       type, code);
+		printf("vm_fault(%p, %lx, %x, 0) -> %x\n", map, va, ftype, rv);
+		printf("  type %x, code [mmu,,ssw]: %x\n", type, code);
 		panictrap(type, code, v, fp);
 	}
-	trapsignal(p, (rv == KERN_PROTECTION_FAILURE) ? SIGBUS : SIGSEGV, v);
+	sv.sival_int = v;
+	trapsignal(p, SIGSEGV, vftype, SEGV_MAPERR, sv);
 	if ((type & T_USER) == 0)
 		return;
-	userret(p, fp->f_pc, sticks); 
+	userret(p, fp, sticks, 0, 0); 
 }
+
 /*
  * Trap is called from locore to handle most types of processor traps,
  * including events such as simulated software interrupts/AST's.
  * System calls are broken out for efficiency.
  */
 /*ARGSUSED*/
+void
 trap(type, code, v, frame)
 	int type;
 	u_int code, v;
 	struct frame frame;
 {
 	struct proc *p;
-	u_int ncode, ucode;
-	u_quad_t sticks;
-	int i, s;
+	u_int ucode;
+	u_quad_t sticks = 0;
+	int typ, i;
+	union sigval sv;
 #ifdef COMPAT_SUNOS
 	extern struct emul emul_sunos;
 #endif
 
 	p = curproc;
-	ucode = 0;
-	cnt.v_trap++;
+	typ = ucode = 0;
+	uvmexp.traps++;
 
 	if (USERMODE(frame.f_sr)) {
 		type |= T_USER;
@@ -487,19 +536,20 @@ trap(type, code, v, frame)
 
 #ifdef DDB
 	if (type == T_TRACE || type == T_BREAKPOINT) {
-		if (kdb_trap(type, &frame))
+		if (kdb_trap(type, (db_regs_t *)&frame))
 			return;
 	}
 #endif
-/*
-	printf("trap: t %x c %x v %x pad %x adj %x sr %x pc %x fmt %x vc %x\n",
-	    type, code, v, frame.f_pad, frame.f_stackadj, frame.f_sr,
-	    frame.f_pc, frame.f_format, frame.f_vector);
-*/
-
+#ifdef DEBUG
+	if (mmudebug & 2)
+		printf("trap: t %x c %x v %x pad %x adj %x sr %x pc %x fmt %x "
+		    "vc %x\n", type, code, v, frame.f_pad, frame.f_stackadj,
+		    frame.f_sr, frame.f_pc, frame.f_format, frame.f_vector);
+#endif
 	switch (type) {
 	default:
 		panictrap(type, code, v, &frame);
+
 	/*
 	 * Kernel Bus error
 	 */
@@ -508,38 +558,89 @@ trap(type, code, v, frame)
 			panictrap(type, code, v, &frame);
 		trapcpfault(p, &frame);
 		return;
+
 	/*
 	 * User Bus/Addr error.
 	 */
 	case T_BUSERR|T_USER:
-	case T_ADDRERR|T_USER:
+		ucode = code & ~T_USER;
+		typ = BUS_OBJERR;
 		i = SIGBUS;
 		break;
+
+	case T_ADDRERR|T_USER:
+		ucode = code & ~T_USER;
+		typ = BUS_ADRALN;
+		i = SIGBUS;
+		break;
+
 	/*
 	 * User illegal/privleged inst fault
 	 */
 	case T_ILLINST|T_USER:
+		ucode = frame.f_format;	/* XXX was ILL_PRIVIN_FAULT */
+		typ = ILL_ILLOPC;
+		i = SIGILL;
+		v = frame.f_pc;
+		break;
+
 	case T_PRIVINST|T_USER:
 		ucode = frame.f_format;	/* XXX was ILL_PRIVIN_FAULT */
+		typ = ILL_PRVOPC;
 		i = SIGILL;
+		v = frame.f_pc;
 		break;
+
 	/*
 	 * divde by zero, CHK/TRAPV inst 
 	 */
 	case T_ZERODIV|T_USER:
+		ucode = frame.f_format;
+		typ = FPE_INTDIV;
+		i = SIGFPE;
+		v = frame.f_pc;
+		break;
+
 	case T_CHKINST|T_USER:
+		ucode = frame.f_format;
+		typ = FPE_FLTSUB;
+		i = SIGFPE;
+		v = frame.f_pc;
+		break;
+
+  
+	case T_FPEMULI|T_USER:
+	case T_FPEMULD|T_USER:
+#ifdef FPU_EMULATE
+		i = fpu_emulate(&frame, &p->p_addr->u_pcb.pcb_fpregs);
+		/* XXX - Deal with tracing? (frame.f_sr & PSL_T) */
+		if (i == 0)
+			break;		
+#else
+		printf("pid %d killed: no floating point support\n", p->p_pid);
+		i = SIGILL;
+#endif
+		typ = ILL_ILLTRP;
+		v = frame.f_pc;
+		break;
+
 	case T_TRAPVINST|T_USER:
 		ucode = frame.f_format;
-		i = SIGFPE;
+		typ = ILL_ILLTRP;
+		i = SIGILL;
+		v = frame.f_pc;
 		break;
-#ifdef FPCOPROC
+
 	/* 
 	 * User coprocessor violation
 	 */
 	case T_COPERR|T_USER:
 		ucode = 0;
+		typ = FPE_FLTINV;
 		i = SIGFPE;	/* XXX What is a proper response here? */
+		v = frame.f_pc;
 		break;
+
 	/* 
 	 * 6888x exceptions 
 	 */
@@ -555,14 +656,17 @@ trap(type, code, v, frame)
 		 * there is no clash.
 		 */
 		ucode = code;
+		typ = FPE_FLTRES;
 		i = SIGFPE;
+		v = frame.f_pc;
 		break;
+
 	/* 
 	 * Kernel coprocessor violation
 	 */
 	case T_COPERR:
 		/*FALLTHROUGH*/
-#endif
+
 	/*
 	 * Kernel format error
 	 */
@@ -581,9 +685,12 @@ trap(type, code, v, frame)
 		p->p_sigignore &= ~i;
 		p->p_sigcatch &= ~i;
 		p->p_sigmask &= ~i;
+		typ = ILL_COPROC;
 		i = SIGILL;
+		v = frame.f_pc;
 		ucode = frame.f_format;	/* XXX was ILL_RESAD_FAULT */
 		break;
+
 	/*
 	 * Trace traps.
 	 *
@@ -598,30 +705,34 @@ trap(type, code, v, frame)
 	case T_TRACE:
 	case T_TRAP15:
 		frame.f_sr &= ~PSL_T;
+		typ = TRAP_TRACE;
 		i = SIGTRAP;
 		break;
+
 	case T_TRACE|T_USER:
 	case T_TRAP15|T_USER:
 #ifdef COMPAT_SUNOS
 		/*
-		 * XXX This comment/code is not consistent XXX
-		 * SunOS seems to use Trap #2 for some obscure 
-		 * fpu operations.  So far, just ignore it, but
-		 * DONT trap on it.. 
+		 * SunOS uses Trap #2 for a "CPU cache flush".
+		 * Just flush the on-chip caches and return.
 		 */
 		if (p->p_emul == &emul_sunos) {
-			userret(p, frame.f_pc, sticks); 
+			ICIA();
+			DCIU();
 			return;
 		}
 #endif
 		frame.f_sr &= ~PSL_T;
+		typ = TRAP_TRACE;
 		i = SIGTRAP;
 		break;
+
 	/* 
 	 * Kernel AST (should not happen)
 	 */
 	case T_ASTFLT:
 		panictrap(type, code, v, &frame);
+
 	/*
 	 * User AST
 	 */
@@ -632,8 +743,9 @@ trap(type, code, v, frame)
 			p->p_flag &= ~P_OWEUPC;
 			ADDUPROF(p);
 		}
-		userret(p, frame.f_pc, sticks); 
+		userret(p, &frame, sticks, 0, 0); 
 		return;
+
 	/*
 	 * Kernel/User page fault
 	 */
@@ -645,6 +757,7 @@ trap(type, code, v, frame)
 			return;
 		}
 		/*FALLTHROUGH*/
+
 	case T_MMUFLT|T_USER:	/* page fault */
 		trapmmufault(type, code, v, &frame, p, sticks);
 		return;
@@ -655,15 +768,19 @@ trap(type, code, v, frame)
 		printf("trapsignal(%d, %d, %d, %x, %x)\n", p->p_pid, i,
 		    ucode, v, frame.f_pc);
 #endif
-	trapsignal(p, i, ucode);
+	if (i) {
+		sv.sival_int = ucode;
+		trapsignal(p, i, ucode, typ, sv);
+	}
 	if ((type & T_USER) == 0)
 		return;
-	userret(p, frame.f_pc, sticks); 
+	userret(p, &frame, sticks, 0, 0); 
 }
 
 /*
  * Process a system call.
  */
+void
 syscall(code, frame)
 	register_t code;
 	struct frame frame;
@@ -679,7 +796,7 @@ syscall(code, frame)
 	extern struct emul emul_sunos;
 #endif
 
-	cnt.v_syscall++;
+	uvmexp.syscalls++;
 	if (!USERMODE(frame.f_sr))
 		panic("syscall");
 	p = curproc;
@@ -737,6 +854,7 @@ syscall(code, frame)
 		if (code == SYS_sigreturn)
 			code = nsys;
 		break;
+
 	case SYS___syscall:
 		/*
 		 * Like syscall, but code is a quad, so as to maintain
@@ -747,6 +865,7 @@ syscall(code, frame)
 		code = fuword(params + _QUAD_LOWWORD * sizeof(int));
 		params += sizeof(quad_t);
 		break;
+
 	default:
 		break;
 	}
@@ -764,7 +883,7 @@ syscall(code, frame)
 #endif
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSCALL))
-		ktrsyscall(p->p_tracep, code, argsize, args);
+		ktrsyscall(p, code, argsize, args);
 #endif
 	if (error)
 		goto bad;
@@ -782,6 +901,7 @@ syscall(code, frame)
 		frame.f_regs[D1] = rval[1];
 		frame.f_sr &= ~PSL_C;	/* carry bit */
 		break;
+
 	case ERESTART:
 		/*
 		 * We always enter through a `trap' instruction, which is 2
@@ -789,9 +909,11 @@ syscall(code, frame)
 		 */
 		frame.f_pc = opc - 2;
 		break;
+
 	case EJUSTRETURN:
 		/* nothing to do */
 		break;
+
 	default:
 	bad:
 		frame.f_regs[D0] = error;
@@ -807,60 +929,46 @@ syscall(code, frame)
 	if (error == ERESTART && (p->p_md.md_flags & MDP_STACKADJ))
 		frame.f_regs[SP] -= sizeof (int);
 #endif
-	userret(p, frame.f_pc, sticks);
+	userret(p, &frame, sticks, 0, 0);
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p->p_tracep, code, error, rval[0]);
-#endif
-}
-
-/*
- * Process the tail end of a fork() for the child
- */
-void
-child_return(p, frame)
-	struct proc *p;
-	struct frame frame;
-{
-	frame.f_regs[D0] = 0;
-	frame.f_sr &= ~PSL_C;	/* carry bit */
-
-	userret(p, frame.f_pc, p->p_sticks);
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p->p_tracep, SYS_fork, 0, 0);
+		ktrsysret(p, code, error, rval[0]);
 #endif
 }
 
 /*
  * Process a pending write back
  */
+int
 _write_back (wb, wb_sts, wb_data, wb_addr, wb_map)
 	u_int wb;	/* writeback type: 1, 2, or 3 */
 	u_int wb_sts;	/* writeback status information */
 	u_int wb_data;	/* data to writeback */
 	u_int wb_addr;	/* address to writeback to */
-	vm_map_t wb_map;
+	struct vm_map *wb_map;
 {
 	u_int wb_extra_page = 0;
 	u_int wb_rc, mmusr;
-	void _wb_fault ();	/* fault handler for write back */
+	caddr_t oonfault = curpcb->pcb_onfault;
+	int rv = 0;
+
+	/* A fault in here must *not* go to the registered fault handler.  */
+	curpcb->pcb_onfault = NULL;
 
 #ifdef DEBUG
 	if (mmudebug)
-		printf("wb%d valid: %x %x %x\n",wb,wb_sts,wb_addr,wb_data);
+		printf("wb%d valid: %x %x %x\n", wb, wb_sts, wb_addr, wb_data);
 #endif
 
 	/* See if we're going to span two pages (for word or long transfers) */
-
-	if((wb_sts & WBS_SZMASK) == WBS_SIZE_WORD)
-		if(trunc_page((vm_offset_t)wb_addr) !=
-		    trunc_page((vm_offset_t)wb_addr+1))
+	if ((wb_sts & WBS_SZMASK) == WBS_SIZE_WORD)
+		if (trunc_page((vm_offset_t)wb_addr) !=
+		    trunc_page((vm_offset_t)wb_addr + 1))
 			wb_extra_page = 1;
 
-	if((wb_sts & WBS_SZMASK) == WBS_SIZE_LONG)
-		if(trunc_page((vm_offset_t)wb_addr) !=
-		    trunc_page((vm_offset_t)wb_addr+3))
+	if ((wb_sts & WBS_SZMASK) == WBS_SIZE_LONG)
+		if (trunc_page((vm_offset_t)wb_addr) !=
+		    trunc_page((vm_offset_t)wb_addr + 3))
 			wb_extra_page = 3;
 
 	/*
@@ -874,17 +982,19 @@ _write_back (wb, wb_sts, wb_data, wb_addr, wb_map)
 		    wb_addr + wb_extra_page, wb_sts & WBS_TMMASK, mmusr);
 #endif
 
-		if((mmusr & (MMUSR_R | MMUSR_W)) != MMUSR_R) {
+		if ((mmusr & (MMUSR_R | MMUSR_W)) != MMUSR_R) {
 #ifdef DEBUG
 			if (mmudebug)
 				printf("wb3: need to bring in first page\n");
 #endif
-			wb_rc = vm_fault(wb_map, 
+			wb_rc = uvm_fault(wb_map, 
 			    trunc_page((vm_offset_t)wb_addr), 
-			    VM_PROT_READ | VM_PROT_WRITE, FALSE);
+			    0, VM_PROT_READ | VM_PROT_WRITE);
 
-			if(wb_rc != KERN_SUCCESS)
-				return (wb_rc);
+			if (wb_rc) {
+				rv = wb_rc;
+				goto out;
+			}
 #ifdef DEBUG
 			if (mmudebug)
 				printf("wb3: first page brought in.\n");
@@ -909,15 +1019,16 @@ _write_back (wb, wb_sts, wb_data, wb_addr, wb_map)
 #ifdef DEBUG
 			if (mmudebug)
 				printf("wb%d: page boundary crossed."
-				    "  Bringing in extra page.\n",wb);
+				    "  Bringing in extra page.\n", wb);
 #endif
 
-			wb_rc = vm_fault(wb_map, 
+			wb_rc = uvm_fault(wb_map,
 			    trunc_page((vm_offset_t)wb_addr + wb_extra_page),
-			    VM_PROT_READ | VM_PROT_WRITE,FALSE);
-
-			if(wb_rc != KERN_SUCCESS)
-				return (wb_rc);
+			    0, VM_PROT_READ | VM_PROT_WRITE);
+			if (wb_rc) {
+				rv = wb_rc;
+				goto out;
+			}
 		}
 #ifdef DEBUG
 		if (mmudebug)
@@ -926,47 +1037,39 @@ _write_back (wb, wb_sts, wb_data, wb_addr, wb_map)
 	}
 
 	/* Actually do the write now */
-
-	if ((wb_sts & WBS_TMMASK) == FC_USERD &&
-	    !curpcb->pcb_onfault) {
-	    	curpcb->pcb_onfault = (caddr_t) _wb_fault;
-	}
+	if ((wb_sts & WBS_TMMASK) == FC_USERD && oonfault != NULL)
+		__asm volatile("movl #Lwberr,%0@" : :
+		     "a" (&curpcb->pcb_onfault));
 
 	switch(wb_sts & WBS_SZMASK) {
-
 	case WBS_SIZE_BYTE :
-		asm volatile ("movec %0,dfc ; movesb %1,%2@" : : "d" (wb_sts & WBS_TMMASK),
-								 "d" (wb_data),
-								 "a" (wb_addr));
+		__asm volatile("movec %0,dfc ; movesb %1,%2@" : :
+		    "d" (wb_sts & WBS_TMMASK), "d" (wb_data), "a" (wb_addr));
 		break;
 
 	case WBS_SIZE_WORD :
-		asm volatile ("movec %0,dfc ; movesw %1,%2@" : : "d" (wb_sts & WBS_TMMASK),
-								 "d" (wb_data),
-								 "a" (wb_addr));
+		__asm volatile("movec %0,dfc ; movesw %1,%2@" : :
+		    "d" (wb_sts & WBS_TMMASK), "d" (wb_data), "a" (wb_addr));
 		break;
 
 	case WBS_SIZE_LONG :
-		asm volatile ("movec %0,dfc ; movesl %1,%2@" : : "d" (wb_sts & WBS_TMMASK),
-								 "d" (wb_data),
-								 "a" (wb_addr));
+		__asm volatile("movec %0,dfc ; movesl %1,%2@" : :
+		    "d" (wb_sts & WBS_TMMASK), "d" (wb_data), "a" (wb_addr));
 		break;
 
+	default:
+		/*
+		 * This is trickery, we need this assembly somewhere out
+		 * of the default execution path, but still not detectable as
+		 * dead code that the compiler can throw away erroneously.
+		 */
+		__asm volatile("Lwberr: addql #1,%0" : "=d" (rv));
 	}
-	if (curpcb->pcb_onfault == (caddr_t) _wb_fault)
-		curpcb->pcb_onfault = NULL;
+	curpcb->pcb_onfault = NULL;
 	if ((wb_sts & WBS_TMMASK) != FC_USERD)
-		asm volatile ("movec %0,dfc\n" : : "d" (FC_USERD));
-	return (KERN_SUCCESS);
-}
+		__asm volatile("movec %0,dfc\n" : : "d" (FC_USERD));
 
-/*
- * fault handler for write back
- */
-void _wb_fault()
-{
-#ifdef DEBUG
-	printf ("trap: writeback fault\n");
-#endif
-	return;
+ out:
+	curpcb->pcb_onfault = oonfault;
+	return (rv);
 }

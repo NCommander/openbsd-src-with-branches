@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)fsi_util.c	8.1 (Berkeley) 6/6/93
- *	$Id: fsi_util.c,v 1.4 1995/05/21 16:59:39 mycroft Exp $
+ *	$Id: fsi_util.c,v 1.4 1997/02/17 22:13:28 deraadt Exp $
  */
 
 #include "../fsinfo/fsinfo.h"
@@ -45,7 +45,7 @@ void error(s, s1, s2, s3, s4)
 char *s, *s1, *s2, *s3, *s4;
 {
 	col_cleanup(0);
-	fprintf(stderr, "%s: Error, ", progname);
+	fprintf(stderr, "%s: Error, ", __progname);
 	fprintf(stderr, s, s1, s2, s3, s4);
 	fputc('\n', stderr);
 	errors++;
@@ -77,12 +77,13 @@ void fatal(s, s1, s2, s3, s4)
 char *s, *s1, *s2, *s3, *s4;
 {
 	col_cleanup(1);
-	fprintf(stderr, "%s: Fatal, ", progname);
+	fprintf(stderr, "%s: Fatal, ", __progname);
 	fprintf(stderr, s, s1, s2, s3, s4);
 	fputc('\n', stderr);
 	exit(1);
 }
 
+#if !(defined(__NetBSD__) || defined(__OpenBSD__))
 /*
  * Dup a string
  */
@@ -97,6 +98,7 @@ char *s;
 
 	return sp;
 }
+#endif /* !(defined(__NetBSD__) || defined(__OpenBSD)) */
 
 /*
  * Debug log
@@ -106,7 +108,7 @@ char *s, *s1, *s2, *s3, *s4;
 {
 	if (verbose > 0) {
 		fputc('#', stdout);
-		fprintf(stdout, "%s: ", progname);
+		fprintf(stdout, "%s: ", __progname);
 		fprintf(stdout, s, s1, s2, s3, s4);
 		putc('\n', stdout);
 	}
@@ -138,7 +140,7 @@ FILE *fp;
 # \"%s\" run by %s@%s on %s\
 #\n\
 ",
-	progname, username, hostname, cp);
+	__progname, username, hostname, cp);
 }
 
 static int show_range = 10;
@@ -419,8 +421,8 @@ char *v;
 		free(v);
 	} break;
 	case EF_NETMASK: {
-		u_long nm = 0;
-		if ((sscanf(v, "0x%lx", &nm) == 1 || sscanf(v, "%lx", &nm) == 1) && nm != 0)
+		u_int32_t nm = 0;
+		if ((sscanf(v, "0x%x", &nm) == 1 || sscanf(v, "%x", &nm) == 1) && nm != 0)
 			ep->e_netmask = htonl(nm);
 		else
 			yyerror("malformed netmask: %s", v);

@@ -1,41 +1,23 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.inc,v 1.7 2000/10/03 23:24:52 mickey Exp $
 
-CFLAGS=${DEBUG} -O2 -Wall -Werror
+CFLAGS=${DEBUG} -Os -Wall -Werror
 CPPFLAGS+=-I${S} -I. -I${.CURDIR}
-SACFLAGS=-nostdinc -fno-builtin
+SACFLAGS=-nostdinc -fno-builtin -D_STANDALONE -I${SADIR}/libsa
 SACFLAGS+=-mdisable-fpregs -mfast-indirect-calls -mpa-risc-1-0
-SACFLAGS+=-D_STANDALONE -I${SADIR}/libsa
-DEBUGFLAGS=-DDEBUG
-# DEBUGFLAGS+=-DEXEC_DEBUG
-# DEBUGFLAGS+=-DALLOC_TRACE
-# DEBUGFLAGS+=-DBOOTP_DEBUG -DNETIF_DEBUG -DETHER_DEBUG
-# DEBUGFLAGS+=-DNFS_DEBUG -DRPC_DEBUG -DRARP_DEBUG
-LINKADDR=0x500000
-LOADADDR=0x500000
-HEAP_LIMIT=0x600000
-#ROM_SIZE=32768
+#DEBUGFLAGS=-DDEBUG
+#DEBUGFLAGS+=-DPDCDEBUG
+#DEBUGFLAGS+=-DLIFDEBUG
+#DEBUGFLAGS+=-DEXEC_DEBUG
+#DEBUGFLAGS+=-DALLOC_TRACE
+LINKADDR=0x700000
+LOADADDR=0x700000
+HEAP_LIMIT=0x7c0000
 CLEANFILES+=	machine
+DEBUGLIBS=	no
 
 .if !make(libdep) && !make(sadep) && !make(salibdir) && !make(kernlibdir) && !make(obj) && !(defined(PROG) && ${PROG} == "mkboot")
 .BEGIN:
 	@([ -h machine ] || ln -s $(S)/arch/hppa/include machine)
-.endif
-
-.if $(CC) != $(HOSTCC)
-.S.o .s.o:
-	@echo "${CPP} ${CPPFLAGS} ${CFLAGS:M-[ID]*} ${AINC} ${.IMPSRC} | \
-	${AS} -o ${.TARGET}"
-	@${CPP} ${CPPFLAGS} ${CFLAGS:M-[ID]*} ${AINC} ${.IMPSRC} | \
-	${AS} -o ${.TARGET}.o
-	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
-	@rm -f ${.TARGET}.o
-
-.c.o:
-	${CC} -S ${CFLAGS} ${CPPFLAGS} ${CFLAGS:M-[ID]*} ${.IMPSRC}
-	${AS} $*.s -o ${.TARGET}.o
-	@rm $*.s
-	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
-	@rm -f ${.TARGET}.o
 .endif
 
 .if exists(${SADIR}/libsa/libsa.a)
@@ -53,6 +35,10 @@ LIBZ=${SADIR}/libz/libz.a
 .else
 LIBZ=${SADIR}/libz/${__objdir}/libz.a
 .endif
+.if exists(${SADIR}/mkboot/mkboot)
+MKBOOT=${SADIR}/mkboot/mkboot
+.else
+MKBOOT=${SADIR}/mkboot/${__objdir}/mkboot
+.endif
 
-# NO_NET=no_net
 BINDIR=	/usr/mdec

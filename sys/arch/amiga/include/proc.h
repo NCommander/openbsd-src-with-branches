@@ -1,4 +1,5 @@
-/*	$NetBSD: proc.h,v 1.10 1994/10/26 02:06:27 cgd Exp $	*/
+/*	$OpenBSD: proc.h,v 1.3 1997/01/16 09:26:02 niklas Exp $	*/
+/*	$NetBSD: proc.h,v 1.12 1997/06/08 10:35:39 veego Exp $	*/
 
 /*
  * Copyright (c) 1991 Regents of the University of California.
@@ -46,8 +47,9 @@ struct mdproc {
 };
 
 /* md_flags */
-#define	MDP_AST		0x0001	/* async trap pending */
-#define MDP_STACKADJ	0x0002	/* frame SP adjusted, might have to
+#define MDP_STACKADJ	0x0001	/* frame SP adjusted, might have to
 				   undo when system call returns
 				   ERESTART. */
+#define MDP_UNCACHE_WX	0x0002	/* The process might modify code, so
+				   don't cache writeable executable pages.  */
 #endif /* !_MACHINE_PROC_H_ */

@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: collect.c,v 8.228 2001/09/04 22:43:02 ca Exp $")
+SM_RCSID("@(#)$Sendmail: collect.c,v 8.237 2001/12/10 19:56:03 ca Exp $")
 
 static void	collecttimeout __P((time_t));
 static void	dferror __P((SM_FILE_T *volatile, char *, ENVELOPE *));
@@ -106,7 +106,7 @@ collect_doheader(e)
 
 	/* collect statistics */
 	if (OpMode != MD_VERIFY)
-		markstats(e, (ADDRESS *) NULL, false);
+		markstats(e, (ADDRESS *) NULL, STATS_NORMAL);
 
 	/*
 	**  If we have a Return-Receipt-To:, turn it into a DSN.
@@ -209,7 +209,7 @@ collect_dfopen(e)
 	if (!setnewqueue(e))
 		return NULL;
 
-	dfname = queuename(e, 'd');
+	dfname = queuename(e, DATAFL_LETTER);
 	if (bitset(S_IWGRP, QueueFileMode))
 		oldumask = umask(002);
 	df = bfopen(dfname, QueueFileMode, DataFileBufferSize,
@@ -221,7 +221,7 @@ collect_dfopen(e)
 		syserr("@Cannot create %s", dfname);
 		e->e_flags |= EF_NO_BODY_RETN;
 		flush_errors(true);
-		finis(true, ExitStat);
+		finis(true, true, ExitStat);
 		/* NOTREACHED */
 	}
 	dfd = sm_io_getinfo(df, SM_IO_WHAT_FD, NULL);
@@ -232,12 +232,11 @@ collect_dfopen(e)
 		e->e_dfdev = stbuf.st_dev;
 		e->e_dfino = stbuf.st_ino;
 	}
-	e->e_msgsize = 0;
 	e->e_flags |= EF_HAS_DF;
 	return df;
 }
 
-/*
+/*
 **  COLLECT -- read & parse message header & make temp file.
 **
 **	Creates a temporary file name and copies the standard
@@ -361,6 +360,7 @@ collect(fp, smtpmode, hdrp, e)
 		CollectTimeout = sm_setevent(dbto, collecttimeout, dbto);
 	}
 
+	e->e_msgsize = 0;
 	for (;;)
 	{
 		if (tTd(30, 35))
@@ -524,6 +524,17 @@ bufferchar:
 				if (obuf != bufbuf)
 					sm_free(obuf);  /* XXX */
 			}
+
+			/*
+			**  XXX Notice: the logic here is broken.
+			**  An input to sendmail that doesn't contain a
+			**  header but starts immediately with the body whose
+			**  first line contain characters which match the
+			**  following "if" will cause problems: those
+			**  characters will NOT appear in the output...
+			**  Do we care?
+			*/
+
 			if (c >= 0200 && c <= 0237)
 			{
 #if 0	/* causes complaints -- figure out something for 8.n+1 */
@@ -687,7 +698,7 @@ readerr:
 	{
 		dferror(df, "sm_io_flush||sm_io_error", e);
 		flush_errors(true);
-		finis(true, ExitStat);
+		finis(true, true, ExitStat);
 		/* NOTREACHED */
 	}
 	else if (SuperSafe != SAFE_REALLY)
@@ -705,7 +716,7 @@ readerr:
 			struct stat st;
 			int dfd;
 
-			dfile = queuename(e, 'd');
+			dfile = queuename(e, DATAFL_LETTER);
 			if (stat(dfile, &st) < 0)
 				st.st_size = -1;
 			errno = EEXIST;
@@ -718,21 +729,21 @@ readerr:
 		errno = save_errno;
 		dferror(df, "bfcommit", e);
 		flush_errors(true);
-		finis(save_errno != EEXIST, ExitStat);
+		finis(save_errno != EEXIST, true, ExitStat);
 	}
 	else if ((afd = sm_io_getinfo(df, SM_IO_WHAT_FD, NULL)) >= 0 &&
 		 fsync(afd) < 0)
 	{
 		dferror(df, "fsync", e);
 		flush_errors(true);
-		finis(true, ExitStat);
+		finis(true, true, ExitStat);
 		/* NOTREACHED */
 	}
 	else if (sm_io_close(df, SM_TIME_DEFAULT) < 0)
 	{
 		dferror(df, "sm_io_close", e);
 		flush_errors(true);
-		finis(true, ExitStat);
+		finis(true, true, ExitStat);
 		/* NOTREACHED */
 	}
 	else
@@ -779,7 +790,7 @@ readerr:
 		e->e_flags &= ~EF_FATALERRS;
 		e->e_flags |= EF_CLRQUEUE;
 
-		finis(true, ExitStat);
+		finis(true, true, ExitStat);
 		/* NOTREACHED */
 	}
 
@@ -828,13 +839,13 @@ readerr:
 
 	if (SuperSafe == SAFE_REALLY && !bitset(EF_FATALERRS, e->e_flags))
 	{
-		char *dfname = queuename(e, 'd');
+		char *dfname = queuename(e, DATAFL_LETTER);
 		if ((e->e_dfp = sm_io_open(SmFtStdio, SM_TIME_DEFAULT, dfname,
 					   SM_IO_RDONLY, NULL)) == NULL)
 		{
 			/* we haven't acked receipt yet, so just chuck this */
 			syserr("@Cannot reopen %s", dfname);
-			finis(true, ExitStat);
+			finis(true, true, ExitStat);
 			/* NOTREACHED */
 		}
 	}
@@ -875,7 +886,7 @@ collecttimeout(timeout)
 	}
 	errno = save_errno;
 }
-/*
+/*
 **  DFERROR -- signal error on writing the data file.
 **
 **	Called by collect().  Collect() always terminates the process
@@ -904,7 +915,7 @@ dferror(df, msg, e)
 {
 	char *dfname;
 
-	dfname = queuename(e, 'd');
+	dfname = queuename(e, DATAFL_LETTER);
 	setstat(EX_IOERR);
 	if (errno == ENOSPC)
 	{
@@ -967,7 +978,7 @@ dferror(df, msg, e)
 			  "dferror: sm_io_reopen(\"/dev/null\") failed: %s",
 			  sm_errstring(errno));
 }
-/*
+/*
 **  EATFROM -- chew up a UNIX style from line and process
 **
 **	This does indeed make some assumptions about the format

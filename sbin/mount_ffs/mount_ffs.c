@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_ffs.c,v 1.1 1995/07/12 03:46:50 cgd Exp $	*/
+/*	$OpenBSD: mount_ffs.c,v 1.11 2001/04/04 20:19:01 gluk Exp $	*/
+/*	$NetBSD: mount_ffs.c,v 1.3 1996/04/13 01:31:19 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_ufs.c	8.2 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_ffs.c,v 1.1 1995/07/12 03:46:50 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_ffs.c,v 1.11 2001/04/04 20:19:01 gluk Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,14 +60,16 @@ static char rcsid[] = "$NetBSD: mount_ffs.c,v 1.1 1995/07/12 03:46:50 cgd Exp $"
 
 #include "mntopts.h"
 
-void	ffs_usage __P((void));
+void	ffs_usage(void);
 
-static struct mntopt mopts[] = {
+static const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	MOPT_ASYNC,
 	MOPT_SYNC,
 	MOPT_UPDATE,
 	MOPT_RELOAD,
+	MOPT_FORCE,
+	MOPT_SOFTDEP,
 	{ NULL }
 };
 
@@ -75,14 +78,13 @@ main(argc, argv)
 	int argc;
 	char * const argv[];
 {
-	extern int optreset;
 	struct ufs_args args;		/* XXX ffs_args */
 	int ch, mntflags;
 	char *fs_name, *errcause;
 
 	mntflags = 0;
 	optind = optreset = 1;		/* Reset for parse of new argv. */
-	while ((ch = getopt(argc, argv, "o:")) != EOF)
+	while ((ch = getopt(argc, argv, "o:")) != -1)
 		switch (ch) {
 		case 'o':
 			getmntopts(optarg, mopts, &mntflags);
@@ -107,17 +109,17 @@ main(argc, argv)
 	else
 		args.export.ex_flags = 0;
 
-	if (mount(MOUNT_UFS, fs_name, mntflags, &args) < 0) {
+	if (mount(MOUNT_FFS, fs_name, mntflags, &args) < 0) {
 		switch (errno) {
 		case EMFILE:
 			errcause = "mount table full";
 			break;
 		case EINVAL:
-			if (mntflags & MNT_UPDATE)
-				errcause =
+			errcause =
 			    "specified device does not match mounted device";
-			else 
-				errcause = "incorrect super block";
+			break;
+		case EOPNOTSUPP:
+			errcause = "filesystem not supported by kernel";
 			break;
 		default:
 			errcause = strerror(errno);

@@ -1,4 +1,5 @@
-/*	$NetBSD: ramdisk.c,v 1.1 1995/10/08 23:30:57 gwr Exp $	*/
+/*	$OpenBSD: ramdisk.c,v 1.17 2001/11/06 19:53:18 miod Exp $	*/
+/*	$NetBSD: ramdisk.c,v 1.8 1996/04/12 08:30:09 leo Exp $	*/
 
 /*
  * Copyright (c) 1995 Gordon W. Ross, Leo Weppelman.
@@ -46,14 +47,19 @@
  */
 
 #include <sys/param.h>
+#include <sys/kernel.h>
+#include <sys/malloc.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/device.h>
+#include <sys/file.h>
+#include <sys/disk.h>
+#include <sys/proc.h>
+#include <sys/conf.h>
+#include <sys/disklabel.h>
+#include <sys/dkio.h>
 
-#include <vm/vm.h>
-#include <vm/vm_kern.h>
-/* Don't want all those other VM headers... */
-extern vm_offset_t	 kmem_alloc __P((vm_map_t, vm_size_t));
+#include <uvm/uvm_extern.h>
 
 #include <dev/ramdisk.h>
 
@@ -73,19 +79,14 @@ extern vm_offset_t	 kmem_alloc __P((vm_map_t, vm_size_t));
  *
  * XXX Assumption: 16 RAM-disks are enough!
  */
-#define RD_IS_CTRL(unit) (unit & 0x10)
-#define RD_UNIT(unit)    (unit &  0xF)
-
-/*
- * XXX -  This is just for a sanity check.  Only
- * applies to kernel-space RAM disk allocations.
- */
-#define RD_KMEM_MAX_SIZE	0x100000	/* 1MB */
+#define RD_MAX_UNITS	0x10
+#define RD_IS_CTRL(dev) (DISKPART(dev) == RAW_PART)
 
 /* autoconfig stuff... */
 
 struct rd_softc {
 	struct device sc_dev;	/* REQUIRED first entry */
+	struct disk sc_dkdev;	/* hook for generic disk handling */
 	struct rd_conf sc_rd;
 	struct buf *sc_buflist;
 	int sc_flags;
@@ -98,20 +99,64 @@ struct rd_softc {
 #define RD_ISOPEN	0x01
 #define RD_SERVED	0x02
 
-static int  rd_match (struct device *, void *self, void *);
-static void rd_attach(struct device *, struct device *self, void *);
+void rdattach(int);
+static void rd_attach(struct device *, struct device *, void *);
+struct disklabel *rdgetdisklabel(dev_t dev, struct rd_softc *sc);
 
-struct cfdriver rdcd = {
-	NULL, "rd", rd_match, rd_attach,
-	DV_DISK, sizeof(struct device), NULL, 0 };
+/*
+ * Some ports (like i386) use a swapgeneric that wants to
+ * snoop around in this rd_cd structure.  It is preserved
+ * (for now) to remain compatible with such practice.
+ * XXX - that practice is questionable...
+ */
+struct cfdriver rd_cd = {
+	NULL, "rd", DV_DULL, NULL, 0
+};
 
-static int
-rd_match(parent, self, aux)
-	struct device	*parent;
-	void	*self;
-	void	*aux;
+void rdstrategy(struct buf *bp);
+struct dkdriver rddkdriver = { rdstrategy };
+
+static int   ramdisk_ndevs;
+static void *ramdisk_devs[RD_MAX_UNITS];
+
+/*
+ * This is called if we are configured as a pseudo-device
+ */
+void
+rdattach(n)
+	int n;
 {
-	return(1);
+	struct rd_softc *sc;
+	int i;
+
+#ifdef	DIAGNOSTIC
+	if (ramdisk_ndevs) {
+		printf("ramdisk: multiple attach calls?\n");
+		return;
+	}
+#endif
+
+	/* XXX:  Are we supposed to provide a default? */
+	if (n <= 1)
+		n = 1;
+	if (n > RD_MAX_UNITS)
+		n = RD_MAX_UNITS;
+	ramdisk_ndevs = n;
+
+	/* XXX: Fake-up rd_cd (see above) */
+	rd_cd.cd_ndevs = ramdisk_ndevs;
+	rd_cd.cd_devs  = ramdisk_devs;
+
+	/* Attach as if by autoconfig. */
+	for (i = 0; i < n; i++) {
+
+		sc = malloc(sizeof(*sc), M_DEVBUF, M_WAITOK);
+		bzero((caddr_t)sc, sizeof(*sc));
+		ramdisk_devs[i] = sc;
+		sc->sc_dev.dv_unit = i;
+		sprintf(sc->sc_dev.dv_xname, "rd%d", i);
+		rd_attach(NULL, &sc->sc_dev, NULL);
+	}
 }
 
 static void
@@ -130,7 +175,13 @@ rd_attach(parent, self, aux)
 	 */
 	rd_attach_hook(sc->sc_dev.dv_unit, &sc->sc_rd);
 #endif
-	printf("\n");
+
+	/*
+	 * Initialize and attach the disk structure.
+	 */
+	sc->sc_dkdev.dk_driver = &rddkdriver;
+	sc->sc_dkdev.dk_name = sc->sc_dev.dv_xname;
+	disk_attach(&sc->sc_dkdev);
 }
 
 /*
@@ -139,13 +190,21 @@ rd_attach(parent, self, aux)
  * ioctl, dump, size
  */
 
-void rdstrategy __P((struct buf *bp));
-
 #if RAMDISK_SERVER
-static int rd_server_loop __P((struct rd_softc *sc));
-static int rd_ioctl_server __P((struct rd_softc *sc,
-		struct rd_conf *urd, struct proc *proc));
+static int rd_server_loop(struct rd_softc *sc);
+static int rd_ioctl_server(struct rd_softc *sc,
+		struct rd_conf *urd, struct proc *proc);
 #endif
+static int rd_ioctl_kalloc(struct rd_softc *sc,
+		struct rd_conf *urd, struct proc *proc);
+
+dev_type_open(rdopen);
+dev_type_close(rdclose);
+dev_type_read(rdread);
+dev_type_write(rdwrite);
+dev_type_ioctl(rdioctl);
+dev_type_size(rdsize);
+dev_type_dump(rddump);
 
 int rddump(dev, blkno, va, size)
 	dev_t dev;
@@ -163,9 +222,9 @@ int rdsize(dev_t dev)
 
 	/* Disallow control units. */
 	unit = minor(dev);
-	if (unit >= rdcd.cd_ndevs)
+	if (unit >= ramdisk_ndevs)
 		return 0;
-	sc = rdcd.cd_devs[unit];
+	sc = ramdisk_devs[unit];
 	if (sc == NULL)
 		return 0;
 
@@ -175,19 +234,19 @@ int rdsize(dev_t dev)
 	return (sc->sc_size >> DEV_BSHIFT);
 }
 
-int rdopen(dev, flag, fmt, proc)
+int
+rdopen(dev, flag, fmt, proc)
 	dev_t   dev;
 	int     flag, fmt;
 	struct proc *proc;
 {
-	int md, unit;
+	int unit;
 	struct rd_softc *sc;
 
-	md = minor(dev);
-	unit = RD_UNIT(md);
-	if (unit >= rdcd.cd_ndevs)
+	unit = DISKUNIT(dev);
+	if (unit >= ramdisk_ndevs)
 		return ENXIO;
-	sc = rdcd.cd_devs[unit];
+	sc = ramdisk_devs[unit];
 	if (sc == NULL)
 		return ENXIO;
 
@@ -195,7 +254,7 @@ int rdopen(dev, flag, fmt, proc)
 	 * The control device is not exclusive, and can
 	 * open uninitialized units (so you can setconf).
 	 */
-	if (RD_IS_CTRL(md))
+	if (RD_IS_CTRL(dev))
 		return 0;
 
 #ifdef	RAMDISK_HOOKS
@@ -215,19 +274,19 @@ int rdopen(dev, flag, fmt, proc)
 	return 0;
 }
 
-int rdclose(dev, flag, fmt, proc)
+int
+rdclose(dev, flag, fmt, proc)
 	dev_t   dev;
 	int     flag, fmt;
 	struct proc *proc;
 {
-	int md, unit;
+	int unit;
 	struct rd_softc *sc;
 
-	md = minor(dev);
-	unit = RD_UNIT(md);
-	sc = rdcd.cd_devs[unit];
+	unit = DISKUNIT(dev);
+	sc = ramdisk_devs[unit];
 
-	if (RD_IS_CTRL(md))
+	if (RD_IS_CTRL(dev))
 		return 0;
 
 	/* Normal device. */
@@ -237,17 +296,19 @@ int rdclose(dev, flag, fmt, proc)
 }
 
 int
-rdread(dev, uio)
+rdread(dev, uio, flags)
 	dev_t		dev;
 	struct uio	*uio;
+	int		flags;
 {
 	return (physio(rdstrategy, NULL, dev, B_READ, minphys, uio));
 }
 
 int
-rdwrite(dev, uio)
+rdwrite(dev, uio, flags)
 	dev_t		dev;
 	struct uio	*uio;
+	int		flags;
 {
 	return (physio(rdstrategy, NULL, dev, B_WRITE, minphys, uio));
 }
@@ -260,14 +321,13 @@ void
 rdstrategy(bp)
 	struct buf *bp;
 {
-	int md, unit;
+	int unit;
 	struct rd_softc *sc;
 	caddr_t addr;
 	size_t  off, xfer;
 
-	md = minor(bp->b_dev);
-	unit = RD_UNIT(md);
-	sc = rdcd.cd_devs[unit];
+	unit = DISKUNIT(bp->b_dev);
+	sc = ramdisk_devs[unit];
 
 	switch (sc->sc_type) {
 #if RAMDISK_SERVER
@@ -323,28 +383,70 @@ rdioctl(dev, cmd, data, flag, proc)
 	caddr_t	data;
 	struct proc	*proc;
 {
-	int md, unit;
+	int unit;
 	struct rd_softc *sc;
 	struct rd_conf *urd;
+	struct cpu_disklabel clp;
+	struct disklabel lp, *lpp;
+	int error;
 
-	md = minor(dev);
-	unit = RD_UNIT(md);
-	sc = rdcd.cd_devs[unit];
-
-	/* If this is not the control device, punt! */
-	if (RD_IS_CTRL(md) == 0)
-		return ENOTTY;
+	unit = DISKUNIT(dev);
+	sc = ramdisk_devs[unit];
 
 	urd = (struct rd_conf *)data;
 	switch (cmd) {
+	case DIOCGDINFO:
+		if (sc->sc_type == RD_UNCONFIGURED) {
+			break;
+		}
+		lpp = rdgetdisklabel(dev, sc);
+		if (lpp)
+			*(struct disklabel *)data = *lpp;
+		return 0;
+
+	case DIOCWDINFO:
+	case DIOCSDINFO:
+		if (sc->sc_type == RD_UNCONFIGURED) {
+			break;
+		}
+		if ((flag & FWRITE) == 0)
+			return EBADF;
+
+		error = setdisklabel(&lp, (struct disklabel *)data,
+		    /*sd->sc_dk.dk_openmask : */0, &clp);
+		if (error == 0) {
+			if (cmd == DIOCWDINFO)
+				error = writedisklabel(DISKLABELDEV(dev),
+				    rdstrategy, &lp, &clp);
+		}
+
+		return error;
+
+	case DIOCWLABEL:
+		if (sc->sc_type == RD_UNCONFIGURED) {
+			break;
+		}
+		if ((flag & FWRITE) == 0)
+			return EBADF;
+		return 0;
+
 	case RD_GETCONF:
+		/* If this is not the control device, punt! */
+		if (RD_IS_CTRL(dev) == 0) {
+			break;
+		}
 		*urd = sc->sc_rd;
 		return 0;
 
 	case RD_SETCONF:
-		/* Can only set it once. */
-		if (sc->sc_type != RD_UNCONFIGURED)
+		/* If this is not the control device, punt! */
+		if (RD_IS_CTRL(dev) == 0) {
 			break;
+		}
+		/* Can only set it once. */
+		if (sc->sc_type != RD_UNCONFIGURED) {
+			break;
+		}
 		switch (urd->rd_type) {
 		case RD_KMEM_ALLOCATED:
 			return rd_ioctl_kalloc(sc, urd, proc);
@@ -360,24 +462,73 @@ rdioctl(dev, cmd, data, flag, proc)
 	return EINVAL;
 }
 
+struct disklabel *
+rdgetdisklabel(dev, sc)
+	dev_t dev;
+	struct rd_softc *sc;
+{
+	static struct disklabel lp;
+	struct cpu_disklabel clp;
+	char *errstring;
+
+	bzero(&lp, sizeof(struct disklabel));
+	bzero(&clp, sizeof(struct cpu_disklabel));
+
+	lp.d_secsize = 1 << DEV_BSHIFT;
+	lp.d_ntracks = 1;
+	lp.d_nsectors = sc->sc_size >> DEV_BSHIFT;
+	lp.d_ncylinders = 1;
+	lp.d_secpercyl = lp.d_nsectors;
+	if (lp.d_secpercyl == 0) {
+		lp.d_secpercyl = 100;
+		/* as long as it's not 0 - readdisklabel divides by it (?) */
+	}
+
+	strncpy(lp.d_typename, "RAM disk", 16);
+	lp.d_type = DTYPE_SCSI;
+	strncpy(lp.d_packname, "fictitious", 16);
+	lp.d_secperunit = lp.d_nsectors;
+	lp.d_rpm = 3600;
+	lp.d_interleave = 1;
+	lp.d_flags = 0;
+
+	lp.d_partitions[RAW_PART].p_offset = 0;
+	lp.d_partitions[RAW_PART].p_size =
+	    lp.d_secperunit * (lp.d_secsize / DEV_BSIZE);
+	lp.d_partitions[RAW_PART].p_fstype = FS_UNUSED;
+	lp.d_npartitions = RAW_PART + 1;
+
+	lp.d_magic = DISKMAGIC;
+	lp.d_magic2 = DISKMAGIC;
+	lp.d_checksum = dkcksum(&lp);
+
+	/*
+	 * Call the generic disklabel extraction routine
+	 */
+	errstring = readdisklabel(DISKLABELDEV(dev), rdstrategy, &lp, &clp, 0);
+	if (errstring) {
+		/*printf("%s: %s\n", sc->sc_dev.dv_xname, errstring);*/
+		return NULL;
+	}
+	return &lp;
+}
+
 /*
  * Handle ioctl RD_SETCONF for (sc_type == RD_KMEM_ALLOCATED)
  * Just allocate some kernel memory and return.
  */
-int
+static int
 rd_ioctl_kalloc(sc, urd, proc)
 	struct rd_softc *sc;
 	struct rd_conf *urd;
 	struct proc	*proc;
 {
-	vm_offset_t addr;
-	vm_size_t  size;
+	vaddr_t addr;
+	vsize_t size;
 
 	/* Sanity check the size. */
 	size = urd->rd_size;
-	if (size > RD_KMEM_MAX_SIZE)
-		return EINVAL;
-	addr = kmem_alloc(kernel_map, size);
+	addr = uvm_km_zalloc(kernel_map, size);
 	if (!addr)
 		return ENOMEM;
 
@@ -391,23 +542,22 @@ rd_ioctl_kalloc(sc, urd, proc)
 #if RAMDISK_SERVER
 
 /*
- * Handle ioctl RD_SETCONF for (sc_type == RD_KMEM_ALLOCATED)
+ * Handle ioctl RD_SETCONF for (sc_type == RD_UMEM_SERVER)
  * Set config, then become the I/O server for this unit.
  */
-int
+static int
 rd_ioctl_server(sc, urd, proc)
 	struct rd_softc *sc;
 	struct rd_conf *urd;
 	struct proc	*proc;
 {
-	vm_offset_t end;
+	vaddr_t end;
 	int error;
 
 	/* Sanity check addr, size. */
-	end = (vm_offset_t) (urd->rd_addr + urd->rd_size);
+	end = (vaddr_t) (urd->rd_addr + urd->rd_size);
 
-	if ((end >= VM_MAXUSER_ADDRESS) ||
-		(end < ((vm_offset_t) urd->rd_addr)) )
+	if ((end >= VM_MAXUSER_ADDRESS) || (end < ((vaddr_t) urd->rd_addr)) )
 		return EINVAL;
 
 	/* This unit is now configured. */

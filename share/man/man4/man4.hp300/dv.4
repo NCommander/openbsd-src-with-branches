@@ -1,5 +1,7 @@
-.\" Copyright (c) 1990, 1991 The Regents of the University of California.
-.\" All rights reserved.
+.\"	$OpenBSD: dv.4,v 1.5 2001/10/05 14:45:53 mpech Exp $
+.\"
+.\" Copyright (c) 1990, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
 .\"
 .\" This code is derived from software contributed to Berkeley by
 .\" the Systems Programming Group of the University of Utah Computer
@@ -33,10 +35,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)dv.4	5.2 (Berkeley) 3/27/91
-.\"	$Id: dv.4,v 1.2 1993/08/01 07:56:33 mycroft Exp $
+.\"     from: @(#)dv.4	8.1 (Berkeley) 6/9/93
 .\"
-.Dd March 27, 1991
+.Dd June 9, 1993
 .Dt DV 4 hp300
 .Os
 .Sh NAME
@@ -48,8 +49,9 @@
 This driver is for the
 .Tn HP98730
 and 98731 graphics device, also known as
-the DaVinci.  This driver has not been tested with all possible
-combinations of frame buffer boards and scan boards installed in the device.
+the DaVinci.
+This driver has not been tested with all possible combinations of frame
+buffer boards and scan boards installed in the device.
 The driver merely checks for the existence of the device and does minimal set
 up.
 .Pp
@@ -64,9 +66,10 @@ setting these values.
 .Pp
 A user process communicates to the device initially by means of
 .Xr ioctl 2
-calls.  For the
+calls.
+For the
 .Tn HP-UX
-.Xr ioctl
+.Xr ioctl 2
 calls supported, refer to
 .Tn HP-UX
 manuals.
@@ -81,18 +84,20 @@ Get info about device, setting the entries in the
 .Ar grfinfo
 structure, as defined in
 .Aq Pa hpdev/grfioctl.h .
-For the standard 98730, the number of planes should be 4.  The number of
-colors would therefore be 15, excluding black.  If one 98732A frame buffer
-board is installed, there will still be 4 planes, with the 4 planes on the
-colormap board becoming overlay planes.  With each additional 98732 frame
-buffer board 4 planes will be added up to a maximum of 32 planes total.
+For the standard 98730, the number of planes should be 4.
+The number of colors would therefore be 15, excluding black.
+If one 98732A frame buffer board is installed, there will still be 4 planes, 
+with the 4 planes on the colormap board becoming overlay planes.
+With each additional 98732 frame buffer board 4 planes will be added up
+to a maximum of 32 planes total.
 .It Dv GRFIOCON
 Graphics On
 .Pp
 Turn graphics on by enabling
 .Tn CRT
-output.  The screen will come on, displaying
-whatever is in the frame buffer, using whatever colormap is in place.
+output.
+The screen will come on, displaying whatever is in the frame buffer, using
+whatever colormap is in place.
 .It Dv GRFIOCOFF
 Graphics Off
 .Pp
@@ -103,12 +108,12 @@ are not affected.
 .It Dv GRFIOCMAP
 Map Device to user space
 .Pp
-Map in control registers and frame buffer space. Once the device file is
-mapped, the frame buffer structure is accessible.  The structure describing
-the 98730 is defined in
+Map in control registers and frame buffer space.
+Once the device file is mapped, the frame buffer structure is accessible.
+The structure describing the 98730 is defined in
 .Aq Pa hpdev/grf_dvreg.h .
 .El
-.Sh EXAMPLE
+.Sh EXAMPLES
 This is a short segment of code showing how the device is opened and mapped
 into user process address space assuming that it is
 .Ql grf0 :
@@ -164,11 +169,6 @@ Invalid ioctl specification.
 .El
 .Sh SEE ALSO
 .Xr ioctl 2 ,
-.Xr grf 4 .
-.Sh HISTORY
-The
-.Nm
-driver
-.Ud
+.Xr grf 4
 .Sh BUGS
 Not tested for all configurations of scan board and frame buffer memory boards.

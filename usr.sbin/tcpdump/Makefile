@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.6 1995/03/07 23:18:39 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.33 2001/11/06 23:03:12 art Exp $
 #
 #  Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
 # 	The Regents of the University of California.  All rights reserved.
@@ -19,12 +19,17 @@
 #  WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 #  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #
-# @(#) $Header: /a/cvsroot/src/usr.sbin/tcpdump/Makefile,v 1.6 1995/03/07 23:18:39 mycroft Exp $ (LBL)
 
 PROG=	tcpdump
 MAN=	tcpdump.8
 
-CFLAGS+=-DCSLIP -DPPP -DFDDI -DETHER_SERVICE
+CFLAGS+=-Wall -Werror
+
+CFLAGS+=-DCSLIP -DPPP -DHAVE_FDDI -DETHER_SERVICE -DRETSIGTYPE=void -DHAVE_NET_SLIP_H -DHAVE_ETHER_NTOHOST -DINET6
+.if (${MACHINE_ARCH} == "alpha") || (${MACHINE_ARCH} == "sparc") || \
+    (${MACHINE_ARCH} == "sparc64")
+CFLAGS+=-DLBL_ALIGN
+.endif
 
 LDADD+=	-lpcap -ll
 DPADD+=	${LIBL} ${LIBPCAP}
@@ -32,11 +37,20 @@ DPADD+=	${LIBL} ${LIBPCAP}
 SRCS=	tcpdump.c addrtoname.c \
 	print-ether.c print-ip.c print-arp.c print-tcp.c print-udp.c \
 	print-atalk.c print-domain.c print-tftp.c print-bootp.c print-nfs.c \
-	print-icmp.c print-sl.c print-ppp.c print-rip.c \
+	print-icmp.c print-sl.c print-ppp.c print-rip.c print-timed.c \
 	print-snmp.c print-ntp.c print-null.c print-egp.c print-ospf.c \
-	print-fddi.c print-llc.c print-sunrpc.c \
-	print-wb.c print-decnet.c print-isoclns.c print-ipx.c \
-	util.c bpf_dump.c parsenfsfh.c version.c
+	print-fddi.c print-llc.c print-sunrpc.c print-hsrp.c \
+	print-vrrp.c print-wb.c print-decnet.c print-isoclns.c print-ipx.c \
+	print-atm.c print-dvmrp.c print-krb.c print-pim.c print-netbios.c \
+	util.c bpf_dump.c parsenfsfh.c version.c machdep.c print-igrp.c \
+	print-gre.c print-radius.c print-enc.c print-cnfp.c \
+	print-ipsec.c print-ike.c print-raw.c print-l2tp.c print-mobile.c \
+	print-ip6.c print-ip6opts.c print-icmp6.c print-dhcp6.c print-frag6.c \
+	print-bgp.c print-ospf6.c print-ripng.c print-rt6.c print-stp.c \
+	print-etherip.c print-lwres.c print-cdp.c print-pflog.c \
+	gmt2local.c savestr.c setsignal.c
+
+#SRCS+=	smbutil.c print-smb.c
 
 AWKS =	atime.awk packetdat.awk send-ack.awk stime.awk
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: wwenviron.c,v 1.3 1995/09/28 10:35:27 tls Exp $	*/
+/*	$OpenBSD: wwenviron.c,v 1.5 1998/03/17 04:11:54 deraadt Exp $	*/
+/*	$NetBSD: wwenviron.c,v 1.4 1995/12/21 08:39:50 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwenviron.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwenviron.c,v 1.3 1995/09/28 10:35:27 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwenviron.c,v 1.5 1998/03/17 04:11:54 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,13 +55,14 @@ static char rcsid[] = "$NetBSD: wwenviron.c,v 1.3 1995/09/28 10:35:27 tls Exp $"
  * Set up the environment of this process to run in window 'wp'.
  */
 wwenviron(wp)
-register struct ww *wp;
+struct ww *wp;
 {
-	register i;
+	int i;
 #ifndef TIOCSCTTY
 	int pgrp = getpid();
 #endif
 	char buf[1024];
+	sigset_t sigset;
 
 #ifndef TIOCSCTTY
 	if ((i = open("/dev/tty", 0)) < 0)
@@ -90,16 +92,17 @@ register struct ww *wp;
 #endif
 	/* SIGPIPE is the only one we ignore */
 	(void) signal(SIGPIPE, SIG_DFL);
-	(void) sigsetmask(0);
+	sigemptyset(&sigset);
+	sigprocmask(SIG_SETMASK, &sigset, (sigset_t *)0);
 	/*
 	 * Two conditions that make destructive setenv ok:
 	 * 1. setenv() copies the string,
 	 * 2. we've already called tgetent which copies the termcap entry.
 	 */
-	(void) sprintf(buf, "%sco#%d:li#%d:%s",
+	(void) snprintf(buf, sizeof buf, "%sco#%d:li#%d:%s",
 		WWT_TERMCAP, wp->ww_w.nc, wp->ww_w.nr, wwwintermcap);
 	(void) setenv("TERMCAP", buf, 1);
-	(void) sprintf(buf, "%d", wp->ww_id + 1);
+	(void) snprintf(buf, sizeof buf, "%d", wp->ww_id + 1);
 	(void) setenv("WINDOW_ID", buf, 1);
 	return 0;
 bad:

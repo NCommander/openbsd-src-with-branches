@@ -1,3 +1,4 @@
+/*	$OpenBSD: tr.c,v 1.7 2002/02/09 02:03:28 deraadt Exp $	*/
 /*	$NetBSD: tr.c,v 1.5 1995/08/31 22:13:48 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tr.c	8.2 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$NetBSD: tr.c,v 1.5 1995/08/31 22:13:48 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tr.c,v 1.7 2002/02/09 02:03:28 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -52,6 +53,7 @@ static char rcsid[] = "$NetBSD: tr.c,v 1.5 1995/08/31 22:13:48 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <err.h>
 
 #include "extern.h"
 
@@ -93,19 +95,19 @@ static int string1[NCHARS] = {
 STR s1 = { STRING1, NORMAL, 0, OOBCH, { 0, OOBCH }, NULL, NULL };
 STR s2 = { STRING2, NORMAL, 0, OOBCH, { 0, OOBCH }, NULL, NULL };
 
-static void setup __P((int *, char *, STR *, int));
-static void usage __P((void));
+static void setup(int *, char *, STR *, int);
+static void usage(void);
 
 int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	register int ch, cnt, lastch, *p;
+	int ch, cnt, lastch, *p;
 	int cflag, dflag, sflag, isstring2;
 
 	cflag = dflag = sflag = 0;
-	while ((ch = getopt(argc, argv, "cds")) != EOF)
+	while ((ch = getopt(argc, argv, "cds")) != -1)
 		switch((char)ch) {
 		case 'c':
 			cflag = 1;
@@ -204,9 +206,10 @@ main(argc, argv)
 			*p++ = OOBCH;
 
 	if (!next(&s2))
-		err("empty string2");
+		errx(1, "empty string2");
 
 	/* If string2 runs out of characters, use the last one specified. */
+	ch = s2.lastch;
 	if (sflag)
 		while (next(&s1)) {
 			string1[s1.lastch] = ch = s2.lastch;
@@ -244,7 +247,7 @@ setup(string, arg, str, cflag)
 	STR *str;
 	int cflag;
 {
-	register int cnt, *p;
+	int cnt, *p;
 
 	str->str = arg;
 	bzero(string, NCHARS * sizeof(int));
@@ -263,33 +266,4 @@ usage()
 	(void)fprintf(stderr, "       tr [-c] -s string1\n");
 	(void)fprintf(stderr, "       tr [-c] -ds string1 string2\n");
 	exit(1);
-}
-
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(const char *fmt, ...)
-#else
-err(fmt, va_alist)
-	char *fmt;
-        va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "tr: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-	exit(1);
-	/* NOTREACHED */
 }

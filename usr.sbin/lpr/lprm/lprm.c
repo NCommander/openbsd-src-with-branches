@@ -1,3 +1,5 @@
+/*	$OpenBSD: lprm.c,v 1.9 2001/12/06 03:12:31 ericj Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,13 +35,17 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)lprm.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static const char sccsid[] = "@(#)lprm.c	8.1 (Berkeley) 6/6/93";
+#else
+static const char rcsid[] = "$OpenBSD: lprm.c,v 1.9 2001/12/06 03:12:31 ericj Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -76,22 +82,24 @@ char	*user[MAXUSERS];	/* users to process */
 int	 users;			/* # of users in user array */
 uid_t	 uid, euid;		/* real and effective user id's */
 
-static char	luser[16];	/* buffer for person */
+static char	luser[MAXLOGNAME];	/* buffer for person */
 
-void usage __P((void));
+volatile sig_atomic_t gotintr;
+
+void usage(void);
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register char *arg;
+	char *arg;
 	struct passwd *p;
 
 	uid = getuid();
 	euid = geteuid();
 	seteuid(uid);	/* be safe */
-	name = argv[0];
+
 	gethostname(host, sizeof(host));
 	openlog("lpd", 0, LOG_LPR);
 	if ((p = getpwuid(getuid())) == NULL)
@@ -133,8 +141,13 @@ main(argc, argv)
 			}
 		}
 	}
-	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
+	if (printer == NULL) {
+		char *p;
+
 		printer = DEFLP;
+		if ((p = getenv("PRINTER")) != NULL)
+			printer = p;
+	}
 
 	rmjob();
 	exit(0);

@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -39,15 +38,15 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: symbol.c,v 1.4 1998/02/19 05:16:28 assar Exp $");
+RCSID("$Id: symbol.c,v 1.7 1999/02/13 04:44:16 assar Exp $");
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mem.h>
 #include "sym.h"
 #include <hash.h>
+#include <roken.h>
 
 static Hashtab *hashtab;
 
@@ -102,8 +101,7 @@ findsym (char *name)
      return (Symbol *)hashtabsearch (hashtab, (void *)&tmp);
 }
 
-#ifdef notyet
-static Bool
+static Bool __attribute__ ((unused))
 printsymbol (void *ptr, void *arg)
 {
      Symbol *s = (Symbol *)ptr;
@@ -134,7 +132,6 @@ printsymbol (void *ptr, void *arg)
 
      return FALSE;
 }
-#endif
 
 void
 symiterate (Bool (*func)(void *, void *), void *arg)

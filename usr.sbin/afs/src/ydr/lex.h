@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -37,11 +36,13 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: lex.h,v 1.3 1998/02/19 05:11:49 assar Exp $ */
+/* $Id: lex.h,v 1.5 2000/06/17 04:18:58 assar Exp $ */
 
 #ifndef _LEX_
 #define _LEX_
 
-void error_message (char *, ...);
+void error_message (int errorp, char *, ...);
+
+int yylex (void);
 
 #endif /* _LEX_ */

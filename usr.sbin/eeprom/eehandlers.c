@@ -1,8 +1,12 @@
-/*	$NetBSD: eehandlers.c,v 1.1 1995/07/13 18:10:29 thorpej Exp $	*/
+/*	$OpenBSD: eehandlers.c,v 1.7 2001/09/20 20:42:25 jason Exp $	*/
+/*	$NetBSD: eehandlers.c,v 1.2 1996/02/28 01:13:22 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,22 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <sys/types.h>
@@ -60,12 +65,12 @@ extern	int cksumfail;
 extern	u_short writecount;
 
 struct	timeb;
-extern	time_t get_date __P((char *, struct timeb *));
+extern	time_t get_date(char *, struct timeb *);
 
 static	char err_str[BUFSIZE];
 
-static	void badval __P((struct keytabent *, char *));
-static	int doio __P((struct keytabent *, u_char *, ssize_t, int));
+static	void badval(struct keytabent *, char *);
+static	int doio(struct keytabent *, u_char *, ssize_t, int);
 
 #define BARF(kt) {							\
 	badval((kt), arg);						\
@@ -74,14 +79,14 @@ static	int doio __P((struct keytabent *, u_char *, ssize_t, int));
 }
 
 #define FAILEDREAD(kt) {						\
-	warnx(err_str);							\
+	warnx("%s", err_str);						\
 	warnx("failed to read field `%s'", (kt)->kt_keyword);		\
 	++eval;								\
 	return;								\
 }
 
 #define FAILEDWRITE(kt) {						\
-	warnx(err_str);							\
+	warnx("%s", err_str);						\
 	warnx("failed to update field `%s'", (kt)->kt_keyword);		\
 	++eval;								\
 	return;								\
@@ -172,11 +177,14 @@ ee_num16(ktent, arg)
 	printf("%s=%d\n", ktent->kt_keyword, num16);
 }
 
+#ifndef __sparc64__
 static	struct strvaltabent scrsizetab[] = {
-	{ "1152x900",		EE_SCR_1152X900 },
-	{ "1024x1024",		EE_SCR_1024X1024 },
-	{ "1600x1280",		EE_SCR_1600X1280 },
-	{ "1440x1440",		EE_SCR_1440X1440 },
+	{ "640x480",		EED_SCR_640X480 },
+	{ "1152x900",		EED_SCR_1152X900 },
+	{ "1024x1024",		EED_SCR_1024X1024 },
+	{ "1600x1280",		EED_SCR_1600X1280 },
+	{ "1280x1024",		EED_SCR_1280X1024 },
+	{ "1440x1440",		EED_SCR_1440X1440 },
 	{ NULL,			0 },
 };
 
@@ -213,6 +221,7 @@ ee_screensize(ktent, arg)
 	}
 	printf("%s=%s\n", ktent->kt_keyword, svp->sv_str);
 }
+#endif
 
 static	struct strvaltabent truthtab[] = {
 	{ "true",		EE_TRUE },
@@ -352,12 +361,13 @@ ee_kbdtype(ktent, arg)
 	printf("%s=%d (%s)\n", ktent->kt_keyword, kbd, kbd ? "other" : "Sun");
 }
 
+#ifndef __sparc64__
 static	struct strvaltabent constab[] = {
-	{ "b&w",		EE_CONS_BW },
-	{ "ttya",		EE_CONS_TTYA },
-	{ "ttyb",		EE_CONS_TTYB },
-	{ "color",		EE_CONS_COLOR },
-	{ "p4opt",		EE_CONS_P4OPT },
+	{ "b&w",		EED_CONS_BW },
+	{ "ttya",		EED_CONS_TTYA },
+	{ "ttyb",		EED_CONS_TTYB },
+	{ "color",		EED_CONS_COLOR },
+	{ "p4opt",		EED_CONS_P4 },
 	{ NULL,			0 },
 };
 
@@ -395,6 +405,7 @@ ee_constype(ktent, arg)
 	printf("%s=%s\n", ktent->kt_keyword, svp->sv_str);
 		
 }
+#endif
 
 void
 ee_diagpath(ktent, arg)
@@ -407,7 +418,7 @@ ee_diagpath(ktent, arg)
 	if (arg) {
 		if (strlen(arg) > sizeof(path))
 			BARF(ktent);
-		sprintf(path, arg);
+		snprintf(path, sizeof path, arg);
 		if (doio(ktent, (u_char *)&path[0], sizeof(path), IO_WRITE))
 			FAILEDWRITE(ktent);
 	} else
@@ -436,7 +447,7 @@ ee_banner(ktent, arg)
 			BARF(ktent);
 		if (*arg != '\0') {
 			enable = EE_TRUE;
-			sprintf(string, arg);
+			snprintf(string, sizeof string, arg);
 			if (doio(ktent, (u_char *)string,
 			    sizeof(string), IO_WRITE))
 				FAILEDWRITE(ktent);
@@ -497,22 +508,22 @@ doio(ktent, buf, len, wr)
 
 	fd = open(path_eeprom, wr == IO_WRITE ? O_RDWR : O_RDONLY, 0640);
 	if (fd < 0) {
-		sprintf(err_str, "open: %s: %s", path_eeprom,
+		snprintf(err_str, sizeof err_str, "open: %s: %s", path_eeprom,
 		    strerror(errno));
 		free(buf2);
 		return (1);
 	}
 
 	if (lseek(fd, (off_t)ktent->kt_offset, SEEK_SET) < (off_t)0) {
-		sprintf(err_str, "lseek: %s:", path_eeprom,
+		snprintf(err_str, sizeof err_str, "lseek: %s: %s", path_eeprom,
 		    strerror(errno));
 		rval = 1;
 		goto done;
 	}
 
 	if (read(fd, buf2, len) != len) {
-		sprintf(err_str, "read: %s: %s", path_eeprom,
-		     strerror(errno));
+		snprintf(err_str, sizeof err_str, "read: %s: %s", path_eeprom,
+		    strerror(errno));
 		return (1);
 	}
 
@@ -521,16 +532,16 @@ doio(ktent, buf, len, wr)
 			goto done;
 
 		if (lseek(fd, (off_t)ktent->kt_offset, SEEK_SET) < (off_t)0) {
-			sprintf(err_str, "lseek: %s: %s", path_eeprom,
-			     strerror(errno));
+			snprintf(err_str, sizeof err_str, "lseek: %s: %s",
+			    path_eeprom, strerror(errno));
 			rval = 1;
 			goto done;
 		}
 
 		++update_checksums;
 		if (write(fd, buf, len) < 0) {
-			sprintf(err_str, "write: %s: %s", path_eeprom,
-			     strerror(errno));
+			snprintf(err_str, sizeof err_str, "write: %s: %s",
+			    path_eeprom, strerror(errno));
 			rval = 1;
 			goto done;
 		}

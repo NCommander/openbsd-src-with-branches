@@ -1,3 +1,4 @@
+/*	$OpenBSD: stdarg.h,v 1.3 2001/03/29 18:52:19 drahn Exp $	*/
 /*	$NetBSD: stdarg.h,v 1.1 1996/09/30 16:34:35 ws Exp $	*/
 
 /*-
@@ -35,8 +36,8 @@
  *	@(#)stdarg.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef _PPC_STDARG_H_
-#define	_PPC_STDARG_H_
+#ifndef _POWERPC_STDARG_H_
+#define	_POWERPC_STDARG_H_
 
 #include <machine/ansi.h>
 
@@ -47,4 +48,4 @@
 
 typedef _BSD_VA_LIST_	va_list;
 
-#endif /* !_PPC_STDARG_H_ */
+#endif /* !_POWERPC_STDARG_H_ */

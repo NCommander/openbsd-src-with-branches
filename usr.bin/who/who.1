@@ -1,3 +1,4 @@
+.\"	$OpenBSD: who.1,v 1.15 2002/01/17 15:45:04 millert Exp $
 .\"	$NetBSD: who.1,v 1.5 1994/12/07 04:28:47 jtc Exp $
 .\"
 .\" Copyright (c) 1986, 1991, 1993
@@ -41,43 +42,49 @@
 .Nd display who is logged in
 .Sh SYNOPSIS
 .Nm who
-.Op Fl mTu
-.Op Ar file 
+.Op Fl mqTuH
+.Op Ar file
 .Nm who
 .Ar am i
 .Sh DESCRIPTION
-The 
-.Nm who
+The
+.Nm
 utility displays a list of all users currently logged on, showing for
 each user the login name, tty name, the date and time of login, and
 hostname if not local.
 .Pp
-Available options:
-.Pp
-.Bl -tag -width file
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl m
-Only print information about the current terminal.  This is the
+Only print information about the current terminal.
+This is the
 .Tn POSIX
 way of saying
-.Nm who 
+.Nm
 .Ar am i .
+.It Fl q
+(Quick.)
+List only the names and the number of users currently logged on.
+When this option is used, all other options are ignored.
 .It Fl T
 Print a character after the user name indicating the state of the
 terminal line:
-.Sq + 
+.Sq +
 if the terminal is writable;
-.Sq - 
+.Sq \-
 if it is not;
 and
 .Sq ?
 if a bad line is encountered.
 .It Fl u
 Print the idle time for each user.
+.It Fl H
+Write column headings above the regular output.
 .It Ar \&am I
-Returns the invoker's real user name. 
+Returns the invoker's real user name.
 .It Ar file
 By default,
-.Nm who
+.Nm
 gathers information from the file
 .Pa /var/run/utmp .
 An alternate
@@ -104,9 +111,13 @@ created.
 If
 .Pa /var/log/wtmp
 is being used as the file, the user name may be empty
-or one of the special characters '|', '}' and '~'.  Logouts produce
-an output line without any user name.  For more information on the
-special characters, see
+or one of the special characters
+.Ql | ,
+.Ql } ,
+and
+.Ql \&~ .
+Logouts produce an output line without any user name.
+For more information on the special characters, see
 .Xr utmp 5 .
 .Sh FILES
 .Bl -tag -width /var/log/wtmp.[0-6] -compact
@@ -120,13 +131,13 @@ special characters, see
 .Xr users 1 ,
 .Xr getuid 2 ,
 .Xr utmp 5
-.Sh HISTORY
-A
-.Nm
-utility appeared in
-.At v6 .
 .Sh STANDARDS
 The
 .Nm
 utility is expected to conform to
 .St -p1003.2-92 .
+.Sh HISTORY
+A
+.Nm
+utility appeared in
+.At v3 .

@@ -1,7 +1,9 @@
-/*	$Id: transport.c,v 1.20 1998/10/11 20:25:09 niklas Exp $	*/
+/*	$OpenBSD: transport.c,v 1.15 2001/10/05 05:54:50 ho Exp $	*/
+/*	$EOM: transport.c,v 1.43 2000/10/10 12:36:39 provos Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +38,8 @@
 #include <sys/param.h>
 #include <sys/queue.h>
 
+#include "sysdep.h"
+
 #include "conf.h"
 #include "exchange.h"
 #include "log.h"
@@ -44,8 +48,22 @@
 #include "timer.h"
 #include "transport.h"
 
+/* If no retransmit limit is given, use this as a default.  */
+#define RETRANSMIT_DEFAULT 10
+
 LIST_HEAD (transport_list, transport) transport_list;
 LIST_HEAD (transport_method_list, transport_vtbl) transport_method_list;
+
+/* Call the reinit function of the various transports.  */
+void
+transport_reinit (void)
+{
+  struct transport_vtbl *method;
+
+  for (method = LIST_FIRST (&transport_method_list); method;
+       method = LIST_NEXT (method, link))
+    method->reinit ();
+}
 
 /* Initialize the transport maintenance module.  */
 void
@@ -59,8 +77,74 @@ transport_init (void)
 void
 transport_add (struct transport *t)
 {
+  LOG_DBG ((LOG_TRANSPORT, 70, "transport_add: adding %p", t));
   TAILQ_INIT (&t->sendq);
+  TAILQ_INIT (&t->prio_sendq);
   LIST_INSERT_HEAD (&transport_list, t, link);
+  t->flags = 0;
+  t->refcnt = 0;
+}
+
+/* Add a referer to transport T.  */
+void
+transport_reference (struct transport *t)
+{
+  t->refcnt++;
+  LOG_DBG ((LOG_TRANSPORT, 95,
+	    "transport_reference: transport %p now has %d references", t,
+	    t->refcnt));
+}
+
+/*
+ * Remove a referer from transport T, removing all of T when no referers left.
+ */
+void
+transport_release (struct transport *t)
+{
+  LOG_DBG ((LOG_TRANSPORT, 95,
+	    "transport_release: transport %p had %d references", t,
+	    t->refcnt));
+  if (--t->refcnt)
+    return;
+
+  LOG_DBG ((LOG_TRANSPORT, 70, "transport_release: freeing %p", t));
+  LIST_REMOVE (t, link);
+  t->vtbl->remove (t);
+}
+
+void
+transport_report (void)
+{
+  struct transport *t;
+  struct message *msg;
+
+  for (t = LIST_FIRST (&transport_list); t; t = LIST_NEXT (t, link))
+    { 
+      LOG_DBG ((LOG_REPORT, 0, 
+		"transport_report: transport %p flags %x refcnt %d", t,
+		t->flags, t->refcnt));
+      
+      t->vtbl->report (t);
+      
+      /* This is the reason message_dump_raw lives outside message.c.  */
+      for (msg = TAILQ_FIRST (&t->prio_sendq); msg;
+	   msg = TAILQ_NEXT (msg, link))
+        message_dump_raw ("udp_report", msg, LOG_REPORT);
+
+      for (msg = TAILQ_FIRST (&t->sendq); msg; msg = TAILQ_NEXT (msg, link))
+        message_dump_raw ("udp_report", msg, LOG_REPORT);
+    }
+}
+
+int
+transport_prio_sendqs_empty (void)
+{
+  struct transport *t;
+
+  for (t = LIST_FIRST (&transport_list); t; t = LIST_NEXT (t, link))
+    if (TAILQ_FIRST (&t->prio_sendq))
+      return 0;
+  return 1;
 }
 
 /* Register another transport method T.  */
@@ -95,7 +179,7 @@ transport_fd_set (fd_set *fds)
   for (t = LIST_FIRST (&transport_list); t; t = LIST_NEXT (t, link))
     if (t->flags & TRANSPORT_LISTEN)
       {
-	n = (*t->vtbl->fd_set) (t, fds);
+	n = t->vtbl->fd_set (t, fds, 1);
 	if (n > max)
 	  max = n;
       }
@@ -117,9 +201,9 @@ transport_pending_wfd_set (fd_set *fds)
 
   for (t = LIST_FIRST (&transport_list); t; t = LIST_NEXT (t, link))
     {
-      if (TAILQ_FIRST (&t->sendq))
+      if (TAILQ_FIRST (&t->sendq) || TAILQ_FIRST (&t->prio_sendq))
 	{
-	  n = (*t->vtbl->fd_set) (t, fds);
+	  n = t->vtbl->fd_set (t, fds, 1);
 	  if (n > max)
 	    max = n;
 	}
@@ -142,89 +226,137 @@ transport_handle_messages (fd_set *fds)
 }
 
 /*
- * Send the first queued message on the transports whose file descriptor
- * is in FDS.
+ * Send the first queued message on the transports found whose file
+ * descriptor is in FDS and has messages queued.  Remove the fd bit from
+ * FDS as soon as one message has been sent on it so other transports
+ * sharing the socket won't get service without an intervening select
+ * call.  Perhaps a fairness strategy should be implemented between
+ * such transports.  Now early transports in the list will potentially
+ * be favoured to later ones sharing the file descriptor.
  */
 void
 transport_send_messages (fd_set *fds)
 {
-  struct transport *t;
+  struct transport *t, *next;
   struct message *msg;
+  struct exchange *exchange;
   struct timeval expiration;
-  struct sa *sa, *next_sa;
-  int expiry;
+  int expiry, ok_to_drop_message;
+
+  /* Reference all transports first so noone will disappear while in use.  */
+  for (t = LIST_FIRST (&transport_list); t; t = LIST_NEXT (t, link))
+    transport_reference (t);
 
   for (t = LIST_FIRST (&transport_list); t; t = LIST_NEXT (t, link))
-    if (TAILQ_FIRST (&t->sendq) && (*t->vtbl->fd_isset) (t, fds))
-      {
-	msg = TAILQ_FIRST (&t->sendq);
-	TAILQ_REMOVE (&t->sendq, msg, link);
+    {
+      if ((TAILQ_FIRST (&t->sendq) || TAILQ_FIRST (&t->prio_sendq))
+	  && t->vtbl->fd_isset (t, fds))
+	{
+	  t->vtbl->fd_set (t, fds, 0);
 
-	/*
-	 * We disregard the potential error message here, hoping that the
-	 * retransmit will go better.
-	 * XXX Consider a retry/fatal error discriminator.
-	 */
-	t->vtbl->send_message (msg);
+	  /* Prefer a message from the prioritized sendq.  */
+	  if (TAILQ_FIRST (&t->prio_sendq))
+ 	    {
+	      msg = TAILQ_FIRST (&t->prio_sendq);
+	      TAILQ_REMOVE (&t->prio_sendq, msg, link);
+	    }
+	  else
+	    {
+	      msg = TAILQ_FIRST (&t->sendq);
+	      TAILQ_REMOVE (&t->sendq, msg, link);
+	    }
 
-	/*
-	 * If this is not a retransmit call post-send functions that allows
-	 * parallel work to be done while the network and peer does their
-	 * share of the job.
-	 */
-	if (msg->xmits == 0)
-	  message_post_send (msg);
+	  msg->flags &= ~MSG_IN_TRANSIT;
+	  exchange = msg->exchange;
+	  exchange->in_transit = 0;
 
-	msg->xmits++;
+	  /*
+	   * We disregard the potential error message here, hoping that the
+	   * retransmit will go better.
+	   * XXX Consider a retry/fatal error discriminator.
+	   */
+	  t->vtbl->send_message (msg);
+	  msg->xmits++;
 
-	if ((msg->flags & MSG_NO_RETRANS) == 0)
-	  {
-	    /* XXX make this a configurable parameter.  */
-	    if (msg->xmits > conf_get_num ("General", "retransmits"))
-	      {
-		log_print ("transport_send_messages: giving up on message %p",
-			   msg);
-		msg->exchange->last_sent = 0;
+	  /*
+	   * This piece of code has been proven to be quite delicate.
+	   * Think twice for before altering.  Here's an outline:
+	   *
+	   * If this message is not the one which finishes an exchange,
+	   * check if we have reached the number of retransmit before
+	   * queuing it up for another.
+	   *
+	   * If it is a finishing message we still may have to keep it
+	   * around for an on-demand retransmit when seeing a duplicate
+	   * of our peer's previous message.
+	   *
+	   * If we have no previous message from our peer, we need not
+	   * to keep the message around.
+	   */
+	  if ((msg->flags & MSG_LAST) == 0)
+	    {
+	      if (msg->xmits > conf_get_num ("General", "retransmits",
+					     RETRANSMIT_DEFAULT))
+		{
+		  log_print ("transport_send_messages: "
+			     "giving up on message %p",
+			     msg);
+		  exchange->last_sent = 0;
+		}
+	      else
+		{
+		  gettimeofday (&expiration, 0);
 
-		/*
-		 * As this exchange never went to a normal end, remove the
-		 * SA's being negotiated too.
-		 */
-		for (sa = TAILQ_FIRST (&msg->exchange->sa_list); sa;
-		     sa = next_sa)
-		  {
-		    next_sa = TAILQ_NEXT (sa, next);
-		    sa_free (sa);
-		  }
+		  /*
+		   * XXX Calculate from round trip timings and a backoff func.
+		   */
+		  expiry = msg->xmits * 2 + 5;
+		  expiration.tv_sec += expiry;
+		  LOG_DBG ((LOG_TRANSPORT, 30,
+			    "transport_send_messages: message %p "
+			    "scheduled for retransmission %d in %d secs",
+			    msg, msg->xmits, expiry));
+		  if (msg->retrans)
+		    timer_remove_event (msg->retrans);
+		  msg->retrans
+		    = timer_add_event ("message_send_expire",
+				       (void (*) (void *))message_send_expire,
+				       msg, &expiration);
+		  /* If we cannot retransmit, we cannot...  */
+		  exchange->last_sent = msg->retrans ? msg : 0;
+		}
+	    }
+	  else
+	    exchange->last_sent = exchange->last_received ? msg : 0;
 
-		exchange_free (msg->exchange);
-		message_free (msg);
-		return;
-	      };
+	  /*
+	   * If this message is not referred to for later retransmission
+	   * it will be ok for us to drop it after the post-send function.
+	   * But as the post-send function may remove the exchange, we need
+	   * to remember this fact here.
+	   */
+	  ok_to_drop_message = exchange->last_sent == 0;
 
-	    gettimeofday (&expiration, 0);
-	    /* XXX Calculate from round trip timings and a backoff func.  */
-	    expiry = msg->xmits * 2 + 5;
-	    expiration.tv_sec += expiry;
-	    log_debug (LOG_TRANSPORT, 30,
-		       "transport_send_messages: "
-		       "message %p scheduled for retransmission %d in %d secs",
-		       msg, msg->xmits, expiry);
-	    msg->retrans = timer_add_event ("message_send",
-					    (void (*) (void *))message_send,
-					    msg, &expiration);
-	    if (!msg->retrans)
-	      {
-		/* If we can make no retransmission, we can't.... */
-		message_free (msg);
-		return;
-	      }
+	  /*
+	   * If this is not a retransmit call post-send functions that allows
+	   * parallel work to be done while the network and peer does their
+	   * share of the job.  Note that a post-send function may take
+	   * away the exchange we belong to, but only if no retransmits
+	   * are possible.
+	   */
+	  if (msg->xmits == 1)
+	    message_post_send (msg);
 
-	    msg->exchange->last_sent = msg;
-	  }
-	else if ((msg->flags & MSG_KEEP) == 0)
-	  message_free (msg);
-      }
+	  if (ok_to_drop_message)
+	    message_free (msg);
+	}
+    }
+
+  for (t = LIST_FIRST (&transport_list); t; t = next)
+    {
+      next = LIST_NEXT (t, link);
+      transport_release (t);
+    }
 }
 
 /*

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: qn.4,v 1.9 2001/10/05 14:45:53 mpech Exp $
+.\"
 .\"
 .\" Copyright (c) 1995 Mika Kortelainen. All rights reserved.
 .\" Copyright (c) 1995 Bernd Ernesti and Klaus Burkert. All rights reserved.
@@ -41,16 +43,16 @@
 .\" - if_es.c: used as an example of -current driver
 .\"
 .\" The following requests are required for all man pages.
-.Dd Oct 5, 1995
-.Os NetBSD 1.0
+.Dd October 5, 1995
 .Dt QN 4 amiga
+.Os
 .Sh NAME
 .Nm qn
 .Nd Ethernet driver for Fujitsu MB86950 based boards
 .Sh SYNOPSIS
 .Cd "qn* at zbus0"
 .Sh DESCRIPTION
-The 
+The
 .Nm
 interface provides access to the 10 Mb/s Ethernet network via the
 .Tn Fujitsu
@@ -60,14 +62,13 @@ Ethernet chip set.
 Each of the host's network addresses
 is specified at boot time with an
 .Dv SIOCSIFADDR
-.Xr ioctl .
+.Xr ioctl 2 .
 The
 .Nm
 interface employs the address resolution protocol described in
 .Xr arp 4
 to dynamically map between Internet and Ethernet addresses on the local
 network.
-.Pp
 .Sh HARDWARE
 The
 .Nm
@@ -76,12 +77,12 @@ interface supports the following Zorro II expansion cards:
 .It Em QuickNet
 Resource Management Force's ethernet card, manufacturer\ 2011, product\ 2
 .El
-.Pp
 .Sh NOTES
-Multicasting not done yet. If the driver happens to lock up, you may use
-.Xr ifconfig
-to force the driver down and up again. This usually helps.
-.Pp
+Multicasting not done yet.
+If the driver happens to lock up, you may use
+.Xr ifconfig 8
+to force the driver down and up again.
+This usually helps.
 .Sh HISTORY
 The
 .Nm
@@ -89,6 +90,6 @@ interface first appeared in
 .Nx 1.0a
 .Sh SEE ALSO
 .Xr arp 4 ,
-.Xr ifconfig 8 ,
 .Xr inet 4 ,
-.Xr intro 4
+.Xr intro 4 ,
+.Xr ifconfig 8 ,

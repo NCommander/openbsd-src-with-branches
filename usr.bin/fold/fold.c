@@ -1,3 +1,4 @@
+/*	$OpenBSD: fold.c,v 1.4 2001/07/09 21:59:02 pjanzen Exp $	*/
 /*	$NetBSD: fold.c,v 1.6 1995/09/01 01:42:44 jtc Exp $	*/
 
 /*-
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)fold.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: fold.c,v 1.6 1995/09/01 01:42:44 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fold.c,v 1.4 2001/07/09 21:59:02 pjanzen Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -67,7 +68,7 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	register int ch;
+	int ch;
 	int width;
 	char *p;
 
@@ -81,11 +82,8 @@ main(argc, argv)
 			split_words = 1;
 			break;
 		case 'w':
-			if ((width = atoi(optarg)) <= 0) {
-				(void)fprintf(stderr,
-				    "fold: illegal width value.\n");
-				exit(1);
-			}
+			if ((width = atoi(optarg)) <= 0)
+				errx(1, "illegal width value.");
 			break;
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
@@ -132,12 +130,12 @@ main(argc, argv)
  */
 static void
 fold(width)
-	register int width;
+	int width;
 {
 	static char *buf = NULL;
 	static int   buf_max = 0;
-	register int ch, col;
-	register int indx;
+	int ch, col;
+	int indx;
 
 	col = indx = 0;
 	while ((ch = getchar()) != EOF) {
@@ -167,7 +165,7 @@ fold(width)
 				indx -= last_space;
 				col = 0;
 				for (i = 0; i < indx; i++) {
-					col = new_column_position (col, ch);
+					col = new_column_position (col, buf[i]);
 				}
 			} else {
 				fwrite (buf, 1, indx, stdout);

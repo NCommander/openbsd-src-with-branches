@@ -1,4 +1,5 @@
-/*	$NetBSD: kbd.h,v 1.4 1995/07/06 05:36:29 pk Exp $ */
+/*	$OpenBSD: kbd.h,v 1.8 2002/03/14 01:26:43 millert Exp $	*/
+/*	$NetBSD: kbd.h,v 1.6 1996/03/31 22:21:35 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -86,3 +87,83 @@
 #define	LED_COMPOSE	0x2
 #define	LED_SCROLL_LOCK	0x4
 #define	LED_CAPS_LOCK	0x8
+
+#define	CAPSLOCK	0
+#define	SHIFTLOCK	1
+#define	LEFTSHIFT	2
+#define	RIGHTSHIFT	3
+#define	LEFTCTRL	4
+#define	RIGHTCTRL	5
+#define	ALTGRAPH	9
+#define	ALT		10
+#define	NUMLOCK		11
+
+#define	SYSTEMBIT	1
+
+#define	SHIFTKEYS	0x100
+#define	BUCKYBITS	0x200
+#define	FUNNY		0x300
+#define	NOP		0x300
+#define	OOPS		0x301
+/*	HOLE		0x302 defined in kbio.h */
+#define	RESET		0x306
+#define	ERROR		0x307
+#define	IDLE		0x308
+#define	COMPOSE		0x309
+#define	NONL		0x30a
+
+#define	FA_CLASS	0x400
+#define	FA_UMLAUT	0x400
+#define	FA_CFLEX	0x401
+#define	FA_TILDE	0x402
+#define	FA_CEDILLA	0x403
+#define	FA_ACUTE	0x404
+#define	FA_GRAVE	0x405
+#define	FA_CLASS_LAST	0x405
+
+#define	STRING		0x500
+#define	KTAB_STRLEN	10
+#define	HOMEARROW	0x00
+#define	UPARROW		0x01
+#define	DOWNARROW	0x02
+#define	LEFTARROW	0x03
+#define	RIGHTARROR	0x04
+
+#define	FUNCKEYS	0x600
+#define	LEFTFUNC	0x600
+#define	RIGHTFUNC	0x610
+#define	TOPFUNC		0x620
+#define	BOTTOMFUNC	0x630
+#define	LF(n)		(LEFTFUNC+(n)-1)
+#define	RF(n)		(RIGHTFUNC+(n)-1)
+#define	TF(n)		(TOPFUNC+(n)-1)
+#define	BF(n)		(BOTTOMFUNC+(n)-1)
+
+#define	PADKEYS		0x700
+#define	PADEQUAL	0x700
+#define	PADSLASH	0x701
+#define	PADSTAR		0x702
+#define	PADMINUS	0x703
+#define	PADSEP		0x704
+#define	PAD7		0x705
+#define	PAD8		0x706
+#define	PAD9		0x707
+#define	PADPLUS		0x708
+#define	PAD4		0x709
+#define	PAD5		0x70A
+#define	PAD6		0x70B
+#define	PAD1		0x70C
+#define	PAD2		0x70D
+#define	PAD3		0x70E
+#define	PAD0		0x70F
+#define	PADDOT		0x710
+#define	PADENTER	0x711
+
+#ifdef _KERNEL
+void 	kbd_serial(struct tty *, void (*)(struct tty *), void (*)(struct tty *));
+void 	ms_serial(struct tty *, void (*)(struct tty *), void (*)(struct tty *));
+void 	kbd_rint(int);
+void 	ms_rint(int);
+void 	kbd_ascii(struct tty *);
+int	kbd_docmd(int, int);
+#endif

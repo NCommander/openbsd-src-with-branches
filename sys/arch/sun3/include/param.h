@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.29 1995/06/27 14:37:22 gwr Exp $	*/
+/*	$OpenBSD: param.h,v 1.29 2001/12/05 01:57:15 provos Exp $	*/
+/*	$NetBSD: param.h,v 1.34 1996/03/04 05:04:40 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
@@ -43,122 +44,58 @@
  *	from: @(#)param.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef	MACHINE
+#ifndef	_MACHINE_PARAM_H_
 
 /*
  * Machine dependent constants for the Sun3 series.
  */
-#define	MACHINE     "sun3"
-#define	MACHINE_ARCH	"m68k"
-#define MID_MACHINE MID_M68K
+#define	_MACHINE	sun3
+#define	MACHINE		"sun3"
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value
  * for all data types (int, long, ...).   The result is u_int and
  * must be cast to any desired pointer type.
  */
-#define	ALIGNBYTES	3
-#define	ALIGN(p)	(((u_int)(p) + ALIGNBYTES) &~ ALIGNBYTES)
 
-#define	NBPG		8192		/* bytes/page */
-#define	PGOFSET		(NBPG-1)	/* byte offset into page */
 #define	PGSHIFT		13		/* LOG2(NBPG) */
 
-#define NBSG		0x20000	/* bytes/segment */
-#define	SEGOFSET	(NBSG-1)	/* byte offset into segment */
+#define	PAGE_SHIFT	13
+#define	PAGE_SIZE	(1 << PAGE_SHIFT)
+#define	PAGE_MASK	(PAGE_SIZE - 1)
+
 #define SEGSHIFT	17	        /* LOG2(NBSG) */
+#define NBSG		(1 << SEGSHIFT)	/* bytes/segment */
+#define	SEGOFSET	(NBSG-1)	/* byte offset into segment */
 
 #define	KERNBASE	0x0E000000	/* start of kernel virtual */
-#define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
+#define	KERNTEXTOFF	0x0E004000	/* start of kernel text */
 
-#define	DEV_BSIZE	512
-#define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
-#define BLKDEV_IOSIZE	2048
-#define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
+#include <m68k/param.h>
 
-#define	CLSIZE		1
-#define	CLSIZELOG2	0
+#define MAXBSIZE 0x8000		/* XXX temp until sun3 dma chaining */
 
-/* NOTE: SSIZE, SINCR and UPAGES must be multiples of CLSIZE */
-#define	SSIZE		1		/* initial stack size/NBPG */
-#define	SINCR		1		/* increment of stack/NBPG */
-
-#define	UPAGES		2		/* pages of u-area */
-#define	USPACE		(UPAGES << PGSHIFT)
+#define	MSGBUFOFF	0x200
+#define MSGBUFSIZE	(NBPG - MSGBUFOFF)
 
 /*
- * Constants related to network buffer management.
- * MCLBYTES must be no larger than CLBYTES (the software page size), and,
- * on machines that exchange pages of input or output buffers with mbuf
- * clusters (MAPPED_MBUFS), MCLBYTES must also be an integral multiple
- * of the hardware page size.
+ * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized
+ * logical pages.
  */
-#define	MSIZE		128		/* size of an mbuf */
-#define	MCLBYTES	2048		/* large enough for ether MTU */
-#define	MCLSHIFT	11
-#define	MCLOFSET	(MCLBYTES - 1)
-#ifndef NMBCLUSTERS
-#ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
-#else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
-#endif
-#endif
+#define	NKMEMPAGES_MIN_DEFAULT	((2 * 1024 * 1024) >> PAGE_SHIFT)
+#define	NKMEMPAGES_MAX_DEFAULT	((2 * 1024 * 1024) >> PAGE_SHIFT)
 
 /*
- * Size of kernel malloc arena in CLBYTES-sized logical pages
- */ 
-#ifndef NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(2048*1024/CLBYTES)
-#endif
-
-/* pages ("clicks") to disk blocks */
-#define	ctod(x)		((x) << (PGSHIFT - DEV_BSHIFT))
-#define	dtoc(x)		((x) >> (PGSHIFT - DEV_BSHIFT))
-
-/* pages to bytes */
-#define	ctob(x)		((x) << PGSHIFT)
-#define	btoc(x)		(((x) + PGOFSET) >> PGSHIFT)
-
-/* bytes to disk blocks */
-#define	btodb(x)	((x) >> DEV_BSHIFT)
-#define	dbtob(x)	((x) << DEV_BSHIFT)
-
-/*
- * Map a ``block device block'' to a file system block.
- * This should be device dependent, and should use the bsize
- * field from the disk label.
- * For now though just use DEV_BSIZE.
+ * spl functions; all are done in-line
  */
-#define	bdbtofsb(bn)	((bn) / (BLKDEV_IOSIZE/DEV_BSIZE))
 
-/*
- * Mach derived conversion macros
- */
-#define sun3_round_seg(x)	((((unsigned)(x)) + SEGOFSET) & ~SEGOFSET)
-#define sun3_trunc_seg(x)	((unsigned)(x) & ~SEGOFSET)
-#define sun3_btos(x)		((unsigned)(x) >> SEGSHIFT)
-#define sun3_stob(x)		((unsigned)(x) << SEGSHIFT)
-
-#define sun3_round_page(x)	((((unsigned)(x)) + PGOFSET) & ~PGOFSET)
-#define sun3_trunc_page(x)	((unsigned)(x) & ~PGOFSET)
-#define sun3_btop(x)		((unsigned)(x) >> PGSHIFT)
-#define sun3_ptob(x)		((unsigned)(x) << PGSHIFT)
-
-/* XXX - Does this really belong here? -gwr */
 #include <machine/psl.h>
+#if defined(_KERNEL) && !defined(_LOCORE)
+#include <machine/cpu.h>
 
-#ifdef _KERNEL
-#ifndef LOCORE
+extern void _delay(unsigned);
+#define delay(us)	_delay((us)<<8)
 #define	DELAY(n)	delay(n)
-extern int cpuspeed;
-static inline void delay2us()
-{
-	register int n = cpuspeed;
+#endif	/* _KERNEL && !_LOCORE */
 
-	__asm __volatile ("0: subql #4,%0; jgt 0b" : "=d" (n) : "0" (n));
-}
-#endif	/* !LOCORE */
-#endif	/* _KERNEL */
-
-#endif	/* MACHINE */
+#endif	/* _MACHINE_PARAM_H_ */

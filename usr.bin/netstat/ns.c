@@ -1,3 +1,4 @@
+/*	$OpenBSD: ns.c,v 1.6 2001/11/19 19:02:15 mpech Exp $	*/
 /*	$NetBSD: ns.c,v 1.8 1995/10/03 21:42:46 thorpej Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)ns.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$NetBSD: ns.c,v 1.8 1995/10/03 21:42:46 thorpej Exp $";
+static char *rcsid = "$OpenBSD: ns.c,v 1.6 2001/11/19 19:02:15 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,6 +65,7 @@ static char *rcsid = "$NetBSD: ns.c,v 1.8 1995/10/03 21:42:46 thorpej Exp $";
 #define SANAMES
 #include <netns/spp_debug.h>
 
+#include <limits.h>
 #include <nlist.h>
 #include <errno.h>
 #include <stdio.h>
@@ -74,8 +76,8 @@ struct	nspcb nspcb;
 struct	sppcb sppcb;
 struct	socket sockb;
 
-static char *ns_prpr __P((struct ns_addr *));
-static void ns_erputil __P((int, int));
+static char *ns_prpr(struct ns_addr *);
+static void ns_erputil(int, int);
 
 static	int first = 1;
 
@@ -92,7 +94,7 @@ nsprotopr(off, name)
 	char *name;
 {
 	struct nspcb cb;
-	register struct nspcb *prev, *next;
+	struct nspcb *prev, *next;
 	int isspp;
 
 	if (off == 0)
@@ -139,8 +141,8 @@ nsprotopr(off, name)
 			first = 0;
 		}
 		if (Aflag)
-			printf("%8x ", ppcb);
-		printf("%-5.5s %6d %6d ", name, sockb.so_rcv.sb_cc,
+			printf("%8lx ", ppcb);
+		printf("%-5.5s %6ld %6ld ", name, sockb.so_rcv.sb_cc,
 			sockb.so_snd.sb_cc);
 		printf("  %-22.22s", ns_prpr(&nspcb.nsp_laddr));
 		printf(" %-22.22s", ns_prpr(&nspcb.nsp_faddr));
@@ -156,7 +158,7 @@ nsprotopr(off, name)
 	}
 }
 #define ANY(x,y,z) \
-	((x) ? printf("\t%d %s%s%s -- %s\n",x,y,plural(x),z,"x") : 0)
+	((x) ? printf("\t%ld %s%s%s -- %s\n",x,y,plural(x),z,"x") : 0)
 
 /*
  * Dump SPP statistics structure.
@@ -173,18 +175,23 @@ spp_stats(off, name)
 		return;
 	kread(off, (char *)&spp_istat, sizeof (spp_istat));
 	printf("%s:\n", name);
-	ANY(spp_istat.nonucn, "connection", " dropped due to no new sockets ");
-	ANY(spp_istat.gonawy, "connection", " terminated due to our end dying");
-	ANY(spp_istat.nonucn, "connection",
+	ANY((long)spp_istat.nonucn, "connection",
+	    " dropped due to no new sockets ");
+	ANY((long)spp_istat.gonawy, "connection",
+	    " terminated due to our end dying");
+	ANY((long)spp_istat.nonucn, "connection",
 	    " dropped due to inability to connect");
-	ANY(spp_istat.noconn, "connection",
+	ANY((long)spp_istat.noconn, "connection",
 	    " dropped due to inability to connect");
-	ANY(spp_istat.notme, "connection",
+	ANY((long)spp_istat.notme, "connection",
 	    " incompleted due to mismatched id's");
-	ANY(spp_istat.wrncon, "connection", " dropped due to mismatched id's");
-	ANY(spp_istat.bdreas, "packet", " dropped out of sequence");
-	ANY(spp_istat.lstdup, "packet", " duplicating the highest packet");
-	ANY(spp_istat.notyet, "packet", " refused as exceeding allocation");
+	ANY((long)spp_istat.wrncon, "connection",
+	    " dropped due to mismatched id's");
+	ANY((long)spp_istat.bdreas, "packet", " dropped out of sequence");
+	ANY((long)spp_istat.lstdup, "packet",
+	    " duplicating the highest packet");
+	ANY((long)spp_istat.notyet, "packet",
+	    " refused as exceeding allocation");
 	ANY(sppstat.spps_connattempt, "connection", " initiated");
 	ANY(sppstat.spps_accepts, "connection", " accepted");
 	ANY(sppstat.spps_connects, "connection", " established");
@@ -281,8 +288,8 @@ nserr_stats(off, name)
 	char *name;
 {
 	struct ns_errstat ns_errstat;
-	register int j;
-	register int histoprint = 1;
+	int j;
+	int histoprint = 1;
 	int z;
 
 	if (off == 0)
@@ -337,7 +344,8 @@ ns_erputil(z, c)
 			where = "in transit";
 		else
 			where = "at destination";
-		sprintf(codebuf, "Unknown XNS error code 0%o", c);
+		snprintf(codebuf, sizeof codebuf,
+		    "Unknown XNS error code 0%o", c);
 		name = codebuf;
 	} else
 		where =  ns_errnames[j].where;

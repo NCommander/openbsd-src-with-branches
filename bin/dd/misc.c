@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.9 2001/06/25 08:06:04 deraadt Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $	*/
 
 /*-
@@ -41,16 +42,18 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.9 2001/06/25 08:06:04 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
+#include <sys/uio.h>
 
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -60,31 +63,47 @@ static char rcsid[] = "$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $";
 void
 summary()
 {
-	time_t secs;
-	char buf[100];
+	struct timeval nowtv;
+	char buf[4][100];
+	struct iovec iov[4];
+	double microsecs;
+	int i = 0;
 
-	(void)time(&secs);
-	if ((secs -= st.start) == 0)
-		secs = 1;
+	(void)gettimeofday(&nowtv, (struct timezone *)NULL);
+	timersub(&nowtv, &st.startv, &nowtv);
+	if ((microsecs = (nowtv.tv_sec * 1000000) + nowtv.tv_usec) == 0)
+		microsecs = 1;
+
 	/* Use snprintf(3) so that we don't reenter stdio(3). */
-	(void)snprintf(buf, sizeof(buf),
+	(void)snprintf(buf[0], sizeof(buf[0]),
 	    "%u+%u records in\n%u+%u records out\n",
 	    st.in_full, st.in_part, st.out_full, st.out_part);
-	(void)write(STDERR_FILENO, buf, strlen(buf));
+	iov[i].iov_base = buf[0];
+	iov[i++].iov_len = strlen(buf[0]);
+
 	if (st.swab) {
-		(void)snprintf(buf, sizeof(buf), "%u odd length swab %s\n",
+		(void)snprintf(buf[1], sizeof(buf[1]),
+		    "%u odd length swab %s\n",
 		     st.swab, (st.swab == 1) ? "block" : "blocks");
-		(void)write(STDERR_FILENO, buf, strlen(buf));
+		iov[i].iov_base = buf[1];
+		iov[i++].iov_len = strlen(buf[1]);
 	}
 	if (st.trunc) {
-		(void)snprintf(buf, sizeof(buf), "%u truncated %s\n",
+		(void)snprintf(buf[2], sizeof(buf[2]),
+		    "%u truncated %s\n",
 		     st.trunc, (st.trunc == 1) ? "block" : "blocks");
-		(void)write(STDERR_FILENO, buf, strlen(buf));
+		iov[i].iov_base = buf[2];
+		iov[i++].iov_len = strlen(buf[2]);
 	}
-	(void)snprintf(buf, sizeof(buf),
-	    "%u bytes transferred in %u secs (%u bytes/sec)\n",
-	    st.bytes, secs, st.bytes / secs);
-	(void)write(STDERR_FILENO, buf, strlen(buf));
+	(void)snprintf(buf[3], sizeof(buf[3]),
+	    "%qd bytes transferred in %ld.%03ld secs (%0.0f bytes/sec)\n",
+	    (long long)st.bytes, nowtv.tv_sec, nowtv.tv_usec / 1000,
+	    ((double)st.bytes * 1000000) / microsecs);
+
+	iov[i].iov_base = buf[3];
+	iov[i++].iov_len = strlen(buf[3]);
+
+	(void)writev(STDERR_FILENO, iov, i);
 }
 
 /* ARGSUSED */
@@ -92,8 +111,10 @@ void
 summaryx(notused)
 	int notused;
 {
+	int save_errno = errno;
 
 	summary();
+	errno = save_errno;
 }
 
 /* ARGSUSED */
@@ -102,5 +123,6 @@ terminate(notused)
 	int notused;
 {
 
-	exit(0);
+	summary();
+	_exit(0);
 }

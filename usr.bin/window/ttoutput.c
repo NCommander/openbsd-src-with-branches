@@ -1,3 +1,4 @@
+/*	$OpenBSD: ttoutput.c,v 1.3 1997/02/25 00:04:25 downsj Exp $	*/
 /*	$NetBSD: ttoutput.c,v 1.3 1995/09/28 10:34:51 tls Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)ttoutput.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: ttoutput.c,v 1.3 1995/09/28 10:34:51 tls Exp $";
+static char rcsid[] = "$OpenBSD: ttoutput.c,v 1.3 1997/02/25 00:04:25 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,8 +56,8 @@ static char rcsid[] = "$NetBSD: ttoutput.c,v 1.3 1995/09/28 10:34:51 tls Exp $";
 
 ttflush()
 {
-	register char *p;
-	register n = tt_obp - tt_ob;
+	char *p;
+	int n = tt_obp - tt_ob;
 	extern errno;
 
 	if (n == 0)
@@ -89,15 +90,15 @@ ttflush()
 }
 
 ttputs(s)
-register char *s;
+char *s;
 {
 	while (*s)
 		ttputc(*s++);
 }
 
 ttwrite(s, n)
-	register char *s;
-	register n;
+	char *s;
+	int n;
 {
 	switch (n) {
 	case 0:
@@ -137,7 +138,7 @@ ttwrite(s, n)
 		break;
 	default:
 		while (n > 0) {
-			register m;
+			int m;
 
 			while ((m = tt_obe - tt_obp) == 0)
 				ttflush();

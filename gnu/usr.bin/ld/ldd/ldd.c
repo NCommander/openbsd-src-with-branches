@@ -1,3 +1,4 @@
+/*	$OpenBSD: ldd.c,v 1.8 2001/07/09 07:04:36 deraadt Exp $	*/
 /*	$NetBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -44,6 +45,8 @@
 #include <string.h>
 #include <unistd.h>
 
+extern void scan_library(int, struct exec *, const char *, const char *, const char *);
+
 void
 usage()
 {
@@ -86,11 +89,14 @@ char	*argv[];
 	}
 
 	/* ld.so magic */
-	setenv("LD_TRACE_LOADED_OBJECTS", "", 1);
+	if (setenv("LD_TRACE_LOADED_OBJECTS", "", 1) == -1)
+		err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS");
 	if (fmt1)
-		setenv("LD_TRACE_LOADED_OBJECTS_FMT1", fmt1, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_FMT1", fmt1, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_FMT1");
 	if (fmt2)
-		setenv("LD_TRACE_LOADED_OBJECTS_FMT2", fmt2, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_FMT2", fmt2, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_FMT2");
 
 	rval = 0;
 	while (argc--) {
@@ -104,10 +110,22 @@ char	*argv[];
 			argv++;
 			continue;
 		}
-		if (read(fd, &hdr, sizeof hdr) != sizeof hdr
-		    || (N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
+		if (read(fd, &hdr, sizeof hdr) != sizeof hdr) {
+			warnx("%s: not a dynamic executable", *argv);
+			(void)close(fd);
+			rval |= 1;
+			argv++;
+			continue;
+		}
+		if ((N_GETFLAG(hdr) & EX_DPMASK) == (EX_DYNAMIC | EX_PIC)) {
+			scan_library(fd, &hdr, *argv, fmt1, fmt2);
+			(void)close(fd);
+			argv++;
+			continue;
+		}
+		if ((N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
 #if 1 /* Compatibility */
-		    || hdr.a_entry < __LDPGSZ
+		    || hdr.a_entry < N_PAGSIZ(hdr)
 #endif
 		    ) {
 
@@ -119,7 +137,8 @@ char	*argv[];
 		}
 		(void)close(fd);
 
-		setenv("LD_TRACE_LOADED_OBJECTS_PROGNAME", *argv, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_PROGNAME", *argv, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_PROGNAME");
 		if (fmt1 == NULL && fmt2 == NULL)
 			/* Default formats */
 			printf("%s:\n", *argv);
@@ -144,12 +163,12 @@ char	*argv[];
 			}
 			break;
 		case 0:
-			rval |= execl(*argv, *argv, NULL) != 0;
+			rval |= execl(*argv, *argv, (char *)NULL) != 0;
 			perror(*argv);
 			_exit(1);
 		}
 		argv++;
 	}
 
-	return rval;
+	return (rval ? 1 : 0);
 }

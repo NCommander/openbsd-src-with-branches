@@ -1,3 +1,5 @@
+.\"	$OpenBSD: uname.1,v 1.8 2000/03/11 21:40:06 aaron Exp $
+.\"
 .\" Copyright (c) 1990 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,44 +32,45 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)du.1	6.13 (Berkeley) 6/20/91
-.\"	$Id: uname.1,v 1.5 1995/05/08 09:30:09 mycroft Exp $
 .\"
 .Dd January 26, 1994
 .Dt UNAME 1
 .Os
 .Sh NAME
 .Nm uname
-.Nd Print operating system name
+.Nd print operating system name
 .Sh SYNOPSIS
 .Nm uname
-.Op Fl amnsrv
+.Op Fl amnpsrv
 .Sh DESCRIPTION
 The
 .Nm uname
 utility writes symbols representing one or more system characteristics
 to the standard output.
 .Pp
-The following options are available:
-.Bl -tag -width indent
-.It Fl a 
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl a
 Behave as though all of the options
-.Fl mnrsv 
+.Fl mnrsv
 were specified.
 .It Fl m
-print the machine hardware name.
+Print the machine hardware name.
 .It Fl n
-print the nodename (the nodename may be a name
+Print the nodename (the nodename may be a name
 that the system is known by to a communications
 network).
+.It Fl p
+Print the processor type in more detail.
 .It Fl s
-print the operating system name.
+Print the operating system name.
 .It Fl r
-print the operating system release.
+Print the operating system release.
 .It Fl v
-print the operating system version.
+Print the operating system version.
 .El
 .Pp
-If no options are specified, 
+If no options are specified,
 .Nm uname
 prints the operating system name as if the
 .Fl s
@@ -81,4 +84,8 @@ The
 .Nm uname
 utility conforms to
 .St -p1003.2-92 .
-
+.Sh HISTORY
+The
+.Nm
+command appeared in
+.Bx 4.4 .

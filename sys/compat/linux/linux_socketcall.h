@@ -1,3 +1,4 @@
+/*	$OpenBSD: linux_socketcall.h,v 1.2 1996/04/17 05:24:03 mickey Exp $	*/
 /*	$NetBSD: linux_socketcall.h,v 1.1 1995/02/28 23:26:05 fvdl Exp $	*/
 
 /*
@@ -53,6 +54,8 @@
 #define LINUX_SYS_shutdown	13
 #define LINUX_SYS_setsockopt	14
 #define LINUX_SYS_getsockopt	15
+#define LINUX_SYS_sendmsg	16
+#define LINUX_SYS_recvmsg	17
 
 /*
  * Structures for the arguments of the different system calls. This looks
@@ -157,6 +160,18 @@ struct linux_setsockopt_args {
 	int optname;
 	void *optval;
 	int optlen;
+};
+
+struct linux_sendmsg_args {
+	int s;
+	struct msghdr *msg;
+	int flags;
+};
+
+struct linux_recvmsg_args {
+	int s;
+	struct msghdr *msg;
+	int flags;
 };
 
 #endif /* _LINUX_SOCKETCALL_H */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: genpar.c,v 1.6 1995/02/16 21:57:31 chopps Exp $	*/
 /*	$NetBSD: genpar.c,v 1.6 1995/02/16 21:57:31 chopps Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: exec_script.c,v 1.12 1995/04/10 18:27:59 mycroft Exp $	*/
+/*	$OpenBSD: exec_script.c,v 1.14 2001/10/26 12:03:27 art Exp $	*/
+/*	$NetBSD: exec_script.c,v 1.13 1996/02/04 02:15:06 christos Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -30,10 +31,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(SETUIDSCRIPTS) && !defined(FDSCRIPTS)
-#define FDSCRIPTS		/* Need this for safe set-id scripts. */
-#endif
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
@@ -44,9 +41,13 @@
 #include <sys/filedesc.h>
 #include <sys/exec.h>
 #include <sys/resourcevar.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <sys/exec_script.h>
+
+#if defined(SETUIDSCRIPTS) && !defined(FDSCRIPTS)
+#define FDSCRIPTS		/* Need this for safe set-id scripts. */
+#endif
 
 /*
  * exec_script_makecmds(): Check if it's an executable shell script.
@@ -71,8 +72,8 @@ exec_script_makecmds(p, epp)
 	char **shellargp, **tmpsap;
 	struct vnode *scriptvp;
 #ifdef SETUIDSCRIPTS
-	uid_t script_uid;
-	gid_t script_gid;
+	uid_t script_uid = -1;
+	gid_t script_gid = -1;
 	u_short script_sbits;
 #endif
 
@@ -105,6 +106,7 @@ exec_script_makecmds(p, epp)
 
 	shellname = NULL;
 	shellarg = NULL;
+	shellarglen = 0;
 
 	/* strip spaces before the shell name */
 	for (cp = hdrstr + EXEC_SCRIPT_MAGICLEN; *cp == ' ' || *cp == '\t';
@@ -134,7 +136,6 @@ exec_script_makecmds(p, epp)
 	 * behaviour.
 	 */
 	shellarg = cp;
-	shellarglen = 0;
 	for ( /* cp = cp */ ; *cp != '\0'; cp++)
 		shellarglen++;
 	*cp++ = '\0';
@@ -165,14 +166,13 @@ check_shell:
 #endif
 	    ) {
 		struct file *fp;
-		extern struct fileops vnops;
 
-#if defined(DIAGNOSTIC) && defined(FDSCRIPTS)
+#ifdef DIAGNOSTIC
 		if (epp->ep_flags & EXEC_HASFD)
 			panic("exec_script_makecmds: epp already has a fd");
 #endif
 
-		if (error = falloc(p, &fp, &epp->ep_fd))
+		if ((error = falloc(p, &fp, &epp->ep_fd)))
 			goto fail;
 
 		epp->ep_flags |= EXEC_HASFD;
@@ -180,6 +180,7 @@ check_shell:
 		fp->f_ops = &vnops;
 		fp->f_data = (caddr_t) epp->ep_vp;
 		fp->f_flag = FREAD;
+		FILE_SET_MATURE(fp);
 	}
 #endif
 
@@ -191,13 +192,13 @@ check_shell:
 	/* and set up the fake args list, for later */
 	MALLOC(shellargp, char **, 4 * sizeof(char *), M_EXEC, M_WAITOK);
 	tmpsap = shellargp;
-	MALLOC(*tmpsap, char *, shellnamelen + 1, M_EXEC, M_WAITOK);
+	*tmpsap = malloc(shellnamelen + 1, M_EXEC, M_WAITOK);
 	strcpy(*tmpsap++, shellname);
 	if (shellarg != NULL) {
-		MALLOC(*tmpsap, char *, shellarglen + 1, M_EXEC, M_WAITOK);
+		*tmpsap = malloc(shellarglen + 1, M_EXEC, M_WAITOK);
 		strcpy(*tmpsap++, shellarg);
 	}
-	MALLOC(*tmpsap, char *, MAXPATHLEN, M_EXEC, M_WAITOK);
+	*tmpsap = malloc(MAXPATHLEN, M_EXEC, M_WAITOK);
 #ifdef FDSCRIPTS
 	if ((epp->ep_flags & EXEC_HASFD) == 0) {
 #endif
@@ -206,7 +207,7 @@ check_shell:
 		    (size_t *)0);
 #ifdef DIAGNOSTIC
 		if (error != 0)
-			panic("exec_script: copyinstr couldn't fail\n");
+			panic("exec_script: copyinstr couldn't fail");
 #endif
 #ifdef FDSCRIPTS
 	} else
@@ -227,7 +228,7 @@ check_shell:
 	scriptvp = epp->ep_vp;
 	oldpnbuf = epp->ep_ndp->ni_cnd.cn_pnbuf;
 
-	VOP_UNLOCK(scriptvp);
+	VOP_UNLOCK(scriptvp, 0, p);
 
 	if ((error = check_exec(p, epp)) == 0) {
 		/* note that we've clobbered the header */
@@ -263,32 +264,34 @@ check_shell:
 
 	/* XXX oldpnbuf not set for "goto fail" path */
 	epp->ep_ndp->ni_cnd.cn_pnbuf = oldpnbuf;
+#ifdef FDSCRIPTS
 fail:
+#endif
 	/* note that we've clobbered the header */
 	epp->ep_flags |= EXEC_DESTR;
 
 	/* kill the opened file descriptor, else close the file */
-        if (epp->ep_flags & EXEC_HASFD) {
-                epp->ep_flags &= ~EXEC_HASFD;
-                (void) fdrelease(p, epp->ep_fd);
-        } else
+	if (epp->ep_flags & EXEC_HASFD) {
+		epp->ep_flags &= ~EXEC_HASFD;
+		(void) fdrelease(p, epp->ep_fd);
+	} else
 		vn_close(scriptvp, FREAD, p->p_ucred, p);
 
-        FREE(epp->ep_ndp->ni_cnd.cn_pnbuf, M_NAMEI);
+	FREE(epp->ep_ndp->ni_cnd.cn_pnbuf, M_NAMEI);
 
 	/* free the fake arg list, because we're not returning it */
 	tmpsap = shellargp;
 	while (*tmpsap != NULL) {
-		FREE(*tmpsap, M_EXEC);
+		free(*tmpsap, M_EXEC);
 		tmpsap++;
 	}
 	FREE(shellargp, M_EXEC);
 
-        /*
-         * free any vmspace-creation commands,
-         * and release their references
-         */
-        kill_vmcmds(&epp->ep_vmcmds);
+	/*
+	 * free any vmspace-creation commands,
+	 * and release their references
+	 */
+	kill_vmcmds(&epp->ep_vmcmds);
 
-        return error;
+	return error;
 }

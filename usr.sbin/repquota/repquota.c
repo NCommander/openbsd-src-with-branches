@@ -42,7 +42,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)repquota.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: repquota.c,v 1.7 1995/01/03 02:06:31 cgd Exp $";
+static char *rcsid = "$Id: repquota.c,v 1.15 2002/02/16 21:28:08 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -55,6 +55,7 @@ static char *rcsid = "$Id: repquota.c,v 1.7 1995/01/03 02:06:31 cgd Exp $";
 #include <pwd.h>
 #include <grp.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <errno.h>
 
@@ -64,7 +65,7 @@ char *qfextension[] = INITQFNAMES;
 struct fileusage {
 	struct	fileusage *fu_next;
 	struct	dqblk fu_dqblk;
-	u_long	fu_id;
+	uid_t	fu_id;
 	char	fu_name[1];
 	/* actually bigger */
 };
@@ -72,25 +73,32 @@ struct fileusage {
 struct fileusage *fuhead[MAXQUOTAS][FUHASH];
 struct fileusage *lookup();
 struct fileusage *addid();
-u_long highid[MAXQUOTAS];	/* highest addid()'ed identifier per type */
+uid_t highid[MAXQUOTAS];	/* highest addid()'ed identifier per type */
 
 int	vflag;			/* verbose */
 int	aflag;			/* all file systems */
 
+void	usage(void);
+int	repquota(struct fstab *, int, char *);
+int	hasquota(struct fstab *, int, char **);
+int	oneof(char *, char *[], int);
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	register struct fstab *fs;
-	register struct passwd *pw;
-	register struct group *gr;
+	struct fstab *fs;
+	struct passwd *pw;
+	struct group *gr;
 	int gflag = 0, uflag = 0, errs = 0;
 	long i, argnum, done = 0;
 	extern char *optarg;
 	extern int optind;
-	char ch, *qfnp;
+	char *qfnp;
+	int ch;
 
-	while ((ch = getopt(argc, argv, "aguv")) != EOF) {
+	while ((ch = getopt(argc, argv, "aguv")) != -1) {
 		switch(ch) {
 		case 'a':
 			aflag++;
@@ -120,18 +128,20 @@ main(argc, argv)
 	if (gflag) {
 		setgrent();
 		while ((gr = getgrent()) != 0)
-			(void) addid((u_long)gr->gr_gid, GRPQUOTA, gr->gr_name);
+			(void) addid((uid_t)gr->gr_gid, GRPQUOTA, gr->gr_name);
 		endgrent();
 	}
 	if (uflag) {
 		setpwent();
 		while ((pw = getpwent()) != 0)
-			(void) addid((u_long)pw->pw_uid, USRQUOTA, pw->pw_name);
+			(void) addid(pw->pw_uid, USRQUOTA, pw->pw_name);
 		endpwent();
 	}
 	setfsent();
 	while ((fs = getfsent()) != NULL) {
-		if (strcmp(fs->fs_vfstype, "ufs"))
+		if (strcmp(fs->fs_vfstype, "ffs") &&
+		    strcmp(fs->fs_vfstype, "ufs") &&
+		    strcmp(fs->fs_vfstype, "mfs"))
 			continue;
 		if (aflag) {
 			if (gflag && hasquota(fs, GRPQUOTA, &qfnp))
@@ -156,6 +166,7 @@ main(argc, argv)
 	exit(errs);
 }
 
+void
 usage()
 {
 	fprintf(stderr, "Usage:\n\t%s\n\t%s\n",
@@ -164,20 +175,20 @@ usage()
 	exit(1);
 }
 
+int
 repquota(fs, type, qfpathname)
-	register struct fstab *fs;
+	struct fstab *fs;
 	int type;
 	char *qfpathname;
 {
-	register struct fileusage *fup;
+	struct fileusage *fup;
 	FILE *qf;
-	u_long id;
+	uid_t id;
 	struct dqblk dqbuf;
 	char *timeprt();
 	static struct dqblk zerodqblk;
 	static int warned = 0;
 	static int multiple = 0;
-	extern int errno;
 
 	if (quotactl(fs->fs_file, QCMD(Q_SYNC, type), 0, 0) < 0 &&
 	    errno == EOPNOTSUPP && !warned && vflag) {
@@ -222,9 +233,12 @@ repquota(fs, type, qfpathname)
 			fup->fu_dqblk.dqb_isoftlimit &&
 			    fup->fu_dqblk.dqb_curinodes >=
 			    fup->fu_dqblk.dqb_isoftlimit ? '+' : '-',
-			dbtob(fup->fu_dqblk.dqb_curblocks) / 1024,
-			dbtob(fup->fu_dqblk.dqb_bsoftlimit) / 1024,
-			dbtob(fup->fu_dqblk.dqb_bhardlimit) / 1024,
+			(int)(dbtob((u_quad_t)fup->fu_dqblk.dqb_curblocks)
+			    / 1024),
+			(int)(dbtob((u_quad_t)fup->fu_dqblk.dqb_bsoftlimit)
+			    / 1024),
+			(int)(dbtob((u_quad_t)fup->fu_dqblk.dqb_bhardlimit)
+			    / 1024),
 			fup->fu_dqblk.dqb_bsoftlimit && 
 			    fup->fu_dqblk.dqb_curblocks >= 
 			    fup->fu_dqblk.dqb_bsoftlimit ?
@@ -245,11 +259,12 @@ repquota(fs, type, qfpathname)
 /*
  * Check to see if target appears in list of size cnt.
  */
+int
 oneof(target, list, cnt)
-	register char *target, *list[];
+	char *target, *list[];
 	int cnt;
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < cnt; i++)
 		if (strcmp(target, list[i]) == 0)
@@ -260,24 +275,27 @@ oneof(target, list, cnt)
 /*
  * Check to see if a particular quota is to be enabled.
  */
+int
 hasquota(fs, type, qfnamep)
-	register struct fstab *fs;
+	struct fstab *fs;
 	int type;
 	char **qfnamep;
 {
-	register char *opt;
-	char *cp, *index(), *strtok();
+	char *opt;
+	char *cp;
 	static char initname, usrname[100], grpname[100];
 	static char buf[BUFSIZ];
 
 	if (!initname) {
-		sprintf(usrname, "%s%s", qfextension[USRQUOTA], qfname);
-		sprintf(grpname, "%s%s", qfextension[GRPQUOTA], qfname);
+		(void)snprintf(usrname, sizeof usrname, "%s%s",
+		    qfextension[USRQUOTA], qfname);
+		(void)snprintf(grpname, sizeof grpname, "%s%s",
+		    qfextension[GRPQUOTA], qfname);
 		initname = 1;
 	}
-	strcpy(buf, fs->fs_mntops);
+	strlcpy(buf, fs->fs_mntops, sizeof buf);
 	for (opt = strtok(buf, ","); opt; opt = strtok(NULL, ",")) {
-		if (cp = index(opt, '='))
+		if ((cp = strchr(opt, '=')))
 			*cp++ = '\0';
 		if (type == USRQUOTA && strcmp(opt, usrname) == 0)
 			break;
@@ -290,7 +308,8 @@ hasquota(fs, type, qfnamep)
 		*qfnamep = cp;
 		return (1);
 	}
-	(void) sprintf(buf, "%s/%s.%s", fs->fs_file, qfname, qfextension[type]);
+	(void)snprintf(buf, sizeof buf, "%s/%s.%s",
+	    fs->fs_file, qfname, qfextension[type]);
 	*qfnamep = buf;
 	return (1);
 }
@@ -302,10 +321,10 @@ hasquota(fs, type, qfnamep)
  */
 struct fileusage *
 lookup(id, type)
-	u_long id;
+	uid_t id;
 	int type;
 {
-	register struct fileusage *fup;
+	struct fileusage *fup;
 
 	for (fup = fuhead[type][id & (FUHASH-1)]; fup != 0; fup = fup->fu_next)
 		if (fup->fu_id == id)
@@ -318,7 +337,7 @@ lookup(id, type)
  */
 struct fileusage *
 addid(id, type, name)
-	u_long id;
+	uid_t id;
 	int type;
 	char *name;
 {
@@ -326,7 +345,7 @@ addid(id, type, name)
 	int len;
 	extern char *calloc();
 
-	if (fup = lookup(id, type))
+	if ((fup = lookup(id, type)))
 		return (fup);
 	if (name)
 		len = strlen(name);
@@ -357,7 +376,7 @@ char *
 timeprt(seconds)
 	time_t seconds;
 {
-	time_t hours, minutes;
+	int hours, minutes;
 	static char buf[20];
 	static time_t now;
 

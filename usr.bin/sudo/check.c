@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1994-1996,1998-1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1993-1996,1998-2001 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,34 +34,40 @@
 
 #include "config.h"
 
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/file.h>
 #include <stdio.h>
 #ifdef STDC_HEADERS
-#include <stdlib.h>
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
 #endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <time.h>
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/file.h>
 #include <pwd.h>
 #include <grp.h>
 
 #include "sudo.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: check.c,v 1.192 1999/10/07 21:20:55 millert Exp $";
+static const char rcsid[] = "$Sudo: check.c,v 1.202 2001/12/14 19:52:47 millert Exp $";
 #endif /* lint */
 
 /* Status codes for timestamp_status() */
@@ -71,7 +77,6 @@ static const char rcsid[] = "$Sudo: check.c,v 1.192 1999/10/07 21:20:55 millert 
 #define TS_NOFILE		3
 #define TS_ERROR		4
 
-       int   user_is_exempt	__P((void));
 static void  build_timestamp	__P((char **, char **));
 static int   timestamp_status	__P((char *, char *, char *, int));
 static char *expand_prompt	__P((char *, char *, char *));
@@ -103,7 +108,7 @@ check_user()
 	prompt = expand_prompt(user_prompt ? user_prompt : def_str(I_PASSPROMPT),
 	    user_name, user_shost);
 
-	verify_user(prompt);
+	verify_user(auth_pw, prompt);
     }
     if (status != TS_ERROR)
 	update_timestamp(timestampdir, timestampfile);
@@ -191,9 +196,9 @@ expand_prompt(old_prompt, user, host)
 
     if (subst) {
 	new_prompt = (char *) emalloc(len + 1);
-	for (p = old_prompt, np = new_prompt; *p; p++) {
+	for (p = old_prompt, np = new_prompt, lastchar = '\0'; *p; p++) {
 	    if (lastchar == '%' && (*p == 'h' || *p == 'u' || *p == '%')) {
-		/* substiture user/host name */
+		/* substitute user/host name */
 		if (*p == 'h') {
 		    np--;
 		    strcpy(np, user_shost);
@@ -227,13 +232,13 @@ user_is_exempt()
     struct group *grp;
     char **gr_mem;
 
-    if (!def_str(I_EXEMPT_GRP))
+    if (!def_str(I_EXEMPT_GROUP))
 	return(FALSE);
 
-    if (!(grp = getgrnam(def_str(I_EXEMPT_GRP))))
+    if (!(grp = getgrnam(def_str(I_EXEMPT_GROUP))))
 	return(FALSE);
 
-    if (getgid() == grp->gr_gid)
+    if (user_gid == grp->gr_gid)
 	return(TRUE);
 
     for (gr_mem = grp->gr_mem; *gr_mem; gr_mem++) {
@@ -252,8 +257,18 @@ build_timestamp(timestampdir, timestampfile)
     char **timestampdir;
     char **timestampfile;
 {
-    char *dirparent = def_str(I_TIMESTAMPDIR);
+    char *dirparent;
+    int len;
 
+    dirparent = def_str(I_TIMESTAMPDIR);
+    len = easprintf(timestampdir, "%s/%s", dirparent, user_name);
+    if (len >= MAXPATHLEN)
+	log_error(0, "timestamp path too long: %s", timestampdir);
+
+    /*
+     * Timestamp file may be a file in the directory or NUL to use
+     * the directory as the timestamp.
+     */
     if (def_flag(I_TTY_TICKETS)) {
 	char *p;
 
@@ -261,17 +276,20 @@ build_timestamp(timestampdir, timestampfile)
 	    p++;
 	else
 	    p = user_tty;
-	if (strlen(dirparent) + strlen(user_name) + strlen(p) + 3 > MAXPATHLEN)
-	    log_error(0, "timestamp path too long: %s/%s/%s", dirparent,
-		user_name, p);
-	easprintf(timestampdir, "%s/%s", dirparent, user_name);
-	easprintf(timestampfile, "%s/%s/%s", dirparent, user_name, p);
-    } else {
-	if (strlen(dirparent) + strlen(user_name) + 2 > MAXPATHLEN)
-	    log_error(0, "timestamp path too long: %s/%s", dirparent, user_name);
-	easprintf(timestampdir, "%s/%s", dirparent, user_name);
+	if (def_flag(I_TARGETPW))
+	    len = easprintf(timestampfile, "%s/%s/%s:%s", dirparent, user_name,
+		p, *user_runas);
+	else
+	    len = easprintf(timestampfile, "%s/%s/%s", dirparent, user_name, p);
+	if (len >= MAXPATHLEN)
+	    log_error(0, "timestamp path too long: %s", timestampfile);
+    } else if (def_flag(I_TARGETPW)) {
+	len = easprintf(timestampfile, "%s/%s/%s", dirparent, user_name,
+	    *user_runas);
+	if (len >= MAXPATHLEN)
+	    log_error(0, "timestamp path too long: %s", timestampfile);
+    } else
 	*timestampfile = NULL;
-    }
 }
 
 /*
@@ -412,24 +430,29 @@ timestamp_status(timestampdir, timestampfile, user, make_dirs)
      * If the file/dir exists, check its mtime.
      */
     if (status == TS_OLD) {
-	now = time(NULL);
-	if (def_ival(I_TS_TIMEOUT) && 
-	    now - sb.st_mtime < 60 * def_ival(I_TS_TIMEOUT)) {
-	    /*
-	     * Check for bogus time on the stampfile.  The clock may
-	     * have been set back or someone could be trying to spoof us.
-	     */
-	    if (sb.st_mtime > now + 60 * def_ival(I_TS_TIMEOUT) * 2) {
-		log_error(NO_EXIT,
-		    "timestamp too far in the future: %20.20s",
-		    4 + ctime(&sb.st_mtime));
-		if (timestampfile)
-		    (void) unlink(timestampfile);
-		else
-		    (void) rmdir(timestampdir);
-		status = TS_MISSING;
-	    } else
-		status = TS_CURRENT;
+	/* Negative timeouts only expire manually (sudo -k). */
+	if (def_ival(I_TIMESTAMP_TIMEOUT) < 0 && sb.st_mtime != 0)
+	    status = TS_CURRENT;
+	else {
+	    now = time(NULL);
+	    if (def_ival(I_TIMESTAMP_TIMEOUT) && 
+		now - sb.st_mtime < 60 * def_ival(I_TIMESTAMP_TIMEOUT)) {
+		/*
+		 * Check for bogus time on the stampfile.  The clock may
+		 * have been set back or someone could be trying to spoof us.
+		 */
+		if (sb.st_mtime > now + 60 * def_ival(I_TIMESTAMP_TIMEOUT) * 2) {
+		    log_error(NO_EXIT,
+			"timestamp too far in the future: %20.20s",
+			4 + ctime(&sb.st_mtime));
+		    if (timestampfile)
+			(void) unlink(timestampfile);
+		    else
+			(void) rmdir(timestampdir);
+		    status = TS_MISSING;
+		} else
+		    status = TS_CURRENT;
+	    }
 	}
     }
 
@@ -457,9 +480,9 @@ remove_timestamp(remove)
 		status = unlink(timestampfile);
 	    else
 		status = rmdir(timestampdir);
-	    if (status == -1) {
+	    if (status == -1 && errno != ENOENT) {
 		log_error(NO_EXIT, "can't remove %s (%s), will reset to epoch",
-		    strerror(errno), ts);
+		    ts, strerror(errno));
 		remove = FALSE;
 	    }
 	}

@@ -1,5 +1,3 @@
-/*	$NetBSD: getbsize.c,v 1.7 1995/06/16 07:12:41 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getbsize.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getbsize.c,v 1.7 1995/06/16 07:12:41 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getbsize.c,v 1.6 1998/06/23 22:40:25 millert Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -55,9 +49,9 @@ getbsize(headerlenp, blocksizep)
 	long n, max, mul, blocksize;
 	char *ep, *p, *form;
 
-#define	KB	(1024L)
-#define	MB	(1024L * 1024L)
-#define	GB	(1024L * 1024L * 1024L)
+#define	KB	(1024)
+#define	MB	(1024 * 1024)
+#define	GB	(1024 * 1024 * 1024)
 #define	MAXB	GB		/* No tera, peta, nor exa. */
 	form = "";
 	if ((p = getenv("BLOCKSIZE")) != NULL && *p != '\0') {
@@ -90,6 +84,7 @@ getbsize(headerlenp, blocksizep)
 		default:
 fmterr:			_warnx("%s: unknown blocksize", p);
 			n = 512;
+			max = MAXB;
 			mul = 1;
 			break;
 		}
@@ -98,14 +93,18 @@ fmterr:			_warnx("%s: unknown blocksize", p);
 			n = max;
 		}
 		if ((blocksize = n * mul) < 512) {
-underflow:		_warnx("%s: minimum blocksize is 512");
+underflow:		_warnx("%s: minimum blocksize is 512", p);
 			form = "";
 			blocksize = n = 512;
 		}
 	} else
 		blocksize = n = 512;
 
-	*headerlenp = snprintf(header, sizeof(header), "%d%s-blocks", n, form);
+	*headerlenp = snprintf(header, sizeof(header), "%ld%s-blocks", n, form);
+	if (*headerlenp < 0)
+		*headerlenp = 0;
+	else if (*headerlenp >= sizeof(header))
+		*headerlenp = sizeof(header) - 1;
 	*blocksizep = blocksize;
 	return (header);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: fish.c,v 1.9 2001/07/09 07:04:29 deraadt Exp $	*/
 /*	$NetBSD: fish.c,v 1.3 1995/03/23 08:28:18 cgd Exp $	*/
 
 /*-
@@ -46,51 +47,79 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)fish.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: fish.c,v 1.3 1995/03/23 08:28:18 cgd Exp $";
+static char rcsid[] = "$OpenBSD: fish.c,v 1.9 2001/07/09 07:04:29 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
-#include <sys/errno.h>
+#include <sys/wait.h>
+#include <err.h>
 #include <fcntl.h>
+#include <paths.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
+#include <time.h>
 #include "pathnames.h"
 
 #define	RANKS		13
 #define	HANDSIZE	7
 #define	CARDS		4
+#define	TOTCARDS	RANKS * CARDS
 
 #define	USER		1
 #define	COMPUTER	0
 #define	OTHER(a)	(1 - (a))
 
-char *cards[] = {
+const char *const cards[] = {
 	"A", "2", "3", "4", "5", "6", "7",
 	"8", "9", "10", "J", "Q", "K", NULL,
 };
 #define	PRC(card)	(void)printf(" %s", cards[card])
 
 int promode;
-int asked[RANKS], comphand[RANKS], deck[RANKS];
+int curcard;
+int asked[RANKS], comphand[RANKS], deck[TOTCARDS];
 int userasked[RANKS], userhand[RANKS];
 
+void	chkwinner(int, const int *);
+int	compmove(void);
+int	countbooks(const int *);
+int	countcards(const int *);
+int	drawcard(int, int *);
+int	getans(const char *);
+int	gofish(int, int, int *);
+void	goodmove(int, int, int *, int *);
+void	init(void);
+void	instructions(void);
+int	nrandom(int);
+void	printhand(const int *);
+void	printplayer(int);
+int	promove(void);
+void	usage(void);
+int	usermove(void);
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
 	int ch, move;
 
-	while ((ch = getopt(argc, argv, "p")) != EOF)
+	/* revoke privs */
+	setegid(getgid());
+	setgid(getgid());
+
+	while ((ch = getopt(argc, argv, "ph")) != -1)
 		switch(ch) {
 		case 'p':
 			promode = 1;
 			break;
 		case '?':
+		case 'h':
 		default:
-			(void)fprintf(stderr, "usage: fish [-p]\n");
-			exit(1);
+			usage();
 		}
 
 	srandom(time((time_t *)NULL));
@@ -127,10 +156,11 @@ istart:		for (;;) {
 	/* NOTREACHED */
 }
 
+int
 usermove()
 {
-	register int n;
-	register char **p;
+	int n;
+	const char *const *p;
 	char buf[256];
 
 	(void)printf("\nYour hand is:");
@@ -139,13 +169,13 @@ usermove()
 	for (;;) {
 		(void)printf("You ask me for: ");
 		(void)fflush(stdout);
-		if (fgets(buf, BUFSIZ, stdin) == NULL)
+		if (fgets(buf, sizeof(buf), stdin) == NULL)
 			exit(0);
 		if (buf[0] == '\0')
 			continue;
 		if (buf[0] == '\n') {
 			(void)printf("%d cards in my hand, %d in the pool.\n",
-			    countcards(comphand), countcards(deck));
+			    countcards(comphand), curcard);
 			(void)printf("My books:");
 			(void)countbooks(comphand);
 			continue;
@@ -181,6 +211,7 @@ usermove()
 	/* NOTREACHED */
 }
 
+int
 compmove()
 {
 	static int lmove;
@@ -198,9 +229,10 @@ compmove()
 	return(lmove);
 }
 
+int
 promove()
 {
-	register int i, max;
+	int i, max;
 
 	for (i = 0; i < RANKS; ++i)
 		if (userasked[i] &&
@@ -236,15 +268,14 @@ promove()
 	/* NOTREACHED */
 }
 
+int
 drawcard(player, hand)
 	int player;
 	int *hand;
 {
 	int card;
 
-	while (deck[card = nrandom(RANKS)] == 0);
-	++hand[card];
-	--deck[card];
+	++hand[card = deck[--curcard]];
 	if (player == USER || hand[card] == CARDS) {
 		printplayer(player);
 		(void)printf("drew %s", cards[card]);
@@ -258,6 +289,7 @@ drawcard(player, hand)
 	return(card);
 }
 
+int
 gofish(askedfor, player, hand)
 	int askedfor, player;
 	int *hand;
@@ -274,6 +306,7 @@ gofish(askedfor, player, hand)
 	return(0);
 }
 
+void
 goodmove(player, move, hand, opphand)
 	int player, move;
 	int *hand, *opphand;
@@ -297,11 +330,12 @@ goodmove(player, move, hand, opphand)
 	(void)printf("get another guess!\n");
 }
 
+void
 chkwinner(player, hand)
 	int player;
-	register int *hand;
+	const int *hand;
 {
-	register int cb, i, ub;
+	int cb, i, ub;
 
 	for (i = 0; i < RANKS; ++i)
 		if (hand[i] > 0 && hand[i] < CARDS)
@@ -326,6 +360,7 @@ chkwinner(player, hand)
 	exit(0);
 }
 
+void
 printplayer(player)
 	int player;
 {
@@ -339,10 +374,11 @@ printplayer(player)
 	}
 }
 
+void
 printhand(hand)
-	int *hand;
+	const int *hand;
 {
-	register int book, i, j;
+	int book, i, j;
 
 	for (book = i = 0; i < RANKS; i++)
 		if (hand[i] < CARDS)
@@ -359,18 +395,20 @@ printhand(hand)
 	(void)putchar('\n');
 }
 
+int
 countcards(hand)
-	register int *hand;
+	const int *hand;
 {
-	register int i, count;
+	int i, count;
 
 	for (count = i = 0; i < RANKS; i++)
 		count += *hand++;
 	return(count);
 }
 
+int
 countbooks(hand)
-	int *hand;
+	const int *hand;
 {
 	int i, count;
 
@@ -385,49 +423,106 @@ countbooks(hand)
 	return(count);
 }
 
+void
 init()
 {
-	register int i, rank;
+	int i, j, temp;
 
-	for (i = 0; i < RANKS; ++i)
-		deck[i] = CARDS;
-	for (i = 0; i < HANDSIZE; ++i) {
-		while (!deck[rank = nrandom(RANKS)]);
-		++userhand[rank];
-		--deck[rank];
+	curcard = TOTCARDS;
+	for (i = 0; i < TOTCARDS; ++i)
+		deck[i] = i % RANKS;
+	for (i = 0; i < TOTCARDS - 1; ++i) {
+		j = nrandom(TOTCARDS-i);
+		if (j == 0)
+			continue;
+		temp = deck[i];
+		deck[i] = deck[i+j];
+		deck[i+j] = temp;
 	}
 	for (i = 0; i < HANDSIZE; ++i) {
-		while (!deck[rank = nrandom(RANKS)]);
-		++comphand[rank];
-		--deck[rank];
+		++userhand[deck[--curcard]];
+		++comphand[deck[--curcard]];
 	}
 }
 
+int
 nrandom(n)
 	int n;
 {
-	long random();
-
 	return((int)random() % n);
 }
 
+int
+getans(prompt)
+	const char *prompt;
+{
+	char buf[20];
+
+	/*
+	 * simple routine to ask the yes/no question specified until the user
+	 * answers yes or no, then return 1 if they said 'yes' and 0 if they
+	 * answered 'no'.
+	 */
+	for (;;) {
+		(void)printf("%s", prompt);
+		(void)fflush(stdout);
+		if (!fgets(buf, sizeof(buf), stdin)) {
+			(void)printf("\n");
+			exit(0);
+		}
+		if (*buf == 'N' || *buf == 'n')
+			return(0);
+		if (*buf == 'Y' || *buf == 'y')
+			return(1);
+		(void)printf(
+"I don't understand your answer; please enter 'y' or 'n'!\n");
+	}
+	/* NOTREACHED */
+}
+
+void
 instructions()
 {
+	const char *pager;
+	pid_t pid;
+	int status;
 	int input;
-	char buf[1024];
+	int fd;
 
-	(void)printf("Would you like instructions (y or n)? ");
-	input = getchar();
-	while (getchar() != '\n');
-	if (input != 'y')
+	if (getans("Would you like instructions (y or n)? ") == 0)
 		return;
 
-	(void)sprintf(buf, "%s %s", _PATH_MORE, _PATH_INSTR);
-	(void)system(buf);
+	if ((fd = open(_PATH_INSTR, O_RDONLY)) == -1)
+		(void)printf("No instruction file found!\n");
+	else {
+		switch (pid = fork()) {
+		case 0: /* child */
+			if (!isatty(1))
+				pager = "/bin/cat";
+			else {
+				if (!(pager = getenv("PAGER")) || (*pager == 0))
+					pager = _PATH_MORE;
+			}
+			if (dup2(fd, 0) == -1)
+				err(1, "dup2");
+			(void)execl(_PATH_BSHELL, "sh", "-c", pager, (char *)NULL);
+			err(1, "exec sh -c %s", pager);
+			/* NOT REACHED */
+		case -1:
+			err(1, "fork");
+			/* NOT REACHED */
+		default:
+			(void)waitpid(pid, &status, 0);
+			close(fd);
+			break;
+		}
+	}
+
 	(void)printf("Hit return to continue...\n");
 	while ((input = getchar()) != EOF && input != '\n');
 }
 
+void
 usage()
 {
 	(void)fprintf(stderr, "usage: fish [-p]\n");

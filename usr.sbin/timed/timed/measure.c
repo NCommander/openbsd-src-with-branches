@@ -1,3 +1,5 @@
+/*	$OpenBSD: measure.c,v 1.5 2001/11/23 03:45:51 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -80,13 +82,14 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 	long min_idelta, min_odelta;
 	struct timeval tdone, tcur, ttrans, twait, tout;
 	u_char packet[PACKET_IN], opacket[64];
-	register struct icmp *icp = (struct icmp *) packet;
-	register struct icmp *oicp = (struct icmp *) opacket;
+	struct icmp *icp = (struct icmp *) packet;
+	struct icmp *oicp = (struct icmp *) opacket;
 	struct ip *ip = (struct ip *) packet;
 
 	min_idelta = min_odelta = 0x7fffffff;
 	measure_status = HOSTDOWN;
 	measure_delta = HOSTDOWN;
+	trials = 0;
 	errno = 0;
 
 	/* open raw socket used to measure time differences */
@@ -97,7 +100,6 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 			goto quit;
 		}
 	}
-	    
 
 	/*
 	 * empty the icmp input queue
@@ -108,10 +110,16 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 		FD_SET(sock_raw, &ready);
 		if (select(sock_raw+1, &ready, 0,0, &tout)) {
 			length = sizeof(struct sockaddr_in);
+			siginterrupt(SIGINT, 1);
 			cc = recvfrom(sock_raw, (char *)packet, PACKET_IN, 0,
-				      0,&length);
-			if (cc < 0)
+			    0, &length);
+			if (cc < 0) {
+				if (errno == EINTR && gotintr)
+					goto bail;
+				siginterrupt(SIGINT, 0);
 				goto quit;
+			}
+			siginterrupt(SIGINT, 0);
 			continue;
 		}
 		break;
@@ -158,14 +166,19 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 			oicp->icmp_cksum = in_cksum((u_short*)oicp,
 						    sizeof(*oicp));
 
+			siginterrupt(SIGINT, 1);
 			count = sendto(sock_raw, opacket, sizeof(*oicp), 0,
 				       (struct sockaddr*)addr,
 				       sizeof(struct sockaddr));
 			if (count < 0) {
+				if (errno == EINTR && gotintr)
+					goto bail;
+				siginterrupt(SIGINT, 0);
 				if (measure_status == HOSTDOWN)
 					measure_status = UNREACHABLE;
 				goto quit;
 			}
+			siginterrupt(SIGINT, 0);
 			++oicp->icmp_seq;
 
 			timeradd(&tcur, &twait, &ttrans);
@@ -186,12 +199,18 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 				break;
 
 			length = sizeof(struct sockaddr_in);
+			siginterrupt(SIGINT, 1);
 			cc = recvfrom(sock_raw, (char *)packet, PACKET_IN, 0,
 				      0,&length);
-			if (cc < 0)
+			if (cc < 0) {
+				if (errno == EINTR && gotintr)
+					goto bail;
+				siginterrupt(SIGINT, 0);
 				goto quit;
+			}
+			siginterrupt(SIGINT, 0);
 
-			/* 
+			/*
 			 * got something.  See if it is ours
 			 */
 			icp = (struct icmp *)(packet + (ip->ip_hl << 2));
@@ -201,7 +220,6 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 			    || icp->icmp_seq < seqno
 			    || icp->icmp_seq >= oicp->icmp_seq)
 				continue;
-
 
 			sendtime = ntohl(icp->icmp_otime);
 			recvtime = ((tcur.tv_sec % SECDAY) * 1000 +
@@ -269,7 +287,7 @@ quit:
 		if (trace) {
 			fprintf(fd,
 				"measured delta %4d, %d trials to %-15s %s\n",
-			   	measure_delta, trials,
+				measure_delta, trials,
 				inet_ntoa(addr->sin_addr), hname);
 		}
 	} else if (print) {
@@ -291,11 +309,10 @@ quit:
 	}
 
 	return(measure_status);
+bail:
+	siginterrupt(SIGINT, 0);
+	return (0);
 }
-
-
-
-
 
 /*
  * round a number of milliseconds into a struct timeval

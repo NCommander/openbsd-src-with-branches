@@ -1,4 +1,5 @@
-/*	$NetBSD: psl.h,v 1.7 1995/08/13 00:29:56 mycroft Exp $ */
+/*	$OpenBSD: psl.h,v 1.8 2001/12/19 08:58:05 art Exp $	*/
+/*	$NetBSD: psl.h,v 1.12 1997/03/10 21:49:11 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -77,25 +78,45 @@
 
 #define	PIL_CLOCK	10
 
-#if defined(_KERNEL) && !defined(LOCORE)
+#if defined(_KERNEL) && !defined(_LOCORE)
+
+static __inline int getpsr(void);
+static __inline void setpsr(int);
+static __inline int spl0(void);
+static __inline int splhigh(void);
+static __inline void splx(int);
+static __inline int getmid(void);
+
 /*
  * GCC pseudo-functions for manipulating PSR (primarily PIL field).
  */
-static __inline int getpsr() {
+static __inline int getpsr()
+{
 	int psr;
 
 	__asm __volatile("rd %%psr,%0" : "=r" (psr));
 	return (psr);
 }
 
-static __inline void setpsr(int newpsr) {
+static __inline int getmid()
+{
+	int mid;
+
+	__asm __volatile("rd %%tbr,%0" : "=r" (mid));
+	return ((mid >> 20) & 0x3);
+}
+
+static __inline void setpsr(newpsr)
+	int newpsr;
+{
 	__asm __volatile("wr %0,0,%%psr" : : "r" (newpsr));
 	__asm __volatile("nop");
 	__asm __volatile("nop");
 	__asm __volatile("nop");
 }
 
-static __inline int spl0() {
+static __inline int spl0()
+{
 	int psr, oldipl;
 
 	/*
@@ -121,7 +142,9 @@ static __inline int spl0() {
  * into the ipl field.)
  */
 #define	SPL(name, newipl) \
-static __inline int name() { \
+static __inline int name(void); \
+static __inline int name() \
+{ \
 	int psr, oldipl; \
 	__asm __volatile("rd %%psr,%0" : "=r" (psr)); \
 	oldipl = psr & PSR_PIL; \
@@ -131,47 +154,76 @@ static __inline int name() { \
 	__asm __volatile("nop; nop; nop"); \
 	return (oldipl); \
 }
+/* A non-priority-decreasing version of SPL */
+#define	SPLHOLD(name, newipl) \
+static __inline int name(void); \
+static __inline int name() \
+{ \
+	int psr, oldipl; \
+	__asm __volatile("rd %%psr,%0" : "=r" (psr)); \
+	oldipl = psr & PSR_PIL; \
+	if ((newipl << 8) <= oldipl) \
+		return oldipl; \
+	psr &= ~oldipl; \
+	__asm __volatile("wr %0,%1,%%psr" : : \
+	    "r" (psr), "n" ((newipl) << 8)); \
+	__asm __volatile("nop; nop; nop"); \
+	return (oldipl); \
+}
 
-SPL(splsoftint, 1)
-#define	splsoftclock	splsoftint
-#define	splsoftnet	splsoftint
+SPLHOLD(splsoftint, 1)
+#define	splsoftclock		splsoftint
+#define	splsoftnet		splsoftint
 
-/* network hardware interrupts are at level 6 */
-#define	PIL_NET	6
-SPL(splnet, PIL_NET)
-
-/* tty input runs at software level 6 */
-#define	PIL_TTY	6
-SPL(spltty, PIL_TTY)
-
-/* Memory allocation (must be as high as highest network or tty device) */
-SPL(splimp, 7)
+SPL(spllowersoftclock, 1)
 
 /* audio software interrupts are at software level 4 */
 #define	PIL_AUSOFT	4
-SPL(splausoft, PIL_AUSOFT)
+SPLHOLD(splausoft, PIL_AUSOFT)
 
 /* floppy software interrupts are at software level 4 too */
 #define PIL_FDSOFT	4
-SPL(splfdsoft, PIL_FDSOFT)
+SPLHOLD(splfdsoft, PIL_FDSOFT)
 
-SPL(splbio, 9)
+/* Block devices */
+#define PIL_BIO 5
+SPLHOLD(splbio, PIL_BIO)
 
-SPL(splclock, PIL_CLOCK)
+/* network hardware interrupts are at level 6 */
+#define	PIL_NET	6
+SPLHOLD(splnet, PIL_NET)
+
+/* tty input runs at software level 6 */
+#define	PIL_TTY	6
+SPLHOLD(spltty, PIL_TTY)
+
+/*
+ * Memory allocation (must be as high as highest network, tty, or disk device)
+ */
+SPLHOLD(splimp, 7)
+SPLHOLD(splvm, 7)
+
+/*
+ * remove.
+ */
+SPLHOLD(splpmap, 7)
+
+SPLHOLD(splclock, PIL_CLOCK)
 
 /* fd hardware interrupts are at level 11 */
-SPL(splfd, 11)
+SPLHOLD(splfd, 11)
 
 /* zs hardware interrupts are at level 12 */
-SPL(splzs, 12)
+SPLHOLD(splzs, 12)
 
 /* audio hardware interrupts are at level 13 */
-SPL(splaudio, 13)
+SPLHOLD(splaudio, 13)
 
 /* second sparc timer interrupts at level 14 */
-SPL(splstatclock, 14)
+SPLHOLD(splstatclock, 14)
 
-static __inline int splhigh() {
+static __inline int splhigh()
+{
 	int psr, oldipl;
 
 	__asm __volatile("rd %%psr,%0" : "=r" (psr));
@@ -182,7 +234,9 @@ static __inline int splhigh() {
 }
 
 /* splx does not have a return value */
-static __inline void splx(int newipl) {
+static __inline void splx(newipl)
+	int newipl;
+{
 	int psr;
 
 	__asm __volatile("rd %%psr,%0" : "=r" (psr));
@@ -190,6 +244,6 @@ static __inline void splx(int newipl) {
 	    "r" (psr & ~PSR_PIL), "rn" (newipl));
 	__asm __volatile("nop; nop; nop");
 }
-#endif /* KERNEL && !LOCORE */
+#endif /* KERNEL && !_LOCORE */
 
 #endif /* PSR_IMPL */

@@ -1,4 +1,5 @@
-/*	$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $	*/
+/*	$OpenBSD: file.c,v 1.8 2002/02/16 21:27:06 millert Exp $	*/
+/*	$NetBSD: file.c,v 1.11 1996/11/08 19:34:37 christos Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)file.c	8.2 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: file.c,v 1.8 2002/02/16 21:27:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,11 +55,7 @@ static char rcsid[] = "$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $"
 #ifndef SHORT_STRINGS
 #include <string.h>
 #endif /* SHORT_STRINGS */
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -85,25 +82,25 @@ typedef enum {
     LIST, RECOGNIZE
 }       COMMAND;
 
-static void	 setup_tty __P((int));
-static void	 back_to_col_1 __P((void));
-static void	 pushback __P((Char *));
-static void	 catn __P((Char *, Char *, int));
-static void	 copyn __P((Char *, Char *, int));
-static Char	 filetype __P((Char *, Char *));
-static void	 print_by_column __P((Char *, Char *[], int));
-static Char	*tilde __P((Char *, Char *));
-static void	 retype __P((void));
-static void	 beep __P((void));
-static void	 print_recognized_stuff __P((Char *));
-static void	 extract_dir_and_name __P((Char *, Char *, Char *));
-static Char	*getentry __P((DIR *, int));
-static void	 free_items __P((Char **));
-static int	 tsearch __P((Char *, COMMAND, int));
-static int	 recognize __P((Char *, Char *, int, int));
-static int	 is_prefix __P((Char *, Char *));
-static int	 is_suffix __P((Char *, Char *));
-static int	 ignored __P((Char *));
+static void	 setup_tty(int);
+static void	 back_to_col_1(void);
+static void	 pushback(Char *);
+static void	 catn(Char *, Char *, int);
+static void	 copyn(Char *, Char *, int);
+static Char	 filetype(Char *, Char *);
+static void	 print_by_column(Char *, Char *[], int);
+static Char	*tilde(Char *, Char *);
+static void	 retype(void);
+static void	 beep(void);
+static void	 print_recognized_stuff(Char *);
+static void	 extract_dir_and_name(Char *, Char *, Char *);
+static Char	*getentry(DIR *, int);
+static void	 free_items(Char **);
+static int	 tsearch(Char *, COMMAND, int);
+static int	 recognize(Char *, Char *, int, int);
+static int	 is_prefix(Char *, Char *);
+static int	 is_suffix(Char *, Char *);
+static int	 ignored(Char *);
 
 /*
  * Put this here so the binary can be patched with adb to enable file
@@ -153,9 +150,9 @@ back_to_col_1()
     tty_normal = tty;
     tty.c_iflag &= ~INLCR;
     tty.c_oflag &= ~ONLCR;
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty);
     (void) write(SHOUT, "\r", 1);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty_normal);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty_normal);
     sigprocmask(SIG_SETMASK, &osigset, NULL);
 }
 
@@ -177,11 +174,11 @@ pushback(string)
     (void) tcgetattr(SHOUT, &tty);
     tty_normal = tty;
     tty.c_lflag &= ~(ECHOKE | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOCTL);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty);
 
     for (p = string; (c = *p) != '\0'; p++)
 	(void) ioctl(SHOUT, TIOCSTI, (ioctl_t) & c);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty_normal);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty_normal);
     sigprocmask(SIG_SETMASK, &osigset, NULL);
 }
 
@@ -332,7 +329,7 @@ retype()
 
     (void) tcgetattr(SHOUT, &tty);
     tty.c_lflag |= PENDIN;
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
+    (void) tcsetattr(SHOUT, TCSADRAIN, &tty);
 }
 
 static void
@@ -447,9 +444,9 @@ tsearch(word, command, max_word_length)
 {
     static Char **items = NULL;
     register DIR *dir_fd;
-    register numitems = 0, ignoring = TRUE, nignored = 0;
-    register name_length, looking_for_lognames;
-    Char    tilded_dir[MAXPATHLEN + 1], dir[MAXPATHLEN + 1];
+    register int numitems = 0, ignoring = TRUE, nignored = 0;
+    register int name_length, looking_for_lognames;
+    Char    tilded_dir[MAXPATHLEN], dir[MAXPATHLEN];
     Char    name[MAXNAMLEN + 1], extended_name[MAXNAMLEN + 1];
     Char   *entry;
 
@@ -532,7 +529,7 @@ again:				/* search for matches */
     }
     else {			/* LIST */
 	qsort((ptr_t) items, numitems, sizeof(items[0]), 
-		(int (*) __P((const void *, const void *))) sortscmp);
+		(int (*)(const void *, const void *)) sortscmp);
 	print_by_column(looking_for_lognames ? NULL : tilded_dir,
 			items, numitems);
 	if (items != NULL)
@@ -641,7 +638,7 @@ tenex(inputline, inputline_size)
 	    --str_end;		/* wipeout trailing cmd Char */
 	*str_end = '\0';
 	/*
-	 * Find LAST occurence of a delimiter in the inputline. The word start
+	 * Find LAST occurrence of a delimiter in the inputline. The word start
 	 * is one Character past it.
 	 */
 	for (word_start = str_end; word_start > inputline; --word_start)

@@ -1289,8 +1289,6 @@ static int argbuf_index;
 
 #ifdef MKTEMP_EACH_FILE
 
-extern char *make_temp_file PROTO((const char *));
-
 /* This is the list of suffixes and codes (%g/%u/%U) and the associated
    temp file.  */
 

@@ -1,6 +1,6 @@
 %{
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2001 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * This code is derived from software contributed by Chris Jepeway
@@ -45,30 +45,37 @@
  */
 
 #include "config.h"
-#include <stdio.h>
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-#include <pwd.h>
+
 #include <sys/types.h>
 #include <sys/param.h>
+#include <stdio.h>
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+#endif /* STDC_HEADERS */
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
+#include <pwd.h>
 #if defined(HAVE_MALLOC_H) && !defined(STDC_HEADERS)
-#include <malloc.h>
+# include <malloc.h>
 #endif /* HAVE_MALLOC_H && !STDC_HEADERS */
 #if defined(YYBISON) && defined(HAVE_ALLOCA_H) && !defined(__GNUC__)
-#include <alloca.h>
+# include <alloca.h>
 #endif /* YYBISON && HAVE_ALLOCA_H && !__GNUC__ */
 #ifdef HAVE_LSEARCH
-#include <search.h>
+# include <search.h>
 #endif /* HAVE_LSEARCH */
 
 #include "sudo.h"
@@ -79,7 +86,7 @@
 #endif /* HAVE_LSEARCH */
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: parse.yacc,v 1.166 1999/10/07 21:20:57 millert Exp $";
+static const char rcsid[] = "$Sudo: parse.yacc,v 1.179 2001/12/30 18:41:12 millert Exp $";
 #endif /* lint */
 
 /*
@@ -90,6 +97,8 @@ int errorlineno = -1;
 int clearaliases = TRUE;
 int printmatches = FALSE;
 int pedantic = FALSE;
+int keepall = FALSE;
+int quiet = FALSE;
 
 /*
  * Alias types
@@ -188,10 +197,10 @@ void
 yyerror(s)
     char *s;
 {
-    /* Save the line the first error occured on. */
+    /* Save the line the first error occurred on. */
     if (errorlineno == -1)
 	errorlineno = sudolineno ? sudolineno - 1 : 0;
-    if (s) {
+    if (s && !quiet) {
 #ifndef TRACELEXER
 	(void) fprintf(stderr, ">>> sudoers file: %s, line %d <<<\n", s,
 	    sudolineno ? sudolineno - 1 : 0);
@@ -213,8 +222,8 @@ yyerror(s)
 %start file				/* special start symbol */
 %token <command> COMMAND		/* absolute pathname w/ optional args */
 %token <string>  ALIAS			/* an UPPERCASE alias name */
+%token <string>	 DEFVAR			/* a Defaults variable name */
 %token <string>  NTWKADDR		/* w.x.y.z */
-%token <string>  FQHOST			/* foo.bar.com */
 %token <string>  NETGROUP		/* a netgroup (+NAME) */
 %token <string>  USERGROUP		/* a usergroup (%NAME) */
 %token <string>  WORD			/* a word */
@@ -230,7 +239,7 @@ yyerror(s)
 %token <tok>	 CMNDALIAS		/* Cmnd_Alias keyword */
 %token <tok>	 USERALIAS		/* User_Alias keyword */
 %token <tok>	 RUNASALIAS		/* Runas_Alias keyword */
-%token <tok>	 ':' '=' ',' '!'	/* union member tokens */
+%token <tok>	 ':' '=' ',' '!' '+' '-' /* union member tokens */
 %token <tok>	 ERROR
 
 /*
@@ -242,6 +251,8 @@ yyerror(s)
 %type <BOOLEAN>	 cmnd
 %type <BOOLEAN>	 host
 %type <BOOLEAN>	 runasuser
+%type <BOOLEAN>	 oprunasuser
+%type <BOOLEAN>	 runaslist
 %type <BOOLEAN>	 user
 
 %%
@@ -288,23 +299,43 @@ defaults_type	:	DEFAULTS {
 defaults_list	:	defaults_entry
 		|	defaults_entry ',' defaults_list
 
-defaults_entry	:	WORD {
-			    if (defaults_matches && !set_default($1, NULL, 1)) {
+defaults_entry	:	DEFVAR {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, NULL, TRUE)) {
 				yyerror(NULL);
 				YYERROR;
 			    }
 			    free($1);
 			}
-		|	'!' WORD {
-			    if (defaults_matches && !set_default($2, NULL, 0)) {
+		|	'!' DEFVAR {
+			    if (defaults_matches == TRUE &&
+				!set_default($2, NULL, FALSE)) {
 				yyerror(NULL);
 				YYERROR;
 			    }
 			    free($2);
 			}
-		|	WORD '=' WORD {
-			    /* XXX - need to support quoted values */
-			    if (defaults_matches && !set_default($1, $3, 1)) {
+		|	DEFVAR '=' WORD {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, $3, TRUE)) {
+				yyerror(NULL);
+				YYERROR;
+			    }
+			    free($1);
+			    free($3);
+			}
+		|	DEFVAR '+' WORD {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, $3, '+')) {
+				yyerror(NULL);
+				YYERROR;
+			    }
+			    free($1);
+			    free($3);
+			}
+		|	DEFVAR '-' WORD {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, $3, '-')) {
 				yyerror(NULL);
 				YYERROR;
 			    }
@@ -351,21 +382,14 @@ host		:	ALL {
 			    free($1);
 			}
 		|	NETGROUP {
-			    if (netgr_matches($1, user_host, NULL))
+			    if (netgr_matches($1, user_host, user_shost, NULL))
 				$$ = TRUE;
 			    else
 				$$ = -1;
 			    free($1);
 			}
 		|	WORD {
-			    if (strcasecmp(user_shost, $1) == 0)
-				$$ = TRUE;
-			    else
-				$$ = -1;
-			    free($1);
-			}
-		|	FQHOST {
-			    if (strcasecmp(user_host, $1) == 0)
+			    if (hostname_matches(user_shost, user_host, $1) == 0)
 				$$ = TRUE;
 			    else
 				$$ = -1;
@@ -409,6 +433,9 @@ cmndspec	:	runasspec nopasswd opcmnd {
 			     * the user was listed in sudoers.  Also, we
 			     * need to be able to tell whether or not a
 			     * user was listed for this specific host.
+			     *
+			     * If keepall is set and the user matches then
+			     * we need to keep entries around too...
 			     */
 			    if (user_matches != -1 && host_matches != -1 &&
 				cmnd_matches != -1 && runas_matches != -1)
@@ -416,6 +443,8 @@ cmndspec	:	runasspec nopasswd opcmnd {
 			    else if (user_matches != -1 && (top == 1 ||
 				(top == 2 && host_matches != -1 &&
 				match[0].host == -1)))
+				pushcp;
+			    else if (user_matches == TRUE && keepall)
 				pushcp;
 			    cmnd_matches = -1;
 			}
@@ -460,19 +489,24 @@ runasspec	:	/* empty */ {
 			     */
 			    if (runas_matches == -1)
 				runas_matches = (strcmp(*user_runas,
-				    def_str(I_RUNAS_DEF)) == 0);
+				    def_str(I_RUNAS_DEFAULT)) == 0);
 			}
-		|	RUNAS runaslist { ; }
+		|	RUNAS runaslist {
+			    runas_matches = ($2 == TRUE ? TRUE : FALSE);
+			}
 		;
 
-runaslist	:	oprunasuser
-		|	runaslist ',' oprunasuser
+runaslist	:	oprunasuser { ; }
+		|	runaslist ',' oprunasuser {
+			    /* Later entries override earlier ones. */
+			    if ($3 != -1)
+				$$ = $3;
+			    else
+				$$ = $1;
+			}
 		;
 
-oprunasuser	:	runasuser {
-			    if ($1 != -1)
-				runas_matches = $1;
-			}
+oprunasuser	:	runasuser { ; }
 		|	'!' {
 			    if (printmatches == TRUE) {
 				if (in_alias == TRUE)
@@ -482,8 +516,8 @@ oprunasuser	:	runasuser {
 				    append_runas("!", ", ");
 			    }
 			} runasuser {
-			    if ($3 != -1)
-				runas_matches = ! $3;
+			    /* Set $$ to the negation of runasuser */
+			    $$ = ($3 == -1 ? -1 : ! $3);
 			}
 
 runasuser	:	WORD {
@@ -522,7 +556,7 @@ runasuser	:	WORD {
 				    user_matches == TRUE)
 				    append_runas($1, ", ");
 			    }
-			    if (netgr_matches($1, NULL, *user_runas))
+			    if (netgr_matches($1, NULL, NULL, *user_runas))
 				$$ = TRUE;
 			    else
 				$$ = -1;
@@ -717,7 +751,6 @@ runasaliases	:	runasalias
 		;
 
 runasalias	:	ALIAS {
-			    push;
 			    if (printmatches == TRUE) {
 				in_alias = TRUE;
 				/* Allocate space for ga_list if necessary. */
@@ -726,10 +759,9 @@ runasalias	:	ALIAS {
 				ga_list[ga_list_len-1].alias = estrdup($1);
 			    }
 			} '=' runaslist {
-			    if ((runas_matches != -1 || pedantic) &&
-				!add_alias($1, RUNAS_ALIAS, runas_matches))
+			    if (($4 != -1 || pedantic) &&
+				!add_alias($1, RUNAS_ALIAS, $4))
 				YYERROR;
-			    pop;
 			    free($1);
 
 			    if (printmatches == TRUE)
@@ -778,7 +810,7 @@ user		:	WORD {
 			    free($1);
 			}
 		|	NETGROUP {
-			    if (netgr_matches($1, NULL, user_name))
+			    if (netgr_matches($1, NULL, NULL, user_name))
 				$$ = TRUE;
 			    else
 				$$ = -1;
@@ -996,7 +1028,7 @@ list_matches()
 	    } while ((p = strtok(NULL, ", ")));
 	    (void) fputs(") ", stdout);
 	} else {
-	    (void) printf("(%s) ", def_str(I_RUNAS_DEF));
+	    (void) printf("(%s) ", def_str(I_RUNAS_DEFAULT));
 	}
 
 	/* Is a password required? */

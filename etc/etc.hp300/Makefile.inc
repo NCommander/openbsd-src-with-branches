@@ -1,28 +1,29 @@
-#	$NetBSD: Makefile.inc,v 1.1 1995/09/06 16:17:41 thorpej Exp $
-#
+#	$OpenBSD: Makefile.inc,v 1.15 1997/10/24 12:38:41 downsj Exp $
 #	etc.hp300/Makefile.inc -- hp300-specific etc Makefile targets
 
 .ifdef DESTDIR
-snap_md: netbsd-gen.gz netbsd-dl.gz
+snap_md: bsd bsd.dl bootblocks distrib
 
-netbsd-gen:
-	cd ${.CURDIR}/../sys/arch/hp300/conf && config.old GENERIC
+bsd:
+	cd ${.CURDIR}/../sys/arch/hp300/conf && config GENERIC
 	cd ${.CURDIR}/../sys/arch/hp300/compile/GENERIC && \
 	    make clean && make depend && make
-	cp ${.CURDIR}/../sys/arch/hp300/compile/GENERIC/netbsd \
-	    ${DESTDIR}/snapshot/netbsd-gen
+	cp ${.CURDIR}/../sys/arch/hp300/compile/GENERIC/bsd \
+	    ${DESTDIR}/snapshot/bsd
 
-netbsd-dl:
-	cd ${.CURDIR}/../sys/arch/hp300/conf && config.old DISKLESS
+bsd.dl:
+	cd ${.CURDIR}/../sys/arch/hp300/conf && config DISKLESS
 	cd ${.CURDIR}/../sys/arch/hp300/compile/DISKLESS && \
 	    make clean && make depend && make
-	cp ${.CURDIR}/../sys/arch/hp300/compile/DISKLESS/netbsd \
-	    ${DESTDIR}/snapshot/netbsd-dl
+	cp ${.CURDIR}/../sys/arch/hp300/compile/DISKLESS/bsd \
+	    ${DESTDIR}/snapshot/bsd.dl
 
-netbsd-gen.gz: netbsd-gen
-	gzip -9 ${DESTDIR}/snapshot/netbsd-gen
+bootblocks:
+	cp ${DESTDIR}/usr/mdec/uboot.lif ${DESTDIR}/snapshot/SYS_UBOOT
+	cp ${DESTDIR}/usr/mdec/cdboot.lif ${DESTDIR}/snapshot/SYS_CDBOOT
 
-netbsd-dl.gz: netbsd-dl
-	gzip -9 ${DESTDIR}/snapshot/netbsd-dl
+distrib:
+	cd ${.CURDIR}/../distrib && make cleandir && \
+	    make && make install
 
 .endif	# DESTDIR check

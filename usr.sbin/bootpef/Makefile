@@ -1,5 +1,4 @@
-# bootpef/Makefile
-# $Id: Makefile,v 1.3 1994/12/22 11:33:12 cgd Exp $
+#	$OpenBSD$
 
 PROG=	bootpef
 SRCDIR= ${.CURDIR}/../bootpd

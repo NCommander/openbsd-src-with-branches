@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: syscall.h,v 1.4 2002/02/21 23:17:53 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -31,6 +31,8 @@
  * SUCH DAMAGE.
  *
  */
+#ifndef __DL_SYSCALL_H__
+#define __DL_SYSCALL_H__
 
 #ifdef USE_CACHE
 #include <sys/stat.h>
@@ -48,8 +50,6 @@
  *  Inlined system call functions that can be used before
  *  any dynamic address resoving has been done.
  */
-
-void _dl_printf(const char *, ...);
 
 static inline int
 _dl_exit (int status)
@@ -135,24 +135,6 @@ _dl_read (int fd, const char* buf, int len)
                     : "0", "3", "4", "5");
   return status;
 } 
-#if 0
-static inline int
-_dl__syscall(quad_t val, ...)
-{
-  register int status __asm__ ("3");
-  __asm__ volatile ("mr    0,%1\n\t"
-		    "mr	   3,%2\n\t"
-                    "sc\n\t"
-		    "cmpwi   0, 0\n\t"
-		    "beq   1f\n\t"
-		    "li    3,-1\n\t"
-		    "1:"
-                    : "=r" (status)
-                    : "r" (SYS___syscall), "r" (val)
-                    : "0");
-	
-}
-#else
 
 #define STRINGIFY(x)  #x
 #define XSTRINGIFY(x) STRINGIFY(x)
@@ -167,7 +149,7 @@ __asm__(".align 2\n\t"
 	"li	3, -1\n\t"
 	"1:\n\t"
 	"blr");
-#endif
+
 static int
 _dl_mmap (void *addr, unsigned int len, unsigned int prot,
           unsigned int flags, int fd, off_t offset)
@@ -189,7 +171,7 @@ _dl_munmap (const void* addr, unsigned int len)
 		    "li    3,-1\n\t"
 		    "1:"
                     : "=r" (status)
-                    : "r" (SYS_read), "r" (addr), "r" (len)
+                    : "r" (SYS_munmap), "r" (addr), "r" (len)
                     : "0", "3", "4");
   return status;
 } 
@@ -208,11 +190,10 @@ _dl_mprotect (const void *addr, int size, int prot)
 		    "li    3,-1\n\t"
 		    "1:"
                     : "=r" (status)
-                    : "r" (SYS_read), "r" (addr), "r" (size), "r" (prot)
+                    : "r" (SYS_mprotect), "r" (addr), "r" (size), "r" (prot)
                     : "0", "3", "4", "5");
   return status;
 } 
-#if 0
 
 #ifdef USE_CACHE
 static inline int
@@ -228,18 +209,15 @@ _dl_stat (const char *addr, struct stat *sb)
 		    "li    3,-1\n\t"
 		    "1:"
                     : "=r" (status)
-                    : "r" (SYS_read), "r" (addr), "r" (sb)
+                    : "r" (SYS_stat), "r" (addr), "r" (sb)
                     : "0", "3", "4");
   return status;
 } 
 
 #endif
 
-/* Not an actual syscall, but we need something in assembly to say
-   whether this is OK or not.  */
-
 static inline int
-_dl_getuid (const void *addr, int size, int prot)
+_dl_issetugid()
 { 
   register int status __asm__ ("3");
   __asm__ volatile ("mr    0,%1\n\t"
@@ -249,86 +227,9 @@ _dl_getuid (const void *addr, int size, int prot)
 		    "li    3,-1\n\t"
 		    "1:"
                     : "=r" (status)
-                    : "r" (SYS_getuid)
+                    : "r" (SYS_issetugid)
                     : "0", "3");
   return status;
 } 
-static inline int
-_dl_geteuid (const void *addr, int size, int prot)
-{ 
-  register int status __asm__ ("3");
-  __asm__ volatile ("mr    0,%1\n\t"
-                    "sc\n\t"
-		    "cmpwi   0, 0\n\t"
-		    "beq   1f\n\t"
-		    "li    3,-1\n\t"
-		    "1:"
-                    : "=r" (status)
-                    : "r" (SYS_geteuid)
-                    : "0", "3");
-  return status;
-} 
-static inline int
-_dl_getgid (const void *addr, int size, int prot)
-{ 
-  register int status __asm__ ("3");
-  __asm__ volatile ("mr    0,%1\n\t"
-                    "sc\n\t"
-		    "cmpwi   0, 0\n\t"
-		    "beq   1f\n\t"
-		    "li    3,-1\n\t"
-		    "1:"
-                    : "=r" (status)
-                    : "r" (SYS_getgid)
-                    : "0", "3");
-  return status;
-} 
-static inline int
-_dl_getuid (const void *addr, int size, int prot)
-{ 
-  register int status __asm__ ("3");
-  __asm__ volatile ("mr    0,%1\n\t"
-                    "sc\n\t"
-		    "cmpwi   0, 0\n\t"
-		    "beq   1f\n\t"
-		    "li    3,-1\n\t"
-		    "1:"
-                    : "=r" (status)
-                    : "r" (SYS_getegid),
-                    : "0", "3");
-  return status;
-} 
-static inline int
-_dl_getuid (const void *addr, int size, int prot)
-{ 
-  register int status __asm__ ("3");
-  __asm__ volatile ("mr    0,%1\n\t"
-                    "sc\n\t"
-		    "cmpwi   0, 0\n\t"
-		    "beq   1f\n\t"
-		    "li    3,-1\n\t"
-		    "1:"
-                    : "=r" (status)
-                    : "r" (SYS_read), 
-                    : "0", "3");
-  return status;
-} 
-static inline int
-_dl_suid_ok (void)
-{
-  unsigned int uid, euid, gid, egid;
-
-	uid = _dl_getuid();
-	euid = _dl_geteuid();
-	gid = _dl_getgid();
-	egid = _dl_getegid();
-  	return (uid == euid && gid == egid);
-}
-#endif
-static inline int
-_dl_suid_ok(void)
-{
-	return 1;
-}
-
 #include <elf_abi.h>
+#endif /*__DL_SYSCALL_H__*/

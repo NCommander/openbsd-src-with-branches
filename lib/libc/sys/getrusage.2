@@ -1,4 +1,4 @@
-.\"	$NetBSD: getrusage.2,v 1.4 1995/02/27 12:33:23 cgd Exp $
+.\"	$OpenBSD: getrusage.2,v 1.6 1999/06/29 14:10:01 aaron Exp $
 .\"
 .\" Copyright (c) 1985, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -35,19 +35,20 @@
 .\"
 .Dd June 4, 1993
 .Dt GETRUSAGE 2
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm getrusage
 .Nd get information about resource utilization
 .Sh SYNOPSIS
 .Fd #include <sys/time.h>
 .Fd #include <sys/resource.h>
+
 .Fd #define	RUSAGE_SELF	 0
 .Fd #define	RUSAGE_CHILDREN	-1
 .Ft int
 .Fn getrusage "int who" "struct rusage *rusage"
 .Sh DESCRIPTION
-.Fn Getrusage
+.Fn getrusage
 returns information describing the resources utilized by the current
 process, or all its terminated child processes.
 The
@@ -64,7 +65,7 @@ the following structure:
 struct rusage {
         struct timeval ru_utime; /* user time used */
         struct timeval ru_stime; /* system time used */
-        long ru_maxrss;          /* integral max resident set size */
+        long ru_maxrss;          /* max resident set size */
         long ru_ixrss;           /* integral shared text memory size */
         long ru_idrss;           /* integral unshared data size */
         long ru_isrss;           /* integral unshared stack size */
@@ -93,8 +94,8 @@ the maximum resident set size utilized (in kilobytes).
 .It Fa ru_ixrss
 an \*(lqintegral\*(rq value indicating the amount of memory used
 by the text segment
-that was also shared among other processes.  This value is expressed
-in units of kilobytes * ticks-of-execution.
+that was also shared among other processes.
+This value is expressed in units of kilobytes * ticks-of-execution.
 .It Fa ru_idrss
 an integral value of the amount of unshared memory residing in the
 data segment of a process (expressed in units of
@@ -132,16 +133,16 @@ priority process becoming runnable or because the current process
 exceeded its time slice.
 .El
 .Sh NOTES
-The numbers 
+The numbers
 .Fa ru_inblock
-and 
+and
 .Fa ru_oublock
 account only for real
 I/O; data supplied by the caching mechanism is charged only
 to the first process to read or write the data.
 .Sh ERRORS
-.Fn Getrusage
-returns -1 on error.
+.Fn getrusage
+returns \-1 on error.
 The possible errors are:
 .Bl -tag -width Er
 .It Bq Er EINVAL

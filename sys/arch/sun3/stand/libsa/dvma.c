@@ -1,4 +1,5 @@
-/*	$NetBSD: dvma.c,v 1.4 1995/09/26 21:29:25 gwr Exp $	*/
+/*	$OpenBSD: dvma.c,v 1.5 2002/03/14 01:26:47 millert Exp $	*/
+/*	$NetBSD: dvma.c,v 1.6 1996/01/31 17:20:39 gwr Exp $	*/
 
 /*
  * Copyright (c) 1995 Gordon W. Ross
@@ -44,8 +45,8 @@
 #include "stand.h"
 
 /* XXX */
-extern int  get_segmap __P((int));
-extern void set_segmap __P((int, int));
+extern int  get_segmap(int);
+extern void set_segmap(int, int);
 
 
 #define	DVMA_BASE 0xFFf00000
@@ -53,6 +54,9 @@ extern void set_segmap __P((int, int));
 
 #define SA_MIN_VA	0x200000
 #define SA_MAX_VA	(SA_MIN_VA + DVMA_MAPLEN)
+
+/* This points to the end of the free DVMA space. */
+u_int dvma_end = DVMA_BASE + DVMA_MAPLEN;
 
 void
 dvma_init()
@@ -105,20 +109,13 @@ dvma_mapout(char *addr, int len)
 char *
 dvma_alloc(int len)
 {
-	char *mem;
-
-	mem = alloc(len);
-	if (!mem)
-		return(mem);
-	return(dvma_mapin(mem, len));
+	len = m68k_round_page(len);
+	dvma_end -= len;
+	return((char *)dvma_end);
 }
 
 void
 dvma_free(char *dvma, int len)
 {
-	char *mem;
-
-	mem = dvma_mapout(dvma, len);
-	if (mem)
-		free(mem, len);
+	/* not worth the trouble */
 }

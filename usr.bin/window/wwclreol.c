@@ -1,4 +1,5 @@
-/*	$NetBSD: wwclreol.c,v 1.3 1995/09/28 10:35:15 tls Exp $	*/
+/*	$OpenBSD: wwclreol.c,v 1.4 1997/02/25 00:04:43 downsj Exp $	*/
+/*	$NetBSD: wwclreol.c,v 1.4 1996/02/08 21:48:58 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwclreol.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwclreol.c,v 1.3 1995/09/28 10:35:15 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwclreol.c,v 1.4 1997/02/25 00:04:43 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,17 +53,17 @@ static char rcsid[] = "$NetBSD: wwclreol.c,v 1.3 1995/09/28 10:35:15 tls Exp $";
  * If cleared is true, then the screen line has already been cleared.
  */
 wwclreol1(w, row, col, cleared)
-register struct ww *w;
+struct ww *w;
 int row, col;
 char cleared;
 {
-	register i;
+	int i;
 
 	/*
 	 * Clear the buffer right off
 	 */
 	{
-		register union ww_char *buf;
+		union ww_char *buf;
 
 		buf = &w->ww_buf[row][col]; 
 		for (i = w->ww_b.r - col; --i >= 0;)
@@ -83,8 +84,9 @@ char cleared;
 	 * Now fix wwns.
 	 */
 	{
-		register union ww_char *s;
-		register char *smap, *win;
+		union ww_char *s;
+		unsigned char *smap;
+		char *win;
 
 		i = col;
 		smap = &wwsmap[row][i];

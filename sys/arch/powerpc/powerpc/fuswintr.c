@@ -1,3 +1,4 @@
+/*	$OpenBSD: fuswintr.c,v 1.2 1996/12/28 06:21:59 rahnds Exp $	*/
 /*	$NetBSD: fuswintr.c,v 1.1 1996/09/30 16:34:45 ws Exp $	*/
 
 /*-
@@ -30,6 +31,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <sys/types.h>
+#include <sys/systm.h>
 
 /*
  * Emulate fuswintr

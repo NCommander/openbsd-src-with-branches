@@ -1,3 +1,6 @@
+/*	$OpenBSD: utilities.c,v 1.6 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$NetBSD: utilities.c,v 1.5 1996/02/28 21:04:21 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,29 +34,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: utilities.c,v 1.3 1994/02/25 03:00:51 cgd Exp $";
-#endif /* not lint */
-
 #define	TELOPTS
 #define	TELCMDS
 #define	SLC_NAMES
-#include <arpa/telnet.h>
-#include <sys/types.h>
-#include <sys/time.h>
 
-#include <ctype.h>
-
-#include "general.h"
-
-#include "fdset.h"
-
-#include "ring.h"
-
-#include "defines.h"
-
-#include "externs.h"
+#include "telnet_locl.h"
 
 FILE	*NetTrace = 0;		/* Not in bss, since needs to stay */
 int	prettydump;
@@ -66,9 +51,9 @@ int	prettydump;
 
     void
 upcase(argument)
-    register char *argument;
+    char *argument;
 {
-    register int c;
+    int c;
 
     while ((c = *argument) != 0) {
 	if (islower(c)) {
@@ -90,7 +75,7 @@ SetSockOpt(fd, level, option, yesno)
 {
 #ifndef	NOT43
     return setsockopt(fd, level, option,
-				(char *)&yesno, sizeof yesno);
+				(void *)&yesno, sizeof yesno);
 #else	/* NOT43 */
     if (yesno == 0) {		/* Can't do that in 4.2! */
 	fprintf(stderr, "Error: attempt to turn off an option 0x%x.\n",
@@ -105,18 +90,18 @@ SetSockOpt(fd, level, option, yesno)
  * The following are routines used to print out debugging information.
  */
 
-unsigned char NetTraceFile[256] = "(standard output)";
+unsigned char NetTraceFile[MAXPATHLEN] = "(standard output)";
 
     void
 SetNetTrace(file)
-    register char *file;
+    char *file;
 {
     if (NetTrace && NetTrace != stdout)
 	fclose(NetTrace);
     if (file  && (strcmp(file, "-") != 0)) {
 	NetTrace = fopen(file, "w");
 	if (NetTrace) {
-	    strcpy((char *)NetTraceFile, file);
+	    strlcpy((char *)NetTraceFile, file, sizeof(NetTraceFile));
 	    return;
 	}
 	fprintf(stderr, "Cannot open %s.\n", file);
@@ -135,7 +120,6 @@ Dump(direction, buffer, length)
 #   define min(x,y)	((x<y)? x:y)
     unsigned char *pThis;
     int offset;
-    extern pettydump;
 
     offset = 0;
 
@@ -190,7 +174,7 @@ printoption(direction, cmd, option)
 		else
 		    fprintf(NetTrace, "%s IAC %d", direction, option);
 	} else {
-		register char *fmt;
+		char *fmt;
 		fmt = (cmd == WILL) ? "WILL" : (cmd == WONT) ? "WONT" :
 			(cmd == DO) ? "DO" : (cmd == DONT) ? "DONT" : 0;
 		if (fmt) {
@@ -216,7 +200,7 @@ printoption(direction, cmd, option)
     void
 optionstatus()
 {
-    register int i;
+    int i;
     extern char will_wont_resp[], do_dont_resp[];
 
     for (i = 0; i < 256; i++) {
@@ -296,7 +280,7 @@ printsub(direction, pointer, length)
     unsigned char *pointer;	/* where suboption data sits */
     int		  length;	/* length of suboption data */
 {
-    register int i;
+    int i;
     char buf[512];
     extern int want_status_response;
 
@@ -306,7 +290,7 @@ printsub(direction, pointer, length)
 	    fprintf(NetTrace, "%s IAC SB ",
 				(direction == '<')? "RCVD":"SENT");
 	    if (length >= 3) {
-		register int j;
+		int j;
 
 		i = pointer[length-2];
 		j = pointer[length-1];
@@ -487,6 +471,77 @@ printsub(direction, pointer, length)
 	    break;
 #endif
 
+#if    defined(ENCRYPTION)
+	case TELOPT_ENCRYPT:
+	    fprintf(NetTrace, "ENCRYPT");
+	    if (length < 2) {
+		fprintf(NetTrace, " (empty suboption?)");
+		break;
+	    }
+	    switch (pointer[1]) {
+	    case ENCRYPT_START:
+		fprintf(NetTrace, " START");
+		break;
+		
+	    case ENCRYPT_END:
+		fprintf(NetTrace, " END");
+		break;
+		
+	    case ENCRYPT_REQSTART:
+		fprintf(NetTrace, " REQUEST-START");
+		break;
+
+	    case ENCRYPT_REQEND:
+		fprintf(NetTrace, " REQUEST-END");
+		break;
+		
+	    case ENCRYPT_IS:
+	    case ENCRYPT_REPLY:
+		fprintf(NetTrace, " %s ", (pointer[1] == ENCRYPT_IS) ?
+			"IS" : "REPLY");
+		if (length < 3) {
+		    fprintf(NetTrace, " (partial suboption?)");
+		    break;
+		}
+		if (ENCTYPE_NAME_OK(pointer[2]))
+		    fprintf(NetTrace, "%s ", ENCTYPE_NAME(pointer[2]));
+		else
+		    fprintf(NetTrace, " %d (unknown)", pointer[2]);
+		
+		encrypt_printsub(&pointer[1], length - 1, buf, sizeof(buf));
+		fprintf(NetTrace, "%s", buf);
+		break;
+		
+	    case ENCRYPT_SUPPORT:
+		i = 2;
+		fprintf(NetTrace, " SUPPORT ");
+		while (i < length) {
+		    if (ENCTYPE_NAME_OK(pointer[i]))
+			fprintf(NetTrace, "%s ", ENCTYPE_NAME(pointer[i]));
+		    else
+			fprintf(NetTrace, "%d ", pointer[i]);
+		    i++;
+		}
+		break;
+		
+	    case ENCRYPT_ENC_KEYID:
+		fprintf(NetTrace, " ENC_KEYID ");
+		goto encommon;
+		
+	    case ENCRYPT_DEC_KEYID:
+		fprintf(NetTrace, " DEC_KEYID ");
+		goto encommon;
+		
+	    default:
+		fprintf(NetTrace, " %d (unknown)", pointer[1]);
+	    encommon:
+		for (i = 2; i < length; i++)
+		    fprintf(NetTrace, " %d", pointer[i]);
+		break;
+	    }
+	    break;
+#endif
+
 
 	case TELOPT_LINEMODE:
 	    fprintf(NetTrace, "LINEMODE ");
@@ -524,7 +579,7 @@ printsub(direction, pointer, length)
 		    break;
 		}
 		break;
-		
+
 	    case LM_SLC:
 		fprintf(NetTrace, "SLC");
 		for (i = 2; i < length - 2; i += 3) {
@@ -566,12 +621,13 @@ printsub(direction, pointer, length)
 		}
 		{
 		    char tbuf[64];
-		    sprintf(tbuf, "%s%s%s%s%s",
-			pointer[2]&MODE_EDIT ? "|EDIT" : "",
-			pointer[2]&MODE_TRAPSIG ? "|TRAPSIG" : "",
-			pointer[2]&MODE_SOFT_TAB ? "|SOFT_TAB" : "",
-			pointer[2]&MODE_LIT_ECHO ? "|LIT_ECHO" : "",
-			pointer[2]&MODE_ACK ? "|ACK" : "");
+		    snprintf(tbuf, sizeof(tbuf),
+			     "%s%s%s%s%s",
+			     pointer[2]&MODE_EDIT ? "|EDIT" : "",
+			     pointer[2]&MODE_TRAPSIG ? "|TRAPSIG" : "",
+			     pointer[2]&MODE_SOFT_TAB ? "|SOFT_TAB" : "",
+			     pointer[2]&MODE_LIT_ECHO ? "|LIT_ECHO" : "",
+			     pointer[2]&MODE_ACK ? "|ACK" : "");
 		    fprintf(NetTrace, "%s", tbuf[1] ? &tbuf[1] : "0");
 		}
 		if (pointer[2]&~(MODE_MASK))
@@ -587,8 +643,8 @@ printsub(direction, pointer, length)
 	    break;
 
 	case TELOPT_STATUS: {
-	    register char *cp;
-	    register int j, k;
+	    char *cp;
+	    int j, k;
 
 	    fprintf(NetTrace, "STATUS");
 
@@ -656,7 +712,7 @@ printsub(direction, pointer, length)
 			    fprintf(NetTrace, "\n");
 
 			break;
-				
+
 		    default:
 			fprintf(NetTrace, " %d", pointer[i]);
 			break;
@@ -701,7 +757,7 @@ printsub(direction, pointer, length)
 		fprintf(NetTrace, "INFO ");
 	    env_common:
 		{
-		    register int noquote = 2;
+		    int noquote = 2;
 #if defined(ENV_HACK) && defined(OLD_ENVIRON)
 		    extern int old_env_var, old_env_value;
 #endif
@@ -750,7 +806,6 @@ printsub(direction, pointer, length)
 			    break;
 
 			default:
-			def_case:
 			    if (isprint(pointer[i]) && pointer[i] != '"') {
 				if (noquote) {
 				    putc('"', NetTrace);
@@ -801,23 +856,24 @@ printsub(direction, pointer, length)
 EmptyTerminal()
 {
 #if	defined(unix)
-    fd_set	o;
+    fd_set	outs;
 
-    FD_ZERO(&o);
+    FD_ZERO(&outs);
 #endif	/* defined(unix) */
 
     if (TTYBYTES() == 0) {
 #if	defined(unix)
-	FD_SET(tout, &o);
-	(void) select(tout+1, (fd_set *) 0, &o, (fd_set *) 0,
+	FD_SET(tout, &outs);
+	(void) select(tout+1, (fd_set *) 0, &outs, (fd_set *) 0,
 			(struct timeval *) 0);	/* wait for TTLOWAT */
 #endif	/* defined(unix) */
     } else {
 	while (TTYBYTES()) {
 	    (void) ttyflush(0);
 #if	defined(unix)
-	    FD_SET(tout, &o);
-	    (void) select(tout+1, (fd_set *) 0, &o, (fd_set *) 0,
+	    ttyflush(0);
+	    FD_SET(tout, &outs);
+	    (void) select(tout+1, (fd_set *) 0, &outs, (fd_set *) 0,
 				(struct timeval *) 0);	/* wait for TTLOWAT */
 #endif	/* defined(unix) */
 	}

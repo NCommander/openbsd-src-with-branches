@@ -1,3 +1,4 @@
+.\"   $OpenBSD: bah.4,v 1.8 2001/10/05 14:45:53 mpech Exp $
 .\"	$NetBSD: bah.4,v 1.2 1995/06/06 23:41:37 cgd Exp $
 .\"
 .\" Copyright (c) 1995 Ignatios Souvatzis
@@ -32,15 +33,15 @@
 
 .\" The following requests are required for all man pages.
 .Dd May 31, 1995
-.Os NetBSD 1.0
 .Dt BAH 4 amiga
+.Os
 .Sh NAME
 .Nm bah
 .Nd ARCnet driver for SMC COM90C26 based boards
 .Sh SYNOPSIS
 .Cd "bah* at zbus0"
 .Sh DESCRIPTION
-The 
+The
 .Nm
 interface provides access to the 2.5 Mb/s ARCnet network via the
 .Tn SMC
@@ -50,31 +51,31 @@ ARCnet chip set.
 Each of the host's network addresses
 is specified at boot time with an
 .Dv SIOCSIFADDR
-.Xr ioctl .
+.Xr ioctl 2 .
 The
 .Nm
 interface does not employ the address resolution protocol described in
 .Xr arp 4
 to dynamically map between Internet and Ethernet addresses on the local
-network. Instead, it uses the least significant 8 bits of the IP address
-as hardware address, as described in
-.Xr RFC 1051
+network.
+Instead, it uses the least significant 8 bits of the IP address as hardware
+address, as described in
+.Em RFC 1051
 and
-.Xr RFC 1201
+.Em RFC 1201
 as one option.
 .Pp
 With the IFF_LINK0 flag cleared, IP encoding is done according to the
 deprecated, but popular among Amiga users, RFC 1051 encoding (that
 is, with simple header, packet type 240), and the MTU is 507.
-.Pp 
-With the IFF_LINK0 flag set, IP encoding is done according to RFC 1201 (that 
-is, with Packet Header Definition Standard header and packet type 212). The MTU
-is normally 1500.
 .Pp
-When switching between the two modes, do a 
+With the IFF_LINK0 flag set, IP encoding is done according to RFC 1201 (that
+is, with Packet Header Definition Standard header and packet type 212).
+The MTU is normally 1500.
+.Pp
+When switching between the two modes, do a
 .Cd ifconfig interfacename down up
 to switch the mtu.
-.Pp
 .Sh HARDWARE
 The
 .Nm
@@ -87,10 +88,10 @@ Ameristar's arcnet card, manufacturer\ 1053, product\ 9
 .El
 .Sh SEE ALSO
 .Xr arp 4 ,
-.Xr ifconfig 8 ,
 .Xr inet 4 ,
 .Xr intro 4 ,
-.Xr RFC1051 
+.Xr ifconfig 8
+.Xr RFC1051
 ,
 .Xr RFC1201
 .br
@@ -104,5 +105,5 @@ The
 .Nm
 interface first appeared in
 .Nx 1.0a
-.Sh AUTHOR
+.Sh AUTHORS
 Ignatios Souvatzis

@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: dlfcn.c,v 1.14 2002/03/17 04:42:51 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -49,24 +49,25 @@ void _dl_show_objects(void);
 
 static int _dl_real_close(void *handle);
 static void _dl_unload_deps(elf_object_t *object);
-extern char *_dl_debug;
 
 void *
 dlopen(const char *libname, int how)
 {
 	elf_object_t	*object;
 	elf_object_t	*dynobj;
-	Elf32_Dyn	*dynp;
+	Elf_Dyn	*dynp;
 
-	if (_dl_debug) {
-		_dl_printf("loading: %s\n", libname);
+	if (libname == NULL) {
+		return _dl_objects;
 	}
+	DL_DEB(("dlopen: loading: %s\n", libname));
+
 	object = _dl_load_shlib(libname, _dl_objects, OBJTYPE_DLO);
-	if(object == 0) {
+	if (object == 0) {
 		return((void *)0);
 	}
 
-	if(object->refcount > 1) {
+	if (object->refcount > 1) {
 		return((void *)object);	/* Already loaded */
 	}
 
@@ -78,18 +79,19 @@ dlopen(const char *libname, int how)
 	 *	resolving undefined symbols. This is not yet done. XXX
 	 */
 	dynobj = object;
-	while(dynobj) {
+	while (dynobj) {
 		elf_object_t *tmpobj = dynobj;
-                for(dynp = dynobj->load_dyn; dynp->d_tag; dynp++) {
+
+                for (dynp = dynobj->load_dyn; dynp->d_tag; dynp++) {
 			const char *libname;
 			elf_object_t *depobj;
 
-                        if(dynp->d_tag != DT_NEEDED) {
+                        if (dynp->d_tag != DT_NEEDED) {
 				continue;
 			}
 			libname = dynobj->dyn.strtab + dynp->d_un.d_val;
-			depobj = _dl_load_shlib(libname, dynobj, OBJTYPE_DLO);
-			if(!depobj) {
+			depobj = _dl_load_shlib(libname, dynobj, OBJTYPE_LIB);
+			if (!depobj) {
 				_dl_exit(4);
 			}
 			tmpobj->dep_next = _dl_malloc(sizeof(elf_object_t));
@@ -102,14 +104,12 @@ dlopen(const char *libname, int how)
 	_dl_rtld(object);
 	_dl_call_init(object);
 
-#ifdef __mips__
 	if(_dl_debug_map->r_brk) {
 		_dl_debug_map->r_state = RT_ADD;
 		(*((void (*)())_dl_debug_map->r_brk))();
 		_dl_debug_map->r_state = RT_CONSISTENT;
 		(*((void (*)())_dl_debug_map->r_brk))();
 	}
-#endif /* __mips__ */
 
 	return((void *)object);
 }
@@ -120,32 +120,32 @@ dlsym(void *handle, const char *name)
 	elf_object_t	*object;
 	elf_object_t	*dynobj;
 	void		*retval;
-	const Elf32_Sym	*sym = 0;
+	const Elf_Sym	*sym = NULL;
 
 	object = (elf_object_t *)handle;
 	dynobj = _dl_objects;
-	while(dynobj && dynobj != object) {
+	while (dynobj && dynobj != object) {
 		dynobj = dynobj->next;
 	}
-	if(!dynobj || object != dynobj) {
+	if (!dynobj || object != dynobj) {
 		_dl_errno = DL_INVALID_HANDLE;
 		return(0);
 	}
 
 	retval = (void *)_dl_find_symbol(name, object, &sym, 1, 1);
-	if(retval) {
+	if (sym != NULL) {
 		retval += sym->st_value;
-	}
-	else {
+	} else {
 		_dl_errno = DL_NO_SYMBOL;
 	}
-	return(retval);
+
+	return (retval);
 }
 
 int
 dlctl(void *handle, int command, void *data)
 {
-	switch(command) {
+	switch (command) {
 
 #ifdef __mips__
 	case DL_DUMP_MAP:
@@ -165,17 +165,19 @@ dlclose(void *handle)
 {
 	int retval;
 
+	if (handle == _dl_objects) {
+		return 0;
+	}
 	retval = _dl_real_close(handle);
 
-#ifdef __mips__
-	if(_dl_debug_map->r_brk) {
+	if (_dl_debug_map->r_brk) {
 		_dl_debug_map->r_state = RT_DELETE;
 		(*((void (*)())_dl_debug_map->r_brk))();
 		_dl_debug_map->r_state = RT_CONSISTENT;
 		(*((void (*)())_dl_debug_map->r_brk))();
 	}
-#endif /* __mips__ */
-	return(retval);
+
+	return (retval);
 }
 
 static int
@@ -186,22 +188,22 @@ _dl_real_close(void *handle)
 
 	object = (elf_object_t *)handle;
 	dynobj = _dl_objects;
-	while(dynobj && dynobj != object) {
+	while (dynobj && dynobj != object) {
 		dynobj = dynobj->next;
 	}
-	if(!dynobj || object != dynobj) {
+	if (!dynobj || object != dynobj) {
 		_dl_errno = DL_INVALID_HANDLE;
-		return(1);
+		return (1);
 	}
 
-	if(object->refcount == 1) {
-		if(dynobj->dep_next) {
+	if (object->refcount == 1) {
+		if (dynobj->dep_next) {
 			_dl_unload_deps(dynobj);
 		}
 	}
 
 	_dl_unload_shlib(object);
-	return(0);
+	return (0);
 }
 
 /*
@@ -214,9 +216,9 @@ _dl_unload_deps(elf_object_t *object)
 	elf_object_t *depobj;
 
 	depobj = object->dep_next;
-	while(depobj) {
-		if(depobj->next->refcount == 1) { /* This object will go away */
-			if(depobj->next->dep_next) {
+	while (depobj) {
+		if (depobj->next->refcount == 1) { /* This object will go away */
+			if (depobj->next->dep_next) {
 				_dl_unload_deps(depobj->next);
 			}
 			_dl_unload_shlib(depobj->next);
@@ -228,51 +230,67 @@ _dl_unload_deps(elf_object_t *object)
 /*
  *	dlerror()
  *
- *	Return a character string describing the last dl... error occured.
+ *	Return a character string describing the last dl... error occurred.
  */
 const char *
 dlerror()
 {
-	switch(_dl_errno) {
+	switch (_dl_errno) {
+	case 0:	/* NO ERROR */
+		return (NULL);
 	case DL_NOT_FOUND:
-		return("File not found");
+		return ("File not found");
 	case DL_CANT_OPEN:
-		return("Can't open file");
+		return ("Can't open file");
 	case DL_NOT_ELF:
-		return("File not an ELF object");
+		return ("File not an ELF object");
 	case DL_CANT_OPEN_REF:
-		return("Can't open referenced object");
+		return ("Can't open referenced object");
 	case DL_CANT_MMAP:
-		return("Can't map ELF object");
+		return ("Can't map ELF object");
 	case DL_INVALID_HANDLE:
-		return("Invalid handle");
+		return ("Invalid handle");
 	case DL_NO_SYMBOL:
-		return("Unable to resolve symbol");
+		return ("Unable to resolve symbol");
 	case DL_INVALID_CTL:
-		return("Invalid dlctl() command");
+		return ("Invalid dlctl() command");
 	default:
-		return("Unknown error");
+		return ("Unknown error");
 	}
 }
-
 
 void
 _dl_show_objects()
 {
 	elf_object_t *object;
-static char *otyp[] = {
-	"none", "rtld", "exe ", "rlib", "dlib"
-};
+	char *objtypename;
 
 	object = _dl_objects;
 
-	_dl_printf("Currently loaded modules:\n");
-	_dl_printf("Start    End      Type Ref Name\n");
+	_dl_printf("\tStart    Size     Type Ref Name\n");
 
-	while(object) {
-		_dl_printf("%X %X %s  %d  %s\n", object->load_addr,
-				object->load_size, otyp[object->obj_type],
-				object->refcount, object->load_name);
+	while (object) {
+		switch (object->obj_type) {
+		case OBJTYPE_LDR:
+			objtypename = "rtld";
+			break;
+		case OBJTYPE_EXE:
+			objtypename = "exe ";
+			break;
+		case OBJTYPE_LIB:
+			objtypename = "rlib";
+			break;
+		case OBJTYPE_DLO:
+			objtypename = "dlib";
+			break;
+		default:
+			objtypename = "????";
+			break;
+		}
+		_dl_printf("\t%X %X %s  %d  %s\n", object->load_addr,
+				object->load_addr + object->load_size,
+				objtypename, object->refcount,
+				object->load_name);
 		object = object->next;
 	}
 }

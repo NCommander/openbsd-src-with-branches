@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.do_wear.c,v 1.3 2001/01/28 23:41:43 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.do_wear.c,v 1.3 1995/03/23 08:29:57 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.do_wear.c,v 1.3 2001/01/28 23:41:43 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -53,7 +55,7 @@ doremring() {
 		char answer;
 
 		pline("What ring, Right or Left? [ rl?]");
-		if(index(quitchars, (answer = readchar())))
+		if(strchr(quitchars, (answer = readchar())))
 			return(0);
 		switch(answer) {
 		case 'l':
@@ -70,7 +72,7 @@ doremring() {
 	/* NOTREACHED */
 #ifdef lint
 	return(0);
-#endif lint
+#endif /* lint */
 }
 
 dorr(otmp) register struct obj *otmp; {
@@ -198,7 +200,7 @@ dowearring() {
 		char answer;
 
  		pline("What ring-finger, Right or Left? ");
-		if(index(quitchars, (answer = readchar())))
+		if(strchr(quitchars, (answer = readchar())))
 			return(0);
 		switch(answer){
 		case 'l':

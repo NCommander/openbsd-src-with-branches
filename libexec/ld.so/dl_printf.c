@@ -1,4 +1,4 @@
-/*	$OpenBSD: printf.c,v 1.13 1998/06/12 12:09:12 d Exp $	*/
+/*	$OpenBSD: dl_printf.c,v 1.4 2002/02/17 19:42:26 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -60,23 +60,18 @@
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
-#ifdef __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "syscall.h"
 
-static void kprintn __P((void (*)(int), u_long, int));
-static void kdoprnt __P((void (*)(int), const char *, va_list));
+static void kprintn(void (*)(int), u_long, int);
+static void kdoprnt(void (*)(int), const char *, va_list);
 
-static void putchar __P((int));
-static void sputchar __P((int));
+static void putchar(int);
+static void sputchar(int);
 static char *sbuf;
 
 static void
-putchar(c)
-	int c;
+putchar(int c)
 {
 	char b;
 	b = c;
@@ -84,48 +79,29 @@ putchar(c)
 }
 
 static void
-sputchar(c)
-	int c;
+sputchar(int c)
 {
 	*sbuf++ = c;
 }
 
 void
-#ifdef __STDC__
 _dl_sprintf(char *buf, const char *fmt, ...)
-#else
-_dl_sprintf(buf, fmt, va_alist)
-	char *buf, *fmt;
-#endif
 {
 	va_list ap;
 
 	sbuf = buf;
-#ifdef __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	kdoprnt(sputchar, fmt, ap);
 	va_end(ap);
 	*sbuf = '\0';
 }
 
 void
-#ifdef __STDC__
 _dl_printf(const char *fmt, ...)
-#else
-_dl_printf(fmt, va_alist)
-	char *fmt;
-#endif
 {
 	va_list ap;
 
-#ifdef __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	kdoprnt(putchar, fmt, ap);
 	va_end(ap);
 }
@@ -137,10 +113,7 @@ _dl_vprintf(const char *fmt, va_list ap)
 }
 
 static void
-kdoprnt(put, fmt, ap)
-	void (*put)__P((int));
-	const char *fmt;
-	va_list ap;
+kdoprnt(void (*put)(int), const char *fmt, va_list ap)
 {
 	char *p;
 	int ch;
@@ -154,7 +127,8 @@ kdoprnt(put, fmt, ap)
 			put(ch);
 		}
 		lflag = 0;
-reswitch:	switch (ch = *fmt++) {
+reswitch:
+		switch (ch = *fmt++) {
 		case 'l':
 			lflag = 1;
 			goto reswitch;
@@ -235,10 +209,7 @@ reswitch:	switch (ch = *fmt++) {
 }
 
 static void
-kprintn(put, ul, base)
-	void (*put)__P((int));
-	unsigned long ul;
-	int base;
+kprintn(void (*put)(int), unsigned long ul, int base)
 {
 					/* hold a long in base 8 */
 	char *p, buf[(sizeof(long) * NBBY / 3) + 1];

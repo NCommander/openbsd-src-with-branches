@@ -1,7 +1,7 @@
-/*	$NetBSD: print-ether.c,v 1.3 1995/03/06 19:11:10 mycroft Exp $	*/
+/*	$OpenBSD: print-ether.c,v 1.17 2001/02/05 15:18:47 jason Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,15 +21,16 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 #ifndef lint
-static char rcsid[] =
-    "@(#) Header: print-ether.c,v 1.37 94/06/10 17:01:29 mccanne Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-ether.c,v 1.17 2001/02/05 15:18:47 jason Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 
+struct mbuf;
+struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>
@@ -40,10 +41,13 @@ static char rcsid[] =
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 
 #include <stdio.h>
 #include <pcap.h>
+
+#ifdef INET6
+#include <netinet/ip6.h>
+#endif
 
 #include "interface.h"
 #include "addrtoname.h"
@@ -52,8 +56,8 @@ static char rcsid[] =
 const u_char *packetp;
 const u_char *snapend;
 
-static inline void
-ether_print(register const u_char *bp, int length)
+void
+ether_print(register const u_char *bp, u_int length)
 {
 	register const struct ether_header *ep;
 
@@ -71,6 +75,8 @@ ether_print(register const u_char *bp, int length)
 			     length);
 }
 
+u_short extracted_ethertype;
+
 /*
  * This is the top level routine of the printer.  'p' is the points
  * to the ether header of the packet, 'tvp' is the timestamp,
@@ -80,11 +86,10 @@ ether_print(register const u_char *bp, int length)
 void
 ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 {
-	int caplen = h->caplen;
-	int length = h->len;
+	u_int caplen = h->caplen;
+	u_int length = h->len;
 	struct ether_header *ep;
 	u_short ether_type;
-	extern u_short extracted_ethertype;
 
 	ts_print(&h->ts);
 
@@ -115,7 +120,7 @@ ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 	 * Is it (gag) an 802.3 encapsulation?
 	 */
 	extracted_ethertype = 0;
-	if (ether_type < ETHERMTU) {
+	if (ether_type <= ETHERMTU) {
 		/* Try to print the LLC-layer header & higher layers */
 		if (llc_print(p, length, caplen, ESRC(ep), EDST(ep)) == 0) {
 			/* ether_type not known, print raw packet */
@@ -151,11 +156,11 @@ ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
  * that might want to know what it is.
  */
 
-u_short	extracted_ethertype;
-
 int
-ether_encap_print(u_short ethertype, const u_char *p, int length, int caplen)
+ether_encap_print(u_short ethertype, const u_char *p,
+    u_int length, u_int caplen)
 {
+recurse:
 	extracted_ethertype = ethertype;
 
 	switch (ethertype) {
@@ -163,6 +168,12 @@ ether_encap_print(u_short ethertype, const u_char *p, int length, int caplen)
 	case ETHERTYPE_IP:
 		ip_print(p, length);
 		return (1);
+
+#ifdef INET6
+	case ETHERTYPE_IPV6:
+		ip6_print(p, length);
+		return (1);
+#endif /*INET6*/
 
 	case ETHERTYPE_ARP:
 	case ETHERTYPE_REVARP:
@@ -176,14 +187,49 @@ ether_encap_print(u_short ethertype, const u_char *p, int length, int caplen)
 	case ETHERTYPE_ATALK:
 		if (vflag)
 			fputs("et1 ", stdout);
-		atalk_print(p, length);
+		atalk_print_llap(p, length);
 		return (1);
 
 	case ETHERTYPE_AARP:
 		aarp_print(p, length);
 		return (1);
 
+	case ETHERTYPE_8021Q:
+		printf("802.1Q vid %d pri %d%s",
+		       ntohs(*(unsigned short*)p)&0xFFF,
+		       ntohs(*(unsigned short*)p)>>13,
+		       (ntohs(*(unsigned short*)p)&0x1000) ? " cfi " : " ");
+		ethertype = ntohs(*(unsigned short*)(p+2));
+		p += 4;
+		length -= 4;
+		caplen -= 4;
+		if (ethertype > ETHERMTU) 
+			goto recurse;
+
+		extracted_ethertype = 0;
+
+		if (llc_print(p, length, caplen, p-18, p-12) == 0) {
+			/* ether_type not known, print raw packet */
+			if (!eflag)
+				ether_print(p-18, length+4);
+			if (extracted_ethertype) {
+				printf("(LLC %s) ",
+				etherproto_string(htons(extracted_ethertype)));
+			}
+			if (!xflag && !qflag)
+				default_print(p-18, caplen+4);
+		}
+		return (1);
+
+#ifdef PPP
+	case ETHERTYPE_PPPOEDISC:
+	case ETHERTYPE_PPPOE:
+		pppoe_if_print(ethertype, p, length, caplen);
+		return (1);
+#endif
+
 	case ETHERTYPE_LAT:
+	case ETHERTYPE_SCA:
 	case ETHERTYPE_MOPRC:
 	case ETHERTYPE_MOPDL:
 		/* default_print for now */
@@ -191,4 +237,3 @@ ether_encap_print(u_short ethertype, const u_char *p, int length, int caplen)
 		return (0);
 	}
 }
-

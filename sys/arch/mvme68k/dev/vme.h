@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: vme.h,v 1.6 1999/09/27 20:30:31 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -32,8 +33,18 @@
 
 struct vmesoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
+	void *		sc_vaddr;
 	struct intrhand sc_abih;	/* `abort' switch */
+};
+
+struct vmessoftc {
+	struct device		sc_dev;
+	struct vmesoftc		*sc_vme;
+};
+
+struct vmelsoftc {
+	struct device		sc_dev;
+	struct vmesoftc		*sc_vme;
 };
 
 /*
@@ -215,6 +226,10 @@ struct vme2reg {
 /*58*/	volatile u_long		vme2_t2cmp;
 /*5c*/	volatile u_long		vme2_t2count;
 /*60*/	volatile u_long		vme2_tctl;
+#define VME2_TCTL_CEN		0x01
+#define VME2_TCTL_COC		0x02
+#define VME2_TCTL_COVF		0x04
+#define VME2_TCTL_OVF		0xf0
 #define VME2_TCTL_SCON		0x40000000	/* we are SCON */
 #define VME2_TCTL_SYSFAIL	0x20000000	/* light SYSFAIL led */
 #define VME2_TCTL_SRST		0x00800000	/* system reset */
@@ -318,8 +333,8 @@ struct vme2reg {
 #define VME2_A16BASE	0xffff0000UL
 #define VME2_A24BASE	0xff000000UL
 
-caddr_t	vmepmap __P((struct vmesoftc *sc, caddr_t vmeaddr, int len,
-	    int bustype));
-caddr_t	vmemap __P((struct vmesoftc *sc, caddr_t vmeaddr, int len,
-	    int bustype));
-int	vmerw __P((struct vmesoftc *sc, struct uio *uio, int flags, int bus));
+void * vmepmap(struct vmesoftc *sc, void * vmeaddr, int len,
+	    int bustype);
+void * vmemap(struct vmesoftc *sc, void * vmeaddr, int len,
+	    int bustype);
+int	vmerw(struct vmesoftc *sc, struct uio *uio, int flags, int bus);

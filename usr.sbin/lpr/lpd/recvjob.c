@@ -1,3 +1,5 @@
+/*	$OpenBSD: recvjob.c,v 1.18 2002/02/16 21:28:04 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,13 +35,17 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)recvjob.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static const char sccsid[] = "@(#)recvjob.c	8.2 (Berkeley) 4/27/95";
+#else
+static const char rcsid[] = "$OpenBSD: recvjob.c,v 1.18 2002/02/16 21:28:04 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -56,8 +62,10 @@ static char sccsid[] = "@(#)recvjob.c	8.1 (Berkeley) 6/6/93";
 #include <dirent.h>
 #include <syslog.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "lp.h"
 #include "lp.local.h"
 #include "extern.h"
@@ -65,18 +73,18 @@ static char sccsid[] = "@(#)recvjob.c	8.1 (Berkeley) 6/6/93";
 
 #define ack()	(void) write(1, sp, 1);
 
-static char	 dfname[40];	/* data files */
+static char	 dfname[NAME_MAX];	/* data files */
 static int	 minfree;       /* keep at least minfree blocks available */
 static char	*sp = "";
-static char	 tfname[40];	/* tmp copy of cf before linking */
+static char	 tfname[NAME_MAX];	/* tmp copy of cf before linking */
 
-static int        chksize __P((int));
-static void       frecverr __P((const char *, ...));
-static int        noresponse __P((void));
-static void       rcleanup __P((int));
-static int        read_number __P((char *));
-static int        readfile __P((char *, int));
-static int        readjob __P((void));
+static int        chksize(int);
+static void       frecverr(const char *, ...);
+static int        noresponse(void);
+static void       rcleanup(int);
+static int        read_number(char *);
+static int        readfile(char *, int);
+static int        readjob(void);
 
 
 void
@@ -128,13 +136,13 @@ recvjob()
 
 /*
  * Read printer jobs sent by lpd and copy them to the spooling directory.
- * Return the number of jobs successfully transfered.
+ * Return the number of jobs successfully transferred.
  */
 static int
 readjob()
 {
-	register int size, nfiles;
-	register char *cp;
+	int size, nfiles;
+	char *cp;
 
 	ack();
 	nfiles = 0;
@@ -146,10 +154,13 @@ readjob()
 		do {
 			if ((size = read(1, cp, 1)) != 1) {
 				if (size < 0)
-					frecverr("%s: Lost connection",printer);
+					frecverr("%s: Lost connection",
+					    printer);
 				return(nfiles);
 			}
-		} while (*cp++ != '\n');
+		} while (*cp++ != '\n' && (cp - line + 1) < sizeof line);
+		if (cp - line + 1 >= sizeof line)
+			frecverr("readjob overflow");
 		*--cp = '\0';
 		cp = line;
 		switch (*cp++) {
@@ -169,8 +180,10 @@ readjob()
 			 * something different than what gethostbyaddr()
 			 * returns
 			 */
-			strcpy(cp + 6, from);
-			strcpy(tfname, cp);
+			strlcpy(cp + 6, from, sizeof(line) + line - cp - 6);
+			if (strchr(cp, '/'))
+				frecverr("readjob: %s: illegal path name", cp);
+			strlcpy(tfname, cp, sizeof tfname);
 			tfname[0] = 't';
 			if (!chksize(size)) {
 				(void) write(1, "\2", 1);
@@ -193,14 +206,13 @@ readjob()
 				size = size * 10 + (*cp++ - '0');
 			if (*cp++ != ' ')
 				break;
+			if (strchr(cp, '/'))
+				frecverr("readjob: %s: illegal path name", cp);
 			if (!chksize(size)) {
 				(void) write(1, "\2", 1);
 				continue;
 			}
-			(void) strcpy(dfname, cp);
-			if (index(dfname, '/'))
-				frecverr("readjob: %s: illegal path name",
-					dfname);
+			(void) strlcpy(dfname, cp, sizeof dfname);
 			(void) readfile(dfname, size);
 			continue;
 		}
@@ -216,9 +228,9 @@ readfile(file, size)
 	char *file;
 	int size;
 {
-	register char *cp;
+	char *cp;
 	char buf[BUFSIZ];
-	register int i, j, amt;
+	int i, j, amt;
 	int fd, err;
 
 	fd = open(file, O_CREAT|O_EXCL|O_WRONLY, FILMOD);
@@ -250,7 +262,8 @@ readfile(file, size)
 	if (err)
 		frecverr("%s: write error", file);
 	if (noresponse()) {		/* file sent had bad data in it */
-		(void) unlink(file);
+		if (strchr(file, '/') == NULL)
+			(void) unlink(file);
 		return(0);
 	}
 	ack();
@@ -296,7 +309,7 @@ read_number(fn)
 	char *fn;
 {
 	char lin[80];
-	register FILE *fp;
+	FILE *fp;
 
 	if ((fp = fopen(fn, "r")) == NULL)
 		return (0);
@@ -309,46 +322,35 @@ read_number(fn)
 }
 
 /*
- * Remove all the files associated with the current job being transfered.
+ * Remove all the files associated with the current job being transferred.
  */
 static void
 rcleanup(signo)
 	int signo;
 {
-	if (tfname[0])
+	int save_errno = errno;
+
+	if (tfname[0] && strchr(tfname, '/') == NULL)
 		(void) unlink(tfname);
-	if (dfname[0])
+	if (dfname[0] && strchr(dfname, '/') == NULL) {
 		do {
 			do
 				(void) unlink(dfname);
 			while (dfname[2]-- != 'A');
 			dfname[2] = 'z';
 		} while (dfname[0]-- != 'd');
+	}
 	dfname[0] = '\0';
+	errno = save_errno;
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 static void
-#if __STDC__
 frecverr(const char *msg, ...)
-#else
-frecverr(msg, va_alist)
-	char *msg;
-        va_dcl
-#endif
 {
 	extern char fromb[];
 	va_list ap;
-#if __STDC__
+
 	va_start(ap, msg);
-#else
-	va_start(ap);
-#endif
 	rcleanup(0);
 	syslog(LOG_ERR, "%s", fromb);
 	vsyslog(LOG_ERR, msg, ap);

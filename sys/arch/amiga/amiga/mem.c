@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.15 1995/10/09 02:46:09 chopps Exp $	*/
+/*	$OpenBSD: mem.c,v 1.17 2001/12/08 02:24:06 art Exp $	*/
+/*	$NetBSD: mem.c,v 1.18 1997/02/02 07:17:14 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -50,30 +51,48 @@
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 extern int kernel_reload_write(struct uio *uio);
 extern u_int lowram;
-caddr_t zeropage;
+caddr_t devzeropage;
+
+int mmopen(dev_t, int, int, struct proc *);
+int mmclose(dev_t, int, int, struct proc *);
+int mmrw(dev_t, struct uio *, int);
+paddr_t mmmmap(dev_t, off_t, int);
+int mmioctl(dev_t, u_long, caddr_t, int, struct proc *);
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
-	dev_t dev;
-	int flag, mode;
+mmopen(dev, flag, mode, p)
+	dev_t		dev;
+	int		flag, mode;
+	struct proc	*p;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+		case 20:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
-	dev_t dev;
-	int flag, mode;
+mmclose(dev, flag, mode, p)
+	dev_t		dev;
+	int		flag, mode;
+	struct proc	*p;
 {
 
 	return (0);
@@ -114,7 +133,7 @@ mmrw(dev, uio, flags)
 		}
 		switch (minor(dev)) {
 
-/* minor device 0 is physical memory */
+		/* minor device 0 is physical memory */
 		case 0:
 			v = uio->uio_offset;
 #ifndef DEBUG
@@ -126,19 +145,21 @@ mmrw(dev, uio, flags)
 #endif
 			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
 			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+			    VM_PROT_READ : VM_PROT_WRITE, PMAP_WIRED);
+			pmap_update(pmap_kernel());
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
 			pmap_remove(pmap_kernel(), (vm_offset_t)vmmap,
 			    (vm_offset_t)vmmap + NBPG);
+			pmap_update(pmap_kernel());
 			continue;
 
-/* minor device 1 is kernel memory */
+		/* minor device 1 is kernel memory */
 		case 1:
 			v = uio->uio_offset;
 			c = min(iov->iov_len, MAXPHYS);
-			if (!kernacc((caddr_t)v, c,
+			if (!uvm_kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
 				return (EFAULT);
 			if (v < NBPG) {
@@ -148,14 +169,14 @@ mmrw(dev, uio, flags)
 				 * and EFAULT for writes.
 				 */
 				if (uio->uio_rw == UIO_READ) {
-					if (zeropage == NULL) {
-						zeropage = (caddr_t)
-						    malloc(CLBYTES, M_TEMP,
+					if (devzeropage == NULL) {
+						devzeropage = (caddr_t)
+						    malloc(PAGE_SIZE, M_TEMP,
 						    M_WAITOK);
-						bzero(zeropage, CLBYTES);
+						bzero(devzeropage, PAGE_SIZE);
 					}
 					c = min(c, NBPG - (int)v);
-					v = (vm_offset_t) zeropage;
+					v = (vm_offset_t)devzeropage;
 				} else
 #endif
 					return (EFAULT);
@@ -163,28 +184,35 @@ mmrw(dev, uio, flags)
 			error = uiomove((caddr_t)v, c, uio);
 			continue;
 
-/* minor device 2 is EOF/RATHOLE */
+		/* minor device 2 is EOF/RATHOLE */
 		case 2:
 			if (uio->uio_rw == UIO_WRITE)
 				uio->uio_resid = 0;
 			return (0);
 
-/* minor device 12 (/dev/zero) is source of nulls on read, rathole on write */
+		/*
+		 * minor device 12 (/dev/zero) is source of nulls on read,
+		 * rathole on write
+		 */
 		case 12:
 			if (uio->uio_rw == UIO_WRITE) {
 				c = iov->iov_len;
 				break;
 			}
-			if (zeropage == NULL) {
-				zeropage = (caddr_t)
-				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
+			if (devzeropage == NULL) {
+				devzeropage = (caddr_t)
+				    malloc(PAGE_SIZE, M_TEMP, M_WAITOK);
+				bzero(devzeropage, PAGE_SIZE);
 			}
-			c = min(iov->iov_len, CLBYTES);
-			error = uiomove(zeropage, c, uio);
+			c = min(iov->iov_len, PAGE_SIZE);
+			error = uiomove(devzeropage, c, uio);
 			continue;
 
-/* minor device 20 (/dev/reload) represents magic memory which you can write a kernel image to, causing a reboot into that kernel */
+		/*
+		 * minor device 20 (/dev/reload) represents magic memory
+		 * which you can write a kernel image to, causing a reboot
+		 * into that kernel
+		 */
 		case 20:
 			if (uio->uio_rw == UIO_READ)
 				return 0;
@@ -202,7 +230,9 @@ mmrw(dev, uio, flags)
 		uio->uio_resid -= c;
 	}
 	if (minor(dev) == 0) {
+#ifndef DEBUG
 unlock:
+#endif
 		if (physlock > 1)
 			wakeup((caddr_t)&physlock);
 		physlock = 0;
@@ -210,11 +240,22 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
+	return (-1);
+}
 
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
 	return (EOPNOTSUPP);
 }

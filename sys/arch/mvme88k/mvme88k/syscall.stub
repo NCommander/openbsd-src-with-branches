@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 	/*
 	 * system call will look like:
 	 *	 ld r10, r31, 32; r10,r11,r12 might be garbage.

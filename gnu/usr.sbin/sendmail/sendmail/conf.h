@@ -10,7 +10,7 @@
  * the sendmail distribution.
  *
  *
- *	$Sendmail: conf.h,v 8.555 2001/09/03 17:21:30 gshapiro Exp $
+ *	$Sendmail: conf.h,v 8.557 2001/10/05 03:49:41 ca Exp $
  */
 
 /*
@@ -70,7 +70,6 @@ struct rusage;	/* forward declaration to get gcc to shut up in wait.h */
 #define MAXKEY		128		/* maximum size of a database key */
 #define MEMCHUNKSIZE	1024		/* chunk size for memory allocation */
 #define MAXUSERENVIRON	100		/* max envars saved, must be >= 3 */
-#define MAXALIASDB	12		/* max # of alias databases */
 #define MAXMAPSTACK	12		/* max # of stacked or sequenced maps */
 #if MILTER
 # define MAXFILTERS	25		/* max # of milter filters */
@@ -188,7 +187,11 @@ struct rusage;	/* forward declaration to get gcc to shut up in wait.h */
 #endif /* NAMED_BIND */
 
 #ifndef PIPELINING
-# define PIPELINING	1	/* SMTP PIPELINING */
+# ifdef __vax__
+#  define PIPELINING	0	/* SMTP PIPELINING */
+# else
+#  define PIPELINING	1	/* SMTP PIPELINING */
+# endif /* __vax__ */
 #endif /* PIPELINING */
 
 /**********************************************************************

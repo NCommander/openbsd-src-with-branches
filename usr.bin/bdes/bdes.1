@@ -1,3 +1,4 @@
+.\"	$OpenBSD: bdes.1,v 1.4 1999/03/10 21:25:29 pjanzen Exp $
 .\"	$NetBSD: bdes.1,v 1.1 1995/07/24 04:30:51 cgd Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -48,16 +49,9 @@ bdes [ \-abdp ] [ \-F N ] [ \-f N ] [ \-k key ]
 [ \-m N ] [ \-o N ] [ \-v vector ]
 .ft R
 .fi
-.SH WARNING
-The
-.I bdes
-program installed on this system does not support
-encryption, because it was obtained as part of the
-``exportable'' distribution of
-.IR NetBSD .
 .SH DESCRIPTION
 .I Bdes
-implements all DES modes of operation described in FIPS PUB 81, 
+implements all DES modes of operation described in FIPS PUB 81,
 including alternative cipher feedback mode and both authentication
 modes.
 .I Bdes
@@ -226,7 +220,7 @@ By default,
 .I bdes
 does too, but this may be changed from the command line.
 .SH SEE ALSO
-crypt(1), crypt(3), getpass(3)
+crypt(3), getpass(3)
 .sp
 .IR "Data Encryption Standard" ,
 Federal Information Processing Standard #46,
@@ -282,7 +276,7 @@ Additionally, programs which display programs' arguments may compromise the
 key and initialization vector, if they are specified on the command line.
 To avoid this
 .I bdes
-overwrites its arguments, however, the obvious race cannot currently be
+overwrites its arguments; however, the obvious race cannot currently be
 avoided.
 .PP
 Certain specific keys should be avoided because they introduce potential

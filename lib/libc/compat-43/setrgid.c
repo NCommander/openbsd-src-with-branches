@@ -32,8 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)setrgid.c	5.5 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: setrgid.c,v 1.5 1994/07/21 17:13:38 jtc Exp $";
+static char *rcsid = "$OpenBSD: setrgid.c,v 1.7 2002/02/16 21:27:21 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -41,13 +40,10 @@ static char *rcsid = "$Id: setrgid.c,v 1.5 1994/07/21 17:13:38 jtc Exp $";
 
 __warn_references(setrgid, "warning: this program uses setrgid(), which is deprecated.");
 
+extern int __setregid(gid_t, gid_t);
+
 int
-#ifdef __STDC__
 setrgid(gid_t rgid)
-#else
-setrgid(rgid)
-	int rgid;
-#endif
 {
-	return (__setregid(rgid, -1));
+	return (__setregid(rgid, (gid_t)-1));
 }

@@ -1,4 +1,6 @@
+/*	$OpenBSD: reg.h,v 1.10 2001/12/16 23:49:46 miod Exp $ */
 /*
+ * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
  *
@@ -28,41 +30,58 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <machine/pcb.h>
+#ifndef _M88K_REG_H_
+#define _M88K_REG_H_
 
+/* This must always be an even number of words long */
 struct reg {
-    unsigned r_r[32];
-    unsigned r_fpsr;
-    unsigned r_fpcr;
-    unsigned r_epsr;
-    unsigned r_sxip;
-    unsigned r_snip;
-    unsigned r_sfip;
-    unsigned r_ssbr;
-    unsigned r_dmt0;
-    unsigned r_dmd0;
-    unsigned r_dma0;
-    unsigned r_dmt1;
-    unsigned r_dmd1;
-    unsigned r_dma1;
-    unsigned r_dmt2;
-    unsigned r_dmd2;
-    unsigned r_dma2;
-    unsigned r_fpecr;
-    unsigned r_fphs1;
-    unsigned r_fpls1;
-    unsigned r_fphs2;
-    unsigned r_fpls2;
-    unsigned r_fppt;
-    unsigned r_fprh;
-    unsigned r_fprl;
-    unsigned r_fpit;
-    unsigned r_vector;   /* exception vector number */
-    unsigned r_mask;	   /* interrupt mask level */
-    unsigned r_mode;     /* interrupt mode */
-    unsigned r_scratch1; /* used by locore trap handling code */
-    unsigned r_pad;      /* to make an even length */
-} ;
+    unsigned r[32];  /* 0 - 31 */
+#define   tf_sp r[31]
+    unsigned epsr;   /* 32 */
+    unsigned fpsr;
+    unsigned fpcr;
+    unsigned sxip;
+#define exip sxip	/* mc88110 */
+    unsigned snip;
+#define enip snip	/* mc88110 */
+    unsigned sfip;
+    unsigned ssbr;
+#define duap ssbr	/* mc88110 */
+    unsigned dmt0;
+#define dsr dmt0	/* mc88110 */
+    unsigned dmd0;
+#define dlar dmd0	/* mc88110 */
+    unsigned dma0;
+#define dpar dma0	/* mc88110 */
+    unsigned dmt1;
+#define isr dmt1	/* mc88110 */
+    unsigned dmd1;
+#define ilar dmd1	/* mc88110 */
+    unsigned dma1;
+#define ipar dma1	/* mc88110 */
+    unsigned dmt2;
+#define isap dmt2	/* mc88110 */
+    unsigned dmd2;
+#define dsap dmd2	/* mc88110 */
+    unsigned dma2;
+#define iuap dma2	/* mc88110 */
+    unsigned fpecr;
+    unsigned fphs1;
+    unsigned fpls1;
+    unsigned fphs2;
+    unsigned fpls2;
+    unsigned fppt;
+    unsigned fprh;
+    unsigned fprl;
+    unsigned fpit;
+    unsigned vector;	      /* exception vector number */
+    unsigned mask;	      /* interrupt mask level */
+    unsigned mode;	      /* interrupt mode */
+    unsigned scratch1;	   /* used by locore trap handling code */
+    unsigned ipfsr;        /* P BUS status - used in inst fault handling */
+    unsigned dpfsr;        /* P BUS status - used in data fault handling */
+    unsigned cpu;          /* cpu number */
+};
 
 struct fpreg {
     unsigned fp_fpecr;
@@ -75,3 +94,5 @@ struct fpreg {
     unsigned fp_fprl;
     unsigned fp_fpit;
 };
+
+#endif /* _M88K_REG_H_ */

@@ -35,7 +35,7 @@
 
 RCSID("$KTH: common.c,v 1.13.2.4 2000/10/18 23:31:51 assar Exp $");
 
-sig_atomic_t disconnect = 0;
+volatile sig_atomic_t disconnect = 0;
 int isserver = 0;
 
 /*
@@ -162,6 +162,7 @@ copy_packets (int tundev, int netdev, int mtu, des_cblock *iv,
 RETSIGTYPE
 childhandler (int sig)
 {
+     int save_errno = errno;
      pid_t pid;
      int status;
 
@@ -169,6 +170,7 @@ childhandler (int sig)
 	  pid = waitpid (-1, &status, WNOHANG|WUNTRACED);
      } while(pid > 0);
      signal (SIGCHLD, childhandler);
+     errno = save_errno;
      SIGRETURN(0);
 }
 

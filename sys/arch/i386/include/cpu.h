@@ -1,4 +1,5 @@
-/*	$NetBSD: cpu.h,v 1.31 1995/10/11 04:20:02 mycroft Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.40 2001/12/08 02:24:06 art Exp $	*/
+/*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -53,8 +54,6 @@
  * referenced in generic code
  */
 #define	cpu_swapin(p)			/* nothing */
-#define	cpu_wait(p)			/* nothing */
-#define	cpu_swapout(p)			panic("cpu_swapout: can't get here");
 
 /*
  * Arguments to hardclock, softclock and statclock
@@ -68,7 +67,7 @@
 #define	CLKF_USERMODE(frame)	USERMODE((frame)->if_cs, (frame)->if_eflags)
 #define	CLKF_BASEPRI(frame)	((frame)->if_ppl == 0)
 #define	CLKF_PC(frame)		((frame)->if_eip)
-#define	CLKF_INTR(frame)	(0)	/* XXX should have an interrupt stack */
+#define	CLKF_INTR(frame)	(IDXSEL((frame)->if_cs) == GICODE_SEL)
 
 /*
  * Preempt the current process if in interrupt from user mode,
@@ -94,32 +93,178 @@ int	want_resched;		/* resched() was called */
  * We need a machine-independent name for this.
  */
 #define	DELAY(x)		delay(x)
+void	delay(int);
+
+#if defined(I586_CPU) || defined(I686_CPU)
+/*
+ * High resolution clock support (Pentium only)
+ */
+void	calibrate_cyclecounter(void);
+#ifndef	HZ
+extern u_quad_t pentium_base_tsc;
+#define CPU_CLOCKUPDATE(otime, ntime)					\
+	do {								\
+		if (pentium_mhz) {					\
+			__asm __volatile("cli\n"			\
+					 "movl (%3), %%eax\n"		\
+					 "movl %%eax, (%2)\n"		\
+					 "movl 4(%3), %%eax\n"		\
+					 "movl %%eax, 4(%2)\n"		\
+					 ".byte 0xf, 0x31\n"		\
+					 "sti\n"			\
+					 "#%0 %1 %2 %3"			\
+					 : "=m" (*otime),		\
+					 "=A" (pentium_base_tsc)	\
+					 : "c" (otime), "b" (ntime));	\
+		}							\
+		else {							\
+			*(otime) = *(ntime);				\
+		}							\
+	} while (0)
+#endif
+#endif
 
 /*
  * pull in #defines for kinds of processors
  */
 #include <machine/cputypes.h>
 
-struct cpu_nameclass {
-	char *cpu_name;
-	int  cpu_class;
+struct cpu_nocpuid_nameclass {
+	int cpu_vendor;
+	const char *cpu_vendorname;
+	const char *cpu_name;
+	int cpu_class;
+	void (*cpu_setup)(const char *, int, int);
+};
+
+struct cpu_cpuid_nameclass {
+	const char *cpu_id;
+	int cpu_vendor;
+	const char *cpu_vendorname;
+	struct cpu_cpuid_family {
+		int cpu_class;
+		const char *cpu_models[CPU_MAXMODEL+2];
+		void (*cpu_setup)(const char *, int, int);
+	} cpu_family[CPU_MAXFAMILY - CPU_MINFAMILY + 1];
+};
+
+struct cpu_cpuid_feature {
+	int feature_bit;
+	const char *feature_name;
 };
 
 #ifdef _KERNEL
 extern int cpu;
 extern int cpu_class;
-extern struct cpu_nameclass i386_cpus[];
+extern int cpu_feature;
+extern int cpu_apmwarn;
+extern int cpu_apmhalt;
+extern int cpuid_level;
+extern const struct cpu_nocpuid_nameclass i386_nocpuid_cpus[];
+extern const struct cpu_cpuid_nameclass i386_cpuid_cpus[];
+
+#if defined(I586_CPU) || defined(I686_CPU)
+extern int pentium_mhz;
 #endif
+
+#ifdef I586_CPU
+/* F00F bug fix stuff for pentium cpu */
+extern int cpu_f00f_bug;
+void fix_f00f(void);
+#endif
+
+/* dkcsum.c */
+void	dkcsumattach(void);
+
+/* machdep.c */
+void	dumpconf(void);
+void	cpu_reset(void);
+void	i386_proc0_tss_ldt_init(void);
+
+/* locore.s */
+struct region_descriptor;
+void	lgdt(struct region_descriptor *);
+void	fillw(short, void *, size_t);
+short	fusword(u_short *);
+int	susword(u_short *t, u_short);
+
+struct pcb;
+void	savectx(struct pcb *);
+void	switch_exit(struct proc *);
+void	proc_trampoline(void);
+
+/* clock.c */
+void	initrtclock(void);
+void	startrtclock(void);
+void	rtcdrain(void *);
+
+/* npx.c */
+void	npxdrop(void);
+void	npxsave(void);
+
+#if defined(MATH_EMULATE) || defined(GPL_MATH_EMULATE)
+/* math_emulate.c */
+int	math_emulate(struct trapframe *);
+#endif
+
+#ifdef USER_LDT
+/* sys_machdep.h */
+void	i386_user_cleanup(struct pcb *);
+int	i386_get_ldt(struct proc *, void *, register_t *);
+int	i386_set_ldt(struct proc *, void *, register_t *);
+#endif
+
+/* isa_machdep.c */
+void	isa_defaultirq(void);
+int	isa_nmi(void);
+
+/* pmap.c */
+void	pmap_bootstrap(vm_offset_t);
+
+/* vm_machdep.c */
+int	kvtop(caddr_t);
+
+#ifdef VM86
+/* vm86.c */
+void	vm86_gpfault(struct proc *, int);
+#endif /* VM86 */
+
+#ifdef GENERIC
+/* swapgeneric.c */
+void	setconf(void);
+#endif /* GENERIC */
+
+#endif /* _KERNEL */
 
 /* 
  * CTL_MACHDEP definitions.
  */
 #define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
+#define	CPU_BIOS		2	/* BIOS variables */
+#define	CPU_BLK2CHR		3	/* convert blk maj into chr one */
+#define	CPU_CHR2BLK		4	/* convert chr maj into blk one */
+#define CPU_ALLOWAPERTURE	5	/* allow mmap of /dev/xf86 */
+#define CPU_CPUVENDOR		6	/* cpuid vendor string */
+#define CPU_CPUID		7	/* cpuid */
+#define CPU_CPUFEATURE		8	/* cpuid features */
+#define CPU_APMWARN		9	/* APM battery warning percentage */
+#define CPU_KBDRESET		10	/* keyboard reset under pcvt */
+#define CPU_APMHALT		11	/* halt -p hack */
+#define	CPU_MAXID		12	/* number of valid machdep ids */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
 	{ "console_device", CTLTYPE_STRUCT }, \
+	{ "bios", CTLTYPE_INT }, \
+	{ "blk2chr", CTLTYPE_STRUCT }, \
+	{ "chr2blk", CTLTYPE_STRUCT }, \
+	{ "allowaperture", CTLTYPE_INT }, \
+	{ "cpuvendor", CTLTYPE_STRING }, \
+	{ "cpuid", CTLTYPE_INT }, \
+	{ "cpufeature", CTLTYPE_INT }, \
+	{ "apmwarn", CTLTYPE_INT }, \
+	{ "kbdreset", CTLTYPE_INT }, \
+	{ "apmhalt", CTLTYPE_INT }, \
 }
 
 #endif /* !_I386_CPU_H_ */

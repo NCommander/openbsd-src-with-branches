@@ -1,3 +1,5 @@
+/*	$OpenBSD: freebsd_timex.h,v 1.3 2001/09/20 17:02:31 mpech Exp $	*/
+
 /******************************************************************************
  *                                                                            *
  * Copyright (c) David L. Mills 1993, 1994                                    *
@@ -229,7 +231,7 @@
 #define TIME_INS	1	/* insert leap second warning */
 #define TIME_DEL	2	/* delete leap second warning */
 #define TIME_OOP	3	/* leap second in progress */
-#define TIME_WAIT	4	/* leap second has occured */
+#define TIME_WAIT	4	/* leap second has occurred */
 #define TIME_ERROR	5	/* clock not synchronized */
 
 /*
@@ -292,8 +294,8 @@ struct freebsd_timex {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern int ntp_gettime	__P((struct ntptimeval *));
-extern int ntp_adjtime	__P((struct timex *));
+extern int ntp_gettime(struct ntptimeval *);
+extern int ntp_adjtime(struct timex *);
 __END_DECLS
 
 #endif /* not _KERNEL */

@@ -31,11 +31,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#if defined(SYSLIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)setlogin.s	5.1 (Berkeley) 5/6/91"*/
-	.asciz "$Id: setlogin.S,v 1.3 1994/01/27 14:45:55 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD: setlogin.S,v 1.1.1.1 1995/10/18 08:41:32 deraadt Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 

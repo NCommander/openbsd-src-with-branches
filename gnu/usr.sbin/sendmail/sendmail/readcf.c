@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: readcf.c,v 8.582 2001/09/04 22:43:05 ca Exp $")
+SM_RCSID("@(#)$Sendmail: readcf.c,v 8.594 2001/12/14 00:43:17 gshapiro Exp $")
 
 #if NETINET || NETINET6
 # include <arpa/inet.h>
@@ -115,19 +115,19 @@ readcf(cfname, safe, e)
 	if (cf == NULL)
 	{
 		syserr("cannot open");
-		finis(false, EX_OSFILE);
+		finis(false, true, EX_OSFILE);
 	}
 
 	if (fstat(sm_io_getinfo(cf, SM_IO_WHAT_FD, NULL), &statb) < 0)
 	{
 		syserr("cannot fstat");
-		finis(false, EX_OSFILE);
+		finis(false, true, EX_OSFILE);
 	}
 
 	if (!S_ISREG(statb.st_mode))
 	{
 		syserr("not a plain file");
-		finis(false, EX_OSFILE);
+		finis(false, true, EX_OSFILE);
 	}
 
 	if (OpMode != MD_TEST && bitset(S_IWGRP|S_IWOTH, statb.st_mode))
@@ -613,7 +613,7 @@ readcf(cfname, safe, e)
 	if (sm_io_error(cf))
 	{
 		syserr("I/O read error");
-		finis(false, EX_OSFILE);
+		finis(false, true, EX_OSFILE);
 	}
 	(void) sm_io_close(cf, SM_TIME_DEFAULT);
 	FileName = NULL;
@@ -645,7 +645,7 @@ readcf(cfname, safe, e)
 		}
 	}
 }
-/*
+/*
 **  TRANSLATE_DOLLARS -- convert $x into internal form
 **
 **	Actually does all appropriate pre-processing of a config line
@@ -726,7 +726,7 @@ translate_dollars(bp)
 	while (--p > bp && isascii(*p) && isspace(*p))
 		*p = '\0';
 }
-/*
+/*
 **  TOOMANY -- signal too many of some option
 **
 **	Parameters:
@@ -747,7 +747,7 @@ toomany(id, maxcnt)
 {
 	syserr("too many %c lines, %d max", id, maxcnt);
 }
-/*
+/*
 **  FILECLASS -- read members of a class from a file
 **
 **	Parameters:
@@ -964,7 +964,7 @@ fileclass(class, filename, fmt, safe, optional)
 			f = NULL;
 		else
 			f = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
-				       (void *) fd, SM_IO_RDONLY, NULL);
+				       (void *) &fd, SM_IO_RDONLY, NULL);
 	}
 	else
 	{
@@ -977,6 +977,8 @@ fileclass(class, filename, fmt, safe, optional)
 			sff |= SFF_NOWLINK;
 		if (safe)
 			sff |= SFF_OPENASROOT;
+		else if (RealUid == 0)
+			sff |= SFF_ROOTOK;
 		if (DontLockReadFiles)
 			sff |= SFF_NOLOCK;
 		f = safefopen(filename, O_RDONLY, 0, sff);
@@ -1017,7 +1019,7 @@ fileclass(class, filename, fmt, safe, optional)
 	if (pid > 0)
 		(void) waitfor(pid);
 }
-/*
+/*
 **  MAKEMAILER -- define a new mailer.
 **
 **	Parameters:
@@ -1344,6 +1346,24 @@ makemailer(line)
 		p = delimptr;
 	}
 
+#if !HASRRESVPORT
+	if (bitnset(M_SECURE_PORT, m->m_flags))
+	{
+		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+				     "M%s: Warning: F=%c set on system that doesn't support rresvport()\n",
+				     m->m_name, M_SECURE_PORT);
+	}
+#endif /* !HASRRESVPORT */
+
+#if !HASNICE
+	if (m->m_nice != 0)
+	{
+		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+				     "M%s: Warning: N= set on system that doesn't support nice()\n",
+				     m->m_name);
+	}
+#endif /* !HASNICE */
+
 	/* do some rationality checking */
 	if (m->m_argv == NULL)
 	{
@@ -1376,8 +1396,7 @@ makemailer(line)
 
 	if (strcmp(m->m_mailer, "[TCP]") == 0)
 	{
-		syserr("M%s: P=[TCP] must be replaced by P=[IPC]\n",
-		       m->m_name);
+		syserr("M%s: P=[TCP] must be replaced by P=[IPC]", m->m_name);
 		return;
 	}
 
@@ -1475,7 +1494,7 @@ makemailer(line)
 	Mailer[i] = s->s_mailer = m;
 	m->m_mno = i;
 }
-/*
+/*
 **  MUNCHSTRING -- translate a string into internal form.
 **
 **	Parameters:
@@ -1547,7 +1566,7 @@ munchstring(p, delimptr, delim)
 	*q++ = '\0';
 	return buf;
 }
-/*
+/*
 **  EXTRQUOTSTR -- extract a (quoted) string.
 **
 **	This routine deals with quoted (") strings and escaped
@@ -1607,7 +1626,7 @@ extrquotstr(p, delimptr, delimbuf, st)
 		*st = !(quotemode || backslash);
 	return buf;
 }
-/*
+/*
 **  MAKEARGV -- break up a string into words
 **
 **	Parameters:
@@ -1648,7 +1667,7 @@ makeargv(p)
 
 	return avp;
 }
-/*
+/*
 **  PRINTRULES -- print rewrite rules (for debugging)
 **
 **	Parameters:
@@ -1685,7 +1704,7 @@ printrules()
 		}
 	}
 }
-/*
+/*
 **  PRINTMAILER -- print mailer structure (for debugging)
 **
 **	Parameters:
@@ -1762,7 +1781,7 @@ printmailer(m)
 	}
 	(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "\n");
 }
-/*
+/*
 **  SETOPTION -- set global processing option
 **
 **	Parameters:
@@ -1838,6 +1857,9 @@ static struct optioninfo
 	{ "TempFileMode",		'F',		OI_NONE	},
 	{ "SaveFromLine",		'f',		OI_NONE	},
 	{ "MatchGECOS",			'G',		OI_NONE	},
+
+	/* no long name, just here to avoid problems in setoption */
+	{ "",				'g',		OI_NONE	},
 	{ "HelpFile",			'H',		OI_NONE	},
 	{ "MaxHopCount",		'h',		OI_NONE	},
 	{ "ResolverOptions",		'I',		OI_NONE	},
@@ -1849,6 +1871,9 @@ static struct optioninfo
 	{ "UseErrorsTo",		'l',		OI_NONE	},
 	{ "LogLevel",			'L',		OI_SAFE	},
 	{ "MeToo",			'm',		OI_SAFE	},
+
+	/* no long name, just here to avoid problems in setoption */
+	{ "",				'M',		OI_NONE	},
 	{ "CheckAliases",		'n',		OI_NONE	},
 	{ "OldStyleHeaders",		'o',		OI_SAFE	},
 	{ "DaemonPortOptions",		'O',		OI_NONE	},
@@ -2155,6 +2180,11 @@ setoption(opt, val, safe, sticky, e)
 			if (o->o_code == opt)
 				break;
 		}
+		if (o->o_name == NULL)
+		{
+			syserr("readcf: unknown option name 0x%x", opt & 0xff);
+			return;
+		}
 		subopt = NULL;
 	}
 
@@ -2250,7 +2280,7 @@ setoption(opt, val, safe, sticky, e)
 
 		  default:
 			syserr("Unknown 8-bit mode %c", *val);
-			finis(false, EX_USAGE);
+			finis(false, true, EX_USAGE);
 		}
 #else /* MIME8TO7 */
 		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
@@ -2318,7 +2348,7 @@ setoption(opt, val, safe, sticky, e)
 
 		  default:
 			syserr("Unknown delivery mode %c", *val);
-			finis(false, EX_USAGE);
+			finis(false, true, EX_USAGE);
 		}
 		break;
 
@@ -2606,7 +2636,11 @@ setoption(opt, val, safe, sticky, e)
 	  case 'u':		/* set default uid */
 		for (p = val; *p != '\0'; p++)
 		{
+#if _FFR_DOTTED_USERNAMES
+			if (*p == '/' || *p == ':')
+#else /* _FFR_DOTTED_USERNAMES */
 			if (*p == '.' || *p == '/' || *p == ':')
+#endif /* _FFR_DOTTED_USERNAMES */
 			{
 				*p++ = '\0';
 				break;
@@ -2843,6 +2877,10 @@ setoption(opt, val, safe, sticky, e)
 		break;
 
 	  case O_NICEQUEUERUN:		/* nice queue runs */
+#if !HASNICE
+		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+				     "Warning: NiceQueueRun set on system that doesn't support nice()\n");
+#endif /* !HASNICE */
 
 		/* XXX do we want to check the range? > 0 ? */
 		NiceQueueRun = atoi(val);
@@ -2938,7 +2976,11 @@ setoption(opt, val, safe, sticky, e)
 	  case O_RUNASUSER:	/* run bulk of code as this user */
 		for (p = val; *p != '\0'; p++)
 		{
+#if _FFR_DOTTED_USERNAMES
+			if (*p == '/' || *p == ':')
+#else /* _FFR_DOTTED_USERNAMES */
 			if (*p == '.' || *p == '/' || *p == ':')
+#endif /* _FFR_DOTTED_USERNAMES */
 			{
 				*p++ = '\0';
 				break;
@@ -3122,11 +3164,11 @@ setoption(opt, val, safe, sticky, e)
 		break;
 
 	  case O_TRUSTUSER:
-# if !HASFCHOWN
+# if !HASFCHOWN && !defined(_FFR_DROP_TRUSTUSER_WARNING)
 		if (!UseMSP)
 			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
 					     "readcf: option TrustedUser may cause problems on systems\n        which do not support fchown() if UseMSP is not set.\n");
-# endif /* !HASFCHOWN */
+# endif /* !HASFCHOWN && !defined(_FFR_DROP_TRUSTUSER_WARNING) */
 		if (isascii(*val) && isdigit(*val))
 			TrustedUid = atoi(val);
 		else
@@ -3484,7 +3526,7 @@ setoption(opt, val, safe, sticky, e)
 	if (sticky && !bitset(OI_SUBOPT, o->o_flags))
 		setbitn(opt, StickyOpt);
 }
-/*
+/*
 **  SETCLASS -- set a string into a class
 **
 **	Parameters:
@@ -3528,7 +3570,7 @@ setclass(class, str)
 		setbitn(bitidx(class), s->s_class);
 	}
 }
-/*
+/*
 **  MAKEMAPENTRY -- create a map entry
 **
 **	Parameters:
@@ -3608,7 +3650,7 @@ makemapentry(line)
 	}
 	return &s->s_map;
 }
-/*
+/*
 **  STRTORWSET -- convert string to rewriting set number
 **
 **	Parameters:
@@ -3736,7 +3778,7 @@ strtorwset(p, endp, stabmode)
 	}
 	return ruleset;
 }
-/*
+/*
 **  SETTIMEOUT -- set an individual timeout
 **
 **	Parameters:
@@ -4057,7 +4099,7 @@ settimeout(name, val, sticky)
 			setbitn(to->to_code + i, StickyTimeoutOpt);
 	}
 }
-/*
+/*
 **  INITTIMEOUTS -- parse and set timeout values
 **
 **	Parameters:

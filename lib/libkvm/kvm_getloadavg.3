@@ -1,3 +1,6 @@
+.\"	$OpenBSD: kvm_getloadavg.3,v 1.4 1999/05/16 19:55:53 alex Exp $
+.\"	$NetBSD: kvm_getloadavg.3,v 1.2 1996/03/18 22:33:26 thorpej Exp $
+.\"
 .\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -36,11 +39,10 @@
 .Os
 .Sh NAME
 .Nm kvm_getloadavg
-.Nd get error message on kvm descriptor
+.Nd get load average of the system
 .Sh SYNOPSIS
 .Fd #include <sys/resource.h>
 .Fd #include <kvm.h>
-.br
 .Ft int
 .Fn kvm_getloadavg "kvm_t *kd" "double loadavg[]" "int nelem"
 .Sh DESCRIPTION
@@ -56,10 +58,10 @@ samples are retrieved and assigned to successive elements of
 .Fa loadavg Ns Bq .
 The system imposes a maximum of 3 samples, representing averages
 over the last 1, 5, and 15 minutes, respectively.
-.Sh DIAGNOSTICS
-If the load average was unobtainable, \-1 is returned; otherwise,
+.Sh RETURN VALUES
+If the load average was unobtainable, \-1 is returned. Otherwise,
 the number of samples actually retrieved is returned.
 .Sh SEE ALSO
 .Xr uptime 1 ,
-.Xr kvm 3 ,
-.Xr getloadavg 3
+.Xr getloadavg 3 ,
+.Xr kvm 3

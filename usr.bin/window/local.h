@@ -1,3 +1,4 @@
+/*	$OpenBSD: local.h,v 1.3 1997/02/25 00:04:08 downsj Exp $	*/
 /*	$NetBSD: local.h,v 1.3 1995/09/28 10:34:26 tls Exp $	*/
 
 /*
@@ -47,7 +48,7 @@
 #define NLINE		48			/* default text buffer size */
 
 #ifdef TERMINFO
-#define _PATH_CAPTOINFO	"/usr/5bin/captoinfo"
-#define _PATH_TIC	"/usr/5bin/tic"
+#define _PATH_CAPTOINFO	"/usr/bin/captoinfo"
+#define _PATH_TIC	"/usr/bin/tic"
 #define _PATH_RM	"/bin/rm"
 #endif

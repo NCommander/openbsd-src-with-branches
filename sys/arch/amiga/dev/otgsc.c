@@ -1,4 +1,5 @@
-/*	$NetBSD: otgsc.c,v 1.9 1995/09/16 16:11:24 chopps Exp $	*/
+/*	$OpenBSD: otgsc.c,v 1.6 1997/01/18 12:26:35 niklas Exp $	*/
+/*	$NetBSD: otgsc.c,v 1.17 1996/12/23 09:10:27 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -47,15 +48,14 @@
 #include <amiga/dev/scivar.h>
 #include <amiga/dev/zbusvar.h>
 
-int otgscprint __P((void *auxp, char *));
-void otgscattach __P((struct device *, struct device *, void *));
-int otgscmatch __P((struct device *, struct cfdata *, void *));
+void otgscattach(struct device *, struct device *, void *);
+int otgscmatch(struct device *, void *, void *);
 
-int otgsc_dma_xfer_in __P((struct sci_softc *dev, int len,
-    register u_char *buf, int phase));
-int otgsc_dma_xfer_out __P((struct sci_softc *dev, int len,
-    register u_char *buf, int phase));
-int otgsc_intr __P((struct sci_softc *));
+int otgsc_dma_xfer_in(struct sci_softc *dev, int len,
+    register u_char *buf, int phase);
+int otgsc_dma_xfer_out(struct sci_softc *dev, int len,
+    register u_char *buf, int phase);
+int otgsc_intr(void *);
 
 struct scsi_adapter otgsc_scsiswitch = {
 	sci_scsicmd,
@@ -71,26 +71,31 @@ struct scsi_device otgsc_scsidev = {
 	NULL,		/* Use default done routine */
 };
 
-#define QPRINTF
 
 #ifdef DEBUG
-extern int sci_debug;
+extern int sci_debug;  
+#define QPRINTF(a) if (sci_debug > 1) printf a
+#else
+#define QPRINTF(a)
 #endif
 
 extern int sci_data_wait;
 
-struct cfdriver otgsccd = {
-	NULL, "otgsc", (cfmatch_t)otgscmatch, otgscattach, 
-	DV_DULL, sizeof(struct sci_softc), NULL, 0 };
+struct cfattach otgsc_ca = {
+	sizeof(struct sci_softc), otgscmatch, otgscattach
+};
+
+struct cfdriver otgsc_cd = {
+	NULL, "otgsc", DV_DULL, NULL, 0
+};
 
 /*
  * if we are my Hacker's SCSI board we are here.
  */
 int
-otgscmatch(pdp, cdp, auxp)
+otgscmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -154,22 +159,8 @@ otgscattach(pdp, dp, auxp)
 	/*
 	 * attach all scsi units on us
 	 */
-	config_found(dp, &sc->sc_link, otgscprint);
+	config_found(dp, &sc->sc_link, scsiprint);
 }
-
-/*
- * print diag if pnp is NULL else just extra
- */
-int
-otgscprint(auxp, pnp)
-	void *auxp;
-	char *pnp;
-{
-	if (pnp == NULL)
-		return(UNCONF);
-	return(QUIET);
-}
-
 
 int
 otgsc_dma_xfer_in (dev, len, buf, phase)
@@ -179,11 +170,11 @@ otgsc_dma_xfer_in (dev, len, buf, phase)
 	int phase;
 {
 	int wait = sci_data_wait;
-	u_char csr;
-	u_char *obp = buf;
 	volatile register u_char *sci_dma = dev->sci_data + 0x100;
 	volatile register u_char *sci_csr = dev->sci_csr;
-	volatile register u_char *sci_icmd = dev->sci_icmd;
+#ifdef DEBUG
+	u_char *obp = buf;
+#endif
 
 	QPRINTF(("otgsc_dma_in %d, csr=%02x\n", len, *dev->sci_bus_csr));
 
@@ -201,7 +192,7 @@ otgsc_dma_xfer_in (dev, len, buf, phase)
 #ifdef DEBUG
 				if (sci_debug)
 					printf("otgsc_dma_in fail: l%d i%x w%d\n",
-					len, csr, wait);
+					len, *dev->sci_bus_csr, wait);
 #endif
 				*dev->sci_mode &= ~SCI_MODE_DMA;
 				return 0;
@@ -228,11 +219,8 @@ otgsc_dma_xfer_out (dev, len, buf, phase)
 	int phase;
 {
 	int wait = sci_data_wait;
-	u_char csr;
-	u_char *obp = buf;
 	volatile register u_char *sci_dma = dev->sci_data + 0x100;
 	volatile register u_char *sci_csr = dev->sci_csr;
-	volatile register u_char *sci_icmd = dev->sci_icmd;
 
 	QPRINTF(("otgsc_dma_out %d, csr=%02x\n", len, *dev->sci_bus_csr));
 
@@ -254,7 +242,7 @@ otgsc_dma_xfer_out (dev, len, buf, phase)
 #ifdef DEBUG
 				if (sci_debug)
 					printf("otgsc_dma_out fail: l%d i%x w%d\n",
-					len, csr, wait);
+					len, *dev->sci_bus_csr, wait);
 #endif
 				*dev->sci_mode &= ~SCI_MODE_DMA;
 				return 0;
@@ -275,9 +263,10 @@ otgsc_dma_xfer_out (dev, len, buf, phase)
 }
 
 int
-otgsc_intr(dev)
-	struct sci_softc *dev;
+otgsc_intr(arg)
+	void *arg;
 {
+	struct sci_softc *dev = arg;
 	u_char stat;
 
 	if ((*dev->sci_csr & SCI_CSR_INT) == 0)

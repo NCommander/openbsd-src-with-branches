@@ -1,14 +1,15 @@
-#	$OpenBSD: Makefile.bsd-wrapper,v 1.13 1997/09/05 07:17:18 kstailey Exp $
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.9 2000/03/25 01:01:06 deraadt Exp $
+
+SUBDIR=bcwrap
 
 MAN=	doc/bc.1 doc/dc.1
-#CLEANFILES=
+MLINKS=	bc.1 gnubc.1
 LDFLAGS+=	-s ${LDSTATIC}
-GNUCFLAGS=	CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
+GNUCFLAGS=	CC="${CC}" CFLAGS="${CFLAGS} ${COPTS}" LDFLAGS="${LDFLAGS}"
+CLEANFILES+=	bc/libmath.h doc/dc.info
 
-all:	config.status wrapper
+all:	config.status
 	${MAKE} ${GNUCFLAGS}
-
-wrapper:
 	cd ${.CURDIR}/bcwrap && ${MAKE}
 
 .FORCE:	.IGNORE
@@ -25,11 +26,15 @@ config: .FORCE
 .ifndef GLOBAL_AUTOCONF_CACHE
 	-rm -f config.cache
 .endif
+	PATH="/bin:/usr/bin:/sbin:/usr/sbin" \
 	INSTALL_PROGRAM="${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP}" \
+	${GNUCFLAGS} \
 	sh ${.CURDIR}/configure --prefix=${PREFIX}/usr --infodir=${PREFIX}/usr/share/info ${CF}
 
 config.status:
+	PATH="/bin:/usr/bin:/sbin:/usr/sbin" \
 	INSTALL_PROGRAM="${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP}" \
+	${GNUCFLAGS} \
 	sh ${.CURDIR}/configure --prefix=${PREFIX}/usr --infodir=${PREFIX}/usr/share/info ${CF}
 
 .ifdef NOMAN
@@ -38,12 +43,17 @@ maninstall:
 .endif
 
 install: maninstall
+	${MAKE} ${GNUCFLAGS} prefix=/usr \
+		bindir=/usr/bin infodir=/usr/share/info install
 	cd ${.CURDIR}/bcwrap && ${MAKE} install
-	${MAKE} ${GNUCFLAGS} prefix=${DESTDIR}/usr \
-		bindir=${DESTDIR}/usr/bin infodir=${PREFIX}/usr/share/info
 
-clean cleandir:
+clean:
 	-@if [ -e Makefile ]; then ${MAKE} distclean; fi
+	cd ${.CURDIR}/bcwrap && ${MAKE} clean
+
+cleandir:
+	-@if [ -e Makefile ]; then ${MAKE} distclean; fi
+	cd ${.CURDIR}/bcwrap && ${MAKE} cleandir
 	rm -f ${CLEANFILES}
 
 depend:

@@ -1,4 +1,5 @@
-/*	$NetBSD: resourcevar.h,v 1.11 1995/03/26 20:24:37 jtc Exp $	*/
+/*	$OpenBSD: resourcevar.h,v 1.4 2000/05/05 08:34:18 art Exp $	*/
+/*	$NetBSD: resourcevar.h,v 1.12 1995/11/22 23:01:53 cgd Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -53,9 +54,9 @@ struct pstats {
 
 	struct uprof {			/* profile arguments */
 		caddr_t	pr_base;	/* buffer base */
-		u_long	pr_size;	/* buffer size */
+		size_t  pr_size;	/* buffer size */
 		u_long	pr_off;		/* pc offset */
-		u_long	pr_scale;	/* pc scaling */
+		u_int   pr_scale;	/* pc scaling */
 		u_long	pr_addr;	/* temp storage for addr until AST */
 		u_long	pr_ticks;	/* temp storage for ticks until AST */
 	} p_prof;
@@ -84,12 +85,13 @@ struct plimit {
 	    (p)->p_stats->p_prof.pr_addr, (p)->p_stats->p_prof.pr_ticks)
 
 #ifdef _KERNEL
-void	 addupc_intr __P((struct proc *p, u_long pc, u_int ticks));
-void	 addupc_task __P((struct proc *p, u_long pc, u_int ticks));
-void	 calcru __P((struct proc *p, struct timeval *up, struct timeval *sp,
-	    struct timeval *ip));
-struct plimit
-	*limcopy __P((struct plimit *lim));
-void	 ruadd __P((struct rusage *ru, struct rusage *ru2));
+void	 addupc_intr(struct proc *p, u_long pc, u_int ticks);
+void	 addupc_task(struct proc *p, u_long pc, u_int ticks);
+void	 calcru(struct proc *p, struct timeval *up, struct timeval *sp,
+	    struct timeval *ip);
+struct plimit *limcopy(struct plimit *lim);
+void	limfree(struct plimit *);
+
+void	 ruadd(struct rusage *ru, struct rusage *ru2);
 #endif
 #endif	/* !_SYS_RESOURCEVAR_H_ */

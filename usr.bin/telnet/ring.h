@@ -1,3 +1,6 @@
+/*	$OpenBSD: ring.h,v 1.4 1998/05/15 03:16:42 art Exp $	*/
+/*	$NetBSD: ring.h,v 1.5 1996/02/28 21:04:09 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,18 +34,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)ring.h	8.1 (Berkeley) 6/6/93
- *	$Id: ring.h,v 1.3 1994/02/25 03:00:36 cgd Exp $
  */
-
-#if defined(P)
-# undef P
-#endif
-
-#if defined(__STDC__) || defined(LINT_ARGS)
-# define	P(x)	x
-#else
-# define	P(x)	()
-#endif
 
 /*
  * This defines a structure for a ring buffer.
@@ -60,6 +52,10 @@ typedef struct {
 			*bottom,	/* lowest address in buffer */
 			*top,		/* highest address+1 in buffer */
 			*mark;		/* marker (user defined) */
+#if    defined(ENCRYPTION)
+    unsigned char	*clearto;       /* Data to this point is clear text */
+    unsigned char	*encryyptedto;  /* Data is encrypted to here */
+#endif
     int		size;		/* size in bytes of buffer */
     u_long	consumetime,	/* help us keep straight full, empty, etc. */
 		supplytime;
@@ -69,29 +65,39 @@ typedef struct {
 
 /* Initialization routine */
 extern int
-	ring_init P((Ring *ring, unsigned char *buffer, int count));
+	ring_init(Ring *ring, unsigned char *buffer, int count);
 
 /* Data movement routines */
 extern void
-	ring_supply_data P((Ring *ring, unsigned char *buffer, int count));
+	ring_supply_data(Ring *ring, unsigned char *buffer, int count);
 #ifdef notdef
 extern void
-	ring_consume_data P((Ring *ring, unsigned char *buffer, int count));
+	ring_consume_data(Ring *ring, unsigned char *buffer, int count);
 #endif
 
 /* Buffer state transition routines */
 extern void
-	ring_supplied P((Ring *ring, int count)),
-	ring_consumed P((Ring *ring, int count));
+	ring_supplied(Ring *ring, int count),
+	ring_consumed(Ring *ring, int count);
 
 /* Buffer state query routines */
 extern int
-	ring_empty_count P((Ring *ring)),
-	ring_empty_consecutive P((Ring *ring)),
-	ring_full_count P((Ring *ring)),
-	ring_full_consecutive P((Ring *ring));
+	ring_empty_count(Ring *ring),
+	ring_empty_consecutive(Ring *ring),
+	ring_full_count(Ring *ring),
+	ring_full_consecutive(Ring *ring);
+
+#if    defined(ENCRYPTION)
+extern void
+	ring_encrypt (Ring *ring, void (*func)()),
+	ring_clearto (Ring *ring);
+#endif
 
 
 extern void
-    ring_clear_mark(),
-    ring_mark();
+    ring_clear_mark(Ring *),
+    ring_mark(Ring *);
+
+
+extern int
+    ring_at_mark(Ring *);

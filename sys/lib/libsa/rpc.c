@@ -1,4 +1,5 @@
-/*	$NetBSD: rpc.c,v 1.10 1995/09/23 03:36:11 gwr Exp $	*/
+/*	$OpenBSD: rpc.c,v 1.10 1998/02/23 20:32:30 niklas Exp $	*/
+/*	$NetBSD: rpc.c,v 1.16 1996/10/13 02:29:06 christos Exp $	*/
 
 /*
  * Copyright (c) 1992 Regents of the University of California.
@@ -54,10 +55,6 @@
 #include <netinet/in_systm.h>
 
 #include <nfs/rpcv2.h>
-#include <nfs/nfsv2.h>
-#include <nfs/xdr_subs.h>
-
-#include <string.h>
 
 #include "stand.h"
 #include "net.h"
@@ -100,8 +97,8 @@ struct rpc_reply {
 };
 
 /* Local forwards */
-static	ssize_t recvrpc __P((struct iodesc *, void *, size_t, time_t));
-static	int rpc_getport __P((struct iodesc *, n_long, n_long));
+static	ssize_t recvrpc(struct iodesc *, void *, size_t, time_t);
+static	int rpc_getport(struct iodesc *, n_long, n_long);
 
 int rpc_xid;
 int rpc_port = 0x400;	/* predecrement */
@@ -131,7 +128,7 @@ rpc_call(d, prog, vers, proc, sdata, slen, rdata, rlen)
 #ifdef RPC_DEBUG
 	if (debug)
 		printf("rpc_call: prog=0x%x vers=%d proc=%d\n",
-			prog, vers, proc);
+		    prog, vers, proc);
 #endif
 
 	port = rpc_getport(d, prog, vers);
@@ -186,17 +183,17 @@ rpc_call(d, prog, vers, proc, sdata, slen, rdata, rlen)
 	recv_head -= sizeof(*reply);
 
 	cc = sendrecv(d,
-	    sendudp, send_head, ((int)send_tail - (int)send_head),
-	    recvrpc, recv_head, ((int)recv_tail - (int)recv_head));
+	    sendudp, send_head, send_tail - send_head,
+	    recvrpc, recv_head, recv_tail - recv_head);
 
 #ifdef RPC_DEBUG
 	if (debug)
 		printf("callrpc: cc=%d rlen=%d\n", cc, rlen);
 #endif
-	if (cc == -1)
+	if (cc < -1)
 		return (-1);
 
-	if (cc <= sizeof(*reply)) {
+	if ((size_t)cc <= sizeof(*reply)) {
 		errno = EBADRPC;
 		return (-1);
 	}
@@ -226,7 +223,7 @@ rpc_call(d, prog, vers, proc, sdata, slen, rdata, rlen)
 	}
 	recv_head += sizeof(*reply);
 
-	return (ssize_t)((int)recv_tail - (int)recv_head);
+	return (ssize_t)(recv_tail - recv_head);
 }
 
 /*
@@ -243,7 +240,7 @@ recvrpc(d, pkt, len, tleft)
 {
 	register struct rpc_reply *reply;
 	ssize_t	n;
-	long	x;
+	int	x;
 
 	errno = 0;
 #ifdef RPC_DEBUG
@@ -322,8 +319,8 @@ rpc_fromaddr(pkt, addr, port)
 int rpc_pmap_num;
 struct pmap_list {
 	struct in_addr	addr;	/* server, net order */
-	u_long	prog;		/* host order */
-	u_long	vers;		/* host order */
+	u_int	prog;		/* host order */
+	u_int	vers;		/* host order */
 	int 	port;		/* host order */
 } rpc_pmap_list[PMAP_NUM];
 
@@ -331,8 +328,8 @@ struct pmap_list {
 int
 rpc_pmap_getcache(addr, prog, vers)
 	struct in_addr	addr;	/* server, net order */
-	u_long		prog;	/* host order */
-	u_long		vers;	/* host order */
+	u_int		prog;	/* host order */
+	u_int		vers;	/* host order */
 {
 	struct pmap_list *pl;
 
@@ -349,8 +346,8 @@ rpc_pmap_getcache(addr, prog, vers)
 void
 rpc_pmap_putcache(addr, prog, vers, port)
 	struct in_addr	addr;	/* server, net order */
-	u_long		prog;	/* host order */
-	u_long		vers;	/* host order */
+	u_int		prog;	/* host order */
+	u_int		vers;	/* host order */
 	int 		port;	/* host order */
 {
 	struct pmap_list *pl;
@@ -429,7 +426,7 @@ rpc_getport(d, prog, vers)
 
 	cc = rpc_call(d, PMAPPROG, PMAPVERS, PMAPPROC_GETPORT,
 		args, sizeof(*args), res, sizeof(*res));
-	if (cc < sizeof(*res)) {
+	if (cc < 0 || (size_t)cc < sizeof(*res)) {
 		printf("getport: %s", strerror(errno));
 		errno = EBADRPC;
 		return (-1);

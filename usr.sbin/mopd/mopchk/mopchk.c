@@ -1,3 +1,5 @@
+/*	$OpenBSD: mopchk.c,v 1.5 2001/11/16 21:18:06 miod Exp $	*/
+
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
  *
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: mopchk.c,v 1.5 1996/08/16 22:46:55 moj Exp $";
+static char rcsid[] = "$OpenBSD: mopchk.c,v 1.5 2001/11/16 21:18:06 miod Exp $";
 #endif
 
 /*
@@ -54,17 +56,17 @@ struct if_info *iflist;
 void   Usage         (/* void */);
 void   mopProcess    (/* struct if_info *, u_char * */);
 #else
-void   Usage         __P((void));
-void   mopProcess    __P((struct if_info *, u_char *));
+void   Usage(void);
+void   mopProcess(struct if_info *, u_char *);
 #endif
 
 int     AllFlag = 0;		/* listen on "all" interfaces  */
 int	VersionFlag = 0;	/* Show version */
 int	promisc = 0;		/* promisc mode not needed */
 char	*Program;
-char	version[];
+extern char version[];
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
@@ -87,7 +89,7 @@ main(argc, argv)
 	openlog(Program, LOG_PID | LOG_CONS, LOG_DAEMON);
 
 	opterr = 0;
-	while ((op = getopt(argc, argv, "av")) != EOF) {
+	while ((op = getopt(argc, argv, "av")) != -1) {
 		switch (op) {
 		case 'a':
 			AllFlag++;
@@ -155,7 +157,7 @@ main(argc, argv)
 			};
 		}
 	}
-
+	return 0;
 }
 
 void

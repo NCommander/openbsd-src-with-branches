@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_arc.h,v 1.4 2001/06/09 07:03:40 angelos Exp $	*/
 /*	$NetBSD: if_arc.h,v 1.5 1995/06/07 00:14:04 cgd Exp $	*/
 
 /*
@@ -35,6 +36,9 @@
  * from: NetBSD: if_ether.h,v 1.10 1994/06/29 06:37:55 cgd Exp
  *       @(#)if_ether.h	8.1 (Berkeley) 6/10/93
  */
+
+#ifndef _NETINET_IF_ARC_H_
+#define _NETINET_IF_ARC_H_
 
 /*
  * Arcnet address - 1 octets
@@ -92,6 +96,8 @@ struct	arc_header {
 #define	ARCTYPE_BANIAN		247	/* Banyan Vines */
 #define	ARCTYPE_IPX		250	/* Novell IPX */
 
+#define	ARCTYPE_INET6		0xc4	/* IPng */
+
 #define	ARCMTU			507
 #define	ARCMIN			0
 
@@ -114,10 +120,11 @@ struct	arccom {
 #ifdef _KERNEL
 u_int8_t arcbroadcastaddr;
 
-void	arc_ifattach __P((struct ifnet *));
-char	*arc_sprintf __P((u_int8_t *));
-void	arc_input __P((struct ifnet *, struct mbuf *));
-int	arc_output __P((struct ifnet *, struct mbuf *, struct sockaddr *,
-	    struct rtentry *));
-int	arc_isphds __P((int));
-#endif
+void	arc_ifattach(struct ifnet *);
+char	*arc_sprintf(u_int8_t *);
+void	arc_input(struct ifnet *, struct mbuf *);
+int	arc_output(struct ifnet *, struct mbuf *, struct sockaddr *,
+	    struct rtentry *);
+int	arc_isphds(int);
+#endif /* _KERNEL */
+#endif /* _NETINET_IF_ARC_H_ */

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: MAKEDEV.8,v 1.8 2002/04/08 21:40:30 miod Exp $
 .\"	$NetBSD: MAKEDEV.8,v 1.1 1995/09/06 21:31:34 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -31,13 +32,13 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	from: @(#)makedev.8	8.1 (Berkeley) 6/5/93
+.\"	from: @(#)MAKEDEV.8	8.1 (Berkeley) 6/5/93
 .\"
 .Dd June 5, 1993
 .Dt MAKEDEV 8 sun3
 .Os
 .Sh NAME
-.Nm makedev
+.Nm MAKEDEV
 .Nd create system and device special files
 .Sh SYNOPSIS
 .Nm MAKEDEV
@@ -52,13 +53,13 @@ directory, is used to create
 the common special
 files.
 See
-.Xr special 8
+.Xr intro 4
 for a more complete discussion of special files.
 .Pp
 .Nm MAKEDEV
-takes any number of device names as arguments,
-where the names are the common abbreviation for
-the device.  There are three special device names,
+takes any number of device names as arguments, where the names are
+the common abbreviation for the device.
+There are three special device names,
 .Ar all ,
 .Ar std
 and
@@ -66,31 +67,29 @@ and
 If
 given,
 .Ar all
-creates device files for all devices on
-the Sun3.  If units are expected for a device
+creates device files for all devices on the sun3.
+If units are expected for a device,
 .Nm MAKEDEV
-supplies the standard numbers.
+will supply the standard numbers.
 The
 .Ar std
-argument creates the standard devices for the Sun3.
+argument creates only the standard devices for the sun3.
 Finally
 .Ar local
-is for devices specific to the local site, and
-executes the shell file
+is for devices specific to the local site, and executes the shell file
 .Pa MAKEDEV.local .
 .Pp
-The Sun3 supports the following devices.
-Where a device name is followed by a hash
-sign ("#"), the hash sign must be replaced
-by a unit number.
+The sun3 supports the following devices.
+Where a device name is followed by a hash sign ("#"), the hash sign
+must be replaced by a unit number.
 .Pp
 .Sy Pseudo\-names
 .Bl -tag -width indent -compact
 .It Ar all
-All known devices for the Sun3.
+All known devices for the sun3.
 .It Ar std
-The standard devices (console, drum, fd/*, klog, kmem, mem, null,
-stderr, stdin, stdout, tty, zero)
+The standard devices (console, drum, fd/*, klog, kmem, mem, null, stderr,
+stdin, stdout, tty, zero)
 .It Ar local
 Configuration specific devices
 .El
@@ -106,11 +105,11 @@ SCSI CD-ROM drives
 .It Ar cgtwo#
 Colour frame buffers
 .It Ar cgfour#
-\&"..."
+Colour P4 frame buffers
 .It Ar kbd
 The keyboard
-.\" .It Ar lkm
-.\" Loadable kernel modules.
+.It Ar lkm
+Loadable kernel modules
 .It Ar mouse#
 Mouse ports
 .It Ar pty#
@@ -130,7 +129,6 @@ Onboard Serial ports
 The special file directory.
 .El
 .Sh SEE ALSO
-.Xr mknod 1 , 
 .Xr intro 4 ,
 .Xr config 8 ,
-.Xr special 8
+.Xr mknod 8

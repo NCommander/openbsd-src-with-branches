@@ -1,4 +1,5 @@
-.\"	$NetBSD: resolv.conf.5,v 1.6 1994/12/12 06:13:29 deraadt Exp $
+.\"	$OpenBSD: resolv.conf.5,v 1.18 2001/09/24 13:41:30 heko Exp $
+.\"	$NetBSD: resolv.conf.5,v 1.7 1996/03/06 18:22:16 scottr Exp $
 .\"
 .\" Copyright (c) 1986, 1991 The Regents of the University of California.
 .\" All rights reserved.
@@ -35,13 +36,13 @@
 .\"
 .Dd May 10, 1991
 .Dt RESOLV.CONF 5
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm resolv.conf
 .Nd resolver configuration file
 .Sh DESCRIPTION
 The
-.Nm resolv.conf
+.Nm
 file specifies how the
 .Xr resolver 3
 routines in the C library
@@ -59,22 +60,24 @@ and the domain search path is constructed from the domain name.
 The different configuration options are:
 .Bl -tag -width nameserver
 .It Sy nameserver
-Internet address (in dot notation) of a name server
-that the resolver should query.
+IPv4 address (in dot notation)
+or IPv6 address (in hex-and-colon notation)
+of a name server that the resolver should query.
+Scoped IPv6 address notation is accepted as well
+(see
+.Xr inet6 4
+for details).
 Up to
 .Dv MAXNS
-(currently 3) name servers may be listed,
-one per keyword.
-If there are multiple servers,
-the resolver library queries them in the order listed.
+(currently 3) name servers may be listed, one per keyword.
+If there are multiple servers, the resolver library queries them in the
+order listed.
 If no
 .Sy nameserver
-entries are present,
-the default is to use the name server on the local machine.
+entries are present, the default is to use the name server on the local machine.
 (The algorithm used is to try a name server, and if the query times out,
-try the next, until out of name servers,
-then repeat trying all the name servers
-until a maximum number of retries are made).
+try the next, until out of name servers, then repeat trying all name servers
+until a maximum number of retries are performed.)
 .It Sy domain
 Local domain name.
 Most queries for names within this domain can use short names
@@ -83,8 +86,9 @@ If no
 .Sy domain
 entry is present, the domain is determined
 from the local host name returned by
-.Xr gethostname 2 ;
-the domain part is taken to be everything after the first `.'.
+.Xr gethostname 3 ;
+the domain part is taken to be everything after the first
+.Dq \&. .
 Finally, if the host name does not contain a domain part, the root
 domain is assumed.
 .It Sy lookup
@@ -92,20 +96,20 @@ This keyword is used by the library routines
 .Xr gethostbyname 3
 and
 .Xr gethostbyaddr 3 .
-It specifies which databases should be searched,
-and the order to do so.
-The legal space-separated values are
-.Bl -tag -width bind
+It specifies which databases should be searched, and the order to do so.
+The legal space-separated values are:
+.Pp
+.Bl -tag -width bind -compact
 .It Sy bind
-use the Domain Name server by querying the
-.Xr named 8
+Use the Domain Name server by querying
+.Xr named 8 .
 .It Sy file
-search for entries in
-.Nm /etc/hosts
+Search for entries in
+.Pa /etc/hosts .
 .It Sy yp
-talk to the YP system if
+Talk to the YP system if
 .Xr ypbind 8
-is running
+is running.
 .El
 .Pp
 If the
@@ -120,15 +124,13 @@ file does not exist, then the only database used is
 .Sy file .
 .Pp
 .It Sy search
-Search list for host-name lookup.
+Search list for hostname lookup.
 The search list is normally determined from the local domain name;
 by default, it begins with the local domain name, then successive
 parent domains that have at least two components in their names.
-This may be changed by listing the desired domain search path
-following the
+This may be changed by listing the desired domain search path following the
 .Sy search
-keyword with spaces or tabs separating
-the names.
+keyword with spaces or tabs separating the names.
 Most resolver queries will be attempted using each component
 of the search path in turn until a match is found.
 Note that this process may be slow and will generate a lot of network
@@ -137,36 +139,61 @@ and that queries will time out if no server is available
 for one of the domains.
 .Pp
 The search list is currently limited to six domains
-with a total of 256 characters.
+with a total of 1024 characters.
 .It Sy sortlist
-Sortlist allows addresses returned by gethostbyname to
-be sorted.
-A sortlist is specified by IP address netmask pairs.
-The netmask is optional and defaults to the natural
-netmask of the net.
-The IP address and optional network pairs are seperated by
-slashes.
-Up to 10 pairs may be specified, ie.
+Allows addresses returned by
+.Xr gethostbyname 3
+to be sorted.
+A
+.Sy sortlist
+is specified by IP address netmask pairs.
+The netmask is optional and defaults to the natural netmask of the net.
+The IP address and optional network pairs are separated by slashes.
+Up to 10 pairs may be specified, e.g.:
 .Pp
 .Sy sortlist 130.155.160.0/255.255.240.0 130.155.0.0
 .It Sy options
-Options allows certain internal resolver variables to be modified.
+Allows certain internal resolver variables to be modified.
 The syntax is:
 .Pp
 .Sy options option ...
 .Pp
 where option is one of the following:
-.Bl -tag -width ndots:n
+.Bl -tag -width insecure1
 .It Sy debug
-sets RES_DEBUG in _res.options.
+Sets RES_DEBUG in _res.options.
+.It Sy edns0
+attach OPT pseudo-RR for ENDS0 extension specified in RFC2671,
+to inform DNS server of our receive buffer size.
+The option will allow DNS servers to take advantage of non-default receive
+buffer size, and to send larger replies.
+DNS query packets with EDNS0 extension is not compatible with
+non-EDNS0 DNS servers.
+The option must be used only when all the DNS servers listed in
+.Sy nameserver
+lines are able to handle EDNS0 extension.
+.It Sy inet6
+Enables support for IPv6-only applications, by setting RES_USE_INET6 in
+_res.options (see
+.Xr resolver 3 ) .
+Use of this option is discouraged, and meaningless on
+.Ox .
+.It Sy insecure1
+Do not require IP source address on the reply packet to be equal to the
+servers' address.
+.It Sy insecure2
+Do not check if the query section of the reply packet is equal
+to that of the query packet.
+For testing purposes only.
 .It Sy ndots:n
-sets a threshold for the number of dots which
+Sets a threshold for the number of dots which
 must appear in a name given to res_query (see
 .Xr resolver 3 )
 before an initial absolute query will be made.
-The default for n is 1, meaning that if there are any
-dots in a name, the name will be tried first as an absolute
-name before any search list elements are appended to it.
+The default for
+.Ar n
+is 1, meaning that if there are any dots in a name, the name will be tried
+first as an absolute name before any search list elements are appended to it.
 .El
 .El
 .Pp
@@ -175,8 +202,8 @@ The
 and
 .Sy search
 keywords are mutually exclusive.
-If more than one instance of these keywords is present,
-the last instance will override.
+If more than one instance of these keywords is present, the last instance
+will override.
 .Pp
 The
 .Sy search
@@ -196,22 +223,18 @@ environment variable
 .Ev RES_OPTIONS
 to a space-separated list of resolver options as explained above.
 .Pp
-The keyword and value must appear on a single line, and the keyword
-(e.g.
+The keyword and value must appear on a single line, and the keyword (e.g.,
 .Sy nameserver )
-must start the line.  The value follows
-the keyword, separated by white space.
+must start the line.
+The value follows the keyword, separated by whitespace.
 .Sh FILES
 .Bl -tag -width /etc/resolv.conf -compact
 .It Pa /etc/resolv.conf
-The file
-.Nm resolv.conf
-resides in
-.Pa /etc .
 .El
 .Sh SEE ALSO
 .Xr gethostbyname 3 ,
 .Xr resolver 3 ,
+.Xr hosts 5 ,
 .Xr hostname 7 ,
 .Xr named 8
 .Rs
@@ -219,6 +242,17 @@ resides in
 .Re
 .Sh HISTORY
 The
-.Nm resolv.conf
+.Nm
 file format appeared in
 .Bx 4.3 .
+.Sh BUGS
+Due to resolver internal issues,
+.Xr getaddrinfo 3
+may not behave as
+.Sy lookup
+suggests.
+Consequently, userland programs that use
+.Xr getaddrinfo 3
+may behave differently from what
+.Sy lookup
+says.

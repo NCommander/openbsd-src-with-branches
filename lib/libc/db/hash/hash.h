@@ -1,4 +1,4 @@
-/*	$NetBSD: hash.h,v 1.5 1995/02/27 13:22:08 cgd Exp $	*/
+/*	$OpenBSD: hash.h,v 1.5 2001/01/04 21:45:30 todd Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -97,7 +97,7 @@ typedef struct htab	 {		/* Memory resident data structure */
 	int		exsegs;		/* Number of extra allocated 
 					 * segments */
 	u_int32_t			/* Hash function */
-	    (*hash)__P((const void *, size_t));
+	    (*hash)(const void *, size_t);
 	int		flags;		/* Flag values */
 	int		fp;		/* File pointer */
 	char		*tmp_buf;	/* Temporary Buffer for BIG data */
@@ -106,7 +106,7 @@ typedef struct htab	 {		/* Memory resident data structure */
 	int		cbucket;	/* Current bucket */
 	int		cndx;		/* Index of next item on cpage */
 	int		errno;		/* Error Number -- for DBM 
-					 * compatability */
+					 * compatibility */
 	int		new_file;	/* Indicates if fd is backing store 
 					 * or no */
 	int		save_file;	/* Indicates whether we need to flush 

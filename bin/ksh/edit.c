@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: edit.c,v 1.13 2001/02/19 19:32:13 camield Exp $	*/
 
 /*
  * Command line editing - common code
@@ -17,41 +17,46 @@
 # include <sys/stream.h>	/* needed for <sys/ptem.h> */
 # include <sys/ptem.h>		/* needed for struct winsize */
 #endif /* OS_SCO */
+#include <sys/ioctl.h>
 #include <ctype.h>
 #include "ksh_stat.h"
 
-static char	vdisable_c;
+
+#if defined(TIOCGWINSZ)
+static RETSIGTYPE x_sigwinch ARGS((int sig));
+static int got_sigwinch;
+static void check_sigwinch ARGS((void));
+#endif /* TIOCGWINSZ */
+
+static int	x_file_glob ARGS((int flags, const char *str, int slen,
+				  char ***wordsp));
+static int	x_command_glob ARGS((int flags, const char *str, int slen,
+				     char ***wordsp));
+static int	x_locate_word ARGS((const char *buf, int buflen, int pos,
+				    int *startp, int *is_command));
+
+static char vdisable_c;
 
 
 /* Called from main */
 void
 x_init()
 {
-	/* set to -1 to force initial binding */
+	/* set to -2 to force initial binding */
 	edchars.erase = edchars.kill = edchars.intr = edchars.quit
-		= edchars.eof = -1;
+		= edchars.eof = -2;
 	/* default value for deficient systems */
 	edchars.werase = 027;	/* ^W */
+
 #ifdef TIOCGWINSZ
-	{
-		struct winsize ws;
-
-		if (ioctl(tty_fd, TIOCGWINSZ, &ws) >= 0) {
-			struct tbl *vp;
-
-			if (ws.ws_col) {
-				x_cols = ws.ws_col < MIN_COLS ? MIN_COLS
-						: ws.ws_col;
-				
-				if ((vp = typeset("COLUMNS", EXPORT, 0, 0, 0)))
-					setint(vp, (long) ws.ws_col);
-			}
-			if (ws.ws_row
-			    && (vp = typeset("LINES", EXPORT, 0, 0, 0)))
-				setint(vp, (long) ws.ws_row);
-		}
-	}
+# ifdef SIGWINCH
+	if (setsig(&sigtraps[SIGWINCH], x_sigwinch, SS_RESTORE_ORIG|SS_SHTRAP))
+		sigtraps[SIGWINCH].flags |= TF_SHELL_USES;
+# endif /* SIGWINCH */
+	got_sigwinch = 1; /* force initial check */
+	check_sigwinch();
 #endif /* TIOCGWINSZ */
+
 #ifdef EMACS
 	x_init_emacs();
 #endif /* EMACS */
@@ -74,6 +79,46 @@ x_init()
 #endif /* _POSIX_VDISABLE */
 }
 
+#if defined(TIOCGWINSZ)
+static RETSIGTYPE
+x_sigwinch(sig)
+    	int sig;
+{
+	got_sigwinch = 1;
+	return RETSIGVAL;
+}
+
+static void
+check_sigwinch ARGS((void))
+{
+	if (got_sigwinch) {
+		struct winsize ws;
+
+		got_sigwinch = 0;
+		if (procpid == kshpid && ioctl(tty_fd, TIOCGWINSZ, &ws) >= 0) {
+			struct tbl *vp;
+
+			/* Do NOT export COLUMNS/LINES.  Many applications
+			 * check COLUMNS/LINES before checking ws.ws_col/row,
+			 * so if the app is started with C/L in the environ
+			 * and the window is then resized, the app won't
+			 * see the change cause the environ doesn't change.
+			 */
+			if (ws.ws_col) {
+				x_cols = ws.ws_col < MIN_COLS ? MIN_COLS
+						: ws.ws_col;
+				
+				if ((vp = typeset("COLUMNS", 0, 0, 0, 0)))
+					setint(vp, (long) ws.ws_col);
+			}
+			if (ws.ws_row
+			    && (vp = typeset("LINES", 0, 0, 0, 0)))
+				setint(vp, (long) ws.ws_row);
+		}
+	}
+}
+#endif /* TIOCGWINSZ */
+
 /*
  * read an edited command line
  */
@@ -83,6 +128,11 @@ x_read(buf, len)
 	size_t len;
 {
 	int	i;
+
+#if defined(TIOCGWINSZ)
+	if (got_sigwinch)
+		check_sigwinch();
+#endif /* TIOCGWINSZ */
 
 	x_mode(TRUE);
 #ifdef EMACS
@@ -237,14 +287,33 @@ x_mode(onoff)
 
 		set_tty(tty_fd, &cb, TF_WAIT);
 
+#ifdef __CYGWIN__
+		if (edchars.eof == '\0')
+			edchars.eof = '\4';
+#endif /* __CYGWIN__ */
+
+		/* Convert unset values to internal `unset' value */
+		if (edchars.erase == vdisable_c)
+			edchars.erase = -1;
+		if (edchars.kill == vdisable_c)
+			edchars.kill = -1;
+		if (edchars.intr == vdisable_c)
+			edchars.intr = -1;
+		if (edchars.quit == vdisable_c)
+			edchars.quit = -1;
+		if (edchars.eof == vdisable_c)
+			edchars.eof = -1;
+		if (edchars.werase == vdisable_c)
+			edchars.werase = -1;
 		if (memcmp(&edchars, &oldchars, sizeof(edchars)) != 0) {
 #ifdef EMACS
 			x_emacs_keys(&edchars);
 #endif
 		}
-	} else
+	} else {
 		/* TF_WAIT doesn't seem to be necessary when leaving xmode */
 		set_tty(tty_fd, &tty_state, TF_NONE);
+	}
 
 	return prev;
 }
@@ -260,7 +329,6 @@ x_mode(onoff)
  * RETURN VALUE:
  *      length
  */
- 
 int
 promptlen(cp, spp)
     const char  *cp;
@@ -268,37 +336,35 @@ promptlen(cp, spp)
 {
     int count = 0;
     const char *sp = cp;
+    char delimiter = 0;
+    int indelimit = 0;
 
-    while (*cp) {
-	if (*cp == '\n' || *cp == '\r') {
+    /* Undocumented AT&T ksh feature:
+     * If the second char in the prompt string is \r then the first char
+     * is taken to be a non-printing delimiter and any chars between two
+     * instances of the delimiter are not considered to be part of the
+     * prompt length
+     */
+    if (*cp && cp[1] == '\r') {
+	delimiter = *cp;
+	cp += 2;
+    }
+
+    for (; *cp; cp++) {
+	if (indelimit && *cp != delimiter)
+	    ;
+	else if (*cp == '\n' || *cp == '\r') {
 	    count = 0;
-	    cp++;
-	    sp = cp;
+	    sp = cp + 1;
 	} else if (*cp == '\t') {
 	    count = (count | 7) + 1;
-	    cp++;
 	} else if (*cp == '\b') {
 	    if (count > 0)
 		count--;
-	    cp++;
-	}
-#if 1
+	} else if (*cp == delimiter)
+	    indelimit = !indelimit;
 	else
-	  cp++, count++;
-#else
-	else if (*cp++ != '!')
-	  count++;
-	else if (*cp == '!') {
-	    cp++;
 	    count++;
-	} else {
-	    register int i = source->line + 1;
-
-	    do
-		count++;
-	    while ((i /= 10) > 0);
-	}
-#endif /* 1 */
     }
     if (spp)
 	*spp = sp;
@@ -330,6 +396,61 @@ set_editmode(ed)
 }
 
 /* ------------------------------------------------------------------------- */
+/*           Misc common code for vi/emacs				     */
+
+/* Handle the commenting/uncommenting of a line.
+ * Returns:
+ *	1 if a carriage return is indicated (comment added)
+ *	0 if no return (comment removed)
+ *	-1 if there is an error (not enough room for comment chars)
+ * If successful, *lenp contains the new length.  Note: cursor should be
+ * moved to the start of the line after (un)commenting.
+ */
+int
+x_do_comment(buf, bsize, lenp)
+	char *buf;
+	int bsize;
+	int *lenp;
+{
+	int i, j;
+	int len = *lenp;
+
+	if (len == 0)
+		return 1; /* somewhat arbitrary - it's what at&t ksh does */
+
+	/* Already commented? */
+	if (buf[0] == '#') {
+		int saw_nl = 0;
+
+		for (j = 0, i = 1; i < len; i++) {
+			if (!saw_nl || buf[i] != '#')
+				buf[j++] = buf[i];
+			saw_nl = buf[i] == '\n';
+		}
+		*lenp = j;
+		return 0;
+	} else {
+		int n = 1;
+
+		/* See if there's room for the #'s - 1 per \n */
+		for (i = 0; i < len; i++)
+			if (buf[i] == '\n')
+				n++;
+		if (len + n >= bsize)
+			return -1;
+		/* Now add them... */
+		for (i = len, j = len + n; --i >= 0; ) {
+			if (buf[i] == '\n')
+				buf[--j] = '#';
+			buf[--j] = buf[i];
+		}
+		buf[0] = '#';
+		*lenp += n;
+		return 1;
+	}
+}
+
+/* ------------------------------------------------------------------------- */
 /*           Common file/command completion code for vi/emacs	             */
 
 
@@ -338,7 +459,9 @@ static void	glob_table ARGS((const char *pat, XPtrV *wp, struct table *tp));
 static void	glob_path ARGS((int flags, const char *pat, XPtrV *wp,
 				const char *path));
 
-/* XXX not used... */
+#if 0 /* not used... */
+int	x_complete_word ARGS((const char *str, int slen, int is_command,
+			      int *multiple, char **ret));
 int
 x_complete_word(str, slen, is_command, nwordsp, ret)
 	const char *str;
@@ -364,6 +487,7 @@ x_complete_word(str, slen, is_command, nwordsp, ret)
 	x_free_words(nwords, words);
 	return prefix_len;
 }
+#endif /* 0 */
 
 void
 x_print_expansions(nwords, words, is_command)
@@ -376,7 +500,7 @@ x_print_expansions(nwords, words, is_command)
 	XPtrV l;
 
 	/* Check if all matches are in the same directory (in this
-	 * case, we want to omitt the directory name)
+	 * case, we want to omit the directory name)
 	 */
 	if (!is_command
 	    && (prefix_len = x_longest_prefix(nwords, words)) > 0)
@@ -409,7 +533,7 @@ x_print_expansions(nwords, words, is_command)
 	 */
 	x_putc('\r');
 	x_putc('\n');
-	pr_menu(use_copy ? (char **) XPptrv(l) : words);
+	pr_list(use_copy ? (char **) XPptrv(l) : words);
 
 	if (use_copy)
 		XPfree(l); /* not x_free_words() */
@@ -422,8 +546,7 @@ x_print_expansions(nwords, words, is_command)
  *	- sets *wordsp to array of matching strings
  *	- returns number of matching strings
  */
-/* XXX static? */
-int
+static int
 x_file_glob(flags, str, slen, wordsp)
 	int flags;
 	const char *str;
@@ -432,14 +555,28 @@ x_file_glob(flags, str, slen, wordsp)
 {
 	char *toglob;
 	char **words;
-	int nwords;
+	int nwords, i, idx, escaping;
 	XPtrV w;
 	struct source *s, *sold;
 
-	if (slen <= 0)
+	if (slen < 0)
 		return 0;
 
 	toglob = add_glob(str, slen);
+
+	/* remove all escaping backward slashes */
+	escaping = 0;
+	for(i = 0, idx = 0; toglob[i]; i++) {
+		if (toglob[i] == '\\' && !escaping) {
+			escaping = 1;
+			continue;
+		}
+
+		toglob[idx] = toglob[i];
+		idx++;
+		if (escaping) escaping = 0;
+	}
+	toglob[idx] = '\0';
 
 	/*
 	 * Convert "foo*" (toglob) to an array of strings (words)
@@ -507,8 +644,7 @@ path_order_cmp(aa, bb)
 	return t ? t : a->path_order - b->path_order;
 }
 
-/* XXX static? */
-int
+static int
 x_command_glob(flags, str, slen, wordsp)
 	int flags;
 	const char *str;
@@ -522,7 +658,7 @@ x_command_glob(flags, str, slen, wordsp)
 	XPtrV w;
 	struct block *l;
 
-	if (slen <= 0)
+	if (slen < 0)
 		return 0;
 
 	toglob = add_glob(str, slen);
@@ -603,10 +739,10 @@ x_command_glob(flags, str, slen, wordsp)
 	return nwords;
 }
 
-#define IS_WORDC(c)	!isspace(c)
+#define IS_WORDC(c)	!( ctype(c, C_LEX1) || (c) == '\'' || (c) == '"'  \
+			    || (c) == '`' || (c) == '=' || (c) == ':' )
 
-/* XXX static? */
-int
+static int
 x_locate_word(buf, buflen, pos, startp, is_commandp)
 	const char *buf;
 	int buflen;
@@ -617,28 +753,26 @@ x_locate_word(buf, buflen, pos, startp, is_commandp)
 	int p;
 	int start, end;
 
-	if (pos == buflen)
-		pos--;
-	if (pos < 0 || pos >= buflen) {
+	/* Bad call?  Probably should report error */
+	if (pos < 0 || pos > buflen) {
 		*startp = pos;
 		*is_commandp = 0;
 		return 0;
 	}
+	/* The case where pos == buflen happens to take care of itself... */
 
-	/* Go backwards 'til we are in a word */
-	for (start = pos; start >= 0 && !IS_WORDC(buf[start]); start--)
+	start = pos;
+	/* Keep going backwards to start of word (has effect of allowing
+	 * one blank after the end of a word)
+	 */
+	for (; (start > 0 && IS_WORDC(buf[start - 1]))
+		|| (start > 1 && buf[start-2] == '\\'); start--)
 		;
-	/* No word found? */
-	if (start < 0)
-		return 0;
-	/* Keep going backwards to start of word */
-	for (; start >= 0 && IS_WORDC(buf[start]); start--)
-		;
-	start++;
-
 	/* Go forwards to end of word */
-	for (end = start; end < buflen && IS_WORDC(buf[end]); end++)
-		;
+	for (end = start; end < buflen && IS_WORDC(buf[end]); end++) {
+		if (buf[end] == '\\' && (end+1) < buflen && buf[end+1] == ' ')
+			end++;
+	}
 
 	if (is_commandp) {
 		int iscmd;
@@ -646,7 +780,7 @@ x_locate_word(buf, buflen, pos, startp, is_commandp)
 		/* Figure out if this is a command */
 		for (p = start - 1; p >= 0 && isspace(buf[p]); p--)
 			;
-		iscmd = p < 0 || strchr(";|&()", buf[p]);
+		iscmd = p < 0 || strchr(";|&()`", buf[p]);
 		if (iscmd) {
 			/* If command has a /, path, etc. is not searched;
 			 * only current directory is searched, which is just
@@ -682,11 +816,15 @@ x_cf_glob(flags, buf, buflen, pos, startp, endp, wordsp, is_commandp)
 	int is_command;
 
 	len = x_locate_word(buf, buflen, pos, startp, &is_command);
-	if (len == 0)
-		return 0;
-
 	if (!(flags & XCF_COMMAND))
 		is_command = 0;
+	/* Don't do command globing on zero length strings - it takes too
+	 * long and isn't very useful.  File globs are more likely to be
+	 * useful, so allow these.
+	 */
+	if (len == 0 && is_command)
+		return 0;
+
 	nwords = (is_command ? x_command_glob : x_file_glob)(flags,
 				    buf + *startp, len, &words);
 	if (nwords == 0) {
@@ -712,8 +850,9 @@ add_glob(str, slen)
 {
 	char *toglob;
 	char *s;
+	bool_t saw_slash = FALSE;
 
-	if (slen <= 0)
+	if (slen < 0)
 		return (char *) 0;
 
 	toglob = str_nsave(str, slen + 1, ATEMP); /* + 1 for "*" */
@@ -721,8 +860,9 @@ add_glob(str, slen)
 
 	/*
 	 * If the pathname contains a wildcard (an unquoted '*',
-	 * '?', or '[') or parameter expansion ('$'), then it is globbed
-	 * based on that value (i.e., without the appended '*').
+	 * '?', or '[') or parameter expansion ('$'), or a ~username
+	 * with no trailing slash, then it is globbed based on that
+	 * value (i.e., without the appended '*').
 	 */
 	for (s = toglob; *s; s++) {
 		if (*s == '\\' && s[1])
@@ -730,8 +870,10 @@ add_glob(str, slen)
 		else if (*s == '*' || *s == '[' || *s == '?' || *s == '$'
 			 || (s[1] == '(' /*)*/ && strchr("*+?@!", *s)))
 			break;
+		else if (ISDIRSEP(*s))
+			saw_slash = TRUE;
 	}
-	if (!*s) {
+	if (!*s && (*toglob != '~' || saw_slash)) {
 		toglob[slen] = '*';
 		toglob[slen + 1] = '\0';
 	}
@@ -840,6 +982,7 @@ glob_path(flags, pat, wp, path)
 {
 	const char *sp, *p;
 	char *xp;
+	int staterr;
 	int pathlen;
 	int patlen;
 	int oldsize, newsize, i, j;
@@ -874,13 +1017,15 @@ glob_path(flags, pat, wp, path)
 		memcpy(xp, pat, patlen);
 
 		oldsize = XPsize(*wp);
-		glob_str(Xstring(xs, xp), wp, 0);
+		glob_str(Xstring(xs, xp), wp, 1); /* mark dirs */
 		newsize = XPsize(*wp);
 
 		/* Check that each match is executable... */
 		words = (char **) XPptrv(*wp);
 		for (i = j = oldsize; i < newsize; i++) {
-			if (search_access(words[i], X_OK) >= 0) {
+			staterr = 0;
+			if ((search_access(words[i], X_OK, &staterr) >= 0)
+			    || (staterr == EISDIR)) {
 				words[j] = words[i];
 				if (!(flags & XCF_FULLPATH))
 					memmove(words[j], words[j] + pathlen,
@@ -897,4 +1042,40 @@ glob_path(flags, pat, wp, path)
 	Xfree(xs, xp);
 }
 
+/*
+ * if argument string contains any special characters, they will
+ * be escaped and the result will be put into edit buffer by
+ * keybinding-specific function
+ */
+int
+x_escape(s, len, putbuf_func)
+	const char *s;
+	size_t len;
+	int putbuf_func ARGS((const char *s, size_t len));
+{
+	size_t add, wlen;
+	const char *ifs = str_val(local("IFS", 0));
+	int rval=0;
+
+	for (add = 0, wlen = len; wlen - add > 0; add++) {
+		if (strchr("\\$(){}*&;#|<>\"'", s[add]) || strchr(ifs, s[add])) {
+			if (putbuf_func(s, add) != 0) {
+				rval = -1;
+				break;
+			}
+
+			putbuf_func("\\", 1);
+			putbuf_func(&s[add], 1);
+
+			add++;
+			wlen -= add;
+			s += add;
+			add = -1; /* after the increment it will go to 0 */
+		}
+	}
+	if (wlen > 0 && rval == 0)
+		rval = putbuf_func(s, wlen);
+
+	return (rval);
+}
 #endif /* EDIT */

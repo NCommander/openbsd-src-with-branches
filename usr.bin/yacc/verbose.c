@@ -1,15 +1,69 @@
+/*	$OpenBSD: verbose.c,v 1.5 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$NetBSD: verbose.c,v 1.4 1996/03/19 03:21:50 jtc Exp $	*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed by the University of
+ *	California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #ifndef lint
-static char rcsid[] = "$Id: verbose.c,v 1.3 1993/08/02 17:56:51 mycroft Exp $";
+#if 0
+static char sccsid[] = "@(#)verbose.c	5.3 (Berkeley) 1/20/91";
+#else
+static char rcsid[] = "$OpenBSD: verbose.c,v 1.5 2001/11/19 19:02:18 mpech Exp $";
+#endif
 #endif /* not lint */
 
 #include "defs.h"
 
-
 static short *null_rules;
 
+void log_unused(void);
+void log_conflicts(void);
+void print_state(int);
+void print_conflicts(int);
+void print_core(int);
+void print_nulls(int);
+void print_actions(int);
+void print_shifts(action *);
+void print_reductions(action *, int);
+void print_gotos(int);
+
+void
 verbose()
 {
-    register int i;
+    int i;
 
     if (!vflag) return;
 
@@ -31,10 +85,11 @@ verbose()
 }
 
 
+void
 log_unused()
 {
-    register int i;
-    register short *p;
+    int i;
+    short *p;
 
     fprintf(verbose_file, "\n\nRules never reduced:\n");
     for (i = 3; i < nrules; ++i)
@@ -50,9 +105,10 @@ log_unused()
 }
 
 
+void
 log_conflicts()
 {
-    register int i;
+    int i;
 
     fprintf(verbose_file, "\n\n");
     for (i = 0; i < nstates; i++)
@@ -78,6 +134,7 @@ log_conflicts()
 }
 
 
+void
 print_state(state)
 int state;
 {
@@ -92,11 +149,12 @@ int state;
 }
 
 
+void
 print_conflicts(state)
 int state;
 {
-    register int symbol, act, number;
-    register action *p;
+    int symbol, act, number;
+    action *p;
 
     symbol = -1;
     for (p = parser[state]; p; p = p->next)
@@ -140,15 +198,16 @@ int state;
 }
 
 
+void
 print_core(state)
 int state;
 {
-    register int i;
-    register int k;
-    register int rule;
-    register core *statep;
-    register short *sp;
-    register short *sp1;
+    int i;
+    int k;
+    int rule;
+    core *statep;
+    short *sp;
+    short *sp1;
 
     statep = state_table[state];
     k = statep->nitems;
@@ -176,11 +235,12 @@ int state;
 }
 
 
+void
 print_nulls(state)
 int state;
 {
-    register action *p;
-    register int i, j, k, nnulls;
+    action *p;
+    int i, j, k, nnulls;
 
     nnulls = 0;
     for (p = parser[state]; p; p = p->next)
@@ -220,12 +280,13 @@ int state;
 }
 
 
+void
 print_actions(stateno)
 int stateno;
 {
-    register action *p;
-    register shifts *sp;
-    register int as;
+    action *p;
+    shifts *sp;
+    int as;
 
     if (stateno == final_state)
 	fprintf(verbose_file, "\t$end  accept\n");
@@ -247,11 +308,12 @@ int stateno;
 }
 
 
+void
 print_shifts(p)
-register action *p;
+action *p;
 {
-    register int count;
-    register action *q;
+    int count;
+    action *q;
 
     count = 0;
     for (q = p; q; q = q->next)
@@ -272,12 +334,13 @@ register action *p;
 }
 
 
+void
 print_reductions(p, defred)
-register action *p;
-register int defred;
+action *p;
+int defred;
 {
-    register int k, anyreds;
-    register action *q;
+    int k, anyreds;
+    action *q;
 
     anyreds = 0;
     for (q = p; q ; q = q->next)
@@ -310,13 +373,14 @@ register int defred;
 }
 
 
+void
 print_gotos(stateno)
 int stateno;
 {
-    register int i, k;
-    register int as;
-    register short *to_state;
-    register shifts *sp;
+    int i, k;
+    int as;
+    short *to_state;
+    shifts *sp;
 
     putc('\n', verbose_file);
     sp = shift_table[stateno];
@@ -329,4 +393,3 @@ int stateno;
 	    fprintf(verbose_file, "\t%s  goto %d\n", symbol_name[as], k);
     }
 }
-

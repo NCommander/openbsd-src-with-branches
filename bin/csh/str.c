@@ -1,3 +1,4 @@
+/*	$OpenBSD: str.c,v 1.4 1997/07/25 18:58:18 mickey Exp $	*/
 /*	$NetBSD: str.c,v 1.6 1995/03/21 09:03:24 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)str.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: str.c,v 1.6 1995/03/21 09:03:24 cgd Exp $";
+static char rcsid[] = "$OpenBSD: str.c,v 1.4 1997/07/25 18:58:18 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,11 +50,7 @@ static char rcsid[] = "$NetBSD: str.c,v 1.6 1995/03/21 09:03:24 cgd Exp $";
  */
 
 #include <sys/types.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 #include <vis.h>
 
 #include "csh.h"
@@ -322,7 +319,7 @@ s_strncmp(str1, str2, n)
 		return (*str1 - *str2);
 	    break;
 	}
-        if (*str1 == '\0')
+	if (*str1 == '\0')
 	    return(0);
 	str1++, str2++;
     } while (--n != 0);

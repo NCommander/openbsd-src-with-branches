@@ -21,9 +21,24 @@
 
 <H1 ALIGN="CENTER">Module mod_negotiation</H1>
 
-This module is contained in the <CODE>mod_negotiation.c</CODE> file,
-and is compiled in by default. It provides for <A
-HREF="../content-negotiation.html">content negotiation</A>.
+<p>This module provides for <A
+HREF="../content-negotiation.html">content negotiation</A>.</p>
+
+<P><A
+HREF="module-dict.html#Status"
+REL="Help"
+><STRONG>Status:</STRONG></A> Base
+<BR>
+<A
+HREF="module-dict.html#SourceFile"
+REL="Help"
+><STRONG>Source File:</STRONG></A> mod_negotiation.c
+<BR>
+<A
+HREF="module-dict.html#ModuleIdentifier"
+REL="Help"
+><STRONG>Module Identifier:</STRONG></A> negotiation_module
+</P>
 
 <H2>Summary</H2>
 Content negotiation, or more accurately content selection, is the
@@ -38,7 +53,20 @@ which explicitly lists the files containing the variants.
 filename pattern match, and choose from amongst the results.
 </UL>
 
-<H3>Type maps</H3>
+<H2>Directives</H2>
+<UL>
+<LI><A HREF="#cachenegotiateddocs">CacheNegotiatedDocs</A>
+<LI><A HREF="#languagepriority">LanguagePriority</A>
+</UL>
+
+<STRONG>See also</STRONG>:
+<A HREF="./mod_mime.html#defaultlanguage">DefaultLanguage</A>,
+<A HREF="./mod_mime.html#addencoding">AddEncoding</A>,
+<A HREF="./mod_mime.html#addlanguage">AddLanguage</A>,
+<A HREF="./mod_mime.html#addtype">AddType</A>, and
+<A HREF="core.html#options">Options</A>.
+
+<H2>Type maps</H2>
 A type map has the same format as RFC822 mail headers. It contains document
 descriptions separated by blank lines, with lines beginning with a hash
 character ('#') treated as comments. A document description consists of
@@ -52,26 +80,35 @@ The headers allowed are:
 
 <DL>
 <DT>Content-Encoding:
-<DD>The encoding of the file. Currently only two encodings are recognized
-by http; <CODE>x-compress</CODE> for compressed files, and <CODE>x-gzip</CODE>
-for gzipped files.
+<DD>The encoding of the file. Apache only recognizes encodings that are
+defined by an <A HREF="mod_mime.html#addencoding">AddEncoding</A> directive.
+This normally includes the encodings <CODE>x-compress</CODE> for compress'd
+files, and <CODE>x-gzip</CODE> for gzip'd files.  The <CODE>x-</CODE> prefix
+is ignored for encoding comparisons.
 <DT>Content-Language:
-<DD>The language of the variant, as an Internet standard language code, such
-as <CODE>en</CODE>.
+<DD>The language of the variant, as an Internet standard language tag
+(RFC 1766).  An example is <CODE>en</CODE>, meaning English.
 <DT>Content-Length:
 <DD>The length of the file, in bytes. If this header is not present, then
 the actual length of the file is used.
 <DT>Content-Type:
 <DD>The MIME media type of the document, with optional parameters.
-parameters are separated from the media type and from one another by
-semi-colons. Parameter syntax is name=value; allowed parameters are:
+Parameters are separated from the media type and from one another by a
+semi-colon, with a syntax of <CODE>name=value</CODE>. Common parameters
+include:
 <DL>
 <DT>level
-<DD>the value is an integer, which specifies the version of the media type.
+<DD>an integer specifying the version of the media type.
 For <CODE>text/html</CODE> this defaults to 2, otherwise 0.
 <DT>qs
-<DD>the value is a floating-point number with value between 0. and 1.
-It indications the 'quality' of this variant.
+<DD>a floating-point number with a value in the range 0.0 to 1.0,
+    indicating the relative 'quality' of this variant
+    compared to the other available variants, independent of the client's
+    capabilities.  For example, a jpeg file is usually of higher source
+    quality than an ascii file if it is attempting to represent a
+    photograph.  However, if the resource being represented is ascii art,
+    then an ascii file would have a higher source quality than a jpeg file.
+    All qs values are therefore specific to a given resource.
 </DL>
 Example:
 <BLOCKQUOTE><CODE>Content-Type: image/jpeg; qs=0.8</CODE></BLOCKQUOTE>
@@ -79,7 +116,7 @@ Example:
 <DD>The path to the file containing this variant, relative to the map file.
 </DL>
 
-<H3>MultiViews</H3>
+<H2>MultiViews</H2>
 A MultiViews search is enabled by the MultiViews
 <A HREF="core.html#options">Option</A>.
 If the server receives a request for <CODE>/some/dir/foo</CODE> and
@@ -92,15 +129,10 @@ requirements, and returns that document.<P>
 
 
 
-<H2>Directives</H2>
-<UL>
-<LI><A HREF="#cachenegotiateddocs">CacheNegotiatedDocs</A>
-<LI><A HREF="#languagepriority">LanguagePriority</A>
-</UL>
 <HR>
 
 
-<H2><A NAME="cachenegotiateddocs">CacheNegotiatedDocs</A></H2>
+<H2><A NAME="cachenegotiateddocs">CacheNegotiatedDocs</A> directive</H2>
 <A
  HREF="directive-dict.html#Syntax"
  REL="Help"
@@ -137,7 +169,7 @@ HTTP/1.1 requests.
 
 
 
-<H2><A NAME="languagepriority">LanguagePriority</A></H2>
+<H2><A NAME="languagepriority">LanguagePriority</A> directive</H2>
 <!--%plaintext &lt;?INDEX {\tt LanguagePriority} directive&gt; -->
 <A
  HREF="directive-dict.html#Syntax"
@@ -174,8 +206,15 @@ a language preference, then <CODE>foo.html.fr</CODE> would be returned.<P>
 <P>
 
 Note that this directive only has an effect if a 'best' language
-cannot be determined by other any other means. Correctly implemented
+cannot be determined by any other means. Correctly implemented
 HTTP/1.1 requests will mean this directive has no effect.
+
+<P>
+
+<STRONG>See also</STRONG>:
+<A HREF="./mod_mime.html#defaultlanguage">DefaultLanguage</A> and
+<A HREF="./mod_mime.html#addlanguage">AddLanguage</A>
+
 
 <HR>
 

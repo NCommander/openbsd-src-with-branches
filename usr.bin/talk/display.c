@@ -1,3 +1,4 @@
+/*	$OpenBSD: display.c,v 1.8 2000/12/31 00:24:51 hugh Exp $	*/
 /*	$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)display.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $";
+static char rcsid[] = "$OpenBSD: display.c,v 1.8 2000/12/31 00:24:51 hugh Exp $";
 #endif /* not lint */
 
 /*
@@ -45,17 +46,20 @@ static char rcsid[] = "$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $";
  * displaying of text
  */
 #include "talk.h"
+#include <ctype.h>
 
 xwin_t	my_win;
 xwin_t	his_win;
 WINDOW	*line_win;
 
 int	curses_initialized = 0;
+int	high_print = 0;
 
 /*
  * max HAS to be a function, it is called with
  * a argument of the form --foo at least once.
  */
+int
 max(a,b)
 	int a, b;
 {
@@ -67,15 +71,22 @@ max(a,b)
  * Display some text on somebody's window, processing some control
  * characters while we are at it.
  */
+void
 display(win, text, size)
-	register xwin_t *win;
-	register char *text;
+	xwin_t *win;
+	char *text;
 	int size;
 {
-	register int i;
+	int i;
 	char cch;
 
 	for (i = 0; i < size; i++) {
+		/*
+		 * Since we do not use curses's input routines we must
+		 * convert '\r' -> '\n' ourselves.
+		 */
+		if (*text == '\r')
+			*text = '\n';
 		if (*text == '\n') {
 			xscroll(win, 0);
 			text++;
@@ -139,7 +150,8 @@ display(win, text, size)
 			/* check for wraparound */
 			xscroll(win, 0);
 		}
-		if (*text < ' ' && *text != '\t') {
+		if (*text != '\t' &&
+		    ((!high_print && !isprint(*text)) || iscntrl(*text))) {
 			waddch(win->x_win, '^');
 			getyx(win->x_win, win->x_line, win->x_col);
 			if (win->x_col == COLS-1) /* check for wraparound */
@@ -147,7 +159,7 @@ display(win, text, size)
 			cch = (*text & 63) + 64;
 			waddch(win->x_win, cch);
 		} else
-			waddch(win->x_win, *text);
+			waddch(win->x_win, (unsigned char)(*text));
 		getyx(win->x_win, win->x_line, win->x_col);
 		text++;
 	}
@@ -157,11 +169,13 @@ display(win, text, size)
 /*
  * Read the character at the indicated position in win
  */
+int
 readwin(win, line, col)
 	WINDOW *win;
+	int line, col;
 {
 	int oldline, oldcol;
-	register int c;
+	int c;
 
 	getyx(win, oldline, oldcol);
 	wmove(win, line, col);
@@ -174,8 +188,9 @@ readwin(win, line, col)
  * Scroll a window, blanking out the line following the current line
  * so that the current position is obvious
  */
+void
 xscroll(win, flag)
-	register xwin_t *win;
+	xwin_t *win;
 	int flag;
 {
 

@@ -1,7 +1,8 @@
-/*	$NetBSD: ypmatch.c,v 1.5 1994/12/24 16:56:47 cgd Exp $	*/
+/*	$OpenBSD: ypmatch.c,v 1.5 1996/05/21 21:32:42 deraadt Exp $ */
+/*	$NetBSD: ypmatch.c,v 1.8 1996/05/07 01:24:52 jtc Exp $	*/
 
 /*
- * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@fsa.ca>
+ * Copyright (c) 1992, 1993, 1996 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +34,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$NetBSD: ypmatch.c,v 1.5 1994/12/24 16:56:47 cgd Exp $";
+static char rcsid[] = "$OpenBSD: ypmatch.c,v 1.5 1996/05/21 21:32:42 deraadt Exp $";
 #endif
 
 #include <sys/param.h>
@@ -41,6 +42,7 @@ static char rcsid[] = "$NetBSD: ypmatch.c,v 1.5 1994/12/24 16:56:47 cgd Exp $";
 #include <sys/socket.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <ctype.h>
 
 #include <rpc/rpc.h>
@@ -61,6 +63,7 @@ struct ypalias {
 	{ "ethers", "ethers.byname" },
 };
 
+void
 usage()
 {
 	fprintf(stderr, "Usage:\n");
@@ -84,10 +87,10 @@ char **argv;
 	extern int optind;
 	int outbuflen, key, notrans;
 	int c, r, i;
+	int rval;
 
+	domainname = NULL;
 	notrans = key = 0;
-	yp_get_default_domain(&domainname);
-
 	while( (c=getopt(argc, argv, "xd:kt")) != -1)
 		switch(c) {
 		case 'x':
@@ -112,10 +115,18 @@ char **argv;
 	if( (argc-optind) < 2 )
 		usage();
 
+	if (!domainname) {
+		yp_get_default_domain(&domainname);
+	}
+
 	inmap = argv[argc-1];
-	for(i=0; (!notrans) && i<sizeof ypaliases/sizeof ypaliases[0]; i++)
-		if( strcmp(inmap, ypaliases[i].alias) == 0)
-			inmap = ypaliases[i].name;
+	if (!notrans) {
+		for(i=0; i<sizeof ypaliases/sizeof ypaliases[0]; i++)
+			if( strcmp(inmap, ypaliases[i].alias) == 0)
+				inmap = ypaliases[i].name;
+	}
+
+	rval = 0;
 	for(; optind < argc-1; optind++) {
 		inkey = argv[optind];
 
@@ -124,7 +135,7 @@ char **argv;
 		switch(r) {
 		case 0:
 			if(key)
-				printf("%s ", inkey);
+				printf("%s: ", inkey);
 			printf("%*.*s\n", outbuflen, outbuflen, outbuf);
 			break;
 		case YPERR_YPBIND:
@@ -133,8 +144,9 @@ char **argv;
 		default:
 			fprintf(stderr, "Can't match key %s in map %s. Reason: %s\n",
 				inkey, inmap, yperr_string(r));
+			rval = 1;
 			break;
 		}
 	}
-	exit(0);
+	exit(rval);
 }

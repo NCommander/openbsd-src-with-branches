@@ -1,3 +1,4 @@
+/*	$OpenBSD: main.c,v 1.9 2001/11/19 19:02:16 mpech Exp $	*/
 /*	$NetBSD: main.c,v 1.6 1995/05/21 16:54:10 mycroft Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/05/21 16:54:10 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.9 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
 /* Many bug fixes are from Jim Guyton <guyton@rand-unix> */
@@ -68,11 +69,13 @@ static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/05/21 16:54:10 mycroft Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <err.h>
 
 #include "extern.h"
 
 #define	TIMEOUT		5		/* secs between rexmt's */
 #define	LBUFLEN		200		/* size of input buffer */
+#define	MAXARGV		20
 
 struct	sockaddr_in peeraddr;
 int	f;
@@ -83,39 +86,39 @@ int	connected;
 char	mode[32];
 char	line[LBUFLEN];
 int	margc;
-char	*margv[20];
+char	*margv[MAXARGV+1];
 char	*prompt = "tftp";
 jmp_buf	toplevel;
 void	intr();
 struct	servent *sp;
 
-void	get __P((int, char **));
-void	help __P((int, char **));
-void	modecmd __P((int, char **));
-void	put __P((int, char **));
-void	quit __P((int, char **));
-void	setascii __P((int, char **));
-void	setbinary __P((int, char **));
-void	setpeer __P((int, char **));
-void	setrexmt __P((int, char **));
-void	settimeout __P((int, char **));
-void	settrace __P((int, char **));
-void	setverbose __P((int, char **));
-void	status __P((int, char **));
+void	get(int, char **);
+void	help(int, char **);
+void	modecmd(int, char **);
+void	put(int, char **);
+void	quit(int, char **);
+void	setascii(int, char **);
+void	setbinary(int, char **);
+void	setpeer(int, char **);
+void	setrexmt(int, char **);
+void	settimeout(int, char **);
+void	settrace(int, char **);
+void	setverbose(int, char **);
+void	status(int, char **);
 
-static __dead void command __P((void));
+static __dead void command(void);
 
-static void getusage __P((char *));
-static void makeargv __P((void));
-static void putusage __P((char *));
-static void settftpmode __P((char *));
+static void getusage(char *);
+static int makeargv(void);
+static void putusage(char *);
+static void settftpmode(char *);
 
 #define HELPINDENT (sizeof("connect"))
 
 struct cmd {
 	char	*name;
 	char	*help;
-	void	(*handler) __P((int, char **));
+	void	(*handler)(int, char **);
 };
 
 char	vhelp[] = "toggle verbose mode";
@@ -146,13 +149,11 @@ struct cmd cmdtab[] = {
 	{ "rexmt",	xhelp,		setrexmt },
 	{ "timeout",	ihelp,		settimeout },
 	{ "?",		hhelp,		help },
-	{ 0 }
+	{ NULL,		NULL,		NULL }
 };
 
 struct	cmd *getcmd();
 char	*tail();
-char	*index();
-char	*rindex();
 
 int
 main(argc, argv)
@@ -162,21 +163,15 @@ main(argc, argv)
 	struct sockaddr_in s_in;
 
 	sp = getservbyname("tftp", "udp");
-	if (sp == 0) {
-		fprintf(stderr, "tftp: udp/tftp: unknown service\n");
-		exit(1);
-	}
+	if (sp == 0)
+		errx(1, "udp/tftp: unknown service");
 	f = socket(AF_INET, SOCK_DGRAM, 0);
-	if (f < 0) {
-		perror("tftp: socket");
-		exit(3);
-	}
+	if (f < 0)
+		err(3, "tftp: socket");
 	bzero((char *)&s_in, sizeof (s_in));
 	s_in.sin_family = AF_INET;
-	if (bind(f, (struct sockaddr *)&s_in, sizeof (s_in)) < 0) {
-		perror("tftp: bind");
-		exit(1);
-	}
+	if (bind(f, (struct sockaddr *)&s_in, sizeof (s_in)) < 0)
+		err(1, "tftp: bind");
 	strcpy(mode, "netascii");
 	signal(SIGINT, intr);
 	if (argc > 1) {
@@ -187,9 +182,10 @@ main(argc, argv)
 	if (setjmp(toplevel) != 0)
 		(void)putchar('\n');
 	command();
+	return (0);
 }
 
-char    hostname[100];
+char    hostname[MAXHOSTNAMELEN];
 
 void
 setpeer(argc, argv)
@@ -202,7 +198,8 @@ setpeer(argc, argv)
 		strcpy(line, "Connect ");
 		printf("(to) ");
 		fgets(&line[strlen(line)], LBUFLEN-strlen(line), stdin);
-		makeargv();
+		if (makeargv())
+			return;
 		argc = margc;
 		argv = margv;
 	}
@@ -212,7 +209,8 @@ setpeer(argc, argv)
 	}
 	if (inet_aton(argv[1], &peeraddr.sin_addr) != 0) {
 		peeraddr.sin_family = AF_INET;
-		(void) strcpy(hostname, argv[1]);
+		(void) strncpy(hostname, argv[1], sizeof hostname);
+		hostname[sizeof(hostname)-1] = '\0';
 	} else {
 		host = gethostbyname(argv[1]);
 		if (host == 0) {
@@ -247,7 +245,7 @@ struct	modes {
 	{ "image",      "octet" },
 	{ "octet",     "octet" },
 /*      { "mail",       "mail" },       */
-	{ 0,		0 }
+	{ NULL,		NULL }
 };
 
 void
@@ -255,7 +253,7 @@ modecmd(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register struct modes *p;
+	struct modes *p;
 	char *sep;
 
 	if (argc < 2) {
@@ -263,7 +261,7 @@ modecmd(argc, argv)
 		return;
 	}
 	if (argc == 2) {
-		for (p = modes; p->m_name; p++)
+		for (p = modes; p->m_name != NULL; p++)
 			if (strcmp(argv[1], p->m_name) == 0)
 				break;
 		if (p->m_name) {
@@ -276,7 +274,7 @@ modecmd(argc, argv)
 
 	printf("usage: %s [", argv[0]);
 	sep = " ";
-	for (p = modes; p->m_name; p++) {
+	for (p = modes; p->m_name != NULL; p++) {
 		printf("%s%s", sep, p->m_name);
 		if (*sep == ' ')
 			sep = " | ";
@@ -289,7 +287,7 @@ void
 setbinary(argc, argv)
 	int argc;
 	char *argv[];
-{      
+{
 
 	settftpmode("octet");
 }
@@ -322,14 +320,15 @@ put(argc, argv)
 	char *argv[];
 {
 	int fd;
-	register int n;
-	register char *cp, *targ;
+	int n;
+	char *cp, *targ;
 
 	if (argc < 2) {
 		strcpy(line, "send ");
 		printf("(file) ");
 		fgets(&line[strlen(line)], LBUFLEN-strlen(line), stdin);
-		makeargv();
+		if (makeargv())
+			return;
 		argc = margc;
 		argv = margv;
 	}
@@ -338,22 +337,21 @@ put(argc, argv)
 		return;
 	}
 	targ = argv[argc - 1];
-	if (index(argv[argc - 1], ':')) {
+	if (strchr(argv[argc - 1], ':')) {
 		char *cp;
 		struct hostent *hp;
 
 		for (n = 1; n < argc - 1; n++)
-			if (index(argv[n], ':')) {
+			if (strchr(argv[n], ':')) {
 				putusage(argv[0]);
 				return;
 			}
 		cp = argv[argc - 1];
-		targ = index(cp, ':');
+		targ = strchr(cp, ':');
 		*targ++ = 0;
 		hp = gethostbyname(cp);
 		if (hp == NULL) {
-			fprintf(stderr, "tftp: %s: ", cp);
-			herror((char *)NULL);
+			warnx("%s: %s", cp, hstrerror(h_errno));
 			return;
 		}
 		bcopy(hp->h_addr, (caddr_t)&peeraddr.sin_addr, hp->h_length);
@@ -369,7 +367,7 @@ put(argc, argv)
 		cp = argc == 2 ? tail(targ) : argv[1];
 		fd = open(cp, O_RDONLY);
 		if (fd < 0) {
-			fprintf(stderr, "tftp: "); perror(cp);
+			warn("open: %s", cp);
 			return;
 		}
 		if (verbose)
@@ -381,13 +379,13 @@ put(argc, argv)
 	}
 				/* this assumes the target is a directory */
 				/* on a remote unix system.  hmmmm.  */
-	cp = index(targ, '\0'); 
+	cp = strchr(targ, '\0');
 	*cp++ = '/';
 	for (n = 1; n < argc - 1; n++) {
 		strcpy(cp, tail(argv[n]));
 		fd = open(argv[n], O_RDONLY);
 		if (fd < 0) {
-			fprintf(stderr, "tftp: "); perror(argv[n]);
+			warn("open: %s", argv[n]);
 			continue;
 		}
 		if (verbose)
@@ -415,15 +413,16 @@ get(argc, argv)
 	char *argv[];
 {
 	int fd;
-	register int n;
-	register char *cp;
+	int n;
+	char *cp;
 	char *src;
 
 	if (argc < 2) {
 		strcpy(line, "get ");
 		printf("(files) ");
 		fgets(&line[strlen(line)], LBUFLEN-strlen(line), stdin);
-		makeargv();
+		if (makeargv())
+			return;
 		argc = margc;
 		argv = margv;
 	}
@@ -433,13 +432,13 @@ get(argc, argv)
 	}
 	if (!connected) {
 		for (n = 1; n < argc ; n++)
-			if (index(argv[n], ':') == 0) {
+			if (strchr(argv[n], ':') == 0) {
 				getusage(argv[0]);
 				return;
 			}
 	}
 	for (n = 1; n < argc ; n++) {
-		src = index(argv[n], ':');
+		src = strchr(argv[n], ':');
 		if (src == NULL)
 			src = argv[n];
 		else {
@@ -448,8 +447,7 @@ get(argc, argv)
 			*src++ = 0;
 			hp = gethostbyname(argv[n]);
 			if (hp == NULL) {
-				fprintf(stderr, "tftp: %s: ", argv[n]);
-				herror((char *)NULL);
+				warnx("%s: %s", argv[n], hstrerror(h_errno));
 				continue;
 			}
 			bcopy(hp->h_addr, (caddr_t)&peeraddr.sin_addr,
@@ -462,7 +460,7 @@ get(argc, argv)
 			cp = argc == 3 ? argv[2] : tail(src);
 			fd = creat(cp, 0644);
 			if (fd < 0) {
-				fprintf(stderr, "tftp: "); perror(cp);
+				warn("create: %s", cp);
 				return;
 			}
 			if (verbose)
@@ -475,7 +473,7 @@ get(argc, argv)
 		cp = tail(src);         /* new .. jdg */
 		fd = creat(cp, 0644);
 		if (fd < 0) {
-			fprintf(stderr, "tftp: "); perror(cp);
+			warn("create: %s", cp);
 			continue;
 		}
 		if (verbose)
@@ -507,7 +505,8 @@ setrexmt(argc, argv)
 		strcpy(line, "Rexmt-timeout ");
 		printf("(value) ");
 		fgets(&line[strlen(line)], LBUFLEN-strlen(line), stdin);
-		makeargv();
+		if (makeargv())
+			return;
 		argc = margc;
 		argv = margv;
 	}
@@ -535,7 +534,8 @@ settimeout(argc, argv)
 		strcpy(line, "Maximum-timeout ");
 		printf("(value) ");
 		fgets(&line[strlen(line)], LBUFLEN-strlen(line), stdin);
-		makeargv();
+		if (makeargv())
+			return;
 		argc = margc;
 		argv = margv;
 	}
@@ -578,10 +578,10 @@ char *
 tail(filename)
 	char *filename;
 {
-	register char *s;
-	
+	char *s;
+
 	while (*filename) {
-		s = rindex(filename, '/');
+		s = strrchr(filename, '/');
 		if (s == NULL)
 			break;
 		if (s[1])
@@ -597,7 +597,7 @@ tail(filename)
 static __dead void
 command()
 {
-	register struct cmd *c;
+	struct cmd *c;
 
 	for (;;) {
 		printf("%s> ", prompt);
@@ -610,7 +610,8 @@ command()
 		}
 		if ((line[0] == 0) || (line[0] == '\n'))
 			continue;
-		makeargv();
+		if (makeargv())
+			continue;
 		if (margc == 0)
 			continue;
 		c = getcmd(margv[0]);
@@ -628,11 +629,11 @@ command()
 
 struct cmd *
 getcmd(name)
-	register char *name;
+	char *name;
 {
-	register char *p, *q;
-	register struct cmd *c, *found;
-	register int nmatches, longest;
+	char *p, *q;
+	struct cmd *c, *found;
+	int nmatches, longest;
 
 	longest = 0;
 	nmatches = 0;
@@ -658,14 +659,20 @@ getcmd(name)
 /*
  * Slice a string up into argc/argv.
  */
-static void
+static int
 makeargv()
 {
-	register char *cp;
-	register char **argp = margv;
+	char *cp;
+	char **argp = margv;
+	int ret = 0;
 
 	margc = 0;
 	for (cp = line; *cp;) {
+		if (margc >= MAXARGV) {
+			printf("too many arguments\n");
+			ret = 1;
+			break;
+		}
 		while (isspace(*cp))
 			cp++;
 		if (*cp == '\0')
@@ -679,6 +686,7 @@ makeargv()
 		*cp++ = '\0';
 	}
 	*argp++ = 0;
+	return (ret);
 }
 
 void
@@ -698,16 +706,16 @@ help(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register struct cmd *c;
+	struct cmd *c;
 
 	if (argc == 1) {
 		printf("Commands may be abbreviated.  Commands are:\n\n");
-		for (c = cmdtab; c->name; c++)
+		for (c = cmdtab; c->name != NULL; c++)
 			printf("%-*s\t%s\n", (int)HELPINDENT, c->name, c->help);
 		return;
 	}
 	while (--argc > 0) {
-		register char *arg;
+		char *arg;
 		arg = *++argv;
 		c = getcmd(arg);
 		if (c == (struct cmd *)-1)

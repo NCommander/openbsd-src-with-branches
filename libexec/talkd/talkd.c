@@ -1,3 +1,5 @@
+/*	$OpenBSD: talkd.c,v 1.9 2001/07/08 21:18:12 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -39,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)talkd.c	5.8 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: talkd.c,v 1.2 1993/08/01 18:29:30 mycroft Exp $";
+static char rcsid[] = "$Id: talkd.c,v 1.9 2001/07/08 21:18:12 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -48,6 +50,7 @@ static char rcsid[] = "$Id: talkd.c,v 1.2 1993/08/01 18:29:30 mycroft Exp $";
  * disconnect all descriptors and ttys, and then endless
  * loop on waiting for and processing requests
  */
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <protocols/talkd.h>
@@ -60,33 +63,29 @@ static char rcsid[] = "$Id: talkd.c,v 1.2 1993/08/01 18:29:30 mycroft Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <paths.h>
-
-CTL_MSG		request;
-CTL_RESPONSE	response;
+#include "talkd.h"
 
 int	sockt;
 int	debug = 0;
 void	timeout();
 long	lastmsgtime;
 
-char	hostname[32];
+char	hostname[MAXHOSTNAMELEN];
 
 #define TIMEOUT 30
 #define MAXIDLE 120
 
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register CTL_MSG *mp = &request;
-	int cc;
-
 	if (getuid()) {
 		fprintf(stderr, "%s: getuid: not super-user", argv[0]);
 		exit(1);
 	}
 	openlog("talkd", LOG_PID, LOG_DAEMON);
-	if (gethostname(hostname, sizeof (hostname) - 1) < 0) {
+	if (gethostname(hostname, sizeof (hostname)) < 0) {
 		syslog(LOG_ERR, "gethostname: %m");
 		_exit(1);
 	}
@@ -96,23 +95,33 @@ main(argc, argv)
 	}
 	if (argc > 1 && strcmp(argv[1], "-d") == 0)
 		debug = 1;
+	init_table();
 	signal(SIGALRM, timeout);
 	alarm(TIMEOUT);
 	for (;;) {
-		extern int errno;
+		CTL_MSG		request;
+		CTL_RESPONSE	response;
+		int		cc;
+		int		len = sizeof(response.addr);
 
-		cc = recv(0, (char *)mp, sizeof (*mp), 0);
-		if (cc != sizeof (*mp)) {
+		cc = recvfrom(0, (char *)&request, sizeof (request), 0,
+			(struct sockaddr *)&response.addr, &len);
+		if (cc != sizeof (request)) {
 			if (cc < 0 && errno != EINTR)
-				syslog(LOG_WARNING, "recv: %m");
+				syslog(LOG_WARNING, "recvfrom: %m");
 			continue;
 		}
+		/* Force NUL termination */
+		request.l_name[NAME_SIZE-1] = '\0';
+		request.r_name[NAME_SIZE-1] = '\0';
+		request.r_tty[TTY_SIZE-1] = '\0';
+
 		lastmsgtime = time(0);
-		process_request(mp, &response);
+		process_request(&request, &response);
 		/* can block here, is this what I want? */
 		cc = sendto(sockt, (char *)&response,
-		    sizeof (response), 0, (struct sockaddr *)&mp->ctl_addr,
-		    sizeof (mp->ctl_addr));
+		    sizeof (response), 0, (struct sockaddr *)&request.ctl_addr,
+		    sizeof (request.ctl_addr));
 		if (cc != sizeof (response))
 			syslog(LOG_WARNING, "sendto: %m");
 	}
@@ -121,8 +130,10 @@ main(argc, argv)
 void
 timeout()
 {
+	int save_errno = errno;
 
 	if (time(0) - lastmsgtime >= MAXIDLE)
 		_exit(0);
 	alarm(TIMEOUT);
+	errno = save_errno;
 }

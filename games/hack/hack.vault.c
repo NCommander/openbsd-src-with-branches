@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.vault.c,v 1.2 2001/01/28 23:41:46 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.vault.c,v 1.3 1995/03/23 08:31:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.vault.c,v 1.2 2001/01/28 23:41:46 niklas Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -261,4 +263,4 @@ register struct monst *mtmp, *mtmp2;
 		guard = mtmp2;
 }
 
-#endif QUEST
+#endif /* QUEST */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: rm.c,v 1.11 2001/09/06 13:29:08 mpech Exp $	*/
 /*	$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $	*/
 
 /*-
@@ -43,12 +44,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rm.c	8.8 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rm.c,v 1.11 2001/09/06 13:29:08 mpech Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
+#include <sys/mount.h>
 
 #include <locale.h>
 #include <err.h>
@@ -59,15 +62,19 @@ static char rcsid[] = "$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
+
+extern char *__progname;
 
 int dflag, eval, fflag, iflag, Pflag, Wflag, stdin_ok;
 
-int	check __P((char *, char *, struct stat *));
-void	checkdot __P((char **));
-void	rm_file __P((char **));
-void	rm_overwrite __P((char *, struct stat *));
-void	rm_tree __P((char **));
-void	usage __P((void));
+int	check(char *, char *, struct stat *);
+void	checkdot(char **);
+void	rm_file(char **);
+void	rm_overwrite(char *, struct stat *);
+void	rm_tree(char **);
+void	usage(void);
 
 /*
  * rm --
@@ -109,14 +116,13 @@ main(argc, argv)
 		case 'W':
 			Wflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 1)
+	if (argc < 1 && fflag == 0)
 		usage();
 
 	checkdot(argv);
@@ -159,7 +165,7 @@ rm_tree(argv)
 		flags |= FTS_NOSTAT;
 	if (Wflag)
 		flags |= FTS_WHITEOUT;
-	if (!(fts = fts_open(argv, flags, (int (*)())NULL)))
+	if (!(fts = fts_open(argv, flags, NULL)))
 		err(1, NULL);
 	while ((p = fts_read(fts)) != NULL) {
 		switch (p->fts_info) {
@@ -212,20 +218,22 @@ rm_tree(argv)
 		switch (p->fts_info) {
 		case FTS_DP:
 		case FTS_DNR:
-			if (!rmdir(p->fts_accpath) || fflag && errno == ENOENT)
+			if (!rmdir(p->fts_accpath) ||
+			    (fflag && errno == ENOENT))
 				continue;
 			break;
 
 		case FTS_W:
 			if (!undelete(p->fts_accpath) ||
-			    fflag && errno == ENOENT)
+			    (fflag && errno == ENOENT))
 				continue;
 			break;
 
 		default:
 			if (Pflag)
 				rm_overwrite(p->fts_accpath, NULL);
-			if (!unlink(p->fts_accpath) || fflag && errno == ENOENT)
+			if (!unlink(p->fts_accpath) ||
+			    (fflag && errno == ENOENT))
 				continue;
 		}
 		warn("%s", p->fts_path);
@@ -305,9 +313,10 @@ rm_overwrite(file, sbp)
 	struct stat *sbp;
 {
 	struct stat sb;
+	struct statfs fsb;
 	off_t len;
-	int fd, wlen;
-	char buf[8 * 1024];
+	int bsize, fd, wlen;
+	char *buf = NULL;
 
 	fd = -1;
 	if (sbp == NULL) {
@@ -319,11 +328,16 @@ rm_overwrite(file, sbp)
 		return;
 	if ((fd = open(file, O_WRONLY, 0)) == -1)
 		goto err;
+	if (fstatfs(fd, &fsb) == -1)
+		goto err;
+	bsize = MAX(fsb.f_iosize, 1024);
+	if ((buf = malloc(bsize)) == NULL)
+		err(1, "malloc");
 
 #define	PASS(byte) {							\
-	memset(buf, byte, sizeof(buf));					\
+	memset(buf, byte, bsize);					\
 	for (len = sbp->st_size; len > 0; len -= wlen) {		\
-		wlen = len < sizeof(buf) ? len : sizeof(buf);		\
+		wlen = len < bsize ? len : bsize;			\
 		if (write(fd, buf, wlen) != wlen)			\
 			goto err;					\
 	}								\
@@ -335,10 +349,14 @@ rm_overwrite(file, sbp)
 	if (fsync(fd) || lseek(fd, (off_t)0, SEEK_SET))
 		goto err;
 	PASS(0xff);
-	if (!fsync(fd) && !close(fd))
+	if (!fsync(fd) && !close(fd)) {
+		free(buf);
 		return;
+	}
 
 err:	eval = 1;
+	if (buf)
+		free(buf);
 	warn("%s", file);
 }
 
@@ -385,7 +403,7 @@ check(path, name, sp)
  * Since POSIX.2 defines basename as the final portion of a path after
  * trailing slashes have been removed, we'll remove them here.
  */
-#define ISDOT(a)	((a)[0] == '.' && (!(a)[1] || (a)[1] == '.' && !(a)[2]))
+#define ISDOT(a)	((a)[0] == '.' && (!(a)[1] || ((a)[1] == '.' && !(a)[2])))
 void
 checkdot(argv)
 	char **argv;
@@ -421,7 +439,6 @@ checkdot(argv)
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: rm [-dfiPRrW] file ...\n");
+	(void)fprintf(stderr, "usage: %s [-dfiPRrW] file ...\n", __progname);
 	exit(1);
 }

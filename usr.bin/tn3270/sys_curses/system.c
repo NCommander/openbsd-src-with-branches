@@ -1,3 +1,5 @@
+/*	$OpenBSD: system.c,v 1.9 2001/07/09 07:04:55 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)system.c	4.5 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: system.c,v 1.3 1994/04/10 07:20:35 cgd Exp $";
+static char rcsid[] = "$OpenBSD: system.c,v 1.9 2001/07/09 07:04:55 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -56,11 +58,11 @@ static char rcsid[] = "$Id: system.c,v 1.3 1994/04/10 07:20:35 cgd Exp $";
 #include <sys/wait.h>
 
 #include <errno.h>
-extern int errno;
 
 #include <netdb.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <pwd.h>
 
@@ -589,8 +591,9 @@ shell_continue()
 static void
 child_died(code)
 {
+    int save_errno = errno;
     union wait status;
-    register int pid;
+    int pid;
 
     while ((pid = wait3((int *)&status, WNOHANG, (struct rusage *)0)) > 0) {
 	if (pid == shell_pid) {
@@ -613,6 +616,7 @@ child_died(code)
 	}
     }
     signal(SIGCHLD, child_died);
+    errno = save_errno;
 }
 
 
@@ -630,25 +634,19 @@ char	*argv[];
 {
     int length;
     struct sockaddr_in server;
-    char sockNAME[100];
+    char sockNAME[200+MAXHOSTNAMELEN];
     static char **whereAPI = 0;
     int fd;
     struct timeval tv;
     long ikey;
-    extern long random();
-    extern char *mktemp();
-    extern char *strcpy();
 
-    /* First, create verification file. */
-    do {
-	keyname = mktemp(strdup("/tmp/apiXXXXXX"));
-	fd = open(keyname, O_RDWR|O_CREAT|O_EXCL, IREAD|IWRITE);
-    } while ((fd == -1) && (errno == EEXIST));
-
-    if (fd == -1) {
+    keyname = strdup("/tmp/apiXXXXXXXXXX");
+    if ((fd = mkstemp(keyname)) == -1) {
 	perror("open");
+	free(keyname);
 	return 0;
     }
+    keyname = strdup(sockNAME);
 
     /* Now, get seed for random */
 
@@ -730,7 +728,7 @@ char	*argv[];
 	    state = UNCONNECTED;
 	}
     } else {				/* New process */
-	register int i;
+	int i;
 
 	for (i = 3; i < 30; i++) {
 	    (void) close(i);
@@ -740,13 +738,13 @@ char	*argv[];
 	    extern char *getenv();
 
 	    cmdname = getenv("SHELL");
-	    execlp(cmdname, cmdname, 0);
+	    execlp(cmdname, cmdname, (char *)NULL);
 	    perror("Exec'ing new shell...\n");
-	    exit(1);
+	    _exit(1);
 	} else {
 	    execvp(argv[1], &argv[1]);
 	    perror("Exec'ing command.\n");
-	    exit(1);
+	    _exit(1);
 	}
 	/*NOTREACHED*/
     }

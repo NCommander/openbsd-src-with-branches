@@ -1,3 +1,5 @@
+/*	$OpenBSD: apprentice.c,v 1.12 2002/02/16 21:27:46 millert Exp $	*/
+
 /*
  * apprentice - make one pass through /etc/magic, learning its secrets.
  *
@@ -29,11 +31,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
+#include <err.h>
 #include "file.h"
 
 #ifndef	lint
-static char *moduleid = 
-	"@(#)$Id: apprentice.c,v 1.9 1995/05/21 00:13:24 christos Exp $";
+static char *moduleid = "$OpenBSD: apprentice.c,v 1.12 2002/02/16 21:27:46 millert Exp $";
 #endif	/* lint */
 
 #define	EATAB {while (isascii((unsigned char) *l) && \
@@ -42,47 +45,76 @@ static char *moduleid =
 			tolower((unsigned char) (l)) : (l))
 
 
-static int getvalue	__P((struct magic *, char **));
-static int hextoint	__P((int));
-static char *getstr	__P((char *, char *, int, int *));
-static int parse	__P((char *, int *, int));
-static void eatsize	__P((char **));
+static int getvalue(struct magic *, char **);
+static int hextoint(int);
+static char *getstr(char *, char *, int, int *);
+static int parse(char *, int *, int);
+static void eatsize(char **);
 
 static int maxmagic = 0;
+static int alloc_incr = 256;
 
+static int apprentice_1(char *, int);
 
 int
 apprentice(fn, check)
+char *fn;			/* list of magic files */
+int check;			/* non-zero? checking-only run. */
+{
+	char *p, *mfn;
+	int file_err, errs = -1;
+
+        maxmagic = MAXMAGIS;
+	magic = (struct magic *) calloc(sizeof(struct magic), maxmagic);
+	mfn = malloc(strlen(fn)+1);
+	if (magic == NULL || mfn == NULL) {
+		warn("malloc");
+		if (check)
+			return -1;
+		else
+			exit(1);
+	}
+	fn = strcpy(mfn, fn);	/* ok */
+  
+	while (fn) {
+		p = strchr(fn, ':');
+		if (p)
+			*p++ = '\0';
+		file_err = apprentice_1(fn, check);
+		if (file_err > errs)
+			errs = file_err;
+		fn = p;
+	}
+	if (errs == -1)
+		warnx("couldn't find any magic files!");
+	if (!check && errs)
+		exit(1);
+
+	free(mfn);
+	return errs;
+}
+
+static int
+apprentice_1(fn, check)
 char *fn;			/* name of magic file */
 int check;			/* non-zero? checking-only run. */
 {
+	static const char hdr[] =
+		"cont\toffset\ttype\topcode\tmask\tvalue\tdesc";
 	FILE *f;
 	char line[BUFSIZ+1];
 	int errs = 0;
 
 	f = fopen(fn, "r");
 	if (f==NULL) {
-		(void) fprintf(stderr, "%s: can't read magic file %s\n",
-		progname, fn);
-		if (check)
-			return -1;
-		else
-			exit(1);
+		if (errno != ENOENT)
+			warn("%s", fn);
+		return -1;
 	}
 
-        maxmagic = MAXMAGIS;
-	if ((magic = (struct magic *) calloc(sizeof(struct magic), maxmagic))
-	    == NULL) {
-		(void) fprintf(stderr, "%s: Out of memory.\n", progname);
-		if (check)
-			return -1;
-		else
-			exit(1);
-	}
-  
 	/* parse it */
 	if (check)	/* print silly verbose header for USG compat. */
-		(void) printf("cont\toffset\ttype\topcode\tmask\tvalue\tdesc\n");
+		(void) printf("%s\n", hdr);
 
 	for (lineno = 1;fgets(line, BUFSIZ, f) != NULL; lineno++) {
 		if (line[0]=='#')	/* comment, do not parse */
@@ -91,20 +123,20 @@ int check;			/* non-zero? checking-only run. */
 			continue;
 		line[strlen(line)-1] = '\0'; /* delete newline */
 		if (parse(line, &nmagic, check) != 0)
-			++errs;
+			errs = 1;
 	}
 
 	(void) fclose(f);
-	return errs ? -1 : 0;
+	return errs;
 }
 
 /*
  * extend the sign bit if the comparison is to be signed
  */
-unsigned long
+uint32
 signextend(m, v)
 struct magic *m;
-unsigned long v;
+uint32 v;
 {
 	if (!(m->flag & UNSIGNED))
 		switch(m->type) {
@@ -127,13 +159,12 @@ unsigned long v;
 		case LONG:
 		case BELONG:
 		case LELONG:
-			v = (long) v;
+			v = (int32) v;
 			break;
 		case STRING:
 			break;
 		default:
-			magwarn("can't happen: m->type=%d\n",
-				m->type);
+			warnx("can't happen: m->type=%d", m->type);
 			return -1;
 		}
 	return v;
@@ -151,19 +182,24 @@ int *ndx, check;
 	struct magic *m;
 	char *t, *s;
 
-#define ALLOC_INCR	20
 	if (nd+1 >= maxmagic){
-	    maxmagic += ALLOC_INCR;
-	    if ((magic = (struct magic *) realloc(magic, 
+	    struct magic *mtmp;
+
+	    maxmagic += alloc_incr;
+	    if ((mtmp = (struct magic *) realloc(magic, 
 						  sizeof(struct magic) * 
 						  maxmagic)) == NULL) {
-		(void) fprintf(stderr, "%s: Out of memory.\n", progname);
-		if (check)
+		warn("malloc");
+		if (check) {
+			if (magic)
+				free(magic);
 			return -1;
-		else
+		} else
 			exit(1);
 	    }
-	    memset(&magic[*ndx], 0, sizeof(struct magic) * ALLOC_INCR);
+	    magic = mtmp;
+	    memset(&magic[*ndx], 0, sizeof(struct magic) * alloc_incr);
+	    alloc_incr *= 2;
 	}
 	m = &magic[*ndx];
 	m->flag = 0;
@@ -178,11 +214,15 @@ int *ndx, check;
 		++l;		/* step over */
 		m->flag |= INDIR;
 	}
+	if (m->cont_level != 0 && *l == '&') {
+                ++l;            /* step over */
+                m->flag |= ADD;
+        }
 
 	/* get offset, then skip over it */
 	m->offset = (int) strtoul(l,&t,0);
         if (l == t)
-		magwarn("offset %s invalid", l);
+		warnx("offset %s invalid", l);
         l = t;
 
 	if (m->flag & INDIR) {
@@ -206,7 +246,7 @@ int *ndx, check;
 				m->in.type = BYTE;
 				break;
 			default:
-				magwarn("indirect offset type %c invalid", *l);
+				warnx("indirect offset type %c invalid", *l);
 				break;
 			}
 			l++;
@@ -220,7 +260,7 @@ int *ndx, check;
 		else
 			t = l;
 		if (*t++ != ')') 
-			magwarn("missing ')' in indirect offset");
+			warnx("missing ')' in indirect offset");
 		l = t;
 	}
 
@@ -281,7 +321,7 @@ int *ndx, check;
 		m->type = LEDATE;
 		l += NLEDATE;
 	} else {
-		magwarn("type %s invalid", l);
+		warnx("type %s invalid", l);
 		return -1;
 	}
 	/* New-style anding: "0 byte&0x80 =0x80 dynamically linked" */
@@ -327,7 +367,7 @@ int *ndx, check;
 	/*
 	 * TODO finish this macro and start using it!
 	 * #define offsetcheck {if (offset > HOWMANY-1) 
-	 *	magwarn("offset too big"); }
+	 *	warnx("offset too big"); }
 	 */
 
 	/*
@@ -385,14 +425,14 @@ char **p;
  */
 static char *
 getstr(s, p, plen, slen)
-register char	*s;
-register char	*p;
+char	*s;
+char	*p;
 int	plen, *slen;
 {
 	char	*origs = s, *origp = p;
 	char	*pmax = p + plen - 1;
-	register int	c;
-	register int	val;
+	int	c;
+	int	val;
 
 	while ((c = *s++) != '\0') {
 		if (isspace((unsigned char) c))
@@ -459,21 +499,16 @@ int	plen, *slen;
 				*p++ = (char)val;
 				break;
 
-			/* \x and up to 3 hex digits */
+			/* \x and up to 2 hex digits */
 			case 'x':
 				val = 'x';	/* Default if no digits */
 				c = hextoint(*s++);	/* Get next char */
 				if (c >= 0) {
 					val = c;
 					c = hextoint(*s++);
-					if (c >= 0) {
+					if (c >= 0)
 						val = (val << 4) + c;
-						c = hextoint(*s++);
-						if (c >= 0) {
-							val = (val << 4) + c;
-						} else
-							--s;
-					} else
+					else
 						--s;
 				} else
 					--s;
@@ -512,7 +547,7 @@ FILE *fp;
 const char *s;
 int len;
 {
-	register char	c;
+	char	c;
 
 	for (;;) {
 		c = *s++;

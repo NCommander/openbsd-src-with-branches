@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.zap.c,v 1.3 2001/01/28 23:41:46 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.zap.c,v 1.3 1995/03/23 08:32:21 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.zap.c,v 1.3 2001/01/28 23:41:46 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -44,7 +46,7 @@ register struct obj *otmp;
 		mtmp->mspeed = MFAST;
 		break;
 	case WAN_UNDEAD_TURNING:
-		if(index(UNDEAD,mtmp->data->mlet)) {
+		if(strchr(UNDEAD,mtmp->data->mlet)) {
 			mtmp->mhp -= rnd(8);
 			if(mtmp->mhp < 1) killed(mtmp);
 			else mtmp->mflee = 1;
@@ -67,7 +69,7 @@ register struct obj *otmp;
 	case WAN_PROBING:
 		mstatusline(mtmp);
 		break;
-#endif WAN_PROBING
+#endif /* WAN_PROBING */
 	default:
 		impossible("What an interesting wand (%u)", otmp->otyp);
 	}
@@ -114,7 +116,7 @@ register struct obj *obj, *otmp;	/* returns TRUE if sth was done */
 	case WAN_SPEED_MONSTER:
 #ifdef WAN_PROBING
 	case WAN_PROBING:
-#endif WAN_PROBING
+#endif /* WAN_PROBING */
 		res = FALSE;
 		break;
 	default:
@@ -557,20 +559,20 @@ register type;
 		break;
 	case -1:		/* Dragon blazing fire */
 	case 1:			/* fire */
-		if(index("Dg", mon->data->mlet)) break;
+		if(strchr("Dg", mon->data->mlet)) break;
 		tmp = d(6,6);
-		if(index("YF", mon->data->mlet)) tmp += 7;
+		if(strchr("YF", mon->data->mlet)) tmp += 7;
 		break;
 	case 2:			/* sleep*/
 		mon->mfroz = 1;
 		break;
 	case 3:			/* cold */
-		if(index("YFgf", mon->data->mlet)) break;
+		if(strchr("YFgf", mon->data->mlet)) break;
 		tmp = d(6,6);
 		if(mon->data->mlet == 'D') tmp += 7;
 		break;
 	case 4:			/* death*/
-		if(index(UNDEAD, mon->data->mlet)) break;
+		if(strchr(UNDEAD, mon->data->mlet)) break;
 		tmp = mon->mhp+1;
 		break;
 	}

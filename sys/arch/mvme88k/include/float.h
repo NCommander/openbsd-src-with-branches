@@ -1,4 +1,4 @@
-/*	$NetBSD: float.h,v 1.10 1995/06/20 20:45:41 jtc Exp $	*/
+/*	$OpenBSD: float.h,v 1.5 2001/08/12 12:03:02 heko Exp $	*/
 
 /*
  * Copyright (c) 1989 Regents of the University of California.
@@ -35,13 +35,13 @@
  *	@(#)float.h	7.1 (Berkeley) 5/8/90
  */
 
-#ifndef _M88K_FLOAT_H_
-#define _M88K_FLOAT_H_
+#ifndef __M88K_FLOAT_H__
+#define __M88K_FLOAT_H__
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern int __flt_rounds();
+int __flt_rounds(void);
 __END_DECLS
 
 #define FLT_RADIX	2		/* b */
@@ -77,4 +77,4 @@ __END_DECLS
 #define LDBL_MAX	DBL_MAX
 #define LDBL_MAX_10_EXP	DBL_MAX_10_EXP
 
-#endif /* !_M88K_FLOAT_H_ */
+#endif /* __M88K_FLOAT_H__ */

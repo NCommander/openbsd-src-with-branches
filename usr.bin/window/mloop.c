@@ -1,4 +1,5 @@
-/*	$NetBSD: mloop.c,v 1.3 1995/09/28 10:34:28 tls Exp $	*/
+/*	$OpenBSD: mloop.c,v 1.5 1997/02/25 00:04:10 downsj Exp $	*/
+/*	$NetBSD: mloop.c,v 1.5 1996/02/08 20:45:03 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)mloop.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: mloop.c,v 1.3 1995/09/28 10:34:28 tls Exp $";
+static char rcsid[] = "$OpenBSD: mloop.c,v 1.5 1997/02/25 00:04:10 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,24 +54,27 @@ mloop()
 		if (incmd) {
 			docmd();
 		} else if (wwcurwin->ww_state != WWS_HASPROC) {
-			if (!wwcurwin->ww_keepopen)
+			if (!ISSET(wwcurwin->ww_uflags, WWU_KEEPOPEN))
 				closewin(wwcurwin);
 			setcmd(1);
 			if (wwpeekc() == escapec)
 				(void) wwgetc();
 			error("Process died.");
 		} else {
-			register struct ww *w = wwcurwin;
-			register char *p;
-			register n;
+			struct ww *w = wwcurwin;
+			char *p;
+			int n;
 
-			if (wwibp >= wwibq)
+			if (wwibp >= wwibq) {
+				wwibp = wwibq = wwib;
 				wwiomux();
+			}
 			for (p = wwibp; p < wwibq && wwmaskc(*p) != escapec;
 			     p++)
 				;
 			if ((n = p - wwibp) > 0) {
-				if (!w->ww_ispty && w->ww_stopped)
+				if (w->ww_type != WWT_PTY &&
+				    ISSET(w->ww_pflags, WWP_STOPPED))
 					startwin(w);
 #if defined(sun) && !defined(BSD)
 				/* workaround for SunOS pty bug */

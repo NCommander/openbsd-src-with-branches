@@ -1,7 +1,9 @@
-/*	$Id: b2ntest.c,v 1.4 1998/07/16 19:31:55 provos Exp $	*/
+/*	$OpenBSD: b2ntest.c,v 1.5 2001/01/27 12:03:37 niklas Exp $	*/
+/*	$EOM: b2ntest.c,v 1.4 1998/07/16 19:31:55 provos Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,7 +47,9 @@
 
 #include "math_2n.h"
 
-#define CMP_FAIL(n,x) b2n_sprint (buf, n); if (strcmp (buf, (x))) \
+#define BUFSIZE 200
+
+#define CMP_FAIL(n,x) b2n_snprint (buf, BUFSIZE, n); if (strcmp (buf, (x))) \
     printf ("FAILED: %s != %s ", buf, x); else printf ("OKAY ");
 
 int
@@ -53,7 +57,7 @@ main (void)
 {
   int i;
   b2n_t n, m, d, r;
-  char buf[200];
+  char buf[BUFSIZE];
 
   b2n_init (n);
   b2n_init (m);
@@ -214,7 +218,8 @@ main (void)
   b2n_div_r (d, n, m);
   CMP_FAIL (d, "0xab");
 
-  printf ("\nTesting: b2n_div: 0x0800000000000000000000004000000000000001 / 0xffab09909a00: ");
+  printf ("\nTesting: b2n_div: "
+	  "0x0800000000000000000000004000000000000001 / 0xffab09909a00: ");
   b2n_set_str (n, "0x0800000000000000000000004000000000000001");
   b2n_set_str (m, "0xffab09909a00");
   b2n_div_q (d, n, m);
@@ -226,7 +231,8 @@ main (void)
   CMP_FAIL (n, "0x18083e83a98647cedae0b3e69a5e");
   CMP_FAIL (m, "0x5b8bf98cac01");
 
-  printf ("\nTesting: b2n_div: 0x0800000000000000000000004000000000000001 / 0x7b: ");
+  printf ("\nTesting: b2n_div: "
+	  "0x0800000000000000000000004000000000000001 / 0x7b: ");
   b2n_set_str (n, "0x0800000000000000000000004000000000000001");
   b2n_set_str (m, "0x7b");
   b2n_div (n, m, n, m);
@@ -269,7 +275,7 @@ main (void)
 
   printf ("\nTesting: b2n_random: ");
   b2n_random (m, 155);
-  b2n_sprint (buf, m);
+  b2n_snprint (buf, BUFSIZE, m);
   printf ("%s, %d", buf, b2n_sigbit(m));
 
   printf ("\nTesting: b2n_sqrt: ");

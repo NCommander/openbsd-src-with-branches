@@ -89,23 +89,25 @@ doexec(int argc, char **argv)
 static RETSIGTYPE
 renew(int sig)
 {
+    int save_errno = errno;
     int code;
 
     signal(SIGALRM, renew);
 
+    /* XXX signal race */
     code = krb_get_svc_in_tkt(princ.name, princ.instance, princ.realm,
-			      KRB_TICKET_GRANTING_TICKET,
-			      princ.realm, lifetime, srvtab);
+	KRB_TICKET_GRANTING_TICKET, princ.realm, lifetime, srvtab);
     if (code)
 	warnx ("%s", krb_get_err_text(code));
-    else if (k_hasafs())
-	{
-	    if ((code = krb_afslog(cell, NULL)) != 0 && code != KDC_PR_UNKNOWN) {
-		warnx ("%s", krb_get_err_text(code));
-	    }
+    else if (k_hasafs()) {
+	/* XXX signal race */
+	if ((code = krb_afslog(cell, NULL)) != 0 && code != KDC_PR_UNKNOWN) {
+	    warnx ("%s", krb_get_err_text(code));
 	}
+    }
 
     alarm(krb_life_to_time(0, lifetime)/2 - 60);
+    errno = save_errno;
     SIGRETURN(0);
 }
 
@@ -118,8 +120,8 @@ zrefresh(void)
 	return -1;
     case 0:
 	/* Child */
-	execlp("zrefresh", "zrefresh", 0);
-	execl(BINDIR "/zrefresh", "zrefresh", 0);
+	execlp("zrefresh", "zrefresh", (char *)NULL);
+	execl(BINDIR "/zrefresh", "zrefresh", (char *)NULL);
 	exit(1);
     default:
 	/* Parent */
@@ -315,7 +317,8 @@ main(int argc, char **argv)
 	}while(f < 0);
 	close(f);
 	unlink(tf);
-	setenv("KRBTKFILE", tf, 1);
+	if(setenv("KRBTKFILE", tf, 1) != 0)
+	    errx(1, "cannot set KRBTKFILE");
 	krb_set_tkt_string (tf);
     }
     

@@ -1,4 +1,5 @@
-/*	$NetBSD: segments.h,v 1.20 1995/10/12 17:57:01 mycroft Exp $	*/
+/*	$OpenBSD: segments.h,v 1.8 2000/12/06 17:18:58 deraadt Exp $	*/
+/*	$NetBSD: segments.h,v 1.23 1996/02/01 22:31:03 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -70,9 +71,9 @@
 #define	KERNELMODE(c, f)	(ISPL(c) == SEL_KPL)
 #endif
 
-#ifndef LOCORE
+#ifndef _LOCORE
 
-#if __GNUC__ >= 2
+#if __GNUC__ == 2 && __GNUC_MINOR__ < 7
 #pragma pack(1)
 #endif
 
@@ -90,7 +91,7 @@ struct segment_descriptor {
 	unsigned sd_def32:1;		/* default 32 vs 16 bit size */
 	unsigned sd_gran:1;		/* limit granularity (byte/page) */
 	unsigned sd_hibase:8;		/* segment base address (msb) */
-};
+} __attribute__((__packed__));
 
 /*
  * Gate descriptors (e.g. indirect descriptors)
@@ -104,7 +105,7 @@ struct gate_descriptor {
 	unsigned gd_dpl:2;		/* segment descriptor priority level */
 	unsigned gd_p:1;		/* segment descriptor present */
 	unsigned gd_hioffset:16;	/* gate offset (msb) */
-};
+} __attribute__((__packed__));
 
 /*
  * Generic descriptor
@@ -112,7 +113,7 @@ struct gate_descriptor {
 union descriptor {
 	struct segment_descriptor sd;
 	struct gate_descriptor gd;
-};
+} __attribute__((__packed__));
 
 /*
  * region descriptors, used to load gdt/idt tables before segments yet exist.
@@ -120,23 +121,24 @@ union descriptor {
 struct region_descriptor {
 	unsigned rd_limit:16;		/* segment extent */
 	unsigned rd_base:32;		/* base address  */
-};
+} __attribute__((__packed__));
 
-#if __GNUC__ >= 2
+#if __GNUC__ == 2 && __GNUC_MINOR__ < 7
 #pragma pack(4)
 #endif
 
 #ifdef _KERNEL
 extern union descriptor gdt[], ldt[];
-extern struct gate_descriptor idt[];
+extern struct gate_descriptor idt_region[];
+extern struct gate_descriptor *idt;
 
-void setgate __P((struct gate_descriptor *, void *, int, int, int));
-void setregion __P((struct region_descriptor *, void *, size_t));
-void setsegment __P((struct segment_descriptor *, void *, size_t, int, int,
-    int, int));
+void setgate(struct gate_descriptor *, void *, int, int, int, int);
+void setregion(struct region_descriptor *, void *, size_t);
+void setsegment(struct segment_descriptor *, void *, size_t, int, int,
+    int, int);
 #endif /* _KERNEL */
 
-#endif /* !LOCORE */
+#endif /* !_LOCORE */
 
 /* system segments and gate types */
 #define	SDT_SYSNULL	 0	/* system null */
@@ -217,7 +219,11 @@ void setsegment __P((struct segment_descriptor *, void *, size_t, int, int,
 #define	GLDT_SEL	3	/* Default LDT descriptor */
 #define	GUCODE_SEL	4	/* User code descriptor */
 #define	GUDATA_SEL	5	/* User data descriptor */
-#define	NGDT 		6
+#define	GAPM32CODE_SEL	6	/* 32 bit APM code descriptor */
+#define	GAPM16CODE_SEL	7	/* 16 bit APM code descriptor */
+#define	GAPMDATA_SEL	8	/* APM data descriptor */
+#define	GICODE_SEL	9	/* Interrupt code descriptor (same as Kernel code) */
+#define	NGDT		10
 
 /*
  * Entries in the Local Descriptor Table (LDT)

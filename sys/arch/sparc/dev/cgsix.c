@@ -1,4 +1,5 @@
-/*	$NetBSD: cgsix.c,v 1.16 1995/10/08 01:39:16 pk Exp $ */
+/*	$OpenBSD: cgsix.c,v 1.17 2001/11/06 19:53:16 miod Exp $	*/
+/*	$NetBSD: cgsix.c,v 1.33 1997/08/07 19:12:30 pk Exp $ */
 
 /*
  * Copyright (c) 1993
@@ -53,6 +54,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/device.h>
 #include <machine/fbio.h>
@@ -60,22 +62,33 @@
 #include <sys/malloc.h>
 #include <sys/mman.h>
 #include <sys/tty.h>
+#include <sys/conf.h>
 
 #ifdef DEBUG
 #include <sys/proc.h>
 #include <sys/syslog.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/pmap.h>
 #include <machine/fbvar.h>
+#include <machine/cpu.h>
+#if defined(SUN4)
+#include <machine/eeprom.h>
+#endif
+#include <machine/conf.h>
 
 #include <sparc/dev/btreg.h>
 #include <sparc/dev/btvar.h>
 #include <sparc/dev/cgsixreg.h>
 #include <sparc/dev/sbusvar.h>
+#if defined(SUN4)
+#include <sparc/dev/pfourreg.h>
+#endif
+
+extern int sparc_vsyncblank;
 
 union cursor_cmap {		/* colormap, like bt_cmap, but tiny */
 	u_char	cm_map[2][3];	/* 2 R/G/B entries */
@@ -96,7 +109,8 @@ struct cgsix_softc {
 	struct	device sc_dev;		/* base device */
 	struct	sbusdev sc_sd;		/* sbus device */
 	struct	fbdevice sc_fb;		/* frame buffer device */
-	volatile struct cg6_layout *sc_physadr;	/* phys addr of h/w */
+	struct	rom_reg sc_physadr;	/* phys addr of h/w */
+	int	sc_bustype;		/* type of bus we live on */
 	volatile struct bt_regs *sc_bt;		/* Brooktree registers */
 	volatile int *sc_fhc;			/* FHC register */
 	volatile struct cg6_thc *sc_thc;	/* THC registers */
@@ -108,17 +122,17 @@ struct cgsix_softc {
 };
 
 /* autoconfiguration driver */
-static void	cgsixattach __P((struct device *, struct device *, void *));
-static int	cgsixmatch __P((struct device *, void *, void *));
-int		cgsixopen __P((dev_t, int, int, struct proc *));
-int		cgsixclose __P((dev_t, int, int, struct proc *));
-int		cgsixioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
-int		cgsixmmap __P((dev_t, int, int));
-static void	cg6_unblank __P((struct device *));
+static void	cgsixattach(struct device *, struct device *, void *);
+static int	cgsixmatch(struct device *, void *, void *);
+static void	cg6_unblank(struct device *);
 
-struct cfdriver cgsixcd =
-    { NULL, "cgsix", cgsixmatch, cgsixattach,
-      DV_DULL, sizeof(struct cgsix_softc) };
+struct cfattach cgsix_ca = {
+	sizeof(struct cgsix_softc), cgsixmatch, cgsixattach
+};
+
+struct cfdriver cgsix_cd = {
+	NULL, "cgsix", DV_DULL
+};
 
 /* frame buffer generic driver */
 static struct fbdriver cg6_fbdriver = {
@@ -127,16 +141,23 @@ static struct fbdriver cg6_fbdriver = {
 
 /*
  * Unlike the bw2 and cg3 drivers, we do not need to provide an rconsole
- * interface, as the cg6 is fast enough.
+ * interface, as the cg6 is fast enough.. but provide a knob to turn it
+ * on anyway.
+ * XXXCDC: rethink this.  the Sun PROM is buggy with some escape sequences
+ * thus causing your display to get messed up.  raster console prevents 
+ * this....
  */
+#ifdef RASTERCONSOLE
+int cgsix_use_rasterconsole = 1;
+#endif
 
 extern int fbnode;
 
-static void cg6_reset __P((struct cgsix_softc *));
-static void cg6_loadcmap __P((struct cgsix_softc *, int, int));
-static void cg6_loadomap __P((struct cgsix_softc *));
-static void cg6_setcursor __P((struct cgsix_softc *));/* set position */
-static void cg6_loadcursor __P((struct cgsix_softc *));/* set shape */
+static void cg6_reset(struct cgsix_softc *);
+static void cg6_loadcmap(struct cgsix_softc *, int, int);
+static void cg6_loadomap(struct cgsix_softc *);
+static void cg6_setcursor(struct cgsix_softc *);/* set position */
+static void cg6_loadcursor(struct cgsix_softc *);/* set shape */
 
 /*
  * Match a cgsix.
@@ -149,19 +170,40 @@ cgsixmatch(parent, vcf, aux)
 	struct cfdata *cf = vcf;
 	struct confargs *ca = aux;
 	struct romaux *ra = &ca->ca_ra;
-	struct cg6_layout *p = (struct cg6_layout *)ra->ra_vaddr;
 
 	if (strcmp(cf->cf_driver->cd_name, ra->ra_name))
 		return (0);
+
+	/*
+	 * Mask out invalid flags from the user.
+	 */
+	cf->cf_flags &= FB_USERMASK;
+
 	if (ca->ca_bustype == BUS_SBUS)
 		return (1);
-#ifdef SUN4
-	ra->ra_len = NBPG;
-	bus_tmp(&p->cg6_fhc_un.un_fhc, ca->ca_bustype);
-	return (probeget(&p->cg6_fhc_un.un_fhc, 4) != 0);
-#else
-	return (0);
+
+#if defined(SUN4)
+	if (CPU_ISSUN4 && (ca->ca_bustype == BUS_OBIO)) {
+		void *tmp;
+
+		/*
+		 * Check for a pfour framebuffer.  This is done somewhat
+		 * differently on the cgsix than other pfour framebuffers.
+		 */
+		bus_untmp();
+		tmp = (caddr_t)mapdev(ra->ra_reg, TMPMAP_VA, CGSIX_FHC_OFFSET,
+				      NBPG);
+		if (probeget(tmp, 4) == -1)
+			return (0);
+
+		if (fb_pfour_id(tmp) == PFOUR_ID_FASTCOLOR) {
+			cf->cf_flags |= FB_PFOUR;
+			return (1);
+		}
+	}
 #endif
+
+	return (0);
 }
 
 /*
@@ -174,19 +216,52 @@ cgsixattach(parent, self, args)
 {
 	register struct cgsix_softc *sc = (struct cgsix_softc *)self;
 	register struct confargs *ca = args;
-	register int node, ramsize, i;
+	register int node = 0, ramsize, i;
 	register volatile struct bt_regs *bt;
-	register volatile struct cg6_layout *p;
-	int sbus = 1;
-	char *nam;
+	struct fbdevice *fb = &sc->sc_fb;
+	int isconsole = 0, sbus = 1;
+	char *nam = NULL;
 	extern struct tty *fbconstty;
 
-	sc->sc_fb.fb_driver = &cg6_fbdriver;
-	sc->sc_fb.fb_device = &sc->sc_dev;
-	sc->sc_fb.fb_type.fb_type = FBTYPE_SUNFAST_COLOR;
+	fb->fb_driver = &cg6_fbdriver;
+	fb->fb_device = &sc->sc_dev;
+	fb->fb_type.fb_type = FBTYPE_SUNFAST_COLOR;
+	fb->fb_flags = sc->sc_dev.dv_cfdata->cf_flags;
+
+	/*
+	 * Dunno what the PROM has mapped, though obviously it must have
+	 * the video RAM mapped.  Just map what we care about for ourselves
+	 * (the FHC, THC, and Brooktree registers).
+	 */
+#define	O(memb) ((u_int)(&((struct cg6_layout *)0)->memb))
+	sc->sc_physadr = ca->ca_ra.ra_reg[0];
+	sc->sc_bustype = ca->ca_bustype;
+	sc->sc_bt = bt = (volatile struct bt_regs *)
+	   mapiodev(ca->ca_ra.ra_reg, O(cg6_bt_un.un_btregs),sizeof *sc->sc_bt);
+	sc->sc_fhc = (volatile int *)
+	   mapiodev(ca->ca_ra.ra_reg, O(cg6_fhc_un.un_fhc), sizeof *sc->sc_fhc);
+	sc->sc_thc = (volatile struct cg6_thc *)
+	   mapiodev(ca->ca_ra.ra_reg, O(cg6_thc_un.un_thc), sizeof *sc->sc_thc);
+	sc->sc_tec = (volatile struct cg6_tec_xxx *)
+	   mapiodev(ca->ca_ra.ra_reg, O(cg6_tec_un.un_tec), sizeof *sc->sc_tec);
 
 	switch (ca->ca_bustype) {
 	case BUS_OBIO:
+		sbus = node = 0;
+		if (fb->fb_flags & FB_PFOUR)
+			nam = "cgsix/p4";
+		else
+			nam = "cgsix";
+
+#if defined(SUN4M)
+		if (CPU_ISSUN4M) {   /* 4m has framebuffer on obio */
+			node = ca->ca_ra.ra_node;
+			nam = getpropstring(node, "model");
+			break;
+		}
+#endif
+		break;
+
 	case BUS_VME32:
 	case BUS_VME16:
 		sbus = node = 0;
@@ -203,34 +278,39 @@ cgsixattach(parent, self, args)
 		return;
 	}
 
-	sc->sc_fb.fb_type.fb_depth = 8;
-	fb_setsize(&sc->sc_fb, sc->sc_fb.fb_type.fb_depth,
-	    1152, 900, node, ca->ca_bustype);
+	/* Don't have to map the pfour register on the cgsix. */
+	fb->fb_pfour = NULL;
 
-	ramsize = sc->sc_fb.fb_type.fb_height * sc->sc_fb.fb_linebytes;
-	sc->sc_fb.fb_type.fb_cmsize = 256;
-	sc->sc_fb.fb_type.fb_size = ramsize;
-	printf(": %s, %d x %d", nam,
-	    sc->sc_fb.fb_type.fb_width, sc->sc_fb.fb_type.fb_height);
+	fb->fb_type.fb_depth = 8;
+	fb_setsize(fb, fb->fb_type.fb_depth, 1152, 900,
+	    node, ca->ca_bustype);
 
-	/*
-	 * Dunno what the PROM has mapped, though obviously it must have
-	 * the video RAM mapped.  Just map what we care about for ourselves
-	 * (the FHC, THC, and Brooktree registers).
-	 */
-	sc->sc_physadr = p = (struct cg6_layout *)ca->ca_ra.ra_paddr;
-	sc->sc_bt = bt = (volatile struct bt_regs *)
-	    mapiodev((caddr_t)&p->cg6_bt_un.un_btregs, sizeof *sc->sc_bt,
-	    ca->ca_bustype);
-	sc->sc_fhc = (volatile int *)
-	    mapiodev((caddr_t)&p->cg6_fhc_un.un_fhc, sizeof *sc->sc_fhc,
-	    ca->ca_bustype);
-	sc->sc_thc = (volatile struct cg6_thc *)
-	    mapiodev((caddr_t)&p->cg6_thc_un.un_thc, sizeof *sc->sc_thc,
-	    ca->ca_bustype);
-	sc->sc_tec = (volatile struct cg6_tec_xxx *)
-	    mapiodev((caddr_t)&p->cg6_tec_un.un_tec, sizeof *sc->sc_tec,
-	    ca->ca_bustype);
+	ramsize = fb->fb_type.fb_height * fb->fb_linebytes;
+	fb->fb_type.fb_cmsize = 256;
+	fb->fb_type.fb_size = ramsize;
+	printf(": %s, %d x %d", nam, fb->fb_type.fb_width,
+	    fb->fb_type.fb_height);
+
+#if defined(SUN4)
+	if (CPU_ISSUN4) {
+		struct eeprom *eep = (struct eeprom *)eeprom_va;
+		int constype = (fb->fb_flags & FB_PFOUR) ? EE_CONS_P4OPT :
+		    EE_CONS_COLOR;
+		/*
+		 * Assume this is the console if there's no eeprom info
+		 * to be found.
+		 */
+		if (eep == NULL || eep->eeConsole == constype)
+			isconsole = (fbconstty != NULL);
+		else
+			isconsole = 0;
+	}
+#endif
+
+#if defined(SUN4C) || defined(SUN4M)
+	if (CPU_ISSUN4COR4M)
+		isconsole = node == fbnode && fbconstty != NULL;
+#endif
 
 	sc->sc_fhcrev = (*sc->sc_fhc >> FHC_REV_SHIFT) &
 	    (FHC_REV_MASK >> FHC_REV_SHIFT);
@@ -245,16 +325,26 @@ cgsixattach(parent, self, args)
 		((char *)&sc->sc_cmap)[i] = bt->bt_cmap >> 24;
 
 	/* enable video */
-	sc->sc_thc->thc_misc |= THC_MISC_VIDEN;
+	sc->sc_thc->thc_misc |= THC_MISC_VIDEN | THC_MISC_SYNCEN;
 
-	if (node == fbnode && fbconstty != NULL) {
+	if (isconsole) {
 		printf(" (console)\n");
+#ifdef RASTERCONSOLE
+		if (cgsix_use_rasterconsole) {
+			sc->sc_fb.fb_pixels = (caddr_t)
+				mapiodev(ca->ca_ra.ra_reg,
+					 O(cg6_ram[0]), ramsize);
+			fbrcons_init(&sc->sc_fb);
+		}
+#endif
 	} else
 		printf("\n");
+#if defined(SUN4C) || defined(SUN4M)
 	if (sbus)
 		sbus_establish(&sc->sc_sd, &sc->sc_dev);
-	if (node == fbnode)
-		fb_attach(&sc->sc_fb);
+#endif
+	if (CPU_ISSUN4 || (node == fbnode))
+		fb_attach(&sc->sc_fb, isconsole);
 }
 
 int
@@ -265,7 +355,7 @@ cgsixopen(dev, flags, mode, p)
 {
 	int unit = minor(dev);
 
-	if (unit >= cgsixcd.cd_ndevs || cgsixcd.cd_devs[unit] == NULL)
+	if (unit >= cgsix_cd.cd_ndevs || cgsix_cd.cd_devs[unit] == NULL)
 		return (ENXIO);
 	return (0);
 }
@@ -276,7 +366,7 @@ cgsixclose(dev, flags, mode, p)
 	int flags, mode;
 	struct proc *p;
 {
-	struct cgsix_softc *sc = cgsixcd.cd_devs[minor(dev)];
+	struct cgsix_softc *sc = cgsix_cd.cd_devs[minor(dev)];
 
 	cg6_reset(sc);
 	return (0);
@@ -290,9 +380,9 @@ cgsixioctl(dev, cmd, data, flags, p)
 	int flags;
 	struct proc *p;
 {
-	register struct cgsix_softc *sc = cgsixcd.cd_devs[minor(dev)];
+	register struct cgsix_softc *sc = cgsix_cd.cd_devs[minor(dev)];
 	u_int count;
-	int i, v, error;
+	int v, error;
 	union cursor_cmap tcm;
 
 	switch (cmd) {
@@ -338,7 +428,8 @@ cgsixioctl(dev, cmd, data, flags, p)
 			cg6_unblank(&sc->sc_dev);
 		else if (!sc->sc_blanked) {
 			sc->sc_blanked = 1;
-			sc->sc_thc->thc_misc &= ~THC_MISC_VIDEN;
+			sc->sc_thc->thc_misc &= ~(THC_MISC_VIDEN |
+			    (sparc_vsyncblank ? THC_MISC_SYNCEN : 0));
 		}
 		break;
 
@@ -400,8 +491,8 @@ cgsixioctl(dev, cmd, data, flags, p)
 			if ((u_int)p->size.x > 32 || (u_int)p->size.y > 32)
 				return (EINVAL);
 			count = p->size.y * 32 / NBBY;
-			if (!useracc(p->image, count, B_READ) ||
-			    !useracc(p->mask, count, B_READ))
+			if (!uvm_useracc(p->image, count, B_READ) ||
+			    !uvm_useracc(p->mask, count, B_READ))
 				return (EFAULT);
 		}
 
@@ -449,7 +540,7 @@ cgsixioctl(dev, cmd, data, flags, p)
 
 	default:
 #ifdef DEBUG
-		log(LOG_NOTICE, "cgsixioctl(%x) (%s[%d])\n", cmd,
+		log(LOG_NOTICE, "cgsixioctl(0x%lx) (%s[%d])\n", cmd,
 		    p->p_comm, p->p_pid);
 #endif
 		return (ENOTTY);
@@ -595,7 +686,7 @@ cg6_unblank(dev)
 
 	if (sc->sc_blanked) {
 		sc->sc_blanked = 0;
-		sc->sc_thc->thc_misc |= THC_MISC_VIDEN;
+		sc->sc_thc->thc_misc |= THC_MISC_VIDEN|THC_MISC_SYNCEN;
 	}
 }
 
@@ -627,12 +718,13 @@ struct mmo {
  *
  * XXX	needs testing against `demanding' applications (e.g., aviator)
  */
-int
+paddr_t
 cgsixmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
-	register struct cgsix_softc *sc = cgsixcd.cd_devs[minor(dev)];
+	register struct cgsix_softc *sc = cgsix_cd.cd_devs[minor(dev)];
 	register struct mmo *mo;
 	register u_int u, sz;
 #define	O(memb) ((u_int)(&((struct cg6_layout *)0)->memb))
@@ -666,13 +758,14 @@ cgsixmmap(dev, off, prot)
 		u = off - mo->mo_uaddr;
 		sz = mo->mo_size ? mo->mo_size : sc->sc_fb.fb_type.fb_size;
 		if (u < sz)
-			return ((int)sc->sc_physadr + u + mo->mo_physoff +
-			    PMAP_OBIO + PMAP_NC);
+			return (REG2PHYS(&sc->sc_physadr, u + mo->mo_physoff) |
+				PMAP_NC);
 	}
 #ifdef DEBUG
 	{
 	  register struct proc *p = curproc;	/* XXX */
-	  log(LOG_NOTICE, "cgsixmmap(%x) (%s[%d])\n", off, p->p_comm, p->p_pid);
+	  log(LOG_NOTICE, "cgsixmmap(0x%x) (%s[%d])\n",
+		off, p->p_comm, p->p_pid);
 	}
 #endif
 	return (-1);	/* not a user-map offset */

@@ -1,4 +1,5 @@
-/*	$NetBSD: dumpfs.c,v 1.10 1995/04/12 21:23:24 mycroft Exp $	*/
+/*	$OpenBSD: dumpfs.c,v 1.13 2001/12/01 19:13:21 deraadt Exp $	*/
+/*	$NetBSD: dumpfs.c,v 1.12 1997/04/26 05:41:33 lukem Exp $	*/
 
 /*
  * Copyright (c) 1983, 1992, 1993
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dumpfs.c	8.2 (Berkeley) 2/2/94";
 #else
-static char rcsid[] = "$NetBSD: dumpfs.c,v 1.10 1995/04/12 21:23:24 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: dumpfs.c,v 1.13 2001/12/01 19:13:21 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -76,17 +77,17 @@ union {
 
 long	dev_bsize = 1;
 
-int	dumpfs __P((char *));
-int	dumpcg __P((char *, int, int));
-void	pbits __P((void *, int));
-void	usage __P((void));
+int	dumpfs(char *);
+int	dumpcg(char *, int, int);
+void	pbits(void *, int);
+void	usage(void);
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register struct fstab *fs;
+	struct fstab *fs;
 	int ch, eval;
 
 	while ((ch = getopt(argc, argv, "")) != -1)
@@ -113,18 +114,24 @@ int
 dumpfs(name)
 	char *name;
 {
+	ssize_t n;
 	int fd, c, i, j, k, size;
 
 	if ((fd = open(name, O_RDONLY, 0)) < 0)
 		goto err;
 	if (lseek(fd, (off_t)SBOFF, SEEK_SET) == (off_t)-1)
 		goto err;
-	if (read(fd, &afs, SBSIZE) != SBSIZE)
+	if ((n = read(fd, &afs, SBSIZE)) == -1)
 		goto err;
 
+	if (n != SBSIZE) {
+		warnx("%s: non-existent or truncated superblock, skipped",
+		    name);
+		(void)close(fd);
+ 		return (1);
+	}
  	if (afs.fs_magic != FS_MAGIC) {
-		warnx("%s: superblock has bad magic number, skipping.",
-		     name);
+		warnx("%s: superblock has bad magic number, skipping.", name);
 		(void) close(fd);
  		return (1);
  	}
@@ -134,9 +141,23 @@ dumpfs(name)
 	dev_bsize = afs.fs_fsize / fsbtodb(&afs, 1);
 	printf("magic\t%x\ttime\t%s", afs.fs_magic,
 	    ctime(&afs.fs_time));
-	printf("cylgrp\t%s\tinodes\t%s\n",
-	    afs.fs_postblformat == FS_42POSTBLFMT ? "static" : "dynamic",
-	    afs.fs_inodefmt < FS_44INODEFMT ? "4.2/4.3BSD" : "4.4BSD");
+	i = 0;
+	if (afs.fs_postblformat != FS_42POSTBLFMT) {
+		i++;
+		if (afs.fs_inodefmt >= FS_44INODEFMT) {
+			int max;
+
+			i++;
+			max = afs.fs_maxcontig;
+			size = afs.fs_contigsumsize;
+			if ((max < 2 && size == 0)
+			    || (max > 1 && size >= MIN(max, FS_MAXCONTIG)))
+				i++;
+		}
+	}
+	printf("cylgrp\t%s\tinodes\t%s\tfslevel %d%s\n",
+	    i < 1 ? "static" : "dynamic", i < 2 ? "4.2/4.3BSD" : "4.4BSD", i,
+	    (afs.fs_flags & FS_DOSOFTDEP) ? "\tsoft updates" : "");
 	printf("nbfree\t%d\tndir\t%d\tnifree\t%d\tnffree\t%d\n",
 	    afs.fs_cstotal.cs_nbfree, afs.fs_cstotal.cs_ndir,
 	    afs.fs_cstotal.cs_nifree, afs.fs_cstotal.cs_nffree);
@@ -153,15 +174,14 @@ dumpfs(name)
 	printf("minfree\t%d%%\toptim\t%s\tmaxcontig %d\tmaxbpg\t%d\n",
 	    afs.fs_minfree, afs.fs_optim == FS_OPTSPACE ? "space" : "time",
 	    afs.fs_maxcontig, afs.fs_maxbpg);
-	printf("rotdelay %dms\theadswitch %dus\ttrackseek %dus\trps\t%d\n",
-	    afs.fs_rotdelay, afs.fs_headswitch, afs.fs_trkseek, afs.fs_rps);
+	printf("rotdelay %dms\trps\t%d\n", afs.fs_rotdelay, afs.fs_rps);
 	printf("ntrak\t%d\tnsect\t%d\tnpsect\t%d\tspc\t%d\n",
 	    afs.fs_ntrak, afs.fs_nsect, afs.fs_npsect, afs.fs_spc);
 	printf("symlinklen %d\ttrackskew %d\tinterleave %d\tcontigsumsize %d\n",
 	    afs.fs_maxsymlinklen, afs.fs_trackskew, afs.fs_interleave,
 	    afs.fs_contigsumsize);
-	printf("nindir\t%d\tinopb\t%d\tnspf\t%d\n",
-	    afs.fs_nindir, afs.fs_inopb, afs.fs_nspf);
+	printf("nindir\t%d\tinopb\t%d\tnspf\t%d\tmaxfilesize\t%qu\n",
+	    afs.fs_nindir, afs.fs_inopb, afs.fs_nspf, afs.fs_maxfilesize);
 	printf("sblkno\t%d\tcblkno\t%d\tiblkno\t%d\tdblkno\t%d\n",
 	    afs.fs_sblkno, afs.fs_cblkno, afs.fs_iblkno, afs.fs_dblkno);
 	printf("sbsize\t%d\tcgsize\t%d\tcgoffset %d\tcgmask\t0x%08x\n",
@@ -170,6 +190,17 @@ dumpfs(name)
 	    afs.fs_csaddr, afs.fs_cssize, afs.fs_csshift, afs.fs_csmask);
 	printf("cgrotor\t%d\tfmod\t%d\tronly\t%d\tclean\t0x%02x\n",
 	    afs.fs_cgrotor, afs.fs_fmod, afs.fs_ronly, afs.fs_clean);
+	printf("flags\t");
+	if (afs.fs_flags == 0)
+		printf("none");
+	if (afs.fs_flags & FS_UNCLEAN)
+		printf("unclean ");
+	if (afs.fs_flags & FS_DOSOFTDEP)
+		printf("soft-updates ");
+	if ((afs.fs_flags & ~(FS_UNCLEAN | FS_DOSOFTDEP)) != 0)
+		printf("unknown flags (%#x)", 
+		    afs.fs_flags & ~(FS_UNCLEAN | FS_DOSOFTDEP));
+	printf("\n");
 	if (afs.fs_cpc != 0)
 		printf("blocks available in each of %d rotational positions",
 		     afs.fs_nrpos);
@@ -192,15 +223,15 @@ dumpfs(name)
 		}
 	}
 	printf("\ncs[].cs_(nbfree,ndir,nifree,nffree):\n\t");
+	afs.fs_csp = calloc(1, afs.fs_cssize);
 	for (i = 0, j = 0; i < afs.fs_cssize; i += afs.fs_bsize, j++) {
 		size = afs.fs_cssize - i < afs.fs_bsize ?
 		    afs.fs_cssize - i : afs.fs_bsize;
-		afs.fs_csp[j] = calloc(1, size);
 		if (lseek(fd,
-		    (off_t)(fsbtodb(&afs, (afs.fs_csaddr + j * afs.fs_frag)) *
-		    dev_bsize), SEEK_SET) == (off_t)-1)
+		    (off_t)(fsbtodb(&afs, (afs.fs_csaddr + j * afs.fs_frag))) *
+		    dev_bsize, SEEK_SET) == (off_t)-1)
 			goto err;
-		if (read(fd, afs.fs_csp[j], size) != size)
+		if (read(fd, (char *)afs.fs_csp + i, size) != size)
 			goto err;
 	}
 	for (i = 0; i < afs.fs_ncg; i++) {
@@ -239,7 +270,7 @@ dumpcg(name, fd, c)
 	int i, j;
 
 	printf("\ncg %d:\n", c);
-	if ((cur = lseek(fd, (off_t)(fsbtodb(&afs, cgtod(&afs, c)) * dev_bsize),
+	if ((cur = lseek(fd, (off_t)(fsbtodb(&afs, cgtod(&afs, c))) * dev_bsize,
 	    SEEK_SET)) == (off_t)-1)
 		return (1);
 	if (read(fd, &acg, afs.fs_bsize) != afs.fs_bsize) {
@@ -299,11 +330,11 @@ dumpcg(name, fd, c)
 
 void
 pbits(vp, max)
-	register void *vp;
+	void *vp;
 	int max;
 {
-	register int i;
-	register char *p;
+	int i;
+	char *p;
 	int count, j;
 
 	for (count = i = 0, p = vp; i < max; i++)

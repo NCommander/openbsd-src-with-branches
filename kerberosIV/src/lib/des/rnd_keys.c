@@ -194,17 +194,6 @@ sigALRM(int sig)
 #endif
 #endif
 
-static void
-des_not_rand_data(unsigned char *data, int size)
-{
-  int i;
-
-  srandom (time (NULL));
-
-  for(i = 0; i < size; ++i)
-    data[i] ^= random() % 0x100;
-}
-
 #if !defined(WIN32) && !defined(__EMX__) && !defined(__OS2__) && !defined(__CYGWIN32__)
 
 #ifndef HAVE_SETITIMER
@@ -286,7 +275,7 @@ des_rand_data(unsigned char *data, int size)
 #ifdef HAVE_SETITIMER
     setitimer(ITIMER_REAL, &tv, &otv);
 #else
-    ochld = signal(SIGCHLD, SIG_IGN);
+    ochld = signal(SIGCHLD, SIG_DFL);
     pid = fork();
     if(pid == -1){
 	signal(SIGCHLD, ochld != SIG_ERR ? ochld : SIG_DFL);

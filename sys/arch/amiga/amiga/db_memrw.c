@@ -1,8 +1,12 @@
-/*	$NetBSD: db_memrw.c,v 1.1 1995/02/13 00:27:37 chopps Exp $	*/
+/*	$OpenBSD: db_memrw.c,v 1.7 2001/11/06 19:53:13 miod Exp $	*/
+/*	$NetBSD: db_memrw.c,v 1.7 1997/06/10 18:24:34 veego Exp $	*/
 
-/*
- * Copyright (c) 1994 Gordon W. Ross
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Gordon W. Ross.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,19 +16,25 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -37,28 +47,36 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_output.h>
+#include <ddb/db_access.h>
+
+#include <machine/cpu.h>
 #include <machine/pte.h>
+
+char db_read_data(char *src);
+void db_write_text(char *dst, int ch);
+void db_write_data(char *dst, int ch);
 
 /*
  * Read one byte somewhere in the kernel.
  * It does not matter if this is slow. -gwr
  */
-static char
+char
 db_read_data(src)
 	char *src;
 {
 	u_int *pte;
 	vm_offset_t pgva;
-	int ch;
 
-	pgva = amiga_trunc_page((long)src);
+	pgva = m68k_trunc_page((long)src);
 	pte = kvtopte(pgva);
 
 	if ((*pte & PG_V) == 0) {
-		db_printf(" address 0x%x not a valid page\n", src);
+		db_printf(" address %p not a valid page\n", src);
 		return 0;
 	}
 	return (*src);
@@ -71,8 +89,8 @@ db_read_data(src)
 void
 db_read_bytes(addr, size, data)
 	vm_offset_t	addr;
-	register int	size;
-	register char	*data;
+	size_t		size;
+	char	       *data;
 {
 	char	*src, *limit;
 
@@ -90,7 +108,7 @@ db_read_bytes(addr, size, data)
  * Write one byte somewhere in kernel text.
  * It does not matter if this is slow. -gwr
  */
-static void
+void
 db_write_text(dst, ch)
 	char *dst;
 	int ch;
@@ -100,26 +118,29 @@ db_write_text(dst, ch)
 	pte = kvtopte((vm_offset_t)dst);
 	oldpte = *pte;
 	if ((oldpte & PG_V) == 0) {
-		db_printf(" address 0x%x not a valid page\n", dst);
+		db_printf(" address %p not a valid page\n", dst);
 		return;
 	}
 
-/*printf("db_write_text: %x: %x = %x (%x:%x)\n", dst, *dst, ch, pte, *pte);*/
+#if 0
+	printf("db_write_text: %x: %x = %x (%x:%x)\n", dst, *dst, ch, pte,
+	    *pte);
+#endif
 	*pte &= ~PG_RO;
-	TBIS(dst);
+	TBIS((vm_offset_t)dst);
 
 	*dst = (char) ch;
 
 	*pte = oldpte;
-	TBIS(dst);
-	cachectl (4, dst, 1);
+	TBIS((vm_offset_t)dst);
+	dma_cachectl (dst, 1);
 }
 
 /*
  * Write one byte somewhere outside kernel text.
  * It does not matter if this is slow. -gwr
  */
-static void
+void
 db_write_data(dst, ch)
 	char *dst;
 	int ch;
@@ -129,7 +150,7 @@ db_write_data(dst, ch)
 	pte = kvtopte((vm_offset_t)dst);
 
 	if ((*pte & (PG_V | PG_RO)) != PG_V) {
-		db_printf(" address 0x%x not a valid page\n", dst);
+		db_printf(" address %p not a valid page\n", dst);
 		return;
 	}
 	*dst = (char) ch;
@@ -141,11 +162,11 @@ db_write_data(dst, ch)
 void
 db_write_bytes(addr, size, data)
 	vm_offset_t	addr;
-	int	size;
-	char	*data;
+	size_t		size;
+	char	       *data;
 {
-	extern char	etext[] ;
-	char	*dst, *limit;
+	extern char	etext[];
+	char	       *dst, *limit;
 
 	dst = (char *)addr;
 	limit = dst + size;

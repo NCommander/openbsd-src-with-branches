@@ -1,5 +1,3 @@
-/*	$NetBSD: timezone.c,v 1.5 1995/02/27 05:54:24 cgd Exp $	*/
-
 /*
  * Copyright (c) 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)timezone.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: timezone.c,v 1.5 1995/02/27 05:54:24 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: timezone.c,v 1.4 1997/12/19 09:43:16 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -68,13 +62,12 @@ timezone(zone, dst)
 	register char	*beg,
 			*end;
 
-	if (beg = getenv("TZNAME")) {		/* set in environment */
-		if (end = strchr(beg, ',')) {	/* "PST,PDT" */
+	if ((beg = getenv("TZNAME"))) {		/* set in environment */
+		if ((end = strchr(beg, ','))) {	/* "PST,PDT" */
 			if (dst)
 				return(++end);
 			*end = '\0';
-			(void)strncpy(czone,beg,sizeof(czone) - 1);
-			czone[sizeof(czone) - 1] = '\0';
+			strlcpy(czone,beg,sizeof(czone));
 			*end = ',';
 			return(czone);
 		}
@@ -88,22 +81,22 @@ static struct zone {
 	char	*stdzone;
 	char	*dlzone;
 } zonetab[] = {
-	-1*60,	"MET",	"MET DST",	/* Middle European */
-	-2*60,	"EET",	"EET DST",	/* Eastern European */
-	4*60,	"AST",	"ADT",		/* Atlantic */
-	5*60,	"EST",	"EDT",		/* Eastern */
-	6*60,	"CST",	"CDT",		/* Central */
-	7*60,	"MST",	"MDT",		/* Mountain */
-	8*60,	"PST",	"PDT",		/* Pacific */
+	{ -1*60,    "MET",	"MET DST"} ,	/* Middle European */
+	{ -2*60,    "EET",	"EET DST"} ,	/* Eastern European */
+	{ 4*60,	    "AST",	"ADT"} ,	/* Atlantic */
+	{ 5*60,	    "EST",	"EDT"} ,	/* Eastern */
+	{ 6*60,	    "CST",	"CDT"} ,	/* Central */
+	{ 7*60,	    "MST",	"MDT"} ,	/* Mountain */
+	{ 8*60,	    "PST",	"PDT"} ,	/* Pacific */
 #ifdef notdef
 	/* there's no way to distinguish this from WET */
-	0,	"GMT",	0,		/* Greenwich */
+	{ 0,	    "GMT",	0 },		/* Greenwich */
 #endif
-	0*60,	"WET",	"WET DST",	/* Western European */
-	-10*60,	"EST",	"EST",		/* Aust: Eastern */
-     -10*60+30,	"CST",	"CST",		/* Aust: Central */
-	-8*60,	"WST",	0,		/* Aust: Western */
-	-1
+	{ 0*60,	    "WET",	"WET DST" },	/* Western European */
+	{ -10*60,   "EST",	"EST" },	/* Aust: Eastern */
+	{ -10*60+30,"CST",	"CST" },	/* Aust: Central */
+	{ -8*60,    "WST",	0 },		/* Aust: Western */
+	{ -1 }
 };
 
 /*
@@ -135,6 +128,7 @@ _tztab(zone,dst)
 	}
 	else
 		sign = '-';
-	(void)sprintf(czone,"GMT%c%d:%02d",sign,zone / 60,zone % 60);
+	(void)snprintf(czone, sizeof czone, "GMT%c%d:%02d",
+	    sign,zone / 60,zone % 60);
 	return(czone);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: t3000.c,v 1.2 1994/12/08 09:31:45 jtc Exp $	*/
+/*	$OpenBSD: t3000.c,v 1.8 2001/09/26 06:07:28 pvalchev Exp $	*/
+/*	$NetBSD: t3000.c,v 1.5 1997/02/11 09:24:18 mrg Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)t3000.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: t3000.c,v 1.2 1994/12/08 09:31:45 jtc Exp $";
+static char rcsid[] = "$OpenBSD: t3000.c,v 1.8 2001/09/26 06:07:28 pvalchev Exp $";
 #endif /* not lint */
 
 /*
@@ -45,6 +46,8 @@ static char rcsid[] = "$NetBSD: t3000.c,v 1.2 1994/12/08 09:31:45 jtc Exp $";
  * Derived from Courier driver.
  */
 #include "tip.h"
+
+#include <sys/ioctl.h>
 #include <stdio.h>
 
 #define	MAXRETRY	5
@@ -53,22 +56,26 @@ static	void sigALRM();
 static	int timeout = 0;
 static	int connected = 0;
 static	jmp_buf timeoutbuf, intbuf;
-static	int t3000_sync();
+static	int t3000_sync(), t3000_connect(), t3000_swallow();
+static	void t3000_nap();
 
+int
 t3000_dialer(num, acu)
-	register char *num;
+	char *num;
 	char *acu;
 {
-	register char *cp;
+	char *cp;
+	struct termios cntrl;
 #ifdef ACULOG
 	char line[80];
 #endif
-	static int t3000_connect(), t3000_swallow();
 
 	if (boolean(value(VERBOSE)))
 		printf("Using \"%s\"\n", acu);
 
-	ioctl(FD, TIOCHPCL, 0);
+	tcgetattr(FD, &cntrl);
+	cntrl.c_cflag |= HUPCL;
+	tcsetattr(FD, TCSANOW, &cntrl);
 	/*
 	 * Get in synch.
 	 */
@@ -86,7 +93,7 @@ badsynch:
 	if (boolean(value(VERBOSE)))
 		t3000_verbose_read();
 #endif
-	ioctl(FD, TIOCFLUSH, 0);	/* flush any clutter */
+	tcflush(FD, TCIOFLUSH);
 	t3000_write(FD, "AT E0 H0 Q0 X4 V1\r", 18);
 	if (!t3000_swallow("\r\nOK\r\n"))
 		goto badsynch;
@@ -100,7 +107,7 @@ badsynch:
 	connected = t3000_connect();
 #ifdef ACULOG
 	if (timeout) {
-		sprintf(line, "%d second dial timeout",
+		(void)sprintf(line, "%ld second dial timeout",
 			number(value(DIALTIMEOUT)));
 		logent(value(HOST), num, "t3000", line);
 	}
@@ -110,6 +117,7 @@ badsynch:
 	return (connected);
 }
 
+void
 t3000_disconnect()
 {
 	 /* first hang up the modem*/
@@ -120,6 +128,7 @@ t3000_disconnect()
 	close(FD);
 }
 
+void
 t3000_abort()
 {
 	t3000_write(FD, "\r", 1);	/* send anything to abort the call */
@@ -136,8 +145,8 @@ sigALRM()
 
 static int
 t3000_swallow(match)
-  register char *match;
-  {
+	char *match;
+{
 	sig_t f;
 	char c;
 
@@ -200,7 +209,6 @@ t3000_connect()
 {
 	char c;
 	int nc, nl, n;
-	struct sgttyb sb;
 	char dialer_buf[64];
 	struct tbaud_msg *bm;
 	sig_t f;
@@ -239,25 +247,12 @@ again:
 			for (bm = tbaud_msg ; bm->msg ; bm++)
 				if (strcmp(bm->msg,
 				    dialer_buf+sizeof("CONNECT")-1) == 0) {
-					if (ioctl(FD, TIOCGETP, &sb) < 0) {
-						perror("TIOCGETP");
-						goto error;
-					}
-					sb.sg_ispeed = sb.sg_ospeed = bm->baud;
-					if (ioctl(FD, TIOCSETP, &sb) < 0) {
-						if (bm->baud2) {
-							sb.sg_ispeed =
-							sb.sg_ospeed =
-								bm->baud2;
-							if (ioctl(FD,
-								  TIOCSETP,
-								  &sb) >= 0)
-								goto isok;
-						}
-						perror("TIOCSETP");
-						goto error;
-					}
-isok:
+					struct termios	cntrl;
+
+					tcgetattr(FD, &cntrl);
+					cfsetospeed(&cntrl, bm->baud);
+					cfsetispeed(&cntrl, bm->baud);
+					tcsetattr(FD, TCSAFLUSH, &cntrl);
 					signal(SIGALRM, f);
 #ifdef DEBUG
 					if (boolean(value(VERBOSE)))
@@ -273,9 +268,7 @@ isok:
 			putchar(c);
 #endif
 	}
-error1:
 	printf("%s\r\n", dialer_buf);
-error:
 	signal(SIGALRM, f);
 	return (0);
 }
@@ -292,7 +285,7 @@ t3000_sync()
 	char buf[40];
 
 	while (already++ < MAXRETRY) {
-		ioctl(FD, TIOCFLUSH, 0);	/* flush any clutter */
+		tcflush(FD, TCIOFLUSH);
 		t3000_write(FD, "\rAT Z\r", 6);	/* reset modem */
 		bzero(buf, sizeof(buf));
 		sleep(2);
@@ -306,8 +299,8 @@ if (len == 0) len = 1;
 			buf[len] = '\0';
 			printf("t3000_sync: (\"%s\")\n\r", buf);
 #endif
-			if (index(buf, '0') || 
-		   	   (index(buf, 'O') && index(buf, 'K')))
+			if (strchr(buf, '0') || 
+		   	   (strchr(buf, 'O') && strchr(buf, 'K')))
 				return(1);
 		}
 		/*
@@ -329,24 +322,21 @@ if (len == 0) len = 1;
 	return (0);
 }
 
+static int
 t3000_write(fd, cp, n)
 int fd;
 char *cp;
 int n;
 {
-	struct sgttyb sb;
-
 #ifdef notdef
 	if (boolean(value(VERBOSE)))
 		write(1, cp, n);
 #endif
-	ioctl(fd, TIOCGETP, &sb);
-	ioctl(fd, TIOCSETP, &sb);
+	tcdrain(fd);
 	t3000_nap();
 	for ( ; n-- ; cp++) {
 		write(fd, cp, 1);
-		ioctl(fd, TIOCGETP, &sb);
-		ioctl(fd, TIOCSETP, &sb);
+		tcdrain(fd);
 		t3000_nap();
 	}
 }
@@ -367,47 +357,14 @@ t3000_verbose_read()
 }
 #endif
 
-/*
- * Code stolen from /usr/src/lib/libc/gen/sleep.c
- */
-#define mask(s) (1<<((s)-1))
-#define setvec(vec, a) \
-        vec.sv_handler = a; vec.sv_mask = vec.sv_onstack = 0
-
-static napms = 50; /* Give the t3000 50 milliseconds between characters */
-
-static int ringring;
-
+/* Give the t3000 50 milliseconds between characters */
+void
 t3000_nap()
 {
+	struct timespec ts;
 
-        static void t3000_napx();
-	int omask;
-        struct itimerval itv, oitv;
-        register struct itimerval *itp = &itv;
-        struct sigvec vec, ovec;
+	ts.tv_sec = 0;
+	ts.tv_nsec = 50 * 1000000;
 
-        timerclear(&itp->it_interval);
-        timerclear(&itp->it_value);
-        if (setitimer(ITIMER_REAL, itp, &oitv) < 0)
-                return;
-        setvec(ovec, SIG_DFL);
-        omask = sigblock(mask(SIGALRM));
-        itp->it_value.tv_sec = napms/1000;
-	itp->it_value.tv_usec = ((napms%1000)*1000);
-        setvec(vec, t3000_napx);
-        ringring = 0;
-        (void) sigvec(SIGALRM, &vec, &ovec);
-        (void) setitimer(ITIMER_REAL, itp, (struct itimerval *)0);
-        while (!ringring)
-                sigpause(omask &~ mask(SIGALRM));
-        (void) sigvec(SIGALRM, &ovec, (struct sigvec *)0);
-        (void) setitimer(ITIMER_REAL, &oitv, (struct itimerval *)0);
-	(void) sigsetmask(omask);
-}
-
-static void
-t3000_napx()
-{
-        ringring = 1;
+	nanosleep(&ts, NULL);
 }

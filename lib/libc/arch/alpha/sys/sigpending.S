@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigpending.S,v 1.3 1996/11/13 22:05:14 niklas Exp $	*/
 /*	$NetBSD: sigpending.S,v 1.1 1995/02/10 17:50:40 cgd Exp $	*/
 
 /*
@@ -29,8 +30,13 @@
 
 #include "SYS.h"
 
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sigpending.S,v 1.3 1996/11/13 22:05:14 niklas Exp $"
+#endif /* SYSLIBC_SCCS */
+
 SYSCALL(sigpending)
 	stl	v0, 0(a0)
 	mov	zero, v0
 	RET
-END(sigpending)
+SYSEND(sigpending)

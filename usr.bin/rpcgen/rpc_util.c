@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpc_util.c,v 1.7 2001/12/05 09:50:31 deraadt Exp $	*/
 /*	$NetBSD: rpc_util.c,v 1.6 1995/08/29 23:05:57 cgd Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -34,20 +35,21 @@ static char sccsid[] = "@(#)rpc_util.c 1.11 89/02/22 (C) 1987 SMI";
 #endif
 
 /*
- * rpc_util.c, Utility routines for the RPC protocol compiler 
+ * rpc_util.c, Utility routines for the RPC protocol compiler
  */
 #include <sys/cdefs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 #include "rpc_scan.h"
 #include "rpc_parse.h"
 #include "rpc_util.h"
 
 #define ARGEXT "argument"
 
-static void printwhere __P((void));
+static void printwhere(void);
 
 char curline[MAXLINESIZE];	/* current read line */
 char *where = curline;		/* current point in line */
@@ -65,8 +67,9 @@ FILE *fin;			/* file pointer of current input */
 list *defined;			/* list of defined things */
 
 /*
- * Reinitialize the world 
+ * Reinitialize the world
  */
+void
 reinitialize()
 {
 	memset(curline, 0, MAXLINESIZE);
@@ -76,8 +79,9 @@ reinitialize()
 }
 
 /*
- * string equality 
+ * string equality
  */
+int
 streq(a, b)
 	char *a;
 	char *b;
@@ -86,7 +90,7 @@ streq(a, b)
 }
 
 /*
- * find a value in a list 
+ * find a value in a list
  */
 definition *
 findval(lst, val, cmp)
@@ -95,7 +99,7 @@ findval(lst, val, cmp)
 	int (*cmp) ();
 
 {
-         
+
 	for (; lst != NULL; lst = lst->next) {
 		if ((*cmp) (lst->val, val)) {
 			return (lst->val);
@@ -105,7 +109,7 @@ findval(lst, val, cmp)
 }
 
 /*
- * store a value in a list 
+ * store a value in a list
  */
 void
 storeval(lstp, val)
@@ -115,7 +119,6 @@ storeval(lstp, val)
 	list **l;
 	list *lst;
 
-	
 	for (l = lstp; *l != NULL; l = (list **) & (*l)->next);
 	lst = ALLOC(list);
 	lst->val = val;
@@ -123,7 +126,7 @@ storeval(lstp, val)
 	*l = lst;
 }
 
-static
+static int
 findit(def, type)
 	definition *def;
 	char *type;
@@ -192,7 +195,7 @@ ptype(prefix, type, follow)
 	}
 }
 
-static
+static int
 typedefed(def, type)
 	definition *def;
 	char *type;
@@ -204,6 +207,7 @@ typedefed(def, type)
 	}
 }
 
+int
 isvectordef(type, rel)
 	char *type;
 	relation rel;
@@ -237,7 +241,7 @@ locase(str)
 	static char buf[100];
 	char *p = buf;
 
-	while (c = *str++) {
+	while ((c = *str++)) {
 		*p++ = (c >= 'A' && c <= 'Z') ? (c - 'A' + 'a') : c;
 	}
 	*p = 0;
@@ -261,7 +265,7 @@ pvname(pname, vnum)
 }
 
 /*
- * print a useful (?) error message, and then die 
+ * print a useful (?) error message, and then die
  */
 void
 error(msg)
@@ -275,8 +279,9 @@ error(msg)
 
 /*
  * Something went wrong, unlink any files that we may have created and then
- * die. 
+ * die.
  */
+void
 crash()
 {
 	int i;
@@ -303,7 +308,7 @@ static char expectbuf[100];
 static char *toktostr();
 
 /*
- * error, token encountered was not the expected one 
+ * error, token encountered was not the expected one
  */
 void
 expected1(exp1)
@@ -315,7 +320,7 @@ expected1(exp1)
 }
 
 /*
- * error, token encountered was not one of two expected ones 
+ * error, token encountered was not one of two expected ones
  */
 void
 expected2(exp1, exp2)
@@ -328,7 +333,7 @@ expected2(exp1, exp2)
 }
 
 /*
- * error, token encountered was not one of 3 expected ones 
+ * error, token encountered was not one of 3 expected ones
  */
 void
 expected3(exp1, exp2, exp3)
@@ -350,7 +355,6 @@ tabify(f, tab)
 		(void) fputc('\t', f);
 	}
 }
-
 
 static token tokstrings[] = {
 	{TOK_IDENT, "identifier"},
@@ -399,7 +403,7 @@ toktostr(kind)
 	return (sp->str);
 }
 
-static
+static void
 printbuf()
 {
 	char c;
@@ -408,7 +412,7 @@ printbuf()
 
 #	define TABSIZE 4
 
-	for (i = 0; c = curline[i]; i++) {
+	for (i = 0; (c = curline[i]); i++) {
 		if (c == '\t') {
 			cnt = 8 - (i % TABSIZE);
 			c = ' ';
@@ -443,13 +447,13 @@ printwhere()
 	(void) fputc('\n', stderr);
 }
 
-char * 
-make_argname(pname, vname) 
+char *
+make_argname(pname, vname)
 	char *pname;
 	char *vname;
 {
 	char *name;
-	
+
 	name = (char *)malloc(strlen(pname) + strlen(vname) + strlen(ARGEXT) + 3);
 	if (!name) {
 		fprintf(stderr, "failed in malloc");
@@ -492,8 +496,7 @@ find_type(type)
 {
 	bas_type * ptr;
 
-	ptr=typ_list_h;
-
+	ptr = typ_list_h;
 
 	while (ptr != NULL) {
 		if (strcmp(ptr->name,type) == 0)

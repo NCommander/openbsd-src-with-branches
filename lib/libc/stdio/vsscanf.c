@@ -1,5 +1,3 @@
-/*	$NetBSD: vsscanf.c,v 1.5 1995/02/02 02:10:57 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)vsscanf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: vsscanf.c,v 1.5 1995/02/02 02:10:57 jtc Exp $";
+static char rcsid[] = "$OpenBSD: vsscanf.c,v 1.3 1996/09/15 09:31:47 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -57,12 +52,12 @@ eofread(cookie, buf, len)
 	return (0);
 }
 
+int
 vsscanf(str, fmt, ap)
 	const char *str;
 	const char *fmt;
 	_BSD_VA_LIST_ ap;
 {
-	int ret;
 	FILE f;
 
 	f._flags = __SRD;

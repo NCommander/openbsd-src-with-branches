@@ -1,4 +1,5 @@
-/*	$NetBSD: if_pppvar.h,v 1.2 1995/07/04 15:30:39 briggs Exp $	*/
+/*	$OpenBSD: if_pppvar.h,v 1.10 2002/03/14 01:27:09 millert Exp $	*/
+/*	$NetBSD: if_pppvar.h,v 1.5 1997/01/03 07:23:29 mikel Exp $	*/
 /*
  * if_pppvar.h - private structures and declarations for PPP.
  *
@@ -41,6 +42,9 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+#ifndef _NET_IF_PPPVAR_H_
+#define _NET_IF_PPPVAR_H_
+
 /*
  * Supported network protocols.  These values are used for
  * indexing sc_npmode.
@@ -53,11 +57,13 @@
  */
 struct ppp_softc {
 	struct	ifnet sc_if;		/* network-visible interface */
+	struct	timeout sc_timo;	/* timeout control (for ptys) */
+	int	sc_unit;		/* XXX unit number */
 	u_int	sc_flags;		/* control/status bits; see if_ppp.h */
 	void	*sc_devp;		/* pointer to device-dep structure */
-	void	(*sc_start) __P((struct ppp_softc *));	/* start output proc */
-	void	(*sc_ctlp) __P((struct ppp_softc *)); /* rcvd control pkt */
-	void	(*sc_relinq) __P((struct ppp_softc *)); /* relinquish ifunit */
+	void	(*sc_start)(struct ppp_softc *); /* start output proc */
+	void	(*sc_ctlp)(struct ppp_softc *); /* rcvd control pkt */
+	void	(*sc_relinq)(struct ppp_softc *); /* relinquish ifunit */
 	u_int16_t sc_mru;		/* max receive unit */
 	pid_t	sc_xfer;		/* used in transferring unit */
 	struct	ifqueue sc_rawq;	/* received packets */
@@ -66,11 +72,7 @@ struct ppp_softc {
 	struct	mbuf *sc_togo;		/* output packet ready to go */
 	struct	mbuf *sc_npqueue;	/* output packets not to be sent yet */
 	struct	mbuf **sc_npqtail;	/* ptr to last next ptr in npqueue */
-#ifdef	VJC
-	struct	slcompress sc_comp; 	/* vjc control buffer */
-#endif
-	u_int	sc_bytessent;		/* count of octets sent */
-	u_int	sc_bytesrcvd;		/* count of octets received */
+	struct	pppstat sc_stats;	/* count of bytes/pkts sent/rcvd */
 	caddr_t	sc_bpf;			/* hook for BPF */
 	enum	NPmode sc_npmode[NUM_NP]; /* what to do with each NP */
 	struct	compressor *sc_xcomp;	/* transmit compressor */
@@ -79,7 +81,12 @@ struct ppp_softc {
 	void	*sc_rc_state;		/* receive decompressor state */
 	time_t	sc_last_sent;		/* time (secs) last NP pkt sent */
 	time_t	sc_last_recv;		/* time (secs) last NP pkt rcvd */
-	
+	struct	bpf_program sc_pass_filt; /* filter for packets to pass */
+	struct	bpf_program sc_active_filt; /* filter for "non-idle" packets */
+#ifdef	VJC
+	struct	slcompress *sc_comp; 	/* vjc control buffer */
+#endif
+
 	/* Device-dependent part for async lines. */
 	ext_accm sc_asyncmap;		/* async control character map */
 	u_int32_t sc_rasyncmap;		/* receive async control char map */
@@ -94,11 +101,17 @@ struct ppp_softc {
 	int	sc_rawin_count;		/* # in sc_rawin */
 };
 
+#ifdef _KERNEL
 struct	ppp_softc ppp_softc[NPPP];
 
-struct	ppp_softc *pppalloc __P((pid_t pid));
-void	pppdealloc __P((struct ppp_softc *sc));
-int	pppioctl __P((struct ppp_softc *sc, u_long cmd, caddr_t data,
-		      int flag, struct proc *p));
-void	ppppktin __P((struct ppp_softc *sc, struct mbuf *m, int lost));
-struct	mbuf *ppp_dequeue __P((struct ppp_softc *sc));
+struct	ppp_softc *pppalloc(pid_t pid);
+void	pppdealloc(struct ppp_softc *sc);
+int	pppioctl(struct ppp_softc *sc, u_long cmd, caddr_t data,
+		      int flag, struct proc *p);
+void	ppppktin(struct ppp_softc *sc, struct mbuf *m, int lost);
+struct	mbuf *ppp_dequeue(struct ppp_softc *sc);
+void	ppp_restart(struct ppp_softc *sc);
+int	pppoutput(struct ifnet *, struct mbuf *,
+		       struct sockaddr *, struct rtentry *);
+#endif /* _KERNEL */
+#endif /* _NET_IF_PPPVAR_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: cd9660_bmap.c,v 1.5 1994/12/13 22:33:12 mycroft Exp $	*/
+/*	$OpenBSD: cd9660_bmap.c,v 1.2 1996/02/29 10:12:14 niklas Exp $	*/
+/*	$NetBSD: cd9660_bmap.c,v 1.7 1997/01/24 00:27:29 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1994
@@ -48,6 +49,7 @@
 #include <sys/mount.h>
 
 #include <isofs/cd9660/iso.h>
+#include <isofs/cd9660/cd9660_extern.h>
 #include <isofs/cd9660/cd9660_node.h>
 
 /*
@@ -56,15 +58,16 @@
  * number to index into the data block (extent) for the file.
  */
 int
-cd9660_bmap(ap)
+cd9660_bmap(v)
+	void *v;
+{
 	struct vop_bmap_args /* {
 		struct vnode *a_vp;
 		daddr_t  a_bn;
 		struct vnode **a_vpp;
 		daddr_t *a_bnp;
 		int *a_runp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct iso_node *ip = VTOI(ap->a_vp);
 	daddr_t lblkno = ap->a_bn;
 	int bshift;

@@ -1,5 +1,5 @@
+/*	$OpenBSD: boot.c,v 1.5 2002/03/14 01:26:46 millert Exp $	*/
 /*	$NetBSD: boot.c,v 1.3 2001/05/31 08:55:19 mrg Exp $	*/
-#define DEBUG
 /*
  * Copyright (c) 1997, 1999 Eduardo E. Horvath.  All rights reserved.
  * Copyright (c) 1997 Jason R. Thorpe.  All rights reserved.
@@ -68,19 +68,8 @@
  * this list is used in sequence, to find a kernel.
  */
 char *kernels[] = {
-	"netbsd ",
-	"netbsd.gz ",
-	"netbsd.old ",
-	"netbsd.old.gz ",
-	"onetbsd ",
-	"onetbsd.gz ",
-	"vmunix ",
-#ifdef notyet
-	"netbsd.pl ",
-	"netbsd.pl.gz ",
-	"netbsd.el ",
-	"netbsd.el.gz ",
-#endif
+	"bsd ",
+	"obsd ",
 	NULL
 };
 
@@ -92,12 +81,12 @@ int debug;
 
 
 #ifdef SPARC_BOOT_ELF
-int	elf32_exec __P((int, Elf32_Ehdr *, u_int64_t *, void **, void **));
-int	elf64_exec __P((int, Elf64_Ehdr *, u_int64_t *, void **, void **));
+int	elf32_exec(int, Elf32_Ehdr *, u_int64_t *, void **, void **);
+int	elf64_exec(int, Elf64_Ehdr *, u_int64_t *, void **, void **);
 #endif
 
 #ifdef SPARC_BOOT_AOUT
-int	aout_exec __P((int, struct exec *, u_int64_t *, void **));
+int	aout_exec(int, struct exec *, u_int64_t *, void **);
 #endif
 
 #if 0
@@ -177,7 +166,7 @@ chain(pentry, args, ssym, esym)
 	int l, machine_tag;
 	long newargs[3];
 
-	entry = (void*)(long)pentry;
+	entry = (void *)(long)pentry;
 
 	freeall();
 	/*
@@ -453,7 +442,7 @@ elf32_exec(fd, elf, entryp, ssymp, esymp)
 		if (phdr.p_filesz < phdr.p_memsz) {
 			printf("+%lu@0x%lx", phdr.p_memsz - phdr.p_filesz,
 			    (u_long)(phdr.p_vaddr + phdr.p_filesz));
-			bzero((void*)phdr.p_vaddr + phdr.p_filesz,
+			bzero((void *)phdr.p_vaddr + phdr.p_filesz,
 			    phdr.p_memsz - phdr.p_filesz);
 		}
 		first = 0;

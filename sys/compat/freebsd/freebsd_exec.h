@@ -1,3 +1,5 @@
+/*	$OpenBSD: freebsd_exec.h,v 1.4 2001/02/02 05:21:47 tholo Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -90,9 +92,13 @@
 /* String table offset. */
 #define	FREEBSD_N_STROFF(ex) 	(FREEBSD_N_SYMOFF(ex) + (ex).a_syms)
 
+#define FREEBSD_ELF_AUX_ARGSIZ (sizeof(AuxInfo) * 15 / sizeof(char *))
+
 #define	FREEBSD_AOUT_HDR_SIZE	sizeof(struct exec)
 
-int exec_freebsd_aout_makecmds __P((struct proc *, struct exec_package *));
+int exec_freebsd_aout_makecmds(struct proc *, struct exec_package *);
+int freebsd_elf_probe(struct proc *, struct exec_package *, char *,
+    u_long *, u_int8_t *);
 
 extern char freebsd_sigcode[], freebsd_esigcode[];
 

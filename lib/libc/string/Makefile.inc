@@ -1,29 +1,33 @@
-#	from: @(#)Makefile.inc	5.6 (Berkeley) 3/5/91
-#	$Id: Makefile.inc,v 1.35 1995/03/20 14:47:39 mycroft Exp $
+#	$OpenBSD: Makefile.inc,v 1.9 1999/11/09 11:20:41 art Exp $
 
 # string sources
-.PATH: ${.CURDIR}/arch/${MACHINE_ARCH}/string ${.CURDIR}/string
+.PATH: ${LIBCSRCDIR}/arch/${MACHINE_ARCH}/string ${LIBCSRCDIR}/string
 
 SRCS+=	bm.c memccpy.c strcasecmp.c strcoll.c strdup.c strerror.c \
-	strftime.c strmode.c strsignal.c strtok.c strxfrm.c \
+	strlcat.c strmode.c strsignal.c strtok.c strxfrm.c \
 	__strerror.c __strsignal.c
 
 # machine-dependent net sources
 # m-d Makefile.inc must include sources for:
 #	bcmp() bcopy() bzero() ffs() index() memchr() memcmp() memset()
-#	rindex() strcat() strcmp() strcpy() strcspn() strlen()
+#	rindex() strcat() strcmp() strcpy() strcspn() strlen() strlcpy()
 #	strncat() strncmp() strncpy() strpbrk() strsep()
 #	strspn() strstr() swav()
 # m-d Makefile.inc may include sources for:
 #	memcpy() memmove() strchr() strrchr()
 
-.include "${.CURDIR}/arch/${MACHINE_ARCH}/string/Makefile.inc"
+.include "${LIBCSRCDIR}/arch/${MACHINE_ARCH}/string/Makefile.inc"
 
 # if no machine specific memmove(3), build one out of bcopy(3).
 .if empty(SRCS:Mmemmove.S)
 OBJS+=	memmove.o
 memmove.o: bcopy.c
 	${CC} -DMEMMOVE ${CFLAGS} ${CPPFLAGS} -c ${.ALLSRC} -o ${.TARGET}
+	@${LD} -x -r ${.TARGET}
+	@mv a.out ${.TARGET}
+
+memmove.go: bcopy.c
+	${CC} -g -DMEMMOVE ${CFLAGS} ${CPPFLAGS} -c ${.ALLSRC} -o ${.TARGET}
 	@${LD} -x -r ${.TARGET}
 	@mv a.out ${.TARGET}
 
@@ -48,6 +52,11 @@ memcpy.o: bcopy.c
 	@${LD} -x -r ${.TARGET}
 	@mv a.out ${.TARGET}
 
+memcpy.go: bcopy.c
+	${CC} -g -DMEMCOPY ${CFLAGS} ${CPPFLAGS} -c ${.ALLSRC} -o ${.TARGET}
+	@${LD} -x -r ${.TARGET}
+	@mv a.out ${.TARGET}
+
 memcpy.po: bcopy.c
 	${CC} -DMEMCOPY ${CFLAGS} ${CPPFLAGS} -c -p ${.ALLSRC} -o ${.TARGET}
 	@${LD} -X -r ${.TARGET}
@@ -64,6 +73,11 @@ memcpy.so: bcopy.c
 OBJS+=	strchr.o
 strchr.o: index.c
 	${CC} -DSTRCHR ${CFLAGS} ${CPPFLAGS} -c ${.ALLSRC} -o ${.TARGET}
+	@${LD} -x -r ${.TARGET}
+	@mv a.out ${.TARGET}
+
+strchr.go: index.c
+	${CC} -g -DSTRCHR ${CFLAGS} ${CPPFLAGS} -c ${.ALLSRC} -o ${.TARGET}
 	@${LD} -x -r ${.TARGET}
 	@mv a.out ${.TARGET}
 
@@ -85,6 +99,11 @@ strrchr.o: rindex.c
 	@${LD} -x -r ${.TARGET}
 	@mv a.out ${.TARGET}
 
+strrchr.go: rindex.c
+	${CC} -g -DSTRRCHR ${CFLAGS} ${CPPFLAGS} -c ${.ALLSRC} -o ${.TARGET}
+	@${LD} -x -r ${.TARGET}
+	@mv a.out ${.TARGET}
+
 strrchr.po: rindex.c
 	${CC} -DSTRRCHR ${CFLAGS} ${CPPFLAGS} -c -p ${.ALLSRC} -o ${.TARGET}
 	@${LD} -X -r ${.TARGET}
@@ -95,14 +114,38 @@ strrchr.so: rindex.c
 	    -o ${.TARGET}
 .endif
 
-MAN+=	bm.3 bcmp.3 bcopy.3 bstring.3 bzero.3 ffs.3 index.3 memccpy.3 memchr.3 \
-	memcmp.3 memcpy.3 memmove.3 memset.3 rindex.3 strcasecmp.3 strcat.3 \
-	strchr.3 strcmp.3 strcoll.3 strcpy.3 strcspn.3 strerror.3 strftime.3 \
+# build .ln files for memmove, memcpy, strchr and strrchr always from
+# bcopy, index, and rindex
+LOBJS+=	memmove.ln memcpy.ln strchr.ln strrchr.ln
+
+memmove.ln: bcopy.c
+	lint ${LINTFLAGS} -DMEMMOVE ${CFLAGS:M-[IDU]*} -i -o ${.TARGET} \
+		${LIBCSRCDIR}/string/bcopy.c
+
+memcpy.ln: bcopy.c
+	lint ${LINTFLAGS} -DMEMCOPY ${CFLAGS:M-[IDU]*} -i -o ${.TARGET} \
+		${LIBCSRCDIR}/string/bcopy.c
+
+strchr.ln: index.c
+	lint ${LINTFLAGS} -DSTRCHR ${CFLAGS:M-[IDU]*} -i -o ${.TARGET} \
+		${LIBCSRCDIR}/string/index.c
+
+strrchr.ln: rindex.c
+	lint ${LINTFLAGS} -DSTRRCHR ${CFLAGS:M-[IDU]*} -i -o ${.TARGET} \
+		${LIBCSRCDIR}/string/rindex.c
+
+MAN+=	bm.3 bcmp.3 bcopy.3 bstring.3 bzero.3 ffs.3 memccpy.3 memchr.3 \
+	memcmp.3 memcpy.3 memmove.3 memset.3 strcasecmp.3 strcat.3 \
+	strchr.3 strcmp.3 strcoll.3 strcpy.3 strcspn.3 strerror.3 \
 	string.3 strlen.3 strmode.3 strdup.3 strpbrk.3 strrchr.3 strsep.3 \
-	strsignal.3 strspn.3 strstr.3 strtok.3 strxfrm.3 swab.3
+	strsignal.3 strspn.3 strstr.3 strtok.3 strxfrm.3 swab.3 strlcpy.3
 
 MLINKS+=bm.3 bm_comp.3 bm.3 bm_exec.3 bm.3 bm_free.3
+MLINKS+=strchr.3 index.3
+MLINKS+=strrchr.3 rindex.3
 MLINKS+=strcasecmp.3 strncasecmp.3
 MLINKS+=strcat.3 strncat.3
 MLINKS+=strcmp.3 strncmp.3
 MLINKS+=strcpy.3 strncpy.3
+MLINKS+=strlcpy.3 strlcat.3
+MLINKS+=strtok.3 strtok_r.3

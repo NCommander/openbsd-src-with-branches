@@ -1,10 +1,20 @@
+/*
+ * Music
+ *
+ * $OpenBSD: calendar.music,v 1.7 2001/11/30 19:37:13 mickey Exp $
+ */
+
+#ifndef _calendar_music_
+#define _calendar_music_
+
 01/01	Country Joe McDonald is born in El Monte, California, 1942
 01/03	Steven Stills is born in Dallas, 1945
 01/04	Jazz great Charlie Mingus dies at 57 in Cuernavaca, Mexico, 1979
+01/08	Elvis Presley born, 1935
 01/08	David Bowie (then David Robert Jones) is born in London, 1947
 01/09	James Patrick Page (Led Zeppelin) is born in Middlesex, England, 1945
 01/10	Blues guitarist Howlin' Wolf dies in Chicago, 1976
-01/10	Jim Croce is born in Phildelphia, 1943
+01/10	Jim Croce is born in Philadelphia, 1943
 01/10	Pat Benatar is born in Long Island, 1952
 01/10	Rod Stewart is born in Glasgow, Scotland, 1945
 01/13	Eric Clapton plays the "Rainbow Concert" in London, 1973
@@ -35,6 +45,7 @@
 02/20	Yes sells out Madison Square Garden...without advertising, 1974
 02/23	Handel born, 1685
 02/23	Johnny Winter is born in Leland, Mississippi, 1944
+02/25	George Harrison born in Liverpool, England, 1943
 02/29	Jimmy Dorsey born, 1904
 03/01	Jim Morrison is busted for obscenity in Miami, 1969
 03/02	Blues guitarist Rory Gallagher is born in Ballyshannon, Ireland, 1949
@@ -46,12 +57,16 @@
 03/13	The Allman Brothers record their live album at the Fillmore East, 1971
 03/15	Sly Stone born, 1944
 03/17	Paul Kantner (Jefferson Airplane) is born in San Francisco, 1942
-03/21	J.S. Bach born, 1685
+03/21	Johann Sebastian Bach born in Eisenach, 1685
 03/22	Ten Years After plays their last concert, 1974
 03/25	Aretha Franklin is born in Detroit, 1943
+03/25	Bela Bartok is born in Nagyszentmiklos, 1881
+03/26	Ludwig van Beethoven dies in Wien, 1827
 03/26	Emerson, Lake, and Palmer record "Pictures at an Exhibition" live, 1971
+03/28	Sergej Rachmaninow dies in Beverley Hills, 1943
 03/29	Dr. Hook gets a group picture on the cover of "Rolling Stone", 1973
 03/30	Eric Clapton is born in Surrey, England, 1945
+04/01	Sergej Rachmaninow is born in Oneg, 1873
 04/02	Marvin Gaye is born in Washington, D.C., 1939
 04/04	Muddy Waters (McKinley Morganfield) is born in Rolling Fork,
 	Mississippi, 1915
@@ -73,7 +88,6 @@
 05/18	Rick Wakeman is born in West London, England, 1949
 05/19	Pete Townshend is born in London, 1945
 05/20	The Jimi Hendrix Experience is signed by Reprise Records, 1967
-05/22	Johann Sebastian Bach born in Eisenach, Germany, 1665
 05/23	Blues great Elmore James dies, 1963
 05/24	Bob Dylan (Robert Zimmerman) is born in Duluth, 1941
 05/26	Al Jolson born, 1886
@@ -98,12 +112,12 @@
 07/14	Woodie Guthrie born, 1912
 07/16	Cream forms in the U.K., 1966
 07/16	Harry Chapin dies on Long Island Expressway, 1981
-07/17	"Yellow Submarine" premieres at the London Pavilon, 1968
+07/17	"Yellow Submarine" premieres at the London Pavilion, 1968
 07/20	Carlos Santana is born in Autlan, Mexico, 1947
 07/25	Bob Dylan goes electric at the Newport Folk Festival, 1965
 07/25	Crosby, Stills, Nash & Young debut at the Fillmore East, 1969
 07/26	Mick Jagger is born in Kent, England, 1943
-07/28	Bach dies, 1750
+07/28	Johann Sebastian Bach dies in Leipzig, 1750
 07/28	The Watkins Glen "Summer Jam" opens, 1973
 08/01	The Concert for Bangla Desh takes place at Madison Square Garden, 1971
 08/04	John Lennon points out that "the Beatles are more popular than Jesus",
@@ -126,6 +140,7 @@
 09/23	"Paul is dead" rumors sweep the country, 1969
 09/23	Bruce "The Boss" Springsteen is born in Freehold, New Jersey, 1949
 09/25	John Bonham (Led Zeppelin) dies of alcohol poisoning, 1980
+09/26	Bela Bartok dies in New York, 1945
 09/26	George Gershwin born in Brooklyn, NY
 10/04	Janis Joplin O.D.s, 1970
 10/04	Janis Joplin dies of a heroin overdose in Hollywood, 1970
@@ -138,7 +153,9 @@
 10/17	"Hair" opens at New York's Public Theater, 1967
 10/18	Chuck Berry is born in San Jose, California, 1926
 10/20	Three members of Lynyrd Skynyrd die in a plane crash, 1977
+10/21	Jesus Christ Super Star debuted on Broadway, 1971
 10/22	Franz Liszt born, 1811
+10/22	Pablo Casals died in Puerto Rico, 1973
 10/25	Jon Anderson (Yes) is born in Lancashire, England, 1944
 10/25	The Rolling Stones appear on The Ed Sullivan Show, 1964
 10/29	Duane Allman dies in motorcycle crash near Macon, Georgia, 1971
@@ -160,6 +177,9 @@
 11/25	Johann Strauss, Jr., writes `On the Beautiful Blue Danube', 1867
 11/26	Cream performs their farewell concert at Royal Albert Hall, 1968
 11/27	Jimi Hendrix (Johnny Allen Hendrix) is born in Seattle, 1942
+11/29	Pau Casals born in Vendrell, 1876
+11/30	George Harrison dies at 13:30 in L.A., 2001
+12/04	Frank Zappa dies in his Laurel Canyon home shortly before 18:00, 1993
 12/05	Mozart dies, 1791
 12/06	First sound recording made by Thomas Edison, 1877
 12/06	The Rolling Stones play Altamont Speedway near San Francisco, 1969
@@ -169,10 +189,11 @@
 12/09	The Who's "Tommy" premieres in London, 1973
 12/13	Ted Nugent, the motor city madman, born in Detroit, 1949
 12/15	Thomas Edison receives patent on the phonograph, 1877
-12/16	Beethoven born, 1770
 12/16	Don McLean's "American Pie" is released, 1971
-12/16	Ludwig von Beethoven christened in Bonn, Germany, 1770
+12/16	Ludwig von Beethoven born or christened in Bonn, Germany, 1770
 12/21	Frank Zappa is born in Baltimore, 1940
 12/23	First G&S collaboration, Thespis, 1871
 12/28	Edgar Winter is born in Beaumont, Texas, 1946
 12/31	Jimi Hendrix introduces the Band of Gypsies at the Fillmore East, 1969
+
+#endif /* !_calendar_music_ */

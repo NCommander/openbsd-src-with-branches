@@ -29,17 +29,20 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)kern_prot.c	7.21 (Berkeley) 5/3/91
- *	$Id: setregid.c,v 1.5 1994/07/21 17:13:35 jtc Exp $
  */
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char *rcsid = "$OpenBSD: setregid.c,v 1.3 1997/01/19 22:32:14 graichen Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <unistd.h>
 
-extern int __setregid __P((gid_t, gid_t));
+extern int __setregid(gid_t, gid_t);
 
+#ifndef NO_WARN_REFERENCES
 __warn_references(setregid, "warning: this program uses setregid(), which is deprecated.");
+#endif
 
 int
 setregid(rgid, egid)

@@ -10,18 +10,18 @@ divert(-1)
 #
 
 divert(0)dnl
-VERSIONID(`$Sendmail: msp.m4,v 1.27 2001/08/16 16:31:29 ca Exp $')
+VERSIONID(`$Sendmail: msp.m4,v 1.29 2001/12/13 23:56:38 gshapiro Exp $')
 divert(-1)
 define(`ALIAS_FILE', `')
 define(`confDELIVERY_MODE', `i')
 define(`confUSE_MSP', `True')
 define(`confFORWARD_PATH', `')
-define(`confPRIVACY_FLAGS', `goaway,noetrn')
+define(`confPRIVACY_FLAGS', `goaway,noetrn,restrictqrun')
 define(`confDONT_PROBE_INTERFACES', `True')
 dnl ---------------------------------------------
 dnl run as this user (even if called by root)
-define(`confRUN_AS_USER', `smmsp')
-define(`confTRUSTED_USER', confRUN_AS_USER)
+ifdef(`confRUN_AS_USER',,`define(`confRUN_AS_USER', `smmsp')')
+ifdef(`confTRUSTED_USER',,`define(`confTRUSTED_USER', confRUN_AS_USER)')
 dnl ---------------------------------------------
 dnl This queue directory must have the same group
 dnl as sendmail and it must be group-writable.

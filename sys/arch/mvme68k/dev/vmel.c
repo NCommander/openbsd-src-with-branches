@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: vmel.c,v 1.7 2001/11/05 19:45:34 art Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -47,17 +48,15 @@
  * functions will decide how many address bits are relevant.
  */
 
-void vmelattach __P((struct device *, struct device *, void *));
-int  vmelmatch __P((struct device *, void *, void *));
+void vmelattach(struct device *, struct device *, void *);
+int  vmelmatch(struct device *, void *, void *);
 
-struct vmelsoftc {
-	struct device		sc_dev;
-	struct vmesoftc		*sc_vme;
+struct cfattach vmel_ca = {
+	sizeof(struct vmelsoftc), vmelmatch, vmelattach
 };
 
-struct cfdriver vmelcd = {
-	NULL, "vmel", vmelmatch, vmelattach,
-	DV_DULL, sizeof(struct vmelsoftc), 0
+struct cfdriver vmel_cd = {
+	NULL, "vmel", DV_DULL, 0
 };
 
 int
@@ -96,8 +95,8 @@ vmelopen(dev, flag, mode)
 	dev_t dev;
 	int flag, mode;
 {
-	if (minor(dev) >= vmelcd.cd_ndevs ||
-	    vmelcd.cd_devs[minor(dev)] == NULL)
+	if (minor(dev) >= vmel_cd.cd_ndevs ||
+	    vmel_cd.cd_devs[minor(dev)] == NULL)
 		return (ENODEV);
 	return (0);
 }
@@ -121,7 +120,7 @@ vmelioctl(dev, cmd, data, flag, p)
 	struct proc *p;
 {
 	int unit = minor(dev);
-	struct vmelsoftc *sc = (struct vmelsoftc *) vmelcd.cd_devs[unit];
+	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
 	int error = 0;
 
 	switch (cmd) {
@@ -139,7 +138,7 @@ vmelread(dev, uio, flags)
 	int flags;
 {
 	int unit = minor(dev);
-	struct vmelsoftc *sc = (struct vmelsoftc *) vmelcd.cd_devs[unit];
+	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
 
 	return (vmerw(sc->sc_vme, uio, flags, BUS_VMEL));
 }
@@ -151,21 +150,22 @@ vmelwrite(dev, uio, flags)
 	int flags;
 {
 	int unit = minor(dev);
-	struct vmelsoftc *sc = (struct vmelsoftc *) vmelcd.cd_devs[unit];
+	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
 
 	return (vmerw(sc->sc_vme, uio, flags, BUS_VMEL));
 }
 
-int
+paddr_t
 vmelmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	int unit = minor(dev);
-	struct vmelsoftc *sc = (struct vmelsoftc *) vmelcd.cd_devs[unit];
-	caddr_t pa;
+	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
+	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (caddr_t)off, NBPG, BUS_VMEL);
+	pa = vmepmap(sc->sc_vme, (void *)(int)off, NBPG, BUS_VMEL);
 	printf("vmel %x pa %x\n", off, pa);
 	if (pa == NULL)
 		return (-1);

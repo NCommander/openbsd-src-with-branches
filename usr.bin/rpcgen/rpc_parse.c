@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpc_parse.c,v 1.8 2001/12/05 09:50:31 deraadt Exp $	*/
 /*	$NetBSD: rpc_parse.c,v 1.5 1995/08/29 23:05:55 cgd Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -34,7 +35,7 @@ static char sccsid[] = "@(#)rpc_parse.c 1.8 89/02/22 (C) 1987 SMI";
 #endif
 
 /*
- * rpc_parse.c, Parser for the RPC protocol compiler 
+ * rpc_parse.c, Parser for the RPC protocol compiler
  * Copyright (C) 1987 Sun Microsystems, Inc.
  */
 #include <stdio.h>
@@ -47,17 +48,17 @@ static char sccsid[] = "@(#)rpc_parse.c 1.8 89/02/22 (C) 1987 SMI";
 
 #define ARGNAME "arg"
 
-static isdefined __P((definition *));
-static def_struct __P((definition *));
-static def_program __P((definition *));
-static def_enum __P((definition *));
-static def_const __P((definition *));
-static def_union __P((definition *));
-static def_typedef __P((definition *));
-static get_declaration __P((declaration *, defkind));
-static get_prog_declaration __P((declaration *, defkind, int));
-static get_type __P((char **, char **, defkind));
-static unsigned_dec __P((char **));
+static isdefined(definition *);
+static def_struct(definition *);
+static def_program(definition *);
+static def_enum(definition *);
+static def_const(definition *);
+static def_union(definition *);
+static def_typedef(definition *);
+static get_declaration(declaration *, defkind);
+static get_prog_declaration(declaration *, defkind, int);
+static get_type(char **, char **, defkind);
+static unsigned_dec(char **);
 
 /*
  * return the next definition you see
@@ -164,7 +165,7 @@ def_program(defp)
 		do {
 			/* get result type */
 			plist = ALLOC(proc_list);
-			get_type(&plist->res_prefix, &plist->res_type, 
+			get_type(&plist->res_prefix, &plist->res_type,
 				 DEF_PROGRAM);
 			if (streq(plist->res_type, "opaque")) {
 				error("illegal result type");
@@ -175,7 +176,7 @@ def_program(defp)
 			/* get args - first one*/
 			num_args = 1;
 			isvoid = FALSE;
-			/* type of DEF_PROGRAM in the first 
+			/* type of DEF_PROGRAM in the first
 			 * get_prog_declaration and DEF_STURCT in the next
 			 * allows void as argument if it is the only argument
 			 */
@@ -187,9 +188,9 @@ def_program(defp)
 			decls->decl = dec;
 			tailp = &decls->next;
 			/* get args */
-			while(peekscan(TOK_COMMA, &tok)) {
+			while (peekscan(TOK_COMMA, &tok)) {
 			  num_args++;
-			  get_prog_declaration(&dec, DEF_STRUCT, 
+			  get_prog_declaration(&dec, DEF_STRUCT,
 					       num_args);
 			  decls = ALLOC(decl_list);
 			  decls->decl = dec;
@@ -202,7 +203,7 @@ def_program(defp)
 			if( !newstyle && num_args > 1 ) {
 			  error("only one argument is allowed" );
 			}
-			if (isvoid && num_args > 1) { 
+			if (isvoid && num_args > 1) {
 			  error("illegal use of void in program definition");
 			}
 			*tailp = NULL;
@@ -224,10 +225,10 @@ def_program(defp)
 		scan_num(&tok);
 		vlist->vers_num = tok.str;
 		/* make the argument structure name for each arg*/
-		for(plist = vlist->procs; plist != NULL; 
+		for(plist = vlist->procs; plist != NULL;
 		    plist = plist->next) {
 			plist->args.argname = make_argname(plist->proc_name,
-							   vlist->vers_num); 
+							   vlist->vers_num);
 			/* free the memory ??*/
 		}
 		scan(TOK_SEMICOLON, &tok);
@@ -315,7 +316,7 @@ def_union(defp)
     if(peekscan(TOK_CASE,&tok))
       {
 
-	do 
+	do
 	  {
 	    scan2(TOK_IDENT, TOK_CHARCONST, &tok);
 	    cases->contflag=1;	/* continued case statement */
@@ -324,8 +325,8 @@ def_union(defp)
 	    cases = ALLOC(case_list);
 	    cases->case_name = tok.str;
 	    scan(TOK_COLON, &tok);
-      
-	  }while(peekscan(TOK_CASE,&tok));
+
+	  } while (peekscan(TOK_CASE,&tok));
       }
     else
       if(flag)
@@ -334,7 +335,7 @@ def_union(defp)
 	  *tailp = cases;
 	  tailp = &cases->next;
 	  cases = ALLOC(case_list);
-	};
+	}
 
     get_declaration(&dec, DEF_UNION);
     cases->case_decl = dec;
@@ -358,7 +359,7 @@ def_union(defp)
   }
 }
 
-static char* reserved_words[] = {
+static char *reserved_words[] = {
 	"array",
 	"bytes",
 	"destroy",
@@ -374,7 +375,7 @@ static char* reserved_words[] = {
 	NULL
 };
 
-static char* reserved_types[] = {
+static char *reserved_types[] = {
 	"opaque",
 	"string",
 	NULL
@@ -384,14 +385,14 @@ static char* reserved_types[] = {
    xdr routines that would conflict with internal XDR routines. */
 static check_type_name( name, new_type )
 int new_type;
-char* name;
+char *name;
 {
   int i;
   char tmp[100];
 
   for( i = 0; reserved_words[i] != NULL; i++ ) {
     if( strcmp( name, reserved_words[i] ) == 0 ) {
-      sprintf(tmp, 
+      sprintf(tmp,
 	      "illegal (reserved) name :\'%s\' in type definition", name );
       error(tmp);
     }
@@ -399,7 +400,7 @@ char* name;
   if( new_type ) {
     for( i = 0; reserved_types[i] != NULL; i++ ) {
       if( strcmp( name, reserved_types[i] ) == 0 ) {
-	sprintf(tmp, 
+	sprintf(tmp,
 		"illegal (reserved) name :\'%s\' in type definition", name );
 	error(tmp);
       }
@@ -485,7 +486,7 @@ get_prog_declaration(dec, dkind, num)
 	token tok;
 	char name[10]; /* argument name */
 
-	if (dkind == DEF_PROGRAM) { 
+	if (dkind == DEF_PROGRAM) {
 	  peek(&tok);
 	  if (tok.kind == TOK_RPAREN) { /* no arguments */
 	    	dec->rel = REL_ALIAS;
@@ -499,11 +500,11 @@ get_prog_declaration(dec, dkind, num)
 	dec->rel = REL_ALIAS;
 	if (peekscan(TOK_IDENT, &tok))  /* optional name of argument */
 		strcpy(name, tok.str);
-	else 
+	else
 		sprintf(name, "%s%d", ARGNAME, num); /* default name of argument */
 
-	dec->name = (char *)strdup(name); 
-	
+	dec->name = (char *)strdup(name);
+
 	if (streq(dec->type, "void")) {
 		return;
 	}
@@ -511,7 +512,7 @@ get_prog_declaration(dec, dkind, num)
 	if (streq(dec->type, "opaque")) {
 		error("opaque -- illegal argument type");
 	}
-	if (peekscan(TOK_STAR, &tok)) { 
+	if (peekscan(TOK_STAR, &tok)) {
 	  if (streq(dec->type, "string")) {
 	    error("pointer to string not allowed in program arguments\n");
 	  }
@@ -534,7 +535,7 @@ get_prog_declaration(dec, dkind, num)
 	}
 	if (streq(dec->type, "string")) {
 		if (dec->rel != REL_ARRAY) {  /* .x specifies just string as
-					       * type of argument 
+					       * type of argument
 					       * - make it string<>
 					       */
 			dec->rel = REL_ARRAY;

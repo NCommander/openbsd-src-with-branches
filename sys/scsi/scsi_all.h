@@ -1,4 +1,5 @@
-/*	$NetBSD: scsi_all.h,v 1.6 1994/12/28 19:42:54 mycroft Exp $	*/
+/*	$OpenBSD: scsi_all.h,v 1.11 2001/06/22 14:35:42 deraadt Exp $	*/
+/*	$NetBSD: scsi_all.h,v 1.10 1996/09/12 01:57:17 thorpej Exp $	*/
 
 /*
  * SCSI general  interface description
@@ -29,13 +30,19 @@
  */
 
 /*
- * Define dome bits that are in ALL (or a lot of) scsi commands
+ * Define some bits that are in ALL (or a lot of) scsi commands
  */
 #define SCSI_CTL_LINK		0x01
 #define SCSI_CTL_FLAG		0x02
 #define SCSI_CTL_VENDOR		0xC0
-#define	SCSI_CMD_LUN		0xA0	/* these two should not be needed */
-#define	SCSI_CMD_LUN_SHIFT	5	/* LUN in the cmd is no longer SCSI */
+
+
+/*
+ * Some old SCSI devices need the LUN to be set in the top 3 bits of the
+ * second byte of the CDB.
+ */
+#define	SCSI_CMD_LUN_MASK	0xe0
+#define	SCSI_CMD_LUN_SHIFT	5
 
 
 struct scsi_generic {
@@ -168,15 +175,18 @@ struct scsi_changedef {
 #define MODE_SELECT		0x15
 #define MODE_SENSE		0x1a
 #define START_STOP		0x1b
-#define RESERVE      		0x16
-#define RELEASE      		0x17
+#define RESERVE			0x16
+#define RELEASE			0x17
 #define PREVENT_ALLOW		0x1e
 #define POSITION_TO_ELEMENT	0x2b
 #define	CHANGE_DEFINITION	0x40
 #define	MODE_SENSE_BIG		0x54
 #define	MODE_SELECT_BIG		0x55
-#define MOVE_MEDIUM     	0xa5
-#define READ_ELEMENT_STATUS	0xb8
+
+/*
+ * Sort of an extra one, for SCSI_RESET.
+ */
+#define GENRETRY		1
 
 /*
  * sense data format
@@ -193,6 +203,7 @@ struct scsi_changedef {
 
 #define T_CHANGER	8
 #define T_COMM		9
+#define	T_ENCLOSURE	13
 
 #define T_REMOV		1
 #define	T_FIXED		0
@@ -226,61 +237,58 @@ struct scsi_inquiry_data {
 	char	vendor[8];
 	char	product[16];
 	char	revision[4];
-	u_int8_t extra[8];
+	u_int8_t extra[20];
+	u_int8_t flags2;
+#define SID_IUS		0x01
+#define SID_QAS		0x02
+#define SID_CLOCKING	0x0c /* 0 == ST only, 1 == DT only, 3 == both */
+	u_int8_t reserved;
 };
 
-/*
- * This looks bad, and it is.  However it fixes padding problems
- * caused by using unions.  This *needs* to be an array, if this code
- * is to work on any architecture.
- */
-struct	scsi_sense_data {
-/* 1*/	u_int8_t error_code;		/* same bits as new version */
-#define XXX_unextended_blockhi	extended_segment
-#define XXX_unextended_blockmed	extended_flags
-#define XXX_unextended_blocklow	extended_info[0]
-/* 2*/	u_int8_t extended_segment;
-/* 3*/	u_int8_t extended_flags;	/* same bits as new version */
-/* 7*/	u_int8_t extended_info[4];
-/* 8*/	u_int8_t extended_extra_len;
-	/*
-	 * allocate enough room to hold new stuff
-	 * (by increasing 16 to 24 below)
-	 */
-/*32*/	u_int8_t extended_extra_bytes[24];
-};	/* total of 32 bytes */
+struct scsi_sense_data_unextended {
+/* 1*/	u_int8_t error_code;
+/* 4*/	u_int8_t block[3];
+};
 
-struct	scsi_sense_data_new {
+struct scsi_sense_data {
 /* 1*/	u_int8_t error_code;
 #define	SSD_ERRCODE		0x7F
 #define	SSD_ERRCODE_VALID	0x80
-	union {
-		struct {	/* this is deprecated, the standard says "DON'T"*/
-/* 2*/			u_int8_t blockhi;
-/* 3*/			u_int8_t blockmed;
-/* 4*/			u_int8_t blocklow;
-		} unextended;
-		struct {
-/* 2*/			u_int8_t segment;
-/* 3*/			u_int8_t flags;
+/* 2*/	u_int8_t segment;
+/* 3*/	u_int8_t flags;
 #define	SSD_KEY		0x0F
 #define	SSD_ILI		0x20
 #define	SSD_EOM		0x40
 #define	SSD_FILEMARK	0x80
-/* 7*/			u_int8_t info[4];
-/* 8*/			u_int8_t extra_len;
-/*12*/			u_int8_t cmd_spec_info[4];
-/*13*/			u_int8_t add_sense_code;
-/*14*/			u_int8_t add_sense_code_qual;
-/*15*/			u_int8_t fru;
-/*16*/			u_int8_t sense_key_spec_1;
-#define	SSD_SCS_VALID		0x80
-/*17*/			u_int8_t sense_key_spec_2;
-/*18*/			u_int8_t sense_key_spec_3;
-/*32*/			u_int8_t extra_bytes[14];
-		} extended;
-	} ext;
-}; /* total of 32 bytes */
+/* 7*/	u_int8_t info[4];
+/* 8*/	u_int8_t extra_len;
+/*12*/	u_int8_t cmd_spec_info[4];
+/*13*/	u_int8_t add_sense_code;
+/*14*/	u_int8_t add_sense_code_qual;
+/*15*/	u_int8_t fru;
+/*16*/	u_int8_t sense_key_spec_1;
+#define	SSD_SCS_VALID	0x80
+/*17*/	u_int8_t sense_key_spec_2;
+/*18*/	u_int8_t sense_key_spec_3;
+/*32*/	u_int8_t extra_bytes[14];
+};
+
+#define SKEY_NO_SENSE		0x00
+#define SKEY_RECOVERED_ERROR	0x01
+#define SKEY_NOT_READY		0x02
+#define SKEY_MEDIUM_ERROR	0x03
+#define SKEY_HARDWARE_ERROR	0x04
+#define SKEY_ILLEGAL_REQUEST	0x05
+#define SKEY_UNIT_ATTENTION	0x06
+#define SKEY_WRITE_PROTECT	0x07
+#define SKEY_BLANK_CHECK	0x08
+#define SKEY_VENDOR_UNIQUE	0x09
+#define SKEY_COPY_ABORTED	0x0A
+#define SKEY_ABORTED_COMMAND	0x0B
+#define SKEY_EQUAL		0x0C
+#define SKEY_VOLUME_OVERFLOW	0x0D
+#define SKEY_MISCOMPARE		0x0E
+#define SKEY_RESERVED		0x0F
 
 struct scsi_blk_desc {
 	u_int8_t density;
@@ -308,9 +316,16 @@ struct scsi_mode_header_big {
 /*
  * Status Byte
  */
-#define	SCSI_OK		0x00
-#define	SCSI_CHECK	0x02
-#define	SCSI_BUSY	0x08	
-#define SCSI_INTERM	0x10
+#define SCSI_OK			0x00
+#define SCSI_CHECK		0x02
+#define SCSI_COND_MET		0x04
+#define SCSI_BUSY		0x08	
+#define SCSI_INTERM		0x10
+#define SCSI_INTERM_COND_MET	0x14
+#define SCSI_RESV_CONFLICT	0x18
+#define SCSI_TERMINATED		0x22
+#define SCSI_QUEUE_FULL		0x28	/* Old (Pre SCSI-3) name */
+#define SCSI_TASKSET_FULL	0x28	/* New (SCSI-3)     name */
+#define SCSI_ACA_ACTIVE		0x30
 
 #endif /* _SCSI_SCSI_ALL_H */

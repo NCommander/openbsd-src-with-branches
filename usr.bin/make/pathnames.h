@@ -1,8 +1,10 @@
-/*	$NetBSD: pathnames.h,v 1.3 1995/06/14 15:19:52 christos Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: pathnames.h,v 1.7 1998/12/05 00:06:29 espie Exp $	*/
+/*	$NetBSD: pathnames.h,v 1.6 1996/11/06 17:59:21 christos Exp $	*/
 
 /*
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,10 +35,26 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)pathnames.h	5.2 (Berkeley) 6/1/90
- *	$Id: pathnames.h,v 1.3 1995/06/14 15:19:52 christos Exp $
  */
 
-#define	_PATH_OBJDIR		"obj"
-#define	_PATH_DEFSHELLDIR	"/bin"
-#define	_PATH_DEFSYSMK		"/usr/share/mk/sys.mk"
-#define	_PATH_DEFSYSPATH	"/usr/share/mk"
+#ifdef HAS_PATH_H
+# include <paths.h>
+#endif
+#ifndef _PATH_BSHELL
+# define _PATH_BSHELL	"/bin/sh"
+#endif
+#ifndef _PATH_OBJDIR
+#define _PATH_OBJDIR		"obj"
+#endif /* !_PATH_OBJDIR */
+#ifndef _PATH_OBJDIRPREFIX
+#define _PATH_OBJDIRPREFIX	"/usr/obj"
+#endif /* !_PATH_OBJDIRPREFIX */
+#ifndef _PATH_DEFSHELLDIR
+#define _PATH_DEFSHELLDIR	"/bin"
+#endif /* !_PATH_DEFSHELLDIR */
+#ifndef _PATH_DEFSYSMK
+#define _PATH_DEFSYSMK		"sys.mk"
+#endif /* ! _PATH_DEFSYSMK */
+#ifndef _PATH_DEFSYSPATH
+#define _PATH_DEFSYSPATH	"/usr/share/mk"
+#endif /* ! _PATH_DEFSYSPATH */

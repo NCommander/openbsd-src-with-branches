@@ -1,4 +1,5 @@
-/*	$NetBSD: ms.c,v 1.7 1995/04/10 09:10:21 mycroft Exp $	*/
+/*	$OpenBSD: ms.c,v 1.5 2001/09/13 13:34:53 jj Exp $	*/
+/*	$NetBSD: ms.c,v 1.14 1996/12/23 09:10:25 veego Exp $	*/
 
 /*
  * based on:
@@ -53,39 +54,78 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
+#include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/syslog.h>
 #include <sys/systm.h>
 #include <sys/tty.h>
+#include <sys/signalvar.h>
 
 #include <amiga/dev/event_var.h>
 #include <amiga/dev/vuid_event.h>
 
 #include <amiga/amiga/custom.h>
 #include <amiga/amiga/cia.h>
+#include <amiga/amiga/device.h>
 
-#include "mouse.h"
-#if NMOUSE > 0
+#include <sys/conf.h>
+#include <machine/conf.h>
 
-/* there's really no more physical ports on an amiga.. */
-#if NMOUSE > 2
-#undef NMOUSE
-#define NMOUSE 2
-#endif
+void msattach(struct device *, struct device *, void *);
+int msmatch(struct device *, void *, void *);
 
-void msintr __P((void *));
-void ms_enable __P((dev_t));
-void ms_disable __P((dev_t));
+void msintr(void *);
+void ms_enable(dev_t);
+void ms_disable(dev_t);
+
+struct ms_softc {
+	struct device sc_dev;
+
+	u_char	ms_horc;	   /* horizontal counter on last scan */
+  	u_char	ms_verc;	   /* vertical counter on last scan */
+	char	ms_mb;		   /* mouse button state */
+	char	ms_ub;		   /* user button state */
+	int	ms_dx;		   /* delta-x */
+	int	ms_dy;		   /* delta-y */
+	volatile int ms_ready;	   /* event queue is ready */
+	struct	evvar ms_events;   /* event queue state */
+	struct	timeout ms_intr_to; /* interrupt timeout */
+};
+
+struct cfattach ms_ca = {
+	sizeof(struct ms_softc), msmatch, msattach
+};
+
+struct cfdriver ms_cd = {
+	NULL, "ms", DV_DULL, NULL, 0
+};
 
 int
-mouseattach(cnt)
-	int cnt;
+msmatch(pdp, match, auxp)
+	struct device *pdp;
+	void *match, *auxp;
 {
-	printf("%d %s configured\n", NMOUSE, NMOUSE == 1 ? "mouse" : "mice");
-	return(NMOUSE);
+	struct cfdata *cfp = (struct cfdata *)match;
+
+	if (matchname((char *)auxp, "ms") &&
+	    cfp->cf_unit >= 0 && cfp->cf_unit <= 1) /* only two units */
+		return 1;
+
+	return 0;
+}
+
+void
+msattach(pdp, dp, auxp)
+	struct device *pdp, *dp;
+	void *auxp;
+{
+	struct ms_softc *sc = (struct ms_softc *)dp;
+		
+	timeout_set(&sc->ms_intr_to, msintr, sc);
+
+	printf("\n");
 }
 
 /*
@@ -95,17 +135,6 @@ mouseattach(cnt)
  * devices, /dev/mouse0 and /dev/mouse1 (with a link of /dev/mouse to
  * the device that represents the port of the mouse in use).
  */
-struct ms_softc {
-	u_char	ms_horc;	   /* horizontal counter on last scan */
-  	u_char	ms_verc;	   /* vertical counter on last scan */
-	char	ms_mb;		   /* mouse button state */
-	char	ms_ub;		   /* user button state */
-	int	ms_dx;		   /* delta-x */
-	int	ms_dy;		   /* delta-y */
-	volatile int ms_ready;	   /* event queue is ready */
-	struct	evvar ms_events;   /* event queue state */
-} ms_softc[NMOUSE];
-
 
 /*
  * enable scanner, called when someone opens the device.
@@ -117,14 +146,15 @@ ms_enable(dev)
 {
 	struct ms_softc *ms;
 
-	ms = &ms_softc[minor(dev)];
+	ms = (struct ms_softc *)getsoftc(ms_cd, minor(dev));
+
 	/* 
 	 * use this as flag to the "interrupt" to tell it when to
 	 * shut off (when it's reset to 0).
 	 */
 	ms->ms_ready = 1;
 
-	timeout(msintr, (void *)minor(dev), 2);
+	timeout_add(&ms->ms_intr_to, 2);
 }
 
 /*
@@ -138,7 +168,7 @@ ms_disable(dev)
 	struct ms_softc *ms;
 	int s;
 
-	ms = &ms_softc[minor(dev)];
+	ms = (struct ms_softc *)getsoftc(ms_cd, minor(dev));
 	s = splhigh ();
 	ms->ms_ready = 0;
 	/*
@@ -164,9 +194,10 @@ msintr(arg)
 	u_char pra, *horc, *verc;
 	u_short pot, count;
 	short dx, dy;
-	
-	unit = (int)arg;
-	ms = &ms_softc[unit];
+
+	ms = (struct ms_softc *)arg;
+	unit = ms->sc_dev.dv_unit;
+
 	horc = ((u_char *) &count) + 1;
 	verc = (u_char *) &count;
 
@@ -303,7 +334,7 @@ out:
 	 * handshake with ms_disable
 	 */
 	if (ms->ms_ready)
-		timeout(msintr, (void *)unit, 2);
+		timeout_add(&ms->ms_intr_to, 2);
 	else
 		wakeup(ms);
 }
@@ -315,12 +346,12 @@ msopen(dev, flags, mode, p)
 	struct proc *p;
 {
 	struct ms_softc *ms;
-	int s, error, unit;
+	int unit;
 
 	unit = minor(dev);
-	ms = &ms_softc[unit];
+	ms = (struct ms_softc *)getsoftc(ms_cd, unit);
 
-	if (unit >= NMOUSE)
+	if (ms == NULL)
 		return(EXDEV);
 
 	if (ms->ms_events.ev_io)
@@ -342,7 +373,7 @@ msclose(dev, flags, mode, p)
 	struct ms_softc *ms;
 
 	unit = minor (dev);
-	ms = &ms_softc[unit];
+	ms = (struct ms_softc *)getsoftc(ms_cd, unit);
 
 	ms_disable(dev);
 	ev_fini(&ms->ms_events);
@@ -358,7 +389,8 @@ msread(dev, uio, flags)
 {
 	struct ms_softc *ms;
 
-	ms = &ms_softc[minor(dev)];
+	ms = (struct ms_softc *)getsoftc(ms_cd, minor(dev));
+
 	return(ev_read(&ms->ms_events, uio, flags));
 }
 
@@ -374,7 +406,7 @@ msioctl(dev, cmd, data, flag, p)
 	int unit;
 
 	unit = minor(dev);
-	ms = &ms_softc[unit];
+	ms = (struct ms_softc *)getsoftc(ms_cd, unit);
 
 	switch (cmd) {
 	case FIONBIO:		/* we will remove this someday (soon???) */
@@ -405,7 +437,7 @@ msselect(dev, rw, p)
 {
 	struct ms_softc *ms;
 
-	ms = &ms_softc[minor(dev)];
+	ms = (struct ms_softc *)getsoftc(ms_cd, minor(dev));
+
 	return(ev_select(&ms->ms_events, rw, p));
 }
-#endif /* NMOUSE > 0 */

@@ -1,7 +1,9 @@
-/*	$Id: util.h,v 1.6 1998/11/12 13:01:46 niklas Exp $	*/
+/*	$OpenBSD: util.h,v 1.12 2001/08/22 08:50:40 niklas Exp $	*/
+/*	$EOM: util.h,v 1.10 2000/10/24 13:33:39 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,14 +42,34 @@
 
 #define ROUNDUP_32(x) (((x) + 3) & ~4)
 
-struct message;
+extern int allow_name_lookups;
+extern int regrand;
+extern unsigned long seed;
 
+struct message;
+struct sockaddr;
+
+extern int check_file_secrecy (char *, off_t *);
 extern u_int16_t decode_16 (u_int8_t *);
 extern u_int32_t decode_32 (u_int8_t *);
+extern u_int64_t decode_64 (u_int8_t *);
+#if 0
+extern void decode_128 (u_int8_t *, u_int8_t *);
+#endif
 extern void encode_16 (u_int8_t *, u_int16_t);
 extern void encode_32 (u_int8_t *, u_int32_t);
+extern void encode_64 (u_int8_t *, u_int64_t);
+#if 0
+extern void encode_128 (u_int8_t *, u_int8_t *);
+#endif
 extern u_int8_t *getrandom (u_int8_t *, size_t);
 extern int hex2raw (char *, u_int8_t *, size_t);
+extern int ones_test (const u_int8_t *, size_t);
+extern int sockaddr2text (struct sockaddr *, char **, int);
+extern u_int8_t *sockaddr_addrdata (struct sockaddr *);
+extern int sockaddr_addrlen (struct sockaddr *);
+extern int text2sockaddr (char *, char *, struct sockaddr **);
+extern void util_ntoa (char **, int, u_int8_t *);
 extern int zero_test (const u_int8_t *, size_t);
 
 #endif /* _UTIL_H_ */

@@ -1,3 +1,6 @@
+/*	$OpenBSD: rdate.c,v 1.12 2001/08/15 19:39:09 stevesk Exp $	*/
+/*	$NetBSD: rdate.c,v 1.4 1996/03/16 12:37:45 pk Exp $	*/
+
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -26,8 +29,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *	$Id: rdate.c,v 1.1 1994/06/02 22:55:07 deraadt Exp $
  */
 
 /*
@@ -38,25 +39,40 @@
  *	midnight January 1st 1900.
  */
 #ifndef lint
-static char rcsid[] = "$Id: rdate.c,v 1.1 1994/06/02 22:55:07 deraadt Exp $";
+#if 0
+from: static char rcsid[] = "$NetBSD: rdate.c,v 1.3 1996/02/22 06:59:18 thorpej Exp $";
+#else
+static char rcsid[] = "$OpenBSD: rdate.c,v 1.12 2001/08/15 19:39:09 stevesk Exp $";
+#endif
 #endif				/* lint */
 
 #include <sys/types.h>
 #include <sys/param.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <err.h>
 #include <string.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <unistd.h>
+#include <util.h>
+#include <time.h>
 
 /* seconds from midnight Jan 1900 - 1970 */
-#if __STDC__
 #define DIFFERENCE 2208988800UL
-#else
-#define DIFFERENCE 2208988800
-#endif
+
+extern char    *__progname;
+
+static void
+usage()
+{
+	(void) fprintf(stderr, "Usage: %s [-psa] host\n", __progname);
+	(void) fprintf(stderr, "  -p: just print, don't set\n");
+	(void) fprintf(stderr, "  -s: just set, don't print\n");
+	(void) fprintf(stderr, "  -a: use adjtime instead of instant change\n");
+}
 
 int
 main(argc, argv)
@@ -64,17 +80,18 @@ main(argc, argv)
 	char           *argv[];
 {
 	int             pr = 0, silent = 0, s;
+	int		slidetime = 0;
+	int		adjustment;
 	time_t          tim;
 	char           *hname;
 	struct hostent *hp;
 	struct protoent *pp, ppp;
 	struct servent *sp, ssp;
 	struct sockaddr_in sa;
-	extern char    *__progname;
 	extern int      optind;
 	int             c;
 
-	while ((c = getopt(argc, argv, "ps")) != -1)
+	while ((c = getopt(argc, argv, "psa")) != -1)
 		switch (c) {
 		case 'p':
 			pr++;
@@ -84,21 +101,24 @@ main(argc, argv)
 			silent++;
 			break;
 
+		case 'a':
+			slidetime++;
+			break;
+
 		default:
-			goto usage;
+			usage();
+			return 1;
 		}
 
 	if (argc - 1 != optind) {
-usage:
-		(void) fprintf(stderr, "Usage: %s [-ps] host\n", __progname);
-		return (1);
+		usage();
+		return 1;
 	}
 	hname = argv[optind];
 
 	if ((hp = gethostbyname(hname)) == NULL) {
-		fprintf(stderr, "%s: ", __progname);
-		herror(hname);
-		exit(1);
+		warnx("%s: %s", hname, hstrerror(h_errno));
+		return 1;
 	}
 
 	if ((sp = getservbyname("time", "tcp")) == NULL) {
@@ -117,7 +137,7 @@ usage:
 	sa.sin_family = AF_INET;
 	sa.sin_port = sp->s_port;
 
-	memcpy(&(sa.sin_addr.s_addr), hp->h_addr, hp->h_length);
+	(void) memcpy(&(sa.sin_addr.s_addr), hp->h_addr, hp->h_length);
 
 	if (connect(s, (struct sockaddr *) & sa, sizeof(sa)) == -1)
 		err(1, "Could not connect socket");
@@ -128,14 +148,42 @@ usage:
 	(void) close(s);
 	tim = ntohl(tim) - DIFFERENCE;
 
+	if (slidetime) {
+		struct timeval tv_current;
+		if (gettimeofday(&tv_current, NULL) == -1)
+			err(1, "Could not get local time of day");
+		adjustment = tim - tv_current.tv_sec;
+	}
+
 	if (!pr) {
 		struct timeval  tv;
-		tv.tv_sec = tim;
-		tv.tv_usec = 0;
-		if (settimeofday(&tv, NULL) == -1)
-			err(1, "Could not set time of day");
+		if (!slidetime) {
+			logwtmp("|", "date", "");
+			tv.tv_sec = tim;
+			tv.tv_usec = 0;
+			if (settimeofday(&tv, NULL) == -1)
+				err(1, "Could not set time of day");
+			logwtmp("{", "date", "");
+		} else {
+			tv.tv_sec = adjustment;
+			tv.tv_usec = 0;
+			if (adjtime(&tv, NULL) == -1)
+				err(1, "Could not adjust time of day");
+		}
 	}
-	if (!silent)
-		(void) fputs(ctime(&tim), stdout);
+
+	if (!silent) {
+		struct tm      *ltm;
+		char		buf[80];
+
+		ltm = localtime(&tim);
+		(void) strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y\n", ltm);
+		(void) fputs(buf, stdout);
+
+		if (slidetime)
+			(void) fprintf(stdout, 
+			   "%s: adjust local clock by %d seconds\n",
+			   __progname, adjustment);
+	}
 	return 0;
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: kbd.c,v 1.19 1995/07/06 05:35:34 pk Exp $ */
+/*	$OpenBSD: kbd.c,v 1.16 2002/03/14 01:26:43 millert Exp $	*/
+/*	$NetBSD: kbd.c,v 1.28 1997/09/13 19:12:18 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -51,7 +52,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
@@ -59,11 +59,15 @@
 #include <sys/syslog.h>
 #include <sys/systm.h>
 #include <sys/tty.h>
+#include <sys/signalvar.h>
+#include <sys/conf.h>
+#include <sys/timeout.h>
 
 #include <machine/autoconf.h>
+#include <machine/conf.h>
 
 #include <machine/vuid_event.h>
-#include <sparc/dev/event_var.h>
+#include <dev/sun/event_var.h>
 #include <machine/kbd.h>
 #include <machine/kbio.h>
 
@@ -96,7 +100,15 @@
 #define	KEY_RSHIFT	0x82
 #define	KEY_CONTROL	0x83
 #define	KEY_ALLUP	0x84		/* all keys are now up; also reset */
-
+#define	KEY_ALTGR	0x85
+#define	KEY_UMLAUT	0x86
+#define	KEY_CFLEX	0x87
+#define	KEY_TILDE	0x88
+#define	KEY_CEDILLA	0x89
+#define	KEY_ACUTE	0x8a
+#define	KEY_GRAVE	0x8b
+#define	KEY_COMPOSE	0x8c
+#define	KEY_MAGIC_LAST	0x8c
 /*
  * Decode tables for type 2, 3, and 4 keyboards
  * (stolen from Sprite; see also kbd.h).
@@ -105,7 +117,7 @@ static u_char kbd_unshifted[] = {
 /*   0 */	KEY_IGNORE,	KEY_L1,		KEY_IGNORE,	KEY_IGNORE,
 /*   4 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*   8 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
-/*  12 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  12 */	KEY_IGNORE,	KEY_ALTGR,	KEY_IGNORE,	KEY_IGNORE,
 /*  16 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*  20 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*  24 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
@@ -118,7 +130,7 @@ static u_char kbd_unshifted[] = {
 /*  52 */	KEY_IGNORE,	'\t',		'q',		'w',
 /*  56 */	'e',		'r',		't',		'y',
 /*  60 */	'u',		'i',		'o',		'p',
-/*  64 */	'[',		']',		'\177',		KEY_IGNORE,
+/*  64 */	'[',		']',		'\177',		KEY_COMPOSE,
 /*  68 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*  72 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*  76 */	KEY_CONTROL,	'a',		's',		'd',
@@ -140,7 +152,7 @@ static u_char kbd_shifted[] = {
 /*   0 */	KEY_IGNORE,	KEY_L1,		KEY_IGNORE,	KEY_IGNORE,
 /*   4 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*   8 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
-/*  12 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  12 */	KEY_IGNORE,	KEY_ALTGR,	KEY_IGNORE,	KEY_IGNORE,
 /*  16 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*  20 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*  24 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
@@ -153,7 +165,7 @@ static u_char kbd_shifted[] = {
 /*  52 */	KEY_IGNORE,	'\t',		'Q',		'W',
 /*  56 */	'E',		'R',		'T',		'Y',
 /*  60 */	'U',		'I',		'O',		'P',
-/*  64 */	'{',		'}',		'\177',		KEY_IGNORE,
+/*  64 */	'{',		'}',		'\177',		KEY_COMPOSE,
 /*  68 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*  72 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
 /*  76 */	KEY_CONTROL,	'A',		'S',		'D',
@@ -171,6 +183,159 @@ static u_char kbd_shifted[] = {
 /* 124 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_ALLUP,
 };
 
+static u_char kbd_altgraph[] = {
+/*   0 */	KEY_IGNORE,	KEY_L1,		KEY_IGNORE,	KEY_IGNORE,
+/*   4 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*   8 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  12 */	KEY_IGNORE,	KEY_ALTGR,	KEY_IGNORE,	KEY_IGNORE,
+/*  16 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  20 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  24 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  28 */	KEY_IGNORE,	'\033',		KEY_IGNORE,	KEY_IGNORE,
+/*  32 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  36 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  40 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	'\b',
+/*  44 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  48 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  52 */	KEY_IGNORE,	'\t',		KEY_IGNORE,	KEY_IGNORE,
+/*  56 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  60 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  64 */	KEY_IGNORE,	KEY_IGNORE,	'\177',		KEY_COMPOSE,
+/*  68 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  72 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  76 */	KEY_CONTROL,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  80 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  84 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  88 */	KEY_IGNORE,	'\r',		KEY_IGNORE,	KEY_IGNORE,
+/*  92 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  96 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_LSHIFT,
+/* 100 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/* 104 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/* 108 */	KEY_IGNORE,	KEY_IGNORE,	KEY_RSHIFT,	'\n',
+/* 112 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/* 116 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_CAPSLOCK,
+/* 120 */	KEY_IGNORE,	' ',		KEY_IGNORE,	KEY_IGNORE,
+/* 124 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_ALLUP,
+};
+
+static u_char kbd_ctrl[] = {
+/*   0 */	KEY_IGNORE,	KEY_L1,		KEY_IGNORE,	KEY_IGNORE,
+/*   4 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*   8 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  12 */	KEY_IGNORE,	KEY_ALTGR,	KEY_IGNORE,	KEY_IGNORE,
+/*  16 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  20 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  24 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  28 */	KEY_IGNORE,	'\033',		'1',		'\000',
+/*  32 */	'3',		'4',		'5',		'\036',
+/*  36 */	'7',		'8',		'9',		'0',
+/*  40 */	'\037',		'=',		'\036',		'\b',
+/*  44 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  48 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  52 */	KEY_IGNORE,	'\t',		'\021',		'\027',
+/*  56 */	'\005',		'\022',		'\024',		'\031',
+/*  60 */	'\025',		'\t',		'\017',		'\020',
+/*  64 */	'\033',		'\035',		'\177',		KEY_COMPOSE,
+/*  68 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  72 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  76 */	KEY_CONTROL,	'\001',		'\023',		'\004',
+/*  80 */	'\006',		'\007',		'\b',		'\n',
+/*  84 */	'\013',		'\014',		';',		'\'',
+/*  88 */	'\034',		'\r',		KEY_IGNORE,	KEY_IGNORE,
+/*  92 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/*  96 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_LSHIFT,
+/* 100 */	'\032',		'\030',		'\003',		'\026',
+/* 104 */	'\002',		'\016',		'\r',		',',
+/* 108 */	'.',		'\037',		KEY_RSHIFT,	'\n',
+/* 112 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,
+/* 116 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_CAPSLOCK,
+/* 120 */	KEY_IGNORE,	'\000',		KEY_IGNORE,	KEY_IGNORE,
+/* 124 */	KEY_IGNORE,	KEY_IGNORE,	KEY_IGNORE,	KEY_ALLUP,
+};
+
+static u_char kbd_accent[] = {
+	0, KEY_UMLAUT,
+		' ', '¨',
+		'A', 'Ä', 'E', 'Ë', 'I', 'Ï', 'O', 'Ö', 'U', 'Ü',
+		'a', 'ä', 'e', 'ë', 'i', 'ï', 'o', 'ö',	'u', 'ü', 'y', 'ÿ',
+	0, KEY_CFLEX,
+		' ', '^',
+		'A', 'Â', 'E', 'Ê', 'I', 'Î', 'O', 'Ô', 'U', 'Û',
+		'a', 'â', 'e', 'ê', 'i', 'î', 'o', 'ô',	'u', 'û',
+	0, KEY_TILDE,
+		' ', '~',
+		'A', 'Ã', 'N', 'Ñ', 'O', 'Õ',
+		'a', 'ã', 'n', 'ñ', 'o', 'õ',
+	0, KEY_CEDILLA,
+		' ', '¸',
+		'C', 'Ç',
+		'c', 'ç',
+	0, KEY_ACUTE,
+		' ', '´',
+		'A', 'Á', 'E', 'É', 'I', 'Í', 'O', 'Ó',	'U', 'Ú', 'Y', 'Ý',
+		'a', 'á', 'e', 'é', 'i', 'í', 'o', 'ó',	'u', 'ú', 'y', 'ý',
+	0, KEY_GRAVE,
+		' ', '`',
+		'A', 'À', 'E', 'È', 'I', 'Ì', 'O', 'Ò',	'U', 'Ù',
+		'a', 'à', 'e', 'è', 'i', 'ì', 'o', 'ò',	'u', 'ù',
+	0, 0
+};
+
+static u_char kbd_compose[] = {
+	0, ' ', ' ', ' ',
+	0, '!', '!', '¡',
+	0, '"', '"', '¨',
+	0, '+', '-', '±',
+	0, ',', ',', '¸',
+	0, '-', ',', '¬', '-', '­', ':', '÷', 'A', 'ª', 'a', 'ª', '|', '¬',
+	0, '/', 'u', 'µ',
+	0, '0', 'X', '¤', 'x', '¤',
+	0, '1', '2', '½', '4', '¼',
+	0, '3', '4', '¾',
+	0, '<', '<', '«',
+	0, '>', '>', '»',
+	0, '?', '?', '¿',
+	0, 'A', '"', 'Ä', '*', 'Å', 'E', 'Æ', '^', 'Â',
+		'`', 'À', '~', 'Ã', '´', 'Á',
+	0, 'C', ',', 'Ç', '/', '¢', 'O', '©',
+	0, 'D', '-', 'Ð',
+	0, 'E', '"', 'Ë', '^', 'Ê', '`', 'È', '´', 'É',
+	0, 'I', '"', 'Ï', '^', 'Î', '`', 'Ì', '´', 'Í',
+	0, 'L', '-', '£',
+	0, 'N', '~', 'Ñ',
+	0, 'O', '"', 'Ö', '/', 'Ø', 'X', '¤', '^', 'Ô',
+		'`', 'Ò', '~', 'Õ', '´', 'Ó',
+	0, 'P', '!', '¶', '|', 'Þ',
+	0, 'R', 'O', '®',
+	0, 'S', 'O', '§',
+	0, 'T', 'H', 'Þ',
+	0, 'U', '"', 'Ü', '^', 'Û', '`', 'Ù', '´', 'Ú',
+	0, 'Y', '-', '¥', '´', 'Ý',
+	0, '\\','\\','´',
+	0, '^', '*', '°', '-', '¯', '.', '·', '0', '°',
+		'1', '¹', '2', '²', '3', '³',
+	0, '_', 'O', 'º', 'o', 'º',
+	0, 'a', '"', 'ä', '*', 'å', '^', 'â', '`', 'à',
+		'e', 'æ', '~', 'ã', '´', 'á',
+	0, 'c', ',', 'ç', '/', '¢', 'o', '©',
+	0, 'd', '-', 'ð',
+	0, 'e', '"', 'ë', '^', 'ê', '`', 'è', '´', 'é',
+	0, 'i', '"', 'ï', '^', 'î', '`', 'ì', '´', 'í',
+	0, 'l', '-', '£',
+	0, 'n', '~', 'ñ',
+	0, 'o', '"', 'ö', '/', 'ø', '^', 'ô', '`', 'ò',
+		'x', '¤', '~', 'õ', '´', 'ó',
+	0, 'p', '!', '¶', '|', 'þ',
+	0, 'r', 'o', '®',
+	0, 's', 'o', '§', 's', 'ß',
+	0, 't', 'h', 'þ',
+	0, 'u', '"', 'ü', '^', 'û', '`', 'ù', '´', 'ú',
+	0, 'x', 'x', '×',
+	0, 'y', '"', 'ÿ', '-', '¥', '´', 'ý',
+	0, '|', '|', '¦',
+	0, 0
+};
+
 /*
  * We need to remember the state of the keyboard's shift and control
  * keys, and we need a per-type translation table.
@@ -178,6 +343,8 @@ static u_char kbd_shifted[] = {
 struct kbd_state {
 	const u_char *kbd_unshifted;	/* unshifted keys */
 	const u_char *kbd_shifted;	/* shifted keys */
+	const u_char *kbd_altgraph;	/* alt gr keys */
+	const u_char *kbd_ctrl;		/* control keys */
 	const u_char *kbd_cur;	/* current keys (either of the preceding) */
 	union {
 		char	c[2];	/* left and right shift keys */
@@ -187,7 +354,10 @@ struct kbd_state {
 #define	kbd_rshift	kbd_shift.c[1]
 #define	kbd_anyshift	kbd_shift.s
 	char	kbd_control;	/* true => ctrl down */
+	char	kbd_altgr;	/* true => alt gr down */
 	char	kbd_click;	/* true => keyclick enabled */
+	u_char	kbd_faccent;	/* "floating accent" character pressed */
+	u_short	kbd_compose;	/* compose state */
 	u_char	kbd_pending;	/* Another code from the keyboard is due */
 	u_char	kbd_id;		/* a place to store the ID */
 	u_char	kbd_layout;	/* a place to store layout */
@@ -207,40 +377,36 @@ struct kbd_state {
 struct kbd_softc {
 	struct	tty *k_cons;		/* uplink for ASCII data to console */
 	struct	tty *k_kbd;		/* downlink for output to keyboard */
-	void	(*k_open) __P((struct tty *));	/* enable dataflow */
-	void	(*k_close) __P((struct tty *));	/* disable dataflow */
+	void	(*k_open)(struct tty *);	/* enable dataflow */
+	void	(*k_close)(struct tty *);	/* disable dataflow */
 	int	k_evmode;		/* set if we should produce events */
 	struct	kbd_state k_state;	/* ASCII decode state */
 	struct	evvar k_events;		/* event queue state */
 	int	k_repeatc;		/* repeated character */
 	int	k_repeating;		/* we've called timeout() */
+	struct	timeout k_repeat_tmo;	/* for kbd_repeat() timeouts */
 } kbd_softc;
 
 /* Prototypes */
-void	kbd_ascii(struct tty *);
-void	kbd_serial(struct tty *, void (*)(), void (*)());
-static	void kbd_getid(void *);
 void	kbd_reset(struct kbd_state *);
 static	int kbd_translate(int, struct kbd_state *);
-void	kbd_rint(int);
-int	kbdopen(dev_t, int, int, struct proc *);
-int	kbdclose(dev_t, int, int, struct proc *);
-int	kbdread(dev_t, struct uio *, int);
-int	kbdwrite(dev_t, struct uio *, int);
-int	kbdioctl(dev_t, u_long, caddr_t, int, struct proc *);
-int	kbdselect(dev_t, int, struct proc *);
-int	kbd_docmd(int, int);
+void	kbdattach(int);
+void	kbd_repeat(void *arg);
+u_short	kbd_cnv_entry(u_short);
+u_short	kbd_cnv_out(u_short);
 
 /* set in kbdattach() */
 int kbd_repeat_start;
 int kbd_repeat_step;
+int kbd_initialized;
 
 /*
  * Attach the console keyboard ASCII (up-link) interface.
  * This happens before kbd_serial.
  */
 void
-kbd_ascii(struct tty *tp)
+kbd_ascii(tp)
+	struct tty *tp;
 {
 
 	kbd_softc.k_cons = tp;
@@ -251,7 +417,10 @@ kbd_ascii(struct tty *tp)
  * We pick up the initial keyboard click state here as well.
  */
 void
-kbd_serial(struct tty *tp, void (*iopen)(), void (*iclose)())
+kbd_serial(tp, iopen, iclose)
+	struct tty *tp;
+	void (*iopen)(struct tty *);
+	void (*iclose)(struct tty *);
 {
 	register struct kbd_softc *k;
 	register char *cp;
@@ -261,7 +430,7 @@ kbd_serial(struct tty *tp, void (*iopen)(), void (*iclose)())
 	k->k_open = iopen;
 	k->k_close = iclose;
 
-	if (cputyp != CPU_SUN4) {
+	if (!CPU_ISSUN4) {
 		cp = getpropstring(optionsnode, "keyboard-click?");
 		if (cp && strcmp(cp, "true") == 0)
 			k->k_state.kbd_click = 1;
@@ -274,13 +443,17 @@ kbd_serial(struct tty *tp, void (*iopen)(), void (*iclose)())
  * send a RESET, so that we can find out what kind of keyboard it is.
  */
 void
-kbdattach(int nkbd)
+kbdattach(kbd)
+	int kbd;
 {
 	register struct kbd_softc *k;
 	register struct tty *tp;
 
 	kbd_repeat_start = hz/5;
 	kbd_repeat_step = hz/20;
+
+	timeout_set(&kbd_softc.k_repeat_tmo, kbd_repeat, k);
+	kbd_initialized = 1;
 
 	if (kbd_softc.k_cons != NULL) {
 		k = &kbd_softc;
@@ -289,20 +462,37 @@ kbdattach(int nkbd)
 		if (ttyoutput(KBD_CMD_RESET, tp) >= 0)
 			panic("kbdattach");
 		(*tp->t_oproc)(tp);	/* get it going */
+
+		/*
+		 * Wait here for the keyboard initialization to complete
+		 * since subsequent kernel console access (ie. cnget())
+		 * may cause the PROM to interfere with the device.
+		 */
+		if (tsleep((caddr_t)&kbd_softc.k_state,
+			   PZERO | PCATCH, devopn, hz) != 0) {
+			/* no response */
+			printf("kbd: reset failed\n");
+			kbd_reset(&kbd_softc.k_state);
+		}
+		printf("kbd: type = %d, layout = 0x%x\n",
+		    kbd_softc.k_state.kbd_id, kbd_softc.k_state.kbd_layout);
 	}
 }
 
 void
-kbd_reset(register struct kbd_state *ks)
+kbd_reset(ks)
+	register struct kbd_state *ks;
 {
 	/*
-	 * On first identification, wake up anyone waiting for type
-	 * and set up the table pointers.
+	 * On first identification, set up the table pointers.
 	 */
 	if (ks->kbd_unshifted == NULL) {
-		wakeup((caddr_t)ks);
 		ks->kbd_unshifted = kbd_unshifted;
 		ks->kbd_shifted = kbd_shifted;
+		ks->kbd_altgraph = kbd_altgraph;
+		ks->kbd_ctrl = kbd_ctrl;
+		ks->kbd_faccent = 0;
+		ks->kbd_compose = 0;
 		ks->kbd_cur = ks->kbd_unshifted;
 	}
 
@@ -335,9 +525,13 @@ kbd_reset(register struct kbd_state *ks)
  * Turn keyboard up/down codes into ASCII.
  */
 static int
-kbd_translate(register int c, register struct kbd_state *ks)
+kbd_translate(c, ks)
+	register int c;
+	register struct kbd_state *ks;
 {
 	register int down;
+	register u_char *p;
+	register int r;
 
 	if (ks->kbd_cur == NULL) {
 		/*
@@ -348,7 +542,7 @@ kbd_translate(register int c, register struct kbd_state *ks)
 	}
 	down = !KEY_UP(c);
 	c = ks->kbd_cur[KEY_CODE(c)];
-	if (c & KEY_MAGIC) {
+	if ((c >= KEY_MAGIC) && (c <= KEY_MAGIC_LAST)) {
 		switch (c) {
 
 		case KEY_LSHIFT:
@@ -362,12 +556,29 @@ kbd_translate(register int c, register struct kbd_state *ks)
 		case KEY_ALLUP:
 			ks->kbd_anyshift = 0;
 			ks->kbd_control = 0;
+			ks->kbd_altgr = 0;
+			break;
+
+		case KEY_ALTGR:
+			ks->kbd_altgr = down;
 			break;
 
 		case KEY_CONTROL:
 			ks->kbd_control = down;
-			/* FALLTHROUGH */
+			break;
 
+		case KEY_UMLAUT:
+		case KEY_CFLEX:
+		case KEY_TILDE:
+		case KEY_CEDILLA:
+		case KEY_ACUTE:
+		case KEY_GRAVE:
+			ks->kbd_faccent = c;
+			return (-1);
+
+		case KEY_COMPOSE:
+			ks->kbd_compose = 0xffff;
+			
 		case KEY_IGNORE:
 			return (-1);
 
@@ -378,48 +589,102 @@ kbd_translate(register int c, register struct kbd_state *ks)
 			ks->kbd_cur = ks->kbd_shifted;
 		else
 			ks->kbd_cur = ks->kbd_unshifted;
+		if (ks->kbd_control) {
+			ks->kbd_cur = ks->kbd_ctrl;
+		} else if (ks->kbd_altgr) {
+			ks->kbd_cur = ks->kbd_altgraph;
+		}
 		return (-1);
 	}
 	if (!down)
 		return (-1);
-	if (ks->kbd_control) {
-		/* control space and unshifted control atsign return null */
-		if (c == ' ' || c == '2')
-			return (0);
-		/* unshifted control hat */
-		if (c == '6')
-			return ('^' & 0x1f);
-		/* standard controls */
-		if (c >= '@' && c < 0x7f)
-			return (c & 0x1f);
+	if (ks->kbd_faccent) {
+		r = -1;
+		p = &kbd_accent[0];
+		while (p != NULL) {
+			if (*p == 0) {
+				if (*++p == 0)
+					break;
+				if (*p++ != ks->kbd_faccent)
+					while(*(p+=2) != 0);
+			} else {
+			  	if (*p++ == (u_char)c) {
+					r = (int) *p;
+					break;
+			  	}
+				p++;
+			}
+		}
+		ks->kbd_faccent = 0;
+		if (r == -1) return(r);
+		c = r;
+	}
+	if (ks->kbd_compose) {
+		p = &kbd_compose[0];
+		if (ks->kbd_compose == 0xffff) {
+			r = 0;
+			while (p != NULL) {
+				if (*++p == 0)
+					break;
+				if (*p++ == (u_char)c) {
+					r = (int)c;
+					break;
+				}
+				while (*(p+=2) != 0);
+			}
+			ks->kbd_compose = (u_short)r;
+			return (-1);
+		} else {
+			r = -1;
+			while (p != NULL) {
+				if (*p == 0) {
+					if (*++p == 0)
+						break;
+					if (*p++ != (u_char) ks->kbd_compose)
+						while (*(p+=2) != 0);
+				} else {
+					if (*p++ == (u_char)c) {
+						r = (int) *p;
+						break;
+					}
+				}
+			}
+			ks->kbd_compose = 0;
+			return (r);
+		}
 	}
 	return (c);
 }
 
 
 void
-kbd_repeat(void *arg)
+kbd_repeat(arg)
+	void *arg;
 {
 	struct kbd_softc *k = (struct kbd_softc *)arg;
 	int s = spltty();
 
 	if (k->k_repeating && k->k_repeatc >= 0 && k->k_cons != NULL) {
 		ttyinput(k->k_repeatc, k->k_cons);
-		timeout(kbd_repeat, k, kbd_repeat_step);
+		timeout_add(&k->k_repeat_tmo, kbd_repeat_step);
 	}
 	splx(s);
 }
 
 void
-kbd_rint(register int c)
+kbd_rint(c)
+	register int c;
 {
 	register struct kbd_softc *k = &kbd_softc;
 	register struct firm_event *fe;
 	register int put;
 
+	if (!kbd_initialized)
+		return;
+
 	if (k->k_repeating) {
 		k->k_repeating = 0;
-		untimeout(kbd_repeat, k);
+		timeout_del(&k->k_repeat_tmo);
 	}
 
 	/*
@@ -443,7 +708,8 @@ kbd_rint(register int c)
 			/* Arrange to get keyboard layout as well */
 			(void)ttyoutput(KBD_CMD_GLAYOUT, k->k_kbd);
 			(*k->k_kbd->t_oproc)(k->k_kbd);
-		}
+		} else
+			wakeup((caddr_t)&k->k_state);
 		return;
 	}
 
@@ -451,6 +717,10 @@ kbd_rint(register int c)
 	if (k->k_state.kbd_pending == KBD_LAYOUT) {
 		k->k_state.kbd_pending = 0;
 		k->k_state.kbd_layout = c;
+		/*
+		 * Wake up anyone waiting for type.
+		 */
+		wakeup((caddr_t)&k->k_state);
 		return;
 	}
 
@@ -475,7 +745,7 @@ kbd_rint(register int c)
 			ttyinput(c, k->k_cons);
 			k->k_repeating = 1;
 			k->k_repeatc = c;
-			timeout(kbd_repeat, k, kbd_repeat_start);
+			timeout_add(&k->k_repeat_tmo, kbd_repeat_start);
 		}
 		return;
 	}
@@ -508,8 +778,103 @@ kbd_rint(register int c)
 	EV_WAKEUP(&k->k_events);
 }
 
+u_short
+kbd_cnv_entry(entry)
+	u_short entry;
+{
+	u_short s;
+
+	s = entry;
+
+	if ((entry >= 0x100) && (entry < 0x800)) {
+
+		if (entry == SHIFTKEYS+CAPSLOCK) {
+			s = KEY_CAPSLOCK;
+		} else if (entry == SHIFTKEYS+LEFTSHIFT) {
+			s = KEY_LSHIFT;
+		} else if (entry == SHIFTKEYS+RIGHTSHIFT) {
+			s = KEY_RSHIFT;
+		} else if ((entry == SHIFTKEYS+LEFTCTRL) ||
+			   (entry == SHIFTKEYS+RIGHTCTRL)) {
+			s = KEY_CONTROL;
+		} else if (entry == SHIFTKEYS+ALTGRAPH) {
+			s = KEY_ALTGR;
+		} else if (entry == BUCKYBITS+SYSTEMBIT) {
+			s = KEY_L1;
+		} else if (entry == IDLE) {
+			s = KEY_ALLUP;
+		} else if (entry == COMPOSE) {
+			s = KEY_COMPOSE;
+		} else if (entry == FA_UMLAUT) {
+			s = KEY_UMLAUT;
+		} else if (entry == FA_CFLEX) {
+			s = KEY_CFLEX;
+		} else if (entry == FA_TILDE) {
+			s = KEY_TILDE;
+		} else if (entry == FA_CEDILLA) {
+			s = KEY_CEDILLA;
+		} else if (entry == FA_ACUTE) {
+			s = KEY_ACUTE;
+		} else if (entry == FA_GRAVE) {
+			s = KEY_GRAVE;
+		} else {
+			s = KEY_IGNORE;
+		}
+	       
+	}
+
+	return(s);
+}
+
+u_short
+kbd_cnv_out(entry)
+	u_short entry;
+{
+	u_short s;
+
+	s = entry;
+
+	if (entry == KEY_IGNORE) {
+		s = NOP;
+	} else if (entry == KEY_L1) {
+		s = BUCKYBITS+SYSTEMBIT;
+	} else if (entry == KEY_CAPSLOCK) {
+		s = SHIFTKEYS+CAPSLOCK;
+	} else if (entry == KEY_LSHIFT) {
+		s = SHIFTKEYS+LEFTSHIFT;
+	} else if (entry == KEY_RSHIFT) {
+		s = SHIFTKEYS+RIGHTSHIFT;
+	} else if (entry == KEY_CONTROL) {
+		s = SHIFTKEYS+LEFTCTRL;
+	} else if (entry == KEY_ALLUP) {
+		s = IDLE;
+	} else if (entry == KEY_ALTGR) {
+		s = SHIFTKEYS+ALTGRAPH;
+	} else if (entry == KEY_UMLAUT) {
+		s = FA_UMLAUT;
+	} else if (entry == KEY_CFLEX) {
+		s = FA_CFLEX;
+	} else if (entry == KEY_TILDE) {
+		s = FA_TILDE;
+	} else if (entry == KEY_CEDILLA) {
+		s = FA_CEDILLA;
+	} else if (entry == KEY_ACUTE) {
+		s = FA_ACUTE;
+	} else if (entry == KEY_GRAVE) {
+		s = FA_GRAVE;
+	} else if (entry == KEY_COMPOSE) {
+		s = COMPOSE;
+	}
+
+	return(s);
+}
+
 int
-kbdopen(dev_t dev, int flags, int mode, struct proc *p)
+kbdopen(dev, flags, mode, p)
+	dev_t dev;
+	int flags;
+	int mode;
+	struct proc *p;
 {
 	int s, error;
 	struct tty *tp;
@@ -545,7 +910,11 @@ kbdopen(dev_t dev, int flags, int mode, struct proc *p)
 }
 
 int
-kbdclose(dev_t dev, int flags, int mode, struct proc *p)
+kbdclose(dev, flags, mode, p)
+	dev_t dev;
+	int flags;
+	int mode;
+	struct proc *p;
 {
 
 	/*
@@ -561,7 +930,10 @@ kbdclose(dev_t dev, int flags, int mode, struct proc *p)
 }
 
 int
-kbdread(dev_t dev, struct uio *uio, int flags)
+kbdread(dev, uio, flags)
+	dev_t dev;
+	struct uio *uio;
+	int flags;
 {
 
 	return (ev_read(&kbd_softc.k_events, uio, flags));
@@ -569,14 +941,22 @@ kbdread(dev_t dev, struct uio *uio, int flags)
 
 /* this routine should not exist, but is convenient to write here for now */
 int
-kbdwrite(dev_t dev, struct uio *uio, int flags)
+kbdwrite(dev, uio, flags)
+	dev_t dev;
+	struct uio *uio;
+	int flags;
 {
 
 	return (EOPNOTSUPP);
 }
 
 int
-kbdioctl(dev_t dev, u_long cmd, register caddr_t data, int flag, struct proc *p)
+kbdioctl(dev, cmd, data, flag, p)
+	dev_t dev;
+	u_long cmd;
+	register caddr_t data;
+	int flag;
+	struct proc *p;
 {
 	register struct kbd_softc *k = &kbd_softc;
 	register struct kiockey *kmp;
@@ -599,10 +979,11 @@ kbdioctl(dev_t dev, u_long cmd, register caddr_t data, int flag, struct proc *p)
 	case KIOCGETKEY:
 		if (((struct okiockey *)data)->kio_station == 118) {
 			/*
-			 * This is X11 asking if a type 3 keyboard is
-			 * really a type 3 keyboard.  Say yes.
+			 * This is X11 asking (in an inappropriate fashion)
+			 * if a type 3 keyboard is really a type 3 keyboard.
+			 * Say yes (inappropriately).
 			 */
-			((struct okiockey *)data)->kio_entry = HOLE;
+			((struct okiockey *)data)->kio_entry = (u_char)HOLE;
 			return (0);
 		}
 		break;
@@ -617,11 +998,18 @@ kbdioctl(dev_t dev, u_long cmd, register caddr_t data, int flag, struct proc *p)
 		case KIOC_SHIFTMASK:
 			tp = kbd_shifted;
 			break;
+		case KIOC_CTRLMASK:
+			tp = kbd_ctrl;
+			break;
+		case KIOC_ALTGMASK:
+			tp = kbd_altgraph;
+			break;
 		default:
 			/* Silently ignore unsupported masks */
 			return (0);
 		}
-		if (kmp->kio_entry & 0xff80)
+		kmp->kio_entry = kbd_cnv_entry(kmp->kio_entry);
+		if (kmp->kio_entry & 0xff00)
 			/* Silently ignore funny entries */
 			return (0);
 
@@ -638,10 +1026,16 @@ kbdioctl(dev_t dev, u_long cmd, register caddr_t data, int flag, struct proc *p)
 		case KIOC_SHIFTMASK:
 			tp = kbd_shifted;
 			break;
+		case KIOC_CTRLMASK:
+			tp = kbd_ctrl;
+			break;
+		case KIOC_ALTGMASK:
+			tp = kbd_altgraph;
+			break;
 		default:
 			return (0);
 		}
-		kmp->kio_entry = tp[kmp->kio_station] & ~KEY_MAGIC;
+		kmp->kio_entry = kbd_cnv_out(tp[kmp->kio_station]);
 		return (0);
 
 	case KIOCCMD:
@@ -672,7 +1066,7 @@ kbdioctl(dev_t dev, u_long cmd, register caddr_t data, int flag, struct proc *p)
 	case KIOCSLED:
 		if (k->k_state.kbd_id != KB_SUN4) {
 			/* xxx NYI */
-			k->k_state.kbd_leds = *(char*)data;
+			k->k_state.kbd_leds = *(char *)data;
 		} else {
 			int s;
 			char leds = *(char *)data;
@@ -719,7 +1113,10 @@ kbdioctl(dev_t dev, u_long cmd, register caddr_t data, int flag, struct proc *p)
 }
 
 int
-kbdselect(dev_t dev, int rw, struct proc *p)
+kbdselect(dev, rw, p)
+	dev_t dev;
+	int rw;
+	struct proc *p;
 {
 
 	return (ev_select(&kbd_softc.k_events, rw, p));
@@ -731,7 +1128,9 @@ kbdselect(dev_t dev, int rw, struct proc *p)
  * is flooding.  (The keyboard runs at 1200 baud, or 120 cps.)
  */
 int
-kbd_docmd(int cmd, int isuser)
+kbd_docmd(cmd, isuser)
+	int cmd;
+	int isuser;
 {
 	register struct tty *tp = kbd_softc.k_kbd;
 	register struct kbd_softc *k = &kbd_softc;

@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)info_hes.c	8.1 (Berkeley) 6/6/93
- *	$Id: info_hes.c,v 1.3 1994/06/13 20:47:20 mycroft Exp $
+ *	$Id: info_hes.c,v 1.4 1997/12/17 07:40:42 deraadt Exp $
  */
 
 /*
@@ -187,7 +187,7 @@ void (*fn)();
 
 #ifdef DEBUG
 	dlog("hesiod_reload (%x %s %x)", m, map, fn);
-#endif DEBUG
+#endif /* DEBUG */
 	if (status = res_init()) {
 #ifdef DEBUG
 		dlog("hesiod_reload: res_init failed with %d", status);
@@ -228,7 +228,7 @@ char *domain;
 	int status, len;
 	char buf[PACKETSZ];
 	/* Want to make sure ansbuf is well alligned */
-	long ansbuf[PACKETSZ/sizeof(long)];
+	u_int32_t ansbuf[PACKETSZ/sizeof(u_int32_t)];
 
 #ifdef DEBUG
 	dlog("hs_zone_transfer (%s)", domain);
@@ -396,16 +396,22 @@ hs_res_selwait(sock, timeout)
 int sock;
 struct timeval *timeout;
 {
-	fd_set dsmask;
+	fd_set *fdsp;
+	int fdsn;
 	register int n;
 
 	/*
 	 * Wait for reply
 	 */
-	FD_ZERO(&dsmask);
-	FD_SET(sock, &dsmask);
-	n = select(sock+1, &dsmask, (fd_set *)NULL,
+	fdsn = howmany(sock+1, NFDBITS) * sizeof(fd_mask);
+	if ((fdsp = (fd_set *)malloc(fdsn)) == NULL)
+		return(0);
+	memset(fdsp, 0, fdsn);
+
+	FD_SET(sock, fdsp);
+	n = select(sock+1, fdsp, (fd_set *)NULL,
 		   (fd_set *)NULL, timeout);
+	free(fdsp);
 	return(n);
 }
 
@@ -423,14 +429,14 @@ char *msg, *eom;
 	int qdcount, ancount;
 	char key[PACKETSZ];
 	char *key_cpy, *value, *hs_make_value();
-	short type;
+	int16_t type;
 
 	hp = (HEADER *)msg;
 	if (hp->rcode != NOERROR || hp->opcode != QUERY) {
 		char dq[20];
 #ifdef DEBUG
 		dlog("Bad response (%d) from nameserver %s", hp->rcode, inet_dquad(dq, hs_server_addr(servernum)->s_addr));
-#endif DEBUG
+#endif /* DEBUG */
 		return(-1);
 	}
 	cp = msg + sizeof(HEADER);
@@ -452,9 +458,9 @@ char *msg, *eom;
 		if ((type = _getshort(cp)) == T_SOA) {
 			soacnt++;
 		}
-		cp += 2*sizeof(u_short) + sizeof(u_long);
+		cp += 2*sizeof(u_int16_t) + sizeof(u_int32_t);
 		len = _getshort(cp);
-		cp += sizeof(u_short);
+		cp += sizeof(u_int16_t);
 		/* Check to see if key is in our domain */
 		if (type == T_TXT && hs_strip_our_domain(key)) {
 			value = hs_make_value(cp, len);
@@ -507,7 +513,7 @@ int len;
 	char *dbgname;
 
 	dbgname = &cp[1];
-#endif DEBUG
+#endif /* DEBUG */
 
 	lencpy = len;
 	cpcpy = cp;
@@ -526,7 +532,7 @@ int len;
 #ifdef DEBUG
 		dlog("TXT RR not of expected length (%d %d): %s", totalcnt,
 		     len, dbgname);
-#endif DEBUG
+#endif /* DEBUG */
 		return(NULL);
 	}
 	/* Allocate null terminated string */
@@ -581,7 +587,7 @@ struct in_addr *addr;
 	bcopy((char *)addr, nsaddr_list[hs_nscount++], sizeof(struct in_addr));
 #ifdef DEBUG
 	dlog("Adding NS address %s", inet_dquad(dq, addr->s_addr));
-#endif DEBUG
+#endif /* DEBUG */
 }
 
 hs_get_ns_list(domain)
@@ -592,7 +598,7 @@ char *domain;
 	register char *cp;
 	register int n, len;
 	char key[PACKETSZ], name[PACKETSZ], msg[PACKETSZ], *eom;
-	register long **hptr;
+	register u_int32_t **hptr;
 	struct hostent *ghp;
 	int numns;
 	char nsname[MAXHSNS][MAXDATA];
@@ -609,7 +615,7 @@ char *domain;
 #ifdef DEBUG
 		dlog("Bad response (%d) from nameserver %#x", hp->rcode,
 		      hs_server_addr(servernum)->s_addr);
-#endif DEBUG
+#endif /* DEBUG */
 		return(-1);
 	}
 	cp = msg + sizeof(HEADER);
@@ -625,7 +631,7 @@ char *domain;
 			break;
 		cp += n;
 		type = _getshort(cp);
-		cp += 2*sizeof(u_short) + sizeof(u_long);
+		cp += 2*sizeof(u_short) + sizeof(u_int32_t);
 		len = _getshort(cp);
 		cp += sizeof(u_short);
 #ifdef DEBUG
@@ -679,7 +685,7 @@ char *domain;
 			continue;
 		if ((ghp = gethostbyname(nsname[i])) == 0)
 			continue;
-		for (hptr = (long **)ghp->h_addr_list;
+		for (hptr = (in_addr_t **)ghp->h_addr_list;
 		     *hptr && hs_nscount < MAX_NSADDR; hptr++) {
 			add_address((struct in_addr *) *hptr);
 		}
@@ -689,7 +695,7 @@ char *domain;
 #ifdef DEBUG
 	dlog("No NS records found for %s", domain);
 	return(-1);
-#endif DEBUG
+#endif /* DEBUG */
 }
 #endif /* HAS_HESIOD_RELOAD */
 #endif /* HAS_HESIOD_MAPS */

@@ -1,4 +1,4 @@
-/*	$PMDB: aout_syms.c,v 1.17 2002/03/11 21:46:12 art Exp $	*/
+/*	$OpenBSD: aout_syms.c,v 1.5 2002/03/19 21:19:39 fgsch Exp $	*/
 /*
  * Copyright (c) 2002 Federico Schwindt <fgsch@openbsd.org>
  * All rights reserved. 
@@ -42,11 +42,6 @@
 #include "pmdb.h"
 #include "symbol.h"
 
-#if defined(__OpenBSD__) && (OpenBSD < 200106)
-/* OpenBSD prior to 2.9 have a broken pread on big-endian archs. */
-#define IGNORE_PREAD_ERRORS
-#endif
-
 struct aout_symbol_handle {
 	struct sym_table	ash_st;
 	int		ash_fd;
@@ -54,7 +49,6 @@ struct aout_symbol_handle {
 	u_int32_t	ash_strsize;
 	struct nlist   *ash_symtab;
 	int		ash_symsize;
-	int		ash_offs;
 };
 
 #define ASH_TO_ST(ash) (&(ash)->ash_st)
@@ -78,26 +72,26 @@ int
 sym_check_aout(const char *name, struct pstate *ps)
 {
 	struct exec ahdr;
+	int error = 0;
 	int fd;
 
 	if ((fd = open(name, O_RDONLY)) < 0)
-		return (-1);
+		return (1);
 
 	if (pread(fd, &ahdr, sizeof(ahdr), 0) != sizeof(ahdr)) {
-#ifndef IGNORE_PREAD_ERRORS
-		return (-1);
-#endif
+		error = 1;
 	}
 
-	if (N_BADMAG(ahdr)) {
-		return (-1);
+	if (!error && N_BADMAG(ahdr)) {
+		error = 1;
 	}
 
 	close(fd);
 
-	ps->ps_sops = &aout_sops;
+	if (!error)
+		ps->ps_sops = &aout_sops;
 
-	return (0);
+	return (error);
 }
 
 struct sym_table *
@@ -120,10 +114,8 @@ aout_open(const char *name)
 	}
 
 	if (pread(ash->ash_fd, &ahdr, sizeof(ahdr), 0) != sizeof(ahdr)) {
-#ifndef IGNORE_PREAD_ERRORS
 		warn("pread(header)");
 		goto fail;
-#endif
 	}
 
 	if (N_BADMAG(ahdr)) {
@@ -137,10 +129,8 @@ aout_open(const char *name)
 
 	if (pread(ash->ash_fd, &ash->ash_strsize, sizeof(u_int32_t),
 	    stroff) != sizeof(u_int32_t)) {
-#ifndef IGNORE_PREAD_ERRORS
 		warn("pread(strsize)");
 		goto fail;
-#endif
 	}
 
 	if ((ash->ash_strtab = mmap(NULL, ash->ash_strsize, PROT_READ,
@@ -184,7 +174,7 @@ aout_name_and_off(struct sym_table *st, reg pc, reg *offs)
 	int nsyms, i;
 	char *symn;
 
-#define SYMVAL(S) (unsigned long)((S)->n_value + ash->ash_offs)
+#define SYMVAL(S) (unsigned long)((S)->n_value + st->st_offs)
 
 	nsyms = ash->ash_symsize / sizeof(struct nlist);
 
@@ -262,7 +252,7 @@ restart:
 		return (-1);
 	}
 
-	*res = s->n_value + ST_TO_ASH(st)->ash_offs;
+	*res = s->n_value + st->st_offs;
 	return (0);
 }
 
@@ -285,7 +275,7 @@ aout_update(struct pstate *ps)
 		warnx("Can't find __DYNAMIC");
 		return;
 	}
-	addr = s->n_value + ST_TO_ASH(ps->ps_sym_exe)->ash_offs;
+	addr = s->n_value + ps->ps_sym_exe->st_offs;
 
 	if (read_from_pid(pid, addr, &dyn, sizeof(dyn)) < 0) {
 		warn("Can't read __DYNAMIC");
@@ -314,7 +304,6 @@ aout_update(struct pstate *ps)
 
 	somp = (off_t)(reg)sdt.sdt_loaded;
 	while (somp) {
-		struct sym_table *st;
 		char fname[MAXPATHLEN];
 		int i;
 
@@ -338,11 +327,7 @@ aout_update(struct pstate *ps)
 			continue;
 		}
 
-		st = st_open(ps, fname);
-		if (st == NULL) {
+		if (st_open(ps, fname, (reg)som.som_addr) == NULL)
 			warn("symbol loading failed");
-			continue;
-		}
-		ST_TO_ASH(st)->ash_offs = (int)som.som_addr;
 	}
 }

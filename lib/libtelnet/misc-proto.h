@@ -30,8 +30,21 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)misc-proto.h	8.1 (Berkeley) 6/4/93
- *	$Id: misc-proto.h,v 1.4 1995/06/05 19:47:02 pk Exp $
+ *     from: @(#)misc-proto.h  8.1 (Berkeley) 6/4/93
+ *     $OpenBSD: misc-proto.h,v 1.4 2001/05/25 10:23:07 hin Exp $
+ *     $NetBSD: misc-proto.h,v 1.5 1996/02/24 01:15:23 jtk Exp $
+ */
+
+/*
+ * This source code is no longer held under any constraint of USA
+ * `cryptographic laws' since it was exported legally.  The cryptographic
+ * functions were removed from the code and a "Bones" distribution was
+ * made.  A Commodity Jurisdiction Request #012-94 was filed with the
+ * USA State Department, who handed it to the Commerce department.  The
+ * code was determined to fall under General License GTDA under ECCN 5D96G,
+ * and hence exportable.  The cryptographic interfaces were re-added by Eric
+ * Young, and then KTH proceeded to maintain the code in the free world.
+ *
  */
 
 /*
@@ -54,22 +67,28 @@
  * or implied warranty.
  */
 
+/* $KTH: misc-proto.h,v 1.9 2000/11/15 23:00:21 assar Exp $ */
+
 #ifndef	__MISC_PROTO__
 #define	__MISC_PROTO__
 
-#include <sys/cdefs.h>
+void auth_encrypt_init (const char *, const char *, const char *, int);
+void auth_encrypt_user(const char *name);
+void auth_encrypt_connect (int);
+void printd (const unsigned char *, int);
 
-void auth_encrypt_init __P((char *, char *, char *, int));
-void auth_encrypt_user __P((char *));
-void auth_encrypt_connect __P((int));
-void printd __P((unsigned char *, int));
+char** genget (char *name, char **table, int stlen);
+int isprefix(char *s1, char *s2);
+int Ambiguous(void *s);
 
 /*
  * These functions are imported from the application
  */
-int net_write __P((unsigned char *, int));
-void net_encrypt __P((void));
-int telnet_spin __P((void));
-char *telnet_getenv __P((char *));
-char *telnet_gets __P((char *, char *, int, int));
+int telnet_net_write (unsigned char *, int);
+void net_encrypt (void);
+int telnet_spin (void);
+char *telnet_getenv (const char *);
+char *telnet_gets (char *, char *, int, int);
+void printsub(int direction, unsigned char *pointer, int length);
+void esetenv(const char *, const char *, int);
 #endif

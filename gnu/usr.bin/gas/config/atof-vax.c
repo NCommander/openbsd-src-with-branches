@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* atof_vax.c - turn a Flonum into a VAX floating point number
    Copyright (C) 1987, 1992 Free Software Foundation, Inc.
    

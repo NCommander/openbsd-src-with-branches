@@ -1,3 +1,5 @@
+/*	$OpenBSD: regex.c,v 1.3 2000/03/02 00:29:48 todd Exp $	*/
+
 /*-
  * Copyright (c) 1992 The Regents of the University of California.
  * All rights reserved.
@@ -43,7 +45,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char sccsid[] = "from: @(#)regex.c	5.1 (Berkeley) 3/29/92";*/
-static char rcsid[] = "$Id: regex.c,v 1.5 1995/06/05 19:42:25 pk Exp $";
+static char rcsid[] = "$OpenBSD: regex.c,v 1.3 2000/03/02 00:29:48 todd Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -56,18 +58,26 @@ static regexp *re_regexp;
 static int re_goterr;
 static char *re_errstr;
 
+static void re_error(const char *);
+
 char *
 re_comp(s)
 	const char *s;
 {
 	if (s == NULL)
 		return (NULL);
-	if (re_regexp)
+	if (re_regexp) {
 		free(re_regexp);
-	if (re_errstr)
+		re_regexp = NULL;
+	}
+	if (re_errstr) {
 		free(re_errstr);
+		re_errstr = NULL;
+	}
+	v8_setregerror(re_error);
+
 	re_goterr = 0;
-	re_regexp = regcomp(s);
+	re_regexp = v8_regcomp(s);
 	return (re_goterr ? re_errstr : NULL);
 }
 
@@ -78,12 +88,12 @@ re_exec(s)
 	int rc;
 
 	re_goterr = 0;
-	rc = regexec(re_regexp, s);
+	rc = v8_regexec(re_regexp, s);
 	return (re_goterr ? -1 : rc);
 }
 
-void
-regerror(s)
+static void
+re_error(s)
 	const char *s;
 {
 	re_goterr = 1;

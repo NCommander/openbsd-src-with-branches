@@ -490,7 +490,7 @@ doit(int f, struct sockaddr_in *fromp)
 		       hostname);
 		    
 	    execl(new_login, "login", "-p",
-		  "-h", hostname, "-f", "--", lusername, 0);
+		  "-h", hostname, "-f", "--", lusername, (char *)NULL);
 	} else if (use_kerberos) {
 	    fprintf(stderr, "User `%s' is not authorized to login as `%s'!\n",
 		    krb_unparse_name_long(kdata->pname, 
@@ -500,7 +500,7 @@ doit(int f, struct sockaddr_in *fromp)
 	    exit(1);
 	} else
 	    execl(new_login, "login", "-p",
-		  "-h", hostname, "--", lusername, 0);
+		  "-h", hostname, "--", lusername, (char *)NULL);
 	fatal(STDERR_FILENO, new_login, 1);
 	/*NOTREACHED*/
     }
@@ -519,7 +519,7 @@ doit(int f, struct sockaddr_in *fromp)
     signal(SIGCHLD, cleanup);
     setsid();
     protocol(f, master);
-    signal(SIGCHLD, SIG_IGN);
+    signal(SIGCHLD, SIG_DFL);
     cleanup(0);
 }
 

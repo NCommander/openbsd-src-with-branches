@@ -1,4 +1,5 @@
-/*	$NetBSD: compare.c,v 1.8 1995/03/07 21:12:05 cgd Exp $	*/
+/*	$NetBSD: compare.c,v 1.11 1996/09/05 09:56:48 mycroft Exp $	*/
+/*	$OpenBSD: compare.c,v 1.14 2002/02/16 21:28:05 millert Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -35,9 +36,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)compare.c	8.1 (Berkeley) 6/6/93";
+static const char sccsid[] = "@(#)compare.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: compare.c,v 1.8 1995/03/07 21:12:05 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: compare.c,v 1.14 2002/02/16 21:28:05 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,12 +50,15 @@ static char rcsid[] = "$NetBSD: compare.c,v 1.8 1995/03/07 21:12:05 cgd Exp $";
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
+#include <md5.h>
+#include <sha1.h>
+#include <rmd160.h>
 #include "mtree.h"
 #include "extern.h"
 
-extern int uflag;
+extern int lflag, tflag, uflag;
 
-static char *ftype __P((u_int));
+static char *ftype(u_int);
 
 #define	INDENTNAMELEN	8
 #define	LABEL \
@@ -65,20 +69,28 @@ static char *ftype __P((u_int));
 			(void)printf("\n"); \
 		} else { \
 			tab = ""; \
-			(void)printf("%*s", INDENTNAMELEN - len, ""); \
+			(void)printf("%*s", INDENTNAMELEN - (int)len, ""); \
 		} \
 	}
+
+#define REPLACE_COMMA(x)						\
+	do {								\
+		char *l;						\
+		for (l = x; *l; l++) {					\
+			if (*l == ',')					\
+				*l = ' ';				\
+		}							\
+	} while (0)							\
 
 int
 compare(name, s, p)
 	char *name;
-	register NODE *s;
-	register FTSENT *p;
+	NODE *s;
+	FTSENT *p;
 {
-	extern int uflag;
-	u_long len, val;
+	u_int32_t len, val;
 	int fd, label;
-	char *cp, *tab;
+	char *cp, *tab = "";
 
 	label = 0;
 	switch(s->type) {
@@ -145,6 +157,21 @@ typeerr:		LABEL;
 	}
 	if (s->flags & F_MODE &&
 	    s->st_mode != (p->fts_statp->st_mode & MBITS)) {
+		if (lflag) {
+			mode_t tmode, mode;
+
+			tmode = s->st_mode;
+			mode = p->fts_statp->st_mode & MBITS;
+			/*
+			 * if none of the suid/sgid/etc bits are set,
+			 * then if the mode is a subset of the target,
+			 * skip.
+			 */
+			if (!((tmode & ~(S_IRWXU|S_IRWXG|S_IRWXO)) ||
+			    (mode & ~(S_IRWXU|S_IRWXG|S_IRWXO))))
+				if ((mode | tmode) == tmode)
+					goto skip;
+		}
 		LABEL;
 		(void)printf("%spermissions (%#o, %#o",
 		    tab, s->st_mode, p->fts_statp->st_mode & MBITS);
@@ -157,6 +184,7 @@ typeerr:		LABEL;
 		else
 			(void)printf(")\n");
 		tab = "\t";
+	skip:
 	}
 	if (s->flags & F_NLINK && s->type != F_DIR &&
 	    s->st_nlink != p->fts_statp->st_nlink) {
@@ -173,19 +201,37 @@ typeerr:		LABEL;
 	}
 	/*
 	 * XXX
-	 * Catches nano-second differences, but doesn't display them.
+	 * Since utimes(2) only takes a timeval, there's no point in
+	 * comparing the low bits of the timespec nanosecond field.  This
+	 * will only result in mismatches that we can never fix.
+	 *
+	 * Doesn't display microsecond differences.
 	 */
-	if (s->flags & F_TIME &&
-	    s->st_mtimespec.ts_sec != p->fts_statp->st_mtimespec.ts_sec ||
-	    s->st_mtimespec.ts_nsec != p->fts_statp->st_mtimespec.ts_nsec) {
-		LABEL;
-		(void)printf("%smodification time (%.24s, ",
-		    tab, ctime(&s->st_mtimespec.ts_sec));
-		(void)printf("%.24s)\n",
-		    ctime(&p->fts_statp->st_mtimespec.ts_sec));
-		tab = "\t";
+	if (s->flags & F_TIME) {
+		struct timeval tv[2];
+
+		TIMESPEC_TO_TIMEVAL(&tv[0], &s->st_mtimespec);
+		TIMESPEC_TO_TIMEVAL(&tv[1], &p->fts_statp->st_mtimespec);
+		if (tv[0].tv_sec != tv[1].tv_sec ||
+		    tv[0].tv_usec != tv[1].tv_usec) {
+			LABEL;
+			(void)printf("%smodification time (%.24s, ",
+			    tab, ctime(&s->st_mtimespec.tv_sec));
+			(void)printf("%.24s",
+			    ctime(&p->fts_statp->st_mtimespec.tv_sec));
+			if (tflag) {
+				tv[1] = tv[0];
+				if (utimes(p->fts_accpath, tv))
+					(void)printf(", not modified: %s)\n",
+					    strerror(errno));
+				else  
+					(void)printf(", modified)\n");  
+			} else
+				(void)printf(")\n");
+			tab = "\t";   
+		}
 	}
-	if (s->flags & F_CKSUM)
+	if (s->flags & F_CKSUM) {
 		if ((fd = open(p->fts_accpath, O_RDONLY, 0)) < 0) {
 			LABEL;
 			(void)printf("%scksum: %s: %s\n",
@@ -201,14 +247,100 @@ typeerr:		LABEL;
 			(void)close(fd);
 			if (s->cksum != val) {
 				LABEL;
-				(void)printf("%scksum (%lu, %lu)\n", 
+				(void)printf("%scksum (%u, %u)\n",
 				    tab, s->cksum, val);
 			}
 			tab = "\t";
 		}
+	}
+	if (s->flags & F_MD5) {
+		char *new_digest, buf[33];
+
+		new_digest = MD5File(p->fts_accpath, buf);
+		if (!new_digest) {
+			LABEL;
+			printf("%sMD5File: %s: %s\n", tab, p->fts_accpath,
+			       strerror(errno));
+			tab = "\t";
+		} else if (strcmp(new_digest, s->md5digest)) {
+			LABEL;
+			printf("%sMD5 (%s, %s)\n", tab, s->md5digest,
+			       new_digest);
+			tab = "\t";
+		}
+	}
+	if (s->flags & F_RMD160) {
+		char *new_digest, buf[41];
+
+		new_digest = RMD160File(p->fts_accpath, buf);
+		if (!new_digest) {
+			LABEL;
+			printf("%sRMD160File: %s: %s\n", tab, p->fts_accpath,
+			       strerror(errno));
+			tab = "\t";
+		} else if (strcmp(new_digest, s->rmd160digest)) {
+			LABEL;
+			printf("%sRMD160 (%s, %s)\n", tab, s->rmd160digest,
+			       new_digest);
+			tab = "\t";
+		}
+	}
+	if (s->flags & F_SHA1) {
+		char *new_digest, buf[41];
+
+		new_digest = SHA1File(p->fts_accpath, buf);
+		if (!new_digest) {
+			LABEL;
+			printf("%sSHA1File: %s: %s\n", tab, p->fts_accpath,
+			       strerror(errno));
+			tab = "\t";
+		} else if (strcmp(new_digest, s->sha1digest)) {
+			LABEL;
+			printf("%sSHA1 (%s, %s)\n", tab, s->sha1digest,
+			       new_digest);
+			tab = "\t";
+		}
+	}
 	if (s->flags & F_SLINK && strcmp(cp = rlink(name), s->slink)) {
 		LABEL;
 		(void)printf("%slink ref (%s, %s)\n", tab, cp, s->slink);
+	}
+	if (s->flags & F_FLAGS && s->file_flags != p->fts_statp->st_flags) {
+		char *db_flags = NULL;
+		char *cur_flags = NULL;
+
+		if ((db_flags = fflagstostr(s->file_flags)) == NULL ||
+		    (cur_flags = fflagstostr(p->fts_statp->st_flags)) == NULL) {
+			LABEL;
+			(void)printf("%sflags: %s %s\n", tab, p->fts_accpath,
+				     strerror(errno));
+			tab = "\t";
+			if (db_flags != NULL)
+				free(db_flags);
+			if (cur_flags != NULL)
+				free(cur_flags);
+		} else {
+			LABEL;
+			REPLACE_COMMA(db_flags);
+			REPLACE_COMMA(cur_flags);
+			printf("%sflags (%s, %s", tab, (*db_flags == '\0') ?
+						  "-" : db_flags,
+						  (*cur_flags == '\0') ? 
+						  "-" : cur_flags);
+				tab = "\t";
+			if (uflag)
+				if (chflags(p->fts_accpath, s->file_flags))
+					(void)printf(", not modified: %s)\n",
+						strerror(errno));
+				else	
+					(void)printf(", modified)\n");
+			else
+				(void)printf(")\n");
+			tab = "\t"; 
+
+			free(db_flags);
+			free(cur_flags);
+		}
 	}
 	return (label);
 }
@@ -268,10 +400,10 @@ rlink(name)
 	char *name;
 {
 	static char lbuf[MAXPATHLEN];
-	register int len;
+	int len;
 
-	if ((len = readlink(name, lbuf, sizeof(lbuf))) == -1)
-		err("%s: %s", name, strerror(errno));
+	if ((len = readlink(name, lbuf, sizeof(lbuf)-1)) == -1)
+		error("%s: %s", name, strerror(errno));
 	lbuf[len] = '\0';
 	return (lbuf);
 }

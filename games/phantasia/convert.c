@@ -1,3 +1,4 @@
+/*	$OpenBSD: convert.c,v 1.2 1995/03/24 03:58:34 cgd Exp $	*/
 /*	$NetBSD: convert.c,v 1.2 1995/03/24 03:58:34 cgd Exp $	*/
 
 /*
@@ -58,7 +59,7 @@ FILE	*oldcharac, *newcharac;		/* to open old and new files */
 	exit(1);
 	}
 
-    srandom((unsigned) time((long *) NULL));	/* prime random numbers */
+    srandom((unsigned) time(NULL));	/* prime random numbers */
 
     while (fread((char *) &Oldplayer, sizeof(struct oldplayer), 1, oldcharac) == 1)
 	/* read and convert old structures into new */

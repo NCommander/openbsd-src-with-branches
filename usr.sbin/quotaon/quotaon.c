@@ -42,7 +42,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)quotaon.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: quotaon.c,v 1.5 1994/12/23 16:39:33 cgd Exp $";
+static char *rcsid = "$Id: quotaon.c,v 1.11 2001/07/27 20:34:36 pvalchev Exp $";
 #endif /* not lint */
 
 /*
@@ -68,14 +68,14 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	register struct fstab *fs;
-	char ch, *qfnp, *whoami, *rindex();
+	struct fstab *fs;
+	char *qfnp, *whoami;
 	long argnum, done = 0;
 	int i, offmode = 0, errs = 0;
-	extern char *optarg;
 	extern int optind;
+	int ch;
 
-	whoami = rindex(*argv, '/') + 1;
+	whoami = strrchr(*argv, '/') + 1;
 	if (whoami == (char *)1)
 		whoami = *argv;
 	if (strcmp(whoami, "quotaoff") == 0)
@@ -85,7 +85,7 @@ main(argc, argv)
 			whoami);
 		exit(1);
 	}
-	while ((ch = getopt(argc, argv, "avug")) != EOF) {
+	while ((ch = getopt(argc, argv, "avug")) != -1) {
 		switch(ch) {
 		case 'a':
 			aflag++;
@@ -113,23 +113,30 @@ main(argc, argv)
 	}
 	setfsent();
 	while ((fs = getfsent()) != NULL) {
-		if (strcmp(fs->fs_vfstype, "ufs") ||
-		    strcmp(fs->fs_type, FSTAB_RW))
+		if (strcmp(fs->fs_type, FSTAB_RW))
+			continue;
+		if (strcmp(fs->fs_vfstype, "ffs") &&
+		    strcmp(fs->fs_vfstype, "ufs") &&
+		    strcmp(fs->fs_vfstype, "mfs"))
 			continue;
 		if (aflag) {
-			if (gflag && hasquota(fs, GRPQUOTA, &qfnp))
+			if (gflag && hasquota(fs, GRPQUOTA, &qfnp, 0))
 				errs += quotaonoff(fs, offmode, GRPQUOTA, qfnp);
-			if (uflag && hasquota(fs, USRQUOTA, &qfnp))
+			if (uflag && hasquota(fs, USRQUOTA, &qfnp, 0))
 				errs += quotaonoff(fs, offmode, USRQUOTA, qfnp);
 			continue;
 		}
 		if ((argnum = oneof(fs->fs_file, argv, argc)) >= 0 ||
 		    (argnum = oneof(fs->fs_spec, argv, argc)) >= 0) {
 			done |= 1 << argnum;
-			if (gflag && hasquota(fs, GRPQUOTA, &qfnp))
+			if (gflag) {
+				hasquota(fs, GRPQUOTA, &qfnp, 1);
 				errs += quotaonoff(fs, offmode, GRPQUOTA, qfnp);
-			if (uflag && hasquota(fs, USRQUOTA, &qfnp))
+			}
+			if (uflag) {
+				hasquota(fs, USRQUOTA, &qfnp, 1);
 				errs += quotaonoff(fs, offmode, USRQUOTA, qfnp);
+			}
 		}
 	}
 	endfsent();
@@ -150,11 +157,10 @@ usage(whoami)
 }
 
 quotaonoff(fs, offmode, type, qfpathname)
-	register struct fstab *fs;
+	struct fstab *fs;
 	int offmode, type;
 	char *qfpathname;
 {
-
 	if (strcmp(fs->fs_file, "/") && readonly(fs))
 		return (1);
 	if (offmode) {
@@ -164,12 +170,13 @@ quotaonoff(fs, offmode, type, qfpathname)
 			return (1);
 		}
 		if (vflag)
-			printf("%s: quotas turned off\n", fs->fs_file);
+			printf("%s: %s quotas turned off\n", fs->fs_file,
+			    qfextension[type]);
 		return (0);
 	}
 	if (quotactl(fs->fs_file, QCMD(Q_QUOTAON, type), 0, qfpathname) < 0) {
-		fprintf(stderr, "quotaon: using %s on", qfpathname);
-		perror(fs->fs_file);
+		warn("%s: %s quotas using %s", fs->fs_file,
+		    qfextension[type], qfpathname);
 		return (1);
 	}
 	if (vflag)
@@ -182,10 +189,10 @@ quotaonoff(fs, offmode, type, qfpathname)
  * Check to see if target appears in list of size cnt.
  */
 oneof(target, list, cnt)
-	register char *target, *list[];
+	char *target, *list[];
 	int cnt;
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < cnt; i++)
 		if (strcmp(target, list[i]) == 0)
@@ -196,13 +203,14 @@ oneof(target, list, cnt)
 /*
  * Check to see if a particular quota is to be enabled.
  */
-hasquota(fs, type, qfnamep)
-	register struct fstab *fs;
+hasquota(fs, type, qfnamep, force)
+	struct fstab *fs;
 	int type;
 	char **qfnamep;
+	int force;
 {
-	register char *opt;
-	char *cp, *index(), *strtok();
+	char *opt;
+	char *cp;
 	static char initname, usrname[100], grpname[100];
 	static char buf[BUFSIZ];
 
@@ -213,14 +221,14 @@ hasquota(fs, type, qfnamep)
 	}
 	strcpy(buf, fs->fs_mntops);
 	for (opt = strtok(buf, ","); opt; opt = strtok(NULL, ",")) {
-		if (cp = index(opt, '='))
+		if (cp = strchr(opt, '='))
 			*cp++ = '\0';
 		if (type == USRQUOTA && strcmp(opt, usrname) == 0)
 			break;
 		if (type == GRPQUOTA && strcmp(opt, grpname) == 0)
 			break;
 	}
-	if (!opt)
+	if (!force && !opt)
 		return (0);
 	if (cp) {
 		*qfnamep = cp;
@@ -233,17 +241,23 @@ hasquota(fs, type, qfnamep)
 
 /*
  * Verify file system is mounted and not readonly.
+ * MFS is special -- it puts "mfs:" in the kernel's mount table
  */
 readonly(fs)
-	register struct fstab *fs;
+	struct fstab *fs;
 {
 	struct statfs fsbuf;
 
 	if (statfs(fs->fs_file, &fsbuf) < 0 ||
 	    strcmp(fsbuf.f_mntonname, fs->fs_file) ||
 	    strcmp(fsbuf.f_mntfromname, fs->fs_spec)) {
-		printf("%s: not mounted\n", fs->fs_file);
-		return (1);
+		if (strcmp(fs->fs_file, "mfs") ||
+		    memcmp(fsbuf.f_mntfromname, "mfs:", sizeof("mfs:")-1))
+			;
+		else {
+			printf("%s: not mounted\n", fs->fs_file);
+			return (1);
+		}
 	}
 	if (fsbuf.f_flags & MNT_RDONLY) {
 		printf("%s: mounted read-only\n", fs->fs_file);

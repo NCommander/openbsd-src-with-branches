@@ -1,4 +1,5 @@
-/*	$NetBSD: db_disasm.c,v 1.9 1995/02/05 13:59:38 mycroft Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.6 2001/07/04 08:57:46 niklas Exp $	*/
+/*	$NetBSD: db_disasm.c,v 1.11 1996/05/03 19:41:58 christos Exp $	*/
 
 /* 
  * Mach Operating System
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,21 +23,23 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
- *	Id: db_disasm.c,v 2.3 91/02/05 17:11:03 mrt (CMU)
+ *	Id: db_disasm.c,v 2.6  92/01/03  20:05:00  dbg (CMU)
  */
 
 /*
  * Instruction disassembler.
  */
-#include "param.h"
-#include "proc.h"
+#include <sys/param.h>
+#include <sys/proc.h>
 #include <machine/db_machdep.h>
 
 #include <ddb/db_access.h>
 #include <ddb/db_sym.h>
+#include <ddb/db_output.h>
+#include <ddb/db_interface.h>
 
 /*
  * Size attributes
@@ -281,6 +284,25 @@ struct inst	db_inst_0fcx[] = {
 /*cf*/	{ "bswap", FALSE, LONG,  op1(Ri),     0 },
 };
 
+struct inst	db_inst_0fdx[] = {
+/*c0*/	{ "cmpxchg",TRUE, BYTE,	 op2(R, E),   0 },
+/*c1*/	{ "cmpxchg",TRUE, LONG,	 op2(R, E),   0 },
+/*c2*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*c3*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*c4*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*c5*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*c6*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*c7*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*c8*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*c9*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*ca*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*cb*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*cc*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*cd*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*ce*/	{ "",	   FALSE, NONE,	 0,	      0 },
+/*cf*/	{ "",	   FALSE, NONE,	 0,	      0 },
+};
+
 struct inst *db_inst_0f[] = {
 	db_inst_0f0x,
 	0,
@@ -295,7 +317,7 @@ struct inst *db_inst_0f[] = {
 	db_inst_0fax,
 	db_inst_0fbx,
 	db_inst_0fcx,
-	0,
+	db_inst_0fdx,
 	0,
 	0
 };
@@ -807,9 +829,9 @@ char *	db_index_reg_16[8] = {
 };
 
 char *	db_reg[3][8] = {
-	"%al",  "%cl",  "%dl",  "%bl",  "%ah",  "%ch",  "%dh",  "%bh",
-	"%ax",  "%cx",  "%dx",  "%bx",  "%sp",  "%bp",  "%si",  "%di",
-	"%eax", "%ecx", "%edx", "%ebx", "%esp", "%ebp", "%esi", "%edi"
+	{ "%al",  "%cl",  "%dl",  "%bl",  "%ah",  "%ch",  "%dh",  "%bh" },
+	{ "%ax",  "%cx",  "%dx",  "%bx",  "%sp",  "%bp",  "%si",  "%di" },
+	{ "%eax", "%ecx", "%edx", "%ebx", "%esp", "%ebp", "%esi", "%edi" }
 };
 
 char *	db_seg_reg[8] = {
@@ -835,6 +857,11 @@ int db_lengths[] = {
 		(loc) += (size); \
 	} while (0)
 
+
+db_addr_t db_read_address(db_addr_t, int, int, struct i_addr *);
+void db_print_address(char *, int, struct i_addr *);
+db_addr_t db_disasm_esc(db_addr_t, int, int, int, char *);
+
 /*
  * Read address at location and return updated location.
  */
@@ -845,7 +872,7 @@ db_read_address(loc, short_addr, regmodrm, addrp)
 	int		regmodrm;
 	struct i_addr	*addrp;		/* out */
 {
-	int		mod, rm, sib, index, ss, disp;
+	int		mod, rm, sib, index, disp;
 
 	mod = f_mod(regmodrm);
 	rm  = f_rm(regmodrm);
@@ -1045,7 +1072,7 @@ db_disasm(loc, altfmt)
 	char *	i_name;
 	int	i_size;
 	int	i_mode;
-	int	regmodrm;
+	int	regmodrm = 0;
 	boolean_t	first;
 	int	displ;
 	int	prefix;

@@ -1,3 +1,5 @@
+/*	$OpenBSD: devopen.c,v 1.3 2001/07/04 08:33:48 niklas Exp $	*/
+
 
 #include <sys/param.h>
 #include <machine/mon.h>
@@ -6,7 +8,7 @@
 
 /*
  * Open the device named by the combined device/file name
- * given as the "fname" arg, something like: "sd()netbsd"
+ * given as the "fname" arg, something like: "sd()bsd"
  *
  * However, Sun PROMs don't really let you choose which
  * device you will talk to.  You can only open the device
@@ -23,7 +25,7 @@ devopen(f, fname, file)
 	struct devsw *dp;
 	int error;
 
-	*file = (char*)fname;
+	*file = (char *)fname;
 	dp = &devsw[0];
 	f->f_dev = dp;
 	error = (*dp->dv_open)(f, prom_bootdev);

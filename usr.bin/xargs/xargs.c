@@ -1,3 +1,4 @@
+/*	$OpenBSD: xargs.c,v 1.10 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: xargs.c,v 1.7 1994/11/14 06:51:41 jtc Exp $	*/
 
 /*-
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)xargs.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: xargs.c,v 1.7 1994/11/14 06:51:41 jtc Exp $";
+static char rcsid[] = "$OpenBSD: xargs.c,v 1.10 2002/02/16 21:27:59 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -58,23 +59,26 @@ static char rcsid[] = "$NetBSD: xargs.c,v 1.7 1994/11/14 06:51:41 jtc Exp $";
 #include <unistd.h>
 #include <limits.h>
 #include <locale.h>
+#include <signal.h>
 #include <err.h>
 #include "pathnames.h"
 
 int tflag, rval;
+int zflag;
 
-void run __P((char **));
-void usage __P((void));
+void run(char **);
+void usage(void);
 
 int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	register int ch;
-	register char *p, *bbp, *ebp, **bxp, **exp, **xp;
+	int ch;
+	char *p, *bbp, *ebp, **bxp, **exp, **xp;
 	int cnt, indouble, insingle, nargs, nflag, nline, xflag;
 	char **av, *argp;
+	int arg_max;
 
 	setlocale(LC_ALL, "");
 
@@ -92,9 +96,11 @@ main(argc, argv)
 	 * probably not worthwhile.
 	 */
 	nargs = 5000;
-	nline = ARG_MAX - 4 * 1024;
+	if ((arg_max = sysconf(_SC_ARG_MAX)) == -1)
+		errx(1, "sysconf(_SC_ARG_MAX) failed");
+	nline = arg_max - 4 * 1024;
 	nflag = xflag = 0;
-	while ((ch = getopt(argc, argv, "n:s:tx")) != EOF)
+	while ((ch = getopt(argc, argv, "0n:s:tx")) != -1)
 		switch(ch) {
 		case 'n':
 			nflag = 1;
@@ -110,15 +116,15 @@ main(argc, argv)
 		case 'x':
 			xflag = 1;
 			break;
+		case '0':
+			zflag = 1;
+			break;
 		case '?':
 		default:
 			usage();
 	}
 	argc -= optind;
 	argv += optind;
-
-	if (xflag && !nflag)
-		usage();
 
 	/*
 	 * Allocate pointers for the utility name, the utility arguments,
@@ -183,10 +189,17 @@ main(argc, argv)
 		case ' ':
 		case '\t':
 			/* Quotes escape tabs and spaces. */
-			if (insingle || indouble)
+			if (insingle || indouble || zflag)
 				goto addch;
 			goto arg2;
+		case '\0':
+			if (zflag)
+				goto arg2;
+			goto addch;
 		case '\n':
+			if (zflag)
+				goto addch;
+
 			/* Empty lines are skipped. */
 			if (argp == p)
 				continue;
@@ -217,16 +230,18 @@ arg2:			*p = '\0';
 			argp = p;
 			break;
 		case '\'':
-			if (indouble)
+			if (indouble || zflag)
 				goto addch;
 			insingle = !insingle;
 			break;
 		case '"':
-			if (insingle)
+			if (insingle || zflag)
 				goto addch;
 			indouble = !indouble;
 			break;
 		case '\\':
+			if (zflag)
+				goto addch;
 			/* Backslash escapes anything, is escaped by quotes. */
 			if (!insingle && !indouble && (ch = getchar()) == EOF)
 				errx(1, "backslash at EOF");
@@ -261,7 +276,7 @@ run(argv)
 	char **argv;
 {
 	volatile int noinvoke;
-	register char **p;
+	char **p;
 	pid_t pid;
 	int status;
 
@@ -279,7 +294,7 @@ run(argv)
 	case 0:
 		execvp(argv[0], argv);
 		noinvoke = (errno == ENOENT) ? 127 : 126;
-		warn("%s", argv[0]);;
+		warn("%s", argv[0]);
 		_exit(1);
 	}
 	pid = waitpid(pid, &status, 0);
@@ -300,14 +315,21 @@ run(argv)
 	 * we'll use 124 and 125, the same values used by GNU xargs.
 	 */
 	if (WIFEXITED(status)) {
-		if (WEXITSTATUS (status) == 255) {
-			warnx ("%s exited with status 255", argv[0]);
+		if (WEXITSTATUS(status) == 255) {
+			warnx("%s exited with status 255", argv[0]);
 			exit(124);
-		} else if (WEXITSTATUS (status) != 0) {
+		} else if (WEXITSTATUS(status) != 0) {
 			rval = 123;
 		}
-	} else if (WIFSIGNALED (status)) {
-		warnx ("%s terminated by signal %d", argv[0], WTERMSIG(status));
+	} else if (WIFSIGNALED(status)) {
+		if (WTERMSIG(status) != SIGPIPE) {
+			if (WTERMSIG(status) < NSIG)
+				warnx("%s terminated by SIG%s", argv[0],
+				    sys_signame[WTERMSIG(status)]);
+			else
+				warnx("%s terminated by signal %d", argv[0],
+				    WTERMSIG(status));
+		}
 		exit(125);
 	}
 }
@@ -316,6 +338,6 @@ void
 usage()
 {
 	(void)fprintf(stderr,
-"usage: xargs [-t] [-n number [-x]] [-s size] [utility [argument ...]]\n");
+"usage: xargs [-0] [-t] [-n number [-x]] [-s size] [utility [argument ...]]\n");
 	exit(1);
 }

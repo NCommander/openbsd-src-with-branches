@@ -1,7 +1,10 @@
-/*	$Id: x509.c,v 1.8 1998/08/21 14:33:09 provos Exp $	*/
+/*	$OpenBSD: x509.c,v 1.68 2002/01/23 18:44:48 ho Exp $	*/
+/*	$EOM: x509.c,v 1.54 2001/01/16 18:42:16 ho Exp $	*/
 
 /*
- * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niels Provos.  All rights reserved.
+ * Copyright (c) 1999, 2000, 2001 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1999, 2000, 2001 Angelos D. Keromytis.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,86 +36,989 @@
  * This code was written under funding by Ericsson Radio Systems.
  */
 
+#ifdef USE_X509
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <fcntl.h>
-#include <gmp.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+#ifdef USE_POLICY
+#include <regex.h>
+#include <keynote.h>
+#endif /* USE_POLICY */
+
+#include "sysdep.h"
+
+#include "cert.h"
 #include "conf.h"
+#include "dyn.h"
 #include "exchange.h"
 #include "hash.h"
 #include "ike_auth.h"
-#include "sa.h"
 #include "ipsec.h"
 #include "log.h"
-#include "asn.h"
-#include "asn_useful.h"
-#include "pkcs.h"
+#include "math_mp.h"
+#include "policy.h"
+#include "sa.h"
+#include "util.h"
 #include "x509.h"
 
-/* X509 Certificate Handling functions */
+static u_int16_t x509_hash (u_int8_t *, size_t);
+static void x509_hash_init (void);
+static X509 *x509_hash_find (u_int8_t *, size_t);
+static int x509_hash_enter (X509 *);
 
-/* Validate the BER Encoding of a RDNSequence in the CERT_REQ payload */
+/*
+ * X509_STOREs do not support subjectAltNames, so we have to build
+ * our own hash table.
+ */
 
+/*
+ * XXX Actually this store is not really useful, we never use it as we have
+ * our own hash table.  It also gets collisons if we have several certificates
+ * only differing in subjectAltName.
+ */
+static X509_STORE *x509_certs = 0;
+static X509_STORE *x509_cas = 0;
+
+/* Initial number of bits used as hash.  */
+#define INITIAL_BUCKET_BITS 6
+
+struct x509_hash {
+  LIST_ENTRY (x509_hash) link;
+
+  X509 *cert;
+};
+
+static LIST_HEAD (x509_list, x509_hash) *x509_tab = 0;
+
+/* Works both as a maximum index and a mask.  */
+static int bucket_mask;
+
+#ifdef USE_POLICY
+/*
+ * Given an X509 certificate, create a KeyNote assertion where
+ * Issuer/Subject -> Authorizer/Licensees.
+ * XXX RSA-specific.
+ */
+int
+x509_generate_kn (int id, X509 *cert)
+{
+  char *fmt = "Authorizer: \"rsa-hex:%s\"\nLicensees: \"rsa-hex:%s\"\n"
+    "Conditions: %s >= \"%s\" && %s <= \"%s\";\n";
+  char *ikey, *skey, *buf, isname[256], subname[256];
+  char *fmt2 = "Authorizer: \"DN:%s\"\nLicensees: \"DN:%s\"\n"
+    "Conditions: %s >= \"%s\" && %s <= \"%s\";\n";
+  X509_NAME *issuer, *subject;
+  struct keynote_deckey dc;
+  X509_STORE_CTX csc;
+  X509_OBJECT obj;
+  X509 *icert;
+  RSA *key;
+  time_t tt;
+  char before[15], after[15];
+  ASN1_TIME *tm;
+  char *timecomp, *timecomp2;
+  int i, buf_len;
+
+  LOG_DBG ((LOG_POLICY, 90,
+	    "x509_generate_kn: generating KeyNote policy for certificate %p",
+	    cert));
+
+  issuer = LC (X509_get_issuer_name, (cert));
+  subject = LC (X509_get_subject_name, (cert));
+
+  /* Missing or self-signed, ignore cert but don't report failure.  */
+  if (!issuer || !subject || !LC (X509_name_cmp, (issuer, subject)))
+    return 1;
+
+  if (!x509_cert_get_key (cert, &key))
+    {
+      LOG_DBG ((LOG_POLICY, 30,
+		"x509_generate_kn: failed to get public key from cert"));
+      return 0;
+    }
+
+  dc.dec_algorithm = KEYNOTE_ALGORITHM_RSA;
+  dc.dec_key = key;
+  ikey = LK (kn_encode_key, (&dc, INTERNAL_ENC_PKCS1, ENCODING_HEX,
+			     KEYNOTE_PUBLIC_KEY));
+  if (LKV (keynote_errno) == ERROR_MEMORY)
+    {
+      log_print ("x509_generate_kn: failed to get memory for public key");
+      LC (RSA_free, (key));
+      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: cannot get subject key"));
+      return 0;
+    }
+  if (!ikey)
+    {
+      LC (RSA_free, (key));
+      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: cannot get subject key"));
+      return 0;
+    }
+  LC (RSA_free, (key));
+
+  /* Now find issuer's certificate so we can get the public key.  */
+  LC (X509_STORE_CTX_init, (&csc, x509_cas, cert, NULL));
+  if (LC (X509_STORE_get_by_subject, (&csc, X509_LU_X509, issuer, &obj)) !=
+      X509_LU_X509)
+    {
+      LC (X509_STORE_CTX_cleanup, (&csc));
+      LC (X509_STORE_CTX_init, (&csc, x509_certs, cert, NULL));
+      if (LC (X509_STORE_get_by_subject, (&csc, X509_LU_X509, issuer, &obj)) !=
+          X509_LU_X509)
+	{
+  	  LC (X509_STORE_CTX_cleanup, (&csc));
+	  LOG_DBG ((LOG_POLICY, 30,
+		    "x509_generate_kn: no certificate found for issuer"));
+	  return 0;
+	}
+    }
+
+  LC (X509_STORE_CTX_cleanup, (&csc));
+  icert = obj.data.x509;
+
+  if (icert == NULL)
+    {
+      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: "
+		"missing certificates, cannot construct X509 chain"));
+      free (ikey);
+      return 0;
+    }
+
+  if (!x509_cert_get_key (icert, &key))
+    {
+      LOG_DBG ((LOG_POLICY, 30,
+		"x509_generate_kn: failed to get public key from cert"));
+      free (ikey);
+      return 0;
+    }
+
+  LC (X509_OBJECT_free_contents, (&obj));
+
+  dc.dec_algorithm = KEYNOTE_ALGORITHM_RSA;
+  dc.dec_key = key;
+  skey = LK (kn_encode_key, (&dc, INTERNAL_ENC_PKCS1, ENCODING_HEX,
+			     KEYNOTE_PUBLIC_KEY));
+  if (LKV (keynote_errno) == ERROR_MEMORY)
+    {
+      log_error ("x509_generate_kn: failed to get memory for public key");
+      free (ikey);
+      LC (RSA_free, (key));
+      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: cannot get issuer key"));
+      return 0;
+    }
+
+  if (!skey)
+    {
+      free (ikey);
+      LC (RSA_free, (key));
+      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: cannot get issuer key"));
+      return 0;
+    }
+  LC (RSA_free, (key));
+
+  buf_len = strlen (fmt) + strlen (ikey) + strlen (skey) + 56;
+  buf = calloc (buf_len, sizeof (char));
+  buf_len *= sizeof (char);
+  if (!buf)
+    {
+      log_error ("x509_generate_kn: "
+		 "failed to allocate memory for KeyNote credential");
+      free (ikey);
+      free (skey);
+      return 0;
+    }
+
+  if (((tm = X509_get_notBefore (cert)) == NULL) ||
+      (tm->type != V_ASN1_UTCTIME && tm->type != V_ASN1_GENERALIZEDTIME))
+    {
+      tt = time (0);
+      strftime (before, 14, "%Y%m%d%H%M%S", localtime (&tt));
+      timecomp = "LocalTimeOfDay";
+    }
+  else
+    {
+      if (tm->data[tm->length - 1] == 'Z')
+	{
+	  timecomp = "GMTTimeOfDay";
+	  i = tm->length - 2;
+	}
+      else
+        {
+	  timecomp = "LocalTimeOfDay";
+	  i = tm->length - 1;
+	}
+
+      for (; i >= 0; i--)
+        {
+	  if (tm->data[i] < '0' || tm->data[i] > '9')
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid data in "
+			"NotValidBefore time field"));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+	}
+
+      if (tm->type == V_ASN1_UTCTIME)
+	{
+	  if ((tm->length < 10) || (tm->length > 13))
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid length "
+			"of NotValidBefore time field (%d)", tm->length));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+
+	  /* Validity checks.  */
+	  if ((tm->data[2] != '0' && tm->data[2] != '1')
+	      || (tm->data[2] == '0' && tm->data[3] == '0')
+	      || (tm->data[2] == '1' && tm->data[3] > '2')
+	      || (tm->data[4] > '3')
+	      || (tm->data[4] == '0' && tm->data[5] == '0')
+	      || (tm->data[4] == '3' && tm->data[5] > '1')
+	      || (tm->data[6] > '2')
+	      || (tm->data[6] == '2' && tm->data[7] > '3')
+	      || (tm->data[8] > '5'))
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid value in "
+			"NotValidBefore time field"));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+
+	  /* Stupid UTC tricks.  */
+	  if (tm->data[0] < '5')
+	    snprintf (before, 15, "20%s", tm->data);
+	  else
+	    snprintf (before, 15, "19%s", tm->data);
+	}
+      else
+        { /* V_ASN1_GENERICTIME */
+	  if ((tm->length < 12) || (tm->length > 15))
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid length of "
+			"NotValidBefore time field (%d)", tm->length));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+
+	  /* Validity checks.  */
+	  if ((tm->data[4] != '0' && tm->data[4] != '1')
+	      || (tm->data[4] == '0' && tm->data[5] == '0')
+	      || (tm->data[4] == '1' && tm->data[5] > '2')
+	      || (tm->data[6] > '3')
+	      || (tm->data[6] == '0' && tm->data[7] == '0')
+	      || (tm->data[6] == '3' && tm->data[7] > '1')
+	      || (tm->data[8] > '2')
+	      || (tm->data[8] == '2' && tm->data[9] > '3')
+	      || (tm->data[10] > '5'))
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid value in "
+			"NotValidBefore time field"));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+
+	  snprintf (before, 15, "%s", tm->data);
+	}
+
+      /* Fix missing seconds.  */
+      if (tm->length < 12)
+        {
+	  before[12] = '0';
+	  before[13] = '0';
+	}
+
+      /* This will overwrite trailing 'Z'.  */
+      before[14] = '\0';
+    }
+
+  tm = X509_get_notAfter (cert);
+  if (tm == NULL
+      && (tm->type != V_ASN1_UTCTIME && tm->type != V_ASN1_GENERALIZEDTIME))
+    {
+      tt = time (0);
+      strftime (after, 14, "%Y%m%d%H%M%S", localtime (&tt));
+      timecomp2 = "LocalTimeOfDay";
+    }
+  else
+    {
+      if (tm->data[tm->length - 1] == 'Z')
+	{
+	  timecomp2 = "GMTTimeOfDay";
+	  i = tm->length - 2;
+	}
+      else
+        {
+	  timecomp2 = "LocalTimeOfDay";
+	  i = tm->length - 1;
+	}
+
+      for (; i >= 0; i--)
+        {
+	  if (tm->data[i] < '0' || tm->data[i] > '9')
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid data in "
+			"NotValidAfter time field"));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+	}
+
+      if (tm->type == V_ASN1_UTCTIME)
+	{
+	  if ((tm->length < 10) || (tm->length > 13))
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid length of "
+			"NotValidAfter time field (%d)", tm->length));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+
+	  /* Validity checks. */
+	  if ((tm->data[2] != '0' && tm->data[2] != '1')
+	      || (tm->data[2] == '0' && tm->data[3] == '0')
+	      || (tm->data[2] == '1' && tm->data[3] > '2')
+	      || (tm->data[4] > '3')
+	      || (tm->data[4] == '0' && tm->data[5] == '0')
+	      || (tm->data[4] == '3' && tm->data[5] > '1')
+	      || (tm->data[6] > '2')
+	      || (tm->data[6] == '2' && tm->data[7] > '3')
+	      || (tm->data[8] > '5'))
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid value in "
+			"NotValidAfter time field"));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+
+	  /* Stupid UTC tricks.  */
+	  if (tm->data[0] < '5')
+	    snprintf (after, 15, "20%s", tm->data);
+	  else
+	    snprintf (after, 15, "19%s", tm->data);
+	}
+      else
+        { /* V_ASN1_GENERICTIME */
+	  if ((tm->length < 12) || (tm->length > 15))
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid length of "
+			"NotValidAfter time field (%d)", tm->length));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+
+	  /* Validity checks.  */
+	  if ((tm->data[4] != '0' && tm->data[4] != '1')
+	      || (tm->data[4] == '0' && tm->data[5] == '0')
+	      || (tm->data[4] == '1' && tm->data[5] > '2')
+	      || (tm->data[6] > '3')
+	      || (tm->data[6] == '0' && tm->data[7] == '0')
+	      || (tm->data[6] == '3' && tm->data[7] > '1')
+	      || (tm->data[8] > '2')
+	      || (tm->data[8] == '2' && tm->data[9] > '3')
+	      || (tm->data[10] > '5'))
+	    {
+	      LOG_DBG ((LOG_POLICY, 30, "x509_generate_kn: invalid value in "
+			"NotValidAfter time field"));
+	      free (ikey);
+	      free (skey);
+	      free (buf);
+	      return 0;
+	    }
+
+	  snprintf (after, 15, "%s", tm->data);
+        }
+
+      /* Fix missing seconds.  */
+      if (tm->length < 12)
+        {
+	  after[12] = '0';
+	  after[13] = '0';
+	}
+
+      after[14] = '\0'; /* This will overwrite trailing 'Z' */
+    }
+
+  snprintf (buf, buf_len, fmt, skey, ikey, timecomp, before, timecomp2, after);
+  free (ikey);
+  free (skey);
+
+  if (LK (kn_add_assertion, (id, buf, strlen (buf),
+			     ASSERT_FLAG_LOCAL)) == -1)
+    {
+      LOG_DBG ((LOG_POLICY, 30,
+		"x509_generate_kn: failed to add new KeyNote credential"));
+      free (buf);
+      return 0;
+    }
+
+  /* We could print the assertion here, but log_print() truncates...  */
+  LOG_DBG ((LOG_POLICY, 60, "x509_generate_kn: added credential"));
+
+  free (buf);
+
+  if (!LC (X509_NAME_oneline, (issuer, isname, 256)))
+    {
+      LOG_DBG ((LOG_POLICY, 50,
+		"x509_generate_kn: X509_NAME_oneline (issuer, ...) failed"));
+      return 0;
+    }
+
+  if (!LC (X509_NAME_oneline, (subject, subname, 256)))
+    {
+      LOG_DBG ((LOG_POLICY, 50,
+		"x509_generate_kn: X509_NAME_oneline (subject, ...) failed"));
+      return 0;
+    }
+
+  buf_len = strlen (fmt2) + strlen (isname) + strlen (subname) + 56;
+  buf = malloc (buf_len);
+  if (!buf)
+    {
+      log_error ("x509_generate_kn: malloc (%d) failed", buf_len);
+      return 0;
+    }
+
+  snprintf (buf, buf_len, fmt2, isname, subname, timecomp, before, timecomp2,
+	    after);
+
+  if (LK (kn_add_assertion, (id, buf, strlen (buf),
+			     ASSERT_FLAG_LOCAL)) == -1)
+    {
+      LOG_DBG ((LOG_POLICY, 30,
+		"x509_generate_kn: failed to add new KeyNote credential"));
+      free (buf);
+      return 0;
+    }
+
+  LOG_DBG ((LOG_POLICY, 80, "x509_generate_kn: added credential:\n%s", buf));
+
+  free (buf);
+  return 1;
+}
+#endif /* USE_POLICY */
+
+static u_int16_t
+x509_hash (u_int8_t *id, size_t len)
+{
+  int i;
+  u_int16_t bucket = 0;
+
+  /* XXX We might resize if we are crossing a certain threshold.  */
+  for (i = 4; i < (len & ~1); i += 2)
+    {
+      /* Doing it this way avoids alignment problems.  */
+      bucket ^= (id[i] + 1) * (id[i + 1] + 257);
+    }
+  /* Hash in the last character of odd length IDs too.  */
+  if (i < len)
+    bucket ^= (id[i] + 1) * (id[i] + 257);
+
+  bucket &= bucket_mask;
+
+  return bucket;
+}
+
+static void
+x509_hash_init (void)
+{
+  struct x509_hash *certh;
+  int i;
+
+  bucket_mask = (1 << INITIAL_BUCKET_BITS) - 1;
+
+  /* If reinitializing, free existing entries.  */
+  if (x509_tab)
+    {
+      for (i = 0; i <= bucket_mask; i++)
+        for (certh = LIST_FIRST (&x509_tab[i]); certh;
+             certh = LIST_FIRST (&x509_tab[i]))
+	  {
+	    LIST_REMOVE (certh, link);
+	    free (certh);
+	  }
+
+      free (x509_tab);
+    }
+
+  x509_tab = malloc ((bucket_mask + 1) * sizeof (struct x509_list));
+  if (!x509_tab)
+    log_fatal ("x509_hash_init: malloc (%d) failed",
+	       (bucket_mask + 1) * sizeof (struct x509_list));
+  for (i = 0; i <= bucket_mask; i++)
+    {
+      LIST_INIT (&x509_tab[i]);
+    }
+}
+
+/* Lookup a certificate by an ID blob.  */
+static X509 *
+x509_hash_find (u_int8_t *id, size_t len)
+{
+  struct x509_hash *cert;
+  u_int8_t **cid;
+  u_int32_t *clen;
+  int n, i, id_found;
+
+  for (cert = LIST_FIRST (&x509_tab[x509_hash (id, len)]); cert;
+       cert = LIST_NEXT (cert, link))
+    {
+      if (!x509_cert_get_subjects (cert->cert, &n, &cid, &clen))
+	continue;
+
+      id_found = 0;
+      for (i = 0; i < n; i++)
+	{
+	  LOG_DBG_BUF ((LOG_CRYPTO, 70, "cert_cmp", id, len));
+	  LOG_DBG_BUF ((LOG_CRYPTO, 70, "cert_cmp", cid[i], clen[i]));
+	  /* XXX This identity predicate needs to be understood.  */
+	  if (clen[i] == len && id[0] == cid[i][0]
+	      && memcmp (id + 4, cid[i] + 4, len - 4) == 0)
+	    {
+	      id_found++;
+	      break;
+	    }
+	}
+      cert_free_subjects (n, cid, clen);
+      if (!id_found)
+	continue;
+
+      LOG_DBG ((LOG_CRYPTO, 70, "x509_hash_find: return X509 %p",
+		cert->cert));
+      return cert->cert;
+    }
+
+  LOG_DBG ((LOG_CRYPTO, 70, "x509_hash_find: no certificate matched query"));
+  return 0;
+}
+
+static int
+x509_hash_enter (X509 *cert)
+{
+  u_int16_t bucket = 0;
+  u_int8_t **id;
+  u_int32_t *len;
+  struct x509_hash *certh;
+  int n, i;
+
+  if (!x509_cert_get_subjects (cert, &n, &id, &len))
+    {
+      log_print ("x509_hash_enter: cannot retrieve subjects");
+      return 0;
+    }
+
+  for (i = 0; i < n; i++)
+    {
+      certh = calloc (1, sizeof *certh);
+      if (!certh)
+        {
+          cert_free_subjects (n, id, len);
+          log_error ("x509_hash_enter: calloc (1, %d) failed", sizeof *certh);
+          return 0;
+        }
+
+      certh->cert = cert;
+
+      bucket = x509_hash (id[i], len[i]);
+
+      LIST_INSERT_HEAD (&x509_tab[bucket], certh, link);
+      LOG_DBG ((LOG_CRYPTO, 70, "x509_hash_enter: cert %p added to bucket %d",
+		cert, bucket));
+    }
+  cert_free_subjects (n, id, len);
+
+  return 1;
+}
+
+/* X509 Certificate Handling functions.  */
+
+int
+x509_read_from_dir (X509_STORE *ctx, char *name, int hash)
+{
+  DIR *dir;
+  struct dirent *file;
+  BIO *certh;
+  X509 *cert;
+  char fullname[PATH_MAX];
+  int off, size;
+
+  if (strlen (name) >= sizeof fullname - 1)
+    {
+      log_print ("x509_read_from_dir: directory name too long");
+      return 0;
+    }
+
+  LOG_DBG ((LOG_CRYPTO, 40, "x509_read_from_dir: reading certs from %s",
+	    name));
+
+  dir = opendir (name);
+  if (!dir)
+    {
+      log_error ("x509_read_from_dir: opendir (\"%s\") failed", name);
+      return 0;
+    }
+
+  strlcpy (fullname, name, sizeof fullname);
+  off = strlen (fullname);
+  size = sizeof fullname - off;
+
+  while ((file = readdir (dir)) != NULL)
+    {
+      strlcpy (fullname + off, file->d_name, size);
+
+      if (file->d_type != DT_UNKNOWN)
+      {
+	 if (file->d_type != DT_REG && file->d_type != DT_LNK)
+	   continue;
+      }
+      else
+      {
+	struct stat sb;
+
+	if (stat(fullname, &sb) == -1 || !(sb.st_mode & S_IFREG))
+          continue;
+      }
+
+      if (file->d_type != DT_REG && file->d_type != DT_LNK)
+	continue;
+
+      LOG_DBG ((LOG_CRYPTO, 60, "x509_read_from_dir: reading certificate %s",
+		file->d_name));
+
+      certh = LC (BIO_new, (LC (BIO_s_file, ())));
+      if (!certh)
+	{
+	  log_error ("x509_read_from_dir: BIO_new (BIO_s_file ()) failed");
+	  continue;
+	}
+
+      if (LC (BIO_read_filename, (certh, fullname)) == -1)
+	{
+	  LC (BIO_free, (certh));
+	  log_error ("x509_read_from_dir: "
+		     "BIO_read_filename (certh, \"%s\") failed",
+		     fullname);
+	  continue;
+	}
+
+#if SSLEAY_VERSION_NUMBER >= 0x00904100L
+      cert = LC (PEM_read_bio_X509, (certh, NULL, NULL, NULL));
+#else
+      cert = LC (PEM_read_bio_X509, (certh, NULL, NULL));
+#endif
+      LC (BIO_free, (certh));
+      if (cert == NULL)
+	{
+	  log_print ("x509_read_from_dir: PEM_read_bio_X509 failed for %s",
+		     file->d_name);
+	  continue;
+	}
+
+      if (!LC (X509_STORE_add_cert, (ctx, cert)))
+	{
+	  /*
+	   * This is actually expected if we have several certificates only
+	   * differing in subjectAltName, which is not an something that is
+	   * strange.  Consider multi-homed machines.
+	   */
+	  LOG_DBG ((LOG_CRYPTO, 50,
+		    "x509_read_from_dir: X509_STORE_add_cert failed for %s",
+		    file->d_name));
+	}
+
+      if (hash)
+	if (!x509_hash_enter (cert))
+	  log_print ("x509_read_from_dir: x509_hash_enter (%s) failed",
+		     file->d_name);
+    }
+
+  closedir (dir);
+
+  return 1;
+}
+
+/* Initialize our databases and load our own certificates.  */
+int
+x509_cert_init (void)
+{
+  char *dirname;
+
+  x509_hash_init ();
+
+  /* Process CA certificates we will trust.  */
+  dirname = conf_get_str ("X509-certificates", "CA-directory");
+  if (!dirname)
+    {
+      log_print ("x509_cert_init: no CA-directory");
+      return 0;
+    }
+
+  /* Free if already initialized.  */
+  if (x509_cas)
+    LC (X509_STORE_free, (x509_cas));
+
+  x509_cas = LC (X509_STORE_new, ());
+  if (!x509_cas)
+    {
+      log_print ("x509_cert_init: creating new X509_STORE failed");
+      return 0;
+    }
+
+  if (!x509_read_from_dir (x509_cas, dirname, 0))
+    {
+      log_print ("x509_cert_init: x509_read_from_dir failed");
+      return 0;
+    }
+
+  /* Process client certificates we will accept.  */
+  dirname = conf_get_str ("X509-certificates", "Cert-directory");
+  if (!dirname)
+    {
+      log_print ("x509_cert_init: no Cert-directory");
+      return 0;
+    }
+
+  /* Free if already initialized.  */
+  if (x509_certs)
+    LC (X509_STORE_free, (x509_certs));
+
+  x509_certs = LC (X509_STORE_new, ());
+  if (!x509_certs)
+    {
+      log_print ("x509_cert_init: creating new X509_STORE failed");
+      return 0;
+    }
+
+  if (!x509_read_from_dir (x509_certs, dirname, 1))
+    {
+      log_print ("x509_cert_init: x509_read_from_dir failed");
+      return 0;
+    }
+
+  return 1;
+}
+
+void *
+x509_cert_get (u_int8_t *asn, u_int32_t len)
+{
+#ifndef USE_LIBCRYPTO
+  /*
+   * If we don't have a statically linked libcrypto, the dlopen must have
+   * succeeded for X.509 to be usable.
+   */
+  if (!libcrypto)
+    return 0;
+#endif
+
+  return x509_from_asn (asn, len);
+}
+
+int
+x509_cert_validate (void *scert)
+{
+  X509_STORE_CTX csc;
+  X509_NAME *issuer, *subject;
+  X509 *cert = (X509 *)scert;
+  EVP_PKEY *key;
+  int res, err;
+
+  /*
+   * Validate the peer certificate by checking with the CA certificates we
+   * trust.
+   */
+  LC (X509_STORE_CTX_init, (&csc, x509_cas, cert, NULL));
+  res = LC (X509_verify_cert, (&csc));
+  err = csc.error;
+  LC (X509_STORE_CTX_cleanup, (&csc));
+
+  /* Return if validation succeeded or self-signed certs are not accepted.  */
+  if (res)
+    return 1;
+  else if (!conf_get_str ("X509-certificates", "Accept-self-signed"))
+    {
+      if (err)
+	log_print ("x509_cert_validate: %.100s",
+		   LC (X509_verify_cert_error_string, (err)));
+      return res;
+    }
+
+  issuer = LC (X509_get_issuer_name, (cert));
+  subject = LC (X509_get_subject_name, (cert));
+
+  if (!issuer || !subject || LC (X509_name_cmp, (issuer, subject)))
+    return 0;
+
+  key = LC (X509_get_pubkey, (cert));
+  if (!key)
+    {
+      log_print ("x509_cert_validate: could not get public key from "
+		 "self-signed cert");
+      return 0;
+    }
+
+  if (LC (X509_verify, (cert, key)) == -1)
+    {
+      log_print ("x509_cert_validate: self-signed cert is bad");
+      return 0;
+    }
+
+  return 1;
+}
+
+int
+x509_cert_insert (int id, void *scert)
+{
+  X509 *cert;
+  int res;
+
+  cert = LC (X509_dup, ((X509 *)scert));
+  if (!cert)
+    {
+      log_print ("x509_cert_insert: X509_dup failed");
+      return 0;
+    }
+
+#ifdef USE_POLICY
+#ifdef USE_KEYNOTE
+  if (x509_generate_kn (id, cert) == 0)
+#else
+    if (libkeynote && x509_generate_kn (id, cert) == 0)
+#endif
+      {
+	LOG_DBG ((LOG_POLICY, 50,
+		  "x509_cert_insert: x509_generate_kn failed"));
+	LC (X509_free, (cert));
+	return 0;
+      }
+#endif /* USE_POLICY */
+
+  res = x509_hash_enter (cert);
+  if (!res)
+    LC (X509_free, (cert));
+
+  return res;
+}
+
+static struct x509_hash *
+x509_hash_lookup (X509 *cert)
+{
+  int i;
+  struct x509_hash *certh;
+
+  for (i = 0; i <= bucket_mask; i++)
+    for (certh = LIST_FIRST (&x509_tab[i]); certh;
+	 certh = LIST_NEXT (certh, link))
+      if (certh->cert == cert)
+	return certh;
+  return 0;
+}
+
+void
+x509_cert_free (void *cert)
+{
+  struct x509_hash *certh = x509_hash_lookup ((X509 *)cert);
+
+  if (certh)
+    LIST_REMOVE (certh, link);
+  LC (X509_free, ((X509 *)cert));
+}
+
+/* Validate the BER Encoding of a RDNSequence in the CERT_REQ payload.  */
 int
 x509_certreq_validate (u_int8_t *asn, u_int32_t len)
 {
-  struct norm_type name = SEQOF ("issuer", RDNSequence);
   int res = 1;
+#if 0
+  struct norm_type name = SEQOF ("issuer", RDNSequence);
 
-  if (asn_template_clone (&name, 1) == NULL ||
-      (asn = asn_decode_sequence (asn, len, &name)) == NULL)
+  if (!asn_template_clone (&name, 1)
+      || (asn = asn_decode_sequence (asn, len, &name)) == 0)
     {
       log_print ("x509_certreq_validate: can not decode 'acceptable CA' info");
       res = 0;
     }
   asn_free (&name);
+#endif
+
+  /* XXX - not supported directly in SSL - later.  */
 
   return res;
 }
 
-/* Decode the BER Encoding of a RDNSequence in the CERT_REQ payload */
-
+/* Decode the BER Encoding of a RDNSequence in the CERT_REQ payload.  */
 void *
 x509_certreq_decode (u_int8_t *asn, u_int32_t len)
 {
+#if 0
+  /* XXX This needs to be done later.  */
   struct norm_type aca = SEQOF ("aca", RDNSequence);
   struct norm_type *tmp;
   struct x509_aca naca, *ret;
 
-  if (asn_template_clone (&aca, 1) == NULL ||
-      (asn = asn_decode_sequence (asn, len, &aca)) == NULL)
+  if (!asn_template_clone (&aca, 1)
+      || (asn = asn_decode_sequence (asn, len, &aca)) == 0)
     {
-      log_print ("x509_certreq_validate: can not decode 'acceptable CA' info");
+      log_print ("x509_certreq_decode: can not decode 'acceptable CA' info");
       goto fail;
     }
   memset (&naca, 0, sizeof (naca));
 
-  tmp = asn_decompose ("aca.RelativeDistinguishedName.AttributeValueAssertion", &aca);
-  if (tmp == NULL)
+  tmp = asn_decompose ("aca.RelativeDistinguishedName.AttributeValueAssertion",
+		       &aca);
+  if (!tmp)
     goto fail;
   x509_get_attribval (tmp, &naca.name1);
 
-  tmp = asn_decompose ("aca.RelativeDistinguishedName[1].AttributeValueAssertion", &aca);
-  if (tmp != NULL)
+  tmp = asn_decompose ("aca.RelativeDistinguishedName[1]"
+		       ".AttributeValueAssertion", &aca);
+  if (tmp)
     x509_get_attribval (tmp, &naca.name2);
-  
+
   asn_free (&aca);
 
-  if ((ret = malloc (sizeof (struct x509_aca))) != NULL)
+  ret = malloc (sizeof (struct x509_aca));
+  if (ret)
     memcpy (ret, &naca, sizeof (struct x509_aca));
   else
-    x509_free_aca (&aca);
+    {
+      log_error ("x509_certreq_decode: malloc (%d) failed",
+		 sizeof (struct x509_aca));
+      x509_free_aca (&aca);
+    }
 
   return ret;
 
  fail:
   asn_free (&aca);
-  return NULL;
+#endif
+  return 0;
 }
 
 void
@@ -120,725 +1026,379 @@ x509_free_aca (void *blob)
 {
   struct x509_aca *aca = blob;
 
-  if (aca->name1.type != NULL)
+  if (aca->name1.type)
     free (aca->name1.type);
-  if (aca->name1.val != NULL)
+  if (aca->name1.val)
     free (aca->name1.val);
 
-  if (aca->name2.type != NULL)
+  if (aca->name2.type)
     free (aca->name2.type);
-  if (aca->name2.val != NULL)
+  if (aca->name2.val)
     free (aca->name2.val);
 }
 
-/* 
- * Obtain a Certificate from an acceptable Certification Authority.
- * XXX - this is where all the magic should happen, but yet here
- * you will find nothing :-\
- */
+X509 *
+x509_from_asn (u_char *asn, u_int len)
+{
+  BIO *certh;
+  X509 *scert = 0;
 
+  certh = LC (BIO_new, (LC (BIO_s_mem, ())));
+  if (!certh)
+    {
+      log_error ("x509_from_asn: BIO_new (BIO_s_mem ()) failed");
+      return 0;
+    }
+
+  if (LC (BIO_write, (certh, asn, len)) == -1)
+    {
+      log_error ("x509_from_asn: BIO_write failed\n");
+      goto end;
+    }
+
+  scert = LC (d2i_X509_bio, (certh, NULL));
+  if (!scert)
+    {
+      log_print ("x509_from_asn: d2i_X509_bio failed\n");
+      goto end;
+    }
+
+ end:
+  LC (BIO_free, (certh));
+  return scert;
+}
+
+/*
+ * Obtain a certificate from an acceptable CA.
+ * XXX We don't check if the certificate we find is from an accepted CA.
+ */
 int
-x509_cert_obtain (struct exchange *exchange, void *data, u_int8_t **cert,
+x509_cert_obtain (u_int8_t *id, size_t id_len, void *data, u_int8_t **cert,
 		  u_int32_t *certlen)
 {
   struct x509_aca *aca = data;
-  struct ipsec_exch *ie = exchange->data;
-  char *certfile;
-  int fd, res = 0;
-  struct stat st;
+  X509 *scert;
 
-  if (aca != NULL)
-    log_debug (LOG_CRYPTO, 60, "x509_cert_obtain: (%s) %s, (%s) %s",
-	       asn_parse_objectid (asn_ids, aca->name1.type), aca->name1.val,
-	       asn_parse_objectid (asn_ids, aca->name2.type), aca->name2.val);
+  if (aca)
+    LOG_DBG ((LOG_CRYPTO, 60,
+	      "x509_cert_obtain: acceptable certificate authorities here"));
 
-  /* XXX - this needs to be changed - but how else shoud I know */
-  switch (ie->ike_auth->id)
+  /* We need our ID to find a certificate.  */
+  if (!id)
     {
-    case IKE_AUTH_RSA_SIG:
-      if ((certfile = conf_get_str ("rsa_sig", "cert")) == NULL)
-	return 0;
-      break;
-    default:
+      log_print ("x509_cert_obtain: ID is missing");
       return 0;
     }
 
-  if (stat (certfile, &st) == -1)
-    {
-      log_error ("x509_cert_obtain: failed to state %s", certfile);
-      return 0;
-    }
-
-  *certlen = st.st_size;
-
-  if ((fd = open (certfile, O_RDONLY)) == -1)
-    {
-      log_error ("x509_cert_obtain: failed to open %s", certfile);
-      return 0;
-    }
-  
-  if ((*cert = malloc (st.st_size)) == NULL)
-    {
-      log_print ("x509_cert_obtain: out of memory");
-      res = 0;
-      goto done;
-    }
-
-  if (read (fd, *cert, st.st_size) != st.st_size)
-    {
-      log_print ("x509_cert_obtain: cert file ended early");
-      free (*cert);
-      res = 0;
-      goto done;
-    }
-
-  {
-    /* 
-     * XXX - assumes IPv4 here, assumes a certificate with an extension
-     * type of subjectAltName at the end - this can go once the saved
-     * certificate is only used with one host with a fixed IP address
-     */
-    u_int8_t *id_cert, *asn, *id;
-    size_t id_len;
-    u_int32_t id_cert_len;
-
-    /* XXX - assumes IPv4 */
-    id = exchange->initiator ? exchange->id_i : exchange->id_r;
-    id_len = exchange->initiator ? exchange->id_i_len : exchange->id_r_len;
-
-    /* XXX - we need our ID to set that in the cert */
-    if (id != NULL) 
-      {
-	/* XXX - get to address ? */
-	id += 4; id_len -= 4;
-	
-	/* Get offset into data structure where the IP is saved */
-	asn = *cert;
-	id_cert_len = asn_get_data_len (NULL, &asn, &id_cert);
-	asn = id_cert;
-	id_cert_len = asn_get_data_len (NULL, &asn, &id_cert);
-	id_cert += id_cert_len - 4;
-	memcpy (id_cert, id, 4); 
-      }
-  }
- 
-  res = 1;
-
- done:
-  close (fd);
-
-  return res;
-}
-
-/* Retrieve the public key from a X509 Certificate */
-int
-x509_cert_get_key (u_int8_t *asn, u_int32_t asnlen, void *blob)
-{
-  struct rsa_public_key *key = blob;
-  struct x509_certificate cert;
-
-  if (!x509_decode_certificate (asn, asnlen, &cert))
+  scert = x509_hash_find (id, id_len);
+  if (!scert)
     return 0;
 
-  /* XXX - perhaps put into pkcs ? */
-  mpz_init_set (key->n, cert.key.n);
-  mpz_init_set (key->e, cert.key.e);
-
-  x509_free_certificate (&cert);
-
+  x509_serialize (scert, cert, certlen);
+  if (!*cert)
+    return 0;
   return 1;
 }
 
-/*
- * Retrieve the public key from a X509 Certificate
- * XXX - look at XXX below.
- */
+/* Returns a pointer to the subjectAltName information of X509 certificate.  */
+int
+x509_cert_subjectaltname (X509 *scert, u_int8_t **altname, u_int32_t *len)
+{
+  X509_EXTENSION *subjectaltname;
+  u_int8_t *sandata;
+  int extpos;
+  int santype, sanlen;
+
+  extpos = LC (X509_get_ext_by_NID, (scert, NID_subject_alt_name, -1));
+  if (extpos == -1)
+    {
+      log_print ("x509_cert_subjectaltname: "
+		 "certificate does not contain subjectAltName");
+      return 0;
+    }
+
+  subjectaltname = LC (X509_get_ext, (scert, extpos));
+
+  if (!subjectaltname || !subjectaltname->value
+      || !subjectaltname->value->data || subjectaltname->value->length < 4)
+    {
+      log_print ("x509_cert_subjectaltname: invalid subjectaltname extension");
+      return 0;
+    }
+
+  /* SSL does not handle unknown ASN stuff well, do it by hand.  */
+  sandata = subjectaltname->value->data;
+  santype = sandata[2] & 0x3f;
+  sanlen = sandata[3];
+  sandata += 4;
+
+  if (sanlen + 4 != subjectaltname->value->length)
+    {
+      log_print ("x509_cert_subjectaltname: subjectaltname invalid length");
+      return 0;
+    }
+
+  *len = sanlen;
+  *altname = sandata;
+
+  return santype;
+}
 
 int
-x509_cert_get_subject (u_int8_t *asn, u_int32_t asnlen, 
-		       u_int8_t **subject, u_int32_t *subjectlen)
+x509_cert_get_subjects (void *scert, int *cnt, u_int8_t ***id,
+			u_int32_t **id_len)
 {
-  struct x509_certificate cert;
+  X509 *cert = scert;
+  X509_NAME *subject;
+  int type;
+  u_int8_t *altname;
+  u_int32_t altlen;
+  char *buf = 0;
+  unsigned char *ubuf;
+  int i;
 
-  if (!x509_decode_certificate (asn, asnlen, &cert))
-    return 0;
+  *id = 0;
+  *id_len = 0;
 
-  if (cert.extension.type == NULL || cert.extension.val == NULL)
+  /*
+   * XXX There can be a collection of subjectAltNames, but for now
+   * I only return the subjectName and a single subjectAltName.
+   */
+  *cnt = 2;
+
+  *id = calloc (*cnt, sizeof **id);
+  if (!*id)
+    {
+      log_print ("x509_cert_get_subject: malloc (%d) failed",
+		 *cnt * sizeof **id);
+      goto fail;
+    }
+
+  *id_len = malloc (*cnt * sizeof **id_len);
+  if (!*id_len)
+    {
+      log_print ("x509_cert_get_subject: malloc (%d) failed",
+		 *cnt * sizeof **id_len);
+      goto fail;
+    }
+
+  /* Stash the subjectName into the first slot.  */
+  subject = LC (X509_get_subject_name, (cert));
+  if (!subject)
     goto fail;
 
-  log_debug (LOG_CRYPTO, 60, "x509_cert_get_subject: Extension Type %s = %s",
-	     cert.extension.type, 
-	     asn_parse_objectid (asn_ids, cert.extension.type));
 
-  if (strcmp (ASN_ID_SUBJECT_ALT_NAME, cert.extension.type))
+  (*id_len)[0] =
+    ISAKMP_ID_DATA_OFF + LC (i2d_X509_NAME, (subject, NULL)) - ISAKMP_GEN_SZ;
+  (*id)[0] = malloc ((*id_len)[0]);
+  if (!(*id)[0])
     {
-      log_print ("x509_cert_get_subject: extension type != subjectAltName");
+      log_print ("x509_cert_get_subject: malloc (%d) failed", (*id_len)[0]);
+      goto fail;
+    }
+  SET_ISAKMP_ID_TYPE ((*id)[0] - ISAKMP_GEN_SZ, IPSEC_ID_DER_ASN1_DN);
+  ubuf = (*id)[0] + ISAKMP_ID_DATA_OFF - ISAKMP_GEN_SZ;
+  LC (i2d_X509_NAME, (subject, &ubuf));
+
+  /* Stash the subjectAltName into the second slot.  */
+  type = x509_cert_subjectaltname (cert, &altname, &altlen);
+  if (!type)
+    goto fail;
+
+  buf = malloc (altlen + ISAKMP_ID_DATA_OFF);
+  if (!buf)
+    {
+      log_print ("x509_cert_get_subject: malloc (%d) failed",
+		 altlen + ISAKMP_ID_DATA_OFF);
       goto fail;
     }
 
-  /* 
-   * XXX Evil**3, due to lack of time the IP encoding of subjectAltName
-   * is supposed to be: 0x30 0x06 0x087 0x04 aa bb cc dd, where the IPV4
-   * IP number is aa.bb.cc.dd.
-   */
-
-  if (asn_get_len (cert.extension.val) != 8 || cert.extension.val[3] != 4)
+  switch (type)
     {
-      log_print ("x509_cert_get_subject: subjectAltName uses "
-		 "unhandled encoding");
-      goto fail;
+    case X509v3_DNS_NAME:
+      SET_ISAKMP_ID_TYPE (buf, IPSEC_ID_FQDN);
+      break;
+
+    case X509v3_RFC_NAME:
+      SET_ISAKMP_ID_TYPE (buf, IPSEC_ID_USER_FQDN);
+      break;
+
+    case X509v3_IP_ADDR:
+      /*
+       * XXX I dislike the numeric constants, but I don't know what we
+       * should use otherwise.
+       */
+      switch (altlen)
+	{
+	case 4:
+	  SET_ISAKMP_ID_TYPE (buf, IPSEC_ID_IPV4_ADDR);
+	  break;
+
+	case 16:
+	  SET_ISAKMP_ID_TYPE (buf, IPSEC_ID_IPV6_ADDR);
+	  break;
+
+	default:
+	  log_print ("x509_cert_get_subject: "
+		     "invalid subjectAltName iPAdress length %d ", altlen);
+	  goto fail;
+	}
+      break;
     }
 
-  /* XXX - 4 bytes for IPV4 address */
-  *subject = malloc (4);
-  if (*subject == NULL)
+  SET_IPSEC_ID_PROTO (buf + ISAKMP_ID_DOI_DATA_OFF, 0);
+  SET_IPSEC_ID_PORT (buf + ISAKMP_ID_DOI_DATA_OFF, 0);
+  memcpy (buf + ISAKMP_ID_DATA_OFF, altname, altlen);
+
+  (*id_len)[1] = ISAKMP_ID_DATA_OFF + altlen - ISAKMP_GEN_SZ;
+  (*id)[1] = malloc ((*id_len)[1]);
+  if (!(*id)[1])
     {
-      log_print ("x509_cert_get_subject: out of memory");
+      log_print ("x509_cert_get_subject: malloc (%d) failed", (*id_len)[1]);
       goto fail;
     }
-  *subjectlen = 4;
-  memcpy (*subject, cert.extension.val + 4, *subjectlen);
+  memcpy ((*id)[1], buf + ISAKMP_GEN_SZ, (*id_len)[1]);
 
-  x509_free_certificate (&cert);
-
+  free (buf);
+  buf = 0;
   return 1;
 
  fail:
-  x509_free_certificate (&cert);
+  for (i = 0; i < *cnt; i++)
+    if ((*id)[i])
+      free ((*id)[i]);
+  if (*id)
+    free (*id);
+  if (*id_len)
+    free (*id_len);
+  if (buf)
+    free (buf);
   return 0;
 }
 
-/* Initalizes the struct x509_attribval from a AtributeValueAssertion */
-
-void
-x509_get_attribval (struct norm_type *obj, struct x509_attribval *a)
-{
-  struct norm_type *tmp;
-
-  tmp = asn_decompose ("AttributeValueAssertion.AttributeType", obj);
-  if (tmp != NULL && tmp->data != NULL)
-    a->type = strdup ((char *)tmp->data);
-
-  tmp = asn_decompose ("AttributeValueAssertion.AttributeValue", obj);
-  if (tmp != NULL && tmp->data != NULL)
-    a->val = strdup ((char *)tmp->data);
-}
-
-/* Set's norm_type with values from x509_attribval */
-
-void
-x509_set_attribval (struct norm_type *obj, struct x509_attribval *a)
-{
-  struct norm_type *tmp;
-
-  tmp = asn_decompose ("AttributeValueAssertion.AttributeType", obj);
-  tmp->data = strdup (a->type);
-  tmp->len = strlen (tmp->data);
-  tmp = asn_decompose ("AttributeValueAssertion.AttributeValue", obj);
-  tmp->type = TAG_PRINTSTRING;
-  tmp->data = strdup (a->val);
-  tmp->len = strlen (tmp->data);
-}
-
-void
-x509_free_attribval (struct x509_attribval *a)
-{
-  if (a->type != NULL)
-    free (a->type);
-  if (a->val != NULL)
-    free (a->val);
-}
-
-void
-x509_free_certificate (struct x509_certificate *cert)
-{
-  pkcs_free_public_key (&cert->key);
-  if (cert->signaturetype != NULL)
-    free (cert->signaturetype);
-  if (cert->start != NULL)
-    free (cert->start);
-  if (cert->end != NULL)
-    free (cert->end);
-
-  x509_free_attribval (&cert->issuer1);
-  x509_free_attribval (&cert->issuer2);
-  x509_free_attribval (&cert->subject1);
-  x509_free_attribval (&cert->subject2);
-  x509_free_attribval (&cert->extension);
-}
-
 int
-x509_decode_certificate (u_int8_t *asn, u_int32_t asnlen, 
-			      struct x509_certificate *rcert)
+x509_cert_get_key (void *scert, void *keyp)
 {
-  struct norm_type cert = SEQ ("cert", Certificate);
-  struct norm_type *tmp;
+  X509 *cert = scert;
+  EVP_PKEY *key;
+
+  key = LC (X509_get_pubkey, (cert));
+
+  /* Check if we got the right key type.  */
+  if (key->type != EVP_PKEY_RSA)
+    {
+      log_print ("x509_cert_get_key: public key is not a RSA key");
+      LC (X509_free, (cert));
+      return 0;
+    }
+
+  *(RSA **)keyp = LC (RSAPublicKey_dup, (key->pkey.rsa));
+
+  return *(RSA **)keyp == NULL ? 0 : 1;
+}
+
+void *
+x509_cert_dup (void *scert)
+{
+  return LC (X509_dup, (scert));
+}
+
+void
+x509_serialize (void *scert, u_int8_t **data, u_int32_t *datalen)
+{
+  u_int8_t *p;
+
+  *datalen = LC (i2d_X509, ((X509 *) scert, NULL));
+  *data = p = malloc (*datalen);
+  if (!p)
+    {
+      log_error ("x509_serialize: malloc (%d) failed", *datalen);
+      return;
+    }
+
+  *datalen = LC (i2d_X509, ((X509 *)scert, &p));
+}
+
+/* From cert to printable */
+char *
+x509_printable (void *cert)
+{
+  char *s;
   u_int8_t *data;
   u_int32_t datalen;
+  int i;
 
-  /* Get access to the inner Certificate */
-  if (!x509_validate_signed (asn, asnlen, NULL, &data, &datalen))
+  x509_serialize (cert, &data, &datalen);
+  if (!data)
     return 0;
-  
-  memset (rcert, 0, sizeof (*rcert));
 
-  if (asn_template_clone (&cert, 1) == NULL || 
-      asn_decode_sequence (data, datalen, &cert) == NULL)
-    goto fail;
-
-  tmp = asn_decompose ("cert.subjectPublicKeyInfo.subjectPublicKey", &cert);
-  if (!pkcs_public_key_from_asn (&rcert->key, tmp->data + 1, tmp->len - 1))
-    goto fail;
-  
-  tmp = asn_decompose ("cert.version", &cert);
-  rcert->version = mpz_get_ui (tmp->data);
-  tmp = asn_decompose ("cert.serialNumber", &cert);
-  rcert->serialnumber = mpz_get_ui (tmp->data);
-  tmp = asn_decompose ("cert.signature.algorithm", &cert);
-  rcert->signaturetype = strdup ((char *)tmp->data);
-
-  tmp = asn_decompose ("cert.issuer.RelativeDistinguishedName."
-		       "AttributeValueAssertion", &cert);
-  x509_get_attribval (tmp, &rcert->issuer1);
-  tmp = asn_decompose ("cert.issuer.RelativeDistinguishedName[1]."
-		       "AttributeValueAssertion", &cert);
-  if (tmp != NULL)
-    x509_get_attribval (tmp, &rcert->issuer2);
-  else
-    rcert->issuer2.type = NULL;
-
-  tmp = asn_decompose ("cert.subject.RelativeDistinguishedName."
-		       "AttributeValueAssertion", &cert);
-  x509_get_attribval (tmp, &rcert->subject1);
-  tmp = asn_decompose ("cert.subject.RelativeDistinguishedName[1]."
-		       "AttributeValueAssertion", &cert);
-  if (tmp != NULL)
-    x509_get_attribval (tmp, &rcert->subject2);
-  else
-    rcert->subject2.type = NULL;
-
-  tmp = asn_decompose ("cert.validity.notBefore", &cert);
-  rcert->start = strdup ((char *)tmp->data);
-  tmp = asn_decompose ("cert.validity.notAfter", &cert);
-  rcert->end = strdup ((char *)tmp->data);
-
-  /* For x509v3 there might be an extension, try to decode it */
-  tmp = asn_decompose ("cert.extension", &cert);
-  if (tmp && tmp->data && rcert->version == 2)
-    x509_decode_cert_extension (tmp->data, tmp->len, rcert);
- 
-  asn_free (&cert);
-  return 1;
-
- fail:
-  x509_free_certificate (rcert);
-  asn_free (&cert);
-  return 0;
-}
-
-int
-x509_encode_certificate (struct x509_certificate *rcert,
-			 u_int8_t **asn, u_int32_t *asnlen)
-{
-  struct norm_type cert = SEQ ("cert", Certificate);
-  struct norm_type *tmp;
-  u_int8_t *data, *new_buf;
-  mpz_t num;
-
-  if (asn_template_clone (&cert, 1) == NULL)
-    goto fail;
-
-  if (rcert->extension.type != NULL && rcert->extension.val != NULL)
-    {
-      u_int8_t *asn;
-      u_int32_t asnlen;
-
-      tmp = asn_decompose ("cert.extension", &cert);
-      if (x509_encode_cert_extension (rcert, &asn, &asnlen))
-	{
-	  tmp->data = asn;
-	  tmp->len = asnlen;
-	}
-    }
-
-  tmp = asn_decompose ("cert.subjectPublicKeyInfo.algorithm.parameters",
-		       &cert);
-  tmp->type = TAG_NULL;
-  tmp = asn_decompose ("cert.subjectPublicKeyInfo.algorithm.algorithm",
-		       &cert);
-  tmp->data = strdup (ASN_ID_RSAENCRYPTION);
-  tmp->len = strlen (tmp->data);
-
-  tmp = asn_decompose ("cert.subjectPublicKeyInfo.subjectPublicKey", &cert);
-  data = pkcs_public_key_to_asn (&rcert->key);
-  if (data == NULL)
-    goto fail;
-
-  /* This is a BIT STRING add 0 octet for padding */
-  tmp->len = asn_get_len (data);
-  new_buf = realloc (data, tmp->len + 1);
-  if (new_buf == NULL)
+  s = malloc (datalen * 2 + 1);
+  if (!s)
     {
       free (data);
-      goto fail;
-    }
-  data = new_buf;
-  memmove (data + 1, data, tmp->len);
-  data[0] = 0;
-  tmp->data = data;
-  tmp->len++;
-  
-  mpz_init (num);
-  tmp = asn_decompose ("cert.version", &cert);
-  mpz_set_ui (num, rcert->version);
-  if (!pkcs_mpz_to_norm_type (tmp, num))
-    {
-      mpz_clear (num);
-      goto fail;
-    }
-
-  tmp = asn_decompose ("cert.serialNumber", &cert);
-  mpz_set_ui (num, rcert->serialnumber);
-  if (!pkcs_mpz_to_norm_type (tmp, num))
-    {
-      mpz_clear (num);
-      goto fail;
-    }
-  mpz_clear (num);
-
-  tmp = asn_decompose ("cert.signature.parameters", &cert);
-  tmp->type = TAG_NULL;
-  tmp = asn_decompose ("cert.signature.algorithm", &cert);
-  tmp->data = strdup (rcert->signaturetype);
-  tmp->len = strlen ((char *)tmp->data);
-
-  tmp = asn_decompose ("cert.issuer.RelativeDistinguishedName."
-		       "AttributeValueAssertion", &cert);
-  x509_set_attribval (tmp, &rcert->issuer1);
-  tmp = asn_decompose ("cert.issuer.RelativeDistinguishedName[1]."
-		       "AttributeValueAssertion", &cert);
-  x509_set_attribval (tmp, &rcert->issuer2);
-
-  tmp = asn_decompose ("cert.subject.RelativeDistinguishedName."
-		       "AttributeValueAssertion", &cert);
-  x509_set_attribval (tmp, &rcert->subject1);
-  tmp = asn_decompose ("cert.subject.RelativeDistinguishedName[1]."
-		       "AttributeValueAssertion", &cert);
-  x509_set_attribval (tmp, &rcert->subject2);
-
-  tmp = asn_decompose ("cert.validity.notBefore", &cert);
-  tmp->data = strdup (rcert->start);
-  tmp->len = strlen ((char *)tmp->data);
-
-  tmp = asn_decompose ("cert.validity.notAfter", &cert);
-  tmp->data = strdup (rcert->end);
-  tmp->len = strlen ((char *)tmp->data);
-
-  *asn = asn_encode_sequence (&cert, NULL);
-  if (*asn == NULL)
-    goto fail;
-
-  *asnlen = asn_get_len (*asn);
-
-  asn_free (&cert);
-  return 1;
-
- fail:
-  asn_free (&cert);
-  return 0;
-}
-
-/*
- * Decode an Extension to a X509 certificate.
- * XXX - We ignore the critical boolean
- */
-
-int
-x509_decode_cert_extension (u_int8_t *asn, u_int32_t asnlen,
-			    struct x509_certificate *cert)
-{
-  struct norm_type *tmp;
-  struct norm_type ex = SEQOF ("ex", Extensions);
-
-  /* Implicit tagging for extension */
-  ex.class = ADD_EXP (3, UNIVERSAL);
-
-  if (asn_template_clone (&ex, 1) == NULL ||
-      asn_decode_sequence (asn, asnlen, &ex) == NULL)
-    {
-      asn_free (&ex);
+      log_error ("x509_printable: malloc (%d) failed", datalen * 2 + 1);
       return 0;
     }
 
-  tmp = asn_decompose ("ex.extension.extnValue", &ex);
-  if (!tmp || tmp->data == NULL || asn_get_len (tmp->data) != tmp->len)
-    goto fail;
-  cert->extension.val = malloc (tmp->len);
-  if (cert->extension.val == 0)
-    goto fail;
-  memcpy (cert->extension.val, tmp->data, tmp->len);
-
-  tmp = asn_decompose ("ex.extension.extnId", &ex);
-  if (!tmp || tmp->data == NULL)
-    goto fail;
-  cert->extension.type = strdup (tmp->data);
-  if (cert->extension.type == NULL)
-    {
-      free (cert->extension.val);
-      cert->extension.val = NULL;
-      goto fail;
-    }
-
-  asn_free (&ex);
-  return 1;
-
- fail:
-  asn_free (&ex);
-  return 0;
+  for (i = 0; i < datalen; i++)
+    snprintf (s + (2 * i), 2 * (datalen - i) + 1, "%02x", data[i]);
+  free (data);
+  return s;
 }
 
-/* 
- * Encode a Cert Extension - XXX - only one extension per certificate 
- * XXX - We tag everything as critical
- */
-
-int
-x509_encode_cert_extension (struct x509_certificate *cert,
-			    u_int8_t **asn, u_int32_t *asnlen)
+/* From printable to cert */
+void *
+x509_from_printable (char *cert)
 {
-  struct norm_type ex = SEQ ("ex", Extensions);
-  struct norm_type *tmp;
-  ex.class = ADD_EXP (3, UNIVERSAL);
+  u_int8_t *buf;
+  int plen, ret;
+  void *foo;
 
-  if (asn_template_clone (&ex ,1) == NULL)
-    goto fail;
+  plen = (strlen (cert) + 1) / 2;
+  buf = malloc (plen);
+  if (!buf)
+    {
+      log_error ("x509_from_printable: malloc (%d) failed", plen);
+      return 0;
+    }
 
-  tmp = asn_decompose ("ex.extension.extnId", &ex);
-  tmp->data = strdup (cert->extension.type);
-  tmp->len = strlen (tmp->data);
+  ret = hex2raw (cert, buf, plen);
+  if (ret == -1)
+    {
+      free (buf);
+      log_print ("x509_from_printable: badly formatted cert");
+      return 0;
+    }
 
-  /* XXX - we mark every extension as critical */
-  tmp = asn_decompose ("ex.extension.critical", &ex);
-  if ((tmp->data = malloc (1)) == NULL)
-    goto fail;
-  *(u_int8_t *)tmp->data = 0xFF;
-  tmp->len = 1;
-
-  tmp = asn_decompose ("ex.extension.extnValue", &ex);
-  if ((tmp->data = malloc (asn_get_len (cert->extension.val))) == NULL)
-    goto fail;
-  tmp->len = asn_get_len (cert->extension.val);
-  memcpy (tmp->data, cert->extension.val, tmp->len);
-
-  *asn = asn_encode_sequence (&ex, NULL);
-  if (*asn == NULL)
-    goto fail;
-
-  *asnlen = asn_get_len (*asn);
-  
-  asn_free (&ex);
-  return 1;
- fail:
-  asn_free (&ex);
-  return 0;
+  foo = x509_cert_get (buf, plen);
+  free (buf);
+  if (!foo)
+    log_print ("x509_from_printable: could not retrieve certificate");
+  return foo;
 }
 
-/* 
- * Checks the signature on an ASN.1 Signed Type. If the passed Key is
- * NULL we just unwrap the inner object and return it.
- */
-
-int
-x509_validate_signed (u_int8_t *asn, u_int32_t asnlen,
-		      struct rsa_public_key *key, u_int8_t **data, 
-		      u_int32_t *datalen)
+char *
+x509_DN_string (u_int8_t *asn1, size_t sz)
 {
-  struct norm_type sig = SEQ("signed", Signed);
-  struct norm_type digest = SEQ("digest", DigestInfo);
-  struct norm_type *tmp;
-  struct hash *hash = NULL;
-  int res;
-  u_int8_t *dec;
-  u_int16_t declen;
+  X509_NAME *name;
+  u_int8_t *p = asn1;
+  /* XXX Just a guess at a maximum length.  */
+  char buf[256];
 
-  if (asn_template_clone (&sig, 1) == NULL)
-      /* Failed, probably memory allocation, free what we got anyway */
-    goto fail;
-
-  if (asn_decode_sequence (asn, asnlen, &sig) == NULL)
+  name = LC (d2i_X509_NAME, (NULL, &p, sz));
+  if (!name)
     {
-      log_print ("x509_validate_signed: input data could not be decoded");
-      goto fail;
+      log_print ("x509_DN_string: d2i_X509_NAME failed");
+      return 0;
     }
-
-  tmp = asn_decompose ("signed.algorithm.algorithm", &sig);
-
-  if (!strcmp ((char *)tmp->data, ASN_ID_MD5WITHRSAENC))
+  if (!LC (X509_NAME_oneline, (name, buf, sizeof buf - 1)))
     {
-      hash = hash_get (HASH_MD5);
+      log_print ("x509_DN_string: X509_NAME_oneline failed");
+      LC (X509_NAME_free, (name));
+      return 0;
     }
-  else
-    {
-      char *id = asn_parse_objectid (asn_ids, tmp->data);
-      log_print ("x509_validate_signed: can not handle SigType %s",
-		 id == NULL ? tmp->data : id);
-      goto fail;
-    }
-
-  if (hash == NULL)
-    goto fail;
-
-  tmp = asn_decompose ("signed.data", &sig);
-  /* Hash the data */
-  hash->Init (hash->ctx);
-  hash->Update (hash->ctx, tmp->data, tmp->len);
-  hash->Final (hash->digest, hash->ctx);
-
-  *data = tmp->data;
-  *datalen = tmp->len;
-
-  /* Used to unwrap the SIGNED object around the Certificate */
-  if (key == NULL)
-    {
-      asn_free (&sig);
-      return 1;
-    }
-
-  tmp = asn_decompose ("signed.encrypted", &sig);
-  /* 
-   * tmp->data is a BIT STRING, the first octet in the BIT STRING gives
-   * the padding bits at the end. Per definition there are no padding
-   * bits at the end in this case, so just skip it.
-   */
-  if (!pkcs_rsa_decrypt (PKCS_PRIVATE, key->n, key->e, tmp->data + 1,
-			 &dec, &declen))
-    goto fail;
-
-  if (asn_template_clone (&digest, 1) == NULL || 
-      asn_decode_sequence (dec, declen, &digest) == NULL)
-    {
-      asn_free (&digest);
-      goto fail;
-    }
-  tmp = asn_decompose ("digest.digestAlgorithm.algorithm", &digest);
-  if (strcmp (ASN_ID_MD5, (char *)tmp->data))
-    {
-      log_print ("x509_validate_signed: DigestAlgorithm is not MD5");
-      res = 0;
-    }
-  else
-    {
-      tmp = asn_decompose ("digest.digest", &digest);
-      if (tmp->len != hash->hashsize ||
-	  memcmp (tmp->data, hash->digest, tmp->len))
-	{
-	  log_print ("x509_validate_signed: Digest does not match Data");
-	  res = 0;
-	}
-      else
-	res = 1;
-    }
-
-  asn_free (&digest);
-  asn_free (&sig);
-  return res;
-
- fail:
-  asn_free (&sig);
-  return 0;
+  LC (X509_NAME_free, (name));
+  buf[sizeof buf - 1] = '\0';
+  return strdup (buf);
 }
-
-/*
- * Create an ASN Signed Structure from the data passed in data
- * and return the result in asn.
- * At the moment the used hash is MD5, this is the only common
- * hash between us and X509.
- */
-
-int
-x509_create_signed (u_int8_t *data, u_int32_t datalen,
-		    struct rsa_private_key *key, u_int8_t **asn, 
-		    u_int32_t *asnlen)
-{
-  struct norm_type digest = SEQ ("digest", DigestInfo);
-  struct norm_type sig = SEQ ("signed", Signed);
-  struct norm_type *tmp;
-  struct hash *hash;
-  u_int8_t *diginfo, *enc;
-  u_int32_t enclen;
-  int res = 0;
-  
-  /* Hash the Data */
-  hash = hash_get (HASH_MD5);
-  hash->Init (hash->ctx);
-  hash->Update (hash->ctx, data, datalen);
-  hash->Final (hash->digest, hash->ctx);
-
-  if (asn_template_clone (&digest, 1) == NULL)
-    goto fail;
-
-  tmp = asn_decompose ("digest.digest", &digest);
-  tmp->len = hash->hashsize;
-  tmp->data = malloc (hash->hashsize);
-  if (tmp->data == NULL)
-    goto fail;
-  memcpy (tmp->data, hash->digest, hash->hashsize);
-
-  tmp = asn_decompose ("digest.digestAlgorithm.parameters", &digest);
-  tmp->type = TAG_NULL;
-  tmp = asn_decompose ("digest.digestAlgorithm.algorithm", &digest);
-  tmp->data = strdup (ASN_ID_MD5);
-  tmp->len = strlen (tmp->data);
-
-  /* ASN encode Digest Information */
-  if ((diginfo = asn_encode_sequence (&digest, NULL)) == NULL)
-    goto fail;
-
-  /* Encrypt the Digest Info with Private Key */
-  res = pkcs_rsa_encrypt (PKCS_PRIVATE, key->n, key->d, diginfo, 
-			  asn_get_len (diginfo), &enc, &enclen);
-  free (diginfo);
-  if (!res)
-    goto fail;
-  res = 0;
-
-  if (asn_template_clone (&sig, 1) == NULL)
-    goto fail2;
-
-  tmp = asn_decompose ("signed.algorithm.parameters", &sig);
-  tmp->type = TAG_NULL;
-  tmp = asn_decompose ("signed.algorithm.algorithm", &sig);
-  tmp->data = strdup (ASN_ID_MD5WITHRSAENC);
-  tmp->len = strlen (tmp->data);
-
-  /* The type is BITSTING, i.e. first octet need to be zero */
-  tmp = asn_decompose ("signed.encrypted", &sig);
-  tmp->data = malloc (enclen + 1);
-  if (tmp->data == NULL)
-    {
-      free (enc);
-      goto fail2;
-    }
-  tmp->len = enclen + 1;
-  memcpy (tmp->data + 1, enc, enclen);
-  *(char *)tmp->data = 0;
-  free (enc);
-
-  tmp = asn_decompose ("signed.data", &sig);
-  tmp->data = data;
-  tmp->len = datalen;
-
-  *asn = asn_encode_sequence (&sig, NULL);
-  if (*asn == NULL)
-    goto fail2;
-  *asnlen = asn_get_len (*asn);
-
-  /* This is the data we have been given, we can not free it in asn_free */
-  tmp->data = NULL;
-  res = 1;	/* Successfull */
- fail2:
-  asn_free (&sig);
- fail:
-  asn_free (&digest);
-  return res;
-}
+#endif /* USE_X509 */

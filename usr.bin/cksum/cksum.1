@@ -1,3 +1,4 @@
+.\"	$OpenBSD: cksum.1,v 1.13 2000/11/10 05:10:22 aaron Exp $
 .\"	$NetBSD: cksum.1,v 1.8 1995/09/02 05:45:15 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -38,9 +39,10 @@
 .\"
 .Dd April 28, 1995
 .Dt CKSUM 1
-.Os BSD 4.4
+.Os
 .Sh NAME
-.Nm cksum
+.Nm cksum ,
+.Nm sum
 .Nd display file checksums and block counts
 .Sh SYNOPSIS
 .Nm cksum
@@ -68,13 +70,13 @@ described below.
 It is provided for compatibility only.
 .Pp
 The options are as follows:
-.Bl -tag -width indent
-.It Fl o
+.Bl -tag -width Ds
+.It Fl o Ar \&1 No \&| Ar \&2
 Use historic algorithms instead of the (superior) default one.
 .Pp
 Algorithm 1 is the algorithm used by historic
 .Bx
-systems as the 
+systems as the
 .Xr sum 1
 algorithm and by historic
 .At V
@@ -155,8 +157,12 @@ The
 .Nm cksum
 and
 .Nm sum
-utilities exit 0 on success, and >0 if an error occurs.
+utilities exit 0 on success or >0 if an error occurred.
 .Sh SEE ALSO
+.Xr md5 1 ,
+.Xr rmd160 1 ,
+.Xr sha1 1
+.Pp
 The default calculation is identical to that given in pseudo-code
 in the following
 .Tn ACM
@@ -170,17 +176,24 @@ article.
 .Sh STANDARDS
 The
 .Nm cksum
-utility is expected to conform to 
-.St -p1003.2-92 .
+utility is compliant with the
+.St -p1003.2-92
+specification.
 .Sh HISTORY
+A
+.Nm sum
+command appeared in
+.At v2 .
 The
 .Nm cksum
 utility appeared in
 .Bx 4.4 .
-.\" .Pp
-.\" The
-.\" .Nm sum
-.\" utility appeared in
-.\" .Bx ?.?
-.\" and
-.\" .At V .
+.Sh WARNING
+Do not use
+.Nm cksum
+or
+.Nm sum
+to detect hostile binary modifications.
+An attacker can trivially produce backdoored daemons which have the same
+CRC as the standard versions.
+Use a cryptographic checksum (such as MD5) instead.

@@ -1,4 +1,5 @@
-/*	$NetBSD: cons.c,v 1.27 1995/04/11 22:08:06 pk Exp $	*/
+/*	$OpenBSD: cons.c,v 1.9 2001/03/01 20:54:32 provos Exp $	*/
+/*	$NetBSD: cons.c,v 1.30 1996/04/08 19:57:30 jonathan Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -43,9 +44,9 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-#include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
@@ -65,6 +66,7 @@ cnopen(dev, flag, mode, p)
 	int flag, mode;
 	struct proc *p;
 {
+	dev_t cndev;
 
 	if (cn_tab == NULL)
 		return (0);
@@ -74,12 +76,18 @@ cnopen(dev, flag, mode, p)
 	 * later.  This follows normal device semantics; they always get
 	 * open() calls.
 	 */
-	dev = cn_tab->cn_dev;
+	cndev = cn_tab->cn_dev;
+	if (cndev == NODEV)
+		return (ENXIO);
+#ifdef DIAGNOSTIC
+	if (cndev == dev)
+		panic("cnopen: recursive");
+#endif
 	if (cn_devvp == NULLVP) {
 		/* try to get a reference on its vnode, but fail silently */
-		cdevvp(dev, &cn_devvp);
+		cdevvp(cndev, &cn_devvp);
 	}
-	return ((*cdevsw[major(dev)].d_open)(dev, flag, mode, p));
+	return ((*cdevsw[major(cndev)].d_open)(cndev, flag, mode, p));
 }
  
 int
@@ -157,7 +165,7 @@ cnstop(tp, flag)
 	struct tty *tp;
 	int flag;
 {
-
+	return (0);
 }
  
 int
@@ -206,7 +214,7 @@ cnselect(dev, rw, p)
 {
 
 	/*
-	 * Redirect the ioctl, if that's appropriate.
+	 * Redirect the select, if that's appropriate.
 	 * I don't want to think of the possible side effects
 	 * of console redirection here.
 	 */
@@ -219,6 +227,23 @@ cnselect(dev, rw, p)
 	return (ttselect(cn_tab->cn_dev, rw, p));
 }
 
+
+int
+cnkqfilter(dev, kn)
+	dev_t dev;
+	struct knote *kn;
+{
+	if (constty != NULL && (cn_tab == NULL || cn_tab->cn_pri != CN_REMOTE))
+		return 0;
+	if (cn_tab == NULL)
+		return (1);
+
+	dev = cn_tab->cn_dev;
+	if (cdevsw[major(dev)].d_type & D_KQFILTER)
+		return ((*cdevsw[major(dev)].d_kqfilter)(dev, kn));
+	return (1);
+}
+
 int
 cngetc()
 {
@@ -228,19 +253,19 @@ cngetc()
 	return ((*cn_tab->cn_getc)(cn_tab->cn_dev));
 }
 
-int
+void
 cnputc(c)
 	register int c;
 {
 
 	if (cn_tab == NULL)
-		return 0;			/* XXX should be void */
+		return;			
+
 	if (c) {
 		(*cn_tab->cn_putc)(cn_tab->cn_dev, c);
 		if (c == '\n')
 			(*cn_tab->cn_putc)(cn_tab->cn_dev, '\r');
 	}
-	return 0;				/* XXX should be void */
 }
 
 void
@@ -260,8 +285,20 @@ cnpollc(on)
 }
 
 void
-nullcnpollc(on)
+nullcnpollc(dev, on)
+	dev_t dev;
 	int on;
 {
 
 }
+
+void
+cnbell(pitch, period, volume)
+	u_int pitch, period, volume;
+{
+	if (cn_tab == NULL || cn_tab->cn_bell == NULL)
+		return;
+
+	(*cn_tab->cn_bell)(cn_tab->cn_dev, pitch, period, volume);
+}
+

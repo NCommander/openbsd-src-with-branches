@@ -1,4 +1,5 @@
-/*	$NetBSD: cpu.h,v 1.19 1995/06/28 02:56:08 cgd Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.14 2001/11/06 18:41:10 art Exp $	*/
+/*	$NetBSD: cpu.h,v 1.20 1995/12/21 05:02:10 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
@@ -44,6 +45,14 @@
  *	cpu.h,v 1.2 1993/05/22 07:58:17 cgd Exp
  */
 
+#ifndef _SUN3_CPU_H_
+#define _SUN3_CPU_H_
+
+/*
+ * Get common m68k CPU definitions.
+ */
+#include <m68k/cpu.h>
+
 #ifdef _KERNEL
 
 /*
@@ -56,7 +65,6 @@
  */
 #define	cpu_swapin(p)			/* nothing */
 #define	cpu_wait(p)			/* nothing */
-#define cpu_setstack(p, ap)		(p)->p_md.md_regs[SP] = ap
 
 /*
  * Arguments to hardclock and gatherstats encapsulate the previous
@@ -109,6 +117,7 @@ extern int want_resched; /* resched() was called */
  * isr_soft_request() so this scheme just multiplexes four
  * software interrupt `sources' on the level one handler.
  */
+extern void isr_soft_request(int level);
 union sun3sir {
 	int 	sir_any;
 	char	sir_which[4];
@@ -122,18 +131,6 @@ union sun3sir {
 #define	setsoftint()	isr_soft_request(1)
 #define setsoftnet()	(sun3sir.sir_which[SIR_NET] = 1, setsoftint())
 #define setsoftclock()	(sun3sir.sir_which[SIR_CLOCK] = 1, setsoftint())
-
-
-/*
- * CTL_MACHDEP definitions.
- */
-#define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
-
-#define	CTL_MACHDEP_NAMES { \
-	{ 0, 0 }, \
-	{ "console_device", CTLTYPE_STRUCT }, \
-}
 
 /* values for cpu_machine_id */
 
@@ -149,20 +146,28 @@ union sun3sir {
 
 extern	unsigned char cpu_machine_id;
 
-/* 680X0 function codes */
-#define	FC_USERD	1	/* user data space */
-#define	FC_USERP	2	/* user program space */
-#define	FC_CONTROL	3	/* sun control space */
-#define	FC_SUPERD	5	/* supervisor data space */
-#define	FC_SUPERP	6	/* supervisor program space */
-#define	FC_CPU		7	/* CPU space */
+/* dma.c */
+long	dvma_kvtopa(long, int);
 
-/* fields in the 68020 cache control register */
-#define	IC_ENABLE	0x0001	/* enable instruction cache */
-#define	IC_FREEZE	0x0002	/* freeze instruction cache */
-#define	IC_CE		0x0004	/* clear instruction cache entry */
-#define	IC_CLR		0x0008	/* clear entire instruction cache */
+/* machdep.c */
+void	dumpconf(void);
 
-#define IC_CLEAR (IC_CLR|IC_ENABLE)
+struct pcb;
+void	savectx(struct pcb *);
+void	switch_exit(struct proc *);
+void	proc_trampoline(void);
 
 #endif	/* _KERNEL */
+
+/* 
+ * CTL_MACHDEP definitions.
+ */
+#define	CPU_CONSDEV		1	/* dev_t: console terminal device */
+#define	CPU_MAXID		2	/* number of valid machdep ids */
+
+#define	CTL_MACHDEP_NAMES { \
+	{ 0, 0 }, \
+	{ "console_device", CTLTYPE_STRUCT }, \
+}
+
+#endif /* !_SUN3_CPU_H_ */

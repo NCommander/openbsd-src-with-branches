@@ -1,3 +1,4 @@
+/*	$OpenBSD: nice.c,v 1.5 2001/09/16 22:40:10 pvalchev Exp $	*/
 /*	$NetBSD: nice.c,v 1.9 1995/08/31 23:30:58 jtc Exp $	*/
 
 /*
@@ -43,15 +44,13 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)nice.c	5.4 (Berkeley) 6/1/90";
 #endif
-static char rcsid[] = "$NetBSD: nice.c,v 1.9 1995/08/31 23:30:58 jtc Exp $";
+static char rcsid[] = "$OpenBSD: nice.c,v 1.5 2001/09/16 22:40:10 pvalchev Exp $";
 #endif /* not lint */
 
-#include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <locale.h>
 #include <ctype.h>
 #include <errno.h>
@@ -60,7 +59,8 @@ static char rcsid[] = "$NetBSD: nice.c,v 1.9 1995/08/31 23:30:58 jtc Exp $";
 
 #define	DEFNICE	10
 
-static void usage();
+int	main(int, char **);
+static void usage(void);
 
 int
 main(argc, argv)
@@ -113,8 +113,8 @@ main(argc, argv)
 static void
 usage()
 {
-	(void)fprintf(stderr,
-	    "usage: nice [ -n increment ] utility [ argument ...]\n");
-	
+	extern char *__progname;
+	fprintf(stderr, "usage: %s [ -n increment ] utility [ argument ...]\n",
+	    __progname);
 	exit(1);
 }

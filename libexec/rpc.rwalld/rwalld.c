@@ -1,3 +1,5 @@
+/*	$OpenBSD: rwalld.c,v 1.5 2001/07/08 21:18:11 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
  * All rights reserved.
@@ -28,19 +30,20 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rwalld.c,v 1.9 1995/07/09 00:30:17 pk Exp $";
+static char rcsid[] = "$OpenBSD: rwalld.c,v 1.5 2001/07/08 21:18:11 deraadt Exp $";
 #endif /* not lint */
 
-#include <unistd.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
 #include <pwd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <syslog.h>
 #include <errno.h>
-#include <sys/socket.h>
+#include <unistd.h>
 #include <signal.h>
-#include <sys/wait.h>
 #include <rpc/rpc.h>
 #include <rpcsvc/rwall.h>
 
@@ -57,10 +60,11 @@ int from_inetd = 1;
 void
 cleanup()
 {
-	(void) pmap_unset(WALLPROG, WALLVERS);
-	exit(0);
+	(void) pmap_unset(WALLPROG, WALLVERS);		/* XXX signal race */
+	_exit(0);
 }
 
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
@@ -73,10 +77,14 @@ main(argc, argv)
 
 	if (geteuid() == 0) {
 		struct passwd *pep = getpwnam("nobody");
-		if (pep)
+		if (pep) {
+			seteuid(pep->pw_uid);
 			setuid(pep->pw_uid);
-		else
+		}
+		else {
+			seteuid(getuid());
 			setuid(getuid());
+		}
 	}
 
 	/*
@@ -143,7 +151,7 @@ wallprog_1(rqstp, transp)
 	} argument;
 	char *result;
 	xdrproc_t xdr_argument, xdr_result;
-	char *(*local) __P((char **, struct svc_req *));
+	char *(*local)(char **, struct svc_req *);
 
 	switch (rqstp->rq_proc) {
 	case NULLPROC:
@@ -153,7 +161,7 @@ wallprog_1(rqstp, transp)
 	case WALLPROC_WALL:
 		xdr_argument = (xdrproc_t)xdr_wrapstring;
 		xdr_result = (xdrproc_t)xdr_void;
-		local = (char *(*) __P((char **, struct svc_req *)))
+		local = (char *(*)(char **, struct svc_req *))
 			wallproc_wall_1_svc;
 		break;
 

@@ -1,9 +1,9 @@
+/*	$OpenBSD: panic.c,v 1.4 1997/03/01 23:40:09 millert Exp $	*/
 /*	$NetBSD: panic.c,v 1.2 1995/03/25 18:13:33 glass Exp $	*/
 
 /*
  * panic.c - terminate fast in case of error
  * Copyright (c) 1993 by Thomas Koenig
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -17,7 +17,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR(S) ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * IN NO EVENT SHALL THE AUTHOR(S) BE LIABLE FOR ANY DIRECT, INDIRECT,
  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
  * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -37,11 +37,12 @@
 
 #include "panic.h"
 #include "at.h"
+#include "privs.h"
 
 /* File scope variables */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: panic.c,v 1.2 1995/03/25 18:13:33 glass Exp $";
+static char rcsid[] = "$OpenBSD: panic.c,v 1.4 1997/03/01 23:40:09 millert Exp $";
 #endif
 
 /* External variables */
@@ -52,11 +53,15 @@ void
 panic(a)
 	char *a;
 {
-/* Something fatal has happened, print error message and exit.
- */
-	fprintf(stderr, "%s: %s\n", namep, a);
-	if (fcreated)
+	/*
+	 * Something fatal has happened, print error message and exit.
+	 */
+	(void)fprintf(stderr, "%s: %s\n", namep, a);
+	if (fcreated) {
+		PRIV_START
 		unlink(atfile);
+		PRIV_END
+	}
 
 	exit(EXIT_FAILURE);
 }
@@ -65,11 +70,15 @@ void
 perr(a)
 	char *a;
 {
-/* Some operating system error; print error message and exit.
- */
+	/*
+	 * Some operating system error; print error message and exit.
+	 */
 	perror(a);
-	if (fcreated)
+	if (fcreated) {
+		PRIV_START
 		unlink(atfile);
+		PRIV_END
+	}
 
 	exit(EXIT_FAILURE);
 }
@@ -78,18 +87,19 @@ void
 perr2(a, b)
 	char *a, *b;
 {
-	fprintf(stderr, "%s", a);
+	(void)fputs(a, stderr);
 	perr(b);
 }
 
 void
 usage(void)
 {
-/* Print usage and exit.
-*/
-	fprintf(stderr, "Usage: at [-q x] [-f file] [-m] time\n"
-	    "       atq [-q x] [-v]\n"
-	    "       atrm [-q x] job ...\n"
-	    "       batch [-f file] [-m]\n");
+	/* Print usage and exit.  */
+	(void)fprintf(stderr,
+	    "Usage: at [-V] [-q queue] [-f file] [-mldbv] time\n"
+	    "       at [-V] -c job [job ...]\n"
+	    "       atq [-V] [-q queue] [-v]\n"
+	    "       atrm [-V] job [job ...]\n"
+	    "       batch [-V] [-q queue] [-f file] [-mv]\n");
 	exit(EXIT_FAILURE);
 }

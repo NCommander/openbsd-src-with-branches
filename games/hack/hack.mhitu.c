@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.mhitu.c,v 1.3 2001/01/28 23:41:44 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.mhitu.c,v 1.3 1995/03/23 08:30:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.mhitu.c,v 1.3 2001/01/28 23:41:44 niklas Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -63,11 +65,11 @@ register struct monst *mtmp;
 		mtmp->minvis = 0;
 		pmon(mtmp);
 	}
-	if(!index("1&DuxynNF",mdat->mlet))
+	if(!strchr("1&DuxynNF",mdat->mlet))
 		tmp = hitu(mtmp,d(mdat->damn,mdat->damd));
 	else
 		tmp = 0;
-	if(index(UNDEAD, mdat->mlet) && midnight())
+	if(strchr(UNDEAD, mdat->mlet) && midnight())
 		tmp += hitu(mtmp,d(mdat->damn,mdat->damd));
 
 	ctmp = tmp && !mtmp->mcan &&
@@ -290,7 +292,7 @@ register struct monst *mtmp;
 #ifndef NOWORM
 	case 'w':
 		if(tmp) wormhit(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 		break;
 	case 'X':
 		(void) hitu(mtmp,rnd(5));

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: j0.3,v 1.7 1999/07/09 13:35:27 aaron Exp $
 .\" Copyright (c) 1985, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,18 +31,23 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)j0.3	6.7 (Berkeley) 4/19/91
-.\"	$Id: j0.3,v 1.6 1995/04/14 18:40:15 jtc Exp $
 .\"
 .Dd April 19, 1991
 .Dt J0 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm j0 ,
+.Nm j0f ,
 .Nm j1 ,
+.Nm j1f ,
 .Nm jn ,
+.Nm jnf ,
 .Nm y0 ,
+.Nm y0f ,
 .Nm y1 ,
-.Nm yn
+.Nm y1f ,
+.Nm yn ,
+.Nm ynf
 .Nd bessel functions of first and second kind
 .Sh SYNOPSIS
 .Fd #include <math.h>
@@ -71,7 +77,7 @@
 .Fn ynf "int n" "float x"
 .Sh DESCRIPTION
 The functions
-.Fn j0 , 
+.Fn j0 ,
 .Fn j0f ,
 .Fn j1
 and
@@ -118,31 +124,18 @@ and
 compute the
 .Em Bessel function of the second kind for the integer order
 .Fa n
-for the positive 
+for the positive
 .Em integer
 value
 .Fa x
 (expressed as a double).
 .Sh RETURN VALUES
 If these functions are successful,
-the computed value is returned. On the
-.Tn VAX
-and
-.Tn Tahoe
-architectures,
-a negative
-.Fa x
-value
-results in an error; the global
-variable
+the computed value is returned, otherwise the global variable
 .Va errno
-is set to
-.Er EDOM
-and a reserve operand fault is generated.
+is set to EDOM or ERANGE.
 .Sh SEE ALSO
-.Xr math 3 ,
-.Xr matherr 3 ,
-.Xr infnan 3
+.Xr math 3
 .Sh HISTORY
 This set of functions
 appeared in

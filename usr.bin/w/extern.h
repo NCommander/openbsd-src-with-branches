@@ -1,3 +1,5 @@
+/*	$OpenBSD: extern.h,v 1.2 1996/06/26 05:42:42 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,8 +36,8 @@
  */
 
 struct proc;
-void	fmt_puts __P((char *, int *));
-void	fmt_putc __P((int, int *));
-void	pr_attime __P((time_t *, time_t *));
-void	pr_idle __P((time_t));
-int	proc_compare __P((struct proc *, struct proc *));
+void	fmt_puts(char *, int *);
+void	fmt_putc(int, int *);
+void	pr_attime(time_t *, time_t *);
+void	pr_idle(time_t);
+int	proc_compare(struct proc *, struct proc *);

@@ -1,4 +1,4 @@
-.\"	$PMDB: pmdb.1,v 1.2 2002/02/20 15:16:27 art Exp $
+.\"	$OpenBSD: pmdb.1,v 1.5 2002/03/15 18:04:41 art Exp $
 .\"
 .\" Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
 .\" All rights reserved. 
@@ -39,7 +39,7 @@ utility can be used to see what is happening inside a running process or
 to catch program crashes and examine the state at the time of the crash.
 The only way to start
 .Nm
-at this moment is to specify the name of the prgram to be debugged and all
+at this moment is to specify the name of the program to be debugged and all
 its arguments on the command line.
 The program is controlled from a command line which usually gives the
 prompt "pmdb>".
@@ -59,7 +59,9 @@ When a process is
 the only way to affect it is through signals sent to it.
 Unless a signal is ignored with the
 .Ic signal ignore
-command, it will be catched by pmdb and the process will go into the
+command, it will be catched by
+.Nm 
+and the process will go into the
 .Ic STOPPED
 state.
 .It STOPPED
@@ -93,6 +95,21 @@ Sets the signal state for the specified signal to either ignore it and
 pass it to the process or to stop the process.
 .It sigstate
 Shows which signals are currently ignored.
+.It break Ar symname|addr
+Sets a breakpoint at the symbol
+.Ar symname
+or the numerical address
+.Ar addr .
+.It step
+Resumes execution just like
+.Ic continue ,
+but stops it again as soon as possible after executing at least
+one instruction.
+.It sym_load Ar fname Ar offs
+Loads a symbol table from the file
+.Ar fname
+at the offset
+.Ar offs .
 .It help
 Shows a short help.
 .It quit
@@ -102,9 +119,13 @@ Kills the process (if necessary) and exits
 Alias for
 .Ic quit .
 .El
+.Sh BUGS
+The command syntax is really poor and ad hoc at this moment. Most of the
+command names and arguments will change as soon as the command line interface
+is replaced.
 .Sh HISTORY
 The
 .Nm
 debugger was written because the author believed that
 .Xr gdb 1
-was too to bloated and hairy to run on OpenBSD/sparc64.
+was too bloated and hairy to run on OpenBSD/sparc64.

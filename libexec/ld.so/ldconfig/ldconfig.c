@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldconfig.c,v 1.7 2000/01/27 22:14:57 form Exp $	*/
+/*	$OpenBSD: ldconfig.c,v 1.6 2001/12/07 18:45:32 mpech Exp $	*/
 
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -63,6 +63,7 @@ static int			nostd;
 static int			justread;
 static int			merge;
 static int			rescan;
+static int			unconfig;
 
 struct shlib_list {
 	/* Internal list of shared libraries found */
@@ -78,11 +79,11 @@ struct shlib_list {
 static struct shlib_list	*shlib_head = NULL, **shlib_tail = &shlib_head;
 static char			*dir_list;
 
-static void	enter __P((char *, char *, char *, int *, int));
-static int	dodir __P((char *, int));
-static int	buildhints __P((void));
-static int	readhints __P((void));
-static void	listhints __P((void));
+static void	enter(char *, char *, char *, int *, int);
+static int	dodir(char *, int);
+static int	buildhints(void);
+static int	readhints(void);
+static void	listhints(void);
 
 int
 main(argc, argv)
@@ -92,10 +93,13 @@ char	*argv[];
 	int		i, c;
 	int		rval = 0;
 
-	while ((c = getopt(argc, argv, "Rmrsv")) != EOF) {
+	while ((c = getopt(argc, argv, "RUmrsv")) != -1) {
 		switch (c) {
 		case 'R':
 			rescan = 1;
+			break;
+		case 'U':
+			rescan = unconfig = 1;
 			break;
 		case 'm':
 			merge = 1;
@@ -110,11 +114,15 @@ char	*argv[];
 			verbose = 1;
 			break;
 		default:
-			errx(1, "Usage: %s [-mrsv] [dir ...]",
-				__progname);
+			(void)fprintf(stderr,
+				"usage: %s [-RUmrsv] [dir ...]\n", __progname);
+			exit(1);
 			break;
 		}
 	}
+
+	if (unconfig && merge)
+		errx(1, "cannot use -U with -m");
 
 	dir_list = xmalloc(1);
 	*dir_list = '\0';
@@ -126,22 +134,35 @@ char	*argv[];
 			listhints();
 			return 0;
 		}
-	}
-
-	if (!nostd && !merge)
-		std_search_path();
-	if (rescan)
 		add_search_path(dir_list);
+		dir_list = xrealloc(dir_list, 1);
+		*dir_list = '\0';
+	} else
+		if (!nostd)
+			std_search_path();
 
-	for (i = 0; i < n_search_dirs; i++)
-		rval |= dodir(search_dirs[i], 1);
+	if (unconfig) {
+		if (optind < argc)
+			for (i = optind; i < argc; i++)
+				remove_search_dir(argv[i]);
+		else {
+			i = 0;
+			while (i < n_search_dirs) {
+				if (access(search_dirs[i], R_OK) < 0)
+					remove_search_dir(search_dirs[i]);
+				else
+					i++;
+			}
+		}
+	} else
+		for (i = optind; i < argc; i++)
+			add_search_dir(argv[i]);
 
-	for (i = optind; i < argc; i++) {
-		/* Check for duplicates? */
-		char *cp = concat(dir_list, *dir_list?":":"", argv[i]);
+	for (i = 0; i < n_search_dirs; i++) {
+		char *cp = concat(dir_list, *dir_list?":":"", search_dirs[i]);
 		free(dir_list);
 		dir_list = cp;
-		rval |= dodir(argv[i], 0);
+		rval |= dodir(search_dirs[i], 0);
 	}
 
 	rval |= buildhints();
@@ -166,8 +187,8 @@ int	silent;
 	}
 
 	while ((dp = readdir(dd)) != NULL) {
-		register int n;
-		register char *cp;
+		int n;
+		char *cp;
 
 		/* Check for `lib' prefix */
 		if (dp->d_name[0] != 'l' ||
@@ -225,8 +246,7 @@ int	dewey[], ndewey;
 					dir, file);
 
 			free(shp->name);
-			if ((shp->name = strdup(name)) == NULL)
-				errx(1, "virtual memory exhausted");
+			shp->name = xstrdup(name);
 			free(shp->path);
 			shp->path = concat(dir, "/", file);
 			bcopy(dewey, shp->dewey, sizeof(shp->dewey));
@@ -244,8 +264,7 @@ int	dewey[], ndewey;
 		printf("Adding %s/%s\n", dir, file);
 
 	shp = (struct shlib_list *)xmalloc(sizeof *shp);
-	if ((shp->name = strdup(name)) == NULL)
-		errx(1, "virtual memory exhausted");
+	shp->name = xstrdup(name);
 	shp->path = concat(dir, "/", file);
 	bcopy(dewey, shp->dewey, MAXDEWEY);
 	shp->ndewey = ndewey;
@@ -429,9 +448,9 @@ readhints()
 	}
 
 	msize = PAGSIZ;
-	addr = mmap(0, msize, PROT_READ, MAP_COPY, fd, 0);
+	addr = mmap(0, msize, PROT_READ, MAP_PRIVATE, fd, 0);
 
-	if (addr == (caddr_t)-1) {
+	if (addr == MAP_FAILED) {
 		warn("%s", _PATH_LD_HINTS);
 		return -1;
 	}
@@ -450,7 +469,7 @@ readhints()
 
 	if (hdr->hh_ehints > msize) {
 		if (mmap(addr+msize, hdr->hh_ehints - msize,
-				PROT_READ, MAP_COPY|MAP_FIXED,
+				PROT_READ, MAP_PRIVATE|MAP_FIXED,
 				fd, msize) != (caddr_t)(addr+msize)) {
 
 			warn("%s", _PATH_LD_HINTS);
@@ -462,37 +481,35 @@ readhints()
 	blist = (struct hints_bucket *)(addr + hdr->hh_hashtab);
 	strtab = (char *)(addr + hdr->hh_strtab);
 
-	if (justread || !rescan) {
-		for (i = 0; i < hdr->hh_nbucket; i++) {
-			struct hints_bucket	*bp = &blist[i];
+	dir_list = xstrdup(strtab + hdr->hh_dirlist);
 
-			/* Sanity check */
-			if (bp->hi_namex >= hdr->hh_strtab_sz) {
-				warnx("Bad name index: %#x", bp->hi_namex);
-				return -1;
-			}
-			if (bp->hi_pathx >= hdr->hh_strtab_sz) {
-				warnx("Bad path index: %#x", bp->hi_pathx);
-				return -1;
-			}
+	if (rescan)
+		return (0);
 
-			/* Allocate new list element */
-			shp = (struct shlib_list *)xmalloc(sizeof *shp);
-			if ((shp->name = strdup(strtab + bp->hi_namex)) == NULL)
-				errx(1, "virtual memory exhausted");
-			if ((shp->path = strdup(strtab + bp->hi_pathx)) == NULL)
-				errx(1, "virtual memory exhausted");
-			bcopy(bp->hi_dewey, shp->dewey, sizeof(shp->dewey));
-			shp->ndewey = bp->hi_ndewey;
-			shp->next = NULL;
+	for (i = 0; i < hdr->hh_nbucket; i++) {
+		struct hints_bucket	*bp = &blist[i];
 
-			*shlib_tail = shp;
-			shlib_tail = &shp->next;
+		/* Sanity check */
+		if (bp->hi_namex >= hdr->hh_strtab_sz) {
+			warnx("Bad name index: %#x", bp->hi_namex);
+			return -1;
 		}
-	}
+		if (bp->hi_pathx >= hdr->hh_strtab_sz) {
+			warnx("Bad path index: %#x", bp->hi_pathx);
+			return -1;
+		}
 
-	if ((dir_list = strdup(strtab + hdr->hh_dirlist)) == NULL)
-		errx(1, "virtual memory exhausted");
+		/* Allocate new list element */
+		shp = (struct shlib_list *)xmalloc(sizeof *shp);
+		shp->name = xstrdup(strtab + bp->hi_namex);
+		shp->path = xstrdup(strtab + bp->hi_pathx);
+		bcopy(bp->hi_dewey, shp->dewey, sizeof(shp->dewey));
+		shp->ndewey = bp->hi_ndewey;
+		shp->next = NULL;
+
+		*shlib_tail = shp;
+		shlib_tail = &shp->next;
+	}
 
 	return 0;
 }

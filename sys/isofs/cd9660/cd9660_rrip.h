@@ -1,3 +1,4 @@
+/*	$OpenBSD: cd9660_rrip.h,v 1.6 1994/12/13 22:33:24 mycroft Exp $	*/
 /*	$NetBSD: cd9660_rrip.h,v 1.6 1994/12/13 22:33:24 mycroft Exp $	*/
 
 /*-

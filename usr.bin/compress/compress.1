@@ -1,3 +1,4 @@
+.\"	$OpenBSD: compress.1,v 1.11 2000/03/23 21:10:15 aaron Exp $
 .\"	$NetBSD: compress.1,v 1.5 1995/03/26 09:44:34 glass Exp $
 .\"
 .\" Copyright (c) 1986, 1990, 1993
@@ -39,25 +40,28 @@
 .\"
 .Dd April 18, 1994
 .Dt COMPRESS 1
-.Os BSD 4.3
+.Os
 .Sh NAME
 .Nm compress ,
-.\".Nm uncompress ,
 .Nm uncompress
-.\".Nm zcat
 .Nd compress and expand data
 .Sh SYNOPSIS
 .Nm compress
-.Op Fl cfv
+.Op Fl cdftgOqv
 .Op Fl b Ar bits
+.Op Fl o Ar filename
 .Op Ar
 .Nm uncompress
-.Op Fl cfv
-.Op Ar 
-.\".Nm zcat
-.\".Op Ar
+.Op Fl cftoqv
+.Op Fl o Ar filename
+.Op Ar
+.Nm zcat
+.Op Fl fq
+.Op Ar
 .Sh DESCRIPTION
-.Nm Compress
+The
+.Nm
+utility
 reduces the size of the named files using adaptive Lempel-Ziv coding.
 Each
 .Ar file
@@ -70,15 +74,19 @@ If compression would not reduce the size of a
 .Ar file ,
 the file is ignored.
 .Pp
-.Nm Uncompress
-restores the compressed files to their original form, renaming the
-files by deleting the
+The
+.Nm uncompress
+utility restores compressed files to their original form, renaming the
+files by removing the
 .Dq .Z
 extension.
-.\".Pp
-.\".Nm Zcat
-.\"is an alias for
-.\".Dq "uncompress -c" .
+.Pp
+The
+.Nm zcat
+is equivalent, by it's functionality, to
+.Nm uncompress
+.Fl c
+command.
 .Pp
 If renaming the files would cause files to be overwritten and the standard
 input device is a terminal, the user is prompted (on the standard error
@@ -88,56 +96,72 @@ are not overwritten.
 .Pp
 If no files are specified, the standard input is compressed or uncompressed
 to the standard output.
-If either the input and output files are not regular files, the checks for
+If either the input or output files are not regular files, the checks for
 reduction in size and file overwriting are not performed, the input file is
 not removed, and the attributes of the input file are not retained.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl b
+.It Fl b Ar bits
 Specify the
 .Ar bits
 code limit (see below).
 .It Fl c
 Compressed or uncompressed output is written to the standard output.
 No files are modified.
+.It Fl d
+Decompress the source files instead of compressing them.
 .It Fl f
 Force compression of
 .Ar file ,
 even if it is not actually reduced in size.
 Additionally, files are overwritten without prompting for confirmation.
+.It Fl g
+Use deflate scheme which reportedly provides better compression rates.
+.It Fl O
+Use old compression method (default is based on the program name).
+.It Fl o Ar filename
+Set the output file name.
+.It Fl t
+Test the integrity of each file leaving any files intact.
+.It Fl q
+Be quiet, suppress any messages.
 .It Fl v
 Print the percentage reduction of each file.
 .El
 .Pp
-.Nm Compress
+.Nm
 uses a modified Lempel-Ziv algorithm.
 Common substrings in the file are first replaced by 9-bit codes 257 and up.
 When code 512 is reached, the algorithm switches to 10-bit codes and
 continues to use more bits until the
 limit specified by the
 .Fl b
-flag is reached (the default is 16).
-.Ar Bits
-must be between 9 and 16.
+flag is reached.
+.Ar bits
+must be between 9 and 16 (the default is 16).
+.\" XXX - use .br here to work-around an apparent bug in mdoc
+.br
 .Pp
 After the
 .Ar bits
 limit is reached,
-.Nm compress
+.Nm
 periodically checks the compression ratio.
 If it is increasing,
-.Nm compress
+.Nm
 continues to use the existing code dictionary.
 However, if the compression ratio decreases,
-.Nm compress
-discards the table of substrings and rebuilds it from scratch.  This allows
-the algorithm to adapt to the next "block" of the file.
+.Nm
+discards the table of substrings and rebuilds it from scratch.
+This allows the algorithm to adapt to the next
+.Dq block
+of the file.
 .Pp
 The
 .Fl b
 flag is omitted for
-.Ar uncompress
+.Nm uncompress
 since the
 .Ar bits
 parameter specified during compression
@@ -157,10 +181,13 @@ coding (as used in the historical command compact), and takes less
 time to compute.
 .Pp
 The
-.Nm compress
-utility exits 0 on success, and >0 if an error occurs.
+.Nm
+utility exits 0 on success, 1 if an error occurred, or 2 if one or
+more files were not compressed because they would have grown in
+size (and
+.Fl f
+was not specified).
 .Sh SEE ALSO
-.Xr zcat 1
 .Rs
 .%A Welch, Terry A.
 .%D June, 1984
@@ -169,8 +196,16 @@ utility exits 0 on success, and >0 if an error occurs.
 .%V 17:6
 .%P pp. 8-19
 .Re
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.2-92
+specification.
 .Sh HISTORY
 The
 .Nm
 command appeared in
 .Bx 4.3 .
+The deflate compression support was added in
+.Ox 2.1 .

@@ -1,4 +1,4 @@
-/*	$NetBSD: dkbad.c,v 1.4 1994/10/26 07:25:33 cgd Exp $	*/
+/*	$OpenBSD: dkbad.c,v 1.4 1999/07/20 03:23:05 csapuntz Exp $ */
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -45,6 +45,9 @@
  * the specified sector.  Return index if found.
  * Return -1 if not found.
  */
+#ifndef NBT_BAD
+#define NBT_BAD 126
+#endif 
 
 isbad(bt, cyl, trk, sec)
 	register struct dkbad *bt;
@@ -54,7 +57,7 @@ isbad(bt, cyl, trk, sec)
 	register long blk, bblk;
 
 	blk = ((long)cyl << 16) + (trk << 8) + sec;
-	for (i = 0; i < 126; i++) {
+	for (i = 0; i < NBT_BAD; i++) {
 		bblk = ((long)bt->bt_bad[i].bt_cyl << 16) + bt->bt_bad[i].bt_trksec;
 		if (blk == bblk)
 			return (i);

@@ -1,4 +1,5 @@
-/*	$NetBSD: size.c,v 1.6 1994/12/21 08:07:21 jtc Exp $	*/
+/*	$OpenBSD: size.c,v 1.13 2001/07/18 17:17:39 pvalchev Exp $	*/
+/*	$NetBSD: size.c,v 1.7 1996/01/14 23:07:12 pk Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -43,19 +44,35 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)size.c	8.2 (Berkeley) 12/9/93";
 #endif
-static char rcsid[] = "$NetBSD: size.c,v 1.6 1994/12/21 08:07:21 jtc Exp $";
+static char rcsid[] = "$OpenBSD: size.c,v 1.13 2001/07/18 17:17:39 pvalchev Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/file.h>
 #include <a.out.h>
+#include <ar.h>
+#include <ranlib.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 #include <err.h>
+#include "byte.c"
 
-int	show __P((int, char *));
-void	usage __P((void));
+#ifdef MID_MACHINE_OVERRIDE
+#undef MID_MACHINE
+#define MID_MACHINE MID_MACHINE_OVERRIDE
+#endif
+
+unsigned long total_text, total_data, total_bss, total_total;
+int ignore_bad_archive_entries = 1;
+int print_totals = 0;
+
+int	process_file(int, char *);
+int	show_archive(int, char *, FILE *);
+int	show_objfile(int, char *, FILE *);
+void	usage(void);
 
 int
 main(argc, argv)
@@ -64,8 +81,14 @@ main(argc, argv)
 {
 	int ch, eval;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	while ((ch = getopt(argc, argv, "wt")) != -1)
 		switch(ch) {
+		case 'w':
+			ignore_bad_archive_entries = 0;
+			break;
+		case 't':
+			print_totals = 1;
+			break;
 		case '?':
 		default:
 			usage();
@@ -76,43 +99,215 @@ main(argc, argv)
 	eval = 0;
 	if (*argv)
 		do {
-			eval |= show(argc, *argv);
+			eval |= process_file(argc, *argv);
 		} while (*++argv);
 	else
-		eval |= show(1, "a.out");
+		eval |= process_file(1, "a.out");
+
+	if (print_totals)
+		(void)printf("\n%lu\t%lu\t%lu\t%lu\t%lx\tTOTAL\n",
+		    total_text, total_data, total_bss,
+		    total_total, total_total);
 	exit(eval);
 }
 
+/*
+ * process_file()
+ *	show symbols in the file given as an argument.  Accepts archive and
+ *	object files as input.
+ */
 int
-show(count, name)
+process_file(count, fname)
+	int count;
+	char *fname;
+{
+	struct exec exec_head;
+	FILE *fp;
+	int retval;
+	char magic[SARMAG];
+
+	if (!(fp = fopen(fname, "r"))) {
+		warnx("cannot read %s", fname);
+		return(1);
+	}
+
+	/*
+	 * first check whether this is an object file - read a object
+	 * header, and skip back to the beginning
+	 */
+	if (fread((char *)&exec_head, sizeof(exec_head), (size_t)1, fp) != 1) {
+		warnx("%s: bad format", fname);
+		(void)fclose(fp);
+		return(1);
+	}
+	rewind(fp);
+
+	/* this could be an archive */
+	if (N_BADMAG(exec_head)) {
+		if (fread(magic, sizeof(magic), (size_t)1, fp) != 1 ||
+		    strncmp(magic, ARMAG, SARMAG)) {
+			warnx("%s: not object file or archive", fname);
+			(void)fclose(fp);
+			return(1);
+		}
+		retval = show_archive(count, fname, fp);
+	} else
+		retval = show_objfile(count, fname, fp);
+	(void)fclose(fp);
+	return(retval);
+}
+
+/*
+ * show_archive()
+ *	show symbols in the given archive file
+ */
+int
+show_archive(count, fname, fp)
+	int count;
+	char *fname;
+	FILE *fp;
+{
+	struct ar_hdr ar_head;
+	struct exec exec_head;
+	int i, rval;
+	long last_ar_off;
+	char *p, *name;
+	int baselen, namelen;
+
+	baselen = strlen(fname) + 3;
+	namelen = sizeof(ar_head.ar_name);
+	if ((name = malloc(baselen + namelen)) == NULL)
+		err(1, NULL);
+
+	rval = 0;
+
+	/* while there are more entries in the archive */
+	while (fread((char *)&ar_head, sizeof(ar_head), (size_t)1, fp) == 1) {
+		/* bad archive entry - stop processing this archive */
+		if (strncmp(ar_head.ar_fmag, ARFMAG, sizeof(ar_head.ar_fmag))) {
+			warnx("%s: bad format archive header", fname);
+			(void)free(name);
+			return(1);
+		}
+
+		/* remember start position of current archive object */
+		last_ar_off = ftell(fp);
+
+		/* skip ranlib entries */
+		if (!strncmp(ar_head.ar_name, RANLIBMAG, sizeof(RANLIBMAG) - 1))
+			goto skip;
+
+		/*
+		 * construct a name of the form "archive.a:obj.o:" for the
+		 * current archive entry if the object name is to be printed
+		 * on each output line
+		 */
+		p = name;
+		if (count > 1)
+			p += sprintf(p, "%s:", fname);
+#ifdef AR_EFMT1
+		/*
+		 * BSD 4.4 extended AR format: #1/<namelen>, with name as the
+		 * first <namelen> bytes of the file
+		 */
+		if (		(ar_head.ar_name[0] == '#') &&
+				(ar_head.ar_name[1] == '1') &&
+				(ar_head.ar_name[2] == '/') && 
+				(isdigit(ar_head.ar_name[3]))) {
+
+			int len = atoi(&ar_head.ar_name[3]);
+			if (len > namelen) {
+				p -= (long)name;
+				if ((name = realloc(name, baselen+len)) == NULL)
+					err(1, NULL);
+				namelen = len;
+				p += (long)name;
+			}
+			if (fread(p, len, 1, fp) != 1) {
+				warnx("%s: premature EOF", name);
+				(void)free(name);
+				return(1);
+			}
+			p += len;
+		} else
+#endif
+		for (i = 0; i < sizeof(ar_head.ar_name); ++i)
+			if (ar_head.ar_name[i] && ar_head.ar_name[i] != ' ')
+				*p++ = ar_head.ar_name[i];
+		*p++ = '\0';
+
+		/* get and check current object's header */
+		if (fread((char *)&exec_head, sizeof(exec_head),
+		    (size_t)1, fp) != 1) {
+			warnx("%s: premature EOF", name);
+			(void)free(name);
+			return(1);
+		}
+
+		if (BAD_OBJECT(exec_head)) {
+			if (!ignore_bad_archive_entries) {
+				warnx("%s: bad format", name);
+				rval = 1;
+			}
+		} else {
+			(void)fseek(fp, (long)-sizeof(exec_head),
+			    SEEK_CUR);
+			rval |= show_objfile(2, name, fp);
+		}
+
+		/*
+		 * skip to next archive object - it starts at the next
+	 	 * even byte boundary
+		 */
+#define even(x) (((x) + 1) & ~1)
+skip:		if (fseek(fp, last_ar_off + even(atol(ar_head.ar_size)),
+		    SEEK_SET)) {
+			warn("%s", fname);
+			(void)free(name);
+			return(1);
+		}
+	}
+	(void)free(name);
+	return(rval);
+}
+
+int
+show_objfile(count, name, fp)
 	int count;
 	char *name;
+	FILE *fp;
 {
 	static int first = 1;
 	struct exec head;
 	u_long total;
-	int fd;
 
-	if ((fd = open(name, O_RDONLY, 0)) < 0) {
-		warn("%s", name);
-		return (1);
+	if (fread((char *)&head, sizeof(head), (size_t)1, fp) != 1) {
+		warnx("%s: cannot read header", name);
+		return(1);
 	}
-	if (read(fd, &head, sizeof(head)) != sizeof(head) || N_BADMAG(head)) {
-		(void)close(fd);
-		warnx("%s: not in a.out format", name);
-		return (1);
+
+	if (BAD_OBJECT(head)) {
+		warnx("%s: bad format", name);
+		return(1);
 	}
-	(void)close(fd);
+
+	fix_header_order(&head);
 
 	if (first) {
 		first = 0;
 		(void)printf("text\tdata\tbss\tdec\thex\n");
 	}
 	total = head.a_text + head.a_data + head.a_bss;
-	(void)printf("%lu\t%lu\t%lu\t%lu\t%lx", head.a_text, head.a_data,
-	    head.a_bss, total, total);
+	(void)printf("%lu\t%lu\t%lu\t%lu\t%lx", (unsigned long)head.a_text, 
+	    (unsigned long)head.a_data, (unsigned long)head.a_bss, total, total);
 	if (count > 1)
 		(void)printf("\t%s", name);
+
+	total_text += head.a_text;
+	total_data += head.a_data;
+	total_bss += head.a_bss;
+	total_total += total;
+
 	(void)printf("\n");
 	return (0);
 }
@@ -120,6 +315,6 @@ show(count, name)
 void
 usage()
 {
-	(void)fprintf(stderr, "usage: size [file ...]\n");
+	(void)fprintf(stderr, "usage: size [-tw] [file ...]\n");
 	exit(1);
 }

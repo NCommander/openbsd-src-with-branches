@@ -3342,7 +3342,7 @@ struct rcs_keyword
     size_t len;
 };
 #define KEYWORD_INIT(s) (s), sizeof (s) - 1
-static const struct rcs_keyword keywords[] =
+static struct rcs_keyword keywords[] =
 {
     { KEYWORD_INIT ("Author") },
     { KEYWORD_INIT ("Date") },
@@ -3355,6 +3355,7 @@ static const struct rcs_keyword keywords[] =
     { KEYWORD_INIT ("Revision") },
     { KEYWORD_INIT ("Source") },
     { KEYWORD_INIT ("State") },
+    { NULL, 0 },
     { NULL, 0 }
 };
 enum keyword
@@ -3369,7 +3370,8 @@ enum keyword
     KEYWORD_RCSFILE,
     KEYWORD_REVISION,
     KEYWORD_SOURCE,
-    KEYWORD_STATE
+    KEYWORD_STATE,
+    KEYWORD_LOCALID
 };
 
 /* Convert an RCS date string into a readable string.  This is like
@@ -3506,6 +3508,12 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 	return;
     }
 
+    if (RCS_citag != NULL && *RCS_citag && *RCS_citag != '-'
+	&& keywords[KEYWORD_LOCALID].string == NULL) {
+	keywords[KEYWORD_LOCALID].string = RCS_citag;
+	keywords[KEYWORD_LOCALID].len = strlen(RCS_citag);
+    }
+
     /* If we are using -kkvl, dig out the locker information if any.  */
     locker = NULL;
     if (expand == KFLAG_KVL)
@@ -3533,13 +3541,15 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 	srch_len -= (srch_next + 1) - srch;
 	srch = srch_next + 1;
 
-	/* Look for the first non alphabetic character after the '$'.  */
+	/* Look for the first non alphanumeric character after the '$'.  */
 	send = srch + srch_len;
-	for (s = srch; s < send; s++)
-	    if (! isalpha ((unsigned char) *s))
+	if (! isalpha((unsigned char) *srch))
+	    continue;	/* first character of a tag must be a letter */
+	for (s = srch+1; s < send; s++)
+	    if (! isalnum ((unsigned char) *s))
 		break;
 
-	/* If the first non alphabetic character is not '$' or ':',
+	/* If the first non alphanumeric character is not '$' or ':',
            then this is not an RCS keyword.  */
 	if (s == send || (*s != '$' && *s != ':'))
 	    continue;
@@ -3597,6 +3607,7 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 
 	    case KEYWORD_HEADER:
 	    case KEYWORD_ID:
+	    case KEYWORD_LOCALID:
 		{
 		    char *path;
 		    int free_path;
@@ -4228,7 +4239,7 @@ RCS_checkout (rcs, workfile, rev, nametag, options, sout, pfn, callerdat)
 	if (info != NULL)
 	{
 	    /* If the size of `devtype' changes, fix the sscanf call also */
-	    char devtype[16];
+	    char devtype[16+1];
 
 	    if (sscanf (info->data, "%16s %lu",
 			devtype, &devnum_long) < 2)

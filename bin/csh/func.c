@@ -1,4 +1,5 @@
-/*	$NetBSD: func.c,v 1.10 1995/03/21 18:35:42 mycroft Exp $	*/
+/*    $OpenBSD: func.c,v 1.13 2002/02/16 21:27:06 millert Exp $       */
+/*    $NetBSD: func.c,v 1.11 1996/02/09 02:28:29 christos Exp $       */
 
 /*-
  * Copyright (c) 1980, 1991, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)func.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: func.c,v 1.10 1995/03/21 18:35:42 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: func.c,v 1.13 2002/02/16 21:27:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,11 +49,7 @@ static char rcsid[] = "$NetBSD: func.c,v 1.10 1995/03/21 18:35:42 mycroft Exp $"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -61,16 +58,16 @@ static char rcsid[] = "$NetBSD: func.c,v 1.10 1995/03/21 18:35:42 mycroft Exp $"
 extern char **environ;
 
 static int zlast = -1;
-static void	islogin __P((void));
-static void	reexecute __P((struct command *));
-static void	preread __P((void));
-static void	doagain __P((void));
-static void	search __P((int, int, Char *));
-static int	getword __P((Char *));
-static int	keyword __P((Char *));
-static void	toend __P((void));
-static void	xecho __P((int, Char **));
-static void	Unsetenv __P((Char *));
+static void	islogin(void);
+static void	reexecute(struct command *);
+static void	preread(void);
+static void	doagain(void);
+static void	search(int, int, Char *);
+static int	getword(Char *);
+static int	keyword(Char *);
+static void	toend(void);
+static void	xecho(int, Char **);
+static void	Unsetenv(Char *);
 
 struct biltins *
 isbfunc(t)
@@ -100,7 +97,7 @@ isbfunc(t)
      * one past the end.
      */
     for (bp1 = bfunc, bp2 = bfunc + nbfunc; bp1 < bp2;) {
-	register i;
+	register int i;
 
 	bp = bp1 + ((bp2 - bp1) >> 1);
 	if ((i = *cp - *bp->bname) == 0 &&
@@ -252,7 +249,7 @@ dologin(v, t)
     islogin();
     rechist();
     (void) signal(SIGTERM, parterm);
-    (void) execl(_PATH_LOGIN, "login", short2str(v[1]), NULL);
+    (void) execl(_PATH_LOGIN, "login", short2str(v[1]), (char *)NULL);
     untty();
     xexit(1);
 }
@@ -611,7 +608,7 @@ srchx(cp)
     register Char *cp;
 {
     register struct srch *sp, *sp1, *sp2;
-    register i;
+    register int i;
 
     /*
      * Binary search Sp1 is the beginning of the current search range. Sp2 is
@@ -766,11 +763,12 @@ getword(wp)
 	    c = readc(1);
 	    if (c == '\\' && (c = readc(1)) == '\n')
 		c = ' ';
-	    if (c == '\'' || c == '"')
+	    if (c == '\'' || c == '"') {
 		if (d == 0)
 		    d = c;
 		else if (d == c)
 		    d = 0;
+	    }
 	    if (c < 0)
 		goto past;
 	    if (wp) {
@@ -1161,11 +1159,11 @@ static struct limits {
     { -1,		NULL,		0,	NULL }
 };
 
-static struct limits *findlim __P((Char *));
-static RLIM_TYPE getval __P((struct limits *, Char **));
-static void limtail __P((Char *, char *));
-static void plim __P((struct limits *, Char));
-static int setlim __P((struct limits *, Char, RLIM_TYPE));
+static struct limits *findlim(Char *);
+static RLIM_TYPE getval(struct limits *, Char **);
+static void limtail(Char *, char *);
+static void plim(struct limits *, Char);
+static int setlim(struct limits *, Char, RLIM_TYPE);
 
 static struct limits *
 findlim(cp)
@@ -1173,7 +1171,7 @@ findlim(cp)
 {
     register struct limits *lp, *res;
 
-    res = (struct limits *) NULL;
+    res = NULL;
     for (lp = limits; lp->limconst >= 0; lp++)
 	if (prefix(cp, str2short(lp->limname))) {
 	    if (res)
@@ -1400,11 +1398,13 @@ dosuspend(v, t)
     (void) signal(SIGTSTP, old);
 
     if (tpgrp != -1) {
+retry:
 	ctpgrp = tcgetpgrp(FSHTTY);
-	while  (ctpgrp != opgrp) {
+      if  (ctpgrp != opgrp) {
 	    old = signal(SIGTTIN, SIG_DFL);
 	    (void) kill(0, SIGTTIN);
 	    (void) signal(SIGTTIN, old);
+	  goto retry;
 	}
 	(void) setpgid(0, shpgrp);
 	(void) tcsetpgrp(FSHTTY, shpgrp);
@@ -1414,7 +1414,7 @@ dosuspend(v, t)
 /* This is the dreaded EVAL built-in.
  *   If you don't fiddle with file descriptors, and reset didfds,
  *   this command will either ignore redirection inside or outside
- *   its aguments, e.g. eval "date >x"  vs.  eval "date" >x
+ *   its arguments, e.g. eval "date >x"  vs.  eval "date" >x
  *   The stuff here seems to work, but I did it by trial and error rather
  *   than really knowing what was going on.  If tpgrp is zero, we are
  *   probably a background eval, e.g. "eval date &", and we want to
@@ -1509,9 +1509,22 @@ doprintf(v, t)
     Char **v;
     struct command *t;
 {
+    Char **newv;
     char **c;
-    extern int progprintf __P((int, char **));
+    extern int progprintf(int, char **);
     int ret;
+
+    gflag = 0;
+    tglob(v);
+    if (gflag) {
+	newv = globall(v);
+	if (newv == 0) {
+	    stderror(ERR_NAME | ERR_NOMATCH);
+	    return;
+	}
+	v = newv;
+	gargv = 0;
+    }
 
     ret = progprintf(blklen(v), c = short2blk(v));
     (void) fflush(cshout);

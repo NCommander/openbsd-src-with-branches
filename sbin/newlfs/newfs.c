@@ -1,4 +1,5 @@
-/*	$NetBSD: newfs.c,v 1.4 1995/06/28 02:21:32 thorpej Exp $	*/
+/*	$OpenBSD: newfs.c,v 1.9 2002/02/16 21:27:37 millert Exp $	*/
+/*	$NetBSD: newfs.c,v 1.5 1996/05/16 07:17:50 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1992, 1993
@@ -41,9 +42,9 @@ static char copyright[] =
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)newfs.c	8.3 (Berkeley) 4/22/94";
+static char sccsid[] = "@(#)newfs.c	8.5 (Berkeley) 5/24/95";
 #else
-static char rcsid[] = "$NetBSD: newfs.c,v 1.4 1995/06/28 02:21:32 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: newfs.c,v 1.9 2002/02/16 21:27:37 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,7 +56,6 @@ static char rcsid[] = "$NetBSD: newfs.c,v 1.4 1995/06/28 02:21:32 thorpej Exp $"
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/disklabel.h>
-#include <sys/file.h>
 #include <sys/mount.h>
 #include <sys/sysctl.h>
 
@@ -63,12 +63,14 @@ static char rcsid[] = "$NetBSD: newfs.c,v 1.4 1995/06/28 02:21:32 thorpej Exp $"
 #include <ufs/ufs/dinode.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <paths.h>
+#include <util.h>
 #include "config.h"
 #include "extern.h"
 
@@ -116,20 +118,19 @@ int	unlabeled;
 char	device[MAXPATHLEN];
 char	*progname, *special;
 
-static struct disklabel *getdisklabel __P((char *, int));
-static struct disklabel *debug_readlabel __P((int));
-static void rewritelabel __P((char *, int, struct disklabel *));
-static int getmaxpartitions __P((void));
-static void usage __P((void));
+static struct disklabel *getdisklabel(char *, int);
+static struct disklabel *debug_readlabel(int);
+static void rewritelabel(char *, int, struct disklabel *);
+static void usage(void);
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register int ch;
-	register struct partition *pp;
-	register struct disklabel *lp;
+	int ch;
+	struct partition *pp;
+	struct disklabel *lp;
 	struct partition oldpartition;
 	struct stat st;
 	int debug, lfs, fsi, fso, segsize, maxpartitions;
@@ -150,12 +151,12 @@ main(argc, argv)
 		fatal("insane maxpartitions value %d", maxpartitions);
 
 	/* -F is mfs only and MUST come first! */
-	opstring = "F:B:DLNS:T:a:b:c:d:e:f:i:k:l:m:n:o:p:r:s:t:u:x:";
+	opstring = "F:B:DLNS:T:a:b:c:d:e:f:i:k:l:t:m:n:o:p:r:s:z:u:x:";
 	if (!mfs)
 		opstring += 2;
 
 	debug = lfs = segsize = 0;
-	while ((ch = getopt(argc, argv, opstring)) != EOF)
+	while ((ch = getopt(argc, argv, opstring)) != -1)
 		switch(ch) {
 		case 'B':	/* LFS segment size */
 			if ((segsize = atoi(optarg)) < LFS_MINSEGSIZE)
@@ -253,7 +254,9 @@ main(argc, argv)
 			if ((fssize = atoi(optarg)) <= 0)
 				fatal("%s: bad file system size", optarg);
 			break;
-		case 't':
+		case 't':	/* compat with "-t fstype" in newfs */
+			break;
+		case 'z':
 			if ((ntracks = atoi(optarg)) <= 0)
 				fatal("%s: bad total tracks", optarg);
 			break;
@@ -327,7 +330,7 @@ main(argc, argv)
 		fatal("%s: `%c' partition is unavailable", argv[0], *cp);
 
 	/* If we're making a LFS, we break out here */
-	exit(make_lfs(fso, lp, pp, minfree, bsize, segsize));
+	exit(make_lfs(fso, lp, pp, minfree, bsize, fsize, segsize));
 }
 
 #ifdef COMPAT
@@ -382,7 +385,7 @@ static void
 rewritelabel(s, fd, lp)
 	char *s;
 	int fd;
-	register struct disklabel *lp;
+	struct disklabel *lp;
 {
 #ifdef COMPAT
 	if (unlabeled)
@@ -397,7 +400,7 @@ rewritelabel(s, fd, lp)
 	}
 #if vax
 	if (lp->d_type == DTYPE_SMD && lp->d_flags & D_BADSECT) {
-		register i;
+		int i;
 		int cfd;
 		daddr_t alt;
 		char specname[64];
@@ -419,7 +422,7 @@ rewritelabel(s, fd, lp)
 		alt = lp->d_ncylinders * lp->d_secpercyl - lp->d_nsectors;
 		for (i = 1; i < 11 && i < lp->d_nsectors; i += 2) {
 			if (lseek(cfd, (off_t)(alt + i) * lp->d_secsize,
-			    L_SET) == -1)
+			    SEEK_SET) == -1)
 				fatal("lseek to badsector area: %s",
 				    strerror(errno));
 			if (write(cfd, blk, lp->d_secsize) < lp->d_secsize)
@@ -432,21 +435,6 @@ rewritelabel(s, fd, lp)
 #endif
 }
 
-static int
-getmaxpartitions()
-{
-	int maxpart, mib[2];
-	size_t varlen;
-
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_MAXPARTITIONS;
-	varlen = sizeof(maxpart);
-	if (sysctl(mib, 2, &maxpart, &varlen, NULL, 0) < 0)
-		fatal("getmaxpartitions: %s", strerror(errno));
-
-	return (maxpart);
-}
-
 void
 usage()
 {
@@ -455,7 +443,7 @@ usage()
 		    "usage: mfs [ -fsoptions ] special-device mount-point\n");
 	} else
 		fprintf(stderr,
-		    "usage: newlfs [ -fsoptions ] special-device%s\n",
+		    "usage: newfs_lfs [ -fsoptions ] special-device%s\n",
 #ifdef COMPAT
 		    " [device-type]");
 #else
@@ -487,8 +475,8 @@ usage()
 	fprintf(stderr, "\t-p spare sectors per track\n");
 	fprintf(stderr, "\t-r revolutions/minute\n");
 	fprintf(stderr, "\t-s file system size (sectors)\n");
-	fprintf(stderr, "\t-t tracks/cylinder\n");
 	fprintf(stderr, "\t-u sectors/track\n");
 	fprintf(stderr, "\t-x spare sectors per cylinder\n");
+	fprintf(stderr, "\t-z tracks/cylinder\n");
 	exit(1);
 }

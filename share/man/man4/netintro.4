@@ -1,4 +1,5 @@
-.\"	$NetBSD: netintro.4,v 1.3 1994/11/30 16:22:24 jtc Exp $
+.\"	$OpenBSD: netintro.4,v 1.18 2001/10/05 14:45:53 mpech Exp $
+.\"	$NetBSD: netintro.4,v 1.4 1995/10/19 08:03:40 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -33,9 +34,9 @@
 .\"
 .\"     @(#)netintro.4	8.2 (Berkeley) 11/30/93
 .\"
-.Dd November 30, 1993
+.Dd September 3, 1994
 .Dt NETINTRO 4
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm networking
 .Nd introduction to networking facilities
@@ -58,16 +59,17 @@ All network protocols are associated with a specific
 .Em protocol family .
 A protocol family provides basic services to the protocol
 implementation to allow it to function within a specific
-network environment.  These services may include 
-packet fragmentation and reassembly, routing, addressing, and 
-basic transport.  A protocol family may support multiple
-methods of addressing, though the current protocol implementations
-do not.  A protocol family is normally comprised of a number
-of protocols, one per
+network environment.
+These services may include packet fragmentation and reassembly, routing,
+addressing, and basic transport.
+A protocol family may support multiple methods of addressing, though
+the current protocol implementations do not.
+A protocol family is normally comprised of a number of protocols, one per
 .Xr socket 2
-type.  It is not required that a protocol family support
-all socket types.  A protocol family may contain multiple
-protocols supporting the same socket abstraction. 
+type.
+It is not required that a protocol family support all socket types.
+A protocol family may contain multiple protocols supporting the same socket
+abstraction.
 .Pp
 A protocol supports one of the socket abstractions detailed in
 .Xr socket 2 .
@@ -78,10 +80,11 @@ Protocols normally accept only one type of address format,
 usually determined by the addressing structure inherent in
 the design of the protocol family/network architecture.
 Certain semantics of the basic socket abstractions are
-protocol specific.  All protocols are expected to support
-the basic model for their particular socket type, but may,
-in addition, provide non-standard facilities or extensions
-to a mechanism.  For example, a protocol supporting the
+protocol specific.
+All protocols are expected to support the basic model for their particular
+socket type, but may, in addition, provide non-standard facilities or
+extensions to a mechanism.
+For example, a protocol supporting the
 .Dv SOCK_STREAM
 abstraction may allow more than one byte of out-of-band
 data to be transmitted per out-of-band message.
@@ -89,12 +92,11 @@ data to be transmitted per out-of-band message.
 A network interface is similar to a device interface.
 Network interfaces comprise the lowest layer of the
 networking subsystem, interacting with the actual transport
-hardware.  An interface may support one or more protocol
-families and/or address formats.
-The SYNOPSIS section of each network interface
-entry gives a sample specification
-of the related drivers for use in providing
-a system description to the
+hardware.
+An interface may support one or more protocol families and/or address formats.
+The SYNOPSIS section of each network interface entry gives a sample
+specification of the related drivers for use in providing a system description
+to the
 .Xr config 8
 program.
 The DIAGNOSTICS section lists messages which may appear on the console
@@ -122,22 +124,23 @@ Consult the appropriate manual pages in this section for more
 information regarding the support for each protocol family.
 .Sh ADDRESSING
 Associated with each protocol family is an address
-format.  All network address adhere to a general structure,
-called a sockaddr, described below. However, each protocol
-imposes finer and more specific structure, generally renaming
-the variant, which is discussed in the protocol family manual
+format.
+All network addresses adhere to a general structure, called a sockaddr,
+described below.
+However, each protocol imposes a finer, more specific structure, generally
+renaming the variant, which is discussed in the protocol family manual
 page alluded to above.
 .Bd -literal -offset indent
-    struct sockaddr {
-	u_char	sa_len;
-    	u_char	sa_family;
-    	char	sa_data[14];
+struct sockaddr {
+	u_int8_t	sa_len;
+	sa_family_t	sa_family;
+	char		sa_data[14];
 };
 .Ed
 .Pp
 The field
 .Ar sa_len
-contains the total length of the of the structure,
+contains the total length of the structure,
 which may exceed 16 bytes.
 The following address values for
 .Ar sa_family
@@ -149,7 +152,11 @@ are known to the system
 #define    AF_NS        6    /* Xerox NS protocols */
 #define    AF_CCITT     10   /* CCITT protocols, X.25 etc */
 #define    AF_HYLINK    15   /* NSC Hyperchannel */
+#define    AF_APPLETALK 16   /* AppleTalk */
 #define    AF_ISO       18   /* ISO protocols */
+#define    AF_IPX       23   /* Novell Internet Protocol */
+#define    AF_INET6     24   /* IPv6 */
+#define    AF_NATM      27   /* native ATM access */
 .Ed
 .Sh ROUTING
 .Tn UNIX
@@ -169,41 +176,43 @@ This facility is described in
 .Xr route 4 .
 .Sh INTERFACES
 Each network interface in a system corresponds to a
-path through which messages may be sent and received.  A network
-interface usually has a hardware device associated with it, though
-certain interfaces such as the loopback interface,
+path through which messages may be sent and received. 
+A network interface usually has a hardware device associated with it,
+though certain interfaces such as the loopback interface,
 .Xr lo 4 ,
 do not.
 .Pp
-The following 
-.Xr ioctl
+The following
+.Xr ioctl 2
 calls may be used to manipulate network interfaces.
 The
-.Xr ioctl
+.Xr ioctl 2
 is made on a socket (typically of type
 .Dv SOCK_DGRAM )
 in the desired domain.
-Most of the requests supported in earlier releases 
+Most of the requests supported in earlier releases
 take an
 .Ar ifreq
-structure as its parameter.  This structure has the form
+structure as its parameter.
+This structure has the form
 .Bd -literal
 struct	ifreq {
 #define    IFNAMSIZ    16
-    char    ifr_name[IFNAMSIZE];        /* if name, e.g. "en0" */
-    union {
-        struct    sockaddr ifru_addr;
-        struct    sockaddr ifru_dstaddr;
-        struct    sockaddr ifru_broadaddr;
-        short     ifru_flags;
-        int       ifru_metric;
-        caddr_t   ifru_data;
-    } ifr_ifru;
+	char    ifr_name[IFNAMSIZ];         /* if name, e.g. "en0" */
+	union {
+	        struct    sockaddr ifru_addr;
+	        struct    sockaddr ifru_dstaddr;
+	        struct    sockaddr ifru_broadaddr;
+	        short     ifru_flags;
+	        int       ifru_metric;
+	        caddr_t   ifru_data;
+	} ifr_ifru;
 #define ifr_addr      ifr_ifru.ifru_addr    /* address */
 #define ifr_dstaddr   ifr_ifru.ifru_dstaddr /* other end of p-to-p link */
 #define ifr_broadaddr ifr_ifru.ifru_broadaddr /* broadcast address */
 #define ifr_flags     ifr_ifru.ifru_flags   /* flags */
 #define ifr_metric    ifr_ifru.ifru_metric  /* metric */
+#define ifr_media     ifr_ifru.ifru_metric  /* media options (overload) */
 #define ifr_data      ifr_ifru.ifru_data    /* for use by interface */
 };
 .Ed
@@ -211,16 +220,16 @@ struct	ifreq {
 Calls which are now deprecated are:
 .Bl -tag -width SIOCGIFBRDADDR
 .It Dv SIOCSIFADDR
-Set interface address for protocol family.  Following the address
-assignment, the ``initialization'' routine for
-the interface is called.
+Set interface address for protocol family.
+Following the address assignment, the ``initialization'' routine for the
+interface is called.
 .It Dv SIOCSIFDSTADDR
 Set point to point address for protocol family and interface.
 .It Dv SIOCSIFBRDADDR
 Set broadcast address for protocol family and interface.
 .El
 .Pp
-.Xr Ioctl
+.Xr ioctl 2
 requests to obtain addresses and requests both to set and
 retrieve other data are still fully supported
 and use the
@@ -234,13 +243,23 @@ Get point to point address for protocol family and interface.
 .It Dv SIOCGIFBRDADDR
 Get broadcast address for protocol family and interface.
 .It Dv SIOCSIFFLAGS
-Set interface flags field.  If the interface is marked down,
-any processes currently routing packets through the interface
-are notified;
-some interfaces may be reset so that incoming packets are no longer received.
+Set interface flags field.
+If the interface is marked down, any processes currently routing packets
+through the interface are notified; some interfaces may be reset so that
+incoming packets are no longer received.
 When marked up again, the interface is reinitialized.
 .It Dv SIOCGIFFLAGS
 Get interface flags.
+.It Dv SIOCSIFMEDIA
+Set interface media.
+See
+.Xr ifmedia 4
+for possible values.
+.It Dv SIOCGIFMEDIA
+Get interface media.
+See
+.Xr ifmedia 4
+for interpreting this value.
 .It Dv SIOCSIFMETRIC
 Set interface routing metric.
 The metric is used only by user-level routers.
@@ -252,25 +271,25 @@ There are two requests that make use of a new structure:
 .Bl -tag -width SIOCGIFBRDADDR
 .It Dv SIOCAIFADDR
 An interface may have more than one address associated with it
-in some protocols.  This request provides a means to
-add additional addresses (or modify characteristics of the
-primary address if the default address for the address family
-is specified).  Rather than making separate calls to
-set destination or broadcast addresses, or network masks
-(now an integral feature of multiple protocols)
-a separate structure is used to specify all three facets simultaneously
-(see below).
+in some protocols.
+This request provides a means to add additional addresses (or modify
+characteristics of the primary address if the default address for the
+address family is specified).
+Rather than making separate calls to set destination or broadcast addresses,
+or network masks (now an integral feature of multiple protocols) a separate
+structure is used to specify all three facets simultaneously (see below).
 One would use a slightly tailored version of this struct specific
 to each family (replacing each sockaddr by one
 of the family-specific type).
 Where the sockaddr itself is larger than the
 default size, one needs to modify the
-.Xr ioctl
+.Xr ioctl 2
 identifier itself to include the total size, as described in
-.Xr ioctl .
+.Xr ioctl 2 .
 .It Dv SIOCDIFADDR
-This requests deletes the specified address from the list
-associated with an interface.  It also uses the
+This request deletes the specified address from the list
+associated with an interface.
+It also uses the
 .Ar if_aliasreq
 structure to allow for the possibility of protocols allowing
 multiple masks or destination addresses, and also adopts the
@@ -278,19 +297,36 @@ convention that specification of the default address means
 to delete the first address for the interface belonging to
 the address family in which the original socket was opened.
 .It Dv SIOCGIFCONF
-Get interface configuration list.  This request takes an
+Get interface configuration list.
+This request takes an
 .Ar ifconf
-structure (see below) as a value-result parameter.  The 
+structure (see below) as a value-result parameter.
+The
 .Ar ifc_len
 field should be initially set to the size of the buffer
-pointed to by 
+pointed to by
 .Ar ifc_buf .
 On return it will contain the length, in bytes, of the
 configuration list.
+Alternately, if the
+.Ar ifc_len
+passed in is set to 0,
+.Dv SIOCGIFCONF
+will set
+.Ar ifc_len
+to the size that
+.Ar ifc_buf
+needs to be to fit the entire configuration list and not
+fill in the other parameters.
+This is useful for determining the exact size that
+.Ar ifc_buf
+needs to be in advance.
+Note, however, that this is an extension
+that not all operating systems support.
 .El
 .Bd -literal
 /*
-* Structure used in SIOCAIFCONF request.
+* Structure used in SIOCAIFADDR request.
 */
 struct ifaliasreq {
         char    ifra_name[IFNAMSIZ];   /* if name, e.g. "en0" */
@@ -308,18 +344,20 @@ struct ifaliasreq {
 * must know all networks accessible).
 */
 struct ifconf {
-    int   ifc_len;		/* size of associated buffer */
-    union {
-        caddr_t    ifcu_buf;
-        struct     ifreq *ifcu_req;
-    } ifc_ifcu;
+	int   ifc_len;		/* size of associated buffer */
+	union {
+		caddr_t    ifcu_buf;
+	        struct     ifreq *ifcu_req;
+	} ifc_ifcu;
 #define ifc_buf ifc_ifcu.ifcu_buf /* buffer address */
 #define ifc_req ifc_ifcu.ifcu_req /* array of structures returned */
 };
 .Ed
 .Sh SEE ALSO
-.Xr socket 2 ,
 .Xr ioctl 2 ,
+.Xr socket 2 ,
+.Xr bridge 4 ,
+.Xr ifmedia 4 ,
 .Xr intro 4 ,
 .Xr config 8 ,
 .Xr routed 8

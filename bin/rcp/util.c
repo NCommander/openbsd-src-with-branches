@@ -1,3 +1,4 @@
+/*	$OpenBSD: util.c,v 1.9 2001/07/09 07:04:27 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.9 2001/07/09 07:04:27 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,9 +62,6 @@ char *
 colon(cp)
 	char *cp;
 {
-	if (*cp == ':')		/* Leading colon is part of file name. */
-		return (0);
-
 	for (; *cp; ++cp) {
 		if (*cp == ':')
 			return (cp);
@@ -115,17 +113,18 @@ susystem(s, userid)
 	char *s;
 {
 	sig_t istat, qstat;
-	int status, w;
+	int status;
 	pid_t pid;
 
 	pid = vfork();
 	switch (pid) {
 	case -1:
 		return (127);
-	
+
 	case 0:
+		(void)seteuid(userid);
 		(void)setuid(userid);
-		execl(_PATH_BSHELL, "sh", "-c", s, NULL);
+		execl(_PATH_BSHELL, "sh", "-c", s, (char *)NULL);
 		_exit(127);
 	}
 	istat = signal(SIGINT, SIG_IGN);
@@ -144,6 +143,7 @@ allocbuf(bp, fd, blksize)
 {
 	struct stat stb;
 	size_t size;
+	char *p;
 
 	if (fstat(fd, &stb) < 0) {
 		run_err("fstat: %s", strerror(errno));
@@ -154,11 +154,16 @@ allocbuf(bp, fd, blksize)
 		size = blksize;
 	if (bp->cnt >= size)
 		return (bp);
-	if ((bp->buf = realloc(bp->buf, size)) == NULL) {
+	if ((p = realloc(bp->buf, size)) == NULL) {
+		if (bp->buf)
+			free(bp->buf);
+		bp->buf = NULL;
 		bp->cnt = 0;
 		run_err("%s", strerror(errno));
 		return (0);
 	}
+	memset(p, 0, size);
+	bp->buf = p;
 	bp->cnt = size;
 	return (bp);
 }
@@ -167,7 +172,13 @@ void
 lostconn(signo)
 	int signo;
 {
-	if (!iamremote)
-		warnx("lost connection");
-	exit(1);
+	extern char *__progname;
+	char buf[1024];
+
+	if (!iamremote) {
+		strlcpy(buf, __progname, sizeof buf);
+		strlcat(buf, ": lost connection\n", sizeof buf);
+		write(STDERR_FILENO, buf, strlen(buf));
+	}
+	_exit(1);
 }

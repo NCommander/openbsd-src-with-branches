@@ -31,10 +31,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)setjmp.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: setjmp.S,v 1.1 1995/04/17 12:23:46 ragge Exp $"
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: setjmp.S,v 1.3 2001/03/18 07:29:04 bjc Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * C library -- setjmp, longjmp
@@ -47,17 +47,17 @@
  * and a struct sigcontext, see <signal.h>
  */
 
-#include "DEFS.h"
+#include "SYS.h"
 
 ENTRY(setjmp, R6)
 	movl	4(ap),r6		# construct sigcontext
 	subl2	$12,sp			# space for current struct sigstack
 	pushl	sp			# get current values
 	pushl	$0			# no new values
-	calls	$4,_sigaltstack		# pop args plus signal stack value
+	calls	$4,SYSNAME(sigaltstack)# pop args plus signal stack value
 	movl	(sp)+,(r6)+		# save onsigstack status of caller
 	pushl	$0
-	calls	$1,_sigblock		# get signal mask
+	calls	$1,SYSNAME(sigblock)	# get signal mask
 	movl	r0,(r6)+		# save signal mask of caller
 	movl	(ap),r0
 	moval	4(ap)[r0],(r6)+		# save sp of caller
@@ -69,7 +69,7 @@ ENTRY(setjmp, R6)
 	clrl	r0
 	ret
 
-ENTRY(longjmp, 0)
+ENTRY(longjmp, R2)
 	movl	8(ap),r0		# return(v)
 	movl	4(ap),r1		# fetch buffer
 	tstl	12(r1)
@@ -90,7 +90,7 @@ loop:
 
 done:
 	pushl	r1			# pointer to sigcontext
-	calls	$1,_sigreturn		# restore previous context
+	calls	$1,SYSNAME(sigreturn)	# restore previous context
 					# we should never return
 botch:
 	calls	$0,_longjmperror

@@ -1,3 +1,4 @@
+/*	$OpenBSD: checknr.c,v 1.6 2001/08/12 12:03:03 heko Exp $	*/
 /*	$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)checknr.c	8.1 (Berkeley) 6/6/93";
 #else 
-static char rcsid[] = "$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $";
+static char rcsid[] = "$OpenBSD: checknr.c,v 1.6 2001/08/12 12:03:03 heko Exp $";
 #endif
 #endif /* not lint */
 
@@ -73,6 +74,19 @@ struct stkstr {
 } stk[MAXSTK];
 int stktop;
 
+void	usage(void);
+void	addmac(char *);
+void	process(FILE *);
+void	pe(int);
+int	eq(char *, char *);
+void	complain(int);
+void	prop(int);
+void	chkcmd(char *, char *);
+void	addcmd(char *);
+void	nomatch(char *);
+void	checkknown(char *);
+int	binsrch(char *);
+
 /*
  * The kinds of opening and closing brackets.
  */
@@ -82,53 +96,53 @@ struct brstr {
 } br[MAXBR] = {
 	/* A few bare bones troff commands */
 #define SZ	0
-	"sz",	"sz",	/* also \s */
+	{ "sz",	"sz" },	/* also \s */
 #define FT	1
-	"ft",	"ft",	/* also \f */
+	{ "ft",	"ft" },	/* also \f */
 	/* the -mm package */
-	"AL",	"LE",
-	"AS",	"AE",
-	"BL",	"LE",
-	"BS",	"BE",
-	"DF",	"DE",
-	"DL",	"LE",
-	"DS",	"DE",
-	"FS",	"FE",
-	"ML",	"LE",
-	"NS",	"NE",
-	"RL",	"LE",
-	"VL",	"LE",
+	{ "AL",	"LE" },
+	{ "AS",	"AE" },
+	{ "BL",	"LE" },
+	{ "BS",	"BE" },
+	{ "DF",	"DE" },
+	{ "DL",	"LE" },
+	{ "DS",	"DE" },
+	{ "FS",	"FE" },
+	{ "ML",	"LE" },
+	{ "NS",	"NE" },
+	{ "RL",	"LE" },
+	{ "VL",	"LE" },
 	/* the -ms package */
-	"AB",	"AE",
-	"BD",	"DE",
-	"CD",	"DE",
-	"DS",	"DE",
-	"FS",	"FE",
-	"ID",	"DE",
-	"KF",	"KE",
-	"KS",	"KE",
-	"LD",	"DE",
-	"LG",	"NL",
-	"QS",	"QE",
-	"RS",	"RE",
-	"SM",	"NL",
-	"XA",	"XE",
-	"XS",	"XE",
+	{ "AB",	"AE" },
+	{ "BD",	"DE" },
+	{ "CD",	"DE" },
+	{ "DS",	"DE" },
+	{ "FS",	"FE" },
+	{ "ID",	"DE" },
+	{ "KF",	"KE" },
+	{ "KS",	"KE" },
+	{ "LD",	"DE" },
+	{ "LG",	"NL" },
+	{ "QS",	"QE" },
+	{ "RS",	"RE" },
+	{ "SM",	"NL" },
+	{ "XA",	"XE" },
+	{ "XS",	"XE" },
 	/* The -me package */
-	"(b",	")b",
-	"(c",	")c",
-	"(d",	")d",
-	"(f",	")f",
-	"(l",	")l",
-	"(q",	")q",
-	"(x",	")x",
-	"(z",	")z",
+	{ "(b",	")b" },
+	{ "(c",	")c" },
+	{ "(d",	")d" },
+	{ "(f",	")f" },
+	{ "(l",	")l" },
+	{ "(q",	")q" },
+	{ "(x",	")x" },
+	{ "(z",	")z" },
 	/* Things needed by preprocessors */
-	"EQ",	"EN",
-	"TS",	"TE",
+	{ "EQ",	"EN" },
+	{ "TS",	"TE" },
 	/* Refer */
-	"[",	"]",
-	0,	0
+	{ "[",	"]" },
+	{ 0,	 },
 };
 
 /*
@@ -180,6 +194,7 @@ int	slot;		/* slot in knowncmds found by binsrch */
 
 char	*malloc();
 
+int
 main(argc, argv)
 int argc;
 char **argv;
@@ -260,16 +275,20 @@ char **argv;
 	exit(0);
 }
 
+void
 usage()
 {
-	printf("Usage: checknr -s -f -a.xx.yy.xx.yy... -c.xx.xx.xx...\n");
+	(void)fprintf(stderr,
+	    "usage: checknr [-fs] [-a.x1.y1.x2.y2. ... .xn.yn] "
+	    "[-c.x1.x2.x3. ... .xn] [file]\n");
 	exit(1);
 }
 
+void
 process(f)
 FILE *f;
 {
-	register int i, n;
+	int i, n;
 	char mac[5];	/* The current macro or nroff command */
 	int pl;
 
@@ -362,6 +381,7 @@ FILE *f;
 	}
 }
 
+void
 complain(i)
 {
 	pe(stk[i].lno);
@@ -370,7 +390,9 @@ complain(i)
 	printf("\n");
 }
 
+void
 prop(i)
+	int i;
 {
 	if (stk[i].pl == 0)
 		printf(".%s", br[stk[i].opno].opbr);
@@ -387,11 +409,12 @@ prop(i)
 	}
 }
 
+void
 chkcmd(line, mac)
 char *line;
 char *mac;
 {
-	register int i, n;
+	int i;
 
 	/*
 	 * Check to see if it matches top of stack.
@@ -424,10 +447,11 @@ char *mac;
 	}
 }
 
+void
 nomatch(mac)
 char *mac;
 {
-	register int i, j;
+	int i, j;
 
 	/*
 	 * Look for a match further down on stack
@@ -469,6 +493,7 @@ char *mac;
 }
 
 /* eq: are two strings equal? */
+int
 eq(s1, s2)
 char *s1, *s2;
 {
@@ -476,6 +501,7 @@ char *s1, *s2;
 }
 
 /* print the first part of an error message, given the line number */
+void
 pe(lineno)
 int lineno;
 {
@@ -484,6 +510,7 @@ int lineno;
 	printf("%d: ", lineno);
 }
 
+void
 checkknown(mac)
 char *mac;
 {
@@ -502,6 +529,7 @@ char *mac;
 /*
  * We have a .de xx line in "line".  Add xx to the list of known commands.
  */
+void
 addcmd(line)
 char *line;
 {
@@ -533,15 +561,16 @@ char *line;
  * me someday?)  Anyway, I claim that .de is fairly rare in user
  * nroff programs, and the register loop below is pretty fast.
  */
+void
 addmac(mac)
 char *mac;
 {
-	register char **src, **dest, **loc;
+	char **src, **dest, **loc;
 
 	if (binsrch(mac) >= 0){	/* it's OK to redefine something */
 #ifdef DEBUG
 		printf("binsrch(%s) -> already in table\n", mac);
-#endif DEBUG
+#endif /* DEBUG */
 		return;
 	}
 	/* binsrch sets slot as a side effect */
@@ -565,13 +594,14 @@ printf("after: %s %s %s %s %s, %d cmds\n", knowncmds[slot-2], knowncmds[slot-1],
  * Do a binary search in knowncmds for mac.
  * If found, return the index.  If not, return -1.
  */
+int
 binsrch(mac)
 char *mac;
 {
-	register char *p;	/* pointer to current cmd in list */
-	register int d;		/* difference if any */
-	register int mid;	/* mid point in binary search */
-	register int top, bot;	/* boundaries of bin search, inclusive */
+	char *p;		/* pointer to current cmd in list */
+	int d;			/* difference if any */
+	int mid;		/* mid point in binary search */
+	int top, bot;		/* boundaries of bin search, inclusive */
 
 	top = ncmds-1;
 	bot = 0;

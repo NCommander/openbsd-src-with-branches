@@ -1,15 +1,21 @@
-#	$NetBSD: Makefile,v 1.3 1995/07/25 22:20:13 gwr Exp $
+#	$OpenBSD: Makefile,v 1.7 2000/09/03 18:41:22 espie Exp $
+
+.include <bsd.own.mk>
 
 PROG=	rpc.pcnfsd
 MAN=	pcnfsd.8
 MLINKS= pcnfsd.8 rpc.pcnfsd.8
-CFLAGS += -DUSER_CACHE -DWTMP -DUSE_YP -I${.OBJDIR}
+CFLAGS += -I${.OBJDIR}
+
+.if (${YP:L} == "yes")
+CFLAGS+=-DUSE_YP
+.endif
 
 SRCS=	pcnfsd_v1.c pcnfsd_v2.c pcnfsd_misc.c \
 	pcnfsd_cache.c pcnfsd_print.c pcnfsd_svc.c pcnfsd_xdr.c
 
 DPADD=	${LIBRPCSVC}
-LDADD=	-lrpcsvc -lcrypt
+LDADD=	-lrpcsvc
 
 pcnfsd_svc.c: pcnfsd.x
 	rpcgen -s udp -s tcp -I ${.CURDIR}/pcnfsd.x -o $@

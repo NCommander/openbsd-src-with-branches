@@ -1,3 +1,5 @@
+/*	$OpenBSD: lpq.c,v 1.10 2001/12/06 03:12:31 ericj Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,20 +35,25 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)lpq.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static const char sccsid[] = "@(#)lpq.c	8.3 (Berkeley) 5/10/95";
+#else
+static const char rcsid[] = "$OpenBSD: lpq.c,v 1.10 2001/12/06 03:12:31 ericj Exp $";
+#endif
 #endif /* not lint */
 
 /*
  * Spool Queue examination program
  *
- * lpq [-l] [-Pprinter] [user...] [job...]
+ * lpq [-a] [-l] [-Pprinter] [user...] [job...]
  *
+ * -a show all non-null queues on the local machine
  * -l long output
  * -P used to identify printer as per lpr/lprm
  */
@@ -61,6 +68,7 @@ static char sccsid[] = "@(#)lpq.c	8.1 (Berkeley) 6/6/93";
 #include <ctype.h>
 #include "lp.h"
 #include "lp.local.h"
+#include "pathnames.h"
 
 int	 requ[MAXREQUESTS];	/* job number of spool entries */
 int	 requests;		/* # of spool requests */
@@ -69,30 +77,37 @@ int	 users;			/* # of users in user array */
 
 uid_t	uid, euid;
 
-void usage __P((void));
+volatile sig_atomic_t gotintr;
+
+static int ckqueue(char *);
+void usage(void);
 
 int
 main(argc, argv)
-	register int	argc;
-	register char	**argv;
+	int	argc;
+	char	**argv;
 {
 	extern char	*optarg;
 	extern int	optind;
-	int	ch, lflag;		/* long output option */
+	int	ch, aflag, lflag;
+	char	*buf, *cp;
 
 	euid = geteuid();
 	uid = getuid();
 	seteuid(uid);
-	name = *argv;
+
 	if (gethostname(host, sizeof(host))) {
 		perror("lpq: gethostname");
 		exit(1);
 	}
 	openlog("lpd", 0, LOG_LPR);
 
-	lflag = 0;
-	while ((ch = getopt(argc, argv, "lP:")) != EOF)
+	aflag = lflag = 0;
+	while ((ch = getopt(argc, argv, "alP:")) != -1)
 		switch((char)ch) {
+		case 'a':
+			++aflag;
+			break;
 		case 'l':			/* long output */
 			++lflag;
 			break;
@@ -104,8 +119,13 @@ main(argc, argv)
 			usage();
 		}
 
-	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
+	if (!aflag && printer == NULL) {
+		char *p;
+
 		printer = DEFLP;
+		if ((p = getenv("PRINTER")) != NULL)
+			printer = p;
+	}
 
 	for (argc -= optind, argv += optind; argc; --argc, ++argv)
 		if (isdigit(argv[0][0])) {
@@ -119,13 +139,53 @@ main(argc, argv)
 			user[users++] = *argv;
 		}
 
-	displayq(lflag);
+	if (aflag) {
+		while (cgetnext(&buf, printcapdb) > 0) {
+			if (ckqueue(buf) <= 0) {
+				free(buf);
+				continue;	/* no jobs */
+			}
+			for (cp = buf; *cp; cp++)
+				if (*cp == '|' || *cp == ':') {
+					*cp = '\0';
+					break;
+				}
+			printer = buf;
+			printf("%s:\n", printer);
+			displayq(lflag);
+			free(buf);
+			printf("\n");
+		}
+	} else
+		displayq(lflag);
 	exit(0);
+}
+
+static int
+ckqueue(cap)
+	char *cap;
+{
+	struct dirent *d;
+	DIR *dirp;
+	char *spooldir;
+
+	if (cgetstr(cap, "sd", &spooldir) == -1)
+		spooldir = _PATH_DEFSPOOL;
+	if ((dirp = opendir(spooldir)) == NULL)
+		return (-1);
+	while ((d = readdir(dirp)) != NULL) {
+		if (d->d_name[0] != 'c' || d->d_name[1] != 'f')
+			continue;	/* daemon control files only */
+		closedir(dirp);
+		return (1);		/* found something */
+	}
+	closedir(dirp);
+	return (0);
 }
 
 void
 usage()
 {
-	puts("usage: lpq [-l] [-Pprinter] [user ...] [job ...]");
+	puts("usage: lpq [-a] [-l] [-Pprinter] [user ...] [job ...]");
 	exit(1);
 }

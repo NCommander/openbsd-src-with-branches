@@ -1,5 +1,3 @@
-/*	$NetBSD: scandir.c,v 1.6 1995/02/25 08:51:42 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)scandir.c	8.3 (Berkeley) 1/2/94";
-#else
-static char rcsid[] = "$NetBSD: scandir.c,v 1.6 1995/02/25 08:51:42 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: scandir.c,v 1.4 1998/08/14 21:39:32 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -69,8 +63,8 @@ int
 scandir(dirname, namelist, select, dcomp)
 	const char *dirname;
 	struct dirent ***namelist;
-	int (*select) __P((struct dirent *));
-	int (*dcomp) __P((const void *, const void *));
+	int (*select)(struct dirent *);
+	int (*dcomp)(const void *, const void *);
 {
 	register struct dirent *d, *p, **names;
 	register size_t nitems;
@@ -103,6 +97,7 @@ scandir(dirname, namelist, select, dcomp)
 		if (p == NULL)
 			return(-1);
 		p->d_ino = d->d_ino;
+		p->d_type = d->d_type;
 		p->d_reclen = d->d_reclen;
 		p->d_namlen = d->d_namlen;
 		bcopy(d->d_name, p->d_name, p->d_namlen + 1);
@@ -111,13 +106,19 @@ scandir(dirname, namelist, select, dcomp)
 		 * realloc the maximum size.
 		 */
 		if (++nitems >= arraysz) {
+			register struct dirent **nnames;
+			
 			if (fstat(dirp->dd_fd, &stb) < 0)
 				return(-1);	/* just might have grown */
 			arraysz = stb.st_size / 12;
-			names = (struct dirent **)realloc((char *)names,
+			nnames = (struct dirent **)realloc((char *)names,
 				arraysz * sizeof(struct dirent *));
-			if (names == NULL)
+			if (nnames == NULL) {
+				if (names)
+					free(names);
 				return(-1);
+			}
+			names = nnames;
 		}
 		names[nitems-1] = p;
 	}

@@ -31,17 +31,17 @@
  * SUCH DAMAGE.
  */
 
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)sigprocmask.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: sigprocmask.S,v 1.1 1995/04/17 12:24:08 ragge Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sigprocmask.S,v 1.3 1998/05/17 10:06:36 niklas Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
 err:
 	jmp	cerror
 
-ENTRY(sigprocmask)
+SYSENTRY(sigprocmask)
 	tstl	8(ap)			# check new sigset pointer
 	bneq	1f			# if not null, indirect
 /*	movl	$0,8(ap)		# null mask pointer: block empty set */

@@ -3,14 +3,18 @@
 ; boot file for secondary name server
 ; Note that there should be one primary entry for each SOA record.
 
-sortlist 128.3.0.0
-
-directory	/etc/namedb
+; NOTE: if you are not chroot'ing named, change directory to /var/named/namedb
+;       OpenBSD chroot's named by default
+;directory	/var/named/namedb
+directory	/namedb
 
 ; type    domain		source host/file		backup file
 
 cache     .							root.cache
 primary   0.0.127.IN-ADDR.ARPA	localhost.rev
+primary   1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.int localhost.v6.rev
+primary   1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa localhost.v6.rev
+primary   localhost		localhost.zone
 
 ; example secondary server config:
 ; secondary Berkeley.EDU	128.32.130.11 128.32.133.1	ucbhosts.bak

@@ -1,8 +1,12 @@
-/*	$NetBSD: screenblank.c,v 1.1 1995/07/12 04:57:51 thorpej Exp $	*/
+/*	$OpenBSD: screenblank.c,v 1.11 2001/12/09 14:58:21 miod Exp $	*/
+/*	$NetBSD: screenblank.c,v 1.2 1996/02/28 01:18:34 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,22 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -53,6 +58,7 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <syslog.h>
 
 #include <machine/fbio.h>
 
@@ -69,12 +75,13 @@ LIST_HEAD(ds_list, dev_stat) ds_list;
 
 extern	char *__progname;
 
-static	void add_dev __P((char *, int));
-static	void change_state __P((int));
-static	void cvt_arg __P((char *, struct timeval *));
-static	void logpid __P((void));
-static	void sighandler __P((int, int, struct sigcontext *));
-static	void usage __P((void));
+void add_dev(char *, int);
+void change_state(int, int);
+void cvt_arg(char *, struct timeval *);
+void logpid(void);
+void sighandler(int);
+void usage(void);
+void cleanup(int);
 
 int
 main(argc, argv)
@@ -146,21 +153,23 @@ main(argc, argv)
 
 	/* Ensure that the framebuffer is on. */
 	state = FBVIDEO_ON;
-	change_state(state);
+	change_state(state, 0);
 	tvp = &timo_on;
 
 	/*
 	 * Make sure the framebuffer gets turned back on when we're
 	 * killed.
 	 */
+	memset(&sa, 0, sizeof sa);
 	sa.sa_handler = sighandler;
-	sa.sa_mask = 0;
+	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_NOCLDSTOP;
 	if (sigaction(SIGINT, &sa, NULL) || sigaction(SIGTERM, &sa, NULL) ||
 	    sigaction(SIGHUP, &sa, NULL))
 		err(1, "sigaction");
 
 	/* Detach. */
+	openlog(__progname, LOG_PID, LOG_DAEMON);
 	if (daemon(0, 0))
 		err(1, "daemon");
 	logpid();
@@ -173,8 +182,12 @@ main(argc, argv)
 			/* Don't check framebuffers. */
 			if (dsp->ds_isfb)
 				continue;
-			if (stat(dsp->ds_path, &st) < 0)
-				err(1, "stat: %s", dsp->ds_path);
+			if (stat(dsp->ds_path, &st) < 0) {
+				syslog(LOG_ERR, "stat(%s): %m",
+				    dsp->ds_path);
+				cleanup(0);
+				exit(1);
+			}
 			if (st.st_atime > dsp->ds_atime) {
 				change = 1;
 				dsp->ds_atime = st.st_atime;
@@ -189,7 +202,7 @@ main(argc, argv)
 		case FBVIDEO_ON:
 			if (!change) {
 				state = FBVIDEO_OFF;
-				change_state(state);
+				change_state(state, 0);
 				tvp = &timo_off;
 			}
 			break;
@@ -197,19 +210,22 @@ main(argc, argv)
 		case FBVIDEO_OFF:
 			if (change) {
 				state = FBVIDEO_ON;
-				change_state(state);
+				change_state(state, 0);
 				tvp = &timo_on;
 			}
 			break;
 		}
 
-		if (select(0, NULL, NULL, NULL, tvp) < 0)
-			err(1, "select");
+		if (select(0, NULL, NULL, NULL, tvp) < 0) {
+			syslog(LOG_ERR, "select: %m");
+			cleanup(0);
+			exit(1);
+		}
 	}
 	/* NOTREACHED */
 }
 
-static void
+void
 add_dev(path, isfb)
 	char *path;
 	int isfb;
@@ -236,21 +252,29 @@ add_dev(path, isfb)
 }
 
 /* ARGSUSED */
-static void
-sighandler(sig, code, context)
-	int sig, code;
-	struct sigcontext *context;
+void
+sighandler(sig)
+	int sig;
+{
+
+	cleanup(1);
+	_exit(0);
+}
+
+void
+cleanup(sig)
+	int sig;
 {
 
 	/* Kill the pid file and re-enable the framebuffer before exit. */
-	(void)unlink(_PATH_SCREENBLANKPID);
-	change_state(FBVIDEO_ON);
-	exit(0);
+	unlink(_PATH_SCREENBLANKPID);
+	change_state(FBVIDEO_ON, sig);
 }
 
-static void
-change_state(state)
+void
+change_state(state, sig)
 	int state;
+	int sig;
 {
 	struct dev_stat *dsp;
 	int fd;
@@ -260,16 +284,28 @@ change_state(state)
 		if (dsp->ds_isfb == 0)
 			continue;
 		if ((fd = open(dsp->ds_path, O_RDWR, 0)) < 0) {
-			warn("open: %s", dsp->ds_path);
+			if (errno == ENXIO) {
+				if (sig)
+					_exit(1);
+				else {
+					syslog(LOG_ERR, "open(%s): %m",
+					    dsp->ds_path);
+					exit(1);
+				}
+			}
+			if (!sig)
+				syslog(LOG_WARNING, "open: %s", dsp->ds_path);
 			continue;
 		}
-		if (ioctl(fd, FBIOSVIDEO, &state) < 0)
-			warn("ioctl: %s", dsp->ds_path);
+		if (ioctl(fd, FBIOSVIDEO, &state) < 0) {
+			if (!sig)
+				syslog(LOG_WARNING, "ioctl: %s", dsp->ds_path);
+		}
 		(void)close(fd);
 	}
 }
 
-static void
+void
 cvt_arg(arg, tvp)
 	char *arg;
 	struct timeval *tvp;
@@ -300,7 +336,7 @@ cvt_arg(arg, tvp)
 	tvp->tv_usec = (long)((seconds - tvp->tv_sec) * 1000000);
 }
 
-static void
+void
 logpid()
 {
 	FILE *fp;
@@ -311,7 +347,7 @@ logpid()
 	}
 }
 
-static void
+void
 usage()
 {
 

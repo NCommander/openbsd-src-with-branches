@@ -1,8 +1,12 @@
-/*	$NetBSD: ccdconfig.c,v 1.2 1995/08/23 01:06:59 thorpej Exp $	*/
+/*	$OpenBSD: ccdconfig.c,v 1.16 2001/07/07 18:26:10 deraadt Exp $	*/
+/*	$NetBSD: ccdconfig.c,v 1.6 1996/05/16 07:11:18 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,22 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <sys/param.h>
@@ -50,6 +55,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <util.h>
 
 #include <dev/ccdvar.h>
 
@@ -70,6 +76,8 @@ struct	flagval {
 } flagvaltab[] = {
 	{ "CCDF_SWAP",		CCDF_SWAP },
 	{ "CCDF_UNIFORM",	CCDF_UNIFORM },
+	{ "CCDF_MIRROR",	CCDF_MIRROR },
+	{ "CCDF_OLD",		CCDF_OLD },
 	{ NULL,			0 },
 };
 
@@ -87,18 +95,15 @@ static	struct nlist nl[] = {
 #define CCD_UNCONFIGALL		3	/* unconfigure all devices */
 #define CCD_DUMP		4	/* dump a ccd's configuration */
 
-static	int checkdev __P((char *));
-static	int do_io __P((char *, u_long, struct ccd_ioctl *));
-static	int do_single __P((int, char **, int));
-static	int do_all __P((int));
-static	int dump_ccd __P((int, char **));
-static	int getmaxpartitions __P((void));
-static	int getrawpartition __P((void));
-static	int flags_to_val __P((char *));
-static	int pathtodevt __P((char *, dev_t *));
-static	void print_ccd_info __P((struct ccd_softc *, kvm_t *));
-static	char *resolve_ccdname __P((char *));
-static	void usage __P((void));
+static	int checkdev(char *);
+static	int do_io(char *, u_long, struct ccd_ioctl *);
+static	int do_single(int, char **, int);
+static	int do_all(int);
+static	int dump_ccd(int, char **);
+static	int flags_to_val(char *);
+static	void print_ccd_info(struct ccd_softc *, kvm_t *);
+static	char *resolve_ccdname(char *);
+static	void usage(void);
 
 int
 main(argc, argv)
@@ -107,7 +112,7 @@ main(argc, argv)
 {
 	int ch, options = 0, action = CCD_CONFIG;
 
-	while ((ch = getopt(argc, argv, "cCf:guUv")) != -1) {
+	while ((ch = getopt(argc, argv, "cCf:gM:N:uUv")) != -1) {
 		switch (ch) {
 		case 'c':
 			action = CCD_CONFIG;
@@ -132,7 +137,7 @@ main(argc, argv)
 			break;
 
 		case 'N':
-			core = optarg;
+			kernel = optarg;
 			break;
 
 		case 'u':
@@ -159,22 +164,34 @@ main(argc, argv)
 	if (options > 1)
 		usage();
 
+	/*
+	 * Discard setgid privileges if not the running kernel so that bad
+	 * guys can't print interesting stuff from kernel memory.
+	 */
+	if (core != NULL || kernel != NULL || action != CCD_DUMP) {
+		setegid(getgid());
+		setgid(getgid());
+	}
+
 	switch (action) {
-		case CCD_CONFIG:
-		case CCD_UNCONFIG:
-			exit(do_single(argc, argv, action));
-			/* NOTREACHED */
+	case CCD_CONFIG:
+	case CCD_UNCONFIG:
+		setegid(getgid());
+		setgid(getgid());
+		return (do_single(argc, argv, action));
 
-		case CCD_CONFIGALL:
-		case CCD_UNCONFIGALL:
-			exit(do_all(action));
-			/* NOTREACHED */
+	case CCD_CONFIGALL:
+	case CCD_UNCONFIGALL:
+		setegid(getgid());
+		setgid(getgid());
+		return (do_all(action));
 
-		case CCD_DUMP:
-			exit(dump_ccd(argc, argv));
-			/* NOTREACHED */
+	case CCD_DUMP:
+		return (dump_ccd(argc, argv));
 	}
 	/* NOTREACHED */
+
+	return (0);
 }
 
 static int
@@ -185,9 +202,9 @@ do_single(argc, argv, action)
 {
 	struct ccd_ioctl ccio;
 	char *ccd, *cp, *cp2, **disks;
-	int noflags = 0, i, ileave, flags, j, error;
+	int noflags = 0, i, ileave, flags = 0, j;
 
-	bzero(&ccio, sizeof(ccio));
+	memset(&ccio, 0, sizeof(ccio));
 
 	/*
 	 * If unconfiguring, all arguments are treated as ccds.
@@ -210,7 +227,7 @@ do_single(argc, argv, action)
 	}
 
 	/* Make sure there are enough arguments. */
-	if (argc < 4)
+	if (argc < 4) {
 		if (argc == 3) {
 			/* Assume that no flags are specified. */
 			noflags = 1;
@@ -221,6 +238,7 @@ do_single(argc, argv, action)
 			} else
 				usage();
 		}
+	}
 
 	/* First argument is the ccd to configure. */
 	cp = *argv++; --argc;
@@ -304,12 +322,18 @@ do_all(action)
 	FILE *f;
 	char line[_POSIX2_LINE_MAX];
 	char *cp, **argv;
-	int argc, rval;
+	int argc, rval = 0;
+	gid_t egid;
+	char **nargv;
 
+	egid = getegid();
+	setegid(getgid());
 	if ((f = fopen(ccdconf, "r")) == NULL) {
+		setegid(egid);
 		warn("fopen: %s", ccdconf);
 		return (1);
 	}
+	setegid(egid);
 
 	while (fgets(line, sizeof(line), f) != NULL) {
 		argc = 0;
@@ -324,11 +348,12 @@ do_all(action)
 		for (cp = line; (cp = strtok(cp, " \t")) != NULL; cp = NULL) {
 			if (*cp == '#')
 				break;
-			if ((argv = realloc(argv,
+			if ((nargv = realloc(argv,
 			    sizeof(char *) * ++argc)) == NULL) {
 				warnx("no memory to configure ccds");
 				return (1);
 			}
+			argv = nargv;
 			argv[argc - 1] = cp;
 			/*
 			 * If our action is to unconfigure all, then pass
@@ -377,7 +402,6 @@ pathtounit(path, unitp)
 	int *unitp;
 {
 	struct stat st;
-	dev_t dev;
 	int maxpartitions;
 
 	if (stat(path, &st) != 0)
@@ -398,7 +422,7 @@ static char *
 resolve_ccdname(name)
 	char *name;
 {
-	char c, *cp, *path;
+	char c, *path;
 	size_t len, newlen;
 	int rawpart;
 
@@ -413,7 +437,7 @@ resolve_ccdname(name)
 	newlen = len + 8;
 	if ((path = malloc(newlen)) == NULL)
 		return (NULL);
-	bzero(path, newlen);
+	memset(path, 0, newlen);
 
 	if (isdigit(c)) {
 		if ((rawpart = getrawpartition()) < 0) {
@@ -463,8 +487,8 @@ do_io(path, cmd, cciop)
 
 #define KVM_ABORT(kd, str) {						\
 	(void)kvm_close((kd));						\
-	warnx((str));							\
-	warnx(kvm_geterr((kd)));					\
+	warnx("%s", (str));						\
+	warnx("%s", kvm_geterr((kd)));					\
 	return (1);							\
 }
 
@@ -479,13 +503,16 @@ dump_ccd(argc, argv)
 	int i, error, numccd, numconfiged = 0;
 	kvm_t *kd;
 
-	bzero(errbuf, sizeof(errbuf));
+	memset(errbuf, 0, sizeof(errbuf));
 
 	if ((kd = kvm_openfiles(kernel, core, NULL, O_RDONLY,
 	    errbuf)) == NULL) {
 		warnx("can't open kvm: %s", errbuf);
 		return (1);
 	}
+
+	setegid(getgid());
+	setgid(getgid());
 
 	if (kvm_nlist(kd, nl))
 		KVM_ABORT(kd, "ccd-related symbols not available");
@@ -506,7 +533,7 @@ dump_ccd(argc, argv)
 		warnx("no memory for configuration data");
 		goto bad;
 	}
-	bzero(cs, readsize);
+	memset(cs, 0, readsize);
 
 	/*
 	 * Read the ccd configuration data from the kernel and dump
@@ -586,7 +613,7 @@ print_ccd_info(cs, kd)
 		    cs->sc_unit);
 		return;
 	}
-	bzero(cip, readsize);
+	memset(cip, 0, readsize);
 
 	/* Dump out softc information. */
 	printf("ccd%d\t\t%d\t%d\t", cs->sc_unit, cs->sc_ileave,
@@ -598,7 +625,7 @@ print_ccd_info(cs, kd)
 	    readsize) != readsize) {
 		printf("\n");
 		warnx("can't read component info");
-		warnx(kvm_geterr(kd));
+		warnx("%s", kvm_geterr(kd));
 		goto done;
 	}
 
@@ -608,7 +635,7 @@ print_ccd_info(cs, kd)
 		    cip[i].ci_pathlen) != cip[i].ci_pathlen) {
 			printf("\n");
 			warnx("can't read component pathname");
-			warnx(kvm_geterr(kd));
+			warnx("%s", kvm_geterr(kd));
 			goto done;
 		}
 		printf((i + 1 < cs->sc_nccdisks) ? "%s " : "%s\n", path);
@@ -617,36 +644,6 @@ print_ccd_info(cs, kd)
 
  done:
 	free(cip);
-}
-
-static int
-getmaxpartitions()
-{
-	int maxpart, mib[2];
-	size_t varlen;
-
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_MAXPARTITIONS;
-	varlen = sizeof(maxpart);
-	if (sysctl(mib, 2, &maxpart, &varlen, NULL, 0) < 0)
-		return (-1);
-
-	return (maxpart);
-}
-
-static int
-getrawpartition()
-{
-	int rawpart, mib[2];
-	size_t varlen;
-
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_RAWPARTITION;
-	varlen = sizeof(rawpart);
-	if (sysctl(mib, 2, &rawpart, &varlen, NULL, 0) < 0)
-		return (-1);
-
-	return (rawpart);
 }
 
 static int

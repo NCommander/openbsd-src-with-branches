@@ -1,4 +1,5 @@
-/*	$NetBSD: intr.c,v 1.9 1995/07/04 12:34:37 paulus Exp $ */
+/*	$OpenBSD: intr.c,v 1.17 2001/11/06 19:53:16 miod Exp $ */
+/*	$NetBSD: intr.c,v 1.20 1997/07/29 09:42:03 fair Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -45,17 +46,40 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/kernel.h>
+#include <sys/socket.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
+
+#include <dev/cons.h>
 
 #include <net/netisr.h>
+#include <net/if.h>
 
 #include <machine/cpu.h>
 #include <machine/ctlreg.h>
 #include <machine/instr.h>
 #include <machine/trap.h>
 
+#include <sparc/sparc/cpuvar.h>
+
+#ifdef INET
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
+#include <netinet/ip_var.h>
+#endif
+
+#ifdef INET6
+# ifndef INET
+#  include <netinet/in.h>
+# endif
+#include <netinet/ip6.h>
+#include <netinet6/ip6_var.h>
+#endif
+
+void	strayintr(struct clockframe *);
+int	soft01intr(void *);
 
 /*
  * Stray interrupt handler.  Clear it if possible.
@@ -68,8 +92,8 @@ strayintr(fp)
 	static int straytime, nstray;
 	int timesince;
 
-	printf("stray interrupt ipl %x pc=%x npc=%x psr=%b\n",
-	    fp->ipl, fp->pc, fp->npc, fp->psr, PSR_BITS);
+	printf("stray interrupt ipl 0x%x pc=0x%x npc=0x%x psr=%b\n",
+		fp->ipl, fp->pc, fp->npc, fp->psr, PSR_BITS);
 	timesince = time.tv_sec - straytime;
 	if (timesince <= 10) {
 		if (++nstray > 9)
@@ -80,12 +104,9 @@ strayintr(fp)
 	}
 }
 
-extern int clockintr();		/* level 10 (clock) interrupt code */
 static struct intrhand level10 = { clockintr };
-
-extern int statintr();		/* level 14 (statclock) interrupt code */
 static struct intrhand level14 = { statintr };
-
+union sir sir;
 /*
  * Level 1 software interrupt (could also be Sbus level 1 interrupt).
  * Three possible reasons:
@@ -102,11 +123,6 @@ soft01intr(fp)
 	if (rom_console_input && cnrom())
 		cnrint();
 	if (sir.sir_any) {
-		/*
-		 * XXX	this is bogus: should just have a list of
-		 *	routines to call, a la timeouts.  Mods to
-		 *	netisr are not atomic and must be protected (gah).
-		 */
 		if (sir.sir_which[SIR_NET]) {
 			int n, s;
 
@@ -115,33 +131,84 @@ soft01intr(fp)
 			netisr = 0;
 			splx(s);
 			sir.sir_which[SIR_NET] = 0;
-#ifdef INET
-			if (n & (1 << NETISR_ARP))
-				arpintr();
-			if (n & (1 << NETISR_IP))
-				ipintr();
-#endif
-#ifdef NS
-			if (n & (1 << NETISR_NS))
-				nsintr();
-#endif
-#ifdef ISO
-			if (n & (1 << NETISR_ISO))
-				clnlintr();
-#endif
-#include "ppp.h"
-#if NPPP > 0
-			if (n & (1 << NETISR_PPP))
-				pppintr();
-#endif
+#define DONETISR(bit, fn) \
+	do { \
+		if (n & (1 << bit)) \
+			fn(); \
+	} while (0)
+#include <net/netisr_dispatch.h>
+#undef DONETISR
 		}
 		if (sir.sir_which[SIR_CLOCK]) {
 			sir.sir_which[SIR_CLOCK] = 0;
-			softclock(fp);
+			softclock();
 		}
 	}
 	return (1);
 }
+
+#if defined(SUN4M)
+void	nmi_hard(void);
+void
+nmi_hard()
+{
+	/*
+         * A level 15 hard interrupt.
+         */
+#ifdef noyet
+	int fatal = 0;
+#endif
+	u_int32_t si;
+	u_int afsr, afva;
+
+	afsr = afva = 0;
+	if ((*cpuinfo.get_asyncflt)(&afsr, &afva) == 0) {
+		printf("Async registers (mid %d): afsr=%b; afva=0x%x%x\n",
+		       cpuinfo.mid, afsr, AFSR_BITS,
+		       (afsr & AFSR_AFA) >> AFSR_AFA_RSHIFT, afva);
+	}
+
+	if (cpuinfo.master == 0) {
+		/*
+		 * For now, just return.
+		 * Should wait on damage analysis done by the master.
+		 */
+		return;
+	}
+
+	/*
+	 * Examine pending system interrupts.
+	 */
+	si = *((u_int32_t *)ICR_SI_PEND);
+	printf("NMI: system interrupts: %b\n", si, SINTR_BITS);
+
+#ifdef notyet
+	if ((si & SINTR_M) != 0) {
+		/* ECC memory error */
+                if (memerr_handler != NULL)
+                        fatal |= (*memerr_handler)();
+        }
+        if ((si & SINTR_I) != 0) {
+                /* MBus/SBus async error */
+                if (sbuserr_handler != NULL)
+                        fatal |= (*sbuserr_handler)();
+        }
+        if ((si & SINTR_V) != 0) {
+                /* VME async error */
+                if (vmeerr_handler != NULL)
+                        fatal |= (*vmeerr_handler)();
+        }
+        if ((si & SINTR_ME) != 0) {
+                /* Module async error */
+                if (moduleerr_handler != NULL)
+                        fatal |= (*moduleerr_handler)();
+        }
+
+        if (fatal)
+#endif
+                panic("nmi");
+}
+#endif
 
 static struct intrhand level01 = { soft01intr };
 
@@ -153,11 +220,11 @@ static struct intrhand level01 = { soft01intr };
 struct intrhand *intrhand[15] = {
 	NULL,			/*  0 = error */
 	&level01,		/*  1 = software level 1 + Sbus */
-	NULL,	 		/*  2 = Sbus level 2 */
-	NULL,			/*  3 = SCSI + DMA + Sbus level 3 */
-	NULL,			/*  4 = software level 4 (tty softint) */
-	NULL,			/*  5 = Ethernet + Sbus level 4 */
-	NULL,			/*  6 = software level 6 (not used) */
+	NULL,	 		/*  2 = Sbus level 2 (4m: Sbus L1) */
+	NULL,			/*  3 = SCSI + DMA + Sbus level 3 (4m: L2,lpt)*/
+	NULL,			/*  4 = software level 4 (tty softint) (scsi) */
+	NULL,			/*  5 = Ethernet + Sbus level 4 (4m: Sbus L3) */
+	NULL,			/*  6 = software level 6 (not used) (4m: enet)*/
 	NULL,			/*  7 = video + Sbus level 5 */
 	NULL,			/*  8 = Sbus level 6 */
 	NULL,			/*  9 = Sbus level 7 */
@@ -170,7 +237,8 @@ struct intrhand *intrhand[15] = {
 
 static int fastvec;		/* marks fast vectors (see below) */
 #ifdef DIAGNOSTIC
-extern int sparc_interrupt[];
+extern int sparc_interrupt4m[];
+extern int sparc_interrupt44c[];
 #endif
 
 /*
@@ -182,10 +250,10 @@ intr_establish(level, ih)
 	int level;
 	struct intrhand *ih;
 {
-	register struct intrhand **p, *q;
+	struct intrhand **p, *q;
 #ifdef DIAGNOSTIC
-	register struct trapvec *tv;
-	register int displ;
+	struct trapvec *tv;
+	int displ;
 #endif
 	int s;
 
@@ -195,14 +263,17 @@ intr_establish(level, ih)
 		    level);
 #ifdef DIAGNOSTIC
 	/* double check for legal hardware interrupt */
-	if (level != 1 && level != 4 && level != 6) {
+	if ((level != 1 && level != 4 && level != 6) || CPU_ISSUN4M ) {
 		tv = &trapbase[T_L1INT - 1 + level];
-		displ = &sparc_interrupt[0] - &tv->tv_instr[1];
+		displ = (CPU_ISSUN4M)
+			? &sparc_interrupt4m[0] - &tv->tv_instr[1]
+			: &sparc_interrupt44c[0] - &tv->tv_instr[1];
+
 		/* has to be `mov level,%l3; ba _sparc_interrupt; rdpsr %l0' */
 		if (tv->tv_instr[0] != I_MOVi(I_L3, level) ||
 		    tv->tv_instr[1] != I_BA(0, displ) ||
 		    tv->tv_instr[2] != I_RDPSR(I_L0))
-			panic("intr_establish(%d, %x)\n%x %x %x != %x %x %x",
+			panic("intr_establish(%d, %p)\n0x%x 0x%x 0x%x != 0x%x 0x%x 0x%x",
 			    level, ih,
 			    tv->tv_instr[0], tv->tv_instr[1], tv->tv_instr[2],
 			    I_MOVi(I_L3, level), I_BA(0, displ), I_RDPSR(I_L0));
@@ -226,14 +297,17 @@ intr_establish(level, ih)
 void
 intr_fasttrap(level, vec)
 	int level;
-	void (*vec) __P((void));
+	void (*vec)(void);
 {
-	register struct trapvec *tv;
-	register u_long hi22, lo10;
+	struct trapvec *tv;
+	u_long hi22, lo10;
 #ifdef DIAGNOSTIC
-	register int displ;	/* suspenders, belt, and buttons too */
+	int displ;	/* suspenders, belt, and buttons too */
 #endif
-	int s;
+	int s, i;
+	int instr[3];
+	char *instrp;
+	char *tvp;
 
 	tv = &trapbase[T_L1INT - 1 + level];
 	hi22 = ((u_long)vec) >> 10;
@@ -243,23 +317,27 @@ intr_fasttrap(level, vec)
 		panic("intr_fasttrap: already handling level %d interrupts",
 		    level);
 #ifdef DIAGNOSTIC
-	displ = &sparc_interrupt[0] - &tv->tv_instr[1];
+	displ = (CPU_ISSUN4M)
+		? &sparc_interrupt4m[0] - &tv->tv_instr[1]
+		: &sparc_interrupt44c[0] - &tv->tv_instr[1];
+
 	/* has to be `mov level,%l3; ba _sparc_interrupt; rdpsr %l0' */
 	if (tv->tv_instr[0] != I_MOVi(I_L3, level) ||
 	    tv->tv_instr[1] != I_BA(0, displ) ||
 	    tv->tv_instr[2] != I_RDPSR(I_L0))
-		panic("intr_fasttrap(%d, %x)\n%x %x %x != %x %x %x",
+		panic("intr_fasttrap(%d, %p)\n0x%x 0x%x 0x%x != 0x%x 0x%x 0x%x",
 		    level, vec,
 		    tv->tv_instr[0], tv->tv_instr[1], tv->tv_instr[2],
 		    I_MOVi(I_L3, level), I_BA(0, displ), I_RDPSR(I_L0));
 #endif
-	/* kernel text is write protected -- let us in for a moment */
-	pmap_changeprot(pmap_kernel(), (vm_offset_t)tv,
-	    VM_PROT_READ|VM_PROT_WRITE, 1);
-	tv->tv_instr[0] = I_SETHI(I_L3, hi22);	/* sethi %hi(vec),%l3 */
-	tv->tv_instr[1] = I_JMPLri(I_G0, I_L3, lo10);/* jmpl %l3+%lo(vec),%g0 */
-	tv->tv_instr[2] = I_RDPSR(I_L0);	/* mov %psr, %l0 */
-	pmap_changeprot(pmap_kernel(), (vm_offset_t)tv, VM_PROT_READ, 1);
-	fastvec |= 1 << level;
+	
+	instr[0] = I_SETHI(I_L3, hi22);		/* sethi %hi(vec),%l3 */
+	instr[1] = I_JMPLri(I_G0, I_L3, lo10);	/* jmpl %l3+%lo(vec),%g0 */
+	instr[2] = I_RDPSR(I_L0);		/* mov %psr, %l0 */
+
+	tvp = (char *)tv->tv_instr;
+	instrp = (char *)instr;
+	for (i = 0; i < sizeof(int) * 3; i++, instrp++, tvp++)
+		pmap_writetext(tvp, *instrp);
 	splx(s);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: spec_hit.c,v 1.3 1998/08/22 08:55:48 pjanzen Exp $	*/
 /*	$NetBSD: spec_hit.c,v 1.3 1995/04/22 10:28:29 cgd Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)spec_hit.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: spec_hit.c,v 1.3 1995/04/22 10:28:29 cgd Exp $";
+static char rcsid[] = "$OpenBSD: spec_hit.c,v 1.3 1998/08/22 08:55:48 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,45 +62,35 @@ static char rcsid[] = "$NetBSD: spec_hit.c,v 1.3 1995/04/22 10:28:29 cgd Exp $";
 short less_hp = 0;
 boolean being_held;
 
-extern short cur_level, max_level, blind, levitate, ring_exp;
-extern long level_points[];
-extern boolean detect_monster, mon_disappeared;
-extern boolean sustain_strength, maintain_armor;
-extern char *you_can_move_again;
-
+void
 special_hit(monster)
-object *monster;
+	object *monster;
 {
-	if ((monster->m_flags & CONFUSED) && rand_percent(66)) {
+	if ((monster->m_flags & CONFUSED) && rand_percent(66))
 		return;
-	}
-	if (monster->m_flags & RUSTS) {
+	if (wizard && rand_percent(50))
+		return;
+	if (monster->m_flags & RUSTS)
 		rust(monster);
-	}
-	if ((monster->m_flags & HOLDS) && !levitate) {
+	if ((monster->m_flags & HOLDS) && !levitate)
 		being_held = 1;
-	}
-	if (monster->m_flags & FREEZES) {
+	if (monster->m_flags & FREEZES)
 		freeze(monster);
-	}
-	if (monster->m_flags & STINGS) {
+	if (monster->m_flags & STINGS)
 		sting(monster);
-	}
-	if (monster->m_flags & DRAINS_LIFE) {
+	if (monster->m_flags & DRAINS_LIFE)
 		drain_life();
-	}
-	if (monster->m_flags & DROPS_LEVEL) {
+	if (monster->m_flags & DROPS_LEVEL)
 		drop_level();
-	}
-	if (monster->m_flags & STEALS_GOLD) {
+	if (monster->m_flags & STEALS_GOLD)
 		steal_gold(monster);
-	} else if (monster->m_flags & STEALS_ITEM) {
+	else if (monster->m_flags & STEALS_ITEM) 
 		steal_item(monster);
-	}
 }
 
+void
 rust(monster)
-object *monster;
+	object *monster;
 {
 	if ((!rogue.armor) || (get_armor_class(rogue.armor) <= 1) ||
 		(rogue.armor->which_kind == LEATHER)) {
@@ -117,8 +108,9 @@ object *monster;
 	}
 }
 
+void
 freeze(monster)
-object *monster;
+	object *monster;
 {
 	short freeze_percent = 99;
 	short i, n;
@@ -150,8 +142,9 @@ object *monster;
 	}
 }
 
+void
 steal_gold(monster)
-object *monster;
+	object *monster;
 {
 	int amount;
 
@@ -170,11 +163,12 @@ object *monster;
 	disappear(monster);
 }
 
+void
 steal_item(monster)
-object *monster;
+	object *monster;
 {
 	object *obj;
-	short i, n, t;
+	short i, n, t = 0;
 	char desc[80];
 	boolean has_something = 0;
 
@@ -224,8 +218,9 @@ DSPR:
 	disappear(monster);
 }
 
+void
 disappear(monster)
-object *monster;
+	object *monster;
 {
 	short row, col;
 
@@ -241,8 +236,9 @@ object *monster;
 	mon_disappeared = 1;
 }
 
+void
 cough_up(monster)
-object *monster;
+	object *monster;
 {
 	object *obj;
 	short row, col, i, n;
@@ -285,11 +281,13 @@ object *monster;
 	free_object(obj);
 }
 
+boolean
 try_to_cough(row, col, obj)
-short row, col;
-object *obj;
+	short row, col;
+	object *obj;
 {
-	if ((row < MIN_ROW) || (row > (DROWS-2)) || (col < 0) || (col>(DCOLS-1))) {
+	if ((row < MIN_ROW) ||
+	    (row > (DROWS-2)) || (col < 0) || (col>(DCOLS-1))) {
 		return(0);
 	}
 	if ((!(dungeon[row][col] & (OBJECT | STAIRS | TRAP))) &&
@@ -304,8 +302,9 @@ object *obj;
 	return(0);
 }
 
+boolean
 seek_gold(monster)
-object *monster;
+	object *monster;
 {
 	short i, j, rn, s;
 
@@ -336,8 +335,9 @@ object *monster;
 	return(0);
 }
 
+boolean
 gold_at(row, col)
-short row, col;
+	short row, col;
 {
 	if (dungeon[row][col] & OBJECT) {
 		object *obj;
@@ -350,14 +350,16 @@ short row, col;
 	return(0);
 }
 
+void
 check_gold_seeker(monster)
-object *monster;
+	object *monster;
 {
 	monster->m_flags &= (~SEEKS_GOLD);
 }
 
+boolean
 check_imitator(monster)
-object *monster;
+	object *monster;
 {
 	char msg[80];
 
@@ -375,13 +377,14 @@ object *monster;
 	return(0);
 }
 
+boolean
 imitating(row, col)
-register short row, col;
+	short row, col;
 {
 	if (dungeon[row][col] & MONSTER) {
-		object *object_at(), *monster;
+		object *monster;
 
-		if (monster = object_at(&level_monsters, row, col)) {
+		if ((monster = object_at(&level_monsters, row, col))) {
 			if (monster->m_flags & IMITATES) {
 				return(1);
 			}
@@ -390,8 +393,9 @@ register short row, col;
 	return(0);
 }
 
+void
 sting(monster)
-object *monster;
+	object *monster;
 {
 	short sting_chance = 35;
 	char msg[80];
@@ -413,6 +417,7 @@ object *monster;
 	}
 }
 
+void
 drop_level()
 {
 	int hp;
@@ -432,6 +437,7 @@ drop_level()
 	add_exp(1, 0);
 }
 
+void
 drain_life()
 {
 	short n;
@@ -460,8 +466,9 @@ drain_life()
 	print_stats((STAT_STRENGTH | STAT_HP));
 }
 
+boolean
 m_confuse(monster)
-object *monster;
+	object *monster;
 {
 	char msg[80];
 
@@ -482,8 +489,9 @@ object *monster;
 	return(0);
 }
 
+boolean
 flame_broil(monster)
-object *monster;
+	object *monster;
 {
 	short row, col, dir;
 
@@ -508,8 +516,9 @@ object *monster;
 	return(1);
 }
 
+int
 get_dir(srow, scol, drow, dcol)
-short srow, scol, drow, dcol;
+	short srow, scol, drow, dcol;
 {
 	if (srow == drow) {
 		if (scol < dcol) {

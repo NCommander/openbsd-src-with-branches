@@ -1,3 +1,4 @@
+/*	$OpenBSD: bog.c,v 1.7 2001/06/03 23:10:50 pjanzen Exp $	*/
 /*	$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $	*/
 
 /*-
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)bog.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $";
+static char rcsid[] = "$OpenBSD: bog.c,v 1.7 2001/06/03 23:10:50 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,11 +57,12 @@ static char rcsid[] = "$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "bog.h"
 #include "extern.h"
 
-static int	compar __P((const void *, const void *));
+static int	compar(const void *, const void *);
 
 struct dictindex dictindex[26];
 
@@ -73,7 +75,7 @@ struct dictindex dictindex[26];
  *	C D E F
  */
 static int adjacency[16][16] = {
-/*        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+/*	  0  1	2  3  4	 5  6  7  8  9	A  B  C	 D  E  F */
 	{ 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 0 */
 	{ 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 1 */
 	{ 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 2 */
@@ -119,6 +121,7 @@ int batch;
 int debug;
 int minlength;
 int reuse;
+int selfuse;
 int tlimit;
 
 int
@@ -126,16 +129,21 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	long seed;
-	int ch, done, i, selfuse, sflag;
+	time_t seed;
+	int ch, done, i, sflag;
 	char *bspec, *p;
 
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
+	seed = 0;
 	batch = debug = reuse = selfuse = sflag = 0;
 	bspec = NULL;
 	minlength = 3;
 	tlimit = 180;		/* 3 minutes is standard */
 
-	while ((ch = getopt(argc, argv, "bds:t:w:")) != EOF)
+	while ((ch = getopt(argc, argv, "bds:t:w:")) != -1)
 		switch(ch) {
 		case 'b':
 			batch = 1;
@@ -163,18 +171,19 @@ main(argc, argv)
 	argv += optind;
 
 	/* process final arguments */
-	if (argc > 0)
+	if (argc > 0) {
 		if (strcmp(argv[0], "+") == 0)
 			reuse = 1;
 		else if (strcmp(argv[0], "++") == 0)
 			selfuse = 1;
+	}
 
 	if (reuse || selfuse) {
 		argc -= 1;
 		argv += 1;
 	}
 
-	if (argc > 0)
+	if (argc > 0) {
 		if (islower(argv[0][0])) {
 			if (strlen(argv[0]) != 16) {
 				usage();
@@ -185,6 +194,7 @@ main(argc, argv)
 		} else {
 		  	usage();
 		}
+	}
 
 	if (batch && bspec == NULL)
 		errx(1, "must give both -b and a board setup");
@@ -331,7 +341,7 @@ playgame()
 			showstr(buf, 1);
 			continue;
 		}
-		if (strlen(buf) < minlength) {
+		if (strlen(buf) < (size_t)minlength) {
 			badword();
 			continue;
 		}
@@ -471,7 +481,7 @@ checkword(word, prev, path)
 			 * If necessary, check if the square has already
 			 * been used.
 			 */
-			if (!reuse && (usedbits & used))
+			if (!reuse && !selfuse && (usedbits & used))
 					continue;
 			*path = lm[i];
 			usedbits |= used;
@@ -497,7 +507,7 @@ validword(word)
 	register char *q, *w;
 
 	j = word[0] - 'a';
-	if (dictseek(dictfp, dictindex[j].start, 0) < 0) {
+	if (dictseek(dictfp, dictindex[j].start, SEEK_SET) < 0) {
 		(void) fprintf(stderr, "Seek error\n");
 		cleanup();
 		exit(1);
@@ -537,7 +547,7 @@ checkdict()
 	prevch ='a';
 	qi = &wordpath[MAXWORDLEN + 1];
 
-	(void) dictseek(dictfp, 0L, 0);
+	(void) dictseek(dictfp, 0L, SEEK_SET);
 	while ((w = nextword(dictfp)) != NULL) {
 		if (wordlen < minlength)
 			continue;
@@ -564,7 +574,7 @@ checkdict()
 			 */
 			if (i != previndex + 1) {
 				if (dictseek(dictfp,
-				    dictindex[i].start, 0) < 0) {
+				    dictindex[i].start, SEEK_SET) < 0) {
 					warnx("seek error in checkdict()");
 					cleanup();
 					exit(1);
@@ -593,7 +603,7 @@ checkdict()
 		}
 		mword[nmwords++] = mwordsp;
 		p = w;
-		while (*mwordsp++ = *p++);
+		while ((*mwordsp++ = *p++));
 	}
 }
 

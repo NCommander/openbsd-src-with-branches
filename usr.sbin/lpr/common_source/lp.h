@@ -1,3 +1,5 @@
+/*	$OpenBSD: lp.h,v 1.7 2002/02/16 21:28:03 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,7 +32,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * 	@(#)lp.h	8.1 (Berkeley) 6/6/93
+ * 	@(#)lp.h	8.2 (Berkeley) 4/28/95
  */
 
 
@@ -81,13 +83,15 @@ extern long	 XS;		/* flags to set for local mode */
 
 extern char	line[BUFSIZ];
 extern char	*bp;		/* pointer into printcap buffer */
-extern char	*name;		/* program name */
 extern char	*printer;	/* printer name */
 				/* host machine name */
 extern char	host[MAXHOSTNAMELEN];
 extern char	*from;		/* client's machine name */
-extern int	sendtorem;	/* are we sending to a remote? */
+extern int	remote;		/* true if sending files to a remote host */
 extern char	*printcapdb[];  /* printcap database array */
+
+extern volatile sig_atomic_t	gotintr;
+
 /*
  * Structure used for building a sorted list of control files.
  */
@@ -101,27 +105,28 @@ struct queue {
 __BEGIN_DECLS
 struct dirent;
 
-void     blankfill __P((int));
-char	*checkremote __P((void));
-int      chk __P((char *));
-void     displayq __P((int));
-void     dump __P((char *, char *, int));
-void	 fatal __P((const char *, ...));
-int	 getline __P((FILE *));
-int	 getport __P((char *));
-int	 getq __P((struct queue *(*[])));
-void     header __P((void));
-void     inform __P((char *));
-int      inlist __P((char *, char *));
-int      iscf __P((struct dirent *));
-int      isowner __P((char *, char *));
-void     ldump __P((char *, char *, int));
-int      lockchk __P((char *));
-void     prank __P((int));
-void     process __P((char *));
-void     rmjob __P((void));
-void     rmremote __P((void));
-void     show __P((char *, char *, int));
-int      startdaemon __P((char *));
-void     warn __P((void));
+void     blankfill(int);
+char	*checkremote(void);
+int      chk(char *);
+void     displayq(int);
+void     dump(char *, char *, int);
+void	 fatal(const char *, ...);
+int	 getline(FILE *);
+int	 getport(char *, int);
+int	 getq(struct queue *(*[]));
+void     header(void);
+void     inform(char *);
+int      inlist(char *, char *);
+int      iscf(struct dirent *);
+int      isowner(char *, char *);
+void     ldump(char *, char *, int);
+int      lockchk(char *);
+void     prank(int);
+void     process(char *);
+void     rmjob(void);
+void     rmremote(void);
+void     show(char *, char *, int);
+int      startdaemon(char *);
+void     nodaemon(void);
+void     delay(int);
 __END_DECLS

@@ -1,3 +1,4 @@
+/*	$OpenBSD: deck.h,v 1.3 1995/03/21 15:08:49 cgd Exp $	*/
 /*	$NetBSD: deck.h,v 1.3 1995/03/21 15:08:49 cgd Exp $	*/
 
 /*
@@ -82,6 +83,3 @@ typedef		struct  {
 			int		rank;
 			int		suit;
 		}		CARD;
-
-typedef		char		BOOLEAN;
-

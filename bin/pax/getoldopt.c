@@ -1,3 +1,4 @@
+/*	$OpenBSD: getoldopt.c,v 1.3 1997/09/01 18:29:52 deraadt Exp $	*/
 /*	$NetBSD: getoldopt.c,v 1.3 1995/03/21 09:07:28 cgd Exp $	*/
 
 /*
@@ -10,7 +11,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: getoldopt.c,v 1.3 1995/03/21 09:07:28 cgd Exp $";
+static char rcsid[] = "$OpenBSD: getoldopt.c,v 1.3 1997/09/01 18:29:52 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -23,15 +24,13 @@ getoldopt(argc, argv, optstring)
 	char	**argv;
 	char	*optstring;
 {
-	extern char	*optarg;	/* Points to next arg */
-	extern int	optind;		/* Global argv index */
 	static char	*key;		/* Points to next keyletter */
 	static char	use_getopt;	/* !=0 if argv[1][0] was '-' */
 	char		c;
 	char		*place;
 
 	optarg = NULL;
-	
+
 	if (key == NULL) {		/* First time */
 		if (argc < 2) return EOF;
 		key = argv[1];

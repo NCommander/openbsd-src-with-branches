@@ -1,3 +1,5 @@
+/*	$OpenBSD: process.c,v 1.6 2001/11/19 19:02:16 mpech Exp $	*/
+
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -37,7 +39,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)process.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: process.c,v 1.17 1995/07/11 04:09:50 cgd Exp $";
+static char *rcsid = "$OpenBSD: process.c,v 1.6 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -65,12 +67,12 @@ static SPACE HS, PS, SS;
 #define	hs		HS.space
 #define	hsl		HS.len
 
-static inline int	 applies __P((struct s_command *));
-static void		 flush_appends __P((void));
-static void		 lputs __P((char *));
-static inline int	 regexec_e __P((regex_t *, const char *, int, int, size_t));
-static void		 regsub __P((SPACE *, char *, char *));
-static int		 substitute __P((struct s_command *));
+static inline int	 applies(struct s_command *);
+static void		 flush_appends(void);
+static void		 lputs(char *);
+static inline int	 regexec_e(regex_t *, const char *, int, int, size_t);
+static void		 regsub(SPACE *, char *, char *);
+static int		 substitute(struct s_command *);
 
 struct s_appends *appends;	/* Array of pointers to strings to append. */
 static int appendx;		/* Index into appends array. */
@@ -144,6 +146,8 @@ redirect:
 				cspace(&PS, hs, hsl, REPLACE);
 				break;
 			case 'G':
+				if (hs == NULL)
+					cspace(&HS, "\n", 1, REPLACE);
 				cspace(&PS, hs, hsl, 0);
 				break;
 			case 'h':
@@ -238,7 +242,7 @@ redirect:
 				if (pd)
 					break;
 				for (p = ps, len = psl; --len; ++p)
-					*p = cp->u.y[*p];
+					*p = cp->u.y[(unsigned char)*p];
 				break;
 			case ':':
 			case '}':
@@ -443,7 +447,7 @@ flush_appends()
 			 */
 			if ((f = fopen(appends[i].s, "r")) == NULL)
 				break;
-			while (count = fread(buf, sizeof(char), sizeof(buf), f))
+			while ((count = fread(buf, sizeof(char), sizeof(buf), f)))
 				(void)fwrite(buf, sizeof(char), count, stdout);
 			(void)fclose(f);
 			break;
@@ -455,15 +459,15 @@ flush_appends()
 
 static void
 lputs(s)
-	register char *s;
+	char *s;
 {
-	register int count;
-	register char *escapes, *p;
+	int count;
+	char *escapes, *p;
 	struct winsize win;
 	static int termwidth = -1;
 
 	if (termwidth == -1)
-		if (p = getenv("COLUMNS"))
+		if ((p = getenv("COLUMNS")))
 			termwidth = atoi(p);
 		else if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) == 0 &&
 		    win.ws_col > 0)
@@ -482,7 +486,7 @@ lputs(s)
 		} else {
 			escapes = "\\\a\b\f\n\r\t\v";
 			(void)putchar('\\');
-			if (p = strchr(escapes, *s)) {
+			if ((p = strchr(escapes, *s))) {
 				(void)putchar("\\abfnrtv"[p - escapes]);
 				count += 2;
 			} else {
@@ -539,8 +543,8 @@ regsub(sp, string, src)
 	SPACE *sp;
 	char *string, *src;
 {
-	register int len, no;
-	register char c, *dst;
+	int len, no;
+	char c, *dst;
 
 #define	NEEDSP(reqlen)							\
 	if (sp->len >= sp->blen - (reqlen) - 1) {			\
@@ -609,7 +613,7 @@ cspace(sp, p, len, spflag)
  */
 void
 cfclose(cp, end)
-	register struct s_command *cp, *end;
+	struct s_command *cp, *end;
 {
 
 	for (; cp != end; cp = cp->next)

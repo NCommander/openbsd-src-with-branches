@@ -1,4 +1,5 @@
-#	@(#)Makefile	5.3 (Berkeley) 6/8/93
+#	$OpenBSD$
+
 
 DIR=	papers/fsinterface
 SRCS=	fsinterface.ms

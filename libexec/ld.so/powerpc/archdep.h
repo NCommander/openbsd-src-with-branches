@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: archdep.h,v 1.3 2000/10/19 02:44:16 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -44,6 +44,8 @@
 
 #include <elf_abi.h>
 #include <machine/reloc.h>
+#include "syscall.h"
+#include "util.h"
 
 /* HACK */
 #define DT_PROCNUM 0
@@ -52,99 +54,18 @@
 #endif
 
 /*
- *	Simple reloc of REL32's. Used by bootstrapping.
- */
-#define	SIMPLE_RELOC(r, s, p, v)					\
-	if(ELF32_R_TYPE((r)->r_info) == RELOC_32) {			\
-		if((ELF32_ST_BIND((s)->st_info) == STB_LOCAL) &&	\
-		   (ELF32_ST_TYPE((s)->st_info) == STT_SECTION ||	\
-		    ELF32_ST_TYPE((s)->st_info) == STT_NOTYPE) ) {	\
-			*(p) += (v);					\
-		}							\
-		else {							\
-			*(p) = (v) + (s)->st_value;			\
-		}							\
-	}
-
-/*
  *	The following functions are declared inline so they can
  *	be used before bootstrap linking has been finished.
  */
 static inline void
 _dl_dcbf(Elf32_Addr *addr)
 {
-  __asm__ volatile ("li 0, 0\n\t"
-                    "dcbf 0, %0"
+  __asm__ volatile ("dcbst 0, %0\n\t"
+		    "sync\n\t"
+		    "icbi 0, %0\n\t"
+		    "sync\n\t"
+		    "isync"
                     : : "r" (addr) : "0");
-}
-
-static inline int _dl_write (int fd, const char* buf, int len);
-static inline void
-_dl_wrstderr(const char *s)
-{
-	while(*s) {
-		_dl_write(2, s, 1);
-		s++;
-	}
-}
-
-static inline void *
-_dl_memset(void *p, const char v, size_t c)
-{
-	char *ip = p;
-
-	while(c--)
-		*ip++ = v;
-	return(p);
-}
-
-static inline int
-_dl_strlen(const char *p)
-{
-	const char *s = p;
-
-	while(*s != '\0')
-		s++;
-	return(s - p);
-}
-
-static inline char *
-_dl_strcpy(char *d, const char *s)
-{
-	char *rd = d;
-
-	while((*d++ = *s++) != '\0');
-
-	return(rd);
-}
-
-static inline int
-_dl_strncmp(const char *d, const char *s, int c)
-{
-	while(c-- && *d && *d++ == *s++) {};
-	if(c < 0) {
-		return(0);
-	}
-	return(d[-1] - s[-1]);
-}
- 
-static inline int
-_dl_strcmp(const char *d, const char *s)
-{
-	while(*d && *d++ == *s++) {};
-	return(d[-1] - s[-1]);
-}
- 
-static inline const char *
-_dl_strchr(const char *p, const int c)
-{
-	while(*p) {
-		if(*p == c) {
-			return(p);
-		}
-		p++;
-	}
-	return(0);
 }
 
 static inline void

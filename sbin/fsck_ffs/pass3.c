@@ -1,3 +1,4 @@
+/*	$OpenBSD: pass3.c,v 1.5 2001/07/07 18:26:12 deraadt Exp $	*/
 /*	$NetBSD: pass3.c,v 1.8 1995/03/18 14:55:54 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)pass3.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: pass3.c,v 1.8 1995/03/18 14:55:54 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pass3.c,v 1.5 2001/07/07 18:26:12 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -45,20 +46,34 @@ static char rcsid[] = "$NetBSD: pass3.c,v 1.8 1995/03/18 14:55:54 cgd Exp $";
 #include <sys/time.h>
 #include <ufs/ufs/dinode.h>
 #include <ufs/ffs/fs.h>
+#include <stdio.h>
 #include "fsck.h"
 #include "extern.h"
+
+static int info_pos;
+
+static int
+pass3_info(buf, buflen)
+	char *buf;
+	int buflen;
+{
+	return snprintf(buf, buflen, "phase 3, directory %d/%ld",
+		info_pos, inplast);
+}
 
 void
 pass3()
 {
-	register struct inoinfo **inpp, *inp;
+	struct inoinfo **inpp, *inp, *pinp;
 	ino_t orphan;
 	int loopcnt;
 
+	info_fn = pass3_info;
 	for (inpp = &inpsort[inplast - 1]; inpp >= inpsort; inpp--) {
+		info_pos++;
 		inp = *inpp;
 		if (inp->i_number == ROOTINO ||
-		    !(inp->i_parent == 0 || statemap[inp->i_number] == DSTATE))
+		    (inp->i_parent != 0 && statemap[inp->i_number] != DSTATE))
 			continue;
 		if (statemap[inp->i_number] == DCLEAR)
 			continue;
@@ -70,10 +85,16 @@ pass3()
 				break;
 			inp = getinoinfo(inp->i_parent);
 		}
-		(void)linkup(orphan, inp->i_dotdot);
-		inp->i_parent = inp->i_dotdot = lfdir;
-		lncntp[lfdir]--;
-		statemap[orphan] = DFOUND;
-		propagate();
+		if (linkup(orphan, inp->i_dotdot)) {
+			inp->i_parent = inp->i_dotdot = lfdir;
+			lncntp[lfdir]--;
+			pinp = getinoinfo(inp->i_parent);
+			inp->i_parentp = pinp;
+			inp->i_sibling = pinp->i_child;
+			pinp->i_child = inp;
+			statemap[orphan] = statemap[inp->i_parent];
+		}
+		propagate(orphan);
 	}
+	info_fn = NULL;
 }

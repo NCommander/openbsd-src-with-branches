@@ -1,8 +1,12 @@
-/*	$NetBSD: mon.h,v 1.16 1995/02/07 05:01:05 gwr Exp $	*/
+/*	$OpenBSD: mon.h,v 1.7 2002/03/14 03:16:01 millert Exp $	*/
+/*	$NetBSD: mon.h,v 1.19 1996/11/20 18:57:12 gwr Exp $	*/
 
-/*
- * Copyright (c) 1993 Adam Glass
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Adam Glass.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,21 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by Adam Glass.
- * 4. The name of the Author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY Adam Glass ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -98,41 +104,41 @@ typedef struct bootparam {
  *       translate these structs into Sprite format.
  */
 typedef struct {
-	char		*initSp;		/* Initial system stack ptr  
-						 * for hardware */
-	int		(*startMon)();		/* Initial PC for hardware */
+	char	*initSp;		/* Initial system stack ptr
+					 * for hardware */
+	int	(*startMon)(void);	/* Initial PC for hardware */
 
-	int		*diagberr;		/* Bus err handler for diags */
+	int	*diagberr;		/* Bus err handler for diags */
 
-	/* 
+	/*
 	 * Monitor and hardware revision and identification
 	 */
 
-	struct bootparam **bootParam;		/* Info for bootstrapped pgm */
- 	unsigned	*memorySize;		/* Usable memory in bytes */
+	struct bootparam **bootParam;	/* Info for bootstrapped pgm */
+ 	u_int	*memorySize;		/* Usable memory in bytes */
 
-	/* 
-	 * Single-character input and output 
+	/*
+	 * Single-character input and output
 	 */
 
-	unsigned char	(*getChar)();		/* Get char from input source */
-	int		(*putChar)();		/* Put char to output sink */
-	int		(*mayGet)();		/* Maybe get char, or -1 */
-	int		(*mayPut)();		/* Maybe put char, or -1 */
-	unsigned char	*echo;			/* Should getchar echo? */
-	unsigned char	*inSource;		/* Input source selector */
-	unsigned char	*outSink;		/* Output sink selector */
+	u_char	(*getChar)(void);	/* Get char from input source */
+	int	(*putChar)(int);	/* Put char to output sink */
+	int	(*mayGet)(void);	/* Maybe get char, or -1 */
+	int	(*mayPut)(int);		/* Maybe put char, or -1 */
+	u_char	*echo;			/* Should getchar echo? */
+	u_char	*inSource;		/* Input source selector */
+	u_char	*outSink;		/* Output sink selector */
 
-	/* 
-	 * Keyboard input (scanned by monitor nmi routine) 
+	/*
+	 * Keyboard input (scanned by monitor nmi routine)
 	 */
 
-	int		(*getKey)();		/* Get next key if one exists */
-	int		(*initGetKey)();	/* Initialize get key */
-	unsigned int	*translation;		/* Kbd translation selector 
-						   (see keyboard.h in sun 
+	int	(*getKey)(void);		/* Get next key if one exists */
+	int	(*initGetKey)(void *);		/* Initialize get key */
+	u_int	*translation;			/* Kbd translation selector
+						   (see keyboard.h in sun
 						    monitor code) */
-	unsigned char	*keyBid;		/* Keyboard ID byte */
+	u_char		*keyBid;		/* Keyboard ID byte */
 	int		*screen_x;		/* V2: Screen x pos (R/O) */
 	int		*screen_y;		/* V2: Screen y pos (R/O) */
 	struct keybuf	*keyBuf;		/* Up/down keycode buffer */
@@ -141,86 +147,88 @@ typedef struct {
 	 * Monitor revision level.
 	 */
 
-	char		*monId;
-
-	/* 
-	 * Frame buffer output and terminal emulation 
-	 */
-
-	int		(*fbWriteChar)();	/* Write a character to FB */
-	int		*fbAddr;		/* Address of frame buffer */
-	char		**font;			/* Font table for FB */
-	int		(*fbWriteStr)();	/* Quickly write string to FB */
-
-	/* 
-	 * Reboot interface routine -- resets and reboots system.  No return. 
-	 */
-
-	int		(*reBoot)();		/* e.g. reBoot("xy()vmunix") */
-
-	/* 
-	 * Line input and parsing 
-	 */
-
-	unsigned char	*lineBuf;		/* The line input buffer */
-	unsigned char	**linePtr;		/* Cur pointer into linebuf */
-	int		*lineSize;		/* length of line in linebuf */
-	int		(*getLine)();		/* Get line from user */
-	unsigned char	(*getNextChar)();	/* Get next char from linebuf */
-	unsigned char	(*peekNextChar)();	/* Peek at next char */
-	int		*fbThere;		/* =1 if frame buffer there */
-	int		(*getNum)();		/* Grab hex num from line */
-
-	/* 
-	 * Print formatted output to current output sink 
-	 */
-
-	int		(*printf)();		/* Similar to "Kernel printf" */
-	int		(*printHex)();		/* Format N digits in hex */
+	char	*monId;
 
 	/*
-	 * Led stuff 
+	 * Frame buffer output and terminal emulation
 	 */
 
-	unsigned char	*leds;			/* RAM copy of LED register */
-	int		(*setLeds)();		/* Sets LED's and RAM copy */
+	int	(*fbWriteChar)(int);	/* Write a character to FB */
+	int	*fbAddr;		/* Address of frame buffer */
+	char	**font;			/* Font table for FB */
+	/* Quickly write string to FB */
+	int	(*fbWriteStr)(char *buf, int len);
 
-	/* 
+	/*
+	 * Reboot interface routine -- resets and reboots system.  No return.
+	 * XXX should this be declared volatile?
+	 */
+
+	int	(*reBoot)(char *);	/* e.g. reBoot("sd()bsd") */
+
+	/*
+	 * Line input and parsing
+	 */
+
+	u_char	*lineBuf;			/* The line input buffer */
+	u_char	**linePtr;			/* Cur pointer into linebuf */
+	int	*lineSize;			/* length of line in linebuf */
+	int	(*getLine)(int);		/* Get line from user */
+	u_char	(*getNextChar)(void);		/* Get next char from linebuf */
+	u_char	(*peekNextChar)(void);		/* Peek at next char */
+	int	*fbThere;			/* =1 if frame buffer there */
+	int	(*getNum)(void);		/* Grab hex num from line */
+
+	/*
+	 * Print formatted output to current output sink
+	 */
+
+	int	(*printf)(char *, ...);		/* Similar to "Kernel printf" */
+	int	(*printHex)(int,int);		/* Format N digits in hex */
+
+	/*
+	 * Led stuff
+	 */
+
+	u_char	*leds;				/* RAM copy of LED register */
+	int	(*setLeds)(int);		/* Sets LED's and RAM copy */
+
+	/*
 	 * Non-maskable interrupt  (nmi) information
-	 */ 
+	 */
 
-	int		(*nmiAddr)();		/* Addr for level 7 vector */
-	int		(*abortEntry)();	/* Entry for keyboard abort */
-	int		*nmiClock;		/* Counts up in msec */
+	int	(*nmiAddr)(void *);		/* Addr for level 7 vector */
+	int	(*abortEntry)(void *);		/* Entry for keyboard abort */
+	int	*nmiClock;			/* Counts up in msec */
 
 	/*
-	 * Frame buffer type: see <sun/fbio.h>
+	 * Frame buffer type: see <machine/fbio.h>
 	 */
 
-	int		*fbType;
+	int	*fbType;
 
-	/* 
-	 * Assorted other things 
+	/*
+	 * Assorted other things
 	 */
 
-	unsigned	romvecVersion;		/* Version # of Romvec */ 
+	u_int		romvecVersion;		/* Version # of Romvec */
 	struct globram  *globRam;		/* monitor global variables */
 	caddr_t		kbdZscc;		/* Addr of keyboard in use */
 
-	int		*keyrInit;		/* ms before kbd repeat */
-	unsigned char	*keyrTick; 		/* ms between repetitions */
-	unsigned	*memoryAvail;		/* V1: Main mem usable size */
-	long		*resetAddr;		/* where to jump on a reset */
-	long		*resetMap;		/* pgmap entry for resetaddr */
+	int	*keyrInit;			/* ms before kbd repeat */
+	u_char	*keyrTick; 			/* ms between repetitions */
+	u_int	*memoryAvail;			/* V1: Main mem usable size */
+	long	*resetAddr;			/* where to jump on a reset */
+	long	*resetMap;			/* pgmap entry for resetaddr */
 						/* Really struct pgmapent *  */
-	int		(*exitToMon)();		/* Exit from user program */
-	unsigned char	**memorybitmap;		/* V1: &{0 or &bits} */
-	void		(*setcxsegmap)();	/* Set seg in any context */
-	void		(**vector_cmd)();	/* V2: Handler for 'v' cmd */
-	int		dummy1z;
-	int		dummy2z;
-	int		dummy3z;
-	int		dummy4z;
+	int	(*exitToMon)(void);		/* Exit from user program */
+	u_char	**memorybitmap;			/* V1: &{0 or &bits} */
+	void	(*setcxsegmap)(int,int,int);	/* Set seg in any context */
+	void	(**vector_cmd)(int, char *);	/* V2: Handler for 'v' cmd */
+	int	dummy1z;
+	int	dummy2z;
+	int	dummy3z;
+	int	dummy4z;
 } MachMonRomVector;
 
 /*
@@ -234,13 +242,13 @@ typedef struct {
  * putChar -- Write the given character to the output source.
  *
  *     void putChar(ch)
- *	   char ch;	
+ *	   char ch;
  *
- * mayGet -- Maybe get a character from the current input source.  Return -1 
+ * mayGet -- Maybe get a character from the current input source.  Return -1
  *           if don't return a character.
  *
  * 	int mayGet()
- *	
+ *
  * mayPut -- Maybe put a character to the current output source.   Return -1
  *           if no character output.
  *
@@ -252,7 +260,7 @@ typedef struct {
  * 	     NOKEY (if no key has been hit).
  *
  *	int getKey()
- *	
+ *
  * initGetKey --  Initialize things for get key.
  *
  *	void initGetKey()
@@ -322,9 +330,9 @@ typedef struct {
 
 /*
  * MONSTART and MONEND denote the range of the damn monitor.
- * 
+ *
  * supposedly you can steal pmegs within this range that do not contain
- * valid pages. 
+ * valid pages.
  */
 #define MONSTART     0x0FE00000
 #define MONEND       0x0FF00000
@@ -341,8 +349,8 @@ typedef struct {
  *
  */
 
-#define MONSHORTPAGE 0x0FFFE000	
-#define MONSHORTSEG  0x0FFE0000     
+#define MONSHORTPAGE 0x0FFFE000
+#define MONSHORTSEG  0x0FFE0000
 
 #endif /* _MACHMON */
-#endif /* MACHINE_MON_H */     
+#endif /* MACHINE_MON_H */

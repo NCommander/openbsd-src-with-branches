@@ -1,6 +1,8 @@
-/*	$NetBSD: hpibvar.h,v 1.6 1995/03/28 18:16:09 jtc Exp $	*/
+/*	$OpenBSD: hpibvar.h,v 1.6 1997/04/16 11:56:09 downsj Exp $	*/
+/*	$NetBSD: hpibvar.h,v 1.10 1997/03/31 07:34:25 scottr Exp $	*/
 
 /*
+ * Copyright (c) 1996, 1997 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1982, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -35,6 +37,8 @@
  *	@(#)hpibvar.h	8.1 (Berkeley) 6/10/93
  */
 
+#include <sys/queue.h>
+
 #define	HPIB_IPL(x)	((((x) >> 4) & 0x3) + 3)
 
 #define	HPIBA		32
@@ -66,16 +70,94 @@
 #define	C_UNT_P		0xdf	/*  with odd parity */
 #define	C_SCG		0x60	/* Secondary group commands */
 
-struct	hpib_softc {
-	struct	hp_ctlr *sc_hc;
-	int	sc_flags;
-	struct	devqueue sc_dq;
-	struct	devqueue sc_sq;
+struct hpibbus_softc;
+
+/*
+ * Each of the HP-IB controller drivers fills in this structure, which
+ * is used by the indirect driver to call controller-specific functions.
+ */
+struct	hpib_controller {
+	void	(*hpib_reset)(struct hpibbus_softc *);
+	int	(*hpib_send)(struct hpibbus_softc *,
+		    int, int, void *, int);
+	int	(*hpib_recv)(struct hpibbus_softc *,
+		    int, int, void *, int);
+	int	(*hpib_ppoll)(struct hpibbus_softc *);
+	void	(*hpib_ppwatch)(void *);
+	void	(*hpib_go)(struct hpibbus_softc *,
+		    int, int, void *, int, int, int);
+	void	(*hpib_done)(struct hpibbus_softc *);
+	int	(*hpib_intr)(void *);
+};
+
+/*
+ * Attach an HP-IB bus to an HP-IB controller.
+ */
+struct hpibdev_attach_args {
+	struct	hpib_controller *ha_ops;	/* controller ops vector */
+	int	ha_type;			/* XXX */
+	int	ha_ba;
+	struct hpibbus_softc **ha_softcpp;	/* XXX */
+};
+
+/*
+ * Attach an HP-IB device to an HP-IB bus.
+ */
+struct hpibbus_attach_args {
+	u_int16_t ha_id;		/* device id */
+	int	ha_slave;		/* HP-IB bus slave */
+	int	ha_punit;		/* physical unit on slave */
+};
+
+/* Locator short-hand */
+#define	hpibbuscf_slave		cf_loc[0]
+#define	hpibbuscf_punit		cf_loc[1]
+
+#define	HPIBBUS_SLAVE_UNK	-1
+#define	HPIBBUS_PUNIT_UNK	-1
+
+#define	HPIB_NSLAVES		8	/* number of slaves on a bus */
+#define	HPIB_NPUNITS		2	/* number of punits per slave */
+
+/*
+ * An HP-IB job queue entry.  Slave drivers have one of these used
+ * to queue requests with the controller.
+ */
+struct hpibqueue {
+	TAILQ_ENTRY(hpibqueue) hq_list;	/* entry on queue */
+	void	*hq_softc;		/* slave's softc */
+	int	hq_slave;		/* slave on bus */
+
+	/*
+	 * Callbacks used to start and stop the slave driver.
+	 */
+	void	(*hq_start)(void *);
+	void	(*hq_go)(void *);
+	void	(*hq_intr)(void *);
+};
+
+struct dmaqueue;
+
+/*
+ * Software state per HP-IB bus.
+ */
+struct hpibbus_softc {
+	struct	device sc_dev;		/* generic device glue */
+	struct	hpib_controller *sc_ops; /* controller ops vector */
+	volatile int sc_flags;		/* misc flags */
+	struct	dmaqueue *sc_dq;
+	TAILQ_HEAD(, hpibqueue) sc_queue;
 	int	sc_ba;
 	int	sc_type;
 	char	*sc_addr;
 	int	sc_count;
 	int	sc_curcnt;
+
+	/*
+	 * HP-IB is an indirect bus; this cheezy resource map
+	 * keeps track of slave/punit allocations.
+	 */
+	char	sc_rmap[HPIB_NSLAVES][HPIB_NPUNITS];
 };
 
 /* sc_flags */
@@ -87,10 +169,28 @@ struct	hpib_softc {
 #define	HPIBF_DMA16	0x8000
 
 #ifdef _KERNEL
-extern	struct hpib_softc hpib_softc[];
 extern	caddr_t internalhpib;
 extern	int hpibtimeout;
 extern	int hpibdmathresh;
-void	fhpibppwatch __P((void *arg));
-void	nhpibppwatch __P((void *arg));
+
+void	hpibreset(int);
+int	hpibsend(int, int, int, void *, int);
+int	hpibrecv(int, int, int, void *, int);
+int	hpibustart(int);
+void	hpibstart(void *);
+void	hpibgo(int, int, int, void *, int, int, int);
+void	hpibdone(void *);
+int	hpibpptest(int, int);
+void	hpibppclear(int);
+void	hpibawait(int);
+int	hpibswait(int, int);
+int	hpibid(int, int);
+
+int	hpibreq(struct device *, struct hpibqueue *);
+void	hpibfree(struct device *, struct hpibqueue *);
+int	hpibbus_alloc(struct hpibbus_softc *, int, int);
+void	hpibbus_free(struct hpibbus_softc *, int, int);
+
+int	hpibintr(void *);
+int	hpibdevprint(void *, const char *);
 #endif

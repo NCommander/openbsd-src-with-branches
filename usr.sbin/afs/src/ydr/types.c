@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -39,11 +38,11 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: types.c,v 1.3 1998/02/19 05:17:08 assar Exp $");
+RCSID("$Id: types.c,v 1.7 1999/03/19 06:06:30 lha Exp $");
 #endif
 
 #include <stdio.h>
-#include <mem.h>
+#include <roken.h>
 #include "types.h"
 #include "lex.h"
 
@@ -55,7 +54,7 @@ define_const (char *name, int value)
      s = addsym (name);
 
      if (s->type != TUNDEFINED) {
-	  error_message ("Redeclaration of %s\n", s->name);
+	  error_message (1, "Redeclaration of %s\n", s->name);
 	  return NULL;
      }
      s->type = TCONST;
@@ -71,7 +70,7 @@ define_enum (char *name, List *list)
      s = addsym (name);
 
      if (s->type != TUNDEFINED) {
-	  error_message ("Redeclaration of %s\n", s->name);
+	  error_message (1, "Redeclaration of %s\n", s->name);
 	  return NULL;
      }
      s->type = TENUM;
@@ -86,13 +85,21 @@ define_struct (char *name)
 
      s = addsym (name);
 
-     if (s->type != TUNDEFINED) {
-	  error_message ("Redeclaration of %s\n", s->name);
+     if (s->type != TSTRUCT && s->type != TUNDEFINED) {
+	  error_message (1, "Redeclaration of %s as a different type\n",
+			 s->name);
 	  return NULL;
      }
      s->type = TSTRUCT;
      s->u.list = NULL;
      return s;
+}
+
+Symbol *
+set_struct_body_sym (Symbol *s, List *list)
+{
+    s->u.list = list;
+    return s;
 }
 
 Symbol *
@@ -102,11 +109,10 @@ set_struct_body (char *name, List *list)
 
     s = findsym(name);
     if (s == NULL) {
-	error_message("struct %s not declared", name);
+	error_message(1, "struct %s not declared", name);
 	return NULL;
     }
-    s->u.list = list;
-    return s;
+    return set_struct_body_sym (s, list);
 }
 
 Symbol *
@@ -117,7 +123,7 @@ define_typedef (StructEntry *entry)
      s = addsym (entry->name);
 
      if (s->type != TUNDEFINED) {
-	  error_message ("Redeclaration of %s\n", s->name);
+	  error_message (1, "Redeclaration of %s\n", s->name);
 	  return NULL;
      }
      s->type = TTYPEDEF;
@@ -136,7 +142,7 @@ define_proc (char *name, List *args, unsigned id)
      s = addsym (name);
 
      if (s->type != TUNDEFINED) {
-	  error_message ("Redeclaration of %s\n", s->name);
+	  error_message (1, "Redeclaration of %s\n", s->name);
 	  return NULL;
      }
      s->type = TPROC;
@@ -153,7 +159,7 @@ createenumentry (char *name, int value)
      s = addsym (name);
 
      if (s->type != TUNDEFINED) {
-	  error_message ("Redeclaration of %s\n", s->name);
+	  error_message (1,"Redeclaration of %s\n", s->name);
 	  return NULL;
      }
      s->type = TENUMVAL;
@@ -172,5 +178,21 @@ createstructentry (char *name, Type *type)
      return e;
 }
 
-Symbol *
-define_proc (char *name, List *params, unsigned id);
+struct Type *
+create_type (TypeType type, Symbol *symbol, unsigned size,
+	     Type *subtype, Type *indextype, int flags)
+{
+    Type *t;
+
+    t = emalloc(sizeof(*t));
+
+    t->type = type;
+    t->symbol = symbol;
+    t->size = size;
+    t->subtype = subtype;
+    t->indextype = indextype;
+    t->flags = flags;
+
+    return t;
+}
+

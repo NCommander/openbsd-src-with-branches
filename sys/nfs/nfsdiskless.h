@@ -1,4 +1,5 @@
-/*	$NetBSD: nfsdiskless.h,v 1.7 1994/06/29 06:42:31 cgd Exp $	*/
+/*	$OpenBSD: nfsdiskless.h,v 1.6 2001/11/14 23:37:33 mickey Exp $	*/
+/*	$NetBSD: nfsdiskless.h,v 1.9 1996/02/18 11:54:00 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -35,8 +36,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)nfsdiskless.h	8.1 (Berkeley) 6/10/93
+ *	@(#)nfsdiskless.h	8.2 (Berkeley) 3/30/95
  */
+
+#ifndef _NFS_DISKLESS_H_
+#define _NFS_DISKLESS_H_
 
 /*
  * Structure that must be initialized for a diskless nfs client.
@@ -52,9 +56,16 @@
 struct nfs_dlmount {
 	struct sockaddr_in ndm_saddr;  		/* Address of file server */
 	char		ndm_host[MNAMELEN]; 	/* Host name for mount pt */
-	u_char		ndm_fh[NFS_FHSIZE]; 	/* The file's file handle */
+	u_char		ndm_fh[NFSX_V2FH]; 	/* The file's file handle */
 };
 struct nfs_diskless {
+	struct sockaddr_in nd_boot;	/* Address of boot server */
 	struct nfs_dlmount nd_root; 	/* Mount info for root */
 	struct nfs_dlmount nd_swap; 	/* Mount info for swap */
 };
+
+int nfs_boot_init(struct nfs_diskless *nd, struct proc *procp);
+int nfs_boot_getfh(struct sockaddr_in *bpsin, char *key,
+		struct nfs_dlmount *ndmntp, int retries);
+#endif	/* _NFS_DISKLESS_H_ */
+

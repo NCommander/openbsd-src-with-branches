@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: prom.h,v 1.8 2001/01/15 19:50:38 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -63,7 +64,7 @@
 #define ENVIRONTYPE_NETBOOT	4
 #define ENVIRONTYPE_MEMSIZE	5
 
-#ifndef LOCORE
+#ifndef _LOCORE
 struct prom_netctrl {
 	u_char	dev;
 	u_char	ctrl;
@@ -147,9 +148,45 @@ struct mvmeprom_args {
         u_int	conf_blk;
         char	*arg_start;
         char	*arg_end;
+	char	*nbarg_start;
+	char	*nbarg_end;
+	u_int	cputyp;
 };
 
 #endif
 
 #define MVMEPROM_CALL(x) \
-	asm volatile (__CONCAT("trap #15; .short ", __STRING(x)) )
+	__asm__ __volatile__ (__CONCAT("trap #15; .short ", __STRING(x)) )
+#define MVMEPROM_NOARG() \
+	__asm__ __volatile__ ("clrl sp@-")
+#define MVMEPROM_ARG1(arg) \
+	__asm__ __volatile__ ("movel %0, sp@-"::"d" (arg))
+#define MVMEPROM_ARG2(arg) \
+	__asm__ __volatile__ ("movel %0, sp@-"::"d" (arg))
+#define MVMEPROM_GETRES(ret) \
+	__asm__ __volatile__ ("movel sp@+,%0": "=d" (ret):)
+#define MVMEPROM_RETURN(ret) \
+	MVMEPROM_GETRES(ret); \
+	return (ret);			/* return a value (int) */
+#define MVMEPROM_RETURN_BYTE(ret) \
+	MVMEPROM_GETRES(ret); \
+	return((ret >> 24) & 0xff);	/* return a byte, ret must be int */
+#define MVMEPROM_STATRET(ret) \
+	MVMEPROM_GETRES(ret); \
+	return (!(ret & 0x4));		/* return a 'status' */
+
+#define MVMEPROM_REG_DEVLUN	"d0"
+#define MVMEPROM_REG_CTRLLUN	"d1"
+#define MVMEPROM_REG_FLAGS	"d4"
+#define MVMEPROM_REG_CTRLADDR	"a0"
+#define MVMEPROM_REG_ENTRY	"a1"
+#define MVMEPROM_REG_CONFBLK	"a2"
+#define MVMEPROM_REG_NBARGSTART	"a3"
+#define MVMEPROM_REG_NBARGEND	"a4"
+#define MVMEPROM_REG_ARGSTART	"a5"
+#define MVMEPROM_REG_ARGEND	"a6"
+
+#ifndef RB_NOSYM
+#define RB_NOSYM 0x4000
+#endif
+

@@ -33,14 +33,14 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)strcpy.3	5.4 (Berkeley) 6/29/91
-.\"	$Id: strcpy.3,v 1.2 1993/08/01 07:43:51 mycroft Exp $
+.\"	$OpenBSD: strcpy.3,v 1.9 1999/06/29 18:01:33 aaron Exp $
 .\"
 .Dd June 29, 1991
 .Dt STRCPY 3
-.Os BSD 4
+.Os
 .Sh NAME
-.Nm strcpy
+.Nm strcpy ,
+.Nm strncpy
 .Nd copy strings
 .Sh SYNOPSIS
 .Fd #include <string.h>
@@ -53,8 +53,7 @@ The
 .Fn strcpy
 and
 .Fn strncpy
-functions
-copy the string
+functions copy the string
 .Fa src
 to
 .Fa dst
@@ -62,7 +61,6 @@ to
 .Ql \e0
 character).
 .Pp
-The
 .Fn strncpy
 copies not more than
 .Fa len
@@ -88,35 +86,70 @@ The
 .Fn strcpy
 and
 .Fn strncpy
-functions
-return
+functions return
 .Fa dst .
 .Sh EXAMPLES
 The following sets
-.Dq Li chararray
+.Va chararray
 to
-.Dq Li abc\e0\e0\e0 :
+.Dq abc\e0\e0\e0 :
 .Bd -literal -offset indent
-(void)strncpy(chararray, "abc", 6).
+(void)strncpy(chararray, "abc", 6);
 .Ed
 .Pp
 The following sets
-.Dq Li chararray
+.Va chararray
 to
-.Dq Li abcdef :
+.Dq abcdef
+and does
+.Em not
+null terminate
+.Va chararray
+because the source string is >= the length parameter.
+.Fn strncpy
+.Em only
+null terminates the destination string when then length of the source
+string is less than the length parameter.
 .Bd -literal -offset indent
 (void)strncpy(chararray, "abcdefgh", 6);
+.Ed
+.Pp
+The following copies as many characters from
+.Va input
+to
+.Va buf
+as will fit and null terminates the result.
+Because
+.Fn strncpy
+does
+.Em not
+guarantee to null terminate the string itself, we must do this by hand.
+.Bd -literal -offset indent
+char buf[BUFSIZ];
+
+(void)strncpy(buf, input, sizeof(buf) - 1);
+buf[sizeof(buf) - 1] = '\e0';
+.Ed
+.Pp
+Note that
+.Xr strlcpy 3
+is a better choice for this kind of operation.
+The equivalent using
+.Xr strlcpy 3
+is simply:
+.Bd -literal -offset indent
+(void)strlcpy(buf, input, sizeof(buf));
 .Ed
 .Sh SEE ALSO
 .Xr bcopy 3 ,
 .Xr memccpy 3 ,
 .Xr memcpy 3 ,
-.Xr memmove 3
+.Xr memmove 3 ,
+.Xr strlcpy 3
 .Sh STANDARDS
 The
 .Fn strcpy
 and
 .Fn strncpy
-functions
-conform to
+functions conform to
 .St -ansiC .

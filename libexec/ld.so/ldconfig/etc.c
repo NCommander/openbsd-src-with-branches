@@ -1,4 +1,4 @@
-/* * $OpenBSD: etc.c,v 1.2 1998/03/26 19:46:18 niklas Exp $*/
+/* * $OpenBSD: etc.c,v 1.2 2001/01/30 02:39:04 brad Exp $*/
 /*
  */
 
@@ -7,13 +7,28 @@
 #include <string.h>
 
 /*
+ * Like strdup but get fatal error if memory is exhausted.
+ */
+char *
+xstrdup(s)
+	char*s;
+{
+	char *result = strdup(s);
+
+	if (!result)
+		errx(1, "virtual memory exhausted");
+
+	return result;
+}
+
+/*
  * Like malloc but get fatal error if memory is exhausted.
  */
 void *
 xmalloc(size)
 	size_t size;
 {
-	register void	*result = (void *)malloc(size);
+	void	*result = (void *)malloc(size);
 
 	if (!result)
 		errx(1, "virtual memory exhausted");
@@ -29,7 +44,7 @@ xrealloc(ptr, size)
 	void *ptr;
 	size_t size;
 {
-	register void	*result;
+	void	*result;
 
 	if (ptr == NULL)
 		result = (void *)malloc(size);
@@ -50,11 +65,11 @@ char *
 concat(s1, s2, s3)
 	const char *s1, *s2, *s3;
 {
-	register int	len1 = strlen(s1),
+	int	len1 = strlen(s1),
 			len2 = strlen(s2),
 			len3 = strlen(s3);
 
-	register char *result = (char *)xmalloc(len1 + len2 + len3 + 1);
+	char *result = (char *)xmalloc(len1 + len2 + len3 + 1);
 
 	strcpy(result, s1);
 	strcpy(result + len1, s2);

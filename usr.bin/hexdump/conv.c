@@ -1,6 +1,9 @@
+/*	$OpenBSD: conv.c,v 1.3 2001/07/12 05:17:10 deraadt Exp $	*/
+/*	$NetBSD: conv.c,v 1.7 2001/12/07 15:14:29 bjh21 Exp $	*/
+
 /*
- * Copyright (c) 1989 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1989, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,19 +36,23 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)conv.c	5.4 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: conv.c,v 1.2 1993/08/01 18:14:50 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: conv.c,v 1.3 2001/07/12 05:17:10 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
+
+#include <stdio.h>
 #include <ctype.h>
+
 #include "hexdump.h"
 
+void
 conv_c(pr, p)
 	PR *pr;
 	u_char *p;
 {
-	extern int deprecated;
-	char buf[10], *str;
+	char buf[10];
+	char const *str;
 
 	switch(*p) {
 	case '\0':
@@ -84,18 +91,19 @@ conv_c(pr, p)
 		*pr->cchar = 'c';
 		(void)printf(pr->fmt, *p);
 	} else {
-		(void)sprintf(str = buf, "%03o", (int)*p);
+		(void)sprintf(buf, "%03o", (int)*p);
+		str = buf;
 strpr:		*pr->cchar = 's';
 		(void)printf(pr->fmt, str);
 	}
 }
 
+void
 conv_u(pr, p)
 	PR *pr;
 	u_char *p;
 {
-	extern int deprecated;
-	static char *list[] = {
+	static const char *list[] = {
 		"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
 		 "bs",  "ht",  "lf",  "vt",  "ff",  "cr",  "so",  "si",
 		"dle", "dcl", "dc2", "dc3", "dc4", "nak", "syn", "etb",
@@ -112,7 +120,7 @@ conv_u(pr, p)
 	} else if (*p == 0x7f) {
 		*pr->cchar = 's';
 		(void)printf(pr->fmt, "del");
-	} else if (deprecated && *p == 0x20) {	/* od replace space with sp */
+	} else if (deprecated && *p == 0x20) {	/* od replaced space with sp */
 		*pr->cchar = 's';
 		(void)printf(pr->fmt, " sp");
 	} else if (isprint(*p)) {

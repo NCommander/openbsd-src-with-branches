@@ -1,3 +1,4 @@
+/*	$OpenBSD: ctl.c,v 1.4 1998/08/18 04:02:09 millert Exp $	*/
 /*	$NetBSD: ctl.c,v 1.3 1994/12/09 02:14:10 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)ctl.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: ctl.c,v 1.3 1994/12/09 02:14:10 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ctl.c,v 1.4 1998/08/18 04:02:09 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -46,11 +47,8 @@ static char rcsid[] = "$NetBSD: ctl.c,v 1.3 1994/12/09 02:14:10 jtc Exp $";
  * the progress
  */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <protocols/talkd.h>
-#include <netinet/in.h>
 #include "talk.h"
+#include <arpa/inet.h>
 #include "talk_ctl.h"
 
 struct	sockaddr_in daemon_addr = { sizeof(daemon_addr), AF_INET };
@@ -69,6 +67,7 @@ int	invitation_waiting = 0;
 
 CTL_MSG msg;
 
+void
 open_sockt()
 {
 	int length;
@@ -77,16 +76,17 @@ open_sockt()
 	my_addr.sin_port = 0;
 	sockt = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockt <= 0)
-		p_error("Bad socket");
+		quit("Bad socket", 1);
 	if (bind(sockt, (struct sockaddr *)&my_addr, sizeof(my_addr)) != 0)
-		p_error("Binding local socket");
+		quit("Binding local socket", 1);
 	length = sizeof(my_addr);
 	if (getsockname(sockt, (struct sockaddr *)&my_addr, &length) == -1)
-		p_error("Bad address for socket");
+		quit("Bad address for socket", 1);
 }
 
 /* open the ctl socket */
-open_ctl() 
+void
+open_ctl()
 {
 	int length;
 
@@ -94,24 +94,25 @@ open_ctl()
 	ctl_addr.sin_addr = my_machine_addr;
 	ctl_sockt = socket(AF_INET, SOCK_DGRAM, 0);
 	if (ctl_sockt <= 0)
-		p_error("Bad socket");
+		quit("Bad socket", 1);
 	if (bind(ctl_sockt,
 	    (struct sockaddr *)&ctl_addr, sizeof(ctl_addr)) != 0)
-		p_error("Couldn't bind to control socket");
+		quit("Couldn't bind to control socket", 1);
 	length = sizeof(ctl_addr);
 	if (getsockname(ctl_sockt,
 	    (struct sockaddr *)&ctl_addr, &length) == -1)
-		p_error("Bad address for ctl socket");
+		quit("Bad address for ctl socket", 1);
 }
 
 /* print_addr is a debug print routine */
+void
 print_addr(addr)
 	struct sockaddr_in addr;
 {
 	int i;
 
-	printf("addr = %x, port = %o, family = %o zero = ",
-		addr.sin_addr, addr.sin_port, addr.sin_family);
+	printf("addr = %s, port = %o, family = %o zero = ",
+		inet_ntoa(addr.sin_addr), addr.sin_port, addr.sin_family);
 	for (i = 0; i<8;i++)
 	printf("%o ", (int)addr.sin_zero[i]);
 	putchar('\n');

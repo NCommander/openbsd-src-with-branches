@@ -1,3 +1,4 @@
+/*	$OpenBSD: sbicreg.h,v 1.3 1997/01/16 09:25:17 niklas Exp $	*/
 /*	$NetBSD: sbicreg.h,v 1.2 1994/10/26 02:04:40 cgd Exp $	*/
 
 /*
@@ -310,9 +311,17 @@
 #define SBIC_MACHINE_DMA_MODE	SBIC_CTL_DMA
 
 typedef struct {
+#ifdef APOLLO
+	PAD(pad1);
+	PAD(pad2);
+#endif
         volatile unsigned char  sbic_asr;	/* r : Aux Status Register */
 #define sbic_address sbic_asr			/* w : desired register no */
-        PAD(pad1);
+        PAD(pad3);
+#ifdef APOLLO
+	PAD(pad4);
+	PAD(pad5);
+#endif
         volatile unsigned char  sbic_value;	/* rw: register value */
 } sbic_padded_ind_regmap_t;
 typedef volatile sbic_padded_ind_regmap_t *sbic_regmap_p;
@@ -395,7 +404,7 @@ typedef volatile sbic_padded_ind_regmap_t *sbic_regmap_p;
 
 #define SBIC_LOAD_COMMAND(regs,cmd,cmdsize) do { \
 	int n=(cmdsize)-1; \
-	char *ptr = (char*)(cmd); \
+	char *ptr = (char *)(cmd); \
 	sbic_write_reg(regs,SBIC_cdb1,*ptr++); \
 	while (n-- > 0) (regs)->sbic_value = *ptr++; \
 } while (0)
