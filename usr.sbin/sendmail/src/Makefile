@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 1997/04/21 03:39:19 millert Exp $
+#	$OpenBSD: Makefile,v 1.13 1997/04/27 20:57:06 millert Exp $
 #
 #  OpenBSD Makefile
 #
@@ -23,6 +23,13 @@ DBMDEF+=-DNIS
 .endif
 
 CFLAGS+=-I${.CURDIR} ${DBMDEF} -DNETISO
+
+.if (${TCP_WRAPPERS} == "yes")
+CFLAGS+=-DTCPWRAPPERS
+
+DPADD=	${LIBWRAP}
+LDADD=	-lwrap
+.endif
 
 SRCS=	alias.c arpadate.c clock.c collect.c conf.c convtime.c daemon.c \
 	deliver.c domain.c envelope.c err.c headers.c macro.c main.c map.c \
