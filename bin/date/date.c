@@ -1,4 +1,4 @@
-/*	$OpenBSD: date.c,v 1.10 1997/09/17 23:23:03 bri Exp $	*/
+/*	$OpenBSD: date.c,v 1.11 1998/09/01 04:57:27 pjanzen Exp $	*/
 /*	$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)date.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: date.c,v 1.10 1997/09/17 23:23:03 bri Exp $";
+static char rcsid[] = "$OpenBSD: date.c,v 1.11 1998/09/01 04:57:27 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -191,7 +191,8 @@ setthetime(p)
 		if (yearset) {
 			lt->tm_year += ATOI2(p);
 		} else {
-			lt->tm_year = ATOI2(p) + 1900 - TM_YEAR_BASE;
+			lt->tm_year = ATOI2(p);
+			lt->tm_year += (1900 - TM_YEAR_BASE);
 			if (lt->tm_year < 69)		/* hack for 2000 ;-} */
 				lt->tm_year += 100;
 		}
