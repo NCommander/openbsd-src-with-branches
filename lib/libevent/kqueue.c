@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue.c,v 1.5 2002/07/10 14:41:31 art Exp $	*/
+/*	$OpenBSD: kqueue.c,v 1.6 2002/09/08 07:52:33 itojun Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -93,7 +93,7 @@ kq_init(void)
 
 	memset(&kqop, 0, sizeof(kqop));
 
-	/* Initalize the kernel queue */
+	/* Initialize the kernel queue */
 	
 	if ((kq = kqueue()) == -1) {
 		log_error("kqueue");
@@ -102,7 +102,7 @@ kq_init(void)
 
 	kqop.kq = kq;
 
-	/* Initalize fields */
+	/* Initialize fields */
 	kqop.changes = malloc(NEVENT * sizeof(struct kevent));
 	if (kqop.changes == NULL)
 		return (NULL);

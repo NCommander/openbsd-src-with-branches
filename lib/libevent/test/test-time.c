@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: test-time.c,v 1.2 2002/06/25 15:50:16 mickey Exp $	*/
 
 /*
  * Compile with:
@@ -50,13 +50,13 @@ main (int argc, char **argv)
 	struct timeval tv;
 	int i;
 
-	/* Initalize the event library */
+	/* Initialize the event library */
 	event_init();
 
 	for (i = 0; i < NEVENT; i++) {
 		ev[i] = malloc(sizeof(struct event));
 
-		/* Initalize one event */
+		/* Initialize one event */
 		timeout_set(ev[i], time_cb, ev[i]);
 		tv.tv_sec = 0;
 		tv.tv_usec = random() % 50000L;
