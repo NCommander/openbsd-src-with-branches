@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.20 1999/11/22 12:55:16 mjacob Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.21 1999/12/16 05:17:36 mjacob Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -87,6 +87,11 @@ typedef	int			boolean;
 
 struct buf;
 struct scsi_xfer;
+
+/*
+ * Temporary hack 
+ */
+extern int scsi_autoconf;
 
 /*
  * These entrypoints are called by the high-end drivers to get services from
