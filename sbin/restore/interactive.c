@@ -1,4 +1,4 @@
-/*	$OpenBSD: interactive.c,v 1.3 1996/12/16 17:11:43 deraadt Exp $	*/
+/*	$OpenBSD: interactive.c,v 1.4 1997/07/05 20:51:22 millert Exp $	*/
 /*	$NetBSD: interactive.c,v 1.10 1997/03/19 08:42:52 lukem Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)interactive.c	8.3 (Berkeley) 9/13/94";
 #else
-static char rcsid[] = "$OpenBSD: interactive.c,v 1.3 1996/12/16 17:11:43 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: interactive.c,v 1.4 1997/07/05 20:51:22 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,6 +54,7 @@ static char rcsid[] = "$OpenBSD: interactive.c,v 1.3 1996/12/16 17:11:43 deraadt
 #include <setjmp.h>
 #include <glob.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -772,8 +773,11 @@ void
 onintr(signo)
 	int signo;
 {
+	int save_errno = errno;
+
 	if (command == 'i' && runshell)
 		longjmp(reset, 1);
 	if (reply("restore interrupted, continue") == FAIL)
 		exit(1);
+	errno = save_errno;
 }
