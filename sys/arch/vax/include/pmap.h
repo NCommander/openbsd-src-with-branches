@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.6 1997/09/12 09:21:22 maja Exp $     */
+/*      $OpenBSD: pmap.h,v 1.7 1998/03/01 00:37:49 niklas Exp $     */
 /*      $NetBSD: pmap.h,v 1.19 1997/07/06 22:38:29 ragge Exp $     */
 
 /* 
@@ -65,7 +65,7 @@ typedef struct pmap {
 	struct pcb		*pm_pcb; /* Pointer to PCB for this pmap */
 	int                      ref_count;   /* reference count        */
 	struct pmap_statistics   stats;       /* statistics             */
-	simple_lock_data_t       lock;        /* lock on pmap           */
+	simple_lock_data_t       pm_lock;     /* lock on pmap           */
 } *pmap_t;
 
 /*
