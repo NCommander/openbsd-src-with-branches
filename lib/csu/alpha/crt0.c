@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.7 2002/02/16 21:27:20 millert Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.8 2003/02/28 18:05:51 deraadt Exp $	*/
 /*	$NetBSD: crt0.c,v 1.1 1996/09/12 16:59:02 cgd Exp $	*/
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: crt0.c,v 1.7 2002/02/16 21:27:20 millert Exp $";
+static char rcsid[] = "$OpenBSD: crt0.c,v 1.8 2003/02/28 18:05:51 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdlib.h>
@@ -50,6 +50,9 @@ extern void	_mcleanup(void);
 extern unsigned char _etext, _eprol;
 #endif /* MCRT0 */
 
+__asm(".globl _start");
+__asm(".type _start@function");
+__asm("_start = __start");
 void
 __start(sp, cleanup, obj)
 	char **sp;
