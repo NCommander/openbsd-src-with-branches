@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.h,v 1.17 2004/08/11 21:43:05 avsm Exp $	*/
+/*	$OpenBSD: misc.h,v 1.18 2004/10/29 22:53:56 djm Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -47,3 +47,4 @@ char	*tilde_expand_filename(const char *, uid_t);
 
 char	*read_passphrase(const char *, int);
 int	 ask_permission(const char *, ...) __attribute__((format(printf, 1, 2)));
+int	 read_keyfile_line(FILE *, const char *, char *, size_t, int *);
