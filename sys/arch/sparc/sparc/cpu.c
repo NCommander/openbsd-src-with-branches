@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.24 2000/02/19 21:45:56 art Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.25 2000/02/19 22:04:23 art Exp $	*/
 /*	$NetBSD: cpu.c,v 1.56 1997/09/15 20:52:36 pk Exp $ */
 
 /*
@@ -911,7 +911,7 @@ viking_mmu_enable()
 /* ROSS Hypersparc */
 struct module_info module_hypersparc = {		/* UNTESTED */
 	CPUTYP_UNKNOWN,
-	VAC_NONE,
+	VAC_WRITEBACK,
 	cpumatch_hypersparc,
 	getcacheinfo_obp,
 	0,
