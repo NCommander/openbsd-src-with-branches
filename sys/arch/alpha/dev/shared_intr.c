@@ -1,3 +1,4 @@
+/* $OpenBSD: shared_intr.c,v 1.13 2000/03/19 01:46:18 thorpej Exp $ */
 /* $NetBSD: shared_intr.c,v 1.13 2000/03/19 01:46:18 thorpej Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/* $OpenBSD: sgmapvar.h,v 1.10 1998/08/14 16:50:02 thorpej Exp $ */
 /* $NetBSD: sgmapvar.h,v 1.10 1998/08/14 16:50:02 thorpej Exp $ */
 
 /*-

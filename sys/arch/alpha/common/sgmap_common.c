@@ -1,3 +1,4 @@
+/* $OpenBSD: sgmap_common.c,v 1.13 2000/06/29 09:02:57 mrg Exp $ */
 /* $NetBSD: sgmap_common.c,v 1.13 2000/06/29 09:02:57 mrg Exp $ */
 
 /*-

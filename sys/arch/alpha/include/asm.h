@@ -1,3 +1,4 @@
+/* $OpenBSD: asm.h,v 1.23 2000/06/23 12:18:45 kleink Exp $ */
 /* $NetBSD: asm.h,v 1.23 2000/06/23 12:18:45 kleink Exp $ */
 
 /* 

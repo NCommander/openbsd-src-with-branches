@@ -1,3 +1,4 @@
+/* $OpenBSD: pmap.h,v 1.35 2000/06/08 03:10:06 thorpej Exp $ */
 /* $NetBSD: pmap.h,v 1.35 2000/06/08 03:10:06 thorpej Exp $ */
 
 /*-

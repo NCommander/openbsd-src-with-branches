@@ -1,3 +1,4 @@
+/* $OpenBSD: vmparam.h,v 1.18 2000/05/22 17:13:54 thorpej Exp $ */
 /* $NetBSD: vmparam.h,v 1.18 2000/05/22 17:13:54 thorpej Exp $ */
 
 /*

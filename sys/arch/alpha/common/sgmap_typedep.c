@@ -1,3 +1,4 @@
+/* $OpenBSD: sgmap_typedep.c,v 1.13 1999/07/08 18:05:23 thorpej Exp $ */
 /* $NetBSD: sgmap_typedep.c,v 1.13 1999/07/08 18:05:23 thorpej Exp $ */
 
 /*-

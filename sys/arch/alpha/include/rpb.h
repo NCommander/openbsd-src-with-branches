@@ -1,3 +1,4 @@
+/* $OpenBSD: rpb.h,v 1.38 2000/07/06 23:29:13 thorpej Exp $ */
 /* $NetBSD: rpb.h,v 1.38 2000/07/06 23:29:13 thorpej Exp $ */
 
 /*

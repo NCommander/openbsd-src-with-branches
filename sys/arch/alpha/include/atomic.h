@@ -1,3 +1,4 @@
+/* $OpenBSD: atomic.h,v 1.5 2000/06/08 02:54:55 thorpej Exp $ */
 /* $NetBSD: atomic.h,v 1.5 2000/06/08 02:54:55 thorpej Exp $ */
 
 /*-

@@ -1,3 +1,4 @@
+/* $OpenBSD: dec_kn20aa.c,v 1.42 2000/05/22 20:13:32 thorpej Exp $ */
 /* $NetBSD: dec_kn20aa.c,v 1.42 2000/05/22 20:13:32 thorpej Exp $ */
 
 /*
