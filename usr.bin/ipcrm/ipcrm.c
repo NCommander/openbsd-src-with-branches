@@ -129,7 +129,7 @@ main(int argc, char *argv[])
 			if (result < 0) {
 				errflg++;
 				if (!signaled)
-					warn("%sid(%d): ",
+					warn("%sid(%d)",
 					    IPC_TO_STR(toupper(c)), target_id);
 				else
 					warnx("%ss are not configured in the running kernel",
@@ -153,7 +153,7 @@ main(int argc, char *argv[])
 			if (result < 0) {
 				errflg++;
 				if (!signaled)
-					warn("%skey(%ld): ", IPC_TO_STR(c),
+					warn("%skey(%ld)", IPC_TO_STR(c),
 					    target_key);
 				else
 					warnx("%ss are not configured in the running kernel",
