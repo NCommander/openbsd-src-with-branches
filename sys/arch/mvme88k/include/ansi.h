@@ -1,4 +1,4 @@
-/*	$OpenBSD: ansi.h,v 1.9 2000/03/03 00:54:53 todd Exp $	*/
+/*	$OpenBSD: ansi.h,v 1.10 2001/01/14 20:25:23 smurph Exp $	*/
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -77,6 +77,7 @@
  * defined for ctype.h.
  */
 #define	_BSD_WCHAR_T_	int			/* wchar_t */
+#define	_BSD_WINT_T_	int			/* wint_t */
 #define	_BSD_RUNE_T_	int			/* rune_t */
 
 /*
@@ -85,4 +86,4 @@
  */
 #define _BSD_OFF_T_	long long		/* file offset */
 
-#endif __MACHINE_ANSI_H__
+#endif /* __MACHINE_ANSI_H__ */
