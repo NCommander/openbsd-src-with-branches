@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.34 2004/12/07 06:33:10 jfb Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.35 2004/12/07 17:10:56 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -128,6 +128,8 @@ struct cvs_op {
 };
 
 
+#define CVS_ROOT_CONNECTED    0x01
+
 struct cvsroot {
 	char   *cr_str;
 	u_int   cr_method;
@@ -140,6 +142,7 @@ struct cvsroot {
 	u_int   cr_ref;
 
 	/* connection data */
+	u_int   cr_flags;
 	FILE   *cr_srvin;
 	FILE   *cr_srvout;
 	FILE   *cr_srverr;
