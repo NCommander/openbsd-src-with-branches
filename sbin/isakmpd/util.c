@@ -1,4 +1,4 @@
-/* $OpenBSD: util.c,v 1.45 2004/06/23 03:01:53 hshoexer Exp $	 */
+/* $OpenBSD: util.c,v 1.46 2004/06/25 19:42:38 mcbride Exp $	 */
 /* $EOM: util.c,v 1.23 2000/11/23 12:22:08 niklas Exp $	 */
 
 /*
@@ -476,7 +476,7 @@ check_file_secrecy_fd(int fd, char *name, size_t *file_size)
 /* Special for compiling with Boehms GC. See Makefile and sysdep.h  */
 #if defined (USE_BOEHM_GC)
 char *
-my_strdup(const char *x)
+gc_strdup(const char *x)
 {
 	char *strcpy(char *,const char *);
 	char *y = malloc(strlen(x) + 1);
