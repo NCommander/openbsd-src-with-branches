@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.227 2002/06/09 10:55:59 pb Exp $ */
+/*	$OpenBSD: pf.c,v 1.228 2002/06/09 20:20:58 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -41,7 +41,6 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/kernel.h>
-#include <sys/malloc.h>
 #include <sys/time.h>
 #include <sys/pool.h>
 

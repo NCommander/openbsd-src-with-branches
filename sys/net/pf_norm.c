@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.29 2002/06/07 21:14:02 frantzen Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.30 2002/06/08 08:09:11 frantzen Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -32,7 +32,6 @@
 #include <sys/fcntl.h>
 #include <sys/socket.h>
 #include <sys/kernel.h>
-#include <sys/malloc.h>
 #include <sys/time.h>
 #include <sys/pool.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.1 2002/06/09 03:57:18 pb Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.2 2002/06/09 20:20:58 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -42,7 +42,6 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/kernel.h>
-#include <sys/malloc.h>
 #include <sys/time.h>
 #include <sys/pool.h>
 
