@@ -259,6 +259,10 @@ cvs_splitpath(const char *path, char *dir, size_t dlen, char *file, size_t flen)
 	const char *sp;
 	struct stat st;
 
+	rlen = strlen(path);
+	while ((rlen > 0) && (path[rlen - 1] == '/'))
+		path[--rlen] = '\0';
+
 	sp = strrchr(path, '/');
 	if (sp == NULL) {
 		if (stat(path, &st) == -1)
