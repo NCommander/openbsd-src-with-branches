@@ -42,7 +42,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.268 2003/06/04 10:23:48 djm Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.269 2003/06/24 08:23:46 markus Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -1161,7 +1161,10 @@ main(int ac, char **av)
 			 * overwrite any old pid in the file.
 			 */
 			f = fopen(options.pid_file, "w");
-			if (f) {
+			if (f == NULL) {
+				error("Couldn't create pid file \"%s\": %s",
+				    options.pid_file, strerror(errno));
+			} else {
 				fprintf(f, "%ld\n", (long) getpid());
 				fclose(f);
 			}
