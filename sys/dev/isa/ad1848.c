@@ -1,4 +1,4 @@
-/*	$OpenBSD: ad1848.c,v 1.27 2003/02/11 19:20:27 mickey Exp $	*/
+/*	$OpenBSD: ad1848.c,v 1.28 2003/04/27 11:22:53 ho Exp $	*/
 /*	$NetBSD: ad1848.c,v 1.45 1998/01/30 02:02:38 augustss Exp $	*/
 
 /*
@@ -1648,8 +1648,14 @@ ad1848_malloc(addr, direction, size, pool, flags)
 	int flags;
 {
 	struct ad1848_softc *sc = addr;
+	int drq;
 
-	return isa_malloc(sc->sc_isa, 1, size, pool, flags);
+	if (sc->sc_mode == AUMODE_RECORD)
+		drq = sc->sc_recdrq == -1 ? sc->sc_drq : sc->sc_recdrq;
+	else
+		drq = sc->sc_drq;
+
+	return isa_malloc(sc->sc_isa, drq, size, pool, flags);
 }
 
 void
