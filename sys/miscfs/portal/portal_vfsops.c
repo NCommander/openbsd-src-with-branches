@@ -1,4 +1,4 @@
-/*	$OpenBSD: portal_vfsops.c,v 1.17 2003/06/02 23:28:10 millert Exp $	*/
+/*	$OpenBSD: portal_vfsops.c,v 1.18 2003/08/14 07:46:39 mickey Exp $	*/
 /*	$NetBSD: portal_vfsops.c,v 1.14 1996/02/09 22:40:41 christos Exp $	*/
 
 /*
@@ -171,7 +171,7 @@ portal_unmount(mp, mntflags, p)
 	if (mntinvalbuf(mp, 1))
 		return (EBUSY);
 #endif
-	if (rvp->v_usecount > 1)
+	if (rvp->v_usecount > 1 && !(flags & FORCECLOSE))
 		return (EBUSY);
 	if ((error = vflush(mp, rvp, flags)) != 0)
 		return (error);
