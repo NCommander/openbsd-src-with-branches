@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.c,v 1.14 2004/04/18 00:43:27 deraadt Exp $ */
+/*	$OpenBSD: dhcpd.c,v 1.15 2004/04/20 00:27:57 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -130,7 +130,7 @@ main(int argc, char *argv[])
 	icmp_startup(1, lease_pinged);
 
 	if ((pw = getpwnam("_dhcp")) == NULL)
-		error("%m");
+		error("user \"_dhcp\" not found");
 
 	log_perror = 0;
 	if (daemonize)
