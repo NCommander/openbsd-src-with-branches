@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpd.h,v 1.9 2001/02/16 02:15:59 beck Exp $	*/
+/*	$OpenBSD: tcpd.h,v 1.10 2001/03/28 22:06:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, Jason Downs.  All rights reserved.
@@ -44,7 +44,7 @@
 
 /* Structure to describe one communications endpoint. */
 
-#define STRING_LENGTH	128		/* hosts, users, processes */
+#define STRING_LENGTH	256		/* hosts, users, processes */
 
 struct host_info {
     char    name[STRING_LENGTH];	/* access via eval_hostname(host) */
