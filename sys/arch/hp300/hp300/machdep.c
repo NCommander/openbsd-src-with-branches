@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.34 1998/05/04 06:29:03 downsj Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.35 1999/02/04 23:00:24 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.94 1997/06/12 15:46:29 mrg Exp $	*/
 
 /*
@@ -857,7 +857,7 @@ dumpconf()
 	cpu_kcore_hdr.ram_segs[0].size = ctob(dumpsize);
 	cpu_kcore_hdr.mmutype = mmutype;
 	cpu_kcore_hdr.kernel_pa = lowram;
-	cpu_kcore_hdr.sysseg_pa = 0; /* XXX */
+	cpu_kcore_hdr.sysseg_pa = pmap_kernel()->pm_stpa;
 #endif	/* HP300_NEWKVM */
 
 	/* Always skip the first CLBYTES, in case there is a label there. */
