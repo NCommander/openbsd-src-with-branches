@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.11 1996/06/15 07:30:05 etheisen Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.12 1996/06/16 20:05:08 etheisen Exp $	*/
 /*	$NetBSD: exec_elf.c,v 1.6 1996/02/09 18:59:18 christos Exp $	*/
 
 /*
@@ -339,7 +339,7 @@ elf_load_file(p, path, vcset, entry, ap, last)
 	char *bp = NULL;
 	u_long addr = *last;
 
-	bp  = path;
+	bp = path;
 	/*
 	 * 1. open file
 	 * 2. read filehdr
