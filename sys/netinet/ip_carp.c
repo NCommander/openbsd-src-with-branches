@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.45 2004/04/28 00:28:43 mcbride Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.46 2004/05/08 02:53:03 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -731,12 +731,10 @@ carp_send_ad(void *v)
 		advskew = 255;
 	} else {
 		advbase = sc->sc_advbase;
-		if (!carp_suppress_preempt)
+		if (!carp_suppress_preempt || sc->sc_advskew > 240)
 			advskew = sc->sc_advskew;
-		else {
-			if (sc->sc_advskew < 240)
-				advskew = 240;
-		}
+		else
+			advskew = 240;
 		tv.tv_sec = advbase;
 		tv.tv_usec = advskew * 1000000 / 256;
 	}
