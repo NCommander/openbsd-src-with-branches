@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1998 Daniel M. Eischen <eischen@vigrid.com>
  * All rights reserved.

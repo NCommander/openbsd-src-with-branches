@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* ==== test_sock_1.c =========================================================
  * Copyright (c) 1993 by Chris Provenzano, proven@athena.mit.edu
  *

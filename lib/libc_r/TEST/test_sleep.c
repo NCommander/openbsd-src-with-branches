@@ -1,4 +1,5 @@
-/* ==== test_switch.c ============================================================
+/*	$OpenBSD$	*/
+/* ==== test_sleep.c ============================================================
  * Copyright (c) 1993 by Chris Provenzano, proven@athena.mit.edu
  *
  * Description : Test context switch functionality.

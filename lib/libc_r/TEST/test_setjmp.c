@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 #include <setjmp.h>
 #include "test.h"
 

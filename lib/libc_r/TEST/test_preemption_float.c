@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* Test to see if floating point state is being properly maintained
    for each thread.  Different threads doing floating point operations
    simultaneously should not interfere with one another.  This

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* ==== test_pthread_cond.c =========================================
  * Copyright (c) 1993 by Chris Provenzano, proven@athena.mit.edu
  *
@@ -11,7 +12,8 @@
 #include <stdio.h>
 #include "test.h"
 
-void* new_thread(void * new_buf)
+void *
+new_thread(void * new_buf)
 {
 	int i;
 

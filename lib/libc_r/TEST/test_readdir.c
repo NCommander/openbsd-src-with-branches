@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* ==== test_readdir.c ========================================================
  * Copyright (c) 1993, 1994 by Chris Provenzano, proven@athena.mit.edu
  *

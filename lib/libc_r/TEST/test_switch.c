@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* ==== test_switch.c ========================================================
  * Copyright (c) 1993 by Chris Provenzano, proven@athena.mit.edu
  *
