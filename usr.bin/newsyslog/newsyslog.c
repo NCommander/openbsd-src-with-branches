@@ -1,4 +1,4 @@
-/*	$OpenBSD: newsyslog.c,v 1.39 2001/11/19 19:02:15 mpech Exp $	*/
+/*	$OpenBSD: newsyslog.c,v 1.40 2001/11/23 04:20:56 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -88,7 +88,7 @@ provided "as is" without express or implied warranty.
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: newsyslog.c,v 1.39 2001/11/19 19:02:15 mpech Exp $";
+static char rcsid[] = "$OpenBSD: newsyslog.c,v 1.40 2001/11/23 04:20:56 deraadt Exp $";
 #endif /* not lint */
 
 #ifndef CONF
@@ -332,7 +332,7 @@ send_signal(pidfile, signal)
 	if (fgets(line, sizeof(line), f)) {
 		errno = 0;
 		ulval = strtoul(line, &ep, 10);
-		if (line[0] == '\0' || *ep != '\0')
+		if (line[0] == '\0' || (*ep != '\0' && *ep != '\n'))
 			err = "invalid number in";
 		else if (errno == ERANGE && ulval == ULONG_MAX)
 			err = "out of range number in";
