@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.46 2000/01/31 19:57:18 deraadt Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.47 2000/02/28 18:04:08 provos Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -95,6 +95,10 @@
 
 #include <net/if.h>
 #include <net/raw_cb.h>
+
+#if defined(CRYPTO)
+#include <crypto/crypto.h>
+#endif
 
 #if defined(NFSSERVER) || defined(NFSCLIENT)
 extern void nfs_init __P((void));
@@ -349,6 +353,10 @@ main(framep)
 	for (pdev = pdevinit; pdev->pdev_attach != NULL; pdev++)
 		(*pdev->pdev_attach)(pdev->pdev_count);
 
+#ifdef CRYPTO
+	swcr_init();
+#endif /* CRYPTO */
+	
 	/*
 	 * Initialize protocols.  Block reception of incoming packets
 	 * until everything is ready.
