@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: strcat.c,v 1.2 1996/04/19 16:09:37 niklas Exp $	*/
 
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -35,10 +35,14 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)strcat.c	5.6 (Berkeley) 2/24/91";*/
-static char *rcsid = "$OpenBSD$";
+static char *rcsid = "$OpenBSD: strcat.c,v 1.2 1996/04/19 16:09:37 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#ifndef _KERNEL
 #include <string.h>
+#else
+#include <lib/libkern/libkern.h>
+#endif
 
 char *
 strcat(s, append)
