@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mkdb.c,v 1.10 1999/04/18 17:11:11 espie Exp $	*/
+/*	$OpenBSD: kvm_mkdb.c,v 1.11 2002/02/16 21:28:03 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1990, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)kvm_mkdb.c	8.3 (Berkeley) 5/4/95";
 #else
-static char *rcsid = "$OpenBSD: kvm_mkdb.c,v 1.10 1999/04/18 17:11:11 espie Exp $";
+static const char rcsid[] = "$OpenBSD: kvm_mkdb.c,v 1.11 2002/02/16 21:28:03 millert Exp $";
 #endif
 #endif /* not lint */
 
