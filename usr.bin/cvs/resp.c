@@ -308,6 +308,7 @@ cvs_resp_ok(struct cvsroot *root, int type, char *line)
 static int
 cvs_resp_error(struct cvsroot *root, int type, char *line)
 {
+	fprintf(stderr, "%s\n", line);
 	return (1);
 }
 
