@@ -128,18 +128,9 @@ __svfscanf(fp, fmt0, ap)
 		if (c == 0)
 			return (nassigned);
 		if (isspace(c)) {
-			for (;;) {
-				if (fp->_r <= 0 && __srefill(fp)) {
-					while (isspace(*fmt))
-						fmt++;
-					if (*fmt == '%' && *(fmt + 1) == 'n')
-						break;
-					return (nassigned);
-				}
-				if (!isspace(*fp->_p))
-					break;
+			while ((fp->_r > 0 || __srefill(fp) == 0) &&
+			    isspace(*fp->_p))
 				nread++, fp->_r--, fp->_p++;
-			}
 			continue;
 		}
 		if (c != '%')
