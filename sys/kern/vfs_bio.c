@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.27 2000/06/23 02:14:38 mickey Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.28 2001/02/13 19:51:49 art Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -475,9 +475,9 @@ brelse(bp)
 		 * If it's invalid or empty, dissociate it from its vnode
 		 * and put on the head of the appropriate queue.
 		 */
-		if (LIST_FIRST(&bp->b_dep) != NULL && bioops.io_deallocate) {
-			(*bioops.io_deallocate)(bp);
-		}
+		if (LIST_FIRST(&bp->b_dep) != NULL)
+			buf_deallocate(bp);
+
 		CLR(bp->b_flags, B_DELWRI);
 		if (bp->b_vp) {
 			reassignbuf(bp, bp->b_vp);
@@ -787,8 +787,8 @@ start:
 
 	splx(s);
 
-	if (LIST_FIRST(&bp->b_dep) != NULL && bioops.io_deallocate)
-		(*bioops.io_deallocate)(bp);
+	if (LIST_FIRST(&bp->b_dep) != NULL)
+		buf_deallocate(bp);
 
 	/* clear out various other fields */
 	bp->b_flags = B_BUSY;
@@ -866,8 +866,8 @@ biodone(bp)
 		panic("biodone already");
 	SET(bp->b_flags, B_DONE);		/* note that it's done */
 
-	if (LIST_FIRST(&bp->b_dep) != NULL && bioops.io_complete)
-		(*bioops.io_complete)(bp);
+	if (LIST_FIRST(&bp->b_dep) != NULL)
+		buf_complete(bp);
 
 	if (!ISSET(bp->b_flags, B_READ))	/* wake up reader */
 		vwakeup(bp);
