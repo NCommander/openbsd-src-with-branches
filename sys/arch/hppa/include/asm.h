@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.13 2002/05/20 03:27:09 mickey Exp $	*/
+/*	$OpenBSD: asm.h,v 1.14 2003/07/15 18:15:41 mickey Exp $	*/
 
 /* 
  * Copyright (c) 1990,1991,1994 The University of Utah and
@@ -247,7 +247,7 @@ tf4	.reg	%fr8
 	.entry ! _PROF_PROLOGUE
 
 #define ALTENTRY(x) ! .export x, entry ! .label  x
-#define EXIT(x) ! .exit ! .procend
+#define EXIT(x) ! .exit ! .procend ! .size   x, .-x
 
 #define	BSS(n,s)	! .data ! .label n ! .comm s
 
