@@ -42,6 +42,7 @@ struct cmd_state {
 
 	enum { CMD_ADDR, CMD_BOOT, CMD_CD, CMD_DEVICE, CMD_DEBUG, CMD_HELP,
 	       CMD_IMAGE, CMD_LS, CMD_NOPE, CMD_REBOOT, CMD_SET,
+	       CMD_REGS,
 	       CMD_ERROR /* last !!! */
 	}	cmd;
 	int argc;
