@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.106 2000/01/11 13:50:03 peter Exp $
+#	$OpenBSD: Makefile,v 1.107 2000/04/06 18:26:04 millert Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -199,7 +199,7 @@ distribution-etc-root-var: distrib-dirs
 	(cd etc.vax; ${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 444 ${PCS} \
 	    ${DESTDIR}/)
 .endif
-	(cd ../usr.sbin/sendmail/cf/cf; ${MAKE} distribution)
+	(cd ../gnu/usr.sbin/sendmail/cf/cf; ${MAKE} distribution)
 	(cd ../usr.sbin/ypserv/ypinit; ${MAKE} distribution)
 	(cd ../usr.bin/ssh; ${MAKE} distribution)
 	(cd ../usr.sbin/httpd; ${MAKE} -f Makefile.bsd-wrapper distribution)
