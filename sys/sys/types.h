@@ -82,12 +82,6 @@ typedef	int32_t		segsz_t;	/* segment size */
 typedef	int32_t		swblk_t;	/* swap offset */
 typedef	u_int32_t	uid_t;		/* user id */
 
-#ifdef _KERNEL	/* XXX */
-typedef	int	boolean_t;
-#define	TRUE	1
-#define	FALSE	0
-#endif
-
 /*
  * These belong in unistd.h, but are placed here too to ensure that
  * long arguments will be promoted to off_t if the program fails to
@@ -173,8 +167,6 @@ typedef	struct fd_set {
  * used in the same place that the structure is defined.
  */
 struct	proc;
-struct	thread;
-struct	slock;
 struct	pgrp;
 struct	ucred;
 struct	rusage;
