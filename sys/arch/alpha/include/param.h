@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.10 1997/09/17 17:44:04 downsj Exp $	*/
+/*	$OpenBSD: param.h,v 1.11 2000/02/22 19:27:40 deraadt Exp $	*/
 /*	$NetBSD: param.h,v 1.15 1996/11/13 21:13:19 cgd Exp $	*/
 
 /*
@@ -109,7 +109,9 @@
 #endif
 #endif
 
-#define MSGBUFSIZE	8192
+#ifndef MSGBUFSIZE
+#define MSGBUFSIZE	1*NBPG
+#endif
 
 /*
  * Size of kernel malloc arena in CLBYTES-sized logical pages
