@@ -12,7 +12,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: ssh.h,v 1.57 2001/01/07 11:28:06 markus Exp $"); */
+/* RCSID("$OpenBSD: ssh.h,v 1.58 2001/01/18 16:20:22 markus Exp $"); */
 
 #ifndef SSH_H
 #define SSH_H
@@ -501,12 +501,6 @@ int     radix_to_creds(const char *buf, CREDENTIALS * creds);
 #endif				/* AFS */
 
 #endif				/* KRB4 */
-
-#ifdef SKEY
-#include <skey.h>
-char   *skey_fake_keyinfo(char *username);
-int	auth_skey_password(struct passwd * pw, const char *password);
-#endif				/* SKEY */
 
 /* AF_UNSPEC or AF_INET or AF_INET6 */
 extern int IPv4or6;

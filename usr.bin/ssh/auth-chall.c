@@ -23,12 +23,14 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-skey.c,v 1.10 2001/01/18 16:59:59 markus Exp $");
+RCSID("$OpenBSD: auth-chall.c,v 1.1 2001/01/18 17:12:43 markus Exp $");
 
 #include "ssh.h"
 #include "auth.h"
 
 #ifdef SKEY
+#include <skey.h>
+
 char *
 get_challenge(Authctxt *authctxt, char *devs)
 {
