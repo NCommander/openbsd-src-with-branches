@@ -1,4 +1,4 @@
-/*	$OpenBSD: dayobjs.c,v 1.2 1997/06/30 19:56:34 kstailey Exp $	*/
+/*	$OpenBSD: dayobjs.c,v 1.3 1997/08/24 21:55:06 deraadt Exp $	*/
 /*	$NetBSD: dayobjs.c,v 1.3 1995/03/21 15:07:22 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)dayobjs.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: dayobjs.c,v 1.3 1995/03/21 15:07:22 cgd Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -141,5 +141,5 @@ struct objs dayobjs[] = {
 	{ 130,	BRACELET },
 	{ 93,	GIRL },
 	{ 268,	LAMPON },
-	0
+	{ 0 }
 };
