@@ -1,4 +1,4 @@
-/*	$OpenBSD: mesh.c,v 1.3 2001/11/06 19:53:15 miod Exp $	*/
+/*	$OpenBSD: mesh.c,v 1.3.2.1 2002/06/11 03:36:34 art Exp $	*/
 /*	$NetBSD: mesh.c,v 1.1 1999/02/19 13:06:03 tsubai Exp $	*/
 
 /*-

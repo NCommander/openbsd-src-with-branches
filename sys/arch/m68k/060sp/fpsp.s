@@ -1,5 +1,5 @@
 #
-# $OpenBSD: fpsp.s,v 1.2 1996/05/30 22:14:22 niklas Exp $
+# $OpenBSD: fpsp.s,v 1.3 2001/09/20 17:02:30 mpech Exp $
 # $NetBSD: fpsp.s,v 1.2 1996/05/15 19:48:03 is Exp $
 #
 
@@ -3891,7 +3891,7 @@ _fpsp_fline:
 # FP Unimplemented Instruction stack frame and jump to that entry
 # point.
 #
-# but, if the FPU is disabled, then we need to jump to the FPU diabled
+# but, if the FPU is disabled, then we need to jump to the FPU disabled
 # entry point.
 	movc		%pcr,%d0
 	btst		&0x1,%d0

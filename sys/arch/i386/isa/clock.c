@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.24 2001/09/21 20:38:42 mickey Exp $	*/
+/*	$OpenBSD: clock.c,v 1.24.4.1 2002/06/11 03:35:54 art Exp $	*/
 /*	$NetBSD: clock.c,v 1.39 1996/05/12 23:11:54 mycroft Exp $	*/
 
 /*-
@@ -450,17 +450,11 @@ void
 calibrate_cyclecounter()
 {
 	unsigned long long count, last_count;
-#ifdef NTP
-	extern long time_precision;
-#endif
 
 	__asm __volatile(".byte 0xf, 0x31" : "=A" (last_count));
 	delay(1000000);
 	__asm __volatile(".byte 0xf, 0x31" : "=A" (count));
 	pentium_mhz = ((count - last_count) + 500000) / 1000000;
-#ifdef NTP
-	time_precision = 1;	/* XXX */
-#endif
 }
 #endif
 

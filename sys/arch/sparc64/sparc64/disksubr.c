@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.6 2001/10/15 04:03:45 jason Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.6.6.1 2002/06/11 03:38:43 art Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.13 2000/12/17 22:39:18 pk Exp $ */
 
 /*
@@ -48,9 +48,6 @@
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
-#if defined(SUN4)
-#include <machine/oldmon.h>
-#endif
 
 #include <dev/sbus/sbusvar.h>
 #include "cd.h"

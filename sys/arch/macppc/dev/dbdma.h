@@ -1,4 +1,4 @@
-/*	$OpenBSD: dbdma.h,v 1.1 2001/09/01 15:50:00 drahn Exp $	*/
+/*	$OpenBSD: dbdma.h,v 1.2 2001/09/15 01:51:11 mickey Exp $	*/
 /*	$NetBSD: dbdma.h,v 1.2 1998/08/21 16:13:28 tsubai Exp $	*/
 
 /*
@@ -23,7 +23,8 @@
  *
  */
 
-#include "machine/pio.h"
+#include <machine/bus.h>
+#include <machine/pio.h>
 
 #ifndef _POWERMAC_DBDMA_H_
 #define _POWERMAC_DBDMA_H_

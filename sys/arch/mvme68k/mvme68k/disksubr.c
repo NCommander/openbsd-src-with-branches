@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.23 2001/08/06 20:45:07 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.23.4.1 2002/06/11 03:36:50 art Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -88,8 +88,8 @@ dk_establish(dk, dev)
 		} else
 #endif
 		{
-			target = bootdevlun / 10;
-			lun = bootdevlun % 10;
+			target = bootdevlun >> 4;
+			lun = bootdevlun & 0x0f;
 		}
     		
 		if (sbsc->sc_link[target][lun] != NULL &&

@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_supio.c,v 1.2.20.1 2002/01/31 22:55:07 niklas Exp $	*/
+/*	$OpenBSD: com_supio.c,v 1.2.20.2 2002/06/11 03:34:57 art Exp $	*/
 /*	$NetBSD: com_supio.c,v 1.3 1997/08/27 20:41:30 is Exp $	*/
 
 /*-
@@ -45,7 +45,6 @@
 #include <sys/tty.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-#include <sys/conf.h>
 #include <sys/file.h>
 #include <sys/uio.h>
 #include <sys/kernel.h>
@@ -53,6 +52,7 @@
 #include <sys/types.h>
 #include <sys/device.h>
 
+#include <machine/conf.h>
 #include <machine/intr.h>
 #include <machine/bus.h>
 

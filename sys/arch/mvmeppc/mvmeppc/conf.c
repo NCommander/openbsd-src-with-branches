@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.10 2001/12/11 23:19:02 miod Exp $ */
+/*	$OpenBSD: conf.c,v 1.10.2.1 2002/06/11 03:37:22 art Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -113,7 +113,6 @@ cdev_decl(xfs_dev);
 #endif  
  
 #include "ksyms.h"
-cdev_decl(ksyms);
 
 #include "pf.h"
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite_et.c,v 1.4 1997/09/18 13:39:58 niklas Exp $	*/
+/*	$OpenBSD: ite_et.c,v 1.4.22.1 2002/06/11 03:34:58 art Exp $	*/
 /*	$NetBSD: ite_et.c,v 1.3 1997/03/05 22:50:41 veego Exp $	*/
 
 /*
@@ -38,13 +38,13 @@
 #if NGRFET > 0
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/systm.h>
 #include <dev/cons.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <amiga/amiga/device.h>
 #include <amiga/dev/grfioctl.h>

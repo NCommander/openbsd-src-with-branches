@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 1998/02/24 22:06:36 weingart Exp $
+#	$OpenBSD: Makefile,v 1.9 2000/05/26 11:50:46 deraadt Exp $
 
 .if ${MACHINE} == "i386"
 SUBDIR=	etc libsa libz mbr
@@ -10,5 +10,12 @@ test-fd0:
 	sudo cp /usr/mdec/boot /mnt
 	sudo /usr/mdec/installboot -v /mnt/boot /usr/mdec/biosboot fd0
 	sudo umount /mnt
+
+zero-fd0:
+	sudo dd if=/dev/zero of=/dev/rfd0a count=144 bs=10240
+
+prep-fd0:
+	sudo disklabel -rw fd0 floppy
+	sudo newfs -O -m 0 -o space -i 3000 -c 80 /dev/rfd0a
 
 .include <bsd.subdir.mk>

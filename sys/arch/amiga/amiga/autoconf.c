@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.14 2001/05/05 22:33:28 art Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.14.4.1 2002/06/11 03:34:56 art Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.59 1998/01/15 21:55:51 is Exp $	*/
 
 /*
@@ -33,9 +33,9 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/reboot.h>
-#include <sys/conf.h>
 #include <sys/device.h>
 #include <sys/disklabel.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <amiga/amiga/cfdev.h>
 #include <amiga/amiga/device.h>

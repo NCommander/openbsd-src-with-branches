@@ -1,4 +1,4 @@
-/*	$OpenBSD: limits.h,v 1.2 2001/08/23 16:12:40 art Exp $	*/
+/*	$OpenBSD: limits.h,v 1.2.6.1 2002/06/11 03:38:43 art Exp $	*/
 /*	$NetBSD: limits.h,v 1.8 2000/08/08 22:31:14 tshiozak Exp $ */
 
 /*
@@ -47,6 +47,7 @@
 #endif
 
 #if !defined(_ANSI_SOURCE)
+#define	SIZE_MAX	ULONG_MAX	/* max value for a size_t */
 #define	SSIZE_MAX	LONG_MAX	/* max value for a ssize_t */
 
 #if !defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.50.2.1 2002/01/31 22:55:11 niklas Exp $	*/
+/*	$OpenBSD: apm.c,v 1.50.2.2 2002/06/11 03:35:53 art Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -1121,11 +1121,9 @@ filt_apmread(kn, hint)
 	struct knote *kn;
 	long hint;
 {
-	/* XXX weird kqueue_scan() semantics */
-	if (hint && !kn->kn_data)
-		kn->kn_data = (int)hint;
+	kn->kn_data = (int)hint;
 
-	return (1);
+	return (hint != 0);
 }
 
 int

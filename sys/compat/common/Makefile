@@ -1,8 +1,11 @@
-#	$OpenBSD: Makefile,v 1.10 2001/08/19 18:29:02 art Exp $
+#	$OpenBSD: Makefile,v 1.11 2001/08/19 18:35:49 art Exp $
 #	$NetBSD: Makefile,v 1.8 1996/05/18 15:52:19 christos Exp $
 
 LIB=	compat
 NOPIC=
+
+MACHINE=	${XMACHINE}
+MACHINE_ARCH=	${XMACHINE_ARCH}
 
 .PATH:	${COMPATDIR}
 

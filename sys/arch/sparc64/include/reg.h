@@ -1,4 +1,4 @@
-/*	$OpenBSD: reg.h,v 1.1 2001/08/18 04:16:40 jason Exp $	*/
+/*	$OpenBSD: reg.h,v 1.1.4.1 2002/06/11 03:38:43 art Exp $	*/
 /*	$NetBSD: reg.h,v 1.8 2001/06/19 12:59:16 wiz Exp $ */
 
 /*
@@ -193,19 +193,11 @@ struct fpreg32 {
 	int	fr_fsr;			/* %fsr */
 };
 
-#if defined(__arch64__)
 /* Here we gotta do naughty things to let gdb work on 32-bit binaries */
 #define reg		reg64
 #define fpreg		fpreg64
 #define fpstate		fpstate64
 #define trapframe	trapframe64
 #define rwindow		rwindow64
-#else
-#define reg		reg32
-#define fpreg		fpreg32
-#define fpstate		fpstate32
-#define trapframe	trapframe32
-#define rwindow		rwindow32
-#endif
 
 #endif /* _MACHINE_REG_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.4 1997/01/16 09:25:50 niklas Exp $	*/
+/*	$OpenBSD: exec.h,v 1.5 1999/06/08 15:05:22 espie Exp $	*/
 
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
@@ -34,7 +34,7 @@
 #define _NLIST_DO_ELF
 
 #if defined(COMPAT_LINUX) || defined(COMPAT_SVR4)
-#define _KERN_DO_KERN
+#define _KERN_DO_ELF
 #endif
 
 #endif  /* _AMIGA_EXEC_H_ */

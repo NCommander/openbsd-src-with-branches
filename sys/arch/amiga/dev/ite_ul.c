@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite_ul.c,v 1.4 1997/01/16 09:24:52 niklas Exp $	*/
+/*	$OpenBSD: ite_ul.c,v 1.4.24.1 2002/06/11 03:34:58 art Exp $	*/
 /*	$NetBSD: ite_ul.c,v 1.7 1996/10/13 03:07:20 christos Exp $	*/
 
 /*
@@ -35,13 +35,13 @@
 #if NGRFUL > 0
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/systm.h>
 #include <dev/cons.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <amiga/amiga/device.h>
 #include <amiga/amiga/isr.h>

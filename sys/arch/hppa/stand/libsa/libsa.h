@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.7 1999/12/23 04:07:47 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.7.12.1 2002/06/11 03:35:38 art Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -36,7 +36,7 @@
 /* #define	EXEC_ECOFF */
 #define	EXEC_SOM
 
-#define	DEFAULT_KERNEL_ADDRESS	0x12000
+#define	DEFAULT_KERNEL_ADDRESS	0
 
 extern dev_t bootdev;
 

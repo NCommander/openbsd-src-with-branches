@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fpbits.h,v 1.4.6.1 2002/06/11 03:35:38 art Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -53,4 +53,3 @@
 #define Bitfield_deposit(value,start,len,object)  object = \
     ((object) & ~(((unsigned)-1 >> (HOSTWDSZ-(len))) << (HOSTWDSZ-(start)-(len)))) | \
     (((value) & ((unsigned)-1 >> (HOSTWDSZ-(len)))) << (HOSTWDSZ-(start)-(len)))
-

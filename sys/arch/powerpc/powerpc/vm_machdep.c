@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.29.2.1 2002/01/31 22:55:21 niklas Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.29.2.2 2002/06/11 03:37:28 art Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.1 1996/09/30 16:34:57 ws Exp $	*/
 
 /*

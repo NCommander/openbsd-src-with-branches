@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: setovfl.c,v 1.4.6.1 2002/06/11 03:35:38 art Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -19,7 +19,7 @@
 #include "dbl_float.h"
 
 /*ARGSUSED*/
-sgl_floating_point 
+sgl_floating_point
 sgl_setoverflow(sign)
 	unsigned int sign;
 {
@@ -55,8 +55,8 @@ sgl_setoverflow(sign)
 }
 
 /*ARGSUSED*/
-dbl_floating_point 
-dbl_setoverflow(sign) 
+dbl_floating_point
+dbl_setoverflow(sign)
 	unsigned int sign;
 {
 	dbl_floating_point result;

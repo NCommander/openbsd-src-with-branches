@@ -1,5 +1,5 @@
 /*	$NetBSD: types.h,v 1.1 1996/09/30 16:34:36 ws Exp $	*/
-/*	$OpenBSD: types.h,v 1.9 1999/11/09 04:13:54 rahnds Exp $	*/
+/*	$OpenBSD: types.h,v 1.10 2001/09/01 15:49:05 drahn Exp $	*/
 
 /*-
  * Copyright (C) 1995 Wolfgang Solfrank.

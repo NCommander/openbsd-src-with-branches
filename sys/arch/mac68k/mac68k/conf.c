@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.27 2001/12/11 23:19:02 miod Exp $	*/
+/*	$OpenBSD: conf.c,v 1.27.2.1 2002/06/11 03:36:19 art Exp $	*/
 /*	$NetBSD: conf.c,v 1.41 1997/02/11 07:35:49 scottr Exp $	*/
 
 /*
@@ -103,7 +103,6 @@ cdev_decl(zs);
 #include "asc.h"
 cdev_decl(asc);
 #include "ksyms.h"
-cdev_decl(ksyms);
 #ifdef XFS
 #include <xfs/nxfs.h>
 cdev_decl(xfs_dev);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.13.2.1 2002/01/31 22:55:18 niklas Exp $ */
+/*	$OpenBSD: vs.c,v 1.13.2.2 2002/06/11 03:37:10 art Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -995,8 +995,8 @@ vs_build_memory_structure(xs, iopb)
 
 	/*
 	 * We have the following things:
-	 *	virt			the virtuell address of the contiguous virtual memory block
-	 *	len			the lenght of the contiguous virtual memory block
+	 *	virt			the virtual address of the contiguous virtual memory block
+	 *	len			the length of the contiguous virtual memory block
 	 *	starting_point_virt	the virtual address of the contiguous *physical* memory block
 	 *	starting_point_phys	the *physical* address of the contiguous *physical* memory block
 	 *	point_virt		the pointer to the virtual memory we are checking at the moment

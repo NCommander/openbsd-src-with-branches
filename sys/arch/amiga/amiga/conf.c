@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.33 2001/12/11 23:19:02 miod Exp $	*/
+/*	$OpenBSD: conf.c,v 1.33.2.1 2002/06/11 03:34:57 art Exp $	*/
 /*	$NetBSD: conf.c,v 1.42 1997/01/07 11:35:03 mrg Exp $	*/
 
 /*-
@@ -41,7 +41,6 @@
 #include <sys/buf.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
-#include <sys/conf.h>
 #include <sys/vnode.h>
 #include <dev/cons.h>
 

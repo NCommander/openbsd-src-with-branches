@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb.c,v 1.3 2001/10/03 14:45:37 drahn Exp $	*/
+/*	$OpenBSD: adb.c,v 1.3.6.1 2002/06/11 03:36:33 art Exp $	*/
 /*	$NetBSD: adb.c,v 1.6 1999/08/16 06:28:09 tsubai Exp $	*/
 
 /*-

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.28 2001/12/11 23:19:02 miod Exp $	*/
+/*	$OpenBSD: conf.c,v 1.28.2.1 2002/06/11 03:35:20 art Exp $	*/
 /*	$NetBSD: conf.c,v 1.39 1997/05/12 08:17:53 thorpej Exp $	*/
 
 /*-
@@ -121,7 +121,6 @@ cdev_decl(fd);
 #include "bpfilter.h"
 #include "tun.h"
 #include "ksyms.h"
-cdev_decl(ksyms);   
 #ifdef XFS
 #include <xfs/nxfs.h>
 cdev_decl(xfs_dev);

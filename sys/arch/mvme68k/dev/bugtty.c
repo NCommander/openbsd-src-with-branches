@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.4 1996/06/11 10:17:29 deraadt Exp $ */
+/*	$OpenBSD: bugtty.c,v 1.4.26.1 2002/06/11 03:36:49 art Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -497,7 +497,5 @@ bugttycnputc(dev, c)
 	dev_t dev;
 	char c;
 {
-	if (c == '\n')
-		bug_outchr('\r');
 	bug_outchr(c);
 }

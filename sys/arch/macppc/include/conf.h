@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.4 2001/12/12 19:19:17 jason Exp $	*/
+/*	$OpenBSD: conf.h,v 1.4.2.1 2002/06/11 03:36:34 art Exp $	*/
 /*	$NetBSD: conf.h,v 1.2 1996/05/05 19:28:34 christos Exp $	*/
 
 /*
@@ -46,5 +46,3 @@ cdev_decl(mm);
 cdev_decl(aed);
 cdev_decl(apm);
 cdev_decl(zs);
-
-cdev_decl(crypto);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapgeneric.c,v 1.13 2001/09/29 18:40:29 miod Exp $	*/
+/*	$OpenBSD: swapgeneric.c,v 1.13.4.1 2002/06/11 03:34:57 art Exp $	*/
 /*	$NetBSD: swapgeneric.c,v 1.27 1997/01/26 22:58:32 rat Exp $	*/
 
 /*
@@ -38,7 +38,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/conf.h>
 #include <sys/buf.h>
 #include <sys/reboot.h>
 #include <sys/device.h>
@@ -47,6 +46,7 @@
 #include <sys/proc.h>		/* XXXX and all that uses it */
 #include <sys/disk.h>
 #include <dev/cons.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 
 #include "fd.h"

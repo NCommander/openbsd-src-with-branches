@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.2 2001/11/06 22:45:54 miod Exp $ */
+/*	$OpenBSD: bugtty.c,v 1.2.2.1 2002/06/11 03:37:22 art Exp $ */
 /* Copyright (c) 1998 Steve Murphree, Jr. 
  * Copyright (c) 1995 Dale Rahn.
  * All rights reserved.
@@ -453,7 +453,5 @@ bugttycnputc(dev, c)
 	dev_t dev;
 	char c;
 {
-	if (c == '\n')
-		mvmeprom_outchar('\r');
 	mvmeprom_outchar(c);
 }

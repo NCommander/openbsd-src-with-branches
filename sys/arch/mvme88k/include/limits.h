@@ -1,4 +1,4 @@
-/*	$OpenBSD: limits.h,v 1.8 2000/07/31 20:06:03 millert Exp $ */
+/*	$OpenBSD: limits.h,v 1.8.8.1 2002/06/11 03:37:10 art Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)limits.h	8.3 (Berkeley) 1/4/94
- *      $Id: limits.h,v 1.8 2000/07/31 20:06:03 millert Exp $
+ *      $Id: limits.h,v 1.8.8.1 2002/06/11 03:37:10 art Exp $
  */
 
 #ifndef _MACHINE_LIMITS_H_
@@ -41,6 +41,7 @@
 #define	MB_LEN_MAX	6		/* Allow 31 bit UTF2 */
 
 #if !defined(_ANSI_SOURCE)
+#define	SIZE_MAX	UINT_MAX	/* max value for a size_t */
 #define	SSIZE_MAX	INT_MAX		/* max value for a ssize_t */
 
 #if !defined(_POSIX_SOURCE)

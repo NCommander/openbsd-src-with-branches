@@ -1,4 +1,4 @@
-/*	$OpenBSD: abtn.c,v 1.2 2001/09/01 17:43:08 drahn Exp $	*/
+/*	$OpenBSD: abtn.c,v 1.2.6.1 2002/06/11 03:36:33 art Exp $	*/
 /*	$NetBSD: abtn.c,v 1.1 1999/07/12 17:48:26 tsubai Exp $	*/
 
 /*-
@@ -135,7 +135,7 @@ abtn_adbcomplete(buffer, data, adb_command)
 		break;
 
 	default:
-		if ((cmd & ~0x7f) == 0))
+		if ((cmd & ~0x7f) == 0)
 			printf("unknown ADB button %d\n", cmd);
 		break;
 #endif

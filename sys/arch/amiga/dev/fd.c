@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.14 2001/05/05 20:56:33 art Exp $	*/
+/*	$OpenBSD: fd.c,v 1.14.4.1 2002/06/11 03:34:57 art Exp $	*/
 /*	$NetBSD: fd.c,v 1.36 1996/12/23 09:09:59 veego Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 #include <amiga/amiga/cc.h>
 #include <amiga/amiga/isr.h>
 
-#include <sys/conf.h>
 #include <machine/conf.h>
 
 enum fdc_bits { FDB_CHANGED = 2, FDB_PROTECT, FDB_CYLZERO, FDB_READY };

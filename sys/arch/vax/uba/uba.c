@@ -1,4 +1,4 @@
-/*	$OpenBSD: uba.c,v 1.12.2.1 2002/01/31 22:55:27 niklas Exp $	   */
+/*	$OpenBSD: uba.c,v 1.12.2.2 2002/06/11 03:39:19 art Exp $	   */
 /*	$NetBSD: uba.c,v 1.43 2000/01/24 02:40:36 matt Exp $	   */
 /*
  * Copyright (c) 1996 Jonathan Stone.
@@ -620,7 +620,7 @@ ubasetup(uh, bp, flags)
 				return (0);
 			}
 			uh->uh_bdpwant++;
-			sleep((caddr_t)&uh->uh_bdpwant, PSWP);
+			tsleep((caddr_t)&uh->uh_bdpwant, PSWP, "ubasetup", 0);
 		}
 		uh->uh_bdpfree &= ~(1 << (bdp-1));
 	} else if (flags & UBA_HAVEBDP)

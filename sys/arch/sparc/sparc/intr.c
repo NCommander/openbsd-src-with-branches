@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.17 2001/11/06 19:53:16 miod Exp $ */
+/*	$OpenBSD: intr.c,v 1.17.2.1 2002/06/11 03:38:16 art Exp $ */
 /*	$NetBSD: intr.c,v 1.20 1997/07/29 09:42:03 fair Exp $ */
 
 /*
@@ -118,10 +118,6 @@ int
 soft01intr(fp)
 	void *fp;
 {
-	extern int rom_console_input;
-
-	if (rom_console_input && cnrom())
-		cnrint();
 	if (sir.sir_any) {
 		if (sir.sir_which[SIR_NET]) {
 			int n, s;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: freebsd_machdep.c,v 1.11 2001/02/03 02:46:28 mickey Exp $	*/
+/*	$OpenBSD: freebsd_machdep.c,v 1.12 2001/11/06 19:53:14 miod Exp $	*/
 /*	$NetBSD: freebsd_machdep.c,v 1.10 1996/05/03 19:42:05 christos Exp $	*/
 
 /*-
@@ -89,7 +89,6 @@ freebsd_sendsig(catcher, sig, mask, code, type, val)
 	struct freebsd_sigframe *fp, frame;
 	struct sigacts *psp = p->p_sigacts;
 	int oonstack;
-	extern char freebsd_sigcode[], freebsd_esigcode[];
 
 	/* 
 	 * Build the argument list for the signal handler.
@@ -160,8 +159,7 @@ freebsd_sendsig(catcher, sig, mask, code, type, val)
 	 */
 	tf->tf_es = GSEL(GUDATA_SEL, SEL_UPL);
 	tf->tf_ds = GSEL(GUDATA_SEL, SEL_UPL);
-	tf->tf_eip = (int)(((char *)PS_STRINGS) - 
-	     (freebsd_esigcode - freebsd_sigcode));
+	tf->tf_eip = p->p_sigcode;
 	tf->tf_cs = GSEL(GUCODE_SEL, SEL_UPL);
 	tf->tf_eflags &= ~(PSL_T|PSL_VM|PSL_AC);
 	tf->tf_esp = (int)fp;

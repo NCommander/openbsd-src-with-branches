@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.2 2001/10/03 20:06:00 drahn Exp $	*/
+/*	$OpenBSD: apm.c,v 1.2.6.1 2002/06/11 03:36:33 art Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.

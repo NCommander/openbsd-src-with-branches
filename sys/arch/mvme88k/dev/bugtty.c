@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: bugtty.c,v 1.9.2.1 2002/06/11 03:37:09 art Exp $ */
 
 /* Copyright (c) 1998 Steve Murphree, Jr. 
  * Copyright (c) 1995 Dale Rahn.
@@ -515,7 +515,5 @@ bugttycnputc(dev, c)
 	dev_t dev;
 	char c;
 {
-	if (c == '\n')
-		bugoutchr('\r');
 	bugoutchr(c);
 }

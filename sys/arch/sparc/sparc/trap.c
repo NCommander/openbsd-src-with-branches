@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.35 2001/11/28 13:47:39 art Exp $	*/
+/*	$OpenBSD: trap.c,v 1.35.2.1 2002/06/11 03:38:17 art Exp $	*/
 /*	$NetBSD: trap.c,v 1.58 1997/09/12 08:55:01 pk Exp $ */
 
 /*
@@ -861,7 +861,15 @@ mem_access_fault4m(type, sfsr, sfva, tf)
 	if ((sfsr & SFSR_FT) == SFSR_FT_NONE)
 		goto out;	/* No fault. Why were we called? */
 
-	ftype = sfsr & SFSR_AT_STORE ? VM_PROT_WRITE : VM_PROT_READ;
+	if ((sfsr & SFSR_AT_STORE)) {
+		/* stores are never text faults. */
+		ftype = VM_PROT_WRITE;
+	} else {
+		ftype = VM_PROT_READ;
+		if ((sfsr & SFSR_AT_TEXT) || (type == T_TEXTFAULT)) {
+			ftype |= VM_PROT_EXECUTE;
+		}
+	}
 
 	/*
 	 * NOTE: the per-CPU fault status register readers (in locore)

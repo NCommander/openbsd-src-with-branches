@@ -1,4 +1,4 @@
-/*	$OpenBSD: reg.h,v 1.5 2001/12/17 03:19:01 drahn Exp $	*/
+/*	$OpenBSD: reg.h,v 1.5.2.1 2002/06/11 03:37:28 art Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.

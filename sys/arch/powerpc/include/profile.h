@@ -1,4 +1,4 @@
-/*	$OpenBSD: $ */
+/*	$OpenBSD: profile.h,v 1.2 1998/07/04 23:56:14 rahnds Exp $ */
 
 /*
  * Copyright (c) 1998 Dale Rahn. All rights reserved.

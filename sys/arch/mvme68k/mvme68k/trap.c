@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.41 2001/12/08 02:24:06 art Exp $ */
+/*	$OpenBSD: trap.c,v 1.41.2.1 2002/06/11 03:36:50 art Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -734,7 +734,7 @@ writeback(fp, docachepush)
 							(vm_offset_t)&vmmap[NBPG]);
 			pmap_update(pmap_kernel());
 		} else
-			printf("WARNING: pid %d(%s) uid %d: CPUSH not done\n",
+			printf("WARNING: pid %d(%s) uid %u: CPUSH not done\n",
 					 p->p_pid, p->p_comm, p->p_ucred->cr_uid);
 	} else if ((f->f_ssw & (SSW4_RW|SSW4_TTMASK)) == SSW4_TTM16) {
 		/*

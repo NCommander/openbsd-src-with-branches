@@ -1,4 +1,4 @@
-/*	$OpenBSD: qd.c,v 1.2 2001/11/06 19:53:17 miod Exp $	*/
+/*	$OpenBSD: qd.c,v 1.2.2.1 2002/06/11 03:39:19 art Exp $	*/
 /*	$NetBSD: qd.c,v 1.17 2000/01/24 02:40:29 matt Exp $	*/
 
 /*-
@@ -1690,7 +1690,7 @@ panic("qd_strategy");
 	dga->bytcnt_hi = (short) (bp->b_bcount >> 16);
        
 	while (qdflags[unit].user_dma) {
-		sleep((caddr_t)&qdflags[unit].user_dma, QDPRIOR);
+		tsleep((caddr_t)&qdflags[unit].user_dma, QDPRIOR, "qdstrat", 0);
 	}
 	splx(s);
 #ifdef notyet
@@ -2924,9 +2924,6 @@ qdcnputc(dev, chr)
 		return;
 
 	blitc(0, (u_char)(chr & 0xff));
-	if ((chr & 0177) == '\n')
-		blitc(0, '\r');
-
 } /* qdputc */
 
 /*
