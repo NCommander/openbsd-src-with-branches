@@ -1,4 +1,4 @@
-/*	$OpenBSD: man.c,v 1.20 2002/02/16 21:27:48 millert Exp $	*/
+/*	$OpenBSD: man.c,v 1.21 2002/09/17 19:37:39 deraadt Exp $	*/
 /*	$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)man.c	8.17 (Berkeley) 1/31/95";
 #else
-static char rcsid[] = "$OpenBSD: man.c,v 1.20 2002/02/16 21:27:48 millert Exp $";
+static char rcsid[] = "$OpenBSD: man.c,v 1.21 2002/09/17 19:37:39 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -138,8 +138,8 @@ main(int argc, char *argv[])
 			machine = optarg;
 			break;
 		/*
-		 * The -f and -k options are backward compatible,
-		 * undocumented ways of calling whatis(1) and apropos(1).
+		 * The -f and -k options are backward compatible
+		 * ways of calling whatis(1) and apropos(1).
 		 */
 		case 'f':
 			jump(argv, "-f", "whatis");
