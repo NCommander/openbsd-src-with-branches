@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbdevs.c,v 1.7 2002/05/30 19:09:05 deraadt Exp $	*/
+/*	$OpenBSD: usbdevs.c,v 1.8 2002/06/02 06:42:29 deraadt Exp $	*/
 /*	$NetBSD: usbdevs.c,v 1.19 2002/02/21 00:34:31 christos Exp $	*/
 
 /*
@@ -87,16 +87,12 @@ usbdev(int f, int a, int rec)
 	printf("addr %d: ", a);
 	done[a] = 1;
 	if (verbose) {
-#ifdef notyet
 		switch (di.udi_speed) {
 		case USB_SPEED_LOW:  printf("low speed, "); break;
 		case USB_SPEED_FULL: printf("full speed, "); break;
 		case USB_SPEED_HIGH: printf("high speed, "); break;
 		default: break;
 		}
-#endif
-		if (di.udi_lowspeed)
-			printf("low speed, ");
 
 		if (di.udi_power)
 			printf("power %d mA, ", di.udi_power);
