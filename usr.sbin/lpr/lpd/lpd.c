@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpd.c,v 1.13 1997/01/17 16:12:41 millert Exp $ */
+/*	$OpenBSD: lpd.c,v 1.14 1997/07/19 07:11:43 deraadt Exp $ */
 /*	$NetBSD: lpd.c,v 1.7 1996/04/24 14:54:06 mrg Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)lpd.c	8.7 (Berkeley) 5/10/95";
 #else
-static char rcsid[] = "$OpenBSD: lpd.c,v 1.13 1997/01/17 16:12:41 millert Exp $";
+static char rcsid[] = "$OpenBSD: lpd.c,v 1.14 1997/07/19 07:11:43 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -302,9 +302,11 @@ reapchild(signo)
 	int signo;
 {
 	int status;
+	int save_errno = errno;
 
 	while (waitpid((pid_t)-1, &status, WNOHANG) > 0)
 		;
+	errno = save_errno;
 }
 
 static void
