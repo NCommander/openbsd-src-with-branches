@@ -1,4 +1,4 @@
-/* $OpenBSD: vga.c,v 1.30 2002/07/12 20:17:03 mickey Exp $ */
+/* $OpenBSD: vga.c,v 1.31 2003/05/17 18:31:03 krw Exp $ */
 /* $NetBSD: vga.c,v 1.28.2.1 2000/06/30 16:27:47 simonb Exp $ */
 
 /*
@@ -823,11 +823,12 @@ vga_load_font(v, cookie, data)
 	struct vgafont *f;
 
 	if (scr) {
-		name2 = data->name;
-		while (*name2 && *name2 != ',')
-			name2++;
-		if (name2)
-			*name2++ = '\0';
+		if ((name2 = data->name) != NULL) {
+			while (*name2 && *name2 != ',')
+				name2++;
+			if (*name2)
+				*name2++ = '\0';
+		}
 		res = vga_selectfont(vc, scr, data->name, name2);
 		if (!res)
 			vga_setfont(vc, scr);
