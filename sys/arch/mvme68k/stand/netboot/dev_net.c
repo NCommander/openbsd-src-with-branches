@@ -55,7 +55,10 @@
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
 
+#include <machine/prom.h>
+
 #include "stand.h"
+#include "libsa.h"
 #include "net.h"
 #include "netif.h"
 #include "config.h"
@@ -183,9 +186,8 @@ machdep_common_ether(ether)
 	u_char *ether;
 {
 	u_char *ea;
-	extern int cputyp;
 
-	if (cputyp == CPU_147) {
+	if (bugargs.cputyp == CPU_147) {
 		ea = (u_char *) ETHER_ADDR_147;
 
 		if ((*(int *) ea & 0x2fffff00) == 0x2fffff00)
