@@ -1,4 +1,4 @@
-/*	$OpenBSD: aout_syms.c,v 1.8 2002/06/11 06:34:38 art Exp $	*/
+/*	$OpenBSD: aout_syms.c,v 1.9 2002/07/22 01:20:50 art Exp $	*/
 /*
  * Copyright (c) 2002 Federico Schwindt <fgsch@openbsd.org>
  * All rights reserved. 
@@ -253,8 +253,7 @@ restart:
 
 	if (s == NULL) {
 		if (first) {
-			asprintf(&sname, "_%s", sname);
-			if (sname != NULL) {
+			if (asprintf(&sname, "_%s", sname) != -1) {
 				first = 0;
 				goto restart;
 			}
