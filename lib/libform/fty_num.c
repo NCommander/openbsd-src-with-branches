@@ -15,7 +15,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fty_num.c,v 1.11 1997/10/18 19:32:58 tom Exp $")
+MODULE_ID("$From: fty_num.c,v 1.11 1997/10/18 19:32:58 tom Exp $")
 
 #if HAVE_LOCALE_H
 #include <locale.h>

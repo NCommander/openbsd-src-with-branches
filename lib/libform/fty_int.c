@@ -15,7 +15,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fty_int.c,v 1.8 1997/10/18 19:32:50 tom Exp $")
+MODULE_ID("$From: fty_int.c,v 1.8 1997/10/18 19:32:50 tom Exp $")
 
 typedef struct {
   int precision;

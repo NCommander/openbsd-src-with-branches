@@ -15,7 +15,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fty_alpha.c,v 1.7 1997/10/18 19:33:38 tom Exp $")
+MODULE_ID("$From: fty_alpha.c,v 1.7 1997/10/18 19:33:38 tom Exp $")
 
 typedef struct {
   int width;

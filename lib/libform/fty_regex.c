@@ -15,7 +15,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fty_regex.c,v 1.11 1997/10/18 19:32:35 tom Exp $")
+MODULE_ID("$From: fty_regex.c,v 1.11 1997/10/18 19:32:35 tom Exp $")
 
 #if HAVE_REGEX_H_FUNCS	/* We prefer POSIX regex */
 #include <regex.h>
