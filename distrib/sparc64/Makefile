@@ -1,5 +1,5 @@
-#	$OpenBSD: Makefile,v 1.5 2000/04/24 20:23:28 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2001/09/18 14:27:32 jason Exp $
 
-SUBDIR+= ramdisk
+SUBDIR+= ramdisk ramdiskB bsd.rd
 
 .include <bsd.subdir.mk>
