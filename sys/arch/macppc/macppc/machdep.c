@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.33 2002/03/23 13:28:34 espie Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.34 2002/03/27 15:09:24 jason Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -202,7 +202,9 @@ initppc(startkernel, endkernel, args)
 	extern void *tlbimiss; extern int tlbimsize;
 	extern void *tlbdlmiss; extern int tlbdlmsize;
 	extern void *tlbdsmiss; extern int tlbdsmsize;
+#ifdef DDB
 	extern void *ddblow; extern int ddbsize;
+#endif
 #if NIPKDB > 0
 	extern ipkdblow, ipkdbsize;
 #endif
@@ -426,11 +428,6 @@ where = 3;
 		}
 	}
 	bootpath= &bootpathbuf[0];
-#if 0
-	bcopy(args +strlen(args) + 1, &startsym, sizeof(startsym));
-	bcopy(args +strlen(args) + 5, &endsym, sizeof(endsym));
-	ddb_init((int)((u_int)endsym - (u_int)startsym), startsym, endsym);
-#endif
 
 #ifdef DDB
 	ddb_init();
@@ -906,9 +903,6 @@ lcsplx(ipl)
 void
 boot(howto)
 	int howto;
-#if 0
-	char *what;
-#endif
 {
 	static int syncing;
 	static char str[256];
