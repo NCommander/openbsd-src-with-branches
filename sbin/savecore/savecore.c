@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.23 2001/01/18 00:18:38 deraadt Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.24 2001/06/04 14:59:49 mickey Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)savecore.c	8.3 (Berkeley) 1/2/94";
 #else
-static char rcsid[] = "$OpenBSD: savecore.c,v 1.23 2001/01/18 00:18:38 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: savecore.c,v 1.24 2001/06/04 14:59:49 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -620,7 +620,7 @@ check_space()
 		syslog(LOG_ERR, "%s: %m", dirn);
 		exit(1);
 	}
- 	spacefree = (fsbuf.f_bavail * fsbuf.f_bsize) / 1024;
+ 	spacefree = ((off_t)fsbuf.f_bavail * fsbuf.f_bsize) / 1024;
 
 	(void)snprintf(path, sizeof(path), "%s/minfree", dirn);
 	if ((fp = fopen(path, "r")) == NULL)
