@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_extern.h,v 1.9 2000/02/07 04:57:19 assar Exp $	*/
+/*	$OpenBSD: ufs_extern.h,v 1.10 2001/02/21 23:24:31 csapuntz Exp $	*/
 /*	$NetBSD: ufs_extern.h,v 1.5 1996/02/09 22:36:03 christos Exp $	*/
 
 /*-
@@ -90,6 +90,7 @@ int	 ufs_rename	__P((void *));
 int	 ufs_rmdir	__P((void *));
 int	 ufs_seek	__P((void *));
 int	 ufs_select	__P((void *));
+int	 ufs_kqfilter	__P((void *));
 int	 ufs_setattr	__P((void *));
 int	 ufs_strategy	__P((void *));
 int	 ufs_symlink	__P((void *));

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cons.c,v 1.7 1996/04/21 22:19:48 deraadt Exp $	*/
+/*	$OpenBSD: cons.c,v 1.8 2001/02/09 20:48:24 mickey Exp $	*/
 /*	$NetBSD: cons.c,v 1.30 1996/04/08 19:57:30 jonathan Exp $	*/
 
 /*
@@ -225,6 +225,23 @@ cnselect(dev, rw, p)
 	else
 		dev = cn_tab->cn_dev;
 	return (ttselect(cn_tab->cn_dev, rw, p));
+}
+
+
+int
+cnkqfilter(dev, kn)
+	dev_t dev;
+	struct knote *kn;
+{
+	if (constty != NULL && (cn_tab == NULL || cn_tab->cn_pri != CN_REMOTE))
+		return 0;
+	if (cn_tab == NULL)
+		return (1);
+
+	dev = cn_tab->cn_dev;
+	if (cdevsw[major(dev)].d_type & D_KQFILTER)
+		return ((*cdevsw[major(dev)].d_kqfilter)(dev, kn));
+	return (1);
 }
 
 int
