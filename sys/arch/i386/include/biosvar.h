@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosvar.h,v 1.12 1997/09/21 23:00:43 mickey Exp $	*/
+/*	$OpenBSD: biosvar.h,v 1.13 1997/09/29 03:42:28 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -81,7 +81,7 @@
 extern struct BIOS_vars {
 	/* XXX filled in assumption that last file opened is kernel */
 	int	bios_dev;
-	int	bios_geometry;
+	u_int	bios_geometry;
 
 	u_int	bios_apm_detail;
 	u_int	bios_apm_code32_base;
