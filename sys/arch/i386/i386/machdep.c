@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.72 1998/01/09 12:33:21 niklas Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.73 1998/01/09 14:36:42 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.202 1996/05/18 15:54:59 christos Exp $	*/
 
 /*-
@@ -631,7 +631,7 @@ void
 intel586_cpu_setup(cpu_device)
 	const char *cpu_device;
 {
-#if defined(I586_CPU) || defined(I686_CPU)
+#if defined(I586_CPU)
 	fix_f00f();
 	printf("%s: F00F bug workaround installed\n", cpu_device);
 #endif
