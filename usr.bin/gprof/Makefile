@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.5 1997/04/27 20:56:44 millert Exp $
+#	$OpenBSD: Makefile,v 1.6 1997/09/21 11:49:15 deraadt Exp $
 
-.if (${MACHINE_ARCH} == "alpha" || ${MACHINE_ARCH} == "mips")
+.if (${MACHINE_ARCH} == "alpha") || (${MACHINE_ARCH} == "mips") || \
+	(${MACHINE_ARCH} == "powerpc")
 NOPROG=
 .else
 PROG=	gprof
