@@ -1,4 +1,4 @@
-/*	$OpenBSD: qop_cbq.c,v 1.1.1.1 2001/06/27 18:23:29 kjc Exp $	*/
+/*	$OpenBSD: qop_cbq.c,v 1.2 2001/08/16 12:59:43 kjc Exp $	*/
 /*	$KAME: qop_cbq.c,v 1.5 2001/08/16 10:39:14 kjc Exp $	*/
 /*
  * Copyright (c) Sun Microsystems, Inc. 1993-1998 All rights reserved.
@@ -134,7 +134,7 @@ cbq_interface_parser(const char *ifname, int argc, char **argv)
 		} else if (EQUAL(*argv, "cbq-prr")) {
 			is_wrr = 0;
 		} else {
-			LOG(LOG_ERR, 0, "Unknown keyword '%s'", argv);
+			LOG(LOG_ERR, 0, "Unknown keyword '%s'", *argv);
 			return (0);
 		}
 		argc--; argv++;
