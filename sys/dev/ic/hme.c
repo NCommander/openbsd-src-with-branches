@@ -662,7 +662,7 @@ hme_start(ifp)
 
 	if (cnt != 0) {
 		sc->sc_tx_prod = bix;
-		ifp->if_timer = 0;
+		ifp->if_timer = 5;
 	}
 }
 
@@ -715,8 +715,7 @@ hme_tint(sc)
 	}
 
 	sc->sc_tx_cnt = cnt;
-	if (cnt == 0)
-		ifp->if_timer = 0;
+	ifp->if_timer = cnt > 0 ? 5 : 0;
 
 	/* Update ring */
 	sc->sc_tx_cons = ri;
