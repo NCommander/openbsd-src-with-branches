@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ifaddr.c,v 1.6 2001/01/17 05:00:58 fgsch Exp $	*/
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <err.h>
+#include "ifaddr.h"
 
 /*
  * if_addr():
