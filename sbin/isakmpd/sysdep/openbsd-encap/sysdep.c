@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysdep.c,v 1.2 2001/01/28 22:38:49 niklas Exp $	*/
+/*	$OpenBSD: sysdep.c,v 1.3 2001/02/24 03:59:59 angelos Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
@@ -196,10 +196,11 @@ sysdep_ipsec_group_spis (struct sa *sa, struct proto *proto1,
 }
 
 int
-sysdep_ipsec_set_spi (struct sa *sa, struct proto *proto, int incoming)
+sysdep_ipsec_set_spi (struct sa *sa, struct proto *proto, int incoming,
+		      struct sa *isakmp_sa)
 {
   if (app_none)
     return 0;
-  return KEY_API (set_spi) (sa, proto, incoming);
+  return KEY_API (set_spi) (sa, proto, incoming, isakmp_sa);
 }
 #endif
