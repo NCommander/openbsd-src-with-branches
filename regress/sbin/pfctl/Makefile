@@ -1,8 +1,8 @@
-# $OpenBSD: $
+# $OpenBSD: Makefile,v 1.1 2001/07/26 14:33:45 markus Exp $
 
 NOMAN=
 NOPROG=
-PFTESTS=1 2
+PFTESTS=1 2 3
 
 pfail1:
 	@pfctl -nvR- < ${.CURDIR}/pfail1.in > /dev/null 2>&1 || \

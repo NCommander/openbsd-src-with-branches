@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.14 2001/07/18 09:53:14 markus Exp $	*/
+/*	$OpenBSD: parse.y,v 1.15 2001/07/19 00:07:36 krw Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -351,6 +351,16 @@ flags:					{ $$.b1 = 0; $$.b2 = 0; }
 			$$.b1 = f;
 			if ((f = parse_flags($4)) < 0) {
 				warnx("line %d: bad flags %s", lineno, $4);
+				YYERROR;
+			}
+			$$.b2 = f;
+		}
+		| FLAGS "/" STRING	{
+			int f;
+
+			$$.b1 = 0;
+			if ((f = parse_flags($3)) < 0) {
+				warnx("line %d: bad flags %s", lineno, $3);
 				YYERROR;
 			}
 			$$.b2 = f;
