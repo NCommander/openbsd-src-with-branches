@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.69 2000/06/18 19:05:49 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.70 2000/09/19 03:20:59 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -229,6 +229,8 @@ struct tdb				/* tunnel descriptor block */
     struct tdb	     *tdb_hnext;   /* dst/spi/sproto table */
     struct tdb       *tdb_anext;   /* dst/sproto table */
     struct tdb       *tdb_snext;   /* src/sproto table */
+    struct tdb       *tdb_inext;
+    struct tdb       *tdb_onext;
 
     struct xformsw   *tdb_xform;	/* Transformation to use */
     struct enc_xform *tdb_encalgxform;  /* Encryption algorithm xform */
