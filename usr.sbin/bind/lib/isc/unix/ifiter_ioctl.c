@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999-2001  Internet Software Consortium.
+ * Copyright (C) 1999-2001, 2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,12 +15,30 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: ifiter_ioctl.c,v 1.19.2.2 2001/12/12 00:16:47 marka Exp $ */
+/* $ISC: ifiter_ioctl.c,v 1.19.2.5 2003/07/22 04:03:49 marka Exp $ */
 
 /*
  * Obtain the list of network interfaces using the SIOCGLIFCONF ioctl.
  * See netintro(4).
  */
+#ifdef __hpux
+#undef SIOCGLIFCONF
+#undef lifc_len
+#undef lifc_buf
+#undef lifc_req
+#undef lifconf
+#undef SIOCGLIFADDR
+#undef SIOCGLIFFLAGS
+#undef SIOCGLIFDSTADDR
+#undef SIOCGLIFNETMASK
+#undef lifr_addr
+#undef lifr_name
+#undef lifr_dstaddr
+#undef lifr_flags
+#undef ss_family
+#undef lifreq
+#endif
+
 #ifndef SIOCGLIFCONF
 #define SIOCGLIFCONF SIOCGIFCONF
 #define lifc_len ifc_len
@@ -115,7 +133,7 @@ isc_interfaceiter_create(isc_mem_t *mctx, isc_interfaceiter_t **iterp) {
 			goto alloc_failure;
 		}
 
-		memset(&iter->ifc.lifc_len, 0, sizeof(iter->ifc.lifc_len));
+		memset(&iter->ifc, 0, sizeof(iter->ifc));
 #ifdef ISC_HAVE_LIFC_FAMILY
 		iter->ifc.lifc_family = AF_UNSPEC;
 #endif

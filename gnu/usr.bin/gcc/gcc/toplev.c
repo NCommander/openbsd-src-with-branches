@@ -852,7 +852,11 @@ int flag_instrument_function_entry_exit = 0;
    On SVR4 targets, it also controls whether or not to emit a
    string identifying the compiler.  */
 
+#ifdef OPENBSD_NATIVE
+int flag_no_ident = 1;
+#else
 int flag_no_ident = 0;
+#endif
 
 /* This will perform a peephole pass before sched2.  */
 int flag_peephole2 = 0;
@@ -903,6 +907,15 @@ int align_functions_log;
 /* Like align_functions_log above, but used by front-ends to force the
    minimum function alignment.  Zero means no alignment is forced.  */
 int force_align_functions_log;
+
+#if defined(STACK_PROTECTOR) && defined(STACK_GROWS_DOWNWARD)
+/* Nonzero means use propolice as a stack protection method */
+int flag_propolice_protection = 1;
+int flag_stack_protection = 0;
+#else
+int flag_propolice_protection = 0;
+int flag_stack_protection = 0;
+#endif
 
 /* Table of supported debugging formats.  */
 static const struct
@@ -1186,8 +1199,14 @@ static const lang_independent_options f_options[] =
    N_("Report on permanent memory allocation at end of run") },
   { "trapv", &flag_trapv, 1,
    N_("Trap for signed overflow in addition / subtraction / multiplication") },
+  { "no-stack-protector", &flag_propolice_protection, 0,
+   N_("Fake disable stack protection") },
   { "new-ra", &flag_new_regalloc, 1,
    N_("Use graph coloring register allocation.") },
+  {"stack-protector", &flag_propolice_protection, 1,
+   N_("Enables stack protection") },
+  {"stack-protector-all", &flag_stack_protection, 1,
+   N_("Enables stack protection of every function") } ,
 };
 
 /* Table of language-specific options.  */
@@ -1362,6 +1381,9 @@ documented_lang_options[] =
   { "-Wwrite-strings",
     N_("Mark strings as 'const char *'") },
   { "-Wno-write-strings", "" },
+  { "-Wbounded",
+    N_("Fake bounds checking option") },
+  { "-Wno-bounded", "" },
 
 #define DEFINE_LANG_NAME(NAME) { NULL, NAME },
 
@@ -1547,7 +1569,9 @@ static const lang_independent_options W_options[] =
   {"missing-noreturn", &warn_missing_noreturn, 1,
    N_("Warn about functions which might be candidates for attribute noreturn") },
   {"strict-aliasing", &warn_strict_aliasing, 1,
-   N_ ("Warn about code which might break the strict aliasing rules") }
+   N_ ("Warn about code which might break the strict aliasing rules") },
+  {"stack-protector", &warn_stack_protector, 1,
+   N_("Warn when disabling stack protector for some reason")}
 };
 
 void
@@ -2449,6 +2473,8 @@ rest_of_compilation (decl)
 
       insns = get_insns ();
 
+      if (flag_propolice_protection) prepare_stack_protection (inlinable);
+  
       /* Dump the rtl code if we are dumping rtl.  */
 
       if (open_dump_file (DFI_rtl, decl))
@@ -4898,7 +4924,6 @@ parse_options_and_default_flags (argc, argv)
       flag_schedule_insns_after_reload = 1;
 #endif
       flag_regmove = 1;
-      flag_strict_aliasing = 1;
       flag_delete_null_pointer_checks = 1;
       flag_reorder_blocks = 1;
       flag_reorder_functions = 1;
@@ -4906,6 +4931,7 @@ parse_options_and_default_flags (argc, argv)
 
   if (optimize >= 3)
     {
+      flag_strict_aliasing = 1;
       flag_inline_functions = 1;
       flag_rename_registers = 1;
     }
@@ -5218,6 +5244,12 @@ process_options ()
     /* The presence of IEEE signaling NaNs, implies all math can trap.  */
     if (flag_signaling_nans)
       flag_trapping_math = 1;
+
+    /* This combination makes optimized frame addressings and causes
+       a internal compilation error at prepare_stack_protection.
+       so don't allow it.  */
+    if (flag_stack_protection && !flag_propolice_protection)
+      flag_propolice_protection = TRUE;
 }
 
 /* Initialize the compiler back end.  */

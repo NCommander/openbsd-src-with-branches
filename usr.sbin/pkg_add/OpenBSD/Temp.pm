@@ -1,5 +1,5 @@
 use strict;
-# $OpenBSD: Temp.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: Temp.pm,v 1.1.1.1 2003/10/16 17:43:34 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -28,7 +28,7 @@ use warnings;
 package OpenBSD::Temp;
 
 use File::Temp;
-my $tempbase = $ENV{'PKG_TMPDIR'} || '/var/tmp';
+our $tempbase = $ENV{'PKG_TMPDIR'} || '/var/tmp';
 
 sub dir()
 {

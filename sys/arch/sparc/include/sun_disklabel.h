@@ -1,4 +1,5 @@
-/*	$NetBSD: sun_disklabel.h,v 1.5 1995/06/26 22:09:47 pk Exp $ */
+/*	$OpenBSD: sun_disklabel.h,v 1.8 2002/03/14 01:26:44 millert Exp $	*/
+/*	$NetBSD: sun_disklabel.h,v 1.6 1996/01/07 22:03:09 thorpej Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -86,9 +83,15 @@ struct sun_dkpart {
 	long	sdkp_nsectors;		/* number of sectors */
 };
 
+#define SUNXPART 8
+#define SL_XPMAG (0x199d1fe2+SUNXPART)
+
 struct sun_disklabel {			/* total size = 512 bytes */
 	char	sl_text[128];
-	char	sl_xxx1[292];
+	u_long	sl_xpsum;		/* additive cksum, [sl_xpmag,sl_xxx1) */
+	u_long	sl_xpmag;		/* "extended" magic number */
+	struct sun_dkpart sl_xpart[SUNXPART];	/* "extended" partitions, i through p */
+	char	sl_xxx1[292-8-(8*SUNXPART)];	/* [292] including sl_x* */
 	u_short sl_rpm;			/* rotational speed */
 	u_short	sl_pcylinders;		/* number of physical cyls */
 	u_short sl_sparespercyl;	/* spare sectors per cylinder */
@@ -108,8 +111,8 @@ struct sun_disklabel {			/* total size = 512 bytes */
 
 #ifdef _KERNEL
 /* reads sun label in sector at [cp..cp+511] and sets *lp to BSD label */
-int	sun_disklabel __P((caddr_t, struct disklabel *)); /* true on success */
+int	sun_disklabel(caddr_t, struct disklabel *); /* true on success */
 
-/* compatability dk ioctl's */
-int	sun_dkioctl __P((struct dkdevice *, u_long, caddr_t, int));
+/* compatibility dk ioctl's */
+int	sun_dkioctl(struct disk *, u_long, caddr_t, int);
 #endif

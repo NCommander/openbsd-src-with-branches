@@ -1,3 +1,4 @@
+/*	$OpenBSD: telnet.h,v 1.6 2001/01/04 21:36:58 todd Exp $	*/
 /*	$NetBSD: telnet.h,v 1.4 1994/10/26 00:56:46 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -68,7 +65,8 @@
 char *telcmds[] = {
 	"EOF", "SUSP", "ABORT", "EOR",
 	"SE", "NOP", "DMARK", "BRK", "IP", "AO", "AYT", "EC",
-	"EL", "GA", "SB", "WILL", "WONT", "DO", "DONT", "IAC", 0,
+	"EL", "GA", "SB", "WILL", "WONT", "DO", "DONT", "IAC",
+	0
 };
 #else
 extern char *telcmds[];
@@ -137,7 +135,7 @@ char *telopts[NTELOPTS+1] = {
 	"3270 REGIME", "X.3 PAD", "NAWS", "TSPEED", "LFLOW",
 	"LINEMODE", "XDISPLOC", "OLD-ENVIRON", "AUTHENTICATION",
 	"ENCRYPT", "NEW-ENVIRON",
-	0,
+	0
 };
 #define	TELOPT_FIRST	TELOPT_BINARY
 #define	TELOPT_LAST	TELOPT_NEW_ENVIRON
@@ -198,16 +196,33 @@ char *telopts[NTELOPTS+1] = {
 #define	SLC_XOFF	16
 #define	SLC_FORW1	17
 #define	SLC_FORW2	18
+#define	SLC_MCL		19
+#define	SLC_MCR		20
+#define	SLC_MCWL	21
+#define	SLC_MCWR	22
+#define	SLC_MCBOL	23
+#define	SLC_MCEOL	24
+#define	SLC_INSRT	25
+#define	SLC_OVER	26
+#define	SLC_ECR		27
+#define	SLC_EWR		28
+#define	SLC_EBOL	29
+#define	SLC_EEOL	30
 
-#define	NSLC		18
+#define	NSLC		30
 
 /*
- * For backwards compatability, we define SLC_NAMES to be the
+ * For backwards compatibility, we define SLC_NAMES to be the
  * list of names if SLC_NAMES is not defined.
  */
-#define	SLC_NAMELIST	"0", "SYNCH", "BRK", "IP", "AO", "AYT", "EOR", \
-			"ABORT", "EOF", "SUSP", "EC", "EL", "EW", "RP", \
-			"LNEXT", "XON", "XOFF", "FORW1", "FORW2", 0,
+#define	SLC_NAMELIST	"0", "SYNCH", "BRK", "IP", "AO", "AYT", "EOR",	\
+			"ABORT", "EOF", "SUSP", "EC", "EL", "EW", "RP",	\
+			"LNEXT", "XON", "XOFF", "FORW1", "FORW2",	\
+			"MCL", "MCR", "MCWL", "MCWR", "MCBOL",		\
+			"MCEOL", "INSRT", "OVER", "ECR", "EWR",		\
+			"EBOL", "EEOL",					\
+			0
+
 #ifdef	SLC_NAMES
 char *slc_names[] = {
 	SLC_NAMELIST
@@ -217,7 +232,7 @@ extern char *slc_names[];
 #define	SLC_NAMES SLC_NAMELIST
 #endif
 
-#define	SLC_NAME_OK(x)	((unsigned int)(x) <= NSLC)
+#define	SLC_NAME_OK(x)	((unsigned)(x) > 0 && (unsigned)(x) <= NSLC)
 #define SLC_NAME(x)	slc_names[x]
 
 #define	SLC_NOSUPPORT	0
@@ -270,7 +285,8 @@ extern char *slc_names[];
 
 #ifdef	AUTH_NAMES
 char *authtype_names[] = {
-	"NULL", "KERBEROS_V4", "KERBEROS_V5", "SPX", "MINK", 0,
+	"NULL", "KERBEROS_V4", "KERBEROS_V5", "SPX", "MINK",
+	0
 };
 #else
 extern char *authtype_names[];
@@ -288,7 +304,7 @@ extern char *authtype_names[];
 #define	ENCRYPT_START		3	/* Am starting to send encrypted */
 #define	ENCRYPT_END		4	/* Am ending encrypted */
 #define	ENCRYPT_REQSTART	5	/* Request you start encrypting */
-#define	ENCRYPT_REQEND		6	/* Request you send encrypting */
+#define	ENCRYPT_REQEND		6	/* Request you end encrypting */
 #define	ENCRYPT_ENC_KEYID	7
 #define	ENCRYPT_DEC_KEYID	8
 #define	ENCRYPT_CNT		9
@@ -302,10 +318,11 @@ extern char *authtype_names[];
 char *encrypt_names[] = {
 	"IS", "SUPPORT", "REPLY", "START", "END",
 	"REQUEST-START", "REQUEST-END", "ENC-KEYID", "DEC-KEYID",
-	0,
+	0
 };
 char *enctype_names[] = {
-	"ANY", "DES_CFB64",  "DES_OFB64",  0,
+	"ANY", "DES_CFB64",  "DES_OFB64",
+	0
 };
 #else
 extern char *encrypt_names[];

@@ -1,21 +1,21 @@
-#include "HTUtils.h"
-#include "tcp.h"
-#include "HTAlert.h"
-#include "LYUtils.h"
-#include "LYStrings.h"
-#include "LYGlobalDefs.h"
-#include "LYJump.h"
-#include "LYKeymap.h"
-#include "LYSignal.h"
-#include "GridText.h"
+#include <HTUtils.h>
+#include <HTAlert.h>
+#include <LYUtils.h>
+#include <LYStrings.h>
+#include <LYGlobalDefs.h>
+#include <LYJump.h>
+#include <LYKeymap.h>
+#include <GridText.h>
 
-#include "LYLeaks.h"
+#include <LYLeaks.h>
+
+#ifdef _WINDOWS
+#include <stdlib.h>	/* bsearch() */
+#endif
 
 #ifdef VMS
 #include <fab.h>
 #endif /* VMS */
-
-#define FREE(x) if (x) {free(x); x = NULL;}
 
 struct JumpTable *JThead = NULL;
 
@@ -57,16 +57,14 @@ PUBLIC void LYJumpTable_free NOARGS
  */
 PUBLIC void LYAddJumpShortcut ARGS2(HTList *, historyp, char *,shortcut)
 {
-    char *new;
+    char *new = NULL;
     char *old;
     HTList *cur =  historyp;
 
     if (!historyp || !(shortcut && *shortcut))
 	return;
 
-    if ((new = (char *)calloc(1, (strlen(shortcut) + 1))) == NULL)
-	outofmem(__FILE__, "HTAddJumpShortcut");
-    strcpy(new, shortcut);
+    StrAllocCopy(new, shortcut);
 
     while (NULL != (old = (char *)HTList_nextObject(cur))) {
 	if (!strcmp(old, new)) {
@@ -88,10 +86,9 @@ PUBLIC BOOL LYJumpInit ARGS1 (char *, config)
     /*
      * Create a JumpTable structure.
      */
-    jtp = (struct JumpTable *) calloc(1, sizeof(*jtp));
+    jtp = typecalloc(struct JumpTable);
     if (jtp == NULL) {
-	perror("Out of memory in LYJumpInit");
-	return FALSE;
+	outofmem(__FILE__, "LYJumpInit");
     }
 
     /*
@@ -114,8 +111,10 @@ PUBLIC BOOL LYJumpInit ARGS1 (char *, config)
 	return FALSE;
     }
     StrAllocCopy(jtp->file, cp);
+#ifdef LY_FIND_LEAKS
     if (!JThead)
 	atexit(LYJumpTable_free);
+#endif /* LY_FIND_LEAKS */
 
     /*
      * Get the key, if present.
@@ -147,10 +146,9 @@ PUBLIC BOOL LYJumpInit ARGS1 (char *, config)
 	StrAllocCopy(JThead->msg, jumpprompt);
 	if (!jumpfile)
 	    StrAllocCopy(jumpfile, JThead->file);
-	jtp = (struct JumpTable *) calloc(1, sizeof(*jtp));
+	jtp = typecalloc(struct JumpTable);
 	if (jtp == NULL) {
-	    perror("Out of memory in LYJumpInit");
-	    return FALSE;
+	    outofmem(__FILE__, "LYJumpInit");
 	}
 	StrAllocCopy(jtp->file, JThead->file);
     }
@@ -159,7 +157,7 @@ PUBLIC BOOL LYJumpInit ARGS1 (char *, config)
      * Complete the initialization of config.
      */
     if (cp) {
-	jtp->key = remap(cp, "JUMP");	    /* key is present, (re)map it */
+	jtp->key = remap(cp, "JUMP", FALSE);  /* key is present, (re)map it */
 	cp = strtok(NULL, "\n");	    /* get prompt, if present */
 	if (cp && *cp)
 	    StrAllocCopy(jtp->msg, cp);     /* prompt is present, load it */
@@ -194,9 +192,10 @@ PUBLIC char *LYJump ARGS1(int, key)
     while (jtp && jtp->key && jtp->key != key)
 	jtp = jtp->next;
     if (!jtp) {
-	char msg[40];
-	sprintf(msg, KEY_NOT_MAPPED_TO_JUMP_FILE, key);
+	char *msg = 0;
+	HTSprintf0(&msg, KEY_NOT_MAPPED_TO_JUMP_FILE, key);
 	HTAlert(msg);
+	FREE(msg);
 	return NULL;
     }
     if (!jtp->table)
@@ -214,11 +213,11 @@ PUBLIC char *LYJump ARGS1(int, key)
 
     ShortcutTotal = (jtp->history ? HTList_count(jtp->history) : 0);
     if (jump_buffer && *buf) {
-	recall = ((ShortcutTotal > 1) ? RECALL : NORECALL);
+	recall = ((ShortcutTotal > 1) ? RECALL_URL : NORECALL);
 	ShortcutNum = 0;
 	FirstShortcutRecall = FALSE;
     } else {
-	recall = ((ShortcutTotal >= 1) ? RECALL : NORECALL);
+	recall = ((ShortcutTotal >= 1) ? RECALL_URL : NORECALL);
 	ShortcutNum = ShortcutTotal;
 	FirstShortcutRecall = TRUE;
     }
@@ -228,8 +227,7 @@ PUBLIC char *LYJump ARGS1(int, key)
 	/*
 	 * User cancelled the Jump via ^G. - FM
 	 */
-	_statusline(CANCELLED);
-	sleep(InfoSecs);
+	HTInfoMsg(CANCELLED);
 	return NULL;
     }
 
@@ -237,8 +235,7 @@ check_recall:
     bp = buf;
     if (toupper(key) == 'G' && strncmp(buf, "o ", 2) == 0)
 	bp++;
-    while (isspace(*bp))
-	bp++;
+    bp = LYSkipBlanks(bp);
     if (*bp == '\0' &&
 	!(recall && (ch == UPARROW || ch == DNARROW))) {
 	/*
@@ -246,8 +243,7 @@ check_recall:
 	 */
 	*buf = '\0';
 	StrAllocCopy(jtp->shortcut, buf);
-	_statusline(CANCELLED);
-	sleep(InfoSecs);
+	HTInfoMsg(CANCELLED);
 	return NULL;
     }
 #ifdef PERMIT_GOTO_FROM_JUMP
@@ -258,15 +254,11 @@ check_recall:
 	if (no_goto) {
 	    *buf = '\0';
 	    StrAllocCopy(jtp->shortcut, buf);
-	    _statusline(RANDOM_URL_DISALLOWED);
-	    sleep(MessageSecs);
+	    HTUserMsg(RANDOM_URL_DISALLOWED);
 	    return NULL;
 	}
-	StrAllocCopy(temp, "Go ");
-	StrAllocCat(temp, bp);
-	strcpy(buf, temp);
-	FREE(temp);
-	return(bp=buf);
+	sprintf(buf, "Go %.*s", (int)sizeof(buf) - 4, bp);
+	return (bp = buf);
     }
 #endif /* PERMIT_GOTO_FROM_JUMP */
 
@@ -290,7 +282,7 @@ check_recall:
 	    ShortcutNum = 0;
 	if ((cp=(char *)HTList_objectAt(jtp->history,
 					ShortcutNum)) != NULL) {
-	    strcpy(buf, cp);
+	    LYstrncpy(buf, cp, sizeof(buf)-1);
 	    if (jump_buffer && jtp->shortcut &&
 		!strcmp(buf, jtp->shortcut)) {
 		_statusline(EDIT_CURRENT_SHORTCUT);
@@ -305,8 +297,7 @@ check_recall:
 		/*
 		 * User cancelled the jump via ^G.
 		 */
-		_statusline(CANCELLED);
-		sleep(InfoSecs);
+		HTInfoMsg(CANCELLED);
 		return NULL;
 	    }
 	    goto check_recall;
@@ -331,7 +322,7 @@ check_recall:
 	    ShortcutNum = ShortcutTotal - 1;
 	if ((cp=(char *)HTList_objectAt(jtp->history,
 					ShortcutNum)) != NULL) {
-	    strcpy(buf, cp);
+	    LYstrncpy(buf, cp, sizeof(buf)-1);
 	    if (jump_buffer && jtp->shortcut &&
 		!strcmp(buf, jtp->shortcut)) {
 		_statusline(EDIT_CURRENT_SHORTCUT);
@@ -346,8 +337,7 @@ check_recall:
 		/*
 		 * User cancelled the jump via ^G.
 		 */
-		_statusline(CANCELLED);
-		sleep(InfoSecs);
+		HTInfoMsg(CANCELLED);
 		return NULL;
 	    }
 	    goto check_recall;
@@ -359,7 +349,7 @@ check_recall:
 				 jtp->nel, sizeof(JumpDatum), LYCompare);
     if (!found) {
 	user_message("Unknown target '%s'", buf);
-	sleep(AlertSecs);
+	LYSleepAlert();
     }
 
     StrAllocCopy(jtp->shortcut, bp);
@@ -388,7 +378,7 @@ PRIVATE unsigned LYRead_Jumpfile ARGS1(struct JumpTable *,jtp)
     }
 
     /* allocate storage to read entire file */
-    if ((mp=(char *)calloc(1, st.st_size + 1)) == NULL) {
+    if ((mp= typecallocn(char, st.st_size + 1)) == NULL) {
 	HTAlert(OUTOF_MEM_FOR_JUMP_FILE);
 	return 0;
     }
@@ -403,10 +393,11 @@ PRIVATE unsigned LYRead_Jumpfile ARGS1(struct JumpTable *,jtp)
 	    return 0;
 	}
     } else
-    if ((fd=open(jtp->file, O_RDONLY, "mbc=32")) < 0) {
+    if ((fd=open(jtp->file, O_RDONLY, "mbc=32")) < 0)
 #else
-    if ((fd=open(jtp->file, O_RDONLY)) < 0) {
+    if ((fd=open(jtp->file, O_RDONLY)) < 0)
 #endif /* VMS */
+    {
 	HTAlert(CANNOT_OPEN_JUMP_FILE);
 	FREE(mp);
 	return 0;
@@ -431,8 +422,9 @@ PRIVATE unsigned LYRead_Jumpfile ARGS1(struct JumpTable *,jtp)
 	FREE(mp);
 	return 0;
     } else
-	while(fgets(mp+strlen(mp), 1024, fp) != NULL) ;
-    fclose(fp);
+	while(fgets(mp+strlen(mp), 1024, fp) != NULL)
+	    ;
+	LYCloseInput(fp);
     }
 #endif /* VMS */
 

@@ -1,5 +1,3 @@
-/*	$NetBSD: pmap_getmaps.c,v 1.3 1995/02/25 03:01:48 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)pmap_getmaps.c 1.10 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)pmap_getmaps.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: pmap_getmaps.c,v 1.3 1995/02/25 03:01:48 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: pmap_getmaps.c,v 1.6 1997/09/22 05:11:08 millert Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * pmap_getmap.c
@@ -50,6 +46,7 @@ static char *rcsid = "$NetBSD: pmap_getmaps.c,v 1.3 1995/02/25 03:01:48 cgd Exp 
 #include <netdb.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
 #define NAMELEN 255
@@ -64,15 +61,15 @@ pmap_getmaps(address)
 	 struct sockaddr_in *address;
 {
 	struct pmaplist *head = (struct pmaplist *)NULL;
-	int socket = -1;
+	int sock = -1;
 	struct timeval minutetimeout;
-	register CLIENT *client;
+	CLIENT *client;
 
 	minutetimeout.tv_sec = 60;
 	minutetimeout.tv_usec = 0;
 	address->sin_port = htons(PMAPPORT);
 	client = clnttcp_create(address, PMAPPROG,
-	    PMAPVERS, &socket, 50, 500);
+	    PMAPVERS, &sock, 50, 500);
 	if (client != (CLIENT *)NULL) {
 		if (CLNT_CALL(client, PMAPPROC_DUMP, xdr_void, NULL, xdr_pmaplist,
 		    &head, minutetimeout) != RPC_SUCCESS) {
@@ -80,7 +77,8 @@ pmap_getmaps(address)
 		}
 		CLNT_DESTROY(client);
 	}
-	(void)close(socket);
+	if (sock != -1)
+		(void)close(sock);
 	address->sin_port = 0;
 	return (head);
 }

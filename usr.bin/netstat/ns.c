@@ -1,3 +1,4 @@
+/*	$OpenBSD: ns.c,v 1.10 2003/02/01 01:51:31 deraadt Exp $	*/
 /*	$NetBSD: ns.c,v 1.8 1995/10/03 21:42:46 thorpej Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)ns.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$NetBSD: ns.c,v 1.8 1995/10/03 21:42:46 thorpej Exp $";
+static char *rcsid = "$OpenBSD: ns.c,v 1.10 2003/02/01 01:51:31 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,6 +61,7 @@ static char *rcsid = "$NetBSD: ns.c,v 1.8 1995/10/03 21:42:46 thorpej Exp $";
 #define SANAMES
 #include <netns/spp_debug.h>
 
+#include <limits.h>
 #include <nlist.h>
 #include <errno.h>
 #include <stdio.h>
@@ -74,8 +72,8 @@ struct	nspcb nspcb;
 struct	sppcb sppcb;
 struct	socket sockb;
 
-static char *ns_prpr __P((struct ns_addr *));
-static void ns_erputil __P((int, int));
+static char *ns_prpr(struct ns_addr *);
+static void ns_erputil(int, int);
 
 static	int first = 1;
 
@@ -87,12 +85,10 @@ static	int first = 1;
  */
 
 void
-nsprotopr(off, name)
-	u_long off;
-	char *name;
+nsprotopr(u_long off, char *name)
 {
 	struct nspcb cb;
-	register struct nspcb *prev, *next;
+	struct nspcb *prev, *next;
 	int isspp;
 
 	if (off == 0)
@@ -122,8 +118,8 @@ nsprotopr(off, name)
 			if (isspp) {
 				kread(ppcb, (char *)&sppcb, sizeof (sppcb));
 			} else continue;
-		} else
-			if (isspp) continue;
+		} else if (isspp)
+			continue;
 		if (first) {
 			printf("Active NS connections");
 			if (aflag)
@@ -132,16 +128,16 @@ nsprotopr(off, name)
 			if (Aflag)
 				printf("%-8.8s ", "PCB");
 			printf(Aflag ?
-				"%-5.5s %-6.6s %-6.6s  %-18.18s %-18.18s %s\n" :
-				"%-5.5s %-6.6s %-6.6s  %-22.22s %-22.22s %s\n",
-				"Proto", "Recv-Q", "Send-Q",
-				"Local Address", "Foreign Address", "(state)");
+			    "%-5.5s %-6.6s %-6.6s  %-18.18s %-18.18s %s\n" :
+			    "%-5.5s %-6.6s %-6.6s  %-22.22s %-22.22s %s\n",
+			    "Proto", "Recv-Q", "Send-Q",
+			    "Local Address", "Foreign Address", "(state)");
 			first = 0;
 		}
 		if (Aflag)
-			printf("%8x ", ppcb);
-		printf("%-5.5s %6d %6d ", name, sockb.so_rcv.sb_cc,
-			sockb.so_snd.sb_cc);
+			printf("%8lx ", ppcb);
+		printf("%-5.5s %6ld %6ld ", name, sockb.so_rcv.sb_cc,
+		    sockb.so_snd.sb_cc);
 		printf("  %-22.22s", ns_prpr(&nspcb.nsp_laddr));
 		printf(" %-22.22s", ns_prpr(&nspcb.nsp_faddr));
 		if (isspp) {
@@ -156,15 +152,13 @@ nsprotopr(off, name)
 	}
 }
 #define ANY(x,y,z) \
-	((x) ? printf("\t%d %s%s%s -- %s\n",x,y,plural(x),z,"x") : 0)
+	((x) ? printf("\t%ld %s%s%s -- %s\n",x,y,plural(x),z,"x") : 0)
 
 /*
  * Dump SPP statistics structure.
  */
 void
-spp_stats(off, name)
-	u_long off;
-	char *name;
+spp_stats(u_long off, char *name)
 {
 	struct spp_istat spp_istat;
 #define sppstat spp_istat.newstats
@@ -173,18 +167,23 @@ spp_stats(off, name)
 		return;
 	kread(off, (char *)&spp_istat, sizeof (spp_istat));
 	printf("%s:\n", name);
-	ANY(spp_istat.nonucn, "connection", " dropped due to no new sockets ");
-	ANY(spp_istat.gonawy, "connection", " terminated due to our end dying");
-	ANY(spp_istat.nonucn, "connection",
+	ANY((long)spp_istat.nonucn, "connection",
+	    " dropped due to no new sockets ");
+	ANY((long)spp_istat.gonawy, "connection",
+	    " terminated due to our end dying");
+	ANY((long)spp_istat.nonucn, "connection",
 	    " dropped due to inability to connect");
-	ANY(spp_istat.noconn, "connection",
+	ANY((long)spp_istat.noconn, "connection",
 	    " dropped due to inability to connect");
-	ANY(spp_istat.notme, "connection",
+	ANY((long)spp_istat.notme, "connection",
 	    " incompleted due to mismatched id's");
-	ANY(spp_istat.wrncon, "connection", " dropped due to mismatched id's");
-	ANY(spp_istat.bdreas, "packet", " dropped out of sequence");
-	ANY(spp_istat.lstdup, "packet", " duplicating the highest packet");
-	ANY(spp_istat.notyet, "packet", " refused as exceeding allocation");
+	ANY((long)spp_istat.wrncon, "connection",
+	    " dropped due to mismatched id's");
+	ANY((long)spp_istat.bdreas, "packet", " dropped out of sequence");
+	ANY((long)spp_istat.lstdup, "packet",
+	    " duplicating the highest packet");
+	ANY((long)spp_istat.notyet, "packet",
+	    " refused as exceeding allocation");
 	ANY(sppstat.spps_connattempt, "connection", " initiated");
 	ANY(sppstat.spps_accepts, "connection", " accepted");
 	ANY(sppstat.spps_connects, "connection", " established");
@@ -220,7 +219,7 @@ spp_stats(off, name)
 	ANY(sppstat.spps_rcvduppack, "duplicate-only packet", " received");
 	ANY(sppstat.spps_rcvdupbyte, "duplicate-only byte", " received");
 	ANY(sppstat.spps_rcvpartduppack, "packet", " with some duplicate data");
-	ANY(sppstat.spps_rcvpartdupbyte, "dup. byte", " in part-dup. packet");
+	ANY(sppstat.spps_rcvpartdupbyte, "duplicate byte", " in part-duplicate packet");
 	ANY(sppstat.spps_rcvoopack, "out-of-order packet", " received");
 	ANY(sppstat.spps_rcvoobyte, "out-of-order byte", " received");
 	ANY(sppstat.spps_rcvpackafterwin, "packet", " with data after window");
@@ -234,15 +233,13 @@ spp_stats(off, name)
 	ANY(sppstat.spps_rcvwinupd, "rcvd window update packet", "");
 }
 #undef ANY
-#define ANY(x,y,z)  ((x) ? printf("\t%d %s%s%s\n",x,y,plural(x),z) : 0)
+#define ANY(x,y,z)	((x) ? printf("\t%d %s%s%s\n",x,y,plural(x),z) : 0)
 
 /*
  * Dump IDP statistics structure.
  */
 void
-idp_stats(off, name)
-	u_long off;
-	char *name;
+idp_stats(u_long off, char *name)
 {
 	struct idpstat idpstat;
 
@@ -276,13 +273,11 @@ static	struct {
  */
 /*ARGSUSED*/
 void
-nserr_stats(off, name)
-	u_long off;
-	char *name;
+nserr_stats(u_long off, char *name)
 {
 	struct ns_errstat ns_errstat;
-	register int j;
-	register int histoprint = 1;
+	int j;
+	int histoprint = 1;
 	int z;
 
 	if (off == 0)
@@ -298,7 +293,7 @@ nserr_stats(off, name)
 		" received incomplete");
 	ANY(ns_errstat.ns_es_badcode, "error packet",
 		" received of unknown type");
-	for(j = 0; j < NS_ERR_MAX; j ++) {
+	for (j = 0; j < NS_ERR_MAX; j ++) {
 		z = ns_errstat.ns_es_outhist[j];
 		if (z && histoprint) {
 			printf("Output Error Histogram:\n");
@@ -308,7 +303,7 @@ nserr_stats(off, name)
 
 	}
 	histoprint = 1;
-	for(j = 0; j < NS_ERR_MAX; j ++) {
+	for (j = 0; j < NS_ERR_MAX; j ++) {
 		z = ns_errstat.ns_es_inhist[j];
 		if (z && histoprint) {
 			printf("Input Error Histogram:\n");
@@ -319,36 +314,35 @@ nserr_stats(off, name)
 }
 
 static void
-ns_erputil(z, c)
-	int z, c;
+ns_erputil(int z, int c)
 {
-	int j;
-	char codebuf[30];
 	char *name, *where;
+	char codebuf[30];
+	int j;
 
-	for(j = 0;; j ++) {
+	for (j = 0;; j ++) {
 		if ((name = ns_errnames[j].name) == 0)
 			break;
 		if (ns_errnames[j].code == c)
 			break;
 	}
-	if (name == 0)  {
+	if (name == 0) {
 		if (c > 01000)
 			where = "in transit";
 		else
 			where = "at destination";
-		sprintf(codebuf, "Unknown XNS error code 0%o", c);
+		snprintf(codebuf, sizeof codebuf,
+		    "Unknown XNS error code 0%o", c);
 		name = codebuf;
 	} else
-		where =  ns_errnames[j].where;
+		where = ns_errnames[j].where;
 	ANY(z, name, where);
 }
 
 static struct sockaddr_ns ssns = {AF_NS};
 
 static
-char *ns_prpr(x)
-	struct ns_addr *x;
+char *ns_prpr(struct ns_addr *x)
 {
 	struct sockaddr_ns *sns = &ssns;
 

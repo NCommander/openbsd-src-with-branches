@@ -1819,7 +1819,7 @@ char *strdup(const char *str)
 	fprintf(stderr, "Ouch!  Out of memory in our strdup()!\n");
 	return NULL;
     }
-    sdup = strcpy(sdup, str);
+    sdup = strlcpy(sdup, str, strlen(str) + 1);
 
     return sdup;
 }
@@ -2106,19 +2106,23 @@ API_EXPORT(char *) ap_get_local_host(pool *a)
         str[sizeof(str) - 1] = '\0';
         if ((!(p = gethostbyname(str))) 
             || (!(server_hostname = find_fqdn(a, p)))) {
-            /* Recovery - return the default servername by IP: */
-            if (p && p->h_addr_list && p->h_addr_list[0]) {
-                ap_snprintf(str, sizeof(str), "%pA", p->h_addr_list[0]);
-	        server_hostname = ap_pstrdup(a, str);
-                /* We will drop through to report the IP-named server */
-            }
+           if (p == NULL || p->h_addr_list == NULL)
+              server_hostname=NULL;
+           else {
+              /* Recovery - return the default servername by IP: */
+              if (p->h_addr_list[0]) {
+		      ap_snprintf(str, sizeof(str), "%pA", p->h_addr_list[0]);
+		      server_hostname = ap_pstrdup(a, str);
+                    /* We will drop through to report the IP-named server */
+	      }
+	   }
         }
 	else
             /* Since we found a fqdn, return it with no logged message. */
             return server_hostname;
     }
 
-    /* If we don't have an fdqn or IP, fall back to the loopback addr */
+    /* If we don't have an fqdn or IP, fall back to the loopback addr */
     if (!server_hostname) 
         server_hostname = ap_pstrdup(a, "127.0.0.1");
     
@@ -2233,34 +2237,6 @@ API_EXPORT(char *) ap_caret_escape_args(pool *p, const char *str)
     return cmd;
 }
 #endif
-
-#ifdef OS2
-void os2pathname(char *path)
-{
-    char newpath[MAX_STRING_LEN];
-    int loop;
-    int offset;
-
-    offset = 0;
-    for (loop = 0; loop < (strlen(path) + 1) && loop < sizeof(newpath) - 1; loop++) {
-	if (path[loop] == '/') {
-	    newpath[offset] = '\\';
-	    /*
-	       offset = offset + 1;
-	       newpath[offset] = '\\';
-	     */
-	}
-	else
-	    newpath[offset] = path[loop];
-	offset = offset + 1;
-    };
-    /* Debugging code */
-    /* fprintf(stderr, "%s \n", newpath); */
-
-    strcpy(path, newpath);
-};
-#endif
-
 
 #ifdef NEED_STRERROR
 char *

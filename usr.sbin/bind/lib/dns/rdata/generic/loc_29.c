@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999-2002  Internet Software Consortium.
+ * Copyright (C) 1999-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: loc_29.c,v 1.30.2.2 2002/08/05 06:57:14 marka Exp $ */
+/* $ISC: loc_29.c,v 1.30.2.4 2003/10/09 07:32:42 marka Exp $ */
 
 /* Reviewed: Wed Mar 15 18:13:09 PST 2000 by explorer */
 
@@ -73,7 +73,7 @@ fromtext_loc(ARGS_FROMTEXT) {
 	 */
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_number,
 				      ISC_FALSE));
-	if (token.value.as_ulong > 90)
+	if (token.value.as_ulong > 90U)
 		RETTOK(ISC_R_RANGE);
 	d1 = (int)token.value.as_ulong;
 	/*
@@ -142,7 +142,7 @@ fromtext_loc(ARGS_FROMTEXT) {
 	 */
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_number,
 				      ISC_FALSE));
-	if (token.value.as_ulong > 180)
+	if (token.value.as_ulong > 180U)
 		RETTOK(ISC_R_RANGE);
 	d2 = (int)token.value.as_ulong;
 
@@ -454,19 +454,25 @@ totext_loc(ARGS_TOTEXT) {
 	/* version = sr.base[0]; */
 	size = sr.base[1];
 	if ((size&0x0f)> 1)
-		sprintf(sbuf, "%lum", (size>>4) * poweroften[(size&0x0f)-2]);
+		snprintf(sbuf, sizeof(sbuf),
+			 "%lum", (size>>4) * poweroften[(size&0x0f)-2]);
 	else
-		sprintf(sbuf, "0.%02lum", (size>>4) * poweroften[(size&0x0f)]);
+		snprintf(sbuf, sizeof(sbuf),
+			 "0.%02lum", (size>>4) * poweroften[(size&0x0f)]);
 	hp = sr.base[2];
 	if ((hp&0x0f)> 1)
-		sprintf(hbuf, "%lum", (hp>>4) * poweroften[(hp&0x0f)-2]);
+		snprintf(hbuf, sizeof(hbuf),
+			 "%lum", (hp>>4) * poweroften[(hp&0x0f)-2]);
 	else
-		sprintf(hbuf, "0.%02lum", (hp>>4) * poweroften[(hp&0x0f)]);
+		snprintf(hbuf, sizeof(hbuf),
+			 "0.%02lum", (hp>>4) * poweroften[(hp&0x0f)]);
 	vp = sr.base[3];
 	if ((vp&0x0f)> 1)
-		sprintf(vbuf, "%lum", (vp>>4) * poweroften[(vp&0x0f)-2]);
+		snprintf(vbuf, sizeof(vbuf),
+			 "%lum", (vp>>4) * poweroften[(vp&0x0f)-2]);
 	else
-		sprintf(vbuf, "0.%02lum", (vp>>4) * poweroften[(vp&0x0f)]);
+		snprintf(vbuf, sizeof(vbuf),
+			 "0.%02lum", (vp>>4) * poweroften[(vp&0x0f)]);
 	isc_region_consume(&sr, 4);
 
 	latitude = uint32_fromregion(&sr);
@@ -505,7 +511,7 @@ totext_loc(ARGS_TOTEXT) {
 
 	altitude = uint32_fromregion(&sr);
 	isc_region_consume(&sr, 4);
-	if (altitude < 10000000) {
+	if (altitude < 10000000U) {
 		below = ISC_TRUE;
 		altitude = 10000000 - altitude;
 	} else {
@@ -513,7 +519,8 @@ totext_loc(ARGS_TOTEXT) {
 		altitude -= 10000000;
 	}
 
-	sprintf(buf, "%d %d %d.%03d %s %d %d %d.%03d %s %s%ld.%02ldm %s %s %s",
+	snprintf(buf, sizeof(buf),
+		"%d %d %d.%03d %s %d %d %d.%03d %s %s%ld.%02ldm %s %s %s",
 		d1, m1, s1, fs1, north ? "N" : "S",
 		d2, m2, s2, fs2, east ? "E" : "W",
 		below ? "-" : "", altitude/100, altitude % 100,

@@ -1,5 +1,3 @@
-/*	$NetBSD: getc.c,v 1.5 1995/02/02 02:09:52 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,13 +31,22 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getc.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: getc.c,v 1.5 1995/02/02 02:09:52 jtc Exp $";
+static char rcsid[] = "$OpenBSD: getc.c,v 1.3 1998/11/20 11:18:48 d Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
+
+/*
+ * A subroutine version of the macro getc_unlocked.
+ */
+#undef getc_unlocked
+
+int
+getc_unlocked(fp)
+	FILE *fp;
+{
+	return (__sgetc(fp));
+}
 
 /*
  * A subroutine version of the macro getc.
@@ -54,5 +57,10 @@ int
 getc(fp)
 	register FILE *fp;
 {
-	return (__sgetc(fp));
+	int c;
+
+	flockfile(fp);
+	c = __sgetc(fp);
+	funlockfile(fp);
+	return (c);
 }

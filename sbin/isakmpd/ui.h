@@ -1,4 +1,5 @@
-/*	$Id: ui.h,v 1.4 1998/07/22 00:26:48 niklas Exp $	*/
+/*	$OpenBSD: ui.h,v 1.4 1998/12/21 01:02:28 niklas Exp $	*/
+/*	$EOM: ui.h,v 1.5 1998/12/01 10:20:12 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -43,5 +39,6 @@ extern int ui_socket;
 
 extern void ui_handler (void);
 extern void ui_init (void);
+extern void ui_report (char *);
 
 #endif /* _UI_H_ */

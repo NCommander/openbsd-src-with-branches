@@ -1,3 +1,5 @@
+/*	$OpenBSD: dfa.c,v 1.5 2001/11/19 19:02:14 mpech Exp $	*/
+
 /* dfa - DFA construction routines */
 
 /*-
@@ -11,22 +13,27 @@
  * to contract no. DE-AC03-76SF00098 between the United States
  * Department of Energy and the University of California.
  *
- * Redistribution and use in source and binary forms are permitted provided
- * that: (1) source distributions retain this entire copyright notice and
- * comment, and (2) distributions including binaries display the following
- * acknowledgement:  ``This product includes software developed by the
- * University of California, Berkeley and its contributors'' in the
- * documentation or other materials provided with the distribution and in
- * all advertising materials mentioning features or use of this software.
- * Neither the name of the University nor the names of its contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University nor the names of its contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE.
  */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/dfa.c,v 1.9 1995/05/05 05:35:14 jtc Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/dfa.c,v 1.5 2001/11/19 19:02:14 mpech Exp $ */
 
 #include "flexdef.h"
 
@@ -103,13 +110,13 @@ int *nfa_states, num_states;
 int *accset;
 int nacc;
 	{
-	register int i, j;
+	int i, j;
 
 	for ( i = 1; i <= num_states; ++i )
 		{
 		int ns = nfa_states[i];
-		register int type = state_type[ns];
-		register int ar = assoc_rule[ns];
+		int type = state_type[ns];
+		int ar = assoc_rule[ns];
 
 		if ( type == STATE_NORMAL || rule_type[ar] != RULE_VARIABLE )
 			{ /* do nothing */
@@ -147,15 +154,15 @@ void dump_associated_rules( file, ds )
 FILE *file;
 int ds;
 	{
-	register int i, j;
-	register int num_associated_rules = 0;
+	int i, j;
+	int num_associated_rules = 0;
 	int rule_set[MAX_ASSOC_RULES + 1];
 	int *dset = dss[ds];
 	int size = dfasiz[ds];
 
 	for ( i = 1; i <= size; ++i )
 		{
-		register int rule_num = rule_linenum[assoc_rule[dset[i]]];
+		int rule_num = rule_linenum[assoc_rule[dset[i]]];
 
 		for ( j = 1; j <= num_associated_rules; ++j )
 			if ( rule_num == rule_set[j] )
@@ -199,7 +206,7 @@ void dump_transitions( file, state )
 FILE *file;
 int state[];
 	{
-	register int i, ec;
+	int i, ec;
 	int out_char_set[CSIZE];
 
 	for ( i = 0; i < csize; ++i )
@@ -247,7 +254,7 @@ int state[];
 int *epsclosure( t, ns_addr, accset, nacc_addr, hv_addr )
 int *t, *ns_addr, accset[], *nacc_addr, *hv_addr;
 	{
-	register int stkpos, ns, tsp;
+	int stkpos, ns, tsp;
 	int numstates = *ns_addr, nacc, hashval, transsym, nfaccnum;
 	int stkend, nstate;
 	static int did_stk_init = false, *stk; 
@@ -679,7 +686,7 @@ void ntod()
 
 		if ( caseins && ! useecs )
 			{
-			register int j;
+			int j;
 
 			for ( i = 'A', j = 'a'; i <= 'Z'; ++i, ++j )
 				{
@@ -794,7 +801,7 @@ int snstods( sns, numstates, accset, nacc, hashval, newds_addr )
 int sns[], numstates, accset[], nacc, hashval, *newds_addr;
 	{
 	int didsort = 0;
-	register int i, j;
+	int i, j;
 	int newds, *oldsns;
 
 	for ( i = 1; i <= lastdfa; ++i )

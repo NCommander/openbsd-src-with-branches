@@ -1,3 +1,4 @@
+/*	$OpenBSD: random.s,v 1.3 2001/07/04 08:57:47 niklas Exp $	*/
 /*	$NetBSD: random.s,v 1.5 1995/01/15 23:20:33 mycroft Exp $	*/
 
 /*
@@ -44,19 +45,20 @@
 #include <machine/asm.h>
 
 	.data
-randseed:
+	.globl	_C_LABEL(_randseed)
+_C_LABEL(_randseed):
 	.long	1
 	.text
 ENTRY(random)
 	movl	$16807,%eax
-	imull	randseed
+	imull	_C_LABEL(_randseed)
 	shld	$1,%eax,%edx
 	andl	$0x7fffffff,%eax
 	addl	%edx,%eax
 	js	1f
-	movl	%eax,randseed
+	movl	%eax,_C_LABEL(_randseed)
 	ret
 1:
 	subl	$0x7fffffff,%eax
-	movl	%eax,randseed
+	movl	%eax,_C_LABEL(_randseed)
 	ret

@@ -1,3 +1,4 @@
+/*	$OpenBSD: chk.c,v 1.7 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: chk.c,v 1.7 2002/02/16 21:27:59 millert Exp $";
 #endif
 
 #include <stdlib.h>
@@ -46,28 +47,26 @@ static char rcsid[] = "$NetBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $";
 ttab_t	ttab[NTSPEC];
 
 
-static	void	chkund __P((hte_t *));
-static	void	chkdnu __P((hte_t *));
-static	void	chkdnud __P((hte_t *));
-static	void	chkmd __P((hte_t *));
-static	void	chkvtui __P((hte_t *, sym_t *, sym_t *));
-static	void	chkvtdi __P((hte_t *, sym_t *, sym_t *));
-static	void	chkfaui __P((hte_t *, sym_t *, sym_t *));
-static	void	chkau __P((hte_t *, int, sym_t *, sym_t *, pos_t *,
-			   fcall_t *, fcall_t *, type_t *, type_t *));
-static	void	chkrvu __P((hte_t *, sym_t *));
-static	void	chkadecl __P((hte_t *, sym_t *, sym_t *));
-static	void	printflike __P((hte_t *,fcall_t *, int,
-				const char *, type_t **));
-static	void	scanflike __P((hte_t *, fcall_t *, int,
-			       const char *, type_t **));
-static	void	badfmt __P((hte_t *, fcall_t *));
-static	void	inconarg __P((hte_t *, fcall_t *, int));
-static	void	tofewarg __P((hte_t *, fcall_t *));
-static	void	tomanyarg __P((hte_t *, fcall_t *));
-static	int	eqtype __P((type_t *, type_t *, int, int, int, int *));
-static	int	eqargs __P((type_t *, type_t *, int *));
-static	int	mnoarg __P((type_t *, int *));
+static	void	chkund(hte_t *);
+static	void	chkdnu(hte_t *);
+static	void	chkdnud(hte_t *);
+static	void	chkmd(hte_t *);
+static	void	chkvtui(hte_t *, sym_t *, sym_t *);
+static	void	chkvtdi(hte_t *, sym_t *, sym_t *);
+static	void	chkfaui(hte_t *, sym_t *, sym_t *);
+static	void	chkau(hte_t *, int, sym_t *, sym_t *, pos_t *,
+		   fcall_t *, fcall_t *, type_t *, type_t *);
+static	void	chkrvu(hte_t *, sym_t *);
+static	void	chkadecl(hte_t *, sym_t *, sym_t *);
+static	void	printflike(hte_t *,fcall_t *, int, const char *, type_t **);
+static	void	scanflike(hte_t *, fcall_t *, int, const char *, type_t **);
+static	void	badfmt(hte_t *, fcall_t *);
+static	void	inconarg(hte_t *, fcall_t *, int);
+static	void	tofewarg(hte_t *, fcall_t *);
+static	void	tomanyarg(hte_t *, fcall_t *);
+static	int	eqtype(type_t *, type_t *, int, int, int, int *);
+static	int	eqargs(type_t *, type_t *, int *);
+static	int	mnoarg(type_t *, int *);
 
 
 void
@@ -281,7 +280,7 @@ chkdnud(hte)
 }
 
 /*
- * Print a warning if there is more then one definition for
+ * Print a warning if there is more than one definition for
  * this name.
  */
 static void
@@ -442,7 +441,7 @@ chkfaui(hte, def, decl)
 		return;
 
 	/*
-	 * If we find a function definition, we use this for comparision,
+	 * If we find a function definition, we use this for comparison,
 	 * otherwise the first prototype we can find. If there is no
 	 * definition or prototype declaration, the first function call
 	 * is used.
@@ -700,7 +699,7 @@ printflike(hte, call, n, fmt, ap)
 	const	char *fp;
 	int	fc;
 	int	fwidth, prec, left, sign, space, alt, zero;
-	tspec_t	sz, t1, t2;
+	tspec_t	sz, t1, t2 = NOTSPEC;
 	type_t	*tp;
 
 	fp = fmt;
@@ -930,7 +929,7 @@ scanflike(hte, call, n, fmt, ap)
 	const	char *fp;
 	int	fc;
 	int	noasgn, fwidth;
-	tspec_t	sz, t1, t2;
+	tspec_t	sz, t1 = NOTSPEC, t2 = NOTSPEC;
 	type_t	*tp;
 
 	fp = fmt;
@@ -1176,7 +1175,7 @@ chkrvu(hte, def)
 		/* function has return value */
 		used = ignored = 0;
 		for (call = hte->h_calls; call != NULL; call = call->f_nxt) {
-			used |= call->f_rused;
+			used |= call->f_rused || call->f_rdisc;
 			ignored |= !call->f_rused && !call->f_rdisc;
 		}
 		/*
@@ -1280,8 +1279,8 @@ chkadecl(hte, def, decl)
  *
  * ignqual	if set, ignore qualifiers of outhermost type; used for
  *		function arguments
- * promote	if set, promote left type before comparision; used for
- *		comparisions of arguments with parameters of old style
+ * promote	if set, promote left type before comparison; used for
+ *		comparisons of arguments with parameters of old style
  *		definitions
  * asgn		left indirected type must have at least the same qualifiers
  *		like right indirected type (for assignments and function

@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,29 +31,28 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#if defined(SYSLIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)sbrk.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: sbrk.S,v 1.4 1994/08/04 05:02:46 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD: sbrk.S,v 1.3 2002/11/05 00:02:20 miod Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
 	.globl	_end
-	.globl	curbrk
+	.globl	__curbrk
 
 	.data
-curbrk:	.long	_end
+__curbrk:.long	_end
 	.text
 
 ENTRY(sbrk)
 #ifdef	PIC
 	movl	#__GLOBAL_OFFSET_TABLE_,a1
 	lea	pc@(0,a1:l),a1
-	movl	a1@(curbrk:w),a1
+	movl	a1@(__curbrk:w),a1
 	movl	a1@,d0
 #else
-	movl	curbrk,d0
+	movl	__curbrk,d0
 #endif
 	addl	d0,sp@(4)
 	movl	#SYS_break,d0
@@ -67,9 +62,9 @@ ENTRY(sbrk)
 	movl	a1@,d0
 	movl	sp@(4),a1@
 #else
-	movl	curbrk,d0
-	movl	sp@(4),curbrk
+	movl	__curbrk,d0
+	movl	sp@(4),__curbrk
 #endif
 	rts
 err:
-	jra	cerror
+	jra	__cerror

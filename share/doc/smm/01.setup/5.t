@@ -1,3 +1,5 @@
+.\"	$OpenBSD: 5.t,v 1.3 2003/06/02 23:30:11 millert Exp $
+.\"
 .\" Copyright (c) 1980, 1986, 1988, 1993 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -339,7 +337,7 @@ The generation of redirects may be disabled with the configuration option
 IPSENDREDIRECTS=0 or while the system is running by using the command:
 .DS
 .ft CW
-sysctl -w net.inet.ip.redirect=0
+sysctl net.inet.ip.redirect=0
 .DE
 in environments where it may cause difficulties.
 .Sh 2 "Network databases"

@@ -1,3 +1,4 @@
+/*	$OpenBSD: lint2.h,v 1.2 1995/07/03 21:24:49 cgd Exp $	*/
 /*	$NetBSD: lint2.h,v 1.2 1995/07/03 21:24:49 cgd Exp $	*/
 
 /*

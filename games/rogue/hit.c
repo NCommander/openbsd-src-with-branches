@@ -1,3 +1,4 @@
+/*	$OpenBSD: hit.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: hit.c,v 1.3 1995/04/22 10:27:30 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)hit.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: hit.c,v 1.3 1995/04/22 10:27:30 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: hit.c,v 1.5 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,17 +56,14 @@ static char rcsid[] = "$NetBSD: hit.c,v 1.3 1995/04/22 10:27:30 cgd Exp $";
 #include "rogue.h"
 
 object *fight_monster = 0;
-char hit_message[80] = "";
+char hit_message[HIT_MESSAGE_LEN] = "";
 
-extern short halluc, blind, cur_level;
-extern short add_strength, ring_exp, r_rings;
-extern boolean being_held, interrupted, wizard, con_mon;
-
+void
 mon_hit(monster)
-register object *monster;
+	object *monster;
 {
 	short damage, hit_chance;
-	char *mn;
+	const char *mn;
 	float minus;
 
 	if (fight_monster && (monster != fight_monster)) {
@@ -92,15 +86,13 @@ register object *monster;
 
 	if (!rand_percent(hit_chance)) {
 		if (!fight_monster) {
-			sprintf(hit_message + strlen(hit_message), "the %s misses", mn);
-			message(hit_message, 1);
+			messagef(1, "%sthe %s misses", hit_message, mn);
 			hit_message[0] = 0;
 		}
 		return;
 	}
 	if (!fight_monster) {
-		sprintf(hit_message + strlen(hit_message), "the %s hit", mn);
-		message(hit_message, 1);
+		messagef(1, "%sthe %s hit", hit_message, mn);
 		hit_message[0] = 0;
 	}
 	if (!(monster->m_flags & STATIONARY)) {
@@ -126,9 +118,10 @@ register object *monster;
 	}
 }
 
+void
 rogue_hit(monster, force_hit)
-register object *monster;
-boolean force_hit;
+	object *monster;
+	boolean force_hit;
 {
 	short damage, hit_chance;
 
@@ -143,7 +136,8 @@ boolean force_hit;
 		}
 		if (!rand_percent(hit_chance)) {
 			if (!fight_monster) {
-				(void) strcpy(hit_message, "you miss  ");
+				(void) strlcpy(hit_message, "you miss  ",
+				    sizeof(hit_message));
 			}
 			goto RET;
 		}
@@ -156,7 +150,8 @@ boolean force_hit;
 		}
 		if (mon_damage(monster, damage)) {	/* still alive? */
 			if (!fight_monster) {
-				(void) strcpy(hit_message, "you hit  ");
+				(void) strlcpy(hit_message, "you hit  ",
+				    sizeof(hit_message));
 			}
 		}
 RET:	check_gold_seeker(monster);
@@ -164,10 +159,11 @@ RET:	check_gold_seeker(monster);
 	}
 }
 
+void
 rogue_damage(d, monster, other)
-short d;
-object *monster;
-short other;
+	short d;
+	object *monster;
+	short other;
 {
 	if (d >= rogue.hp_current) {
 		rogue.hp_current = 0;
@@ -180,17 +176,24 @@ short other;
 	}
 }
 
+int
 get_damage(ds, r)
-char *ds;
-boolean r;
+	const char *ds;
+	boolean r;
 {
-	register i = 0, j, n, d, total = 0;
+	int i = 0, j, n, d, total = 0;
 
 	while (ds[i]) {
-		n = get_number(ds+i);
-		while (ds[i++] != 'd') ;
-		d = get_number(ds+i);
-		while ((ds[i] != '/') && ds[i]) i++;
+		n = get_number(ds + i);
+		while ((ds[i] != 'd') && ds[i])
+			i++;
+		if (ds[i] == 'd')
+			i++;
+		d = get_number(ds + i);
+		while ((ds[i] != '/') && ds[i])
+			i++;
+		if (ds[i] == '/')
+			i++;
 
 		for (j = 0; j < n; j++) {
 			if (r) {
@@ -199,37 +202,39 @@ boolean r;
 				total += d;
 			}
 		}
-		if (ds[i] == '/') {
-			i++;
-		}
 	}
 	return(total);
 }
 
+int
 get_w_damage(obj)
-object *obj;
+	const object *obj;
 {
-	char new_damage[12];
-	register to_hit, damage;
-	register i = 0;
+	char new_damage[32];
+	int tmp_to_hit, tmp_damage;
+	int i = 0;
 
 	if ((!obj) || (obj->what_is != WEAPON)) {
 		return(-1);
 	}
-	to_hit = get_number(obj->damage) + obj->hit_enchant;
-	while (obj->damage[i++] != 'd') ;
-	damage = get_number(obj->damage + i) + obj->d_enchant;
+	tmp_to_hit = get_number(obj->damage) + obj->hit_enchant;
+	while ((obj->damage[i++] != 'd') && obj->damage[i])
+		i++;
+	if (obj->damage[i] == 'd')
+		i++;
+	tmp_damage = get_number(obj->damage + i) + obj->d_enchant;
 
-	sprintf(new_damage, "%dd%d", to_hit, damage);
+	snprintf(new_damage, sizeof(new_damage), "%dd%d", tmp_to_hit, tmp_damage);
 
 	return(get_damage(new_damage, 1));
 }
 
+int
 get_number(s)
-register char *s;
+	const char *s;
 {
-	register i = 0;
-	register total = 0;
+	int i = 0;
+	int total = 0;
 
 	while ((s[i] >= '0') && (s[i] <= '9')) {
 		total = (10 * total) + (s[i] - '0');
@@ -238,22 +243,9 @@ register char *s;
 	return(total);
 }
 
-long
-lget_number(s)
-char *s;
-{
-	short i = 0;
-	long total = 0;
-
-	while ((s[i] >= '0') && (s[i] <= '9')) {
-		total = (10 * total) + (s[i] - '0');
-		i++;
-	}
-	return(total);
-}
-
+int
 to_hit(obj)
-object *obj;
+	object *obj;
 {
 	if (!obj) {
 		return(1);
@@ -261,6 +253,7 @@ object *obj;
 	return(get_number(obj->damage) + obj->hit_enchant);
 }
 
+int
 damage_for_strength()
 {
 	short strength;
@@ -291,11 +284,12 @@ damage_for_strength()
 	return(8);
 }
 
+int
 mon_damage(monster, damage)
-object *monster;
-short damage;
+	object *monster;
+	short damage;
 {
-	char *mn;
+	const char *mn;
 	short row, col;
 
 	monster->hp_to_kill -= damage;
@@ -309,8 +303,7 @@ short damage;
 		fight_monster = 0;
 		cough_up(monster);
 		mn = mon_name(monster);
-		sprintf(hit_message+strlen(hit_message), "defeated the %s", mn);
-		message(hit_message, 1);
+		messagef(1, "%sdefeated the %s", hit_message, mn);
 		hit_message[0] = 0;
 		add_exp(monster->kill_exp, 1);
 		take_from_pack(monster, &level_monsters);
@@ -324,8 +317,9 @@ short damage;
 	return(1);
 }
 
+void
 fight(to_the_death)
-boolean to_the_death;
+	boolean to_the_death;
 {
 	short ch, c, d;
 	short row, col;
@@ -334,9 +328,9 @@ boolean to_the_death;
 	object *monster;
 
 	while (!is_direction(ch = rgetchar(), &d)) {
-		sound_bell();
+		beep();
 		if (first_miss) {
-			message("direction?", 0);
+			messagef(0, "direction?");
 			first_miss = 0;
 		}
 	}
@@ -350,7 +344,7 @@ boolean to_the_death;
 	c = mvinch(row, col);
 	if (((c < 'A') || (c > 'Z')) ||
 		(!can_move(rogue.row, rogue.col, row, col))) {
-		message("I see no monster there", 0);
+		messagef(0, "I see no monster there");
 		return;
 	}
 	if (!(fight_monster = object_at(&level_monsters, row, col))) {
@@ -375,10 +369,11 @@ boolean to_the_death;
 	}
 }
 
+void
 get_dir_rc(dir, row, col, allow_off_screen)
-short dir;
-short *row, *col;
-short allow_off_screen;
+	short dir;
+	short *row, *col;
+	short allow_off_screen;
 {
 	switch(dir) {
 	case LEFT:
@@ -428,8 +423,9 @@ short allow_off_screen;
 	}
 }
 
+int
 get_hit_chance(weapon)
-object *weapon;
+	object *weapon;
 {
 	short hit_chance;
 
@@ -439,8 +435,9 @@ object *weapon;
 	return(hit_chance);
 }
 
+int
 get_weapon_damage(weapon)
-object *weapon;
+	object *weapon;
 {
 	short damage;
 
@@ -450,13 +447,14 @@ object *weapon;
 	return(damage);
 }
 
+void
 s_con_mon(monster)
-object *monster;
+	object *monster;
 {
 	if (con_mon) {
 		monster->m_flags |= CONFUSED;
 		monster->moves_confused += get_rand(12, 22);
-		message("the monster appears confused", 0);
+		messagef(0, "the monster appears confused");
 		con_mon = 0;
 	}
 }

@@ -1,5 +1,5 @@
-.\" $NetBSD: groupdel.8,v 1.5 2000/02/28 05:10:56 enami Exp $ */
-.\"
+.\" $OpenBSD: groupdel.8,v 1.10 2003/06/08 23:32:23 millert Exp $
+.\" $NetBSD: groupdel.8,v 1.9 2003/02/14 16:11:37 grant Exp $
 .\"
 .\" Copyright (c) 1999 Alistair G. Crooks.  All rights reserved.
 .\"
@@ -33,12 +33,12 @@
 .\"
 .Dd November 30, 1999
 .Dt GROUPDEL 8
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm groupdel
 .Nd remove a group from the system
 .Sh SYNOPSIS
-.Nm
+.Nm groupdel
 .Op Fl v
 .Ar group
 .Sh DESCRIPTION
@@ -53,19 +53,20 @@ enables verbose mode - explain the commands as they are executed.
 .Pp
 The
 .Nm
-utility exits 0 on success, and >0 if an error occurs.
+utility exits 0 on success, and \*(Gt0 if an error occurs.
 .Sh SEE ALSO
 .Xr group 5 ,
+.Xr groupadd 8 ,
+.Xr groupinfo 8 ,
+.Xr groupmod 8 ,
 .Xr user 8
 .Sh HISTORY
 The
 .Nm
 utility first appeared in
-.Nx 1.5 .
-It is based on the
-.Ar addnerd
-package by the same author.
-.Sh AUTHOR
+.Ox 2.7 .
+.Sh AUTHORS
 The
 .Nm
-utility was written by Alistair G. Crooks (agc@netbsd.org).
+utility was written by
+.An Alistair G. Crooks Aq agc@NetBSD.org .

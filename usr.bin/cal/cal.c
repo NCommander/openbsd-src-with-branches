@@ -1,3 +1,4 @@
+/*	$OpenBSD: cal.c,v 1.9 2003/06/03 02:56:06 millert Exp $	*/
 /*	$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cal.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $";
+static char rcsid[] = "$OpenBSD: cal.c,v 1.9 2003/06/03 02:56:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,6 +55,7 @@ static char rcsid[] = "$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <tzfile.h>
 #include <unistd.h>
 
 #define	THURSDAY		4		/* for reformation */
@@ -102,13 +100,13 @@ char *month_names[12] = {
 	"July", "August", "September", "October", "November", "December",
 };
 
-char *day_headings = " S  M Tu  W Th  F  S";
-char *j_day_headings = "  S   M  Tu   W  Th   F   S";
+char *day_headings = "Su Mo Tu We Th Fr Sa";
+char *j_day_headings = " Su  Mo  Tu  We  Th  Fr  Sa";
 
 /* leap year -- account for gregorian reformation in 1752 */
 #define	leap_year(yr) \
 	((yr) <= 1752 ? !((yr) % 4) : \
-	!((yr) % 4) && ((yr) % 100) || !((yr) % 400))
+	(!((yr) % 4) && ((yr) % 100)) || !((yr) % 400))
 
 /* number of centuries since 1700, not inclusive */
 #define	centuries_since_1700(yr) \
@@ -124,28 +122,26 @@ char *j_day_headings = "  S   M  Tu   W  Th   F   S";
 
 int julian;
 
-void	ascii_day __P((char *, int));
-void	center __P((char *, int, int));
-void	day_array __P((int, int, int *));
-int	day_in_week __P((int, int, int));
-int	day_in_year __P((int, int, int));
-void	j_yearly __P((int));
-void	monthly __P((int, int));
-void	trim_trailing_spaces __P((char *));
-void	usage __P((void));
-void	yearly __P((int));
+void	ascii_day(char *, int);
+void	center(char *, int, int);
+void	day_array(int, int, int *);
+int	day_in_week(int, int, int);
+int	day_in_year(int, int, int);
+void	j_yearly(int);
+void	monthly(int, int);
+void	trim_trailing_spaces(char *);
+void	usage(void);
+void	yearly(int);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	struct tm *local_time;
 	time_t now;
 	int ch, month, year, yflag;
 
-	yflag = 0;
-	while ((ch = getopt(argc, argv, "jy")) != EOF)
+	yflag = year = 0;
+	while ((ch = getopt(argc, argv, "jy")) != -1)
 		switch(ch) {
 		case 'j':
 			julian = 1;
@@ -173,7 +169,7 @@ main(argc, argv)
 	case 0:
 		(void)time(&now);
 		local_time = localtime(&now);
-		year = local_time->tm_year + 1900;
+		year = local_time->tm_year + TM_YEAR_BASE;
 		if (!yflag)
 			month = local_time->tm_mon + 1;
 		break;
@@ -198,14 +194,14 @@ main(argc, argv)
 #define	J_HEAD_SEP	2
 
 void
-monthly(month, year)
-	int month, year;
+monthly(int month, int year)
 {
 	int col, row, len, days[MAXDAYS];
 	char *p, lineout[30];
 
 	day_array(month, year, days);
-	len = sprintf(lineout, "%s %d", month_names[month - 1], year);
+	len = snprintf(lineout, sizeof lineout, "%s %d",
+	    month_names[month - 1], year);
 	(void)printf("%*s%s\n%s\n",
 	    ((julian ? J_WEEK_LEN : WEEK_LEN) - len) / 2, "",
 	    lineout, julian ? j_day_headings : day_headings);
@@ -220,14 +216,13 @@ monthly(month, year)
 }
 
 void
-j_yearly(year)
-	int year;
+j_yearly(int year)
 {
 	int col, *dp, i, month, row, which_cal;
 	int days[12][MAXDAYS];
 	char *p, lineout[80];
 
-	(void)sprintf(lineout, "%d", year);
+	(void)snprintf(lineout, sizeof lineout, "%d", year);
 	center(lineout, J_WEEK_LEN * 2 + J_HEAD_SEP, 0);
 	(void)printf("\n\n");
 	for (i = 0; i < 12; i++)
@@ -255,14 +250,13 @@ j_yearly(year)
 }
 
 void
-yearly(year)
-	int year;
+yearly(int year)
 {
 	int col, *dp, i, month, row, which_cal;
 	int days[12][MAXDAYS];
 	char *p, lineout[80];
 
-	(void)sprintf(lineout, "%d", year);
+	(void)snprintf(lineout, sizeof lineout, "%d", year);
 	center(lineout, WEEK_LEN * 3 + HEAD_SEP * 2, 0);
 	(void)printf("\n\n");
 	for (i = 0; i < 12; i++)
@@ -298,9 +292,7 @@ yearly(year)
  *	builds that array for any month from Jan. 1 through Dec. 9999.
  */
 void
-day_array(month, year, days)
-	int month, year;
-	int *days;
+day_array(int month, int year, int *days)
 {
 	int day, dw, dm;
 
@@ -322,8 +314,7 @@ day_array(month, year, days)
  *	return the 1 based day number within the year
  */
 int
-day_in_year(day, month, year)
-	int day, month, year;
+day_in_year(int day, int month, int year)
 {
 	int i, leap;
 
@@ -341,8 +332,7 @@ day_in_year(day, month, year)
  *	missing days.
  */
 int
-day_in_week(day, month, year)
-	int day, month, year;
+day_in_week(int day, int month, int year)
 {
 	long temp;
 
@@ -356,9 +346,7 @@ day_in_week(day, month, year)
 }
 
 void
-ascii_day(p, day)
-	char *p;
-	int day;
+ascii_day(char *p, int day)
 {
 	int display, val;
 	static char *aday[] = {
@@ -375,7 +363,8 @@ ascii_day(p, day)
 		return;
 	}
 	if (julian) {
-		if (val = day / 100) {
+		val = day / 100;
+		if (val) {
 			day %= 100;
 			*p++ = val + '0';
 			display = 1;
@@ -397,8 +386,7 @@ ascii_day(p, day)
 }
 
 void
-trim_trailing_spaces(s)
-	char *s;
+trim_trailing_spaces(char *s)
 {
 	char *p;
 
@@ -412,10 +400,7 @@ trim_trailing_spaces(s)
 }
 
 void
-center(str, len, separate)
-	char *str;
-	int len;
-	int separate;
+center(char *str, int len, int separate)
 {
 
 	len -= strlen(str);
@@ -425,7 +410,7 @@ center(str, len, separate)
 }
 
 void
-usage()
+usage(void)
 {
 
 	(void)fprintf(stderr, "usage: cal [-jy] [[month] year]\n");

@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,7 +40,7 @@ static char sccsid[] = "@(#)cosh.c	8.1 (Berkeley) 6/4/93";
  *
  * Required system supported functions :
  *	copysign(x,y)
- *	scalb(x,N)
+ *	scalbn(x,N)
  *
  * Required kernel function:
  *	exp(x) 
@@ -99,11 +95,11 @@ ic(lnovfl, 7.0978271289338397310E2,     9, 1.62E42FEFA39EF)
 #define   lnovfl    vccast(lnovfl)
 #endif
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
 static max = 126                      ;
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
 static max = 1023                     ;
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 
 double cosh(x)
 double x;
@@ -112,9 +108,9 @@ double x;
 		one=1.0, small=1.0E-18; /* fl(1+small)==1 */
 	double t;
 
-#if !defined(vax)&&!defined(tahoe)
+#if !defined(__vax__)&&!defined(tahoe)
 	if(x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+#endif	/* !defined(__vax__)&&!defined(tahoe) */
 	if((x=copysign(x,one)) <= 22)
 	    if(x<0.3465) 
 		if(x<small) return(one+x);
@@ -127,7 +123,7 @@ double x;
         /* for x lies in [lnovfl, lnovfl+ln2], decrease x by ln(2^(max+1)) 
          * and return 2^max*exp(x) to avoid unnecessary overflow 
          */
-	    return(scalb(exp((x-mln2hi)-mln2lo), max)); 
+	    return(scalbn(exp((x-mln2hi)-mln2lo), max)); 
 
 	else 
 	    return(exp(x)*half);	/* for large x,  cosh(x)=exp(x)/2 */

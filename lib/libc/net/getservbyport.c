@@ -1,5 +1,3 @@
-/*	$NetBSD: getservbyport.c,v 1.4 1995/02/25 06:20:37 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getservbyport.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getservbyport.c,v 1.4 1995/02/25 06:20:37 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getservbyport.c,v 1.3 1997/07/09 01:08:35 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <netdb.h>
@@ -54,7 +44,7 @@ getservbyport(port, proto)
 	register struct servent *p;
 
 	setservent(_serv_stayopen);
-	while (p = getservent()) {
+	while ((p = getservent())) {
 		if (p->s_port != port)
 			continue;
 		if (proto == 0 || strcmp(p->s_proto, proto) == 0)

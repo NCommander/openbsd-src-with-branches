@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2002  Internet Software Consortium.
+ * Copyright (C) 1998-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: socket.c,v 1.207.2.14 2002/07/11 04:04:26 marka Exp $ */
+/* $ISC: socket.c,v 1.207.2.19 2003/07/23 06:57:54 marka Exp $ */
 
 #include <config.h>
 
@@ -44,6 +44,7 @@
 #include <isc/net.h>
 #include <isc/platform.h>
 #include <isc/print.h>
+#include <isc/privsep.h>
 #include <isc/region.h>
 #include <isc/socket.h>
 #include <isc/strerror.h>
@@ -229,6 +230,8 @@ struct isc_socketmgr {
 static isc_socketmgr_t *socketmgr = NULL;
 #endif /* ISC_PLATFORM_USETHREADS */
 
+static int privsep = 0;
+
 #define CLOSED		0	/* this one must be zero */
 #define MANAGED		1
 #define CLOSE_PENDING	2
@@ -338,7 +341,7 @@ wakeup_socket(isc_socketmgr_t *manager, int fd, int msg) {
 	 * or writes.
 	 */
 
-	INSIST(fd >= 0 && fd < FD_SETSIZE);
+	INSIST(fd >= 0 && fd < (int)FD_SETSIZE);
 
 	if (manager->fdstate[fd] == CLOSE_PENDING) {
 		manager->fdstate[fd] = CLOSED;
@@ -648,7 +651,7 @@ build_msghdr_send(isc_socket_t *sock, isc_socketevent_t *dev,
 		buffer = ISC_LIST_NEXT(buffer, link);
 	}
 
-	INSIST(skip_count == 0);
+	INSIST(skip_count == 0U);
 
  config:
 	msg->msg_iov = iov;
@@ -990,7 +993,7 @@ doio_recv(isc_socket_t *sock, isc_socketevent_t *dev) {
 	dev->n += cc;
 	actual_count = cc;
 	buffer = ISC_LIST_HEAD(dev->bufferlist);
-	while (buffer != NULL && actual_count > 0) {
+	while (buffer != NULL && actual_count > 0U) {
 		REQUIRE(ISC_BUFFER_VALID(buffer));
 		if (isc_buffer_availablelength(buffer) <= actual_count) {
 			actual_count -= isc_buffer_availablelength(buffer);
@@ -1003,7 +1006,7 @@ doio_recv(isc_socket_t *sock, isc_socketevent_t *dev) {
 		}
 		buffer = ISC_LIST_NEXT(buffer, link);
 		if (buffer == NULL) {
-			INSIST(actual_count == 0);
+			INSIST(actual_count == 0U);
 		}
 	}
 
@@ -1153,7 +1156,7 @@ destroy(isc_socket_t **sockp) {
 	INSIST(ISC_LIST_EMPTY(sock->recv_list));
 	INSIST(ISC_LIST_EMPTY(sock->send_list));
 	INSIST(sock->connect_ev == NULL);
-	REQUIRE(sock->fd >= 0 && sock->fd < FD_SETSIZE);
+	REQUIRE(sock->fd >= 0 && sock->fd < (int)FD_SETSIZE);
 
 	LOCK(&manager->lock);
 
@@ -1316,7 +1319,21 @@ isc_socket_create(isc_socketmgr_t *manager, int pf, isc_sockettype_t type,
 		break;
 	}
 
-	if (sock->fd >= FD_SETSIZE) {
+#ifdef F_DUPFD
+        /*
+         * Leave a space for stdio to work in.
+         */
+        if (sock->fd >= 0 && sock->fd < 20) {
+                int new, tmp;
+                new = fcntl(sock->fd, F_DUPFD, 20);
+                tmp = errno;
+                (void)close(sock->fd);
+                errno = tmp;
+                sock->fd = new;
+        }
+#endif
+
+	if (sock->fd >= (int)FD_SETSIZE) {
 		(void)close(sock->fd);
 		isc_log_iwrite(isc_lctx, ISC_LOGCATEGORY_GENERAL,
 			      ISC_LOGMODULE_SOCKET, ISC_LOG_ERROR,
@@ -1740,6 +1757,21 @@ internal_accept(isc_task_t *me, isc_event_t *ev) {
 	memset(&dev->newsocket->address.type.sa, 0, addrlen);
 	fd = accept(sock->fd, &dev->newsocket->address.type.sa,
 		    (void *)&addrlen);
+
+#ifdef F_DUPFD
+        /*
+         * Leave a space for stdio to work in.
+         */
+        if (fd >= 0 && fd < 20) {
+                int new, tmp;
+                new = fcntl(fd, F_DUPFD, 20);
+                tmp = errno;
+                (void)close(fd);
+                errno = tmp;
+                fd = new;
+        }
+#endif
+
 	if (fd < 0) {
 		if (SOFT_ERROR(errno))
 			goto soft_error;
@@ -1795,7 +1827,7 @@ internal_accept(isc_task_t *me, isc_event_t *ev) {
 					 sock->pf);
 			(void)close(fd);
 			goto soft_error;
-		} else if (fd >= FD_SETSIZE) {
+		} else if (fd >= (int)FD_SETSIZE) {
 			isc_log_iwrite(isc_lctx, ISC_LOGCATEGORY_GENERAL,
 				       ISC_LOGMODULE_SOCKET, ISC_LOG_ERROR,
 				       isc_msgcat, ISC_MSGSET_SOCKET,
@@ -2007,7 +2039,7 @@ process_fds(isc_socketmgr_t *manager, int maxfd,
 	isc_socket_t *sock;
 	isc_boolean_t unlock_sock;
 
-	REQUIRE(maxfd <= FD_SETSIZE);
+	REQUIRE(maxfd <= (int)FD_SETSIZE);
 
 	/*
 	 * Process read/writes on other fds here.  Avoid locking
@@ -2366,7 +2398,7 @@ isc_socketmgr_destroy(isc_socketmgr_t **managerp) {
 	(void)isc_condition_destroy(&manager->shutdown_ok);
 #endif /* ISC_PLATFORM_USETHREADS */
 
-	for (i = 0 ; i < FD_SETSIZE ; i++)
+	for (i = 0 ; i < (int)FD_SETSIZE ; i++)
 		if (manager->fdstate[i] == CLOSE_PENDING)
 			close(i);
 
@@ -2771,7 +2803,9 @@ isc_socket_bind(isc_socket_t *sock, isc_sockaddr_t *sockaddr) {
 						ISC_MSG_FAILED, "failed"));
 		/* Press on... */
 	}
-	if (bind(sock->fd, &sockaddr->type.sa, sockaddr->length) < 0) {
+	if ((privsep ?
+	    isc_priv_bind(sock->fd, &sockaddr->type.sa, sockaddr->length) :
+	    bind(sock->fd, &sockaddr->type.sa, sockaddr->length)) < 0) {
 		UNLOCK(&sock->lock);
 		switch (errno) {
 		case EACCES:
@@ -2795,6 +2829,12 @@ isc_socket_bind(isc_socket_t *sock, isc_sockaddr_t *sockaddr) {
 	sock->bound = 1;
 
 	UNLOCK(&sock->lock);
+	return (ISC_R_SUCCESS);
+}
+
+isc_result_t
+isc_socket_privsep(int flag) {
+	privsep = flag;
 	return (ISC_R_SUCCESS);
 }
 

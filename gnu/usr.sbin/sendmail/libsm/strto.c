@@ -10,13 +10,15 @@
  */
 
 #include <sm/gen.h>
-SM_IDSTR(id, "@(#)$Sendmail: strto.c,v 1.14 2001/08/27 22:27:14 gshapiro Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: strto.c,v 1.18 2001/12/30 04:59:37 gshapiro Exp $")
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
 #include <sm/limits.h>
+#include <sm/conf.h>
 #include <sm/string.h>
 
 /*

@@ -1,6 +1,12 @@
-/*-
- * Copyright (c) 1991, 1993
+/*	$OpenBSD: frexp.c,v 1.4 2001/09/10 22:37:06 millert Exp $	*/
+
+/*
+ * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
+ *
+ * This software was developed by the Computer Systems Engineering group
+ * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
+ * contributed to Berkeley.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,43 +34,41 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "from: @(#)frexp.c	8.1 (Berkeley) 6/4/93";
-static char rcsid[] = "$Id: frexp.c,v 1.1 1994/05/24 07:12:27 glass Exp $";
+static char rcsid[] = "$OpenBSD: frexp.c,v 1.4 2001/09/10 22:37:06 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
-#include <machine/endian.h>
-#include <math.h>
+#include <machine/ieee.h>
 
+/*
+ * Split the given value into a fraction in the range [0.5, 1.0) and
+ * an exponent, such that frac * (2^exp) == value.  If value is 0,
+ * return 0.
+ */
 double
 frexp(value, eptr)
 	double value;
 	int *eptr;
 {
 	union {
-                double v;
-                struct {
-#if BYTE_ORDER == LITTLE_ENDIAN
-			u_int u_mant2 : 32;
-			u_int u_mant1 : 20;
-			u_int   u_exp : 11;
-                        u_int  u_sign :  1;
-#else
-                        u_int  u_sign :  1;
-			u_int   u_exp : 11;
-			u_int u_mant1 : 20;
-			u_int u_mant2 : 32;
-#endif
-                } s;
-        } u;
+		double v;
+		struct ieee_double s;
+	} u;
 
 	if (value) {
+		/*
+		 * Fractions in [0.5..1.0) have an exponent of 2^-1.
+		 * Leave Inf and NaN alone, however.
+		 * WHAT ABOUT DENORMS?
+		 */
 		u.v = value;
-		*eptr = u.s.u_exp - 1022;
-		u.s.u_exp = 1022;
-		return(u.v);
+		if (u.s.dbl_exp != DBL_EXP_INFNAN) {
+			*eptr = u.s.dbl_exp - (DBL_EXP_BIAS - 1);
+			u.s.dbl_exp = DBL_EXP_BIAS - 1;
+		}
+		return (u.v);
 	} else {
 		*eptr = 0;
-		return((double)0);
+		return ((double)0);
 	}
 }

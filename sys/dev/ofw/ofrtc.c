@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofrtc.c,v 1.4 2000/08/08 22:34:24 deraadt Exp $	*/
 /*	$NetBSD: ofrtc.c,v 1.3 1996/10/13 01:38:14 christos Exp $	*/
 
 /*
@@ -42,8 +43,8 @@ struct ofrtc_softc {
 	int sc_ihandle;
 };
 
-static int ofrtcprobe __P((struct device *, void *, void *));
-static void ofrtcattach __P((struct device *, struct device *, void *));
+static int ofrtcprobe(struct device *, void *, void *);
+static void ofrtcattach(struct device *, struct device *, void *);
 
 struct cfattach ofrtc_ca = {
 	sizeof(struct ofrtc_softc), ofrtcprobe, ofrtcattach
@@ -175,8 +176,8 @@ ofrtcread(dev, uio, flag)
 		return 0;
 	
 	if (OF_call_method("get-time", of->sc_ihandle, 0, 6,
-			   date, date + 1, date + 2,
-			   date + 3, date + 4, date + 5))
+	    date, date + 1, date + 2,
+	    date + 3, date + 4, date + 5))
 		return EIO;
 
 	twodigit(buf, date[5] % 100);
@@ -222,12 +223,17 @@ ofrtcwrite(dev, uio, flag)
 	if (year < 1970)
 		year += 100;
 	if (OF_call_method("set-time", of->sc_ihandle, 6, 0,
-			   twodigits(buf + 11), twodigits(buf + 8), twodigits(buf + 6),
-			   twodigits(buf + 4), twodigits(buf + 2), year))
+	    twodigits(buf + 11), twodigits(buf + 8), twodigits(buf + 6),
+	    twodigits(buf + 4), twodigits(buf + 2), year))
 		return EIO;
 	return 0;
 }
 
+
+
+/* powerpc expects clock_read data in BCD, discuss this if it is improper */
+#define TOBCD(x)        (((x) / 10 * 16) + ((x) % 10))
+#define YEAR0		1900
 
 int
 OF_clock_read(int *sec, int *min, int *hour, int *day,
@@ -238,11 +244,11 @@ OF_clock_read(int *sec, int *min, int *hour, int *day,
         int l;
 
 	if (!(of = ofrtc_cd.cd_devs[0]))
-		return 0;
+		return 1;
 	if ((l = OF_package_to_path(of->sc_phandle, path, sizeof path - 1)) < 0)
-		return 0;
+		return 1;
 	if (l >= sizeof path)
-		return 0;
+		return 1;
 	path[l] = 0;
 	
 	if (!(of->sc_ihandle = OF_open(path))) {
@@ -250,11 +256,22 @@ OF_clock_read(int *sec, int *min, int *hour, int *day,
 			OF_close(of->sc_ihandle);
 			of->sc_ihandle = 0;
 		}
-		return 0;
+		return 1;
 	}
 	if (OF_call_method("get-time", of->sc_ihandle, 0, 6,
-			sec, min, hour, day, mon, yr))
-		return 0;
+	    sec, min, hour, day, mon, yr))
+		return 1;
+#if 0
+	printf("y:%d m:%d d:%d H:%d M:%d S:%d\n",
+		*yr, *mon, *day, *hour, *min, *sec);
+#endif
+	*yr -= YEAR0; /* bsd expects 0 - 200, not something like 1998 */
+	*yr = TOBCD(*yr);
+	*mon = TOBCD(*mon);
+	*day = TOBCD(*day);
+	*hour = TOBCD(*hour);
+	*min = TOBCD(*min);
+	*sec = TOBCD(*sec);
 
-	return 1;
+	return 0;
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cpufunc.h,v 1.10 2003/10/24 09:03:20 grange Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.8 1994/10/27 04:15:59 cgd Exp $	*/
 
 /*
@@ -33,6 +34,8 @@
 #ifndef _I386_CPUFUNC_H_
 #define	_I386_CPUFUNC_H_
 
+#ifdef _KERNEL
+
 /*
  * Functions to provide access to i386-specific instructions.
  */
@@ -40,15 +43,32 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
-static __inline int bdb(void)
-{
-	extern int bdb_exists;
+static __inline void invlpg(u_int);
+static __inline void lidt(void *);
+static __inline void lldt(u_short);
+static __inline void ltr(u_short);
+static __inline void lcr0(u_int);
+static __inline u_int rcr0(void);
+static __inline u_int rcr2(void);
+static __inline void lcr3(u_int);
+static __inline u_int rcr3(void);
+static __inline void lcr4(u_int);
+static __inline u_int rcr4(void);
+static __inline void tlbflush(void);
+static __inline void disable_intr(void);
+static __inline void enable_intr(void);
+static __inline u_int read_eflags(void);
+static __inline void write_eflags(u_int);
+static __inline void wbinvd(void);
+static __inline void wrmsr(u_int, u_int64_t);
+static __inline u_int64_t rdmsr(u_int);
+static __inline void breakpoint(void);
 
-	if (!bdb_exists)
-		return (0);
-	__asm __volatile("int $3");
-	return (1);
-}
+static __inline void 
+invlpg(u_int addr)
+{ 
+        __asm __volatile("invlpg (%0)" : : "r" (addr) : "memory");
+}  
 
 static __inline void
 lidt(void *p)
@@ -105,6 +125,20 @@ rcr3(void)
 }
 
 static __inline void
+lcr4(u_int val)
+{
+	__asm __volatile("movl %0,%%cr4" : : "r" (val));
+}
+
+static __inline u_int
+rcr4(void)
+{
+	u_int val;
+	__asm __volatile("movl %%cr4,%0" : "=r" (val));
+	return val;
+}
+
+static __inline void
 tlbflush(void)
 {
 	u_int val;
@@ -113,7 +147,7 @@ tlbflush(void)
 }
 
 #ifdef notyet
-void	setidt	__P((int idx, /*XXX*/caddr_t func, int typ, int dpl));
+void	setidt(int idx, /*XXX*/caddr_t func, int typ, int dpl);
 #endif
 
 
@@ -131,4 +165,49 @@ enable_intr(void)
 	__asm __volatile("sti");
 }
 
+static __inline u_int
+read_eflags(void)
+{
+	u_int ef;
+
+	__asm __volatile("pushfl; popl %0" : "=r" (ef));
+	return (ef);
+}
+
+static __inline void
+write_eflags(u_int ef)
+{
+	__asm __volatile("pushl %0; popfl" : : "r" (ef));
+}
+
+static __inline void
+wbinvd(void)
+{
+        __asm __volatile("wbinvd");
+}
+
+
+static __inline void
+wrmsr(u_int msr, u_int64_t newval)
+{
+        __asm __volatile("wrmsr" : : "A" (newval), "c" (msr));
+}
+
+static __inline u_int64_t
+rdmsr(u_int msr)
+{
+        u_int64_t rv;
+
+        __asm __volatile("rdmsr" : "=A" (rv) : "c" (msr));
+        return (rv);
+}
+
+/* Break into DDB/KGDB. */
+static __inline void
+breakpoint(void)
+{
+	__asm __volatile("int $3");
+}
+
+#endif /* _KERNEL */
 #endif /* !_I386_CPUFUNC_H_ */

@@ -1,5 +1,3 @@
-/*	$NetBSD: ctermid.c,v 1.4 1995/02/25 15:39:15 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ctermid.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: ctermid.c,v 1.4 1995/02/25 15:39:15 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: ctermid.c,v 1.4 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -46,8 +36,7 @@ static char rcsid[] = "$NetBSD: ctermid.c,v 1.4 1995/02/25 15:39:15 cgd Exp $";
 #include <string.h>
 
 char *
-ctermid(s)
-	char *s;
+ctermid(char *s)
 {
 	static char def[] = _PATH_TTY;
 
@@ -56,4 +45,13 @@ ctermid(s)
 		return(s);
 	}
 	return(def);
+}
+
+char *
+ctermid_r(char *s)
+{
+	if (s)
+		return ctermid(s);
+	else
+		return(NULL);
 }

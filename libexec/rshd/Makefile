@@ -1,7 +1,18 @@
-#	from: @(#)Makefile	8.1 (Berkeley) 6/4/93
-#	$Id: Makefile,v 1.6 1994/12/22 10:28:04 cgd Exp $
+#	$OpenBSD: Makefile,v 1.7 2002/05/06 22:23:53 deraadt Exp $
 
 PROG=	rshd
+SRCS=	rshd.c
 MAN=	rshd.8
+CFLAGS+= -Wall -Wno-unused
+
+.include <bsd.own.mk>
+
+#.if (${KERBEROS:L} == "yes")
+#SRCS+=	des_rw.c
+#.PATH:	${.CURDIR}/../../usr.bin/rsh
+#CFLAGS+=-DKERBEROS
+#DPADD+=	${LIBKRB} ${LIBDES}
+#LDADD+=	-lkrb -ldes
+#.endif
 
 .include <bsd.prog.mk>

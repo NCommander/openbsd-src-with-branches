@@ -1,3 +1,4 @@
+/*	$OpenBSD: config.h,v 1.3 1996/07/01 11:02:53 downsj Exp $	*/
 /*	$NetBSD: config.h,v 1.2 1995/03/18 14:58:47 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,7 +29,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)config.h	8.2 (Berkeley) 4/22/94
+ *	@(#)config.h	8.3 (Berkeley) 5/24/95
  */
 
 /*
@@ -134,3 +131,9 @@
 #define	DFL_LFSBLOCK		4096
 #define	DFL_LFSBLOCK_SHIFT	12
 #define	DFL_LFSBLOCK_MASK	0xFFF
+
+#define DFL_LFSFRAG		4096
+#define DFL_LFS_FFMASK		DFL_LFSBLOCK_MASK
+#define DFL_LFS_FFSHIFT		DFL_LFSBLOCK_SHIFT
+#define DFL_LFS_FBMASK		0
+#define DFL_LFS_FBSHIFT		0

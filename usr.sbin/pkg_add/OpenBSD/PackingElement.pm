@@ -1,4 +1,4 @@
-# $OpenBSD: PackingElement.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.6 2004/01/22 21:11:43 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -83,7 +83,12 @@ sub keyword() { return; }
 sub write
 {
 	my ($self, $fh) = @_;
-	print $fh "\@", $self->keyword()," ", $self->{name}, "\n";
+	print $fh "\@", $self->keyword(), " ", $self->stringize(), "\n";
+}
+
+sub stringize($)
+{
+	return $_[0]->{name};
 }
 
 sub compute_fullname
@@ -136,13 +141,17 @@ sub write
 {
 	my ($self, $fh) = @_;
 	print $fh "\@ignore\n" if defined $self->{ignore};
-	if ($self->{name} =~ m/^\@/) {
+	print $fh "\@comment no checksum\n" if defined $self->{nochecksum};
+	if ($self->stringize() =~ m/^\@/) {
 		$self->SUPER::write($fh);
 	} else {
-		print $fh $self->{name}, "\n";
+		print $fh $self->stringize(), "\n";
 	}
 	if (defined $self->{md5}) {
-		print $fh "\@comment MD5:", $self->{md5}, "\n";
+		print $fh "\@md5 ", $self->{md5}, "\n";
+	}
+	if (defined $self->{size}) {
+		print $fh "\@size ", $self->{size}, "\n";
 	}
 }
 
@@ -191,6 +200,12 @@ sub add_md5
 	$self->{md5} = $md5;
 }
 
+sub add_size
+{
+	my ($self, $sz) = @_;
+	$self->{size} = $sz;
+}
+
 sub IsFile() { 1 }
 
 package OpenBSD::PackingElement::Other;
@@ -233,6 +248,30 @@ sub add
 	}
 }
 
+package OpenBSD::PackingElement::md5;
+our @ISA=qw(OpenBSD::PackingElement);
+__PACKAGE__->setKeyword('md5');
+
+sub add
+{
+	my ($class, $plist, @args) = @_;
+
+	$plist->{state}->{lastfile}->add_md5($');
+	return undef;
+}
+
+package OpenBSD::PackingElement::size;
+our @ISA=qw(OpenBSD::PackingElement);
+__PACKAGE__->setKeyword('size');
+
+sub add
+{
+	my ($class, $plist, @args) = @_;
+
+	$plist->{state}->{lastfile}->add_size($args[0]);
+	return undef;
+}
+
 package OpenBSD::PackingElement::Option;
 our @ISA=qw(OpenBSD::PackingElement);
 __PACKAGE__->setKeyword('option');
@@ -258,6 +297,7 @@ sub keyword() { 'option' }
 package OpenBSD::PackingElement::ExtraInfo;
 our @ISA=qw(OpenBSD::PackingElement);
 
+sub keyword() { 'comment' }
 sub category() { 'extrainfo' }
 
 
@@ -275,12 +315,11 @@ sub add
 	return $self;
 }
 
-sub write
+sub stringize($)
 {
-	my ($self, $fh) = @_;
-	print  $fh "\@comment subdir=", $self->{subdir}, 
-	    " cdrom=", $self->{cdrom}, 
-	    " ftp=", $self->{ftp}, "\n";
+	my $self = $_[0];
+	return "subdir=".$self->{subdir}." cdrom=".$self->{cdrom}.
+	    " ftp=".$self->{ftp};
 }
 
 package OpenBSD::PackingElement::PkgDep;
@@ -304,6 +343,7 @@ our @ISA=qw(OpenBSD::PackingElement);
 
 __PACKAGE__->setKeyword('newdepend');
 sub category() { "newdepend" }
+sub keyword() { "newdepend" }
 
 sub new
 {
@@ -312,11 +352,10 @@ sub new
 	bless { name => $name, pattern => $pattern, def => $def }, $class;
 }
 
-sub write
+sub stringize($)
 {
-	my ($self, $fh) = @_;
-	print $fh "\@newdepend ", $self->{name}, ':', 
-	    $self->{pattern}, ':', $self->{def}, "\n";
+	my $self = $_[0];
+	return $self->{name}.':'.$self->{pattern}.':'.$self->{def};
 }
 
 package OpenBSD::PackingElement::LibDepend;
@@ -325,6 +364,7 @@ our @ISA=qw(OpenBSD::PackingElement);
 
 __PACKAGE__->setKeyword('libdepend');
 sub category() { "libdepend" }
+sub keyword() { "libdepend" }
 
 sub new
 {
@@ -334,12 +374,11 @@ sub new
 	    def => $def }, $class;
 }
 
-sub write
+sub stringize($)
 {
-	my ($self, $fh) = @_;
-	print $fh "\@libdepend ", $self->{name}, ':', 
-	    $self->{libspec}, ':',
-	    $self->{pattern}, ':', $self->{def}, "\n";
+	my $self = $_[0];
+	return $self->{name}.':'.$self->{libspec}.':'.$self->{pattern}.
+	    ':'.$self->{def};
 }
 
 package OpenBSD::PackingElement::Unique;
@@ -362,6 +401,13 @@ our @ISA=qw(OpenBSD::PackingElement::Unique OpenBSD::PackingElement);
 __PACKAGE__->setKeyword('name');
 sub keyword() { "name" }
 sub category() { "name" }
+
+package OpenBSD::PackingElement::LocalBase;
+our @ISA=qw(OpenBSD::PackingElement::Unique OpenBSD::PackingElement);
+
+__PACKAGE__->setKeyword('localbase');
+sub keyword() { "localbase" }
+sub category() { "localbase" }
 
 package OpenBSD::PackingElement::Cwd;
 use File::Spec;
@@ -538,5 +584,24 @@ sub category() { OpenBSD::PackageInfo::DISPLAY }
 package OpenBSD::PackingElement::FMTREE_DIRS;
 our @ISA=qw(OpenBSD::PackingElement::SpecialFile);
 sub category() { OpenBSD::PackageInfo::MTREE_DIRS }
+
+package OpenBSD::PackingElement::Arch;
+our @ISA=qw(OpenBSD::PackingElement::Unique);
+__PACKAGE__->setKeyword('arch');
+sub category() { 'arch' }
+sub keyword() { 'arch' }
+
+sub new
+{
+	my ($class, $args) = @_;
+	my @arches= split(/\,/, $args);
+	bless { arches => \@arches }, $class;
+}
+
+sub stringize($)
+{
+	my $self = $_[0];
+	return join(',',@{$self->{arches}});
+}
 
 1;

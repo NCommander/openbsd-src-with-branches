@@ -1,3 +1,4 @@
+/*	$OpenBSD: grfioctl.h,v 1.4 2003/04/03 06:47:58 jmc Exp $	*/
 /*	$NetBSD: grfioctl.h,v 1.5 1995/07/02 05:26:45 briggs Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,6 +38,9 @@
  *
  *	@(#)grfioctl.h	7.2 (Berkeley) 11/4/90
  */
+
+#ifndef _MAC68K_GRFIOCTL_H_
+#define _MAC68K_GRFIOCTL_H_
 
 struct grfmode {
 	u_int8_t	mode_id;	/* Identifier for mode              */
@@ -63,7 +63,7 @@ struct grfmodes {
 };
 
 /*
- * BSD ioctls (first few match HP/UX ioctl()s.  In case we want
+ * BSD ioctls (first few match HP-UX ioctl()s.  In case we want
  * compatibility later, start our own at 16).
  */
 #define	GRFIOCGINFO	_IOR('G', 0, struct grfinfo) /* get info on device */
@@ -83,7 +83,7 @@ struct grfmodes {
  * depend on GRFIOCGINFO.
  */
 struct	grfinfo {
-	int	gd_id;			/* HPUX identifier */
+	int	gd_id;			/* HP-UX identifier */
 	caddr_t	gd_regaddr;		/* control registers physaddr */
 	int	gd_regsize;		/* control registers size */
 	caddr_t	gd_fbaddr;		/* frame buffer physaddr */
@@ -97,3 +97,5 @@ struct	grfinfo {
 	int	gd_dheight;		/* displayed part height */
 	int	gd_pad[6];		/* for future expansion */
 };
+
+#endif	/* _MAC68K_GRFIOCTL_H_ */

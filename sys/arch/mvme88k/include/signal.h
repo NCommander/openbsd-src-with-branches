@@ -1,3 +1,4 @@
+/*	$OpenBSD: signal.h,v 1.11 2004/01/12 23:55:10 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -28,6 +29,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+#ifndef __MACHINE_SIGNAL_H__
+#define __MACHINE_SIGNAL_H__
+
+#include <machine/reg.h>
+
 typedef int sig_atomic_t;
 
 /*
@@ -43,32 +50,7 @@ struct  sigcontext {
         int     sc_onstack;             /* sigstack state to restore */
         int     sc_mask;                /* signal mask to restore */
 	/* begin machine dependent portion */
-	int	sc_regs[32];
-#define	sc_sp	sc_regs[31]
-	int	sc_xip;
-	int	sc_nip;
-	int	sc_fip;
-	int	sc_ps;
-	int	sc_fpsr;
-	int	sc_fpcr;
-	int	sc_ssbr;
-	int	sc_dmt0;
-	int	sc_dmd0;
-	int	sc_dma0;
-	int	sc_dmt1;
-	int	sc_dmd1;
-	int	sc_dma1;
-	int	sc_dmt2;
-	int	sc_dmd2;
-	int	sc_dma2;
-	int	sc_fpecr;
-	int	sc_fphs1;
-	int	sc_fpls1;
-	int	sc_fphs2;
-	int	sc_fpls2;
-	int	sc_fppt;
-	int	sc_fprh;
-	int	sc_fprl;
-	int	sc_fpit;
-	int	sc_xxxx;	/* padd to double word boundary */
+	struct reg sc_regs;
 };
+
+#endif /* __MACHINE_SIGNAL_H__ */

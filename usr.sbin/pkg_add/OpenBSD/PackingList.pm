@@ -1,4 +1,4 @@
-# $OpenBSD: PackingList.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: PackingList.pm,v 1.5 2004/01/28 22:12:01 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -57,6 +57,9 @@ sub read
 	return $plist;
 }
 
+# XXX Please don't define other selectors yourself, as this is a hack
+# XXX that is bound to change in the future.
+
 sub OpenBSD::PackingList::DirrmOnly
 {
 	m/^\@cwd/ || m/^\@dirrm/ || m/^\@name/;
@@ -79,7 +82,9 @@ sub write
 	if (defined $self->{'no-default-conflict'}) {
 		$self->{'no-default-conflict'}->write($fh);
 	}
-	$self->{extrainfo}->write($fh);
+	for my $unique_item (qw(extrainfo arch)) {
+		$self->{$unique_item}->write($fh) if defined $self->{$unique_item};
+	}
 	for my $listname (qw(pkgcfl pkgdep newdepend libdepend items)) {
 		if (defined $self->{$listname}) {
 			for my $item (@{$self->{$listname}}) {
@@ -128,10 +133,33 @@ sub addunique
 	$plist->{$category} = $object;
 }
 
+sub has
+{
+	my ($plist, $name) = @_;
+	return defined $plist->{$name};
+}
+
+sub get
+{
+	my ($plist, $name) = @_;
+	return $plist->{$name};
+}
+
 sub pkgname($)
 {
 	my $self = shift;
 	return $self->{name}->{name};
+}
+
+sub pkgbase($)
+{
+	my $self = shift;
+
+	if (defined $self->{localbase}) {
+		return $self->{localbase}->{name};
+	} else {
+		return '/usr/local';
+	}
 }
 
 # allows the autoloader to work correctly

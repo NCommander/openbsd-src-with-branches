@@ -1,3 +1,4 @@
+/*	$OpenBSD: string.h,v 1.12 2003/06/26 19:34:17 avsm Exp $	*/
 /*	$NetBSD: string.h,v 1.6 1994/10/26 00:56:30 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,51 +42,72 @@ typedef	_BSD_SIZE_T_	size_t;
 #endif
 
 #ifndef	NULL
-#define	NULL	0
+#ifdef 	__GNUG__
+#define	NULL	__null
+#else
+#define	NULL	0L
+#endif
 #endif
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void	*memchr __P((const void *, int, size_t));
-int	 memcmp __P((const void *, const void *, size_t));
-void	*memcpy __P((void *, const void *, size_t));
-void	*memmove __P((void *, const void *, size_t));
-void	*memset __P((void *, int, size_t));
-char	*strcat __P((char *, const char *));
-char	*strchr __P((const char *, int));
-int	 strcmp __P((const char *, const char *));
-int	 strcoll __P((const char *, const char *));
-char	*strcpy __P((char *, const char *));
-size_t	 strcspn __P((const char *, const char *));
-char	*strerror __P((int));
-size_t	 strlen __P((const char *));
-char	*strncat __P((char *, const char *, size_t));
-int	 strncmp __P((const char *, const char *, size_t));
-char	*strncpy __P((char *, const char *, size_t));
-char	*strpbrk __P((const char *, const char *));
-char	*strrchr __P((const char *, int));
-size_t	 strspn __P((const char *, const char *));
-char	*strstr __P((const char *, const char *));
-char	*strtok __P((char *, const char *));
-size_t	 strxfrm __P((char *, const char *, size_t));
+void	*memchr(const void *, int, size_t);
+int	 memcmp(const void *, const void *, size_t);
+void	*memcpy(void *, const void *, size_t)
+		__attribute__ ((__bounded__(__buffer__,1,3)))
+		__attribute__ ((__bounded__(__buffer__,2,3)));
+void	*memmove(void *, const void *, size_t)
+		__attribute__ ((__bounded__(__buffer__,1,3)))
+		__attribute__ ((__bounded__(__buffer__,2,3)));
+void	*memset(void *, int, size_t)
+		__attribute__ ((__bounded__(__buffer__,1,3)));
+char	*strcat(char *, const char *);
+char	*strchr(const char *, int);
+int	 strcmp(const char *, const char *);
+int	 strcoll(const char *, const char *);
+char	*strcpy(char *, const char *);
+size_t	 strcspn(const char *, const char *);
+char	*strerror(int);
+int	 strerror_r(int, char *, size_t)
+		__attribute__ ((__bounded__(__string__,2,3)));
+size_t	 strlen(const char *);
+char	*strncat(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+int	 strncmp(const char *, const char *, size_t);
+char	*strncpy(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+char	*strpbrk(const char *, const char *);
+char	*strrchr(const char *, int);
+size_t	 strspn(const char *, const char *);
+char	*strstr(const char *, const char *);
+char	*strtok(char *, const char *);
+char	*strtok_r(char *, const char *, char **);
+size_t	 strxfrm(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
 
 /* Nonstandard routines */
 #if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
-int	 bcmp __P((const void *, const void *, size_t));
-void	 bcopy __P((const void *, void *, size_t));
-void	 bzero __P((void *, size_t));
-int	 ffs __P((int));
-char	*index __P((const char *, int));
-void	*memccpy __P((void *, const void *, int, size_t));
-char	*rindex __P((const char *, int));
-int	 strcasecmp __P((const char *, const char *));
-char	*strdup __P((const char *));
-void	 strmode __P((int, char *));
-int	 strncasecmp __P((const char *, const char *, size_t));
-char	*strsep __P((char **, const char *));
-char	*strsignal __P((int));
-void	 swab __P((const void *, void *, size_t));
+int	 bcmp(const void *, const void *, size_t);
+void	 bcopy(const void *, void *, size_t)
+		__attribute__ ((__bounded__(__buffer__,2,3)));
+void	 bzero(void *, size_t)
+		__attribute__ ((__bounded__(__buffer__,1,2)));
+int	 ffs(int);
+char	*index(const char *, int);
+void	*memccpy(void *, const void *, int, size_t)
+		__attribute__ ((__bounded__(__buffer__,1,4)));
+char	*rindex(const char *, int);
+int	 strcasecmp(const char *, const char *);
+char	*strdup(const char *);
+size_t	 strlcat(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+size_t	 strlcpy(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+void	 strmode(int, char *);
+int	 strncasecmp(const char *, const char *, size_t);
+char	*strsep(char **, const char *);
+char	*strsignal(int);
 #endif 
 __END_DECLS
 

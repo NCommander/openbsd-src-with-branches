@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: pkg_delete,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: pkg_delete,v 1.22 2004/01/28 22:12:01 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -31,6 +31,10 @@ use Getopt::Std;
 use OpenBSD::PackingList;
 use OpenBSD::PackageInfo;
 use OpenBSD::RequiredBy;
+use OpenBSD::Logger;
+use OpenBSD::Vstat;
+
+our %forced = ();
 
 package OpenBSD::PackingElement;
 sub delete
@@ -39,6 +43,16 @@ sub delete
 
 sub record_dirrm
 {
+}
+
+sub log_pkgname
+{
+	my ($self, $state) = @_;
+	if (defined $state->{pkgname_tolog}) {
+		OpenBSD::Logger::log
+		    "# package ", $state->{pkgname_tolog}, "\n";
+	$state->{pkgname_tolog} = undef;
+	}
 }
 
 package OpenBSD::PackingElement::DirRm;
@@ -69,6 +83,7 @@ sub delete
 {
 	my ($self, $state) = @_;
 	my $name = $self->fullname();
+	my $realname = $state->{destdir}.$name;
 
 	if ($state->{verbose} or $state->{not}) {
 		print "dirrm: $name\n";
@@ -87,8 +102,11 @@ sub delete
 	}
 	elsif (@$entry == 1) {
 		if ($entry->[0] eq $state->{pkgname}) {
-			rmdir($name) 
-			    or print "Error deleting directory $name\n";
+			if (!rmdir $realname) {
+			    print "Error deleting directory $realname\n";
+			    $self->log_pkgname($state);
+			    OpenBSD::Logger::log "rmdir $state->{destdirname}$name\n";
+			}
 			$state->{dirrms}->{$name} = undef;
 		} else {
 			print "Error: dirrm $name recorded as ", 
@@ -97,7 +115,7 @@ sub delete
 	}
 	elsif (@$entry > 1) {
 		print "Dirrm $name defined in multiple packages: ",
-			join(",", @$entry), "\n";
+			join(",", @$entry), "\n" if $state->{verbose};
 	    	@$entry = grep { $_ ne $state->{pkgname} }  @$entry;
 	}
 }
@@ -120,34 +138,43 @@ sub delete
 {
 	my ($self, $state) = @_;
 	my $name = $self->fullname();
-	if (-l $name) {
+	my $realname = $state->{destdir}.$name;
+	if (-l $realname) {
 		if ($state->{verbose} or $state->{not}) {
-			print "deleting symlink: $name\n";
+			print "deleting symlink: $realname\n";
 		}
 	} else {
 		unless ($self->{nochecksum} or $state->{quick}) {
 			if (!defined $self->{md5}) {
 				print "Problem: $name does not have an md5 checksum\n";
-				print "NOT deleting: $name\n";
+				print "NOT deleting: $realname\n";
+				$self->log_pkgname($state);
+				OpenBSD::Logger::log "rm $state->{destdirname}$name\n";
 				return;
 			}
-			if (! -f $name) {
-				print "File $name does not exist\n";
+			if (! -f $realname) {
+				print "File $realname does not exist\n";
 				return;
 			}
-			my $md5 = OpenBSD::md5::fromfile($name);
+			my $md5 = OpenBSD::md5::fromfile($realname);
 			if ($md5 ne $self->{md5}) {
 				print "Problem: md5 doesn't match for $name\n";
-				print "NOT deleting: $name\n";
+				print "NOT deleting: $realname\n";
+				$self->log_pkgname($state);
+				OpenBSD::Logger::log "rm $state->{destdirname}$name #MD5\n";
 				return;
 			}
 		}
 		if ($state->{verbose} or $state->{not}) {
-			print "deleting: $name\n";
+			print "deleting: $realname\n";
 		}
 	}
 	return if $state->{not};
-	unlink($name) or print "problem deleting $name\n";
+	if (!unlink $realname) {
+		print "Problem deleting $realname\n";
+		$self->log_pkgname($state);
+		OpenBSD::Logger::log "rm $state->{destdirname}$name\n";
+	}
 }
 
 package OpenBSD::PackingElement::Extra;
@@ -156,17 +183,23 @@ sub delete
 	my ($self, $state) = @_;
 	return unless $state->{extra};
 	my $name = $self->fullname();
-	if ($name =~ s|/$||) {
+	my $realname = $state->{destdir}.$name;
+	if ($self->{name} =~ m|/$|) {
 		if ($state->{verbose} or $state->{not}) {
-			print "deleting extra directory: $name\n";
-		}
-		rmdir($name) unless $state->{not};
-	} else {
-		if ($state->{verbose} or $state->{not}) {
-			print "deleting extra file: $name\n";
+			print "deleting extra directory: $realname\n";
 		}
 		return if $state->{not};
-		unlink($name) or print "problem deleting $name\n";
+		return unless -e $realname;
+		rmdir($realname) or 
+		    print "problem deleting extra directory $realname\n";
+	} else {
+		if ($state->{verbose} or $state->{not}) {
+			print "deleting extra file: $realname\n";
+		}
+		return if $state->{not};
+		return unless -e $realname;
+		unlink($realname) or 
+		    print "problem deleting extra file $realname\n";
 	}
 }
 
@@ -213,7 +246,7 @@ sub delete
 	my $opt_v = $state->{verbose};
 	my $opt_n = $state->{not};
 	my $pkgname = $state->{pkgname};
-	print "Deinstall script: $dir",DEINSTALL ,"$pkgname DEINSTALL\n" if $opt_v or $opt_n;
+	print "Deinstall script: $dir",DEINSTALL ," $pkgname DEINSTALL\n" if $opt_v or $opt_n;
 	unless ($opt_n) {
 		chmod 0755, $dir.DEINSTALL;
 		system($dir.DEINSTALL, $pkgname, "DEINSTALL") == 0 or 
@@ -223,7 +256,7 @@ sub delete
 
 package main;
 
-our ($opt_v, $opt_D, $opt_d, $opt_n, $opt_f, $opt_q, $opt_p, $opt_c);
+our ($opt_v, $opt_D, $opt_d, $opt_n, $opt_f, $opt_q, $opt_p, $opt_c, $opt_L, $opt_B);
 
 sub remove_packing_info
 {
@@ -232,7 +265,7 @@ sub remove_packing_info
 	for my $fname (info_names()) {
 		unlink($dir.$fname);
 	}
-	rmdir($dir) or die "Can't finish removing directory $dir";
+	rmdir($dir) or die "Can't finish removing directory $dir: $!";
 }
 
 sub delete_package
@@ -250,12 +283,26 @@ sub delete_package
 		die "Package $pkgname real name does not match";
 	}
 
-	if ($plist->{OpenBSD::PackageInfo::REQUIRE}) {
-		$plist->{OpenBSD::PackageInfo::REQUIRE}->delete($state);
+	my $problems = 0;
+	for my $item (@{$plist->{items}}) {
+		next unless $item->IsFile();
+		my $fname = $item->fullname();
+		my $s = OpenBSD::Vstat::remove($fname, $item->{size});
+		next unless defined $s;
+		if ($s->{ro}) {
+			print "Error: ", $s->{mnt}, " is read-only ($fname)\n";
+			$problems++;
+		}
 	}
-	if ($plist->{OpenBSD::PackageInfo::DEINSTALL}) {
-		$plist->{OpenBSD::PackageInfo::DEINSTALL}->delete($state);
+	die if $problems;
+
+	$ENV{'PKG_PREFIX'} = $plist->pkgbase();
+	if ($plist->has(REQUIRE)) {
+		$plist->get(REQUIRE)->delete($state);
 	}
+	if ($plist->has(DEINSTALL)) {
+		$plist->get(DEINSTALL)->delete($state);
+	} 
 	for my $item (@{$plist->{items}}) {
 		$item->delete($state);
 	}
@@ -265,20 +312,39 @@ sub delete_package
 		my $name = $item->{name};
 		next if defined $removed->{$name};
 		print "remove dependency in $name\n" if $opt_v or $opt_n;
-		OpenBSD::RequiredBy->new($name)->delete($pkgname) unless $opt_n;
-		$removed->{name} = 1;
+		local $@;
+		eval { OpenBSD::RequiredBy->new($name)->delete($pkgname) unless $opt_n; };
+		if ($@) {
+			print STDERR "$@\n";
+		}
+		$removed->{$name} = 1;
 	}
 	remove_packing_info($dir) unless $opt_n;
 }
 
+getopts('vcDdnf:qpS:L:B:');
+$opt_B = $ENV{'PKG_DESTDIR'} unless defined $opt_B;
+$opt_B = '' unless defined $opt_B;
+if ($opt_B ne '') {
+	$opt_B.='/' unless $opt_B =~ m/\/$/;
+}
+$ENV{'PKG_DESTDIR'} = $opt_B;
 
-getopts('vcDdnfqpS:');
+$opt_L = '/usr/local' unless defined $opt_L;
 
 if (defined $opt_p) {
 	die "Option p is obsolete";
 }
 if (defined $opt_d) {
 	die "Option d is obsolete";
+}
+
+if ($opt_f) {
+	%forced = map {($_, 1)} split(/,/, $opt_f);
+}
+
+if ($< && !$forced{nonroot}) {
+	die "$0 must be run as root";
 }
 
 my %done;
@@ -290,9 +356,88 @@ $state->{quick} = $opt_q;
 $state->{verbose} = $opt_v;
 $state->{extra} = $opt_c;
 $ENV{'PKG_DELETE_EXTRA'} = $state->{extra} ? "Yes" : "No";
-do {
+
+# First, resolve pkg names
+
+my @realnames;
+my $bad;
+
+for my $pkgname (@ARGV) {
+    $pkgname =~ s/\.tgz$//;
+    if (is_installed($pkgname)) {
+	push(@realnames, installed_name($pkgname));
+    } else {
+	if (OpenBSD::PackageName::is_stem($pkgname)) {
+	    my @l = OpenBSD::PackageName::findstem($pkgname, 
+		installed_packages());
+	    if (@l == 0) {
+		print "Can't resolve $pkgname to an installed package name\n";
+		$bad = 1 unless $forced{uninstalled};
+	    } elsif (@l == 1) {
+		push(@realnames, $l[0]);
+	    } elsif (@l != 0) {
+		print "Ambiguous: $pkgname could be ", join(' ', @l),"\n";
+		if ($forced{ambiguous}) {
+		    print "(removing them all)\n";
+		    push(@realnames, @l);
+		} else {
+		    $bad = 1;
+		}
+	    }
+	}
+    }
+}
+
+# Then check that dependencies are okay
+my (%toremove, %extra_rm);
+my @todo;
+for my $pkgname (@realnames) {
+	$toremove{$pkgname} = 1;
+}
+
+push(@todo, @realnames);
+
+OpenBSD::Logger::log_as("pkg_delete");
+
+while (my $pkgname = pop @todo) {
+	my $deps = OpenBSD::RequiredBy->new($pkgname)->list();
+	if (@$deps > 0) {
+		for my $dep (@$deps) {
+			next if defined $toremove{$dep};
+			next if defined $extra_rm{$dep};
+			$extra_rm{$dep}=$pkgname;
+			push(@todo, $dep);
+		}
+	}
+}
+
+if (keys(%extra_rm) != 0) {
+	print "Can't remove ", join(' ', @ARGV), " without also removing:\n",
+	    join(' ', keys(%extra_rm)), "\n";
+	if ($forced{dependencies}) {
+		print "(removing them as well)\n";
+		push(@realnames, keys(%extra_rm));
+	} else {
+		$bad = 1;
+	}
+}
+
+if ($bad) {
+	exit(1);
+}
+
+$state->{destdir} = $opt_B;
+if ($opt_B eq '') {
+    $state->{destdirname} = '';
+} else {
+    OpenBSD::Logger::annotate("PKG_DESTDIR=\"$opt_B\"; export PKG_DESTDIR\n");
+    $state->{destdirname} = '${PKG_DESTDIR}';
+}
+
+# and finally, handle the removal
+{ do {
 	$removed = 0;
-	for my $pkgname (@ARGV) {
+	for my $pkgname (@realnames) {
 		next if $done{$pkgname};
 		unless (is_installed($pkgname)) {
 			print "$pkgname was not installed\n";
@@ -301,17 +446,21 @@ do {
 			next;
 		}
 		my $deps = OpenBSD::RequiredBy->new($pkgname)->list();
-		if (@$deps > 0) {
-			print "Can't remove $pkgname yet, ";
-			print "needed by ", join(',', @$deps), "\n";
-			next;
-		}
-		print "Deleting $pkgname\n";
+		next if @$deps > 0;
+		print $opt_n ? "Pretending to delete " : "Deleting ", 
+		    "$pkgname\n";
+		$state->{pkgname_tolog} = $pkgname;
 		delete_package($pkgname, $state);
+		delete_installed($pkgname);
 		$done{$pkgname} = 1;
 		$removed++;
 	}
 	# we're not actually doing anything, so we can't expect this loop 
 	# to ever finish
 	last if $opt_n;
-} while ($removed);
+} while ($removed); }
+
+my $logname = OpenBSD::Logger::logname();
+if (defined $logname) {
+	print "Problems logged as $logname\n";
+}

@@ -1,4 +1,5 @@
-/*	$Id: cookie.h,v 1.5 1998/08/05 09:21:43 niklas Exp $	*/
+/*	$OpenBSD: cookie.h,v 1.4 2001/06/25 00:00:44 ho Exp $	*/
+/*	$EOM: cookie.h,v 1.5 1998/08/05 09:21:43 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -44,7 +40,5 @@ struct transport;
 
 extern void cookie_gen (struct transport *, struct exchange *, u_int8_t *,
 			size_t);
-extern void cookie_init (void);
-extern void cookie_reset_event (void *);
 
 #endif /* _COOKIE_H_ */

@@ -15,8 +15,8 @@ extern char *inet_ntoa();
 int debug = 0;
 char *progname;
 
-main(argc, argv)
-	char **argv;
+int
+main(int argc, char *argv[])
 {
 	int i;
 	struct in_addr in;

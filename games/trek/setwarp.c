@@ -1,3 +1,4 @@
+/*	$OpenBSD: setwarp.c,v 1.2 1998/08/19 07:42:05 pjanzen Exp $	*/
 /*	$NetBSD: setwarp.c,v 1.3 1995/04/22 10:59:27 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,12 +34,13 @@
 #if 0
 static char sccsid[] = "@(#)setwarp.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: setwarp.c,v 1.3 1995/04/22 10:59:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: setwarp.c,v 1.2 1998/08/19 07:42:05 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
-# include	"getpar.h"
+#include <stdio.h>
+#include "trek.h"
+#include "getpar.h"
 
 /*
 **  SET WARP FACTOR
@@ -51,7 +49,9 @@ static char rcsid[] = "$NetBSD: setwarp.c,v 1.3 1995/04/22 10:59:27 cgd Exp $";
 **	checked for consistancy.
 */
 
-setwarp()
+void
+setwarp(v)
+	int v;
 {
 	double	warpfac;
 
@@ -59,9 +59,15 @@ setwarp()
 	if (warpfac < 0.0)
 		return;
 	if (warpfac < 1.0)
-		return (printf("Minimum warp speed is 1.0\n"));
+	{
+		printf("Minimum warp speed is 1.0\n");
+		return;
+	}
 	if (warpfac > 10.0)
-		return (printf("Maximum speed is warp 10.0\n"));
+	{
+		printf("Maximum speed is warp 10.0\n");
+		return;
+	}
 	if (warpfac > 6.0)
 		printf("Damage to warp engines may occur above warp 6.0\n");
 	Ship.warp = warpfac;

@@ -1,8 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pppoe.c,v 1.10 2003/06/28 20:37:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Network Security
- *	Technologies, Inc.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -53,22 +46,24 @@
 #include <sysexits.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <ifaddrs.h>
 
 #include "pppoe.h"
 
 int option_verbose = 0;
 u_char etherbroadcastaddr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-int main __P((int, char **));
-void usage __P((char *));
-int getifhwaddr __P((char *, char *, struct ether_addr *));
-int setupfilter __P((char *, struct ether_addr *, int));
-void child_handler __P((int));
-int signal_init __P((void));
+int main(int, char **);
+void usage(void);
+int getifhwaddr(char *, char *, struct ether_addr *);
+int setupfilter(char *, struct ether_addr *, int);
+void child_handler(int);
+int signal_init(void);
 
 int
 main(int argc, char **argv) {
-	char *ifname = NULL, *sysname = NULL, *srvname = NULL;
+	char *ifname = NULL;
+	u_int8_t *sysname = NULL, *srvname = NULL;
 	char ifnambuf[IFNAMSIZ];
 	struct ether_addr ea;
 	int bpffd, smode = 0, c;
@@ -77,28 +72,28 @@ main(int argc, char **argv) {
 		switch (c) {
 		case 'i':
 			if (ifname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
 			ifname = optarg;
 			break;
 		case 'n':
 			if (srvname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
-			srvname = optarg;
+			srvname = (u_int8_t *)optarg;
 			break;
 		case 'p':
 			if (sysname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
-			sysname = optarg;
+			sysname = (u_int8_t *)optarg;
 			break;
 		case 's':
 			if (smode) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
 			smode = 1;
@@ -107,14 +102,14 @@ main(int argc, char **argv) {
 			option_verbose++;
 			break;
 		default:
-			usage(argv[0]);
+			usage();
 			return (EX_USAGE);
 		}
 	}
 
 	argc -= optind;
 	if (argc != 0) {
-		usage(argv[0]);
+		usage();
 		return (EX_USAGE);
 	}
 
@@ -186,7 +181,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = ep[4] << 8 | ep[5];
+	insns[idx].k = (ep[4] << 8) | (ep[5] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 1;
 	idx++;
@@ -223,7 +218,8 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = (ep[0]) | (ep[1] << 8) | (ep[3] << 16) | (ep[3] << 24);
+	insns[idx].k =
+	    (ep[0] << 24) | (ep[1] << 16) | (ep[2] << 8) | (ep[3] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 3;
 	idx++;
@@ -234,7 +230,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = (ep[4]) | (ep[5] << 8);
+	insns[idx].k = (ep[4] << 8) | (ep[5] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 1;
 	idx++;
@@ -245,16 +241,14 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_RET | BPF_K;
-	insns[idx].k = (u_int)-1;
-	insns[idx].jt = 0;
-	insns[idx].jf = 0;
+	insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
 	idx++;
 
 	filter.bf_len = idx;
 	filter.bf_insns = insns;
 
-	for (i = 0; 1; i++) {
-		snprintf(device, sizeof(device), "/dev/bpf%d", i++);
+	for (i = 0; ; i++) {
+		snprintf(device, sizeof(device), "/dev/bpf%d", i);
 		fd = open(device, O_RDWR);
 		if (fd < 0) {
 			if (errno != EBUSY)
@@ -276,8 +270,7 @@ setupfilter(ifn, ea, server_mode)
 		err(EX_IOERR, "set immediate");
 	}
 
-	strncpy(ifr.ifr_name, ifn, sizeof(ifr.ifr_name));
-	ifr.ifr_name[sizeof(ifr.ifr_name)-1] = '\0';
+	strlcpy(ifr.ifr_name, ifn, IFNAMSIZ);
 	if (ioctl(fd, BIOCSETIF, &ifr) < 0) {
 		close(fd);
 		err(EX_IOERR, "set interface");
@@ -303,102 +296,74 @@ getifhwaddr(ifnhint, ifnambuf, ea)
 	char *ifnhint, *ifnambuf;
 	struct ether_addr *ea;
 {
-	int s;
-	char *inbuf = NULL;
-	struct ifconf ifc;
-	struct ifreq *ifrp, ifreq, req;
 	struct sockaddr_dl *dl;
-	int len = 8192, i;
+	struct ifaddrs *ifap, *ifa;
 
-	s = socket(AF_INET, SOCK_DGRAM, 0);
-	if (s < 0) {
-		perror("socket");
+	if (getifaddrs(&ifap) != 0) {
+		perror("getifaddrs");
 		return (-1);
 	}
 
-	while (1) {
-		ifc.ifc_len= len;
-		ifc.ifc_buf = inbuf = realloc(inbuf, len);
-		if (inbuf == NULL)
-			err(1, "malloc");
-		if (ioctl(s, SIOCGIFCONF, &ifc) < 0)
-			err(1, "gifconf");
-		if (ifc.ifc_len + sizeof(struct ifreq) < len)
-			break;
-		len *= 2;
-	}
-
-	ifrp = ifc.ifc_req;
-	ifreq.ifr_name[0] = '\0';
-	for (i = 0; i < ifc.ifc_len; ) {
-		ifrp = (struct ifreq *)((caddr_t)ifc.ifc_req + i);
-		i += sizeof(ifrp->ifr_name) +
-		    (ifrp->ifr_addr.sa_len > sizeof(struct sockaddr) ?
-		    ifrp->ifr_addr.sa_len : sizeof(struct sockaddr));
-		if (ifrp->ifr_addr.sa_family != AF_LINK)
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+		if (ifa->ifa_addr->sa_family != AF_LINK)
 			continue;
-		if (ifnhint != NULL && strncmp(ifnhint, ifrp->ifr_name,
-		    sizeof(ifrp->ifr_name)))
+		if (ifnhint != NULL && strcmp(ifnhint, ifa->ifa_name))
 			continue;
 		if (ifnhint == NULL) {
-			strncpy(req.ifr_name, ifrp->ifr_name, IFNAMSIZ);
-			req.ifr_name[IFNAMSIZ-1] = '\0';
-			if (ioctl(s, SIOCGIFFLAGS, &req) < 0)
-				err(EX_IOERR, "get flags");
-			if ((req.ifr_flags & IFF_UP) == 0)
+			if ((ifa->ifa_flags & IFF_UP) == 0)
 				continue;
 		}
-		dl = (struct sockaddr_dl *)&ifrp->ifr_addr;
+		dl = (struct sockaddr_dl *)ifa->ifa_addr;
 		if (dl->sdl_type != IFT_ETHER) {
 			if (ifnhint == NULL)
 				continue;
 			fprintf(stderr, "not ethernet interface: %s\n",
 				ifnhint);
-			free(inbuf);
-			close(s);
+			freeifaddrs(ifap);
 			return (-1);
 		}
 		if (dl->sdl_alen != ETHER_ADDR_LEN) {
 			fprintf(stderr, "invalid hwaddr len: %u\n",
 				dl->sdl_alen);
-			free(inbuf);
-			close(s);
+			freeifaddrs(ifap);
 			return (-1);
 		}
 		bcopy(dl->sdl_data + dl->sdl_nlen, ea, sizeof(*ea));
-		strncpy(ifnambuf, ifrp->ifr_name, IFNAMSIZ);
-		ifnambuf[IFNAMSIZ-1] = '\0';
-		free(inbuf);
-		close(s);
+		strlcpy(ifnambuf, ifa->ifa_name, IFNAMSIZ);
+		freeifaddrs(ifap);
 		return (0);
 	}
-	free(inbuf);
+	freeifaddrs(ifap);
 	if (ifnhint == NULL)
 		fprintf(stderr, "no running ethernet found\n");
 	else
 		fprintf(stderr, "no such interface: %s\n", ifnhint);
-	close(s);
 	return (-1);
 }
 
 void
-usage(progname)
-	char *progname;
+usage(void)
 {
-	fprintf(stderr, "%s [-s] [-v] [-p system] [-i interface]\n", progname);
+	extern char *__progname;
+
+	fprintf(stderr,"%s [-sv] [-i interface] [-n service] [-p system]\n",
+	    __progname);
 }
 
 void
 child_handler(sig)
 	int sig;
 {
+	int save_errno = errno;
 	int status;
 
-	while (wait3(&status, WNOHANG, NULL) > 0);
+	while (wait3(&status, WNOHANG, NULL) > 0)
+		;
+	errno = save_errno;
 }
 
 int
-signal_init()
+signal_init(void)
 {
 	struct sigaction act;
 

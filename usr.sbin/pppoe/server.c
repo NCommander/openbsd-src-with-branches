@@ -1,8 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: server.c,v 1.10 2003/06/04 04:46:13 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Network Security
- *	Technologies, Inc.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -60,71 +53,80 @@
 #define	COOKIE_LEN	4	/* bytes/cookie, must be <= 16 */
 #define	COOKIE_MAX	16
 
-static char ac_cookie_key[8];
+static u_int8_t ac_cookie_key[8];
 
-static void getpackets __P((int, char *, struct ether_addr *));
+static void getpackets(int, u_int8_t *, struct ether_addr *);
 
-static void recv_padi __P((int, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
-static void recv_padr __P((int, char *, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
-static void recv_padt __P((int, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
+static void recv_padi(int, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static void recv_padr(int, u_int8_t *, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static void recv_padt(int, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
 
-static void send_pado __P((int, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
-static void send_pads __P((int, char *, struct ether_addr *,
-    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *));
-static void key_gen __P((void));
-static u_int8_t *key_make __P((u_int8_t *, int, u_int8_t *, int));
-static int key_cmp __P((u_int8_t *, int, u_int8_t *, int, u_int8_t *, int));
+static void send_pado(int, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static void send_pads(int, u_int8_t *, struct ether_addr *,
+    struct ether_header *, struct pppoe_header *, u_long, u_int8_t *);
+static void key_gen(void);
+static u_int8_t *key_make(u_int8_t *, int, u_int8_t *, int);
+static int key_cmp(u_int8_t *, int, u_int8_t *, int, u_int8_t *, int);
 
 void
 server_mode(bpffd, sysname, srvname, ea)
 	int bpffd;
-	char *sysname, *srvname;
+	u_int8_t *sysname, *srvname;
 	struct ether_addr *ea;
 {
 	struct pppoe_session *ses;
-	fd_set rfds;
-	int n;
+	fd_set *fdsp = NULL;
+	int n, oldmax = 0;
 
 	key_gen();
 
 	while (1) {
-reselect:
-		FD_ZERO(&rfds);
-		FD_SET(bpffd, &rfds);
 		n = bpffd;
-		ses = LIST_FIRST(&session_master.sm_sessions);
-		while (ses) {
-			if (ses->s_fd != -1) {
-				FD_SET(ses->s_fd, &rfds);
-				if (ses->s_fd > n)
-					n = ses->s_fd;
-			}
-			ses = LIST_NEXT(ses, s_next);
+		LIST_FOREACH(ses, &session_master.sm_sessions, s_next) {
+			if (ses->s_fd != -1 && ses->s_fd > n)
+				n = ses->s_fd;
+		}
+		n++;
+
+		if (n > oldmax) {
+			if (fdsp != NULL)
+				free(fdsp);
+			fdsp = (fd_set *)malloc(howmany(n, NFDBITS) *
+			    sizeof(fd_mask));
+			if (fdsp == NULL)
+				break;
+			oldmax = n;
+		}
+		bzero(fdsp, howmany(n, NFDBITS) * sizeof(fd_mask));
+
+		FD_SET(bpffd, fdsp);
+		LIST_FOREACH(ses, &session_master.sm_sessions, s_next) {
+			if (ses->s_fd != -1)
+				FD_SET(ses->s_fd, fdsp);
 		}
 
-		n = select(n+1, &rfds, NULL, NULL, NULL);
+		n = select(n, fdsp, NULL, NULL, NULL);
 		if (n < 0) {
 			if (errno == EINTR)
-				goto reselect;
+				continue;
 			err(EX_IOERR, "select");
-			return;
+			break;
 		}
 		if (n == 0)
 			continue;
-		if (FD_ISSET(bpffd, &rfds)) {
+		if (FD_ISSET(bpffd, fdsp)) {
 			n--;
 			getpackets(bpffd, sysname, ea);
 		}
 		if (n == 0)
 			continue;
 
-		ses = LIST_FIRST(&session_master.sm_sessions);
-		while (ses) {
-			if (ses->s_fd != -1 && FD_ISSET(ses->s_fd, &rfds)) {
+		LIST_FOREACH(ses, &session_master.sm_sessions, s_next) {
+			if (ses->s_fd != -1 && FD_ISSET(ses->s_fd, fdsp)) {
 				if (ppp_to_bpf(bpffd, ses->s_fd, ea,
 					&ses->s_ea, ses->s_id) < 0) {
 					send_padt(bpffd, ea,
@@ -135,13 +137,15 @@ reselect:
 				if (n == 0)
 					break;
 			}
-			ses = LIST_NEXT(ses, s_next);
 		}
 	}
+
+	if (fdsp != NULL)
+		free(fdsp);
 }
 
 void
-key_gen()
+key_gen(void)
 {
 	u_int32_t r;
 
@@ -193,7 +197,7 @@ key_cmp(k, klen, in1, in1len, in2, in2len)
 static void
 getpackets(bpffd, sysname, ea)
 	int bpffd;
-	char *sysname;
+	u_int8_t *sysname;
 	struct ether_addr *ea;
 {
 	static u_int8_t *pktbuf;
@@ -259,7 +263,7 @@ getpackets(bpffd, sysname, ea)
 				recv_padt(bpffd, ea, &eh, &ph, len, mpkt);
 				break;
 			default:
-				recv_debug(bpffd, ea, &eh, &ph, len, mpkt);
+				break;
 			}
 		}
 		else if (eh.ether_type == ETHERTYPE_PPPOE) {
@@ -316,7 +320,7 @@ send_pado(bpffd, ea, eh, ph, pktlen, pktbuf)
 	u_int8_t *pktbuf;
 {
 	struct pppoe_tag ktag, htag;
-	char hn[MAXHOSTNAMELEN];
+	u_int8_t hn[MAXHOSTNAMELEN];
 	u_int8_t *k = NULL;
 	struct iovec v[7];
 	int idx = 0;
@@ -331,9 +335,9 @@ send_pado(bpffd, ea, eh, ph, pktlen, pktbuf)
 
 	v[idx].iov_base = pktbuf; v[idx].iov_len = pktlen; idx++;
 
-	if (gethostname(hn, sizeof(hn)) < 0)
+	if (gethostname((char *)hn, sizeof(hn)) < 0)
 		return;
-	htag.len = strlen(hn);
+	htag.len = strlen((char *)hn);
 	htag.type = htons(PPPOE_TAG_AC_NAME);
 	htag.val = hn;
 	v[idx].iov_base = &htag;
@@ -368,7 +372,7 @@ send_pado(bpffd, ea, eh, ph, pktlen, pktbuf)
 static void
 recv_padr(bpffd, sysname, ea, eh, ph, pktlen, pktbuf)
 	int bpffd;
-	char *sysname;
+	u_int8_t *sysname;
 	struct ether_addr *ea;
 	struct ether_header *eh;
 	struct pppoe_header *ph;
@@ -400,14 +404,14 @@ recv_padr(bpffd, sysname, ea, eh, ph, pktlen, pktbuf)
 static void
 send_pads(bpffd, sysname, ea, eh, ph, pktlen, pktbuf)
 	int bpffd;
-	char *sysname;
+	u_int8_t *sysname;
 	struct ether_addr *ea;
 	struct ether_header *eh;
 	struct pppoe_header *ph;
 	u_long pktlen;
 	u_int8_t *pktbuf;
 {
-	char hn[MAXHOSTNAMELEN];
+	u_int8_t hn[MAXHOSTNAMELEN];
 	struct iovec v[16];
 	struct pppoe_session *s;
 	struct pppoe_tag htag;
@@ -424,13 +428,13 @@ send_pads(bpffd, sysname, ea, eh, ph, pktlen, pktbuf)
 
 	ph->code = PPPOE_CODE_PADS;
 	ph->sessionid = htons(s->s_id);
-	if (gethostname(hn, sizeof(hn)) < 0)
+	if (gethostname((char *)hn, sizeof(hn)) < 0)
 		return;
 	v[idx].iov_base = ph; v[idx].iov_len = sizeof(*ph); idx++;
 
 	v[idx].iov_base = pktbuf; v[idx].iov_len = pktlen; idx++;
 
-	htag.len = strlen(hn);
+	htag.len = strlen((char *)hn);
 	htag.type = htons(PPPOE_TAG_AC_NAME);
 	htag.val = hn;
 	v[idx].iov_base = &htag;

@@ -1,3 +1,6 @@
+/*	$OpenBSD: ibcs2_errno.c,v 1.3 1996/08/02 20:35:03 niklas Exp $	*/
+/*	$NetBSD: ibcs2_errno.c,v 1.2 1996/05/03 17:05:16 christos Exp $	*/
+
 /*
  * ibcs2_errno.c
  * Copyright (c) 1995 Scott Bartram
@@ -115,4 +118,3 @@ int bsd2ibcs_errno[] = {
 	0,			/* 80 */
 	0,			/* 81 */
 };
-

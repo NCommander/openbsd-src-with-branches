@@ -1,4 +1,5 @@
-/*	$Id: crypto.h,v 1.10 1998/08/05 13:14:03 niklas Exp $	*/
+/*	$OpenBSD: crypto.h,v 1.11 2003/09/24 11:12:31 markus Exp $	*/
+/*	$EOM: crypto.h,v 1.12 2000/10/15 21:56:41 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,9 +32,31 @@
 #ifndef _CRYPTO_H_
 #define _CRYPTO_H_
 
+#if defined (__APPLE__)
+
+#include <openssl/des.h>
+#ifdef USE_BLOWFISH
+#include <openssl/blowfish.h>
+#endif
+#ifdef USE_CAST
+#include <openssl/cast.h>
+#endif
+
+#else
+
 #include <des.h>
+#ifdef USE_BLOWFISH
 #include <blf.h>
+#endif
+#ifdef USE_CAST
 #include <cast.h>
+#endif
+
+#endif /* __APPLE__ */
+
+#ifdef USE_AES
+#include <openssl/aes.h>
+#endif
 
 #define USE_32BIT
 #if defined (USE_64BIT)
@@ -49,7 +67,7 @@
 #elif defined (USE_32BIT)
 
 #define XOR64(x,y) *(u_int32_t *)(x) ^= *(u_int32_t *)(y); \
-   *(u_int32_t *)((u_int8_t *)(x) + 4) ^= *(u_int32_t *)((u_int8_t *)(y) + 4); 
+   *(u_int32_t *)((u_int8_t *)(x) + 4) ^= *(u_int32_t *)((u_int8_t *)(y) + 4);
 #define SET64(x,y) *(u_int32_t *)(x) = *(u_int32_t *)(y); \
    *(u_int32_t *)((u_int8_t *)(x) + 4) = *(u_int32_t *)((u_int8_t *)(y) + 4);
 
@@ -65,18 +83,21 @@
 #endif /* USE_64BIT */
 
 #define SET_32BIT_BIG(x,y) (x)[3]= (y); (x)[2]= (y) >> 8; \
-    (x)[1] = (y) >> 16; (x)[0]= (y) >> 24; 
+    (x)[1] = (y) >> 16; (x)[0]= (y) >> 24;
 #define GET_32BIT_BIG(x) (u_int32_t)(x)[3] | ((u_int32_t)(x)[2] << 8) | \
     ((u_int32_t)(x)[1] << 16)| ((u_int32_t)(x)[0] << 24);
 
-/* 
+/*
  * This is standard for all block ciphers we use at the moment.
- * Theoretically this could increase in future, e.g. for TwoFish.
- * Keep MAXBLK uptodate 
+ * Keep MAXBLK uptodate.
  */
 #define BLOCKSIZE	8
 
+#ifdef USE_AES
+#define MAXBLK		AES_BLOCK_SIZE
+#else
 #define MAXBLK		BLOCKSIZE
+#endif
 
 struct keystate {
   struct crypto_xf *xf;			/* Back pointer */
@@ -88,14 +109,22 @@ struct keystate {
   u_int8_t	*riv, *liv;
   union {
     des_key_schedule desks[3];
+#ifdef USE_BLOWFISH
     blf_ctx blfks;
+#endif
+#ifdef USE_CAST
     cast_key castks;
+#endif
+#ifdef USE_AES
+    AES_KEY aesks[2];
+#endif
   } keydata;
 };
 
 #define ks_des	keydata.desks
 #define ks_blf	keydata.blfks
 #define ks_cast	keydata.castks
+#define ks_aes	keydata.aesks
 
 /*
  * Information about the cryptotransform.
@@ -112,14 +141,15 @@ enum transform {
   BLOWFISH_CBC=3,
   RC5_R16_B64_CBC=4,		/* Licensed, DONT use */
   TRIPLEDES_CBC=5,			/* This is a SHOULD */
-  CAST_CBC=6
+  CAST_CBC=6,
+  AES_CBC=7
 };
 
 enum cryptoerr {
   EOKAY,			/* No error */
   ENOCRYPTO,			/* A none crypto related error, see errno */
   EWEAKKEY,			/* A weak key was found in key setup */
-  EKEYLEN,			/* The key length was invalid for the cipher */
+  EKEYLEN			/* The key length was invalid for the cipher */
 };
 
 struct crypto_xf {

@@ -1,4 +1,5 @@
-/*	$NetBSD: union.h,v 1.8 1995/05/30 18:55:28 mycroft Exp $	*/
+/*	$OpenBSD: union.h,v 1.9 2003/06/02 23:28:11 millert Exp $	*/
+/*	$NetBSD: union.h,v 1.13 2002/09/21 18:09:31 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 The Regents of the University of California.
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,6 +46,9 @@ struct union_args {
 #define UNMNT_REPLACE	0x0003		/* Target replaces mount point */
 #define UNMNT_OPMASK	0x0003
 
+#define UNMNT_BITS "\177\20" \
+    "b\00above\0b\01below\0b\02replace"
+
 struct union_mount {
 	struct vnode	*um_uppervp;
 	struct vnode	*um_lowervp;
@@ -62,10 +62,8 @@ struct union_mount {
 /*
  * DEFDIRMODE is the mode bits used to create a shadow directory.
  */
-#define VRWXMODE (VREAD|VWRITE|VEXEC)
-#define VRWMODE (VREAD|VWRITE)
-#define UN_DIRMODE ((VRWXMODE)|(VRWXMODE>>3)|(VRWXMODE>>6))
-#define UN_FILEMODE ((VRWMODE)|(VRWMODE>>3)|(VRWMODE>>6))
+#define	UN_DIRMODE	(S_IRWXU|S_IRWXG|S_IRWXO)
+#define	UN_FILEMODE	(S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
 
 /*
  * A cache of vnode references
@@ -94,31 +92,33 @@ struct union_node {
 #define UN_ULOCK	0x04		/* Upper node is locked */
 #define UN_KLOCK	0x08		/* Keep upper node locked on vput */
 #define UN_CACHED	0x10		/* In union cache */
+#define UN_DRAINING	0x20		/* upper node lock is draining */
+#define UN_DRAINED	0x40		/* upper node lock is drained */
 
-extern int union_allocvp __P((struct vnode **, struct mount *,
+extern int union_allocvp(struct vnode **, struct mount *,
 				struct vnode *, struct vnode *,
 				struct componentname *, struct vnode *,
-				struct vnode *, int));
-extern int union_copyfile __P((struct vnode *, struct vnode *,
-					struct ucred *, struct proc *));
-extern int union_copyup __P((struct union_node *, int, struct ucred *,
-				struct proc *));
-extern void union_diruncache __P((struct union_node *));
-extern int union_dowhiteout __P((struct union_node *, struct ucred *,
-					struct proc *));
-extern int union_mkshadow __P((struct union_mount *, struct vnode *,
-				struct componentname *, struct vnode **));
-extern int union_mkwhiteout __P((struct union_mount *, struct vnode *,
-				struct componentname *, char *));
-extern int union_vn_create __P((struct vnode **, struct union_node *,
-				struct proc *));
-extern int union_cn_close __P((struct vnode *, int, struct ucred *,
-				struct proc *));
-extern void union_removed_upper __P((struct union_node *un));
-extern struct vnode *union_lowervp __P((struct vnode *));
-extern void union_newlower __P((struct union_node *, struct vnode *));
-extern void union_newupper __P((struct union_node *, struct vnode *));
-extern void union_newsize __P((struct vnode *, off_t, off_t));
+				struct vnode *, int);
+extern int union_copyfile(struct vnode *, struct vnode *,
+					struct ucred *, struct proc *);
+extern int union_copyup(struct union_node *, int, struct ucred *,
+				struct proc *);
+extern void union_diruncache(struct union_node *);
+extern int union_dowhiteout(struct union_node *, struct ucred *,
+					struct proc *);
+extern int union_mkshadow(struct union_mount *, struct vnode *,
+				struct componentname *, struct vnode **);
+extern int union_mkwhiteout(struct union_mount *, struct vnode *,
+				struct componentname *, char *);
+extern int union_vn_create(struct vnode **, struct union_node *,
+				struct proc *);
+extern int union_cn_close(struct vnode *, int, struct ucred *,
+				struct proc *);
+extern void union_removed_upper(struct union_node *un);
+extern struct vnode *union_lowervp(struct vnode *);
+extern void union_newlower(struct union_node *, struct vnode *);
+extern void union_newupper(struct union_node *, struct vnode *);
+extern void union_newsize(struct vnode *, off_t, off_t);
 
 #define	MOUNTTOUNIONMOUNT(mp) ((struct union_mount *)((mp)->mnt_data))
 #define	VTOUNION(vp) ((struct union_node *)(vp)->v_data)
@@ -127,6 +127,10 @@ extern void union_newsize __P((struct vnode *, off_t, off_t));
 #define	UPPERVP(vp) (VTOUNION(vp)->un_uppervp)
 #define OTHERVP(vp) (UPPERVP(vp) ? UPPERVP(vp) : LOWERVP(vp))
 
-extern int (**union_vnodeop_p)();
-extern struct vfsops union_vfsops;
+extern int (**union_vnodeop_p)(void *);
+extern const struct vfsops union_vfsops;
+
+int union_init(struct vfsconf *);
+int union_freevp(struct vnode *);
+
 #endif /* _KERNEL */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: mntopts.h,v 1.9 2002/11/18 20:22:45 millert Exp $	*/
 /*	$NetBSD: mntopts.h,v 1.3 1995/03/18 14:56:59 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,6 +40,8 @@ struct mntopt {
 
 /* User-visible MNT_ flags. */
 #define MOPT_ASYNC		{ "async",	0, MNT_ASYNC }
+#define MOPT_NOACCESSTIME	{ "accesstime",	1, MNT_NOATIME }
+#define MOPT_NOATIME		{ "atime",	1, MNT_NOATIME }
 #define MOPT_NODEV		{ "dev",	1, MNT_NODEV }
 #define MOPT_NOEXEC		{ "exec",	1, MNT_NOEXEC }
 #define MOPT_NOSUID		{ "suid",	1, MNT_NOSUID }
@@ -51,9 +50,10 @@ struct mntopt {
 #define MOPT_UNION		{ "union",	0, MNT_UNION }
 #define MOPT_USERQUOTA		{ "userquota",	0, 0 }
 #define MOPT_GROUPQUOTA		{ "groupquota",	0, 0 }
+#define MOPT_SOFTDEP		{ "softdep",	0, MNT_SOFTDEP }
 
 /* Control flags. */
-#define MOPT_FORCE		{ "force",	1, MNT_FORCE }
+#define MOPT_FORCE		{ "force",	0, MNT_FORCE }
 #define MOPT_UPDATE		{ "update",	0, MNT_UPDATE }
 #define MOPT_RELOAD		{ "reload",	0, MNT_RELOAD }
 
@@ -61,7 +61,7 @@ struct mntopt {
 #define MOPT_RO			{ "ro",		0, MNT_RDONLY }
 #define MOPT_RW			{ "rw",		1, MNT_RDONLY }
 
-/* This is parse by mount(8), but is ignored by specific mount_*(8)s. */
+/* This is parsed by mount(8), but is ignored by specific mount_*(8)s. */
 #define MOPT_AUTO		{ "auto",	0, 0 }
 
 #define MOPT_FSTAB_COMPAT						\
@@ -74,10 +74,12 @@ struct mntopt {
 	MOPT_USERQUOTA,							\
 	MOPT_GROUPQUOTA,						\
 	MOPT_FSTAB_COMPAT,						\
+	MOPT_NOACCESSTIME,						\
+	MOPT_NOATIME,							\
 	MOPT_NODEV,							\
 	MOPT_NOEXEC,							\
 	MOPT_NOSUID,							\
 	MOPT_RDONLY,							\
 	MOPT_UNION
 
-void getmntopts __P((const char *, const struct mntopt *, int *));
+void getmntopts(const char *, const struct mntopt *, int *);

@@ -32,6 +32,7 @@
  */
 
 #include "iprop.h"
+#include <util.h>
 
 RCSID("$KTH: ipropd_slave.c,v 1.27 2002/10/21 15:51:44 joda Exp $");
 

@@ -53,8 +53,7 @@ dumptab(filename)
  */
 
 void
-dumptab(filename)
-	char *filename;
+dumptab(char *filename)
 {
 	int n;
 	struct host *hp;
@@ -260,7 +259,7 @@ dump_host(fp, hp)
 		/* NetBSD: domainname (see above) */
 		/* NetBSD: dumpfile (see above) */
 		if (hp->flags.time_offset) {
-			fprintf(fp, "\\\n\t:to=%ld:", hp->time_offset);
+			fprintf(fp, "\\\n\t:to=%d:", hp->time_offset);
 		}
 		if (hp->flags.time_server) {
 			fprintf(fp, "\\\n\t:ts=");
@@ -352,7 +351,7 @@ list_ipaddresses(fp, ipptr)
 	FILE *fp;
 	struct in_addr_list *ipptr;
 {
-	unsigned count;
+	unsigned int count;
 	struct in_addr *addrptr;
 
 	if (ipptr) {

@@ -1,25 +1,40 @@
+/*	$OpenBSD: frm_def.c,v 1.5 1999/05/17 03:04:16 millert Exp $	*/
 
-/***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
+/****************************************************************************
+ * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author: Juergen Pfeifer <juergen.pfeifer@gmx.net> 1995,1997            *
+ ****************************************************************************/
 
 #include "form.priv.h"
+
+MODULE_ID("$From: frm_def.c,v 1.10 2000/12/10 02:09:38 tom Exp $")
 
 /* this can't be readonly */
 static FORM default_form = {
@@ -47,7 +62,7 @@ static FORM default_form = {
   NULL                                  /* fieldterm  */
 };
 
-FORM *_nc_Default_Form = &default_form;
+NCURSES_EXPORT_VAR(FORM *) _nc_Default_Form = &default_form;
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
@@ -106,23 +121,24 @@ static FIELD *Insert_Field_By_Position(FIELD *newfield, FIELD *head)
 +--------------------------------------------------------------------------*/
 static void Disconnect_Fields( FORM * form )
 {
-  FIELD **fields;
-  
-  assert(form && form->field);
-
-  for(fields=form->field;*fields;fields++)
+  if (form->field)
     {
-      if (form == (*fields)->form) 
-	(*fields)->form = (FORM *)0;
-    }
-  
-  form->rows = form->cols = 0;
-  form->maxfield = form->maxpage = -1;
-  form->field = (FIELD **)0;
-  if (form->page) 
-    free(form->page);
-  form->page = (_PAGE *)0;
-}	
+      FIELD **fields;
+
+      for(fields=form->field;*fields;fields++)
+	{
+	  if (form == (*fields)->form) 
+	    (*fields)->form = (FORM *)0;
+	}
+      
+      form->rows = form->cols = 0;
+      form->maxfield = form->maxpage = -1;
+      form->field = (FIELD **)0;
+      if (form->page) 
+	free(form->page);
+      form->page = (_PAGE *)0;
+    }	
+}
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
@@ -255,7 +271,8 @@ INLINE static int Associate_Fields(FORM  *form, FIELD **fields)
 |
 |   Return Values :  Pointer to form. NULL if error occured.
 +--------------------------------------------------------------------------*/
-FORM *new_form(FIELD ** fields)
+NCURSES_EXPORT(FORM *)
+new_form (FIELD ** fields)
 {	
   int err = E_SYSTEM_ERROR;
 
@@ -287,7 +304,8 @@ FORM *new_form(FIELD ** fields)
 |                    E_BAD_ARGUMENT - invalid form pointer
 |                    E_POSTED       - form is posted
 +--------------------------------------------------------------------------*/
-int free_form(FORM * form)
+NCURSES_EXPORT(int)
+free_form (FORM * form)
 {
   if ( !form )	
     RETURN(E_BAD_ARGUMENT);
@@ -313,7 +331,8 @@ int free_form(FORM * form)
 |                    E_BAD_ARGUMENT    - invalid form pointer
 |                    E_POSTED          - form is posted
 +--------------------------------------------------------------------------*/
-int set_form_fields(FORM  * form, FIELD ** fields)
+NCURSES_EXPORT(int)
+set_form_fields (FORM  * form, FIELD ** fields)
 {
   FIELD **old;
   int res;
@@ -341,7 +360,8 @@ int set_form_fields(FORM  * form, FIELD ** fields)
 |
 |   Return Values :  Pointer to field array
 +--------------------------------------------------------------------------*/
-FIELD **form_fields(const FORM * form)
+NCURSES_EXPORT(FIELD **)
+form_fields (const FORM * form)
 {
   return (Normalize_Form( form )->field);
 }
@@ -354,35 +374,10 @@ FIELD **form_fields(const FORM * form)
 |
 |   Return Values :  Number of fields, -1 if none are defined
 +--------------------------------------------------------------------------*/
-int field_count(const FORM * form)
+NCURSES_EXPORT(int)
+field_count (const FORM * form)
 {
   return (Normalize_Form( form )->maxfield);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int scale_form( const FORM *form, int *rows, int *cols )
-|   
-|   Description   :  Retrieve size of form
-|
-|   Return Values :  E_OK              - no error
-|                    E_BAD_ARGUMENT    - invalid form pointer
-|                    E_NOT_CONNECTED   - no fields connected to form
-+--------------------------------------------------------------------------*/
-int scale_form(const FORM * form, int * rows, int * cols)
-{
-  if ( !form )
-    RETURN(E_BAD_ARGUMENT);
-
-  if ( !(form->field) )
-    RETURN(E_NOT_CONNECTED);
-  
-  if (rows) 
-    *rows = form->rows;
-  if (cols) 
-    *cols = form->cols;
-  
-  RETURN(E_OK);
 }
 
 /* frm_def.c ends here */

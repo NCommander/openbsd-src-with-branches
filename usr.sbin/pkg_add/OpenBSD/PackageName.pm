@@ -1,4 +1,4 @@
-# $OpenBSD: PackageName.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: PackageName.pm,v 1.3 2003/11/06 17:47:25 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -27,16 +27,24 @@ use strict;
 use warnings;
 package OpenBSD::PackageName;
 
+sub url2pkgname($)
+{
+	my $name = $_[0];
+	$name =~ s|.*/||;
+	$name =~ s|\.tgz$||;
+
+	return $name;
+}
+
 sub new
 {
 	my ($class, $name) = @_;
 	my $self = { name => $name };
 # remove irrelevant filesystem info
-	$name =~ s|.*/||;
-	$name =~ s|\.tgz||;
-	$self->{pkgname} = $name;
+	my $pkgname = url2pkgname($name);
+	$self->{pkgname} = $pkgname;
 # cut pkgname into pieces
-	my @list = splitname($name);
+	my @list = splitname($pkgname);
 	$self->{stem} = $list[0];
 	$self->{version} = $list[1];
 	$self->{flavors} = [];
@@ -56,6 +64,29 @@ sub splitname
 	} else {
 		return ($_);
 	}
+}
+
+sub is_stem
+{
+	local $_ = shift;
+	if (m/\-\d/) {
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+sub findstem
+{
+	my ($k, @list) = @_;
+	my @r = ();
+	for my $n (@list) {
+		my $stem = (splitname $n)[0];
+		if ($k eq $stem) {
+			push(@r, $n);
+		}
+	}
+	return @r;
 }
 
 # all the shit that does handle package specifications
@@ -192,11 +223,6 @@ sub subpattern_match
 
 	my ($stemspec, $vspec, $flavorspec);
 
-	# first, handle special characters (shell -> perl)
-	$p =~ s/\./\\\./g;
-	$p =~ s/\+/\\\+/g;
-	$p =~ s/\*/\.\*/g;
-	$p =~ s/\?/\./g;
 
 	# then, guess at where the version number is if any,
 	
@@ -207,14 +233,24 @@ sub subpattern_match
 	if ($p =~ m/\-((?:\>|\>\=|\<|\<\=)?\d[^-]*)/) {
 		($stemspec, $vspec, $flavorspec) = ($`, $1, $');
 	# `any version' matcher
-	} elsif ($p =~ m/\-(\.\*)/) {
-		($stemspec, $vspec, $flavorspec) = ($`, $1, $');
+	} elsif ($p =~ m/\-\*/) {
+		($stemspec, $vspec, $flavorspec) = ($`, '*', $');
 	# okay, so no version marker. Assume no flavor spec.
 	} else {
 		($stemspec, $vspec, $flavorspec) = ($p, '', '');
 	}
 
-	$p = "$stemspec-\.\*" if $vspec ne '';
+	$stemspec =~ s/\./\\\./g;
+	$stemspec =~ s/\+/\\\+/g;
+	$stemspec =~ s/\*/\.\*/g;
+	$stemspec =~ s/\?/\./g;
+	$vspec =~ s/\./\\\./g;
+	$vspec =~ s/\+/\\\+/g;
+	$vspec =~ s/\*/\.\*/g;
+	$vspec =~ s/\?/\./g;
+
+	$p = $stemspec;
+	$p.="-.*" if $vspec ne '';
 
 	# First trim down the list
 	my @l = grep {/^$p$/} @$list;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -18,15 +18,17 @@ SM_IDSTR(copyright,
      Copyright (c) 1990, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n")
 
-SM_IDSTR(id, "@(#)$Sendmail: mail.local.c,v 8.232 2001/09/08 01:21:04 gshapiro Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: mail.local.c,v 8.239.2.11 2003/09/01 01:49:46 gshapiro Exp $")
 
 #include <stdlib.h>
 #include <sm/errstring.h>
 #include <sm/io.h>
+#include <sm/limits.h>
 # include <unistd.h>
 # ifdef EX_OK
 #  undef EX_OK		/* unistd.h may have another use for this */
 # endif /* EX_OK */
+# define LOCKFILE_PMODE 0
 #include <sm/mbdb.h>
 #include <sm/sysexits.h>
 
@@ -60,10 +62,6 @@ SM_IDSTR(id, "@(#)$Sendmail: mail.local.c,v 8.232 2001/09/08 01:21:04 gshapiro E
 
 #include <sm/conf.h>
 #include <sendmail/pathnames.h>
-
-
-/* additional mode for open() */
-# define EXTRA_MODE 0
 
 
 #ifndef LOCKTO_RM
@@ -519,7 +517,7 @@ dolmtp()
 						"Nested MAIL command");
 					continue;
 				}
-				if (sm_strncasecmp(buf+5, "from:", 5) != 0 ||
+				if (sm_strncasecmp(buf + 5, "from:", 5) != 0 ||
 				    ((return_path = parseaddr(buf + 10,
 							      false)) == NULL))
 				{
@@ -656,6 +654,8 @@ store(from, inbody)
 	(void) sm_strlcpy(tmpbuf, _PATH_LOCTMP, sizeof tmpbuf);
 	if ((fd = mkstemp(tmpbuf)) < 0 || (fp = fdopen(fd, "w+")) == NULL)
 	{
+		if (fd >= 0)
+			(void) close(fd);
 		mailerr("451 4.3.0", "Unable to open temporary file");
 		return -1;
 	}
@@ -851,12 +851,12 @@ deliver(fd, name)
 	int exitval;
 	char *p;
 	char *errcode;
-	off_t curoff;
+	off_t curoff, cursize;
 #ifdef CONTENTLENGTH
 	off_t headerbytes;
 	int readamount;
 #endif /* CONTENTLENGTH */
-	char biffmsg[100], buf[8*1024];
+	char biffmsg[100], buf[8 * 1024];
 	SM_MBDB_T user;
 
 	/*
@@ -994,7 +994,7 @@ tryagain:
 		mode |= S_IRGRP|S_IWGRP;
 #endif /* MAILGID */
 
-		mbfd = open(path, O_APPEND|O_CREAT|O_EXCL|O_WRONLY|EXTRA_MODE,
+		mbfd = open(path, O_APPEND|O_CREAT|O_EXCL|O_WRONLY,
 			    mode);
 		save_errno = errno;
 
@@ -1035,7 +1035,12 @@ tryagain:
 			mbfd = -1;
 		}
 	}
-	else if (sb.st_nlink != 1 || !S_ISREG(sb.st_mode))
+	else if (sb.st_nlink != 1)
+	{
+		mailerr("550 5.2.0", "%s: too many links", path);
+		goto err0;
+	}
+	else if (!S_ISREG(sb.st_mode))
 	{
 		mailerr("550 5.2.0", "%s: irregular file", path);
 		goto err0;
@@ -1059,7 +1064,7 @@ tryagain:
 #ifdef DEBUG
 	fprintf(stderr, "new euid = %d\n", (int) geteuid());
 #endif /* DEBUG */
-	mbfd = open(path, O_APPEND|O_WRONLY|EXTRA_MODE, 0);
+	mbfd = open(path, O_APPEND|O_WRONLY, 0);
 	if (mbfd < 0)
 	{
 		mailerr("450 4.2.0", "%s: %s", path, sm_errstring(errno));
@@ -1127,7 +1132,7 @@ tryagain:
 		goto err1;
 	}
 
-	/* Get the starting offset of the new message for biff. */
+	/* Get the starting offset of the new message */
 	curoff = lseek(mbfd, (off_t) 0, SEEK_END);
 	(void) sm_snprintf(biffmsg, sizeof(biffmsg), "%s@%lld\n",
 			   name, (LONGLONG_T) curoff);
@@ -1195,16 +1200,32 @@ tryagain:
 	{
 		mailerr("450 4.2.0", "%s: %s", path, sm_errstring(errno));
 err3:
-		(void) setreuid(0, 0);
 #ifdef DEBUG
 		fprintf(stderr, "reset euid = %d\n", (int) geteuid());
 #endif /* DEBUG */
-		(void) ftruncate(mbfd, curoff);
+		if (mbfd >= 0)
+			(void) ftruncate(mbfd, curoff);
 err1:		if (mbfd >= 0)
 			(void) close(mbfd);
-err0:		unlockmbox();
+err0:		(void) setreuid(0, 0);
+		unlockmbox();
 		return;
 	}
+
+	/*
+	**  Save the current size so if the close() fails below
+	**  we can make sure no other process has changed the mailbox
+	**  between the failed close and the re-open()/re-lock().
+	**  If something else has changed the size, we shouldn't
+	**  try to truncate it as we may do more harm then good
+	**  (e.g., truncate a later message delivery).
+	*/
+
+	if (fstat(mbfd, &sb) < 0)
+		cursize = 0;
+	else
+		cursize = sb.st_size;
+
 
 	/* Close and check -- NFS doesn't write until the close. */
 	if (close(mbfd))
@@ -1215,7 +1236,32 @@ err0:		unlockmbox();
 			errcode = "552 5.2.2";
 #endif /* EDQUOT */
 		mailerr(errcode, "%s: %s", path, sm_errstring(errno));
-		(void) truncate(path, curoff);
+		mbfd = open(path, O_WRONLY, 0);
+		if (mbfd < 0 ||
+		    cursize == 0
+		    || flock(mbfd, LOCK_EX) < 0 ||
+		    fstat(mbfd, &sb) < 0 ||
+		    sb.st_size != cursize ||
+		    sb.st_nlink != 1 ||
+		    !S_ISREG(sb.st_mode) ||
+		    sb.st_dev != fsb.st_dev ||
+		    sb.st_ino != fsb.st_ino ||
+# if HAS_ST_GEN && 0		/* AFS returns random values for st_gen */
+		    sb.st_gen != fsb.st_gen ||
+# endif /* HAS_ST_GEN && 0 */
+		    sb.st_uid != fsb.st_uid
+		   )
+		{
+			/* Don't use a bogus file */
+			if (mbfd >= 0)
+			{
+				(void) close(mbfd);
+				mbfd = -1;
+			}
+		}
+
+		/* Attempt to truncate back to pre-write size */
+		goto err3;
 	}
 	else
 		notifybiff(biffmsg);
@@ -1313,7 +1359,7 @@ lockmbox(path)
 			errno = 0;
 			return EX_TEMPFAIL;
 		}
-		fd = open(LockName, O_WRONLY|O_EXCL|O_CREAT, 0);
+		fd = open(LockName, O_WRONLY|O_EXCL|O_CREAT, LOCKFILE_PMODE);
 		if (fd >= 0)
 		{
 			/* defeat lock checking programs which test pid */
@@ -1563,11 +1609,7 @@ e_to_sys(num)
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *

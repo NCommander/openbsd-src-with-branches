@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999-2002  Internet Software Consortium.
+ * Copyright (C) 1999-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: query.c,v 1.198.2.8 2002/08/02 04:17:21 marka Exp $ */
+/* $ISC: query.c,v 1.198.2.14 2003/09/02 02:27:53 marka Exp $ */
 
 #include <config.h>
 
@@ -1148,6 +1148,12 @@ query_addadditional(void *arg, dns_name_t *name, dns_rdatatype_t qtype) {
 	if (client->query.gluedb == NULL)
 		goto cleanup;
 
+	/*
+	 * Don't poision caches using the bailiwick protection model.
+	 */
+	if (!dns_name_issubdomain(name, dns_db_origin(client->query.gluedb)))
+		goto cleanup;
+
 	dns_db_attach(client->query.gluedb, &db);
 	result = dns_db_find(db, name, version, type,
 			     client->query.dboptions | DNS_DBFIND_GLUEOK,
@@ -1934,7 +1940,9 @@ query_addbestns(ns_client_t *client) {
 			zdb = db;
 			zfname = fname;
 			zrdataset = rdataset;
+			rdataset = NULL;
 			zsigrdataset = sigrdataset;
+			sigrdataset = NULL;
 			dns_db_detachnode(db, &node);
 			version = NULL;
 			db = NULL;
@@ -1995,7 +2003,8 @@ query_addbestns(ns_client_t *client) {
 		       DNS_SECTION_AUTHORITY);
 
  cleanup:
-	query_putrdataset(client, &rdataset);
+	if (rdataset != NULL)
+		query_putrdataset(client, &rdataset);
 	if (sigrdataset != NULL)
 		query_putrdataset(client, &sigrdataset);
 	if (fname != NULL)
@@ -2372,6 +2381,7 @@ query_find(ns_client_t *client, dns_fetchevent_t *event, dns_rdatatype_t qtype) 
 	dns_zone_t *zone;
 	dns_rdata_cname_t cname;
 	dns_rdata_dname_t dname;
+	isc_boolean_t empty_wild;
 
 	CTRACE("query_find");
 
@@ -2394,6 +2404,7 @@ query_find(ns_client_t *client, dns_fetchevent_t *event, dns_rdatatype_t qtype) 
 	zdb = NULL;
 	version = NULL;
 	zone = NULL;
+	empty_wild = ISC_FALSE;
 
 	if (event != NULL) {
 		/*
@@ -2696,7 +2707,9 @@ query_find(ns_client_t *client, dns_fetchevent_t *event, dns_rdatatype_t qtype) 
 				zdb = db;
 				zfname = fname;
 				zrdataset = rdataset;
+				rdataset = NULL;
 				zsigrdataset = sigrdataset;
+				sigrdataset = NULL;
 				dns_db_detachnode(db, &node);
 				version = NULL;
 				db = NULL;
@@ -2782,6 +2795,9 @@ query_find(ns_client_t *client, dns_fetchevent_t *event, dns_rdatatype_t qtype) 
 			}
 		}
 		goto cleanup;
+	case DNS_R_EMPTYNAME:
+		result = DNS_R_NXRRSET;
+		/* FALLTHROUGH */
 	case DNS_R_NXRRSET:
 		INSIST(is_zone);
 		if (dns_rdataset_isassociated(rdataset)) {
@@ -2817,6 +2833,9 @@ query_find(ns_client_t *client, dns_fetchevent_t *event, dns_rdatatype_t qtype) 
 					       NULL, DNS_SECTION_AUTHORITY);
 		}
 		goto cleanup;
+	case DNS_R_EMPTYWILD:
+		empty_wild = ISC_TRUE;
+		/* FALLTHROUGH */
 	case DNS_R_NXDOMAIN:
 		INSIST(is_zone);
 		if (dns_rdataset_isassociated(rdataset)) {
@@ -2860,7 +2879,10 @@ query_find(ns_client_t *client, dns_fetchevent_t *event, dns_rdatatype_t qtype) 
 		/*
 		 * Set message rcode.
 		 */
-		client->message->rcode = dns_rcode_nxdomain;
+		if (empty_wild)
+			client->message->rcode = dns_rcode_noerror;
+		else
+			client->message->rcode = dns_rcode_nxdomain;
 		goto cleanup;
 	case DNS_R_NCACHENXDOMAIN:
 	case DNS_R_NCACHENXRRSET:
@@ -3192,7 +3214,8 @@ query_find(ns_client_t *client, dns_fetchevent_t *event, dns_rdatatype_t qtype) 
 	/*
 	 * General cleanup.
 	 */
-	query_putrdataset(client, &rdataset);
+	if (rdataset != NULL)
+		query_putrdataset(client, &rdataset);
 	if (sigrdataset != NULL)
 		query_putrdataset(client, &sigrdataset);
 	if (fname != NULL)
@@ -3300,9 +3323,11 @@ ns_query_start(ns_client_t *client) {
 	if ((message->flags & DNS_MESSAGEFLAG_RD) != 0)
 		client->query.attributes |= NS_QUERYATTR_WANTRECURSION;
 	
+#ifdef ISC_RFC2535
 	if ((client->extflags & DNS_MESSAGEEXTFLAG_DO) != 0 ||
 	    (message->flags & DNS_MESSAGEFLAG_AD) != 0)
 		client->query.attributes |= NS_QUERYATTR_WANTDNSSEC;
+#endif
 	
 	if (client->view->minimalresponses)
 		client->query.attributes |= (NS_QUERYATTR_NOAUTHORITY |

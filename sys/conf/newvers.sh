@@ -1,5 +1,6 @@
 #!/bin/sh -
 #
+#	$OpenBSD: newvers.sh,v 1.60 2004/03/09 22:32:57 deraadt Exp $
 #	$NetBSD: newvers.sh,v 1.17.2.1 1995/10/12 05:17:11 jtc Exp $
 #
 # Copyright (c) 1984, 1986, 1990, 1993
@@ -13,11 +14,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -35,7 +32,7 @@
 #
 #	@(#)newvers.sh	8.1 (Berkeley) 4/20/94
 
-if [ ! -r version ]
+if [ ! -r version -o ! -s version ]
 then
 	echo 0 > version
 fi
@@ -44,15 +41,47 @@ touch version
 v=`cat version` u=${USER-root} d=`pwd` h=`hostname` t=`date`
 id=`basename ${d}`
 
-ost="NetBSD"
-osr="1.1_ALPHA"
+# additional things which need version number upgrades:
+#	src/sys/sys/param.h:
+#		OpenBSD symbol
+#		OpenBSD_X_X symbol
+#	src/share/tmac/mdoc/doc-common
+#		change	.       ds oS OpenBSD X.X
+#		add	.	if "\\$2"X.X"  .as oS \0X.X
+#	src/share/tmac/mdoc/doc-syms
+#		ensure new release is listed
+#	src/share/mk/sys.mk
+#		OSMAJOR
+#		OSMINOR
+#	src/distrib/miniroot/install.sub
+#		VERSION
+#	src/etc/root/root.mail
+#		VERSION and other bits
+#	src/sys/arch/macppc/stand/tbxidata/bsd.tbxi
+#		change	/X.X/macppc/bsd.rd
+#
+# -current and -beta tagging:
+#	right after a release, re-tag to -current by changing the
+#	following lines below, as shown:
+#
+#	"    @(#)${ost} ${osr}-current (${id}) #${v}: ${t}\n";
+#	"${ost} ${osr}-current (${id}) #${v}: ${t}\n    ${u}@${h}:${d}\n";
+#	
+#	a month or so before release, change to -beta by changing in the
+#	same way.
+#
 
-echo "char ostype[] = \"${ost}\";" > vers.c
-echo "char osrelease[] = \"${osr}\";" >> vers.c
-echo "char sccs[4] = { '@', '(', '#', ')' };" >> vers.c
-echo \
-  "char version[] = \
-    \"${ost} ${osr} (${id}) #${v}: ${t}\\n    ${u}@${h}:${d}\\n\";" \
-  >> vers.c
+ost="OpenBSD"
+osr="3.5"
 
-echo `expr ${v} + 1` > version
+cat >vers.c <<eof
+const char ostype[] = "${ost}";
+const char osrelease[] = "${osr}";
+const char osversion[] = "${id}#${v}";
+const char sccs[] =
+    "    @(#)${ost} ${osr}-stable (${id}) #${v}: ${t}\n";
+const char version[] =
+    "${ost} ${osr}-stable (${id}) #${v}: ${t}\n    ${u}@${h}:${d}\n";
+eof
+
+expr ${v} + 1 > version

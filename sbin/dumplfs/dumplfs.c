@@ -1,4 +1,5 @@
-/*	$NetBSD: dumplfs.c,v 1.6 1995/06/07 17:16:05 cgd Exp $	*/
+/*	$OpenBSD: dumplfs.c,v 1.8 2002/07/11 21:23:28 deraadt Exp $	*/
+/*	$NetBSD: dumplfs.c,v 1.7 1995/12/14 22:36:34 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dumplfs.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: dumplfs.c,v 1.6 1995/06/07 17:16:05 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dumplfs.c,v 1.8 2002/07/11 21:23:28 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -65,16 +62,16 @@ static char rcsid[] = "$NetBSD: dumplfs.c,v 1.6 1995/06/07 17:16:05 cgd Exp $";
 #include <unistd.h>
 #include "extern.h"
 
-static void	addseg __P((char *));
-static void	dump_cleaner_info __P((struct lfs *, void *));
-static void	dump_dinode __P((struct dinode *));
-static void	dump_ifile __P((int, struct lfs *, int));
-static int	dump_ipage_ifile __P((int, IFILE *, int));
-static int	dump_ipage_segusage __P((struct lfs *, int, IFILE *, int));
-static void	dump_segment __P((int, int, daddr_t, struct lfs *, int));
-static int	dump_sum __P((int, struct lfs *, SEGSUM *, int, daddr_t));
-static void	dump_super __P((struct lfs *));
-static void	usage __P((void));
+static void	addseg(char *);
+static void	dump_cleaner_info(struct lfs *, void *);
+static void	dump_dinode(struct dinode *);
+static void	dump_ifile(int, struct lfs *, int);
+static int	dump_ipage_ifile(int, IFILE *, int);
+static int	dump_ipage_segusage(struct lfs *, int, IFILE *, int);
+static void	dump_segment(int, int, daddr_t, struct lfs *, int);
+static int	dump_sum(int, struct lfs *, SEGSUM *, int, daddr_t);
+static void	dump_super(struct lfs *);
+static void	usage(void);
 
 typedef struct seglist SEGLIST;
 struct seglist {
@@ -178,7 +175,7 @@ main(argc, argv)
 			    segnum, seg_addr, lfs_master, do_allsb);
 
 	(void)close(fd);
-	exit(0);
+	return (0);
 }
 
 /*
@@ -228,10 +225,10 @@ dump_ifile(fd, lfsp, do_ientries)
 			dump_cleaner_info(lfsp, ipage);
 			print_suheader;
 			continue;
-		} 
+		}
 
 		if (i < (lfsp->lfs_segtabsz + lfsp->lfs_cleansz)) {
-			inum = dump_ipage_segusage(lfsp, inum, ipage, 
+			inum = dump_ipage_segusage(lfsp, inum, ipage,
 			    lfsp->lfs_sepb);
 			if (!inum)
 				if(!do_ientries)
@@ -258,11 +255,11 @@ dump_ifile(fd, lfsp, do_ientries)
 		if (i < lfsp->lfs_cleansz) {
 			dump_cleaner_info(lfsp, ipage);
 			continue;
-		} else 
+		} else
 			i -= lfsp->lfs_cleansz;
 
 		if (i < lfsp->lfs_segtabsz) {
-			inum = dump_ipage_segusage(lfsp, inum, ipage, 
+			inum = dump_ipage_segusage(lfsp, inum, ipage,
 			    lfsp->lfs_sepb);
 			if (!inum)
 				if(!do_ientries)
@@ -292,7 +289,7 @@ dump_ifile(fd, lfsp, do_ientries)
 			if (i < lfsp->lfs_cleansz) {
 				dump_cleaner_info(lfsp, ipage);
 				continue;
-			} else 
+			} else
 				i -= lfsp->lfs_cleansz;
 
 			if (i < lfsp->lfs_segtabsz) {
@@ -355,6 +352,11 @@ dump_dinode(dip)
 	struct dinode *dip;
 {
 	int i;
+	time_t at, mt, ct;
+
+	at = dip->di_atime;
+	mt = dip->di_mtime;
+	ct = dip->di_ctime;
 
 	(void)printf("%s%d\t%s%d\t%s%d\t%s%d\t%s%d\n",
 		"mode  ", dip->di_mode,
@@ -363,9 +365,9 @@ dump_dinode(dip)
 		"gid   ", dip->di_gid,
 		"size  ", dip->di_size);
 	(void)printf("%s%s%s%s%s%s",
-		"atime ", ctime(&dip->di_atime),
-		"mtime ", ctime(&dip->di_mtime),
-		"ctime ", ctime(&dip->di_ctime));
+		"atime ", ctime(&at),
+		"mtime ", ctime(&mt),
+		"ctime ", ctime(&ct));
 	(void)printf("inum  %d\n", dip->di_inumber);
 	(void)printf("Direct Addresses\n");
 	for (i = 0; i < NDADDR; i++) {
@@ -392,7 +394,7 @@ dump_sum(fd, lfsp, sp, segnum, addr)
 	int numblocks;
 	struct dinode *inop;
 
-	if (sp->ss_sumsum != (ck = cksum(&sp->ss_datasum, 
+	if (sp->ss_sumsum != (ck = cksum(&sp->ss_datasum,
 	    LFS_SUMMARY_SIZE - sizeof(sp->ss_sumsum)))) {
 		(void)printf("dumplfs: %s %d address 0x%lx\n",
 		    "corrupt summary block; segment", segnum, addr);
@@ -414,13 +416,15 @@ dump_sum(fd, lfsp, sp, segnum, addr)
 	dp = (daddr_t *)sp;
 	dp += LFS_SUMMARY_SIZE / sizeof(daddr_t);
 	inop = malloc(1 << lfsp->lfs_bshift);
+	if (inop == NULL)
+		err(1, "malloc");
 	printf("    Inode addresses:");
 	for (dp--, i = 0; i < sp->ss_ninos; dp--) {
 		printf("\t0x%X {", *dp);
-		get(fd, *dp << (lfsp->lfs_bshift - lfsp->lfs_fsbtodb), inop, 
+		get(fd, *dp << (lfsp->lfs_bshift - lfsp->lfs_fsbtodb), inop,
 		    (1 << lfsp->lfs_bshift));
 		for (j = 0; i < sp->ss_ninos && j < INOPB(lfsp); j++, i++) {
-			if (j > 0) 
+			if (j > 0)
 				(void)printf(", ");
 			(void)printf("%d", inop[j].di_inumber);
 		}
@@ -470,7 +474,7 @@ dump_segment(fd, segnum, addr, lfsp, dump_sb)
 	do {
 		get(fd, sum_offset, sumblock, LFS_SUMMARY_SIZE);
 		sump = (SEGSUM *)sumblock;
-		if (sump->ss_sumsum != cksum (&sump->ss_datasum, 
+		if (sump->ss_sumsum != cksum (&sump->ss_datasum,
 			LFS_SUMMARY_SIZE - sizeof(sump->ss_sumsum))) {
 			sbp = (struct lfs *)sump;
 			if (sb = (sbp->lfs_magic == LFS_MAGIC)) {
@@ -486,7 +490,7 @@ dump_segment(fd, segnum, addr, lfsp, dump_sb)
 			nblocks = dump_sum(fd, lfsp, sump, segnum, sum_offset >>
 			     (lfsp->lfs_bshift - lfsp->lfs_fsbtodb));
 			if (nblocks)
-				sum_offset += LFS_SUMMARY_SIZE + 
+				sum_offset += LFS_SUMMARY_SIZE +
 					(nblocks << lfsp->lfs_bshift);
 			else
 				sum_offset = 0;

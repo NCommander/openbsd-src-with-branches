@@ -53,7 +53,7 @@
  */
 
 #ifndef AP_EBCDIC_H
-#define AP_EBCDIC_H  "$Id: ap_ebcdic.h,v 1.3 2003/02/03 17:13:18 nd Exp $"
+#define AP_EBCDIC_H  "$Id: ap_ebcdic.h,v 1.1.1.2 2003/08/21 12:53:38 henning Exp $"
 
 #include <sys/types.h>
 

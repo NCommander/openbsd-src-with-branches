@@ -449,8 +449,8 @@ struct entry log_strings[] = {
 
 #if 0
 struct entry kdcdefaults_entries[] = {
-    { "kdc_ports, krb5_config_string, mit_entry },
-    { "v4_mode, krb5_config_string, mit_entry },
+    { "kdc_ports", krb5_config_string, mit_entry },
+    { "v4_mode", krb5_config_string, mit_entry },
     { NULL }
 };
 #endif
@@ -536,8 +536,6 @@ main(int argc, char **argv)
     krb5_error_code ret;
     krb5_config_section *tmp_cf;
     int optind = 0;
-
-    setprogname (argv[0]);
 
     ret = krb5_init_context(&context);
     if (ret)

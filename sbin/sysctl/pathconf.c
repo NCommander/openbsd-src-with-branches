@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathconf.c,v 1.7 2003/06/02 20:06:17 millert Exp $	*/
 /*	$NetBSD: pathconf.c,v 1.2 1995/09/30 07:12:47 thorpej Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pathconf.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: pathconf.c,v 1.2 1995/09/30 07:12:47 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: pathconf.c,v 1.7 2003/06/02 20:06:17 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -81,17 +78,15 @@ struct list pclist = { pcnames, PC_MAXID };
 
 int	Aflag, aflag, nflag, wflag, stdinflag;
 
+char *equ = " = ";
+
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	extern char *optarg;
-	extern int optind;
 	char *path;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "Aan")) != EOF) {
+	while ((ch = getopt(argc, argv, "Aan")) != -1) {
 		switch (ch) {
 
 		case 'A':
@@ -121,21 +116,19 @@ main(argc, argv)
 	argc--;
 	if (Aflag || aflag) {
 		listall(path, &pclist);
-		exit(0);
+		return (0);
 	}
 	if (argc == 0)
 		usage();
 	while (argc-- > 0)
 		parse(path, *argv, 1);
-	exit(0);
+	return (0);
 }
 
 /*
  * List all variables known to the system.
  */
-listall(path, lp)
-	char *path;
-	struct list *lp;
+listall(char *path, struct list *lp)
 {
 	int lvl2;
 
@@ -152,10 +145,7 @@ listall(path, lp)
  * Parse a name into an index.
  * Lookup and print out the attribute if it exists.
  */
-parse(pathname, string, flags)
-	char *pathname;
-	char *string;
-	int flags;
+parse(char *pathname, char *string, int flags)
 {
 	int indx, value;
 	char *bufp, buf[BUFSIZ];
@@ -193,18 +183,14 @@ parse(pathname, string, flags)
 		}
 	}
 	if (!nflag)
-		fprintf(stdout, "%s = ", string);
+		fprintf(stdout, "%s%s", string, equ);
 	fprintf(stdout, "%d\n", value);
 }
 
 /*
  * Scan a list of names searching for a particular name.
  */
-findname(string, level, bufp, namelist)
-	char *string;
-	char *level;
-	char **bufp;
-	struct list *namelist;
+findname(char *string, char *level, char **bufp, struct list *namelist)
 {
 	char *name;
 	int i;
@@ -225,7 +211,7 @@ findname(string, level, bufp, namelist)
 	return (i);
 }
 
-usage()
+usage(void)
 {
 
 	(void)fprintf(stderr, "usage:\t%s\n\t%s\n\t%s\n",

@@ -1,4 +1,5 @@
-/*	$NetBSD: random.s,v 1.5 1995/01/15 22:32:35 mycroft Exp $	*/
+/*	$OpenBSD: random.s,v 1.3 1996/08/10 21:41:08 deraadt Exp $	*/
+/*	$NetBSD: random.s,v 1.6 1997/04/25 02:22:02 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1990,1993 The Regents of the University of California.
@@ -43,17 +44,17 @@
 #include <machine/asm.h>
 
 	.data
-randseed:
+GLOBAL(_randseed)
 	.long	1
-	.text
+
 ENTRY(random)
 	movl	#16807, d0
-	mulsl	randseed, d1:d0
+	mulsl	_C_LABEL(_randseed), d1:d0
 	lsll	#1, d0
 	roxll	#2, d1
 	addl	d1, d0
 	moveql	#1, d1
 	addxl	d1, d0
 	lsrl	#1, d0
-	movl	d0, randseed
+	movl	d0, _C_LABEL(_randseed)
 	rts

@@ -1,11 +1,14 @@
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.9 2002/04/22 21:45:00 miod Exp $
 
 # -DEXTENDED 
 # 	if you want the paste & spaste macros.
 
 PROG=	m4
 CFLAGS+=-DEXTENDED
-SRCS=	eval.c expr.c look.c main.c misc.c
+CDIAGFLAGS=-W -Wall -Wstrict-prototypes -pedantic \
+	-Wno-unused -Wno-char-subscripts -Wno-sign-compare
+
+SRCS=	eval.c expr.c look.c main.c misc.c gnum4.c trace.c
 MAN=	m4.1
 
 .include <bsd.prog.mk>

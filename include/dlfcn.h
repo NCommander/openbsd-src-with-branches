@@ -1,3 +1,4 @@
+/*	$OpenBSD: dlfcn.h,v 1.7 2003/04/25 19:16:12 marc Exp $	*/
 /*	$NetBSD: dlfcn.h,v 1.2 1995/06/05 19:38:00 pk Exp $	*/
 
 /*
@@ -16,7 +17,7 @@
  *    must display the following acknowledgement:
  *      This product includes software developed by Paul Kranenburg.
  * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -39,16 +40,19 @@
  * User interface to the run-time linker.
  */
 __BEGIN_DECLS
-extern void	*dlopen __P((char *, int));
-extern int	dlclose __P((void *));
-extern void	*dlsym __P((void *, char *));
-extern int	dlctl __P((void *, int, void *));
-extern char	*dlerror __P((void));
+extern void	*dlopen(const char *, int);
+extern int	dlclose(void *);
+extern void	*dlsym(void *, const char *);
+extern int	dlctl(void *, int, void *);
+extern const char	*dlerror(void);
 __END_DECLS
 
 /* Values for dlopen `mode'. */
-#define DL_LAZY		1
-#define RTLD_LAZY	DL_LAZY		/* SunOS Compat */
+#define RTLD_LAZY	1
+#define RTLD_NOW	2
+#define RTLD_GLOBAL	0x100
+#define RTLD_LOCAL	0x000
+#define	DL_LAZY		RTLD_LAZY	/* Compat */
 
 /*
  * dlctl() commands
@@ -58,5 +62,6 @@ __END_DECLS
 #define DL_GETLIST	x
 #define DL_GETREFCNT	x
 #define DL_GETLOADADDR	x
+#define DL_SETTHREADLCK	2
 
 #endif /* _DLFCN_H_ */

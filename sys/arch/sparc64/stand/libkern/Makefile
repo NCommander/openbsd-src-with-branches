@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1999/12/10 10:40:47 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 2003/04/09 10:35:04 sturm Exp $
 
 LIB=	kern
 
@@ -15,24 +15,25 @@ AFLAGS=	-x assembler-with-cpp -traditional-cpp -I${.CURDIR}/../include \
 	-I${.CURDIR}/../../../..  -I${.CURDIR}/../../../../lib/libkern \
 	-I${.CURDIR}/../../../../lib/libkern/arch/sparc
 
-.NOPATH: machine
-
 # kern routines
-SRCS=	__main.c ashrdi3.c bzero.S divdi3.c qdivrem.c strlen.S strcat.c \
-	strcmp.c strcpy.c strncmp.c umoddi3.c
+SRCS=	__main.c ashrdi3.c bzero.S divdi3.c qdivrem.c strlen.S \
+	strcmp.c strlcat.c strlcpy.c strncmp.c umoddi3.c
 
 SRCS+=	umul.S mul.S rem.S sdiv.S udiv.S urem.S
 SRCS+=	saveregs.S
 
 ${OBJS}:	${.CURDIR}/../Makefile.inc
 
+CLEANFILES += machine
+
 NOPROFILE=
 NOPIC=
+
+.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(kernlibdir) && !make(obj)
+.BEGIN:
+	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
+.endif
 
 install:
 
 .include <bsd.lib.mk>
-
-machine:
-	rm -f $@
-	ln -s ${.CURDIR}/../../include $@

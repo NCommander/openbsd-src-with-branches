@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NOWHERE: time.c,v 2.2 1998/06/23 05:26:53 mickey Exp $	*/
+/*	$OpenBSD: time.c,v 1.3 1999/02/13 04:43:18 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -40,8 +39,8 @@
 time_t
 getsecs()
 {
+	time_t tt;
 	int err;
-	register time_t tt;
 
 	if ((err = (*pdc)(PDC_TOD, PDC_TOD_READ, &pdcbuf)) < 0) {
 		tt = 0;
@@ -53,10 +52,9 @@ getsecs()
 		tt = ((struct pdc_tod *)pdcbuf)->sec;
 #ifdef DEBUG
 		if (debug && tt < 800000000)
-			printf("getsecs: got %lu seconds\n", tt);
+			printf("getsecs: got %u seconds\n", tt);
 #endif
 	}
 
 	return tt;
 }
-

@@ -1,17 +1,22 @@
-/*	$NetBSD: kgdb_proto.h,v 1.2 1994/11/20 20:54:21 deraadt Exp $ */
+/*	$OpenBSD: kgdb_proto.h,v 1.3 1997/08/08 08:27:23 downsj Exp $	*/
+/*	$NetBSD: kgdb_proto.h,v 1.4 1996/05/16 15:57:19 abrown Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1995
+ *	The President and Fellows of Harvard College. All rights reserved.
  *
  * This software was developed by the Computer Systems Engineering group
  * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
  * contributed to Berkeley.
  *
  * All advertising materials mentioning features or use of this software
- * must display the following acknowledgement:
+ * must display the following acknowledgements:
  *	This product includes software developed by the University of
  *	California, Lawrence Berkeley Laboratory.
+ *
+ *	This product includes software developed by Harvard University.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -21,11 +26,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -56,6 +57,8 @@
 #define KGDB_KILL	0x07
 #define KGDB_SIGNAL	0x08
 #define KGDB_EXEC	0x09
+#define KGDB_HALT       0x0a
+#define KGDB_BOOT       0x0b
 
 #define KGDB_CMD(x) ((x) & 0x0f)
 

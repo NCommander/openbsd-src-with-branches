@@ -1,288 +1,120 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: alloc.c,v 1.6 2003/08/05 20:52:27 millert Exp $	*/
+/*
+ * Copyright (c) 2002 Marc Espie.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
+ * PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  * area-based allocation built on malloc/free
  */
 
 #include "sh.h"
-#ifdef MEM_DEBUG
-# undef alloc
-# undef aresize
-# undef afree
-#endif /* MEM_DEBUG */
 
-#define	ICELLS	100		/* number of Cells in small Block */
-
-typedef union Cell Cell;
-typedef struct Block Block;
-
-/*
- * The Cells in a Block are organized as a set of objects.
- * Each object (pointed to by dp) begins with a size in (dp-1)->size,
- * followed with "size" data Cells.  Free objects are
- * linked together via dp->next.
- */
-
-union Cell {
-	size_t	size;
-	Cell   *next;
-	struct {int _;} junk;	/* alignment */
+struct link {
+	struct link *prev;
+	struct link *next;
 };
 
-struct Block {
-	Block  *next;		/* list of Blocks in Area */
-	Cell   *freelist;	/* object free list */
-	Cell   *last;		/* &b.cell[size] */
-	Cell	cell [1];	/* [size] Cells for allocation */
-};
-
-static Block aempty = {&aempty, aempty.cell, aempty.cell};
-
-/* create empty Area */
 Area *
-ainit(ap)
-	register Area *ap;
+ainit(Area *ap)
 {
-	ap->freelist = &aempty;
+	ap->freelist = NULL;
 	return ap;
 }
 
-/* free all object in Area */
 void
-afreeall(ap)
-	register Area *ap;
+afreeall(Area *ap)
 {
-	register Block *bp;
-	register Block *tmp;
+	struct link *l, *l2;
 
-	bp = ap->freelist;
-	if (bp != NULL && bp != &aempty) {
-		do {
-			tmp = bp->next;
-			free((void*)bp);
-			bp = tmp;
-		} while (bp != ap->freelist);
-		ap->freelist = &aempty;
+	for (l = ap->freelist; l != NULL; l = l2) {
+		l2 = l->next;
+		free(l);
 	}
+	ap->freelist = NULL;
 }
 
-/* allocate object from Area */
+#define L2P(l)	( (void *)(((char *)(l)) + sizeof(struct link)) )
+#define P2L(p)	( (struct link *)(((char *)(p)) - sizeof(struct link)) )
+
 void *
-alloc(size, ap)
-	size_t size;
-	register Area *ap;
+alloc(size_t size, Area *ap)
 {
-	int cells, split;
-	register Block *bp;
-	register Cell *dp, *fp, *fpp;
+	struct link *l;
 
-	if (size <= 0) {
-		aerror(ap, "allocate bad size");
-		return NULL;
-	}
-	cells = (unsigned)(size - 1) / sizeof(Cell) + 1;
+	l = malloc(sizeof(struct link) + size);
+	if (l == NULL)
+		internal_errorf(1, "unable to allocate memory");
+	l->next = ap->freelist;
+	l->prev = NULL;
+	if (ap->freelist)
+		ap->freelist->prev = l;
+	ap->freelist = l;
 
-	/* find Cell large enough */
-	for (bp = ap->freelist; ; bp = bp->next) {
-		for (fpp = NULL, fp = bp->freelist;
-		     fp != bp->last; fpp = fp, fp = fpp->next)
-			if ((fp-1)->size >= cells)
-				goto Found;
+	return L2P(l);
+}
 
-		/* wrapped around Block list, create new Block */
-		if (bp->next == ap->freelist) {
-			bp = (Block*) malloc(offsetof(Block, cell[ICELLS])
-					     + sizeof(bp->cell[0]) * cells);
-			if (bp == NULL) {
-				aerror(ap, "cannot allocate");
-				return NULL;
-			}
-			if (ap->freelist == &aempty)
-				bp->next = bp;
-			else {
-				bp->next = ap->freelist->next;
-				ap->freelist->next = bp;
-			}
-			bp->last = bp->cell + ICELLS + cells;
-			fp = bp->freelist = bp->cell + 1; /* initial free list */
-			(fp-1)->size = ICELLS + cells - 1;
-			fp->next = bp->last;
-			fpp = NULL;
-			break;
-		}
-	}
-  Found:
-	ap->freelist = bp;
-	dp = fp;		/* allocated object */
-	split = (dp-1)->size - cells;
-	if (split < 0)
-		aerror(ap, "allocated object too small");
-	if (--split <= 0) {	/* allocate all */
-		fp = fp->next;
-	} else {		/* allocate head, free tail */
-		(fp-1)->size = cells;
-		fp += cells + 1;
-		(fp-1)->size = split;
-		fp->next = dp->next;
-	}
-	if (fpp == NULL)
-		bp->freelist = fp;
+void *
+aresize(void *ptr, size_t size, Area *ap)
+{
+	struct link *l, *l2, *lprev, *lnext;
+
+	if (ptr == NULL)
+		return alloc(size, ap);
+
+	l = P2L(ptr);
+	lprev = l->prev;
+	lnext = l->next;
+
+	l2 = realloc(l, sizeof(struct link) + size);
+	if (l2 == NULL)
+		internal_errorf(1, "unable to allocate memory");
+	if (lprev)
+		lprev->next = l2;
 	else
-		fpp->next = fp;
-	return (void*) dp;
-}
+		ap->freelist = l2;
+	if (lnext)
+		lnext->prev = l2;
 
-/* change size of object -- like realloc */
-void *
-aresize(ptr, size, ap)
-	register void *ptr;
-	size_t size;
-	Area *ap;
-{
-	int cells;
-	register Cell *dp = (Cell*) ptr;
-
-	if (size <= 0) {
-		aerror(ap, "allocate bad size");
-		return NULL;
-	}
-	cells = (unsigned)(size - 1) / sizeof(Cell) + 1;
-
-	if (dp == NULL || (dp-1)->size < cells) { /* enlarge object */
-		/* XXX check for available adjacent free block */
-		ptr = alloc(size, ap);
-		if (dp != NULL) {
-			memcpy(ptr, dp, (dp-1)->size * sizeof(Cell));
-			afree((void *) dp, ap);
-		}
-	} else {		/* shrink object */
-		int split;
-
-		split = (dp-1)->size - cells;
-		if (--split <= 0) /* cannot split */
-			;
-		else {		/* shrink head, free tail */
-			(dp-1)->size = cells;
-			dp += cells + 1;
-			(dp-1)->size = split;
-			afree((void*)dp, ap);
-		}
-	}
-	return (void*) ptr;
+	return L2P(l2);
 }
 
 void
-afree(ptr, ap)
-	void *ptr;
-	register Area *ap;
+afree(void *ptr, Area *ap)
 {
-	register Block *bp;
-	register Cell *fp, *fpp;
-	register Cell *dp = (Cell*)ptr;
+	struct link *l;
 
-	/* find Block containing Cell */
-	for (bp = ap->freelist; ; bp = bp->next) {
-		if (bp->cell <= dp && dp < bp->last)
-			break;
-		if (bp->next == ap->freelist) {
-			aerror(ap, "freeing with invalid area");
-			return;
-		}
-	}
-
-	/* find position in free list */
-	for (fpp = NULL, fp = bp->freelist; fp < dp; fpp = fp, fp = fpp->next)
-		;
-
-	if (fp == dp) {
-		aerror(ap, "freeing free object");
+	if (!ptr)
 		return;
-	}
 
-	/* join object with next */
-	if (dp + (dp-1)->size == fp-1) { /* adjacent */
-		(dp-1)->size += (fp-1)->size + 1;
-		dp->next = fp->next;
-	} else			/* non-adjacent */
-		dp->next = fp;
+	l = P2L(ptr);
 
-	/* join previous with object */
-	if (fpp == NULL)
-		bp->freelist = dp;
-	else if (fpp + (fpp-1)->size == dp-1) { /* adjacent */
-		(fpp-1)->size += (dp-1)->size + 1;
-		fpp->next = dp->next;
-	} else			/* non-adjacent */
-		fpp->next = dp;
+	if (l->prev)
+		l->prev->next = l->next;
+	else
+		ap->freelist = l->next;
+	if (l->next)
+		l->next->prev = l->prev;
+
+	free(l);
 }
-
-#if DEBUG_ALLOC
-void
-aprint(ap, ptr, size)
-	register Area *ap;
-	void *ptr;
-	size_t size;
-{
-	Block *bp;
-
-	if (!ap)
-		shellf("aprint: null area pointer\n");
-	else if (!(bp = ap->freelist))
-		shellf("aprint: null area freelist\n");
-	else if (bp == &aempty)
-		shellf("aprint: area is empty\n");
-	else {
-		int i;
-		Cell *fp;
-
-		for (i = 0; !i || bp != ap->freelist; bp = bp->next, i++) {
-			if (ptr) {
-				void *eptr = (void *) (((char *) ptr) + size);
-				/* print block only if it overlaps ptr/size */
-				if (!((ptr >= (void *) bp
-				       && ptr <= (void *) bp->last)
-				      || (eptr >= (void *) bp
-				         && eptr <= (void *) bp->last)))
-					continue;
-				shellf("aprint: overlap of 0x%p .. 0x%p\n",
-					ptr, eptr);
-			}
-			shellf("aprint: block %2d: 0x%p .. 0x%p (%d)\n", i,
-				bp->cell, bp->last,
-				(char *) bp->last - (char *) bp->cell);
-			for (fp = bp->freelist; fp != bp->last; fp = fp->next)
-				shellf(
-				    "aprint:   0x%p .. 0x%p (%d) free\n",
-					(fp-1), (fp-1) + (fp-1)->size,
-					(fp-1)->size * sizeof(Cell));
-		}
-	}
-}
-#endif /* DEBUG_ALLOC */
-
-
-#ifdef TEST_ALLOC
-
-Area a;
-
-main(int argc, char **argv) {
-	int i;
-	char *p [9];
-
-	ainit(&a);
-	for (i = 0; i < 9; i++) {
-		p[i] = alloc(124, &a);
-		printf("alloc: %x\n", p[i]);
-	}
-	for (i = 1; i < argc; i++)
-		afree(p[atoi(argv[i])], &a);
-	afreeall(&a);
-	return 0;
-}
-
-void aerror(Area *ap, const char *msg) {
-	abort();
-}
-
-#endif
-

@@ -1,5 +1,3 @@
-/*	$NetBSD: auth_none.c,v 1.3 1995/02/25 03:01:34 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)auth_none.c 1.19 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)auth_none.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: auth_none.c,v 1.3 1995/02/25 03:01:34 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: auth_none.c,v 1.6 2001/03/03 06:50:27 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * auth_none.c
@@ -45,6 +41,7 @@ static char *rcsid = "$NetBSD: auth_none.c,v 1.3 1995/02/25 03:01:34 cgd Exp $";
 
 #include <stdlib.h>
 #include <rpc/types.h>
+#include <rpc/rpc.h>
 #include <rpc/xdr.h>
 #include <rpc/auth.h>
 #define MAX_MARSHEL_SIZE 20
@@ -52,11 +49,11 @@ static char *rcsid = "$NetBSD: auth_none.c,v 1.3 1995/02/25 03:01:34 cgd Exp $";
 /*
  * Authenticator operations routines
  */
-static void	authnone_verf();
-static void	authnone_destroy();
-static bool_t	authnone_marshal();
-static bool_t	authnone_validate();
-static bool_t	authnone_refresh();
+static void	authnone_destroy(struct __rpc_auth *);
+static void	authnone_verf(struct __rpc_auth *);
+static bool_t	authnone_validate(struct __rpc_auth *, struct opaque_auth *);
+static bool_t	authnone_marshal(struct __rpc_auth *, XDR *);
+static bool_t	authnone_refresh(struct __rpc_auth *);
 
 static struct auth_ops ops = {
 	authnone_verf,
@@ -75,14 +72,14 @@ static struct authnone_private {
 AUTH *
 authnone_create()
 {
-	register struct authnone_private *ap = authnone_private;
+	struct authnone_private *ap = authnone_private;
 	XDR xdr_stream;
-	register XDR *xdrs;
+	XDR *xdrs;
 
-	if (ap == 0) {
+	if (ap == NULL) {
 		ap = (struct authnone_private *)calloc(1, sizeof (*ap));
-		if (ap == 0)
-			return (0);
+		if (ap == NULL)
+			return (NULL);
 		authnone_private = ap;
 	}
 	if (!ap->mcnt) {
@@ -105,34 +102,34 @@ authnone_marshal(client, xdrs)
 	AUTH *client;
 	XDR *xdrs;
 {
-	register struct authnone_private *ap = authnone_private;
+	struct authnone_private *ap = authnone_private;
 
-	if (ap == 0)
+	if (ap == NULL)
 		return (0);
 	return ((*xdrs->x_ops->x_putbytes)(xdrs,
 	    ap->marshalled_client, ap->mcnt));
 }
 
 static void 
-authnone_verf()
+authnone_verf(struct __rpc_auth *none)
 {
 }
 
 static bool_t
-authnone_validate()
+authnone_validate(struct __rpc_auth *none, struct opaque_auth *noauth)
 {
 
 	return (TRUE);
 }
 
 static bool_t
-authnone_refresh()
+authnone_refresh(struct __rpc_auth *none)
 {
 
 	return (FALSE);
 }
 
 static void
-authnone_destroy()
+authnone_destroy(struct __rpc_auth *none)
 {
 }

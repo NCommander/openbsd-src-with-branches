@@ -1,4 +1,4 @@
-/*	$PMDB: sparc64.c,v 1.6 2002/03/07 01:10:52 art Exp $	*/
+/*	$OpenBSD: sparc64.c,v 1.5 2002/07/22 01:20:50 art Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -33,10 +33,12 @@
 static const char *md_reg_names[] = {
 	"%pc", "%npc", /* %y */
 	"%o0", "%o1", "%o2", "%o3", "%o4", "%o5", "%o6", "%o7",
+	"%i0", "%i1", "%i2", "%i3", "%i4", "%i5", "%i6", "%i7",
 	"%g0", "%g1", "%g2", "%g3", "%g4", "%g5", "%g6", "%g7",
+	"%l0", "%l1", "%l2", "%l3", "%l4", "%l5", "%l6", "%l7",
 };
 
-struct md_def md_def = { md_reg_names, 18, 0 };
+struct md_def md_def = { md_reg_names, 34, 0 };
 
 void
 md_def_init(void)
@@ -53,7 +55,7 @@ md_getframe(struct pstate *ps, int frame, struct md_frame *fram)
 	reg *outs;
 	int i;
 
-	if (ptrace(PT_GETREGS, ps->ps_pid, (caddr_t)&r, 0) != 0)
+	if (process_getregs(ps, &r))
 		return (-1);
 
 	if (frame == 0) {
@@ -77,8 +79,9 @@ md_getframe(struct pstate *ps, int frame, struct md_frame *fram)
 		if (fp < 8192 || (fp & 7) != 0)
 			return (-1);
 
-		if (read_from_pid(ps->ps_pid, fp, &fr, sizeof(fr)) < 0)
-			return -1;
+		if (process_read(ps, fp, &fr, sizeof(fr)) < 0)
+			return (-1);
+
 		fp = (unsigned long)v9next_frame((&fr));
 		pc = fr.fr_pc;
 
@@ -98,7 +101,7 @@ out:
 		fram->args[i] = fr.fr_arg[i];
 	}
 
-	return 0;
+	return (0);
 }
 
 int
@@ -107,16 +110,18 @@ md_getregs(struct pstate *ps, reg *regs)
 	struct reg r;
 	int i;
 
-	if (ptrace(PT_GETREGS, ps->ps_pid, (caddr_t)&r, 0) != 0)
-		return -1;
+	if (process_getregs(ps, &r))
+		return (-1);
+
 	regs[0] = r.r_pc;
 	regs[1] = r.r_npc;
+
 	for (i = 0; i < 8; i++) {
 		regs[2 + i] = r.r_out[i];
-	}
-	for (i = 0; i < 8; i++) {
-		regs[10 + i] = r.r_global[i];
+		regs[10 + i] = r.r_in[i];
+		regs[18 + i] = r.r_global[i];
+		regs[26 + i] = r.r_local[i];
 	}
 
-	return 0;
+	return (0);
 }

@@ -1,5 +1,3 @@
-/*	$NetBSD: perror.c,v 1.8 1995/02/02 02:10:11 jtc Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,10 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)perror.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: perror.c,v 1.8 1995/02/02 02:10:11 jtc Exp $";
+static char rcsid[] = "$OpenBSD: perror.c,v 1.4 2002/02/16 21:27:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -53,7 +44,7 @@ static char rcsid[] = "$NetBSD: perror.c,v 1.8 1995/02/02 02:10:11 jtc Exp $";
  * internal function __strerror().
  */
 
-extern char *__strerror __P((int , char *));
+extern char *__strerror(int , char *);
 
 void
 perror(s)
@@ -61,7 +52,7 @@ perror(s)
 {
 	register struct iovec *v;
 	struct iovec iov[4];
-	static char buf[NL_TEXTMAX];
+	char buf[NL_TEXTMAX];
 
 	v = iov;
 	if (s && *s) {

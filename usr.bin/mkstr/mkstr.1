@@ -1,3 +1,4 @@
+.\"	$OpenBSD: mkstr.1,v 1.8 2003/03/11 08:11:08 jmc Exp $
 .\"	$NetBSD: mkstr.1,v 1.3 1995/09/28 06:22:19 tls Exp $
 .\"
 .\" Copyright (c) 1980, 1990, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -43,9 +40,9 @@
 .Nm mkstr
 .Op Fl
 .Ar messagefile
-.Ar prefix file ...
+.Ar prefix file Op Ar ...
 .Sh DESCRIPTION
-.Nm Mkstr
+.Nm mkstr
 creates files containing error messages extracted from C source,
 and restructures the same C source, to utilize the created error message
 file.
@@ -56,7 +53,7 @@ reduce swapping (see
 .Sx BUGS
 section below).
 .Pp
-.Nm Mkstr
+.Nm mkstr
 processes each of the specified
 .Ar files ,
 placing a restructured version of the input in a file whose name
@@ -67,23 +64,23 @@ A typical usage of
 .Nm mkstr
 is
 .Bd -literal -offset indent
-mkstr pistrings xx *.c
+$ mkstr pistrings xx *.c
 .Ed
 .Pp
 This command causes all the error messages from the C source
 files in the current directory to be placed in the file
-.Ar pistrings
+.Dq pistrings
 and restructured copies of the sources to be placed in
 files whose names are prefixed with
-.Ar \&xx .
+.Dq \&xx .
 .Pp
-Options:
-.Bl -tag -width indent
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl
 Error messages are placed at the end of the specified
-message file for recompiling part of a large
-.Nm mkstr
-ed
+.Ar messagefile
+for recompiling part of a large
+.Nm mkstr Ns ed
 program.
 .El
 .Pp
@@ -95,7 +92,7 @@ in the input stream.
 Each time it occurs, the C string starting at the
 .Sq \&"\&
 is stored
-in the message file followed by a null character and a new-line character;
+in the message file followed by a null character and a newline character.
 The new source is restructured with
 .Xr lseek 2
 pointers into the error message file for retrieval.
@@ -121,19 +118,20 @@ oops:
 }
 .Ed
 .Sh SEE ALSO
-.Xr lseek 2 ,
-.Xr xstr 1
+.Xr xstr 1 ,
+.Xr lseek 2
 .Sh HISTORY
-.Nm Mkstr
+.Nm mkstr
 appeared in
 .Bx 3.0 .
 .Sh BUGS
 .Nm mkstr
 was intended for the limited architecture of the PDP 11 family.
-Very few programs actually use it. The pascal interpreter,
-.Xr \&pi 1
+Very few programs actually use it.
+The pascal interpreter,
+.Xr pi ,
 and the editor,
-.Xr \&ex 1
+.Xr ex 1 ,
 are two programs that are built this way.
-It is not an efficient method, the error messages
+It is not an efficient method; the error messages
 should be stored in the program text.

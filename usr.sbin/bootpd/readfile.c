@@ -21,7 +21,7 @@ SOFTWARE.
 ************************************************************************/
 
 #ifndef lint
-static char rcsid[] = "$Id: readfile.c,v 1.2 1994/08/22 22:15:04 gwr Exp $";
+static char rcsid[] = "$Id: readfile.c,v 1.8 2003/03/13 09:09:45 deraadt Exp $";
 #endif
 
 
@@ -235,7 +235,7 @@ PRIVATE struct htypename htnamemap[] = {
 #define P(args) ()
 #endif
 
-extern boolean iplookcmp();
+extern boolean iplookcmp(hash_datum *, hash_datum *);
 boolean nmcmp P((hash_datum *, hash_datum *));
 
 PRIVATE void
@@ -306,7 +306,7 @@ hash_tbl *nmhashtable;
  * (shared by bootpd and bootpef)
  */
 void
-rdtab_init()
+rdtab_init(void)
 {
 	hwhashtable = hash_Init(HASHTABLESIZE);
 	iphashtable = hash_Init(HASHTABLESIZE);
@@ -324,13 +324,12 @@ rdtab_init()
  */
 
 void
-readtab(force)
-	int force;
+readtab(int force)
 {
 	struct host *hp;
 	FILE *fp;
 	struct stat st;
-	unsigned hashcode, buflen;
+	unsigned int hashcode, buflen;
 	static char buffer[MAXENTRYLEN];
 
 	/*
@@ -344,7 +343,7 @@ readtab(force)
 #ifdef DEBUG
 	if (debug > 3) {
 		char timestr[28];
-		strcpy(timestr, ctime(&(st.st_mtime)));
+		strlcpy(timestr, ctime(&(st.st_mtime)), sizeof(timestr));
 		/* zap the newline */
 		timestr[24] = '\0';
 		report(LOG_INFO, "bootptab mtime: %s",
@@ -446,7 +445,7 @@ readtab(force)
 			if (hash_Insert(hwhashtable, hashcode, hwinscmp, hp, hp) < 0) {
 				report(LOG_NOTICE, "duplicate %s address: %s",
 					   netname(hp->htype),
-					   haddrtoa(hp->haddr, hp->htype));
+					   haddrtoa(hp->haddr, haddrlength(hp->htype)));
 				free_host((hash_datum *) hp);
 				continue;
 			}
@@ -507,10 +506,7 @@ readtab(force)
  */
 
 PRIVATE void
-read_entry(fp, buffer, bufsiz)
-	FILE *fp;
-	char *buffer;
-	unsigned *bufsiz;
+read_entry(FILE *fp, char *buffer, unsigned int *bufsiz)
 {
 	int c, length;
 
@@ -646,9 +642,7 @@ read_entry(fp, buffer, bufsiz)
  */
 
 PRIVATE int
-process_entry(host, src)
-	struct host *host;
-	char *src;
+process_entry(struct host *host, char *src)
 {
 	int retval;
 	char *msg;
@@ -702,7 +696,7 @@ process_entry(host, src)
 		case E_BAD_VALUE:
 			msg = "bad value";
 		default:
-			msg = "unkown error";
+			msg = "unknown error";
 			break;
 		}						/* switch */
 		report(LOG_ERR, "in entry named \"%s\", symbol \"%s\": %s",
@@ -790,18 +784,15 @@ process_entry(host, src)
  * Obviously, this need a few more comments. . . .
  */
 PRIVATE int
-eval_symbol(symbol, hp)
-	char **symbol;
-	struct host *hp;
+eval_symbol(char **symbol, struct host *hp)
 {
 	char tmpstr[MAXSTRINGLEN];
 	byte *tmphaddr;
-	struct shared_string *ss;
 	struct symbolmap *symbolptr;
 	u_int32 value;
 	int32 timeoff;
 	int i, numsymbols;
-	unsigned len;
+	unsigned int len;
 	int optype;					/* Indicates boolean, addition, or deletion */
 
 	eat_whitespace(symbol);
@@ -820,7 +811,7 @@ eval_symbol(symbol, hp)
 	if ((*symbol)[0] == 'T') {	/* generic symbol */
 		(*symbol)++;
 		value = get_u_long(symbol);
-		sprintf(current_tagname, "T%d", value);
+		snprintf(current_tagname, sizeof(current_tagname), "T%d", value);
 		eat_whitespace(symbol);
 		if ((*symbol)[0] != '=') {
 			return E_SYNTAX_ERROR;
@@ -1166,9 +1157,7 @@ eval_symbol(symbol, hp)
  */
 
 PRIVATE char *
-get_string(src, dest, length)
-	char **src, *dest;
-	unsigned *length;
+get_string(char **src, char *dest, unsigned int *length)
 {
 	int n, len, quoteflag;
 
@@ -1218,20 +1207,20 @@ get_string(src, dest, length)
  */
 
 PRIVATE struct shared_string *
-get_shared_string(src)
-	char **src;
+get_shared_string(char **src)
 {
 	char retstring[MAXSTRINGLEN];
 	struct shared_string *s;
-	unsigned length;
+	unsigned int length;
+	int len;
 
 	length = sizeof(retstring);
 	(void) get_string(src, retstring, &length);
 
-	s = (struct shared_string *) smalloc(sizeof(struct shared_string)
-										 + length);
+	len = sizeof(struct shared_string) + length;
+	s = (struct shared_string *) smalloc(len);
 	s->linkcount = 1;
-	strcpy(s->string, retstring);
+	strlcpy(s->string, retstring, len);
 
 	return s;
 }
@@ -1255,10 +1244,7 @@ get_shared_string(src)
  */
 
 PRIVATE int
-process_generic(src, dest, tagvalue)
-	char **src;
-	struct shared_bindata **dest;
-	u_int tagvalue;
+process_generic(char **src, struct shared_bindata **dest, u_int tagvalue)
 {
 	byte tmpbuf[MAXBUFLEN];
 	byte *str;
@@ -1271,7 +1257,7 @@ process_generic(src, dest, tagvalue)
 	if ((*src)[0] == '"') {		/* ASCII data */
 		newlength = sizeof(tmpbuf) - 2;	/* Set maximum allowed length */
 		(void) get_string(src, (char *) str, &newlength);
-		newlength++;			/* null terminator */
+		/* Do NOT include the terminating null. */
 	} else {					/* Numeric data */
 		newlength = 0;
 		while (newlength < sizeof(tmpbuf) - 2) {
@@ -1313,8 +1299,7 @@ process_generic(src, dest, tagvalue)
  */
 
 PRIVATE boolean
-goodname(hostname)
-	register char *hostname;
+goodname(char *hostname)
 {
 	do {
 		if (!isalpha(*hostname++)) {	/* First character must be a letter */
@@ -1346,8 +1331,7 @@ goodname(hostname)
  */
 
 PRIVATE boolean
-nullcmp(d1, d2)
-	hash_datum *d1, *d2;
+nullcmp(hash_datum *d1, hash_datum *d2)
 {
 	return FALSE;
 }
@@ -1359,8 +1343,7 @@ nullcmp(d1, d2)
  */
 
 boolean
-nmcmp(d1, d2)
-	hash_datum *d1, *d2;
+nmcmp(hash_datum *d1, hash_datum *d2)
 {
 	char *name = (char *) d1;	/* XXX - OK? */
 	struct host *hp = (struct host *) d2;
@@ -1382,8 +1365,7 @@ nmcmp(d1, d2)
  */
 
 PRIVATE boolean
-hwinscmp(d1, d2)
-	hash_datum *d1, *d2;
+hwinscmp(hash_datum *d1, hash_datum *d2)
 {
 	struct host *host1 = (struct host *) d1;
 	struct host *host2 = (struct host *) d2;
@@ -1438,9 +1420,7 @@ hwinscmp(d1, d2)
  * current host entry are inferred from the template entry.
  */
 PRIVATE void
-fill_defaults(hp, src)
-	struct host *hp;
-	char **src;
+fill_defaults(struct host *hp, char **src)
 {
 	unsigned int tlen, hashcode;
 	struct host *hp2;
@@ -1530,10 +1510,9 @@ fill_defaults(hp, src)
  */
 
 PRIVATE void
-adjust(s)
-	char **s;
+adjust(char **s)
 {
-	register char *t;
+	char *t;
 
 	t = *s;
 	while (*t && (*t != ':')) {
@@ -1555,10 +1534,9 @@ adjust(s)
  */
 
 PRIVATE void
-eat_whitespace(s)
-	char **s;
+eat_whitespace(char **s)
 {
-	register char *t;
+	char *t;
 
 	t = *s;
 	while (*t && isspace(*t)) {
@@ -1574,8 +1552,7 @@ eat_whitespace(s)
  */
 
 PRIVATE void
-makelower(s)
-	char *s;
+makelower(char *s)
 {
 	while (*s) {
 		if (isupper(*s)) {
@@ -1615,13 +1592,12 @@ makelower(s)
  */
 
 PRIVATE struct in_addr_list *
-get_addresses(src)
-	char **src;
+get_addresses(char **src)
 {
 	struct in_addr tmpaddrlist[MAXINADDRS];
 	struct in_addr *address1, *address2;
 	struct in_addr_list *result;
-	unsigned addrcount, totalsize;
+	unsigned int addrcount, totalsize;
 
 	address1 = tmpaddrlist;
 	for (addrcount = 0; addrcount < MAXINADDRS; addrcount++) {
@@ -1672,12 +1648,10 @@ get_addresses(src)
  */
 
 PRIVATE int
-prs_inetaddr(src, result)
-	char **src;
-	u_int32 *result;
+prs_inetaddr(char **src, u_int32 *result)
 {
 	char tmpstr[MAXSTRINGLEN];
-	register u_int32 value;
+	u_int32 value;
 	u_int32 parts[4], *pp;
 	int n;
 	char *s, *t;
@@ -1774,15 +1748,13 @@ prs_inetaddr(src, result)
  */
 
 PRIVATE byte *
-prs_haddr(src, htype)
-	char **src;
-	u_int htype;
+prs_haddr(char **src, u_int htype)
 {
 	static byte haddr[MAXHADDRLEN];
 	byte *hap;
 	char tmpstr[MAXSTRINGLEN];
 	u_int tmplen;
-	unsigned hal;
+	unsigned int hal;
 	char *p;
 
 	hal = haddrlength(htype);	/* Get length of this address type */
@@ -1807,7 +1779,7 @@ prs_haddr(src, htype)
 
 	hap = haddr;
 	while (hap < haddr + hal) {
-		if (*p == '.')
+		if ((*p == '.') || (*p == ':'))
 			p++;
 		if (interp_byte(&p, hap++) < 0) {
 			return NULL;
@@ -1831,9 +1803,7 @@ prs_haddr(src, htype)
  */
 
 PRIVATE int
-interp_byte(src, retbyte)
-	char **src;
-	byte *retbyte;
+interp_byte(char **src, byte *retbyte)
 {
 	int v;
 
@@ -1863,10 +1833,9 @@ interp_byte(src, retbyte)
  */
 
 PRIVATE u_int32
-get_u_long(src)
-	char **src;
+get_u_long(char **src)
 {
-	register u_int32 value, base;
+	u_int32 value, base;
 	char c;
 
 	/*
@@ -1912,8 +1881,7 @@ get_u_long(src)
  */
 
 PRIVATE void
-free_host(hmp)
-	hash_datum *hmp;
+free_host(hash_datum *hmp)
 {
 	struct host *hostptr = (struct host *) hmp;
 	if (hostptr == NULL)
@@ -1969,8 +1937,7 @@ free_host(hmp)
  */
 
 PRIVATE void
-del_iplist(iplist)
-	struct in_addr_list *iplist;
+del_iplist(struct in_addr_list *iplist)
 {
 	if (iplist) {
 		if (!(--(iplist->linkcount))) {
@@ -1988,8 +1955,7 @@ del_iplist(iplist)
  */
 
 PRIVATE void
-del_string(stringptr)
-	struct shared_string *stringptr;
+del_string(struct shared_string *stringptr)
 {
 	if (stringptr) {
 		if (!(--(stringptr->linkcount))) {
@@ -2007,8 +1973,7 @@ del_string(stringptr)
  */
 
 PRIVATE void
-del_bindata(dataptr)
-	struct shared_bindata *dataptr;
+del_bindata(struct shared_bindata *dataptr)
 {
 	if (dataptr) {
 		if (!(--(dataptr->linkcount))) {
@@ -2029,8 +1994,7 @@ del_bindata(dataptr)
  */
 
 PRIVATE char *
-smalloc(nbytes)
-	unsigned nbytes;
+smalloc(unsigned int nbytes)
 {
 	char *retvalue;
 
@@ -2054,8 +2018,7 @@ smalloc(nbytes)
  */
 
 boolean
-hwlookcmp(d1, d2)
-	hash_datum *d1, *d2;
+hwlookcmp(hash_datum *d1, hash_datum *d2)
 {
 	struct host *host1 = (struct host *) d1;
 	struct host *host2 = (struct host *) d2;
@@ -2075,8 +2038,7 @@ hwlookcmp(d1, d2)
  */
 
 boolean
-iplookcmp(d1, d2)
-	hash_datum *d1, *d2;
+iplookcmp(hash_datum *d1, hash_datum *d2)
 {
 	struct host *host1 = (struct host *) d1;
 	struct host *host2 = (struct host *) d2;

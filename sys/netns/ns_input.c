@@ -1,4 +1,6 @@
-/*	$NetBSD: ns_input.c,v 1.8 1995/07/27 20:37:27 mycroft Exp $	*/
+
+/*	$OpenBSD: ns_input.c,v 1.5 2003/09/22 21:39:40 miod Exp $	*/
+/*	$NetBSD: ns_input.c,v 1.9 1996/02/13 22:13:56 christos Exp $	*/
 
 /*
  * Copyright (c) 1984, 1985, 1986, 1987, 1993
@@ -12,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -52,11 +50,16 @@
 #include <net/raw_cb.h>
 
 #include <netns/ns.h>
-#include <netns/ns_if.h>
 #include <netns/ns_pcb.h>
+#include <netns/ns_if.h>
+#include <netns/ns_var.h>
 #include <netns/idp.h>
 #include <netns/idp_var.h>
 #include <netns/ns_error.h>
+#include <netns/sp.h>
+#include <netns/spidp.h>
+#include <netns/spp_timer.h>
+#include <netns/spp_var.h>
 
 /*
  * NS initialization.
@@ -79,6 +82,7 @@ int	nsqmaxlen = IFQ_MAXLEN;
 int	idpcksum = 1;
 long	ns_pexseq;
 
+void
 ns_init()
 {
 
@@ -101,12 +105,13 @@ ns_init()
  */
 int nsintr_getpck = 0;
 int nsintr_swtch = 0;
+void
 nsintr()
 {
-	register struct idp *idp;
-	register struct mbuf *m;
-	register struct nspcb *nsp;
-	register int i;
+	struct idp *idp;
+	struct mbuf *m;
+	struct nspcb *nsp;
+	int i;
 	int len, s, error;
 	char oddpacketp;
 
@@ -137,7 +142,7 @@ next:
 
 	idp = mtod(m, struct idp *);
 	len = ntohs(idp->idp_len);
-	if (oddpacketp = len & 1) {
+	if ((oddpacketp = len & 1) != 0) {
 		len++;		/* If this packet is of odd length,
 				   preserve garbage byte for checksum */
 	}
@@ -246,21 +251,21 @@ u_char nsctlerrmap[PRC_NCMDS] = {
 
 int idp_donosocks = 1;
 
-idp_ctlinput(cmd, arg)
+void *
+idp_ctlinput(cmd, sa, arg)
 	int cmd;
-	caddr_t arg;
+	struct sockaddr *sa;
+	void *arg;
 {
 	struct ns_addr *ns;
 	struct nspcb *nsp;
-	struct ns_errp *errp;
-	int idp_abort();
-	extern struct nspcb *idp_drop();
+	struct ns_errp *errp = NULL;
 	int type;
 
-	if (cmd < 0 || cmd > PRC_NCMDS)
-		return;
+	if (cmd < 0 || cmd >= PRC_NCMDS)
+		return NULL;
 	if (nsctlerrmap[cmd] == 0)
-		return;		/* XXX */
+		return NULL;		/* XXX */
 	type = NS_ERR_UNREACH_HOST;
 	switch (cmd) {
 		struct sockaddr_ns *sns;
@@ -268,14 +273,14 @@ idp_ctlinput(cmd, arg)
 	case PRC_IFDOWN:
 	case PRC_HOSTDEAD:
 	case PRC_HOSTUNREACH:
-		sns = (struct sockaddr_ns *)arg;
-		if (sns->sns_family != AF_NS)
-			return;
+		sns = arg;
+		if (arg == NULL || sns->sns_family != AF_NS)
+			return NULL;
 		ns = &sns->sns_addr;
 		break;
 
 	default:
-		errp = (struct ns_errp *)arg;
+		errp = arg;
 		ns = &errp->ns_err_idp.idp_dna;
 		type = errp->ns_err_num;
 		type = ntohs((u_short)type);
@@ -288,10 +293,11 @@ idp_ctlinput(cmd, arg)
 
 	case NS_ERR_NOSOCK:
 		nsp = ns_pcblookup(ns, errp->ns_err_idp.idp_sna.x_port,
-			NS_WILDCARD);
+				   NS_WILDCARD);
 		if(nsp && idp_donosocks && ! ns_nullhost(nsp->nsp_faddr))
 			(void) idp_drop(nsp, (int)nsctlerrmap[cmd]);
 	}
+	return NULL;
 }
 
 int	idpprintfs = 0;
@@ -305,11 +311,12 @@ int	idpforwarding = 1;
 struct route idp_droute;
 struct route idp_sroute;
 
+void
 idp_forward(m)
 struct mbuf *m;
 {
-	register struct idp *idp = mtod(m, struct idp *);
-	register int error, type, code;
+	struct idp *idp = mtod(m, struct idp *);
+	int error, type, code;
 	struct mbuf *mcopy = NULL;
 	int agedelta = 1;
 	int flags = NS_FORWARDING;
@@ -380,7 +387,7 @@ struct mbuf *m;
 			u_short s[2];
 			long l;
 		} x;
-		register int shift;
+		int shift;
 		x.l = 0; x.c[0] = agedelta;
 		shift = (((((int)ntohs(idp->idp_len))+1)>>1)-2) & 0xf;
 		x.l = idp->idp_sum + (x.s[0] << shift);
@@ -388,7 +395,7 @@ struct mbuf *m;
 		x.l = x.s[0] + x.s[1];
 		if (x.l==0xffff) idp->idp_sum = 0; else idp->idp_sum = x.l;
 	}
-	if ((error = ns_output(m, &idp_droute, flags)) && 
+	if ((error = ns_output(m, &idp_droute, flags)) != 0 && 
 	    (mcopy!=NULL)) {
 		idp = mtod(mcopy, struct idp *);
 		type = NS_ERR_UNSPEC_T, code = 0;
@@ -424,6 +431,7 @@ cleanup:
 		m_freem(mcopy);
 }
 
+int
 idp_do_route(src, ro)
 struct ns_addr *src;
 struct route *ro;
@@ -446,25 +454,27 @@ struct route *ro;
 	return (1);
 }
 
+void
 idp_undo_route(ro)
 register struct route *ro;
 {
 	if (ro->ro_rt) {RTFREE(ro->ro_rt);}
 }
 
+void
 ns_watch_output(m, ifp)
 struct mbuf *m;
 struct ifnet *ifp;
 {
-	register struct nspcb *nsp;
-	register struct ifaddr *ifa;
+	struct nspcb *nsp;
+	struct ifaddr *ifa;
 	/*
 	 * Give any raw listeners a crack at the packet
 	 */
 	for (nsp = nsrawpcb.nsp_next; nsp != &nsrawpcb; nsp = nsp->nsp_next) {
 		struct mbuf *m0 = m_copy(m, 0, (int)M_COPYALL);
 		if (m0) {
-			register struct idp *idp;
+			struct idp *idp;
 
 			M_PREPEND(m0, sizeof (*idp), M_DONTWAIT);
 			if (m0 == NULL)

@@ -29,11 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define ("__unix__");		\
-	builtin_define ("__OpenBSD__");		\
-	builtin_assert ("system=unix");		\
-	builtin_assert ("system=bsd");		\
-	builtin_assert ("system=OpenBSD");	\
+    	OPENBSD_OS_CPP_BUILTINS_COMMON();	\
     }						\
   while (0)
 
@@ -101,3 +97,19 @@ Boston, MA 02111-1307, USA.  */
 
 /* OpenBSD gas currently does not support quad, so do not use it.  */
 #undef ASM_QUAD
+
+#define TRANSFER_FROM_TRAMPOLINE					\
+extern void __enable_execute_stack (void *);				\
+void									\
+__enable_execute_stack (addr)						\
+     void *addr;							\
+{									\
+  long size = getpagesize ();						\
+  long mask = ~(size-1);						\
+  char *page = (char *) (((long) addr) & mask); 			\
+  char *end  = (char *) ((((long) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
+								      \
+  /* 7 is PROT_READ | PROT_WRITE | PROT_EXEC */ 			\
+  if (mprotect (page, end - page, 7) < 0)				\
+    perror ("mprotect of trampoline code");				\
+}

@@ -55,7 +55,6 @@ send_inactive_node(int fd, xfs_handle *handle)
 }
 
 
-
 int
 xfs_message_installroot(int fd,
 			struct xfs_message_installroot * message,
@@ -358,7 +357,6 @@ xfs_message_updatefid(int fd,
 		      d_thread_t *p)
 {
     int error = 0;
-    struct xfs_node *t;
 
     NNPFSDEB(XDEBMSG, ("xfs_message_updatefid (%d,%d,%d,%d) (%d,%d,%d,%d)\n",
 		       message->old_handle.a,

@@ -1,4 +1,4 @@
-# $OpenBSD: PackageLocator.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: PackageLocator.pm,v 1.8 2004/03/07 19:29:08 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -59,6 +59,63 @@ sub new
 	}
 }
 
+
+# by default, all objects may exist
+sub may_exist
+{
+	return 1;
+}
+
+# by default, we don't track opened files for this key
+
+sub opened
+{
+	undef;
+}
+
+sub close
+{
+	my ($self, $object) = @_;
+	close($object->{fh}) if defined $object->{fh};
+	$object->_close();
+}
+
+
+# open method that tracks opened files per-host.
+sub open
+{
+	my ($self, $object) = @_;
+
+	return undef unless $self->may_exist($object->{name});
+
+	# kill old files if too many
+	my $already = $self->opened();
+	if (defined $already) {
+		# gc old objects
+		if (@$already >= $self->maxcount()) {
+			@$already = grep { defined $_->{fh} } @$already;
+		}
+		while (@$already >= $self->maxcount()) {
+			my $o = shift @$already;
+			$self->close($o);
+		}
+	}
+
+	my $p = $self->pipename($object->{name});
+	
+	open(my $fh, '-|', $p) or return undef;
+	$object->{fh} = $fh;
+	if (defined $already) {
+		push @$already, $object;
+	}
+	return $fh;
+}
+
+# by default, we don't know how to list packages there.
+sub simplelist
+{
+}
+
 package OpenBSD::PackageLocation::SCP;
 our @ISA=qw(OpenBSD::PackageLocation OpenBSD::PackageLocation::FTPorSCP);
 
@@ -70,13 +127,12 @@ sub _new
 	bless {	host => $`, path => "/$'" }, $class;
 }
 
-sub open
+sub pipename
 {
 	my ($self, $name) = @_;
 	my $host = $self->{host};
 	my $path = $self->{path};
-	open(my $fh, '-|', "scp $host:$path$name /dev/stdout 2> /dev/null|gzip -d -c -q - 2> /dev/null") or return undef;
-	return $fh;
+	return "scp $host:$path$name /dev/stdout 2> /dev/null|gzip -d -c -q - 2> /dev/null";
 }
 
 sub list
@@ -90,26 +146,50 @@ sub list
 package OpenBSD::PackageLocation::Local;
 our @ISA=qw(OpenBSD::PackageLocation);
 
-sub open
+sub pipename
 {
 	my ($self, $name) = @_;
 	my $fullname = $self->{location}.$name;
-	open(my $fh, '-|', "gzip -d -c -q 2>/dev/null $fullname") or return undef;
-	return $fh;
+	return "gzip -d -c -q -f 2>/dev/null $fullname";
+}
+
+sub may_exist
+{
+	my ($self, $name) = @_;
+	return -r $self->{location}.$name;
 }
 
 sub list
 {
 	my $self = shift;
 	my @l = ();
-	opendir(my $dir, $self->{location}) or return undef;
+	my $dname = $self->{location};
+	opendir(my $dir, $dname) or return undef;
 	while (my $e = readdir $dir) {
-		next unless -f "$dir/$e";
-		next unless $e = ~ m/\.tgz$/;
+		next unless -f "$dname/$e";
+		next unless $e =~ m/\.tgz$/;
 		push(@l, $`);
 	}
 	close($dir);
 	return @l;
+}
+
+sub simplelist
+{
+	return $_[0]->list();
+}
+
+package OpenBSD::PackageLocation::Local::Pipe;
+our @ISA=qw(OpenBSD::PackageLocation::Local);
+
+sub may_exist
+{
+	return 1;
+}
+
+sub pipename
+{
+	return "gzip -d -c -q -f 2>/dev/null -";
 }
 
 package OpenBSD::PackageLocation::FTPorSCP;
@@ -131,12 +211,39 @@ sub _list
 }
 
 package OpenBSD::PackageLocation::HTTPorFTP;
-sub open
+
+my %distant = ();
+
+sub maxcount
+{
+	return 1;
+}
+
+sub opened
+{
+	my $self = $_[0];
+	my $k = $self->{key};
+	if (!defined $distant{$k}) {
+		$distant{$k} = [];
+	}
+	return $distant{$k};
+}
+
+sub _new
+{
+	my ($class, $location) = @_;
+	my $distant_host;
+	if ($location =~ m/^(http|ftp)\:\/\/(.*?)\//i) {
+	    $distant_host = $&;
+	}
+	bless { location => $location, key => $distant_host }, $class;
+}
+
+sub pipename
 {
 	my ($self, $name) = @_;
 	my $fullname = $self->{location}.$name;
-	open(my $fh, '-|', "ftp -o - $fullname 2>/dev/null|gzip -d -c -q - 2>/dev/null") or return undef;
-	return $fh;
+	return "ftp -o - $fullname 2>/dev/null|gzip -d -c -q - 2>/dev/null";
 }
 
 package OpenBSD::PackageLocation::HTTP;
@@ -190,31 +297,53 @@ if (defined $ENV{PKG_PATH}) {
 			$i.= ":".(shift @tentative);
 		}
 		$i =~ m|/$| or $i.='/';
-		unshift @pkgpath, OpenBSD::PackageLocation->new($i);
+		push @pkgpath, OpenBSD::PackageLocation->new($i);
 	}
+} else {
+	@pkgpath=(OpenBSD::PackageLocation->new("./"));
 }
 
 sub find
 {
 	my $class = shift;
 	local $_ = shift;
+
+	if ($_ eq '-') {
+		my $location = OpenBSD::PackageLocation::Local::Pipe->_new('./');
+		my $package = $class->openAbsolute($location, '');
+		return $package;
+	}
 	$_.=".tgz" unless m/\.tgz$/;
 	if (exists $packages{$_}) {
 		return $packages{$_};
 	}
 	my $package;
 	if (m/\//) {
-		my $location = OpenBSD::PackageLocation->new($_);
-		$package = openAbsolute($location, '');
+		use File::Basename;
+
+		my ($pkgname, $path) = fileparse($_);
+		my $location = OpenBSD::PackageLocation->new($path);
+		$package = $class->openAbsolute($location, $pkgname);
+		if (defined $package) {
+			push(@pkgpath, $location);
+		}
 	} else {
 		for my $p (@pkgpath) {
-			$package = openAbsolute($p, $_);
+			$package = $class->openAbsolute($p, $_);
 			last if defined $package;
 		}
 	}
-	return $package unless defined $package;
-	$packages{$_} = $package;
-	bless $package, $class;
+	$packages{$_} = $package if defined($package);
+	return $package;
+}
+
+sub available
+{
+	my @l = ();
+	foreach my $loc (@pkgpath) {
+		push(@l, $loc->simplelist());
+	}
+	return @l;
 }
 
 sub info
@@ -226,38 +355,95 @@ sub info
 sub close
 {
 	my $self = shift;
-	close($self->{fh});
-	$self->{fh} = undef;
-	$self->{archive} = undef;
+	$self->{location}->close($self);
 }
 
-sub openAbsolute
+sub _close
 {
-	my ($location, $name) = @_;
-	my $fh = $location->open($name);
+	my $self = shift;
+	$self->{fh} = undef;
+	$self->{_archive} = undef;
+}
+
+sub _open
+{
+	my $self = shift;
+
+	my $fh = $self->{location}->open($self);
 	if (!defined $fh) {
 		return undef;
 	}
 	my $archive = new OpenBSD::Ustar $fh;
-	my $dir = OpenBSD::Temp::dir();
+	$self->{_archive} = $archive;
+}
 
-	my $self = { name => $_, fh => $fh, archive => $archive, dir => $dir };
+sub openAbsolute
+{
+	my ($class, $location, $name) = @_;
+	my $self = { location => $location, name => $name};
+	bless $self, $class;
+
+	if (!$self->_open()) {
+		return undef;
+	}
+	my $dir = OpenBSD::Temp::dir();
+	$self->{dir} = $dir;
+
 	# check that Open worked
-	while (my $e = $archive->next()) {
+	while (my $e = $self->next()) {
 		if ($e->isFile() && is_info_name($e->{name})) {
 			$e->{name}=$dir.$e->{name};
-			$e->create();
+			eval { $e->create(); }
 		} else {
-			$archive->unput();
+			$self->unput();
 			last;
 		}
 	}
 	if (-f $dir.CONTENTS) {
+#		$self->close();
 		return $self;
 	} else {
-		CORE::close($fh);
+		$self->close();
 		return undef;
 	}
+}
+
+sub reopen
+{
+	my $self = shift;
+	if (!$self->_open()) {
+		return undef;
+	}
+	while (my $e = $self->{_archive}->next()) {
+		if ($e->{name} eq $self->{_current}->{name}) {
+			$self->{_current} = $e;
+			return $self;
+		}
+	}
+	return undef;
+}
+
+# proxy for archive operations
+sub next
+{
+	my $self = shift;
+
+	if (!defined $self->{fh}) {
+		if (!$self->reopen()) {
+			return undef;
+		}
+	}
+	if (!$self->{_unput}) {
+		$self->{_current} = $self->{_archive}->next();
+	}
+	$self->{_unput} = 0;
+	return $self->{_current};
+}
+
+sub unput
+{
+	my $self = shift;
+	$self->{_unput} = 1;
 }
 
 # allows the autoloader to work correctly

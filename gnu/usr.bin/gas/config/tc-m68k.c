@@ -1,3 +1,5 @@
+/*	$OpenBSD: tc-m68k.c,v 1.4 1996/06/17 00:24:29 deraadt Exp $	*/
+
 /* tc-m68k.c  All the m68020 specific stuff in one convenient, huge,
    slow to compile, easy to find file.
    
@@ -27,6 +29,8 @@
 
 /* note that this file includes real declarations and thus can only be included by one source file per executable. */
 #include "opcode/m68k.h"
+#include "opcode/m68k-aliases.h"
+
 #ifdef TE_SUN
 /* This variable contains the value to write out at the beginning of
    the a.out file.  The 2<<16 means that this is a 68020 file instead
@@ -64,7 +68,7 @@ const char FLT_CHARS[] = "rRsSfFdDxXeEpP";
    but nothing is ideal around here.
    */
 
-int md_reloc_size = 8;		/* Size of relocation record */
+const int md_reloc_size = 8;		/* Size of relocation record */
 
 /* Its an arbitrary name:  This means I don't approve of it */
 /* See flames below */
@@ -1302,7 +1306,7 @@ char *instring;
 #ifdef	PIC
 				case ' ':
 					/* this operand is just here to indicate a jump-table branch */
-					if (!flagseen['k'])
+					if (!picmode)
 						losing++;
 					break;
 #endif	/* PIC */
@@ -1663,7 +1667,7 @@ char *instring;
 
 #ifdef	PIC
 			/* Use GLOB_DAT for operand references in PIC mode */
-			if (flagseen['k'])
+			if (picmode)
 			    reloc_type = RELOC_GLOB_DAT;
 			else
 #endif	/* PIC */
@@ -1687,7 +1691,7 @@ char *instring;
 				       __GLOBAL_OFFSET_TABLE_ is turned into a pc-relative
 				       reference to __GLOBAL_OFFSET_TABLE_ - 6,
 				       for the sake of Sun compatibility. */
-				    if (s[1] == 'l' && flagseen['k'] && gots(opP->con1)) {
+				    if (s[1] == 'l' && picmode && gots(opP->con1)) {
 					offs(opP->con1) -= 6;
 					add_fix(s[1], opP->con1, 1, NO_RELOC);
 				    } else
@@ -2119,7 +2123,7 @@ char *instring;
 #ifdef	PIC
 				/* If we have the optional kludgey 2nd operand,
 				   make this go via the jump table. */
-				if (flagseen['k'] && s[2] == ' ') {
+				if (picmode && s[2] == ' ') {
 				    the_ins.opcode[the_ins.numo-1] |= 0xFF;
 				    add_fix('l', opP->con1, 1, RELOC_JMP_TBL);
 				    addword(0);
@@ -2925,6 +2929,16 @@ void
 		if (retval && *retval)
 		    as_fatal("Internal Error:  Can't hash %s: %s",ins->name,retval);
 	}
+	for (i = 0; i < m68k_numaliases; i++) {
+	    const char *name = m68k_opcode_aliases[i].primary;
+	    const char *alias = m68k_opcode_aliases[i].alias;
+	    void *val = hash_find(op_hash, name);
+	    if (!val)
+	      as_fatal("Internal Error: Can't find %s in hash table", name);
+	    retval = hash_insert(op_hash, alias, val);
+	    if (retval && *retval)
+	      as_fatal("Internal Error: Can't hash %s: %s", alias, retval);
+	}
 	
 	for (i = 0; i < sizeof(mklower_table) ; i++)
 	    mklower_table[i] = (isupper(c = (char) i)) ? tolower(c) : c;
@@ -3312,7 +3326,7 @@ segT segment;
 				(symbolS *) 0, fragP->fr_offset, 1,
 #ifdef	PIC
 				/* With -k, make all external branches go via the jump table. */
-				(flagseen['k']? RELOC_JMP_TBL: NO_RELOC), NULL
+				(picmode ? RELOC_JMP_TBL : NO_RELOC), NULL
 #else
 				NO_RELOC
 #endif
@@ -3515,7 +3529,7 @@ relax_addressT segment_address_in_file;
 	case NO_RELOC:
 	    break;
 	case RELOC_32:
-	    if (flagseen['k'] && S_IS_EXTERNAL(fixP->fx_addsy)) {
+	    if (picmode && S_IS_EXTERNAL(fixP->fx_addsy)) {
 		r_symbolnum = fixP->fx_addsy->sy_number;
 		r_flags |= 0x10;	/* set extern bit */
 	    }
@@ -3882,6 +3896,9 @@ char ***vecP;
 			
 		} else if (!strcmp(*argP, "68040")) { 
 			current_architecture |= m68040 | MAYBE_FLOAT_TOO;
+
+		} else if (!strcmp(*argP, "68060")) { 
+			current_architecture |= m68040 | MAYBE_FLOAT_TOO;
 			
 #ifndef NO_68881
 		} else if (!strcmp(*argP, "68881")) {
@@ -3914,6 +3931,7 @@ char ***vecP;
 		
 #ifdef	PIC
 	case 'k':
+	case 'K':
 		/* Predefine GOT symbol */
 		GOT_symbol = symbol_find_or_make("__GLOBAL_OFFSET_TABLE_");
 		break;

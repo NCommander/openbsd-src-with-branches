@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,14 +9,14 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: config.c,v 1.19 2001/09/04 22:41:27 ca Exp $")
+SM_RCSID("@(#)$Sendmail: config.c,v 1.27.2.1 2003/03/06 02:16:24 ca Exp $")
 
 #include <stdlib.h>
 #include <sm/heap.h>
 #include <sm/string.h>
 #include <sm/conf.h>
 
-/*
+/*
 **  PUTENV -- emulation of putenv() in terms of setenv()
 **
 **	Not needed on Posix-compliant systems.
@@ -126,7 +126,7 @@ putenv(env)
 
 # endif /* NEEDPUTENV == 2 */
 #endif /* NEEDPUTENV */
-/*
+/*
 **  UNSETENV -- remove a variable from the environment
 **
 **	Not needed on newer systems.
@@ -176,6 +176,9 @@ char *SmCompileOptions[] =
 #if SM_CONF_GETOPT
 	"SM_CONF_GETOPT",
 #endif /* SM_CONF_GETOPT */
+#if SM_CONF_LDAP_MEMFREE
+	"SM_CONF_LDAP_MEMFREE",
+#endif /* SM_CONF_LDAP_MEMFREE */
 #if SM_CONF_LONGLONG
 	"SM_CONF_LONGLONG",
 #endif /* SM_CONF_LONGLONG */
@@ -194,6 +197,9 @@ char *SmCompileOptions[] =
 #if SM_CONF_SETITIMER
 	"SM_CONF_SETITIMER",
 #endif /* SM_CONF_SETITIMER */
+#if SM_CONF_SIGSETJMP
+	"SM_CONF_SIGSETJMP",
+#endif /* SM_CONF_SIGSETJMP */
 #if SM_CONF_SHM
 	"SM_CONF_SHM",
 #endif /* SM_CONF_SHM */

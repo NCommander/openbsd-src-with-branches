@@ -1,4 +1,5 @@
-/*	$NetBSD: sum2.c,v 1.4 1995/03/26 05:15:25 glass Exp $	*/
+/*	$OpenBSD: sum2.c,v 1.3 2001/11/19 19:02:13 mpech Exp $	*/
+/*	$NetBSD: sum2.c,v 1.5 1996/02/27 21:17:28 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,22 +33,25 @@
 #ifndef lint
 #if 0
 static char sccsid[] = "@(#)sum2.c	8.1 (Berkeley) 6/6/93";
+static char rcsid[] = "$NetBSD: sum2.c,v 1.5 1996/02/27 21:17:28 cgd Exp $";
 #else
-static char rcsid[] = "$NetBSD: sum2.c,v 1.4 1995/03/26 05:15:25 glass Exp $";
+static char rcsid[] = "$OpenBSD: sum2.c,v 1.3 2001/11/19 19:02:13 mpech Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "extern.h"
+
 int
 csum2(fd, cval, clen)
-	register int fd;
-	u_long *cval, *clen;
+	int fd;
+	u_int32_t *cval, *clen;
 {
-	register u_long crc, total;
-	register int nr;
-	register u_char *p;
+	u_int32_t crc, total;
+	int nr;
+	u_char *p;
 	u_char buf[8192];
 
 	/*

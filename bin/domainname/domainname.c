@@ -1,3 +1,4 @@
+/*	$OpenBSD: domainname.c,v 1.6 2002/07/04 04:26:39 deraadt Exp $	*/
 /*	$NetBSD: domainname.c,v 1.7 1995/03/21 09:04:22 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)hostname.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: domainname.c,v 1.7 1995/03/21 09:04:22 cgd Exp $";
+static char rcsid[] = "$OpenBSD: domainname.c,v 1.6 2002/07/04 04:26:39 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,19 +52,18 @@ static char rcsid[] = "$NetBSD: domainname.c,v 1.7 1995/03/21 09:04:22 cgd Exp $
 #include <string.h>
 #include <unistd.h>
 
-void usage __P((void));
+extern	char *__progname;
+
+void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch;
 	char domainname[MAXHOSTNAMELEN];
 
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch (ch) {
-		case '?':
 		default:
 			usage();
 		}
@@ -89,9 +85,8 @@ main(argc, argv)
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: domainname [name-of-domain]\n");
+	(void)fprintf(stderr, "usage: %s [name-of-domain]\n", __progname);
 	exit(1);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999-2002  Internet Software Consortium.
+ * Copyright (C) 1999-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: server.c,v 1.339.2.8 2002/07/10 04:27:23 marka Exp $ */
+/* $ISC: server.c,v 1.339.2.18 2003/09/19 13:40:42 marka Exp $ */
 
 #include <config.h>
 
@@ -26,6 +26,7 @@
 #include <isc/dir.h>
 #include <isc/entropy.h>
 #include <isc/file.h>
+#include <isc/hash.h>
 #include <isc/lex.h>
 #include <isc/print.h>
 #include <isc/resource.h>
@@ -163,6 +164,7 @@ configure_view_acl(cfg_obj_t *vconfig, cfg_obj_t *config,
 	return (result);
 }
 
+#ifdef ISC_RFC2535
 static isc_result_t
 configure_view_dnsseckey(cfg_obj_t *vconfig, cfg_obj_t *key,
 			 dns_keytable_t *keytable, isc_mem_t *mctx)
@@ -258,6 +260,7 @@ configure_view_dnsseckey(cfg_obj_t *vconfig, cfg_obj_t *key,
 
 	return (result);
 }
+#endif
 
 /*
  * Configure DNSSEC keys for a view.  Currently used only for
@@ -271,15 +274,21 @@ configure_view_dnsseckeys(cfg_obj_t *vconfig, cfg_obj_t *config,
 			  isc_mem_t *mctx, dns_keytable_t **target)
 {
 	isc_result_t result;
+#ifdef ISC_RFC2535
 	cfg_obj_t *keys = NULL;
 	cfg_obj_t *voptions = NULL;
 	cfg_listelt_t *element, *element2;
 	cfg_obj_t *keylist;
 	cfg_obj_t *key;
+#endif
 	dns_keytable_t *keytable = NULL;
 
 	CHECK(dns_keytable_create(mctx, &keytable));
 
+#ifndef ISC_RFC2535
+	UNUSED(vconfig);
+	UNUSED(config);
+#else
 	if (vconfig != NULL)
 		voptions = cfg_tuple_get(vconfig, "options");
 
@@ -303,7 +312,7 @@ configure_view_dnsseckeys(cfg_obj_t *vconfig, cfg_obj_t *config,
 						       keytable, mctx));
 		}
 	}
-
+#endif
 	dns_keytable_detach(target);
 	*target = keytable; /* Transfer ownership. */
 	keytable = NULL;
@@ -390,9 +399,24 @@ get_view_querysource_dispatch(cfg_obj_t **maps,
 				     1000, 32768, 16411, 16433,
 				     attrs, attrmask, &disp);
 	if (result != ISC_R_SUCCESS) {
+		isc_sockaddr_t any;
+		char buf[ISC_SOCKADDR_FORMATSIZE];
+
+		switch (af) {
+		case AF_INET:
+			isc_sockaddr_any(&any);
+			break;
+		case AF_INET6:
+			isc_sockaddr_any6(&any);
+			break;
+		}
+		if (isc_sockaddr_equal(&sa, &any))
+			return (ISC_R_SUCCESS);
+		isc_sockaddr_format(&sa, buf, sizeof(buf));
 		isc_log_write(ns_g_lctx, NS_LOGCATEGORY_GENERAL,
 			      NS_LOGMODULE_SERVER, ISC_LOG_ERROR,
-			      "could not get query source dispatcher");
+			      "could not get query source dispatcher (%s)",
+			      buf);
 		return (result);
 	}
 
@@ -842,6 +866,35 @@ configure_view(dns_view_t *view, cfg_obj_t *config, cfg_obj_t *vconfig,
 	if (view->maxncachettl > 7 * 24 * 3600)
 		view->maxncachettl = 7 * 24 * 3600;
 
+	obj = NULL;
+	result = ns_config_get(maps, "root-delegation-only", &obj);
+	if (result == ISC_R_SUCCESS) {
+		dns_view_setrootdelonly(view, ISC_TRUE);
+		if (!cfg_obj_isvoid(obj)) {
+			dns_fixedname_t fixed;
+			dns_name_t *name;
+			isc_buffer_t b;
+			char *str;
+			cfg_obj_t *exclude;
+
+			dns_fixedname_init(&fixed);
+			name = dns_fixedname_name(&fixed);
+			for (element = cfg_list_first(obj);
+			     element != NULL;
+			     element = cfg_list_next(element)) {
+				exclude = cfg_listelt_value(element);
+				str = cfg_obj_asstring(exclude);
+				isc_buffer_init(&b, str, strlen(str));
+				isc_buffer_add(&b, strlen(str));
+				CHECK(dns_name_fromtext(name, &b, dns_rootname,
+							ISC_FALSE, NULL));
+				CHECK(dns_view_excludedelegationonly(view,
+								     name));
+			}
+		}
+	} else
+		dns_view_setrootdelonly(view, ISC_FALSE);
+
 	result = ISC_R_SUCCESS;
 
  cleanup:
@@ -913,7 +966,7 @@ create_version_zone(cfg_obj_t **maps, dns_zonemgr_t *zmgr, dns_view_t *view) {
 	INSIST(result == ISC_R_SUCCESS);
 	versiontext = cfg_obj_asstring(obj);
 	len = strlen(versiontext);
-	if (len > 255)
+	if (len > 255U)
 		len = 255; /* Silently truncate. */
 	buf[0] = len;
 	memcpy(buf + 1, versiontext, len);
@@ -949,7 +1002,7 @@ create_version_zone(cfg_obj_t **maps, dns_zonemgr_t *zmgr, dns_view_t *view) {
 	CHECK(dns_zone_replacedb(zone, db, ISC_FALSE));
 
 	CHECK(dns_view_addzone(view, zone));
-
+			
 	result = ISC_R_SUCCESS;
 
  cleanup:
@@ -1240,7 +1293,9 @@ configure_zone(cfg_obj_t *config, cfg_obj_t *zconfig, cfg_obj_t *vconfig,
 	cfg_obj_t *typeobj = NULL;
 	cfg_obj_t *forwarders = NULL;
 	cfg_obj_t *forwardtype = NULL;
+	cfg_obj_t *only = NULL;
 	isc_result_t result;
+	isc_result_t tresult;
 	isc_buffer_t buffer;
 	dns_fixedname_t fixorigin;
 	dns_name_t *origin;
@@ -1306,14 +1361,25 @@ configure_zone(cfg_obj_t *config, cfg_obj_t *zconfig, cfg_obj_t *vconfig,
 		}
 		if (dns_name_equal(origin, dns_rootname)) {
 			char *hintsfile = cfg_obj_asstring(fileobj);
+
 			result = configure_hints(view, hintsfile);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				isc_log_write(ns_g_lctx, NS_LOGCATEGORY_GENERAL,
 					      NS_LOGMODULE_SERVER,
 					      ISC_LOG_ERROR,
 					      "could not configure root hints "
 					      "from '%s': %s", hintsfile,
 					      isc_result_totext(result));
+				goto cleanup;
+			}
+			/*
+			 * Hint zones may also refer to delegation only points.
+			 */
+			only = NULL;
+			tresult = cfg_map_get(zoptions, "delegation-only",
+					      &only);
+			if (tresult == ISC_R_SUCCESS && cfg_obj_asboolean(only))
+				CHECK(dns_view_adddelegationonly(view, origin));
 		} else {
 			isc_log_write(ns_g_lctx, NS_LOGCATEGORY_GENERAL,
 				      NS_LOGMODULE_SERVER, ISC_LOG_WARNING,
@@ -1337,6 +1403,14 @@ configure_zone(cfg_obj_t *config, cfg_obj_t *zconfig, cfg_obj_t *vconfig,
 		(void)cfg_map_get(zoptions, "forwarders", &forwarders);
 		result = configure_forward(config, view, origin, forwarders,
 					   forwardtype);
+		goto cleanup;
+	}
+
+	/*
+	 * "delegation-only zones" aren't zones either.
+	 */
+	if (strcasecmp(ztypestr, "delegation-only") == 0) {
+		result = dns_view_adddelegationonly(view, origin);
 		goto cleanup;
 	}
 
@@ -1405,6 +1479,16 @@ configure_zone(cfg_obj_t *config, cfg_obj_t *zconfig, cfg_obj_t *vconfig,
 		cfg_map_get(zoptions, "forward", &forwardtype);
 		CHECK(configure_forward(config, view, origin, forwarders,
 					forwardtype));
+	}
+
+	/*
+	 * Stub and forward zones may also refer to delegation only points.
+	 */
+	only = NULL;
+	if (cfg_map_get(zoptions, "delegation-only", &only) == ISC_R_SUCCESS)
+	{
+		if (cfg_obj_asboolean(only))
+			CHECK(dns_view_adddelegationonly(view, origin));
 	}
 
 	/*
@@ -1800,7 +1884,7 @@ load_configuration(const char *filename, ns_server_t *server,
 			 * Not specified, use default.
 			 */
 			CHECK(ns_listenlist_default(ns_g_mctx, listen_port,
-						    ISC_FALSE, &listenon));
+						    ISC_TRUE, &listenon));
 		}
 		if (listenon != NULL) {
 			ns_interfacemgr_setlistenon6(server->interfacemgr,
@@ -1956,7 +2040,7 @@ load_configuration(const char *filename, ns_server_t *server,
 			const char *randomdev = cfg_obj_asstring(obj);
 			result = isc_entropy_createfilesource(ns_g_entropy,
 							      randomdev);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS && ns_g_chrootdir == NULL) {
 				isc_log_write(ns_g_lctx,
 					      NS_LOGCATEGORY_GENERAL,
 					      NS_LOGMODULE_SERVER,
@@ -1965,14 +2049,32 @@ load_configuration(const char *filename, ns_server_t *server,
 					      "%s: %s",
 					      randomdev,
 					      isc_result_totext(result));
+			}
+#ifdef PATH_RANDOMDEV
+			if (result != ISC_R_SUCCESS && ns_g_chrootdir != NULL) {
+				isc_log_write(ns_g_lctx,
+					      NS_LOGCATEGORY_GENERAL,
+					      NS_LOGMODULE_SERVER,
+					      ISC_LOG_INFO,
+					      "using pre-chroot entropy source "
+					      "%s",
+					      PATH_RANDOMDEV);
+		  		isc_entropy_detach(&ns_g_entropy);
+				isc_entropy_attach(ns_g_fallbackentropy,
+						   &ns_g_entropy);
+
+			}
+#endif
 		}
 	}
 
 	/*
-	 * Relinquish root privileges.
+	 * Relinquish root privileges. Not used due to privsep
 	 */
+#if 0
 	if (first_time)
 		ns_os_changeuser();
+#endif
 
 	/*
 	 * Configure the logging system.
@@ -2049,13 +2151,17 @@ load_configuration(const char *filename, ns_server_t *server,
 		}
 	}
 
-	obj = NULL;
-	if (ns_config_get(maps, "pid-file", &obj) == ISC_R_SUCCESS)
-		ns_os_writepidfile(cfg_obj_asstring(obj), first_time);
-	else if (ns_g_lwresdonly)
-		ns_os_writepidfile(lwresd_g_defaultpidfile, first_time);
-	else
-		ns_os_writepidfile(ns_g_defaultpidfile, first_time);
+	if (ns_g_pidfile != NULL) {
+		ns_os_writepidfile(ns_g_pidfile, first_time);
+	} else {
+		obj = NULL;
+		if (ns_config_get(maps, "pid-file", &obj) == ISC_R_SUCCESS)
+			ns_os_writepidfile(cfg_obj_asstring(obj), first_time);
+		else if (ns_g_lwresdonly)
+			ns_os_writepidfile(lwresd_g_defaultpidfile, first_time);
+		else
+			ns_os_writepidfile(ns_g_defaultpidfile, first_time);
+	}
 
 	obj = NULL;
 	result = ns_config_get(maps, "statistics-file", &obj);
@@ -2154,6 +2260,12 @@ load_new_zones(ns_server_t *server, isc_boolean_t stop) {
 	{
 		CHECK(dns_view_loadnew(view, stop));
 	}
+	/*
+	 * Force zone maintenance.  Do this after loading
+	 * so that we know when we need to force AXFR of
+	 * slave zones whose master files are missing.
+	 */
+	CHECK(dns_zonemgr_forcemaint(server->zonemgr));
  cleanup:
 	isc_task_endexclusive(server->task);	
 	return (result);
@@ -2199,6 +2311,8 @@ run_server(isc_task_t *task, isc_event_t *event) {
 	else
 		CHECKFATAL(load_configuration(ns_g_conffile, server, ISC_TRUE),
 			   "loading configuration");
+
+	isc_hash_init();
 
 	CHECKFATAL(load_zones(server, ISC_FALSE),
 		   "loading zones");
@@ -2737,7 +2851,7 @@ ns_server_dumpstats(ns_server_t *server) {
 	fprintf(fp, "+++ Statistics Dump +++ (%lu)\n", (unsigned long)now);
 	
 	for (i = 0; i < ncounters; i++)
-		fprintf(fp, "%s %" ISC_PRINT_QUADFORMAT "d\n",
+		fprintf(fp, "%s %" ISC_PRINT_QUADFORMAT "u\n",
 			dns_statscounter_names[i],
 			server->querystats[i]);
 	
@@ -2758,7 +2872,7 @@ ns_server_dumpstats(ns_server_t *server) {
 			viewname = view->name;
 			for (i = 0; i < ncounters; i++) {
 				fprintf(fp, "%s %" ISC_PRINT_QUADFORMAT
-					"d %s",
+					"u %s",
 					dns_statscounter_names[i],
 					zonestats[i],
 					zonename);
@@ -2883,11 +2997,11 @@ ns_server_status(ns_server_t *server, isc_buffer_t *text) {
 					  DNS_ZONESTATE_SOAQUERY);
 	n = snprintf((char *)isc_buffer_used(text),
 		     isc_buffer_availablelength(text),
-		     "number of zones: %d\n"
+		     "number of zones: %u\n"
 		     "debug level: %d\n"
-		     "xfers running: %d\n"
-		     "xfers deferred: %d\n"
-		     "soa queries in progress: %d\n"
+		     "xfers running: %u\n"
+		     "xfers deferred: %u\n"
+		     "soa queries in progress: %u\n"
 		     "query logging is %s\n"
 		     "server is up and running",
 		     zonecount, ns_g_debuglevel, xferrunning, xferdeferred,

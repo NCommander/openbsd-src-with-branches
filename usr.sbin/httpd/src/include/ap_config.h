@@ -1,3 +1,5 @@
+/*	$OpenBSD: ap_config.h,v 1.16 2003/04/15 13:43:44 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *

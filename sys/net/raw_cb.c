@@ -1,4 +1,5 @@
-/*	$NetBSD: raw_cb.c,v 1.8 1995/06/12 00:46:53 mycroft Exp $	*/
+/*	$OpenBSD: raw_cb.c,v 1.4 2003/06/02 23:28:12 millert Exp $	*/
+/*	$NetBSD: raw_cb.c,v 1.9 1996/02/13 22:00:39 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -60,6 +57,7 @@
 
 u_long	raw_sendspace = RAWSNDQ;
 u_long	raw_recvspace = RAWRCVQ;
+struct rawcbhead rawcb;
 
 /*
  * Allocate a control block and a nominal amount
@@ -67,10 +65,10 @@ u_long	raw_recvspace = RAWRCVQ;
  */
 int
 raw_attach(so, proto)
-	register struct socket *so;
+	struct socket *so;
 	int proto;
 {
-	register struct rawcb *rp = sotorawcb(so);
+	struct rawcb *rp = sotorawcb(so);
 	int error;
 
 	/*
@@ -80,7 +78,7 @@ raw_attach(so, proto)
 	 */
 	if (rp == 0)
 		return (ENOBUFS);
-	if (error = soreserve(so, raw_sendspace, raw_recvspace))
+	if ((error = soreserve(so, raw_sendspace, raw_recvspace)) != 0)
 		return (error);
 	rp->rcb_socket = so;
 	rp->rcb_proto.sp_family = so->so_proto->pr_domain->dom_family;
@@ -95,7 +93,7 @@ raw_attach(so, proto)
  */
 void
 raw_detach(rp)
-	register struct rawcb *rp;
+	struct rawcb *rp;
 {
 	struct socket *so = rp->rcb_socket;
 
@@ -130,11 +128,11 @@ raw_disconnect(rp)
 #ifdef notdef
 int
 raw_bind(so, nam)
-	register struct socket *so;
+	struct socket *so;
 	struct mbuf *nam;
 {
 	struct sockaddr *addr = mtod(nam, struct sockaddr *);
-	register struct rawcb *rp;
+	struct rawcb *rp;
 
 	if (ifnet == 0)
 		return (EADDRNOTAVAIL);

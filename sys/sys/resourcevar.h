@@ -1,4 +1,5 @@
-/*	$NetBSD: resourcevar.h,v 1.11 1995/03/26 20:24:37 jtc Exp $	*/
+/*	$OpenBSD: resourcevar.h,v 1.6 2002/06/07 21:20:02 art Exp $	*/
+/*	$NetBSD: resourcevar.h,v 1.12 1995/11/22 23:01:53 cgd Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -53,11 +50,10 @@ struct pstats {
 
 	struct uprof {			/* profile arguments */
 		caddr_t	pr_base;	/* buffer base */
-		u_long	pr_size;	/* buffer size */
+		size_t  pr_size;	/* buffer size */
 		u_long	pr_off;		/* pc offset */
-		u_long	pr_scale;	/* pc scaling */
+		u_int   pr_scale;	/* pc scaling */
 		u_long	pr_addr;	/* temp storage for addr until AST */
-		u_long	pr_ticks;	/* temp storage for ticks until AST */
 	} p_prof;
 #define	pstat_endcopy	p_start
 	struct	timeval p_start;	/* starting time */
@@ -79,17 +75,16 @@ struct plimit {
 };
 
 /* add user profiling from AST */
-#define	ADDUPROF(p)							\
-	addupc_task(p,							\
-	    (p)->p_stats->p_prof.pr_addr, (p)->p_stats->p_prof.pr_ticks)
+#define	ADDUPROF(p) addupc_task((p), (p)->p_stats->p_prof.pr_addr, 1)
 
 #ifdef _KERNEL
-void	 addupc_intr __P((struct proc *p, u_long pc, u_int ticks));
-void	 addupc_task __P((struct proc *p, u_long pc, u_int ticks));
-void	 calcru __P((struct proc *p, struct timeval *up, struct timeval *sp,
-	    struct timeval *ip));
-struct plimit
-	*limcopy __P((struct plimit *lim));
-void	 ruadd __P((struct rusage *ru, struct rusage *ru2));
+void	 addupc_intr(struct proc *p, u_long pc);
+void	 addupc_task(struct proc *p, u_long pc, u_int ticks);
+void	 calcru(struct proc *p, struct timeval *up, struct timeval *sp,
+	    struct timeval *ip);
+struct plimit *limcopy(struct plimit *lim);
+void	limfree(struct plimit *);
+
+void	 ruadd(struct rusage *ru, struct rusage *ru2);
 #endif
 #endif	/* !_SYS_RESOURCEVAR_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pl_7.c,v 1.7 2002/12/09 11:21:32 deraadt Exp $	*/
 /*	$NetBSD: pl_7.c,v 1.6 1995/04/22 10:37:17 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,12 +34,15 @@
 #if 0
 static char sccsid[] = "@(#)pl_7.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: pl_7.c,v 1.6 1995/04/22 10:37:17 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pl_7.c,v 1.7 2002/12/09 11:21:32 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/ttydefaults.h>
 #include "player.h"
+#include <stdarg.h>
+#include <unistd.h>
+#include <err.h>
 
 
 /*
@@ -50,12 +50,31 @@ static char rcsid[] = "$NetBSD: pl_7.c,v 1.6 1995/04/22 10:37:17 cgd Exp $";
  */
 
 static char sc_hasprompt;
-static char *sc_prompt;
-static char *sc_buf;
+static const char *sc_prompt;
+static const char *sc_buf;
 static int sc_line;
 
+WINDOW *view_w;
+WINDOW *slot_w;
+WINDOW *scroll_w;
+WINDOW *stat_w;
+WINDOW *turn_w;
+
+char done_curses;
+char loaded, fired, changed, repaired;
+char dont_adjust;
+int viewrow, viewcol;
+char movebuf[sizeof SHIP(0)->file->movebuf];
+int player;
+struct ship *ms;		/* memorial structure, &cc->ship[player] */
+struct File *mf;		/* ms->file */
+struct shipspecs *mc;		/* ms->specs */
+
+void
 initscreen()
 {
+	if (!SCREENTEST())
+		errx(1, "can't sail on this terminal.");
 	/* initscr() already done in SCREENTEST() */
 	view_w = newwin(VIEW_Y, VIEW_X, VIEW_T, VIEW_L);
 	slot_w = newwin(SLOT_Y, SLOT_X, SLOT_T, SLOT_L);
@@ -68,9 +87,10 @@ initscreen()
 	(void) leaveok(stat_w, 1);
 	(void) leaveok(turn_w, 1);
 	noecho();
-	crmode();
+	cbreak();
 }
 
+void
 cleanupscreen()
 {
 	/* alarm already turned off */
@@ -82,25 +102,29 @@ cleanupscreen()
 	}
 }
 
+/* ARGSUSED */
 void
-newturn()
+newturn(n)
+	int n;
 {
 	repaired = loaded = fired = changed = 0;
 	movebuf[0] = '\0';
 
 	(void) alarm(0);
-	if (mf->readyL & R_LOADING)
+	if (mf->readyL & R_LOADING) {
 		if (mf->readyL & R_DOUBLE)
 			mf->readyL = R_LOADING;
 		else
 			mf->readyL = R_LOADED;
-	if (mf->readyR & R_LOADING)
+	}
+	if (mf->readyR & R_LOADING) {
 		if (mf->readyR & R_DOUBLE)
 			mf->readyR = R_LOADING;
 		else
 			mf->readyR = R_LOADED;
+	}
 	if (!hasdriver)
-		Write(W_DDEAD, SHIP(0), 0, 0, 0, 0, 0);
+		Write(W_DDEAD, SHIP(0), 0, 0, 0, 0);
 
 	if (sc_hasprompt) {
 		(void) wmove(scroll_w, sc_line, 0);
@@ -114,11 +138,11 @@ newturn()
 		(void) wprintw(scroll_w, "%s%s", sc_prompt, sc_buf);
 
 	if (turn % 50 == 0)
-		Write(W_ALIVE, SHIP(0), 0, 0, 0, 0, 0);
+		Write(W_ALIVE, SHIP(0), 0, 0, 0, 0);
 	if (mf->FS && (!mc->rig1 || windspeed == 6))
-		Write(W_FS, ms, 0, 0, 0, 0, 0);
+		Write(W_FS, ms, 0, 0, 0, 0);
 	if (mf->FS == 1)
-		Write(W_FS, ms, 0, 2, 0, 0, 0);
+		Write(W_FS, ms, 2, 0, 0, 0);
 
 	if (mf->struck)
 		leave(LEAVE_QUIT);
@@ -135,23 +159,45 @@ newturn()
 }
 
 /*VARARGS2*/
-Signal(fmt, ship, a, b, c, d)
-char *fmt;
-register struct ship *ship;
-int a, b, c, d;
+void
+Signal(char *fmt, struct ship *ship, ...)
 {
-	if (!done_curses)
+	va_list ap;
+	char format[BUFSIZ];
+
+	va_start(ap, ship);
+	if (!done_curses) {
+		va_end(ap);
 		return;
+	}
 	if (*fmt == '\7')
 		putchar(*fmt++);
-	if (ship == 0)
-		(void) wprintw(scroll_w, fmt, a, b, c, d);
-	else
-		(void) wprintw(scroll_w, fmt, ship->shipname,
-			colours(ship), sterncolour(ship), a, b, c, d);
+	fmtship(format, sizeof(format), fmt, ship);
+	(void) vw_printw(scroll_w, format, ap);
+	va_end(ap);
 	Scroll();
 }
 
+/*VARARGS2*/
+void
+Msg(char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+
+	if (!done_curses) {
+		va_end(ap);
+		return;
+	}
+	if (*fmt == '\7')
+		putchar(*fmt++);
+	(void) vw_printw(scroll_w, fmt, ap);
+	va_end(ap);
+	Scroll();
+}
+
+void
 Scroll()
 {
 	if (++sc_line >= SCROLL_Y)
@@ -160,37 +206,36 @@ Scroll()
 	(void) wclrtoeol(scroll_w);
 }
 
+void
 prompt(p, ship)
-register char *p;
-struct ship *ship;
+	const char *p;
+	struct ship *ship;
 {
-	static char buf[60];
+	static char buf[BUFSIZ];
 
-	if (ship != 0) {
-		(void)sprintf(buf, p, ship->shipname, colours(ship),
-			sterncolour(ship));
-		p = buf;
-	}
-	sc_prompt = p;
+	fmtship(buf, sizeof(buf), p, ship);
+	sc_prompt = buf;
 	sc_buf = "";
 	sc_hasprompt = 1;
-	(void) waddstr(scroll_w, p);
+	(void) waddstr(scroll_w, buf);
 }
 
+void
 endprompt(flag)
-char flag;
+	char flag;
 {
 	sc_hasprompt = 0;
 	if (flag)
 		Scroll();
 }
 
+int
 sgetch(p, ship, flag)
-char *p;
-struct ship *ship;
-char flag;
+	const char *p;
+	struct ship *ship;
+	char flag;
 {
-	register c;
+	int c;
 
 	prompt(p, ship);
 	blockalarm();
@@ -204,13 +249,14 @@ char flag;
 	return c;
 }
 
+void
 sgetstr(pr, buf, n)
-char *pr;
-register char *buf;
-register n;
+	const char *pr;
+	char *buf;
+	int n;
 {
-	register c;
-	register char *p = buf;
+	int c;
+	char *p = buf;
 
 	prompt(pr, (struct ship *)0);
 	sc_buf = buf;
@@ -242,6 +288,7 @@ register n;
 	}
 }
 
+void
 draw_screen()
 {
 	draw_view();
@@ -251,9 +298,10 @@ draw_screen()
 	(void) wrefresh(scroll_w);		/* move the cursor */
 }
 
+void
 draw_view()
 {
-	register struct ship *sp;
+	struct ship *sp;
 
 	(void) werase(view_w);
 	foreachship(sp) {
@@ -274,6 +322,7 @@ draw_view()
 	(void) wrefresh(view_w);
 }
 
+void
 draw_turn()
 {
 	(void) wmove(turn_w, 0, 0);
@@ -281,6 +330,7 @@ draw_turn()
 	(void) wrefresh(turn_w);
 }
 
+void
 draw_stat()
 {
 	(void) wmove(stat_w, STAT_1, 0);
@@ -321,6 +371,7 @@ draw_stat()
 	(void) wrefresh(stat_w);
 }
 
+void
 draw_slot()
 {
 	if (!boarding(ms, 0)) {
@@ -384,9 +435,10 @@ draw_slot()
 	(void) wrefresh(slot_w);
 }
 
+void
 draw_board()
 {
-	register int n;
+	int n;
 
 	(void) clear();
 	(void) werase(view_w);
@@ -431,32 +483,38 @@ draw_board()
 	(void) refresh();
 }
 
+void
 centerview()
 {
 	viewrow = mf->row - VIEW_Y / 2;
 	viewcol = mf->col - VIEW_X / 2;
 }
 
+void
 upview()
 {
 	viewrow -= VIEW_Y / 3;
 }
 
+void
 downview()
 {
 	viewrow += VIEW_Y / 3;
 }
 
+void
 leftview()
 {
 	viewcol -= VIEW_X / 5;
 }
 
+void
 rightview()
 {
 	viewcol += VIEW_X / 5;
 }
 
+void
 adjustview()
 {
 	if (dont_adjust)

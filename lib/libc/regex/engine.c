@@ -1,4 +1,4 @@
-/*	$NetBSD: engine.c,v 1.5 1995/02/27 13:28:39 cgd Exp $	*/
+/*	$OpenBSD: engine.c,v 1.6 2002/05/25 09:11:02 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
@@ -16,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,6 +34,10 @@
  *
  *	@(#)engine.c	8.5 (Berkeley) 3/20/94
  */
+
+#if defined(SNAMES) && defined(LIBC_SCCS) && !defined(lint)
+static char enginercsid[] = "$OpenBSD: engine.c,v 1.6 2002/05/25 09:11:02 deraadt Exp $";
+#endif /* SNAMES and LIBC_SCCS and not lint */
 
 /*
  * The matching engine and friends.  This file is #included by regexec.c
@@ -92,12 +92,12 @@ extern "C" {
 #endif
 
 /* === engine.c === */
-static int matcher __P((struct re_guts *g, char *string, size_t nmatch, regmatch_t pmatch[], int eflags));
-static char *dissect __P((struct match *m, char *start, char *stop, sopno startst, sopno stopst));
-static char *backref __P((struct match *m, char *start, char *stop, sopno startst, sopno stopst, sopno lev));
-static char *fast __P((struct match *m, char *start, char *stop, sopno startst, sopno stopst));
-static char *slow __P((struct match *m, char *start, char *stop, sopno startst, sopno stopst));
-static states step __P((struct re_guts *g, sopno start, sopno stop, states bef, int ch, states aft));
+static int matcher(struct re_guts *g, char *string, size_t nmatch, regmatch_t pmatch[], int eflags);
+static char *dissect(struct match *m, char *start, char *stop, sopno startst, sopno stopst);
+static char *backref(struct match *m, char *start, char *stop, sopno startst, sopno stopst, sopno lev);
+static char *fast(struct match *m, char *start, char *stop, sopno startst, sopno stopst);
+static char *slow(struct match *m, char *start, char *stop, sopno startst, sopno stopst);
+static states step(struct re_guts *g, sopno start, sopno stop, states bef, int ch, states aft);
 #define	BOL	(OUT+1)
 #define	EOL	(BOL+1)
 #define	BOLEOL	(BOL+2)
@@ -108,13 +108,13 @@ static states step __P((struct re_guts *g, sopno start, sopno stop, states bef, 
 #define	NONCHAR(c)	((c) > CHAR_MAX)
 #define	NNONCHAR	(CODEMAX-CHAR_MAX)
 #ifdef REDEBUG
-static void print __P((struct match *m, char *caption, states st, int ch, FILE *d));
+static void print(struct match *m, char *caption, states st, int ch, FILE *d);
 #endif
 #ifdef REDEBUG
-static void at __P((struct match *m, char *title, char *start, char *stop, sopno startst, sopno stopst));
+static void at(struct match *m, char *title, char *start, char *stop, sopno startst, sopno stopst);
 #endif
 #ifdef REDEBUG
-static char *pchar __P((int ch));
+static char *pchar(int ch);
 #endif
 
 #ifdef __cplusplus
@@ -125,7 +125,7 @@ static char *pchar __P((int ch));
 #ifdef REDEBUG
 #define	SP(t, s, c)	print(m, t, s, c, stdout)
 #define	AT(t, p1, p2, s1, s2)	at(m, t, p1, p2, s1, s2)
-#define	NOTE(str)	{ if (m->eflags&REG_TRACE) printf("=%s\n", (str)); }
+#define	NOTE(str)	{ if (m->eflags&REG_TRACE) (void)printf("=%s\n", (str)); }
 #else
 #define	SP(t, s, c)	/* nothing */
 #define	AT(t, p1, p2, s1, s2)	/* nothing */
@@ -1019,15 +1019,15 @@ FILE *d;
 	if (!(m->eflags&REG_TRACE))
 		return;
 
-	fprintf(d, "%s", caption);
+	(void)fprintf(d, "%s", caption);
 	if (ch != '\0')
-		fprintf(d, " %s", pchar(ch));
+		(void)fprintf(d, " %s", pchar(ch));
 	for (i = 0; i < g->nstates; i++)
 		if (ISSET(st, i)) {
-			fprintf(d, "%s%d", (first) ? "\t" : ", ", i);
+			(void)fprintf(d, "%s%d", (first) ? "\t" : ", ", i);
 			first = 0;
 		}
-	fprintf(d, "\n");
+	(void)fprintf(d, "\n");
 }
 
 /* 
@@ -1049,9 +1049,9 @@ sopno stopst;
 	if (!(m->eflags&REG_TRACE))
 		return;
 
-	printf("%s %s-", title, pchar(*start));
-	printf("%s ", pchar(*stop));
-	printf("%ld-%ld\n", (long)startst, (long)stopst);
+	(void)printf("%s %s-", title, pchar(*start));
+	(void)printf("%s ", pchar(*stop));
+	(void)printf("%ld-%ld\n", (long)startst, (long)stopst);
 }
 
 #ifndef PCHARDONE
@@ -1074,9 +1074,9 @@ int ch;
 	static char pbuf[10];
 
 	if (isprint(ch) || ch == ' ')
-		sprintf(pbuf, "%c", ch);
+		(void)snprintf(pbuf, sizeof pbuf, "%c", ch);
 	else
-		sprintf(pbuf, "\\%o", ch);
+		(void)snprintf(pbuf, sizeof pbuf, "\\%o", ch);
 	return(pbuf);
 }
 #endif

@@ -1243,17 +1243,13 @@ copy_archive (ibfd, obfd, output_target)
     } *list, *l;
   bfd **ptr = &obfd->archive_head;
   bfd *this_element;
-  char *dir = make_tempname (bfd_get_filename (obfd));
+  char *dir = make_tempname (bfd_get_filename (obfd), 1);
 
   /* Make a temp directory to hold the contents.  */
-#if defined (_WIN32) && !defined (__CYGWIN32__)
-  if (mkdir (dir) != 0)
-#else
-  if (mkdir (dir, 0700) != 0)
-#endif
+  if (dir == (char *) NULL)
     {
-      fatal (_("cannot mkdir %s for archive copying (error: %s)"),
-	     dir, strerror (errno));
+      fatal (_("cannot make temp directory for archive copying (error: %s)"),
+	     strerror (errno));
     }
   obfd->has_armap = ibfd->has_armap;
 
@@ -1835,7 +1831,7 @@ strip_main (argc, argv)
   struct section_list *p;
   char *output_file = NULL;
 
-  while ((c = getopt_long (argc, argv, "b:i:I:j:K:N:s:O:d:F:L:G:R:SpgxXVvW:",
+  while ((c = getopt_long (argc, argv, "I:O:F:K:N:R:o:sSpdgxXhVv",
 			   strip_options, (int *) 0)) != EOF)
     {
       switch (c)
@@ -1933,7 +1929,7 @@ strip_main (argc, argv)
       if (output_file != NULL)
 	tmpname = output_file;
       else
-	tmpname = make_tempname (argv[i]);
+	tmpname = make_tempname (argv[i], 0);
       status = 0;
 
       copy_file (argv[i], tmpname, input_target, output_target);
@@ -1967,7 +1963,7 @@ copy_main (argc, argv)
   struct section_list *p;
   struct stat statbuf;
 
-  while ((c = getopt_long (argc, argv, "b:i:I:j:K:N:s:O:d:F:L:R:SpgxXVvW:",
+  while ((c = getopt_long (argc, argv, "b:i:I:j:K:N:s:O:d:F:L:G:R:SpgxXhVvW:",
 			   copy_options, (int *) 0)) != EOF)
     {
       switch (c)
@@ -2370,7 +2366,7 @@ copy_main (argc, argv)
 
   if (output_filename == (char *) NULL)
     {
-      char *tmpname = make_tempname (input_filename);
+      char *tmpname = make_tempname (input_filename, 0);
 
       copy_file (input_filename, tmpname, input_target, output_target);
       if (status == 0)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001, 2002  Internet Software Consortium.
+ * Copyright (C) 2001-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: check.c,v 1.14.2.16 2002/04/23 02:00:03 marka Exp $ */
+/* $ISC: check.c,v 1.14.2.21 2003/09/19 13:41:36 marka Exp $ */
 
 #include <config.h>
 
@@ -61,6 +61,7 @@ static isc_result_t
 check_options(cfg_obj_t *options, isc_log_t *logctx) {
 	isc_result_t result = ISC_R_SUCCESS;
 	unsigned int i;
+	cfg_obj_t *obj;
 
 	static intervaltable intervals[] = {
 	{ "cleaning-interval", 60 },
@@ -92,6 +93,40 @@ check_options(cfg_obj_t *options, isc_log_t *logctx) {
 			result = ISC_R_RANGE;
 		}
 	}
+
+	obj = NULL;
+	(void)cfg_map_get(options, "root-delegation-only", &obj);
+	if (obj != NULL) {
+		if (!cfg_obj_isvoid(obj)) {
+			cfg_listelt_t *element;
+			cfg_obj_t *exclude;
+			char *str;
+			dns_fixedname_t fixed;
+			dns_name_t *name;
+			isc_buffer_t b;
+			isc_result_t tresult;
+
+			dns_fixedname_init(&fixed);
+			name = dns_fixedname_name(&fixed);
+			for (element = cfg_list_first(obj);
+			     element != NULL;
+			     element = cfg_list_next(element)) {
+				exclude = cfg_listelt_value(element);
+				str = cfg_obj_asstring(exclude);
+				isc_buffer_init(&b, str, strlen(str));
+				isc_buffer_add(&b, strlen(str));
+				tresult = dns_name_fromtext(name, &b,
+							   dns_rootname,
+                                                           ISC_FALSE, NULL);
+				if (tresult != ISC_R_SUCCESS) {
+					cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+						    "bad domain name '%s'",
+						    str);
+					result = tresult;
+				}
+			}
+		}
+	}
 	return (result);
 }
 
@@ -100,6 +135,7 @@ check_options(cfg_obj_t *options, isc_log_t *logctx) {
 #define STUBZONE	4
 #define HINTZONE	8
 #define FORWARDZONE	16
+#define DELEGATIONZONE	32
 
 typedef struct {
 	const char *name;
@@ -130,6 +166,7 @@ check_zoneconf(cfg_obj_t *zconfig, isc_symtab_t *symtab, isc_log_t *logctx,
 	{ "notify", MASTERZONE | SLAVEZONE },
 	{ "also-notify", MASTERZONE | SLAVEZONE },
 	{ "dialup", MASTERZONE | SLAVEZONE | STUBZONE },
+	{ "delegation-only", HINTZONE | STUBZONE },
 	{ "forward", MASTERZONE | SLAVEZONE | STUBZONE | FORWARDZONE},
 	{ "forwarders", MASTERZONE | SLAVEZONE | STUBZONE | FORWARDZONE},
 	{ "maintain-ixfr-base", MASTERZONE | SLAVEZONE },
@@ -189,6 +226,8 @@ check_zoneconf(cfg_obj_t *zconfig, isc_symtab_t *symtab, isc_log_t *logctx,
 		ztype = FORWARDZONE;
 	else if (strcasecmp(typestr, "hint") == 0)
 		ztype = HINTZONE;
+	else if (strcasecmp(typestr, "delegation-only") == 0)
+		ztype = DELEGATIONZONE;
 	else {
 		cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
 			    "zone '%s': invalid type %s",
@@ -243,11 +282,18 @@ check_zoneconf(cfg_obj_t *zconfig, isc_symtab_t *symtab, isc_log_t *logctx,
 		    cfg_map_get(zoptions, options[i].name, &obj) ==
 		    ISC_R_SUCCESS)
 		{
-			cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
-				    "option '%s' is not allowed in '%s' "
-				    "zone '%s'",
-				    options[i].name, typestr, zname);
-			result = ISC_R_FAILURE;
+			if (strcmp(options[i].name, "allow-update") != 0 ||
+			    ztype != SLAVEZONE) {
+				cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+					    "option '%s' is not allowed "
+					    "in '%s' zone '%s'",
+					    options[i].name, typestr, zname);
+					result = ISC_R_FAILURE;
+			} else
+				cfg_obj_log(obj, logctx, ISC_LOG_WARNING,
+					    "option '%s' is not allowed "
+					    "in '%s' zone '%s'",
+					    options[i].name, typestr, zname);
 		}
 	}
 

@@ -1,5 +1,3 @@
-/*	$NetBSD: tmpnam.c,v 1.6 1995/02/02 02:10:45 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,16 +31,18 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)tmpnam.c	8.3 (Berkeley) 3/28/94";
-#endif
-static char rcsid[] = "$NetBSD: tmpnam.c,v 1.6 1995/02/02 02:10:45 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tmpnam.c,v 1.7 2002/02/16 21:27:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 
 #include <stdio.h>
 #include <unistd.h>
+
+__warn_references(tmpnam,
+    "warning: tmpnam() possibly used unsafely; consider using mkstemp()");
+
+extern char *_mktemp(char *);
 
 char *
 tmpnam(s)
@@ -57,7 +53,7 @@ tmpnam(s)
 
 	if (s == NULL)
 		s = buf;
-	(void)snprintf(s, L_tmpnam, "%stmp.%lu.XXXXXX", P_tmpdir, tmpcount);
+	(void)snprintf(s, L_tmpnam, "%stmp.%lu.XXXXXXXXX", P_tmpdir, tmpcount);
 	++tmpcount;
-	return (mktemp(s));
+	return (_mktemp(s));
 }

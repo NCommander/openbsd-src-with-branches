@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,12 +28,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)setenv.c	5.6 (Berkeley) 6/4/91";*/
-static char *rcsid = "$Id: setenv.c,v 1.7 1995/06/14 05:19:57 jtc Exp $";
+static char *rcsid = "$OpenBSD: setenv.c,v 1.5 2002/12/10 22:44:13 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdlib.h>
 #include <string.h>
+
+char *__findenv(const char *name, int *offset);
 
 /*
  * setenv --
@@ -54,7 +51,6 @@ setenv(name, value, rewrite)
 	static int alloced;			/* if allocated space before */
 	register char *C;
 	int l_value, offset;
-	char *__findenv();
 
 	if (*value == '=')			/* no `=' in value */
 		++value;
@@ -63,7 +59,8 @@ setenv(name, value, rewrite)
 		if (!rewrite)
 			return (0);
 		if (strlen(C) >= l_value) {	/* old larger; copy over */
-			while (*C++ = *value++);
+			while ((*C++ = *value++))
+				;
 			return (0);
 		}
 	} else {					/* create new slot */
@@ -72,10 +69,11 @@ setenv(name, value, rewrite)
 
 		for (P = environ, cnt = 0; *P; ++P, ++cnt);
 		if (alloced) {			/* just increase size */
-			environ = (char **)realloc((char *)environ,
+			P = (char **)realloc((void *)environ,
 			    (size_t)(sizeof(char *) * (cnt + 2)));
-			if (!environ)
+			if (!P)
 				return (-1);
+			environ = P;
 		}
 		else {				/* get new space */
 			alloced = 1;		/* copy old entries into it */
@@ -95,7 +93,7 @@ setenv(name, value, rewrite)
 		return (-1);
 	for (C = environ[offset]; (*C = *name++) && *C != '='; ++C)
 		;
-	for (*C++ = '='; *C++ = *value++; )
+	for (*C++ = '='; (*C++ = *value++); )
 		;
 	return (0);
 }

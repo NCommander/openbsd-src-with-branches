@@ -1,4 +1,4 @@
-# $OpenBSD: Ustar.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: Ustar.pm,v 1.6 2004/01/29 13:06:39 espie Exp $
 #
 # Copyright (c) 2002 Marc Espie.
 # 
@@ -56,7 +56,7 @@ sub new
 {
     my ($class, $fh) = @_;
 
-    return bless { fh => $fh, swallow => 0, unput => 0} , $class;
+    return bless { fh => $fh, swallow => 0} , $class;
 }
 
 
@@ -98,19 +98,9 @@ sub skip
     $self->{swallow} = 0;
 }
 
-sub unput
-{
-    my $self = shift;
-    $self->{unput} = 1;
-}
-
 sub next
 {
     my $self = shift;
-    if ($self->{unput}) {
-    	$self->{unput} = 0;
-	return $self->{current};
-    }
     # get rid of the current object
     $self->skip();
     my $header;
@@ -142,7 +132,7 @@ sub next
     $uid = oct($uid);
     $gid = oct($gid);
     $uid = name2uid($uname, $uid);
-    $gid = name2gid($uname, $gid);
+    $gid = name2gid($gname, $gid);
     $mtime = oct($mtime);
     unless ($prefix =~ m/^\0/) {
 	$prefix =~ s/\0*$//;
@@ -160,7 +150,8 @@ sub next
 	gname => $gname,
 	gid => $gid,
 	size => $size,
-	archive => $self
+	archive => $self,
+	destdir => ''
 	};
     # adjust swallow
     $self->{swallow} = $size;
@@ -178,7 +169,6 @@ sub next
     } else {
     	die "Unsupported type";
     }
-    $self->{current} = $result;
     return $result;
 }
 
@@ -186,14 +176,15 @@ package OpenBSD::Ustar::Object;
 sub set_modes
 {
 	my $self = shift;
-	chmod $self->{mode}, $self->{name};
-	chown $self->{uid}, $self->{gid}, $self->{name};
+	chown $self->{uid}, $self->{gid}, $self->{destdir}.$self->{name};
+	chmod $self->{mode}, $self->{destdir}.$self->{name};
+	utime $self->{mtime}, $self->{mtime}, $self->{destdir}.$self->{name};
 }
 
 sub make_basedir
 {
 	my $self = shift;
-	my $dir = File::Basename::dirname($self->{name});
+	my $dir = $self->{destdir}.File::Basename::dirname($self->{name});
 	File::Path::mkpath($dir) unless -d $dir;
 }
 
@@ -209,7 +200,7 @@ our @ISA=qw(OpenBSD::Ustar::Object);
 sub create
 {
 	my $self = shift;
-	File::Path::mkpath($self->{name});
+	File::Path::mkpath($self->{destdir}.$self->{name});
 	$self->SUPER::set_modes();
 }
 
@@ -222,11 +213,12 @@ sub create
 {
 	my $self = shift;
 	$self->make_basedir($self->{name});
+	my $linkname = $self->{linkname};
 	if (defined $self->{cwd}) {
-		link $self->{cwd}."/".$self->{linkname}, $self->{name};
-	} else {
-		link $self->{linkname}, $self->{name};
+		$linkname=$self->{cwd}.'/'.$linkname;
 	}
+	link $self->{destdir}.$linkname, $self->{destdir}.$self->{name} or
+	    die "Can't link $self->{destdir}$linkname to $self->{destdir}$self->{name}: $!";
 }
 
 sub isLink() { 1 }
@@ -239,7 +231,8 @@ sub create
 {
 	my $self = shift;
 	$self->make_basedir($self->{name});
-	symlink $self->{linkname}, $self->{name};
+	symlink $self->{linkname}, $self->{destdir}.$self->{name} or 
+	    die "Can't symlink $self->{linkname} to $self->{destdir}$self->{name}: $!";
 }
 
 sub isLink() { 1 }
@@ -248,29 +241,31 @@ sub isHardLink() { 1 }
 package OpenBSD::Ustar::File;
 our @ISA=qw(OpenBSD::Ustar::Object);
 
-use IO::File;
-
 sub create
 {
 	my $self = shift;
 	$self->make_basedir($self->{name});
-	my $out = new IO::File $self->{name}, "w";
+	open (my $out, '>', $self->{destdir}.$self->{name});
 	if (!defined $out) {
-		print "Can't write to ", $self->{name}, "\n";
-		return;
+		die "Can't write to $self->{destdir}$self->{name}: $!";
 	}
-	$self->SUPER::set_modes();
 	my $buffer;
 	my $toread = $self->{size};
 	while ($toread > 0) {
 		my $maxread = $buffsize;
 		$maxread = $toread if $maxread > $toread;
-		read($self->{archive}->{fh}, $buffer, $maxread);
+		if (!defined read($self->{archive}->{fh}, $buffer, $maxread)) {
+			die "Error reading from archive: $!";
+		}
 		$self->{archive}->{swallow} -= $maxread;
-		print $out $buffer;
+		unless (print $out $buffer) {
+			die "Error writing to $self->{destdir}$self->{name}: $!";
+		}
+			
 		$toread -= $maxread;
 	}
-	$out->close();
+	$out->close() or die "Error closing $self->{destdir}$self->{name}: $!";
+	$self->SUPER::set_modes();
 }
 
 sub isFile() { 1 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: vnconfig.c,v 1.11 2003/06/02 23:36:55 millert Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,31 +40,34 @@
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
-#include <sys/stat.h>
 
 #include <dev/vndioctl.h>
 
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <util.h>
 
 #define VND_CONFIG	1
 #define VND_UNCONFIG	2
 
 int verbose = 0;
 
-char *rawdevice __P((char *));
-void usage __P((void));
+__dead void usage(void);
+int config(char *, char *, int, char *);
 
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char **argv)
 {
 	int ch, rv, action = VND_CONFIG;
+	char *key = NULL;
 
-	while ((ch = getopt(argc, argv, "cuv")) != -1) {
+	while ((ch = getopt(argc, argv, "cuvk")) != -1) {
 		switch (ch) {
 		case 'c':
 			action = VND_CONFIG;
@@ -78,8 +78,10 @@ main(argc, argv)
 		case 'v':
 			verbose = 1;
 			break;
+		case 'k':
+			key = getpass("Encryption key: ");
+			break;
 		default:
-		case '?':
 			usage();
 			/* NOTREACHED */
 		}
@@ -88,31 +90,33 @@ main(argc, argv)
 	argv += optind;
 
 	if (action == VND_CONFIG && argc == 2)
-		rv = config(argv[0], argv[1], action);
+		rv = config(argv[0], argv[1], action, key);
 	else if (action == VND_UNCONFIG && argc == 1)
-		rv = config(argv[0], NULL, action);
+		rv = config(argv[0], NULL, action, key);
 	else
 		usage();
 	exit(rv);
 }
 
-config(dev, file, action)
-	char *dev;
-	char *file;
-	int action;
+int
+config(char *dev, char *file, int action, char *key)
 {
 	struct vnd_ioctl vndio;
 	FILE *f;
 	char *rdev;
 	int rv;
 
-	rdev = rawdevice(dev);
+	if (opendev(dev, O_RDWR, OPENDEV_PART, &rdev) < 0)
+		err(4, "%s", rdev);
 	f = fopen(rdev, "rw");
 	if (f == NULL) {
-		warn(rdev);
-		return (1);
+		warn("%s", rdev);
+		rv = -1;
+		goto out;
 	}
 	vndio.vnd_file = file;
+	vndio.vnd_key = key;
+	vndio.vnd_keylen = key == NULL ? 0 : strlen(key);
 
 	/*
 	 * Clear (un-configure) the device
@@ -132,43 +136,25 @@ config(dev, file, action)
 		if (rv)
 			warn("VNDIOCSET");
 		else if (verbose)
-			printf("%s: %d bytes on %s\n", dev, vndio.vnd_size,
+			printf("%s: %llu bytes on %s\n", dev, vndio.vnd_size,
 			    file);
 	}
-done:
+
 	fclose(f);
 	fflush(stdout);
+ out:
+	if (key)
+		memset(key, 0, strlen(key));
 	return (rv < 0);
 }
 
-char *
-rawdevice(dev)
-	char *dev;
+__dead void
+usage(void)
 {
-	register char *rawbuf, *dp, *ep;
-	struct stat sb;
-	int len;
+	extern char *__progname;
 
-	len = strlen(dev);
-	rawbuf = malloc(len + 2);
-	strcpy(rawbuf, dev);
-	if (stat(rawbuf, &sb) != 0 || !S_ISCHR(sb.st_mode)) {
-		dp = rindex(rawbuf, '/');
-		if (dp) {
-			for (ep = &rawbuf[len]; ep > dp; --ep)
-				*(ep+1) = *ep;
-			*++ep = 'r';
-		}
-	}
-	return (rawbuf);
-}
-
-void
-usage()
-{
-
-	(void)fprintf(stderr, "%s%s",
-	    "usage: vnconfig -c [-v] special-file regular-file\n",
-	    "       vnconfig -u [-v] special-file\n");
+	(void)fprintf(stderr,
+	    "usage: %s [-c] [-vk] rawdev regular-file\n"
+	    "       %s -u [-v] rawdev\n", __progname, __progname);
 	exit(1);
 }

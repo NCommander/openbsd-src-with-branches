@@ -1,4 +1,6 @@
+/*	$OpenBSD: reg.h,v 1.13 2004/01/12 21:33:15 miod Exp $ */
 /*
+ * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
  *
@@ -28,50 +30,61 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <machine/pcb.h>
+
+#ifndef _M88K_REG_H_
+#define _M88K_REG_H_
 
 struct reg {
-    unsigned r_r[32];
-    unsigned r_fpsr;
-    unsigned r_fpcr;
-    unsigned r_epsr;
-    unsigned r_sxip;
-    unsigned r_snip;
-    unsigned r_sfip;
-    unsigned r_ssbr;
-    unsigned r_dmt0;
-    unsigned r_dmd0;
-    unsigned r_dma0;
-    unsigned r_dmt1;
-    unsigned r_dmd1;
-    unsigned r_dma1;
-    unsigned r_dmt2;
-    unsigned r_dmd2;
-    unsigned r_dma2;
-    unsigned r_fpecr;
-    unsigned r_fphs1;
-    unsigned r_fpls1;
-    unsigned r_fphs2;
-    unsigned r_fpls2;
-    unsigned r_fppt;
-    unsigned r_fprh;
-    unsigned r_fprl;
-    unsigned r_fpit;
-    unsigned r_vector;   /* exception vector number */
-    unsigned r_mask;	   /* interrupt mask level */
-    unsigned r_mode;     /* interrupt mode */
-    unsigned r_scratch1; /* used by locore trap handling code */
-    unsigned r_pad;      /* to make an even length */
-} ;
+	unsigned int	r[32];  /* 0 - 31 */
+	unsigned int	epsr;   /* 32 */
+	unsigned int	fpsr;
+	unsigned int	fpcr;
+	unsigned int	sxip;
+#define exip sxip	/* mc88110 */
+	unsigned int	snip;
+#define enip snip	/* mc88110 */
+	unsigned int	sfip;
+	unsigned int	ssbr;
+#define duap ssbr	/* mc88110 */
+	unsigned int	dmt0;
+#define dsr dmt0	/* mc88110 */
+	unsigned int	dmd0;
+#define dlar dmd0	/* mc88110 */
+	unsigned int	dma0;
+#define dpar dma0	/* mc88110 */
+	unsigned int	dmt1;
+#define isr dmt1	/* mc88110 */
+	unsigned int	dmd1;
+#define ilar dmd1	/* mc88110 */
+	unsigned int	dma1;
+#define ipar dma1	/* mc88110 */
+	unsigned int	dmt2;
+#define isap dmt2	/* mc88110 */
+	unsigned int	dmd2;
+#define dsap dmd2	/* mc88110 */
+	unsigned int	dma2;
+#define iuap dma2	/* mc88110 */
+	unsigned int	fpecr;
+	unsigned int	fphs1;
+	unsigned int	fpls1;
+	unsigned int	fphs2;
+	unsigned int	fpls2;
+	unsigned int	fppt;
+	unsigned int	fprh;
+	unsigned int	fprl;
+	unsigned int	fpit;
+};
 
 struct fpreg {
-    unsigned fp_fpecr;
-    unsigned fp_fphs1;
-    unsigned fp_fpls1;
-    unsigned fp_fphs2;
-    unsigned fp_fpls2;
-    unsigned fp_fppt;
-    unsigned fp_fprh;
-    unsigned fp_fprl;
-    unsigned fp_fpit;
+	unsigned int	fp_fpecr;
+	unsigned int	fp_fphs1;
+	unsigned int	fp_fpls1;
+	unsigned int	fp_fphs2;
+	unsigned int	fp_fpls2;
+	unsigned int	fp_fppt;
+	unsigned int	fp_fprh;
+	unsigned int	fp_fprl;
+	unsigned int	fp_fpit;
 };
+
+#endif /* _M88K_REG_H_ */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: recipient.c,v 8.322 2001/09/04 22:43:05 ca Exp $")
+SM_RCSID("@(#)$Sendmail: recipient.c,v 8.330.2.4 2003/10/06 20:43:29 ca Exp $")
 
 static void	includetimeout __P((void));
 static ADDRESS	*self_reference __P((ADDRESS *));
@@ -151,9 +151,6 @@ sortbysignature(xx, yy)
 **
 **	Returns:
 **		The number of addresses actually on the list.
-**
-**	Side Effects:
-**		none.
 */
 
 /* q_flags bits inherited from ctladdr */
@@ -172,6 +169,7 @@ sendtolist(list, ctladdr, sendq, aliaslevel, e)
 	SM_NONVOLATILE char delimiter;		/* the address delimiter */
 	SM_NONVOLATILE int naddrs;
 	SM_NONVOLATILE int i;
+	char *endp;
 	char *oldto = e->e_to;
 	char *SM_NONVOLATILE bufp;
 	char buf[MAXNAME + 1];
@@ -209,6 +207,7 @@ sendtolist(list, ctladdr, sendq, aliaslevel, e)
 	}
 	else
 		bufp = sm_malloc_x(i);
+	endp = bufp + i;
 
 	SM_TRY
 	{
@@ -220,12 +219,16 @@ sendtolist(list, ctladdr, sendq, aliaslevel, e)
 			auto char *delimptr;
 			register ADDRESS *a;
 
+			SM_ASSERT(p < endp);
+
 			/* parse the address */
 			while ((isascii(*p) && isspace(*p)) || *p == ',')
 				p++;
+			SM_ASSERT(p < endp);
 			a = parseaddr(p, NULLADDR, RF_COPYALL, delimiter,
 				      &delimptr, e, true);
 			p = delimptr;
+			SM_ASSERT(p < endp);
 			if (a == NULL)
 				continue;
 			a->q_next = al;
@@ -307,7 +310,7 @@ sendtolist(list, ctladdr, sendq, aliaslevel, e)
 	return naddrs;
 }
 #if MILTER
-/*
+/*
 **  REMOVEFROMLIST -- Remove addresses from a send list.
 **
 **	The parameter is a comma-separated list of recipients to remove.
@@ -394,7 +397,8 @@ removefromlist(list, sendq, e)
 			for (pq = sendq; (q = *pq) != NULL; pq = &q->q_next)
 			{
 				if (!QS_IS_DEAD(q->q_state) &&
-				    sameaddr(q, &a))
+				    (sameaddr(q, &a) ||
+				     strcmp(q->q_paddr, a.q_paddr) == 0))
 				{
 					if (tTd(25, 5))
 					{
@@ -419,7 +423,7 @@ removefromlist(list, sendq, e)
 	return naddrs;
 }
 #endif /* MILTER */
-/*
+/*
 **  RECIPIENT -- Designate a message recipient
 **
 **	Saves the named person for future mailing.
@@ -682,7 +686,7 @@ recipient(new, sendq, aliaslevel, e)
 	**  the current recipient is marked expensive.
 	*/
 
-	if (WILL_BE_QUEUED(e->e_sendmode) ||
+	if (UseMSP || WILL_BE_QUEUED(e->e_sendmode) ||
 	    (!bitset(EF_SPLIT, e->e_flags) && e->e_ntries == 0 &&
 	     FastSplit > 0))
 		sortfn = sorthost;
@@ -784,6 +788,9 @@ recipient(new, sendq, aliaslevel, e)
 		new->q_next = NULL;
 		*pq = new;
 	}
+
+	/* added a new address: clear split flag */
+	e->e_flags &= ~EF_SPLIT;
 
 	/*
 	**  Alias the name and handle special mailer types.
@@ -1103,7 +1110,7 @@ recipient(new, sendq, aliaslevel, e)
 	macdefine(&e->e_macro, A_TEMP, macid("{nrcpts}"), buf0);
 	return new;
 }
-/*
+/*
 **  FINDUSER -- find the password entry for a user.
 **
 **	This looks a lot like getpwnam, except that it may want to
@@ -1241,7 +1248,7 @@ finduser(name, fuzzyp, user)
 	return EX_NOUSER;
 #endif /* MATCHGECOS */
 }
-/*
+/*
 **  WRITABLE -- predicate returning if the file is writable.
 **
 **	This routine must duplicate the algorithm in sys/fio.c.
@@ -1333,7 +1340,7 @@ writable(filename, ctladdr, flags)
 	errno = safefile(filename, euid, egid, user, flags, S_IWRITE, NULL);
 	return errno == 0;
 }
-/*
+/*
 **  INCLUDE -- handle :include: specification.
 **
 **	Parameters:
@@ -1399,7 +1406,6 @@ include(fname, forwarding, ctladdr, sendq, aliaslevel, e)
 	register char *p;
 	bool safechown = false;
 	volatile bool safedir = false;
-	bool oldsplit;
 	struct stat st;
 	char buf[MAXLINE];
 
@@ -1420,7 +1426,7 @@ include(fname, forwarding, ctladdr, sendq, aliaslevel, e)
 
 	if (forwarding)
 	{
-		sfflags |= SFF_MUSTOWN|SFF_ROOTOK|SFF_NOWLINK;
+		sfflags |= SFF_MUSTOWN|SFF_ROOTOK;
 		if (!bitnset(DBS_GROUPWRITABLEFORWARDFILE, DontBlameSendmail))
 			sfflags |= SFF_NOGWFILES;
 		if (!bitnset(DBS_WORLDWRITABLEFORWARDFILE, DontBlameSendmail))
@@ -1503,7 +1509,7 @@ include(fname, forwarding, ctladdr, sendq, aliaslevel, e)
 			{
 				rval = EAGAIN;
 				syserr("seteuid(%d) failure (real=%d, eff=%d)",
-					uid, getuid(), geteuid());
+					uid, (int) getuid(), (int) geteuid());
 				goto resetuid;
 			}
 # endif /* MAILER_SETUID_METHOD == USE_SETEUID */
@@ -1512,7 +1518,7 @@ include(fname, forwarding, ctladdr, sendq, aliaslevel, e)
 			{
 				rval = EAGAIN;
 				syserr("setreuid(0, %d) failure (real=%d, eff=%d)",
-					uid, getuid(), geteuid());
+					uid, (int) getuid(), (int) geteuid());
 				goto resetuid;
 			}
 # endif /* MAILER_SETUID_METHOD == USE_SETREUID */
@@ -1784,8 +1790,6 @@ resetuid:
 	LineNumber = 0;
 	ctladdr->q_flags &= ~QSELFREF;
 	nincludes = 0;
-	oldsplit = bitset(EF_SPLIT, e->e_flags);
-	e->e_flags &= ~EF_SPLIT;
 	while (sm_io_fgets(fp, SM_TIME_DEFAULT, buf, sizeof buf) != NULL &&
 	       !maxreached)
 	{
@@ -1833,8 +1837,8 @@ resetuid:
 			ctladdr->q_state = QS_DONTSEND;
 #endif /* 0 */
 
-			syserr("Attempt to forward to more then %d addresses (in %s)!",
-				MaxForwardEntries,fname);
+			syserr("Attempt to forward to more than %d addresses (in %s)!",
+				MaxForwardEntries, fname);
 			maxreached = true;
 		}
 	}
@@ -1850,10 +1854,6 @@ resetuid:
 		}
 		ctladdr->q_state = QS_DONTSEND;
 	}
-
-	/* if nothing included: restore old split flag */
-	if (nincludes <= 0 && oldsplit)
-		e->e_flags |= EF_SPLIT;
 
 	(void) sm_io_close(fp, SM_TIME_DEFAULT);
 	FileName = oldfilename;
@@ -1874,7 +1874,7 @@ includetimeout()
 	errno = ETIMEDOUT;
 	longjmp(CtxIncludeTimeout, 1);
 }
-/*
+/*
 **  SENDTOARGV -- send to an argument vector.
 **
 **	Parameters:
@@ -1899,7 +1899,7 @@ sendtoargv(argv, e)
 	while ((p = *argv++) != NULL)
 		(void) sendtolist(p, NULLADDR, &e->e_sendqueue, 0, e);
 }
-/*
+/*
 **  GETCTLADDR -- get controlling address from an address header.
 **
 **	If none, get one corresponding to the effective userid.
@@ -1919,7 +1919,7 @@ getctladdr(a)
 		a = a->q_alias;
 	return a;
 }
-/*
+/*
 **  SELF_REFERENCE -- check to see if an address references itself
 **
 **	The check is done through a chain of aliases.  If it is part of

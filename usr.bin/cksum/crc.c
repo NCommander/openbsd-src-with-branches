@@ -1,4 +1,5 @@
-/*	$NetBSD: crc.c,v 1.5 1995/03/26 05:15:18 glass Exp $	*/
+/*	$OpenBSD: crc.c,v 1.3 2001/11/19 19:02:13 mpech Exp $	*/
+/*	$NetBSD: crc.c,v 1.7 1996/02/27 21:29:53 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,15 +36,18 @@
 #ifndef lint
 #if 0
 static char sccsid[] = "@(#)crc.c	8.1 (Berkeley) 6/17/93";
+static char rcsid[] = "$NetBSD: crc.c,v 1.7 1996/02/27 21:29:53 jtc Exp $";
 #else
-static char rcsid[] = "$NetBSD: crc.c,v 1.5 1995/03/26 05:15:18 glass Exp $";
+static char rcsid[] = "$OpenBSD: crc.c,v 1.3 2001/11/19 19:02:13 mpech Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <unistd.h>
 
-static u_int32_t crctab[] = {
+#include "extern.h"
+
+static const u_int32_t crctab[] = {
 	0x0,
 	0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b,
 	0x1a864db2, 0x1e475005, 0x2608edb8, 0x22c9f00f, 0x2f8ad6d6,
@@ -112,12 +112,12 @@ u_int32_t crc_total = ~0;		/* The crc over a number of files. */
 
 int
 crc(fd, cval, clen)
-	register int fd;
+	int fd;
 	u_int32_t *cval, *clen;
 {
-	register u_char *p;
-	register int nr;
-	register u_int32_t crc, len;
+	u_char *p;
+	int nr;
+	u_int32_t crc, len;
 	u_char buf[16 * 1024];
 
 #define	COMPUTE(var, ch)	(var) = (var) << 8 ^ crctab[(var) >> 24 ^ (ch)]

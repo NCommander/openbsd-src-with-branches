@@ -1,3 +1,5 @@
+/*	$OpenBSD: input-file.c,v 1.2 1998/02/15 18:48:51 niklas Exp $	*/
+
 /* input_file.c - Deal with Input Files -
    Copyright (C) 1987, 1990, 1991, 1992 Free Software Foundation, Inc.
    
@@ -25,7 +27,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: input-file.c,v 1.3 1993/10/02 20:57:37 pk Exp $";
+static char rcsid[] = "$OpenBSD: input-file.c,v 1.2 1998/02/15 18:48:51 niklas Exp $";
 #endif
 
 #ifdef USG
@@ -173,8 +175,8 @@ int	debugging;	/* TRUE if we are debugging assembler. */
 				(void)dup2 (fd, fileno(stdout));
 				/* JF for testing #define PREPROCESSOR "/lib/app" */
 #define PREPROCESSOR "./app"
-				execl (PREPROCESSOR, PREPROCESSOR, 0);
-				execl ("app","app",0);
+				execl (PREPROCESSOR, PREPROCESSOR, (char *)NULL);
+				execl ("app","app",(char *)NULL);
 				(void)write(2,"Exec of app failed.  Get help.\n",31);
 				(void)unlink(temporary_file_name);
 				_exit (11);

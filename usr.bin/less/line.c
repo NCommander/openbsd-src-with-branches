@@ -165,11 +165,11 @@ plinenum(pos)
 		char buf[INT_STRLEN_BOUND(pos) + 2];
 		int n;
 
-		linenumtoa(linenum, buf);
+		linenumtoa(linenum, buf, sizeof(buf));
 		n = strlen(buf);
 		if (n < MIN_LINENUM_WIDTH)
 			n = MIN_LINENUM_WIDTH;
-		sprintf(linebuf+curr, "%*s ", n, buf);
+		snprintf(linebuf+curr, size_linebuf-curr, "%*s ", n, buf);
 		n++;  /* One space after the line number. */
 		for (i = 0; i < n; i++)
 			attr[curr+i] = AT_NORMAL;

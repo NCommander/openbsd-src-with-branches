@@ -84,12 +84,12 @@ d_suidsafe=$define
 
 # cc is gcc so we can do better than -O
 # Allow a command-line override, such as -Doptimize=-g
-case ${ARCH} in
-m88k)
-   optimize='-O0'
+case "${ARCH}-${osvers}" in
+hppa-3.3|m88k-2.*)
+   test "$optimize" || optimize='-O0'
    ;;
-hppa)
-   optimize='-O0'
+m88k-3.*)
+   test "$optimize" || optimize='-O1'
    ;;
 *)
    test "$optimize" || optimize='-O2'

@@ -1,4 +1,5 @@
-#	$Id: Makefile.ns32k,v 1.1 1994/04/08 08:39:04 phil Exp $
+#	$OpenBSD: Makefile.ns32k,v 1.2 1996/04/23 00:15:57 niklas Exp $
+#	$NetBSD: Makefile.ns32k,v 1.3 1997/10/25 10:10:42 lukem Exp $
 
-CFLAGS+=	-DPIC -DNS32532 -DNS32381
-SRCS+=		tc-ns32k.c atof-ns32k.c
+CPPFLAGS+=	-DPIC -DNS32532 -DNS32381
+SRCS+=		tc-ns32k.c atof-ieee.c

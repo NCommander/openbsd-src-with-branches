@@ -1,3 +1,4 @@
+/*	$OpenBSD: wwdump.c,v 1.6 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: wwdump.c,v 1.5 1995/09/29 00:44:09 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,20 +37,21 @@
 #if 0
 static char sccsid[] = "@(#)wwdump.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwdump.c,v 1.5 1995/09/29 00:44:09 cgd Exp $";
+static char rcsid[] = "$OpenBSD: wwdump.c,v 1.6 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include "ww.h"
 #include "tt.h"
+#include <stdio.h>
 #include <string.h>
 
 static char cmap[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 wwdumpwin(w)
-register struct ww *w;
+struct ww *w;
 {
-	register i, j;
+	int i, j;
 
 	tt.tt_nmodes = 0;
 	(*tt.tt_clear)();
@@ -65,23 +63,23 @@ register struct ww *w;
 }
 
 wwdumpnvis(w)
-register struct ww *w;
+struct ww *w;
 {
-	register i;
+	int i;
 	char buf[20];
 
 	tt.tt_nmodes = 0;
 	(*tt.tt_clear)();
 	for (i = w->ww_i.t; i < w->ww_i.b; i++) {
 		(*tt.tt_move)(i, w->ww_i.l);
-		(void) sprintf(buf, "%d", w->ww_nvis[i]);
+		(void) snprintf(buf, sizeof(buf), "%d", w->ww_nvis[i]);
 		(*tt.tt_write)(buf, strlen(buf));
 	}
 }
 
 wwdumpsmap()
 {
-	register i, j;
+	int i, j;
 
 	tt.tt_nmodes = 0;
 	(*tt.tt_clear)();
@@ -94,7 +92,7 @@ wwdumpsmap()
 
 wwdumpns()
 {
-	register i, j;
+	int i, j;
 
 	(*tt.tt_clear)();
 	for (i = 0; i < wwnrow; i++) {
@@ -108,7 +106,7 @@ wwdumpns()
 
 wwdumpos()
 {
-	register i, j;
+	int i, j;
 
 	(*tt.tt_clear)();
 	for (i = 0; i < wwnrow; i++) {

@@ -1,4 +1,4 @@
-# $OpenBSD: PackageInfo.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: PackageInfo.pm,v 1.5 2004/01/27 00:14:42 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -27,8 +27,8 @@ use strict;
 use warnings;
 package OpenBSD::PackageInfo;
 our @ISA=qw(Exporter);
-our @EXPORT=qw(installed_packages installed_info info_names is_info_name 
-    add_installed is_installed CONTENTS COMMENT DESC INSTALL DEINSTALL REQUIRE 
+our @EXPORT=qw(installed_packages installed_info installed_name info_names is_info_name 
+    add_installed delete_installed is_installed borked_package CONTENTS COMMENT DESC INSTALL DEINSTALL REQUIRE 
     REQUIRED_BY DISPLAY MTREE_DIRS);
 
 use OpenBSD::PackageName;
@@ -45,8 +45,7 @@ use constant {
 
 my $pkg_db = $ENV{"PKG_DBDIR"} || '/var/db/pkg';
 
-our @list;
-my $read_list;
+our $list;
 
 our @info = (CONTENTS, COMMENT, DESC, INSTALL, DEINSTALL, REQUIRE, REQUIRED_BY, DISPLAY, MTREE_DIRS);
 
@@ -59,46 +58,89 @@ for my $i (@info) {
 
 sub add_installed
 {
-	if (!$read_list) {
+	if (!defined $list) {
 		installed_packages();
 	}
-	push(@list, @_);
+	for my $p (@_) {
+		$list->{$p} = 1;
+	}
+}
+
+sub delete_installed
+{
+	if (!defined $list) {
+		installed_packages();
+	}
+	for my $p (@_) {
+		undef $list->{$p};
+
+	}
 }
 
 sub installed_packages()
 {
-	if (!$read_list) {
-		@list = ();
-		$read_list = 1;
+	if (!defined $list) {
+		$list = {};
+		my @bad=();
 
-		opendir(my $dir, $pkg_db) or die "Bad pkg_db";
+		opendir(my $dir, $pkg_db) or die "Bad pkg_db: $!";
 		while (my $e = readdir($dir)) {
 			next if $e eq '.' or $e eq '..';
 			next unless -d "$pkg_db/$e";
+			if (! -r _) {
+				push(@bad, $e);
+				next;
+			}
 			if (-f "$pkg_db/$e/+CONTENTS") {
-				add_installed($e);
+				$list->{$e} = 1;
 			} else {
-				print "Warning: $e is not really a package";
+				print "Warning: $e is not really a package\n";
 			}
 		}
 		close($dir);
+		if (@bad > 0) {
+			print "Warning: can't access information for ", join(", ", @bad), "\n";
+		}
 	}
-	return @list;
+	return keys %$list;
 }
 
 sub installed_info($)
 {
 	my $name =  shift;
-	return "$pkg_db/$name/";
+
+	if ($name =~ m|^\Q$pkg_db\E/?|) {
+		return "$name/";
+	} else {
+		return "$pkg_db/$name/";
+	}
+}
+
+sub borked_package()
+{
+	my $i = 1;
+
+	while (-e "$pkg_db/borked.$i") {
+		$i++;
+	}
+	return "borked.$i";
 }
 
 sub is_installed($)
 {
+	my $name = installed_name(shift);
+	if (!defined $list) {
+		installed_packages();
+	}
+	return defined $list->{$name};
+}
+
+sub installed_name($)
+{
 	my $name = shift;
-	my $dir = installed_info($name);
-	return unless -d $dir;
-	return unless -f $dir.CONTENTS;
-	return $dir;
+	$name =~ s|/$||;
+	$name =~ s|^\Q$pkg_db\E/?||;
+	return $name;
 }
 
 sub info_names()

@@ -1,4 +1,5 @@
-/*	$NetBSD: hunt.c,v 1.4 1994/12/24 17:56:27 cgd Exp $	*/
+/*	$OpenBSD: hunt.c,v 1.9 2002/05/07 06:56:50 hugh Exp $	*/
+/*	$NetBSD: hunt.c,v 1.6 1997/04/20 00:02:10 mellon Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,13 +34,12 @@
 #if 0
 static char sccsid[] = "@(#)hunt.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: hunt.c,v 1.4 1994/12/24 17:56:27 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: hunt.c,v 1.9 2002/05/07 06:56:50 hugh Exp $";
 #endif /* not lint */
 
 #include "tip.h"
 
 extern char *getremote();
-extern char *rindex();
 
 static	jmp_buf deadline;
 static	int deadfl;
@@ -59,13 +55,18 @@ long
 hunt(name)
 	char *name;
 {
-	register char *cp;
+	char *cp;
 	sig_t f;
 
 	f = signal(SIGALRM, dead);
-	while (cp = getremote(name)) {
+	while ((cp = getremote(name))) {
 		deadfl = 0;
-		uucplock = rindex(cp, '/')+1;
+		uucplock = strrchr(cp, '/');
+		if (uucplock == NULL)
+			uucplock = cp;
+		else
+			uucplock++;
+
 		if (uu_lock(uucplock) < 0)
 			continue;
 		/*
@@ -79,7 +80,8 @@ hunt(name)
 			break;
 		if (setjmp(deadline) == 0) {
 			alarm(10);
-			FD = open(cp, O_RDWR);
+			FD = open(cp, (O_RDWR |
+				       (boolean(value(DC)) ? O_NONBLOCK : 0)));
 		}
 		alarm(0);
 		if (FD < 0) {
@@ -87,8 +89,13 @@ hunt(name)
 			deadfl = 1;
 		}
 		if (!deadfl) {
+			struct termios cntrl;
+
+			tcgetattr(FD, &cntrl);
+			if (!boolean(value(DC)))
+				cntrl.c_cflag |= HUPCL;
+			tcsetattr(FD, TCSAFLUSH, &cntrl);
 			ioctl(FD, TIOCEXCL, 0);
-			ioctl(FD, TIOCHPCL, 0);
 			signal(SIGALRM, SIG_DFL);
 			return ((long)cp);
 		}

@@ -710,10 +710,8 @@ xfs_symlink(struct vop_symlink_args * ap)
 
     if (error == 0) {
 	error = xfs_lookup_common(dvp, cnp, vpp);
-#if (!defined(__FreeBSD__) || __FreeBSD_version < 400012) && (!defined(__NetBSD__) || __NetBSD_Version__ < 105240000) && (!defined(__OpenBSD__) || OpenBSD <= 200211)
 	if (error == 0)
 	    vput (*vpp);
-#endif
     }
     cleanup_cnp (cnp, error);
 #if !defined(__FreeBSD__)
@@ -1185,6 +1183,7 @@ xfs_print (struct vop_print_args *v)
 int
 xfs_advlock(struct vop_advlock_args *v)
 {
+#if 0
     struct vop_advlock_args /* {
 	struct vnode *a_vp;
 	caddr_t  a_id;
@@ -1192,7 +1191,7 @@ xfs_advlock(struct vop_advlock_args *v)
 	struct flock *a_fl;
 	int  a_flags;
     } */ *ap = v;
-#if 0
+
     struct xfs_node *xn = VNODE_TO_XNODE(ap->a_vp);
     int ret;
     xfs_locktype_t locktype;

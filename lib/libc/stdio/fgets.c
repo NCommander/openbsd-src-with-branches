@@ -1,5 +1,3 @@
-/*	$NetBSD: fgets.c,v 1.5 1995/03/25 02:50:04 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,19 +31,18 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fgets.c	8.2 (Berkeley) 12/22/93";
-#endif
-static char rcsid[] = "$NetBSD: fgets.c,v 1.5 1995/03/25 02:50:04 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fgets.c,v 1.5 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 #include <string.h>
+#include "local.h"
 
 /*
  * Read at most n-1 characters from the given file.
  * Stop when a newline has been read, or the count runs out.
  * Return first argument, or NULL if no characters were read.
+ * Do not return NULL if n == 1.
  */
 char *
 fgets(buf, n, fp)
@@ -57,9 +50,9 @@ fgets(buf, n, fp)
 	register int n;
 	register FILE *fp;
 {
-	register size_t len;
-	register char *s;
-	register unsigned char *p, *t;
+	size_t len;
+	char *s;
+	unsigned char *p, *t;
 
 	if (n <= 0)		/* sanity check */
 		return (NULL);
@@ -70,15 +63,15 @@ fgets(buf, n, fp)
 		/*
 		 * If the buffer is empty, refill it.
 		 */
-		if ((len = fp->_r) <= 0) {
+		if (fp->_r <= 0) {
 			if (__srefill(fp)) {
 				/* EOF/error: stop with partial or no line */
 				if (s == buf)
 					return (NULL);
 				break;
 			}
-			len = fp->_r;
 		}
+		len = fp->_r;
 		p = fp->_p;
 
 		/*

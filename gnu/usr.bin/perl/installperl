@@ -246,9 +246,9 @@ else {
 }
 -x 'suidperl' . $exe_ext|| die "suidperl isn't executable!\n" if $d_dosuid;
 
--f 't/rantests'		|| $Is_W32
-			|| warn "WARNING: You've never run 'make test' or",
-				" some tests failed! (Installing anyway.)\n";
+#-f 't/rantests'		|| $Is_W32
+#			|| warn "WARNING: You've never run 'make test' or",
+#				" some tests failed! (Installing anyway.)\n";
 } #if (!$Is_NetWare)
 
 if (($Is_W32 and ! $Is_NetWare) or $Is_Cygwin) {
@@ -306,6 +306,10 @@ SHELL
 # This will be used to store the packlist
 my $packlist = ExtUtils::Packlist->new("$installarchlib/.packlist");
 
+# Get the install command and flags from the environment
+my @installcmd = $ENV{"INSTALL"} || "install";
+push(@installcmd, $ENV{"INSTALL_COPY"} || "-c");
+
 # First we install the version-numbered executables.
 
 if ($Is_VMS) {
@@ -339,10 +343,8 @@ elsif ($^O eq 'mpeix') {
 }
 elsif ($^O ne 'dos') {
     if (!$Is_NetWare) {
-	safe_unlink("$installbin/$perl_verbase$ver$exe_ext");
-	copy("perl$exe_ext", "$installbin/$perl_verbase$ver$exe_ext");
-	strip("$installbin/$perl_verbase$ver$exe_ext");
-	chmod(0755, "$installbin/$perl_verbase$ver$exe_ext");
+	install("perl$exe_ext", "$installbin/$perl_verbase$ver$exe_ext",
+	    "0755", $dostrip);
     }
     else {
 	# If installing onto a NetWare server
@@ -366,8 +368,8 @@ else {
 
 safe_unlink("$installbin/s$perl_verbase$ver$exe_ext");
 if ($d_dosuid) {
-    copy("suidperl$exe_ext", "$installbin/s$perl_verbase$ver$exe_ext");
-    chmod(04711, "$installbin/s$perl_verbase$ver$exe_ext");
+    install("perl$exe_ext", "$installbin/s$perl_verbase$ver$exe_ext",
+	"04711", $dostrip);
 }
 
 # Install library files.
@@ -403,7 +405,9 @@ if ($Is_VMS) {  # We did core file selection during build
 }
 else {
     # [als] hard-coded 'libperl' name... not good!
-    @corefiles = <*.h *.inc libperl*.*>;
+    #@corefiles = <*.h *.inc libperl*.*>;
+    @corefiles = <*.h *.inc>;
+    push(@corefiles,<libperl*.*>) unless defined($ENV{"NOLIBINSTALL"});
 
     # AIX needs perl.exp installed as well.
     push(@corefiles,'perl.exp') if $^O eq 'aix';
@@ -432,10 +436,7 @@ foreach my $file (@corefiles) {
 # modules if so needed.
 if ($Config{use5005threads}) {
     for my $m (qw(Queue Semaphore)) {
-	my $t = "$installprivlib/Thread/$m.pm";
-	unlink $t;
-	copy("ext/Thread/$m.pmx", $t);
-	chmod(0444, $t);
+	install("ext/Thread/$m.pmx", "$installprivlib/Thread/$m.pm", "0444");
     }
 }
 
@@ -770,6 +771,23 @@ sub copy {
     File::Copy::copy($from, $to)
 	|| warn "Couldn't copy $from to $to: $!\n"
       unless $nonono;
+    $packlist->{$xto} = { type => 'file' };
+}
+
+sub install {
+    my($from,$to,$mode,$strip) = @_;
+
+    my $xto = $to;
+    my $cmd = join(' ', @installcmd);
+    $cmd .= " -m $mode" if $mode;
+    $cmd .= " -s" if $strip;
+    $cmd .= " $from $to";
+    $xto =~ s/^\Q$destdir\E// if $destdir;
+    print $verbose ? "  install $from $xto\n" : "  $xto\n" unless $silent;
+    unless ($nonono) {
+	system($cmd);
+	warn "Couldn't $cmd\n" if $?;
+    }
     $packlist->{$xto} = { type => 'file' };
 }
 

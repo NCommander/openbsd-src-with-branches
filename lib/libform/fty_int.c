@@ -1,3 +1,5 @@
+/*	$OpenBSD: fty_int.c,v 1.6 2001/01/22 18:02:17 millert Exp $	*/
+
 
 /*
  * THIS CODE IS SPECIFICALLY EXEMPTED FROM THE NCURSES PACKAGE COPYRIGHT.
@@ -5,13 +7,20 @@
  * If you develop a field type that might be of general use, please send
  * it back to the ncurses maintainers for inclusion in the next version.
  */
+/***************************************************************************
+*                                                                          *
+*  Author : Juergen Pfeifer, juergen.pfeifer@gmx.net                       *
+*                                                                          *
+***************************************************************************/
 
 #include "form.priv.h"
 
+MODULE_ID("$From: fty_int.c,v 1.11 2000/12/09 23:46:12 tom Exp $")
+
 typedef struct {
   int precision;
-  int low;
-  int high;
+  long low;
+  long high;
 } integerARG;
 
 /*---------------------------------------------------------------------------
@@ -29,8 +38,8 @@ static void *Make_Integer_Type(va_list * ap)
   if (argp)
     {
       argp->precision = va_arg(*ap,int);
-      argp->low       = va_arg(*ap,int);
-      argp->high      = va_arg(*ap,int);
+      argp->low       = va_arg(*ap,long);
+      argp->high      = va_arg(*ap,long);
     }
   return (void *)argp;
 }
@@ -45,16 +54,16 @@ static void *Make_Integer_Type(va_list * ap)
 +--------------------------------------------------------------------------*/
 static void *Copy_Integer_Type(const void * argp)
 {
-  integerARG *ap  = (integerARG *)argp;
-  integerARG *new = (integerARG *)0;
+  const integerARG *ap = (const integerARG *)argp;
+  integerARG *result = (integerARG *)0;
 
   if (argp)
     {
-      new = (integerARG *)malloc(sizeof(integerARG));
-      if (new)
-	*new = *ap;
+      result = (integerARG *)malloc(sizeof(integerARG));
+      if (result)
+	*result = *ap;
     }
-  return (void *)new;
+  return (void *)result;
 }
 
 /*---------------------------------------------------------------------------
@@ -84,9 +93,9 @@ static void Free_Integer_Type(void * argp)
 +--------------------------------------------------------------------------*/
 static bool Check_Integer_Field(FIELD * field, const void * argp)
 {
-  integerARG *argi  = (integerARG *)argp;
-  int low           = argi->low;
-  int high          = argi->high;
+  const integerARG *argi = (const integerARG *)argp;
+  long low          = argi->low;
+  long high         = argi->high;
   int prec          = argi->precision;
   unsigned char *bp = (unsigned char *)field_buffer(field,0);
   char *s           = (char *)bp;
@@ -110,7 +119,7 @@ static bool Check_Integer_Field(FIELD * field, const void * argp)
 	    {
 	      if (val<low || val>high) return FALSE;
 	    }
-	  sprintf(buf,"%.*ld",prec,val);
+	  snprintf(buf, sizeof(buf), "%.*ld",(prec>0?prec:0),val);
 	  set_field_buffer(field,0,buf);
 	  return TRUE;
 	}
@@ -129,7 +138,7 @@ static bool Check_Integer_Field(FIELD * field, const void * argp)
 |   Return Values :  TRUE  - character is valid
 |                    FALSE - character is invalid
 +--------------------------------------------------------------------------*/
-static bool Check_Integer_Character(int c, const void * argp)
+static bool Check_Integer_Character(int c, const void * argp GCC_UNUSED)
 {
   return ((isdigit(c) || (c=='-')) ? TRUE : FALSE);
 }
@@ -148,6 +157,6 @@ static FIELDTYPE typeINTEGER = {
   NULL
 };
 
-FIELDTYPE* TYPE_INTEGER = &typeINTEGER;
+NCURSES_EXPORT_VAR(FIELDTYPE*) TYPE_INTEGER = &typeINTEGER;
 
 /* fty_int.c ends here */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cksum.c,v 1.10 2003/06/03 02:56:06 millert Exp $	*/
 /*	$NetBSD: cksum.c,v 1.7 1995/09/02 05:45:18 jtc Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,10 +43,9 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cksum.c	8.2 (Berkeley) 4/28/95";
 #endif
-static char rcsid[] = "$NetBSD: cksum.c,v 1.7 1995/09/02 05:45:18 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cksum.c,v 1.10 2003/06/03 02:56:06 millert Exp $";
 #endif /* not lint */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include <err.h>
@@ -59,22 +55,24 @@ static char rcsid[] = "$NetBSD: cksum.c,v 1.7 1995/09/02 05:45:18 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <locale.h>
 
 #include "extern.h"
 
-void usage __P((void));
+void usage(void);
+
+extern char *__progname;
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	register int ch, fd, rval;
+	int ch, fd, rval;
 	u_int32_t len, val;
 	char *fn;
-	int (*cfncn) __P((int, u_int32_t *, u_int32_t *));
-	void (*pfncn) __P((char *, u_int32_t, u_int32_t));
-	extern char *__progname;
+	int (*cfncn)(int, u_int32_t *, u_int32_t *);
+	void (*pfncn)(char *, u_int32_t, u_int32_t);
+
+	setlocale(LC_ALL, "");
 
 	if (!strcmp(__progname, "sum")) {
 		cfncn = csum1;
@@ -128,9 +126,11 @@ main(argc, argv)
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: cksum [-o 1 | 2] [file ...]\n");
+	if (!strcmp(__progname, "cksum"))
+		(void)fprintf(stderr, "usage: cksum [-o 1 | 2] [file ...]\n");
+	else
+		(void)fprintf(stderr, "usage: %s [file ...]\n", __progname);
 	exit(1);
 }

@@ -187,7 +187,8 @@ printsysname(const char *sysname)
 	       sysname);
 	break;
     default:
-	abort();
+	errx(-1, "printsysname: unknown output type %d\n", output);
+	/* NOTREACHED */
     }
     
 }
@@ -247,8 +248,6 @@ main(int argc, char **argv)
     struct sysname *sysname = sysnames;
     int found = 0;
     int optind = 0;
-
-    set_progname (argv[0]);
 
     if (getarg (args, sizeof(args)/sizeof(args[0]), argc, argv, &optind)) 
 	usage();

@@ -36,6 +36,8 @@ Boston, MA 02111-1307, USA.  */
    OBSD_HAS_DECLARE_OBJECT: 
       PIC support, FUNCTION_NAME/FUNCTION_SIZE are independent, whereas
       the corresponding logic for OBJECTS is necessarily coupled.
+  OBSD_HAS_CORRECT_ASM_OPS:
+      another mechanism provides correct ASM_OP values already.
 
    There are also a few `default' defines such as ASM_WEAKEN_LABEL,
    intended as common ground for arch that don't provide 
@@ -80,10 +82,9 @@ Boston, MA 02111-1307, USA.  */
    have subspecs.  */
 #define OBSD_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
 
-/* LIB_SPEC appropriate for OpenBSD.  Select the appropriate libc, 
-   depending on profiling and threads.  Basically, 
-   -lc(_r)?(_p)?, select _r for threads, and _p for p or pg.  */
-#define OBSD_LIB_SPEC "-lc%{pthread:_r}%{p:_p}%{!p:%{pg:_p}}"
+/* LIB_SPEC appropriate for OpenBSD.  Include -lpthread if -pthread is
+   specified on the command line. */
+#define OBSD_LIB_SPEC "%{!shared:%{pthread:-lpthread%{p:_p}%{!p:%{pg:_p}}}} %{!shared:-lc%{p:_p}%{!p:%{pg:_p}}}"
 
 #ifndef OBSD_HAS_CORRECT_SPECS
 
@@ -116,10 +117,10 @@ Boston, MA 02111-1307, USA.  */
 #undef LINK_SPEC
 #ifdef OBSD_NO_DYNAMIC_LIBRARIES
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{assert*}"
+  "%{g:%{!nostdlib:-L/usr/lib/debug}} %{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{assert*}"
 #else
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
+  "%{g:%{!nostdlib:-L/usr/lib/debug}} %{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}}} %{shared:-Bshareable -x} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
 #endif
 
 #undef LIB_SPEC
@@ -168,6 +169,8 @@ Boston, MA 02111-1307, USA.  */
    yet (look for GRACE_PERIOD_EXPIRED in gas/config/obj-aout.c).  
    SET_ASM_OP is needed for attribute alias to work.  */
 
+#ifndef	OBSD_HAS_CORRECT_ASM_OPS
+
 #undef TYPE_ASM_OP
 #undef SIZE_ASM_OP
 #undef SET_ASM_OP
@@ -175,6 +178,8 @@ Boston, MA 02111-1307, USA.  */
 #define TYPE_ASM_OP	".type"
 #define SIZE_ASM_OP	".size"
 #define SET_ASM_OP	".set"
+
+#endif
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  */
@@ -309,3 +314,7 @@ do {									 \
    as this depends on a few other details as well...  */
 #define HANDLE_SYSV_PRAGMA
 
+/* Disable the use of unsafe builtin functions, (strcpy), making
+ * them easier to spot in the object files. 
+ */
+#define NO_UNSAFE_BUILTINS

@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include <unistd.h>
+#include <string.h>
 #include <ctype.h>
 #include <syslog.h>
 
@@ -31,13 +33,15 @@
 #include <net/if.h>				/* struct ifdevea */
 
 getether(ifname, eap)
-	char *ifname, *eap;
+	char *ifname;
+	u_char *eap;
 {
 	int rc = -1;
 	int fd;
 	struct ifdevea phys;
+
 	bzero(&phys, sizeof(phys));
-	strcpy(phys.ifr_name, ifname);
+	strlcpy(phys.ifr_name, ifname, sizeof phys.ifr_name);
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		report(LOG_ERR, "getether: socket(INET,DGRAM) failed");
 		return -1;
@@ -73,7 +77,7 @@ getether(ifname, eap)
 	int nit;
 
 	bzero((char *) &ifrnit, sizeof(ifrnit));
-	strncpy(&ifrnit.ifr_name[0], ifname, IFNAMSIZ);
+	strlcpy(&ifrnit.ifr_name[0], ifname, IFNAMSIZ);
 
 	nit = open("/dev/nit", 0);
 	if (nit < 0) {
@@ -101,62 +105,46 @@ getether(ifname, eap)
 #endif /* SUNOS */
 
 
-#if defined(__386BSD__) || defined(__NetBSD__)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 /* Thanks to John Brezak <brezak@ch.hp.com> for this code. */
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>
+#include <ifaddrs.h>
 
+int
 getether(ifname, eap)
 	char *ifname;				/* interface name from ifconfig structure */
 	char *eap;					/* Ether address (output) */
 {
-	int fd, rc = -1;
-	register int n;
-	struct ifreq ibuf[16], ifr;
-	struct ifconf ifc;
-	register struct ifreq *ifrp, *ifend;
+	int rc = -1;
+	struct ifaddrs *ifap, *ifa;
 
 	/* Fetch the interface configuration */
-	fd = socket(AF_INET, SOCK_DGRAM, 0);
-	if (fd < 0) {
-		report(LOG_ERR, "getether: socket %s: %s", ifname, get_errmsg());
-		return (fd);
+	if (getifaddrs(&ifap) != 0) {
+		report(LOG_ERR, "getether: getifaddrs %s: %s", ifname,
+		    get_errmsg());
+		return (-1);
 	}
-	ifc.ifc_len = sizeof(ibuf);
-	ifc.ifc_buf = (caddr_t) ibuf;
-	if (ioctl(fd, SIOCGIFCONF, (char *) &ifc) < 0 ||
-		ifc.ifc_len < sizeof(struct ifreq)) {
-		report(LOG_ERR, "getether: SIOCGIFCONF: %s", get_errmsg);
-		goto out;
-	}
-	/* Search interface configuration list for link layer address. */
-	ifrp = ibuf;
-	ifend = (struct ifreq *) ((char *) ibuf + ifc.ifc_len);
-	while (ifrp < ifend) {
+
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 		/* Look for interface */
-		if (strcmp(ifname, ifrp->ifr_name) == 0 &&
-			ifrp->ifr_addr.sa_family == AF_LINK &&
-		((struct sockaddr_dl *) &ifrp->ifr_addr)->sdl_type == IFT_ETHER) {
-			bcopy(LLADDR((struct sockaddr_dl *) &ifrp->ifr_addr), eap, EALEN);
+		if (strcmp(ifname, ifa->ifa_name) == 0 &&
+			ifa->ifa_addr->sa_family == AF_LINK &&
+		((struct sockaddr_dl *)ifa->ifa_addr)->sdl_type == IFT_ETHER) {
+			bcopy(LLADDR((struct sockaddr_dl *)ifa->ifa_addr), eap, EALEN);
 			rc = 0;
 			break;
 		}
-		/* Bump interface config pointer */
-		n = ifrp->ifr_addr.sa_len + sizeof(ifrp->ifr_name);
-		if (n < sizeof(*ifrp))
-			n = sizeof(*ifrp);
-		ifrp = (struct ifreq *) ((char *) ifrp + n);
 	}
 
-  out:
-	close(fd);
+	freeifaddrs(ifap);
 	return (rc);
 }
 
 #define	GETETHER
-#endif /* __NetBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ */
 
 
 #ifdef	SVR4
@@ -185,7 +173,7 @@ getether(ifname, eap)
 	char *enaddr;
 	int unit = -1;				/* which unit to attach */
 
-	sprintf(devname, "/dev/%s", ifname);
+	snprintf(devname, sizeof(devname), "/dev/%s", ifname);
 	fd = open(devname, 2);
 	if (fd < 0) {
 		/* Try without the trailing digit. */
@@ -331,8 +319,9 @@ getether(ifname, eap)
 	int rc = -1;
 	int fd;
 	struct ifreq phys;
+
 	bzero(&phys, sizeof(phys));
-	strcpy(phys.ifr_name, ifname);
+	strlcpy(phys.ifr_name, ifname, sizeof phys.ifr_name);
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		report(LOG_ERR, "getether: socket(INET,DGRAM) failed");
 		return -1;

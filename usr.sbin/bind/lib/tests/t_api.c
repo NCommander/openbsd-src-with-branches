@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999-2001  Internet Software Consortium.
+ * Copyright (C) 1999-2001, 2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: t_api.c,v 1.48 2001/07/11 18:51:22 bwelling Exp $ */
+/* $ISC: t_api.c,v 1.48.2.2 2003/10/09 07:32:57 marka Exp $ */
 
 #include <config.h>
 
@@ -253,7 +253,7 @@ main(int argc, char **argv) {
 	 * Output start stanza to journal.
 	 */
 
-	sprintf(T_buf, "%s:", argv[0]);
+	snprintf(T_buf, sizeof(T_buf), "%s:", argv[0]);
 	len = strlen(T_buf);
 	(void) t_getdate(T_buf + len, T_BIGBUF - len);
 	t_putinfo("S", T_buf);
@@ -334,7 +334,7 @@ main(int argc, char **argv) {
 		++tnum;
 	}
 
-	sprintf(T_buf, "%s:", argv[0]);
+	snprintf(T_buf, sizeof(T_buf), "%s:", argv[0]);
 	len = strlen(T_buf);
 	(void) t_getdate(T_buf + len, T_BIGBUF - len);
 	t_putinfo("E", T_buf);
@@ -353,7 +353,7 @@ t_assert(const char *component, int anum, int class, const char *what, ...) {
 	 * Format text to a buffer.
 	 */
 	va_start(args, what);
-	(void)vsprintf(T_buf, what, args);
+	(void)vsnprintf(T_buf, sizeof(T_buf), what, args);
 	va_end(args);
 
 	(void)t_putinfo("A", T_buf);
@@ -365,7 +365,7 @@ t_info(const char *format, ...) {
 	va_list	args;
 
 	va_start(args, format);
-	(void) vsprintf(T_buf, format, args);
+	(void) vsnprintf(T_buf, sizeof(T_buf), format, args);
 	va_end(args);
 	(void) t_putinfo("I", T_buf);
 }
@@ -534,7 +534,7 @@ t_fgetbs(FILE *fp) {
 			}
 		}
 		*p = '\0';
-		return(((c == EOF) && (n == 0)) ? NULL : buf);
+		return(((c == EOF) && (n == 0U)) ? NULL : buf);
 	} else {
 		fprintf(stderr, "malloc failed %d", errno);
 		return(NULL);
@@ -569,7 +569,7 @@ t_getdate(char *buf, size_t buflen) {
 	t = time(NULL);
 	p = localtime(&t);
 	n = strftime(buf, buflen - 1, "%A %d %B %H:%M:%S %Y\n", p);
-	return(n != 0 ? buf : NULL);
+	return(n != 0U ? buf : NULL);
 }
 
 /*

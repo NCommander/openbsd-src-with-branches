@@ -1,3 +1,5 @@
+/*	$OpenBSD: print.c,v 1.8 2003/07/29 18:39:23 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)print.c	5.8 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: print.c,v 1.2 1993/08/01 18:29:35 mycroft Exp $";
+static char rcsid[] = "$Id: print.c,v 1.8 2003/07/29 18:39:23 deraadt Exp $";
 #endif /* not lint */
 
 /* debug print routines */
@@ -43,23 +41,26 @@ static char rcsid[] = "$Id: print.c,v 1.2 1993/08/01 18:29:35 mycroft Exp $";
 #include <protocols/talkd.h>
 #include <syslog.h>
 #include <stdio.h>
+#include "talkd.h"
 
-static	char *types[] =
-    { "leave_invite", "look_up", "delete", "announce" };
-#define	NTYPES	(sizeof (types) / sizeof (types[0]))
-static	char *answers[] = 
-    { "success", "not_here", "failed", "machine_unknown", "permission_denied",
-      "unknown_request", "badversion", "badaddr", "badctladdr" };
-#define	NANSWERS	(sizeof (answers) / sizeof (answers[0]))
+static	char *types[] = {
+	"leave_invite", "look_up", "delete", "announce"
+};
+#define	NTYPES	(sizeof(types) / sizeof(types[0]))
 
-print_request(cp, mp)
-	char *cp;
-	register CTL_MSG *mp;
+static	char *answers[] = {
+	"success", "not_here", "failed", "machine_unknown", "permission_denied",
+	"unknown_request", "badversion", "badaddr", "badctladdr"
+};
+#define	NANSWERS	(sizeof(answers) / sizeof(answers[0]))
+
+void
+print_request(char *cp, CTL_MSG *mp)
 {
 	char tbuf[80], *tp;
-	
+
 	if (mp->type > NTYPES) {
-		(void)sprintf(tbuf, "type %d", mp->type);
+		(void)snprintf(tbuf, sizeof(tbuf), "type %d", mp->type);
 		tp = tbuf;
 	} else
 		tp = types[mp->type];
@@ -67,19 +68,18 @@ print_request(cp, mp)
 	    cp, tp, mp->id_num, mp->l_name, mp->r_name, mp->r_tty);
 }
 
-print_response(cp, rp)
-	char *cp;
-	register CTL_RESPONSE *rp;
+void
+print_response(char *cp, CTL_RESPONSE *rp)
 {
 	char tbuf[80], *tp, abuf[80], *ap;
-	
+
 	if (rp->type > NTYPES) {
-		(void)sprintf(tbuf, "type %d", rp->type);
+		(void)snprintf(tbuf, sizeof(tbuf), "type %d", rp->type);
 		tp = tbuf;
 	} else
 		tp = types[rp->type];
 	if (rp->answer > NANSWERS) {
-		(void)sprintf(abuf, "answer %d", rp->answer);
+		(void)snprintf(abuf, sizeof(abuf), "answer %d", rp->answer);
 		ap = abuf;
 	} else
 		ap = answers[rp->answer];

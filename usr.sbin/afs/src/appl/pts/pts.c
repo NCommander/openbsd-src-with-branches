@@ -41,6 +41,8 @@ static int help_cmd (int argc, char **argv);
 /* Debugging on/off */
 static int prdebug = 0;
 
+extern char *__progname;
+
 static int
 empty_cmd (int argc, char **argv)
 {
@@ -155,9 +157,9 @@ dump_cmd (int argc, char **argv)
 }
 
 static int
-flags_to_string(int flags, char *string)
+flags_to_string(int flags, char *string, size_t size)
 {
-    strcpy(string, "-----");
+    strlcpy(string, "-----", size);
     if((flags & PRP_STATUS_ANY) != 0)
 	string[0]='S';
     else if((flags & PRP_STATUS_MEM) != 0)
@@ -214,7 +216,7 @@ examine_id(struct rx_connection *conn, int32_t id, char *idname)
       return error;
     } 
 
-    flags_to_string(ent.flags << 16, flags_str); /* XXX why do i have to shift by 16? seems strange */
+    flags_to_string(ent.flags << 16, flags_str, sizeof(flags_str)); /* XXX why do i have to shift by 16? seems strange */
 
     printf("Name: %s, id: %d, owner: %s, creator: %s,\n", 
            nlist.val[0], ent.id, nlist.val[1], nlist.val[2]);
@@ -1528,10 +1530,9 @@ main(int argc, char **argv)
     int pos = 0;
     int i;
 
-    setprogname(argv[0]);
     tzset();
 
-    method = log_open (getprogname(), "/dev/stderr:notime");
+    method = log_open (__progname, "/dev/stderr:notime");
     if (method == NULL)
 	errx (1, "log_open failed");
     cell_init(0, method);

@@ -6851,8 +6851,8 @@ display_debug_info (section, start, file)
 	      return 0;
 	    }
 
-	  printf (_(" <%d><%x>: Abbrev Number: %lu (%s)\n"),
-		  level, tags - section_begin - bytes_read,
+	  printf (_(" <%d><%lx>: Abbrev Number: %lu (%s)\n"),
+		  level, (unsigned long) (tags - section_begin - bytes_read),
 		  abbrev_number,
 		  get_TAG_name (entry->tag));
 
@@ -8144,7 +8144,8 @@ process_mips_specific (file)
 	    iconf[cnt] = BYTE_GET (econf64[cnt]);
 	}
 
-      printf (_("\nSection '.conflict' contains %d entries:\n"), conflictsno);
+      printf (_("\nSection '.conflict' contains %lu entries:\n"),
+	      (unsigned long) conflictsno);
       puts (_("  Num:    Index       Value  Name"));
 
       for (cnt = 0; cnt < conflictsno; ++cnt)

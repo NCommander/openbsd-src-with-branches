@@ -1,3 +1,4 @@
+/*	$OpenBSD: limits.h,v 1.7 2002/04/24 21:53:11 espie Exp $	*/
 /*	$NetBSD: limits.h,v 1.7 1994/10/26 00:56:00 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,7 +46,7 @@
 #define	_POSIX_OPEN_MAX		16
 #define	_POSIX_PATH_MAX		255
 #define _POSIX_PIPE_BUF		512
-#define _POSIX_SSIZE_MAX	32727
+#define _POSIX_SSIZE_MAX	32767
 #define _POSIX_STREAM_MAX	8
 #define _POSIX_TZNAME_MAX	3
 
@@ -61,9 +58,12 @@
 #define	_POSIX2_EXPR_NEST_MAX	32
 #define	_POSIX2_LINE_MAX	2048
 #define	_POSIX2_RE_DUP_MAX	255
-#endif /* !_ANSI_SOURCE */
 
-#if (!defined(_ANSI_SOURCE)&&!defined(_POSIX_SOURCE)) || defined(_XOPEN_SOURCE)
+/* P1003.1c */
+#define _POSIX_TTY_NAME_MAX	260
+#define _POSIX_LOGIN_NAME_MAX	MAXLOGNAME
+
+#if !defined(_POSIX_C_SOURCE) || defined(_XOPEN_SOURCE)
 #define PASS_MAX		128
 
 #define NL_ARGMAX		9
@@ -72,9 +72,17 @@
 #define NL_NMAX			1
 #define NL_SETMAX		255
 #define NL_TEXTMAX		255
-#endif 
 
-#include <machine/limits.h>
+#define TMP_MAX                 308915776
+#endif /* !_POSIX_C_SOURCE || _XOPEN_SOURCE */
+
+#endif /* !_ANSI_SOURCE */
+
+/* where does this belong? it is defined by P1003.1c */
+#define TTY_NAME_MAX		_POSIX_TTY_NAME_MAX
+#define LOGIN_NAME_MAX		MAXLOGNAME
+
+#include <sys/limits.h>
 #include <sys/syslimits.h>
 
 #endif /* !_LIMITS_H_ */

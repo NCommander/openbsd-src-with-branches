@@ -248,6 +248,9 @@ EOF
     *:[Aa]miga[Oo][Ss]:*:*)
 	echo ${UNAME_MACHINE}-unknown-amigaos
 	exit 0 ;;
+    amd64:OpenBSD:*:*)
+	echo x86_64-unknown-openbsd${UNAME_RELEASE}  
+	exit 0 ;;
     arc64:OpenBSD:*:*)
 	echo mips64el-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
@@ -363,11 +366,20 @@ EOF
     mac68k:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
+    macppc:OpenBSD:*:*)
+	echo powerpc-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
     mvme68k:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     mvme88k:OpenBSD:*:*)
 	echo m88k-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    mvmeppc:OpenBSD:*:*)
+	echo powerpc-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    pegasos:OpenBSD:*:*)
+	echo powerpc-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     powerpc:machten:*:*)
 	echo powerpc-apple-machten${UNAME_RELEASE}
@@ -650,7 +662,7 @@ EOF
 	echo hppa1.1-hp-lites
 	exit 0 ;;
     hppa*:OpenBSD:*:*)
-	echo hppa-unknown-openbsd
+	echo hppa-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     C1*:ConvexOS:*:* | convex:ConvexOS:C1*:*)
 	echo c1-convex-bsd

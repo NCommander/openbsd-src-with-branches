@@ -1,11 +1,15 @@
-#	$PMDB: Makefile,v 1.10 2002/03/07 14:27:08 art Exp $
+#	$OpenBSD: Makefile,v 1.8 2003/07/22 17:15:13 brad Exp $
 
 .include <bsd.own.mk>
 
-BINDIR=/usr/local/bin
+.if (!exists(arch/${MACHINE}/Makefile.inc) && \
+    !exists(arch/${MACHINE_ARCH}/Makefile.inc))
+NOMAN=no, man
+NOPROG=no, man
+.else
 
 PROG=pmdb
-SRCS=pmdb.c symbol.c clit.c process.c signal.c break.c
+SRCS=pmdb.c symbol.c clit.c process.c signal.c break.c core.c
 
 # support for NetBSD
 .if defined(OBJECT_FMT)
@@ -16,7 +20,7 @@ ELF_TOOLCHAIN=no
 .endif
 .endif
 
-.if (${ELF_TOOLCHAIN} == "yes")
+.if (${ELF_TOOLCHAIN:L} == "yes")
 SRCS+=elf_syms.c
 CPPFLAGS+=-DPMDB_ELF
 .else
@@ -25,7 +29,7 @@ CPPFLAGS+=-DPMDB_AOUT
 .endif
 
 LDADD=-ledit -lcurses
-DPADD=${LIBEDIT} ${LIBTERMCAP}
+DPADD=${LIBEDIT} ${LIBCURSES}
 
 CPPFLAGS+=-I${.CURDIR}
 
@@ -37,10 +41,12 @@ CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE}
 
 .if (${MACHINE_ARCH} != ${MACHINE}) && exists(arch/${MACHINE_ARCH}/Makefile.inc)
 .PATH: ${.CURDIR}/arch/${MACHINE_ARCH}
-.include arch/${MACHINE_ARCH}/Makefile.inc
+.include "arch/${MACHINE_ARCH}/Makefile.inc"
 CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE_ARCH}
 .endif
 
-COPTS=-Wall -Wno-uninitialized
+COPTS+=-Wall -Wno-uninitialized
+
+.endif
 
 .include <bsd.prog.mk>

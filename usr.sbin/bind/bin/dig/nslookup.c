@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2000-2002  Internet Software Consortium.
+ * Copyright (C) 2000-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: nslookup.c,v 1.90.2.3 2002/03/20 22:45:11 marka Exp $ */
+/* $ISC: nslookup.c,v 1.90.2.5 2003/10/09 07:32:30 marka Exp $ */
 
 #include <config.h>
 
@@ -62,7 +62,7 @@ extern isc_task_t *global_task;
 extern char *progname;
 
 static isc_boolean_t short_form = ISC_TRUE,
-	tcpmode = ISC_FALSE, deprecation_msg = ISC_TRUE,
+	tcpmode = ISC_FALSE, deprecation_msg = ISC_FALSE,
 	identify = ISC_FALSE, stats = ISC_TRUE,
 	comments = ISC_TRUE, section_question = ISC_TRUE,
 	section_answer = ISC_TRUE, section_authority = ISC_TRUE,
@@ -518,8 +518,7 @@ testclass(char *typetext) {
 
 static void
 safecpy(char *dest, char *src, int size) {
-	strncpy(dest, src, size);
-	dest[size-1] = 0;
+	strlcpy(dest, src, size);
 }
 	
 
@@ -627,7 +626,9 @@ addlookup(char *opt) {
 		rdclass = dns_rdataclass_in;
 	}
 	lookup = make_empty_lookup();
-	if (get_reverse(store, opt, lookup->nibble) == ISC_R_SUCCESS) {
+	if (get_reverse(store, opt, lookup->ip6_int, ISC_TRUE)
+	    == ISC_R_SUCCESS)
+	{
 		safecpy(lookup->textname, store, sizeof(lookup->textname));
 		lookup->rdtype = dns_rdatatype_ptr;
 		lookup->rdtypeset = ISC_TRUE;

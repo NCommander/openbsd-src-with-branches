@@ -1,7 +1,8 @@
-/*	$Id: timer.c,v 1.7 1998/08/11 15:03:26 niklas Exp $	*/
+/*	$OpenBSD: timer.c,v 1.10 2002/06/09 08:13:07 todd Exp $	*/
+/*	$EOM: timer.c,v 1.13 2000/02/20 19:58:42 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -37,13 +33,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "sysdep.h"
+
 #include "log.h"
 #include "timer.h"
 
 static TAILQ_HEAD (event_list, event) events;
 
 void
-timer_init ()
+timer_init (void)
 {
   TAILQ_INIT (&events);
 }
@@ -66,7 +64,7 @@ timer_next_event (struct timeval **timeout)
 }
 
 void
-timer_handle_expirations ()
+timer_handle_expirations (void)
 {
   struct timeval now;
   struct event *n;
@@ -75,8 +73,8 @@ timer_handle_expirations ()
   for (n = TAILQ_FIRST (&events); n && timercmp (&now, &n->expiration, >=);
        n = TAILQ_FIRST (&events))
     {
-      log_debug (LOG_TIMER, 10,
-		 "timer_handle_expirations: event %s(%p)", n->name, n->arg);
+      LOG_DBG ((LOG_TIMER, 10,
+		"timer_handle_expirations: event %s(%p)", n->name, n->arg));
       TAILQ_REMOVE (&events, n, link);
       (*n->func) (n->arg);
       free (n);
@@ -89,12 +87,14 @@ timer_add_event (char *name, void (*func) (void *), void *arg,
 {
   struct event *ev = (struct event *)malloc (sizeof *ev);
   struct event *n;
+  struct timeval now;
 
   if (!ev)
     return 0;
   ev->name = name;
   ev->func = func;
   ev->arg = arg;
+  gettimeofday (&now, 0);
   memcpy (&ev->expiration, expiration, sizeof *expiration);
   for (n = TAILQ_FIRST (&events);
        n && timercmp (expiration, &n->expiration, >=);
@@ -102,15 +102,17 @@ timer_add_event (char *name, void (*func) (void *), void *arg,
     ;
   if (n)
     {
-      log_debug (LOG_TIMER, 10,
-		 "timer_add_event: event %s(%p) added before %s(%p)", name,
-		 arg, n->name, n->arg);
+      LOG_DBG ((LOG_TIMER, 10,
+		"timer_add_event: event %s(%p) added before %s(%p), "
+		"expiration in %lds", name,
+		arg, n->name, n->arg, expiration->tv_sec - now.tv_sec));
       TAILQ_INSERT_BEFORE (n, ev, link);
     }
   else
     {
-      log_debug (LOG_TIMER, 10, "timer_add_event: event %s(%p) added last",
-		 name, arg);
+      LOG_DBG ((LOG_TIMER, 10, "timer_add_event: event %s(%p) added last, "
+		"expiration in %lds", name, arg,
+		expiration->tv_sec - now.tv_sec));
       TAILQ_INSERT_TAIL (&events, ev, link);
     }
   return ev;
@@ -119,8 +121,23 @@ timer_add_event (char *name, void (*func) (void *), void *arg,
 void
 timer_remove_event (struct event *ev)
 {
-  log_debug (LOG_TIMER, 10, "timer_remove_event: removing event %s(%p)",
-	     ev->name, ev->arg);
+  LOG_DBG ((LOG_TIMER, 10, "timer_remove_event: removing event %s(%p)",
+	    ev->name, ev->arg));
   TAILQ_REMOVE (&events, ev, link);
   free (ev);
+}
+
+void
+timer_report (void)
+{
+  struct event *ev;
+  struct timeval now;
+
+  gettimeofday (&now, 0);
+
+  for (ev = TAILQ_FIRST (&events); ev; ev = TAILQ_NEXT (ev, link))
+    LOG_DBG ((LOG_REPORT, 0,
+	      "timer_report: event %s(%p) scheduled in %d seconds",
+	      (ev->name ? ev->name : "<unknown>"), ev,
+	      (int)(ev->expiration.tv_sec - now.tv_sec)));
 }

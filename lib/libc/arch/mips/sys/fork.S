@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,12 +32,13 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)fork.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: fork.S,v 1.3 1994/12/15 17:25:11 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: fork.S,v 1.5 1999/01/19 01:38:53 d Exp $"
+#endif /* SYSLIBC_SCCS */
 
-LEAF(fork)
+SYSLEAF(fork)
+	.set	reorder
 	li	v0, SYS_fork	# pid = fork()
 	syscall
 	bne	a3, zero, 2f
@@ -50,5 +47,6 @@ LEAF(fork)
 1:
 	j	ra
 2:
-	j	_C_LABEL(cerror)
-END(fork)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
+SYSEND(fork)

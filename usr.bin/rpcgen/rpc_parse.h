@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpc_parse.h,v 1.6 2002/07/05 05:39:42 deraadt Exp $	*/
 /*	$NetBSD: rpc_parse.h,v 1.3 1995/06/11 21:50:00 pk Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -114,7 +115,7 @@ struct arg_list {
 	char *argname; /* name of struct for arg*/
 	decl_list *decls;
 };
-	
+
 typedef struct arg_list arg_list;
 
 struct proc_list {
@@ -156,14 +157,12 @@ struct definition {
 };
 typedef struct definition definition;
 
-definition *get_definition();
+definition *get_definition(void);
 
-
-struct bas_type
-{
-  char *name;
-  int length;
-  struct bas_type *next;
+struct bas_type {
+	char *name;
+	int length;
+	struct bas_type *next;
 };
 
 typedef struct bas_type bas_type;

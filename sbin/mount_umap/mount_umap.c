@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_umap.c,v 1.4 1995/04/24 13:23:11 cgd Exp $	*/
+/*	$OpenBSD: mount_umap.c,v 1.13 2003/06/11 06:22:14 deraadt Exp $	*/
+/*	$NetBSD: mount_umap.c,v 1.5 1996/04/13 01:32:05 jtc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_umap.c	8.3 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_umap.c,v 1.4 1995/04/24 13:23:11 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_umap.c,v 1.13 2003/06/11 06:22:14 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,6 +54,7 @@ static char rcsid[] = "$NetBSD: mount_umap.c,v 1.4 1995/04/24 13:23:11 cgd Exp $
 #include <miscfs/umapfs/umap.h>
 
 #include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,39 +72,37 @@ static char rcsid[] = "$NetBSD: mount_umap.c,v 1.4 1995/04/24 13:23:11 cgd Exp $
 
 /*
  * This routine provides the user interface to mounting a umap layer.
- * It takes 4 mandatory parameters.  The mandatory arguments are the place 
+ * It takes 4 mandatory parameters.  The mandatory arguments are the place
  * where the next lower level is mounted, the place where the umap layer is to
  * be mounted, the name of the user mapfile, and the name of the group
  * mapfile.  The routine checks the ownerships and permissions on the
  * mapfiles, then opens and reads them.  Then it calls mount(), which
- * will, in turn, call the umap version of mount. 
+ * will, in turn, call the umap version of mount.
  */
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
 
-void	usage __P((void));
+void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	static char not[] = "; not mounted.";
 	struct stat statbuf;
 	struct umap_args args;
 	FILE *fp, *gfp;
 	long d1, d2;
-	u_long mapdata[MAPFILEENTRIES][2];
+	u_long umapdata[UMAPFILEENTRIES][2];
 	u_long gmapdata[GMAPFILEENTRIES][2];
-	int ch, count, gnentries, mntflags, nentries;
-	char *gmapfile, *mapfile, *source, *target, buf[20];
+	int ch, count, gnentries, mntflags, unentries;
+	char *gmapfile, *umapfile, *source, target[MAXPATHLEN], buf[20];
 
 	mntflags = 0;
-	mapfile = gmapfile = NULL;
-	while ((ch = getopt(argc, argv, "g:o:u:")) != EOF)
+	umapfile = gmapfile = NULL;
+	while ((ch = getopt(argc, argv, "g:o:u:")) != -1)
 		switch (ch) {
 		case 'g':
 			gmapfile = optarg;
@@ -115,7 +111,7 @@ main(argc, argv)
 			getmntopts(optarg, mopts, &mntflags);
 			break;
 		case 'u':
-			mapfile = optarg;
+			umapfile = optarg;
 			break;
 		case '?':
 		default:
@@ -124,55 +120,56 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	if (argc != 2 || mapfile == NULL || gmapfile == NULL)
+	if (argc != 2 || umapfile == NULL || gmapfile == NULL)
 		usage();
 
 	source = argv[0];
-	target = argv[1];
+	if (realpath(argv[1], target) == NULL)
+		err(1, "realpath %s", target);
 
 	/* Read in uid mapping data. */
-	if ((fp = fopen(mapfile, "r")) == NULL)
-		err(1, "%s%s", mapfile, not);
+	if ((fp = fopen(umapfile, "r")) == NULL)
+		err(1, "%s%s", umapfile, not);
 
 #ifdef MAPSECURITY
 	/*
 	 * Check that group and other don't have write permissions on
-	 * this mapfile, and that the mapfile belongs to root. 
+	 * this umapfile, and that the umapfile belongs to root.
 	 */
 	if (fstat(fileno(fp), &statbuf))
-		err(1, "%s%s", mapfile, not);
+		err(1, "%s%s", umapfile, not);
 	if (statbuf.st_mode & S_IWGRP || statbuf.st_mode & S_IWOTH) {
 		strmode(statbuf.st_mode, buf);
 		err(1, "%s: improper write permissions (%s)%s",
-		    mapfile, buf, not);
+		    umapfile, buf, not);
 	}
 	if (statbuf.st_uid != ROOTUSER)
-		errx(1, "%s does not belong to root%s", mapfile, not);
+		errx(1, "%s does not belong to root%s", umapfile, not);
 #endif /* MAPSECURITY */
 
-	if ((fscanf(fp, "%d\n", &nentries)) != 1)
-		errx(1, "%s: nentries not found%s", mapfile, not);
-	if (nentries > MAPFILEENTRIES)
+	if ((fscanf(fp, "%d\n", &unentries)) != 1)
+		errx(1, "%s: nentries not found%s", umapfile, not);
+	if (unentries > UMAPFILEENTRIES)
 		errx(1,
-		    "maximum number of entries is %d%s", MAPFILEENTRIES, not);
+		    "maximum number of entries is %d%s", UMAPFILEENTRIES, not);
 #if 0
-	(void)printf("reading %d entries\n", nentries);
+	(void)printf("reading %d entries\n", unentries);
 #endif
-	for (count = 0; count < nentries; ++count) {
+	for (count = 0; count < unentries; ++count) {
 		if ((fscanf(fp, "%lu %lu\n", &d1, &d2)) != 2) {
 			if (ferror(fp))
-				err(1, "%s%s", mapfile, not);
+				err(1, "%s%s", umapfile, not);
 			if (feof(fp))
 				errx(1, "%s: unexpected end-of-file%s",
-				    mapfile, not);
+				    umapfile, not);
 			errx(1, "%s: illegal format (line %d)%s",
-			    mapfile, count + 2, not);
+			    umapfile, count + 2, not);
 		}
-		mapdata[count][0] = d1;
-		mapdata[count][1] = d2;
+		umapdata[count][0] = d1;
+		umapdata[count][1] = d2;
 #if 0
 		/* Fix a security hole. */
-		if (mapdata[count][1] == 0)
+		if (umapdata[count][1] == 0)
 			errx(1, "mapping id 0 not permitted (line %d)%s",
 			    count + 2, not);
 #endif
@@ -185,7 +182,7 @@ main(argc, argv)
 #ifdef MAPSECURITY
 	/*
 	 * Check that group and other don't have write permissions on
-	 * this group mapfile, and that the file belongs to root. 
+	 * this group mapfile, and that the file belongs to root.
 	 */
 	if (fstat(fileno(gfp), &statbuf))
 		err(1, "%s%s", gmapfile, not);
@@ -199,8 +196,8 @@ main(argc, argv)
 #endif /* MAPSECURITY */
 
 	if ((fscanf(gfp, "%d\n", &gnentries)) != 1)
-		errx(1, "nentries not found%s", gmapfile, not);
-	if (gnentries > MAPFILEENTRIES)
+		errx(1, "%s: nentries not found%s", gmapfile, not);
+	if (gnentries > GMAPFILEENTRIES)
 		errx(1,
 		    "maximum number of entries is %d%s", GMAPFILEENTRIES, not);
 #if 0
@@ -223,19 +220,24 @@ main(argc, argv)
 
 
 	/* Setup mount call args. */
-	args.target = source;
-	args.nentries = nentries;
-	args.mapdata = mapdata;
+	args.la.target = source;
+	args.unentries = unentries;
+	args.umapdata  = umapdata;
 	args.gnentries = gnentries;
-	args.gmapdata = gmapdata;
+	args.gmapdata  = gmapdata;
 
-	if (mount(MOUNT_UMAP, argv[1], mntflags, &args))
-		err(1, NULL);
+	if (mount(MOUNT_UMAP, target, mntflags, &args)) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel",
+			    argv[1]);
+		else
+			err(1, "%s", argv[1]);
+	}
 	exit(0);
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
 "usage: mount_umap [-o options] -u usermap -g groupmap target_fs mount_point\n");

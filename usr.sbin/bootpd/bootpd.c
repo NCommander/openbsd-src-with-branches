@@ -21,7 +21,7 @@ SOFTWARE.
 ************************************************************************/
 
 #ifndef lint
-static char rcsid[] = "$Id: bootpd.c,v 1.5 1994/12/23 16:52:31 cgd Exp $";
+static char rcsid[] = "$Id: bootpd.c,v 1.13 2003/07/08 20:41:13 deraadt Exp $";
 #endif
 
 /*
@@ -60,6 +60,7 @@ static char rcsid[] = "$Id: bootpd.c,v 1.5 1994/12/23 16:52:31 cgd Exp $";
 #include <stdlib.h>
 #include <signal.h>
 #include <stdio.h>
+#include <poll.h>
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
@@ -99,7 +100,7 @@ static char rcsid[] = "$Id: bootpd.c,v 1.5 1994/12/23 16:52:31 cgd Exp $";
 #define CONFIG_FILE		"/etc/bootptab"
 #endif
 #ifndef DUMPTAB_FILE
-#define DUMPTAB_FILE		"/tmp/bootpd.dump"
+#define DUMPTAB_FILE		"/var/run/bootpd.dump"
 #endif
 
 
@@ -113,8 +114,6 @@ static char rcsid[] = "$Id: bootpd.c,v 1.5 1994/12/23 16:52:31 cgd Exp $";
 #else
 #define P(args) ()
 #endif
-
-extern void dumptab P((char *));
 
 PRIVATE void catcher P((int));
 PRIVATE int chk_access P((char *, int32 *));
@@ -133,7 +132,7 @@ PRIVATE void usage P((void));
  * IP port numbers for client and server obtained from /etc/services
  */
 
-u_short bootps_port, bootpc_port;
+in_port_t bootps_port, bootpc_port;
 
 
 /*
@@ -149,11 +148,6 @@ struct sockaddr_in send_addr;	/*  destination */
  * option defaults
  */
 int debug = 0;					/* Debugging flag (level) */
-struct timeval actualtimeout =
-{								/* fifteen minutes */
-	15 * 60L,					/* tv_sec */
-	0							/* tv_usec */
-};
 
 /*
  * General
@@ -168,8 +162,8 @@ char hostname[MAXHOSTNAMELEN];	/* System host name */
 struct in_addr my_ip_addr;
 
 /* Flags set by signal catcher. */
-PRIVATE int do_readtab = 0;
-PRIVATE int do_dumptab = 0;
+PRIVATE volatile sig_atomic_t do_readtab = 0;
+PRIVATE volatile sig_atomic_t do_dumptab = 0;
 
 /*
  * Globals below are associated with the bootp database file (bootptab).
@@ -185,18 +179,17 @@ char *bootpd_dump = DUMPTAB_FILE;
  * main server loop is started.
  */
 
-void
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char *argv[])
 {
-	struct timeval *timeout;
 	struct bootp *bp;
 	struct servent *servp;
 	struct hostent *hep;
+	struct pollfd pfd[1];
 	char *stmp;
-	int n, ba_len, ra_len;
-	int nfound, readfds;
+	int n;
+	socklen_t ba_len, ra_len;
+	int nfound, timeout;
 	int standalone;
 
 	progname = strrchr(argv[0], '/');
@@ -253,7 +246,7 @@ main(argc, argv)
 	 * Set defaults that might be changed by option switches.
 	 */
 	stmp = NULL;
-	timeout = &actualtimeout;
+	timeout = 15 * 60 * 1000;		/* fifteen minutes */
 
 	/*
 	 * Read switches.
@@ -315,7 +308,7 @@ main(argc, argv)
 						"bootpd: missing hostname\n");
 				break;
 			}
-			strncpy(hostname, stmp, sizeof(hostname)-1);
+			strlcpy(hostname, stmp, sizeof(hostname));
 			break;
 
 		case 'i':				/* inetd mode */
@@ -339,13 +332,15 @@ main(argc, argv)
 						"%s: invalid timeout specification\n", progname);
 				break;
 			}
-			actualtimeout.tv_sec = (int32) (60 * n);
 			/*
-			 * If the actual timeout is zero, pass a NULL pointer
-			 * to select so it blocks indefinitely, otherwise,
-			 * point to the actual timeout value.
+			 * If the actual timeout is zero, pass INFTIM
+			 * to poll so it blocks indefinitely, otherwise,
+			 * set to the actual timeout value.
 			 */
-			timeout = (n > 0) ? &actualtimeout : NULL;
+			if (n > 0)
+				timeout = n * 60 * 1000;
+			else
+				timeout = INFTIM;
 			break;
 
 		default:
@@ -407,7 +402,7 @@ main(argc, argv)
 		/*
 		 * Nuke any timeout value
 		 */
-		timeout = NULL;
+		timeout = INFTIM;
 
 	} /* if standalone (1st) */
 
@@ -443,9 +438,9 @@ main(argc, argv)
 		 */
 		servp = getservbyname("bootps", "udp");
 		if (servp) {
-			bootps_port = ntohs((u_short) servp->s_port);
+			bootps_port = ntohs((in_port_t) servp->s_port);
 		} else {
-			bootps_port = (u_short) IPPORT_BOOTPS;
+			bootps_port = (in_port_t) IPPORT_BOOTPS;
 			report(LOG_ERR,
 				   "udp/bootps: unknown service -- assuming port %d",
 				   bootps_port);
@@ -475,7 +470,7 @@ main(argc, argv)
 		report(LOG_ERR,
 			   "udp/bootpc: unknown service -- assuming port %d",
 			   IPPORT_BOOTPC);
-		bootpc_port = (u_short) IPPORT_BOOTPC;
+		bootpc_port = (in_port_t) IPPORT_BOOTPC;
 	}
 
 	/*
@@ -493,12 +488,13 @@ main(argc, argv)
 	/*
 	 * Process incoming requests.
 	 */
+	pfd[0].fd = s;
+	pfd[0].events = POLLIN;
 	for (;;) {
-		readfds = 1 << s;
-		nfound = select(s + 1, (fd_set *)&readfds, NULL, NULL, timeout);
+		nfound = poll(pfd, 1, timeout);
 		if (nfound < 0) {
 			if (errno != EINTR) {
-				report(LOG_ERR, "select: %s", get_errmsg());
+				report(LOG_ERR, "poll: %s", get_errmsg());
 			}
 			/*
 			 * Call readtab() or dumptab() here to avoid the
@@ -514,10 +510,10 @@ main(argc, argv)
 			}
 			continue;
 		}
-		if (!(readfds & (1 << s))) {
+		if (!(pfd[0].revents & POLLIN)) {
 			if (debug > 1)
 				report(LOG_INFO, "exiting after %ld minutes of inactivity",
-					   actualtimeout.tv_sec / 60);
+					   timeout / (60 * 1000));
 			exit(0);
 		}
 		ra_len = sizeof(recv_addr);
@@ -576,6 +572,8 @@ PRIVATE void
 catcher(sig)
 	int sig;
 {
+    int save_errno = errno;
+
 	if (sig == SIGHUP)
 		do_readtab = 1;
 	if (sig == SIGUSR1)
@@ -585,6 +583,7 @@ catcher(sig)
 	/* XXX - Should just do it the POSIX way (sigaction). */
 	signal(sig, catcher);
 #endif
+    save_errno = errno;
 }
 
 
@@ -607,12 +606,18 @@ handle_request()
 	struct host *hp = NULL;
 	struct host dummyhost;
 	int32 bootsize = 0;
-	unsigned hlen, hashcode;
+	unsigned int hlen, hashcode;
 	int32 dest;
-	char realpath[1024];
+	char realpath[MAXPATHLEN];
 	char *clntpath;
 	char *homedir, *bootfile;
 	int n;
+
+	/*
+	 * Force C strings in packet to be NUL-terminated.
+	 */
+	bp->bp_sname[BP_SNAME_LEN-1] = '\0';
+	bp->bp_file[BP_FILE_LEN-1] = '\0';
 
 	/* XXX - SLIP init: Set bp_ciaddr = recv_addr here? */
 
@@ -632,7 +637,16 @@ ignoring request for server %s from client at %s address %s",
 			return;
 		}
 	} else {
-		strcpy(bp->bp_sname, hostname);
+		strlcpy(bp->bp_sname, hostname, sizeof(bp->bp_sname));
+	}
+
+	/* If it uses an unknown network type, ignore the request.  */
+	if (bp->bp_htype >= hwinfocnt) {
+		if (debug)
+			report(LOG_INFO,
+			    "Request with unknown network type %u",
+			    bp->bp_htype);
+		return;
 	}
 
 	/* Convert the request into a reply. */
@@ -649,7 +663,7 @@ ignoring request for server %s from client at %s address %s",
 		}
 		hlen = haddrlength(bp->bp_htype);
 		if (hlen != bp->bp_hlen) {
-			report(LOG_NOTICE, "bad addr len from from %s address %s",
+			report(LOG_NOTICE, "bad addr len from %s address %s",
 				   netname(bp->bp_htype),
 				   haddrtoa(bp->bp_chaddr, hlen));
 		}
@@ -740,11 +754,9 @@ HW addr type is IEEE 802.  convert to %s and check again\n",
 	/* Run a program, passing the client name as a parameter. */
 	if (hp->flags.exec_file) {
 		char tst[100];
-		/* XXX - Check string lengths? -gwr */
-		strcpy (tst, hp->exec_file->string);
-		strcat (tst, " ");
-		strcat (tst, hp->hostname->string);
-		strcat (tst, " &");
+
+		snprintf(tst, sizeof(tst), "%s %s &", hp->exec_file->string,
+		    hp->hostname->string);
 		if (debug)
 			report(LOG_INFO, "executing %s", tst);
 		system(tst);	/* Hope this finishes soon... */
@@ -812,7 +824,7 @@ HW addr type is IEEE 802.  convert to %s and check again\n",
 	 * daemon chroot directory (i.e. /tftpboot).
 	 */
 	if (hp->flags.tftpdir) {
-		strcpy(realpath, hp->tftpdir->string);
+		strlcpy(realpath, hp->tftpdir->string, sizeof(realpath));
 		clntpath = &realpath[strlen(realpath)];
 	} else {
 		realpath[0] = '\0';
@@ -856,14 +868,18 @@ HW addr type is IEEE 802.  convert to %s and check again\n",
 	 */
 	if (homedir) {
 		if (homedir[0] != '/')
-			strcat(clntpath, "/");
-		strcat(clntpath, homedir);
+			strlcat(clntpath, "/",
+			    sizeof(realpath) - (clntpath - realpath));
+		strlcat(clntpath, homedir,
+		    sizeof(realpath) - (clntpath - realpath));
 		homedir = NULL;
 	}
 	if (bootfile) {
 		if (bootfile[0] != '/')
-			strcat(clntpath, "/");
-		strcat(clntpath, bootfile);
+			strlcat(clntpath, "/",
+			    sizeof(realpath) - (clntpath - realpath));
+		strlcat(clntpath, bootfile,
+		    sizeof(realpath) - (clntpath - realpath));
 		bootfile = NULL;
 	}
 
@@ -871,8 +887,9 @@ HW addr type is IEEE 802.  convert to %s and check again\n",
 	 * First try to find the file with a ".host" suffix
 	 */
 	n = strlen(clntpath);
-	strcat(clntpath, ".");
-	strcat(clntpath, hp->hostname->string);
+	strlcat(clntpath, ".", sizeof(realpath) - (clntpath - realpath));
+	strlcat(clntpath, hp->hostname->string,
+	    sizeof(realpath) - (clntpath - realpath));
 	if (chk_access(realpath, &bootsize) < 0) {
 		clntpath[n] = 0;			/* Try it without the suffix */
 		if (chk_access(realpath, &bootsize) < 0) {
@@ -907,7 +924,7 @@ HW addr type is IEEE 802.  convert to %s and check again\n",
 #endif	/* CHECK_FILE_ACCESS */
 		}
 	}
-	strncpy(bp->bp_file, clntpath, BP_FILE_LEN);
+	strlcpy(bp->bp_file, clntpath, sizeof(bp->bp_file));
 	if (debug > 2)
 		report(LOG_INFO, "bootfile=\"%s\"", clntpath);
 
@@ -992,7 +1009,7 @@ sendreply(forward, dst_override)
 {
 	struct bootp *bp = (struct bootp *) pktbuf;
 	struct in_addr dst;
-	u_short port = bootpc_port;
+	in_port_t port = bootpc_port;
 	unsigned char *ha;
 	int len;
 
@@ -1146,7 +1163,7 @@ dovend_cmu(bp, hp)
 	 * domain name server, ien name server, time server
 	 */
 	vendp = (struct cmu_vend *) bp->bp_vend;
-	strcpy(vendp->v_magic, (char *)vm_cmu);
+	strlcpy(vendp->v_magic, (char *)vm_cmu, sizeof(vendp->v_magic));
 	if (hp->flags.subnet_mask) {
 		(vendp->v_smask).s_addr = hp->subnet_mask.s_addr;
 		(vendp->v_flags) |= VF_SMASK;

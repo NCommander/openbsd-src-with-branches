@@ -157,7 +157,7 @@ const char extra_symbol_chars[] = "*%-(";
 
 /* This array holds the chars that always start a comment.  If the
    pre-processor is disabled, these aren't very useful.  */
-#if defined (TE_I386AIX) || ((defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)) && ! defined (TE_LINUX) && !defined(TE_FreeBSD))
+#if defined (TE_I386AIX) || ((defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)) && ! defined (TE_LINUX) && !defined(TE_FreeBSD) && !defined(__OpenBSD__))
 /* Putting '/' here makes it impossible to use the divide operator.
    However, we need it for compatibility with SVR4 systems.  */
 const char comment_chars[] = "#/";
@@ -175,7 +175,7 @@ const char comment_chars[] = "#";
    #NO_APP at the beginning of its output.
    Also note that comments started like this one will always work if
    '/' isn't otherwise defined.  */
-#if defined (TE_I386AIX) || ((defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)) && ! defined (TE_LINUX) && !defined(TE_FreeBSD))
+#if defined (TE_I386AIX) || ((defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)) && ! defined (TE_LINUX) && !defined(TE_FreeBSD) && !defined(__OpenBSD__))
 const char line_comment_chars[] = "";
 #else
 const char line_comment_chars[] = "/";
@@ -924,6 +924,7 @@ md_begin ()
     identifier_chars['@'] = '@';
 #endif
     digit_chars['-'] = '-';
+    mnemonic_chars['-'] = '-';
     identifier_chars['_'] = '_';
     identifier_chars['.'] = '.';
 
@@ -4342,6 +4343,8 @@ md_apply_fix3 (fixP, valp, seg)
   else if (use_rela_relocations)
     {
       fixP->fx_no_overflow = 1;
+      /* Remember value for tc_gen_reloc.  */
+      fixP->fx_addnumber = value;
       value = 0;
     }
   md_number_to_chars (p, value, fixP->fx_size);
@@ -4803,9 +4806,23 @@ tc_gen_reloc (section, fixp)
   /* Use the rela in 64bit mode.  */
   else
     {
-      rel->addend = fixp->fx_offset;
-      if (fixp->fx_pcrel)
-	rel->addend -= fixp->fx_size;
+      if (!fixp->fx_pcrel)
+	rel->addend = fixp->fx_offset;
+      else
+	switch (code)
+	  {
+	  case BFD_RELOC_X86_64_PLT32:
+	  case BFD_RELOC_X86_64_GOT32:
+	  case BFD_RELOC_X86_64_GOTPCREL:
+	    rel->addend = fixp->fx_offset - fixp->fx_size;
+	    break;
+	  default:
+	    rel->addend = (section->vma
+			   - fixp->fx_size
+			   + fixp->fx_addnumber
+			   + md_pcrel_from (fixp));
+	    break;
+	  }
     }
 
   rel->howto = bfd_reloc_type_lookup (stdoutput, code);

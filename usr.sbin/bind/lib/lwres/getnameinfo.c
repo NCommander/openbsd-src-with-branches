@@ -1,5 +1,5 @@
 /*
- * Portions Copyright (C) 1999-2001  Internet Software Consortium.
+ * Portions Copyright (C) 1999-2001, 2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: getnameinfo.c,v 1.30 2001/07/10 18:25:43 gson Exp $ */
+/* $ISC: getnameinfo.c,v 1.30.2.3 2003/07/23 06:57:56 marka Exp $ */
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -29,11 +29,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by WIDE Project and
- *    its contributors.
- * 4. Neither the name of the project nor the names of its contributors
+ * 3. Neither the name of the project nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -166,20 +162,20 @@ lwres_getnameinfo(const struct sockaddr *sa, size_t salen, char *host,
 	}
 	proto = (flags & NI_DGRAM) ? "udp" : "tcp";
 
-	if (serv == NULL || servlen == 0) {
+	if (serv == NULL || servlen == 0U) {
 		/*
 		 * Caller does not want service.
 		 */
 	} else if ((flags & NI_NUMERICSERV) != 0 ||
 		   (sp = getservbyport(port, proto)) == NULL) {
-		sprintf(numserv, "%d", ntohs(port));
+		snprintf(numserv, sizeof(numserv), "%d", ntohs(port));
 		if ((strlen(numserv) + 1) > servlen)
 			ERR(ENI_MEMORY);
-		strcpy(serv, numserv);
+		strlcpy(serv, numserv, servlen);
 	} else {
 		if ((strlen(sp->s_name) + 1) > servlen)
 			ERR(ENI_MEMORY);
-		strcpy(serv, sp->s_name);
+		strlcpy(serv, sp->s_name, servlen);
 	}
 
 #if 0
@@ -201,7 +197,7 @@ lwres_getnameinfo(const struct sockaddr *sa, size_t salen, char *host,
 	}
 #endif
 
-	if (host == NULL || hostlen == 0) {
+	if (host == NULL || hostlen == 0U) {
 		/*
 		 * What should we do?
 		 */
@@ -235,7 +231,7 @@ lwres_getnameinfo(const struct sockaddr *sa, size_t salen, char *host,
 #endif
 		if (strlen(numaddr) + 1 > hostlen)
 			ERR(ENI_MEMORY);
-		strcpy(host, numaddr);
+		strlcpy(host, numaddr, hostlen);
 	} else {
 		switch (family) {
 		case AF_INET:
@@ -264,7 +260,7 @@ lwres_getnameinfo(const struct sockaddr *sa, size_t salen, char *host,
 			}
 			if ((strlen(by->realname) + 1) > hostlen)
 				ERR(ENI_MEMORY);
-			strcpy(host, by->realname);
+			strlcpy(host, by->realname, hostlen);
 		} else {
 			if (flags & NI_NAMEREQD)
 				ERR(ENI_NOHOSTNAME);
@@ -274,7 +270,7 @@ lwres_getnameinfo(const struct sockaddr *sa, size_t salen, char *host,
 				ERR(ENI_NOHOSTNAME);
 			if ((strlen(numaddr) + 1) > hostlen)
 				ERR(ENI_MEMORY);
-			strcpy(host, numaddr);
+			strlcpy(host, numaddr, hostlen);
 		}
 	}
 	result = SUCCESS;

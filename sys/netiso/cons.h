@@ -1,4 +1,5 @@
-/*	$NetBSD: cons.h,v 1.7 1995/03/29 22:09:44 briggs Exp $	*/
+/*	$OpenBSD: cons.h,v 1.2 1996/03/04 10:35:10 mickey Exp $	*/
+/*	$NetBSD: cons.h,v 1.8 1996/02/13 22:09:10 christos Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,13 +37,13 @@
 
                       All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the name of IBM not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 IBM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -65,11 +62,11 @@ SOFTWARE.
  * interface between TP and CONS
  */
 
-#define	CONSOPT_X25CRUD	0x01		/* set x.25 call request user data */
+#define	CONSOPT_X25CRUD	0x01	/* set x.25 call request user data */
 
 struct dte_addr {
-	u_char 	dtea_addr[7];
-	u_char	dtea_niblen;
+	u_char          dtea_addr[7];
+	u_char          dtea_niblen;
 };
 
 #ifdef	_KERNEL
@@ -84,8 +81,8 @@ struct dte_addr {
 
 #ifndef	PRC_NCMDS
 #include <sys/protosw.h>
-#endif	/* PRC_NCMDS */
+#endif				/* PRC_NCMDS */
 
-#define PRC_CONS_SEND_DONE 2 /* something unused in protosw.h */
+#define PRC_CONS_SEND_DONE 2	/* something unused in protosw.h */
 
-#endif	/* _KERNEL */
+#endif				/* _KERNEL */

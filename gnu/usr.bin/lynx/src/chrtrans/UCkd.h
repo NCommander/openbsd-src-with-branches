@@ -1,8 +1,5 @@
 #ifndef _UC_KD_H
 #define _UC_KD_H
-#ifdef NOTDEFINED
-#include <sys/types.h>	/* Included via tcp.h. */
-#endif /* NOTDEFINED */
 
 /*
  *  NOTE: THE FOLLOWING #define MAY NEED ADJUSTMENT.
@@ -34,7 +31,7 @@ struct unipair {
 };
 struct unipair_str {
 	u16 unicode;
-	char * replace_str;
+	CONST char * replace_str;
 };
 struct unimapdesc {
 	u16 entry_ct;

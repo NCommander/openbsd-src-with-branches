@@ -1,6 +1,11 @@
-/*
- * Copyright (c) 1994 Winning Strategies, Inc.
+/*	$OpenBSD: getconf.c,v 1.8 2003/06/10 22:20:47 deraadt Exp $	*/
+
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by J.T. Conklin.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,17 +41,19 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: getconf.c,v 1.2 1994/05/10 00:04:12 jtc Exp $";
+static char rcsid[] = "$OpenBSD: getconf.c,v 1.8 2003/06/10 22:20:47 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <limits.h>
 #include <locale.h>
 #include <unistd.h>
+#include <err.h>
 #include <errno.h>
 
-static void usage __P((void));
+static void usage(void);
 
 struct conf_variable
 {
@@ -79,7 +86,7 @@ const struct conf_variable conf_table[] =
   { "_POSIX_NAME_MAX",		CONSTANT,	_POSIX_NAME_MAX		},
   { "_POSIX_NGROUPS_MAX",	CONSTANT,	_POSIX_NGROUPS_MAX	},
   { "_POSIX_OPEN_MAX",		CONSTANT,	_POSIX_OPEN_MAX		},
-  { "_POSIX_PATH_MAX",		CONSTANT,	_POSIX_PIPE_BUF		},
+  { "_POSIX_PATH_MAX",		CONSTANT,	_POSIX_PATH_MAX		},
   { "_POSIX_PIPE_BUF",		CONSTANT,	_POSIX_PIPE_BUF		},
   { "_POSIX_SSIZE_MAX",		CONSTANT,	_POSIX_SSIZE_MAX	},
   { "_POSIX_STREAM_MAX",	CONSTANT,	_POSIX_STREAM_MAX	},
@@ -134,9 +141,7 @@ const struct conf_variable conf_table[] =
 
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	int ch;
 	const struct conf_variable *cp;
@@ -167,7 +172,7 @@ main(argc, argv)
 			break;
 	}
 	if (cp->name == NULL) {
-		err(1, "%s: unknown variable", *argv);
+		errx(1, "%s: unknown variable", *argv);
 		/* NOTREACHED */
 	}
 
@@ -226,9 +231,10 @@ main(argc, argv)
 
 
 static void
-usage()
+usage(void)
 {
-  fprintf (stderr, "usage: getconf system_var\n");
-  fprintf (stderr, "       getconf path_var pathname\n");
-  exit(1);
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: %s name [pathname]\n", __progname);
+	exit(1);
 }

@@ -1,5 +1,3 @@
-/*	$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)unvis.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: unvis.c,v 1.7 2002/02/19 19:39:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -62,10 +52,7 @@ static char rcsid[] = "$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $";
  * unvis - decode characters previously encoded by vis
  */
 int
-unvis(cp, c, astate, flag)
-	char *cp;
-	char c;
-	int *astate, flag;
+unvis(char *cp, char c, int *astate, int flag)
 {
 
 	if (flag & UNVIS_END) {
@@ -99,7 +86,7 @@ unvis(cp, c, astate, flag)
 			*astate = S_OCTAL2;
 			return (0);
 		case 'M':
-			*cp = 0200;
+			*cp = (char) 0200;
 			*astate = S_META;
 			return (0);
 		case '^':
@@ -232,7 +219,7 @@ strunvis(dst, src)
 	char *start = dst;
 	int state = 0;
 
-	while (c = *src++) {
+	while ((c = *src++)) {
 	again:
 		switch (unvis(dst, c, &state, 0)) {
 		case UNVIS_VALID:

@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,8 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strerror.c	5.6 (Berkeley) 5/4/91";*/
-static char *rcsid = "$Id: __strsignal.c,v 1.9 1995/06/15 00:07:11 jtc Exp $";
+static char *rcsid = "$OpenBSD: __strsignal.c,v 1.7 2003/03/13 15:47:33 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #ifdef NLS
@@ -46,15 +41,31 @@ static char *rcsid = "$Id: __strsignal.c,v 1.9 1995/06/15 00:07:11 jtc Exp $";
 #define sys_siglist	_sys_siglist
 
 #include <stdio.h>
+#include <limits.h>
 #include <signal.h>
 #include <string.h>
+
+static char *itoa(num)
+	int num;
+{
+	static char buffer[11];
+	char *p;
+
+	p = buffer + 4;
+	while (num >= 10) {
+		*--p = (num % 10) + '0';
+		num /= 10;
+	}
+	*p = (num % 10) + '0';
+	return p;
+}
 
 char *
 __strsignal(num, buf)
 	int num;
 	char *buf;
 {
-#define	UPREFIX	"Unknown signal: %u"
+#define	UPREFIX	"Unknown signal: "
 	register unsigned int signum;
 
 #ifdef NLS
@@ -65,17 +76,18 @@ __strsignal(num, buf)
 	signum = num;				/* convert to unsigned */
 	if (signum < NSIG) {
 #ifdef NLS
-		strcpy(buf, catgets(catd, 2, signum,
-		    (char *)sys_siglist[signum])); 
+		strlcpy(buf, catgets(catd, 2, signum,
+		    (char *)sys_siglist[signum]), NL_TEXTMAX);
 #else
 		return((char *)sys_siglist[signum]);
 #endif
 	} else {
 #ifdef NLS
-		sprintf(buf, catgets(catd, 1, 0xffff, UPREFIX), signum);
+		strlcpy(buf, catgets(catd, 1, 0xffff, UPREFIX), NL_TEXTMAX);
 #else
-		sprintf(buf, UPREFIX, signum);
+		strlcpy(buf, UPREFIX, NL_TEXTMAX);
 #endif
+		strlcat(buf, itoa(signum), NL_TEXTMAX);
 	}
 
 #ifdef NLS

@@ -1,8 +1,16 @@
-#	$NetBSD: Makefile,v 1.7 1995/04/23 07:50:21 cgd Exp $
+#	$OpenBSD: Makefile,v 1.10 2004/01/23 18:21:13 espie Exp $
 
-SUBDIR+= libmalloc
-.if (${MACHINE_ARCH} != "alpha")
-SUBDIR+= libg++
+.include <bsd.own.mk>
+USE_GCC3?=No
+
+.if make(obj)
+SUBDIR+=libiberty libobjc libstdc++ ../egcs libreadline libf2c
+.else
+.  if ${USE_GCC3:L} == "yes"
+SUBDIR+=libiberty libobjc libstdc++ libreadline libf2c
+.  else
+SUBDIR+=libiberty ../egcs libreadline 
+.  endif
 .endif
 
 .include <bsd.subdir.mk>

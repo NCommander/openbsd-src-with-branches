@@ -1,3 +1,5 @@
+/*	$OpenBSD: rc.c,v 1.3 2003/06/02 21:38:39 maja Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -28,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: rc.c,v 1.8 1995/10/13 19:25:34 moj Exp $";
+static const char rcsid[] = "$OpenBSD: rc.c,v 1.3 2003/06/02 21:38:39 maja Exp $";
 #endif
 
 #include "os.h"
@@ -78,7 +75,7 @@ mopDumpRC(fd, pkt, trans)
 		} else {
 			
 			tmpl = mopGetLong(pkt,&index);
-			(void)fprintf(fd,"Verification : %08x\n",tmpl);
+			(void)fprintf(fd,"Verification : %08lx\n",tmpl);
 
 			tmpc = mopGetChar(pkt,&index);	/* Processor */
 			(void)fprintf(fd,"Processor    :   %02x ",tmpc);
@@ -164,31 +161,31 @@ mopDumpRC(fd, pkt, trans)
 		(void)fprintf(fd,"Last Zeroed  : %04x %d\n",tmps,tmps);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Bytes rec    : %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Bytes rec    : %08lx %ld\n",tmpl,tmpl);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Bytes snd    : %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Bytes snd    : %08lx %ld\n",tmpl,tmpl);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Frames rec   : %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Frames rec   : %08lx %ld\n",tmpl,tmpl);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Frames snd   : %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Frames snd   : %08lx %ld\n",tmpl,tmpl);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Mcst Bytes re: %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Mcst Bytes re: %08lx %ld\n",tmpl,tmpl);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Mcst Frame re: %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Mcst Frame re: %08lx %ld\n",tmpl,tmpl);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Frame snd,def: %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Frame snd,def: %08lx %ld\n",tmpl,tmpl);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Frame snd,col: %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Frame snd,col: %08lx %ld\n",tmpl,tmpl);
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Frame snd,mcl: %08x %d\n",tmpl,tmpl);
+		(void)fprintf(fd,"Frame snd,mcl: %08lx %ld\n",tmpl,tmpl);
 		
 		tmps = mopGetShort(pkt,&index);
 		(void)fprintf(fd,"Snd failure  : %04x %d\n",tmps,tmps);
@@ -229,7 +226,7 @@ mopDumpRC(fd, pkt, trans)
 	case MOP_K_CODE_RVC:
 		
 		tmpl = mopGetLong(pkt,&index);
-		(void)fprintf(fd,"Verification : %08x\n",tmpl);
+		(void)fprintf(fd,"Verification : %08lx\n",tmpl);
 		
 		break;
 	case MOP_K_CODE_RLC:
