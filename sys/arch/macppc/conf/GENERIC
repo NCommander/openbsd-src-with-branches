@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.71 2005/02/17 14:40:29 dlg Exp $g
+#	$OpenBSD: GENERIC,v 1.72 2005/03/05 23:58:43 tdeval Exp $g
 #
 # PPC GENERIC config file
 #
@@ -250,5 +250,5 @@ ch*		at scsibus?
 ss*		at scsibus?
 uk*		at scsibus?
 
-#pseudo-device	hotplug	1	# devices hot plugging
+pseudo-device	hotplug	1	# devices hot plugging
 pseudo-device	wsmux	2	# mouse & keyboard multiplexor
