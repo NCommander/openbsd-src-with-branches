@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.33 2002/05/22 01:48:38 krw Exp $
+#	$OpenBSD: install.md,v 1.34 2002/08/27 02:18:34 krw Exp $
 #	$NetBSD: install.md,v 1.1.2.4 1996/08/26 15:45:14 gwr Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -39,8 +39,6 @@
 # machine dependent section of installation/upgrade script
 #
 
-# Machine-dependent install sets
-MDSETS=kernel
 MDTERM=hp300h
 MDDISKDEVS='/^hd[0-9][0-9]*:./s/:.*//p;/^sd[0-9][0-9]*:.*cylinders/s/:.*//p'
 MDCDDEVS='/^sd[0-9][0-9]*:.*CD-ROM/s/:.*//p'
