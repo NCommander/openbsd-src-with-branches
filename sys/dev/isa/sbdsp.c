@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbdsp.c,v 1.17 2001/10/31 11:00:24 art Exp $	*/
+/*	$OpenBSD: sbdsp.c,v 1.18 2001/11/06 19:53:19 miod Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -2189,9 +2189,10 @@ sbdsp_mixer_query_devinfo(addr, dip)
 }
 
 void *
-sb_malloc(addr, size, pool, flags)
+sb_malloc(addr, direction, size, pool, flags)
 	void *addr;
-	unsigned long size;
+	int direction;
+	size_t size;
 	int pool;
 	int flags;
 {
@@ -2216,10 +2217,11 @@ sb_free(addr, ptr, pool)
 	isa_free(ptr, pool);
 }
 
-unsigned long
-sb_round(addr, size)
+size_t
+sb_round(addr, direction, size)
 	void *addr;
-	unsigned long size;
+	int direction;
+	size_t size;
 {
 	if (size > MAX_ISADMA)
 		size = MAX_ISADMA;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxki.c,v 1.6 2001/11/26 18:16:02 mickey Exp $	*/
+/*	$OpenBSD: emuxki.c,v 1.7 2001/11/29 13:05:30 ho Exp $	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -245,15 +245,13 @@ struct audio_hw_if emuxki_hw_if = {
 	emuxki_set_port,
 	emuxki_get_port,
 	emuxki_query_devinfo,
-	NULL,			/* allocm_old */
+	emuxki_allocm,
 	emuxki_freem,
-	NULL,			/* round_buffersize_old */
+	emuxki_round_buffersize,
 	emuxki_mappage,
 	emuxki_get_props,
 	emuxki_trigger_output,
 	emuxki_trigger_input,
-	emuxki_allocm,
-	emuxki_round_buffersize
 };
 
 /*
