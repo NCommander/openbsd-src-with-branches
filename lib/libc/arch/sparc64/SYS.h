@@ -57,7 +57,11 @@
  */
 #ifdef PIC
 #define	CALL(name) \
-	call name, 0; \
+	PIC_PROLOGUE(%g1,%g2); \
+	sethi %hi(name),%g2; \
+	or %g2,%lo(name),%g2; \
+	ldx [%g1+%g2],%g2; \
+	jmp %g2; \
 	nop
 #else
 #define	CALL(name) \
