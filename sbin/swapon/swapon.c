@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapon.c,v 1.2 1996/06/23 14:32:46 deraadt Exp $	*/
+/*	$OpenBSD: swapon.c,v 1.3 1997/01/15 23:41:43 millert Exp $	*/
 /*	$NetBSD: swapon.c,v 1.7 1995/03/18 15:01:18 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)swapon.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: swapon.c,v 1.2 1996/06/23 14:32:46 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: swapon.c,v 1.3 1997/01/15 23:41:43 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -106,13 +106,13 @@ add(name, ignoreebusy)
 	if (swapon(name) == -1) {
 		switch (errno) {
 		case EINVAL:
-			fprintf(stderr, "swapon: %s: device not configured\n",
+			fprintf(stderr, "swapon: %s: Device not configured\n",
 			    name);
 			break;
 		case EBUSY:
 			if (!ignoreebusy)
 				fprintf(stderr,
-				    "swapon: %s: device already in use\n",
+				    "swapon: %s: Device already in use\n",
 				     name);
 			break;
 		default:
