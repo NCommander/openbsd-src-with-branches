@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_fpregs.c,v 1.3 1997/08/16 02:00:48 millert Exp $	*/
+/*	$OpenBSD: procfs_fpregs.c,v 1.4 1997/08/29 04:24:37 millert Exp $	*/
 /*	$NetBSD: procfs_fpregs.c,v 1.4 1995/08/13 09:06:05 mycroft Exp $	*/
 
 /*
@@ -99,8 +99,9 @@ procfs_dofpregs(curp, p, pfs, uio)
 }
 
 int
-procfs_validfpregs(p)
+procfs_validfpregs(p, mp)
 	struct proc *p;
+	struct mount *mp;
 {
 
 #if defined(PT_SETFPREGS) || defined(PT_GETFPREGS)
