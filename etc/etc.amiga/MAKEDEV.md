@@ -1,5 +1,5 @@
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.7 2002/02/21 18:36:55 deraadt Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.8 2002/05/16 21:11:20 miod Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001 Todd T. Fries <todd@OpenBSD.org>
@@ -138,7 +138,7 @@ mouse*)
 	0|1)
 		M mouse$U c 15 $U
 		if [ $U = 0 ]
-		then 
+		then
 			MKlist="$MKlist;rm -f mouse; ln -s mouse$U mouse"
 		fi
 		;;

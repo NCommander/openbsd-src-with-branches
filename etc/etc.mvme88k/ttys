@@ -5,7 +5,7 @@
 #
 # If the console is marked insecure, single-user requires
 # the root password.
-console	"/usr/libexec/getty Pc"		unknown	off secure 
+console	"/usr/libexec/getty Pc"		unknown	off secure
 ttye0	"/usr/libexec/getty Pc"		unknown	on  secure clocal
 ttye1	"/usr/libexec/getty Pc"		unknown	on
 ttye2	"/usr/libexec/getty Pc"		unknown	off

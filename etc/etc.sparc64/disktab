@@ -2,7 +2,7 @@
 #
 #	@(#)disktab	5.5 (Berkeley) 2/27/91
 #
-# Disk geometry and partition layout tables. 
+# Disk geometry and partition layout tables.
 # Key:
 #	ty	type of disk
 #	ns	#sectors/track
