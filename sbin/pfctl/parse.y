@@ -3145,6 +3145,12 @@ expand_queue(struct pf_altq *a, struct node_queue *nqueues,
 		return (0);
 	}
 
+	if (queues == NULL) {
+		yyerror("queue has no parent");
+		FREE_LIST(struct node_queue, nqueues);
+		return (1);
+	}
+
 	LOOP_THROUGH(struct node_queue, tqueue, queues,
 		if (!strncmp(a->qname, tqueue->queue, PF_QNAME_SIZE)) {
 			/* found ourselve in queues */
