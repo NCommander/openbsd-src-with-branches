@@ -1,4 +1,4 @@
-.\"	$OpenBSD: doshutdownhooks.9,v 1.5 2001/03/09 14:04:19 aaron Exp $
+.\"	$OpenBSD: dohooks.9,v 1.1 2001/07/27 09:55:07 niklas Exp $
 .\"
 .\" Copyright (c) 2001 Niklas Hallqvist.
 .\" All rights reserved.
@@ -41,7 +41,7 @@ The
 function invokes all hooks established using the
 .Xr hook_establish 9
 function.
-Hooks are called in the order of the the TAILQ that
+Hooks are called in the order of the TAILQ that
 .Fa head
 points to, however
 .Xr hook_establish 9
