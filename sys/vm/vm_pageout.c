@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_pageout.c,v 1.8 1997/11/06 05:59:36 csapuntz Exp $	*/
+/*	$OpenBSD: vm_pageout.c,v 1.9 1998/03/01 00:38:21 niklas Exp $	*/
 /*	$NetBSD: vm_pageout.c,v 1.23 1996/02/05 01:54:07 christos Exp $	*/
 
 /* 
@@ -101,7 +101,8 @@ int doclustered_pageout = 1;
 /*
  * Activate the pageout daemon and sleep awaiting more free memory
  */
-void vm_wait(msg)
+void
+vm_wait(msg)
 	char *msg;
 {
 	int timo = 0;
