@@ -1,7 +1,6 @@
-/* $Id: xd.c,v 1.10 1995/12/11 12:40:20 pk Exp $ */
+/*	$OpenBSD$ */
 
 /*
- *
  * Copyright (c) 1996 Charles D. Cranor
  * All rights reserved.
  *

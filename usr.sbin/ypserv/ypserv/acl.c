@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
  * All rights reserved.
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: acl.c,v 1.2 1994/07/02 16:43:04 moj Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 
 #include <sys/types.h>

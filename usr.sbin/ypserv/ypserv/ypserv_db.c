@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
  * Copyright (c) 1996 Charles D. Cranor
@@ -29,7 +31,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: ypserv_db.c,v 1.2 1996/01/20 00:47:01 chuck Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 
 /*
