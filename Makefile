@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.46 1999/01/24 16:40:42 niklas Exp $
+#	$OpenBSD: Makefile,v 1.48 1999/02/02 08:53:32 imp Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -77,7 +77,7 @@ build:
 	rm -f ${GLOBAL_AUTOCONF_CACHE}
 .endif
 	(cd ${.CURDIR}/share/mk && ${SUDO} ${MAKE} install)
-	(cd ${.CURDIR}/include; ${SUDO} ${MAKE} includes)
+	(cd ${.CURDIR}/include; ${MAKE} prereq; ${SUDO} ${MAKE} includes)
 	${SUDO} ${MAKE} cleandir
 	(cd ${.CURDIR}/lib && ${MAKE} depend && ${MAKE} && \
 	    ${SUDO} ${MAKE} install)
