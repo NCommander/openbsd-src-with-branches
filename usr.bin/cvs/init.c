@@ -72,7 +72,13 @@ struct cvsroot_file {
 
 
 
-
+/*
+ * cvs_init()
+ *
+ * Handler for the `cvs init' command which is used to initialize a CVS
+ * repository.
+ * Returns 0 on success, or the appropriate exit status on failure.
+ */
 
 int
 cvs_init(int argc, char **argv)
