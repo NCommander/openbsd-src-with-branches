@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ray.c,v 1.23 2004/05/12 06:35:11 tedu Exp $	*/
+/*	$OpenBSD: if_ray.c,v 1.24 2004/06/05 20:23:00 mcbride Exp $	*/
 /*	$NetBSD: if_ray.c,v 1.21 2000/07/05 02:35:54 onoe Exp $	*/
 
 /*
@@ -87,7 +87,8 @@
 #include <netinet/if_ether.h>
 #endif
 
-#include <net/if_ieee80211.h>	/* here, since ETHER_ADDR_LEN is in netinet */
+#include <net80211/ieee80211.h>
+#include <net80211/ieee80211_ioctl.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
