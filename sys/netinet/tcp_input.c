@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.71 2000/09/18 23:59:39 fgsch Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.72 2000/09/19 03:20:59 angelos Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -2105,8 +2105,10 @@ dropwithreset:
 	return;
 
 drop:
+#ifdef IPSEC
 	if (tdbi)
 	        free(tdbi, M_TEMP);
+#endif
 
 	/*
 	 * Drop space held by incoming segment and return.
