@@ -1,2 +1,0 @@
-dnl	$OpenBSD: upgrade,v 1.6 2002/04/07 22:13:01 miod Exp $
-OpenBSDUpgrade({:- the CD-ROM or an installation floppy-:})
