@@ -1,4 +1,4 @@
-/*	$OpenBSD: throw.c,v 1.5 2002/07/18 07:13:57 pjanzen Exp $	*/
+/*	$OpenBSD: throw.c,v 1.6 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: throw.c,v 1.3 1995/04/22 10:28:32 cgd Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)throw.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: throw.c,v 1.5 2002/07/18 07:13:57 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: throw.c,v 1.6 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -262,7 +262,7 @@ void
 rand_around(i, r, c)
 	short i, *r, *c;
 {
-	static char* pos = "\010\007\001\003\004\005\002\006\0";
+	static char pos[] = "\010\007\001\003\004\005\002\006\0";
 	static short row, col;
 	short j;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: message.c,v 1.9 2002/07/26 19:52:03 pjanzen Exp $	*/
+/*	$OpenBSD: message.c,v 1.10 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: message.c,v 1.5 1995/04/22 10:27:43 cgd Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)message.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: message.c,v 1.9 2002/07/26 19:52:03 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: message.c,v 1.10 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -351,7 +351,7 @@ is_digit(ch)
 
 int
 r_index(str, ch, last)
-	char *str;
+	const char *str;
 	int ch;
 	boolean last;
 {

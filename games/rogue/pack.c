@@ -1,4 +1,4 @@
-/*	$OpenBSD: pack.c,v 1.8 2003/04/06 18:50:38 deraadt Exp $	*/
+/*	$OpenBSD: pack.c,v 1.9 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: pack.c,v 1.3 1995/04/22 10:27:54 cgd Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)pack.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: pack.c,v 1.8 2003/04/06 18:50:38 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: pack.c,v 1.9 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,7 +55,7 @@ static const char rcsid[] = "$OpenBSD: pack.c,v 1.8 2003/04/06 18:50:38 deraadt 
 
 #include "rogue.h"
 
-char *curse_message = "you can't, it appears to be cursed";
+const char *curse_message = "you can't, it appears to be cursed";
 
 object *
 add_to_pack(obj, pack, condense)
@@ -277,7 +277,7 @@ wait_for_ack()
 
 short
 pack_letter(prompt, mask)
-	char *prompt;
+	const char *prompt;
 	unsigned short mask;
 {
 	short ch;

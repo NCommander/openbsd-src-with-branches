@@ -1,4 +1,4 @@
-/*	$OpenBSD: hit.c,v 1.4 2002/07/18 07:13:57 pjanzen Exp $	*/
+/*	$OpenBSD: hit.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: hit.c,v 1.3 1995/04/22 10:27:30 cgd Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)hit.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: hit.c,v 1.4 2002/07/18 07:13:57 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: hit.c,v 1.5 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -63,7 +63,7 @@ mon_hit(monster)
 	object *monster;
 {
 	short damage, hit_chance;
-	char *mn;
+	const char *mn;
 	float minus;
 
 	if (fight_monster && (monster != fight_monster)) {
@@ -178,7 +178,7 @@ rogue_damage(d, monster, other)
 
 int
 get_damage(ds, r)
-	char *ds;
+	const char *ds;
 	boolean r;
 {
 	int i = 0, j, n, d, total = 0;
@@ -231,7 +231,7 @@ get_w_damage(obj)
 
 int
 get_number(s)
-	char *s;
+	const char *s;
 {
 	int i = 0;
 	int total = 0;
@@ -289,7 +289,7 @@ mon_damage(monster, damage)
 	object *monster;
 	short damage;
 {
-	char *mn;
+	const char *mn;
 	short row, col;
 
 	monster->hp_to_kill -= damage;

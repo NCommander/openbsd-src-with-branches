@@ -1,4 +1,4 @@
-/*	$OpenBSD: object.c,v 1.7 2002/07/26 19:53:15 pjanzen Exp $	*/
+/*	$OpenBSD: object.c,v 1.8 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: object.c,v 1.3 1995/04/22 10:27:50 cgd Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)object.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: object.c,v 1.7 2002/07/26 19:53:15 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: object.c,v 1.8 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -291,11 +291,11 @@ free_stuff(objlist)
 	}
 }
 
-char *
+const char *
 name_of(obj)
 	const object *obj;
 {
-	char *retstring;
+	const char *retstring;
 
 	switch(obj->what_is) {
 	case SCROL:
