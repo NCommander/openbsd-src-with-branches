@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrs.c,v 1.7 1998/05/18 00:53:42 art Exp $	*/
+/*	$OpenBSD: getaddrs.c,v 1.8 1998/07/07 19:06:50 art Exp $	*/
 /*	$KTH: getaddrs.c,v 1.24 1998/04/26 15:10:44 joda Exp $		*/
 
 /*
@@ -107,11 +107,15 @@ k_get_all_addrs (struct in_addr **l)
 	       ifreq = *ifr;
 	  }
      }
-     if (j != num)
-	if ((*l = realloc (*l, j * sizeof(struct in_addr))) == NULL) {
+     if (j != num) {
+        struct in_addr *temp;
+	if ((temp = realloc (*l, j * sizeof(struct in_addr))) == NULL) {
+	    free(*l);
 	    close(fd);
 	    return -1;
 	}
+	*l = temp;
+     }
      
      close(fd);
      return j;
