@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.9 1997/09/26 02:20:44 millert Exp $
+#	$OpenBSD: Makefile,v 1.10 1997/10/01 22:13:01 deraadt Exp $
 
-REV=		22
+REV=		23
 
 ARCHDIR=	${.CURDIR}/../${MACHINE}/simpleroot
 

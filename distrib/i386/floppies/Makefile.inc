@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.8 1997/04/22 10:34:39 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.9 1997/10/01 22:16:11 deraadt Exp $
 
-REV=	22
+REV=	23
 FLOPPY3=1
 
 .include <bsd.own.mk>
