@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: param.h,v 1.34 1996/03/04 05:04:40 cgd Exp $	*/
 
 /*
