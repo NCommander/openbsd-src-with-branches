@@ -34,7 +34,7 @@
 
 #if defined(LIBC_SCCS) 
 	.text
-	.asciz "$OpenBSD: htons.S,v 1.6 2003/06/02 20:18:31 millert Exp $"
+	.asciz "$OpenBSD: htons.S,v 1.1 2004/08/11 17:30:59 pefo Exp $"
 #endif /* LIBC_SCCS */
 
 /*
@@ -42,7 +42,7 @@
  * hostorder = ntohs(netorder)
  */
 ALEAF(ntohs)
-NLEAF(htons)
+NLEAF(htons, 0)
 	.set	reorder
 #ifdef __MIPSEL__
 	srl	v0, a0, 8

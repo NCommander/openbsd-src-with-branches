@@ -35,18 +35,27 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: setlogin.S,v 1.1 2004/08/11 17:31:00 pefo Exp $"
+	.asciz "$OpenBSD: setlogin.S,v 1.2 2004/09/07 13:48:27 pefo Exp $"
 #endif /* SYSLIBC_SCCS */
 
-LEAF(setlogin)
+FRAMESZ= MKFSIZ(1,1)
+GPOFF= FRAMESZ-2*REGSZ
+
+LEAF(setlogin, FRAMESZ)
+	PTR_SUBU sp, FRAMESZ
+	SETUP_GP64(GPOFF, setlogin)
 	.set	reorder
 	li	v0, SYS_setlogin		# setlogin(name)
 	syscall
 
 	bne	a3, zero, 1f
 	sw	zero, _C_LABEL(__logname_valid)	# in getlogin()
+	RESTORE_GP64
+	PTR_ADDU sp, FRAMESZ
 	j	ra
 1:
 	LA	t9, _C_LABEL(cerror)
+	RESTORE_GP64
+	PTR_ADDU sp, FRAMESZ
 	jr	t9
 END(setlogin)

@@ -34,10 +34,10 @@
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: rindex.S,v 1.5 2003/06/02 20:18:32 millert Exp $"
+	.asciz "$OpenBSD: rindex.S,v 1.1 2004/08/11 17:30:59 pefo Exp $"
 #endif /* LIBC_SCCS */
 
-LEAF(rindex)
+LEAF(rindex, 0)
 	.set	reorder
 	move	v0, zero		# default if not found
 1:

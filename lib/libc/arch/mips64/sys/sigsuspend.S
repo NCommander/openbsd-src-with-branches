@@ -34,18 +34,27 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: sigsuspend.S,v 1.1 2004/08/11 17:31:00 pefo Exp $"
+	.asciz "$OpenBSD: sigsuspend.S,v 1.2 2004/09/07 13:48:27 pefo Exp $"
 #endif /* SYSLIBC_SCCS */
 
-SYSLEAF(sigsuspend)
+FRAMESZ= MKFSIZ(1,1)
+GPOFF= FRAMESZ-2*REGSZ
+
+SYSLEAF(sigsuspend, FRAMESZ)
+	PTR_SUBU sp, FRAMESZ
+	SETUP_GP64(GPOFF, sigsuspend)
 	.set	reorder
 	lw	a0, 0(a0)		# indirect to mask arg
 	li	v0, SYS_sigsuspend
 	syscall
 	bne	a3, zero, 1f
 	move	v0, zero		# should not happen
+	RESTORE_GP64
+	PTR_ADDU sp, FRAMESZ
 	j	ra
 1:
 	LA	t9, _C_LABEL(cerror)
+	RESTORE_GP64
+	PTR_ADDU sp, FRAMESZ
 	jr	t9
 SYSEND(sigsuspend)

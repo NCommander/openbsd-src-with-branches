@@ -34,7 +34,7 @@
 
 #if defined(LIBC_SCCS) 
 	.text
-	.asciz "$OpenBSD: fabs.S,v 1.5 2003/06/02 20:18:31 millert Exp $"
+	.asciz "$OpenBSD: fabs.S,v 1.1 2004/08/11 17:30:59 pefo Exp $"
 #endif /* LIBC_SCCS */
 
 /*
@@ -43,7 +43,7 @@
  *
  * Return absolute value of x.
  */
-LEAF(fabs)
+LEAF(fabs, 0)
 	.set	noreorder
 	j	ra
 	abs.d	$f0, $f12		# compute absolute value of x

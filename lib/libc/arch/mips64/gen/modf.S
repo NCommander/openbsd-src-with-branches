@@ -34,7 +34,7 @@
 
 #if defined(LIBC_SCCS) 
 	.text
-	.asciz "$OpenBSD: modf.S,v 1.6 2003/06/02 20:18:31 millert Exp $"
+	.asciz "$OpenBSD: modf.S,v 1.1 2004/08/11 17:30:59 pefo Exp $"
 #endif /* LIBC_SCCS */
 
 /*
@@ -42,7 +42,7 @@
  *	double val, *iptr;
  * returns: xxx and n (in *iptr) where val == n.xxx
  */
-LEAF(modf)
+LEAF(modf, 0)
 	.set	reorder
 	cfc1	t0, $31			# get the control register
 	li.d	$f2, 4503599627370496e0 # f2 <- 2^52

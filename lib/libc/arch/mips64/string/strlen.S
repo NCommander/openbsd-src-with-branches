@@ -34,10 +34,10 @@
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: strlen.S,v 1.5 2003/06/02 20:18:32 millert Exp $"
+	.asciz "$OpenBSD: strlen.S,v 1.1 2004/08/11 17:30:59 pefo Exp $"
 #endif /* LIBC_SCCS */
 
-LEAF(strlen)
+LEAF(strlen, 0)
 	.set	reorder
 	addu	v1, a0, 1
 1:

@@ -34,13 +34,13 @@
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: bcopy.S,v 1.6 2003/06/02 20:18:32 millert Exp $"
+	.asciz "$OpenBSD: bcopy.S,v 1.1 2004/08/11 17:30:59 pefo Exp $"
 #endif /* LIBC_SCCS */
 
 /* bcopy(s1, s2, n) */
 
 
-LEAF(bcopy)
+LEAF(bcopy, 0)
 	.set	noreorder
 	addu	t0, a0, a2		# t0 = end of s1 region
 	sltu	t1, a1, t0
