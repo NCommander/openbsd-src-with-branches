@@ -1,4 +1,4 @@
-/*	$OpenBSD: as.h,v 1.2 1996/04/23 00:15:51 niklas Exp $	*/
+/*	$OpenBSD: as.h,v 1.3 1998/02/28 00:51:54 niklas Exp $	*/
 
 /* as.h - global header file
    Copyright (C) 1987, 1990, 1991, 1992 Free Software Foundation, Inc.
@@ -74,6 +74,7 @@
 /* These #includes are for type definitions etc. */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
