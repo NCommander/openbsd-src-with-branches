@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.135 2004/03/12 19:33:30 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.136 2004/03/15 11:48:04 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -165,6 +165,10 @@ session_main(struct bgpd_config *config, struct peer *cpeers,
 	default:
 		return (pid);
 	}
+
+	/* control socket is outside chroot */
+	if ((csock = control_init()) == -1)
+		fatalx("control socket setup failed");
 
 	if ((pw = getpwnam(BGPD_USER)) == NULL)
 		fatal(NULL);
