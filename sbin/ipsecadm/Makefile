@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.3 1999/02/24 23:32:51 angelos Exp $
+#	$OpenBSD: Makefile,v 1.4 1999/12/20 05:38:22 angelos Exp $
 
 PROG= ipsecadm
 MAN=  ipsecadm.8
-SRCS= ipsecadm.c
+SRCS= ipsecadm.c pfkdump.c
 
 CPPFLAGS+=	-DINET6
 
