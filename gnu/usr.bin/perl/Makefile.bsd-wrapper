@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.bsd-wrapper,v 1.6 1996/08/26 05:52:24 downsj Exp $
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.7 1997/04/17 18:21:30 kstailey Exp $
 #
 # Build wrapper for Perl 5.003.
 #
@@ -100,4 +100,6 @@ tags:
 
 .include <bsd.obj.mk>
 .include <bsd.subdir.mk>
+.ifndef NOMAN
 .include <bsd.man.mk>
+.endif
