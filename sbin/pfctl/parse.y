@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.471 2004/12/22 17:17:55 dhartmei Exp $	*/
+/*	$OpenBSD: parse.y,v 1.472 2004/12/23 17:21:48 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -531,7 +531,7 @@ option		: SET OPTIMIZATION STRING		{
 		}
 		| SET FINGERPRINTS STRING {
 			if (pf->opts & PF_OPT_VERBOSE)
-				printf("fingerprints %s\n", $3);
+				printf("set fingerprints %s\n", $3);
 			if (check_rulestate(PFCTL_STATE_OPTION)) {
 				free($3);
 				YYERROR;
