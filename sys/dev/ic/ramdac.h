@@ -1,4 +1,4 @@
-/* $OpenBSD: ramdac.h,v 1.4 2002/03/14 03:16:05 millert Exp $ */
+/* $OpenBSD: ramdac.h,v 1.5 2002/04/01 11:26:32 matthieu Exp $ */
 /* $NetBSD: ramdac.h,v 1.1 2000/03/04 10:23:39 elric Exp $ */
 
 /*-
@@ -40,9 +40,7 @@
 #ifndef _DEV_IC_RAMDAC_H
 #define _DEV_IC_RAMDAC_H
 
-#include <dev/rcons/raster.h>
 #include <dev/wscons/wsconsio.h>
-#include <dev/wscons/wscons_raster.h>
 
 struct ramdac_cookie;
 
