@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.124.2.18 2003/05/16 00:29:39 niklas Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.124.2.19 2003/05/17 16:07:37 andreas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -3894,26 +3894,42 @@ void
 i386_intlock(struct intrframe iframe)
 {
 	if (iframe.if_ppl < IPL_SCHED)
+#ifdef notdef
 		spinlockmgr(&kernel_lock, LK_EXCLUSIVE|LK_CANRECURSE, 0);
+#else
+		__mp_lock(&kernel_lock);
+#endif
 }
 
 void
 i386_intunlock(struct intrframe iframe)
 {
 	if (iframe.if_ppl < IPL_SCHED)
+#ifdef notdef
 		spinlockmgr(&kernel_lock, LK_RELEASE, 0);
+#else
+		__mp_unlock(&kernel_lock);
+#endif
 }
 
 void
 i386_softintlock(void)
 {
+#ifdef notdef
 	spinlockmgr(&kernel_lock, LK_EXCLUSIVE|LK_CANRECURSE, 0);
+#else
+	__mp_lock(&kernel_lock);
+#endif
 }
 
 void
 i386_softintunlock(void)
 {
+#ifdef notdef
 	spinlockmgr(&kernel_lock, LK_RELEASE, 0);
+#else
+	__mp_unlock(&kernel_lock);
+#endif
 }
 #endif
 

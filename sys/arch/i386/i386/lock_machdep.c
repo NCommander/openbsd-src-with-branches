@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lock_machdep.c,v 1.1.2.2 2001/07/15 15:10:55 ho Exp $	*/
 /* $NetBSD: lock_machdep.c,v 1.1.2.3 2000/05/03 14:40:30 sommerfeld Exp $ */
 
 /*-
@@ -44,7 +44,7 @@
  * Machine-dependent spin lock operations.
  */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/lock.h>
 #include <sys/systm.h>
 
