@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pcb.h,v 1.4 1995/03/28 18:19:56 jtc Exp $ */
 
 /*

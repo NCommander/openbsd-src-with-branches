@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: btreg.h,v 1.4 1996/02/27 22:09:21 thorpej Exp $ */
 
 /*

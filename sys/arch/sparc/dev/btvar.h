@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: btvar.h,v 1.2 1994/11/20 20:51:56 deraadt Exp $ */
 
 /*

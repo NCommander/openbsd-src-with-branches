@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: varargs.h,v 1.10 1995/12/29 18:53:02 mycroft Exp $ */
 
 /*

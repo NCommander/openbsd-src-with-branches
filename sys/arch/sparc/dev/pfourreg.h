@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pfourreg.h,v 1.1 1996/02/27 22:09:36 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_lereg.h,v 1.5 1995/12/10 10:15:07 mycroft Exp $ */
 
 /*-

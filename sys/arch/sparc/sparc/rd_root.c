@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rd_root.c,v 1.2 1996/03/27 16:38:33 perry Exp $	*/
 
 /*

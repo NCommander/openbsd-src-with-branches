@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: fpu_explode.c,v 1.3 1996/03/14 19:41:54 christos Exp $ */
 
 /*

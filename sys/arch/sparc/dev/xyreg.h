@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: xyreg.h,v 1.3 1996/03/31 22:39:02 pk Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: bsd_audioio.h,v 1.3 1995/03/04 09:58:45 pk Exp $ */
 
 /*

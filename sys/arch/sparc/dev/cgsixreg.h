@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgsixreg.h,v 1.4 1996/02/27 22:09:31 thorpej Exp $ */
 
 /*

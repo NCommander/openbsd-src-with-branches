@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: xdvar.h,v 1.5 1996/03/31 22:38:56 pk Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iommureg.h,v 1.2 1996/05/16 15:57:18 abrown Exp $ */
 
 /*

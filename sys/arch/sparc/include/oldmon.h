@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: oldmon.h,v 1.11 1996/03/31 22:21:38 pk Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: fpu_extern.h,v 1.1 1996/03/14 19:41:56 christos Exp $	*/
 
 /*

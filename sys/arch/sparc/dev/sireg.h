@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sireg.h,v 1.3 1996/01/01 22:40:58 thorpej Exp $	*/
 
 /*

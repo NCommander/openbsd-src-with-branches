@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: fpu_subr.c,v 1.3 1996/03/14 19:42:01 christos Exp $ */
 
 /*
