@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.4 1996/04/21 22:29:03 deraadt Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.6 1996/05/15 09:03:12 mickey Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -457,7 +457,7 @@ udp_output(m, va_alist)
 	M_PREPEND(m, sizeof(struct udpiphdr), M_DONTWAIT);
 	if (m == 0) {
 		error = ENOBUFS;
-		goto release;
+		goto bail;
 	}
 
 	/*
@@ -490,6 +490,7 @@ udp_output(m, va_alist)
 	    inp->inp_socket->so_options & (SO_DONTROUTE | SO_BROADCAST),
 	    inp->inp_moptions);
 
+bail:
 	if (addr) {
 		in_pcbdisconnect(inp);
 		inp->inp_laddr = laddr;
