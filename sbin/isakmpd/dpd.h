@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp.c,v 1.65 2003/09/26 11:29:11 cedric Exp $	*/
+/*	$OpenBSD: dpd.h,v 1.1 2004/06/20 15:20:06 ho Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -27,16 +27,12 @@
 #ifndef _DPD_H_
 #define _DPD_H_
 
-#define DPD_DEFAULT_WORRY_METRIC	300			/* seconds */
-
 struct message;
 struct payload;
+struct sa;
 
-int		dpd_add_vendor_payload(struct message *);
-void		dpd_check_vendor_payload(struct message *, struct payload *);
-
-extern int	(*isakmp_dpd_initiator[])(struct message *);
-extern int	(*isakmp_dpd_responder[])(struct message *);
-extern int16_t	script_dpd[];
+int	dpd_add_vendor_payload(struct message *);
+void	dpd_check_vendor_payload(struct message *, struct payload *);
+void	dpd_handle_notify(struct message *, struct payload *);
 
 #endif /* _DPD_H_ */
