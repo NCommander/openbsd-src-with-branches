@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcode.c,v 1.2 2003/09/19 19:00:36 deraadt Exp $	*/
+/*	$OpenBSD: bcode.c,v 1.3 2003/09/19 20:58:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: bcode.c,v 1.2 2003/09/19 19:00:36 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: bcode.c,v 1.3 2003/09/19 20:58:58 deraadt Exp $";
 #endif /* not lint */
 
 #include <ssl/ssl.h>
@@ -963,10 +963,6 @@ bmod(void)
 	}
 
 	r = new_number();
-	/*
-	 * XXX gives incorrect results for scale > 0, but is AT&T and
-	 * GNU compatible
-	 */
 	scale = max(a->scale, b->scale);
 	r->scale = max(b->scale, a->scale + bmachine.scale);
 
