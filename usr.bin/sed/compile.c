@@ -1,4 +1,4 @@
-/*	$OpenBSD: compile.c,v 1.16 2003/10/07 17:56:26 deraadt Exp $	*/
+/*	$OpenBSD: compile.c,v 1.17 2004/02/17 16:13:33 otto Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)compile.c	8.2 (Berkeley) 4/28/95"; */
-static char *rcsid = "$OpenBSD: compile.c,v 1.16 2003/10/07 17:56:26 deraadt Exp $";
+static char *rcsid = "$OpenBSD: compile.c,v 1.17 2004/02/17 16:13:33 otto Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -596,7 +596,7 @@ compile_tr(char *p, char **transtab)
 		return (NULL);
 	}
 	/* We assume characters are 8 bits */
-	lt = xmalloc(UCHAR_MAX);
+	lt = xmalloc(UCHAR_MAX + 1);
 	for (i = 0; i <= UCHAR_MAX; i++)
 		lt[i] = (char)i;
 	for (op = old, np = new; *op; op++, np++)
