@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.1 1997/02/23 01:19:08 downsj Exp $
+#	$OpenBSD: RAMDISK,v 1.2 1997/04/16 11:55:54 downsj Exp $
 #
 # Ram disk kernel.
 #
@@ -111,3 +111,5 @@ oscsi*		at dio? scode ?		# Old HP SCSI
 sd*		at oscsi? target ? lun ?	# SCSI disks
 st*		at oscsi? target ? lun ?	# SCSI tapes
 ac*		at oscsi? target ? lun ?	# SCSI changers
+
+pseudo-device	rd 2
