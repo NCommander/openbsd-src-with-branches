@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.2 1999/01/11 05:11:27 millert Exp $	*/
+/*	$OpenBSD: sbic.c,v 1.3 2000/01/10 03:55:36 millert Exp $	*/
 /*	$NetBSD: sbic.c,v 1.28 1996/10/13 03:07:29 christos Exp $	*/
 
 /*
@@ -1056,7 +1056,7 @@ sbicselectbus(dev, regs, target, lun, our_addr)
 	SET_SBIC_cmd(regs, SBIC_CMD_SEL_ATN);
 
 	/*
-	 * wait for select (merged from seperate function may need
+	 * wait for select (merged from separate function may need
 	 * cleanup)
 	 */
 	WAIT_CIP(regs);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: xy.c,v 1.12 1999/01/11 05:11:57 millert Exp $	*/
+/*	$OpenBSD: xy.c,v 1.13 1999/07/09 21:34:46 art Exp $	*/
 /*	$NetBSD: xy.c,v 1.26 1997/07/19 21:43:56 pk Exp $	*/
 
 /*
@@ -1196,7 +1196,7 @@ int del;
 
 /*
  * xyc_cmd: front end for POLL'd and WAIT'd commands.  Returns 0 or error.
- * note that NORM requests are handled seperately.
+ * note that NORM requests are handled separately.
  */
 int
 xyc_cmd(xycsc, cmd, subfn, unit, block, scnt, dptr, fullmode)

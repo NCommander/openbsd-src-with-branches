@@ -1,4 +1,4 @@
-/*	$OpenBSD: nm.c,v 1.7 1998/05/11 20:34:58 niklas Exp $	*/
+/*	$OpenBSD: nm.c,v 1.8 1999/05/10 16:14:07 espie Exp $	*/
 /*	$NetBSD: nm.c,v 1.7 1996/01/14 23:04:03 pk Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)nm.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: nm.c,v 1.7 1998/05/11 20:34:58 niklas Exp $";
+static char rcsid[] = "$OpenBSD: nm.c,v 1.8 1999/05/10 16:14:07 espie Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -450,7 +450,7 @@ print_symbol(objname, sym)
 		(void)printf("%s:", objname);
 
 	/*
-	 * handle undefined-only format seperately (no space is
+	 * handle undefined-only format separately (no space is
 	 * left for symbol values, no type field is printed)
 	 */
 	if (print_only_undefined_symbols) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_exec.c,v 1.12 1999/11/10 15:55:22 mickey Exp $	*/
+/*	$OpenBSD: linux_exec.c,v 1.13 1999/11/26 16:44:28 art Exp $	*/
 /*	$NetBSD: linux_exec.c,v 1.13 1996/04/05 00:01:10 christos Exp $	*/
 
 /*
@@ -414,7 +414,7 @@ linux_elf_probe(p, epp, itp, pos, os)
  *
  * Yes, both text and data are mapped at once, so we're left with
  * writeable text for the shared libs. The Linux crt0 seemed to break
- * sometimes when data was mapped seperately. It munmapped a uselib()
+ * sometimes when data was mapped separately. It munmapped a uselib()
  * of ld.so by hand, which failed with shared text and data for ld.so
  * Yuck.
  *
