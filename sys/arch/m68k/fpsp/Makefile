@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 1996/06/16 10:33:44 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.10 1996/08/04 18:44:58 deraadt Exp $
 #	$NetBSD: Makefile,v 1.4 1994/10/26 07:48:46 cgd Exp $
 
 #	MOTOROLA MICROPROCESSOR & MEMORY TECHNOLOGY GROUP
@@ -334,6 +334,8 @@ clean cleandir:
 	rm -f $(LIB_S_FILES)
 	rm -f $(LIB_O_FILES)
 	rm -f $(LIB_TARGET)
+
+clobber:	clean
 
 _SUBDIRUSE:
 

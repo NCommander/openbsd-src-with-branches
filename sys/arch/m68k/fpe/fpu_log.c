@@ -1,5 +1,5 @@
 /*	$OpenBSD$	*/
-/*	$NetBSD: fpu_log.c,v 1.3 1996/04/30 11:52:33 briggs Exp $	*/
+/*	$NetBSD: fpu_log.c,v 1.5 1996/10/13 03:19:18 christos Exp $	*/
 
 /*
  * Copyright (c) 1995  Ken Nakata

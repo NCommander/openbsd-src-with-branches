@@ -1,5 +1,5 @@
 /*	$OpenBSD: db_interface.c,v 1.4 1996/04/21 22:17:49 deraadt Exp $	*/
-/*	$NetBSD: db_interface.c,v 1.20 1996/04/29 20:50:28 leo Exp $	*/
+/*	$NetBSD: db_interface.c,v 1.22 1996/10/13 03:19:20 christos Exp $	*/
 
 /* 
  * Mach Operating System
