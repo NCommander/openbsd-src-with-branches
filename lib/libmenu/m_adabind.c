@@ -33,72 +33,35 @@
  ****************************************************************************/
 
 /***************************************************************************
-* Module m_item_top                                                        *
-* Set and get top menus item                                               *
+* Module m_adabind.c                                                       *
+* Helper routines to ease the implementation of an Ada95 binding to        *
+* ncurses. For details and copyright of the binding see the ../Ada95       *
+* subdirectory.                                                            *
 ***************************************************************************/
-
 #include "menu.priv.h"
 
-MODULE_ID("$From: m_item_top.c,v 1.2 1998/02/11 12:13:50 tom Exp $")
+MODULE_ID("$From: m_adabind.c,v 1.6 1998/02/11 12:13:50 tom Exp $")
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int set_top_row(MENU *menu, int row)
-|   
-|   Description   :  Makes the speified row the top row in the menu
-|
-|   Return Values :  E_OK             - success
-|                    E_BAD_ARGUMENT   - not a menu pointer or invalid row
-|                    E_NOT_CONNECTED  - there are no items for the menu
-+--------------------------------------------------------------------------*/
-int set_top_row(MENU * menu, int row)
+/* Prototypes for the functions in this module */
+void  _nc_ada_normalize_menu_opts (int *opt);
+void  _nc_ada_normalize_item_opts (int *opt);
+ITEM* _nc_get_item(const MENU*, int);
+
+void _nc_ada_normalize_menu_opts (int *opt)
 {
-  ITEM *item;
-  
-  if (menu)
-    {
-      if ( menu->status & _IN_DRIVER )
-	RETURN(E_BAD_STATE);
-      if (menu->items == (ITEM **)0)
-	RETURN(E_NOT_CONNECTED);
-      
-      if ((row<0) || (row > (menu->rows - menu->arows)))
-	RETURN(E_BAD_ARGUMENT);
-    }
-  else
-    RETURN(E_BAD_ARGUMENT);
-  
-  if (row != menu->toprow)
-    {
-      if (menu->status & _LINK_NEEDED) 
-	_nc_Link_Items(menu);
-      
-      item = menu->items[ (menu->opt&O_ROWMAJOR) ? (row*menu->cols) : row ];
-      assert(menu->pattern);
-      Reset_Pattern(menu);
-      _nc_New_TopRow_and_CurrentItem(menu, row, item);
-    }
-  
-    RETURN(E_OK);
+  *opt = ALL_MENU_OPTS & (*opt);
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int top_row(const MENU *)
-|   
-|   Description   :  Return the top row of the menu
-|
-|   Return Values :  The row number or ERR if there is no row
-+--------------------------------------------------------------------------*/
-int top_row(const MENU * menu)
+void _nc_ada_normalize_item_opts (int *opt)
 {
-  if (menu && menu->items && *(menu->items))
-    {
-      assert( (menu->toprow>=0) && (menu->toprow < menu->rows) );
-      return menu->toprow;
-    }
-  else
-    return(ERR);
+  *opt = ALL_ITEM_OPTS & (*opt);
 }
 
-/* m_item_top.c ends here */
+ITEM* _nc_get_item(const MENU* menu, int idx) {
+  if (menu && menu->items && idx>=0 && (idx<menu->nitems))
+    {
+      return menu->items[idx];
+    }
+  else
+    return (ITEM*)0;
+}
