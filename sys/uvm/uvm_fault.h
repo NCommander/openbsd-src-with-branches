@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_fault.h,v 1.6 2001/03/09 05:34:38 smart Exp $	*/
-/*	$NetBSD: uvm_fault.h,v 1.12 1999/06/16 22:11:23 thorpej Exp $	*/
+/*	$OpenBSD: uvm_fault.h,v 1.7 2001/05/07 16:08:40 art Exp $	*/
+/*	$NetBSD: uvm_fault.h,v 1.13 1999/06/21 17:25:11 thorpej Exp $	*/
 
 /*
  *
