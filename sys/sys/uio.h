@@ -70,9 +70,10 @@ struct uio {
 /*
  * Limits
  */
-#define UIO_MAXIOV	1024		/* max 1K of iov's */
 #define UIO_SMALLIOV	8		/* 8 on stack, else malloc */
 #endif /* _KERNEL */
+
+#define UIO_MAXIOV	1024		/* max 1K of iov's */
 
 #ifndef	_KERNEL
 #include <sys/cdefs.h>
