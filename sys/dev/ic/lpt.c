@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpt.c,v 1.1 1996/11/30 00:53:35 niklas Exp $ */
+/*	$OpenBSD: lpt.c,v 1.2 1997/09/02 01:16:50 deraadt Exp $ */
 /*	$NetBSD: lpt.c,v 1.42 1996/10/21 22:41:14 thorpej Exp $	*/
 
 /*
@@ -159,6 +159,7 @@ lptopen(dev, flag, mode, p)
 	if (!sc)
 		return ENXIO;
 
+	sc->sc_flags = (sc->sc_flags & LPT_POLLED) | flags;
 	if ((sc->sc_flags & (LPT_POLLED|LPT_NOINTR)) == LPT_POLLED)
 		return ENXIO;
 
@@ -172,7 +173,6 @@ lptopen(dev, flag, mode, p)
 		return EBUSY;
 
 	sc->sc_state = LPT_INIT;
-	sc->sc_flags = flags;
 	LPRINTF(("%s: open: flags=0x%x\n", sc->sc_dev.dv_xname, flags));
 	iot = sc->sc_iot;
 	ioh = sc->sc_ioh;
