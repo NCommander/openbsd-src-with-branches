@@ -55,8 +55,8 @@ cvs_version(int argc, char **argv)
 		if (cvs_connect(root) < 0)
 			return (1);
 
-		cvs_sendreq(root, CVS_REQ_VERSION, NULL);
-		printf("Server: %s\n", root->cr_version);
+		printf("Server: %s\n", root->cr_version == NULL ?
+		    "(unknown)" : root->cr_version);
 		cvs_disconnect(root);
 	}
 
