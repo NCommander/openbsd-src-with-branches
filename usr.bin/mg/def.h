@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.49 2003/10/21 22:48:07 vincent Exp $	*/
+/*	$OpenBSD: def.h,v 1.50 2003/10/27 11:21:12 vincent Exp $	*/
 
 #include <sys/queue.h>
 
@@ -275,7 +275,6 @@ struct undo_rec {
 	} type;
 	REGION		 region;
 	int		 pos;
-	int		 size;
 	char		*content;
 };
 
