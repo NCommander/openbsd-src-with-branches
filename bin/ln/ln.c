@@ -1,4 +1,4 @@
-/*	$OpenBSD: ln.c,v 1.7 2002/02/16 21:27:07 millert Exp $	*/
+/*	$OpenBSD: ln.c,v 1.8 2002/07/04 04:26:40 deraadt Exp $	*/
 /*	$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)ln.c	8.2 (Berkeley) 3/31/94";
 #else
-static const char rcsid[] = "$OpenBSD: ln.c,v 1.7 2002/02/16 21:27:07 millert Exp $";
+static const char rcsid[] = "$OpenBSD: ln.c,v 1.8 2002/07/04 04:26:40 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,6 +53,7 @@ static const char rcsid[] = "$OpenBSD: ln.c,v 1.7 2002/02/16 21:27:07 millert Ex
 
 #include <err.h>
 #include <errno.h>
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -142,10 +143,10 @@ linkit(char *target, char *source, int isdir)
 
 	/* If the source is a directory, append the target's name. */
 	if (isdir || (!statf(source, &sb) && S_ISDIR(sb.st_mode))) {
-		if ((p = strrchr(target, '/')) == NULL)
-			p = target;
-		else
-			++p;
+		if ((p = basename(target)) == NULL) {
+			warn("%s", target);
+			return (1);
+		}
 		(void)snprintf(path, sizeof(path), "%s/%s", source, p);
 		source = path;
 	}
