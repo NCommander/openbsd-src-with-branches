@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn_stubs.c,v 1.2 2001/11/20 01:53:21 pvalchev Exp $	*/
+/*	$OpenBSD: dlfcn_stubs.c,v 1.3 2001/12/26 02:27:13 pvalchev Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -72,13 +72,11 @@ dlsym(void *handle, const char *name)
 int
 dlctl(void *handle, int command, void *data)
 {
-	printf("Wrong dl symbols!\n");
-	return 0;
+	return -1;
 }
 
 const char *
 dlerror()
 {
-	printf("Wrong dl symbols!\n");
 	return "Wrong dl symbols!\n";
 }
