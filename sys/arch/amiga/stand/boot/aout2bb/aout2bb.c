@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: aout2bb.c,v 1.3 2002/03/14 01:26:29 millert Exp $
+ * $OpenBSD: aout2bb.c,v 1.4 2002/06/11 05:18:21 jsyn Exp $
  * $NetBSD: aout2bb.c,v 1.2 1996/12/31 22:39:58 veego Exp $
  *
  * Copyright (c) 1996 Ignatios Souvatzis
@@ -166,7 +166,7 @@ main(argc, argv)
 	if (tsz+dsz+bsz > BBSIZE)
 		errx(1, "%s: resulting image too big", argv[0]);
 
-	memset(buffer, sizeof(buffer), 0);
+	memset(buffer, 0, sizeof(buffer));
 	memcpy(buffer, image + N_TXTOFF(*eh), tsz+dsz);
 
 	/*
