@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xl.c,v 1.12 1998/10/09 00:15:35 deraadt Exp $	*/
+/*	$OpenBSD: if_xl.c,v 1.13 1998/11/11 23:25:02 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1533,7 +1533,7 @@ xl_attach(config_id, unit)
 		if (round % 8) {
 			round++;
 			roundptr++;
-		}
+		} else
 			break;
 	}
 	sc->xl_ldata = (struct xl_list_data *)roundptr;
@@ -3122,8 +3122,8 @@ xl_attach(parent, self, aux)
 		if (round % 8) {
 			round++;
 			roundptr++;
-		}
-		break;
+		} else
+			break;
 	}
 	sc->xl_ldata = (struct xl_list_data *)roundptr;
 	bzero(sc->xl_ldata, sizeof(struct xl_list_data));
