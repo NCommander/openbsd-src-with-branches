@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.2 2001/06/23 19:44:59 deraadt Exp $
+#	$OpenBSD: install.md,v 1.3 2001/12/23 01:51:52 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -176,7 +176,7 @@ __EOT
 
 	else
 		cat << __EOT
-Welcome to the OpenBSD/sun3 ${VERSION} upgrade program.
+Welcome to the OpenBSD/sun3 ${VERSION_MAJOR}.${VERSION_MINOR} upgrade program.
 
 This program is designed to help you upgrade your OpenBSD system in a
 simple and rational way.
