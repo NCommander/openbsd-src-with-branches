@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kex.c,v 1.49 2002/03/26 23:14:51 markus Exp $");
+RCSID("$OpenBSD: kex.c,v 1.50 2002/05/15 15:47:49 mouring Exp $");
 
 #include <openssl/crypto.h>
 
@@ -202,8 +202,8 @@ kex_input_kexinit(int type, u_int32_t seq, void *ctxt)
 		packet_get_char();
 	for (i = 0; i < PROPOSAL_MAX; i++)
 		xfree(packet_get_string(NULL));
-	packet_get_char();
-	packet_get_int();
+	(void) packet_get_char();
+	(void) packet_get_int();
 	packet_check_eom();
 
 	kex_kexinit_finish(kex);
