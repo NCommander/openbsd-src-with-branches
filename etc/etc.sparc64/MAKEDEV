@@ -403,11 +403,16 @@ if [ "$os" = "SunOS" ]; then
 			 s/operator/5/g;s/root.kmem/root.2/g;s/root\./root:/g'`
 	}
 fi
-$eo eval "$RMlist"
+list="$RMlist"
 for mode in $modes; do
-    $eo eval "${mklist[$mode]}"
+	list="$list;${mklist[$mode]}"
 done
 for group in $groups; do
-	$eo eval "${grplist[$groupl]}"
+	list="$list;${grplist[$groupl]}"
 done
-$eo eval "$MKlist"
+list="$list;$MKlist"
+if [ "$eo" = "echo" ]; then
+	echo "$list"
+else
+	echo "$list" | sh
+fi
