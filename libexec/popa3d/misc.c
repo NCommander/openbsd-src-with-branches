@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * Miscellaneous syscall wrappers. See misc.h for the descriptions.
  */

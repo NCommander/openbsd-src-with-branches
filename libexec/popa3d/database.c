@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * Message database management.
  */

@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * Standalone POP server: accepts connections, checks the anti-flood limits,
  * logs and starts the actual POP sessions.

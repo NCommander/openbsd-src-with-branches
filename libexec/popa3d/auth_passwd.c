@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * The /etc/passwd authentication routine.
  */

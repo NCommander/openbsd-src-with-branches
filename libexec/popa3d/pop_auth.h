@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * AUTHORIZATION state handling.
  */

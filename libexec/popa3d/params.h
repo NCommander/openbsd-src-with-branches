@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * Global POP daemon parameters.
  */

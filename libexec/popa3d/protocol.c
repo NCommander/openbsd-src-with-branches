@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * POP protocol handling.
  */
