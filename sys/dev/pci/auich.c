@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.6 2001/01/11 21:40:05 mickey Exp $	*/
+/*	$OpenBSD: auich.c,v 1.7 2001/03/09 09:26:45 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -371,7 +371,7 @@ auich_attach(parent, self, aux)
 	sprintf(sc->sc_audev.version, "0x%02x", PCI_REVISION(pa->pa_class));
 	strcpy(sc->sc_audev.config, sc->sc_dev.dv_xname);
 
-	printf(" %s: %s\n", intrstr, sc->sc_audev.name);
+	printf(": %s %s\n", intrstr, sc->sc_audev.name);
 
 	/* allocate dma lists */
 #define	a(a)	(void*)(((u_long)(a) + sizeof(*(a)) - 1) & ~(sizeof(*(a))-1))
