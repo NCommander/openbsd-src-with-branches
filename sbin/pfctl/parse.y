@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.323 2003/02/18 21:59:34 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.324 2003/02/19 21:54:46 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1549,7 +1549,13 @@ xhost		: not host			{
 		;
 
 host		: address
-		| STRING '/' number		{ $$ = host($1, $3); }
+		| address '/' number		{
+			struct node_host	*n;
+
+			$$ = $1;
+			for (n = $1; n != NULL; n = n->next)
+				set_ipmask(n, $3);
+		}
 		| PORTUNARY STRING PORTUNARY	{
 			if ($1 != PF_OP_LT || $3 != PF_OP_GT)
 				YYERROR;
