@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.29 1998/03/13 20:50:52 deraadt Exp $
+#	$OpenBSD: install.md,v 1.30 1998/03/27 23:28:14 deraadt Exp $
 #
 #
 # Copyright rc) 1996 The NetBSD Foundation, Inc.
@@ -202,7 +202,6 @@ md_welcome_banner() {
 
 This program is designed to help you put OpenBSD on your disk in a simple and
 rational way.
-
 __welcome_banner_1
 
 	else
