@@ -277,7 +277,7 @@ cvs_splitpath(const char *path, char *dir, size_t dlen, char *file, size_t flen)
 		}
 	}
 	else {
-		rlen = MIN(dlen - 1, sp - path);
+		rlen = MIN(dlen - 1, (size_t)(sp - path));
 		if (dir != NULL) {
 			strncpy(dir, path, rlen);
 			dir[rlen] = '\0';

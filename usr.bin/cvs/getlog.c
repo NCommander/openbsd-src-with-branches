@@ -38,6 +38,7 @@
 #include "log.h"
 #include "rcs.h"
 #include "sock.h"
+#include "proto.h"
 
 
 #define CVS_GLOG_RFONLY    0x01

@@ -255,7 +255,6 @@ cvsroot_get(const char *dir)
 	size_t len;
 	char rootpath[MAXPATHLEN], *rootstr, line[128];
 	FILE *fp;
-	struct cvsroot *rp;
 
 	if (cvs_rootstr != NULL)
 		return cvsroot_parse(cvs_rootstr);

@@ -37,6 +37,7 @@
 
 #include "cvs.h"
 #include "log.h"
+#include "proto.h"
 
 
 
