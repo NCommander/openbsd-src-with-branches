@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.195 2002/03/25 22:03:01 frantzen Exp $ */
+/*	$OpenBSD: pf.c,v 1.196 2002/03/25 23:33:13 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1022,6 +1022,7 @@ pfattach(int num)
 	timeout_add(&pf_expire_to, pftm_interval * hz);
 
 	pf_normalize_init();
+	pf_status.debug = PF_DEBUG_URGENT;
 }
 
 int
