@@ -22,6 +22,11 @@ config.status:
 rcsfile.5:
 	(cd man ; ${MAKE} ${GNUCFLAGS} rcsfile.5)
 
+# Cope with temporary make(1) bugs.  This entire rule should be removed.
+man/rcsfile.cat5:	rcsfile.5
+	@echo "${NROFF} -mandoc ${.OBJDIR}/man/rcsfile.5 > ${.TARGET}"
+	@${NROFF} -mandoc ${.OBJDIR}/man/rcsfile.5 > ${.TARGET} || (rm -f ${.TARGET}; false)
+
 install: maninstall
 	${MAKE} ${GNUCFLAGS} prefix=${DESTDIR}/usr \
 		bindir=${DESTDIR}/usr/bin INSTALL_MAN= install
