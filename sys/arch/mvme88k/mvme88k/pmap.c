@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.11 1999/09/03 18:01:31 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.12 1999/09/27 19:13:23 smurph Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -1344,7 +1344,7 @@ pmap_bootstrap(vm_offset_t load_start, /* IN */
    virt = *virt_start;
 
    SYSMAP(caddr_t, vmpte , vmmap, 1);
-   SYSMAP(struct msgbuf *, msgbufmap ,msgbufp, 1);
+   SYSMAP(struct msgbuf *, msgbufmap ,msgbufp, btoc(MSGBUFSIZE));
 
    vmpte->pfn = -1;
    vmpte->dtype = DT_INVALID;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.9 1997/01/24 19:57:14 niklas Exp $	*/
+/*	$OpenBSD: param.h,v 1.10 1997/09/17 17:44:04 downsj Exp $	*/
 /*	$NetBSD: param.h,v 1.15 1996/11/13 21:13:19 cgd Exp $	*/
 
 /*
@@ -108,6 +108,8 @@
 #define	NMBCLUSTERS	512		/* map size, max cluster allocation */
 #endif
 #endif
+
+#define MSGBUFSIZE	8192
 
 /*
  * Size of kernel malloc arena in CLBYTES-sized logical pages

@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.8 1999/09/20 17:06:00 deraadt Exp $	*/
+/*	$OpenBSD: param.h,v 1.9 1999/11/27 16:25:32 deraadt Exp $	*/
 /*	$NetBSD: param.h,v 1.29 1996/03/04 05:04:26 cgd Exp $	*/
 
 /*-
@@ -92,6 +92,10 @@
 #define	SINCR		1		/* increment of stack/NBPG */
 #define	UPAGES		2		/* pages of u-area */
 #define	USPACE		(UPAGES * NBPG)	/* total size of u-area */
+
+#ifndef MSGBUFSIZE
+#define MSGBUFSIZE	2*NBPG		/* default message buffer size */
+#endif
 
 /*
  * Constants related to network buffer management.
