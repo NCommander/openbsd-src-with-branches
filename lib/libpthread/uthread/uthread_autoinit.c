@@ -1,7 +1,7 @@
 /*
  * David Leonard, 1998. Public Domain. <david.leonard@csee.uq.edu.au>
  *
- * $OpenBSD: uthread_autoinit.c,v 1.6 1999/03/10 10:05:39 d Exp $
+ * $OpenBSD: uthread_autoinit.c,v 1.7 1999/11/25 07:01:32 d Exp $
  */
 
 #include <stdio.h>
@@ -68,7 +68,7 @@ _init()
  * the collect2 stage of linkage will inform __main (from libgcc.a)
  * to call it.
  */
-#if defined(__GNUC__) /* && defined(notyet) /* internal compiler error??? */
+#if defined(__GNUC__) /* && defined(notyet) */ /* internal compiler error??? */
 void _thread_init_constructor __P((void)) __attribute__((constructor));
 void
 _thread_init_constructor()
