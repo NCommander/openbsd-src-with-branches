@@ -26,7 +26,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: readpassphrase.c,v 1.3 2001/06/16 22:53:10 millert Exp $";
+static char rcsid[] = "$OpenBSD: readpassphrase.c,v 1.4 2001/06/18 17:41:39 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ctype.h>
@@ -109,7 +109,7 @@ readpassphrase(prompt, buf, bufsiz, flags)
 	for (p = buf; read(input, &ch, 1) == 1 && ch != '\n' && ch != '\r';) {
 		if (p < end) {
 			if ((flags & RPP_SEVENBIT))
-				ch = ch &= 0x7f;
+				ch &= 0x7f;
 			if (isalpha(ch)) {
 				if ((flags & RPP_FORCELOWER))
 					ch = tolower(ch);
