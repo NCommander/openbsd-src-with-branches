@@ -58,7 +58,8 @@ the
 .Nm wtmp
 file.
 .Pp
-These files can grow rapidly on busy systems, daily or weekly rotation
+.Nm wtmp
+can can grow rapidly on busy systems, daily or weekly rotation
 is recommended. 
 If any of these files do not exist, it is not created.
 These
@@ -137,10 +138,10 @@ program opens the file
 and appends the user's
 .Fa utmp
 record.
-The same
+! When the user logs out, a
 .Fa utmp
-record, with an updated time stamp is later appended
-to the file when the user logs out. (See
+! record with the tty line, an updated time stamp, and zero'd name and host
+! fields is appended to the file. (See
 .Xr init 8 . )
 The
 .Nm wtmp

@@ -9,6 +9,7 @@ case "${host}" in
   i[3456]86-ncr-sysv4*)	frag=mh-ncr3000 ;;
   *-*-cxux7*)		frag=mh-cxux7 ;;
   *-*-cygwin32)		frag=mh-cygwin32 ;;
+  *-*-lynxos*)		frag=mh-lynxos ;;
   *-*-dgux*)		frag=mh-sysv ;;
   hppa*-hp-bsd*)	frag=mh-hpbsd ;;
   *-*-hpux*)		frag=mh-hpux ;;

@@ -1,5 +1,5 @@
 /* A YACC grammer to parse a superset of the AT&T linker scripting languaue.
-   Copyright (C) 1991, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Written by Steve Chamberlain of Cygnus Support (steve@cygnus.com).
 
 This file is part of GNU ld.
@@ -77,9 +77,6 @@ static int error_index;
     } phdr;
   struct lang_nocrossref *nocrossref;
   struct lang_output_section_phdr_list *section_phdr;
-  struct bfd_elf_version_deps *deflist;
-  struct bfd_elf_version_expr *versyms;
-  struct bfd_elf_version_tree *versnode;
 }
 
 %type <etree> exp opt_exp_with_type mustbe_exp opt_at phdr_type phdr_val
@@ -131,18 +128,12 @@ static int error_index;
 %token CHIP LIST SECT ABSOLUTE  LOAD NEWLINE ENDWORD ORDER NAMEWORD
 %token FORMAT PUBLIC DEFSYMEND BASE ALIAS TRUNCATE REL
 %token INPUT_SCRIPT INPUT_MRI_SCRIPT INPUT_DEFSYM CASE EXTERN START
-%token <name> VERS_TAG VERS_IDENTIFIER
-%token GLOBAL LOCAL VERSION INPUT_VERSION_SCRIPT
-%type <versyms> vers_defns
-%type <versnode> vers_tag
-%type <deflist> verdep
 
 %%
 
 file:	
 		INPUT_SCRIPT script_file
 	|	INPUT_MRI_SCRIPT mri_script_file
-	|	INPUT_VERSION_SCRIPT version_script_file
 	|	INPUT_DEFSYM defsym_expr
 	;
 
@@ -290,7 +281,6 @@ ifile_p1:
 	|	low_level_library
 	|	floating_point_support
 	|	statement_anywhere
-	|	version
         |	 ';'
 	|	TARGET_K '(' NAME ')'
 		{ lang_add_target($3); }
@@ -912,93 +902,6 @@ phdr_val:
 	| '(' exp ')'
 		{
 		  $$ = $2;
-		}
-	;
-
-/* This syntax is used within an external version script file.  */
-
-version_script_file:
-		{
-		  ldlex_version_file ();
-		  PUSH_ERROR ("VERSION script");
-		}
-		vers_nodes
-		{
-		  ldlex_popstate ();
-		  POP_ERROR ();
-		}
-	;
-
-/* This is used within a normal linker script file.  */
-
-version:
-		{
-		  ldlex_version_script ();
-		}
-		VERSION '{' vers_nodes '}'
-		{
-		  ldlex_popstate ();
-		}
-	;
-
-vers_nodes:
-		vers_node
-	|	vers_nodes vers_node
-	;
-
-vers_node:
-		VERS_TAG '{' vers_tag '}' ';'
-		{
-		  lang_register_vers_node ($1, $3, NULL);
-		}
-	|	VERS_TAG '{' vers_tag '}' verdep ';'
-		{
-		  lang_register_vers_node ($1, $3, $5);
-		}
-	;
-
-verdep:
-		VERS_TAG
-		{
-		  $$ = lang_add_vers_depend (NULL, $1);
-		}
-	|	verdep VERS_TAG
-		{
-		  $$ = lang_add_vers_depend ($1, $2);
-		}
-	;
-
-vers_tag:
-		/* empty */
-		{
-		  $$ = lang_new_vers_node (NULL, NULL);
-		}
-	|	vers_defns ';'
-		{
-		  $$ = lang_new_vers_node ($1, NULL);
-		}
-	|	GLOBAL ':' vers_defns ';'
-		{
-		  $$ = lang_new_vers_node ($3, NULL);
-		}
-	|	LOCAL ':' vers_defns ';'
-		{
-		  $$ = lang_new_vers_node (NULL, $3);
-		}
-	|	GLOBAL ':' vers_defns ';' LOCAL ':' vers_defns ';'
-		{
-		  $$ = lang_new_vers_node ($3, $7);
-		}
-	;
-
-vers_defns:
-		VERS_IDENTIFIER
-		{
-		  $$ = lang_new_vers_regex (NULL, $1);
-		}
-	|	vers_defns ';' VERS_IDENTIFIER
-		{
-		  $$ = lang_new_vers_regex ($1, $3);
 		}
 	;
 

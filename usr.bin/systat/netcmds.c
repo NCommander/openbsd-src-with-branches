@@ -1,3 +1,4 @@
+/*	$OpenBSD: netcmds.c,v 1.3 1997/01/17 07:13:25 millert Exp $	*/
 /*	$NetBSD: netcmds.c,v 1.4 1995/05/21 17:14:38 mycroft Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)netcmds.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: netcmds.c,v 1.4 1995/05/21 17:14:38 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: netcmds.c,v 1.3 1997/01/17 07:13:25 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -131,9 +132,8 @@ changeitems(args, onoff)
 	struct servent *sp;
 	struct hostent *hp;
 	struct in_addr in;
-	char *index();
 
-	cp = index(args, '\n');
+	cp = strchr(args, '\n');
 	if (cp)
 		*cp = '\0';
 	for (;;args = cp) {
@@ -176,7 +176,7 @@ selectproto(proto)
 		new = TCP;
 	else if (streq(proto, "udp"))
 		new = UDP;
-	return (new != protos, protos = new);
+	return (protos = new);
 }
 
 static void
@@ -246,7 +246,7 @@ showports()
 
 	for (p = ports; p < ports+nports; p++) {
 		sp = getservbyport(p->port,
-		    protos == TCP|UDP ? 0 : protos == TCP ? "tcp" : "udp");
+		    protos == (TCP|UDP) ? 0 : protos == TCP ? "tcp" : "udp");
 		if (!p->onoff)
 			addch('!');
 		if (sp)

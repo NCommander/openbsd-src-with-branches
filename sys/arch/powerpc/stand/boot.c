@@ -1,3 +1,4 @@
+/*	$OpenBSD: boot.c,v 1.4 1997/02/06 23:44:56 rahnds Exp $	*/
 /*	$NetBSD: boot.c,v 1.2 1996/10/07 21:43:02 cgd Exp $	*/
 
 /*
@@ -43,7 +44,6 @@
 #include <sys/disklabel.h>
 
 #include <sys/exec_elf.h>
-#include <machine/cpu.h>
 
 #include "ofdev.h"
 #include "openfirm.h"
@@ -210,12 +210,13 @@ loadfile(fd, addr, args)
 	}
 #endif
 	close(fd);
-	syncicache(addr, exec_addr);
+#if 0
 	if (floppyboot) {
 		printf("Please insert root disk and press ENTER ");
 		getchar();
 		printf("\n");
 	}
+#endif
 	chain((void *)exec_addr, args);
 }
 
@@ -227,7 +228,7 @@ main()
 	char *cp;
 	int fd;
 	
-	printf(">> NetBSD BOOT\n");
+	printf(">> OpenBSD BOOT\n");
 
 	/*
 	 * Get the boot arguments from Openfirmware

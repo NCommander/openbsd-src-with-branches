@@ -1,3 +1,4 @@
+/*	$OpenBSD: igmp.h,v 1.6 1995/05/31 06:08:21 mycroft Exp $	*/
 /*	$NetBSD: igmp.h,v 1.6 1995/05/31 06:08:21 mycroft Exp $	*/
 
 /*

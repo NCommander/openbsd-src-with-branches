@@ -1,4 +1,5 @@
-/*	$NetBSD: freebsd_exec.c,v 1.1 1995/10/10 01:19:27 mycroft Exp $	*/
+/*	$OpenBSD: freebsd_exec.c,v 1.3 1996/08/02 20:34:44 niklas Exp $	*/
+/*	$NetBSD: freebsd_exec.c,v 1.2 1996/05/18 16:02:08 christos Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -58,6 +59,7 @@ struct emul emul_freebsd = {
 	0,
 	copyargs,
 	setregs,
+	NULL,
 	freebsd_sigcode,
 	freebsd_esigcode,
 };
@@ -91,7 +93,7 @@ exec_freebsd_aout_makecmds(p, epp)
 	/* assume FreeBSD's MID_MACHINE and [ZQNO]MAGIC is same as NetBSD's */
 	switch (midmag) {
 	case (MID_MACHINE << 16) | ZMAGIC:
-		error = cpu_exec_aout_prep_oldzmagic(p, epp);
+		error = exec_aout_prep_oldzmagic(p, epp);
 		break;
 	case (MID_MACHINE << 16) | QMAGIC:
 		error = exec_aout_prep_zmagic(p, epp);

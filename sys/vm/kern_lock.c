@@ -1,3 +1,4 @@
+/*	$OpenBSD: kern_lock.c,v 1.6 1997/07/25 06:03:03 mickey Exp $	*/
 /*	$NetBSD: kern_lock.c,v 1.10 1994/10/30 19:11:09 cgd Exp $	*/
 
 /* 
@@ -72,6 +73,7 @@
 #include <sys/systm.h>
 
 #include <vm/vm.h>
+#include <vm/vm_extern.h>
 
 /* XXX */
 #include <sys/proc.h>
@@ -134,7 +136,7 @@ void simple_unlock(l)
 boolean_t simple_lock_try(l)
 	simple_lock_t	l;
 {
-    	return (!test_and_set((boolean_t *)l));
+	return (!test_and_set((boolean_t *)l));
 }
 #endif /* notdef */
 #endif /* NCPUS > 1 */
@@ -443,7 +445,7 @@ boolean_t lock_try_read(l)
 {
 	simple_lock(&l->interlock);
 
-	if (((thread_t)l->thread) == current_thread()) {
+ 	if (((thread_t)l->thread) == current_thread()) {
 		/*
 		 *	Recursive lock
 		 */

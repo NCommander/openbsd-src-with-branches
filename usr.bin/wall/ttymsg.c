@@ -1,3 +1,4 @@
+/*	$OpenBSD: ttymsg.c,v 1.2 1996/06/26 05:42:47 deraadt Exp $	*/
 /*	$NetBSD: ttymsg.c,v 1.3 1994/11/17 07:17:55 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)ttymsg.c	8.2 (Berkeley) 11/16/93";
 #endif
-static char rcsid[] = "$NetBSD: ttymsg.c,v 1.3 1994/11/17 07:17:55 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ttymsg.c,v 1.2 1996/06/26 05:42:47 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -74,6 +75,13 @@ ttymsg(iov, iovcnt, line, tmout)
 
 	if (iovcnt > sizeof(localiov) / sizeof(localiov[0]))
 		return ("too many iov's (change code in wall/ttymsg.c)");
+
+	/*
+	 * Ignore lines that start with "ftp" or "uucp".
+	 */
+	if ((strncmp(line, "ftp", 3) == 0)
+	    || (strncmp(line, "uucp", 4) == 0))
+		return (NULL);
 
 	(void) strcpy(device + sizeof(_PATH_DEV) - 1, line);
 	if (strchr(device + sizeof(_PATH_DEV) - 1, '/')) {

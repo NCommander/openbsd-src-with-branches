@@ -1,4 +1,9 @@
 #!./perl
+#	$OpenBSD: installperl,v 1.5 1997/07/24 21:12:15 kstailey Exp $
+#
+# This is hacked up, in order to support DESTDIR and INSTALL_STRIP.
+#
+
 BEGIN { @INC=('./lib', '../lib') }
 use File::Find;
 use File::Path qw(mkpath);
@@ -24,7 +29,7 @@ umask 022;
 
 # pod documentation now handled by separate installman script.
 # These two are archaic leftovers.
-@manpages = qw(x2p/a2p.man x2p/s2p.man);
+#@manpages = qw(x2p/a2p.man x2p/s2p.man);
 
 @pods = (<pod/*.pod>);
 
@@ -35,14 +40,28 @@ die "Patchlevel of perl ($patchlevel)",
     "and patchlevel of config.sh ($Config{'PATCHLEVEL'}) don't match\n"
 	if $patchlevel != $Config{'PATCHLEVEL'};
 
-# Fetch some frequently-used items from %Config
-$installbin = $Config{installbin};
-$installscript = $Config{installscript};
-$installprivlib = $Config{installprivlib};
-$installarchlib = $Config{installarchlib};
-$installsitelib = $Config{installsitelib};
-$installsitearch = $Config{installsitearch};
-$installman1dir = $Config{installman1dir};
+$installdest = $ENV{"DESTDIR"};
+if ($installdest ne '') {
+    # Fetch some frequently-used items from %Config, prefixing them with
+    # DESTDIR.
+    $installbin = "$installdest/$Config{installbin}";
+    $installscript = "$installdest/$Config{installscript}";
+    $installprivlib = "$installdest/$Config{installprivlib}";
+    $installarchlib = "$installdest/$Config{installarchlib}";
+    $installsitelib = "$installdest/$Config{installsitelib}";
+    $installsitearch = "$installdest/$Config{installsitearch}";
+    $installman1dir = "$installdest/$Config{installman1dir}";
+    # Also whack $mainperldir.
+    $mainperldir = "$installdest/$mainperldir";
+} else {
+    # Fetch some frequently-used items from %Config.
+    $installbin = $Config{installbin};
+    $installscript = $Config{installscript};
+    $installprivlib = $Config{installprivlib};
+    $installarchlib = $Config{installarchlib};
+    $installsitelib = $Config{installsitelib};
+    $installsitearch = $Config{installsitearch};
+}
 $man1ext = $Config{man1ext};
 # Did we build libperl as a shared library?
 $d_shrplib = $Config{d_shrplib};
@@ -83,8 +102,12 @@ if ($d_shrplib) {
 
 # First we install the version-numbered executables.
 
+$installcmd = $ENV{"INSTALL"}
+	. " " . $ENV{"INSTALL_COPY"}
+	. " " . $ENV{"INSTALL_STRIP"};
+
 &safe_unlink("$installbin/perl$ver$exe_ext");
-&cmd("cp perl$exe_ext $installbin/perl$ver$exe_ext");
+&cmd("$installcmd perl$exe_ext $installbin/perl$ver$exe_ext");
 
 &safe_unlink("$installbin/sperl$ver$exe_ext");
 if ($d_dosuid) {
@@ -105,7 +128,7 @@ if (! &samepath($installbin, '.')) {
 
 if (! &samepath($installbin, 'x2p')) {
     &safe_unlink("$installbin/a2p$exe_ext");
-    &cmd("cp x2p/a2p$exe_ext $installbin/a2p$exe_ext");
+    &cmd("$installcmd x2p/a2p$exe_ext $installbin");
     &chmod(0755, "$installbin/a2p$exe_ext");
 }
 
@@ -129,27 +152,27 @@ foreach $file (@pods) {
 
 # Install old man pages.
 
-if ($installman1dir ne '') {
-    mkpath($installman1dir, 1, 0777);
-
-    if (! &samepath($installman1dir, '.')) {
-	for (@manpages) {
-	    ($new = $_) =~ s/man$/$man1ext/;
-	    $new =~ s#.*/##;
-	    print STDERR "  Installing $installman1dir/$new\n";
-	    next if $nonono;
-	    open(MI,$_) || warn "Can't open $_: $!\n";
-	    open(MO,">$installman1dir/$new") || 
-		    warn "Can't install $installman1dir/$new: $!\n";
-	    print MO ".ds RP Release $release Patchlevel $patchlevel\n";
-	    while (<MI>) {
-		print MO;
-	    }
-	    close MI;
-	    close MO;
-	}
-    }
-}
+#if ($installman1dir ne '') {
+#    mkpath($installman1dir, 1, 0777);
+#
+#    if (! &samepath($installman1dir, '.')) {
+#	for (@manpages) {
+#	    ($new = $_) =~ s/man$/$man1ext/;
+#	    $new =~ s#.*/##;
+#	    print STDERR "  Installing $installman1dir/$new\n";
+#	    next if $nonono;
+#	    open(MI,$_) || warn "Can't open $_: $!\n";
+#	    open(MO,">$installman1dir/$new") || 
+#		    warn "Can't install $installman1dir/$new: $!\n";
+#	    print MO ".ds RP Release $release Patchlevel $patchlevel\n";
+#	    while (<MI>) {
+#		print MO;
+#	    }
+#	    close MI;
+#	    close MO;
+#	}
+#    }
+#}
 
 # Install library files.
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: amd7930.c,v 1.4 1995/07/19 19:50:16 brezak Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: amd7930.c,v 1.30 1997/08/27 22:42:23 augustss Exp $	*/
 
 /*
  * Copyright (c) 1995 Rolf Grossmann
@@ -49,6 +50,8 @@
 #include <dev/ic/am7930reg.h>
 #include <sparc/dev/amd7930var.h>
 
+#define AUDIO_ROM_NAME "audio"
+
 #ifdef AUDIO_DEBUG
 extern void Dprintf __P((const char *, ...));
 
@@ -69,7 +72,7 @@ struct amd7930_softc {
 	int	sc_open;		/* single use device */
 	int	sc_locked;		/* true when transfering data */
 	struct	mapreg sc_map;		/* current contents of map registers */
-    
+
 	u_char	sc_rlevel;		/* record level */
 	u_char	sc_plevel;		/* play level */
 	u_char	sc_mlevel;		/* monitor level */
@@ -89,11 +92,19 @@ struct amd7930_softc {
 /* interrupt interfaces */
 #ifdef AUDIO_C_HANDLER
 int	amd7930hwintr __P((void *));
+#if defined(SUN4M)
+#define AUDIO_SET_SWINTR do {		\
+	if (CPU_ISSUN4M)		\
+		raise(0, 4);		\
+	else				\
+		ienab_bis(IE_L4);	\
+} while(0);
+#else
 #define AUDIO_SET_SWINTR ienab_bis(IE_L4)
+#endif /* defined(SUN4M) */
 #else
 struct auio *auiop;
-extern void amd7930_trap();
-#endif
+#endif /* AUDIO_C_HANDLER */
 int	amd7930swintr __P((void *));
 
 /* forward declarations */
@@ -101,18 +112,21 @@ void	audio_setmap __P((volatile struct amd7930 *, struct mapreg *));
 static void init_amd __P((volatile struct amd7930 *));
 
 /* autoconfiguration driver */
-void	amd9730attach __P((struct device *, struct device *, void *));
-int	amd9730match __P((struct device *, void *, void *));
+void	amd7930attach __P((struct device *, struct device *, void *));
+int	amd7930match __P((struct device *, void *, void *));
 
-struct	cfdriver audiocd = {
-	NULL, "audio", amd9730match, amd9730attach,
-	DV_DULL, sizeof(struct amd7930_softc)
+struct cfattach audioamd_ca = {
+	sizeof(struct amd7930_softc), amd7930match, amd7930attach
+};
+
+struct	cfdriver audioamd_cd = {
+	NULL, "audioamd", DV_DULL
 };
 
 struct audio_device amd7930_device = {
 	"amd7930",
 	"x",
-	"audio"
+	"audioamd"
 };
 
 /* Write 16 bits of data from variable v to the data port of the audio chip */
@@ -127,7 +141,7 @@ struct audio_device amd7930_device = {
  * -18 to 0dB in .16dB steps then 0 to 12dB in .08dB steps.
  */
 static const u_short gx_coeff[256] = {
-	0x9008, 0x8b7c, 0x8b51, 0x8b45, 0x8b42, 0x8b3b, 0x8b36, 0x8b33,
+	0x9008, 0x8e7c, 0x8e51, 0x8e45, 0x8d42, 0x8d3b, 0x8c36, 0x8c33,
 	0x8b32, 0x8b2a, 0x8b2b, 0x8b2c, 0x8b25, 0x8b23, 0x8b22, 0x8b22,
 	0x9122, 0x8b1a, 0x8aa3, 0x8aa3, 0x8b1c, 0x8aa6, 0x912d, 0x912b,
 	0x8aab, 0x8b12, 0x8aaa, 0x8ab2, 0x9132, 0x8ab4, 0x913c, 0x8abb,
@@ -199,9 +213,8 @@ u_long	amd7930_get_in_sr __P((void *));
 int	amd7930_set_out_sr __P((void *, u_long));
 u_long	amd7930_get_out_sr __P((void *));
 int	amd7930_query_encoding __P((void *, struct audio_encoding *));
-int	amd7930_set_encoding __P((void *, u_int));
+int	amd7930_set_format __P((void *, u_int, u_int));
 int	amd7930_get_encoding __P((void *));
-int	amd7930_set_precision __P((void *, u_int));
 int	amd7930_get_precision __P((void *));
 int	amd7930_set_channels __P((void *, int));
 int	amd7930_get_channels __P((void *));
@@ -212,8 +225,10 @@ int	amd7930_set_in_port __P((void *, int));
 int	amd7930_get_in_port __P((void *));
 int	amd7930_commit_settings __P((void *));
 u_int	amd7930_get_silence __P((int));
-int	amd7930_start_output __P((void *, void *, int, void (*)(), void *));
-int	amd7930_start_input __P((void *, void *, int, void (*)(), void *));
+int	amd7930_start_output __P((void *, void *, int, void (*)(void *),
+				  void *));
+int	amd7930_start_input __P((void *, void *, int, void (*)(void *),
+				 void *));
 int	amd7930_halt_output __P((void *));
 int	amd7930_halt_input __P((void *));
 int	amd7930_cont_output __P((void *));
@@ -234,9 +249,8 @@ struct audio_hw_if sa_hw_if = {
 	amd7930_set_out_sr,
 	amd7930_get_out_sr,
 	amd7930_query_encoding,
-	amd7930_set_encoding,
+	amd7930_set_format,
 	amd7930_get_encoding,
-	amd7930_set_precision,
 	amd7930_get_precision,
 	amd7930_set_channels,
 	amd7930_get_channels,
@@ -246,7 +260,6 @@ struct audio_hw_if sa_hw_if = {
 	amd7930_set_in_port,
 	amd7930_get_in_port,
 	amd7930_commit_settings,
-	amd7930_get_silence,
 	NULL,
 	NULL,
 	amd7930_start_output,
@@ -268,24 +281,23 @@ struct audio_hw_if sa_hw_if = {
 /* autoconfig routines */
 
 int
-amd9730match(parent, vcf, aux)
+amd7930match(parent, vcf, aux)
 	struct device *parent;
 	void *vcf, *aux;
 {
-	struct cfdata *cf = vcf;
 	register struct confargs *ca = aux;
 	register struct romaux *ra = &ca->ca_ra;
 
-	if (cputyp==CPU_SUN4)
+	if (CPU_ISSUN4)
 		return (0);
-	return (strcmp(cf->cf_driver->cd_name, ra->ra_name) == 0);
+	return (strcmp(AUDIO_ROM_NAME, ra->ra_name) == 0);
 }
 
 /*
  * Audio chip found.
  */
 void
-amd9730attach(parent, self, args)
+amd7930attach(parent, self, args)
 	struct device *parent, *self;
 	void *args;
 {
@@ -302,8 +314,7 @@ amd9730attach(parent, self, args)
 	pri = ra->ra_intr[0].int_pri;
 	printf(" pri %d, softpri %d\n", pri, PIL_AUSOFT);
 	amd = (volatile struct amd7930 *)(ra->ra_vaddr ?
-		ra->ra_vaddr : mapiodev(ra->ra_paddr, sizeof (*amd),
-					ca->ca_bustype));
+		ra->ra_vaddr : mapiodev(ra->ra_reg, 0, sizeof (*amd)));
 
 	sc->sc_map.mr_mmr1 = AMD_MMR1_GX | AMD_MMR1_GER |
 			     AMD_MMR1_GR | AMD_MMR1_STG;
@@ -313,7 +324,7 @@ amd9730attach(parent, self, args)
 	sc->sc_plevel = 128;
 	sc->sc_mlevel = 0;
 	sc->sc_out_port = SUNAUDIO_SPEAKER;
-	
+
 	init_amd(amd);
 
 #ifndef AUDIO_C_HANDLER
@@ -361,14 +372,13 @@ amd7930_open(dev, flags)
 	int flags;
 {
 	register struct amd7930_softc *sc;
-	register volatile struct amd7930 *amd;
 	int unit = AUDIOUNIT(dev);
 
 	DPRINTF(("sa_open: unit %d\n",unit));
 
-	if (unit >= audiocd.cd_ndevs)
+	if (unit >= audioamd_cd.cd_ndevs)
 		return (ENODEV);
-	if ((sc = audiocd.cd_devs[unit]) == NULL)
+	if ((sc = audioamd_cd.cd_devs[unit]) == NULL)
 		return (ENXIO);
 	if (sc->sc_open)
 		return (EBUSY);
@@ -411,7 +421,7 @@ amd7930_set_in_sr(addr, sr)
 {
 	if (sr != 8000)
 		return EINVAL;
-    
+
 	return(0);	/* no other sampling rates supported by amd chip */
 }
 
@@ -458,13 +468,16 @@ amd7930_query_encoding(addr, fp)
 }
 
 int
-amd7930_set_encoding(addr, enc)
+amd7930_set_format(addr, enc, precision)
 	void *addr;
-	u_int enc;
+	u_int enc, precision;
 {
 	if (enc != AUDIO_ENCODING_ULAW)
 		return(EINVAL);
-    
+
+	if (precision != 8)
+		return(EINVAL);
+
 	return(0);		/* no other encoding supported by amd chip */
 }
 
@@ -473,17 +486,6 @@ amd7930_get_encoding(addr)
 	void *addr;
 {
 	return(AUDIO_ENCODING_ULAW);
-}
-
-int
-amd7930_set_precision(addr, prec)
-	void *addr;
-	u_int prec;
-{
-	if (prec != 8)
-		return(EINVAL);
-
-	return(0);		/* no other precision supported by amd chip */
 }
 
 int
@@ -572,7 +574,7 @@ amd7930_commit_settings(addr)
 	register struct mapreg *map;
 	register volatile struct amd7930 *amd;
 	register int s, level;
-	
+
 	DPRINTF(("sa_commit.\n"));
 
 	map = &sc->sc_map;
@@ -580,7 +582,7 @@ amd7930_commit_settings(addr)
 
 	map->mr_gx = gx_coeff[sc->sc_rlevel];
 	map->mr_stgr = gx_coeff[sc->sc_mlevel];
-	
+
 	level = (sc->sc_plevel * (256 + NGER)) >> 8;
 	if (level >= 256) {
 		map->mr_ger = ger_coeff[level - 256];
@@ -594,9 +596,9 @@ amd7930_commit_settings(addr)
 		map->mr_mmr2 |= AMD_MMR2_LS;
 	else
 		map->mr_mmr2 &= ~AMD_MMR2_LS;
-	
+
 	s = splaudio();
-	
+
 	amd->cr = AMDR_MAP_MMR1;
 	amd->dr = map->mr_mmr1;
 	amd->cr = AMDR_MAP_GX;
@@ -626,7 +628,7 @@ amd7930_start_output(addr, p, cc, intr, arg)
 	void *addr;
 	void *p;
 	int cc;
-	void (*intr)();
+	void (*intr) __P((void *));
 	void *arg;
 {
 	register struct amd7930_softc *sc = addr;
@@ -658,7 +660,7 @@ amd7930_start_input(addr, p, cc, intr, arg)
 	void *addr;
 	void *p;
 	int cc;
-	void (*intr)();
+	void (*intr) __P((void *));
 	void *arg;
 {
 	register struct amd7930_softc *sc = addr;
@@ -761,7 +763,7 @@ amd7930_set_port(addr, cp)
 
 	if (cp->type != AUDIO_MIXER_VALUE || cp->un.value.num_channels != 1)
 		return(EINVAL);
-	
+
 	switch(cp->dev) {
 	    case SUNAUDIO_MIC_PORT:
 		    sc->sc_rlevel = cp->un.value.level[AUDIO_MIXER_LEVEL_MONO];
@@ -791,7 +793,7 @@ amd7930_get_port(addr, cp)
 
 	if (cp->type != AUDIO_MIXER_VALUE || cp->un.value.num_channels != 1)
 		return(EINVAL);
-	
+
 	switch(cp->dev) {
 	    case SUNAUDIO_MIC_PORT:
 		    cp->un.value.level[AUDIO_MIXER_LEVEL_MONO] = sc->sc_rlevel;
@@ -815,8 +817,6 @@ amd7930_query_devinfo(addr, dip)
 	void *addr;
 	register mixer_devinfo_t *dip;
 {
-	register struct amd7930_softc *sc = addr;
-
 	switch(dip->index) {
 	    case SUNAUDIO_MIC_PORT:
 		    dip->type = AUDIO_MIXER_VALUE;
@@ -868,7 +868,7 @@ amd7930_query_devinfo(addr, dip)
 	}
 
 	DPRINTF(("AUDIO_MIXER_DEVINFO: name=%s\n", dip->label.name));
-    
+
 	return(0);
 }
 
@@ -914,6 +914,7 @@ amd7930hwintr(au0)
 		}
 	}
 
+	*(au->au_intrcnt)++;
 	return (1);
 }
 #endif /* AUDIO_C_HANDLER */

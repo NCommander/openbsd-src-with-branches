@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dkbad.h,v 1.10 1994/12/25 13:14:21 pk Exp $	*/
 
 /*-

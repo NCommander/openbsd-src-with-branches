@@ -1,3 +1,5 @@
+/*	$OpenBSD: passwd.c,v 1.5 1997/01/15 23:43:01 millert Exp $	*/
+
 /*
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -39,12 +41,15 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)passwd.c	5.5 (Berkeley) 7/6/91";*/
-static char rcsid[] = "$Id: passwd.c,v 1.7 1995/02/12 17:45:56 phil Exp $";
+static char rcsid[] = "$OpenBSD: passwd.c,v 1.5 1997/01/15 23:43:01 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#ifdef KERBEROS
+#include <kerberosIV/krb.h>
+#endif
 
 /*
  * Note on configuration:
@@ -60,6 +65,14 @@ int use_yp;
 int force_yp;
 #endif
 
+
+extern int local_passwd(char *);
+extern int yp_passwd(char *);
+extern int krb_passwd(void);
+void usage(void);
+
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -68,35 +81,18 @@ main(argc, argv)
 	register int ch;
 	char *username;
 	int status = 0;
-	char *basename;
-
 #if defined(KERBEROS) || defined(KERBEROS5)
-	use_kerberos = 1;
+	extern char realm[];
+
+	if (krb_get_lrealm(realm,1) == KSUCCESS)
+		use_kerberos = 1;
 #endif
 #ifdef	YP
 	use_yp = _yp_check(NULL);
 #endif
 
-	basename = strrchr(argv[0], '/');
-	if (basename == NULL)
-		basename = argv[0];
-	if (strcmp(basename, "yppasswd") == 0) {
-#ifdef YP
-		if (!use_yp) {
-			fprintf(stderr, "yppasswd: YP not in use.\n");
-			exit (1);
-		}
-		use_kerberos = 0;
-		use_yp = 1;
-		force_yp = 1;
-#else
-		fprintf(stderr, "yppasswd: YP not compiled in\n");
-		exit(1);
-#endif
-	}
-
-	
-	while ((ch = getopt(argc, argv, "lky")) != EOF)
+	/* Process args and options */
+	while ((ch = getopt(argc, argv, "lky")) != -1)
 		switch (ch) {
 		case 'l':		/* change local password file */
 			use_kerberos = 0;
@@ -171,7 +167,8 @@ main(argc, argv)
 	exit(local_passwd(username));
 }
 
-usage()
+void
+usage(void)
 {
 	fprintf(stderr, "usage: passwd [-l] [-k] [-y] user\n");
 }

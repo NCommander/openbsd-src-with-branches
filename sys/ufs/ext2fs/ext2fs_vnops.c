@@ -1,8 +1,8 @@
-/*	$NetBSD: ufs_vnops.c,v 1.22 1997/01/30 09:52:27 tls Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_vnops.c,v 1.4 1997/06/12 21:27:47 downsj Exp $	*/
+/*	$NetBSD: ext2fs_vnops.c,v 1.1 1997/06/11 09:34:09 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -40,6 +40,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)ufs_vnops.c	8.14 (Berkeley) 10/26/94
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 #include <sys/param.h>
@@ -61,7 +62,6 @@
 #include <vm/vm.h>
 
 #include <miscfs/fifofs/fifo.h>
-#include <miscfs/genfs/genfs.h>
 #include <miscfs/specfs/specdev.h>
 
 #include <ufs/ufs/quota.h>
@@ -110,7 +110,7 @@ ext2fs_create(v)
 		struct vattr *a_vap;
 	} */ *ap = v;
 	return
-	    ext2fs_makeinode(MAKEIMODE(ap->a_vap->va_type, ap->a_vap->va_mode),
+		ext2fs_makeinode(MAKEIMODE(ap->a_vap->va_type, ap->a_vap->va_mode),
 			  ap->a_dvp, ap->a_vpp, ap->a_cnp);
 }
 
@@ -134,8 +134,8 @@ ext2fs_mknod(v)
 	int error;
 
 	if ((error =
-	    ext2fs_makeinode(MAKEIMODE(vap->va_type, vap->va_mode),
-	    ap->a_dvp, vpp, ap->a_cnp)) != 0)
+		ext2fs_makeinode(MAKEIMODE(vap->va_type, vap->va_mode),
+		ap->a_dvp, vpp, ap->a_cnp)) != 0)
 		return (error);
 	ip = VTOI(*vpp);
 	ip->i_flag |= IN_ACCESS | IN_CHANGE | IN_UPDATE;
@@ -179,7 +179,7 @@ ext2fs_open(v)
 	 * Files marked append-only must be opened for appending.
 	 */
 	if ((VTOI(ap->a_vp)->i_e2fs_flags & EXT2_APPEND) &&
-	    (ap->a_mode & (FWRITE | O_APPEND)) == FWRITE)
+		(ap->a_mode & (FWRITE | O_APPEND)) == FWRITE)
 		return (EPERM);
 	return (0);
 }
@@ -210,7 +210,7 @@ ext2fs_access(v)
 		return (EPERM);
 
 	return (vaccess(ip->i_e2fs_mode, ip->i_e2fs_uid, ip->i_e2fs_gid, mode,
-					ap->a_cred));
+			ap->a_cred));
 }
 
 /* ARGSUSED */
@@ -227,16 +227,14 @@ ext2fs_getattr(v)
 	register struct vnode *vp = ap->a_vp;
 	register struct inode *ip = VTOI(vp);
 	register struct vattr *vap = ap->a_vap;
-	struct timespec ts;
 
-	TIMEVAL_TO_TIMESPEC(&time, &ts);
-	EXT2FS_ITIMES(ip, &ts, &ts, &ts);
+	EXT2FS_ITIMES(ip, &time, &time);
 	/*
 	 * Copy from inode table
 	 */
 	vap->va_fsid = ip->i_dev;
 	vap->va_fileid = ip->i_number;
-	vap->va_mode = ip->i_e2fs_mode & ~IFMT;
+	vap->va_mode = ip->i_e2fs_mode & ALLPERMS;
 	vap->va_nlink = ip->i_e2fs_nlink;
 	vap->va_uid = ip->i_e2fs_uid;
 	vap->va_gid = ip->i_e2fs_gid;
@@ -293,23 +291,23 @@ ext2fs_setattr(v)
 	 * Check for unsettable attributes.
 	 */
 	if ((vap->va_type != VNON) || (vap->va_nlink != VNOVAL) ||
-	    (vap->va_fsid != VNOVAL) || (vap->va_fileid != VNOVAL) ||
-	    (vap->va_blocksize != VNOVAL) || (vap->va_rdev != VNOVAL) ||
-	    ((int)vap->va_bytes != VNOVAL) || (vap->va_gen != VNOVAL)) {
+		(vap->va_fsid != VNOVAL) || (vap->va_fileid != VNOVAL) ||
+		(vap->va_blocksize != VNOVAL) || (vap->va_rdev != VNOVAL) ||
+		((int)vap->va_bytes != VNOVAL) || (vap->va_gen != VNOVAL)) {
 		return (EINVAL);
 	}
 	if (vap->va_flags != VNOVAL) {
 		if (cred->cr_uid != ip->i_e2fs_uid &&
-		    (error = suser(cred, &p->p_acflag)))
+			(error = suser(cred, &p->p_acflag)))
 			return (error);
 #ifdef EXT2FS_SYSTEM_FLAGS
 		if (cred->cr_uid == 0) {
 			if ((ip->i_e2fs_flags & (EXT2_APPEND | EXT2_IMMUTABLE)) &&
-			    securelevel > 0)
+				securelevel > 0)
 				return (EPERM);
 			ip->i_e2fs_flags &= ~(EXT2_APPEND | EXT2_IMMUTABLE);
 			ip->i_e2fs_flags |= (vap->va_flags & SF_APPEND) ? EXT2_APPEND : 0 |
-				    (vap->va_flags & SF_IMMUTABLE) ? EXT2_IMMUTABLE: 0;
+					(vap->va_flags & SF_IMMUTABLE) ? EXT2_IMMUTABLE: 0;
 		} else {
 			return (EPERM);
 		}
@@ -342,9 +340,9 @@ ext2fs_setattr(v)
 	ip = VTOI(vp);
 	if (vap->va_atime.tv_sec != VNOVAL || vap->va_mtime.tv_sec != VNOVAL) {
 		if (cred->cr_uid != ip->i_e2fs_uid &&
-		    (error = suser(cred, &p->p_acflag)) &&
-		    ((vap->va_vaflags & VA_UTIMES_NULL) == 0 || 
-		    (error = VOP_ACCESS(vp, VWRITE, cred, p))))
+			(error = suser(cred, &p->p_acflag)) &&
+			((vap->va_vaflags & VA_UTIMES_NULL) == 0 || 
+			(error = VOP_ACCESS(vp, VWRITE, cred, p))))
 			return (error);
 		if (vap->va_atime.tv_sec != VNOVAL)
 			if (!(vp->v_mount->mnt_flag & MNT_NOATIME))
@@ -376,7 +374,7 @@ ext2fs_chmod(vp, mode, cred, p)
 	int error;
 
 	if (cred->cr_uid != ip->i_e2fs_uid &&
-	    (error = suser(cred, &p->p_acflag)))
+		(error = suser(cred, &p->p_acflag)))
 		return (error);
 	if (cred->cr_uid) {
 		if (vp->v_type != VDIR && (mode & S_ISTXT))
@@ -419,8 +417,8 @@ ext2fs_chown(vp, uid, gid, cred, p)
 	 * the caller must be superuser or the call fails.
 	 */
 	if ((cred->cr_uid != ip->i_e2fs_uid || uid != ip->i_e2fs_uid ||
-	    (gid != ip->i_e2fs_gid && !groupmember((gid_t)gid, cred))) &&
-	    (error = suser(cred, &p->p_acflag)))
+		(gid != ip->i_e2fs_gid && !groupmember((gid_t)gid, cred))) &&
+		(error = suser(cred, &p->p_acflag)))
 		return (error);
 	ogid = ip->i_e2fs_gid;
 	ouid = ip->i_e2fs_uid;
@@ -450,18 +448,15 @@ ext2fs_remove(v)
 	register struct vnode *dvp = ap->a_dvp;
 	int error;
 
-	if (vp->v_type == VDIR) {
-		error = EISDIR;
-		goto out;
-	}
 	ip = VTOI(vp);
-	if ((ip->i_e2fs_flags & (EXT2_IMMUTABLE | EXT2_APPEND)) ||
+	if (vp->v_type == VDIR ||
+	    (ip->i_e2fs_flags & (EXT2_IMMUTABLE | EXT2_APPEND)) ||
 	    (VTOI(dvp)->i_e2fs_flags & EXT2_APPEND)) {
 		error = EPERM;
 		goto out;
 	}
-    error = ext2fs_dirremove(dvp, ap->a_cnp);
-    if (error == 0) {
+	error = ext2fs_dirremove(dvp, ap->a_cnp);
+	if (error == 0) {
 		ip->i_e2fs_nlink--;
 		ip->i_flag |= IN_CHANGE;
 	}
@@ -668,7 +663,9 @@ abortit:
 		 * Avoid ".", "..", and aliases of "." for obvious reasons.
 		 */
 		if ((fcnp->cn_namelen == 1 && fcnp->cn_nameptr[0] == '.') ||
-		    dp == ip || (fcnp->cn_flags&ISDOTDOT) ||
+		    dp == ip ||
+			(fcnp->cn_flags&ISDOTDOT) ||
+			(tcnp->cn_flags & ISDOTDOT) ||
 		    (ip->i_flag & IN_RENAME)) {
 			VOP_UNLOCK(fvp);
 			error = EINVAL;
@@ -981,7 +978,7 @@ ext2fs_mkdir(v)
 		error = EMLINK;
 		goto out;
 	}
-	dmode = vap->va_mode & 0777;
+	dmode = vap->va_mode & ACCESSPERMS;
 	dmode |= IFDIR;
 	/*
 	 * Must simulate part of ext2fs_makeinode here to acquire the inode,
@@ -1356,6 +1353,28 @@ bad:
 }
 
 /*
+ * Synch an open file.
+ */
+/* ARGSUSED */
+int
+ext2fs_fsync(v)
+	void *v;
+{
+	struct vop_fsync_args /* {
+		struct vnode *a_vp;
+		struct ucred *a_cred;
+		int a_waitfor;
+		struct proc *a_p;
+	} */ *ap = v;
+	register struct vnode *vp = ap->a_vp;
+	struct timespec ts;
+
+	vflushbuf(vp, ap->a_waitfor == MNT_WAIT);
+	TIMEVAL_TO_TIMESPEC(&time, &ts);
+	return (VOP_UPDATE(ap->a_vp, &ts, &ts, ap->a_waitfor == MNT_WAIT));
+}
+
+/*
  * Reclaim an inode so that it can be used for other purposes.
  */
 int
@@ -1406,7 +1425,7 @@ struct vnodeopv_entry_desc ext2fs_vnodeop_entries[] = {
 	{ &vop_write_desc, ext2fs_write },		/* write */
 	{ &vop_lease_desc, ufs_lease_check },	/* lease */
 	{ &vop_ioctl_desc, ufs_ioctl },			/* ioctl */
-	{ &vop_poll_desc, ufs_poll },			/* poll */
+	{ &vop_select_desc, ufs_select },		/* select */
 	{ &vop_mmap_desc, ufs_mmap },			/* mmap */
 	{ &vop_fsync_desc, ext2fs_fsync },		/* fsync */
 	{ &vop_seek_desc, ufs_seek },			/* seek */
@@ -1455,7 +1474,7 @@ struct vnodeopv_entry_desc ext2fs_specop_entries[] = {
 	{ &vop_write_desc, ufsspec_write },		/* write */
 	{ &vop_lease_desc, spec_lease_check },	/* lease */
 	{ &vop_ioctl_desc, spec_ioctl },		/* ioctl */
-	{ &vop_poll_desc, spec_poll },			/* poll */
+	{ &vop_select_desc, spec_select },		/* poll */
 	{ &vop_mmap_desc, spec_mmap },			/* mmap */
 	{ &vop_fsync_desc, ext2fs_fsync },		/* fsync */
 	{ &vop_seek_desc, spec_seek },			/* seek */
@@ -1505,7 +1524,7 @@ struct vnodeopv_entry_desc ext2fs_fifoop_entries[] = {
 	{ &vop_write_desc, ufsfifo_write },		/* write */
 	{ &vop_lease_desc, fifo_lease_check },	/* lease */
 	{ &vop_ioctl_desc, fifo_ioctl },		/* ioctl */
-	{ &vop_poll_desc, fifo_poll },			/* poll */
+	{ &vop_select_desc, fifo_select },		/* select */
 	{ &vop_mmap_desc, fifo_mmap },			/* mmap */
 	{ &vop_fsync_desc, ext2fs_fsync },		/* fsync */
 	{ &vop_seek_desc, fifo_seek },			/* seek */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: com2.c,v 1.3 1997/08/24 21:55:02 deraadt Exp $	*/
 /*	$NetBSD: com2.c,v 1.3 1995/03/21 15:06:55 cgd Exp $	*/
 
 /*
@@ -41,8 +42,9 @@ static char rcsid[] = "$NetBSD: com2.c,v 1.3 1995/03/21 15:06:55 cgd Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include "extern.h"
 
+int
 wearit()		/* synonyms = {sheathe, sheath} */
 {
 	register int n;
@@ -87,16 +89,16 @@ wearit()		/* synonyms = {sheathe, sheath} */
 					setbit(wear,value);
 					carrying -= objwt[value];
 					encumber -= objcumber[value];
-					time++;
+					btime++;
 					printf("You are now wearing %s %s.\n",(objsht[value][n-1] == 's' ? "the" : "a"), objsht[value]);
 				}
 				else if (testbit(wear,value))
 					printf("You are already wearing the %s.\n", objsht[value]);
-				else 
+				else
 					printf("You aren't holding the %s.\n", objsht[value]);
 				if (wordnumber < wordcount - 1 && wordvalue[++wordnumber] == AND)
 					wordnumber++;
-				else 
+				else
 					return(firstnumber);
 		} /* end switch */
 	} /* end while */
@@ -104,6 +106,7 @@ wearit()		/* synonyms = {sheathe, sheath} */
 	return(firstnumber);
 }
 
+int
 put()		/* synonyms = {buckle, strap, tie} */
 {
 	if (wordvalue[wordnumber + 1] == ON){
@@ -119,11 +122,13 @@ put()		/* synonyms = {buckle, strap, tie} */
 
 }
 
+int
 draw() 			/* synonyms = {pull, carry} */
 {
 	return(take(wear));
 }
 
+int
 use()
 {
 	while (wordtype[++wordnumber] == ADJS && wordnumber < wordcount);
@@ -135,7 +140,7 @@ use()
 				location[position].down = 160;
 				whichway(location[position]);
 				puts("The waves subside and it is possible to descend to the sea cave now.");
-				time++;
+				btime++;
 				return(-1);
 			}
 		}
@@ -145,7 +150,8 @@ use()
 			position = 224;
 		else
 			position = 229;
-		time++;
+		btime++;
+		notes[CANTSEE] = 0;
 		return(0);
 	}
 	else if (position == FINAL)
@@ -161,6 +167,7 @@ use()
 	return(-1);
 }
 
+void
 murder()
 {
 	register int n;
@@ -227,11 +234,12 @@ murder()
 	}
 }
 
+void
 ravage()
 {
 	while (wordtype[++wordnumber] != NOUNS && wordnumber <= wordcount);
 	if (wordtype[wordnumber] == NOUNS && testbit(location[position].objects,wordvalue[wordnumber])){
-		time++;
+		btime++;
 		switch(wordvalue[wordnumber]){
 			case NORMGOD:
 				puts("You attack the goddess, and she screams as you beat her.  She falls down");
@@ -276,9 +284,10 @@ ravage()
 		puts("Who?");
 }
 
+int
 follow()
 {
-	if (followfight == time){
+	if (followfight == btime){
 		puts("The Dark Lord leaps away and runs down secret tunnels and corridoors.");
 		puts("You chase him through the darkness and splash in pools of water.");
 		puts("You have cornered him.  His laser sword extends as he steps forward.");
@@ -288,7 +297,7 @@ follow()
 		setbit(location[position].objects,AMULET);
 		return(0);
 	}
-	else if (followgod == time){
+	else if (followgod == btime){
 		puts("The goddess leads you down a steamy tunnel and into a high, wide chamber.");
 		puts("She sits down on a throne.");
 		position = 268;
@@ -296,7 +305,7 @@ follow()
 		notes[CANTSEE] = 1;
 		return(0);
 	}
-	else 
+	else
 		puts("There is no one to follow.");
 	return(-1);
 }

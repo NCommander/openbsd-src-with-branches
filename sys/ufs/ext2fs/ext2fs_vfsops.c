@@ -1,8 +1,8 @@
-/*	$NetBSD: ffs_vfsops.c,v 1.21 1996/10/12 21:58:47 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.3 1997/06/12 21:09:35 downsj Exp $	*/
+/*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1989, 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -35,6 +35,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)ffs_vfsops.c	8.14 (Berkeley) 11/28/94
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 #include <sys/param.h>
@@ -82,7 +83,6 @@ struct vfsops ext2fs_vfsops = {
 	ext2fs_fhtovp,
 	ext2fs_vptofh,
 	ext2fs_init,
-	ext2fs_mountroot,
 };
 
 extern u_long ext2gennumber;
@@ -152,9 +152,6 @@ ext2fs_mountroot()
 	size_t size;
 	int error;
 
-	if (root_device->dv_class != DV_DISK)
-		return (ENODEV);
-	
 	/*
 	 * Get vnodes for swapdev and rootdev.
 	 */
@@ -198,8 +195,8 @@ ext2fs_mountroot()
 int
 ext2fs_mount(mp, path, data, ndp, p)
 	register struct mount *mp;
-	const char *path;
-	void * data;
+	char *path;
+	caddr_t data;
 	struct nameidata *ndp;
 	struct proc *p;
 {
@@ -311,7 +308,7 @@ ext2fs_mount(mp, path, data, ndp, p)
 		error = ext2fs_mountfs(devvp, mp, p);
 	else {
 		if (devvp != ump->um_devvp)
-			error = EINVAL;	/* needs translation */
+			error = EINVAL;	/* XXX needs translation */
 		else
 			vrele(devvp);
 	}
@@ -537,7 +534,7 @@ ext2fs_mountfs(devvp, mp, p)
 		printf(" or wrong revision number: %x (expected %x for ext2 fs)\n",
 			fs->e2fs_rev, E2FS_REV);
 #endif
-		error = EINVAL;		/* XXX needs translation */
+		error = EFTYPE;
 		goto out;
 	}
 
@@ -546,7 +543,7 @@ ext2fs_mountfs(devvp, mp, p)
 		printf("wrong block size: %d (expected <2 for ext2 fs)\n",
 			fs->e2fs_log_bsize);
 #endif
-		error = EINVAL;	 /* XXX needs translation */
+		error = EFTYPE;
 		goto out;
 	}
 

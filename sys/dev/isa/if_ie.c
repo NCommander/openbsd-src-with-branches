@@ -1,4 +1,5 @@
-/*	$NetBSD: if_ie.c,v 1.44 1995/09/26 13:24:48 hpeyerl Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.15 1996/11/12 20:30:37 niklas Exp $	*/
+/*	$NetBSD: if_ie.c,v 1.51 1996/05/12 23:52:48 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles Hannum.
@@ -87,7 +88,7 @@ that we must include this header in the transmit buffer as well.
 By convention, all transmit commands, and only transmit commands, shall have
 the I (IE_CMD_INTR) bit set in the command.  This way, when an interrupt
 arrives at ieintr(), it is immediately possible to tell what precisely caused
-it.  ANY OTHER command-sending routines should run at splimp(), and should
+it.  ANY OTHER command-sending routines should run at splnet(), and should
 post an acknowledgement to every interrupt they generate.
 
 The 82586 has a 24-bit address space internally, and the adaptor's memory is
@@ -137,15 +138,12 @@ iomem, and to make 16-pointers, we subtract sc_maddr and and with 0xffff.
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
 #include <vm/vm.h>
 
 #include <machine/cpu.h>
-#include <machine/pio.h>
+#include <machine/pio.h>		/* XXX convert this driver! */
+#include <machine/bus.h>
+#include <machine/intr.h>
 
 #include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
@@ -232,8 +230,8 @@ struct ie_softc {
 
 	struct arpcom sc_arpcom;
 
-	void (*reset_586)();
-	void (*chan_attn)();
+	void (*reset_586) __P((struct ie_softc *));
+	void (*chan_attn) __P((struct ie_softc *));
 
 	enum ie_hardware hard_type;
 	int hard_vers;
@@ -264,7 +262,7 @@ struct ie_softc {
 #endif
 };
 
-void iewatchdog __P((int));
+void iewatchdog __P((struct ifnet *));
 int ieintr __P((void *));
 void iestop __P((struct ie_softc *));
 int ieinit __P((struct ie_softc *));
@@ -306,11 +304,31 @@ int in_ierint = 0;
 int in_ietint = 0;
 #endif
 
-int ieprobe __P((struct device *, void *, void *));
-void ieattach __P((struct device *, struct device *, void *));
+int	ieprobe __P((struct device *, void *, void *));
+void	ieattach __P((struct device *, struct device *, void *));
+int	sl_probe __P((struct ie_softc *, struct isa_attach_args *));
+int	el_probe __P((struct ie_softc *, struct isa_attach_args *));
+int	ee16_probe __P((struct ie_softc *, struct isa_attach_args *));
+int	check_ie_present __P((struct ie_softc *, caddr_t, u_int));
 
-struct cfdriver iecd = {
-	NULL, "ie", ieprobe, ieattach, DV_IFNET, sizeof(struct ie_softc)
+static __inline void ie_setup_config __P((volatile struct ie_config_cmd *,
+    int, int));
+static __inline void ie_ack __P((struct ie_softc *, u_int));
+static __inline int ether_equal __P((u_char *, u_char *));
+static __inline int check_eh __P((struct ie_softc *, struct ether_header *,
+    int *));
+static __inline int ie_buflen __P((struct ie_softc *, int));
+static __inline int ie_packet_len __P((struct ie_softc *));
+
+static void chan_attn_timeout __P((void *));
+static void run_tdr __P((struct ie_softc *, struct ie_tdr_cmd *));
+
+struct cfattach ie_ca = {
+	sizeof(struct ie_softc), ieprobe, ieattach
+};
+
+struct cfdriver ie_cd = {
+	NULL, "ie", DV_IFNET
 };
 
 #define MK_24(base, ptr) ((caddr_t)((u_long)ptr - (u_long)base))
@@ -323,7 +341,7 @@ struct cfdriver iecd = {
  * Here are a few useful functions.  We could have done these as macros, but
  * since we have the inline facility, it makes sense to use that instead.
  */
-static inline void
+static __inline void
 ie_setup_config(cmd, promiscuous, manchester)
 	volatile struct ie_config_cmd *cmd;
 	int promiscuous, manchester;
@@ -343,7 +361,7 @@ ie_setup_config(cmd, promiscuous, manchester)
 	cmd->ie_junk = 0xff;
 }
 
-static inline void
+static __inline void
 ie_ack(sc, mask)
 	struct ie_softc *sc;
 	u_int mask;
@@ -401,7 +419,7 @@ sl_probe(sc, ia)
 
 	default:
 		/* Anything else is not recognized or cannot be used. */
-#ifdef DIAGNOSTIC
+#if 0
 		printf("%s: unknown AT&T board type code %d\n",
 		    sc->sc_dev.dv_xname, SL_BOARD(c));
 #endif
@@ -446,8 +464,10 @@ el_probe(sc, ia)
 	struct ie_softc *sc;
 	struct isa_attach_args *ia;
 {
+	bus_space_tag_t iot = ia->ia_iot;
+	bus_space_handle_t ioh;
 	u_char c;
-	int i;
+	int i, rval = 0;
 	u_char signature[] = "*3COM*";
 
 	sc->sc_iobase = ia->ia_iobase;
@@ -456,28 +476,39 @@ el_probe(sc, ia)
 	sc->reset_586 = el_reset_586;
 	sc->chan_attn = el_chan_attn;
 
-	/* Reset and put card in CONFIG state without changing address. */
-	elink_reset();
-	elink_idseq(ELINK_507_POLY);
-	elink_idseq(ELINK_507_POLY);
+	/*
+	 * Map the Etherlink ID port for the probe sequence.
+	 */
+	if (bus_space_map(iot, ELINK_ID_PORT, 1, 0, &ioh)) {
+		printf("3c507 probe: can't map Etherlink ID port\n");
+		return 0;
+	}
+
+	/*
+	 * Reset and put card in CONFIG state without changing address.
+	 * XXX Indirect brokenness here!
+	 */
+	elink_reset(iot, ioh, sc->sc_dev.dv_parent->dv_unit);
+	elink_idseq(iot, ioh, ELINK_507_POLY);
+	elink_idseq(iot, ioh, ELINK_507_POLY);
 	outb(ELINK_ID_PORT, 0xff);
 
 	/* Check for 3COM signature before proceeding. */
 	outb(PORT + IE507_CTRL, inb(PORT + IE507_CTRL) & 0xfc);	/* XXX */
 	for (i = 0; i < 6; i++)
 		if (inb(PORT + i) != signature[i])
-			return 0;
+			goto out;
 
 	c = inb(PORT + IE507_MADDR);
 	if (c & 0x20) {
 		printf("%s: can't map 3C507 RAM in high memory\n",
 		    sc->sc_dev.dv_xname);
-		return 0;
+		goto out;
 	}
 
 	/* Go to RUN state. */
 	outb(ELINK_ID_PORT, 0x00);
-	elink_idseq(ELINK_507_POLY);
+	elink_idseq(iot, ioh, ELINK_507_POLY);
 	outb(ELINK_ID_PORT, 0x00);
 
 	/* Set bank 2 for version info and read BCD version byte. */
@@ -493,7 +524,7 @@ el_probe(sc, ia)
 		if (ia->ia_irq != i) {
 			printf("%s: irq mismatch; kernel configured %d != board configured %d\n",
 			    sc->sc_dev.dv_xname, ia->ia_irq, i);
-			return 0;
+			goto out;
 		}
 	} else
 		ia->ia_irq = i;
@@ -504,7 +535,7 @@ el_probe(sc, ia)
 		if (ia->ia_maddr != i) {
 			printf("%s: maddr mismatch; kernel configured %x != board configured %x\n",
 			    sc->sc_dev.dv_xname, ia->ia_maddr, i);
-			return 0;
+			goto out;
 		}
 	} else
 		ia->ia_maddr = i;
@@ -520,7 +551,7 @@ el_probe(sc, ia)
 	if (!sc->sc_msize) {
 		printf("%s: can't find shared memory\n", sc->sc_dev.dv_xname);
 		outb(PORT + IE507_CTRL, EL_CTRL_NRST);
-		return 0;
+		goto out;
 	}
 
 	if (!ia->ia_msize)
@@ -529,7 +560,7 @@ el_probe(sc, ia)
 		printf("%s: msize mismatch; kernel configured %d != board configured %d\n",
 		    sc->sc_dev.dv_xname, ia->ia_msize, sc->sc_msize);
 		outb(PORT + IE507_CTRL, EL_CTRL_NRST);
-		return 0;
+		goto out;
 	}
 
 	slel_get_address(sc);
@@ -538,7 +569,11 @@ el_probe(sc, ia)
 	outb(PORT + IE507_ICTRL, 1);
 
 	ia->ia_iosize = 16;
-	return 1;
+	rval = 1;
+
+ out:
+	bus_space_unmap(iot, ioh, 1);
+	return rval;
 }
 
 /* Taken almost exactly from Rod's if_ix.c. */
@@ -549,12 +584,9 @@ ee16_probe(sc, ia)
 	struct isa_attach_args *ia;
 {
 	int i;
-	int cnt_id;
 	u_short board_id, id_var1, id_var2, checksum = 0;
 	u_short eaddrtemp, irq;
         u_short pg, adjust, decode, edecode;
-        u_char lock_bit;
-	u_char c;
 	u_char	bart_config;
 
 	short	irq_translate[] = {0, 0x09, 0x03, 0x04, 0x05, 0x0a, 0x0b, 0};
@@ -755,8 +787,8 @@ ieattach(parent, self, aux)
 	struct isa_attach_args *ia = aux;
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = iecd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_start = iestart;
 	ifp->if_ioctl = ieioctl;
 	ifp->if_watchdog = iewatchdog;
@@ -776,8 +808,8 @@ ieattach(parent, self, aux)
 	    sizeof(struct ether_header));
 #endif
 
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_NET,
-	    ieintr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_NET, ieintr, sc, sc->sc_dev.dv_xname);
 }
 
 /*
@@ -785,10 +817,10 @@ ieattach(parent, self, aux)
  * an interrupt after a transmit has been started on it.
  */
 void
-iewatchdog(unit)
-	int unit;
+iewatchdog(ifp)
+	struct ifnet *ifp;
 {
-	struct ie_softc *sc = iecd.cd_devs[unit];
+	struct ie_softc *sc = ifp->if_softc;
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 	++sc->sc_arpcom.ac_if.if_oerrors;
@@ -982,7 +1014,7 @@ ietint(sc)
  * Compare two Ether/802 addresses for equality, inlined and unrolled for
  * speed.  I'd love to have an inline assembler version of this...
  */
-static inline int
+static __inline int
 ether_equal(one, two)
 	u_char *one, *two;
 {
@@ -1005,7 +1037,7 @@ ether_equal(one, two)
  * only client which will fiddle with IFF_PROMISC is BPF.  This is
  * probably a good assumption, but we do not make it here.  (Yet.)
  */
-static inline int
+static __inline int
 check_eh(sc, eh, to_bpf)
 	struct ie_softc *sc;
 	struct ether_header *eh;
@@ -1106,6 +1138,7 @@ check_eh(sc, eh, to_bpf)
 #ifdef DIAGNOSTIC
 	panic("check_eh: impossible");
 #endif
+	return 0;
 }
 
 /*
@@ -1113,7 +1146,7 @@ check_eh(sc, eh, to_bpf)
  * IE_RBUF_SIZE is an even power of two.  If somehow the act_len exceeds
  * the size of the buffer, then we are screwed anyway.
  */
-static inline int
+static __inline int
 ie_buflen(sc, head)
 	struct ie_softc *sc;
 	int head;
@@ -1123,7 +1156,7 @@ ie_buflen(sc, head)
 	    & (IE_RBUF_SIZE | (IE_RBUF_SIZE - 1)));
 }
 
-static inline int
+static __inline int
 ie_packet_len(sc)
 	struct ie_softc *sc;
 {
@@ -1440,7 +1473,7 @@ void
 iestart(ifp)
 	struct ifnet *ifp;
 {
-	struct ie_softc *sc = iecd.cd_devs[ifp->if_unit];
+	struct ie_softc *sc = ifp->if_softc;
 	struct mbuf *m0, *m;
 	u_char *buffer;
 	u_short len;
@@ -1508,7 +1541,7 @@ check_ie_present(sc, where, size)
 	u_long realbase;
 	int s;
 
-	s = splimp();
+	s = splnet();
 
 	realbase = (u_long)where + size - (1 << 24);
 
@@ -1759,7 +1792,7 @@ void
 iereset(sc)
 	struct ie_softc *sc;
 {
-	int s = splimp();
+	int s = splnet();
 
 	iestop(sc);
 
@@ -1782,7 +1815,7 @@ iereset(sc)
  */
 static void
 chan_attn_timeout(rock)
-	caddr_t rock;
+	void *rock;
 {
 
 	*(int *)rock = 1;
@@ -1967,7 +2000,7 @@ iememinit(ptr, sc)
 
 /*
  * Run the multicast setup command.
- * Called at splimp().
+ * Called at splnet().
  */
 static int
 mc_setup(sc, ptr)
@@ -2001,7 +2034,7 @@ mc_setup(sc, ptr)
  * includes executing the CONFIGURE, IA-SETUP, and MC-SETUP commands, starting
  * the receiver unit, and clearing interrupts.
  *
- * THIS ROUTINE MUST BE CALLED AT splimp() OR HIGHER.
+ * THIS ROUTINE MUST BE CALLED AT splnet() OR HIGHER.
  */
 int
 ieinit(sc)
@@ -2009,7 +2042,6 @@ ieinit(sc)
 {
 	volatile struct ie_sys_ctl_block *scb = sc->scb;
 	void *ptr;
-	int n;
 
 	ptr = (void *)ALIGN(scb + 1);
 
@@ -2110,12 +2142,17 @@ ieioctl(ifp, cmd, data)
 	u_long cmd;
 	caddr_t data;
 {
-	struct ie_softc *sc = iecd.cd_devs[ifp->if_unit];
+	struct ie_softc *sc = ifp->if_softc;
 	struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (cmd) {
 
@@ -2129,24 +2166,6 @@ ieioctl(ifp, cmd, data)
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
 #endif
-#ifdef NS
-		/* XXX - This code is probably wrong. */
-		case AF_NS:
-		    {
-			struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				bcopy(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			/* Set new address. */
-			ieinit(sc);
-			break;
-		    }
-#endif /* NS */
 		default:
 			ieinit(sc);
 			break;

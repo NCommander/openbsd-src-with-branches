@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: tree.c,v 1.4 1997/06/19 13:58:48 kstailey Exp $	*/
 
 /*
  * command tree climbing
@@ -352,7 +352,7 @@ int
 #ifdef HAVE_PROTOTYPES
 fptreef(struct shf *shf, int indent, const char *fmt, ...)
 #else
-fptreef(shf, indent, fmt, va_alist) 
+fptreef(shf, indent, fmt, va_alist)
   struct shf *shf;
   int indent;
   const char *fmt;
@@ -362,7 +362,7 @@ fptreef(shf, indent, fmt, va_alist)
   va_list	va;
 
   SH_VA_START(va, fmt);
-  
+
   vfptreef(shf, indent, fmt, va);
   va_end(va);
   return 0;
@@ -478,7 +478,7 @@ tcopy(t, ap)
 	r = (struct op *) alloc(sizeof(struct op), ap);
 
 	r->type = t->type;
-	r->evalflags = t->evalflags;
+	r->u.evalflags = t->u.evalflags;
 
 	r->str = t->type == TCASE ? wdcopy(t->str, ap) : str_save(t->str, ap);
 

@@ -1,4 +1,6 @@
 #!/bin/sh -
+#	$OpenBSD$
+
 #
 # Copyright (c) 1994
 #	The Regents of the University of California.  All rights reserved.

@@ -1,3 +1,6 @@
+/*	$OpenBSD: printjob.c,v 1.18 1997/09/09 00:09:35 millert Exp $ */
+/*	$NetBSD: printjob.c,v 1.9.4.3 1996/07/12 22:31:39 jtc Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +42,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)printjob.c	8.2 (Berkeley) 4/16/94";
+static char sccsid[] = "@(#)printjob.c	8.7 (Berkeley) 5/10/95";
 #endif /* not lint */
 
 
@@ -54,6 +57,7 @@ static char sccsid[] = "@(#)printjob.c	8.2 (Berkeley) 4/16/94";
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/file.h>
 
 #include <pwd.h>
 #include <unistd.h>
@@ -95,7 +99,6 @@ static int	 ofilter;	/* id of output filter, if any */
 static int	 pfd;		/* prstatic inter file descriptor */
 static int	 pid;		/* pid of lpd process */
 static int	 prchild;	/* id of pr process */
-static int	 remote;	/* true if sending files to remote */
 static char	 title[80];	/* ``pr'' title */
 static int	 tof;		/* true if at top of form */
 
@@ -108,7 +111,7 @@ static char	length[10] = "-l";	/* page length in lines */
 static char	logname[32];		/* user's login name */
 static char	pxlength[10] = "-y";	/* page length in pixels */
 static char	pxwidth[10] = "-x";	/* page width in pixels */
-static char	tempfile[] = "errsXXXXXX"; /* file name for filter output */
+static char	tempfile[] = "errsXXXXXXXXXX"; /* file name for filter output */
 static char	width[10] = "-w";	/* page width in static characters */
 
 static void       abortpr __P((int));
@@ -117,6 +120,9 @@ static int        dofork __P((int));
 static int        dropit __P((int));
 static void       init __P((void));
 static void       openpr __P((void));
+static void       opennet __P((char *));
+static void       opentty __P((void));
+static void       openrem __P((void));
 static int        print __P((int, char *));
 static int        printit __P((char *));
 static void       pstatus __P((const char *, ...));
@@ -126,7 +132,6 @@ static char      *scnline __P((int, char *, int));
 static int        sendfile __P((int, char *));
 static int        sendit __P((char *));
 static void       sendmail __P((char *, int));
-static void       set_ttyflags __P((struct termios *));
 static void       setty __P((void));
 
 void
@@ -136,8 +141,8 @@ printjob()
 	register struct queue *q, **qp;
 	struct queue **queue;
 	register int i, nitems;
-	long pidoff;
-	int count = 0;
+	off_t pidoff;
+	int errcnt, count = 0;
 
 	init();					/* set up capabilities */
 	(void) write(1, "", 1);			/* ack that daemon is started */
@@ -180,7 +185,7 @@ printjob()
 	/*
 	 * write process id for others to know
 	 */
-	sprintf(line, "%u\n", pid);
+	sprintf(line, "%d\n", pid);
 	pidoff = i = strlen(line);
 	if (write(lfd, line, i) != i) {
 		syslog(LOG_ERR, "%s: %s: %m", printer, LO);
@@ -210,9 +215,10 @@ again:
 		q = *qp++;
 		if (stat(q->q_name, &stb) < 0)
 			continue;
+		errcnt = 0;
 	restart:
-		(void) lseek(lfd, (off_t)pidoff, 0);
-		(void) sprintf(line, "%s\n", q->q_name);
+		(void) lseek(lfd, pidoff, 0);
+		(void) snprintf(line, sizeof line, "%s\n", q->q_name);
 		i = strlen(line);
 		if (write(lfd, line, i) != i)
 			syslog(LOG_ERR, "%s: %s: %m", printer, LO);
@@ -240,12 +246,13 @@ again:
 		}
 		if (i == OK)		/* file ok and printed */
 			count++;
-		else if (i == REPRINT) { /* try reprinting the job */
+		else if (i == REPRINT && ++errcnt < 5) {
+			/* try reprinting the job */
 			syslog(LOG_INFO, "restarting %s", printer);
 			if (ofilter > 0) {
 				kill(ofilter, SIGCONT);	/* to be sure */
 				(void) close(ofd);
-				while ((i = wait(0)) > 0 && i != ofilter)
+				while ((i = wait(NULL)) > 0 && i != ofilter)
 					;
 				ofilter = 0;
 			}
@@ -254,6 +261,17 @@ again:
 				syslog(LOG_WARNING, "%s: %s: %m", printer, LO);
 			openpr();		/* try to reopen printer */
 			goto restart;
+		} else {
+			syslog(LOG_WARNING, "%s: job could not be %s (%s)", printer,
+				remote ? "sent to remote host" : "printed", q->q_name);
+			if (i == REPRINT) {
+				/* ensure we don't attempt this job again */
+				(void) unlink(q->q_name);
+				q->q_name[0] = 'd';
+				(void) unlink(q->q_name);
+				if (logname[0])
+					sendmail(logname, FATALERR);
+			}
 		}
 	}
 	free((char *) queue);
@@ -272,6 +290,8 @@ again:
 			if (TR != NULL)		/* output trailer */
 				(void) write(ofd, TR, strlen(TR));
 		}
+		(void) close(ofd);
+		(void) wait(NULL);
 		(void) unlink(tempfile);
 		exit(0);
 	}
@@ -311,7 +331,7 @@ printit(file)
 	 */
 	for (i = 0; i < 4; i++)
 		strcpy(fonts[i], ifonts[i]);
-	sprintf(&width[2], "%d", PW);
+	sprintf(&width[2], "%ld", PW);
 	strcpy(indent+2, "0");
 
 	/*
@@ -329,6 +349,7 @@ printit(file)
 	 *		H -- "host name" of machine where lpr was done
 	 *              P -- "person" user's login name
 	 *              I -- "indent" amount to indent output
+	 *		R -- laser dpi "resolution"
 	 *              f -- "file name" name of text file to print
 	 *		l -- "file name" text file with control chars
 	 *		p -- "file name" text file to print with pr(1)
@@ -355,13 +376,17 @@ printit(file)
 	while (getline(cfp))
 		switch (line[0]) {
 		case 'H':
-			strcpy(fromhost, line+1);
-			if (class[0] == '\0')
+			strncpy(fromhost, line+1, sizeof(fromhost)-1);
+			fromhost[sizeof(fromhost)-1] = '\0';
+			if (class[0] == '\0') {
 				strncpy(class, line+1, sizeof(class)-1);
+				class[sizeof(class)-1] = '\0';
+			}
 			continue;
 
 		case 'P':
 			strncpy(logname, line+1, sizeof(logname)-1);
+			logname[sizeof(logname)-1] = '\0';
 			if (RS) {			/* restricted */
 				if (getpwnam(logname) == NULL) {
 					bombed = NOACCT;
@@ -385,9 +410,10 @@ printit(file)
 			continue;
 
 		case 'J':
-			if (line[1] != '\0')
+			if (line[1] != '\0') {
 				strncpy(jobname, line+1, sizeof(jobname)-1);
-			else
+				jobname[sizeof(jobname)-1] = '\0';
+			} else
 				strcpy(jobname, " ");
 			continue;
 
@@ -396,10 +422,12 @@ printit(file)
 				strncpy(class, line+1, sizeof(class)-1);
 			else if (class[0] == '\0')
 				gethostname(class, sizeof(class));
+			class[sizeof(class)-1] = '\0';
 			continue;
 
 		case 'T':	/* header title for pr */
 			strncpy(title, line+1, sizeof(title)-1);
+			title[sizeof(title)-1] = '\0';
 			continue;
 
 		case 'L':	/* identification line */
@@ -411,16 +439,21 @@ printit(file)
 		case '2':
 		case '3':
 		case '4':
-			if (line[1] != '\0')
-				strcpy(fonts[line[0]-'1'], line+1);
+			if (line[1] != '\0') {
+				strncpy(fonts[line[0]-'1'], line+1,
+				    50-1);
+				fonts[line[0]-'1'][50-1] = '\0';
+			}
 			continue;
 
 		case 'W':	/* page width */
 			strncpy(width+2, line+1, sizeof(width)-3);
+			width[2+sizeof(width)-3] = '\0';
 			continue;
 
 		case 'I':	/* indent amount */
 			strncpy(indent+2, line+1, sizeof(indent)-3);
+			indent[2+sizeof(indent)-3] = '\0';
 			continue;
 
 		default:	/* some file to print */
@@ -443,6 +476,7 @@ printit(file)
 		case 'N':
 		case 'U':
 		case 'M':
+		case 'R':
 			continue;
 		}
 
@@ -463,6 +497,8 @@ pass2:
 			continue;
 
 		case 'U':
+			if (strchr(line+1, '/'))
+				continue;
 			(void) unlink(line+1);
 		}
 	/*
@@ -493,7 +529,7 @@ print(format, file)
 	int fi, fo;
 	FILE *fp;
 	char *av[15], buf[BUFSIZ];
-	int pid, p[2], stopped = 0;
+	int pid, p[2], stopped = 0, nofile;
 	union wait status;
 	struct stat stb;
 
@@ -538,7 +574,8 @@ print(format, file)
 		if ((prchild = dofork(DORETURN)) == 0) {	/* child */
 			dup2(fi, 0);		/* file is stdin */
 			dup2(p[1], 1);		/* pipe is stdout */
-			for (n = 3; n < NOFILE; n++)
+			closelog();
+			for (n = 3, nofile = sysconf(_SC_OPEN_MAX); n < nofile; n++)
 				(void) close(n);
 			execl(_PATH_PR, "pr", width, length,
 			    "-h", *title ? title : " ", 0);
@@ -620,7 +657,14 @@ print(format, file)
 			printer, format);
 		return(ERROR);
 	}
-	if ((av[0] = rindex(prog, '/')) != NULL)
+	if (prog == NULL) {
+		(void) close(fi);
+		syslog(LOG_ERR,
+		   "%s: no filter found in printcap for format character '%c'",
+		   printer, format);
+		return(ERROR);
+	}
+	if ((av[0] = strrchr(prog, '/')) != NULL)
 		av[0]++;
 	else
 		av[0] = prog;
@@ -633,13 +677,14 @@ print(format, file)
 	fo = pfd;
 	if (ofilter > 0) {		/* stop output filter */
 		write(ofd, "\031\1", 2);
-		while ((pid =
-		    wait3((int *)&status, WUNTRACED, 0)) > 0 && pid != ofilter)
+		while ((pid = waitpid((pid_t)-1, (int *)&status, WUNTRACED)) > 0
+		    && pid != ofilter)
 			;
 		if (status.w_stopval != WSTOPPED) {
 			(void) close(fi);
-			syslog(LOG_WARNING, "%s: output filter died (%d)",
-				printer, status.w_retcode);
+			syslog(LOG_WARNING,
+			    "%s: output filter died (retcode=%d termsig=%d)",
+			    printer, status.w_retcode, status.w_termsig);
 			return(REPRINT);
 		}
 		stopped++;
@@ -651,7 +696,8 @@ start:
 		n = open(tempfile, O_WRONLY|O_CREAT|O_TRUNC, 0664);
 		if (n >= 0)
 			dup2(n, 2);
-		for (n = 3; n < NOFILE; n++)
+		closelog();
+		for (n = 3, nofile = sysconf(_SC_OPEN_MAX); n < nofile; n++)
 			(void) close(n);
 		execv(prog, av);
 		syslog(LOG_ERR, "cannot execv %s", prog);
@@ -674,14 +720,14 @@ start:
 	tof = 0;
 
 	/* Copy filter output to "lf" logfile */
-	if (fp = fopen(tempfile, "r")) {
+	if ((fp = fopen(tempfile, "r"))) {
 		while (fgets(buf, sizeof(buf), fp))
 			fputs(buf, stderr);
 		fclose(fp);
 	}
 
 	if (!WIFEXITED(status)) {
-		syslog(LOG_WARNING, "%s: Daemon filter '%c' terminated (%d)",
+		syslog(LOG_WARNING, "%s: filter '%c' terminated (termsig=%d)",
 			printer, format, status.w_termsig);
 		return(ERROR);
 	}
@@ -691,11 +737,12 @@ start:
 		return(OK);
 	case 1:
 		return(REPRINT);
-	default:
-		syslog(LOG_WARNING, "%s: Daemon filter '%c' exited (%d)",
-			printer, format, status.w_retcode);
 	case 2:
 		return(ERROR);
+	default:
+		syslog(LOG_WARNING, "%s: filter '%c' exited (retcode=%d)",
+			printer, format, status.w_retcode);
+		return(FILTERERR);
 	}
 }
 
@@ -748,7 +795,7 @@ sendit(file)
 		}
 		if (line[0] >= 'a' && line[0] <= 'z') {
 			strcpy(last, line);
-			while (i = getline(cfp))
+			while ((i = getline(cfp)))
 				if (strcmp(last, line))
 					break;
 			switch (sendfile('\3', last+1)) {
@@ -776,7 +823,7 @@ sendit(file)
 	 */
 	fseek(cfp, 0L, 0);
 	while (getline(cfp))
-		if (line[0] == 'U')
+		if (line[0] == 'U' && !strchr(line+1, '/'))
 			(void) unlink(line+1);
 	/*
 	 * clean-up in case another control file exists
@@ -810,7 +857,9 @@ sendfile(type, file)
 	if ((stb.st_mode & S_IFMT) == S_IFLNK && fstat(f, &stb) == 0 &&
 	    (stb.st_dev != fdev || stb.st_ino != fino))
 		return(ACCESS);
-	(void) sprintf(buf, "%c%qd %s\n", type, stb.st_size, file);
+	if (snprintf(buf, sizeof buf, "%c%qd %s\n", type,
+	    stb.st_size, file) > sizeof buf-1)
+		return (ACCESS);		/* XXX hack */
 	amt = strlen(buf);
 	for (i = 0;  ; i++) {
 		if (write(pfd, buf, amt) != amt ||
@@ -840,9 +889,6 @@ sendfile(type, file)
 			return(REPRINT);
 		}
 	}
-
-
-
 
 	(void) close(f);
 	if (sizerr) {
@@ -881,7 +927,6 @@ banner(name1, name2)
 	char *name1, *name2;
 {
 	time_t tvec;
-	extern char *ctime();
 
 	time(&tvec);
 	if (!SF && !tof)
@@ -954,7 +999,7 @@ scan_out(scfd, scsp, dlm)
 				for (j = WIDTH; --j;)
 					*strp++ = BACKGND;
 			else
-				strp = scnline(scnkey[c][scnhgt-1-d], strp, cc);
+				strp = scnline(scnkey[(int)c][scnhgt-1-d], strp, cc);
 			if (*sp == dlm || *sp == '\0' || nchrs++ >= PW/(WIDTH+1)-1)
 				break;
 			*strp++ = BACKGND;
@@ -998,63 +1043,76 @@ sendmail(user, bombed)
 	char *user;
 	int bombed;
 {
-	register int i;
+	register int i, nofile;
 	int p[2], s;
-	register char *cp;
-	char buf[100];
+	register char *cp = NULL;
 	struct stat stb;
 	FILE *fp;
 
+	if (user[0] == '-' || user[0] == '/' || !isprint(user[0]))
+		return;
 	pipe(p);
 	if ((s = dofork(DORETURN)) == 0) {		/* child */
 		dup2(p[0], 0);
-		for (i = 3; i < NOFILE; i++)
+		closelog();
+		for (i = 3, nofile = sysconf(_SC_OPEN_MAX); i < nofile; i++)
 			(void) close(i);
-		if ((cp = rindex(_PATH_SENDMAIL, '/')) != NULL)
+		if ((cp = strrchr(_PATH_SENDMAIL, '/')) != NULL)
 			cp++;
-	else
+		else
 			cp = _PATH_SENDMAIL;
-		sprintf(buf, "%s@%s", user, fromhost);
-		execl(_PATH_SENDMAIL, cp, buf, 0);
+		execl(_PATH_SENDMAIL, cp, "-t", 0);
 		exit(0);
 	} else if (s > 0) {				/* parent */
 		dup2(p[1], 1);
 		printf("To: %s@%s\n", user, fromhost);
-		printf("Subject: printer job\n\n");
+		printf("Subject: %s printer job \"%s\"\n", printer,
+			*jobname ? jobname : "<unknown>");
+		printf("Reply-To: root@%s\n\n", host);
 		printf("Your printer job ");
 		if (*jobname)
 			printf("(%s) ", jobname);
 		switch (bombed) {
 		case OK:
 			printf("\ncompleted successfully\n");
+			cp = "OK";
 			break;
 		default:
 		case FATALERR:
 			printf("\ncould not be printed\n");
+			cp = "FATALERR";
 			break;
 		case NOACCT:
 			printf("\ncould not be printed without an account on %s\n", host);
+			cp = "NOACCT";
 			break;
 		case FILTERERR:
 			if (stat(tempfile, &stb) < 0 || stb.st_size == 0 ||
 			    (fp = fopen(tempfile, "r")) == NULL) {
-				printf("\nwas printed but had some errors\n");
+				printf("\nhad some errors and may not have printed\n");
 				break;
 			}
-			printf("\nwas printed but had the following errors:\n");
+			printf("\nhad the following errors and may not have printed:\n");
 			while ((i = getc(fp)) != EOF)
 				putchar(i);
 			(void) fclose(fp);
+			cp = "FILTERERR";
 			break;
 		case ACCESS:
 			printf("\nwas not printed because it was not linked to the original file\n");
+			cp = "ACCESS";
 		}
 		fflush(stdout);
 		(void) close(1);
 	}
 	(void) close(p[0]);
 	(void) close(p[1]);
-	wait(&s);
+	if (s != -1) {
+		wait(NULL);
+		syslog(LOG_INFO,
+		    "mail sent to user %s about job %s on printer %s (%s)",
+		    user, *jobname ? jobname : "<unknown>", printer, cp);
+	}
 }
 
 /*
@@ -1078,12 +1136,13 @@ dofork(action)
 		if (pid == 0) {
 			pw = getpwuid(DU);
 			if (pw == 0) {
-				syslog(LOG_ERR, "uid %d not in password file",
-				    DU);
+				syslog(LOG_ERR, "uid %u not in password file",
+				    (uid_t)DU);
 				break;
 			}
 			initgroups(pw->pw_name, pw->pw_gid);
 			setgid(pw->pw_gid);
+			setlogin("");
 			setuid(DU);
 		}
 		return (pid);
@@ -1151,18 +1210,18 @@ init()
 		FF = DEFFF;
 	if (cgetnum(bp, "pw", &PW) < 0)
 		PW = DEFWIDTH;
-	sprintf(&width[2], "%d", PW);
+	sprintf(&width[2], "%ld", PW);
 	if (cgetnum(bp, "pl", &PL) < 0)
 		PL = DEFLENGTH;
-	sprintf(&length[2], "%d", PL);
+	sprintf(&length[2], "%ld", PL);
 	if (cgetnum(bp,"px", &PX) < 0)
 		PX = 0;
-	sprintf(&pxwidth[2], "%d", PX);
+	sprintf(&pxwidth[2], "%ld", PX);
 	if (cgetnum(bp, "py", &PY) < 0)
 		PY = 0;
-	sprintf(&pxlength[2], "%d", PY);
+	sprintf(&pxlength[2], "%ld", PY);
 	cgetstr(bp, "rm", &RM);
-	if (s = checkremote())
+	if ((s = checkremote()))
 		syslog(LOG_WARNING, s);
 
 	cgetstr(bp, "af", &AF);
@@ -1204,54 +1263,22 @@ init()
 static void
 openpr()
 {
-	register int i, n;
-	int resp;
+	register int i, nofile;
+	char *cp;
 
-	if (!sendtorem && *LP) {
-		for (i = 1; ; i = i < 32 ? i << 1 : i) {
-			pfd = open(LP, RW ? O_RDWR : O_WRONLY);
-			if (pfd >= 0)
-				break;
-			if (errno == ENOENT) {
-				syslog(LOG_ERR, "%s: %m", LP);
-				exit(1);
-			}
-			if (i == 1)
-				pstatus("waiting for %s to become ready (offline ?)", printer);
-			sleep(i);
-		}
-		if (isatty(pfd))
-			setty();
-		pstatus("%s is ready and printing", printer);
-	} else if (RM != NULL) {
-		for (i = 1; ; i = i < 256 ? i << 1 : i) {
-			resp = -1;
-			pfd = getport(RM);
-			if (pfd >= 0) {
-				(void) sprintf(line, "\2%s\n", RP);
-				n = strlen(line);
-				if (write(pfd, line, n) == n &&
-				    (resp = response()) == '\0')
-					break;
-				(void) close(pfd);
-			}
-			if (i == 1) {
-				if (resp < 0)
-					pstatus("waiting for %s to come up", RM);
-				else {
-					pstatus("waiting for queue to be enabled on %s", RM);
-					i = 256;
-				}
-			}
-			sleep(i);
-		}
-		pstatus("sending to %s", RM);
-		remote = 1;
+	if (!remote && *LP) {
+		if ((cp = strchr(LP, '@')))
+			opennet(cp);
+		else
+			opentty();
+	} else if (remote) {
+		openrem();
 	} else {
 		syslog(LOG_ERR, "%s: no line printer device or host name",
 			printer);
 		exit(1);
 	}
+
 	/*
 	 * Start up an output filter, if needed.
 	 */
@@ -1263,9 +1290,10 @@ openpr()
 		if ((ofilter = dofork(DOABORT)) == 0) {	/* child */
 			dup2(p[0], 0);		/* pipe is std in */
 			dup2(pfd, 1);		/* printer is std out */
-			for (i = 3; i < NOFILE; i++)
+			closelog();
+			for (i = 3, nofile = sysconf(_SC_OPEN_MAX); i < nofile; i++)
 				(void) close(i);
-			if ((cp = rindex(OF, '/')) == NULL)
+			if ((cp = strrchr(OF, '/')) == NULL)
 				cp = OF;
 			else
 				cp++;
@@ -1281,6 +1309,115 @@ openpr()
 	}
 }
 
+/*
+ * Printer connected directly to the network
+ * or to a terminal server on the net
+ */
+static void
+opennet(cp)
+	char *cp;
+{
+	register int i;
+	int resp, port;
+	char save_ch;
+
+	save_ch = *cp;
+	*cp = '\0';
+	port = atoi(LP);
+	if (port <= 0) {
+		syslog(LOG_ERR, "%s: bad port number: %s", printer, LP);
+		exit(1);
+	}
+	*cp++ = save_ch;
+
+	for (i = 1; ; i = i < 256 ? i << 1 : i) {
+		resp = -1;
+		pfd = getport(cp, port);
+		if (pfd < 0 && errno == ECONNREFUSED)
+			resp = 1;
+		else if (pfd >= 0) {
+			/*
+			 * need to delay a bit for rs232 lines
+			 * to stabilize in case printer is
+			 * connected via a terminal server
+			 */
+			delay(500);
+			break;
+		}
+		if (i == 1) {
+		   if (resp < 0)
+			pstatus("waiting for %s to come up", LP);
+		   else
+			pstatus("waiting for access to printer on %s", LP);
+		}
+		sleep(i);
+	}
+	pstatus("sending to %s port %d", cp, port);
+}
+
+/*
+ * Printer is connected to an RS232 port on this host
+ */
+static void
+opentty()
+{
+	register int i;
+
+	for (i = 1; ; i = i < 32 ? i << 1 : i) {
+		pfd = open(LP, RW ? O_RDWR : O_WRONLY);
+		if (pfd >= 0) {
+			delay(500);
+			break;
+		}
+		if (errno == ENOENT) {
+			syslog(LOG_ERR, "%s: %m", LP);
+			exit(1);
+		}
+		if (i == 1)
+			pstatus("waiting for %s to become ready (offline ?)",
+				printer);
+		sleep(i);
+	}
+	if (isatty(pfd))
+		setty();
+	pstatus("%s is ready and printing", printer);
+}
+
+/*
+ * Printer is on a remote host
+ */
+static void
+openrem()
+{
+	register int i, n;
+	int resp;
+
+	for (i = 1; ; i = i < 256 ? i << 1 : i) {
+		resp = -1;
+		pfd = getport(RM, 0);
+		if (pfd >= 0) {
+			(void) snprintf(line, sizeof line, "\2%s\n", RP);
+			n = strlen(line);
+			if (write(pfd, line, n) == n &&
+			    (resp = response()) == '\0')
+				break;
+			(void) close(pfd);
+		}
+		if (i == 1) {
+			if (resp < 0)
+				pstatus("waiting for %s to come up", RM);
+			else {
+				pstatus("waiting for queue to be enabled on %s",
+					RM);
+				i = 256;
+			}
+		}
+		sleep(i);
+	}
+	pstatus("sending to %s", RM);
+}
+
+#if !defined(__NetBSD__) && !defined(__OpenBSD__)
 struct bauds {
 	int	baud;
 	int	speed;
@@ -1300,8 +1437,10 @@ struct bauds {
 	9600,	B9600,
 	19200,	B19200,
 	38400,	B38400,
+	57600,	B57600,
 	0,	0
 };
+#endif
 
 /*
  * setup tty lines.
@@ -1309,7 +1448,6 @@ struct bauds {
 static void
 setty()
 {
-	register struct bauds *bp;
 	struct info i;
 	char **argv, **ap, *p, *val;
 
@@ -1324,6 +1462,10 @@ setty()
 		exit(1);
 	}
 	if (BR > 0) {
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+		cfsetspeed(&i.t, BR);
+#else
+		register struct bauds *bp;
 		for (bp = bauds; bp->baud; bp++)
 			if (BR == bp->baud)
 				break;
@@ -1332,6 +1474,7 @@ setty()
 			exit(1);
 		}
 		cfsetspeed(&i.t, bp->speed);
+#endif
 		i.set = 1;
 	}
 	if (MS) {
@@ -1351,7 +1494,10 @@ setty()
 		p = strdup(MS);
 		ap = argv;
 		while ((val = strsep(&p, " \t,")) != NULL) {
-			*ap++ = strdup(val);
+			if ((*ap++ = strdup(val)) == NULL) {
+				syslog(LOG_ERR, "%s: strdup: %m", printer);
+				exit(1);
+			}
 		}
 
 		for (; *argv; ++argv) {
@@ -1376,7 +1522,7 @@ setty()
 			i.set = 1;
 		}
 		if (XS) {
-			sttysetlflags(&i.t, XC);
+			sttysetlflags(&i.t, XS);
 			i.set = 1;
 		}
 	}
@@ -1390,14 +1536,14 @@ setty()
 	return;
 }
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
-void
-#if __STDC__
+static void
+#ifdef __STDC__
 pstatus(const char *msg, ...)
 #else
 pstatus(msg, va_alist)
@@ -1408,7 +1554,7 @@ pstatus(msg, va_alist)
 	register int fd;
 	char buf[BUFSIZ];
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, msg);
 #else
 	va_start(ap);
@@ -1421,7 +1567,7 @@ pstatus(msg, va_alist)
 		exit(1);
 	}
 	ftruncate(fd, 0);
-	(void)vsnprintf(buf, sizeof(buf), msg, ap);
+	(void)vsnprintf(buf, sizeof(buf) - 1, msg, ap);
 	va_end(ap);
 	strcat(buf, "\n");
 	(void) write(fd, buf, strlen(buf));

@@ -1,8 +1,8 @@
-/*	$NetBSD: setup.c,v 1.27 1996/09/27 22:45:19 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: setup.c,v 1.3 1997/06/14 04:16:59 downsj Exp $	*/
+/*	$NetBSD: setup.c,v 1.1 1997/06/11 11:22:01 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -39,7 +39,11 @@
 #if 0
 static char sccsid[] = "@(#)setup.c	8.5 (Berkeley) 11/23/94";
 #else
-static char rcsid[] = "$NetBSD: setup.c,v 1.27 1996/09/27 22:45:19 christos Exp $";
+#if 0
+static char rcsid[] = "$NetBSD: setup.c,v 1.1 1997/06/11 11:22:01 bouyer Exp $";
+#else
+static char rcsid[] = "$OpenBSD: setup.c,v 1.3 1997/06/14 04:16:59 downsj Exp $";
+#endif
 #endif
 #endif /* not lint */
 
@@ -115,8 +119,8 @@ setup(dev)
 	lfdir = 0;
 	initbarea(&sblk);
 	initbarea(&asblk);
-	sblk.b_un.b_buf = malloc(SBSIZE);
-	asblk.b_un.b_buf = malloc(SBSIZE);
+	sblk.b_un.b_buf = malloc(sizeof(struct m_ext2fs));
+	asblk.b_un.b_buf = malloc(sizeof(struct m_ext2fs));
 	if (sblk.b_un.b_buf == NULL || asblk.b_un.b_buf == NULL)
 		errexit("cannot allocate space for superblock\n");
 	if ((lp = getdisklabel((char *)NULL, fsreadfd)) != NULL)

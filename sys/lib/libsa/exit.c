@@ -1,4 +1,5 @@
-/*	$NetBSD: exit.c,v 1.7 1995/09/18 21:19:25 pk Exp $	*/
+/*	$OpenBSD: exit.c,v 1.3 1996/12/08 15:15:50 niklas Exp $	*/
+/*	$NetBSD: exit.c,v 1.11 1996/12/01 20:22:19 pk Exp $	*/
 
 /*-
  *  Copyright (c) 1993 John Brezak
@@ -28,9 +29,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #ifdef __STDC__
-#include <stdarg.h>
+#include <machine/stdarg.h>
 #else
-#include <varargs.h>
+#include <machine/varargs.h>
 #endif
 
 #include "stand.h"
@@ -57,7 +58,7 @@ panic(fmt /*, va_alist */)
 #else
     va_start(ap);
 #endif
-    printf(fmt, ap);
+    vprintf(fmt, ap);
     printf("\n");
     va_end(ap);
     _rtt();

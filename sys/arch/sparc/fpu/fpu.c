@@ -1,4 +1,5 @@
-/*	$NetBSD: fpu.c,v 1.2 1994/11/20 20:52:33 deraadt Exp $ */
+/*	$OpenBSD$	*/
+/*	$NetBSD: fpu.c,v 1.6 1997/07/29 10:09:51 fair Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -49,11 +50,13 @@
 #include <sys/signal.h>
 #include <sys/systm.h>
 #include <sys/syslog.h>
+#include <sys/signalvar.h>
 
 #include <machine/instr.h>
 #include <machine/reg.h>
 
 #include <sparc/fpu/fpu_emu.h>
+#include <sparc/fpu/fpu_extern.h>
 
 /*
  * fpu_execute returns the following error numbers (0 = no error):
@@ -87,18 +90,28 @@ static u_char fpu_codes[] = {
 	X16(FPE_FLTOPERR_TRAP)
 };
 
+static int fpu_types[] = {
+	FPE_FLTRES,
+	FPE_FLTDIV,
+	FPE_FLTUND,
+	FPE_FLTOVF,
+	FPE_FLTINV,
+};
+
 /*
  * The FPU gave us an exception.  Clean up the mess.  Note that the
  * fp queue can only have FPops in it, never load/store FP registers
  * nor FBfcc instructions.  Experiments with `crashme' prove that
  * unknown FPops do enter the queue, however.
  */
+void
 fpu_cleanup(p, fs)
 	register struct proc *p;
 	register struct fpstate *fs;
 {
 	register int i, fsr = fs->fs_fsr, error;
 	union instr instr;
+	caddr_t pc = (caddr_t)p->p_md.md_tf->tf_pc;	/* XXX only approximate */
 	struct fpemu fe;
 
 	switch ((fsr >> FSR_FTT_SHIFT) & FSR_FTT_MASK) {
@@ -108,10 +121,9 @@ fpu_cleanup(p, fs)
 		break;
 
 	case FSR_TT_IEEE:
-		/* XXX missing trap address! */
 		if ((i = fsr & FSR_CX) == 0)
 			panic("fpu ieee trap, but no exception");
-		trapsignal(p, SIGFPE, fpu_codes[i - 1]);
+		trapsignal(p, SIGFPE, fpu_codes[i - 1], fpu_types[i - i], pc);
 		break;		/* XXX should return, but queue remains */
 
 	case FSR_TT_UNFIN:
@@ -128,11 +140,11 @@ fpu_cleanup(p, fs)
 		log(LOG_ERR, "fpu hardware error (%s[%d])\n",
 		    p->p_comm, p->p_pid);
 		uprintf("%s[%d]: fpu hardware error\n", p->p_comm, p->p_pid);
-		trapsignal(p, SIGFPE, -1);	/* ??? */
+		trapsignal(p, SIGFPE, -1, FPE_FLTINV, pc);	/* ??? */
 		goto out;
 
 	default:
-		printf("fsr=%x\n", fsr);
+		printf("fsr=0x%x\n", fsr);
 		panic("fpu error");
 	}
 
@@ -152,11 +164,12 @@ fpu_cleanup(p, fs)
 
 		case FPE:
 			trapsignal(p, SIGFPE,
-			    fpu_codes[(fs->fs_fsr & FSR_CX) - 1]);
+			    fpu_codes[(fs->fs_fsr & FSR_CX) - 1],
+			    fpu_types[(fs->fs_fsr & FSR_CX) - 1], pc);
 			break;
 
 		case NOTFPU:
-			trapsignal(p, SIGILL, 0);	/* ??? code?  */
+			trapsignal(p, SIGILL, 0, ILL_COPROC, pc);
 			break;
 
 		default:

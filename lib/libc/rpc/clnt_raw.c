@@ -1,5 +1,3 @@
-/*	$NetBSD: clnt_raw.c,v 1.3 1995/02/25 03:01:40 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)clnt_raw.c 1.22 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)clnt_raw.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: clnt_raw.c,v 1.3 1995/02/25 03:01:40 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: clnt_raw.c,v 1.4 1996/09/15 09:31:32 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * clnt_raw.c
@@ -126,6 +122,7 @@ clntraw_create(prog, vers)
 	return (client);
 }
 
+/* ARGSUSED */
 static enum clnt_stat 
 clntraw_call(h, proc, xargs, argsp, xresults, resultsp, timeout)
 	CLIENT *h;
@@ -152,7 +149,7 @@ call_again:
 	XDR_SETPOS(xdrs, 0);
 	((struct rpc_msg *)clp->mashl_callmsg)->rm_xid ++ ;
 	if ((! XDR_PUTBYTES(xdrs, clp->mashl_callmsg, clp->mcnt)) ||
-	    (! XDR_PUTLONG(xdrs, &proc)) ||
+	    (! XDR_PUTLONG(xdrs, (long *)&proc)) ||
 	    (! AUTH_MARSHALL(h->cl_auth, xdrs)) ||
 	    (! (*xargs)(xdrs, argsp))) {
 		return (RPC_CANTENCODEARGS);
@@ -206,7 +203,7 @@ clntraw_geterr()
 {
 }
 
-
+/* ARGSUSED */
 static bool_t
 clntraw_freeres(cl, xdr_res, res_ptr)
 	CLIENT *cl;

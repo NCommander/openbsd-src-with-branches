@@ -1,4 +1,5 @@
-/*	$NetBSD: stdio.h,v 1.16 1995/03/25 02:51:02 jtc Exp $	*/
+/*	$OpenBSD: stdio.h,v 1.6 1996/07/26 10:34:25 deraadt Exp $	*/
+/*	$NetBSD: stdio.h,v 1.18 1996/04/25 18:29:21 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -41,7 +42,7 @@
 #ifndef	_STDIO_H_
 #define	_STDIO_H_
 
-#if !defined(_ANSI_SOURCE) && !defined(__STRICT_ANSI_)
+#if !defined(_ANSI_SOURCE) && !defined(__STRICT_ANSI__)
 #include <sys/types.h>
 #endif
 
@@ -66,6 +67,7 @@ typedef	_BSD_SIZE_T_	size_t;
 typedef off_t fpos_t;
 #else
 typedef struct __sfpos {
+	/* LONGLONG */
 	long long _pos;			/* XXX must be the same as off_t */
 } fpos_t;
 #endif
@@ -232,9 +234,11 @@ size_t	 fwrite __P((const void *, size_t, size_t, FILE *));
 int	 getc __P((FILE *));
 int	 getchar __P((void));
 char	*gets __P((char *));
-#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
+#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE) && !defined(__SYS_ERRLIST)
+#define __SYS_ERRLIST
+
 extern int sys_nerr;			/* perror(3) external variables */
-extern const char *const sys_errlist[];
+extern char *sys_errlist[];
 #endif
 void	 perror __P((const char *));
 int	 printf __P((const char *, ...));
@@ -367,7 +371,13 @@ static __inline int __sputc(int _c, FILE *_p) {
 
 #ifndef lint
 #define	getc(fp)	__sgetc(fp)
+/*
+ * The macro implementation of putc is not fully POSIX
+ * compliant; it does not set errno on failure
+ */
+#ifndef _POSIX_SOURCE
 #define putc(x, fp)	__sputc(x, fp)
+#endif /* _POSIX_SOURCE */
 #endif /* lint */
 
 #define	getchar()	getc(stdin)

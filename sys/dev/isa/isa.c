@@ -1,4 +1,5 @@
-/*	$NetBSD: isa.c,v 1.74 1995/06/07 06:46:04 cgd Exp $	*/
+/*	$OpenBSD: isa.c,v 1.21 1996/12/09 09:27:06 niklas Exp $	*/
+/*	$NetBSD: isa.c,v 1.85 1996/05/14 00:31:04 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994 Charles Hannum.  All rights reserved.
@@ -35,14 +36,80 @@
 #include <sys/conf.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
+#include <sys/extent.h>
+
+#include <machine/intr.h>
 
 #include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 
+#include "isapnp.h"
+
+int isamatch __P((struct device *, void *, void *));
+void isaattach __P((struct device *, struct device *, void *));
+
+struct cfattach isa_ca = {
+	sizeof(struct isa_softc), isamatch, isaattach
+};
+
+struct cfdriver isa_cd = {
+	NULL, "isa", DV_DULL, 1
+};
+
+int
+isamatch(parent, match, aux)
+	struct device *parent;
+	void *match, *aux;
+{
+	struct cfdata *cf = match;
+	struct isabus_attach_args *iba = aux;
+
+	if (strcmp(iba->iba_busname, cf->cf_driver->cd_name))
+		return (0);
+
+	/* XXX check other indicators */
+
+        return (1);
+}
+
+void
+isaattach(parent, self, aux)
+	struct device *parent, *self;
+	void *aux;
+{
+	struct isa_softc *sc = (struct isa_softc *)self;
+	struct isabus_attach_args *iba = aux;
+#if NISAPNP > 0
+	void postisapnpattach __P((struct device *, struct device *, void *));
+#endif /* NISAPNP > 0 */
+
+	isa_attach_hook(parent, self, iba);
+	printf("\n");
+
+	sc->sc_iot = iba->iba_iot;
+	sc->sc_memt = iba->iba_memt;
+	sc->sc_ic = iba->iba_ic;
+
+	/*
+	 * Map port 0x84, which causes a 1.25us delay when read.
+	 * We do this now, since several drivers need it.
+	 * XXX this port doesn't exist on all ISA busses...
+	 */
+	if (bus_space_map(sc->sc_iot, 0x84, 1, 0, &sc->sc_delaybah))
+		panic("isaattach: can't map `delay port'");	/* XXX */
+
+	TAILQ_INIT(&sc->sc_subdevs);
+	config_scan(isascan, self);
+
+#if NISAPNP > 0
+	postisapnpattach(parent, self, aux);
+#endif /* NISAPNP > 0 */
+}
+
 int
 isaprint(aux, isa)
 	void *aux;
-	char *isa;
+	const char *isa;
 {
 	struct isa_attach_args *ia = aux;
 
@@ -66,39 +133,92 @@ isascan(parent, match)
 	struct device *parent;
 	void *match;
 {
+	struct isa_softc *sc = (struct isa_softc *)parent;
 	struct device *dev = match;
 	struct cfdata *cf = dev->dv_cfdata;
 	struct isa_attach_args ia;
+#if 0
+	struct emap *io_map, *mem_map, *irq_map, *drq_map;
+#endif
 
-	if (cf->cf_fstate == FSTATE_STAR)
-		panic("not bloody likely");
+	if (cf->cf_loc[6] != -1)	/* pnp device, scanned later */
+		return;
 
+#if 0
+	io_map = find_emap("io");
+	mem_map = find_emap("mem");
+	irq_map = find_emap("irq");
+	drq_map = find_emap("drq");
+#endif
+
+	ia.ia_iot = sc->sc_iot;
+	ia.ia_memt = sc->sc_memt;
+	ia.ia_ic = sc->sc_ic;
 	ia.ia_iobase = cf->cf_loc[0];
 	ia.ia_iosize = 0x666;
 	ia.ia_maddr = cf->cf_loc[2];
 	ia.ia_msize = cf->cf_loc[3];
 	ia.ia_irq = cf->cf_loc[4] == 2 ? 9 : cf->cf_loc[4];
 	ia.ia_drq = cf->cf_loc[5];
+	ia.ia_delaybah = sc->sc_delaybah;
 
-	if ((*cf->cf_driver->cd_match)(parent, dev, &ia) > 0)
+	if (cf->cf_fstate == FSTATE_STAR) {
+		struct isa_attach_args ia2 = ia;
+
+		while ((*cf->cf_attach->ca_match)(parent, dev, &ia2) > 0) {
+			if (ia2.ia_iosize == 0x666) {
+				printf("%s: iosize not repaired by driver\n",
+				    sc->sc_dev.dv_xname);
+				ia2.ia_iosize = 0;
+			}
+#if 0
+			if (ia2.ia_iobase != -1 && ia2.ia_iosize > 0)
+				add_extent(io_map, ia2.ia_iobase, ia2.ia_iosize);
+			if (ia.ia_maddr != -1 && ia.ia_msize > 0)
+				add_extent(mem_map, ia2.ia_maddr, ia2.ia_msize);
+			if (ia2.ia_irq != -1)
+				add_extent(irq_map, ia2.ia_irq, 1);
+			if (ia2.ia_drq != -1)
+				add_extent(drq_map, ia2.ia_drq, 1);
+#endif
+			config_attach(parent, dev, &ia2, isaprint);
+			dev = config_make_softc(parent, cf);
+			ia2 = ia;
+		}
+		free(dev, M_DEVBUF);
+		return;
+	}
+
+	if ((*cf->cf_attach->ca_match)(parent, dev, &ia) > 0) {
+#if 0
+		if (ia.ia_iobase > 0 && ia.ia_iosize > 0)
+			add_extent(io_map, ia.ia_iobase, ia.ia_iosize);
+		if (ia.ia_maddr > 0 && ia.ia_msize > 0)
+			add_extent(mem_map, ia.ia_maddr, ia.ia_msize);
+		if (ia.ia_irq > 0)
+			add_extent(irq_map, ia.ia_irq, 1);
+		if (ia.ia_drq > 0)
+			add_extent(drq_map, ia.ia_drq, 1);
+#endif
 		config_attach(parent, dev, &ia, isaprint);
+	}
 	else
 		free(dev, M_DEVBUF);
 }
 
 char *
 isa_intr_typename(type)
-	isa_intrtype type;
+	int type;
 {
 
 	switch (type) {
-        case ISA_IST_NONE :
+        case IST_NONE:
 		return ("none");
-        case ISA_IST_PULSE:
+        case IST_PULSE:
 		return ("pulsed");
-        case ISA_IST_EDGE:
+        case IST_EDGE:
 		return ("edge-triggered");
-        case ISA_IST_LEVEL:
+        case IST_LEVEL:
 		return ("level-triggered");
 	default:
 		panic("isa_intr_typename: invalid type %d", type);

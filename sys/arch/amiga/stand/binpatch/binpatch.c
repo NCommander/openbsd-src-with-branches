@@ -1,3 +1,4 @@
+/*	$OpenBSD: binpatch.c,v 1.3 1997/01/15 23:41:49 millert Exp $	*/
 /*	$NetBSD: binpatch.c,v 1.6 1995/08/18 15:28:28 chopps Exp $	*/
 
 /* Author: Markus Wild mw@eunet.ch ???   */
@@ -109,7 +110,7 @@ main(int argc, char *argv[])
   u_char  cval;
   
  
-  while ((c = getopt (argc, argv, "H:a:bwlr:s:o:")) != EOF)
+  while ((c = getopt (argc, argv, "H:a:bwlr:s:o:")) != -1)
     switch (c)
       {
       case 'H':
@@ -397,7 +398,7 @@ static void FindOffset(char *symbol,u_long *index)
 */
 static u_long FindAssign(char *symbol,u_long *rvalue)
 {
-  char *ce = rindex(symbol,'='); /* Assign symbol some number */
+  char *ce = strrchr(symbol,'='); /* Assign symbol some number */
   char *cn = ce + 1; /* This should point at some number, no spaces allowed */
   u_long dr = 0; /* flag for do_replace */
   if (ce)

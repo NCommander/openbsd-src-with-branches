@@ -52,7 +52,7 @@ static char rcsid[] = "$NetBSD: use.c,v 1.3 1995/04/22 10:28:38 cgd Exp $";
  *    1.)  No portion of this notice shall be removed.
  *    2.)  Credit shall not be taken for the creation of this source.
  *    3.)  This code is not to be traded, sold, or used for personal
- *         gain or profit.
+ *	   gain or profit.
  *
  */
 
@@ -174,7 +174,7 @@ quaff()
 			}
 			break;
 		case SEE_INVISIBLE:
-			sprintf(buf, "hmm, this potion tastes like %sjuice", fruit);
+			sprintf(buf, "hmm, this potion tastes like %s juice", fruit);
 			message(buf, 0);
 			if (blind) {
 				unblind();

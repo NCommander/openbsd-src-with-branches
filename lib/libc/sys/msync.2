@@ -1,4 +1,4 @@
-.\"	$NetBSD: msync.2,v 1.7 1995/02/27 10:41:44 cgd Exp $
+.\"	$NetBSD: msync.2,v 1.8 1995/10/12 15:41:09 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -40,7 +40,10 @@
 .Nm msync
 .Nd synchronize a mapped region
 .Sh SYNOPSIS
-.Fn msync "caddr_t addr" "int len"
+.Fd #include <sys/types.h>
+.Fd #include <sys/mman.h>
+.Ft int
+.Fn msync "caddr_t addr" "size_t len"
 .Sh DESCRIPTION
 The
 .Fn msync
@@ -64,6 +67,12 @@ will also take place at this time.
 Filesystem operations on a file that is mapped for shared modifications
 are unpredictable except after an
 .Fn msync .
+.Sh RETURN VALUES
+Upon successful completion,
+a value of 0 is returned.
+Otherwise, a value of -1 is returned and
+.Va errno
+is set to indicate the error.
 .Sh ERRORS
 The following errors may be reported:
 .Bl -tag -width Er
@@ -83,6 +92,7 @@ parameter was negative.
 An I/O error occured while writing to the file system.
 .Sh SEE ALSO
 .Xr madvise 2 ,
+.Xr minherit 2 ,
 .Xr munmap 2 ,
 .Xr mprotect 2 ,
 .Xr mincore 2

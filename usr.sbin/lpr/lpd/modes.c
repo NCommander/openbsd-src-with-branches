@@ -1,3 +1,4 @@
+/*	$OpenBSD: modes.c,v 1.1 1995/10/03 15:02:45 hpeyerl Exp $	*/
 /*	$NetBSD: modes.c,v 1.1 1995/10/03 15:02:45 hpeyerl Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)modes.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: modes.c,v 1.1 1995/10/03 15:02:45 hpeyerl Exp $";
+static char rcsid[] = "$OpenBSD: modes.c,v 1.1 1995/10/03 15:02:45 hpeyerl Exp $";
 #endif
 #endif /* not lint */
 
@@ -111,6 +112,8 @@ struct modes imodes[] = {
 	{ "-igncr",	0, IGNCR },
 	{ "icrnl",	ICRNL, 0 },
 	{ "-icrnl",	0, ICRNL },
+	{ "iuclc",	IUCLC, 0 },
+	{ "-iuclc",	0, IUCLC },
 	{ "ixon",	IXON, 0 },
 	{ "-ixon",	0, IXON },
 	{ "flow",	IXON, 0 },
@@ -177,6 +180,8 @@ struct modes lmodes[] = {
 	{ "-nokerninfo",0, NOKERNINFO },
 	{ "kerninfo",	0, NOKERNINFO },
 	{ "-kerninfo",	NOKERNINFO, 0 },
+	{ "xcase",	XCASE, 0 },
+	{ "-xcase",	0, XCASE },
 	{ NULL },
 };
 
@@ -185,8 +190,16 @@ struct modes omodes[] = {
 	{ "-opost",	0, OPOST },
 	{ "litout",	0, OPOST },
 	{ "-litout",	OPOST, 0 },
+	{ "ocrnl",	OCRNL, 0 },
+	{ "-ocrnl",	0, OCRNL },
+	{ "olcuc",	OLCUC, 0 },
+	{ "-olcuc",	0, OLCUC },
 	{ "onlcr",	ONLCR, 0 },
 	{ "-onlcr",	0, ONLCR },
+	{ "onlret",	ONLRET, 0 },
+	{ "-onlret",	0, ONLRET },
+	{ "onocr",	ONOCR, 0 },
+	{ "-onocr",	0, ONOCR },
 	{ "tabs",	0, OXTABS },		/* "preserve" tabs */
 	{ "-tabs",	OXTABS, 0 },
 	{ "oxtabs",	OXTABS, 0 },

@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: mainbus.c,v 1.3 1995/06/28 02:45:10 cgd Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.5 1997/03/12 19:16:44 pefo Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -44,7 +43,7 @@ struct mainbus_softc {
 /* Definition of the mainbus driver. */
 static int	mbmatch __P((struct device *, void *, void *));
 static void	mbattach __P((struct device *, struct device *, void *));
-static int	mbprint __P((void *, char *));
+static int	mbprint __P((void *, const char *));
 
 struct cfattach mainbus_ca = {
 	sizeof(struct device), mbmatch, mbattach
@@ -86,7 +85,7 @@ mbattach(parent, self, aux)
 {
 	struct mainbus_softc *sc = (struct mainbus_softc *)self;
 	struct confargs nca;
-	extern int cputype, ncpus;
+	extern int cputype;
 
 	printf("\n");
 
@@ -116,8 +115,28 @@ mbattach(parent, self, aux)
 		nca.ca_bus = &sc->sc_bus;
 		config_found(self, &nca, mbprint);
 	}
-	if (cputype == ACER_PICA_61) {
-		/* we have an ISA bus! */
+	else if (cputype == ALGOR_P4032) {
+		/* we have an ALGOR bus! :-) */
+		nca.ca_name = "algor";
+		nca.ca_slot = 0;
+		nca.ca_offset = 0;
+		nca.ca_bus = &sc->sc_bus;
+		config_found(self, &nca, mbprint);
+	}
+
+	/* The following machines have a PCI bus */
+	if (cputype == ALGOR_P4032) {
+		nca.ca_name = "pbcpcibr";
+		nca.ca_slot = 0;
+		nca.ca_offset = 0;
+		nca.ca_bus = &sc->sc_bus;
+		config_found(self, &nca, mbprint);
+	}
+
+	/* The following machines have an ISA bus */
+	if (cputype == ACER_PICA_61 ||
+	    cputype == DESKSTATION_TYNE ||
+            cputype == DESKSTATION_RPC44) {
 		nca.ca_name = "isabr";
 		nca.ca_slot = 0;
 		nca.ca_offset = 0;
@@ -129,7 +148,7 @@ mbattach(parent, self, aux)
 static int
 mbprint(aux, pnp)
 	void *aux;
-	char *pnp;
+	const char *pnp;
 {
 
 	if (pnp)

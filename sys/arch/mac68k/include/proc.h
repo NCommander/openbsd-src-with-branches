@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: proc.h,v 1.5 1994/10/26 08:46:40 cgd Exp $	*/
 
 /*
@@ -48,3 +49,5 @@ struct mdproc {
 #define	MDP_STACKADJ	0x0002	/* Frame SP adjusted, might have to
 				   undo when system call returns
 				   ERESTART. */
+#define	MDP_UNCACHE_WX	0x0004	/* The process might modify code, so
+				   don't cache writeable executable pages.  */

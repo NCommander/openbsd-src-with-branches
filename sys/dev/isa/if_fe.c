@@ -68,17 +68,13 @@
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
 #if NBPFILTER > 0
 #include <net/bpf.h>
 #include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <dev/isa/isareg.h>
@@ -206,7 +202,7 @@ void	fe_init		__P((struct fe_softc *));
 int	fe_ioctl	__P((struct ifnet *, u_long, caddr_t));
 void	fe_start	__P((struct ifnet *));
 void	fe_reset	__P((struct fe_softc *));
-void	fe_watchdog	__P((int));
+void	fe_watchdog	__P((struct ifnet *));
 
 /* Local functions.  Order of declaration is confused.  FIXME. */
 int	fe_probe_fmv	__P((struct fe_softc *, struct isa_attach_args *));
@@ -227,8 +223,12 @@ void	fe_loadmar	__P((struct fe_softc *));
 void	fe_dump		__P((int, struct fe_softc *));
 #endif
 
-struct cfdriver fecd = {
-	NULL, "fe", feprobe, feattach, DV_IFNET, sizeof(struct fe_softc)
+struct cfattach fe_ca = {
+	sizeof(struct fe_softc), feprobe, feattach
+};
+
+struct cfdriver fe_cd = {
+	NULL, "fe", DV_IFNET
 };
 
 /* Ethernet constants.  To be defined in if_ehter.h?  FIXME. */
@@ -992,8 +992,8 @@ feattach(parent, self, aux)
 	fe_stop(sc);
 
 	/* Initialize ifnet structure. */
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = fecd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_start = fe_start;
 	ifp->if_ioctl = fe_ioctl;
 	ifp->if_watchdog = fe_watchdog;
@@ -1124,8 +1124,8 @@ feattach(parent, self, aux)
 	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
 #endif
 
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_NET,
-	    feintr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_NET, feintr, sc, sc->sc_dev.dv_xname);
 }
 
 /*
@@ -1137,7 +1137,7 @@ fe_reset(sc)
 {
 	int s;
 
-	s = splimp();
+	s = splnet();
 	fe_stop(sc);
 	fe_init(sc);
 	splx(s);
@@ -1195,10 +1195,10 @@ fe_stop(sc)
  * generate an interrupt after a transmit has been started on it.
  */
 void
-fe_watchdog(unit)
-	int unit;
+fe_watchdog(ifp)
+	struct ifnet *ifp;
 {
-	struct fe_softc *sc = fecd.cd_devs[unit];
+	struct fe_softc *sc = ifp->if_softc;
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 #if FE_DEBUG >= 3
@@ -1410,7 +1410,7 @@ fe_xmit(sc)
 /*
  * Start output on interface.
  * We make two assumptions here:
- *  1) that the current priority is set to splimp _before_ this code
+ *  1) that the current priority is set to splnet _before_ this code
  *     is called *and* is returned to the appropriate priority after
  *     return
  *  2) that the IFF_OACTIVE flag is checked before this code is called
@@ -1420,7 +1420,7 @@ void
 fe_start(ifp)
 	struct ifnet *ifp;
 {
-	struct fe_softc *sc = fecd.cd_devs[ifp->if_unit];
+	struct fe_softc *sc = ifp->if_softc;
 	struct mbuf *m;
 
 #if FE_DEBUG >= 1
@@ -1679,7 +1679,9 @@ fe_tint(sc, tstat)
 		 */
 		ifp->if_opackets += sc->txb_sched;
 		sc->txb_sched = 0;
+	}
 
+	if (sc->txb_sched == 0) {
 		/*
 		 * The transmitter is no more active.
 		 * Reset output active flag and watchdog timer. 
@@ -1919,7 +1921,7 @@ fe_ioctl(ifp, command, data)
 	u_long command;
 	caddr_t data;
 {
-	struct fe_softc *sc = fecd.cd_devs[ifp->if_unit];
+	struct fe_softc *sc = ifp->if_softc;
 	register struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
@@ -1928,7 +1930,12 @@ fe_ioctl(ifp, command, data)
 	log(LOG_INFO, "%s: ioctl(%x)\n", sc->sc_dev.dv_xname, command);
 #endif
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, command, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (command) {
 
@@ -1941,23 +1948,6 @@ fe_ioctl(ifp, command, data)
 			fe_init(sc);
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
-#endif
-#ifdef NS
-		case AF_NS:
-		    {
-			register struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				bcopy(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			/* Set new address. */
-			fe_init(sc);
-			break;
-		    }
 #endif
 		default:
 			fe_init(sc);
@@ -2427,7 +2417,7 @@ fe_setmode(sc)
 /*
  * Load a new multicast address filter into MARs.
  *
- * The caller must have splimp'ed befor fe_loadmar.
+ * The caller must have splnet'ed befor fe_loadmar.
  * This function starts the DLC upon return.  So it can be called only
  * when the chip is working, i.e., from the driver's point of view, when
  * a device is RUNNING.  (I mistook the point in previous versions.)

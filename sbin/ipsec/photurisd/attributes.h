@@ -46,7 +46,9 @@
 #define AT_AH_ATTRIB  1
 #define AT_ESP_ATTRIB 2
 #define AT_MD5_DP     3
+#define AT_SHA1_DP    4
 #define AT_MD5_KDP    5
+#define AT_SHA1_KDP   6
 #define AT_DES_CBC    8
 #define AT_ORG        255
 
@@ -75,6 +77,10 @@ struct attribute_list {
      u_int16_t attribsize;
 };
 
+EXTERN int isinattrib(u_int8_t *attributes, u_int16_t attribsize, 
+		      u_int8_t attribute);
+EXTERN int isattribsubset(u_int8_t *set, u_int16_t setsize, 
+			  u_int8_t *subset, u_int16_t subsetsize);
 EXTERN struct attribute_list *attrib_new(void);
 EXTERN int attrib_insert(struct attribute_list *);
 EXTERN int attrib_unlink(struct attribute_list *);

@@ -1,8 +1,5 @@
-#
-#	$NetBSD: Makefile.inc,v 1.1.1.1 1995/03/30 05:44:08 leo Exp $
-#
+#	$OpenBSD$
 #	etc.atari/Makefile.inc -- atari-specific etc Makefile targets
-#
 
 .ifdef DESTDIR
 snap_md: netbsd-generic netbsd-ataritt

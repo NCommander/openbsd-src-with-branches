@@ -1,7 +1,9 @@
-/*	$NetBSD: isadma.c,v 1.12 1995/04/17 12:09:11 cgd Exp $	*/
+/*	$OpenBSD: isadma.c,v 1.9 1996/11/23 21:46:41 kstailey Exp $	*/
+/*	$NetBSD: isadma.c,v 1.19 1996/04/29 20:03:26 christos Exp $	*/
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/device.h>
 #include <sys/file.h>
 #include <sys/buf.h>
 #include <sys/syslog.h>
@@ -13,81 +15,138 @@
 #include <machine/pio.h>
 
 #include <dev/isa/isareg.h>
+#include <dev/isa/isavar.h>
 #include <dev/isa/isadmavar.h>
 #include <dev/isa/isadmareg.h>
 
-/* region of physical memory known to be contiguous */
-vm_offset_t isaphysmem;
-static caddr_t dma_bounce[8];		/* XXX */
-static char bounced[8];		/* XXX */
-#define MAXDMASZ 512		/* XXX */
+struct dma_info {
+	int flags;
+	int active;
+	caddr_t addr;
+	vm_size_t nbytes;
+	struct isadma_seg phys[1];
+};
+
+static struct dma_info dma_info[8];
+static u_int8_t dma_finished;
 
 /* high byte of address is stored in this port for i-th dma channel */
-static int dmapageport[8] =
-	{ 0x87, 0x83, 0x81, 0x82, 0x8f, 0x8b, 0x89, 0x8a };
+static int dmapageport[2][4] = {
+	{0x87, 0x83, 0x81, 0x82},
+	{0x8f, 0x8b, 0x89, 0x8a}
+};
+
+static u_int8_t dmamode[4] = {
+	DMA37MD_READ | DMA37MD_SINGLE,
+	DMA37MD_WRITE | DMA37MD_SINGLE,
+	DMA37MD_READ | DMA37MD_LOOP,
+	DMA37MD_WRITE | DMA37MD_LOOP
+};
+
+int isadmamatch __P((struct device *, void *, void *));
+void isadmaattach __P((struct device *, struct device *, void *));
+int isadmaprint __P((void *, const char *));
+
+struct cfattach isadma_ca = {
+	sizeof(struct device), isadmamatch, isadmaattach
+};
+
+struct cfdriver isadma_cd = {
+	NULL, "isadma", DV_DULL, 1
+};
+
+int
+isadmamatch(parent, match, aux)
+	struct device *parent;
+	void *match, *aux;
+{
+	struct isa_attach_args *ia = aux;
+
+	/* Sure we exist */
+	ia->ia_iosize = 0;
+	return (1);
+}
+
+void
+isadmaattach(parent, self, aux)
+	struct device *parent, *self;
+	void *aux;
+{
+	printf("\n");
+}
 
 /*
- * isa_dmacascade(): program 8237 DMA controller channel to accept
+ * isadma_cascade(): program 8237 DMA controller channel to accept
  * external dma control by a board.
  */
 void
-isa_dmacascade(chan)
+isadma_cascade(chan)
 	int chan;
 {
 
-#ifdef DIAGNOSTIC
+#ifdef ISADMA_DEBUG
 	if (chan < 0 || chan > 7)
-		panic("isa_dmacascade: impossible request"); 
+		panic("isadma_cascade: impossible request"); 
 #endif
 
 	/* set dma channel mode, and set dma channel mode */
 	if ((chan & 4) == 0) {
-		outb(DMA1_MODE, DMA37MD_CASCADE | chan);
+		outb(DMA1_MODE, chan | DMA37MD_CASCADE);
 		outb(DMA1_SMSK, chan);
 	} else {
-		outb(DMA2_MODE, DMA37MD_CASCADE | (chan & 3));
-		outb(DMA2_SMSK, chan & 3);
+		chan &= 3;
+
+		outb(DMA2_MODE, chan | DMA37MD_CASCADE);
+		outb(DMA2_SMSK, chan);
 	}
 }
 
 /*
- * isa_dmastart(): program 8237 DMA controller channel, avoid page alignment
+ * isadma_start(): program 8237 DMA controller channel, avoid page alignment
  * problems by using a bounce buffer.
  */
 void
-isa_dmastart(flags, addr, nbytes, chan)
-	int flags;
+isadma_start(addr, nbytes, chan, flags)
 	caddr_t addr;
 	vm_size_t nbytes;
 	int chan;
+	int flags;
 {
-	vm_offset_t phys;
+	struct dma_info *di;
 	int waport;
-	caddr_t newaddr;
+	int mflags;
 
-#ifdef DIAGNOSTIC
+#ifdef ISADMA_DEBUG
 	if (chan < 0 || chan > 7 ||
+	    (((flags & DMAMODE_READ) != 0) + ((flags & DMAMODE_WRITE) != 0) +
+	    ((flags & DMAMODE_LOOP) != 0) != 1) ||
 	    ((chan & 4) ? (nbytes >= (1<<17) || nbytes & 1 || (u_int)addr & 1) :
 	    (nbytes >= (1<<16))))
-		panic("isa_dmastart: impossible request"); 
+		panic("isadma_start: impossible request"); 
 #endif
 
-	if (isa_dmarangecheck(addr, nbytes, chan)) {
-		if (dma_bounce[chan] == 0)
-			dma_bounce[chan] =
-			    /*(caddr_t)malloc(MAXDMASZ, M_TEMP, M_WAITOK);*/
-			    (caddr_t) isaphysmem + NBPG*chan;
-		bounced[chan] = 1;
-		newaddr = dma_bounce[chan];
-		*(int *) newaddr = 0;	/* XXX */
-		/* copy bounce buffer on write */
-		if ((flags & B_READ) == 0)
-			bcopy(addr, newaddr, nbytes);
-		addr = newaddr;
+	di = dma_info+chan;
+	if (di->active) {
+		log(LOG_ERR,"isadma_start: old request active on %d\n",chan);
+		isadma_abort(chan);
 	}
 
-	/* translate to physical */
-	phys = pmap_extract(pmap_kernel(), (vm_offset_t)addr);
+	di->flags = flags;
+	di->active = 1;
+	di->addr = addr;
+	di->nbytes = nbytes;
+
+	mflags = ISADMA_MAP_WAITOK | ISADMA_MAP_BOUNCE | ISADMA_MAP_CONTIG;
+	mflags |= (chan & 4) ? ISADMA_MAP_16BIT : ISADMA_MAP_8BIT;
+
+	if (isadma_map(addr, nbytes, di->phys, mflags) != 1)
+		panic("isadma_start: cannot map");
+
+	/* XXX Will this do what we want with DMAMODE_LOOP?  */
+	if ((flags & DMAMODE_READ) == 0)
+		isadma_copytobuf(addr, nbytes, 1, di->phys);
+
+	dma_finished &= ~(1 << chan);
 
 	if ((chan & 4) == 0) {
 		/*
@@ -95,17 +154,14 @@ isa_dmastart(flags, addr, nbytes, chan)
 		 * byte mode channels.
 		 */
 		/* set dma channel mode, and reset address ff */
-		if (flags & B_READ)
-			outb(DMA1_MODE, chan | DMA37MD_SINGLE | DMA37MD_WRITE);
-		else
-			outb(DMA1_MODE, chan | DMA37MD_SINGLE | DMA37MD_READ);
+		outb(DMA1_MODE, chan | dmamode[flags]);
 		outb(DMA1_FFC, 0);
 
 		/* send start address */
-		waport =  DMA1_CHN(chan);
-		outb(waport, phys);
-		outb(waport, phys>>8);
-		outb(dmapageport[chan], phys>>16);
+		waport = DMA1_CHN(chan);
+		outb(dmapageport[0][chan], di->phys[0].addr>>16);
+		outb(waport, di->phys[0].addr);
+		outb(waport, di->phys[0].addr>>8);
 
 		/* send count */
 		outb(waport + 1, --nbytes);
@@ -119,17 +175,14 @@ isa_dmastart(flags, addr, nbytes, chan)
 		 * word mode channels.
 		 */
 		/* set dma channel mode, and reset address ff */
-		if (flags & B_READ)
-			outb(DMA2_MODE, (chan & 3) | DMA37MD_SINGLE | DMA37MD_WRITE);
-		else
-			outb(DMA2_MODE, (chan & 3) | DMA37MD_SINGLE | DMA37MD_READ);
+		outb(DMA2_MODE, (chan & 3) | dmamode[flags]);
 		outb(DMA2_FFC, 0);
 
 		/* send start address */
 		waport = DMA2_CHN(chan & 3);
-		outb(waport, phys>>1);
-		outb(waport, phys>>9);
-		outb(dmapageport[chan], phys>>16);
+		outb(dmapageport[1][chan], di->phys[0].addr>>16);
+		outb(waport, di->phys[0].addr>>1);
+		outb(waport, di->phys[0].addr>>9);
 
 		/* send count */
 		nbytes >>= 1;
@@ -142,37 +195,68 @@ isa_dmastart(flags, addr, nbytes, chan)
 }
 
 void
-isa_dmaabort(chan)
+isadma_abort(chan)
 	int chan;
 {
+	struct dma_info *di;
 
-#ifdef DIAGNOSTIC
+#ifdef ISADMA_DEBUG
 	if (chan < 0 || chan > 7)
-		panic("isa_dmaabort: impossible request");
+		panic("isadma_abort: impossible request");
 #endif
 
-	bounced[chan] = 0;
+	di = dma_info+chan;
+	if (! di->active) {
+		log(LOG_ERR,"isadma_abort: no request active on %d\n",chan);
+		return;
+	}
 
 	/* mask channel */
 	if ((chan & 4) == 0)
 		outb(DMA1_SMSK, DMA37SM_SET | chan);
 	else
 		outb(DMA2_SMSK, DMA37SM_SET | (chan & 3));
+
+	isadma_unmap(di->addr, di->nbytes, 1, di->phys);
+	di->active = 0;
+}
+
+int
+isadma_finished(chan)
+	int chan;
+{
+
+#ifdef ISADMA_DEBUG
+	if (chan < 0 || chan > 7)
+		panic("isadma_finished: impossible request");
+#endif
+
+	/* check that the terminal count was reached */
+	if ((chan & 4) == 0)
+		dma_finished |= inb(DMA1_SR) & 0x0f;
+	else
+		dma_finished |= (inb(DMA2_SR) & 0x0f) << 4;
+
+	return ((dma_finished & (1 << chan)) != 0);
 }
 
 void
-isa_dmadone(flags, addr, nbytes, chan)
-	int flags;
-	caddr_t addr;
-	vm_size_t nbytes;
+isadma_done(chan)
 	int chan;
 {
+	struct dma_info *di;
 	u_char tc;
 
 #ifdef DIAGNOSTIC
 	if (chan < 0 || chan > 7)
-		panic("isa_dmadone: impossible request");
+		panic("isadma_done: impossible request");
 #endif
+
+	di = dma_info+chan;
+	if (! di->active) {
+		log(LOG_ERR,"isadma_done: no request active on %d\n",chan);
+		return;
+	}
 
 	/* check that the terminal count was reached */
 	if ((chan & 4) == 0)
@@ -189,85 +273,10 @@ isa_dmadone(flags, addr, nbytes, chan)
 	else
 		outb(DMA2_SMSK, DMA37SM_SET | (chan & 3));
 
-	/* copy bounce buffer on read */
-	if (bounced[chan]) {
-		bcopy(dma_bounce[chan], addr, nbytes);
-		bounced[chan] = 0;
-	}
-}
+	/* XXX Will this do what we want with DMAMODE_LOOP?  */
+	if (di->flags & DMAMODE_READ)
+		isadma_copyfrombuf(di->addr, di->nbytes, 1, di->phys);
 
-/*
- * Check for problems with the address range of a DMA transfer
- * (non-contiguous physical pages, outside of bus address space,
- * crossing DMA page boundaries).
- * Return true if special handling needed.
- */
-int
-isa_dmarangecheck(va, length, chan)
-	vm_offset_t va;
-	u_long length;
-	int chan;
-{
-	vm_offset_t phys, priorpage = 0, endva;
-	u_int dma_pgmsk = (chan & 4) ?  ~(128*1024-1) : ~(64*1024-1);
-
-	endva = round_page(va + length);
-	for (; va < endva ; va += NBPG) {
-		phys = trunc_page(pmap_extract(pmap_kernel(), va));
-		if (phys == 0)
-			panic("isa_dmacheck: no physical page present");
-		if (phys >= (1<<24)) 
-			return 1;
-		if (priorpage) {
-			if (priorpage + NBPG != phys)
-				return 1;
-			/* check if crossing a DMA page boundary */
-			if ((priorpage ^ phys) & dma_pgmsk)
-				return 1;
-		}
-		priorpage = phys;
-	}
-	return 0;
-}
-
-/* head of queue waiting for physmem to become available */
-struct buf isa_physmemq;
-
-/* blocked waiting for resource to become free for exclusive use */
-static isaphysmemflag;
-/* if waited for and call requested when free (B_CALL) */
-static void (*isaphysmemunblock)(); /* needs to be a list */
-
-/*
- * Allocate contiguous physical memory for transfer, returning
- * a *virtual* address to region. May block waiting for resource.
- * (assumed to be called at splbio())
- */
-caddr_t
-isa_allocphysmem(caddr_t va, unsigned length, void (*func)()) {
-	
-	isaphysmemunblock = func;
-	while (isaphysmemflag & B_BUSY) {
-		isaphysmemflag |= B_WANTED;
-		sleep((caddr_t)&isaphysmemflag, PRIBIO);
-	}
-	isaphysmemflag |= B_BUSY;
-
-	return((caddr_t)isaphysmem);
-}
-
-/*
- * Free contiguous physical memory used for transfer.
- * (assumed to be called at splbio())
- */
-void
-isa_freephysmem(caddr_t va, unsigned length) {
-
-	isaphysmemflag &= ~B_BUSY;
-	if (isaphysmemflag & B_WANTED) {
-		isaphysmemflag &= B_WANTED;
-		wakeup((caddr_t)&isaphysmemflag);
-		if (isaphysmemunblock)
-			(*isaphysmemunblock)();
-	}
+	isadma_unmap(di->addr, di->nbytes, 1, di->phys);
+	di->active = 0;
 }

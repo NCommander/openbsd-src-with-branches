@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mem.c,v 1.2 1997/03/23 11:34:30 pefo Exp $	*/
 /*	$NetBSD: mem.c,v 1.6 1995/04/10 11:55:03 mycroft Exp $	*/
 
 /*
@@ -48,17 +48,25 @@
 #include <sys/param.h>
 #include <sys/conf.h>
 #include <sys/buf.h>
+#include <sys/proc.h>
+#include <sys/user.h>
 #include <sys/msgbuf.h>
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
 
+#include <machine/pte.h>
 #include <machine/cpu.h>
 
 #include <vm/vm.h>
 
 extern vm_offset_t avail_end;
 caddr_t zeropage;
+
+int mmopen __P((dev_t, int, int));
+int mmclose __P((dev_t, int, int));
+int mmrw __P((dev_t, struct uio *uio, int));
+int mmmmap __P((dev_t, int, int));
 
 /*ARGSUSED*/
 int
@@ -87,7 +95,7 @@ mmrw(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t o, v;
+	register vm_offset_t v;
 	register int c;
 	register struct iovec *iov;
 	int error = 0;
@@ -120,7 +128,7 @@ mmrw(dev, uio, flags)
 			if (v < CACHED_MEMORY_ADDR)
 				return (EFAULT);
 			if (v + c > PHYS_TO_CACHED(avail_end +
-							sizeof (struct msgbuf)) &&
+						sizeof (struct msgbuf)) &&
 			    (v < KSEG2_ADDR ||
 			    !kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE)))
@@ -163,6 +171,7 @@ mmrw(dev, uio, flags)
 	return (error);
 }
 
+/*ARGSUSED*/
 int
 mmmmap(dev, off, prot)
 	dev_t dev;

@@ -3,7 +3,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.unix.c,v 1.3 1995/03/23 08:31:55 cgd Exp $";
+static char rcsid[] = "$NetBSD: hack.unix.c,v 1.4 1996/02/06 22:47:25 jtc Exp $";
 #endif /* not lint */
 
 /* This file collects some Unix dependencies; hack.pager.c contains some more */
@@ -19,7 +19,7 @@ static char rcsid[] = "$NetBSD: hack.unix.c,v 1.3 1995/03/23 08:31:55 cgd Exp $"
 
 #include <stdio.h>
 #include <errno.h>
-#include "hack.h"	/* mainly for index() which depends on BSD */
+#include "hack.h"
 
 #include	<sys/types.h>		/* for time_t and stat */
 #include	<sys/stat.h>
@@ -97,12 +97,12 @@ struct stat buf, hbuf;
 gethdate(name) char *name; {
 /* old version - for people short of space */
 /*
-/* register char *np;
-/*	if(stat(name, &hbuf))
-/*		error("Cannot get status of %s.",
-/*			(np = rindex(name, '/')) ? np+1 : name);
-/*
-/* version using PATH from: seismo!gregc@ucsf-cgl.ARPA (Greg Couch) */
+    register char *np;
+  	if(stat(name, &hbuf))
+  		error("Cannot get status of %s.",
+  			(np = strrchr(name, '/')) ? np+1 : name);
+  
+   version using PATH from: seismo!gregc@ucsf-cgl.ARPA (Greg Couch) */
 
 
 /*
@@ -114,11 +114,11 @@ gethdate(name) char *name; {
 
 register char *np, *path;
 char filename[MAXPATHLEN+1];
-	if (index(name, '/') != NULL || (path = getenv("PATH")) == NULL)
+	if (strchr(name, '/') != NULL || (path = getenv("PATH")) == NULL)
 		path = "";
 
 	for (;;) {
-		if ((np = index(path, ':')) == NULL)
+		if ((np = strchr(path, ':')) == NULL)
 			np = path + strlen(path);	/* point to end str */
 		if (np - path <= 1)			/* %% */
 			(void) strcpy(filename, name);
@@ -134,7 +134,7 @@ char filename[MAXPATHLEN+1];
 		path = np + 1;
 	}
 	error("Cannot get status of %s.",
-		(np = rindex(name, '/')) ? np+1 : name);
+		(np = strrchr(name, '/')) ? np+1 : name);
 }
 
 uptodate(fd) {
@@ -158,7 +158,6 @@ veryold(fd) {
 	if(buf.st_size != sizeof(int)) return(0);	/* not an xlock file */
 	(void) time(&date);
 	if(date - buf.st_mtime < 3L*24L*60L*60L) {	/* recent */
-		extern int errno;
 		int lockedpid;	/* should be the same size as hackpid */
 
 		if(read(fd, (char *)&lockedpid, sizeof(lockedpid)) !=
@@ -167,8 +166,8 @@ veryold(fd) {
 			return(0);
 
 		/* From: Rick Adams <seismo!rick>
-		/* This will work on 4.1cbsd, 4.2bsd and system 3? & 5.
-		/* It will do nothing on V7 or 4.1bsd. */
+		   This will work on 4.1cbsd, 4.2bsd and system 3? & 5.
+		   It will do nothing on V7 or 4.1bsd. */
 		if(!(kill(lockedpid, 0) == -1 && errno == ESRCH))
 			return(0);
 	}
@@ -184,7 +183,7 @@ veryold(fd) {
 
 getlock()
 {
-	extern int errno, hackpid, locknum;
+      extern int hackpid, locknum;
 	register int i = 0, fd;
 
 	(void) fflush(stdout);
@@ -430,6 +429,6 @@ register char *s;
 {
 	register char *lp;
 
-	while((lp = index(s, '.')) || (lp = index(s, '/')))
+	while((lp = strchr(s, '.')) || (lp = strchr(s, '/')))
 		*lp = '_';
 }

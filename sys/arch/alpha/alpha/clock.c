@@ -1,4 +1,5 @@
-/*	$NetBSD: clock.c,v 1.4 1995/08/03 00:53:34 cgd Exp $	*/
+/*	$OpenBSD: clock.c,v 1.6 1996/10/30 22:37:58 niklas Exp $	*/
+/*	$NetBSD: clock.c,v 1.14 1996/11/23 06:31:57 cgd Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -47,25 +48,10 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 
-#include <machine/autoconf.h>
 #include <machine/rpb.h>
+#include <machine/autoconf.h>
 
 #include <alpha/alpha/clockvar.h>
-#include <alpha/tc/asic.h>			/* XXX */
-#include <dev/isa/isavar.h>			/* XXX */
-
-/* Definition of the driver for autoconfig. */
-static int	clockmatch __P((struct device *, void *, void *));
-static void	clockattach __P((struct device *, struct device *, void *));
-struct cfdriver clockcd =
-    { NULL, "clock", clockmatch, clockattach, DV_DULL,
-	sizeof(struct clock_softc) };
-
-#if defined(DEC_3000_500) || defined(DEC_3000_300) || \
-    defined(DEC_2000_300) || defined(DEC_2100_A50)
-void	mcclock_attach __P((struct device *parent,
-	    struct device *self, void *aux));
-#endif
 
 #define	SECMIN	((unsigned)60)			/* seconds per minute */
 #define	SECHOUR	((unsigned)(60*SECMIN))		/* seconds per hour */
@@ -74,107 +60,28 @@ void	mcclock_attach __P((struct device *parent,
 
 #define	LEAPYEAR(year)	(((year) % 4) == 0)
 
-static int
-clockmatch(parent, cfdata, aux)
-	struct device *parent;
-	void *cfdata;
-	void *aux;
+struct device *clockdev;
+const struct clockfns *clockfns;
+int clockinitted;
+
+void
+clockattach(dev, fns)
+	struct device *dev;
+	const struct clockfns *fns;
 {
-	struct cfdata *cf = cfdata;
-	struct confargs *ca = aux;
-
-	/* See how many clocks this system has */	
-	switch (hwrpb->rpb_type) {
-#if defined(DEC_3000_500) || defined(DEC_3000_300)
-
-#if defined(DEC_3000_500)
-	case ST_DEC_3000_500:
-#endif
-#if defined(DEC_3000_300)
-	case ST_DEC_3000_300:
-#endif
-		/* make sure that we're looking for this type of device. */
-		if (!BUS_MATCHNAME(ca, "dallas_rtc"))
-			return (0);
-
-		if (cf->cf_unit >= 1)
-			return (0);
-
-		break;
-#endif
-
-#if defined(DEC_2100_A50)
-	case ST_DEC_2100_A50:
-		/* Just say yes.  XXX */
-
-		if (cf->cf_unit >= 1)
-			return 0;
-
-		/* XXX XXX XXX */
-		{
-			struct isa_attach_args *ia = aux;
-
-			if (ia->ia_iobase != 0x70 &&		/* XXX */
-			    ia->ia_iobase != -1)		/* XXX */
-				return (0);
-
-			ia->ia_iobase = 0x70;			/* XXX */
-			ia->ia_iosize = 2;			/* XXX */
-			ia->ia_msize = 0;
-		}
-
-		break;
-#endif
-
-#if defined(DEC_2000_300)
-	case ST_DEC_2000_300:
-		panic("clockmatch on jensen");
-#endif
-
-	default:
-		panic("unknown CPU");
-	}
-
-	return (1);
-}
-
-static void
-clockattach(parent, self, aux)
-	struct device *parent;
-	struct device *self;
-	void *aux;
-{
-
-	switch (hwrpb->rpb_type) {
-#if defined(DEC_3000_500) || defined(DEC_3000_300) || \
-    defined(DEC_2000_300) || defined(DEC_2100_A50)
-#if defined(DEC_3000_500)
-	case ST_DEC_3000_500:
-#endif
-#if defined(DEC_2000_300)
-	case ST_DEC_2000_300:
-#endif
-#if defined(DEC_3000_300)
-	case ST_DEC_3000_300:
-#endif
-#if defined(DEC_2100_A50)
-	case ST_DEC_2100_A50:
-#endif
-		mcclock_attach(parent, self, aux);
-		break;
-#endif /* defined(at least one of lots of system types) */
-
-	default:
-		panic("clockattach: it didn't get here.  really.");
-	}
-
 
 	/*
-	 * establish the clock interrupt; it's a special case
+	 * Just bookkeeping.
 	 */
-	set_clockintr(hardclock);
-
 	printf("\n");
+
+	if (clockfns != NULL)
+		panic("clockattach: multiple clocks");
+	clockdev = dev;
+	clockfns = fns;
+#ifdef EVCNT_COUNTERS
+	evcnt_attach(dev, "intr", &clock_intr_evcnt);
+#endif
 }
 
 /*
@@ -194,11 +101,13 @@ clockattach(parent, self, aux)
  * Start the real-time and statistics clocks. Leave stathz 0 since there
  * are no other timers available.
  */
+void
 cpu_initclocks()
 {
 	extern int tickadj;
-	struct clock_softc *csc = (struct clock_softc *)clockcd.cd_devs[0];
-	int fractick;
+
+	if (clockfns == NULL)
+		panic("cpu_initclocks: no clock attached");
 
 	hz = 1024;		/* 1024 Hz clock */
 	tick = 1000000 / hz;	/* number of microseconds between interrupts */
@@ -212,9 +121,23 @@ cpu_initclocks()
         }
 
 	/*
+	 * Establish the clock interrupt; it's a special case.
+	 *
+	 * We establish the clock interrupt this late because if
+	 * we do it at clock attach time, we may have never been at
+	 * spl0() since taking over the system.  Some versions of
+	 * PALcode save a clock interrupt, which would get delivered
+	 * when we spl0() in autoconf.c.  If established the clock
+	 * interrupt handler earlier, that interrupt would go to
+	 * hardclock, which would then fall over because p->p_stats
+	 * isn't set at that time.
+	 */
+	set_clockintr();
+
+	/*
 	 * Get the clock started.
 	 */
-	(*csc->sc_init)(csc);
+	(*clockfns->cf_init)(clockdev);
 }
 
 /*
@@ -247,11 +170,10 @@ void
 inittodr(base)
 	time_t base;
 {
-	struct clock_softc *csc = (struct clock_softc *)clockcd.cd_devs[0];
 	register int days, yr;
 	struct clocktime ct;
-	long deltat;
-	int badbase, s;
+	time_t deltat;
+	int badbase;
 
 	if (base < 5*SECYR) {
 		printf("WARNING: preposterous time in file system");
@@ -261,9 +183,8 @@ inittodr(base)
 	} else
 		badbase = 0;
 
-	(*csc->sc_get)(csc, base, &ct);
-
-	csc->sc_initted = 1;
+	(*clockfns->cf_get)(clockdev, base, &ct);
+	clockinitted = 1;
 
 	/* simple sanity checks */
 	if (ct.year < 70 || ct.mon < 1 || ct.mon > 12 || ct.day < 1 ||
@@ -316,12 +237,10 @@ bad:
 void
 resettodr()
 {
-	struct clock_softc *csc = (struct clock_softc *)clockcd.cd_devs[0];
 	register int t, t2;
 	struct clocktime ct;
-	int s;
 
-	if (!csc->sc_initted)
+	if (!clockinitted)
 		return;
 
 	/* compute the day of week. */
@@ -330,6 +249,7 @@ resettodr()
 
 	/* compute the year */
 	ct.year = 69;
+	t = t2;			/* XXX ? */
 	while (t2 >= 0) {	/* whittle off years */
 		t = t2;
 		ct.year++;
@@ -353,15 +273,5 @@ resettodr()
 	ct.min = t / SECMIN;
 	ct.sec = t % SECMIN;
 
-	(*csc->sc_set)(csc, &ct);
-}
-
-/*
- * Wait "n" microseconds.  This doesn't belong here.  XXX.
- */
-void
-delay(n)
-	int n;
-{
-	DELAY(n);
+	(*clockfns->cf_set)(clockdev, &ct);
 }

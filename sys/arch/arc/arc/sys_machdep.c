@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: sys_machdep.c,v 1.6 1994/10/26 21:10:42 cgd Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.2 1997/03/23 11:34:31 pefo Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -110,6 +109,7 @@ vdoualarm(arg)
 }
 #endif
 
+int
 sys_sysarch(p, v, retval)
 	struct proc *p;
 	void *v;

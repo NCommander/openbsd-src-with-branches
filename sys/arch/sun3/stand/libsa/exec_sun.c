@@ -1,4 +1,4 @@
-/*	$NetBSD: exec_sun.c,v 1.4 1995/09/23 03:42:40 gwr Exp $ */
+/*	$NetBSD: exec_sun.c,v 1.6 1996/06/20 03:59:41 gwr Exp $ */
 
 /*-
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -42,6 +42,7 @@
 #include "stand.h"
 
 extern int debug;
+int errno;
 
 /*ARGSUSED*/
 int
@@ -88,12 +89,16 @@ exec_sun(file, loadaddr)
 	bcopy(&x, cp - sizeof(x), sizeof(x));
 
 	/*
-	 * Read in the text segment.
+	 * Read in the text segment.  Note:
+	 * a.out header part of text in zmagic
 	 */
 	printf("%d", x.a_text);
-	if (read(io, cp, x.a_text) != x.a_text)
+	cc = x.a_text;
+	if (magic == ZMAGIC) 
+		cc -= sizeof(x);
+	if (read(io, cp, cc) != cc)
 		goto shread;
-	cp += x.a_text;
+	cp += cc;
 
 	/*
 	 * NMAGIC may have a gap between text and data.
@@ -159,13 +164,8 @@ exec_sun(file, loadaddr)
 	printf("=0x%x\n", cp - loadaddr);
 	close(io);
 
-	if (debug) {
-		printf("Debug mode - enter c to continue...");
-		/* This will print "\nAbort at ...\n" */
-		asm("	trap #0");
-	}
-
 	printf("Starting program at 0x%x\n", (int)entry);
+	asm("_exec_sun_call_entry:");
 	(*entry)();
 	panic("exec returned");
 

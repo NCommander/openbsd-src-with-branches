@@ -90,17 +90,27 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$Id: strtod.c,v 1.19 1994/12/23 22:50:19 jtc Exp $";
+static char *rcsid = "$OpenBSD: strtod.c,v 1.8 1997/01/09 03:19:01 rahnds Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #if defined(__m68k__) || defined(__sparc__) || defined(__i386__) || \
-    defined(__mips__) || defined(__ns32k__) || defined(__alpha__)
-#include <machine/endian.h>
+    defined(__mips__) || defined(__ns32k__) || defined(__alpha__) || \
+    defined(__powerpc__) || defined(__m88k__)
+#include <sys/types.h>
 #if BYTE_ORDER == BIG_ENDIAN
 #define IEEE_BIG_ENDIAN
 #else
 #define IEEE_LITTLE_ENDIAN
 #endif
+#endif
+
+#ifdef __arm32__
+/*
+ * Although the CPU is little endian the FP has different
+ * byte and word endianness. The byte order is still little endian
+ * but the word order is big endian.
+ */
+#define IEEE_BIG_ENDIAN
 #endif
 
 #ifdef vax
@@ -224,7 +234,7 @@ IBM should be defined.
  * An alternative that might be better on some machines is
  * #define Storeinc(a,b,c) (*a++ = b << 16 | c & 0xffff)
  */
-#if defined(IEEE_LITTLE_ENDIAN) + defined(VAX)
+#if defined(IEEE_LITTLE_ENDIAN) + defined(VAX) + defined(__arm32__)
 #define Storeinc(a,b,c) (((unsigned short *)a)[1] = (unsigned short)b, \
 ((unsigned short *)a)[0] = (unsigned short)c, a++)
 #else
@@ -1226,7 +1236,7 @@ strtod
 	rv = 0.;
 
 
-	for(s = s00; isspace(*s); s++)
+	for(s = s00; isspace((unsigned char) *s); s++)
 		;
 
 	if (*s == '-') {

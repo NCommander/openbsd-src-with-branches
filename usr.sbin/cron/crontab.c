@@ -16,7 +16,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: crontab.c,v 1.2 1994/03/30 01:46:45 jtc Exp $";
+static char rcsid[] = "$Id: crontab.c,v 1.10 1997/04/12 14:51:22 deraadt Exp $";
 #endif
 
 /* crontab - install and manage per-user crontab files
@@ -143,7 +143,8 @@ parse_args(argc, argv)
 		fprintf(stderr, "bailing out.\n");
 		exit(ERROR_EXIT);
 	}
-	strcpy(User, pw->pw_name);
+	(void) strncpy(User, pw->pw_name, (sizeof User)-1);
+	User[(sizeof User)-1] = '\0';
 	strcpy(RealUser, User);
 	Filename[0] = '\0';
 	Option = opt_unknown;
@@ -166,7 +167,8 @@ parse_args(argc, argv)
 					ProgramName, optarg);
 				exit(ERROR_EXIT);
 			}
-			(void) strcpy(User, optarg);
+			(void) strncpy(User, pw->pw_name, (sizeof User)-1);
+			User[(sizeof User)-1] = '\0';
 			break;
 		case 'l':
 			if (Option != opt_unknown)
@@ -197,7 +199,9 @@ parse_args(argc, argv)
 	} else {
 		if (argv[optind] != NULL) {
 			Option = opt_replace;
-			(void) strcpy (Filename, argv[optind]);
+			(void) strncpy (Filename, argv[optind], (sizeof Filename)-1);
+			Filename[(sizeof Filename)-1] = '\0';
+
 		} else {
 			usage("file name must be specified for replace");
 		}
@@ -315,8 +319,8 @@ edit_cmd() {
 		}
 	}
 
-	(void) sprintf(Filename, "/tmp/crontab.%d", Pid);
-	if (-1 == (t = open(Filename, O_CREAT|O_EXCL|O_RDWR, 0600))) {
+	(void) sprintf(Filename, "/tmp/crontab.XXXXXXXXXX");
+	if ((t = mkstemp(Filename)) == -1) {
 		perror(Filename);
 		goto fatal;
 	}
@@ -390,6 +394,10 @@ edit_cmd() {
 	 * close and reopen the file around the edit.
 	 */
 
+	/* Turn off signals. */
+	(void)signal(SIGHUP, SIG_IGN);
+	(void)signal(SIGINT, SIG_IGN);
+	(void)signal(SIGQUIT, SIG_IGN);
 	switch (pid = fork()) {
 	case -1:
 		perror("fork");
@@ -420,24 +428,33 @@ edit_cmd() {
 	}
 
 	/* parent */
-	xpid = wait(&waiter);
-	if (xpid != pid) {
-		fprintf(stderr, "%s: wrong PID (%d != %d) from \"%s\"\n",
-			ProgramName, xpid, pid, editor);
-		goto fatal;
+	while (1) {
+		xpid = waitpid(pid, &waiter, WUNTRACED);
+		if (xpid == -1) {
+			fprintf(stderr, "%s: waitpid() failed waiting for PID %d from \"%s\": %s\n",
+				ProgramName, pid, editor, strerror(errno));
+		} else if (xpid != pid) {
+			fprintf(stderr, "%s: wrong PID (%d != %d) from \"%s\"\n",
+				ProgramName, xpid, pid, editor);
+			goto fatal;
+		} else if (WIFSTOPPED(waiter)) {
+			raise(WSTOPSIG(waiter));
+		} else if (WIFEXITED(waiter) && WEXITSTATUS(waiter)) {
+			fprintf(stderr, "%s: \"%s\" exited with status %d\n",
+				ProgramName, editor, WEXITSTATUS(waiter));
+			goto fatal;
+		} else if (WIFSIGNALED(waiter)) {
+			fprintf(stderr,
+				"%s: \"%s\" killed; signal %d (%score dumped)\n",
+				ProgramName, editor, WTERMSIG(waiter),
+				WCOREDUMP(waiter) ?"" :"no ");
+			goto fatal;
+		} else
+			break;
 	}
-	if (WIFEXITED(waiter) && WEXITSTATUS(waiter)) {
-		fprintf(stderr, "%s: \"%s\" exited with status %d\n",
-			ProgramName, editor, WEXITSTATUS(waiter));
-		goto fatal;
-	}
-	if (WIFSIGNALED(waiter)) {
-		fprintf(stderr,
-			"%s: \"%s\" killed; signal %d (%score dumped)\n",
-			ProgramName, editor, WTERMSIG(waiter),
-			WCOREDUMP(waiter) ?"" :"no ");
-		goto fatal;
-	}
+	(void)signal(SIGHUP, SIG_DFL);
+	(void)signal(SIGINT, SIG_DFL);
+	(void)signal(SIGQUIT, SIG_DFL);
 	if (fstat(t, &statbuf) < 0) {
 		perror("fstat");
 		goto fatal;
@@ -473,7 +490,8 @@ edit_cmd() {
 			ProgramName, Filename);
 		goto done;
 	default:
-		fprintf(stderr, "%s: panic: bad switch() in replace_cmd()\n");
+		fprintf(stderr, "%s: panic: bad switch() in replace_cmd()\n",
+		    ProgramName);
 		goto fatal;
 	}
  remove:
@@ -495,6 +513,11 @@ replace_cmd() {
 	entry	*e;
 	time_t	now = time(NULL);
 	char	**envp = env_init();
+
+	if (envp == NULL) {
+		fprintf(stderr, "%s: Cannot allocate memory.\n", ProgramName);
+		return (-2);
+	}
 
 	(void) sprintf(n, "tmp.%d", Pid);
 	(void) sprintf(tn, CRON_TAB(n));

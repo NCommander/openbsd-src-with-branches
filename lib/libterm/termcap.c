@@ -44,6 +44,7 @@ static char rcsid[] = "$NetBSD: termcap.c,v 1.7 1995/06/05 19:45:52 pk Exp $";
 #define	PBUFSIZ		512	/* max length of filename path */
 #define	PVECSIZ		32	/* max number of names in path */
 
+#include <sys/param.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -80,7 +81,7 @@ tgetent(bp, name)
 	char **fname;
 	char  *home;
 	int    i;
-	char   pathbuf[PBUFSIZ];	/* holds raw path of filenames */
+	char   pathbuf[MAXPATHLEN];	/* holds raw path of filenames */
 	char  *pathvec[PVECSIZ];	/* to point to names in pathbuf */
 	char **pvec;			/* holds usable tail of path vector */
 	char  *termpath;
@@ -91,30 +92,36 @@ tgetent(bp, name)
 	p = pathbuf;
 	cp = getenv("TERMCAP");
 	/*
-	 * TERMCAP can have one of two things in it. It can be the
-	 * name of a file to use instead of /etc/termcap. In this
+	 * TERMCAP can have one of two things in it. It can be the name
+	 * of a file to use instead of /usr/share/misc/termcap. In this
 	 * case it better start with a "/". Or it can be an entry to
 	 * use so we don't have to read the file. In this case it
 	 * has to already have the newlines crunched out.  If TERMCAP
 	 * does not hold a file name then a path of names is searched
-	 * instead.  The path is found in the TERMPATH variable, or
-	 * becomes "$HOME/.termcap /etc/termcap" if no TERMPATH exists.
+	 * instead.  The path is found in the TERMPATH variable, or becomes
+	 * "$HOME/.termcap /usr/share/misc/termcap" if no TERMPATH exists.
 	 */
 	if (!cp || *cp != '/') {	/* no TERMCAP or it holds an entry */
 		if ((termpath = getenv("TERMPATH")) != NULL)
-			strncpy(pathbuf, termpath, PBUFSIZ);
+			strncpy(pathbuf, termpath, sizeof(pathbuf) - 1);
 		else {
 			if ((home = getenv("HOME")) != NULL) {
 				/* set up default */
-				p += strlen(home);	/* path, looking in */
-				strcpy(pathbuf, home);	/* $HOME first */
+				/* $HOME first */
+				strncpy(pathbuf, home, sizeof(pathbuf) - 1 -
+				    strlen(_PATH_DEF) - 1);
+				pathbuf[sizeof(pathbuf) - 1 -
+				    strlen(_PATH_DEF) - 1] = '\0';
+				p += strlen(pathbuf);	/* path, looking in */
 				*p++ = '/';
 			}	/* if no $HOME look in current directory */
-			strncpy(p, _PATH_DEF, PBUFSIZ - (p - pathbuf));
+			strncpy(p, _PATH_DEF, sizeof(pathbuf) -1 -
+			    (p - pathbuf));
 		}
 	}
 	else				/* user-defined name in TERMCAP */
-		strncpy(pathbuf, cp, PBUFSIZ);	/* still can be tokenized */
+		strncpy(pathbuf, cp, sizeof(pathbuf) - 1); /* still can be tokenized */
+	pathbuf[sizeof(pathbuf) - 1] = '\0';
 
 	*fname++ = pathbuf;	/* tokenize path into vector of names */
 	while (*++p)
@@ -137,13 +144,20 @@ tgetent(bp, name)
 			return (-2);
 
 	dummy = NULL;
-	i = cgetent(&dummy, pathvec, name);      
+	i = cgetent(&dummy, pathvec, name);
 	
-	if (i == 0)
-		strcpy(bp, dummy);
-	
-	if (dummy)
+	if (i == 0 && bp != NULL) {
+		strncpy(bp, dummy, 1023);
+		bp[1023] = '\0';
+		if ((cp = strrchr(bp, ':')) != NULL)
+			if (cp[1] != '\0')
+				cp[1] = '\0';
+	}
+	else if (i == 0 && bp == NULL)
+		tbuf = dummy;
+	else if (dummy != NULL)
 		free(dummy);
+
 	/* no tc reference loop return code in libterm XXX */
 	if (i == -3)
 		return (-1);

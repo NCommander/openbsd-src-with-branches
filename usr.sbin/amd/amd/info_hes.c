@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)info_hes.c	8.1 (Berkeley) 6/6/93
- *	$Id: info_hes.c,v 1.3 1994/06/13 20:47:20 mycroft Exp $
+ *	$Id: info_hes.c,v 1.2 1997/01/31 14:41:58 graichen Exp $
  */
 
 /*
@@ -228,7 +228,7 @@ char *domain;
 	int status, len;
 	char buf[PACKETSZ];
 	/* Want to make sure ansbuf is well alligned */
-	long ansbuf[PACKETSZ/sizeof(long)];
+	u_int32_t ansbuf[PACKETSZ/sizeof(u_int32_t)];
 
 #ifdef DEBUG
 	dlog("hs_zone_transfer (%s)", domain);
@@ -423,7 +423,7 @@ char *msg, *eom;
 	int qdcount, ancount;
 	char key[PACKETSZ];
 	char *key_cpy, *value, *hs_make_value();
-	short type;
+	int16_t type;
 
 	hp = (HEADER *)msg;
 	if (hp->rcode != NOERROR || hp->opcode != QUERY) {
@@ -452,9 +452,9 @@ char *msg, *eom;
 		if ((type = _getshort(cp)) == T_SOA) {
 			soacnt++;
 		}
-		cp += 2*sizeof(u_short) + sizeof(u_long);
+		cp += 2*sizeof(u_int16_t) + sizeof(u_int32_t);
 		len = _getshort(cp);
-		cp += sizeof(u_short);
+		cp += sizeof(u_int16_t);
 		/* Check to see if key is in our domain */
 		if (type == T_TXT && hs_strip_our_domain(key)) {
 			value = hs_make_value(cp, len);
@@ -592,7 +592,7 @@ char *domain;
 	register char *cp;
 	register int n, len;
 	char key[PACKETSZ], name[PACKETSZ], msg[PACKETSZ], *eom;
-	register long **hptr;
+	register u_int32_t **hptr;
 	struct hostent *ghp;
 	int numns;
 	char nsname[MAXHSNS][MAXDATA];
@@ -625,7 +625,7 @@ char *domain;
 			break;
 		cp += n;
 		type = _getshort(cp);
-		cp += 2*sizeof(u_short) + sizeof(u_long);
+		cp += 2*sizeof(u_short) + sizeof(u_int32_t);
 		len = _getshort(cp);
 		cp += sizeof(u_short);
 #ifdef DEBUG
@@ -679,7 +679,7 @@ char *domain;
 			continue;
 		if ((ghp = gethostbyname(nsname[i])) == 0)
 			continue;
-		for (hptr = (long **)ghp->h_addr_list;
+		for (hptr = (in_addr_t **)ghp->h_addr_list;
 		     *hptr && hs_nscount < MAX_NSADDR; hptr++) {
 			add_address((struct in_addr *) *hptr);
 		}

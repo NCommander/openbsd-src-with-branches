@@ -31,7 +31,7 @@
 .Nd generates build environment for a crunched binary
 .Sh SYNOPSIS
 .Nm \&crunchgen
-.Op Fl fq
+.Op Fl fqE
 .Op Fl m Ar makefile-name
 .Op Fl c Ar c-file-name
 .Op Fl e Ar exec-file-name
@@ -72,7 +72,7 @@ is run, the crunched binary can be built by running ``make -f
 be built.  A ``objs'' target, included in the output makefile, will
 run make in each component program's source dir to build the object
 files for the user.  This is not done automatically since in release
-engineering circumstances it is generally not desireable to be
+engineering circumstances it is generally not desirable to be
 modifying objects in other directories.
 
 .Pp
@@ -94,6 +94,9 @@ Set output Makefile name to
 The default name is ``<conf-name>.mk''.
 .It Fl q
 Quiet operation.  Status messages are suppressed.
+.It Fl E
+Don't prepend stub names with an underscore. Used for architectures that
+don't have underscore prepended to symbol names. Example mips ELF.
 .It Fl D Ar src-root
 Assume that relative source directory specifications begin with
 .Ar srt-root .
@@ -244,9 +247,9 @@ The crunched binary ``kcopy'' can be built as follows:
 .Pp
 .nf
 	% crunchgen -m Makefile kcopy.conf    # gen Makefile and kcopy.c
-	% make objs             # build the component progams' .o files
-	% make                  # build the crunched binary kcopy
-	% kcopy sh              # test that this invokes a sh shell
+	% make objs		# build the component progams' .o files
+	% make			# build the crunched binary kcopy
+	% kcopy sh		# test that this invokes a sh shell
 	$			# it works!
 .fi
 .Pp

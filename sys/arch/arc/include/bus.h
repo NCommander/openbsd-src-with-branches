@@ -1,8 +1,8 @@
-/*	$OpenBSD: bus.h,v 1.2 1996/06/06 23:06:33 deraadt Exp $	*/
-/*	$NetBSD: bus.h,v 1.2 1996/04/05 23:59:37 thorpej Exp $	*/
+/*	$OpenBSD: bus.h,v 1.12 1997/04/10 16:29:22 pefo Exp $	*/
 
 /*
- * Copyright (c) 1996 Christopher G. Demetriou.  All rights reserved.
+ * Copyright (c) 1997 Per Fogelstrom.  All rights reserved.
+ * Copyright (c) 1996 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,99 +34,128 @@
 #ifndef _ARC_BUS_H_
 #define _ARC_BUS_H_
 
-#include <machine/autoconf.h>
 #include <machine/pio.h>
 
-/*
- * I/O addresses (in bus space)
- */
-typedef u_long bus_io_addr_t;
-typedef u_long bus_io_size_t;
-typedef u_long bus_io_handle_t;
-
-/*
- * Memory addresses (in bus space)
- */
-typedef u_long bus_mem_addr_t;
-typedef u_long bus_mem_size_t;
-typedef caddr_t bus_mem_handle_t;
+#ifdef __STDC__
+#define CAT(a,b)	a##b
+#define CAT3(a,b,c)	a##b##c
+#else
+#define CAT(a,b)	a/**/b
+#define CAT3(a,b,c)	a/**/b/**/c
+#endif
 
 /*
- * Access methods for bus resources, I/O space, and memory space.
+ * Bus access types.
  */
-typedef
-struct arc_isa_busmap {
-	void	*isa_io_base;
-	void	*isa_mem_base;
-} *bus_chipset_tag_t;
+typedef u_int32_t bus_addr_t;
+typedef u_int32_t bus_size_t;
+typedef u_int32_t bus_space_handle_t;
+typedef struct arc_bus_space *bus_space_tag_t;
+
+struct arc_bus_space {
+	u_int32_t	bus_base;
+	u_int8_t	bus_sparse1;	/* Sparse addressing shift count */
+	u_int8_t	bus_sparse2;	/* Sparse addressing shift count */
+	u_int8_t	bus_sparse4;	/* Sparse addressing shift count */
+	u_int8_t	bus_sparse8;	/* Sparse addressing shift count */
+};
+
+extern struct arc_bus_space arc_bus_io, arc_bus_mem;
+
+/*
+ * Access methods for bus resources
+ */
+#define bus_space_map(t, addr, size, cacheable, bshp)			      \
+    ((*(bshp) = (t)->bus_base + (addr)), 0)
+
+#define bus_space_unmap(t, bsh, size)
+
+#define bus_space_read(n,m)						      \
+static __inline CAT3(u_int,m,_t)					      \
+CAT(bus_space_read_,n)(bus_space_tag_t bst, bus_space_handle_t bsh,	      \
+     bus_addr_t ba)							      \
+{									      \
+	return *(volatile CAT3(u_int,m,_t) *)(bsh + ((ba) << CAT(bst->bus_sparse,n)));		      \
+}
+
+bus_space_read(1,8)
+bus_space_read(2,16)
+bus_space_read(4,32)
+
+#define	bus_space_read_8	!!! bus_space_read_8 unimplemented !!!
+
+#define bus_space_read_multi_1(t, h, o, a, c) do {			      \
+		insb((u_int8_t *)((h) + (o)), (a), (c));		      \
+	} while(0)
+
+#define bus_space_read_multi_2(t, h, o, a, c) do {			      \
+		insw((u_int16_t *)((h) + (o)), (a), (c));		      \
+	} while(0)
+
+#define bus_space_read_multi_4(t, h, o, a, c) do {			      \
+		insl((u_int32_t *)((h) + (o)), (a), (c));		      \
+	} while(0)
+
+#define	bus_space_read_multi_8	!!! bus_space_read_multi_8 not implemented !!!
+
+#define bus_space_write(n,m)						      \
+static __inline void							      \
+CAT(bus_space_write_,n)(bus_space_tag_t bst, bus_space_handle_t bsh,	      \
+     bus_addr_t ba, CAT3(u_int,m,_t) x)					      \
+{									      \
+	*(volatile CAT3(u_int,m,_t) *)(bsh + ((ba) << CAT(bst->bus_sparse,n))) = x;      \
+}
+
+bus_space_write(1,8)
+bus_space_write(2,16)
+bus_space_write(4,32)
+
+#define	bus_space_write_8	!!! bus_space_write_8 unimplemented !!!
 
 
-#define bus_io_map(t, port, size, iohp)					\
-    (*iohp = (t == NULL ? port : port + (ulong)(t->isa_io_base)), 0)
-#define bus_io_unmap(t, ioh, size)
+#define bus_space_write_multi_1(t, h, o, a, c) do {			      \
+		outsb((u_int8_t *)((h) + (o)), (a), (c));		      \
+	} while(0)
 
-#define	bus_io_read_1(t, h, o)		inb((h) + (o))
-#define	bus_io_read_2(t, h, o)		inw((h) + (o))
-#define	bus_io_read_4(t, h, o)		inl((h) + (o))
-#if 0 /* Cause a link error for bus_io_read_8 */
-#define	bus_io_read_8(t, h, o)		!!! bus_io_read_8 unimplemented !!!
-#endif
+#define bus_space_write_multi_2(t, h, o, a, c) do {			      \
+		outsw((u_int16_t *)((h) + (o)), (a), (c));		      \
+	} while(0)
 
-#define	bus_io_read_multi_1(t, h, o, a, c)	\
-					insb((h) + (o), (a), (c))
-#define	bus_io_read_multi_2(t, h, o, a, c)	\
-					insw((h) + (o), (a), (c))
-#define	bus_io_read_multi_4(t, h, o, a, c)	\
-					insl((h) + (o), (a), (c))
-#if 0 /* Cause a link error for bus_io_read_multi_8 */
-#define	bus_io_read_multi_8(t, h, o, a, c)	\
-				!!! bus_io_read_multi_8 unimplemented !!!
-#endif
+#define bus_space_write_multi_4(t, h, o, a, c) do {			      \
+		outsl((u_int32_t *)((h) + (o)), (a), (c));		      \
+	} while(0)
 
-#define	bus_io_write_1(t, h, o, v)	outb((h) + (o), (v))
-#define	bus_io_write_2(t, h, o, v)	outw((h) + (o), (v))
-#define	bus_io_write_4(t, h, o, v)	outl((h) + (o), (v))
-#if 0 /* Cause a link error for bus_io_write_8 */
-#define	bus_io_write_8(t, h, o, v)	!!! bus_io_write_8 unimplemented !!!
-#endif
+#define	bus_space_write_multi_8	!!! bus_space_write_multi_8 not implemented !!!
 
-#define	bus_io_write_multi_1(t, h, o, a, c)	\
-					outsb((h) + (o), (a), (c))
-#define	bus_io_write_multi_2(t, h, o, a, c)	\
-					outsw((h) + (o), (a), (c))
-#define	bus_io_write_multi_4(t, h, o, a, c)	\
-					outsl((h) + (o), (a), (c))
-#if 0 /* Cause a link error for bus_io_write_multi_8 */
-#define	bus_io_write_multi_8(t, h, o, a, c)	\
-				!!! bus_io_write_multi_8 unimplimented !!!
-#endif
+/* These are OpenBSD extensions to the general NetBSD bus interface.  */
+#define	bus_space_read_raw_multi(n,m,l)					      \
+static __inline void							      \
+CAT(bus_space_read_raw_multi_,n)(bus_space_tag_t bst, bus_space_handle_t bsh, \
+    bus_addr_t ba, u_int8_t *buf, bus_size_t cnt)			      \
+{									      \
+	CAT(bus_space_read_multi_,n)(bst, bsh, ba, (CAT3(u_int,m,_t) *)buf,   \
+	    cnt >> l);							      \
+}
 
-int	bus_mem_map __P((bus_chipset_tag_t t, bus_mem_addr_t bpa,
-	    bus_mem_size_t size, int cacheable, bus_mem_handle_t *mhp));
-void	bus_mem_unmap __P((bus_chipset_tag_t t, bus_mem_handle_t memh,
-	    bus_mem_size_t size));
+bus_space_read_raw_multi(2,16,1)
+bus_space_read_raw_multi(4,32,2)
 
-#define	bus_mem_read_1(t, h, o)		(*(volatile u_int8_t *)((h) + (o)))
-#define	bus_mem_read_2(t, h, o)		(*(volatile u_int16_t *)((h) + (o)))
-#define	bus_mem_read_4(t, h, o)		(*(volatile u_int32_t *)((h) + (o)))
-#define	bus_mem_read_8(t, h, o)		(*(volatile u_int64_t *)((h) + (o)))
+#define	bus_space_read_raw_multi_8 \
+    !!! bus_space_read_raw_multi_8 not implemented !!!
 
-#define	bus_mem_write_1(t, h, o, v)					\
-    ((void)(*(volatile u_int8_t *)((h) + (o)) = (v)))
-#define	bus_mem_write_2(t, h, o, v)					\
-    ((void)(*(volatile u_int16_t *)((h) + (o)) = (v)))
-#define	bus_mem_write_4(t, h, o, v)					\
-    ((void)(*(volatile u_int32_t *)((h) + (o)) = (v)))
-#define	bus_mem_write_8(t, h, o, v)					\
-    ((void)(*(volatile u_int64_t *)((h) + (o)) = (v)))
+#define	bus_space_write_raw_multi(n,m,l)				      \
+static __inline void							      \
+CAT(bus_space_write_raw_multi_,n)(bus_space_tag_t bst, bus_space_handle_t bsh,\
+    bus_addr_t ba, const u_int8_t *buf, bus_size_t cnt)			      \
+{									      \
+	CAT(bus_space_write_multi_,n)(bst, bsh, ba,			      \
+	    (const CAT3(u_int,m,_t) *)buf, cnt >> l);			      \
+}
 
-/* These are extensions to the general NetBSD bus interface.  */
-#define bus_to_host_2(t, v) (v)
-#define bus_to_host_4(t, v) (v)
-#define bus_to_host_8(t, v) (v)
+bus_space_write_raw_multi(2,16,1)
+bus_space_write_raw_multi(4,32,2)
 
-#define bus_from_host_2(t, v) (v)
-#define bus_from_host_4(t, v) (v)
-#define bus_from_host_8(t, v) (v)
+#define	bus_space_write_raw_multi_8 \
+    !!! bus_space_write_raw_multi_8 not implemented !!!
 
 #endif /* _ARC_BUS_H_ */

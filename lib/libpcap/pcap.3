@@ -1,4 +1,5 @@
-.\"	$NetBSD: pcap.3,v 1.2 1995/03/06 11:39:03 mycroft Exp $
+.\"	$OpenBSD
+.\"	$NetBSD: pcap.3,v 1.2.6.1 1996/06/05 18:04:43 cgd Exp $
 .\"
 .\" Copyright (c) 1994
 .\"	The Regents of the University of California.  All rights reserved.
@@ -19,7 +20,7 @@
 .\" WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 .\" MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 .\"
-.TH PCAP 3  "14 Jun 1994"
+.TH PCAP 3  "12 Oct 1994"
 .SH NAME
 pcap \- Packet Capture library
 .SH SYNOPSIS
@@ -39,9 +40,9 @@ pcap_dumper_t *pcap_dump_open(pcap_t *p, char *fname)
 .ft B
 char errbuf[PCAP_ERRBUF_SIZE];
 char *pcap_lookupdev(char *errbuf)
-int pcap_lookupnet(char *device, u_long *netp,
+int pcap_lookupnet(char *device, u_int32_t *netp,
 .ti +8
-u_long *maskp, char *errbuf)
+u_int32_t *maskp, char *errbuf)
 .ft
 .LP
 .ft B
@@ -57,13 +58,17 @@ u_char *sp)
 .ft
 .LP
 .ft B
+int pcap_inject(pcap_t *p, void *, size_t)
+.ft
+.LP
+.ft B
 int pcap_immediate(pcap_t *p)
 .ft
 .LP
 .ft B
 int pcap_compile(pcap_t *p, struct bpf_program *fp,
 .ti +8
-char *str, int optimize, u_long netmask)
+char *str, int optimize, u_int32_t netmask)
 int pcap_setfilter(pcap_t *p, struct bpf_program *fp)
 .ft
 .LP
@@ -117,7 +122,7 @@ is called to open a ``savefile'' for reading.
 .I fname
 specifies the name of the file to open. The file has
 the same format as those used by
-.B tcpdump(1)
+.B tcpdump(8)
 and
 .BR tcpslice(1) .
 The name "-" in a synonym for
@@ -169,7 +174,7 @@ Both
 and
 .I maskp
 are
-.I u_long
+.I u_int32_t
 pointers.
 A return of -1 indicates an error in which case
 .I errbuf
@@ -212,6 +217,11 @@ Note that its calling arguments are suitable for use with
 .ft B
 (??? this guy is kind of weird.)
 .ft
+.PP
+.B pcap_inject()
+uses
+.B write(2)
+to inject a raw packet through the network interface.
 .PP
 .B pcap_immediate()
 sets ``immediate'' mode.
@@ -320,6 +330,6 @@ and deallocates resources.
 closes the ``savefile.''
 .PP
 .SH SEE ALSO
-tcpdump(1), tcpslice(1)
+tcpdump(8), tcpslice(1)
 .SH BUGS
 .SH HISTORY

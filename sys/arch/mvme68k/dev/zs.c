@@ -1,4 +1,4 @@
-/*	$NetBSD: zs.c,v 1.4 1994/10/26 02:33:32 cgd Exp $	*/
+/*	$OpenBSD: zs.c,v 1.4 1996/06/11 10:15:38 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -13,7 +13,11 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software withough specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
@@ -129,7 +133,7 @@ int	zsopen	__P((dev_t, int, int, struct proc *));
 void	zsstart	__P((struct tty *));
 int	zsparam	__P((struct tty *, struct termios *));
 int	zsirq	__P((int unit));
-int	zsregs	__P((caddr_t va, int unit, volatile u_char **crp,
+int	zsregs	__P((void *va, int unit, volatile u_char **crp,
 	    volatile u_char **drp));
 int	zspclk	__P((void));
 
@@ -145,8 +149,12 @@ void	zs_softint __P((void));
 void	zsattach __P((struct device *, struct device *, void *));
 int	zsmatch __P((struct device *, void *, void *));
 
-struct cfdriver zscd = {
-	NULL, "zs", zsmatch, zsattach, DV_TTY, sizeof(struct zssoftc), 0
+struct cfattach zs_ca = {
+	sizeof(struct zssoftc), zsmatch, zsattach
+};
+
+struct cfdriver zs_cd = {
+	NULL, "zs", DV_TTY, 0
 };
 
 int
@@ -316,13 +324,14 @@ zsopen(dev, flag, mode, p)
 	struct zs *zp;
 	struct zssoftc *sc;
 
-	if (zsunit(dev) >= zscd.cd_ndevs ||
-	    (sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)]) == NULL)
+	if (zsunit(dev) >= zs_cd.cd_ndevs ||
+	    (sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)]) == NULL)
 		return (ENODEV);
 
 	zp = &sc->sc_zs[zsside(dev)];
 	if (zp->tty == NULL) {
 		zp->tty = ttymalloc();
+		tty_attach(zp->tty);
 		zs_ttydef(zp);
 		if (minor(dev) < NZSLINE)
 			zs_tty[minor(dev)] = zp->tty;
@@ -356,8 +365,8 @@ zsclose(dev, flag, mode, p)
 	struct zssoftc *sc;
 	int s;
 
-	if (zsunit(dev) > zscd.cd_ndevs ||
-	    (sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)]) == NULL)
+	if (zsunit(dev) > zs_cd.cd_ndevs ||
+	    (sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)]) == NULL)
 		return (ENODEV);
 	zp = &sc->sc_zs[zsside(dev)];
 	tp = zp->tty;
@@ -380,7 +389,7 @@ zsread(dev, uio, flag)
 	struct uio *uio;
 	int	flag;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)];
 	struct zs *zp = &sc->sc_zs[zsside(dev)];
 	struct tty *tp = zp->tty;
 
@@ -394,7 +403,7 @@ zswrite(dev, uio, flag)
 	struct uio *uio;
 	int     flag;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)];
 	struct zs *zp = &sc->sc_zs[zsside(dev)];
 	struct tty *tp = zp->tty;
 
@@ -408,7 +417,7 @@ zsioctl(dev, cmd, data, flag, p)
 	int     cmd, flag;
 	struct proc *p;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)];
 	struct zs *zp = &sc->sc_zs[zsside(dev)];
 	struct tty *tp = zp->tty;
 	register struct sccregs *scc = &zp->scc;
@@ -465,7 +474,7 @@ zsparam(tp, t)
 	struct tty *tp;
 	struct termios *t;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(tp->t_dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(tp->t_dev)];
 	struct zs *zp = &sc->sc_zs[zsside(tp->t_dev)];
 	register int s;
 
@@ -489,7 +498,7 @@ void
 zsstart(tp)
 	struct tty *tp;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(tp->t_dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(tp->t_dev)];
 	struct zs *zp = &sc->sc_zs[zsside(tp->t_dev)];
 	register int s, n;
 
@@ -514,7 +523,7 @@ zsstop(tp, flag)
 	struct tty *tp;
 	int flag;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(tp->t_dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(tp->t_dev)];
 	struct zs *zp = &sc->sc_zs[zsside(tp->t_dev)];
 	int     s, n;
 
@@ -709,7 +718,7 @@ int
 zsirq(unit)
 	int unit;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[unit];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[unit];
 	register struct zs *zp = &sc->sc_zs[0];
 	register int ipend, x;
 
@@ -842,10 +851,10 @@ zs_softint()
 	int     unit, side;
 
 	s = splzs();
-	for (unit = 0; unit < zscd.cd_ndevs; ++unit) {
-		if (zscd.cd_devs[unit] == NULL)
+	for (unit = 0; unit < zs_cd.cd_ndevs; ++unit) {
+		if (zs_cd.cd_devs[unit] == NULL)
 			continue;
-		zp = &((struct zssoftc *) zscd.cd_devs[unit])->sc_zs[0];
+		zp = &((struct zssoftc *) zs_cd.cd_devs[unit])->sc_zs[0];
 		for (side = 0; side < 2; ++side, ++zp) {
 			if ((zp->hflags & ZH_SIRQ) == 0)
 				continue;
@@ -1075,7 +1084,7 @@ u_long zs_cons_addrs_162[] = { ZS0_PHYS_162, ZS1_PHYS_162 };
  */
 int
 zsregs(va, unit, crp, drp)
-	caddr_t	va;
+	void *va;
 	int unit;
 	volatile u_char **crp, **drp;
 {
@@ -1092,7 +1101,7 @@ zsregs(va, unit, crp, drp)
 #ifdef MVME147
 	case CPU_147:
 		if (!va)
-			va = (caddr_t)IIOV(zs_cons_addrs_147[zsunit(unit)]);
+			va = (void *)IIOV(zs_cons_addrs_147[zsunit(unit)]);
 		scc_adr_147 = (volatile struct scc_147 *)va;
 		scc_cr = &scc_adr_147->cr;
 		scc_dr = &scc_adr_147->dr;
@@ -1102,7 +1111,7 @@ zsregs(va, unit, crp, drp)
 #ifdef MVME162
 	case CPU_162:
 		if (!va)
-			va = (caddr_t)IIOV(zs_cons_addrs_162[zsunit(unit)]);
+			va = (void *)IIOV(zs_cons_addrs_162[zsunit(unit)]);
 		scc_adr_162 = (volatile struct scc_162 *)va;
 		scc_cr = &scc_adr_162->cr;
 		scc_dr = &scc_adr_162->dr;

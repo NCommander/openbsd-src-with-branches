@@ -2,10 +2,9 @@
 
 LIB=pthread
 NOPIC= no
-CPPFLAGS+= -DPTHREAD_KERNEL -I. -I${.CURDIR}/include -I${.CURDIR}/arch/${MACHINE}
-CFLAGS+= ${CPPFLAGS}
+CPPFLAGS+= -DPTHREAD_KERNEL -I. -I${.CURDIR}/include -I${.CURDIR}/arch/${MACHINE_ARCH}
 
-.include "${.CURDIR}/arch/${MACHINE}/Makefile.inc"
+.include "${.CURDIR}/arch/${MACHINE_ARCH}/Makefile.inc"
 .include "${.CURDIR}/pthreads/Makefile.inc"
 .include "${.CURDIR}/stdio/Makefile.inc"
 

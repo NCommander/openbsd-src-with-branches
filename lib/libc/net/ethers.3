@@ -1,10 +1,12 @@
+.\"	$OpenBSD$
 .\"
 .\" Written by roland@frob.com.  Public domain.
 .\"
 .Dd December 16, 1993
 .Dt ETHERS 3
-.Os NetBSD
+.Os
 .Sh NAME
+.Nm ether_aton ,
 .Nm ether_ntoa ,
 .Nm ether_addr ,
 .Nm ether_ntohost ,
@@ -17,15 +19,18 @@
 .Fn ether_ntoa "struct ether_addr *e"
 .Ft struct ether_addr *
 .Fn ether_aton "char *s"
+.Ft int
 .Fn ether_ntohost "char *hostname" "struct ether_addr *e"
+.Ft int
 .Fn ether_hostton "char *hostname" "struct ether_addr *e"
+.Ft int
 .Fn ether_line "char *l" "struct ether_addr *e" "char *hostname"
 .Sh DESCRIPTION
 Ethernet addresses are represented by the 
 following structure:
 .Bd -literal -offset indent
 struct ether_addr {
-        u_char  ether_addr_octet[6];
+        u_int8_t  ether_addr_octet[6];
 };
 .Ed
 .Pp

@@ -1,4 +1,5 @@
-/*	$NetBSD: wwiomux.c,v 1.3 1995/09/28 10:35:37 tls Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: wwiomux.c,v 1.5 1996/02/08 20:45:09 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwiomux.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwiomux.c,v 1.3 1995/09/28 10:35:37 tls Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -57,11 +58,8 @@ static char rcsid[] = "$NetBSD: wwiomux.c,v 1.3 1995/09/28 10:35:37 tls Exp $";
  * The idea is to copy window outputs to the terminal, via the
  * display package.  We try to give wwcurwin highest priority.
  * The only return conditions are when there is keyboard input
- * and when a child process dies, which are serviced by signal
- * catchers (wwrint() and wwchild()).
+ * and when a child process dies.
  * When there's nothing to do, we sleep in a select().
- * This can be done better with interrupt driven io.  But that's
- * not supported on ptys, yet.
  * The history of this routine is interesting.
  */
 wwiomux()
@@ -87,11 +85,17 @@ wwiomux()
 				continue;
 			if (w->ww_obq < w->ww_obe) {
 				if (w->ww_pty > n)
-					n = w->ww_pty;
+					n = w->ww_pty + 1;
 				FD_SET(w->ww_pty, &imask);
 			}
-			if (w->ww_obq > w->ww_obp && !w->ww_stopped)
+			if (w->ww_obq > w->ww_obp &&
+			    !ISSET(w->ww_pflags, WWP_STOPPED))
 				noblock = 1;
+		}
+		if (wwibq < wwibe) {
+			if (0 > n)
+				n = 0 + 1;
+			FD_SET(0, &imask);
 		}
 
 		if (!noblock) {
@@ -106,16 +110,7 @@ wwiomux()
 				wwclrintr();
 				return;
 			}
-			/*
-			 * Defensive code.  If somebody else (for example,
-			 * wall) clears the ASYNC flag on us, we will block
-			 * forever.  So we need a finite timeout and set
-			 * the flag again.  Anything more clever will probably
-			 * need even more system calls.  (This is a bug
-			 * in the kernel.)
-			 * I don't like this one bit.
-			 */
-			(void) fcntl(0, F_SETFL, wwnewtty.ww_fflags);
+			/* XXXX */
 			tv.tv_sec = 30;
 			tv.tv_usec = 0;
 		} else {
@@ -131,14 +126,16 @@ wwiomux()
 			wwnselecte++;
 		else if (n == 0)
 			wwnselectz++;
-		else
+		else {
+			if (FD_ISSET(0, &imask))
+				wwrint();
 			for (w = wwhead.ww_forw; w != &wwhead; w = w->ww_forw) {
 				if (w->ww_pty < 0 ||
 				    !FD_ISSET(w->ww_pty, &imask))
 					continue;
 				wwnwread++;
 				p = w->ww_obq;
-				if (w->ww_ispty) {
+				if (w->ww_type == WWT_PTY) {
 					if (p == w->ww_ob) {
 						w->ww_obp++;
 						w->ww_obq++;
@@ -155,7 +152,7 @@ wwiomux()
 					wwnwreadz++;
 					(void) close(w->ww_pty);
 					w->ww_pty = -1;
-				} else if (!w->ww_ispty) {
+				} else if (w->ww_type != WWT_PTY) {
 					wwnwreadd++;
 					wwnwreadc += n;
 					w->ww_obq += n;
@@ -167,18 +164,17 @@ wwiomux()
 				} else {
 					wwnwreadp++;
 					if (*p & TIOCPKT_STOP)
-						w->ww_stopped = 1;
+						SET(w->ww_pflags, WWP_STOPPED);
 					if (*p & TIOCPKT_START)
-						w->ww_stopped = 0;
+						CLR(w->ww_pflags, WWP_STOPPED);
 					if (*p & TIOCPKT_FLUSHWRITE) {
-						w->ww_stopped = 0;
+						CLR(w->ww_pflags, WWP_STOPPED);
 						w->ww_obq = w->ww_obp =
 							w->ww_ob;
 					}
 				}
-				if (w->ww_ispty)
-					*p = c;
 			}
+		}
 		/*
 		 * Try the current window first, if there is output
 		 * then process it and go back to the top to try again.
@@ -188,7 +184,8 @@ wwiomux()
 		 * dies down.
 		 */
 		if ((w = wwcurwin) != 0 && w->ww_pty >= 0 &&
-		    w->ww_obq > w->ww_obp && !w->ww_stopped) {
+		    w->ww_obq > w->ww_obp &&
+		    !ISSET(w->ww_pflags, WWP_STOPPED)) {
 			n = wwwrite(w, w->ww_obp, w->ww_obq - w->ww_obp);
 			if ((w->ww_obp += n) == w->ww_obq)
 				w->ww_obq = w->ww_obp = w->ww_ob;
@@ -197,7 +194,7 @@ wwiomux()
 		}
 		for (w = wwhead.ww_forw; w != &wwhead; w = w->ww_forw)
 			if (w->ww_pty >= 0 && w->ww_obq > w->ww_obp &&
-			    !w->ww_stopped) {
+			    !ISSET(w->ww_pflags, WWP_STOPPED)) {
 				n = wwwrite(w, w->ww_obp,
 					w->ww_obq - w->ww_obp);
 				if ((w->ww_obp += n) == w->ww_obq)

@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_malloc.c,v 1.11 1995/05/01 22:39:11 cgd Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.5 1996/06/10 07:27:12 deraadt Exp $	*/
+/*	$NetBSD: kern_malloc.c,v 1.15.4.2 1996/06/13 17:10:56 cgd Exp $	*/
 
 /*
  * Copyright (c) 1987, 1991, 1993
@@ -40,6 +41,7 @@
 #include <sys/map.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
+#include <sys/systm.h>
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
@@ -65,7 +67,7 @@ long addrmask[] = { 0,
  * The WEIRD_ADDR is used as known text to copy into free objects so
  * that modifications after frees can be detected.
  */
-#define WEIRD_ADDR	0xdeadbeef
+#define WEIRD_ADDR	((unsigned) 0xdeadbeef)
 #define MAX_COPY	32
 
 /*
@@ -141,6 +143,16 @@ malloc(size, type, flags)
 		va = (caddr_t) kmem_malloc(kmem_map, (vm_size_t)ctob(npg),
 					   !(flags & M_NOWAIT));
 		if (va == NULL) {
+			/*
+			 * Kmem_malloc() can return NULL, even if it can
+			 * wait, if there is no map space avaiable, because
+			 * it can't fix that problem.  Neither can we,
+			 * right now.  (We should release pages which
+			 * are completely free and which are in buckets
+			 * with too many free elements.)
+			 */
+			if ((flags & M_NOWAIT) == 0)
+				panic("malloc: out of space in kmem_map");
 			splx(s);
 			return ((void *) NULL);
 		}
@@ -198,7 +210,7 @@ malloc(size, type, flags)
 		memname[freep->type] : "???";
 	if (kbp->kb_next &&
 	    !kernacc(kbp->kb_next, sizeof(struct freelist), 0)) {
-		printf("%s %d of object %p size %d %s %s (invalid addr %p)\n",
+		printf("%s %d of object %p size %ld %s %s (invalid addr %p)\n",
 			"Data modified on freelist: word", 
 			(int32_t *)&kbp->kb_next - (int32_t *)kbp, va, size,
 			"previous type", savedtype, kbp->kb_next);
@@ -222,7 +234,7 @@ malloc(size, type, flags)
 	for (lp = (int32_t *)va; lp < end; lp++) {
 		if (*lp == WEIRD_ADDR)
 			continue;
-		printf("%s %d of object %p size %d %s %s (%p != %p)\n",
+		printf("%s %d of object %p size %ld %s %s (0x%x != 0x%x)\n",
 			"Data modified on freelist: word", lp - (int32_t *)va,
 			va, size, "previous type", savedtype, *lp, WEIRD_ADDR);
 		break;
@@ -288,7 +300,7 @@ free(addr, type)
 	else
 		alloc = addrmask[kup->ku_indx];
 	if (((u_long)addr & alloc) != 0)
-		panic("free: unaligned addr 0x%x, size %d, type %s, mask %d\n",
+		panic("free: unaligned addr %p, size %ld, type %s, mask %ld\n",
 			addr, size, memname[type], alloc);
 #endif /* DIAGNOSTIC */
 	if (size > MAXALLOCSAVE) {
@@ -314,7 +326,8 @@ free(addr, type)
 	 * it looks free before laboriously searching the freelist.
 	 */
 	if (freep->spare0 == WEIRD_ADDR) {
-		for (cp = kbp->kb_next; cp; cp = *(caddr_t *)cp) {
+		for (cp = kbp->kb_next; cp;
+		    cp = ((struct freelist *)cp)->next) {
 			if (addr != cp)
 				continue;
 			printf("multiply freed item %p\n", addr);
@@ -359,9 +372,12 @@ free(addr, type)
 /*
  * Initialize the kernel memory allocator
  */
+void
 kmeminit()
 {
+#ifdef KMEMSTATS
 	register long indx;
+#endif
 	int npg;
 
 #if	((MAXALLOCSAVE & (MAXALLOCSAVE - 1)) != 0)

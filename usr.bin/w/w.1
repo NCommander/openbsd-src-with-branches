@@ -1,3 +1,5 @@
+.\"	$OpenBSD: w.1,v 1.3 1996/07/08 22:09:45 ccappuc Exp $
+.\"
 .\" Copyright (c) 1980, 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -39,7 +41,7 @@
 .Nd "who present users are and what they are doing"
 .Sh SYNOPSIS
 .Nm w
-.Op Fl hin
+.Op Fl hia
 .Op Fl M Ar core
 .Op Fl N Ar system
 .Op Ar user
@@ -72,11 +74,9 @@ core instead of the default
 .It Fl N
 Extract the name list from the specified system instead of the
 default
-.Dq /netbsd .
-.It Fl n
-Show network addresses as numbers (normally
-.Nm w
-interprets addresses and attempts to display them symbolically).
+.Dq /bsd .
+.It Fl a
+Attempt to translate network addresses into names.
 .El
 .Pp
 If a
@@ -138,4 +138,4 @@ flags are no longer supported.
 The
 .Nm
 command appeared in
-.Ux 3.0 .
+.Bx 3.0 .

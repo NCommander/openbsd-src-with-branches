@@ -1,5 +1,3 @@
-/*	$NetBSD: xdr.c,v 1.8 1995/04/29 05:26:38 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)xdr.c 1.35 87/08/12";*/
-/*static char *sccsid = "from: @(#)xdr.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: xdr.c,v 1.8 1995/04/29 05:26:38 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: xdr.c,v 1.3 1996/08/19 08:32:01 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * xdr.c, Generic XDR routines implementation.
@@ -135,10 +131,10 @@ xdr_u_int(xdrs, up)
 
 	case XDR_ENCODE:
 		l = (u_long) *up;
-		return (XDR_PUTLONG(xdrs, &l));
+		return (XDR_PUTLONG(xdrs, (long *)&l));
 
 	case XDR_DECODE:
-		if (!XDR_GETLONG(xdrs, &l)) {
+		if (!XDR_GETLONG(xdrs, (long *)&l)) {
 			return (FALSE);
 		}
 		*up = (u_int) l;
@@ -238,10 +234,10 @@ xdr_u_int32_t(xdrs, u_int32_p)
 
 	case XDR_ENCODE:
 		l = (u_long) *u_int32_p;
-		return (XDR_PUTLONG(xdrs, &l));
+		return (XDR_PUTLONG(xdrs, (long *)&l));
 
 	case XDR_DECODE:
-		if (!XDR_GETLONG(xdrs, &l)) {
+		if (!XDR_GETLONG(xdrs, (long *)&l)) {
 			return (FALSE);
 		}
 		*u_int32_p = (u_int32_t) l;
@@ -297,10 +293,10 @@ xdr_u_short(xdrs, usp)
 
 	case XDR_ENCODE:
 		l = (u_long) *usp;
-		return (XDR_PUTLONG(xdrs, &l));
+		return (XDR_PUTLONG(xdrs, (long *)&l));
 
 	case XDR_DECODE:
-		if (!XDR_GETLONG(xdrs, &l)) {
+		if (!XDR_GETLONG(xdrs, (long *)&l)) {
 			return (FALSE);
 		}
 		*usp = (u_short) l;
@@ -356,10 +352,10 @@ xdr_u_int16_t(xdrs, u_int16_p)
 
 	case XDR_ENCODE:
 		l = (u_long) *u_int16_p;
-		return (XDR_PUTLONG(xdrs, &l));
+		return (XDR_PUTLONG(xdrs, (long *)&l));
 
 	case XDR_DECODE:
-		if (!XDR_GETLONG(xdrs, &l)) {
+		if (!XDR_GETLONG(xdrs, (long *)&l)) {
 			return (FALSE);
 		}
 		*u_int16_p = (u_int16_t) l;
@@ -462,7 +458,7 @@ xdr_enum(xdrs, ep)
 	}
 #else
 	(void) (xdr_short(xdrs, (short *)ep));
-	(void) (xdr_int(xdrs, (short *)ep));
+	(void) (xdr_int(xdrs, (int *)ep));
 	return (xdr_long(xdrs, (long *)ep));
 #endif
 }

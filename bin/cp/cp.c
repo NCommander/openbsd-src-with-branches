@@ -1,3 +1,4 @@
+/*	$OpenBSD: cp.c,v 1.9 1997/09/01 18:29:17 deraadt Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cp.c	8.5 (Berkeley) 4/29/95";
 #else
-static char rcsid[] = "$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cp.c,v 1.9 1997/09/01 18:29:17 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -83,8 +84,8 @@ static char rcsid[] = "$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $";
 #include "extern.h"
 
 #define	STRIP_TRAILING_SLASH(p) {					\
-        while ((p).p_end > (p).p_path && (p).p_end[-1] == '/')		\
-                *--(p).p_end = 0;					\
+	while ((p).p_end > (p).p_path + 1 && (p).p_end[-1] == '/')	\
+		*--(p).p_end = '\0';					\
 }
 
 PATH_T to = { to.p_path, "" };
@@ -109,7 +110,7 @@ main(argc, argv)
 	char *target;
 
 	Hflag = Lflag = Pflag = Rflag = 0;
-	while ((ch = getopt(argc, argv, "HLPRfipr")) != EOF) 
+	while ((ch = getopt(argc, argv, "HLPRfipr")) != -1)
 		switch (ch) {
 		case 'H':
 			Hflag = 1;
@@ -138,7 +139,6 @@ main(argc, argv)
 		case 'r':
 			rflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 			break;
@@ -180,20 +180,20 @@ main(argc, argv)
 
 	/* Save the target base in "to". */
 	target = argv[--argc];
-	if (strlen(target) > MAXPATHLEN)
+	if (strlen(target) >= sizeof(to.p_path))
 		errx(1, "%s: name too long", target);
 	(void)strcpy(to.p_path, target);
 	to.p_end = to.p_path + strlen(to.p_path);
-        if (to.p_path == to.p_end) {
+	if (to.p_path == to.p_end) {
 		*to.p_end++ = '.';
-		*to.p_end = 0;
+		*to.p_end = '\0';
 	}
-        STRIP_TRAILING_SLASH(to);
+	STRIP_TRAILING_SLASH(to);
 	to.target_end = to.p_end;
 
 	/* Set end of argument list for fts(3). */
-	argv[argc] = NULL;     
-	
+	argv[argc] = NULL;
+
 	/*
 	 * Cp has two distinct cases:
 	 *
@@ -214,7 +214,7 @@ main(argc, argv)
 	if (r == -1 || !S_ISDIR(to_stat.st_mode)) {
 		/*
 		 * Case (1).  Target is not a directory.
-		 */ 
+		 */
 		if (argc > 1) {
 			usage();
 			exit(1);
@@ -231,7 +231,7 @@ main(argc, argv)
 				stat(*argv, &tmp_stat);
 			else
 				lstat(*argv, &tmp_stat);
-			
+
 			if (S_ISDIR(tmp_stat.st_mode) && (Rflag || rflag))
 				type = DIR_TO_DNE;
 			else
@@ -257,8 +257,10 @@ copy(argv, type, fts_options)
 	FTS *ftsp;
 	FTSENT *curr;
 	int base, dne, nlen, rval;
-	char *p;
-
+	char *p, *target_mid;
+#ifdef lint
+	base = 0;
+#endif
 	if ((ftsp = fts_open(argv, fts_options, mastercmp)) == NULL)
 		err(1, NULL);
 	for (rval = 0; (curr = fts_read(ftsp)) != NULL;) {
@@ -279,17 +281,9 @@ copy(argv, type, fts_options)
 
 		/*
 		 * If we are in case (2) or (3) above, we need to append the 
-                 * source name to the target name.  
-                 */
+		 * source name to the target name.  
+		 */
 		if (type != FILE_TO_FILE) {
-			if ((curr->fts_namelen +
-			    to.target_end - to.p_path + 1) > MAXPATHLEN) {
-				warnx("%s/%s: name too long (not copied)", 
-				    to.p_path, curr->fts_name);
-				rval = 1;
-				continue;
-			}
-
 			/*
 			 * Need to remember the roots of traversals to create
 			 * correct pathnames.  If there's a directory being
@@ -312,25 +306,30 @@ copy(argv, type, fts_options)
 			if (curr->fts_level == FTS_ROOTLEVEL)
 				if (type != DIR_TO_DNE) {
 					p = strrchr(curr->fts_path, '/');
-					base = (p == NULL) ? 0 : 
+					base = (p == NULL) ? 0 :
 					    (int)(p - curr->fts_path + 1);
 
-					if (!strcmp(&curr->fts_path[base], 
+					if (!strcmp(&curr->fts_path[base],
 					    ".."))
 						base += 1;
 				} else
 					base = curr->fts_pathlen;
 
-			if (to.target_end[-1] != '/') {
-				*to.target_end = '/';
-				*(to.target_end + 1) = 0;
-			}
 			p = &curr->fts_path[base];
 			nlen = curr->fts_pathlen - base;
-
-			(void)strncat(to.target_end + 1, p, nlen);
-			to.p_end = to.target_end + nlen + 1;
-			*to.p_end = 0;
+			target_mid = to.target_end;
+			if (*p != '/' && target_mid[-1] != '/')
+				*target_mid++ = '/';
+			*target_mid = '\0';
+			if (target_mid - to.p_path + nlen >= MAXPATHLEN) {
+				warnx("%s%s: name too long (not copied)",
+				    to.p_path, p);
+				rval = 1;
+				continue;
+			}
+			(void)strncat(target_mid, p, nlen);
+			to.p_end = target_mid + nlen;
+			*to.p_end = '\0';
 			STRIP_TRAILING_SLASH(to);
 		}
 
@@ -379,7 +378,7 @@ copy(argv, type, fts_options)
 			 * umask blocks owner writes, we fail..
 			 */
 			if (dne) {
-				if (mkdir(to.p_path, 
+				if (mkdir(to.p_path,
 				    curr->fts_statp->st_mode | S_IRWXU) < 0)
 					err(1, "%s", to.p_path);
 			} else if (!S_ISDIR(to_stat.st_mode)) {
@@ -389,13 +388,13 @@ copy(argv, type, fts_options)
 			/*
 			 * If not -p and directory didn't exist, set it to be
 			 * the same as the from directory, umodified by the 
-                         * umask; arguably wrong, but it's been that way 
-                         * forever.
+			 * umask; arguably wrong, but it's been that way 
+			 * forever.
 			 */
 			if (pflag && setfile(curr->fts_statp, 0))
 				rval = 1;
 			else if (dne)
-				(void)chmod(to.p_path, 
+				(void)chmod(to.p_path,
 				    curr->fts_statp->st_mode);
 			break;
 		case S_IFBLK:
@@ -411,7 +410,7 @@ copy(argv, type, fts_options)
 			if (Rflag) {
 				if (copy_fifo(curr->fts_statp, !dne))
 					rval = 1;
-			} else 
+			} else
 				if (copy_file(curr, dne))
 					rval = 1;
 			break;

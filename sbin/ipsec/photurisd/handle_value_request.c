@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: handle_value_request.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $";
+static char rcsid[] = "$Id: handle_value_request.c,v 1.3 1997/07/24 23:47:13 provos Exp $";
 #endif
 
 #include <stdio.h>
@@ -54,6 +54,7 @@ static char rcsid[] = "$Id: handle_value_request.c,v 1.3 1997/06/12 17:09:20 pro
 #include "packet.h"
 #include "exchange.h"
 #include "secrets.h"
+#include "server.h"
 #include "errlog.h"
 
 int
@@ -64,6 +65,7 @@ handle_value_request(u_char *packet, int size,
 {
 	struct value_request *header;
 	struct stateob *st;
+	mpz_t test, gen, mod;
 	u_int8_t *p, *modp, *refp, *genp = NULL;
 	u_int16_t i, sstart, vsize, asize, modsize, modflag;
 	u_int8_t scheme_ref[2];
@@ -81,10 +83,10 @@ handle_value_request(u_char *packet, int size,
 	     tempst.initiator = 0;                   /* We are the Responder */ 
 	     bcopy(header->icookie, tempst.icookie, COOKIE_SIZE); 
 	     strncpy(tempst.address, address, 15); 
-	     tempst.port = port; 
+	     tempst.port = global_port; 
 	     tempst.counter = header->counter;
 	     
-	     cookie_generate(&tempst, rcookie, COOKIE_SIZE); 
+	     cookie_generate(&tempst, rcookie, COOKIE_SIZE, schemes, ssize); 
 
 	     /* Check for invalid cookie */
 	     if (bcmp(rcookie, header->rcookie, COOKIE_SIZE)) {
@@ -146,6 +148,21 @@ handle_value_request(u_char *packet, int size,
 	     if (asize + i != size)
 		  return -1;  /* attributes dont match udp length */
 
+	     /* now check the exchange value */
+	     mpz_init_set_varpre(test, VALUE_REQUEST_VALUE(header));
+	     mpz_init_set_varpre(mod, modp);
+	     mpz_init(gen);
+	     if (exchange_set_generator(gen, header->scheme, genp) == -1 ||
+		 !exchange_check_value(test, gen, mod)) {
+		  mpz_clear(test);
+		  mpz_clear(gen);
+		  mpz_clear(mod);
+		  return 0;
+	     }
+	     mpz_clear(test);
+	     mpz_clear(gen);
+	     mpz_clear(mod);
+
 	     if ((st = state_new()) == NULL)
 		  return -1;
 
@@ -201,6 +218,8 @@ handle_value_request(u_char *packet, int size,
 	     }
 	     bcopy(VALUE_REQUEST_VALUE(header), st->texchange, st->texchangesize);
 
+
+	     /* Fill in the state object with generic data */
              strncpy(st->address, address, 15);  
              st->port = port;  
 	     st->counter = header->counter;
@@ -241,6 +260,12 @@ handle_value_request(u_char *packet, int size,
 	     printf("Shared secret is: 0x%s\n", buffer);   
 	}
 #endif   
+
+	if (st->oSPIprivacyctx == NULL) {
+	     /* Initialize Privacy Keys from Exchange Values */
+	     init_privacy_key(st, 0);   /* User -> Owner direction */
+	     init_privacy_key(st, 1);   /* Owner -> User direction */
+	}
 
 	st->retries = 0;
 	st->phase = VALUE_RESPONSE;

@@ -185,7 +185,13 @@ writedisklabel(dev, strat, lp, osdep)
 			goto done;
 		}
 	}
-	error = ESRCH;
+	/* Write it in the regular place. */
+	*(struct disklabel *)bp->b_data = *lp;
+	bp->b_flags = B_BUSY | B_WRITE;
+	(*strat)(bp);
+	error = biowait(bp);
+	goto done;
+
 done:
 	brelse(bp);
 	return (error);
@@ -198,7 +204,11 @@ done:
  * if needed, and signal errors or early completion.
  */
 int
-bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
+bounds_check_with_label(bp, lp, osdep, wlabel)
+	struct buf *bp;
+	struct disklabel *lp;
+	struct cpu_disklabel *osdep;
+	int wlabel;
 {
 	struct partition *p = lp->d_partitions + dkpart(bp->b_dev);
 	int maxsz = p->p_size,

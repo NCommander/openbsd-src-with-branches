@@ -1,5 +1,3 @@
-/*	$NetBSD: fvwrite.c,v 1.4 1995/02/02 02:09:45 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,14 +35,12 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fvwrite.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: fvwrite.c,v 1.4 1995/02/02 02:09:45 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fvwrite.c,v 1.3 1996/10/26 06:58:58 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "local.h"
 #include "fvwrite.h"
 
@@ -68,8 +64,10 @@ __sfvwrite(fp, uio)
 	if ((len = uio->uio_resid) == 0)
 		return (0);
 	/* make sure we can write */
-	if (cantwrite(fp))
+	if (cantwrite(fp)) {
+		errno = EBADF;
 		return (EOF);
+	}
 
 #define	MIN(a, b) ((a) < (b) ? (a) : (b))
 #define	COPY(n)	  (void)memcpy((void *)fp->_p, (void *)p, (size_t)(n))

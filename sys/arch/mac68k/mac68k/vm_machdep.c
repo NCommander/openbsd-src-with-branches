@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_machdep.c,v 1.13 1995/06/21 03:45:10 briggs Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.7 1996/10/14 01:28:43 briggs Exp $	*/
+/*	$NetBSD: vm_machdep.c,v 1.21 1996/09/16 18:00:31 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -62,7 +63,7 @@
 #include <machine/pte.h>
 #include <machine/reg.h>
 
-extern int fpu_type;
+void savectx __P((struct pcb *));
 
 /*
  * Finish a fork operation, with process p2 nearly set up.
@@ -73,7 +74,7 @@ extern int fpu_type;
  * address in each process; in the future we will probably relocate
  * the frame pointers on the stack after copying.
  */
-int
+void
 cpu_fork(p1, p2)
 	register struct proc *p1, *p2;
 {
@@ -81,7 +82,6 @@ cpu_fork(p1, p2)
 	register struct trapframe *tf;
 	register struct switchframe *sf;
 	extern struct pcb *curpcb;
-	extern void proc_trampoline(), child_return();
 
 	p2->p_md.md_flags = p1->p_md.md_flags;
 
@@ -105,8 +105,6 @@ cpu_fork(p1, p2)
 	pcb->pcb_regs[6] = (int)child_return;	/* A2 */
 	pcb->pcb_regs[7] = (int)p2;		/* A3 */
 	pcb->pcb_regs[11] = (int)sf;		/* SSP */
-
-	return (0);
 }
 
 /*
@@ -120,19 +118,20 @@ cpu_fork(p1, p2)
  */
 void
 cpu_set_kpc(p, pc)
-	struct proc	*p;
-	u_int32_t	pc;
+	struct proc *p;
+	void (*pc) __P((struct proc *));
 {
 	struct pcb *pcbp;
 	struct switchframe *sf;
-	extern void proc_trampoline();
 
 	pcbp = &p->p_addr->u_pcb;
 	sf = (struct switchframe *) pcbp->pcb_regs[11];
 	sf->sf_pc = (u_int) proc_trampoline;
-	pcbp->pcb_regs[6] = pc;		/* A2 */
+	pcbp->pcb_regs[6] = (int)pc;	/* A2 */
 	pcbp->pcb_regs[7] = (int)p;	/* A3 */
 }
+
+void	switch_exit __P((struct proc *));
 
 /*
  * cpu_exit is called as the last action during exit.
@@ -194,7 +193,7 @@ cpu_coredump(p, vp, cred, chdr)
 		md_core.intreg.r_sr = f->f_sr;
 		md_core.intreg.r_pc = f->f_pc;
 	}
-	if (fpu_type) {
+	if (fputype) {
 		register struct fpframe *f;
 
 		f = &up->u_pcb.pcb_fpregs;
@@ -234,14 +233,15 @@ cpu_coredump(p, vp, cred, chdr)
  * Both addresses are assumed to reside in the Sysmap,
  * and size must be a multiple of CLSIZE.
  */
+void
 pagemove(from, to, size)
 	register caddr_t from, to;
-	int size;
+	size_t size;
 {
 	register vm_offset_t	pa;
 
 #ifdef DEBUG
-	if (size & CLOFFSET)
+	if (size % PAGE_SIZE)
 		panic("pagemove");
 #endif
 	while (size > 0) {
@@ -262,11 +262,14 @@ pagemove(from, to, size)
 	}
 }
 
+void	TBIAS __P((void));
+
 /*
  * Map `size' bytes of physical memory starting at `paddr' into
  * kernel VA space at `vaddr'.  Read/write and cache-inhibit status
  * are specified by `prot'.
  */ 
+void
 physaccess(vaddr, paddr, size, prot)
 	caddr_t vaddr, paddr;
 	register int size, prot;
@@ -283,6 +286,9 @@ physaccess(vaddr, paddr, size, prot)
 	TBIAS();
 }
 
+void	physunaccess __P((caddr_t, register int));
+
+void
 physunaccess(vaddr, size)
 	caddr_t vaddr;
 	register int size;
@@ -294,6 +300,8 @@ physunaccess(vaddr, size)
 		*pte++ = PG_NV;
 	TBIAS();
 }
+
+void	setredzone __P((void *, caddr_t));
 
 /*
  * Set a red zone in the kernel stack after the u. area.
@@ -307,15 +315,19 @@ physunaccess(vaddr, size)
  * Look at _lev6intr in locore.s for more details.
  */
 /*ARGSUSED*/
+void
 setredzone(pte, vaddr)
-	struct pte *pte;
+	void *pte;
 	caddr_t vaddr;
 {
 }
 
+int	kvtop __P((register caddr_t addr));
+
 /*
  * Convert kernel VA to physical address
  */
+int
 kvtop(addr)
 	register caddr_t addr;
 {
@@ -347,8 +359,11 @@ extern vm_map_t phys_map;
  * All requests are (re)mapped into kernel VA space via the useriomap
  * (a name with only slightly more meaning than "kernelmap")
  */
-vmapbuf(bp)
+/*ARGSUSED*/
+void
+vmapbuf(bp, sz)
 	register struct buf *bp;
+	vm_size_t sz;
 {
 	register int npf;
 	register caddr_t addr;
@@ -382,8 +397,11 @@ vmapbuf(bp)
  * Free the io map PTEs associated with this IO operation.
  * We also invalidate the TLB entries and restore the original b_addr.
  */
-vunmapbuf(bp)
+/*ARGSUSED*/
+void
+vunmapbuf(bp, sz)
 	register struct buf *bp;
+	vm_size_t sz;
 {
 	register int npf;
 	register caddr_t addr = bp->b_un.b_addr;

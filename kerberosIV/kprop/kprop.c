@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: kprop.c,v 1.2 1995/12/14 08:43:48 tholo Exp $	*/
 
 /*-
  * Copyright 1987 by the Massachusetts Institute of Technology.
@@ -126,6 +126,7 @@ int get_slaves(struct slave_host **psl, char *file, time_t ok_mtime)
 static int
 prop_to_slaves(struct slave_host *sl, int fd, char *fslv)
 {
+    char *dot, admin[MAXHOSTNAMELEN];
     char buf[KPROP_BUFSIZ];
     char obuf[KPROP_BUFSIZ + 64	/* leave room for private msg overhead */ ];
     struct servent *sp;
@@ -141,7 +142,7 @@ prop_to_slaves(struct slave_host *sl, int fd, char *fslv)
     KTEXT_ST     ticket;
     CREDENTIALS  cred;
     MSG_DAT msg_dat;
-    static char tkstring[] = "/tmp/kproptktXXXXXX";
+    static char tkstring[] = "/tmp/kproptktXXXXXXXXXX";
     
     des_key_schedule session_sched;
 
@@ -215,11 +216,18 @@ prop_to_slaves(struct slave_host *sl, int fd, char *fslv)
 		    /* copy it to make sure gethostbyname static doesn't
 		     * screw us. */
 		    strcpy (kprop_service_instance, p_my_host_name);
+
+		    if (krb_get_admhst(admin, my_realm, 1) != KSUCCESS) {
+			fprintf (stderr,  "Could not get admin host.\n");
+			break;
+		    }
+		    if ((dot = strchr(admin, '.')) != NULL)
+			*dot = '\0';
 		    kerror = krb_get_svc_in_tkt (KPROP_SERVICE_NAME, 
 #if 0
 						 kprop_service_instance,
 #else
-						 KRB_MASTER,
+						 admin,
 #endif
 						 my_realm,
 						 TGT_SERVICE_NAME,

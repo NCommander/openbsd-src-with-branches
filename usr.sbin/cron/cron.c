@@ -16,7 +16,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: cron.c,v 1.1.1.4 1994/01/20 02:47:09 jtc Exp $";
+static char rcsid[] = "$Id: cron.c,v 1.2 1996/09/15 09:28:14 deraadt Exp $";
 #endif
 
 
@@ -46,7 +46,12 @@ static	void	usage __P((void)),
 
 static void
 usage() {
-	fprintf(stderr, "usage:  %s [-x debugflag[,...]]\n", ProgramName);
+	char **dflags;
+
+	fprintf(stderr, "usage:  %s [-x [", ProgramName);
+	for(dflags = DebugFlagNames; *dflags; dflags++)
+		fprintf(stderr, "%s%s", *dflags, dflags[1] ? "," : "]");
+	fprintf(stderr, "]\n");
 	exit(ERROR_EXIT);
 }
 
@@ -247,6 +252,7 @@ cron_sleep() {
 #ifdef USE_SIGCHLD
 static void
 sigchld_handler(x) {
+	int save_errno = errno;
 	WAIT_T		waiter;
 	PID_T		pid;
 
@@ -260,10 +266,12 @@ sigchld_handler(x) {
 		case -1:
 			Debug(DPROC,
 				("[%d] sigchld...no children\n", getpid()))
+			errno = save_errno;
 			return;
 		case 0:
 			Debug(DPROC,
 				("[%d] sigchld...no dead kids\n", getpid()))
+			errno = save_errno;
 			return;
 		default:
 			Debug(DPROC,
@@ -271,6 +279,7 @@ sigchld_handler(x) {
 				getpid(), pid, WEXITSTATUS(waiter)))
 		}
 	}
+	errno = save_errno;
 }
 #endif /*USE_SIGCHLD*/
 

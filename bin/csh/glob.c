@@ -1,3 +1,4 @@
+/*	$OpenBSD: glob.c,v 1.4 1997/07/25 18:58:08 mickey Exp $	*/
 /*	$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)glob.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $";
+static char rcsid[] = "$OpenBSD: glob.c,v 1.4 1997/07/25 18:58:08 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,7 +48,7 @@ static char rcsid[] = "$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -409,7 +410,7 @@ libglob(vl)
     do {
 	ptr = short2qstr(*vl);
 	switch (glob(ptr, gflgs, 0, &globv)) {
-	case GLOB_ABEND:
+	case GLOB_ABORTED:
 	    setname(vis_str(*vl));
 	    stderror(ERR_NAME | ERR_GLOB);
 	    /* NOTREACHED */
@@ -707,7 +708,7 @@ backeval(cp, literal)
 	while (*cp)
 	    *cp++ &= TRIM;
 
-        /*
+	/*
 	 * In the child ``forget'' everything about current aliases or
 	 * eval vectors.
 	 */

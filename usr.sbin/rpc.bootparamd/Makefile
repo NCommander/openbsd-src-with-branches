@@ -1,6 +1,10 @@
-#	$Id: Makefile,v 1.10 1995/06/24 15:03:49 pk Exp $
+#	$OpenBSD$
 
+.include <bsd.own.mk>
+
+.if (${YP} == "yes")
 CFLAGS+=-DYP
+.endif
 
 PROG=	rpc.bootparamd
 SRCS=	bootparamd.c bootparam_prot_svc.c

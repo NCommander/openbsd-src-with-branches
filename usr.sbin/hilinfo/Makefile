@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.1 1994/04/04 21:52:21 cgd Exp $
+#	$OpenBSD$
 
 PROG=	hilinfo
 NOMAN=

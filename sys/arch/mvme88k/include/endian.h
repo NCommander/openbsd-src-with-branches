@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)endian.h	8.1 (Berkeley) 6/11/93
- *      $Id: endian.h,v 1.3 1994/05/27 09:00:49 glass Exp $
+ *      $Id: endian.h,v 1.6 1997/06/25 12:32:51 downsj Exp $
  */
 
 #ifndef _ENDIAN_H_
@@ -57,15 +57,25 @@
 
 #include <sys/cdefs.h>
 
+typedef u_int32_t in_addr_t;
+typedef u_int16_t in_port_t;
+
 __BEGIN_DECLS
-unsigned long	htonl __P((unsigned long));
-unsigned short	htons __P((unsigned short));
-unsigned long	ntohl __P((unsigned long));
-unsigned short	ntohs __P((unsigned short));
+u_int32_t	htonl __P((u_int32_t));
+u_int16_t	htons __P((u_int16_t));
+u_int32_t	ntohl __P((u_int32_t));
+u_int16_t	ntohs __P((u_int16_t));
 __END_DECLS
 
 /*
  * Macros for network/external number representation conversion.
+ *
+ * The way this works is that HTONS(x) modifies x and *can't* be used as
+ * and rvalue i.e.  foo=HTONS(bar) is wrong.  Likewise x=htons(x) should
+ * never be used where HTONS(x) will serve i.e. foo=htons(foo) is wrong.
+ * Failing to observe these rule will result in code that appears to work
+ * and probably does work, but generates gcc warnings on architectures
+ * where the macros are used to optimize away an unneeded conversion.
  */
 #if BYTE_ORDER == BIG_ENDIAN && !defined(lint)
 #define	ntohl(x)	(x)
@@ -73,10 +83,10 @@ __END_DECLS
 #define	htonl(x)	(x)
 #define	htons(x)	(x)
 
-#define	NTOHL(x)	(x)
-#define	NTOHS(x)	(x)
-#define	HTONL(x)	(x)
-#define	HTONS(x)	(x)
+#define	NTOHL(x)	(void)(x)
+#define	NTOHS(x)	(void)(x)
+#define	HTONL(x)	(void)(x)
+#define	HTONS(x)	(void)(x)
 
 #else
 
@@ -84,6 +94,7 @@ __END_DECLS
 #define	NTOHS(x)	(x) = ntohs((u_short)x)
 #define	HTONL(x)	(x) = htonl((u_long)x)
 #define	HTONS(x)	(x) = htons((u_short)x)
+
 #endif
 #endif /* ! _POSIX_SOURCE */
 #endif /* !_ENDIAN_H_ */

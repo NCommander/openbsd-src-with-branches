@@ -1,3 +1,4 @@
+/*	$OpenBSD: invite.c,v 1.3 1994/12/09 02:14:18 jtc Exp $	*/
 /*	$NetBSD: invite.c,v 1.3 1994/12/09 02:14:18 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)invite.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: invite.c,v 1.3 1994/12/09 02:14:18 jtc Exp $";
+static char rcsid[] = "$OpenBSD: invite.c,v 1.3 1994/12/09 02:14:18 jtc Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -127,7 +128,6 @@ re_invite()
 {
 
 	message("Ringing your party again");
-	current_line++;
 	/* force a re-announce */
 	msg.id_num = htonl(remote_id + 1);
 	announce_invite();

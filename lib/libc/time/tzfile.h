@@ -1,7 +1,13 @@
-/*	$NetBSD: tzfile.h,v 1.3 1995/03/09 23:41:24 jtc Exp $	*/
+/*	$OpenBSD: tzfile.h,v 1.3 1996/08/19 08:34:53 tholo Exp $	*/
 
 #ifndef TZFILE_H
+
 #define TZFILE_H
+
+/*
+** This file is in the public domain, so clarified as of
+** 1996-06-05 by Arthur David Olson (arthur_david_olson@nih.gov).
+*/
 
 /*
 ** This header is for use ONLY with the time conversion code.
@@ -15,18 +21,20 @@
 ** ID
 */
 
+#if 0
 #ifndef lint
 #ifndef NOID
-static char	tzfilehid[] = "@(#)tzfile.h	7.6";
+static char	tzfilehid[] = "@(#)tzfile.h	7.9";
 #endif /* !defined NOID */
 #endif /* !defined lint */
+#endif
 
 /*
 ** Information about time zone files.
 */
 
-#ifndef TZDIR		/* Time zone object file directory */
-#define TZDIR		"/usr/share/zoneinfo"
+#ifndef TZDIR
+#define TZDIR	"/usr/share/zoneinfo" /* Time zone object file directory */
 #endif /* !defined TZDIR */
 
 #ifndef TZDEFAULT
@@ -154,7 +162,7 @@ struct tzhead {
 ** that will probably do.
 */
 
-#define isleap(y) ((((y) % 4) == 0 && ((y) % 100) != 0) || ((y) % 400) == 0)
+#define isleap(y) (((y) % 4) == 0 && (((y) % 100) != 0 || ((y) % 400) == 0))
 
 #ifndef USG
 

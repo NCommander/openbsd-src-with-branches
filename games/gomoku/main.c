@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: main.c,v 1.6 1997/01/15 23:40:49 millert Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -45,15 +45,13 @@ static char copyright[] =
 static char sccsid[] = "@(#)main.c	8.4 (Berkeley) 5/4/95";
 #endif /* not lint */
 
-#include <ocurses.h>
+#include "gomoku.h"
+#include <curses.h>
 #include <err.h>
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "gomoku.h"
 
 #define USER	0		/* get input from standard input */
 #define PROGRAM	1		/* get input from program */
@@ -78,22 +76,22 @@ int	movelog[BSZ * BSZ];		/* log of all the moves */
 int	movenum;			/* current move number */
 char	*plyr[2];			/* who's who */
 
-extern void quit();
-#ifdef DEBUG
-extern void whatsup();
-#endif
-
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
 	char buf[128];
-	int color, curmove, i, ch;
+	int color = BLACK, curmove = 0, i, ch;
 	int input[2];
 	static char *fmt[2] = {
 		"%3d %-6s",
 		"%3d        %-6s"
 	};
+
+	/* revoke privs */
+	setegid(getgid());
+	setgid(getgid());
 
 	prog = strrchr(argv[0], '/');
 	if (prog)
@@ -101,7 +99,7 @@ main(argc, argv)
 	else
 		prog = argv[0];
 
-	while ((ch = getopt(argc, argv, "bcdD:u")) != EOF) {
+	while ((ch = getopt(argc, argv, "bcdD:u")) != -1) {
 		switch (ch) {
 		case 'b':	/* background */
 			interactive = 0;
@@ -306,7 +304,7 @@ again:
 		replay:
 			ask("replay? ");
 			if (getline(buf, sizeof(buf)) &&
-			    buf[0] == 'y' || buf[0] == 'Y')
+			    (buf[0] == 'y' || buf[0] == 'Y'))
 				goto again;
 			if (strcmp(buf, "save") == 0) {
 				FILE *fp;
@@ -325,9 +323,11 @@ again:
 			}
 		}
 	}
-	quit();
+	quit(0);
+	/* NOTREACHED */
 }
 
+int
 readinput(fp)
 	FILE *fp;
 {
@@ -357,16 +357,16 @@ whatsup(signum)
 	struct combostr *cbp;
 
 	if (!interactive)
-		quit();
+		quit(0);
 top:
 	ask("cmd? ");
 	if (!getline(fmtbuf, sizeof(fmtbuf)))
-		quit();
+		quit(0);
 	switch (*fmtbuf) {
 	case '\0':
 		goto top;
 	case 'q':		/* conservative quit */
-		quit();
+		quit(0);
 	case 'd':		/* set debug level */
 		debug = fmtbuf[1] - '0';
 		sprintf(fmtbuf, "Debug set to %d", debug);
@@ -487,6 +487,7 @@ syntax:
 /*
  * Display debug info.
  */
+void
 dlog(str)
 	char *str;
 {
@@ -499,6 +500,7 @@ dlog(str)
 		fprintf(stderr, "%s\n", str);
 }
 
+void
 log(str)
 	char *str;
 {
@@ -511,8 +513,24 @@ log(str)
 		printf("%s\n", str);
 }
 
+/*
+ * Deal with a fatal error.
+ */
 void
-quit()
+qlog(str)
+	char *str;
+{
+	dlog(str);
+	if (interactive)
+		beep();
+	sleep(5);
+	quit(0);
+}
+
+/* ARGSUSED */
+void
+quit(sig)
+	int sig;
 {
 	if (interactive) {
 		bdisp();		/* show final board */
@@ -524,10 +542,11 @@ quit()
 /*
  * Die gracefully.
  */
+void
 panic(str)
 	char *str;
 {
 	fprintf(stderr, "%s: %s\n", prog, str);
 	fputs("resign\n", stdout);
-	quit();
+	quit(0);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: clock.c,v 1.4 1997/03/12 19:16:38 pefo Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -39,7 +39,7 @@
  * from: Utah Hdr: clock.c 1.18 91/01/21
  *
  *	from: @(#)clock.c	8.1 (Berkeley) 6/10/93
- *      $Id: clock.c,v 1.5 1996/06/06 23:07:28 deraadt Exp $
+ *      $Id: clock.c,v 1.4 1997/03/12 19:16:38 pefo Exp $
  */
 
 #include <sys/param.h>
@@ -52,21 +52,35 @@
 #include <arc/arc/clockvar.h>
 #include <arc/arc/arctype.h>
 
+#include <dev/isa/isavar.h>
+#include <arc/isa/isa_machdep.h>
 
 extern int cputype;	/* What kind of cpu we are running on */
+
+int	clock_started = 0;
 
 /* Definition of the driver for autoconfig. */
 static int	clockmatch __P((struct device *, void *, void *));
 static void	clockattach __P((struct device *, struct device *, void *));
 
-struct cfattach clock_ca = {
-	sizeof(struct clock_softc), clockmatch, clockattach
-};
 struct cfdriver clock_cd = {
 	NULL, "clock", DV_DULL, NULL, 0
 };
 
+struct cfattach clock_isa_ca = {
+	sizeof(struct clock_softc), clockmatch, clockattach
+};
+
+struct cfattach clock_pica_ca = {
+	sizeof(struct clock_softc), clockmatch, clockattach
+};
+
+struct cfattach clock_algor_ca = {
+	sizeof(struct clock_softc), clockmatch, clockattach
+};
+
 void	mcclock_attach __P((struct device *, struct device *, void *));
+int	clockintr __P((void *));
 
 #define	SECMIN	((unsigned)60)			/* seconds per minute */
 #define	SECHOUR	((unsigned)(60*SECMIN))		/* seconds per hour */
@@ -92,16 +106,30 @@ clockmatch(parent, cfdata, aux)
 		if (!BUS_MATCHNAME(ca, "dallas_rtc"))
 			return (0);
 
-		if (cf->cf_unit >= 1)
-			return (0);
+		break;
 
+	case DESKSTATION_RPC44:
+	case DESKSTATION_TYNE:
+	case ALGOR_P4032:
 		break;
 
 	default:
 		panic("unknown CPU");
 	}
 
+	if (cf->cf_unit >= 1)
+		return (0);
+
 	return (1);
+}
+
+int
+clockintr(cf)
+	void *cf;
+{
+	if(clock_started)
+		hardclock((struct clockframe *)cf);
+	return(1);
 }
 
 static void
@@ -110,22 +138,27 @@ clockattach(parent, self, aux)
 	struct device *self;
 	void *aux;
 {
+	struct isa_attach_args *ia = aux;
+
+	mcclock_attach(parent, self, aux);
 
 	switch (cputype) {
 
 	case ACER_PICA_61:
-		mcclock_attach(parent, self, aux);
+	case ALGOR_P4032:
+		BUS_INTR_ESTABLISH((struct confargs *)aux,
+			(intr_handler_t)hardclock, self);
+		break;
+
+	case DESKSTATION_RPC44:
+	case DESKSTATION_TYNE:
+		(void)isa_intr_establish(ia->ia_ic,
+				0, 1, 3, clockintr, 0, "clock");
 		break;
 
 	default:
 		panic("clockattach: it didn't get here.  really.");
 	}
-
-
-	/*
-	 * establish the clock interrupt; it's a special case
-	 */
-	BUS_INTR_ESTABLISH((struct confargs *)aux, (intr_handler_t)hardclock, self);
 
 	printf("\n");
 }
@@ -164,13 +197,18 @@ cpu_initclocks()
 	extern int tickadj;
 	struct clock_softc *csc = (struct clock_softc *)clock_cd.cd_devs[0];
 
-	hz = 100;		/* 100 Hz */
-	tick = 1000000 / hz;	/* number of micro-seconds between interrupts */
 
-	/*
-	 * Start the clock.
-	 */
+	/*  Assume 100 Hz */
+	hz = 100;
+
+	/* Start the clock.  */
 	(*csc->sc_init)(csc);
+
+	/* Recalculate theese if clock init changed hz */
+	tick = 1000000 / hz;	/* number of micro-seconds between interrupts */
+	tickadj = 240000 / (60 * hz);           /* can adjust 240ms in 60s */
+
+	clock_started++;
 }
 
 /*
@@ -205,7 +243,7 @@ inittodr(base)
 	struct clock_softc *csc = (struct clock_softc *)clock_cd.cd_devs[0];
 	register int days, yr;
 	long deltat;
-	int badbase, s;
+	int badbase;
 
 	if (base < 5*SECYR) {
 		printf("WARNING: preposterous time in file system");
@@ -274,7 +312,6 @@ resettodr()
 	struct tod_time c;
 	struct clock_softc *csc = (struct clock_softc *)clock_cd.cd_devs[0];
 	register int t, t2;
-	int s;
 
 	if(!csc->sc_initted)
 		return;

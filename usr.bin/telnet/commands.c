@@ -1,3 +1,6 @@
+/*	$OpenBSD: commands.c,v 1.8 1996/12/06 15:21:53 robin Exp $	*/
+/*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
+
 /*
  * Copyright (c) 1988, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,12 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)commands.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: commands.c,v 1.8 1995/01/03 06:24:48 hpeyerl Exp $";
+#if 0
+static char sccsid[] = "@(#)commands.c	8.4 (Berkeley) 5/30/95";
+static char rcsid[] = "$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $";
+#else
+static char rcsid[] = "$OpenBSD: commands.c,v 1.8 1996/12/06 15:21:53 robin Exp $";
+#endif
 #endif /* not lint */
 
 #if	defined(unix)
@@ -59,6 +66,8 @@ static char *rcsid = "$Id: commands.c,v 1.8 1995/01/03 06:24:48 hpeyerl Exp $";
 #include <errno.h>
 
 #include <arpa/telnet.h>
+#include <sys/cdefs.h>
+#define P __P
 
 #include "general.h"
 
@@ -77,9 +86,9 @@ static char *rcsid = "$Id: commands.c,v 1.8 1995/01/03 06:24:48 hpeyerl Exp $";
 #include <netinet/ip.h>
 
 
-#ifndef       MAXHOSTNAMELEN
-#define       MAXHOSTNAMELEN 64
-#endif        MAXHOSTNAMELEN
+#ifndef	MAXHOSTNAMELEN
+#define	MAXHOSTNAMELEN 64
+#endif	MAXHOSTNAMELEN
 
 #if	defined(IPPROTO_IP) && defined(IP_TOS)
 int tos = -1;
@@ -107,6 +116,39 @@ static char line[256];
 static char saveline[256];
 static int margc;
 static char *margv[20];
+
+#if	defined(SKEY)
+#include <sys/wait.h>
+#define PATH_SKEY	"/usr/bin/skey"
+    int
+skey_calc(argc, argv)
+	int argc;
+	char **argv;
+{
+	int status;
+
+	if(argc != 3) {
+		printf("%s sequence challenge\n", argv[0]);
+		return;
+	}
+
+	switch(fork()) {
+	case 0:
+		execv(PATH_SKEY, argv);
+		exit (1);
+	case -1:
+		perror("fork");
+		break;
+	default:
+		(void) wait(&status);
+		if (WIFEXITED(status))
+			return (WEXITSTATUS(status));
+		return (0);
+	}
+}
+#endif
+   	
+
 
     static void
 makeargv()
@@ -235,7 +277,7 @@ control(c)
  *	the "send" command.
  *
  */
- 
+
 struct sendlist {
     char	*name;		/* How user refers to it (case independent) */
     char	*help;		/* Help information (0 ==> no help) */
@@ -413,7 +455,7 @@ send_tncmd(func, cmd, name)
     extern char *telopts[];
     register int val = 0;
 
-    if (isprefix(name, "help") || isprefix(name, "?")) {
+    if (isprefix(name, "?")) {
 	register int col, len;
 
 	printf("Usage: send %s <value|option>\n", cmd);
@@ -627,6 +669,7 @@ struct togglelist {
     int		(*handler)();	/* routine to do actual setting */
     int		*variable;
     char	*actionexplanation;
+    int		needconnect;	/* Need to be connected */
 };
 
 static struct togglelist Togglelist[] = {
@@ -634,105 +677,105 @@ static struct togglelist Togglelist[] = {
 	"flushing of output when sending interrupt characters",
 	    0,
 		&autoflush,
-		    "flush output when sending interrupt characters" },
+		    "flush output when sending interrupt characters", 0 },
     { "autosynch",
 	"automatic sending of interrupt characters in urgent mode",
 	    0,
 		&autosynch,
-		    "send interrupt characters in urgent mode" },
+		    "send interrupt characters in urgent mode", 0 },
 #if	defined(AUTHENTICATION)
     { "autologin",
 	"automatic sending of login and/or authentication info",
 	    0,
 		&autologin,
-		    "send login name and/or authentication information" },
+		    "send login name and/or authentication information", 0 },
     { "authdebug",
 	"Toggle authentication debugging",
 	    auth_togdebug,
 		0,
-		     "print authentication debugging information" },
+		     "print authentication debugging information", 0 },
 #endif
     { "skiprc",
 	"don't read ~/.telnetrc file",
 	    0,
 		&skiprc,
-		    "skip reading of ~/.telnetrc file" },
+		    "skip reading of ~/.telnetrc file", 0 },
     { "binary",
 	"sending and receiving of binary data",
 	    togbinary,
 		0,
-		    0 },
+		    0, 1 },
     { "inbinary",
 	"receiving of binary data",
 	    togrbinary,
 		0,
-		    0 },
+		    0, 1 },
     { "outbinary",
 	"sending of binary data",
 	    togxbinary,
 		0,
-		    0 },
+		    0, 1 },
     { "crlf",
 	"sending carriage returns as telnet <CR><LF>",
 	    togcrlf,
 		&crlf,
-		    0 },
+		    0, 0 },
     { "crmod",
 	"mapping of received carriage returns",
 	    0,
 		&crmod,
-		    "map carriage return on output" },
+		    "map carriage return on output", 0 },
     { "localchars",
 	"local recognition of certain control characters",
 	    lclchars,
 		&localchars,
-		    "recognize certain control characters" },
-    { " ", "", 0 },		/* empty line */
+		    "recognize certain control characters", 0 },
+    { " ", "", 0, 0 },		/* empty line */
 #if	defined(unix) && defined(TN3270)
     { "apitrace",
 	"(debugging) toggle tracing of API transactions",
 	    0,
 		&apitrace,
-		    "trace API transactions" },
+		    "trace API transactions", 0 },
     { "cursesdata",
 	"(debugging) toggle printing of hexadecimal curses data",
 	    0,
 		&cursesdata,
-		    "print hexadecimal representation of curses data" },
+		    "print hexadecimal representation of curses data", 0 },
 #endif	/* defined(unix) && defined(TN3270) */
     { "debug",
 	"debugging",
 	    togdebug,
 		&debug,
-		    "turn on socket level debugging" },
+		    "turn on socket level debugging", 0 },
     { "netdata",
 	"printing of hexadecimal network data (debugging)",
 	    0,
 		&netdata,
-		    "print hexadecimal representation of network traffic" },
+		    "print hexadecimal representation of network traffic", 0 },
     { "prettydump",
 	"output of \"netdata\" to user readable format (debugging)",
 	    0,
 		&prettydump,
-		    "print user readable output for \"netdata\"" },
+		    "print user readable output for \"netdata\"", 0 },
     { "options",
 	"viewing of options processing (debugging)",
 	    0,
 		&showoptions,
-		    "show option processing" },
+		    "show option processing", 0 },
 #if	defined(unix)
     { "termdata",
 	"(debugging) toggle printing of hexadecimal terminal data",
 	    0,
 		&termdata,
-		    "print hexadecimal representation of terminal traffic" },
+		    "print hexadecimal representation of terminal traffic", 0 },
 #endif	/* defined(unix) */
     { "?",
 	0,
-	    togglehelp },
+	    togglehelp, 0 },
     { "help",
 	0,
-	    togglehelp },
+	    togglehelp, 0 },
     { 0 }
 };
 
@@ -800,6 +843,10 @@ toggle(argc, argv)
 	} else if (c == 0) {
 	    fprintf(stderr, "'%s': unknown argument ('toggle ?' for help).\n",
 					name);
+	    return 0;
+	} else if (!connected && c->needconnect) {
+	    printf("?Need to be connected first.\n");
+	    printf("'send ?' for help\n");
 	    return 0;
 	} else {
 	    if (c->variable) {
@@ -945,7 +992,12 @@ setcmd(argc, argv)
 	    fprintf(stderr, "'%s': ambiguous argument ('set ?' for help).\n",
 			argv[1]);
 	    return 0;
+	} else if (!connected && c->needconnect) {
+	    printf("?Need to be connected first.\n");
+	    printf("'send ?' for help\n");
+	    return 0;
 	}
+
 	if (c->variable) {
 	    if ((argc == 2) || (strcmp("on", argv[2]) == 0))
 		*c->variable = 1;
@@ -1333,7 +1385,7 @@ suspend()
 	(void) kill(0, SIGTSTP);
 	/*
 	 * If we didn't get the window size before the SUSPEND, but we
-	 * can get them now (???), then send the NAWS to make sure that
+	 * can get them now (?), then send the NAWS to make sure that
 	 * we are set up for the right window size.
 	 */
 	if (TerminalWindowSize(&newrows, &newcols) && connected &&
@@ -1373,12 +1425,12 @@ shell(argc, argv)
 	     * Fire up the shell in the child.
 	     */
 	    register char *shellp, *shellname;
-	    extern char *rindex();
+	    extern char *strrchr();
 
 	    shellp = getenv("SHELL");
 	    if (shellp == NULL)
 		shellp = "/bin/sh";
-	    if ((shellname = rindex(shellp, '/')) == 0)
+	    if ((shellname = strrchr(shellp, '/')) == 0)
 		shellname = shellp;
 	    else
 		shellname++;
@@ -1514,14 +1566,14 @@ slccmd(argc, argv)
     }
     c = getslc(argv[1]);
     if (c == 0) {
-        fprintf(stderr, "'%s': unknown argument ('slc ?' for help).\n",
+	fprintf(stderr, "'%s': unknown argument ('slc ?' for help).\n",
     				argv[1]);
-        return 0;
+	return 0;
     }
     if (Ambiguous(c)) {
-        fprintf(stderr, "'%s': ambiguous argument ('slc ?' for help).\n",
+	fprintf(stderr, "'%s': ambiguous argument ('slc ?' for help).\n",
     				argv[1]);
-        return 0;
+	return 0;
     }
     (*c->handler)(c->arg);
     slcstate();
@@ -1610,14 +1662,14 @@ env_cmd(argc, argv)
     }
     c = getenvcmd(argv[1]);
     if (c == 0) {
-        fprintf(stderr, "'%s': unknown argument ('environ ?' for help).\n",
+	fprintf(stderr, "'%s': unknown argument ('environ ?' for help).\n",
     				argv[1]);
-        return 0;
+	return 0;
     }
     if (Ambiguous(c)) {
-        fprintf(stderr, "'%s': ambiguous argument ('environ ?' for help).\n",
+	fprintf(stderr, "'%s': ambiguous argument ('environ ?' for help).\n",
     				argv[1]);
-        return 0;
+	return 0;
     }
     if (c->narg + 2 != argc) {
 	fprintf(stderr,
@@ -1660,10 +1712,10 @@ env_init()
 	extern char **environ;
 	register char **epp, *cp;
 	register struct env_lst *ep;
-	extern char *index();
+	extern char *strchr();
 
 	for (epp = environ; *epp; epp++) {
-		if (cp = index(*epp, '=')) {
+		if (cp = strchr(*epp, '=')) {
 			*cp = '\0';
 			ep = env_define((unsigned char *)*epp,
 					(unsigned char *)cp+1);
@@ -1678,9 +1730,9 @@ env_init()
 	 */
 	if ((ep = env_find("DISPLAY"))
 	    && ((*ep->value == ':')
-	        || (strncmp((char *)ep->value, "unix:", 5) == 0))) {
+		|| (strncmp((char *)ep->value, "unix:", 5) == 0))) {
 		char hbuf[256+1];
-		char *cp2 = index((char *)ep->value, ':');
+		char *cp2 = strchr((char *)ep->value, ':');
 
 		gethostname(hbuf, 256);
 		hbuf[256] = '\0';
@@ -1772,7 +1824,7 @@ env_send(var)
 {
 	register struct env_lst *ep;
 
-        if (my_state_is_wont(TELOPT_NEW_ENVIRON)
+	if (my_state_is_wont(TELOPT_NEW_ENVIRON)
 #ifdef	OLD_ENVIRON
 	    && my_state_is_wont(TELOPT_OLD_ENVIRON)
 #endif
@@ -1885,8 +1937,8 @@ struct authlist {
 };
 
 extern int
-	auth_enable P((int)),
-	auth_disable P((int)),
+	auth_enable P((char *)),
+	auth_disable P((char *)),
 	auth_status P((void));
 static int
 	auth_help P((void));
@@ -1925,17 +1977,23 @@ auth_cmd(argc, argv)
 {
     struct authlist *c;
 
+    if (argc < 2) {
+	fprintf(stderr,
+	    "Need an argument to 'auth' command.  'auth ?' for help.\n");
+	return 0;
+    }
+
     c = (struct authlist *)
 		genget(argv[1], (char **) AuthList, sizeof(struct authlist));
     if (c == 0) {
-        fprintf(stderr, "'%s': unknown argument ('auth ?' for help).\n",
+	fprintf(stderr, "'%s': unknown argument ('auth ?' for help).\n",
     				argv[1]);
-        return 0;
+	return 0;
     }
     if (Ambiguous(c)) {
-        fprintf(stderr, "'%s': ambiguous argument ('auth ?' for help).\n",
+	fprintf(stderr, "'%s': ambiguous argument ('auth ?' for help).\n",
     				argv[1]);
-        return 0;
+	return 0;
     }
     if (c->narg + 2 != argc) {
 	fprintf(stderr,
@@ -2069,8 +2127,9 @@ tn(argc, argv)
     int argc;
     char *argv[];
 {
-    register struct hostent *host = 0;
+    register struct hostent *host = 0, *alias = 0;
     struct sockaddr_in sin;
+    struct sockaddr_in ladr;
     struct servent *sp = 0;
     unsigned long temp;
     extern char *inet_ntoa();
@@ -2078,13 +2137,14 @@ tn(argc, argv)
     char *srp = 0, *strrchr();
     unsigned long sourceroute(), srlen;
 #endif
-    char *cmd, *hostp = 0, *portp = 0, *user = 0;
+    char *cmd, *hostp = 0, *portp = 0, *user = 0, *aliasp = 0;
 
     /* clear the socket address prior to use */
-    bzero((char *)&sin, sizeof(sin));
+    memset((char *)&sin, 0, sizeof(sin));
 
     if (connected) {
 	printf("?Already connected to %s\n", hostname);
+	seteuid(getuid());
 	setuid(getuid());
 	return 0;
     }
@@ -2099,13 +2159,21 @@ tn(argc, argv)
     cmd = *argv;
     --argc; ++argv;
     while (argc) {
-	if (isprefix(*argv, "help") || isprefix(*argv, "?"))
+	if (strcmp(*argv, "help") == 0 || isprefix(*argv, "?"))
 	    goto usage;
 	if (strcmp(*argv, "-l") == 0) {
 	    --argc; ++argv;
 	    if (argc == 0)
 		goto usage;
 	    user = *argv++;
+	    --argc;
+	    continue;
+	}
+	if (strcmp(*argv, "-b") == 0) {
+	    --argc; ++argv;
+	    if (argc == 0)
+		goto usage;
+	    aliasp = *argv++;
 	    --argc;
 	    continue;
 	}
@@ -2126,6 +2194,7 @@ tn(argc, argv)
 	}
     usage:
 	printf("usage: %s [-l user] [-a] host-name [port]\n", cmd);
+	seteuid(getuid());
 	setuid(getuid());
 	return 0;
     }
@@ -2141,10 +2210,12 @@ tn(argc, argv)
 	temp = sourceroute(hostp, &srp, &srlen);
 	if (temp == 0) {
 	    herror(srp);
+	    seteuid(getuid());
 	    setuid(getuid());
 	    return 0;
 	} else if (temp == -1) {
 	    printf("Bad source route option: %s\n", hostp);
+	    seteuid(getuid());
 	    setuid(getuid());
 	    return 0;
 	} else {
@@ -2157,24 +2228,29 @@ tn(argc, argv)
 	if (temp != INADDR_NONE) {
 	    sin.sin_addr.s_addr = temp;
 	    sin.sin_family = AF_INET;
-	    (void) strcpy(_hostname, hostp);
+	    host = gethostbyaddr((char *)&temp, sizeof(temp), AF_INET);
+	    if (host)
+	        (void) strcpy(_hostname, host->h_name);
+	    else
+		(void) strcpy(_hostname, hostp);
 	    hostname = _hostname;
 	} else {
 	    host = gethostbyname(hostp);
 	    if (host) {
 		sin.sin_family = host->h_addrtype;
 #if	defined(h_addr)		/* In 4.3, this is a #define */
-		memcpy((caddr_t)&sin.sin_addr,
+		memmove((caddr_t)&sin.sin_addr,
 				host->h_addr_list[0], host->h_length);
 #else	/* defined(h_addr) */
-		memcpy((caddr_t)&sin.sin_addr, host->h_addr, host->h_length);
+		memmove((caddr_t)&sin.sin_addr, host->h_addr, host->h_length);
 #endif	/* defined(h_addr) */
 		strncpy(_hostname, host->h_name, sizeof(_hostname));
 		_hostname[sizeof(_hostname)-1] = '\0';
 		hostname = _hostname;
 	    } else {
 		herror(hostp);
-	        setuid(getuid());
+		seteuid(getuid());
+		setuid(getuid());
 		return 0;
 	    }
 	}
@@ -2194,7 +2270,8 @@ tn(argc, argv)
 		sin.sin_port = sp->s_port;
 	    else {
 		printf("%s: bad port number\n", portp);
-	        setuid(getuid());
+		seteuid(getuid());
+		setuid(getuid());
 		return 0;
 	    }
 	} else {
@@ -2208,7 +2285,8 @@ tn(argc, argv)
 	    sp = getservbyname("telnet", "tcp");
 	    if (sp == 0) {
 		fprintf(stderr, "telnet: tcp/telnet: unknown service\n");
-	        setuid(getuid());
+		seteuid(getuid());
+		setuid(getuid());
 		return 0;
 	    }
 	    sin.sin_port = sp->s_port;
@@ -2218,12 +2296,44 @@ tn(argc, argv)
     printf("Trying %s...\n", inet_ntoa(sin.sin_addr));
     do {
 	net = socket(AF_INET, SOCK_STREAM, 0);
+	seteuid(getuid());
 	setuid(getuid());
 	if (net < 0) {
 	    perror("telnet: socket");
 	    return 0;
 	}
-#if	defined(IP_OPTIONS) && defined(IPPROTO_IP)
+	if (aliasp) {
+	    memset ((caddr_t)&ladr, 0, sizeof (ladr));
+	    temp = inet_addr(aliasp);
+	    if (temp != INADDR_NONE) {
+	        ladr.sin_addr.s_addr = temp;
+	        ladr.sin_family = AF_INET;
+	        alias = gethostbyaddr((char *)&temp, sizeof(temp), AF_INET);
+	    } else {
+	        alias = gethostbyname(aliasp);
+	        if (alias) {
+		    ladr.sin_family = alias->h_addrtype;
+#if	defined(h_addr)		/* In 4.3, this is a #define */
+		    memmove((caddr_t)&ladr.sin_addr,
+			alias->h_addr_list[0], alias->h_length);
+#else	/* defined(h_addr) */
+		    memmove((caddr_t)&ladr.sin_addr, alias->h_addr,
+			alias->h_length);
+#endif	/* defined(h_addr) */
+	        } else {
+		    herror(aliasp);
+		    return 0;
+	        }
+	    }
+            ladr.sin_port = htons(0);
+  
+            if (bind (net, (struct sockaddr *)&ladr, sizeof(ladr)) < 0) {
+                perror(aliasp);; 
+                (void) close(net);   /* dump descriptor */
+		return 0;
+            }
+        }
+ #if	defined(IP_OPTIONS) && defined(IPPROTO_IP)
 	if (srp && setsockopt(net, IPPROTO_IP, IP_OPTIONS, (char *)srp, srlen) < 0)
 		perror("setsockopt (IP_OPTIONS)");
 #endif
@@ -2235,7 +2345,7 @@ tn(argc, argv)
 		tos = tp->t_tos;
 # endif
 	    if (tos < 0)
-		tos = IPTOS_LOWDELAY;
+		tos = IPTOS_LOWDELAY;	/* Low Delay bit */
 	    if (tos
 		&& (setsockopt(net, IPPROTO_IP, IP_TOS,
 		    (char *)&tos, sizeof(int)) < 0)
@@ -2258,7 +2368,7 @@ tn(argc, argv)
 		errno = oerrno;
 		perror((char *)0);
 		host->h_addr_list++;
-		memcpy((caddr_t)&sin.sin_addr, 
+		memmove((caddr_t)&sin.sin_addr,
 			host->h_addr_list[0], host->h_length);
 		(void) NetClose(net);
 		continue;
@@ -2356,6 +2466,9 @@ static Command cmdtab[] = {
 #endif
 	{ "environ",	envhelp,	env_cmd,	0 },
 	{ "?",		helphelp,	help,		0 },
+#if	defined(SKEY)
+	{ "skey",	NULL,		skey_calc,	0 },
+#endif		
 	0
 };
 
@@ -2436,7 +2549,7 @@ command(top, tbuf, cnt)
 		goto getline;
 	    *cp = '\0';
 	    if (rlogin == _POSIX_VDISABLE)
-	        printf("%s\n", line);
+		printf("%s\n", line);
 	} else {
 	getline:
 	    if (rlogin != _POSIX_VDISABLE)
@@ -2541,7 +2654,7 @@ cmdrc(m1, m2)
 
     if (rcname == 0) {
 	rcname = getenv("HOME");
-	if (rcname)
+	if (rcname && (strlen(rcname) + 10) < sizeof(rcbuf))
 	    strcpy(rcbuf, rcname);
 	else
 	    rcbuf[0] = '\0';
@@ -2639,10 +2752,10 @@ cmdrc(m1, m2)
  *	*cpp:	If *cpp was equal to NULL, it will be filled
  *		in with a pointer to our static area that has
  *		the option filled in.  This will be 32bit aligned.
- * 
+ *
  *	*lenp:	This will be filled in with how long the option
  *		pointed to by *cpp is.
- *	
+ *
  */
 	unsigned long
 sourceroute(arg, cpp, lenp)
@@ -2736,16 +2849,16 @@ sourceroute(arg, cpp, lenp)
 			sin_addr.s_addr = tmp;
 		} else if (host = gethostbyname(cp)) {
 #if	defined(h_addr)
-			memcpy((caddr_t)&sin_addr,
+			memmove((caddr_t)&sin_addr,
 				host->h_addr_list[0], host->h_length);
 #else
-			memcpy((caddr_t)&sin_addr, host->h_addr, host->h_length);
+			memmove((caddr_t)&sin_addr, host->h_addr, host->h_length);
 #endif
 		} else {
 			*cpp = cp;
 			return(0);
 		}
-		memcpy(lsrp, (char *)&sin_addr, 4);
+		memmove(lsrp, (char *)&sin_addr, 4);
 		lsrp += 4;
 		if (cp2)
 			cp = cp2;

@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: kdb_edit.c,v 1.2 1996/09/16 18:48:53 millert Exp $	*/
 
 /*-
  * Copyright 1987, 1988 by the Student Information Processing Board
@@ -57,7 +57,7 @@ static des_cblock master_key;
 static des_cblock session_key;
 static des_key_schedule master_key_schedule;
 static char pw_str[255];
-static long master_key_version;
+static int master_key_version;
 
 static void
 Usage(void)
@@ -97,7 +97,7 @@ change_principal(void)
     int     creating = 0;
     int     editpw = 0;
     int     changed = 0;
-    long    temp_long;
+    int    temp_long;
     int     n;
     struct tm 	*tp, edate, *localtime(const time_t *);
     long 	maketime(struct tm *tp, int local);
@@ -130,9 +130,10 @@ change_principal(void)
 	principal_data[0].key_version = 0; /* bumped up later */
     }
     tp = k_localtime(&principal_data[0].exp_date);
-    (void) sprintf(principal_data[0].exp_date_txt, "%4d-%02d-%02d",
-		   tp->tm_year > 1900 ? tp->tm_year : tp->tm_year + 1900,
-		   tp->tm_mon + 1, tp->tm_mday); /* January is 0, not 1 */
+    (void) snprintf(principal_data[0].exp_date_txt,
+		    sizeof(principal_data[0].exp_date_txt), "%4d-%02d-%02d",
+		    tp->tm_year > 1900 ? tp->tm_year : tp->tm_year + 1900,
+		    tp->tm_mon + 1, tp->tm_mday); /* January is 0, not 1 */
     for (i = 0; i < j; i++) {
 	for (;;) {
 	    fprintf(stdout,
@@ -219,7 +220,7 @@ change_principal(void)
 				 &master_key, master_key_schedule,
 				 DES_ENCRYPT);
 		bcopy(new_key, &principal_data[i].key_low, 4);
-		bcopy(((long *) new_key) + 1,
+		bcopy(((int *) new_key) + 1,
 		    &principal_data[i].key_high, 4);
 		bzero(new_key, sizeof(new_key));
 	null_key:
@@ -266,7 +267,7 @@ change_principal(void)
 	    fprintf(stdout, "Max ticket lifetime (*5 minutes) [ %d ] ? ",
 		    principal_data[i].max_life);
 	    while (z_fgets(temp, sizeof temp, stdin) && *temp) {
-		if (sscanf(temp, "%ld", &temp_long) != 1)
+		if (sscanf(temp, "%d", &temp_long) != 1)
 		    goto bad_life;
 		if (temp_long > 255 || (temp_long < 0)) {
 		bad_life:
@@ -286,7 +287,7 @@ change_principal(void)
 	    fprintf(stdout, "Attributes [ %d ] ? ",
 		    principal_data[i].attributes);
 	    while (z_fgets(temp, sizeof temp, stdin) && *temp) {
-		if (sscanf(temp, "%ld", &temp_long) != 1)
+		if (sscanf(temp, "%d", &temp_long) != 1)
 		    goto bad_att;
 		if (temp_long > 65535 || (temp_long < 0)) {
 		bad_att:
@@ -348,17 +349,12 @@ main(int argc, char **argv)
 {
     /* Local Declarations */
 
-    long    n;
+    int		n;
 
     prog[sizeof prog - 1] = '\0';	/* make sure terminated */
     strncpy(prog, argv[0], sizeof prog - 1);	/* salt away invoking
 						 * program */
 
-    /* Assume a long is four bytes */
-    if (sizeof(long) != 4) {
-	fprintf(stdout, "%s: size of long is %d.\n", prog, (int)sizeof(long));
-	exit(-1);
-    }
     /* Assume <=32 signals */
     if (NSIG > 32) {
 	fprintf(stderr, "%s: more than 32 signals defined.\n", prog);

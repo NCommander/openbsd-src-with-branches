@@ -274,9 +274,9 @@ getfsquota(id, path, dqblk)
 		switch (read(fd, dqblk, sizeof(struct dqblk))) {
 		case 0:
 			/*
-                         * Convert implicit 0 quota (EOF)
-                         * into an explicit one (zero'ed dqblk)
-                         */
+			 * Convert implicit 0 quota (EOF)
+			 * into an explicit one (zero'ed dqblk)
+			 */
 			bzero((caddr_t) dqblk, sizeof(struct dqblk));
 			ret = 1;
 			break;
@@ -313,7 +313,7 @@ hasquota(fs, qfnamep)
 	}
 	strcpy(buf, fs->fs_mntops);
 	for (opt = strtok(buf, ","); opt; opt = strtok(NULL, ",")) {
-		if (cp = index(opt, '='))
+		if (cp = strchr(opt, '='))
 			*cp++ = '\0';
 		if (strcmp(opt, usrname) == 0)
 			break;

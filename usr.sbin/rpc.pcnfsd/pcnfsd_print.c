@@ -18,7 +18,7 @@
 **=====================================================================
 */
 #include "pcnfsd.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <pwd.h>
 #include <sys/file.h>
@@ -118,7 +118,7 @@ pr_queue        queue = NULL;
 int suspicious (s)
 char *s;
 {
-	if(strpbrk(pathname, ";|&<>`'#!?*()[]^") != NULL)
+	if(strpbrk(s, ";|&<>`'#!?*()[]^") != NULL)
 		return 1;
 	return 0;
 }
@@ -149,13 +149,21 @@ pr_list curr;
 	return(0);
 }
 
+/*
+ * get pathname of current directory and return to client
+ *
+ * Note: This runs as root on behalf of a client request.
+ * As described in CERT advisory CA-96.08, be careful about
+ * doing a chmod on something that could be a symlink...
+ */
 pirstat pr_init(sys, pr, sp)
 char *sys;
 char *pr;
 char**sp;
 {
-int    dir_mode = 0777;
-int rc;
+	int    dir_mode = 0777;
+	int rc;
+	mode_t oldmask;
 
 	*sp = &pathname[0];
 	pathname[0] = '\0';
@@ -163,28 +171,32 @@ int rc;
 	if(suspicious(sys) || suspicious(pr))
 		return(PI_RES_FAIL);
 
-	/* get pathname of current directory and return to client */
-
+	/*
+	 * Create the client spool directory if needed.
+	 * Just do the mkdir call and ignore EEXIST.
+	 * Mode of client directory should be 777.
+	 */
 	(void)sprintf(pathname,"%s/%s",sp_name, sys);
-	(void)mkdir(sp_name, dir_mode);	/* ignore the return code */
-	(void)chmod(sp_name, dir_mode);
+	oldmask = umask(0);
 	rc = mkdir(pathname, dir_mode);	/* DON'T ignore this return code */
+	umask(oldmask);
+
 	if((rc < 0 && errno != EEXIST) ||
-	   (chmod(pathname, dir_mode) != 0) ||
 	   (stat(pathname, &statbuf) != 0) ||
 	   !(statbuf.st_mode & S_IFDIR)) {
-	   (void)sprintf(tempstr,
-		         "rpc.pcnfsd: unable to set up spool directory %s\n",
+		(void)sprintf(tempstr,
+		    "rpc.pcnfsd: unable to set up spool directory %s\n",
 		 	  pathname);
-            msg_out(tempstr);
+		msg_out(tempstr);
 	    pathname[0] = '\0';	/* null to tell client bad vibes */
 	    return(PI_RES_FAIL);
-	    }
- 	if (!valid_pr(pr)) 
-           {
+	}
+
+	/* OK, we have a spool directory. */
+ 	if (!valid_pr(pr)) {
 	    pathname[0] = '\0';	/* null to tell client bad vibes */
 	    return(PI_RES_NO_SUCH_PRINTER);
-	    } 
+	} 
 	return(PI_RES_OK);
 
 }
@@ -313,7 +325,10 @@ char            scratch[512];
 		   ** filter with the appropriate arguments.
                    **------------------------------------------------------
 		   */
-		   (void)run_ps630(new_pathname, opts);
+		   (void)sprintf(tempstr,
+			"rpc.pcnfsd: ps630 filter disabled for %s\n", pathname);
+			msg_out(tempstr);
+			return(PS_RES_FAIL);
 		   }
 		/*
 		** Try to match to an aliased printer

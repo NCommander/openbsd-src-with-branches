@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: grf_gbreg.h,v 1.4 1994/10/26 07:23:53 cgd Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD: finger.c,v 1.6 1997/01/17 07:12:31 millert Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -35,7 +37,13 @@
  */
 
 /*
- * Mail status reporting added 931007 by Luke Mewburn, <zak@rmit.edu.au>.
+ * Luke Mewburn <lukem@netbsd.org> added the following on 961121:
+ *    - mail status ("No Mail", "Mail read:...", or "New Mail ...,
+ *	Unread since ...".)
+ *    - 4 digit phone extensions (3210 is printed as x3210.)
+ *    - host/office toggling in short format with -h & -o.
+ *    - short day names (`Tue' printed instead of `Jun 21' if the
+ *	login time is < 6 days.
  */
 
 #ifndef lint
@@ -46,7 +54,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)finger.c	5.22 (Berkeley) 6/29/90";*/
-static char rcsid[] = "$Id: finger.c,v 1.4 1994/12/24 16:33:46 cgd Exp $";
+static char rcsid[] = "$OpenBSD: finger.c,v 1.6 1997/01/17 07:12:31 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -57,30 +65,37 @@ static char rcsid[] = "$Id: finger.c,v 1.4 1994/12/24 16:33:46 cgd Exp $";
  *
  * There are currently two output formats; the short format is one line
  * per user and displays login name, tty, login time, real name, idle time,
- * and office location/phone number.  The long format gives the same
- * information (in a more legible format) as well as home directory, shell,
- * mail info, and .plan/.project files.
+ * and either remote host information (default) or office location/phone
+ * number, depending on if -h or -o is used respectively.
+ * The long format gives the same information (in a more legible format) as
+ * well as home directory, shell, mail info, and .plan/.project files.
  */
 
 #include <sys/param.h>
 #include <sys/file.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include "finger.h"
+#include "extern.h"
 
 time_t now;
-int lflag, sflag, mflag, pplan;
+int entries, lflag, sflag, mflag, oflag, pplan, Mflag;
 char tbuf[1024];
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
 	extern int optind;
 	int ch;
-	time_t time();
+	char domain[256];
 
-	while ((ch = getopt(argc, argv, "lmps")) != EOF)
+	oflag = 1;		/* default to old "office" behavior */
+
+	while ((ch = getopt(argc, argv, "lmMpsho")) != -1)
 		switch(ch) {
 		case 'l':
 			lflag = 1;		/* long format */
@@ -88,20 +103,33 @@ main(argc, argv)
 		case 'm':
 			mflag = 1;		/* force exact match of names */
 			break;
+		case 'M':
+			Mflag = 1;		/* allow name matching */
+			break;
 		case 'p':
 			pplan = 1;		/* don't show .plan/.project */
 			break;
 		case 's':
 			sflag = 1;		/* short format */
 			break;
+		case 'h':
+			oflag = 0;		/* remote host info */
+			break;
+		case 'o':
+			oflag = 1;		/* office info */
+			break;
 		case '?':
 		default:
 			(void)fprintf(stderr,
-			    "usage: finger [-lmps] [login ...]\n");
+			    "usage: finger [-lmMpsho] [login ...]\n");
 			exit(1);
 		}
 	argc -= optind;
 	argv += optind;
+
+	/* if a domainname is set, increment mflag. */
+	if ((getdomainname(&domain, sizeof(domain)) == 0) && domain[0])
+		mflag++;
 
 	(void)time(&now);
 	setpassent(1);
@@ -135,9 +163,10 @@ main(argc, argv)
 	exit(0);
 }
 
+void
 loginlist()
 {
-	register PERSON *pn;
+	PERSON *pn;
 	struct passwd *pw;
 	struct utmp user;
 	char name[UT_NAMESIZE + 1];
@@ -146,7 +175,7 @@ loginlist()
 		(void)fprintf(stderr, "finger: can't read %s.\n", _PATH_UTMP);
 		exit(2);
 	}
-	name[UT_NAMESIZE] = NULL;
+	name[UT_NAMESIZE] = '\0';
 	while (fread((char *)&user, sizeof(user), 1, stdin) == 1) {
 		if (!user.ut_name[0])
 			continue;
@@ -162,17 +191,17 @@ loginlist()
 		enter_lastlog(pn);
 }
 
+void
 userlist(argc, argv)
-	register argc;
-	register char **argv;
+	int argc;
+	char **argv;
 {
-	register i;
+	register int i;
 	register PERSON *pn;
 	PERSON *nethead, **nettail;
 	struct utmp user;
 	struct passwd *pw;
 	int dolocal, *used;
-	char *index();
 
 	if (!(used = (int *)calloc((u_int)argc, (u_int)sizeof(int)))) {
 		(void)fprintf(stderr, "finger: out of space.\n");
@@ -181,7 +210,7 @@ userlist(argc, argv)
 
 	/* pull out all network requests */
 	for (i = 0, dolocal = 0, nettail = &nethead; i < argc; i++) {
-		if (!index(argv[i], '@')) {
+		if (!strchr(argv[i], '@')) {
 			dolocal = 1;
 			continue;
 		}
@@ -200,13 +229,13 @@ userlist(argc, argv)
 	 * traverse the list of possible login names and check the login name
 	 * and real name against the name specified by the user.
 	 */
-	if (mflag) {
+	if ((mflag - Mflag) > 0) {
 		for (i = 0; i < argc; i++)
 			if (used[i] >= 0 && (pw = getpwnam(argv[i]))) {
 				enter_person(pw);
 				used[i] = 1;
 			}
-	} else while (pw = getpwent())
+	} else while ((pw = getpwent()) != NULL)
 		for (i = 0; i < argc; i++)
 			if (used[i] >= 0 &&
 			    (!strcasecmp(pw->pw_name, argv[i]) ||

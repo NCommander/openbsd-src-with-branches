@@ -1,3 +1,4 @@
+/*	$OpenBSD: param.h,v 1.5 1997/10/13 10:53:47 pefo Exp $	*/
 /*	$NetBSD: param.h,v 1.1 1996/09/30 16:34:28 ws Exp $	*/
 
 /*-
@@ -41,16 +42,16 @@
  * Machine dependent constants for PowerPC (32-bit only currently)
  */
 #define	MACHINE		"powerpc"
+#define	_MACHINE	powerpc
 #define	MACHINE_ARCH	"powerpc"
-#define	MID_MACHINE	MID_POWERPC
+#define	_MACHINE_ARCH	powerpc
+
+#define	MID_MACHINE	0	/* None but has to be defined */
 
 #define	ALIGNBYTES	(sizeof(double) - 1)
 #define	ALIGN(p)	(((u_int)(p) + ALIGNBYTES) & ~ALIGNBYTES)
 
 #define	PGSHIFT		12
-#if 0
-#define	NBPG		(1 << PGSHIFT)	/* Page size */
-#endif
 #define	NBPG		4096
 #define	PGOFSET		(NBPG - 1)
 
@@ -77,12 +78,13 @@
 #define	MSIZE		128		/* size of an mbuf */
 #define	MCLSHIFT	11		/* convert bytes to m_buf clusters */
 #define	MCLBYTES	(1 << MCLSHIFT)	/* size of a m_buf cluster */
+#define	MCLOFSET	(MCLBYTES - 1)
 
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
 #else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	1024		/* map size, max cluster allocation */
 #endif
 #endif
 

@@ -1,4 +1,4 @@
-#	$Id: list,v 1.2 1994/10/18 07:03:15 glass Exp $
+#	$OpenBSD: list,v 1.2 1995/11/06 21:27:46 deraadt Exp $
 
 # and the upgrade tools
 COPY	dot.profile			.profile

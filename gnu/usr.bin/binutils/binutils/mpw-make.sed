@@ -90,7 +90,13 @@ stamps \\Option-f stamp-under\
 install \\Option-f  all install-only\
 \
 install-only \\Option-f\
-	NewFolderRecursive "{bindir}"\
+	If "`Exists "{prefix}"`" == ""\
+		Echo "{prefix}" does not exist, cannot install anything\
+		Exit 1\
+	End If\
+	If "`Exists "{bindir}"`" == ""\
+		NewFolder "{bindir}"\
+	End If\
 	# Need to copy all the tools\
 	For prog in {PROGS}\
 		Set progname `echo {prog} | sed -e 's/.new//'`\

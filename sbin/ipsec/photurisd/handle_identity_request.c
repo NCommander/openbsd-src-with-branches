@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: handle_identity_request.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $";
+static char rcsid[] = "$Id: handle_identity_request.c,v 1.3 1997/07/23 12:28:48 provos Exp $";
 #endif
 
 #include <stdio.h>
@@ -54,6 +54,7 @@ static char rcsid[] = "$Id: handle_identity_request.c,v 1.3 1997/06/12 17:09:20 
 #include "scheme.h"
 #include "errlog.h"
 #include "schedule.h"
+#include "attributes.h"
 #ifdef IPSEC
 #include "kernel.h"
 #endif
@@ -91,24 +92,13 @@ handle_identity_request(u_char *packet, int size, char *address,
 	tmp = size - IDENTITY_MESSAGE_MIN;
 	if (packet_decrypt(st, IDENTITY_MESSAGE_CHOICE(header), &tmp) == -1) {
 	     log_error(0, "packet_decrypt() in handle_identity_request()");
-	     packet_size = PACKET_BUFFER_SIZE;
-	     photuris_error_message(st, packet_buffer, &packet_size,
-				    header->icookie, header->rcookie,
-				    0, VERIFICATION_FAILURE);
-	     send_packet();
-	     return -1;
+	     goto verification_failed;
 	}
 
 	/* Verify message */
-	if (!(i = get_identity_verification_size(st, IDENTITY_MESSAGE_CHOICE(header)))) {
-	     packet_size = PACKET_BUFFER_SIZE;
-	     photuris_error_message(st, packet_buffer, &packet_size,
-				    header->icookie, header->rcookie,
-				    0, VERIFICATION_FAILURE);
-	     send_packet();
-	     return -1;
-	}
-	
+	if (!(i = get_identity_verification_size(st, IDENTITY_MESSAGE_CHOICE(header))))
+	     goto verification_failed;
+
 	asize = IDENTITY_MESSAGE_MIN;
 
 	p = IDENTITY_MESSAGE_CHOICE(header);
@@ -128,17 +118,18 @@ handle_identity_request(u_char *packet, int size, char *address,
 
 	if (asize != size) {
 	     log_error(0, "wrong packet size in handle_identity_request()");
-	     return -1;
+	     return 0;
+	}
+
+	if (!isattribsubset(st->oSPIoattrib,st->oSPIoattribsize,
+			    attributes, attribsize)) {
+	     log_error(0, "attributes are not a subset in handle_identity_request()");
+	     return 0;
 	}
 
 	if (i > sizeof(signature)) {
 	     log_error(0, "verification too long in handle_identity_request()");
-	     packet_size = PACKET_BUFFER_SIZE;
-	     photuris_error_message(st, packet_buffer, &packet_size,
-				    header->icookie, header->rcookie,
-				    0, VERIFICATION_FAILURE);
-	     send_packet();
-	     return -1;
+	     goto verification_failed;
 	}
 
 	bcopy(p, signature, i);
@@ -149,7 +140,7 @@ handle_identity_request(u_char *packet, int size, char *address,
 	     if (st->uSPIidentver == NULL) {
 		  if((st->uSPIidentver = calloc(i, sizeof(u_int8_t))) == NULL) { 
 		       log_error(1, "calloc() in handle_identity_request()"); 
-		       return -1; 
+		       goto verification_failed;
 		  }
 		  bcopy(signature, st->uSPIidentver, i);
 		  st->uSPIidentversize = i;
@@ -159,7 +150,7 @@ handle_identity_request(u_char *packet, int size, char *address,
 	     if (st->uSPIidentchoice == NULL) {
 		  if((st->uSPIidentchoice = calloc(p[1]+2, sizeof(u_int8_t))) == NULL) {
 		       log_error(1, "calloc() in handle_identity_request()");
-		       return -1;
+		       goto verification_failed;
 		  }
 		  bcopy(p, st->uSPIidentchoice, p[1]+2);
 		  st->uSPIidentchoicesize = p[1]+2;
@@ -169,7 +160,7 @@ handle_identity_request(u_char *packet, int size, char *address,
 	     if (st->uSPIident == NULL) {
 		  if((st->uSPIident = calloc(varpre2octets(p), sizeof(u_int8_t))) == NULL) {
 		       log_error(1,"calloc() in handle_identity_request()"); 
-		       return -1; 
+		       goto verification_failed;
 		  }
 		  bcopy(p, st->uSPIident, varpre2octets(p));
 	     }
@@ -186,7 +177,7 @@ handle_identity_request(u_char *packet, int size, char *address,
 	     if (st->oSPIident == NULL && 
 		 get_secrets(st, (ID_REMOTE|ID_LOCAL)) == -1) {
 		  log_error(0, "get_secrets() in in handle_identity_request()");
-		  return -1;
+		  goto verification_failed;
 	     }
 
 	}
@@ -216,6 +207,7 @@ handle_identity_request(u_char *packet, int size, char *address,
 		  st->uSPIsecret = NULL; st->uSPIsecretsize = 0;
 	     }
 
+	verification_failed:
 	     log_error(0, "verification failed in handle_identity_request()");
 	     packet_size = PACKET_BUFFER_SIZE;
 	     photuris_error_message(st, packet_buffer, &packet_size,
@@ -249,6 +241,10 @@ handle_identity_request(u_char *packet, int size, char *address,
 
 	packet_save(st, packet_buffer, packet_size);
 
+	/* At this point we do not need the exchange values any longer */
+	free(st->texchange); st->texchange = NULL;
+	free(st->exchangevalue); st->exchangevalue = NULL;
+
 	bcopy(header->SPI, st->uSPI, SPI_SIZE);
 	st->ulifetime = (header->lifetime[0] << 16) + 
 	     (header->lifetime[1] << 8) + header->lifetime[2];
@@ -264,7 +260,7 @@ handle_identity_request(u_char *packet, int size, char *address,
 		  return -1;
 	     }
              bcopy(st->icookie, spi->icookie, COOKIE_SIZE); 
-	     spi->owner = 1;
+	     spi->flags |= SPI_OWNER;
              spi->attribsize = st->oSPIattribsize; 
              spi->attributes = calloc(spi->attribsize, sizeof(u_int8_t)); 
              if (spi->attributes == NULL) { 
@@ -275,6 +271,8 @@ handle_identity_request(u_char *packet, int size, char *address,
              bcopy(st->oSPIattrib, spi->attributes, spi->attribsize); 
              spi->lifetime = time(NULL) + st->olifetime; 
 
+	     /* Cludge for getting the right verification field */
+	     state_save_verification(st, st->oSPIidentver, st->oSPIidentversize);
 	     /* Make session keys for Owner */
 	     make_session_keys(st, spi);
 
@@ -306,8 +304,12 @@ handle_identity_request(u_char *packet, int size, char *address,
 	     bcopy(st->uSPIattrib, spi->attributes, spi->attribsize);
 	     spi->lifetime = time(NULL) + st->ulifetime;
 
+	     /* Cludge for getting the right verification field */
+	     state_save_verification(st, st->uSPIidentver, st->uSPIidentversize);
 	     /* Make session keys for User */
 	     make_session_keys(st, spi);
+
+	     spi_set_tunnel(st, spi);
 
 	     spi_insert(spi);
 #ifdef IPSEC
@@ -315,7 +317,7 @@ handle_identity_request(u_char *packet, int size, char *address,
 #endif
 	}
 
-	st->lifetime = exchange_lifetime + time(NULL) + random() % 20;
+	st->lifetime = st->exchange_lifetime + time(NULL) + random() % 20;
 
 	st->retries = 0;
 	st->phase = SPI_UPDATE;

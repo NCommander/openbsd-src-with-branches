@@ -1,3 +1,6 @@
+/*	$OpenBSD: names.c,v 1.7 1997/07/24 17:27:12 millert Exp $	*/
+/*	$NetBSD: names.c,v 1.5 1996/06/08 19:48:32 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)names.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: names.c,v 1.4 1994/11/28 20:03:34 jtc Exp $";
+#if 0
+static char sccsid[] = "@(#)names.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: names.c,v 1.7 1997/07/24 17:27:12 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -58,7 +64,7 @@ nalloc(str, ntype)
 {
 	register struct name *np;
 
-	np = (struct name *) salloc(sizeof *np);
+	np = (struct name *)salloc(sizeof(*np));
 	np->n_flink = NIL;
 	np->n_blink = NIL;
 	np->n_type = ntype;
@@ -95,14 +101,16 @@ extract(line, ntype)
 {
 	register char *cp;
 	register struct name *top, *np, *t;
-	char nbuf[BUFSIZ];
+	char *nbuf;
 
-	if (line == NOSTR || *line == '\0')
-		return NIL;
+	if (line == NULL || *line == '\0')
+		return(NIL);
+	if ((nbuf = (char *)malloc(strlen(line) + 1)) == NULL)
+		panic("Out of memory");
 	top = NIL;
 	np = NIL;
 	cp = line;
-	while ((cp = yankword(cp, nbuf)) != NOSTR) {
+	while ((cp = yankword(cp, nbuf)) != NULL) {
 		t = nalloc(nbuf, ntype);
 		if (top == NIL)
 			top = t;
@@ -111,7 +119,8 @@ extract(line, ntype)
 		t->n_blink = np;
 		np = t;
 	}
-	return top;
+	(void)free(nbuf);
+	return(top);
 }
 
 /*
@@ -129,11 +138,11 @@ detract(np, ntype)
 
 	comma = ntype & GCOMMA;
 	if (np == NIL)
-		return(NOSTR);
+		return(NULL);
 	ntype &= ~GCOMMA;
 	s = 0;
 	if (debug && comma)
-		fprintf(stderr, "detract asked to insert commas\n");
+		fputs("detract asked to insert commas\n", stderr);
 	for (p = np; p != NIL; p = p->n_flink) {
 		if (ntype && (p->n_type & GMASK) != ntype)
 			continue;
@@ -142,7 +151,7 @@ detract(np, ntype)
 			s++;
 	}
 	if (s == 0)
-		return(NOSTR);
+		return(NULL);
 	s += 2;
 	top = salloc(s);
 	cp = top;
@@ -173,7 +182,7 @@ yankword(ap, wbuf)
 	cp = ap;
 	for (;;) {
 		if (*cp == '\0')
-			return NOSTR;
+			return(NULL);
 		if (*cp == '(') {
 			register int nesting = 0;
 
@@ -198,10 +207,10 @@ yankword(ap, wbuf)
 		for (cp2 = wbuf; *cp && (*cp2++ = *cp++) != '>';)
 			;
 	else
-		for (cp2 = wbuf; *cp && !index(" \t,(", *cp); *cp2++ = *cp++)
+		for (cp2 = wbuf; *cp && !strchr(" \t,(", *cp); *cp2++ = *cp++)
 			;
 	*cp2 = '\0';
-	return cp;
+	return(cp);
 }
 
 /*
@@ -220,15 +229,14 @@ outof(names, fo, hp)
 {
 	register int c;
 	register struct name *np, *top;
-	time_t now, time();
-	char *date, *fname, *ctime();
+	time_t now;
+	char *date, *fname;
 	FILE *fout, *fin;
 	int ispipe;
-	extern char *tempEdit;
 
 	top = names;
 	np = names;
-	(void) time(&now);
+	(void)time(&now);
 	date = ctime(&now);
 	while (np != NIL) {
 		if (!isfileaddr(np->n_name) && np->n_name[0] != '|') {
@@ -247,30 +255,36 @@ outof(names, fo, hp)
 		 */
 
 		if (image < 0) {
-			if ((fout = Fopen(tempEdit, "a")) == NULL) {
-				perror(tempEdit);
+			int fd;
+			char tempname[PATHSIZE];
+
+			(void)snprintf(tempname, sizeof(tempname),
+			    "%s/mail.ReXXXXXXXXXX", tmpdir);
+			if ((fd = mkstemp(tempname)) == -1 ||
+			    (fout = Fdopen(fd, "a")) == NULL) {
+				warn(tempname);
 				senderr++;
 				goto cant;
 			}
-			image = open(tempEdit, 2);
-			(void) unlink(tempEdit);
+			image = open(tempname, O_RDWR);
+			(void)rm(tempname);
 			if (image < 0) {
-				perror(tempEdit);
+				warn(tempname);
 				senderr++;
-				(void) Fclose(fout);
+				(void)Fclose(fout);
 				goto cant;
 			}
-			(void) fcntl(image, F_SETFD, 1);
+			(void)fcntl(image, F_SETFD, 1);
 			fprintf(fout, "From %s %s", myname, date);
 			puthead(hp, fout, GTO|GSUBJECT|GCC|GNL);
 			while ((c = getc(fo)) != EOF)
-				(void) putc(c, fout);
+				(void)putc(c, fout);
 			rewind(fo);
-			(void) putc('\n', fout);
-			(void) fflush(fout);
+			(void)putc('\n', fout);
+			(void)fflush(fout);
 			if (ferror(fout))
-				perror(tempEdit);
-			(void) Fclose(fout);
+				warn(tempname);
+			(void)Fclose(fout);
 		}
 
 		/*
@@ -282,6 +296,7 @@ outof(names, fo, hp)
 		if (ispipe) {
 			int pid;
 			char *shell;
+			sigset_t nset;
 
 			/*
 			 * XXX
@@ -290,11 +305,14 @@ outof(names, fo, hp)
 			 * share the same lseek location and trample
 			 * on one another.
 			 */
-			if ((shell = value("SHELL")) == NOSTR)
+			if ((shell = value("SHELL")) == NULL)
 				shell = _PATH_CSHELL;
-			pid = start_command(shell, sigmask(SIGHUP)|
-					sigmask(SIGINT)|sigmask(SIGQUIT),
-				image, -1, "-c", fname, NOSTR);
+			sigemptyset(&nset);
+			sigaddset(&nset, SIGHUP);
+			sigaddset(&nset, SIGINT);
+			sigaddset(&nset, SIGQUIT);
+			pid = start_command(shell, &nset,
+				image, -1, "-c", fname, NULL);
 			if (pid < 0) {
 				senderr++;
 				goto cant;
@@ -303,28 +321,30 @@ outof(names, fo, hp)
 		} else {
 			int f;
 			if ((fout = Fopen(fname, "a")) == NULL) {
-				perror(fname);
+				warn(fname);
 				senderr++;
 				goto cant;
 			}
 			if ((f = dup(image)) < 0) {
-				perror("dup");
+				warn("dup");
 				fin = NULL;
 			} else
 				fin = Fdopen(f, "r");
 			if (fin == NULL) {
-				fprintf(stderr, "Can't reopen image\n");
-				(void) Fclose(fout);
+				fputs("Can't reopen image\n", stderr);
+				(void)Fclose(fout);
 				senderr++;
 				goto cant;
 			}
 			rewind(fin);
 			while ((c = getc(fin)) != EOF)
-				(void) putc(c, fout);
-			if (ferror(fout))
-				senderr++, perror(fname);
-			(void) Fclose(fout);
-			(void) Fclose(fin);
+				(void)putc(c, fout);
+			if (ferror(fout)) {
+				senderr++;
+				warn(fname);
+			}
+			(void)Fclose(fout);
+			(void)Fclose(fin);
 		}
 cant:
 		/*
@@ -336,7 +356,7 @@ cant:
 		np = np->n_flink;
 	}
 	if (image >= 0) {
-		(void) close(image);
+		(void)close(image);
 		image = -1;
 	}
 	return(top);
@@ -354,14 +374,14 @@ isfileaddr(name)
 	register char *cp;
 
 	if (*name == '+')
-		return 1;
+		return(1);
 	for (cp = name; *cp; cp++) {
 		if (*cp == '!' || *cp == '%' || *cp == '@')
-			return 0;
+			return(0);
 		if (*cp == '/')
-			return 1;
+			return(1);
 	}
-	return 0;
+	return(0);
 }
 
 /*
@@ -381,7 +401,7 @@ usermap(names)
 
 	new = NIL;
 	np = names;
-	metoo = (value("metoo") != NOSTR);
+	metoo = (value("metoo") != NULL);
 	while (np != NIL) {
 		if (np->n_name[0] == '\\') {
 			cp = np->n_flink;
@@ -492,13 +512,13 @@ unpack(np)
 	 */
 	extra = 2;
 	extra++;
-	metoo = value("metoo") != NOSTR;
+	metoo = value("metoo") != NULL;
 	if (metoo)
 		extra++;
-	verbose = value("verbose") != NOSTR;
+	verbose = value("verbose") != NULL;
 	if (verbose)
 		extra++;
-	top = (char **) salloc((t + extra) * sizeof *top);
+	top = (char **)salloc((t + extra) * sizeof(*top));
 	ap = top;
 	*ap++ = "send-mail";
 	*ap++ = "-i";
@@ -509,7 +529,7 @@ unpack(np)
 	for (; n != NIL; n = n->n_flink)
 		if ((n->n_type & GDEL) == 0)
 			*ap++ = n->n_name;
-	*ap = NOSTR;
+	*ap = NULL;
 	return(top);
 }
 
@@ -641,7 +661,7 @@ count(np)
 	for (c = 0; np != NIL; np = np->n_flink)
 		if ((np->n_type & GDEL) == 0)
 			c++;
-	return c;
+	return(c);
 }
 
 /*
@@ -670,7 +690,7 @@ delname(np, name)
 			p->n_blink->n_flink = p->n_flink;
 			p->n_flink->n_blink = p->n_blink;
 		}
-	return np;
+	return(np);
 }
 
 /*
@@ -690,6 +710,6 @@ prettyprint(name)
 		fprintf(stderr, "%s(%d) ", np->n_name, np->n_type);
 		np = np->n_flink;
 	}
-	fprintf(stderr, "\n");
+	putc('\n', stderr);
 }
 */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: os-bsd44.h,v 1.5 1996/08/22 00:34:28 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -36,7 +38,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)os-bsd44.h	8.1 (Berkeley) 6/6/93
- *	$Id: os-bsd44.h,v 1.10 1995/03/22 17:15:17 mycroft Exp $
  *
  * 4.4 BSD definitions for Amd (automounter)
  */
@@ -69,7 +70,7 @@
 /*
  * 4.4 doesn't provide NIS, but NetBSD does.
  */
-#ifndef __NetBSD__
+#if !(defined(__NetBSD__) || defined(__OpenBSD__))
 #undef HAS_NIS_MAPS
 #endif
 
@@ -96,7 +97,7 @@
 #undef MTAB_TYPE_UFS
 #define	MTAB_TYPE_UFS	"ufs"
 #define	MTAB_TYPE_MFS	"mfs"
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #undef MTYPE_TYPE
 #define MTYPE_TYPE char *
 #endif
@@ -123,7 +124,7 @@
  * Byte ordering
  */
 #ifndef BYTE_ORDER
-#include <machine/endian.h>
+#include <sys/types.h>
 #endif /* BYTE_ORDER */
 
 #undef ARCH_ENDIAN
@@ -160,6 +161,7 @@ XXX - Probably no hope of running Amd on this machine!
 #define	MNTOPT_INTR	"intr"		/* interrupts allowed */
 #define	MNTOPT_NOCONN	"noconn"	/* accept any responder */
 #define	MNTOPT_RESVPORT	"resvport"	/* use reserved port */
+#define	MNTOPT_NQNFS	"nqnfs"		/* use reserved port */
 
 #define NFSMNT_HOSTNAME	0		/* hostname on 4.4 is not optional */
 
@@ -176,7 +178,9 @@ struct mntent {
  * Type of a file handle
  */
 #undef NFS_FH_TYPE
-#define	NFS_FH_TYPE	nfsv2fh_t *
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+#define NFS_FH_TYPE void *
+#endif
 
 /*
  * How to get a mount list
@@ -196,3 +200,8 @@ struct mntent {
  */
 #undef RE_HDR
 #define RE_HDR <regexp.h>
+
+/*
+ * Need precise length links
+ */
+#define	PRECISE_SYMLINKS

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dmesg.c,v 1.4 1997/01/15 23:41:10 millert Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dmesg.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dmesg.c,v 1.4 1997/01/15 23:41:10 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -85,7 +86,7 @@ main(argc, argv)
 	char buf[5];
 
 	memf = nlistf = NULL;
-	while ((ch = getopt(argc, argv, "M:N:")) != EOF)
+	while ((ch = getopt(argc, argv, "M:N:")) != -1)
 		switch(ch) {
 		case 'M':
 			memf = optarg;
@@ -104,8 +105,10 @@ main(argc, argv)
 	 * Discard setgid privileges if not the running kernel so that bad
 	 * guys can't print interesting stuff from kernel memory.
 	 */
-	if (memf != NULL || nlistf != NULL)
+	if (memf != NULL || nlistf != NULL) {
+		setegid(getgid());
 		setgid(getgid());
+	}
 
 	/* Read in kernel message buffer, do sanity checks. */
 	if ((kd = kvm_open(nlistf, memf, NULL, O_RDONLY, "dmesg")) == NULL)
@@ -126,10 +129,10 @@ main(argc, argv)
 	 * The message buffer is circular; start at the read pointer, and
 	 * go to the write pointer - 1.
 	 */
-	p = cur.msg_bufc + cur.msg_bufx;
-	ep = cur.msg_bufc + cur.msg_bufx - 1;
-	for (newl = skip = 0; p != ep; ++p) {
-		if (p == cur.msg_bufc + MSG_BSIZE)
+	p = ep = cur.msg_bufc + (cur.msg_bufx - 1 + MSG_BSIZE) % MSG_BSIZE;
+	newl = skip = 0;
+	do {
+		if (++p == cur.msg_bufc + MSG_BSIZE)
 			p = cur.msg_bufc;
 		ch = *p;
 		/* Skip "\n<.*>" syslog sequences. */
@@ -150,7 +153,7 @@ main(argc, argv)
 			(void)putchar(buf[0]);
 		else
 			(void)printf("%s", buf);
-	}
+	} while (p != ep);
 	if (!newl)
 		(void)putchar('\n');
 	exit(0);

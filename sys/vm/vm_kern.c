@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_kern.c,v 1.17 1995/04/10 16:53:55 mycroft Exp $	*/
+/*	$OpenBSD: vm_kern.c,v 1.5 1997/09/22 15:17:18 chuck Exp $	*/
+/*	$NetBSD: vm_kern.c,v 1.17.6.1 1996/06/13 17:21:28 cgd Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -70,8 +71,10 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 
 #include <vm/vm.h>
+#include <vm/vm_extern.h>
 #include <vm/vm_page.h>
 #include <vm/vm_pageout.h>
 #include <vm/vm_kern.h>
@@ -266,7 +269,7 @@ kmem_suballoc(parent, min, max, size, pageable)
  * this routine, ensures that we will never block in map or object waits.
  *
  * Note that this still only works in a uni-processor environment and
- * when called at splhigh().
+ * when called at splimp().
  *
  * We don't worry about expanding the map (adding entries) since entries
  * for wired maps are statically allocated.
@@ -297,9 +300,14 @@ kmem_malloc(map, size, canwait)
 	vm_map_lock(map);
 	if (vm_map_findspace(map, 0, size, &addr)) {
 		vm_map_unlock(map);
-		if (canwait)		/* XXX  should wait */
-			panic("kmem_malloc: %s too small",
-			    map == kmem_map ? "kmem_map" : "mb_map");
+		/*
+		 * Should wait, but that makes no sense since we will
+		 * likely never wake up unless action to free resources
+		 * is taken by the calling subsystem.
+		 *
+		 * We return NULL, and if the caller was able to wait
+		 * then they should take corrective action and retry.
+		 */
 		return (0);
 	}
 	offset = addr - vm_map_min(kmem_map);

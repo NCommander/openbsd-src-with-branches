@@ -1,5 +1,3 @@
-/*	$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1983, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)syslog.c	8.4 (Berkeley) 3/18/94";
-#else
-static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: syslog.c,v 1.3 1997/07/09 00:28:24 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -55,7 +49,7 @@ static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp 
 #include <time.h>
 #include <unistd.h>
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -74,7 +68,7 @@ extern char	*__progname;		/* Program name, from crt0. */
  *	print message on log file; output is intended for syslogd(8).
  */
 void
-#if __STDC__
+#ifdef __STDC__
 syslog(int pri, const char *fmt, ...)
 #else
 syslog(pri, fmt, va_alist)
@@ -85,7 +79,7 @@ syslog(pri, fmt, va_alist)
 {
 	va_list ap;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -183,7 +177,7 @@ vsyslog(pri, fmt, ap)
 	 * We wouldn't need this mess if printf handled %m, or if 
 	 * strerror() had been invented before syslog().
 	 */
-	for (t = fmt_cpy, fmt_left = FMT_LEN; ch = *fmt; ++fmt) {
+	for (t = fmt_cpy, fmt_left = FMT_LEN; (ch = *fmt); ++fmt) {
 		if (ch == '%' && fmt[1] == 'm') {
 			++fmt;
 			prlen = snprintf(t, fmt_left, "%s",

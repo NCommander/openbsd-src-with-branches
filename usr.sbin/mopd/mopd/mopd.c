@@ -1,3 +1,5 @@
+/*	$OpenBSD: mopd.c,v 1.2 1996/09/21 19:12:24 maja Exp $ */
+
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
  *
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: mopd.c,v 1.14 1996/03/31 19:20:42 moj Exp $";
+static char rcsid[] = "$OpenBSD: mopd.c,v 1.2 1996/09/21 19:12:24 maja Exp $";
 #endif
 
 /*
@@ -94,7 +96,7 @@ main(argc, argv)
 	if (*Program == '-')
 		Program++;
 
-	while ((c = getopt(argc, argv, "34adfv")) != EOF)
+	while ((c = getopt(argc, argv, "34adfv")) != -1)
 		switch (c) {
 			case '3':
 				Not3Flag++;

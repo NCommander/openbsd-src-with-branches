@@ -1,3 +1,5 @@
+/*	$OpenBSD: mopchk.c,v 1.2 1996/09/21 19:12:18 maja Exp $
+
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
  *
@@ -28,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: mopchk.c,v 1.5 1996/08/16 22:46:55 moj Exp $";
+static char rcsid[] = "$OpenBSD: mopchk.c,v 1.2 1996/09/21 19:12:18 maja Exp $";
 #endif
 
 /*
@@ -87,7 +89,7 @@ main(argc, argv)
 	openlog(Program, LOG_PID | LOG_CONS, LOG_DAEMON);
 
 	opterr = 0;
-	while ((op = getopt(argc, argv, "av")) != EOF) {
+	while ((op = getopt(argc, argv, "av")) != -1) {
 		switch (op) {
 		case 'a':
 			AllFlag++;

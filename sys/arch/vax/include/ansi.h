@@ -1,4 +1,5 @@
-/*	$NetBSD: ansi.h,v 1.3 1994/10/26 08:01:59 cgd Exp $	*/
+/*	$OpenBSD: ansi.h,v 1.5 1997/07/05 21:09:14 millert Exp $	*/
+/*	$NetBSD: ansi.h,v 1.5 1996/11/15 22:39:01 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -49,12 +50,16 @@
  *
  * Thanks, ANSI!
  */
-#define _BSD_CLOCK_T_   unsigned long           /* clock() */
-#define _BSD_PTRDIFF_T_ int                     /* ptr1 - ptr2 */
-#define _BSD_SIZE_T_    unsigned int            /* sizeof() */
-#define _BSD_SSIZE_T_   int                     /* byte count or error */
-#define _BSD_TIME_T_    long                    /* time() */
-#define _BSD_VA_LIST_   char *                  /* va_list */
-#define	_BSD_WCHAR_T_	int                     /* wchar_t */
+#define	_BSD_CLOCK_T_   unsigned long		/* clock() */
+#define	_BSD_PTRDIFF_T_ int			/* ptr1 - ptr2 */
+#define	_BSD_SIZE_T_    unsigned int		/* sizeof() */
+#define	_BSD_SSIZE_T_   int			/* byte count or error */
+#define	_BSD_TIME_T_    int			/* time() */
+#define	_BSD_VA_LIST_   char *			/* va_list */
+#define	_BSD_WCHAR_T_	int			/* wchar_t */
+#define	_BSD_WINT_T_	int			/* wint_t */
+#define	_BSD_CLOCKID_T_	int
+#define	_BSD_TIMER_T_	int
+
 
 #endif  /* _ANSI_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: wwsize.c,v 1.3 1995/09/28 10:35:54 tls Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: wwsize.c,v 1.5 1996/02/08 20:45:11 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwsize.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwsize.c,v 1.3 1995/09/28 10:35:54 tls Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -174,14 +175,14 @@ register struct ww *w;
 	/*
 	 * Put cursor back.
 	 */
-	if (w->ww_hascursor) {
-		w->ww_hascursor = 0;
+	if (ISSET(w->ww_wflags, WWW_HASCURSOR)) {
+		CLR(w->ww_wflags, WWW_HASCURSOR);
 		wwcursor(w, 1);
 	}
 	/*
 	 * Fool with pty.
 	 */
-	if (w->ww_ispty && w->ww_pty >= 0)
+	if (w->ww_type == WWT_PTY && w->ww_pty >= 0)
 		(void) wwsetttysize(w->ww_pty, nrow, ncol);
 	return 0;
 bad:

@@ -1,4 +1,4 @@
-/*	$NetBSD$	*/
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,10 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
+ *	This product includes software developed by Dale Rahn.
+ *    and
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -53,7 +56,7 @@
 
 void	sbicdmaattach	__P((struct device *, struct device *, void *));
 int	sbicdmamatch	__P((struct device *, void *, void *));
-int	sbicdmaprint	__P((void *auxp, char *));
+int	sbicdmaprint	__P((void *auxp, const char *));
 
 void	sbicdma_dmafree	__P((struct sbic_softc *));
 void	sbicdma_dmastop	__P((struct sbic_softc *));
@@ -157,8 +160,8 @@ sbicdmaattach(parent, self, args)
  */
 int
 sbicdmaprint(auxp, pnp)
-	void	*auxp;
-	char	*pnp;
+	void		*auxp;
+	const char	*pnp;
 {
 	if (pnp == NULL)
 		return (UNCONF);

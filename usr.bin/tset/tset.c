@@ -1,3 +1,4 @@
+/*	$OpenBSD: tset.c,v 1.3 1997/01/15 23:43:25 millert Exp $	*/
 /*	$NetBSD: tset.c,v 1.4 1994/12/07 05:08:15 jtc Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tset.c	8.1 (Berkeley) 6/9/93";
 #endif
-static char rcsid[] = "$NetBSD: tset.c,v 1.4 1994/12/07 05:08:15 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tset.c,v 1.3 1997/01/15 23:43:25 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -55,6 +56,7 @@ static char rcsid[] = "$NetBSD: tset.c,v 1.4 1994/12/07 05:08:15 jtc Exp $";
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <err.h>
 #include "extern.h"
 
 void	obsolete __P((char *[]));
@@ -81,7 +83,7 @@ main(argc, argv)
 	char savech, *p, *t, *tcapbuf, *ttype;
 
 	if (tcgetattr(STDERR_FILENO, &mode) < 0)
-		err("standard error: %s", strerror(errno));
+		err(1, "standard error");
 
 	oldmode = mode;
 	ospeed = cfgetospeed(&mode);
@@ -98,7 +100,7 @@ main(argc, argv)
 
 	obsolete(argv);
 	noinit = noset = quiet = Sflag = sflag = showterm = 0;
-	while ((ch = getopt(argc, argv, "-a:d:e:Ii:k:m:np:QSrs")) != EOF) {
+	while ((ch = getopt(argc, argv, "-a:d:e:Ii:k:m:np:QSrs")) != -1) {
 		switch (ch) {
 		case '-':		/* display term only */
 			noset = 1;
@@ -193,7 +195,7 @@ main(argc, argv)
 			savech = *p;
 			*p = '\0';
 			if ((ttype = strdup(t)) == NULL)
-				err("%s", strerror(errno));
+				err(1, "strdup");
 			*p = savech;
 		}
 	}

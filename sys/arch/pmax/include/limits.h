@@ -1,4 +1,4 @@
-/*	$NetBSD: limits.h,v 1.8 1995/03/28 18:19:16 jtc Exp $	*/
+/*	$NetBSD: limits.h,v 1.9 1996/03/19 02:45:48 jonathan Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -35,12 +35,11 @@
  *	@(#)limits.h	8.3 (Berkeley) 1/4/94
  */
 
+#ifndef _MACHINE_LIMITS_H_
+#define _MACHINE_LIMITS_H_
+
 #define	CHAR_BIT	8		/* number of bits in a char */
 #define	MB_LEN_MAX	6		/* Allow 31 bit UTF2 */
-
-#ifdef _KERNEL
-#define	CLK_TCK		60		/* ticks per second */
-#endif
 
 /*
  * According to ANSI (section 2.2.4.2), the values below must be usable by
@@ -98,3 +97,11 @@
 #define FLT_MAX		3.40282347E+38F
 #define FLT_MIN		1.17549435E-38F
 #endif
+
+/* Stuff from the NetBSD mips tree TTTTT */
+#ifdef _KERNEL
+#define CLK_TCK         60              /* ticks per second */
+#endif
+/* End of stuff from the NetBSD mips tree TTTTT */
+
+#endif /* _MACHINE_LIMITS_H_ */

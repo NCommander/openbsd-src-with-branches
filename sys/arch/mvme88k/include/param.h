@@ -38,7 +38,7 @@
  * from: Utah $Hdr: machparam.h 1.11 89/08/14$
  *
  *	@(#)param.h	7.8 (Berkeley) 6/28/91
- *	$Id: param.h,v 1.2 1996/04/02 12:36:29 build Exp build $
+ *	$Id: param.h,v 1.1.1.2 1997/03/03 19:31:22 rahnds Exp $
  */
 #ifndef _MACHINE_PARAM_H_
 #define _MACHINE_PARAM_H_

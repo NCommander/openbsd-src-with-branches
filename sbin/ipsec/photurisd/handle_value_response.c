@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: handle_value_response.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $";
+static char rcsid[] = "$Id: handle_value_response.c,v 1.2 1997/07/24 23:47:14 provos Exp $";
 #endif
 
 #include <stdlib.h>
@@ -64,6 +64,7 @@ handle_value_response(u_char *packet, int size, char *address,
 {
 	struct value_response *header;
 	struct stateob *st;
+	mpz_t test;
 	u_int8_t *p;
 	u_int16_t i, asize;
 
@@ -93,6 +94,14 @@ handle_value_response(u_char *packet, int size, char *address,
 
 	if (asize + i != size)
 	     return -1;  /* attributes dont match udp length */
+
+	/* Now check the exchange value for defects */
+	mpz_init_set_varpre(test, VALUE_RESPONSE_VALUE(header));
+	if (!exchange_check_value(test, st->generator, st->modulus)) {
+	     mpz_clear(test);
+	     return 0;
+	}
+	mpz_clear(test);
 
 	/* Fill the state object */
 	st->uSPIoattrib = calloc(i, sizeof(u_int8_t));
@@ -139,6 +148,10 @@ handle_value_response(u_char *packet, int size, char *address,
 	     return -1;
 	}
 	
+	/* Initialize Privacy Keys from Exchange Values */
+	init_privacy_key(st, 0);   /* User -> Owner direction */
+	init_privacy_key(st, 1);   /* Owner -> User direction */
+
 	packet_size = PACKET_BUFFER_SIZE;
 	if (photuris_identity_request(st, packet_buffer, &packet_size) == -1)
 	     return -1;

@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.3 1996/06/06 23:06:59 deraadt Exp $ */
+/*      $OpenBSD: pmap.h,v 1.2 1996/07/16 07:46:18 pefo Exp $ */
 
 /* 
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -64,8 +64,8 @@
  * dynamically allocated at boot time.
  */
 
-#define pica_trunc_seg(x)	((vm_offset_t)(x) & ~SEGOFSET)
-#define pica_round_seg(x)	(((vm_offset_t)(x) + SEGOFSET) & ~SEGOFSET)
+#define mips_trunc_seg(x)	((vm_offset_t)(x) & ~SEGOFSET)
+#define mips_round_seg(x)	(((vm_offset_t)(x) + SEGOFSET) & ~SEGOFSET)
 #define pmap_segmap(m, v)	((m)->pm_segtab->seg_tab[((v) >> SEGSHIFT)])
 
 #define PMAP_SEGTABSIZE		512
@@ -103,6 +103,17 @@ extern	struct pmap kernel_pmap_store;
 #define pmap_kernel() (&kernel_pmap_store)
 
 #define PMAP_PREFER(pa, va)             pmap_prefer((pa), (va))
+
+void pmap_prefer __P((vm_offset_t, vm_offset_t *));
+
+void pmap_bootstrap __P((vm_offset_t));
+void pmap_zero_page __P((vm_offset_t));
+int pmap_is_page_ro __P(( pmap_t, vm_offset_t, int));
+int pmap_alloc_tlbpid __P((struct proc *));
+int pmap_remove_pv __P((pmap_t, vm_offset_t, vm_offset_t));
+int pmap_is_pa_mapped __P((vm_offset_t));
+vm_offset_t pmap_pa_to_va __P((vm_offset_t));
+void pmap_page_cache __P((vm_offset_t, int));;
 
 #endif	/* _KERNEL */
 

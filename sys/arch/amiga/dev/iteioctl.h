@@ -1,3 +1,4 @@
+/*	$OpenBSD: iteioctl.h,v 1.9 1994/10/26 02:04:02 cgd Exp $	*/
 /*	$NetBSD: iteioctl.h,v 1.9 1994/10/26 02:04:02 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: util.c,v 1.4 1996/12/22 02:57:52 tholo Exp $	*/
 /*	$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.4 1996/12/22 02:57:52 tholo Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,9 +62,6 @@ char *
 colon(cp)
 	char *cp;
 {
-	if (*cp == ':')		/* Leading colon is part of file name. */
-		return (0);
-
 	for (; *cp; ++cp) {
 		if (*cp == ':')
 			return (cp);
@@ -115,15 +113,16 @@ susystem(s, userid)
 	char *s;
 {
 	sig_t istat, qstat;
-	int status, w;
+	int status;
 	pid_t pid;
 
 	pid = vfork();
 	switch (pid) {
 	case -1:
 		return (127);
-	
+
 	case 0:
+		(void)seteuid(userid);
 		(void)setuid(userid);
 		execl(_PATH_BSHELL, "sh", "-c", s, NULL);
 		_exit(127);

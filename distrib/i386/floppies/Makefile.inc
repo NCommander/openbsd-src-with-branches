@@ -1,4 +1,6 @@
-#	$Id: Makefile.inc,v 1.2 1995/04/16 19:11:21 mycroft Exp $
+#	$OpenBSD: Makefile.inc,v 1.8 1997/04/22 10:34:39 deraadt Exp $
 
-# Revision is 1.0A
-REV=	10A
+REV=	22
+FLOPPY3=1
+
+.include <bsd.own.mk>

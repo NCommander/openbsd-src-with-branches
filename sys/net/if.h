@@ -1,4 +1,5 @@
-/*	$NetBSD: if.h,v 1.19 1995/06/19 21:57:28 cgd Exp $	*/
+/*	$OpenBSD: if.h,v 1.6 1996/06/29 18:54:10 deraadt Exp $	*/
+/*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -69,6 +70,7 @@ struct proc;
 struct rtentry;
 struct socket;
 struct ether_header;
+struct arpcom;
 
 /*
  * Structure defining statistics and other data kept regarding a network
@@ -104,14 +106,20 @@ struct	if_data {
  */
 TAILQ_HEAD(ifnet_head, ifnet);		/* the actual queue head */
 
+/*
+ * Length of interface external name, including terminating '\0'.
+ * Note: this is the same size as a generic device's external name.
+ */
+#define	IFNAMSIZ	16
+
 struct ifnet {				/* and the entries */
-	char	*if_name;		/* name, e.g. ``en'' or ``lo'' */
+	void	*if_softc;		/* lower-level data for this if */
 	TAILQ_ENTRY(ifnet) if_list;	/* all struct ifnets are chained */
 	TAILQ_HEAD(, ifaddr) if_addrlist; /* linked list of addresses per if */
+	char	if_xname[IFNAMSIZ];	/* external name (name + unit) */
 	int	if_pcount;		/* number of promiscuous listeners */
 	caddr_t	if_bpf;			/* packet filter structure */
 	u_short	if_index;		/* numeric abbreviation for this if */
-	short	if_unit;		/* sub-unit for lower level driver */
 	short	if_timer;		/* time 'til if_watchdog called */
 	short	if_flags;		/* up/down, broadcast, etc. */
 	struct	if_data if_data;	/* statistics and other data about if */
@@ -124,9 +132,9 @@ struct ifnet {				/* and the entries */
 	int	(*if_ioctl)		/* ioctl routine */
 		__P((struct ifnet *, u_long, caddr_t));
 	int	(*if_reset)		/* XXX bus reset routine */
-		__P((int));
+		__P((struct ifnet *));
 	void	(*if_watchdog)		/* timer routine */
-		__P((int));
+		__P((struct ifnet *));
 	struct	ifqueue {
 		struct	mbuf *ifq_head;
 		struct	mbuf *ifq_tail;
@@ -226,7 +234,8 @@ struct ifaddr {
 	struct	sockaddr *ifa_netmask;	/* used to determine subnet */
 	struct	ifnet *ifa_ifp;		/* back-pointer to interface */
 	TAILQ_ENTRY(ifaddr) ifa_list;	/* list of addresses for interface */
-	void	(*ifa_rtrequest)();	/* check or clean routes (+ or -)'d */
+	void	(*ifa_rtrequest)	/* check or clean routes (+ or -)'d */
+		    __P((int, struct rtentry *, struct sockaddr *));
 	u_short	ifa_flags;		/* mostly rt_flags for cloning */
 	short	ifa_refcnt;		/* count of references */
 	int	ifa_metric;		/* cost of going out this interface */
@@ -268,7 +277,6 @@ struct ifa_msghdr {
  * remainder may be interface specific.
  */
 struct	ifreq {
-#define	IFNAMSIZ	16
 	char	ifr_name[IFNAMSIZ];		/* if name, e.g. "en0" */
 	union {
 		struct	sockaddr ifru_addr;
@@ -289,7 +297,8 @@ struct	ifreq {
 struct ifaliasreq {
 	char	ifra_name[IFNAMSIZ];		/* if name, e.g. "en0" */
 	struct	sockaddr ifra_addr;
-	struct	sockaddr ifra_broadaddr;
+	struct	sockaddr ifra_dstaddr;
+#define	ifra_broadaddr	ifra_dstaddr
 	struct	sockaddr ifra_mask;
 };
 
@@ -321,12 +330,15 @@ struct	ifconf {
 struct ifnet_head ifnet;
 
 void	ether_ifattach __P((struct ifnet *));
+int	ether_ioctl __P((struct ifnet *, struct arpcom *, u_long, caddr_t));
 void	ether_input __P((struct ifnet *, struct ether_header *, struct mbuf *));
 int	ether_output __P((struct ifnet *,
 	   struct mbuf *, struct sockaddr *, struct rtentry *));
 char	*ether_sprintf __P((u_char *));
 
 void	if_attach __P((struct ifnet *));
+void	if_attachtail __P((struct ifnet *));
+void	if_attachhead __P((struct ifnet *));
 void	if_down __P((struct ifnet *));
 void	if_qflush __P((struct ifqueue *));
 void	if_slowtimo __P((void *));

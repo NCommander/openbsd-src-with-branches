@@ -1,4 +1,4 @@
-/*	$NetBSD: machdep.c,v 1.40.2.1 1995/10/17 00:19:08 phil Exp $	*/
+/*	$NetBSD: machdep.c,v 1.43 1996/01/15 05:30:47 phil Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1987, 1990 The Regents of the University of California.
@@ -479,6 +479,13 @@ again:
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
 	configure();
 }
 
@@ -532,7 +539,7 @@ sendsig(catcher, sig, mask, code)
 	 */
 	if ((ps->ps_flags & SAS_ALTSTACK) && !oonstack &&
 	    (ps->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(ps->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(ps->ps_sigstk.ss_sp +
 		    ps->ps_sigstk.ss_size - sizeof(struct sigframe));
 		ps->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else {
@@ -652,6 +659,11 @@ boot(howto)
 	}
 	boothowto = howto;
 	if ((howto&RB_NOSYNC) == 0 && waittime < 0) {
+		extern struct proc proc0;
+		/* defeat against panic on sync   XXX */
+		if (curproc == NULL)
+			curproc = proc0;
+
 		waittime = 0;
 		vfs_shutdown();
 		/*
@@ -673,10 +685,22 @@ boot(howto)
 		/*NOTREACHED*/
 	} else {
 		if (howto & RB_DUMP) {
+#if STACK_DUMP
+		  	/* dump the stack! */
+		        { int *fp = (int *)_get_fp();
+		            int i=0;
+		            while ((u_int)fp < (u_int)UPT_MIN_ADDRESS-40) {
+		              printf ("0x%x (@0x%x), ", fp[1], fp);
+		              fp = (int *)fp[0];
+		              if (++i == 3) { printf ("\n"); i=0; }
+		            }
+		        }
+#endif
 			savectx(&dumppcb, 0);
 			dumppcb.pcb_ptb = _get_ptb0();
 			dumpsys();
 		}
+		doshutdownhooks();
 	}
 
 	printf("rebooting ...");

@@ -1,3 +1,5 @@
+/*	$OpenBSD: local_passwd.c,v 1.7 1997/03/27 00:30:53 weingart Exp $	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -33,20 +35,25 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)local_passwd.c	5.5 (Berkeley) 5/6/91";*/
-static char rcsid[] = "$Id: local_passwd.c,v 1.7 1994/12/24 17:27:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: local_passwd.c,v 1.7 1997/03/27 00:30:53 weingart Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <pwd.h>
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <util.h>
 
-uid_t uid;
+static uid_t uid;
 
-char *progname = "passwd";
-char *tempname;
 
+int
 local_passwd(uname)
 	char *uname;
 {
@@ -59,19 +66,27 @@ local_passwd(uname)
 		extern int use_yp;
 		if (!use_yp)
 #endif
-		(void)fprintf(stderr, "passwd: unknown user %s.\n", uname);
+		warnx("unknown user %s.", uname);
 		return(1);
 	}
 
 	uid = getuid();
 	if (uid && uid != pw->pw_uid) {
-		(void)fprintf(stderr, "passwd: %s\n", strerror(EACCES));
+		warnx("login/uid mismatch, username argument required.");
 		return(1);
 	}
 
 	pw_init();
-	pfd = pw_lock();
-	tfd = pw_tmp();
+	tfd = pw_lock(0);
+	if (tfd < 0) {
+		if (errno == EEXIST)
+			errx(1, "the passwd file is busy.");
+		else
+			err(1, "can't open passwd temp file");
+	}
+	pfd = open(_PATH_MASTERPASSWD, O_RDONLY, 0);
+	if (pfd < 0)
+		pw_error(_PATH_MASTERPASSWD, 1, 1);
 
 	/*
 	 * Get the new password.  Reset passwd change time to zero; when
@@ -82,7 +97,7 @@ local_passwd(uname)
 	pw->pw_change = 0;
 	pw_copy(pfd, tfd, pw);
 
-	if (!pw_mkdb())
+	if (pw_mkdb() < 0)
 		pw_error((char *)NULL, 0, 1);
 	return(0);
 }
@@ -93,7 +108,8 @@ getnewpasswd(pw)
 {
 	register char *p, *t;
 	int tries;
-	char buf[_PASSWORD_LEN+1], salt[9], *crypt(), *getpass();
+	char buf[_PASSWORD_LEN+1], salt[_PASSWORD_LEN], *crypt(), *getpass();
+	int pwd_gensalt __P(( char *, int, struct passwd *, char));
 
 	(void)printf("Changing local password for %s.\n", pw->pw_name);
 
@@ -124,28 +140,9 @@ getnewpasswd(pw)
 			break;
 		(void)printf("Mismatch; try again, EOF to quit.\n");
 	}
-	/* grab a random printable character that isn't a colon */
-	(void)srandom((int)time((time_t *)NULL));
-#ifdef NEWSALT
-	salt[0] = _PASSWORD_EFMT1;
-	to64(&salt[1], (long)(29 * 25), 4);
-	to64(&salt[5], random(), 4);
-#else
-	to64(&salt[0], random(), 2);
-#endif
-	return(crypt(buf, salt));
-}
-
-static unsigned char itoa64[] =		/* 0 ... 63 => ascii - 64 */
-	"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-to64(s, v, n)
-	register char *s;
-	register long v;
-	register int n;
-{
-	while (--n >= 0) {
-		*s++ = itoa64[v&0x3f];
-		v >>= 6;
+	if( !pwd_gensalt( salt, _PASSWORD_LEN, pw, 'l' )) {
+		(void)printf("Couldn't generate salt.\n");
+		pw_error(NULL, 0, 0);
 	}
+	return(crypt(buf, salt));
 }

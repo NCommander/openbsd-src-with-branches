@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: registerd.c,v 1.5 1997/06/29 10:32:20 provos Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -54,11 +54,11 @@ static char sccsid[] = "@(#)registerd.c	8.1 (Berkeley) 6/1/93";
 #include <arpa/inet.h>
 #include <syslog.h>
 #include <unistd.h>
-#include <kerberosIV/des.h>
+#include <des.h>
 #include <kerberosIV/krb.h>
 #include <kerberosIV/krb_db.h>
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include "register_proto.h"
 #include "pathnames.h"
 
@@ -106,32 +106,30 @@ main(argc, argv)
 
 	/* get encryption key */
 
-	(void) sprintf(keyfile, "%s%s%s",
-		SERVER_KEYDIR,
-		CLIENT_KEYFILE,
-		inet_ntoa(sina.sin_addr));
+	(void) snprintf(keyfile, sizeof(keyfile), "%s/%s",
+			SERVER_KEYDIR, inet_ntoa(sina.sin_addr));
 
 	if ((kf = open(keyfile, O_RDONLY)) < 0) {
 		syslog(LOG_ERR,
 		    "error opening Kerberos update keyfile (%s): %m", keyfile);
-		(void) sprintf(msgbuf,
-		    "couldn't open session keyfile for your host");
+		(void) snprintf(msgbuf, sizeof(msgbuf),
+				"couldn't open session keyfile for your host");
 		send_packet(msgbuf, CLEAR);
 		exit(1);
 	}
 
 	if (read(kf, keybuf, KBUFSIZ) != KBUFSIZ) {
 		syslog(LOG_ERR, "wrong read size of Kerberos update keyfile");
-		(void) sprintf(msgbuf,
+		(void) snprintf(msgbuf, sizeof(msgbuf),
 			"couldn't read session key from your host's keyfile");
 		send_packet(msgbuf, CLEAR);
 		exit(1);
 	}
-	(void) sprintf(msgbuf, GOTKEY_MSG);
+	(void) snprintf(msgbuf, sizeof(msgbuf), GOTKEY_MSG);
 	send_packet(msgbuf, CLEAR);
 	kfile = (struct keyfile_data *) keybuf;
 	key_sched(&kfile->kf_key, schedule);
-	des_set_key(&kfile->kf_key, schedule);
+	desrw_set_key(&kfile->kf_key, schedule);
 
 	/* read the command code byte */
 
@@ -160,10 +158,11 @@ main(argc, argv)
 
 	code = (u_char) retval; 
 	if (code != KSUCCESS) {
-		(void) sprintf(msgbuf, "%s", krb_err_txt[code]);
+		(void) snprintf(msgbuf, sizeof(msgbuf), "%s",
+				krb_err_txt[code]);
 		send_packet(msgbuf, RCRYPT);
 	} else {
-		(void) sprintf(msgbuf, "Update complete.");
+		(void) snprintf(msgbuf, sizeof(msgbuf), "Update complete.");
 		send_packet(msgbuf, RCRYPT);
 	}
 	cleanup();

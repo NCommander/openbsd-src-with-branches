@@ -1,3 +1,4 @@
+/*	$OpenBSD: mkdir.c,v 1.5 1997/07/23 14:45:15 kstailey Exp $	*/
 /*	$NetBSD: mkdir.c,v 1.14 1995/06/25 21:59:21 mycroft Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mkdir.c	8.2 (Berkeley) 1/25/94";
 #else
-static char rcsid[] = "$NetBSD: mkdir.c,v 1.14 1995/06/25 21:59:21 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: mkdir.c,v 1.5 1997/07/23 14:45:15 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -92,7 +93,6 @@ main(argc, argv)
 				errx(1, "invalid file mode: %s", optarg);
 			mode = getmode(set, S_IRWXU | S_IRWXG | S_IRWXO);
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -101,7 +101,7 @@ main(argc, argv)
 
 	if (*argv == NULL)
 		usage();
-	
+
 	for (exitval = 0; *argv != NULL; ++argv) {
 		register char *slash;
 
@@ -149,15 +149,15 @@ mkpath(path, mode, dir_mode)
 		*slash = '\0';
 
 		if (stat(path, &sb)) {
-			if (errno != ENOENT || mkdir(path, dir_mode)) {
+			if (errno != ENOENT || mkdir(path, done ? mode : dir_mode)) {
 				warn("%s", path);
 				return (-1);
 			}
 		} else if (!S_ISDIR(sb.st_mode)) {
-		        warnx("%s: %s", path, strerror(ENOTDIR));
+			warnx("%s: %s", path, strerror(ENOTDIR));
 			return (-1);
 		}
-		    
+
 		*slash = '/';
 	}
 

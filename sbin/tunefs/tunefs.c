@@ -1,3 +1,4 @@
+/*	$OpenBSD: tunefs.c,v 1.4 1997/09/04 00:51:56 mickey Exp $	*/
 /*	$NetBSD: tunefs.c,v 1.10 1995/03/18 15:01:31 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tunefs.c	8.2 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$NetBSD: tunefs.c,v 1.10 1995/03/18 15:01:31 cgd Exp $";
+static char rcsid[] = "$OpenBSD: tunefs.c,v 1.4 1997/09/04 00:51:56 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -80,6 +81,9 @@ void bwrite(daddr_t, char *, int);
 int bread(daddr_t, char *, int);
 void getsb(struct fs *, char *);
 void usage __P((void));
+void printfs __P((void));
+
+extern char *__progname;
 
 int
 main(argc, argv)
@@ -121,6 +125,10 @@ again:
 			case 'A':
 				Aflag++;
 				continue;
+
+			case 'p':
+				printfs();
+				exit(0);
 
 			case 'a':
 				name = "maximum contiguous block count";
@@ -230,14 +238,16 @@ again:
 void
 usage()
 {
-
-	fprintf(stderr, "Usage: tunefs tuneup-options special-device\n");
-	fprintf(stderr, "where tuneup-options are:\n");
-	fprintf(stderr, "\t-a maximum contiguous blocks\n");
-	fprintf(stderr, "\t-d rotational delay between contiguous blocks\n");
-	fprintf(stderr, "\t-e maximum blocks per file in a cylinder group\n");
-	fprintf(stderr, "\t-m minimum percentage of free space\n");
-	fprintf(stderr, "\t-o optimization preference (`space' or `time')\n");
+	fprintf(stderr,
+		"Usage: %s tuneup-options special-device\n"
+		"where tuneup-options are:\n"
+		"\t-a maximum contiguous blocks\n"
+		"\t-d rotational delay between contiguous blocks\n"
+		"\t-e maximum blocks per file in a cylinder group\n"
+		"\t-m minimum percentage of free space\n"
+		"\t-o optimization preference (`space' or `time')\n"
+		"\t-p no change - just prints current tuneable settings\n",
+		__progname);
 	exit(2);
 }
 
@@ -255,6 +265,27 @@ getsb(fs, file)
 	if (fs->fs_magic != FS_MAGIC)
 		err(5, "%s: bad magic number", file);
 	dev_bsize = fs->fs_fsize / fsbtodb(fs, 1);
+}
+
+void
+printfs()
+{
+	warnx("maximum contiguous block count: (-a)               %d",
+	      sblock.fs_maxcontig);
+	warnx("rotational delay between contiguous blocks: (-d)   %d ms",
+	      sblock.fs_rotdelay);
+	warnx("maximum blocks per file in a cylinder group: (-e)  %d",
+	      sblock.fs_maxbpg);
+	warnx("minimum percentage of free space: (-m)             %d%%",
+	      sblock.fs_minfree);
+	warnx("optimization preference: (-o)                      %s",
+	      sblock.fs_optim == FS_OPTSPACE ? "space" : "time");
+	if (sblock.fs_minfree >= MINFREE &&
+	    sblock.fs_optim == FS_OPTSPACE)
+		warnx(OPTWARN, "time", ">=", MINFREE);
+	if (sblock.fs_minfree < MINFREE &&
+	    sblock.fs_optim == FS_OPTTIME)
+		warnx(OPTWARN, "space", "<", MINFREE);
 }
 
 void

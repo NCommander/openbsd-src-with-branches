@@ -1,4 +1,5 @@
-/*	$NetBSD: ibcs2_ioctl.c,v 1.9 1995/10/10 02:35:16 mycroft Exp $	*/
+/*	$OpenBSD: ibcs2_ioctl.c,v 1.5 1996/08/10 12:09:21 deraadt Exp $	*/
+/*	$NetBSD: ibcs2_ioctl.c,v 1.12 1996/08/10 09:08:26 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Scott Bartram
@@ -29,7 +30,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/namei.h>
-#include <sys/dir.h>
+#include <sys/dirent.h>
 #include <sys/proc.h>
 #include <sys/file.h>
 #include <sys/stat.h>
@@ -110,6 +111,11 @@ static u_long s2btab[] = {
 	19200,
 	38400,
 };
+
+static void stios2btios __P((struct ibcs2_termios *, struct termios *));
+static void btios2stios __P((struct termios *, struct ibcs2_termios *));
+static void stios2stio __P((struct ibcs2_termios *, struct ibcs2_termio *));
+static void stio2stios __P((struct ibcs2_termio *, struct ibcs2_termios *));
 
 static void
 stios2btios(st, bt)
@@ -336,7 +342,7 @@ ibcs2_sys_ioctl(p, v, retval)
 	} */ *uap = v;
 	struct filedesc *fdp = p->p_fd;
 	struct file *fp;
-	int (*ctl)();
+	int (*ctl) __P((struct file *, u_long, caddr_t, struct proc *));
 	int error;
 
 	if (SCARG(uap, fd) < 0 || SCARG(uap, fd) >= fdp->fd_nfiles ||
@@ -451,12 +457,40 @@ ibcs2_sys_ioctl(p, v, retval)
 		return ENOSYS;
 
 	case IBCS2_TCXONC:
-		DPRINTF(("ibcs2_ioctl(%d): TCXONC ", p->p_pid));
-		return ENOSYS;
+	    {
+		switch ((int)SCARG(uap, data)) {
+		case 0:
+		case 1:
+			DPRINTF(("ibcs2_ioctl(%d): TCXONC ", p->p_pid));
+			return ENOSYS;
+		case 2:
+			return (*ctl)(fp, TIOCSTOP, (caddr_t)0, p);
+		case 3:
+			return (*ctl)(fp, TIOCSTART, (caddr_t)1, p);
+		default:
+			return EINVAL;
+		}
+	    }
 
 	case IBCS2_TCFLSH:
-		DPRINTF(("ibcs2_ioctl(%d): TCFLSH ", p->p_pid));
-		return ENOSYS;
+	    {
+		int arg;
+
+		switch ((int)SCARG(uap, data)) {
+		case 0:
+			arg = FREAD;
+			break;
+		case 1:
+			arg = FWRITE;
+			break;
+		case 2:
+			arg = FREAD | FWRITE;
+			break;
+		default:
+			return EINVAL;
+		}
+		return (*ctl)(fp, TIOCFLUSH, (caddr_t)&arg, p);
+	    }
 
 	case IBCS2_TIOCGWINSZ:
 		SCARG(uap, cmd) = TIOCGWINSZ;
@@ -476,7 +510,7 @@ ibcs2_sys_ioctl(p, v, retval)
 
 		SCARG(&sa, pid) = 0;
 		SCARG(&sa, pgid) = (int)SCARG(uap, data);
-		if (error = sys_setpgid(p, &sa, retval))
+		if ((error = sys_setpgid(p, &sa, retval)) != 0)
 			return error;
 		return 0;
 	    }

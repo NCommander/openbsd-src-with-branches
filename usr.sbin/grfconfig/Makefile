@@ -1,7 +1,10 @@
-#   $NetBSD: Makefile,v 1.1 1995/10/09 03:43:22 chopps Exp $
+#	$OpenBSD$
 
-PROG=	grfconfig
+.if ${MACHINE} == "amiga"
+PROG=		grfconfig
+CFLAGS+=	-I${.CURDIR}/../../sys/arch -D${MACHINE}
+.endif
+
 MAN=	grfconfig.8
-CFLAGS+=-I${.CURDIR}/../../sys/arch -D${MACHINE}
 
 .include <bsd.prog.mk>

@@ -1,4 +1,5 @@
-.\"	$NetBSD: mdoc.samples.7,v 1.4 1994/11/30 19:07:22 jtc Exp $
+.\"	$OpenBSD: mdoc.samples.7,v 1.4 1997/06/11 08:21:05 deraadt Exp $
+.\"	$NetBSD: mdoc.samples.7,v 1.5 1996/04/03 20:17:34 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -134,7 +135,7 @@ outlined as follows:
 .It "Addresses" .
 .It "Arguments" .
 .It "Configuration Declarations (section four only)" .
-.It "Command Modifier .
+.It "Command Modifier" .
 .It "Defined Variables" .
 .It "Errno's (Section two only)" .
 .It "Environment Variables" .
@@ -168,7 +169,7 @@ outlined as follows:
 .It "Single Quotes/Enclosure" .
 .It "Prefix Macro" .
 .El
-.It "Extended  Arguments" .
+.It "Extended Arguments" .
 .It "No\-Op or Normal Text Macro" .
 .It "No Space Macro" .
 .It "Section Cross References" .
@@ -245,7 +246,7 @@ accept nine arguments and,
 in limited cases, arguments may be continued or extended
 on the
 next line (See
-.Sx Extensions ) .
+.Sx Extended Arguments ) .
 A few macros handle quoted arguments (see
 .Sx Passing Space Characters in an Argument
 below).
@@ -441,7 +442,7 @@ the backslash.
 The body of a man page is easily constructed from a basic
 template found in the file:
 .Bd -literal -offset indent
-\&.\e" /usr/share/misc/man.template:
+\&.\e" /usr/share/misc/mdoc.template:
 \&.\e" The following six lines are required.
 \&.Dd Month day, year
 \&.Os OPERATING_SYSTEM [version/release]
@@ -1682,7 +1683,7 @@ The
 .Ql \&.Tn
 macro
 is parsed and is callable by other macros.
-.Ss Extended  Arguments
+.Ss Extended Arguments
 The
 .Li \&.Xo
 and
@@ -2747,10 +2748,10 @@ which can be set to zero in the site dependent style file
 .Pa /usr/src/share/tmac/doc-nroff
 to restore the old style behavior.
 .Sh FILES
-.Bl -tag -width /usr/share/man0/template.doc -compact
+.Bl -tag -width /usr/share/misc/mdoc.template -compact
 .It Pa /usr/share/tmac/tmac.doc
 manual macro package
-.It Pa /usr/share/man0/template.doc
+.It Pa /usr/share/misc/mdoc.template
 template for writing a man page
 .El
 .Sh SEE ALSO

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: syslimits.h,v 1.12 1995/10/05 05:26:19 thorpej Exp $	*/
 
 /*

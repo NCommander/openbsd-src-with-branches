@@ -36,17 +36,19 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)ptrace.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: ptrace.S,v 1.3 1994/12/15 17:25:13 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 LEAF(ptrace)
+	.set	reorder
 	sw	zero, _C_LABEL(errno)
 	li	v0, SYS_ptrace
 	syscall
 	bne	a3, zero, 1f
 	j	ra
 1:
-	j	_C_LABEL(cerror)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
 END(ptrace)

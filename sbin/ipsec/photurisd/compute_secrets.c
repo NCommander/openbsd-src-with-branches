@@ -34,7 +34,7 @@
  */
 
 #ifndef lint 
-static char rcsid[] = "$Id: compute_secrets.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $"; 
+static char rcsid[] = "$Id: compute_secrets.c,v 1.3 1997/07/24 23:47:08 provos Exp $"; 
 #endif 
 
 #define _SECRETS_C_
@@ -51,6 +51,7 @@ static char rcsid[] = "$Id: compute_secrets.c,v 1.3 1997/06/12 17:09:20 provos E
 #include "state.h"
 #include <sha1.h>
 #include "config.h"
+#include "identity.h"
 #include "attributes.h"
 #include "modulus.h"
 #include "secrets.h"
@@ -60,12 +61,8 @@ static char rcsid[] = "$Id: compute_secrets.c,v 1.3 1997/06/12 17:09:20 provos E
 #include "scheme.h"
 #include "errlog.h"
 
-int MD5privacykey(struct stateob *st, u_int8_t *key, u_int8_t *packet,
-		  u_int16_t bytes, u_int16_t order, int owner);
-int SHA1privacykey(struct stateob *st, u_int8_t *key, u_int8_t *packet,
-		   u_int16_t bytes, u_int16_t order, int owner);
-
-
+int privacykey(struct stateob *st, struct idxform *hash, u_int8_t *key, 
+	       u_int8_t *packet, u_int16_t bytes, u_int16_t order, int owner);
 int
 compute_shared_secret(struct stateob *st, 
 		      u_int8_t **shared, u_int16_t *sharedsize)
@@ -147,14 +144,16 @@ make_session_keys(struct stateob *st, struct spiob *spi)
      for (i = 0; i<attribsize; i += attributes[i+1] + 2) {
 	  if (attributes[i] != AT_AH_ATTRIB && 
 	      attributes[i] != AT_ESP_ATTRIB) {
-	       bits = compute_session_key(st, p, attributes+i, spi->owner, 
+	       bits = compute_session_key(st, p, attributes+i, 
+					  spi->flags & SPI_OWNER, 
 					  &count);
 	       if (bits == -1)
 		    return -1;
 #ifdef DEBUG
 	       {    int d = BUFFER_SIZE;
 		    printf("%s session key for AT %d: ", 
-			   spi->owner ? "Owner" : "User", (int)attributes[i]);
+			   spi->flags & SPI_OWNER ? 
+			   "Owner" : "User", (int)attributes[i]);
 		    bin2hex(buffer, &d, p, 
 			    bits & 7 ? (bits >> 3) + 1 : bits >> 3);
 		    printf("0x%s\n", buffer);
@@ -191,14 +190,38 @@ get_session_key_length(u_int8_t *attribute)
  */
 
 int
-compute_session_key(struct stateob *st, u_int8_t *key,
+compute_session_key(struct stateob *st, u_int8_t *key, 
 		    u_int8_t *attribute, int owner,
 		    u_int16_t *order)
 {
-     u_int16_t size, i,n;
-     u_int8_t digest[16];
-     int bits;
-     MD5_CTX ctx;
+     struct idxform *hash;
+     u_int16_t size, i, n;
+     u_int8_t digest[HASH_MAX];
+     int bits, hbits;
+
+     switch(ntohs(*((u_int16_t *)st->scheme))) {
+     case DH_G_2_MD5: 
+     case DH_G_3_MD5:  
+     case DH_G_2_DES_MD5:  
+     case DH_G_5_MD5:  
+     case DH_G_3_DES_MD5:  
+     case DH_G_5_DES_MD5:  
+     case DH_G_VAR_MD5: 
+     case DH_G_VAR_DES_MD5: 
+	  hash = get_hash(HASH_MD5);
+	  break;
+     case DH_G_2_3DES_SHA1:  
+     case DH_G_3_3DES_SHA1:  
+     case DH_G_5_3DES_SHA1:
+     case DH_G_VAR_3DES_SHA1: 
+	  hash = get_hash(HASH_SHA1);
+	  break;
+     default:
+	  log_error(0, "Unkown scheme %d in compute_session_key()",
+		    ntohs(*((u_int16_t *)st->scheme)));
+	  return -1;
+     }	  
+	  
 
      if ((bits = get_session_key_length(attribute)) == -1)
 	  return -1;
@@ -207,39 +230,106 @@ compute_session_key(struct stateob *st, u_int8_t *key,
      if(bits & 0x7)
 	  size++;
 
-     /* XXX - we only do md5 at the moment */
-     *order = (*order^(*order&0x7f)) + (*order & 0x7f ? 128 : 0);
+     hbits = (hash->hashsize << 3);
+     *order += (*order%hbits) ? hbits - (*order%hbits) : 0;
 
      /* As many shared secrets we used already */
-     n = *order >> 7;
+     n = *order/hbits;
+
+     hash->Init(hash->ctx);
+     hash->Update(hash->ctx, st->icookie, COOKIE_SIZE);
+     hash->Update(hash->ctx, st->rcookie, COOKIE_SIZE);
+     if(owner) { /* Session key for Owner SPI */
+	  hash->Update(hash->ctx,st->oSPIsecret,st->oSPIsecretsize);
+	  hash->Update(hash->ctx,st->uSPIsecret,st->uSPIsecretsize);
+     } else {    /* Session key for User SPI */
+	  hash->Update(hash->ctx,st->uSPIsecret,st->uSPIsecretsize); 
+	  hash->Update(hash->ctx,st->oSPIsecret,st->oSPIsecretsize); 
+     }
+
+     /* Message Verification field */
+     hash->Update(hash->ctx, st->verification, st->versize);
+
+     for (i=0; i<n; i++)
+	  hash->Update(hash->ctx, st->shared, st->sharedsize);
 
      do {
-	  MD5Init(&ctx);
-	  MD5Update(&ctx, st->icookie, COOKIE_SIZE);
-	  MD5Update(&ctx, st->rcookie, COOKIE_SIZE);
-	  if(owner) { /* Session key for Owner SPI */
-	       MD5Update(&ctx,st->oSPIsecret,st->oSPIsecretsize);
-	       MD5Update(&ctx,st->uSPIsecret,st->uSPIsecretsize);
-	       MD5Update(&ctx,st->oSPIidentver, st->oSPIidentversize);
-	  } else {    /* Session key for User SPI */
-               MD5Update(&ctx,st->uSPIsecret,st->uSPIsecretsize); 
-               MD5Update(&ctx,st->oSPIsecret,st->oSPIsecretsize); 
-               MD5Update(&ctx,st->uSPIidentver, st->uSPIidentversize); 
-	  }
-	  for(i=0; i<n; i++)
-	       MD5Update(&ctx,st->shared, st->sharedsize);
-	  n++;
-	  MD5Final(digest, &ctx);
-	  bcopy(digest, key, size>16 ? 16 : size);
-	  key += size>16 ? 16 : size;
+	  bcopy(hash->ctx, hash->ctx2, hash->ctxsize);
+	  hash->Update(hash->ctx2,st->shared, st->sharedsize);
+	  bcopy(hash->ctx2, hash->ctx, hash->ctxsize);
+
+	  hash->Final(digest, hash->ctx2);
+	  bcopy(digest, key, size>hash->hashsize ? hash->hashsize : size);
+	  key += size>hash->hashsize ? hash->hashsize : size;
 
 	  /* Unsigned integer arithmetic */
-	  size -= size>16 ? 16 : size;
+	  size -= size>hash->hashsize ? hash->hashsize : size;
      } while(size > 0);  
      
-     *order += (bits^(bits&0x7f)) + (bits & 0x7f ? 128 : 0);
+     *order += bits + (bits%hbits ? hbits - (bits%hbits) : 0 );
 
      return bits;
+}
+
+/*
+ * Initializes the hash contexts for privacy key computation.
+ */
+
+int
+init_privacy_key(struct stateob *st, int owner)
+{
+     void **ctx;
+     struct idxform *hash;
+     u_int8_t *first, *second;
+     u_int16_t firstsize, secondsize;
+
+     if (owner) {
+	  ctx = &st->oSPIprivacyctx;
+	  first = st->exchangevalue;
+	  firstsize = st->exchangesize;
+	  second = st->texchange;
+	  secondsize = st->texchangesize;
+     } else {
+	  ctx = &st->uSPIprivacyctx;
+	  first = st->texchange;
+	  firstsize = st->texchangesize;
+	  second = st->exchangevalue;
+	  secondsize = st->exchangesize;
+     }
+
+     switch(ntohs(*((u_int16_t *)st->scheme))) {  
+     case DH_G_2_MD5:  
+     case DH_G_3_MD5:  
+     case DH_G_5_MD5:  
+     case DH_G_2_DES_MD5:  
+     case DH_G_3_DES_MD5:  
+     case DH_G_5_DES_MD5: 
+	  hash = get_hash(HASH_MD5);
+	  break;
+     case DH_G_2_3DES_SHA1:  
+     case DH_G_3_3DES_SHA1:  
+     case DH_G_5_3DES_SHA1:  
+	  hash = get_hash(HASH_SHA1);
+	  break;
+     default:  
+          log_error(0, "Unknown exchange scheme in init_privacy_key()");
+          return -1;  
+     }  
+
+     if (hash == NULL)
+	  return -1;
+
+     if (*ctx != NULL)
+	  free(*ctx);
+
+     if ((*ctx = calloc(hash->ctxsize, sizeof(char))) == NULL) {
+	  log_error(1, "calloc() in init_privacy_key()");
+	  return -1;
+     }
+     hash->Init(*ctx);
+     hash->Update(*ctx, first, firstsize);
+     hash->Update(*ctx, second, secondsize);
+     return 1;
 }
 
 /*
@@ -251,6 +341,7 @@ compute_privacy_key(struct stateob *st, u_int8_t *key, u_int8_t *packet,
 		    u_int16_t bits, u_int16_t order, int owner)
 {
      u_int16_t size;
+     struct idxform *hash;
 
      size = bits >> 3; 
      if(bits & 0x7) 
@@ -263,108 +354,58 @@ compute_privacy_key(struct stateob *st, u_int8_t *key, u_int8_t *packet,
      case DH_G_2_DES_MD5:  
      case DH_G_3_DES_MD5:  
      case DH_G_5_DES_MD5:  
-	  return MD5privacykey(st, key, packet, size, order, owner);
+	  hash = get_hash(HASH_MD5);
+	  break;
      case DH_G_2_3DES_SHA1:  
      case DH_G_3_3DES_SHA1:  
      case DH_G_5_3DES_SHA1:  
-	  return SHA1privacykey(st, key, packet, size, order, owner);
+	  hash = get_hash(HASH_SHA1);
+	  break;
      default:  
           log_error(0, "Unknown exchange scheme in compute_privacy_key()");
           return -1;  
      }  
-}
 
-
-int
-MD5privacykey(struct stateob *st, u_int8_t *key, u_int8_t *packet, 
-	      u_int16_t bytes, u_int16_t order, int owner) 
-{
-     MD5_CTX ctx, ctxb; 
-     u_int16_t i, n;
-     struct moduli_cache *mod; 
-     u_int8_t digest[16];
-     
-     MD5Init(&ctxb); 
-	  
-     MD5Update(&ctxb, packet, 2*COOKIE_SIZE + 4 + SPI_SIZE); 
-     
-     if((mod=mod_find_modgen(st->modulus,st->generator)) == NULL)
+     if (hash == NULL)
 	  return -1;
 
-     if (owner) {
-	  MD5Update(&ctxb, mod->exchangevalue, mod->exchangesize);   
-	  MD5Update(&ctxb, st->texchange, st->texchangesize);   
-     } else {
-	  MD5Update(&ctxb, st->texchange, st->texchangesize);    
-	  MD5Update(&ctxb, mod->exchangevalue, mod->exchangesize);    
-     }
-     
-     /* As many shared secrets we used already */ 
-     n = order&0x7f ? (order >> 7) + 1 : order >> 7; 
-     for(i=0; i<n; i++) 
-	  MD5Update(&ctxb, st->shared, st->sharedsize); 
-
-     do {
-	  ctx = ctxb;
-	  MD5Update(&ctx, st->shared, st->sharedsize);
-	  ctxb = ctx;
-	  
-	  MD5Final(digest, &ctx);
-          bcopy(digest, key, bytes>16 ? 16 : bytes); 
-	  key += bytes>16 ? 16 : bytes;
- 
-	  /* Unsigned integer arithmetic */ 
-          bytes -= bytes>16 ? 16 : bytes; 
-     } while(bytes>=16);   
-
-     return 0;
+     return privacykey(st, hash, key, packet, size, order, owner);
 }
+
 
 int
-SHA1privacykey(struct stateob *st, u_int8_t *key, u_int8_t *packet,
-	      u_int16_t bytes, u_int16_t order, int owner) 
+privacykey(struct stateob *st, struct idxform *hash, 
+	   u_int8_t *key, u_int8_t *packet, 
+	   u_int16_t bytes, u_int16_t order, int owner) 
 {
-     SHA1_CTX ctx, ctxb; 
-     u_int16_t i, n; 
-     struct moduli_cache *mod; 
-     u_int8_t digest[20];
-
-     SHA1Init(&ctxb); 
+     u_int16_t i, n, hbits;
+     u_int8_t digest[HASH_MAX];
      
-     SHA1Update(&ctxb, packet, 2*COOKIE_SIZE + 4 + SPI_SIZE);  
+     /* SPIprivacyctx contains the hashed exchangevalues */
+     bcopy(owner ? st->oSPIprivacyctx : st->uSPIprivacyctx, 
+	   hash->ctx2, hash->ctxsize);
 	  
-     if((mod=mod_find_modgen(st->modulus,st->generator)) == NULL)
-	       return -1;
-
-     if (owner) {
-	  SHA1Update(&ctxb, mod->exchangevalue, mod->exchangesize);   
-	  SHA1Update(&ctxb, st->texchange, st->texchangesize);   
-     } else {
-	  SHA1Update(&ctxb, st->texchange, st->texchangesize);    
-	  SHA1Update(&ctxb, mod->exchangevalue, mod->exchangesize);    
-     }
-
-
+     hash->Update(hash->ctx2, packet, 2*COOKIE_SIZE + 4 + SPI_SIZE); 
+     
      /* As many shared secrets we used already */ 
-     n = order%160 ? order/160+1 : order/160; 
-     for (i=0; i<n; i++)
-	  SHA1Update(&ctxb, st->shared, st->sharedsize);
+     hbits = (hash->hashsize << 3);
+     n = order/hbits + (order%hbits ? 1 : 0); 
+     for(i=0; i<n; i++) 
+	  hash->Update(hash->ctx2, st->shared, st->sharedsize); 
 
      do {
-
-	  ctx = ctxb;
-	  SHA1Update(&ctx, st->shared, st->sharedsize); 
-	  ctxb = ctx;
-
-	  SHA1Final(digest, &ctx);
-
-          bcopy(digest, key, bytes>20 ? 20 : bytes); 
-
-	  key += bytes>20 ? 20 : bytes;
+	  bcopy(hash->ctx2, hash->ctx, hash->ctxsize);
+	  hash->Update(hash->ctx, st->shared, st->sharedsize);
+	  bcopy(hash->ctx, hash->ctx2, hash->ctxsize);
+	  
+	  hash->Final(digest, hash->ctx);
+          bcopy(digest, key, bytes>hash->hashsize ? hash->hashsize : bytes); 
+	  key += bytes>hash->hashsize ? hash->hashsize : bytes;
  
-          /* Unsigned integer arithmetic */ 
-          bytes -= bytes>20 ? 20 : bytes; 
-     } while(bytes>0);   
+	  /* Unsigned integer arithmetic */ 
+          bytes -= bytes>hash->hashsize ? hash->hashsize : bytes; 
+     } while(bytes > 0);   
 
      return 0;
 }
+

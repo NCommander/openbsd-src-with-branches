@@ -1,4 +1,5 @@
-/*	$NetBSD: in_proto.c,v 1.12 1995/09/30 07:02:00 thorpej Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.5 1996/07/18 05:00:57 dm Exp $	*/
+/*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -66,21 +67,44 @@
  */
 
 #ifdef NSIP
-void	idpip_input(), nsip_ctlinput();
+#include <netns/ns_var.h>
+#include <netns/idp_var.h>
+#endif /* NSIP */
+
+#ifdef IPXIP
+#include <netipx/ipx.h>
+#include <netipx/ipx_ip.h>
 #endif /* NSIP */
 
 #ifdef TPIP
-void	tpip_input(), tpip_ctlinput(), tp_init(), tp_slowtimo(), tp_drain();
-int	tp_ctloutput(), tp_usrreq();
+#include <netiso/tp_param.h>
+#include <netiso/tp_var.h>
 #endif /* TPIP */
 
 #ifdef EON
-void	eoninput(), eonctlinput(), eonprotoinit();
+#include <netiso/eonvar.h>
 #endif /* EON */
 
 #ifdef MROUTING
-void	ipip_input();
+#include <netinet/ip_mroute.h>
 #endif /* MROUTING */
+
+#ifdef IPFILTER
+void	iplinit __P((void));
+#define ip_init	iplinit
+#endif
+
+#ifdef IPSEC
+#include <net/encap.h>
+#include <netinet/ip_ipsp.h>
+
+extern void ah_input __P((struct mbuf *, ...));
+extern void esp_input __P((struct mbuf *, ...));
+extern int ah_output __P((struct mbuf *, struct sockaddr_encap *,
+    struct tdb *, struct mbuf **));
+extern int esp_output __P((struct mbuf *, struct sockaddr_encap *,
+    struct tdb *, struct mbuf **));
+#endif
 
 extern	struct domain inetdomain;
 
@@ -116,7 +140,13 @@ struct protosw inetsw[] = {
   rip_usrreq,	/* XXX */
   0,		0,		0,		0,
 },
-#endif /* MROUTING */
+#elif defined(IPSEC)
+{ SOCK_RAW,     &inetdomain,    IPPROTO_IPIP,   PR_ATOMIC|PR_ADDR,
+  ipe4_input,   rip_output,     0,              rip_ctloutput,
+  rip_usrreq,   /* XXX */
+  0,            0,              0,              0,
+},
+#endif /* MROUTING/IPSEC */
 { SOCK_RAW,	&inetdomain,	IPPROTO_IGMP,	PR_ATOMIC|PR_ADDR,
   igmp_input,	rip_output,	0,		rip_ctloutput,
   rip_usrreq,
@@ -137,6 +167,13 @@ struct protosw inetsw[] = {
   eonprotoinit,	0,		0,		0,
 },
 #endif /* EON */
+#ifdef IPXIP
+{ SOCK_RAW,	&inetdomain,	IPPROTO_IDP,	PR_ATOMIC|PR_ADDR,
+  ipxip_input,	rip_output,	ipxip_ctlinput,	0,
+  rip_usrreq,
+  ipxipprotoinit,0,		0,		0,
+},
+#endif /* NSIP */
 #ifdef NSIP
 { SOCK_RAW,	&inetdomain,	IPPROTO_IDP,	PR_ATOMIC|PR_ADDR,
   idpip_input,	rip_output,	nsip_ctlinput,	0,
@@ -144,6 +181,18 @@ struct protosw inetsw[] = {
   0,		0,		0,		0,
 },
 #endif /* NSIP */
+#ifdef IPSEC
+{ SOCK_RAW,   &inetdomain,    IPPROTO_AH,     PR_ATOMIC|PR_ADDR,
+  ah_input,   rip_output,     0,              rip_ctloutput,
+  rip_usrreq,
+  0,          0,              0,              0,
+},
+{ SOCK_RAW,   &inetdomain,    IPPROTO_ESP,    PR_ATOMIC|PR_ADDR,
+  esp_input,  rip_output,     0,              rip_ctloutput,
+  rip_usrreq,
+  0,          0,              0,              0,
+},
+#endif
 /* raw wildcard */
 { SOCK_RAW,	&inetdomain,	0,		PR_ATOMIC|PR_ADDR,
   rip_input,	rip_output,	0,		rip_ctloutput,

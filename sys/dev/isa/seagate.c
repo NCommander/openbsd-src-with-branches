@@ -75,6 +75,7 @@
 #include <sys/queue.h>
 #include <sys/malloc.h>
 
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <scsi/scsi_all.h>
@@ -260,12 +261,14 @@ static const BiosSignature signatures[] = {
 
 #define	nsignatures	(sizeof(signatures) / sizeof(signatures[0]))
 
+#ifdef notdef
 static const char *bases[] = {
 	(char *) 0xc8000, (char *) 0xca000, (char *) 0xcc000,
 	(char *) 0xce000, (char *) 0xdc000, (char *) 0xde000
 };
 
 #define	nbases		(sizeof(bases) / sizeof(bases[0]))
+#endif
 
 int seaintr __P((void *));
 int sea_scsi_cmd __P((struct scsi_xfer *));
@@ -301,10 +304,14 @@ struct scsi_device sea_dev = {
 
 int	seaprobe __P((struct device *, void *, void *));
 void	seaattach __P((struct device *, struct device *, void *));
-int	seaprint __P((void *, char *));
+int	seaprint __P((void *, const char *));
 
-struct cfdriver seacd = {
-	NULL, "sea", seaprobe, seaattach, DV_DULL, sizeof(struct sea_softc)
+struct cfattach sea_ca = {
+	sizeof(struct sea_softc), seaprobe, seaattach
+};
+
+struct cfdriver sea_cd = {
+	NULL, "sea", DV_DULL
 };
 
 #ifdef SEA_DEBUGQUEUE
@@ -378,8 +385,8 @@ seaprobe(parent, match, aux)
 		    (void *) (((u_char *)sea->maddr) + 0x1e00);
 		break;
 	default:
-#ifdef DIAGNOSTIC
-		printf("%s: board type unknown at address 0x%lx\n",
+#if 0
+		printf("%s: board type unknown at address %p\n",
 		    sea->sc_dev.dv_xname, sea->maddr);
 #endif
 		return 0;
@@ -404,7 +411,7 @@ seaprobe(parent, match, aux)
 int
 seaprint(aux, name)
 	void *aux;
-	char *name;
+	const char *name;
 {
 	if (name != NULL)       
 		printf("%s: scsibus ", name);
@@ -438,8 +445,8 @@ seaattach(parent, self, aux)
 #ifdef NEWCONFIG
 	isa_establish(&sea->sc_id, &sea->sc_deV);
 #endif
-	sea->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_BIO,
-	    seaintr, sea);
+	sea->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_BIO, seaintr, sea, sea->sc_dev.dv_xname);
 
 	/*
 	 * ask the adapter what subunits are present
@@ -625,8 +632,9 @@ sea_get_scb(sea, flags)
 			break;
 		}
 		if (sea->numscbs < SEA_SCB_MAX) {
-			if (scb = (struct sea_scb *) malloc(sizeof(struct sea_scb),
-			    M_TEMP, M_NOWAIT)) {
+			scb = (struct sea_scb *) malloc(sizeof(struct sea_scb),
+			    M_TEMP, M_NOWAIT);
+			if (scb) {
 				bzero(scb, sizeof(struct sea_scb));
 				sea->numscbs++;
 			} else
@@ -685,8 +693,8 @@ sea_main()
 	 */
 loop:
 	done = 1;
-	for (unit = 0; unit < seacd.cd_ndevs; unit++) {
-		sea = seacd.cd_devs[unit];
+	for (unit = 0; unit < sea_cd.cd_ndevs; unit++) {
+		sea = sea_cd.cd_devs[unit];
 		if (!sea)
 			continue;
 		s = splbio();
@@ -880,6 +888,7 @@ sea_reselect(sea)
 		printf("%s: expecting IDENTIFY message, got 0x%x\n",
 		    sea->sc_dev.dv_xname, msg[0]);
 		abort = 1;
+		scb = NULL;
 	} else {
 		lun = msg[0] & 0x07;
 

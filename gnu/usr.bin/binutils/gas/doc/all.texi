@@ -26,7 +26,6 @@
 @c CPUs of interest
 @c ================
 @set A29K
-@set D10V
 @set H8/300
 @set H8/500
 @set SH

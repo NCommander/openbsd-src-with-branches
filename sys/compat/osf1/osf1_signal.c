@@ -1,3 +1,5 @@
+/*	$OpenBSD: osf1_signal.c,v 1.4 1997/09/15 03:01:47 deraadt Exp $	*/
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/namei.h>
@@ -155,8 +157,12 @@ osf1_to_bsd_sigaction(osa, bsa)
 		bsa->sa_flags |= SA_RESETHAND;
 	if ((osa->sa_flags & OSF1_SA_NOCLDSTOP) != 0)
 		bsa->sa_flags |= SA_NOCLDSTOP;
+	if ((osa->sa_flags & OSF1_SA_NOCLDWAIT) != 0)
+		bsa->sa_flags |= SA_NOCLDWAIT;
 	if ((osa->sa_flags & OSF1_SA_NODEFER) != 0)
 		bsa->sa_flags |= SA_NODEFER;
+	if ((osa->sa_flags & OSF1_SA_SIGINFO) != 0)
+		bsa->sa_flags |= SA_SIGINFO;
 }
 
 void
@@ -169,15 +175,19 @@ bsd_to_osf1_sigaction(bsa, osa)
 	bsd_to_osf1_sigset(&bsa->sa_mask, &osa->sa_mask);
 	osa->sa_flags = 0;
 	if ((bsa->sa_flags & SA_ONSTACK) != 0)
-		osa->sa_flags |= SA_ONSTACK;
+		osa->sa_flags |= OSF1_SA_ONSTACK;
 	if ((bsa->sa_flags & SA_RESTART) != 0)
-		osa->sa_flags |= SA_RESTART;
+		osa->sa_flags |= OSF1_SA_RESTART;
 	if ((bsa->sa_flags & SA_NOCLDSTOP) != 0)
-		osa->sa_flags |= SA_NOCLDSTOP;
+		osa->sa_flags |= OSF1_SA_NOCLDSTOP;
+	if ((bsa->sa_flags & SA_NOCLDWAIT) != 0)
+		osa->sa_flags |= OSF1_SA_NOCLDWAIT;
 	if ((bsa->sa_flags & SA_NODEFER) != 0)
-		osa->sa_flags |= SA_NODEFER;
+		osa->sa_flags |= OSF1_SA_NODEFER;
 	if ((bsa->sa_flags & SA_RESETHAND) != 0)
-		osa->sa_flags |= SA_RESETHAND;
+		osa->sa_flags |= OSF1_SA_RESETHAND;
+	if ((bsa->sa_flags & SA_SIGINFO) != 0)
+		osa->sa_flags |= OSF1_SA_SIGINFO;
 }
 
 void
@@ -186,7 +196,7 @@ osf1_to_bsd_sigaltstack(oss, bss)
 	struct sigaltstack *bss;
 {
 
-	bss->ss_base = oss->ss_sp;
+	bss->ss_sp = oss->ss_sp;
 	bss->ss_size = oss->ss_size;
 	bss->ss_flags = 0;
 
@@ -202,7 +212,7 @@ bsd_to_osf1_sigaltstack(bss, oss)
 	struct osf1_sigaltstack *oss;
 {
 
-	oss->ss_sp = bss->ss_base;
+	oss->ss_sp = bss->ss_sp;
 	oss->ss_size = bss->ss_size;
 	oss->ss_flags = 0;
 

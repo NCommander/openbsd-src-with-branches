@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_machdep.c,v 1.23 1995/10/10 04:54:25 mycroft Exp $	*/
+/*	$OpenBSD: linux_machdep.c,v 1.9 1997/01/27 22:47:58 deraadt Exp $	*/
+/*	$NetBSD: linux_machdep.c,v 1.29 1996/05/03 19:42:11 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -57,6 +58,7 @@
 #include <compat/linux/linux_signal.h>
 #include <compat/linux/linux_syscallargs.h>
 #include <compat/linux/linux_util.h>
+#include <compat/linux/linux_ioctl.h>
 
 #include <machine/cpu.h>
 #include <machine/cpufunc.h>
@@ -65,6 +67,7 @@
 #include <machine/segments.h>
 #include <machine/specialreg.h>
 #include <machine/sysarch.h>
+#include <machine/vm86.h>
 #include <machine/linux_machdep.h>
 
 /*
@@ -73,6 +76,14 @@
 #include "vt.h"
 #if NVT > 0
 #include <arch/i386/isa/pcvt/pcvt_ioctl.h>
+#endif
+
+#ifdef USER_LDT
+#include <machine/cpu.h>
+int linux_read_ldt __P((struct proc *, struct linux_sys_modify_ldt_args *,
+    register_t *));
+int linux_write_ldt __P((struct proc *, struct linux_sys_modify_ldt_args *,
+    register_t *));
 #endif
 
 /*
@@ -93,10 +104,12 @@
  */
 
 void
-linux_sendsig(catcher, sig, mask, code)
+linux_sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	register struct proc *p = curproc;
 	register struct trapframe *tf;
@@ -113,7 +126,7 @@ linux_sendsig(catcher, sig, mask, code)
 	 */
 	if ((psp->ps_flags & SAS_ALTSTACK) && !oonstack &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct linux_sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct linux_sigframe *)(psp->ps_sigstk.ss_sp +
 		    psp->ps_sigstk.ss_size - sizeof(struct linux_sigframe));
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else {
@@ -133,6 +146,7 @@ linux_sendsig(catcher, sig, mask, code)
 		frame.sf_sc.sc_fs = tf->tf_vm86_fs;
 		frame.sf_sc.sc_es = tf->tf_vm86_es;
 		frame.sf_sc.sc_ds = tf->tf_vm86_ds;
+		frame.sf_sc.sc_eflags = get_vflags(p);
 	} else
 #endif
 	{
@@ -140,20 +154,20 @@ linux_sendsig(catcher, sig, mask, code)
 		__asm("movl %%fs,%w0" : "=r" (frame.sf_sc.sc_fs));
 		frame.sf_sc.sc_es = tf->tf_es;
 		frame.sf_sc.sc_ds = tf->tf_ds;
+		frame.sf_sc.sc_eflags = tf->tf_eflags;
 	}
-	frame.sf_sc.sc_edi    = tf->tf_edi;
-	frame.sf_sc.sc_esi    = tf->tf_esi;
-	frame.sf_sc.sc_ebp    = tf->tf_ebp;
-	frame.sf_sc.sc_ebx    = tf->tf_ebx;
-	frame.sf_sc.sc_edx    = tf->tf_edx;
-	frame.sf_sc.sc_ecx    = tf->tf_ecx;
-	frame.sf_sc.sc_eax    = tf->tf_eax;
-	frame.sf_sc.sc_eip    = tf->tf_eip;
-	frame.sf_sc.sc_cs     = tf->tf_cs;
-	frame.sf_sc.sc_eflags = tf->tf_eflags;
+	frame.sf_sc.sc_edi = tf->tf_edi;
+	frame.sf_sc.sc_esi = tf->tf_esi;
+	frame.sf_sc.sc_ebp = tf->tf_ebp;
+	frame.sf_sc.sc_ebx = tf->tf_ebx;
+	frame.sf_sc.sc_edx = tf->tf_edx;
+	frame.sf_sc.sc_ecx = tf->tf_ecx;
+	frame.sf_sc.sc_eax = tf->tf_eax;
+	frame.sf_sc.sc_eip = tf->tf_eip;
+	frame.sf_sc.sc_cs = tf->tf_cs;
 	frame.sf_sc.sc_esp_at_signal = tf->tf_esp;
-	frame.sf_sc.sc_ss     = tf->tf_ss;
-	frame.sf_sc.sc_err    = tf->tf_err;
+	frame.sf_sc.sc_ss = tf->tf_ss;
+	frame.sf_sc.sc_err = tf->tf_err;
 	frame.sf_sc.sc_trapno = tf->tf_trapno;
 
 	if (copyout(&frame, fp, sizeof(frame)) != 0) {
@@ -168,15 +182,13 @@ linux_sendsig(catcher, sig, mask, code)
 	/*
 	 * Build context to run handler in.
 	 */
-	tf->tf_esp = (int)fp;
+	tf->tf_es = GSEL(GUDATA_SEL, SEL_UPL);
+	tf->tf_ds = GSEL(GUDATA_SEL, SEL_UPL);
 	tf->tf_eip = (int)(((char *)PS_STRINGS) -
 	     (linux_esigcode - linux_sigcode));
-#ifdef VM86
-	tf->tf_eflags &= ~PSL_VM;
-#endif
 	tf->tf_cs = GSEL(GUCODE_SEL, SEL_UPL);
-	tf->tf_ds = GSEL(GUDATA_SEL, SEL_UPL);
-	tf->tf_es = GSEL(GUDATA_SEL, SEL_UPL);
+	tf->tf_eflags &= ~(PSL_T|PSL_VM|PSL_AC);
+	tf->tf_esp = (int)fp;
 	tf->tf_ss = GSEL(GUDATA_SEL, SEL_UPL);
 }
 
@@ -214,16 +226,6 @@ linux_sys_sigreturn(p, v, retval)
 		return (EFAULT);
 
 	/*
-	 * Check for security violations.
-	 */
-	if (((context.sc_eflags ^ tf->tf_eflags) & PSL_USERSTATIC) != 0 ||
-	    !USERMODE(context.sc_cs, context.sc_eflags))
-		return (EINVAL);
-
-	p->p_sigacts->ps_sigstk.ss_flags &= ~SS_ONSTACK;
-	p->p_sigmask = context.sc_mask & ~sigcantmask;
-
-	/*
 	 * Restore signal context.
 	 */
 #ifdef VM86
@@ -232,25 +234,39 @@ linux_sys_sigreturn(p, v, retval)
 		tf->tf_vm86_fs = context.sc_fs;
 		tf->tf_vm86_es = context.sc_es;
 		tf->tf_vm86_ds = context.sc_ds;
+		set_vflags(p, context.sc_eflags);
 	} else
 #endif
 	{
+		/*
+		 * Check for security violations.  If we're returning to
+		 * protected mode, the CPU will validate the segment registers
+		 * automatically and generate a trap on violations.  We handle
+		 * the trap, rather than doing all of the checking here.
+		 */
+		if (((context.sc_eflags ^ tf->tf_eflags) & PSL_USERSTATIC) != 0 ||
+		    !USERMODE(context.sc_cs, context.sc_eflags))
+			return (EINVAL);
+
 		/* %fs and %gs were restored by the trampoline. */
 		tf->tf_es = context.sc_es;
 		tf->tf_ds = context.sc_ds;
+		tf->tf_eflags = context.sc_eflags;
 	}
-	tf->tf_edi    = context.sc_edi;
-	tf->tf_esi    = context.sc_esi;
-	tf->tf_ebp    = context.sc_ebp;
-	tf->tf_ebx    = context.sc_ebx;
-	tf->tf_edx    = context.sc_edx;
-	tf->tf_ecx    = context.sc_ecx;
-	tf->tf_eax    = context.sc_eax;
-	tf->tf_eip    = context.sc_eip;
-	tf->tf_cs     = context.sc_cs;
-	tf->tf_eflags = context.sc_eflags;
-	tf->tf_esp    = context.sc_esp_at_signal;
-	tf->tf_ss     = context.sc_ss;
+	tf->tf_edi = context.sc_edi;
+	tf->tf_esi = context.sc_esi;
+	tf->tf_ebp = context.sc_ebp;
+	tf->tf_ebx = context.sc_ebx;
+	tf->tf_edx = context.sc_edx;
+	tf->tf_ecx = context.sc_ecx;
+	tf->tf_eax = context.sc_eax;
+	tf->tf_eip = context.sc_eip;
+	tf->tf_cs = context.sc_cs;
+	tf->tf_esp = context.sc_esp_at_signal;
+	tf->tf_ss = context.sc_ss;
+
+	p->p_sigacts->ps_sigstk.ss_flags &= ~SS_ONSTACK;
+	p->p_sigmask = context.sc_mask & ~sigcantmask;
 
 	return (EJUSTRETURN);
 }
@@ -280,10 +296,10 @@ linux_read_ldt(p, uap, retval)
 
 	parms = stackgap_alloc(&sg, sizeof(gl));
 
-	if (error = copyout(&gl, parms, sizeof(gl)))
+	if ((error = copyout(&gl, parms, sizeof(gl))) != 0)
 		return (error);
 
-	if (error = i386_get_ldt(p, parms, retval))
+	if ((error = i386_get_ldt(p, parms, retval)) != 0)
 		return (error);
 
 	*retval *= sizeof(union descriptor);
@@ -320,7 +336,7 @@ linux_write_ldt(p, uap, retval)
 
 	if (SCARG(uap, bytecount) != sizeof(ldt_info))
 		return (EINVAL);
-	if (error = copyin(SCARG(uap, ptr), &ldt_info, sizeof(ldt_info)))
+	if ((error = copyin(SCARG(uap, ptr), &ldt_info, sizeof(ldt_info))) != 0)
 		return error;
 	if (ldt_info.contents == 3)
 		return (EINVAL);
@@ -349,12 +365,12 @@ linux_write_ldt(p, uap, retval)
 
 	parms = stackgap_alloc(&sg, sizeof(sl));
 
-	if (error = copyout(&sd, sl.desc, sizeof(sd)))
+	if ((error = copyout(&sd, sl.desc, sizeof(sd))) != 0)
 		return (error);
-	if (error = copyout(&sl, parms, sizeof(sl)))
+	if ((error = copyout(&sl, parms, sizeof(sl))) != 0)
 		return (error);
 
-	if (error = i386_set_ldt(p, parms, retval))
+	if ((error = i386_set_ldt(p, parms, retval)) != 0)
 		return (error);
 
 	*retval = 0;
@@ -419,15 +435,12 @@ linux_machdepioctl(p, v, retval)
 		syscallarg(u_long) com;
 		syscallarg(caddr_t) data;
 	} */ *uap = v;
-	struct sys_ioctl_args bia, tmparg;
+	struct sys_ioctl_args bia;
 	u_long com;
 #if NVT > 0
-	int error, mode;
+	int error;
 	struct vt_mode lvt;
 	caddr_t bvtp, sg;
-	u_int fd;
-	struct file *fp;
-	struct filedesc *fdp;
 #endif
 
 	SCARG(&bia, fd) = SCARG(uap, fd);
@@ -502,6 +515,7 @@ linux_machdepioctl(p, v, retval)
 		break;
 #endif
 	default:
+		printf("linux_machdepioctl: invalid ioctl %08lx\n", com);
 		return EINVAL;
 	}
 	SCARG(&bia, com) = com;
@@ -519,9 +533,11 @@ linux_sys_iopl(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0
 	struct linux_sys_iopl_args /* {
 		syscallarg(int) level;
 	} */ *uap = v;
+#endif
 	struct trapframe *fp = p->p_md.md_regs;
 
 	if (suser(p->p_ucred, &p->p_acflag) != 0)

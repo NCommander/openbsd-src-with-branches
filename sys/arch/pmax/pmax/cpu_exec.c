@@ -48,9 +48,6 @@
 #include <vm/vm.h>
 
 #include <sys/exec_ecoff.h>
-#ifdef COMPAT_09
-#include <machine/bsd-aout.h>
-#endif
 #include <machine/reg.h>
 
 /*
@@ -66,62 +63,11 @@ cpu_exec_aout_makecmds(p, epp)
 	struct proc *p;
 	struct exec_package *epp;
 {
-	/* If COMPAT_09 is defined, allow loading of old-style 4.4bsd a.out
-	   executables. */
-#ifdef COMPAT_09
-	struct bsd_aouthdr *hdr = (struct bsd_aouthdr *)epp -> ep_hdr;
-
-	/* Only handle paged files (laziness). */
-	if (hdr -> a_magic != BSD_ZMAGIC)
-#endif
-		/* If it's not a.out, maybe it's ELF.  (This wants to
-		   be moved up to the machine independent code as soon
-		   as possible.)  XXX */
-		return pmax_elf_makecmds (p, epp);
-
-#ifdef COMPAT_09
-	epp -> ep_taddr = 0x1000;
-	epp -> ep_entry = hdr -> a_entry;
-	epp -> ep_tsize = hdr -> a_text;
-	epp -> ep_daddr = epp -> ep_taddr + hdr -> a_text;
-	epp -> ep_dsize = hdr -> a_data + hdr -> a_bss;
-
-	/*
-	 * check if vnode is in open for writing, because we want to
-	 * demand-page out of it.  if it is, don't do it, for various
-	 * reasons
-	 */
-	if ((hdr -> a_text != 0 || hdr -> a_data != 0)
-	    && epp->ep_vp->v_writecount != 0) {
-#ifdef DIAGNOSTIC
-		if (epp->ep_vp->v_flag & VTEXT)
-			panic("exec: a VTEXT vnode has writecount != 0\n");
-#endif
-		return ETXTBSY;
-	}
-	epp->ep_vp->v_flag |= VTEXT;
-
-	/* set up command for text segment */
-	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_pagedvn, hdr -> a_text,
-	    epp->ep_taddr, epp->ep_vp, 0, VM_PROT_READ|VM_PROT_EXECUTE);
-
-	/* set up command for data segment */
-	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_pagedvn, hdr -> a_data,
-	    epp->ep_daddr, epp->ep_vp, hdr -> a_text,
-	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
-
-	/* set up command for bss segment */
-	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, hdr -> a_bss,
-	    epp->ep_daddr + hdr -> a_data, NULLVP, 0,
-	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
-
-	return exec_aout_setup_stack(p, epp);
-#endif
+	return ENOEXEC;
 }
 
-#ifdef COMPAT_ULTRIX
-extern struct emul emul_ultrix;
 
+#if defined(_KERN_DO_ECOFF)
 void
 cpu_exec_ecoff_setregs(p, pack, stack, retval)
 	struct proc *p;
@@ -145,13 +91,18 @@ cpu_exec_ecoff_setregs(p, pack, stack, retval)
  *
  */
 int
-cpu_exec_ecoff_hook(p, epp, eap)
+cpu_exec_ecoff_hook(p, epp)
 	struct proc *p;
 	struct exec_package *epp;
-	struct ecoff_aouthdr *eap;
 {
+#ifdef COMPAT_ULTRIX
+	extern struct emul emul_ultrix;
+#endif
 
+#if defined(COMPAT_ULTRIX)
 	epp->ep_emul = &emul_ultrix;
+#endif
 	return 0;
 }
-#endif
+
+#endif /* _KERN_DO_ECOFF */

@@ -1,5 +1,4 @@
-#	$OpenBSD$
-#	@(#)Makefile	8.1 (Berkeley) 6/19/93
+#	$OpenBSD: Makefile,v 1.7 1997/07/30 23:28:39 deraadt Exp $
 
 PROG=	routed
 SRCS=	if.c input.c main.c output.c parms.c radix.c rdisc.c table.c trace.c
@@ -9,6 +8,9 @@ CFLAGS+=-D'panic(s)={log(LOG_ERR,s); exit(1);}'
 SUBDIR=	rtquery
 DPADD=	${LIBCOMPAT}
 LDADD=	-lcompat
+
+# Do *NOT* turn this flag on unless you like security holes
+#CFLAGS+=-DPERMIT_TRACE
 
 .PATH: ${.CURDIR}/../../sys/net
 

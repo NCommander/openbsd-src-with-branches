@@ -1,8 +1,9 @@
-/*	$NetBSD: nonints.h,v 1.6 1995/06/14 15:19:45 christos Exp $	*/
+/*	$OpenBSD: nonints.h,v 1.5 1996/09/02 16:04:16 briggs Exp $	*/
+/*	$NetBSD: nonints.h,v 1.12 1996/11/06 17:59:19 christos Exp $	*/
 
 /*-
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * Copyright (c) 1988, 1989 by Adam de Boor
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  * Copyright (c) 1989 by Berkeley Softworks
  * All rights reserved.
  *
@@ -37,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)nonints.h	5.6 (Berkeley) 4/18/91
+ *	from: @(#)nonints.h	8.3 (Berkeley) 3/19/94
  */
 
 /* arch.c */
@@ -50,6 +51,7 @@ void Arch_FindLib __P((GNode *, Lst));
 Boolean Arch_LibOODate __P((GNode *));
 void Arch_Init __P((void));
 void Arch_End __P((void));
+int Arch_IsLib __P((GNode *));
 
 /* compat.c */
 void Compat_Run __P((Lst));
@@ -65,14 +67,18 @@ void For_Run  __P((void));
 /* main.c */
 void Main_ParseArgLine __P((char *));
 int main __P((int, char **));
+char *Cmd_Exec __P((char *, char **));
 void Error __P((char *, ...));
 void Fatal __P((char *, ...));
 void Punt __P((char *, ...));
 void DieHorribly __P((void));
 int PrintAddr __P((ClientData, ClientData));
 void Finish __P((int));
-char *emalloc __P((size_t));
+char *estrdup __P((const char *));
+void *emalloc __P((size_t));
+void *erealloc __P((void *, size_t));
 void enomem __P((void));
+int eunlink __P((const char *));
 
 /* parse.c */
 void Parse_Error __P((int, char *, ...));

@@ -1,7 +1,7 @@
 /*
  * This software may now be redistributed outside the US.
  *
- * $Source: /usr/src/kerberosIV/lib/krb/RCS/get_krbrlm.c,v $
+ * $Source: /cvs/src/kerberosIV/krb/get_krbrlm.c,v $
  *
  * $Locker:  $
  */
@@ -33,9 +33,7 @@ or implied warranty.
  * krb_get_lrealm takes a pointer to a string, and a number, n.  It fills
  * in the string, r, with the name of the nth realm specified on the
  * first line of the kerberos config file (KRB_CONF, defined in "krb.h").
- * It returns 0 (KSUCCESS) on success, and KFAILURE on failure.  If the
- * config file does not exist, and if n=1, a successful return will occur
- * with r = KRB_REALM (also defined in "krb.h").
+ * It returns 0 (KSUCCESS) on success, and KFAILURE on failure.
  *
  * NOTE: for archaic & compatibility reasons, this routine will only return
  * valid results when n = 1.
@@ -56,17 +54,14 @@ krb_get_lrealm(r, n)
 
     if ((cnffile = fopen(KRB_CONF, "r")) == NULL) {
         char tbuf[128];
-        char *tdir = (char *) getenv("KRBCONFDIR");
-        strncpy(tbuf, tdir ? tdir : "/etc", sizeof(tbuf));
-        strncat(tbuf, "/krb.conf", sizeof(tbuf));
+        char *tdir = NULL;
+	if (issetugid() == 0) 
+	   tdir = (char *) getenv("KRBCONFDIR");
+        strncpy(tbuf, tdir ? tdir : "/etc", sizeof(tbuf)-1);
         tbuf[sizeof(tbuf)-1] = 0;
+        strncat(tbuf, "/krb.conf", sizeof(tbuf)-strlen(tbuf));
         if ((cnffile = fopen(tbuf,"r")) == NULL)
-            if (n == 1) {
-                (void) strcpy(r, KRB_REALM);
-                return(KSUCCESS);
-            }
-            else
-                return(KFAILURE);
+            return(KFAILURE);
     }
 
     if (fscanf(cnffile,"%s",r) != 1) {
@@ -74,5 +69,5 @@ krb_get_lrealm(r, n)
         return(KFAILURE);
     }
     (void) fclose(cnffile);
-    return(KSUCCESS);
+    return(*r == '#' ? KFAILURE : KSUCCESS);
 }

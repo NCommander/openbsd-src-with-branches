@@ -1,3 +1,4 @@
+#	$OpenBSD:$
 #	$NetBSD: Makefile.inc,v 1.6 1994/10/26 06:39:03 cgd Exp $
 
 CFLAGS	+= -D_KERNEL

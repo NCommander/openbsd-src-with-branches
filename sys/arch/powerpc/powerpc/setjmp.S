@@ -1,3 +1,4 @@
+/*	$OpenBSD:$	*/
 /* kernel version of this file, does not have signal goop */
 /* int setjmp(jmp_buf env) */
 

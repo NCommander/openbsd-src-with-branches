@@ -1,11 +1,11 @@
 #!/bin/csh -f
 
-set arch=`uname -m`
+set arch=`machine`
 set listsdir=`pwd`/lists
 
 set TMPFILE=/tmp/_LIST.$$
 
-set lists=(base comp etc games text)
+set lists=(base comp etc game text)
 # SPECIAL: man misc
 # EXTRA SPECIAL (not done here): secr
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: func.c,v 1.10 1995/03/21 18:35:42 mycroft Exp $	*/
+/*    $OpenBSD: func.c,v 1.5 1997/07/23 14:36:50 kstailey Exp $       */
+/*    $NetBSD: func.c,v 1.11 1996/02/09 02:28:29 christos Exp $       */
 
 /*-
  * Copyright (c) 1980, 1991, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)func.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: func.c,v 1.10 1995/03/21 18:35:42 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: func.c,v 1.5 1997/07/23 14:36:50 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,7 +49,7 @@ static char rcsid[] = "$NetBSD: func.c,v 1.10 1995/03/21 18:35:42 mycroft Exp $"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -1173,7 +1174,7 @@ findlim(cp)
 {
     register struct limits *lp, *res;
 
-    res = (struct limits *) NULL;
+    res = NULL;
     for (lp = limits; lp->limconst >= 0; lp++)
 	if (prefix(cp, str2short(lp->limname))) {
 	    if (res)
@@ -1400,11 +1401,13 @@ dosuspend(v, t)
     (void) signal(SIGTSTP, old);
 
     if (tpgrp != -1) {
+retry:
 	ctpgrp = tcgetpgrp(FSHTTY);
-	while  (ctpgrp != opgrp) {
+      if  (ctpgrp != opgrp) {
 	    old = signal(SIGTTIN, SIG_DFL);
 	    (void) kill(0, SIGTTIN);
 	    (void) signal(SIGTTIN, old);
+	  goto retry;
 	}
 	(void) setpgid(0, shpgrp);
 	(void) tcsetpgrp(FSHTTY, shpgrp);

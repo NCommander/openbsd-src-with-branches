@@ -49,8 +49,8 @@
 .Fn Getfsstat
 returns information about all mounted file systems.
 .Fa Buf
-is a pointer to
-.Xr statfs
+is a pointer to an array of
+.Xr statfs 2
 structures defined as follows:
 .Bd -literal
 typedef struct { int32_t val[2]; } fsid_t;

@@ -1,4 +1,4 @@
-/*	$NetBSD: boot.c,v 1.28 1995/03/12 00:10:57 mycroft Exp $	*/
+/*	$NetBSD: boot.c,v 1.29 1995/12/23 17:21:27 perry Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -63,22 +63,33 @@ int cflag;
 #endif
 char *name;
 char *names[] = {
-	"/netbsd", "/onetbsd", "/netbsd.old",
+	"/bsd", "/obsd", "/bsd.old",
 };
 #define NUMNAMES	(sizeof(names)/sizeof(char *))
 
-extern char *version;
+/* Number of seconds that prompt should wait during boot */
+#define PROMPTWAIT 5
 
+static void getbootdev __P((int *howto));
+static void loadprog __P((int howto));
+
+extern char version[];
 extern int end;
+
+void
 boot(drive)
-int drive;
+	int drive;
 {
 	int loadflags, currname = 0;
 	char *t;
-		
+
+#ifdef SERIAL
+	init_serial();
+#endif
 	printf("\n"
-	       ">> NetBSD BOOT: %d/%d k [%s]\n"
-	       "use hd(1,a)/netbsd to boot sd0 when wd0 is also installed\n",
+	       ">> OpenBSD BOOT: %d/%d k [%s]\n"
+	       "use ? for file list, or carriage return for defaults\n"
+	       "use hd(1,a)/bsd to boot sd0 when wd0 is also installed\n",
 		argv[7] = memsize(0),
 		argv[8] = memsize(1),
 		version);
@@ -88,26 +99,42 @@ loadstart:
 	* As a default set it to the first partition of the first	*
 	* floppy or hard drive						*
 	\***************************************************************/
-	part = 0;
-	unit = drive&0x7f;
-	maj = (drive&0x80 ? 0 : 2);		/* a good first bet */
+#ifdef DOSREAD
+	if (drive== 0xff) {
+          maj = 5;
+          part = 0;
+          unit = 0;
+	} else
+#endif
+        {
+          part = 0;
+          unit = drive&0x7f;
+          maj = (drive&0x80 ? 0 : 2);         /* a good first bet */
+        }
 
 	name = names[currname++];
 
 	loadflags = 0;
+	getbootdev(&loadflags);
+	switch(openrd()) {
+	case 0:
+		loadprog(loadflags);
+		break;
+	case -1:
+		currname--;
+		break;
+	default:
+		printf("Can't find %s\n", name);
+		break;
+	}
 	if (currname == NUMNAMES)
 		currname = 0;
-	getbootdev(&loadflags);
-	if (openrd()) {
-		printf("Can't find %s\n", name);
-		goto loadstart;
-	}
-	loadprog(loadflags);
 	goto loadstart;
 }
 
+static void
 loadprog(howto)
-	int		howto;
+	int howto;
 {
 	long int startaddr;
 	long int addr;	/* physical address.. not directly useable */
@@ -119,8 +146,6 @@ loadprog(howto)
 		printf("invalid format\n");
 		return;
 	}
-
-	poff = N_TXTOFF(head);
 
 	startaddr = (int)head.a_entry;
 	addr = (startaddr & 0x00f00000); /* some MEG boundary */
@@ -141,7 +166,8 @@ loadprog(howto)
 	/* LOAD THE TEXT SEGMENT				*/
 	/********************************************************/
 	printf("%d", head.a_text);
-	xread(addr, head.a_text);
+      pcpy(&head, addr, sizeof(head));
+      xread(addr+sizeof(head), head.a_text - sizeof(head));
 #ifdef CHECKSUM
 	if (cflag)
 		printf("(%x)", cksum(addr, head.a_text));
@@ -215,6 +241,9 @@ loadprog(howto)
 	}
 
 	putchar(']');
+#ifdef DOSREAD
+      doclose();
+#endif
 
 	/********************************************************/
 	/* and that many bytes of (debug symbols?)		*/
@@ -246,10 +275,6 @@ nosyms:
          *  arg7 = conventional memory size (640)
          *  arg8 = extended memory size (8196)
 	 */
-	if (maj == 2) {
-		printf("\n\nInsert file system floppy\n");
-		getc();
-	}
 
 	startaddr &= 0xffffff;
 	argv[1] = howto;
@@ -265,17 +290,18 @@ nosyms:
 	startprog((int)startaddr, argv);
 }
 
-char namebuf[100];
+static void
 getbootdev(howto)
 	int *howto;
 {
+	static char namebuf[100]; /* don't allocate on stack! */
 	char c, *ptr = namebuf;
-	printf("Boot: [[[%s(%d,%c)]%s][-adrs]] :- ",
+	printf("Boot: [[[%s(%d,%c)]%s][-abcdrs]] : ",
 	    devs[maj], unit, 'a'+part, name);
 #ifdef CHECKSUM
 	cflag = 0;
 #endif
-	if (gets(namebuf)) {
+	if (awaitkey(PROMPTWAIT) && gets(namebuf)) {
 		while (c = *ptr) {
 			while (c == ' ')
 				c = *++ptr;
@@ -287,8 +313,10 @@ getbootdev(howto)
 						*howto |= RB_ASKNAME;
 					else if (c == 'b')
 						*howto |= RB_HALT;
-#ifdef CHECKSUM
 					else if (c == 'c')
+						*howto |= RB_CONFIG;
+#ifdef CHECKSUM
+					else if (c == 'C')
 						cflag = 1;
 #endif
 					else if (c == 'd')

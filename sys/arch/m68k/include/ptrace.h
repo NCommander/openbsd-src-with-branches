@@ -1,3 +1,4 @@
+/*	$OpenBSD: ptrace.h,v 1.7 1995/01/26 19:47:10 mycroft Exp $	*/
 /*	$NetBSD: ptrace.h,v 1.7 1995/01/26 19:47:10 mycroft Exp $	*/
 
 /*

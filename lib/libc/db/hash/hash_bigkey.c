@@ -1,5 +1,3 @@
-/*	$NetBSD: hash_bigkey.c,v 1.5 1995/02/27 13:22:16 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)hash_bigkey.c	8.3 (Berkeley) 5/31/94";
-#else
-static char rcsid[] = "$NetBSD: hash_bigkey.c,v 1.5 1995/02/27 13:22:16 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: hash_bigkey.c,v 1.3 1996/08/19 08:20:34 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -437,7 +431,7 @@ __big_return(hashp, bufp, ndx, val, set_current)
 		}
 
 	val->size = collect_data(hashp, bufp, (int)len, set_current);
-	if (val->size == -1)
+	if (val->size == (size_t) -1)
 		return (-1);
 	if (save_p->addr != save_addr) {
 		/* We are pretty short on buffers. */
@@ -516,7 +510,7 @@ __big_keydata(hashp, bufp, key, val, set)
 	int set;
 {
 	key->size = collect_key(hashp, bufp, 0, val, set);
-	if (key->size == -1)
+	if (key->size == (size_t) -1)
 		return (-1);
 	key->data = (u_char *)hashp->tmp_key;
 	return (0);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.2 1995/03/21 08:19:01 cgd Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1995/03/21 08:19:01 cgd Exp $	*/
 
 /*-

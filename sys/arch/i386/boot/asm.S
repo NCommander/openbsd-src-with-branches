@@ -52,10 +52,11 @@ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 #include <machine/asm.h>
+#define _LOCORE
+#include <machine/specialreg.h>
+#undef _LOCORE
 #define	addr32	.byte 0x67
 #define	data32	.byte 0x66
-
-CR0_PE		=	0x1
 
 	.data
 	.globl	_ourseg
@@ -103,10 +104,13 @@ xprot:
  */
 ENTRY(prot_to_real)
 	# set up a dummy stack frame for the second seg change.
-	movl 	_ourseg, %eax
-	pushw	%ax
-	movl	$xreal, %eax	# gas botches pushw $xreal - extra bytes 0, 0
-	pushw	%ax		# decode to add %al, (%eax) (%al usually 0)
+	# Adjust the intersegment jump instruction following
+	# the clearing of protected mode bit.
+	# This is self-modifying code, but we need a writable
+	# code segment, and an intersegment return does not give us that.
+	movl    _ourseg, %eax
+	movw    %ax, xreal-2
+
 
 	# Change to use16 mode.
 	ljmp	$0x28, $x16
@@ -121,7 +125,10 @@ x16:
 	# make intersegment jmp to flush the processor pipeline
 	# using the fake stack frame set up earlier
 	# and reload CS register
-	lret
+	# Here we have an 16 bits intersegment jump.
+	.byte 0xea
+	.word xreal
+	.word 0
 
 xreal:
 	# we are in real mode now

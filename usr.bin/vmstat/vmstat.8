@@ -1,4 +1,5 @@
-.\"	$NetBSD: vmstat.8,v 1.11 1995/08/10 23:29:47 jtc Exp $
+.\"	$OpenBSD: vmstat.8,v 1.5 1996/07/04 20:16:02 deraadt Exp $
+.\"	$NetBSD: vmstat.8,v 1.12 1996/05/10 23:19:30 thorpej Exp $
 .\"
 .\" Copyright (c) 1986, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -64,9 +65,10 @@ interval is specified, the default is 1 second.
 .TP
 \-f
 Report on the number
-.IR fork (2)
-and
+.IR fork (2) ,
 .IR vfork (2)
+and
+.IR rfork (2)
 system calls since system startup, and the number of pages of virtual memory
 involved in each.
 .TP
@@ -76,11 +78,11 @@ startup.
 .TP
 \-M
 Extract values associated with the name list from the specified core 
-instead of the default ``/dev/kmem''.
+instead of the default ``/dev/mem''.
 .TP
 \-N
 Extract the name list from the specified system instead of the default
-``/netbsd''.
+``/bsd''.
 .TP
 \-m
 Report on the usage of kernel dynamic memory listed first by size of
@@ -150,7 +152,7 @@ sr	pages scanned by clock algorithm, per-second
 .RE
 .TP
 disks
-Disk operations per second (this field is system dependent).
+Disk transfers per second.
 Typically paging will be split across the available drives.
 The header of the field is the first character of the disk name and
 the unit number.
@@ -183,16 +185,16 @@ id	cpu idle
 .fi
 .RE
 .SH EXAMPLES
-The command ``vmstat -i 5'' will print what the system is doing every five
+The command ``vmstat -w 5'' will print what the system is doing every five
 seconds; this is a good choice of printing interval since this is how often
 some of the statistics are sampled in the system.
 Others vary every second and running the output for a while will make it
 apparent which are recomputed every second.
 .SH FILES
-.ta \w'/dev/kmem  'u
-/netbsd	default kernel namelist
+.ta \w'/dev/mem  'u
+/bsd	default kernel namelist
 .br
-/dev/kmem	default memory file
+/dev/mem	default memory file
 .SH SEE ALSO
 .IR fstat (1),
 .IR netstat (1),

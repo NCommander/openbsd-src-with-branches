@@ -1,4 +1,4 @@
-*vim_idx.txt*   For Vim version 4.2.  Last modification: 1996 June 16
+*vim_idx.txt*   For Vim version 4.5.  Last modification: 1996 Sep 16
 
 This file contains a list of all commands for each mode, with a tag and a
 short description.  The list is sorted on ASCII value.
@@ -38,7 +38,7 @@ tag		char		action
 				line
 |i_CTRL-E|	CTRL-E		insert the character which is below the cursor
 		CTRL-F		not used
-		CTRL-G		not used
+		CTRL-G		reserved for future expansion
 |i_<BS>|	<BS>		delete character before the cursor
 |i_digraph|	{char1}<BS>{char2}
 				enter digraph (only when 'digraph' option set)
@@ -275,7 +275,7 @@ tag		char	      note action in Normal mode
 				   insert text, repeat N times
 |P|		["x]P		2  put the text [from buffer x] before the
 				   cursor N times
-|Q|		Q{motion}	2  format Nmove lines (obsolete)
+|Q|		Q		   switch to "ex" mode
 |R|		R		2  enter replace mode: overtype existing
 				   characters, repeat the entered text N-1
 				   times
@@ -292,6 +292,7 @@ tag		char	      note action in Normal mode
 |Y|		["x]Y		   yank N lines [into buffer x]; synonym for
 				   "yy"
 |ZZ|		ZZ		   store current file if modified, and exit
+|ZQ|		ZQ		   exit current file always
 |[|		[{char}		   square bracket command (see below)
 		\		   not used
 |]|		]{char}		   square bracket command (see below)
@@ -587,7 +588,7 @@ tag		char	      note action in Normal mode
 				   lines down
 |gk|		gk		1  like "k", but when 'wrap' on go N screen
 				   lines up
-|gq|		gq{motion}	2  format Nmove text (same as "Q")
+|gq|		gq{motion}	2  format Nmove text
 |gs|		gs		   goto sleep for N seconds (default 1)
 |gu|		gu{motion}	2  make Nmove text lowercase
 |gv|		gv		   reselect the previous Visual area
@@ -751,7 +752,7 @@ arguments.
 |:@|		:@		execute contents of a register
 |:@@|		:@@		repeat the previous ":@"
 |:Next|		:N[ext]		go to previous file in the argument list
-|:append|	:a[ppend]	append text (not implemented)
+|:append|	:a[ppend]	append text
 |:abbreviate|	:ab[breviate]	enter abbreviation
 |:abclear|	:abc[lear]	remove all abbreviations
 |:all|		:al[l]		open a window for each file in the argument
@@ -773,7 +774,7 @@ arguments.
 |:brewind|	:br[ewind]	go to last file in the buffer list
 |:buffers|	:buffers	list all files in the buffer list
 |:bunload|	:bun[load]	unload a specific buffer
-|:change|	:c[hange]	replace a line (not implemented)
+|:change|	:c[hange]	replace a line or series of lines
 |:cNext|	:cN[ext]	go to previous error
 |:cabbrev|	:ca[bbrev]	like ":abbreviate" but for command-line mode
 |:cabclear|	:cabc[lear]	clear all abbreviations for command-line mode
@@ -804,6 +805,7 @@ arguments.
 |:dsearch|	:ds[earch]	list one #define
 |:dsplit|	:dsp[lit]	split window and jump to #define
 |:edit|		:e[dit]		edit a file
+|:endif|	:en[dif]	end previous :if
 |:ex|		:ex		same as ":edit"
 |:exit|		:exi[t]		same as ":xit"
 |:file|		:f[ile]		show or set the current file name
@@ -813,7 +815,8 @@ arguments.
 |:gui|		:gu[i]		start the GUI
 |:gvim|		:gv[im]		start the GUI
 |:help|		:h[elp]		open a help window
-|:insert|	:i[nsert]	insert text (not implemented)
+|:if|		:if		ignore all commands until matching :endif
+|:insert|	:i[nsert]	insert text
 |:iabbrev|	:ia[bbrev]	like ":abbrev" but for Insert mode
 |:iabclear|	:iabc[lear]	like ":abclear" but for Insert mode
 |:ijump|	:ij[ump]	jump to definition of identifier
@@ -925,7 +928,7 @@ arguments.
 |:unmap|	:unm[ap]	remove mapping
 |:version|	:ve[rsion]	print version number and other info
 |:vglobal|	:v[global]	execute commands for not matching lines
-|:visual|	:vi[sual]	same as ":edit"
+|:visual|	:vi[sual]	same as ":edit", but turns off "ex" mode.
 |:view|		:vie[w]		edit a file read-only
 |:vmap|		:vm[ap]		like ":map" but for Visual mode
 |:vmapclear|	:vmapc[lear]	remove all mappings for Visual mode
@@ -945,5 +948,5 @@ arguments.
 |:xit|		:x[it]		write if buffer changed and quit window or Vim
 |:xall|		:xa[ll]		same as ":wqall"
 |:yank|		:y[ank]		yank lines into a register
-|:z|		:z		print some lines (not implemented)
+|:z|		:z		print some lines
 |:~|		:~		repeat last ":substitute"

@@ -33,7 +33,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)subr.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$Id: subr.c,v 1.18 1995/10/05 08:51:31 mycroft Exp $";
+static char rcsid[] = "$Id: subr.c,v 1.7 1996/12/17 19:33:55 tholo Exp $";
 #endif /* not lint */
 
 /*
@@ -264,10 +264,11 @@ setflags(n)
 		}
 	} /* else, leave as is */
 
-#if 0
-	if (UC)
-		f |= LCASE;
-#endif
+	if (UC) {
+		SET(iflag, IUCLC);
+		SET(oflag, OLCUC);
+		SET(lflag, XCASE);
+	}
 
 	if (HC)
 		SET(cflag, HUPCL);
@@ -388,15 +389,27 @@ register long flags;
 		SET(oflag, OXTABS);
 	else
 		CLR(oflag, OXTABS);
+	if (ISSET(flags, LCASE)) {
+		SET(iflag, IUCLC);
+		SET(oflag, OLCUC);
+		SET(lflag, XCASE);
+	}
+	else {
+		CLR(iflag, IUCLC);
+		CLR(oflag, OLCUC);
+		CLR(lflag, XCASE);
+	}
 
 
 	if (ISSET(flags, RAW)) {
 		iflag &= IXOFF;
-		CLR(lflag, ISIG|ICANON|IEXTEN);
+		CLR(lflag, ISIG|ICANON|IEXTEN|XCASE);
 		CLR(cflag, PARENB);
 	} else {
 		SET(iflag, BRKINT|IXON|IMAXBEL);
 		SET(lflag, ISIG|IEXTEN);
+		if (ISSET(iflag, IUCLC) && ISSET(oflag, OLCUC))
+			SET(lflag, XCASE);
 		if (ISSET(flags, CBREAK))
 			CLR(lflag, ICANON);
 		else
@@ -552,7 +565,7 @@ adelay(ms, dp)
 }
 #endif
 
-char	editedhost[32];
+char	editedhost[48];
 
 void
 edithost(pat)
@@ -604,12 +617,13 @@ makeenv(env)
 
 	ep = env;
 	if (TT && *TT) {
-		strcat(termbuf, TT);
+		strncat(termbuf, TT, sizeof(termbuf)-strlen(termbuf));
+		termbuf[sizeof(termbuf)-1] = '\0';
 		*ep++ = termbuf;
 	}
-	if (p = EV) {
+	if ((p = EV)) {
 		q = p;
-		while (q = strchr(q, ',')) {
+		while ((q = strchr(q, ','))) {
 			*q++ = '\0';
 			*ep++ = p;
 			p = q;

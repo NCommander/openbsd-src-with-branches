@@ -1,3 +1,4 @@
+/*	$OpenBSD: date.c,v 1.9 1997/09/16 13:40:14 deraadt Exp $	*/
 /*	$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)date.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $";
+static char rcsid[] = "$OpenBSD: date.c,v 1.9 1997/09/16 13:40:14 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,6 +60,7 @@ static char rcsid[] = "$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $";
 #include <locale.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <util.h>
 
 #include "extern.h"
 
@@ -68,8 +70,6 @@ int retval, nflag;
 static void setthetime __P((char *));
 static void badformat __P((void));
 static void usage __P((void));
-
-int logwtmp __P((char *, char *, char *));
 
 int
 main(argc, argv)
@@ -116,7 +116,7 @@ main(argc, argv)
 
 	/*
 	 * If -d or -t, set the timezone or daylight savings time; this
-	 * doesn't belong here, there kernel should not know about either.
+	 * doesn't belong here, the kernel should not know about either.
 	 */
 	if ((tz.tz_minuteswest || tz.tz_dsttime) &&
 	    settimeofday(NULL, &tz))
@@ -154,6 +154,7 @@ setthetime(p)
 	register struct tm *lt;
 	struct timeval tv;
 	char *dot, *t;
+	int bigyear = 0;
 
 	for (t = p, dot = NULL; *t; ++t) {
 		if (isdigit(*t))
@@ -167,7 +168,7 @@ setthetime(p)
 
 	lt = localtime(&tval);
 
-	if (dot != NULL) {			/* .ss */
+	if (dot != NULL) {			/* .SS */
 		*dot++ = '\0';
 		if (strlen(dot) != 2)
 			badformat();
@@ -178,10 +179,19 @@ setthetime(p)
 		lt->tm_sec = 0;
 
 	switch (strlen(p)) {
+	case 12:				/* yyyy */
+		bigyear = ATOI2(p);
+		bigyear = bigyear * 100 - 1900;
+		/* FALLTHROUGH */
 	case 10:				/* yy */
-		lt->tm_year = ATOI2(p);
+		lt->tm_year = bigyear;
+		lt->tm_year += ATOI2(p);
 		if (lt->tm_year < 69)		/* hack for 2000 ;-} */
 			lt->tm_year += 100;
+		if (lt->tm_year > (2037-1900))  {
+			warnx("year too large (overflows 32 bit value)");
+			exit(1);
+		}
 		/* FALLTHROUGH */
 	case 8:					/* mm */
 		lt->tm_mon = ATOI2(p);
@@ -194,12 +204,12 @@ setthetime(p)
 		if (lt->tm_mday > 31)
 			badformat();
 		/* FALLTHROUGH */
-	case 4:					/* hh */
+	case 4:					/* HH */
 		lt->tm_hour = ATOI2(p);
 		if (lt->tm_hour > 23)
 			badformat();
 		/* FALLTHROUGH */
-	case 2:					/* mm */
+	case 2:					/* MM */
 		lt->tm_min = ATOI2(p);
 		if (lt->tm_min > 59)
 			badformat();
@@ -241,6 +251,6 @@ usage()
 {
 	(void)fprintf(stderr,
 	    "usage: date [-nu] [-d dst] [-r seconds] [-t west] [+format]\n");
-	(void)fprintf(stderr, "            [yy[mm[dd[hh]]]]mm[.ss]]\n");
+	(void)fprintf(stderr, "            [[[[[[cc]yy]mm]dd]HH]MM[.SS]]\n");
 	exit(1);
 }

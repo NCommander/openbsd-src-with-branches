@@ -1,4 +1,5 @@
-/*	$NetBSD: adb.c,v 1.4 1995/09/03 20:59:53 briggs Exp $	*/
+/*	$OpenBSD: adb.c,v 1.8 1997/03/12 13:36:56 briggs Exp $	*/
+/*	$NetBSD: adb.c,v 1.13 1996/12/16 16:17:02 scottr Exp $	*/
 
 /*-
  * Copyright (C) 1994	Bradley A. Grantham
@@ -33,20 +34,25 @@ e*    notice, this list of conditions and the following disclaimer in the
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/systm.h>
+#include <sys/time.h>
 
-#include <machine/adbsys.h>
+#include <machine/autoconf.h>
 #include <machine/keyboard.h>
 
-#include "adbvar.h"
-#include "../mac68k/macrom.h"
+#include <arch/mac68k/mac68k/macrom.h>
+#include <arch/mac68k/dev/adbvar.h>
+#include <arch/mac68k/dev/itevar.h>
 
 /*
  * Function declarations.
  */
-static void	adbattach __P((struct device *parent, struct device *dev, void *aux));
+static int	adbmatch __P((struct device *, void *, void *));
+static void	adbattach __P((struct device *, struct device *, void *));
 
 /*
  * Global variables.
@@ -80,12 +86,23 @@ static int adb_rptinterval = 6;	/* ticks between auto-repeat */
 static int adb_repeating = -1;	/* key that is auto-repeating */
 static adb_event_t adb_rptevent;/* event to auto-repeat */
 
-extern int matchbyname();
-
-/* Driver definition. */
-struct cfdriver adbcd = {
-	NULL, "adb", matchbyname, adbattach, DV_DULL, sizeof(struct device),
+/* Driver definition.  -- This should probably be a bus...  */
+struct cfattach adb_ca = {
+	sizeof(struct device), adbmatch, adbattach
 };
+
+struct cfdriver adb_cd = {
+	NULL, "adb", DV_DULL
+};
+
+static int
+adbmatch(parent, vcf, aux)
+	struct device *parent;
+	void *vcf;
+	void *aux;
+{
+	return 1;
+}
 
 static void
 adbattach(parent, dev, aux)
@@ -284,9 +301,10 @@ adb_processevent(event)
     adb_event_t *event;
 {
 	adb_event_t new_event;
-	int i, button_bit, max_byte, mask;
+	int i, button_bit, max_byte, mask, buttons;
 
 	new_event = *event;
+	buttons = 0;
 
 	switch (event->def_addr) {
 	case ADBADDR_KBD:
@@ -307,24 +325,36 @@ adb_processevent(event)
 		 */
 		max_byte = event->byte_count;
 		button_bit = 1;
-		/* Classic Mouse Protocol (up to 2 buttons) */
-		for (i = 0; i < 2; i++, button_bit <<= 1)
-			/* 0 when button down */
-			if (!(event->bytes[i] & 0x80))
-				adb_ms_buttons |= button_bit;
+		switch (event->hand_id) {
+		case ADBMS_USPEED:
+			/* MicroSpeed mouse */
+			if (max_byte == 4)
+				buttons = (~event->bytes[2]) & 0xff;
 			else
-				adb_ms_buttons &= ~button_bit;
-		/* Extended Protocol (up to 6 more buttons) */
-		for (mask = 0x80; i < max_byte;
-		     i += (mask == 0x80), button_bit <<= 1) {
-			/* 0 when button down */
-			if (!(event->bytes[i] & mask))
-				adb_ms_buttons |= button_bit;
-			else
-				adb_ms_buttons &= ~button_bit;
-			mask = ((mask >> 4) & 0xf) | ((mask & 0xf) << 4);
+				buttons = (event->bytes[0] & 0x80) ? 0 : 1;
+			break;
+		default:
+			/* Classic Mouse Protocol (up to 2 buttons) */
+			for (i = 0; i < 2; i++, button_bit <<= 1)
+				/* 0 when button down */
+				if (!(event->bytes[i] & 0x80))
+					buttons |= button_bit;
+				else
+					buttons &= ~button_bit;
+			/* Extended Protocol (up to 6 more buttons) */
+			for (mask = 0x80; i < max_byte;
+			     i += (mask == 0x80), button_bit <<= 1) {
+				/* 0 when button down */
+				if (!(event->bytes[i] & mask))
+					buttons |= button_bit;
+				else
+					buttons &= ~button_bit;
+				mask = ((mask >> 4) & 0xf)
+					| ((mask & 0xf) << 4);
+			}
+			break;
 		}
-		new_event.u.m.buttons = adb_ms_buttons;
+		new_event.u.m.buttons = adb_ms_buttons | buttons;
 		new_event.u.m.dx = ((signed int) (event->bytes[1] & 0x3f)) -
 					((event->bytes[1] & 0x40) ? 64 : 0);
 		new_event.u.m.dy = ((signed int) (event->bytes[0] & 0x3f)) -

@@ -1,4 +1,5 @@
-/*	$NetBSD: audio_if.h,v 1.5 1995/07/19 19:58:23 brezak Exp $	*/
+/*	$OpenBSD: audio_if.h,v 1.3 1996/03/02 00:29:20 niklas Exp $	*/
+/*	$NetBSD: audio_if.h,v 1.7 1996/03/07 15:00:10 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Havard Eidnes.
@@ -38,6 +39,8 @@
  * Generic interface to hardware driver.
  */
 
+struct audio_softc;
+
 struct audio_hw_if {
 	int	(*open)__P((dev_t, int));	/* open hardware */
 	void	(*close)__P((void *));		/* close hardware */
@@ -50,14 +53,11 @@ struct audio_hw_if {
 	u_long	(*get_out_sr)__P((void *));
 
 	/* Encoding. */
-	/* XXX should we have separate in/out? */
-	int	(*query_encoding)__P((void *, struct audio_encoding *));
-	int	(*set_encoding)__P((void *, u_int));
-	int	(*get_encoding)__P((void *));
-
 	/* Precision = bits/sample, usually 8 or 16 */
 	/* XXX should we have separate in/out? */
-	int	(*set_precision)__P((void *, u_int));
+	int	(*query_encoding)__P((void *, struct audio_encoding *));
+	int	(*set_format)__P((void *, u_int, u_int));
+	int	(*get_encoding)__P((void *));
 	int	(*get_precision)__P((void *));
 
 	/* Channels - mono(1), stereo(2) */
@@ -83,16 +83,15 @@ struct audio_hw_if {
 	 */
 	int	(*commit_settings)__P((void *));
 
-	/* Return silence value for encoding */
-	u_int	(*get_silence)__P((int));
-
 	/* Software en/decode functions, set if SW coding required by HW */
 	void	(*sw_encode)__P((void *, int, u_char *, int));
 	void	(*sw_decode)__P((void *, int, u_char *, int));
 
 	/* Start input/output routines. These usually control DMA. */
-	int	(*start_output)__P((void *, void *, int, void (*)(), void *));
-	int	(*start_input)__P((void *, void *, int, void (*)(), void *));
+	int	(*start_output)__P((void *, void *, int,
+				    void (*)(void *), void *));
+	int	(*start_input)__P((void *, void *, int,
+				   void (*)(void *), void *));
 	int	(*halt_output)__P((void *));
 	int	(*halt_input)__P((void *));
 	int	(*cont_output)__P((void *));
@@ -132,4 +131,4 @@ extern int	audio_hardware_detach __P((struct audio_hw_if *));
 #define AUDIODEV(x)		(minor(x)&0xf0)
 
 #define splaudio splbio		/* XXX */
-#define ISA_IPL_AUDIO ISA_IPL_BIO /* XXX */
+#define IPL_AUDIO IPL_BIO	/* XXX */

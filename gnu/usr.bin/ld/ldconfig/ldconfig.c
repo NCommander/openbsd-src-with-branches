@@ -1,3 +1,5 @@
+/*	$OpenBSD: ldconfig.c,v 1.5 1996/12/18 04:55:53 millert Exp $	*/
+
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
  * All rights reserved.
@@ -26,8 +28,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *	$Id: ldconfig.c,v 1.12 1995/08/25 11:35:35 pk Exp $
  */
 
 #include <sys/param.h>
@@ -37,7 +37,9 @@
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
+#include <ctype.h>
 #include <dirent.h>
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <ar.h>
@@ -73,6 +75,7 @@ struct shlib_list {
 };
 
 static struct shlib_list	*shlib_head = NULL, **shlib_tail = &shlib_head;
+static char			*dir_list;
 
 static void	enter __P((char *, char *, char *, int *, int));
 static int	dodir __P((char *, int));
@@ -103,18 +106,21 @@ char	*argv[];
 			verbose = 1;
 			break;
 		default:
-			errx(1, "Usage: %s [-r][-s][-v][dir ...]",
+			errx(1, "Usage: %s [-mrsv] [dir ...]",
 				__progname);
 			break;
 		}
 	}
+
+	dir_list = xmalloc(1);
+	*dir_list = '\0';
 
 	if (justread || merge) {
 		if ((rval = readhints()) != 0)
 			return rval;
 		if (justread) {
 			listhints();
-			return;
+			return 0;
 		}
 	}
 
@@ -124,8 +130,13 @@ char	*argv[];
 	for (i = 0; i < n_search_dirs; i++)
 		rval |= dodir(search_dirs[i], 1);
 
-	for (i = optind; i < argc; i++)
+	for (i = optind; i < argc; i++) {
+		/* Check for duplicates? */
+		char *cp = concat(dir_list, *dir_list?":":"", argv[i]);
+		free(dir_list);
+		dir_list = cp;
 		rval |= dodir(argv[i], 0);
+	}
 
 	rval |= buildhints();
 
@@ -208,7 +219,8 @@ int	dewey[], ndewey;
 					dir, file);
 
 			free(shp->name);
-			shp->name = strdup(name);
+			if ((shp->name = strdup(name)) == NULL)
+				errx(1, "virtual memory exhausted");
 			free(shp->path);
 			shp->path = concat(dir, "/", file);
 			bcopy(dewey, shp->dewey, sizeof(shp->dewey));
@@ -226,7 +238,8 @@ int	dewey[], ndewey;
 		printf("Adding %s/%s\n", dir, file);
 
 	shp = (struct shlib_list *)xmalloc(sizeof *shp);
-	shp->name = strdup(name);
+	if ((shp->name = strdup(name)) == NULL)
+		errx(1, "virtual memory exhausted");
 	shp->path = concat(dir, "/", file);
 	bcopy(dewey, shp->dewey, MAXDEWEY);
 	shp->ndewey = ndewey;
@@ -254,7 +267,9 @@ int	vmajor, vminor;
 		k = (((k << 1) + (k >> 14)) ^ (*cp++)) & 0x3fff;
 
 	k = (((k << 1) + (k >> 14)) ^ (vmajor*257)) & 0x3fff;
+#if 0
 	k = (((k << 1) + (k >> 14)) ^ (vminor*167)) & 0x3fff;
+#endif
 
 	return k;
 }
@@ -280,16 +295,18 @@ buildhints()
 
 	/* Fill hints file header */
 	hdr.hh_magic = HH_MAGIC;
-	hdr.hh_version = LD_HINTS_VERSION_1;
+	hdr.hh_version = LD_HINTS_VERSION_2;
 	hdr.hh_nbucket = 1 * nhints;
 	n = hdr.hh_nbucket * sizeof(struct hints_bucket);
 	hdr.hh_hashtab = sizeof(struct hints_header);
 	hdr.hh_strtab = hdr.hh_hashtab + n;
+	hdr.hh_dirlist = strtab_sz;
+	strtab_sz += 1 + strlen(dir_list);
 	hdr.hh_strtab_sz = strtab_sz;
 	hdr.hh_ehints = hdr.hh_strtab + hdr.hh_strtab_sz;
 
 	if (verbose)
-		printf("Totals: entries %d, buckets %d, string size %d\n",
+		printf("Totals: entries %d, buckets %ld, string size %d\n",
 					nhints, hdr.hh_nbucket, strtab_sz);
 
 	/* Allocate buckets and string table */
@@ -339,17 +356,21 @@ buildhints()
 		bp->hi_ndewey = shp->ndewey;
 	}
 
-	tmpfile = concat(_PATH_LD_HINTS, ".XXXXXX", "");
-	if ((tmpfile = mktemp(tmpfile)) == NULL) {
+	/* Copy search directories */
+	strcpy(strtab + str_index, dir_list);
+	str_index += 1 + strlen(dir_list);
+
+	/* Sanity check */
+	if (str_index != strtab_sz) {
+		errx(1, "str_index(%d) != strtab_sz(%d)", str_index, strtab_sz);
+	}
+
+	tmpfile = concat(_PATH_LD_HINTS, ".XXXXXXXXXX", "");
+	if ((fd = mkstemp(tmpfile)) == -1) {
 		warn("%s", tmpfile);
 		return -1;
 	}
-
-	umask(0);	/* Create with exact permissions */
-	if ((fd = open(tmpfile, O_RDWR|O_CREAT|O_TRUNC, 0444)) == -1) {
-		warn("%s", _PATH_LD_HINTS);
-		return -1;
-	}
+	fchmod(fd, 0444);
 
 	if (write(fd, &hdr, sizeof(struct hints_header)) !=
 	    sizeof(struct hints_header)) {
@@ -411,13 +432,13 @@ readhints()
 
 	hdr = (struct hints_header *)addr;
 	if (HH_BADMAG(*hdr)) {
-		warnx("%s: Bad magic: %o",
+		warnx("%s: Bad magic: %lo",
 			_PATH_LD_HINTS, hdr->hh_magic);
 		return -1;
 	}
 
-	if (hdr->hh_version != LD_HINTS_VERSION_1) {
-		warnx("Unsupported version: %d", hdr->hh_version);
+	if (hdr->hh_version != LD_HINTS_VERSION_2) {
+		warnx("Unsupported version: %ld", hdr->hh_version);
 		return -1;
 	}
 
@@ -450,8 +471,10 @@ readhints()
 
 		/* Allocate new list element */
 		shp = (struct shlib_list *)xmalloc(sizeof *shp);
-		shp->name = strdup(strtab + bp->hi_namex);
-		shp->path = strdup(strtab + bp->hi_pathx);
+		if ((shp->name = strdup(strtab + bp->hi_namex)) == NULL)
+			errx(1, "virtual memory exhausted");
+		if ((shp->path = strdup(strtab + bp->hi_pathx)) == NULL)
+			errx(1, "virtual memory exhausted");
 		bcopy(bp->hi_dewey, shp->dewey, sizeof(shp->dewey));
 		shp->ndewey = bp->hi_ndewey;
 		shp->next = NULL;
@@ -459,6 +482,8 @@ readhints()
 		*shlib_tail = shp;
 		shlib_tail = &shp->next;
 	}
+	if ((dir_list = strdup(strtab + hdr->hh_dirlist)) == NULL)
+		errx(1, "virtual memory exhausted");
 
 	return 0;
 }
@@ -470,6 +495,7 @@ listhints()
 	int			i;
 
 	printf("%s:\n", _PATH_LD_HINTS);
+	printf("\tsearch directories: %s\n", dir_list);
 
 	for (i = 0, shp = shlib_head; shp; i++, shp = shp->next)
 		printf("\t%d:-l%s.%d.%d => %s\n",

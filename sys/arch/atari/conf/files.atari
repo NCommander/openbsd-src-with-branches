@@ -1,5 +1,5 @@
 #
-#	$NetBSD: files.atari,v 1.12 1995/08/28 19:31:16 leo Exp $
+#	$NetBSD: files.atari,v 1.14 1996/01/06 20:11:02 leo Exp $
 #
 
 maxpartitions 16
@@ -27,6 +27,10 @@ file	arch/atari/dev/zs.c		zs needs-count
 #ramdisk
 device	ramd at mainbus
 file	arch/atari/dev/ramd.c		ramd needs-flag
+
+# nvram
+device	nvr at mainbus
+file	arch/atari/dev/nvram.c		nvr needs-flag
 
 device	fdc at mainbus { unit = -1 }
 
@@ -79,6 +83,8 @@ file	scsi/st.c			st needs-flag
 major	{st = 5}
 device	ch at scsibus: disk
 file	scsi/ch.c			ch needs-flag
+device	ss at scsibus: tape
+file	scsi/ss.c			ss needs-flag
 device	uk at scsibus: disk
 file	scsi/uk.c			uk needs-flag
 device	su at scsibus: disk
@@ -109,7 +115,7 @@ file	arch/m68k/m68k/copy.s
 
 # Emulation modules
 # 6888x emulator (FPU_EMULATE)
-file	arch/m68k/fpe/fpu_emulate.c		fpu_emulate
+include "../../m68k/fpe/files.fpe"
 
 # Compatibility modules
 

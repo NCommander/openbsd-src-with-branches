@@ -32,14 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)strtouq.c	5.1 (Berkeley) 6/26/92";
+static char rcsid[] = "$OpenBSD$";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 
-#include <limits.h>
-#include <errno.h>
 #include <ctype.h>
+#include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 
 /*
@@ -54,10 +54,9 @@ strtouq(nptr, endptr, base)
 	char **endptr;
 	register int base;
 {
-	register const char *s = nptr;
-	register u_quad_t acc;
+	register const char *s;
+	register u_quad_t acc, cutoff;
 	register int c;
-	register u_quad_t qbase, cutoff;
 	register int neg, any, cutlim;
 
 	/*
@@ -65,7 +64,7 @@ strtouq(nptr, endptr, base)
 	 */
 	s = nptr;
 	do {
-		c = *s++;
+		c = (unsigned char) *s++;
 	} while (isspace(c));
 	if (c == '-') {
 		neg = 1;
@@ -83,10 +82,10 @@ strtouq(nptr, endptr, base)
 	}
 	if (base == 0)
 		base = c == '0' ? 8 : 10;
-	qbase = (unsigned)base;
-	cutoff = (u_quad_t)UQUAD_MAX / qbase;
-	cutlim = (u_quad_t)UQUAD_MAX % qbase;
-	for (acc = 0, any = 0;; c = *s++) {
+
+	cutoff = UQUAD_MAX / (u_quad_t)base;
+	cutlim = UQUAD_MAX % (u_quad_t)base;
+	for (acc = 0, any = 0;; c = (unsigned char) *s++) {
 		if (isdigit(c))
 			c -= '0';
 		else if (isalpha(c))
@@ -95,18 +94,19 @@ strtouq(nptr, endptr, base)
 			break;
 		if (c >= base)
 			break;
-		if (any < 0 || acc > cutoff || acc == cutoff && c > cutlim)
+		if (any < 0)
+			continue;
+		if (acc > cutoff || acc == cutoff && c > cutlim) {
 			any = -1;
-		else {
+			acc = UQUAD_MAX;
+			errno = ERANGE;
+		} else {
 			any = 1;
-			acc *= qbase;
+			acc *= (u_quad_t)base;
 			acc += c;
 		}
 	}
-	if (any < 0) {
-		acc = UQUAD_MAX;
-		errno = ERANGE;
-	} else if (neg)
+	if (neg && any > 0)
 		acc = -acc;
 	if (endptr != 0)
 		*endptr = (char *) (any ? s - 1 : nptr);

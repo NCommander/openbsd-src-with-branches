@@ -23,7 +23,6 @@ SECTIONS
     /* Grouped section support currently must be explicitly provided for
 	in the linker script.  */
     *(.text\$)
-    *(.gcc_except_table)
   }
 
   .bss BLOCK(__section_alignment__)  :

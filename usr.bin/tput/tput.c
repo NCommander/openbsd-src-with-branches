@@ -1,3 +1,4 @@
+/*	$OpenBSD: tput.c,v 1.4 1997/03/07 21:54:48 gene Exp $	*/
 /*	$NetBSD: tput.c,v 1.8 1995/08/31 22:11:37 jtc Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tput.c	8.3 (Berkeley) 4/28/95";
 #endif
-static char rcsid[] = "$NetBSD: tput.c,v 1.8 1995/08/31 22:11:37 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tput.c,v 1.4 1997/03/07 21:54:48 gene Exp $";
 #endif /* not lint */
 
 #include <termios.h>
@@ -53,6 +54,7 @@ static char rcsid[] = "$NetBSD: tput.c,v 1.8 1995/08/31 22:11:37 jtc Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 static void   prlongname __P((char *));
 static void   setospeed __P((void));
@@ -68,10 +70,10 @@ main(argc, argv)
 	extern char *optarg;
 	extern int optind;
 	int ch, exitval, n;
-	char *cptr, *p, *term, buf[1024], tbuf[1024];
+	char *argv0, *cptr, *p, *term, buf[1024], tbuf[1024];
 
 	term = NULL;
-	while ((ch = getopt(argc, argv, "T:")) != EOF)
+	while ((ch = getopt(argc, argv, "T:")) != -1)
 		switch(ch) {
 		case 'T':
 			term = optarg;
@@ -80,14 +82,23 @@ main(argc, argv)
 		default:
 			usage();
 		}
+	if ((argv0 = (char *)strrchr(argv[0], '/')) != NULL)
+		argv0++;
+	else
+		argv0 = argv[0];
 	argc -= optind;
 	argv += optind;
+
 
 	if (!term && !(term = getenv("TERM")))
 errx(2, "no terminal type specified and no TERM environmental variable.");
 	if (tgetent(tbuf, term) != 1)
 		err(2, "tgetent failure");
 	setospeed();
+	if (strcmp(argv0, "clear") == 0) {
+		*argv = "clear";
+		*(argv+1) = NULL;
+	}
 	for (exitval = 0; (p = *argv) != NULL; ++argv) {
 		switch (*p) {
 		case 'c':

@@ -1,4 +1,34 @@
+/*	$OpenBSD: sboot.c,v 1.6 1996/08/20 04:01:09 deraadt Exp $ */
+
 /*
+ * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  *
  * Copyright (c) 1995 Charles D. Cranor and Seth Widoff
  * All rights reserved.
@@ -31,19 +61,20 @@
  */
 
 #include <sys/cdefs.h>
+#include <sys/types.h>
 #include "sboot.h"
 
 void
 main()
 {
-	char    buf[128];
+	char    buf[128], *ebuf;
 
 	buf[0] = '0';
 	printf("\nsboot: MVME147 bootstrap program\n");
 	while (1) {
 		printf(">>> ");
-		gets(buf);
-		do_cmd(buf);
+		ebuf = ngets(buf, sizeof(buf));
+		do_cmd(buf, ebuf);
 	}
 	/* not reached */
 }
@@ -61,8 +92,8 @@ callrom()
  * do_cmd: do a command
  */
 void 
-do_cmd(buf)
-	char   *buf;
+do_cmd(buf, ebuf)
+	char   *buf, *ebuf;
 {
 	switch (*buf) {
 	case '\0':
@@ -106,8 +137,8 @@ do_cmd(buf)
 			printf("received secondary boot program.\n");
 		}
 		if (*++buf == '\0')
-			buf = "netbsd";
-		go(buf);
+			buf = " bsd";
+		go(LOAD_ADDR, buf+1, ebuf);
 		break;
 	case 'h':
 	case '?':
@@ -124,22 +155,31 @@ do_cmd(buf)
 		le_init();
 		break;
 	case 'g':
-		go(buf);
+		go(LOAD_ADDR, buf+1, ebuf);
 		break;
 	default:
 		printf("sboot: %s: Unknown command\n", buf);
 	}
 }
 
-go(buf)
-	char *buf;
+/* 
+ * ngets: get string from console 
+ */
+ 
+char *ngets ( char * str, int size )
 {
-	void (*entry)() = (void (*))LOAD_ADDR;
-
-	printf("jumping to boot program at 0x%x.\n", entry);
-
-	asm("clrl d0; clrl d1");	/* XXX network device */
-	asm("movl %0, a3" : : "a" (buf) : "a3");
-	asm("movl %0, a4" : : "a" (buf + strlen(buf)) : "a4");
-	asm("jmp %0@" : : "a" (entry));
+  int i = 0;
+  while ( (i < size - 1) && (str[i] = getchar()) != '\r') {
+    if ( str[i] == '\b' || str[i] == 0x7F ) {
+      if ( i == 0) continue;
+      i--;
+      printf("\b \b");
+      continue;
+    }
+    putchar(str[i]);
+    i++; 
+  }
+  printf("\n");
+  str[i] = '\0';
+  return(&str[i]);
 }

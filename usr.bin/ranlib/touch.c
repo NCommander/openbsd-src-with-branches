@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)touch.c	5.3 (Berkeley) 3/12/91";*/
-static char rcsid[] = "$Id: touch.c,v 1.3 1994/03/03 10:20:12 pk Exp $";
+static char rcsid[] = "$OpenBSD: touch.c,v 1.1.1.1 1995/10/18 08:45:58 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>

@@ -133,6 +133,18 @@ cmsg_len = sizeof(struct in_addr)
 cmsg_level = IPPROTO_IP
 cmsg_type = IP_RECVDSTADDR
 .Ed
+.Pp
+The IP_PORTRANGE
+option causes the default allocation policy for when the kernel is asked
+to choose a free port number.  Three choices are available:
+.Bl -tag -width IP_PORTRANGE_DEFAULT
+.It IP_PORTRANGE_DEFAULT
+The regular range of non-reserved ports.
+.It IP_PORTRANGE_HIGH
+A high range, for fun.
+.It IP_PORTRANGE_LOW
+Reserved ports; between 600 and 1023.
+.El
 .Ss "Multicast Options"
 .Pp
 .Tn IP 
@@ -324,9 +336,14 @@ the fields of the IP header, including the following:
 ip->ip_v = IPVERSION;
 ip->ip_hl = hlen >> 2;
 ip->ip_id = 0;  /* 0 means kernel set appropriate value */
-ip->ip_off = offset;
+ip->ip_off = htons(offset);
+ip->ip_len = htons(len);
 .Ed
 .sp .5
+.Pp
+Additionally note that starting with
+.Tn OpenBSD 2.1
+the ip_off and ip_len fields are in network byte order.
 If the header source address is set to 
 .Dv INADDR_ANY,
 the kernel will choose an appropriate address.

@@ -39,7 +39,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)bad144.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: bad144.c,v 1.8 1995/06/10 21:01:08 mycroft Exp $";
+static char *rcsid = "$Id: bad144.c,v 1.2 1997/06/29 07:15:29 deraadt Exp $";
 #endif not lint
 
 /*
@@ -63,18 +63,14 @@ static char *rcsid = "$Id: bad144.c,v 1.8 1995/06/10 21:01:08 mycroft Exp $";
 #include <sys/disklabel.h>
 #include <ufs/ffs/fs.h>
 
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <paths.h>
 
 #define RETRIES	10		/* number of retries on reading old sectors */
-#ifdef i386 /* XXX */
-#define	RAWPART	"d"		/* disk partition containing badsector tables */
-#else
-#define	RAWPART	"c"		/* disk partition containing badsector tables */
-#endif
 
 int	fflag, add, copy, verbose, nflag;
-int	compare();
 int	dups;
 int	badfile = -1;		/* copy of badsector table to use, -1 if any */
 #define MAXSECSIZE	1024
@@ -82,12 +78,20 @@ struct	dkbad curbad, oldbad;
 #define	DKBAD_MAGIC	0x4321
 
 char	label[BBSIZE];
-daddr_t	size, getold(), badsn();
+daddr_t	size;
 struct	disklabel *dp;
 char	name[BUFSIZ];
-char	*malloc();
-off_t	lseek();
 
+void	Perror __P((const char *));
+daddr_t	badsn __P((const struct bt_bad *));
+int	blkcopy __P((int, daddr_t, daddr_t));
+void	blkzero __P((int, daddr_t));
+int	checkold __P((void));
+int	compare __P((const void *, const void *));
+daddr_t	getold __P((int, struct dkbad *));
+void	shift __P((int, int, int));
+
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
@@ -145,7 +149,8 @@ usage:
 		exit(1);
 	}
 	if (argv[0][0] != '/')
-		(void)sprintf(name, "%sr%s%s", _PATH_DEV, argv[0], RAWPART);
+		(void)sprintf(name, "%sr%s%c", _PATH_DEV, argv[0],
+		    'a' + RAW_PART);
 	else
 		strcpy(name, argv[0]);
 	f = open(name, argc == 1? O_RDONLY : O_RDWR);
@@ -218,7 +223,7 @@ usage:
 			    bt->bt_cyl, bt->bt_trksec>>8, bt->bt_trksec&0xff);
 			bt++;
 		}
-		(void) checkold(&oldbad);
+		(void) checkold();
 		exit(0);
 	}
 	if (add) {
@@ -228,7 +233,7 @@ usage:
 		 * are in order.  Copy the old table to the new one.
 		 */
 		(void) getold(f, &oldbad);
-		i = checkold(&oldbad);
+		i = checkold();
 		if (verbose)
 			printf("Had %d bad sectors, adding %d\n", i, argc);
 		if (i + argc > 126) {
@@ -364,11 +369,12 @@ struct dkbad *bad;
 	/*NOTREACHED*/
 }
 
+int
 checkold()
 {
 	register int i;
 	register struct bt_bad *bt;
-	daddr_t sn, lsn;
+	daddr_t sn, lsn = 0;
 	int errors = 0, warned = 0;
 
 	if (oldbad.bt_flag != DKBAD_MAGIC) {
@@ -421,6 +427,7 @@ checkold()
  * to make room for the new bad sectors.
  * new is the new number of bad sectors, old is the previous count.
  */
+void
 shift(f, new, old)
 {
 	daddr_t repl;
@@ -457,6 +464,7 @@ char *buf;
 /*
  *  Copy disk sector s1 to s2.
  */
+int
 blkcopy(f, s1, s2)
 daddr_t s1, s2;
 {
@@ -496,6 +504,7 @@ daddr_t s1, s2;
 
 char *zbuf;
 
+void
 blkzero(f, sn)
 daddr_t sn;
 {
@@ -518,9 +527,12 @@ daddr_t sn;
 	}
 }
 
-compare(b1, b2)
-register struct bt_bad *b1, *b2;
+int
+compare(v1, v2)
+	const void *v1, *v2;
 {
+	const struct bt_bad *b1 = v1, *b2 = v2;
+
 	if (b1->bt_cyl > b2->bt_cyl)
 		return(1);
 	if (b1->bt_cyl < b2->bt_cyl)
@@ -532,7 +544,7 @@ register struct bt_bad *b1, *b2;
 
 daddr_t
 badsn(bt)
-register struct bt_bad *bt;
+	const struct bt_bad *bt;
 {
 	return ((bt->bt_cyl*dp->d_ntracks + (bt->bt_trksec>>8)) * dp->d_nsectors
 		+ (bt->bt_trksec&0xff));
@@ -686,10 +698,11 @@ format(fd, blk)
 }
 #endif
 
+void
 Perror(op)
-	char *op;
+	const char *op;
 {
-
-	fprintf(stderr, "bad144: "); perror(op);
+	fprintf(stderr, "bad144: ");
+	perror(op);
 	exit(4);
 }

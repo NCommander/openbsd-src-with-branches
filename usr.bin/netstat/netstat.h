@@ -1,4 +1,5 @@
-/*	$NetBSD: netstat.h,v 1.5 1995/10/03 21:42:45 thorpej Exp $	*/
+/*	$OpenBSD: netstat.h,v 1.9 1997/07/04 04:31:32 millert Exp $	*/
+/*	$NetBSD: netstat.h,v 1.6 1996/05/07 02:55:05 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -37,6 +38,9 @@
 
 #include <sys/cdefs.h>
 
+/* What is the max length of a pointer printed with %p (including 0x)? */
+#define PLEN	(LONG_BIT / 4 + 2)
+
 int	Aflag;		/* show addresses of protocol control block */
 int	aflag;		/* show all sockets (including servers) */
 int	dflag;		/* show i/f dropped packets */
@@ -52,11 +56,10 @@ int	tflag;		/* show i/f watchdog timers */
 int	interval;	/* repeat interval for i/f stats */
 
 char	*interface;	/* desired i/f for stats, or NULL for all i/fs */
-int	unit;		/* unit number for above */
 
 int	af;		/* address family */
 
-char	*prog;		/* program name */
+extern	char *__progname; /* program name, from crt0.o */
 
 
 int	kread __P((u_long addr, char *buf, int size));
@@ -69,6 +72,9 @@ void	udp_stats __P((u_long, char *));
 void	ip_stats __P((u_long, char *));
 void	icmp_stats __P((u_long, char *));
 void	igmp_stats __P((u_long, char *));
+void	ah_stats __P((u_long, char *));
+void	esp_stats __P((u_long, char *));
+void	ip4_stats __P((u_long, char *));
 void	protopr __P((u_long, char *));
 
 void	mbpr(u_long);
@@ -79,20 +85,28 @@ void	impstats __P((u_long, u_long));
 void	intpr __P((int, u_long));
 
 void	pr_rthdr __P(());
+void	pr_encaphdr __P(());
 void	pr_family __P((int));
 void	rt_stats __P((u_long));
 char	*ns_phost __P((struct sockaddr *));
+char	*ipx_phost __P((struct sockaddr *));
 void	upHex __P((char *));
 
-char	*routename __P((u_int32_t));
-char	*netname __P((u_int32_t, u_int32_t));
+char	*routename __P((in_addr_t));
+char	*netname __P((in_addr_t, in_addr_t));
 char	*ns_print __P((struct sockaddr *));
+char	*ipx_print __P((struct sockaddr *));
 void	routepr __P((u_long));
 
 void	nsprotopr __P((u_long, char *));
 void	spp_stats __P((u_long, char *));
 void	idp_stats __P((u_long, char *));
 void	nserr_stats __P((u_long, char *));
+
+void	ipxprotopr __P((u_long, char *));
+void	spx_stats __P((u_long, char *));
+void	ipx_stats __P((u_long, char *));
+void	ipxerr_stats __P((u_long, char *));
 
 void	intpr __P((int, u_long));
 
@@ -109,3 +123,9 @@ void	tp_stats __P((caddr_t, caddr_t));
 
 void	mroutepr __P((u_long, u_long, u_long, u_long));
 void	mrt_stats __P((u_long, u_long));
+
+void	atalkprotopr __P((u_long, char *));
+void	ddp_stats __P((u_long, char *));
+char	*atalk_print __P((const struct sockaddr *, int));
+char	*atalk_print2 __P((const struct sockaddr *,
+		const struct sockaddr *, int));

@@ -1,3 +1,6 @@
+/*	$OpenBSD: vars.c,v 1.3 1997/07/13 21:21:18 millert Exp $	*/
+/*	$NetBSD: vars.c,v 1.4 1996/06/08 19:48:45 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)vars.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: vars.c,v 1.3 1994/06/29 05:09:49 deraadt Exp $";
+#if 0
+static char sccsid[] = "@(#)vars.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: vars.c,v 1.3 1997/07/13 21:21:18 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -58,7 +64,7 @@ assign(name, value)
 	h = hash(name);
 	vp = lookup(name);
 	if (vp == NOVAR) {
-		vp = (struct var *) calloc(sizeof *vp, 1);
+		vp = (struct var *)calloc(sizeof(*vp), 1);
 		vp->v_name = vcopy(name);
 		vp->v_link = variables[h];
 		variables[h] = vp;
@@ -78,7 +84,7 @@ vfree(cp)
 	char *cp;
 {
 	if (*cp)
-		free(cp);
+		(void)free(cp);
 }
 
 /*
@@ -94,12 +100,12 @@ vcopy(str)
 	unsigned len;
 
 	if (*str == '\0')
-		return "";
+		return("");
 	len = strlen(str) + 1;
-	if ((new = malloc(len)) == NULL)
+	if ((new = (char *)malloc(len)) == NULL)
 		panic("Out of memory");
-	bcopy(str, new, (int) len);
-	return new;
+	(void)memcpy(new, str, len);
+	return(new);
 }
 
 /*
@@ -187,5 +193,5 @@ hash(name)
 	}
 	if (h < 0 && (h = -h) < 0)
 		h = 0;
-	return (h % HSHSIZE);
+	return(h % HSHSIZE);
 }

@@ -1,4 +1,4 @@
-/*	$NetBSD: isa_machdep.h,v 1.4 1995/05/04 19:39:46 cgd Exp $	*/
+/*	$NetBSD: isa_machdep.h,v 1.6 1996/05/03 19:14:56 christos Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -39,6 +39,14 @@
  */
 
 /*
+ * Various pieces of the i386 port want to include this file without
+ * or in spite of using isavar.h, and should be fixed.
+ */
+
+#ifndef _I386_ISA_MACHDEP_H_			/* XXX */
+#define _I386_ISA_MACHDEP_H_			/* XXX */
+
+/*
  * XXX THIS FILE IS A MESS.  copyright: berkeley's probably.
  * contents from isavar.h and isareg.h, mostly the latter.
  * perhaps charles's?
@@ -46,7 +54,27 @@
  * copyright from berkeley's isa.h which is now dev/isa/isareg.h.
  */
 
+/*
+ * Types provided to machine-independent ISA code.
+ */
+typedef void *isa_chipset_tag_t;
 
+struct device;			/* XXX */
+struct isabus_attach_args;	/* XXX */
+
+/*
+ * Functions provided to machine-independent ISA code.
+ */
+void	isa_attach_hook __P((struct device *, struct device *,
+	    struct isabus_attach_args *));
+void	*isa_intr_establish __P((isa_chipset_tag_t ic, int irq, int type,
+	    int level, int (*ih_fun)(void *), void *ih_arg, char *ih_what));
+void	isa_intr_disestablish __P((isa_chipset_tag_t ic, void *handler));
+
+/*
+ * ALL OF THE FOLLOWING ARE MACHINE-DEPENDENT, AND SHOULD NOT BE USED
+ * BY PORTABLE CODE.
+ */
 /*
  * XXX Various seemingly PC-specific constants, some of which may be
  * unnecessary anyway.
@@ -70,44 +98,33 @@
 /*
  * stuff that used to be in pccons.c
  */
-#define	MONO_BASE	0x3B4
 #define	MONO_BUF	0xB0000
-#define	CGA_BASE	0x3D4
 #define	CGA_BUF		0xB8000
 #define	IOPHYSMEM	0xA0000
 
 
 /*
- * Interrupt handler chains.  isa_intr_establish() inserts a handler into
- * the list.  The handler is called with its (single) argument.
- */
-
-struct intrhand {
-	int	(*ih_fun)();
-	void	*ih_arg;
-	u_long	ih_count;
-	struct	intrhand *ih_next;
-	int	ih_level;
-	int	ih_irq;
-};
-
- 
-/*
  * ISA DMA bounce buffers.
  * XXX should be made partially machine- and bus-mapping-independent.
  *
  * DMA_BOUNCE is the number of pages of low-addressed physical memory
- * to acquire for ISA bounce buffers.
+ * to acquire for ISA bounce buffers. If physical memory below 16 MB
+ * then DMA_BOUNCE_LOW will be used.
  *
- * isaphysmem is the location of those bounce buffers.  (They are currently
- * assumed to be contiguous.
+ * isaphysmem is the address of this physical contiguous low memory.
+ * isaphysmempgs is the number of pages allocated.
  */
 
 #ifndef DMA_BOUNCE
-#define	DMA_BOUNCE      8		/* one buffer per channel */
+#define	DMA_BOUNCE      48		/* number of pages if memory > 16M */
+#endif
+
+#ifndef DMA_BOUNCE_LOW
+#define	DMA_BOUNCE_LOW  16		/* number of pages if memory <= 16M */
 #endif
 
 extern vm_offset_t isaphysmem;
+extern int isaphysmempgs;
 
 
 /*
@@ -135,3 +152,5 @@ extern u_long atdevbase;           /* kernel virtual address of "hole" */
  * Miscellanous functions.
  */
 void sysbeep __P((int, int));		/* beep with the system speaker */
+
+#endif /* _I386_ISA_MACHDEP_H_ XXX */

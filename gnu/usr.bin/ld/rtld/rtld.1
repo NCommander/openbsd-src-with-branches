@@ -30,7 +30,7 @@
 .\"
 .Dd June 27, 1995
 .Dt RTLD 1
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm ld.so
 .Nd run-time link-editor
@@ -54,8 +54,8 @@ After all shared libraries have been succesfully loaded,
 proceeds to resolve external references from both the main program and
 all objects loaded. A mechanism is provided for initialisation routines
 to be called, on a per-object basis, giving a shared object an opportunity
-to perfrom any extra set-up, before execution of the program proper begins.
-This is useful for C++ libraries that contain static constrictors.
+to perform any extra set-up, before execution of the program proper begins.
+This is useful for C++ libraries that contain static constructors.
 .Pp
 .Nm
 is itself a shared object that is initially loaded by the startup module
@@ -70,7 +70,7 @@ uses the special symbol
 to determine whether a program is in fact dynamically linked or not. Whenever
 the linker
 .Xr ld 1
-has relocated this symbol to a location other then 0,
+has relocated this symbol to a location other than 0,
 .Em crt0
 assumes the services of
 .Nm
@@ -127,7 +127,7 @@ the absolute pathnames of all objects, to standard output.
 When set, these variables are interpreted as format strings a la
 .Xr printf 3
 to customize the trace output and are used by
-.Xr ldd 1 's
+.Xr ldd 1 Ns 's
 .Fl f
 option and allows
 .Xr ldd 1
@@ -145,9 +145,9 @@ The value of the environment variable
 .It \&%o
 The libary name.
 .It \&%m
-The library's major version numer.
+The library's major version number.
 .It \&%n
-The library's minor version numer.
+The library's minor version number.
 .It \&%p
 The full pathname as determined by
 .Nm rtld Ns 's

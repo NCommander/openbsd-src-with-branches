@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: mkswap.c,v 1.6 1996/11/10 07:57:25 downsj Exp $	*/
+/*	$NetBSD: mkswap.c,v 1.5 1996/08/31 20:58:27 mycroft Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -40,7 +43,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mkswap.c	8.1 (Berkeley) 6/6/93
- *	$Id: mkswap.c,v 1.1 1995/04/28 06:55:17 cgd Exp $
  */
 
 #include <sys/param.h>
@@ -86,12 +88,10 @@ mkoneswap(cf)
 {
 	register struct nvlist *nv;
 	register FILE *fp;
-	register char *fname;
-	char buf[200];
+	char fname[200];
 	char *mountroot;
 
-	(void)sprintf(buf, "swap%s.c", cf->cf_name);
-	fname = path(buf);
+	(void)sprintf(fname, "swap%s.c", cf->cf_name);
 	if ((fp = fopen(fname, "w")) == NULL) {
 		(void)fprintf(stderr, "config: cannot write %s: %s\n",
 		    fname, strerror(errno));
@@ -99,7 +99,8 @@ mkoneswap(cf)
 	}
 	if (fputs("\
 #include <sys/param.h>\n\
-#include <sys/conf.h>\n\n", fp) < 0)
+#include <sys/conf.h>\n\
+#include <sys/systm.h>\n\n", fp) < 0)
 		goto wrerror;
 	nv = cf->cf_root;
 	if (fprintf(fp, "dev_t\trootdev = %s;\t/* %s */\n",
@@ -118,17 +119,14 @@ mkoneswap(cf)
 	if (fputs("\t{ NODEV, 0, 0 }\n};\n\n", fp) < 0)
 		goto wrerror;
 	mountroot =
-	    cf->cf_root->nv_str == s_nfs ? "nfs_mountroot" : "ffs_mountroot";
-	if (fprintf(fp, "extern int %s();\n", mountroot) < 0)
-		goto wrerror;
-	if (fprintf(fp, "int (*mountroot)() = %s;\n", mountroot) < 0)
+	    cf->cf_root->nv_str == s_nfs ? "nfs_mountroot" : "dk_mountroot";
+	if (fprintf(fp, "int (*mountroot) __P((void)) = %s;\n", mountroot) < 0)
 		goto wrerror;
 
 	if (fclose(fp)) {
 		fp = NULL;
 		goto wrerror;
 	}
-	free(fname);
 	return (0);
 wrerror:
 	(void)fprintf(stderr, "config: error writing %s: %s\n",
@@ -136,6 +134,5 @@ wrerror:
 	if (fp != NULL)
 		(void)fclose(fp);
 	/* (void)unlink(fname); */
-	free(fname);
 	return (1);
 }

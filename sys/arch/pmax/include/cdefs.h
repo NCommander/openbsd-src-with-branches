@@ -1,4 +1,4 @@
-/*	$NetBSD: cdefs.h,v 1.3 1995/05/03 06:04:54 mellon Exp $	*/
+/*	$NetBSD: cdefs.h,v 1.4 1995/12/15 01:17:04 jonathan Exp $	*/
 
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
@@ -34,5 +34,26 @@
 
 #define	__indr_references(sym,msg)	/* nothing */
 #define	__warn_references(sym,msg)	/* nothing */
+
+/* Kernel-only .sections for kernel copyright */
+#ifdef _KERNEL
+
+#ifdef __STDC__
+#define	__KERNEL_SECTIONSTRING(_sec, _str)				\
+	__asm__(".section " #_sec " ; .asciz \"" _str "\" ; .text")
+#else
+#define	__KERNEL_SECTIONSTRING(_sec, _str)				\
+	__asm__(".section _sec ; .asciz _str ; .text")
+#endif
+
+#define	__KERNEL_RCSID(_n, _s)		__KERNEL_SECTIONSTRING(.ident, _s)
+#define	__KERNEL_COPYRIGHT(_n, _s)	__KERNEL_SECTIONSTRING(.copyright, _s)
+
+#ifdef NO_KERNEL_RCSIDS
+#undef __KERNEL_RCSID
+#define	__KERNEL_RCSID(_n, _s)		/* nothing */
+#endif
+
+#endif /* _KERNEL */
 
 #endif /* !_MACHINE_CDEFS_H_ */

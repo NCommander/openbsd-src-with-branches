@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.3 1995/02/27 16:36:07 cgd Exp $
 #	$NetBSD: Makefile,v 1.3 1995/02/27 16:36:07 cgd Exp $
 
 # Makefile for alpha tags file and boot blocks

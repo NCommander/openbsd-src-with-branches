@@ -1,3 +1,5 @@
+/*	$OpenBSD: env.c,v 1.3 1996/06/26 05:32:40 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)env.c	8.3 (Berkeley) 4/2/94";*/
-static char rcsid[] = "$NetBSD: env.c,v 1.8 1995/09/28 07:34:39 perry Exp $";
+static char rcsid[] = "$OpenBSD: env.c,v 1.3 1996/06/26 05:32:40 deraadt Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -58,9 +60,8 @@ main(argc, argv)
 	char **argv;
 {
 	extern char **environ;
-	extern int errno, optind;
+	extern int optind;
 	char **ep, *p;
-	char *cleanenv[1];
 	int ch;
 
 	setlocale(LC_ALL, "");
@@ -69,8 +70,8 @@ main(argc, argv)
 		switch((char)ch) {
 		case '-':			/* obsolete */
 		case 'i':
-			environ = cleanenv;
-			cleanenv[0] = NULL;
+			if ((environ = (char **)calloc(1, sizeof(char *))) == NULL)
+				err(1, "calloc");
 			break;
 		case '?':
 		default:

@@ -1,3 +1,6 @@
+/*	$OpenBSD: utilities.c,v 1.2 1996/03/27 19:33:15 niklas Exp $	*/
+/*	$NetBSD: utilities.c,v 1.5 1996/02/28 21:04:21 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,12 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: utilities.c,v 1.3 1994/02/25 03:00:51 cgd Exp $";
+#if 0
+static char sccsid[] = "@(#)utilities.c	8.3 (Berkeley) 5/30/95";
+static char rcsid[] = "$NetBSD: utilities.c,v 1.5 1996/02/28 21:04:21 thorpej Exp $";
+#else
+static char rcsid[] = "$OpenBSD: utilities.c,v 1.2 1996/03/27 19:33:15 niklas Exp $";
+#endif
 #endif /* not lint */
 
 #define	TELOPTS
@@ -42,7 +49,8 @@ static char *rcsid = "$Id: utilities.c,v 1.3 1994/02/25 03:00:51 cgd Exp $";
 #include <arpa/telnet.h>
 #include <sys/types.h>
 #include <sys/time.h>
-
+#include <sys/socket.h>
+#include <unistd.h>
 #include <ctype.h>
 
 #include "general.h"
@@ -135,7 +143,6 @@ Dump(direction, buffer, length)
 #   define min(x,y)	((x<y)? x:y)
     unsigned char *pThis;
     int offset;
-    extern pettydump;
 
     offset = 0;
 
@@ -297,7 +304,6 @@ printsub(direction, pointer, length)
     int		  length;	/* length of suboption data */
 {
     register int i;
-    char buf[512];
     extern int want_status_response;
 
     if (showoptions || direction == 0 ||
@@ -524,7 +530,7 @@ printsub(direction, pointer, length)
 		    break;
 		}
 		break;
-		
+
 	    case LM_SLC:
 		fprintf(NetTrace, "SLC");
 		for (i = 2; i < length - 2; i += 3) {
@@ -656,7 +662,7 @@ printsub(direction, pointer, length)
 			    fprintf(NetTrace, "\n");
 
 			break;
-				
+
 		    default:
 			fprintf(NetTrace, " %d", pointer[i]);
 			break;
@@ -750,7 +756,6 @@ printsub(direction, pointer, length)
 			    break;
 
 			default:
-			def_case:
 			    if (isprint(pointer[i]) && pointer[i] != '"') {
 				if (noquote) {
 				    putc('"', NetTrace);

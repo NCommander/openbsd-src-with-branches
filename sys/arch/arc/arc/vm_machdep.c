@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vm_machdep.c,v 1.4 1997/03/23 11:34:31 pefo Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -39,10 +39,8 @@
  * from: Utah Hdr: vm_machdep.c 1.21 91/04/06
  *
  *	from: @(#)vm_machdep.c	8.3 (Berkeley) 1/4/94
- *      $Id: vm_machdep.c,v 1.3 1996/05/15 07:09:12 pefo Exp $
+ *      $Id: vm_machdep.c,v 1.4 1997/03/23 11:34:31 pefo Exp $
  */
-
-
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -51,18 +49,21 @@
 #include <sys/buf.h>
 #include <sys/vnode.h>
 #include <sys/user.h>
+#include <sys/core.h>
+#include <sys/exec.h>
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
 #include <vm/vm_page.h>
-#if 0
-#include <vm/vm_object.h>
-#endif
 
 #include <machine/pte.h>
 #include <machine/cpu.h>
 
-vm_offset_t kmem_alloc_wait_align();
+vm_offset_t kmem_alloc_wait_align __P((vm_map_t, vm_size_t, vm_size_t));
+static int vm_map_findspace_align __P((vm_map_t map, vm_offset_t, vm_size_t,
+					vm_offset_t *, vm_size_t));
+int vm_map_find_U __P((vm_map_t, vm_object_t, vm_offset_t, vm_offset_t *,
+			vm_size_t, boolean_t));
 
 /*
  * Finish a fork operation, with process p2 nearly set up.
@@ -73,12 +74,13 @@ vm_offset_t kmem_alloc_wait_align();
  * address in each process; in the future we will probably relocate
  * the frame pointers on the stack after copying.
  */
+int
 cpu_fork(p1, p2)
 	register struct proc *p1, *p2;
 {
-	register struct user *up = p2->p_addr;
-	register pt_entry_t *pte;
-	register int i;
+	struct user *up = p2->p_addr;
+	pt_entry_t *pte;
+	int i;
 	extern struct proc *machFPCurProcPtr;
 
 	p2->p_md.md_regs = up->u_pcb.pcb_regs;
@@ -162,7 +164,8 @@ cpu_swapin(p)
  * pcb and stack and never returns.  We block memory allocation
  * until switch_exit has made things safe again.
  */
-void cpu_exit(p)
+void
+cpu_exit(p)
 	struct proc *p;
 {
 	extern struct proc *machFPCurProcPtr;
@@ -181,13 +184,22 @@ void cpu_exit(p)
 /*
  * Dump the machine specific header information at the start of a core dump.
  */
-cpu_coredump(p, vp, cred, core)
+int
+cpu_coredump(p, vp, cred, chdr)
 	struct proc *p;
 	struct vnode *vp;
 	struct ucred *cred;
-	struct core *core;
+	struct core *chdr;
 {
+	int error;
+	/*register struct user *up = p->p_addr;*/
+	struct coreseg cseg;
 	extern struct proc *machFPCurProcPtr;
+
+	CORE_SETMAGIC(*chdr, COREMAGIC, MID_MIPS, 0);
+	chdr->c_hdrsize = ALIGN(sizeof(*chdr));
+	chdr->c_seghdrsize = ALIGN(sizeof(cseg));
+	chdr->c_cpusize = sizeof (p -> p_addr -> u_pcb.pcb_regs);
 
 	/*
 	 * Copy floating point state from the FP chip if this process
@@ -196,9 +208,27 @@ cpu_coredump(p, vp, cred, core)
 	if (p == machFPCurProcPtr)
 		MachSaveCurFPState(p);
 
-	return (vn_rdwr(UIO_WRITE, vp, (caddr_t)p->p_addr, ctob(UPAGES),
-	    (off_t)0, UIO_SYSSPACE, IO_NODELOCKED|IO_UNIT, cred, (int *)NULL,
-	    p));
+	CORE_SETMAGIC(cseg, CORESEGMAGIC, MID_MIPS, CORE_CPU);
+	cseg.c_addr = 0;
+	cseg.c_size = chdr->c_cpusize;
+
+	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cseg, chdr->c_seghdrsize,
+	    (off_t)chdr->c_hdrsize, UIO_SYSSPACE,
+	    IO_NODELOCKED|IO_UNIT, cred, (int *)NULL, p);
+	if (error)
+		return error;
+
+	error = vn_rdwr(UIO_WRITE, vp,
+			(caddr_t)(&(p -> p_addr -> u_pcb.pcb_regs)),
+			(off_t)chdr -> c_cpusize,
+	    		(off_t)(chdr->c_hdrsize + chdr->c_seghdrsize),
+			UIO_SYSSPACE, IO_NODELOCKED|IO_UNIT,
+			cred, (int *)NULL, p);
+
+	if (!error)
+		chdr->c_nseg++;
+
+	return error;
 }
 
 /*
@@ -208,21 +238,21 @@ cpu_coredump(p, vp, cred, core)
  */
 void
 pagemove(from, to, size)
-	register caddr_t from, to;
+	caddr_t from, to;
 	size_t size;
 {
-	register pt_entry_t *fpte, *tpte;
+	pt_entry_t *fpte, *tpte;
 
 	if (size % CLBYTES)
 		panic("pagemove");
 	fpte = kvtopte(from);
 	tpte = kvtopte(to);
-	if(((int)from & machCacheAliasMask) != ((int)to & machCacheAliasMask)) {
-		MachHitFlushDCache(from, size);
+	if(((int)from & CpuCacheAliasMask) != ((int)to & CpuCacheAliasMask)) {
+		R4K_HitFlushDCache((vm_offset_t)from, size);
 	}
 	while (size > 0) {
-		MachTLBFlushAddr(from);
-		MachTLBUpdate(to, *fpte);
+		R4K_TLBFlushAddr((vm_offset_t)from);
+		R4K_TLBUpdate((vm_offset_t)to, fpte->pt_entry);
 		*tpte++ = *fpte;
 		fpte->pt_entry = PG_NV | PG_G;
 		fpte++;
@@ -269,7 +299,7 @@ vmapbuf(bp, len)
 	off = (int)addr & PGOFSET;
 	p = bp->b_proc;
 	sz = round_page(off + len);
-	kva = kmem_alloc_wait_align(phys_map, sz, (vm_size_t)addr & machCacheAliasMask);
+	kva = kmem_alloc_wait_align(phys_map, sz, (vm_size_t)addr & CpuCacheAliasMask);
 	bp->b_un.b_addr = (caddr_t) (kva + off);
 	sz = atop(sz);
 	while (sz--) {
@@ -384,10 +414,10 @@ vm_map_find_U(map, object, offset, addr, length, find_space)
  * Find sufficient space for `length' bytes in the given map, starting at
  * `start'.  The map must be locked.  Returns 0 on success, 1 on no space.
  */
-int
+static int
 vm_map_findspace_align(map, start, length, addr, align)
-	register vm_map_t map;
-	register vm_offset_t start;
+	vm_map_t map;
+	vm_offset_t start;
 	vm_size_t length;
 	vm_offset_t *addr;
 	vm_size_t align;
@@ -427,11 +457,11 @@ vm_map_findspace_align(map, start, length, addr, align)
 		 * win.
 		 */
 		start = ((start + NBPG -1) & ~(NBPG - 1)); /* Paranoia */
-		if((start & machCacheAliasMask) <= align) {
-			start += align - (start & machCacheAliasMask);
+		if((start & CpuCacheAliasMask) <= align) {
+			start += align - (start & CpuCacheAliasMask);
 		}
 		else {
-			start = ((start + machCacheAliasMask) & ~machCacheAliasMask);
+			start = ((start + CpuCacheAliasMask) & ~CpuCacheAliasMask);
 			start += align;
 		}
 			

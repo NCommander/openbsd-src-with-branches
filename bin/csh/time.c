@@ -1,3 +1,4 @@
+/*	$OpenBSD: time.c,v 1.3 1996/12/14 12:17:44 mickey Exp $	*/
 /*	$NetBSD: time.c,v 1.7 1995/03/21 13:55:25 mycroft Exp $	*/
 
 /*-
@@ -37,12 +38,12 @@
 #if 0
 static char sccsid[] = "@(#)time.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: time.c,v 1.7 1995/03/21 13:55:25 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: time.c,v 1.3 1996/12/14 12:17:44 mickey Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -250,7 +251,7 @@ pdeltat(t1, t0)
     struct timeval td;
 
     timersub(t1, t0, &td);
-    (void) fprintf(cshout, "%d.%01d", td.tv_sec, td.tv_usec / 100000);
+    (void) fprintf(cshout, "%ld.%01ld", td.tv_sec, td.tv_usec / 100000);
 }
 
 #define  P2DIG(i) (void) fprintf(cshout, "%d%d", (i) / 10, (i) % 10)

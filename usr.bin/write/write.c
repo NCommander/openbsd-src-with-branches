@@ -1,3 +1,4 @@
+/*	$OpenBSD: write.c,v 1.7 1996/10/25 06:15:03 downsj Exp $	*/
 /*	$NetBSD: write.c,v 1.5 1995/08/31 21:48:32 jtc Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)write.c	8.2 (Berkeley) 4/27/95";
 #endif
-static char *rcsid = "$NetBSD: write.c,v 1.5 1995/08/31 21:48:32 jtc Exp $";
+static char *rcsid = "$OpenBSD: write.c,v 1.7 1996/10/25 06:15:03 downsj Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -58,10 +59,12 @@ static char *rcsid = "$NetBSD: write.c,v 1.5 1995/08/31 21:48:32 jtc Exp $";
 #include <signal.h>
 #include <time.h>
 #include <fcntl.h>
+#include <paths.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <utmp.h>
 #include <err.h>
+#include <vis.h>
 
 void done(); 
 void do_write __P((char *, char *, uid_t));
@@ -97,7 +100,7 @@ main(argc, argv)
 	if (term_chk(mytty, &msgsok, &atime, 1))
 		exit(1);
 	if (!msgsok)
-		errx(1, "you have write permission turned off");
+		warnx("you have write permission turned off");
 
 	myuid = getuid();
 
@@ -108,8 +111,8 @@ main(argc, argv)
 		do_write(tty, mytty, myuid);
 		break;
 	case 3:
-		if (!strncmp(argv[2], "/dev/", 5))
-			argv[2] += 5;
+		if (!strncmp(argv[2], _PATH_DEV, strlen(_PATH_DEV)))
+			argv[2] += strlen(_PATH_DEV);
 		if (utmp_chk(argv[1], argv[2]))
 			errx(1, "%s is not logged in on %s",
 			    argv[1], argv[2]);
@@ -227,7 +230,7 @@ term_chk(tty, msgsokP, atimeP, showerror)
 	struct stat s;
 	char path[MAXPATHLEN];
 
-	(void)sprintf(path, "/dev/%s", tty);
+	(void)snprintf(path, sizeof(path), "%s%s", _PATH_DEV, tty);
 	if (stat(path, &s) < 0) {
 		if (showerror)
 			warn("%s", path);
@@ -258,7 +261,7 @@ do_write(tty, mytty, myuid)
 		else
 			login = "???";
 
-	(void)sprintf(path, "/dev/%s", tty);
+	(void)snprintf(path, sizeof(path), "%s%s", _PATH_DEV, tty);
 	if ((freopen(path, "w", stdout)) == NULL)
 		err(1, "%s", path);
 
@@ -296,7 +299,8 @@ void
 wr_fputs(s)
 	register char *s;
 {
-	register char c;
+	register u_char c;
+	char visout[4], *s2;
 
 #define	PUTC(c)	if (putchar(c) == EOF) goto err;
 
@@ -305,11 +309,11 @@ wr_fputs(s)
 		if (c == '\n') {
 			PUTC('\r');
 			PUTC('\n');
-		} else if (!isprint(c) && !isspace(c) && c != '\007') {
-			PUTC('^');
-			PUTC(c^0x40);	/* DEL to ?, others to alpha */
-		} else
-			PUTC(c);
+			continue;
+		}
+		vis(visout, c, VIS_SAFE|VIS_NOSLASH, s[1]);
+		for (s2 = visout; *s2; s2++)
+			PUTC(*s2);
 	}
 	return;
 

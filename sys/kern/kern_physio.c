@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_physio.c,v 1.25 1995/10/10 02:51:45 mycroft Exp $	*/
+/*	$OpenBSD: kern_physio.c,v 1.3 1997/07/25 02:44:22 mickey Exp $	*/
+/*	$NetBSD: kern_physio.c,v 1.28 1997/05/19 10:43:28 pk Exp $	*/
 
 /*-
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -47,6 +48,8 @@
 #include <sys/conf.h>
 #include <sys/proc.h>
 
+#include <vm/vm.h>
+
 /*
  * The routines implemented in this file are described in:
  *	Leffler, et al.: The Design and Implementation of the 4.3BSD
@@ -90,13 +93,15 @@ physio(strategy, bp, dev, flags, minphys, uio)
 	 * writing, so we ignore the uio's rw parameter.  Also note that if
 	 * we're doing a read, that's a *write* to user-space.
 	 */
-	for (i = 0; i < uio->uio_iovcnt; i++)
-		if (!useracc(uio->uio_iov[i].iov_base, uio->uio_iov[i].iov_len,
-		    (flags == B_READ) ? B_WRITE : B_READ))
-			return (EFAULT);
+	if (uio->uio_segflg == UIO_USERSPACE)
+		for (i = 0; i < uio->uio_iovcnt; i++)
+			if (!useracc(uio->uio_iov[i].iov_base,
+			    uio->uio_iov[i].iov_len,
+			    (flags == B_READ) ? B_WRITE : B_READ))
+				return (EFAULT);
 
 	/* Make sure we have a buffer, creating one if necessary. */
-	if (nobuf = (bp == NULL))
+	if ((nobuf = (bp == NULL)) != 0)
 		bp = getphysbuf();
 
 	/* [raise the processor priority level to splbio;] */

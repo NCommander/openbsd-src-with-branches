@@ -1,4 +1,5 @@
-/*	$NetBSD: genassym.c,v 1.29 1995/09/26 04:02:19 gwr Exp $	*/
+/*	$OpenBSD: genassym.c,v 1.7 1997/02/14 21:13:49 kstailey Exp $	*/
+/*	$NetBSD: genassym.c,v 1.32 1996/10/23 16:39:27 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
@@ -38,8 +39,6 @@
  *	from: genassym.c,v 1.9 1994/05/23 06:14:19 mycroft
  */
 
-#define _KERNEL
-
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/cdefs.h>
@@ -49,24 +48,46 @@
 
 #include <vm/vm.h>
 
+#include <machine/control.h>
 #include <machine/cpu.h>
+#include <machine/dvma.h>
 #include <machine/pcb.h>
 #include <machine/psl.h>
 #include <machine/pte.h>
-#include <machine/control.h>
+#include <machine/machdep.h>
 #include <machine/mon.h>
 #include <machine/vmparam.h>
-#include <machine/dvma.h>
 
 #include "intersil7170.h"
 #include "interreg.h"
 #include "buserr.h"
+
+#if 1	/* XXX - Temporary hack... */
+/*
+ * Make this work correctly on a SPARC!
+ * Should be able to fix this by adding:
+ * __attribute__((packed)) where needed.
+ */
+struct mytrapframe {
+	int 	tf_regs[16];
+	short	tf_pad;
+	short	tf_stackadj;
+	u_short	tf_sr;
+	u_short	tf_pc[2];	/* XXX was:  u_int tf_pc; */
+	u_short	tf_format:4,
+	        tf_vector:12;
+};
+#define trapframe mytrapframe
+#endif	/* XXX */
 
 #ifdef	__STDC__
 #define	def1(name) def(#name, name)
 #else
 #define	def1(name) def("name", name)
 #endif
+
+extern void printf __P((char *fmt, ...));
+extern void exit __P((int));
 
 void
 def(what, val)
@@ -78,13 +99,14 @@ def(what, val)
 	printf(((val > 999) ? "0x%x\n" : "%d\n"), val);
 }
 
+int
 main()
 {
 	struct pcb *pcb = (struct pcb *) 0;
 	struct proc *p = (struct proc *) 0;
 	struct vmspace *vms = (struct vmspace *) 0;
 	struct intersil7170 *intersil_addr = (struct intersil7170 *) 0;
-	struct frame *fp = (struct frame *) 0;
+	struct trapframe *tf = (struct trapframe *) 0;
 	struct fpframe *fpf = (struct fpframe *) 0;
 
 	/* intersil clock internals */
@@ -101,6 +123,7 @@ main()
 	def1(PSL_HIGHIPL);
 	def1(PSL_USER);
 	def1(PSL_S);
+	def1(PSL_IPL7);
 	def1(FC_CONTROL);
 	def1(FC_SUPERD);
 	def1(FC_USERD);
@@ -134,7 +157,7 @@ main()
 	def1(ENAMETOOLONG);
 
 	/* trap types: locore.s includes trap.h */
-	
+
 	/*
 	 * unix structure-isms
 	 */
@@ -165,16 +188,25 @@ main()
 	def("PCB_REGS", pcb->pcb_regs);
 	def("PCB_ONFAULT", &pcb->pcb_onfault);
 	def("PCB_FPCTX", &pcb->pcb_fpregs);
-	def("SIZEOF_PCB", sizeof(struct pcb));
+	def("SIZEOF_PCB", sizeof(*pcb));
 
 	/* exception frame offset/sizes */
-	def("FR_SP", &fp->f_regs[15]);
-	def("FR_HW", &fp->f_sr);
-	def("FR_ADJ", &fp->f_stackadj);
+	def("FR_SP", &tf->tf_regs[15]);
+	def("FR_ADJ", &tf->tf_stackadj);
+	def("FR_HW", &tf->tf_sr);
+	def("FR_SIZE", sizeof(*tf));
 
 	/* FP frame offsets */
 	def("FPF_REGS", &fpf->fpf_regs[0]);
 	def("FPF_FPCR", &fpf->fpf_fpcr);
+
+	/* SPL values */
+	def("SPL1", PSL_S | PSL_IPL1);
+	def("SPL2", PSL_S | PSL_IPL2);
+	def("SPL3", PSL_S | PSL_IPL3);
+	def("SPL4", PSL_S | PSL_IPL4);
+	def("SPL5", PSL_S | PSL_IPL5);
+	def("SPL6", PSL_S | PSL_IPL6);
 
 	exit(0);
 }

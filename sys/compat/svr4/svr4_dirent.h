@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_dirent.h,v 1.4 1995/10/07 06:27:37 mycroft Exp $	 */
 /*	$NetBSD: svr4_dirent.h,v 1.4 1995/10/07 06:27:37 mycroft Exp $	 */
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: makemove.c,v 1.2 1996/12/21 21:17:51 tholo Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -53,9 +53,10 @@ int	weight[5] = { 0, 1, 7, 22, 100 };
  *	MOVEOK	everything is OK.
  *	RESIGN	Player resigned.
  *	ILLEGAL	Illegal move.
- *	WIN	The the winning move was just played.
+ *	WIN	The winning move was just played.
  *	TIE	The game is a tie.
  */
+int
 makemove(us, mv)
 	int us, mv;
 {
@@ -213,13 +214,14 @@ makemove(us, mv)
 /*
  * fix up the overlap array due to updating spot osp.
  */
+void
 update_overlap(osp)
 	struct spotstr *osp;
 {
 	register struct spotstr *sp, *sp1, *sp2;
 	register int i, f, r, r1, d, d1, n;
 	int a, b, bmask, bmask1;
-	struct spotstr *esp;
+	struct spotstr *esp = NULL;
 	char *str;
 
 	for (r = 4; --r >= 0; ) {			/* for each direction */

@@ -1,24 +1,34 @@
 #	from: @(#)Makefile	8.1 (Berkeley) 6/1/93
-#	$Id: Makefile,v 1.4 1995/06/15 21:59:25 mellon Exp $
+#	$Id: Makefile,v 1.7 1996/12/08 15:22:21 downsj Exp $
 
-CFLAGS=		-DLIBC_SCCS
-OBJS=		crt0.o gcrt0.o
+CFLAGS+=	-DLIBC_SCCS -I${.CURDIR}
+OBJS=		crt0.o gcrt0.o scrt0.o crtn.o
 CLEANFILES+=	core a.out
+SRCS=		crt0.c
+DEPS=
 
 all: ${OBJS}
 
-crt0.o: crt0.S
-	${COMPILE.S} -DCRT0 ${.ALLSRC}
-	${LD} -x -r ${.TARGET}
-	mv a.out ${.TARGET}
+crt0.o: ${SRCS} ${DEPS}
+	@echo "${COMPILE.c} -DCRT0 -DDYNAMIC ${.CURDIR}/${SRCS} -o ${.TARGET}"
+	@${COMPILE.c} -DCRT0 -DDYNAMIC ${.CURDIR}/${SRCS} -o ${.TARGET}.o
+	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
+	@rm -f ${.TARGET}.o
 
-gcrt0.o: crt0.S
-	${COMPILE.S} -DMCRT0 ${.ALLSRC} -o ${.TARGET}
-	${LD} -x -r ${.TARGET}
-	mv a.out ${.TARGET}
+gcrt0.o: ${SRCS} ${DEPS}
+	@echo "${COMPILE.c} -DMCRT0 ${.CURDIR}/${SRCS} -o ${.TARGET}"
+	@${COMPILE.c} -DMCRT0 ${.CURDIR}/${SRCS} -o ${.TARGET}.o
+	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
+	@rm -f ${.TARGET}.o
+
+scrt0.o: ${SRCS} ${DEPS}
+	@echo "${COMPILE.c} -DSCRT0 ${.CURDIR}/${SRCS} -o ${.TARGET}"
+	@${COMPILE.c} -DSCRT0 ${.CURDIR}/${SRCS} -o ${.TARGET}.o
+	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
+	@rm -f ${.TARGET}.o
 
 install:
-	install ${COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
 
 depend lint tags:

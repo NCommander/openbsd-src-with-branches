@@ -1,8 +1,9 @@
-/*	$NetBSD: db_output.c,v 1.8 1994/06/29 22:41:41 deraadt Exp $	*/
+/*	$OpenBSD: db_output.c,v 1.12 1997/07/07 19:45:23 niklas Exp $	*/
+/*	$NetBSD: db_output.c,v 1.13 1996/04/01 17:27:14 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,16 +23,32 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  */
 
 /*
  * Printf and character output for debugger.
  */
 #include <sys/param.h>
+#include <sys/proc.h>
 
 #include <machine/stdarg.h>
+
+#include <dev/cons.h>
+
+#include <vm/vm.h>
+
+#include <machine/db_machdep.h>
+
+#include <ddb/db_command.h>
+#include <ddb/db_output.h>
+#include <ddb/db_interface.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_var.h>
+#include <ddb/db_extern.h>
+
+#include <lib/libkern/libkern.h>
 
 /*
  *	Character output - tracks position in line.
@@ -63,8 +80,13 @@ int	db_tab_stop_width = 8;		/* how wide are tab stops? */
 	((((i) + db_tab_stop_width) / db_tab_stop_width) * db_tab_stop_width)
 int	db_max_line = DB_MAX_LINE;	/* output max lines */
 int	db_max_width = DB_MAX_WIDTH;	/* output line width */
+int	db_radix = 16;			/* output numbers radix */
 
-extern void	db_check_interrupt();
+#ifdef DDB
+static void db_more __P((void));
+#endif
+static char *db_ksprintn __P((u_long, int, int *));
+static void db_printf_guts __P((const char *, va_list));
 
 /*
  * Force pending whitespace.
@@ -91,6 +113,7 @@ db_force_whitespace()
 	db_last_non_space = db_output_position;
 }
 
+#ifdef DDB
 static void
 db_more()
 {
@@ -120,15 +143,19 @@ db_more()
 	    /* NOTREACHED */
 	}
 }
+#endif
 
 /*
  * Output character.  Buffer whitespace.
  */
+void
 db_putchar(c)
 	int	c;		/* character to output */
 {
+#ifdef DDB
 	if (db_max_line >= DB_MIN_MAX_LINE && db_output_line >= db_max_line-1)
 	    db_more();
+#endif
 	if (c > ' ' && c <= '~') {
 	    /*
 	     * Printing character.
@@ -154,7 +181,9 @@ db_putchar(c)
 	    db_output_position = 0;
 	    db_last_non_space = 0;
 	    db_output_line++;
+#ifdef DDB
 	    db_check_interrupt();
+#endif
 	}
 	else if (c == '\t') {
 	    /* assume tabs every 8 positions */
@@ -183,45 +212,51 @@ db_print_position()
 /*
  * Printing
  */
-extern int	db_radix;
 
 /*VARARGS1*/
-#ifdef __STDC__
-db_printf(char *fmt, ...)
+int
+#if __STDC__
+db_printf(const char *fmt, ...)
 #else
 db_printf(fmt, va_alist)
-	char *fmt;
+	const char *fmt;
+	va_dcl
 #endif
 {
 	va_list	listp;
 	va_start(listp, fmt);
 	db_printf_guts (fmt, listp);
 	va_end(listp);
+	return 0;
 }
 
 /* alternate name */
 
 /*VARARGS1*/
-#ifdef __STDC__
-kdbprintf(char *fmt, ...)
+int
+#if __STDC__
+kdbprintf(const char *fmt, ...)
 #else
 kdbprintf(fmt, va_alist)
 	char *fmt;
+	va_dcl
 #endif
 {
 	va_list	listp;
 	va_start(listp, fmt);
 	db_printf_guts (fmt, listp);
 	va_end(listp);
+	return 0;
 }
 
 /*
  * End line if too long.
  */
 void
-db_end_line()
+db_end_line(space)
+	int space;
 {
-	if (db_output_position >= db_max_width)
+	if (db_output_position >= db_max_width - space)
 	    db_printf("\n");
 }
 
@@ -247,6 +282,7 @@ db_ksprintn(ul, base, lenp)
 	return (p);
 }
 
+static void
 db_printf_guts(fmt, ap)
 	register const char *fmt;
 	va_list ap;
@@ -263,7 +299,7 @@ db_printf_guts(fmt, ap)
 	for (;;) {
 		padc = ' ';
 		width = 0;
-		while ((ch = *(u_char *)fmt++) != '%') {
+		while ((ch = *(const u_char *)fmt++) != '%') {
 			if (ch == '\0')
 				return;
 			db_putchar(ch);
@@ -272,7 +308,7 @@ db_printf_guts(fmt, ap)
 		ladjust = 0;
 		sharpflag = 0;
 		neg = 0;
-reswitch:	switch (ch = *(u_char *)fmt++) {
+reswitch:	switch (ch = *(const u_char *)fmt++) {
 		case '0':
 			padc = '0';
 			goto reswitch;
@@ -297,13 +333,14 @@ reswitch:	switch (ch = *(u_char *)fmt++) {
 		case 'b':
 			ul = va_arg(ap, int);
 			p = va_arg(ap, char *);
-			for (p = db_ksprintn(ul, *p++, NULL); ch = *p--;)
+			for (p = db_ksprintn(ul, *p++, NULL);
+			     (ch = *p--) !='\0';)
 				db_putchar(ch);
 
 			if (!ul)
 				break;
 
-			for (tmp = 0; n = *p++;) {
+			for (tmp = 0; (n = *p++) != '\0';) {
 				if (ul & (1 << (n - 1))) {
 					db_putchar(tmp ? ',' : '<');
 					for (; (n = *p) > ' '; ++p)
@@ -322,6 +359,10 @@ reswitch:	switch (ch = *(u_char *)fmt++) {
 				width = -width;
 			}
 			goto reswitch;
+		case ':':
+			p = va_arg(ap, char *);
+			db_printf_guts (p, va_arg(ap, va_list));
+			break;
 		case 'c':
 			db_putchar(va_arg(ap, int));
 			break;
@@ -331,7 +372,7 @@ reswitch:	switch (ch = *(u_char *)fmt++) {
 			if (!ladjust && width > 0)
 				while (width--)
 					db_putchar (padc);
-			while (ch = *p++)
+			while ((ch = *p++) != '\0')
 				db_putchar(ch);
 			if (ladjust && width > 0)
 				while (width--)
@@ -364,6 +405,12 @@ reswitch:	switch (ch = *(u_char *)fmt++) {
 		case 'o':
 			ul = lflag ? va_arg(ap, u_long) : va_arg(ap, u_int);
 			base = 8;
+			goto number;
+		case 'p':
+			db_putchar ('0');
+			db_putchar ('x');
+			ul = (u_long) va_arg(ap, void *);
+			base = 16;
 			goto number;
 		case 'u':
 			ul = lflag ? va_arg(ap, u_long) : va_arg(ap, u_int);
@@ -407,7 +454,7 @@ number:			p = (char *)db_ksprintn(ul, base, &tmp);
 				while (width--)
 					db_putchar(padc);
 
-			while (ch = *p--)
+			while ((ch = *p--) != '\0')
 				db_putchar(ch);
 			break;
 		default:
@@ -420,4 +467,3 @@ number:			p = (char *)db_ksprintn(ul, base, &tmp);
 		}
 	}
 }
-

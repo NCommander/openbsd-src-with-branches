@@ -1,5 +1,3 @@
-/*	$NetBSD: freopen.c,v 1.4 1995/02/02 02:09:36 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,10 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)freopen.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: freopen.c,v 1.4 1995/02/02 02:09:36 jtc Exp $";
+static char rcsid[] = "$OpenBSD: freopen.c,v 1.5 1996/05/04 19:25:19 mycroft Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -114,7 +109,7 @@ freopen(file, mode, fp)
 	 * keep fp->_base: it may be the wrong size.  This loses the effect
 	 * of any setbuffer calls, but stdio has always done this before.
 	 */
-	if (isopen)
+	if (isopen && f != wantfd)
 		(void) (*fp->_close)(fp->_cookie);
 	if (fp->_flags & __SMBF)
 		free((char *)fp->_bf._base);

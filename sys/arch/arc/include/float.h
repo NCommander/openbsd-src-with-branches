@@ -1,4 +1,4 @@
-/*	$OpenBSD: float.h,v 1.2 1996/06/06 23:06:40 deraadt Exp $	*/
+/*	$OpenBSD: float.h,v 1.2 1996/07/30 20:24:25 pefo Exp $	*/
 /*	$NetBSD: float.h,v 1.7 1995/06/20 20:45:50 jtc Exp $	*/
 
 /*
@@ -36,13 +36,13 @@
  *	@(#)float.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef _PMAX_FLOAT_H_
-#define _PMAX_FLOAT_H_
+#ifndef _MIPS_FLOAT_H_
+#define _MIPS_FLOAT_H_
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern int __flt_rounds();
+int __flt_rounds __P((void));
 __END_DECLS
 
 #define FLT_RADIX	2		/* b */
@@ -78,4 +78,4 @@ __END_DECLS
 #define LDBL_MAX	DBL_MAX
 #define LDBL_MAX_10_EXP	DBL_MAX_10_EXP
 
-#endif	/* _PMAX_FLOAT_H_ */
+#endif	/* _MIPS_FLOAT_H_ */

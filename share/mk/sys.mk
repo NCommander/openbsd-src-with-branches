@@ -1,7 +1,14 @@
-#	$NetBSD: sys.mk,v 1.22 1995/09/24 23:49:09 christos Exp $
+#	$OpenBSD: sys.mk,v 1.10 1997/01/08 07:35:04 niklas Exp $
+#	$NetBSD: sys.mk,v 1.27 1996/04/10 05:47:19 mycroft Exp $
 #	@(#)sys.mk	5.11 (Berkeley) 3/13/91
 
-unix=		We run NetBSD.
+.if defined(EXTRA_SYS_MK_INCLUDES)
+.for __SYS_MK_INCLUDE in ${EXTRA_SYS_MK_INCLUDES}
+.include ${__SYS_MK_INCLUDE}
+.endfor
+.endif
+
+unix=		We run OpenBSD.
 
 .SUFFIXES: .out .a .ln .o .c .cc .C .F .f .r .y .l .s .S .cl .p .h .sh .m4
 
@@ -10,18 +17,21 @@ unix=		We run NetBSD.
 AR?=		ar
 ARFLAGS?=	rl
 RANLIB?=	ranlib
+LORDER?=	lorder
 
 AS?=		as
-AFLAGS?=
-COMPILE.s?=	${AS} ${AFLAGS}
+AFLAGS?=	${DEBUG}
+COMPILE.s?=	${CC} ${AFLAGS} -c
 LINK.s?=	${CC} ${AFLAGS} ${LDFLAGS}
 COMPILE.S?=	${CC} ${AFLAGS} ${CPPFLAGS} -c
 LINK.S?=	${CC} ${AFLAGS} ${CPPFLAGS} ${LDFLAGS}
 
 CC?=		cc
-CFLAGS?=	-O
+CFLAGS?=	-O ${DEBUG}
 COMPILE.c?=	${CC} ${CFLAGS} ${CPPFLAGS} -c
 LINK.c?=	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS}
+
+HOSTCC?=	cc
 
 CXX?=		g++
 CXXFLAGS?=	${CFLAGS}
@@ -29,9 +39,7 @@ COMPILE.cc?=	${CXX} ${CXXFLAGS} ${CPPFLAGS} -c
 LINK.cc?=	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS}
 
 CPP?=		cpp
-.if defined(DESTDIR)
-CPPFLAGS+=	-nostdinc -idirafter ${DESTDIR}/usr/include
-.endif
+CPPFLAGS?=	
 
 FC?=		f77
 FFLAGS?=		-O
@@ -66,15 +74,19 @@ YACC?=		yacc
 YFLAGS?=	-d
 YACC.y?=	${YACC} ${YFLAGS}
 
+INSTALL?=	install
+
 # C
 .c:
 	${LINK.c} -o ${.TARGET} ${.IMPSRC} ${LDLIBS}
 .c.o:
 	${COMPILE.c} ${.IMPSRC}
+.if (${MACHINE_ARCH} != "alpha")
 .c.a:
 	${COMPILE.c} ${.IMPSRC}
 	${AR} ${ARFLAGS} $@ $*.o
 	rm -f $*.o
+.endif
 .c.ln:
 	${LINT} ${LINTFLAGS} ${CFLAGS:M-[IDU]*} -i ${.IMPSRC}
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: types.h,v 1.23 1995/05/28 03:06:34 jtc Exp $	*/
+/*	$OpenBSD: types.h,v 1.9 1996/05/28 12:16:28 deraadt Exp $	*/
+/*	$NetBSD: types.h,v 1.29 1996/11/15 22:48:25 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -49,13 +50,16 @@
 #include <machine/ansi.h>
 #include <machine/endian.h>
 
-#ifndef _POSIX_SOURCE
+#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 typedef	unsigned char	u_char;
 typedef	unsigned short	u_short;
 typedef	unsigned int	u_int;
 typedef	unsigned long	u_long;
+
+typedef unsigned char	unchar;		/* Sys V compatibility */
 typedef	unsigned short	ushort;		/* Sys V compatibility */
 typedef	unsigned int	uint;		/* Sys V compatibility */
+typedef unsigned long	ulong;		/* Sys V compatibility */
 #endif
 
 typedef	u_int64_t	u_quad_t;	/* quads */
@@ -80,10 +84,10 @@ typedef	u_int32_t	uid_t;		/* user id */
 
 /*
  * These belong in unistd.h, but are placed here too to ensure that
- * long arguments will be promoted to off_t if the program fails to 
+ * long arguments will be promoted to off_t if the program fails to
  * include that header or explicitly cast them to off_t.
  */
-#ifndef _POSIX_SOURCE
+#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #ifndef _KERNEL
 #include <sys/cdefs.h>
 __BEGIN_DECLS
@@ -92,9 +96,9 @@ int	 ftruncate __P((int, off_t));
 int	 truncate __P((const char *, off_t));
 __END_DECLS
 #endif /* !_KERNEL */
-#endif /* !_POSIX_SOURCE */
+#endif /* !defined(_POSIX_SOURCE) ... */
 
-#ifndef _POSIX_SOURCE
+#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 /* Major, minor numbers, dev_t's. */
 #define	major(x)	((int32_t)(((u_int32_t)(x) >> 8) & 0xff))
 #define	minor(x)	((int32_t)((x) & 0xff))
@@ -121,7 +125,17 @@ typedef	_BSD_TIME_T_	time_t;
 #undef	_BSD_TIME_T_
 #endif
 
-#ifndef _POSIX_SOURCE
+#ifdef	_BSD_CLOCKID_T_
+typedef	_BSD_CLOCKID_T_	clockid_t;
+#undef	_BSD_CLOCKID_T_
+#endif
+
+#ifdef	_BSD_TIMER_T_
+typedef	_BSD_TIMER_T_	timer_t;
+#undef	_BSD_TIMER_T_
+#endif
+
+#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define	NBBY	8		/* number of bits in a byte */
 
 /*
@@ -148,8 +162,13 @@ typedef	struct fd_set {
 #define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
 #define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
 #define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
+#ifdef _KERNEL
 #define	FD_COPY(f, t)	bcopy(f, t, sizeof(*(f)))
 #define	FD_ZERO(p)	bzero(p, sizeof(*(p)))
+#else
+#define	FD_COPY(f, t)	memcpy(t, f, sizeof(*(f)))
+#define	FD_ZERO(p)	memset(p, 0, sizeof(*(p)))
+#endif
 
 #if defined(__STDC__) && defined(_KERNEL)
 /*
@@ -167,5 +186,5 @@ struct	tty;
 struct	uio;
 #endif
 
-#endif /* !_POSIX_SOURCE */
+#endif /* !defined(_POSIX_SOURCE) ... */
 #endif /* !_SYS_TYPES_H_ */

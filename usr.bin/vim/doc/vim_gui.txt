@@ -1,4 +1,4 @@
-*vim_gui.txt*   For Vim version 4.2.  Last modification: 1996 June 11
+*vim_gui.txt*   For Vim version 4.5.  Last modification: 1996 Oct 12
 
 
 		       Vim's Graphical User Interface
@@ -31,10 +31,23 @@ that waits for gvim to exit), start gvim with "gvim -f", "vim -gf" or use
 color.  If you want the GUI to run in the foreground always, include the 'f'
 flag in 'guioptions'.  |-f|.
 
-When the GUI starts up, the file ~/.gvimrc is sourced if it exists, and then
-the file ./.gvimrc.  This file may contain commands to set up your own
-customised menus (see |:menu|) and initialise other things that you may want
-to set up differently from the terminal version.
+							*gui_init*
+When the GUI starts up initializations are carried out, in this order:
+- If the system gvimrc exists, it is sourced.  The name if this file is
+  something like "/usr/local/share/vim/gvimrc".  You can check this with
+  ":version".
+- If the GVIMINIT environment variable exists and is not empty, it is
+  executed as an Ex command.  Otherwise, if the user gvimrc file exists, it
+  is sourced.  The name of this file is something like "$HOME/.gvimrc".  You
+  can check this with ":version".
+- If the 'exrc' option is set (which is NOT the default) the file ./.gvimrc
+  is sourced, if it exist and isn't the same file as the system or user
+  gvimrc file.  If this file is not owned by you, some security restrictions
+  apply.
+
+You can use the gvimrc files to set up your own customised menus (see |:menu|)
+and initialise other things that you may want to set up differently from the
+terminal version.
 
 There are a number of options which only have meaning in the GUI version of
 Vim.  These are 'guifont', 'guipty' and 'guioptions'.  They are documented
@@ -89,7 +102,7 @@ Vim*useEnhancedFSB:		true
 Vim.foreground:			Black
 Vim.background:			Wheat
 Vim.boldColor:			Blue
-Vim.italColor:			Cyan
+Vim.italicColor:		Magenta
 Vim.underlineColor:		Brown
 Vim.cursorColor:		DarkGreen
 Vim*menuBar*font:		7x13
@@ -99,6 +112,12 @@ which make Motif applications look even better, highly recommended!
 
 Don't use "Vim*geometry" in the defaults.  This will break the menus.  Use
 "Vim.geometry" instead.
+
+If you get an error message "Cannot allocate colormap entry for "gray60",
+try adding this to your Vim resources (change the colors to your liking):
+
+Vim*scrollBackground:		Black
+Vim*scrollForeground:		Blue
 
 The resources can also be set with arguments to vim:
 
@@ -461,7 +480,7 @@ scrollbars will remain the same, because Vim has its own, which are already
 
     - Window should be redrawn when resizing at the hit-return prompt.
 
-    - Use different cursor and mouse shapes/colours for different modes.
+    - Use different cursor and mouse shapes/colors for different modes.
 
     - Scrollbars with Motif 1.1 are ordered upside down!  Do we care?
 
@@ -474,8 +493,8 @@ scrollbars will remain the same, because Vim has its own, which are already
       current Vim window.
 
     - Add a new command :highlight for specifying how various things should
-      be highlighted, allowing colours to be given.  Currently it's all hard
-      coded, the text colour, bg colour etc.
+      be highlighted, allowing colors to be given.  Currently it's all hard
+      coded, the text color, bg color etc.
 
     - We need a nice little picture to go on the icon :-)  But how do we do
       that?

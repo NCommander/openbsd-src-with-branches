@@ -41,8 +41,8 @@
 .Nm sbrk
 .Nd change data segment size
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Ft int
+.Fd #include <unistd.h>
+.Ft char *
 .Fn brk "const char *addr"
 .Ft char *
 .Fn sbrk "int incr"
@@ -98,7 +98,7 @@ beyond the
 value returned from a call to
 .Xr getrlimit ,
 e.g.
-.Dq qetext + rlp\(->rlim_max.
+.Dq etext + rlp\(->rlim_max.
 (see
 .Xr end 3
 for the definition of
@@ -116,7 +116,7 @@ otherwise -1 with
 .Va errno
 set to indicate why the allocation failed.
 .Sh ERRORS
-.Xr Sbrk
+.Nm Sbrk
 will fail and no additional memory will be allocated if
 one of the following are true:
 .Bl -tag -width Er
@@ -135,6 +135,7 @@ to support the expansion.
 .Xr execve 2 ,
 .Xr getrlimit 2 ,
 .Xr malloc 3 ,
+.Xr mmap 2 ,
 .Xr end 3
 .Sh BUGS
 Setting the break may fail due to a temporary lack of

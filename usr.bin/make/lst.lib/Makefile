@@ -1,4 +1,5 @@
-#	$NetBSD: Makefile,v 1.3 1995/06/14 15:20:42 christos Exp $
+#	$OpenBSD: Makefile,v 1.3 1996/11/30 21:09:09 millert Exp $
+#	$NetBSD: Makefile,v 1.4 1996/11/06 17:59:31 christos Exp $
 
 OBJ=lstAppend.o lstDupl.o lstInit.o lstOpen.o lstAtEnd.o lstEnQueue.o \
     lstInsert.o lstAtFront.o lstIsAtEnd.o lstClose.o lstFind.o lstIsEmpty.o \
@@ -6,5 +7,5 @@ OBJ=lstAppend.o lstDupl.o lstInit.o lstOpen.o lstAtEnd.o lstEnQueue.o \
     lstDatum.o lstForEach.o lstMember.o lstSucc.o lstDeQueue.o \
     lstForEachFrom.o lstDestroy.o lstNext.o 
 
-CFLAGS=-I..
+CFLAGS+=-I..
 all: ${OBJ}

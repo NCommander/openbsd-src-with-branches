@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: kadm_ser_wrap.c,v 1.3 1997/02/19 06:08:37 tholo Exp $	*/
 
 /*-
  * Copyright (C) 1989 by the Massachusetts Institute of Technology
@@ -54,7 +54,7 @@ kadm_ser_init(int inter, char *realm)
       return KADM_NO_HOSTNAME;
 
   (void) strcpy(server_parm.sname, PWSERV_NAME);
-  (void) strcpy(server_parm.sinst, KRB_MASTER);
+  (void) strcpy(server_parm.sinst, KADM_SINST);
   (void) strcpy(server_parm.krbrlm, realm);
 
   server_parm.admin_fd = -1;

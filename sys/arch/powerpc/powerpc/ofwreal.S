@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofwreal.S,v 1.3 1997/01/27 03:40:09 rahnds Exp $	*/
 /*	$NetBSD: ofwreal.S,v 1.1 1996/09/30 16:34:51 ws Exp $	*/
 
 /*
@@ -40,7 +41,6 @@
  * Furthermore it assumes that addresses returned by OpenFirmware are not
  * accessed by the client.
  *
- * TODO: handle set-callback specially
  */
 #include <machine/asm.h>
 #include <machine/psl.h>
@@ -112,7 +112,9 @@ fwentry:
 	stw	3,8(1)			/* save return value */
 
 	mfmsr	4
-	andi.	4,4,~(PSL_IR|PSL_DR)	/* turn off MMU */
+	lis	3,(PSL_IR|PSL_DR)@h	/* turn off MMU */
+	ori	3,3,(PSL_IR|PSL_DR)@l	/* turn off MMU */
+	andc	4,4,3			/* turn off MMU */
 	mtmsr	4
 	isync
 

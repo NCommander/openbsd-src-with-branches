@@ -1,4 +1,5 @@
-.\"	$NetBSD: ping.8,v 1.9 1995/10/02 19:47:11 pk Exp $
+.\"	$OpenBSD: ping.8,v 1.5 1996/07/23 10:31:27 deraadt Exp $
+.\"	$NetBSD: ping.8,v 1.10 1995/12/31 04:55:35 ghudson Exp $
 .\"
 .\" Copyright (c) 1985, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -78,6 +79,10 @@ Stop after sending (and receiving)
 .Ar count
 .Tn ECHO_RESPONSE
 packets.
+.It Fl D
+Set the
+.Dv Don't Fragment
+bit.
 .It Fl d
 Set the
 .Dv SO_DEBUG
@@ -96,6 +101,10 @@ Only the super-user may use this option.
 .Bf -emphasis
 This can be very hard on a network and should be used with caution.
 .Ef
+Only root can do a flood ping.
+.It Fl I Ar ifaddr
+Specify the interface to transmit from on machines with multiple
+interfaces. For unicast and multicast pings.
 .It Fl i Ar wait
 Wait
 .Ar wait
@@ -111,7 +120,7 @@ If
 is specified,
 .Nm ping
 sends that many packets as fast as possible before falling into its normal
-mode of behavior.
+mode of behavior. Only root may set a preload value.
 .It Fl n
 Numeric output only.
 No attempt will be made to lookup symbolic names for host addresses.
@@ -143,9 +152,6 @@ If the host is not on a directly-attached network, an error is returned.
 This option can be used to ping a local host through an interface
 that has no route through it (e.g., after the interface was dropped by
 .Xr routed 8 ) .
-.It Fl S Ar ifaddr
-Specify the interface to transmit from on machines with multiple
-interfaces. For unicast pings.
 .It Fl s Ar packetsize
 Specifies the number of data bytes to be sent.  
 The default is 56, which translates into 64
@@ -153,27 +159,35 @@ The default is 56, which translates into 64
 data bytes when combined
 with the 8 bytes of
 .Tn ICMP
-header data.
+header data. If the 
+.Fl D
+or
+.Fl T
+options are specified, or the
+.Fl t
+option to a unicast destination, a raw socket will be used and the 8 bytes of
+header data are included in
+.Ar packetsize .
+.It Fl T Ar tos
+Use the specified type of service.
+.It Fl t Ar ttl
+Use the specified time-to-live.
 .It Fl v
 Verbose output.
 .Tn ICMP
 packets other than
 .Tn ECHO_RESPONSE
 that are received are listed.
-.El
-.Pp
-In addition, the following options may be used for multicast pings:
-.Bl -tag -width Ds
-.It Fl I Ar ifaddr
-Transmit using the specified interface address.
-.It Fl L
-Disable the loopback, so the transmitting host doesn't see the ICMP
-requests.
-.It Fl t Ar ttl
-Use the specified time-to-live.
 .It Fl w Ar maxwait
 Specifies the number of seconds to wait for a response to a packet
 before transmitting the next one.  The default is 10.
+.El
+.Pp
+In addition, the following option may be used for multicast pings:
+.Bl -tag -width Ds
+.It Fl L
+Disable the loopback, so the transmitting host doesn't see the ICMP
+requests.
 .El
 .Pp
 When using

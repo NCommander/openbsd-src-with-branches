@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)rshd.8	8.1 (Berkeley) 6/4/93
-.\"	$Id: rshd.8,v 1.4 1994/06/05 15:33:23 cgd Exp $
+.\"	$Id: rshd.8,v 1.2 1996/07/13 11:23:17 deraadt Exp $
 .\"
 .Dd June 4, 1993
 .Dt RSHD 8
@@ -51,6 +51,21 @@ routine and, consequently, for the
 .Xr rsh 1
 program.  The server provides remote execution facilities
 with authentication based on privileged port numbers from trusted hosts.
+.Pp
+Options supported by
+.Nm rshd :
+.Bl -tag -width Ds
+.It Fl a
+Ask hostname for verification.
+.It Fl l
+Prevent any authentication based on the user's
+.Dq Pa .rhosts
+file, unless the user is logging in as the superuser.
+.It Fl n
+Disable keep-alive messages.
+.It Fl L
+Log successful accesses very verbosely.
+.El
 .Pp
 The
 .Nm rshd
@@ -173,14 +188,13 @@ longer than 16 characters.
 .It Sy Command too long  .
 The command line passed exceeds the size of the argument
 list (as configured into the system).
-.It Sy Login incorrect.
-No password file entry for the user name existed.
 .It Sy Remote directory.
 The 
 .Xr chdir
 command to the home directory failed.
 .It Sy Permission denied.
-The authentication procedure described above failed.
+The authentication procedure described above failed or
+there is no password file entry for the specified user.
 .It Sy Can't make pipe.
 The pipe needed for the 
 .Em stderr ,

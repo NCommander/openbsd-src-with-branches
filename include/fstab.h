@@ -1,3 +1,4 @@
+/*	$OpenBSD: fstab.h,v 1.3 1994/10/26 00:55:53 cgd Exp $	*/
 /*	$NetBSD: fstab.h,v 1.3 1994/10/26 00:55:53 cgd Exp $	*/
 
 /*
@@ -65,7 +66,7 @@ struct fstab {
 	char	*fs_mntops;		/* Mount options ala -o */
 	char	*fs_type;		/* FSTAB_* from fs_mntops */
 	int	fs_freq;		/* dump frequency, in days */
-	int	fs_passno;		/* pass number on parallel dump */
+	int	fs_passno;		/* pass number on parallel fsck */
 };
 
 #include <sys/cdefs.h>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: trap.c,v 1.5 1997/02/05 06:10:05 rahnds Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -53,7 +54,6 @@
 #define	NARGREG		8		/* 8 args are in registers */
 #define	MOREARGS(sp)	((caddr_t)((int)(sp) + 8)) /* more args go here */
 
-volatile int astpending;
 volatile int want_resched;
 
 void
@@ -107,22 +107,25 @@ trap(frame)
 			}
 			map = kernel_map;
 		}
+printf("kern dsi on addr %x iar %x\n", frame->dar, frame->srr0);
 		goto brain_damage;
 	case EXC_DSI|EXC_USER:
 		{
-			int ftype;
+			int ftype, vftype;
 			
-			if (frame->dsisr & DSISR_STORE)
+			if (frame->dsisr & DSISR_STORE) {
 				ftype = VM_PROT_READ | VM_PROT_WRITE;
-			else
-				ftype = VM_PROT_READ;
+				vftype = VM_PROT_WRITE;
+			} else
+				vftype = ftype = VM_PROT_READ;
 			if (vm_fault(&p->p_vmspace->vm_map,
 				     trunc_page(frame->dar), ftype, FALSE)
 			    == KERN_SUCCESS)
 				break;
+printf("dsi on addr %x iar %x\n", frame->dar, frame->srr0);
+			trapsignal(p, SIGSEGV, vftype, SEGV_MAPERR,
+			    frame->dar);
 		}
-printf("dsi on addr %x iar %x\n", frame->dsisr, frame->srr0);
-		trapsignal(p, SIGSEGV, EXC_DSI);
 		break;
 	case EXC_ISI|EXC_USER:
 		{
@@ -135,7 +138,8 @@ printf("dsi on addr %x iar %x\n", frame->dsisr, frame->srr0);
 				break;
 		}
 printf("isi iar %x\n", frame->srr0);
-		trapsignal(p, SIGSEGV, EXC_ISI);
+		trapsignal(p, SIGSEGV, VM_PROT_EXECUTE, SEGV_MAPERR,
+		    frame->srr0);
 		break;
 	case EXC_SC|EXC_USER:
 		{
@@ -255,11 +259,12 @@ syscall_bad:
 	
 brain_damage:
 		printf("trap type %x at %x\n", type, frame->srr0);
+mpc_print_pci_stat();
 		panic("trap");
 
 	case EXC_PGM|EXC_USER:
 printf("pgm iar %x\n", frame->srr0);
-		trapsignal(p, SIGILL,EXC_PGM);
+		trapsignal(p, SIGILL, 0, ILL_ILLOPC, frame->srr0);
 		break;
 	case EXC_AST|EXC_USER:
 		/* This is just here that we trap */
@@ -350,7 +355,7 @@ setusr(content)
 
 int
 copyin(udaddr, kaddr, len)
-	void *udaddr;
+	const void *udaddr;
 	void *kaddr;
 	size_t len;
 {
@@ -377,7 +382,7 @@ copyin(udaddr, kaddr, len)
 
 int
 copyout(kaddr, udaddr, len)
-	void *kaddr;
+	const void *kaddr;
 	void *udaddr;
 	size_t len;
 {

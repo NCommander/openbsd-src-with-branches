@@ -1,10 +1,10 @@
-/*	$NetBSD: scheck.c,v 1.2 1995/03/10 18:12:42 jtc Exp $	*/
-
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)scheck.c	8.12";
-#endif /* !defined lint */
-#endif /* !defined NOID */
+#if defined(LIBC_SCCS) && !defined(lint)
+#if 0
+static char	elsieid[] = "@(#)scheck.c	8.13";
+#else
+static char rcsid[] = "$OpenBSD: scheck.c,v 1.3 1996/08/19 08:34:51 tholo Exp $";
+#endif
+#endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
 
@@ -44,7 +44,7 @@ char * const		format;
 		*tp++ = '*';
 		if (*fp == '*')
 			++fp;
-		while (isascii(*fp) && isdigit(*fp))
+		while (is_digit(*fp))
 			*tp++ = *fp++;
 		if (*fp == 'l' || *fp == 'h')
 			*tp++ = *fp++;

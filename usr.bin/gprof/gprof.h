@@ -1,4 +1,5 @@
-/*	$NetBSD: gprof.h,v 1.12 1995/04/19 07:22:59 cgd Exp $	*/
+/*	$OpenBSD: gprof.h,v 1.3 1996/06/26 05:33:51 deraadt Exp $	*/
+/*	$NetBSD: gprof.h,v 1.13 1996/04/01 21:54:06 mark Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -46,6 +47,9 @@
 #if alpha
 #   include "alpha.h"
 #endif
+#if arm32
+#   include "arm32.h"
+#endif
 #if i386
 #   include "i386.h"
 #endif
@@ -57,6 +61,9 @@
 #endif
 #if ns32k
 #   include "ns32k.h"
+#endif
+#if powerpc
+#   include "powerpc.h"
 #endif
 #if pmax
 #   include "pmax.h"

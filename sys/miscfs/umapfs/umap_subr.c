@@ -1,4 +1,5 @@
-/*	$NetBSD: umap_subr.c,v 1.6 1995/06/01 22:44:34 jtc Exp $	*/
+/*	$OpenBSD: umap_subr.c,v 1.8 1997/09/11 05:26:14 millert Exp $	*/
+/*	$NetBSD: umap_subr.c,v 1.8 1996/03/05 02:35:39 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -66,9 +67,15 @@
 LIST_HEAD(umap_node_hashhead, umap_node) *umap_node_hashtbl;
 u_long umap_node_hash;
 
+static id_t umap_findid __P((id_t, id_map_t, int));
+static struct vnode *umap_node_find __P((struct mount *, struct vnode *));
+static int umap_node_alloc __P((struct mount *, struct vnode *,
+				struct vnode **));
+
 /*
  * Initialise cache headers
  */
+void
 umapfs_init()
 {
 
@@ -82,15 +89,15 @@ umapfs_init()
  * umap_findid is called by various routines in umap_vnodeops.c to
  * find a user or group id in a map.
  */
-static u_long
+static id_t
 umap_findid(id, map, nentries)
-	u_long id;
-	u_long map[][2];
-	int nentries;
+	id_t	id;
+	id_map_t map;
+	int	nentries;
 {
 	int i;
 
-	/* Find uid entry in map */
+	/* Find {g,u}id entry in map */
 	i = 0;
 	while ((i<nentries) && ((map[i][0]) != id))
 		i++;
@@ -106,11 +113,11 @@ umap_findid(id, map, nentries)
  * umap_reverse_findid is called by umap_getattr() in umap_vnodeops.c to
  * find a user or group id in a map, in reverse.
  */
-u_long
+id_t
 umap_reverse_findid(id, map, nentries)
-	u_long id;
-	u_long map[][2];
-	int nentries;
+	id_t	id;
+	id_map_t map;
+	int	nentries;
 {
 	int i;
 
@@ -139,7 +146,7 @@ umap_node_find(mp, targetvp)
 	struct vnode *vp;
 
 #ifdef UMAPFS_DIAGNOSTIC
-	printf("umap_node_find(mp = %x, target = %x)\n", mp, targetvp);
+	printf("umap_node_find(mp = %p, target = %p)\n", mp, targetvp);
 #endif
 
 	/*
@@ -170,7 +177,7 @@ loop:
 	}
 
 #ifdef UMAPFS_DIAGNOSTIC
-	printf("umap_node_find(%x, %x): NOT found\n", mp, targetvp);
+	printf("umap_node_find(%p, %p): NOT found\n", mp, targetvp);
 #endif
 
 	return (0);
@@ -191,9 +198,9 @@ umap_node_alloc(mp, lowervp, vpp)
 	struct umap_node *xp;
 	struct vnode *vp, *nvp;
 	int error;
-	extern int (**dead_vnodeop_p)();
+	extern int (**dead_vnodeop_p) __P((void *));
 
-	if (error = getnewvnode(VT_UMAP, mp, umap_vnodeop_p, &vp))
+	if ((error = getnewvnode(VT_UMAP, mp, umap_vnodeop_p, &vp)) != 0)
 		return (error);
 	vp->v_type = lowervp->v_type;
 
@@ -213,7 +220,7 @@ umap_node_alloc(mp, lowervp, vpp)
 	 * check to see if someone else has beaten us to it.
 	 * (We could have slept in MALLOC.)
 	 */
-	if (nvp = umap_node_find(lowervp)) {
+	if ((nvp = umap_node_find(mp, lowervp)) != NULL) {
 		*vpp = nvp;
 
 		/* free the substructures we've allocated. */
@@ -292,12 +299,12 @@ umap_node_create(mp, targetvp, newvpp)
 {
 	struct vnode *aliasvp;
 
-	if (aliasvp = umap_node_find(mp, targetvp)) {
+	if ((aliasvp = umap_node_find(mp, targetvp)) != NULL) {
 		/*
 		 * Take another reference to the alias vnode
 		 */
 #ifdef UMAPFS_DIAGNOSTIC
-		vprint("umap_node_create: exists", ap->umap_vnode);
+		vprint("umap_node_create: exists", aliasvp);
 #endif
 		/* VREF(aliasvp); */
 	} else {
@@ -312,7 +319,7 @@ umap_node_create(mp, targetvp, newvpp)
 		/*
 		 * Make new vnode reference the umap_node.
 		 */
-		if (error = umap_node_alloc(mp, targetvp, &aliasvp))
+		if ((error = umap_node_alloc(mp, targetvp, &aliasvp)) != 0)
 			return (error);
 
 		/*
@@ -340,7 +347,7 @@ umap_checkvp(vp, fil, lno)
 	int lno;
 {
 	struct umap_node *a = VTOUMAP(vp);
-#if 0
+#ifdef notyet
 	/*
 	 * Can't do this check because vop_reclaim runs
 	 * with funny vop vector.
@@ -354,9 +361,9 @@ umap_checkvp(vp, fil, lno)
 	if (a->umap_lowervp == NULL) {
 		/* Should never happen */
 		int i; u_long *p;
-		printf("vp = %x, ZERO ptr\n", vp);
+		printf("vp = %p, ZERO ptr\n", vp);
 		for (p = (u_long *) a, i = 0; i < 8; i++)
-			printf(" %x", p[i]);
+			printf(" %lx", p[i]);
 		printf("\n");
 		/* wait for debugger */
 		while (umap_checkvp_barrier) /*WAIT*/ ;
@@ -364,16 +371,16 @@ umap_checkvp(vp, fil, lno)
 	}
 	if (a->umap_lowervp->v_usecount < 1) {
 		int i; u_long *p;
-		printf("vp = %x, unref'ed lowervp\n", vp);
+		printf("vp = %p, unref'ed lowervp\n", vp);
 		for (p = (u_long *) a, i = 0; i < 8; i++)
-			printf(" %x", p[i]);
+			printf(" %lx", p[i]);
 		printf("\n");
 		/* wait for debugger */
 		while (umap_checkvp_barrier) /*WAIT*/ ;
 		panic ("umap with unref'ed lowervp");
 	}
-#if 0
-	printf("umap %x/%d -> %x/%d [%s, %d]\n",
+#ifdef notyet
+	printf("umap %p/%d -> %p/%d [%s, %d]\n",
 	        a->umap_vnode, a->umap_vnode->v_usecount,
 		a->umap_lowervp, a->umap_lowervp->v_usecount,
 		fil, lno);
@@ -389,15 +396,18 @@ umap_mapids(v_mount, credp)
 	struct mount *v_mount;
 	struct ucred *credp;
 {
-	int i, unentries, gnentries;
-	uid_t uid;
-	gid_t gid;
-	u_long *usermap, *groupmap;
+	int	i, unentries, gnentries;
+	uid_t	uid;
+	gid_t	gid;
+	id_map_t usermap, groupmap;
 
-	unentries =  MOUNTTOUMAPMOUNT(v_mount)->info_nentries;
-	usermap =  &(MOUNTTOUMAPMOUNT(v_mount)->info_mapdata[0][0]);
+	if (credp == NOCRED)
+		return;
+
+	unentries =  MOUNTTOUMAPMOUNT(v_mount)->info_unentries;
+	usermap   =  MOUNTTOUMAPMOUNT(v_mount)->info_umapdata;
 	gnentries =  MOUNTTOUMAPMOUNT(v_mount)->info_gnentries;
-	groupmap =  &(MOUNTTOUMAPMOUNT(v_mount)->info_gmapdata[0][0]);
+	groupmap  =  MOUNTTOUMAPMOUNT(v_mount)->info_gmapdata;
 
 	/* Find uid entry in map */
 
@@ -424,14 +434,13 @@ umap_mapids(v_mount, credp)
 	/* Now we must map each of the set of groups in the cr_groups 
 		structure. */
 
-	i = 0;
-	while (credp->cr_groups[i] != 0) {
+	for ( i = 0 ; credp->cr_groups[i] != 0 ; i++ ) {
 		gid = (gid_t) umap_findid(credp->cr_groups[i],
-					groupmap, gnentries);
+					  groupmap, gnentries);
 
 		if (gid != -1)
-			credp->cr_groups[i++] = gid;
+			credp->cr_groups[i] = gid;
 		else
-			credp->cr_groups[i++] = NULLGROUP;
+			credp->cr_groups[i] = NULLGROUP;
 	}
 }

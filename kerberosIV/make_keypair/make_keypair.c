@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: make_keypair.c,v 1.4 1997/06/29 10:32:18 provos Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -48,13 +48,15 @@ static char sccsid[] = "@(#)make_keypair.c	8.1 (Berkeley) 6/1/93";
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <kerberosIV/des.h>
+#include <des.h>
 #include <kerberosIV/krb.h>
 #include "pathnames.h"
 #include "register_proto.h"
+
+char *progname;
 
 extern void herror();
 void make_key(), usage();
@@ -68,6 +70,7 @@ main(argc, argv)
 	int		i;
 	struct sockaddr_in	sin;
 
+	progname = (addr = strrchr(*argv, '/')) ? addr + 1 : *argv;
 	if (argc != 2) {
 		usage(argv[0]);
 		exit(1);
@@ -106,9 +109,7 @@ make_key(addr)
 	char		namebuf[255];
 	int		fd;
 
-	(void)sprintf(namebuf, ".%s%s",
-		CLIENT_KEYFILE,
-		inet_ntoa(addr));
+	(void)snprintf(namebuf, sizeof(namebuf), "%s", inet_ntoa(addr));
 	fd = open(namebuf, O_WRONLY|O_CREAT, 0600);
 	if (fd < 0) {
 		perror("open");

@@ -1,3 +1,4 @@
+/*	$OpenBSD: union_vfsops.c,v 1.4 1997/09/11 05:26:16 millert Exp $	*/
 /*	$NetBSD: union_vfsops.c,v 1.10 1995/06/18 14:47:47 cgd Exp $	*/
 
 /*
@@ -54,7 +55,22 @@
 #include <sys/malloc.h>
 #include <sys/filedesc.h>
 #include <sys/queue.h>
+#include <sys/stat.h>
+
 #include <miscfs/union/union.h>
+
+int union_mount __P((struct mount *, char *, caddr_t, struct nameidata *,
+		     struct proc *));
+int union_start __P((struct mount *, int, struct proc *));
+int union_unmount __P((struct mount *, int, struct proc *));
+int union_root __P((struct mount *, struct vnode **));
+int union_quotactl __P((struct mount *, int, uid_t, caddr_t, struct proc *));
+int union_statfs __P((struct mount *, struct statfs *, struct proc *));
+int union_sync __P((struct mount *, int, struct ucred *, struct proc *));
+int union_vget __P((struct mount *, ino_t, struct vnode **));
+int union_fhtovp __P((struct mount *, struct fid *, struct mbuf *,
+		      struct vnode **, int *, struct ucred **));
+int union_vptofh __P((struct vnode *, struct fid *));
 
 /*
  * Mount union filesystem
@@ -73,14 +89,12 @@ union_mount(mp, path, data, ndp, p)
 	struct vnode *upperrootvp = NULLVP;
 	struct union_mount *um = 0;
 	struct ucred *cred = 0;
-	struct ucred *scred;
-	struct vattr va;
 	char *cp;
 	int len;
 	size_t size;
 
 #ifdef UNION_DIAGNOSTIC
-	printf("union_mount(mp = %x)\n", mp);
+	printf("union_mount(mp = %p)\n", mp);
 #endif
 
 	/*
@@ -99,7 +113,8 @@ union_mount(mp, path, data, ndp, p)
 	/*
 	 * Get argument
 	 */
-	if (error = copyin(data, (caddr_t)&args, sizeof(struct union_args)))
+	error = copyin(data, (caddr_t)&args, sizeof(struct union_args));
+	if (error)
 		goto bad;
 
 	lowerrootvp = mp->mnt_vnodecovered;
@@ -111,7 +126,7 @@ union_mount(mp, path, data, ndp, p)
 	NDINIT(ndp, LOOKUP, FOLLOW|WANTPARENT,
 	       UIO_USERSPACE, args.target, p);
 
-	if (error = namei(ndp))
+	if ((error = namei(ndp)) != 0)
 		goto bad;
 
 	upperrootvp = ndp->ni_vp;
@@ -214,6 +229,12 @@ union_mount(mp, path, data, ndp, p)
 	case UNMNT_REPLACE:
 		cp = "";
 		break;
+	default:
+		cp = "<invalid>:";
+#ifdef DIAGNOSTIC
+		panic("union_mount: bad um_op");
+#endif
+		break;
 	}
 	len = strlen(cp);
 	bcopy(cp, mp->mnt_stat.f_mntfromname, len);
@@ -247,6 +268,7 @@ bad:
  * on the underlying filesystem(s) will have been called
  * when that filesystem was mounted.
  */
+ /*ARGSUSED*/
 int
 union_start(mp, flags, p)
 	struct mount *mp;
@@ -274,7 +296,7 @@ union_unmount(mp, mntflags, p)
 	extern int doforce;
 
 #ifdef UNION_DIAGNOSTIC
-	printf("union_unmount(mp = %x)\n", mp);
+	printf("union_unmount(mp = %p)\n", mp);
 #endif
 
 	if (mntflags & MNT_FORCE) {
@@ -284,7 +306,7 @@ union_unmount(mp, mntflags, p)
 		flags |= FORCECLOSE;
 	}
 
-	if (error = union_root(mp, &um_rootvp))
+	if ((error = union_root(mp, &um_rootvp)) != 0)
 		return (error);
 
 	/*
@@ -390,6 +412,7 @@ union_root(mp, vpp)
 	return (error);
 }
 
+/*ARGSUSED*/
 int
 union_quotactl(mp, cmd, uid, arg, p)
 	struct mount *mp;
@@ -414,7 +437,7 @@ union_statfs(mp, sbp, p)
 	int lbsize;
 
 #ifdef UNION_DIAGNOSTIC
-	printf("union_statfs(mp = %x, lvp = %x, uvp = %x)\n", mp,
+	printf("union_statfs(mp = %p, lvp = %p, uvp = %p)\n", mp,
 			um->um_lowervp,
 	       		um->um_uppervp);
 #endif
@@ -476,6 +499,7 @@ union_statfs(mp, sbp, p)
 	return (0);
 }
 
+/*ARGSUSED*/
 int
 union_sync(mp, waitfor, cred, p)
 	struct mount *mp;
@@ -490,6 +514,7 @@ union_sync(mp, waitfor, cred, p)
 	return (0);
 }
 
+/*ARGSUSED*/
 int
 union_vget(mp, ino, vpp)
 	struct mount *mp;
@@ -500,6 +525,7 @@ union_vget(mp, ino, vpp)
 	return (EOPNOTSUPP);
 }
 
+/*ARGSUSED*/
 int
 union_fhtovp(mp, fidp, nam, vpp, exflagsp, credanonp)
 	struct mount *mp;
@@ -513,6 +539,7 @@ union_fhtovp(mp, fidp, nam, vpp, exflagsp, credanonp)
 	return (EOPNOTSUPP);
 }
 
+/*ARGSUSED*/
 int
 union_vptofh(vp, fhp)
 	struct vnode *vp;
@@ -521,8 +548,6 @@ union_vptofh(vp, fhp)
 
 	return (EOPNOTSUPP);
 }
-
-int union_init __P((void));
 
 struct vfsops union_vfsops = {
 	MOUNT_UNION,

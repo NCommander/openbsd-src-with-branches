@@ -1,3 +1,5 @@
+/*	$OpenBSD: function.c,v 1.9 1997/06/30 23:54:07 millert Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)function.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
+static char rcsid[] = "$OpenBSD: function.c,v 1.9 1997/06/30 23:54:07 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -45,11 +47,13 @@ static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
 #include <sys/wait.h>
 #include <sys/mount.h>
 
+#include <dirent.h>
 #include <err.h>
 #include <errno.h>
 #include <fnmatch.h>
 #include <fts.h>
 #include <grp.h>
+#include <libgen.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,6 +77,10 @@ static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
 }
 
 static PLAN *palloc __P((enum ntype, int (*) __P((PLAN *, FTSENT *))));
+
+extern int dotfd;
+extern time_t now;
+extern FTS *tree;
 
 /*
  * find_parsenum --
@@ -138,7 +146,6 @@ f_atime(plan, entry)
 	PLAN *plan;
 	FTSENT *entry;
 {
-	extern time_t now;
 
 	COMPARE((now - entry->fts_statp->st_atime +
 	    SECSPERDAY - 1) / SECSPERDAY, plan->t_data);
@@ -168,7 +175,6 @@ f_ctime(plan, entry)
 	PLAN *plan;
 	FTSENT *entry;
 {
-	extern time_t now;
 
 	COMPARE((now - entry->fts_statp->st_ctime +
 	    SECSPERDAY - 1) / SECSPERDAY, plan->t_data);
@@ -212,6 +218,48 @@ c_depth()
 }
  
 /*
+ * -empty functions --
+ *
+ *	True if the file or directory is empty
+ */
+int
+f_empty(plan, entry)
+	PLAN *plan;
+	FTSENT *entry;
+{
+	if (S_ISREG(entry->fts_statp->st_mode) && entry->fts_statp->st_size == 0)
+		return (1);
+	if (S_ISDIR(entry->fts_statp->st_mode)) {
+		struct dirent *dp;
+		int empty;
+		DIR *dir;
+
+		empty = 1;
+		dir = opendir(entry->fts_accpath);
+		if (dir == NULL)
+			err(1, "%s", entry->fts_accpath);
+		for (dp = readdir(dir); dp; dp = readdir(dir))
+			if (dp->d_name[0] != '.' ||
+			    (dp->d_name[1] != '\0' &&
+			     (dp->d_name[1] != '.' || dp->d_name[2] != '\0'))) {
+				empty = 0;
+				break;
+			}
+		closedir(dir);
+		return (empty);
+	}
+	return (0);
+}
+
+PLAN *
+c_empty()
+{
+	ftsoptions &= ~FTS_NOSTAT;
+
+	return (palloc(N_EMPTY, f_empty));
+}
+
+/*
  * [-exec | -ok] utility [arg ... ] ; functions --
  *
  *	True if the executed utility returns a zero value as exit status.
@@ -228,7 +276,6 @@ f_exec(plan, entry)
 	register PLAN *plan;
 	FTSENT *entry;
 {
-	extern int dotfd;
 	register int cnt;
 	pid_t pid;
 	int status;
@@ -317,6 +364,103 @@ c_exec(argvp, isok)
 }
  
 /*
+ * -execdir utility [arg ... ] ; functions --
+ *
+ *	True if the executed utility returns a zero value as exit status.
+ *	The end of the primary expression is delimited by a semicolon.  If
+ *	"{}" occurs anywhere, it gets replaced by the unqualified pathname.
+ *	The current directory for the execution of utility is the same as
+ *	the directory where the file lives.
+ */
+int
+f_execdir(plan, entry)
+	register PLAN *plan;
+	FTSENT *entry;
+{
+	register int cnt;
+	pid_t pid;
+	int status;
+	char base[MAXPATHLEN];
+
+	/* Substitute basename(path) for {} since cwd is it's parent dir */
+	(void)strncpy(base, basename(entry->fts_path), sizeof(base) - 1);
+	base[sizeof(base) - 1] = '\0';
+	for (cnt = 0; plan->e_argv[cnt]; ++cnt)
+		if (plan->e_len[cnt])
+			brace_subst(plan->e_orig[cnt], &plan->e_argv[cnt],
+			    base, plan->e_len[cnt]);
+
+	/* don't mix output of command with find output */
+	fflush(stdout);
+	fflush(stderr);
+
+	switch (pid = vfork()) {
+	case -1:
+		err(1, "fork");
+		/* NOTREACHED */
+	case 0:
+		execvp(plan->e_argv[0], plan->e_argv);
+		warn("%s", plan->e_argv[0]);
+		_exit(1);
+	}
+	pid = waitpid(pid, &status, 0);
+	return (pid != -1 && WIFEXITED(status) && !WEXITSTATUS(status));
+}
+ 
+/*
+ * c_execdir --
+ *	build three parallel arrays, one with pointers to the strings passed
+ *	on the command line, one with (possibly duplicated) pointers to the
+ *	argv array, and one with integer values that are lengths of the
+ *	strings, but also flags meaning that the string has to be massaged.
+ */
+PLAN *
+c_execdir(argvp)
+	char ***argvp;
+{
+	PLAN *new;			/* node returned */
+	register int cnt;
+	register char **argv, **ap, *p;
+
+	ftsoptions &= ~FTS_NOSTAT;
+	ftsoptions |= FTS_CHDIRROOT;
+	isoutput = 1;
+    
+	new = palloc(N_EXECDIR, f_execdir);
+
+	for (ap = argv = *argvp;; ++ap) {
+		if (!*ap)
+			errx(1,
+			    "-execdir: no terminating \";\"");
+		if (**ap == ';')
+			break;
+	}
+
+	cnt = ap - *argvp + 1;
+	new->e_argv = (char **)emalloc((u_int)cnt * sizeof(char *));
+	new->e_orig = (char **)emalloc((u_int)cnt * sizeof(char *));
+	new->e_len = (int *)emalloc((u_int)cnt * sizeof(int));
+
+	for (argv = *argvp, cnt = 0; argv < ap; ++argv, ++cnt) {
+		new->e_orig[cnt] = *argv;
+		for (p = *argv; *p; ++p)
+			if (p[0] == '{' && p[1] == '}') {
+				new->e_argv[cnt] = emalloc((u_int)MAXPATHLEN);
+				new->e_len[cnt] = MAXPATHLEN;
+				break;
+			}
+		if (!*p) {
+			new->e_argv[cnt] = *argv;
+			new->e_len[cnt] = 0;
+		}
+	}
+	new->e_argv[cnt] = new->e_orig[cnt] = NULL;
+
+	*argvp = argv + 1;
+	return (new);
+}
+ 
+/*
  * -follow functions --
  *
  *	Always true, causes symbolic links to be followed on a global
@@ -358,7 +502,7 @@ f_fstype(plan, entry)
 		 */
 		if (entry->fts_info == FTS_SL ||
 		    entry->fts_info == FTS_SLNONE) {
-			if (p = strrchr(entry->fts_accpath, '/'))
+			if ((p = strrchr(entry->fts_accpath, '/')))
 				++p;
 			else
 				p = entry->fts_accpath;
@@ -542,6 +686,60 @@ c_ls()
 }
 
 /*
+ * - maxdepth n functions --
+ *
+ *	True if the current search depth is less than or equal to the
+ *	maximum depth specified
+ */
+int
+f_maxdepth(plan, entry)
+	PLAN *plan;
+	FTSENT *entry;
+{
+
+	if (entry->fts_level >= plan->max_data)
+		fts_set(tree, entry, FTS_SKIP);
+	return (entry->fts_level <= plan->max_data);
+}
+
+PLAN *
+c_maxdepth(arg)
+	char *arg;
+{
+	PLAN *new;
+
+	new = palloc(N_MAXDEPTH, f_maxdepth);
+	new->max_data = atoi(arg);
+	return (new);
+}
+
+/*
+ * - mindepth n functions --
+ *
+ *	True if the current search depth is greater than or equal to the
+ *	minimum depth specified
+ */
+int
+f_mindepth(plan, entry)
+	PLAN *plan;
+	FTSENT *entry;
+{
+
+	return (entry->fts_level >= plan->min_data);
+}
+
+PLAN *
+c_mindepth(arg)
+	char *arg;
+{
+	PLAN *new;
+
+	new = palloc(N_MINDEPTH, f_mindepth);
+	new->min_data = atoi(arg);
+	return (new);
+}
+
+/*
  * -mtime n functions --
  *
  *	True if the difference between the file modification time and the
@@ -552,7 +750,6 @@ f_mtime(plan, entry)
 	PLAN *plan;
 	FTSENT *entry;
 {
-	extern time_t now;
 
 	COMPARE((now - entry->fts_statp->st_mtime + SECSPERDAY - 1) /
 	    SECSPERDAY, plan->t_data);
@@ -763,6 +960,7 @@ f_print(plan, entry)
 }
 
 /* ARGSUSED */
+int
 f_print0(plan, entry)
 	PLAN *plan;
 	FTSENT *entry;
@@ -798,7 +996,6 @@ f_prune(plan, entry)
 	PLAN *plan;
 	FTSENT *entry;
 {
-	extern FTS *tree;
 
 	if (fts_set(tree, entry, FTS_SKIP))
 		err(1, "%s", entry->fts_path);
@@ -875,6 +1072,11 @@ c_type(typestring)
 	ftsoptions &= ~FTS_NOSTAT;
 
 	switch (typestring[0]) {
+#ifdef S_IFWHT
+	case 'W':
+		mask = S_IFWHT;
+		break;
+#endif
 	case 'b':
 		mask = S_IFBLK;
 		break;
@@ -1054,7 +1256,7 @@ palloc(t, f)
 {
 	PLAN *new;
 
-	if (new = malloc(sizeof(PLAN))) {
+	if ((new = malloc(sizeof(PLAN)))) {
 		new->type = t;
 		new->eval = f;
 		new->flags = 0;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ad1848reg.h,v 1.1 1995/07/07 02:11:45 brezak Exp $	*/
 /*	$NetBSD: ad1848reg.h,v 1.1 1995/07/07 02:11:45 brezak Exp $	*/
 
 /*
@@ -36,6 +37,7 @@
  */
 /*
  * Copyright (c) 1993 Analog Devices Inc. All rights reserved
+ * (http://www.analog.com, mike.long@analog.com)
  */
 
 /* parent driver is primarily responsible for checking this */
@@ -104,7 +106,7 @@
 #define CAPTURE_READY		0x20
 #define CAPTURE_LEFT		0x40
 /* cpright is not left */
-#define CAPTURE_UPPER		0x08
+#define CAPTURE_UPPER		0x80
 /* cplower is not upper */
 
 /* Input & Output regs bits */

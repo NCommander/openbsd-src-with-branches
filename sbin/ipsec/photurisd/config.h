@@ -27,7 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $Id: config.h,v 1.2 1997/06/12 17:09:20 provos Exp provos $ */
+/* $Id: config.h,v 1.2 1997/07/22 11:18:21 provos Exp $ */
 /*
  * config.h: 
  * handling config
@@ -74,7 +74,7 @@
 #define EXTERN
 
 #ifndef DEBUG
-void reconfig(int sig, siginfo_t *sip, struct sigcontext *scp);
+void reconfig(int sig);
 #endif
 
 #else
@@ -106,6 +106,8 @@ EXTERN int init_moduli(int);
 EXTERN int init_schemes(void);
 EXTERN int init_attributes(void);
 EXTERN int init_times(void);
+EXTERN void startup_parse(struct stateob *st, char *line);
+EXTERN void startup_end(struct stateob *st);
 EXTERN int init_startup(void);
 EXTERN int init_signals(void);
 

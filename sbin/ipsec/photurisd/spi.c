@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: spi.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $";
+static char rcsid[] = "$Id: spi.c,v 1.3 1997/07/23 12:28:54 provos Exp $";
 #endif
 
 #define _SPI_C_
@@ -60,26 +60,11 @@ static char rcsid[] = "$Id: spi.c,v 1.3 1997/06/12 17:09:20 provos Exp provos $"
 
 static struct spiob *spiob = NULL;
 
-int
-isinattrib(u_int8_t *attributes, u_int16_t attribsize, u_int8_t attribute)
-{
-     while(attribsize>0) {
-	  if(*attributes==attribute)
-	       return 1;
-	  if(attribsize - (*(attributes+1)+2) > attribsize) 
-	       return 0;
-
-	  attribsize -= *(attributes+1)+2;
-	  attributes += *(attributes+1)+2;
-     }
-     return 0;
-}
-
 time_t
 getspilifetime(struct stateob *st)
 {
      /* XXX - destination depend lifetimes */
-     return spi_lifetime;
+     return st->spi_lifetime;
 }
 
 int
@@ -171,7 +156,7 @@ make_spi(struct stateob *st, char *local_address,
      for(i=0; i<SPI_SIZE; i++) {
 	  if(i%4 == 0)
 #ifdef IPSEC
-	       tmp = kernel_reserve_spi(local_address);
+	       tmp = kernel_reserve_spi(local_address, st->flags);
 #else
 	       tmp = arc4random();
 #endif
@@ -182,6 +167,24 @@ make_spi(struct stateob *st, char *local_address,
      *lifetime = getspilifetime(st) + (arc4random() & 0x1F);
 
      return 0;
+}
+
+int
+spi_set_tunnel(struct stateob *st, struct spiob *spi)
+{
+     if (st->flags & IPSEC_OPT_TUNNEL) {
+	  spi->flags |= SPI_TUNNEL;
+	  spi->isrc = st->isrc;
+	  spi->ismask = st->ismask;
+	  spi->idst = st->idst;
+	  spi->idmask = st->idmask;
+     } else {
+	  spi->isrc = inet_addr(spi->local_address);
+	  spi->ismask = inet_addr("255.255.255.255");
+	  spi->idst = inet_addr(spi->address);
+	  spi->idmask = inet_addr("255.255.255.255");
+     }
+     return 1;
 }
 
 
@@ -283,8 +286,8 @@ spi_find_attrib(char *address, u_int8_t *attrib, u_int16_t attribsize)
 
 /* 
  * find the spi ob with matching address
- * Alas this is tweaked, for owner = 1 compare with local_address
- * and for owner = 0 compare with address.
+ * Alas this is tweaked, for SPI_OWNER compare with local_address
+ * and for user compare with address.
  */
 
 struct spiob *
@@ -292,7 +295,7 @@ spi_find(char *address, u_int8_t *spi)
 {
      struct spiob *tmp = spiob;
      while(tmp!=NULL) {
-          if ((address == NULL || (tmp->owner ? 
+          if ((address == NULL || (tmp->flags & SPI_OWNER ? 
 	      !strcmp(address, tmp->local_address) :
 	      !strcmp(address, tmp->address))) &&
 	     !bcmp(spi, tmp->SPI, SPI_SIZE))
@@ -331,7 +334,8 @@ spi_expire(void)
      tm = time(NULL);
      while (tmp != NULL) {
 	  if (tmp->lifetime == -1 || 
-	      tmp->lifetime + (tmp->owner ? CLEANUP_TIMEOUT : 0) > tm) {
+	      tmp->lifetime + (tmp->flags & SPI_OWNER ? 
+			       CLEANUP_TIMEOUT : 0) > tm) {
 	       tmp = tmp->next;
 	       continue;
 	  }
@@ -339,7 +343,8 @@ spi_expire(void)
 	  {
 	       int i = BUFFER_SIZE;
 	       bin2hex(buffer, &i, tmp->SPI, 4);
-	       printf("Expiring %s spi %s to %s\n", tmp->owner ? "Owner" : "User",
+	       printf("Expiring %s spi %s to %s\n", 
+		      tmp->flags & SPI_OWNER ? "Owner" : "User",
 		      buffer, tmp->address);
 	  }
 #endif

@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs_quota.c,v 1.7 1995/03/08 01:51:38 cgd Exp $	*/
+/*	$OpenBSD: ufs_quota.c,v 1.3 1997/05/30 08:35:10 downsj Exp $	*/
+/*	$NetBSD: ufs_quota.c,v 1.8 1996/02/09 22:36:09 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -80,7 +81,7 @@ getinoquota(ip)
 	 */
 	if (ip->i_dquot[USRQUOTA] == NODQUOT &&
 	    (error =
-		dqget(vp, ip->i_uid, ump, USRQUOTA, &ip->i_dquot[USRQUOTA])) &&
+		dqget(vp, ip->i_ffs_uid, ump, USRQUOTA, &ip->i_dquot[USRQUOTA])) &&
 	    error != EINVAL)
 		return (error);
 	/*
@@ -89,7 +90,7 @@ getinoquota(ip)
 	 */
 	if (ip->i_dquot[GRPQUOTA] == NODQUOT &&
 	    (error =
-		dqget(vp, ip->i_gid, ump, GRPQUOTA, &ip->i_dquot[GRPQUOTA])) &&
+		dqget(vp, ip->i_ffs_gid, ump, GRPQUOTA, &ip->i_dquot[GRPQUOTA])) &&
 	    error != EINVAL)
 		return (error);
 	return (0);
@@ -137,7 +138,7 @@ chkdq(ip, change, cred, flags)
 		for (i = 0; i < MAXQUOTAS; i++) {
 			if ((dq = ip->i_dquot[i]) == NODQUOT)
 				continue;
-			if (error = chkdqchg(ip, change, cred, i))
+			if ((error = chkdqchg(ip, change, cred, i)) != 0)
 				return (error);
 		}
 	}
@@ -173,7 +174,7 @@ chkdqchg(ip, change, cred, type)
 	 */
 	if (ncurblocks >= dq->dq_bhardlimit && dq->dq_bhardlimit) {
 		if ((dq->dq_flags & DQ_BLKS) == 0 &&
-		    ip->i_uid == cred->cr_uid) {
+		    ip->i_ffs_uid == cred->cr_uid) {
 			uprintf("\n%s: write failed, %s disk limit reached\n",
 			    ITOV(ip)->v_mount->mnt_stat.f_mntonname,
 			    quotatypes[type]);
@@ -189,7 +190,7 @@ chkdqchg(ip, change, cred, type)
 		if (dq->dq_curblocks < dq->dq_bsoftlimit) {
 			dq->dq_btime = time.tv_sec +
 			    VFSTOUFS(ITOV(ip)->v_mount)->um_btime[type];
-			if (ip->i_uid == cred->cr_uid)
+			if (ip->i_ffs_uid == cred->cr_uid)
 				uprintf("\n%s: warning, %s %s\n",
 				    ITOV(ip)->v_mount->mnt_stat.f_mntonname,
 				    quotatypes[type], "disk quota exceeded");
@@ -197,7 +198,7 @@ chkdqchg(ip, change, cred, type)
 		}
 		if (time.tv_sec > dq->dq_btime) {
 			if ((dq->dq_flags & DQ_BLKS) == 0 &&
-			    ip->i_uid == cred->cr_uid) {
+			    ip->i_ffs_uid == cred->cr_uid) {
 				uprintf("\n%s: write failed, %s %s\n",
 				    ITOV(ip)->v_mount->mnt_stat.f_mntonname,
 				    quotatypes[type],
@@ -252,7 +253,7 @@ chkiq(ip, change, cred, flags)
 		for (i = 0; i < MAXQUOTAS; i++) {
 			if ((dq = ip->i_dquot[i]) == NODQUOT)
 				continue;
-			if (error = chkiqchg(ip, change, cred, i))
+			if ((error = chkiqchg(ip, change, cred, i)) != 0)
 				return (error);
 		}
 	}
@@ -288,7 +289,7 @@ chkiqchg(ip, change, cred, type)
 	 */
 	if (ncurinodes >= dq->dq_ihardlimit && dq->dq_ihardlimit) {
 		if ((dq->dq_flags & DQ_INODS) == 0 &&
-		    ip->i_uid == cred->cr_uid) {
+		    ip->i_ffs_uid == cred->cr_uid) {
 			uprintf("\n%s: write failed, %s inode limit reached\n",
 			    ITOV(ip)->v_mount->mnt_stat.f_mntonname,
 			    quotatypes[type]);
@@ -304,7 +305,7 @@ chkiqchg(ip, change, cred, type)
 		if (dq->dq_curinodes < dq->dq_isoftlimit) {
 			dq->dq_itime = time.tv_sec +
 			    VFSTOUFS(ITOV(ip)->v_mount)->um_itime[type];
-			if (ip->i_uid == cred->cr_uid)
+			if (ip->i_ffs_uid == cred->cr_uid)
 				uprintf("\n%s: warning, %s %s\n",
 				    ITOV(ip)->v_mount->mnt_stat.f_mntonname,
 				    quotatypes[type], "inode quota exceeded");
@@ -312,7 +313,7 @@ chkiqchg(ip, change, cred, type)
 		}
 		if (time.tv_sec > dq->dq_itime) {
 			if ((dq->dq_flags & DQ_INODS) == 0 &&
-			    ip->i_uid == cred->cr_uid) {
+			    ip->i_ffs_uid == cred->cr_uid) {
 				uprintf("\n%s: write failed, %s %s\n",
 				    ITOV(ip)->v_mount->mnt_stat.f_mntonname,
 				    quotatypes[type],
@@ -372,7 +373,7 @@ quotaon(p, mp, type, fname)
 
 	vpp = &ump->um_quotas[type];
 	NDINIT(&nd, LOOKUP, FOLLOW, UIO_USERSPACE, fname, p);
-	if (error = vn_open(&nd, FREAD|FWRITE, 0))
+	if ((error = vn_open(&nd, FREAD|FWRITE, 0)) != 0)
 		return (error);
 	vp = nd.ni_vp;
 	VOP_UNLOCK(vp);
@@ -417,7 +418,7 @@ again:
 			continue;
 		if (vget(vp, 1))
 			goto again;
-		if (error = getinoquota(VTOI(vp))) {
+		if ((error = getinoquota(VTOI(vp))) != 0) {
 			vput(vp);
 			break;
 		}
@@ -498,7 +499,7 @@ getquota(mp, id, type, addr)
 	struct dquot *dq;
 	int error;
 
-	if (error = dqget(NULLVP, id, VFSTOUFS(mp), type, &dq))
+	if ((error = dqget(NULLVP, id, VFSTOUFS(mp), type, &dq)) != 0)
 		return (error);
 	error = copyout((caddr_t)&dq->dq_dqb, addr, sizeof (struct dqblk));
 	dqrele(NULLVP, dq);
@@ -521,9 +522,10 @@ setquota(mp, id, type, addr)
 	struct dqblk newlim;
 	int error;
 
-	if (error = copyin(addr, (caddr_t)&newlim, sizeof (struct dqblk)))
+	error = copyin(addr, (caddr_t)&newlim, sizeof (struct dqblk));
+	if (error)
 		return (error);
-	if (error = dqget(NULLVP, id, ump, type, &ndq))
+	if ((error = dqget(NULLVP, id, ump, type, &ndq)) != 0)
 		return (error);
 	dq = ndq;
 	while (dq->dq_flags & DQ_LOCK) {
@@ -580,9 +582,10 @@ setuse(mp, id, type, addr)
 	struct dqblk usage;
 	int error;
 
-	if (error = copyin(addr, (caddr_t)&usage, sizeof (struct dqblk)))
+	error = copyin(addr, (caddr_t)&usage, sizeof (struct dqblk));
+	if (error)
 		return (error);
-	if (error = dqget(NULLVP, id, ump, type, &ndq))
+	if ((error = dqget(NULLVP, id, ump, type, &ndq)) != 0)
 		return (error);
 	dq = ndq;
 	while (dq->dq_flags & DQ_LOCK) {

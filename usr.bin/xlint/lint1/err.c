@@ -1,3 +1,4 @@
+/*	$OpenBSD: err.c,v 1.8 1995/10/02 17:37:00 jpo Exp $	*/
 /*	$NetBSD: err.c,v 1.8 1995/10/02 17:37:00 jpo Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: err.c,v 1.8 1995/10/02 17:37:00 jpo Exp $";
+static char rcsid[] = "$OpenBSD: err.c,v 1.8 1995/10/02 17:37:00 jpo Exp $";
 #endif
 
 /* number of errors found */

@@ -1,4 +1,5 @@
-/*	$NetBSD: vfs_lookup.c,v 1.15 1995/03/08 01:20:50 cgd Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.8 1997/06/18 17:37:38 tholo Exp $	*/
+/*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -111,41 +112,44 @@ namei(ndp)
 	else
 		error = copyinstr(ndp->ni_dirp, cnp->cn_pnbuf,
 			    MAXPATHLEN, &ndp->ni_pathlen);
-	if (error) {
-		free(cnp->cn_pnbuf, M_NAMEI);
-		ndp->ni_vp = NULL;
-		return (error);
-	}
-	ndp->ni_loopcnt = 0;
+
 #ifdef KTRACE
 	if (KTRPOINT(cnp->cn_proc, KTR_NAMEI))
 		ktrnamei(cnp->cn_proc->p_tracep, cnp->cn_pnbuf);
 #endif
 
 	/*
+	 * Fail on null pathnames
+	 */
+	if (error == 0 && ndp->ni_pathlen == 1)
+		error = ENOENT;
+
+	if (error) {
+		FREE(cnp->cn_pnbuf, M_NAMEI);
+		ndp->ni_vp = NULL;
+		return (error);
+	}
+	ndp->ni_loopcnt = 0;
+
+	/*
 	 * Get starting point for the translation.
 	 */
 	if ((ndp->ni_rootdir = fdp->fd_rdir) == NULL)
 		ndp->ni_rootdir = rootvnode;
-	dp = fdp->fd_cdir;
-	VREF(dp);
+	/*
+	 * Check if starting from root directory or current directory.
+	 */
+	if (cnp->cn_pnbuf[0] == '/') {
+		dp = ndp->ni_rootdir;
+		VREF(dp);
+	} else {
+		dp = fdp->fd_cdir;
+		VREF(dp);
+	}
 	for (;;) {
-		/*
-		 * Check if root directory should replace current directory.
-		 * Done at start of translation and after symbolic link.
-		 */
 		cnp->cn_nameptr = cnp->cn_pnbuf;
-		if (*(cnp->cn_nameptr) == '/') {
-			vrele(dp);
-			while (*(cnp->cn_nameptr) == '/') {
-				cnp->cn_nameptr++;
-				ndp->ni_pathlen--;
-			}
-			dp = ndp->ni_rootdir;
-			VREF(dp);
-		}
 		ndp->ni_startdir = dp;
-		if (error = lookup(ndp)) {
+		if ((error = lookup(ndp)) != 0) {
 			FREE(cnp->cn_pnbuf, M_NAMEI);
 			return (error);
 		}
@@ -178,17 +182,17 @@ namei(ndp)
 		auio.uio_segflg = UIO_SYSSPACE;
 		auio.uio_procp = (struct proc *)0;
 		auio.uio_resid = MAXPATHLEN;
-		if (error = VOP_READLINK(ndp->ni_vp, &auio, cnp->cn_cred)) {
+		error = VOP_READLINK(ndp->ni_vp, &auio, cnp->cn_cred);
+		if (error) {
+badlink:
 			if (ndp->ni_pathlen > 1)
-				free(cp, M_NAMEI);
+				FREE(cp, M_NAMEI);
 			break;
 		}
 		linklen = MAXPATHLEN - auio.uio_resid;
 		if (linklen + ndp->ni_pathlen >= MAXPATHLEN) {
-			if (ndp->ni_pathlen > 1)
-				free(cp, M_NAMEI);
 			error = ENAMETOOLONG;
-			break;
+			goto badlink;
 		}
 		if (ndp->ni_pathlen > 1) {
 			bcopy(ndp->ni_next, cp + linklen, ndp->ni_pathlen);
@@ -199,6 +203,14 @@ namei(ndp)
 		ndp->ni_pathlen += linklen;
 		vput(ndp->ni_vp);
 		dp = ndp->ni_dvp;
+		/*
+		 * Check if root directory should replace current directory.
+		 */
+		if (cnp->cn_pnbuf[0] == '/') {
+			vrele(dp);
+			dp = ndp->ni_rootdir;
+			VREF(dp);
+		}
 	}
 	FREE(cnp->cn_pnbuf, M_NAMEI);
 	vrele(ndp->ni_dvp);
@@ -257,6 +269,7 @@ lookup(ndp)
 	int wantparent;			/* 1 => wantparent or lockparent flag */
 	int rdonly;			/* lookup read-only flag bit */
 	int error = 0;
+	int slashes;
 	struct componentname *cnp = &ndp->ni_cnd;
 
 	/*
@@ -274,6 +287,40 @@ lookup(ndp)
 	ndp->ni_startdir = NULLVP;
 	VOP_LOCK(dp);
 
+	/*
+	 * If we have a leading string of slashes, remove them, and just make
+	 * sure the current node is a directory.
+	 */
+	cp = cnp->cn_nameptr;
+	if (*cp == '/') {
+		do {
+			cp++;
+		} while (*cp == '/');
+		ndp->ni_pathlen -= cp - cnp->cn_nameptr;
+		cnp->cn_nameptr = cp;
+
+		if (dp->v_type != VDIR) {
+			error = ENOTDIR;
+			goto bad;
+		}
+
+		/*
+		 * If we've exhausted the path name, then just return the
+		 * current node.  If the caller requested the parent node (i.e.
+		 * it's a CREATE, DELETE, or RENAME), and we don't have one
+		 * (because this is the root directory), then we must fail.
+		 */
+		if (cnp->cn_nameptr[0] == '\0') {
+			if (ndp->ni_dvp == NULL && wantparent) {
+				error = EISDIR;
+				goto bad;
+			}
+			ndp->ni_vp = dp;
+			cnp->cn_flags |= ISLASTCN;
+			goto terminal;
+		}
+	}
+
 dirloop:
 	/*
 	 * Search a new directory.
@@ -286,7 +333,7 @@ dirloop:
 	 */
 	cnp->cn_consume = 0;
 	cnp->cn_hash = 0;
-	for (cp = cnp->cn_nameptr; *cp != 0 && *cp != '/'; cp++)
+	for (cp = cnp->cn_nameptr; *cp != '\0' && *cp != '/'; cp++)
 		cnp->cn_hash += (unsigned char)*cp;
 	cnp->cn_namelen = cp - cnp->cn_nameptr;
 	if (cnp->cn_namelen > NAME_MAX) {
@@ -301,45 +348,42 @@ dirloop:
 #endif
 	ndp->ni_pathlen -= cnp->cn_namelen;
 	ndp->ni_next = cp;
-	cnp->cn_flags |= MAKEENTRY;
-	if (*cp == '\0' && docache == 0)
-		cnp->cn_flags &= ~MAKEENTRY;
+	/*
+	 * If this component is followed by a slash, then move the pointer to
+	 * the next component forward, and remember that this component must be
+	 * a directory.
+	 */
+	if (*cp == '/') {
+		do {
+			cp++;
+		} while (*cp == '/');
+		slashes = cp - ndp->ni_next;
+		ndp->ni_pathlen -= slashes;
+		ndp->ni_next = cp;
+		cnp->cn_flags |= REQUIREDIR;
+	} else {
+		slashes = 0;
+		cnp->cn_flags &= ~REQUIREDIR;
+	}
+	/*
+	 * We do special processing on the last component, whether or not it's
+	 * a directory.  Cache all intervening lookups, but not the final one.
+	 */
+	if (*cp == '\0') {
+		if (docache)
+			cnp->cn_flags |= MAKEENTRY;
+		else
+			cnp->cn_flags &= ~MAKEENTRY;
+		cnp->cn_flags |= ISLASTCN;
+	} else {
+		cnp->cn_flags |= MAKEENTRY;
+		cnp->cn_flags &= ~ISLASTCN;
+	}
 	if (cnp->cn_namelen == 2 &&
 	    cnp->cn_nameptr[1] == '.' && cnp->cn_nameptr[0] == '.')
 		cnp->cn_flags |= ISDOTDOT;
 	else
 		cnp->cn_flags &= ~ISDOTDOT;
-	if (*ndp->ni_next == 0)
-		cnp->cn_flags |= ISLASTCN;
-	else
-		cnp->cn_flags &= ~ISLASTCN;
-
-
-	/*
-	 * Check for degenerate name (e.g. / or "")
-	 * which is a way of talking about a directory,
-	 * e.g. like "/." or ".".
-	 */
-	if (cnp->cn_nameptr[0] == '\0') {
-		if (dp->v_type != VDIR) {
-			error = ENOTDIR;
-			goto bad;
-		}
-		if (cnp->cn_nameiop != LOOKUP) {
-			error = EISDIR;
-			goto bad;
-		}
-		if (wantparent) {
-			ndp->ni_dvp = dp;
-			VREF(dp);
-		}
-		ndp->ni_vp = dp;
-		if (!(cnp->cn_flags & (LOCKPARENT | LOCKLEAF)))
-			VOP_UNLOCK(dp);
-		if (cnp->cn_flags & SAVESTART)
-			panic("lookup: SAVESTART");
-		return (0);
-	}
 
 	/*
 	 * Handle "..": two special cases.
@@ -375,7 +419,7 @@ dirloop:
 	 */
 unionlookup:
 	ndp->ni_dvp = dp;
-	if (error = VOP_LOOKUP(dp, &ndp->ni_vp, cnp)) {
+	if ((error = VOP_LOOKUP(dp, &ndp->ni_vp, cnp)) != 0) {
 #ifdef DIAGNOSTIC
 		if (ndp->ni_vp != NULL)
 			panic("leaf should be empty");
@@ -396,6 +440,14 @@ unionlookup:
 
 		if (error != EJUSTRETURN)
 			goto bad;
+		/*
+		 * If this was not the last component, or there were trailing
+		 * slashes, then the name must exist.
+		 */
+		if (cnp->cn_flags & REQUIREDIR) {
+			error = ENOENT;
+			goto bad;
+		}
 		/*
 		 * If creating and at end of pathname, then can consider
 		 * allowing file to be created.
@@ -420,14 +472,16 @@ unionlookup:
 #endif
 
 	/*
-	 * Take into account any additional components consumed by
-	 * the underlying filesystem.
+	 * Take into account any additional components consumed by the
+	 * underlying filesystem.  This will include any trailing slashes after
+	 * the last component consumed.
 	 */
 	if (cnp->cn_consume > 0) {
-		cnp->cn_nameptr += cnp->cn_consume;
-		ndp->ni_next += cnp->cn_consume;
-		ndp->ni_pathlen -= cnp->cn_consume;
+		ndp->ni_pathlen -= cnp->cn_consume - slashes;
+		ndp->ni_next += cnp->cn_consume - slashes;
 		cnp->cn_consume = 0;
+		if (ndp->ni_next[0] == '\0')
+			cnp->cn_flags |= ISLASTCN;
 	}
 
 	dp = ndp->ni_vp;
@@ -442,35 +496,44 @@ unionlookup:
 			sleep((caddr_t)mp, PVFS);
 			continue;
 		}
-		if (error = VFS_ROOT(dp->v_mountedhere, &tdp))
+		if ((error = VFS_ROOT(dp->v_mountedhere, &tdp)) != 0)
 			goto bad2;
 		vput(dp);
 		ndp->ni_vp = dp = tdp;
 	}
 
 	/*
-	 * Check for symbolic link
+	 * Check for symbolic link.  Back up over any slashes that we skipped,
+	 * as we will need them again.
 	 */
-	if ((dp->v_type == VLNK) &&
-	    ((cnp->cn_flags & FOLLOW) || *ndp->ni_next == '/')) {
+	if ((dp->v_type == VLNK) && (cnp->cn_flags & (FOLLOW|REQUIREDIR))) {
+		ndp->ni_pathlen += slashes;
+		ndp->ni_next -= slashes;
 		cnp->cn_flags |= ISSYMLINK;
 		return (0);
 	}
 
+	/*
+	 * Check for directory, if the component was followed by a series of
+	 * slashes.
+	 */
+	if ((dp->v_type != VDIR) && (cnp->cn_flags & REQUIREDIR)) {
+		error = ENOTDIR;
+		goto bad2;
+	}
+
 nextname:
 	/*
-	 * Not a symbolic link.  If more pathname,
-	 * continue at next component, else return.
+	 * Not a symbolic link.  If this was not the last component, then
+	 * continue at the next component, else return.
 	 */
-	if (*ndp->ni_next == '/') {
+	if (!(cnp->cn_flags & ISLASTCN)) {
 		cnp->cn_nameptr = ndp->ni_next;
-		while (*cnp->cn_nameptr == '/') {
-			cnp->cn_nameptr++;
-			ndp->ni_pathlen--;
-		}
 		vrele(ndp->ni_dvp);
 		goto dirloop;
 	}
+
+terminal:
 	/*
 	 * Check for read-only file systems.
 	 */
@@ -486,18 +549,20 @@ nextname:
 			goto bad2;
 		}
 	}
-	if (cnp->cn_flags & SAVESTART) {
-		ndp->ni_startdir = ndp->ni_dvp;
-		VREF(ndp->ni_startdir);
+	if (ndp->ni_dvp != NULL) {
+		if (cnp->cn_flags & SAVESTART) {
+			ndp->ni_startdir = ndp->ni_dvp;
+			VREF(ndp->ni_startdir);
+		}
+		if (!wantparent)
+			vrele(ndp->ni_dvp);
 	}
-	if (!wantparent)
-		vrele(ndp->ni_dvp);
 	if ((cnp->cn_flags & LOCKLEAF) == 0)
 		VOP_UNLOCK(dp);
 	return (0);
 
 bad2:
-	if ((cnp->cn_flags & LOCKPARENT) && *ndp->ni_next == '\0')
+	if ((cnp->cn_flags & LOCKPARENT) && (cnp->cn_flags & ISLASTCN))
 		VOP_UNLOCK(ndp->ni_dvp);
 	vrele(ndp->ni_dvp);
 bad:
@@ -564,22 +629,8 @@ relookup(dvp, vpp, cnp)
 	 * which is a way of talking about a directory,
 	 * e.g. like "/." or ".".
 	 */
-	if (cnp->cn_nameptr[0] == '\0') {
-		if (dp->v_type != VDIR) {
-			error = ENOTDIR;
-			goto bad;
-		}
-		if (cnp->cn_nameiop != LOOKUP || wantparent) {
-			error = EISDIR;
-			goto bad;
-		}
-		if (!(cnp->cn_flags & LOCKLEAF))
-			VOP_UNLOCK(dp);
-		*vpp = dp;
-		if (cnp->cn_flags & SAVESTART)
-			panic("lookup: SAVESTART");
-		return (0);
-	}
+	if (cnp->cn_nameptr[0] == '\0')
+		panic("relookup: null name");
 
 	if (cnp->cn_flags & ISDOTDOT)
 		panic ("relookup: lookup on dot-dot");
@@ -587,7 +638,7 @@ relookup(dvp, vpp, cnp)
 	/*
 	 * We now have a segment name to search for, and a directory to search.
 	 */
-	if (error = VOP_LOOKUP(dp, vpp, cnp)) {
+	if ((error = VOP_LOOKUP(dp, vpp, cnp)) != 0) {
 #ifdef DIAGNOSTIC
 		if (*vpp != NULL)
 			panic("leaf should be empty");
@@ -640,7 +691,6 @@ relookup(dvp, vpp, cnp)
 	/* ASSERT(dvp == ndp->ni_startdir) */
 	if (cnp->cn_flags & SAVESTART)
 		VREF(dvp);
-	
 	if (!wantparent)
 		vrele(dvp);
 	if ((cnp->cn_flags & LOCKLEAF) == 0)

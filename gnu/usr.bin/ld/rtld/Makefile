@@ -6,7 +6,8 @@ SRCS=	mdprologue.S rtld.c malloc.c shlib.c etc.c md.c vfprintf.c
 MAN= rtld.1
 LDDIR?= $(.CURDIR)/..
 #PICFLAG=-pic
-PICFLAG=-fpic
+# As there is relocation going on behind GCC's back, don't cache function addresses.
+PICFLAG=-fpic -fno-function-cse
 CFLAGS+=-I$(LDDIR) -I$(.CURDIR) -I$(LDDIR)/$(MACHINE_ARCH) $(PICFLAG) -DRTLD -DLIBC_SCCS
 LDFLAGS+=-Bshareable -Bsymbolic -assert nosymbolic
 ASFLAGS+=-k
@@ -16,8 +17,13 @@ MLINKS=	rtld.1 ld.so.1
 
 .PATH: $(LDDIR) $(LDDIR)/$(MACHINE_ARCH) ${.CURDIR}/../../../../lib/libc/stdio
 
+.if defined(DESTDIR)
+$(PROG):
+	$(LD) -o $(PROG) $(LDFLAGS) -nostdlib -L${DESTDIR}/usr/lib $(OBJS) $(LDADD)
+.else
 $(PROG):
 	$(LD) -o $(PROG) $(LDFLAGS) $(OBJS) $(LDADD)
+.endif
 
 .S.o:
 	${CPP} ${.IMPSRC} | ${AS} ${ASFLAGS} -o ${.TARGET} -

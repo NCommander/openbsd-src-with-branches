@@ -1,3 +1,4 @@
+/*	$OpenBSD: clnt.h,v 1.6 1995/04/29 05:27:58 cgd Exp $	*/
 /*	$NetBSD: clnt.h,v 1.6 1995/04/29 05:27:58 cgd Exp $	*/
 
 /*
@@ -134,7 +135,7 @@ typedef struct __rpc_client {
 		void		(*cl_destroy) __P((struct __rpc_client *));
 		/* the ioctl() of rpc */
 		bool_t          (*cl_control) __P((struct __rpc_client *, u_int,
-				    char *));
+				    void *));
 	} *cl_ops;
 	caddr_t			cl_private;	/* private stuff */
 } CLIENT;

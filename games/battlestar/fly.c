@@ -1,3 +1,4 @@
+/*	$OpenBSD: fly.c,v 1.3 1997/06/30 19:56:35 kstailey Exp $	*/
 /*	$NetBSD: fly.c,v 1.3 1995/03/21 15:07:28 cgd Exp $	*/
 
 /*
@@ -41,7 +42,8 @@ static char rcsid[] = "$NetBSD: fly.c,v 1.3 1995/03/21 15:07:28 cgd Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include <unistd.h>
+#include "extern.h"
 #undef UP
 #include <curses.h>
 
@@ -52,9 +54,17 @@ static char rcsid[] = "$NetBSD: fly.c,v 1.3 1995/03/21 15:07:28 cgd Exp $";
 int row, column;
 int dr = 0, dc = 0;
 char destroyed;
-int clock = 120;		/* time for all the flights in the game */
+int bclock = 120;		/* time for all the flights in the game */
 char cross = 0;
 sig_t oldsig;
+
+void blast __P((void));
+void endfly __P((void));
+void moveenemy __P((void));
+void notarget __P((void));
+void screen __P((void));
+void succumb __P((void));
+void target __P((void));
 
 void
 succumb()
@@ -69,12 +79,11 @@ succumb()
 	}
 }
 
+int
 visual()
 {
-	void moveenemy();
-
 	destroyed = 0;
-	if(initscr() == ERR){
+	if(initscr() == NULL){
 		puts("Whoops!  No more memory...");
 		return(0);
 	}
@@ -172,13 +181,14 @@ visual()
 			endfly();
 			return(1);
 		}
-		if (clock <= 0){
+		if (bclock <= 0){
 			endfly();
 			die();
 		}
 	}
 }
 
+void
 screen()
 {
 	register int r,c,n;
@@ -195,6 +205,7 @@ screen()
 	refresh();
 }
 
+void
 target()
 {
 	register int n;
@@ -207,6 +218,7 @@ target()
 	}
 }
 
+void
 notarget()
 {
 	register int n;
@@ -219,6 +231,7 @@ notarget()
 	}
 }
 
+void
 blast()
 {
 	register int n;
@@ -262,7 +275,7 @@ moveenemy()
 		row += (rnd(9) - 4) % (4 - abs(row - MIDR));
 		column += (rnd(9) - 4) % (4 - abs(column - MIDC));
 	}
-	clock--;
+	bclock--;
 	mvaddstr(oldr, oldc - 1, "   ");
 	if (cross)
 		target();
@@ -272,18 +285,20 @@ moveenemy()
 	move(LINES-1, 42);
 	printw("%3d", fuel);
 	move(LINES-1, 57);
-	printw("%3d", clock);
+	printw("%3d", bclock);
 	refresh();
 	signal(SIGALRM, moveenemy);
 	alarm(1);
 }
 
+void
 endfly()
 {
 	alarm(0);
 	signal(SIGALRM, SIG_DFL);
 	mvcur(0,COLS-1,LINES-1,0);
 	endwin();
+	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
 	signal(SIGTSTP, SIG_DFL);
 	signal(SIGINT, oldsig);
 }

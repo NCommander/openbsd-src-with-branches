@@ -1,0 +1,9 @@
+#	$OpenBSD$
+#	@(#)Makefile	8.1 (Berkeley) 7/2/95
+
+PROG=	smrsh
+MAN=	smrsh.8
+CFLAGS+=-I${.CURDIR}/../src -DCMDDIR=\"/usr/libexec/sm.bin\"
+
+.include "../../Makefile.inc"
+.include <bsd.prog.mk>

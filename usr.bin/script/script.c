@@ -1,3 +1,4 @@
+/*	$OpenBSD: script.c,v 1.8 1997/08/04 19:25:56 deraadt Exp $	*/
 /*	$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)script.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $";
+static char rcsid[] = "$OpenBSD: script.c,v 1.8 1997/08/04 19:25:56 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -63,6 +64,9 @@ static char rcsid[] = "$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $";
 #include <tzfile.h>
 #include <unistd.h>
 
+#include <util.h>
+#include <err.h>
+
 FILE	*fscript;
 int	master, slave;
 int	child, subchild;
@@ -74,7 +78,6 @@ struct	termios tt;
 __dead	void done __P((void));
 	void dooutput __P((void));
 	void doshell __P((void));
-	void err __P((const char *, ...));
 	void fail __P((void));
 	void finish __P((int));
 	void scriptflush __P((int));
@@ -91,7 +94,7 @@ main(argc, argv)
 	char ibuf[BUFSIZ];
 
 	aflg = 0;
-	while ((ch = getopt(argc, argv, "a")) != EOF)
+	while ((ch = getopt(argc, argv, "a")) != -1)
 		switch(ch) {
 		case 'a':
 			aflg = 1;
@@ -110,12 +113,12 @@ main(argc, argv)
 		fname = "typescript";
 
 	if ((fscript = fopen(fname, aflg ? "a" : "w")) == NULL)
-		err("%s: %s", fname, strerror(errno));
+		err(1, fname);
 
 	(void)tcgetattr(STDIN_FILENO, &tt);
 	(void)ioctl(STDIN_FILENO, TIOCGWINSZ, &win);
 	if (openpty(&master, &slave, NULL, &tt, &win) == -1)
-		err("openpty: %s", strerror(errno));
+		err(1, "openpty");
 
 	(void)printf("Script started, output file is %s\n", fname);
 	rtt = tt;
@@ -145,6 +148,7 @@ main(argc, argv)
 	while ((cc = read(STDIN_FILENO, ibuf, BUFSIZ)) > 0)
 		(void)write(master, ibuf, cc);
 	done();
+	exit(0);
 }
 
 void
@@ -152,6 +156,7 @@ finish(signo)
 	int signo;
 {
 	register int die, pid;
+	int save_errno = errno;
 	union wait status;
 
 	die = 0;
@@ -161,6 +166,7 @@ finish(signo)
 
 	if (die)
 		done();
+	errno = save_errno;
 }
 
 void
@@ -195,10 +201,13 @@ void
 scriptflush(signo)
 	int signo;
 {
+	int save_errno = errno;
+
 	if (outcc) {
 		(void)fflush(fscript);
 		outcc = 0;
 	}
+	errno = save_errno;
 }
 
 void
@@ -213,7 +222,7 @@ doshell()
 	(void)close(master);
 	(void)fclose(fscript);
 	login_tty(slave);
-	execl(shell, "sh", "-i", NULL);
+	execl(shell, shell, "-i", NULL);
 	perror(shell);
 	fail();
 }
@@ -243,31 +252,3 @@ done()
 	exit(0);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(const char *fmt, ...)
-#else
-err(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "script: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-	exit(1);
-	/* NOTREACHED */
-}

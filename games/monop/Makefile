@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile,v 1.12 1995/03/23 08:34:32 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:55:46 millert Exp $
 
 PROG=	monop
 SRCS=	monop.c cards.c execute.c getinp.c houses.c jail.c misc.c morg.c \
@@ -16,10 +15,10 @@ cards.pck: initdeck
 	${.OBJDIR}/initdeck ${.CURDIR}/cards.inp
 
 initdeck: initdeck.c
-	${CC} ${CFLAGS} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} ${.CURDIR}/initdeck.c ${LDADD}
+	${HOSTCC} ${CFLAGS} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} ${.CURDIR}/initdeck.c ${LDADD}
 
 beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 cards.pck \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 cards.pck \
 	    ${DESTDIR}/usr/share/games
 
 .include <bsd.prog.mk>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: locore.S,v 1.4 1997/01/26 09:06:38 rahnds Exp $	*/
 /*	$NetBSD: locore.S,v 1.2 1996/10/16 19:33:09 ws Exp $	*/
 
 /*
@@ -265,7 +266,7 @@ _ENTRY(_C_LABEL(cpu_switch))
 	lwz	31,_C_LABEL(curpcb)@l(3)
 
 	xor	3,3,3
-	bl	_C_LABEL(splx)
+	bl	_C_LABEL(lcsplx)
 	stw	3,PCB_SPL(31)		/* save spl */
 
 /* Find a new process */
@@ -369,7 +370,7 @@ switch_exited:
 switch_return:
 	mr	30,7			/* save proc pointer */
 	lwz	3,PCB_SPL(4)
-	bl	_C_LABEL(splx)
+	bl	_C_LABEL(lcsplx)
 
 	mr	3,30			/* get curproc for special fork returns */
 
@@ -805,7 +806,9 @@ _C_LABEL(ipkdbsize) =	.-_C_LABEL(ipkdblow)
 	mtsprg	3,3;							\
 /* Disable translation, machine check and recoverability: */		\
 	mfmsr	2;							\
-	andi.	2,2,~(PSL_DR|PSL_IR|PSL_ME|PSL_RI);			\
+	lis	3,(PSL_DR|PSL_IR|PSL_ME|PSL_RI)@ha;			\
+	addi	3,3,(PSL_DR|PSL_IR|PSL_ME|PSL_RI)@l;			\
+	andc	2,2,3;							\
 	mtmsr	2;							\
 	isync;								\
 /* Decide whether we return to user mode: */				\
@@ -893,7 +896,7 @@ trapexit:
 	.globl	_C_LABEL(fork_trampoline)
 _C_LABEL(fork_trampoline):
 	xor	3,3,3
-	bl	_C_LABEL(splx)
+	bl	_C_LABEL(lcsplx)
 	mtlr	31
 	mr	3,30
 	blrl				/* jump indirect to r31 */
@@ -1002,7 +1005,7 @@ s_isitrap:
 	stw	30,32(1);		/* saved XER */			\
 	lmw	28,tempsave(0);		/* restore r28-r31 */		\
 	mfctr	6;							\
-	li	5,_C_LABEL(intr_depth)@ha;				\
+	lis	5,_C_LABEL(intr_depth)@ha;				\
 	lwz	5,_C_LABEL(intr_depth)@l(5);				\
 	mfsrr0	4;							\
 	mfsrr1	3;							\

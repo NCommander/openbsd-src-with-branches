@@ -1,8 +1,8 @@
-/*	$NetBSD: pass5.c,v 1.16 1996/09/27 22:45:18 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: pass5.c,v 1.3 1997/06/14 04:16:58 downsj Exp $	*/
+/*	$NetBSD: pass5.c,v 1.1 1997/06/11 11:21:58 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -39,7 +39,11 @@
 #if 0
 static char sccsid[] = "@(#)pass5.c	8.6 (Berkeley) 11/30/94";
 #else
-static char rcsid[] = "$NetBSD: pass5.c,v 1.16 1996/09/27 22:45:18 christos Exp $";
+#if 0
+static char rcsid[] = "$NetBSD: pass5.c,v 1.1 1997/06/11 11:21:58 bouyer Exp $";
+#else
+static char rcsid[] = "$OpenBSD: pass5.c,v 1.3 1997/06/14 04:16:58 downsj Exp $";
+#endif
 #endif
 #endif /* not lint */
 
@@ -49,8 +53,8 @@ static char rcsid[] = "$NetBSD: pass5.c,v 1.16 1996/09/27 22:45:18 christos Exp 
 #include <ufs/ext2fs/ext2fs.h>
 #include <ufs/ext2fs/ext2fs_extern.h>
 #include <string.h>
-#include <malloc.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "fsutil.h"
 #include "fsck.h"

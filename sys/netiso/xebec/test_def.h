@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: test_def.h,v 1.4 1994/06/29 06:41:20 cgd Exp $	*/
 
 struct blah {

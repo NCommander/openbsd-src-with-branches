@@ -1,8 +1,8 @@
-/*	$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: inode.c,v 1.3 1997/06/14 04:16:53 downsj Exp $	*/
+/*	$NetBSD: inode.c,v 1.1 1997/06/11 11:21:49 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -39,7 +39,11 @@
 #if 0
 static char sccsid[] = "@(#)inode.c	8.5 (Berkeley) 2/8/95";
 #else
-static char rcsid[] = "$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $";
+#if 0
+static char rcsid[] = "$NetBSD: inode.c,v 1.1 1997/06/11 11:21:49 bouyer Exp $";
+#else
+static char rcsid[] = "$OpenBSD: inode.c,v 1.3 1997/06/14 04:16:53 downsj Exp $";
+#endif
 #endif
 #endif /* not lint */
 
@@ -434,7 +438,7 @@ getinoinfo(inumber)
 		return (inp);
 	}
 	errexit("cannot find inode %d\n", inumber);
-	return ((struct inoinfo *)0);
+	return (NULL);
 }
 
 /*
