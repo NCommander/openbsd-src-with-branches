@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1996/05/22 11:35:47 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/09/21 11:43:44 deraadt Exp $
 
 PROG=	iostat
 MAN=	iostat.8
@@ -12,7 +12,5 @@ SRCS=	dkstats.c iostat.c
 
 DPADD=	${LIBKVM}
 LDADD=	-lkvm
-BINGRP=	kmem
-BINMODE=2555
 
 .include <bsd.prog.mk>
