@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_blkio.c,v 1.1 2001/04/09 06:53:44 tholo Exp $	*/
+/*	$OpenBSD: linux_blkio.c,v 1.2 2001/10/26 12:03:27 art Exp $	*/
 /*	$NetBSD: linux_blkio.c,v 1.3 2001/01/18 17:48:04 tv Exp $	*/
 
 /*
@@ -114,10 +114,6 @@ linux_ioctl_blkio(struct proc *p, struct linux_sys_ioctl_args *uap,
 	default:
 		error = ENOTTY;
 	}
-
-#ifdef notyet
-	FILE_UNUSE(fp, p);
-#endif
 
 	return error;
 }
