@@ -1,3 +1,4 @@
+/*	$OpenBSD: scsi_debug.h,v 1.5 1994/12/28 19:43:00 mycroft Exp $	*/
 /*	$NetBSD: scsi_debug.h,v 1.5 1994/12/28 19:43:00 mycroft Exp $	*/
 
 /*

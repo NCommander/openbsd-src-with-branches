@@ -1,3 +1,4 @@
+/*	$OpenBSD: scsi_tape.h,v 1.8 1996/03/19 03:07:36 mycroft Exp $	*/
 /*	$NetBSD: scsi_tape.h,v 1.8 1996/03/19 03:07:36 mycroft Exp $	*/
 
 /*

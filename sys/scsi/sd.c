@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.17 1996/07/12 08:57:57 pefo Exp $	*/
+/*	$OpenBSD: sd.c,v 1.18 1996/08/07 00:09:17 deraadt Exp $	*/
 /*	$NetBSD: sd.c,v 1.100.4.1 1996/06/04 23:14:08 thorpej Exp $	*/
 
 /*
@@ -1103,7 +1103,7 @@ sddump(dev, blkno, va, size)
 	sddoingadump = 0;
 	return 0;
 }
-#else	/* __BDEVSW_DUMP_NEW_TYPE */
+#else	/* __BDEVSW_DUMP_OLD_TYPE */
 int
 sddump(dev, blkno, va, size)
 	dev_t dev;
@@ -1115,4 +1115,4 @@ sddump(dev, blkno, va, size)
 	/* Not implemented. */
 	return ENXIO;
 }
-#endif	/* __BDEVSW_DUMP_NEW_TYPE */
+#endif	/* __BDEVSW_DUMP_OLD_TYPE */

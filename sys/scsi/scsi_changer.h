@@ -1,3 +1,4 @@
+/*	$OpenBSD: scsi_changer.h,v 1.7 1996/04/03 00:25:48 thorpej Exp $	*/
 /*	$NetBSD: scsi_changer.h,v 1.7 1996/04/03 00:25:48 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: scsi_disk.h,v 1.9 1996/03/19 03:07:02 mycroft Exp $	*/
 /*	$NetBSD: scsi_disk.h,v 1.9 1996/03/19 03:07:02 mycroft Exp $	*/
 
 /*
