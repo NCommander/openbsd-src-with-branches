@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.1 2001/09/01 15:44:20 drahn Exp $ */
+/*	$OpenBSD: conf.c,v 1.2 2001/09/27 17:30:56 drahn Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -186,7 +186,6 @@ cdev_decl(pci);
 cdev_decl(audio);
 
 #include "pf.h"
-cdev_decl(pf);
 
 #include <altq/altqconf.h>
 

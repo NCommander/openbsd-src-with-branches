@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.6 2001/07/06 05:14:30 smurph Exp $ */
+/*	$OpenBSD: conf.c,v 1.7 2001/08/06 22:34:44 mickey Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -148,7 +148,6 @@ cdev_decl(lkm);
 cdev_decl(ksyms);
 
 #include "pf.h"
-cdev_decl(pf);
 
 #include <altq/altqconf.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.28 2001/06/27 06:56:30 kjc Exp $ */
+/*	$OpenBSD: conf.c,v 1.29 2001/08/06 22:34:44 mickey Exp $ */
 /*	$NetBSD: conf.c,v 1.44 1999/10/27 16:38:54 ragge Exp $	*/
 
 /*-
@@ -433,7 +433,6 @@ dev_decl(filedesc,open);
 #include "wsmouse.h"
 
 #include "pf.h"
-cdev_decl(pf);
 
 #include <altq/altqconf.h>
 
