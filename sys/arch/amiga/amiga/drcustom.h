@@ -1,4 +1,5 @@
 /* 
+ * $OpenBSD: drcustom.h,v 1.1 1996/05/09 20:30:36 is Exp $
  * $NetBSD: drcustom.h,v 1.1 1996/05/09 20:30:36 is Exp $
  * 
  * Motherboard addresses for the DraCo.

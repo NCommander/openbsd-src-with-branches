@@ -1,3 +1,5 @@
+$OpenBSD$
+
 There are four different interruptsystems currently supported (well
 only three, really) in the kernel.  They are all mutual exclusive:
 
