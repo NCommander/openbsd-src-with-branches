@@ -49,12 +49,16 @@ char     *cvsd_sock_path = CVSD_SOCK_PATH;
 
 
 /* daemon API */
+#ifdef CVSD
 int cvsd_sock = -1;
 static struct sockaddr_un cvsd_sun;
+#endif
 
 /* for client API */
+#ifdef CVS
 static int cvs_sock = -1;
 static struct sockaddr_un cvs_sun;
+#endif
 
 
 #ifdef CVSD
@@ -69,7 +73,7 @@ static struct sockaddr_un cvs_sun;
 int
 cvsd_sock_open(void)
 {
-	if (cvs_sock >= 0)
+	if (cvsd_sock >= 0)
 		cvsd_sock_close();
 
 	cvsd_sun.sun_family = AF_LOCAL;
