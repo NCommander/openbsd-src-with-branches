@@ -254,7 +254,7 @@ release:
 .else
 release: distribution snap_pre snap_md
 	cd ${.CURDIR}/../distrib/notes; ${MAKE}; ${MAKE} install
-	cd ${.CURDIR}/../distrib/sets; csh -f maketars ${OSrev}
+	cd ${.CURDIR}/../distrib/sets; sh maketars ${OSrev}
 	-cp ${DESTDIR}/snapshot/bsd* ${RELEASEDIR}
 	-cp ${DESTDIR}/snapshot/*boot* ${RELEASEDIR}
 	-cp ${DESTDIR}/snapshot/*BOOT* ${RELEASEDIR}
