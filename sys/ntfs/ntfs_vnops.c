@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vnops.c,v 1.3 2003/05/20 03:36:42 tedu Exp $	*/
+/*	$OpenBSD: ntfs_vnops.c,v 1.4 2003/06/02 23:28:20 millert Exp $	*/
 /*	$NetBSD: ntfs_vnops.c,v 1.6 2003/04/10 21:57:26 jdolecek Exp $	*/
 
 /*
@@ -310,10 +310,6 @@ ntfs_reclaim(ap)
 	
 	/* Purge old data structures associated with the inode. */
 	cache_purge(vp);
-	if (ip->i_devvp) {
-		vrele(ip->i_devvp);
-		ip->i_devvp = NULL;
-	}
 
 	ntfs_frele(fp);
 #ifndef __OpenBSD__
