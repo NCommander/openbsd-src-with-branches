@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.52 1999/01/10 22:47:08 art Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.53 1999/01/19 20:52:47 art Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -199,17 +199,15 @@ sys_mount(p, v, retval)
 		 */     
 		fstypenum = (u_long)SCARG(uap, type);
 		
-		if (fstypenum < maxvfsconf) {
-			for (vfsp = vfsconf; vfsp; vfsp = vfsp->vfc_next)
-				if (vfsp->vfc_typenum == fstypenum)
-					break;
-			if (vfsp == NULL) {
-				vput(vp);
-				return (ENODEV);
-			}
-			strncpy(fstypename, vfsp->vfc_name, MFSNAMELEN);
-
+		for (vfsp = vfsconf; vfsp; vfsp = vfsp->vfc_next)
+			if (vfsp->vfc_typenum == fstypenum)
+				break;
+		if (vfsp == NULL) {
+			vput(vp);
+			return (ENODEV);
 		}
+		strncpy(fstypename, vfsp->vfc_name, MFSNAMELEN);
+
 #else
 		vput(vp);
 		return (error);
