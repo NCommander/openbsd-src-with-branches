@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.46 2001/10/02 18:18:28 frantzen Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.47 2001/10/04 21:54:15 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -94,6 +94,9 @@ static const struct {
 	{ "udp.multiple",	PFTM_UDP_MULTIPLE },
 	{ "icmp.first",		PFTM_ICMP_FIRST_PACKET },
 	{ "icmp.error",		PFTM_ICMP_ERROR_REPLY },
+	{ "other.first",	PFTM_OTHER_FIRST_PACKET },
+	{ "other.single",	PFTM_OTHER_SINGLE },
+	{ "other.multiple",	PFTM_OTHER_MULTIPLE },
 	{ "frag",		PFTM_FRAG },
 	{ "interval",		PFTM_INTERVAL },
 	{ NULL,			0 }};
