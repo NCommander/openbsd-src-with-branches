@@ -1,4 +1,4 @@
-/*	$OpenBSD: compat.h,v 1.29 2001/09/20 13:50:40 markus Exp $	*/
+/*	$OpenBSD: compat.h,v 1.30 2002/03/04 17:27:39 stevesk Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000, 2001 Markus Friedl.  All rights reserved.
@@ -52,6 +52,7 @@
 #define SSH_BUG_OPENFAILURE	0x00020000
 #define SSH_BUG_DERIVEKEY	0x00040000
 #define SSH_BUG_DUMMYCHAN	0x00100000
+#define SSH_BUG_EXTEOF		0x00200000
 
 void     enable_compat13(void);
 void     enable_compat20(void);
