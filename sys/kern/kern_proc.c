@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.3 1997/11/24 03:22:41 deraadt Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.4 1998/02/20 13:47:22 niklas Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -362,7 +362,7 @@ pgrpdump()
 {
 	register struct pgrp *pgrp;
 	register struct proc *p;
-	register i;
+	register int i;
 
 	for (i = 0; i <= pgrphash; i++) {
 		if ((pgrp = pgrphashtbl[i].lh_first) != NULL) {
