@@ -1,5 +1,5 @@
 /*	$NetBSD: rcp.c,v 1.9 1995/03/21 08:19:06 cgd Exp $	*/
-/*	$OpenBSD: rcp.c,v 1.17 1997/11/05 00:09:36 deraadt Exp $	*/
+/*	$OpenBSD: rcp.c,v 1.18 1997/12/08 05:15:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1990, 1992, 1993
@@ -403,9 +403,13 @@ source(argc, argv)
 	off_t i;
 	int amt, fd, haderr, indx, result;
 	char *last, *name, buf[BUFSIZ];
+	int len;
 
 	for (indx = 0; indx < argc; ++indx) {
 		name = argv[indx];
+		len = strlen(name);
+		while (len > 1 && name[len-1] == '/')
+			name[--len] = '\0';
 		if ((fd = open(name, O_RDONLY, 0)) < 0)
 			goto syserr;
 		if (fstat(fd, &stb)) {
