@@ -1,4 +1,4 @@
-/*	$OpenBSD: gen.c,v 1.2 1996/06/26 05:35:34 deraadt Exp $	*/
+/*	$OpenBSD: gen.c,v 1.3 1996/07/13 22:22:01 millert Exp $	*/
 
 /* gen - actual generation (writing) of flex scanners */
 
@@ -28,7 +28,7 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/* $Header: /home/daffy/u0/vern/flex/RCS/gen.c,v 2.56 96/05/25 20:43:38 vern Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/gen.c,v 1.3 1996/07/13 22:22:01 millert Exp $ */
 
 #include "flexdef.h"
 
@@ -1025,6 +1025,7 @@ void gentabs()
 		}
 
 	dataend();
+	free(acc_array);
 	}
 
 
