@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.h,v 1.28 2001/03/16 04:39:08 hugh Exp $	*/
+/*	$OpenBSD: exec_elf.h,v 1.20.4.1 2001/05/14 22:45:01 niklas Exp $	*/
 /*
  * Copyright (c) 1995, 1996 Erik Theisen.  All rights reserved.
  *
@@ -485,7 +485,7 @@ enum AuxID {
 };
 
 struct elf_args {
-        u_long  arg_entry;		/* progran entry point */
+        u_long  arg_entry;		/* program entry point */
         u_long  arg_interp;		/* Interpreter load address */
         u_long  arg_phaddr;		/* program header address */
         u_long  arg_phentsize;		/* Size of program header */
