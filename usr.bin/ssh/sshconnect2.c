@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect2.c,v 1.43 2001/02/08 10:47:05 itojun Exp $");
+RCSID("$OpenBSD: sshconnect2.c,v 1.44 2001/02/09 12:28:35 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/md5.h>
@@ -601,13 +601,13 @@ input_userauth_failure(int type, int plen, void *ctxt)
 	packet_done();
 
 	if (partial != 0)
-		debug("partial success");
+		log("Authenticated with partial success.");
 	debug("authentications that can continue: %s", authlist);
 
 	for (;;) {
 		method = authmethod_get(authlist);
 		if (method == NULL)
-			fatal("Unable to find an authentication method");
+			fatal("Permission denied (%s).", authlist);
 		authctxt->method = method;
 		if (method->userauth(authctxt) != 0) {
 			debug2("we sent a %s packet, wait for reply", method->name);
