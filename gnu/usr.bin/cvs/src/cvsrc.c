@@ -10,11 +10,7 @@
 
 
 #include "cvs.h"
-
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)cvsrc.c 1.9 94/09/30 $";
-USE(rcsid);
-#endif /* lint */
+#include "getline.h"
 
 /* this file is to be found in the user's home directory */
 
@@ -27,19 +23,26 @@ char cvsrc[] = CVSRC_FILENAME;
 
 extern char *strtok ();
 
+/* Read cvsrc, processing options matching CMDNAME ("cvs" for global
+   options, and update *ARGC and *ARGV accordingly.  */
+
 void
-read_cvsrc (argc, argv)
-     int *argc;
-     char ***argv;
+read_cvsrc (argc, argv, cmdname)
+    int *argc;
+    char ***argv;
+    char *cmdname;
 {
     char *homedir;
     char *homeinit;
     FILE *cvsrcfile;
 
-    char linebuf [MAXLINELEN];
-  
+    char *line;
+    int line_length;
+    size_t line_chars_allocated;
+
     char *optstart;
 
+    int command_len;
     int found = 0;
 
     int i;
@@ -61,7 +64,7 @@ read_cvsrc (argc, argv)
 
     /* determine filename for ~/.cvsrc */
 
-    homedir = getenv ("HOME");
+    homedir = get_homedir ();
     if (!homedir)
 	return;
 
@@ -72,7 +75,7 @@ read_cvsrc (argc, argv)
 
     /* if it can't be read, there's no point to continuing */
 
-    if (access (homeinit, R_OK) != 0)
+    if (!isreadable (homeinit))
     {
 	free (homeinit);
 	return;
@@ -80,15 +83,20 @@ read_cvsrc (argc, argv)
 
     /* now scan the file until we find the line for the command in question */
 
+    line = NULL;
+    line_chars_allocated = 0;
+    command_len = strlen (cmdname);
     cvsrcfile = open_file (homeinit, "r");
-    while (fgets (linebuf, MAXLINELEN, cvsrcfile))
+    while ((line_length = getline (&line, &line_chars_allocated, cvsrcfile))
+	   >= 0)
     {
 	/* skip over comment lines */
-	if (linebuf[0] == '#')
+	if (line[0] == '#')
 	    continue;
 
 	/* stop if we match the current command */
-	if (!strncmp (linebuf, (*argv)[0], strlen ((*argv)[0])))
+	if (!strncmp (line, cmdname, command_len)
+	    && isspace (*(line + command_len)))
 	{
 	    found = 1;
 	    break;
@@ -100,9 +108,9 @@ read_cvsrc (argc, argv)
     if (found)
     {
 	/* skip over command in the options line */
-	optstart = strtok(linebuf+strlen((*argv)[0]), "\t \n");
-      
-	do
+	optstart = strtok (line + command_len, "\t \n");
+
+	while (optstart)
 	{
 	    new_argv [new_argc] = xstrdup (optstart);
 	    new_argv [new_argc+1] = NULL;
@@ -118,10 +126,12 @@ read_cvsrc (argc, argv)
 		free(new_argv);
 		new_argv = tmp_argv;
 	    }
-	  
+	    optstart = strtok (NULL, "\t \n");
 	}
-	while ((optstart = strtok (NULL, "\t \n")) != NULL);
     }
+
+    if (line != NULL)
+	free (line);
 
     /* now copy the remaining arguments */
   

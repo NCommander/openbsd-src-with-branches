@@ -18,8 +18,9 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
 
 ;;; Code:
 
@@ -55,7 +56,7 @@
 		  (forward-line 2)
 		  (if (re-search-backward regexp beg t)
 		      (setq list
-			    (cons (list (buffer-substring
+			    (cons (list (buffer-substring-no-properties
 					  (match-beginning 1)
 					  (match-end 1))
 					beg)
@@ -175,7 +176,7 @@ Check that every node pointer points to an existing node."
 	    (forward-line 1)
 	    (if (re-search-backward regexp beg t)
 		(let ((name (downcase
-			      (buffer-substring
+			      (buffer-substring-no-properties
 			        (match-beginning 1)
 				(progn
 				  (goto-char (match-end 1))
@@ -208,7 +209,7 @@ Check that every node pointer points to an existing node."
 		  (search-forward "\n\^_" nil 'move)
 		  (narrow-to-region beg (point))
 		  (setq thisnode (downcase
-				   (buffer-substring
+				   (buffer-substring-no-properties
 				     (match-beginning 1)
 				     (progn
 				       (goto-char (match-end 1))
@@ -302,7 +303,7 @@ Check that every node pointer points to an existing node."
     (if (= (following-char) ?\()
 	nil
       (setq name
-	    (buffer-substring
+	    (buffer-substring-no-properties
 	     (point)
 	     (progn
 	      (skip-chars-forward "^,\t\n")
@@ -338,7 +339,7 @@ Check that every node pointer points to an existing node."
 	       (setq tem (cdr tem)))
 	     (goto-char (1+ start))
 	     (while (looking-at ".*Node: \\(.*\\)\177\\([0-9]+\\)$")
-	       (setq tem (downcase (buffer-substring
+	       (setq tem (downcase (buffer-substring-no-properties
 				     (match-beginning 1)
 				     (match-end 1))))
 	       (setq tem (assoc tem allnodes))
@@ -348,8 +349,10 @@ Check that every node pointer points to an existing node."
 				 (setq tem (- (car (cdr (cdr tem)))
 					      (read (current-buffer))))
 				 (if (> tem 0) tem (- tem)))))
-		   (throw 'losing 'y)))
-	     (forward-line 1))
+		   (throw 'losing 'y))
+	       (forward-line 1)))
+	   (if (looking-at "\^_\n")
+	       (forward-line 1))
 	   (or (looking-at "End tag table\n")
 	       (throw 'losing 'z))
 	   nil))))
@@ -412,7 +415,8 @@ For example, invoke \"emacs -batch -f batch-info-validate $info/ ~/*.info\""
 		    (message ">> PROBLEMS IN INFO FILE %s" file)
 		    (save-excursion
 		      (set-buffer loss-name)
-		      (princ (buffer-substring (point-min) (point-max))))
+		      (princ (buffer-substring-no-properties
+			      (point-min) (point-max))))
 		    (message "----------------------------------------------------------------------")
 		    (setq error 1 lose t)))
 		(if (and (buffer-modified-p)
