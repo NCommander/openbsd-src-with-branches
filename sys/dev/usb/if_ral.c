@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.5 2005/03/17 12:46:54 damien Exp $  */
+/*	$OpenBSD: if_ral.c,v 1.6 2005/03/17 14:23:03 damien Exp $  */
 
 /*-
  * Copyright (c) 2005
@@ -478,6 +478,19 @@ USB_DETACH(ural)
 
 	usb_rem_task(sc->sc_udev, &sc->sc_task);
 	timeout_del(&sc->scan_ch);
+
+	if (sc->sc_rx_pipeh != NULL) {
+		usbd_abort_pipe(sc->sc_rx_pipeh);
+		usbd_close_pipe(sc->sc_rx_pipeh);
+	}
+
+	if (sc->sc_tx_pipeh != NULL) {
+		usbd_abort_pipe(sc->sc_tx_pipeh);
+		usbd_close_pipe(sc->sc_tx_pipeh);
+	}
+
+	ural_free_rx_list(sc);
+	ural_free_tx_list(sc);
 
 #if NBPFILTER > 0
 	bpfdetach(ifp);
