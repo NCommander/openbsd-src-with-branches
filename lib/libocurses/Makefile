@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1998/07/23 21:10:24 millert Exp $
+#	$OpenBSD: Makefile,v 1.5 1998/11/30 01:02:18 millert Exp $
 
 CFLAGS+=#-DTFILE=\"/dev/ttyp0\"
 CFLAGS+=-D_CURSES_PRIVATE -I${.CURDIR}
@@ -11,7 +11,7 @@ SRCS=	addbytes.c addch.c addnstr.c box.c clear.c clrtobot.c clrtoeol.c \
 	overwrite.c printw.c putchar.c refresh.c scanw.c scroll.c setterm.c \
 	standout.c toucholap.c touchwin.c tscroll.c tstp.c tty.c unctrl.c
 SRCS+=	termcap.c tgoto.c tputs.c
-MAN=	ocurses.3
+MAN=	ocurses.3 otermcap.3
 
 .if make(install)
 SUBDIR+= PSD.doc
