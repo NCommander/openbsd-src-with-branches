@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.348 2003/03/27 18:01:57 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.349 2003/04/04 18:48:11 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -3703,7 +3703,7 @@ top:
 		if (next == '>') {
 			yylval.v.i = PF_OP_XRG;
 			return (PORTBINARY);
-		} 
+		}
 		lungetc(next);
 		break;
 	case '>':
