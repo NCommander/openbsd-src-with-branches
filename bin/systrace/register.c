@@ -1,4 +1,4 @@
-/*	$OpenBSD: register.c,v 1.13 2002/11/16 14:27:17 itojun Exp $	*/
+/*	$OpenBSD: register.c,v 1.14 2003/05/17 03:09:59 sturm Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -202,4 +202,5 @@ systrace_initcb(void)
 	intercept_register_translation("linux", "chmod", 1, &ic_modeflags);
 
 	X(intercept_register_execcb(execres_cb, NULL));
+	X(intercept_register_pfreecb(policyfree_cb, NULL));
 }
