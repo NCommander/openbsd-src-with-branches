@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyinit.c,v 1.21 1998/07/09 17:04:00 millert Exp $	*/
+/*	$OpenBSD: skeyinit.c,v 1.22 1998/08/22 19:29:46 dgregor Exp $	*/
 /*	$NetBSD: skeyinit.c,v 1.6 1995/06/05 19:50:48 pk Exp $	*/
 
 /* S/KEY v1.1b (skeyinit.c)
@@ -89,7 +89,7 @@ main(argc, argv)
 				zerokey = 1;
 				break;
 			case 'n':
-				if (argv[++i][0] == '\0')
+				if (argv[++i] == NULL || argv[i][0] == '\0')
 					usage(argv[0]);
 				if ((n = atoi(argv[i])) < 1 || n >= SKEY_MAX_SEQ)
 					errx(1, "count must be > 0 and < %d",
