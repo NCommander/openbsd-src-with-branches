@@ -1,4 +1,4 @@
-/*	$OpenBSD: modstat.c,v 1.8 1997/02/06 13:02:43 deraadt Exp $	*/
+/*	$OpenBSD: modstat.c,v 1.9 1997/09/11 11:03:14 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1993 Terrence R. Lambert.
@@ -80,7 +80,7 @@ dostat(devfd, modnum, modname)
 	sbuf.name = name;
 
 	if (modname != NULL) {
-		if (strlen(modname) >= sizeof(sbuf.name))
+		if (strlen(modname) >= sizeof(name))
 			return 4;
 		strcpy(sbuf.name, modname);
 	}
