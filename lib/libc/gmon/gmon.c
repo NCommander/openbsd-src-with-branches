@@ -32,7 +32,7 @@
  */
 
 #if !defined(lint) && defined(LIBC_SCCS)
-static char rcsid[] = "$OpenBSD: gmon.c,v 1.7 1996/09/15 09:31:12 tholo Exp $";
+static char rcsid[] = "$OpenBSD: gmon.c,v 1.8 1997/07/23 21:11:27 kstailey Exp $";
 #endif
 
 #include <sys/param.h>
@@ -55,7 +55,7 @@ static int	s_scale;
 /* see profil(2) where this is describe (incorrectly) */
 #define		SCALE_1_TO_1	0x10000L
 
-#define ERR(s) write(2, s, sizeof(s))
+#define ERR(s) write(STDERR_FILENO, s, sizeof(s))
 
 void	moncontrol __P((int));
 static int hertz __P((void));
