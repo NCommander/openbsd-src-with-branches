@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash.h,v 1.7 2002/05/31 20:46:31 itojun Exp $	*/
+/*	$OpenBSD: hash.h,v 1.8 2003/06/02 20:18:33 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -101,7 +101,7 @@ typedef struct htab	 {		/* Memory resident data structure */
 	BUFHEAD 	*cpage;		/* Current page */
 	int		cbucket;	/* Current bucket */
 	int		cndx;		/* Index of next item on cpage */
-	int		errno;		/* Error Number -- for DBM 
+	int		err;		/* Error Number -- for DBM 
 					 * compatibility */
 	int		new_file;	/* Indicates if fd is backing store 
 					 * or no */
