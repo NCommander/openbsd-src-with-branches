@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: bt_split.c,v 1.6 1996/05/03 21:50:56 cgd Exp $";
+static char rcsid[] = "$OpenBSD: bt_split.c,v 1.3 1996/08/19 08:20:16 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -673,7 +673,8 @@ bt_psplit(t, h, l, r, pskip, ilen)
 		 * where we decide to try and copy too much onto the left page.
 		 * Make sure that doesn't happen.
 		 */
-		if (skip <= off && used + nbytes >= full) {
+		if ((skip <= off && used + nbytes + sizeof(indx_t) >= full) ||
+		    nxt == top - 1) {
 			--off;
 			break;
 		}
@@ -686,7 +687,7 @@ bt_psplit(t, h, l, r, pskip, ilen)
 			memmove((char *)l + l->upper, src, nbytes);
 		}
 
-		used += nbytes;
+		used += nbytes + sizeof(indx_t);
 		if (used >= half) {
 			if (!isbigkey || bigkeycnt == 3)
 				break;
