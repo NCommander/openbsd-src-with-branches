@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.44 1998/08/18 22:29:10 marc Exp $	*/
+/*	$OpenBSD: locore.s,v 1.45 1998/09/06 20:09:58 millert Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -2067,6 +2067,7 @@ IDTVEC(osyscall)
 	popfl
 	pushl	$7		# size of instruction for restart
 	jmp	syscall1
+IDTVEC(osyscall_end)
 
 /*
  * Trap gate entry for syscall
