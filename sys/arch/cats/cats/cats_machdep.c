@@ -1,4 +1,4 @@
-/*	$OpenBSD: cats_machdep.c,v 1.6 2004/02/13 21:32:02 drahn Exp $	*/
+/*	$OpenBSD: cats_machdep.c,v 1.7 2004/02/23 05:03:50 drahn Exp $	*/
 /*	$NetBSD: cats_machdep.c,v 1.50 2003/10/04 14:28:28 chris Exp $	*/
 
 /*
@@ -245,9 +245,15 @@ boot(howto)
 	 */
 	if (cold) {
 		doshutdownhooks();
-		printf("The operating system has halted.\n");
-		printf("Please press any key to reboot.\n\n");
-		cngetc();
+		/*
+		 * If the system is cold, just halt, unless the user
+		 * explicitly asked for reboot.
+		 */
+		if ((howto & (RB_HALT | RB_USERREQ)) != RB_USERREQ) {
+			printf("The operating system has halted.\n");
+			printf("Please press any key to reboot.\n\n");
+			cngetc();
+		}
 		printf("rebooting...\n");
 		cpu_reset();
 		/*NOTREACHED*/
