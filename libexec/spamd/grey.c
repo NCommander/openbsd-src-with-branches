@@ -1,4 +1,4 @@
-/*	$OpenBSD: grey.c,v 1.15 2004/07/04 22:46:47 deraadt Exp $	*/
+/*	$OpenBSD: grey.c,v 1.16 2004/08/08 19:32:45 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -213,7 +213,7 @@ greyscan(char *dbname)
 			return(-1);
 		}
 		memcpy(&gd, dbd.data, sizeof(gd));
-		if (gd.expire < now) {
+		if (gd.expire <= now) {
 			/* get rid of entry */
 			if (debug) {
 				memset(a, 0, sizeof(a));
