@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstat_proc.c,v 1.16 2001/09/19 21:47:31 deraadt Exp $	*/
+/*	$OpenBSD: rstat_proc.c,v 1.17 2001/10/02 01:14:42 millert Exp $	*/
 
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -31,7 +31,7 @@
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rpc.rstatd.c 1.1 86/09/25 Copyr 1984 Sun Micro";*/
 /*static char sccsid[] = "from: @(#)rstat_proc.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char rcsid[] = "$OpenBSD: rstat_proc.c,v 1.16 2001/09/19 21:47:31 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rstat_proc.c,v 1.17 2001/10/02 01:14:42 millert Exp $";
 #endif
 
 /*
@@ -268,8 +268,9 @@ updatestat(int sig)
 		stats_all.s1.if_collisions += ifdp->ifi_collisions;
 	}
 	freeifaddrs(ifaddrs);
-	gettimeofday((struct timeval *)&stats_all.s3.curtime,
-	    (struct timezone *) 0);
+	stats_all.s3.curtime.tv_sec = tm.tv_sec;
+	stats_all.s3.curtime.tv_usec = tm.tv_usec;
+
 	alarm(1);
 	errno = save_errno;
 }
