@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2002/05/23 18:43:00 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2002/05/31 03:46:32 pjanzen Exp $
 
 PROG=	atc
 CFLAGS+=-I${.CURDIR} -I.
@@ -17,7 +17,7 @@ beforeinstall:
 	@if [ ! -d ${DESTDIR}/usr/share/games/atc ]; then \
                 /bin/rm -f ${DESTDIR}/usr/share/games/atc ; \
                 mkdir -p ${DESTDIR}/usr/share/games/atc ; \
-                chown root.wheel ${DESTDIR}/usr/share/games/atc ; \
+                chown root:wheel ${DESTDIR}/usr/share/games/atc ; \
                 chmod 755 ${DESTDIR}/usr/share/games/atc ; \
         else \
                 true ; \
