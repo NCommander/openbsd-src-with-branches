@@ -1,8 +1,6 @@
-#	$OpenBSD: Makefile,v 1.3 2004/01/24 21:11:56 miod Exp $
+#	$OpenBSD: Makefile,v 1.4 2004/01/24 22:15:34 miod Exp $
 
 LIB=sa
-
-CLEANFILES+=SRT0.o SRT1.o
 
 NOPIC=nopic
 NOPROFILE=noprofile
