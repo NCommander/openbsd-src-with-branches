@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.40 1998/02/17 12:07:21 deraadt Exp $	*/
+/*	$OpenBSD: locore.s,v 1.41 1998/02/22 00:34:52 niklas Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -154,6 +154,7 @@ _cold:		.long	1	# cold till we are not
 _esym:		.long	0	# ptr to end of syms
 _cnvmem:	.long	0	# conventional memory size
 _extmem:	.long	0	# extended memory size
+_boothowto:	.long	0	# boot flags
 _atdevbase:	.long	0	# location of start of iomem in virtual
 _bootapiver:	.long	0	# /boot API version
 _bootargc:	.long	0	# /boot argc
