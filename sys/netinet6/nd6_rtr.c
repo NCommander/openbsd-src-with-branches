@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_rtr.c,v 1.28 2003/06/24 07:55:12 itojun Exp $	*/
+/*	$OpenBSD: nd6_rtr.c,v 1.29 2003/09/26 21:43:32 miod Exp $	*/
 /*	$KAME: nd6_rtr.c,v 1.97 2001/02/07 11:09:13 itojun Exp $	*/
 
 /*
@@ -1979,7 +1979,7 @@ nd6_setdefaultiface(ifindex)
 {
 	int error = 0;
 
-	if (ifindex < 0 || if_index < ifindex)
+	if (ifindex < 0 || if_indexlim <= ifindex || !ifindex2ifnet[ifindex])
 		return (EINVAL);
 
 	if (nd6_defifindex != ifindex) {

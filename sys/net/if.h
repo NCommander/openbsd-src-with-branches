@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.45 2003/12/03 13:27:36 markus Exp $	*/
+/*	$OpenBSD: if.h,v 1.46 2003/12/08 09:09:03 markus Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -554,7 +554,7 @@ do {									\
 extern struct ifnet_head ifnet;
 extern struct ifnet **ifindex2ifnet;
 extern struct ifnet *lo0ifp;
-extern int if_index;
+extern int if_indexlim;
 
 void	ether_ifattach(struct ifnet *);
 void	ether_ifdetach(struct ifnet *);
