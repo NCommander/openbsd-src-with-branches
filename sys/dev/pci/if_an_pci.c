@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_an_pci.c,v 1.4 2001/06/23 01:44:30 mickey Exp $	*/
+/*	$OpenBSD: if_an_pci.c,v 1.5 2001/08/25 10:13:29 art Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -62,6 +62,7 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
+#include <net/if_media.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
