@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.31 2003/06/11 23:42:12 deraadt Exp $	*/
+/*	$OpenBSD: print.c,v 1.32 2004/01/08 18:18:35 millert Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.31 2003/06/11 23:42:12 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.32 2004/01/08 18:18:35 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -258,7 +258,7 @@ pri(const struct kinfo_proc2 *kp, VARENT *ve)
 }
 
 void
-uname(const struct kinfo_proc2 *kp, VARENT *ve)
+euname(const struct kinfo_proc2 *kp, VARENT *ve)
 {
 	VAR *v;
 
