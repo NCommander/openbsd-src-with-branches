@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.13 2002/01/23 19:16:09 fgsch Exp $
+#	$OpenBSD: RAMDISK,v 1.14 2002/03/14 00:47:56 miod Exp $
 
 #
 # A ramdisk kernel
@@ -44,7 +44,7 @@ option		ADOSFS		# AmigaDOS file system
 
 
 #
-# Misc. debuging options
+# Misc. debugging options
 #
 #option		DEBUG		# Add debugging statements
 #option		SYSCALL_DEBUG	# debug all syscalls.
