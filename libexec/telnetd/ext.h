@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext.h,v 1.7 1998/07/23 17:55:50 deraadt Exp $	*/
+/*	$OpenBSD: ext.h,v 1.8 1998/07/28 20:18:19 marc Exp $	*/
 /*	$NetBSD: ext.h,v 1.6 1996/02/28 20:38:13 thorpej Exp $	*/
 
 /*
@@ -86,7 +86,7 @@ extern char *unptyip;  /* pointer to remaining characters in buffer */
 #endif
 
 extern int	pty, net;
-extern char	*line;
+extern char	line[16];
 extern int	SYNCHing;		/* we are in TELNET SYNCH mode */
 
 #include <sys/cdefs.h>
