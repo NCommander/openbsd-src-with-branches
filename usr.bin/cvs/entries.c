@@ -137,7 +137,7 @@ cvs_ent_close(CVSENTRIES *ep)
 	struct cvs_ent *ent;
 
 	if (ep->cef_file != NULL)
-		(void)fclose(ep);
+		(void)fclose(ep->cef_file);
 	if (ep->cef_path != NULL)
 		free(ep->cef_path);
 
