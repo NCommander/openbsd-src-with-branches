@@ -1,4 +1,4 @@
-# $OpenBSD: PackingList.pm,v 1.4 2003/12/26 16:44:31 espie Exp $
+# $OpenBSD: PackingList.pm,v 1.5 2004/01/28 22:12:01 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -56,6 +56,9 @@ sub read
 	}
 	return $plist;
 }
+
+# XXX Please don't define other selectors yourself, as this is a hack
+# XXX that is bound to change in the future.
 
 sub OpenBSD::PackingList::DirrmOnly
 {
