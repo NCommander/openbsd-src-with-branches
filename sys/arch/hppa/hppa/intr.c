@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.14 2003/12/20 21:49:06 miod Exp $	*/
+/*	$OpenBSD: intr.c,v 1.15 2003/12/30 21:21:40 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -223,9 +223,9 @@ cpu_intr(void *v)
 {
 	struct trapframe *frame = v;
 	u_long mask;
-	int oldintr, s = cpl;
+	int s = cpl;
 
-	if ((oldintr = cpu_inintr++))
+	if (cpu_inintr++)
 		frame->tf_flags |= TFF_INTR;
 
 	while ((mask = ipending & ~imask[s])) {
