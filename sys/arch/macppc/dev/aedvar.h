@@ -1,4 +1,4 @@
-/*	$OpenBSD: aedvar.h,v 1.2 2002/03/14 01:26:36 millert Exp $	*/
+/*	$OpenBSD: aedvar.h,v 1.3 2002/06/07 07:13:37 miod Exp $	*/
 /*	$NetBSD: aedvar.h,v 1.2 2000/03/23 06:40:33 thorpej Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
 
 /* Event queue definitions */
 #ifndef AED_MAX_EVENTS
-#define AED_MAX_EVENTS 200	/* Maximum events to be kept in queue */  
+#define AED_MAX_EVENTS 200	/* Maximum events to be kept in queue */
 				/* maybe should be higher for slower macs? */
 #endif				/* AED_MAX_EVENTS */
 
