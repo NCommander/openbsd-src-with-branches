@@ -297,7 +297,7 @@ emitfiles(fp, suffix)
 				    "$S/arch/%s/%s/swapgeneric.c",
 				    machine, machine);
 			else
-				(void)sprintf(swapname, "swap%s.c",
+				(void)sprintf(swapname, "./swap%s.c",
 				    cf->cf_name);
 			len = strlen(swapname);
 			if (lpos + len > 72) {
