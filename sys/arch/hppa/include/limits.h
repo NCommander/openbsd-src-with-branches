@@ -1,4 +1,4 @@
-/*	$OpenBSD: limits.h,v 1.5 2002/04/20 22:25:29 mickey Exp $	*/
+/*	$OpenBSD: limits.h,v 1.6 2002/04/24 21:53:11 espie Exp $	*/
 
 /* 
  * Copyright (c) 1992-1994, The University of Utah and
@@ -64,6 +64,7 @@
 #define	MB_LEN_MAX	6		/* Allow 31 bit UTF2 */
 
 #if !defined(_ANSI_SOURCE)
+#define	SIZE_MAX	UINT_MAX	/* max value for a size_t */
 #define	SSIZE_MAX	INT_MAX		/* max value for a ssize_t */
 
 #if !defined(_POSIX_SOURCE)
