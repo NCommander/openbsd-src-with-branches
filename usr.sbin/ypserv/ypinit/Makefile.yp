@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.yp,v 1.8 1997/04/20 10:00:22 maja Exp $
+#	$OpenBSD: Makefile.yp,v 1.9 1997/07/26 22:23:45 maja Exp $
 
 YPDBDIR=/var/yp
 DIR=/etc
@@ -128,7 +128,7 @@ ethers.time: $(DIR)/ethers
 		if [ ! $(NOPUSH) ]; then \
 			$(YPPUSH) -d $(DOMAIN) ethers.byaddr; \
 			$(YPPUSH) -d $(DOMAIN) ethers.byname; \
-			$(ECHO) "pushed hosts"; \
+			$(ECHO) "pushed ethers"; \
 		else \
 			: ; \
 		fi \
