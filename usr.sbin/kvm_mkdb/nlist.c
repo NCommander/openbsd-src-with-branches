@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.15 1998/10/28 23:20:01 millert Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.16 1998/11/29 09:34:09 downsj Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "from: @(#)nlist.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD: nlist.c,v 1.15 1998/10/28 23:20:01 millert Exp $";
+static char *rcsid = "$OpenBSD: nlist.c,v 1.16 1998/11/29 09:34:09 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -115,10 +115,6 @@ __aout_knlist(fd, db)
 	/* Must have a symbol table. */
 	if (!ebuf.a_syms)
 		badfmt("stripped");
-
-	/* Sanity check. */
-	if (!ebuf.a_data || !ebuf.a_bss)
-		badfmt("corrupt exec header");
 
 	/* Seek to string table. */
 	if (lseek(fd, N_STROFF(ebuf), SEEK_SET) == -1)
