@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.31 2003/04/17 03:43:13 drahn Exp $
+#	$OpenBSD: Makefile.inc,v 1.32 2003/07/05 17:02:55 deraadt Exp $
 
 CFLAGS=${DEBUG} -Os -Wall -Werror
 CFLAGS+=	-fno-stack-protector
@@ -52,4 +52,4 @@ LIBZ=${SADIR}/libz/${__objdir}/libz.a
 # NO_NET=no_net
 BINDIR=	/usr/mdec
 
-MANSUBDIR=/i386
+MANSUBDIR=i386

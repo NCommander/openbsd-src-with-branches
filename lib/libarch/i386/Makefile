@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.3 2000/01/01 10:02:07 matthieu Exp $
+#	$OpenBSD: Makefile,v 1.4 2002/07/12 22:22:43 deraadt Exp $
 #	$NetBSD: Makefile,v 1.1 1996/02/21 02:45:47 jtk Exp $
 
 MAN+=	i386_get_ldt.2 \
 	i386_iopl.2 i386_get_ioperm.2 \
 	i386_vm86.2
-MANSUBDIR=/i386
+MANSUBDIR=i386
 MLINKS+=i386_get_ldt.2 i386_set_ldt.2 \
 	i386_get_ioperm.2 i386_set_ioperm.2
 
