@@ -124,8 +124,8 @@ extern char sigcode[], esigcode[];
 extern char *syscallnames[];
 #endif
 
-struct emul emul_netbsd = {
-	"netbsd",
+struct emul emul_native = {
+	"native",
 	NULL,
 	sendsig,
 	SYS_syscall,
@@ -206,7 +206,7 @@ main(framep)
 	p->p_flag = P_INMEM | P_SYSTEM;
 	p->p_stat = SRUN;
 	p->p_nice = NZERO;
-	p->p_emul = &emul_netbsd;
+	p->p_emul = &emul_native;
 	bcopy("swapper", p->p_comm, sizeof ("swapper"));
 
 	/* Create credentials. */

@@ -229,7 +229,7 @@ sys_execve(p, v, retval)
 	struct vmspace *vm = p->p_vmspace;
 	char **tmpfap;
 	int szsigcode;
-	extern struct emul emul_netbsd;
+	extern struct emul emul_native;
 
 	/*
 	 * figure out the maximum size of an exec header, if necessary.
@@ -258,7 +258,7 @@ sys_execve(p, v, retval)
 	pack.ep_vmcmds.evs_cnt = 0;
 	pack.ep_vmcmds.evs_used = 0;
 	pack.ep_vap = &attr;
-	pack.ep_emul = &emul_netbsd;
+	pack.ep_emul = &emul_native;
 	pack.ep_flags = 0;
 
 	/* see if we can run it. */
