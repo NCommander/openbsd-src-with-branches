@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgetc.c,v 1.3 1995/04/22 10:58:34 cgd Exp $	*/
 
 /*
@@ -37,14 +38,15 @@
 #if 0
 static char sccsid[] = "@(#)cgetc.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: cgetc.c,v 1.3 1995/04/22 10:58:34 cgd Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
-# include	<stdio.h>
+#include <stdio.h>
 
-char	cgetc(i)
-int	i;
+char
+cgetc(i)
+	int	i;
 {
 	return ( getchar() );
 }
