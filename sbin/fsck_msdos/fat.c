@@ -1,4 +1,4 @@
-/*	$OpenBSD: fat.c,v 1.7 1998/01/11 20:40:33 provos Exp $	*/
+/*	$OpenBSD: fat.c,v 1.8 1999/09/06 12:39:58 espie Exp $	*/
 /*	$NetBSD: fat.c,v 1.8 1997/10/17 11:19:53 ws Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
 
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fat.c,v 1.7 1998/01/11 20:40:33 provos Exp $";
+static char rcsid[] = "$OpenBSD: fat.c,v 1.8 1999/09/06 12:39:58 espie Exp $";
 #endif /* not lint */
 
 #include <stdlib.h>
@@ -368,7 +368,8 @@ checkfat(boot, fat)
 
 		/* follow the chain and mark all clusters on the way */
 		for (len = 0, p = head;
-		     p >= CLUST_FIRST && p < boot->NumClusters;
+		     p >= CLUST_FIRST && p < boot->NumClusters &&
+		     fat[p].head != head;
 		     p = fat[p].next) {
 			fat[p].head = head;
 			len++;
