@@ -1,4 +1,4 @@
-/* $OpenBSD: standalone.c,v 1.2 2001/09/21 20:22:06 camield Exp $ */
+/* $OpenBSD: standalone.c,v 1.3 2002/05/29 09:45:08 deraadt Exp $ */
 
 /*
  * Standalone POP server: accepts connections, checks the anti-flood limits,
@@ -114,7 +114,7 @@ int main(void)
 	int true = 1;
 	int sock, new;
 	struct sockaddr_in addr;
-	int addrlen;
+	socklen_t addrlen;
 	pid_t pid;
 	struct tms buf;
 	clock_t now;
@@ -237,7 +237,7 @@ int main(void)
 
 		default:
 			sessions[j].addr = addr.sin_addr;
-			(va_int)sessions[j].pid = pid;
+			sessions[j].pid = pid;
 			sessions[j].start = now;
 			sessions[j].log = 0;
 		}
