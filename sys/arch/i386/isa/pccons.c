@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccons.c,v 1.34 1997/03/03 12:01:15 downsj Exp $	*/
+/*	$OpenBSD: pccons.c,v 1.35 1997/11/05 09:38:54 deraadt Exp $	*/
 /*	$NetBSD: pccons.c,v 1.99.4.1 1996/06/04 20:03:53 cgd Exp $	*/
 
 /*-
@@ -50,6 +50,7 @@
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/select.h>
+#include <sys/fcntl.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/callout.h>
