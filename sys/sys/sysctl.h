@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.h,v 1.7 1996/06/29 21:06:43 tholo Exp $	*/
+/*	$OpenBSD: sysctl.h,v 1.8 1996/08/08 06:36:48 tholo Exp $	*/
 /*	$NetBSD: sysctl.h,v 1.16 1996/04/09 20:55:36 cgd Exp $	*/
 
 /*
@@ -393,6 +393,8 @@ int vm_sysctl __P((int *, u_int, void *, size_t *, void *, size_t,
 		   struct proc *));
 int fs_sysctl __P((int *, u_int, void *, size_t *, void *, size_t,
 		   struct proc *));
+int fs_posix_sysctl __P((int *, u_int, void *, size_t *, void *, size_t,
+			 struct proc *));
 int net_sysctl __P((int *, u_int, void *, size_t *, void *, size_t,
 		    struct proc *));
 int cpu_sysctl __P((int *, u_int, void *, size_t *, void *, size_t,
