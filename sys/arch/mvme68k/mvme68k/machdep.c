@@ -1228,11 +1228,11 @@ int	*nofault;
 
 int
 badpaddr(addr, size)
-	register caddr_t addr;
+	register void *addr;
 	int size;
 {
 	int off = (int)addr & PGOFSET;
-	caddr_t v, p = (caddr_t)((int)addr & ~PGOFSET);
+	caddr_t v, p = (void *)((int)addr & ~PGOFSET);
 	int x;
 
 	v = mapiodev(p, NBPG);

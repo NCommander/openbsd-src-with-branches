@@ -63,5 +63,5 @@ struct	device *bootdv; /* boot device */
 /* PARTITIONSHIFT from disklabel.h */
 #define PARTITIONMASK   ((1 << PARTITIONSHIFT) - 1) 
 
-caddr_t	mapiodev __P((caddr_t pa, int size));
-void	unmapiodev __P((caddr_t kva, int size));
+void	*mapiodev __P((void *pa, int size));
+void	unmapiodev __P((void *kva, int size));

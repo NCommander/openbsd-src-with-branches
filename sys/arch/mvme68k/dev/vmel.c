@@ -163,13 +163,14 @@ vmelwrite(dev, uio, flags)
 int
 vmelmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	int off;
+	int prot;
 {
 	int unit = minor(dev);
 	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
-	caddr_t pa;
+	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (caddr_t)off, NBPG, BUS_VMEL);
+	pa = vmepmap(sc->sc_vme, (void *)off, NBPG, BUS_VMEL);
 	printf("vmel %x pa %x\n", off, pa);
 	if (pa == NULL)
 		return (-1);

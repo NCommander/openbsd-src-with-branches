@@ -57,7 +57,7 @@
 
 struct memcsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
+	void *		sc_vaddr;
 	struct memcreg *sc_memc;
 	struct intrhand	sc_ih;
 };

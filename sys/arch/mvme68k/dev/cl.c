@@ -72,7 +72,7 @@
 #define CL_RXINTR	0x02
 
 struct cl_cons {
-	u_char *cl_paddr;
+	void	*cl_paddr;
 	struct clreg *cl_vaddr;
 	volatile struct pcctworeg *pcctwoaddr;
 	u_char	channel;
@@ -237,7 +237,7 @@ int	clprobe(parent, self, aux)
 	{
 		return 0;
 	}
-	cl_reg = ca->ca_vaddr;
+	cl_reg = (struct clreg *)ca->ca_vaddr;
 
 #if 0
 	ret = !badvaddr(&cl_reg->cl_gfrcr,1);
@@ -257,7 +257,7 @@ clattach(parent, self, aux)
 	struct confargs *ca = aux;
 	int i;
 
-	sc->cl_reg = ca->ca_vaddr;
+	sc->cl_reg = (struct clreg *)ca->ca_vaddr;
 	sc->sc_pcctwo = ca->ca_master;
 
 	if (ca->ca_paddr == cl_cons.cl_paddr) {

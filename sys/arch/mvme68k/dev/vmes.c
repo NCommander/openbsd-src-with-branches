@@ -163,13 +163,14 @@ vmeswrite(dev, uio, flags)
 int
 vmesmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	int off;
+	int prot;
 {
 	int unit = minor(dev);
 	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
-	caddr_t pa;
+	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (caddr_t)off, NBPG, BUS_VMES);
+	pa = vmepmap(sc->sc_vme, (void *)off, NBPG, BUS_VMES);
 	printf("vmes %x pa %x\n", off, pa);
 	if (pa == NULL)
 		return (-1);

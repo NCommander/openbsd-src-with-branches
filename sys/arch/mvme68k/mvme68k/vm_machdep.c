@@ -202,7 +202,7 @@ pagemove(from, to, size)
  * are specified by `prot'.
  */ 
 physaccess(vaddr, paddr, size, prot)
-	caddr_t vaddr, paddr;
+	void *vaddr, *paddr;
 	register int size, prot;
 {
 	register pt_entry_t *pte;
