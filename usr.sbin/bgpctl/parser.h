@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.32 2004/01/20 13:11:39 henning Exp $ */
+/*	$OpenBSD: parser.h,v 1.1 2004/01/21 23:45:18 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -27,6 +27,7 @@ enum actions {
 	SHOW_NEIGHBOR,
 	SHOW_NEIGHBOR_TIMERS,
 	SHOW_FIB,
+	SHOW_RIB,
 	SHOW_NEXTHOP,
 	SHOW_INTERFACE,
 	RELOAD,
@@ -42,6 +43,7 @@ struct parse_result {
 	enum actions		action;
 	int			flags;
 	struct bgpd_addr	addr;
+	struct as_filter	as;
 };
 
 struct parse_result	*parse(int, char *[]);
