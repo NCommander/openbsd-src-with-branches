@@ -37,6 +37,7 @@
 
 #define GG2_STATUS 0x18000
 #define GG2_STATUS_ADDR(va) (volatile u_int16_t *)((va) + GG2_STATUS)
+#define GG2_GET_STATUS(va) (*GG2_STATUS_ADDR(va))
 
 #define GG2_MASTER 0
 #define GG2_WAIT 1
