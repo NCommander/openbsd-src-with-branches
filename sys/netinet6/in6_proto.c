@@ -1,4 +1,4 @@
-/* $OpenBSD: in6_proto.c,v 1.16 2000/02/02 17:01:51 itojun Exp $ */
+/*	$OpenBSD: in6_proto.c,v 1.17 2000/02/07 06:09:10 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
