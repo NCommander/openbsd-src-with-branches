@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ipxcp.h,v 1.2 1997/09/05 04:32:40 millert Exp $	*/
 
 /*
  * ipxcp.h - IPX Control Protocol definitions.
@@ -71,3 +71,6 @@ extern ipxcp_options ipxcp_allowoptions[];
 extern ipxcp_options ipxcp_hisoptions[];
 
 extern struct protent ipxcp_protent;
+
+extern int sipxfaddr(int, u_int32_t, u_char *);
+extern int cipxfaddr(int);

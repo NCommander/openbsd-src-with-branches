@@ -1,4 +1,4 @@
-/* $OpenBSD: mouse_protocols.h,v 1.1 2001/04/14 04:47:41 aaron Exp $ */
+/* $OpenBSD: mouse_protocols.h,v 1.2 2002/02/15 02:18:39 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -200,4 +200,6 @@ typedef struct mousestatus {
 void mouse_init(void);
 int mouse_identify(void);
 int mouse_protocol(unsigned char, mousestatus_t *);
+char *mouse_name(int type);
+void wsmouse_init(void);
 
