@@ -1,7 +1,7 @@
-/*	$OpenBSD: pch.c,v 1.11 2000/12/14 00:02:19 beck Exp $	*/
+/*	$OpenBSD: pch.c,v 1.12 2003/04/05 17:17:53 deraadt Exp $	*/
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: pch.c,v 1.11 2000/12/14 00:02:19 beck Exp $";
+static char rcsid[] = "$OpenBSD: pch.c,v 1.12 2003/04/05 17:17:53 deraadt Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -501,7 +501,7 @@ another_hunk()
 		if (!*s)
 		    malformed ();
 		if (strnEQ(s,"0,0",3))
-		    strcpy(s, s+2);
+		    memmove(s, s+2, strlen(s+2)+1);
 		p_first = (LINENUM) atol(s);
 		while (isdigit(*s)) s++;
 		if (*s == ',') {
