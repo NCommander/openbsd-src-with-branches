@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.176 2003/09/26 21:44:09 cedric Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.177 2003/10/08 14:47:57 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1308,7 +1308,7 @@ pfctl_get_ticket(struct pfr_buffer *buf, int rs_num, const char *anchor,
     const char *ruleset) 
 {
 	struct pfioc_trans_e *p;
-	
+
 	PFRB_FOREACH(p, buf)
 		if (rs_num == p->rs_num && !strcmp(anchor, p->anchor) &&
 		    !strcmp(ruleset, p->ruleset))
