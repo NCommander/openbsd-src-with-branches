@@ -1,4 +1,4 @@
-/*	$OpenBSD: modload.c,v 1.20 1999/08/17 09:13:14 millert Exp $	*/
+/*	$OpenBSD: modload.c,v 1.21 2001/02/10 20:42:09 millert Exp $	*/
 /*	$NetBSD: modload.c,v 1.13 1995/05/28 05:21:58 jtc Exp $	*/
 
 /*
@@ -281,7 +281,7 @@ main(argc, argv)
 		entry[strlen(entry) - 2] = '\0'; /* chop off .o */
 	}
 
-	if((modfd = open(out, O_RDWR | O_EXCL | O_CREAT, 0666)) < 0)
+	if((modfd = open(out, O_RDWR | O_EXCL | O_CREAT, 0600)) < 0)
 		err(1, "creating %s", out);
 	close(modfd);
 
