@@ -201,7 +201,8 @@ mgnsc_dmaintr(arg)
 	siopintr(sc);
 #else
 	add_sicallback((sifunc_t)siopintr, sc, NULL);
-#endif	return (1);
+#endif
+	return (1);
 }
 
 #ifdef DEBUG
