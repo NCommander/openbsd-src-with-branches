@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm_macro.h,v 1.8 2001/01/15 19:50:38 deraadt Exp $ */
+/*	$OpenBSD: asm_macro.h,v 1.9 2001/02/01 03:38:17 smurph Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -95,7 +95,7 @@ static __inline__ m88k_psr_type enable_interrupts_return_psr(void)
 /*
  * flushes the data pipeline.
  */
-static __inline__ void flush_pipeline()
+static __inline__ void flush_pipeline(void)
 {
 	__asm__ __volatile__ ("tcnd ne0, r0, 0");
 }
@@ -104,7 +104,7 @@ static __inline__ void flush_pipeline()
 /*
  * gets the current stack pointer.
  */
-static inline unsigned long stack_pointer()
+static __inline__ unsigned long stack_pointer(void)
 {
 	register unsigned long sp;
 	__asm__ __volatile__ ("or %0,r0,r31" : "=r" (sp));
