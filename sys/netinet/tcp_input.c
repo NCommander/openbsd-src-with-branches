@@ -1059,9 +1059,9 @@ trimthenstep6:
 	 */
 	if (tiflags & TH_RST) {
 
-		if ((ti->ti_seq != tp->rcv_nxt) ||
-		    (ti->ti_ack && ((SEQ_LEQ(ti->ti_ack, tp->iss) ||
-		    SEQ_GT(ti->ti_ack, tp->snd_max)))))
+		if ((ti->ti_seq != tp->rcv_nxt) &&
+		    (ti->ti_ack && ((SEQ_GT(ti->ti_ack, tp->snd_nxt) ||
+		      SEQ_LT(ti->ti_ack, (tp->snd_nxt - tp->snd_wnd))))))
 			goto drop;
 
 		switch (tp->t_state) {
