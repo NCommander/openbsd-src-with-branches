@@ -1,7 +1,7 @@
-/*	$OpenBSD: pch.c,v 1.9 1998/11/25 00:30:26 espie Exp $	*/
+/*	$OpenBSD: pch.c,v 1.10 1999/12/04 01:01:07 provos Exp $	*/
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: pch.c,v 1.9 1998/11/25 00:30:26 espie Exp $";
+static char rcsid[] = "$OpenBSD: pch.c,v 1.10 1999/12/04 01:01:07 provos Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -150,6 +150,7 @@ there_is_another_patch()
 	if (force || batch) {
 	    say1("No file to patch.  Skipping...\n");
 	    filearg[0] = savestr(bestguess);
+	    skip_rest_of_patch = TRUE;
 	    return TRUE;
 	}
 	ask1("File to patch: ");
