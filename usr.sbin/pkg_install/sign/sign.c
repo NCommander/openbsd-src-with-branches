@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: sign.c,v 1.1 1999/09/27 21:40:04 espie Exp $ */
 /*-
  * Copyright (c) 1999 Marc Espie.
  *
@@ -70,9 +70,7 @@ retrieve_signature(filename, sign, userid)
 		return 0;
 	if (fread(sign, 1, SIGNSIZE, cmd) != SIGNSIZE)
 		return 0;
-#ifdef DEBUG_PGP
-	printf("%d\n", pclose(cmd));
-#endif
+	(void)pclose(cmd);
 	return 1;
 }
 
