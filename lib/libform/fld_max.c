@@ -24,36 +24,43 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fld_user.c,v 1.5 1997/05/23 23:31:29 juergen Exp $")
+MODULE_ID("Id: fld_max.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_field_userptr(FIELD *field, void *usrptr)
+|   Function      :  int set_max_field(FIELD *field, int maxgrow)
 |   
-|   Description   :  Set the pointer that is reserved in any field to store
-|                    application relevant informations
+|   Description   :  Set the maximum growth for a dynamic field. If maxgrow=0
+|                    the field may grow to any possible size.
 |
-|   Return Values :  E_OK         - on success
+|   Return Values :  E_OK           - success
+|                    E_BAD_ARGUMENT - invalid argument
 +--------------------------------------------------------------------------*/
-int set_field_userptr(FIELD * field, void  *usrptr)
+int set_max_field(FIELD *field, int maxgrow)
 {
-  Normalize_Field( field )->usrptr = usrptr;
+  if (!field || (maxgrow<0))
+    RETURN(E_BAD_ARGUMENT);
+  else
+    {
+      bool single_line_field = Single_Line_Field(field);
+
+      if (maxgrow>0)
+	{
+	  if (( single_line_field && (maxgrow < field->dcols)) ||
+	      (!single_line_field && (maxgrow < field->drows)))
+	    RETURN(E_BAD_ARGUMENT);
+	}
+      field->maxgrow = maxgrow;
+      field->status &= ~_MAY_GROW;
+      if (!(field->opts & O_STATIC))
+	{
+	  if ((maxgrow==0) ||
+	      ( single_line_field && (field->dcols < maxgrow)) ||
+	      (!single_line_field && (field->drows < maxgrow)))
+	    field->status |= _MAY_GROW;
+	}
+    }
   RETURN(E_OK);
 }
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  void *field_userptr(const FIELD *field)
-|   
-|   Description   :  Return the pointer that is reserved in any field to
-|                    store application relevant informations.
-|
-|   Return Values :  Value of pointer. If no such pointer has been set,
-|                    NULL is returned
-+--------------------------------------------------------------------------*/
-void *field_userptr(const FIELD *field)
-{
-  return Normalize_Field( field )->usrptr;
-}
-
-/* fld_user.c ends here */
+		  
+/* fld_max.c ends here */

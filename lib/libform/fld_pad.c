@@ -21,85 +21,50 @@
 | NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH    |
 | THE USE OR PERFORMANCE OF THIS SOFTWARE.                                     |
 +-----------------------------------------------------------------------------*/
-
 #include "form.priv.h"
 
-MODULE_ID("Id: frm_opts.c,v 1.3 1997/05/01 16:47:54 juergen Exp $")
+MODULE_ID("Id: fld_pad.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_form_opts(FORM *form, Form_Options opts)
+|   Function      :  int set_field_pad(FIELD *field, int ch)
 |   
-|   Description   :  Turns on the named options and turns off all the
-|                    remaining options for that form.
+|   Description   :  Set the pad character used to fill the field. This must
+|                    be a printable character.
 |
-|   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - invalid options
+|   Return Values :  E_OK           - success
+|                    E_BAD_ARGUMENT - invalid field pointer or pad character
+|                    E_SYSTEM_ERROR - system error
 +--------------------------------------------------------------------------*/
-int set_form_opts(FORM * form, Form_Options  opts)
+int set_field_pad(FIELD  * field, int ch)
 {
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
+  int res = E_BAD_ARGUMENT;
+
+  Normalize_Field( field );
+  if (isprint((unsigned char)ch))
     {
-      Normalize_Form( form )->opts = opts;
-      RETURN(E_OK);
+      if (field->pad != ch)
+	{
+	  field->pad = ch;
+	  res = _nc_Synchronize_Attributes( field );
+	}
+      else
+	res = E_OK;
     }
+  RETURN(res);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  Form_Options form_opts(const FORM *)
+|   Function      :  int field_pad(const FIELD *field)
 |   
-|   Description   :  Retrieves the current form options.
+|   Description   :  Retrieve the fields pad character.
 |
-|   Return Values :  The option flags.
+|   Return Values :  The pad character.
 +--------------------------------------------------------------------------*/
-Form_Options form_opts(const FORM * form)
+int field_pad(const FIELD * field)
 {
-  return (Normalize_Form(form)->opts & ALL_FORM_OPTS);
+  return Normalize_Field( field )->pad;
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_on(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns on the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_on(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts |= opts;	
-      RETURN(E_OK);
-    }
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_off(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns off the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_off(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form(form)->opts &= ~opts;
-      RETURN(E_OK);
-    }
-}
-
-/* frm_opts.c ends here */
+/* fld_pad.c ends here */

@@ -24,82 +24,60 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: frm_opts.c,v 1.3 1997/05/01 16:47:54 juergen Exp $")
+MODULE_ID("Id: fld_arg.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_form_opts(FORM *form, Form_Options opts)
+|   Function      :  int set_fieldtype_arg(
+|                            FIELDTYPE *typ,
+|                            void * (* const make_arg)(va_list *),
+|                            void * (* const copy_arg)(const void *),
+|                            void   (* const free_arg)(void *) )
 |   
-|   Description   :  Turns on the named options and turns off all the
-|                    remaining options for that form.
+|   Description   :  Connects to the type additional arguments necessary
+|                    for a set_field_type call. The various function pointer
+|                    arguments are:
+|                       make_arg : allocates a structure for the field
+|                                  specific parameters.
+|                       copy_arg : duplicate the structure created by
+|                                  make_arg
+|                       free_arg : Release the memory allocated by make_arg
+|                                  or copy_arg
 |
-|   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - invalid options
+|                    At least make_arg must be non-NULL.
+|                    You may pass NULL for copy_arg and free_arg if your
+|                    make_arg function doesn't allocate memory and your
+|                    arg fits into the storage for a (void*).
+|
+|   Return Values :  E_OK           - success
+|                    E_BAD_ARGUMENT - invalid argument
 +--------------------------------------------------------------------------*/
-int set_form_opts(FORM * form, Form_Options  opts)
+int set_fieldtype_arg(FIELDTYPE * typ,
+		      void * (* const make_arg)(va_list *),
+		      void * (* const copy_arg)(const void *),
+		      void   (* const free_arg)(void *))
 {
-  if (opts & ~ALL_FORM_OPTS)
+  if ( !typ || !make_arg )
     RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts = opts;
-      RETURN(E_OK);
-    }
+
+  typ->status |= _HAS_ARGS;
+  typ->makearg = make_arg;
+  typ->copyarg = copy_arg;
+  typ->freearg = free_arg;
+  RETURN(E_OK);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  Form_Options form_opts(const FORM *)
+|   Function      :  void *field_arg(const FIELD *field)
 |   
-|   Description   :  Retrieves the current form options.
+|   Description   :  Retrieve pointer to the fields argument structure.
 |
-|   Return Values :  The option flags.
+|   Return Values :  Pointer to structure or NULL if none is defined.
 +--------------------------------------------------------------------------*/
-Form_Options form_opts(const FORM * form)
+void *field_arg(const FIELD * field)
 {
-  return (Normalize_Form(form)->opts & ALL_FORM_OPTS);
+  return Normalize_Field(field)->arg;
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_on(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns on the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_on(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts |= opts;	
-      RETURN(E_OK);
-    }
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_off(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns off the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_off(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form(form)->opts &= ~opts;
-      RETURN(E_OK);
-    }
-}
-
-/* frm_opts.c ends here */
+/* fld_arg.c ends here */

@@ -21,85 +21,89 @@
 | NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH    |
 | THE USE OR PERFORMANCE OF THIS SOFTWARE.                                     |
 +-----------------------------------------------------------------------------*/
-
 #include "form.priv.h"
 
-MODULE_ID("Id: frm_opts.c,v 1.3 1997/05/01 16:47:54 juergen Exp $")
+MODULE_ID("Id: frm_post.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_form_opts(FORM *form, Form_Options opts)
+|   Function      :  int post_form(FORM * form)
 |   
-|   Description   :  Turns on the named options and turns off all the
-|                    remaining options for that form.
+|   Description   :  Writes the form into its associated subwindow.
 |
 |   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - invalid options
+|                    E_BAD_ARGUMENT    - invalid form pointer
+|                    E_POSTED          - form already posted
+|                    E_NOT_CONNECTED   - no fields connected to form
+|                    E_NO_ROOM         - form doesn't fit into subwindow
+|                    E_SYSTEM_ERROR    - system error
 +--------------------------------------------------------------------------*/
-int set_form_opts(FORM * form, Form_Options  opts)
+int post_form(FORM * form)
 {
-  if (opts & ~ALL_FORM_OPTS)
+  WINDOW *formwin;
+  int err;
+  int page;
+
+  if (!form)
     RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts = opts;
-      RETURN(E_OK);
-    }
+
+  if (form->status & _POSTED)   
+    RETURN(E_POSTED);
+
+  if (!(form->field))
+    RETURN(E_NOT_CONNECTED);
+  
+  formwin = Get_Form_Window(form);
+  if ((form->cols > getmaxx(formwin)) || (form->rows > getmaxy(formwin))) 
+    RETURN(E_NO_ROOM);
+
+  /* reset form->curpage to an invald value. This forces Set_Form_Page
+     to do the page initialization which is required by post_form.
+  */
+  page = form->curpage;
+  form->curpage = -1;
+  if ((err = _nc_Set_Form_Page(form,page,form->current))!=E_OK)
+    RETURN(err);
+
+  form->status |= _POSTED;
+
+  Call_Hook(form,forminit);
+  Call_Hook(form,fieldinit);
+
+  _nc_Refresh_Current_Field(form);
+  RETURN(E_OK);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  Form_Options form_opts(const FORM *)
+|   Function      :  int unpost_form(FORM * form)
 |   
-|   Description   :  Retrieves the current form options.
+|   Description   :  Erase form from its associated subwindow.
 |
-|   Return Values :  The option flags.
+|   Return Values :  E_OK            - success
+|                    E_BAD_ARGUMENT  - invalid form pointer
+|                    E_NOT_POSTED    - form isn't posted
+|                    E_BAD_STATE     - called from a hook routine
 +--------------------------------------------------------------------------*/
-Form_Options form_opts(const FORM * form)
+int unpost_form(FORM * form)
 {
-  return (Normalize_Form(form)->opts & ALL_FORM_OPTS);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_on(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns on the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_on(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
+  if (!form)
     RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts |= opts;	
-      RETURN(E_OK);
-    }
+
+  if (!(form->status & _POSTED)) 
+    RETURN(E_NOT_POSTED);
+
+  if (form->status & _IN_DRIVER) 
+    RETURN(E_BAD_STATE);
+
+  Call_Hook(form,fieldterm);
+  Call_Hook(form,formterm);
+
+  werase(Get_Form_Window(form));
+  delwin(form->w);
+  form->w = (WINDOW *)0;
+  form->status &= ~_POSTED;
+  RETURN(E_OK);
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_off(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns off the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_off(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form(form)->opts &= ~opts;
-      RETURN(E_OK);
-    }
-}
-
-/* frm_opts.c ends here */
+/* frm_post.c ends here */

@@ -24,36 +24,31 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fld_user.c,v 1.5 1997/05/23 23:31:29 juergen Exp $")
+MODULE_ID("Id: fld_move.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_field_userptr(FIELD *field, void *usrptr)
+|   Function      :  int move_field(FIELD *field,int frow, int fcol)
 |   
-|   Description   :  Set the pointer that is reserved in any field to store
-|                    application relevant informations
+|   Description   :  Moves the disconnected field to the new location in
+|                    the forms subwindow.
 |
-|   Return Values :  E_OK         - on success
+|   Return Values :  E_OK            - success
+|                    E_BAD_ARGUMENT  - invalid argument passed
+|                    E_CONNECTED     - field is connected
 +--------------------------------------------------------------------------*/
-int set_field_userptr(FIELD * field, void  *usrptr)
+int move_field(FIELD *field, int frow, int fcol)
 {
-  Normalize_Field( field )->usrptr = usrptr;
+  if ( !field || (frow<0) || (fcol<0) ) 
+    RETURN(E_BAD_ARGUMENT);
+
+  if (field->form) 
+    RETURN(E_CONNECTED);
+
+  field->frow = frow;
+  field->fcol = fcol;
   RETURN(E_OK);
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  void *field_userptr(const FIELD *field)
-|   
-|   Description   :  Return the pointer that is reserved in any field to
-|                    store application relevant informations.
-|
-|   Return Values :  Value of pointer. If no such pointer has been set,
-|                    NULL is returned
-+--------------------------------------------------------------------------*/
-void *field_userptr(const FIELD *field)
-{
-  return Normalize_Field( field )->usrptr;
-}
+/* fld_move.c ends here */
 
-/* fld_user.c ends here */

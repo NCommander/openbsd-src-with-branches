@@ -24,36 +24,32 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fld_user.c,v 1.5 1997/05/23 23:31:29 juergen Exp $")
+MODULE_ID("Id: frm_scale.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_field_userptr(FIELD *field, void *usrptr)
+|   Function      :  int scale_form( const FORM *form, int *rows, int *cols )
 |   
-|   Description   :  Set the pointer that is reserved in any field to store
-|                    application relevant informations
+|   Description   :  Retrieve size of form
 |
-|   Return Values :  E_OK         - on success
+|   Return Values :  E_OK              - no error
+|                    E_BAD_ARGUMENT    - invalid form pointer
+|                    E_NOT_CONNECTED   - no fields connected to form
 +--------------------------------------------------------------------------*/
-int set_field_userptr(FIELD * field, void  *usrptr)
+int scale_form(const FORM * form, int * rows, int * cols)
 {
-  Normalize_Field( field )->usrptr = usrptr;
+  if ( !form )
+    RETURN(E_BAD_ARGUMENT);
+
+  if ( !(form->field) )
+    RETURN(E_NOT_CONNECTED);
+  
+  if (rows) 
+    *rows = form->rows;
+  if (cols) 
+    *cols = form->cols;
+  
   RETURN(E_OK);
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  void *field_userptr(const FIELD *field)
-|   
-|   Description   :  Return the pointer that is reserved in any field to
-|                    store application relevant informations.
-|
-|   Return Values :  Value of pointer. If no such pointer has been set,
-|                    NULL is returned
-+--------------------------------------------------------------------------*/
-void *field_userptr(const FIELD *field)
-{
-  return Normalize_Field( field )->usrptr;
-}
-
-/* fld_user.c ends here */
+/* frm_scale.c ends here */

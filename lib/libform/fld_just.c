@@ -24,82 +24,50 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: frm_opts.c,v 1.3 1997/05/01 16:47:54 juergen Exp $")
+MODULE_ID("Id: fld_just.c,v 1.2 1997/10/26 11:20:59 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_form_opts(FORM *form, Form_Options opts)
+|   Function      :  int set_field_just(FIELD *field, int just)
 |   
-|   Description   :  Turns on the named options and turns off all the
-|                    remaining options for that form.
+|   Description   :  Set the fields type of justification.
 |
-|   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - invalid options
+|   Return Values :  E_OK            - success
+|                    E_BAD_ARGUMENT  - one of the arguments was incorrect
+|                    E_SYSTEM_ERROR  - system error
 +--------------------------------------------------------------------------*/
-int set_form_opts(FORM * form, Form_Options  opts)
+int set_field_just(FIELD * field, int just)
 {
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
+  int res = E_BAD_ARGUMENT;
+
+  if ((just==NO_JUSTIFICATION)  ||
+      (just==JUSTIFY_LEFT)	||
+      (just==JUSTIFY_CENTER)	||
+      (just==JUSTIFY_RIGHT)	)
     {
-      Normalize_Form( form )->opts = opts;
-      RETURN(E_OK);
+      Normalize_Field( field );
+      if (field->just != just)
+	{
+	  field->just = just;
+	  res = _nc_Synchronize_Attributes( field );
+	}
+      else
+	res = E_OK;
     }
+  RETURN(res);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  Form_Options form_opts(const FORM *)
+|   Function      :  int field_just( const FIELD *field )
 |   
-|   Description   :  Retrieves the current form options.
+|   Description   :  Retrieve the fields type of justification
 |
-|   Return Values :  The option flags.
+|   Return Values :  The justification type.
 +--------------------------------------------------------------------------*/
-Form_Options form_opts(const FORM * form)
+int field_just(const FIELD * field)
 {
-  return (Normalize_Form(form)->opts & ALL_FORM_OPTS);
+  return Normalize_Field( field )->just;
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_on(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns on the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_on(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts |= opts;	
-      RETURN(E_OK);
-    }
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_off(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns off the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_off(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form(form)->opts &= ~opts;
-      RETURN(E_OK);
-    }
-}
-
-/* frm_opts.c ends here */
+/* fld_just.c ends here */

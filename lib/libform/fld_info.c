@@ -24,82 +24,60 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: frm_opts.c,v 1.3 1997/05/01 16:47:54 juergen Exp $")
+MODULE_ID("Id: fld_info.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_form_opts(FORM *form, Form_Options opts)
+|   Function      :  int field_info(const FIELD *field,
+|                                   int *rows, int *cols,
+|                                   int *frow, int *fcol,
+|                                   int *nrow, int *nbuf)
 |   
-|   Description   :  Turns on the named options and turns off all the
-|                    remaining options for that form.
+|   Description   :  Retrieve infos about the fields creation parameters.
 |
-|   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - invalid options
+|   Return Values :  E_OK           - success
+|                    E_BAD_ARGUMENT - invalid field pointer
 +--------------------------------------------------------------------------*/
-int set_form_opts(FORM * form, Form_Options  opts)
+int field_info(const FIELD *field,
+	       int *rows, int *cols, 
+	       int *frow, int *fcol, 
+	       int *nrow, int *nbuf)
 {
-  if (opts & ~ALL_FORM_OPTS)
+  if (!field) 
     RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts = opts;
-      RETURN(E_OK);
-    }
-}
 
+  if (rows) *rows = field->rows;
+  if (cols) *cols = field->cols;
+  if (frow) *frow = field->frow;
+  if (fcol) *fcol = field->fcol;
+  if (nrow) *nrow = field->nrow;
+  if (nbuf) *nbuf = field->nbuf;
+  RETURN(E_OK);
+}
+	
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  Form_Options form_opts(const FORM *)
+|   Function      :  int dynamic_field_info(const FIELD *field,
+|                                           int *drows, int *dcols,
+|                                           int *maxgrow)
 |   
-|   Description   :  Retrieves the current form options.
+|   Description   :  Retrieve informations about a dynamic fields current
+|                    dynamic parameters.
 |
-|   Return Values :  The option flags.
+|   Return Values :  E_OK           - success
+|                    E_BAD_ARGUMENT - invalid argument
 +--------------------------------------------------------------------------*/
-Form_Options form_opts(const FORM * form)
+int dynamic_field_info(const FIELD *field,
+		       int *drows, int *dcols, int *maxgrow)
 {
-  return (Normalize_Form(form)->opts & ALL_FORM_OPTS);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_on(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns on the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_on(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
+  if (!field)
     RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts |= opts;	
-      RETURN(E_OK);
-    }
+
+  if (drows)   *drows   = field->drows;
+  if (dcols)   *dcols   = field->dcols;
+  if (maxgrow) *maxgrow = field->maxgrow;
+
+  RETURN(E_OK);
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_off(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns off the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_off(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form(form)->opts &= ~opts;
-      RETURN(E_OK);
-    }
-}
-
-/* frm_opts.c ends here */
+/* fld_info.c ends here */

@@ -24,36 +24,45 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fld_user.c,v 1.5 1997/05/23 23:31:29 juergen Exp $")
+MODULE_ID("Id: fld_page.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_field_userptr(FIELD *field, void *usrptr)
+|   Function      :  int set_new_page(FIELD *field, bool new_page_flag)
 |   
-|   Description   :  Set the pointer that is reserved in any field to store
-|                    application relevant informations
+|   Description   :  Marks the field as the beginning of a new page of 
+|                    the form.
 |
-|   Return Values :  E_OK         - on success
+|   Return Values :  E_OK         - success
+|                    E_CONNECTED  - field is connected
 +--------------------------------------------------------------------------*/
-int set_field_userptr(FIELD * field, void  *usrptr)
+int set_new_page(FIELD * field, bool new_page_flag)
 {
-  Normalize_Field( field )->usrptr = usrptr;
+  Normalize_Field(field);
+  if (field->form) 
+    RETURN(E_CONNECTED);
+
+  if (new_page_flag) 
+    field->status |= _NEWPAGE;
+  else
+    field->status &= ~_NEWPAGE;
+
   RETURN(E_OK);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  void *field_userptr(const FIELD *field)
+|   Function      :  bool new_page(const FIELD *field)
 |   
-|   Description   :  Return the pointer that is reserved in any field to
-|                    store application relevant informations.
+|   Description   :  Retrieve the info whether or not the field starts a
+|                    new page on the form.
 |
-|   Return Values :  Value of pointer. If no such pointer has been set,
-|                    NULL is returned
+|   Return Values :  TRUE  - field starts a new page
+|                    FALSE - field doesn't start a new page
 +--------------------------------------------------------------------------*/
-void *field_userptr(const FIELD *field)
+bool new_page(const FIELD * field)
 {
-  return Normalize_Field( field )->usrptr;
+  return (Normalize_Field(field)->status & _NEWPAGE)  ? TRUE : FALSE;
 }
 
-/* fld_user.c ends here */
+/* fld_page.c ends here */

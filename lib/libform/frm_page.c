@@ -24,82 +24,69 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: frm_opts.c,v 1.3 1997/05/01 16:47:54 juergen Exp $")
+MODULE_ID("Id: frm_page.c,v 1.2 1997/10/26 11:21:04 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_form_opts(FORM *form, Form_Options opts)
+|   Function      :  int set_form_page(FORM * form,int  page)
 |   
-|   Description   :  Turns on the named options and turns off all the
-|                    remaining options for that form.
+|   Description   :  Set the page number of the form.
 |
 |   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - invalid options
+|                    E_BAD_ARGUMENT    - invalid form pointer or page number
+|                    E_BAD_STATE       - called from a hook routine
+|                    E_INVALID_FIELD   - current field can't be left
+|                    E_SYSTEM_ERROR    - system error
 +--------------------------------------------------------------------------*/
-int set_form_opts(FORM * form, Form_Options  opts)
+int set_form_page(FORM * form, int page)
 {
-  if (opts & ~ALL_FORM_OPTS)
+  int err = E_OK;
+
+  if ( !form || (page<0) || (page>=form->maxpage) )
     RETURN(E_BAD_ARGUMENT);
+
+  if (!(form->status & _POSTED))
+    {
+      form->curpage = page;
+      form->current = _nc_First_Active_Field(form);
+  }
   else
     {
-      Normalize_Form( form )->opts = opts;
-      RETURN(E_OK);
+      if (form->status & _IN_DRIVER) 
+	err = E_BAD_STATE;
+      else
+	{
+	  if (form->curpage != page)
+	    {
+	      if (!_nc_Internal_Validation(form)) 
+		err = E_INVALID_FIELD;
+	      else
+		{
+		  Call_Hook(form,fieldterm);
+		  Call_Hook(form,formterm);
+		  err = _nc_Set_Form_Page(form,page,(FIELD *)0);
+		  Call_Hook(form,forminit);
+		  Call_Hook(form,fieldinit);
+		  _nc_Refresh_Current_Field(form);
+		}
+	    }
+	}
     }
+  RETURN(err);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  Form_Options form_opts(const FORM *)
+|   Function      :  int form_page(const FORM * form)
 |   
-|   Description   :  Retrieves the current form options.
+|   Description   :  Return the current page of the form.
 |
-|   Return Values :  The option flags.
+|   Return Values :  >= 0  : current page number
+|                    -1    : invalid form pointer
 +--------------------------------------------------------------------------*/
-Form_Options form_opts(const FORM * form)
+int form_page(const FORM * form)
 {
-  return (Normalize_Form(form)->opts & ALL_FORM_OPTS);
+  return Normalize_Form(form)->curpage;
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_on(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns on the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_on(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form( form )->opts |= opts;	
-      RETURN(E_OK);
-    }
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  int form_opts_off(FORM *form, Form_Options opts)
-|   
-|   Description   :  Turns off the named options; no other options are 
-|                    changed.
-|
-|   Return Values :  E_OK            - success 
-|                    E_BAD_ARGUMENT  - invalid options
-+--------------------------------------------------------------------------*/
-int form_opts_off(FORM * form, Form_Options opts)
-{
-  if (opts & ~ALL_FORM_OPTS)
-    RETURN(E_BAD_ARGUMENT);
-  else
-    {
-      Normalize_Form(form)->opts &= ~opts;
-      RETURN(E_OK);
-    }
-}
-
-/* frm_opts.c ends here */
+/* frm_page.c ends here */

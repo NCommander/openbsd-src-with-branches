@@ -24,36 +24,52 @@
 
 #include "form.priv.h"
 
-MODULE_ID("Id: fld_user.c,v 1.5 1997/05/23 23:31:29 juergen Exp $")
+MODULE_ID("Id: fld_ftlink.c,v 1.1 1997/10/21 13:24:19 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
-|   Function      :  int set_field_userptr(FIELD *field, void *usrptr)
+|   Function      :  FIELDTYPE *link_fieldtype(
+|                                FIELDTYPE *type1,
+|                                FIELDTYPE *type2)
 |   
-|   Description   :  Set the pointer that is reserved in any field to store
-|                    application relevant informations
+|   Description   :  Create a new fieldtype built from the two given types.
+|                    They are connected by an logical 'OR'.
+|                    If an error occurs, errno is set to                    
+|                       E_BAD_ARGUMENT  - invalid arguments
+|                       E_SYSTEM_ERROR  - system error (no memory)
 |
-|   Return Values :  E_OK         - on success
+|   Return Values :  Fieldtype pointer or NULL if error occured.
 +--------------------------------------------------------------------------*/
-int set_field_userptr(FIELD * field, void  *usrptr)
+FIELDTYPE *link_fieldtype(FIELDTYPE * type1, FIELDTYPE * type2)
 {
-  Normalize_Field( field )->usrptr = usrptr;
-  RETURN(E_OK);
+  FIELDTYPE *nftyp = (FIELDTYPE *)0;
+
+  if ( type1 && type2 )
+    {
+      nftyp = (FIELDTYPE *)malloc(sizeof(FIELDTYPE));
+      if (nftyp)
+	{
+	  *nftyp = *_nc_Default_FieldType;
+	  nftyp->status |= _LINKED_TYPE;
+	  if ((type1->status & _HAS_ARGS) || (type2->status & _HAS_ARGS) )
+	    nftyp->status |= _HAS_ARGS;
+	  if ((type1->status & _HAS_CHOICE) || (type2->status & _HAS_CHOICE) )
+	    nftyp->status |= _HAS_CHOICE;
+	  nftyp->left  = type1;
+	  nftyp->right = type2; 
+	  type1->ref++;
+	  type2->ref++;
+	}
+      else
+	{
+	  SET_ERROR( E_SYSTEM_ERROR );
+	}
+    }
+  else
+    {
+      SET_ERROR( E_BAD_ARGUMENT );
+    }
+  return nftyp;
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  void *field_userptr(const FIELD *field)
-|   
-|   Description   :  Return the pointer that is reserved in any field to
-|                    store application relevant informations.
-|
-|   Return Values :  Value of pointer. If no such pointer has been set,
-|                    NULL is returned
-+--------------------------------------------------------------------------*/
-void *field_userptr(const FIELD *field)
-{
-  return Normalize_Field( field )->usrptr;
-}
-
-/* fld_user.c ends here */
+/* fld_ftlink.c ends here */
