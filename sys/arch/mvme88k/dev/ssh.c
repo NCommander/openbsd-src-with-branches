@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.c,v 1.8 2001/11/06 19:53:15 miod Exp $	*/
+/*	$OpenBSD: ssh.c,v 1.10 2001/12/16 23:49:46 miod Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -55,7 +55,7 @@
 #include <uvm/uvm_pmap.h>
 
 #include <machine/autoconf.h>
-#include <machine/mmu.h>
+#include <machine/cmmu.h>
 #include <machine/pmap.h>
 
 #include <scsi/scsi_all.h>
