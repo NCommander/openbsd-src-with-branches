@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.25 2003/06/02 23:27:57 millert Exp $ */
+/*	$OpenBSD: param.h,v 1.26 2004/04/19 22:55:51 deraadt Exp $ */
 /*      $NetBSD: param.h,v 1.39 1999/10/22 21:14:34 ragge Exp $    */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -87,6 +87,7 @@
 
 #define	UPAGES		2		/* pages of u-area */
 #define USPACE		(NBPG*UPAGES)
+#define	USPACE_ALIGN	(0)		/* u-area alignment 0-none */
 #define	REDZONEADDR	(VAX_NBPG*3)	/* Must be > sizeof(struct user) */
 
 #ifndef MSGBUFSIZE

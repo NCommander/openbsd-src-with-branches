@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.35 2004/04/19 22:55:49 deraadt Exp $ */
+/*	$OpenBSD: param.h,v 1.1 2004/04/26 12:34:05 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1988 University of Utah.
@@ -82,6 +82,7 @@
 
 #define UPAGES		3		/* pages of u-area */
 #define USPACE		(UPAGES * NBPG)
+#define	USPACE_ALIGN	(0)		/* u-area alignment 0-none */
 
 #define UADDR		0xeee00000	/* address of u */
 

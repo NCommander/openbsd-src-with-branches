@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: param.h,v 1.4 2004/06/13 21:49:13 niklas Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -98,6 +98,7 @@
 #define	SINCR		1		/* increment of stack/NBPG */
 #define	UPAGES		5		/* pages of u-area */
 #define	USPACE		(UPAGES * NBPG)	/* total size of u-area */
+#define	USPACE_ALIGN	(0)		/* u-area alignment 0-none */
 
 #ifndef MSGBUFSIZE
 #define MSGBUFSIZE	4*NBPG		/* default message buffer size */
