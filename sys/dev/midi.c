@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.c,v 1.3 2000/01/03 19:38:13 fgsch Exp $	*/
+/*	$OpenBSD: midi.c,v 1.4 2000/05/24 13:44:18 ho Exp $	*/
 /*	$NetBSD: midi.c,v 1.10 1998/12/20 14:26:44 drochner Exp $	*/
 
 /*
@@ -170,6 +170,7 @@ midi_attach(sc, parent)
 	sc->sc_dev = parent;
 	sc->hw_if->getinfo(sc->hw_hdl, &mi);
 	sc->props = mi.props;
+	timeout_set(&sc->timeo, midi_timeout, sc);
 	printf(": <%s>\n", mi.name);
 }
 
@@ -527,7 +528,7 @@ midi_start_output(sc, intr)
 		psignal(sc->async, SIGIO);
 	if (mb->used > 0) {
 		if (!(sc->props & MIDI_PROP_OUT_INTR))
-			timeout(midi_timeout, sc, midi_wait);
+			timeout_add(&sc->timeo, midi_wait);
 	} else
 		sc->pbus = 0;
 	splx(s);
