@@ -47,10 +47,9 @@ void d_putc(dev_t, int);
 #define	CKPT(c)	/* c */
 #endif
 
-int
+void
 debug_init(void)
 {
-	return 0;
 }
 
 

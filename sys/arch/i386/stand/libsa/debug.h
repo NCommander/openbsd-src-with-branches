@@ -33,6 +33,6 @@
 extern char  *const reg_names[];
 extern const size_t nregs;
 
-int debug_init(void);
+void debug_init(void);
 void dump_regs(u_int, u_int);
 void dump_mem(char *, void *, size_t);
