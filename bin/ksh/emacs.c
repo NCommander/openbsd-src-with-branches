@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.20 2003/06/26 00:09:45 deraadt Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.21 2003/08/02 19:26:15 fgsch Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -554,7 +554,7 @@ x_delete(nc, force_push)
 	/*
 	 * This lets us yank a word we have deleted.
 	 */
-	if (nc > 1 || force_push)
+	if (force_push)
 		x_push(nc);
 
 	xep -= nc;
