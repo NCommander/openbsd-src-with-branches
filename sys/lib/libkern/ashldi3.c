@@ -1,4 +1,4 @@
-/*	$OpenBSD: ashldi3.c,v 1.2 1997/11/07 15:56:36 niklas Exp $	*/
+/*	$OpenBSD: ashldi3.c,v 1.3 2003/06/02 23:28:07 millert Exp $	*/
 /*	$NetBSD: ashldi3.c,v 1.5 1995/10/07 09:26:17 mycroft Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)ashldi3.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$OpenBSD: ashldi3.c,v 1.2 1997/11/07 15:56:36 niklas Exp $";
+static char rcsid[] = "$OpenBSD: ashldi3.c,v 1.3 2003/06/02 23:28:07 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -49,9 +49,7 @@ static char rcsid[] = "$OpenBSD: ashldi3.c,v 1.2 1997/11/07 15:56:36 niklas Exp 
  * This is the same as logical shift left!
  */
 quad_t
-__ashldi3(a, shift)
-	quad_t a;
-	qshift_t shift;
+__ashldi3(quad_t a, qshift_t shift)
 {
 	union uu aa;
 

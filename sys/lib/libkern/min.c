@@ -1,4 +1,4 @@
-/*	$OpenBSD: min.c,v 1.2 1996/04/19 16:09:29 niklas Exp $	*/
+/*	$OpenBSD: min.c,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
 /*	$NetBSD: min.c,v 1.3 1996/03/14 18:52:13 christos Exp $	*/
 
 /*
@@ -36,8 +36,7 @@
 #include <lib/libkern/libkern.h>
 
 unsigned int
-min(a, b)
-	unsigned int a, b;
+min(unsigned int a, unsigned int b)
 {
 	return (a < b ? a : b);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: umoddi3.c,v 1.2 1997/11/07 15:56:55 niklas Exp $	*/
+/*	$OpenBSD: umoddi3.c,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
 /*	$NetBSD: umoddi3.c,v 1.5 1995/10/07 09:26:55 mycroft Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)umoddi3.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$OpenBSD: umoddi3.c,v 1.2 1997/11/07 15:56:55 niklas Exp $";
+static char rcsid[] = "$OpenBSD: umoddi3.c,v 1.3 2003/06/02 23:28:08 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -48,8 +48,7 @@ static char rcsid[] = "$OpenBSD: umoddi3.c,v 1.2 1997/11/07 15:56:55 niklas Exp 
  * Return remainder after dividing two unsigned quads.
  */
 u_quad_t
-__umoddi3(a, b)
-	u_quad_t a, b;
+__umoddi3(u_quad_t a, u_quad_t b)
 {
 	u_quad_t r;
 

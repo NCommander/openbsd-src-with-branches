@@ -1,4 +1,4 @@
-/*	$OpenBSD: bzero.c,v 1.3 1997/11/07 15:56:38 niklas Exp $	*/
+/*	$OpenBSD: bzero.c,v 1.4 2003/06/02 23:28:08 millert Exp $	*/
 
 /*
  * Copyright (c) 1987 Regents of the University of California.
@@ -31,7 +31,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)bzero.c	5.7 (Berkeley) 2/24/91";*/
-static char *rcsid = "$OpenBSD: bzero.c,v 1.3 1997/11/07 15:56:38 niklas Exp $";
+static char *rcsid = "$OpenBSD: bzero.c,v 1.4 2003/06/02 23:28:08 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #ifndef _KERNEL
@@ -44,11 +44,9 @@ static char *rcsid = "$OpenBSD: bzero.c,v 1.3 1997/11/07 15:56:38 niklas Exp $";
  * bzero -- vax movc5 instruction
  */
 void
-bzero(b, length)
-	void *b;
-	register size_t length;
+bzero(void *b, size_t length)
 {
-	register char *p;
+	char *p;
 
 	for (p = b; length--;)
 		*p++ = '\0';

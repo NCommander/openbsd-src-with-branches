@@ -1,4 +1,4 @@
-/*	$OpenBSD: lmin.c,v 1.2 1996/04/19 16:09:27 niklas Exp $	*/
+/*	$OpenBSD: lmin.c,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
 /*	$NetBSD: lmin.c,v 1.3 1996/03/14 18:52:10 christos Exp $	*/
 
 /*
@@ -36,8 +36,7 @@
 #include <lib/libkern/libkern.h>
 
 long
-lmin(a, b)
-	long a, b;
+lmin(long a, long b)
 {
 	return (a < b ? a : b);
 }

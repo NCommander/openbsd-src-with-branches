@@ -1,4 +1,4 @@
-/*	$OpenBSD: imax.c,v 1.2 1996/04/19 16:09:20 niklas Exp $	*/
+/*	$OpenBSD: imax.c,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
 /*	$NetBSD: imax.c,v 1.3 1996/03/14 18:52:06 christos Exp $	*/
 
 /*
@@ -36,8 +36,7 @@
 #include <lib/libkern/libkern.h>
 
 int
-imax(a, b)
-	int a, b;
+imax(int a, int b)
 {
 	return (a > b ? a : b);
 }

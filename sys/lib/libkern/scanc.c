@@ -1,4 +1,4 @@
-/*	$OpenBSD: scanc.c,v 1.3 1996/12/06 12:21:07 niklas Exp $	*/
+/*	$OpenBSD: scanc.c,v 1.4 2003/06/02 23:28:08 millert Exp $	*/
 /*	$NetBSD: scanc.c,v 1.3 1996/03/14 18:52:16 christos Exp $	*/
 
 /*
@@ -36,14 +36,11 @@
 #include <lib/libkern/libkern.h>
 
 int
-scanc(size, cp, table, mask)
-	u_int size;
-	register const u_char *cp, table[];
-	register u_char mask;
+scanc(u_int size, const u_char *cp, const u_char table[], int mask)
 {
-	register const u_char *end = &cp[size];
+	const u_char *end = &cp[size];
 
-	while (cp < end && (table[*cp] & mask) == 0)
+	while (cp < end && (table[*cp] & (u_char)mask) == 0)
 		cp++;
 	return (end - cp);
 }
