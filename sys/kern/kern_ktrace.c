@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.26 2002/02/22 19:19:28 deraadt Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.27 2002/03/14 01:27:04 millert Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -303,7 +303,7 @@ sys_ktrace(curp, v, retval)
 		syscallarg(char *) fname;
 		syscallarg(int) ops;
 		syscallarg(int) facs;
-		syscallarg(int) pid;
+		syscallarg(pid_t) pid;
 	} */ *uap = v;
 	struct vnode *vp = NULL;
 	struct proc *p = NULL;
