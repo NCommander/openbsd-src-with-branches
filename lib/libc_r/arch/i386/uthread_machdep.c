@@ -1,8 +1,8 @@
-/*	 $OpenBSD$	*/
+/*	 $OpenBSD: uthread_machdep.c,v 1.1 2000/09/25 01:16:40 d Exp $	*/
 /* David Leonard, <d@csee.uq.edu.au>. Public domain. */
 
 /*
- * Machine-dependent thread state functions for OpenBSD/sparc.
+ * Machine-dependent thread state functions for OpenBSD/i386.
  */
 
 #include <machine/param.h>
