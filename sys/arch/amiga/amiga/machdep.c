@@ -959,15 +959,9 @@ sys_sigreturn(p, v, retval)
 static int waittime = -1;
 
 void
-boot(howto)
-	register int howto;
+bootsync(void)
 {
-	/* take a snap shot before clobbering any registers */
-	if (curproc)
-		savectx(&curproc->p_addr->u_pcb);
-
-	boothowto = howto;
-	if ((howto & RB_NOSYNC) == 0 && waittime < 0) {
+	if (waittime < 0) {
 		waittime = 0;
 		vfs_shutdown();
 		/*
@@ -976,6 +970,19 @@ boot(howto)
 		 */
 		resettodr();
 	}
+}
+
+void
+boot(howto)
+	register int howto;
+{
+	/* take a snap shot before clobbering any registers */
+	if (curproc)
+		savectx(&curproc->p_addr->u_pcb);
+
+	boothowto = howto;
+	if ((howto & RB_NOSYNC) == 0)
+		bootsync();
 
 	/* Disable interrupts. */
 	spl7();
