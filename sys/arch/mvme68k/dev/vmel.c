@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmel.c,v 1.10 2003/06/02 05:09:14 deraadt Exp $ */
+/*	$OpenBSD: vmel.c,v 1.11 2003/12/20 00:34:28 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -54,7 +54,7 @@ struct cfattach vmel_ca = {
 };
 
 struct cfdriver vmel_cd = {
-	NULL, "vmel", DV_DULL, 0
+	NULL, "vmel", DV_DULL
 };
 
 int

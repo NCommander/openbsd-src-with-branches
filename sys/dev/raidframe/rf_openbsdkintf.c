@@ -1,4 +1,4 @@
-/* $OpenBSD: rf_openbsdkintf.c,v 1.23 2003/04/27 11:22:54 ho Exp $	*/
+/* $OpenBSD: rf_openbsdkintf.c,v 1.24 2003/06/02 23:28:03 millert Exp $	*/
 /* $NetBSD: rf_netbsdkintf.c,v 1.109 2001/07/27 03:30:07 oster Exp $	*/
 
 /*-
@@ -202,7 +202,7 @@ struct raidbuf {
  * compatible with such practice.
  */
 struct cfdriver raid_cd = {
-	NULL, "raid", DV_DISK, NULL, 0
+	NULL, "raid", DV_DISK
 };
 
 /*

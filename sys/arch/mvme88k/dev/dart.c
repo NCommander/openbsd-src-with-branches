@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.25 2003/10/11 22:08:57 miod Exp $	*/
+/*	$OpenBSD: dart.c,v 1.26 2003/10/23 19:03:26 miod Exp $	*/
 
 /*
  * Mach Operating System
@@ -90,7 +90,7 @@ struct cfattach dart_ca = {
 };
 
 struct cfdriver dart_cd = {
-   NULL, "dart", DV_TTY, 0
+	NULL, "dart", DV_TTY
 };
 
 int dart_cons = -1;

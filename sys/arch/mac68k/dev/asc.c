@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc.c,v 1.15 2002/06/24 22:14:47 miod Exp $	*/
+/*	$OpenBSD: asc.c,v 1.16 2003/09/23 16:51:11 millert Exp $	*/
 /*	$NetBSD: asc.c,v 1.20 1997/02/24 05:47:33 scottr Exp $	*/
 
 /*
@@ -105,7 +105,7 @@ struct cfattach asc_ca = {
 };
 
 struct cfdriver asc_cd = {
-	NULL, "asc", DV_DULL, NULL, 0
+	NULL, "asc", DV_DULL
 };
 
 static int

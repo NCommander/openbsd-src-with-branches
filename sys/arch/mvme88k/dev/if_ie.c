@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.25 2003/09/29 09:08:19 miod Exp $ */
+/*	$OpenBSD: if_ie.c,v 1.26 2003/10/05 20:27:47 miod Exp $ */
 
 /*-
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -287,7 +287,7 @@ struct cfattach ie_ca = {
 };
 
 struct cfdriver ie_cd = {
-	NULL, "ie", DV_IFNET, 0
+	NULL, "ie", DV_IFNET
 };
 
 /*

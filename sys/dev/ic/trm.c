@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.2 2003/10/21 18:58:50 jmc Exp $
+/*	$OpenBSD: trm.c,v 1.3 2003/11/08 19:17:28 jmc Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -129,11 +129,7 @@ void	trm_print_info(struct trm_softc *, struct trm_dcb *);
  * Define structures
  */
 struct  cfdriver trm_cd = {
-        NULL,
-	"trm",
-	DV_DULL,
-	0,
-	0
+        NULL, "trm", DV_DULL
 };
 
 struct scsi_adapter trm_switch = {

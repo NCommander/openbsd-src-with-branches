@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmel.c,v 1.12 2003/12/19 22:30:18 miod Exp $ */
+/*	$OpenBSD: vmel.c,v 1.13 2003/12/28 19:44:26 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -52,7 +52,7 @@ struct cfattach vmel_ca = {
 };
 
 struct cfdriver vmel_cd = {
-        NULL, "vmel", DV_DULL, 0
+        NULL, "vmel", DV_DULL
 };
 
 int vmelscan(struct device *, void *, void *);

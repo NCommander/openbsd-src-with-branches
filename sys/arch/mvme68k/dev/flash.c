@@ -1,4 +1,4 @@
-/*	$OpenBSD: flash.c,v 1.11 2002/04/27 23:21:05 miod Exp $ */
+/*	$OpenBSD: flash.c,v 1.12 2003/06/02 05:09:14 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -69,7 +69,7 @@ struct cfattach flash_ca = {
 };
 
 struct cfdriver flash_cd = {
-	NULL, "flash", DV_DULL, 0
+	NULL, "flash", DV_DULL
 };
 
 int flashwritebyte(struct flashsoftc *sc, int addr, u_char val);

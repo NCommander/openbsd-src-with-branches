@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.18 2003/12/22 11:54:48 miod Exp $ */
+/*	$OpenBSD: bugtty.c,v 1.19 2004/01/13 21:29:23 miod Exp $ */
 
 /* Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -56,7 +56,7 @@ struct cfattach bugtty_ca = {
 };
 
 struct cfdriver bugtty_cd = {
-        NULL, "bugtty", DV_TTY, 0
+        NULL, "bugtty", DV_TTY
 };
 
 /* prototypes */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscon.c,v 1.12 2003/09/28 22:14:33 miod Exp $ */
+/*	$OpenBSD: syscon.c,v 1.13 2003/10/11 22:08:57 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * All rights reserved.
@@ -94,7 +94,7 @@ struct cfattach syscon_ca = {
 };
 
 struct cfdriver syscon_cd = {
-	NULL, "syscon", DV_DULL, 0
+	NULL, "syscon", DV_DULL
 };
 
 struct sysconreg *sys_syscon;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshdma.c,v 1.6 2003/02/11 19:20:26 mickey Exp $ */
+/*	$OpenBSD: sshdma.c,v 1.7 2003/06/02 23:27:50 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -80,7 +80,7 @@ struct cfattach ssh_ca = {
 };
 
 struct cfdriver ssh_cd = {
-	NULL, "ssh", DV_DULL, 0
+	NULL, "ssh", DV_DULL
 };
 
 int

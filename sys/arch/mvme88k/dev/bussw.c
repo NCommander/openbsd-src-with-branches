@@ -1,4 +1,4 @@
-/*	$OpenBSD: bussw.c,v 1.8 2003/10/06 06:31:26 miod Exp $ */
+/*	$OpenBSD: bussw.c,v 1.9 2003/12/19 22:30:18 miod Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -58,7 +58,7 @@ struct cfattach bussw_ca = {
 };
 
 struct cfdriver bussw_cd = {
-	NULL, "bussw", DV_DULL, 0
+	NULL, "bussw", DV_DULL
 };
 
 int bussw_print(void *args, const char *bus);

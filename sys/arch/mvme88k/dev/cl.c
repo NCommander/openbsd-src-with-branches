@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.35 2004/01/02 23:37:17 miod Exp $ */
+/*	$OpenBSD: cl.c,v 1.36 2004/01/05 20:08:01 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -189,7 +189,7 @@ struct cfattach cl_ca = {
 };
 
 struct cfdriver cl_cd = {
-	NULL, "cl", DV_TTY, 0
+	NULL, "cl", DV_TTY
 };
 
 #define CLCDBUF 80
