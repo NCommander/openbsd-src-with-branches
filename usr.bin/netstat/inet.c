@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.24 1998/03/18 02:43:04 angelos Exp $	*/
+/*	$OpenBSD: inet.c,v 1.25 1998/11/25 02:11:44 niklas Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)inet.c	8.4 (Berkeley) 4/20/94";
 #else
-static char *rcsid = "$OpenBSD: inet.c,v 1.24 1998/03/18 02:43:04 angelos Exp $";
+static char *rcsid = "$OpenBSD: inet.c,v 1.25 1998/11/25 02:11:44 niklas Exp $";
 #endif
 #endif /* not lint */
 
@@ -197,6 +197,7 @@ tcp_stats(off, name)
 		"\t\t%ld data packet%s (%qd byte%s)\n");
 	p2(tcps_sndrexmitpack, tcps_sndrexmitbyte,
 		"\t\t%ld data packet%s (%qd byte%s) retransmitted\n");
+	p(tcps_sndrexmitfast, "\t\t%qd fast retransmitted packet%s\n");
 	p2(tcps_sndacks, tcps_delack,
 		"\t\t%ld ack-only packet%s (%ld delayed)\n");
 	p(tcps_sndurg, "\t\t%ld URG only packet%s\n");
