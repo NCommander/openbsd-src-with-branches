@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.8 1999/03/19 22:47:33 jason Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.9 1999/05/24 23:09:10 jason Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -43,6 +43,7 @@
 #include <sys/errno.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
+#include <machine/cpu.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
