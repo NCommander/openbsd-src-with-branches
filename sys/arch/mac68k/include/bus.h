@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.6 2000/03/15 03:56:49 todd Exp $	*/
+/*	$OpenBSD: bus.h,v 1.7 2002/03/14 01:26:35 millert Exp $	*/
 /*	$NetBSD: bus.h,v 1.9 1998/01/13 18:32:15 scottr Exp $	*/
 
 /*-
@@ -543,7 +543,8 @@ int	mac68k_bus_space_probe(bus_space_tag_t t,
  */
 
 #define	__MAC68K_copy_region_N(BYTES)					\
-static __inline void __CONCAT(bus_space_copy_region_,BYTES)		\(bus_space_tag_t,						\
+static __inline void __CONCAT(bus_space_copy_region_,BYTES)		\
+	    (bus_space_tag_t,						\
 	    bus_space_handle_t bsh1, bus_size_t off1,			\
 	    bus_space_handle_t bsh2, bus_size_t off2,			\
 	    bus_size_t count);						\
