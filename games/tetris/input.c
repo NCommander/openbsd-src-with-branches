@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*    $NetBSD: input.c,v 1.3 1996/02/06 22:47:33 jtc Exp $    */
 
 /*-

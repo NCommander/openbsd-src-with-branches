@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: input.h,v 1.2 1995/04/22 07:42:36 cgd Exp $	*/
 
 /*-
