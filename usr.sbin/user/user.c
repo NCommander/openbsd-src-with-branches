@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.13 2000/05/05 23:54:51 ho Exp $ */
+/* $OpenBSD: user.c,v 1.14 2000/06/09 16:34:24 millert Exp $ */
 /* $NetBSD: user.c,v 1.17 2000/04/14 06:26:55 simonb Exp $ */
 
 /*
@@ -937,7 +937,7 @@ moduser(char *login, char *newlogin, user_t *up)
 		}
 		/* if home directory hasn't been given, use the old one */
 		if (!up->u_homeset) {
-			(void) strlcpy(home, pwp->pw_dir, strlen(home));
+			(void) strlcpy(home, pwp->pw_dir, sizeof(home));
 		}
 		expire = 0;
 		if (up->u_expire != NULL) {
