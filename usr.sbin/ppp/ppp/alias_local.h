@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: alias_local.h,v 1.12 2001/06/07 09:32:55 brian Exp $
+ * $OpenBSD: alias_local.h,v 1.13 2001/11/23 11:17:03 brian Exp $
  */
 
 /*
@@ -38,7 +38,7 @@
  * This software is placed into the public domain with no restrictions
  * on its distribution.
  *
- * Initial version:  August, 1996  (cjm)    
+ * Initial version:  August, 1996  (cjm)
  *
  * <updated several times by original author and Eivind Eklund>
  */

@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: ccp.c,v 1.27 2002/05/16 01:13:39 brian Exp $
+ * $OpenBSD: ccp.c,v 1.28 2002/06/15 01:33:23 brian Exp $
  */
 
 #include <sys/param.h>
@@ -452,7 +452,7 @@ CcpLayerDown(struct fsm *fp)
     ccp->out.algorithm = -1;
   }
   ccp->his_reject = ccp->my_reject = 0;
-  
+
   while (ccp->out.opt) {
     next = ccp->out.opt->next;
     free(ccp->out.opt);

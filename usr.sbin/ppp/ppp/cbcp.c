@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: cbcp.c,v 1.14 2000/07/19 11:06:31 brian Exp $
+ *	$OpenBSD: cbcp.c,v 1.15 2002/05/16 01:13:39 brian Exp $
  */
 
 #include <sys/param.h>
@@ -75,7 +75,7 @@ static void cbcp_SendReq(struct cbcp *);
 static void cbcp_SendResponse(struct cbcp *);
 static void cbcp_SendAck(struct cbcp *);
 
-static void 
+static void
 cbcp_Timeout(void *v)
 {
   struct cbcp *cbcp = (struct cbcp *)v;
