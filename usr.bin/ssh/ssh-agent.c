@@ -35,7 +35,7 @@
 
 #include "includes.h"
 #include <sys/queue.h>
-RCSID("$OpenBSD: ssh-agent.c,v 1.112 2003/09/18 08:49:45 markus Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.113 2003/09/19 11:29:40 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/md5.h>
@@ -953,7 +953,7 @@ cleanup_socket(void)
 		rmdir(socket_dir);
 }
 
-static void
+void
 cleanup_exit(int i)
 {
 	cleanup_socket();
@@ -965,17 +965,6 @@ cleanup_handler(int sig)
 {
 	cleanup_socket();
 	_exit(2);
-}
-
-void
-fatal(const char *fmt,...)
-{
-	va_list args;
-	va_start(args, fmt);
-	do_log(SYSLOG_LEVEL_FATAL, fmt, args);
-	va_end(args);
-	cleanup_socket();
-	_exit(255);
 }
 
 static void
