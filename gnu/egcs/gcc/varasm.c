@@ -1,5 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -72,14 +73,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #define CHKR_PREFIX_SIZE (sizeof (CHKR_PREFIX) - 1)
 
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  On most machines,
-   we discard the * if any and that's all.  */
-#ifndef STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
-  (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
-#endif
-
 /* File in which assembler code is being written.  */
 
 extern FILE *asm_out_file;
@@ -149,6 +142,7 @@ static void mark_constants		PROTO((rtx));
 static int output_addressed_constants	PROTO((tree));
 static void output_after_function_constants PROTO((void));
 static void output_constructor		PROTO((tree, int));
+static void remove_from_pending_weak_list	PROTO ((char *));
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss		PROTO((FILE *, tree, char *, int, int));
 #endif
@@ -1020,7 +1014,13 @@ assemble_start_function (decl, fnname)
 
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
-	ASM_WEAKEN_LABEL (asm_out_file, fnname);
+	{
+	  ASM_WEAKEN_LABEL (asm_out_file, fnname);
+	  /* Remove this function from the pending weak list so that
+	     we do not emit multiple .weak directives for it.  */
+	  remove_from_pending_weak_list
+	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	}
       else
 #endif
       ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
@@ -1453,8 +1453,14 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     {
 #ifdef ASM_WEAKEN_LABEL
-      if (DECL_WEAK (decl))
-	ASM_WEAKEN_LABEL (asm_out_file, name);
+      if (DECL_WEAK (decl)) 
+	{
+	  ASM_WEAKEN_LABEL (asm_out_file, name);
+	   /* Remove this variable from the pending weak list so that
+	      we do not emit multiple .weak directives for it.  */
+	  remove_from_pending_weak_list
+	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	}
       else
 #endif
       ASM_GLOBALIZE_LABEL (asm_out_file, name);
@@ -3488,6 +3494,18 @@ force_const_mem (mode, x)
 
 	  pop_obstacks ();
 	}
+      if (GET_CODE (x) == LABEL_REF)
+	{
+	  extern rtx forced_labels;
+
+	  push_obstacks_nochange ();
+	  rtl_in_saveable_obstack ();
+
+	  forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
+					     XEXP (x, 0),
+					     forced_labels);
+	  pop_obstacks ();
+	}
 
       /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
 
@@ -3896,6 +3914,13 @@ output_constant (exp, size)
      register int size;
 {
   register enum tree_code code = TREE_CODE (TREE_TYPE (exp));
+
+  /* Some front-ends use constants other than the standard
+     language-indepdent varieties, but which may still be output
+     directly.  Give the front-end a chance to convert EXP to a
+     language-independent representation.  */
+  if (lang_expand_constant)
+    exp = (*lang_expand_constant) (exp);
 
   if (size == 0 || flag_syntax_only)
     return;
@@ -4352,9 +4377,32 @@ weak_finish ()
       struct weak_syms *t;
       for (t = weak_decls; t; t = t->next)
 	{
-	  ASM_WEAKEN_LABEL (asm_out_file, t->name);
-	  if (t->value)
-	    ASM_OUTPUT_DEF (asm_out_file, t->name, t->value);
+	  if (t->name)
+	    {
+	      ASM_WEAKEN_LABEL (asm_out_file, t->name);
+	      if (t->value)
+		ASM_OUTPUT_DEF (asm_out_file, t->name, t->value);
+	    }
+	}
+    }
+#endif
+}
+
+/* Remove NAME from the pending list of weak symbols.  This prevents
+   the compiler from emitting multiple .weak directives which confuses
+   some assemblers.  */
+static void
+remove_from_pending_weak_list (name)
+     char *name;
+{
+#ifdef HANDLE_PRAGMA_WEAK
+  if (HANDLE_PRAGMA_WEAK)
+    {
+      struct weak_syms *t;
+      for (t = weak_decls; t; t = t->next)
+	{
+	  if (t->name && strcmp (name, t->name) == 0)
+	    t->name = NULL;
 	}
     }
 #endif
@@ -4376,7 +4424,13 @@ assemble_alias (decl, target)
     {
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
-	ASM_WEAKEN_LABEL (asm_out_file, name);
+ 	{
+	  ASM_WEAKEN_LABEL (asm_out_file, name);
+	  /* Remove this function from the pending weak list so that
+	     we do not emit multiple .weak directives for it.  */
+	  remove_from_pending_weak_list
+	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	}
       else
 #endif
 	ASM_GLOBALIZE_LABEL (asm_out_file, name);

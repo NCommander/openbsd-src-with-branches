@@ -1,4 +1,4 @@
-/*	$OpenBSD: tar.c,v 1.31 2003/06/26 00:10:18 deraadt Exp $	*/
+/*	$OpenBSD: tar.c,v 1.30 2003/06/02 23:32:09 millert Exp $	*/
 /*	$NetBSD: tar.c,v 1.5 1995/03/21 09:07:49 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static const char sccsid[] = "@(#)tar.c	8.2 (Berkeley) 4/18/94";
 #else
-static const char rcsid[] = "$OpenBSD: tar.c,v 1.31 2003/06/26 00:10:18 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: tar.c,v 1.30 2003/06/02 23:32:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,7 +58,6 @@ static const char rcsid[] = "$OpenBSD: tar.c,v 1.31 2003/06/26 00:10:18 deraadt 
  * Routines for reading, writing and header identify of various versions of tar
  */
 
-static size_t expandname(char *, size_t, char **, const char *);
 static u_long tar_chksm(char *, int);
 static char *name_split(char *, int);
 static int ul_oct(u_long, char *, int, int);
@@ -71,8 +70,7 @@ static int uqd_oct(u_quad_t, char *, int, int);
  */
 
 static int tar_nodir;			/* do not write dirs under old tar */
-char *gnu_name_string;			/* GNU ././@LongLink hackery name */
-char *gnu_link_string;			/* GNU ././@LongLink hackery link */
+char *gnu_hack_string;			/* GNU ././@LongLink hackery */
 
 /*
  * tar_endwr()
@@ -387,19 +385,21 @@ tar_rd(ARCHD *arcn, char *buf)
 	 */
 	if (tar_id(buf, BLKMULT) < 0)
 		return(-1);
-	memset(arcn, 0, sizeof(*arcn));
 	arcn->org_name = arcn->name;
 	arcn->sb.st_nlink = 1;
+	arcn->pat = NULL;
 
 	/*
 	 * copy out the name and values in the stat buffer
 	 */
 	hd = (HD_TAR *)buf;
-	if (hd->linkflag != LONGLINKTYPE && hd->linkflag != LONGNAMETYPE) {
-		arcn->nlen = expandname(arcn->name, sizeof(arcn->name),
-		    &gnu_name_string, hd->name);
-		arcn->ln_nlen = expandname(arcn->ln_name, sizeof(arcn->ln_name),
-		    &gnu_link_string, hd->linkname);
+	if (gnu_hack_string) {
+		arcn->nlen = strlcpy(arcn->name, gnu_hack_string,
+		    sizeof(arcn->name));
+		free(gnu_hack_string);
+		gnu_hack_string = NULL;
+	} else {
+		arcn->nlen = strlcpy(arcn->name, hd->name, sizeof(arcn->name));
 	}
 	arcn->sb.st_mode = (mode_t)(asc_ul(hd->mode,sizeof(hd->mode),OCT) &
 	    0xfff);
@@ -427,6 +427,8 @@ tar_rd(ARCHD *arcn, char *buf)
 		 * the st_mode so -v printing will look correct.
 		 */
 		arcn->type = PAX_SLK;
+		arcn->ln_nlen = strlcpy(arcn->ln_name, hd->linkname,
+			sizeof(arcn->ln_name));
 		arcn->sb.st_mode |= S_IFLNK;
 		break;
 	case LNKTYPE:
@@ -436,6 +438,8 @@ tar_rd(ARCHD *arcn, char *buf)
 		 */
 		arcn->type = PAX_HLK;
 		arcn->sb.st_nlink = 2;
+		arcn->ln_nlen = strlcpy(arcn->ln_name, hd->linkname,
+			sizeof(arcn->ln_name));
 
 		/*
 		 * no idea of what type this thing really points at, but
@@ -444,15 +448,19 @@ tar_rd(ARCHD *arcn, char *buf)
 		arcn->sb.st_mode |= S_IFREG;
 		break;
 	case LONGLINKTYPE:
+		arcn->type = PAX_GLL;
+		/* FALLTHROUGH */
 	case LONGNAMETYPE:
 		/*
 		 * GNU long link/file; we tag these here and let the
 		 * pax internals deal with it -- too ugly otherwise.
 		 */
-		arcn->type =
-		    hd->linkflag == LONGLINKTYPE ? PAX_GLL : PAX_GLF;
+		if (hd->linkflag != LONGLINKTYPE)
+			arcn->type = PAX_GLF;
 		arcn->pad = TAR_PAD(arcn->sb.st_size);
 		arcn->skip = arcn->sb.st_size;
+		arcn->ln_name[0] = '\0';
+		arcn->ln_nlen = 0;
 		break;
 	case DIRTYPE:
 		/*
@@ -461,6 +469,8 @@ tar_rd(ARCHD *arcn, char *buf)
 		arcn->type = PAX_DIR;
 		arcn->sb.st_mode |= S_IFDIR;
 		arcn->sb.st_nlink = 2;
+		arcn->ln_name[0] = '\0';
+		arcn->ln_nlen = 0;
 		break;
 	case AREGTYPE:
 	case REGTYPE:
@@ -747,9 +757,10 @@ ustar_rd(ARCHD *arcn, char *buf)
 	 */
 	if (ustar_id(buf, BLKMULT) < 0)
 		return(-1);
-	memset(arcn, 0, sizeof(*arcn));
 	arcn->org_name = arcn->name;
 	arcn->sb.st_nlink = 1;
+	arcn->pat = NULL;
+	arcn->nlen = 0;
 	hd = (HD_USTAR *)buf;
 
 	/*
@@ -762,15 +773,14 @@ ustar_rd(ARCHD *arcn, char *buf)
 		dest += cnt;
 		*dest++ = '/';
 		cnt++;
-	} else {
-		cnt = 0;
 	}
-
-	if (hd->typeflag != LONGLINKTYPE && hd->typeflag != LONGNAMETYPE) {
-		arcn->nlen = expandname(dest, sizeof(arcn->name) - cnt,
-		    &gnu_name_string, hd->name);
-		arcn->ln_nlen = expandname(arcn->ln_name, sizeof(arcn->ln_name),
-		    &gnu_link_string, hd->linkname);
+	if (gnu_hack_string) {
+		arcn->nlen = strlcpy(dest, gnu_hack_string,
+		    sizeof(arcn->name) - cnt);
+		free(gnu_hack_string);
+		gnu_hack_string = NULL;
+	} else {
+		arcn->nlen = strlcpy(dest, hd->name, sizeof(arcn->name) - cnt);
 	}
 
 	/*
@@ -803,6 +813,8 @@ ustar_rd(ARCHD *arcn, char *buf)
 	/*
 	 * set the defaults, these may be changed depending on the file type
 	 */
+	arcn->ln_name[0] = '\0';
+	arcn->ln_nlen = 0;
 	arcn->pad = 0;
 	arcn->skip = 0;
 	arcn->sb.st_rdev = (dev_t)0;
@@ -857,6 +869,11 @@ ustar_rd(ARCHD *arcn, char *buf)
 			arcn->sb.st_mode |= S_IFREG;
 			arcn->sb.st_nlink = 2;
 		}
+		/*
+		 * copy the link name
+		 */
+		arcn->ln_nlen = strlcpy(arcn->ln_name, hd->linkname,
+			sizeof(arcn->ln_name));
 		break;
 	case LONGLINKTYPE:
 	case LONGNAMETYPE:
@@ -868,6 +885,8 @@ ustar_rd(ARCHD *arcn, char *buf)
 		    hd->typeflag == LONGLINKTYPE ? PAX_GLL : PAX_GLF;
 		arcn->pad = TAR_PAD(arcn->sb.st_size);
 		arcn->skip = arcn->sb.st_size;
+		arcn->ln_name[0] = '\0';
+		arcn->ln_nlen = 0;
 		break;
 	case CONTTYPE:
 	case AREGTYPE:
@@ -1115,21 +1134,4 @@ name_split(char *name, int len)
 	 * ok have a split point, return it to the caller
 	 */
 	return(start);
-}
-
-static size_t
-expandname(char *buf, size_t len, char **gnu_name, const char *name)
-{
-	size_t nlen;
-
-	if (*gnu_name) {
-		if ((nlen = strlcpy(buf, *gnu_name, len)) >= len)
-			nlen = len - 1;
-		free(*gnu_name);
-		*gnu_name = NULL;
-	} else {
-		if ((nlen = strlcpy(buf, name, len)) >= len)
-			nlen = len - 1;
-	}
-	return(nlen);
 }

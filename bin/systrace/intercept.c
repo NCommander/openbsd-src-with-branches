@@ -1,4 +1,4 @@
-/*	$OpenBSD: intercept.c,v 1.45 2004/01/30 17:21:16 sturm Exp $	*/
+/*	$OpenBSD: intercept.c,v 1.44 2003/10/18 19:26:00 jmc Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -639,12 +639,12 @@ normalize_filename(int fd, pid_t pid, char *name, int userp)
 	/* Need concatenated path for simplifypath */
 	if (havecwd && name[0] != '/') {
 		if (strlcat(cwd, "/", sizeof(cwd)) >= sizeof(cwd))
-			return (NULL);
+			goto error;
 		if (strlcat(cwd, name, sizeof(cwd)) >= sizeof(cwd))
-			return (NULL);
+			goto error;
 	} else {
 		if (strlcpy(cwd, name, sizeof(cwd)) >= sizeof(cwd))
-			return (NULL);
+			goto error;
 	}
 
 	if (userp != ICLINK_NONE) {

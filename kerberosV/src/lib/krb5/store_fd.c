@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -32,8 +32,9 @@
  */
 
 #include "krb5_locl.h"
+#include "store-int.h"
 
-RCSID("$KTH: store_fd.c,v 1.8 2001/01/29 02:32:35 assar Exp $");
+RCSID("$KTH: store_fd.c,v 1.10 2002/04/18 14:00:39 joda Exp $");
 
 typedef struct fd_storage{
     int fd;
@@ -63,8 +64,17 @@ krb5_storage *
 krb5_storage_from_fd(int fd)
 {
     krb5_storage *sp = malloc(sizeof(krb5_storage));
+
+    if (sp == NULL)
+	return NULL;
+
     sp->data = malloc(sizeof(fd_storage));
+    if (sp->data == NULL) {
+	free(sp);
+	return NULL;
+    }
     sp->flags = 0;
+    sp->eof_code = HEIM_ERR_EOF;
     FD(sp) = fd;
     sp->fetch = fd_fetch;
     sp->store = fd_store;

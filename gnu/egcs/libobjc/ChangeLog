@@ -1,3 +1,45 @@
+2001-01-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* sendmsg.c (__objc_print_dtable_stats): Don't use #ifdef inside
+	printf.
+
+2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* objc/Protocol.h, objc/objc-list.h: Change #endif labels to
+	comments.
+
+Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.2 Released.
+
+Mon Aug 16 01:29:24 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.1 Released.
+
+Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
+
+	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,
+	libdir, libsubdir and tooldir.
+
+Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+Mon Jun 21 05:40:15 1999  John David Anglin <dave@hiauly1>
+
+	* init.c (__objc_force_linking): Make global.
+
+Thu May 20 03:20:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (AC_EXEEXT): Remove call.
+	(compiler_name): Explicitly check with no extension and .exe
+	extension.
+	* configure: Regenerate.
+
 Sun Apr 25 01:15:34 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* Makefile.in (CC1OBJ): Define in terms of CC.

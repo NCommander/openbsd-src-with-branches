@@ -1,5 +1,6 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1562,7 +1563,12 @@ delete_unreachable_blocks ()
 	 check that the edge is not a FALLTHRU edge.  */
       if ((s = b->succ) != NULL
 	  && s->succ_next == NULL
-	  && s->dest == c)
+	  && s->dest == c
+	  /* If the last insn is not a normal conditional jump
+	     (or an unconditional jump), then we can not tidy the
+	     fallthru edge because we can not delete the jump.  */
+	  && GET_CODE (b->end) == JUMP_INSN
+	  && condjump_p (b->end))
 	tidy_fallthru_edge (s, b, c);
     }
 
@@ -1578,8 +1584,14 @@ delete_unreachable_blocks ()
       /* A loop because chains of blocks might be combineable.  */
       while ((s = b->succ) != NULL
 	     && s->succ_next == NULL
+	     && (s->flags & EDGE_EH) == 0
 	     && (c = s->dest) != EXIT_BLOCK_PTR
 	     && c->pred->pred_next == NULL
+	     /* If the last insn is not a normal conditional jump
+		(or an unconditional jump), then we can not merge
+		the blocks because we can not delete the jump.  */
+	     && GET_CODE (b->end) == JUMP_INSN
+	     && condjump_p (b->end)
 	     && merge_blocks (s, b, c))
 	continue;
 
@@ -1670,7 +1682,7 @@ delete_block (b)
      basic_block b;
 {
   int deleted_handler = 0;
-  rtx insn, end;
+  rtx insn, end, tmp;
 
   /* If the head of this block is a CODE_LABEL, then it might be the
      label for an exception handler which can't be reached.
@@ -1717,11 +1729,21 @@ delete_block (b)
 	}
     }
 
-  /* Selectively unlink the insn chain.  Include any BARRIER that may
-     follow the basic block.  */
-  end = next_nonnote_insn (b->end);
-  if (!end || GET_CODE (end) != BARRIER)
-    end = b->end;
+  /* Include any jump table following the basic block.  */
+  end = b->end;
+  if (GET_CODE (end) == JUMP_INSN
+      && (tmp = JUMP_LABEL (end)) != NULL_RTX
+      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
+      && GET_CODE (tmp) == JUMP_INSN
+      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+	  || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+    end = tmp;
+
+  /* Include any barrier that may follow the basic block.  */
+  tmp = next_nonnote_insn (b->end);
+  if (tmp && GET_CODE (tmp) == BARRIER)
+    end = tmp;
+
   delete_insn_chain (insn, end);
 
 no_delete_insns:
@@ -1785,6 +1807,7 @@ flow_delete_insn (insn)
 {
   rtx prev = PREV_INSN (insn);
   rtx next = NEXT_INSN (insn);
+  rtx note;
 
   PREV_INSN (insn) = NULL_RTX;
   NEXT_INSN (insn) = NULL_RTX;
@@ -1803,6 +1826,10 @@ flow_delete_insn (insn)
      the label itself should happen in the normal course of block merging.  */
   if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))
     LABEL_NUSES (JUMP_LABEL (insn))--;
+
+  /* Also if deleting an insn that references a label.  */
+  else if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != NULL_RTX)
+    LABEL_NUSES (XEXP (note, 0))--;
 
   return next;
 }
@@ -2272,11 +2299,14 @@ mark_regs_live_at_end (set)
      we end up eliminating it, it will be removed from the live list
      of each basic block by reload.  */
 
-  SET_REGNO_REG_SET (set, FRAME_POINTER_REGNUM);
+  if (! reload_completed || frame_pointer_needed)
+    {
+      SET_REGNO_REG_SET (set, FRAME_POINTER_REGNUM);
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-  /* If they are different, also mark the hard frame pointer as live */
-  SET_REGNO_REG_SET (set, HARD_FRAME_POINTER_REGNUM);
+      /* If they are different, also mark the hard frame pointer as live */
+      SET_REGNO_REG_SET (set, HARD_FRAME_POINTER_REGNUM);
 #endif      
+    }
 
   /* Mark all global registers, and all registers used by the epilogue
      as being live at the end of the function since they may be
@@ -2707,6 +2737,39 @@ propagate_block (old, first, last, final, significant, bnum, remove_dead_code)
 	     can cause trouble for first or last insn in a basic block.  */
 	  if (final && insn_is_dead)
 	    {
+	      rtx inote;
+	      /* If the insn referred to a label, note that the label is
+		 now less used.  */
+	      for (inote = REG_NOTES (insn); inote; inote = XEXP (inote, 1))
+		{
+		  if (REG_NOTE_KIND (inote) == REG_LABEL)
+		    {
+		      rtx label = XEXP (inote, 0);
+		      rtx next;
+		      LABEL_NUSES (label)--;
+
+		      /* If this label was attached to an ADDR_VEC, it's
+			 safe to delete the ADDR_VEC.  In fact, it's pretty much
+			 mandatory to delete it, because the ADDR_VEC may
+			 be referencing labels that no longer exist.  */
+		      if (LABEL_NUSES (label) == 0
+			  && (next = next_nonnote_insn (label)) != NULL
+			  && GET_CODE (next) == JUMP_INSN
+			  && (GET_CODE (PATTERN (next)) == ADDR_VEC
+			      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+			{
+			  rtx pat = PATTERN (next);
+			  int diff_vec_p = GET_CODE (pat) == ADDR_DIFF_VEC;
+			  int len = XVECLEN (pat, diff_vec_p);
+			  int i;
+			  for (i = 0; i < len; i++)
+			    LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0))--;
+
+			  flow_delete_insn (next);
+			}
+		    }
+		}
+
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
@@ -2957,9 +3020,11 @@ insn_dead_p (x, needed, call_ok, notes)
 	  /* Don't delete insns to set global regs.  */
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
 	      /* Make sure insns to set frame pointer aren't deleted.  */
-	      || regno == FRAME_POINTER_REGNUM
+	      || (regno == FRAME_POINTER_REGNUM
+		  && (! reload_completed || frame_pointer_needed))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	      || regno == HARD_FRAME_POINTER_REGNUM
+	      || (regno == HARD_FRAME_POINTER_REGNUM
+		  && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	      /* Make sure insns to set arg pointer are never deleted
@@ -3258,6 +3323,9 @@ mark_set_1 (needed, dead, x, insn, significant)
     invalidate_mems_from_autoinc (insn);
 
   if (GET_CODE (reg) == MEM && ! side_effects_p (reg)
+      /* We do not know the size of a BLKmode store, so we do not track
+	 them for redundant store elimination.  */
+      && GET_MODE (reg) != BLKmode
       /* There are no REG_INC notes for SP, so we can't assume we'll see 
 	 everything that invalidates it.  To be safe, don't eliminate any
 	 stores though SP; none of them should be redundant anyway.  */
@@ -3265,9 +3333,11 @@ mark_set_1 (needed, dead, x, insn, significant)
     mem_set_list = gen_rtx_EXPR_LIST (VOIDmode, reg, mem_set_list);
 
   if (GET_CODE (reg) == REG
-      && (regno = REGNO (reg), regno != FRAME_POINTER_REGNUM)
+      && (regno = REGNO (reg), ! (regno == FRAME_POINTER_REGNUM
+				  && (! reload_completed || frame_pointer_needed)))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      && regno != HARD_FRAME_POINTER_REGNUM
+      && ! (regno == HARD_FRAME_POINTER_REGNUM
+	    && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
@@ -3725,12 +3795,14 @@ mark_used_regs (needed, live, x, final, insn)
 	       nothing below can be necessary, so waste no more time.  */
 	    if (regno == STACK_POINTER_REGNUM
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-		|| regno == HARD_FRAME_POINTER_REGNUM
+		|| (regno == HARD_FRAME_POINTER_REGNUM
+		    && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 		|| (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
-		|| regno == FRAME_POINTER_REGNUM)
+		|| (regno == FRAME_POINTER_REGNUM
+		    && (! reload_completed || frame_pointer_needed)))
 	      {
 		/* If this is a register we are going to try to eliminate,
 		   don't mark it live here.  If we are successful in
@@ -3906,9 +3978,11 @@ mark_used_regs (needed, live, x, final, insn)
 	if ((GET_CODE (testreg) == PARALLEL
 	     && GET_MODE (testreg) == BLKmode)
 	    || (GET_CODE (testreg) == REG
-		&& (regno = REGNO (testreg), regno != FRAME_POINTER_REGNUM)
+		&& (regno = REGNO (testreg), ! (regno == FRAME_POINTER_REGNUM
+						&& (! reload_completed || frame_pointer_needed)))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-		&& regno != HARD_FRAME_POINTER_REGNUM
+		&& ! (regno == HARD_FRAME_POINTER_REGNUM
+		      && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])

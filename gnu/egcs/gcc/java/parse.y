@@ -100,6 +100,7 @@ static int find_in_imports PROTO ((tree));
 static int check_pkg_class_access PROTO ((tree, tree));
 static tree resolve_package PROTO ((tree, tree *));
 static tree lookup_package_type PROTO ((char *, int));
+static tree lookup_package_type_and_set_next PROTO ((char *, int, tree *));
 static tree resolve_class PROTO ((tree, tree, tree));
 static void declare_local_variables PROTO ((int, tree, tree));
 static void source_start_java_method PROTO ((tree));
@@ -396,7 +397,7 @@ static tree current_static_block = NULL_TREE;
 			variable_initializers constructor_body
 			array_initializer
 
-%type	 <node>		class_body block_end
+%type	 <node>		class_body block_end constructor_block_end
 %type	 <node>		statement statement_without_trailing_substatement
 			labeled_statement if_then_statement label_decl
 			if_then_else_statement while_statement for_statement
@@ -917,7 +918,10 @@ formal_parameter:
 		  $$ = build_tree_list ($2, $1);
 		}
 |	modifiers type variable_declarator_id /* Added, JDK1.1 final parms */
-		{ $$ = parse_jdk1_1_error ("final parameters"); }
+		{ 
+		  parse_jdk1_1_error ("final parameters");
+		  $$ = build_tree_list ($3, $2);
+		}
 |	type error
 		{yyerror ("Missing identifier"); RECOVER;}
 |	modifiers type error
@@ -1001,18 +1005,22 @@ constructor_body:
 	/* Unlike regular method, we always need a complete (empty)
 	   body so we can safely perform all the required code
 	   addition (super invocation and field initialization) */
-	block_begin block_end
+	block_begin constructor_block_end
 		{ 
 		  BLOCK_EXPR_BODY ($2) = empty_stmt_node;
 		  $$ = $2;
 		}
-|	block_begin explicit_constructor_invocation block_end
+|	block_begin explicit_constructor_invocation constructor_block_end
 		{ $$ = $3; }
-|	block_begin block_statements block_end
+|	block_begin block_statements constructor_block_end
 		{ $$ = $3; }
-|       block_begin explicit_constructor_invocation block_statements block_end
+|       block_begin explicit_constructor_invocation block_statements constructor_block_end
 		{ $$ = $4; }
 ;
+
+constructor_block_end:
+	block_end
+|	block_end SC_TK
 
 /* Error recovery for that rule moved down expression_statement: rule.  */
 explicit_constructor_invocation:
@@ -1231,6 +1239,7 @@ statement_nsi:
 |	if_then_else_statement_nsi
 |	while_statement_nsi
 |	for_statement_nsi
+		{ $$ = exit_block (); }
 ;
 
 statement_without_trailing_substatement:
@@ -3073,7 +3082,7 @@ lookup_field_wrapper (class, name)
   java_parser_context_save_global ();
   decl = lookup_field (&type, name);
   java_parser_context_restore_global ();
-  return decl;
+  return decl == error_mark_node ? NULL : decl;
 }
 
 /* Find duplicate field within the same class declarations and report
@@ -3206,7 +3215,6 @@ register_fields (flags, type, variable_list)
 		 appropriately. */
 	      TREE_CHAIN (init) = ctxp->static_initialized;
 	      ctxp->static_initialized = init;
-	      DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
 	      if (TREE_OPERAND (init, 1) 
 		  && TREE_CODE (TREE_OPERAND (init, 1)) == NEW_ARRAY_INIT)
 		TREE_STATIC (TREE_OPERAND (init, 1)) = 1;
@@ -3220,6 +3228,7 @@ register_fields (flags, type, variable_list)
 	      ctxp->non_static_initialized = init;
 	    }
 	  MODIFY_EXPR_FROM_INITIALIZATION_P (init) = 1;
+	  DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
 	}
     }
   lineno = saved_lineno;
@@ -3260,7 +3269,6 @@ static void
 maybe_generate_clinit ()
 {
   tree mdecl, c;
-  int has_non_primitive_fields = 0;
 
   if (!ctxp->static_initialized || java_error_count)
     return;
@@ -3512,6 +3520,35 @@ static void
 finish_method_declaration (method_body)
      tree method_body;
 {
+  int flags = get_access_flags_from_decl (current_function_decl);
+
+  /* 8.4.5 Method Body */
+  if ((flags & ACC_ABSTRACT || flags & ACC_NATIVE) && method_body)
+    {
+      tree wfl = DECL_NAME (current_function_decl);
+      parse_error_context (wfl, 
+			   "%s method `%s' can't have a body defined",
+			   (METHOD_NATIVE (current_function_decl) ?
+			    "Native" : "Abstract"),
+			   IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+      method_body = NULL_TREE;
+    }
+  else if (!(flags & ACC_ABSTRACT) && !(flags & ACC_NATIVE) && !method_body)
+    {
+      tree wfl = DECL_NAME (current_function_decl);
+      parse_error_context (wfl, 
+			   "Non native and non abstract method `%s' must "
+			   "have a body defined",
+			   IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+      method_body = NULL_TREE;
+    }
+
+  if (flag_emit_class_files && method_body 
+      && TREE_CODE (method_body) == NOP_EXPR 
+      && TREE_TYPE (current_function_decl) 
+      && TREE_TYPE (TREE_TYPE (current_function_decl)) == void_type_node)
+    method_body = build1 (RETURN_EXPR, void_type_node, NULL);
+    
   BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (current_function_decl)) = method_body;
   maybe_absorb_scoping_blocks ();
   /* Exit function's body */
@@ -5006,7 +5043,7 @@ note_possible_classname (name, len)
     return 0;
   node = ident_subst (name, len, "", '/', '.', "");
   IS_A_CLASSFILE_NAME (node) = 1; /* Or soon to be */
-  QUALIFIED_P (node) = 1; /* As soon as we turn / into . */
+  QUALIFIED_P (node) = strchr (name, '/') ? 1 : 0;
   return 1;
 }
 
@@ -5145,9 +5182,9 @@ static int
 find_in_imports_on_demand (class_type)
      tree class_type;
 {
-  tree node, import, node_to_use;
+  tree node, import, node_to_use = NULL_TREE;
   int seen_once = -1;
-  tree cl;
+  tree cl = NULL_TREE;
 
   for (import = ctxp->import_demand_list; import; import = TREE_CHAIN (import))
     {
@@ -5207,6 +5244,7 @@ static tree
 resolve_package (pkg, next)
      tree pkg, *next;
 {
+  tree current;
   tree type_name = NULL_TREE;
   char *name = IDENTIFIER_POINTER (EXPR_WFL_NODE (pkg));
 
@@ -5226,9 +5264,63 @@ resolve_package (pkg, next)
       *next = TREE_CHAIN (TREE_CHAIN (EXPR_WFL_QUALIFICATION (pkg)));
       type_name = lookup_package_type (name, 9);
     }
-  else
-    return NULL_TREE;		/* FIXME, search all imported packages. */
 
+  /* If we found something here, return */
+  if (type_name)
+    return type_name; 
+
+  *next = EXPR_WFL_QUALIFICATION (pkg);
+
+  /* Try the current package. */
+  if (ctxp->package && !strncmp (name, IDENTIFIER_POINTER (ctxp->package),  
+				 IDENTIFIER_LENGTH (ctxp->package)))
+    {
+      type_name = 
+	lookup_package_type_and_set_next (name, 
+					  IDENTIFIER_LENGTH (ctxp->package), 
+					  next );
+      if (type_name)
+	return type_name;
+    }
+
+  /* Search in imported package */
+  for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
+    {
+      tree current_pkg_name = EXPR_WFL_NODE (TREE_PURPOSE (current));
+      int len = IDENTIFIER_LENGTH (current_pkg_name);
+      if (!strncmp (name, IDENTIFIER_POINTER (current_pkg_name), len))
+	{
+	  tree left, dummy;
+	  
+	  breakdown_qualified (&left, &dummy, current_pkg_name);
+	  len = IDENTIFIER_LENGTH (left);
+	  type_name = lookup_package_type_and_set_next (name, len, next);
+	  if (type_name)
+	    break;
+	}
+    }
+
+  return type_name;
+}
+
+static tree
+lookup_package_type_and_set_next (name, len, next)
+     char *name;
+     int len;
+     tree *next;
+{
+  char *ptr;
+  tree type_name = lookup_package_type (name, len);
+
+  if (!type_name)
+    return NULL;
+  
+  ptr = IDENTIFIER_POINTER (type_name);
+  while (ptr && (ptr = strchr (ptr, '.'))) 
+    {
+      *next = TREE_CHAIN (*next);
+      ptr++;
+    }
   return type_name;
 }
 
@@ -6281,6 +6373,8 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 	      && TREE_CODE (where_found) != RECORD_TYPE)
 	    {
 	      tree type = QUAL_DECL_TYPE (field_ref);
+	      if (TREE_CODE (type) == RECORD_TYPE)
+		type = build_pointer_type (type);
 	      field_ref = build (COMPOUND_EXPR, type, where_found, field_ref);
 	    }
 	}
@@ -6840,18 +6934,36 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	 as a MethodName. We need to qualify what's before */
       qualify_ambiguous_name (wfl);
 
-      /* Package resolution are erroneous */
+      /* Package resolution */
       if (RESOLVE_PACKAGE_NAME_P (wfl))
 	{
-	  tree remainder;
-	  breakdown_qualified (&remainder, NULL, EXPR_WFL_NODE (wfl));
-	  parse_error_context (wfl, "Can't search method `%s' in package "
-			       "`%s'",IDENTIFIER_POINTER (identifier),
-			       IDENTIFIER_POINTER (remainder));
-	  PATCH_METHOD_RETURN_ERROR ();
+	  tree next, decl, name = resolve_package (wfl, &next);
+	  
+	  if (!name)
+	    {
+	      tree remainder;
+	      breakdown_qualified (&remainder, NULL, EXPR_WFL_NODE (wfl));
+	      parse_error_context (wfl, "Can't search method `%s' in package "
+				   "`%s'",IDENTIFIER_POINTER (identifier),
+				   IDENTIFIER_POINTER (remainder));
+	      PATCH_METHOD_RETURN_ERROR ();
+	    }
+	  RESOLVE_PACKAGE_NAME_P (wfl) = 0;
+	  if ((decl = resolve_no_layout (name, QUAL_WFL (next))))
+	    {
+	      QUAL_RESOLUTION (EXPR_WFL_QUALIFICATION (wfl)) = decl;
+	      RESOLVE_EXPRESSION_NAME_P (wfl) = 0;
+	      RESOLVE_TYPE_NAME_P (wfl) = 1;
+	    }
+	  else
+	    {
+	      RESOLVE_EXPRESSION_NAME_P (wfl) = 1;
+	      RESOLVE_TYPE_NAME_P (wfl) = 0;
+	    }
 	}
+
       /* We're resolving a call from a type */
-      else if (RESOLVE_TYPE_NAME_P (wfl))
+      if (RESOLVE_TYPE_NAME_P (wfl))
 	{
 	  tree decl = QUAL_RESOLUTION (EXPR_WFL_QUALIFICATION (wfl));
 	  tree name = DECL_NAME (decl);
@@ -7496,6 +7608,7 @@ qualify_ambiguous_name (id)
 {
   tree qual, qual_wfl, name, decl, ptr_type, saved_current_class;
   int again, super_found = 0, this_found = 0, new_array_found = 0;
+  int code;
 
   /* We first qualify the first element, then derive qualification of
      others based on the first one. If the first element is qualified
@@ -7525,7 +7638,7 @@ qualify_ambiguous_name (id)
 	break;
       case NEW_ARRAY_EXPR:
 	qual = TREE_CHAIN (qual);
-	new_array_found = again = 1;
+	new_array_found = 1;
 	continue;
       case NEW_CLASS_EXPR:
       case CONVERT_EXPR:
@@ -7535,13 +7648,41 @@ qualify_ambiguous_name (id)
 	while (TREE_CODE (qual_wfl) == ARRAY_REF)
 	  qual_wfl = TREE_OPERAND (qual_wfl, 0);
 	break;
+      case STRING_CST:
+	qual = TREE_CHAIN (qual);
+	qual_wfl = QUAL_WFL (qual);
+	break;
       default:
 	/* Fix for -Wall. Just break doing nothing */
 	break;
       }
-    name = EXPR_WFL_NODE (qual_wfl);
+
     ptr_type = current_class;
     again = 0;
+    code = TREE_CODE (qual_wfl);
+
+    /* Pos evaluation: non WFL leading expression nodes */
+    if (code == CONVERT_EXPR
+	&& TREE_CODE (TREE_TYPE (qual_wfl)) == EXPR_WITH_FILE_LOCATION)
+      name = EXPR_WFL_NODE (TREE_TYPE (qual_wfl));
+
+    else if (code == ARRAY_REF &&
+	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
+      name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
+
+    else if (code == CALL_EXPR && 
+	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
+      name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
+
+    else if (code == STRING_CST || code == CONDITIONAL_EXPR)
+      {
+	qual = TREE_CHAIN (qual);
+	qual_wfl = QUAL_WFL (qual);
+	again = 1;
+      }
+    else 
+      name = EXPR_WFL_NODE (qual_wfl);
+    
     /* If we have a THIS (from a primary), we set the context accordingly */
     if (name == this_identifier_node)
       {
@@ -7568,16 +7709,6 @@ qualify_ambiguous_name (id)
 	qual = TREE_CHAIN (qual);
 	/* Do one more interation to set things up */
 	super_found = again = 1;
-      }
-    /* Loop one more time if we're dealing with ?: or a string
-       constant, or a convert expression */
-    if (TREE_CODE (qual_wfl) == CONDITIONAL_EXPR
-	|| TREE_CODE (qual_wfl) == STRING_CST
-	|| TREE_CODE (qual_wfl) == CONVERT_EXPR)
-      {
-	qual = TREE_CHAIN (qual);
-	qual_wfl = QUAL_WFL (qual);
-	again = 1;
       }
   } while (again);
   
@@ -7618,7 +7749,8 @@ qualify_ambiguous_name (id)
 
   /* Method call are expression name */
   else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR
-	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF)
+	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF
+	   || TREE_CODE (QUAL_WFL (qual)) == CONVERT_EXPR)
     RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
 
   /* Check here that NAME isn't declared by more than one
@@ -7872,7 +8004,10 @@ java_complete_lhs (node)
       POP_LABELED_BLOCK ();
 
       if (LABELED_BLOCK_BODY (node) == empty_stmt_node)
-	LABELED_BLOCK_BODY (node) = NULL_TREE;
+	{
+	  LABELED_BLOCK_BODY (node) = NULL_TREE;
+	  CAN_COMPLETE_NORMALLY (node) = 1;
+	}
       else if (CAN_COMPLETE_NORMALLY (LABELED_BLOCK_BODY (node)))
 	CAN_COMPLETE_NORMALLY (node) = 1;
       return node;
@@ -7887,8 +8022,15 @@ java_complete_lhs (node)
       if (cn == error_mark_node)
 	return cn;
 
-      /* First, the case expression must be constant */
+      /* First, the case expression must be constant. Values of final
+         fields are accepted. */
       cn = fold (cn);
+      if ((TREE_CODE (cn) == COMPOUND_EXPR || TREE_CODE (cn) == COMPONENT_REF)
+	  && JDECL_P (TREE_OPERAND (cn, 1))
+	  && FIELD_FINAL (TREE_OPERAND (cn, 1))
+	  && DECL_INITIAL (TREE_OPERAND (cn, 1)))
+	cn = fold_constant_for_init (DECL_INITIAL (TREE_OPERAND (cn, 1)),
+				     TREE_OPERAND (cn, 1));
 
       if (!TREE_CONSTANT (cn) && !flag_emit_xref)
 	{
@@ -8045,7 +8187,7 @@ java_complete_lhs (node)
 	    return node;
 	  /* Keep line number information somewhere were it doesn't
 	     disrupt the completion process. */
-	  if (flag_emit_xref)
+	  if (flag_emit_xref && TREE_CODE (node) != CALL_EXPR)
 	    {
 	      EXPR_WFL_NODE (wfl) = TREE_OPERAND (node, 1);
 	      TREE_OPERAND (node, 1) = wfl;
@@ -8814,6 +8956,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	}
 
       /* Build the invocation of _Jv_CheckArrayStore */
+      new_rhs = save_expr (new_rhs);
       check = build (CALL_EXPR, void_type_node,
 		     build_address_of (soft_checkarraystore_node),
 		     tree_cons (NULL_TREE, base,
@@ -9057,7 +9200,8 @@ valid_ref_assignconv_cast_p (source, dest, cast)
 	    return source == dest || interface_of_p (dest, source);
 	}
       else			/* Array */
-	return 0;
+	return (cast ? 
+		(DECL_NAME (TYPE_NAME (source)) == java_lang_cloneable) : 0);
     }
   if (TYPE_ARRAY_P (source))
     {
@@ -9218,7 +9362,7 @@ patch_binop (node, wfl_op1, wfl_op2)
   tree op2 = TREE_OPERAND (node, 1);
   tree op1_type = TREE_TYPE (op1);
   tree op2_type = TREE_TYPE (op2);
-  tree prom_type;
+  tree prom_type = NULL_TREE;
   int code = TREE_CODE (node);
 
   /* If 1, tell the routine that we have to return error_mark_node
@@ -9844,7 +9988,7 @@ patch_unaryop (node, wfl_op)
 {
   tree op = TREE_OPERAND (node, 0);
   tree op_type = TREE_TYPE (op);
-  tree prom_type, value, decl;
+  tree prom_type = NULL_TREE, value, decl;
   int code = TREE_CODE (node);
   int error_found = 0;
 
@@ -11424,7 +11568,7 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
       /* Otherwise, binary numeric promotion is applied and the
 	 resulting type is the promoted type of operand 1 and 2 */
       else 
-	resulting_type = binary_numeric_promotion (t2, t2, 
+	resulting_type = binary_numeric_promotion (t1, t2, 
 						   &TREE_OPERAND (node, 1), 
 						   &TREE_OPERAND (node, 2));
     }
@@ -11481,9 +11625,12 @@ fold_constant_for_init (node, context)
   tree op0, op1, val;
   enum tree_code code = TREE_CODE (node);
 
-  if (code == INTEGER_CST || code == REAL_CST || code == STRING_CST)
+  if (code == STRING_CST)
     return node;
-  if (TREE_TYPE (node) != NULL_TREE && code != VAR_DECL)
+
+  if (code == INTEGER_CST || code == REAL_CST)
+    return convert (TREE_TYPE (context), node);
+  if (TREE_TYPE (node) != NULL_TREE && code != VAR_DECL && code != FIELD_DECL)
     return NULL_TREE;
 
   switch (code)
@@ -11549,7 +11696,8 @@ fold_constant_for_init (node, context)
 	: TREE_OPERAND (node, 2);
 
     case VAR_DECL:
-      if (! FIELD_STATIC (node) || ! FIELD_FINAL (node)
+    case FIELD_DECL:
+      if (! FIELD_FINAL (node)
 	  || DECL_INITIAL (node) == NULL_TREE)
 	return NULL_TREE;
       val = DECL_INITIAL (node);
@@ -11571,19 +11719,18 @@ fold_constant_for_init (node, context)
 	  else if (! QUALIFIED_P (name))
 	    {
 	      decl = lookup_field_wrapper (DECL_CONTEXT (context), name);
-	      if (decl == NULL_TREE || ! FIELD_STATIC (decl))
+	      if (decl == NULL_TREE 
+		  || (! FIELD_STATIC (decl) && ! FIELD_FINAL (decl)))
 		return NULL_TREE;
 	      return fold_constant_for_init (decl, decl);
 	    }
 	  else
 	    {
-#if 0
 	      /* Wait until the USE_COMPONENT_REF re-write.  FIXME. */
 	      qualify_ambiguous_name (node);
 	      if (resolve_field_access (node, &decl, NULL)
 		  && decl != NULL_TREE)
 		return fold_constant_for_init (decl, decl);
-#endif
 	      return NULL_TREE;
 	    }
 	}
