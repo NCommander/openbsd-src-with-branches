@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_sem.c,v 1.14 2002/12/30 18:41:27 millert Exp $	*/
+/*	$OpenBSD: sysv_sem.c,v 1.15 2002/12/30 19:57:34 millert Exp $	*/
 /*	$NetBSD: sysv_sem.c,v 1.26 1996/02/09 19:00:25 christos Exp $	*/
 
 /*
@@ -869,8 +869,8 @@ sysctl_sysvsem(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 		    val == seminfo.semmni)
 			return (error);
 
-		if (val < seminfo.semmni)
-			return (EINVAL);	/* can't decrease semmni */
+		if (val < seminfo.semmni || val > 0xffff)
+			return (EINVAL);
 
 		/* Expand semsegs and semseqs arrays */
 		sema_new = malloc(val * sizeof(struct semid_ds *),
