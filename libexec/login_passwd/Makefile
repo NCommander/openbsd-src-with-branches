@@ -8,8 +8,8 @@ LDADD=	-lutil
 CFLAGS+=-Wall -DPASSWD
 
 BINOWN=	root
-BINGRP=	_shadow
-BINMODE=2555
+BINGRP=	auth
+BINMODE=4555
 BINDIR=	/usr/libexec/auth
 
 .include <bsd.prog.mk>
