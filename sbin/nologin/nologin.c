@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: nologin.c,v 1.1 1997/02/16 04:15:32 downsj Exp $	*/
 
 /*
  * Copyright (c) 1997, Jason Downs.  All rights reserved.
@@ -27,6 +27,7 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 
 /* Distinctly different from _PATH_NOLOGIN. */
