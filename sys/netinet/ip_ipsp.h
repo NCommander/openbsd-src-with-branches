@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.59 2000/01/21 03:15:05 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.60 2000/01/27 08:09:12 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -48,11 +48,11 @@
 #include <sys/queue.h>
 #include <netinet/in.h>
 #include <sys/md5k.h>
-#include <netinet/ip_sha1.h>
-#include <netinet/ip_rmd160.h>
-#include <netinet/ip_blf.h>
-#include <netinet/ip_cast.h>
-#include <netinet/ip_skipjack.h>
+#include <crypto/sha1.h>
+#include <crypto/rmd160.h>
+#include <crypto/blf.h>
+#include <crypto/cast.h>
+#include <crypto/skipjack.h>
 
 union sockaddr_union
 {

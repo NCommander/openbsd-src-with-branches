@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: podd.h,v 1.2 1997/02/24 14:06:52 niklas Exp $	*/
 
 /* lib/des/podd.h */
 /* Copyright (C) 1995 Eric Young (eay@mincom.oz.au)
