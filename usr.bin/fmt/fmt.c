@@ -1,4 +1,4 @@
-/*	$OpenBSD: fmt.c,v 1.11 1998/04/25 23:07:16 millert Exp $	*/
+/*	$OpenBSD: fmt.c,v 1.12 1998/12/14 21:48:10 millert Exp $	*/
 
 /* Sensible version of fmt
  *
@@ -168,7 +168,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-  "$OpenBSD: fmt.c,v 1.11 1998/04/25 23:07:16 millert Exp $";
+  "$OpenBSD: fmt.c,v 1.12 1998/12/14 21:48:10 millert Exp $";
 static const char copyright[] =
   "Copyright (c) 1997 Gareth McCaughan. All rights reserved.\n";
 #endif /* not lint */
@@ -331,6 +331,7 @@ main(int argc, char *argv[]) {
     if (argc>0
         && (max_length=get_positive(*argv,"max length must be positive", 0))
            != 0) {
+      --argc; ++argv;
       if (max_length<goal_length)
         errx(EX_USAGE, "max length must be >= goal length");
     }
