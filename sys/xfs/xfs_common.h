@@ -1,3 +1,4 @@
+/* $OpenBSD: xfs_common.h,v 1.3 1999/04/30 01:58:59 art Exp $ */
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -36,7 +37,6 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_common.h,v 1.7 1998/11/02 01:51:14 assar Exp $ */
 
 #ifndef _xfs_common_h
 #define _xfs_common_h

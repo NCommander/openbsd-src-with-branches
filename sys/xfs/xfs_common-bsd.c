@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -41,7 +43,7 @@
 #include <xfs/xfs_common.h>
 #include <xfs/xfs_deb.h>
 
-RCSID("$Id: xfs_common-bsd.c,v 1.7 1998/12/22 13:16:11 lha Exp $");
+RCSID("$OpenBSD: xfs_common-bsd.c,v 1.1 1999/04/30 01:58:59 art Exp $");
 
 static u_int xfs_allocs;
 static u_int xfs_frees;

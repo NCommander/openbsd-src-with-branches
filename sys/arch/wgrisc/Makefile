@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.2 1997/10/23 13:14:37 deraadt Exp $
 #	from: @(#)Makefile	8.1 (Berkeley) 6/16/93
-#	$Id: Makefile,v 1.1.1.1 1997/02/06 16:02:41 pefo Exp $
 
 # Makefile for pica links, tags file
 

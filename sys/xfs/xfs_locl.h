@@ -1,3 +1,4 @@
+/* $OpenBSD: xfs_locl.h,v 1.1 1999/04/30 01:59:00 art Exp $ */
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -36,7 +37,6 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_locl.h,v 1.21 1999/01/19 19:55:21 art Exp $ */
 
 #if 1 /* XXX - ugly hack */
 #include <xfs/xfs_config.h>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: m18x_cmmu.c,v 1.1 1999/09/27 19:13:22 smurph Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -28,7 +29,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: cmmu.c,v 1.4 1998/12/15 05:11:01 smurph Exp $
  */
 
 /*

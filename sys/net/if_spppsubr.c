@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_spppsubr.c,v 1.3 1999/08/06 23:02:27 niklas Exp $	*/
 /*
  * Synchronous PPP/Cisco link level subroutines.
  * Keepalive protocol implemented in both Cisco and PPP modes.
@@ -17,7 +18,6 @@
  *
  * Version 2.6, Tue May 12 17:10:39 MSD 1998
  *
- * $Id: if_spppsubr.c,v 1.2 1999/07/02 17:46:55 deraadt Exp $
  */
 
 #include <sys/param.h>

@@ -1,3 +1,4 @@
+/* $OpenBSD: font_italic.h,v 1.1 1996/01/31 23:20:13 mark Exp $ */
 /* $NetBSD: font_italic.h,v 1.1 1996/01/31 23:20:13 mark Exp $ */
 
 /*
@@ -45,7 +46,6 @@
  *
  * Based on kate/display/14norm.h
  *
- *    $Id: font_italic.h,v 1.1 1996/01/31 23:20:13 mark Exp $
  */
  
 unsigned char font_terminal_14italic_data[] = {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: version.c,v 1.3 1995/10/17 22:58:32 gwr Exp $ */
 /*	$NetBSD: version.c,v 1.3 1995/10/17 22:58:32 gwr Exp $ */
 
 /*
@@ -7,4 +8,4 @@
  *	device access stays strictly on block boundaries.
  */
 
-char *version = "$Revision: 1.1.1.1 $";
+char *version = "$Revision: 1.3 $";

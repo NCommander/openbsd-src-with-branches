@@ -1,3 +1,4 @@
+/* $OpenBSD: xfs_attr.h,v 1.2 1999/04/30 01:58:59 art Exp $ */
 /*
  * Copyright (c) 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -36,7 +37,6 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: xfs_attr.h,v 1.7 1998/07/12 15:29:09 map Exp $ */
 
 #ifndef _XFS_ATTR_H
 #define _XFS_ATTR_H

@@ -1,4 +1,4 @@
-/*	$Id: if_ie.c,v 1.5 1999/05/29 04:41:43 smurph Exp $ */
+/*	$OpenBSD: if_ie.c,v 1.6 1999/09/27 18:43:24 smurph Exp $ */
 
 /*-
  * Copyright (c) 1998 Steve Murphree, Jr. 

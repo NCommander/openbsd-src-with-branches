@@ -1,3 +1,4 @@
+/*	$OpenBSD: rawwrite.c,v 1.3 1996/01/09 09:55:17 leo Exp $	*/
 /*	$NetBSD: rawwrite.c,v 1.3 1996/01/09 09:55:17 leo Exp $	*/
 
 /*
@@ -53,7 +54,7 @@ int	v_flag = 0;	/* Verbose (a dot for each track copied)	*/
 int	V_flag = 0;	/* Show version					*/
 char	*progname;
 
-const char version[] = "$Revision: 1.2 $";
+const char version[] = "$Revision: 1.3 $";
 
 int
 main(argc, argv)

@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.2 1998/09/15 04:01:21 smurph Exp $
 #	from: @(#)Makefile	7.3 (Berkeley) 6/9/91
-#	$Id: Makefile,v 1.1.1.1 1995/10/18 10:54:18 deraadt Exp $
 
 SUBDIR= stand
 DIRS= conf dev ddb mvme88k include

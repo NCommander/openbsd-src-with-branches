@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -51,7 +53,7 @@
 #include <vm/vm.h>
 #include <vm/vnode_pager.h>
 
-RCSID("$Id: xfs_vnodeops-bsd.c,v 1.47 1999/03/01 08:57:15 assar Exp $");
+RCSID("$OpenBSD: xfs_vnodeops-bsd.c,v 1.1 1999/04/30 01:59:01 art Exp $");
 
 /*
  * vnode functions
