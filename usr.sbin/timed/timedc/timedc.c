@@ -1,4 +1,4 @@
-/*	$OpenBSD: timedc.c,v 1.11 2003/06/26 21:36:40 deraadt Exp $	*/
+/*	$OpenBSD: timedc.c,v 1.12 2003/10/12 23:44:13 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
@@ -70,9 +70,6 @@ main(int argc, char *argv[])
 		perror("opening raw socket");
 		exit(1);
 	}
-
-	(void) seteuid(getuid());
-	(void) setuid(getuid());
 
 	openlog("timedc", LOG_ODELAY, LOG_AUTH);
 
