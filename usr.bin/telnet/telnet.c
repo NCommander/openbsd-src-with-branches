@@ -2025,7 +2025,7 @@ telsnd()
 	    }
 	}
 #endif
-	if (MODE_LOCAL_CHARS(globalmode)) {
+	if (sc != _POSIX_VDISABLE && MODE_LOCAL_CHARS(globalmode)) {
 	    if (TerminalSpecialChars(sc) == 0) {
 		bol = 1;
 		break;
