@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_resource.c,v 1.13 2001/05/26 04:10:26 art Exp $	*/
+/*	$OpenBSD: kern_resource.c,v 1.14 2001/06/27 04:49:44 art Exp $	*/
 /*	$NetBSD: kern_resource.c,v 1.38 1996/10/23 07:19:38 matthias Exp $	*/
 
 /*-
@@ -321,11 +321,11 @@ sys_getrlimit(p, v, retval)
 	register_t *retval;
 {
 	register struct sys_getrlimit_args /* {
-		syscallarg(u_int) which;
+		syscallarg(int) which;
 		syscallarg(struct rlimit *) rlp;
 	} */ *uap = v;
 
-	if (SCARG(uap, which) >= RLIM_NLIMITS)
+	if (SCARG(uap, which) < 0 || SCARG(uap, which) >= RLIM_NLIMITS)
 		return (EINVAL);
 	return (copyout((caddr_t)&p->p_rlimit[SCARG(uap, which)],
 	    (caddr_t)SCARG(uap, rlp), sizeof (struct rlimit)));
