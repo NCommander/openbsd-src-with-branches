@@ -1,4 +1,4 @@
-/*	$OpenBSD: spx_usrreq.c,v 1.10 2000/01/11 19:45:01 fgsch Exp $	*/
+/*	$OpenBSD: spx_usrreq.c,v 1.11 2000/01/15 09:23:14 fgsch Exp $	*/
 
 /*-
  *
@@ -1337,10 +1337,6 @@ spx_usrreq(so, req, m, nam, controlp)
 		break;
 
 	case PRU_DETACH:
-		if (ipxp == NULL) {
-			error = ENOTCONN;
-			break;
-		}
 		if (cb->s_state > TCPS_LISTEN)
 			cb = spx_disconnect(cb);
 		else
