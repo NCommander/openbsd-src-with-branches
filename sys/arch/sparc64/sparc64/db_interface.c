@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.15 2003/06/16 20:46:14 miod Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.16 2003/07/09 17:38:19 jason Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.61 2001/07/31 06:55:47 eeh Exp $ */
 
 /*
@@ -1340,7 +1340,7 @@ db_inst_store(inst)
       case IOP3_STDF:
       case IOP3_STC:
       case IOP3_STCSR:
-      case IOP3_STDCQ:
+      case IOP3_STQFA:
       case IOP3_STDC:
 	return 1;
 
