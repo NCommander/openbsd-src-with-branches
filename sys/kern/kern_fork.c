@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.60 2003/06/02 23:28:05 millert Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.61 2003/06/21 00:42:58 tedu Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -171,7 +171,7 @@ fork1(struct proc *p1, int exitsig, int flags, void *stack, size_t stacksize,
 	}
 
 	/*
-	 * From now on, we're comitted to the fork and cannot fail.
+	 * From now on, we're committed to the fork and cannot fail.
 	 */
 
 	/* Allocate new proc. */
