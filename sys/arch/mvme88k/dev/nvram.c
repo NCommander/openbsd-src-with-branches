@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvram.c,v 1.9 2001/03/09 05:44:39 smurph Exp $ */
+/*	$OpenBSD: nvram.c,v 1.10 2001/06/14 21:30:34 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -83,6 +83,8 @@ int nvramioctl __P((dev_t dev, int cmd, caddr_t data, int flag,
 int nvramread __P((dev_t dev, struct uio *uio, int flags));
 int nvramwrite __P((dev_t dev, struct uio *uio, int flags));
 int nvrammmap __P((dev_t dev, int off, int prot));
+
+u_long chiptotime __P((int, int, int, int, int, int));
 
 int
 nvrammatch(parent, vcf, args)
@@ -199,7 +201,7 @@ microtime(tvp)
 const short dayyr[12] =
 { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
-static u_long
+u_long
 chiptotime(sec, min, hour, day, mon, year)
 	register int sec, min, hour, day, mon, year;
 {

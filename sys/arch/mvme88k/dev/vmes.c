@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmes.c,v 1.3 2001/03/09 05:44:39 smurph Exp $ */
+/*	$OpenBSD: vmes.c,v 1.4 2001/06/14 21:30:35 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -58,6 +58,14 @@ struct cfattach vmes_ca = {
 struct cfdriver vmes_cd = {
         NULL, "vmes", DV_DULL, 0
 };
+
+int vmesscan __P((struct device *, void *, void*));
+int vmesopen __P((dev_t, int, int));
+int vmesclose __P((dev_t, int, int));
+int vmesioctl __P((dev_t, int, caddr_t, int, struct proc *));
+int vmesread __P((dev_t, struct uio *, int));
+int vmeswrite __P((dev_t, struct uio *, int));
+int vmesmmap __P((dev_t, int, int));
 
 int
 vmesmatch(parent, cf, args)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.c,v 1.3 2001/03/09 05:44:39 smurph Exp $	*/
+/*	$OpenBSD: ssh.c,v 1.4 2001/06/14 21:30:35 miod Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -51,7 +51,9 @@
 #include <sys/buf.h>
 #include <sys/malloc.h>
 
+#include <vm/vm.h>
 #include <vm/pmap.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/mmu.h>
