@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwd_mkdb.c,v 1.21 2000/06/30 16:00:26 millert Exp $	*/
+/*	$OpenBSD: pwd_mkdb.c,v 1.22 2000/11/26 01:23:12 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -45,7 +45,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)pwd_mkdb.c	8.5 (Berkeley) 4/20/94";
 #else
-static char *rcsid = "$OpenBSD: pwd_mkdb.c,v 1.21 2000/06/30 16:00:26 millert Exp $";
+static char *rcsid = "$OpenBSD: pwd_mkdb.c,v 1.22 2000/11/26 01:23:12 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -605,7 +605,7 @@ db_store(fp, oldfp, edp, dp, pw, keytype, username, olduid)
 	}
 	if (firsttime) {
 		firsttime = 0;
-		if (username && !found)
+		if (username && !found && olduid != UID_MAX)
 			errorx("can't find user in master.passwd");
 	}
 }
