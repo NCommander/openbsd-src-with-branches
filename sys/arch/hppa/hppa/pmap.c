@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.5 1998/11/24 04:56:36 mickey Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.6 1998/12/05 15:53:53 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -1543,6 +1543,8 @@ kvtop(va)
 	caddr_t va;
 {
 	if ((vm_offset_t)va < virtual_avail)
+		return (int)va;
+	else if ((vm_offset_t)va >= HPPA_IOBEGIN)
 		return (int)va;
 	else
 		return (int)pmap_extract(pmap_kernel(), (vm_offset_t)va);
