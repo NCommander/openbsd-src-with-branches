@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.20 2004/06/20 18:03:26 henning Exp $ */
+/*	$OpenBSD: buffer.c,v 1.21 2004/06/20 18:35:12 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -29,7 +29,6 @@
 
 #include "bgpd.h"
 
-int	buf_write(int, struct buf *);
 void	buf_enqueue(struct msgbuf *, struct buf *);
 void	buf_dequeue(struct msgbuf *, struct buf *);
 
