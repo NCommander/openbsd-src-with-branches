@@ -31,8 +31,9 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)pathnames.h	5.3 (Berkeley) 1/17/91
- *	$Id: pathnames.h,v 1.2 1993/08/01 18:30:11 mycroft Exp $
+ *	$Id: pathnames.h,v 1.2 1998/02/24 04:52:53 millert Exp $
  */
 #include <paths.h>
 
-#define _PATH_LOCTMP	"/tmp/local.XXXXXX"
+#define _PATH_LOCTMP	"/tmp/local.XXXXXXXXXX"
+#define _PATH_LOCKSPOOL	"/usr/libexec/lockspool"

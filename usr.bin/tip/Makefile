@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile,v 1.4 1994/12/08 09:30:36 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.6 1997/09/21 11:51:16 deraadt Exp $
 #
 # Files are:
 #	/etc/remote		remote host description file
@@ -32,13 +31,10 @@
 #	CONNECT			enable ~C command (connect pgm to remote)
 
 PROG=	tip
-CFLAGS+=-I${.CURDIR} \
+CFLAGS+=-I${.CURDIR} -ansi -pedantic \
 	-DDEFBR=1200 -DDEFFS=BUFSIZ -DACULOG -DPRISTINE -DCONNECT \
 	-DV831 -DVENTEL -DHAYES -DCOURIER -DT3000
 .PATH:	${.CURDIR}/aculib
-BINOWN=	uucp
-BINGRP=	dialer
-BINMODE=4510
 SRCS=	acu.c acutab.c cmds.c cmdtab.c cu.c hunt.c log.c partab.c \
 	remote.c tip.c tipout.c uucplock.c value.c vars.c \
 	biz22.c courier.c df.c dn11.c hayes.c t3000.c v3451.c v831.c ventel.c

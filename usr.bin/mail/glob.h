@@ -1,3 +1,6 @@
+/*	$OpenBSD: glob.h,v 1.3 1997/07/18 18:12:56 millert Exp $	*/
+/*	$NetBSD: glob.h,v 1.4 1996/06/08 19:48:25 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +34,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)glob.h	8.1 (Berkeley) 6/6/93
- *	$Id: glob.h,v 1.3 1994/06/29 05:09:26 deraadt Exp $
+ *	$NetBSD: glob.h,v 1.4 1996/06/08 19:48:25 christos Exp $
  */
 
 /*
@@ -80,10 +83,11 @@ int	screenwidth;			/* Screen width, or best guess */
 int	screenheight;			/* Screen height, or best guess,
 					   for "header" command */
 int	realscreenheight;		/* the real screen height */
+int	uflag;				/* Are we in -u mode? */
 
 #include <setjmp.h>
 
-jmp_buf	srbuf;
+sigjmp_buf	srbuf;
 
 
 /*

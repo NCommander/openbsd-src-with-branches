@@ -1,3 +1,4 @@
+/*	$OpenBSD: ctags.c,v 1.3 1997/01/15 23:42:23 millert Exp $	*/
 /*	$NetBSD: ctags.c,v 1.4 1995/09/02 05:57:23 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ctags.c	8.4 (Berkeley) 2/7/95";
 #endif
-static char rcsid[] = "$NetBSD: ctags.c,v 1.4 1995/09/02 05:57:23 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ctags.c,v 1.3 1997/01/15 23:42:23 millert Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -97,7 +98,7 @@ main(argc, argv)
 	char	cmd[100];			/* too ugly to explain */
 
 	aflag = uflag = NO;
-	while ((ch = getopt(argc, argv, "BFadf:tuwvx")) != EOF)
+	while ((ch = getopt(argc, argv, "BFadf:tuwvx")) != -1)
 		switch(ch) {
 		case 'B':
 			searchar = '?';
@@ -153,7 +154,7 @@ usage:		(void)fprintf(stderr,
 			(void)fclose(inf);
 		}
 
-	if (head)
+	if (head) {
 		if (xflag)
 			put_entries(head);
 		else {
@@ -177,6 +178,7 @@ usage:		(void)fprintf(stderr,
 				system(cmd);
 			}
 		}
+	}
 	exit(exit_val);
 }
 

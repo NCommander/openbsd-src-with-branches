@@ -1,3 +1,5 @@
+/*	$OpenBSD: indent.c,v 1.5 1997/09/10 06:59:35 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
  * Copyright (c) 1980 The Regents of the University of California.
@@ -43,7 +45,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)indent.c	5.16 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: indent.c,v 1.2 1993/08/01 18:14:33 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: indent.c,v 1.5 1997/09/10 06:59:35 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -55,6 +57,8 @@ static char rcsid[] = "$Id: indent.c,v 1.2 1993/08/01 18:14:33 mycroft Exp $";
 #include "indent_globs.h"
 #include "indent_codes.h"
 #include <ctype.h>
+#include <errno.h>
+#include <err.h>
 
 char       *in_name = "Standard Input";	/* will always point to name of input
 					 * file */
@@ -62,6 +66,9 @@ char       *out_name = "Standard Output";	/* will always point to name
 						 * of output file */
 char        bakfile[MAXPATHLEN] = "";
 
+void bakcopy();
+
+int
 main(argc, argv)
     int         argc;
     char      **argv;
@@ -182,33 +189,30 @@ main(argc, argv)
 	    if (input == 0) {	/* we must have the input file */
 		in_name = argv[i];	/* remember name of input file */
 		input = fopen(in_name, "r");
-		if (input == 0)		/* check for open error */
-			err(in_name);
+		if (input == NULL)		/* check for open error */
+			err(1, in_name);
 		continue;
 	    }
 	    else if (output == 0) {	/* we have the output file */
 		out_name = argv[i];	/* remember name of output file */
-		if (strcmp(in_name, out_name) == 0) {	/* attempt to overwrite
+		if (strcmp(in_name, out_name) == 0)	/* attempt to overwrite
 							 * the file */
-		    fprintf(stderr, "indent: input and output files must be different\n");
-		    exit(1);
-		}
+			errx(1, "input and output files must be different");
 		output = fopen(out_name, "w");
-		if (output == 0)	/* check for create error */
-			err(out_name);
+		if (output == NULL)	/* check for create error */
+			err(1, out_name);
 		continue;
 	    }
-	    fprintf(stderr, "indent: unknown parameter: %s\n", argv[i]);
-	    exit(1);
+	    errx(1, "unknown parameter: %s", argv[i]);
 	}
 	else
 	    set_option(argv[i]);
     }				/* end of for */
-    if (input == 0) {
-	fprintf(stderr, "indent: usage: indent file [ outfile ] [ options ]\n");
+    if (input == NULL) {
+	fprintf(stderr, "usage: indent file [ outfile ] [ options ]\n");
 	exit(1);
     }
-    if (output == 0)
+    if (output == NULL)
 	if (troff)
 	    output = stdout;
 	else {
@@ -243,7 +247,7 @@ main(argc, argv)
 	ps.decl_com_ind = ps.ljust_decl ? (ps.com_ind <= 10 ? 2 : ps.com_ind - 8) : ps.com_ind;
     if (continuation_indent == 0)
 	continuation_indent = ps.ind_size;
-    fill_buffer();		/* get first batch of stuff into input buffer */
+    fill_buffer();	/* get first batch of stuff into input buffer */
 
     parse(semicolon);
     {
@@ -359,11 +363,11 @@ main(argc, argv)
 		if (flushed_nl)	/* if we flushed a newline, make sure it is
 				 * put back */
 		    force_nl = true;
-		if (type_code == sp_paren && *token == 'i'
-			&& last_else && ps.else_if
-			|| type_code == sp_nparen && *token == 'e'
-			&& e_code != s_code && e_code[-1] == '}')
-		    force_nl = false;
+		if ((type_code == sp_paren && *token == 'i'
+		     && last_else && ps.else_if) ||
+		    (type_code == sp_nparen && *token == 'e'
+		     && e_code != s_code && e_code[-1] == '}'))
+			force_nl = false;
 
 		if (sc_end == 0) {	/* ignore buffering if comment wasnt
 					 * saved up */
@@ -1110,7 +1114,7 @@ check_type:
 	    break;		/* subsequent processing of the newline
 				 * character will cause the line to be printed */
 
-	case comment:		/* we have gotten a /*  this is a biggie */
+	case comment:		/* we have gotten a comment this is a biggie */
 	    if (flushed_nl) {	/* we should force a broken line here */
 		flushed_nl = false;
 		dump_line();
@@ -1132,6 +1136,7 @@ check_type:
  * backup file will be ".Bfile" then make the backup file the input and
  * original input file the output
  */
+void
 bakcopy()
 {
     int         n,
@@ -1150,33 +1155,23 @@ bakcopy()
     /* copy in_name to backup file */
     bakchn = creat(bakfile, 0600);
     if (bakchn < 0)
-	err(bakfile);
-    while (n = read(fileno(input), buff, sizeof buff))
+	err(1, bakfile);
+    while ((n = read(fileno(input), buff, sizeof buff)) > 0)
 	if (write(bakchn, buff, n) != n)
-	    err(bakfile);
+	    err(1, bakfile);
     if (n < 0)
-	err(in_name);
+	err(1, in_name);
     close(bakchn);
     fclose(input);
 
     /* re-open backup file as the input file */
     input = fopen(bakfile, "r");
-    if (input == 0)
-	err(bakfile);
+    if (input == NULL)
+	err(1, bakfile);
     /* now the original input file will be the output */
     output = fopen(in_name, "w");
-    if (output == 0) {
+    if (output == NULL) {
 	unlink(bakfile);
-	err(in_name);
+	err(1, in_name);
     }
-}
-
-err(msg)
-	char *msg;
-{
-	extern int errno;
-	char *strerror();
-
-	(void)fprintf(stderr, "indent: %s: %s\n", msg, strerror(errno));
-	exit(1);
 }

@@ -23,15 +23,8 @@
 #define ECOFF_DEBUGGING 1
 #endif
 
-/* FIXME: What's the story here?  Why do we have to define
-   OBJ_SYMFIELD_TYPE both here and in obj-elf.h?  */
 #ifdef OBJ_MAYBE_ELF
-struct elf_obj_sy
-{
-  expressionS *size;
-  char *versioned_name;
-};
-#define OBJ_SYMFIELD_TYPE struct elf_obj_sy
+#define OBJ_SYMFIELD_TYPE expressionS *
 #define ELF_TARGET_SYMBOL_FIELDS int local:1;
 #else
 #define ELF_TARGET_SYMBOL_FIELDS

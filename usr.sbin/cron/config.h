@@ -17,7 +17,7 @@
 
 /* config.h - configurables for Vixie Cron
  *
- * $Id: config.h,v 1.3 1995/04/14 19:49:32 mycroft Exp $
+ * $Id: config.h,v 1.3 1999/08/28 20:13:13 millert Exp $
  */
 
 #if !defined(_PATH_SENDMAIL)
@@ -42,23 +42,25 @@
 			 */
 
 #define MAILCMD _PATH_SENDMAIL					/*-*/
-#define MAILARGS "%s -FCronDaemon -odi -oem -oi -or0s -t"	/*-*/
+#define MAILARGS "%s -FCronDaemon -odi -oem -oi -t"		/*-*/
 			/* -Fx	 = set full-name of sender
 			 * -odi	 = Option Deliverymode Interactive
 			 * -oem	 = Option Errors Mailedtosender
-			 * -or0s = Option Readtimeout -- don't time out
 			 * -t    = read recipient from header of message
+			 * NOTE: since this runs as the user, not root you must
+			 *       not specify any args that will cause sendmail
+			 *       to drop its suidness (see op.me for a list).
 			 */
 
-/* #define MAILCMD "/bin/mail"			/*-*/
-/* #define MAILARGS "%s -d  %s"			/*-*/
+/* #define MAILCMD "/bin/mail"			-*/
+/* #define MAILARGS "%s -d  %s"			-*/
 			/* -d = undocumented but common flag: deliver locally?
 			 */
 
-/* #define MAILCMD "/usr/mmdf/bin/submit"	/*-*/
-/* #define MAILARGS "%s -mlrxto %s"		/*-*/
+/* #define MAILCMD "/usr/mmdf/bin/submit"	-*/
+/* #define MAILARGS "%s -mlrxto %s"		-*/
 
-/* #define MAIL_DATE				/*-*/
+/* #define MAIL_DATE				-*/
 			/* should we include an ersatz Date: header in
 			 * generated mail?  if you are using sendmail
 			 * for MAILCMD, it is better to let sendmail
@@ -69,7 +71,7 @@
 			 * defined but neither exists, should crontab(1) be
 			 * usable only by root?
 			 */
-/*#define ALLOW_ONLY_ROOT			/*-*/
+/*#define ALLOW_ONLY_ROOT			-*/
 
 			/* if you want to use syslog(3) instead of appending
 			 * to CRONDIR/LOG_FILE (/var/cron/log, e.g.), define

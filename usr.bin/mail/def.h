@@ -1,3 +1,5 @@
+/*	$OpenBSD: def.h,v 1.5 1997/07/13 21:21:10 millert Exp $	*/
+/*	$NetBSD: def.h,v 1.9 1996/12/28 07:11:00 tls Exp $	*/
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,8 +32,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)def.h	8.2 (Berkeley) 3/21/94
- *	$Id: def.h,v 1.7 1995/05/02 01:40:14 mycroft Exp $
+ *	@(#)def.h	8.4 (Berkeley) 4/20/95
+ *	$OpenBSD: def.h,v 1.5 1997/07/13 21:21:10 millert Exp $
  */
 
 /*
@@ -44,13 +46,14 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include <ctype.h>
+#include <err.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
 #include "pathnames.h"
 
 #define	APPEND				/* New mail goes to end of mailbox */
@@ -62,17 +65,16 @@
 #define	LINESIZE	BUFSIZ		/* max readable line width */
 #define	STRINGSIZE	((unsigned) 128)/* Dynamic allocation units */
 #define	MAXARGC		1024		/* Maximum list of raw strings */
-#define	NOSTR		((char *) 0)	/* Null string pointer */
 #define	MAXEXP		25		/* Maximum expansion of aliases */
 
 #define	equal(a, b)	(strcmp(a,b)==0)/* A nice function to string compare */
 
 struct message {
 	short	m_flag;			/* flags, see below */
-	short	m_block;		/* block number of this message */
-	short	m_offset;		/* offset in block of message */
-	long	m_size;			/* Bytes in the message */
-	short	m_lines;		/* Lines in the message */
+	int	m_offset;		/* offset in block of message */
+	int	m_block;		/* block number of this message */
+	int	m_size;			/* Bytes in the message */
+	int	m_lines;		/* Lines in the message */
 };
 
 /*
@@ -105,7 +107,7 @@ struct message {
  */
 struct cmd {
 	char	*c_name;		/* Name of command */
-	int	(*c_func)();		/* Implementor of the command */
+	int	(*c_func) __P((void *));/* Implementor of the command */
 	short	c_argtype;		/* Type of arglist (see below) */
 	short	c_msgflag;		/* Required flags of messages */
 	short	c_msgmask;		/* Relevant flags of messages */
@@ -260,11 +262,11 @@ struct ignoretab {
 #define	CSEND		2		/* Execute in send mode only */
 
 /*
- * Kludges to handle the change from setexit / reset to setjmp / longjmp
+ * Kludges to handle the change from setexit / reset to sigsetjmp / siglongjmp
  */
 
-#define	setexit()	setjmp(srbuf)
-#define	reset(x)	longjmp(srbuf, x)
+#define	setexit()	sigsetjmp(srbuf, 1)
+#define	reset(x)	siglongjmp(srbuf, x)
 
 /*
  * Truncate a file to the last character written. This is

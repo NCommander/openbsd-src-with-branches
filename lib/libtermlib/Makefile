@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.7 1997/04/27 20:56:17 millert Exp $
 #
 # Copyright (c) 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
 # All rights reserved.
@@ -31,21 +31,40 @@
 
 LIB=		termlib
 SRCS=		captoinfo.c def_prog_mode.c def_shell_mode.c del_curterm.c \
-		fillcap.c findcap.c findinfo.c getterm.c mvcur.c outc.c putp.c \
-		reset_prog_mode.c reset_shell_mode.c restartterm.c setterm.c \
-		setupterm.c set_curterm.c tgetent.c tgetflag.c tgetnum.c \
-		tgetstr.c tgoto.c tigetflag.c tigetnum.c tigetstr.c tparm.c \
-		tputs.c tty_init.c vidattr.c vidputs.c captoidx.c infotoidx.c \
+		fillcap.c findcap.c findinfo.c getterm.c globals.c \
+		mvcur.c _mvcur.c \
+		outc.c putp.c reset_prog_mode.c reset_shell_mode.c \
+		restartterm.c setterm.c setupterm.c set_curterm.c tgetent.c \
+		tgetflag.c tgetnum.c tgetstr.c tgoto.c tigetflag.c tigetnum.c \
+		tigetstr.c tparm.c tputs.c tty_init.c \
+		vidattr.c _vidattr.c \
+		vidputs.c _vidputs.c \
+		captoidx.c infotoidx.c \
 		boolnames.c boolcodes.c boolfnames.c \
 		numnames.c  numcodes.c  numfnames.c \
 		strnames.c  strcodes.c  strfnames.c
 HDRS=		term.h
+MAN=		terminfo.3
+MLINKS+=	terminfo.3 setupterm.3 \
+		terminfo.3 setterm.3 \
+		terminfo.3 set_curterm.3 \
+		terminfo.3 del_curterm.3 \
+		terminfo.3 restartterm.3 \
+		terminfo.3 tparm.3 \
+		terminfo.3 tparam.3 \
+		terminfo.3 tputs.3 \
+		terminfo.3 putp.3 \
+		terminfo.3 vidputs.3 \
+		terminfo.3 vidattr.3 \
+		terminfo.3 mvcur.3 \
+		terminfo.3 tigetflag.3 \
+		terminfo.3 tigetnum.3 \
+		terminfo.3 tigetstr.3
 CLEANFILES+=	${HDRS} binaries.h captoidx.c infotoidx.c mkinfo \
 		boolnames.c boolcodes.c boolfnames.c \
 		numnames.c  numcodes.c  numfnames.c \
 		strnames.c  strcodes.c  strfnames.c
 CFLAGS+=	-I. -I${.CURDIR}
-NOMAN=
 
 beforedepend:	${HDRS} binaries.h
 
@@ -64,10 +83,13 @@ binaries.h:	mkinfo Capabilities
 includes:	${HDRS}
 	@for i in ${HDRS}; do \
 	    cmp -s $$i ${DESTDIR}/usr/include/$$i || \
-		install -c -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+		${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
 		${DESTDIR}/usr/include; \
 	done
 
 .include <bsd.lib.mk>
+
+mkinfo:	mkinfo.c
+	${HOSTCC} ${CFLAGS} -I${.CURDIR} -o mkinfo $>
 
 .depend:	mkinfo.c

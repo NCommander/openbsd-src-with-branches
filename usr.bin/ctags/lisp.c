@@ -1,3 +1,4 @@
+/*	$OpenBSD: lisp.c,v 1.3 1995/03/26 20:14:09 glass Exp $	*/
 /*	$NetBSD: lisp.c,v 1.3 1995/03/26 20:14:09 glass Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)lisp.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: lisp.c,v 1.3 1995/03/26 20:14:09 glass Exp $";
+static char rcsid[] = "$OpenBSD: lisp.c,v 1.3 1995/03/26 20:14:09 glass Exp $";
 #endif
 #endif /* not lint */
 

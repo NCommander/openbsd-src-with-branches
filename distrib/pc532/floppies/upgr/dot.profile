@@ -1,3 +1,4 @@
+#       $OpenBSD: dot.profile,v 1.3 1997/10/20 22:24:11 millert Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -27,14 +28,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#       $Id: dot.profile,v 1.2 1995/09/26 21:25:18 phil Exp $
 
-PATH=/sbin:/bin:/usr/bin:/usr/sbin:/
-export PATH
-TERM=pc3
-export TERM
+export PATH=/sbin:/bin:/usr/bin:/usr/sbin:/
+export HISTFILE=/.sh_history
+export TERM=pc3
 
 umask 022
+
+set -o emacs # emacs-style command line editing
 
 if [ "X${DONEPROFILE}" = "X" ]; then
 	DONEPROFILE=YES

@@ -1,4 +1,4 @@
-/*	$NetBSD: copyoutstr.c,v 1.1 1996/09/30 16:34:42 ws Exp $	*/
+/*	$OpenBSD: copyoutstr.c,v 1.3 1997/10/13 13:42:55 pefo Exp $	*/
 
 /*-
  * Copyright (C) 1995 Wolfgang Solfrank.
@@ -49,7 +49,7 @@ copyoutstr(kaddr, udaddr, len, done)
 	for (l = 0; len-- > 0; l++) {
 		if (subyte(udaddr++, *kp) < 0) {
 			*done = l;
-			return EACCES;
+			return EFAULT;
 		}
 		if (!*kp++) {
 			*done = l + 1;

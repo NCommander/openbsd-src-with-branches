@@ -1,3 +1,5 @@
+/*	$OpenBSD: faithd.c,v 1.3 1999/12/30 16:31:01 deraadt Exp $	*/
+
 /*
  * Copyright (C) 1997 and 1998 WIDE Project.
  * All rights reserved.
@@ -33,6 +35,7 @@
  * Usage: faithd [<port> <progpath> <arg1(progname)> <arg2> ...]
  *   e.g. faithd telnet /usr/local/v6/sbin/telnetd telnetd
  */
+#define HAVE_GETIFADDRS
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -68,6 +71,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#ifdef HAVE_GETIFADDRS
+#include <ifaddrs.h>
+#endif
 
 #ifdef FAITH4
 #include <resolv.h>
@@ -83,6 +89,7 @@ char *serverpath = NULL;
 char *serverarg[MAXARGV + 1];
 static char *faithdname = NULL;
 char logname[BUFSIZ];
+char procname[BUFSIZ];
 struct myaddrs {
 	struct myaddrs *next;
 	struct sockaddr *addr;
@@ -106,7 +113,9 @@ static int map4to6 __P((struct sockaddr_in *, struct sockaddr_in6 *));
 static void sig_child __P((int));
 static void sig_terminate __P((int));
 static void start_daemon __P((void));
+#ifndef HAVE_GETIFADDRS
 static unsigned int if_maxindex __P((void));
+#endif
 static void grab_myaddrs __P((void));
 static void free_myaddrs __P((void));
 static void update_myaddrs __P((void));
@@ -167,7 +176,7 @@ main(int argc, char *argv[])
 
 		memset(&ss, 0, sizeof(ss));
 		memset(&hints, 0, sizeof(hints));
-		sprintf(serv, "%u", NAMESERVER_PORT);
+		snprintf(serv, sizeof(serv), "%u", NAMESERVER_PORT);
 		hints.ai_flags = AI_NUMERICHOST;
 		if (getaddrinfo(ns, serv, &hints, &res) ==  0) {
 			res_init();
@@ -270,7 +279,8 @@ main(int argc, char *argv[])
 
 	start_daemon();
 
-	sprintf(logname, "accepting port %s", service);
+	snprintf(logname, sizeof(logname), "faithd %s", service);
+	snprintf(procname, sizeof(procname), "accepting port %s", service);
 	openlog(logname, LOG_PID | LOG_NOWAIT, LOG_DAEMON);
 	syslog(LOG_INFO, "Staring faith daemon for %s port", service);
 
@@ -294,7 +304,7 @@ play_service(int s_wld)
 	 * Wait, accept, fork, faith....
 	 */
 again:
-	setproctitle(logname);
+	setproctitle(procname);
 
 	FD_ZERO(&rfds);
 	FD_SET(s_wld, &rfds);
@@ -459,7 +469,7 @@ play_child(int s_src, struct sockaddr *srcaddr)
 	if (error == -1)
 		exit_error("setsockopt(SO_SNDTIMEO): %s", ERRSTR);
 
-	error = connect(s_dst, sa4, sa4->sa_family);
+	error = connect(s_dst, sa4, sa4->sa_len);
 	if (error == -1)
 		exit_failure("connect: %s", ERRSTR);
 
@@ -640,7 +650,7 @@ exit_error(const char *fmt, ...)
 	char buf[BUFSIZ];
 
 	va_start(ap, fmt);
-	vsprintf(buf, fmt, ap);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	fprintf(stderr, "%s\n", buf);
 	exit(EXIT_FAILURE);
@@ -653,7 +663,7 @@ exit_failure(const char *fmt, ...)
 	char buf[BUFSIZ];
 
 	va_start(ap, fmt);
-	vsprintf(buf, fmt, ap);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	syslog(LOG_ERR, buf);
 	exit(EXIT_FAILURE);
@@ -666,13 +676,14 @@ exit_success(const char *fmt, ...)
 	char buf[BUFSIZ];
 
 	va_start(ap, fmt);
-	vsprintf(buf, fmt, ap);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	syslog(LOG_INFO, buf);
 	exit(EXIT_SUCCESS);
 }
 
 #ifdef USE_ROUTE
+#ifndef HAVE_GETIFADDRS
 static unsigned int
 if_maxindex()
 {
@@ -687,17 +698,73 @@ if_maxindex()
 	if_freenameindex(p0);
 	return max;
 }
+#endif
 
 static void
 grab_myaddrs()
 {
+#ifdef HAVE_GETIFADDRS
+	struct ifaddrs *ifap, *ifa;
+	struct myaddrs *p;
+	struct sockaddr_in6 *sin6;
+
+	if (getifaddrs(&ifap) != 0) {
+		exit_failure("getifaddrs");
+		/*NOTREACHED*/
+	}
+
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+		switch (ifa->ifa_addr->sa_family) {
+		case AF_INET:
+		case AF_INET6:
+			break;
+		default:
+			continue;
+		}
+
+		p = (struct myaddrs *)malloc(sizeof(struct myaddrs) +
+		    ifa->ifa_addr->sa_len);
+		if (!p) {
+			exit_failure("not enough core");
+			/*NOTREACHED*/
+		}
+		memcpy(p + 1, ifa->ifa_addr, ifa->ifa_addr->sa_len);
+		p->next = myaddrs;
+		p->addr = (struct sockaddr *)(p + 1);
+#ifdef __KAME__
+		if (ifa->ifa_addr->sa_family == AF_INET6) {
+			sin6 = (struct sockaddr_in6 *)p->addr;
+			if (IN6_IS_ADDR_LINKLOCAL(&sin6->sin6_addr)
+			 || IN6_IS_ADDR_SITELOCAL(&sin6->sin6_addr)) {
+				sin6->sin6_scope_id =
+					ntohs(*(u_int16_t *)&sin6->sin6_addr.s6_addr[2]);
+				sin6->sin6_addr.s6_addr[2] = 0;
+				sin6->sin6_addr.s6_addr[3] = 0;
+			}
+		}
+#endif
+		myaddrs = p;
+		if (dflag) {
+			char hbuf[NI_MAXHOST];
+			getnameinfo(p->addr, p->addr->sa_len,
+				hbuf, sizeof(hbuf), NULL, 0,
+				NI_NUMERICHOST);
+			syslog(LOG_INFO, "my interface: %s %s", hbuf,
+			    ifa->ifa_name);
+		}
+	}
+
+	freeifaddrs(ifap);
+#else
 	int s;
 	unsigned int maxif;
 	struct ifreq *iflist;
 	struct ifconf ifconf;
-	struct ifreq *ifr, *ifr_end;
+	struct ifreq *ifr, *ifrp, *ifr_end;
 	struct myaddrs *p;
 	struct sockaddr_in6 *sin6;
+	size_t siz;
+	char ifrbuf[sizeof(struct ifreq) + 1024];
 
 	maxif = if_maxindex() + 1;
 	iflist = (struct ifreq *)malloc(maxif * BUFSIZ);	/* XXX */
@@ -721,10 +788,21 @@ grab_myaddrs()
 
 	/* Look for this interface in the list */
 	ifr_end = (struct ifreq *) (ifconf.ifc_buf + ifconf.ifc_len);
-	for (ifr = ifconf.ifc_req;
-	     ifr < ifr_end;
-	     ifr = (struct ifreq *) ((char *) &ifr->ifr_addr
-				    + ifr->ifr_addr.sa_len)) {
+	for (ifrp = ifconf.ifc_req;
+	     ifrp < ifr_end;
+	     ifrp = (struct ifreq *)((char *)ifrp + siz)) {
+		memcpy(ifrbuf, ifrp, sizeof(*ifrp));
+		ifr = (struct ifreq *)ifrbuf;
+		siz = ifr->ifr_addr.sa_len;
+		if (siz < sizeof(ifr->ifr_addr))
+			siz = sizeof(ifr->ifr_addr);
+		siz += (sizeof(*ifrp) - sizeof(ifr->ifr_addr));
+		if (siz > sizeof(ifrbuf)) {
+			/* ifr too big */
+			break;
+		}
+		memcpy(ifrbuf, ifrp, siz);
+
 		switch (ifr->ifr_addr.sa_family) {
 		case AF_INET:
 		case AF_INET6:
@@ -764,6 +842,7 @@ grab_myaddrs()
 	}
 
 	free(iflist);
+#endif
 }
 
 static void

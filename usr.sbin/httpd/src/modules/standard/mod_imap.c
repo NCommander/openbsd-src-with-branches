@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -508,7 +508,7 @@ static void menu_header(request_rec *r, char *menu)
     ap_send_http_header(r);
     ap_hard_timeout("send menu", r);       /* killed in menu_footer */
 
-    ap_rvputs(r, "<html><head>\n<title>Menu for ", r->uri,
+    ap_rvputs(r, DOCTYPE_HTML_3_2, "<html><head>\n<title>Menu for ", r->uri,
            "</title>\n</head><body>\n", NULL);
 
     if (!strcasecmp(menu, "formatted")) {
@@ -679,11 +679,10 @@ static int imap_handler(request_rec *r)
                                    if we aren't printing a menu */
 
 	/* find the first two space delimited fields, recall that
-	 * cfg_getline has removed leading/trailing whitespace and
-	 * compressed the other whitespace down to one space a piece
+	 * ap_cfg_getline has removed leading/trailing whitespace.
 	 *
 	 * note that we're tokenizing as we go... if we were to use the
-	 * getword() class of functions we would end up allocating extra
+	 * ap_getword() class of functions we would end up allocating extra
 	 * memory for every line of the map file
 	 */
         string_pos = input;
@@ -692,7 +691,7 @@ static int imap_handler(request_rec *r)
 	}
 
 	directive = string_pos;
-	while (*string_pos && *string_pos != ' ') {	/* past directive */
+	while (*string_pos && !ap_isspace(*string_pos)) {	/* past directive */
 	    ++string_pos;
 	}
 	if (!*string_pos) {		/* need at least two fields */
@@ -703,11 +702,15 @@ static int imap_handler(request_rec *r)
 	if (!*string_pos) {		/* need at least two fields */
 	    goto need_2_fields;
 	}
-	value = string_pos;
-	while (*string_pos && *string_pos != ' ') {	/* past value */
+	while(*string_pos && ap_isspace(*string_pos)) { /* past whitespace */
 	    ++string_pos;
 	}
-	if (*string_pos == ' ') {
+
+	value = string_pos;
+	while (*string_pos && !ap_isspace(*string_pos)) {	/* past value */
+	    ++string_pos;
+	}
+	if (ap_isspace(*string_pos)) {
 	    *string_pos++ = '\0';
 	}
 	else {

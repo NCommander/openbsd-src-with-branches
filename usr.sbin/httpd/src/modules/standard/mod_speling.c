@@ -1,6 +1,6 @@
 #define WANT_BASENAME_MATCH
 /* ====================================================================
- * Copyright (c) 1996-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1996-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -244,7 +244,7 @@ static int check_speling(request_rec *r)
     }
 
     /* We've already got a file of some kind or another */
-    if (r->proxyreq || (r->finfo.st_mode != 0)) {
+    if (r->proxyreq != NOT_PROXY || (r->finfo.st_mode != 0)) {
         return DECLINED;
     }
 
@@ -408,10 +408,11 @@ static int check_speling(request_rec *r)
 	    && (candidates->nelts == 1
 		|| variant[0].quality != variant[1].quality)) {
 
-            nuri = ap_pstrcat(r->pool, url, variant[0].name, r->path_info,
-			      r->parsed_uri.query ? "?" : "",
-			      r->parsed_uri.query ? r->parsed_uri.query : "",
-			      NULL);
+            nuri = ap_escape_uri(r->pool, ap_pstrcat(r->pool, url,
+						     variant[0].name,
+						     r->path_info, NULL));
+	    if (r->parsed_uri.query)
+		nuri = ap_pstrcat(r->pool, nuri, "?", r->parsed_uri.query, NULL);
 
             ap_table_setn(r->headers_out, "Location",
 			  ap_construct_url(r->pool, nuri, r));
@@ -428,9 +429,12 @@ static int check_speling(request_rec *r)
          * returned.
          */
         else {
-            char *t;
             pool *p;
             table *notes;
+	    pool *sub_pool;
+	    array_header *t;
+	    array_header *v;
+
 
             if (r->main == NULL) {
                 p = r->pool;
@@ -441,30 +445,47 @@ static int check_speling(request_rec *r)
                 notes = r->main->notes;
             }
 
+	    sub_pool = ap_make_sub_pool(p);
+	    t = ap_make_array(sub_pool, candidates->nelts * 8 + 8,
+			      sizeof(char *));
+	    v = ap_make_array(sub_pool, candidates->nelts * 5,
+			      sizeof(char *));
+
             /* Generate the response text. */
-            /*
-	     * Since the text is expanded by repeated calls of
-             * t = pstrcat(p, t, ".."), we can avoid a little waste
-             * of memory by adding the header AFTER building the list.
-             * XXX: FIXME: find a way to build a string concatenation
-             *             without repeatedly requesting new memory
-             * XXX: FIXME: Limit the list to a maximum number of entries
-             */
-            t = "";
+
+	    *(const char **)ap_push_array(t) =
+			  "The document name you requested (<code>";
+	    *(const char **)ap_push_array(t) = ap_escape_html(sub_pool, r->uri);
+	    *(const char **)ap_push_array(t) =
+			   "</code>) could not be found on this server.\n"
+			   "However, we found documents with names similar "
+			   "to the one you requested.<p>"
+			   "Available documents:\n<ul>\n";
 
             for (i = 0; i < candidates->nelts; ++i) {
+		char *vuri;
+		const char *reason;
 
+		reason = sp_reason_str[(int) (variant[i].quality)];
                 /* The format isn't very neat... */
-                t = ap_pstrcat(p, t, "<li><a href=\"", url,
-			       variant[i].name, r->path_info,
-			       r->parsed_uri.query ? "?" : "",
-			       r->parsed_uri.query ? r->parsed_uri.query : "",
-			       "\">", variant[i].name, r->path_info,
-			       r->parsed_uri.query ? "?" : "",
-			       r->parsed_uri.query ? r->parsed_uri.query : "",
-			       "</a> (",
-			       sp_reason_str[(int) (variant[i].quality)],
-			       ")\n", NULL);
+		vuri = ap_pstrcat(sub_pool, url, variant[i].name, r->path_info,
+				  (r->parsed_uri.query != NULL) ? "?" : "",
+				  (r->parsed_uri.query != NULL)
+				      ? r->parsed_uri.query : "",
+				  NULL);
+		*(const char **)ap_push_array(v) = "\"";
+		*(const char **)ap_push_array(v) = ap_escape_uri(sub_pool, vuri);
+		*(const char **)ap_push_array(v) = "\";\"";
+		*(const char **)ap_push_array(v) = reason;
+		*(const char **)ap_push_array(v) = "\"";
+
+		*(const char **)ap_push_array(t) = "<li><a href=\"";
+		*(const char **)ap_push_array(t) = ap_escape_uri(sub_pool, vuri);
+		*(const char **)ap_push_array(t) = "\">";
+		*(const char **)ap_push_array(t) = ap_escape_html(sub_pool, vuri);
+		*(const char **)ap_push_array(t) = "</a> (";
+		*(const char **)ap_push_array(t) = reason;
+		*(const char **)ap_push_array(t) = ")\n";
 
                 /*
                  * when we have printed the "close matches" and there are
@@ -476,30 +497,31 @@ static int check_speling(request_rec *r)
                 if (i > 0 && i < candidates->nelts - 1
                     && variant[i].quality != SP_VERYDIFFERENT
                     && variant[i + 1].quality == SP_VERYDIFFERENT) {
-                    t = ap_pstrcat(p, t, 
+		    *(const char **)ap_push_array(t) = 
 				   "</ul>\nFurthermore, the following related "
-				   "documents were found:\n<ul>\n", NULL);
+				   "documents were found:\n<ul>\n";
                 }
             }
-            t = ap_pstrcat(p, "The document name you requested (<code>",
-			   r->uri,
-			   "</code>) could not be found on this server.\n"
-			   "However, we found documents with names similar "
-			   "to the one you requested.<p>"
-			   "Available documents:\n<ul>\n", t, "</ul>\n", NULL);
+	    *(const char **)ap_push_array(t) = "</ul>\n";
 
             /* If we know there was a referring page, add a note: */
             if (ref != NULL) {
-                t = ap_pstrcat(p, t,
+                *(const char **)ap_push_array(t) =
 			       "Please consider informing the owner of the "
-			       "<a href=\"", ref, 
-			       "\">referring page</a> "
-			       "about the broken link.\n",
-			       NULL);
+			       "<a href=\"";
+		*(const char **)ap_push_array(t) = ap_escape_uri(sub_pool, ref);
+                *(const char **)ap_push_array(t) = "\">referring page</a> "
+			       "about the broken link.\n";
 	    }
 
+
             /* Pass our table to http_protocol.c (see mod_negotiation): */
-            ap_table_setn(notes, "variant-list", t);
+            ap_table_setn(notes, "variant-list", ap_array_pstrcat(p, t, 0));
+
+	    ap_table_mergen(r->subprocess_env, "VARIANTS",
+			    ap_array_pstrcat(p, v, ','));
+	  
+	    ap_destroy_pool(sub_pool);
 
             ap_log_rerror(APLOG_MARK, APLOG_NOERRNO | APLOG_INFO, r,
 			 ref ? "Spelling fix: %s: %d candidates from %s"
@@ -535,3 +557,10 @@ module MODULE_VAR_EXPORT speling_module =
     NULL,                       /* child_exit */
     NULL                        /* post read-request */
 };
+
+#ifdef NETWARE
+int main(int argc, char *argv[]) 
+{
+    ExitThread(TSR_THREAD, 0);
+}
+#endif

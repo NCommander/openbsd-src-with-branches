@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: picabus.c,v 1.10 1998/03/16 09:38:52 pefo Exp $	*/
 /*	$NetBSD: tc.c,v 1.2 1995/03/08 00:39:05 cgd Exp $	*/
 
 /*
@@ -30,14 +30,20 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/proc.h>
+#include <sys/user.h>
 #include <sys/device.h>
 
+#include <machine/intr.h>
+#include <machine/pte.h>
 #include <machine/cpu.h>
 #include <machine/pio.h>
 #include <machine/autoconf.h>
 
+#include <mips/archtype.h>
 #include <arc/pica/pica.h>
-#include <arc/arc/arctype.h>
+#include <arc/dev/dma.h>
 
 struct pica_softc {
 	struct	device sc_dv;
@@ -48,7 +54,7 @@ struct pica_softc {
 /* Definition of the driver for autoconfig. */
 int	picamatch(struct device *, void *, void *);
 void	picaattach(struct device *, struct device *, void *);
-int	picaprint(void *, char *);
+int	picaprint(void *, const char *);
 
 struct cfattach pica_ca = {
 	sizeof(struct pica_softc), picamatch, picaattach
@@ -61,10 +67,8 @@ void	pica_intr_establish __P((struct confargs *, int (*)(void *), void *));
 void	pica_intr_disestablish __P((struct confargs *));
 caddr_t	pica_cvtaddr __P((struct confargs *));
 int	pica_matchname __P((struct confargs *, char *));
-int	pica_iointr __P((void *));
-int	pica_clkintr __P((unsigned, unsigned, unsigned, unsigned));
-
-extern int cputype;
+int	pica_iointr __P((unsigned int, struct clockframe *));
+int	pica_clkintr __P((unsigned int, struct clockframe *));
 
 /*
  *  Interrupt dispatch table.
@@ -94,7 +98,6 @@ struct pica_dev {
 	intr_handler_t	ps_handler;
 	void 		*ps_base;
 };
-#ifdef ACER_PICA_61
 struct pica_dev acer_pica_61_cpu[] = {
 	{{ "dallas_rtc",0, 0, },
 	   0,			 pica_intrnull, (void *)PICA_SYS_CLOCK, },
@@ -121,15 +124,15 @@ struct pica_dev acer_pica_61_cpu[] = {
 	{{ NULL,       -1, NULL, },
 	   0, NULL, (void *)NULL, },
 };
-#endif
 
 struct pica_dev *pica_cpu_devs[] = {
         NULL,                   /* Unused */
-#ifdef ACER_PICA_61
         acer_pica_61_cpu,       /* Acer PICA */
-#else
+        acer_pica_61_cpu,       /* MAGNUMS same as Acer PICA */
 	NULL,
-#endif
+	NULL,
+	NULL,
+        acer_pica_61_cpu,       /* NEC-R94 same as MAGNUM */
 };
 int npica_cpu_devs = sizeof pica_cpu_devs / sizeof pica_cpu_devs[0];
 
@@ -150,7 +153,7 @@ picamatch(parent, cfdata, aux)
 
         /* Make sure that unit exists. */
 	if (cf->cf_unit != 0 ||
-	    cputype > npica_cpu_devs || pica_cpu_devs[cputype] == NULL)
+	    system_type > npica_cpu_devs || pica_cpu_devs[system_type] == NULL)
 		return (0);
 
 	return (1);
@@ -169,7 +172,7 @@ picaattach(parent, self, aux)
 	printf("\n");
 
 	/* keep our CPU device description handy */
-	sc->sc_devs = pica_cpu_devs[cputype];
+	sc->sc_devs = pica_cpu_devs[system_type];
 
 	/* set up interrupt handlers */
 	set_intr(INT_MASK_1, pica_iointr, 2);
@@ -201,7 +204,7 @@ picaattach(parent, self, aux)
 int
 picaprint(aux, pnp)
 	void *aux;
-	char *pnp;
+	const char *pnp;
 {
 	struct confargs *ca = aux;
 
@@ -252,14 +255,10 @@ void
 pica_intr_disestablish(ca)
 	struct confargs *ca;
 {
-	struct pica_softc *sc = pica_cd.cd_devs[0];
-
 	int slot;
 
 	slot = ca->ca_slot;
-	if(slot = 0) {		/* Slot 0 is special, clock */
-	}
-	else {
+	if(slot != 0)		 {	/* Slot 0 is special, clock */
 		local_int_mask &= ~int_table[slot].int_mask;
 		int_table[slot].int_mask = 0;
 		int_table[slot].int_hand = pica_intrnull;
@@ -279,15 +278,16 @@ int
 pica_intrnull(val)
 	void *val;
 {
-	panic("uncaught PICA intr for slot %d\n", val);
+	panic("uncaught PICA intr for slot %d", val);
 }
 
 /*
  *   Handle pica i/o interrupt.
  */
 int
-pica_iointr(val)
-	void *val;
+pica_iointr(mask, cf)
+	unsigned mask;
+	struct clockframe *cf;
 {
 	int vector;
 
@@ -301,19 +301,14 @@ pica_iointr(val)
  * Handle pica interval clock interrupt.
  */
 int
-pica_clkintr(mask, pc, statusReg, causeReg)
+pica_clkintr(mask, cf)
 	unsigned mask;
-	unsigned pc;
-	unsigned statusReg;
-	unsigned causeReg;
+	struct clockframe *cf;
 {
-	struct clockframe cf;
 	int temp;
 
-	temp = inw(PICA_SYS_IT_STAT);
-	cf.pc = pc;
-	cf.sr = statusReg;
-	hardclock(&cf);
+	temp = inw(R4030_SYS_IT_STAT);
+	hardclock(cf);
 
 	/* Re-enable clock interrupts */
 	splx(INT_MASK_4 | SR_INT_ENAB);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: getnetgr.c,v 1.2 1995/10/13 18:10:26 gwr Exp $	*/
 /*	$NetBSD: getnetgr.c,v 1.2 1995/10/13 18:10:26 gwr Exp $	*/
 
 /*

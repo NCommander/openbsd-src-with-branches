@@ -1,4 +1,5 @@
-/*	$NetBSD: mbuf.c,v 1.8 1995/10/03 21:42:41 thorpej Exp $	*/
+/*	$OpenBSD: mbuf.c,v 1.6 1997/07/23 02:50:55 denny Exp $	*/
+/*	$NetBSD: mbuf.c,v 1.9 1996/05/07 02:55:03 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)mbuf.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$NetBSD: mbuf.c,v 1.8 1995/10/03 21:42:41 thorpej Exp $";
+static char *rcsid = "$OpenBSD: mbuf.c,v 1.6 1997/07/23 02:50:55 denny Exp $";
 #endif
 #endif /* not lint */
 
@@ -46,6 +47,7 @@ static char *rcsid = "$NetBSD: mbuf.c,v 1.8 1995/10/03 21:42:41 thorpej Exp $";
 #include <sys/socket.h>
 #include <sys/mbuf.h>
 
+#include <limits.h>
 #include <stdio.h>
 #include "netstat.h"
 
@@ -62,9 +64,16 @@ static struct mbtypes {
 	{ MT_OOBDATA,	"oob data" },
 	{ MT_CONTROL,	"ancillary data" },
 	{ MT_HEADER,	"packet headers" },
+	{ MT_SOCKET,	"socket structures" },			/* XXX */
+	{ MT_PCB,	"protocol control blocks" },		/* XXX */
+	{ MT_RTABLE,	"routing table entries" },		/* XXX */
+	{ MT_HTABLE,	"IMP host table entries" },		/* XXX */
+	{ MT_ATABLE,	"address resolution tables" },
 	{ MT_FTABLE,	"fragment reassembly queue headers" },	/* XXX */
 	{ MT_SONAME,	"socket names and addresses" },
 	{ MT_SOOPTS,	"socket options" },
+	{ MT_RIGHTS,	"access rights" },
+	{ MT_IFADDR,	"interface addresses" },		/* XXX */
 	{ 0, 0 }
 };
 
@@ -84,11 +93,13 @@ mbpr(mbaddr)
 
 	if (nmbtypes != 256) {
 		fprintf(stderr,
-		    "%s: unexpected change to mbstat; check source\n", prog);
+		    "%s: unexpected change to mbstat; check source\n",
+		        __progname);
 		return;
 	}
 	if (mbaddr == 0) {
-		fprintf(stderr, "%s: mbstat: symbol not in namelist\n", prog);
+		fprintf(stderr, "%s: mbstat: symbol not in namelist\n",
+		    __progname);
 		return;
 	}
 	if (kread(mbaddr, (char *)&mbstat, sizeof (mbstat)))
@@ -96,26 +107,30 @@ mbpr(mbaddr)
 	totmbufs = 0;
 	for (mp = mbtypes; mp->mt_name; mp++)
 		totmbufs += mbstat.m_mtypes[mp->mt_type];
-	printf("%u mbufs in use:\n", totmbufs);
+	printf("%u mbuf%s in use:\n", totmbufs, plural(totmbufs));
 	for (mp = mbtypes; mp->mt_name; mp++)
 		if (mbstat.m_mtypes[mp->mt_type]) {
 			seen[mp->mt_type] = YES;
-			printf("\t%u mbufs allocated to %s\n",
-			    mbstat.m_mtypes[mp->mt_type], mp->mt_name);
+			printf("\t%u mbuf%s allocated to %s\n",
+			    mbstat.m_mtypes[mp->mt_type],
+			    plural((int)mbstat.m_mtypes[mp->mt_type]),
+			    mp->mt_name);
 		}
 	seen[MT_FREE] = YES;
 	for (i = 0; i < nmbtypes; i++)
 		if (!seen[i] && mbstat.m_mtypes[i]) {
-			printf("\t%u mbufs allocated to <mbuf type %d>\n",
-			    mbstat.m_mtypes[i], i);
+			printf("\t%u mbuf%s allocated to <mbuf type %d>\n",
+			    mbstat.m_mtypes[i],
+			    plural((int)mbstat.m_mtypes[i]), i);
 		}
-	printf("%u/%u mapped pages in use\n",
+	printf("%lu/%lu mapped pages in use\n",
 		mbstat.m_clusters - mbstat.m_clfree, mbstat.m_clusters);
 	totmem = totmbufs * MSIZE + mbstat.m_clusters * MCLBYTES;
 	totfree = mbstat.m_clfree * MCLBYTES;
 	printf("%u Kbytes allocated to network (%d%% in use)\n",
-		totmem / 1024, (totmem - totfree) * 100 / totmem);
-	printf("%u requests for memory denied\n", mbstat.m_drops);
-	printf("%u requests for memory delayed\n", mbstat.m_wait);
-	printf("%u calls to protocol drain routines\n", mbstat.m_drain);
+	    totmem / 1024,
+	    totmem ? (totmem - totfree) * 100 / totmem : 100);
+	printf("%lu requests for memory denied\n", mbstat.m_drops);
+	printf("%lu requests for memory delayed\n", mbstat.m_wait);
+	printf("%lu calls to protocol drain routines\n", mbstat.m_drain);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: udp_var.h,v 1.9 1995/06/12 00:48:09 mycroft Exp $	*/
+/*	$OpenBSD: udp_var.h,v 1.8 1999/03/27 21:04:21 provos Exp $	*/
+/*	$NetBSD: udp_var.h,v 1.12 1996/02/13 23:44:41 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -39,11 +40,9 @@
  * UDP kernel structures and variables.
  */
 struct	udpiphdr {
-	struct 	ipovly ui_i;		/* overlaid ip structure */
+	struct	ipovly ui_i;		/* overlaid ip structure */
 	struct	udphdr ui_u;		/* udp header */
 };
-#define	ui_next		ui_i.ih_next
-#define	ui_prev		ui_i.ih_prev
 #define	ui_x1		ui_i.ih_x1
 #define	ui_pr		ui_i.ih_pr
 #define	ui_len		ui_i.ih_len
@@ -59,11 +58,13 @@ struct	udpstat {
 	u_long	udps_ipackets;		/* total input packets */
 	u_long	udps_hdrops;		/* packet shorter than header */
 	u_long	udps_badsum;		/* checksum error */
+	u_long	udps_nosum;		/* no checksum */
 	u_long	udps_badlen;		/* data length larger than packet */
 	u_long	udps_noport;		/* no socket on port */
 	u_long	udps_noportbcast;	/* of above, arrived as broadcast */
+	u_long	udps_nosec;		/* dropped for lack of ipsec */
 	u_long	udps_fullsock;		/* not delivered, input socket full */
-	u_long	udpps_pcbcachemiss;	/* input packets missing pcb cache */
+	u_long	udps_pcbhashmiss;	/* input packets missing pcb hash */
 				/* output statistics: */
 	u_long	udps_opackets;		/* total output packets */
 };
@@ -71,23 +72,34 @@ struct	udpstat {
 /*
  * Names for UDP sysctl objects
  */
-#define	UDPCTL_CHECKSUM		1	/* checksum UDP packets */
-#define UDPCTL_MAXID		2
+#define	UDPCTL_CHECKSUM		1 /* checksum UDP packets */
+#define	UDPCTL_BADDYNAMIC	2 /* return bad dynamic port bitmap */
+#define UDPCTL_RECVSPACE	3 /* receive buffer space */
+#define UDPCTL_SENDSPACE	4 /* send buffer space */
+#define UDPCTL_MAXID		5
 
 #define UDPCTL_NAMES { \
 	{ 0, 0 }, \
 	{ "checksum", CTLTYPE_INT }, \
+	{ "baddynamic", CTLTYPE_STRUCT }, \
+	{ "recvspace",  CTLTYPE_INT }, \
+	{ "sendspace",  CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL
 struct	inpcbtable udbtable;
 struct	udpstat udpstat;
 
-void	 udp_ctlinput __P((int, struct sockaddr *, struct ip *));
+#if defined(INET6) && !defined(TCP6)
+void	udp6_ctlinput __P((int, struct sockaddr *, void *));
+int	udp6_input __P((struct mbuf **, int *, int));
+int	udp6_usrreq __P((struct socket *,
+	    int, struct mbuf *, struct mbuf *, struct mbuf *, struct proc *));
+#endif
+void	 *udp_ctlinput __P((int, struct sockaddr *, void *));
 void	 udp_init __P((void));
-void	 udp_input __P((struct mbuf *, int));
-int	 udp_output __P((struct inpcb *,
-	    struct mbuf *, struct mbuf *, struct mbuf *));
+void	 udp_input __P((struct mbuf *, ...));
+int	 udp_output __P((struct mbuf *, ...));
 int	 udp_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
 int	 udp_usrreq __P((struct socket *,
 	    int, struct mbuf *, struct mbuf *, struct mbuf *));

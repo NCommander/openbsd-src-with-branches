@@ -10,7 +10,7 @@
  * the sendmail distribution.
  *
  *
- *	$Sendmail: conf.h,v 8.492 2000/02/26 06:04:21 gshapiro Exp $
+ *	$Sendmail: conf.h,v 8.496 2000/04/06 02:15:29 gshapiro Exp $
  */
 
 /*
@@ -228,6 +228,9 @@ struct rusage;	/* forward declaration to get gcc to shut up in wait.h */
 # endif /* ! HASGETUSERSHELL */
 # ifdef HPUX11
 #  define HASSNPRINTF	1	/* has snprintf(3) */
+#  ifndef BROKEN_RES_SEARCH
+#   define BROKEN_RES_SEARCH 1	/* res_search(unknown) returns h_errno=0 */
+#  endif /* ! BROKEN_RES_SEARCH */
 # else /* HPUX11 */
 #  ifndef NOT_SENDMAIL
 #   define syslog	hard_syslog
@@ -968,9 +971,12 @@ typedef int		pid_t;
 #  undef SPT_TYPE
 #  define SPT_TYPE	SPT_BUILTIN	/* setproctitle is in libc */
 #  define HASSETLOGIN	1	/* has setlogin(2) */
-
-/* strlcat(3) is broken in OpenBSD 2.5 and earlier */
-#  define HASSTRL	0	/* has strlc{py,at}(3) functions */
+#  define HASSRANDOMDEV	1	/* has srandomdev(3) */
+#  if OpenBSD < 199912
+#   define HASSTRL	0	/* strlcat(3) is broken in 2.5 and earlier */
+#  else /* OpenBSD < 199912 */
+#   define HASSTRL	1	/* has strlc{py,at}(3) functions */
+#  endif /* OpenBSD < 199912 */
 # endif /* defined(__OpenBSD__) */
 #endif /* defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) */
 
@@ -2130,6 +2136,7 @@ typedef struct msgb		mblk_t;
 **	of Siemens Business Services VAS.
 */
 #ifdef sinix
+# define HASRANDOM		0	/* has random(3) */
 # define SYSLOG_BUFSIZE		1024
 #endif /* sinix */
 

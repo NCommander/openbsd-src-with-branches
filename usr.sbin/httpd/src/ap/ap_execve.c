@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1998-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -99,7 +99,7 @@
 #undef execle
 #undef execve
 
-static const char **hashbang(const char *filename, char **argv);
+static const char **hashbang(const char *filename, char * const *argv);
 
 
 /* Historically, a list of arguments on the stack was often treated as
@@ -126,11 +126,14 @@ int ap_execle(const char *filename, const char *argv0, ...)
     }
     va_end(adummy);
 
-    argv = (char **) malloc((argc + 2) * sizeof(*argv));
+    if ((argv = (char **) malloc((argc + 2) * sizeof(*argv))) == NULL) {
+	fprintf(stderr, "Ouch!  Out of memory in ap_execle()!\n");
+	return -1;
+    }
 
     /* Pass two --- copy the argument strings into the result space */
     va_start(adummy, argv0);
-    argv[0] = argv0;
+    argv[0] = (char *)argv0;
     for (argc = 1; (argv[argc] = va_arg(adummy, char *)) != NULL; ++argc) {
 	continue;
     }
@@ -143,14 +146,31 @@ int ap_execle(const char *filename, const char *argv0, ...)
     return ret;
 }
 
-int ap_execve(const char *filename, const char *argv[],
-	      const char *envp[])
+/* Count number of entries in vector "args", including the trailing NULL entry
+ */
+static int
+count_args(char * const *args)
 {
-    const char *argv0 = argv[0];
+    int i;
+    for (i = 0; args[i] != NULL; ++i) {
+	continue;
+    }
+    return i+1;
+}
+
+/* Emulate the execve call, respecting a #!/interpreter line if present.
+ * On "real" unixes, the kernel does this.
+ * We have to fiddle with the argv array to make it work on platforms
+ * which don't support the "hashbang" interpreter line by default.
+ */
+int ap_execve(const char *filename, char * const argv[],
+	      char * const envp[])
+{
+    char **script_argv;
     extern char **environ;
 
     if (envp == NULL) {
-	envp = (const char **) environ;
+	envp = (char * const *) environ;
     }
 
     /* Try to execute the file directly first: */
@@ -174,26 +194,52 @@ int ap_execve(const char *filename, const char *argv[],
      * ELOOP  filename contains a circular reference (i.e., via a symbolic link)
      */
 
-    if (errno == ENOEXEC
-    /* Probably a script.
-     * Have a look; if there's a "#!" header then try to emulate
-     * the feature found in all modern OS's:
-     * Interpret the line following the #! as a command line
-     * in shell style.
-     */
-	&& (argv = hashbang(filename, argv)) != NULL) {
+    if (errno == ENOEXEC) {
+	/* Probably a script.
+	 * Have a look; if there's a "#!" header then try to emulate
+	 * the feature found in all modern OS's:
+	 * Interpret the line following the #! as a command line
+	 * in shell style.
+	 */
+	if ((script_argv = (char **)hashbang(filename, argv)) != NULL) {
 
-	/* new filename is the interpreter to call */
-	filename = argv[0];
+	    /* new filename is the interpreter to call */
+	    filename = script_argv[0];
 
-	/* Restore argv[0] as on entry */
-	if (argv0 != NULL) {
-	    argv[0] = argv0;
+	    /* Restore argv[0] as on entry */
+	    if (argv[0] != NULL) {
+		script_argv[0] = argv[0];
+	    }
+
+	    execve(filename, script_argv, envp);
+
+	    free(script_argv);
 	}
+	/*
+	 * Script doesn't start with a hashbang line!
+	 * So, try to have the default shell execute it.
+	 * For this, the size of argv must be increased by one
+	 * entry: the shell's name. The remaining args are appended.
+	 */
+	else {
+	    int i = count_args(argv) + 1;   /* +1 for leading SHELL_PATH */
 
-	execve(filename, argv, envp);
+	    if ((script_argv = malloc(sizeof(*script_argv) * i)) == NULL) {
+		fprintf(stderr, "Ouch!  Out of memory in ap_execve()!\n");
+		return -1;
+	    }
 
-	free(argv);
+	    script_argv[0] = SHELL_PATH;
+
+	    while (i > 0) {
+		script_argv[i] = argv[i-1];
+		--i;
+	    }
+
+	    execve(SHELL_PATH, script_argv, envp);
+
+	    free(script_argv);
+	}
     }
     return -1;
 }
@@ -211,7 +257,7 @@ int ap_execve(const char *filename, const char *argv[],
  */
 #define HACKBUFSZ 1024		/* Max chars in #! vector */
 #define HACKVECSZ 128		/* Max words in #! vector */
-static const char **hashbang(const char *filename, char **argv)
+static const char **hashbang(const char *filename, char * const *argv)
 {
     char lbuf[HACKBUFSZ];
     char *sargv[HACKVECSZ];
@@ -301,8 +347,12 @@ static const char **hashbang(const char *filename, char **argv)
 	    }
 	    ++i;
 
-	    newargv = (char **) malloc((p - lbuf + 1)
+	    newargv = (const char **) malloc((p - lbuf + 1)
                       + (i + sargc + 1) * sizeof(*newargv));
+	    if (newargv == NULL) {
+		fprintf(stderr, "Ouch!  Out of memory in hashbang()!\n");
+		return NULL;
+	    }
 	    ws = &((char *) newargv)[(i + sargc + 1) * sizeof(*newargv)];
 
 	    /* Copy entries to allocated memory */

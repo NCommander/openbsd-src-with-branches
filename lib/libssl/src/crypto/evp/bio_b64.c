@@ -59,10 +59,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include "cryptlib.h"
-#include "buffer.h"
-#include "evp.h"
+#include <openssl/buffer.h>
+#include <openssl/evp.h>
 
-#ifndef NOPROTO
 static int b64_write(BIO *h,char *buf,int num);
 static int b64_read(BIO *h,char *buf,int size);
 /*static int b64_puts(BIO *h,char *str); */
@@ -70,16 +69,7 @@ static int b64_read(BIO *h,char *buf,int size);
 static long b64_ctrl(BIO *h,int cmd,long arg1,char *arg2);
 static int b64_new(BIO *h);
 static int b64_free(BIO *data);
-#else
-static int b64_write();
-static int b64_read();
-/*static int b64_puts(); */
-/*static int b64_gets(); */
-static long b64_ctrl();
-static int b64_new();
-static int b64_free();
-#endif
-
+static long b64_callback_ctrl(BIO *h,int cmd,void (*fp)());
 #define B64_BLOCK_SIZE	1024
 #define B64_BLOCK_SIZE2	768
 #define B64_NONE	0
@@ -111,15 +101,15 @@ static BIO_METHOD methods_b64=
 	b64_ctrl,
 	b64_new,
 	b64_free,
+	b64_callback_ctrl,
 	};
 
-BIO_METHOD *BIO_f_base64()
+BIO_METHOD *BIO_f_base64(void)
 	{
 	return(&methods_b64);
 	}
 
-static int b64_new(bi)
-BIO *bi;
+static int b64_new(BIO *bi)
 	{
 	BIO_B64_CTX *ctx;
 
@@ -140,8 +130,7 @@ BIO *bi;
 	return(1);
 	}
 
-static int b64_free(a)
-BIO *a;
+static int b64_free(BIO *a)
 	{
 	if (a == NULL) return(0);
 	Free(a->ptr);
@@ -151,10 +140,7 @@ BIO *a;
 	return(1);
 	}
 	
-static int b64_read(b,out,outl)
-BIO *b;
-char *out;
-int outl;
+static int b64_read(BIO *b, char *out, int outl)
 	{
 	int ret=0,i,ii,j,k,x,n,num,ret_code=0;
 	BIO_B64_CTX *ctx;
@@ -253,8 +239,8 @@ int outl;
 							&(ctx->tmp[0]));
 						for (x=0; x < i; x++)
 							ctx->tmp[x]=p[x];
-						EVP_DecodeInit(&ctx->base64);
 						}
+					EVP_DecodeInit(&ctx->base64);
 					ctx->start=0;
 					break;
 					}
@@ -354,10 +340,7 @@ int outl;
 	return((ret == 0)?ret_code:ret);
 	}
 
-static int b64_write(b,in,inl)
-BIO *b;
-char *in;
-int inl;
+static int b64_write(BIO *b, char *in, int inl)
 	{
 	int ret=inl,n,i;
 	BIO_B64_CTX *ctx;
@@ -451,11 +434,7 @@ int inl;
 	return(ret);
 	}
 
-static long b64_ctrl(b,cmd,num,ptr)
-BIO *b;
-int cmd;
-long num;
-char *ptr;
+static long b64_ctrl(BIO *b, int cmd, long num, char *ptr)
 	{
 	BIO_B64_CTX *ctx;
 	long ret=1;
@@ -540,6 +519,20 @@ again:
 	case BIO_CTRL_SET:
 	default:
 		ret=BIO_ctrl(b->next_bio,cmd,num,ptr);
+		break;
+		}
+	return(ret);
+	}
+
+static long b64_callback_ctrl(BIO *b, int cmd, void (*fp)())
+	{
+	long ret=1;
+
+	if (b->next_bio == NULL) return(0);
+	switch (cmd)
+		{
+	default:
+		ret=BIO_callback_ctrl(b->next_bio,cmd,fp);
 		break;
 		}
 	return(ret);

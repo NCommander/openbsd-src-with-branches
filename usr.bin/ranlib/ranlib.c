@@ -1,3 +1,5 @@
+/*	$OpenBSD: ranlib.c,v 1.3 1997/01/15 23:43:04 millert Exp $	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -42,7 +44,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)ranlib.c	5.6 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: ranlib.c,v 1.3 1994/03/03 10:20:10 pk Exp $";
+static char rcsid[] = "$OpenBSD: ranlib.c,v 1.3 1997/01/15 23:43:04 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -50,11 +52,17 @@ static char rcsid[] = "$Id: ranlib.c,v 1.3 1994/03/03 10:20:10 pk Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <archive.h>
+#include "extern.h"
 
 CHDR chdr;
 u_int options;				/* UNUSED -- keep open_archive happy */
+
 char *archive;
 
+static void
+usage();
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -62,7 +70,7 @@ main(argc, argv)
 	int ch, eval, tflag;
 
 	tflag = 0;
-	while ((ch = getopt(argc, argv, "t")) != EOF)
+	while ((ch = getopt(argc, argv, "t")) != -1)
 		switch(ch) {
 		case 't':
 			tflag = 1;
@@ -82,6 +90,7 @@ main(argc, argv)
 	exit(eval);
 }
 
+static void
 usage()
 {
 	(void)fprintf(stderr, "usage: ranlib [-t] archive ...\n");

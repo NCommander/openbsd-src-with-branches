@@ -1,19 +1,20 @@
+#	$OpenBSD: Makefile,v 1.6 1999/11/17 04:55:36 millert Exp $
+
 LIB	=	keycap
-CAPDIR	=	$(DESTDIR)/usr/share/misc
+CAPDIR	=	/usr/share/misc
 CAPPATH	=	$(CAPDIR)/keycap.pcvt
 KEYCAPSRC=	keycap.src
 CFLAGS	+=	-DKEYCAP_PATH=\"$(CAPPATH)\"
 SRCS	=	keycap.c
-MAN3	=	keycap.${MAN3EXT}
-MAN5	=	keycap.${MAN5EXT}
-#CLEANFILES+=	keycap.0 keycap.0
+MAN3	=	keycap.3 keycap.5
+MLINKS	=	keycap.3 kgetent.3 keycap.3 kgetnum.3 keycap.3 kgetflag.3 \
+		keycap.3 kgetstr.3
 
 beforeinstall:
-	@if [ ! -d ${DESTDIR}${LIBDIR} ]; then mkdir ${DESTDIR}${LIBDIR};fi
-	@${ECHO} "Saving old keycap database"
-	-mv -f ${DESTDIR}${CAPPATH} ${DESTDIR}${CAPPATH}.BAK
+	-@if [ ! -d ${DESTDIR}${LIBDIR} ]; then \
+		mkdir ${DESTDIR}${LIBDIR}; \
+	fi
 	install -c -m ${LIBMODE} -o ${LIBOWN} -g ${LIBGRP} \
-	${.CURDIR}/${KEYCAPSRC} ${DESTDIR}${CAPPATH}
-
+	    ${.CURDIR}/${KEYCAPSRC} ${DESTDIR}${CAPPATH}
 
 .include <bsd.lib.mk>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: k5login.c,v 1.2 1994/12/23 06:52:58 jtc Exp $	*/
 /*	$NetBSD: k5login.c,v 1.2 1994/12/23 06:52:58 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)klogin.c	5.11 (Berkeley) 7/12/92";
 #endif
-static char rcsid[] = "$NetBSD: k5login.c,v 1.2 1994/12/23 06:52:58 jtc Exp $";
+static char rcsid[] = "$OpenBSD: k5login.c,v 1.2 1994/12/23 06:52:58 jtc Exp $";
 #endif /* not lint */
 
 #ifdef KERBEROS5

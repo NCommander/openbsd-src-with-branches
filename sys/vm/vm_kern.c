@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_kern.c,v 1.17 1995/04/10 16:53:55 mycroft Exp $	*/
+/*	$OpenBSD: vm_kern.c,v 1.10 1998/03/01 00:38:08 niklas Exp $	*/
+/*	$NetBSD: vm_kern.c,v 1.17.6.1 1996/06/13 17:21:28 cgd Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -35,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_kern.c	8.3 (Berkeley) 1/12/94
+ *	@(#)vm_kern.c	8.4 (Berkeley) 1/9/95
  *
  *
  * Copyright (c) 1987, 1990 Carnegie-Mellon University.
@@ -70,8 +71,10 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 
 #include <vm/vm.h>
+#include <vm/vm_extern.h>
 #include <vm/vm_page.h>
 #include <vm/vm_pageout.h>
 #include <vm/vm_kern.h>
@@ -98,13 +101,12 @@ kmem_alloc_pageable(map, size)
 	size = round_page(size);
 
 	addr = vm_map_min(map);
-	result = vm_map_find(map, NULL, (vm_offset_t) 0,
-				&addr, size, TRUE);
+	result = vm_map_find(map, NULL, (vm_offset_t)0, &addr, size, TRUE);
 	if (result != KERN_SUCCESS) {
-		return(0);
+		return (0);
 	}
 
-	return(addr);
+	return (addr);
 }
 
 /*
@@ -169,12 +171,13 @@ kmem_alloc(map, size)
 	 */
 
 	vm_object_lock(kernel_object);
-	for (i = 0 ; i < size; i+= PAGE_SIZE) {
+	for (i = 0; i < size; i += PAGE_SIZE) {
 		vm_page_t	mem;
 
-		while ((mem = vm_page_alloc(kernel_object, offset+i)) == NULL) {
+		while ((mem = vm_page_alloc(kernel_object, offset + i)) ==
+		    NULL) {
 			vm_object_unlock(kernel_object);
-			VM_WAIT;
+			vm_wait("fKmwire");
 			vm_object_lock(kernel_object);
 		}
 		vm_page_zero_fill(mem);
@@ -183,18 +186,18 @@ kmem_alloc(map, size)
 	vm_object_unlock(kernel_object);
 		
 	/*
-	 *	And finally, mark the data as non-pageable.
+	 * And finally, mark the data as non-pageable.
 	 */
 
-	(void) vm_map_pageable(map, (vm_offset_t) addr, addr + size, FALSE);
+	(void)vm_map_pageable(map, (vm_offset_t)addr, addr + size, FALSE);
 
 	/*
-	 *	Try to coalesce the map
+	 * Try to coalesce the map
 	 */
 
 	vm_map_simplify(map, addr);
 
-	return(addr);
+	return (addr);
 }
 
 /*
@@ -210,7 +213,7 @@ kmem_free(map, addr, size)
 	register vm_offset_t	addr;
 	vm_size_t		size;
 {
-	(void) vm_map_remove(map, trunc_page(addr), round_page(addr + size));
+	(void)vm_map_remove(map, trunc_page(addr), round_page(addr + size));
 }
 
 /*
@@ -238,9 +241,8 @@ kmem_suballoc(parent, min, max, size, pageable)
 
 	size = round_page(size);
 
-	*min = (vm_offset_t) vm_map_min(parent);
-	ret = vm_map_find(parent, NULL, (vm_offset_t) 0,
-				min, size, TRUE);
+	*min = (vm_offset_t)vm_map_min(parent);
+	ret = vm_map_find(parent, NULL, (vm_offset_t)0, min, size, TRUE);
 	if (ret != KERN_SUCCESS) {
 		printf("kmem_suballoc: bad status return of %d.\n", ret);
 		panic("kmem_suballoc");
@@ -252,7 +254,7 @@ kmem_suballoc(parent, min, max, size, pageable)
 		panic("kmem_suballoc: cannot create submap");
 	if ((ret = vm_map_submap(parent, *min, *max, result)) != KERN_SUCCESS)
 		panic("kmem_suballoc: unable to change range to submap");
-	return(result);
+	return (result);
 }
 
 /*
@@ -266,7 +268,7 @@ kmem_suballoc(parent, min, max, size, pageable)
  * this routine, ensures that we will never block in map or object waits.
  *
  * Note that this still only works in a uni-processor environment and
- * when called at splhigh().
+ * when called at splimp().
  *
  * We don't worry about expanding the map (adding entries) since entries
  * for wired maps are statically allocated.
@@ -297,9 +299,14 @@ kmem_malloc(map, size, canwait)
 	vm_map_lock(map);
 	if (vm_map_findspace(map, 0, size, &addr)) {
 		vm_map_unlock(map);
-		if (canwait)		/* XXX  should wait */
-			panic("kmem_malloc: %s too small",
-			    map == kmem_map ? "kmem_map" : "mb_map");
+		/*
+		 * Should wait, but that makes no sense since we will
+		 * likely never wake up unless action to free resources
+		 * is taken by the calling subsystem.
+		 *
+		 * We return NULL, and if the caller was able to wait
+		 * then they should take corrective action and retry.
+		 */
 		return (0);
 	}
 	offset = addr - vm_map_min(kmem_map);
@@ -312,10 +319,10 @@ kmem_malloc(map, size, canwait)
 	 */
 	if (canwait) {
 		vm_map_unlock(map);
-		(void) vm_map_pageable(map, (vm_offset_t) addr, addr + size,
-				       FALSE);
+		(void)vm_map_pageable(map, (vm_offset_t)addr, addr + size,
+		    FALSE);
 		vm_map_simplify(map, addr);
-		return(addr);
+		return (addr);
 	}
 
 	/*
@@ -340,7 +347,7 @@ kmem_malloc(map, size, canwait)
 			vm_object_unlock(kmem_object);
 			vm_map_delete(map, addr, addr + size);
 			vm_map_unlock(map);
-			return(0);
+			return (0);
 		}
 #if 0
 		vm_page_zero_fill(m);
@@ -371,12 +378,12 @@ kmem_malloc(map, size, canwait)
 		m = vm_page_lookup(kmem_object, offset + i);
 		vm_object_unlock(kmem_object);
 		pmap_enter(map->pmap, addr + i, VM_PAGE_TO_PHYS(m),
-			   VM_PROT_DEFAULT, TRUE);
+		    VM_PROT_DEFAULT, TRUE, 0);
 	}
 	vm_map_unlock(map);
 
 	vm_map_simplify(map, addr);
-	return(addr);
+	return (addr);
 }
 
 /*
@@ -410,7 +417,7 @@ kmem_alloc_wait(map, size)
 		}
 		assert_wait(map, TRUE);
 		vm_map_unlock(map);
-		thread_block();
+		thread_block("mKmwait");
 	}
 	vm_map_insert(map, NULL, (vm_offset_t)0, addr, addr + size);
 	vm_map_unlock(map);
@@ -430,7 +437,7 @@ kmem_free_wakeup(map, addr, size)
 	vm_size_t	size;
 {
 	vm_map_lock(map);
-	(void) vm_map_delete(map, trunc_page(addr), round_page(addr + size));
+	(void)vm_map_delete(map, trunc_page(addr), round_page(addr + size));
 	thread_wakeup(map);
 	vm_map_unlock(map);
 }
@@ -451,8 +458,8 @@ kmem_init(start, end)
 	vm_map_lock(m);
 	/* N.B.: cannot use kgdb to debug, starting with this assignment ... */
 	kernel_map = m;
-	(void) vm_map_insert(m, NULL, (vm_offset_t)0,
-	    VM_MIN_KERNEL_ADDRESS, start);
+	(void)vm_map_insert(m, NULL, (vm_offset_t)0, VM_MIN_KERNEL_ADDRESS,
+	    start);
 	/* ... and ending with the completion of the above `insert' */
 	vm_map_unlock(m);
 }

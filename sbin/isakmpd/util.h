@@ -1,4 +1,5 @@
-/*	$Id: util.h,v 1.6 1998/11/12 13:01:46 niklas Exp $	*/
+/*	$OpenBSD: util.h,v 1.3 1998/11/17 11:10:22 niklas Exp $	*/
+/*	$EOM: util.h,v 1.7 1999/08/05 15:00:04 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -39,6 +40,8 @@
 #include <sys/types.h>
 
 #define ROUNDUP_32(x) (((x) + 3) & ~4)
+
+extern int regrand;
 
 struct message;
 

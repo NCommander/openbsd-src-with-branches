@@ -14,7 +14,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: ac.c,v 1.3 1994/05/01 04:39:35 cgd Exp $";
+static char rcsid[] = "$Id: ac.c,v 1.6 1997/08/30 19:54:45 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -195,7 +195,7 @@ update_user(head, name, secs)
 	struct user_list *up;
 
 	for (up = head; up != NULL; up = up->next) {
-		if (strncmp(up->name, name, sizeof (up->name)) == 0) {
+		if (strncmp(up->name, name, sizeof (up->name) - 1) == 0) {
 			up->secs += secs;
 			Total += secs;
 			return head;
@@ -226,7 +226,7 @@ main(argc, argv)
 	int c;
 
 	fp = NULL;
-	while ((c = getopt(argc, argv, "Dc:dpt:w:")) != EOF) {
+	while ((c = getopt(argc, argv, "Dc:dpt:w:")) != -1) {
 		switch (c) {
 #ifdef DEBUG
 		case 'D':
@@ -460,7 +460,7 @@ ac(fp)
 	struct utmp_list *lp, *head = NULL;
 	struct utmp usr;
 	struct tm *ltm;
-	time_t secs;
+	time_t secs = 0;
 	int day = -1;
 	
 	while (fread((char *)&usr, sizeof(usr), 1, fp) == 1) {
@@ -499,12 +499,12 @@ ac(fp)
 			break;
 		default:
 			/*
-			 * if they came in on tty[p-y]*, then it is only
+			 * if they came in on a pseudo-tty, then it is only
 			 * a login session if the ut_host field is non-empty
 			 */
 			if (*usr.ut_name) {
 				if (strncmp(usr.ut_line, "tty", 3) != 0 ||
-				    strchr("pqrstuvwxy", usr.ut_line[3]) == 0 ||
+				    strchr("pqrstuvwxyzPQRST", usr.ut_line[3]) != 0 ||
 				    *usr.ut_host != '\0')
 					head = log_in(head, &usr);
 			} else
@@ -513,7 +513,8 @@ ac(fp)
 		}
 	}
 	(void)fclose(fp);
-	usr.ut_time = time((time_t *)0);
+	if (!(Flags & AC_W))
+		usr.ut_time = time((time_t *)0);
 	(void)strcpy(usr.ut_line, "~");
 	
 	if (Flags & AC_D) {

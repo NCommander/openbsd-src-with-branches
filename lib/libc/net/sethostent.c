@@ -1,5 +1,3 @@
-/*	$NetBSD: sethostent.c,v 1.4 1995/02/25 06:21:03 cgd Exp $	*/
-
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sethostent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: sethostent.c,v 1.4 1995/02/25 06:21:03 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: sethostent.c,v 1.3 1996/08/19 08:29:53 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -49,7 +43,11 @@ static char rcsid[] = "$NetBSD: sethostent.c,v 1.4 1995/02/25 06:21:03 cgd Exp $
 
 void
 sethostent(stayopen)
+	int stayopen;
 {
+
+	if ((_res.options & RES_INIT) == 0 && res_init() == -1)
+		return;
 	if (stayopen)
 		_res.options |= RES_STAYOPEN | RES_USEVC;
 }
@@ -58,5 +56,5 @@ void
 endhostent()
 {
 	_res.options &= ~(RES_STAYOPEN | RES_USEVC);
-	_res_close();
+	res_close();
 }

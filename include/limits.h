@@ -1,3 +1,4 @@
+/*	$OpenBSD: limits.h,v 1.5 1998/07/11 06:02:44 deraadt Exp $	*/
 /*	$NetBSD: limits.h,v 1.7 1994/10/26 00:56:00 cgd Exp $	*/
 
 /*
@@ -49,7 +50,7 @@
 #define	_POSIX_OPEN_MAX		16
 #define	_POSIX_PATH_MAX		255
 #define _POSIX_PIPE_BUF		512
-#define _POSIX_SSIZE_MAX	32727
+#define _POSIX_SSIZE_MAX	32767
 #define _POSIX_STREAM_MAX	8
 #define _POSIX_TZNAME_MAX	3
 
@@ -61,9 +62,12 @@
 #define	_POSIX2_EXPR_NEST_MAX	32
 #define	_POSIX2_LINE_MAX	2048
 #define	_POSIX2_RE_DUP_MAX	255
-#endif /* !_ANSI_SOURCE */
 
-#if (!defined(_ANSI_SOURCE)&&!defined(_POSIX_SOURCE)) || defined(_XOPEN_SOURCE)
+/* P1003.1c */
+#define _POSIX_TTY_NAME_MAX	260
+#define _POSIX_LOGIN_NAME_MAX	MAXLOGNAME
+
+#if !defined(_POSIX_C_SOURCE) || defined(_XOPEN_SOURCE)
 #define PASS_MAX		128
 
 #define NL_ARGMAX		9
@@ -72,7 +76,15 @@
 #define NL_NMAX			1
 #define NL_SETMAX		255
 #define NL_TEXTMAX		255
-#endif 
+
+#define TMP_MAX                 308915776
+#endif /* !_POSIX_C_SOURCE || _XOPEN_SOURCE */
+
+#endif /* !_ANSI_SOURCE */
+
+/* where does this belong? it is defined by P1003.1c */
+#define TTY_NAME_MAX		_POSIX_TTY_NAME_MAX
+#define LOGIN_NAME_MAX		MAXLOGNAME
 
 #include <machine/limits.h>
 #include <sys/syslimits.h>

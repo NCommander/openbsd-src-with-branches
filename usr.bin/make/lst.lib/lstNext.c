@@ -1,8 +1,9 @@
-/*	$NetBSD: lstNext.c,v 1.4 1995/06/14 15:21:35 christos Exp $	*/
+/*	$OpenBSD: lstNext.c,v 1.4 1998/12/05 00:06:32 espie Exp $	*/
+/*	$NetBSD: lstNext.c,v 1.5 1996/11/06 17:59:49 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstNext.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstNext.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstNext.c,v 1.4 1995/06/14 15:21:35 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstNext.c,v 1.4 1998/12/05 00:06:32 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,8 +63,8 @@ static char rcsid[] = "$NetBSD: lstNext.c,v 1.4 1995/06/14 15:21:35 christos Exp
  *	Return the next node for the given list.
  *
  * Results:
- *	The next node or NILLNODE if the list has yet to be opened. Also
- *	if the list is non-circular and the end has been reached, NILLNODE
+ *	The next node or NULL if the list has yet to be opened. Also
+ *	if the list is non-circular and the end has been reached, NULL
  *	is returned.
  *
  * Side Effects:
@@ -77,15 +78,15 @@ Lst_Next (l)
 {
     register ListNode	tln;
     register List 	list = (List)l;
-    
+
     if ((LstValid (l) == FALSE) ||
 	(list->isOpen == FALSE)) {
-	    return (NILLNODE);
+	    return (NULL);
     }
-    
+
     list->prevPtr = list->curPtr;
-    
-    if (list->curPtr == NilListNode) {
+
+    if (list->curPtr == NULL) {
 	if (list->atEnd == Unknown) {
 	    /*
 	     * If we're just starting out, atEnd will be Unknown.
@@ -95,14 +96,14 @@ Lst_Next (l)
 	    list->curPtr = tln = list->firstPtr;
 	    list->atEnd = Middle;
 	} else {
-	    tln = NilListNode;
+	    tln = NULL;
 	    list->atEnd = Tail;
 	}
     } else {
 	tln = list->curPtr->nextPtr;
 	list->curPtr = tln;
 
-	if (tln == list->firstPtr || tln == NilListNode) {
+	if (tln == list->firstPtr || tln == NULL) {
 	    /*
 	     * If back at the front, then we've hit the end...
 	     */
@@ -114,7 +115,7 @@ Lst_Next (l)
 	    list->atEnd = Middle;
 	}
     }
-    
+
     return ((LstNode)tln);
 }
 

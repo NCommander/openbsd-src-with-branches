@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_egreg.h,v 1.3 1995/07/23 21:14:35 mycroft Exp $	*/
 /*	$NetBSD: if_egreg.h,v 1.3 1995/07/23 21:14:35 mycroft Exp $	*/
 
 /*

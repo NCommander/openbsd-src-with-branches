@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -210,8 +210,19 @@ static int log_script(request_rec *r, cgi_server_conf * conf, int ret,
 	/* Soak up script output */
 	while (ap_bgets(argsbuffer, HUGE_STRING_LEN, script_in) > 0)
 	    continue;
+#if defined(WIN32) || defined(NETWARE)
+        /* Soak up stderr and redirect it to the error log.
+         * Script output to stderr is already directed to the error log
+         * on Unix, thanks to the magic of fork().
+         */
+        while (ap_bgets(argsbuffer, HUGE_STRING_LEN, script_err) > 0) {
+            ap_log_rerror(APLOG_MARK, APLOG_ERR | APLOG_NOERRNO, r, 
+                          "%s", argsbuffer);            
+        }
+#else
 	while (ap_bgets(argsbuffer, HUGE_STRING_LEN, script_err) > 0)
 	    continue;
+#endif
 	return ret;
     }
 
@@ -275,6 +286,9 @@ static int log_script(request_rec *r, cgi_server_conf * conf, int ret,
 
 
 struct cgi_child_stuff {
+#ifdef TPF
+    TPF_FORK_CHILD t;
+#endif
     request_rec *r;
     int nph;
     int debug;
@@ -325,10 +339,13 @@ static int cgi_child(void *child_stuff, child_info *pinfo)
      * NB only ISINDEX scripts get decoded arguments.
      */
 
+#ifdef TPF
+    return (0);
+#else
     ap_cleanup_for_exec();
 
     child_pid = ap_call_exec(r, pinfo, argv0, env, 0);
-#ifdef WIN32
+#if defined(WIN32) || defined(OS2)
     return (child_pid);
 #else
 
@@ -346,6 +363,7 @@ static int cgi_child(void *child_stuff, child_info *pinfo)
     /* NOT REACHED */
     return (0);
 #endif
+#endif  /* TPF */
 }
 
 static int cgi_handler(request_rec *r)
@@ -386,12 +404,15 @@ static int cgi_handler(request_rec *r)
     /* Allow for cgi files without the .EXE extension on them under OS/2 */
     if (r->finfo.st_mode == 0) {
 	struct stat statbuf;
+	char *newfile;
 
-	r->filename = ap_pstrcat(r->pool, r->filename, ".EXE", NULL);
+	newfile = ap_pstrcat(r->pool, r->filename, ".EXE", NULL);
 
-	if ((stat(r->filename, &statbuf) != 0) || (!S_ISREG(statbuf.st_mode))) {
+	if ((stat(newfile, &statbuf) != 0) || (!S_ISREG(statbuf.st_mode))) {
 	    return log_scripterror(r, conf, NOT_FOUND, 0,
 				   "script not found or unable to stat");
+	} else {
+	    r->filename = newfile;
 	}
     }
 #else
@@ -416,6 +437,11 @@ static int cgi_handler(request_rec *r)
     cld.r = r;
     cld.nph = nph;
     cld.debug = conf->logname ? 1 : 0;
+#ifdef TPF
+    cld.t.filename = r->filename;
+    cld.t.subprocess_env = r->subprocess_env;
+    cld.t.prog_type = FORK_FILE;
+#endif   /* TPF */
 
 #ifdef CHARSET_EBCDIC
     /* XXX:@@@ Is the generated/included output ALWAYS in text/ebcdic format? */
@@ -433,21 +459,14 @@ static int cgi_handler(request_rec *r)
 			 &script_out, &script_in, &script_err)) {
 	ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
 		    "couldn't spawn child process: %s", r->filename);
-	ap_table_setn(r->notes, "error-notes", "Couldn't spawn child process");
 	return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     /* Transfer any put/post args, CERN style...
-     * Note that if a buggy script fails to read everything we throw
-     * at it, or a buggy client sends too much, we get a SIGPIPE, so
-     * we have to ignore SIGPIPE while doing this.  CERN does the same
-     * (and in fact, they pretty nearly guarantee themselves a SIGPIPE
-     * on every invocation by chasing the real client data with a
-     * spurious newline).
+     * Note that we already ignore SIGPIPE in the core server.
      */
 
     if (ap_should_client_block(r)) {
-	void (*handler) (int);
 	int dbsize, len_read;
 
 	if (conf->logname) {
@@ -456,9 +475,6 @@ static int cgi_handler(request_rec *r)
 	}
 
 	ap_hard_timeout("copy script args", r);
-#ifdef SIGPIPE
-	handler = signal(SIGPIPE, SIG_IGN);
-#endif
 
 	while ((len_read =
 		ap_get_client_block(r, argsbuffer, HUGE_STRING_LEN)) > 0) {
@@ -483,7 +499,6 @@ static int cgi_handler(request_rec *r)
 	}
 
 	ap_bflush(script_out);
-	signal(SIGPIPE, handler);
 
 	ap_kill_timeout(r);
     }

@@ -1,8 +1,9 @@
-/*	$NetBSD: lstFindFrom.c,v 1.5 1995/06/14 15:21:09 christos Exp $	*/
+/*	$OpenBSD: lstFindFrom.c,v 1.5 1999/12/18 21:53:33 espie Exp $	*/
+/*	$NetBSD: lstFindFrom.c,v 1.6 1996/11/06 17:59:40 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -37,8 +38,11 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)lstFindFrom.c	5.3 (Berkeley) 6/1/90"; */
-static char *rcsid = "$Id: lstFindFrom.c,v 1.5 1995/06/14 15:21:09 christos Exp $";
+#if 0
+static char sccsid[] = "@(#)lstFindFrom.c	8.1 (Berkeley) 6/6/93";
+#else
+static char *rcsid = "$OpenBSD: lstFindFrom.c,v 1.5 1999/12/18 21:53:33 espie Exp $";
+#endif
 #endif /* not lint */
 
 /*-
@@ -51,47 +55,27 @@ static char *rcsid = "$Id: lstFindFrom.c,v 1.5 1995/06/14 15:21:09 christos Exp 
 /*-
  *-----------------------------------------------------------------------
  * Lst_FindFrom --
- *	Search for a node starting and ending with the given one on the
- *	given list using the passed datum and comparison function to
- *	determine when it has been found.
+ *	Search for a node through a list, starting with the given node,
+ *	using the comparison function and passed datum to determine when 
+ *	it has been found.
  *
  * Results:
- *	The found node or NILLNODE
+ *	The node if found, or NULL
  *
  * Side Effects:
- *	None.
- *
+ *	Whatever cProc incurs.
  *-----------------------------------------------------------------------
  */
 LstNode
-Lst_FindFrom (l, ln, d, cProc)
-    Lst		      	l;
-    register LstNode    ln;
-    register ClientData d;
-    register int	(*cProc) __P((ClientData, ClientData));
+Lst_FindFrom(ln, cProc, d)
+    LstNode    	ln;
+    FindProc	cProc;
+    ClientData 	d;
 {
-    register ListNode	tln;
-    Boolean		found = FALSE;
-    
-    if (!LstValid (l) || LstIsEmpty (l) || !LstNodeValid (ln, l)) {
-	return (NILLNODE);
-    }
-    
-    tln = (ListNode)ln;
-    
-    do {
-	if ((*cProc) (tln->datum, d) == 0) {
-	    found = TRUE;
-	    break;
-	} else {
-	    tln = tln->nextPtr;
-	}
-    } while (tln != (ListNode)ln && tln != NilListNode);
-    
-    if (found) {
-	return ((LstNode)tln);
-    } else {
-	return (NILLNODE);
-    }
-}
+    ListNode	tln;
 
+    for (tln = (ListNode)ln; tln != NULL; tln = tln->nextPtr)
+	if ((*cProc)(tln->datum, d) == 0) 
+	    return (LstNode)tln;
+    return NULL;
+}

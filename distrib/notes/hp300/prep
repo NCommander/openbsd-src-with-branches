@@ -1,125 +1,104 @@
-NOTE:  These instructions are explicitly for installing NetBSD
-from an HP-UX system, version 7 or later.  It has not been
-tested with HP-UX versions earlier than 7, and has also not
-been tested with HP-UX 8, although it is presumed to work.
-For the creative, similar steps may be taken from a system such
-as Utah's 4.3BSD release for the hp300, although bootstrapping
-from such a system has not been tested.
+The ramdisk kernel may be loaded from the network, from CD-ROM, or other
+SCSI devices (such as Zip(tm) disk).  This section primarily describes the
+setup required for a network boot, but does offer information pertaining to
+installation from other media.  Note that loading from HPIB or SCSI cartridge
+tape is possible, but not currently supported.
 
-Bootstrapping the hp300 is a complicated process, but it's a lot
-easier than it used to be.  For this process you need the
-following items from the install/ directory:
+You will need information about your disk's geometry, based on 512-byte
+sectors.  You must have this information before proceeding.  The
+file `HP-IB.geometry' has geometry information for several HP-IB disks,
+but may be incomplete.  Geometry may be calculated from an HP-UX 
+`/etc/disktab' entry, but note that HP-UX geometry is based on
+1024 byte sectors, while OpenBSD's is based on 512 byte sectors.
 
-	boot		NetBSD/hp300 boot block for
-			HP-IB and SCSI disks
+QUICK NOTE ABOUT PARTITIONS:  Since the target disk will become the boot
+disk for your new OpenBSD/hp300 installation, you will need to treat the
+`a' and `c' partitions in a special manner.  Due to the size of the
+OpenBSD/hp300 boot program (it spills into the area after the disklabel),
+it is necessary to offset the `a' partition one cylinder from the beginning
+of the disk.  Later, the `c' partition will be marked with the type
+`FS_BOOT' and may not be used for a filesystem.  (For those unfamiliar
+with historic BSD partition conventions, the `c' partition is defined
+as `the entire disk', or the `raw partition'.)
 
-	rootimage.gz	bootstrap root filesystem
-			image
+		   Ramdisk installation via network or CD-ROM
+	           ------------------------------------------
+NOTE:  BOOTING SYS_UBOOT VIA THE NETWORK IS ONLY POSSIBLE IF YOUR BOOTROM
+IS `REV. C' OR LATER.  (This only applies to the 320/350 era machines.)
 
-	label		prototype disk label
+In order to complete this process, you will need the following from the
+`OSREV/hp300' directory of the distribution:
 
-	makedisk	a program for HP-UX that will
-			write a NetBSD disk label,
-			boot block, and root filesystem
-			image to the target disk
-			(NOTE:  This is an HP-UX 7.x binary.
-			while it will work under HP-UX 9.x,
-			you may want to compile this yourself.
-			The source may be found in makedisk.tar.gz)
+	SYS_UBOOT	The unified boot block file.
 
-VERY IMPORTANT NOTE: This procedure will destroy all data on the
-target disk.  Because NetBSD uses a different filesystem format than
-HP-UX, your old data will be useless.  If you wish to save anything,
-use tar(1) instead of dump(1M), again because of filesystem differences.
+	bsd.rd		The uncompressed RAMDISK kernel image.
 
-First of all, you must have a second disk on which to install NetBSD.
-If possible, this disk should first be prepared with mediainit(1M).
-Once this disk is spotless, you should generate a disk label for it.
-Using the prototype label provided, fill in all of the necessary
-information.  Remember, if you derive geometry information from an
-HP-UX disktab, your partition size will be off.  This is because HP-UX
-uses a 1024-byte sector size, while NetBSD uses a 512-byte sector size.
-To avoid the problem, you may simply double the number of cylinders.
-(That's what I do...works great.  -- JRT)
+	bsd.rd.gz	The gzipped RAMDISK kernel image.
 
-IMPORTANT:  Partition 'a' must be offset one cylinder.  Since
-partition information is expressed in sectors, the offset of
-partition 'a' must be the value of `sectors/cylinder'.  This is
-to leave room for the boot block.
+To boot SYS_UBOOT via the network, you will need a system capable of
+handling boot requests for an hp300.  If you will use this method, see
+the special note below.
 
-When you create your disklabel, be sure to specify whether or not
-the disk is HP-IB or SCSI in the `type:' field.
+To boot from SCSI CD-ROM, simply insert the CD that is hp300 bootable into
+the drive before power up, then during the computer's self-test cycle,
+press the space bar.  Shortly, you should see a menu of possible boot
+options appear.  Select the option corresponding to SYS_CDBOOT.
+SYS_CDBOOT will then load and begin loading bsd.rd from the CD; depending
+on your ROM revision and hardware configuration, you may or may not see
+any messages on the console while this happens.
 
-Below is an example of what a disk label should look like.  This
-is an example only!  Do not attempt this at home!
+Please note that booting from CD-ROM may not be supported by all models of
+hp300.  You will also need a CD-ROM drive which uses 512 byte blocks;
+anything which shipped with an hp300 or is known to boot a SPARC or black
+NeXTStation should work.
 
-
+-- The following section is specific for loading SYS_UBOOT via the network. --
 
-# Sample disklabel for example only.  This is a comment.
-type: HP-IB
-disk: 
-label: INSTALL-1_0
-flags:
-bytes/sector: 512
-sectors/track: 36
-tracks/cylinder: 7
-sectors/cylinder: 252
-cylinders: 1013
-rpm: 3600
-interleave: 1
-trackskew: 0
-cylinderskew: 0
-headswitch: 0		# milliseconds
-track-to-track seek: 0	# milliseconds
-drivedata: 0 
+If you wish to load the SYS_UBOOT program via the network, you need to
+either have another OpenBSD system on the network, or something else
+capable of running the rbootd(8) program.  Source code may be found
+under usr.sbin/rbootd in the OpenBSD source tree, but requires the
+Berkeley Packet Filter (bpf) in order to function.  It may be possible to
+use HP-UX, but is not recommended (or documented here).  For more
+information on diskless booting under OpenBSD, see the "diskless"
+manual page.
 
-7 partitions:
-#        size   offset    fstype   [fsize bsize   cpg]
-  a:    30744      252    4.2BSD     1024  8192    16 	# (Cyl.    1 - 122)
-  b:    32760    30996      swap                    	# (Cyl.  123 - 252)
-  c:   255276        0      boot                    	# (Cyl.    0 - 1012)
-  e:    20412    63756    4.2BSD     1024  4096    16 	# (Cyl.  253 - 333)
-  f:    40824    84168    4.2BSD     1024  8192    16 	# (Cyl.  334 - 495)
-  g:   130284   124992    4.2BSD     1024  8192    16 	# (Cyl.  496 - 1012)
+First of all, configure your rbootd to handle boot requests from the
+client.  NOTE: OpenBSD's `rbootd' is slightly different from HP-UX's.
+To configure OpenBSD's `rbootd', create a file called `/etc/rbootd.conf'
+and place in it an entry like the following:
 
-NOTE:  Due to the nature of the bootstrapping procedure, your 'a'
-partition must be at least 30744 sectors long.  Increase the size of
-your 'a' partition just enough to make it end on a cylinder boundary.
-If you make it any larger, you will just be wasting space, as the
-filesystem ends after 30744 sectors.
+	08:00:09:04:AA:33	SYS_UBOOT	# thunder-egg
 
-Remember to write down the names of the partitions and what you
-will be using them for (i.e. 'a - root, b - swap, e - /usr, etc.')
-as you will need this information later on in the installation
-process.
+The first column is the ethernet address of the client's network interface.
+The second column is the program to send to the client, and anything after
+the `#' is a comment.  Once you have rbootd running, copy the SYS_UBOOT
+program to the /usr/mdec/rbootd directory on your server.  If this
+directory doesn't exist already, you will need to create it.
 
-Once you are satisfied with your disklabel, you can write the
-root filesystem image to the target disk.  Use the `makedisk'
-program for this.  So, under HP-UX, do:
+Next, add the client to /etc/ethers on your server.  For example:
 
-	./makedisk /dev/rdsk/c7d0s0 mylabel boot rootimage.gz
+	08:00:09:04:AA:33	thunder-egg
 
-where:
-	/dev/rdsk/c7d0s0	raw flavor of target disk device
+Then start `rarpd' on your server; `rarpd -a' should do the trick.
 
-	mylabel			disk label you just wrote
+Finally, you need to add an entry in /etc/bootparams.  For example:
 
-	boot			supplied boot block
+	thunder-egg	root=myserver:/export/hp300
 
-	rootimage.gz		gzipped root filesystem image
-				NOTE: This requires that gzip be
-				installed on your HP-UX system.
-				If it is not, a gzip binary is
-				provided in the install/ directory.
-				Source for gzip may be found in the
-				gsrc10 distribution set.  Again, this
-				gzip is an HP-UX 7.x binary.
+Where myserver is the name of your server machine and `/export/hp300'
+is the directory that holds the ramdisk kernel image (`bsd.rd').
+Now run `rpc.bootparamd' and make sure that this directory is NFS
+exported to the client.  See the manual pages on your server system
+if you need more information about exporting filesystems.  If you
+run into problems you may wish to run `rpc.bootparamd' with the `-d'
+flag on your server to get extra debugging information.
 
-If you wish to label any additional disks, you will have to do this
-from NetBSD, although you will not have an editor at your disposal.
-To do this, simply generate the labels now, and then grab them at
-the same time and by the same method you use to grab the distrubtion
-sets.
+You are now ready to load SYS_UBOOT.  During the client's self-test cycle,
+press the space bar.  Shortly, you should see a menu of possible boot
+options appear.  Select the option corresponding to SYS_UBOOT.
+SYS_UBOOT will then load and prompt you for a kernel name.  NFS file
+names should not have a leading '/' prepended to them, simply use `bsd.rd'.
 
-Once this is done, you should be ready to boot NetBSD from the target
-disk.
+------------------ End of network boot-specific section ----------------------
+

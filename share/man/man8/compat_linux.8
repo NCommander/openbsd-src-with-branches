@@ -1,4 +1,4 @@
-.\"	$NetBSD: compat_linux.8,v 1.1.2.1 1995/10/16 20:20:13 fvdl Exp $
+.\"	$NetBSD: compat_linux.8,v 1.2 1995/10/16 20:17:59 fvdl Exp $
 .\"
 .\" Copyright (c) 1995 Frank van der Linden
 .\" All rights reserved.
@@ -30,55 +30,55 @@
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 .Dd March 2, 1995
-.Dt COMPAT_LINUX 8
-.Os BSD 4
+.Dt compat_linux 8
+.Os
 .Sh NAME
-.Nm COMPAT_LINUX
-.Nd setup procedure for running Linux binaries
+.Nm compat_linux
+.Nd setup procedure for running Linux binaries under emulation
 .Sh DESCRIPTION
-NetBSD supports running Linux binaries. This only applies to i386 systems
+OpenBSD supports running Linux binaries. This only applies to i386 systems
 for now. Both the a.out and ELF binary formats are supported. Most programs
-should work, including the ones that use the Linux SVGAlib. Programs that
-will not work include the Linux /proc filesystem (which is different from
-the optional NetBSD /proc filesystem), and i386-specific calls, such as
-enabling virtual 8086 mode. Currently, sound is not supported for Linux
-binaries (they will probably run, but not produce any sound).
-
+should work, including the ones that use the Linux SVGAlib. Additionally,
+OSS audio is emulated, so Linux bins can access the native audio
+transparently. Programs that will not work include those that use the Linux
+/proc filesystem (which is different from the optional OpenBSD /proc
+filesystem), and i386-specific calls, such as enabling virtual 8086 mode.
+.Pp
 The Linux compatibility feature is active
 for kernels compiled with the
 .Nm COMPAT_LINUX
 option enabled.
-
+.Pp
 A lot of programs are dynamically linked. This means, that you will
 also need the Linux shared libraries that the program depends on, and
-the runtime linker. Also, you will need to create a "shadow root"
-directory for Linux binaries on your NetBSD system. This directory
+the runtime linker.  Also, you will need to create a "shadow root"
+directory for Linux binaries on your OpenBSD system. This directory
 is named /emul/linux. Any file operations done by Linux programs
-run under NetBSD will look in this directory first. So, if a Linux
-program opens, for example, /etc/passwd, NetBSD will
+run under OpenBSD will look in this directory first. So, if a Linux
+program opens, for example, /etc/passwd, OpenBSD will
 first try to open /emul/linux/etc/passwd, and if that does not exist
 open the 'real' /etc/passwd file. It is recommended that you install
 Linux packages that include configuration files, etc under /emul/linux,
-to avoid naming conflicts with possible NetBSD counterparts. Shared
+to avoid naming conflicts with possible OpenBSD counterparts. Shared
 libraries should also be installed in the shadow tree.
 .Pp
 Generally, you will need to look for the shared libraries that Linux
 binaries depend on only the first few times that you install a Linux
-program on your NetBSD system. After a while, you will have a sufficient
+program on your OpenBSD system. After a while, you will have a sufficient
 set of Linux shared libraries on your system to be able to run newly
 imported Linux binaries without any extra work.
 
 .Ss Setting up shared libraries
 How to get to know which shared libraries Linux binaries need, and where
-to get them? Basically, there are 2 possibilities (when following
-these instructions: you will need to be root on your NetBSD system to
+to get them? Basically, there are 3 possibilities (when following
+these instructions: you will need to be root on your OpenBSD system to
 do the necessary installation steps).
 
 .Bl -tag -width 123 -compact
 .It 1.
 You have access to a Linux system. In this case you can
 temporarily install the binary there, see what shared libraries
-it needs, and copy them to your NetBSD system. Example: you have
+it needs, and copy them to your OpenBSD system. Example: you have
 just ftp-ed the Linux binary of Doom. Put it on the Linux
 system you have access to, and check which shared libraries it
 needs by running `ldd linuxxdoom':
@@ -95,7 +95,7 @@ libc.so.4 (DLL Jump 4.5pl26) => /lib/libc.so.4.6.29
 You would need go get all the files from the last column, and
 put them under /emul/linux, with the names in the first column
 as symbolic links pointing to them. This means you eventually have
-these files on your NetBSD system:
+these files on your OpenBSD system:
 .Pp
 .nf
 /emul/linux/usr/X11/lib/libXt.so.3.1.0
@@ -139,14 +139,14 @@ you with:
 .Pp
 Please note that the symbolic link mechanism is
 .Nm only
-needed for Linux binaries, the NetBSD runtime linker takes care of
+needed for Linux binaries, the OpenBSD runtime linker takes care of
 looking for matching major revision numbers itself, you
 don't need to worry about that.
 .Pp
 Finally, you must make sure that you have the Linux runtime linker
 and its config files on your system. You should copy these
 files from the Linux system to their appropriate place on your
-NetBSD system (in the /emul/linux tree):
+OpenBSD system (in the /emul/linux tree):
 .Pp
 .nf
 /lib/ld.so
@@ -173,7 +173,7 @@ any version mismatches), and install them under /emul/linux
 .Pp
 ldconfig and ldd don't necessarily need to be under /emul/linux,
 you can install them elsewhere in the system too. Just make sure
-they don't conflict with their NetBSD counterparts. A good idea
+they don't conflict with their OpenBSD counterparts. A good idea
 would be to install them in /usr/local/bin as ldconfig-linux and
 ldd-linux.
 .Pp
@@ -188,7 +188,7 @@ add the following:
 /usr/local/lib
 .fi
 .Pp
-Note that these are mapped to /emul/linux/XXXX by NetBSD's compat
+Note that these are mapped to /emul/linux/XXXX by OpenBSD's compat
 code, and should exist as such on your system.
 
 Run the Linux ldconfig program. It should be statically
@@ -203,11 +203,11 @@ on itself. Suppose that you have it installed as ldd-linux, it
 should produce something like:
 .Pp
 .Bl -tag -width 123 -compact -offset indent
-.It (me@netbsd) ldd-linux `which ldd-linux`
+.It % ldd-linux `which ldd-linux`
 libc.so.4 (DLL Jump 4.5pl26) => /lib/libc.so.4.6.29
 .El
 .Pp
-This being done, you are ready to install new Linux binaries.
+This been done, you are ready to install new Linux binaries.
 Whenever you install a new Linux program, you should check
 if it needs shared libraries, and if so, whether you have
 them installed in the /emul/linux tree. To do this, you run
@@ -216,7 +216,7 @@ ldd (see also the manual page for ldd(1)) will print a list
 of shared libraries that the program depends on, in the
 form  <majorname> (<jumpversion>) => <fullname>.
 .Pp
-If it prints "not found" in stead of <fullname> it means that
+If it prints "not found" instead of <fullname> it means that
 you need an extra library. Which library this is, is shown
 in <majorname>, which will be of the form libXXXX.so.<N>
 You will need to find a libXXXX.so.<N>.<mm> on a Linux ftp site,
@@ -224,14 +224,30 @@ and install it on your system. The XXXX (name) and <N> (major
 revision number) should match; the minor number(s) <mm> are
 less important, though it is advised to take the most
 recent version.
+.Pp
+.It 3.
+You have access to the OpenBSD
+.Xr ports 7
+system.  Install the port named
+.Nm linux_lib
+in the
+.Nm emulators
+category.  The
+.Nm linux_lib
+port contains the shared libraries, binaries, and other related files
+necessary to run Linux applications.  Access to a Linux system is not
+needed.
 .El
 
 .Ss Finding the necessary files.
 .Nm Note:
-the information below is valid as of the \time this
+the information below is valid as of the time this
 document was written (March, 1995), but certain details
 such as names of ftp sites, directories and distribution names
-may have changed by the time you read this.
+may have changed by the time you read this.  You can also
+save yourself a lot of headaches by using the OpenBSD
+.Xr ports 7
+system (possibility 3, above).
 .Pp
 Linux is distributed by several groups that make their own set
 of binaries that they distribute. Each distribution has its own
@@ -260,7 +276,7 @@ consists of a number of subdirectories, containing separate packages.
 Normally, they're controlled by an install program, but you can
 retrieve files "by hand" too. First of all, you will need to look
 in the "contents" subdir of the distribution. You will find
-a lot of small textfiles here describing the contents of the seperate
+a lot of small textfiles here describing the contents of the separate
 packages. The fastest way to look something up is to retrieve all
 the files in the contents subdirectory, and grep through them for the file
 you need. Here is an example of a list of files that you might need, and
@@ -326,5 +342,20 @@ some symbloic links in the /emul/linux/dev directory, namely:
 Be warned: the first link mentioned here makes SVGAlib binaries
 work, but may confuse others, so you may have to remove it again at
 some point.
+.Ss Programs using OSS (Linux) audio
+Only the DSP device is emulated, the following link should be created:
+.Pp
+.nf
+/emul/linux/dev/dsp -> /dev/audio
+.fi
+.Pp
+.Ss Other links Linux bins may require
+.Pp
+CD-ROM support requires a link to your cdrom device, similar to:
+.Pp
+.nf
+/emul/linux/dev/cdrom -> /dev/cd0a   (first scsi cdrom)
+.fi
+.Pp
 .Sh BUGS
 The information about Linux distributions may become outdated.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: kern_ipc_10.c,v 1.3 1998/02/10 04:04:03 deraadt Exp $	*/
 /*	$NetBSD: kern_ipc_10.c,v 1.4 1995/10/07 06:26:25 mycroft Exp $	*/
 
 /*
@@ -75,9 +76,6 @@ compat_10_sys_semsys(p, v, retval)
 		syscallarg(struct sembuf *) sops;
 		syscallarg(u_int) nsops;
 	} */ semop_args;
-	struct sys_semconfig_args /* {
-		syscallarg(int) flag;
-	} */ semconfig_args;
 
 	switch (SCARG(uap, which)) {
 	case 0:						/* __semctl() */
@@ -98,10 +96,6 @@ compat_10_sys_semsys(p, v, retval)
 		SCARG(&semop_args, sops) = (struct sembuf *)SCARG(uap, a3);
 		SCARG(&semop_args, nsops) = SCARG(uap, a4);
 		return (sys_semop(p, &semop_args, retval));
-
-	case 3:						/* semconfig() */
-		SCARG(&semconfig_args, flag) = SCARG(uap, a2);
-		return (sys_semconfig(p, &semconfig_args, retval));
 
 	default:
 		return (EINVAL);
@@ -155,7 +149,7 @@ compat_10_sys_shmsys(p, v, retval)
 		return (sys_shmctl(p, &shmctl_args, retval));
 
 	case 2:						/* shmdt() */
-		SCARG(&shmat_args, shmaddr) = (void *)SCARG(uap, a2);
+		SCARG(&shmdt_args, shmaddr) = (void *)SCARG(uap, a2);
 		return (sys_shmdt(p, &shmdt_args, retval));
 
 	case 3:						/* shmget() */

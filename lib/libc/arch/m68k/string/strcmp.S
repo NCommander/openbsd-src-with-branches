@@ -35,13 +35,12 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)strcmp.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: strcmp.S,v 1.2 1995/02/08 18:33:22 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
+
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /*
  * NOTE: this guy returns result compatible with the VAX assembly version.

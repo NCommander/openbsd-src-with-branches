@@ -1,3 +1,4 @@
+/*	$OpenBSD: db_disasm.c,v 1.3 1998/09/09 04:37:08 rahnds Exp $	*/
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -211,7 +212,7 @@ const struct opcode opcodes_1f[] = {
 	{ "cmpl",	0xfc0007fe, 0x7c000040, Op_crfD | Op_L | Op_A | Op_B },
 	{ "subf",	0xfc0007fe, 0x7c000050, Op_D | Op_A | Op_B | Op_OE | Op_Rc },
 	{ "ldux",	0xfc0007fe, 0x7c00006a, Op_D | Op_A | Op_B },
-	{ "dbcst",	0xfc0007fe, 0x7c00006c, Op_A | Op_B },
+	{ "dcbst",	0xfc0007fe, 0x7c00006c, Op_A | Op_B },
 	{ "lwzux",	0xfc0007fe, 0x7c00006e, Op_D | Op_A | Op_B },
 	{ "cntlzd",	0xfc0007fe, 0x7c000074, Op_S | Op_A | Op_Rc },
 	{ "andc",	0xfc0007fe, 0x7c000078, Op_S | Op_A | Op_B | Op_Rc },
@@ -568,8 +569,8 @@ disasm_fields(const struct opcode *popcode, instr_t instr, char *disasm_str)
 		u_int sprl;
 		u_int sprh;
 		char *reg;
-		sprh = extract_field(instr, 31 - 15, 5);
-		sprl = extract_field(instr, 31 - 20, 5);
+		sprl = extract_field(instr, 31 - 15, 5);
+		sprh = extract_field(instr, 31 - 20, 5);
 		spr = sprh << 5 | sprl;
 
 		/* this table could be written better */
@@ -731,8 +732,8 @@ disasm_fields(const struct opcode *popcode, instr_t instr, char *disasm_str)
 		u_int tbrl;
 		u_int tbrh;
 		char *reg;
-		tbrh = extract_field(instr, 31 - 15, 5);
-		tbrl = extract_field(instr, 31 - 20, 5);
+		tbrl = extract_field(instr, 31 - 15, 5);
+		tbrh = extract_field(instr, 31 - 20, 5);
 		tbr = tbrh << 5 | tbrl;
 		switch (tbr) {
 		case 268:

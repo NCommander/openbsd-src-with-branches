@@ -1,3 +1,5 @@
+/*	$OpenBSD: extern.h,v 1.2 1997/01/17 16:12:39 millert Exp $	*/
+
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -57,3 +59,5 @@ void       sttyclearflags __P((struct termios *tp, int flags));
 void       sttysetflags __P((struct termios *tp, int flags));
 void       sttyclearlflags __P((struct termios *tp, int flags));
 void       sttysetlflags __P((struct termios *tp, int flags));
+int	   ksearch __P((char ***, struct info *));
+int	   msearch __P((char ***, struct info *));

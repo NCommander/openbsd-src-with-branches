@@ -1,4 +1,5 @@
-#	$NetBSD: bsd.prog.mk,v 1.53 1995/06/25 22:29:02 cgd Exp $
+#	$OpenBSD: bsd.prog.mk,v 1.20 1999/11/26 21:47:09 millert Exp $
+#	$NetBSD: bsd.prog.mk,v 1.55 1996/04/08 21:19:26 jtc Exp $
 #	@(#)bsd.prog.mk	5.26 (Berkeley) 6/25/91
 
 .if exists(${.CURDIR}/../Makefile.inc)
@@ -7,32 +8,49 @@
 
 .include <bsd.own.mk>
 
-.SUFFIXES: .out .o .c .cc .C .y .l .s .8 .7 .6 .5 .4 .3 .2 .1 .0
+.SUFFIXES: .out .o .c .cc .C .cxx .y .l .s .8 .7 .6 .5 .4 .3 .2 .1 .0
 
 CFLAGS+=	${COPTS}
 
+.if (${MACHINE_ARCH} == "powerpc")
+CRTBEGIN?=       ${DESTDIR}/usr/lib/crtbegin.o
+CRTEND?=         ${DESTDIR}/usr/lib/crtend.o
+.endif
+
+LIBATALK?=	${DESTDIR}/usr/lib/libatalk.a
 LIBCRT0?=	${DESTDIR}/usr/lib/crt0.o
 LIBC?=		${DESTDIR}/usr/lib/libc.a
 LIBCOMPAT?=	${DESTDIR}/usr/lib/libcompat.a
-LIBCRYPT?=	${DESTDIR}/usr/lib/libcrypt.a
 LIBCURSES?=	${DESTDIR}/usr/lib/libcurses.a
+LIBCRYPTO?=	${DESTDIR}/usr/lib/libcrypto.a
 LIBDBM?=	${DESTDIR}/usr/lib/libdbm.a
 LIBDES?=	${DESTDIR}/usr/lib/libdes.a
 LIBEDIT?=	${DESTDIR}/usr/lib/libedit.a
 LIBGCC?=	${DESTDIR}/usr/lib/libgcc.a
-LIBL?=		${DESTDIR}/usr/lib/libl.a
+LIBGMP?=	${DESTDIR}/usr/lib/libgmp.a
 LIBKDB?=	${DESTDIR}/usr/lib/libkdb.a
+LIBKEYNOTE?=	${DESTDIR}/usr/lib/libkeynote.a
 LIBKRB?=	${DESTDIR}/usr/lib/libkrb.a
+LIBKAFS?=	${DESTDIR}/usr/lib/libkafs.a
 LIBKVM?=	${DESTDIR}/usr/lib/libkvm.a
+LIBL?=		${DESTDIR}/usr/lib/libl.a
 LIBM?=		${DESTDIR}/usr/lib/libm.a
 LIBMP?=		${DESTDIR}/usr/lib/libmp.a
+LIBOLDCURSES?=	${DESTDIR}/usr/lib/libocurses.a
 LIBPC?=		${DESTDIR}/usr/lib/libpc.a
+LIBPERL?=	${DESTDIR}/usr/lib/libperl.a
 LIBPLOT?=	${DESTDIR}/usr/lib/libplot.a
 LIBRESOLV?=	${DESTDIR}/usr/lib/libresolv.a
 LIBRPCSVC?=	${DESTDIR}/usr/lib/librpcsvc.a
 LIBSKEY?=	${DESTDIR}/usr/lib/libskey.a
+LIBSSL?=	${DESTDIR}/usr/lib/libssl.a
+LIBTELNET?=	${DESTDIR}/usr/lib/libtelnet.a
 LIBTERMCAP?=	${DESTDIR}/usr/lib/libtermcap.a
+LIBTERMLIB?=	${DESTDIR}/usr/lib/libtermlib.a
 LIBUTIL?=	${DESTDIR}/usr/lib/libutil.a
+LIBWRAP?=	${DESTDIR}/usr/lib/libwrap.a
+LIBY?=		${DESTDIR}/usr/lib/liby.a
+LIBZ?=		${DESTDIR}/usr/lib/libz.a
 
 .if defined(SHAREDSTRINGS)
 CLEANFILES+=strings
@@ -52,6 +70,12 @@ CLEANFILES+=strings
 	@mv -f x.c x.C
 	@${CXX} ${CXXFLAGS} -c x.C -o ${.TARGET}
 	@rm -f x.C
+
+.cxx.o:
+	${CXX} -E ${CXXFLAGS} ${.IMPSRC} | xstr -c -
+	@mv -f x.c x.cxx
+	@${CXX} ${CXXFLAGS} -c x.cxx -o ${.TARGET}
+	@rm -f x.cxx
 .endif
 
 
@@ -65,12 +89,12 @@ LOBJS+=	${LSRCS:.c=.ln} ${SRCS:M*.c:.c=.ln}
 .if defined(OBJS) && !empty(OBJS)
 .if defined(DESTDIR)
 
-${PROG}: ${LIBCRT0} ${OBJS} ${LIBC} ${DPADD}
-	${CC} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} -nostdlib -L${DESTDIR}/usr/lib ${LIBCRT0} ${OBJS} ${LDADD} -lgcc -lc -lgcc
+${PROG}: ${LIBCRT0} ${OBJS} ${LIBC} ${CRTBEGIN} ${CRTEND} ${DPADD}
+	${CC} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} -nostdlib -L${DESTDIR}/usr/lib ${LIBCRT0} ${CRTBEGIN} ${OBJS} ${LDADD} -lgcc -lc -lgcc ${CRTEND}
 
 .else
 
-${PROG}: ${LIBCRT0} ${OBJS} ${LIBC} ${DPADD}
+${PROG}: ${LIBCRT0} ${OBJS} ${LIBC} ${CRTBEGIN} ${CRTEND} ${DPADD}
 	${CC} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} ${OBJS} ${LDADD}
 
 .endif	# defined(DESTDIR)
@@ -103,8 +127,8 @@ afterinstall:
 .if !target(realinstall)
 realinstall:
 .if defined(PROG)
-	install ${COPY} ${STRIP} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-	    ${PROG} ${DESTDIR}${BINDIR}
+	${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP} -o ${BINOWN} -g ${BINGRP} \
+	    -m ${BINMODE} ${PROG} ${DESTDIR}${BINDIR}
 .endif
 .if defined(HIDEGAME)
 	(cd ${DESTDIR}/usr/games; rm -f ${PROG}; ln -s dm ${PROG})
@@ -148,3 +172,4 @@ lint: ${LOBJS}
 .include <bsd.obj.mk>
 .include <bsd.dep.mk>
 .include <bsd.subdir.mk>
+.include <bsd.sys.mk>

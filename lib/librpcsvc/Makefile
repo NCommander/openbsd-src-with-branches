@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.12 1995/01/12 19:39:43 jtc Exp $
+#	$OpenBSD: Makefile,v 1.4 1996/12/08 15:22:31 downsj Exp $
 
 
 RPCSRCS=	bootparam_prot.x klm_prot.x mount.x nfs_prot.x\
@@ -15,18 +15,21 @@ NOPIC=
 all:		${HDRS}
 beforedepend:	${HDRS}
 
-beforeinstall:
-	install -d -o ${BINOWN} -g ${BINGRP} -m 755 \
+includes:	${HDRS}
+	${INSTALL} -d -o ${BINOWN} -g ${BINGRP} -m 755 \
 		${DESTDIR}/usr/include/rpcsvc
+	@echo installing rpc .h and .x files
 	@for i in $(HDRS); do \
 	    cmp -s $$i ${DESTDIR}/usr/include/rpcsvc/$$i || \
-		install -c -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
-		${DESTDIR}/usr/include/rpcsvc; \
+		{ j="${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+		${DESTDIR}/usr/include/rpcsvc"; \
+		echo $$j; $$j; } \
 	done
-	@for i in $(RPCSRCS); do \
+	@cd ${.CURDIR}; for i in $(RPCSRCS); do \
 	    cmp -s $(.CURDIR)/$$i ${DESTDIR}/usr/include/rpcsvc/$$i || \
-		install -c -o ${BINOWN} -g ${BINGRP} -m 444 $(.CURDIR)/$$i \
-		${DESTDIR}/usr/include/rpcsvc; \
+		{ j="${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+		${DESTDIR}/usr/include/rpcsvc"; \
+		echo $$j; $$j; } \
 	done
 
 # new suffixes have to go afterwards, because bsd.lib.mk clears them
@@ -34,9 +37,7 @@ beforeinstall:
 .SUFFIXES: .x .c .h
 
 .x.c:
-	@echo generating $@...
-	@rpcgen -c ${.IMPSRC} -o ${.TARGET}
+	rpcgen -c ${.IMPSRC} -o ${.TARGET}
 
 .x.h:
-	@echo generating $@...
-	@rpcgen -h ${.IMPSRC} -o ${.TARGET}
+	rpcgen -h ${.IMPSRC} -o ${.TARGET}

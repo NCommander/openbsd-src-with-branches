@@ -1,3 +1,4 @@
+.\"	$OpenBSD: bt.4,v 1.6 1999/05/16 19:57:02 alex Exp $
 .\"
 .\" Copyright (c) 1994 James A. Jegers
 .\" All rights reserved.
@@ -9,7 +10,7 @@
 .\"    notice, this list of conditions and the following disclaimer.
 .\" 2. The name of the author may not be used to endorse or promote products
 .\"    derived from this software without specific prior written permission
-.\" 
+.\"
 .\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 .\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 .\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -23,7 +24,7 @@
 .\"
 .Dd November 29, 1994
 .Dt BT 4 i386
-.Os NetBSD 
+.Os
 .Sh NAME
 .Nm bt
 .Nd Buslogic SCSI adapter driver
@@ -32,17 +33,25 @@
 .Cd "scsibus* at bt?"
 .Sh DESCRIPTION
 The
-.Nm bt
+.Nm
 driver supports the following Buslogic SCSI adapters:
 .Pp
 .Bl -tag -width -offset indent -compact
-.It Buslogic BT-445
-.It Buslogic BT-74x 
-.It Buslogic BT-9xx 
+.It Buslogic BT-445		VLB
+.It Buslogic BT-74x		EISA
+.It Buslogic BT-9[45][68]	PCI
 .El
+.Pp
+The Buslogic BT-930 is not supported.
+.Pp
+The PCI versions of this card will require the Buslogic BIOS
+"Advanced Options" suboption called "Set ISA Compatible IO Port"
+to be set to the value "Primary" or "Alternate".  Some cards have
+an option called "Set host adapter IO port address as default" instead;
+for those boards you should set the value to "false".
 .Sh SEE ALSO
+.Xr cd 4 ,
+.Xr ch 4 ,
 .Xr intro 4 ,
 .Xr sd 4 ,
-.Xr st 4 ,
-.Xr cd 4 ,
-.Xr ch 4  
+.Xr st 4

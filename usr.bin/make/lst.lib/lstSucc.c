@@ -1,8 +1,9 @@
-/*	$NetBSD: lstSucc.c,v 1.4 1995/06/14 15:21:42 christos Exp $	*/
+/*	$OpenBSD: lstSucc.c,v 1.4 1998/12/05 00:06:33 espie Exp $	*/
+/*	$NetBSD: lstSucc.c,v 1.5 1996/11/06 17:59:52 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstSucc.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstSucc.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstSucc.c,v 1.4 1995/06/14 15:21:42 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstSucc.c,v 1.4 1998/12/05 00:06:33 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -70,8 +71,8 @@ LstNode
 Lst_Succ (ln)
     LstNode	ln;
 {
-    if (ln == NILLNODE) {
-	return (NILLNODE);
+    if (ln == NULL) {
+	return (NULL);
     } else {
 	return ((LstNode) ((ListNode) ln)->nextPtr);
     }

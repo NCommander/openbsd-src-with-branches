@@ -47,4 +47,12 @@ struct relocation_info_pc532 {
 };
 #define relocation_info	relocation_info_pc532
 
+#define ELF_TARG_CLASS		ELFCLASS32
+#define ELF_TARG_DATA		ELFDATA2LSB
+#define ELF_TARG_MACH		EM_32K
+
+#define _NLIST_DO_AOUT
+
+#define _KERN_DO_AOUT
+
 #endif  /* _PC532_EXEC_H_ */

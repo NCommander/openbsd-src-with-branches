@@ -1,3 +1,4 @@
+/* $OpenBSD: setstack.S,v 1.1 1996/01/31 23:16:59 mark Exp $ */
 /* $NetBSD: setstack.S,v 1.1 1996/01/31 23:16:59 mark Exp $ */
 
 /*
@@ -47,7 +48,6 @@
  *
  * Based of kate/display/setstack.s
  *
- *    $Id: setstack.S,v 1.1 1996/01/31 23:16:59 mark Exp $
  */
 
 #include <machine/cpu.h>

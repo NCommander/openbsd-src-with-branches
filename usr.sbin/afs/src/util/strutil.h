@@ -1,6 +1,6 @@
 /*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -37,13 +37,11 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: strutil.h,v 1.2 1997/11/09 23:48:58 assar Exp $ */
+/* $KTH: strutil.h,v 1.3 1998/08/28 20:49:36 assar Exp $ */
 
 #ifndef _STRUTIL_
 #define _STRUTIL_
 
-char *strupr (char *);
-char *strlwr (char *);
 char *strtrim (char *);
 
 #endif /* _STRUTIL_ */

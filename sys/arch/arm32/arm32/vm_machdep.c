@@ -103,9 +103,11 @@ extern void child_return	__P(());
  */
 
 void
-cpu_fork(p1, p2)
+cpu_fork(p1, p2, stack, stacksize)
 	struct proc *p1;
 	struct proc *p2;
+	void *stack;
+	size_t stacksize;
 {
 	struct user *up = p2->p_addr;
 	struct pcb *pcb = (struct pcb *)&p2->p_addr->u_pcb;
@@ -207,7 +209,7 @@ cpu_fork(p1, p2)
 #endif
 
 	if (vm_map_pageable(&p2->p_vmspace->vm_map, addr, addr+NBPG, FALSE) != 0) {
-		panic("Failed to fault in system page PT\n");
+		panic("Failed to fault in system page PT");
 	}
 
 #ifdef DEBUG_VMMACHDEP
@@ -231,9 +233,20 @@ cpu_fork(p1, p2)
 	arm_fpe_copycontext(FP_CONTEXT(p1), FP_CONTEXT(p2));
 #endif
 
+	/*
+	 * Copy the trap frame, and arrange for the child to return directly
+	 * through return_to_user().  Note the inline cpu_set_kpc().
+	 */
 	p2->p_md.md_regs = tf = (struct trapframe *)pcb->pcb_sp - 1;
 
 	*tf = *p1->p_md.md_regs;
+
+	/*
+	 * If specified, give the child a different stack.
+	 */
+	if (stack != NULL)
+		tf->tf_usr_sp = (u_int)stack + stacksize;
+
 	sf = (struct switchframe *)tf - 1;
 	sf->sf_spl = SPL_0;
 	sf->sf_r4 = (u_int)child_return;
@@ -244,14 +257,15 @@ cpu_fork(p1, p2)
 
 
 void
-cpu_set_kpc(p, pc)
+cpu_set_kpc(p, pc, arg)
 	struct proc *p;
-	u_long pc;
+	void (*pc) __P((void *));
+	void *arg;
 {
 	struct switchframe *sf = (struct switchframe *)p->p_addr->u_pcb.pcb_sp;
 
-	sf->sf_r4 = pc;
-	sf->sf_r5 = (u_int)p;
+	sf->sf_r4 = (u_int)pc;
+	sf->sf_r5 = (u_int)arg;
 }
 
 
@@ -544,13 +558,13 @@ cpu_coredump(p, vp, cred, chdr)
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cseg, chdr->c_seghdrsize,
 	    (off_t)chdr->c_hdrsize, UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, (int *)NULL, p);
+	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	if (error)
 		return error;
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cpustate, sizeof(cpustate),
 	    (off_t)(chdr->c_hdrsize + chdr->c_seghdrsize), UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, (int *)NULL, p);
+	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	if (error)
 		return error;
 

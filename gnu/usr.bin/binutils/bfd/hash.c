@@ -1,5 +1,5 @@
 /* hash.c -- hash table routines for BFD
-   Copyright (C) 1993, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94 Free Software Foundation, Inc.
    Written by Steve Chamberlain <sac@cygnus.com>
 
 This file is part of BFD, the Binary File Descriptor library.
@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "bfd.h"
 #include "sysdep.h"
 #include "libbfd.h"
-#include "objalloc.h"
+#include "obstack.h"
 
 /*
 SECTION
@@ -77,9 +77,9 @@ SUBSECTION
 	different value for this argument.
 
 @findex bfd_hash_allocate
-	<<bfd_hash_table_init>> will create an objalloc which will be
+	<<bfd_hash_table_init>> will create an obstack which will be
 	used to allocate new entries.  You may allocate memory on this
-	objalloc using <<bfd_hash_allocate>>.
+	obstack using <<bfd_hash_allocate>>.
 
 @findex bfd_hash_table_free
 	Use <<bfd_hash_table_free>> to free up all the memory that has
@@ -111,7 +111,7 @@ SUBSECTION
 
 	If the @var{create} argument is <<true>>, and a new entry is
 	created, the @var{copy} argument is used to decide whether to
-	copy the string onto the hash table objalloc or not.  If
+	copy the string onto the hash table obstack or not.  If
 	@var{copy} is passed as <<false>>, you must be careful not to
 	deallocate or modify the string as long as the hash table
 	exists.
@@ -293,6 +293,10 @@ SUBSUBSECTION
 	<<aout_link_hash_traverse>> in aoutx.h.
 */
 
+/* Obstack allocation and deallocation routines.  */
+#define obstack_chunk_alloc malloc
+#define obstack_chunk_free free
+
 /* The default number of entries to use when creating a hash table.  */
 #define DEFAULT_SIZE (4051)
 
@@ -309,16 +313,14 @@ bfd_hash_table_init_n (table, newfunc, size)
   unsigned int alloc;
 
   alloc = size * sizeof (struct bfd_hash_entry *);
-
-  table->memory = (PTR) objalloc_create ();
-  if (table->memory == NULL)
+  if (!obstack_begin (&table->memory, alloc))
     {
       bfd_set_error (bfd_error_no_memory);
       return false;
     }
   table->table = ((struct bfd_hash_entry **)
-		  objalloc_alloc ((struct objalloc *) table->memory, alloc));
-  if (table->table == NULL)
+		  obstack_alloc (&table->memory, alloc));
+  if (!table->table)
     {
       bfd_set_error (bfd_error_no_memory);
       return false;
@@ -347,8 +349,7 @@ void
 bfd_hash_table_free (table)
      struct bfd_hash_table *table;
 {
-  objalloc_free ((struct objalloc *) table->memory);
-  table->memory = NULL;
+  obstack_free (&table->memory, (PTR) NULL);
 }
 
 /* Look up a string in a hash table.  */
@@ -399,8 +400,7 @@ bfd_hash_lookup (table, string, create, copy)
     {
       char *new;
 
-      new = (char *) objalloc_alloc ((struct objalloc *) table->memory,
-				     len + 1);
+      new = (char *) obstack_alloc (&table->memory, len + 1);
       if (!new)
 	{
 	  bfd_set_error (bfd_error_no_memory);
@@ -467,7 +467,7 @@ bfd_hash_allocate (table, size)
 {
   PTR ret;
 
-  ret = objalloc_alloc ((struct objalloc *) table->memory, size);
+  ret = obstack_alloc (&table->memory, size);
   if (ret == NULL && size != 0)
     bfd_set_error (bfd_error_no_memory);
   return ret;

@@ -16,7 +16,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: do_command.c,v 1.2 1995/04/14 19:49:34 mycroft Exp $";
+static char rcsid[] = "$Id: do_command.c,v 1.5 1998/05/08 20:17:18 deraadt Exp $";
 #endif
 
 
@@ -74,9 +74,15 @@ child_process(e, u)
 	user	*u;
 {
 	int		stdin_pipe[2], stdout_pipe[2];
-	register char	*input_data;
+	char		*input_data;
 	char		*usernm, *mailto;
 	int		children = 0;
+
+#ifdef __GNUC__
+	(void) &input_data;	/* Avoid vfork clobbering */
+	(void) &mailto;
+	(void) &children;
+#endif
 
 	Debug(DPROC, ("[%d] child_process('%s')\n", getpid(), e->cmd))
 
@@ -122,13 +128,21 @@ child_process(e, u)
 	 * command, and subsequent characters are the additional input to
 	 * the command.  Subsequent %'s will be transformed into newlines,
 	 * but that happens later.
+	 *
+	 * If there are escaped %'s, remove the escape character.
 	 */
 	/*local*/{
 		register int escaped = FALSE;
 		register int ch;
+		register char *p;
 
-		for (input_data = e->cmd;  ch = *input_data;  input_data++) {
+		for (input_data = p = e->cmd; (ch = *input_data);
+		    input_data++, p++) {
+			if (p != input_data)
+				*p = ch;
 			if (escaped) {
+				if (ch == '%' || ch == '\\')
+					*--p = ch;
 				escaped = FALSE;
 				continue;
 			}
@@ -141,6 +155,7 @@ child_process(e, u)
 				break;
 			}
 		}
+		*p = '\0';
 	}
 
 	/* fork again, this time so we can exec the user's command.
@@ -210,6 +225,7 @@ child_process(e, u)
 # if defined(BSD)
 		initgroups(env_get("LOGNAME", e->envp), e->gid);
 # endif
+		setlogin(usernm);
 		setuid(e->uid);		/* we aren't root after this... */
 		chdir(env_get("HOME", e->envp));
 
@@ -281,7 +297,7 @@ child_process(e, u)
 		 *	%  -> \n
 		 *	\x -> \x	for all x != %
 		 */
-		while (ch = *input_data++) {
+		while ((ch = *input_data++) != '\0') {
 			if (escaped) {
 				if (ch != '%')
 					putc('\\', out);
@@ -330,10 +346,13 @@ child_process(e, u)
 		register int	ch = getc(in);
 
 		if (ch != EOF) {
-			register FILE	*mail;
+			FILE		*mail;
 			register int	bytes = 1;
 			int		status = 0;
 
+#ifdef __GNUC__
+			(void) &mail;
+#endif
 			Debug(DPROC|DEXT,
 				("[%d] got data (%x:%c) from grandchild\n",
 					getpid(), ch, ch))
@@ -368,7 +387,7 @@ child_process(e, u)
 				(void) gethostname(hostname, MAXHOSTNAMELEN);
 				(void) snprintf(mailcmd, sizeof(mailcmd),
 				    MAILARGS, MAILCMD);
-				if (!(mail = cron_popen(mailcmd, "w"))) {
+				if (!(mail = cron_popen(mailcmd, "w", e))) {
 					perror(MAILCMD);
 					(void) _exit(ERROR_EXIT);
 				}
@@ -379,7 +398,7 @@ child_process(e, u)
 					e->cmd);
 # if defined(MAIL_DATE)
 				fprintf(mail, "Date: %s\n",
-					arpadate(&TargetTime));
+					arpadate(&StartTime));
 # endif /* MAIL_DATE */
 				for (env = e->envp;  *env;  env++)
 					fprintf(mail, "X-Cron-Env: <%s>\n",

@@ -1,8 +1,9 @@
-/*	$NetBSD: lstLast.c,v 1.4 1995/06/14 15:21:29 christos Exp $	*/
+/*	$OpenBSD: lstLast.c,v 1.4 1998/12/05 00:06:32 espie Exp $	*/
+/*	$NetBSD: lstLast.c,v 1.5 1996/11/06 17:59:48 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstLast.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstLast.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstLast.c,v 1.4 1995/06/14 15:21:29 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstLast.c,v 1.4 1998/12/05 00:06:32 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,7 +58,7 @@ static char rcsid[] = "$NetBSD: lstLast.c,v 1.4 1995/06/14 15:21:29 christos Exp
  *	Return the last node on the list l.
  *
  * Results:
- *	The requested node or NILLNODE if the list is empty.
+ *	The requested node or NULL if the list is empty.
  *
  * Side Effects:
  *	None.
@@ -69,7 +70,7 @@ Lst_Last (l)
     Lst	    l;
 {
     if (!LstValid(l) || LstIsEmpty (l)) {
-	return (NILLNODE);
+	return (NULL);
     } else {
 	return ((LstNode)((List)l)->lastPtr);
     }

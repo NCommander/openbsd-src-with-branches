@@ -1,3 +1,5 @@
+/*	$OpenBSD: ldconfig.c,v 1.7 2000/01/27 22:14:57 form Exp $	*/
+
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
  * All rights reserved.
@@ -26,8 +28,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *	$Id: ldconfig.c,v 1.12 1995/08/25 11:35:35 pk Exp $
  */
 
 #include <sys/param.h>
@@ -37,7 +37,9 @@
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
+#include <ctype.h>
 #include <dirent.h>
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <ar.h>
@@ -60,6 +62,7 @@ static int			verbose;
 static int			nostd;
 static int			justread;
 static int			merge;
+static int			rescan;
 
 struct shlib_list {
 	/* Internal list of shared libraries found */
@@ -73,6 +76,7 @@ struct shlib_list {
 };
 
 static struct shlib_list	*shlib_head = NULL, **shlib_tail = &shlib_head;
+static char			*dir_list;
 
 static void	enter __P((char *, char *, char *, int *, int));
 static int	dodir __P((char *, int));
@@ -88,8 +92,11 @@ char	*argv[];
 	int		i, c;
 	int		rval = 0;
 
-	while ((c = getopt(argc, argv, "mrsv")) != EOF) {
+	while ((c = getopt(argc, argv, "Rmrsv")) != EOF) {
 		switch (c) {
+		case 'R':
+			rescan = 1;
+			break;
 		case 'm':
 			merge = 1;
 			break;
@@ -103,29 +110,38 @@ char	*argv[];
 			verbose = 1;
 			break;
 		default:
-			errx(1, "Usage: %s [-r][-s][-v][dir ...]",
+			errx(1, "Usage: %s [-Rmrsv] [dir ...]",
 				__progname);
 			break;
 		}
 	}
 
-	if (justread || merge) {
+	dir_list = xmalloc(1);
+	*dir_list = '\0';
+
+	if (justread || merge || rescan) {
 		if ((rval = readhints()) != 0)
 			return rval;
 		if (justread) {
 			listhints();
-			return;
+			return 0;
 		}
-	}
-
-	if (!nostd && !merge)
-		std_search_path();
-
-	for (i = 0; i < n_search_dirs; i++)
-		rval |= dodir(search_dirs[i], 1);
+		add_search_path(dir_list);
+		dir_list = xrealloc(dir_list, 1);
+		*dir_list = '\0';
+	} else
+		if (!nostd)
+			std_search_path();
 
 	for (i = optind; i < argc; i++)
-		rval |= dodir(argv[i], 0);
+		add_search_dir(argv[i]);
+
+	for (i = 0; i < n_search_dirs; i++) {
+		char *cp = concat(dir_list, *dir_list?":":"", search_dirs[i]);
+		free(dir_list);
+		dir_list = cp;
+		rval |= dodir(search_dirs[i], 0);
+	}
 
 	rval |= buildhints();
 
@@ -208,7 +224,7 @@ int	dewey[], ndewey;
 					dir, file);
 
 			free(shp->name);
-			shp->name = strdup(name);
+			shp->name = xstrdup(name);
 			free(shp->path);
 			shp->path = concat(dir, "/", file);
 			bcopy(dewey, shp->dewey, sizeof(shp->dewey));
@@ -226,7 +242,7 @@ int	dewey[], ndewey;
 		printf("Adding %s/%s\n", dir, file);
 
 	shp = (struct shlib_list *)xmalloc(sizeof *shp);
-	shp->name = strdup(name);
+	shp->name = xstrdup(name);
 	shp->path = concat(dir, "/", file);
 	bcopy(dewey, shp->dewey, MAXDEWEY);
 	shp->ndewey = ndewey;
@@ -254,7 +270,9 @@ int	vmajor, vminor;
 		k = (((k << 1) + (k >> 14)) ^ (*cp++)) & 0x3fff;
 
 	k = (((k << 1) + (k >> 14)) ^ (vmajor*257)) & 0x3fff;
+#if 0
 	k = (((k << 1) + (k >> 14)) ^ (vminor*167)) & 0x3fff;
+#endif
 
 	return k;
 }
@@ -280,16 +298,18 @@ buildhints()
 
 	/* Fill hints file header */
 	hdr.hh_magic = HH_MAGIC;
-	hdr.hh_version = LD_HINTS_VERSION_1;
+	hdr.hh_version = LD_HINTS_VERSION_2;
 	hdr.hh_nbucket = 1 * nhints;
 	n = hdr.hh_nbucket * sizeof(struct hints_bucket);
 	hdr.hh_hashtab = sizeof(struct hints_header);
 	hdr.hh_strtab = hdr.hh_hashtab + n;
+	hdr.hh_dirlist = strtab_sz;
+	strtab_sz += 1 + strlen(dir_list);
 	hdr.hh_strtab_sz = strtab_sz;
 	hdr.hh_ehints = hdr.hh_strtab + hdr.hh_strtab_sz;
 
 	if (verbose)
-		printf("Totals: entries %d, buckets %d, string size %d\n",
+		printf("Totals: entries %d, buckets %ld, string size %d\n",
 					nhints, hdr.hh_nbucket, strtab_sz);
 
 	/* Allocate buckets and string table */
@@ -339,17 +359,21 @@ buildhints()
 		bp->hi_ndewey = shp->ndewey;
 	}
 
-	tmpfile = concat(_PATH_LD_HINTS, ".XXXXXX", "");
-	if ((tmpfile = mktemp(tmpfile)) == NULL) {
+	/* Copy search directories */
+	strcpy(strtab + str_index, dir_list);
+	str_index += 1 + strlen(dir_list);
+
+	/* Sanity check */
+	if (str_index != strtab_sz) {
+		errx(1, "str_index(%d) != strtab_sz(%d)", str_index, strtab_sz);
+	}
+
+	tmpfile = concat(_PATH_LD_HINTS, ".XXXXXXXXXX", "");
+	if ((fd = mkstemp(tmpfile)) == -1) {
 		warn("%s", tmpfile);
 		return -1;
 	}
-
-	umask(0);	/* Create with exact permissions */
-	if ((fd = open(tmpfile, O_RDWR|O_CREAT|O_TRUNC, 0444)) == -1) {
-		warn("%s", _PATH_LD_HINTS);
-		return -1;
-	}
+	fchmod(fd, 0444);
 
 	if (write(fd, &hdr, sizeof(struct hints_header)) !=
 	    sizeof(struct hints_header)) {
@@ -411,13 +435,13 @@ readhints()
 
 	hdr = (struct hints_header *)addr;
 	if (HH_BADMAG(*hdr)) {
-		warnx("%s: Bad magic: %o",
+		warnx("%s: Bad magic: %lo",
 			_PATH_LD_HINTS, hdr->hh_magic);
 		return -1;
 	}
 
-	if (hdr->hh_version != LD_HINTS_VERSION_1) {
-		warnx("Unsupported version: %d", hdr->hh_version);
+	if (hdr->hh_version != LD_HINTS_VERSION_2) {
+		warnx("Unsupported version: %ld", hdr->hh_version);
 		return -1;
 	}
 
@@ -435,6 +459,11 @@ readhints()
 	blist = (struct hints_bucket *)(addr + hdr->hh_hashtab);
 	strtab = (char *)(addr + hdr->hh_strtab);
 
+	dir_list = xstrdup(strtab + hdr->hh_dirlist);
+
+	if (rescan)
+		return (0);
+
 	for (i = 0; i < hdr->hh_nbucket; i++) {
 		struct hints_bucket	*bp = &blist[i];
 
@@ -450,8 +479,8 @@ readhints()
 
 		/* Allocate new list element */
 		shp = (struct shlib_list *)xmalloc(sizeof *shp);
-		shp->name = strdup(strtab + bp->hi_namex);
-		shp->path = strdup(strtab + bp->hi_pathx);
+		shp->name = xstrdup(strtab + bp->hi_namex);
+		shp->path = xstrdup(strtab + bp->hi_pathx);
 		bcopy(bp->hi_dewey, shp->dewey, sizeof(shp->dewey));
 		shp->ndewey = bp->hi_ndewey;
 		shp->next = NULL;
@@ -470,6 +499,7 @@ listhints()
 	int			i;
 
 	printf("%s:\n", _PATH_LD_HINTS);
+	printf("\tsearch directories: %s\n", dir_list);
 
 	for (i = 0, shp = shlib_head; shp; i++, shp = shp->next)
 		printf("\t%d:-l%s.%d.%d => %s\n",

@@ -1,7 +1,5 @@
-/*	$NetBSD: fddi.h,v 1.2 1995/03/06 19:10:10 mycroft Exp $	*/
-
 /*
- * Copyright (c) 1992, 1993, 1994
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -20,7 +18,7 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) Header: fddi.h,v 1.6 94/06/14 20:12:35 leres Exp (LBL)
+ * @(#) $Header: fddi.h,v 1.8 96/06/03 03:06:04 leres Exp $ (LBL)
  */
 
 /*
@@ -34,13 +32,6 @@
  */
 
 struct fddi_header {
-#if defined(ultrix) || defined(__alpha)
-	/* Ultrix pads to make everything line up on a nice boundary */
-#define	FDDIPAD	3
-	u_char  fddi_ph[FDDIPAD];
-#else
-#define	FDDIPAD	0
-#endif
 	u_char  fddi_fc;		/* frame control */
 	u_char  fddi_dhost[6];
 	u_char  fddi_shost[6];

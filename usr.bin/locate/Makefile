@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile,v 1.3 1994/12/22 06:17:28 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.4 1996/09/15 16:50:33 michaels Exp $
 
 SUBDIR=	bigram code locate
 

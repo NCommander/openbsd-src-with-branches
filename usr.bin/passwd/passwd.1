@@ -1,3 +1,5 @@
+.\"	$OpenBSD: passwd.1,v 1.10 2000/03/28 23:44:40 deraadt Exp $
+.\"
 .\" Copyright (c) 1990 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,26 +32,28 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)passwd.1	6.11 (Berkeley) 7/24/91
-.\"	$Id: passwd.1,v 1.5 1995/02/12 17:45:56 phil Exp $
 .\"
 .Dd July 24, 1991
 .Dt PASSWD 1
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm passwd
 .Nd modify a user's password
 .Sh SYNOPSIS
 .Nm passwd
 .Op Fl l
-.Op Fl k
 .Op Fl y
+.Op Fl k
+.Op Fl n Ar name
+.Op Fl i Ar instance
+.Op Fl r Ar realm
+.Op Fl u Ar username[.instance][@realm]
 .Op Ar user
-.Nm yppasswd
-.Op Ar user
+.\" This should really be: passwd [-l] [-y] [-k [-n name] [-i instance] [-r realm] [-u username[.instance][@realm]]] [user]
 .Sh DESCRIPTION
-.Nm Passwd
-changes the user's local, Kerberos, or YP password.  First, the user is prompted
-for their current password.
+.Nm passwd
+changes the user's local, Kerberos, or YP password.
+First, the user is prompted for their current password.
 If the current password is correctly typed, a new password is
 requested.
 The new password must be entered twice to avoid typing errors.
@@ -59,39 +63,61 @@ purely alphabetic.
 Its total length must be less than
 .Dv _PASSWORD_LEN
 (currently 128 characters).
-Numbers, upper case letters and meta characters
+Numbers, upper case letters and meta-characters
 are encouraged.
+.Pp
+The options are as follows:
 .Bl -tag -width flag
 .It Fl l
-This option causes the password to be updated only in the local
-password file.  When changing only the local password,
-.Xr pwd_mkdb  8
+Causes the password to be updated only in the local
+password file.
+When changing only the local password,
+.Xr pwd_mkdb 8
 is used to update the password databases.
+.It Fl y
+Forces the YP password database entry to be changed, even if
+the user has an entry in the local database.
+The
+.Xr rpc.yppasswdd 8
+daemon should be running on the YP master server.
 .It Fl k
-This option forces the change to affect the Kerberos database, even
+Forces the change to affect the Kerberos database, even
 if the user has a password in the local database.
 Once the password has been verified,
 .Nm passwd
 communicates the new password information to
 the Kerberos authenticating host.
-.It Fl y
-This forces the YP password database entry to be changed, even if
-the user has an entry in the local database.  The
-.Xr rpc.yppasswdd 8
-daemon should be running on the YP master server.
-.Nm yppasswd
-is the equivalent of
-.Nm passwd
-with the
-.Fl y
-flag.
+.El
+.Pp
+The following flags are only used when the
+.Fl k
+flag is specified:
+.Bl -tag -width flag
+.It Fl n Ar name
+Specifies a
+.Ar name
+that will be used as the principal name rather than the username
+of the user running
+.Nm passwd .
+(This is determined from the ticket file if it exists; otherwise,
+it is determined from the Unix user ID.)
+.It Fl i Ar instance
+Specifies an
+.Ar instance
+to use rather than a null instance.
+.It Fl r Ar realm
+Specifies a
+.Ar realm
+instead of the local realm.
+.It Fl u Ar username[.instance][@realm]
+Specifies a fully qualified Kerberos principal.
 .El
 .Pp
 This is the behavior if no flags are specified:
 if Kerberos is active then
 .Nm passwd
 will talk to the Kerberos server (even if the user has an entry
-in the local database.)
+in the local database).
 If the password is not in the local password database, then
 an attempt is made to use the YP database.
 .Pp
@@ -100,16 +126,23 @@ run
 .Xr kinit 1
 followed by
 .Xr passwd 1 .
-The super-user is not required to provide a user's current password
+The superuser is not required to provide a user's current password
 if only the local password is modified.
+.Pp
+Which type of cipher is used to encrypt the password information
+depends on the configuration in
+.Xr passwd.conf 5 .
+It can be different for local and YP passwords.
 .Sh FILES
 .Bl -tag -width /etc/master.passwd -compact
 .It Pa /etc/master.passwd
-The user database
-.It Pa /etc/passwd 
-A Version 7 format password file
+user database
+.It Pa /etc/passwd
+a Version 7 format password file
 .It Pa /etc/passwd.XXXXXX
-Temporary copy of the password file
+temporary copy of the password file
+.It /etc/passwd.conf
+configuration options
 .El
 .Sh SEE ALSO
 .Xr chpass 1 ,
@@ -117,7 +150,7 @@ Temporary copy of the password file
 .Xr kinit 1 ,
 .Xr login 1 ,
 .Xr passwd 5 ,
-.Xr kpasswdd 8 ,
+.Xr passwd.conf 5 ,
 .Xr pwd_mkdb 8 ,
 .Xr vipw 8
 .Rs

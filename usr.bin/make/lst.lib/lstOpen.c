@@ -1,8 +1,9 @@
-/*	$NetBSD: lstOpen.c,v 1.4 1995/06/14 15:21:37 christos Exp $	*/
+/*	$OpenBSD: lstOpen.c,v 1.4 1998/12/05 00:06:32 espie Exp $	*/
+/*	$NetBSD: lstOpen.c,v 1.5 1996/11/06 17:59:50 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstOpen.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstOpen.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstOpen.c,v 1.4 1995/06/14 15:21:37 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstOpen.c,v 1.4 1998/12/05 00:06:32 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -65,7 +66,7 @@ static char rcsid[] = "$NetBSD: lstOpen.c,v 1.4 1995/06/14 15:21:37 christos Exp
  *	SUCCESS or FAILURE.
  *
  * Side Effects:
- *	isOpen is set TRUE and curPtr is set to NilListNode so the
+ *	isOpen is set TRUE and curPtr is set to NULL so the
  *	other sequential functions no it was just opened and can choose
  *	the first element accessed based on this.
  *
@@ -80,7 +81,7 @@ Lst_Open (l)
 	}
 	((List) l)->isOpen = TRUE;
 	((List) l)->atEnd = LstIsEmpty (l) ? Head : Unknown;
-	((List) l)->curPtr = NilListNode;
+	((List) l)->curPtr = NULL;
 
 	return (SUCCESS);
 }

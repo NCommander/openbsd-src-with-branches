@@ -1,8 +1,8 @@
-/*	$NetBSD: pass3.c,v 1.8 1995/03/18 14:55:54 cgd Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD$	*/
+/*	$NetBSD: pass3.c,v 1.1 1997/06/11 11:21:55 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -39,7 +39,11 @@
 #if 0
 static char sccsid[] = "@(#)pass3.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: pass3.c,v 1.8 1995/03/18 14:55:54 cgd Exp $";
+#if 0
+static char rcsid[] = "$NetBSD: pass3.c,v 1.1 1997/06/11 11:21:55 bouyer Exp $";
+#else
+static char rcsid[] = "$OpenBSD$";
+#endif
 #endif
 #endif /* not lint */
 

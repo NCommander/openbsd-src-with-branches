@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: swaplist.c,v 1.8 1998/10/08 10:00:31 mrg Exp $	*/
 
 /*
@@ -120,7 +121,7 @@ list_swap(pri, kflag, pflag, tflag, dolong)
 		    (int)(dbtoqb(totalinuse) / (1024 * 1024)),
 		    (int)(dbtoqb(totalsize) / (1024 * 1024)));
 	else if (dolong == 0)
-		    printf("total: %ldk bytes allocated = %ldk used,"
+		    printf("total: %ldk bytes allocated = %ldk used, "
 			   "%ldk available\n",
 		    (long)(dbtoqb(totalsize) / 1024),
 		    (long)(dbtoqb(totalinuse) / 1024),

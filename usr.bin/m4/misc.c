@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.17 2000/01/15 14:26:00 espie Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.17 2000/01/15 14:26:00 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,42 +50,59 @@ static char rcsid[] = "$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $";
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
+#include <err.h>
 #include "mdef.h"
 #include "stdd.h"
 #include "extern.h"
 #include "pathnames.h"
 
+
+char *ep;		/* first free char in strspace */
+static char *strspace;	/* string space for evaluation */
+static char *endest;	/* end of string space	       */
+static size_t strsize = STRSPMAX;
+static size_t bufsize = BUFSIZE;
+static int low_sp = 0;
+
+char *buf;			/* push-back buffer	       */
+char *bufbase;			/* the base for current ilevel */
+char *bbase[MAXINP];		/* the base for each ilevel    */
+char *bp; 			/* first available character   */
+static char *endpbb;			/* end of push-back buffer     */
+
+
+static void enlarge_bufspace __P((void));
+static void enlarge_strspace __P((void));
 /*
  * find the index of second str in the first str.
  */
-int
+ptrdiff_t
 indx(s1, s2)
-char *s1;
-char *s2;
+	const char *s1;
+	const char *s2;
 {
-	register char *t;
-	register char *p;
-	register char *m;
+	char *t;
 
-	for (p = s1; *p; p++) {
-		for (t = p, m = s2; *m && *m == *t; m++, t++);
-		if (!*m)
-			return (p - s1);
-	}
-	return (-1);
+	t = strstr(s1, s2);
+	if (t == NULL)
+		return (-1);
+	else
+		return (t - s1);
 }
 /*
  *  putback - push character back onto input
  */
 void
 putback(c)
-char c;
+	int c;
 {
-	if (bp < endpbb)
-		*bp++ = c;
-	else
-		oops("too many characters pushed back");
+	if (c == EOF)
+		return;
+	if (bp >= endpbb)
+		enlarge_bufspace();
+	*bp++ = c;
 }
 
 /*
@@ -94,22 +112,15 @@ char c;
  */
 void
 pbstr(s)
-register char *s;
+	const char *s;
 {
-	register char *es;
-	register char *zp;
+	size_t n;
 
-	es = s;
-	zp = bp;
-
-	while (*es)
-		es++;
-	es--;
-	while (es >= s)
-		if (zp < endpbb)
-			*zp++ = *es--;
-	if ((bp = zp) == endpbb)
-		oops("too many characters pushed back");
+	n = strlen(s);
+	while (endpbb - bp <= n)
+		enlarge_bufspace();
+	while (n > 0)
+		*bp++ = s[--n];
 }
 
 /*
@@ -117,9 +128,9 @@ register char *s;
  */
 void
 pbnum(n)
-int n;
+	int n;
 {
-	register int num;
+	int num;
 
 	num = (n < 0) ? -n : n;
 	do {
@@ -132,16 +143,103 @@ int n;
 }
 
 /*
+ *  pbunsigned - convert unsigned long to string, push back on input.
+ */
+void
+pbunsigned(n)
+	unsigned long n;
+{
+	do {
+		putback(n % 10 + '0');
+	}
+	while ((n /= 10) > 0);
+}
+
+void 
+initspaces()
+{
+	int i;
+
+	strspace = xalloc(strsize+1);
+	ep = strspace;
+	endest = strspace+strsize;
+	buf = (char *)xalloc(bufsize);
+	bufbase = buf;
+	bp = buf;
+	endpbb = buf + bufsize;
+	for (i = 0; i < MAXINP; i++)
+		bbase[i] = buf;
+}
+
+/* XXX when chrsave is called, the current argument is
+ * always topmost on the stack.  We make use of this to
+ * duplicate it transparently, and to reclaim the correct
+ * space when the stack is unwound.
+ */
+static void 
+enlarge_strspace()
+{
+	char *newstrspace;
+
+	low_sp = sp;
+	strsize *= 2;
+	newstrspace = malloc(strsize + 1);
+	if (!newstrspace)
+		errx(1, "string space overflow");
+	memcpy(newstrspace, strspace, strsize/2);
+		/* reclaim memory in the easy, common case. */
+	if (ep == strspace)
+		free(strspace);
+	mstack[sp].sstr = (mstack[sp].sstr-strspace) + newstrspace;
+	ep = (ep-strspace) + newstrspace;
+	strspace = newstrspace;
+	endest = strspace + strsize;
+}
+
+static void 
+enlarge_bufspace()
+{
+	char *newbuf;
+	int i;
+
+	bufsize *= 2;
+	newbuf = realloc(buf, bufsize);
+	if (!newbuf)
+		errx(1, "too many characters pushed back");
+	for (i = 0; i < MAXINP; i++)
+		bbase[i] = (bbase[i]-buf)+newbuf;
+	bp = (bp-buf)+newbuf;
+	bufbase = (bufbase-buf)+newbuf;
+	buf = newbuf;
+	endpbb = buf+bufsize;
+}
+
+/*
  *  chrsave - put single char on string space
  */
 void
 chrsave(c)
-char c;
+	int c;
 {
-	if (ep < endest)
-		*ep++ = c;
+	if (ep >= endest) 
+		enlarge_strspace();
+	*ep++ = c;
+}
+
+/* 
+ * so we reclaim what string space we can
+ */
+char * 
+compute_prevep()
+{
+	if (fp+3 <= low_sp)
+		{
+		return strspace;
+		}
 	else
-		oops("string space overflow");
+		{
+		return mstack[fp+3].sstr;
+		}
 }
 
 /*
@@ -149,36 +247,24 @@ char c;
  */
 void
 getdiv(n)
-int n;
+	int n;
 {
-	register int c;
-	register FILE *dfil;
+	int c;
 
 	if (active == outfile[n])
-		oops("%s: diversion still active.", "undivert");
+		errx(1, "undivert: diversion still active");
+	rewind(outfile[n]);
+	while ((c = getc(outfile[n])) != EOF)
+		putc(c, active);
 	(void) fclose(outfile[n]);
 	outfile[n] = NULL;
-	m4temp[UNIQUE] = n + '0';
-	if ((dfil = fopen(m4temp, "r")) == NULL)
-		oops("%s: cannot undivert.", m4temp);
-	else
-		while ((c = getc(dfil)) != EOF)
-			putc(c, active);
-	(void) fclose(dfil);
-
-#ifdef vms
-	if (remove(m4temp))
-#else
-	if (unlink(m4temp) == -1)
-#endif
-		oops("%s: cannot unlink.", m4temp);
 }
 
 void
 onintr(signo)
 	int signo;
 {
-	oops("interrupted.");
+	errx(1, "interrupted.");
 }
 
 /*
@@ -187,86 +273,90 @@ onintr(signo)
 void
 killdiv()
 {
-	register int n;
+	int n;
 
 	for (n = 0; n < MAXOUT; n++)
 		if (outfile[n] != NULL) {
 			(void) fclose(outfile[n]);
-			m4temp[UNIQUE] = n + '0';
-#ifdef vms
-			(void) remove(m4temp);
-#else
-			(void) unlink(m4temp);
-#endif
 		}
 }
 
-char *
+void *
 xalloc(n)
-unsigned long n;
+	size_t n;
 {
-	register char *p = malloc(n);
+	char *p = malloc(n);
 
 	if (p == NULL)
-		oops("malloc: %s", strerror(errno));
+		err(1, "malloc");
 	return p;
 }
 
 char *
 xstrdup(s)
-const char *s;
+	const char *s;
 {
-	register char *p = strdup(s);
+	char *p = strdup(s);
 	if (p == NULL)
-		oops("strdup: %s", strerror(errno));
+		err(1, "strdup");
 	return p;
-}
-
-char *
-basename(s)
-register char *s;
-{
-	register char *p;
-	extern char *strrchr();
-
-	if ((p = strrchr(s, '/')) == NULL)
-		return s;
-
-	return ++p;
 }
 
 void
 usage()
 {
-	fprintf(stderr, "usage: m4 [-Dname[=val]] [-Uname]\n");
+	fprintf(stderr, "usage: m4 [-Dname[=val]] [-Uname] [-I dirname...]\n");
 	exit(1);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+int 
+obtain_char(f)
+	struct input_file *f;
+{
+	if (f->c == EOF)
+		return EOF;
+	else if (f->c == '\n')
+		f->lineno++;
+
+	f->c = fgetc(f->file);
+	return f->c;
+}
+
+void 
+set_input(f, real, name)
+	struct input_file *f;
+	FILE *real;
+	const char *name;
+{
+	f->file = real;
+	f->lineno = 1;
+	f->c = 0;
+	f->name = xstrdup(name);
+}
+
+void 
+release_input(f)
+	struct input_file *f;
+{
+	if (f->file != stdin)
+	    fclose(f->file);
+	f->c = EOF;
+	/*
+	 * XXX can't free filename, as there might still be 
+	 * error information pointing to it.
+	 */
+}
 
 void
-#if __STDC__
-oops(const char *fmt, ...)
-#else
-oops(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
+doprintlineno(f)
+	struct input_file *f;
 {
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "%s: ", progname);
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-	exit(1);
-	/* NOTREACHED */
+	pbunsigned(f->lineno);
+}
+
+void
+doprintfilename(f)
+	struct input_file *f;
+{
+	pbstr(f->name);
 }

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -67,9 +67,14 @@ extern "C" {
  */
 
 extern int ap_standalone;
+extern int ap_configtestonly;
+extern int ap_docrootcheck;
 extern uid_t ap_user_id;
 extern char *ap_user_name;
 extern gid_t ap_group_id;
+#ifdef NETWARE
+extern unsigned int ap_thread_stack_size;
+#endif
 #ifdef MULTIPLE_GROUPS
 extern gid_t group_id_list[NGROUPS_MAX];
 #endif
@@ -86,6 +91,9 @@ extern MODULE_VAR_EXPORT int ap_suexec_enabled;
 extern int ap_listenbacklog;
 extern int ap_dump_settings;
 extern API_VAR_EXPORT int ap_extended_status;
+#ifdef EAPI
+extern API_VAR_EXPORT ap_ctx *ap_global_ctx;
+#endif /* EAPI */
 
 extern char *ap_pid_fname;
 extern char *ap_scoreboard_fname;

@@ -1,4 +1,5 @@
-/*	$NetBSD: procfs_mem.c,v 1.7 1995/01/05 07:10:54 chopps Exp $	*/
+/*	$OpenBSD: procfs_mem.c,v 1.8 1998/08/30 13:42:14 pefo Exp $	*/
+/*	$NetBSD: procfs_mem.c,v 1.8 1996/02/09 22:40:50 christos Exp $	*/
 
 /*
  * Copyright (c) 1993 Jan-Simon Pendry
@@ -56,6 +57,15 @@
 #include <vm/vm_kern.h>
 #include <vm/vm_page.h>
 
+#if defined(UVM)
+#include <uvm/uvm_extern.h>
+#endif
+
+#define	ISSET(t, f)	((t) & (f))
+
+#if !defined(UVM)
+static int procfs_rwmem __P((struct proc *, struct uio *));
+
 static int
 procfs_rwmem(p, uio)
 	struct proc *p;
@@ -106,7 +116,7 @@ procfs_rwmem(p, uio)
 		 * The map we want...
 		 */
 		map = &p->p_vmspace->vm_map;
-  
+
 		/*
 		 * Check the permissions for the area we're interested
 		 * in.
@@ -146,15 +156,19 @@ procfs_rwmem(p, uio)
 		 */
 		if (!error)
 			vm_map_lookup_done(tmap, out_entry);
-  
+
 		/*
 		 * Fault the page in...
 		 */
 		if (!error && writing && object->shadow) {
 			m = vm_page_lookup(object, off);
-			if (m == 0 || (m->flags & PG_COPYONWRITE))
+			if (m == 0 || (m->flags & PG_COPYONWRITE)) {
+#ifdef __i386__
+				pmap_prefault(map, uva, 4);
+#endif
 				error = vm_fault(map, pageno,
 							VM_PROT_WRITE, FALSE);
+				}
 		}
 
 		/* Find space in kernel_map for the page we're interested in */
@@ -182,7 +196,8 @@ procfs_rwmem(p, uio)
 			 * Now do the i/o move.
 			 */
 			if (!error)
-				error = uiomove(kva + page_offset, len, uio);
+				error = uiomove((caddr_t) (kva + page_offset),
+						len, uio);
 
 			vm_map_remove(kernel_map, kva, kva + PAGE_SIZE);
 		}
@@ -193,6 +208,7 @@ procfs_rwmem(p, uio)
 
 	return (error);
 }
+#endif
 
 /*
  * Copy data in and out of the target process.
@@ -202,16 +218,34 @@ procfs_rwmem(p, uio)
  */
 int
 procfs_domem(curp, p, pfs, uio)
-	struct proc *curp;
-	struct proc *p;
+	struct proc *curp;		/* tracer */
+	struct proc *p;			/* traced */
 	struct pfsnode *pfs;
 	struct uio *uio;
 {
+	int error;
 
 	if (uio->uio_resid == 0)
 		return (0);
 
-	return (procfs_rwmem(p, uio));
+	if ((error = procfs_checkioperm(curp, p)) != 0)
+		return (error);
+#if defined(UVM)
+	/* XXXCDC: how should locking work here? */
+	if ((p->p_flag & P_WEXIT) || (p->p_vmspace->vm_refcnt < 1)) 
+		return(EFAULT);
+	PHOLD(p);
+	p->p_vmspace->vm_refcnt++;  /* XXX */
+	error = uvm_io(&p->p_vmspace->vm_map, uio);
+	PRELE(p);
+	uvmspace_free(p->p_vmspace);
+#else
+	PHOLD(p);
+	error = procfs_rwmem(p, uio);
+	PRELE(p);
+#endif
+
+	return error;
 }
 
 /*
@@ -233,6 +267,39 @@ procfs_findtextvp(p)
 	return (p->p_textvp);
 }
 
+/*
+ * Ensure that a process has permission to perform I/O on another.
+ * Arguments:
+ *	p   The process wishing to do the I/O (the tracer).
+ *	t   The process who's memory/registers will be read/written.
+ *
+ * You cannot attach to a process's mem/regs if:
+ *
+ *	(1) It's not owned by you, or the last exec
+ *	    gave us setuid/setgid privs (unless
+ *	    you're root), or...
+ *
+ *	(2) It's init, which controls the security level
+ *	    of the entire system, and the system was not
+ *	    compiled with permanently insecure mode turned
+ *	    on.
+ */
+int
+procfs_checkioperm(p, t)
+	struct proc *p, *t;
+{
+	int error;
+
+	if ((t->p_cred->p_ruid != p->p_cred->p_ruid ||
+	    ISSET(t->p_flag, P_SUGID)) &&
+	    (error = suser(p->p_ucred, &p->p_acflag)) != 0)
+		return (error);
+
+	if ((t->p_pid == 1) && (securelevel > -1))
+		return (EPERM);
+
+	return (0);
+}
 
 #ifdef probably_never
 /*
@@ -272,7 +339,7 @@ procfs_findtextvp(p)
 
 			printf("procfs: found vm object\n");
 			vm_map_lookup_done(map, out_entry);
-			printf("procfs: vm object = %x\n", object);
+			printf("procfs: vm object = %p\n", object);
 
 			/*
 			 * At this point, assuming no errors, object
@@ -282,14 +349,15 @@ procfs_findtextvp(p)
 			 */
 
 			pager = object->pager;
-			printf("procfs: pager = %x\n", pager);
+			printf("procfs: pager = %p\n", pager);
 			if (pager)
-				printf("procfs: found pager, type = %d\n", pager->pg_type);
+				printf("procfs: found pager, type = %d\n",
+				    pager->pg_type);
 			if (pager && pager->pg_type == PG_VNODE) {
 				struct vnode *vp;
 
 				vp = (struct vnode *) pager->pg_handle;
-				printf("procfs: vp = 0x%x\n", vp);
+				printf("procfs: vp = %p\n", vp);
 				return (vp);
 			}
 		}

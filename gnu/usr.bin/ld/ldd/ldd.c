@@ -1,3 +1,4 @@
+/*	$OpenBSD: ldd.c,v 1.4 1998/03/26 19:46:55 niklas Exp $	*/
 /*	$NetBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -104,10 +105,22 @@ char	*argv[];
 			argv++;
 			continue;
 		}
-		if (read(fd, &hdr, sizeof hdr) != sizeof hdr
-		    || (N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
+		if (read(fd, &hdr, sizeof hdr) != sizeof hdr) {
+			warnx("%s: not a dynamic executable", *argv);
+			(void)close(fd);
+			rval |= 1;
+			argv++;
+			continue;
+		}
+		if ((N_GETFLAG(hdr) & EX_DPMASK) == (EX_DYNAMIC | EX_PIC)) {
+			warnx("%s: no support for dynamic libraries", *argv);
+			(void)close(fd);
+			argv++;
+			continue;
+		}
+		if ((N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
 #if 1 /* Compatibility */
-		    || hdr.a_entry < __LDPGSZ
+		    || hdr.a_entry < N_PAGSIZ(hdr)
 #endif
 		    ) {
 
@@ -151,5 +164,5 @@ char	*argv[];
 		argv++;
 	}
 
-	return rval;
+	return (rval ? 1 : 0);
 }

@@ -1,10 +1,11 @@
-#	$NetBSD: Makefile,v 1.8 1995/04/22 07:34:00 cgd Exp $
-#	@(#)Makefile	5.12 (Berkeley) 5/30/93
+#	$OpenBSD: Makefile,v 1.10 1999/01/01 17:47:17 millert Exp $
 
 # EXTRA
 #	Incorporates code to gather additional performance statistics
-# SYSV
-#	Use system III/V (instead of V7) type ioctl calls
+# TERMIO
+#	Use sysv termio
+# TERMIOS
+#	Use posix termios
 # BSD
 #	Use BSD specific features (mostly timer and signal stuff)
 # BSD4.1
@@ -36,7 +37,7 @@
 #	cause player id's from the file ".playerids" to be used instead.
 #	(.playerids is created upon demand).  Only one entry per id # is
 #	allowed in each scoreboard (winning & non-winning).
-#  VT100
+# VT100
 #	Compile for using vt100 family of terminals.  Omission of this
 #	define will cause larn to use termcap, but it will be MUCH slower
 #	due to an extra layer of output interpretation.  Also, only VT100
@@ -51,20 +52,26 @@
 #	used to delay for effect when casting missile type spells.
 # NOLOG
 #	Turn off logging.
+# NOSPAM
+#	Don't send e-mail to players once they've won.
 
 PROG=	larn
 MAN=	larn.6
-CFLAGS+=-DBSD -DVER=12 -DSUBVER=0 -DNONAP -DUIDSCORE
+CFLAGS+=-DBSD -DVER=12 -DSUBVER=0 -DNONAP -DUIDSCORE -DTERMIOS
 SRCS=	main.c object.c create.c tok.c display.c global.c data.c io.c \
 	monster.c store.c diag.c help.c config.c nap.c bill.c scores.c \
 	signal.c moreobj.c movem.c regen.c fortune.c savelev.c
-DPADD=	${LIBTERM} ${LIBCOMPAT}
-LDADD=	-ltermcap -lcompat
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 HIDEGAME=hidegame
 
 beforeinstall:
-	(cd ${.CURDIR}/datfiles; install -c -o ${BINOWN} -g ${BINGRP} -m 444 \
-	    larnmaze larnopts larn.help \
+	(cd ${.CURDIR}/datfiles; ${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} \
+	    -m 444 larnmaze larnopts larn.help \
 	    ${DESTDIR}/usr/share/games/larn)
+	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 660 /dev/null \
+	    ${DESTDIR}/var/games/larn/lscore12.0
+	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 660 /dev/null \
+	    ${DESTDIR}/var/games/larn/llog12.0
 
 .include <bsd.prog.mk>

@@ -1,4 +1,5 @@
-/*	$NetBSD: make.h,v 1.6 1995/06/14 15:19:43 christos Exp $	*/
+/*	$OpenBSD: make.h,v 1.17 2000/02/02 13:47:48 espie Exp $	*/
+/*	$NetBSD: make.h,v 1.15 1997/03/10 21:20:00 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1993
@@ -37,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)make.h	8.3 (Berkeley) 6/13/95
+ *	from: @(#)make.h	8.3 (Berkeley) 6/13/95
  */
 
 /*-
@@ -49,19 +50,32 @@
 #define _MAKE_H_
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#ifndef MAKE_BOOTSTRAP
-#include <sys/cdefs.h>
+
+#if !defined(MAKE_BOOTSTRAP) && defined(BSD4_4)
+# include <sys/cdefs.h>
 #else
-#if defined(__STDC__) || defined(__cplusplus)
-#define	__P(protos)	protos		/* full-blown ANSI C */
-#else
-#define	__P(protos)	()		/* traditional C preprocessor */    
+# ifndef __P
+#  if defined(__STDC__) || defined(__cplusplus)
+#   define	__P(protos)	protos		/* full-blown ANSI C */
+#  else
+#   define	__P(protos)	()		/* traditional C preprocessor */
+#  endif
+# endif
+# ifndef __STDC__
+#  ifndef const
+#   define const
+#  endif
+#  ifndef volatile
+#   define volatile
+#  endif
+# endif
 #endif
-#endif
-#if __STDC__
+
+#ifdef __STDC__
 #include <stdlib.h>
 #include <unistd.h>
 #endif
@@ -69,6 +83,8 @@
 #include "lst.h"
 #include "config.h"
 #include "buf.h"
+
+#define OUT_OF_DATE INT_MIN
 
 /*-
  * The structure for an individual graph node. Each node has several
@@ -96,17 +112,18 @@
  *	16) a Lst of ``local'' variables that are specific to this target
  *	   and this target only (qv. var.c [$@ $< $?, etc.])
  *	17) a Lst of strings that are commands to be given to a shell
- *	   to create this target. 
+ *	   to create this target.
  */
 typedef struct GNode {
     char            *name;     	/* The target's name */
     char    	    *path;     	/* The full pathname of the file */
     int             type;      	/* Its type (see the OP flags, below) */
+    int		    order;	/* Its wait weight */
 
     Boolean         make;      	/* TRUE if this target needs to be remade */
     enum {
 	UNMADE, BEINGMADE, MADE, UPTODATE, ERROR, ABORTED,
-	CYCLE, ENDCYCLE,
+	CYCLE, ENDCYCLE
     }	    	    made;    	/* Set to reflect the state of processing
 				 * on this node:
 				 *  UNMADE - Not examined yet
@@ -131,8 +148,8 @@ typedef struct GNode {
 				 * made */
     int             unmade;    	/* The number of unmade children */
 
-    int             mtime;     	/* Its modification time */
-    int        	    cmtime;    	/* The modification time of its youngest
+    time_t          mtime;     	/* Its modification time */
+    time_t     	    cmtime;    	/* The modification time of its youngest
 				 * child */
 
     Lst     	    iParents;  	/* Links to parents for which this is an
@@ -144,6 +161,8 @@ typedef struct GNode {
     Lst	    	    preds;  	/* Nodes that must be made before this one */
 
     Lst             context;   	/* The local variables */
+    unsigned long   lineno;	/* First line number of commands.  */
+    const char *    fname;	/* File name of commands.  */
     Lst             commands;  	/* Creation commands */
 
     struct _Suff    *suffix;	/* Suffix for the node (determined by
@@ -152,9 +171,8 @@ typedef struct GNode {
 } GNode;
 
 /*
- * Manifest constants 
+ * Manifest constants
  */
-#define NILGNODE	((GNode *) NIL)
 
 /*
  * The OP_ constants are used when parsing a dependency line as a way of
@@ -163,7 +181,7 @@ typedef struct GNode {
  * placed in the 'type' field of each node. Any node that has
  * a 'type' field which satisfies the OP_NOP function was never never on
  * the lefthand side of an operator, though it may have been on the
- * righthand side... 
+ * righthand side...
  */
 #define OP_DEPENDS	0x00000001  /* Execution of commands depends on
 				     * kids (:) */
@@ -189,12 +207,15 @@ typedef struct GNode {
 				     * state of the -n or -t flags */
 #define OP_JOIN 	0x00000400  /* Target is out-of-date only if any of its
 				     * children was out-of-date */
+#define	OP_MADE		0x00000800  /* Assume the node is already made; even if
+				     * it really is out of date */
 #define OP_INVISIBLE	0x00004000  /* The node is invisible to its parents.
 				     * I.e. it doesn't show up in the parents's
 				     * local variables. */
 #define OP_NOTMAIN	0x00008000  /* The node is exempt from normal 'main
 				     * target' processing in parse.c */
 #define OP_PHONY	0x00010000  /* Not a file target; run always */
+#define OP_NOPATH	0x00020000  /* Don't search for file in the path */
 /* Attributes applied by PMake */
 #define OP_TRANSFORM	0x80000000  /* The node is a transformation rule */
 #define OP_MEMBER 	0x40000000  /* Target is a member of an archive */
@@ -212,13 +233,15 @@ typedef struct GNode {
  */
 #define OP_NOP(t)	(((t) & OP_OPMASK) == 0x00000000)
 
+#define OP_NOTARGET (OP_NOTMAIN|OP_USE|OP_EXEC|OP_TRANSFORM)
+
 /*
  * The TARG_ constants are used when calling the Targ_FindNode and
  * Targ_FindList functions in targ.c. They simply tell the functions what to
  * do if the desired node(s) is (are) not found. If the TARG_CREATE constant
  * is given, a new, empty node will be created for the target, placed in the
  * table of all targets and its address returned. If TARG_NOCREATE is given,
- * a NIL pointer will be returned. 
+ * a NULL pointer will be returned.
  */
 #define TARG_CREATE	0x01	  /* create node if not found */
 #define TARG_NOCREATE	0x00	  /* don't create it */
@@ -230,7 +253,7 @@ typedef struct GNode {
  * If longer, it should be increased. Reducing it will cause more copying to
  * be done for longer lines, but will save space for shorter ones. In any
  * case, it ought to be a power of two simply because most storage allocation
- * schemes allocate in powers of two. 
+ * schemes allocate in powers of two.
  */
 #define MAKE_BSIZE		256	/* starting size for expandable buffers */
 
@@ -241,7 +264,7 @@ typedef struct GNode {
  * be used instead of a space. If neither is given, no intervening characters
  * will be placed between the two strings in the final output. If the
  * STR_DOFREE bit is set, the two input strings will be freed before
- * Str_Concat returns. 
+ * Str_Concat returns.
  */
 #define STR_ADDSPACE	0x01	/* add a space when Str_Concat'ing */
 #define STR_DOFREE	0x02	/* free source strings after concatenation */
@@ -281,7 +304,7 @@ typedef struct GNode {
 #define DPREFIX           "*D"  /* directory part of PREFIX */
 
 /*
- * Global Variables 
+ * Global Variables
  */
 extern Lst  	create;	    	/* The list of target names specified on the
 				 * command line. used to resolve #if
@@ -325,6 +348,8 @@ extern time_t 	now;	    	/* The time at the start of this whole
 
 extern Boolean	oldVars;    	/* Do old-style variable substitution */
 
+extern Lst	sysIncPath;	/* The system include path. */
+
 /*
  * debug control:
  *	There is one bit per module.  It is up to the module what debug
@@ -352,17 +377,6 @@ extern int debug;
 
 #define	DEBUG(module)	(debug & CONCAT(DEBUG_,module))
 
-/*
- * Since there are so many, all functions that return non-integer values are
- * extracted by means of a sed script or two and stuck in the file "nonints.h"
- */
-#include "nonints.h"
-
-int Make_TimeStamp __P((GNode *, GNode *));
-Boolean Make_OODate __P((GNode *));
-int Make_HandleUse __P((GNode *, GNode *));
-void Make_Update __P((GNode *));
-void Make_DoAllVar __P((GNode *));
-Boolean Make_Run __P((Lst));
+#include "extern.h"
 
 #endif /* _MAKE_H_ */

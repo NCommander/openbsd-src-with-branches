@@ -7,19 +7,18 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/mount.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <signal.h>
 
-#include <stdio.h>
-#include <fstab.h>
 #include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <fstab.h>
+#include <grp.h>
+#include <pwd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pwd.h>
-#include <grp.h>
-#include <errno.h>
-
 #include <syslog.h>
 #include <varargs.h>
 
@@ -225,7 +224,7 @@ initfs()
 		fs_current->qfpathname = malloc(sizeof(char) * (strlen(qfpathname) + 1));
 		strcpy(fs_current->qfpathname, qfpathname);
 
-		stat(qfpathname, &st);
+		stat(fs_current->fs_file, &st);
 		fs_current->st_dev = st.st_dev;
 
 		fs_next = fs_current;
@@ -267,16 +266,17 @@ getfsquota(id, path, dqblk)
 			syslog(LOG_ERR, "open error: %s: %m", fs->qfpathname);
 			return (0);
 		}
-		if (lseek(fd, (off_t)(id * sizeof(struct dqblk)), L_SET) == (off_t)-1) {
+		if (lseek(fd, (off_t)(id * sizeof(struct dqblk)), SEEK_SET) ==
+		    (off_t)-1) {
 			close(fd);
 			return (1);
 		}
 		switch (read(fd, dqblk, sizeof(struct dqblk))) {
 		case 0:
 			/*
-                         * Convert implicit 0 quota (EOF)
-                         * into an explicit one (zero'ed dqblk)
-                         */
+			 * Convert implicit 0 quota (EOF)
+			 * into an explicit one (zero'ed dqblk)
+			 */
 			bzero((caddr_t) dqblk, sizeof(struct dqblk));
 			ret = 1;
 			break;
@@ -313,7 +313,7 @@ hasquota(fs, qfnamep)
 	}
 	strcpy(buf, fs->fs_mntops);
 	for (opt = strtok(buf, ","); opt; opt = strtok(NULL, ",")) {
-		if (cp = index(opt, '='))
+		if (cp = strchr(opt, '='))
 			*cp++ = '\0';
 		if (strcmp(opt, usrname) == 0)
 			break;

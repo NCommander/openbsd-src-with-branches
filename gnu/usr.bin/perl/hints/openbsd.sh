@@ -26,8 +26,8 @@ d_setruid=$undef
 #
 # Not all platforms support dynamic loading...
 #
-case `arch` in
-OpenBSD.alpha|OpenBSD.mips|OpenBSD.powerpc|OpenBSD.vax)
+case `arch -s` in
+alpha|mips|powerpc|vax)
 	usedl=$undef
 	;;
 *)

@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_file.c,v 1.13 1995/10/08 22:53:43 fvdl Exp $	*/
+/*	$OpenBSD: linux_file.c,v 1.12 2000/04/19 08:34:56 csapuntz Exp $	*/
+/*	$NetBSD: linux_file.c,v 1.15 1996/05/20 01:59:09 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -41,6 +42,8 @@
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
 #include <sys/mount.h>
+#include <sys/signalvar.h>
+#include <sys/uio.h>
 #include <sys/malloc.h>
 #include <sys/vnode.h>
 #include <sys/tty.h>
@@ -54,17 +57,29 @@
 #include <compat/linux/linux_fcntl.h>
 #include <compat/linux/linux_util.h>
 
+#include <machine/linux_machdep.h>
+
+static int linux_to_bsd_ioflags __P((int));
+static int bsd_to_linux_ioflags __P((int));
+static void bsd_to_linux_flock __P((struct flock *, struct linux_flock *));
+static void linux_to_bsd_flock __P((struct linux_flock *, struct flock *));
+static void bsd_to_linux_stat __P((struct stat *, struct linux_stat *));
+static int linux_stat1 __P((struct proc *, void *, register_t *, int));
+static int linux_set_pos __P((struct proc *, int, off_t));
+
+
 /*
  * Some file-related calls are handled here. The usual flag conversion
  * an structure conversion is done, and alternate emul path searching.
  */
 
 /*
- * The next two functions convert between the Linux and NetBSD values
+ * The next two functions convert between the Linux and OpenBSD values
  * of the flags used in open(2) and fcntl(2).
  */
 static int
-linux_to_bsd_ioflags(int lflags)
+linux_to_bsd_ioflags(lflags)
+	int lflags;
 {
 	int res = 0;
 
@@ -76,7 +91,7 @@ linux_to_bsd_ioflags(int lflags)
 	res |= cvtto_bsd_mask(lflags, LINUX_O_NOCTTY, O_NOCTTY);
 	res |= cvtto_bsd_mask(lflags, LINUX_O_TRUNC, O_TRUNC);
 	res |= cvtto_bsd_mask(lflags, LINUX_O_NDELAY, O_NDELAY);
-	res |= cvtto_bsd_mask(lflags, LINUX_O_SYNC, O_FSYNC);
+	res |= cvtto_bsd_mask(lflags, LINUX_O_SYNC, O_SYNC);
 	res |= cvtto_bsd_mask(lflags, LINUX_FASYNC, O_ASYNC);
 	res |= cvtto_bsd_mask(lflags, LINUX_O_APPEND, O_APPEND);
 
@@ -84,7 +99,8 @@ linux_to_bsd_ioflags(int lflags)
 }
 
 static int
-bsd_to_linux_ioflags(int bflags)
+bsd_to_linux_ioflags(bflags)
+	int bflags;
 {
 	int res = 0;
 
@@ -96,7 +112,7 @@ bsd_to_linux_ioflags(int bflags)
 	res |= cvtto_linux_mask(bflags, O_NOCTTY, LINUX_O_NOCTTY);
 	res |= cvtto_linux_mask(bflags, O_TRUNC, LINUX_O_TRUNC);
 	res |= cvtto_linux_mask(bflags, O_NDELAY, LINUX_O_NDELAY);
-	res |= cvtto_linux_mask(bflags, O_FSYNC, LINUX_O_SYNC);
+	res |= cvtto_linux_mask(bflags, O_SYNC, LINUX_O_SYNC);
 	res |= cvtto_linux_mask(bflags, O_ASYNC, LINUX_FASYNC);
 	res |= cvtto_linux_mask(bflags, O_APPEND, LINUX_O_APPEND);
 
@@ -134,7 +150,7 @@ linux_sys_creat(p, v, retval)
 
 /*
  * open(2). Take care of the different flag values, and let the
- * NetBSD syscall do the real work. See if this operation
+ * OpenBSD syscall do the real work. See if this operation
  * gives the current process a controlling terminal.
  * (XXX is this necessary?)
  */
@@ -224,7 +240,7 @@ linux_sys_llseek(p, v, retval)
 
 /*
  * The next two functions take care of converting the flock
- * structure back and forth between Linux and NetBSD format.
+ * structure back and forth between Linux and OpenBSD format.
  * The only difference in the structures is the order of
  * the fields, and the 'whence' value.
  */
@@ -276,7 +292,7 @@ linux_to_bsd_flock(lfp, bfp)
 
 /*
  * Most actions in the fcntl() call are straightforward; simply
- * pass control to the NetBSD system call. A few commands need
+ * pass control to the OpenBSD system call. A few commands need
  * conversions after the actual system call has done its work,
  * because the flag values and lock structure are different.
  */
@@ -334,16 +350,22 @@ linux_sys_fcntl(p, v, retval)
 		return sys_fcntl(p, &fca, retval);
 	case LINUX_F_GETLK:
 		sg = stackgap_init(p->p_emul);
+		if ((error = copyin(arg, &lfl, sizeof lfl)))
+			return error;
+		linux_to_bsd_flock(&lfl, &bfl);
 		bfp = (struct flock *) stackgap_alloc(&sg, sizeof *bfp);
 		SCARG(&fca, fd) = fd;
 		SCARG(&fca, cmd) = F_GETLK;
 		SCARG(&fca, arg) = bfp;
+		if ((error = copyout(&bfl, bfp, sizeof bfl)))
+			return error;
 		if ((error = sys_fcntl(p, &fca, retval)))
 			return error;
 		if ((error = copyin(bfp, &bfl, sizeof bfl)))
 			return error;
 		bsd_to_linux_flock(&bfl, &lfl);
-		return copyout(&lfl, arg, sizeof lfl);
+		error = copyout(&lfl, arg, sizeof lfl);
+		return error;
 		break;
 	case LINUX_F_SETLK:
 	case LINUX_F_SETLKW:
@@ -413,7 +435,7 @@ linux_sys_fcntl(p, v, retval)
 }
 
 /*
- * Convert a NetBSD stat structure to a Linux stat structure.
+ * Convert a OpenBSD stat structure to a Linux stat structure.
  * Only the order of the fields and the padding in the structure
  * is different. linux_fakedev is a machine-dependent function
  * which optionally converts device driver major/minor numbers
@@ -483,9 +505,9 @@ linux_sys_fstat(p, v, retval)
 }
 
 static int
-linux_stat1(p, uap, retval, dolstat)
+linux_stat1(p, v, retval, dolstat)
 	struct proc *p;
-	struct linux_sys_stat_args *uap;
+	void *v;
 	register_t *retval;
 	int dolstat;
 {
@@ -494,6 +516,7 @@ linux_stat1(p, uap, retval, dolstat)
 	struct stat *st, tmpst;
 	caddr_t sg;
 	int error;
+	struct linux_sys_stat_args *uap = v;
 
 	sg = stackgap_init(p->p_emul);
 
@@ -691,6 +714,28 @@ linux_sys_fchown(p, v, retval)
 }
 
 int
+linux_sys_lchown(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct linux_sys_lchown_args /* {
+		syscallarg(char *) path;
+		syscallarg(int) uid;
+		syscallarg(int) gid;
+	} */ *uap = v;
+	struct sys_lchown_args bla;
+
+	SCARG(&bla, path) = SCARG(uap, path);
+	SCARG(&bla, uid) = ((linux_uid_t)SCARG(uap, uid) == (linux_uid_t)-1) ?
+		(uid_t)-1 : SCARG(uap, uid);
+	SCARG(&bla, gid) = ((linux_gid_t)SCARG(uap, gid) == (linux_gid_t)-1) ?
+		(gid_t)-1 : SCARG(uap, gid);
+
+	return sys_lchown(p, &bla, retval);
+}
+
+int
 linux_sys_rename(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -792,4 +837,157 @@ linux_sys_truncate(p, v, retval)
 	LINUX_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
 
 	return compat_43_sys_truncate(p, uap, retval);
+}
+
+/*
+ * This is just fsync() for now (just as it is in the Linux kernel)
+ */
+int
+linux_sys_fdatasync(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct linux_sys_fdatasync_args /* {
+		syscallarg(int) fd;
+	} */ *uap = v;
+	return sys_fsync(p, uap, retval);
+}
+
+/*
+ * sys_lseek trimmed down
+ */
+static int
+linux_set_pos(p, fd, offset)
+	struct proc *p;
+	int fd;
+	off_t offset;
+{
+	register struct filedesc *fdp = p->p_fd;
+	register struct file *fp;
+	struct vnode *vp;
+	int special;
+
+	if ((u_int)fd >= fdp->fd_nfiles ||
+	    (fp = fdp->fd_ofiles[fd]) == NULL)
+		return (EBADF);
+	if (fp->f_type != DTYPE_VNODE)
+		return (ESPIPE);
+	vp = (struct vnode *)fp->f_data;
+	if (vp->v_type == VFIFO)
+		return (ESPIPE);
+	if (vp->v_type == VCHR)
+		special = 1;
+	else
+		special = 0;
+	if (!special && offset < 0)
+		return (EINVAL);
+	return (0);
+}
+
+/*
+ * pread(2).
+ */
+int
+linux_sys_pread(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct linux_sys_pread_args /* {
+		syscallarg(int) fd;
+		syscallarg(void *) buf;
+		syscallarg(size_t) nbyte;
+		syscallarg(linux_off_t) offset;
+	} */ *uap = v;
+	register struct file *fp;
+	register struct filedesc *fdp = p->p_fd;
+	struct uio auio;
+	struct iovec aiov;
+	long cnt, error = 0;
+	off_t offset;
+
+	/* Don't allow nbyte to be larger than max return val */
+	if (SCARG(uap, nbyte) > SSIZE_MAX)
+		return(EINVAL);
+
+	offset = SCARG(uap, offset);
+
+	if ((error = linux_set_pos(p, SCARG(uap, fd), offset)) != 0)
+		return (error);
+
+	fp = fdp->fd_ofiles[SCARG(uap, fd)];
+	aiov.iov_base = (caddr_t)SCARG(uap, buf);
+	aiov.iov_len = SCARG(uap, nbyte);
+	auio.uio_iov = &aiov;
+	auio.uio_iovcnt = 1;
+	auio.uio_resid = SCARG(uap, nbyte);
+	auio.uio_rw = UIO_READ;
+	auio.uio_segflg = UIO_USERSPACE;
+	auio.uio_procp = p;
+	cnt = SCARG(uap, nbyte);
+	error = (*fp->f_ops->fo_read)(fp, &offset, &auio, fp->f_cred);
+	if (error)
+		if (auio.uio_resid != cnt && (error == ERESTART ||
+		    error == EINTR || error == EWOULDBLOCK))
+			error = 0;
+	cnt -= auio.uio_resid;
+	*retval = cnt;
+	return (error);
+}
+
+/*
+ * pwrite(2).
+ */
+int
+linux_sys_pwrite(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct linux_sys_pwrite_args /* {
+		syscallarg(int) fd;
+		syscallarg(char *) buf;
+		syscallarg(size_t) nbyte;
+		syscallarg(linux_off_t) offset;
+	} */ *uap = v;
+	register struct file *fp;
+	register struct filedesc *fdp = p->p_fd;
+	struct uio auio;
+	struct iovec aiov;
+	long cnt, error = 0;
+	off_t offset;
+
+	/* Don't allow nbyte to be larger than max return val */
+	if (SCARG(uap, nbyte) > SSIZE_MAX)
+		return(EINVAL);
+
+	offset = SCARG(uap, offset);
+
+	if ((error = linux_set_pos(p, SCARG(uap, fd), offset)) != 0)
+		return (error);
+	fp = fdp->fd_ofiles[SCARG(uap, fd)];
+	if ((fp->f_flag & FWRITE) == 0)
+		return (EBADF);
+	
+	aiov.iov_base = (caddr_t)SCARG(uap, buf);
+	aiov.iov_len = SCARG(uap, nbyte);
+	auio.uio_iov = &aiov;
+	auio.uio_iovcnt = 1;
+	auio.uio_resid = SCARG(uap, nbyte);
+	auio.uio_rw = UIO_WRITE;
+	auio.uio_segflg = UIO_USERSPACE;
+	auio.uio_procp = p;
+	cnt = SCARG(uap, nbyte);
+	error = (*fp->f_ops->fo_write)(fp, &offset, &auio, fp->f_cred);
+	if (error) {
+		if (auio.uio_resid != cnt && (error == ERESTART ||
+		    error == EINTR || error == EWOULDBLOCK))
+			error = 0;
+		if (error == EPIPE)
+			psignal(p, SIGPIPE);
+	}
+	cnt -= auio.uio_resid;
+	*retval = cnt;
+	return (error);
 }

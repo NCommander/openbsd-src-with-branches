@@ -1,3 +1,5 @@
+/*	$OpenBSD: chown.c,v 1.11 1999/09/17 14:58:42 kstailey Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)chown.c	8.8 (Berkeley) 4/4/94"; */
-static char *rcsid = "$Id: chown.c,v 1.7 1995/06/03 07:01:19 jtc Exp $";
+static char *rcsid = "$Id: chown.c,v 1.11 1999/09/17 14:58:42 kstailey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -56,17 +58,16 @@ static char *rcsid = "$Id: chown.c,v 1.7 1995/06/03 07:01:19 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <locale.h>
 
 void	a_gid __P((char *));
 void	a_uid __P((char *));
-void	chownerr __P((char *));
-u_long	id __P((char *, char *));
 void	usage __P((void));
 
 uid_t uid;
 gid_t gid;
 int Rflag, ischown, fflag;
-char *gname, *myname;
+extern char *__progname;
 
 int
 main(argc, argv)
@@ -75,25 +76,25 @@ main(argc, argv)
 {
 	FTS *ftsp;
 	FTSENT *p;
-	int Hflag, Lflag, Pflag, ch, fts_options, hflag, rval;
+	int Hflag, Lflag, ch, fts_options, hflag, rval;
 	char *cp;
 	
-	myname = (cp = rindex(*argv, '/')) ? cp + 1 : *argv;
-	ischown = myname[2] == 'o';
+	setlocale(LC_ALL, "");
+
+	ischown = __progname[2] == 'o';
 	
-	Hflag = Lflag = Pflag = hflag = 0;
-	while ((ch = getopt(argc, argv, "HLPRfh")) != EOF)
+	Hflag = Lflag = hflag = 0;
+	while ((ch = getopt(argc, argv, "HLPRfh")) != -1)
 		switch (ch) {
 		case 'H':
 			Hflag = 1;
-			Lflag = Pflag = 0;
+			Lflag = 0;
 			break;
 		case 'L':
 			Lflag = 1;
-			Hflag = Pflag = 0;
+			Hflag = 0;
 			break;
 		case 'P':
-			Pflag = 1;
 			Hflag = Lflag = 0;
 			break;
 		case 'R':
@@ -103,13 +104,6 @@ main(argc, argv)
 			fflag = 1;
 			break;
 		case 'h':
-			/*
-			 * In System V (and probably POSIX.2) the -h option
-			 * causes chown/chgrp to change the owner/group of
-			 * the symbolic link.  4.4BSD's symbolic links don't
-			 * have owners/groups, so it's an undocumented noop.
-			 * Do syntax checking, though.
-			 */
 			hflag = 1;
 			break;
 		case '?':
@@ -137,16 +131,16 @@ main(argc, argv)
 
 	uid = gid = -1;
 	if (ischown) {
-#ifdef SUPPORT_DOT
-		if ((cp = strchr(*argv, '.')) != NULL) {
-			*cp++ = '\0';
-			a_gid(cp);
-		} else
-#endif
 		if ((cp = strchr(*argv, ':')) != NULL) {
 			*cp++ = '\0';
 			a_gid(cp);
 		} 
+#ifdef SUPPORT_DOT
+		else if ((cp = strchr(*argv, '.')) != NULL) {
+			*cp++ = '\0';
+			a_gid(cp);
+		}
+#endif
 		a_uid(*argv);
 	} else 
 		a_gid(*argv);
@@ -169,19 +163,17 @@ main(argc, argv)
 			warnx("%s: %s", p->fts_path, strerror(p->fts_errno));
 			rval = 1;
 			continue;
-		case FTS_SL:			/* Ignore. */
+		case FTS_SL:
 		case FTS_SLNONE:
-			/*
-			 * The only symlinks that end up here are ones that
-			 * don't point to anything and ones that we found
-			 * doing a physical walk.
-			 */
-			continue;
+			if (!hflag)
+				continue;
+			/*FALLTHROUGH*/
 		default:
 			break;
 		}
 
-		if (chown(p->fts_accpath, uid, gid) && !fflag) {
+		if ((hflag ? lchown(p->fts_accpath, uid, gid) :
+		     chown(p->fts_accpath, uid, gid)) && !fflag) {
 			warn("%s", p->fts_path);
 			rval = 1;
 		}
@@ -196,11 +188,21 @@ a_gid(s)
 	char *s;
 {
 	struct group *gr;
+	char *ep;
+	u_long ul;
 
-	if (*s == '\0')			/* Argument was "uid[:.]". */
+	if (*s == '\0')			/* Argument was "gid[:.]". */
 		return;
-	gname = s;
-	gid = ((gr = getgrnam(s)) == NULL) ? id(s, "group") : gr->gr_gid;
+
+	if ((gr = getgrnam(s)) != NULL) {
+		gid = gr->gr_gid;
+	} else {
+		if ((ul = strtoul(s, &ep, 10)) == ULONG_MAX)
+			err(1, "%s", s);
+		if (*ep != '\0')
+			errx(1, "%s: invalid group name", s);
+		gid = (gid_t)ul;
+	}
 }
 
 void
@@ -208,37 +210,29 @@ a_uid(s)
 	char *s;
 {
 	struct passwd *pw;
-
-	if (*s == '\0')			/* Argument was "[:.]gid". */
-		return;
-	uid = ((pw = getpwnam(s)) == NULL) ? id(s, "user") : pw->pw_uid;
-}
-
-u_long
-id(name, type)
-	char *name, *type;
-{
-	u_long val;
 	char *ep;
+	u_long ul;
 
-	/*
-	 * XXX
-	 * We know that uid_t's and gid_t's are unsigned longs.
-	 */
-	errno = 0;
-	val = strtoul(name, &ep, 10);
-	if (errno)
-		err(1, "%s", name);
-	if (*ep != '\0')
-		errx(1, "%s: illegal %s name", name, type);
-	return (val);
+	if (*s == '\0')			/* Argument was "gid[:.]". */
+		return;
+
+	if ((pw = getpwnam(s)) != NULL) {
+		uid = pw->pw_uid;
+	} else {
+		if ((ul = strtoul(s, &ep, 10)) == ULONG_MAX)
+			err(1, "%s", s);
+		if (*ep != '\0')
+			errx(1, "%s: invalid user name", s);
+		uid = (uid_t)ul;
+	}
 }
 
 void
 usage()
 {
+
 	(void)fprintf(stderr,
-	    "usage: %s [-R [-H | -L | -P]] [-f] %s file ...\n",
-	    myname, ischown ? "[owner][:group]" : "group");
+	    "usage: %s [-R [-H | -L | -P]] [-f] [-h] %s file ...\n",
+	    __progname, ischown ? "[owner][:group]" : "group");
 	exit(1);
 }

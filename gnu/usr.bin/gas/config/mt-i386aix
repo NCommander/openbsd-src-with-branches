@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # TDEFINES = -DBFD_HEADERS
 CC = gcc
 MINUS_G = -O

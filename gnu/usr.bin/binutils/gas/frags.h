@@ -1,5 +1,6 @@
 /* frags.h - Header file for the frag concept.
-   Copyright (C) 1987, 92, 93, 94, 95, 1997 Free Software Foundation, Inc.
+
+   Copyright (C) 1987, 1992 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -14,13 +15,8 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GAS; see the file COPYING.  If not, write to the Free
-   Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
-
-#ifdef ANSI_PROTOTYPES
-struct obstack;
-#endif
+   along with GAS; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #if 0
 /*
@@ -43,14 +39,12 @@ extern void frag_append_1_char PARAMS ((int));
 
 
 void frag_init PARAMS ((void));
-fragS *frag_alloc PARAMS ((struct obstack *));
 void frag_grow PARAMS ((unsigned int nchars));
 char *frag_more PARAMS ((int nchars));
-void frag_align PARAMS ((int alignment, int fill_character, int max));
+void frag_align PARAMS ((int alignment, int fill_character));
 void frag_align_pattern PARAMS ((int alignment,
 				 const char *fill_pattern,
-				 int n_fill,
-				 int max));
+				 int n_fill));
 void frag_new PARAMS ((int old_frags_var_max_size));
 void frag_wane PARAMS ((fragS * fragP));
 
@@ -59,7 +53,7 @@ char *frag_variant PARAMS ((relax_stateT type,
 			    int var,
 			    relax_substateT subtype,
 			    symbolS * symbol,
-			    offsetT offset,
+			    long offset,
 			    char *opcode));
 
 char *frag_var PARAMS ((relax_stateT type,
@@ -67,7 +61,7 @@ char *frag_var PARAMS ((relax_stateT type,
 			int var,
 			relax_substateT subtype,
 			symbolS * symbol,
-			offsetT offset,
+			long offset,
 			char *opcode));
 
 /* end of frags.h */

@@ -1,4 +1,5 @@
-/*	$NetBSD: ffs_subr.c,v 1.4 1995/03/28 20:01:44 jtc Exp $	*/
+/*	$OpenBSD: ffs_subr.c,v 1.5 1997/10/06 20:21:36 deraadt Exp $	*/
+/*	$NetBSD: ffs_subr.c,v 1.6 1996/03/17 02:16:23 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -41,10 +42,10 @@
 #ifdef _KERNEL
 #include <sys/systm.h>
 #include <sys/vnode.h>
-#include <ufs/ffs/ffs_extern.h>
 #include <sys/buf.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
+#include <ufs/ffs/ffs_extern.h>
 
 /*
  * Return buffer with the contents of block "offset" from the beginning of
@@ -52,14 +53,15 @@
  * remaining space in the directory.
  */
 int
-ffs_blkatoff(ap)
+ffs_blkatoff(v)
+	void *v;
+{
 	struct vop_blkatoff_args /* {
 		struct vnode *a_vp;
 		off_t a_offset;
 		char **a_res;
 		struct buf **a_bpp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct inode *ip;
 	register struct fs *fs;
 	struct buf *bp;
@@ -72,7 +74,7 @@ ffs_blkatoff(ap)
 	bsize = blksize(fs, ip, lbn);
 
 	*ap->a_bpp = NULL;
-	if (error = bread(ap->a_vp, lbn, bsize, NOCRED, &bp)) {
+	if ((error = bread(ap->a_vp, lbn, bsize, NOCRED, &bp)) != 0) {
 		brelse(bp);
 		return (error);
 	}
@@ -144,7 +146,7 @@ ffs_checkoverlap(bp, ip)
 		    ep->b_blkno + btodb(ep->b_bcount) <= start)
 			continue;
 		vprint("Disk overlap", vp);
-		(void)printf("\tstart %d, end %d overlap start %d, end %d\n",
+		(void)printf("\tstart %d, end %d overlap start %d, end %ld\n",
 			start, last, ep->b_blkno,
 			ep->b_blkno + btodb(ep->b_bcount) - 1);
 		panic("Disk buffer overlap");
@@ -238,3 +240,30 @@ ffs_setblock(fs, cp, h)
 		panic("ffs_setblock");
 	}
 }
+
+
+/*
+ * check if a block is free
+ */
+int
+ffs_isfreeblock(fs, cp, h)
+      struct fs *fs;
+      unsigned char *cp;
+      daddr_t h;
+{
+
+      switch ((int)fs->fs_frag) {
+      case 8:
+              return (cp[h] == 0);
+      case 4:
+              return ((cp[h >> 1] & (0x0f << ((h & 0x1) << 2))) == 0);
+      case 2:
+              return ((cp[h >> 2] & (0x03 << ((h & 0x3) << 1))) == 0);
+      case 1:
+              return ((cp[h >> 3] & (0x01 << (h & 0x7))) == 0);
+      default:
+              panic("ffs_isfreeblock");
+      }
+}
+
+

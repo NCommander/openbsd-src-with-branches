@@ -59,6 +59,7 @@ End If
 If "{BuildTarget}" =~ /all/
 	Echo Started `Date`
 	"{ThisScript}" all-gcc
+	"{ThisScript}" all-ld
 	"{ThisScript}" all-gdb
 	Echo Finished `Date`
 Else If "{BuildTarget}" =~ /all-libiberty/
@@ -86,7 +87,6 @@ Else If "{BuildTarget}" =~ /all-gcc/
 	"{ThisScript}" all-libiberty
 	"{ThisScript}" all-gas
 	"{ThisScript}" all-binutils
-	"{ThisScript}" all-ld
 	"{ThisScript}" do-gcc
 Else If "{BuildTarget}" =~ /all-gdb/
 	"{ThisScript}" all-libiberty
@@ -192,7 +192,10 @@ Else If "{BuildTarget}" =~ /install-only-ld/
 	SetDirectory :ld:
 	::mpw-build install-only
 Else If "{BuildTarget}" =~ /install-only-top/
-	NewFolderRecursive "{prefix}"
+	If "`Exists "{prefix}"`" == ""
+		Echo "{prefix}" does not exist, cannot install anything
+		Exit 1
+	End If
 	If "{prefix}" != "`Directory`"
 		Duplicate -y 'Read Me for MPW' "{prefix}"'Read Me for MPW'
 		Duplicate -y Install "{prefix}"Install

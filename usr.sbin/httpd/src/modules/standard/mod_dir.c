@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -127,10 +127,10 @@ static int handle_dir(request_rec *r)
     if (r->uri[0] == '\0' || r->uri[strlen(r->uri) - 1] != '/') {
         char *ifile;
         if (r->args != NULL)
-            ifile = ap_pstrcat(r->pool, escape_uri(r->pool, r->uri),
+            ifile = ap_pstrcat(r->pool, ap_escape_uri(r->pool, r->uri),
                             "/", "?", r->args, NULL);
         else
-            ifile = ap_pstrcat(r->pool, escape_uri(r->pool, r->uri),
+            ifile = ap_pstrcat(r->pool, ap_escape_uri(r->pool, r->uri),
                             "/", NULL);
 
         ap_table_setn(r->headers_out, "Location",
@@ -161,8 +161,8 @@ static int handle_dir(request_rec *r)
         char *name_ptr = *names_ptr;
         request_rec *rr = ap_sub_req_lookup_uri(name_ptr, r);
 
-        if (rr->status == HTTP_OK && rr->finfo.st_mode != 0) {
-            char *new_uri = escape_uri(r->pool, rr->uri);
+        if (rr->status == HTTP_OK && S_ISREG(rr->finfo.st_mode)) {
+            char *new_uri = ap_escape_uri(r->pool, rr->uri);
 
             if (rr->args != NULL)
                 new_uri = ap_pstrcat(r->pool, new_uri, "?", rr->args, NULL);
@@ -179,13 +179,13 @@ static int handle_dir(request_rec *r)
         if (ap_is_HTTP_REDIRECT(rr->status) ||
             (rr->status == HTTP_NOT_ACCEPTABLE && num_names == 1)) {
 
+            ap_pool_join(r->pool, rr->pool);
             error_notfound = rr->status;
             r->notes = ap_overlay_tables(r->pool, r->notes, rr->notes);
             r->headers_out = ap_overlay_tables(r->pool, r->headers_out,
                                             rr->headers_out);
             r->err_headers_out = ap_overlay_tables(r->pool, r->err_headers_out,
                                                 rr->err_headers_out);
-            ap_destroy_sub_req(rr);
             return error_notfound;
         }
 

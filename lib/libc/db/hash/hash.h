@@ -1,4 +1,4 @@
-/*	$NetBSD: hash.h,v 1.5 1995/02/27 13:22:08 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994

@@ -1,6 +1,5 @@
-/*
- *	$Id: ld.h,v 1.18 1995/08/04 21:49:06 pk Exp $
- */
+/*	$OpenBSD: ld.h,v 1.4 1999/05/10 16:18:33 espie Exp $	*/
+
 /*-
  * This code is derived from software copyrighted by the Free Software
  * Foundation.
@@ -157,8 +156,10 @@ extern int	netzmagic;
 #define RELOC_PIC_TYPE(r)		((r)->r_baserel? \
 						PIC_TYPE_LARGE:PIC_TYPE_NONE)
 
-#define RELOC_INIT_SEGMENT_RELOC(r)
+#endif
 
+#ifndef RELOC_INIT_SEGMENT_RELOC
+#define RELOC_INIT_SEGMENT_RELOC(r)
 #endif
 
 #ifndef MAX_GOTOFF
@@ -639,6 +640,7 @@ void	prline_file_name __P((struct file_entry *, FILE *));
 int	do_warnings __P((FILE *));
 
 /* In etc.c: */
+char	*xstrdup __P((char *));
 void	*xmalloc __P((size_t));
 void	*xrealloc __P((void *, size_t));
 char	*concat __P((const char *, const char *, const char *));
@@ -702,11 +704,12 @@ void	md_swapout_jmpslot __P((jmpslot_t *, int));
 void	swap_longs __P((long *, int));
 void	swap_symbols __P((struct nlist *, int));
 void	swap_zsymbols __P((struct nzlist *, int));
+struct ranlib; /* keep pedantic ISO compilers happy */
 void	swap_ranlib_hdr __P((struct ranlib *, int));
-void	swap__dynamic __P((struct link_dynamic *));
+void	swap__dynamic __P((struct _dynamic *));
 void	swap_section_dispatch_table __P((struct section_dispatch_table *));
 void	swap_so_debug __P((struct so_debug *));
 void	swapin_sod __P((struct sod *, int));
 void	swapout_sod __P((struct sod *, int));
-void	swapout_fshash __P((struct fshash *, int));
+void	swap_rrs_hash __P((struct rrs_hash *, int));
 #endif

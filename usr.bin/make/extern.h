@@ -1,8 +1,9 @@
-/*	$NetBSD: nonints.h,v 1.6 1995/06/14 15:19:45 christos Exp $	*/
+/*	$OpenBSD: extern.h,v 1.19 2000/02/02 13:47:47 espie Exp $	*/
+/*	$NetBSD: nonints.h,v 1.12 1996/11/06 17:59:19 christos Exp $	*/
 
 /*-
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * Copyright (c) 1988, 1989 by Adam de Boor
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  * Copyright (c) 1989 by Berkeley Softworks
  * All rights reserved.
  *
@@ -37,19 +38,20 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)nonints.h	5.6 (Berkeley) 4/18/91
+ *	from: @(#)nonints.h	8.3 (Berkeley) 3/19/94
  */
 
 /* arch.c */
 ReturnStatus Arch_ParseArchive __P((char **, Lst, GNode *));
 void Arch_Touch __P((GNode *));
 void Arch_TouchLib __P((GNode *));
-int Arch_MTime __P((GNode *));
-int Arch_MemMTime __P((GNode *));
+Boolean Arch_MTime __P((GNode *));
+Boolean Arch_MemMTime __P((GNode *));
 void Arch_FindLib __P((GNode *, Lst));
 Boolean Arch_LibOODate __P((GNode *));
 void Arch_Init __P((void));
 void Arch_End __P((void));
+int Arch_IsLib __P((GNode *));
 
 /* compat.c */
 void Compat_Run __P((Lst));
@@ -58,21 +60,31 @@ void Compat_Run __P((Lst));
 int Cond_Eval __P((char *));
 void Cond_End __P((void));
 
+#include "error.h"
+
 /* for.c */
-int For_Eval __P((char *));
-void For_Run  __P((void));
+typedef struct For_ For;
+For *For_Eval __P((char *));
+Boolean For_Accumulate __P((For *, const char *));
+void For_Run  __P((For *));
 
 /* main.c */
 void Main_ParseArgLine __P((char *));
-int main __P((int, char **));
+char *Cmd_Exec __P((char *, char **));
 void Error __P((char *, ...));
 void Fatal __P((char *, ...));
 void Punt __P((char *, ...));
 void DieHorribly __P((void));
 int PrintAddr __P((ClientData, ClientData));
 void Finish __P((int));
-char *emalloc __P((size_t));
-void enomem __P((void));
+
+/* make.c */
+int Make_TimeStamp __P((GNode *, GNode *));
+Boolean Make_OODate __P((GNode *));
+int Make_HandleUse __P((GNode *, GNode *));
+void Make_Update __P((GNode *));
+void Make_DoAllVar __P((GNode *));
+Boolean Make_Run __P((Lst));
 
 /* parse.c */
 void Parse_Error __P((int, char *, ...));
@@ -83,18 +95,20 @@ void Parse_AddIncludeDir __P((char *));
 void Parse_File __P((char *, FILE *));
 void Parse_Init __P((void));
 void Parse_End __P((void));
-void Parse_FromString __P((char *));
+void Parse_FromString __P((char *, unsigned long));
 Lst Parse_MainName __P((void));
+unsigned long Parse_Getlineno __P((void));
+const char *Parse_Getfilename __P((void));
 
 /* str.c */
 void str_init __P((void));
 void str_end __P((void));
 char *str_concat __P((char *, char *, int));
-char **brk_string __P((char *, int *, Boolean));
-char *Str_FindSubstring __P((char *, char *));
+char **brk_string __P((char *, int *, Boolean, char **));
 int Str_Match __P((char *, char *));
 char *Str_SYSVMatch __P((char *, char *, int *len));
 void Str_SYSVSubst __P((Buffer, char *, char *, int));
+char *interval_dup __P((const char *begin, const char *end));
 
 /* suff.c */
 void Suff_ClearSuffixes __P((void));
@@ -132,9 +146,10 @@ void Var_Delete __P((char *, GNode *));
 void Var_Set __P((char *, char *, GNode *));
 void Var_Append __P((char *, char *, GNode *));
 Boolean Var_Exists __P((char *, GNode *));
-char *Var_Value __P((char *, GNode *, char **));
-char *Var_Parse __P((char *, GNode *, Boolean, int *, Boolean *));
-char *Var_Subst __P((char *, char *, GNode *, Boolean));
+char *Var_Value __P((char *, GNode *));
+char *Var_Parse __P((char *, GNode *, Boolean, size_t *, Boolean *));
+char *Var_Subst __P((char *, GNode *, Boolean));
+void Var_SubstVar __P((Buffer, char *, const char *, GNode *));
 char *Var_GetTail __P((char *));
 char *Var_GetHead __P((char *));
 void Var_Init __P((void));

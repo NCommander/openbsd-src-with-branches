@@ -1,7 +1,8 @@
-/*	$Id: log.h,v 1.9 1998/10/19 16:13:34 niklas Exp $	*/
+/*	$OpenBSD: log.h,v 1.7 2000/02/25 17:23:41 niklas Exp $	*/
+/*	$EOM: log.h,v 1.19 2000/03/30 14:27:23 ho Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,17 +40,47 @@
 #include <sys/types.h>
 #include <stdio.h>
 
+/*
+ * We cannot do the log strings dynamically sizeable as out of memory is one
+ * of the situations we need to report about.
+ */
+#define LOG_SIZE	200
+
 enum log_classes {
-  LOG_MISC, LOG_TRANSPORT, LOG_MESSAGE, LOG_CRYPTO, LOG_TIMER, LOG_PF_ENCAP,
-  LOG_ENDCLASS
+  LOG_MISC, LOG_TRANSPORT, LOG_MESSAGE, LOG_CRYPTO, LOG_TIMER, LOG_SYSDEP,
+  LOG_SA, LOG_EXCHANGE, LOG_ENDCLASS
 };
+#define LOG_CLASSES_TEXT \
+  { "Misc", "Trpt", "Mesg", "Cryp", "Timr", "Sdep", "SA  ", "Exch" }
+
+/*
+ * "Class" LOG_REPORT will always be logged to the current log channel,
+ * regardless of level.
+ */
+#define LOG_PRINT  -1
+#define LOG_REPORT -2
+
+#ifdef USE_DEBUG
+
+#define LOG_DBG(x)	log_debug x
+#define LOG_DBG_BUF(x)	log_debug_buf x
 
 extern void log_debug (int, int, const char *, ...);
 extern void log_debug_buf (int, int, const char *, const u_int8_t *, size_t);
 extern void log_debug_cmd (int, int);
+
+#else /* USE_DEBUG */
+
+#define LOG_DBG(x)
+#define LOG_DBG_BUF(x)
+
+#endif /* USE_DEBUG */
+
+extern FILE *log_current (void);
 extern void log_error (const char *, ...);
 extern void log_fatal (const char *, ...);
 extern void log_print (const char *, ...);
 extern void log_to (FILE *);
+extern void log_init (void);
 
 #endif /* _LOG_H_ */

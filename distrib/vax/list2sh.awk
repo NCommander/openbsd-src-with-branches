@@ -1,4 +1,4 @@
-#	$Id: list2sh.awk,v 1.1 1995/10/01 21:22:18 ragge Exp $
+#	$OpenBSD: list2sh.awk,v 1.2 1996/09/05 21:27:33 deraadt Exp $
 
 BEGIN {
 	printf("cd ${CURDIR}\n");

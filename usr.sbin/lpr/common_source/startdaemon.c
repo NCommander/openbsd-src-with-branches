@@ -1,3 +1,5 @@
+/*	$OpenBSD: $	*/
+
 /*
  * Copyright (c) 1983, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +34,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)startdaemon.c	8.2 (Berkeley) 4/17/94";
+#else
+static char rcsid[] = "$OpenBSD: $";
+#endif
 #endif /* not lint */
 
 
@@ -83,7 +89,10 @@ startdaemon(printer)
 		return(0);
 	}
 	seteuid(uid);
-	(void) sprintf(buf, "\1%s\n", printer);
+	if (snprintf(buf, sizeof buf, "\1%s\n", printer) > sizeof buf-1) {
+		close(s);
+		return (0);
+	}
 	n = strlen(buf);
 	if (write(s, buf, n) != n) {
 		perr("write");

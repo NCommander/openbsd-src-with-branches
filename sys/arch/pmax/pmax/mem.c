@@ -52,6 +52,7 @@
 #include <sys/malloc.h>
 #include <sys/msgbuf.h>
 
+#include <machine/conf.h>
 #include <machine/cpu.h>
 
 #include <vm/vm.h>
@@ -61,19 +62,29 @@ caddr_t zeropage;
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+        struct proc *p;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+        struct proc *p;
 {
 
 	return (0);
@@ -86,7 +97,7 @@ mmrw(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t o, v;
+	register vm_offset_t v;
 	register int c;
 	register struct iovec *iov;
 	int error = 0;
@@ -108,7 +119,7 @@ mmrw(dev, uio, flags)
 			c = iov->iov_len;
 			if (v + c > ctob(physmem))
 				return (EFAULT);
-			v += MACH_CACHED_MEMORY_ADDR;
+			v += MIPS_KSEG0_START;
 			error = uiomove((caddr_t)v, c, uio);
 			continue;
 
@@ -116,11 +127,11 @@ mmrw(dev, uio, flags)
 		case 1:
 			v = uio->uio_offset;
 			c = min(iov->iov_len, MAXPHYS);
-			if (v < MACH_CACHED_MEMORY_ADDR)
+			if (v < MIPS_KSEG0_START)
 				return (EFAULT);
-			if (v + c > MACH_PHYS_TO_CACHED(avail_end +
+			if (v + c > MIPS_PHYS_TO_KSEG0(avail_end +
 							sizeof (struct msgbuf)) &&
-			    (v < MACH_KSEG2_ADDR ||
+			    (v < MIPS_KSEG2_START ||
 			    !kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE)))
 				return (EFAULT);
@@ -167,5 +178,17 @@ mmmmap(dev, off, prot)
 	int off, prot;
 {
 
+	return (EOPNOTSUPP);
+}
+
+/*ARGSUSED*/
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
 	return (EOPNOTSUPP);
 }

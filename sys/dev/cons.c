@@ -1,4 +1,5 @@
-/*	$NetBSD: cons.c,v 1.27 1995/04/11 22:08:06 pk Exp $	*/
+/*	$OpenBSD: cons.c,v 1.6 1996/04/18 04:05:39 mickey Exp $	*/
+/*	$NetBSD: cons.c,v 1.30 1996/04/08 19:57:30 jonathan Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -43,9 +44,9 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-#include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
@@ -157,7 +158,7 @@ cnstop(tp, flag)
 	struct tty *tp;
 	int flag;
 {
-
+	return (0);
 }
  
 int
@@ -206,7 +207,7 @@ cnselect(dev, rw, p)
 {
 
 	/*
-	 * Redirect the ioctl, if that's appropriate.
+	 * Redirect the select, if that's appropriate.
 	 * I don't want to think of the possible side effects
 	 * of console redirection here.
 	 */
@@ -228,19 +229,19 @@ cngetc()
 	return ((*cn_tab->cn_getc)(cn_tab->cn_dev));
 }
 
-int
+void
 cnputc(c)
 	register int c;
 {
 
 	if (cn_tab == NULL)
-		return 0;			/* XXX should be void */
+		return;			
+
 	if (c) {
 		(*cn_tab->cn_putc)(cn_tab->cn_dev, c);
 		if (c == '\n')
 			(*cn_tab->cn_putc)(cn_tab->cn_dev, '\r');
 	}
-	return 0;				/* XXX should be void */
 }
 
 void
@@ -260,7 +261,8 @@ cnpollc(on)
 }
 
 void
-nullcnpollc(on)
+nullcnpollc(dev, on)
+	dev_t dev;
 	int on;
 {
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.3 1997/01/12 23:43:04 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1994/11/23 07:42:00 jtc Exp $	*/
 
 /*-
@@ -47,7 +48,6 @@ void reverse __P((FILE *, enum STYLE, long, struct stat *));
 void bytes __P((FILE *, off_t));
 void lines __P((FILE *, off_t));
 
-void err __P((int fatal, const char *fmt, ...));
 void ierr __P((void));
 void oerr __P((void));
 

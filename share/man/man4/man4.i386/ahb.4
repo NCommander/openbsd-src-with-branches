@@ -1,3 +1,4 @@
+.\"	$OpenBSD: ahb.4,v 1.6 1999/06/05 13:18:35 aaron Exp $
 .\"
 .\" Copyright (c) 1994 James A. Jegers
 .\" All rights reserved.
@@ -9,7 +10,7 @@
 .\"    notice, this list of conditions and the following disclaimer.
 .\" 2. The name of the author may not be used to endorse or promote products
 .\"    derived from this software without specific prior written permission
-.\" 
+.\"
 .\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 .\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 .\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -23,7 +24,7 @@
 .\"
 .Dd November 29, 1994
 .Dt AHB 4 i386
-.Os NetBSD 
+.Os
 .Sh NAME
 .Nm ahb
 .Nd Adaptec 1742 SCSI adapter driver
@@ -32,11 +33,11 @@
 .Cd "scsibus* at ahb?"
 .Sh DESCRIPTION
 The
-.Nm ahb 
-driver provide support for the Adaptec AHA-1742 EISA SCSI adapter.
+.Nm
+driver provides support for the Adaptec AHA-1742 EISA SCSI adapter.
 .Sh SEE ALSO
+.Xr cd 4 ,
+.Xr ch 4 ,
 .Xr intro 4 ,
 .Xr sd 4 ,
-.Xr st 4 ,
-.Xr cd 4 ,
-.Xr ch 4  
+.Xr st 4

@@ -73,7 +73,7 @@ getether(ifname, eap)
 	int nit;
 
 	bzero((char *) &ifrnit, sizeof(ifrnit));
-	strncpy(&ifrnit.ifr_name[0], ifname, IFNAMSIZ);
+	strlcpy(&ifrnit.ifr_name[0], ifname, IFNAMSIZ);
 
 	nit = open("/dev/nit", 0);
 	if (nit < 0) {
@@ -101,7 +101,7 @@ getether(ifname, eap)
 #endif /* SUNOS */
 
 
-#if defined(__386BSD__) || defined(__NetBSD__)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 /* Thanks to John Brezak <brezak@ch.hp.com> for this code. */
 #include <sys/ioctl.h>
 #include <net/if.h>
@@ -156,7 +156,7 @@ getether(ifname, eap)
 }
 
 #define	GETETHER
-#endif /* __NetBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ */
 
 
 #ifdef	SVR4
@@ -185,7 +185,7 @@ getether(ifname, eap)
 	char *enaddr;
 	int unit = -1;				/* which unit to attach */
 
-	sprintf(devname, "/dev/%s", ifname);
+	snprintf(devname, sizeof(devname), "/dev/%s", ifname);
 	fd = open(devname, 2);
 	if (fd < 0) {
 		/* Try without the trailing digit. */

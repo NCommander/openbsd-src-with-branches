@@ -1,3 +1,4 @@
+.\"	$OpenBSD: mopchk.1,v 1.5 1999/06/05 22:17:22 aaron Exp $
 .\"
 .\" Copyright (c) 1996 Mats O Jansson.  All rights reserved.
 .\"
@@ -26,20 +27,21 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" @(#) $Id: mopchk.1,v 1.1 1996/08/11 22:47:11 moj Exp $
+.\" @(#) $OpenBSD: mopchk.1,v 1.5 1999/06/05 22:17:22 aaron Exp $
 .\"
 .Dd October 2, 1995
 .Dt MOPCHK 1
+.Os
 .Sh NAME
 .Nm mopchk
-.Nd MOP Check Utility
+.Nd MOP check utility
 .Sh SYNOPSIS
-.Nm mopchk 
+.Nm mopchk
 .Op Fl a
 .Op Fl v
 .Op Ar filename
 .Sh DESCRIPTION
-.Nm Mopchk
+.Nm
 shows information about which devices are known, version of mopd suite or
 information about a MOP-image.
 .Pp
@@ -55,7 +57,7 @@ Show all the Ethernets attached to the system.
 Show version of mopprobe.
 .El
 .Sh BUGS
-In some implementation the same interface can occure more than once.
+In some implementations the same interface can occur more than once.
 .Sh SEE ALSO
 .Xr mopa.out 1 ,
 .Xr mopprobe 1 ,

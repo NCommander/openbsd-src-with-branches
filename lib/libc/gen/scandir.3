@@ -1,4 +1,4 @@
-.\"	$NetBSD: scandir.3,v 1.4 1995/02/25 08:51:39 cgd Exp $
+.\"	$OpenBSD: scandir.3,v 1.5 1999/06/03 10:03:22 aaron Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,11 +31,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)scandir.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd June 4, 1993
 .Dt SCANDIR 3
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm scandir ,
 .Nm alphasort
@@ -63,7 +61,7 @@ referenced by
 .Pp
 The
 .Fa select
-parameter is a pointer to a user supplied subroutine which is called by
+parameter is a pointer to a user-supplied subroutine which is called by
 .Fn scandir
 to select which entries are to be included in the array.
 The select routine is passed a
@@ -71,14 +69,18 @@ pointer to a directory entry and should return a non-zero
 value if the directory entry is to be included in the array.
 If
 .Fa select
-is null, then all the directory entries will be included.
+is
+.Dv NULL ,
+then all directory entries will be included.
 .Pp
 The
 .Fa compar
-parameter is a pointer to a user supplied subroutine which is passed to
+parameter is a pointer to a user-supplied subroutine which is passed to
 .Xr qsort 3
 to sort the completed array.
-If this pointer is null, the array is not sorted.
+If this pointer is
+.Dv NULL ,
+the array is not sorted.
 .Pp
 The
 .Fn alphasort
@@ -104,5 +106,5 @@ The
 .Fn scandir
 and
 .Fn alphasort
-functions appeared in 
+functions appeared in
 .Bx 4.2 .

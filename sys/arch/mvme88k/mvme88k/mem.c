@@ -1,4 +1,4 @@
-/*	$NetBSD: mem.c,v 1.11 1995/05/29 23:57:16 pk Exp $ */
+/*	$OpenBSD: mem.c,v 1.4 1999/09/03 18:01:31 art Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -64,7 +64,15 @@ mmopen(dev, flag, mode)
 	int flag, mode;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
@@ -123,7 +131,7 @@ mmrw(dev, uio, flags)
 			}
 			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
 			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+			    VM_PROT_READ : VM_PROT_WRITE, TRUE, 0);
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
@@ -186,5 +194,17 @@ mmmmap(dev, off, prot)
         int off, prot;
 {
 
+	return (EOPNOTSUPP);
+}
+
+/*ARGSUSED*/
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
 	return (EOPNOTSUPP);
 }

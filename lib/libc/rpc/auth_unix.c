@@ -1,5 +1,3 @@
-/*	$NetBSD: auth_unix.c,v 1.2 1995/02/25 03:01:35 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)auth_unix.c 1.19 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)auth_unix.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: auth_unix.c,v 1.2 1995/02/25 03:01:35 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: auth_unix.c,v 1.10 1998/07/09 06:11:56 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * auth_unix.c, Implements UNIX style authentication parameters. 
@@ -49,6 +45,8 @@ static char *rcsid = "$NetBSD: auth_unix.c,v 1.2 1995/02/25 03:01:35 cgd Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
 #include <rpc/types.h>
 #include <rpc/xdr.h>
@@ -58,11 +56,11 @@ static char *rcsid = "$NetBSD: auth_unix.c,v 1.2 1995/02/25 03:01:35 cgd Exp $";
 /*
  * Unix authenticator operations vector
  */
+static void	authunix_destroy();
 static void	authunix_nextverf();
 static bool_t	authunix_marshal();
-static bool_t	authunix_validate();
 static bool_t	authunix_refresh();
-static void	authunix_destroy();
+static bool_t	authunix_validate();
 
 static struct auth_ops auth_unix_ops = {
 	authunix_nextverf,
@@ -84,7 +82,7 @@ struct audata {
 };
 #define	AUTH_PRIVATE(auth)	((struct audata *)auth->ah_private)
 
-static bool_t marshal_new_auth();
+static void marshal_new_auth();
 
 
 /*
@@ -155,7 +153,7 @@ authunix_create(machname, uid, gid, len, aup_gids)
 		return (NULL);
 	}
 #endif
-	bcopy(mymem, au->au_origcred.oa_base, (u_int)len);
+	memcpy(au->au_origcred.oa_base, mymem, (u_int)len);
 
 	/*
 	 * set auth handle to reflect new cred.
@@ -172,26 +170,29 @@ authunix_create(machname, uid, gid, len, aup_gids)
 AUTH *
 authunix_create_default()
 {
-	register int len;
+	register int len, i;
 	char machname[MAX_MACHINE_NAME + 1];
-	register int uid;
-	register int gid;
-	int gids[NGRPS];
+	register uid_t uid;
+	register gid_t gid;
+	gid_t gids[NGRPS];
+	int gids2[NGRPS];
 
-	if (gethostname(machname, MAX_MACHINE_NAME) == -1)
-		abort();
+	if (gethostname(machname, sizeof machname) == -1)
+		return (NULL);
 	machname[MAX_MACHINE_NAME] = 0;
 	uid = geteuid();
 	gid = getegid();
 	if ((len = getgroups(NGRPS, gids)) < 0)
-		abort();
-	return (authunix_create(machname, uid, gid, len, gids));
+		return (NULL);
+	for (i = 0; i < len; i++)
+		gids2[i] = gids[i];
+	return (authunix_create(machname, uid, gid, len, gids2));
 }
 
 /*
  * authunix operations
  */
-
+/* ARGSUSED */
 static void
 authunix_nextverf(auth)
 	AUTH *auth;
@@ -212,14 +213,14 @@ authunix_marshal(auth, xdrs)
 static bool_t
 authunix_validate(auth, verf)
 	register AUTH *auth;
-	struct opaque_auth verf;
+	struct opaque_auth *verf;
 {
 	register struct audata *au;
 	XDR xdrs;
 
-	if (verf.oa_flavor == AUTH_SHORT) {
+	if (verf->oa_flavor == AUTH_SHORT) {
 		au = AUTH_PRIVATE(auth);
-		xdrmem_create(&xdrs, verf.oa_base, verf.oa_length, XDR_DECODE);
+		xdrmem_create(&xdrs, verf->oa_base, verf->oa_length, XDR_DECODE);
 
 		if (au->au_shcred.oa_base != NULL) {
 			mem_free(au->au_shcred.oa_base,
@@ -305,7 +306,7 @@ authunix_destroy(auth)
  * Marshals (pre-serializes) an auth struct.
  * sets private data, au_marshed and au_mpos
  */
-static bool_t
+static void
 marshal_new_auth(auth)
 	register AUTH *auth;
 {

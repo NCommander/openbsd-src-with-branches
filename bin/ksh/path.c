@@ -1,49 +1,15 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: path.c,v 1.6 1999/06/15 01:18:35 millert Exp $	*/
 
 #include "sh.h"
 #include "ksh_stat.h"
 
 /*
- *	Contains a routine to search a : seperated list of
+ *	Contains a routine to search a : separated list of
  *	paths (a la CDPATH) and make appropiate file names.
  *	Also contains a routine to simplify .'s and ..'s out of
  *	a path name.
  *
  *	Larry Bouzane (larry@cs.mun.ca)
- */
-
-/*
- * $Log: path.c,v $
- * Revision 1.2  1994/05/19  18:32:40  michael
- * Merge complete, stdio replaced, various fixes. (pre autoconf)
- *
- * Revision 1.1  1994/04/06  13:14:03  michael
- * Initial revision
- *
- * Revision 4.2  1990/12/06  18:05:24  larry
- * Updated test code to reflect parameter change.
- * Fixed problem with /a/./.dir being simplified to /a and not /a/.dir due
- * to *(cur+2) == *f test instead of the correct cur+2 == f
- *
- * Revision 4.1  90/10/29  14:42:19  larry
- * base MUN version
- * 
- * Revision 3.1.0.4  89/02/16  20:28:36  larry
- * Forgot to set *pathlist to NULL when last changed make_path().
- * 
- * Revision 3.1.0.3  89/02/13  20:29:55  larry
- * Fixed up cd so that it knew when a node from CDPATH was used and would
- * print a message only when really necessary.
- * 
- * Revision 3.1.0.2  89/02/13  17:51:22  larry
- * Merged with Eric Gisin's version.
- * 
- * Revision 3.1.0.1  89/02/13  17:50:58  larry
- * *** empty log message ***
- * 
- * Revision 3.1  89/02/13  17:49:28  larry
- * *** empty log message ***
- * 
  */
 
 #ifdef S_ISLNK
@@ -69,7 +35,7 @@ int
 make_path(cwd, file, cdpathp, xsp, phys_pathp)
 	const char *cwd;
 	const char *file;
-	char	**cdpathp;	/* & of : seperated list */
+	char	**cdpathp;	/* & of : separated list */
 	XString	*xsp;
 	int	*phys_pathp;
 {
@@ -158,10 +124,10 @@ simplify_path(path)
 
 	if ((isrooted = ISROOTEDPATH(path)))
 		very_start++;
-#ifdef OS2
+#if defined (OS2) || defined (__CYGWIN__)
 	if (path[0] && path[1] == ':')	/* skip a: */
 		very_start += 2;
-#endif /* OS2 */
+#endif /* OS2 || __CYGWIN__ */
 
 	/* Before			After
 	 *  /foo/			/foo
@@ -171,12 +137,18 @@ simplify_path(path)
 	 *  ..				..
 	 *  ./foo			foo
 	 *  foo/../../../bar		../../bar
-	 * OS2:
+	 * OS2 and CYGWIN:
 	 *  a:/foo/../..		a:/
 	 *  a:.				a:
 	 *  a:..			a:..
 	 *  a:foo/../../blah		a:../blah
 	 */
+
+#ifdef __CYGWIN__
+       /* preserve leading double-slash on pathnames (for UNC paths) */
+       if (path[0] && ISDIRSEP(path[0]) && path[1] && ISDIRSEP(path[1]))
+               very_start++;
+#endif /* __CYGWIN__ */
 
 	for (cur = t = start = very_start; ; ) {
 		/* treat multiple '/'s as one '/' */

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: frame.h,v 1.2 1994/11/20 20:53:07 deraadt Exp $ */
 
 /*

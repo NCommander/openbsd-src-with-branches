@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: version.c,v 1.3 1995/04/22 10:37:27 cgd Exp $	*/
 
 /*
@@ -37,8 +38,8 @@
 #if 0
 static char sccsid[] = "@(#)version.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: version.c,v 1.3 1995/04/22 10:37:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
-char version[] = "Wooden Ships and Iron Men, Version 8.1 (93/05/31)";
+char version[] = "Wooden Ships and Iron Men, Version 8.2 (95/04/28)";

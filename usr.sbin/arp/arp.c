@@ -1,3 +1,4 @@
+/*	$OpenBSD: arp.c,v 1.13 1998/09/29 02:22:14 millert Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -72,10 +73,10 @@ static char *rcsid = "$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <paths.h>
+#include <unistd.h>
 
 int delete __P((const char *, const char *));
-void dump __P((u_long));
-int ether_aton __P((const char *, u_char *));
+void dump __P((in_addr_t));
 void ether_print __P((const u_char *));
 int file __P((char *));
 void get __P((const char *));
@@ -97,7 +98,15 @@ main(argc, argv)
 	int ch;
 
 	pid = getpid();
-	while ((ch = getopt(argc, argv, "andsf")) != EOF)
+	opterr = 0;
+	while ((ch = getopt(argc, argv, "andsf")) != -1)
+		if (ch == 'n')
+			nflag = 1;
+
+	optind = 1;
+	optreset = 1;
+	opterr = 1;
+	while ((ch = getopt(argc, argv, "andsf")) != -1)
 		switch((char)ch) {
 		case 'a':
 			dump(0);
@@ -108,7 +117,6 @@ main(argc, argv)
 			(void)delete(argv[2], argv[3]);
 			return (0);
 		case 'n':
-			nflag = 1;
 			break;
 		case 's':
 			if (argc < 4 || argc > 7)
@@ -149,7 +157,7 @@ file(name)
 	args[4] = &arg[4][0];
 	retval = 0;
 	while (fgets(line, 100, fp) != NULL) {
-		i = sscanf(line, "%s %s %s %s %s", arg[0], arg[1], arg[2],
+		i = sscanf(line, "%49s %49s %49s %49s %49s", arg[0], arg[1], arg[2],
 		    arg[3], arg[4]);
 		if (i < 2) {
 			warnx("bad line: %s", line);
@@ -193,8 +201,9 @@ set(argc, argv)
 	register struct sockaddr_inarp *sin;
 	register struct sockaddr_dl *sdl;
 	register struct rt_msghdr *rtm;
-	u_char *ea;
-	char *host = argv[0], *eaddr;
+	u_char *eaddr;
+	struct ether_addr *ea;
+	char *host = argv[0];
 
 	sin = &sin_m;
 	rtm = &(m_rtmsg.m_rtm);
@@ -207,19 +216,34 @@ set(argc, argv)
 	sin_m = blank_sin;		/* struct copy */
 	if (getinetaddr(host, &sin->sin_addr) == -1)
 		return (1);
-	ea = (u_char *)LLADDR(&sdl_m);
-	if (ether_aton(eaddr, ea) == 0)
-		sdl_m.sdl_alen = 6;
+	ea = ether_aton(eaddr);
+	if (ea == NULL) 
+	  errx(1, "invalid ethernet address: %s\n", eaddr);
+	memcpy(LLADDR(&sdl_m), ea, sizeof (*ea));
+	sdl_m.sdl_alen = 6;
 	doing_proxy = flags = export_only = expire_time = 0;
 	while (argc-- > 0) {
 		if (strncmp(argv[0], "temp", 4) == 0) {
 			struct timeval time;
 			(void)gettimeofday(&time, 0);
 			expire_time = time.tv_sec + 20 * 60;
+			if (flags & RTF_PERMANENT_ARP) {
+			        /* temp or permanent, not both */
+				usage();
+				return (0);
+			}
 		}
 		else if (strncmp(argv[0], "pub", 3) == 0) {
 			flags |= RTF_ANNOUNCE;
 			doing_proxy = SIN_PROXY;
+		}	
+		else if (strncmp(argv[0], "permanent", 9) == 0) {
+			flags |= RTF_PERMANENT_ARP;
+			if (expire_time != 0) {
+			        /* temp or permanent, not both */
+				usage();
+				return (0);
+			}
 		} else if (strncmp(argv[0], "trail", 5) == 0) {
 			(void)printf(
 			    "%s: Sending trailers is no longer supported\n",
@@ -274,7 +298,6 @@ get(host)
 	const char *host;
 {
 	struct sockaddr_inarp *sin;
-	u_char *ea;
 
 	sin = &sin_m;
 	sin_m = blank_sin;		/* struct copy */
@@ -299,8 +322,6 @@ delete(host, info)
 	register struct sockaddr_inarp *sin;
 	register struct rt_msghdr *rtm;
 	struct sockaddr_dl *sdl;
-	u_char *ea;
-	char *eaddr;
 
 	sin = &sin_m;
 	rtm = &m_rtmsg.m_rtm;
@@ -350,7 +371,7 @@ delete:
  */
 void
 dump(addr)
-	u_long addr;
+	in_addr_t addr;
 {
 	int mib[6];
 	size_t needed;
@@ -369,6 +390,8 @@ dump(addr)
 	mib[5] = RTF_LLINFO;
 	if (sysctl(mib, 6, NULL, &needed, NULL, 0) < 0)
 		err(1, "route-sysctl-estimate");
+	if (needed == 0)
+		return;
 	if ((buf = malloc(needed)) == NULL)
 		err(1, "malloc");
 	if (sysctl(mib, 6, buf, &needed, NULL, 0) < 0)
@@ -400,8 +423,10 @@ dump(addr)
 			ether_print(LLADDR(sdl));
 		else
 			(void)printf("(incomplete)");
+		if (rtm->rtm_flags & RTF_PERMANENT_ARP)
+		        (void)printf(" permanent");
 		if (rtm->rtm_rmx.rmx_expire == 0)
-			(void)printf(" permanent");
+			(void)printf(" static");
 		if (sin->sin_other & SIN_PROXY)
 			(void)printf(" published (proxy only)");
 		if (rtm->rtm_addrs & RTA_NETMASK) {
@@ -424,24 +449,6 @@ ether_print(cp)
 	    cp[5]);
 }
 
-int
-ether_aton(a, n)
-	const char *a;
-	u_char *n;
-{
-	int i, o[6];
-
-	i = sscanf(a, "%x:%x:%x:%x:%x:%x", &o[0], &o[1], &o[2], &o[3], &o[4],
-	    &o[5]);
-	if (i != 6) {
-		warnx("invalid Ethernet address '%s'", a);
-		return (1);
-	}
-	for (i=0; i<6; i++)
-		n[i] = o[i];
-	return (0);
-}
-
 void
 usage()
 {
@@ -449,7 +456,7 @@ usage()
 	(void)fprintf(stderr, "usage: arp [-n] -a\n");
 	(void)fprintf(stderr, "usage: arp -d hostname\n");
 	(void)fprintf(stderr,
-	    "usage: arp -s hostname ether_addr [temp] [pub]\n");
+	    "usage: arp -s hostname ether_addr [temp | permanent] [pub]\n");
 	(void)fprintf(stderr, "usage: arp -f filename\n");
 	exit(1);
 }
@@ -528,15 +535,12 @@ getinetaddr(host, inap)
 	const char *host;
 	struct in_addr *inap;
 {
-	extern char *__progname;	/* Program name, from crt0. */
 	struct hostent *hp;
-	u_long addr;
 
 	if (inet_aton(host, inap) == 1)
 		return (0);
 	if ((hp = gethostbyname(host)) == NULL) {
-		(void)fprintf(stderr, "%s: %s: ", __progname, host);
-		herror(NULL);
+		warnx("%s: %s", host, hstrerror(h_errno));
 		return (-1);
 	}
 	(void)memcpy(inap, hp->h_addr, sizeof(*inap));

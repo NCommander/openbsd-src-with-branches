@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1994-1996,1998-1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1994-1996,1998-2000 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Sudo: sudo.h,v 1.163 1999/09/08 08:06:17 millert Exp $
+ * $Sudo: sudo.h,v 1.172 2000/03/07 04:29:46 millert Exp $
  */
 
 #ifndef _SUDO_SUDO_H
@@ -56,6 +56,7 @@ struct sudo_user {
     char *cmnd_safe;
     char *cmnd;
     char *cmnd_args;
+    char *class_name;
 };
 
 /*
@@ -99,7 +100,8 @@ struct sudo_user {
 #define MODE_LISTDEFS            00200
 #define MODE_BACKGROUND          00400
 #define MODE_SHELL               01000
-#define MODE_RESET_HOME          02000
+#define MODE_IMPLIED_SHELL       02000
+#define MODE_RESET_HOME          04000
 
 /*
  * Used with set_perms()
@@ -128,6 +130,7 @@ struct sudo_user {
 #define user_host		(sudo_user.host)
 #define user_shost		(sudo_user.shost)
 #define safe_cmnd		(sudo_user.cmnd_safe)
+#define login_class		(sudo_user.class_name)
 
 /*
  * We used to use the system definition of PASS_MAX or _PASSWD_LEN,
@@ -143,6 +146,24 @@ struct sudo_user {
 #define SUDO_LOCK	1		/* lock a file */
 #define SUDO_TLOCK	2		/* test & lock a file (non-blocking) */
 #define SUDO_UNLOCK	4		/* unlock a file */
+
+/*
+ * Flags for sudoers_lookup:
+ *  PASSWD_NEVER:  user never has to give a passwd
+ *  PASSWD_ALL:    no passwd needed if all entries for host have NOPASSWD flag
+ *  PASSWD_ANY:    no passwd needed if any entry for host has a NOPASSWD flag
+ *  PASSWD_ALWAYS: passwd always needed
+ */
+#define PWCHECK_NEVER	0x01
+#define PWCHECK_ALL	0x02
+#define PWCHECK_ANY	0x04
+#define PWCHECK_ALWAYS	0x08
+
+/*
+ * Flags for tgetpass()
+ */
+#define TGP_ECHO	0x01		/* leave echo on when reading passwd */
+#define TGP_STDIN	0x02		/* read from stdin, not /dev/tty */
 
 /*
  * Function prototypes
@@ -193,6 +214,9 @@ void dump_defaults	__P((void));
 void dump_auth_methods	__P((void));
 int lock_file		__P((int, int));
 int touch		__P((char *, time_t));
+int user_is_exempt	__P((void));
+void set_fqdn		__P((void));
+char *sudo_getepw	__P((struct passwd *));
 YY_DECL;
 
 /* Only provide extern declarations outside of sudo.c. */
@@ -202,6 +226,7 @@ extern struct sudo_user sudo_user;
 extern int Argc;
 extern char **Argv;
 extern FILE *sudoers_fp;
+extern int tgetpass_flags;
 #endif
 extern int errno;
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cat.c,v 1.8 1997/06/18 18:37:56 kstailey Exp $	*/
 /*	$NetBSD: cat.c,v 1.11 1995/09/07 06:12:54 jtc Exp $	*/
 
 /*
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cat.c	8.2 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$NetBSD: cat.c,v 1.11 1995/09/07 06:12:54 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cat.c,v 1.8 1997/06/18 18:37:56 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -77,7 +78,6 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	extern int optind;
 	int ch;
 
 	setlocale(LC_ALL, "");
@@ -100,13 +100,12 @@ main(argc, argv)
 			tflag = vflag = 1;	/* -t implies -v */
 			break;
 		case 'u':
-			setbuf(stdout, (char *)NULL);
+			setbuf(stdout, NULL);
 			break;
 		case 'v':
 			vflag = 1;
 			break;
 		default:
-		case '?':
 			(void)fprintf(stderr,
 			    "usage: cat [-benstuv] [-] [file ...]\n");
 			exit(1);
@@ -136,6 +135,7 @@ cook_args(argv)
 				fp = stdin;
 			else if ((fp = fopen(*argv, "r")) == NULL) {
 				warn("%s", *argv);
+				rval = 1;
 				++argv;
 				continue;
 			}
@@ -204,6 +204,7 @@ cook_buf(fp)
 	}
 	if (ferror(fp)) {
 		warn("%s", filename);
+		rval = 1;
 		clearerr(fp);
 	}
 	if (ferror(stdout))
@@ -224,6 +225,7 @@ raw_args(argv)
 				fd = fileno(stdin);
 			else if ((fd = open(*argv, O_RDONLY, 0)) < 0) {
 				warn("%s", *argv);
+				rval = 1;
 				++argv;
 				continue;
 			}
@@ -250,12 +252,14 @@ raw_cat(rfd)
 			err(1, "%s", filename);
 		bsize = MAX(sbuf.st_blksize, 1024);
 		if ((buf = malloc((u_int)bsize)) == NULL)
-			err(1, NULL);
+			err(1, "buffer");
 	}
 	while ((nr = read(rfd, buf, bsize)) > 0)
 		for (off = 0; nr; nr -= nw, off += nw)
 			if ((nw = write(wfd, buf + off, nr)) < 0)
 				err(1, "stdout");
-	if (nr < 0)
+	if (nr < 0) {
 		warn("%s", filename);
+		rval = 1;
+	}
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: trap.c,v 1.16 2000/01/14 05:42:17 rahnds Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -41,21 +42,39 @@
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
 
+#ifdef UVM
+#include <uvm/uvm_extern.h>
+#endif
+
 #include <machine/cpu.h>
 #include <machine/frame.h>
 #include <machine/pcb.h>
 #include <machine/pmap.h>
 #include <machine/psl.h>
 #include <machine/trap.h>
+#include <machine/db_machdep.h>
 
 /* These definitions should probably be somewhere else				XXX */
 #define	FIRSTARG	3		/* first argument is in reg 3 */
 #define	NARGREG		8		/* 8 args are in registers */
 #define	MOREARGS(sp)	((caddr_t)((int)(sp) + 8)) /* more args go here */
 
-volatile int astpending;
 volatile int want_resched;
 
+#ifdef DDB
+u_int32_t db_dumpframe(u_int32_t);
+void
+ppc_dumpbt(struct trapframe *frame)
+{
+	u_int32_t addr;
+	/* dumpframe is defined in db_trace.c */
+	addr=frame->fixreg[1];
+	while (addr != 0) {
+		addr = db_dumpframe(addr);
+	}
+	return;
+}
+#endif
 void
 trap(frame)
 	struct trapframe *frame;
@@ -63,6 +82,7 @@ trap(frame)
 	struct proc *p = curproc;
 	int type = frame->exc;
 	u_quad_t sticks;
+	union sigval sv;
 
 	if (frame->srr1 & PSL_PR) {
 		type |= EXC_USER;
@@ -70,9 +90,30 @@ trap(frame)
 	}
 
 	switch (type) {
-	case EXC_TRC|EXC_USER:		/* Temporarily!					XXX */
-		printf("TRC: %x\n", frame->srr0);
+	case EXC_TRC|EXC_USER:		
+		{
+			sv.sival_int = frame->srr0;
+			trapsignal(p, SIGTRAP, type, TRAP_TRACE, sv);
+		}
 		break;
+
+	case EXC_MCHK:
+		{
+			faultbuf *fb;
+
+			if (fb = p->p_addr->u_pcb.pcb_onfault) {
+				p->p_addr->u_pcb.pcb_onfault = 0;
+				frame->srr0 = fb->pc;		/* PC */
+				frame->srr1 = fb->sr;		/* SR */
+				frame->fixreg[1] = fb->sp;	/* SP */
+				frame->fixreg[3] = 1;		/* != 0 */
+				frame->cr = fb->cr;
+				bcopy(&fb->regs[0], &frame->fixreg[13], 19*4);
+				return;
+			}
+		}
+		goto brain_damage;
+
 	case EXC_DSI:
 		{
 			vm_map_t map;
@@ -95,47 +136,82 @@ trap(frame)
 				ftype = VM_PROT_READ | VM_PROT_WRITE;
 			else
 				ftype = VM_PROT_READ;
+#ifdef UVM
+			if (uvm_fault(map, trunc_page(va), 0, ftype)
+			    == KERN_SUCCESS)
+#else
 			if (vm_fault(map, trunc_page(va), ftype, FALSE)
 			    == KERN_SUCCESS)
-				break;
+#endif
+			{
+				return;
+			}
 			if (fb = p->p_addr->u_pcb.pcb_onfault) {
-				frame->srr0 = (*fb)[0];
-				frame->fixreg[1] = (*fb)[1];
-				frame->cr = (*fb)[2];
-				bcopy(&(*fb)[3], &frame->fixreg[13], 19);
+				p->p_addr->u_pcb.pcb_onfault = 0;
+				frame->srr0 = fb->pc;		/* PC */
+				frame->fixreg[1] = fb->sp;	/* SP */
+				frame->fixreg[3] = 1;		/* != 0 */
+				frame->cr = fb->cr;
+				bcopy(&fb->regs[0], &frame->fixreg[13], 19*4);
 				return;
 			}
 			map = kernel_map;
 		}
+printf("kern dsi on addr %x iar %x\n", frame->dar, frame->srr0);
 		goto brain_damage;
 	case EXC_DSI|EXC_USER:
 		{
-			int ftype;
+			int ftype, vftype;
 			
-			if (frame->dsisr & DSISR_STORE)
+			if (frame->dsisr & DSISR_STORE) {
 				ftype = VM_PROT_READ | VM_PROT_WRITE;
-			else
-				ftype = VM_PROT_READ;
+				vftype = VM_PROT_WRITE;
+			} else
+				vftype = ftype = VM_PROT_READ;
+#ifdef UVM
+			if (uvm_fault(&p->p_vmspace->vm_map,
+				     trunc_page(frame->dar), 0, ftype)
+			    == KERN_SUCCESS)
+#else
 			if (vm_fault(&p->p_vmspace->vm_map,
 				     trunc_page(frame->dar), ftype, FALSE)
 			    == KERN_SUCCESS)
+#endif
+			{
 				break;
+			}
+printf("dsi on addr %x iar %x lr %x\n", frame->dar, frame->srr0,frame->lr);
+/*
+ * keep this for later in case we want it later.
+*/
+			sv.sival_int = frame->dar;
+			trapsignal(p, SIGSEGV, vftype, SEGV_MAPERR, sv);
 		}
-printf("dsi on addr %x iar %x\n", frame->dsisr, frame->srr0);
-		trapsignal(p, SIGSEGV, EXC_DSI);
 		break;
 	case EXC_ISI|EXC_USER:
 		{
 			int ftype;
 			
 			ftype = VM_PROT_READ | VM_PROT_EXECUTE;
+#ifdef UVM
+			if (uvm_fault(&p->p_vmspace->vm_map,
+				     trunc_page(frame->srr0), 0, ftype)
+			    == KERN_SUCCESS)
+#else
 			if (vm_fault(&p->p_vmspace->vm_map,
 				     trunc_page(frame->srr0), ftype, FALSE)
 			    == KERN_SUCCESS)
+#endif
+			{
 				break;
+			}
 		}
 printf("isi iar %x\n", frame->srr0);
-		trapsignal(p, SIGSEGV, EXC_ISI);
+	case EXC_MCHK|EXC_USER:
+/* XXX Likely that returning from this trap is bogus... */
+/* XXX Have to make sure that sigreturn does the right thing. */
+		sv.sival_int = frame->srr0;
+		trapsignal(p, SIGSEGV, VM_PROT_EXECUTE, SEGV_MAPERR, sv);
 		break;
 	case EXC_SC|EXC_USER:
 		{
@@ -146,7 +222,11 @@ printf("isi iar %x\n", frame->srr0);
 			int nsys, n;
 			register_t args[10];
 			
+#ifdef UVM
+			uvmexp.syscalls++;
+#else
 			cnt.v_syscall++;
+#endif
 			
 			nsys = p->p_emul->e_nsysent;
 			callp = p->p_emul->e_sysent;
@@ -254,13 +334,74 @@ syscall_bad:
 	default:
 	
 brain_damage:
-		printf("trap type %x at %x\n", type, frame->srr0);
+		printf("trap type %x at %x lr %x\n",
+			type, frame->srr0, frame->lr);
+/*
+mpc_print_pci_stat();
+*/
+
+#ifdef DDB
+		/* set up registers */
+		db_save_regs(frame);
+#endif
 		panic("trap");
 
+
 	case EXC_PGM|EXC_USER:
-printf("pgm iar %x\n", frame->srr0);
-		trapsignal(p, SIGILL,EXC_PGM);
+	{
+		char *errstr[8];
+		int errnum = 0;
+		int i;
+
+		if (frame->srr1 & (1<<(31-11))) { 
+			/* floating point enabled program exception */
+			errstr[errnum] = "floating point";
+			errnum++;
+		} 
+		if (frame->srr1 & (1<<(31-12))) {
+			/* illegal instruction program exception */
+			errstr[errnum] = "illegal instruction";
+			errnum++;
+		}
+		if (frame->srr1 & (1<<(31-13))) {
+			/* privileged instruction exception */
+			errstr[errnum] = "priviledged instr";
+			errnum++;
+		}
+		if (frame->srr1 & (1<<(31-14))) {
+			errstr[errnum] = "trap instr";
+			errnum++;
+			/* trap instruction exception */
+			/*
+				instr = copyin (srr0)
+				if (instr == BKPT_INST && uid == 0) {
+					db_trap(T_BREAKPOINT?)
+					break;
+				}
+			*/
+		}
+		if (frame->srr1 & (1<<(31-15))) {
+			errstr[errnum] = "previous address";
+			errnum++;
+		}
+printf("pgm iar %x srr1 %x\n", frame->srr0, frame->srr1);
+for (i = 0; i < errnum; i++) {
+	printf("\t[%s]\n", errstr[i]);
+}
+		sv.sival_int = frame->srr0;
+		trapsignal(p, SIGILL, 0, ILL_ILLOPC, sv);
 		break;
+	case EXC_PGM:
+		/* should check for correct byte here or panic */
+#ifdef DDB
+		db_save_regs(frame);
+		db_trap(T_BREAKPOINT);
+#else
+		panic("trap");
+#endif
+		break;
+
+	}
 	case EXC_AST|EXC_USER:
 		/* This is just here that we trap */
 		break;
@@ -268,7 +409,11 @@ printf("pgm iar %x\n", frame->srr0);
 
 	astpending = 0;		/* we are about to do it */
 
+#ifdef UVM
+	uvmexp.softs++;
+#else
 	cnt.v_soft++;
+#endif
 
 	if (p->p_flag & P_OWEUPC) {
 		p->p_flag &= ~P_OWEUPC;
@@ -349,8 +494,35 @@ setusr(content)
 }
 
 int
+badaddr(addr, len)
+	char *addr;
+	u_int32_t len;
+{
+	faultbuf env;
+	u_int32_t v;
+
+	if (setfault(env)) {
+		curpcb->pcb_onfault = 0;
+		return EFAULT;
+	}
+	switch(len) {
+	case 4:
+		v = *((volatile u_int32_t *)addr);
+		break;
+	case 2:
+		v = *((volatile u_int16_t *)addr);
+		break;
+	default:
+		v = *((volatile u_int8_t *)addr);
+		break;
+	}
+	curpcb->pcb_onfault = 0;
+	return(0);
+}
+
+int
 copyin(udaddr, kaddr, len)
-	void *udaddr;
+	const void *udaddr;
 	void *kaddr;
 	size_t len;
 {
@@ -358,8 +530,10 @@ copyin(udaddr, kaddr, len)
 	size_t l;
 	faultbuf env;
 
-	if (setfault(env))
-		return EACCES;
+	if (setfault(env)) {
+		curpcb->pcb_onfault = 0;
+		return EFAULT;
+	}
 	while (len > 0) {
 		p = USER_ADDR + ((u_int)udaddr & ~SEGMENT_MASK);
 		l = (USER_ADDR + SEGMENT_LENGTH) - p;
@@ -377,7 +551,7 @@ copyin(udaddr, kaddr, len)
 
 int
 copyout(kaddr, udaddr, len)
-	void *kaddr;
+	const void *kaddr;
 	void *udaddr;
 	size_t len;
 {
@@ -385,8 +559,10 @@ copyout(kaddr, udaddr, len)
 	size_t l;
 	faultbuf env;
 
-	if (setfault(env))
-		return EACCES;
+	if (setfault(env)) {
+		curpcb->pcb_onfault = 0;
+		return EFAULT;
+	}
 	while (len > 0) {
 		p = USER_ADDR + ((u_int)udaddr & ~SEGMENT_MASK);
 		l = (USER_ADDR + SEGMENT_LENGTH) - p;

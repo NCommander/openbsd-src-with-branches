@@ -1,3 +1,4 @@
+.\"	$OpenBSD: installboot.8,v 1.5 1999/09/23 04:12:07 alex Exp $
 .\" Copyright (c) 1986, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,20 +31,19 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)installboot.8	7.2 (Berkeley) 3/16/91
-.\"	$Id: installboot.8,v 1.2 1993/08/01 07:34:42 mycroft Exp $
 .\"
 .Dd March 16, 1991
 .Dt INSTALLBOOT 8
-.Os BSD 4.3t
+.Os
 .Sh NAME
-.Nm installboot
+.Nm VAX installboot
 .Nd installs a boot program in a file system
 .Sh SYNOPSIS
 .Nm installboot
 .Ar bootblock bootprog special
 .Sh DESCRIPTION
 .Xr Installboot
-concatentates
+concatenates
 .Ar bootblock
 and
 .Ar bootprog
@@ -61,8 +61,8 @@ boot blocks
 boot programs
 .El
 .Sh SEE ALSO
-.Xr newfs 8 ,
-.Xr dd 1
+.Xr dd 1 ,
+.Xr newfs 8
 .Sh EXAMPLES
 .Bd -literal -offset indent -compact
 cd /usr/mdec

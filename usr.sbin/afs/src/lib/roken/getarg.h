@@ -37,7 +37,7 @@
  * SUCH DAMAGE. 
  */
 
-/* $KTH: getarg.h,v 1.5 1998/08/23 22:47:26 assar Exp $ */
+/* $KTH: getarg.h,v 1.6 1998/12/08 04:00:08 lha Exp $ */
 
 #ifndef __GETARG_H__
 #define __GETARG_H__
@@ -82,6 +82,7 @@ int getarg(struct getargs *args,
 
 void arg_printusage (struct getargs *args,
 		     const char *progname,
-		     const char *extra_string);
+		     const char *extra_string,
+		     int style);
 
 #endif /* __GETARG_H__ */

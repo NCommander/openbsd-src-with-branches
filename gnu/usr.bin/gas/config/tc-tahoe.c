@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* tc-tahoe.c
    Not part of GAS yet. */
 

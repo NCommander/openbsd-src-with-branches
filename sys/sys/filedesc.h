@@ -1,4 +1,5 @@
-/*	$NetBSD: filedesc.h,v 1.11 1995/03/26 20:24:14 jtc Exp $	*/
+/*	$OpenBSD: filedesc.h,v 1.7 2000/02/28 18:04:09 provos Exp $	*/
+/*	$NetBSD: filedesc.h,v 1.14 1996/04/09 20:55:28 cgd Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -50,7 +51,13 @@
  * that will fit in a power-of-two sized piece of memory.
  */
 #define NDFILE		20
-#define NDEXTENT	50		/* 250 bytes in 256-byte alloc. */ 
+#define NDEXTENT	50		/* 250 bytes in 256-byte alloc. */
+#define NDENTRIES	32		/* 32 fds per entry */
+#define NDENTRYMASK	(NDENTRIES - 1)
+#define NDENTRYSHIFT	5		/* bits per entry */
+#define NDREDUCE(x)	(((x) + NDENTRIES - 1) >> NDENTRYSHIFT)
+#define NDHISLOTS(x)	(NDREDUCE(NDREDUCE(x)))
+#define NDLOSLOTS(x)	(NDHISLOTS(x) << NDENTRYSHIFT)
 
 struct filedesc {
 	struct	file **fd_ofiles;	/* file structures for open files */
@@ -58,6 +65,8 @@ struct filedesc {
 	struct	vnode *fd_cdir;		/* current directory */
 	struct	vnode *fd_rdir;		/* root directory */
 	int	fd_nfiles;		/* number of open files allocated */
+	u_int	*fd_himap;		/* each bit points to 32 fds */
+	u_int	*fd_lomap;		/* bitmap of free fds */
 	int	fd_lastfile;		/* high-water mark of fd_ofiles */
 	int	fd_freefile;		/* approx. next free file */
 	u_short	fd_cmask;		/* mask for file creation */
@@ -76,6 +85,12 @@ struct filedesc0 {
 	 */
 	struct	file *fd_dfiles[NDFILE];
 	char	fd_dfileflags[NDFILE];
+	/*
+	 * There arrays are used when the number of open files is
+	 * <= 1024, and are then pointed to by the pointers above.
+	 */
+	u_int   fd_dhimap[NDENTRIES >> NDENTRYSHIFT];
+	u_int   fd_dlomap[NDENTRIES];
 };
 
 /*
@@ -98,6 +113,15 @@ int	dupfdopen __P((struct filedesc *fdp, int indx, int dfd, int mode,
 int	fdalloc __P((struct proc *p, int want, int *result));
 int	fdavail __P((struct proc *p, int n));
 int	falloc __P((struct proc *p, struct file **resultfp, int *resultfd));
+void	ffree __P((struct file *));
+struct	filedesc *fdinit __P((struct proc *p));
+struct	filedesc *fdshare __P((struct proc *p));
 struct	filedesc *fdcopy __P((struct proc *p));
 void	fdfree __P((struct proc *p));
+int	fdrelease __P((struct proc *p, int));
+void	fdremove __P((struct filedesc *, int));
+void	fdcloseexec __P((struct proc *));
+
+int	closef __P((struct file *, struct proc *));
+int	getsock __P((struct filedesc *, int, struct file **));
 #endif

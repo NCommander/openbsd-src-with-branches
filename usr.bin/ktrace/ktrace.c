@@ -1,3 +1,4 @@
+/*	$OpenBSD: ktrace.c,v 1.7 1998/04/25 02:54:44 deraadt Exp $	*/
 /*	$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $	*/
 
 /*-
@@ -43,18 +44,18 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ktrace.c	8.2 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $";
+static char *rcsid = "$OpenBSD: ktrace.c,v 1.7 1998/04/25 02:54:44 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <sys/file.h>
 #include <sys/time.h>
 #include <sys/errno.h>
 #include <sys/uio.h>
 #include <sys/ktrace.h>
 
 #include <err.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -70,12 +71,14 @@ main(argc, argv)
 	enum { NOTSET, CLEAR, CLEARALL } clear;
 	int append, ch, fd, inherit, ops, pid, pidset, trpoints;
 	char *tracefile;
+	mode_t omask;
+	struct stat sb;
 
 	clear = NOTSET;
 	append = ops = pidset = inherit = 0;
 	trpoints = DEF_POINTS;
 	tracefile = DEF_TRACEFILE;
-	while ((ch = getopt(argc,argv,"aCcdf:g:ip:t:")) != EOF)
+	while ((ch = getopt(argc,argv,"aCcdf:g:ip:t:")) != -1)
 		switch((char)ch) {
 		case 'a':
 			append = 1;
@@ -137,9 +140,21 @@ main(argc, argv)
 		exit(0);
 	}
 
-	if ((fd = open(tracefile, O_CREAT | O_WRONLY | (append ? 0 : O_TRUNC),
-	    DEFFILEMODE)) < 0)
-		err(1, tracefile);
+	omask = umask(S_IRWXG|S_IRWXO);
+	if (append) {
+		if ((fd = open(tracefile, O_CREAT | O_WRONLY, DEFFILEMODE)) < 0)
+			err(1, tracefile);
+		if (fstat(fd, &sb) != 0 || sb.st_uid != getuid())
+			errx(1, "Refuse to append to %s: not owned by you.",
+			    tracefile);
+	} else {
+		if (unlink(tracefile) == -1 && errno != ENOENT)
+			err(1, "unlink %s", tracefile);
+		if ((fd = open(tracefile, O_CREAT | O_EXCL | O_WRONLY,
+		    DEFFILEMODE)) < 0)
+			err(1, tracefile);
+	}
+	(void)umask(omask);
 	(void)close(fd);
 
 	if (*argv) { 
@@ -173,15 +188,15 @@ void
 usage()
 {
 	(void)fprintf(stderr,
-"usage:\tktrace [-aCcid] [-f trfile] [-g pgid] [-p pid] [-t [acgn]\n\tktrace [-aCcid] [-f trfile] [-t [acgn] command\n");
+"usage:\tktrace [-aCcid] [-f trfile] [-g pgid] [-p pid] [-t [cenis]\n\tktrace [-aCcid] [-f trfile] [-t [cenis] command\n");
 	exit(1);
 }
 
 void
 no_ktrace(sig)
-        int sig;
+	int sig;
 {
-        (void)fprintf(stderr,
+	(void)fprintf(stderr,
 "error:\tktrace() system call not supported in the running kernel\n\tre-compile kernel with 'options KTRACE'\n");
-        exit(1);
+	exit(1);
 }

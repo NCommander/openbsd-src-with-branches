@@ -1,4 +1,5 @@
-/*	$NetBSD: bit.h,v 1.4 1995/06/14 15:18:49 christos Exp $	*/
+/*	$OpenBSD: bit.h,v 1.3 1996/06/26 05:36:25 deraadt Exp $	*/
+/*	$NetBSD: bit.h,v 1.5 1995/11/08 02:30:53 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -64,7 +65,7 @@
 	(Bit_NumInts(numBits) * sizeof(int))
 
 #define Bit_Alloc(numBits, bitArrayPtr)  	\
-        bitArrayPtr = (int *)malloc((unsigned)Bit_NumBytes(numBits)); \
+        bitArrayPtr = (int *) emalloc((unsigned)Bit_NumBytes(numBits)); \
         Bit_Zero((numBits), (bitArrayPtr))
 
 #define Bit_Free(bitArrayPtr)	\
@@ -86,11 +87,11 @@
 	(!(Bit_IsSet((numBits), (bitArrayPtr))))
 
 #define Bit_Copy(numBits, srcArrayPtr, destArrayPtr) \
-	bcopy((char *)(srcArrayPtr), (char *)(destArrayPtr), \
+	memmove((char *)(destArrayPtr), (char *)(srcArrayPtr), \
 		Bit_NumBytes(numBits))
 
 #define Bit_Zero(numBits, bitArrayPtr) \
-	bzero((char *)(bitArrayPtr), Bit_NumBytes(numBits))
+	memset((char *)(bitArrayPtr), 0, Bit_NumBytes(numBits))
 
 extern int	  Bit_FindFirstSet();
 extern int	  Bit_FindFirstClear();
@@ -98,5 +99,5 @@ extern Boolean	  Bit_Intersect();
 extern Boolean 	  Bit_Union();
 extern Boolean 	  Bit_AnySet();
 extern int  	  *Bit_Expand();
-	 
+
 #endif /* _BIT */

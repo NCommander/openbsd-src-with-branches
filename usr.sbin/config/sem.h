@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: sem.h,v 1.5 1996/10/23 22:38:01 niklas Exp $	*/
+/*	$NetBSD: sem.h,v 1.6 1996/11/11 23:40:10 gwr Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -40,22 +43,24 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)sem.h	8.1 (Berkeley) 6/6/93
- *	$Id: sem.h,v 1.1 1995/04/28 06:55:24 cgd Exp $
  */
 
-void		enddefs __P((const char *));
+void		enddefs __P((void));
 
 void		setdefmaxusers __P((int, int, int));
 void		setmaxusers __P((int));
 int		defattr __P((const char *, struct nvlist *));
 void		defdev __P((struct devbase *, int, struct nvlist *,
-			struct nvlist *, struct nvlist *, struct nvlist *));
+			struct nvlist *));
+void		defdevattach __P((struct deva *, struct devbase *,
+			struct nvlist *, struct nvlist *));
 struct devbase *getdevbase __P((const char *name));
+struct deva    *getdevattach __P((const char *name));
 struct attr    *getattr __P((const char *name));
 void		setmajor __P((struct devbase *d, int n));
 void		addconf __P((struct config *));
 void		setconf __P((struct nvlist **, const char *, struct nvlist *));
-void		adddev __P((const char *, const char *, struct nvlist *, int));
+void		adddev __P((const char *, const char *, struct nvlist *, int, int));
 void		addpseudo __P((const char *name, int number));
 const char     *ref __P((const char *name));
 const char     *starref __P((const char *name));

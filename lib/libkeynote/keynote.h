@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote.h,v 1.9 1999/10/09 06:59:37 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -20,35 +19,8 @@
  * PURPOSE.
  */
 
-#ifndef _KEYNOTE_H_
-#define _KEYNOTE_H_
-
-#include <regex.h>
-
-#ifdef CRYPTO
-#include "ssl/crypto.h"
-#include "ssl/dsa.h"
-#include "ssl/rsa.h"
-#include "ssl/sha.h"
-#include "ssl/md5.h"
-#include "ssl/err.h"
-#include "ssl/rand.h"
-#include "ssl/x509.h"
-#endif /* CRYPTO */
-
-#ifdef WIN32
-#define u_int unsigned int
-#define u_char unsigned char
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
-#define open _open
-#define read _read
-#define close _close
-#endif
-
-#if defined(__OpenBSD__) || defined(linux) || defined(__FreeBSD__) || defined(__NetBSD__)
-#define KEYNOTERNDFILENAME "/dev/urandom"
-#endif /* __OpenBSD__ || linux || __FreeBSD__ || __NetBSD__ */
+#ifndef __KEYNOTE_H__
+#define __KEYNOTE_H__
 
 struct environment
 {
@@ -69,6 +41,14 @@ struct keynote_binary
 {
     int   bn_len;
     char *bn_key;
+};
+
+struct keynote_keylist
+{
+    int                     key_alg;
+    void                   *key_key;
+    char                   *key_stringkey;
+    struct keynote_keylist *key_next;
 };
 
 #define SIG_DSA_SHA1_HEX              "sig-dsa-sha1-hex:"
@@ -137,7 +117,7 @@ struct keynote_binary
 #define KEYNOTE_ALGORITHM_PGP		3
 #define KEYNOTE_ALGORITHM_BINARY        4
 #define KEYNOTE_ALGORITHM_X509          5
-#define KEYNOTE_ALGORITHM_RSA          6
+#define KEYNOTE_ALGORITHM_RSA		6
 
 #define KEYNOTE_ERROR_ANY        0
 #define KEYNOTE_ERROR_SYNTAX     1
@@ -169,6 +149,7 @@ int    kn_add_authorizer(int, char *);
 int    kn_remove_authorizer(int, char *);
 int    kn_do_query(int, char **, int);
 int    kn_get_failed(int, int, int);
+int    kn_cleanup_action_environment(int);
 int    kn_close(int);
 
 /* Simple API */
@@ -177,6 +158,9 @@ int    kn_query(struct environment *, char **, int, char **, int *, int,
 
 /* Aux. routines */
 char **kn_read_asserts(char *, int, int *);
+int    kn_keycompare(void *, void *, int);
+void  *kn_get_authorizer(int, int, int *);
+struct keynote_keylist *kn_get_licensees(int, int);
 
 /* ASCII-encoding API */
 int    kn_encode_base64(unsigned char const *, unsigned int, char *,
@@ -192,4 +176,4 @@ char  *kn_encode_key(struct keynote_deckey *, int, int, int);
 /* Crypto API */
 char  *kn_sign_assertion(char *, int, char *, char *, int);
 int    kn_verify_assertion(char *, int);
-#endif /* _KEYNOTE_H_ */
+#endif /* __KEYNOTE_H__ */

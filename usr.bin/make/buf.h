@@ -1,4 +1,5 @@
-/*	$NetBSD: buf.h,v 1.5 1995/06/14 15:18:53 christos Exp $	*/
+/*	$OpenBSD: buf.h,v 1.10 1999/12/16 16:46:38 espie Exp $	*/
+/*	$NetBSD: buf.h,v 1.7 1996/12/31 17:53:22 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -37,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)buf.h	5.4 (Berkeley) 12/28/90
+ *	from: @(#)buf.h	8.1 (Berkeley) 6/6/93
  */
 
 /*-
@@ -50,33 +51,53 @@
 
 #include    "sprite.h"
 
-typedef char Byte;
+typedef struct Buffer_ {
+    char    *buffer;	/* The buffer itself. */
+    char    *inPtr;	/* Place to write to. */
+    char    *endPtr;	/* End of allocated space. */
+} BUFFER;
 
-typedef struct Buffer {
-    int	    size; 	/* Current size of the buffer */
-    int     left;	/* Space left (== size - (inPtr - buffer)) */
-    Byte    *buffer;	/* The buffer itself */
-    Byte    *inPtr;	/* Place to write to */
-    Byte    *outPtr;	/* Place to read from */
-} *Buffer;
+typedef BUFFER *Buffer;
 
-/* Buf_AddByte adds a single byte to a buffer. */
-#define	Buf_AddByte(bp, byte) \
-	(void) (--(bp)->left <= 0 ? Buf_OvAddByte(bp, byte), 1 : \
-		(*(bp)->inPtr++ = (byte), *(bp)->inPtr = 0), 1)
+/* Internal support for Buf_AddChar.  */
+void BufOverflow __P((Buffer));
+
+/* User interface */
+
+/* Buf_AddChar -- Add a single char to buffer. */
+#define	Buf_AddChar(bp, byte) 			\
+do {			      			\
+	if ((bp)->endPtr - (bp)->inPtr <= 1)	\
+	    BufOverflow(bp);			\
+	*(bp)->inPtr++ = (byte);		\
+} while (0)					
 
 #define BUF_ERROR 256
 
-void Buf_OvAddByte __P((Buffer, int));
-void Buf_AddBytes __P((Buffer, int, Byte *));
-void Buf_UngetByte __P((Buffer, int));
-void Buf_UngetBytes __P((Buffer, int, Byte *));
-int Buf_GetByte __P((Buffer));
-int Buf_GetBytes __P((Buffer, int, Byte *));
-Byte *Buf_GetAll __P((Buffer, int *));
-void Buf_Discard __P((Buffer, int));
-int Buf_Size __P((Buffer));
-Buffer Buf_Init __P((int));
-void Buf_Destroy __P((Buffer, Boolean));
+/* Buf_AddChars -- Add a number of chars to the buffer.  */
+void Buf_AddChars __P((Buffer, size_t, const char *));
+/* Buf_Reset -- Remove all chars from a buffer.  */
+#define Buf_Reset(bp)	((void)((bp)->inPtr = (bp)->buffer))
+/* Buf_AddSpace -- Add a space to buffer.  */
+#define Buf_AddSpace(b)			Buf_AddChar((b), ' ')
+/* Buf_AddString -- Add the contents of a NULL terminated string to buffer.  */
+#define Buf_AddString(b, s)		Buf_AddChars((b), strlen(s), (s))
+/* Buf_AddInterval -- Add characters between pointers s and e to buffer.  */
+#define Buf_AddInterval(b, s, e) 	Buf_AddChars((b), (e) - (s), (s))
+
+/* Buf_Retrieve -- Retrieve data from a buffer, as a NULL terminated string.  */
+#define Buf_Retrieve(bp)	(*(bp)->inPtr = '\0', (bp)->buffer)
+
+/* Buf_Size -- Return the number of chars in the given buffer. 
+ *	Doesn't include the null-terminating char.  */
+#define Buf_Size(bp)	((size_t)((bp)->inPtr - (bp)->buffer))
+
+/* Buf_Init -- Initialize a buffer. If no initial size is given, 
+ *	a reasonable default is used.  */
+void Buf_Init __P((Buffer, size_t));
+/* Buf_Destroy -- Nuke a buffer and all its resources.  */
+void Buf_Destroy __P((Buffer));
+/* Buf_ReplaceLastChar -- Replace the last char in a buffer.  */
+void Buf_ReplaceLastChar __P((Buffer, char));
 
 #endif /* _BUF_H */

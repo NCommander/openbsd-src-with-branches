@@ -29,7 +29,7 @@
  */
 
 /* ====================================================================
- * Copyright (c) 1996-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1996-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -94,6 +94,8 @@ extern "C" {
 
 /* MD5.H - header file for MD5C.C */
 
+#define MD5_DIGESTSIZE 16
+
 /* UINT4 defines a four byte word */
 typedef unsigned int UINT4;
 
@@ -104,10 +106,22 @@ typedef struct {
     unsigned char buffer[64];	/* input buffer */
 } AP_MD5_CTX;
 
-API_EXPORT(void) ap_MD5Init(AP_MD5_CTX * context);
-API_EXPORT(void) ap_MD5Update(AP_MD5_CTX * context, const unsigned char *input,
-			   unsigned int inputLen);
-API_EXPORT(void) ap_MD5Final(unsigned char digest[16], AP_MD5_CTX * context);
+/*
+ * Define the Magic String prefix that identifies a password as being
+ * hashed using our algorithm.
+ */
+#define AP_MD5PW_ID "$apr1$"
+#define AP_MD5PW_IDLEN 6
+
+API_EXPORT(void) ap_MD5Init(AP_MD5_CTX *context);
+API_EXPORT(void) ap_MD5Update(AP_MD5_CTX *context, const unsigned char *input,
+			      unsigned int inputLen);
+API_EXPORT(void) ap_MD5Final(unsigned char digest[MD5_DIGESTSIZE],
+			     AP_MD5_CTX *context);
+API_EXPORT(void) ap_MD5Encode(const unsigned char *password,
+			      const unsigned char *salt,
+			      char *result, size_t nbytes);
+API_EXPORT(void) ap_to64(char *s, unsigned long v, int n);
 
 #ifdef __cplusplus
 }

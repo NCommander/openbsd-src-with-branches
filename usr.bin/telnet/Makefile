@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.7 1998/07/24 00:11:01 millert Exp $
 #
 # Copyright (c) 1990 The Regents of the University of California.
 # All rights reserved.
@@ -31,27 +32,26 @@
 # SUCH DAMAGE.
 #
 #	from: @(#)Makefile	8.1 (Berkeley) 6/6/93
-#	$Id: Makefile,v 1.4 1995/04/24 07:39:57 cgd Exp $
 #
 
 PROG=	telnet
 
-CFLAGS+=-DTERMCAP -DKLUDGELINEMODE -DUSE_TERMIO -Dunix
-CFLAGS+=-DENV_HACK
+CFLAGS+=-DTERMCAP -DKLUDGELINEMODE -DUSE_TERMIO -DSKEY -Dunix
+CFLAGS+=-DENV_HACK -D_USE_OLD_CURSES_
 CFLAGS+=-I${.CURDIR}/../../lib
-
-LDADD=	-ltermcap -ltelnet
-DPADD=	${LIBTERMCAP}
+LDADD+=	-locurses -ltelnet
+DPADD=	${LIBOLDCURSES} ${LIBTELNET}
 
 SRCS=	authenc.c commands.c main.c network.c ring.c sys_bsd.c telnet.c \
 	terminal.c tn3270.c utilities.c
 
-# These are the sources that have encryption stuff in them.
-CRYPT_SRC= authenc.c commands.c externs.h main.c network.c
-CRYPT_SRC+= ring.c ring.h telnet.c terminal.c utilities.c Makefile
-NOCRYPT_DIR=${.CURDIR}/Nocrypt
+.include <bsd.own.mk> # for KERBEROS
+
+.if (${KERBEROS} == "yes")
+CFLAGS+=-DENCRYPTION -DAUTHENTICATION -DKRB4
+LDADD+= -lkrb -ldes
+DPADD+= ${LIBDES} ${LIBKRB}
+.endif
 
 .include <bsd.prog.mk>
 
-nocrypt:
-	@echo "Encryption code already removed."

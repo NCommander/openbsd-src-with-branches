@@ -1,7 +1,8 @@
-/*	$Id: pf_encap.h,v 1.8 1998/10/12 22:15:13 niklas Exp $	*/
+/*	$OpenBSD: pf_encap.h,v 1.6 1999/04/05 21:03:01 niklas Exp $	*/
+/*	$EOM: pf_encap.h,v 1.12 1999/05/01 20:21:13 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,10 +37,12 @@
 #ifndef _PF_ENCAP_H_
 #define _PF_ENCAP_H_
 
+#include <sys/types.h>
 #include <sys/queue.h>
 
 struct proto;
 struct sa;
+struct sockaddr;
 
 struct pf_encap_node {
   /* Link to next node.  */
@@ -53,13 +56,17 @@ struct pf_encap_node {
   void *arg;
 };
 
+extern void pf_encap_connection_check (char *);
 extern int pf_encap_delete_spi (struct sa *, struct proto *, int);
-extern int pf_encap_enable_spi (struct sa *, int);
-extern u_int8_t *pf_encap_get_spi (size_t *, u_int8_t, void *, size_t);
+extern int pf_encap_enable_sa (struct sa *);
+extern int pf_encap_enable_spi (in_addr_t, in_addr_t, in_addr_t, in_addr_t,
+				u_int8_t *, u_int8_t, in_addr_t);
+extern u_int8_t *pf_encap_get_spi (size_t *, u_int8_t, struct sockaddr *, int,
+				   struct sockaddr *, int);
 extern int pf_encap_group_spis (struct sa *, struct proto *, struct proto *,
 				int);
 extern void pf_encap_handler (int);
 extern int pf_encap_open (void);
-extern int pf_encap_set_spi (struct sa *, struct proto *, int, int);
+extern int pf_encap_set_spi (struct sa *, struct proto *, int);
 
 #endif /* _PF_ENCAP_H_ */

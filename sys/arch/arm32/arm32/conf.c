@@ -56,12 +56,6 @@
 
 int     ttselect        __P((dev_t, int, struct proc *));
 
-#ifndef LKM
-#define lkmenodev       enodev
-#else
-int     lkmenodev();
-#endif
-
 #include "wdc.h"
 bdev_decl(wd);
 bdev_decl(sw);
@@ -178,20 +172,6 @@ int nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 	0, seltrue, dev_init(c,n,mmap), 0 }
 
 /* open, close, write, ioctl */
-#define cdev_uk_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
-	dev_init(c,n,write), dev_init(c,n,ioctl), \
-	(dev_type_stop((*))) enodev, \
-	0, seltrue, (dev_type_mmap((*))) enodev, 0 }
-
-/* open, close, read, ioctl */
-#define cdev_ss_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
-	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
-	(dev_type_stop((*))) enodev, 0, seltrue, \
-	(dev_type_mmap((*))) enodev }
-
-/* open, close, write, ioctl */
 #define cdev_iic_init(c,n) { \
 	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
 	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
@@ -265,8 +245,13 @@ cdev_decl(cpu);
 cdev_decl(iic);
 #include "rtc.h"
 cdev_decl(rtc);
+cdev_decl(random);
 /* Temporary hack for ATAPI CDROM */
 cdev_decl(wcd);
+#ifdef XFS
+#include <xfs/nxfs.h>
+cdev_decl(xfs_dev);
+#endif
 
 /* Character devices */
 
@@ -315,6 +300,18 @@ struct cdevsw cdevsw[] = {
 	cdev_lkm_dummy(),		/* 41: */
 	cdev_iic_init(NIIC, iic),	/* 42: IIC bus driver */
 	cdev_rtc_init(NRTC, rtc),	/* 43: RTC driver */
+	cdev_random_init(1, random),	/* 44: random data source */
+	cdev_notdef(),			/* 45: */
+	cdev_notdef(),			/* 46: */
+	cdev_notdef(),			/* 47: */
+	cdev_notdef(),			/* 48: */
+	cdev_notdef(),			/* 49: */
+	cdev_notdef(),			/* 50: */
+#ifdef XFS
+	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
+#else
+	cdev_lkm_dummy(),		/* 51: */
+#endif
 };
 
 int nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
@@ -373,38 +370,20 @@ static int chrtoblktbl[] = {
     /* 24 */        24,
     /* 25 */        25,
     /* 26 */        26,
-    /* 27 */        NODEV,
-    /* 28 */        NODEV,
-    /* 29 */        NODEV,
-    /* 30 */        NODEV,
-    /* 31 */        NODEV,
-    /* 32 */        NODEV,
-    /* 33 */        NODEV,
-    /* 34 */        NODEV,
-    /* 35 */        NODEV,
-    /* 36 */        NODEV,
-    /* 37 */        NODEV,
-    /* 38 */        NODEV,
-    /* 39 */        NODEV,
-    /* 40 */        NODEV,
-    /* 41 */        NODEV,
-    /* 42 */        NODEV,
-    /* 43 */        NODEV,
 };
 
 /*
  * Convert a character device number to a block device number.
  */
- 
 dev_t
 chrtoblk(dev)
 	dev_t dev;
 {
 	int blkmaj;
                   
-	if (major(dev) >= nchrdev)
+	if (major(dev) >= nchrdev ||
+	    major(dev) > sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]))
 		return (NODEV);
-
 	blkmaj = chrtoblktbl[major(dev)];
 	if (blkmaj == NODEV)
 		return (NODEV);

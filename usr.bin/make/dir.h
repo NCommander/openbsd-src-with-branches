@@ -1,4 +1,5 @@
-/*	$NetBSD: dir.h,v 1.3 1995/06/14 15:19:11 christos Exp $	*/
+/*	$OpenBSD: dir.h,v 1.4 1998/12/05 00:06:27 espie Exp $	*/
+/*	$NetBSD: dir.h,v 1.4 1996/11/06 17:59:05 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -37,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)dir.h	5.4 (Berkeley) 12/28/90
+ *	from: @(#)dir.h	8.1 (Berkeley) 6/6/93
  */
 
 /* dir.h --
@@ -59,7 +60,7 @@ void Dir_End __P((void));
 Boolean Dir_HasWildcards __P((char *));
 void Dir_Expand __P((char *, Lst, Lst));
 char *Dir_FindFile __P((char *, Lst));
-int Dir_MTime __P((GNode *));
+Boolean Dir_MTime __P((GNode *));
 void Dir_AddDir __P((Lst, char *));
 char *Dir_MakeFlags __P((char *, Lst));
 void Dir_ClearPath __P((Lst));

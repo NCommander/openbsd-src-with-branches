@@ -1,3 +1,4 @@
+/* *	$OpenBSD: md.c,v 1.4 1998/03/26 19:46:59 niklas Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -27,7 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: md.c,v 1.7 1995/01/17 06:44:39 mycroft Exp $
  */
 
 #include <sys/param.h>
@@ -266,6 +266,8 @@ struct exec *hp;
 		return 1;
 #if 0
 	return (((md_swap_long(hp->a_midmag)&0x00ff0000) >> 16) == MID_SUN020);
+#else
+	return (0);
 #endif
 }
 #endif /* RTLD */
@@ -292,7 +294,7 @@ void
 md_swapout_exec_hdr(h)
 struct exec *h;
 {
-	/* NetBSD: Always leave magic alone */
+	/* NetBSD/OpenBSD: Always leave magic alone */
 	int skip = 1;
 #if 0
 	if (N_GETMAGIC(*h) == OMAGIC)
@@ -312,9 +314,8 @@ int n;
 
 	for (; n; n--, r++) {
 		r->r_address = md_swap_long(r->r_address);
-		bits = ((int *)r)[1];
-		r->r_symbolnum = md_swap_long(bits) & 0x00ffffff;
-		bits = ((unsigned char *)r)[7];
+		bits = md_swap_long(((int *)r)[1]);
+		r->r_symbolnum = (bits>>8) & 0x00ffffff ;
 		r->r_pcrel = (bits >> 7) & 1;
 		r->r_length = (bits >> 5) & 3;
 		r->r_extern = (bits >> 4) & 1;
@@ -336,8 +337,8 @@ int n;
 
 	for (; n; n--, r++) {
 		r->r_address = md_swap_long(r->r_address);
-		((int *)r)[1] = md_swap_long(r->r_symbolnum) & 0xffffff00;
-		bits = (r->r_pcrel & 1) << 7;
+		bits = (r->r_symbolnum & 0x00ffffff) << 8;
+		bits |= (r->r_pcrel & 1) << 7;
 		bits |= (r->r_length & 3) << 5;
 		bits |= (r->r_extern & 1) << 4;
 		bits |= (r->r_baserel & 1) << 3;
@@ -346,7 +347,7 @@ int n;
 #ifdef N_SIZE
 		bits |= (r->r_copy & 1);
 #endif
-		((unsigned char *)r)[7] = bits;
+		((int *)r)[1] = md_swap_long(bits);
 	}
 }
 

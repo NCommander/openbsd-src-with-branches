@@ -1,6 +1,8 @@
+.\"	$OpenBSD: faithd.8,v 1.4 2000/03/12 16:50:26 itojun Exp $
+.\"
 .\" Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
 .\" All rights reserved.
-.\" 
+.\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
@@ -12,7 +14,7 @@
 .\" 3. Neither the name of the project nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
-.\" 
+.\"
 .\" THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
 .\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 .\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,11 +27,11 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: faithd.8,v 1.3 1999/10/07 04:22:14 itojun Exp $
+.\"	KAME Id: faithd.8,v 1.6 2000/03/12 16:49:34 itojun Exp
 .\"
 .Dd May 17, 1998
 .Dt FAITHD 8
-.Os KAME
+.Os
 .Sh NAME
 .Nm faithd
 .Nd FAITH IPv6/v4 translator daemon
@@ -120,7 +122,7 @@ To use
 .Nm
 translation service,
 an IPv6 address prefix must be reserved for mapping IPv4 addresses into.
-Kernel must be properly configured to route all the TCP connection 
+Kernel must be properly configured to route all the TCP connection
 toward the reserved IPv6 address prefix into the
 .Dv faith
 pseudo interface, by using
@@ -150,7 +152,7 @@ and
 .Fl p
 is not necessary as special program code is supplied.
 .Pp
-.Nm 
+.Nm
 will relay both normal and out-of-band TCP data.
 It is capable of emulating TCP half close as well.
 .Nm
@@ -193,27 +195,27 @@ service, and provide no local telnet service, invoke
 as either of the following:
 .Bd -literal -offset
 # faithd
-# faithd telnet 
+# faithd telnet
 .Ed
 .Pp
 If you would like to provide local telnet service via
 .Xr telnetd 8
 on
-.Pa /usr/local/v6/libexec/telnetd ,
+.Pa /usr/libexec/telnetd ,
 user the following command line:
 .Bd -literal -offset
-# faithd telnet /usr/local/v6/libexec/telnetd telnetd
+# faithd telnet /usr/libexec/telnetd telnetd
 .Ed
 .Pp
 If you would like to pass extra arguments to the local daemon:
 .Bd -literal -offset
-# faithd ftpd /usr/local/v6/libexec/ftpd ftpd -l
+# faithd ftpd /usr/libexec/ftpd ftpd -l
 .Ed
 .Pp
 Here are some other examples:
 .Bd -literal -offset
-# faithd login /usr/local/v6/libexec/rlogin rlogind
-# faithd shell /usr/local/v6/libexec/rshd rshd
+# faithd login /usr/libexec/rlogin rlogind
+# faithd shell /usr/libexec/rshd rshd
 # faithd sshd
 .Ed
 .\"
@@ -231,6 +233,14 @@ on error.
 .Xr faith 4 ,
 .Xr route 8 ,
 .Xr sysctl 8
+.Rs
+.%A Jun-ichiro itojun Hagino
+.%A Kazu Yamamoto
+.%T "An IPv6-to-IPv4 transport relay translator"
+.%R internet draft
+.%N draft-ietf-ngtrans-tcpudp-relay-00.txt
+.%O work in progress material
+.Re
 .\"
 .Sh SECURITY NOTICE
 It is very insecure to use
@@ -240,6 +250,20 @@ and other IP-address based authentication, for connections relayed by
 .Po
 and any other TCP relaying services
 .Pc .
+.Pp
+.Nm
+itself does not implement access controls, as
+it intends to implement transparent TCP relay services.
+Administrators are advised to filter packets based on IPv6 address.
+IPv6 destination address can be limited by
+carefully configuring routing entries that points to
+.Xr faith 4 ,
+using
+.Xr route 8 .
+IPv6 source address needs to be filtered by using packet filters.
+Documents listed in
+.Sx SEE ALSO
+have more discussions on this topic.
 .\"
 .Sh HISTORY
 The

@@ -1,8 +1,13 @@
-#   $NetBSD: Makefile,v 1.3 1995/05/12 21:04:26 leo Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/01/19 16:32:59 espie Exp $
 
+.if ${MACHINE} == "amiga"
 PROG=iteconfig
-MAN=	iteconfig_${MACHINE}.8
-MLINKS=	iteconfig_${MACHINE}.8 iteconfig.8
 CFLAGS+=-I${.CURDIR}/../../sys/arch -D${MACHINE}
+CFLAGS+=-W -Wall -Wstrict-prototypes
+.else
+NOPROG=yes
+.endif
 
+MAN=	iteconfig.8
+MANSUBDIR=/amiga
 .include <bsd.prog.mk>

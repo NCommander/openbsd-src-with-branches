@@ -1,9 +1,9 @@
-#	$NetBSD: Makefile.kbus,v 1.15 1996/01/14 21:06:52 thorpej Exp $
+#	$OpenBSD$
 
 # Copyright 1990 W. Jolitz
 # 	@(#)Makefile.i386	7.1 5/10/91
 #
-# Makefile for NetBSD/Kbus
+# Makefile for OpenBSD/Kbus
 #
 #  Edited by Philip A. Nelson
 #
@@ -26,7 +26,8 @@
 
 TOUCH=	touch -f -c
 HOSTCC= gcc
-HOST=sparc-sun-sunos4-
+#HOST=sparc-sun-sunos4-
+HOST=
 AS=	$(HOST)as
 LD=	$(HOST)ld
 CC=	$(HOST)gcc 
@@ -42,7 +43,9 @@ KBUS=	../..
 CPPFLAGS= -I. -I$S -I$S/sys -I${KBUS}
 INCLUDES=$(CPPFLAGS)
 COPTS=	${INCLUDES} ${IDENT} -D_KERNEL
-CDIAGFLAGS= -Wall -Werror -Wno-format -Wstrict-prototypes -Wmissing-prototypes
+CDIAGFLAGS=	-Wall -Werror -Wno-format -Wstrict-prototypes \
+		-Wmissing-prototypes -Wno-main -Wno-uninitialized
+		
 CFLAGS=	-pipe -O ${COPTS} ${CDIAGFLAGS}
 ASFLAGS=
 
@@ -71,8 +74,10 @@ SYSTEM_OBJS=locore.o ${OBJS} param.o ioconf.o conf.o ${LIBKERN} \
 	${LIBCOMPAT}
 SYSTEM_DEP=Makefile ${SYSTEM_OBJS}
 SYSTEM_LD_HEAD= 	@echo loading $@; rm -f $@
-SYSTEM_LD= ${LD} -T ${KBUS}/kbus/ldscript -e start -d -o $@ -X ${SYSTEM_OBJS} vers.o
-SYSTEM_LD_TAIL= $(HOST)size $@ ; $(HOST)nm -n $@ > SYMMS ; chmod 755 $@; cp $@ /tftpboot
+#SYSTEM_LD= ${LD} -T ${KBUS}/kbus/ldscript -e start -d -o $@ -X ${SYSTEM_OBJS} vers.o
+SYSTEM_LD= ${LD} -N -p -Ttext FF060000 -e start -o $@ ${SYSTEM_OBJS} vers.o
+#SYSTEM_LD_TAIL= $(HOST)size $@ ; $(HOST)nm -n $@ > SYMMS ; chmod 755 $@; cp $@ /tftpboot
+SYSTEM_LD_TAIL= $(HOST)size $@ ; $(HOST)nm -n $@ > SYMMS ; chmod 755 $@
 
 %OBJS
 
@@ -81,8 +86,8 @@ SYSTEM_LD_TAIL= $(HOST)size $@ ; $(HOST)nm -n $@ > SYMMS ; chmod 755 $@; cp $@ /
 %LOAD
 
 clean::
-	rm -f eddep *netbsd tags *.o locore.i [a-uw-z]*.s \
-		errs linterrs makelinks genassym
+	rm -f eddep *bsd *bsd.gdb tags *.[io] [a-z]*.s \
+	    [Ee]rrs linterrs makelinks genassym genassym.o assym.h
 
 #lint: /tmp param.c
 #	@lint -hbxn -I. -DGENERIC -Dvolatile= ${COPTS} ${PARAM} \

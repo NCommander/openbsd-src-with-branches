@@ -1,4 +1,5 @@
-/*	$NetBSD: null.h,v 1.4 1995/03/29 22:08:24 briggs Exp $	*/
+/*	$OpenBSD: null.h,v 1.9 1998/03/01 17:18:01 niklas Exp $	*/
+/*	$NetBSD: null.h,v 1.7 1996/05/17 20:53:11 gwr Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -58,7 +59,7 @@ struct null_node {
 	struct vnode		*null_vnode;	/* Back pointer */
 };
 
-extern int null_node_create __P((struct mount *mp, struct vnode *target, struct vnode **vpp));
+extern int null_node_create __P((struct mount *mp, struct vnode *target, struct vnode **vpp, int lockit));
 
 #define	MOUNTTONULLMOUNT(mp) ((struct null_mount *)((mp)->mnt_data))
 #define	VTONULL(vp) ((struct null_node *)(vp)->v_data)
@@ -70,6 +71,11 @@ extern struct vnode *null_checkvp __P((struct vnode *vp, char *fil, int lno));
 #define	NULLVPTOLOWERVP(vp) (VTONULL(vp)->null_lowervp)
 #endif
 
-extern int (**null_vnodeop_p)();
+extern int (**null_vnodeop_p) __P((void *));
 extern struct vfsops null_vfsops;
+
+int nullfs_init __P((struct vfsconf *));
+int null_bypass __P((void *));
+
+
 #endif /* _KERNEL */

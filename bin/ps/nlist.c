@@ -1,3 +1,4 @@
+/*	$OpenBSD: nlist.c,v 1.4 1998/04/26 10:26:45 deraadt Exp $	*/
 /*	$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)nlist.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $";
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.4 1998/04/26 10:26:45 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,24 +57,13 @@ static char rcsid[] = "$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $";
 
 #include "ps.h"
 
-#ifdef P_PPWAIT
-#define NEWVM
-#endif
-
 struct	nlist psnl[] = {
 	{"_fscale"},
 #define	X_FSCALE	0
 	{"_ccpu"},
 #define	X_CCPU		1
-#ifdef NEWVM
-	{"_avail_start"},
-#define	X_AVAILSTART	2
-	{"_avail_end"},
-#define	X_AVAILEND	3
-#else
-	{"_ecmx"},
-#define	X_ECMX		2
-#endif
+	{"_physmem"},
+#define	X_PHYSMEM	2
 	{NULL}
 };
 
@@ -85,15 +75,12 @@ int	fscale;				/* kernel _fscale variable */
 extern kvm_t *kd;
 
 #define kread(x, v) \
-	kvm_read(kd, psnl[x].n_value, (char *)&v, sizeof v) != sizeof(v)
+	kvm_read(kd, psnl[x].n_value, &v, sizeof v) != sizeof(v)
 
 int
 donlist()
 {
 	int rval;
-#ifdef NEWVM
-	int tmp;
-#endif
 
 	rval = 0;
 	nlistread = 1;
@@ -106,23 +93,10 @@ donlist()
 		warnx("fscale: %s", kvm_geterr(kd));
 		eval = rval = 1;
 	}
-#ifdef NEWVM
-	if (kread(X_AVAILEND, mempages)) {
+	if (kread(X_PHYSMEM, mempages)) {
 		warnx("avail_start: %s", kvm_geterr(kd));
 		eval = rval = 1;
 	}
-	if (kread(X_AVAILSTART, tmp)) {
-		warnx("avail_end: %s", kvm_geterr(kd));
-		eval = rval = 1;
-	}
-	mempages -= tmp;
-	mempages /= getpagesize();
-#else
-	if (kread(X_ECMX, mempages)) {
-		warnx("ecmx: %s", kvm_geterr(kd));
-		eval = rval = 1;
-	}
-#endif
 	if (kread(X_CCPU, ccpu)) {
 		warnx("ccpu: %s", kvm_geterr(kd));
 		eval = rval = 1;

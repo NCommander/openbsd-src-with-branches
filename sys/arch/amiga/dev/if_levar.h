@@ -1,4 +1,5 @@
-/*	$NetBSD: if_levar.h,v 1.1 1995/09/30 17:18:22 chopps Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: if_levar.h,v 1.5 1997/03/27 21:15:14 veego Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990 The Regents of the University of California.
@@ -34,11 +35,16 @@
  */
 
 /*
- * LANCE registers.
+ * LANCE and PCnet-ISA registers.
  */
 struct lereg1 {
-	u_short	ler1_rdp;	/* data port */
-	u_short	ler1_rap;	/* register select port */
+	u_int16_t ler1_rdp;	/* data port */
+	u_int16_t ler1_rap;	/* register select port */
+	/*
+	 * The next two registers are only available on PCnet-ISA cards.
+	 */
+	u_int16_t ler1_reset;	/* reading this resets the PCnet-ISA */
+	u_int16_t ler1_idp;	/* isa configuration port */
 };
 
 /*
@@ -49,36 +55,7 @@ struct lereg1 {
  * This structure contains the output queue for the interface, its address, ...
  */
 struct le_softc {
-	struct	device sc_dev;		/* base structure */
-	struct	arpcom sc_arpcom;	/* Ethernet common part */
-
-	void	(*sc_copytodesc)();	/* Copy to descriptor */
-	void	(*sc_copyfromdesc)();	/* Copy from descriptor */
-
-	void	(*sc_copytobuf)();	/* Copy to buffer */
-	void	(*sc_copyfrombuf)();	/* Copy from buffer */
-	void	(*sc_zerobuf)();	/* and Zero bytes in buffer */
-
-	u_int16_t sc_conf3;		/* CSR3 value */
-
-	void	*sc_mem;		/* base address of RAM -- CPU's view */
-	u_long	sc_addr;		/* base address of RAM -- LANCE's view */
-	u_long	sc_memsize;		/* size of RAM */
-
-	int	sc_nrbuf;		/* number of receive buffers */
-	int	sc_ntbuf;		/* number of transmit buffers */
-	int	sc_last_rd;
-	int	sc_first_td, sc_last_td, sc_no_td;
-
-	int	sc_initaddr;
-	int	sc_rmdaddr;
-	int	sc_tmdaddr;
-	int	sc_rbufaddr;
-	int	sc_tbufaddr;
-
-#ifdef LEDEBUG
-	int	sc_debug;
-#endif
+	struct	am7990_softc sc_am7990;	/* glue to MI code */
 
 	struct	isr sc_isr;
 	struct	lereg1 *sc_r1;		/* LANCE registers */

@@ -1,8 +1,8 @@
-/*	$NetBSD: ffs_inode.c,v 1.12 1996/11/06 03:02:59 thorpej Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_inode.c,v 1.7 1999/08/17 14:20:46 art Exp $	*/
+/*	$NetBSD: ext2fs_inode.c,v 1.1 1997/06/11 09:33:56 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -35,6 +35,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)ffs_inode.c	8.8 (Berkeley) 10/19/94
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 #include <sys/param.h>
@@ -60,18 +61,13 @@
 #include <ufs/ext2fs/ext2fs_extern.h>
 
 static int ext2fs_indirtrunc __P((struct inode *, daddr_t, daddr_t,
-									daddr_t, int, long *));
+    				  daddr_t, int, long *));
 
-void
-ext2fs_init()
+int
+ext2fs_init(vfsp)
+	struct vfsconf *vfsp;
 {
-    static int done = 0;
-
-    if (done)
-        return;
-    done = 1;
-    ufs_ihashinit();
-    return;
+	return (ufs_init(vfsp));
 }
 
 /*
@@ -79,55 +75,43 @@ ext2fs_init()
  */
 int
 ext2fs_inactive(v)
-    void *v;
+	void *v;
 {   
-    struct vop_inactive_args /* {
-        struct vnode *a_vp;
-    } */ *ap = v;
-    register struct vnode *vp = ap->a_vp;
-    register struct inode *ip = VTOI(vp);
-    struct timespec ts;
-    int error;
-    extern int prtactive;
-    
-    if (prtactive && vp->v_usecount != 0)
-        vprint("ffs_inactive: pushing active", vp);
-    /* Get rid of inodes related to stale file handles. */
-    if (ip->i_e2fs_mode == 0 || ip->i_e2fs_dtime != 0) {
-        if ((vp->v_flag & VXLOCK) == 0)
-            vgone(vp);
-        return (0);
-    }
-    
-    error = 0;
-#ifdef DIAGNOSTIC
-    if (VOP_ISLOCKED(vp))
-        panic("ffs_inactive: locked inode");
-    if (curproc)
-        ip->i_lockholder = curproc->p_pid;
-    else
-        ip->i_lockholder = -1;
-#endif
-    ip->i_flag |= IN_LOCKED;
-    if (ip->i_e2fs_nlink == 0 && (vp->v_mount->mnt_flag & MNT_RDONLY) == 0) {
-        error = VOP_TRUNCATE(vp, (off_t)0, 0, NOCRED, NULL); 
+	struct vop_inactive_args /* {
+		struct vnode *a_vp;
+	} */ *ap = v;
+	register struct vnode *vp = ap->a_vp;
+	register struct inode *ip = VTOI(vp);
+	struct timespec ts;
+	int error = 0;
+	extern int prtactive;
+	
+	if (prtactive && vp->v_usecount != 0)
+		vprint("ext2fs_inactive: pushing active", vp);
+	/* Get rid of inodes related to stale file handles. */
+	if (ip->i_e2fs_mode == 0 || ip->i_e2fs_dtime != 0) 
+		goto out;
+
+	if (ip->i_e2fs_nlink == 0 && (vp->v_mount->mnt_flag & MNT_RDONLY) == 0) {
+		error = VOP_TRUNCATE(vp, (off_t)0, 0, NOCRED, NULL); 
 		TIMEVAL_TO_TIMESPEC(&time, &ts);
 		ip->i_e2fs_dtime = ts.tv_sec;
-        ip->i_flag |= IN_CHANGE | IN_UPDATE;
-        VOP_VFREE(vp, ip->i_number, ip->i_e2fs_mode);
-    }
-    if (ip->i_flag & (IN_ACCESS | IN_CHANGE | IN_MODIFIED | IN_UPDATE)) {
-        TIMEVAL_TO_TIMESPEC(&time, &ts);
-        VOP_UPDATE(vp, &ts, &ts, 0);
-    }
-    VOP_UNLOCK(vp);
-    /*
-     * If we are done with the inode, reclaim it
-     * so that it can be reused immediately.
-     */
-    if (vp->v_usecount == 0 && ip->i_e2fs_dtime != 0)
-        vgone(vp);
-    return (error);
+		ip->i_flag |= IN_CHANGE | IN_UPDATE;
+		VOP_VFREE(vp, ip->i_number, ip->i_e2fs_mode);
+	}
+	if (ip->i_flag & (IN_ACCESS | IN_CHANGE | IN_MODIFIED | IN_UPDATE)) {
+		TIMEVAL_TO_TIMESPEC(&time, &ts);
+		VOP_UPDATE(vp, &ts, &ts, 0);
+	}
+out:
+	VOP_UNLOCK(vp, 0, ap->a_p);
+	/*
+	 * If we are done with the inode, reclaim it
+	 * so that it can be reused immediately.
+	 */
+	if (ip->i_e2fs_dtime != 0)
+		vrecycle(vp, (struct simplelock *)0, ap->a_p);
+	return (error);
 }   
 
 
@@ -154,20 +138,18 @@ ext2fs_update(v)
 	struct buf *bp;
 	struct inode *ip;
 	int error;
-	struct timespec ts;
 
 	if (ap->a_vp->v_mount->mnt_flag & MNT_RDONLY)
 		return (0);
 	ip = VTOI(ap->a_vp);
-	TIMEVAL_TO_TIMESPEC(&time, &ts);
-	EXT2FS_ITIMES(ip, ap->a_access, ap->a_modify, &ts);
+	EXT2FS_ITIMES(ip, &time, &time);
 	if ((ip->i_flag & IN_MODIFIED) == 0)
 		return (0);
 	ip->i_flag &= ~IN_MODIFIED;
 	fs = ip->i_e2fs;
 	error = bread(ip->i_devvp,
-		      fsbtodb(fs, ino_to_fsba(fs, ip->i_number)),
-		      (int)fs->e2fs_bsize, NOCRED, &bp);
+			  fsbtodb(fs, ino_to_fsba(fs, ip->i_number)),
+			  (int)fs->e2fs_bsize, NOCRED, &bp);
 	if (error) {
 		brelse(bp);
 		return (error);
@@ -222,9 +204,9 @@ ext2fs_truncate(v)
 	oip = VTOI(ovp);
 	TIMEVAL_TO_TIMESPEC(&time, &ts);
 	if (ovp->v_type == VLNK &&
-	    (oip->i_e2fs_size < ovp->v_mount->mnt_maxsymlinklen ||
-	     (ovp->v_mount->mnt_maxsymlinklen == 0 &&
-	      oip->i_e2fs_nblock == 0))) {
+		(oip->i_e2fs_size < ovp->v_mount->mnt_maxsymlinklen ||
+		 (ovp->v_mount->mnt_maxsymlinklen == 0 &&
+		  oip->i_e2fs_nblock == 0))) {
 #ifdef DIAGNOSTIC
 		if (length != 0)
 			panic("ext2fs_truncate: partial truncate of symlink");
@@ -261,8 +243,13 @@ ext2fs_truncate(v)
 		if (error)
 			return (error);
 		oip->i_e2fs_size = length;
+#if defined(UVM)
+		uvm_vnp_setsize(ovp, length);
+		uvm_vnp_uncache(ovp);
+#else
 		vnode_pager_setsize(ovp, (u_long)length);
 		(void) vnode_pager_uncache(ovp);
+#endif
 		if (aflags & B_SYNC)
 			bwrite(bp);
 		else
@@ -290,8 +277,13 @@ ext2fs_truncate(v)
 			return (error);
 		oip->i_e2fs_size = length;
 		size = fs->e2fs_bsize;
+#if defined(UVM)
+		uvm_vnp_setsize(ovp, length);
+		uvm_vnp_uncache(ovp);
+#else
 		vnode_pager_setsize(ovp, (u_long)length);
 		(void) vnode_pager_uncache(ovp);
+#endif
 		bzero((char *)bp->b_data + offset, (u_int)(size - offset));
 		allocbuf(bp, size);
 		if (aflags & B_SYNC)
@@ -349,7 +341,7 @@ ext2fs_truncate(v)
 		bn = oip->i_e2fs_blocks[NDADDR + level];
 		if (bn != 0) {
 			error = ext2fs_indirtrunc(oip, indir_lbn[level],
-			    fsbtodb(fs, bn), lastiblock[level], level, &count);
+				fsbtodb(fs, bn), lastiblock[level], level, &count);
 			if (error)
 				allerror = error;
 			blocksreleased += count;
@@ -386,7 +378,7 @@ done:
 		if (newblks[i] != oip->i_e2fs_blocks[i])
 			panic("itrunc2");
 	if (length == 0 &&
-	    (ovp->v_dirtyblkhd.lh_first || ovp->v_cleanblkhd.lh_first))
+		(ovp->v_dirtyblkhd.lh_first || ovp->v_cleanblkhd.lh_first))
 		panic("itrunc3");
 #endif /* DIAGNOSTIC */
 	/*
@@ -485,14 +477,14 @@ ext2fs_indirtrunc(ip, lbn, dbn, lastbn, level, countp)
 	 */
 	for (i = NINDIR(fs) - 1,
 		nlbn = lbn + 1 - i * factor; i > last;
-	    i--, nlbn += factor) {
+		i--, nlbn += factor) {
 		nb = bap[i];
 		if (nb == 0)
 			continue;
 		if (level > SINGLE) {
 			error = ext2fs_indirtrunc(ip, nlbn, fsbtodb(fs, nb),
-					       (daddr_t)-1, level - 1,
-					       &blkcount);
+						   (daddr_t)-1, level - 1,
+						   &blkcount);
 			if (error)
 				allerror = error;
 			blocksreleased += blkcount;
@@ -509,7 +501,7 @@ ext2fs_indirtrunc(ip, lbn, dbn, lastbn, level, countp)
 		nb = bap[i];
 		if (nb != 0) {
 			error = ext2fs_indirtrunc(ip, nlbn, fsbtodb(fs, nb),
-					       last, level - 1, &blkcount);
+						   last, level - 1, &blkcount);
 			if (error)
 				allerror = error;
 			blocksreleased += blkcount;

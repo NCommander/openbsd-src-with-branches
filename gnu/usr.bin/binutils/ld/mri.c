@@ -1,6 +1,5 @@
-/* mri.c -- handle MRI style linker scripts
-   Copyright (C) 1991, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
-
+/* Copyright (C) 1991, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   
 This file is part of GLD, the Gnu Linker.
 
 GLD is free software; you can redistribute it and/or modify
@@ -14,9 +13,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GLD; see the file COPYING.  If not, write to the Free
-Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.  */
+along with GLD; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 
 /* This bit does the tree decoration when MRI style link scripts are parsed */
@@ -35,7 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ldmisc.h"
 #include "mri.h"
 #include "ldgram.h"
-#include "libiberty.h"
+
 
 struct section_name_struct {
   struct section_name_struct *next;
@@ -55,6 +53,8 @@ struct section_name_struct *alias;
 
 struct section_name_struct *alignment;
 struct section_name_struct *subalignment;
+
+extern char *strdup();
 
 static struct section_name_struct **lookup
   PARAMS ((const char *name, struct section_name_struct **list));
@@ -252,7 +252,7 @@ mri_draw_tree ()
 	base = p->vma ? p->vma :exp_nameop(NAME, ".");
       }
       lang_enter_output_section_statement (p->name, base,
-					   p->ok_to_load ? 0 : noload_section,
+					   p->ok_to_load ? 0 : SEC_NEVER_LOAD,
 					   1, align, subalign,
 					   (etree_type *) NULL);
       base = 0;
@@ -304,7 +304,7 @@ mri_alias (want, is, isn)
     /* Some sections are digits - */
     char buf[20];
     sprintf(buf, "%d", isn);
-    is = xstrdup (buf);
+    is =strdup(buf);
     if (is == NULL)
       abort ();
   }

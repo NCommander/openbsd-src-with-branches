@@ -1,4 +1,5 @@
-/*	$NetBSD: mbuf.h,v 1.17 1995/08/16 01:04:06 mycroft Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.15 2000/03/02 21:39:19 angelos Exp $	*/
+/*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993
@@ -32,7 +33,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)mbuf.h	8.3 (Berkeley) 1/21/94
+ *	@(#)mbuf.h	8.5 (Berkeley) 2/19/95
  */
 
 #ifndef M_WAITOK
@@ -40,9 +41,9 @@
 #endif
 
 /*
- * Mbufs are of a single size, MSIZE (machine/machparam.h), which
+ * Mbufs are of a single size, MSIZE (machine/param.h), which
  * includes overhead.  An mbuf may add a single "mbuf cluster" of size
- * MCLBYTES (also in machine/machparam.h), which has no additional overhead
+ * MCLBYTES (also in machine/param.h), which has no additional overhead
  * and is used instead of the internal data area; this is done when
  * at least MINCLSIZE of data must be stored.
  */
@@ -50,7 +51,7 @@
 #define	MLEN		(MSIZE - sizeof(struct m_hdr))	/* normal data len */
 #define	MHLEN		(MLEN - sizeof(struct pkthdr))	/* data len w/pkthdr */
 
-#define	MINCLSIZE	(MHLEN + MLEN)	/* smallest amount to put in cluster */
+#define	MINCLSIZE	(MHLEN + 1)	/* smallest amount to put in cluster */
 #define	M_MAXCOMPRESS	(MHLEN / 2)	/* max amount to copy for compression */
 
 /*
@@ -70,7 +71,7 @@ struct m_hdr {
 	struct	mbuf *mh_next;		/* next buffer in chain */
 	struct	mbuf *mh_nextpkt;	/* next chain in queue/record */
 	caddr_t	mh_data;		/* location of data */
-	int	mh_len;			/* amount of data in this mbuf */
+	u_int	mh_len;			/* amount of data in this mbuf */
 	short	mh_type;		/* type of data in this mbuf */
 	short	mh_flags;		/* flags; see below */
 };
@@ -79,13 +80,19 @@ struct m_hdr {
 struct	pkthdr {
 	struct	ifnet *rcvif;		/* rcv interface */
 	int	len;			/* total packet length */
+	void	*tdbi;			/* pointer to struct tdb_ident */
+					/* XXX - pull in ip_ipsp.h */ 
 };
 
 /* description of external storage mapped into mbuf, valid if M_EXT set */
 struct m_ext {
 	caddr_t	ext_buf;		/* start of buffer */
-	void	(*ext_free)();		/* free routine if not the usual */
+	void	(*ext_free)		/* free routine if not the usual */
+		    __P((struct mbuf *));
 	u_int	ext_size;		/* size of buffer, for ext_free */
+	void	(*ext_ref)		/* add a reference to the ext object */
+		    __P((struct mbuf *));
+	void	*ext_handle;		/* handle for storage manager */
 };
 
 struct mbuf {
@@ -117,23 +124,49 @@ struct mbuf {
 #define	M_EXT		0x0001	/* has associated external storage */
 #define	M_PKTHDR	0x0002	/* start of record */
 #define	M_EOR		0x0004	/* end of record */
+#define	M_PROTO1	0x0008	/* protocol-specific */
 
 /* mbuf pkthdr flags, also in m_flags */
 #define	M_BCAST		0x0100	/* send/received as link-level broadcast */
 #define	M_MCAST		0x0200	/* send/received as link-level multicast */
+#define M_CONF		0x0400  /* packet was encrypted (ESP-transport) */
+#define M_AUTH		0x0800  /* packet was authenticated (AH) */
+#if 0 /* NRL IPv6 */
+#define M_TUNNEL       	0x1000  /* packet was tunneled */
+#define M_DAD		0x2000	/* Used on outbound packets to indicate that
+				 * this is for duplicate address detection */
+#endif
+
+/* KAME IPv6 */
+#define M_ANYCAST6	0x4000	/* received as IPv6 anycast */
+#if 0 /*KAME IPSEC*/
+#define M_AUTHIPHDR	0x0010	/* data origin authentication for IP header */
+#define M_DECRYPTED	0x0020	/* confidentiality */
+#endif
+#define M_LOOP		0x0040	/* for Mbuf statistics */
+#if 0 /*KAME IPSEC*/
+#define M_AUTHIPDGM     0x0080  /* data origin authentication */
+#endif
 
 /* flags copied when copying m_pkthdr */
-#define	M_COPYFLAGS	(M_PKTHDR|M_EOR|M_BCAST|M_MCAST)
+#define	M_COPYFLAGS	(M_PKTHDR|M_EOR|M_PROTO1|M_BCAST|M_MCAST|M_CONF|M_AUTH|M_ANYCAST6|M_LOOP)
 
 /* mbuf types */
 #define	MT_FREE		0	/* should be on free list */
 #define	MT_DATA		1	/* dynamic (data) allocation */
 #define	MT_HEADER	2	/* packet header */
-#define	MT_SONAME	3	/* socket name */
-#define	MT_SOOPTS	4	/* socket options */
-#define	MT_FTABLE	5	/* fragment reassembly header */
-#define MT_CONTROL	6	/* extra-data protocol message */
-#define MT_OOBDATA	7	/* expedited data  */
+#define	MT_SOCKET	3	/* socket structure */
+#define	MT_PCB		4	/* protocol control block */
+#define	MT_RTABLE	5	/* routing tables */
+#define	MT_HTABLE	6	/* IMP host tables */
+#define	MT_ATABLE	7	/* address resolution tables */
+#define	MT_SONAME	8	/* socket name */
+#define	MT_SOOPTS	10	/* socket options */
+#define	MT_FTABLE	11	/* fragment reassembly header */
+#define	MT_RIGHTS	12	/* access rights */
+#define	MT_IFADDR	13	/* interface address */
+#define	MT_CONTROL	14	/* extra-data protocol message */
+#define	MT_OOBDATA	15	/* expedited data  */
 
 /* flags to m_get/MGET */
 #define	M_DONTWAIT	M_NOWAIT
@@ -222,7 +255,9 @@ union mcluster {
 		(m)->m_data = (m)->m_ext.ext_buf; \
 		(m)->m_flags |= M_EXT; \
 		(m)->m_ext.ext_size = MCLBYTES;  \
-		(m)->m_ext.ext_free = 0; \
+		(m)->m_ext.ext_free = NULL; \
+		(m)->m_ext.ext_ref = NULL; \
+		(m)->m_ext.ext_handle = NULL; \
 	  } \
 	}
 
@@ -236,33 +271,27 @@ union mcluster {
 	)
 
 /*
+ * For cluster mbufs (regardless of header or not).
+ */
+#define MCL_ALIGN(m, len) \
+	{ (m)->m_data += (MCLBYTES - (len)) &~ (sizeof(long) -1); }
+
+/*
  * MFREE(struct mbuf *m, struct mbuf *n)
  * Free a single mbuf and associated external storage.
  * Place the successor, if any, in n.
  */
-#ifdef notyet
 #define	MFREE(m, n) \
 	{ MBUFLOCK(mbstat.m_mtypes[(m)->m_type]--;) \
 	  if ((m)->m_flags & M_EXT) { \
 		if ((m)->m_ext.ext_free) \
-			(*((m)->m_ext.ext_free))((m)->m_ext.ext_buf, \
-			    (m)->m_ext.ext_size); \
+			(*((m)->m_ext.ext_free))(m); \
 		else \
 			MCLFREE((m)->m_ext.ext_buf); \
 	  } \
 	  (n) = (m)->m_next; \
 	  FREE((m), mbtypes[(m)->m_type]); \
 	}
-#else /* notyet */
-#define	MFREE(m, nn) \
-	{ MBUFLOCK(mbstat.m_mtypes[(m)->m_type]--;) \
-	  if ((m)->m_flags & M_EXT) { \
-		MCLFREE((m)->m_ext.ext_buf); \
-	  } \
-	  (nn) = (m)->m_next; \
-	  FREE((m), mbtypes[(m)->m_type]); \
-	}
-#endif
 
 /*
  * Copy mbuf pkthdr from from to to.
@@ -358,7 +387,11 @@ int	max_protohdr;			/* largest protocol header */
 int	max_hdr;			/* largest link+protocol header */
 int	max_datalen;			/* MHLEN - max_hdr */
 extern	int mbtypes[];			/* XXX */
+extern	int needqueuedrain;		/* True if allocation failed at */
+					/* interrupt level */
 
+void	mbinit __P((void));
+struct	mbuf *m_copym2 __P((struct mbuf *, int, int, int));
 struct	mbuf *m_copym __P((struct mbuf *, int, int, int));
 struct	mbuf *m_free __P((struct mbuf *));
 struct	mbuf *m_get __P((int, int));
@@ -366,24 +399,43 @@ struct	mbuf *m_getclr __P((int, int));
 struct	mbuf *m_gethdr __P((int, int));
 struct	mbuf *m_prepend __P((struct mbuf *, int, int));
 struct	mbuf *m_pullup __P((struct mbuf *, int));
+struct	mbuf *m_pullup2 __P((struct mbuf *, int));
 struct	mbuf *m_retry __P((int, int));
 struct	mbuf *m_retryhdr __P((int, int));
 struct	mbuf *m_split __P((struct mbuf *, int, int));
+struct  mbuf *m_inject __P((struct mbuf *, int, int, int));
+struct  mbuf *m_getptr __P((struct mbuf *, int, int *));
 void	m_adj __P((struct mbuf *, int));
 int	m_clalloc __P((int, int));
 void	m_copyback __P((struct mbuf *, int, int, caddr_t));
 void	m_freem __P((struct mbuf *));
+void	m_reclaim __P((void));
+void	m_copydata __P((struct mbuf *, int, int, caddr_t));
+void	m_cat __P((struct mbuf *, struct mbuf *));
+struct mbuf *m_devget __P((char *, int, int, struct ifnet *,
+			   void (*) __P((const void *, void *, size_t))));
+void	m_zero __P((struct mbuf *));
+int	m_apply __P((struct mbuf *, int, int,
+			int (*)(caddr_t, caddr_t, unsigned int), caddr_t));
 
 #ifdef MBTYPES
 int mbtypes[] = {				/* XXX */
 	M_FREE,		/* MT_FREE	0	   should be on free list */
 	M_MBUF,		/* MT_DATA	1	   dynamic (data) allocation */
 	M_MBUF,		/* MT_HEADER	2	   packet header */
-	M_MBUF,		/* MT_SONAME	3	   socket name */
-	M_SOOPTS,	/* MT_SOOPTS	4	   socket options */
-	M_FTABLE,	/* MT_FTABLE	5	   fragment reassembly header */
-	M_MBUF,		/* MT_CONTROL	6	   extra-data protocol message */
-	M_MBUF,		/* MT_OOBDATA	7	   expedited data  */
+	M_SOCKET,	/* MT_SOCKET	3	   socket structure */
+	M_PCB,		/* MT_PCB	4	   protocol control block */
+	M_RTABLE,	/* MT_RTABLE	5	   routing tables */
+	M_HTABLE,	/* MT_HTABLE	6	   IMP host tables */
+	0,		/* MT_ATABLE	7	   address resolution tables */
+	M_MBUF,		/* MT_SONAME	8	   socket name */
+	0,		/* 		9 */
+	M_SOOPTS,	/* MT_SOOPTS	10	   socket options */
+	M_FTABLE,	/* MT_FTABLE	11	   fragment reassembly header */
+	M_MBUF,		/* MT_RIGHTS	12	   access rights */
+	M_IFADDR,	/* MT_IFADDR	13	   interface address */
+	M_MBUF,		/* MT_CONTROL	14	   extra-data protocol message */
+	M_MBUF,		/* MT_OOBDATA	15	   expedited data  */
 #ifdef DATAKIT
 	25, 26, 27, 28, 29, 30, 31, 32		/* datakit ugliness */
 #endif

@@ -1,3 +1,4 @@
+/* $OpenBSD: exit.S,v 1.1 1996/01/31 23:18:14 mark Exp $ */
 /* $NetBSD: exit.S,v 1.1 1996/01/31 23:18:14 mark Exp $ */
 
 /*
@@ -45,7 +46,6 @@
  *
  * Based on kate/boot/_exit.s
  *
- *    $Id: exit.S,v 1.1 1996/01/31 23:18:14 mark Exp $
  */
 
 #include "regs.h"

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ftree.c,v 1.8 1997/09/01 18:29:49 deraadt Exp $	*/
 /*	$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)ftree.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $";
+static char rcsid[] = "$OpenBSD: ftree.c,v 1.8 1997/09/01 18:29:49 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,7 +53,6 @@ static char rcsid[] = "$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $";
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <fts.h>
@@ -95,7 +95,7 @@ static int ftree_arg __P((void));
  *	0 if there is at least one valid file arg to process, -1 otherwise
  */
 
-#if __STDC__
+#ifdef __STDC__
 int
 ftree_start(void)
 #else
@@ -127,7 +127,7 @@ ftree_start()
 		ftsopts |= FTS_PHYSICAL;
 	if (Hflag)
 #	ifdef NET2_FTS
-		warn(0, "The -H flag is not supported on this version");
+		paxwarn(0, "The -H flag is not supported on this version");
 #	else
 		ftsopts |= FTS_COMFOLLOW;
 #	endif
@@ -135,7 +135,7 @@ ftree_start()
 		ftsopts |= FTS_XDEV;
 
 	if ((fthead == NULL) && ((farray[0] = malloc(PAXPATHLEN+2)) == NULL)) {
-		warn(1, "Unable to allocate memory for file name buffer");
+		paxwarn(1, "Unable to allocate memory for file name buffer");
 		return(-1);
 	}
 
@@ -154,13 +154,14 @@ ftree_start()
  *	0 if added to the linked list, -1 if failed
  */
 
-#if __STDC__
+#ifdef __STDC__
 int
-ftree_add(register char *str)
+ftree_add(register char *str, int chflg)
 #else
 int
-ftree_add(str)
+ftree_add(str, chflg)
 	register char *str;
+	int chflg;
 #endif
 {
 	register FTREE *ft;
@@ -170,7 +171,7 @@ ftree_add(str)
 	 * simple check for bad args
 	 */
 	if ((str == NULL) || (*str == '\0')) {
-		warn(0, "Invalid file name arguement");
+		paxwarn(0, "Invalid file name arguement");
 		return(-1);
 	}
 
@@ -180,7 +181,7 @@ ftree_add(str)
 	 * trailing / the user may pass us. (watch out for / by itself).
 	 */
 	if ((ft = (FTREE *)malloc(sizeof(FTREE))) == NULL) {
-		warn(0, "Unable to allocate memory for filename");
+		paxwarn(0, "Unable to allocate memory for filename");
 		return(-1);
 	}
 
@@ -188,6 +189,7 @@ ftree_add(str)
 		str[len] = '\0';
 	ft->fname = str;
 	ft->refcnt = 0;
+	ft->chflg = chflg;
 	ft->fow = NULL;
 	if (fthead == NULL) {
 		fttail = fthead = ft;
@@ -204,7 +206,7 @@ ftree_add(str)
  *	-n and -d processing.
  */
 
-#if __STDC__
+#ifdef __STDC__
 void
 ftree_sel(register ARCHD *arcn)
 #else
@@ -218,7 +220,7 @@ ftree_sel(arcn)
 	 * when file trees are supplied pax as args. The list is not used when
 	 * the trees are read from stdin.
 	 */
-	if (ftcur != NULL) 
+	if (ftcur != NULL)
 		ftcur->refcnt = 1;
 
 	/*
@@ -243,7 +245,7 @@ ftree_sel(arcn)
  *	have a selected member (reference count still 0)
  */
 
-#if __STDC__
+#ifdef __STDC__
 void
 ftree_chk(void)
 #else
@@ -265,10 +267,10 @@ ftree_chk()
 	 * that never had a match
 	 */
 	for (ft = fthead; ft != NULL; ft = ft->fow) {
-		if (ft->refcnt > 0)
+		if ((ft->refcnt > 0) || ft->chflg)
 			continue;
 		if (wban == 0) {
-			warn(1,"WARNING! These file names were not selected:");
+			paxwarn(1,"WARNING! These file names were not selected:");
 			++wban;
 		}
 		(void)fprintf(stderr, "%s\n", ft->fname);
@@ -285,7 +287,7 @@ ftree_chk()
  *	stdin).
  */
 
-#if __STDC__
+#ifdef __STDC__
 static int
 ftree_arg(void)
 #else
@@ -325,7 +327,21 @@ ftree_arg()
 				ftcur = fthead;
 			else if ((ftcur = ftcur->fow) == NULL)
 				return(-1);
-			farray[0] = ftcur->fname;
+			if (ftcur->chflg) {
+				/* First fchdir() back... */
+				if (fchdir(cwdfd) < 0) {
+					syswarn(1, errno,
+					  "Can't fchdir to starting directory");
+					return(-1);
+				}
+				if (chdir(ftcur->fname) < 0) {
+					syswarn(1, errno, "Can't chdir to %s",
+					    ftcur->fname);
+					return(-1);
+				}
+				continue;
+			} else
+				farray[0] = ftcur->fname;
 		}
 
 		/*
@@ -350,7 +366,7 @@ ftree_arg()
  *	0 when contents of arcn have been set with the next file, -1 when done.
  */
 
-#if __STDC__
+#ifdef __STDC__
 int
 next_file(register ARCHD *arcn)
 #else
@@ -428,7 +444,7 @@ next_file(arcn)
 			/*
 			 * fts claims a file system cycle
 			 */
-			warn(1,"File system cycle found at %s",ftent->fts_path);
+			paxwarn(1,"File system cycle found at %s",ftent->fts_path);
 			continue;
 		case FTS_DNR:
 #			ifdef NET2_FTS
@@ -519,7 +535,7 @@ next_file(arcn)
 			}
 			/*
 			 * set link name length, watch out readlink does not
-			 * allways null terminate the link path
+			 * always NUL terminate the link path
 			 */
 			arcn->ln_name[cnt] = '\0';
 			arcn->ln_nlen = cnt;
@@ -542,7 +558,7 @@ next_file(arcn)
 	/*
 	 * copy file name, set file name length
 	 */
-	arcn->nlen = l_strncpy(arcn->name, ftent->fts_path, PAXPATHLEN+1);
+	arcn->nlen = l_strncpy(arcn->name, ftent->fts_path, sizeof(arcn->name) - 1);
 	arcn->name[arcn->nlen] = '\0';
 	arcn->org_name = ftent->fts_path;
 	return(0);

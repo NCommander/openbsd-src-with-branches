@@ -1,4 +1,5 @@
-/*      $NetBSD: domacro.c,v 1.5 1995/09/08 01:06:14 tls Exp $      */
+/*	$OpenBSD: domacro.c,v 1.6 1997/04/23 20:33:02 deraadt Exp $	*/
+/*	$NetBSD: domacro.c,v 1.10 1997/07/20 09:45:45 lukem Exp $	*/
 
 /*
  * Copyright (c) 1985, 1993, 1994
@@ -37,14 +38,14 @@
 #if 0
 static char sccsid[] = "@(#)domacro.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: domacro.c,v 1.5 1995/09/08 01:06:14 tls Exp $";
+static char rcsid[] = "$OpenBSD: domacro.c,v 1.6 1997/04/23 20:33:02 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <ctype.h>
 #include <signal.h>
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 
 #include "ftp_var.h"
 
@@ -58,7 +59,7 @@ domacro(argc, argv)
 	struct cmd *c;
 
 	if (argc < 2 && !another(&argc, &argv, "macro name")) {
-		printf("Usage: %s macro_name.\n", argv[0]);
+		fprintf(ttyout, "usage: %s macro_name\n", argv[0]);
 		code = -1;
 		return;
 	}
@@ -68,11 +69,11 @@ domacro(argc, argv)
 		}
 	}
 	if (i == macnum) {
-		printf("'%s' macro not found.\n", argv[1]);
+		fprintf(ttyout, "'%s' macro not found.\n", argv[1]);
 		code = -1;
 		return;
 	}
-	(void) strcpy(line2, line);
+	(void)strcpy(line2, line);
 TOP:
 	cp1 = macros[i].mac_start;
 	while (cp1 != macros[i].mac_end) {
@@ -93,7 +94,7 @@ TOP:
 				    }
 				    cp1--;
 				    if (argc - 2 >= j) {
-					(void) strcpy(cp2, argv[j+1]);
+					(void)strcpy(cp2, argv[j+1]);
 					cp2 += strlen(argv[j+1]);
 				    }
 				    break;
@@ -102,7 +103,7 @@ TOP:
 					loopflg = 1;
 					cp1++;
 					if (count < argc) {
-					   (void) strcpy(cp2, argv[count]);
+					   (void)strcpy(cp2, argv[count]);
 					   cp2 += strlen(argv[count]);
 					}
 					break;
@@ -120,26 +121,27 @@ TOP:
 		makeargv();
 		c = getcmd(margv[0]);
 		if (c == (struct cmd *)-1) {
-			printf("?Ambiguous command\n");
+			fputs("?Ambiguous command.\n", ttyout);
 			code = -1;
 		}
 		else if (c == 0) {
-			printf("?Invalid command\n");
+			fputs("?Invalid command.\n", ttyout);
 			code = -1;
 		}
 		else if (c->c_conn && !connected) {
-			printf("Not connected.\n");
+			fputs("Not connected.\n", ttyout);
 			code = -1;
 		}
 		else {
 			if (verbose) {
-				printf("%s\n",line);
+				fputs(line, ttyout);
+				fputc('\n', ttyout);
 			}
 			(*c->c_handler)(margc, margv);
 			if (bell && c->c_bell) {
-				(void) putchar('\007');
+				(void)putc('\007', ttyout);
 			}
-			(void) strcpy(line, line2);
+			(void)strcpy(line, line2);
 			makeargv();
 			argc = margc;
 			argv = margv;

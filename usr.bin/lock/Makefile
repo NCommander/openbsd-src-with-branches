@@ -1,11 +1,15 @@
-#	$NetBSD: Makefile,v 1.7 1994/12/22 01:16:19 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.6 1997/04/19 21:26:26 millert Exp $
 
 PROG=	lock
 BINOWN= root
 BINMODE=4555
+
+.include <bsd.own.mk>
+
+.if (${SKEY} == "yes")
 CFLAGS+=-DSKEY
-LDADD+= -lcrypt -lskey
-DPADD+= ${LIBCRYPT} ${LIBSKEY}
+LDADD+= -lskey
+DPADD+= ${LIBSKEY}
+.endif
 
 .include <bsd.prog.mk>

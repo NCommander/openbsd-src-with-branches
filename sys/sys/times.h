@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: times.h,v 1.8 1995/03/26 20:24:54 jtc Exp $	*/
 
 /*-

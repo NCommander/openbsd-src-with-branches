@@ -1,5 +1,8 @@
 #!/bin/sh -
 #
+#	$OpenBSD: MAKEDEV,v 1.27 2000/03/02 22:59:05 todd Exp $
+#	$NetBSD: MAKEDEV,v 1.8 1996/03/03 16:54:17 thorpej Exp $
+#
 # Copyright (c) 1990 The Regents of the University of California.
 # All rights reserved.
 #
@@ -32,33 +35,36 @@
 # SUCH DAMAGE.
 #
 #	@(#)MAKEDEV	5.5 (Berkeley) 5/28/91
-#	$Id: MAKEDEV,v 1.5 1995/10/08 23:23:30 gwr Exp $
 #
 # Device "make" file.  Valid arguments:
 #	std	standard devices
 #	local	configuration specific devices
 # Tapes:
-#	st*	? tape
+#	st*	SCSI tapes
 # Disks:
-#	sd*	Sun SCSI disks
-#	fd*	Floppies
+#	sd*	SCSI disks
+#	fd*	Floppy disk drives (3 1/2", 5 1/4")
 #	vnd*	"file" pseudo-disks
-#	ccd*	concatenated disk driver
+#	ccd*	concatenated disk devices
 # Pseudo terminals:
 #	pty*	set of 16 master and slave pseudo terminals
 # Printers:
 # Call units:
 # Special purpose devices:
-#	bwtwo*
-#	cgtwo*
-#	cgfour*
-#	bpf*	packet filter
+#	bwtwo*	
+#	cgtwo*	
+#	cgfour*	
+#	bpf*	Berkeley Packet Filter
 #	lkm	loadable kernel modules interface
 #	tun*	network tunnel driver
-#	rd*	RAM-disk
+#	rd*	"ramdisk" pseudo-disks
+#	*random	inkernal random data source
+#	uk*	SCSI Unknown device
+#	ss*	SCSI scanners
 
 # XXX - Keep /usr/etc so SunOS can find chown
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/etc
+this=$0
 umask 77
 
 # set this to echo for Echo-Only debugging
@@ -66,6 +72,7 @@ eo=
 
 # mk name b/c major minor [mode] [group]
 mk() {
+	$eo rm -f $1
 	$eo mknod $1 $2 $3 $4
 	$eo chmod ${5-666} $1
 	test -n "$6" && $eo chgrp $6 $1
@@ -81,7 +88,9 @@ unit=`expr $arg : '[a-z][a-z]*\([0-9][0-9]*\)'`
 case $arg in
 
 all)
-	sh MAKEDEV std sd0 sd1 sd2 sd3 st0 st1 pty0
+	sh $this std fd sd0 sd1 sd2 sd3 st0 st1 pty0 random ss0 uk0
+	sh $this bpf0 bpf1 bpf2 bpf3 bpf4 bpf5 bpf6 bpf7 bpf8 bpf9
+	sh $this ipl xfs0
 	;;
 
 std)
@@ -96,12 +105,17 @@ std)
 	mk zero		c 3 12
 	mk drum		c 7 0 640 kmem
 
-	mk ttya		c 12 0
-	mk ttyb		c 12 1
+	mk ttya		c 12 0 tty
+	mk ttyb		c 12 1 tty
 	mk mouse	c 13 0
 	mk klog		c 16 0 600
 	mk fb		c 22 0
 	mk kbd		c 29 0
+	mk leds		c 3 13 644
+	mk stdin        c 23 0
+	mk stdout       c 23 1
+	mk stderr       c 23 2
+	mk ksyms        c 37 0 640 kmem
 	;;
 
 fd)
@@ -117,6 +131,13 @@ bpf*)
 	mk bpf$unit c 36 $unit 600
 	;;
 
+ipl)
+	mk ipl c 75 0 600
+	mk ipnat c 75 1 600
+	mk ipstate c 75 2 600
+	mk ipauth c 75 3 600
+	;;
+
 tun*)
 	mk tun$unit c 24 $unit 600
 	;;
@@ -127,8 +148,18 @@ pty*)
 	1) offset=16 name=q;;
 	2) offset=32 name=r;;
 	3) offset=48 name=s;;
-# Note that telnetd, rlogind, and xterm (at least) only look at p-s.
 	4) offset=64 name=t;;
+	5) offset=80 name=u;;
+	6) offset=96 name=v;;
+	7) offset=112 name=w;;
+	8) offset=128 name=x;;
+	9) offset=144 name=y;;
+	10) offset=160 name=z;;
+	11) offset=176 name=P;;
+	12) offset=192 name=Q;;
+	13) offset=208 name=R;;
+	14) offset=224 name=S;;
+	15) offset=240 name=T;;
 	*) echo bad unit for pty in: $arg;;
 	esac
 	for pair in 0.0 1.1 2.2 3.3 4.4 5.5 6.6 7.7 \
@@ -145,13 +176,14 @@ pty*)
 	done
 	;;
 
-cd*|sd*|xy*|vnd*|ccd*)
+cd*|sd*|xy*|ccd*|rd*|vnd*)
 	case $arg in
 	  cd*) name=cd; blk=18; chr=58;;
 	  sd*) name=sd; blk=7; chr=17;;
 	  xy*) name=xy; blk=3; chr=9 ;;
-	  vnd*) name=vnd; blk=5; chr=19;;
 	  ccd*) name=ccd; blk=9; chr=33;;
+	  rd*) name=rd; blk=13; chr=52;;
+	  vnd*) name=vnd; blk=5; chr=19;
 	esac
 	case $unit in
 	  0|1|2|3|4) offset=`expr $unit \* 8`;;
@@ -166,20 +198,22 @@ cd*|sd*|xy*|vnd*|ccd*)
 		minor=`expr $offset + $2`
 		mk  $name$unit$1 b $blk $minor 640 operator
 		mk r$name$unit$1 c $chr $minor 640 operator
+		if [ $name = vnd ]; then
+		    sminor=`expr $minor + 128`
+		    mk  s$name$unit$1 b $blk $sminor 640 operator
+		    mk rs$name$unit$1 c $chr $sminor 640 operator
+		fi
 	)
 	done
 	;;
 
 st*)
 	name=st; blk=11; chr=18;
-	case $unit in
-	  0|1|2|3) offset=`expr $unit \* 16`;;
-	  *) echo bad unit for $name in: $arg;;
-	esac
-	mk   r$name$unit c $chr `expr $offset + 0`
-	mk  nr$name$unit c $chr `expr $offset + 1`
-	mk  er$name$unit c $chr `expr $offset + 2`
-	mk enr$name$unit c $chr `expr $offset + 3`
+	offset=`expr $unit \* 16`;
+	mk   r$name$unit c $chr `expr $offset + 0` 660 operator
+	mk  nr$name$unit c $chr `expr $offset + 1` 660 operator
+	mk  er$name$unit c $chr `expr $offset + 2` 660 operator
+	mk enr$name$unit c $chr `expr $offset + 3` 660 operator
 	;;
 
 bwtwo*)
@@ -200,9 +234,36 @@ rd*)
 	mk rd${unit}c b 13 `expr $unit + 16`
 	;;
 
+random|srandom|urandom|prandom|arandom)
+	rm -f random urandom srandom prandom arandom
+	mk  random c 72 0
+	mk srandom c 72 1
+	mk urandom c 72 2
+	mk prandom c 72 3
+	mk arandom c 72 4
+	;;
+
+uk*)
+	mk uk$unit c 98 $unit 640 operator
+	;;
+
+ss*)
+	mk ss$unit c 99 $unit 440 operator
+#	backwards compatibility with older PINTs
+	rm -f scan$unit
+	ln -s ss$unit scan$unit
+	;;
+
+xfs*)
+	rm -f xfs$unit
+	mknod xfs$unit c 51 $unit 
+	chmod 600 xfs$unit 
+	chown root.wheel xfs$unit
+	;;
+
 local)
 	umask 0
-	sh MAKEDEV.local
+	test -s $this.local && sh $this.local
 	;;
 *)
 	echo $arg: unknown device
@@ -210,4 +271,3 @@ local)
 
 esac
 done
-

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_hdr.h,v 1.34 2000/03/23 17:09:48 aaron Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -72,163 +74,47 @@
 #define	PCVT_REL "3.32"		/* driver attach announcement	*/
 				/* see also: pcvt_ioctl.h	*/
 
-#if PCVT_FREEBSD >= 200
-
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
+#include <sys/fcntl.h>
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
-#include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
+#include <sys/msgbuf.h>
 #include <sys/malloc.h>
 #include <sys/time.h>
-
-#else /* ! PCVT_FREEBSD >= 200 */
-
-#include "param.h"
-#include "conf.h"
-#include "ioctl.h"
-#include "proc.h"
-#include "user.h"
-#include "tty.h"
-#include "uio.h"
-#include "callout.h"
-#include "systm.h"
-#include "kernel.h"
-#include "syslog.h"
-#include "malloc.h"
-#include "time.h"
-
-#endif /* PCVT_FREEBSD >= 200 */
+#ifdef DDB
+#include <ddb/db_var.h>
+#endif
 
 #include "pcvt_conf.h"
 
-#if PCVT_NETBSD > 9
-#include "device.h"
-#endif
+#include <sys/device.h>
 
-#if PCVT_NETBSD > 9
-#if PCVT_NETBSD > 101
-#include "i386/isa/isa_machdep.h"
-#include "dev/isa/isavar.h"
-#else
-#include "i386/isa/isavar.h"
-#endif
+#include <i386/isa/isa_machdep.h>
+#include <dev/isa/isavar.h>
+#include <machine/cpufunc.h>
+#include <machine/intr.h>
 
-#include "i386/cpufunc.h"
-#elif PCVT_FREEBSD >= 200
-#include <i386/isa/isa_device.h>
-#else
-#include "i386/isa/isa_device.h"
-#endif
-
-#if PCVT_FREEBSD >= 200
 #include <i386/isa/icu.h>
-#else
-#include "i386/isa/icu.h"
-#endif
 
-#if PCVT_NETBSD > 100
-#if PCVT_NETBSD > 101
-#include "dev/isa/isareg.h"
-#else
-#include "i386/isa/isareg.h"
-#endif
-#elif PCVT_FREEBSD >= 200
-#include <i386/isa/isa.h>
-#else
-#include "i386/isa/isa.h"
-#endif
+#include <dev/isa/isareg.h>
 
-#if PCVT_NETBSD > 9
-#include "dev/cons.h"
-#if PCVT_NETBSD > 100
-#include "dev/ic/mc146818reg.h"
-#include "i386/isa/nvram.h"
-#endif
-#elif PCVT_FREEBSD >= 200
-#include <i386/i386/cons.h>
-#else
-#include "i386/i386/cons.h"
-#endif
+#include <dev/cons.h>
+#include <dev/ic/mc146818reg.h>
+#include <i386/isa/nvram.h>
 
-#if PCVT_NETBSD <= 9
-#if PCVT_FREEBSD >= 200
-#include <machine/psl.h>
-#include <machine/frame.h>
-#else /* ! PCVT_FREEBSD >= 200 */
-#include "machine/psl.h"
-#include "machine/frame.h"
-#endif /* PCVT_FREEBSD >= 200 */
-#endif /* PCVT_NETBSD <= 9 */
-
-#if PCVT_FREEBSD >= 200
 #include <machine/stdarg.h>
-#else
-#include "machine/stdarg.h"
-#endif
 
-#if PCVT_NETBSD > 9
 #include "pcvt_ioctl.h"
-#elif PCVT_FREEBSD >= 200
-#include <machine/pcvt_ioctl.h>
-#else
-#include "machine/pcvt_ioctl.h"
-#endif
 
-#if PCVT_FREEBSD >= 200
 #include <machine/pc/display.h>
-#if PCVT_FREEBSD > 200
-#include <machine/clock.h>
-#include <machine/md_var.h>
-#endif
 #include <vm/vm_kern.h>
-#else /* PCVT_FREEBSD >= 200 */
-#include "machine/pc/display.h"
-#include "vm/vm_kern.h"
-#endif /* PCVT_FREEBSD >= 200 */
-
-#if PCVT_FREEBSD > 205
-#include <sys/devconf.h>
-#endif
-
-/* setup irq disable function to use */
-
-#if !(PCVT_SLOW_INTERRUPT) && (PCVT_NETBSD > 9)
-# define PCVT_DISABLE_INTR()	disable_intr()
-# define PCVT_ENABLE_INTR()	enable_intr()
-# undef PCVT_SLOW_INTERRUPT
-#else
-# define PCVT_DISABLE_INTR()	s = spltty()
-# define PCVT_ENABLE_INTR()	splx(s)
-# undef PCVT_SLOW_INTERRUPT
-# define PCVT_SLOW_INTERRUPT 1
-#endif
-
-/* perform option consistency checks */
-
-#if defined PCVT_FREEBSD && PCVT_FREEBSD == 1
-# undef PCVT_FREEBSD
-# define PCVT_FREEBSD 102	/* assume 1.0 release */
-#endif
-
-#if defined PCVT_NETBSD && PCVT_NETBSD == 1
-#undef PCVT_NETBSD
-#define PCVT_NETBSD 9		/* assume 0.9 release for now */
-#endif
-
-#if PCVT_FREEBSD + PCVT_NETBSD == 0
-# error "pcvt_hdr.h: You MUST define one of PCVT_{NET,FREE}BSD \
-in the config file"
-#elif (PCVT_FREEBSD && PCVT_NETBSD)
-# error "pcvt_hdr.h: You CAN only define *one* of PCVT_{NET,FREE}BSD \
-in the config file"
-#endif
 
 #ifdef XSERVER
 
@@ -250,18 +136,8 @@ in the config file"
 
 /* get the inline inb/outb back again ... */
 
-#if PCVT_NETBSD
-#if PCVT_NETBSD == 9
-#include "machine/cpufunc.h"	/* NetBSD 0.9 [...and earlier -currents] */
-#else
-#include "machine/pio.h"	/* recent NetBSD -currents */
+#include <machine/pio.h>	/* recent NetBSD -currents */
 #define NEW_AVERUNNABLE		/* averunnable changes for younger currents */
-#endif /* PCVT_NETBSD == 9 */
-#endif /* PCVT_NETBSD */
-
-#if PCVT_FREEBSD >= 200
-#define NEW_AVERUNNABLE		/* new averunnable changes for FreeBSD 2.0 */
-#endif
 
 #if PCVT_SCANSET !=1 && PCVT_SCANSET !=2
 #error "Supported keyboard scancode sets are 1 and 2 only (for now)!!!"
@@ -314,6 +190,7 @@ in the config file"
 #define	KEYB_C_RESEND	0xfe	/* resend last byte in case of error */
 #define KEYB_C_TYPEM	0xf3	/* set keyboard typematic rate/delay */
 #define KEYB_C_ID	0xf2	/* return keyboard id */
+#define KEYB_C_SCANSET	0xf0	/* get/set keyboard scancode set */
 #define KEYB_C_ECHO	0xee	/* diagnostic, echo 0xee */
 #define KEYB_C_LEDS	0xed	/* set/reset numlock,capslock & scroll lock */
 
@@ -335,6 +212,8 @@ in the config file"
 #define KEYB_R_MF2ID1	0xab	/* MF II Keyboard id-byte #1 */
 #define KEYB_R_MF2ID2	0x41	/* MF II Keyboard id-byte #2 */
 #define KEYB_R_MF2ID2HP	0x83	/* MF II Keyboard id-byte #2 from HP keybd's */
+#define KEYB_R_MF2ID2TP 0x54	/* MF II Keyboard id-byte #2 from IBM ThinkPad */
+#define KEYB_R_MF2ID2TP2 0x84	/* MF II Keyboard id-byte #2 from IBM ThinkPad (340M) */
 
 /* internal Keyboard Type */
 
@@ -346,18 +225,10 @@ in the config file"
  *	CMOS ram access to get the "Equipment Byte"
  *---------------------------------------------------------------------------*/
 
-#if PCVT_NETBSD > 100
 #define EQ_EGAVGA	NVRAM_EQUIPMENT_EGAVGA
 #define EQ_40COLOR	NVRAM_EQUIPMENT_COLOR40
 #define EQ_80COLOR	NVRAM_EQUIPMENT_COLOR80
 #define EQ_80MONO	NVRAM_EQUIPMENT_MONO80
-#else
-#define RTC_EQUIPMENT	0x14	/* equipment byte in cmos ram	*/
-#define EQ_EGAVGA	0	/* reserved (= ega/vga)		*/
-#define EQ_40COLOR	1	/* display = 40 col color	*/
-#define EQ_80COLOR	2	/* display = 80 col color	*/
-#define EQ_80MONO	3	/* display = 80 col mono	*/
-#endif
 
 /*---------------------------------------------------------------------------*
  *	VT220 -> internal color conversion table fields
@@ -581,19 +452,6 @@ in the config file"
 #define VGA_PMSK	0x3F		/* palette mask, 64 distinct values */
 #define NVGAPEL 	256		/* number of palette entries */
 
-/*---------------------------------------------------------------------------*
- *	function key labels
- *---------------------------------------------------------------------------*/
-
-#define LABEL_LEN	9		/* length of one label */
-#define LABEL_MID	8		/* mid-part (row/col)	*/
-
-#define LABEL_ROWH	((4*LABEL_LEN)+1)
-#define LABEL_ROWL	((4*LABEL_LEN)+2)
-#define LABEL_COLU	((4*LABEL_LEN)+4)
-#define LABEL_COLH	((4*LABEL_LEN)+5)
-#define LABEL_COLL	((4*LABEL_LEN)+6)
-
 /* tab setting */
 
 #define MAXTAB 132		/* no of possible tab stops */
@@ -643,30 +501,6 @@ in the config file"
 #define DSCS_LENGTH	3	/* descriptor length */
 #define MAXSIXEL	8	/* sixels forever ! */
 
-/* sub-states for HP-terminal emulator */
-
-#define SHP_INIT	0
-
-/* esc & f family */
-
-#define SHP_AND_F	1
-#define SHP_AND_Fa	2
-#define SHP_AND_Fak	3
-#define SHP_AND_Fak1	4
-#define SHP_AND_Fakd	5
-#define SHP_AND_FakdL	6
-#define SHP_AND_FakdLl	7
-#define SHP_AND_FakdLls	8
-
-/* esc & j family */
-
-#define SHP_AND_J	9
-#define SHP_AND_JL	10
-
-/* esc & every-thing-else */
-
-#define SHP_AND_ETE	11
-
 /* additionals for function key labels */
 
 #define MAX_LABEL	16
@@ -696,21 +530,13 @@ in the config file"
 /* screen memory start, monochrome */
 
 #ifndef	MONO_BUF
-# if PCVT_FREEBSD && (PCVT_FREEBSD > 102)
-#  define MONO_BUF	(KERNBASE+0xB0000)
-# else
 #  define MONO_BUF	0xfe0B0000		 /* NetBSD-current: isa.h */
-# endif
 #endif
 
 /* screen memory start, color */
 
 #ifndef	CGA_BUF
-# if PCVT_FREEBSD && (PCVT_FREEBSD > 102)
-#  define CGA_BUF	(KERNBASE+0xB8000)
-# else
 #  define CGA_BUF	0xfe0B8000		 /* NetBSD-current: isa.h */
-# endif
 #endif
 
 #define	CHR		2		/* bytes per word in screen mem */
@@ -735,16 +561,8 @@ in the config file"
 #define D_G2_96		5	/* designated as G2 for 96-char charsets */
 #define D_G3_96		6	/* designated as G3 for 96-char charsets */
 
-/* which fkey-labels */
-
-#define SYS_FKL		0	/* in hp mode, sys-fkls are active */
-#define USR_FKL		1	/* in hp mode, user-fkls are active */
-
-/* arguments to async_update() */
-
-#define UPDATE_START	0	/* do cursor update and requeue */
-#define UPDATE_STOP	1	/* suspend cursor updates */
-#define UPDATE_KERN	2	/* do cursor updates for kernel output */
+/* initial default scrollback buffer size (in pages) */
+#define SCROLLBACK_PAGES	8
 
 /* variables */
 
@@ -757,35 +575,12 @@ in the config file"
 EXTERN	u_char	*more_chars;		/* response buffer via kbd */
 EXTERN	int	char_count;		/* response char count */
 EXTERN	u_char	color;			/* color or mono display */
+EXTERN	u_char	pcdisp;			/* vt220 or traditional pc features */
 
 EXTERN	u_short	kern_attr;		/* kernel messages char attributes */
 EXTERN	u_short	user_attr;		/* character attributes */
 
-#if !PCVT_EMU_MOUSE
-
-#if PCVT_NETBSD > 100
-/* nothing */
-#elif PCVT_NETBSD
 EXTERN struct tty *pc_tty[PCVT_NSCREENS];
-#elif !(PCVT_FREEBSD > 110 && PCVT_FREEBSD < 200)
-EXTERN struct tty pccons[PCVT_NSCREENS];
-#else
-EXTERN struct tty *pccons[PCVT_NSCREENS];
-#endif /* PCVT_NETBSD */
-
-#else /* PCVT_EMU_MOUSE */
-
-#if PCVT_NETBSD > 100
-/* nothing */
-#elif PCVT_NETBSD
-EXTERN struct tty *pc_tty[PCVT_NSCREENS + 1];
-#elif !(PCVT_FREEBSD > 110 && PCVT_FREEBSD < 200)
-EXTERN struct tty pccons[PCVT_NSCREENS + 1];
-#else
-EXTERN struct tty *pccons[PCVT_NSCREENS + 1];
-#endif
-
-#endif /* PCVT_EMU_MOUSE */
 
 struct sixels {
 	u_char lower[MAXSIXEL];		/* lower half of char */
@@ -805,6 +600,10 @@ struct rgb {
 typedef struct video_state {
 	u_short	*Crtat;			/* video page start addr */
 	u_short *Memory;		/* malloc'ed memory start address */
+	u_short *Scrollback;		/* scrollback buffer */
+	int scr_offset;			/* current scrollback offset (lines) */
+	short scrolling;		/* current scrollback page */
+	u_short max_off;		/* maximum scrollback offset */
 	struct tty *vs_tty;		/* pointer to this screen's tty */
 	u_char	maxcol;			/* 80 or 132 cols on screen */
 	u_char 	row, col;		/* current cursor position */
@@ -813,7 +612,6 @@ typedef struct video_state {
 	u_short	cur_offset;		/* current cursor position offset */
 	u_char	bell_on;		/* flag, bell enabled */
 	u_char	sevenbit;		/* flag, data path 7 bits wide */
-	u_char	dis_fnc;		/* flag, display functions enable */
 	u_char	transparent;		/* flag, mk path tmp trnsprnt for ctls*/
 	u_char	C1_ctls;		/* flag, process C1 ctls */
 	u_char	scrr_beg;		/* scrolling region, begin */
@@ -844,14 +642,9 @@ typedef struct video_state {
 	u_short	*sc_GL;			/* save GL ptr */
 	u_short	*sc_GR;			/* save GR ptr */
 	u_char	sc_sel;			/* selective erase state */
-	u_char	ufkl[8][17];		/* user fkey-labels */
-	u_char	sfkl[8][17];		/* system fkey-labels */
-	u_char	labels_on;		/* display fkey labels etc. on/off */
-	u_char	which_fkl;		/* which fkey labels are active */
 	char	tab_stops[MAXTAB]; 	/* table of active tab stops */
 	u_char	parmi;			/* parameter index */
 	u_char	parms[MAXPARMS];	/* parameter array */
-	u_char	hp_state;		/* hp escape sequence state machine */
 	u_char	attribute;		/* attribute normal, tx only, local */
 	u_char	key;			/* fkey label no */
 	u_char	l_len;			/* buffer length's */
@@ -862,7 +655,6 @@ typedef struct video_state {
 	u_char	s_buf[MAX_STRING+1];
 	u_char	m_buf[MAX_STATUS+1];
 	u_char	openf;			/* we are opened ! */
-	u_char	vt_pure_mode;		/* no fkey labels, row/col, status */
 	u_char	cursor_start;		/* Start of cursor */
 	u_char	cursor_end;		/* End of cursor */
 	u_char	cursor_on;		/* cursor switched on */
@@ -914,6 +706,9 @@ typedef struct video_state {
 
 EXTERN video_state vs[PCVT_NSCREENS];	/* parameters for screens */
 
+/* used to be able to pass ERESTART on properly */
+#define PCVT_ERESTART (ELAST + 1)
+
 /* possible states for video_state.vt_status: */
 
 #define	VT_WAIT_REL 1			/* wait till process released vt */
@@ -934,51 +729,23 @@ struct vga_char_state {
 
 EXTERN struct vga_char_state vgacs[NVGAFONTS];	/* Character set states */
 
-#if PCVT_EMU_MOUSE
-struct mousestat {
-	struct timeval lastmove; /* last time the pointer moved */
-	u_char opened;		 /* someone would like to use a mouse */
-	u_char minor;		 /* minor device number */
-	u_char buttons;		 /* current "buttons" pressed */
-	u_char extendedseen;	 /* 0xe0 has been seen, do not use next key */
-	u_char breakseen;	 /* key break has been seen for a sticky btn */
-};
-#endif /* PCVT_EMU_MOUSE */
-
 #ifdef WAS_EXTERN
 
-#if PCVT_NETBSD > 9
-
-#if PCVT_NETBSD > 101
 struct vt_softc {
 	struct	device sc_dev;
 	void	*sc_ih;
 };
-#endif /* PCVT_NETBSD > 101 */
 
-int pcprobe ();
-void pcattach ();
+int pcprobe(struct device *, void *, void *);
+void pcattach(struct device *, struct device *, void *);
 
-#if PCVT_NETBSD > 101
-struct cfdriver vtcd = {
-	NULL, "vt", pcprobe, pcattach, DV_TTY, sizeof(struct vt_softc)
-};
-#else /* !PCVT_NETBSD > 101 */
-struct cfdriver vtcd = {
-	NULL, "vt", pcprobe, pcattach, DV_TTY, sizeof(struct device)
-};
-#endif /* PCVT_NETBSD > 101 */
-
-#else /* !PCVT_NETBSD > 9 */
-
-int pcprobe ( struct isa_device *dev );
-int pcattach ( struct isa_device *dev );
-
-struct	isa_driver vtdriver = {		/* driver routines */
-	pcprobe, pcattach, "vt",
+struct cfattach vt_ca = {
+	sizeof(struct vt_softc), pcprobe, pcattach
 };
 
-#endif /* PCVT_NETBSD > 9 */
+struct cfdriver vt_cd = {
+	NULL, "vt", DV_TTY
+};
 
 u_char fgansitopc[] = {			/* foreground ANSI color -> pc */
 	FG_BLACK, FG_RED, FG_GREEN, FG_BROWN, FG_BLUE,
@@ -990,26 +757,12 @@ u_char bgansitopc[] = {			/* background ANSI color -> pc */
 	BG_MAGENTA, BG_CYAN, BG_LIGHTGREY
 };
 
-#if !PCVT_NETBSD
-u_short *Crtat	=	(u_short *)MONO_BUF;	/* screen start address */
-#if !(PCVT_FREEBSD > 110 && PCVT_FREEBSD < 200)
-struct tty *pcconsp =	&pccons[0];		/* ptr to current device */
-#else /* PCVT_FREEBSD > 110 */
-struct tty *pcconsp;
-#endif /* !(PCVT_FREEBSD > 110) */
-#else
 struct tty *pcconsp;		/* ptr to current device, see pcattach() */
 
-#if PCVT_NETBSD > 101
 u_short *Crtat;			/* screen start address */
-#endif /* PCVT_NETBSD > 101 */
 
-#endif /* PCVT_NETBSD */
-
-#if PCVT_EMU_MOUSE
-struct mousestat	mouse = {0};
-struct mousedefs	mousedef = {0x3b, 0x3c, 0x3d, 0,     250000};
-#endif /* PCVT_EMU_MOUSE */	/*  F1,   F2,   F3,   false, 0.25 sec */
+u_short *Scrollbuffer;		/* scrollback buffer */
+u_short scrollback_pages;	/* size of scrollback buffer (pages) */
 
 video_state *vsp 		= &vs[0]; /* ptr to current screen parms */
 
@@ -1035,10 +788,6 @@ u_char	keyboard_type		= KB_UNKNOWN;	/* type of keyboard */
 u_char	keyboard_is_initialized = 0;		/* for ddb sanity */
 u_char	kbd_polling		= 0;		/* keyboard is being polled */
 
-#if PCVT_SHOWKEYS
-u_char	keyboard_show		= 0;		/* normal display */
-#endif /* PCVT_SHOWKEYS */
-
 u_char	cursor_pos_valid	= 0;		/* sput left a valid position*/
 
 u_char	critical_scroll		= 0;		/* inside scrolling up */
@@ -1047,11 +796,8 @@ int	switch_page		= -1;		/* which page to switch to */
 #if PCVT_SCREENSAVER
 u_char	reset_screen_saver	= 1;		/* reset the saver next time */
 u_char	scrnsv_active		= 0;		/* active flag */
-#endif /* PCVT_SCREENSAVER */
-
-#if XSERVER || PCVT_SCREENSAVER
 unsigned scrnsv_timeout		= 0;		/* initially off */
-#endif /* XSERVER || PCVT_SCREENSAVER */
+#endif /* PCVT_SCREENSAVER */
 
 #if PCVT_BACKUP_FONTS
 u_char *saved_charsets[NVGAFONTS] = {0};	/* backup copy of fonts */
@@ -1137,11 +883,6 @@ extern u_char		vga_type;
 extern struct tty	*pcconsp;
 extern video_state	*vsp;
 
-#if PCVT_EMU_MOUSE
-extern struct mousestat mouse;
-extern struct mousedefs mousedef;
-#endif /* PCVT_EMU_MOUSE */
-
 extern int		vt_switch_pending;
 extern u_int		addr_6845;
 extern u_short		*Crtat;
@@ -1166,9 +907,8 @@ extern u_char		vga_family;
 extern u_char		keyboard_is_initialized;
 extern u_char		kbd_polling;
 
-#if PCVT_SHOWKEYS
-extern u_char		keyboard_show;
-#endif /* PCVT_SHOWKEYS */
+extern u_short		*Scrollbuffer;
+extern u_short		scrollback_pages;
 
 u_char	cursor_pos_valid;
 
@@ -1184,9 +924,9 @@ extern u_char		sgr_tab_color[];
 extern u_char		sgr_tab_mono[];
 extern u_char		sgr_tab_imono[];
 
-#if defined(XSERVER) || PCVT_SCREENSAVER
+#if PCVT_SCREENSAVER
 extern unsigned		scrnsv_timeout;
-#endif /* XSERVER || PCVT_SCREENSAVER */
+#endif /* PCVT_SCREENSAVER */
 
 #if PCVT_BACKUP_FONTS
 extern u_char		*saved_charsets[NVGAFONTS];
@@ -1194,135 +934,56 @@ extern u_char		*saved_charsets[NVGAFONTS];
 
 #endif	/* WAS_EXTERN */
 
-/*
- * FreeBSD > 1.0.2 cleaned up the kernel definitions (with the aim of
- * getting ANSI-clean). Since there has been a mixed usage of types like
- * "dev_t" (actually some short) in prototyped and non-prototyped fasion,
- * each of those types is declared as "int" within function prototypes
- * (which is what the compiler would actually promote it to).
- *
- * The macros below are used to clarify which type a parameter ought to
- * be, regardless of its actual promotion to "int".
- */
-
-
-#define Dev_t	int
 #define U_short	int
 #define U_char	int
-
-/*
- * In FreeBSD >= 2.0, dev_t has type `unsigned long', so promoting it
- * doesn't cause any problems in prototypes.
- */
-
-#if PCVT_FREEBSD >= 200
-#undef Dev_t
 #define Dev_t	dev_t
-#endif
 
-/* in FreeBSD > 102 arguments for timeout()/untimeout() are a special type */
-
-#if PCVT_FREEBSD > 102
-#define	TIMEOUT_FUNC_T	timeout_func_t
-#else
 #define	TIMEOUT_FUNC_T	void *
-#endif
 
-#if !PCVT_FREEBSD || (PCVT_FREEBSD < 210)
 extern void bcopyb(void *from, void *to, u_int length);
-#endif
-
-#if !PCVT_FREEBSD || (PCVT_FREEBSD < 200)
-extern void fillw(U_short value, void *addr, u_int length);
-#endif
 
 int	pcopen ( Dev_t dev, int flag, int mode, struct proc *p );
 int	pcclose ( Dev_t dev, int flag, int mode, struct proc *p );
 int	pcread ( Dev_t dev, struct uio *uio, int flag );
 int	pcwrite ( Dev_t dev, struct uio *uio, int flag );
-int	pcioctl ( Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p );
+int	pcioctl ( Dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p );
 int	pcmmap ( Dev_t dev, int offset, int nprot );
-#if PCVT_FREEBSD > 205
-struct tty *pcdevtotty ( Dev_t dev );
-#endif /* PCVT_FREEBSD > 205 */
 
-#if PCVT_NETBSD
-#if PCVT_NETBSD > 101
 struct tty *
 	pctty ( Dev_t dev );
 int	pcintr ( void *arg);
 void	pccnprobe ( struct consdev *cp );
 void	pccninit ( struct consdev *cp );
 void	pccnputc ( Dev_t dev, U_char c );
-#else
-int	pcrint ( void );
-int	pccnprobe ( struct consdev *cp );
-int	pccninit ( struct consdev *cp );
-int	pccnputc ( Dev_t dev, U_char c );
-#endif
 int	pccngetc ( Dev_t dev );
-#endif /* PCVT_NETBSD */
 
 int	pcparam ( struct tty *tp, struct termios *t );
 void	pcstart ( struct tty *tp );
 void	pcstop ( struct tty *tp, int flag );
 
-#if PCVT_FREEBSD
-/*
- * In FreeBSD > 2.0.6, driver console functions are declared in i386/cons.h
- * and some return void, so don't declare them here.
- */
-#if PCVT_FREEBSD <= 205
-int	pccnprobe ( struct consdev *cp );
-int	pccninit ( struct consdev *cp );
-int	pccngetc ( Dev_t dev );
-int	pccncheckc ( Dev_t dev );
-int	pccnputc ( Dev_t dev, U_char c );
-#endif
-
-# if PCVT_FREEBSD < 200
-void	consinit ( void );
-# endif
-#endif /* PCVT_FREEBSD */
-
 void	switch_screen ( int n, int oldgrafx, int newgrafx );
-int	usl_vt_ioctl (Dev_t dev,int cmd,caddr_t data,int flag,struct proc *);
+int	usl_vt_ioctl (Dev_t dev, u_long cmd,caddr_t data,int flag,struct proc *);
 int	vt_activate ( int newscreen );
 int	vgapage ( int n );
 void	get_usl_keymap( keymap_t *map );
 void	reset_usl_modes (struct video_state *vsx);
 
-#if PCVT_EMU_MOUSE
-int	mouse_ioctl ( Dev_t dev, int cmd, caddr_t data );
-#endif /*  PCVT_EMU_MOUSE */
-
 #if PCVT_SCREENSAVER
 void 	pcvt_scrnsv_reset ( void );
-#endif /* PCVT_SCREENSAVER */
-
-#if PCVT_SCREENSAVER
 void 	pcvt_set_scrnsv_tmo ( int );
 #endif /* PCVT_SCREENSAVER */
 
-#ifdef XSERVER
-void	vga_move_charset ( unsigned n, unsigned char *b, int save_it);
-#endif /* XSERVER */
-
-void	async_update ( int arg );
+void	async_update ( void );
 void	clr_parms ( struct video_state *svsp );
 void	cons_highlight ( void );
 void	cons_normal ( void );
 int	egavga_test ( void );
-void	fkl_off ( struct video_state *svsp );
-void	fkl_on ( struct video_state *svsp );
 struct tty *get_pccons ( Dev_t dev );
-void	init_sfkl ( struct video_state *svsp );
-void	init_ufkl ( struct video_state *svsp );
 int	kbd_cmd ( int val );
 void	kbd_code_init ( void );
 void	kbd_code_init1 ( void );
 void	kbd_setmode(int mode);
-int	kbdioctl ( Dev_t dev, int cmd, caddr_t data, int flag );
+int	kbdioctl ( Dev_t dev, u_long cmd, caddr_t data, int flag );
 void	loadchar ( int fontset, int character, int char_scanlines,
 		   u_char *char_table );
 void	mda2egaorvga ( void );
@@ -1330,21 +991,16 @@ void	roll_up ( struct video_state *svsp, int n );
 void	select_vga_charset ( int vga_charset );
 void	set_2ndcharset ( void );
 void	set_charset ( struct video_state *svsp, int curvgacs );
-void	set_emulation_mode ( struct video_state *svsp, int mode );
 void	set_screen_size ( struct video_state *svsp, int size );
+void	reallocate_scrollbuffer ( struct video_state *svsp, int pages );
 u_char *sgetc ( int noblock );
 void	sixel_vga ( struct sixels *charsixel, u_char *charvga );
 void	sput ( u_char *s, U_char attrib, int len, int page );
 void	sw_cursor ( int onoff );
-void	sw_sfkl ( struct video_state *svsp );
-void	sw_ufkl ( struct video_state *svsp );
-void	swritefkl ( int num, u_char *string, struct video_state *svsp );
 void	toggl_awm ( struct video_state *svsp );
 void	toggl_bell ( struct video_state *svsp );
 void	toggl_columns ( struct video_state *svsp );
-void	toggl_dspf ( struct video_state *svsp );
 void	toggl_sevenbit ( struct video_state *svsp );
-void 	update_hp ( struct video_state *svsp );
 void	update_led ( void );
 void	vga10_vga10 ( u_char *invga, u_char *outvga );
 void	vga10_vga14 ( u_char *invga, u_char *outvga );
@@ -1352,11 +1008,11 @@ void	vga10_vga16 ( u_char *invga, u_char *outvga );
 void	vga10_vga8 ( u_char *invga, u_char *outvga );
 u_char	vga_chipset ( void );
 int	vga_col ( struct video_state *svsp, int cols );
+void	vga_move_charset ( unsigned n, unsigned char *b, int save_it);
 void	vga_screen_off ( void );
 void	vga_screen_on ( void );
-char   *vga_string ( int number );
 int	vga_test ( void );
-int	vgaioctl ( Dev_t dev, int cmd, caddr_t data, int flag );
+int	vgaioctl ( Dev_t dev, u_long cmd, caddr_t data, int flag );
 void	vgapaletteio ( unsigned idx, struct rgb *val, int writeit );
 void	vt_aln ( struct video_state *svsp );
 void	vt_clearudk ( struct video_state *svsp );
@@ -1364,6 +1020,7 @@ void	vt_clreol ( struct video_state *svsp );
 void	vt_clreos ( struct video_state *svsp );
 void	vt_clrtab ( struct video_state *svsp );
 int	vt_col ( struct video_state *svsp, int cols );
+void	vt_coldinit ( void );
 void	vt_coldmalloc ( void );
 void	vt_cub ( struct video_state *svsp );
 void	vt_cud ( struct video_state *svsp );
@@ -1441,22 +1098,18 @@ static __inline void vt_selattr(struct video_state *svsp)
 				/* 0x84 to produce keyboard controller    */
 				/* access delays                          */
 #define PCVT_KBD_DELAY()          \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); } \
-	{ u_char x = inb(0x84); }
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;} \
+	{ volatile u_char x = inb(0x84); (void) &x;}
 
 #else /* PCVT_PORTIO_DELAY */
 				/* use system supplied delay function for */
 				/* producing delays for accesssing the    */
 				/* keyboard controller                    */
-#if PCVT_NETBSD > 9
 #define PCVT_KBD_DELAY()	delay(7)
-#elif PCVT_FREEBSD || (PCVT_NETBSD <= 9)
-#define PCVT_KBD_DELAY()	DELAY(7)
-#endif
 #endif /* PCVT_PORTIO_DELAY */
 
 /*---------------------------------- E O F ----------------------------------*/

@@ -26,11 +26,7 @@ extern void freeargv PARAMS ((char **));
    across different systems, sometimes as "char *" and sometimes as
    "const char *" */
 
-#if defined(__GNU_LIBRARY__ ) || defined (__linux__)
-extern char *basename PARAMS ((const char *));
-#else
 extern char *basename ();
-#endif
 
 /* Concatenate an arbitrary number of strings, up to (char *) NULL.
    Allocates memory using xmalloc.  */
@@ -45,9 +41,12 @@ extern int fdmatch PARAMS ((int fd1, int fd2));
 
 extern long get_run_time PARAMS ((void));
 
-/* Choose a temporary directory to use for scratch files.  */
+/* Choose a temporary directory to use for scratch files.  OBSOLETE */
 
 extern char *choose_temp_base PARAMS ((void));
+
+/* Replacement... */
+extern char *make_temp_file PARAMS ((char *suffix));
 
 /* Allocate memory filled with spaces.  Allocates using malloc.  */
 

@@ -41,14 +41,14 @@
  * Header with prototypes for OS-specific functions.
  */
 
-/* $KTH: subr.h,v 1.5 1998/03/24 02:43:00 assar Exp $ */
+/* $KTH: subr.h,v 1.6 1998/09/08 08:24:39 assar Exp $ */
 
 #ifndef _SUBR_H_
 #define _SUBR_H_
 
 Result
-conv_dir (FCacheEntry *e, char *handle, size_t handle_size,
-	  CredCacheEntry *ce, u_int tokens);
+conv_dir (FCacheEntry *e, CredCacheEntry *ce, u_int tokens,
+	  xfs_cache_handle *, char *, size_t);
 
 #endif /* _SUBR_H_ */
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: modstat.c,v 1.11 1998/07/06 18:42:46 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1993 Terrence R. Lambert.
  * All rights reserved.
@@ -29,20 +31,20 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: modstat.c,v 1.6 1995/06/27 00:18:19 jtc Exp $
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <err.h>
-#include <string.h>
-#include <a.out.h>
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/conf.h>
 #include <sys/mount.h>
 #include <sys/lkm.h>
-#include <sys/file.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <err.h>
+#include <fcntl.h>
+#include <string.h>
+#include <a.out.h>
 #include <errno.h>
 #include "pathnames.h"
 
@@ -50,8 +52,8 @@ void
 usage()
 {
 
-	fprintf(stderr, "usage:\n");
-	fprintf(stderr, "modstat [-i <module id>] [-n <module name>]\n");
+	fprintf(stderr,
+	    "usage: modstat [-i moduleid] [-n modulename]\n");
 	exit(1);
 }
 
@@ -71,11 +73,17 @@ dostat(devfd, modnum, modname)
 	char *modname;
 {
 	struct lmc_stat	sbuf;
+	char name[MAXLKMNAME] = "";
 
-	if (modname != NULL)
-		strcpy(sbuf.name, modname);
-
+	bzero(&sbuf, sizeof sbuf);
 	sbuf.id = modnum;
+	sbuf.name = name;
+
+	if (modname != NULL) {
+		if (strlen(modname) >= sizeof(name))
+			return 4;
+		strcpy(sbuf.name, modname);
+	}
 
 	if (ioctl(devfd, LMSTAT, &sbuf) == -1) {
 		switch (errno) {
@@ -127,7 +135,7 @@ main(argc, argv)
 	int modnum = -1;
 	char *modname = NULL;
 
-	while ((c = getopt(argc, argv, "i:n:")) != EOF) {
+	while ((c = getopt(argc, argv, "i:n:")) != -1) {
 		switch (c) {
 		case 'i':
 			modnum = atoi(optarg);
@@ -135,10 +143,8 @@ main(argc, argv)
 		case 'n':
 			modname = optarg;
 			break;	/* name */
-		case '?':
-			usage();
 		default:
-			printf("default!\n");
+			usage();
 			break;
 		}
 	}
@@ -152,12 +158,15 @@ main(argc, argv)
 	 * Open the virtual device device driver for exclusive use (needed
 	 * to ioctl() to retrive the loaded module(s) status).
 	 */
-	if ((devfd = open(_PATH_LKM, O_RDONLY, 0)) == -1)
+	if ((devfd = open(_PATH_LKM, O_RDONLY)) == -1)
 		err(2, _PATH_LKM);
+
+	setegid(getgid());
+	setgid(getgid());
 
 	atexit(cleanup);
 
-	printf("Type    Id  Off Loadaddr Size Info     Rev Module Name\n");
+	printf("Type     Id Off Loadaddr Size Info     Rev Module Name\n");
 
 	/*
 	 * Oneshot?

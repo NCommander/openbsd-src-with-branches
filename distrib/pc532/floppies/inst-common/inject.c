@@ -1,3 +1,4 @@
+/*	$OpenBSD: inject.c,v 1.3 1997/11/26 02:32:27 deraadt Exp $	*/
 /*
  * Copyright (c) 1995 Matthias Pfaller.
  * All rights reserved.
@@ -27,7 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: inject.c,v 1.2 1995/10/03 22:31:03 phil Exp $
  */
 
 #include <stdio.h>
@@ -117,7 +117,7 @@ main(int argc, char **argv)
 	memcpy(ramdisk, filesys, filesyslen);
 
 	/* Sync vm/fs and unmap the images */
-	msync(kern, kernlen);
+	msync(kern, kernlen, 0);
 	munmap(kern, kernlen);
 	munmap(filesys, filesyslen);
 	exit(0);

@@ -1,5 +1,5 @@
 /* Generic ECOFF (Extended-COFF) routines.
-   Copyright 1990, 91, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright 1990, 91, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Original version by Per Bothner.
    Full support added by Ian Lance Taylor, ian@cygnus.com.
 
@@ -209,6 +209,7 @@ _bfd_ecoff_set_arch_mach_hook (abfd, filehdr)
       break;
 
     case ALPHA_MAGIC:
+    case ALPHA_MAGIC_BSD:
       arch = bfd_arch_alpha;
       mach = 0;
       break;
@@ -229,6 +230,7 @@ static int
 ecoff_get_magic (abfd)
      bfd *abfd;
 {
+  extern const bfd_target bsd_ecoffalpha_little_vec;
   int big, little;
 
   switch (bfd_get_arch (abfd))
@@ -257,7 +259,8 @@ ecoff_get_magic (abfd)
       return bfd_big_endian (abfd) ? big : little;
 
     case bfd_arch_alpha:
-      return ALPHA_MAGIC;
+      return (abfd->xvec == &bsd_ecoffalpha_little_vec
+	      ? ALPHA_MAGIC_BSD : ALPHA_MAGIC);
 
     default:
       abort ();
@@ -1443,11 +1446,11 @@ _bfd_ecoff_get_symbol_info (abfd, symbol, ret)
 
 /*ARGSUSED*/
 boolean
-_bfd_ecoff_bfd_is_local_label_name (abfd, name)
+_bfd_ecoff_bfd_is_local_label (abfd, symbol)
      bfd *abfd;
-     const char *name;
+     asymbol *symbol;
 {
-  return name[0] == '$';
+  return symbol->name[0] == '$';
 }
 
 /* Print information about an ECOFF symbol.  */

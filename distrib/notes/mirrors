@@ -1,58 +1,89 @@
-Host name		Services Provided
----- ----		-------- --------
-ftp.iastate.edu		Anonymous FTP, AFS
+This is a list of currently known ftp servers:
 
-	Anon-FTP path: pub/netbsd/NetBSD-1.0
-	AFS path: /afs/iastate.edu/public/ftp/pub/netbsd/NetBSD-1.0
+Korea:
 
-ftp.eecs.umich.edu	Anonymous FTP
+ftp://ftp1.kr.openbsd.org/pub/OpenBSD ==
+	ftp://sunsite.kren.ne.kr/pub/OpenBSD
 
-	Anon-FTP path: BSD/NetBSD/NetBSD-1.0
+Australia:
 
-gatekeeper.dec.com	Anonymous FTP
+ftp://ftp.aba.net.au/pub/OpenBSD ==
+	ftp://ftp.au.openbsd.org/pub/OpenBSD
 
-	Anon-FTP path: pub/BSD/NetBSD/NetBSD-1.0
+France:
 
-wipux2.wifo.uni-mannheim.de	Anonymous FTP, SUP
+ftp://ftp.lip6.fr/pub/OpenBSD == 
+	ftp://ftp.fr.openbsd.org/pub/OpenBSD
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
-	SUP: get the file pub/misc/sup/supfile.example via
-		anonymous FTP and read it as an example.
+ftp://frp.univ-evry.fr/pub/OpenBSD
 
-ftp.demon.co.uk		Anonymous FTP, possibly SUP
+Germany:
 
-	Anon-FTP path: pub/BSD/NetBSD/NetBSD-1.0
-	SUP: contact peter@demon.net for SUP server status/information
+ftp://ftp.fu-berlin.de/unix/OpenBSD ==
+	ftp://ftp.de.openbsd.org/pub/unix/openbsd/mirrors/OpenBSD
 
-ftp.uni-regensburg.de	Anonymous FTP
+Japan:
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
+ftp://ftp.tut.ac.jp/OpenBSD == ftp://ftp.jp.openbsd.org/OpenBSD
 
-ftp.unit.no		Anonymous FTP
+ftp://ftp.dti.ad.jp/pub/OpenBSD
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
+Sweden:
 
-ftp.stacken.kth.se	Anonymous FTP
+ftp://ftp.stacken.kth.se/pub/OpenBSD ==
+	ftp://ftp.se.openbsd.org/pub/OpenBSD
+	ftp://ftp1.se.openbsd.org/pub/OpenBSD
 
-	Anon-FTP path: pub/OS/NetBSD/NetBSD-1.0
+Switzerland:
 
-flick.lerc.nasa.gov	Anonymous FTP
+ftp://web.eunet.ch/pub/OpenBSD ==
+	ftp://ftp.eu.openbsd.org/pub/OpenBSD
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
+Thailand:
 
-coombs.anu.edu.au	Anonymous FTP
+ftp://ftp.ruibon.ac.th/pup/OpenBSD ==
+	ftp://ftp.th.openbsd.org/pub/OpenBSD
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
+Korea:
 
-ftp.funet.fi		Anonymous FTP
+ftp://sunsite.kren.ne.kr/pup/OpenBSD ==
+	ftp://ftp.kr.openbsd.org/pub/OpenBSD
 
-	Anon-FTP path: pub/unix/NetBSD/NetBSD-1.0
+United Kingdom:
 
-ftp.netbsd.org		Anonymous FTP, SUP
+ftp://ftp.demon.co.uk/pub/OpenBSD
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
-	SUP: get the file pub/sup/README.sup via anonymous FTP from
-		ftp.netbsd.org, and read it for instructions.
+USA:
 
-If you wish to become a distribution site for NetBSD, contact Chris
-Demetriou <cgd@NetBSD.ORG>.
+ftp://freestuff.cs.colorado.edu/pub/OpenBSD ==
+	ftp://ftp3.usa.openbsd.org/pub/OpenBSD
+
+ftp://openbsd.eecs.umich.edu/pub/OpenBSD ==
+	ftp://ftp1.usa.openbsd.org/pub/OpenBSD
+	ftp://ftp4.usa.openbsd.org/pub/OpenBSD
+
+ftp://ftp.geek-girl.com/pub/OpenBSD ==
+	ftp://ftp.usa.openbsd.org/pub/OpenBSD
+	ftp://ftp6.usa.openbsd.org/pub/OpenBSD
+
+ftp://ftp.op.net/pub/OpenBSD
+
+ftp://freon.republic.k12.mo.us/pub/OpenBSD
+
+frp://ftp.msoe.edu/pub/OpenBSD
+
+Canada:
+
+ftp://lager.ucs.ualberta.ca/pub/OpenBSD ==
+	ftp://ftp.openbsd.org/pub/OpenBSD
+	ftp://ftp.ca.openbsd.org/pub/OpenBSD
+	ftp://ftp1.ca.openbsd.org/pub/OpenBSD
+
+ftp://obsd.compmore.net/pub/OpenBSD ==
+	ftp://ftp2.ca.openbsd.org/pub/OpenBSD
+
+ftp://ftp.styx.org/pub/OpenBSD
+
+As well, the file ftp://ftp.openbsd.org/pub/OpenBSD/OSREV/ftplist
+contains a list which is continually updated.  If you wish to become a
+distribution site for OpenBSD, contact deraadt@cvs.openbsd.org.

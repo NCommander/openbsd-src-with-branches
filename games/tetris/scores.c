@@ -1,3 +1,4 @@
+/*	$OpenBSD: scores.c,v 1.3 1998/09/24 06:45:07 pjanzen Exp $	*/
 /*	$NetBSD: scores.c,v 1.2 1995/04/22 07:42:38 cgd Exp $	*/
 
 /*-
@@ -46,18 +47,17 @@
  * Major whacks since then.
  */
 #include <errno.h>
+#include <err.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <term.h>
 #include <unistd.h>
-
-/*
- * XXX - need a <termcap.h>
- */
-int	tputs __P((const char *, int, int (*)(int)));
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "pathnames.h"
 #include "screen.h"
@@ -99,7 +99,7 @@ static void
 getscores(fpp)
 	FILE **fpp;
 {
-	int sd, mint, lck;
+	int sd, mint, lck, mask, i;
 	char *mstr, *human;
 	FILE *sf;
 
@@ -114,36 +114,37 @@ getscores(fpp)
 		human = "reading";
 		lck = LOCK_SH;
 	}
+	setegid(egid);
+	mask = umask(S_IWOTH);
 	sd = open(_PATH_SCOREFILE, mint, 0666);
+	(void)umask(mask);
+	setegid(gid);
 	if (sd < 0) {
 		if (fpp == NULL) {
 			nscores = 0;
 			return;
 		}
-		(void)fprintf(stderr, "tetris: cannot open %s for %s: %s\n",
-		    _PATH_SCOREFILE, human, strerror(errno));
-		exit(1);
+		err(1, "cannot open %s for %s", _PATH_SCOREFILE, human);
 	}
-	if ((sf = fdopen(sd, mstr)) == NULL) {
-		(void)fprintf(stderr, "tetris: cannot fdopen %s for %s: %s\n",
-		    _PATH_SCOREFILE, human, strerror(errno));
-		exit(1);
-	}
+	setegid(egid);
+	if ((sf = fdopen(sd, mstr)) == NULL)
+		err(1, "cannot fdopen %s for %s", _PATH_SCOREFILE, human);
+	setegid(gid);
 
 	/*
 	 * Grab a lock.
 	 */
 	if (flock(sd, lck))
-		(void)fprintf(stderr,
-		    "tetris: warning: score file %s cannot be locked: %s\n",
-		    _PATH_SCOREFILE, strerror(errno));
+		warn("warning: score file %s cannot be locked",
+		    _PATH_SCOREFILE);
 
 	nscores = fread(scores, sizeof(scores[0]), MAXHISCORES, sf);
-	if (ferror(sf)) {
-		(void)fprintf(stderr, "tetris: error reading %s: %s\n",
-		    _PATH_SCOREFILE, strerror(errno));
-		exit(1);
-	}
+	if (ferror(sf))
+		err(1, "error reading %s", _PATH_SCOREFILE);
+	for (i = 0; i < nscores; i++)
+		if (scores[i].hs_level < MINLEVEL ||
+		    scores[i].hs_level > MAXLEVEL)
+			errx(1, "scorefile %s corrupt", _PATH_SCOREFILE);
 
 	if (fpp)
 		*fpp = sf;
@@ -207,8 +208,7 @@ savescore(level)
 		rewind(sf);
 		if (fwrite(scores, sizeof(*sp), nscores, sf) != nscores ||
 		    fflush(sf) == EOF)
-			(void)fprintf(stderr,
-			    "tetris: error writing %s: %s -- %s\n",
+			warnx("error writing %s: %s\n\t-- %s",
 			    _PATH_SCOREFILE, strerror(errno),
 			    "high scores may be damaged");
 	}
@@ -240,7 +240,7 @@ thisuser()
 	l = strlen(p);
 	if (l >= sizeof(u))
 		l = sizeof(u) - 1;
-	bcopy(p, u, l);
+	memcpy(u, p, l);
 	u[l] = '\0';
 	return (u);
 }
@@ -406,6 +406,9 @@ showscores(level)
 			(void)printf("\n");
 		}
 	}
+
+	if (nscores == 0)
+		printf("\t\t\t      - none to date.\n");
 }
 
 static void
@@ -418,13 +421,13 @@ printem(level, offset, hs, n, me)
 	register struct highscore *sp;
 	int nrows, row, col, item, i, highlight;
 	char buf[100];
-#define	TITLE "Rank  Score   Name     (points/level)"
+#define	TITLE "Rank  Score   Name      (points/level)"
 
 	/*
 	 * This makes a nice two-column sort with headers, but it's a bit
 	 * convoluted...
 	 */
-	printf("%s   %s\n", TITLE, n > 1 ? TITLE : "");
+	printf("%s  %s\n", TITLE, n > 1 ? TITLE : "");
 
 	highlight = 0;
 	nrows = (n + 1) / 2;
@@ -439,10 +442,9 @@ printem(level, offset, hs, n, me)
 				(void)putchar('\n');
 				continue;
 			}
-			(void)printf(item + offset < 10 ? "  " : " ");
 			sp = &hs[item];
 			(void)sprintf(buf,
-			    "%d%c %6d  %-11s (%d on %d)",
+			    "%3d%c %6d  %-11s (%6d on %d)",
 			    item + offset, sp->hs_time ? '*' : ' ',
 			    sp->hs_score * sp->hs_level,
 			    sp->hs_name, sp->hs_score, sp->hs_level);

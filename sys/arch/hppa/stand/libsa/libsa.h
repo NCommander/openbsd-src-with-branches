@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NOWHERE: libsa.h,v 2.2 1998/06/22 19:34:47 mickey Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.6 1999/05/06 02:26:15 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -33,18 +32,29 @@
 
 #include <lib/libsa/stand.h>
 
-void pdc_init __P((void));
-void getbinfo __P((void));
+#define	EXEC_ELF
+/* #define	EXEC_ECOFF */
+#define	EXEC_SOM
 
-int ctstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
+#define	DEFAULT_KERNEL_ADDRESS	0x12000
+
+extern dev_t bootdev;
+
+void pdc_init __P((void));
+struct pz_device;
+struct pz_device *pdc_findev __P((int, int));
+
+int iodcstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
+
 int ctopen __P((struct open_file *, ...));
 int ctclose __P((struct open_file *));
-int ctioctl __P((struct open_file *, u_long, void *));
 
-int dkstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
 int dkopen __P((struct open_file *, ...));
 int dkclose __P((struct open_file *));
-int dkioctl __P((struct open_file *, u_long, void *));
+
+int lfopen __P((struct open_file *, ...));
+int lfstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
+int lfclose __P((struct open_file *));
 
 void ite_probe __P((struct consdev *));
 void ite_init __P((struct consdev *));
@@ -55,6 +65,21 @@ void ite_pollc __P((dev_t, int));
 void machdep __P((void));
 void devboot __P((dev_t, char *));
 void fcacheall __P((void));
-void sync_caches __P((void));
+
+int     lif_open __P((char *path, struct open_file *f));
+int     lif_close __P((struct open_file *f));
+int     lif_read __P((struct open_file *f, void *buf,
+                size_t size, size_t *resid));
+int     lif_write __P((struct open_file *f, void *buf,
+		size_t size, size_t *resid));
+off_t   lif_seek __P((struct open_file *f, off_t offset, int where));
+int     lif_stat __P((struct open_file *f, struct stat *sb));
+int     lif_readdir __P((struct open_file *f, char *name));
+
+union x_header;
+struct x_param;
+int	som_probe __P((int, union x_header *));
+int	som_load __P((int, struct x_param *));
+int	som_ldsym __P((int, struct x_param *));
 
 extern int debug;

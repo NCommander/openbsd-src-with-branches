@@ -1,4 +1,4 @@
-#objdump: -d --prefix-addresses
+#objdump: -d
 #name: link
 
 # Test handling of link instruction.

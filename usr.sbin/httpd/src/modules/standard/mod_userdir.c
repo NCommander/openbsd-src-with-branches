@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -262,7 +262,7 @@ static int translate_userdir(request_rec *r)
 
 	if (userdir[0] == '\0' || ap_os_is_path_absolute(userdir)) {
             if (x) {
-#ifdef WIN32
+#ifdef HAVE_DRIVE_LETTERS
                 /*
                  * Crummy hack. Need to figure out whether we have been
                  * redirected to a URL or to a file on some drive. Since I
@@ -290,10 +290,10 @@ static int translate_userdir(request_rec *r)
             return REDIRECT;
         }
         else {
-#ifdef WIN32
-            /* Need to figure out home dirs on NT */
+#if defined(WIN32) || defined(NETWARE)
+            /* Need to figure out home dirs on NT and NetWare */
             return DECLINED;
-#else                           /* WIN32 */
+#else                           /* WIN32 & NetWare */
             struct passwd *pw;
             if ((pw = getpwnam(w))) {
 #ifdef OS2
@@ -303,7 +303,7 @@ static int translate_userdir(request_rec *r)
                 filename = ap_pstrcat(r->pool, pw->pw_dir, "/", userdir, NULL);
 #endif
             }
-#endif                          /* WIN32 */
+#endif                          /* WIN32 & NetWare */
         }
 
         /*

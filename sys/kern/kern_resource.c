@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_resource.c,v 1.31 1995/10/07 06:28:23 mycroft Exp $	*/
+/*	$OpenBSD: kern_resource.c,v 1.11 2000/03/03 11:31:43 art Exp $	*/
+/*	$NetBSD: kern_resource.c,v 1.38 1996/10/23 07:19:38 matthias Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -53,8 +54,9 @@
 
 #include <vm/vm.h>
 
-int	donice __P((struct proc *curp, struct proc *chgp, int n));
-int	dosetrlimit __P((struct proc *p, u_int which, struct rlimit *limp));
+#if defined(UVM)
+#include <uvm/uvm_extern.h>
+#endif
 
 /*
  * Resource controls and accounting.
@@ -71,7 +73,7 @@ sys_getpriority(curp, v, retval)
 		syscallarg(int) who;
 	} */ *uap = v;
 	register struct proc *p;
-	register int low = PRIO_MAX + 1;
+	register int low = NZERO + PRIO_MAX + 1;
 
 	switch (SCARG(uap, which)) {
 
@@ -102,7 +104,7 @@ sys_getpriority(curp, v, retval)
 	case PRIO_USER:
 		if (SCARG(uap, who) == 0)
 			SCARG(uap, who) = curp->p_ucred->cr_uid;
-		for (p = allproc.lh_first; p != 0; p = p->p_list.le_next)
+		for (p = LIST_FIRST(&allproc); p; p = LIST_NEXT(p, p_list))
 			if (p->p_ucred->cr_uid == SCARG(uap, who) &&
 			    p->p_nice < low)
 				low = p->p_nice;
@@ -111,9 +113,9 @@ sys_getpriority(curp, v, retval)
 	default:
 		return (EINVAL);
 	}
-	if (low == PRIO_MAX + 1)
+	if (low == NZERO + PRIO_MAX + 1)
 		return (ESRCH);
-	*retval = low;
+	*retval = low - NZERO;
 	return (0);
 }
 
@@ -163,7 +165,7 @@ sys_setpriority(curp, v, retval)
 	case PRIO_USER:
 		if (SCARG(uap, who) == 0)
 			SCARG(uap, who) = curp->p_ucred->cr_uid;
-		for (p = allproc.lh_first; p != 0; p = p->p_list.le_next)
+		for (p = LIST_FIRST(&allproc); p; p = LIST_NEXT(p, p_list))
 			if (p->p_ucred->cr_uid == SCARG(uap, who)) {
 				error = donice(curp, p, SCARG(uap, prio));
 				found++;
@@ -193,6 +195,7 @@ donice(curp, chgp, n)
 		n = PRIO_MAX;
 	if (n < PRIO_MIN)
 		n = PRIO_MIN;
+	n += NZERO;
 	if (n < chgp->p_nice && suser(pcred->pc_ucred, &curp->p_acflag))
 		return (EACCES);
 	chgp->p_nice = n;
@@ -214,8 +217,9 @@ sys_setrlimit(p, v, retval)
 	struct rlimit alim;
 	int error;
 
-	if (error = copyin((caddr_t)SCARG(uap, rlp), (caddr_t)&alim,
-	    sizeof (struct rlimit)))
+	error = copyin((caddr_t)SCARG(uap, rlp), (caddr_t)&alim,
+		       sizeof (struct rlimit));
+	if (error)
 		return (error);
 	return (dosetrlimit(p, SCARG(uap, which), &alim));
 }
@@ -232,10 +236,14 @@ dosetrlimit(p, which, limp)
 
 	if (which >= RLIM_NLIMITS)
 		return (EINVAL);
+
+	if (limp->rlim_cur < 0 || limp->rlim_max < 0)
+		return (EINVAL);
+
 	alimp = &p->p_rlimit[which];
 	if (limp->rlim_cur > alimp->rlim_max || 
 	    limp->rlim_max > alimp->rlim_max)
-		if (error = suser(p->p_ucred, &p->p_acflag))
+		if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 			return (error);
 	if (limp->rlim_cur > limp->rlim_max)
 		limp->rlim_cur = limp->rlim_max;
@@ -266,23 +274,36 @@ dosetrlimit(p, which, limp)
 		 * up make more accessible, if going down make inaccessible.
 		 */
 		if (limp->rlim_cur != alimp->rlim_cur) {
-			vm_offset_t addr;
-			vm_size_t size;
+			vaddr_t addr;
+			vsize_t size;
 			vm_prot_t prot;
 
 			if (limp->rlim_cur > alimp->rlim_cur) {
 				prot = VM_PROT_ALL;
 				size = limp->rlim_cur - alimp->rlim_cur;
+#ifdef MACHINE_STACK_GROWS_UP
+				addr = USRSTACK + alimp->rlim_cur;
+#else
 				addr = USRSTACK - limp->rlim_cur;
+#endif
 			} else {
 				prot = VM_PROT_NONE;
 				size = alimp->rlim_cur - limp->rlim_cur;
+#ifdef MACHINE_STACK_GROWS_UP
+				addr = USRSTACK + limp->rlim_cur;
+#else
 				addr = USRSTACK - alimp->rlim_cur;
+#endif
 			}
 			addr = trunc_page(addr);
 			size = round_page(size);
+#if defined(UVM)
+			(void) uvm_map_protect(&p->p_vmspace->vm_map,
+					      addr, addr+size, prot, FALSE);
+#else
 			(void) vm_map_protect(&p->p_vmspace->vm_map,
 					      addr, addr+size, prot, FALSE);
+#endif
 		}
 		break;
 
@@ -334,7 +355,7 @@ calcru(p, up, sp, ip)
 	register struct timeval *ip;
 {
 	register u_quad_t u, st, ut, it, tot;
-	register u_long sec, usec;
+	register long sec, usec;
 	register int s;
 	struct timeval tv;
 
@@ -365,7 +386,7 @@ calcru(p, up, sp, ip)
 		sec += tv.tv_sec - runtime.tv_sec;
 		usec += tv.tv_usec - runtime.tv_usec;
 	}
-	u = sec * 1000000 + usec;
+	u = (u_quad_t) sec * 1000000 + usec;
 	st = (u * st) / tot;
 	sp->tv_sec = st / 1000000;
 	sp->tv_usec = st % 1000000;
@@ -435,13 +456,23 @@ struct plimit *
 limcopy(lim)
 	struct plimit *lim;
 {
-	register struct plimit *copy;
+	register struct plimit *newlim;
 
-	MALLOC(copy, struct plimit *, sizeof(struct plimit),
+	MALLOC(newlim, struct plimit *, sizeof(struct plimit),
 	    M_SUBPROC, M_WAITOK);
-	bcopy(lim->pl_rlimit, copy->pl_rlimit,
+	bcopy(lim->pl_rlimit, newlim->pl_rlimit,
 	    sizeof(struct rlimit) * RLIM_NLIMITS);
-	copy->p_lflags = 0;
-	copy->p_refcnt = 1;
-	return (copy);
+	newlim->p_lflags = 0;
+	newlim->p_refcnt = 1;
+	return (newlim);
+}
+
+void
+limfree(lim)
+	struct plimit *lim;
+{
+
+	if (--lim->p_refcnt > 0)
+		return;
+	FREE(lim, M_SUBPROC);
 }

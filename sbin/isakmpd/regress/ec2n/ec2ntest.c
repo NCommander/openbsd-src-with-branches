@@ -1,4 +1,5 @@
-/*	$Id: ec2ntest.c,v 1.3 1998/07/16 09:21:59 niklas Exp $	*/
+/*	$OpenBSD: ec2ntest.c,v 1.2 1998/11/15 00:44:08 niklas Exp $	*/
+/*	$EOM: ec2ntest.c,v 1.3 1998/07/16 09:21:59 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -136,9 +136,7 @@ static char *get_hash(request_rec *r, char *user, char *auth_pwfile)
 
 static int get_digest_rec(request_rec *r, digest_header_rec * response)
 {
-    const char *auth_line = ap_table_get(r->headers_in,
-                                    r->proxyreq ? "Proxy-Authorization"
-                                    : "Authorization");
+    const char *auth_line;
     int l;
     int s, vk = 0, vv = 0;
     const char *t;
@@ -154,12 +152,15 @@ static int get_digest_rec(request_rec *r, digest_header_rec * response)
 	return SERVER_ERROR;
     }
 
+    auth_line = ap_table_get(r->headers_in,
+			     r->proxyreq == STD_PROXY ? "Proxy-Authorization"
+			                              : "Authorization");
     if (!auth_line) {
 	ap_note_digest_auth_failure(r);
 	return AUTH_REQUIRED;
     }
 
-    if (strcasecmp(scheme=ap_getword(r->pool, &auth_line, ' '), "Digest")) {
+    if (strcasecmp(scheme = ap_getword_white(r->pool, &auth_line), "Digest")) {
 	/* Client tried to authenticate using wrong auth scheme */
 	ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, r->server,
 		    "client used wrong authentication scheme: %s for %s", 
@@ -345,7 +346,7 @@ static int digest_check_auth(request_rec *r)
 	method_restricted = 1;
 
 	t = reqs[x].requirement;
-	w = ap_getword(r->pool, &t, ' ');
+	w = ap_getword_white(r->pool, &t);
 	if (!strcmp(w, "valid-user"))
 	    return OK;
 	else if (!strcmp(w, "user")) {
@@ -388,3 +389,11 @@ module MODULE_VAR_EXPORT digest_module =
     NULL,			/* child_exit */
     NULL			/* post read-request */
 };
+
+
+#ifdef NETWARE
+int main(int argc, char *argv[]) 
+{
+    ExitThread(TSR_THREAD, 0);
+}
+#endif

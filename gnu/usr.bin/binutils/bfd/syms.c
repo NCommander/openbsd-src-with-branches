@@ -1,6 +1,5 @@
 /* Generic symbol-table support for the BFD library.
-   Copyright (C) 1990, 91, 92, 93, 94, 95, 96, 1997
-   Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Written by Cygnus Support.
 
 This file is part of BFD, the Binary File Descriptor library.
@@ -88,7 +87,7 @@ SUBSECTION
 |	     process_symbol (symbol_table[i]);
 |	  }
 
-	All storage for the symbols themselves is in an objalloc
+	All storage for the symbols themselves is in an obstack
 	connected to the BFD; it is freed when the BFD is closed.
 
 
@@ -343,35 +342,8 @@ SYNOPSIS
 DESCRIPTION
 	Return true if the given symbol @var{sym} in the BFD @var{abfd} is
 	a compiler generated local label, else return false.
-*/
-
-boolean
-bfd_is_local_label (abfd, sym)
-     bfd *abfd;
-     asymbol *sym;
-{
-  if ((sym->flags & (BSF_GLOBAL | BSF_WEAK)) != 0)
-    return false;
-  if (sym->name == NULL)
-    return false;
-  return bfd_is_local_label_name (abfd, sym->name);
-}
-
-/*
-FUNCTION
-	bfd_is_local_label_name
-
-SYNOPSIS
-        boolean bfd_is_local_label_name(bfd *abfd, const char *name);
-
-DESCRIPTION
-	Return true if a symbol with the name @var{name} in the BFD
-	@var{abfd} is a compiler generated local label, else return
-	false.  This just checks whether the name has the form of a
-	local label.
-
-.#define bfd_is_local_label_name(abfd, name) \
-.     BFD_SEND (abfd, _bfd_is_local_label_name, (abfd, name))
+.#define bfd_is_local_label(abfd, sym) \
+.     BFD_SEND (abfd, _bfd_is_local_label,(abfd, sym))
 */
 
 /*
@@ -624,6 +596,12 @@ bfd_symbol_info (symbol, ret)
   else
     ret->value = 0;
   ret->name = symbol->name;
+}
+
+void
+bfd_symbol_is_absolute ()
+{
+  abort ();
 }
 
 /*

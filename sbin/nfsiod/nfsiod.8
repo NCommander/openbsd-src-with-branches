@@ -1,3 +1,4 @@
+.\"	$OpenBSD: nfsiod.8,v 1.9 1999/07/21 01:07:56 deraadt Exp $
 .\"	$NetBSD: nfsiod.8,v 1.6 1995/03/18 14:59:04 cgd Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993
@@ -45,7 +46,7 @@ asynchronous I/O server
 .Nm nfsiod
 .Op Fl n Ar num_servers
 .Sh DESCRIPTION
-.Nm Nfsiod
+.Nm
 runs on an
 .Tn NFS
 client machine to service asynchronous I/O requests to its server.
@@ -55,16 +56,17 @@ Unless otherwise specified, a single server is started.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl n
-Specify how many servers are to be started.
+.It Fl n Ar num_servers
+Specify how many servers are to be started (max 20).
 .El
 .Pp
 A client should run enough daemons to handle its maximum
 level of concurrency, typically four to six.
+The system maximum is twenty.
 .Pp
 The
-.Nm nfsiod
-utility exits 0 on success, and >0 if an error occurs.
+.Nm
+utility exits 0 on success or >0 if an error occurred.
 .Sh SEE ALSO
 .Xr nfsstat 1 ,
 .Xr nfssvc 2 ,
@@ -72,5 +74,6 @@ utility exits 0 on success, and >0 if an error occurs.
 .Xr portmap 8
 .Sh HISTORY
 The
-.Nm nfsiod
-utility first appeared in 4.4BSD.
+.Nm
+utility first appeared in
+.Bx 4.4 .

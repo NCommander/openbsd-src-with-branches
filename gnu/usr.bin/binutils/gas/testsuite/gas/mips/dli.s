@@ -1,6 +1,5 @@
 # Source file used to test the dli macro.
 	
-foo:	
 	dli	$4,0
 	dli	$4,1
 	dli	$4,-1
@@ -60,8 +59,3 @@ foo:
 	dli	$4,0x003fffffffffc000
 
 	dli	$4,0x003ffc03ffffc000
-
-# Round to a 16 byte boundary, for ease in testing multiple targets.
-	nop
-	nop
-	nop

@@ -1,4 +1,7 @@
 .\"
+.\"	$OpenBSD: pms.4,v 1.7 2000/03/06 21:46:57 aaron Exp $
+.\"
+.\" Copyright (c) 1996, Jason Downs.
 .\" Copyright (c) 1993 Christopher G. Demetriou
 .\" All rights reserved.
 .\"
@@ -27,25 +30,85 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: pms.4,v 1.5 1995/02/17 09:43:47 jtc Exp $
-.\"
-.Dd August 6, 1993
+.Dd October 10, 1999
 .Dt PMS 4 i386
-.Os NetBSD 0.8a
+.Os
 .Sh NAME
 .Nm pms
 .Nd
 PS/2 auxiliary port mouse driver
 .Sh SYNOPSIS
 .\" XXX this is awful hackery to get it to work right... -- cgd
-.Cd "pms0 at isa? port" \&"IO_KBD\&" irq 12
+.\".Cd "pms0 at isa? port" \&"IO_KBD\&" irq 12
+.Cd "pms0 at pckbd? irq 12"
 .Sh DESCRIPTION
-This driver provides an interface to a PS/2 auxiliary port mice.
+This driver provides an interface to a PS/2 auxiliary port mice.  The driver
+offers two modes of operation, both a raw and the old style translated
+input stream.  The translating portion of the driver provides BusMouse
+codes; in raw mode no translations are performed.
+The
+.Nm
+driver provides three
+.Em ioctls
+for getting mouse status and changing modes.  They are defined in the
+following include:
+.Bd -literal -offset indent
+#include <machine/mouse.h>
+.Ed
+
+The
+.Dv MOUSEIOCREAD
+.Em ioctl
+is used to read the current mouse stats, and takes the
+.Dv "struct mouseinfo"
+as an argument to store the data in.
+
+The
+.Dv MOUSEIOCSRAW
+.Em ioctl
+puts the device into raw mode, if it is not already, and the
+.Dv MOUSEIOCSCOOKED
+.Em ioctl
+puts it into translated (or cooked) mode.  If the mode of the
+.Nm
+device driver changes, all pending but not yet read input is flushed.
+.Pp
+In translated mode, the
+.Nm
+driver also supports
+.Dq Intellimouse
+devices, with the wheel acting as a third button.  The kernel must currently
+be compiled with
+.Pp
+.Cd option INTELLIMOUSE
+.Pp
+specified in the config file, and the X server can be configured to use
+the translated mode of the driver.  (The output of the translated mode is
+.Em Busmouse
+compatible.)  Otherwise, the mouse works as a normal, two button, PS/2
+device.
+.Pp
+.Sh NOTES
+The translated mode of this driver is being deprecated. The raw device
+.Pa /dev/psm0
+should be used in
+.Pa /etc/XF86Config
+with the
+.Em PS/2
+protocol, or one of its variants
+.Pf ( Em IMPS/2
+for MS Intellimouse,
+.Em ThinkingMousePS/2
+for Kensington Thinking Mouse).
+.Pp
 .Sh FILES
-.Bl -tag -width Pa -compact
+.Bl -tag -width /dev/pms0 -compact
+.It Pa /dev/psm0
+PS/2 mouse device file, defaulting to raw mode
 .It Pa /dev/pms0
-PS/2 mouse device file
+PS/2 mouse device file, defaulting to translating mode
 .El
 .Sh SEE ALSO
 .Xr lms 4 ,
-.Xr mms 4
+.Xr mms 4 ,
+.Xr XF86Config 4

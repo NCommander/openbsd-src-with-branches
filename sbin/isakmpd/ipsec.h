@@ -1,7 +1,9 @@
-/*	$Id: ipsec.h,v 1.28 1998/11/14 13:20:11 niklas Exp $	*/
+/*	$OpenBSD: ipsec.h,v 1.12 2000/01/26 15:25:01 niklas Exp $	*/
+/*	$EOM: ipsec.h,v 1.40 2000/01/31 22:33:46 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1999 Angelos D. Keromytis.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +38,8 @@
 #ifndef _IPSEC_H_
 #define _IPSEC_H_
 
+#include <netinet/in.h>
+
 #include "ipsec_doi.h"
 
 struct group;
@@ -51,10 +55,12 @@ struct sa;
  * for phase 2 parameters.
  */
 struct ipsec_exch {
+  u_int flags;
   struct hash *hash;
   struct ike_auth *ike_auth;
   struct group *group;
   u_int16_t prf_type;
+  u_int8_t  pfs;	/* 0 if no KEY_EXCH was proposed, 1 otherwise */
 
   /*
    * A copy of the initiator SA payload body for later computation of hashes.
@@ -82,7 +88,15 @@ struct ipsec_exch {
 
   /* KEYMAT */
   size_t keymat_len;
+
+  /* Phase 2.  */
+  u_int8_t *id_ci;
+  size_t id_ci_sz;
+  u_int8_t *id_cr;
+  size_t id_cr_sz;
 };
+
+#define IPSEC_EXCH_FLAG_NO_ID 1
 
 struct ipsec_sa {
   /* Phase 1.  */
@@ -94,6 +108,12 @@ struct ipsec_sa {
 
   /* Phase 2.  */
   u_int16_t group_desc;
+
+  /* Tunnel parameters.  These are in network byte order.  */
+  in_addr_t src_net;
+  in_addr_t src_mask;
+  in_addr_t dst_net;
+  in_addr_t dst_mask;
 };
 
 struct ipsec_proto {
@@ -103,21 +123,31 @@ struct ipsec_proto {
   u_int16_t keylen;
   u_int16_t keyrounds;
 
+  /* This is not negotiated, but rather configured.  */
+  int32_t replay_window;
+
   /* KEYMAT */
   u_int8_t *keymat[2];
 };
 
+extern u_int8_t *ipsec_add_hash_payload (struct message *msg, size_t);
 extern int ipsec_ah_keylength (struct proto *);
+extern u_int8_t *ipsec_build_id (char *, size_t *);
 extern int ipsec_decode_attribute (u_int16_t, u_int8_t *, u_int16_t, void *);
 extern void ipsec_decode_transform (struct message *, struct sa *,
 				    struct proto *, u_int8_t *);
 extern int ipsec_esp_authkeylength (struct proto *);
 extern int ipsec_esp_enckeylength (struct proto *);
+extern int ipsec_fill_in_hash (struct message *msg);
 extern int ipsec_gen_g_x (struct message *);
+extern int ipsec_get_id (char *, int *, struct in_addr *, struct in_addr *);
+extern ssize_t ipsec_id_size (char *, u_int8_t *);
 extern void ipsec_init (void);
+extern int ipsec_initial_contact (struct message *msg);
 extern int ipsec_is_attribute_incompatible (u_int16_t, u_int8_t *, u_int16_t,
 					    void *);
 extern int ipsec_keymat_length (struct proto *);
 extern int ipsec_save_g_x (struct message *);
+extern struct sa *ipsec_sa_lookup (in_addr_t, u_int32_t, u_int8_t);
 
 #endif /* _IPSEC_H_ */

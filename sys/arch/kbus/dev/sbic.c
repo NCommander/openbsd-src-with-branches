@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.8 1997/01/16 09:25:16 niklas Exp $	*/
+/*	$OpenBSD: sbic.c,v 1.2 1999/01/11 05:11:27 millert Exp $	*/
 /*	$NetBSD: sbic.c,v 1.28 1996/10/13 03:07:29 christos Exp $	*/
 
 /*
@@ -2059,7 +2059,7 @@ sbicmsgin(dev)
 					      !(asr & SBIC_ASR_DBR|SBIC_ASR_INT) )
 						GET_SBIC_asr(regs, asr);
 					if( asr & SBIC_ASR_DBR )
-						panic("msgin: jammed again!\n");
+						panic("msgin: jammed again!");
 					GET_SBIC_csr(regs, csr);
 					CSR_TRACE('e',csr,asr,dev->target);
 					if( csr & 0x07 != MESG_OUT_PHASE ) {
@@ -2352,7 +2352,7 @@ sbicnextstate(dev, csr, asr)
 			wait = sbic_data_wait;
 			if( sbicxfstart(regs,
 					acb->sc_kv.dc_count,
-					SBIC_PHASE(csr), wait))
+					SBIC_PHASE(csr), wait)) {
 				if( SBIC_PHASE(csr) == DATA_IN_PHASE )
 					/* data in? */
 					i=sbicxfin(regs,
@@ -2363,6 +2363,7 @@ sbicnextstate(dev, csr, asr)
 						    acb->sc_kv.dc_count,
 						    acb->sc_kv.dc_addr,
 						    SBIC_PHASE(csr));
+			}
 			acb->sc_kv.dc_addr +=
 				(acb->sc_kv.dc_count - i);
 			acb->sc_kv.dc_count = i;

@@ -1,8 +1,9 @@
-/*	$NetBSD: lstAtFront.c,v 1.4 1995/06/14 15:20:48 christos Exp $	*/
+/*	$OpenBSD: lstAtFront.c,v 1.4 1998/12/05 00:06:31 espie Exp $	*/
+/*	$NetBSD: lstAtFront.c,v 1.5 1996/11/06 17:59:33 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstAtFront.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstAtFront.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstAtFront.c,v 1.4 1995/06/14 15:20:48 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstAtFront.c,v 1.4 1998/12/05 00:06:31 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,22 +57,16 @@ static char rcsid[] = "$NetBSD: lstAtFront.c,v 1.4 1995/06/14 15:20:48 christos 
  * Lst_AtFront --
  *	Place a piece of data at the front of a list
  *
- * Results:
- *	SUCCESS or FAILURE
- *
  * Side Effects:
  *	A new ListNode is created and stuck at the front of the list.
  *	hence, firstPtr (and possible lastPtr) in the list are altered.
  *
  *-----------------------------------------------------------------------
  */
-ReturnStatus
+void
 Lst_AtFront (l, d)
     Lst		l;
     ClientData	d;
 {
-    register LstNode	front;
-    
-    front = Lst_First (l);
-    return (Lst_Insert (l, front, d));
+    Lst_Insert(l, Lst_First(l), d);
 }

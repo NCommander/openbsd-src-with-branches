@@ -1,7 +1,9 @@
-/*	$Id: cert.c,v 1.6 1998/10/07 16:40:43 niklas Exp $	*/
+/*	$OpenBSD: cert.c,v 1.13 2000/03/08 08:42:48 niklas Exp $	*/
+/*	$EOM: cert.c,v 1.16 2000/03/14 19:43:31 ho Exp $	*/
 
 /*
- * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niels Provos.  All rights reserved.
+ * Copyright (c) 1999, 2000 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,18 +36,50 @@
  */
 
 #include <sys/param.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "cert.h"
+#include "sysdep.h"
+
 #include "isakmp_num.h"
+#include "log.h"
+#include "cert.h"
+
+#ifdef USE_X509
 #include "x509.h"
+#ifdef KAME
+#  include <openssl/ssl.h>
+#else
+#  include <ssl/ssl.h>
+#endif
+#endif
 
 struct cert_handler cert_handler[] = {
-    {ISAKMP_CERTENC_X509_SIG, 
-     x509_certreq_validate, x509_certreq_decode, x509_free_aca,
-     x509_cert_obtain, x509_cert_get_key, x509_cert_get_subject}
+#ifdef USE_X509
+  {
+    ISAKMP_CERTENC_X509_SIG, 
+    x509_cert_init, x509_cert_get, x509_cert_validate, 
+    x509_cert_insert, x509_cert_free,
+    x509_certreq_validate, x509_certreq_decode, x509_free_aca,
+    x509_cert_obtain, x509_cert_get_key, x509_cert_get_subject
+  }
+#endif
 };
+
+/* Initialize all certificate handlers */
+
+int
+cert_init (void)
+{
+  int i, err = 1;
+
+  for (i = 0; i < sizeof cert_handler / sizeof cert_handler[0]; i++)
+    if (cert_handler[i].cert_init && !(*cert_handler[i].cert_init) ())
+      err = 0;
+
+  return err;
+}
 
 struct cert_handler *
 cert_get (u_int16_t id)
@@ -55,20 +89,19 @@ cert_get (u_int16_t id)
   for (i = 0; i < sizeof cert_handler / sizeof cert_handler[0]; i++)
     if (id == cert_handler[i].id)
       return &cert_handler[i];
-  return NULL;
+  return 0;
 }
 
-
-/* Decode a CERTREQ and return a parsed structure */
-
+/* Decode a CERTREQ and return a parsed structure.  */
 struct certreq_aca *
 certreq_decode (u_int16_t type, u_int8_t *data, u_int32_t datalen)
 {
   struct cert_handler *handler;
   struct certreq_aca aca, *ret;
 
-  if ((handler = cert_get (type)) == NULL)
-    return NULL;
+  handler = cert_get (type);
+  if (!handler)
+    return 0;
 
   aca.id = type;
   aca.handler = handler;
@@ -76,19 +109,21 @@ certreq_decode (u_int16_t type, u_int8_t *data, u_int32_t datalen)
   if (datalen > 0)
     {
       aca.data = handler->certreq_decode (data, datalen);
-      if (aca.data == NULL)
-	return NULL;
+      if (!aca.data)
+	return 0;
     }
   else
-    aca.data = NULL;
+    aca.data = 0;
 
-  if ((ret = malloc (sizeof (aca))) == NULL)
+  ret = malloc (sizeof aca);
+  if (!ret)
     {
+      log_error ("certreq_decode: malloc (%d) failed", sizeof aca);
       handler->free_aca (aca.data);
-      return NULL;
+      return 0;
     }
 
-  memcpy (ret, &aca, sizeof (aca));
+  memcpy (ret, &aca, sizeof aca);
 
   return ret;
 }

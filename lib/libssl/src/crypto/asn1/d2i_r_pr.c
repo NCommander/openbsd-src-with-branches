@@ -56,18 +56,13 @@
  * [including the GNU Public Licence.]
  */
 
+#ifndef NO_RSA
 #include <stdio.h>
 #include "cryptlib.h"
-#include "bn.h"
-#include "rsa.h"
-#include "objects.h"
-#include "asn1_mac.h"
-
-/*
- * ASN1err(ASN1_F_D2I_RSAPRIVATEKEY,ASN1_R_LENGTH_MISMATCH);
- * ASN1err(ASN1_F_I2D_RSAPRIVATEKEY,ASN1_R_UNKNOWN_ATTRIBUTE_TYPE);
- * ASN1err(ASN1_F_I2D_RSAPRIVATEKEY,ASN1_R_PARSING);
- */
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#include <openssl/objects.h>
+#include <openssl/asn1_mac.h>
 
 static ASN1_METHOD method={
         (int (*)())  i2d_RSAPrivateKey,
@@ -75,15 +70,12 @@ static ASN1_METHOD method={
         (char *(*)())RSA_new,
         (void (*)()) RSA_free};
 
-ASN1_METHOD *RSAPrivateKey_asn1_meth()
+ASN1_METHOD *RSAPrivateKey_asn1_meth(void)
 	{
 	return(&method);
 	}
 
-RSA *d2i_RSAPrivateKey(a,pp,length)
-RSA **a;
-unsigned char **pp;
-long length;
+RSA *d2i_RSAPrivateKey(RSA **a, unsigned char **pp, long length)
 	{
 	int i=ASN1_R_PARSING;
 	ASN1_INTEGER *bs=NULL;
@@ -115,7 +107,7 @@ long length;
 	if ((ret->iqmp=BN_bin2bn(bs->data,bs->length,ret->iqmp)) == NULL)
 		goto err_bn;
 
-	ASN1_INTEGER_free(bs);
+	M_ASN1_INTEGER_free(bs);
 
 	M_ASN1_D2I_Finish_2(a);
 err_bn:
@@ -123,7 +115,14 @@ err_bn:
 err:
 	ASN1err(ASN1_F_D2I_RSAPRIVATEKEY,i);
 	if ((ret != NULL) && ((a == NULL) || (*a != ret))) RSA_free(ret);
-	if (bs != NULL) ASN1_INTEGER_free(bs);
+	if (bs != NULL) M_ASN1_INTEGER_free(bs);
+
 	return(NULL);
 	}
+#else /* !NO_RSA */
 
+# if PEDANTIC
+static void *dummy=&dummy;
+# endif
+
+#endif

@@ -39,7 +39,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: verrx.c,v 1.1 1998/01/13 16:25:46 lha Exp $");
+RCSID("$KTH: verrx.c,v 1.2 1998/12/20 15:52:38 assar Exp $");
 #endif
 
 #include "err.h"
@@ -48,4 +48,5 @@ void
 verrx(int eval, const char *fmt, va_list ap)
 {
     warnerr(1, eval, 0, fmt, ap);
+    exit(eval);
 }

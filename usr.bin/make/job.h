@@ -1,4 +1,5 @@
-/*	$NetBSD: job.h,v 1.4 1995/06/14 15:19:26 christos Exp $	*/
+/*	$OpenBSD: job.h,v 1.5 1998/12/05 00:06:28 espie Exp $	*/
+/*	$NetBSD: job.h,v 1.5 1996/11/06 17:59:10 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -37,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)job.h	5.3 (Berkeley) 6/1/90
+ *	from: @(#)job.h	8.1 (Berkeley) 6/6/93
  */
 
 /*-
@@ -48,25 +49,25 @@
 #ifndef _JOB_H_
 #define _JOB_H_
 
-#define TMPPAT	"/tmp/makeXXXXX"
+#define TMPPAT	"/tmp/makeXXXXXXXXXX"
 
 /*
  * The SEL_ constants determine the maximum amount of time spent in select
  * before coming out to see if a child has finished. SEL_SEC is the number of
- * seconds and SEL_USEC is the number of micro-seconds 
+ * seconds and SEL_USEC is the number of micro-seconds
  */
 #define SEL_SEC		0
 #define SEL_USEC	500000
 
 
 /*-
- * Job Table definitions. 
+ * Job Table definitions.
  *
  * Each job has several things associated with it:
  *	1) The process id of the child shell
  *	2) The graph node describing the target being made by this job
  *	3) A LstNode for the first command to be saved after the job
- *	   completes. This is NILLNODE if there was no "..." in the job's
+ *	   completes. This is NULL if there was no "..." in the job's
  *	   commands.
  *	4) An FILE* for writing out the commands. This is only
  *	   used before the job is actually started.
@@ -81,11 +82,11 @@
  *	6) An identifier provided by and for the exclusive use of the
  *	   Rmt module.
  *	7) A word of flags which determine how the module handles errors,
- *	   echoing, etc. for the job 
+ *	   echoing, etc. for the job
  *
  * The job "table" is kept as a linked Lst in 'jobs', with the number of
  * active jobs maintained in the 'nJobs' variable. At no time will this
- * exceed the value of 'maxJobs', initialized by the Job_Init function. 
+ * exceed the value of 'maxJobs', initialized by the Job_Init function.
  *
  * When a job is finished, the Make_Update function is called on each of the
  * parents of the node which was just remade. This takes care of the upward
@@ -107,7 +108,7 @@ typedef struct Job {
 				 * if we can't export it and maxLocal is 0 */
 #define JOB_IGNDOTS	0x008  	/* Ignore "..." lines when processing
 				 * commands */
-#define JOB_REMOTE	0x010	/* Job is running remotely */  
+#define JOB_REMOTE	0x010	/* Job is running remotely */
 #define JOB_FIRST	0x020	/* Job is first job for the node */
 #define JOB_REMIGRATE	0x040	/* Job needs to be remigrated */
 #define JOB_RESTART	0x080	/* Job needs to be completely restarted */
@@ -129,7 +130,7 @@ typedef struct Job {
 	}   	    o_pipe;	    /* data used when catching the output via
 				     * a pipe */
 	struct {
-	    char  	of_outFile[sizeof(TMPPAT)+2];
+	    char  	of_outFile[sizeof(TMPPAT)];
 	    	  	    	    	/* Name of file to which shell output
 					 * was rerouted */
 	    int	    	of_outFd;	/* Stream open to the output
@@ -195,7 +196,7 @@ typedef struct Shell {
     char	  *errCheck;	/* string to turn error checking on */
     char	  *ignErr;	/* string to turn off error checking */
     /*
-     * command-line flags 
+     * command-line flags
      */
     char          *echo;	/* echo commands */
     char          *exit;	/* exit on error */
@@ -227,7 +228,8 @@ void Job_Init __P((int, int));
 Boolean Job_Full __P((void));
 Boolean Job_Empty __P((void));
 ReturnStatus Job_ParseShell __P((char *));
-int Job_End __P((void));
+int Job_Finish __P((void));
+void Job_End __P((void));
 void Job_Wait __P((void));
 void Job_AbortAll __P((void));
 void JobFlagForMigration __P((int));

@@ -1,5 +1,5 @@
 /* ar.c - Archive modify and extract.
-   Copyright 1991, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright 1991, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU Binutils.
 
@@ -54,10 +54,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 struct ar_hdr *
   bfd_special_undocumented_glue PARAMS ((bfd * abfd, char *filename));
 
-/* Static declarations */
-
-static void
-mri_emul PARAMS ((void));
+/* Forward declarations */
 
 static const char *
 normalize PARAMS ((const char *, bfd *));
@@ -145,15 +142,12 @@ enum pos
     pos_default, pos_before, pos_after, pos_end
   } postype = pos_default;
 
-static bfd **
-get_pos_bfd PARAMS ((bfd **, enum pos));
-
 /* Whether to truncate names of files stored in the archive.  */
 static boolean ar_truncate = false;
 
 int interactive = 0;
 
-static void
+void
 mri_emul ()
 {
   interactive = isatty (fileno (stdin));
@@ -346,8 +340,6 @@ main (argc, argv)
   START_PROGRESS (program_name, 0);
 
   bfd_init ();
-  set_default_bfd_target ();
-
   show_version = 0;
 
   xatexit (remove_output);
@@ -614,6 +606,8 @@ open_inarch (archive_filename, file)
 
   if (stat (archive_filename, &sbuf) != 0)
     {
+      bfd *obj;
+
 #ifndef __GO32__
 
 /* KLUDGE ALERT! Temporary fix until I figger why
@@ -634,17 +628,12 @@ open_inarch (archive_filename, file)
 
       /* Try to figure out the target to use for the archive from the
          first object on the list.  */
-      if (file != NULL)
+      obj = bfd_openr (file, NULL);
+      if (obj != NULL)
 	{
-	  bfd *obj;
-
-	  obj = bfd_openr (file, NULL);
-	  if (obj != NULL)
-	    {
-	      if (bfd_check_format (obj, bfd_object))
-		target = bfd_get_target (obj);
-	      (void) bfd_close (obj);
-	    }
+	  if (bfd_check_format (obj, bfd_object))
+	    target = bfd_get_target (obj);
+	  (void) bfd_close (obj);
 	}
 
       /* Create an empty archive.  */
@@ -1002,7 +991,7 @@ write_archive (iarch)
    into when altering.  DEFAULT_POS should be how to interpret pos_default,
    and should be a pos value.  */
 
-static bfd **
+bfd **
 get_pos_bfd (contents, default_pos)
      bfd **contents;
      enum pos default_pos;

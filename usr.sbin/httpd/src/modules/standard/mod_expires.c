@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -437,7 +437,8 @@ static int add_expires(request_rec *r)
     if (r->content_type == NULL)
         code = NULL;
     else
-        code = (char *) ap_table_get(conf->expiresbytype, r->content_type);
+        code = (char *) ap_table_get(conf->expiresbytype, 
+		ap_field_noparam(r->pool, r->content_type));
 
     if (code == NULL) {
         /* no expires defined for that type, is there a default? */
@@ -508,3 +509,11 @@ module MODULE_VAR_EXPORT expires_module =
     NULL,                       /* child_exit */
     NULL                        /* post read-request */
 };
+
+
+#ifdef NETWARE
+int main(int argc, char *argv[]) 
+{
+    ExitThread(TSR_THREAD, 0);
+}
+#endif

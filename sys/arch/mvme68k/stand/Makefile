@@ -1,5 +1,6 @@
-#	$NetBSD: Makefile,v 1.3 1995/06/09 22:03:41 gwr Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/04/22 16:13:38 gvf Exp $
 
-SUBDIR=  netboot sboot bootsd bootst libsa bugcrt libbug wrtvid
+SUBDIR= bugcrt libbug libsa libz sboot netboot bootxx bootsd bootst \
+	installboot prtvid wrtvid
 
 .include <bsd.subdir.mk>

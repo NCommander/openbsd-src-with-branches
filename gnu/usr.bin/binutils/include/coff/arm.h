@@ -99,9 +99,6 @@ struct external_scnhdr {
 #define _COMMENT ".comment"
 #define _LIB ".lib"
 
-/* We use the .rdata section to hold read only data.  */
-#define _LIT	".rdata"
-
 /********************** LINE NUMBERS **********************/
 
 /* 1 line number entry for every "breakpointable" source line in a section.

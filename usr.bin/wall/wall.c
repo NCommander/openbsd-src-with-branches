@@ -1,3 +1,4 @@
+/*	$OpenBSD: wall.c,v 1.11 1999/05/24 22:35:49 d Exp $	*/
 /*	$NetBSD: wall.c,v 1.6 1994/11/17 07:17:58 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)wall.c	8.2 (Berkeley) 11/16/93";
 #endif
-static char rcsid[] = "$NetBSD: wall.c,v 1.6 1994/11/17 07:17:58 jtc Exp $";
+static char rcsid[] = "$OpenBSD: wall.c,v 1.11 1999/05/24 22:35:49 d Exp $";
 #endif /* not lint */
 
 /*
@@ -58,11 +59,20 @@ static char rcsid[] = "$NetBSD: wall.c,v 1.6 1994/11/17 07:17:58 jtc Exp $";
 
 #include <paths.h>
 #include <pwd.h>
+#include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <utmp.h>
+#include <vis.h>
+#include <err.h>
+
+struct wallgroup {
+	struct wallgroup *next;
+	char	*name;
+	gid_t	gid;
+} *grouplist;
 
 void	makemsg __P((char *));
 
@@ -86,18 +96,26 @@ main(argc, argv)
 	char *p, *ttymsg();
 	struct passwd *pep = getpwnam("nobody");
 	char line[sizeof(utmp.ut_line) + 1];
+	struct wallgroup *g;
 
-	while ((ch = getopt(argc, argv, "n")) != EOF)
+	while ((ch = getopt(argc, argv, "ng:")) != -1)
 		switch (ch) {
 		case 'n':
 			/* undoc option for shutdown: suppress banner */
 			if (geteuid() == 0 || (pep && getuid() == pep->pw_uid))
 				nobanner = 1;
 			break;
+		case 'g':
+			g = (struct wallgroup *)malloc(sizeof *g);
+			g->next = grouplist;
+			g->name = optarg;
+			g->gid = -1;
+			grouplist = g;
+			break;
 		case '?':
 		default:
 usage:
-			(void)fprintf(stderr, "usage: wall [file]\n");
+			(void)fprintf(stderr, "usage: wall [-g group] [file]\n");
 			exit(1);
 		}
 	argc -= optind;
@@ -105,12 +123,18 @@ usage:
 	if (argc > 1)
 		goto usage;
 
+	for (g = grouplist; g; g = g->next) {
+		struct group *grp;
+
+		grp = getgrnam(g->name);
+		if (grp)
+			g->gid = grp->gr_gid;
+	}
+
 	makemsg(*argv);
 
-	if (!(fp = fopen(_PATH_UTMP, "r"))) {
-		(void)fprintf(stderr, "wall: cannot read %s.\n", _PATH_UTMP);
-		exit(1);
-	}
+	if (!(fp = fopen(_PATH_UTMP, "r")))
+		errx(1, "cannot read %s.\n", _PATH_UTMP);
 	iov.iov_base = mbuf;
 	iov.iov_len = mbufsize;
 	/* NOSTRICT */
@@ -118,10 +142,34 @@ usage:
 		if (!utmp.ut_name[0] ||
 		    !strncmp(utmp.ut_name, IGNOREUSER, sizeof(utmp.ut_name)))
 			continue;
+		if (grouplist) {
+			int ingroup = 0, ngrps, i;
+			char username[16];
+			struct passwd *pw;
+			gid_t grps[NGROUPS_MAX];
+
+			bzero(username, sizeof username);
+			strncpy(username, utmp.ut_name, sizeof utmp.ut_name);
+			pw = getpwnam(username);
+			if (!pw)
+				continue;
+			ngrps = getgroups(pw->pw_gid, grps);
+			for (g = grouplist; g && ingroup == 0; g = g->next) {
+				if (g->gid == -1)
+					continue;
+				if (g->gid == pw->pw_gid)
+					ingroup = 1;
+				for (i = 0; i < ngrps && ingroup == 0; i++)
+					if (g->gid == grps[i])
+						ingroup = 1;
+			}
+			if (ingroup == 0)
+				continue;
+		}
 		strncpy(line, utmp.ut_line, sizeof(utmp.ut_line));
 		line[sizeof(utmp.ut_line)] = '\0';
 		if ((p = ttymsg(&iov, 1, line, 60*5)) != NULL)
-			(void)fprintf(stderr, "wall: %s\n", p);
+			warnx("%s\n", p);
 	}
 	exit(0);
 }
@@ -137,14 +185,13 @@ makemsg(fname)
 	time_t now, time();
 	FILE *fp;
 	int fd;
-	char *p, *whom, hostname[MAXHOSTNAMELEN], lbuf[100], tmpname[15];
+	char *p, *whom, hostname[MAXHOSTNAMELEN], lbuf[100], tmpname[64];
+	char tmpbuf[5];
+	char *ttynam;
 
-	(void)strcpy(tmpname, _PATH_TMP);
-	(void)strcat(tmpname, "/wall.XXXXXX");
-	if (!(fd = mkstemp(tmpname)) || !(fp = fdopen(fd, "r+"))) {
-		(void)fprintf(stderr, "wall: can't open temporary file.\n");
-		exit(1);
-	}
+	snprintf(tmpname, sizeof(tmpname), "%s/wall.XXXXXX", _PATH_TMP);
+	if ((fd = mkstemp(tmpname)) == -1 || !(fp = fdopen(fd, "r+")))
+		errx(1, "can't open temporary file.\n");
 	(void)unlink(tmpname);
 
 	if (!nobanner) {
@@ -153,6 +200,8 @@ makemsg(fname)
 		(void)gethostname(hostname, sizeof(hostname));
 		(void)time(&now);
 		lt = localtime(&now);
+		if ((ttynam = ttyname(STDERR_FILENO)) == NULL)
+			ttynam = "(not a tty)";
 
 		/*
 		 * all this stuff is to blank out a square for the message;
@@ -162,46 +211,44 @@ makemsg(fname)
 		 * in column 80, but that can't be helped.
 		 */
 		(void)fprintf(fp, "\r%79s\r\n", " ");
-		(void)sprintf(lbuf, "Broadcast Message from %s@%s",
-		    whom, hostname);
+		(void)snprintf(lbuf, sizeof lbuf,
+		    "Broadcast Message from %s@%s", whom, hostname);
 		(void)fprintf(fp, "%-79.79s\007\007\r\n", lbuf);
-		(void)sprintf(lbuf, "        (%s) at %d:%02d ...", ttyname(2),
+		(void)snprintf(lbuf, sizeof lbuf,
+		    "        (%s) at %d:%02d ...", ttynam,
 		    lt->tm_hour, lt->tm_min);
 		(void)fprintf(fp, "%-79.79s\r\n", lbuf);
 	}
 	(void)fprintf(fp, "%79s\r\n", " ");
 
-	if (fname && !(freopen(fname, "r", stdin))) {
-		(void)fprintf(stderr, "wall: can't read %s.\n", fname);
-		exit(1);
-	}
+	if (fname && !(freopen(fname, "r", stdin)))
+		errx(1, "can't read %s.\n", fname);
 	while (fgets(lbuf, sizeof(lbuf), stdin))
 		for (cnt = 0, p = lbuf; (ch = *p) != '\0'; ++p, ++cnt) {
-			if (cnt == 79 || ch == '\n') {
-				for (; cnt < 79; ++cnt)
+			vis(tmpbuf, ch, VIS_SAFE|VIS_NOSLASH, p[1]);
+			if (cnt == 79+1-strlen(tmpbuf) || ch == '\n') {
+				for (; cnt < 79+1-strlen(tmpbuf); ++cnt)
 					putc(' ', fp);
 				putc('\r', fp);
 				putc('\n', fp);
 				cnt = -1;
 			}
-			if (ch != '\n')
-				putc(ch, fp);
+			if (ch != '\n') {
+				int xx;
+
+				for (xx = 0; tmpbuf[xx]; xx++)
+					putc(tmpbuf[xx], fp);
+			}
 		}
 	(void)fprintf(fp, "%79s\r\n", " ");
 	rewind(fp);
 
-	if (fstat(fd, &sbuf)) {
-		(void)fprintf(stderr, "wall: can't stat temporary file.\n");
-		exit(1);
-	}
+	if (fstat(fd, &sbuf))
+		errx(1, "can't stat temporary file.\n");
 	mbufsize = sbuf.st_size;
-	if (!(mbuf = malloc((u_int)mbufsize))) {
-		(void)fprintf(stderr, "wall: out of memory.\n");
-		exit(1);
-	}
-	if (fread(mbuf, sizeof(*mbuf), mbufsize, fp) != mbufsize) {
-		(void)fprintf(stderr, "wall: can't read temporary file.\n");
-		exit(1);
-	}
+	if (!(mbuf = malloc((u_int)mbufsize)))
+		errx(1, "out of memory.\n");
+	if (fread(mbuf, sizeof(*mbuf), mbufsize, fp) != mbufsize)
+		errx(1, "can't read temporary file.\n");
 	(void)close(fd);
 }

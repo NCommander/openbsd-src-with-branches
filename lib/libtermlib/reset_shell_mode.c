@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: reset_shell_mode.c,v 1.1.1.1 1996/05/31 05:40:02 tholo Exp $	*/
 
 /*
  * Copyright (c) 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -31,12 +31,15 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: reset_shell_mode.c,v 1.1.1.1 1996/05/31 05:40:02 tholo Exp $";
 #endif
 
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include "term.h"
+
+int reset_shell_mode __P((void))
+    __attribute__((weak));
 
 /*
  * Reset shell mode as previously saved with def_shell_mode()

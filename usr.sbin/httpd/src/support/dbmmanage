@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl
 
 # ====================================================================
-# Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+# Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -89,9 +89,9 @@ my $Is_Win32  = $^O eq "MSWin32";
 my %DB = ();
 my @range = ();
 my($mode, $flags) = $command =~ 
-    /^(?:view|check)$/ ? (undef, O_RDONLY) : (0644, O_RDWR|O_CREAT);
+    /^(?:view|check)$/ ? (0644, O_RDONLY) : (0644, O_RDWR|O_CREAT);
 
-tie %DB, "AnyDBM_File", $file, $flags, $mode;
+tie (%DB, "AnyDBM_File", $file, $flags, $mode) || die "Can't tie $file: $!";
 dbmc->$command();
 untie %DB;
 

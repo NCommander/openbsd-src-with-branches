@@ -1,7 +1,7 @@
 /*
-**	$Id: identd.h,v 1.2 1994/02/04 23:17:58 cgd Exp $
+**	$Id: identd.h,v 1.3 1998/09/16 20:22:15 deraadt Exp $
 **
-** identd.h                 Common variables for the Pidentd daemon
+** identd.h		    Common variables for the Pidentd daemon
 **
 ** This program is in the public domain and may be used freely by anyone
 ** who wants to. 
@@ -27,6 +27,7 @@ extern int other_flag;
 extern int unknown_flag;
 extern int number_flag;
 extern int noident_flag;
+extern int token_flag;
 
 extern char *charset_name;
 extern char *indirect_host;
@@ -35,11 +36,8 @@ extern char *indirect_password;
 extern int lport;
 extern int fport;
 
-extern char *gethost();
-
-extern int k_open();
-extern int k_getuid();
-extern int parse();
-extern int parse_config();
+int	parse __P((int, struct in_addr *, struct in_addr *));
+char	*gethost __P((struct in_addr *));
+int	k_getuid __P((struct in_addr *, int, struct in_addr *, int, uid_t *));
 
 #endif

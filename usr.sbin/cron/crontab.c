@@ -16,7 +16,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: crontab.c,v 1.2 1994/03/30 01:46:45 jtc Exp $";
+static char rcsid[] = "$Id: crontab.c,v 1.14 1999/05/29 18:51:12 millert Exp $";
 #endif
 
 /* crontab - install and manage per-user crontab files
@@ -31,6 +31,7 @@ static char rcsid[] = "$Id: crontab.c,v 1.2 1994/03/30 01:46:45 jtc Exp $";
 #include "cron.h"
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #ifdef USE_UTIMES
@@ -56,7 +57,7 @@ static char	*Options[] = { "???", "list", "delete", "edit", "replace" };
 
 static	PID_T		Pid;
 static	char		User[MAX_UNAME], RealUser[MAX_UNAME];
-static	char		Filename[MAX_FNAME];
+static	char		Filename[MAX_FNAME], *TempFilename;
 static	FILE		*NewCrontab;
 static	int		CheckErrorCount;
 static	enum opt_t	Option;
@@ -68,6 +69,7 @@ static	void		list_cmd __P((void)),
 			check_error __P((char *)),
 			parse_args __P((int c, char *v[]));
 static	int		replace_cmd __P((void));
+static	void		clean_turds __P((int));
 
 
 static void
@@ -129,6 +131,11 @@ main(argc, argv)
 	/*NOTREACHED*/
 }
 	
+#if DEBUGGING
+char *getoptarg = "u:lerx:"
+#else
+char *getoptarg = "u:ler";
+#endif
 
 static void
 parse_args(argc, argv)
@@ -143,16 +150,21 @@ parse_args(argc, argv)
 		fprintf(stderr, "bailing out.\n");
 		exit(ERROR_EXIT);
 	}
-	strcpy(User, pw->pw_name);
+	(void) strncpy(User, pw->pw_name, (sizeof User)-1);
+	User[(sizeof User)-1] = '\0';
 	strcpy(RealUser, User);
 	Filename[0] = '\0';
 	Option = opt_unknown;
-	while (EOF != (argch = getopt(argc, argv, "u:lerx:"))) {
+
+	while (-1 != (argch = getopt(argc, argv, getoptarg))) {
 		switch (argch) {
+#if DEBUGGING
 		case 'x':
 			if (!set_debug_flags(optarg))
 				usage("bad debug option");
+			usage("unrecognized option");
 			break;
+#endif
 		case 'u':
 			if (getuid() != ROOT_UID)
 			{
@@ -166,7 +178,8 @@ parse_args(argc, argv)
 					ProgramName, optarg);
 				exit(ERROR_EXIT);
 			}
-			(void) strcpy(User, optarg);
+			(void) strncpy(User, pw->pw_name, (sizeof User)-1);
+			User[(sizeof User)-1] = '\0';
 			break;
 		case 'l':
 			if (Option != opt_unknown)
@@ -197,7 +210,9 @@ parse_args(argc, argv)
 	} else {
 		if (argv[optind] != NULL) {
 			Option = opt_replace;
-			(void) strcpy (Filename, argv[optind]);
+			(void) strncpy (Filename, argv[optind], (sizeof Filename)-1);
+			Filename[(sizeof Filename)-1] = '\0';
+
 		} else {
 			usage("file name must be specified for replace");
 		}
@@ -297,6 +312,7 @@ edit_cmd() {
 	int		ch, t, x;
 	struct stat	statbuf;
 	time_t		mtime;
+	off_t		size;
 	WAIT_T		waiter;
 	PID_T		pid, xpid;
 
@@ -315,8 +331,13 @@ edit_cmd() {
 		}
 	}
 
-	(void) sprintf(Filename, "/tmp/crontab.%d", Pid);
-	if (-1 == (t = open(Filename, O_CREAT|O_EXCL|O_RDWR, 0600))) {
+	/* Turn off signals. */
+	(void)signal(SIGHUP, SIG_IGN);
+	(void)signal(SIGINT, SIG_IGN);
+	(void)signal(SIGQUIT, SIG_IGN);
+
+	(void) sprintf(Filename, "/tmp/crontab.XXXXXXXXXX");
+	if ((t = mkstemp(Filename)) == -1) {
 		perror(Filename);
 		goto fatal;
 	}
@@ -375,6 +396,7 @@ edit_cmd() {
 		goto fatal;
 	}
 	mtime = statbuf.st_mtime;
+	size = statbuf.st_size;
 
 	if ((!(editor = getenv("VISUAL")))
 	 && (!(editor = getenv("EDITOR")))
@@ -420,29 +442,38 @@ edit_cmd() {
 	}
 
 	/* parent */
-	xpid = wait(&waiter);
-	if (xpid != pid) {
-		fprintf(stderr, "%s: wrong PID (%d != %d) from \"%s\"\n",
-			ProgramName, xpid, pid, editor);
-		goto fatal;
+	while (1) {
+		xpid = waitpid(pid, &waiter, WUNTRACED);
+		if (xpid == -1) {
+			fprintf(stderr, "%s: waitpid() failed waiting for PID %d from \"%s\": %s\n",
+				ProgramName, pid, editor, strerror(errno));
+		} else if (xpid != pid) {
+			fprintf(stderr, "%s: wrong PID (%d != %d) from \"%s\"\n",
+				ProgramName, xpid, pid, editor);
+			goto fatal;
+		} else if (WIFSTOPPED(waiter)) {
+			raise(WSTOPSIG(waiter));
+		} else if (WIFEXITED(waiter) && WEXITSTATUS(waiter)) {
+			fprintf(stderr, "%s: \"%s\" exited with status %d\n",
+				ProgramName, editor, WEXITSTATUS(waiter));
+			goto fatal;
+		} else if (WIFSIGNALED(waiter)) {
+			fprintf(stderr,
+				"%s: \"%s\" killed; signal %d (%score dumped)\n",
+				ProgramName, editor, WTERMSIG(waiter),
+				WCOREDUMP(waiter) ?"" :"no ");
+			goto fatal;
+		} else
+			break;
 	}
-	if (WIFEXITED(waiter) && WEXITSTATUS(waiter)) {
-		fprintf(stderr, "%s: \"%s\" exited with status %d\n",
-			ProgramName, editor, WEXITSTATUS(waiter));
-		goto fatal;
-	}
-	if (WIFSIGNALED(waiter)) {
-		fprintf(stderr,
-			"%s: \"%s\" killed; signal %d (%score dumped)\n",
-			ProgramName, editor, WTERMSIG(waiter),
-			WCOREDUMP(waiter) ?"" :"no ");
-		goto fatal;
-	}
+	(void)signal(SIGHUP, SIG_DFL);
+	(void)signal(SIGINT, SIG_DFL);
+	(void)signal(SIGQUIT, SIG_DFL);
 	if (fstat(t, &statbuf) < 0) {
 		perror("fstat");
 		goto fatal;
 	}
-	if (mtime == statbuf.st_mtime) {
+	if (mtime == statbuf.st_mtime && size == statbuf.st_size) {
 		fprintf(stderr, "%s: no changes made to crontab\n",
 			ProgramName);
 		goto remove;
@@ -473,7 +504,8 @@ edit_cmd() {
 			ProgramName, Filename);
 		goto done;
 	default:
-		fprintf(stderr, "%s: panic: bad switch() in replace_cmd()\n");
+		fprintf(stderr, "%s: panic: bad switch() in replace_cmd()\n",
+		    ProgramName);
 		goto fatal;
 	}
  remove:
@@ -489,19 +521,38 @@ edit_cmd() {
  */
 static int
 replace_cmd() {
-	char	n[MAX_FNAME], envstr[MAX_ENVSTR], tn[MAX_FNAME];
+	char	n[MAX_FNAME], envstr[MAX_ENVSTR];
 	FILE	*tmp;
-	int	ch, eof;
+	int	ch, eof, fd;
+	int	error = 0;
 	entry	*e;
 	time_t	now = time(NULL);
 	char	**envp = env_init();
 
-	(void) sprintf(n, "tmp.%d", Pid);
-	(void) sprintf(tn, CRON_TAB(n));
-	if (!(tmp = fopen(tn, "w+"))) {
-		perror(tn);
+	if (envp == NULL) {
+		fprintf(stderr, "%s: Cannot allocate memory.\n", ProgramName);
 		return (-2);
 	}
+
+	TempFilename = strdup(__CONCAT(SPOOL_DIR,"tmp.XXXXXXXXXX"));
+	if (TempFilename == NULL) {
+		fprintf(stderr, "%s: Cannot allocate memory.\n", ProgramName);
+		return (-2);
+	}
+	if ((fd = mkstemp(TempFilename)) == -1 || !(tmp = fdopen(fd, "w+"))) {
+		perror(TempFilename);
+		if (fd != -1) {
+			fprintf(stderr, "%s: Cannot allocate memory.\n",
+			    ProgramName);
+			close(fd);
+			unlink(TempFilename);
+		}
+		return (-2);
+	}
+
+	(void) signal(SIGHUP, clean_turds);
+	(void) signal(SIGINT, clean_turds);
+	(void) signal(SIGQUIT, clean_turds);
 
 	/* write a signature at the top of the file.
 	 *
@@ -522,9 +573,10 @@ replace_cmd() {
 
 	if (ferror(tmp)) {
 		fprintf(stderr, "%s: error while writing new crontab to %s\n",
-			ProgramName, tn);
-		fclose(tmp);  unlink(tn);
-		return (-2);
+			ProgramName, TempFilename);
+		fclose(tmp);
+		error = -2;
+		goto done;
 	}
 
 	/* check the syntax of the file being installed.
@@ -553,51 +605,63 @@ replace_cmd() {
 
 	if (CheckErrorCount != 0) {
 		fprintf(stderr, "errors in crontab file, can't install.\n");
-		fclose(tmp);  unlink(tn);
-		return (-1);
+		fclose(tmp);
+		error = -1;
+		goto done;
 	}
 
 #ifdef HAS_FCHOWN
 	if (fchown(fileno(tmp), ROOT_UID, -1) < OK)
 #else
-	if (chown(tn, ROOT_UID, -1) < OK)
+	if (chown(TempFilename, ROOT_UID, -1) < OK)
 #endif
 	{
 		perror("chown");
-		fclose(tmp);  unlink(tn);
-		return (-2);
+		fclose(tmp);
+		error = -2;
+		goto done;
 	}
 
 #ifdef HAS_FCHMOD
 	if (fchmod(fileno(tmp), 0600) < OK)
 #else
-	if (chmod(tn, 0600) < OK)
+	if (chmod(TempFilename, 0600) < OK)
 #endif
 	{
 		perror("chown");
-		fclose(tmp);  unlink(tn);
-		return (-2);
+		fclose(tmp);
+		error = -2;
+		goto done;
 	}
 
 	if (fclose(tmp) == EOF) {
 		perror("fclose");
-		unlink(tn);
-		return (-2);
+		error = -2;
+		goto done;
 	}
 
 	(void) sprintf(n, CRON_TAB(User));
-	if (rename(tn, n)) {
+	if (rename(TempFilename, n)) {
 		fprintf(stderr, "%s: error renaming %s to %s\n",
-			ProgramName, tn, n);
+			ProgramName, TempFilename, n);
 		perror("rename");
-		unlink(tn);
-		return (-2);
+		error = -2;
+		goto done;
 	}
+	TempFilename = NULL;
 	log_it(RealUser, Pid, "REPLACE", User);
 
 	poke_daemon();
 
-	return (0);
+done:
+	(void) signal(SIGHUP, SIG_DFL);
+	(void) signal(SIGINT, SIG_DFL);
+	(void) signal(SIGQUIT, SIG_DFL);
+	if (TempFilename) {
+		(void) unlink(TempFilename);
+		free(TempFilename);
+	}
+	return (error);
 }
 
 
@@ -621,4 +685,17 @@ poke_daemon() {
 		return;
 	}
 #endif /*USE_UTIMES*/
+}
+
+
+static void
+clean_turds(sig)
+	int sig;
+{
+	if (TempFilename[0])
+		(void) unlink(TempFilename);
+	if (sig) {
+		(void) signal(sig, SIG_DFL);
+		(void) kill(getpid(), sig);
+	}
 }

@@ -59,18 +59,15 @@
 #include <stdio.h>
 #include <time.h>
 #include "cryptlib.h"
-#include "bn.h"
-#include "rsa.h"
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
 
-RSA *RSA_generate_key(bits, e_value, callback,cb_arg)
-int bits;
-unsigned long e_value;
-void (*callback)(P_I_I_P);
-char *cb_arg;
+RSA *RSA_generate_key(int bits, unsigned long e_value,
+	     void (*callback)(int,int,void *), void *cb_arg)
 	{
 	RSA *rsa=NULL;
 	BIGNUM *r0=NULL,*r1=NULL,*r2=NULL,*r3=NULL,*tmp;
-	int bitsp,bitsq,ok= -1,n=0;
+	int bitsp,bitsq,ok= -1,n=0,i;
 	BN_CTX *ctx=NULL,*ctx2=NULL;
 
 	ctx=BN_CTX_new();
@@ -81,12 +78,14 @@ char *cb_arg;
 	/* Body of this routine removed for OpenBSD - will return
 	 * when the RSA patent expires
 	 */
+
 err:
 	if (ok == -1)
 		{
 		RSAerr(RSA_F_RSA_GENERATE_KEY,ERR_LIB_BN);
 		ok=0;
 		}
+	BN_CTX_end(ctx);
 	BN_CTX_free(ctx);
 	BN_CTX_free(ctx2);
 	

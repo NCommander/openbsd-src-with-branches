@@ -1,8 +1,9 @@
-/*	$NetBSD: lstDupl.c,v 1.5 1995/06/14 15:21:02 christos Exp $	*/
+/*	$OpenBSD: lstDupl.c,v 1.6 1999/12/18 21:53:33 espie Exp $	*/
+/*	$NetBSD: lstDupl.c,v 1.6 1996/11/06 17:59:37 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstDupl.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstDupl.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstDupl.c,v 1.5 1995/06/14 15:21:02 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstDupl.c,v 1.6 1999/12/18 21:53:33 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,7 +60,7 @@ static char rcsid[] = "$NetBSD: lstDupl.c,v 1.5 1995/06/14 15:21:02 christos Exp
  *	given, the individual client elements will be duplicated as well.
  *
  * Results:
- *	The new Lst structure or NILLST if failure.
+ *	The new Lst structure or NULL if failure.
  *
  * Side Effects:
  *	A new list is created.
@@ -74,32 +75,22 @@ Lst_Duplicate (l, copyProc)
     register Lst 	nl;
     register ListNode  	ln;
     register List 	list = (List)l;
-    
+
     if (!LstValid (l)) {
-	return (NILLST);
+	return (NULL);
     }
 
-    nl = Lst_Init (list->isCirc);
-    if (nl == NILLST) {
-	return (NILLST);
+    nl = Lst_Init();
+    if (nl == NULL) {
+	return (NULL);
     }
 
-    ln = list->firstPtr;
-    while (ln != NilListNode) {
-	if (copyProc != NOCOPY) {
-	    if (Lst_AtEnd (nl, (*copyProc) (ln->datum)) == FAILURE) {
-		return (NILLST);
-	    }
-	} else if (Lst_AtEnd (nl, ln->datum) == FAILURE) {
-	    return (NILLST);
-	}
-
-	if (list->isCirc && ln == list->lastPtr) {
-	    ln = NilListNode;
-	} else {
-	    ln = ln->nextPtr;
-	}
+    for (ln = list->firstPtr; ln != NULL; ln = ln->nextPtr) {
+    	if (copyProc != NOCOPY)
+	    Lst_AtEnd(nl, (*copyProc)(ln->datum));
+	else
+	    Lst_AtEnd(nl, ln->datum);
     }
-	
+
     return (nl);
 }

@@ -16,7 +16,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: misc.c,v 1.2 1994/08/31 19:28:50 jtc Exp $";
+static char rcsid[] = "$Id: misc.c,v 1.5 1998/07/10 08:06:34 deraadt Exp $";
 #endif
 
 /* vix 26jan87 [RCS has the rest of the log]
@@ -267,7 +267,7 @@ acquire_daemonlock(closeflag)
 		if ((-1 == (fd = open(pidfile, O_RDWR|O_CREAT, 0644)))
 		    || (NULL == (fp = fdopen(fd, "r+")))
 		    ) {
-			sprintf(buf, "can't open or create %s: %s",
+			snprintf(buf, sizeof buf, "can't open or create %s: %s",
 				pidfile, strerror(errno));
 			fprintf(stderr, "%s: %s\n", ProgramName, buf);
 			log_it("CRON", getpid(), "DEATH", buf);
@@ -278,7 +278,8 @@ acquire_daemonlock(closeflag)
 			int save_errno = errno;
 
 			fscanf(fp, "%d", &otherpid);
-			sprintf(buf, "can't lock %s, otherpid may be %d: %s",
+			snprintf(buf, sizeof buf,
+				"can't lock %s, otherpid may be %d: %s",
 				pidfile, otherpid, strerror(save_errno));
 			fprintf(stderr, "%s: %s\n", ProgramName, buf);
 			log_it("CRON", getpid(), "DEATH", buf);
@@ -526,7 +527,7 @@ log_it(username, xpid, event, detail)
 		syslog_open = TRUE;		/* assume openlog success */
 	}
 
-	syslog(LOG_INFO, "(%s) %s (%s)\n", username, event, detail);
+	syslog(LOG_INFO, "(%s) %s (%s)", username, event, detail);
 
 #endif /*SYSLOG*/
 
@@ -622,40 +623,51 @@ mkprints(src, len)
 {
 	register char *dst = malloc(len*4 + 1);
 
-	mkprint(dst, src, len);
+	if (dst)
+		mkprint(dst, src, len);
 
 	return dst;
 }
 
 
 #ifdef MAIL_DATE
-/* Sat, 27 Feb 93 11:44:51 CST
- * 123456789012345678901234567
+/* Sat, 27 Feb 1993 11:44:51 -0800 (CST)
+ * 1234567890123456789012345678901234567
  */
 char *
 arpadate(clock)
 	time_t *clock;
 {
-	time_t t = clock ?*clock :time(0L);
+	static char ret[64];	/* zone name might be >3 chars */
+	time_t t = clock ? *clock : time(NULL);
 	struct tm *tm = localtime(&t);
-	static char ret[30];	/* zone name might be >3 chars */
-	
-	(void) sprintf(ret, "%s, %2d %s %2d %02d:%02d:%02d %s",
-		       DowNames[tm->tm_wday],
-		       tm->tm_mday,
-		       MonthNames[tm->tm_mon],
-		       tm->tm_year,
-		       tm->tm_hour,
-		       tm->tm_min,
-		       tm->tm_sec,
-		       TZONE(*tm));
+	char *qmark;
+	size_t len;
+	int hours = tm->tm_gmtoff / 3600;
+	int minutes = (tm->tm_gmtoff - (hours * 3600)) / 60;
+
+	if (minutes < 0)
+		minutes = -minutes;
+
+	/* Defensive coding (almost) never hurts... */
+	len = strftime(ret, sizeof(ret), "%a, %e %b %Y %T ????? (%Z)", tm);
+	if (len == 0) {
+		ret[0] = '?';
+		ret[1] = '\0';
+		return ret;
+	}
+	qmark = strchr(ret, '?');
+	if (qmark && len - (qmark - ret) >= 6) {
+		snprintf(qmark, 6, "% .2d%.2d", hours, minutes);
+		qmark[5] = ' ';
+	}
 	return ret;
 }
 #endif /*MAIL_DATE*/
 
 
 #ifdef HAVE_SAVED_UIDS
-static int save_euid;
+static uid_t save_euid;
 int swap_uids() { save_euid = geteuid(); return seteuid(getuid()); }
 int swap_uids_back() { return seteuid(save_euid); }
 #else /*HAVE_SAVED_UIDS*/

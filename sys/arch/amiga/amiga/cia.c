@@ -1,3 +1,4 @@
+/*	$OpenBSD: cia.c,v 1.6 1995/02/12 19:34:17 chopps Exp $	*/
 /*	$NetBSD: cia.c,v 1.6 1995/02/12 19:34:17 chopps Exp $	*/
 
 /*

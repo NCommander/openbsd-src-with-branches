@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: conf.c,v 1.26 1998/10/14 18:28:06 imp Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)conf.c	8.2 (Berkeley) 11/14/93
- *      $Id: conf.c,v 1.6 1996/05/15 07:09:10 pefo Exp $
+ *      $Id: conf.c,v 1.26 1998/10/14 18:28:06 imp Exp $
  */
 
 #include <sys/param.h>
@@ -63,6 +63,11 @@ bdev_decl(sd);
 bdev_decl(cd);
 #include "fdc.h"
 bdev_decl(fd);
+#include "wd.h"
+bdev_decl(wd);
+#include "ccd.h"
+#include "rd.h"
+bdev_decl(rd);
 
 struct bdevsw	bdevsw[] =
 {
@@ -70,11 +75,11 @@ struct bdevsw	bdevsw[] =
 	bdev_swap_init(1,sw),		/* 1: should be here swap pseudo-dev */
 	bdev_disk_init(NVND,vnd),	/* 2: vnode disk driver */
 	bdev_disk_init(NCD,cd),		/* 3: SCSI CD-ROM */
-	bdev_notdef(),			/* 4:  */
+	bdev_disk_init(NWD,wd),		/* 4: ST506/ESDI/IDE disk */
 	bdev_notdef(),			/* 5:  */
-	bdev_notdef(),			/* 6:  */
+	bdev_disk_init(NCCD,ccd),	/* 6: concatenated disk driver */
 	bdev_disk_init(NFDC,fd),	/* 7: Floppy disk driver */
-	bdev_notdef(),			/* 8:  */
+	bdev_disk_init(NRD,rd),		/* 8: RAM disk (for install) */
 	bdev_notdef(),			/* 9:  */
 	bdev_notdef(),			/* 10:  */
 	bdev_notdef(),			/* 11:  */
@@ -108,9 +113,17 @@ int	nblkdev = sizeof (bdevsw) / sizeof (bdevsw[0]);
 	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
 	0, seltrue, (dev_type_mmap((*))) enodev }
 
+/* open, close, read, ioctl */
+#define cdev_joy_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) enodev, 0, seltrue, \
+	(dev_type_mmap((*))) enodev }
+
 cdev_decl(cn);
 cdev_decl(sw);
 cdev_decl(ctty);
+cdev_decl(random);
 #define mmread mmrw
 #define mmwrite mmrw
 dev_type_read(mmrw);
@@ -129,10 +142,11 @@ cdev_decl(st);
 #include "fdc.h"
 bdev_decl(fd);
 cdev_decl(vnd);
+cdev_decl(rd);
 #include "bpfilter.h"
 cdev_decl(bpf);
-#include "ace.h"
-cdev_decl(ace);
+#include "com.h"
+cdev_decl(com);
 #include "lpt.h"
 cdev_decl(lpt);
 cdev_decl(sd);
@@ -140,9 +154,21 @@ cdev_decl(sd);
 cdev_decl(pc);
 cdev_decl(pms);
 cdev_decl(cd);
+#include "ss.h"
+#include "uk.h"
+cdev_decl(uk);
+cdev_decl(wd);
+cdev_decl(acd);
+#include "joy.h"
+cdev_decl(joy);
+#ifdef XFS
+#include <xfs/nxfs.h>
+cdev_decl(xfs_dev);
+#endif
+#include "ksyms.h"
+cdev_decl(ksyms);
+#include "ch.h"
 
-/* open, close, read, ioctl */
-cdev_decl(ipl);
 #ifdef IPFILTER
 #define NIPF 1
 #else
@@ -166,28 +192,50 @@ struct cdevsw	cdevsw[] =
 	cdev_bpftun_init(NBPFILTER,bpf),/* 12: berkeley packet filter */
 	cdev_disk_init(NFDC,fd),	/* 13: Floppy disk */
 	cdev_pc_init(NPC,pc),		/* 14: builtin pc style console dev */
-	cdev_mouse_init(1,pms),		/* 15: builtin PS2 style mouse */
-	cdev_lpt_init(NLPT,lpt),	/* 16: lpt paralell printer interface */
-	cdev_tty_init(NCOM,ace),	/* 17: ace 16C450 serial interface */
-	cdev_notdef(),			/* 18: */
+	cdev_mouse_init(NPC,pms),	/* 15: builtin PS2 style mouse */
+	cdev_lpt_init(NLPT,lpt),	/* 16: Parallel printer interface */
+	cdev_tty_init(NCOM,com),	/* 17: 16C450 serial interface */
+	cdev_disk_init(NWD,wd),		/* 18: ST506/ESDI/IDE disk */
 	cdev_notdef(),			/* 19: */
 	cdev_tty_init(NPTY,pts),	/* 20: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 21: pseudo-tty master */
-	cdev_notdef(),			/* 22: */
-	cdev_notdef(),			/* 23: */
+	cdev_disk_init(NRD,rd),		/* 22: ramdisk device */
+	cdev_disk_init(NCCD,ccd),       /* 23: concatenated disk driver */
 	cdev_notdef(),			/* 24: */
 	cdev_notdef(),			/* 25: */
-	cdev_notdef(),			/* 26: */
+	cdev_joy_init(NJOY,joy),	/* 26: joystick */
 	cdev_notdef(),			/* 27: */
 	cdev_notdef(),			/* 28: */
 	cdev_notdef(),			/* 29: */
 	cdev_notdef(),			/* 30: */
 	cdev_gen_ipf(NIPF,ipl),         /* 31: IP filter log */
+	cdev_uk_init(NUK,uk),		/* 32: unknown SCSI */
+	cdev_random_init(1,random),	/* 33: random data source */
+	cdev_ss_init(NSS,ss),		/* 34: SCSI scanner */
+	cdev_ksyms_init(NKSYMS,ksyms),	/* 35: Kernel symbols device */
+	cdev_ch_init(NCH,ch),		/* 36: SCSI autochanger */
+	cdev_notdef(),			/* 37: */
+	cdev_notdef(),			/* 38: */
+	cdev_notdef(),			/* 39: */
+	cdev_notdef(),			/* 40: */
+	cdev_notdef(),			/* 41: */
+	cdev_notdef(),			/* 42: */
+	cdev_notdef(),			/* 33: */
+	cdev_notdef(),			/* 44: */
+	cdev_notdef(),			/* 45: */
+	cdev_notdef(),			/* 46: */
+	cdev_notdef(),			/* 47: */
+	cdev_notdef(),			/* 48: */
+	cdev_notdef(),			/* 49: */
+	cdev_notdef(),			/* 50: */
+#ifdef XFS
+	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
+#else
+	cdev_notdef(),			/* 51: */
+#endif
 };
 
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);
-
-int	mem_no = 2; 	/* major device number of memory special file */
 
 /*
  * Swapdev is a fake device implemented
@@ -205,6 +253,7 @@ dev_t	swapdev = makedev(1, 0);
  *
  * A minimal stub routine can always return 0.
  */
+int
 iskmemdev(dev)
 	dev_t dev;
 {
@@ -221,6 +270,7 @@ iskmemdev(dev)
 /*
  * Returns true if def is /dev/zero
  */
+int
 iszerodev(dev)
 	dev_t dev;
 {
@@ -232,8 +282,7 @@ iszerodev(dev)
 }
 
 
-#define MAXDEV	57
-static int chrtoblktbl[MAXDEV] =  {
+static int chrtoblktbl[] =  {
       /* VCHR */      /* VBLK */
 	/* 0 */		NODEV,
 	/* 1 */		NODEV,
@@ -253,59 +302,47 @@ static int chrtoblktbl[MAXDEV] =  {
 	/* 15 */	NODEV,
 	/* 16 */	NODEV,
 	/* 17 */	NODEV,
-	/* 18 */	NODEV,
-	/* 19 */	NODEV,
+	/* 18 */	4,
+	/* 19 */	5,
 	/* 20 */	NODEV,
 	/* 21 */	NODEV,
-	/* 22 */	NODEV,
-	/* 23 */	NODEV,
-	/* 24 */	NODEV,
-	/* 25 */	NODEV,
-	/* 26 */	NODEV,
-	/* 27 */	NODEV,
-	/* 28 */	NODEV,
-	/* 29 */	NODEV,
-	/* 30 */	NODEV,
-	/* 31 */	NODEV,
-	/* 32 */	NODEV,
-	/* 33 */	NODEV,
-	/* 34 */	NODEV,
-	/* 35 */	NODEV,
-	/* 36 */	NODEV,
-	/* 37 */	NODEV,
-	/* 38 */	NODEV,
-	/* 39 */	NODEV,
-	/* 40 */	NODEV,
-	/* 41 */	NODEV,
-	/* 42 */	NODEV,
-	/* 43 */	NODEV,
-	/* 44 */	NODEV,
-	/* 45 */	NODEV,
-	/* 46 */	NODEV,
-	/* 47 */	NODEV,
-	/* 48 */	NODEV,
-	/* 49 */	NODEV,
-	/* 50 */	NODEV,
-	/* 51 */	NODEV,
-	/* 52 */	NODEV,
-	/* 53 */	NODEV,
-	/* 54 */	NODEV,
-	/* 55 */	NODEV,
-	/* 56 */	NODEV,
+	/* 22 */	8,
 };
+
 /*
  * Routine to convert from character to block device number.
- *
- * A minimal stub routine can always return NODEV.
  */
+dev_t
 chrtoblk(dev)
 	dev_t dev;
 {
 	int blkmaj;
 
-	if (major(dev) >= MAXDEV || (blkmaj = chrtoblktbl[major(dev)]) == NODEV)
+	if (major(dev) >= nchrdev ||
+	    major(dev) > sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]))
+		return (NODEV);
+	blkmaj = chrtoblktbl[major(dev)];
+	if (blkmaj == NODEV)
 		return (NODEV);
 	return (makedev(blkmaj, minor(dev)));
+}
+
+/*
+ * Convert a character device number to a block device number.
+ */
+dev_t
+blktochr(dev)
+	dev_t dev;
+{
+	int blkmaj = major(dev);
+	int i;
+
+	if (blkmaj >= nblkdev)
+		return (NODEV);
+	for (i = 0; i < sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]); i++)
+		if (blkmaj == chrtoblktbl[i])
+			return (makedev(i, minor(dev)));
+	return (NODEV);
 }
 
 /*
@@ -317,14 +354,14 @@ chrtoblk(dev)
 #include <dev/cons.h>
 
 cons_decl(pc);
-cons_decl(ace);
+cons_decl(com);
 
 struct	consdev constab[] = {
 #if NPC + NVT > 0
 	cons_init(pc),
 #endif
 #if NCOM > 0
-	cons_init(ace),
+	cons_init(com),
 #endif
 	{ 0 },
 };

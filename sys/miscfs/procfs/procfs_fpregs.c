@@ -1,3 +1,4 @@
+/*	$OpenBSD: procfs_fpregs.c,v 1.3 1997/08/16 02:00:48 millert Exp $	*/
 /*	$NetBSD: procfs_fpregs.c,v 1.4 1995/08/13 09:06:05 mycroft Exp $	*/
 
 /*
@@ -51,8 +52,8 @@
 
 int
 procfs_dofpregs(curp, p, pfs, uio)
-	struct proc *curp;
-	struct proc *p;
+	struct proc *curp;		/* tracer */
+	struct proc *p;			/* traced */
 	struct pfsnode *pfs;
 	struct uio *uio;
 {
@@ -61,6 +62,9 @@ procfs_dofpregs(curp, p, pfs, uio)
 	struct fpreg r;
 	char *kv;
 	int kl;
+
+	if ((error = procfs_checkioperm(curp, p)) != 0)
+		return (error);
 
 	kl = sizeof(r);
 	kv = (char *) &r;

@@ -3,9 +3,10 @@
 
 PROG=	canfield
 MAN=	canfield.6
-DPADD=	${LIBCURSES} ${LIBTERM}
-LDADD=	-lcurses -ltermcap
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 HIDEGAME=hidegame
+MLINKS=	canfield.6 cfscores.6
 
 
 .include "../../Makefile.inc"

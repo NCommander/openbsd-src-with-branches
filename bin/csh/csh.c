@@ -1,3 +1,4 @@
+/*	$OpenBSD: csh.c,v 1.9 1997/11/15 21:51:27 todd Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -43,13 +44,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)csh.c	8.2 (Berkeley) 10/12/93";
 #else
-static char rcsid[] = "$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: csh.c,v 1.9 1997/11/15 21:51:27 todd Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <pwd.h>
@@ -58,7 +60,7 @@ static char rcsid[] = "$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $";
 #include <locale.h>
 #include <unistd.h>
 #include <vis.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -232,7 +234,7 @@ main(argc, argv)
      */
     set(STRstatus, Strsave(STR0));
 
-    if ((tcp = getenv("HOME")) != NULL)
+    if ((tcp = getenv("HOME")) != NULL && strlen(tcp) < MAXPATHLEN)
 	cp = SAVE(tcp);
     else
 	cp = NULL;
@@ -249,15 +251,15 @@ main(argc, argv)
      */
     if ((tcp = getenv("LOGNAME")) != NULL ||
 	(tcp = getenv("USER")) != NULL)
-	set(STRuser, SAVE(tcp));
+	set(STRuser, quote(SAVE(tcp)));
     if ((tcp = getenv("TERM")) != NULL)
-	set(STRterm, SAVE(tcp));
+	set(STRterm, quote(SAVE(tcp)));
 
     /*
      * Re-initialize path if set in environment
      */
     if ((tcp = getenv("PATH")) == NULL)
-	set1(STRpath, defaultpath(), &shvhed);
+	setq(STRpath, defaultpath(), &shvhed);
     else
 	importpath(SAVE(tcp));
 
@@ -557,7 +559,7 @@ notty:
 	if ((cp = value(STRhistfile)) != STRNULL)
 	    loadhist[2] = cp;
 	dosource(loadhist, NULL);
-        if (loginsh)
+	if (loginsh)
 	      (void) srccat(value(STRhome), STRsldotlogin);
     }
 
@@ -928,7 +930,10 @@ void
 pintr(notused)
 	int notused;
 {
+    int save_errno = errno;
+
     pintr1(1);
+    errno = save_errno;
 }
 
 void
@@ -1233,7 +1238,7 @@ gethdir(home)
 
 /*
  * When didfds is set, we do I/O from 0, 1, 2 otherwise from 15, 16, 17
- * We also check if the shell has already changed the decriptor to point to
+ * We also check if the shell has already changed the descriptor to point to
  * 0, 1, 2 when didfds is set.
  */
 #define DESC(a) (*((int *) (a)) - (didfds && *((int *) a) >= FSHIN ? FSHIN : 0))
@@ -1283,7 +1288,7 @@ vis_fputc(ch, fp)
     int ch;
     FILE *fp;
 {
-    char uenc[5];	/* 4 + NULL */
+    char uenc[5];	/* 4 + NUL */
 
     if (ch & QUOTE) 
 	return fputc(ch & TRIM, fp);

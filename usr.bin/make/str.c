@@ -1,8 +1,9 @@
-/*	$NetBSD: str.c,v 1.10 1995/06/14 15:19:56 christos Exp $	*/
+/*	$OpenBSD: str.c,v 1.10 1999/12/06 22:24:32 espie Exp $	*/
+/*	$NetBSD: str.c,v 1.13 1996/11/06 17:59:23 christos Exp $	*/
 
 /*-
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * Copyright (c) 1988, 1989 by Adam de Boor
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  * Copyright (c) 1989 by Berkeley Softworks
  * All rights reserved.
  *
@@ -42,44 +43,11 @@
 #if 0
 static char     sccsid[] = "@(#)str.c	5.8 (Berkeley) 6/1/90";
 #else
-static char rcsid[] = "$NetBSD: str.c,v 1.10 1995/06/14 15:19:56 christos Exp $";
+static char rcsid[] = "$OpenBSD: str.c,v 1.10 1999/12/06 22:24:32 espie Exp $";
 #endif
 #endif				/* not lint */
 
 #include "make.h"
-
-static char **argv, *buffer;
-static int argmax, curlen;
-
-/*
- * str_init --
- *	Initialize the strings package
- *
- */
-void
-str_init()
-{
-    char *p1;
-    argv = (char **)emalloc((argmax = 50) * sizeof(char *));
-    argv[0] = Var_Value(".MAKE", VAR_GLOBAL, &p1);
-}
-
-
-/*
- * str_end --
- *	Cleanup the strings package
- *
- */
-void
-str_end()
-{
-    if (argv[0]) {
-	free(argv[0]);
-	free((Address) argv);
-    }
-    if (buffer)
-	free(buffer);
-}
 
 /*-
  * str_concat --
@@ -138,42 +106,42 @@ str_concat(s1, s2, flags)
  *	the first word is always the value of the .MAKE variable.
  */
 char **
-brk_string(str, store_argc, expand)
+brk_string(str, store_argc, expand, buffer)
 	register char *str;
 	int *store_argc;
 	Boolean expand;
+	char **buffer;
 {
 	register int argc, ch;
 	register char inquote, *p, *start, *t;
 	int len;
+	int argmax = 50, curlen = 0;
+    	char **argv = (char **)emalloc((argmax + 1) * sizeof(char *));
 
 	/* skip leading space chars. */
 	for (; *str == ' ' || *str == '\t'; ++str)
 		continue;
 
 	/* allocate room for a copy of the string */
-	if ((len = strlen(str) + 1) > curlen) {
-		if (buffer)
-		    free(buffer);
-		buffer = emalloc(curlen = len);
-	}
+	if ((len = strlen(str) + 1) > curlen)
+		*buffer = emalloc(curlen = len);
 
 	/*
 	 * copy the string; at the same time, parse backslashes,
 	 * quotes and build the argument list.
 	 */
-	argc = 1;
+	argc = 0;
 	inquote = '\0';
-	for (p = str, start = t = buffer;; ++p) {
+	for (p = str, start = t = *buffer;; ++p) {
 		switch(ch = *p) {
 		case '"':
 		case '\'':
-			if (inquote)
+			if (inquote) {
 				if (inquote == ch)
 					inquote = '\0';
 				else
 					break;
-			else {
+			} else {
 				inquote = (char) ch;
 				/* Don't miss "" or '' */
 				if (start == NULL && p[1] == inquote) {
@@ -206,9 +174,8 @@ brk_string(str, store_argc, expand)
 			*t++ = '\0';
 			if (argc == argmax) {
 				argmax *= 2;		/* ramp up fast */
-				if (!(argv = (char **)realloc(argv,
-				    argmax * sizeof(char *))))
-				enomem();
+				argv = (char **)erealloc(argv,
+				    (argmax + 1) * sizeof(char *));
 			}
 			argv[argc++] = start;
 			start = (char *)NULL;
@@ -223,7 +190,7 @@ brk_string(str, store_argc, expand)
 				ch = *++p;
 				break;
 			}
-				
+
 			switch (ch = *++p) {
 			case '\0':
 			case '\n':
@@ -259,52 +226,14 @@ done:	argv[argc] = (char *)NULL;
 }
 
 /*
- * Str_FindSubstring -- See if a string contains a particular substring.
- * 
- * Results: If string contains substring, the return value is the location of
- * the first matching instance of substring in string.  If string doesn't
- * contain substring, the return value is NULL.  Matching is done on an exact
- * character-for-character basis with no wildcards or special characters.
- * 
- * Side effects: None.
- */
-char *
-Str_FindSubstring(string, substring)
-	register char *string;		/* String to search. */
-	char *substring;		/* Substring to find in string */
-{
-	register char *a, *b;
-
-	/*
-	 * First scan quickly through the two strings looking for a single-
-	 * character match.  When it's found, then compare the rest of the
-	 * substring.
-	 */
-
-	for (b = substring; *string != 0; string += 1) {
-		if (*string != *b)
-			continue;
-		a = string;
-		for (;;) {
-			if (*b == 0)
-				return(string);
-			if (*a++ != *b++)
-				break;
-		}
-		b = substring;
-	}
-	return((char *) NULL);
-}
-
-/*
  * Str_Match --
- * 
+ *
  * See if a particular string matches a particular pattern.
- * 
+ *
  * Results: Non-zero is returned if string matches pattern, 0 otherwise. The
  * matching operation permits the following special characters in the
  * pattern: *?\[] (see the man page for details on what these mean).
- * 
+ *
  * Side effects: None.
  */
 int
@@ -401,8 +330,8 @@ thisCharOK:	++pattern;
 /*-
  *-----------------------------------------------------------------------
  * Str_SYSVMatch --
- *	Check word against pattern for a match (% is wild), 
- *	
+ *	Check word against pattern for a match (% is wild),
+ *
  * Results:
  *	Returns the beginning position of a match or null. The number
  *	of characters matched is returned in len.
@@ -452,7 +381,7 @@ Str_SYSVMatch(word, pattern, len)
 	    return m;
 	}
     while (*w++ != '\0');
-	    
+
     return NULL;
 }
 
@@ -463,7 +392,7 @@ Str_SYSVMatch(word, pattern, len)
  *	Substitute '%' on the pattern with len characters from src.
  *	If the pattern does not contain a '%' prepend len characters
  *	from src.
- *	
+ *
  * Results:
  *	None
  *
@@ -483,14 +412,27 @@ Str_SYSVSubst(buf, pat, src, len)
 
     if ((m = strchr(pat, '%')) != NULL) {
 	/* Copy the prefix */
-	Buf_AddBytes(buf, m - pat, (Byte *) pat);
+	Buf_AddInterval(buf, pat, m);
 	/* skip the % */
 	pat = m + 1;
     }
 
     /* Copy the pattern */
-    Buf_AddBytes(buf, len, (Byte *) src);
+    Buf_AddChars(buf, len, src);
 
     /* append the rest */
-    Buf_AddBytes(buf, strlen(pat), (Byte *) pat);
+    Buf_AddString(buf, pat);
+}
+
+char *
+interval_dup(begin, end)
+    const char *begin;
+    const char *end;
+{
+    char *s;
+
+    s = emalloc(end - begin + 1);
+    memcpy(s, begin, end - begin);
+    s[end-begin] = '\0';
+    return s;
 }

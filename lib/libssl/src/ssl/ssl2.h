@@ -67,8 +67,8 @@ extern "C" {
 #define SSL2_VERSION		0x0002
 #define SSL2_VERSION_MAJOR	0x00
 #define SSL2_VERSION_MINOR	0x02
-#define SSL2_CLIENT_VERSION	0x0002
-#define SSL2_SERVER_VERSION	0x0002
+/* #define SSL2_CLIENT_VERSION	0x0002 */
+/* #define SSL2_SERVER_VERSION	0x0002 */
 
 /* Protocol Message Codes */
 #define SSL2_MT_ERROR			0
@@ -151,7 +151,7 @@ extern "C" {
 #define  CERT		char
 #endif
 
-typedef struct ssl2_ctx_st
+typedef struct ssl2_state_st
 	{
 	int three_byte_header;
 	int clear_text;		/* clear text */
@@ -162,7 +162,7 @@ typedef struct ssl2_ctx_st
 	 * args were passwd */
 	unsigned int wnum;	/* number of bytes sent so far */
 	int wpend_tot;
-	char *wpend_buf;
+	const unsigned char *wpend_buf;
 
 	int wpend_off;	/* offset to data to write */
 	int wpend_len; 	/* number of bytes passwd to write */
@@ -214,7 +214,7 @@ typedef struct ssl2_ctx_st
 		unsigned int clen;
 		unsigned int rlen;
 		} tmp;
-	} SSL2_CTX;
+	} SSL2_STATE;
 
 /* SSLv2 */
 /* client */

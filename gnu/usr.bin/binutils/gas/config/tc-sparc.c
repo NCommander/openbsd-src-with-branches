@@ -1,5 +1,5 @@
 /* tc-sparc.c -- Assemble for the SPARC
-   Copyright (C) 1989, 90-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-95, 1996 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -28,13 +28,6 @@
 #include "opcode/sparc.h"
 
 static void sparc_ip PARAMS ((char *, const struct sparc_opcode **));
-static int in_signed_range PARAMS ((bfd_signed_vma, bfd_signed_vma));
-static int in_bitfield_range PARAMS ((bfd_signed_vma, bfd_signed_vma));
-static int sparc_ffs PARAMS ((unsigned int));
-static bfd_vma BSR PARAMS ((bfd_vma, int));
-static int cmp_reg_entry PARAMS ((const PTR, const PTR));
-static int parse_keyword_arg PARAMS ((int (*) (const char *), char **, int *));
-static int parse_const_expr_arg PARAMS ((char **, int *));
 
 /* Current architecture.  We don't bump up unless necessary.  */
 static enum sparc_opcode_arch_val current_architecture = SPARC_OPCODE_ARCH_V6;
@@ -62,9 +55,6 @@ static enum sparc_opcode_arch_val warn_after_architecture;
 
 /* Non-zero if we are generating PIC code.  */
 int sparc_pic_code;
-
-/* Non-zero if we should give an error when misaligned data is seen.  */
-static int enforce_aligned_data;
 
 extern int target_big_endian;
 
@@ -159,9 +149,6 @@ struct sparc_it
   };
 
 struct sparc_it the_insn, set_insn;
-
-static void output_insn
-  PARAMS ((const struct sparc_opcode *, struct sparc_it *));
 
 /* Return non-zero if VAL is in the range -(MAX+1) to MAX.  */
 
@@ -365,7 +352,7 @@ s_reserve (ignore)
 	  subseg_set (bss_section, 1); /* switch to bss */
 
 	  if (align)
-	    frag_align (align, 0, 0); /* do alignment */
+	    frag_align (align, 0); /* do alignment */
 
 	  /* detach from old frag */
 	  if (S_GET_SEGMENT(symbolP) == bss_section)
@@ -373,7 +360,7 @@ s_reserve (ignore)
 
 	  symbolP->sy_frag = frag_now;
 	  pfrag = frag_var (rs_org, 1, 1, (relax_substateT)0, symbolP,
-			    (offsetT) size, (char *)0);
+			    size, (char *)0);
 	  *pfrag = 0;
 
 	  S_SET_SEGMENT (symbolP, bss_section);
@@ -423,7 +410,7 @@ s_common (ignore)
   *p = 0;
   symbolP = symbol_find_or_make (name);
   *p = c;
-  if (S_IS_DEFINED (symbolP) && ! S_IS_COMMON (symbolP))
+  if (S_IS_DEFINED (symbolP))
     {
       as_bad ("Ignoring attempt to re-define symbol");
       ignore_rest_of_line ();
@@ -482,12 +469,12 @@ s_common (ignore)
 	  record_alignment (bss_section, align);
 	  subseg_set (bss_section, 0);
 	  if (align)
-	    frag_align (align, 0, 0);
+	    frag_align (align, 0);
 	  if (S_GET_SEGMENT (symbolP) == bss_section)
 	    symbolP->sy_frag->fr_symbol = 0;
 	  symbolP->sy_frag = frag_now;
-	  p = frag_var (rs_org, 1, 1, (relax_substateT) 0, symbolP,
-			(offsetT) size, (char *) 0);
+	  p = frag_var (rs_org, 1, 1, (relax_substateT) 0, symbolP, size,
+			(char *) 0);
 	  *p = 0;
 	  S_SET_SEGMENT (symbolP, bss_section);
 	  S_CLEAR_EXTERNAL (symbolP);
@@ -502,7 +489,8 @@ s_common (ignore)
 	  S_SET_ALIGN (symbolP, temp);
 #endif
 	  S_SET_EXTERNAL (symbolP);
-	  S_SET_SEGMENT (symbolP, bfd_com_section_ptr);
+	  /* should be common, but this is how gas does it for now */
+	  S_SET_SEGMENT (symbolP, bfd_und_section_ptr);
 	}
     }
   else
@@ -524,11 +512,6 @@ s_common (ignore)
 	;
       goto allocate_common;
     }
-
-#ifdef BFD_ASSEMBLER
-  symbolP->bsym->flags |= BSF_OBJECT;
-#endif
-
   demand_empty_rest_of_line ();
   return;
 
@@ -631,16 +614,9 @@ s_uacons (bytes)
   cons (bytes);
 }
 
-/* If the --enforce-aligned-data option is used, we require .word,
-   et. al., to be aligned correctly.  We do it by setting up an
-   rs_align_code frag, and checking in HANDLE_ALIGN to make sure that
-   no unexpected alignment was introduced.
-
-   The SunOS and Solaris native assemblers enforce aligned data by
-   default.  We don't want to do that, because gcc can deliberately
-   generate misaligned data if the packed attribute is used.  Instead,
-   we permit misaligned data by default, and permit the user to set an
-   option to check for it.  */
+/* We require .word, et. al., to be aligned correctly.  We do it by
+   setting up an rs_align_code frag, and checking in HANDLE_ALIGN to
+   make sure that no unexpected alignment was introduced.  */
 
 void
 sparc_cons_align (nbytes)
@@ -648,10 +624,6 @@ sparc_cons_align (nbytes)
 {
   int nalign;
   char *p;
-
-  /* Only do this if we are enforcing aligned data.  */
-  if (! enforce_aligned_data)
-    return;
 
   if (sparc_no_align_cons)
     {
@@ -678,7 +650,7 @@ sparc_cons_align (nbytes)
     }
 
   p = frag_var (rs_align_code, 1, 1, (relax_substateT) 0,
-		(symbolS *) NULL, (offsetT) nalign, (char *) NULL);
+		(symbolS *) NULL, (long) nalign, (char *) NULL);
 
   record_alignment (now_seg, nalign);
 }
@@ -725,13 +697,9 @@ struct priv_reg_entry priv_reg_table[] =
 };
 
 static int
-cmp_reg_entry (parg, qarg)
-     const PTR parg;
-     const PTR qarg;
+cmp_reg_entry (p, q)
+     struct priv_reg_entry *p, *q;
 {
-  const struct priv_reg_entry *p = (const struct priv_reg_entry *) parg;
-  const struct priv_reg_entry *q = (const struct priv_reg_entry *) qarg;
-
   return strcmp (q->name, p->name);
 }
 
@@ -1127,7 +1095,7 @@ md_assemble (str)
 
 static int
 parse_keyword_arg (lookup_fn, input_pointerP, valueP)
-     int (*lookup_fn) PARAMS ((const char *));
+     int (*lookup_fn) ();
      char **input_pointerP;
      int *valueP;
 {
@@ -2321,6 +2289,7 @@ md_atof (type, litP, sizeP)
   int i,prec;
   LITTLENUM_TYPE words[MAX_LITTLENUMS];
   char *t;
+  char *atof_ieee ();
 
   switch (type)
     {
@@ -2397,10 +2366,9 @@ md_number_to_chars (buf, val, n)
    hold. */
 
 int
-md_apply_fix3 (fixP, value, segment)
+md_apply_fix (fixP, value)
      fixS *fixP;
      valueT *value;
-     segT segment;
 {
   char *buf = fixP->fx_where + fixP->fx_frag->fr_literal;
   offsetT val;
@@ -2415,22 +2383,14 @@ md_apply_fix3 (fixP, value, segment)
 #ifdef OBJ_ELF
   /* FIXME: SPARC ELF relocations don't use an addend in the data
      field itself.  This whole approach should be somehow combined
-     with the calls to bfd_install_relocation.  Also, the value passed
+     with the calls to bfd_perform_relocation.  Also, the value passed
      in by fixup_segment includes the value of a defined symbol.  We
      don't want to include the value of an externally visible symbol.  */
   if (fixP->fx_addsy != NULL)
     {
-      if (fixP->fx_addsy->sy_used_in_reloc
-	  && (S_IS_EXTERNAL (fixP->fx_addsy)
-	      || S_IS_WEAK (fixP->fx_addsy)
-	      || (sparc_pic_code && ! fixP->fx_pcrel)
-	      || (S_GET_SEGMENT (fixP->fx_addsy) != segment
-		  && ((bfd_get_section_flags (stdoutput,
-					      S_GET_SEGMENT (fixP->fx_addsy))
-		       & SEC_LINK_ONCE) != 0
-		      || strncmp (segment_name (S_GET_SEGMENT (fixP->fx_addsy)),
-				  ".gnu.linkonce",
-				  sizeof ".gnu.linkonce" - 1) == 0)))
+      if ((S_IS_EXTERNAL (fixP->fx_addsy)
+	   || S_IS_WEAK (fixP->fx_addsy)
+	   || (sparc_pic_code && ! fixP->fx_pcrel))
 	  && S_GET_SEGMENT (fixP->fx_addsy) != absolute_section
 	  && S_GET_SEGMENT (fixP->fx_addsy) != undefined_section
 	  && ! bfd_is_com_section (S_GET_SEGMENT (fixP->fx_addsy)))
@@ -2630,7 +2590,8 @@ tc_gen_reloc (section, fixp)
   arelent *reloc;
   bfd_reloc_code_real_type code;
 
-  reloc = (arelent *) xmalloc (sizeof (arelent));
+  reloc = (arelent *) bfd_alloc_by_size_t (stdoutput, sizeof (arelent));
+  assert (reloc != 0);
 
   reloc->sym_ptr_ptr = &fixp->fx_addsy->bsym;
   reloc->address = fixp->fx_frag->fr_address + fixp->fx_where;
@@ -2680,7 +2641,6 @@ tc_gen_reloc (section, fixp)
 	{
 	case BFD_RELOC_32_PCREL_S2:
 	  if (! S_IS_DEFINED (fixp->fx_addsy)
-	      || S_IS_COMMON (fixp->fx_addsy)
 	      || S_IS_EXTERNAL (fixp->fx_addsy)
 	      || S_IS_WEAK (fixp->fx_addsy))
 	    code = BFD_RELOC_SPARC_WPLT30;
@@ -2864,8 +2824,6 @@ struct option md_longopts[] = {
 #define OPTION_BIG_ENDIAN (OPTION_MD_BASE + 4)
   {"EB", no_argument, NULL, OPTION_BIG_ENDIAN},
 #endif
-#define OPTION_ENFORCE_ALIGNED_DATA (OPTION_MD_BASE + 5)
-  {"enforce-aligned-data", no_argument, NULL, OPTION_ENFORCE_ALIGNED_DATA},
   {NULL, no_argument, NULL, 0}
 };
 size_t md_longopts_size = sizeof(md_longopts);
@@ -2918,10 +2876,6 @@ md_parse_option (c, arg)
 
     case OPTION_SPARC:
       /* Ignore -sparc, used by SunOS make default .s.o rule.  */
-      break;
-
-    case OPTION_ENFORCE_ALIGNED_DATA:
-      enforce_aligned_data = 1;
       break;
 
 #ifdef SPARC_BIENDIAN
@@ -2989,8 +2943,7 @@ md_show_usage (stream)
   fprintf (stream, "\
 			specify variant of SPARC architecture\n\
 -bump			warn when assembler switches architectures\n\
--sparc			ignored\n\
---enforce-aligned-data	force .long, etc., to be aligned correctly\n");
+-sparc			ignored\n");
 #ifdef OBJ_AOUT
   fprintf (stream, "\
 -k			generate PIC\n");

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_conf.h,v 1.14 1999/11/25 20:24:20 aaron Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -51,44 +53,6 @@
  *---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------
- *
- * from: Onno van der Linden    c/o   frank@fwi.uva.nl
- *
- * Here's an idea how to automatically detect the version of NetBSD pcvt is
- * being compiled on:
- *
- * NetBSD 1.0 : NetBSD1_0 defined as 1 in <sys/param.h>
- * NetBSD 1.0A: NetBSD1_0 defined as 2 in <sys/param.h>
- *
- * The NetBSDx_y defines are mutual exclusive.
- *
- * This leads to something like this in pcvt_hdr.h (#elif is possible too):
- *
- *---------------------------------------------------------------------------*/
- 
-#ifndef PCVT_NETBSD			/* let user force it if needed...  */
-#ifdef NetBSD0_8
-#error "NetBSD version 0.8 no longer supported, sorry!"
-#endif
-
-#ifdef NetBSD0_9
-#error "NetBSD version 0.9 no longer supported, sorry!"
-#endif
-
-#ifdef NetBSD1_0
-#if NetBSD1_0 > 1
-#define PCVT_NETBSD 102
-#else
-#define PCVT_NETBSD 100
-#endif
-#endif
-#endif
-
-#ifdef NetBSD1_1
-#define PCVT_NETBSD 110
-#endif
-
-/*---------------------------------------------------------------------------
  * Note that each of the options below should rather be overriden by the
  * kernel config file instead of this .h file - this allows for different
  * definitions in different kernels compiled at the same machine
@@ -105,45 +69,10 @@
  *
  *	options "PCVT_NSCREENS=x"
  *	options "PCVT_SCANSET=x"
- *	options "PCVT_UPDATEFAST=x"
- *	options "PCVT_UPDATESLOW=x"
  *	options "PCVT_SYSBEEPF=x"
  *
  * which are always numeric!
  *---------------------------------------------------------------------------*/
-
-/* -------------------------------------------------------------------- */
-/* -------------------- OPERATING SYSTEM ------------------------------ */
-/* -------------------------------------------------------------------- */
-
-/*
- *  one of the following options must be set in the kernel config file:
- *
- *======================================================================*
- *			N e t B S D					*
- *======================================================================*
- *
- *	options "PCVT_NETBSD=xxx" enables support for NetBSD
- *
- *	select:
- *		PCVT_NETBSD = 100	for NetBSD 1.0
- *		PCVT_NETBSD = 101	for NetBSD-current before Apr. 21 '95
- *		PCVT_NETBSD = 102	for NetBSD-current after Apr. 21 '95
- *
- *
- *======================================================================*
- *			F r e e B S D					*
- *======================================================================*
- *
- *	options "PCVT_FREEBSD=xxx" enables support for FreeBSD
- *
- *	select:
- *		PCVT_FREEBSD = 200	for FreeBSD 2.0-Release
- *		PCVT_FREEBSD = 210	for FreeBSD 2.0.5-Release
- *					(yes, its 210 for 2.0.5 !!!)
- *					(aaand yes, its 210 for 2.1 !!!)
- *
- */
 
 /* -------------------------------------------------------------------- */
 /* ---------------- USER PREFERENCE DRIVER OPTIONS -------------------- */
@@ -162,14 +91,6 @@
 				/* ber...; the value is intented to be	*/
 				/* compile-time overridable by a config	*/
 				/* options "PCVT_NSCREENS=x" line	*/
-
-#if !defined PCVT_VT220KEYB	/* ---------- DEFAULT: OFF ------------ */
-# define PCVT_VT220KEYB 0	/* this compiles a more vt220-like	*/
-#elif PCVT_VT220KEYB != 0	/* keyboardlayout as described in the	*/
-# undef PCVT_VT220KEYB		/* file Keyboard.VT220.			*/
-# define PCVT_VT220KEYB 1	/* if undefined, a more HP-like         */
-#endif				/* keyboardlayout is compiled		*/
-				/* try to find out what YOU like !	*/
 
 #if !defined PCVT_SCREENSAVER	/* ---------- DEFAULT: ON ------------- */
 # define PCVT_SCREENSAVER 1	/* enable screen saver feature - this	*/
@@ -234,14 +155,6 @@
 				/* compatibility (24 lines) by using	*/
 				/* the scon utility at runtime		*/
 
-#if !defined PCVT_EMU_MOUSE	/* ---------- DEFAULT: OFF ------------ */
-# define PCVT_EMU_MOUSE 0	/* emulate a mouse systems mouse via	*/
-#elif PCVT_EMU_MOUSE != 0	/* the keypad; this is experimental	*/
-# undef PCVT_EMU_MOUSE		/* code intented to be used on note-	*/
-# define PCVT_EMU_MOUSE 1	/* books in conjunction with XFree86;	*/
-#endif				/* look at the comments in pcvt_kbd.c	*/
-				/* if you are interested in testing it.	*/
-
 #if !defined PCVT_META_ESC      /* ---------- DEFAULT: OFF ------------ */
 # define PCVT_META_ESC 0        /* if ON, send the sequence "ESC key"	*/
 #elif PCVT_META_ESC != 0        /* for a meta-shifted key; if OFF,	*/
@@ -257,28 +170,15 @@
 #endif				/* SESSION TO CLUTTER VIDEO MEMORY !!!! */
 
 /* -------------------------------------------------------------------- */
-/* -------------------- DRIVER DEBUGGING ------------------------------ */
-/* -------------------------------------------------------------------- */
-
-#if !defined PCVT_SHOWKEYS	/* ---------- DEFAULT: OFF ------------ */
-# define PCVT_SHOWKEYS 0	/* this replaces the system load line	*/
-#elif PCVT_SHOWKEYS != 0	/* on the vt 0 in hp mode with a display*/
-# undef PCVT_SHOWKEYS		/* of the most recent keyboard scan-	*/
-# define PCVT_SHOWKEYS 1	/* and status codes received from the	*/
-#endif				/* keyboard controller chip.		*/
-				/* this is just for some hardcore	*/
-				/* keyboarders ....			*/
-
-/* -------------------------------------------------------------------- */
 /* -------------------- DRIVER OPTIONS -------------------------------- */
 /* -------------------------------------------------------------------- */
 /*     it is unlikely that anybody wants to change anything below       */
 
 #if !defined PCVT_NO_LED_UPDATE	/* ---------- DEFAULT: OFF ------------ */
-# define PCVT_NO_LED_UPDATE 0	/* On some (Notebook?) keyboards it is	*/
+# define PCVT_NO_LED_UPDATE 0	/* On some keyboard controllers it is	*/
 #elif PCVT_NO_LED_UPDATE != 0	/* not possible to update the LED's	*/
 # undef PCVT_NO_LED_UPDATE	/* without hanging the keyboard after-	*/
-# define PCVT_NO_LED_UPDATE 1	/* wards. If you experience Problems	*/
+# define PCVT_NO_LED_UPDATE 1	/* wards. If you experience problems	*/
 #endif				/* like this, try to enable this option	*/
 
 #if !defined PCVT_PORTIO_DELAY  /* ---------- DEFAULT: ON ------------- */
@@ -333,16 +233,6 @@
 # undef PCVT_BACKUP_FONTS	/* they are needed.			*/
 # define PCVT_BACKUP_FONTS 1
 #endif
-
-#ifndef PCVT_UPDATEFAST		/* this is the rate at which the cursor */
-# define PCVT_UPDATEFAST (hz/10) /* gets updated with it's new position	*/
-#endif				/* see: async_update() in pcvt_sup.c	*/
-
-#ifndef PCVT_UPDATESLOW		/* this is the rate at which the cursor	*/
-# define PCVT_UPDATESLOW 3	/* position display and the system load	*/
-#endif				/* (or the keyboard scancode display)	*/
-				/* is updated. the relation is:		*/
-				/* PCVT_UPDATEFAST/PCVT_UPDATESLOW	*/
 
 #ifndef PCVT_SYSBEEPF		/* timer chip value to be used for the	*/
 # define PCVT_SYSBEEPF 1193182	/* sysbeep frequency value.		*/
@@ -403,7 +293,7 @@
 				/* -- see also PCVT_PALFLICKER above -- */
 
 #if !defined PCVT_INHIBIT_NUMLOCK /* --------- DEFAULT: OFF ----------- */
-# define PCVT_INHIBIT_NUMLOCK 0 /* A notebook hack: since i am getting	*/
+# define PCVT_INHIBIT_NUMLOCK 1 /* A notebook hack: since i am getting	*/
 #elif PCVT_INHIBIT_NUMLOCK != 0	/* tired of the numlock LED always	*/
 # undef PCVT_INHIBIT_NUMLOCK    /* being turned on - which causes the	*/
 # define PCVT_INHIBIT_NUMLOCK 1 /* right half of my keyboard being	*/
@@ -445,13 +335,6 @@
 # define PCVT_MDAFASTSCROLL 1	/* MDA/Hercules which do support more 	*/
 #endif				/* than one page of video memory.	*/
 
-#if !defined PCVT_SLOW_INTERRUPT/* ---------- DEFAULT: OFF ------------ */
-# define PCVT_SLOW_INTERRUPT 0	/* If off, protecting critical regions	*/
-#elif PCVT_SLOW_INTERRUPT != 0	/* in the keyboard fifo code is done by	*/
-# undef PCVT_SLOW_INTERRUPT	/* disabling the processor irq's, if on */
-# define PCVT_SLOW_INTERRUPT 1	/* this is done by spl()/splx() calls.  */
-#endif
-
 /*---------------------------------------------------------------------------*
  *	Kernel messages attribute definitions
  *	These define the foreground and background attributes used to
@@ -462,7 +345,7 @@
 #define COLOR_KERNEL_FG	FG_LIGHTGREY	/* kernel messages, foreground	*/
 #endif
 #if !defined COLOR_KERNEL_BG
-#define COLOR_KERNEL_BG	BG_RED		/* kernel messages, background	*/
+#define COLOR_KERNEL_BG	BG_BLUE		/* kernel messages, background	*/
 #endif
 
 #if !defined MONO_KERNEL_FG		/* monochrome displays		*/

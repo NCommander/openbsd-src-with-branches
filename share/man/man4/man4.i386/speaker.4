@@ -1,3 +1,5 @@
+.\"	$OpenBSD: speaker.4,v 1.7 1999/07/09 13:35:44 aaron Exp $
+.\"	$NetBSD: speaker.4,v 1.9 1998/08/18 08:16:56 augustss Exp $
 .\"
 .\" Copyright (c) 1993 Christopher G. Demetriou
 .\" All rights reserved.
@@ -27,15 +29,15 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: speaker.4,v 1.4 1994/01/29 01:43:26 jtc Exp $
-.\"
 .Dd August 6, 1993
 .Dt SPEAKER 4 i386
-.Os NetBSD 0.8a
+.Os
 .Sh NAME
 speaker \- console speaker device driver
 .Sh SYNOPSIS
-.Cd "pseudo-device speaker"
+.Cd "spkr0	at pcppi?"
+.Fd #include <machine/spkr.h>
+.Pa /dev/speaker
 .Sh DESCRIPTION
 The speaker device driver allows applications to control the PC console
 speaker on an IBM-PC-compatible machine running UNIX.
@@ -53,7 +55,7 @@ tones. Other processes may emit beeps while the driver is running.
 .Pp
 Applications may call ioctl() on a speaker file descriptor to control the
 speaker driver directly; definitions for the ioctl() interface are in
-machine/spkr.h. The tone_t structure used in these calls has two fields,
+<machine/spkr.h>. The tone_t structure used in these calls has two fields,
 specifying a frequency (in hz) and a duration (in 1/100ths of a second).
 A frequency of zero is interpreted as a rest.
 .Pp
@@ -64,7 +66,7 @@ continuous sequence; this array must be terminated by a final member with
 a zero duration.
 .Pp
 The play-string language is modelled on the PLAY statement conventions of
-IBM BASIC 2.0. The MB, MF and X primitives of PLAY are not useful in a UNIX 
+IBM BASIC 2.0. The MB, MF and X primitives of PLAY are not useful in a UNIX
 environment and are omitted. The `octave-tracking' feature is also new.
 .Pp
 There are 84 accessible notes numbered 1-83 in 7 octaves, each running from
@@ -94,7 +96,7 @@ locking is disabled for one letter note following by >, < and O[0123456].
 < -- drop the current octave down one.
 .Pp
 N <n> -- play note n, n being 1 to 84 or 0 for a rest of current time value.
-May be followedv by sustain dots.
+May be followed by sustain dots.
 .Pp
 L <n> -- sets the current time value for notes. The default is L4, quarter
 notes. The lowest possible value is 1; values up to 64 are accepted. L1 sets
@@ -107,22 +109,22 @@ T <n> -- Sets the number of quarter notes per minute; default is 120. Musical
 names for common tempi are:
 .Bl -column Description Tempo BPM -offset indent
 .Em 	Tempo		Beats per Minute
-very slow	Larghissimo	
+very slow	Larghissimo
         	Largo	 	40-60
          	Larghetto	60-66
-        	Grave       	
-        	Lento       	
+        	Grave
+        	Lento
         	Adagio	 	66-76
-slow    	Adagietto    	
+slow    	Adagietto
         	Andante	 	76-108
-medium   	Andantino	
+medium   	Andantino
         	Moderato 	108-120
-fast    	Allegretto	
+fast    	Allegretto
         	Allegro	 	120-168
-        	Vivace    	
-        	Veloce    	
+        	Vivace
+        	Veloce
         	Presto	 	168-208
-very fast	Prestissimo	
+very fast	Prestissimo
 .El
 .Pp
 M[LNS] -- set articulation. MN (N for normal) is the default; the last 1/8th of
@@ -132,14 +134,16 @@ MS (staccato) 1/4 rest space.
 Notes (that is, CDEFGAB or N command character groups) may be followed by
 sustain dots. Each dot causes the note's value to be lengthened by one-half
 for each one. Thus, a note dotted once is held for 3/2 of its undotted value;
-dotted twice, it is held 9/4, and three times would give 27/8. 
+dotted twice, it is held 9/4, and three times would give 27/8.
 .Pp
 Whitespace in play strings is simply skipped and may be used to separate
 melody sections.
 .Sh BUGS
 Due to roundoff in the pitch tables and slop in the tone-generation and timer
 hardware (neither of which was designed for precision), neither pitch accuracy
-nor timings will be mathematically exact. There is no volume control.
+nor timings will be mathematically exact.
+.Pp
+There is no volume control.
 .Pp
 In play strings which are very long (longer than your system's physical I/O
 blocks) note suffixes or numbers may occasionally be parsed incorrectly due
@@ -148,5 +152,7 @@ to crossing a block boundary.
 .Bl -tag -width Pa -compact
 .It Pa /dev/speaker
 .El
+.\" .Sh SEE ALSO
+.\" .Xr pcppi 4 .
 .Sh AUTHOR
 Eric S. Raymond (esr@snark.thyrsus.com) Feb 1990

@@ -84,7 +84,6 @@ DEFUN (arc_add, (parent, child, count),
       return;
     }
   arc = (Arc *) xmalloc (sizeof (*arc));
-  memset (arc, 0, sizeof (*arc));
   arc->parent = parent;
   arc->child = child;
   arc->count = count;
@@ -577,7 +576,8 @@ DEFUN_VOID (cg_assemble)
   Sym *parent, **time_sorted_syms, **top_sorted_syms;
   long index;
   Arc *arc;
-
+  extern void find_call PARAMS ((Sym * parent,
+				 bfd_vma p_lowpc, bfd_vma p_highpc));
   /*
    * initialize various things:
    *      zero out child times.

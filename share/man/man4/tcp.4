@@ -35,7 +35,7 @@
 .\"
 .Dd June 5, 1993
 .Dt TCP 4
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm tcp
 .Nd Internet Transmission Control Protocol
@@ -47,7 +47,7 @@
 .Sh DESCRIPTION
 The
 .Tn TCP
-protocol provides reliable, flow-controlled, two-way
+protocol provides a reliable, flow-controlled, two-way
 transmission of data.  It is a byte-stream protocol used to
 support the
 .Dv SOCK_STREAM
@@ -61,7 +61,7 @@ a specific
 .Tn TCP
 port on the host identifying the peer entity.
 .Pp
-Sockets utilizing the tcp protocol are either
+Sockets utilizing the TCP protocol are either
 .Dq active
 or
 .Dq passive .
@@ -75,7 +75,7 @@ system call must be used
 after binding the socket with the
 .Xr bind 2
 system call.  Only
-passive sockets may use the 
+passive sockets may use the
 .Xr accept 2
 call to accept incoming connections.  Only active sockets may
 use the
@@ -98,16 +98,18 @@ must be bound.  The
 port may still be specified
 at this time; if the port is not specified the system will assign one.
 Once a connection has been established the socket's address is
-fixed by the peer entity's location.   The address assigned the
+fixed by the peer entity's location.   The address assigned to the
 socket is the address associated with the network interface
 through which packets are being transmitted and received.  Normally
 this address corresponds to the peer entity's network.
 .Pp
 .Tn TCP
-supports one socket option which is set with
+supports several socket options which are set with
 .Xr setsockopt 2
 and tested with
 .Xr getsockopt 2 .
+.Bl -ohang
+.It Cd TCP_NODELAY
 Under most circumstances,
 .Tn TCP
 sends data when it is presented;
@@ -124,8 +126,16 @@ provides a boolean option,
 (from
 .Aq Pa netinet/tcp.h ,
 to defeat this algorithm.
+.It Cd TCP_MAXSEG
+Set the maximum segment size for this connection. The maximum segment
+size can only be lowered.
+.It Cd TCP_SACK_DISABLE
+Do not use selective acknowledgements for this connection. See
+.Xr options 4 .
+.El
+.Pp
 The option level for the
-.Xr setsockopt
+.Xr setsockopt 2
 call is the protocol number for
 .Tn TCP ,
 available from
@@ -163,16 +173,17 @@ when an attempt
 is made to create a socket with a port which has already been
 allocated;
 .It Bq Er EADDRNOTAVAIL
-when an attempt is made to create a 
+when an attempt is made to create a
 socket with a network address for which no network interface
 exists.
 .El
 .Sh SEE ALSO
 .Xr getsockopt 2 ,
 .Xr socket 2 ,
-.Xr intro 4 ,
 .Xr inet 4 ,
-.Xr ip 4
+.Xr inet6 4 ,
+.Xr ip 4 ,
+.Xr netintro 4
 .Sh HISTORY
 The
 .Nm

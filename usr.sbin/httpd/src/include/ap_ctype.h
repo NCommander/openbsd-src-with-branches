@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1998-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -79,6 +79,7 @@ extern "C" {
 #define ap_ispunct(c) (ispunct(((unsigned char)(c))))
 #define ap_isspace(c) (isspace(((unsigned char)(c))))
 #define ap_isupper(c) (isupper(((unsigned char)(c))))
+#define ap_isxdigit(c) (isxdigit(((unsigned char)(c))))
 #define ap_tolower(c) (tolower(((unsigned char)(c))))
 #define ap_toupper(c) (toupper(((unsigned char)(c))))
 

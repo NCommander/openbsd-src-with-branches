@@ -1,3 +1,5 @@
+/*	$OpenBSD: playvt.c,v 1.3 1999/01/13 07:26:03 niklas Exp $	*/
+
 /*
  * Copyright (c) 1995 Hellmuth Michaelis
  *
@@ -59,7 +61,7 @@ char *argv[];
 	int fflag = -1;
 	char *filename;
 	
-	while( (c = getopt(argc, argv, "d:f:")) != EOF)
+	while( (c = getopt(argc, argv, "d:f:")) != -1)
 	{
 		switch(c)
 		{
@@ -85,7 +87,7 @@ char *argv[];
 		{
 			char buffer[80];
 			strcpy(buffer,"ERROR opening file ");
-			strcat(buffer,filename);
+			strncat(buffer,filename,sizeof(buffer) - strlen(buffer));
 			perror(buffer);
 			exit(1);
 		}

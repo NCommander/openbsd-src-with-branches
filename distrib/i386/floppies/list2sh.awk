@@ -1,4 +1,4 @@
-#	$Id: list2sh.awk,v 1.4 1995/08/14 01:50:13 cgd Exp $
+#	$OpenBSD: list2sh.awk,v 1.4 1997/05/08 04:56:00 tholo Exp $
 
 BEGIN {
 	printf("cd ${CURDIR}\n");
@@ -10,20 +10,36 @@ BEGIN {
 }
 $1 == "COPY" {
 	printf("echo '%s'\n", $0);
-	printf("rm -f ${TARGDIR}/%s\n", $3);
+	printf("rm -fr ${TARGDIR}/%s\n", $3);
 	printf("cp %s ${TARGDIR}/%s\n", $2, $3);
 	next;
 }
 $1 == "LINK" {
 	printf("echo '%s'\n", $0);
-	printf("rm -f ${TARGDIR}/%s\n", $3);
-	printf("(cd ${TARGDIR}; ln %s %s)\n", $2, $3);
+	for (i = 3; i <= NF; i++) {
+		printf("rm -f ${TARGDIR}/%s\n", $i);
+		printf("(cd ${TARGDIR}; ln %s %s)\n", $2, $i);
+	}
 	next;
 }
 $1 == "SYMLINK" {
 	printf("echo '%s'\n", $0);
-	printf("rm -f ${TARGDIR}/%s\n", $3);
-	printf("(cd ${TARGDIR}; ln -s %s %s)\n", $2, $3);
+	for (i = 3; i <= NF; i++) {
+		printf("rm -f ${TARGDIR}/%s\n", $i);
+		printf("(cd ${TARGDIR}; ln -s %s %s)\n", $2, $i);
+	}
+	next;
+}
+$1 == "ARGVLINK" {
+	# crunchgen directive; ignored here
+	next;
+}
+$1 == "SRCDIRS" {
+	# crunchgen directive; ignored here
+	next;
+}
+$1 == "CRUNCHSPECIAL" {
+	# crunchgen directive; ignored here
 	next;
 }
 $1 == "COPYDIR" {

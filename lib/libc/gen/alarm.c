@@ -1,5 +1,3 @@
-/*	$NetBSD: alarm.c,v 1.4 1995/02/25 15:39:04 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)alarm.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: alarm.c,v 1.4 1995/02/25 15:39:04 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: alarm.c,v 1.2 1996/08/19 08:21:43 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -58,7 +52,7 @@ alarm(secs)
 	itp->it_value.tv_sec = secs;
 	itp->it_value.tv_usec = 0;
 	if (setitimer(ITIMER_REAL, itp, &oitv) < 0)
-		return (-1);
+		return ((unsigned int) -1);
 	if (oitv.it_value.tv_usec)
 		oitv.it_value.tv_sec++;
 	return (oitv.it_value.tv_sec);

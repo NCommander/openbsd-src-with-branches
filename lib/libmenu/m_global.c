@@ -1,30 +1,45 @@
+/*	$OpenBSD: m_global.c,v 1.4 1998/07/24 16:38:57 millert Exp $	*/
+
+/****************************************************************************
+ * Copyright (c) 1998 Free Software Foundation, Inc.                        *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author: Juergen Pfeifer <juergen.pfeifer@gmx.net> 1995,1997            *
+ ****************************************************************************/
 
 /***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
-
-/***************************************************************************
-* Module menu_global                                                       *
+* Module m_global                                                          *
 * Globally used internal routines and the default menu and item structures *
 ***************************************************************************/
 
 #include "menu.priv.h"
+
+MODULE_ID("$From: m_global.c,v 1.11 1999/05/16 17:25:14 juergen Exp $")
 
 MENU _nc_Default_Menu = {
   16,				  /* Nr. of chars high */
@@ -33,10 +48,14 @@ MENU _nc_Default_Menu = {
   1,			          /* Nr. of items wide */
   16,				  /* Nr. of formatted items high */
   1,				  /* Nr. of formatted items wide */
+  16,				  /* Nr. of items high (actual) */
   0,				  /* length of widest name */
   0,				  /* length of widest description */
   1,				  /* length of mark */
   1,				  /* length of one item */
+  1,                              /* Spacing for descriptor */ 
+  1,                              /* Spacing for columns */
+  1,                              /* Spacing for rows */
   (char *)0,			  /* buffer used to store match chars */
   0,				  /* Index into pattern buffer */
   (WINDOW *)0,			  /* Window containing entire menu */
@@ -176,7 +195,7 @@ bool _nc_Connect_Items(MENU *menu, ITEM **items)
   else
     return(FALSE);
   
-  if (ItemCount > 0)
+  if (ItemCount != 0)
     {
       menu->items  = items;
       menu->nitems = ItemCount;
@@ -225,18 +244,18 @@ void _nc_Calculate_Item_Length_and_Width(MENU * menu)
   int l;
   
   assert(menu);
-  if (menu->items && *(menu->items))
-    {
-      l = menu->namelen + menu->marklen;
-      if ( (menu->opt & O_SHOWDESC) && (menu->desclen > 0) )
-	l += (menu->desclen + 1);
-      
-      menu->itemlen = l;
-      l *= menu->cols;
-      l += (menu->cols-1);	/* for the padding between the columns */
-      menu->width = l;
-    }
-}
+
+  menu->height  = 1 + menu->spc_rows * (menu->arows - 1);
+
+  l = menu->namelen + menu->marklen;
+  if ( (menu->opt & O_SHOWDESC) && (menu->desclen > 0) )
+    l += (menu->desclen + menu->spc_desc);
+  
+  menu->itemlen = l;
+  l *= menu->cols;
+  l += (menu->cols-1)*menu->spc_cols; /* for the padding between the columns */
+  menu->width = l;
+}  
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -384,7 +403,7 @@ void _nc_Show_Menu(const MENU *menu)
     {
       /* adjust the internal subwindow to start on the current top */
       assert(menu->sub);
-      mvderwin(menu->sub,menu->toprow,0);
+      mvderwin(menu->sub,menu->spc_rows * menu->toprow,0);
       win = Get_Menu_Window(menu);
       
       maxy = getmaxy(win);

@@ -1,3 +1,4 @@
+/* *	$OpenBSD: indent_globs.h,v 1.3 1997/07/25 22:00:45 mickey Exp $*/
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
  * Copyright (c) 1980 The Regents of the University of California.
@@ -33,7 +34,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)indent_globs.h	5.11 (Berkeley) 2/26/91
- *	$Id: indent_globs.h,v 1.2 1993/08/01 18:14:34 mycroft Exp $
  */
 
 #define BACKSLASH '\\'
@@ -56,7 +56,7 @@ FILE       *output;		/* the output file */
 
 #define CHECK_SIZE_CODE \
 	if (e_code >= l_code) { \
-	    register nsize = l_code-s_code+400; \
+	    register int nsize = l_code-s_code+400; \
 	    codebuf = (char *) realloc(codebuf, nsize); \
 	    e_code = codebuf + (e_code-s_code) + 1; \
 	    l_code = codebuf + nsize - 5; \
@@ -64,7 +64,7 @@ FILE       *output;		/* the output file */
 	}
 #define CHECK_SIZE_COM \
 	if (e_com >= l_com) { \
-	    register nsize = l_com-s_com+400; \
+	    register int nsize = l_com-s_com+400; \
 	    combuf = (char *) realloc(combuf, nsize); \
 	    e_com = combuf + (e_com-s_com) + 1; \
 	    l_com = combuf + nsize - 5; \
@@ -72,7 +72,7 @@ FILE       *output;		/* the output file */
 	}
 #define CHECK_SIZE_LAB \
 	if (e_lab >= l_lab) { \
-	    register nsize = l_lab-s_lab+400; \
+	    register int nsize = l_lab-s_lab+400; \
 	    labbuf = (char *) realloc(labbuf, nsize); \
 	    e_lab = labbuf + (e_lab-s_lab) + 1; \
 	    l_lab = labbuf + nsize - 5; \
@@ -80,7 +80,7 @@ FILE       *output;		/* the output file */
 	}
 #define CHECK_SIZE_TOKEN \
 	if (e_token >= l_token) { \
-	    register nsize = l_token-s_token+400; \
+	    register int nsize = l_token-s_token+400; \
 	    tokenbuf = (char *) realloc(tokenbuf, nsize); \
 	    e_token = tokenbuf + (e_token-s_token) + 1; \
 	    l_token = tokenbuf + nsize - 5; \
@@ -218,7 +218,7 @@ struct parser_state {
     float       cstk[STACKSIZE];/* used to store case stmt indentation levels */
     int         box_com;	/* set to true when we are in a "boxed"
 				 * comment. In that case, the first non-blank
-				 * char should be lined up with the / in /* */
+				 * char should be lined up with the / in rem */
     int         comment_delta,
                 n_comment_delta;
     int         cast_mask;	/* indicates which close parens close off

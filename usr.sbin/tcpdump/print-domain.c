@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -20,15 +20,18 @@
  */
 
 #ifndef lint
-static char rcsid[] =
-    "@(#) Header: print-domain.c,v 1.23 94/06/14 20:17:38 leres Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-domain.c,v 1.9 2000/01/16 12:43:58 jakob Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 
+#ifdef __STDC__
+struct mbuf;
+struct rtentry;
+#endif
 #include <net/if.h>
 
 #include <netinet/in.h>
@@ -39,18 +42,103 @@ static char rcsid[] =
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 
+#ifdef NOERROR
 #undef NOERROR					/* Solaris sucks */
+#endif
+#ifdef NOERROR
+#undef T_UNSPEC					/* SINIX does too */
+#endif
 #include <arpa/nameser.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #include "interface.h"
 #include "addrtoname.h"
+#include "extract.h"                    /* must come after interface.h */
+
+/* Compatibility */
+#ifndef T_TXT
+#define T_TXT		16		/* text strings */
+#endif
+#ifndef T_RP
+#define T_RP		17		/* responsible person */
+#endif
+#ifndef T_AFSDB
+#define T_AFSDB		18		/* AFS cell database */
+#endif
+#ifndef T_X25
+#define T_X25		19		/* X_25 calling address */
+#endif
+#ifndef T_ISDN
+#define T_ISDN		20		/* ISDN calling address */
+#endif
+#ifndef T_RT
+#define T_RT		21		/* router */
+#endif
+#ifndef T_NSAP
+#define T_NSAP		22		/* NSAP address */
+#endif
+#ifndef T_NSAP_PTR
+#define T_NSAP_PTR	23		/* reverse NSAP lookup (deprecated) */
+#endif
+#ifndef T_SIG
+#define T_SIG		24		/* security signature */
+#endif
+#ifndef T_KEY
+#define T_KEY		25		/* security key */
+#endif
+#ifndef T_PX
+#define T_PX		26		/* X.400 mail mapping */
+#endif
+#ifndef T_GPOS
+#define T_GPOS		27		/* geographical position (withdrawn) */
+#endif
+#ifndef T_AAAA
+#define T_AAAA		28		/* IP6 Address */
+#endif
+#ifndef T_LOC
+#define T_LOC		29		/* Location Information */
+#endif
+#ifndef T_NXT
+#define T_NXT		30		/* Next Valid Name in Zone */
+#endif
+#ifndef T_EID
+#define T_EID		31		/* Endpoint identifier */
+#endif
+#ifndef T_NIMLOC
+#define T_NIMLOC	32		/* Nimrod locator */
+#endif
+#ifndef T_SRV
+#define T_SRV		33		/* Server selection */
+#endif
+#ifndef T_ATMA
+#define T_ATMA		34		/* ATM Address */
+#endif
+#ifndef T_NAPTR
+#define T_NAPTR		35		/* Naming Authority PoinTeR */
+#endif
+#ifndef T_A6
+#define T_A6		38		/* IP6 address (ipngwg-dns-lookups) */
+#endif
+
+#ifndef T_UNSPEC
+#define T_UNSPEC	103		/* Unspecified format (binary data) */
+#endif
+#ifndef T_UNSPECA
+#define T_UNSPECA	104		/* "unspecified ascii". Ugly MIT hack */
+#endif
+
+#ifndef C_CHAOS
+#define C_CHAOS		3		/* for chaos net (MIT) */
+#endif
+#ifndef C_HS
+#define C_HS		4		/* for Hesiod name server (MIT) (XXX) */
+#endif
 
 static char *ns_ops[] = {
-	"", " inv_q", " stat", " op3", " op4", " op5", " op6", " op7",
+	"", " inv_q", " stat", " op3", " notify", " op5", " op6", " op7",
 	" op8", " updataA", " updateD", " updateDA",
 	" updateM", " updateMA", " zoneInit", " zoneRef",
 };
@@ -64,45 +152,85 @@ static char *ns_resp[] = {
 
 /* skip over a domain name */
 static const u_char *
-ns_nskip(register const u_char *cp)
+ns_nskip(register const u_char *cp, register const u_char *bp)
 {
 	register u_char i;
 
-	if (((i = *cp++) & 0xc0) == 0xc0)
+	if (((i = *cp++) & INDIR_MASK) == INDIR_MASK)
 		return (cp + 1);
-	while (i) {
+	while (i && cp < snapend) {
 		cp += i;
 		i = *cp++;
 	}
 	return (cp);
 }
 
-/* print a domain name */
-static void
-ns_nprint(register const u_char *cp, register const u_char *bp,
-	  register const u_char *ep)
+/* print a <domain-name> */
+static const u_char *
+ns_nprint(register const u_char *cp, register const u_char *bp)
 {
 	register u_int i;
+	register const u_char *rp;
+	register int compress;
+	int chars_processed;
+	int data_size = snapend - bp;
 
-	putchar(' ');
-	if ((i = *cp++) != 0)
-		while (i && cp < ep) {
-			if ((i & 0xc0) == 0xc0) {
+	i = *cp++;
+	chars_processed = 1;
+	rp = cp + i;
+	if ((i & INDIR_MASK) == INDIR_MASK) {
+		rp = cp + 1;
+		compress = 1;
+	} else
+		compress = 0;
+	if (i != 0)
+		while (i && cp < snapend) {
+			if ((i & INDIR_MASK) == INDIR_MASK) {
 				cp = bp + (((i << 8) | *cp) & 0x3fff);
 				i = *cp++;
+				chars_processed++;
+
+				/*
+				 * If we've looked at every character in
+				 * the message, this pointer will make
+				 * us look at some character again,
+				 * which means we're looping.
+				 */
+				if (chars_processed >= data_size) {
+					fn_printn(cp, 6, "<LOOP>");
+					if (!compress)
+						rp += i + 1;
+					return (rp);
+				}
 				continue;
 			}
-			do {
-				putchar(*cp++);
-			} while (--i);
+			if (fn_printn(cp, i, snapend))
+				break;
+			cp += i;
+			chars_processed += i;
 			putchar('.');
 			i = *cp++;
+			chars_processed++;
+			if (!compress)
+				rp += i + 1;
 		}
 	else
 		putchar('.');
+	return (rp);
 }
 
-static struct token type2str[] = {
+/* print a <character-string> */
+static const u_char *
+ns_cprint(register const u_char *cp, register const u_char *bp)
+{
+	register u_int i;
+
+	i = *cp++;
+	(void)fn_printn(cp, i, snapend);
+	return (cp + i);
+}
+
+static struct tok type2str[] = {
 	{ T_A,		"A" },
 	{ T_NS,		"NS" },
 	{ T_MD,		"MD" },
@@ -118,12 +246,41 @@ static struct token type2str[] = {
 	{ T_HINFO,	"HINFO" },
 	{ T_MINFO,	"MINFO" },
 	{ T_MX,		"MX" },
-	{ T_UINFO,	"UINFO" },
-	{ T_UID,	"UID" },
-	{ T_GID,	"GID" },
-#ifdef T_UNSPEC
-	{ T_UNSPEC,	"UNSPEC" },
+	{ T_TXT,	"TXT" },
+	{ T_RP,		"RP" },
+	{ T_AFSDB,	"AFSDB" },
+	{ T_X25,	"X25" },
+	{ T_ISDN,	"ISDN" },
+	{ T_RT,		"RT" },
+	{ T_NSAP,	"NSAP" },
+	{ T_NSAP_PTR,	"NSAP_PTR" },
+	{ T_SIG,	"SIG" },
+	{ T_KEY,	"KEY" },
+	{ T_PX,		"PX" },
+	{ T_GPOS,	"GPOS" },
+	{ T_AAAA,	"AAAA" },
+	{ T_LOC,	"LOC " },
+	{ T_NXT,	"NXT " },
+	{ T_EID,	"EID " },
+	{ T_NIMLOC,	"NIMLOC " },
+	{ T_SRV,	"SRV " },
+	{ T_ATMA,	"ATMA " },
+	{ T_NAPTR,	"NAPTR " },
+	{ T_A6,		"A6 " },
+#ifndef T_UINFO
+#define T_UINFO 100
 #endif
+	{ T_UINFO,	"UINFO" },
+#ifndef T_UID
+#define T_UID 101
+#endif
+	{ T_UID,	"UID" },
+#ifndef T_GID
+#define T_GID 102
+#endif
+	{ T_GID,	"GID" },
+	{ T_UNSPEC,	"UNSPEC" },
+	{ T_UNSPECA,	"UNSPECA" },
 	{ T_AXFR,	"AXFR" },
 	{ T_MAILB,	"MAILB" },
 	{ T_MAILA,	"MAILA" },
@@ -131,17 +288,24 @@ static struct token type2str[] = {
 	{ 0,		NULL }
 };
 
+static struct tok class2str[] = {
+	{ C_IN,		"IN" },		/* Not used */
+	{ C_CHAOS,	"CHAOS)" },
+	{ C_HS,		"HS" },
+	{ C_ANY,	"ANY" },
+	{ 0,		NULL }
+};
+
 /* print a query */
 static void
-ns_qprint(register const u_char *cp, register const u_char *bp,
-	  register const u_char *ep)
+ns_qprint(register const u_char *cp, register const u_char *bp)
 {
-	const u_char *np = cp;
+	register const u_char *np = cp;
 	register u_int i;
 
-	cp = ns_nskip(cp);
+	cp = ns_nskip(cp, bp);
 
-	if (cp + 4 > ep)
+	if (cp + 4 > snapend)
 		return;
 
 	/* print the qtype and qclass (if it's not IN) */
@@ -149,42 +313,47 @@ ns_qprint(register const u_char *cp, register const u_char *bp,
 	i |= *cp++;
 	printf(" %s", tok2str(type2str, "Type%d", i));
 	i = *cp++ << 8;
-	if ((i |= *cp++) != C_IN)
-		if (i == C_ANY)
-			printf("(c_any)");
-		else
-			printf("(Class %d)", i);
+	i |= *cp++;
+	if (i != C_IN)
+		printf(" %s", tok2str(class2str, "(Class %d)", i));
 
-	putchar('?');
-	ns_nprint(np, bp, ep);
+	fputs("? ", stdout);
+	ns_nprint(np, bp);
 }
 
-
 /* print a reply */
-static void
-ns_rprint(register const u_char *cp, register const u_char *bp,
-	  register const u_char *ep)
+static const u_char *
+ns_rprint(register const u_char *cp, register const u_char *bp)
 {
 	register u_int i;
-	u_short typ;
+	register u_short typ, len;
+	register const u_char *rp;
 
-	cp = ns_nskip(cp);
+	if (vflag) {
+		putchar(' ');
+		cp = ns_nprint(cp, bp);
+	} else
+		cp = ns_nskip(cp, bp);
 
-	if (cp + 10 > ep)
-		return;
+	if (cp + 10 > snapend)
+		return (snapend);
 
 	/* print the type/qtype and class (if it's not IN) */
 	typ = *cp++ << 8;
 	typ |= *cp++;
 	i = *cp++ << 8;
-	if ((i |= *cp++) != C_IN)
-		if (i == C_ANY)
-			printf("(c_any)");
-		else
-			printf("(Class %d)", i);
+	i |= *cp++;
+	if (i != C_IN)
+		printf(" %s", tok2str(class2str, "(Class %d)", i));
 
-	/* ignore ttl & len */
-	cp += 6;
+	/* ignore ttl */
+	cp += 4;
+
+	len = *cp++ << 8;
+	len |= *cp++;
+
+	rp = cp + len;
+
 	printf(" %s", tok2str(type2str, "Type%d", typ));
 	switch (typ) {
 
@@ -195,29 +364,56 @@ ns_rprint(register const u_char *cp, register const u_char *bp,
 	case T_NS:
 	case T_CNAME:
 	case T_PTR:
-		ns_nprint(cp, bp, ep);
+#ifdef T_DNAME
+	case T_DNAME:	/*XXX not checked as there's no server support yet*/
+#endif
+		putchar(' ');
+		(void)ns_nprint(cp, bp);
 		break;
 
 	case T_MX:
-		ns_nprint(cp+2, bp, ep);
-#ifndef TCPDUMP_ALIGN
-		printf(" %d", *(short *)cp);
-#else
-		{
-		    u_short x = *cp | cp[1] << 8;
-		    printf(" %d", ntohs(x));
-		}
-#endif
+		putchar(' ');
+		(void)ns_nprint(cp + 2, bp);
+		printf(" %d", EXTRACT_16BITS(cp));
+		break;
+
+	case T_TXT:
+		putchar(' ');
+		(void)ns_cprint(cp, bp);
+		break;
+
+#ifdef INET6
+	case T_AAAA:
+		printf(" %s", ip6addr_string(cp));
+		break;
+
+	case T_A6:	/*XXX not checked as there's no server support yet*/
+	    {
+		struct in6_addr a;
+		int pbyte;
+
+		pbyte = (*cp + 7) / 8;
+		memset(&a, 0, sizeof(a));
+		memcpy(&a, cp + 1, pbyte);
+		printf(" %u %s ", *cp, ip6addr_string(&a));
+		(void)ns_nprint(cp + 1 + pbyte, bp);
+		break;
+	    }
+#endif /*INET6*/
+
+	case T_UNSPECA:		/* One long string */
+	        printf(" %.*s", len, cp);
 		break;
 	}
+	return (rp);		/* XXX This isn't always right */
 }
 
 void
-ns_print(register const u_char *bp, int length)
+ns_print(register const u_char *bp, u_int length)
 {
 	register const HEADER *np;
-	int qdcount, ancount, nscount, arcount;
-	const u_char *ep = snapend;
+	register int qdcount, ancount, nscount, arcount;
+	register const u_char *cp;
 
 	np = (const HEADER *)bp;
 	/* get the byte-order right */
@@ -237,10 +433,20 @@ ns_print(register const u_char *bp, int length)
 			np->tc? "|" : "");
 		if (qdcount != 1)
 			printf(" [%dq]", qdcount);
+		/* Print QUESTION section on -vv */
+		if (vflag > 1) {
+		            fputs(" q: ", stdout);
+			    cp = ns_nprint((const u_char *)(np + 1), bp);
+		} else
+			    cp = ns_nskip((const u_char *)(np + 1), bp);
 		printf(" %d/%d/%d", ancount, nscount, arcount);
-		if (ancount)
-			ns_rprint(ns_nskip((const u_char *)(np + 1)) + 4,
-				  (const u_char *)np, ep);
+		if (ancount--) {
+			cp = ns_rprint(cp + 4, bp);
+			while (ancount-- && cp < snapend) {
+				putchar(',');
+				cp = ns_rprint(cp, bp);
+			}
+		}
 	}
 	else {
 		/* this is a request */
@@ -270,7 +476,7 @@ ns_print(register const u_char *bp, int length)
 		if (arcount)
 			printf(" [%dau]", arcount);
 
-		ns_qprint((const u_char *)(np + 1), (const u_char *)np, ep);
+		ns_qprint((const u_char *)(np + 1), (const u_char *)np);
 	}
 	printf(" (%d)", length);
 }

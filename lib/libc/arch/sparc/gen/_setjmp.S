@@ -1,4 +1,5 @@
 /*
+ *
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -33,14 +34,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * from: Header: _setjmp.s,v 1.1 91/07/06 16:45:53 torek Exp
- * $Id: _setjmp.S,v 1.1 1993/10/07 00:21:26 cgd Exp $
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)_setjmp.s	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /*
  * C library -- _setjmp, _longjmp
@@ -56,8 +55,9 @@
 #include "DEFS.h"
 
 ENTRY(_setjmp)
-	std	%sp, [%o0+0]	/* caller's stack pointer and return pc */
-	st	%fp, [%o0+8]	/* store caller's frame pointer */
+	st	%sp, [%o0+0]	/* store caller's stack pointer */
+	st	%o7, [%o0+4]	/* ... return pc */
+	st	%fp, [%o0+8]	/* ... and frame pointer */
 	retl
 	 clr	%o0		! return 0
 
@@ -73,7 +73,7 @@ ENTRY(_longjmp)
 	bl,a	1b		! if below,
 	 restore		!    pop frame and loop
 	be,a	2f		! if there,
-	 ldd	[%g1+0], %o2	!    fetch return %sp and pc, and get out
+	 ld	[%g1+0], %o2	!    fetch return %sp
 
 Lbotch:
 	call	_longjmperror	! otherwise, went too far; bomb out
@@ -86,5 +86,6 @@ Lbotch:
 	 mov	%o2, %sp	! it is OK, put it in place
 	b,a	Lbotch
 3:
+	ld	[%g1+4], %o3	! fetch pc
 	jmp	%o3 + 8		! success, return %g6
 	 mov	%g6, %o0

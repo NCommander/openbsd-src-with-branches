@@ -44,6 +44,7 @@
 #include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
+#include <sys/fcntl.h>
 
 #include <dev/vndioctl.h>
 
@@ -52,15 +53,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <util.h>
 
 #define VND_CONFIG	1
 #define VND_UNCONFIG	2
 
 int verbose = 0;
 
-char *rawdevice __P((char *));
 void usage __P((void));
+int config __P((char *, char *, int));
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -96,6 +99,7 @@ main(argc, argv)
 	exit(rv);
 }
 
+int
 config(dev, file, action)
 	char *dev;
 	char *file;
@@ -106,7 +110,8 @@ config(dev, file, action)
 	char *rdev;
 	int rv;
 
-	rdev = rawdevice(dev);
+	if (opendev(dev, O_RDWR, OPENDEV_PART, &rdev) < 0)
+		err(4, "%s", rdev);
 	f = fopen(rdev, "rw");
 	if (f == NULL) {
 		warn(rdev);
@@ -135,32 +140,10 @@ config(dev, file, action)
 			printf("%s: %d bytes on %s\n", dev, vndio.vnd_size,
 			    file);
 	}
-done:
+
 	fclose(f);
 	fflush(stdout);
 	return (rv < 0);
-}
-
-char *
-rawdevice(dev)
-	char *dev;
-{
-	register char *rawbuf, *dp, *ep;
-	struct stat sb;
-	int len;
-
-	len = strlen(dev);
-	rawbuf = malloc(len + 2);
-	strcpy(rawbuf, dev);
-	if (stat(rawbuf, &sb) != 0 || !S_ISCHR(sb.st_mode)) {
-		dp = rindex(rawbuf, '/');
-		if (dp) {
-			for (ep = &rawbuf[len]; ep > dp; --ep)
-				*(ep+1) = *ep;
-			*++ep = 'r';
-		}
-	}
-	return (rawbuf);
 }
 
 void
@@ -168,7 +151,7 @@ usage()
 {
 
 	(void)fprintf(stderr, "%s%s",
-	    "usage: vnconfig -c [-v] special-file regular-file\n",
-	    "       vnconfig -u [-v] special-file\n");
+	    "usage: vnconfig -c [-v] rawdev regular-file\n",
+	    "       vnconfig -u [-v] rawdev\n");
 	exit(1);
 }

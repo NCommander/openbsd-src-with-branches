@@ -1,8 +1,9 @@
-/*	$NetBSD: lstFirst.c,v 1.4 1995/06/14 15:21:12 christos Exp $	*/
+/*	$OpenBSD: lstFirst.c,v 1.4 1998/12/05 00:06:32 espie Exp $	*/
+/*	$NetBSD: lstFirst.c,v 1.5 1996/11/06 17:59:41 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstFirst.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstFirst.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstFirst.c,v 1.4 1995/06/14 15:21:12 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstFirst.c,v 1.4 1998/12/05 00:06:32 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,7 +58,7 @@ static char rcsid[] = "$NetBSD: lstFirst.c,v 1.4 1995/06/14 15:21:12 christos Ex
  *	Return the first node on the given list.
  *
  * Results:
- *	The first node or NILLNODE if the list is empty.
+ *	The first node or NULL if the list is empty.
  *
  * Side Effects:
  *	None.
@@ -69,7 +70,7 @@ Lst_First (l)
     Lst	l;
 {
     if (!LstValid (l) || LstIsEmpty (l)) {
-	return (NILLNODE);
+	return (NULL);
     } else {
 	return ((LstNode)((List)l)->firstPtr);
     }

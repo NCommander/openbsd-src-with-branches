@@ -1,3 +1,4 @@
+.\"	$OpenBSD: wait.1,v 1.4 1998/12/16 03:05:34 aaron Exp $
 .\"	$NetBSD: wait.1,v 1.2 1994/11/30 08:35:03 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -44,7 +45,7 @@
 .Op Ar pid
 .Sh DESCRIPTION
 If invoked with no arguments, the
-.Nm wait
+.Nm
 utility waits until
 all existing child processes in the background
 have terminated.
@@ -56,29 +57,32 @@ If a
 .Ar pid
 operand is specified, and it is the process ID of a
 background child process that still exists, the
-.Nm wait
+.Nm
 utility
 waits until that process has completed and consumes its
 status information, without consuming the status information
 of any other process.
 .Pp
-If a pid operand is specified that is not the process ID of
+If a
+.Ar pid
+operand is specified that is not the process ID of
 a child background process that still exists,
-.Nm wait
+.Nm
 exits
 without waiting for any processes to complete.
 .El
 .Pp
 The
-.Nm wait
+.Nm
 utility exits with one of the following values:
 .Bl -tag -width Ds
 .It \&0
 The
-.Nm wait
+.Nm
 utility was invoked with no operands and
 all of the existing background child processes have
-terminated, or the process specified by the pid
+terminated, or the process specified by the
+.Ar pid
 operand exited normally with 0 as its exit status.
 .It \&>\&0
 The specified process did not exist and its exit
@@ -91,12 +95,14 @@ exit status.
 If the specified process terminated abnormally due
 to the receipt of a signal, the exit status
 information of
-.Nm wait
+.Nm
 contains that termination status as
 well.
+.Sh SEE ALSO
+.Xr wait 2
 .Sh STANDARDS
 The
-.Nm wait
+.Nm
 command is expected to be
 .St -p1003.2
 compatible.

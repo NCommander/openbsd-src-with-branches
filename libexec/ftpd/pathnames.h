@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathnames.h,v 1.3 1997/03/25 22:47:08 millert Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.5 1995/04/11 02:44:59 cgd Exp $	*/
 
 /*
@@ -41,3 +42,6 @@
 #define	_PATH_FTPCHROOT		"/etc/ftpchroot"
 #define	_PATH_FTPWELCOME	"/etc/ftpwelcome"
 #define	_PATH_FTPLOGINMESG	"/etc/motd"
+#define _PATH_FTPDSTATFILE	"/var/log/ftpd"
+#define _PATH_FTPDPID		"/var/run/ftpd.pid"
+#define _PATH_CWDMESG		".message"

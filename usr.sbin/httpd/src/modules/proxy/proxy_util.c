@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1996-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1996-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -134,8 +134,8 @@ void ap_proxy_c2hex(int ch, char *x)
  * and encodes those which must be encoded, and does not touch
  * those which must not be touched.
  */
-char *
-     ap_proxy_canonenc(pool *p, const char *x, int len, enum enctype t, int isenc)
+char *ap_proxy_canonenc(pool *p, const char *x, int len, enum enctype t,
+			enum proxyreqtype isenc)
 {
     int i, j, ch;
     char *y;
@@ -177,8 +177,8 @@ char *
 	    continue;
 	}
 /* decode it if not already done */
-	if (isenc && ch == '%') {
-	    if (!isxdigit(x[i + 1]) || !isxdigit(x[i + 2]))
+	if (isenc != NOT_PROXY && ch == '%') {
+	    if (!ap_isxdigit(x[i + 1]) || !ap_isxdigit(x[i + 2]))
 		return NULL;
 	    ch = ap_proxy_hex2c(&x[i + 1]);
 	    i += 2;
@@ -263,11 +263,14 @@ char *
 	    if (!ap_isdigit(strp[i]))
 		break;
 
-	if (i == 0 || strp[i] != '\0')
+	/* if (i == 0) the no port was given; keep default */
+	if (strp[i] != '\0') {
 	    return "Bad port number in URL";
-	*port = atoi(strp);
-	if (*port > 65535)
-	    return "Port number in URL > 65535";
+	} else if (i > 0) {
+	    *port = atoi(strp);
+	    if (*port > 65535)
+		return "Port number in URL > 65535";
+	}
     }
     ap_str_tolower(host);		/* DNS names are case-insensitive */
     if (*host == '\0')
@@ -277,7 +280,7 @@ char *
 	if (!ap_isdigit(host[i]) && host[i] != '.')
 	    break;
     /* must be an IP address */
-#ifdef WIN32
+#if defined(WIN32) || defined(NETWARE) || defined(TPF)
     if (host[i] == '\0' && (inet_addr(host) == -1))
 #else
     if (host[i] == '\0' && (ap_inet_addr(host) == -1 || inet_network(host) == -1))
@@ -488,15 +491,15 @@ table *ap_proxy_read_headers(request_rec *r, char *buffer, int size, BUFF *f)
 
 long int ap_proxy_send_fb(BUFF *f, request_rec *r, cache_req *c)
 {
-    int  ok = 1;
+    int  ok;
     char buf[IOBUFSIZE];
-    long total_bytes_rcv;
+    long total_bytes_rcvd;
     register int n, o, w;
     conn_rec *con = r->connection;
-    int alt_to = 1;
+    int alternate_timeouts = 1;	/* 1 if we alternate between soft & hard timeouts */
 
-    total_bytes_rcv = 0;
-    if (c)
+    total_bytes_rcvd = 0;
+    if (c != NULL)
         c->written = 0;
 
 #ifdef CHARSET_EBCDIC
@@ -514,84 +517,90 @@ long int ap_proxy_send_fb(BUFF *f, request_rec *r, cache_req *c)
 
     ap_kill_timeout(r);
 
-#ifdef WIN32
+#if defined(WIN32) || defined(TPF)
     /* works fine under win32, so leave it */
     ap_hard_timeout("proxy send body", r);
-    alt_to = 0;
+    alternate_timeouts = 0;
 #else
     /* CHECKME! Since hard_timeout won't work in unix on sends with partial
      * cache completion, we have to alternate between hard_timeout
      * for reads, and soft_timeout for send.  This is because we need
      * to get a return from ap_bwrite to be able to continue caching.
      * BUT, if we *can't* continue anyway, just use hard_timeout.
+     * (Also, if no cache file is written, use hard timeouts)
      */
 
-    if (c) {
-        if (c->len <= 0 || c->cache_completion == 1) {
-            ap_hard_timeout("proxy send body", r);
-            alt_to = 0;
-        }
-    } else {
+    if (c == NULL || c->len <= 0 || c->cache_completion == 1.0) {
         ap_hard_timeout("proxy send body", r);
-        alt_to = 0;
+        alternate_timeouts = 0;
     }
 #endif
 
-    while (ok) {
-        if (alt_to)
-            ap_hard_timeout("proxy send body", r);
+    /* Loop and ap_bread() while we can successfully read and write,
+     * or (after the client aborted) while we can successfully
+     * read and finish the configured cache_completion.
+     */
+    for (ok = 1; ok; ) {
+        if (alternate_timeouts)
+            ap_hard_timeout("proxy recv body from upstream server", r);
 
 	/* Read block from server */
 	n = ap_bread(f, buf, IOBUFSIZE);
 
-        if (alt_to)
+        if (alternate_timeouts)
             ap_kill_timeout(r);
         else
             ap_reset_timeout(r);
 
 	if (n == -1) {		/* input error */
-	    if (c != NULL)
+	    if (c != NULL) {
+		ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+		    "proxy: error reading from %s", c->url);
 		c = ap_proxy_cache_error(c);
+	    }
 	    break;
 	}
 	if (n == 0)
 	    break;		/* EOF */
 	o = 0;
-	total_bytes_rcv += n;
+	total_bytes_rcvd += n;
 
 	/* Write to cache first. */
+	/*@@@ XXX FIXME: Assuming that writing the cache file won't time out?!!? */
         if (c != NULL && c->fp != NULL) {
             if (ap_bwrite(c->fp, &buf[0], n) != n) {
-                c = ap_proxy_cache_error(c);
+                ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+		    "proxy: error writing to %s", c->tempfile);
+		c = ap_proxy_cache_error(c);
             } else {
                 c->written += n;
             }
         }
 
 	/* Write the block to the client, detect aborted transfers */
-        while (n && !con->aborted) {
-            if (alt_to)
+        while (!con->aborted && n > 0) {
+            if (alternate_timeouts)
                 ap_soft_timeout("proxy send body", r);
 
             w = ap_bwrite(con->client, &buf[o], n);
 
-            if (alt_to)
+            if (alternate_timeouts)
                 ap_kill_timeout(r);
             else
                 ap_reset_timeout(r);
 
             if (w <= 0) {
-                if (c != NULL) {
+                if (c != NULL && c->fp != NULL) {
                     /* when a send failure occurs, we need to decide
                      * whether to continue loading and caching the
                      * document, or to abort the whole thing
                      */
                     ok = (c->len > 0) &&
                          (c->cache_completion > 0) &&
-                         (c->len * c->cache_completion < total_bytes_rcv);
+                         (c->len * c->cache_completion < total_bytes_rcvd);
 
                     if (! ok) {
-                        ap_pclosef(c->req->pool, c->fp->fd);
+                        ap_pclosef(c->req->pool, ap_bfileno(c->fp, B_WR));
                         c->fp = NULL;
                         unlink(c->tempfile);
 			c = NULL;
@@ -602,14 +611,14 @@ long int ap_proxy_send_fb(BUFF *f, request_rec *r, cache_req *c)
             }
             n -= w;
             o += w;
-        }
-    }
+        } /* while client alive and more data to send */
+    } /* loop and ap_bread while "ok" */
 
     if (!con->aborted)
 	ap_bflush(con->client);
 
     ap_kill_timeout(r);
-    return total_bytes_rcv;
+    return total_bytes_rcvd;
 }
 
 /*
@@ -625,14 +634,11 @@ void ap_proxy_send_headers(request_rec *r, const char *respline, table *t)
     BUFF *fp = r->connection->client;
     table_entry *elts = (table_entry *) ap_table_elts(t)->elts;
 
-    ap_bputs(respline, fp);
-    ap_bputs(CRLF, fp);
+    ap_bvputs(fp, respline, CRLF, NULL);
 
     for (i = 0; i < ap_table_elts(t)->nelts; ++i) {
 	if (elts[i].key != NULL) {
 	    ap_bvputs(fp, elts[i].key, ": ", elts[i].val, CRLF, NULL);
-	    /* FIXME: @@@ This used to be ap_table_set(), but I think
-	     * ap_table_addn() is correct. MnKr */
 	    ap_table_addn(r->headers_out, elts[i].key, elts[i].val);
 	}
     }
@@ -674,10 +680,10 @@ int ap_proxy_liststr(const char *list, const char *val)
     return 0;
 }
 
-#ifdef WIN32
+#ifdef CASE_BLIND_FILESYSTEM
 
 /*
- * On NT, the file system is NOT case sensitive. So, a == A
+ * On some platforms, the file system is NOT case sensitive. So, a == A
  * need to map to smaller set of characters
  */
 void ap_proxy_hash(const char *it, char *val, int ndepth, int nlength)
@@ -775,7 +781,7 @@ void ap_proxy_hash(const char *it, char *val, int ndepth, int nlength)
     val[i + 22 - k] = '\0';
 }
 
-#endif /* WIN32 */
+#endif /* CASE_BLIND_FILESYSTEM */
 
 /*
  * Converts 8 hex digits to a time integer
@@ -823,24 +829,34 @@ void ap_proxy_sec2hex(int t, char *y)
 
 cache_req *ap_proxy_cache_error(cache_req *c)
 {
-    ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
-		 "proxy: error writing to cache file %s", c->tempfile);
-    ap_pclosef(c->req->pool, c->fp->fd);
-    c->fp = NULL;
-    unlink(c->tempfile);
+    if (c != NULL) {
+	if (c->fp != NULL) {
+	    ap_pclosef(c->req->pool, ap_bfileno(c->fp, B_WR));
+	    c->fp = NULL;
+	}
+	if (c->tempfile) unlink(c->tempfile);
+    }
     return NULL;
 }
 
-int ap_proxyerror(request_rec *r, const char *message)
+int ap_proxyerror(request_rec *r, int statuscode, const char *message)
 {
     ap_table_setn(r->notes, "error-notes",
 		  ap_pstrcat(r->pool, 
 			     "The proxy server could not handle the request "
-			     "<EM><A HREF=\"", r->uri, "\">",
-			     r->method, "&nbsp;", r->uri, "</A></EM>.<P>\n"
-			     "Reason: <STRONG>", message, "</STRONG>", NULL));
-    r->status_line = "500 Proxy Error";
-    return HTTP_INTERNAL_SERVER_ERROR;
+			     "<EM><A HREF=\"", ap_escape_uri(r->pool, r->uri),
+			     "\">", ap_escape_html(r->pool, r->method),
+			     "&nbsp;", 
+			     ap_escape_html(r->pool, r->uri), "</A></EM>.<P>\n"
+			     "Reason: <STRONG>",
+			     ap_escape_html(r->pool, message), 
+			     "</STRONG>", NULL));
+
+    /* Allow "error-notes" string to be printed by ap_send_error_response() */
+    ap_table_setn(r->notes, "verbose-error-to", ap_pstrdup(r->pool, "*"));
+
+    r->status_line = ap_psprintf(r->pool, "%3.3u Proxy Error", statuscode);
+    return statuscode;
 }
 
 /*
@@ -1230,7 +1246,7 @@ int ap_proxy_doconnect(int sock, struct sockaddr_in *addr, request_rec *r)
     ap_hard_timeout("proxy connect", r);
     do {
 	i = connect(sock, (struct sockaddr *) addr, sizeof(struct sockaddr_in));
-#ifdef WIN32
+#if defined(WIN32) || defined(NETWARE)
 	if (i == SOCKET_ERROR)
 	    errno = WSAGetLastError();
 #endif /* WIN32 */
@@ -1257,8 +1273,11 @@ int ap_proxy_send_hdr_line(void *p, const char *key, const char *value)
     if (!parm->req->assbackwards)
 	ap_rvputs(parm->req, key, ": ", value, CRLF, NULL);
     if (parm->cache != NULL && parm->cache->fp != NULL &&
-	ap_bvputs(parm->cache->fp, key, ": ", value, CRLF, NULL) == -1)
+	ap_bvputs(parm->cache->fp, key, ": ", value, CRLF, NULL) == -1) {
+	    ap_log_rerror(APLOG_MARK, APLOG_ERR, parm->cache->req,
+		    "proxy: error writing header to %s", parm->cache->tempfile);
 	    parm->cache = ap_proxy_cache_error(parm->cache);
+    }
     return 1; /* tell ap_table_do() to continue calling us for more headers */
 }
 

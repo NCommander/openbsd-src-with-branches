@@ -35,7 +35,7 @@
 .\"
 .Dd April 19, 1994
 .Dt SPP 4
-.Os BSD 4.3
+.Os
 .Sh NAME
 .Nm spp
 .Nd Xerox Sequenced Packet Protocol
@@ -50,7 +50,7 @@
 .Sh DESCRIPTION
 The
 .Tn SPP
-protocol provides reliable, flow-controlled, two-way
+protocol provides a reliable, flow-controlled, two-way
 transmission of data.  It is a byte-stream protocol used to
 support the
 .Dv SOCK_STREAM
@@ -76,7 +76,7 @@ system call must be used
 after binding the socket with the
 .Xr bind 2
 system call.  Only
-passive sockets may use the 
+passive sockets may use the
 .Xr accept 2
 call to accept incoming connections.  Only active sockets may
 use the
@@ -99,7 +99,7 @@ The
 port may still be specified
 at this time; if the port is not specified the system will assign one.
 Once a connection has been established the socket's address is
-fixed by the peer entity's location.   The address assigned the
+fixed by the peer entity's location.   The address assigned to the
 socket is the address associated with the network interface
 through which packets are being transmitted and received.  Normally
 this address corresponds to the peer entity's network.
@@ -157,7 +157,7 @@ when an attempt
 is made to create a socket with a port which has already been
 allocated;
 .It Bq Er EADDRNOTAVAIL
-when an attempt is made to create a 
+when an attempt is made to create a
 socket with a network address for which no network interface
 exists.
 .El
@@ -179,7 +179,7 @@ The data argument for the setsockopt call must be
 an unsigned short.
 .El
 .Sh SEE ALSO
-.Xr intro 4 ,
+.Xr netintro 4 ,
 .Xr ns 4
 .Sh HISTORY
 The

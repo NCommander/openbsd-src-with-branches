@@ -3,8 +3,7 @@
 ### WARNING: this file contains embedded tabs.  Do not run untabify on this file.
 
 # Configuration script
-# Copyright (C) 1988, 90, 91, 92, 93, 94, 95, 96, 1997
-# Free Software Foundation, Inc.
+# Copyright (C) 1988, 90, 91, 92, 93, 94 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,7 +47,7 @@ Makefile=Makefile
 Makefile_in=Makefile.in
 arguments=
 build_alias=
-cache_file=config.cache
+cache_file=
 cache_file_option=
 configdirs=
 exec_prefix=
@@ -81,7 +80,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.230.2.1 $"
+version="$Revision: 1.5 $"
 x11=default
 
 ### we might need to use some other shell than /bin/sh for running subshells
@@ -254,6 +253,9 @@ do
 		   fatal=yes
 		   ;;
 		esac
+		;;
+	--infodir*)
+		infodiroption="--infodir=$optarg"
 		;;
 	--tmpdir* | --tm*)
 		TMPDIR=$optarg
@@ -509,7 +511,7 @@ case "`grep '^# per\-host:' ${srcdir}/configure.in`" in
 	    eval exec ${config_shell} ${srcdir}/configure ${verbose} \
 		${buildopt} --host=${host_alias} --target=${target_alias} \
 		${prefixoption} ${tmpdiroption} ${exec_prefixoption} \
-		${srcdiroption} \
+		${srcdiroption} ${infodiroption} \
 		${program_prefixoption} ${program_suffixoption} \
 		${program_transform_nameoption} ${site_option} \
 		${withoptions} ${withoutoptions} \
@@ -1206,7 +1208,7 @@ ${progname}" ${arguments}  "
         if [ -r ${subdir}/config.back ] ; then
                 mv -f ${subdir}/config.back ${subdir}/config.status
         fi
-	${config_shell} ${moveifchange} ${subdir}/config.new ${subdir}/config.status
+        ${config_shell} ${moveifchange} ${subdir}/config.new ${subdir}/config.status
         ;;
 
     *)  rm -f ${Makefile} ${subdir}/config.status ${links} ;;
@@ -1277,7 +1279,7 @@ if [ -z "${norecursion}" -a -n "${configdirs}" ] ; then
 ### The recursion line is here.
 			if [ ! -z "${recprog}" ] ; then
 	                        if eval ${config_shell} ${recprog} ${verbose} ${buildopt} --host=${host_alias} --target=${target_alias} \
-        	                        ${prefixoption} ${tmpdiroption} ${exec_prefixoption} \
+        	                        ${prefixoption} ${tmpdiroption} ${exec_prefixoption} ${infodiroption} \
                 	                ${srcdiroption} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
 	                                true
         	                else

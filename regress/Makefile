@@ -2,7 +2,7 @@
 
 # missing: bin libexec sbin usr.bin usr.sbin share games gnu
 
-SUBDIR+= include lib sys
+SUBDIR+= include lib sys share
 
 regress: _SUBDIRUSE
 

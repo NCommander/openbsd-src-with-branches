@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote-verify.c,v 1.6 1999/10/09 06:59:37 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -20,33 +19,46 @@
  * PURPOSE.
  */
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <ctype.h>
 
-#ifdef WIN32
-#include <io.h>
-#include "getopt.h"
-#else
-#include <unistd.h>
-#ifdef NEED_GETOPT
-#include "getopt.h"
-#endif
-#endif
+#if STDC_HEADERS
+#include <string.h>
+#if !defined(HAVE_MEMCPY)
+#define memcpy(d, s, n) bcopy ((s), (d), (n))
+#endif /* !HAVE_MEMCPY */
+#endif /* STDC_HEADERS */
 
+#if HAVE_MEMORY_H
+#include <memory.h>
+#endif /* HAVE_MEMORY_H */
+
+#if HAVE_FCNTL_H
+#include <fcntl.h>
+#endif /* HAVE_FCNTL_H */
+
+#if !defined(HAVE_GETOPT)
+#include <getopt.h>
+#endif /* HAVE_GETOPT */
+
+#if HAVE_IO_H
+#include <io.h>
+#elif HAVE_UNISTD_H
+#include <unistd.h>
+#endif /* HAVE_IO_H */
+
+#include "header.h"
 #include "keynote.h"
 
-extern int read_environment(char *);
-extern void parse_key(char *);
-
-int sessid;
-
 void
-usage(void)
+verifyusage(void)
 {
     fprintf(stderr, "Arguments:\n");
     fprintf(stderr, "\t-h:             This message\n");
@@ -59,12 +71,8 @@ usage(void)
     fprintf(stderr, "\t<filename>:     Non-local assertion\n");
 }
 
-#ifdef WIN32
 void
-#else
-int
-#endif
-main(int argc, char *argv[])
+keynote_verify(int argc, char *argv[])
 {
 #ifdef LoopTesting
     int loopvar = 1000;
@@ -76,7 +84,7 @@ main(int argc, char *argv[])
 
     if (argc == 1)
     {
-	usage();
+	verifyusage();
 	exit(-1);
     }
 
@@ -124,7 +132,7 @@ main(int argc, char *argv[])
 
 		if ((fd = open(optarg, O_RDONLY, 0)) < 0)
 		{
-		    perror("open()");
+		    perror(optarg);
 		    exit(-1);
 		}
 
@@ -178,7 +186,7 @@ main(int argc, char *argv[])
 		break;
 
 	    case 'h':
-		usage();
+		verifyusage();
 		exit(0);
 
 	    case 'r':
@@ -211,7 +219,7 @@ main(int argc, char *argv[])
 			    exit(-1);
 			}
 
-			bcopy(retv, foov, numretv * sizeof(char **));
+			memcpy(foov, retv, numretv * sizeof(char **));
 			free(retv);
 			retv = foov;
 		    }
@@ -226,7 +234,7 @@ main(int argc, char *argv[])
 		    }
 
 		    /* Copy */
-		    bcopy(optarg, retv[numret], ptr - optarg);
+		    memcpy(retv[numret], optarg, ptr - optarg);
 		    optarg = ptr + 1;
 		}
 
@@ -244,7 +252,7 @@ main(int argc, char *argv[])
 	    case 'l':
 		if ((fd = open(optarg, O_RDONLY, 0)) < 0)
 		{
-		    perror("open()");
+		    perror(optarg);
 		    exit(-1);
 		}
 
@@ -289,7 +297,7 @@ main(int argc, char *argv[])
 
 	    case '?':
 	    default:
-		usage();
+		verifyusage();
 		exit(-1);
 	}
     }
@@ -332,7 +340,7 @@ main(int argc, char *argv[])
     {
 	if ((fd = open(argv[argc], O_RDONLY, 0)) < 0)
 	{
-	    perror("open()");
+	    perror(argv[argc]);
 	    exit(-1);
 	}
 

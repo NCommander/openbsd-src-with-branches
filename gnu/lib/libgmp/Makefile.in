@@ -36,7 +36,7 @@ AR_FLAGS = rc
 RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
 RANLIB = ranlib
 SHELL = /bin/sh
-INSTALL = $(srcdir)/install.sh -c
+INSTALL = $(SHELL) $(srcdir)/install.sh -c
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL)
 MAKEINFO = makeinfo
@@ -59,12 +59,12 @@ FILES = gmp.h mp.h gmp-impl.h longlong.h urandom.h move-if-change \
 INCLUDES = -I. -Impn -I$(srcdir)
 FLAGS_TO_PASS = "CC=$(CC)" "CFLAGS=$(CFLAGS)" "XCFLAGS=$(XCFLAGS)"
 
-all: libgmp.a
+all: subdirs sublibs libgmp.a
 
 .c.o:
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(XCFLAGS) $<
 
-libgmp.a: mpn/libmpn.a mpz/libmpz.a mpf/libmpf.a mpq/libmpq.a $(OBJS)
+libgmp.a: sublibs $(OBJS)
 	rm -rf tmpdir
 	mkdir tmpdir
 	for i in mpn mpz mpf mpq; \
@@ -78,7 +78,7 @@ libgmp.a: mpn/libmpn.a mpz/libmpz.a mpf/libmpf.a mpq/libmpq.a $(OBJS)
 	mv tmpdir/$@ .
 	rm -rf tmpdir
 
-libmp.a: mpn/libmpn.a mpbsd/libmpbsd.a $(OBJS)
+libmp.a: sublibs $(OBJS)
 	rm -rf tmpdir
 	mkdir tmpdir
 	for i in mpn mpbsd; \
@@ -92,15 +92,14 @@ libmp.a: mpn/libmpn.a mpbsd/libmpbsd.a $(OBJS)
 	mv tmpdir/$@ .
 	rm -rf tmpdir
 
-mpn/libmpn.a: force
+sublibs: mpn/libmpn.a mpz/libmpz.a mpf/libmpf.a mpq/libmpq.a mpbsd/libmpbsd.a
+	-touch sublibs
+
+subdirs:
 	cd mpn; $(MAKE) $(FLAGS_TO_PASS) libmpn.a
-mpz/libmpz.a: force
 	cd mpz; $(MAKE) $(FLAGS_TO_PASS) libmpz.a
-mpf/libmpf.a: force
 	cd mpf; $(MAKE) $(FLAGS_TO_PASS) libmpf.a
-mpq/libmpq.a: force
 	cd mpq; $(MAKE) $(FLAGS_TO_PASS) libmpq.a
-mpbsd/libmpbsd.a: force
 	cd mpbsd; $(MAKE) $(FLAGS_TO_PASS) libmpbsd.a
 
 check: libgmp.a
@@ -110,9 +109,9 @@ check: libgmp.a
 
 doc: gmp.dvi gmp.info
 
-info: $(srcdir)/gmp.info
-$(srcdir)/gmp.info: $(srcdir)/gmp.texi
-	cd $(srcdir); $(MAKEINFO) gmp.texi
+info: gmp.info
+gmp.info: $(srcdir)/gmp.texi
+	$(MAKEINFO) $(srcdir)/gmp.texi
 
 dvi: gmp.dvi
 gmp.dvi: $(srcdir)/gmp.texi
@@ -147,17 +146,17 @@ install-bsdmp: installdirs libmp.a gmp.info install-info-files
 	-chmod a-x $(libdir)/libmp.a
 	$(INSTALL_DATA) $(srcdir)/mp.h $(includedir)/mp.h
 	-chmod a-x $(includedir)/mp.h
-install-info-files: installdirs $(srcdir)/gmp.info
-	cd $(srcdir); for f in gmp.info*; \
+install-info-files: installdirs gmp.info
+	for f in gmp.info*; \
 	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
 	-chmod a-x $(infodir)/gmp.info*
-	# Attempt to edit the info directory node
-	if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
-	  install-info --dir-file=$(infodir)/dir $(infodir)/gmp.info; \
-	  else true; fi
+#	# Attempt to edit the info directory node
+#	if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
+#	  install-info --dir-file=$(infodir)/dir $(infodir)/gmp.info; \
+#	  else true; fi
 
 installdirs: $(srcdir)/mkinstalldirs
-	$(srcdir)/mkinstalldirs $(includedir) $(libdir) $(infodir)
+	$(SHELL) $(srcdir)/mkinstalldirs $(includedir) $(libdir) $(infodir)
 
 uninstall:
 	rm -f $(libdir)/libgmp.a

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dmesg.c,v 1.7 1998/07/08 22:14:37 deraadt Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)dmesg.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dmesg.c,v 1.7 1998/07/08 22:14:37 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -77,15 +78,15 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register int ch, newl, skip;
+	register int ch, newl, skip, i;
 	register char *p, *ep;
 	struct msgbuf *bufp, cur;
-	char *memf, *nlistf;
+	char *memf, *nlistf, *bufdata;
 	kvm_t *kd;
 	char buf[5];
 
 	memf = nlistf = NULL;
-	while ((ch = getopt(argc, argv, "M:N:")) != EOF)
+	while ((ch = getopt(argc, argv, "M:N:")) != -1)
 		switch(ch) {
 		case 'M':
 			memf = optarg;
@@ -104,33 +105,48 @@ main(argc, argv)
 	 * Discard setgid privileges if not the running kernel so that bad
 	 * guys can't print interesting stuff from kernel memory.
 	 */
-	if (memf != NULL || nlistf != NULL)
+	if (memf != NULL || nlistf != NULL) {
+		setegid(getgid());
 		setgid(getgid());
+	}
 
 	/* Read in kernel message buffer, do sanity checks. */
 	if ((kd = kvm_open(nlistf, memf, NULL, O_RDONLY, "dmesg")) == NULL)
 		exit (1);
+
+	setegid(getgid());
+	setgid(getgid());
+
 	if (kvm_nlist(kd, nl) == -1)
 		errx(1, "kvm_nlist: %s", kvm_geterr(kd));
 	if (nl[X_MSGBUF].n_type == 0)
 		errx(1, "%s: msgbufp not found", nlistf ? nlistf : "namelist");
-	if (KREAD(nl[X_MSGBUF].n_value, bufp) || KREAD((long)bufp, cur))
-		errx(1, "kvm_read: %s", kvm_geterr(kd));
-	kvm_close(kd);
+	if (KREAD(nl[X_MSGBUF].n_value, bufp))
+		errx(1, "kvm_read: %s: (0x%lx)", kvm_geterr(kd),
+		    nl[X_MSGBUF].n_value);
+	if (KREAD((long)bufp, cur))
+		errx(1, "kvm_read: %s (%0lx)", kvm_geterr(kd),
+		    (unsigned long)bufp);
 	if (cur.msg_magic != MSG_MAGIC)
 		errx(1, "magic number incorrect");
-	if (cur.msg_bufx >= MSG_BSIZE)
+	bufdata = malloc(cur.msg_bufs);
+	if (bufdata == NULL)
+		errx(1, "couldn't allocate space for buffer data");
+	if (kvm_read(kd, (long)&bufp->msg_bufc, bufdata,
+	    cur.msg_bufs) != cur.msg_bufs)
+		errx(1, "kvm_read: %s", kvm_geterr(kd));
+	if (cur.msg_bufx >= cur.msg_bufs)
 		cur.msg_bufx = 0;
+	kvm_close(kd);
 
 	/*
 	 * The message buffer is circular; start at the read pointer, and
 	 * go to the write pointer - 1.
 	 */
-	p = cur.msg_bufc + cur.msg_bufx;
-	ep = cur.msg_bufc + cur.msg_bufx - 1;
-	for (newl = skip = 0; p != ep; ++p) {
-		if (p == cur.msg_bufc + MSG_BSIZE)
-			p = cur.msg_bufc;
+	for (newl = skip = i = 0, p = bufdata + cur.msg_bufx;
+	    i < cur.msg_bufs; i++, p++) {
+		if (p == bufdata + cur.msg_bufs)
+			p = bufdata;
 		ch = *p;
 		/* Skip "\n<.*>" syslog sequences. */
 		if (skip) {

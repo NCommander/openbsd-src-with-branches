@@ -1,4 +1,4 @@
-/*	$NetBSD: key.c,v 1.1 1995/10/03 15:02:41 hpeyerl Exp $	*/
+/*	$OpenBSD: $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)key.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: key.c,v 1.1 1995/10/03 15:02:41 hpeyerl Exp $";
+static char rcsid[] = "$OpenBSD: $";
 #endif
 #endif /* not lint */
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: apecsreg.h,v 1.2 1995/08/03 01:17:04 cgd Exp $	*/
+/*	$OpenBSD: apecsreg.h,v 1.4 1996/07/09 00:54:34 cgd Exp $	*/
+/*	$NetBSD: apecsreg.h,v 1.4 1996/07/09 00:54:34 cgd Exp $	*/
 
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
@@ -33,6 +34,8 @@
  * Taken from ``DECchip 21071 and DECchip 21072 Core Logic Chipsets Data
  * Sheet'' (DEC order number EC-QAEMA-TE), pages 4-1 - 4-27, 10-21 - 10-38.
  */
+
+#define	REGVAL(r)	(*(int32_t *)ALPHA_PHYS_TO_K0SEG(r))
 
 /*
  * Base addresses
@@ -278,7 +281,9 @@
 #define		EPIC_HAXR1_EADDR	0xf8000000
 
 #define	EPIC_HAXR2	(EPIC_BASE + 0x01c0)		/* Host Addr Extn 2 */
-#define		EPIC_HAXR2_CONF_ADDR	0x00000003
+#define		EPIC_HAXR2_CONF_TYPE	0x00000003
+#define		EPIC_HAXR2_CONF_TYPO0	0x00000000
+#define		EPIC_HAXR2_CONF_TYPE1	0x00000001
 #define		EPIC_HAXR2_RSVD		0x00fffffc
 #define		EPIC_HAXR2_EADDR	0xff000000
 

@@ -1,4 +1,4 @@
-.\"	$NetBSD: setmode.3,v 1.6 1995/02/27 05:50:35 cgd Exp $
+.\"	$OpenBSD: setmode.3,v 1.6 1999/05/20 14:50:35 aaron Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,8 +31,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)setmode.3	8.1 (Berkeley) 6/9/93
-.\"
 .Dd June 9, 1993
 .Dt SETMODE 3
 .Os
@@ -41,9 +39,10 @@
 .Nm setmode
 .Nd modify mode bits
 .Sh SYNOPSIS
+.Fd #include <unistd.h>
 .Ft mode_t
 .Fn getmode "const void *set" "mode_t mode"
-.Ft void
+.Ft void *
 .Fn setmode "const char *mode_str"
 .Sh DESCRIPTION
 The
@@ -85,12 +84,17 @@ If the mode passed to
 is invalid,
 .Fn setmode
 returns
-.Dv NULL . 
+.Dv NULL .
+The caller is responsible for freeing the pointer that
+.Fn setmode
+returns.
 .Sh ERRORS
 The
 .Fn setmode
 function
-may fail and set errno for any of the errors specified for the library
+may fail and set
+.Va errno
+for any of the errors specified for the library
 routine
 .Xr malloc 3 .
 .Sh SEE ALSO
@@ -103,4 +107,5 @@ The
 .Fn getmode
 and
 .Fn setmode
-functions first appeared in 4.4BSD.
+functions first appeared in
+.Bx 4.4 .

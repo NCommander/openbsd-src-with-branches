@@ -1,3 +1,4 @@
+/*	$OpenBSD: mkfs.c,v 1.12 1999/04/10 04:09:23 millert Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mkfs.c	8.3 (Berkeley) 2/3/94";
 #else
-static char rcsid[] = "$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mkfs.c,v 1.12 1999/04/10 04:09:23 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +50,7 @@ static char rcsid[] = "$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $";
 #include <ufs/ufs/dir.h>
 #include <ufs/ffs/fs.h>
 #include <sys/disklabel.h>
+#include <sys/ioctl.h>
 
 #include <string.h>
 #include <unistd.h>
@@ -81,6 +83,7 @@ static char rcsid[] = "$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $";
 extern int	mfs;		/* run as the memory based filesystem */
 extern int	Nflag;		/* run mkfs without writing file system */
 extern int	Oflag;		/* format as an 4.3BSD file system */
+extern int	Uflag;		/* enable soft updates for file system */
 extern int	fssize;		/* file system size */
 extern int	ntracks;	/* # tracks/cylinder */
 extern int	nsectors;	/* # sectors/track */
@@ -90,8 +93,6 @@ extern int	sectorsize;	/* bytes/sector */
 extern int	rpm;		/* revolutions/minute of drive */
 extern int	interleave;	/* hardware sector interleave */
 extern int	trackskew;	/* sector 0 skew, per track */
-extern int	headswitch;	/* head switch time, usec */
-extern int	trackseek;	/* track-to-track seek, usec */
 extern int	fsize;		/* fragment size */
 extern int	bsize;		/* block size */
 extern int	cpg;		/* cylinders/cylinder group */
@@ -105,27 +106,32 @@ extern int	maxbpg;		/* maximum blocks per file in a cyl group */
 extern int	nrpos;		/* # of distinguished rotational positions */
 extern int	bbsize;		/* boot block size */
 extern int	sbsize;		/* superblock size */
+extern int	quiet;		/* quiet flag */
 extern u_long	memleft;	/* virtual memory available */
 extern caddr_t	membase;	/* start address of memory based filesystem */
-extern caddr_t	malloc(), calloc();
+static caddr_t	malloc(), calloc();
+static void	free();
 
-union {
+union fs_u {
 	struct fs fs;
 	char pad[SBSIZE];
-} fsun;
-#define	sblock	fsun.fs
+} *fsun;
+#define sblock	fsun->fs
+
 struct	csum *fscs;
 
-union {
+union cg_u {
 	struct cg cg;
 	char pad[MAXBSIZE];
-} cgun;
-#define	acg	cgun.cg
+} *cgun;
+#define acg	cgun->cg
 
-struct dinode zino[MAXBSIZE / sizeof(struct dinode)];
+struct dinode *zino;
+char	*buf;
 
 int	fsi, fso;
 daddr_t	alloc();
+static int charsperline();
 
 mkfs(pp, fsys, fi, fo)
 	struct partition *pp;
@@ -141,6 +147,16 @@ mkfs(pp, fsys, fi, fo)
 	time_t utime;
 	quad_t sizepb;
 	void started();
+	int width;
+	char tmpbuf[100];	/* XXX this will break in about 2,500 years */
+
+	if ((fsun = (union fs_u *)calloc(1, sizeof (union fs_u))) == 0 ||
+	    (cgun = (union cg_u *)malloc(sizeof (union cg_u))) == 0 ||
+	    (zino = (struct dinode *)malloc(MAXBSIZE)) == 0 ||
+	    (buf = (char *)malloc(MAXBSIZE)) == 0) {
+		printf("buffer malloc failed\n");
+		exit(1);
+	}
 
 #ifndef STANDALONE
 	time(&utime);
@@ -172,6 +188,9 @@ mkfs(pp, fsys, fi, fo)
 	} else {
 		sblock.fs_inodefmt = FS_44INODEFMT;
 		sblock.fs_maxsymlinklen = MAXSYMLINKLEN;
+	}
+	if (Uflag) {
+		sblock.fs_flags |= FS_DOSOFTDEP;
 	}
 	/*
 	 * Validate the given file system size.
@@ -425,9 +444,9 @@ mkfs(pp, fsys, fi, fo)
 	 * Now have size for file system and nsect and ntrak.
 	 * Determine number of cylinders and blocks in the file system.
 	 */
-	sblock.fs_size = fssize = dbtofsb(&sblock, fssize);
-	sblock.fs_ncyl = fssize * NSPF(&sblock) / sblock.fs_spc;
-	if (fssize * NSPF(&sblock) > sblock.fs_ncyl * sblock.fs_spc) {
+	sblock.fs_size = dbtofsb(&sblock, fssize);
+	sblock.fs_ncyl = sblock.fs_size * NSPF(&sblock) / sblock.fs_spc;
+	if (sblock.fs_size * NSPF(&sblock) > sblock.fs_ncyl * sblock.fs_spc) {
 		sblock.fs_ncyl++;
 		warn = 1;
 	}
@@ -518,7 +537,7 @@ next:
 		exit(29);
 	}
 	j = sblock.fs_ncg - 1;
-	if ((i = fssize - j * sblock.fs_fpg) < sblock.fs_fpg &&
+	if ((i = sblock.fs_size - j * sblock.fs_fpg) < sblock.fs_fpg &&
 	    cgdmin(&sblock, j) - cgbase(&sblock, j) > i) {
 		if (j == 0) {
 			printf("Filesystem must have at least %d sectors\n",
@@ -533,15 +552,15 @@ next:
 		    i * NSPF(&sblock));
 		sblock.fs_ncg--;
 		sblock.fs_ncyl -= sblock.fs_ncyl % sblock.fs_cpg;
-		sblock.fs_size = fssize = sblock.fs_ncyl * sblock.fs_spc /
-		    NSPF(&sblock);
+		sblock.fs_size = sblock.fs_ncyl * sblock.fs_spc / NSPF(&sblock);
+		fssize = fsbtodb(&sblock, sblock.fs_size);
 		warn = 0;
 	}
 	if (warn && !mfs) {
 		printf("Warning: %d sector(s) in last cylinder unallocated\n",
 		    sblock.fs_spc -
-		    (fssize * NSPF(&sblock) - (sblock.fs_ncyl - 1)
-		    * sblock.fs_spc));
+		    (dbtofsb(&sblock, fssize) * NSPF(&sblock) -
+		    (sblock.fs_ncyl - 1) * sblock.fs_spc));
 	}
 	/*
 	 * fill in remaining fields of the super block
@@ -553,13 +572,14 @@ next:
 	sblock.fs_csmask = ~(i - 1);
 	for (sblock.fs_csshift = 0; i > 1; i >>= 1)
 		sblock.fs_csshift++;
-	fscs = (struct csum *)calloc(1, sblock.fs_cssize);
+	if ((fscs = (struct csum *)calloc(1, sblock.fs_cssize)) == 0) {
+		printf("cg summary malloc failed\n");
+		exit(1);
+	}
 	sblock.fs_magic = FS_MAGIC;
 	sblock.fs_rotdelay = rotdelay;
 	sblock.fs_minfree = minfree;
 	sblock.fs_maxcontig = maxcontig;
-	sblock.fs_headswitch = headswitch;
-	sblock.fs_trkseek = trackseek;
 	sblock.fs_maxbpg = maxbpg;
 	sblock.fs_rps = rpm / 60;
 	sblock.fs_optim = opt;
@@ -569,8 +589,12 @@ next:
 	sblock.fs_cstotal.cs_nifree = 0;
 	sblock.fs_cstotal.cs_nffree = 0;
 	sblock.fs_fmod = 0;
-	sblock.fs_clean = FS_ISCLEAN;
 	sblock.fs_ronly = 0;
+	sblock.fs_clean = FS_ISCLEAN;
+#ifdef FSIRAND
+	sblock.fs_id[0] = (u_int32_t)utime;
+	sblock.fs_id[1] = (u_int32_t)arc4random();
+#endif
 	/*
 	 * Dump out summary information about file system.
 	 */
@@ -590,18 +614,25 @@ next:
 	 * Now build the cylinders group blocks and
 	 * then print out indices of cylinder groups.
 	 */
-	if (!mfs)
-		printf("super-block backups (for fsck -b #) at:");
+	if (!quiet)
+		printf("super-block backups (for fsck -b #) at:\n");
+	i = 0;
+	width = charsperline();
 	for (cylno = 0; cylno < sblock.fs_ncg; cylno++) {
 		initcg(cylno, utime);
-		if (mfs)
+		if (quiet)
 			continue;
-		if (cylno % 8 == 0)
+		j = sprintf(tmpbuf, " %d,",
+			fsbtodb(&sblock, cgsblock(&sblock, cylno)));
+		if (i+j >= width) {
 			printf("\n");
-		printf(" %d,", fsbtodb(&sblock, cgsblock(&sblock, cylno)));
+			i = 0;
+		}
+		i += j;
+		printf("%s", tmpbuf);
 		fflush(stdout);
 	}
-	if (!mfs)
+	if (!quiet)
 		printf("\n");
 	if (Nflag && !mfs)
 		exit(0);
@@ -711,9 +742,14 @@ initcg(cylno, utime)
 			setbit(cg_inosused(&acg), i);
 			acg.cg_cs.cs_nifree--;
 		}
-	for (i = 0; i < sblock.fs_ipg / INOPF(&sblock); i += sblock.fs_frag)
+	for (i = 0; i < sblock.fs_ipg / INOPF(&sblock); i += sblock.fs_frag) {
+#ifdef FSIRAND
+		for (j = 0; j < sblock.fs_bsize / sizeof(struct dinode); j++)
+			zino[j].di_gen = (u_int32_t)arc4random();
+#endif
 		wtfs(fsbtodb(&sblock, cgimin(&sblock, cylno) + i),
 		    sblock.fs_bsize, (char *)zino);
+	}
 	if (cylno > 0) {
 		/*
 		 * In cylno 0, beginning space is reserved
@@ -837,7 +873,6 @@ struct odirect olost_found_dir[] = {
 	{ 0, DIRBLKSIZ, 0, 0 },
 };
 #endif
-char buf[MAXBSIZE];
 
 fsinit(utime)
 	time_t utime;
@@ -865,7 +900,7 @@ fsinit(utime)
 			memcpy(&buf[i], &lost_found_dir[2],
 			    DIRSIZ(0, &lost_found_dir[2]));
 	}
-	node.di_mode = IFDIR | UMASK;
+	node.di_mode = IFDIR | 1700;
 	node.di_nlink = 2;
 	node.di_size = sblock.fs_bsize;
 	node.di_db[0] = alloc(node.di_size, node.di_mode);
@@ -976,10 +1011,14 @@ iput(ip, ino)
 	register struct dinode *ip;
 	register ino_t ino;
 {
-	struct dinode buf[MAXINOPB];
+	struct dinode *buf =
+	   (struct dinode *)malloc(MAXINOPB * sizeof (struct dinode));
 	daddr_t d;
 	int c;
 
+#ifdef FSIRAND
+	ip->di_gen = (u_int32_t)arc4random();
+#endif
 	c = ino_to_cg(&sblock, ino);
 	rdfs(fsbtodb(&sblock, cgtod(&sblock, 0)), sblock.fs_cgsize,
 	    (char *)&acg);
@@ -1001,6 +1040,7 @@ iput(ip, ino)
 	rdfs(d, sblock.fs_bsize, buf);
 	buf[ino_to_fsbo(&sblock, ino)] = *ip;
 	wtfs(d, sblock.fs_bsize, buf);
+	free(buf);
 }
 
 /*
@@ -1016,7 +1056,7 @@ started()
 /*
  * Replace libc function with one suited to our needs.
  */
-caddr_t
+static caddr_t
 malloc(size)
 	register u_long size;
 {
@@ -1048,7 +1088,7 @@ malloc(size)
 /*
  * Replace libc function with one suited to our needs.
  */
-caddr_t
+static caddr_t
 realloc(ptr, size)
 	char *ptr;
 	u_long size;
@@ -1057,29 +1097,32 @@ realloc(ptr, size)
 
 	if ((p = malloc(size)) == NULL)
 		return (NULL);
-	memcpy(p, ptr, size);
-	free(ptr);
+	if (ptr) {
+		memcpy(p, ptr, size);
+		free(ptr);
+	}
 	return (p);
 }
 
 /*
  * Replace libc function with one suited to our needs.
  */
-char *
+static char *
 calloc(size, numelm)
 	u_long size, numelm;
 {
 	caddr_t base;
 
 	size *= numelm;
-	base = malloc(size);
-	memset(base, 0, size);
+	if ((base = malloc(size)) != 0) 
+		memset(base, 0, size);
 	return (base);
 }
 
 /*
  * Replace libc function with one suited to our needs.
  */
+static void
 free(ptr)
 	char *ptr;
 {
@@ -1241,4 +1284,26 @@ setblock(fs, cp, h)
 #endif
 		return;
 	}
+}
+
+/*
+ * Determine the number of characters in a
+ * single line.
+ */
+static int
+charsperline()
+{
+	int columns;
+	char *cp;
+	struct winsize ws;
+	extern char *getenv();
+
+	columns = 0;
+	if (ioctl(0, TIOCGWINSZ, &ws) != -1)
+		columns = ws.ws_col;
+	if (columns == 0 && (cp = getenv("COLUMNS")))
+		columns = atoi(cp);
+	if (columns == 0)
+		columns = 80;   /* last resort */
+	return columns;
 }

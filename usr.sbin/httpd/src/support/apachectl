@@ -50,7 +50,7 @@ do
     # check for pidfile
     if [ -f $PIDFILE ] ; then
 	PID=`cat $PIDFILE`
-	if kill -0 $PID; then
+	if [ "x$PID" != "x" ] && kill -0 $PID 2>/dev/null ; then
 	    STATUS="httpd (pid $PID) running"
 	    RUNNING=1
 	else
@@ -69,6 +69,18 @@ do
 	    continue
 	fi
 	if $HTTPD ; then
+	    echo "$0 $ARG: httpd started"
+	else
+	    echo "$0 $ARG: httpd could not be started"
+	    ERROR=3
+	fi
+	;;
+    startssl|sslstart|start-SSL)
+	if [ $RUNNING -eq 1 ]; then
+	    echo "$0 $ARG: httpd (pid $PID) already running"
+	    continue
+	fi
+	if $HTTPD -DSSL; then
 	    echo "$0 $ARG: httpd started"
 	else
 	    echo "$0 $ARG: httpd could not be started"
@@ -153,6 +165,7 @@ do
 	cat <<EOF
 
 start      - start httpd
+startssl   - start httpd with SSL enabled
 stop       - stop httpd
 restart    - restart httpd if running by sending a SIGHUP or start if 
              not running
@@ -173,7 +186,7 @@ done
 exit $ERROR
 
 # ====================================================================
-# Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+# Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions

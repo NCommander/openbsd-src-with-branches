@@ -63,7 +63,3 @@ data_label:
 
 # ulhu is handled like ulh.  Sanity check it.
 	ulhu	$4,0
-
-# Round to a 16 byte boundary, for ease in testing multiple targets.
-	nop
-	nop

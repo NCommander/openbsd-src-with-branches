@@ -1,5 +1,5 @@
+/* * $OpenBSD: warnings.c,v 1.3 1998/03/26 19:46:29 niklas Exp $*/
 /*
- * $Id: warnings.c,v 1.18 1994/12/28 10:37:38 pk Exp $
  */
 
 #include <sys/param.h>
@@ -679,12 +679,21 @@ do_file_warnings (entry, outfile)
 		} else if (g->def_lsp && g->def_lsp->entry != entry &&
 			   !(entry->flags & E_DYNAMIC) &&
 			   g->def_lsp->entry->flags & E_SECONDCLASS) {
-			fprintf(outfile,
-			"%s: Undefined symbol `%s' referenced (use %s ?)\n",
-				get_file_name(entry),
-				g->name,
-				g->def_lsp->entry->local_sym_name);
-			continue;
+			if (g->undef_refs == 0)
+			    reported_undefineds++;
+			if (g->undef_refs >= MAX_UREFS_PRINTED)
+				continue;
+			if (++(g->undef_refs) == MAX_UREFS_PRINTED) {
+				errfmt = "More undefined `%s' refs follow";
+				line_number = -1;
+			} else {
+				fprintf(outfile,
+			    "%s: Undefined symbol `%s' referenced (use %s ?)\n",
+				    get_file_name(entry),
+				    g->name,
+				    g->def_lsp->entry->local_sym_name);
+				continue;
+			}
 		} else if (g->warning) {
 			/*
 			 * There are two cases in which we don't want to do
@@ -745,8 +754,8 @@ do_warnings(outfile)
 	if (list_unresolved_refs &&
 	    reported_undefineds !=
 	    (undefined_global_sym_count - undefined_weak_sym_count))
-		warnx("Spurious undefined symbols: "
-		      "# undefined symbols %d, reported %d",
+		warnx("internal consistency check failure: "
+		      "# undefined symbols %d, accounted for %d",
 		      (undefined_global_sym_count - undefined_weak_sym_count),
 		      reported_undefineds);
 

@@ -1,8 +1,8 @@
-/*	$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: utilities.c,v 1.4 1997/06/25 18:40:43 kstailey Exp $	*/
+/*	$NetBSD: utilities.c,v 1.1 1997/06/11 11:22:02 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -39,7 +39,11 @@
 #if 0
 static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $";
+#if 0
+static char rcsid[] = "$NetBSD: utilities.c,v 1.1 1997/06/11 11:22:02 bouyer Exp $";
+#else
+static char rcsid[] = "$OpenBSD: utilities.c,v 1.4 1997/06/25 18:40:43 kstailey Exp $";
+#endif
 #endif
 #endif /* not lint */
 
@@ -67,7 +71,7 @@ int
 ftypeok(dp)
 	struct ext2fs_dinode *dp;
 {
-	switch (dp->e2di_mode & IFMT) {
+	switch (fs2h16(dp->e2di_mode) & IFMT) {
 
 	case IFDIR:
 	case IFREG:
@@ -128,6 +132,7 @@ bufinit()
 	long bufcnt, i;
 	char *bufp;
 
+	diskreads = totalreads = 0;
 	pbp = pdirbp = (struct bufarea *)0;
 	bufhead.b_next = bufhead.b_prev = &bufhead;
 	bufcnt = MAXBUFSPACE / sblock.e2fs_bsize;
@@ -170,6 +175,7 @@ getdatablk(blkno, size)
 	if (bp == &bufhead)
 		errexit("deadlocked buffer pool\n");
 	getblk(bp, blkno, size);
+	diskreads++;
 	/* fall through */
 foundit:
 	totalreads++;
@@ -206,7 +212,7 @@ flush(fd, bp)
 	int fd;
 	register struct bufarea *bp;
 {
-	register int i, j;
+	register int i;
 
 	if (!bp->b_dirty)
 		return;
@@ -253,10 +259,13 @@ ckfini(markclean)
 	}
 	flush(fswritefd, &sblk);
 	if (havesb && sblk.b_bno != SBOFF / dev_bsize &&
-	    !preen && reply("UPDATE STANDARD SUPERBLOCK")) {
+	    !preen && reply("UPDATE STANDARD SUPERBLOCKS")) {
 		sblk.b_bno = SBOFF / dev_bsize;
 		sbdirty();
 		flush(fswritefd, &sblk);
+		copyback_sb(&asblk);
+		asblk.b_dirty = 1;
+		flush(fswritefd, &asblk);
 	}
 	for (bp = bufhead.b_prev; bp && bp != &bufhead; bp = nbp) {
 		cnt++;

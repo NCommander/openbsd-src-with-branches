@@ -1,4 +1,5 @@
-/*	$NetBSD: utilities.c,v 1.15 1995/04/23 10:33:09 cgd Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.6 1997/10/06 20:22:37 deraadt Exp $	*/
+/*	$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -37,12 +38,14 @@
 #if 0
 static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: utilities.c,v 1.15 1995/04/23 10:33:09 cgd Exp $";
+static char rcsid[] = "$OpenBSD: utilities.c,v 1.6 1997/10/06 20:22:37 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/uio.h>
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
 #include <ufs/ffs/fs.h>
@@ -51,11 +54,16 @@ static char rcsid[] = "$NetBSD: utilities.c,v 1.15 1995/04/23 10:33:09 cgd Exp $
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <paths.h>
 
+#include "fsutil.h"
 #include "fsck.h"
 #include "extern.h"
 
 long	diskreads, totalreads;	/* Disk cache statistics */
+
+static void rwerror __P((char *, daddr_t));
 
 int
 ftypeok(dp)
@@ -122,7 +130,7 @@ bufinit()
 	long bufcnt, i;
 	char *bufp;
 
-	pbp = pdirbp = (struct bufarea *)0;
+	pbp = pdirbp = NULL;
 	bufp = malloc((unsigned int)sblock.fs_bsize);
 	if (bufp == 0)
 		errexit("cannot allocate buffer pool\n");
@@ -226,7 +234,7 @@ flush(fd, bp)
 	}
 }
 
-void
+static void
 rwerror(mesg, blk)
 	char *mesg;
 	daddr_t blk;
@@ -234,7 +242,7 @@ rwerror(mesg, blk)
 
 	if (preen == 0)
 		printf("\n");
-	pfatal("CANNOT %s: BLK %ld", mesg, blk);
+	pfatal("CANNOT %s: BLK %d", mesg, blk);
 	if (reply("CONTINUE") == 0)
 		errexit("Program terminated\n");
 }
@@ -268,7 +276,7 @@ ckfini(markclean)
 	}
 	if (bufhead.b_size != cnt)
 		errexit("Panic: lost %d buffers\n", bufhead.b_size - cnt);
-	pbp = pdirbp = (struct bufarea *)0;
+	pbp = pdirbp = NULL;
 	if (markclean && (sblock.fs_clean & FS_ISCLEAN) == 0) {
 		/*
 		 * Mark the file system as clean, and sync the superblock.
@@ -469,7 +477,8 @@ getpathname(namebuf, curdir, ino)
 }
 
 void
-catch()
+catch(n)
+	int n;
 {
 	if (!doinglevel2)
 		ckfini(0);
@@ -482,9 +491,10 @@ catch()
  * so that reboot sequence may be interrupted.
  */
 void
-catchquit()
+catchquit(n)
+	int n;
 {
-	extern returntosingle;
+	extern int returntosingle;
 
 	printf("returning to single-user after filesystem check\n");
 	returntosingle = 1;
@@ -496,7 +506,8 @@ catchquit()
  * Used by child processes in preen.
  */
 void
-voidquit()
+voidquit(n)
+	int n;
 {
 
 	sleep(1);
@@ -545,60 +556,32 @@ dofix(idesc, msg)
 	/* NOTREACHED */
 }
 
-/* VARARGS1 */
-errexit(s1, s2, s3, s4)
-	char *s1;
-	long s2, s3, s4;
-{
-	printf(s1, s2, s3, s4);
-	exit(8);
-}
+int (* info_fn)(char *, int) = NULL;
+char *info_filesys = "?";
 
-/*
- * An unexpected inconsistency occured.
- * Die if preening, otherwise just print message and continue.
- */
-/* VARARGS1 */
-pfatal(s, a1, a2, a3)
-	char *s;
-	long a1, a2, a3;
+void
+catchinfo(n)
+	int n;
 {
+	char buf[1024];
+	struct iovec iov[4];
+	int fd;
 
-	if (preen) {
-		printf("%s: ", cdevname);
-		printf(s, a1, a2, a3);
-		printf("\n");
-		printf("%s: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.\n",
-			cdevname);
-		exit(8);
+	if (info_fn != NULL && info_fn(buf, sizeof buf)) {
+		fd = open(_PATH_TTY, O_WRONLY);
+		if (fd >= 0) {
+			iov[0].iov_base = info_filesys;
+			iov[0].iov_len = strlen(info_filesys);
+			iov[1].iov_base = ": ";
+			iov[1].iov_len = sizeof ": " - 1;
+			iov[2].iov_base = buf;
+			iov[2].iov_len = strlen(buf);
+			iov[3].iov_base = "\n";
+			iov[3].iov_len = sizeof "\n" - 1;
+
+			writev(fd, iov, 4);
+			close(fd);
+		}
 	}
-	printf(s, a1, a2, a3);
 }
 
-/*
- * Pwarn just prints a message when not preening,
- * or a warning (preceded by filename) when preening.
- */
-/* VARARGS1 */
-pwarn(s, a1, a2, a3, a4, a5, a6)
-	char *s;
-	long a1, a2, a3, a4, a5, a6;
-{
-
-	if (preen)
-		printf("%s: ", cdevname);
-	printf(s, a1, a2, a3, a4, a5, a6);
-}
-
-#ifndef lint
-/*
- * Stub for routines from kernel.
- */
-panic(s)
-	char *s;
-{
-
-	pfatal("INTERNAL INCONSISTENCY:");
-	errexit(s);
-}
-#endif

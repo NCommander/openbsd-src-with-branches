@@ -1,4 +1,5 @@
-/*	$NetBSD: write.c,v 1.5 1995/09/14 23:45:41 pk Exp $	*/
+/*	$OpenBSD: write.c,v 1.2 1996/09/23 14:19:07 mickey Exp $	*/
+/*	$NetBSD: write.c,v 1.7 1996/06/21 20:29:30 pk Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -64,6 +65,7 @@
  * rights to redistribute these changes.
  */
 
+#include <sys/param.h>
 #include "stand.h"
 
 ssize_t
@@ -82,9 +84,10 @@ write(fd, dest, bcount)
 	if (f->f_flags & F_RAW) {
 		twiddle();
 		errno = (f->f_dev->dv_strategy)(f->f_devdata, F_WRITE,
-			(daddr_t)0, bcount, dest, &resid);
+			btodb(f->f_offset), bcount, dest, &resid);
 		if (errno)
 			return (-1);
+		f->f_offset += resid;
 		return (resid);
 	}
 	resid = bcount;

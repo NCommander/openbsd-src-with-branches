@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -128,11 +128,12 @@ API_EXPORT(const char *) ap_get_remote_logname(request_rec *r);
 /* Used for constructing self-referencing URLs, and things like SERVER_PORT,
  * and SERVER_NAME.
  */
-API_EXPORT(char *) ap_construct_url(pool *p, const char *uri, const request_rec *r);
-API_EXPORT(const char *) ap_get_server_name(const request_rec *r);
+API_EXPORT(char *) ap_construct_url(pool *p, const char *uri, request_rec *r);
+API_EXPORT(const char *) ap_get_server_name(request_rec *r);
 API_EXPORT(unsigned) ap_get_server_port(const request_rec *r);
 API_EXPORT(unsigned long) ap_get_limit_req_body(const request_rec *r);
 API_EXPORT(void) ap_custom_response(request_rec *r, int status, char *string);
+API_EXPORT(int) ap_exists_config_define(char *name);
 
 /* Authentication stuff.  This is one of the places where compatibility
  * with the old config files *really* hurts; they don't discriminate at
@@ -151,12 +152,23 @@ API_EXPORT(const char *) ap_auth_name (request_rec *);
 API_EXPORT(int) ap_satisfies (request_rec *r);
 API_EXPORT(const array_header *) ap_requires (request_rec *);    
 
+#ifdef WIN32
+/* 
+ * CGI Script stuff for Win32...
+ */
+typedef enum { eFileTypeUNKNOWN, eFileTypeBIN, eFileTypeEXE16, eFileTypeEXE32, 
+               eFileTypeSCRIPT } file_type_e;
+typedef enum { INTERPRETER_SOURCE_UNSET, INTERPRETER_SOURCE_REGISTRY, 
+               INTERPRETER_SOURCE_SHEBANG } interpreter_source_e;
+API_EXPORT(file_type_e) ap_get_win32_interpreter(const request_rec *, char **);
+#endif
+
 #ifdef CORE_PRIVATE
 
 /*
  * Core is also unlike other modules in being implemented in more than
  * one file... so, data structures are declared here, even though most of
- * the code that cares really is in http_core.c.  Also, anothre accessor.
+ * the code that cares really is in http_core.c.  Also, another accessor.
  */
 
 char *ap_response_code_string (request_rec *r, int error_index);
@@ -219,13 +231,26 @@ typedef struct {
 
     signed int content_md5 : 2;  /* calculate Content-MD5? */
 
-    unsigned use_canonical_name : 2; /* bit 0 = on/off, bit 1 = unset/set */
+#define USE_CANONICAL_NAME_OFF   (0)
+#define USE_CANONICAL_NAME_ON    (1)
+#define USE_CANONICAL_NAME_DNS   (2)
+#define USE_CANONICAL_NAME_UNSET (3)
+    unsigned use_canonical_name : 2;
 
     /* since is_fnmatch(conf->d) was being called so frequently in
      * directory_walk() and its relatives, this field was created and
      * is set to the result of that call.
      */
     unsigned d_is_fnmatch : 1;
+
+    /* should we force a charset on any outgoing parameterless content-type?
+     * if so, which charset?
+     */
+#define ADD_DEFAULT_CHARSET_OFF   (0)
+#define ADD_DEFAULT_CHARSET_ON    (1)
+#define ADD_DEFAULT_CHARSET_UNSET (2)
+    unsigned add_default_charset : 2;
+    char *add_default_charset_name;
 
     /* System Resource Control */
 #ifdef RLIMIT_CPU
@@ -240,13 +265,19 @@ typedef struct {
     unsigned long limit_req_body;  /* limit on bytes in request msg body */
 
     /* logging options */
-    enum { srv_sig_off, srv_sig_on, srv_sig_withmail } server_signature;
+    enum { srv_sig_unset, srv_sig_off, srv_sig_on,
+	    srv_sig_withmail } server_signature;
     int loglevel;
     
     /* Access control */
     array_header *sec;
     regex_t *r;
 
+#ifdef WIN32
+    /* Where to find interpreter to run scripts */
+    interpreter_source_e script_interpreter_source;
+#endif    
+    
 } core_dir_config;
 
 /* Per-server core configuration */
@@ -276,6 +307,7 @@ void ap_core_reorder_directories(pool *, server_rec *);
 /* for mod_perl */
 CORE_EXPORT(void) ap_add_per_dir_conf (server_rec *s, void *dir_config);
 CORE_EXPORT(void) ap_add_per_url_conf (server_rec *s, void *url_config);
+CORE_EXPORT(void) ap_add_file_conf(core_dir_config *conf, void *url_config);
 CORE_EXPORT_NONSTD(const char *) ap_limit_section (cmd_parms *cmd, void *dummy, const char *arg);
 
 #endif

@@ -1,7 +1,7 @@
+#	$OpenBSD: Makefile.mvme88k,v 1.7 1999/09/27 21:30:11 smurph Exp $
 #	@(#)Makefile.hp300	7.10 (Berkeley) 6/27/91
-#	$Id: Makefile.mvme88k,v 1.3 1995/09/21 03:58:10 build Exp build $
 #
-# Makefile for NetBSD
+# Makefile for OpenBSD
 #
 # This makefile is constructed from a machine description:
 #	config machineid
@@ -22,12 +22,15 @@
 
 # DEBUG is set to -g by config if debugging is requested (config -g).
 # PROF is set to -pg by config if profiling is requested (config -p).
-AS=     as ${DEBUG}
-AWK=	awk
-CC=     cc ${DEBUG}
-CPP=    cpp
-LD=     ld
-TOUCH=	touch -f -c
+
+AS?= 	as ${DEBUG}
+AWK?=	awk
+CC?=    cc ${DEBUG}
+CPP?=   cpp
+LD?=    ld
+TOUCH?=	touch -f -c
+SIZE?=	size
+STRIP?= strip
 
 .ifndef HOSTCC
 HOSTCC=cc
@@ -97,24 +100,28 @@ SYSTEM_LD=	-@if [ X${DEBUG} = X-g ]; \
 		then strip=-X; \
 		else strip=-x; \
 		fi; \
-		echo ${LD} $$strip -Ttext 0x10000 -o $@ ${SYSTEM_OBJ} libgcc.a vers.o; \
-		${LD} $$strip -Ttext 0x10000 -e start -o $@ ${SYSTEM_OBJ} \
-			libgcc.a vers.o
+		echo ${LD} $$strip -Ttext 0x10000 -o $@ '$${SYSTEM_OBJ}' vers.o; \
+		${LD} $$strip -Ttext 0x10000 -e start ${LINKFLAGS} -o $@ \
+			${SYSTEM_OBJ} vers.o -lgcc -lgcc
 
-SYSTEM_LD_TAIL=	@size $@; chmod 755 $@; \
+SYSTEM_LD_TAIL=	@${SIZE} $@; chmod 755 $@; \
 		[ X${DEBUG} = X-g ] && { \
 		echo cp $@ $@.gdb; rm -f $@.gdb; cp $@ $@.gdb; \
-		echo strip -d $@; strip -d $@; } || true
+		echo ${STRIP} -d $@; ${STRIP} -d $@; } || true
 
 %LOAD
 
 assym.s: genassym
 	./genassym >assym.s
-	cp assym.s ${.CURDIR}/../../include
 
 genassym:
 	${HOSTCC} -static ${INCLUDES} ${IDENT} ${PARAM} -Dmvme88k -Dm88k \
 	    -o genassym ${MVME88K}/mvme88k/genassym.c
+
+assym.h: $S/kern/genassym.sh ${MVME68K}/mvme68k/genassym.cf
+	sh $S/kern/genassym.sh ${HOSTCC} ${CFLAGS} ${CPPFLAGS} \
+	    ${PARAM} < ${MVME88K}/mvme88k/genassym.cf > assym.h.tmp && \
+	    mv -f assym.h.tmp assym.h
 
 vers.o:	newvers
 
@@ -123,13 +130,12 @@ newvers: ${SYSTEM_DEP} ${SYSTEM_SWAP_DEP}
 	${CC} ${CFLAGS} ${CPPFLAGS} ${PROF} -c vers.c
 
 clean::
-	rm -f eddep *bsd bsd.gdb tags *.o locore.i \
+	rm -f eddep *bsd bsd.gdb tags *.o locore.i .depend \
 		[a-z]*.s [Ee]rrs errs linterrs makelinks
 
 lint: /tmp param.c
 	@lint -hbxn -DGENERIC -Dvolatile= ${CFLAGS} ${CPPFLAGS} ${PARAM} -UKGDB \
-	    ${MVME88K}/mvme88k/Locore.c ${CFILES} ${MVME88K}/mvme88k/swapgeneric.c \
-	    ioconf.c param.c| \
+	    ${CFILES} ${MVME88K}/mvme88k/swapgeneric.c ioconf.c param.c| \
 	    grep -v 'struct/union .* never defined' | \
 	    grep -v 'possible pointer alignment problem'
 
@@ -152,7 +158,7 @@ genassym.o machdep.o: Makefile
 locore.o machdep.o: Makefile
 
 depend:: .depend
-.depend: assym.s param.c vnode_if.h
+.depend: assym.s param.c 
 	mkdep ${CFLAGS} ${CPPFLAGS} ${CFILES} ioconf.c param.c
 	mkdep -a -p ${INCLUDES} ${IDENT} ${PARAM} ${MVME88K}/mvme88k/genassym.c
 

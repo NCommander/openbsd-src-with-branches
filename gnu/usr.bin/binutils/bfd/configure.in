@@ -99,7 +99,6 @@ AC_SUBST(PICFLAG)
 AC_SUBST(SHLIB)
 AC_SUBST(SHLIB_CC)
 AC_SUBST(SHLIB_CFLAGS)
-AC_SUBST(SHLIB_LIBS)
 if test "${commonbfdlib}" = "true"; then
   COMMON_SHLIB=yes
   PICLIST=piclist
@@ -181,9 +180,16 @@ changequote([,])dnl
 	AC_DEFINE(TRAD_HEADER,"hosts/i386bsd.h")
 	;;
 changequote(,)dnl
-  i[3456]86-*-netbsd* | i[3456]86-*-openbsd*)
+  i[3456]86-*-netbsd*)
 changequote([,])dnl
 	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
+	;;
+changequote(,)dnl
+  i[3456]86-*-openbsd*)
+changequote([,])dnl
+	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
 	;;
 changequote(,)dnl
   i[3456]86-esix-sysv3*)
@@ -217,6 +223,10 @@ changequote([,])dnl
 	COREFILE=trad-core.o
 	AC_DEFINE(TRAD_HEADER,"hosts/i860mach3.h")
 	;;
+  mips*-*-openbsd*)
+	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
+	;;
   mips-dec-bsd*)
 	COREFILE=trad-core.o
 	AC_DEFINE(TRAD_HEADER,"hosts/mipsbsd.h")
@@ -225,8 +235,9 @@ changequote([,])dnl
 	COREFILE=trad-core.o
 	AC_DEFINE(TRAD_HEADER,"hosts/mipsmach3.h")
 	;;
-  mips-*-netbsd* | mips*-*-openbsd*)
+  mips-*-netbsd*)
 	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
 	;;
   mips-dec-*)
 	COREFILE=trad-core.o
@@ -234,7 +245,6 @@ changequote([,])dnl
 	;;
   mips-sgi-irix4*)	COREFILE=irix-core.o ;;
   mips-sgi-irix5*)	COREFILE=irix-core.o ;;
-  mips-sgi-irix6*)	COREFILE=irix-core.o ;;
   mips-*-mach3*)
 	COREFILE=trad-core.o
 	AC_DEFINE(TRAD_HEADER,"hosts/mipsmach3.h")
@@ -269,8 +279,13 @@ changequote([,])dnl
 	COREFILE=trad-core.o
 	AC_DEFINE(TRAD_HEADER,"hosts/news.h")
 	;;
-  m68*-*-netbsd* | m68*-*-openbsd*)
+  m68*-*-netbsd*)
 	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
+	;;
+  m68*-*-openbsd*)
+	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
 	;;
   m68*-apple-aux*)
 	COREFILE=trad-core.o
@@ -286,18 +301,27 @@ changequote([,])dnl
 	COREFILE=trad-core.o
 	AC_DEFINE(TRAD_HEADER,"hosts/pc532mach.h")
 	;;
-  ns32k-*-netbsd* | ns32k-*-openbsd*)
+  ns32k-*-netbsd*)
 	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
+	;;
+  ns32k-*-openbsd*)
+	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
 	;;
   rs6000-*-lynx*)	COREFILE=lynx-core.o ;;
   rs6000-*-aix4*)	COREFILE=rs6000-core.o ;;
   rs6000-*-*)		COREFILE=rs6000-core.o ;;
-  powerpc-*-*bsd*)	COREFILE=netbsd-core.o ;;
+  powerpc-*-*bsd*)	COREFILE=netbsd-core.o;	COREFLAG=-DNETBSD_CORE;;
   powerpc-*-aix4*)	COREFILE=rs6000-core.o ;;
   powerpc-*-aix*)	COREFILE=rs6000-core.o ;;
-  powerpc-*-beos*)	;;
-  sparc-*-netbsd* | sparc-*-openbsd*)
+  sparc-*-netbsd*)
 	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
+	;;
+  sparc-*-openbsd*)
+	COREFILE=netbsd-core.o
+	COREFLAG=-DNETBSD_CORE
 	;;
   tahoe-*-*)
 	COREFILE=trad-core.o
@@ -352,7 +376,7 @@ AC_SUBST(COREFLAG)
 if test -n "$enable_targets" ; then
     for targ in `echo $enable_targets | sed 's/,/ /g'`
     do
-	result=`${CONFIG_SHELL-/bin/sh} $ac_config_sub $targ 2>/dev/null`
+	result=`$ac_config_sub $targ 2>/dev/null`
 	if test -n "$result" ; then
 	    canon_targets="$canon_targets $result"
 	else
@@ -442,7 +466,6 @@ do
     bfd_elf32_bigmips_vec) 	tb="$tb elf32-mips.o elf32.o $elf ecofflink.o" ;;
     bfd_elf64_bigmips_vec) 	tb="$tb elf64-mips.o elf64.o elf32-mips.o elf32.o $elf ecofflink.o"
 				target64=true ;;
-    bfd_elf32_d10v_vec)		tb="$tb elf32-d10v.o elf32.o $elf" ;;
     bfd_elf32_hppa_vec)		tb="$tb elf32-hppa.o elf32.o $elf" ;;
     bfd_elf32_i386_vec)		tb="$tb elf32-i386.o elf32.o $elf" ;;
     bfd_elf32_i860_vec)		tb="$tb elf32-i860.o elf32.o $elf" ;;
@@ -450,11 +473,10 @@ do
     bfd_elf32_littlemips_vec) 	tb="$tb elf32-mips.o elf32.o $elf ecofflink.o" ;;
     bfd_elf64_littlemips_vec) 	tb="$tb elf64-mips.o elf64.o elf32-mips.o elf32.o $elf ecofflink.o"
 				target64=true ;;
-    bfd_elf32_m32r_vec)		tb="$tb elf32-m32r.o elf32.o $elf" ;;
     bfd_elf32_m68k_vec)		tb="$tb elf32-m68k.o elf32.o $elf" ;;
     bfd_elf32_m88k_vec)		tb="$tb elf32-m88k.o elf32.o $elf" ;;
-    bfd_elf32_mn10200_vec)	tb="$tb elf-m10200.o elf32.o $elf" ;;
-    bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.o elf32.o $elf" ;;
+    bfd_elf32_mn10200_vec)	tb="$tb elf32-mn10200.o elf32.o $elf" ;;
+    bfd_elf32_mn10300_vec)	tb="$tb elf32-mn10300.o elf32.o $elf" ;;
     bfd_elf32_powerpc_vec)	tb="$tb elf32-ppc.o elf32.o $elf" ;;
     bfd_elf32_powerpcle_vec)	tb="$tb elf32-ppc.o elf32.o $elf" ;;
     bfd_elf32_sh_vec)		tb="$tb elf32-sh.o elf32.o $elf coff-sh.o" ;;
@@ -466,12 +488,13 @@ do
 				target64=true ;;
     bfd_elf64_sparc_vec)	tb="$tb elf64-sparc.o elf64.o $elf"
 				target64=true ;;
+    bsd_ecoffalpha_little_vec)	tb="$tb coff-alpha.o ecoff.o ecofflink.o"
+				target64=true ;;
     cisco_core_vec)		tb="$tb cisco-core.o" ;;
     demo_64_vec)		tb="$tb demo64.o aout64.o"
 				target64=true ;;
     ecoff_big_vec)		tb="$tb coff-mips.o ecoff.o ecofflink.o" ;;
     ecoff_little_vec)		tb="$tb coff-mips.o ecoff.o ecofflink.o" ;;
-    ecoff_biglittle_vec)	tb="$tb coff-mips.o ecoff.o ecofflink.o" ;;
     ecoffalpha_little_vec)	tb="$tb coff-alpha.o ecoff.o ecofflink.o"
 				target64=true ;;
     evax_alpha_vec)		tb="$tb evax-alpha.o evax-emh.o evax-egsd.o evax-etir.o evax-misc.o"
@@ -507,7 +530,6 @@ do
     m68knetbsd_vec)		tb="$tb m68knetbsd.o aout32.o" ;;
     m68k4knetbsd_vec)		tb="$tb m68k4knetbsd.o aout32.o" ;;
     m68kaux_coff_vec)		tb="$tb coff-aux.o coff-m68k.o cofflink.o" ;;
-    m68ksysvcoff_vec)		tb="$tb coff-svm68k.o cofflink.o" ;;
     m88kbcs_vec)		tb="$tb coff-m88k.o" ;;
     newsos3_vec)		tb="$tb newsos3.o aout32.o" ;;
     nlm32_i386_vec)		tb="$tb nlm32-i386.o nlm32.o nlm.o" ;;
@@ -529,7 +551,6 @@ do
     shlcoff_vec)		tb="$tb coff-sh.o cofflink.o" ;;
     som_vec)			tb="$tb som.o" ;;
     sparcle_aout_vec)		tb="$tb aout-sparcle.o aout32.o" ;;
-    sparclinux_vec)		tb="$tb sparclinux.o aout32.o stab-syms.o" ;;
     sparclynx_aout_vec)		tb="$tb sparclynx.o lynx-core.o aout32.o" ;;
     sparclynx_coff_vec)		tb="$tb cf-sparclynx.o lynx-core.o" ;;
     sparcnetbsd_vec)		tb="$tb sparcnetbsd.o aout32.o" ;;
@@ -549,9 +570,7 @@ do
 done
 
 # Target architecture .o files.
-# A couple of CPUs use shorter file names to avoid problems on DOS
-# filesystems.
-ta=`echo $selarchs | sed -e s/bfd_/cpu-/g -e s/_arch/.o/g -e s/mn10200/m10200/ -e s/mn10300/m10300/`
+ta=`echo $selarchs | sed -e s/bfd_/cpu-/g -e s/_arch/.o/g`
 
 # Weed out duplicate .o files.
 f=""
@@ -622,7 +641,7 @@ AC_SUBST(tdefaults)
 dnl AC_CHECK_HEADERS(sys/mman.h)
 AC_FUNC_MMAP
 AC_CHECK_FUNCS(madvise mprotect)
-case ${want_mmap}+${ac_cv_func_mmap_fixed_mapped} in
+case ${want_mmap}+${ac_cv_func_mmap} in
   true+yes )  AC_DEFINE(USE_MMAP) ;;
 esac
 

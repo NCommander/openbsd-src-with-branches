@@ -12,8 +12,6 @@
 #include "sym_ids.h"
 #include "utils.h"
 
-static void scale_and_align_entries PARAMS ((void));
-
 /* declarations of automatically generated functions to output blurbs: */
 extern void flat_blurb PARAMS ((FILE * fp));
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: if.h,v 1.19 1995/06/19 21:57:28 cgd Exp $	*/
+/*	$OpenBSD: if.h,v 1.16 2000/03/21 23:31:26 mickey Exp $	*/
+/*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -69,6 +70,7 @@ struct proc;
 struct rtentry;
 struct socket;
 struct ether_header;
+struct arpcom;
 
 /*
  * Structure defining statistics and other data kept regarding a network
@@ -104,14 +106,22 @@ struct	if_data {
  */
 TAILQ_HEAD(ifnet_head, ifnet);		/* the actual queue head */
 
+/*
+ * Length of interface external name, including terminating '\0'.
+ * Note: this is the same size as a generic device's external name.
+ */
+#define	IFNAMSIZ	16
+#define	IF_NAMESIZE	IFNAMSIZ
+
 struct ifnet {				/* and the entries */
-	char	*if_name;		/* name, e.g. ``en'' or ``lo'' */
+	void	*if_softc;		/* lower-level data for this if */
 	TAILQ_ENTRY(ifnet) if_list;	/* all struct ifnets are chained */
 	TAILQ_HEAD(, ifaddr) if_addrlist; /* linked list of addresses per if */
+	char	if_xname[IFNAMSIZ];	/* external name (name + unit) */
 	int	if_pcount;		/* number of promiscuous listeners */
 	caddr_t	if_bpf;			/* packet filter structure */
+	caddr_t	if_bridge;		/* bridge structure */
 	u_short	if_index;		/* numeric abbreviation for this if */
-	short	if_unit;		/* sub-unit for lower level driver */
 	short	if_timer;		/* time 'til if_watchdog called */
 	short	if_flags;		/* up/down, broadcast, etc. */
 	struct	if_data if_data;	/* statistics and other data about if */
@@ -124,9 +134,9 @@ struct ifnet {				/* and the entries */
 	int	(*if_ioctl)		/* ioctl routine */
 		__P((struct ifnet *, u_long, caddr_t));
 	int	(*if_reset)		/* XXX bus reset routine */
-		__P((int));
+		__P((struct ifnet *));
 	void	(*if_watchdog)		/* timer routine */
-		__P((int));
+		__P((struct ifnet *));
 	struct	ifqueue {
 		struct	mbuf *ifq_head;
 		struct	mbuf *ifq_tail;
@@ -134,6 +144,7 @@ struct ifnet {				/* and the entries */
 		int	ifq_maxlen;
 		int	ifq_drops;
 	} if_snd;			/* output queue */
+	struct ifprefix *if_prefixlist; /* linked list of prefixes per if */
 };
 #define	if_mtu		if_data.ifi_mtu
 #define	if_type		if_data.ifi_type
@@ -226,12 +237,27 @@ struct ifaddr {
 	struct	sockaddr *ifa_netmask;	/* used to determine subnet */
 	struct	ifnet *ifa_ifp;		/* back-pointer to interface */
 	TAILQ_ENTRY(ifaddr) ifa_list;	/* list of addresses for interface */
-	void	(*ifa_rtrequest)();	/* check or clean routes (+ or -)'d */
+	void	(*ifa_rtrequest)	/* check or clean routes (+ or -)'d */
+		    __P((int, struct rtentry *, struct sockaddr *));
 	u_short	ifa_flags;		/* mostly rt_flags for cloning */
-	short	ifa_refcnt;		/* count of references */
+	u_int	ifa_refcnt;		/* count of references */
 	int	ifa_metric;		/* cost of going out this interface */
 };
 #define	IFA_ROUTE	RTF_UP		/* route installed */
+
+/*
+ * The prefix structure contains information about one prefix
+ * of an interface.  They are maintained by the different address families,
+ * are allocated and attached when an prefix or an address is set,
+ * and are linked together so all prfefixes for an interface can be located.
+ */
+struct ifprefix {
+	struct	sockaddr *ifpr_prefix;	/* prefix of interface */
+	struct	ifnet *ifpr_ifp;	/* back-pointer to interface */
+	struct ifprefix *ifpr_next;
+	u_char	ifpr_plen;		/* prefix length in bits */
+	u_char	ifpr_type;		/* protocol dependent prefix type */
+};
 
 /*
  * Message format for use in obtaining information about interfaces
@@ -268,7 +294,6 @@ struct ifa_msghdr {
  * remainder may be interface specific.
  */
 struct	ifreq {
-#define	IFNAMSIZ	16
 	char	ifr_name[IFNAMSIZ];		/* if name, e.g. "en0" */
 	union {
 		struct	sockaddr ifru_addr;
@@ -283,14 +308,28 @@ struct	ifreq {
 #define	ifr_broadaddr	ifr_ifru.ifru_broadaddr	/* broadcast address */
 #define	ifr_flags	ifr_ifru.ifru_flags	/* flags */
 #define	ifr_metric	ifr_ifru.ifru_metric	/* metric */
+#define	ifr_mtu		ifr_ifru.ifru_metric	/* mtu (overload) */
+#define	ifr_media	ifr_ifru.ifru_metric	/* media options (overload) */
 #define	ifr_data	ifr_ifru.ifru_data	/* for use by interface */
 };
 
 struct ifaliasreq {
 	char	ifra_name[IFNAMSIZ];		/* if name, e.g. "en0" */
 	struct	sockaddr ifra_addr;
-	struct	sockaddr ifra_broadaddr;
+	struct	sockaddr ifra_dstaddr;
+#define	ifra_broadaddr	ifra_dstaddr
 	struct	sockaddr ifra_mask;
+};
+
+struct ifmediareq {
+	char	ifm_name[IFNAMSIZ];		/* if name, e.g. "en0" */
+	int	ifm_current;			/* current media options */
+	int	ifm_mask;			/* don't care mask */
+	int	ifm_status;			/* media status */
+	int	ifm_active;			/* active options */ 
+	int	ifm_count;			/* # entries in ifm_ulist
+							array */
+	int	*ifm_ulist;			/* media words */
 };
 
 /*
@@ -309,24 +348,62 @@ struct	ifconf {
 #define	ifc_req	ifc_ifcu.ifcu_req	/* array of structures returned */
 };
 
+/*
+ * Structure for SIOC[AGD]LIFADDR
+ */
+struct if_laddrreq {
+	char iflr_name[IFNAMSIZ];
+	unsigned int flags;
+#define IFLR_PREFIX	0x8000	/* in: prefix given  out: kernel fills id */
+	unsigned int prefixlen;		/* in/out */
+	struct sockaddr_storage addr;	/* in/out */
+	struct sockaddr_storage dstaddr; /* out */
+};
+
+struct if_nameindex {
+	unsigned int	if_index;
+	char 		*if_name;
+};
+
+#ifndef _KERNEL
+__BEGIN_DECLS
+unsigned int if_nametoindex __P((const char *));
+char 	*if_indextoname __P((unsigned int, char *));
+struct	if_nameindex *if_nameindex __P((void));
+__END_DECLS
+#define if_freenameindex(x)	free(x)
+#endif
+
 #include <net/if_arp.h>
 
 #ifdef _KERNEL
 #define	IFAFREE(ifa) \
+do { \
 	if ((ifa)->ifa_refcnt <= 0) \
 		ifafree(ifa); \
 	else \
-		(ifa)->ifa_refcnt--;
+		(ifa)->ifa_refcnt--; \
+} while (0)
 
 struct ifnet_head ifnet;
+struct ifnet **ifindex2ifnet;
+#if 0
+struct ifnet loif[];
+#endif
+int if_index;
 
 void	ether_ifattach __P((struct ifnet *));
+void	ether_ifdetach __P((struct ifnet *));
+int	ether_ioctl __P((struct ifnet *, struct arpcom *, u_long, caddr_t));
 void	ether_input __P((struct ifnet *, struct ether_header *, struct mbuf *));
 int	ether_output __P((struct ifnet *,
 	   struct mbuf *, struct sockaddr *, struct rtentry *));
 char	*ether_sprintf __P((u_char *));
 
 void	if_attach __P((struct ifnet *));
+void	if_attachtail __P((struct ifnet *));
+void	if_attachhead __P((struct ifnet *));
+void	if_detach __P((struct ifnet *));
 void	if_down __P((struct ifnet *));
 void	if_qflush __P((struct ifqueue *));
 void	if_slowtimo __P((void *));

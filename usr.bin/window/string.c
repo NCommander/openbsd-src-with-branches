@@ -1,3 +1,4 @@
+/*	$OpenBSD: string.c,v 1.3 1997/02/25 00:04:18 downsj Exp $	*/
 /*	$NetBSD: string.c,v 1.5 1995/09/29 00:44:06 cgd Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)string.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: string.c,v 1.5 1995/09/29 00:44:06 cgd Exp $";
+static char rcsid[] = "$OpenBSD: string.c,v 1.3 1997/02/25 00:04:18 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -130,7 +131,7 @@ int l;
 {
 	register struct string *s;
 
-	s = (struct string *) malloc((unsigned)l + str_offset);
+	s = (struct string *) malloc(l + str_offset);
 	if (s == 0)
 		return 0;
 	if (str_head.s_forw == 0)

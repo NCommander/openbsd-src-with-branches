@@ -1,4 +1,5 @@
-/*	$NetBSD: vmparam.h,v 1.6 1995/07/05 18:04:48 pk Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.13 1999/11/11 12:30:36 art Exp $	*/
+/*	$NetBSD: vmparam.h,v 1.13 1997/07/12 16:20:03 perry Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -44,6 +45,9 @@
  *	@(#)vmparam.h	8.1 (Berkeley) 6/11/93
  */
 
+#ifndef _SPARC_VMPARAM_H_
+#define _SPARC_VMPARAM_H_
+
 /*
  * Machine dependent constants for Sun-4c SPARC
  */
@@ -59,13 +63,13 @@
  * Virtual memory related constants, all in bytes
  */
 #ifndef MAXTSIZ
-#define	MAXTSIZ		(8*1024*1024)		/* max text size */
+#define	MAXTSIZ		(16*1024*1024)		/* max text size */
 #endif
 #ifndef DFLDSIZ
-#define	DFLDSIZ		(16*1024*1024)		/* initial data size limit */
+#define	DFLDSIZ		(32*1024*1024)		/* initial data size limit */
 #endif
 #ifndef MAXDSIZ
-#define	MAXDSIZ		(64*1024*1024)		/* max data size */
+#define	MAXDSIZ		(128*1024*1024)		/* max data size */
 #endif
 #ifndef	DFLSSIZ
 #define	DFLSSIZ		(512*1024)		/* initial stack size limit */
@@ -115,6 +119,10 @@
  * so we loan each swapped in process memory worth 100$, or just admit
  * that we don't consider it worthwhile and swap it out to disk which costs
  * $30/mb or about $0.75.
+ * Update: memory prices have changed recently (9/96). At the current    
+ * value of $6 per megabyte, we lend each swapped in process memory worth
+ * $0.15, or just admit that we don't consider it worthwhile and swap it out
+ * to disk which costs $0.20/MB, or just under half a cent. 
  */
 #define	SAFERSS		4		/* nominal ``small'' resident set size
 					   protected against replacement */
@@ -128,14 +136,36 @@
  * IO space virtual base, which must be the same as VM_MAX_KERNEL_ADDRESS:
  * tread with care.
  */
-#define VM_MIN_ADDRESS		((vm_offset_t)0)
-#define VM_MAX_ADDRESS		((vm_offset_t)KERNBASE)
-#define VM_MAXUSER_ADDRESS	((vm_offset_t)KERNBASE)
-#define VM_MIN_KERNEL_ADDRESS	((vm_offset_t)KERNBASE)
-#define VM_MAX_KERNEL_ADDRESS	((vm_offset_t)0xfe000000)
+#define VM_MIN_ADDRESS		((vaddr_t)0)
+#define VM_MAX_ADDRESS		((vaddr_t)KERNBASE)
+#define VM_MAXUSER_ADDRESS	((vaddr_t)KERNBASE)
+#define VM_MIN_KERNEL_ADDRESS	((vaddr_t)KERNBASE)
+#define VM_MAX_KERNEL_ADDRESS	((vaddr_t)0xfe000000)
 
 /* virtual sizes (bytes) for various kernel submaps */
 #define VM_MBUF_SIZE		(NMBCLUSTERS*MCLBYTES)
 #define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
 
-#define MACHINE_NONCONTIG	/* VM <=> pmap interface modifier */
+#define MACHINE_NEW_NONCONTIG
+
+#define VM_PHYSSEG_MAX		32	/* we only have one "hole" */
+#define VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
+#define VM_PHYSSEG_NOADD		/* can't add RAM after vm_mem_init */
+
+/*
+ * pmap specific data stored in the vm_physmem[] array
+ */
+struct pmap_physseg {
+	struct pvlist *pv_head;
+};
+
+#define VM_NFREELIST		1
+#define VM_FREELIST_DEFAULT	0
+
+#if defined (_KERNEL) && !defined(_LOCORE)
+struct vm_map;
+vaddr_t		dvma_mapin __P((struct vm_map *, vaddr_t, int, int));
+void		dvma_mapout __P((vaddr_t, vaddr_t, int));
+#endif
+
+#endif /* _SPARC_VMPARAM_H_ */

@@ -1,13 +1,17 @@
-#	$NetBSD: Makefile,v 1.8 1995/06/14 15:18:37 christos Exp $
-#	@(#)Makefile	5.2 (Berkeley) 12/28/90
+#	$OpenBSD: Makefile,v 1.12 1999/12/09 18:20:06 espie Exp $
 
 PROG=	make
-CFLAGS+= -I${.CURDIR} -DPOSIX
-SRCS=	arch.c buf.c compat.c cond.c dir.c for.c hash.c job.c main.c \
-	make.c parse.c str.c suff.c targ.c var.c
+CFLAGS+= -I${.CURDIR} -Wall -Wno-char-subscripts -Wno-unused -Wstrict-prototypes#-Wmissing-prototypes -Wstrict-prototypes
+
+.if (${MACHINE_ARCH} == "m88k")
+CFLAGS+=-O0
+.endif
+
+SRCS=	arch.c buf.c compat.c cond.c dir.c error.c for.c hash.c job.c main.c \
+	make.c parse.c str.c suff.c targ.c var.c #util.c 
 SRCS+=	lstAppend.c lstAtEnd.c lstAtFront.c lstClose.c lstConcat.c \
 	lstDatum.c lstDeQueue.c lstDestroy.c lstDupl.c lstEnQueue.c \
-	lstFind.c lstFindFrom.c lstFirst.c lstForEach.c lstForEachFrom.c \
+	lstFindFrom.c lstFirst.c lstForEach.c lstForEachFrom.c \
 	lstInit.c lstInsert.c lstIsAtEnd.c lstIsEmpty.c lstLast.c \
 	lstMember.c lstNext.c lstOpen.c lstRemove.c lstReplace.c lstSucc.c
 .PATH:	${.CURDIR}/lst.lib

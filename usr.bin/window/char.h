@@ -1,3 +1,4 @@
+/*	$OpenBSD: char.h,v 1.4 1999/11/14 17:34:24 millert Exp $	*/
 /*	$NetBSD: char.h,v 1.3 1995/09/28 10:34:01 tls Exp $	*/
 
 /*
@@ -41,8 +42,6 @@
 /*
  * Macros and things to deal with control characters.
  *
- * Unctrl() is just like the standard function, except we don't want
- * to include curses.
  * Isctrl() returns true for all characters less than space and
  * greater than or equal to delete.
  * Isprt() is tab and all characters not isctrl().  It's used
@@ -50,11 +49,13 @@
  * Isunctrl() includes all characters that should be expanded
  * using unctrl() by wwwrite() if ww_unctrl is set.
  */
+#include <curses.h>
+#if defined(TERMINFO) || defined(NCURSES_VERSION)
+#include <term.h>
+#endif
 
-extern char *_unctrl[];
 extern char _cmap[];
 #define ctrl(c)		(c & 0x1f)
-#define unctrl(c)	(_unctrl[(unsigned char) (c)])
 #define _C		0x01
 #define _P		0x02
 #define _U		0x04

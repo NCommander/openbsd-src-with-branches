@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vi.c,v 1.8 1999/11/14 22:04:02 d Exp $	*/
 
 /*
  *	vi command editing
@@ -57,7 +57,6 @@ static void	rewindow ARGS((void));
 static int	newcol ARGS((int ch, int col));
 static void	display ARGS((char *wb1, char *wb2, int leftside));
 static void	ed_mov_opt ARGS((int col, char *wb));
-static int	do_comment ARGS((void));
 static int	expand_word ARGS((int command));
 static int	complete_word ARGS((int command, int count));
 static int	print_expansions ARGS((struct edstate *e, int command));
@@ -66,6 +65,7 @@ static void 	x_vi_zotc ARGS((int c));
 static void	vi_pprompt ARGS((int full));
 static void	vi_error ARGS((void));
 static void	vi_macro_reset ARGS((void));
+static int	x_vi_putbuf	ARGS((const char *s, size_t len));
 
 #define C_	0x1		/* a valid command that isn't a M_, E_, U_ */
 #define M_	0x2		/* movement command (h, l, etc.) */
@@ -94,7 +94,7 @@ const unsigned char	classify[128] = {
    /*  02   ^P     ^Q      ^R      ^S      ^T      ^U      ^V      ^W        */
 	    C_,     0,      C_|U_,  0,      0,      0,      C_,     0,
    /*  03   ^X     ^Y      ^Z      ^[      ^\      ^]      ^^      ^_        */
-	    C_,     0,      0,      0,      0,      0,      0,      0,
+	    C_,     0,      0,      C_|Z_,  0,      0,      0,      0,
    /*  04  <space>  !       "       #       $       %       &       '        */
 	    M_,     0,      0,      C_,     M_,     M_,     0,      0,
    /*  05   (       )       *       +       ,       -       .       /        */
@@ -209,8 +209,9 @@ x_vi(buf, len)
 				vi_macro_reset();
 				c = x_getc();
 			}
-		} else
+		} else {
 			c = x_getc();
+		}
 		if (c == -1)
 			break;
 		if (state != VLIT) {
@@ -504,7 +505,7 @@ vi_hook(ch)
 		state = VNORMAL;
 		if (argc1 != 0)
 			lastac = argc1;
-		switch (vi_cmd(lastac, lastcmd) != 0) {
+		switch (vi_cmd(lastac, lastcmd)) {
 		case -1:
 			vi_error();
 			refresh(0);
@@ -526,8 +527,8 @@ vi_hook(ch)
 			refresh(0);
 			return 1;
 		case 2:
-			/* back from a 'v' command - don't redraw the screen */
-			return 1;
+			/* back from a 'v' command - can't happen */
+			break;
 		}
 		break;
 
@@ -1121,7 +1122,13 @@ vi_cmd(argcnt, cmd)
 			}
 
 		case '#':
-			return do_comment();
+		    {
+			int ret = x_do_comment(es->cbuf, es->cbufsize,
+					    &es->linelen);
+			if (ret >= 0)
+				es->cursor = 0;
+			return ret;
+		    }
 
 		case '=': 			/* at&t ksh */
 		case Ctrl('e'):			/* Nonstandard vi/ksh */
@@ -1132,9 +1139,12 @@ vi_cmd(argcnt, cmd)
 		case Ctrl('i'):			/* Nonstandard vi/ksh */
 			if (!Flag(FVITABCOMPLETE))
 				return -1;
-			/* FALLTHROUGH */
+			complete_word(1, argcnt);
+			break;
 
 		case Ctrl('['):			/* some annoying at&t ksh's */
+			if (!Flag(FVIESCCOMPLETE))
+				return -1;
 		case '\\':			/* at&t ksh */
 		case Ctrl('f'):			/* Nonstandard vi/ksh */
 			complete_word(1, argcnt);
@@ -1461,6 +1471,17 @@ edit_reset(buf, len)
 	morec = ' ';
 	lastref = 1;
 	holdlen = 0;
+}
+
+/*
+ * this is used for calling x_escape() in complete_word()
+ */
+static int
+x_vi_putbuf(s, len)
+	const char *s;
+	size_t len;
+{
+	return putbuf(s, len, 0);
 }
 
 static int
@@ -1836,11 +1857,11 @@ display(wb1, wb2, leftside)
 				if (ch < ' ' || ch == 0x7f) {
 					*twb1++ = '^';
 					if (++col < winwidth) {
-						*twb1++ = es->cbuf[cur] ^ '@';
+						*twb1++ = ch ^ '@';
 						col++;
 					}
 				} else {
-					*twb1++ = es->cbuf[cur];
+					*twb1++ = ch;
 					col++;
 				}
 			}
@@ -1887,7 +1908,7 @@ display(wb1, wb2, leftside)
 	else
 		mc = ' ';
 	if (mc != morec) {
-		ed_mov_opt(x_cols - 2, wb1);
+		ed_mov_opt(pwidth + winwidth + 1, wb1);
 		x_putc(mc);
 		cur_col++;
 		morec = mc;
@@ -1920,48 +1941,6 @@ ed_mov_opt(col, wb)
 	cur_col = col;
 }
 
-/* Handle the commenting/uncommenting of a line */
-static int
-do_comment()
-{
-	int i, j;
-
-	if (es->linelen == 0)
-		return 1; /* somewhat arbitrary - it's what at&t ksh does */
-
-	/* Already commented? */
-	if (es->cbuf[0] == '#') {
-		int saw_nl = 0;
-
-		for (j = 0, i = 1; i < es->linelen; i++) {
-			if (!saw_nl || es->cbuf[i] != '#')
-				es->cbuf[j++] = es->cbuf[i];
-			saw_nl = es->cbuf[i] == '\n';
-		}
-		es->linelen = j;
-		es->cursor = 0;
-		return 0;
-	} else {
-		int n = 1;
-
-		/* See if there's room for the #'s - 1 per \n */
-		for (i = 0; i < es->linelen; i++)
-			if (es->cbuf[i] == '\n')
-				n++;
-		if (es->linelen + n >= es->cbufsize)
-			return -1;
-		/* Now add them... */
-		for (i = es->linelen, j = es->linelen + n; --i >= 0; ) {
-			if (es->cbuf[i] == '\n')
-				es->cbuf[--j] = '#';
-			es->cbuf[--j] = es->cbuf[i];
-		}
-		es->cbuf[0] = '#';
-		es->linelen += n;
-		es->cursor = 0;
-		return 1;
-	}
-}
 
 /* replace word with all expansions (ie, expand word*) */
 static int
@@ -2000,7 +1979,7 @@ expand_word(command)
 	del_range(start, end);
 	es->cursor = start;
 	for (i = 0; i < nwords; ) {
-		if (putbuf(words[i], (int) strlen(words[i]), 0) != 0) {
+		if (x_escape(words[i], strlen(words[i]), x_vi_putbuf) != 0) {
 			rval = -1;
 			break;
 		}
@@ -2103,9 +2082,12 @@ complete_word(command, count)
 	buf = save_edstate(es);
 	del_range(start, end);
 	es->cursor = start;
-	if (putbuf(match, match_len, 0) != 0)
-		rval = -1;
-	else if (is_unique) {
+
+	/* escape all shell-sensitive characters and put the result into
+	 * command buffer */
+	rval = x_escape(match, match_len, x_vi_putbuf);
+
+	if (rval == 0 && is_unique) {
 		/* If exact match, don't undo.  Allows directory completions
 		 * to be used (ie, complete the next portion of the path).
 		 */

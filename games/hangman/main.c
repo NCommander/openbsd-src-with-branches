@@ -1,3 +1,4 @@
+/*	$OpenBSD: main.c,v 1.5 1999/04/20 22:54:56 pjanzen Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/03/23 08:32:50 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.3 1995/03/23 08:32:50 cgd Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.5 1999/04/20 22:54:56 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,11 +53,35 @@ static char rcsid[] = "$NetBSD: main.c,v 1.3 1995/03/23 08:32:50 cgd Exp $";
 /*
  * This game written by Ken Arnold.
  */
-main()
+int
+main(argc, argv)
+	int argc;
+	char *argv[];
 {
-	void die();
+	int ch;
+
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
+	while ((ch = getopt(argc, argv, "d:h")) != -1) {
+		switch (ch) {
+		case 'd':
+			Dict_name = optarg;
+			break;
+		case 'h':
+		case '?':
+		default:
+			(void)fprintf(stderr, "usage: hangman [-d wordlist]\n");
+			exit(1);
+		}
+	}
 
 	initscr();
+	if (COLS < 50 || LINES < 14) {
+		endwin();
+		errx(1, "screen too small (must be at least 50x14)");
+	}
 	signal(SIGINT, die);
 	setup();
 	for (;;) {
@@ -72,7 +97,8 @@ main()
  *	Die properly.
  */
 void
-die()
+die(dummy)
+	int dummy;
 {
 	mvcur(0, COLS - 1, LINES - 1, 0);
 	endwin();

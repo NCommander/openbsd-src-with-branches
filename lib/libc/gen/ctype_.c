@@ -1,5 +1,3 @@
-/*	$NetBSD: ctype_.c,v 1.12 1995/02/25 15:39:28 cgd Exp $	*/
-
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -39,11 +37,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-/*static char *sccsid = "from: @(#)ctype_.c	5.6 (Berkeley) 6/1/90";*/
-#else
-static char rcsid[] = "$NetBSD: ctype_.c,v 1.12 1995/02/25 15:39:28 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: ctype_.c,v 1.2 1996/08/19 08:22:08 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ctype.h>
@@ -54,7 +48,7 @@ const char _C_ctype_[1 + 256] = {
 	_C,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C,	_C,
 	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
 	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
-	_S|_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
+   _S|(char)_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
 	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
 	_N,	_N,	_N,	_N,	_N,	_N,	_N,	_N,
 	_N,	_N,	_P,	_P,	_P,	_P,	_P,	_P,

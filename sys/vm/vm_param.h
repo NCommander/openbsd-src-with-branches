@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_param.h,v 1.18 1999/12/30 18:21:56 provos Exp $	*/
 /*	$NetBSD: vm_param.h,v 1.12 1995/03/26 20:39:16 jtc Exp $	*/
 
 /* 
@@ -35,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_param.h	8.1 (Berkeley) 6/11/93
+ *	@(#)vm_param.h	8.2 (Berkeley) 1/9/95
  *
  *
  * Copyright (c) 1987, 1990 Carnegie-Mellon University.
@@ -76,9 +77,13 @@
 /*
  * This belongs in types.h, but breaks too many existing programs.
  */
-typedef int	boolean_t;
+typedef	int	boolean_t;
+#ifndef TRUE
 #define	TRUE	1
+#endif
+#ifndef FALSE
 #define	FALSE	0
+#endif
 
 /*
  *	The machine independent pages are refered to as PAGES.  A page
@@ -86,16 +91,34 @@ typedef int	boolean_t;
  */
 #define	DEFAULT_PAGE_SIZE	4096
 
+#ifdef _KERNEL
 /*
  *	All references to the size of a page should be done with PAGE_SIZE
- *	or PAGE_SHIFT.  The fact they are variables is hidden here so that
- *	we can easily make them constant if we so desire.
+ *	or PAGE_SHIFT.
+ *	We allow them to be constants in MD code, but when necessary
+ *      (especially in LKMs) they will still be variables.
  */
+#if !defined(PAGE_SIZE) || defined(_LKM)
+/*
+ * We undef those here to avoid problmes with LKMs.
+ */
+#undef PAGE_SIZE
+#undef PAGE_MASK
+#undef PAGE_SHIFT
+#if defined(UVM)
+#define	PAGE_SIZE	uvmexp.pagesize		/* size of page */
+#define	PAGE_MASK	uvmexp.pagemask		/* size of page - 1 */
+#define	PAGE_SHIFT	uvmexp.pageshift	/* bits to shift for pages */
+#else
 #define	PAGE_SIZE	cnt.v_page_size		/* size of page */
 #define	PAGE_MASK	page_mask		/* size of page - 1 */
 #define	PAGE_SHIFT	page_shift		/* bits to shift for pages */
-#ifdef _KERNEL
-extern vm_size_t	page_mask;
+#endif /* UVM */
+#endif /* !PAGE_SIZE */
+#endif /* _KERNEL */
+
+#if defined(_KERNEL) && !defined(UVM)
+extern vsize_t		page_mask;
 extern int		page_shift;
 #endif
 
@@ -104,13 +127,40 @@ extern int		page_shift;
  */
 #define	VM_METER	1		/* struct vmmeter */
 #define	VM_LOADAVG	2		/* struct loadavg */
-#define	VM_MAXID	3		/* number of valid vm ids */
+#define	VM_PSSTRINGS	3		/* PSSTRINGS */
+#if !defined(UVM)
+#define	VM_MAXID	4		/* number of valid vm ids */
 
 #define	CTL_VM_NAMES { \
 	{ 0, 0 }, \
 	{ "vmmeter", CTLTYPE_STRUCT }, \
 	{ "loadavg", CTLTYPE_STRUCT }, \
+	{ "psstrings", CTLTYPE_STRUCT }, \
 }
+
+#else
+
+#define VM_UVMEXP	4		/* struct uvmexp */
+#define VM_SWAPENCRYPT	5		/* int */
+#define	VM_MAXID	6		/* number of valid vm ids */
+
+#define	CTL_VM_NAMES { \
+	{ 0, 0 }, \
+	{ "vmmeter", CTLTYPE_STRUCT }, \
+	{ "loadavg", CTLTYPE_STRUCT }, \
+	{ "psstrings", CTLTYPE_STRUCT }, \
+	{ "uvmexp", CTLTYPE_STRUCT }, \
+	{ "swapencrypt", CTLTYPE_INT }, \
+}
+
+#endif
+
+
+struct _ps_strings {
+	void	*val;
+};
+
+#define SWAPSKIPBYTES	8192	/* never use at the start of a swap space */
 
 /* 
  *	Return values from the VM routines.
@@ -124,6 +174,7 @@ extern int		page_shift;
 #define	KERN_RESOURCE_SHORTAGE	6
 #define	KERN_NOT_RECEIVER	7
 #define	KERN_NO_ACCESS		8
+#define	KERN_PAGES_LOCKED	9
 
 #ifndef ASSEMBLER
 /*
@@ -132,30 +183,26 @@ extern int		page_shift;
  */
 #ifdef _KERNEL
 #define	atop(x)		(((unsigned long)(x)) >> PAGE_SHIFT)
-#define	ptoa(x)		((vm_offset_t)((x) << PAGE_SHIFT))
+#define	ptoa(x)		((vaddr_t)((x) << PAGE_SHIFT))
 
 /*
  * Round off or truncate to the nearest page.  These will work
  * for either addresses or counts (i.e., 1 byte rounds to 1 page).
  */
 #define	round_page(x) \
-	((vm_offset_t)((((vm_offset_t)(x)) + PAGE_MASK) & ~PAGE_MASK))
+	((vaddr_t)((((vaddr_t)(x)) + PAGE_MASK) & ~PAGE_MASK))
 #define	trunc_page(x) \
-	((vm_offset_t)(((vm_offset_t)(x)) & ~PAGE_MASK))
+	((vaddr_t)(((vaddr_t)(x)) & ~PAGE_MASK))
 #define	num_pages(x) \
-	((vm_offset_t)((((vm_offset_t)(x)) + PAGE_MASK) >> PAGE_SHIFT))
-
-extern vm_size_t	mem_size;	/* size of physical memory (bytes) */
-extern vm_offset_t	first_addr;	/* first physical page */
-extern vm_offset_t	last_addr;	/* last physical page */
+	((vaddr_t)((((vaddr_t)(x)) + PAGE_MASK) >> PAGE_SHIFT))
 
 #else
 /* out-of-kernel versions of round_page and trunc_page */
 #define	round_page(x) \
-	((((vm_offset_t)(x) + (vm_page_size - 1)) / vm_page_size) * \
+	((((vaddr_t)(x) + (vm_page_size - 1)) / vm_page_size) * \
 	    vm_page_size)
 #define	trunc_page(x) \
-	((((vm_offset_t)(x)) / vm_page_size) * vm_page_size)
+	((((vaddr_t)(x)) / vm_page_size) * vm_page_size)
 
 #endif /* _KERNEL */
 #endif /* ASSEMBLER */

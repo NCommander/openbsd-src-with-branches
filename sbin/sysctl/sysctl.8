@@ -1,3 +1,4 @@
+.\"	$OpenBSD: sysctl.8,v 1.44 2000/03/18 22:56:05 aaron Exp $
 .\"	$NetBSD: sysctl.8,v 1.4 1995/09/30 07:12:49 thorpej Exp $
 .\"
 .\" Copyright (c) 1993
@@ -31,9 +32,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)sysctl.8	8.1 (Berkeley) 6/6/93
+.\"	@(#)sysctl.8	8.2 (Berkeley) 5/9/95
 .\"
-.Dd "June 6, 1993"
+.Dd May 9, 1995
 .Dt SYSCTL 8
 .Os
 .Sh NAME
@@ -95,7 +96,7 @@ purpose programs such as
 .Nm systat ,
 and
 .Nm netstat .
-The string and integer information is summaried below.
+The string and integer information is summarized below.
 For a detailed description of these variable see
 .Xr sysctl 3 .
 The changeable column indicates whether a process with appropriate
@@ -105,6 +106,7 @@ privilege can change the value.
 .It kern.ostype	string	no
 .It kern.osrelease	string	no
 .It kern.osrevision	integer	no
+.It kern.osversion	string	no
 .It kern.version	string	no
 .It kern.maxvnodes	integer	yes
 .It kern.maxproc	integer	yes
@@ -114,7 +116,8 @@ privilege can change the value.
 .It kern.argmax	integer	no
 .It kern.securelevel	integer	raise only
 .It kern.hostname	string	yes
-.It kern.hostid	integer	yes
+.It kern.domainname	string	yes
+.It kern.hostid	u_int	yes
 .It kern.clockrate	struct	no
 .It kern.posix1version	integer	no
 .It kern.ngroups	integer	no
@@ -128,16 +131,102 @@ privilege can change the value.
 .It kern.pipe_buf	integer	no
 .It kern.chown_restricted	integer	no
 .It kern.no_trunc	integer	no
-.It kern.vdisable	integer	no
 .It kern.boottime	struct	no
+.It kern.somaxconn	integer	yes
+.It kern.sominconn	integer	yes
+.It kern.usermount	integer	yes
+.It kern.random	struct	no
+.It kern.nosuidcoredump	integer	yes
+.It kern.fsync	integer	no
+.It kern.sysvmsg	integer	no
+.It kern.sysvsem	integer	no
+.It kern.sysvshm	integer	no
+.It kern.arandom	u_int	no
 .It vm.loadavg	struct	no
-.It machdep.console_device	dev_t	no
+.It vm.psstrings	struct	no
+.It vm.swapencrypt	integer	yes
+.It fs.posix.setuid	integer	yes
 .It net.inet.ip.forwarding	integer	yes
 .It net.inet.ip.redirect	integer	yes
 .It net.inet.ip.ttl	integer	yes
+.\" .It net.inet.ip.mtu	integer	yes
+.It net.inet.ip.sourceroute	integer	yes
+.It net.inet.ip.directed-broadcast	integer	yes
+.It net.inet.ip.portfirst	integer	yes
+.It net.inet.ip.portlast	integer	yes
+.It net.inet.ip.porthifirst	integer	yes
+.It net.inet.ip.porthilast	integer	yes
+.It net.inet.ip.maxqueue	integer	yes
+.It net.inet.ip.encdebug	integer	yes
+.It net.inet.ip.ipsec-acl	integer	yes
+.It net.inet.ip.ipsec-pfs	integer	yes
+.It net.inet.ip.ipsec-soft-allocs	integer	yes
+.It net.inet.ip.ipsec-allocs	integer	yes
+.It net.inet.ip.ipsec-soft-bytes	integer	yes
+.It net.inet.ip.ipsec-bytes	integer	yes
+.It net.inet.ip.ipsec-timeout	integer	yes
+.It net.inet.ip.ipsec-soft-timeout	integer	yes
+.It net.inet.ip.ipsec-soft-firstuse	integer	yes
+.It net.inet.ip.ipsec-firstuse	integer	yes
+.It net.inet.ip.ipsec-enc-alg	string	yes
+.It net.inet.ip.ipsec-auth-alg	string	yes
+.It net.inet.ip.ipsec-invalid-life	integer	yes
 .It net.inet.icmp.maskrepl	integer	yes
+.It net.inet.icmp.bmcastecho	integer	yes
+.It net.inet.ipip.allow	integer	yes
+.It net.inet.etherip.allow	integer	yes
 .It net.inet.tcp.rfc1323	integer	yes
+.It net.inet.tcp.keepinittime	integer	yes
+.It net.inet.tcp.keepidle	integer	yes
+.It net.inet.tcp.keepintvl	integer	yes
+.It net.inet.tcp.slowhz	integer	no
+.It net.inet.tcp.baddynamic	array	yes
+.It net.inet.tcp.sack	integer	yes
+.It net.inet.tcp.mssdflt	integer	yes
 .It net.inet.udp.checksum	integer	yes
+.It net.inet.udp.baddynamic	array	yes
+.It net.inet.esp.enable	integer	yes
+.It net.inet.ah.enable	integer	yes
+.It net.inet.gre.allow	integer	yes
+.It net.inet.mobileip.allow	integer	yes
+.It net.inet6.ipip.allow	integer	yes
+.It net.inet6.ip6.forwarding	integer	yes
+.It net.inet6.ip6.redirect	integer	yes
+.It net.inet6.ip6.hlim	integer	yes
+.It net.inet6.ip6.maxfragpackets	integer	yes
+.It net.inet6.ip6.accept_rtadv	integer	yes
+.It net.inet6.ip6.keepfaith	integer	yes
+.It net.inet6.ip6.log_interval	integer	yes
+.It net.inet6.ip6.hdrnestlimit	integer	yes
+.It net.inet6.ip6.dad_count	integer	yes
+.It net.inet6.ip6.auto_flowlabel	integer	yes
+.It net.inet6.ip6.defmcasthlim	integer	yes
+.It net.inet6.ip6.gifhlim	integer	yes
+.It net.inet6.ip6.kame_version	string	no
+.It net.inet6.ip6.use_deprecated	integer	yes
+.It net.inet6.ip6.rr_prune	integer	yes
+.It net.inet6.icmp6.rediraccept	integer	yes
+.It net.inet6.icmp6.redirtimeout	integer	yes
+.It net.inet6.icmp6.errratelimit	integer	yes
+.It net.inet6.icmp6.nd6_prune	integer	yes
+.It net.inet6.icmp6.nd6_delay	integer	yes
+.It net.inet6.icmp6.nd6_umaxtries	integer	yes
+.It net.inet6.icmp6.nd6_mmaxtries	integer	yes
+.It net.inet6.icmp6.nd6_useloopback	integer	yes
+.It net.inet6.icmp6.nd6_proxyall	integer	yes
+.It net.inet6.icmp6.nodeinfo	integer	yes
+.It net.ipx.ipx.checksum	integer	yes
+.It net.ipx.ipx.forwarding	integer	yes
+.It net.ipx.ipx.netbios	integer	yes
+.It net.ipx.ipx.recvspace	integer	yes
+.It net.ipx.ipx.sendspace	integer	yes
+.It debug.syncprt	integer	yes
+.It debug.busyprt	integer	yes
+.It debug.doclusterread	integer	yes
+.It debug.doclusterwrite	integer	yes
+.It debug.doreallocblks	integer	yes
+.It debug.doasyncfree	integer	yes
+.It debug.prtrealloc	integer	yes
 .It hw.machine	string	no
 .It hw.model	string	no
 .It hw.ncpu	integer	no
@@ -145,6 +234,10 @@ privilege can change the value.
 .It hw.physmem	integer	no
 .It hw.usermem	integer	no
 .It hw.pagesize	integer	no
+.It machdep.console_device	dev_t	no
+.It machdep.apmwarn	integer	yes (i386 only)
+.It machdep.kbdreset	integer	yes (i386 only)
+.It machdep.allowaperture	integer	yes (i386 only, XFree86)
 .It user.cs_path	string	no
 .It user.bc_base_max	integer	no
 .It user.bc_dim_max	integer	no
@@ -163,9 +256,37 @@ privilege can change the value.
 .It user.posix2_localedef	integer	no
 .It user.posix2_sw_dev	integer	no
 .It user.posix2_upe	integer	no
+.It user.stream_max	integer	no
+.It user.tzname_max	integer	no
+.It ddb.radix	integer	yes
+.It ddb.max_width	integer	yes
+.It ddb.max_line	integer	yes
+.It ddb.tab_stop_width	integer	yes
+.It ddb.panic	integer	yes
+.It ddb.console	integer	yes
 .El
-.Sh EXAMPLES
 .Pp
+The
+.Nm sysctl
+program can get or set debugging variables
+that have been identified for its display.
+This information can be obtained by using the command:
+.Bd -literal -offset indent
+sysctl debug
+.Ed
+In addition,
+.Nm sysctl
+can extract information about the filesystems that have been compiled
+into the running system.
+This information can be obtained by using the command:
+.Bd -literal -offset indent
+sysctl vfs
+.Ed
+By default, only filesystems that are actively being used are listed.
+Use of the
+.Fl A
+flag lists all the filesystems compiled into the running kernel.
+.Sh EXAMPLES
 For example, to retrieve the maximum number of processes allowed
 in the system, one would use the follow request:
 .Bd -literal -offset indent -compact
@@ -187,11 +308,38 @@ Information about the load average history may be obtained with
 .Bd -literal -offset indent -compact
 sysctl vm.loadavg
 .Ed
+.Pp
+To make the
+.Xr chown 2
+system call use traditional BSD semantics (don't clear setuid/setgid bits),
+one would do the following:
+.Bd -literal -offset indent -compact
+sysctl -w fs.posix.setuid=0
+.Ed
+.Pp
+Set the list of reserved TCP ports that should not be allocated
+by the kernel dynamically.
+This can be used to keep daemons
+from stealing a specific port that another program needs to function.
+List elements may be separated by commas and/or whitespace.
+.Bd -literal -offset indent -compact
+sysctl -w net.inet.tcp.baddynamic=749,750,751,760,761,871
+.Ed
+.Pp
+It is also possible to add or remove ports from the current list.
+.Bd -literal -offset indent -compact
+sysctl -w net.inet.tcp.baddynamic=+748
+sysctl -w net.inet.tcp.baddynamic=-871
+.Ed
 .Sh FILES
 .Bl -tag -width <netinet/icmpXvar.h> -compact
 .It Pa <sys/sysctl.h>
 definitions for top level identifiers, second level kernel and hardware
 identifiers, and user level identifiers
+.It Pa <dev/rndvar.h>
+definitions for
+.Xr random 4
+device's statistics structure
 .It Pa <sys/socket.h>
 definitions for second level network identifiers
 .It Pa <sys/gmon.h>
@@ -203,11 +351,19 @@ definitions for third level Internet identifiers and
 fourth level IP identifiers
 .It Pa <netinet/icmp_var.h>
 definitions for fourth level ICMP identifiers
+.It Pa <netinet/tcp_var.h>
+definitions for fourth level TCP identifiers
 .It Pa <netinet/udp_var.h>
 definitions for fourth level UDP identifiers
+.It Pa <netipx/ipx_var.h>
+definitions for third level IPX identifiers and
+fourth level IPX identifiers
+.It Pa <ddb/db_var.h>
+definitions for second level ddb identifiers
 .El
 .Sh SEE ALSO
 .Xr sysctl 3
 .Sh HISTORY
 .Nm sysctl
-first appeared in 4.4BSD.
+first appeared in
+.Bx 4.4 .

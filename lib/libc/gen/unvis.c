@@ -1,5 +1,3 @@
-/*	$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)unvis.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: unvis.c,v 1.5 1997/07/09 00:28:26 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -62,10 +56,14 @@ static char rcsid[] = "$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $";
  * unvis - decode characters previously encoded by vis
  */
 int
+#ifdef __STDC__
+unvis(char *cp, char c, int *astate, int flag)
+#else
 unvis(cp, c, astate, flag)
 	char *cp;
 	char c;
 	int *astate, flag;
+#endif
 {
 
 	if (flag & UNVIS_END) {
@@ -99,7 +97,7 @@ unvis(cp, c, astate, flag)
 			*astate = S_OCTAL2;
 			return (0);
 		case 'M':
-			*cp = 0200;
+			*cp = (char) 0200;
 			*astate = S_META;
 			return (0);
 		case '^':
@@ -232,7 +230,7 @@ strunvis(dst, src)
 	char *start = dst;
 	int state = 0;
 
-	while (c = *src++) {
+	while ((c = *src++)) {
 	again:
 		switch (unvis(dst, c, &state, 0)) {
 		case UNVIS_VALID:

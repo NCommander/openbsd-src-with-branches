@@ -1,61 +1,72 @@
-#	$NetBSD: Makefile,v 1.2 1995/10/13 16:51:30 gwr Exp $
+#	$OpenBSD$
+#	$NetBSD: Makefile,v 1.1 1995/07/18 04:13:06 briggs Exp $
 
 TOP=		${.CURDIR}/..
 
-# This include just sets REV=XX
 .include "${TOP}/Makefile.inc"
-
-IMAGE=	ramdisk
-CBIN=	rd_bin
-
-TREE=	${TOP}/common/${IMAGE}.tree
-
-LISTS=	${TOP}/common/${CBIN}.list \
-	${TOP}/common/${IMAGE}.list
+IMAGE=		ramdisk-${REV}.fs
+CRUNCHCONF?=    ${.CURDIR}/${CBIN}.conf
+BASE=		ramdisk
 
 MOUNT_POINT=	/mnt
-DISKTYPE=	rdroot
-BDEV=		/dev/rd0
-CDEV?=		/dev/rd0
 
-KERNEL=${SRCSYSDIR}/arch/sun3/compile/RAMDISK/netbsd
+VND?=		svnd0
+VND_DEV=	/dev/${VND}a
+VND_RDEV=	/dev/r${VND}a
+VND_CRDEV=	/dev/r${VND}c
+PID!=		echo $$$$
+REALIMAGE!=	echo /var/tmp/image.${PID}
 
-# These are all the parameters for the root fs: (256K)
-NBLKS=		512
-# args: old fmt, minfree, opt, b/i  trks, sects, cpg
-NEWFSARGS= -O -m 0 -o space -i 2048 -t 2 -u 16 -c 16
+GZIP?=		gzip
+GZIPFLAGS?=	-9f
 
-CLEANFILES= netbsd-rd rdsetroot
+all: ${CBIN} ${IMAGE} bsd.rd
+	@echo "all done"
 
-netbsd-rd : rdsetroot ${IMAGE}.fs
-	cp ${KERNEL} netbsd-tmp
-	./rdsetroot  netbsd-tmp < ${IMAGE}.fs
-	-mv -f netbsd-tmp $@
+install: bsd.rd
+	cp bsd.rd ${DESTDIR}/snapshot/bsd.rd
+	cp ${.CURDIR}/../HP-IB.geometry ${DESTDIR}/snapshot
 
-rdsetroot: ${TOP}/common/rdsetroot.c
-	$(CC) -o $@ -DDEBUG ${TOP}/common/rdsetroot.c
+.include "Makefile.inc"
 
-${IMAGE}.fs: ${CBIN} do_mount do_files do_umount
-	dd if=${CDEV} of=$@ count=${NBLKS}
+DISKTYPE=       rdroot
+NBLKS=          4096
+NEWFSARGS= -m 0 -o space -c 16 -i 3072
 
-# Do not delete this if I change my mind and kill make...
-.PRECIOUS: ${IMAGE}.fs
+bsd.rd: ${IMAGE} bsd rdsetroot
+	${.OBJDIR}/rdsetroot bsd < ${IMAGE}
+	${GZIP} -c ${GZIPFLAGS} bsd > bsd.rd
+	rm bsd
 
-# Rules used making ${IMAGE}.fs (do_*)
-.include "${TOP}/common/Make.fsimage"
+bsd:
+	cd ${.CURDIR}/../../../sys/arch/hp300/conf && config RAMDISK
+	cd ${.CURDIR}/../../../sys/arch/hp300/compile/RAMDISK && \
+	    make clean && make depend && make
+	cp ${.CURDIR}/../../../sys/arch/hp300/compile/RAMDISK/bsd bsd
 
-# Rules for making ${CBIN} ...
-.include "${TOP}/common/Make.crunch"
+${IMAGE}: ${CBIN} rd_setup do_files rd_teardown
 
-${CBIN} : libhack.o
+rd_setup: ${CBIN}
+	dd if=/dev/zero of=${REALIMAGE} bs=512 count=${NBLKS}
+	vnconfig -v -c ${VND} ${REALIMAGE}
+	disklabel -w ${VND} ${DISKTYPE}
+	newfs ${NEWFSARGS} ${VND_RDEV}
+	fsck ${VND_RDEV}
+	mount ${VND_DEV} ${MOUNT_POINT}
 
-# Use stubs to eliminate some large stuff from libc
-HACKSRC=${TOP}/../utils/libhack
-.include "${HACKSRC}/Makefile.inc"
+rd_teardown:
+	@df -i ${MOUNT_POINT}
+	-umount ${MOUNT_POINT}
+	-vnconfig -u ${VND}
+	cp ${REALIMAGE} ${IMAGE}
+	rm ${REALIMAGE}
 
-clean cleandir:
-	-rm -f a.out core *.core *.o
-	-rm -f ${CLEANFILES}
+rdsetroot:	${TOP}/../common/rdsetroot.c
+	${HOSTCC} -DDEBUG -o rdsetroot ${TOP}/../common/rdsetroot.c
 
-# Standard rules needed by the above...
-.include <bsd.obj.mk>
+unconfig:
+	-umount -f ${MOUNT_POINT}
+	-vnconfig -u ${VND}
+	-/bin/rm -f ${IMAGE}
+
+.PRECIOUS:	${IMAGE}

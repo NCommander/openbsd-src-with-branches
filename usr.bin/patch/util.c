@@ -1,5 +1,7 @@
+/*	$OpenBSD: util.c,v 1.8 1999/12/04 01:04:14 provos Exp $	*/
+
 #ifndef lint
-static char rcsid[] = "$Id: util.c,v 1.3 1993/12/07 10:36:16 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.8 1999/12/04 01:04:14 provos Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -8,7 +10,11 @@ static char rcsid[] = "$Id: util.c,v 1.3 1993/12/07 10:36:16 mycroft Exp $";
 #include "util.h"
 #include "backupfile.h"
 
+#ifdef __GNUC__
+void my_exit() __attribute__((noreturn));
+#else
 void my_exit();
+#endif
 
 /* Rename a file, copying it if necessary. */
 
@@ -16,7 +22,7 @@ int
 move_file(from,to)
 char *from, *to;
 {
-    char bakname[512];
+    char bakname[MAXPATHLEN];
     Reg1 char *s;
     Reg2 int i;
     Reg3 int fromfd;
@@ -28,7 +34,7 @@ char *from, *to;
 	if (debug & 4)
 	    say2("Moving %s to stdout.\n", from);
 #endif
-	fromfd = open(from, 0);
+	fromfd = open(from, O_RDONLY);
 	if (fromfd < 0)
 	    pfatal2("internal error, can't reopen %s", from);
 	while ((i=read(fromfd, buf, sizeof buf)) > 0)
@@ -39,18 +45,21 @@ char *from, *to;
     }
 
     if (origprae) {
-	Strcpy(bakname, origprae);
-	Strcat(bakname, to);
+	if (strlcpy(bakname, origprae, sizeof(bakname)) >= sizeof(bakname) ||
+	    strlcat(bakname, to, sizeof(bakname)) >= sizeof(bakname))
+	    fatal2("filename %s too long for buffer\n", origprae);
     } else {
 #ifndef NODIR
 	char *backupname = find_backup_file_name(to);
 	if (backupname == (char *) 0)
 	    fatal1("out of memory\n");
-	Strcpy(bakname, backupname);
+	if (strlcpy(bakname, backupname, sizeof(bakname)) >= sizeof(bakname))
+	    fatal2("filename %s too long for buffer\n", backupname);
 	free(backupname);
 #else /* NODIR */
-	Strcpy(bakname, to);
-    	Strcat(bakname, simple_backup_suffix);
+	if (strlcpy(bakname, to, sizeof(bakname)) >= sizeof(bakname) ||
+	    strlcat(bakname, simple_backup_suffix, sizeof(bakname)) >= sizeof(bakname))
+	    fatal2("filename %s too long for buffer\n", to);
 #endif /* NODIR */
     }
 
@@ -73,7 +82,7 @@ char *from, *to;
 	    if (*s)
 		*s = toupper(*s);
 	    else
-		Strcpy(simplename, simplename+1);
+		strcpy(simplename, simplename+1);
 	}
 	while (unlink(bakname) >= 0) ;	/* while() is for benefit of Eunice */
 #ifdef DEBUGGING
@@ -93,7 +102,7 @@ char *from, *to;
 		     strerror(errno));
 		return -1;
 	    }
-	    tofd = open(to, 0);
+	    tofd = open(to, O_RDONLY);
 	    if (tofd < 0)
 		pfatal2("internal error, can't open %s", to);
 	    while ((i=read(tofd, buf, sizeof buf)) > 0)
@@ -117,7 +126,7 @@ char *from, *to;
 	      to, from, strerror(errno));
 	    return -1;
 	}
-	fromfd = open(from, 0);
+	fromfd = open(from, O_RDONLY);
 	if (fromfd < 0)
 	    pfatal2("internal error, can't reopen %s", from);
 	while ((i=read(fromfd, buf, sizeof buf)) > 0)
@@ -143,7 +152,7 @@ char *from, *to;
     tofd = creat(to, 0666);
     if (tofd < 0)
 	pfatal2("can't create %s", to);
-    fromfd = open(from, 0);
+    fromfd = open(from, O_RDONLY);
     if (fromfd < 0)
 	pfatal2("internal error, can't reopen %s", from);
     while ((i=read(fromfd, buf, sizeof buf)) > 0)
@@ -175,7 +184,8 @@ Reg1 char *s;
     }
     else {
 	t = rv;
-	while (*t++ = *s++);
+	while ((*t++ = *s++))
+	    ;
     }
     return rv;
 }
@@ -242,7 +252,7 @@ long arg1,arg2,arg3;
     int r;
     bool tty2 = isatty(2);
 
-    Sprintf(buf, pat, arg1, arg2, arg3);
+    Snprintf(buf, sizeof buf, pat, arg1, arg2, arg3);
     Fflush(stderr);
     write(2, buf, strlen(buf));
     if (tty2) {				/* might be redirected to a file */
@@ -253,7 +263,7 @@ long arg1,arg2,arg3;
 	write(1, buf, strlen(buf));
 	r = read(1, buf, sizeof buf);
     }
-    else if ((ttyfd = open("/dev/tty", 2)) >= 0 && isatty(ttyfd)) {
+    else if ((ttyfd = open(_PATH_TTY, O_RDWR)) >= 0 && isatty(ttyfd)) {
 					/* might be deleted or unwriteable */
 	write(ttyfd, buf, strlen(buf));
 	r = read(ttyfd, buf, sizeof buf);
@@ -284,27 +294,15 @@ set_signals(reset)
 int reset;
 {
 #ifndef lint
-#ifdef VOIDSIG
-    static void (*hupval)(),(*intval)();
-#else
-    static int (*hupval)(),(*intval)();
-#endif
+    static sig_t hupval, intval;
 
     if (!reset) {
 	hupval = signal(SIGHUP, SIG_IGN);
 	if (hupval != SIG_IGN)
-#ifdef VOIDSIG
-	    hupval = my_exit;
-#else
-	    hupval = (int(*)())my_exit;
-#endif
+	    hupval = (sig_t)my_exit;
 	intval = signal(SIGINT, SIG_IGN);
 	if (intval != SIG_IGN)
-#ifdef VOIDSIG
-	    intval = my_exit;
-#else
-	    intval = (int(*)())my_exit;
-#endif
+	    intval = (sig_t)my_exit;
     }
     Signal(SIGHUP, hupval);
     Signal(SIGINT, intval);
@@ -330,45 +328,24 @@ makedirs(filename,striplast)
 Reg1 char *filename;
 bool striplast;
 {
-    char tmpbuf[256];
-    Reg2 char *s = tmpbuf;
-    char *dirv[20];		/* Point to the NULs between elements.  */
-    Reg3 int i;
-    Reg4 int dirvp = 0;		/* Number of finished entries in dirv. */
+    char *tmpbuf;
 
-    /* Copy `filename' into `tmpbuf' with a NUL instead of a slash
-       between the directories.  */
-    while (*filename) {
-	if (*filename == '/') {
-	    filename++;
-	    dirv[dirvp++] = s;
-	    *s++ = '\0';
-	}
-	else {
-	    *s++ = *filename++;
-	}
+    if ((tmpbuf = strdup(filename)) == NULL)
+        fatal1("out of memory\n");
+
+    if (striplast) {
+        char *s = strrchr(tmpbuf, '/');
+	if (s == NULL)
+	  return; /* nothing to be done */
+	*s = '\0';
     }
-    *s = '\0';
-    dirv[dirvp] = s;
-    if (striplast)
-	dirvp--;
-    if (dirvp < 0)
-	return;
 
-    strcpy(buf, "mkdir");
-    s = buf;
-    for (i=0; i<=dirvp; i++) {
-	struct stat sbuf;
+    strcpy(buf, "/bin/mkdir -p ");
+    if (strlcat(buf, tmpbuf, sizeof(buf)) >= sizeof(buf))
+      fatal2("buffer too small to hold %.20s...\n", tmpbuf);
 
-	if (stat(tmpbuf, &sbuf) && errno == ENOENT) {
-	    while (*s) s++;
-	    *s++ = ' ';
-	    strcpy(s, tmpbuf);
-	}
-	*dirv[i] = '/';
-    }
-    if (s != buf)
-	system(buf);
+    if (system(buf))
+      pfatal2("%.40s failed", buf);
 }
 
 /* Make filenames more reasonable. */
@@ -385,7 +362,7 @@ int assume_exists;
     char tmpbuf[200];
     int sleading = strip_leading;
 
-    if (!at)
+    if (!at || *at == '\0')
 	return Nullch;
     while (isspace(*at))
 	at++;
@@ -421,17 +398,14 @@ int assume_exists;
 
     if (stat(name, &filestat) && !assume_exists) {
 	char *filebase = basename(name);
-	int pathlen = filebase - name;
+	char *filedir = dirname(name);
 
-	/* Put any leading path into `tmpbuf'.  */
-	strncpy(tmpbuf, name, pathlen);
-
-#define try(f, a1, a2) (Sprintf(tmpbuf + pathlen, f, a1, a2), stat(tmpbuf, &filestat) == 0)
-	if (   try("RCS/%s%s", filebase, RCSSUFFIX)
-	    || try("RCS/%s"  , filebase,         0)
-	    || try(    "%s%s", filebase, RCSSUFFIX)
-	    || try("SCCS/%s%s", SCCSPREFIX, filebase)
-	    || try(     "%s%s", SCCSPREFIX, filebase))
+#define try(f, a1, a2, a3) (Snprintf(tmpbuf, sizeof tmpbuf, f, a1, a2, a3), stat(tmpbuf, &filestat) == 0)
+	if (   try("%s/RCS/%s%s", filedir, filebase, RCSSUFFIX)
+	    || try("%s/RCS/%s%s", filedir, filebase,        "")
+	    || try(    "%s/%s%s", filedir, filebase, RCSSUFFIX)
+	    || try("%s/SCCS/%s%s", filedir, SCCSPREFIX, filebase)
+	    || try(     "%s/%s%s", filedir, SCCSPREFIX, filebase))
 	  return name;
 	free(name);
 	name = Nullch;

@@ -1,3 +1,5 @@
+/*	$OpenBSD: recvjob.c,v 1.11 1997/07/25 20:12:13 mickey Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)recvjob.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static char sccsid[] = "@(#)recvjob.c	8.2 (Berkeley) 4/27/95";
+#else
+static char rcsid[] = "$OpenBSD: recvjob.c,v 1.11 1997/07/25 20:12:13 mickey Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -65,10 +71,10 @@ static char sccsid[] = "@(#)recvjob.c	8.1 (Berkeley) 6/6/93";
 
 #define ack()	(void) write(1, sp, 1);
 
-static char	 dfname[40];	/* data files */
+static char	 dfname[NAME_MAX];	/* data files */
 static int	 minfree;       /* keep at least minfree blocks available */
 static char	*sp = "";
-static char	 tfname[40];	/* tmp copy of cf before linking */
+static char	 tfname[NAME_MAX];	/* tmp copy of cf before linking */
 
 static int        chksize __P((int));
 static void       frecverr __P((const char *, ...));
@@ -146,10 +152,13 @@ readjob()
 		do {
 			if ((size = read(1, cp, 1)) != 1) {
 				if (size < 0)
-					frecverr("%s: Lost connection",printer);
+					frecverr("%s: Lost connection",
+					    printer);
 				return(nfiles);
 			}
-		} while (*cp++ != '\n');
+		} while (*cp++ != '\n' && (cp - line + 1) < sizeof line);
+		if (cp - line + 1 >= sizeof line)
+			frecverr("readjob overflow");
 		*--cp = '\0';
 		cp = line;
 		switch (*cp++) {
@@ -169,9 +178,14 @@ readjob()
 			 * something different than what gethostbyaddr()
 			 * returns
 			 */
-			strcpy(cp + 6, from);
-			strcpy(tfname, cp);
+			strncpy(cp + 6, from, sizeof(line) + line - cp - 7);
+			line[sizeof(line) -1 ] = '\0';
+			strncpy(tfname, cp, sizeof tfname-1);
+			tfname[sizeof tfname-1] = '\0';
 			tfname[0] = 't';
+			if (strchr(tfname, '/'))
+				frecverr("readjob: %s: illegal path name",
+				    tfname);
 			if (!chksize(size)) {
 				(void) write(1, "\2", 1);
 				continue;
@@ -197,8 +211,9 @@ readjob()
 				(void) write(1, "\2", 1);
 				continue;
 			}
-			(void) strcpy(dfname, cp);
-			if (index(dfname, '/'))
+			(void) strncpy(dfname, cp, sizeof dfname-1);
+			dfname[sizeof dfname-1] = '\0';
+			if (strchr(dfname, '/'))
 				frecverr("readjob: %s: illegal path name",
 					dfname);
 			(void) readfile(dfname, size);
@@ -250,7 +265,8 @@ readfile(file, size)
 	if (err)
 		frecverr("%s: write error", file);
 	if (noresponse()) {		/* file sent had bad data in it */
-		(void) unlink(file);
+		if (strchr(file, '/') == NULL)
+			(void) unlink(file);
 		return(0);
 	}
 	ack();
@@ -315,26 +331,27 @@ static void
 rcleanup(signo)
 	int signo;
 {
-	if (tfname[0])
+	if (tfname[0] && strchr(tfname, '/') == NULL)
 		(void) unlink(tfname);
-	if (dfname[0])
+	if (dfname[0] && strchr(dfname, '/') == NULL) {
 		do {
 			do
 				(void) unlink(dfname);
 			while (dfname[2]-- != 'A');
 			dfname[2] = 'z';
 		} while (dfname[0]-- != 'd');
+	}
 	dfname[0] = '\0';
 }
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
 static void
-#if __STDC__
+#ifdef __STDC__
 frecverr(const char *msg, ...)
 #else
 frecverr(msg, va_alist)
@@ -344,7 +361,7 @@ frecverr(msg, va_alist)
 {
 	extern char fromb[];
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, msg);
 #else
 	va_start(ap);

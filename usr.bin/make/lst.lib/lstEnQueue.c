@@ -1,8 +1,9 @@
-/*	$NetBSD: lstEnQueue.c,v 1.4 1995/06/14 15:21:04 christos Exp $	*/
+/*	$OpenBSD: lstEnQueue.c,v 1.4 1998/12/05 00:06:31 espie Exp $	*/
+/*	$NetBSD: lstEnQueue.c,v 1.5 1996/11/06 17:59:38 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstEnQueue.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstEnQueue.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstEnQueue.c,v 1.4 1995/06/14 15:21:04 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstEnQueue.c,v 1.4 1998/12/05 00:06:31 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,24 +57,20 @@ static char rcsid[] = "$NetBSD: lstEnQueue.c,v 1.4 1995/06/14 15:21:04 christos 
  * Lst_EnQueue --
  *	Add the datum to the tail of the given list.
  *
- * Results:
- *	SUCCESS or FAILURE as returned by Lst_Append.
- *
  * Side Effects:
  *	the lastPtr field is altered all the time and the firstPtr field
  *	will be altered if the list used to be empty.
  *
  *-----------------------------------------------------------------------
  */
-ReturnStatus
-Lst_EnQueue (l, d)
+void
+Lst_EnQueue(l, d)
     Lst	    	  l;
     ClientData	  d;
 {
-    if (LstValid (l) == FALSE) {
-	return (FAILURE);
-    }
-    
-    return (Lst_Append (l, Lst_Last(l), d));
+    if (LstValid(l) == FALSE) 
+	return;
+
+    Lst_AtEnd(l, d);
 }
 

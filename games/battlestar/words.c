@@ -1,3 +1,4 @@
+/*	$OpenBSD: words.c,v 1.4 1998/09/13 01:30:34 pjanzen Exp $	*/
 /*	$NetBSD: words.c,v 1.3 1995/03/21 15:08:00 cgd Exp $	*/
 
 /*
@@ -35,13 +36,13 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)words.c	8.1 (Berkeley) 5/31/93";
+static char sccsid[] = "@(#)words.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: words.c,v 1.3 1995/03/21 15:08:00 cgd Exp $";
+static char rcsid[] = "$OpenBSD: words.c,v 1.4 1998/09/13 01:30:34 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include "extern.h"
 
 struct wlist wlist[] = {
 	{ "knife",	KNIFE,		OBJECT },
@@ -208,5 +209,5 @@ struct wlist wlist[] = {
 	{ "move",	0,		ADJS },
 	{ "make",	0,		ADJS },
 	{ "to",		0,		ADJS },
-	0
+	{ 0 }
 };

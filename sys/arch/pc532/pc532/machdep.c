@@ -1,4 +1,4 @@
-/*	$NetBSD: machdep.c,v 1.40.2.1 1995/10/17 00:19:08 phil Exp $	*/
+/*	$NetBSD: machdep.c,v 1.43 1996/01/15 05:30:47 phil Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1987, 1990 The Regents of the University of California.
@@ -56,7 +56,7 @@ static char rcsid[] = "/b/source/CVS/src/sys/arch/pc532/pc532/machdep.c,v 1.2 19
 #include <sys/reboot.h>
 #include <sys/conf.h>
 #include <sys/file.h>
-#include <sys/callout.h>
+#include <sys/timeout.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/msgbuf.h>
@@ -349,8 +349,7 @@ again:
 	    (name) = (type *)v; v = (caddr_t)((name)+(num))
 #define	valloclim(name, type, num, lim) \
 	    (name) = (type *)v; v = (caddr_t)((lim) = ((name)+(num)))
-	valloc(callout, struct callout, ncallout);
-	valloc(swapmap, struct map, nswapmap = maxproc * 2);
+	valloc(timeouts, struct timeout, ntimeout);
 #ifdef SYSVSHM
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif
@@ -461,11 +460,9 @@ again:
 	mb_map = kmem_suballoc(kernel_map, (vm_offset_t *)&mbutl, &maxaddr,
 			       VM_MBUF_SIZE, FALSE);
 	/*
-	 * Initialize callouts
+	 * Initialize timeouts
 	 */
-	callfree = callout;
-	for (i = 1; i < ncallout; i++)
-		callout[i-1].c_next = &callout[i];
+	timeout_init();
 
 	printf("avail mem = 0x%x\n", ptoa(cnt.v_free_count));
 	printf("using %d buffers containing %d bytes of memory\n",
@@ -479,6 +476,13 @@ again:
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
 	configure();
 }
 
@@ -532,7 +536,7 @@ sendsig(catcher, sig, mask, code)
 	 */
 	if ((ps->ps_flags & SAS_ALTSTACK) && !oonstack &&
 	    (ps->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(ps->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(ps->ps_sigstk.ss_sp +
 		    ps->ps_sigstk.ss_size - sizeof(struct sigframe));
 		ps->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else {
@@ -652,6 +656,11 @@ boot(howto)
 	}
 	boothowto = howto;
 	if ((howto&RB_NOSYNC) == 0 && waittime < 0) {
+		extern struct proc proc0;
+		/* defeat against panic on sync   XXX */
+		if (curproc == NULL)
+			curproc = proc0;
+
 		waittime = 0;
 		vfs_shutdown();
 		/*
@@ -673,10 +682,22 @@ boot(howto)
 		/*NOTREACHED*/
 	} else {
 		if (howto & RB_DUMP) {
+#if STACK_DUMP
+		  	/* dump the stack! */
+		        { int *fp = (int *)_get_fp();
+		            int i=0;
+		            while ((u_int)fp < (u_int)UPT_MIN_ADDRESS-40) {
+		              printf ("0x%x (@0x%x), ", fp[1], fp);
+		              fp = (int *)fp[0];
+		              if (++i == 3) { printf ("\n"); i=0; }
+		            }
+		        }
+#endif
 			savectx(&dumppcb, 0);
 			dumppcb.pcb_ptb = _get_ptb0();
 			dumpsys();
 		}
+		doshutdownhooks();
 	}
 
 	printf("rebooting ...");
@@ -693,7 +714,7 @@ microtime(tvp)
 
 	*tvp = time;
 	tvp->tv_usec += tick;
-	while (tvp->tv_usec > 1000000) {
+	while (tvp->tv_usec >= 1000000) {
 		tvp->tv_sec++;
 		tvp->tv_usec -= 1000000;
 	}

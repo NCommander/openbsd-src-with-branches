@@ -62,7 +62,7 @@
 #include "sudo.tab.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: parse.lex,v 1.109 1999/11/09 20:06:52 millert Exp $";
+static const char rcsid[] = "$Sudo: parse.lex,v 1.111 2000/03/23 04:38:20 millert Exp $";
 #endif /* lint */
 
 #undef yywrap		/* guard against a yywrap macro */
@@ -138,6 +138,7 @@ WORD			([^@!=:,\(\) \t\n\\]|\\[^\n])+
 \n			{
 			    ++sudolineno;
 			    LEXTRACE("\n");
+			    BEGIN INITIAL;
 			    return(COMMENT);
 			}			/* return newline */
 
@@ -211,12 +212,6 @@ PASSWD[[:blank:]]*:	{
 			    return(NTWKADDR);
 			}
 
-[[:alpha:]][[:alnum:]_-]*(\.{HOSTNAME})+ {
-			    fill(yytext, yyleng);
-			    LEXTRACE("FQHOST ");
-			    return(FQHOST);
-			}
-
 <INITIAL>\(		{
 				BEGIN GOTRUNAS;
 				LEXTRACE("RUNAS ");
@@ -257,7 +252,7 @@ PASSWD[[:blank:]]*:	{
 			    }
 			}
 
-<GOTDEFS>{WORD}	{
+<GOTDEFS>{WORD}		{
 			    LEXTRACE("WORD(3) ");
 			    fill(yytext, yyleng);
 			    return(WORD);
@@ -296,6 +291,7 @@ PASSWD[[:blank:]]*:	{
 			    }
 			    if (*yytext == 'R') {
 				LEXTRACE("RUNASALIAS ");
+				BEGIN GOTRUNAS;
 				return(RUNASALIAS);
 			    }
 			}

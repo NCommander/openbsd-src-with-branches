@@ -1,3 +1,4 @@
+/*	$OpenBSD: profile.h,v 1.1 1998/12/15 06:02:55 smurph Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -32,7 +33,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)profile.h	8.1 (Berkeley) 6/11/93
- *	$Id: profile.h,v 1.4 1994/05/13 11:12:38 mycroft Exp $
+ *	$Id: profile.h,v 1.6 1997/03/25 17:07:37 rahnds Exp $
  */
 
 #define	_MCOUNT_DECL static inline void _mcount
@@ -42,7 +43,7 @@ extern void mcount() asm("mcount");					\
 void									\
 mcount()								\
 {									\
-	int selfret;							\
+	register int selfret;						\
 	register int callerret;						\
 	/*								\
 	 * find the return address for mcount,				\
@@ -50,7 +51,7 @@ mcount()								\
 	 *								\
 	 * selfret = ret pushed by mcount call				\
 	 */								\
-	asm volatile("st r1,%0" : "=m" (selfret));			\
+	asm volatile("or %0,r1,0" : "=r" (selfret));			\
 	/*								\
 	 * callerret = ret pushed by call into self.			\
 	 */								\

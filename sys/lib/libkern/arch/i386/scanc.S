@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: scanc.S,v 1.5 1994/10/26 06:39:13 cgd Exp $	*/
 
 /*

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -150,7 +150,9 @@
 
 #include "httpd.h"
 #include "http_config.h"
+#ifndef NETWARE
 #include <sys/types.h>
+#endif
 #include <sys/stat.h>
 #include "util_script.h"
 #include "http_log.h"
@@ -167,7 +169,7 @@ module MODULE_VAR_EXPORT cern_meta_module;
 typedef struct {
     char *metadir;
     char *metasuffix;
-    char *metafiles;
+    int metafiles;
 } cern_meta_dir_config;
 
 static void *create_cern_meta_dir_config(pool *p, char *dummy)
@@ -208,7 +210,7 @@ static const char *set_metasuffix(cmd_parms *parms, cern_meta_dir_config * dconf
     return NULL;
 }
 
-static const char *set_metafiles(cmd_parms *parms, cern_meta_dir_config * dconf, char *arg)
+static const char *set_metafiles(cmd_parms *parms, cern_meta_dir_config * dconf, int arg)
 {
     dconf->metafiles = arg;
     return NULL;
@@ -393,3 +395,11 @@ module MODULE_VAR_EXPORT cern_meta_module =
     NULL,			/* child_exit */
     NULL			/* post read-request */
 };
+
+
+#ifdef NETWARE
+int main(int argc, char *argv[]) 
+{
+    ExitThread(TSR_THREAD, 0);
+}
+#endif

@@ -1,4 +1,4 @@
-/*	$NetBSD: reloc.h,v 1.4 1994/10/26 21:09:59 cgd Exp $	*/
+/*	$NetBSD: reloc.h,v 1.6 1996/10/07 03:15:03 jonathan Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -37,6 +37,8 @@
  * from: Header: reloc.h,v 1.6 92/06/20 09:59:37 torek Exp
  */
 
+#ifndef __MIPS_RELOC_H__
+#define __MIPS_RELOC_H__
 /*
  * MIPS relocation types.
  */
@@ -62,7 +64,7 @@ enum reloc_type {
  * The resulting value is then to be stuffed into the appropriate bits
  * in the object (the low 16, or the low 26 bits).
  */
-struct reloc_info_pmax {
+struct reloc_info_mips {
 	u_long	r_address;	/* relocation addr (offset in segment) */
 	u_int	r_index:24,	/* segment (r_extern==0) or symbol index */
 		r_extern:1,	/* if set, r_index is symbol index */
@@ -71,4 +73,8 @@ struct reloc_info_pmax {
 	long	r_addend;	/* value to add to symbol value */
 };
 
-#define relocation_info reloc_info_pmax
+/* For the pmax we only use the next line TTTTT  */
+/* #define relocation_info reloc_info_mips       */
+
+#define relocation_info_pmax reloc_info_mips
+#endif /* __MIPS_RELOC_H__ */

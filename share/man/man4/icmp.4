@@ -35,7 +35,7 @@
 .\"
 .Dd June 5, 1993
 .Dt ICMP 4
-.Os BSD 4.3
+.Os
 .Sh NAME
 .Nm icmp
 .Nd Internet Control Message Protocol
@@ -70,11 +70,11 @@ and
 calls, though the
 .Xr connect 2
 call may also be used to fix the destination for future
-packets (in which case the 
+packets (in which case the
 .Xr read 2
 or
 .Xr recv 2
-and 
+and
 .Xr write 2
 or
 .Xr send 2
@@ -102,16 +102,16 @@ connected;
 when the system runs out of memory for
 an internal data structure;
 .It Bq Er EADDRNOTAVAIL
-when an attempt is made to create a 
+when an attempt is made to create a
 socket with a network address for which no network interface
 exists.
 .El
 .Sh SEE ALSO
-.Xr send 2 ,
 .Xr recv 2 ,
-.Xr intro 4 ,
+.Xr send 2 ,
 .Xr inet 4 ,
-.Xr ip 4
+.Xr ip 4 ,
+.Xr netintro 4
 .Sh HISTORY
 The
 .Nm

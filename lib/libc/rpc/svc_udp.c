@@ -1,5 +1,3 @@
-/*	$NetBSD: svc_udp.c,v 1.6 1995/06/03 22:37:28 mycroft Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_udp.c 1.24 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_udp.c	2.2 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_udp.c,v 1.6 1995/06/03 22:37:28 mycroft Exp $";
-#endif
+static char *rcsid = "$OpenBSD: svc_udp.c,v 1.7 1997/07/09 03:05:06 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * svc_udp.c,
@@ -49,6 +45,7 @@ static char *rcsid = "$NetBSD: svc_udp.c,v 1.6 1995/06/03 22:37:28 mycroft Exp $
 #include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <unistd.h>
 
 
 #define rpc_buffer(xprt) ((xprt)->xp_p1)
@@ -60,6 +57,8 @@ static enum xprt_stat	svcudp_stat();
 static bool_t		svcudp_getargs();
 static bool_t		svcudp_freeargs();
 static void		svcudp_destroy();
+static void		cache_set __P((SVCXPRT *, u_long));
+static int		cache_get __P((SVCXPRT *, struct rpc_msg *, char **, u_long *));
 
 static struct xp_ops svcudp_op = {
 	svcudp_recv,
@@ -129,16 +128,25 @@ svcudp_bufcreate(sock, sendsz, recvsz)
 	xprt = (SVCXPRT *)mem_alloc(sizeof(SVCXPRT));
 	if (xprt == NULL) {
 		(void)fprintf(stderr, "svcudp_create: out of memory\n");
+		if (madesock)
+			(void)close(sock);
 		return (NULL);
 	}
 	su = (struct svcudp_data *)mem_alloc(sizeof(*su));
 	if (su == NULL) {
 		(void)fprintf(stderr, "svcudp_create: out of memory\n");
+		if (madesock)
+			(void)close(sock);
+		free(xprt);
 		return (NULL);
 	}
 	su->su_iosz = ((MAX(sendsz, recvsz) + 3) / 4) * 4;
 	if ((rpc_buffer(xprt) = mem_alloc(su->su_iosz)) == NULL) {
 		(void)fprintf(stderr, "svcudp_create: out of memory\n");
+		if (madesock)
+			(void)close(sock);
+		free(xprt);
+		free(su);
 		return (NULL);
 	}
 	xdrmem_create(
@@ -161,6 +169,7 @@ svcudp_create(sock)
 	return(svcudp_bufcreate(sock, UDPMSGSIZE, UDPMSGSIZE));
 }
 
+/* ARGSUSED */
 static enum xprt_stat
 svcudp_stat(xprt)
 	SVCXPRT *xprt;
@@ -179,7 +188,6 @@ svcudp_recv(xprt, msg)
 	register int rlen;
 	char *reply;
 	u_long replylen;
-	static int cache_get();
 
     again:
 	xprt->xp_addrlen = sizeof(struct sockaddr_in);
@@ -213,7 +221,6 @@ svcudp_reply(xprt, msg)
 	register XDR *xdrs = &(su->su_xdrs);
 	register int slen;
 	register bool_t stat = FALSE;
-	static void cache_set();
 
 	xdrs->x_op = XDR_ENCODE;
 	XDR_SETPOS(xdrs, 0);
@@ -261,7 +268,9 @@ svcudp_destroy(xprt)
 	register struct svcudp_data *su = su_data(xprt);
 
 	xprt_unregister(xprt);
-	(void)close(xprt->xp_sock);
+	if (xprt->xp_sock != -1)
+		(void)close(xprt->xp_sock);
+	xprt->xp_sock = -1;
 	XDR_DESTROY(&(su->su_xdrs));
 	mem_free(rpc_buffer(xprt), su->su_iosz);
 	mem_free((caddr_t)su, sizeof(struct svcudp_data));
@@ -340,6 +349,7 @@ struct udp_cache {
  * Enable use of the cache. 
  * Note: there is no disable.
  */
+int
 svcudp_enablecache(transp, size)
 	SVCXPRT *transp;
 	u_long size;
@@ -443,7 +453,7 @@ cache_set(xprt, replylen)
  * Try to get an entry from the cache
  * return 1 if found, 0 if not found
  */
-static
+static int
 cache_get(xprt, msg, replyp, replylenp)
 	SVCXPRT *xprt;
 	struct rpc_msg *msg;

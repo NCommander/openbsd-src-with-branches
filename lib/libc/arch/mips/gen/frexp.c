@@ -32,8 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "from: @(#)frexp.c	8.1 (Berkeley) 6/4/93";
-static char rcsid[] = "$Id: frexp.c,v 1.1 1994/05/24 07:12:27 glass Exp $";
+static char rcsid[] = "$OpenBSD: frexp.c,v 1.2 1996/08/19 08:16:00 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -46,21 +45,21 @@ frexp(value, eptr)
 	int *eptr;
 {
 	union {
-                double v;
-                struct {
+		double v;
+		struct {
 #if BYTE_ORDER == LITTLE_ENDIAN
 			u_int u_mant2 : 32;
 			u_int u_mant1 : 20;
 			u_int   u_exp : 11;
-                        u_int  u_sign :  1;
+			u_int  u_sign :	 1;
 #else
-                        u_int  u_sign :  1;
+			u_int  u_sign :	 1;
 			u_int   u_exp : 11;
 			u_int u_mant1 : 20;
 			u_int u_mant2 : 32;
 #endif
-                } s;
-        } u;
+		} s;
+	} u;
 
 	if (value) {
 		u.v = value;

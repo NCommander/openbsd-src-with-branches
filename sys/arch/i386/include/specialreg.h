@@ -1,3 +1,4 @@
+/*	$OpenBSD: specialreg.h,v 1.7 1999/03/08 23:47:25 downsj Exp $	*/
 /*	$NetBSD: specialreg.h,v 1.7 1994/10/27 04:16:26 cgd Exp $	*/
 
 /*-
@@ -70,6 +71,105 @@
 #define CCR1	0xc1		/* configuration control register 1 */
 #define CCR1_RPL	0x01	/* enables RPLSET and RPLVAL# pins */
 /* the remaining 7 bits of this register are reserved */
+
+/*
+ * bits in the pentiums %cr4 register:
+ */
+
+#define CR4_VME	0x00000001	/* virtual 8086 mode extension enable */
+#define CR4_PVI 0x00000002	/* protected mode virtual interrupt enable */
+#define CR4_TSD 0x00000004	/* restrict RDTSC instruction to cpl 0 only */
+#define CR4_DE	0x00000008	/* debugging extension */
+#define CR4_PSE	0x00000010	/* large (4MB) page size enable */
+#define CR4_PAE 0x00000020	/* physical address extension enable */
+#define CR4_MCE	0x00000040	/* machine check enable */
+#define CR4_PGE	0x00000080	/* page global enable */
+#define CR4_PCE	0x00000100	/* enable RDPMC instruction for all cpls */
+
+/*
+ * CPUID "features" (and "extended features") bits:
+ */
+
+#define CPUID_FPU	0x00000001	/* processor has an FPU? */
+#define CPUID_VME	0x00000002	/* has virtual mode (%cr4's VME/PVI) */
+#define CPUID_DE	0x00000004	/* has debugging extension */
+#define CPUID_PSE	0x00000008	/* has 4MB page size extension */
+#define CPUID_TSC	0x00000010	/* has time stamp counter */
+#define CPUID_MSR	0x00000020	/* has mode specific registers */
+#define CPUID_PAE	0x00000040	/* has phys address extension */
+#define CPUID_MCE	0x00000080	/* has machine check exception */
+#define CPUID_CX8	0x00000100	/* has CMPXCHG8B instruction */
+#define CPUID_APIC	0x00000200	/* has enabled APIC */
+#define CPUID_SYS1	0x00000400	/* has SYSCALL/SYSRET inst. (Cyrix) */
+#define CPUID_SYS2	0x00000800	/* has SYSCALL/SYSRET inst. (AMD/Intel) */
+#define CPUID_MTRR	0x00001000	/* has memory type range register */
+#define CPUID_PGE	0x00002000	/* has page global extension */
+#define CPUID_MCA	0x00004000	/* has machine check architecture */
+#define CPUID_CMOV	0x00008000	/* has CMOVcc instruction */
+#define CPUID_PAT	0x00010000	/* has page attribute table */
+#define CPUID_PSE36	0x00020000	/* has 36bit page size extension */
+#define CPUID_SER	0x00040000	/* has processor serial number */
+#define CPUID_MMX	0x00800000	/* has MMX instructions */
+#define CPUID_FXSR	0x01000000	/* has FXRSTOR instruction (Intel) */
+#define CPUID_EMMX	0x01000000	/* has extended MMX (Cyrix; obsolete) */
+#define CPUID_SIMD	0x02000000	/* has SIMD instructions (Intel) */
+#define CPUID_3DNOW	0x80000000	/* has 3DNow! instructions (AMD) */
+
+/*
+ * Model-specific registers for the i386 family
+ */
+#define MSR_P5_MC_ADDR		0x000
+#define MSR_P5_MC_TYPE		0x001
+#define MSR_APICBASE		0x01b
+#define MSR_EBL_CR_POWERON	0x02a
+#define MSR_BIOS_UPDT_TRIG	0x079
+#define MSR_BIOS_SIGN		0x08b
+#define MSR_PERFCTR0		0x0c1
+#define MSR_PERFCTR1		0x0c2
+#define MSR_MTRRcap		0x0fe
+#define MSR_MCG_CAP		0x179
+#define MSR_MCG_STATUS		0x17a
+#define MSR_MCG_CTL		0x17b
+#define MSR_EVNTSEL0		0x186
+#define MSR_EVNTSEL1		0x187
+#define MSR_DEBUGCTLMSR		0x1d9
+#define MSR_LASTBRANCHFROMIP	0x1db
+#define MSR_LASTBRANCHTOIP	0x1dc
+#define MSR_LASTINTFROMIP	0x1dd
+#define MSR_LASTINTTOIP		0x1de
+#define MSR_ROB_CR_BKUPTMPDR6	0x1e0
+#define MSR_MTRRVarBase		0x200
+#define MSR_MTRR64kBase		0x250
+#define MSR_MTRR16kBase		0x258
+#define MSR_MTRR4kBase		0x268
+#define MSR_MTRRdefType		0x2ff
+#define MSR_MC0_CTL		0x400
+#define MSR_MC0_STATUS		0x401
+#define MSR_MC0_ADDR		0x402
+#define MSR_MC0_MISC		0x403
+#define MSR_MC1_CTL		0x404
+#define MSR_MC1_STATUS		0x405
+#define MSR_MC1_ADDR		0x406
+#define MSR_MC1_MISC		0x407
+#define MSR_MC2_CTL		0x408
+#define MSR_MC2_STATUS		0x409
+#define MSR_MC2_ADDR		0x40a
+#define MSR_MC2_MISC		0x40b
+#define MSR_MC4_CTL		0x40c
+#define MSR_MC4_STATUS		0x40d
+#define MSR_MC4_ADDR		0x40e
+#define MSR_MC4_MISC		0x40f
+#define MSR_MC3_CTL		0x410
+#define MSR_MC3_STATUS		0x411
+#define MSR_MC3_ADDR		0x412
+#define MSR_MC3_MISC		0x413
+
+/*
+ * Constants related to MTRRs
+ */
+#define MTRR_N64K		8	/* numbers of fixed-size entries */
+#define MTRR_N16K		16
+#define MTRR_N4K		64
 
 /*
  * the following four 3-byte registers control the non-cacheable regions.

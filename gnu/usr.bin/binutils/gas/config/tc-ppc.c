@@ -1,5 +1,5 @@
 /* tc-ppc.c -- Assemble for the PowerPC or POWER (RS/6000)
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Cygnus Support.
 
    This file is part of GAS, the GNU Assembler.
@@ -53,7 +53,6 @@ static int set_target_endian = 0;
 
 static boolean reg_names_p = TARGET_REG_NAMES_P;
 
-static boolean register_name PARAMS ((expressionS *));
 static void ppc_set_cpu PARAMS ((void));
 static unsigned long ppc_insert_operand
   PARAMS ((unsigned long insn, const struct powerpc_operand *operand,
@@ -83,11 +82,10 @@ static void ppc_section PARAMS ((int));
 static void ppc_stabx PARAMS ((int));
 static void ppc_rename PARAMS ((int));
 static void ppc_toc PARAMS ((int));
-static void ppc_xcoff_cons PARAMS ((int));
 #endif
 
 #ifdef OBJ_ELF
-static bfd_reloc_code_real_type ppc_elf_suffix PARAMS ((char **, expressionS *));
+static bfd_reloc_code_real_type ppc_elf_suffix PARAMS ((char **));
 static void ppc_elf_cons PARAMS ((int));
 static void ppc_elf_rdata PARAMS ((int));
 static void ppc_elf_lcomm PARAMS ((int));
@@ -112,19 +110,9 @@ static void ppc_pe_tocd PARAMS ((int));
 /* Generic assembler global variables which must be defined by all
    targets.  */
 
-#ifdef OBJ_ELF
-/* This string holds the chars that always start a comment.  If the
-   pre-processor is disabled, these aren't very useful.  The macro
-   tc_comment_chars points to this.  We use this, rather than the
-   usual comment_chars, so that we can switch for Solaris conventions.  */
-static const char ppc_solaris_comment_chars[] = "#!";
-static const char ppc_eabi_comment_chars[] = "#";
-
+/* Characters which always start a comment.  */
 #ifdef TARGET_SOLARIS_COMMENT
-const char *ppc_comment_chars = ppc_solaris_comment_chars;
-#else
-const char *ppc_comment_chars = ppc_eabi_comment_chars;
-#endif
+const char comment_chars[] = "#!";
 #else
 const char comment_chars[] = "#";
 #endif
@@ -177,9 +165,6 @@ const pseudo_typeS md_pseudo_table[] =
   { "stabx",	ppc_stabx,	0 },
   { "text",	ppc_section,	't' },
   { "toc",	ppc_toc,	0 },
-  { "long",	ppc_xcoff_cons,	2 },
-  { "word",	ppc_xcoff_cons,	1 },
-  { "short",	ppc_xcoff_cons,	1 },
 #endif
 
 #ifdef OBJ_ELF
@@ -593,20 +578,12 @@ static struct hash_control *ppc_hash;
 static struct hash_control *ppc_macro_hash;
 
 #ifdef OBJ_ELF
-/* What type of shared library support to use */
-static enum { SHLIB_NONE, SHLIB_PIC, SHILB_MRELOCATABLE } shlib = SHLIB_NONE;
+/* Whether to warn about non PC relative relocations that aren't
+   in the .got2 section. */
+static boolean mrelocatable = false;
 
 /* Flags to set in the elf header */
 static flagword ppc_flags = 0;
-
-/* Whether this is Solaris or not.  */
-#ifdef TARGET_SOLARIS_COMMENT
-#define SOLARIS_P true
-#else
-#define SOLARIS_P false
-#endif
-
-static boolean msolaris = SOLARIS_P;
 #endif
 
 #ifdef OBJ_XCOFF
@@ -729,9 +706,9 @@ md_parse_option (c, arg)
 
     case 'K':
       /* Recognize -K PIC */
-      if (strcmp (arg, "PIC") == 0 || strcmp (arg, "pic") == 0)
+      if (strcmp (arg, "PIC") == 0)
 	{
-	  shlib = SHLIB_PIC;
+	  mrelocatable = true;
 	  ppc_flags |= EF_PPC_RELOCATABLE_LIB;
 	}
       else
@@ -786,13 +763,13 @@ md_parse_option (c, arg)
       /* -mrelocatable/-mrelocatable-lib -- warn about initializations that require relocation */
       else if (strcmp (arg, "relocatable") == 0)
 	{
-	  shlib = SHILB_MRELOCATABLE;
+	  mrelocatable = true;
 	  ppc_flags |= EF_PPC_RELOCATABLE;
 	}
 
       else if (strcmp (arg, "relocatable-lib") == 0)
 	{
-	  shlib = SHILB_MRELOCATABLE;
+	  mrelocatable = true;
 	  ppc_flags |= EF_PPC_RELOCATABLE_LIB;
 	}
 
@@ -811,18 +788,6 @@ md_parse_option (c, arg)
 	{
 	  target_big_endian = 1;
 	  set_target_endian = 1;
-	}
-
-      else if (strcmp (arg, "solaris") == 0)
-	{
-	  msolaris = true;
-	  ppc_comment_chars = ppc_solaris_comment_chars;
-	}
-
-      else if (strcmp (arg, "no-solaris") == 0)
-	{
-	  msolaris = false;
-	  ppc_comment_chars = ppc_eabi_comment_chars;
 	}
 #endif
       else
@@ -885,8 +850,6 @@ PowerPC options:\n\
 -mlittle, -mlittle-endian\n\
 			generate code for a little endian machine\n\
 -mbig, -mbig-endian	generate code for a big endian machine\n\
--msolaris		generate code for Solaris\n\
--mno-solaris		do not generate code for Solaris\n\
 -V			print assembler version number\n\
 -Qy, -Qn		ignored\n");
 #endif
@@ -959,7 +922,7 @@ md_begin ()
 
 #ifdef OBJ_ELF
   /* Set the ELF flags if desired. */
-  if (ppc_flags && !msolaris)
+  if (ppc_flags)
     bfd_set_private_flags (stdoutput, ppc_flags);
 #endif
 
@@ -1109,9 +1072,8 @@ ppc_insert_operand (insn, operand, val, file, line)
 #ifdef OBJ_ELF
 /* Parse @got, etc. and return the desired relocation.  */
 static bfd_reloc_code_real_type
-ppc_elf_suffix (str_p, exp_p)
+ppc_elf_suffix (str_p)
      char **str_p;
-     expressionS *exp_p;
 {
   struct map_bfd {
     char *string;
@@ -1139,12 +1101,11 @@ ppc_elf_suffix (str_p, exp_p)
     MAP ("got@h",	BFD_RELOC_HI16_GOTOFF),
     MAP ("got@ha",	BFD_RELOC_HI16_S_GOTOFF),
     MAP ("fixup",	BFD_RELOC_CTOR),		/* warnings with -mrelocatable */
-    MAP ("plt",		BFD_RELOC_24_PLT_PCREL),
     MAP ("pltrel24",	BFD_RELOC_24_PLT_PCREL),
     MAP ("copy",	BFD_RELOC_PPC_COPY),
     MAP ("globdat",	BFD_RELOC_PPC_GLOB_DAT),
     MAP ("local24pc",	BFD_RELOC_PPC_LOCAL24PC),
-    MAP ("local",	BFD_RELOC_PPC_LOCAL24PC),
+    MAP ("plt",		BFD_RELOC_32_PLTOFF),
     MAP ("pltrel",	BFD_RELOC_32_PLT_PCREL),
     MAP ("plt@l",	BFD_RELOC_LO16_PLTOFF),
     MAP ("plt@h",	BFD_RELOC_HI16_PLTOFF),
@@ -1193,24 +1154,6 @@ ppc_elf_suffix (str_p, exp_p)
   for (ptr = &mapping[0]; ptr->length > 0; ptr++)
     if (ch == ptr->string[0] && len == ptr->length && memcmp (ident, ptr->string, ptr->length) == 0)
       {
-	/* Now check for identifier@suffix+constant */
-	if (*str == '-' || *str == '+')
-	  {
-	    char *orig_line = input_line_pointer;
-	    expressionS new_exp;
-
-	    input_line_pointer = str;
-	    expression (&new_exp);
-	    if (new_exp.X_op == O_constant)
-	      {
-		exp_p->X_add_number += new_exp.X_add_number;
-		str = input_line_pointer;
-	      }
-
-	    if (&input_line_pointer != str_p)
-	      input_line_pointer = orig_line;
-	  }
-
 	*str_p = str;
 	return ptr->reloc;
       }
@@ -1239,7 +1182,7 @@ ppc_elf_cons (nbytes)
       expression (&exp);
       if (exp.X_op == O_symbol
 	  && *input_line_pointer == '@'
-	  && (reloc = ppc_elf_suffix (&input_line_pointer, &exp)) != BFD_RELOC_UNUSED)
+	  && (reloc = ppc_elf_suffix (&input_line_pointer)) != BFD_RELOC_UNUSED)
 	{
 	  reloc_howto_type *reloc_howto = bfd_reloc_type_lookup (stdoutput, reloc);
 	  int size = bfd_get_reloc_size (reloc_howto);
@@ -1319,7 +1262,7 @@ ppc_elf_lcomm(xxx)
 
   /* The third argument to .lcomm is the alignment.  */
   if (*input_line_pointer != ',')
-    align = 8;
+    align = 3;
   else
     {
       ++input_line_pointer;
@@ -1327,7 +1270,7 @@ ppc_elf_lcomm(xxx)
       if (align <= 0)
 	{
 	  as_warn ("ignoring bad alignment");
-	  align = 8;
+	  align = 3;
 	}
     }
 
@@ -1335,7 +1278,7 @@ ppc_elf_lcomm(xxx)
   symbolP = symbol_find_or_make (name);
   *p = c;
 
-  if (S_IS_DEFINED (symbolP) && ! S_IS_COMMON (symbolP))
+  if (S_IS_DEFINED (symbolP))
     {
       as_bad ("Ignoring attempt to re-define symbol `%s'.",
 	      S_GET_NAME (symbolP));
@@ -1374,7 +1317,7 @@ ppc_elf_lcomm(xxx)
   record_alignment (bss_section, align2);
   subseg_set (bss_section, 0);
   if (align2)
-    frag_align (align2, 0, 0);
+    frag_align (align2, 0);
   if (S_GET_SEGMENT (symbolP) == bss_section)
     symbolP->sy_frag->fr_symbol = 0;
   symbolP->sy_frag = frag_now;
@@ -1395,41 +1338,32 @@ ppc_elf_validate_fix (fixp, seg)
      fixS *fixp;
      segT seg;
 {
-  if (fixp->fx_done || fixp->fx_pcrel)
-    return;
-
-  switch (shlib)
+  if (mrelocatable
+      && !fixp->fx_done
+      && !fixp->fx_pcrel
+      && fixp->fx_r_type <= BFD_RELOC_UNUSED
+      && fixp->fx_r_type != BFD_RELOC_16_GOTOFF
+      && fixp->fx_r_type != BFD_RELOC_HI16_GOTOFF
+      && fixp->fx_r_type != BFD_RELOC_LO16_GOTOFF
+      && fixp->fx_r_type != BFD_RELOC_HI16_S_GOTOFF
+      && fixp->fx_r_type != BFD_RELOC_32_BASEREL
+      && fixp->fx_r_type != BFD_RELOC_LO16_BASEREL
+      && fixp->fx_r_type != BFD_RELOC_HI16_BASEREL
+      && fixp->fx_r_type != BFD_RELOC_HI16_S_BASEREL
+      && strcmp (segment_name (seg), ".got2") != 0
+      && strcmp (segment_name (seg), ".dtors") != 0
+      && strcmp (segment_name (seg), ".ctors") != 0
+      && strcmp (segment_name (seg), ".fixup") != 0
+      && strcmp (segment_name (seg), ".stab") != 0
+      && strcmp (segment_name (seg), ".gcc_except_table") != 0
+      && strcmp (segment_name (seg), ".ex_shared") != 0)
     {
-    case SHLIB_NONE:
-    case SHLIB_PIC:
-      return;
-
-    case SHILB_MRELOCATABLE:
-      if (fixp->fx_r_type <= BFD_RELOC_UNUSED
-	  && fixp->fx_r_type != BFD_RELOC_16_GOTOFF
-	  && fixp->fx_r_type != BFD_RELOC_HI16_GOTOFF
-	  && fixp->fx_r_type != BFD_RELOC_LO16_GOTOFF
-	  && fixp->fx_r_type != BFD_RELOC_HI16_S_GOTOFF
-	  && fixp->fx_r_type != BFD_RELOC_32_BASEREL
-	  && fixp->fx_r_type != BFD_RELOC_LO16_BASEREL
-	  && fixp->fx_r_type != BFD_RELOC_HI16_BASEREL
-	  && fixp->fx_r_type != BFD_RELOC_HI16_S_BASEREL
-	  && strcmp (segment_name (seg), ".got2") != 0
-	  && strcmp (segment_name (seg), ".dtors") != 0
-	  && strcmp (segment_name (seg), ".ctors") != 0
-	  && strcmp (segment_name (seg), ".fixup") != 0
-	  && strcmp (segment_name (seg), ".stab") != 0
-	  && strcmp (segment_name (seg), ".gcc_except_table") != 0
-	  && strcmp (segment_name (seg), ".ex_shared") != 0)
+      if ((seg->flags & (SEC_READONLY | SEC_CODE)) != 0
+	  || fixp->fx_r_type != BFD_RELOC_CTOR)
 	{
-	  if ((seg->flags & (SEC_READONLY | SEC_CODE)) != 0
-	      || fixp->fx_r_type != BFD_RELOC_CTOR)
-	    {
-	      as_bad_where (fixp->fx_file, fixp->fx_line,
-			    "Relocation cannot be done when using -mrelocatable");
-	    }
+	  as_bad_where (fixp->fx_file, fixp->fx_line,
+			"Relocation cannot be done when using -mrelocatable");
 	}
-      return;
     }
 }
 #endif /* OBJ_ELF */
@@ -1829,7 +1763,7 @@ md_assemble (str)
 	  /* Allow @HA, @L, @H on constants. */
 	  char *orig_str = str;
 
-	  if ((reloc = ppc_elf_suffix (&str, &ex)) != BFD_RELOC_UNUSED)
+	  if ((reloc = ppc_elf_suffix (&str)) != BFD_RELOC_UNUSED)
 	    switch (reloc)
 	      {
 	      default:
@@ -1837,12 +1771,13 @@ md_assemble (str)
 		break;
 
 	      case BFD_RELOC_LO16:
-		if (ex.X_unsigned)
-		  ex.X_add_number &= 0xffff;
-		else
+		if (operand->flags & PPC_OPERAND_SIGNED) {
 		  ex.X_add_number = (((ex.X_add_number & 0xffff)
 				      ^ 0x8000)
 				     - 0x8000);
+		} else {
+		  ex.X_add_number &= 0xffff;
+		}
 		break;
 
 	      case BFD_RELOC_HI16:
@@ -1859,7 +1794,7 @@ md_assemble (str)
 				     (char *) NULL, 0);
 	}
 #ifdef OBJ_ELF
-      else if ((reloc = ppc_elf_suffix (&str, &ex)) != BFD_RELOC_UNUSED)
+      else if ((reloc = ppc_elf_suffix (&str)) != BFD_RELOC_UNUSED)
 	{
 	  /* For the absoulte forms of branchs, convert the PC relative form back into
 	     the absolute.  */
@@ -2326,7 +2261,7 @@ ppc_comm (lcomm)
 	}
 
       subseg_set (bss_section, 1);
-      frag_align (align, 0, 0);
+      frag_align (align, 0);
   
       def_sym->sy_frag = frag_now;
       pfrag = frag_var (rs_org, 1, 1, (relax_substateT) 0, def_sym,
@@ -3069,18 +3004,6 @@ ppc_toc (ignore)
   demand_empty_rest_of_line ();
 }
 
-/* The AIX assembler automatically aligns the operands of a .long or
-   .short pseudo-op, and we want to be compatible.  */
-
-static void
-ppc_xcoff_cons (log_size)
-     int log_size;
-{
-  frag_align (log_size, 0, 0);
-  record_alignment (now_seg, log_size);
-  cons (1 << log_size);
-}
-
 #endif /* OBJ_XCOFF */
 
 /* The .tc pseudo-op.  This is used when generating either XCOFF or
@@ -3164,7 +3087,7 @@ ppc_tc (ignore)
     ++input_line_pointer;
 
   /* Align to a four byte boundary.  */
-  frag_align (2, 0, 0);
+  frag_align (2, 0);
   record_alignment (now_seg, 2);
 
 #endif /* ! defined (OBJ_XCOFF) */
@@ -3483,7 +3406,7 @@ ppc_pe_comm(lcomm)
   symbolP = symbol_find_or_make (name);
 
   *p = c;
-  if (S_IS_DEFINED (symbolP) && ! S_IS_COMMON (symbolP))
+  if (S_IS_DEFINED (symbolP))
     {
       as_bad ("Ignoring attempt to re-define symbol `%s'.",
 	      S_GET_NAME (symbolP));
@@ -4538,9 +4461,9 @@ md_apply_fix3 (fixp, valuep, seg)
   /* FIXME FIXME FIXME: The value we are passed in *valuep includes
      the symbol values.  Since we are using BFD_ASSEMBLER, if we are
      doing this relocation the code in write.c is going to call
-     bfd_install_relocation, which is also going to use the symbol
+     bfd_perform_relocation, which is also going to use the symbol
      value.  That means that if the reloc is fully resolved we want to
-     use *valuep since bfd_install_relocation is not being used.
+     use *valuep since bfd_perform_relocation is not being used.
      However, if the reloc is not fully resolved we do not want to use
      *valuep, and must use fx_offset instead.  However, if the reloc
      is PC relative, we do want to use *valuep since it includes the
@@ -4753,13 +4676,6 @@ md_apply_fix3 (fixp, valuep, seg)
 			      value, 1);
 	  break;
 
-	case BFD_RELOC_24_PLT_PCREL:
-	case BFD_RELOC_PPC_LOCAL24PC:
-	  if (!fixp->fx_pcrel)
-	    abort ();
-
-	  break;
-
 	default:
 	  fprintf(stderr,
 		  "Gas failure, reloc value %d\n", fixp->fx_r_type);
@@ -4798,7 +4714,7 @@ tc_gen_reloc (seg, fixp)
 {
   arelent *reloc;
 
-  reloc = (arelent *) xmalloc (sizeof (arelent));
+  reloc = (arelent *) bfd_alloc_by_size_t (stdoutput, sizeof (arelent));
 
   reloc->sym_ptr_ptr = &fixp->fx_addsy->bsym;
   reloc->address = fixp->fx_frag->fr_address + fixp->fx_where;

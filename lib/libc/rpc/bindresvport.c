@@ -1,5 +1,3 @@
-/*	$NetBSD: bindresvport.c,v 1.5 1995/06/03 22:37:19 mycroft Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,13 +28,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)bindresvport.c 1.8 88/02/08 SMI";*/
-/*static char *sccsid = "from: @(#)bindresvport.c	2.2 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: bindresvport.c,v 1.5 1995/06/03 22:37:19 mycroft Exp $";
-#endif
+static char *rcsid = "$OpenBSD: bindresvport.c,v 1.12 2000/01/24 02:24:21 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * Copyright (c) 1987 by Sun Microsystems, Inc.
+ *
+ * Portions Copyright(C) 1996, Jason Downs.  All rights reserved.
  */
 
 #include <string.h>
@@ -48,40 +46,94 @@ static char *rcsid = "$NetBSD: bindresvport.c,v 1.5 1995/06/03 22:37:19 mycroft 
 /*
  * Bind a socket to a privileged IP port
  */
+int
 bindresvport(sd, sin)
 	int sd;
 	struct sockaddr_in *sin;
 {
-	int res;
-	static short port;
-	struct sockaddr_in myaddr;
-	int i;
+	return bindresvport_sa(sd, (struct sockaddr *)sin);
+}
 
-#define STARTPORT 600
-#define ENDPORT (IPPORT_RESERVED - 1)
-#define NPORTS	(ENDPORT - STARTPORT + 1)
+/*
+ * Bind a socket to a privileged port for whatever protocol.
+ */
+int
+bindresvport_sa(sd, sa)
+	int sd;
+	struct sockaddr *sa;
+{
+	int old, error, af;
+	struct sockaddr_storage myaddr;
+	struct sockaddr_in *sin;
+	struct sockaddr_in6 *sin6;
+	int proto, portrange, portlow;
+	u_int16_t port;
+	int salen;
 
-	if (sin == (struct sockaddr_in *)0) {
-		sin = &myaddr;
-		memset(sin, 0, sizeof (*sin));
-		sin->sin_len = sizeof(struct sockaddr_in);
-		sin->sin_family = AF_INET;
-	} else if (sin->sin_family != AF_INET) {
+	if (sa == NULL) {
+		salen = sizeof(myaddr);
+		sa = (struct sockaddr *)&myaddr;
+
+		if (getsockname(sd, sa, &salen) == -1)
+			return -1;	/* errno is correctly set */
+
+		af = sa->sa_family;
+		memset(&myaddr, 0, salen);
+	} else
+		af = sa->sa_family;
+
+	if (af == AF_INET) {
+		proto = IPPROTO_IP;
+		portrange = IP_PORTRANGE;
+		portlow = IP_PORTRANGE_LOW;
+		sin = (struct sockaddr_in *)sa;
+		salen = sizeof(struct sockaddr_in);
+		port = sin->sin_port;
+	} else if (af == AF_INET6) {
+		proto = IPPROTO_IPV6;
+		portrange = IPV6_PORTRANGE;
+		portlow = IPV6_PORTRANGE_LOW;
+		sin6 = (struct sockaddr_in6 *)sa;
+		salen = sizeof(struct sockaddr_in6);
+		port = sin6->sin6_port;
+	} else {
 		errno = EPFNOSUPPORT;
 		return (-1);
 	}
+	sa->sa_family = af;
+	sa->sa_len = salen;
+
 	if (port == 0) {
-		port = (getpid() % NPORTS) + STARTPORT;
+		int oldlen = sizeof(old);
+
+		error = getsockopt(sd, proto, portrange, &old, &oldlen);
+		if (error < 0)
+			return (error);
+
+		error = setsockopt(sd, proto, portrange, &portlow,
+		    sizeof(portlow));
+		if (error < 0)
+			return (error);
 	}
-	res = -1;
-	errno = EADDRINUSE;
-	for (i = 0; i < NPORTS && res < 0 && errno == EADDRINUSE; i++) {
-		sin->sin_port = htons(port++);
-		if (port > ENDPORT) {
-			port = STARTPORT;
+
+	error = bind(sd, sa, salen);
+
+	if (port == 0) {
+		int saved_errno = errno;
+
+		if (error) {
+			if (setsockopt(sd, proto, portrange, &old,
+			    sizeof(old)) < 0)
+				errno = saved_errno;
+			return (error);
 		}
-		res = bind(sd,
-		    (struct sockaddr *)sin, sizeof(struct sockaddr_in));
+
+		if (sa != (struct sockaddr *)&myaddr) {
+			/* Hmm, what did the kernel assign... */
+			if (getsockname(sd, sa, &salen) < 0)
+				errno = saved_errno;
+			return (error);
+		}
 	}
-	return (res);
+	return (error);
 }

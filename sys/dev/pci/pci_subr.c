@@ -1,7 +1,8 @@
-/*	$NetBSD: pci_subr.c,v 1.12 1995/08/16 04:54:50 cgd Exp $	*/
+/*	$OpenBSD: pci_subr.c,v 1.7 1998/02/03 19:42:04 deraadt Exp $	*/
+/*	$NetBSD: pci_subr.c,v 1.19 1996/10/13 01:38:29 christos Exp $	*/
 
 /*
- * Copyright (c) 1995 Christopher G. Demetriou.  All rights reserved.
+ * Copyright (c) 1995, 1996 Christopher G. Demetriou.  All rights reserved.
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,79 +45,6 @@
 #include <dev/pci/pcidevs.h>
 #endif
 
-int
-pciprint(aux, pci)
-	void *aux;
-	char *pci;
-{
-	register struct pci_attach_args *pa = aux;
-
-	printf(" bus %d device %d", pa->pa_bus, pa->pa_device);
-	return (UNCONF);
-}
-
-int
-pcisubmatch(parent, match, aux)
-	struct device *parent;
-	void *match, *aux;
-{
-	struct cfdata *cf = match;
-	struct pci_attach_args *pa = aux;
-
-	if (cf->cf_loc[0] != -1 && cf->cf_loc[0] != pa->pa_bus)
-		return 0;
-	if (cf->cf_loc[1] != -1 && cf->cf_loc[1] != pa->pa_device)
-		return 0;
-	return ((*cf->cf_driver->cd_match)(parent, match, aux));
-}
-
-/*
- * Try to find and attach the PCI device at the give bus and device number.
- * Return 1 if successful, 0 if unsuccessful.
- */
-int
-pci_attach_subdev(pcidev, bus, device)
-	struct device *pcidev;
-	int bus, device;
-{
-	pcitag_t tag;
-	pcireg_t id, class;
-	struct pci_attach_args pa;
-	struct cfdata *cf;
-	int supported;
-	char devinfo[256];
-
-	tag = pci_make_tag(bus, device, 0);
-	id = pci_conf_read(tag, PCI_ID_REG);
-	if (id == 0 || id == 0xffffffff)
-		return (0);
-	class = pci_conf_read(tag, PCI_CLASS_REG);
-
-	pa.pa_bus = bus;
-	pa.pa_device = device;
-	pa.pa_tag = tag;
-	pa.pa_id = id;
-	pa.pa_class = class;
-
-#if defined(PCIVERBOSE) && 0 /* _too_ verbose */
-	pci_devinfo(id, class, devinfo, NULL);
-	printf("%s bus %d device %d: %s\n", pcidev->dv_xname, bus,
-	    device, devinfo);
-#endif /* _too_ verbose */
-
-	if ((cf = config_search(pcisubmatch, pcidev, &pa)) != NULL)
-		config_attach(pcidev, cf, &pa, pciprint);
-	else {
-		pci_devinfo(id, class, devinfo, &supported);
-		printf("%s bus %d device %d: %s not %s\n", pcidev->dv_xname,
-		    bus, device, devinfo,
-		    supported ? "configured" : "supported");
-		return (0);
-	}
-
-	return (1);
-}
-
 /*
  * Descriptions of known PCI classes and subclasses.
  *
@@ -140,6 +68,7 @@ struct pci_class pci_subclass_mass_storage[] = {
 	{ "IDE",		PCI_SUBCLASS_MASS_STORAGE_IDE,		},
 	{ "floppy",		PCI_SUBCLASS_MASS_STORAGE_FLOPPY,	},
 	{ "IPI",		PCI_SUBCLASS_MASS_STORAGE_IPI,		},
+	{ "RAID",		PCI_SUBCLASS_MASS_STORAGE_RAID,		},
 	{ "miscellaneous",	PCI_SUBCLASS_MASS_STORAGE_MISC,		},
 	{ 0 },
 };
@@ -148,6 +77,7 @@ struct pci_class pci_subclass_network[] = {
 	{ "ethernet",		PCI_SUBCLASS_NETWORK_ETHERNET,		},
 	{ "token ring",		PCI_SUBCLASS_NETWORK_TOKENRING,		},
 	{ "FDDI",		PCI_SUBCLASS_NETWORK_FDDI,		},
+	{ "ATM",		PCI_SUBCLASS_NETWORK_ATM,		},
 	{ "miscellaneous",	PCI_SUBCLASS_NETWORK_MISC,		},
 	{ 0 },
 };
@@ -180,7 +110,58 @@ struct pci_class pci_subclass_bridge[] = {
 	{ "MicroChannel",	PCI_SUBCLASS_BRIDGE_MC,			},
 	{ "PCI",		PCI_SUBCLASS_BRIDGE_PCI,		},
 	{ "PCMCIA",		PCI_SUBCLASS_BRIDGE_PCMCIA,		},
+	{ "NuBus",		PCI_SUBCLASS_BRIDGE_NUBUS,		},
+	{ "CardBus",		PCI_SUBCLASS_BRIDGE_CARDBUS,		},
 	{ "miscellaneous",	PCI_SUBCLASS_BRIDGE_MISC,		},
+	{ 0 },
+};
+
+struct pci_class pci_subclass_communications[] = {
+	{ "serial",		PCI_SUBCLASS_COMMUNICATIONS_SERIAL,	},
+	{ "parallel",		PCI_SUBCLASS_COMMUNICATIONS_PARALLEL,	},
+	{ "miscellaneous",	PCI_SUBCLASS_COMMUNICATIONS_MISC,	},
+	{ 0 },
+};
+
+struct pci_class pci_subclass_system[] = {
+	{ "8259 PIC",		PCI_SUBCLASS_SYSTEM_PIC,		},
+	{ "8237 DMA",		PCI_SUBCLASS_SYSTEM_DMA,		},
+	{ "8254 timer",		PCI_SUBCLASS_SYSTEM_TIMER,		},
+	{ "RTC",		PCI_SUBCLASS_SYSTEM_RTC,		},
+	{ "miscellaneous",	PCI_SUBCLASS_SYSTEM_MISC,		},
+	{ 0 },
+};
+
+struct pci_class pci_subclass_input[] = {
+	{ "keyboard",		PCI_SUBCLASS_INPUT_KEYBOARD,		},
+	{ "digitizer",		PCI_SUBCLASS_INPUT_DIGITIZER,		},
+	{ "mouse",		PCI_SUBCLASS_INPUT_MOUSE,		},
+	{ "miscellaneous",	PCI_SUBCLASS_INPUT_MISC,		},
+	{ 0 },
+};
+
+struct pci_class pci_subclass_dock[] = {
+	{ "generic",		PCI_SUBCLASS_DOCK_GENERIC,		},
+	{ "miscellaneous",	PCI_SUBCLASS_DOCK_MISC,			},
+	{ 0 },
+};
+
+struct pci_class pci_subclass_processor[] = {
+	{ "386",		PCI_SUBCLASS_PROCESSOR_386,		},
+	{ "486",		PCI_SUBCLASS_PROCESSOR_486,		},
+	{ "Pentium",		PCI_SUBCLASS_PROCESSOR_PENTIUM,		},
+	{ "Alpha",		PCI_SUBCLASS_PROCESSOR_ALPHA,		},
+	{ "PowerPC",		PCI_SUBCLASS_PROCESSOR_POWERPC,		},
+	{ "Co-processor",	PCI_SUBCLASS_PROCESSOR_COPROC,		},
+	{ 0 },
+};
+
+struct pci_class pci_subclass_serialbus[] = {
+	{ "Firewire",		PCI_SUBCLASS_SERIALBUS_FIREWIRE,	},
+	{ "ACCESS.bus",		PCI_SUBCLASS_SERIALBUS_ACCESS,		},
+	{ "SSA",		PCI_SUBCLASS_SERIALBUS_SSA,		},
+	{ "USB",		PCI_SUBCLASS_SERIALBUS_USB,		},
+	{ "Fiber Channel",	PCI_SUBCLASS_SERIALBUS_FIBER,		},
 	{ 0 },
 };
 
@@ -199,6 +180,18 @@ struct pci_class pci_class[] = {
 	    pci_subclass_memory,				},
 	{ "bridge",		PCI_CLASS_BRIDGE,
 	    pci_subclass_bridge,				},
+	{ "communications",	PCI_CLASS_COMMUNICATIONS,
+	    pci_subclass_communications,			},
+	{ "system",		PCI_CLASS_SYSTEM,
+	    pci_subclass_system,				},
+	{ "input",		PCI_CLASS_INPUT,
+	    pci_subclass_input,					},
+	{ "dock",		PCI_CLASS_DOCK,
+	    pci_subclass_dock,					},
+	{ "processor",		PCI_CLASS_PROCESSOR,
+	    pci_subclass_processor,				},
+	{ "serial bus",		PCI_CLASS_SERIALBUS,
+	    pci_subclass_serialbus,				},
 	{ "undefined",		PCI_CLASS_UNDEFINED,
 	    0,							},
 	{ 0 },
@@ -214,17 +207,16 @@ struct pci_knowndev {
 	int			flags;
 	char			*vendorname, *productname;
 };
-#define	PCI_KNOWNDEV_UNSUPP	0x01		/* unsupported device */
-#define	PCI_KNOWNDEV_NOPROD	0x02		/* match on vendor only */
+#define	PCI_KNOWNDEV_NOPROD	0x01		/* match on vendor only */
 
 #include <dev/pci/pcidevs_data.h>
 #endif /* PCIVERBOSE */
 
 void
-pci_devinfo(id_reg, class_reg, cp, supp)
+pci_devinfo(id_reg, class_reg, showclass, cp)
 	pcireg_t id_reg, class_reg;
+	int showclass;
 	char *cp;
-	int *supp;
 {
 	pci_vendor_id_t vendor;
 	pci_product_id_t product;
@@ -236,6 +228,9 @@ pci_devinfo(id_reg, class_reg, cp, supp)
 	struct pci_class *classp, *subclassp;
 #ifdef PCIVERBOSE
 	struct pci_knowndev *kdp;
+	const char *unmatched = "unknown ";
+#else
+	const char *unmatched = "";
 #endif
 
 	vendor = PCI_VENDOR(id_reg);
@@ -254,21 +249,15 @@ pci_devinfo(id_reg, class_reg, cp, supp)
                         break;
 		kdp++;
 	}
-        if (kdp->vendorname == NULL) {
+        if (kdp->vendorname == NULL)
 		vendor_namep = product_namep = NULL;
-		if (supp != NULL)
-			*supp = 0;
-        } else {
+	else {
 		vendor_namep = kdp->vendorname;
 		product_namep = (kdp->flags & PCI_KNOWNDEV_NOPROD) == 0 ?
 		    kdp->productname : NULL;
-		if (supp != NULL)
-			*supp = (kdp->flags & PCI_KNOWNDEV_UNSUPP) == 0;
         }
 #else /* PCIVERBOSE */
 	vendor_namep = product_namep = NULL;
-	if (supp != NULL)
-		*supp = 1;		/* always say 'not configured' */
 #endif /* PCIVERBOSE */
 
 	classp = pci_class;
@@ -286,27 +275,32 @@ pci_devinfo(id_reg, class_reg, cp, supp)
 	}
 
 	if (vendor_namep == NULL)
-		cp += sprintf(cp, "unknown vendor/product: 0x%04x/0x%04x",
-		    vendor, product);
+		cp += sprintf(cp, "%svendor 0x%04x product 0x%04x",
+		    unmatched, vendor, product);
 	else if (product_namep != NULL)
-		cp += sprintf(cp, "%s %s", vendor_namep, product_namep);
+		cp += sprintf(cp, "\"%s %s\"", vendor_namep, product_namep);
 	else
-		cp += sprintf(cp, "vendor: %s, unknown product: 0x%x",
+		cp += sprintf(cp, "vendor \"%s\", unknown product 0x%x",
 		    vendor_namep, product);
-	cp += sprintf(cp, " (");
-	if (classp->name == NULL)
-		cp += sprintf(cp, "unknown class/subclass: 0x%02x/0x%02x",
-		    class, subclass);
-	else {
-		cp += sprintf(cp, "class: %s, ", classp->name);
-		if (subclassp == NULL || subclassp->name == NULL)
-			cp += sprintf(cp, "unknown subclass: 0x%02x",
-			    subclass);
-		else
-			cp += sprintf(cp, "subclass: %s", subclassp->name);
-	}
+	if (showclass && product_namep == NULL) {
+		cp += sprintf(cp, " (");
+		if (classp->name == NULL)
+			cp += sprintf(cp,
+			    "unknown class 0x%2x, subclass 0x%02x",
+			    class, subclass);
+		else {
+			cp += sprintf(cp, "class %s, ", classp->name);
+			if (subclassp == NULL || subclassp->name == NULL)
+				cp += sprintf(cp, "unknown subclass 0x%02x",
+				    subclass);
+			else
+				cp += sprintf(cp, "subclass %s",
+				    subclassp->name);
+		}
 #if 0 /* not very useful */
-	cp += sprintf(cp, ", interface: 0x%02x", interface);
+		cp += sprintf(cp, ", interface 0x%02x", interface);
 #endif
-	cp += sprintf(cp, ", revision: 0x%02x)", revision);
+		cp += sprintf(cp, ", rev 0x%02x)", revision);
+	} else
+		cp += sprintf(cp, " rev 0x%02x", revision);
 }

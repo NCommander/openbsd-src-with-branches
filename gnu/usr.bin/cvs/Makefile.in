@@ -50,16 +50,19 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 
 # Where to install the executables.
-bindir = $(exec_prefix)/bin
+bindir = @bindir@
+
+# Where to put auxilliary programs
+libexecdir = @libexecdir@
 
 # Where to put the system-wide .cvsrc file
-libdir = $(prefix)/lib
+datadir = @datadir@
 
 # Where to put the Info files
-infodir = $(prefix)/info
+infodir = @infodir@
 
 # Where to put the manual pages.
-mandir = $(prefix)/man
+mandir = @mandir@
 
 #### End of system configuration section. ####
 
@@ -77,7 +80,8 @@ FLAGS_TO_PASS = \
 	YACC='$(YACC)' \
 	bindir='$(bindir)' \
 	infodir='$(infodir)' \
-	libdir='$(libdir)' \
+	libexecdir='$(libexecdir)' \
+	datadir='$(datadir)' \
 	mandir='$(mandir)' \
 	prefix='$(prefix)' \
 	exec_prefix='$(exec_prefix)'
@@ -94,9 +98,11 @@ DISTFILES = \
 
 ### Subdirectories to run make in for the primary targets.
 # Unix source subdirs, where we'll want to run lint and etags:
-USOURCE_SUBDIRS = lib zlib diff src
+USOURCE_SUBDIRS = lib @ZLIBSUBDIRS@ diff src
+# Documentation directories; special handling
+INSTALL_MAN=man
 # All other subdirs:
-SUBDIRS = ${USOURCE_SUBDIRS} man doc contrib tools \
+SUBDIRS = ${USOURCE_SUBDIRS} ${INSTALL_MAN} doc contrib tools \
 	windows-NT os2 emx vms
 # Only make TAGS/tags files in these directories.
 TSUBDIRS= src lib
@@ -184,24 +190,28 @@ realclean-local: distclean-local
 saber:
 	@for dir in $(SUBDIRS); do cd $$dir && $(MAKE) $(FLAGS_TO_PASS) $@ || exit 1; cd ..; done
 
-.PHONY: check
-check:
-	cd lib ; $(MAKE) $(FLAGS_TO_PASS)
+.PHONY: -dependency
+-dependency:
+
+.PHONY: zlib-dependency
+zlib-dependency:
 	cd zlib ; $(MAKE) $(FLAGS_TO_PASS)
+
+.PHONY: check
+check: @ZLIBSUBDIRS@-dependency
+	cd lib ; $(MAKE) $(FLAGS_TO_PASS)
 	cd diff ; $(MAKE) $(FLAGS_TO_PASS)
 	cd src ; $(MAKE) $(FLAGS_TO_PASS) check
 
 .PHONY: remotecheck
-remotecheck:
+remotecheck: @ZLIBSUBDIRS@-dependency
 	cd lib ; $(MAKE) $(FLAGS_TO_PASS)
-	cd zlib ; $(MAKE) $(FLAGS_TO_PASS)
 	cd diff ; $(MAKE) $(FLAGS_TO_PASS)
 	cd src ; $(MAKE) $(FLAGS_TO_PASS) remotecheck
 
 .PHONY: installcheck
-installcheck:
+installcheck: @ZLIBSUBDIRS@-dependency
 	cd lib ; $(MAKE) $(FLAGS_TO_PASS)
-	cd zlib ; $(MAKE) $(FLAGS_TO_PASS)
 	cd diff ; $(MAKE) $(FLAGS_TO_PASS)
 	cd src ; $(MAKE) $(FLAGS_TO_PASS) installcheck
 

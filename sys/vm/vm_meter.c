@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_meter.c,v 1.17 1995/07/08 03:12:22 cgd Exp $	*/
+/*	$OpenBSD: vm_meter.c,v 1.7 1997/11/06 05:59:35 csapuntz Exp $	*/
+/*	$NetBSD: vm_meter.c,v 1.18 1996/02/05 01:53:59 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -32,7 +33,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_meter.c	8.4 (Berkeley) 1/4/94
+ *	@(#)vm_meter.c	8.7 (Berkeley) 5/10/95
  */
 
 #include <sys/param.h>
@@ -41,11 +42,12 @@
 #include <sys/kernel.h>
 #include <vm/vm.h>
 #include <sys/sysctl.h>
+#include <sys/exec.h>
 
 struct	loadavg averunnable;		/* load average, of runnable procs */
 
 int	maxslp = MAXSLP;
-#ifndef MACHINE_NONCONTIG
+#if !defined(MACHINE_NONCONTIG) && !defined(MACHINE_NEW_NONCONTIG)
 int	saferss = SAFERSS;
 #endif /* MACHINE_NONCONTIG */
 
@@ -99,6 +101,7 @@ loadav(avg)
 /*
  * Attributes associated with virtual memory.
  */
+int
 vm_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	int *name;
 	u_int namelen;
@@ -109,6 +112,7 @@ vm_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	struct proc *p;
 {
 	struct vmtotal vmtotals;
+	struct _ps_strings _ps = { PS_STRINGS };
 
 	/* all sysctl names at this level are terminal */
 	if (namelen != 1)
@@ -123,6 +127,9 @@ vm_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		vmtotal(&vmtotals);
 		return (sysctl_rdstruct(oldp, oldlenp, newp, &vmtotals,
 		    sizeof(vmtotals)));
+	case VM_PSSTRINGS:
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &_ps,
+		    sizeof _ps));
 	default:
 		return (EOPNOTSUPP);
 	}
@@ -196,7 +203,7 @@ vmtotal(totalp)
 			    entry->object.vm_object == NULL)
 				continue;
 			entry->object.vm_object->flags |= OBJ_ACTIVE;
-			paging |= entry->object.vm_object->paging_in_progress;
+			paging |= vm_object_paging(entry->object.vm_object);
 		}
 		if (paging)
 			totalp->t_pw++;
@@ -216,6 +223,7 @@ vmtotal(totalp)
 		}
 		if (object->ref_count > 1) {
 			/* shared object */
+	simple_unlock(&vm_object_list_lock);
 			totalp->t_vmshr += num_pages(object->size);
 			totalp->t_rmshr += object->resident_page_count;
 			if (object->flags & OBJ_ACTIVE) {

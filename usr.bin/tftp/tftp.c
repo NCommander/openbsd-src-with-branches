@@ -1,3 +1,4 @@
+/*	$OpenBSD: tftp.c,v 1.4 1997/08/06 06:43:45 deraadt Exp $	*/
 /*	$NetBSD: tftp.c,v 1.5 1995/04/29 05:55:25 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)tftp.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: tftp.c,v 1.5 1995/04/29 05:55:25 cgd Exp $";
+static char rcsid[] = "$OpenBSD: tftp.c,v 1.4 1997/08/06 06:43:45 deraadt Exp $";
 #endif /* not lint */
 
 /* Many bug fixes are from Jim Guyton <guyton@rand-unix> */
@@ -63,7 +64,6 @@ static char rcsid[] = "$NetBSD: tftp.c,v 1.5 1995/04/29 05:55:25 cgd Exp $";
 #include "extern.h"
 #include "tftpsubs.h"
 
-extern	int errno;
 
 extern  struct sockaddr_in peeraddr;	/* filled in by main */
 extern  int     f;			/* the opened socket */
@@ -382,7 +382,6 @@ tpacket(s, tp, n)
 	   { "#0", "RRQ", "WRQ", "DATA", "ACK", "ERROR" };
 	register char *cp, *file;
 	u_short op = ntohs(tp->th_opcode);
-	char *index();
 
 	if (op < RRQ || op > ERROR)
 		printf("%s opcode=%x ", s, op);
@@ -394,7 +393,7 @@ tpacket(s, tp, n)
 	case WRQ:
 		n -= 2;
 		file = cp = tp->th_stuff;
-		cp = index(cp, '\0');
+		cp = strchr(cp, '\0');
 		printf("<file=%s, mode=%s>\n", file, cp + 1);
 		break;
 
@@ -449,11 +448,14 @@ static void
 timer(sig)
 	int sig;
 {
+	int save_errno = errno;
 
 	timeout += rexmtval;
 	if (timeout >= maxtimeout) {
 		printf("Transfer timed out.\n");
+		errno = save_errno;
 		longjmp(toplevel, -1);
 	}
+	errno = save_errno;
 	longjmp(timeoutbuf, 1);
 }

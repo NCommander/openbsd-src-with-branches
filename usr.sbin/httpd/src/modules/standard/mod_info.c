@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -68,7 +68,7 @@
  * GET /server-info?module_name - Returns configuration for a single module
  * GET /server-info?list - Returns quick list of included modules
  *
- * Rasmus Lerdorf <rasmus@vex.net>, May 1996
+ * Rasmus Lerdorf <rasmus@php.net>, May 1996
  *
  * 05.01.96 Initial Version
  *
@@ -378,7 +378,8 @@ static int display_info(request_rec *r)
     }
     ap_hard_timeout("send server info", r);
 
-    ap_rputs("<html><head><title>Server Information</title></head>\n", r);
+    ap_rputs(DOCTYPE_HTML_3_2
+	     "<html><head><title>Server Information</title></head>\n", r);
     ap_rputs("<body><h1 align=center>Apache Server Information</h1>\n", r);
     if (!r->args || strcasecmp(r->args, "list")) {
         cfname = ap_server_root_relative(r->pool, ap_server_confname);
@@ -692,3 +693,11 @@ module MODULE_VAR_EXPORT info_module =
     NULL,                       /* child_exit */
     NULL                        /* post read-request */
 };
+
+
+#ifdef NETWARE
+int main(int argc, char *argv[]) 
+{
+    ExitThread(TSR_THREAD, 0);
+}
+#endif

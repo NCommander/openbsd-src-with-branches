@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -113,7 +113,7 @@ static int check_safe_file(request_rec *r)
 
 static int check_symlinks(char *d, int opts)
 {
-#if defined(OS2) || defined(WIN32)
+#if defined(OS2) || defined(WIN32) || defined(NETWARE)
     /* OS/2 doesn't have symlinks */
     return OK;
 #else
@@ -178,8 +178,8 @@ static int get_path_info(request_rec *r)
     char *end = &path[strlen(path)];
     char *last_cp = NULL;
     int rv;
-#ifdef WIN32
-    char buf[5];
+#ifdef HAVE_DRIVE_LETTERS
+    char bStripSlash=1;
 #endif
 
     if (r->finfo.st_mode) {
@@ -187,21 +187,40 @@ static int get_path_info(request_rec *r)
 	return OK;
     }
 
-#ifdef WIN32
-    /* If the path is x:/, then convert it to x:/., coz that's what stat needs to work properly */
-    if(strlen(path) == 3 && path[1] == ':') {
-	strcpy(buf,path);
-	buf[3]='.';
-	buf[4]='\0';
-	path=buf;
-	end=buf+4;
+#ifdef HAVE_DRIVE_LETTERS
+    /* If the directory is x:\, then we don't want to strip
+     * the trailing slash since x: is not a valid directory.
+     */
+    if (strlen(path) == 3 && path[1] == ':' && path[2] == '/')
+        bStripSlash = 0;
+
+
+    /* If UNC name == //machine/share/, do not 
+     * advance over the trailing slash.  Any other
+     * UNC name is OK to strip the slash.
+     */
+    cp = end;
+    if (strlen(path) > 2 && path[0] == '/' && path[1] == '/' && 
+        path[2] != '/' && cp[-1] == '/') {
+        char *p;
+        int iCount=0;
+        p = path;
+        while (p = strchr(p,'/')) {
+            p++;
+            iCount++;
+        }
+    
+        if (iCount == 4)
+            bStripSlash = 0;
     }
+
+    if (bStripSlash)
 #endif
-
-    /* Advance over trailing slashes ... NOT part of filename */
-
-    for (cp = end; cp > path && cp[-1] == '/'; --cp)
-        continue;
+        /* Advance over trailing slashes ... NOT part of filename 
+         * if file is not a UNC name (Win32 only).
+         */
+        for (cp = end; cp > path && cp[-1] == '/'; --cp)
+            continue;
 
 
     while (cp > path) {
@@ -210,8 +229,21 @@ static int get_path_info(request_rec *r)
 
         *cp = '\0';
 
-        errno = 0;
-        rv = stat(path, &r->finfo);
+        /* We must not stat() filenames that may cause os-specific system
+         * problems, such as "/file/aux" on DOS-abused filesystems.
+         * So pretend that they do not exist by returning an ENOENT error.
+         * This will force us to drop that part of the path and keep
+         * looking back for a "real" file that exists, while still allowing
+         * the "invalid" path parts within the PATH_INFO.
+         */
+        if (!ap_os_is_filename_valid(path)) {
+            errno = ENOENT;
+            rv = -1;
+        }
+        else {
+            errno = 0;
+            rv = stat(path, &r->finfo);
+        }
 
         if (cp != end)
             *cp = '/';
@@ -233,8 +265,12 @@ static int get_path_info(request_rec *r)
             *cp = '\0';
             return OK;
         }
+	/* must set this to zero, some stat()s may have corrupted it
+	 * even if they returned an error.
+	 */
+	r->finfo.st_mode = 0;
 #if defined(ENOENT) && defined(ENOTDIR)
-        else if (errno == ENOENT || errno == ENOTDIR) {
+        if (errno == ENOENT || errno == ENOTDIR) {
             last_cp = cp;
 
             while (--cp > path && *cp != '/')
@@ -267,15 +303,13 @@ static int get_path_info(request_rec *r)
          * you needed to do this.  Please be sure to include the operating
          * system you are using.
          */
-        else {
-            last_cp = cp;
+	last_cp = cp;
 
-            while (--cp > path && *cp != '/')
-                continue;
+	while (--cp > path && *cp != '/')
+	    continue;
 
-            while (cp > path && cp[-1] == '/')
-                --cp;
-        }
+	while (cp > path && cp[-1] == '/')
+	    --cp;
 #endif  /* ENOENT && ENOTDIR */
     }
     return OK;
@@ -291,7 +325,7 @@ static int directory_walk(request_rec *r)
     char *test_filename;
     char *test_dirname;
     int res;
-    unsigned i, num_dirs;
+    unsigned i, num_dirs, iStart;
     int j, test_filename_len;
 
     /*
@@ -336,7 +370,7 @@ static int directory_walk(request_rec *r)
 
             this_conf = NULL;
             if (entry_core->r) {
-                if (!regexec(entry_core->r, r->filename, 0, NULL, 0))
+                if (!ap_regexec(entry_core->r, r->filename, 0, NULL, 0))
                     this_conf = entry_config;
             }
             else if (entry_core->d_is_fnmatch) {
@@ -357,15 +391,24 @@ static int directory_walk(request_rec *r)
         return OK;
     }
 
+    r->filename   = ap_os_case_canonical_filename(r->pool, r->filename);
+
+    res = get_path_info(r);
+    if (res != OK) {
+        return res;
+    }
+
     r->filename   = ap_os_canonical_filename(r->pool, r->filename);
+
     test_filename = ap_pstrdup(r->pool, r->filename);
 
     ap_no2slash(test_filename);
     num_dirs = ap_count_dirs(test_filename);
 
-    res = get_path_info(r);
-    if (res != OK) {
-        return res;
+    if (!ap_os_is_filename_valid(r->filename)) {
+        ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, r,
+                      "Filename is not valid: %s", r->filename);
+        return HTTP_FORBIDDEN;
     }
 
     if ((res = check_safe_file(r))) {
@@ -388,9 +431,18 @@ static int directory_walk(request_rec *r)
      */
     test_dirname = ap_palloc(r->pool, test_filename_len + 2);
 
+    iStart = 1;
+#ifdef WIN32
+    /* If the name is a UNC name, then do not walk through the
+     * machine and share name (e.g. \\machine\share\)
+     */
+    if (num_dirs > 3 && test_filename[0] == '/' && test_filename[1] == '/')
+        iStart = 4;
+#endif
+
     /* j keeps track of which section we're on, see core_reorder_directories */
     j = 0;
-    for (i = 1; i <= num_dirs; ++i) {
+    for (i = iStart; i <= num_dirs; ++i) {
         int overrides_here;
         core_dir_config *core_dir = (core_dir_config *)
             ap_get_module_config(per_dir_defaults, &core_module);
@@ -462,10 +514,12 @@ static int directory_walk(request_rec *r)
             if (res)
                 return res;
 
-            if (htaccess_conf)
-                per_dir_defaults =
-                    ap_merge_per_dir_configs(r->pool, per_dir_defaults,
-                                          htaccess_conf);
+            if (htaccess_conf) {
+                per_dir_defaults = ap_merge_per_dir_configs(r->pool,
+							    per_dir_defaults,
+							    htaccess_conf);
+		r->per_dir_config = per_dir_defaults;
+	    }
         }
     }
 
@@ -482,7 +536,7 @@ static int directory_walk(request_rec *r)
                      ap_get_module_config(entry_config, &core_module);
 
         if (entry_core->r) {
-            if (!regexec(entry_core->r, test_dirname, 0, NULL, REG_NOTEOL)) {
+            if (!ap_regexec(entry_core->r, test_dirname, 0, NULL, REG_NOTEOL)) {
                 per_dir_defaults =
                     ap_merge_per_dir_configs(r->pool, per_dir_defaults,
                                           entry_config);
@@ -558,7 +612,7 @@ static int location_walk(request_rec *r)
 	this_conf = NULL;
 
 	if (entry_core->r) {
-	    if (!regexec(entry_core->r, r->uri, 0, NULL, 0))
+	    if (!ap_regexec(entry_core->r, r->uri, 0, NULL, 0))
 		this_conf = entry_config;
 	}
 	else if (entry_core->d_is_fnmatch) {
@@ -619,7 +673,7 @@ static int file_walk(request_rec *r)
             this_conf = NULL;
 
             if (entry_core->r) {
-                if (!regexec(entry_core->r, test_file, 0, NULL, 0))
+                if (!ap_regexec(entry_core->r, test_file, 0, NULL, 0))
                     this_conf = entry_config;
             }
             else if (entry_core->d_is_fnmatch) {
@@ -666,14 +720,16 @@ static request_rec *make_sub_request(const request_rec *r)
     return rr;
 }
 
-API_EXPORT(request_rec *) ap_sub_req_lookup_uri(const char *new_file,
-                                             const request_rec *r)
+API_EXPORT(request_rec *) ap_sub_req_method_uri(const char *method,
+                                                const char *new_file,
+                                                const request_rec *r)
 {
     request_rec *rnew;
     int res;
     char *udir;
 
     rnew = make_sub_request(r);
+    rnew->hostname       = r->hostname;
     rnew->request_time   = r->request_time;
     rnew->connection     = r->connection;
     rnew->server         = r->server;
@@ -683,11 +739,15 @@ API_EXPORT(request_rec *) ap_sub_req_lookup_uri(const char *new_file,
 
     ap_set_sub_req_protocol(rnew, r);
 
+    /* would be nicer to pass "method" to ap_set_sub_req_protocol */
+    rnew->method = method;
+    rnew->method_number = ap_method_number_of(method);
+
     if (new_file[0] == '/')
         ap_parse_uri(rnew, new_file);
     else {
         udir = ap_make_dirstr_parent(rnew->pool, r->uri);
-        udir = escape_uri(rnew->pool, udir);    /* re-escape it */
+        udir = ap_escape_uri(rnew->pool, udir);    /* re-escape it */
         ap_parse_uri(rnew, ap_make_full_path(rnew->pool, udir, new_file));
     }
 
@@ -743,6 +803,12 @@ API_EXPORT(request_rec *) ap_sub_req_lookup_uri(const char *new_file,
     return rnew;
 }
 
+API_EXPORT(request_rec *) ap_sub_req_lookup_uri(const char *new_file,
+                                                const request_rec *r)
+{
+    return ap_sub_req_method_uri("GET", new_file, r);
+}
+
 API_EXPORT(request_rec *) ap_sub_req_lookup_file(const char *new_file,
                                               const request_rec *r)
 {
@@ -751,6 +817,7 @@ API_EXPORT(request_rec *) ap_sub_req_lookup_file(const char *new_file,
     char *fdir;
 
     rnew = make_sub_request(r);
+    rnew->hostname       = r->hostname;
     rnew->request_time   = r->request_time;
     rnew->connection     = r->connection;
     rnew->server         = r->server;
@@ -772,7 +839,7 @@ API_EXPORT(request_rec *) ap_sub_req_lookup_file(const char *new_file,
 
         rnew->uri = ap_make_full_path(rnew->pool, udir, new_file);
         rnew->filename = ap_make_full_path(rnew->pool, fdir, new_file);
-	ap_parse_uri(rnew, rnew->uri);    /* fill in parsed_uri values */
+        ap_parse_uri(rnew, rnew->uri);    /* fill in parsed_uri values */
         if (stat(rnew->filename, &rnew->finfo) < 0) {
             rnew->finfo.st_mode = 0;
         }
@@ -826,7 +893,7 @@ API_EXPORT(request_rec *) ap_sub_req_lookup_file(const char *new_file,
          * file may not have a uri associated with it -djg
          */
         rnew->uri = "INTERNALLY GENERATED file-relative req";
-        rnew->filename = ((new_file[0] == '/') ?
+        rnew->filename = ((ap_os_is_path_absolute(new_file)) ?
                           ap_pstrdup(rnew->pool, new_file) :
                           ap_make_full_path(rnew->pool, fdir, new_file));
         rnew->per_dir_config = r->server->lookup_defaults;
@@ -858,7 +925,14 @@ API_EXPORT(request_rec *) ap_sub_req_lookup_file(const char *new_file,
 
 API_EXPORT(int) ap_run_sub_req(request_rec *r)
 {
+#ifndef CHARSET_EBCDIC
     int retval = ap_invoke_handler(r);
+#else /*CHARSET_EBCDIC*/
+    /* Save the EBCDIC conversion setting of the caller across subrequests */
+    int convert = ap_bgetflag(r->connection->client, B_EBCDIC2ASCII);
+    int retval  = ap_invoke_handler(r);
+    ap_bsetflag(r->connection->client, B_EBCDIC2ASCII, convert);
+#endif /*CHARSET_EBCDIC*/
     ap_finalize_sub_req_protocol(r);
     return retval;
 }
@@ -909,7 +983,7 @@ API_EXPORT(void) ap_die(int type, request_rec *r)
      * about proxy authentication.  They treat it like normal auth, and then
      * we tweak the status.
      */
-    if (r->status == AUTH_REQUIRED && r->proxyreq) {
+    if (r->status == AUTH_REQUIRED && r->proxyreq == STD_PROXY) {
         r->status = HTTP_PROXY_AUTHENTICATION_REQUIRED;
     }
 
@@ -918,7 +992,7 @@ API_EXPORT(void) ap_die(int type, request_rec *r)
      * (if any) has been read.
      */
     if ((r->status != HTTP_NOT_MODIFIED) && (r->status != HTTP_NO_CONTENT)
-        && !status_drops_connection(r->status)
+        && !ap_status_drops_connection(r->status)
         && r->connection && (r->connection->keepalive != -1)) {
 
         (void) ap_discard_request_body(r);
@@ -1013,41 +1087,8 @@ static void process_request_internal(request_rec *r)
 {
     int access_status;
 
-    /*
-     * Kluge to be reading the assbackwards field outside of protocol.c, but
-     * we've got to check for this sort of nonsense somewhere...
-     */
-
-    if (r->assbackwards && r->header_only) {
-        /*
-         * Client asked for headers only with HTTP/0.9, which doesn't send
-         * headers!  Have to dink things even to make sure the error message
-         * comes through...
-         */
-        ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, r,
-                    "client sent illegal HTTP/0.9 request: %s", r->uri);
-        r->header_only = 0;
-        ap_die(BAD_REQUEST, r);
-        return;
-    }
-
-    if ((!r->hostname && (r->proto_num >= HTTP_VERSION(1,1))) ||
-        ((r->proto_num == HTTP_VERSION(1,1)) && !ap_table_get(r->headers_in, "Host"))) {
-        /*
-         * Client sent us a HTTP/1.1 or later request without telling us the
-         * hostname, either with a full URL or a Host: header. We therefore
-         * need to (as per the 1.1 spec) send an error.  As a special case,
-	 * HTTP/1.1 mentions twice (S9, S14.23) that a request MUST contain
-	 * a Host: header, and the server MUST respond with 400 if it doesn't.
-         */
-        ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, r,
-               "client sent HTTP/1.1 request without hostname (see RFC2068 section 9, and 14.23): %s", r->uri);
-        ap_die(BAD_REQUEST, r);
-        return;
-    }
-
     /* Ignore embedded %2F's in path for proxy requests */
-    if (!r->proxyreq && r->parsed_uri.path) {
+    if (r->proxyreq == NOT_PROXY && r->parsed_uri.path) {
 	access_status = ap_unescape_url(r->parsed_uri.path);
 	if (access_status) {
 	    ap_die(access_status, r);
@@ -1067,7 +1108,7 @@ static void process_request_internal(request_rec *r)
         return;
     }
 
-    if (!r->proxyreq) {
+    if (r->proxyreq == NOT_PROXY) {
 	/*
 	 * We don't want TRACE to run through the normal handler set, we
 	 * handle it specially.
@@ -1135,8 +1176,9 @@ static void process_request_internal(request_rec *r)
     case SATISFY_ANY:
         if (((access_status = ap_check_access(r)) != 0) || !ap_auth_type(r)) {
             if (!ap_some_auth_required(r)) {
-                decl_die(access_status, ap_auth_type(r)
-		    ? "check access"
+                decl_die(access_status ? access_status :
+			 HTTP_INTERNAL_SERVER_ERROR,
+			 ap_auth_type(r) ? "check access"
 		    : "perform authentication. AuthType not set!", r);
                 return;
             }
@@ -1156,7 +1198,7 @@ static void process_request_internal(request_rec *r)
         break;
     }
 
-    if (! (r->proxyreq 
+    if (! (r->proxyreq != NOT_PROXY
 	   && r->parsed_uri.scheme != NULL
 	   && strcmp(r->parsed_uri.scheme, "http") == 0) ) {
 	if ((access_status = ap_find_types(r)) != 0) {
@@ -1270,8 +1312,13 @@ static request_rec *internal_internal_redirect(const char *new_uri, request_rec 
 
     new->htaccess        = r->htaccess;
     new->no_cache        = r->no_cache;
+    new->expecting_100	 = r->expecting_100;
     new->no_local_copy   = r->no_local_copy;
     new->read_length     = r->read_length;     /* We can only read it once */
+    new->vlist_validator = r->vlist_validator;
+#ifdef EAPI
+    new->ctx             = r->ctx;
+#endif /* EAPI */
 
     ap_table_setn(new->subprocess_env, "REDIRECT_STATUS",
 	ap_psprintf(r->pool, "%d", r->status));

@@ -1,11 +1,14 @@
-#	from: @(#)Makefile	5.8 (Berkeley) 7/28/90
-#	$NetBSD: Makefile,v 1.1 1995/07/13 18:07:19 thorpej Exp $
+#	$OpenBSD: Makefile,v 1.2 1997/09/21 11:43:38 deraadt Exp $
 
 PROG=	eeprom
 MAN=	eeprom.8
 
 BINGRP=	kmem
 BINMODE=2555
+
+# Get getdate.y from cvs distro
+.PATH:  ${.CURDIR}/../../gnu/usr.bin/cvs/lib
+CFLAGS+=-DTIME_WITH_SYS_TIME -DHAVE_SYS_TIMEB_H -DSTDC_HEADERS -DHAVE_BCOPY
 
 SRCS=	eehandlers.c getdate.c main.c
 

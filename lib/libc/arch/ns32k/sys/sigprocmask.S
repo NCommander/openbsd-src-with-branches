@@ -13,20 +13,13 @@
  * LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
  * USE OF THIS SOFTWARE.
  */
-/*
- * HISTORY
- * 29-Apr-92  Johannes Helander (jvh) at Helsinki University of Technology
- *	Created.
- *
- *	$Id: sigprocmask.S,v 1.2 1994/03/07 23:20:50 phil Exp $
- */
-
-/* 
- * Note: Has never been tested. Debug before use.
- */
-
 
 #include "SYS.h"
+
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 ENTRY(sigprocmask)
 	movd	S_ARG1, r1		/* fetch new sigset pointer */

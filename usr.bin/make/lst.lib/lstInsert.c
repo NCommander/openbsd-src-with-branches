@@ -1,8 +1,9 @@
-/*	$NetBSD: lstInsert.c,v 1.4 1995/06/14 15:21:21 christos Exp $	*/
+/*	$OpenBSD: lstInsert.c,v 1.6 1999/12/18 21:53:33 espie Exp $	*/
+/*	$NetBSD: lstInsert.c,v 1.5 1996/11/06 17:59:44 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -38,9 +39,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)lstInsert.c	5.3 (Berkeley) 6/1/90";
+static char sccsid[] = "@(#)lstInsert.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lstInsert.c,v 1.4 1995/06/14 15:21:21 christos Exp $";
+static char rcsid[] = "$OpenBSD: lstInsert.c,v 1.6 1999/12/18 21:53:33 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,16 +58,13 @@ static char rcsid[] = "$NetBSD: lstInsert.c,v 1.4 1995/06/14 15:21:21 christos E
  *	Insert a new node with the given piece of data before the given
  *	node in the given list.
  *
- * Results:
- *	SUCCESS or FAILURE.
- *
  * Side Effects:
  *	the firstPtr field will be changed if ln is the first node in the
  *	list.
  *
  *-----------------------------------------------------------------------
  */
-ReturnStatus
+void
 Lst_Insert (l, ln, d)
     Lst	    	  	l;	/* list to manipulate */
     LstNode	  	ln;	/* node before which to insert d */
@@ -80,40 +78,34 @@ Lst_Insert (l, ln, d)
     /*
      * check validity of arguments
      */
-    if (LstValid (l) && (LstIsEmpty (l) && ln == NILLNODE))
+    if (LstValid (l) && (LstIsEmpty (l) && ln == NULL))
 	goto ok;
-    
+
     if (!LstValid (l) || LstIsEmpty (l) || !LstNodeValid (ln, l)) {
-	return (FAILURE);
+	return;
     }
-    
+
     ok:
     PAlloc (nLNode, ListNode);
-    
+
     nLNode->datum = d;
     nLNode->useCount = nLNode->flags = 0;
-    
-    if (ln == NILLNODE) {
-	if (list->isCirc) {
-	    nLNode->prevPtr = nLNode->nextPtr = nLNode;
-	} else {
-	    nLNode->prevPtr = nLNode->nextPtr = NilListNode;
-	}
+
+    if (ln == NULL) {
+	nLNode->prevPtr = nLNode->nextPtr = NULL;
 	list->firstPtr = list->lastPtr = nLNode;
     } else {
 	nLNode->prevPtr = lNode->prevPtr;
 	nLNode->nextPtr = lNode;
-	
-	if (nLNode->prevPtr != NilListNode) {
+
+	if (nLNode->prevPtr != NULL) {
 	    nLNode->prevPtr->nextPtr = nLNode;
 	}
 	lNode->prevPtr = nLNode;
-	
+
 	if (lNode == list->firstPtr) {
 	    list->firstPtr = nLNode;
 	}
     }
-    
-    return (SUCCESS);
 }
-	
+

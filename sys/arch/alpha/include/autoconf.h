@@ -1,7 +1,8 @@
-/*	$NetBSD: autoconf.h,v 1.1 1995/02/13 23:07:31 cgd Exp $	*/
+/*	$OpenBSD: autoconf.h,v 1.6 1996/10/30 22:38:54 niklas Exp $	*/
+/*	$NetBSD: autoconf.h,v 1.6 1996/11/13 21:13:17 cgd Exp $	*/
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -69,6 +70,25 @@ struct confargs {
 	struct	abus *ca_bus;		/* bus device resides on. */
 };
 
-void	set_clockintr __P((void (*)(struct clockframe *)));
-void	set_iointr __P((void (*)(void *, int)));
-int	badaddr			__P((void *, u_int64_t));
+struct bootdev_data {
+	char	*protocol;
+	int	bus;
+	int	slot;
+	int	channel;
+	char	*remote_address;
+	int	unit;
+	int	boot_dev_type;
+	char	*ctrl_dev_type;
+};
+
+void	configure		__P((void));
+void	device_register		__P((struct device *, void *));
+void	dumpconf		__P((void));
+
+#ifdef EVCNT_COUNTERS
+extern struct evcnt clock_intr_evcnt;
+#endif
+
+extern struct device *booted_device;
+extern int booted_partition;
+extern struct bootdev_data *bootdev_data;

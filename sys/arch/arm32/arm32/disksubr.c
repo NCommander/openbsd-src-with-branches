@@ -107,11 +107,12 @@ filecore_checksum(bootblock)
  */
 
 char *
-readdisklabel(dev, strat, lp, osdep)
+readdisklabel(dev, strat, lp, osdep, spoofonly)
 	dev_t dev;
 	void (*strat)();
 	struct disklabel *lp;
 	struct cpu_disklabel *osdep;
+	int spoofony;
 {
 	struct riscbsd_partition *rp = osdep->partitions;
 	struct dkbad *bdp = &osdep->bad;
@@ -143,6 +144,9 @@ readdisklabel(dev, strat, lp, osdep)
 		lp->d_partitions[RAW_PART].p_offset = 0; 
 		lp->d_partitions[RAW_PART].p_size = 0x1fffffff;
 	}
+
+	if (spoofonly)
+		return (NULL);
 
 /* obtain buffer to probe drive with */
     
@@ -512,14 +516,21 @@ done:
  * if needed, and signal errors or early completion.
  */
 int
-bounds_check_with_label(bp, lp, wlabel)
+bounds_check_with_label(bp, lp, osdep, wlabel)
 	struct buf *bp;
 	struct disklabel *lp;
+	struct cpu_disklabel *osdep;
 	int wlabel;
 {
 	struct partition *p = lp->d_partitions + DISKPART(bp->b_dev);
 	int labelsector = lp->d_partitions[0].p_offset + LABELSECTOR;
 	int sz;
+
+	/* avoid division by zero */
+	if (lp->d_secpercyl == 0) {
+		bp->b_error = EINVAL;
+		goto bad;
+	}
 
 	sz = howmany(bp->b_bcount, lp->d_secsize);
 

@@ -1,5 +1,5 @@
 /* Main header file for the bfd library -- portable access to object files.
-   Copyright 1990, 91, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright 1990, 91, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 ** NOTE: bfd.h and bfd-in2.h are GENERATED files.  Don't change them;
@@ -49,6 +49,7 @@ extern "C" {
 #endif
 
 #include "ansidecl.h"
+#include "obstack.h"
 
 /* These two lines get substitutions done by commands in Makefile.in.  */
 #define BFD_VERSION  "@VERSION@"
@@ -379,9 +380,8 @@ struct bfd_hash_table
   struct bfd_hash_entry *(*newfunc) PARAMS ((struct bfd_hash_entry *,
 					     struct bfd_hash_table *,
 					     const char *));
-   /* An objalloc for this hash table.  This is a struct objalloc *,
-     but we use PTR to avoid requiring the inclusion of objalloc.h.  */
-  PTR memory;
+  /* An obstack for this hash table.  */
+  struct obstack memory;
 };
 
 /* Initialize a hash table.  */
@@ -539,7 +539,6 @@ struct ecoff_extr;
 struct symbol_cache_entry;
 struct bfd_link_info;
 struct bfd_link_hash_entry;
-struct bfd_elf_version_tree;
 #endif
 extern bfd_vma bfd_ecoff_get_gp_value PARAMS ((bfd * abfd));
 extern boolean bfd_ecoff_set_gp_value PARAMS ((bfd *abfd, bfd_vma gp_value));
@@ -606,13 +605,11 @@ extern boolean bfd_elf64_record_link_assignment
 extern struct bfd_link_needed_list *bfd_elf_get_needed_list
   PARAMS ((bfd *, struct bfd_link_info *));
 extern boolean bfd_elf32_size_dynamic_sections
-  PARAMS ((bfd *, const char *, const char *, boolean, const char *,
-	   const char * const *, struct bfd_link_info *, struct sec **,
-	   struct bfd_elf_version_tree *));
+  PARAMS ((bfd *, const char *, const char *, boolean,
+	   struct bfd_link_info *, struct sec **));
 extern boolean bfd_elf64_size_dynamic_sections
-  PARAMS ((bfd *, const char *, const char *, boolean, const char *,
-	   const char * const *, struct bfd_link_info *, struct sec **,
-	   struct bfd_elf_version_tree *));
+  PARAMS ((bfd *, const char *, const char *, boolean,
+	   struct bfd_link_info *, struct sec **));
 extern void bfd_elf_set_dt_needed_name PARAMS ((bfd *, const char *));
 extern const char *bfd_elf_get_dt_soname PARAMS ((bfd *));
 
@@ -631,8 +628,6 @@ extern boolean bfd_sunos_size_dynamic_sections
 extern boolean bfd_i386linux_size_dynamic_sections
   PARAMS ((bfd *, struct bfd_link_info *));
 extern boolean bfd_m68klinux_size_dynamic_sections
-  PARAMS ((bfd *, struct bfd_link_info *));
-extern boolean bfd_sparclinux_size_dynamic_sections
   PARAMS ((bfd *, struct bfd_link_info *));
 
 /* mmap hacks */
@@ -701,7 +696,7 @@ bfd *
 bfd_fdopenr PARAMS ((CONST char *filename, CONST char *target, int fd));
 
 bfd *
-bfd_openstreamr PARAMS ((const char *, const char *, PTR));
+bfd_openstreamr PARAMS (());
 
 bfd *
 bfd_openw PARAMS ((CONST char *filename, CONST char *target));
@@ -711,6 +706,9 @@ bfd_close PARAMS ((bfd *abfd));
 
 boolean 
 bfd_close_all_done PARAMS ((bfd *));
+
+bfd_size_type 
+bfd_alloc_size PARAMS ((bfd *abfd));
 
 bfd *
 bfd_create PARAMS ((CONST char *filename, bfd *templ));
@@ -940,12 +938,6 @@ typedef struct sec
 	   should warn if any duplicate sections contain different
 	   contents.  */
 #define SEC_LINK_DUPLICATES_SAME_CONTENTS 0x600000
-
-	 /* This section was created by the linker as part of dynamic
-	   relocation or other arcane processing.  It is skipped when
-	   going through the first-pass output, trusting that someone
-	   else up the line will take care of it later.  */
-#define SEC_LINKER_CREATED 0x800000
 
 	 /*  End of section flags.  */
 
@@ -1212,7 +1204,6 @@ enum bfd_architecture
   bfd_arch_powerpc,    /* PowerPC */
   bfd_arch_rs6000,     /* IBM RS/6000 */
   bfd_arch_hppa,       /* HP PA RISC */
-  bfd_arch_d10v,       /* Mitsubishi D10V */
   bfd_arch_z8k,        /* Zilog Z8000 */
 #define bfd_mach_z8001		1
 #define bfd_mach_z8002		2
@@ -1222,7 +1213,6 @@ enum bfd_architecture
   bfd_arch_arm,        /* Advanced Risc Machines ARM */
   bfd_arch_ns32k,      /* National Semiconductors ns32000 */
   bfd_arch_w65,        /* WDC 65816 */
-  bfd_arch_m32r,       /* Mitsubishi M32R/D */
   bfd_arch_mn10200,    /* Matsushita MN10200 */
   bfd_arch_mn10300,    /* Matsushita MN10300 */
   bfd_arch_last
@@ -1354,7 +1344,7 @@ enum complain_overflow
 
 struct reloc_howto_struct
 {
-        /*  The type field has mainly a documentary use - the back end can
+        /*  The type field has mainly a documetary use - the back end can
            do what it wants with it, though normally the back end's
            external idea of what a reloc number is stored
            in this field. For example, a PC relative word relocation
@@ -1482,7 +1472,6 @@ enum bfd_reloc_code_real {
   BFD_RELOC_64,
   BFD_RELOC_32,
   BFD_RELOC_26,
-  BFD_RELOC_24,
   BFD_RELOC_16,
   BFD_RELOC_14,
   BFD_RELOC_8,
@@ -1630,6 +1619,9 @@ section symbol.  The addend is ignored when writing, but is filled
 in with the file's GP value on reading, for convenience, as with the
 GPDISP_LO16 reloc.
 
+The LITERALSLEAZY reloc is a hack to allow larger offsets (4x) than
+LITERAL.
+
 The ELF_LITERAL reloc is somewhere between 16_GOTOFF and GPDISP_LO16.
 It should refer to the symbol to be referenced, as with 16_GOTOFF,
 but it generates output not based on the position within the .got
@@ -1647,6 +1639,7 @@ of instruction using the register:
 
 The GNU linker currently doesn't do any of this optimizing. */
   BFD_RELOC_ALPHA_LITERAL,
+  BFD_RELOC_ALPHA_LITERALSLEAZY,
   BFD_RELOC_ALPHA_ELF_LITERAL,
   BFD_RELOC_ALPHA_LITUSE,
 
@@ -1659,19 +1652,9 @@ prediction logic which may be provided on some processors. */
 which is filled by the linker. */
   BFD_RELOC_ALPHA_LINKAGE,
 
-/* The CODEADDR relocation outputs a STO_CA in the object file,
-which is filled by the linker. */
-  BFD_RELOC_ALPHA_CODEADDR,
-
 /* Bits 27..2 of the relocation address shifted right 2 bits;
 simple reloc otherwise. */
   BFD_RELOC_MIPS_JMP,
-
-/* The MIPS16 jump instruction. */
-  BFD_RELOC_MIPS16_JMP,
-
-/* MIPS16 GP relative reloc. */
-  BFD_RELOC_MIPS16_GPREL,
 
 /* High 16 bits of 32-bit value; simple reloc. */
   BFD_RELOC_HI16,
@@ -1810,65 +1793,17 @@ not stored in the instruction. */
   BFD_RELOC_SH_DATA,
   BFD_RELOC_SH_LABEL,
 
-
-/* Mitsubishi D10V relocs.
-This is a 10-bit reloc with the right 2 bits
-assumed to be 0. */
-  BFD_RELOC_D10V_10_PCREL_R,
-
-/* Mitsubishi D10V relocs.
-This is a 10-bit reloc with the right 2 bits
-assumed to be 0.  This is the same as the previous reloc
-except it is in the left container, i.e.,
-shifted left 15 bits. */
-  BFD_RELOC_D10V_10_PCREL_L,
-
-/* This is an 18-bit reloc with the right 2 bits
-assumed to be 0. */
-  BFD_RELOC_D10V_18,
-
-/* This is an 18-bit reloc with the right 2 bits
-assumed to be 0. */
-  BFD_RELOC_D10V_18_PCREL,
+  BFD_RELOC_88K_32,
+  BFD_RELOC_88K_LO16,
+  BFD_RELOC_88K_HI16,
+  BFD_RELOC_88K_IW16,
+  BFD_RELOC_88K_16_PCREL,
+  BFD_RELOC_88K_26_PCREL,
+  BFD_RELOC_88K_GLOB_DAT,
+  BFD_RELOC_88K_JMP_SLOT,
+  BFD_RELOC_88K_RELATIVE,
 
 
-
-/* Mitsubishi M32R relocs.
-This is a 24 bit absolute address. */
-  BFD_RELOC_M32R_24,
-
-/* This is a 10-bit pc-relative reloc with the right 2 bits assumed to be 0. */
-  BFD_RELOC_M32R_10_PCREL,
-
-/* This is an 18-bit reloc with the right 2 bits assumed to be 0. */
-  BFD_RELOC_M32R_18_PCREL,
-
-/* This is a 26-bit reloc with the right 2 bits assumed to be 0. */
-  BFD_RELOC_M32R_26_PCREL,
-
-/* This is a 16-bit reloc containing the high 16 bits of an address
-used when the lower 16 bits are treated as unsigned. */
-  BFD_RELOC_M32R_HI16_ULO,
-
-/* This is a 16-bit reloc containing the high 16 bits of an address
-used when the lower 16 bits are treated as signed. */
-  BFD_RELOC_M32R_HI16_SLO,
-
-/* This is a 16-bit reloc containing the lower 16 bits of an address. */
-  BFD_RELOC_M32R_LO16,
-
-/* This is a 16-bit reloc containing the small data area offset for use in
-add3, load, and store instructions. */
-  BFD_RELOC_M32R_SDA16,
-
-
-/* This is a 32bit pcrel reloc for the mn10300, offset by two bytes in the
-instruction. */
-  BFD_RELOC_MN10300_32_PCREL,
-
-/* This is a 16bit pcrel reloc for the mn10300, offset by two bytes in the
-instruction. */
-  BFD_RELOC_MN10300_16_PCREL,
   BFD_RELOC_UNUSED };
 typedef enum bfd_reloc_code_real bfd_reloc_code_real_type;
 reloc_howto_type *
@@ -2001,11 +1936,8 @@ typedef struct symbol_cache_entry
 boolean 
 bfd_is_local_label PARAMS ((bfd *abfd, asymbol *sym));
 
-boolean 
-bfd_is_local_label_name PARAMS ((bfd *abfd, const char *name));
-
-#define bfd_is_local_label_name(abfd, name) \
-     BFD_SEND (abfd, _bfd_is_local_label_name, (abfd, name))
+#define bfd_is_local_label(abfd, sym) \
+     BFD_SEND (abfd, _bfd_is_local_label,(abfd, sym))
 #define bfd_canonicalize_symtab(abfd, location) \
      BFD_SEND (abfd, _bfd_canonicalize_symtab,\
                   (abfd, location))
@@ -2181,10 +2113,8 @@ struct _bfd
      /* Used by the application to hold private data*/
     PTR usrdata;
 
-   /* Where all the allocated stuff under this BFD goes.  This is a
-     struct objalloc *, but we use PTR to avoid requiring the inclusion of
-     objalloc.h.  */
-    PTR memory;
+     /* Where all the allocated stuff under this BFD goes */
+    struct obstack memory;
 };
 
 typedef enum bfd_error
@@ -2536,7 +2466,7 @@ CAT(NAME,_get_symtab),\
 CAT(NAME,_make_empty_symbol),\
 CAT(NAME,_print_symbol),\
 CAT(NAME,_get_symbol_info),\
-CAT(NAME,_bfd_is_local_label_name),\
+CAT(NAME,_bfd_is_local_label),\
 CAT(NAME,_get_lineno),\
 CAT(NAME,_find_nearest_line),\
 CAT(NAME,_bfd_make_debug_symbol),\
@@ -2555,7 +2485,7 @@ CAT(NAME,_minisymbol_to_symbol)
                                       struct symbol_cache_entry *,
                                       symbol_info *));
 #define bfd_get_symbol_info(b,p,e) BFD_SEND(b, _bfd_get_symbol_info, (b,p,e))
-  boolean	 (*_bfd_is_local_label_name) PARAMS ((bfd *, const char *));
+  boolean	 (*_bfd_is_local_label) PARAMS ((bfd *, asymbol *));
 
   alent *    (*_get_lineno) PARAMS ((bfd *, struct symbol_cache_entry *));
   boolean    (*_bfd_find_nearest_line) PARAMS ((bfd *abfd,
@@ -2651,9 +2581,6 @@ CAT(NAME,_canonicalize_dynamic_reloc)
 
  PTR backend_data;
 } bfd_target;
-boolean 
-bfd_set_default_target  PARAMS ((const char *name));
-
 const bfd_target *
 bfd_find_target PARAMS ((CONST char *target_name, bfd *abfd));
 

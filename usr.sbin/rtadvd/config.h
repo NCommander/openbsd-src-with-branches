@@ -1,3 +1,5 @@
+/*	$OpenBSD: config.h,v 1.2 1999/12/11 10:33:28 itojun Exp $	*/
+
 /*
  * Copyright (C) 1995, 1996, 1997, 1998, and 1999 WIDE Project.
  * All rights reserved.
@@ -30,3 +32,4 @@
 extern void getconfig __P((char *));
 extern void delete_prefix __P((struct rainfo *, struct prefix *));
 extern void make_prefix __P((struct rainfo *, int, struct in6_addr *, int));
+extern void make_packet __P((struct rainfo *));

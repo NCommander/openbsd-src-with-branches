@@ -1,7 +1,8 @@
-/*	$Id: exchange.h,v 1.15 1998/08/13 21:43:57 provos Exp $	*/
+/*	$OpenBSD: exchange.h,v 1.12 1999/07/07 22:09:53 niklas Exp $	*/
+/*	$EOM: exchange.h,v 1.26 1999/07/17 20:44:10 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -60,6 +61,21 @@ struct exchange {
   /* Link to exchanges with the same hash value.  */
   LIST_ENTRY (exchange) link;
 
+  /* A name of the SAs this exchange will result in.  XXX non unique?  */
+  char *name;
+
+  /* A name of the major policy deciding offers and acceptable proposals.  */
+  char *policy;
+
+  /*
+   * A function with a polymorphic argument called after the exchange
+   * has been run to its end, successfully.  The 2nd argument is true
+   * if the finalization hook is called due to the exchange not running
+   * to its end normally.
+   */
+  void (*finalize) (struct exchange *, void *, int);
+  void *finalize_arg;
+
   /* When several SA's are being negotiated we keep them here.  */
   TAILQ_HEAD (sa_head, sa) sa_list;
 
@@ -109,6 +125,12 @@ struct exchange {
   struct message *last_sent;
 
   /*
+   * If some message is queued up for sending, we want to be able to remove
+   * it from the queue, when the exchange is deleted.
+   */
+  struct message *in_transit;
+
+  /*
    * Initiator's & responder's nonces respectively, with lengths.
    * XXX Should this be in the DOI-specific parts instead?
    */
@@ -128,6 +150,16 @@ struct exchange {
   int key_length;
   struct keystate *keystate;
 
+  /* 
+   * Received certificate - used to verify signatures on packet,
+   * stored here for later policy processing. 
+   * a type of ISAKMP_CERTENC_NONE implies pre-shared key.
+   */
+  int recv_certtype, recv_certlen;
+  void *recv_cert;
+
+  /* XXX This is no longer necessary, it is covered by policy. */
+
   /* Acceptable authorities for cert requests */
   TAILQ_HEAD (aca_head, certreq_aca) aca_list;
 
@@ -142,21 +174,29 @@ struct exchange {
 					 | EXCHANGE_FLAG_HE_COMMITTED)
 #define EXCHANGE_FLAG_ENCRYPT		4
 
+extern int exchange_add_certs (struct message *);
 extern void exchange_finalize (struct message *);
 extern void exchange_free (struct exchange *);
+extern void exchange_free_aca_list (struct exchange *);
+extern void exchange_establish (char *name,
+				void (*) (struct exchange *, void *, int),
+				void *);
 extern void exchange_establish_p1 (struct transport *, u_int8_t, u_int32_t,
+				   char *, void *,
+				   void (*) (struct exchange *, void *, int),
 				   void *);
-extern void exchange_establish_p2 (struct sa *, u_int8_t, void *);
+extern void exchange_establish_p2 (struct sa *, u_int8_t, char *, void *,
+				   void (*) (struct exchange *, void *, int),
+				   void *);
 extern int exchange_gen_nonce (struct message *, size_t);
 extern void exchange_init (void);
 extern struct exchange *exchange_lookup (u_int8_t *, int);
+extern struct exchange *exchange_lookup_by_name (char *, int);
 extern struct exchange *exchange_lookup_from_icookie (u_int8_t *);
 extern void exchange_report (void);
 extern void exchange_run (struct message *);
 extern int exchange_save_nonce (struct message *);
 extern int exchange_save_certreq (struct message *);
-extern void exchange_free_aca_list (struct exchange *);
-extern int exchange_add_certs (struct message *);
 extern u_int16_t *exchange_script (struct exchange *);
 extern struct exchange *exchange_setup_p1 (struct message *, u_int32_t);
 extern struct exchange *exchange_setup_p2 (struct message *, u_int8_t);

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: chflags.1,v 1.10 2000/03/05 20:09:20 aaron Exp $
 .\"	$NetBSD: chflags.1,v 1.4 1995/08/31 22:50:22 jtc Exp $
 .\"
 .\" Copyright (c) 1989, 1990, 1993, 1994
@@ -49,61 +50,80 @@
 .Op Fl H | Fl L | Fl P
 .Oc
 .Ar flags
-.Ar file ...
+.Ar file Op Ar ...
 .Sh DESCRIPTION
 The
-.Nm chflags
+.Nm
 utility modifies the file flags of the listed files
 as specified by the
 .Ar flags
 operand.
+The
+.Ar flags
+of a file dictate special restrictions beyond those enforced by its
+mode/permissions.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
+.It Fl R
+Recursively descend through any specified directory arguments.
+Change the flags of the file hierarchies rooted
+in the files instead of just the files themselves.
 .It Fl H
 If the
 .Fl R
-option is specified, symbolic links on the command line are followed.
+option is also specified, symbolic links on the command line are followed.
 (Symbolic links encountered in the tree traversal are not followed.)
 .It Fl L
 If the
 .Fl R
-option is specified, all symbolic links are followed.
+option is also specified, all symbolic links are followed.
 .It Fl P
 If the
 .Fl R
-option is specified, no symbolic links are followed.
-.It Fl R
-Change the file flags for the file hierarchies rooted
-in the files instead of just the files themselves.
+option is also specified, no symbolic links are followed.
 .El
 .Pp
 Flags are a comma separated list of keywords.
 The following keywords are currently defined:
 .Bd -literal -offset indent compact
 arch	set the archived flag
-opaque	set the opaque flag (owner or super-user only)
-nodump	set the nodump flag (owner or super-user only)
-sappnd	set the system append-only flag (super-user only)
-schg	set the system immutable flag (super-user only)
-uappnd	set the user append-only flag (owner or super-user only)
-uchg	set the user immutable flag (owner or super-user only)
+opaque	set the opaque flag (owner or superuser only)
+nodump	set the nodump flag (owner or superuser only)
+sappnd	set the system append-only flag (superuser only)
+schg	set the system immutable flag (superuser only)
+uappnd	set the user append-only flag (owner or superuser only)
+uchg	set the user immutable flag (owner or superuser only)
 .Ed
+.Pp
+An immutable file may not be changed, moved, or deleted.
+An append-only file is immutable except that data may be appended to it.
 .Pp
 Putting the letters
 .Dq no
-before an option causes the flag to be turned off.
+before a flag name causes the flag to be turned off.
 For example:
 .Bd -literal -offset indent compact
 nouchg	the immutable bit should be cleared
 .Ed
+.Pp
+The
+superuser-settable
+.Dq sappnd
+and
+.Dq schg
+flags can be set at any time, but may only be cleared when the system is
+running at security level 0 or -1 (insecure or permanently insecure mode,
+respectively).
+The securelevel is normally set to 0, for example, when
+running in single-user mode.
 .Pp
 Symbolic links do not have flags, so unless the
 .Fl H
 or
 .Fl L
 option is set,
-.Nm chflags
+.Nm
 on a symbolic link always succeeds and has no effect.
 The
 .Fl H ,
@@ -116,11 +136,24 @@ option is specified.
 In addition, these options override each other and the
 command's actions are determined by the last one specified.
 .Pp
+Only the superuser can change the user flags on block and
+character devices.
+.Pp
+You can use
+.Ic ls -lo
+to see the flags of existing files.
+.Pp
 The
-.Nm chflags
-utility exits 0 on success, and >0 if an error occurs.
+.Nm
+utility exits 0 on success or >0 if an error occurred.
 .Sh SEE ALSO
+.Xr ls 1 ,
 .Xr chflags 2 ,
 .Xr stat 2 ,
 .Xr fts 3 ,
 .Xr symlink 7
+.Sh HISTORY
+The
+.Nm
+command first appeared in
+.Bx 4.4 .

@@ -16,7 +16,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: entry.c,v 1.1.1.4 1994/01/20 02:47:23 jtc Exp $";
+static char rcsid[] = "$Id: entry.c,v 1.5 1997/12/22 08:10:43 deraadt Exp $";
 #endif
 
 /* vix 26jan87 [RCS'd; rest of log is in RCS file]
@@ -91,6 +91,7 @@ load_entry(file, error_func, pw, envp)
 	int	ch;
 	char	cmd[MAX_COMMAND];
 	char	envstr[MAX_ENVSTR];
+	char	**tenvp;
 
 	Debug(DPARS, ("load_entry()...about to eat comments\n"))
 
@@ -149,17 +150,28 @@ load_entry(file, error_func, pw, envp)
 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
 		} else if (!strcmp("hourly", cmd)) {
 			bit_set(e->minute, 0);
-			bit_set(e->hour, (LAST_HOUR-FIRST_HOUR+1));
+			bit_nset(e->hour, 0, (LAST_HOUR-FIRST_HOUR+1));
 			bit_nset(e->dom, 0, (LAST_DOM-FIRST_DOM+1));
 			bit_nset(e->month, 0, (LAST_MONTH-FIRST_MONTH+1));
 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
+			e->flags |= HR_STAR;
 		} else {
 			ecode = e_timespec;
+			goto eof;
+		}
+		/* Advance past whitespace between shortcut and
+		 * username/command.
+		 */
+		Skip_Blanks(ch, file);
+		if (ch == EOF) {
+			ecode = e_cmd;
 			goto eof;
 		}
 	} else {
 		Debug(DPARS, ("load_entry()...about to parse numerics\n"))
 
+		if (ch == '*')
+			e->flags |= MIN_STAR;
 		ch = get_list(e->minute, FIRST_MINUTE, LAST_MINUTE,
 			      PPC_NULL, ch, file);
 		if (ch == EOF) {
@@ -170,6 +182,8 @@ load_entry(file, error_func, pw, envp)
 		/* hours
 		 */
 
+		if (ch == '*')
+			e->flags |= HR_STAR;
 		ch = get_list(e->hour, FIRST_HOUR, LAST_HOUR,
 			      PPC_NULL, ch, file);
 		if (ch == EOF) {
@@ -239,6 +253,9 @@ load_entry(file, error_func, pw, envp)
 			goto eof;
 		}
 		Debug(DPARS, ("load_entry()...uid %d, gid %d\n",e->uid,e->gid))
+	} else if (ch == '*') {
+		ecode = e_cmd;
+		goto eof;
 	}
 
 	e->uid = pw->pw_uid;
@@ -247,24 +264,52 @@ load_entry(file, error_func, pw, envp)
 	/* copy and fix up environment.  some variables are just defaults and
 	 * others are overrides.
 	 */
-	e->envp = env_copy(envp);
+	if ((e->envp = env_copy(envp)) == NULL) {
+		ecode = e_none;
+		goto eof;
+	}
 	if (!env_get("SHELL", e->envp)) {
-		sprintf(envstr, "SHELL=%s", _PATH_BSHELL);
-		e->envp = env_set(e->envp, envstr);
+		snprintf(envstr, sizeof envstr, "SHELL=%s", _PATH_BSHELL);
+		if ((tenvp = env_set(e->envp, envstr))) {
+			e->envp = tenvp;
+		} else {
+			ecode = e_none;
+			goto eof;
+		}
 	}
 	if (!env_get("HOME", e->envp)) {
-		sprintf(envstr, "HOME=%s", pw->pw_dir);
-		e->envp = env_set(e->envp, envstr);
+		snprintf(envstr, sizeof envstr, "HOME=%s", pw->pw_dir);
+		if ((tenvp = env_set(e->envp, envstr))) {
+			e->envp = tenvp;
+		} else {
+			ecode = e_none;
+			goto eof;
+		}
 	}
 	if (!env_get("PATH", e->envp)) {
 		sprintf(envstr, "PATH=%s", _PATH_DEFPATH);
-		e->envp = env_set(e->envp, envstr);
+		if ((tenvp = env_set(e->envp, envstr))) {
+			e->envp = tenvp;
+		} else {
+			ecode = e_none;
+			goto eof;
+		}
 	}
-	sprintf(envstr, "%s=%s", "LOGNAME", pw->pw_name);
-	e->envp = env_set(e->envp, envstr);
+	snprintf(envstr, sizeof envstr, "%s=%s", "LOGNAME", pw->pw_name);
+	if ((tenvp = env_set(e->envp, envstr))) {
+		e->envp = tenvp;
+	} else {
+		ecode = e_none;
+		goto eof;
+	}
 #if defined(BSD)
-	sprintf(envstr, "%s=%s", "USER", pw->pw_name);
-	e->envp = env_set(e->envp, envstr);
+	snprintf(envstr, sizeof envstr, "%s=%s", "USER", pw->pw_name);
+	if ((tenvp = env_set(e->envp, envstr))) {
+		e->envp = tenvp;
+	} else {
+		ecode = e_none;
+		goto eof;
+	}
 #endif
 
 	Debug(DPARS, ("load_entry()...about to parse command\n"))
@@ -285,7 +330,10 @@ load_entry(file, error_func, pw, envp)
 
 	/* got the command in the 'cmd' string; save it in *e.
 	 */
-	e->cmd = strdup(cmd);
+	if ((e->cmd = strdup(cmd)) == NULL) {
+		ecode = e_none;
+		goto eof;
+	}
 
 	Debug(DPARS, ("load_entry()...returning successfully\n"))
 
@@ -294,6 +342,10 @@ load_entry(file, error_func, pw, envp)
 	return e;
 
  eof:
+	if (e->envp)
+		env_free(e->envp);
+	if (e->cmd)
+		free(e->cmd);
 	free(e);
 	if (ecode != e_none && error_func)
 		(*error_func)(ecodes[(int)ecode]);

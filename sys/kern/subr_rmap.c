@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_rmap.c,v 1.9 1994/06/29 06:33:02 cgd Exp $	*/
+/*	$OpenBSD: subr_rmap.c,v 1.3 1996/04/21 22:27:23 deraadt Exp $	*/
+/*	$NetBSD: subr_rmap.c,v 1.11 1996/03/16 23:17:11 christos Exp $	*/
 
 /*
  * Copyright (C) 1992, 1994 Wolfgang Solfrank.
@@ -33,6 +34,7 @@
 
 #include <sys/param.h>
 #include <sys/map.h>
+#include <sys/systm.h>
 
 /*
  * Resource allocation map handling.
@@ -59,9 +61,12 @@ rminit(mp, size, addr, name, nelem)
 {
 	struct mapent *ep;
 	
+#ifdef DIAGNOSTIC
 	/* mapsize had better be at least 2 */
 	if (nelem < 2 || addr <= 0 || size < 0)
 		panic("rminit %s",name);
+#endif
+
 	mp->m_name = name;
 	mp->m_limit = (struct mapent *)mp + nelem;
 	
@@ -88,9 +93,11 @@ rmalloc(mp, size)
 	long addr;
 	
 	/* first check arguments */
+#ifdef DIAGNOSTIC
 	if (size < 0)
 		panic("rmalloc %s", mp->m_name);
-	if (!size)
+#endif
+	if (size <= 0)
 		return 0;
 	
 	fp = 0;
@@ -138,9 +145,11 @@ rmfree(mp, size, addr)
 {
 	struct mapent *ep, *fp;
 
+#ifdef DIAGNOSTIC
 	/* first check arguments */
 	if (size <= 0 || addr <= 0)
 		panic("rmfree %s", mp->m_name);
+#endif
 	
 	while (1) {
 		fp = 0;
@@ -156,8 +165,11 @@ rmfree(mp, size, addr)
 				if (ep < mp->m_limit
 				    && ep[1].m_addr
 				    && (addr += size) >= ep[1].m_addr) {
-					if (addr > ep[1].m_addr) /* overlapping frees? */
+#ifdef DIAGNOSTIC
+					/* overlapping frees? */
+					if (addr > ep[1].m_addr)
 						panic("rmfree %s", mp->m_name);
+#endif
 					/* the next slot is now contiguous, so join ... */
 					ep->m_size += ep[1].m_size;
 					ovbcopy(ep + 2, ep + 1,
@@ -206,14 +218,15 @@ rmfree(mp, size, addr)
 		 */
 		if (fp->m_size > size) {
 			/* range to free is smaller, so drop that */
-			printf("rmfree: map '%s' loses space (%d)\n", mp->m_name,
-			       size);
+			printf("rmfree: map '%s' loses space (%ld)\n",
+			       mp->m_name, size);
 			return;
 		} else {
 			/* drop the smallest slot in the list */
-			printf("rmfree: map '%s' loses space (%d)\n", mp->m_name,
-			       fp->m_size);
-			ovbcopy(fp + 1,fp,(char *)(mp->m_limit - 1) - (char *)fp);
+			printf("rmfree: map '%s' loses space (%ld)\n",
+			       mp->m_name, fp->m_size);
+			ovbcopy(fp + 1, fp,
+				(char *)(mp->m_limit - 1) - (char *)fp);
 			mp->m_limit[-1].m_addr = 0;
 			/* now retry */
 		}

@@ -1,3 +1,4 @@
+/*	$OpenBSD: modf.c,v 1.1 1995/02/10 17:50:25 cgd Exp $	*/
 /*	$NetBSD: modf.c,v 1.1 1995/02/10 17:50:25 cgd Exp $	*/
 
 /*
@@ -26,6 +27,10 @@
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char *rcsid = "$OpenBSD: modf.c,v 1.2 1996/08/19 08:10:44 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <machine/ieee.h>

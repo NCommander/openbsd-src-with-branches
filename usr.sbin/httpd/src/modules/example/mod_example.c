@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -525,7 +525,7 @@ static int example_handler(request_rec *r)
      * Now send our actual output.  Since we tagged this as being
      * "text/html", we need to embed any HTML.
      */
-    ap_rputs("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n", r);
+    ap_rputs(DOCTYPE_HTML_3_2, r);
     ap_rputs("<HTML>\n", r);
     ap_rputs(" <HEAD>\n", r);
     ap_rputs("  <TITLE>mod_example Module Content-Handler Output\n", r);

@@ -1,3 +1,5 @@
+/*	$OpenBSD: fty_enum.c,v 1.5 1999/05/17 03:04:18 millert Exp $	*/
+
 
 /*
  * THIS CODE IS SPECIFICALLY EXEMPTED FROM THE NCURSES PACKAGE COPYRIGHT.
@@ -5,8 +7,15 @@
  * If you develop a field type that might be of general use, please send
  * it back to the ncurses maintainers for inclusion in the next version.
  */
+/***************************************************************************
+*                                                                          *
+*  Author : Juergen Pfeifer, juergen.pfeifer@gmx.net                       *
+*                                                                          *
+***************************************************************************/
 
 #include "form.priv.h"
+
+MODULE_ID("$From: fty_enum.c,v 1.11 2000/03/19 01:09:56 Bruno.Haible Exp $")
 
 typedef struct {
   char **kwds;
@@ -55,16 +64,16 @@ static void *Make_Enum_Type(va_list * ap)
 +--------------------------------------------------------------------------*/
 static void *Copy_Enum_Type(const void * argp)
 {
-  enumARG *ap  = (enumARG *)argp;
-  enumARG *new = (enumARG *)0;
+  const enumARG *ap = (const enumARG *)argp;
+  enumARG *result = (enumARG *)0;
 
   if (argp)
     {
-      new = (enumARG *)malloc(sizeof(enumARG));
-      if (new)
-	*new = *ap;
+      result = (enumARG *)malloc(sizeof(enumARG));
+      if (result)
+	*result = *ap;
     }
-  return (void *)new;
+  return (void *)result;
 }
 
 /*---------------------------------------------------------------------------
@@ -120,9 +129,8 @@ static int Compare(const unsigned char *s, const unsigned char *buf,
 	} 
       else 
 	{
-	  while(toupper(*s)==toupper(*buf))
+	  while(toupper(*s++)==toupper(*buf))
 	    {
-	      s++;
 	      if (*buf++=='\0') return EXACT;
 	    }
 	}
@@ -152,9 +160,9 @@ static int Compare(const unsigned char *s, const unsigned char *buf,
 +--------------------------------------------------------------------------*/
 static bool Check_Enum_Field(FIELD * field, const void  * argp)
 {
-  char **kwds       = ((enumARG *)argp)->kwds;
-  bool ccase        = ((enumARG *)argp)->checkcase;
-  bool unique       = ((enumARG *)argp)->checkunique;
+  char **kwds       = ((const enumARG *)argp)->kwds;
+  bool ccase        = ((const enumARG *)argp)->checkcase;
+  bool unique       = ((const enumARG *)argp)->checkunique;
   unsigned char *bp = (unsigned char *)field_buffer(field,0);
   char *s, *t, *p;
   int res;
@@ -163,7 +171,7 @@ static bool Check_Enum_Field(FIELD * field, const void  * argp)
     {
       if ((res=Compare((unsigned char *)s,bp,ccase))!=NOMATCH)
 	{
-	  t=s;
+	  p=t=s; /* t is at least a partial match */
 	  if ((unique && res!=EXACT)) 
 	    {
 	      while( (p = *kwds++) )
@@ -174,16 +182,19 @@ static bool Check_Enum_Field(FIELD * field, const void  * argp)
 			{
 			  t = p;
 			  break;
-			}	
-		      t = (char *)0;
+			}
+		      else
+			t = (char *)0;
 		    }
 		}
-	    }
+	    }	  
 	  if (t)
 	    {
 	      set_field_buffer(field,0,t);
 	      return TRUE;
 	    }
+	  if (!p)
+	    break;
 	}
     }
   return FALSE;
@@ -203,7 +214,7 @@ static const char *dummy[] = { (char *)0 };
 +--------------------------------------------------------------------------*/
 static bool Next_Enum(FIELD * field, const void * argp)
 {
-  enumARG *args     = (enumARG *)argp;
+  const enumARG *args = (const enumARG *)argp;
   char **kwds       = args->kwds;
   bool ccase        = args->checkcase;
   int cnt           = args->count;
@@ -216,7 +227,7 @@ static bool Next_Enum(FIELD * field, const void * argp)
     }
   if (cnt<=0)
     kwds = args->kwds;
-  if ((cnt>=0) || (Compare((unsigned char *)dummy,bp,ccase)==EXACT))
+  if ((cnt>=0) || (Compare((const unsigned char *)dummy,bp,ccase)==EXACT))
     {
       set_field_buffer(field,0,*kwds);
       return TRUE;
@@ -237,7 +248,7 @@ static bool Next_Enum(FIELD * field, const void * argp)
 +--------------------------------------------------------------------------*/
 static bool Previous_Enum(FIELD * field, const void * argp)
 {
-  enumARG *args = (enumARG *)argp;
+  const enumARG *args = (const enumARG *)argp;
   int cnt       = args->count;
   char **kwds   = &args->kwds[cnt-1];
   bool ccase    = args->checkcase;
@@ -252,7 +263,7 @@ static bool Previous_Enum(FIELD * field, const void * argp)
   if (cnt<=0)
     kwds  = &args->kwds[args->count-1];
 
-  if ((cnt>=0) || (Compare((unsigned char *)dummy,bp,ccase)==EXACT))
+  if ((cnt>=0) || (Compare((const unsigned char *)dummy,bp,ccase)==EXACT))
     {
       set_field_buffer(field,0,*kwds);
       return TRUE;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.7 1996/10/19 13:26:04 mickey Exp $ */
+/*	$OpenBSD: conf.c,v 1.6 1998/07/07 06:56:15 deraadt Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)conf.c	8.2 (Berkeley) 11/14/93
- *      $Id: conf.c,v 1.7 1996/10/19 13:26:04 mickey Exp $
+ *      $Id: conf.c,v 1.6 1998/07/07 06:56:15 deraadt Exp $
  */
 
 #include <sys/param.h>
@@ -69,6 +69,8 @@ bdev_decl(fd);
 bdev_decl(wd);
 #include "acd.h"
 bdev_decl(acd);
+#include "fl.h"
+bdev_decl(fl);
 
 struct bdevsw	bdevsw[] =
 {
@@ -82,7 +84,7 @@ struct bdevsw	bdevsw[] =
 	bdev_notdef(),			/* 7: Floppy disk driver */
 	bdev_notdef(),			/* 8:  */
 	bdev_notdef(),			/* 9:  */
-	bdev_notdef(),			/* 10:  */
+	bdev_disk_init(NFL,fl),		/* 10: Flash ram disk driver */
 	bdev_notdef(),			/* 11:  */
 	bdev_notdef(),			/* 12:  */
 	bdev_notdef(),			/* 13:  */
@@ -96,23 +98,6 @@ int	nblkdev = sizeof (bdevsw) / sizeof (bdevsw[0]);
  *	Character devices.
  */
 
-/* open, close, read, write, ioctl, tty, mmap */
-#define cdev_pc_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
-	dev_init(c,n,write), dev_init(c,n,ioctl), dev_init(c,n,stop), \
-	dev_init(c,n,tty), ttselect, dev_init(c,n,mmap), D_TTY }
-
-/* open, close, write, ioctl */
-#define	cdev_lpt_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
-	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
-	0, seltrue, (dev_type_mmap((*))) enodev }
-
-/* open, close, write, ioctl */
-#define	cdev_spkr_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
-	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
-	0, seltrue, (dev_type_mmap((*))) enodev }
 
 cdev_decl(cn);
 cdev_decl(sw);
@@ -133,31 +118,24 @@ cdev_decl(log);
 cdev_decl(fd);
 #include "st.h"
 cdev_decl(st);
-#ifdef notyet
-#include "fdc.h"
-bdev_decl(fd);
-#endif
 cdev_decl(vnd);
 #include "bpfilter.h"
 cdev_decl(bpf);
 #include "com.h"
 cdev_decl(com);
-#include "lpt.h"
-cdev_decl(lpt);
 cdev_decl(sd);
-#ifdef notyet
-#include "pc.h"
-cdev_decl(pc);
-cdev_decl(pms);
-#endif
 cdev_decl(cd);
 #include "uk.h"
 cdev_decl(uk);
 cdev_decl(wd);
 cdev_decl(acd);
+cdev_decl(fl);
 
-/* open, close, read, ioctl */
-cdev_decl(ipl);
+#ifdef XFS
+#include <xfs/nxfs.h>
+cdev_decl(xfs_dev);
+#endif
+
 #ifdef IPFILTER
 #define NIPF 1
 #else
@@ -182,13 +160,13 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 13: Floppy disk */
 	cdev_notdef(),			/* 14: builtin pc style console dev */
 	cdev_notdef(),			/* 15: builtin PS2 style mouse */
-	cdev_lpt_init(NLPT,lpt),	/* 16: lpt paralell printer interface */
+	cdev_notdef(),			/* 16: lpt paralell printer interface */
 	cdev_tty_init(NCOM,com),	/* 17: com 16C450 serial interface */
 	cdev_disk_init(NWDC,wd),	/* 18: ST506/ESDI/IDE disk */
 	cdev_disk_init(NACD,acd),	/* 19: ATAPI CD-ROM */
 	cdev_tty_init(NPTY,pts),	/* 20: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 21: pseudo-tty master */
-	cdev_notdef(),			/* 22: */
+	cdev_disk_init(NFL,fl),		/* 22: Flash memory driver */
 	cdev_notdef(),			/* 23: */
 	cdev_notdef(),			/* 24: */
 	cdev_notdef(),			/* 25: */
@@ -200,6 +178,28 @@ struct cdevsw	cdevsw[] =
 	cdev_gen_ipf(NIPF,ipl),         /* 31: IP filter log */
 	cdev_uk_init(NUK,uk),		/* 32: unknown SCSI */
 	cdev_random_init(1,random),	/* 33: random data source */
+	cdev_notdef(),			/* 34: */
+	cdev_notdef(),			/* 35: */
+	cdev_notdef(),			/* 36: */
+	cdev_notdef(),			/* 37: */
+	cdev_notdef(),			/* 38: */
+	cdev_notdef(),			/* 39: */
+	cdev_notdef(),			/* 30: */
+	cdev_notdef(),			/* 41: */
+	cdev_notdef(),			/* 42: */
+	cdev_notdef(),			/* 43: */
+	cdev_notdef(),			/* 44: */
+	cdev_notdef(),			/* 45: */
+	cdev_notdef(),			/* 46: */
+	cdev_notdef(),			/* 47: */
+	cdev_notdef(),			/* 48: */
+	cdev_notdef(),			/* 49: */
+	cdev_notdef(),			/* 50: */
+#ifdef XFS
+	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
+#else
+	cdev_notdef(),			/* 51: */
+#endif
 };
 
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);
@@ -249,8 +249,7 @@ iszerodev(dev)
 }
 
 
-#define MAXDEV	57
-static int chrtoblktbl[MAXDEV] =  {
+static int chrtoblktbl[] =  {
       /* VCHR */      /* VBLK */
 	/* 0 */		NODEV,
 	/* 1 */		NODEV,
@@ -274,42 +273,9 @@ static int chrtoblktbl[MAXDEV] =  {
 	/* 19 */	5,
 	/* 20 */	NODEV,
 	/* 21 */	NODEV,
-	/* 22 */	NODEV,
-	/* 23 */	NODEV,
-	/* 24 */	NODEV,
-	/* 25 */	NODEV,
-	/* 26 */	NODEV,
-	/* 27 */	NODEV,
-	/* 28 */	NODEV,
-	/* 29 */	NODEV,
-	/* 30 */	NODEV,
-	/* 31 */	NODEV,
-	/* 32 */	NODEV,
-	/* 33 */	NODEV,
-	/* 34 */	NODEV,
-	/* 35 */	NODEV,
-	/* 36 */	NODEV,
-	/* 37 */	NODEV,
-	/* 38 */	NODEV,
-	/* 39 */	NODEV,
-	/* 40 */	NODEV,
-	/* 41 */	NODEV,
-	/* 42 */	NODEV,
-	/* 43 */	NODEV,
-	/* 44 */	NODEV,
-	/* 45 */	NODEV,
-	/* 46 */	NODEV,
-	/* 47 */	NODEV,
-	/* 48 */	NODEV,
-	/* 49 */	NODEV,
-	/* 50 */	NODEV,
-	/* 51 */	NODEV,
-	/* 52 */	NODEV,
-	/* 53 */	NODEV,
-	/* 54 */	NODEV,
-	/* 55 */	NODEV,
-	/* 56 */	NODEV,
+	/* 22 */	10,
 };
+
 /*
  * Routine to convert from character to block device number.
  *
@@ -320,7 +286,11 @@ chrtoblk(dev)
 {
 	int blkmaj;
 
-	if (major(dev) >= MAXDEV || (blkmaj = chrtoblktbl[major(dev)]) == NODEV)
+	if (major(dev) >= nchrdev ||
+	    major(dev) > sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]))
+		return (NODEV);
+	blkmaj = chrtoblktbl[major(dev)];
+	if (blkmaj == NODEV)
 		return (NODEV);
 	return (makedev(blkmaj, minor(dev)));
 }

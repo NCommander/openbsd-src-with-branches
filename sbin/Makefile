@@ -1,36 +1,45 @@
-#	$NetBSD: Makefile,v 1.25 1995/10/10 21:42:00 gwr Exp $
-#	@(#)Makefile	8.5 (Berkeley) 3/31/94
+#	$OpenBSD: Makefile,v 1.49 2000/01/01 22:38:18 deraadt Exp $
 
 # Not ported: XNSrouted enpload scsiformat startslip
-# Missing: icheck ncheck
+# Missing: icheck
 
-SUBDIR=	badsect disklabel ccdconfig dmesg fastboot ifconfig init mknod \
-	modload modunload mount mountd nfsd nfsiod nologin ping quotacheck \
-	reboot route routed savecore shutdown slattach swapon ttyflags umount
+SUBDIR= atactl badsect brconfig ccdconfig disklabel dmesg fsck ifconfig init \
+	ipf ipfstat ipnat ipsecadm isakmpd kbd mknod modload modunload \
+	mount mountd ncheck_ffs nfsd nfsiod nologin photurisd ping \
+	quotacheck raidctl reboot route routed savecore scan_ffs scsi \
+	shutdown slattach startkey swapctl sysctl ttyflags umount
 
 # support for various file systems
 SUBDIR+= mount_ados
 SUBDIR+= mount_cd9660
 SUBDIR+= mount_fdesc
-SUBDIR+= mount_ffs	newfs fsck fsdb dumpfs dump restore clri tunefs
+SUBDIR+= mount_ffs	newfs fsck_ffs fsdb dumpfs dump restore clri tunefs fsirand
 SUBDIR+= mount_kernfs
-SUBDIR+= mount_lfs	newlfs dumplfs
 # mount_mfs -> newfs
-SUBDIR+= mount_msdos
+SUBDIR+= mount_msdos	newfs_msdos fsck_msdos
 SUBDIR+= mount_nfs
 SUBDIR+= mount_null
 SUBDIR+= mount_portal
 SUBDIR+= mount_procfs
 SUBDIR+= mount_umap
 SUBDIR+= mount_union
+SUBDIR+= mount_ext2fs fsck_ext2fs
+SUBDIR+= mount_xfs
 
-.if   make(clean) || make(cleandir)
-SUBDIR+= bim edlabel fdisk
+# IPv6
+SUBDIR+= ping6 rtsol
+
+.if   make(clean) || make(cleandir) || make(obj)
+SUBDIR+= bim edlabel fdisk ancontrol wicontrol
 .elif ${MACHINE} == "i386"
+SUBDIR+= fdisk
+SUBDIR+= ancontrol wicontrol
+.elif (${MACHINE} == "arc") || (${MACHINE} == "powerpc") || (${MACHINE} == "alpha")
 SUBDIR+= fdisk
 .elif ${MACHINE} == "pc532"
 SUBDIR+= bim
-.elif ${MACHINE} == "sun3"
+.elif (${MACHINE} == "sun3") || (${MACHINE} == "atari") || \
+      (${MACHINE} == "sparc")
 SUBDIR+= edlabel
 .endif
 

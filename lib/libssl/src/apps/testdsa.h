@@ -1,14 +1,8 @@
 /* NOCW */
-#ifndef NOPROTO
+/* used by apps/speed.c */
 DSA *get_dsa512(void );
 DSA *get_dsa1024(void );
 DSA *get_dsa2048(void );
-#else
-DSA *get_dsa512();
-DSA *get_dsa1024();
-DSA *get_dsa2048();
-#endif
-
 static unsigned char dsa512_p[]={
 	0x9D,0x1B,0x69,0x8E,0x26,0xDB,0xF2,0x2B,0x11,0x70,0x19,0x86,
 	0xF6,0x19,0xC8,0xF8,0x19,0xF2,0x18,0x53,0x94,0x46,0x06,0xD0,
@@ -153,3 +147,5 @@ DSA *get_dsa2048()
 	return(dsa);
 	}
 
+static const char rnd_seed[] = "string to make the random number generator think it has entropy";
+static int rnd_fake = 0;

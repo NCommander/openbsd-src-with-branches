@@ -1,3 +1,4 @@
+/*	$OpenBSD: factor.c,v 1.6 1999/09/25 15:52:19 pjanzen Exp $	*/
 /*	$NetBSD: factor.c,v 1.5 1995/03/23 08:28:07 cgd Exp $	*/
 
 /*
@@ -44,9 +45,9 @@ static char copyright[] =
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)factor.c	8.3 (Berkeley) 3/30/94";
+static char sccsid[] = "@(#)factor.c	8.4 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$NetBSD: factor.c,v 1.5 1995/03/23 08:28:07 cgd Exp $";
+static char rcsid[] = "$OpenBSD: factor.c,v 1.6 1999/09/25 15:52:19 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,23 +70,25 @@ static char rcsid[] = "$NetBSD: factor.c,v 1.5 1995/03/23 08:28:07 cgd Exp $";
  * If no args are given, the list of numbers are read from stdin.
  */
 
+#include <sys/types.h>
 #include <err.h>
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "primes.h"
 
 /*
- * prime[i] is the (i-1)th prime.
+ * prime[i] is the (i+1)th prime.
  *
  * We are able to sieve 2^32-1 because this byte table yields all primes 
  * up to 65537 and 65537^2 > 2^32-1.
  */
-extern ubig prime[];
-extern ubig *pr_limit;		/* largest prime in the prime array */
+extern const ubig prime[];
+extern const ubig *pr_limit;		/* largest prime in the prime array */
 
 void	pr_fact __P((ubig));	/* print factors of a value */
 void	usage __P((void));
@@ -99,7 +102,11 @@ main(argc, argv)
 	int ch;
 	char *p, buf[100];		/* > max number of digits. */
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	/* revoke privs */
+	setegid(getgid());
+	setgid(getgid());
+
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch (ch) {
 		case '?':
 		default:
@@ -162,7 +169,7 @@ void
 pr_fact(val)
 	ubig val;		/* Factor this value. */
 {
-	ubig *fact;		/* The factor found. */
+	const ubig *fact;	/* The factor found. */
 
 	/* Firewall - catch 0 and 1. */
 	if (val == 0)		/* Historical practice; 0 just exits. */

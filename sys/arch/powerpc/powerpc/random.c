@@ -1,5 +1,4 @@
-/*	$OpenBSD: random.s,v 1.3 1996/08/10 21:41:08 deraadt Exp $	*/
-/*	$NetBSD: random.s,v 1.5 1995/01/15 22:32:35 mycroft Exp $	*/
+/*	$OpenBSD: random.c,v 1.1.1.1 1996/12/21 20:35:58 rahnds Exp $	*/
 
 /*
  * Copyright (c) 1990,1993 The Regents of the University of California.

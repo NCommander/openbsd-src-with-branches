@@ -1,3 +1,5 @@
+/*	$OpenBSD: w.c,v 1.27 1999/06/05 17:04:59 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -38,7 +40,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)w.c	8.4 (Berkeley) 4/16/94";
+#else
+static char *rcsid = "$OpenBSD: w.c,v 1.27 1999/06/05 17:04:59 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -74,6 +80,7 @@ static char sccsid[] = "@(#)w.c	8.4 (Berkeley) 4/16/94";
 #include <string.h>
 #include <tzfile.h>
 #include <unistd.h>
+#include <limits.h>
 #include <utmp.h>
 #include <vis.h>
 
@@ -88,7 +95,7 @@ time_t		uptime;		/* time of last reboot & elapsed time since */
 int		ttywidth;	/* width of tty */
 int		argwidth;	/* width of tty */
 int		header = 1;	/* true if -h flag: don't print heading */
-int		nflag;		/* true if -n flag: don't convert addrs */
+int		nflag = 1;	/* true if -n flag: don't convert addrs */
 int		sortidle;	/* sort bu idle time */
 char	       *sel_user;	/* login of particular user selected */
 char		domain[MAXHOSTNAMELEN];
@@ -120,25 +127,27 @@ main(argc, argv)
 	struct hostent *hp;
 	struct stat *stp;
 	FILE *ut;
-	u_long l;
+	struct in_addr addr;
 	int ch, i, nentries, nusers, wcmd;
 	char *memf, *nlistf, *p, *x;
-	char buf[MAXHOSTNAMELEN], errbuf[256];
+	char buf[MAXHOSTNAMELEN], errbuf[_POSIX2_LINE_MAX];
 
 	/* Are we w(1) or uptime(1)? */
 	p = __progname;
 	if (*p == '-')
 		p++;
-	if (*p == 'u') {
-		wcmd = 0;
-		p = "";
-	} else {
+	if (p[0] == 'w' && p[1] == '\0') {
 		wcmd = 1;
-		p = "hiflM:N:nsuw";
-	}
+		p = "hiflM:N:asuw";
+	} else if (!strcmp(p, "uptime")) {
+		wcmd = 0;
+		p = "M:N:";
+	} else
+		errx(1,
+		 "this program should be invoked only as \"w\" or \"uptime\"");
 
 	memf = nlistf = NULL;
-	while ((ch = getopt(argc, argv, p)) != EOF)
+	while ((ch = getopt(argc, argv, p)) != -1)
 		switch (ch) {
 		case 'h':
 			header = 0;
@@ -153,8 +162,8 @@ main(argc, argv)
 		case 'N':
 			nlistf = optarg;
 			break;
-		case 'n':
-			nflag = 1;
+		case 'a':
+			nflag = 0;
 			break;
 		case 'f': case 'l': case 's': case 'u': case 'w':
 			warnx("[-flsuw] no longer supported");
@@ -166,8 +175,20 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
+	/*
+	 * Discard setgid privileges if not the running kernel so that bad
+	 * guys can't print interesting stuff from kernel memory.
+	 */
+	if (nlistf != NULL || memf != NULL) {
+		setegid(getgid());
+		setgid(getgid());
+	}
+
 	if ((kd = kvm_openfiles(nlistf, memf, NULL, O_RDONLY, errbuf)) == NULL)
 		errx(1, "%s", errbuf);
+
+	setegid(getgid());
+	setgid(getgid());
 
 	(void)time(&now);
 	if ((ut = fopen(_PATH_UTMP, "r")) == NULL)
@@ -187,7 +208,7 @@ main(argc, argv)
 			err(1, NULL);
 		*nextp = ep;
 		nextp = &(ep->next);
-		memmove(&(ep->utmp), &utmp, sizeof(struct utmp));
+		memcpy(&(ep->utmp), &utmp, sizeof(struct utmp));
 		if (!(stp = ttystat(ep->utmp.ut_line)))
 			continue;
 		ep->tdev = stp->st_rdev;
@@ -222,7 +243,7 @@ main(argc, argv)
 	(void)printf(HEADER);
 
 	if ((kp = kvm_getprocs(kd, KERN_PROC_ALL, 0, &nentries)) == NULL)
-		err(1, "%s", kvm_geterr(kd));
+		errx(1, "%s", kvm_geterr(kd));
 	for (i = 0; i < nentries; i++, kp++) {
 		struct proc *p = &kp->kp_proc;
 		struct eproc *e;
@@ -231,7 +252,21 @@ main(argc, argv)
 			continue;
 		e = &kp->kp_eproc;
 		for (ep = ehead; ep != NULL; ep = ep->next) {
-			if (ep->tdev == e->e_tdev && e->e_pgid == e->e_tpgid) {
+			/* ftp is a special case. */
+			if (strncmp(ep->utmp.ut_line, "ftp", 3) == 0) {
+				char pidstr[UT_LINESIZE-2];
+				pid_t fp;
+
+				(void)strncpy(pidstr, &ep->utmp.ut_line[3],
+				    sizeof(pidstr) - 1);
+				pidstr[sizeof(pidstr) - 1] = '\0';
+				fp = (pid_t)strtol(pidstr, NULL, 10);
+				if (p->p_pid == fp) {
+					ep->kp = kp;
+					break;
+				}
+			} else if (ep->tdev == e->e_tdev
+				   && e->e_pgid == e->e_tpgid) {
 				/*
 				 * Proc is in foreground of this terminal
 				 */
@@ -278,11 +313,14 @@ main(argc, argv)
 
 	for (ep = ehead; ep != NULL; ep = ep->next) {
 		p = *ep->utmp.ut_host ? ep->utmp.ut_host : "-";
-		if ((x = strchr(p, ':')) != NULL)
-			*x++ = '\0';
-		if (!nflag && isdigit(*p) &&
-		    (long)(l = inet_addr(p)) != -1 &&
-		    (hp = gethostbyaddr((char *)&l, sizeof(l), AF_INET))) {
+		for (x = NULL, i = 0; p[i] != '\0' && i < UT_HOSTSIZE; i++)
+			if (p[i] == ':') {
+				x = &p[i];
+				*x++ = '\0';
+				break;
+			}
+		if (!nflag && inet_aton(p, &addr) &&
+		    (hp = gethostbyaddr((char *)&addr, sizeof(addr), AF_INET))) {
 			if (domain[0] != '\0') {
 				p = hp->h_name;
 				p += strlen(hp->h_name);
@@ -314,17 +352,34 @@ static void
 pr_args(kp)
 	struct kinfo_proc *kp;
 {
-	char **argv;
+	char **argv, *str;
 	int left;
 
-	if (kp == 0)
+	if (kp == NULL)
 		goto nothing;
 	left = argwidth;
-	argv = kvm_getargv(kd, kp, argwidth);
-	if (argv == 0)
+	argv = kvm_getargv(kd, kp, argwidth+60);  /* +60 for ftpd snip */
+	if (argv == NULL)
 		goto nothing;
+
+	if (*argv == NULL || **argv == '\0') {
+		/* Process has zeroed argv[0], display executable name. */
+		fmt_putc('(', &left);
+		fmt_puts(kp->kp_proc.p_comm, &left);
+		fmt_putc(')', &left);
+	}
 	while (*argv) {
-		fmt_puts(*argv, &left);
+		/* ftp is a special case... */
+		if (strncmp(*argv, "ftpd:", 5) == 0) {
+			str = strrchr(*argv, ':');
+			if (str != (char *)NULL) {
+				if ((str[0] == ':') && isspace(str[1]))
+					str += 2;
+				fmt_puts(str, &left);
+			} else
+				fmt_puts(*argv, &left);
+		} else
+			fmt_puts(*argv, &left);
 		argv++;
 		fmt_putc(' ', &left);
 	}
@@ -351,8 +406,9 @@ pr_header(nowp, nusers)
 	 * SCCS forces the string manipulation below, as it replaces
 	 * %, M, and % in a character string with the file name.
 	 */
-	(void)strftime(buf, sizeof(buf),
+	(void)strftime(buf, sizeof(buf) - 1,
 	    __CONCAT("%l:%","M%p"), localtime(nowp));
+	buf[sizeof buf -1] = '\0';
 	(void)printf("%s ", buf);
 
 	/*
@@ -362,28 +418,31 @@ pr_header(nowp, nusers)
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_BOOTTIME;
 	size = sizeof(boottime);
-	if (sysctl(mib, 2, &boottime, &size, NULL, 0) != -1 &&
-	    boottime.tv_sec != 0) {
+	if (sysctl(mib, 2, &boottime, &size, NULL, 0) != -1) {
 		uptime = now - boottime.tv_sec;
-		uptime += 30;
-		days = uptime / SECSPERDAY;
-		uptime %= SECSPERDAY;
-		hrs = uptime / SECSPERHOUR;
-		uptime %= SECSPERHOUR;
-		mins = uptime / SECSPERMIN;
-		(void)printf(" up");
-		if (days > 0)
-			(void)printf(" %d day%s,", days, days > 1 ? "s" : "");
-		if (hrs > 0 && mins > 0)
-			(void)printf(" %2d:%02d,", hrs, mins);
-		else {
-			if (hrs > 0)
-				(void)printf(" %d hr%s,",
-				    hrs, hrs > 1 ? "s" : "");
-			if (mins > 0)
-				(void)printf(" %d min%s,",
-				    mins, mins > 1 ? "s" : "");
-		}
+		if (uptime > 59) {
+			uptime += 30;
+			days = uptime / SECSPERDAY;
+			uptime %= SECSPERDAY;
+			hrs = uptime / SECSPERHOUR;
+			uptime %= SECSPERHOUR;
+			mins = uptime / SECSPERMIN;
+			(void)printf(" up");
+			if (days > 0)
+				(void)printf(" %d day%s,", days,
+				    days > 1 ? "s" : "");
+			if (hrs > 0 && mins > 0)
+				(void)printf(" %2d:%02d,", hrs, mins);
+			else {
+				if (hrs > 0)
+					(void)printf(" %d hr%s,",
+					    hrs, hrs > 1 ? "s" : "");
+				if (mins > 0 || (days == 0 && hrs == 0))
+					(void)printf(" %d min%s,",
+					    mins, mins != 1 ? "s" : "");
+			}
+		} else
+			printf(" %d secs,", uptime);
 	}
 
 	/* Print number of users logged in to system */
@@ -410,9 +469,12 @@ ttystat(line)
 	char *line;
 {
 	static struct stat sb;
-	char ttybuf[MAXPATHLEN];
+	char ttybuf[sizeof(_PATH_DEV) + UT_LINESIZE];
 
-	(void)snprintf(ttybuf, sizeof(ttybuf), "%s/%s", _PATH_DEV, line);
+	/* Note, line may not be NUL-terminated */
+	(void)strcpy(ttybuf, _PATH_DEV);
+	(void)strncpy(ttybuf + sizeof(_PATH_DEV) - 1, line, UT_LINESIZE);
+	ttybuf[sizeof(ttybuf) - 1] = '\0';
 	if (stat(ttybuf, &sb))
 		return (NULL);
 	return (&sb);
@@ -424,8 +486,8 @@ usage(wcmd)
 {
 	if (wcmd)
 		(void)fprintf(stderr,
-		    "usage: w: [-hin] [-M core] [-N system] [user]\n");
+		    "usage: w: [-hia] [-M core] [-N system] [user]\n");
 	else
-		(void)fprintf(stderr, "uptime\n");
+		(void)fprintf(stderr, "usage: uptime\n");
 	exit (1);
 }

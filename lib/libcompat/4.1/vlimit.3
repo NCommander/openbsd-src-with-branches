@@ -33,7 +33,7 @@
 .\"
 .Dd June 4, 1993
 .Dt VLIMIT 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm vlimit
 .Nd control maximum system resource consumption
@@ -48,7 +48,7 @@ It is available from the compatibility library, libcompat.
 .Ef
 .Pp
 Limits the consumption by the current process and each process
-it creates to not individually exceed 
+it creates to not individually exceed
 .Fa value
 on the specified
 .Fa resource .
@@ -60,7 +60,7 @@ The resources which are currently controllable are:
 .Bl -tag -width LIM_NORAISE
 .It Dv LIM_NORAISE
 A pseudo-limit; if set non-zero then the limits may not be raised.
-Only the super-user may remove the
+Only the superuser may remove the
 .Em noraise
 restriction.
 .It Dv LIM_CPU
@@ -74,14 +74,14 @@ the maximum growth of the data+stack region via
 beyond the end of the program text
 .It Dv LIM_STACK
 the maximum
-size of the automatically-extended stack region
+size of the automatically extended stack region
 .It Dv LIM_CORE
 the size of the largest core dump that will be created.
 .It Dv LIM_MAXRSS
 a soft limit for the amount of physical memory (in bytes) to be given
 to the program.  If memory is tight, the system will prefer to take memory
 from processes which are exceeding their declared
-.Dv LIM_MAXRSS.
+.Dv LIM_MAXRSS .
 .El
 .Pp
 Because this information is stored in the per-process information
@@ -117,7 +117,7 @@ time limit.
 .Sh HISTORY
 The
 .Fn vlimit
-function appeared in 
+function appeared in
 .Bx 4.2 .
 .Sh BUGS
 .Dv LIM_NORAISE

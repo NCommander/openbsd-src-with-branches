@@ -70,11 +70,11 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     amiga:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
-    arc64:OpenBSD:*:*)
-	echo mips64el-unknown-openbsd${UNAME_RELEASE}
-	exit 0 ;;
     arc:OpenBSD:*:*)
 	echo mipsel-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    arc64:OpenBSD:*:*)
+	echo mips64el-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     hkmips:OpenBSD:*:*)
 	echo mips-unknown-openbsd${UNAME_RELEASE}
@@ -355,6 +355,9 @@ EOF
 	exit 0 ;;
     parisc*:Lites*:*:*)
 	echo hppa1.1-hp-lites
+	exit 0 ;;
+    hppa*:OpenBSD*:*:*)
+	echo hppa-hp-openbsd
 	exit 0 ;;
     C1*:ConvexOS:*:* | convex:ConvexOS:C1*:*)
 	echo c1-convex-bsd

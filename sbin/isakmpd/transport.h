@@ -1,7 +1,8 @@
-/*	$Id: transport.h,v 1.10 1998/10/11 20:25:10 niklas Exp $	*/
+/*	$OpenBSD: transport.h,v 1.5 1999/03/24 14:45:36 niklas Exp $	*/
+/*	$EOM: transport.h,v 1.15 1999/04/11 15:07:36 ho Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -60,8 +61,14 @@ struct transport_vtbl {
   /* Create a transport instance of this method.  */
   struct transport *(*create) (char *);
 
+  /* Remove a transport instance of this method.  */
+  void (*remove) (struct transport *);
+
+  /* Report status of given transport */
+  void (*report) (struct transport *);
+
   /* Let the given transport set it's bit in the fd_set passed in.  */
-  int (*fd_set) (struct transport *, fd_set *);
+  int (*fd_set) (struct transport *, fd_set *, int);
 
   /* Is the given transport ready for I/O?  */
   int (*fd_isset) (struct transport *, fd_set *);
@@ -77,13 +84,13 @@ struct transport_vtbl {
 
   /*
    * Fill out a sockaddr structure with the transport's destination end's
-   * address info.  XXX Why not size_t * as last arg?
+   * address info.  XXX Why not size_t * instead of int *?
    */
   void (*get_dst) (struct transport *, struct sockaddr **, int *);
 
   /*
    * Fill out a sockaddr structure with the transport's source end's
-   * address info.  XXX Why not size_t * as last arg?
+   * address info.  XXX Why not size_t * instead of int *?
    */
   void (*get_src) (struct transport *, struct sockaddr **, int *);
 };
@@ -100,6 +107,9 @@ struct transport {
 
   /* Flags describing the transport.  */
   int flags;
+
+  /* References counter.  */
+  int refcnt;
 };
 
 /* Set if this is a transport we want to listen on.  */
@@ -113,6 +123,9 @@ extern void transport_init (void);
 extern void transport_map (void (*) (struct transport *));
 extern void transport_method_add (struct transport_vtbl *);
 extern int transport_pending_wfd_set (fd_set *);
+extern void transport_reference (struct transport *);
+extern void transport_release (struct transport *);
+extern void transport_report (void);
 extern void transport_send_messages (fd_set *);
 
 #endif /* _TRANSPORT_H_ */

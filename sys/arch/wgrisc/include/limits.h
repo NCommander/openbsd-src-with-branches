@@ -1,4 +1,4 @@
-/*	$OpenBSD: limits.h,v 1.1.1.1 1996/06/24 09:07:17 pefo Exp $	*/
+/*	$OpenBSD: limits.h,v 1.2 1997/07/24 14:48:57 deraadt Exp $	*/
 /*	$NetBSD: limits.h,v 1.8 1995/03/28 18:19:16 jtc Exp $	*/
 
 /*
@@ -35,6 +35,9 @@
  *
  *	@(#)limits.h	8.3 (Berkeley) 1/4/94
  */
+
+#ifndef _MACHINE_LIMITS_H_
+#define _MACHINE_LIMITS_H_
 
 #define	CHAR_BIT	8		/* number of bits in a char */
 #define	MB_LEN_MAX	6		/* Allow 31 bit UTF2 */
@@ -78,6 +81,9 @@
 #if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
 
+#define	UID_MAX		UINT_MAX	/* max value for a uid_t */
+#define	GID_MAX		UINT_MAX	/* max value for a gid_t */
+
 /* GCC requires that quad constants be written as expressions. */
 #define	UQUAD_MAX	((u_quad_t)0-1)	/* max value for a uquad_t */
 					/* max value for a quad_t */
@@ -99,3 +105,5 @@
 #define FLT_MAX		3.40282347E+38F
 #define FLT_MIN		1.17549435E-38F
 #endif
+
+#endif /* _MACHINE_LIMITS_H_ */

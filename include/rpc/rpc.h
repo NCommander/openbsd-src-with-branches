@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpc.h,v 1.6 1997/09/21 10:46:13 niklas Exp $	*/
 /*	$NetBSD: rpc.h,v 1.5 1994/12/04 01:15:30 cgd Exp $	*/
 
 /*
@@ -53,6 +54,9 @@
 /* Client side (mostly) remote procedure call */
 #include <rpc/clnt.h>		/* generic rpc stuff */
 
+/* Client side (mostly) pmap functions */
+#include <rpc/pmap_clnt.h>	/* generic pmap stuff */
+
 /* semi-private protocol headers */
 #include <rpc/rpc_msg.h>	/* protocol for rpc messages */
 #include <rpc/auth_unix.h>	/* protocol for unix style cred */
@@ -87,6 +91,15 @@ extern struct rpcent *getrpcbynumber	__P((int));
 extern struct rpcent *getrpcent		__P((void));
 extern void setrpcent __P((int));
 extern void endrpcent __P((void));
+
+extern int get_myaddress __P((struct sockaddr_in *));
+extern int registerrpc __P((int, int, int, char *(*) __P((char [UDPMSGSIZE])),
+	xdrproc_t, xdrproc_t));
+extern int callrpc __P((char *, int, int, int, xdrproc_t, char *,
+	xdrproc_t , char *));
+extern int getrpcport __P((char *, int, int, int));
+
+extern bool_t xdr_opaque_auth __P((XDR *, struct opaque_auth *));
 __END_DECLS
 
 #endif /* !_RPC_RPC_H */

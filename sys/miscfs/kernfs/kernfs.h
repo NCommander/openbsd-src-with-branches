@@ -1,4 +1,5 @@
-/*	$NetBSD: kernfs.h,v 1.9 1995/03/29 22:08:22 briggs Exp $	*/
+/*	$OpenBSD: kernfs.h,v 1.7 1998/12/28 05:51:38 millert Exp $	*/
+/*	$NetBSD: kernfs.h,v 1.10 1996/02/09 22:40:21 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -41,6 +42,30 @@
 #define	_PATH_KERNFS	"/kern"		/* Default mountpoint */
 
 #ifdef _KERNEL
+
+struct kern_target {
+	u_char kt_type;
+	u_char kt_namlen;
+	char *kt_name;
+	void *kt_data;
+#define	KTT_NULL	 1
+#define	KTT_TIME	 5
+#define KTT_INT		17
+#define	KTT_STRING	31
+#define KTT_HOSTNAME	47
+#define KTT_AVENRUN	53
+#define KTT_DEVICE	71
+#define	KTT_MSGBUF	89
+#define KTT_USERMEM	91
+#define KTT_DOMAIN	95
+#ifdef IPSEC
+#define KTT_IPSECSPI	107
+#endif
+	u_char kt_tag;
+	u_char kt_vtype;
+	mode_t kt_mode;
+};
+
 struct kernfs_mount {
 	struct vnode	*kf_root;	/* Root node */
 };
@@ -52,7 +77,21 @@ struct kernfs_node {
 #define VFSTOKERNFS(mp)	((struct kernfs_mount *)((mp)->mnt_data))
 #define	VTOKERN(vp) ((struct kernfs_node *)(vp)->v_data)
 
-extern int (**kernfs_vnodeop_p)();
+#define kernfs_fhtovp ((int (*) __P((struct mount *, struct fid *, \
+	    struct vnode **)))eopnotsupp)
+#define kernfs_quotactl ((int (*) __P((struct mount *, int, uid_t, caddr_t, \
+	    struct proc *)))eopnotsupp)
+#define kernfs_sysctl ((int (*) __P((int *, u_int, void *, size_t *, void *, \
+	    size_t, struct proc *)))eopnotsupp)
+#define kernfs_vget ((int (*) __P((struct mount *, ino_t, struct vnode **))) \
+	    eopnotsupp)
+#define kernfs_vptofh ((int (*) __P((struct vnode *, struct fid *)))eopnotsupp)
+#define kernfs_sync ((int (*) __P((struct mount *, int, struct ucred *, \
+				   struct proc *)))nullop)
+#define kernfs_checkexp ((int (*) __P((struct mount *, struct mbuf *,	\
+	int *, struct ucred **)))eopnotsupp)
+
+extern int (**kernfs_vnodeop_p) __P((void *));
 extern struct vfsops kernfs_vfsops;
 extern dev_t rrootdev;
 #endif /* _KERNEL */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: atzscreg.h,v 1.2 1994/10/26 02:02:49 cgd Exp $	*/
 /*	$NetBSD: atzscreg.h,v 1.2 1994/10/26 02:02:49 cgd Exp $	*/
 
 /*

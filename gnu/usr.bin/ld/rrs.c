@@ -1,3 +1,4 @@
+/*	$OpenBSD: rrs.c,v 1.5 1999/08/25 07:36:28 niklas Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -27,7 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: rrs.c,v 1.18 1995/08/04 21:49:08 pk Exp $
  */
 
 #include <sys/param.h>
@@ -42,6 +42,7 @@
 #include <unistd.h>
 #include <err.h>
 #include <fcntl.h>
+#include <ranlib.h>
 #include <a.out.h>
 #include <stab.h>
 #include <string.h>
@@ -143,6 +144,31 @@ RRS data segment:
 		|                   |
 		+-------------------+
 */
+
+static int
+dlopen_is_used()
+{
+	symbol *sym;
+	struct localsymbol *lsp;
+
+#ifdef nounderscore
+	sym = getsym_soft("dlopen");
+#else
+	sym = getsym_soft("_dlopen");
+#endif
+	if (!sym)
+		return 0;
+
+	/*
+	 * A use is characterized as being an entry on the "refs" list
+	 * that is not in the text section, because such an entry is the
+	 * definition.
+	 */
+	for (lsp = sym->refs; lsp; lsp = lsp->next)
+		if (!(lsp->nzlist.nlist.n_type & N_TEXT))
+			return 1;
+	return 0;
+}
 
 /*
  * Add NAME to the list of needed run-time objects.
@@ -689,7 +715,8 @@ consider_rrs_section_lengths()
 		rrs_section_type = RRS_NONE;
 	else if (link_mode & SHAREABLE)
 		rrs_section_type = RRS_FULL;
-	else if (number_of_shobjs == 0 /*&& !(link_mode & DYNAMIC)*/) {
+	else if (number_of_shobjs == 0 && !dlopen_is_used()
+		 /*&& !(link_mode & DYNAMIC)*/) {
 		/*
 		 * First slots in both tables are reserved
 		 * hence the "> 1" condition

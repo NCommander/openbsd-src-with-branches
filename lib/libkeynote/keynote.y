@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote.y,v 1.4 1999/10/09 06:59:37 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -44,15 +43,23 @@
 %nonassoc UNARYMINUS DEREF OPENNUM OPENFLT
 %start grammarswitch
 %{
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
-#include <regex.h>
-#include "environment.h"
-#include "signature.h"
+#include <math.h>
+
+#if STDC_HEADERS
+#include <string.h>
+#endif /* STDC_HEADERS */
+
+#include "header.h"
+#include "keynote.h"
+#include "assertion.h"
 
 static int *keynote_kth_array = (int *) NULL;
 static int keylistcount = 0;
@@ -64,18 +71,6 @@ static int   checkexception(int);
 static char *my_lookup(char *);
 static int   intpow(int, int);
 static int   get_kth(int);
-
-extern int keynote_in_action_authorizers(void *, int);
-extern int knlex();
-
-extern int keynote_exceptionflag, keynote_donteval;
-extern char **keynote_values, *keynote_privkey;
-extern struct keylist *keynote_keypred_keylist;
-extern struct environment *keynote_temp_list;
-extern struct environment *keynote_init_list;
-extern int knlineno, keynote_used_variable;
- 
-void knerror(char *);
 %}
 %%
 
@@ -514,8 +509,12 @@ stringexp: str EQ str {
 		  memset(pmatch, 0, sizeof(pmatch));
 		  memset(grp, 0, sizeof(grp));
 
+#if HAVE_REGCOMP
 		  if (regcomp(&preg, $3, REG_EXTENDED))
 		  {
+#else /* HAVE_REGCOMP */
+#error "This system does not have regcomp()."
+#endif /* HAVE_REGCOMP */
 		      free($1);
 		      free($3);
 		      keynote_exceptionflag = 1;
@@ -530,11 +529,11 @@ stringexp: str EQ str {
 		      $$ = (i == 0 ? 1 : 0);
 		      if (i == 0)
 		      {
-#ifdef NO_SNPRINTF
+#if !defined(HAVE_SNPRINTF)
 			  sprintf(grp, "%d", preg.re_nsub);
-#else /* NO_SNPRINTF */
+#else /* !HAVE_SNPRINTF */
 			  snprintf(grp, 3, "%d", preg.re_nsub);
-#endif /* NO_SNPRINTF */
+#endif /* !HAVE_SNPRINTF */
 			  if (keynote_env_add("_0", grp, &keynote_temp_list,
 					      1, 0) != RESULT_TRUE)
 			  {
@@ -558,11 +557,11 @@ stringexp: str EQ str {
 			      strncpy(gr, $1 + pmatch[i].rm_so,
 				      pmatch[i].rm_eo - pmatch[i].rm_so);
 			      gr[pmatch[i].rm_eo - pmatch[i].rm_so] = '\0';
-#ifdef NO_SNPRINTF
+#if !defined(HAVE_SNPRINTF)
 			      sprintf(grp, "_%d", i);
-#else /* NO_SNPRINTF */
+#else /* !HAVE_SNPRINTF */
 			      snprintf(grp, 3, "_%d", i);
-#endif /* NO_SNPRINTF */
+#endif /* !HAVE_SNPRINTF */
 			      if (keynote_env_add(grp, gr, &keynote_temp_list,
 						  1, 0) == -1)
 			      {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_edreg.h,v 1.4 1995/05/08 02:40:54 chopps Exp $	*/
 /*	$NetBSD: if_edreg.h,v 1.4 1995/05/08 02:40:54 chopps Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_exec.h,v 1.3 1998/02/22 01:07:59 niklas Exp $	 */
 /*	$NetBSD: svr4_exec.h,v 1.7 1995/07/02 06:16:06 christos Exp $	 */
 
 /*
@@ -49,7 +50,7 @@
 #define SVR4_INTERP_ADDR	0x01000000
 #endif
 
-#ifdef sparc
+#ifdef __sparc__
 /*
  * Here programs load at 0x00010000, so I load the interpreter far after
  * the end of the data segment.
@@ -61,7 +62,7 @@
 # define SVR4_INTERP_ADDR	0
 #endif
 
-int svr4_elf_probe __P((struct proc *p, struct exec_package *, char *,
-	u_long *pos));
+int svr4_elf_probe __P((struct proc *, struct exec_package *, char *, u_long *,
+    u_int8_t *));
 
 #endif /* !_SVR4_EXEC_H_ */

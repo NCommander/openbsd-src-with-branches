@@ -1,3 +1,4 @@
+/*	$OpenBSD: vmparam.h,v 1.14 1999/10/03 21:08:16 niklas Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.15 1994/10/27 04:16:34 cgd Exp $	*/
 
 /*-
@@ -38,7 +39,8 @@
  *	@(#)vmparam.h	5.9 (Berkeley) 5/12/91
  */
 
-
+#ifndef _MACHINE_VM_PARAM_H_
+#define _MACHINE_VM_PARAM_H_
 /*
  * Machine dependent constants for 386.
  */
@@ -60,18 +62,18 @@
 /*
  * Virtual memory related constants, all in bytes
  */
-#define	MAXTSIZ		(8*1024*1024)		/* max text size */
+#define	MAXTSIZ		(64*1024*1024)		/* max text size */
 #ifndef DFLDSIZ
-#define	DFLDSIZ		(16*1024*1024)		/* initial data size limit */
+#define	DFLDSIZ		(64*1024*1024)		/* initial data size limit */
 #endif
 #ifndef MAXDSIZ
-#define	MAXDSIZ		(256*1024*1024)		/* max data size */
+#define	MAXDSIZ		(1*1024*1024*1024)	/* max data size */
 #endif
 #ifndef	DFLSSIZ
-#define	DFLSSIZ		(512*1024)		/* initial stack size limit */
+#define	DFLSSIZ		(4*1024*1024)		/* initial stack size limit */
 #endif
 #ifndef	MAXSSIZ
-#define	MAXSSIZ		(8*1024*1024)		/* max stack size */
+#define	MAXSSIZ		(32*1024*1024)		/* max stack size */
 #endif
 
 /*
@@ -87,7 +89,7 @@
  * Size of shared memory map
  */
 #ifndef SHMMAXPGS
-#define SHMMAXPGS	1024
+#define SHMMAXPGS	2048
 #endif
 
 /*
@@ -130,16 +132,40 @@
 
 /* user/kernel map constants */
 #define VM_MIN_ADDRESS		((vm_offset_t)0)
-/* PTDPTDI<<PDSHIFT - UPAGES*NBPG */
-#define VM_MAXUSER_ADDRESS	((vm_offset_t)0xf7bfe000)
-/* PTDPTDI<<PDSHIFT + PTDPTDI<<PGSHIFT */
-#define VM_MAX_ADDRESS		((vm_offset_t)0xf7fdf000)
-/* KPTDI<<PDSHIFT */
-#define VM_MIN_KERNEL_ADDRESS	((vm_offset_t)0xf8000000)
-/* APTDPTDI<<PDSHIFT */
-#define VM_MAX_KERNEL_ADDRESS	((vm_offset_t)0xffc00000)
+#define VM_MAXUSER_ADDRESS	((vm_offset_t)((PTDPTDI<<PDSHIFT) - USPACE))
+#define VM_MAX_ADDRESS		((vm_offset_t)((PTDPTDI<<PDSHIFT) + (PTDPTDI<<PGSHIFT)))
+#define VM_MIN_KERNEL_ADDRESS	((vm_offset_t)KERNBASE)
+#define VM_MAX_KERNEL_ADDRESS	((vm_offset_t)(APTDPTDI<<PDSHIFT))
 
 /* virtual sizes (bytes) for various kernel submaps */
 #define VM_MBUF_SIZE		(NMBCLUSTERS*MCLBYTES)
 #define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
 #define VM_PHYS_SIZE		(USRIOSIZE*CLBYTES)
+
+#define	MACHINE_NEW_NONCONTIG	/* VM <=> pmap interface modifier */
+
+#define	VM_PHYSSEG_MAX	4	/* actually we could have this many segments */
+#define	VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
+#define	VM_PHYSSEG_NOADD	/* can't add RAM after vm_mem_init */
+
+#define VM_NFREELIST		2
+#define VM_FREELIST_DEFAULT	0
+#define VM_FREELIST_FIRST16	1
+
+/*
+ * pmap specific data stored in the vm_physmem[] array 
+ */
+#if defined(PMAP_NEW)
+struct pmap_physseg {
+	struct pv_head *pvhead;		/* pv_head array */
+	char *attrs;			/* attrs array */
+};
+#else
+struct pmap_physseg {
+	struct pv_entry *pvent;		/* pv_entry array */
+	char *attrs;			/* attrs array */
+}; 
+#endif               
+
+
+#endif /* _MACHINE_VM_PARAM_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: klogin.c,v 1.6 1995/03/08 19:41:36 brezak Exp $	*/
+/*	$OpenBSD: klogin.c,v 1.8 1999/11/11 15:28:15 art Exp $	*/
+/*	$NetBSD: klogin.c,v 1.7 1996/05/21 22:07:04 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -37,14 +38,15 @@
 #if 0
 static char sccsid[] = "@(#)klogin.c	8.3 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$NetBSD: klogin.c,v 1.6 1995/03/08 19:41:36 brezak Exp $";
+static char rcsid[] = "$OpenBSD: klogin.c,v 1.8 1999/11/11 15:28:15 art Exp $";
 #endif /* not lint */
 
 #ifdef KERBEROS
 #include <sys/param.h>
 #include <sys/syslog.h>
-#include <kerberosIV/des.h>
+#include <des.h>
 #include <kerberosIV/krb.h>
+#include <kerberosIV/kafs.h>
 
 #include <err.h>
 #include <netdb.h>
@@ -96,15 +98,18 @@ klogin(pw, instance, localhost, password)
 #endif
 
 	/*
-	 * Root logins don't use Kerberos.
+	 * Root logins don't use Kerberos (or at least shouldn't be
+	 * sending kerberos passwords around in cleartext), so don't
+	 * allow any root logins here (keeping in mind that we only
+	 * get here with a password).
+	 *
 	 * If we have a realm, try getting a ticket-granting ticket
 	 * and using it to authenticate.  Otherwise, return
 	 * failure so that we can try the normal passwd file
 	 * for a password.  If that's ok, log the user in
 	 * without issuing any tickets.
 	 */
-	if (strcmp(pw->pw_name, "root") == 0 ||
-	    krb_get_lrealm(realm, 0) != KSUCCESS)
+	if (pw->pw_uid == 0 || krb_get_lrealm(realm, 0) != KSUCCESS)
 		return (1);
 
 	/*
@@ -114,11 +119,11 @@ klogin(pw, instance, localhost, password)
 	 */
 
 	if (strcmp(instance, "root") != 0)
-		(void)sprintf(tkt_location, "%s%d.%s",
-			      TKT_ROOT, pw->pw_uid, tty);
+		snprintf(tkt_location, sizeof(tkt_location), "%s%d.%s",
+			TKT_ROOT, pw->pw_uid, tty);
 	else
-		(void)sprintf(tkt_location, "%s_root_%d.%s",
-			      TKT_ROOT, pw->pw_uid, tty);
+		snprintf(tkt_location, sizeof(tkt_location), "%s_root_%d.%s",
+			TKT_ROOT, pw->pw_uid, tty);
 	krbtkfile_env = tkt_location;
 	(void)krb_set_tkt_string(tkt_location);
 
@@ -172,12 +177,14 @@ klogin(pw, instance, localhost, password)
 		 * this condition!
 		 */
 		if (strcmp(instance, "root") == 0) {
-		  syslog(LOG_ERR, "Kerberos %s root instance login refused\n",
+		  syslog(LOG_ERR, "Kerberos %s root instance login refused",
 			 pw->pw_name);
 		  dest_tkt();
 		  return (1);
 		}
-		return (0);
+		/* Otherwise, leave ticket around, but make sure
+		 * password matches the Unix password. */
+		return (1);
 	}
 
 	if (kerror != KSUCCESS) {
@@ -205,8 +212,8 @@ klogin(pw, instance, localhost, password)
 	}
 
 	/* undecipherable: probably didn't have a srvtab on the local host */
-	if (kerror = RD_AP_UNDEC) {
-		syslog(LOG_NOTICE, "krb_rd_req: (%s)\n", krb_err_txt[kerror]);
+	if (kerror == RD_AP_UNDEC) {
+		syslog(LOG_NOTICE, "krb_rd_req: (%s)", krb_err_txt[kerror]);
 		dest_tkt();
 		return (1);
 	}
@@ -220,6 +227,21 @@ klogin(pw, instance, localhost, password)
 }
 
 void
+kgettokens(homedir)
+	char *homedir;
+{
+	/* buy AFS-tokens for homedir */
+	if (k_hasafs()) { 
+		char cell[128];
+		k_setpag();
+		if (k_afs_cell_of_file(homedir, 
+				       cell, sizeof(cell)) == 0)
+			krb_afslog(cell, 0);
+		krb_afslog(0, 0);
+	}
+}
+
+void
 kdestroy()
 {
         char *file = krbtkfile_env;
@@ -227,9 +249,9 @@ kdestroy()
 	extern int errno;
 	struct stat statb;
 	char buf[BUFSIZ];
-#ifdef TKT_SHMEM
-	char shmidname[MAXPATHLEN];
-#endif /* TKT_SHMEM */
+
+	if (k_hasafs())
+	    k_unlog();
 
 	if (krbtkfile_env == NULL)
 	    return;
@@ -248,7 +270,7 @@ kdestroy()
 	if ((fd = open(file, O_RDWR, 0)) < 0)
 	    goto out;
 
-	bzero(buf, BUFSIZ);
+	bzero(buf, sizeof(buf));
 
 	for (i = 0; i < statb.st_size; i += BUFSIZ)
 	    if (write(fd, buf, BUFSIZ) != BUFSIZ) {
@@ -264,15 +286,7 @@ kdestroy()
 
 out:
 	if (errno != 0) return;
-#ifdef TKT_SHMEM
-	/* 
-	 * handle the shared memory case 
-	 */
-	(void) strcpy(shmidname, file);
-	(void) strcat(shmidname, ".shm");
-	if (krb_shm_dest(shmidname) != KSUCCESS)
-	    return;
-#endif /* TKT_SHMEM */
+
 	return;
 }
 #endif

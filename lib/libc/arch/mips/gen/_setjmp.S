@@ -34,13 +34,13 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/reg.h>
-#include <machine/machAsmDefs.h>
+#include <machine/regnum.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)_setjmp.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: _setjmp.S,v 1.3 1994/12/15 17:24:46 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: _setjmp.S,v 1.5 1996/08/19 08:15:51 tholo Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * C library -- _setjmp, _longjmp
@@ -53,9 +53,8 @@
  * The previous signal state is NOT restored.
  */
 
-	.set	noreorder
-
 LEAF(_setjmp)
+	.set	noreorder
 	li	v0, 0xACEDBADE			# sigcontext magic number
 	sw	ra, (2 * 4)(a0)			# sc_pc = return address
 	sw	v0, (3 * 4)(a0)			#   saved in sc_regs[0]
@@ -88,9 +87,16 @@ LEAF(_setjmp)
 END(_setjmp)
 
 LEAF(_longjmp)
+#ifdef ABICALLS 
+	subu	sp, sp, 32
+	.cprestore 16
+#endif  
+	.set    noreorder
 	lw	v0, (3 * 4)(a0)			# get magic number
 	lw	ra, (2 * 4)(a0)
 	bne	v0, 0xACEDBADE, botch		# jump if error
+
+	addu	sp, sp, 32			# does not matter, sanity
 	lw	s0, ((S0 + 3) * 4)(a0)
 	lw	s1, ((S1 + 3) * 4)(a0)
 	lw	s2, ((S2 + 3) * 4)(a0)
@@ -115,6 +121,7 @@ LEAF(_longjmp)
 	lwc1	$f29, ((29 + 38) * 4)(a0)
 	lwc1	$f30, ((30 + 38) * 4)(a0)
 	lwc1	$f31, ((31 + 38) * 4)(a0)
+
 	j	ra
 	move	v0, a1
 botch:

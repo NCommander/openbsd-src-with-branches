@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dmap.h,v 1.7 1995/03/26 20:24:02 jtc Exp $	*/
 
 /*-

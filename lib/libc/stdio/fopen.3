@@ -1,4 +1,4 @@
-.\"	$NetBSD: fopen.3,v 1.4 1995/02/02 01:15:39 jtc Exp $
+.\"	$OpenBSD: fopen.3,v 1.8 2000/04/12 21:48:01 aaron Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -34,8 +34,6 @@
 .\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.\"
-.\"     @(#)fopen.3	8.1 (Berkeley) 6/4/93
 .\"
 .Dd June 4, 1993
 .Dt FOPEN 3
@@ -75,7 +73,7 @@ The stream is positioned at the beginning of the file.
 .It Dq Li w
 Truncate file to zero length or create text file for writing.
 The stream is positioned at the beginning of the file.
-.No It Dq Li w+
+.It Dq Li w+
 Open for reading and writing.
 The file is created if it does not exist, otherwise it is truncated.
 The stream is positioned at the beginning of the file.
@@ -115,10 +113,7 @@ as modified by the process'
 umask value (see
 .Xr umask 2 ) .
 .Pp
-Reads and writes may be intermixed on read/write streams in any order,
-and do not require an intermediate seek as in previous versions of
-.Em stdio .
-This is not portable to other systems, however;
+Reads and writes cannot be arbitrarily intermixed on read/write streams.
 .Tn ANSI C
 requires that
 a file positioning function intervene between output and input, unless
@@ -126,11 +121,16 @@ an input operation encounters end-of-file.
 .Pp
 The
 .Fn fdopen
-function associates a stream with the existing file descriptor,
+function associates a stream with the existing file descriptor
 .Fa fildes .
 The
 .Fa mode
 of the stream must be compatible with the mode of the file descriptor.
+If
+.Fn fdopen
+fails, the file descriptor
+.Fa fildes
+is not affected in any way.
 .Pp
 The
 .Fn freopen
@@ -140,7 +140,9 @@ opens the file whose name is the string pointed to by
 and associates the stream pointed to by
 .Fa stream
 with it.
-The original stream (if it exists) is closed.
+The original stream (if it exists) is always closed, even if
+.Fn freopen
+fails.
 The
 .Fa mode
 argument is used just as in the
@@ -219,6 +221,27 @@ for any of the errors specified for the routines
 .Xr fclose 3
 and
 .Xr fflush 3 .
+.Sh CAVEATS
+Proper code using
+.Fn fdopen
+with error checking should
+.Xr close 2
+.Fa fildes
+in case of failure, and
+.Xr fclose 3
+the resulting FILE * in case of success.
+.Bd -literal
+	FILE *file;
+	int fd;
+
+	if ((file = fdopen(fd)) != NULL) {
+		/* perform operations on the FILE * */
+		fclose(file);
+	} else {
+		/* failure, report the error */
+		close(fd);
+	}
+.Ed
 .Sh SEE ALSO
 .Xr open 2 ,
 .Xr fclose 3 ,

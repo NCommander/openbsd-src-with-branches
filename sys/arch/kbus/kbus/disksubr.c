@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.14 1997/05/13 08:51:19 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.4 1999/01/08 04:29:06 millert Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.16 1996/04/28 20:25:59 thorpej Exp $ */
 
 /*
@@ -90,11 +90,12 @@ dk_establish(dk, dev)
  * Returns null on success and an error string on failure.
  */
 char *
-readdisklabel(dev, strat, lp, clp)
+readdisklabel(dev, strat, lp, clp, spoofonly)
 	dev_t dev;
 	void (*strat) __P((struct buf *));
 	struct disklabel *lp;
 	struct cpu_disklabel *clp;
+	int spoofonly;
 {
 	struct buf *bp;
 	struct disklabel *dlp;
@@ -119,6 +120,11 @@ readdisklabel(dev, strat, lp, clp)
 	if (iso_disklabelspoof(dev, strat, lp) == 0)
 		return (NULL);
 #endif
+
+	/* don't read the on-disk label if we are in spoofed-only mode */
+	if (spoofonly)
+		return (NULL);
+
 	/* obtain buffer to probe drive with */
 	bp = geteblk((int)lp->d_secsize);
 
@@ -169,7 +175,7 @@ setdisklabel(olp, nlp, openmask, clp)
 	u_long openmask;
 	struct cpu_disklabel *clp;
 {
-	register i;
+	register int i;
 	register struct partition *opp, *npp;
 
 	/* sanity clause */
@@ -251,14 +257,21 @@ writedisklabel(dev, strat, lp, clp)
  * if needed, and signal errors or early completion.
  */
 int
-bounds_check_with_label(bp, lp, wlabel)
+bounds_check_with_label(bp, lp, osdep, wlabel)
 	struct buf *bp;
 	struct disklabel *lp;
+	struct cpu_disklabel *osdep;
 	int wlabel;
 {
 #define blockpersec(count, lp) ((count) * (((lp)->d_secsize) / DEV_BSIZE))
 	struct partition *p = lp->d_partitions + DISKPART(bp->b_dev);
 	int sz = howmany(bp->b_bcount, DEV_BSIZE);
+
+	/* avoid division by zero */
+	if (lp->d_secpercyl == 0) {
+		bp->b_error = EINVAL;
+		goto bad;
+	}
 
 	/* overwriting disk label ? */
 	/* XXX should also protect bootstrap in first 8K */

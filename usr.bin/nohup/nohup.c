@@ -1,3 +1,4 @@
+/*	$OpenBSD: nohup.c,v 1.4 1997/06/20 13:31:17 deraadt Exp $	*/
 /*	$NetBSD: nohup.c,v 1.6 1995/08/31 23:35:25 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)nohup.c	5.4 (Berkeley) 6/1/90";
 #endif
-static char rcsid[] = "$NetBSD: nohup.c,v 1.6 1995/08/31 23:35:25 jtc Exp $";
+static char rcsid[] = "$OpenBSD: nohup.c,v 1.4 1997/06/20 13:31:17 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -91,7 +92,7 @@ main(argc, argv)
 	(void)signal(SIGHUP, SIG_IGN);
 
 	execvp(argv[1], &argv[1]);
-	exit_status = (errno = ENOENT) ? EXIT_NOTFOUND : EXIT_NOEXEC;
+	exit_status = (errno == ENOENT) ? EXIT_NOTFOUND : EXIT_NOEXEC;
 	(void)fprintf(stderr, "nohup: %s: %s\n", argv[1], strerror(errno));
 	exit(exit_status);
 }
@@ -115,7 +116,8 @@ dofile()
 	p = FILENAME;
 	if ((fd = open(p, O_RDWR|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR)) >= 0)
 		goto dupit;
-	if ((p = getenv("HOME")) != NULL) {
+	if ((p = getenv("HOME")) != NULL &&
+	    (strlen(p) + strlen(FILENAME) + 1) < sizeof(path)) {
 		(void)strcpy(path, p);
 		(void)strcat(path, "/");
 		(void)strcat(path, FILENAME);
@@ -125,7 +127,7 @@ dofile()
 	(void)fprintf(stderr, "nohup: can't open a nohup.out file.\n");
 	exit(EXIT_MISC);
 
-dupit:	(void)lseek(fd, 0L, SEEK_END);
+dupit:	(void)lseek(fd, 0, SEEK_END);
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		(void)fprintf(stderr, "nohup: %s\n", strerror(errno));
 		exit(EXIT_MISC);
