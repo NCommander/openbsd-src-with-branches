@@ -1,4 +1,4 @@
-/*	$OpenBSD: am7990.c,v 1.17 2000/03/10 00:53:58 smurph Exp $	*/
+/*	$OpenBSD: am7990.c,v 1.18 2000/03/14 19:50:13 deraadt Exp $	*/
 /*	$NetBSD: am7990.c,v 1.22 1996/10/13 01:37:19 christos Exp $	*/
 
 /*-
@@ -819,7 +819,9 @@ am7990_start(ifp)
 			bix = 0;
 
 		if (++sc->sc_no_td == sc->sc_ntbuf) {
+#ifdef LEDEBUG
 			printf("\nequal!\n");
+#endif
 			ifp->if_flags |= IFF_OACTIVE;
 			break;
 		}
