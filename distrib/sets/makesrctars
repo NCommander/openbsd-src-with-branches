@@ -1,4 +1,6 @@
 #!/bin/sh
+#	$OpenBSD$
+
 
 set RELEASE=$1
 SPLITSIZE=240640

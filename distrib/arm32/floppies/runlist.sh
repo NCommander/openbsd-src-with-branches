@@ -1,3 +1,4 @@
+# $OpenBSD: runlist.sh,v 1.1 1996/05/16 19:58:52 mark Exp $
 # $NetBSD: runlist.sh,v 1.1 1996/05/16 19:58:52 mark Exp $
 
 if [ "X$1" = "X-d" ]; then

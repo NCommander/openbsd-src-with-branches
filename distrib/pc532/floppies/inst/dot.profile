@@ -1,3 +1,4 @@
+#       $OpenBSD: dot.profile,v 1.3 1997/10/20 22:24:10 millert Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -27,7 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#       $Id: dot.profile,v 1.2 1996/09/05 21:26:47 deraadt Exp $
 
 export PATH=/sbin:/bin:/usr/bin:/usr/sbin:/usr/games:/
 export HISTFILE=/.sh_history

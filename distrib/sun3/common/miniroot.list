@@ -1,3 +1,4 @@
+#	$OpenBSD: miniroot.list,v 1.2.6.1 1996/08/29 03:19:32 gwr Exp $
 #	$NetBSD: miniroot.list,v 1.2.6.1 1996/08/29 03:19:32 gwr Exp $
 
 # These are scripts:

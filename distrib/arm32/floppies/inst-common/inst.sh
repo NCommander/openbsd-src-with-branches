@@ -1,5 +1,6 @@
 #!/bin/sh
 #
+# $OpenBSD: inst.sh,v 1.1 1996/05/16 19:59:05 mark Exp $
 # $NetBSD: inst.sh,v 1.1 1996/05/16 19:59:05 mark Exp $
 #
 # Copyright (c) 1995-1996 Mark Brinicombe

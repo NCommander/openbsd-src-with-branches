@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 .include <bsd.own.mk>
 
 .PATH:	${.CURDIR}/../../../usr.sbin/dhcp/dhclient

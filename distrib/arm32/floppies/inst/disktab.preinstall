@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Disk geometry and partition layout tables. 
 # Key:
 #	dt	controller type

@@ -1,3 +1,4 @@
+# $OpenBSD: Makefile,v 1.4 1996/03/27 04:48:40 scottr Exp $
 # $NetBSD: Makefile,v 1.4 1996/03/27 04:48:40 scottr Exp $
 # Build a "small init" (i.e. for boot media)
 

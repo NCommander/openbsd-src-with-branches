@@ -1,3 +1,4 @@
+# $OpenBSD: Makefile,v 1.4 1996/03/27 04:48:43 scottr Exp $
 # $NetBSD: Makefile,v 1.4 1996/03/27 04:48:43 scottr Exp $
 # Build a smaller dd (i.e. for boot media)
 

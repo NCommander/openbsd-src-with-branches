@@ -1,3 +1,4 @@
+#	$OpenBSD: dot.profile,v 1.1.1.1.4.2 1996/07/15 06:33:30 leo Exp $
 #	$NetBSD: dot.profile,v 1.1.1.1.4.2 1996/07/15 06:33:30 leo Exp $
 #
 # Copyright (c) 1995 Jason R. Thorpe
