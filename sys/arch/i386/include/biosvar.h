@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosvar.h,v 1.8 1997/08/22 20:10:21 mickey Exp $	*/
+/*	$OpenBSD: biosvar.h,v 1.9 1997/09/03 04:33:57 weingart Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -34,6 +34,8 @@
 
 #ifndef __BIOS_VAR_H__
 #define __BIOS_VAR_H__
+
+#define	BOOT_APIVER	0x00000001
 
 #define BOOTC_CHECK  0x00
 #define BOOTC_BOOT   0x01
