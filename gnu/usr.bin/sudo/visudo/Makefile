@@ -1,10 +1,11 @@
-#       $OpenBSD: Makefile,v 1.1 1996/10/14 05:14:57 millert Exp $
+#       $OpenBSD: Makefile,v 1.2 1998/09/15 02:42:45 millert Exp $
 
 PROG=	visudo
 MAN=	visudo.8
 CFLAGS+=-I${.CURDIR}/../sudo -I.
-SRCS=	sudo.tab.c lex.yy.c visudo.c
+SRCS=	sudo.tab.c lex.yy.c visudo.c alloc.c
 CLEANFILES+=sudo.tab.c sudo.tab.h lex.yy.c
+.PATH:	${.CURDIR}/../sudo
 
 LDADD=  -lcompat
 DPADD=  ${LIBCOMPAT}
