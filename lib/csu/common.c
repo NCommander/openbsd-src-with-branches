@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.11 2002/07/14 12:37:51 art Exp $	*/
+/*	$OpenBSD: common.c,v 1.12 2002/07/22 19:15:39 art Exp $	*/
 /*	$NetBSD: common.c,v 1.4 1995/09/23 22:34:20 pk Exp $	*/
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -231,6 +231,8 @@ _getenv(name)
 }
 #endif
 
+#endif /* DYNAMIC */
+
 static char *
 _strrchr(p, ch)
 register char *p, ch;
@@ -245,5 +247,3 @@ register char *p, ch;
 	}
 /* NOTREACHED */
 }
-
-#endif /* DYNAMIC */
