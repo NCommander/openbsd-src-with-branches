@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.6 1996/10/19 13:26:11 mickey Exp $	*/
+/*	$OpenBSD: conf.c,v 1.7 1996/11/11 23:10:34 kstailey Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -89,8 +89,6 @@ cdev_decl(fd);
 #include "lpt.h"
 cdev_decl(lpt);
 
-/* open, close, read, ioctl */
-cdev_decl(ipl);
 #ifdef IPFILTER
 #define NIPF 1
 #else

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.14 1997/01/24 01:35:45 briggs Exp $	*/
+/*	$OpenBSD: conf.c,v 1.15 1997/03/08 16:17:02 briggs Exp $	*/
 /*	$NetBSD: conf.c,v 1.41 1997/02/11 07:35:49 scottr Exp $	*/
 
 /*
@@ -113,8 +113,6 @@ dev_decl(filedesc,open);
 #include "asc.h"
 cdev_decl(asc);
 
-/* open, close, read, ioctl */
-cdev_decl(ipl);
 #ifdef IPFILTER
 #define NIPF 1
 #else
