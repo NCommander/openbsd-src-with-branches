@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 1996/06/11 03:25:16 tholo Exp $
+#	$OpenBSD: Makefile,v 1.14 1996/06/20 08:22:45 downsj Exp $
 
 # not yet done: catman
 
@@ -21,7 +21,7 @@ SUBDIR+=amd
 .endif
 
 .if   make(clean) || make(cleandir) || make(obj)
-SUBDIR+=apm apmd bad144 config.old dbsym eeprom grfconfig grfinfo \
+SUBDIR+=apm apmd bad144 config.old dbsym eeprom fdformat grfconfig grfinfo \
 	hilinfo iteconfig pcmciad screenblank
 .elif ${MACHINE} == "amiga" 
 SUBDIR+=grfconfig iteconfig screenblank videomode
