@@ -8,7 +8,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.30 2000/08/25 16:10:05 deraadt Exp $");
+RCSID("$OpenBSD: session.c,v 1.31 2000/08/28 03:50:54 deraadt Exp $");
 
 #include "xmalloc.h"
 #include "ssh.h"
@@ -749,7 +749,7 @@ do_child(const char *command, struct passwd * pw, const char *term,
 	 const char *display, const char *auth_proto,
 	 const char *auth_data, const char *ttyname)
 {
-	const char *shell, *hostname, *cp = NULL;
+	const char *shell, *hostname = NULL, *cp = NULL;
 	char buf[256];
 	char cmd[1024];
 	FILE *f = NULL;
