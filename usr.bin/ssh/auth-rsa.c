@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rsa.c,v 1.60 2004/06/21 17:36:31 avsm Exp $");
+RCSID("$OpenBSD: auth-rsa.c,v 1.61 2004/12/06 11:41:03 dtucker Exp $");
 
 #include <openssl/rsa.h>
 #include <openssl/md5.h>
@@ -33,6 +33,7 @@ RCSID("$OpenBSD: auth-rsa.c,v 1.60 2004/06/21 17:36:31 avsm Exp $");
 #include "hostfile.h"
 #include "monitor_wrap.h"
 #include "ssh.h"
+#include "misc.h"
 
 /* import */
 extern ServerOptions options;
