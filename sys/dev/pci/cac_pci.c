@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac_pci.c,v 1.4 2001/06/12 15:40:30 niklas Exp $	*/
+/*	$OpenBSD: cac_pci.c,v 1.5 2001/08/25 10:13:29 art Exp $	*/
 /*	$NetBSD: cac_pci.c,v 1.10 2001/01/10 16:48:04 ad Exp $	*/
 
 /*-
@@ -274,7 +274,7 @@ int
 cac_pci_l0_intr_pending(struct cac_softc *sc)
 {
 
-	return (cac_inl(sc, CAC_42REG_STATUS) & CAC_42_EXTINT);
+	return ((cac_inl(sc, CAC_42REG_STATUS) & CAC_42_EXTINT) != 0);
 }
 
 void
@@ -288,5 +288,5 @@ int
 cac_pci_l0_fifo_full(struct cac_softc *sc)
 {
 
-	return (~cac_inl(sc, CAC_42REG_CMD_FIFO));
+	return (cac_inl(sc, CAC_42REG_CMD_FIFO) != 0);
 }
