@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re.c,v 1.8 2004/08/05 21:17:20 brad Exp $	*/
+/*	$OpenBSD: if_re.c,v 1.9 2004/09/23 17:45:16 brad Exp $	*/
 /*
  * Copyright (c) 1997, 1998-2003
  *	Bill Paul <wpaul@windriver.com>.  All rights reserved.
@@ -1474,7 +1474,7 @@ re_poll (struct ifnet *ifp, enum poll_cmd cmd, int count)
 
 		if (status & RL_ISR_SYSTEM_ERR) {
 			re_reset(sc);
-			re_init(sc);
+			re_init(ifp);
 		}
 	}
 done:
