@@ -1,4 +1,4 @@
-#	$OpenBSD: files.i386,v 1.129 2004/10/03 21:28:34 jcs Exp $
+#	$OpenBSD: files.i386,v 1.130 2004/10/08 13:04:36 grange Exp $
 #
 # new style config file for i386 architecture
 #
@@ -386,11 +386,6 @@ attach	pccom at cardbus with pccom_cardbus
 # Machine-independent USB drivers
 #
 include "dev/usb/files.usb"
-
-#
-# Machine-independent FireWire drivers
-#
-include "dev/ieee1394/files.ieee1394"
 
 #
 # Machine-independent I2C drivers
