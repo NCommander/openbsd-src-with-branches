@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.14 2002/05/17 15:04:32 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.15 2003/06/03 02:56:08 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: main.c,v 1.14 2002/05/17 15:04:32 millert Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.15 2003/06/03 02:56:08 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -60,9 +60,7 @@ int isxargs;			/* don't permit xargs delimiting chars */
 static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct sigaction sa;
 	char **p, **paths;
@@ -139,7 +137,7 @@ main(argc, argv)
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
 	    "usage: find [-dHhLXxW] [-f file] file [...] [expression]\n");

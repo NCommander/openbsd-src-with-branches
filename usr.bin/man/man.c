@@ -1,4 +1,4 @@
-/*	$OpenBSD: man.c,v 1.24 2003/03/13 09:09:32 deraadt Exp $	*/
+/*	$OpenBSD: man.c,v 1.25 2003/06/03 02:56:12 millert Exp $	*/
 /*	$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)man.c	8.17 (Berkeley) 1/31/95";
 #else
-static char rcsid[] = "$OpenBSD: man.c,v 1.24 2003/03/13 09:09:32 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: man.c,v 1.25 2003/06/03 02:56:12 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -406,10 +406,7 @@ main(int argc, char *argv[])
  *	Search the manuals for the pages.
  */
 static int
-manual(page, tag, pg)
-	char *page;
-	TAG *tag;
-	glob_t *pg;
+manual(char *page, TAG *tag, glob_t *pg)
 {
 	ENTRY *ep, *e_sufp, *e_tag;
 	TAG *missp, *sufp;

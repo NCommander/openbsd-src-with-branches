@@ -1,4 +1,4 @@
-/*	$OpenBSD: which.c,v 1.8 2003/04/04 03:25:28 millert Exp $	*/
+/*	$OpenBSD: which.c,v 1.9 2003/06/03 01:52:41 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint                                                              
-static const char rcsid[] = "$OpenBSD: which.c,v 1.8 2003/04/04 03:25:28 millert Exp $";
+static const char rcsid[] = "$OpenBSD: which.c,v 1.9 2003/06/03 01:52:41 millert Exp $";
 #endif /* not lint */                                                        
 
 #include <sys/param.h>
@@ -51,7 +51,7 @@ void usage(void);
  */
 
 int
-main(int argc, char **argv)
+main(int argc, char *argv[])
 {
 	char *path;
 	size_t n;

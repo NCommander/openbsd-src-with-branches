@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: readlink.c,v 1.17 1998/08/24 14:43:16 kstailey Exp $
+ * $OpenBSD: readlink.c,v 1.18 1998/08/24 14:45:33 kstailey Exp $
  *
  * Copyright (c) 1997
  *	Kenneth Stailey (hereinafter referred to as the author)
@@ -35,9 +35,7 @@
 #include <unistd.h>
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	char buf[PATH_MAX];
 	int n, ch, nflag = 0, fflag = 0;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.c,v 1.13 2002/05/26 09:27:10 deraadt Exp $	*/
+/*	$OpenBSD: time.c,v 1.14 2003/06/03 02:56:18 millert Exp $	*/
 /*	$NetBSD: time.c,v 1.7 1995/06/27 00:34:00 jtc Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)time.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: time.c,v 1.13 2002/05/26 09:27:10 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: time.c,v 1.14 2003/06/03 02:56:18 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -62,9 +62,7 @@ int portableflag;
 __dead void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	pid_t pid;
 	int ch, status;
@@ -194,7 +192,7 @@ main(argc, argv)
 }
 
 __dead void 
-usage()
+usage(void)
 {
 	extern char *__progname;   
 

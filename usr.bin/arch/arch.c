@@ -24,7 +24,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: arch.c,v 1.6 2002/02/16 21:27:43 millert Exp $";
+static char rcsid[] = "$OpenBSD: arch.c,v 1.7 2003/06/04 16:24:45 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -39,9 +39,7 @@ static void usage(void);
 static int machine;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	char *arch;
 	char *opts;
@@ -89,7 +87,7 @@ main(argc, argv)
 }
 
 static void
-usage()
+usage(void)
 {
 	if (machine)
 		fprintf(stderr, "usage: machine [-a]\n");
