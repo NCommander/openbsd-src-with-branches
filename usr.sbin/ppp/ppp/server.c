@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: server.c,v 1.9 2001/01/26 01:41:04 brian Exp $
+ *	$OpenBSD: server.c,v 1.10 2001/01/29 01:34:38 brian Exp $
  */
 
 #include <sys/param.h>
@@ -102,6 +102,10 @@ server_Read(struct fdescriptor *d, struct bundle *bundle, const fd_set *fdset)
     wfd = accept(s->fd, sa, &ssize);
     if (wfd < 0)
       log_Printf(LogERROR, "server_Read: accept(): %s\n", strerror(errno));
+    else if (sa->sa_len == 0) {
+      close(wfd);
+      wfd = -1;
+    }
   } else
     wfd = -1;
 
