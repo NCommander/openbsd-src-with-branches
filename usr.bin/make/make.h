@@ -1,4 +1,5 @@
-/*	$NetBSD: make.h,v 1.8 1996/02/04 22:20:53 christos Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: make.h,v 1.9 1996/03/06 00:15:21 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1993

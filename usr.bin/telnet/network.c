@@ -1,3 +1,6 @@
+/*	$OpenBSD$	*/
+/*	$NetBSD: network.c,v 1.5 1996/02/28 21:04:06 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,12 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)network.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: network.c,v 1.3 1994/02/25 03:00:31 cgd Exp $";
+#if 0
+static char sccsid[] = "@(#)network.c	8.2 (Berkeley) 12/15/93";
+static char rcsid[] = "$NetBSD: network.c,v 1.5 1996/02/28 21:04:06 thorpej Exp $";
+#else
+static char rcsid[] = "$OpenBSD$";
+#endif
 #endif /* not lint */
 
 #include <sys/types.h>
