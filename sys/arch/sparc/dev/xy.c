@@ -1,4 +1,4 @@
-/*	$OpenBSD: xy.c,v 1.17 2001/11/06 19:53:16 miod Exp $	*/
+/*	$OpenBSD: xy.c,v 1.18 2002/03/14 01:26:43 millert Exp $	*/
 /*	$NetBSD: xy.c,v 1.26 1997/07/19 21:43:56 pk Exp $	*/
 
 /*
@@ -431,7 +431,7 @@ xycattach(parent, self, aux)
 	xyc->sc_ih.ih_fun = xycintr;
 	xyc->sc_ih.ih_arg = xyc;
 	vmeintr_establish(ca->ca_ra.ra_intr[0].int_vec,
-			  ca->ca_ra.ra_intr[0].int_pri, &xyc->sc_ih);
+			  ca->ca_ra.ra_intr[0].int_pri, &xyc->sc_ih, IPL_BIO);
 	evcnt_attach(&xyc->sc_dev, "intr", &xyc->sc_intrcnt);
 
 

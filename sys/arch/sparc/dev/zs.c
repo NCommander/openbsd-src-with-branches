@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.33 2002/03/14 01:26:43 millert Exp $	*/
+/*	$OpenBSD: zs.c,v 1.34 2002/04/28 03:51:19 art Exp $	*/
 /*	$NetBSD: zs.c,v 1.49 1997/08/31 21:26:37 pk Exp $ */
 
 /*
@@ -296,8 +296,8 @@ zsattach(parent, dev, aux)
 	if (!didintr) {
 		didintr = 1;
 		prevpri = pri;
-		intr_establish(pri, &levelhard);
-		intr_establish(IPL_TTY, &levelsoft);
+		intr_establish(pri, &levelhard, IPL_ZS);
+		intr_establish(IPL_TTY, &levelsoft, IPL_TTY);
 	} else if (pri != prevpri)
 		panic("broken zs interrupt scheme");
 	sc = (struct zs_softc *)dev;

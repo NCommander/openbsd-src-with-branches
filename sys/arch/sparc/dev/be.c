@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.30 2002/02/08 19:05:25 jason Exp $	*/
+/*	$OpenBSD: be.c,v 1.31 2002/03/14 01:26:42 millert Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -160,7 +160,7 @@ beattach(parent, self, aux)
 
 	sc->sc_ih.ih_fun = beintr;
 	sc->sc_ih.ih_arg = sc;
-	intr_establish(pri, &sc->sc_ih);
+	intr_establish(pri, &sc->sc_ih, IPL_NET);
 
 	myetheraddr(sc->sc_arpcom.ac_enaddr);
 

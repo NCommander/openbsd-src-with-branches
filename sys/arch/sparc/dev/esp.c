@@ -1,4 +1,4 @@
-/*	$OpenBSD: esp.c,v 1.17 2001/09/27 04:01:42 jason Exp $	*/
+/*	$OpenBSD: esp.c,v 1.18 2002/03/14 01:26:42 millert Exp $	*/
 /*	$NetBSD: esp.c,v 1.69 1997/08/27 11:24:18 bouyer Exp $	*/
 
 /*
@@ -376,7 +376,7 @@ espattach(parent, self, aux)
 	/* and the interuppts */
 	esc->sc_ih.ih_fun = (void *) ncr53c9x_intr;
 	esc->sc_ih.ih_arg = sc;
-	intr_establish(esc->sc_pri, &esc->sc_ih);
+	intr_establish(esc->sc_pri, &esc->sc_ih, IPL_BIO);
 	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
 
 	/*
