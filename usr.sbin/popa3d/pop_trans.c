@@ -1,9 +1,10 @@
-/* $OpenBSD: pop_trans.c,v 1.1 2001/08/19 13:05:57 deraadt Exp $ */
+/* $OpenBSD: pop_trans.c,v 1.2 2001/09/21 20:22:06 camield Exp $ */
 
 /*
  * TRANSACTION state handling.
  */
 
+#include <sys/types.h>
 #include <stdio.h>
 #include <syslog.h>
 
