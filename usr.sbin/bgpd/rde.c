@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.95 2004/03/10 14:29:37 henning Exp $ */
+/*	$OpenBSD: rde.c,v 1.96 2004/03/11 14:22:23 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -197,7 +197,7 @@ rde_main(struct bgpd_config *config, struct peer *peer_l,
 	}
 
 	rde_shutdown();
-	
+
 	msgbuf_write(&ibuf_se.w);
 	msgbuf_clear(&ibuf_se.w);
 	msgbuf_write(&ibuf_main.w);
