@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_vfsops.c,v 1.8 1998/02/08 22:41:40 tholo Exp $	*/
+/*	$OpenBSD: procfs_vfsops.c,v 1.9 1999/02/26 03:47:46 art Exp $	*/
 /*	$NetBSD: procfs_vfsops.c,v 1.25 1996/02/09 22:40:53 christos Exp $	*/
 
 /*
@@ -162,11 +162,6 @@ procfs_statfs(mp, sbp, p)
 	uvm_total(&vmtotals);
 #else
 	vmtotal(&vmtotals);
-#endif
-#ifdef COMPAT_09
-	sbp->f_type = 10;
-#else
-	sbp->f_type = 0;
 #endif
 	sbp->f_bsize = PAGE_SIZE;
 	sbp->f_iosize = PAGE_SIZE;

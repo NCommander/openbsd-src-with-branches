@@ -1,4 +1,4 @@
-/*	$OpenBSD: umap_vfsops.c,v 1.12 1998/02/08 22:41:41 tholo Exp $	*/
+/*	$OpenBSD: umap_vfsops.c,v 1.13 1999/03/18 08:34:18 art Exp $	*/
 /*	$NetBSD: umap_vfsops.c,v 1.9 1996/02/09 22:41:05 christos Exp $	*/
 
 /*
@@ -351,7 +351,6 @@ umapfs_statfs(mp, sbp, p)
 		return (error);
 
 	/* now copy across the "interesting" information and fake the rest */
-	sbp->f_type = mstat.f_type;
 	sbp->f_flags = mstat.f_flags;
 	sbp->f_bsize = mstat.f_bsize;
 	sbp->f_iosize = mstat.f_iosize;
