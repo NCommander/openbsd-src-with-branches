@@ -1,5 +1,5 @@
-/*	$OpenBSD: descr.c,v 1.1 2001/12/30 07:04:38 pvalchev Exp $	*/
-/*	$NetBSD: descr.c,v 1.9 2000/09/24 02:13:24 augustss Exp $	*/
+/*	$OpenBSD: descr.c,v 1.2 2002/05/02 20:12:07 nate Exp $	*/
+/*	$NetBSD: descr.c,v 1.2 2002/02/20 20:31:07 christos Exp $	*/
 
 /*
  * Copyright (c) 1999 Lennart Augustsson <augustss@netbsd.org>
