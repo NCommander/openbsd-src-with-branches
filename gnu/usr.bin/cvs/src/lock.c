@@ -243,7 +243,7 @@ Reader_Lock (xrepository)
     FILE *fp;
     char *tmp;
 
-    if (noexec || readonlyfs)
+    if (noexec)
 	return (0);
 
     /* we only do one directory at a time for read locks! */
@@ -485,7 +485,7 @@ again:
     errno = 0;
     while ((dp = readdir (dirp)) != NULL)
     {
-	if (fnmatch (CVSRFLPAT, dp->d_name, 0) == 0)
+	if (CVS_FNMATCH (CVSRFLPAT, dp->d_name, 0) == 0)
 	{
 #ifdef CVS_FUDGELOCKS
 	    time_t now;

@@ -182,7 +182,6 @@ extern int errno;
 #define CVSROOTADM_READERS	"readers"
 #define CVSROOTADM_WRITERS	"writers"
 #define CVSROOTADM_PASSWD	"passwd"
-#define CVSROOTADM_OPTIONS	"options"
 
 #define CVSNULLREPOS		"Emptydir"	/* an empty directory */
 
@@ -255,8 +254,6 @@ extern int errno;
 /* Environment variable used by CVS */
 #define	CVSREAD_ENV	"CVSREAD"	/* make files read-only */
 #define	CVSREAD_DFLT	FALSE		/* writable files by default */
-
-#define	CVSREADONLYFS_ENV "CVSREADONLYFS" /* repository is read-only */
 
 #define	RCSBIN_ENV	"RCSBIN"	/* RCS binary directory */
 /* #define	RCSBIN_DFLT		   Set by options.h */
@@ -363,7 +360,6 @@ extern int really_quiet, quiet;
 extern int use_editor;
 extern int cvswrite;
 extern mode_t cvsumask;
-extern char *RCS_citag;
 
 /* Access method specified in CVSroot. */
 typedef enum {
@@ -381,7 +377,6 @@ extern char *CVSroot_directory;	/* the directory name */
 
 extern int trace;		/* Show all commands */
 extern int noexec;		/* Don't modify disk anywhere */
-extern int readonlyfs;		/* fail on all write locks; succeed all read locks */
 extern int logoff;		/* Don't write history entry */
 
 #ifdef AUTH_SERVER_SUPPORT
@@ -423,10 +418,16 @@ void Subdir_Register PROTO((List *, const char *, const char *));
 void Subdir_Deregister PROTO((List *, const char *, const char *));
 char *Make_Date PROTO((char *rawdate));
 char *Name_Repository PROTO((char *dir, char *update_dir));
+
+
 char *Name_Root PROTO((char *dir, char *update_dir));
 int parse_cvsroot PROTO((char *CVSroot));
 void set_local_cvsroot PROTO((char *dir));
 void Create_Root PROTO((char *dir, char *rootdir));
+void root_allow_add PROTO ((char *));
+void root_allow_free PROTO ((void));
+int root_allow_ok PROTO ((char *));
+
 int same_directories PROTO((char *dir1, char *dir2));
 char *Short_Repository PROTO((char *repository));
 char *gca PROTO((char *rev1, char *rev2));
@@ -438,6 +439,7 @@ void *xrealloc PROTO((void *ptr, size_t bytes));
 void expand_string PROTO ((char **, size_t *, size_t));
 char *xstrdup PROTO((const char *str));
 void strip_trailing_newlines PROTO((char *str));
+int pathname_levels PROTO ((char *path));
 
 typedef	int (*CALLPROC)	PROTO((char *repository, char *value));
 int Parse_Info PROTO((char *infofile, char *repository, CALLPROC callproc, int all));
@@ -453,7 +455,6 @@ int isabsolute PROTO((const char *filename));
 char *last_component PROTO((char *path));
 char *get_homedir PROTO ((void));
 char *cvs_temp_name PROTO ((void));
-void parseopts PROTO ((const char *root));
 
 int numdots PROTO((const char *s));
 int unlink_file PROTO((const char *f));

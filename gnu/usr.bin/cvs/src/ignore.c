@@ -35,7 +35,7 @@ static int ign_hold = -1;		/* Index where first "temporary" item
 
 const char *ign_default = ". .. core RCSLOG tags TAGS RCS SCCS .make.state\
  .nse_depinfo #* .#* cvslog.* ,* CVS CVS.adm .del-* *.a *.olb *.o *.obj\
- *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$ *.depend";
+ *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$";
 
 #define IGN_GROW 16			/* grow the list by 16 elements at a
 					 * time */
@@ -269,7 +269,9 @@ ign_name (name)
     {
 	/* We do a case-insensitive match by calling fnmatch on copies of
 	   the pattern and the name which have been converted to
-	   lowercase.  */
+	   lowercase.  FIXME: would be much cleaner to just unify this
+	   with the other case-insensitive fnmatch stuff (FOLD_FN_CHAR
+	   in lib/fnmatch.c; os2_fnmatch in emx/system.c).  */
 	char *name_lower;
 	char *pat_lower;
 	char *p;
@@ -282,7 +284,7 @@ ign_name (name)
 	    pat_lower = xstrdup (*cpp++);
 	    for (p = pat_lower; *p != '\0'; ++p)
 		*p = tolower (*p);
-	    if (fnmatch (pat_lower, name_lower, 0) == 0)
+	    if (CVS_FNMATCH (pat_lower, name_lower, 0) == 0)
 		goto matched;
 	    free (pat_lower);
 	}
@@ -296,7 +298,7 @@ ign_name (name)
     else
     {
 	while (*cpp)
-	    if (fnmatch (*cpp++, name, 0) == 0)
+	    if (CVS_FNMATCH (*cpp++, name, 0) == 0)
 		return 1;
 	return 0;
     }

@@ -5,6 +5,7 @@
  * Michael Ladwig <mike@twinpeaks.prc.com> --- November 1995
  */
 
+#include "mac_config.h"
 #include "cvs.h"
 
 #include <GUSI.h>
@@ -21,21 +22,28 @@ macos_start_server (int *tofd, int *fromfd,
 {
     char *cvs_server;
     char *command;
-    struct servent *s;
+    char *portenv;
+    struct servent *sptr;
     unsigned short port;
 
     if (! (cvs_server = getenv ("CVS_SERVER")))
         cvs_server = "cvs";
-    command = alloca (strlen (cvs_server)
-    		      + strlen (server_cvsroot)
-		      + 50);
+    command = xmalloc (strlen (cvs_server)
+		       + strlen (server_cvsroot)
+		       + 50);
     sprintf (command, "%s -d %s server", cvs_server, server_cvsroot);
 
-    if ((s = getservbyname("shell", "tcp")) == NULL)
-    error (1, errno, "cannot getservbyname for shell, tcp");
-
+    portenv = getenv("CVS_RCMD_PORT");
+    if (portenv)
+	port = atoi(portenv);
+    else if ((sptr = getservbyname("shell", "tcp")) != NULL)
+	port = sptr->s_port;
     else
-        port = s->s_port;
+	/* This is the normal case.  Macs will generally lack a /etc/services
+	   file (causing getservbyname to fail), and getenv is only something
+	   that we provide via our own AppleEvents stuff, not a standard
+	   Mac feature.  */
+	port = 514;
 
     read_fd = rcmd (&server_host,
     	            port,
@@ -52,6 +60,7 @@ macos_start_server (int *tofd, int *fromfd,
     
     *tofd = write_fd;
     *fromfd = read_fd;
+    free (command);
 }
 
 
