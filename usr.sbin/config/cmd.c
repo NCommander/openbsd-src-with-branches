@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.3 2000/02/27 21:10:01 deraadt Exp $ */
+/*	$OpenBSD: cmd.c,v 1.4 2001/01/31 22:41:32 maja Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: cmd.c,v 1.3 2000/02/27 21:10:01 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: cmd.c,v 1.4 2001/01/31 22:41:32 maja Exp $";
 #endif
 
 #include <sys/types.h>
@@ -228,6 +228,14 @@ Xlist(cmd)
 			break;
 		pdev(i++);	  
 		cd++;
+	}
+
+	if (nopdev == 0) {
+		while(i <= (totdev+maxpseudo)) {
+			if (more())
+				break;
+			pdev(i++);
+		}
 	}
 
 	cnt = -1;
