@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.20 1999/02/01 16:43:20 pefo Exp $
+#	$OpenBSD: Makefile,v 1.21 1999/07/14 23:16:26 deraadt Exp $
 
 PROG=	disklabel
 SRCS=	disklabel.c dkcksum.c editor.c manual.c
@@ -7,9 +7,9 @@ LDADD=	-lutil
 MAN=	disklabel.8 disklabel.5
 
 CLEANFILES+=manual.c
-manual.c:	disklabel.8
+manual.c:	disklabel.cat8
 	(echo 'char manpage[] = "\\'; \
-	nroff -mandoc ${.CURDIR}/disklabel.8 | sed -e 's/$$/\\n\\/' ; \
+	sed -e 's/[\\"]/\\&/g' -e 's/$$/\\n\\/' disklabel.cat8; \
 	echo '";' ) > manual.c
 
 .if (${MACHINE} == "amiga")
