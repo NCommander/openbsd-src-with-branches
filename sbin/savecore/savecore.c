@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.22 2000/10/25 23:37:38 deraadt Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.23 2001/01/18 00:18:38 deraadt Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)savecore.c	8.3 (Berkeley) 1/2/94";
 #else
-static char rcsid[] = "$OpenBSD: savecore.c,v 1.22 2000/10/25 23:37:38 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: savecore.c,v 1.23 2001/01/18 00:18:38 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -195,11 +195,11 @@ main(argc, argv)
 
 	if (clear) {
 		clear_dump();
-		exit(0);
+		return (0);
 	}
 
 	if (!dump_exists() && !force)
-		exit(1);
+		return (1);
 
 	check_kmem();
 
@@ -209,12 +209,12 @@ main(argc, argv)
 		syslog(LOG_ALERT, "reboot");
 
 	if ((!get_crashtime() || !check_space()) && !force)
-		exit(1);
+		return (1);
 
 	save_core();
 
 	clear_dump();
-	exit(0);
+	return (0);
 }
 
 char	*dump_sys;

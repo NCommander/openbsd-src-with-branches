@@ -1,4 +1,4 @@
-/*	$OpenBSD: edlabel.c,v 1.4 1996/07/27 10:28:42 deraadt Exp $	*/
+/*	$OpenBSD: edlabel.c,v 1.5 2000/08/05 21:40:14 pjanzen Exp $	*/
 /*	$NetBSD: edlabel.c,v 1.1.1.1 1995/10/08 22:39:09 gwr Exp $	*/
 
 /*
@@ -517,7 +517,7 @@ main(argc, argv)
 
 	if (argc != 2) {
 		fprintf(stderr, "usage: edlabel RAWDISK\n");
-		exit(1);
+		return (1);
 	}
 	devname = argv[1];
 
@@ -543,6 +543,7 @@ main(argc, argv)
 	found:
 		cmd->cmd_func(&dl, devname);
 	}
-	exit(0);
+
+	return (0);
 }
 
