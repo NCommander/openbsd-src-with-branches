@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.3 2004/02/26 16:19:58 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.4 2004/03/02 19:32:43 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -189,7 +189,7 @@ parse(int argc, char *argv[])
 	}
 
 	if (curarg < argc) {
-		fprintf(stderr, "superflous argument: %s\n", argv[curarg]);
+		fprintf(stderr, "superfluous argument: %s\n", argv[curarg]);
 		return (NULL);
 	}
 
