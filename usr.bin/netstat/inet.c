@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.75 2003/12/15 07:11:31 mcbride Exp $	*/
+/*	$OpenBSD: inet.c,v 1.76 2003/12/22 22:25:34 mickey Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)inet.c	8.4 (Berkeley) 4/20/94";
 #else
-static char *rcsid = "$OpenBSD: inet.c,v 1.75 2003/12/15 07:11:31 mcbride Exp $";
+static char *rcsid = "$OpenBSD: inet.c,v 1.76 2003/12/22 22:25:34 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -916,7 +916,7 @@ pfsync_stats(u_long off, char *name)
 	p(pfsyncs_ipackets, "\t%u packet%s received (IPv4)\n");
 	p(pfsyncs_ipackets6, "\t%u packet%s received (IPv6)\n");
 	p(pfsyncs_badif, "\t\t%u packet%s discarded for bad interface\n");
-	p(pfsyncs_badttl, "\t\t%u packet%s discarded for bad interface\n");
+	p(pfsyncs_badttl, "\t\t%u packet%s discarded for bad ttl\n");
 	p(pfsyncs_hdrops, "\t\t%u packet%s shorter than header\n");
 	p(pfsyncs_badver,	"\t\t%u discarded packet%s with a bad version\n");
 	p(pfsyncs_badact,	"\t\t%u discarded packet%s with a bad action\n");
