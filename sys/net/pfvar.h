@@ -232,7 +232,6 @@ struct pf_rule {
 	struct pf_rule		*skip[PF_SKIP_COUNT];
 #define PF_RULE_LABEL_SIZE	 64
 	char			 label[PF_RULE_LABEL_SIZE];
-	u_int32_t		 timeout[PFTM_MAX];
 	struct pf_addr		 rt_addr;
 	char			 ifname[IFNAMSIZ];
 	char			 rt_ifname[IFNAMSIZ];

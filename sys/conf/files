@@ -335,7 +335,6 @@ file	dev/ksyms.c	ksyms needs-flag
 pseudo-device pf: ifnet
 file	net/pf.c		pf	needs-flag
 file	net/pf_norm.c		pf
-file	net/pf_ioctl.c		pf
 
 # XXX machine-independent SCSI files should live somewhere here, maybe
 
