@@ -1,4 +1,4 @@
-/*	$OpenBSD: move.c,v 1.3 1997/06/17 20:47:09 kstailey Exp $	*/
+/*	$OpenBSD: move.c,v 1.4 2003/06/03 02:56:05 millert Exp $	*/
 /*	$NetBSD: move.c,v 1.5 1995/03/26 03:27:57 glass Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)move.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: move.c,v 1.3 1997/06/17 20:47:09 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: move.c,v 1.4 2003/06/03 02:56:05 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -63,8 +63,7 @@ static char rcsid[] = "$OpenBSD: move.c,v 1.3 1997/06/17 20:47:09 kstailey Exp $
  *	are moved to end of archive.
  */
 int
-move(argv)
-	char **argv;
+move(char **argv)
 {
 	CF cf;
 	off_t size, tsize;

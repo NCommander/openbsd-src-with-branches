@@ -1,4 +1,4 @@
-/*	$OpenBSD: contents.c,v 1.2 1996/06/26 05:31:19 deraadt Exp $	*/
+/*	$OpenBSD: contents.c,v 1.3 2003/06/03 02:56:05 millert Exp $	*/
 /*	$NetBSD: contents.c,v 1.5 1995/03/26 03:27:49 glass Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)contents.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: contents.c,v 1.2 1996/06/26 05:31:19 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: contents.c,v 1.3 2003/06/03 02:56:05 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,8 +62,7 @@ static char rcsid[] = "$OpenBSD: contents.c,v 1.2 1996/06/26 05:31:19 deraadt Ex
  *	skipping member contents.
  */
 int
-contents(argv)
-	char **argv;
+contents(char **argv)
 {
 	int afd, all;
 	struct tm *tp;

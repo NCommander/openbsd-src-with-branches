@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.3 1997/11/04 08:03:05 deraadt Exp $	*/
+/*	$OpenBSD: print.c,v 1.4 2003/06/03 02:56:07 millert Exp $	*/
 /*	$NetBSD: print.c,v 1.4 1995/09/27 01:06:58 jtc Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.3 (Berkeley) 4/2/94";
 #else 
-static char rcsid[] = "$OpenBSD: print.c,v 1.3 1997/11/04 08:03:05 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.4 2003/06/03 02:56:07 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,7 +52,7 @@ static char rcsid[] = "$OpenBSD: print.c,v 1.3 1997/11/04 08:03:05 deraadt Exp $
  *	prepare it for printing.
  */
 void
-getline()
+getline(void)
 {
 	long	saveftell;
 	int	c;
@@ -98,8 +98,7 @@ getline()
  *	write out the tags
  */
 void
-put_entries(node)
-	NODE	*node;
+put_entries(NODE *node)
 {
 
 	if (node->left)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lisp.c,v 1.3 2000/07/25 19:28:30 deraadt Exp $	*/
+/*	$OpenBSD: lisp.c,v 1.4 2003/06/03 02:56:07 millert Exp $	*/
 /*	$NetBSD: lisp.c,v 1.3 1995/03/26 20:14:09 glass Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)lisp.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: lisp.c,v 1.3 2000/07/25 19:28:30 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: lisp.c,v 1.4 2003/06/03 02:56:07 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,7 +50,7 @@ static char rcsid[] = "$OpenBSD: lisp.c,v 1.3 2000/07/25 19:28:30 deraadt Exp $"
  * just look for (def or (DEF
  */
 void
-l_entries()
+l_entries(void)
 {
 	int	special;
 	char	*cp;

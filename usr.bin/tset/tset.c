@@ -1,4 +1,4 @@
-/*	$OpenBSD: tset.c,v 1.25 2001/11/19 19:02:17 mpech Exp $	*/
+/*	$OpenBSD: tset.c,v 1.26 2003/06/03 02:56:20 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,1999,2000 Free Software Foundation, Inc.              *
@@ -926,7 +926,7 @@ set_init(void)
  * Return TRUE if we set any tab stops, FALSE if not.
  */
 static bool
-set_tabs()
+set_tabs(void)
 {
     if (set_tab && clear_all_tabs) {
 	int c;
