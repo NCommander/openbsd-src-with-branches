@@ -1,4 +1,4 @@
-/*	$OpenBSD: atapiconf.c,v 1.21 1998/01/02 18:22:07 provos Exp $	*/
+/*	$OpenBSD: atapiconf.c,v 1.22 1998/06/09 13:29:58 provos Exp $	*/
 
 /*
  * Copyright (c) 1996 Manuel Bouyer.  All rights reserved.
@@ -686,7 +686,7 @@ atapi_sense(acp, sense_key, flags)
 		break;
 
 	case ATAPI_SK_MEDIUM_ERROR:
-		SILENT_PRINTF(flags,("medium error"));
+		SILENT_PRINTF(flags,("media error"));
 		acp->status = ERROR;
 		break;
 
