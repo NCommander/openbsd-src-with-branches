@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xl.c,v 1.14 1998/11/16 15:29:18 jason Exp $	*/
+/*	$OpenBSD: if_xl.c,v 1.15 1998/11/23 19:56:50 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -3225,6 +3225,7 @@ xl_attach(parent, self, aux)
 		else {
 			printf("%s: MII without any phy!\n",
 			    sc->sc_dev.dv_xname);
+			return;
 		}
 	}
 
