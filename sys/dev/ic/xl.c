@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.17 2000/10/19 16:33:51 jason Exp $	*/
+/*	$OpenBSD: xl.c,v 1.18 2000/11/09 17:39:06 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2223,6 +2223,15 @@ xl_ioctl(ifp, command, data)
 			break;
 		}
 		break;
+
+	case SIOCSIFMTU:
+		if(ifr->ifr_mtu > ETHERMTU || ifr->ifr_mtu < ETHERMIN) {
+			error = EINVAL;
+		} else if (ifp->if_mtu != ifr->ifr_mtu) {
+			ifp->if_mtu = ifr->ifr_mtu;
+		}
+		break;
+
 	case SIOCSIFFLAGS:
 		XL_SEL_WIN(5);
 		rxfilt = CSR_READ_1(sc, XL_W5_RX_FILTER);
