@@ -967,7 +967,7 @@ esioctl(ifp, command, data)
 
 	s = splnet();
 
-	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, command, data)) > 0) {
 		aplx(s);
 		return error;
 	}
