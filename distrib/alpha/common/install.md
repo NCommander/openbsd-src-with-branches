@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.8 2002/05/14 01:49:25 krw Exp $
+#       $OpenBSD: install.md,v 1.9 2002/05/18 17:56:03 krw Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -44,10 +44,6 @@ MDTERM=sun
 ARCH=ARCH
 
 md_set_term() {
-}
-
-md_questions() {
-	:
 }
 
 md_installboot() {

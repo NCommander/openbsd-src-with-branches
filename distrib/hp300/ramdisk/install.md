@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.30 2002/05/14 01:49:25 krw Exp $
+#	$OpenBSD: install.md,v 1.31 2002/05/18 17:56:03 krw Exp $
 #	$NetBSD: install.md,v 1.1.2.4 1996/08/26 15:45:14 gwr Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -47,10 +47,6 @@ MDCDDEVS="'/^sd[0-9][0-9]*:.*CD-ROM/s/:.*//p'"
 ARCH=ARCH
 
 md_set_term() {
-}
-
-md_questions() {
-	:
 }
 
 md_installboot() {
