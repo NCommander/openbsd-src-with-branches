@@ -1,4 +1,4 @@
-/*	$OpenBSD: host_ops.c,v 1.2 1996/03/25 15:54:46 niklas Exp $	*/
+/*	$OpenBSD: host_ops.c,v 1.3 1997/01/31 14:41:58 graichen Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -356,7 +356,7 @@ mntfs *mf;
 			ep[j] = 0;
 		} else {
 			k = j;
-			if (error = fetch_fhandle(client, ep[j]->ex_dir, &fp[j]))
+			if ((error = fetch_fhandle(client, ep[j]->ex_dir, &fp[j])))
 				ep[j] = 0;
 		}
 	}
