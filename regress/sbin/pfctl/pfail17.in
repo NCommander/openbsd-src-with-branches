@@ -1,5 +1,0 @@
-#flags X is invalid; flags X/XY must be used
-
-pass proto tcp flags S
-pass proto tcp flags S/
-
