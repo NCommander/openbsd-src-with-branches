@@ -47,7 +47,7 @@ mcheck()
 	if (getint(global("MAILCHECK"), &mailcheck) < 0)
 		return;
 
-	now = time(NULL);
+	now = time((time_t *) 0);
 	if (mlastchkd == 0)
 		mlastchkd = now;
 	if (now - mlastchkd >= mailcheck) {

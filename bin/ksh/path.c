@@ -108,7 +108,7 @@ make_path(cwd, file, cdpathp, xsp, phys_pathp)
 			for (pend = plist; *pend && *pend != PATHSEP; pend++)
 				;
 			plen = pend - plist;
-			*cdpathp = *pend ? ++pend : NULL;
+			*cdpathp = *pend ? ++pend : (char *) 0;
 		}
 
 		if ((use_cdpath == 0 || !plen || ISRELPATH(plist))
@@ -137,7 +137,7 @@ make_path(cwd, file, cdpathp, xsp, phys_pathp)
 	memcpy(xp, file, len);
 
 	if (!use_cdpath)
-		*cdpathp = NULL;
+		*cdpathp = (char *) 0;
 
 	return rval;
 }
@@ -230,7 +230,7 @@ set_current_wd(path)
 	int len;
 	char *p = path;
 
-	if (!p && !(p = ksh_get_wd(NULL, 0)))
+	if (!p && !(p = ksh_get_wd((char *) 0, 0)))
 		p = null;
 
 	len = strlen(p) + 1;
@@ -255,7 +255,7 @@ get_phys_path(path)
 	xp = do_phys_path(&xs, xp, path);
 
 	if (!xp)
-		return NULL;
+		return (char *) 0;
 
 	if (Xlength(xs, xp) == 0)
 		Xput(xs, xp, DIRSEP);
@@ -304,7 +304,7 @@ do_phys_path(xsp, xp, path)
 		if (llen < 0) {
 			/* EINVAL means it wasn't a symlink... */
 			if (errno != EINVAL)
-				return NULL;
+				return (char *) 0;
 			continue;
 		}
 		lbuf[llen] = '\0';
@@ -313,7 +313,7 @@ do_phys_path(xsp, xp, path)
 		xp = ISABSPATH(lbuf) ? Xstring(*xsp, xp)
 				     : Xrestpos(*xsp, xp, savepos);
 		if (!(xp = do_phys_path(xsp, xp, lbuf)))
-			return NULL;
+			return (char *) 0;
 	}
 	return xp;
 }

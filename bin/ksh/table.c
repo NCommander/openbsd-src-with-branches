@@ -126,7 +126,7 @@ tenter(tp, n, h)
 	p->type = 0;
 	p->areap = tp->areap;
 	p->u2.field = 0;
-	p->u.array = NULL;
+	p->u.array = (struct tbl *)0;
 	memcpy(p->name, n, len);
 
 	/* enter in tp->tbls */

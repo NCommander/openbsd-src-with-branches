@@ -107,7 +107,7 @@ c_ulimit(wp)
 #ifdef RLIMIT_SWAP
 		{ "swap(kbytes)", RLIMIT_SWAP, RLIMIT_SWAP, 1024, 'w' },
 #endif
-		{ NULL }
+		{ (char *) 0 }
 	    };
 	static char	options[3 + NELEM(limits)];
 	rlim_t		UNINITIALIZED(val);

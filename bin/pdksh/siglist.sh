@@ -32,7 +32,7 @@ sed -n 's/{ QwErTy/{/p' < $out | awk '{print NR, $0}' | sort +2n +0n |
 		n = $2;
 		if (n > 0 && n != last) {
 		    while (++last < n) {
-			printf "\t{ %d , NULL, `Signal %d` } ,\n", last, last;
+			printf "\t{ %d , (char *) 0, `Signal %d` } ,\n", last, last;
 		    }
 		    print;
 		}
