@@ -1,3 +1,4 @@
+dnl	$OpenBSD$
 TopPart
 
 OpenBSDdistsets
@@ -6,8 +7,7 @@ OpenBSDbsd
 
 OpenBSDrd
 
-		cd{:--:}OSrev.fs The standard MACHINE boot and installation
-				CD image; see below.
+OpenBSDcd
 
 DistributionDescription(ten)
 
