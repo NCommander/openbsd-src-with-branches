@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.32 1999/02/26 05:17:43 art Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.36 1999/03/11 19:47:25 deraadt Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -779,9 +779,9 @@ vput(vp)
 #endif
 	vputonfreelist(vp);
 
-	VOP_INACTIVE(vp, p);
-
 	simple_unlock(&vp->v_interlock);
+
+	VOP_INACTIVE(vp, p);
 }
 
 /*
