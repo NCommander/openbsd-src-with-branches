@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfsrmuser.c,v 1.6 2000/06/19 23:06:25 aaron Exp $	*/
+/*	$OpenBSD: tcfsrmuser.c,v 1.7 2000/06/20 06:45:16 fgsch Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -103,4 +103,6 @@ rmuser_main(int argn, char *argv[])
 		printf("User entry removed with success.\n");
 
 	tcfs_error(OK, NULL);
+
+	exit(0);
 }
