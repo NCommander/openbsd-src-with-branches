@@ -3,6 +3,7 @@
 
 # Sparc extra's
 LINK	instbin				sbin/disklabel
+LINK	instbin				sbin/restore
 LINK	instbin				usr/bin/grep usr/bin/egrep usr/bin/fgrep
 LINK	instbin				usr/bin/less usr/bin/more
 LINK	instbin				usr/sbin/installboot
