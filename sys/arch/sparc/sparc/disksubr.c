@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.23 1999/01/08 04:29:10 millert Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.24 2000/10/18 21:00:40 mickey Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.16 1996/04/28 20:25:59 thorpej Exp $ */
 
 /*
@@ -661,7 +661,7 @@ isbad(bt, cyl, trk, sec)
 	register long blk, bblk;
 
 	blk = ((long)cyl << 16) + (trk << 8) + sec;
-	for (i = 0; i < 126; i++) {
+	for (i = 0; i < NBT_BAD; i++) {
 		bblk = ((long)bt->bt_bad[i].bt_cyl << 16) +
 			bt->bt_bad[i].bt_trksec;
 		if (blk == bblk)
