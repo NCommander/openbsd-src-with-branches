@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.22 2000/09/27 16:13:46 mickey Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.23 2000/11/16 20:02:16 provos Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -505,8 +505,8 @@ sys_fstat(p, v, retval)
 		syscallarg(struct stat *) sb;
 	} */ *uap = v;
 	int fd = SCARG(uap, fd);
-	register struct filedesc *fdp = p->p_fd;
-	register struct file *fp;
+	struct filedesc *fdp = p->p_fd;
+	struct file *fp;
 	struct stat ub;
 	int error;
 
@@ -525,7 +525,7 @@ sys_fstat(p, v, retval)
 
 #ifndef OLD_PIPE
 	case DTYPE_PIPE:
-		error = pipe_stat((struct pipe *)fp->f_data, &ub);
+		error = pipe_stat(fp, &ub, p);
 		break;
 #endif
 
