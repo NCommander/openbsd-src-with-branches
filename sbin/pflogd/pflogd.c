@@ -1,4 +1,4 @@
-/*	$OpenBSD: pflogd.c,v 1.16 2002/11/30 23:02:10 deraadt Exp $	*/
+/*	$OpenBSD: pflogd.c,v 1.17 2003/03/01 06:11:20 cloder Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -161,13 +161,12 @@ init_pcap(void)
 		return (-1);
 	}
 
-	if (filter != NULL) {
-		if (pcap_compile(hpcap, &bprog, filter, PCAP_OPT_FIL, 0) < 0)
-			logmsg(LOG_WARNING, "%s", pcap_geterr(hpcap));
-		else if (pcap_setfilter(hpcap, &bprog) < 0)
-			logmsg(LOG_WARNING, "%s", pcap_geterr(hpcap));
+	if (pcap_compile(hpcap, &bprog, filter, PCAP_OPT_FIL, 0) < 0)
+		logmsg(LOG_WARNING, "%s", pcap_geterr(hpcap));
+	else if (pcap_setfilter(hpcap, &bprog) < 0)
+		logmsg(LOG_WARNING, "%s", pcap_geterr(hpcap));
+	if (filter != NULL)
 		free(filter);
-	}
 
 	if (pcap_datalink(hpcap) != DLT_PFLOG) {
 		logmsg(LOG_ERR, "Invalid datalink type");
