@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.22 2002/06/10 23:06:55 itojun Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.23 2002/06/30 13:04:36 itojun Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -385,7 +385,7 @@ gre_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 	ifp->if_obytes += m->m_pkthdr.len;
 
 	/* Send it off */
-	error = ip_output(m, NULL, &sc->route, 0, NULL, NULL);
+	error = ip_output(m, (void *)NULL, &sc->route, 0, (void *)NULL, (void *)NULL);
   end:
 	if (error)
 		ifp->if_oerrors++;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_eon.c,v 1.15 2002/03/26 19:12:56 niklas Exp $	*/
+/*	$OpenBSD: if_eon.c,v 1.16 2002/07/31 00:13:37 itojun Exp $	*/
 /*	$NetBSD: if_eon.c,v 1.15 1996/05/09 22:29:37 scottr Exp $	*/
 
 /*-
@@ -433,7 +433,7 @@ send:
 	}
 #endif
 
-	error = ip_output(m, (struct mbuf *) 0, ro, 0, NULL);
+	error = ip_output(m, (struct mbuf *) 0, ro, (void *)NULL, (void *)NULL);
 	m = 0;
 	if (error) {
 		ifp->if_oerrors++;

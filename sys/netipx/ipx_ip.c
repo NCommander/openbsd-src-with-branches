@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_ip.c,v 1.10 2001/05/27 12:16:01 angelos Exp $	*/
+/*	$OpenBSD: ipx_ip.c,v 1.11 2001/09/23 10:22:13 mickey Exp $	*/
 
 /*-
  *
@@ -300,7 +300,7 @@ ipxipoutput(ifp, m, dst, rt)
 	/*
 	 * Output final datagram.
 	 */
-	error =  (ip_output(m, (struct mbuf *)0, ro, SO_BROADCAST, NULL));
+	error =  (ip_output(m, (struct mbuf *)0, ro, SO_BROADCAST, (void *)NULL), (void *)NULL);
 	if (error) {
 		ifn->ifen_ifnet.if_oerrors++;
 		ifn->ifen_ifnet.if_ierrors = error;

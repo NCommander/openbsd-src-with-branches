@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_gif.c,v 1.24 2002/05/30 04:19:44 itojun Exp $	*/
+/*	$OpenBSD: in_gif.c,v 1.25 2002/06/09 16:26:10 itojun Exp $	*/
 /*	$KAME: in_gif.c,v 1.50 2001/01/22 07:27:16 itojun Exp $	*/
 
 /*
@@ -156,7 +156,7 @@ in_gif_output(ifp, family, m, rt)
 	m_copyback(m, offsetof(struct ip, ip_len), sizeof(u_int16_t),
 		   (caddr_t) &plen);
 
-	return ip_output(m, NULL, NULL, 0, NULL, NULL);
+	return ip_output(m, (void *)NULL, (void *)NULL, 0, (void *)NULL, (void *)NULL);
 }
 
 void
