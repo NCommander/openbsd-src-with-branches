@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.98 2002/12/05 14:10:45 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.99 2002/12/06 00:47:31 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -439,7 +439,7 @@ pfctl_get_pool(int dev, struct pf_pool *pool, u_int32_t nr,
 			return (-1);
 		}
 		bcopy(&pp.addr, pa, sizeof(struct pf_pooladdr));
-		TAILQ_INSERT_HEAD(&pool->list, pa, entries);
+		TAILQ_INSERT_TAIL(&pool->list, pa, entries);
 	}
 
 	return (0);
