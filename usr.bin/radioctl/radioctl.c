@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $RuOBSD: radioctl.c,v 1.1 2001/10/03 05:53:35 gluk Exp $ */
 
 /*
