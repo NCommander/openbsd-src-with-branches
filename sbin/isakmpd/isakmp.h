@@ -1,8 +1,9 @@
-/* $OpenBSD: isakmp.h,v 1.5 2003/06/03 14:28:16 ho Exp $	 */
+/* $OpenBSD: isakmp.h,v 1.6 2004/04/15 18:39:26 deraadt Exp $	 */
 /* $EOM: isakmp.h,v 1.11 2000/07/05 10:48:43 ho Exp $	 */
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,11 +36,15 @@
 #include "isakmp_fld.h"
 #include "isakmp_num.h"
 
-/* ISAKMP default transport */
-#define ISAKMP_DEFAULT_TRANSPORT "udp"
-
 /* IANA assigned port */
-#define UDP_DEFAULT_PORT 500
+#define UDP_DEFAULT_PORT		500
+#define UDP_DEFAULT_PORT_STR		"500"
+
+#define ISAKMP_DEFAULT_TRANSPORT	"udp"
+
+/* draft-ietf-ipsec-nat-t-ike-07.txt */
+#define UDP_ENCAP_DEFAULT_PORT		4500
+#define UDP_ENCAP_DEFAULT_PORT_STR	"4500"
 
 /* ISAKMP header extras defines */
 #define ISAKMP_HDR_COOKIES_OFF	ISAKMP_HDR_ICOOKIE_OFF
