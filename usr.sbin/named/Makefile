@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.8 1998/05/22 01:43:32 millert Exp $
+#	$OpenBSD: Makefile,v 1.9 1998/05/22 07:09:05 millert Exp $
 
 SUBDIR= named named-xfer ndc reload restart dig nslookup \
-	host dnsquery addr
+	host dnsquery
 .if make(install)
 SUBDIR+= doc/bog
 .endif
