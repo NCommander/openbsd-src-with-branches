@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons.c,v 1.4 1997/01/24 19:58:30 niklas Exp $	*/
+/*	$OpenBSD: wscons.c,v 1.5 1997/08/22 22:25:11 deraadt Exp $	*/
 /*	$NetBSD: wscons.c,v 1.10 1996/12/05 01:39:47 cgd Exp $	*/
 
 /*
@@ -40,9 +40,9 @@
 #include <sys/termios.h>
 
 #include <dev/cons.h>
-#include <alpha/wscons/wsconsvar.h>
-#include <alpha/wscons/wscons_emul.h>
-#include <alpha/wscons/kbd.h>
+#include <dev/wscons/wsconsvar.h>
+#include <dev/wscons/wscons_emul.h>
+#include <dev/wscons/kbd.h>
 #include <machine/wsconsio.h>
 
 cdev_decl(wscons);

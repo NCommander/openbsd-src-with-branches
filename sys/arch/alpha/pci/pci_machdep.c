@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.7 1997/01/24 19:57:52 niklas Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.8 1997/04/19 21:51:29 tholo Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.7 1996/11/19 04:57:32 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
 
 #include "vga_pci.h"
 #if NVGA_PCI
-#include <alpha/pci/vga_pcivar.h>
+#include <dev/pci/vga_pcivar.h>
 #endif
 
 #include "tga.h"

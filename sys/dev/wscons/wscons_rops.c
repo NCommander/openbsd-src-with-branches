@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_rops.c,v 1.3 1996/10/30 22:41:55 niklas Exp $ */
+/*	$OpenBSD: wscons_rops.c,v 1.4 1997/07/31 13:40:05 kstailey Exp $ */
 /*	$NetBSD: wscons_rops.c,v 1.1 1996/04/12 02:00:55 cgd Exp $ */
 
 /*
@@ -49,7 +49,7 @@
 #include <sys/device.h>
 
 #include <dev/rcons/raster.h>
-#include <alpha/wscons/wscons_raster.h>
+#include <dev/wscons/wscons_raster.h>
 
 /*
  * Paint (or unpaint) the cursor.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tgavar.h,v 1.5 1996/10/30 22:40:22 niklas Exp $	*/
+/*	$OpenBSD: tgavar.h,v 1.6 1996/12/08 00:20:52 niklas Exp $	*/
 /*	$NetBSD: tgavar.h,v 1.6 1996/10/23 04:12:36 cgd Exp $	*/
 
 /*
@@ -30,8 +30,8 @@
 
 #include <machine/tgareg.h>
 #include <dev/rcons/raster.h>
-#include <alpha/wscons/wsconsvar.h>
-#include <alpha/wscons/wscons_raster.h>
+#include <dev/wscons/wsconsvar.h>
+#include <dev/wscons/wscons_raster.h>
 
 struct tga_devconfig;
 struct fbcmap;

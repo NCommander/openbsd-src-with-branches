@@ -1,4 +1,4 @@
-/*	$OpenBSD: ms.c,v 1.3 1996/10/30 22:41:43 niklas Exp $ */
+/*	$OpenBSD: ms.c,v 1.4 1997/01/24 19:58:27 niklas Exp $ */
 /*	$NetBSD: ms.c,v 1.3 1996/11/13 21:13:40 cgd Exp $ */
 
 /*
@@ -60,9 +60,9 @@
 #include <sys/tty.h>
 
 #include <machine/vuid_event.h>
-#include <alpha/wscons/event_var.h>
-#include <alpha/wscons/wsconsvar.h>
-#include <alpha/wscons/ms.h>
+#include <dev/wscons/event_var.h>
+#include <dev/wscons/wsconsvar.h>
+#include <dev/wscons/ms.h>
 
 struct ms_softc {
 	struct device *ms_dev;
