@@ -262,7 +262,7 @@ softclock(void)
 }
 
 #ifdef DDB
-void db_show_callout_bucket __P((struct circq *));
+void db_show_callout_bucket(struct circq *);
 
 void
 db_show_callout_bucket(struct circq *bucket)

@@ -47,7 +47,7 @@
 #define	TOLOWER(c)	(('A'<=(c)&&(c)<='Z')?(c)-'A'+'a':(c))
 #define	ISALPHA(c)	(('a'<=(c)&&(c)<='z')||('A'<=(c)&&(c)<='Z'))
 
-void	 db_hang __P((int, char *, char *));
+void	 db_hang(int, char *, char *);
 
 static int	skill;
 u_long		db_plays, db_guesses;
@@ -66,8 +66,8 @@ struct db_hang_forall_arg {
 /*
  * Horrible abuse of the forall function, but we're not in a hurry.
  */
-static void db_hang_forall __P((db_symtab_t *, db_sym_t, char *, char *, int,
-			void *));
+static void db_hang_forall(db_symtab_t *, db_sym_t, char *, char *, int,
+			void *);
 
 static void
 db_hang_forall(stab, sym, name, suff, pre, varg)

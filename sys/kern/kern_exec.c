@@ -320,7 +320,7 @@ sys_execve(p, v, retval)
 
 	/* Now get argv & environment */
 	if (!(cpp = SCARG(uap, argp))) {
-		error = EINVAL;
+		error = EFAULT;
 		goto bad;
 	}
 

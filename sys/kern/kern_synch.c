@@ -61,12 +61,12 @@
 u_char	curpriority;		/* usrpri of curproc */
 int	lbolt;			/* once a second sleep address */
 
-void scheduler_start __P((void));
+void scheduler_start(void);
 
-void roundrobin __P((void *));
-void schedcpu __P((void *));
-void updatepri __P((struct proc *));
-void endtsleep __P((void *));
+void roundrobin(void *);
+void schedcpu(void *);
+void updatepri(struct proc *);
+void endtsleep(void *);
 
 void
 scheduler_start()
@@ -427,7 +427,7 @@ ltsleep(ident, priority, wmesg, timo, interlock)
 	mi_switch();
 #ifdef	DDB
 	/* handy breakpoint location after process "wakes" */
-	__asm(".globl bpendtsleep ; bpendtsleep:");
+	__asm(".globl bpendtsleep\nbpendtsleep:");
 #endif
 resume:
 	curpriority = p->p_usrpri;
@@ -545,7 +545,7 @@ sleep(ident, priority)
 	mi_switch();
 #ifdef	DDB
 	/* handy breakpoint location after process "wakes" */
-	__asm(".globl bpendsleep ; bpendsleep:");
+	__asm(".globl bpendsleep\nbpendsleep:");
 #endif
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_CSW))

@@ -74,11 +74,11 @@
 struct filelist filehead;	/* head of list of open files */
 int nfiles;			/* actual number of open files */
 
-static __inline void fd_used __P((struct filedesc *, int));
-static __inline void fd_unused __P((struct filedesc *, int));
-static __inline int find_next_zero __P((u_int *, int, u_int));
+static __inline void fd_used(struct filedesc *, int);
+static __inline void fd_unused(struct filedesc *, int);
+static __inline int find_next_zero(u_int *, int, u_int);
 int finishdup(struct proc *, struct file *, int, int, register_t *);
-int find_last_set __P((struct filedesc *, int));
+int find_last_set(struct filedesc *, int);
 
 struct pool file_pool;
 struct pool fdesc_pool;

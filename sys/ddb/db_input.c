@@ -72,7 +72,7 @@ char *  db_history_prev = (char *) 0;	/* start of previous line */
 #define	BLANK		' '
 #define	BACKUP		'\b'
 
-static int cnmaygetc __P((void));
+static int cnmaygetc(void);
 
 void
 db_putstring(s, count)

@@ -151,8 +151,8 @@ fork1(p1, exitsig, flags, stack, stacksize, func, arg, retval)
 	int count;
 	vaddr_t uaddr;
 	int s;
-	extern void endtsleep __P((void *));
-	extern void realitexpire __P((void *));
+	extern void endtsleep(void *);
+	extern void realitexpire(void *);
 
 	/*
 	 * Although process entries are dynamically created, we still keep

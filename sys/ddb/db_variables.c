@@ -111,7 +111,7 @@ db_read_variable(vp, valuep)
 	struct db_variable *vp;
 	db_expr_t	*valuep;
 {
-	int	(*func) __P((struct db_variable *, db_expr_t *, int)) = vp->fcn;
+	int	(*func)(struct db_variable *, db_expr_t *, int) = vp->fcn;
 
 	if (func == FCN_NULL)
 	    *valuep = *(vp->valuep);
@@ -124,7 +124,7 @@ db_write_variable(vp, valuep)
 	struct db_variable *vp;
 	db_expr_t	*valuep;
 {
-	int	(*func) __P((struct db_variable *, db_expr_t *, int)) = vp->fcn;
+	int	(*func)(struct db_variable *, db_expr_t *, int) = vp->fcn;
 
 	if (func == FCN_NULL)
 	    *(vp->valuep) = *valuep;

@@ -54,8 +54,8 @@
 
 extern struct simplelock spechash_slock;
 
-int filt_generic_readwrite __P((struct knote *kn, long hint));
-void filt_generic_detach __P((struct knote *kn));
+int filt_generic_readwrite(struct knote *kn, long hint);
+void filt_generic_detach(struct knote *kn);
 
 /*
  * Eliminate all activity associated with  the requested vnode

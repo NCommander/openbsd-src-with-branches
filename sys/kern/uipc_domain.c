@@ -49,10 +49,10 @@
 #include <sys/sysctl.h>
 #include <sys/timeout.h>
 
-void	pffasttimo __P((void *));
-void	pfslowtimo __P((void *));
+void	pffasttimo(void *);
+void	pfslowtimo(void *);
 #if defined (KEY) || defined (IPSEC)
-int pfkey_init __P((void));
+int pfkey_init(void);
 #endif /* KEY || IPSEC */
 
 #define	ADDDOMAIN(x)	{ \

@@ -941,7 +941,7 @@ unp_dispose(m)
 void
 unp_scan(m0, op, discard)
 	struct mbuf *m0;
-	void (*op) __P((struct file *));
+	void (*op)(struct file *);
 	int discard;
 {
 	struct mbuf *m;

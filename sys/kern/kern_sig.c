@@ -82,9 +82,9 @@ int	filt_signal(struct knote *kn, long hint);
 struct filterops sig_filtops =
 	{ 0, filt_sigattach, filt_sigdetach, filt_signal };
 
-void proc_stop __P((struct proc *p));
-void killproc __P((struct proc *, char *));
-int cansignal __P((struct proc *, struct pcred *, struct proc *, int));
+void proc_stop(struct proc *p);
+void killproc(struct proc *, char *);
+int cansignal(struct proc *, struct pcred *, struct proc *, int);
 
 struct pool sigacts_pool;	/* memory pool for sigacts structures */
 

@@ -15,9 +15,9 @@ typedef struct {
 	unsigned char	buffer[64];
 } SHA1_CTX;
   
-void SHA1Transform __P((u_int32_t state[5], unsigned char buffer[64]));
-void SHA1Init __P((SHA1_CTX * context));
-void SHA1Update __P((SHA1_CTX * context, unsigned char * data, unsigned int len));
-void SHA1Final __P((unsigned char digest[20], SHA1_CTX * context));
+void SHA1Transform(u_int32_t state[5], unsigned char buffer[64]);
+void SHA1Init(SHA1_CTX * context);
+void SHA1Update(SHA1_CTX * context, unsigned char * data, unsigned int len);
+void SHA1Final(unsigned char digest[20], SHA1_CTX * context);
 
 #endif /* _SHA1_H_ */

@@ -64,9 +64,9 @@
 extern int suid_clear;
 int	usermount = 0;		/* sysctl: by default, users may not mount */
 
-static int change_dir __P((struct nameidata *, struct proc *));
+static int change_dir(struct nameidata *, struct proc *);
 
-void checkdirs __P((struct vnode *));
+void checkdirs(struct vnode *);
 
 /*
  * Redirection info so we don't have to include the union fs routines in
@@ -76,8 +76,8 @@ void checkdirs __P((struct vnode *));
  * it to a stub routine.
  */
 
-int (*union_check_p) __P((struct proc *, struct vnode **,
-    struct file *, struct uio, int *)) = NULL;
+int (*union_check_p)(struct proc *, struct vnode **,
+    struct file *, struct uio, int *) = NULL;
 
 /*
  * Virtual File System System Calls

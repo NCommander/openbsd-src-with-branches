@@ -81,8 +81,12 @@
 23	STD		{ int sys_setuid(uid_t uid); }
 24	STD		{ uid_t sys_getuid(void); }
 25	STD		{ uid_t sys_geteuid(void); }
+#ifdef PTRACE
 26	STD		{ int sys_ptrace(int req, pid_t pid, caddr_t addr, \
 			    int data); }
+#else
+26	UNIMPL		ptrace
+#endif
 27	STD		{ ssize_t sys_recvmsg(int s, struct msghdr *msg, \
 			    int flags); }
 28	STD		{ ssize_t sys_sendmsg(int s, \

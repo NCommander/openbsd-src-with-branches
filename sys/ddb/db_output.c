@@ -83,7 +83,7 @@ int	db_max_width = DB_MAX_WIDTH;	/* output line width */
 int	db_radix = 16;			/* output numbers radix */
 
 #ifdef DDB
-static void db_more __P((void));
+static void db_more(void);
 #endif
 
 /*

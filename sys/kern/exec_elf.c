@@ -71,8 +71,8 @@
 #endif
 
 struct ELFNAME(probe_entry) {
-	int (*func) __P((struct proc *, struct exec_package *, char *,
-	    u_long *, u_int8_t *));
+	int (*func)(struct proc *, struct exec_package *, char *,
+	    u_long *, u_int8_t *);
 	int os_mask;
 } ELFNAME(probes)[] = {
 	/* XXX - bogus, shouldn't be size independent.. */

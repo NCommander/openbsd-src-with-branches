@@ -63,9 +63,11 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
-int selscan __P((struct proc *, fd_set *, fd_set *, int, register_t *));
-int seltrue __P((dev_t, int, struct proc *));
-void pollscan __P((struct proc *, struct pollfd *, int, register_t *));
+#include <uvm/uvm_extern.h>
+
+int selscan(struct proc *, fd_set *, fd_set *, int, register_t *);
+int seltrue(dev_t, int, struct proc *);
+void pollscan(struct proc *, struct pollfd *, int, register_t *);
 
 /*
  * Read system call.

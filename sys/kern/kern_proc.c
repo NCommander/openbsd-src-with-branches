@@ -92,9 +92,9 @@ struct pool pcred_pool;
 struct simplelock deadproc_slock;
 struct proclist deadproc;		/* dead, but not yet undead */
 
-static void orphanpg __P((struct pgrp *));
+static void orphanpg(struct pgrp *);
 #ifdef DEBUG
-void pgrpdump __P((void));
+void pgrpdump(void);
 #endif
 
 /*

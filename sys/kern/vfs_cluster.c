@@ -50,15 +50,15 @@
 /*
  * Local declarations
  */
-void	cluster_callback __P((struct buf *));
-struct buf *cluster_newbuf __P((struct vnode *, struct buf *, long, daddr_t,
-	    daddr_t, long, int));
-struct buf *cluster_rbuild __P((struct vnode *, u_quad_t, struct buf *,
-	    daddr_t, daddr_t, long, int, long));
-void	    cluster_wbuild __P((struct vnode *, struct buf *, long,
-	    daddr_t, int, daddr_t));
-struct cluster_save *cluster_collectbufs __P((struct vnode *, 
-	    struct cluster_info *, struct buf *));
+void	cluster_callback(struct buf *);
+struct buf *cluster_newbuf(struct vnode *, struct buf *, long, daddr_t,
+	    daddr_t, long, int);
+struct buf *cluster_rbuild(struct vnode *, u_quad_t, struct buf *,
+	    daddr_t, daddr_t, long, int, long);
+void	    cluster_wbuild(struct vnode *, struct buf *, long,
+	    daddr_t, int, daddr_t);
+struct cluster_save *cluster_collectbufs(struct vnode *, 
+	    struct cluster_info *, struct buf *);
 
 #ifdef DIAGNOSTIC
 /*

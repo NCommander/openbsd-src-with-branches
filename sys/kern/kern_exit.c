@@ -78,7 +78,7 @@
 
 #include <uvm/uvm_extern.h>
 
-void proc_zap __P((struct proc *));
+void proc_zap(struct proc *);
 
 /*
  * exit --

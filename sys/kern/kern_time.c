@@ -55,8 +55,8 @@
 
 #include <machine/cpu.h>
 
-void	settime __P((struct timeval *));
-void	itimerround __P((struct timeval *));
+void	settime(struct timeval *);
+void	itimerround(struct timeval *);
 
 /* 
  * Time of day and interval timer support.

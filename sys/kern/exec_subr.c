@@ -56,7 +56,7 @@
 void
 new_vmcmd(evsp, proc, len, addr, vp, offset, prot)
 	struct	exec_vmcmd_set *evsp;
-	int	(*proc) __P((struct proc * p, struct exec_vmcmd *));
+	int	(*proc)(struct proc * p, struct exec_vmcmd *);
 	u_long	len;
 	u_long	addr;
 	struct	vnode *vp;

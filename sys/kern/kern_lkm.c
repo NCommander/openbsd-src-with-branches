@@ -93,8 +93,8 @@ static int _lkm_vfs(struct lkm_table *, int);
 static int _lkm_dev(struct lkm_table *, int);
 static int _lkm_exec(struct lkm_table *, int);
 
-void lkminit __P((void));
-int lkmexists __P((struct lkm_table *));
+void lkminit(void);
+int lkmexists(struct lkm_table *);
 
 void
 lkminit()
@@ -415,7 +415,7 @@ lkmioctl(dev_t dev, u_long cmd, caddr_t data, int flags, struct proc *p)
 			return (ENXIO);
 		}
 
-		curp->entry = (int (*) __P((struct lkm_table *, int, int)))
+		curp->entry = (int (*)(struct lkm_table *, int, int))
 		    (*((long *) (data)));
 
 #ifdef LKM_DEBUG

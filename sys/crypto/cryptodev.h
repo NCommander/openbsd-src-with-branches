@@ -273,8 +273,8 @@ void	crypto_thread(void);
 int	crypto_invoke(struct cryptop *);
 void	crypto_done(struct cryptop *);
 
-void	cuio_copydata __P((struct uio *, int, int, caddr_t));
-void	cuio_copyback __P((struct uio *, int, int, caddr_t));
+void	cuio_copydata(struct uio *, int, int, caddr_t);
+void	cuio_copyback(struct uio *, int, int, caddr_t);
 int	cuio_getptr(struct uio *, int, int *);
 int	cuio_apply(struct uio *, int, int,
 	    int (*f)(caddr_t, caddr_t, unsigned int), caddr_t);

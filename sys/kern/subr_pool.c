@@ -1976,6 +1976,7 @@ pool_allocator_free(struct pool *pp, void *v)
 			pp->pr_flags &= ~PR_WANTED;
 			wakeup(pp);
 		}
+		simple_unlock(&pp->pr_slock);
 	}
 	wakeup(pa);
 	pa->pa_flags &= ~PA_WANT;
