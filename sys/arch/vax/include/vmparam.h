@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.14 2001/07/18 10:47:05 art Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.15 2001/09/22 18:00:10 miod Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.32 2000/03/07 00:05:59 matt Exp $	*/
 
 /*-
@@ -112,6 +112,7 @@
 #define	VM_NFREELIST		1
 #define	VM_FREELIST_DEFAULT	0
 
+#define __HAVE_PMAP_PHYSSEG
 struct pmap_physseg {
 	int	dummy;
 };
