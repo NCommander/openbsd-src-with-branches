@@ -1,7 +1,7 @@
-/*	$OpenBSD: extract.c,v 1.1 1996/06/04 07:56:03 niklas Exp $	*/
+/*	$OpenBSD: extract.c,v 1.2 1996/06/04 08:43:32 niklas Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: extract.c,v 1.1 1996/06/04 07:56:03 niklas Exp $";
+static const char *rcsid = "$OpenBSD: extract.c,v 1.2 1996/06/04 08:43:32 niklas Exp $";
 #endif
 
 /*
@@ -34,7 +34,7 @@ static const char *rcsid = "$OpenBSD: extract.c,v 1.1 1996/06/04 07:56:03 niklas
 
 #define PUSHOUT(todir) /* push out string */ \
 	if (strlen(where_args) > sizeof(STARTSTRING)-1) { \
-		    strcat(where_args, "|tar xf - -C "); \
+		    strcat(where_args, "|tar xpf - -C "); \
 		    strcat(where_args, todir); \
 		    if (system(where_args)) \
 			barf("can't invoke tar pipeline"); \
