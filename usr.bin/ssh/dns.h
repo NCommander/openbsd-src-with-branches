@@ -1,7 +1,8 @@
-/*	$OpenBSD: radix.h,v 1.3 2001/06/26 06:32:57 itojun Exp $	*/
+/*	$OpenBSD: dns.h,v 1.3 2003/05/14 22:56:51 jakob Exp $	*/
 
 /*
- * Copyright (c) 1999 Dug Song.  All rights reserved.
+ * Copyright (c) 2003 Wesley Griffin. All rights reserved.
+ * Copyright (c) 2003 Jakob Schlyter. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,5 +25,33 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-int	 creds_to_radix(CREDENTIALS *, u_char *, size_t);
-int	 radix_to_creds(const char *, CREDENTIALS *);
+
+#include "includes.h"
+
+#ifdef DNS
+#ifndef DNS_H
+#define DNS_H
+
+enum sshfp_types {
+	SSHFP_KEY_RESERVED,
+	SSHFP_KEY_RSA,
+	SSHFP_KEY_DSA
+};
+
+enum sshfp_hashes {
+	SSHFP_HASH_RESERVED,
+	SSHFP_HASH_SHA1
+};
+
+#define DNS_RDATACLASS_IN	1
+#define DNS_RDATATYPE_SSHFP	44
+
+#define DNS_VERIFY_FAILED	-1
+#define DNS_VERIFY_OK		0
+#define DNS_VERIFY_ERROR	1
+
+int	verify_host_key_dns(const char *, struct sockaddr *, Key *);
+int	export_dns_rr(const char *, Key *, FILE *, int);
+
+#endif /* DNS_H */
+#endif /* DNS */
