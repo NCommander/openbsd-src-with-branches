@@ -1,4 +1,4 @@
-/*	$OpenBSD: wump.c,v 1.19 2002/07/30 05:35:22 pjanzen Exp $	*/
+/*	$OpenBSD: wump.c,v 1.20 2002/12/06 21:48:52 millert Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -47,7 +47,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)wump.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: wump.c,v 1.19 2002/07/30 05:35:22 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: wump.c,v 1.20 2002/12/06 21:48:52 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -471,7 +471,7 @@ shoot(char *room_list)
 		}
 		if (roomcnt > 5) {
 			(void)printf(
-"The arrow wavers in its flight and and can go no further than room %d!\n",
+"The arrow wavers in its flight and can go no further than room %d!\n",
 					arrow_location);
 			break;
 		}
@@ -488,7 +488,7 @@ The arrow is weakly shot and can go no further than room %d!\n",arrow_location);
 			break;
 		} else if (roomcnt == 5 && chance < 6) {
 			(void)printf(
-"The arrow wavers in its flight and and can go no further than room %d!\n",
+"The arrow wavers in its flight and can go no further than room %d!\n",
 					arrow_location);
 			break;
 		}

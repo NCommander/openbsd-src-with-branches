@@ -1,4 +1,4 @@
-/*	$OpenBSD: rogue.h,v 1.8 2002/07/18 07:13:57 pjanzen Exp $	*/
+/*	$OpenBSD: rogue.h,v 1.9 2002/07/26 19:56:07 pjanzen Exp $	*/
 /*	$NetBSD: rogue.h,v 1.4 1995/04/24 12:25:04 cgd Exp $	*/
 
 /*
@@ -240,7 +240,7 @@ struct obj {				/* comment is monster meaning */
 	short quiver;			/* monster slowed toggle */
 	short trow, tcol;		/* target row, col */
 	short hit_enchant;		/* how many moves is confused */
-	unsigned short what_is;	/* imitator's charactor (?!%: */
+	unsigned short what_is;	/* imitator's character (?!%: */
 	short picked_up;		/* sleep from wand of sleep */
 	unsigned short in_use_flags;
 	struct obj *next_object;	/* next monster */
