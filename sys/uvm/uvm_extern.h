@@ -373,7 +373,6 @@ extern struct uvmexp uvmexp;
  */
 #include <sys/vmmeter.h>
 #include <sys/queue.h>
-#include <sys/tree.h>
 #include <uvm/uvm_param.h>
 #include <sys/lock.h>
 #include <uvm/uvm_page.h>

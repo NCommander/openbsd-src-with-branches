@@ -114,7 +114,6 @@ uvm_map_setup(map, min, max, flags)
 	int flags;
 {
 
-	RB_INIT(&map->rbhead);
 	map->header.next = map->header.prev = &map->header;
 	map->nentries = 0;
 	map->size = 0;
