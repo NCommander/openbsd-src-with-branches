@@ -1,10 +1,5 @@
-/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_stat.h,v 1.13 1998/08/09 22:36:39 perry Exp $	*/
 
-/*
- * XXXCDC: "ROUGH DRAFT" QUALITY UVM PRE-RELEASE FILE!   
- *	   >>>USE AT YOUR OWN RISK, WORK IS NOT FINISHED<<<
- */
 /*
  *
  * Copyright (c) 1997 Charles D. Cranor and Washington University.

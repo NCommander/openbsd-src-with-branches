@@ -1,10 +1,5 @@
-/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_fault_i.h,v 1.7 1999/01/24 23:53:15 chuck Exp $	*/
 
-/*
- * XXXCDC: "ROUGH DRAFT" QUALITY UVM PRE-RELEASE FILE!   
- *	   >>>USE AT YOUR OWN RISK, WORK IS NOT FINISHED<<<
- */
 /*
  *
  * Copyright (c) 1997 Charles D. Cranor and Washington University.
