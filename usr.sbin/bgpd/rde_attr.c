@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_attr.c,v 1.36 2004/07/05 02:13:44 henning Exp $ */
+/*	$OpenBSD: rde_attr.c,v 1.37 2004/07/05 17:27:32 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -869,8 +869,8 @@ aspath_neighbor(struct aspath *aspath)
 {
 	/*
 	 * Empty aspath is OK -- internal as route.
-	 * But what is the neighbor? For now let's return 0 that
-	 * should not break anything.
+	 * But what is the neighbor? For now let's return 0.
+	 * That should not break anything.
 	 */
 
 	if (aspath->hdr.len == 0)

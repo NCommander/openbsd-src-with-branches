@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.117 2004/07/03 17:19:59 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.118 2004/07/05 16:54:53 henning Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -968,7 +968,7 @@ filter_set_opt	: LOCALPREF number		{
 			}
 			free($2);
 			if ($$.community.as <= 0 || $$.community.as > 0xffff) {
-				yyerror("Invalid comminity");
+				yyerror("Invalid community");
 				YYERROR;
 			}
 			/* Don't allow setting of unknown well-known types */
