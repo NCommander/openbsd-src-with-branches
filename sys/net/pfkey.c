@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.14 2003/02/16 21:30:13 deraadt Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.15 2004/08/03 12:10:48 todd Exp $	*/
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -321,6 +321,7 @@ pfkey_buildprotosw(void)
 				bcopy(&pfkey_protosw_template, p,
 				    sizeof(struct protosw));
 				p->pr_protocol = pfkey_versions[i]->protocol;
+				p->pr_sysctl = pfkey_versions[i]->sysctl;
 				p++;
 			}
 
