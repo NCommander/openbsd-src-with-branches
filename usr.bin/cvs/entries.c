@@ -402,11 +402,11 @@ cvs_ent_free(struct cvs_ent *ent)
 struct cvs_ent*
 cvs_ent_getent(const char *path)
 {
-	char base[MAXPATHLEN], file[MAXPATHLEN];
+	char base[MAXPATHLEN], *file;
 	CVSENTRIES *entf;
 	struct cvs_ent *ep;
 
-	cvs_splitpath(path, base, sizeof(base), file, sizeof(file));
+	cvs_splitpath(path, base, sizeof(base), &file);
 
 	entf = cvs_ent_open(base, O_RDONLY);
 	if (entf == NULL)
