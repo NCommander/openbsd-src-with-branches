@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: progressmeter.c,v 1.7 2003/06/10 22:20:52 deraadt Exp $");
+RCSID("$OpenBSD: progressmeter.c,v 1.9 2003/07/29 18:24:00 markus Exp $");
 
 #include "progressmeter.h"
 #include "atomicio.h"
@@ -151,7 +151,7 @@ memset(buf, 'a', sizeof(buf));
 		stalled = 0;
 
 	if (stalled >= STALL_TIME)
-		strlcat(buf, "  - stalled -", win_size);
+		strlcat(buf, "- stalled -", win_size);
 	else if (bytes_per_second == 0 && bytes_left)
 		strlcat(buf, "  --:-- ETA", win_size);
 	else {
