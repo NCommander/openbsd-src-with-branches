@@ -57,7 +57,7 @@ afterinstall:
 .if !target(realinstall)
 realinstall:
 .if defined(LKM)
-	install ${COPY} ${STRIP} -o ${LKMOWN} -g ${LKMGRP} -m ${LKMMODE} \
+	install ${COPY} -o ${LKMOWN} -g ${LKMGRP} -m ${LKMMODE} \
 	    ${COMBINED} ${DESTDIR}${LKMDIR}/${LKM}.o
 .endif
 .endif
