@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:56:59 millert Exp $
+#	$OpenBSD: Makefile,v 1.5 1997/09/21 11:52:11 deraadt Exp $
 
 PROG=	xinstall
-SRCS=	stat_flags.c xinstall.c
+SRCS=	xinstall.c
 MAN=	install.1
-.PATH:	${.CURDIR}/../../bin/ls
 
 realinstall:
 	${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP} -o ${BINOWN} -g ${BINGRP} \
