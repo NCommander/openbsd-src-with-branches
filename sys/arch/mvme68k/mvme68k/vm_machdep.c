@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.36 2003/05/30 20:37:42 miod Exp $ */
+/*	$OpenBSD: vm_machdep.c,v 1.37 2003/06/02 23:27:51 millert Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -126,7 +126,7 @@ cpu_exit(p)
 	struct proc *p;
 {
 
-	(void) splimp();
+	splhigh();
 	uvmexp.swtch++;
 	switch_exit(p);
 	/* NOTREACHED */
