@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 2000/06/29 07:39:45 pjanzen Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 2001/02/04 02:51:24 pjanzen Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/04/24 12:24:37 cgd Exp $	*/
 
 /*
@@ -1180,7 +1180,9 @@ playinit()
 	sigset(SIGEMT, ill_sig);
 	sigset(SIGFPE, ill_sig);
 	sigset(SIGBUS, ill_sig);
+#ifdef SIGSEGV_CHECK
 	sigset(SIGSEGV, ill_sig);
+#endif
 	sigset(SIGSYS, ill_sig);
 	sigset(SIGPIPE, ill_sig);
 #endif
@@ -1198,7 +1200,9 @@ playinit()
 	signal(SIGEMT, ill_sig);
 	signal(SIGFPE, ill_sig);
 	signal(SIGBUS, ill_sig);
+#ifdef SIGSEGV_CHECK
 	signal(SIGSEGV, ill_sig);
+#endif
 	signal(SIGSYS, ill_sig);
 	signal(SIGPIPE, ill_sig);
 #endif
@@ -1213,7 +1217,9 @@ playinit()
 	signal(SIGEMT, ill_sig);
 	signal(SIGFPE, ill_sig);
 	signal(SIGBUS, ill_sig);
+#ifdef SIGSEGV_CHECK
 	signal(SIGSEGV, ill_sig);
+#endif
 	signal(SIGSYS, ill_sig);
 	signal(SIGPIPE, ill_sig);
 #endif
@@ -1228,7 +1234,9 @@ playinit()
 	signal(SIGEMT, ill_sig);
 	signal(SIGFPE, ill_sig);
 	signal(SIGBUS, ill_sig);
+#ifdef SIGSEGV_CHECK
 	signal(SIGSEGV, ill_sig);
+#endif
 	signal(SIGSYS, ill_sig);
 	signal(SIGPIPE, ill_sig);
 #endif
