@@ -110,9 +110,9 @@ int	spec_fsync(void *);
 #define	spec_abortop	spec_badop
 int spec_inactive(void *);
 #define	spec_reclaim	nullop
-#define spec_lock       vop_generic_lock
-#define spec_unlock     vop_generic_unlock
-#define spec_islocked   vop_generic_islocked
+#define spec_lock	genfs_nolock
+#define spec_unlock	genfs_nounlock
+#define spec_islocked	genfs_noislocked
 int	spec_bmap(void *);
 int	spec_strategy(void *);
 int	spec_print(void *);
