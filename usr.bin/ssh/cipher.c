@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: cipher.c,v 1.34 2000/10/12 09:59:18 markus Exp $");
+RCSID("$OpenBSD: cipher.c,v 1.35 2000/10/13 18:59:13 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -488,10 +488,10 @@ ciphers_valid(const char *names)
 			xfree(ciphers);
 			return 0;
 		} else {
-			debug("cipher ok: %s [%s]", p, names);
+			debug3("cipher ok: %s [%s]", p, names);
 		}
 	}
-	debug("ciphers ok: [%s]", names);
+	debug3("ciphers ok: [%s]", names);
 	xfree(ciphers);
 	return 1;
 }
