@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.21 2004/03/02 13:39:44 henning Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.22 2004/03/02 18:49:21 deraadt Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -80,7 +80,7 @@ discover_interfaces(struct interface_info *iface)
 			continue;
 
 		if (strcmp(iface->name, ifa->ifa_name))
-			break;
+			continue;
 
 		/*
 		 * If we have the capability, extract link information
