@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti_sgc.c,v 1.23 2004/08/30 18:37:45 mickey Exp $	*/
+/*	$OpenBSD: sti_sgc.c,v 1.24 2004/09/15 20:11:28 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000-2003 Michael Shalayeff
@@ -230,5 +230,5 @@ sti_sgc_attach(parent, self, aux)
 
 	if (ca->ca_hpa == (hppa_hpa_t)PAGE0->mem_cons.pz_hpa)
 		sc->sc_flags |= STI_CONSOLE;
-	sti_attach_common(sc);
+	sti_attach_common(sc, STI_CODEBASE_PA);
 }

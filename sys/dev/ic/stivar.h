@@ -1,4 +1,4 @@
-/*	$OpenBSD: stivar.h,v 1.14 2003/08/19 03:13:07 mickey Exp $	*/
+/*	$OpenBSD: stivar.h,v 1.15 2003/12/16 06:07:13 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000-2003 Michael Shalayeff
@@ -74,7 +74,7 @@ struct sti_softc {
 	sti_util_t	util;
 };
 
-void sti_attach_common(struct sti_softc *sc);
+void sti_attach_common(struct sti_softc *sc, u_int codebase);
 int sti_intr(void *v);
 
 #endif /* _IC_STIVAR_H_ */
