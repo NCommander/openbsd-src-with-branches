@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.410 2003/12/15 07:28:25 mcbride Exp $ */
+/*	$OpenBSD: pf.c,v 1.411 2003/12/15 09:10:25 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -604,7 +604,7 @@ pf_insert_state(struct pf_state *state)
 	if (RB_INSERT(pf_state_tree_id, &tree_id, state) != NULL) {
 		if (pf_status.debug >= PF_DEBUG_MISC) {
 			printf("pf: state insert failed: "
-			    "id: %016x creatorid: %08x",
+			    "id: %016llx creatorid: %08x",
 			    betoh64(state->id), ntohl(state->creatorid));
 			if (state->sync_flags & PFSTATE_FROMSYNC)
 				printf(" (from sync)");

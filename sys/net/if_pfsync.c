@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.10 2003/12/15 21:49:38 deraadt Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.11 2003/12/16 08:17:56 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -254,7 +254,7 @@ pfsync_input(struct mbuf *m, ...)
 		}
 		ip = mtod(m, struct ip *);
 	}
-	ph = (void *)ip + iplen;
+	ph = (struct pfsync_header *)((char *)ip + iplen);
 
 	/* verify the version */
 	if (ph->version != PFSYNC_VERSION) {

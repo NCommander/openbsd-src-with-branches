@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_osfp.c,v 1.2 2003/08/27 16:13:21 frantzen Exp $ */
+/*	$OpenBSD: pf_osfp.c,v 1.3 2003/08/27 18:23:36 frantzen Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@w4g.org>
@@ -106,7 +106,7 @@ pf_osfp_fingerprint_hdr(const struct ip *ip, const struct tcphdr *tcp)
 {
 	struct pf_os_fingerprint fp, *fpresult;
 	int cnt, optlen = 0;
-	u_int8_t *optp;
+	const u_int8_t *optp;
 
 	if ((tcp->th_flags & (TH_SYN|TH_ACK)) != TH_SYN || (ip->ip_off &
 	    htons(IP_OFFMASK)))
