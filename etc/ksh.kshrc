@@ -1,5 +1,5 @@
 :
-#	$OpenBSD: ksh.kshrc,v 1.9 2002/05/30 06:44:07 deraadt Exp $
+#	$OpenBSD: ksh.kshrc,v 1.10 2002/10/16 15:39:10 todd Exp $
 #
 # NAME:
 #	ksh.kshrc - global initialization for ksh
@@ -155,30 +155,6 @@ case "$-" in
 		;;
 	esac
 	alias rsize='eval `resize`'
-
-	case "$TERM" in
-	sun*|xterm*)
-		case $tty in
-		tty[p-w]*)
-			case "$DISPLAY" in
-			"")
-				DISPLAY="`who | grep $TTY | sed -n 's/.*(\([^:)]*\)[:)].*/\1/p' | sed 's/\([a-zA-Z][^.]*\).*/\1/'`:0"
-				;;
-			esac
-			;;
-		esac
-		case "$DISPLAY" in
-		ozen*|:*)
-			stty erase "^?"
-			;;
-		*)
-			stty erase "^h"
-			;;
-		esac
-		export DISPLAY
-		;;
-	esac
-
 ;;
 *)	# non-interactive
 ;;
