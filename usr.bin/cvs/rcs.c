@@ -503,8 +503,8 @@ rcs_patch(const char *data, const char *patch)
  * rcs_getrev()
  *
  * Get the whole contents of revision <rev> from the RCSFILE <rfp>.  The
- * returned buffer is dynamically allocated and should be released using free()
- * once the caller is done using it.
+ * returned buffer is dynamically allocated and should be released using
+ * cvs_buf_free() once the caller is done using it.
  */
 
 BUF*
