@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.25 1999/10/26 18:16:48 mickey Exp $	*/
+/*	$OpenBSD: bios.c,v 1.26 2000/02/18 17:10:09 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -214,8 +214,12 @@ bios_getopt()
 			if (q->ba_size >= sizeof(bios_consdev_t))
 			{
 				bios_consdev_t *cdp = (bios_consdev_t*)q->ba_arg;
+#include "com.h"
+#include "pccom.h"
+#if NCOM + NPCCOM > 0
 				extern int comdefaultrate; /* ic/com.c */
 				comdefaultrate = cdp->conspeed;
+#endif
 				cnset(cdp->consdev);
 			}
 			break;
