@@ -156,7 +156,6 @@ IDTVEC(softnet)
 	movl	%eax,CPL
 	xorl	%edi,%edi
 	xchgl	_netisr,%edi
-
 #include <net/netisr_dispatch.h>
  	movl	%ebx,CPL
 	jmp	%esi
