@@ -1,0 +1,5 @@
+# $OpenBSD$
+
+# add local links; use bin/sh since instbin has already been unlinked
+LINK	bin/sh		sbin/wicontrol
+LINK	bin/sh		sbin/ancontrol

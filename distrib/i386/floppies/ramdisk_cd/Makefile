@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1999/08/07 18:05:34 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 2001/11/09 16:27:29 todd Exp $
 
 .PATH: ${.CURDIR}/../ramdisk
 RAMDISK=RAMDISK_CD
@@ -8,3 +8,6 @@ XNAME=cdrom
 FLOPPYSECS=36
 
 .include "${.CURDIR}/../common/Makefile.inc"
+
+CRUNCHCONFS+=	${.CURDIR}/crunch_local.conf
+LISTS+=		${.CURDIR}/list.local
