@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile.inc,v 1.6 1996/10/01 01:54:22 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.7 1997/01/25 09:16:36 deraadt Exp $
 
-# Revision is 2.0
+# Revision is 2.1
 # all these private copies of the version number really lose.
-REV=	20
+REV=	21
 FLOPPY3=1
 
 .include <bsd.own.mk>
