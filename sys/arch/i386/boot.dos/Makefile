@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1996/12/26 10:50:47 mickey Exp $
+#	$OpenBSD: Makefile,v 1.3 1996/12/29 19:44:49 graichen Exp $
 #	$NetBSD: Makefile,v 1.18 1995/03/23 19:46:45 jtc Exp $
 #
 # Ported to boot 386BSD by Julian Elischer (julian@tfs.com)
@@ -43,7 +43,7 @@ CPPFLAGS+= -DDOSREAD -DDEBUG
 # start.o should be first
 SRCS+= start.S table.c boot.c disk.c io.c serial.S sys.c bios.S asm.S
 SRCS+= dossys.c version.c
-BINDIR=	${DESTDIR}/usr/mdec
+BINDIR=	/usr/mdec
 
 .PATH: ${.CURDIR}/../boot
 
