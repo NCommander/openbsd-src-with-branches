@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.7 2004/12/07 17:10:56 tedu Exp $	*/
+/*	$OpenBSD: version.c,v 1.8 2005/03/30 17:43:04 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -31,7 +31,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <sysexits.h>
 
 #include "cvs.h"
 #include "proto.h"

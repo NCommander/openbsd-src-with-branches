@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.6 2005/03/26 08:09:54 tedu Exp $	*/
+/*	$OpenBSD: tag.c,v 1.7 2005/03/30 17:43:04 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2004 Joris Vink <joris@openbsd.org>
@@ -124,25 +124,25 @@ int
 cvs_tag_sendflags(struct cvsroot *root)
 {
 	if (branch && (cvs_sendarg(root, "-b", 0) < 0))
-		return (EX_PROTOCOL);
+		return (-1);
 
 	if (delete && (cvs_sendarg(root, "-d", 0) < 0))
-		return (EX_PROTOCOL);
+		return (-1);
 
 	if (old_tag) {
 		if ((cvs_sendarg(root, "-r", 0) < 0) ||
 		    (cvs_sendarg(root, old_tag, 0) < 0))
-			return (EX_PROTOCOL);
+			return (-1);
 	}
 
 	if (date) {
 		if ((cvs_sendarg(root, "-D", 0) < 0) ||
 		    (cvs_sendarg(root, date, 0) < 0))
-			return (EX_PROTOCOL);
+			return (-1);
 	}
 
 	if (cvs_sendarg(root, tag, 0) < 0)
-		return (EX_PROTOCOL);
+		return (-1);
 
 	return (0);
 }
