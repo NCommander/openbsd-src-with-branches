@@ -67,7 +67,6 @@ struct asc_softc {
 	int		ccf;		/* CCF, whatever that really is? */
 	int		timeout_250;	/* 250ms timeout */
 	int		tb_ticks;	/* 4ns. ticks/tb channel ticks */
-	struct timeout	asc_timo;
 #ifdef USE_NEW_SCSI
 	struct scsi_link sc_link;		/* scsipi link struct */
 #endif
