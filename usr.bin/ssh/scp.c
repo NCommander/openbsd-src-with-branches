@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.47 2000/12/19 23:17:57 markus Exp $");
+RCSID("$OpenBSD: scp.c,v 1.48 2001/01/01 14:52:49 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -229,7 +229,7 @@ main(argc, argv)
 	addargs("-oFallBackToRsh no");
 
 	fflag = tflag = 0;
-	while ((ch = getopt(argc, argv, "dfprtvBCc:i:P:q46S:o:")) != EOF)
+	while ((ch = getopt(argc, argv, "dfprtvBCc:i:P:q46S:o:")) != -1)
 		switch (ch) {
 		/* User-visible flags. */
 		case '4':
