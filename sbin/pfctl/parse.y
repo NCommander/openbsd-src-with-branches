@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.389 2003/05/25 17:07:28 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.390 2003/06/09 11:14:46 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -3194,6 +3194,8 @@ expand_label_addr(const char *name, char *label, sa_family_t af,
 	if (strstr(label, name) != NULL) {
 		if (h->addr.type == PF_ADDR_DYNIFTL)
 			snprintf(tmp, sizeof(tmp), "(%s)", h->addr.v.ifname);
+		else if (h->addr.type == PF_ADDR_TABLE)
+			snprintf(tmp, sizeof(tmp), "<%s>", h->addr.v.tblname);
 		else if (!af || (PF_AZERO(&h->addr.v.a.addr, af) &&
 		    PF_AZERO(&h->addr.v.a.mask, af)))
 			snprintf(tmp, sizeof(tmp), "any");
