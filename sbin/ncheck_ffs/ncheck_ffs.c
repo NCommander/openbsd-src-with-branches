@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncheck_ffs.c,v 1.3 1996/06/30 05:45:55 tholo Exp $	*/
+/*	$OpenBSD: ncheck_ffs.c,v 1.4 1996/08/14 06:41:37 tholo Exp $	*/
 
 /*-
  * Copyright (c) 1995, 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -31,7 +31,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: ncheck_ffs.c,v 1.3 1996/06/30 05:45:55 tholo Exp $";
+static char rcsid[] = "$OpenBSD: ncheck_ffs.c,v 1.4 1996/08/14 06:41:37 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -438,7 +438,7 @@ main(argc, argv)
 	int c;
 	ino_t ino;
 
-	while ((c = getopt(argc, argv, "ai:ms")) != EOF)
+	while ((c = getopt(argc, argv, "ai:ms")) != -1)
 		switch (c) {
 			case 'a':
 				aflag++;

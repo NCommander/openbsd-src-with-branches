@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sysctl.c,v 1.4 1996/11/25 08:22:43 mickey Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sysctl.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD$";
+static char *rcsid = "$OpenBSD: sysctl.c,v 1.4 1996/11/25 08:22:43 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -143,7 +143,7 @@ main(argc, argv)
 	extern int optind;
 	int ch, lvl1;
 
-	while ((ch = getopt(argc, argv, "Aanw")) != EOF) {
+	while ((ch = getopt(argc, argv, "Aanw")) != -1) {
 		switch (ch) {
 
 		case 'A':

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: main.c,v 1.2 1997/01/12 07:43:33 downsj Exp $	*/
 /*	$NetBSD: main.c,v 1.14 1996/06/10 02:32:24 thorpej Exp $	*/
 
 /*
@@ -71,7 +71,7 @@ main(argc, argv)
 	char *p;
 
 	fatal_errors =1;
-	while ((ch = getopt(argc, argv, "gpk")) != EOF)
+	while ((ch = getopt(argc, argv, "gpk")) != -1)
 		switch (ch) {
 		case 'g':
 			debugging++;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.6 1996/08/17 09:10:47 deraadt Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.7 1996/12/22 03:25:52 tholo Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -41,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)fstat.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$OpenBSD: fstat.c,v 1.6 1996/08/17 09:10:47 deraadt Exp $";
+static char *rcsid = "$OpenBSD: fstat.c,v 1.7 1996/12/22 03:25:52 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -166,7 +166,7 @@ main(argc, argv)
 	arg = 0;
 	what = KERN_PROC_ALL;
 	nlistf = memf = NULL;
-	while ((ch = getopt(argc, argv, "fnp:u:vN:M:")) != EOF)
+	while ((ch = getopt(argc, argv, "fnp:u:vN:M:")) != -1)
 		switch((char)ch) {
 		case 'f':
 			fsflg = 1;

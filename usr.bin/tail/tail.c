@@ -1,4 +1,4 @@
-/*	$OpenBSD: tail.c,v 1.2 1996/06/26 05:40:18 deraadt Exp $	*/
+/*	$OpenBSD: tail.c,v 1.3 1997/01/12 23:43:07 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -46,7 +46,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tail.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: tail.c,v 1.2 1996/06/26 05:40:18 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: tail.c,v 1.3 1997/01/12 23:43:07 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -114,7 +114,7 @@ main(argc, argv)
 
 	obsolete(argv);
 	style = NOTSET;
-	while ((ch = getopt(argc, argv, "b:c:fn:r")) != EOF)
+	while ((ch = getopt(argc, argv, "b:c:fn:r")) != -1)
 		switch(ch) {
 		case 'b':
 			ARG(512, FBYTES, RBYTES);

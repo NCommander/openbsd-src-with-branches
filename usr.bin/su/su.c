@@ -1,4 +1,4 @@
-/*	$OpenBSD: su.c,v 1.16 1996/10/27 16:49:17 millert Exp $	*/
+/*	$OpenBSD: su.c,v 1.17 1996/12/22 03:26:03 tholo Exp $	*/
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)su.c	5.26 (Berkeley) 7/6/91";*/
-static char rcsid[] = "$OpenBSD: su.c,v 1.16 1996/10/27 16:49:17 millert Exp $";
+static char rcsid[] = "$OpenBSD: su.c,v 1.17 1996/12/22 03:26:03 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -94,7 +94,7 @@ main(argc, argv)
 	char shellbuf[MAXPATHLEN], avshellbuf[MAXPATHLEN];
 
 	asme = asthem = fastlogin = 0;
-	while ((ch = getopt(argc, argv, ARGSTR)) != EOF)
+	while ((ch = getopt(argc, argv, ARGSTR)) != -1)
 		switch((char)ch) {
 #ifdef KERBEROS
 		case 'K':

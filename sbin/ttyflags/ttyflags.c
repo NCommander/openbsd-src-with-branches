@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyflags.c,v 1.4 1996/08/30 00:53:26 deraadt Exp $	*/
+/*	$OpenBSD: ttyflags.c,v 1.5 1996/10/30 08:17:05 tholo Exp $	*/
 /*	$NetBSD: ttyflags.c,v 1.8 1996/04/09 05:20:30 cgd Exp $	*/
 
 /*
@@ -39,7 +39,7 @@ char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: ttyflags.c,v 1.4 1996/08/30 00:53:26 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ttyflags.c,v 1.5 1996/10/30 08:17:05 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -77,7 +77,7 @@ main(argc, argv)
 	int aflag, ch, rval, pflag = 0;
 
 	aflag = nflag = vflag = 0;
-	while ((ch = getopt(argc, argv, "panv")) != EOF)
+	while ((ch = getopt(argc, argv, "panv")) != -1)
 		switch (ch) {
 		case 'a':
 			aflag = 1;

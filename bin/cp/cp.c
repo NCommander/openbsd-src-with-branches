@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp.c,v 1.4 1996/10/28 02:55:05 tholo Exp $	*/
+/*	$OpenBSD: cp.c,v 1.5 1996/12/14 12:17:38 mickey Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cp.c	8.5 (Berkeley) 4/29/95";
 #else
-static char rcsid[] = "$OpenBSD: cp.c,v 1.4 1996/10/28 02:55:05 tholo Exp $";
+static char rcsid[] = "$OpenBSD: cp.c,v 1.5 1996/12/14 12:17:38 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -110,7 +110,7 @@ main(argc, argv)
 	char *target;
 
 	Hflag = Lflag = Pflag = Rflag = 0;
-	while ((ch = getopt(argc, argv, "HLPRfipr")) != EOF) 
+	while ((ch = getopt(argc, argv, "HLPRfipr")) != -1) 
 		switch (ch) {
 		case 'H':
 			Hflag = 1;

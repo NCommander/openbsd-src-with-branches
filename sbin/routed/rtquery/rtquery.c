@@ -114,7 +114,7 @@ main(int argc,
 	OMSG.rip_nets[0].n_metric = htonl(HOPCNT_INFINITY);
 
 	pgmname = argv[0];
-	while ((ch = getopt(argc, argv, "np1w:r:t:")) != EOF)
+	while ((ch = getopt(argc, argv, "np1w:r:t:")) != -1)
 		switch (ch) {
 		case 'n':
 			not_trace = 1;

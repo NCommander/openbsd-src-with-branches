@@ -1,4 +1,4 @@
-/*	$OpenBSD: w.c,v 1.10 1996/08/22 09:37:19 deraadt Exp $	*/
+/*	$OpenBSD: w.c,v 1.11 1996/12/22 03:26:10 tholo Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
@@ -141,7 +141,7 @@ main(argc, argv)
 	}
 
 	memf = nlistf = NULL;
-	while ((ch = getopt(argc, argv, p)) != EOF)
+	while ((ch = getopt(argc, argv, p)) != -1)
 		switch (ch) {
 		case 'h':
 			header = 0;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: modload.c,v 1.8 1996/08/29 15:17:38 deraadt Exp $	*/
+/*	$OpenBSD: modload.c,v 1.9 1996/09/16 01:37:00 deraadt Exp $	*/
 /*	$NetBSD: modload.c,v 1.13 1995/05/28 05:21:58 jtc Exp $	*/
 
 /*
@@ -172,7 +172,7 @@ main(argc, argv)
 	char buf[MODIOBUF];
 	char *symbuf;
 
-	while ((c = getopt(argc, argv, "dvsuqA:e:p:o:")) != EOF) {
+	while ((c = getopt(argc, argv, "dvsuqA:e:p:o:")) != -1) {
 		switch (c) {
 		case 'd':
 			debug = 1;

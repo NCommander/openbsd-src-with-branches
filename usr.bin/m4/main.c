@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.3 1996/06/26 05:36:14 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.4 1996/08/22 00:35:01 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.11 1996/01/13 23:25:26 pk Exp $	*/
 
 /*-
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.3 1996/06/26 05:36:14 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.4 1996/08/22 00:35:01 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -167,7 +167,7 @@ main(argc,argv)
 
 	initkwds();
 
-	while ((c = getopt(argc, argv, "tD:U:o:")) != EOF)
+	while ((c = getopt(argc, argv, "tD:U:o:")) != -1)
 		switch(c) {
 
 		case 'D':               /* define something..*/

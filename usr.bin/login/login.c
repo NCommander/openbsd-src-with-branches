@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.14 1996/12/04 04:04:41 millert Exp $	*/
+/*	$OpenBSD: login.c,v 1.15 1996/12/22 03:25:55 tholo Exp $	*/
 /*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$OpenBSD: login.c,v 1.14 1996/12/04 04:04:41 millert Exp $";
+static char rcsid[] = "$OpenBSD: login.c,v 1.15 1996/12/22 03:25:55 tholo Exp $";
 #endif /* not lint */
 
 /*
@@ -159,7 +159,7 @@ main(argc, argv)
 
 	fflag = hflag = pflag = 0;
 	uid = getuid();
-	while ((ch = getopt(argc, argv, "fh:u:p")) != EOF)
+	while ((ch = getopt(argc, argv, "fh:u:p")) != -1)
 		switch (ch) {
 		case 'f':
 			fflag = 1;

@@ -1,7 +1,7 @@
-/*	$OpenBSD: main.c,v 1.2 1996/06/04 08:43:35 niklas Exp $	*/
+/*	$OpenBSD: main.c,v 1.3 1996/12/29 12:18:27 graichen Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: main.c,v 1.2 1996/06/04 08:43:35 niklas Exp $";
+static const char *rcsid = "$OpenBSD: main.c,v 1.3 1996/12/29 12:18:27 graichen Exp $";
 #endif
 
 /*
@@ -43,7 +43,7 @@ main(int argc, char **argv)
     char *prog_name = argv[0];
 
     pkgs = start = argv;
-    while ((ch = getopt(argc, argv, Options)) != EOF)
+    while ((ch = getopt(argc, argv, Options)) != -1)
 	switch(ch) {
 	case 'v':
 	    Verbose = TRUE;

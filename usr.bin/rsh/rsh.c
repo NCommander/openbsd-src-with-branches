@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsh.c,v 1.9 1996/09/02 21:28:04 millert Exp $	*/
+/*	$OpenBSD: rsh.c,v 1.10 1996/12/22 03:26:02 tholo Exp $	*/
 
 /*-
  * Copyright (c) 1983, 1990 The Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rsh.c	5.24 (Berkeley) 7/1/91";*/
-static char rcsid[] = "$OpenBSD: rsh.c,v 1.9 1996/09/02 21:28:04 millert Exp $";
+static char rcsid[] = "$OpenBSD: rsh.c,v 1.10 1996/12/22 03:26:02 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -121,7 +121,7 @@ main(argc, argv)
 #else
 #define	OPTIONS	"8KLdel:nw"
 #endif
-	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != EOF)
+	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != -1)
 		switch(ch) {
 		case 'K':
 #ifdef KERBEROS

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 1996/09/13 04:25:41 mickey Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 1996/10/23 22:37:53 niklas Exp $	*/
 /*	$NetBSD: main.c,v 1.18 1996/08/31 20:58:20 mycroft Exp $	*/
 
 /*
@@ -92,7 +92,7 @@ main(argc, argv)
 	int pflag, ch;
 
 	pflag = 0;
-	while ((ch = getopt(argc, argv, "gpb:s:")) != EOF) {
+	while ((ch = getopt(argc, argv, "gpb:s:")) != -1) {
 		switch (ch) {
 
 		case 'g':

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.c,v 1.11 1996/12/23 07:46:53 downsj Exp $	*/
+/*	$OpenBSD: mount.c,v 1.12 1996/12/23 08:38:49 downsj Exp $	*/
 /*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount.c	8.19 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$OpenBSD: mount.c,v 1.11 1996/12/23 07:46:53 downsj Exp $";
+static char rcsid[] = "$OpenBSD: mount.c,v 1.12 1996/12/23 08:38:49 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -120,7 +120,7 @@ main(argc, argv)
 	all = forceall = init_flags = 0;
 	options = NULL;
 	vfstype = "ffs";
-	while ((ch = getopt(argc, argv, "Aadfo:rwt:uv")) != EOF)
+	while ((ch = getopt(argc, argv, "Aadfo:rwt:uv")) != -1)
 		switch (ch) {
 		case 'A':
 			all = forceall = 1;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlogin.c,v 1.9 1996/11/11 05:59:47 mickey Exp $	*/
+/*	$OpenBSD: rlogin.c,v 1.10 1996/12/22 03:26:01 tholo Exp $	*/
 /*	$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rlogin.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: rlogin.c,v 1.9 1996/11/11 05:59:47 mickey Exp $";
+static char rcsid[] = "$OpenBSD: rlogin.c,v 1.10 1996/12/22 03:26:01 tholo Exp $";
 #endif
 #endif /* not lint */
 
@@ -183,7 +183,7 @@ main(argc, argv)
 #else
 #define	OPTIONS	"8EKLde:l:"
 #endif
-	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != EOF)
+	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != -1)
 		switch(ch) {
 		case '8':
 			eight = 1;

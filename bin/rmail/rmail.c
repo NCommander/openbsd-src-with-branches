@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmail.c,v 1.3 1996/08/02 12:41:06 deraadt Exp $	*/
+/*	$OpenBSD: rmail.c,v 1.4 1996/12/14 12:18:17 mickey Exp $	*/
 /*	$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rmail.c	8.3 (Berkeley) 5/15/95";
 #else
-static char rcsid[] = "$OpenBSD: rmail.c,v 1.3 1996/08/02 12:41:06 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rmail.c,v 1.4 1996/12/14 12:18:17 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -115,7 +115,7 @@ main(argc, argv)
 
 	debug = 0;
 	domain = "UUCP";		/* Default "domain". */
-	while ((ch = getopt(argc, argv, "D:T")) != EOF)
+	while ((ch = getopt(argc, argv, "D:T")) != -1)
 		switch (ch) {
 		case 'T':
 			debug = 1;

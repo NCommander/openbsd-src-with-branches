@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: passwd.c,v 1.4 1996/06/26 05:37:47 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -41,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)passwd.c	5.5 (Berkeley) 7/6/91";*/
-static char rcsid[] = "$OpenBSD: passwd.c,v 1.3 1996/05/03 18:23:34 tholo Exp $";
+static char rcsid[] = "$OpenBSD: passwd.c,v 1.4 1996/06/26 05:37:47 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -88,7 +88,7 @@ main(argc, argv)
 	if (basename == NULL)
 		basename = argv[0];
 	
-	while ((ch = getopt(argc, argv, "lky")) != EOF)
+	while ((ch = getopt(argc, argv, "lky")) != -1)
 		switch (ch) {
 		case 'l':		/* change local password file */
 			use_kerberos = 0;

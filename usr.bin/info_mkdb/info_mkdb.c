@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: info_mkdb.c,v 1.1 1996/07/22 03:16:31 tholo Exp $	*/
 
 /*-
  * Copyright (c) 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -31,7 +31,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: info_mkdb.c,v 1.1 1996/07/22 03:16:31 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -82,7 +82,7 @@ main(argc, argv)
 	int c;
 
 	infoname = NULL;
-	while ((c = getopt(argc, argv, "f:v")) != EOF) {
+	while ((c = getopt(argc, argv, "f:v")) != -1) {
 		switch(c) {
 		case 'f':
 			infoname = optarg;
