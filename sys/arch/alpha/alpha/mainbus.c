@@ -1,4 +1,4 @@
-/* $OpenBSD: mainbus.c,v 1.10 2000/11/08 19:16:59 ericj Exp $ */
+/* $OpenBSD: mainbus.c,v 1.11 2002/03/14 01:26:26 millert Exp $ */
 /* $NetBSD: mainbus.c,v 1.27 1998/06/24 01:10:35 ross Exp $ */
 
 /*
@@ -76,7 +76,6 @@ mbattach(parent, self, aux)
 	struct mainbus_attach_args ma;
 	struct pcs *pcsp;
 	int i, cpuattachcnt;
-	extern int ncpus;
 
 	mainbus_found = 1;
 
