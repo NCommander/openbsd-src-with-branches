@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.26 1999/03/08 23:47:25 downsj Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.27 1999/07/06 07:59:54 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -174,6 +174,9 @@ void fix_f00f __P((void));
 
 /* autoconf.c */
 void	configure __P((void));
+
+/* dkcsum.c */
+void	dkcsumattach __P((void));
 
 /* machdep.c */
 void	delay __P((int));
