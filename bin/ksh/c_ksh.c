@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ksh.c,v 1.23 2004/12/20 11:34:26 otto Exp $	*/
+/*	$OpenBSD: c_ksh.c,v 1.24 2004/12/22 17:14:34 millert Exp $	*/
 
 /*
  * built-in Korn commands: c_*
@@ -1012,7 +1012,7 @@ c_let(char **wp)
 		bi_errorf("no arguments");
 	else
 		for (wp++; *wp; wp++)
-			if (!evaluate(*wp, &val, KSH_RETURN_ERROR)) {
+			if (!evaluate(*wp, &val, KSH_RETURN_ERROR, true)) {
 				rv = 2;	/* distinguish error from zero result */
 				break;
 			} else
