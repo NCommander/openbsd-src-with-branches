@@ -232,12 +232,17 @@ key_load_public_rsa1(int fd, const char *filename, char **commentp)
 {
 	Buffer buffer;
 	Key *pub;
+	struct stat st;
 	char *cp;
 	int i;
 	off_t len;
 
-	len = lseek(fd, (off_t) 0, SEEK_END);
-	lseek(fd, (off_t) 0, SEEK_SET);
+	if (fstat(fd, &st) < 0) {
+		error("fstat for key file %.200s failed: %.100s",
+		    filename, strerror(errno));
+		return NULL;
+	}
+	len = st.st_size;
 
 	buffer_init(&buffer);
 	cp = buffer_append_space(&buffer, len);
@@ -318,9 +323,15 @@ key_load_private_rsa1(int fd, const char *filename, const char *passphrase,
 	CipherContext ciphercontext;
 	Cipher *cipher;
 	Key *prv = NULL;
+	struct stat st;
 
-	len = lseek(fd, (off_t) 0, SEEK_END);
-	lseek(fd, (off_t) 0, SEEK_SET);
+	if (fstat(fd, &st) < 0) {
+		error("fstat for key file %.200s failed: %.100s",
+		    filename, strerror(errno));
+		close(fd);
+		return NULL;
+	}
+	len = st.st_size;
 
 	buffer_init(&buffer);
 	cp = buffer_append_space(&buffer, len);
