@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.9 1997/10/06 20:19:57 deraadt Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.10 1997/11/04 21:09:49 chuck Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -174,7 +174,6 @@ schedcpu(arg)
 	register int s;
 	register unsigned int newcpu;
 
-	wakeup((caddr_t)&lbolt);
 	for (p = allproc.lh_first; p != 0; p = p->p_list.le_next) {
 		/*
 		 * Increment time in/out of memory and sleep time
@@ -223,6 +222,7 @@ schedcpu(arg)
 		splx(s);
 	}
 	vmmeter();
+	wakeup((caddr_t)&lbolt);
 	timeout(schedcpu, (void *)0, hz);
 }
 

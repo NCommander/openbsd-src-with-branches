@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.29 1997/10/06 20:20:04 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.30 1997/10/21 07:22:13 niklas Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -813,9 +813,9 @@ ttioctl(tp, cmd, data, flag, p)
 			error = namei(&nid);
 			if (error)
 				return (error);
-			VOP_LOCK(nid.ni_vp);
+			vn_lock(nid.ni_vp, LK_EXCLUSIVE | LK_RETRY, p);
 			error = VOP_ACCESS(nid.ni_vp, VREAD, p->p_ucred, p);
-			VOP_UNLOCK(nid.ni_vp);
+			VOP_UNLOCK(nid.ni_vp, 0, p);
 			vrele(nid.ni_vp);
 			if (error)
 				return (error);

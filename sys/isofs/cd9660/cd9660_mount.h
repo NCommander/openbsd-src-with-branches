@@ -1,9 +1,11 @@
-/*	$OpenBSD: mfs_extern.h,v 1.4 1997/10/06 20:21:40 deraadt Exp $	*/
-/*	$NetBSD: mfs_extern.h,v 1.4 1996/02/09 22:31:27 christos Exp $	*/
-
-/*-
- * Copyright (c) 1991, 1993
+/*
+ * Copyright (c) 1995
  *	The Regents of the University of California.  All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley
+ * by Pace Willisson (pace@blitz.com).  The Rock Ridge Extension
+ * Support code is derived from software contributed to Berkeley
+ * by Atsushi Murai (amurai@spec.co.jp).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,40 +35,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)mfs_extern.h	8.2 (Berkeley) 6/16/94
+ *	@(#)cd9660_mount.h	8.1 (Berkeley) 5/24/95
  */
 
-struct buf;
-struct mount;
-struct nameidata;
-struct proc;
-struct statfs;
-struct ucred;
-struct vnode;
-struct vfsconf;
-
-__BEGIN_DECLS
-/* mfs_vfsops.c */
-int	mfs_mountroot	__P((void));
-int	mfs_initminiroot	__P((caddr_t));
-int	mfs_mount	__P((struct mount *, char *, caddr_t,
-			     struct nameidata *, struct proc *));
-int	mfs_start	__P((struct mount *, int, struct proc *));
-int	mfs_statfs	__P((struct mount *, struct statfs *, struct proc *));
-
-int	mfs_init	__P((struct vfsconf *));
-
-/* mfs_vnops.c */
-int	mfs_open	__P((void *));
-int	mfs_ioctl	__P((void *));
-int	mfs_strategy	__P((void *));
-void	mfs_doio	__P((struct buf *, caddr_t));
-int	mfs_bmap	__P((void *));
-int	mfs_close	__P((void *));
-int	mfs_inactive	__P((void *));
-int	mfs_reclaim	__P((void *));
-int	mfs_print	__P((void *));
-#define	mfs_revoke vop_revoke
-int	mfs_badop	__P((void *));
-
-__END_DECLS
+/*
+ * Arguments to mount ISO 9660 filesystems.
+ */
+#define	ISOFSMNT_NORRIP	0x00000001	/* disable Rock Ridge Ext.*/
+#define	ISOFSMNT_GENS	0x00000002	/* enable generation numbers */
+#define	ISOFSMNT_EXTATT	0x00000004	/* enable extended attributes */
