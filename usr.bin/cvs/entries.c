@@ -42,10 +42,6 @@
 
 
 
-static struct cvs_ent*  cvs_ent_clone (const struct cvs_ent *);
-
-
-
 /*
  * cvs_ent_open()
  *
@@ -58,12 +54,14 @@ CVSENTRIES*
 cvs_ent_open(const char *dir, int flags)
 {
 	size_t len;
+	int exists;
 	char entpath[MAXPATHLEN], ebuf[128], mode[4];
 	FILE *fp;
 	struct stat st;
 	struct cvs_ent *ent;
 	CVSENTRIES *ep;
 
+	exists = 0;
 	memset(mode, 0, sizeof(mode));
 
 	snprintf(entpath, sizeof(entpath), "%s/" CVS_PATH_ENTRIES, dir);
@@ -81,9 +79,10 @@ cvs_ent_open(const char *dir, int flags)
 	}
 
 	/* we can use 'r' if the file already exists */
-	if (stat(entpath, &st) == 0)
+	if (stat(entpath, &st) == 0) {
+		exists = 1;
 		mode[0] = 'r';
-
+	}
 
 	fp = fopen(entpath, mode);
 	if (fp == NULL) {
@@ -111,8 +110,6 @@ cvs_ent_open(const char *dir, int flags)
 	ep->cef_cur = NULL;
 	TAILQ_INIT(&(ep->cef_ent));
 
-	rewind(fp);
-
 	while (fgets(ebuf, sizeof(ebuf), fp) != NULL) {
 		len = strlen(ebuf);
 		if ((len > 0) && (ebuf[len - 1] == '\n'))
@@ -125,6 +122,10 @@ cvs_ent_open(const char *dir, int flags)
 
 		TAILQ_INSERT_TAIL(&(ep->cef_ent), ent, ce_list);
 	}
+	if (ferror(fp)) {
+		cvs_ent_close(ep);
+		return (NULL);
+	}
 
 	/* only keep a pointer to the open file if we're in writing mode */
 	if ((flags & O_WRONLY) || (flags & O_RDWR)) {
@@ -134,7 +135,9 @@ cvs_ent_open(const char *dir, int flags)
 	else
 		(void)fclose(fp);
 
-	ep->cef_flags |= CVS_ENTF_SYNC;
+	if (exists)
+		ep->cef_flags |= CVS_ENTF_SYNC;
+
 	return (ep);
 }
 
