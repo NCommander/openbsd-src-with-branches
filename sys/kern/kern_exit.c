@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.38 2002/01/16 20:50:17 miod Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.39 2002/01/23 15:46:48 art Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -536,7 +536,7 @@ proc_zap(p)
 	 */
 	if (--p->p_cred->p_refcnt == 0) {
 		crfree(p->p_cred->pc_ucred);
-		FREE(p->p_cred, M_SUBPROC);
+		pool_put(&pcred_pool, p->p_cred);
 	}
 
 	/*
