@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.65 2002/03/14 01:26:38 millert Exp $ */
+/*	$OpenBSD: machdep.c,v 1.66 2002/03/14 03:15:56 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -471,7 +471,6 @@ setregs(p, pack, stack, retval)
  * Info for CTL_HW
  */
 char  cpu_model[120];
-extern   char version[];
 
 int   cputyp;
 int   cpuspeed;

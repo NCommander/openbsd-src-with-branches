@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_compat.c,v 1.17 2002/03/14 00:42:25 miod Exp $	*/
+/*	$OpenBSD: hpux_compat.c,v 1.18 2002/03/14 01:26:49 millert Exp $	*/
 /*	$NetBSD: hpux_compat.c,v 1.35 1997/05/08 16:19:48 mycroft Exp $	*/
 
 /*
@@ -386,8 +386,7 @@ hpux_sys_utssys(p, v, retval)
 	int i;
 	int error;
 	struct hpux_utsname	ut;
-	extern char ostype[], hostname[], osrelease[], version[];
-	extern char machine[];
+	extern char hostname[], machine[];
 
 	switch (SCARG(uap, request)) {
 	/* uname */
