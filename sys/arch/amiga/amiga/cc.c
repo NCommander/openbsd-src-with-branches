@@ -44,6 +44,8 @@
 #define INLINE
 #endif
 
+void	defchannel_handler __P((int));
+
 /* init all the "custom chips" */
 void
 custom_chips_init()
@@ -339,7 +341,6 @@ void
 cc_init_audio()
 {
 	int i;
-	extern int defchannel_handler();
 
 	/*
 	 * disable all audio interupts
@@ -420,6 +421,7 @@ out:
  * other software modules are free to install their own
  * handler
  */
+void
 defchannel_handler(i)
 	int i;
 {
