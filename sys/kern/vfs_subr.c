@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.44 2000/04/21 16:33:12 mickey Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.45 2000/04/25 22:41:57 csapuntz Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -1790,7 +1790,7 @@ vfs_syncwait(verbose)
 	for (iter = 0; iter < 20; iter++) {
 		nbusy = 0;
 		for (bp = &buf[nbuf]; --bp >= buf; ) {
-			if ((bp->b_flags & (B_BUSY|B_INVAL)) == B_BUSY)
+			if ((bp->b_flags & (B_BUSY|B_INVAL|B_READ)) == B_BUSY)
 				nbusy++;
 			/*
 			 * With soft updates, some buffers that are
