@@ -1,4 +1,4 @@
-/*	$OpenBSD: footbridge_com.c,v 1.2 2004/02/11 06:42:39 miod Exp $	*/
+/*	$OpenBSD: footbridge_com.c,v 1.3 2004/05/19 03:17:07 drahn Exp $	*/
 /*	$NetBSD: footbridge_com.c,v 1.13 2003/03/23 14:12:25 chris Exp $	*/
 
 /*-
@@ -221,7 +221,7 @@ fcom_attach(parent, self, aux)
 	printf("\n");
 
 	sc->sc_ih = footbridge_intr_claim(sc->sc_rx_irq, IPL_SERIAL,
-		"serial rx", fcom_rxintr, sc);
+		"serial_rx", fcom_rxintr, sc);
 	if (sc->sc_ih == NULL)
 		panic("%s: Cannot install rx interrupt handler",
 		    sc->sc_dev.dv_xname);
@@ -639,7 +639,7 @@ fcom_rxintr(arg)
 				}
 			}
 	} while (1);
-	return(0);
+	return(1);
 }
 
 #if 0
