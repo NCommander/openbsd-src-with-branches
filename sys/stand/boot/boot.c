@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.28 2003/06/02 20:22:44 mickey Exp $	*/
+/*	$OpenBSD: boot.c,v 1.30 2004/01/29 00:54:08 tom Exp $	*/
 
 /*
  * Copyright (c) 2003 Dale Rahn
@@ -49,6 +49,8 @@ char *progname = "BOOT";
 
 extern	const char version[];
 struct cmd_state cmd;
+
+/* bootprompt can be set by MD code to avoid prompt first time round */
 int bootprompt = 1;
 
 void
