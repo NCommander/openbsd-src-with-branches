@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.46 2000/07/17 14:54:26 art Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.66 2001/09/16 00:42:44 millert Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -1518,6 +1518,8 @@ vfs_hang_addrlist(mp, nep, argp)
 		mp->mnt_flag |= MNT_DEFEXPORTED;
 		return (0);
 	}
+	if (argp->ex_addrlen > MLEN)
+		return (EINVAL);
 	i = sizeof(struct netcred) + argp->ex_addrlen + argp->ex_masklen;
 	np = (struct netcred *)malloc(i, M_NETADDR, M_WAITOK);
 	bzero((caddr_t)np, i);
