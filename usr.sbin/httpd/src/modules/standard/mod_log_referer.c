@@ -1,4 +1,4 @@
-/*	$OpenBSD: mod_log_referer.c,v 1.6 2003/07/18 21:16:37 david Exp $ */
+/*	$OpenBSD: mod_log_referer.c,v 1.7 2003/08/21 13:11:36 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -69,12 +69,7 @@ module referer_log_module;
 
 static int xfer_flags = (O_WRONLY | O_APPEND | O_CREAT);
 
-#ifdef OS2
-/* OS/2 lacks support for users and groups */
-static mode_t xfer_mode = (S_IREAD | S_IWRITE);
-#else
 static mode_t xfer_mode = (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
 
 typedef struct {
     char *fname;
