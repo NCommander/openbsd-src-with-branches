@@ -326,7 +326,7 @@ main(argc, argv)
 	appcstrg(&cppflags, "-$");
 	appcstrg(&cppflags, "-C");
 	appcstrg(&cppflags, "-Wcomment");
-	appcstrg(&cppflags, "-D__NetBSD__");
+	appcstrg(&cppflags, "-D__OpenBSD__");
 	appcstrg(&cppflags, "-Dlint");		/* XXX don't def. with -s */
 	appdef(&cppflags, "lint");
 	appdef(&cppflags, "unix");
