@@ -1,4 +1,5 @@
 #!/bin/sh -
+#	$OpenBSD$
 #
 #	@(#)mxlookup            e07@nikhef.nl (Eric Wassenaar) 950108
 #
