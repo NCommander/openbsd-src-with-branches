@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.4 2001/02/28 17:52:54 deraadt Exp $	*/
+/*	$OpenBSD: cli.h,v 1.4 2001/03/01 03:38:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $OpenBSD: cli.h,v 1.3 2001/01/16 23:58:09 deraadt Exp $ */
+/* $OpenBSD: cli.h,v 1.4 2001/03/01 03:38:33 deraadt Exp $ */
 
 #ifndef CLI_H
 #define CLI_H
@@ -35,8 +35,8 @@
  * of response depending on arg.  Tries to ensure that no other userland
  * buffer is storing the response.
  */
-char *	cli_read_passphrase(char * prompt, int from_stdin, int echo_enable);
-char *	cli_prompt(char * prompt, int echo_enable);
+char*  cli_read_passphrase(const char* prompt, int from_stdin, int echo_enable);
+char*  cli_prompt(char* prompt, int echo_enable);
 void	cli_mesg(char * mesg);
 
 #endif /* CLI_H */
