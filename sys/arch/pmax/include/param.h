@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: param.h,v 1.18 1997/02/26 01:45:41 jonathan Exp $	*/
 
 /*
@@ -104,6 +105,8 @@
 #define	NMBCLUSTERS	1024		/* map size, max cluster allocation */
 #endif
 #endif
+
+#define MSGBUFSIZE	NBPG
 
 #ifdef _KERNEL
 #ifndef _LOCORE
