@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.32 2000/01/17 06:51:58 mickey Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.33 2000/07/02 02:41:57 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2000 Michael Shalayeff
@@ -181,8 +181,6 @@ int pmapdebug = 0
 #endif
 
 vaddr_t	virtual_steal, virtual_avail, virtual_end;
-
-long equiv_end = 0;
 
 struct pmap	kernel_pmap_store;
 pmap_t		kernel_pmap;
