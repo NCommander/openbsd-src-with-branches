@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: stdio.c,v 1.6 2004/09/28 18:12:44 otto Exp $";
+static char rcsid[] = "$OpenBSD: stdio.c,v 1.7 2005/03/30 19:59:03 pat Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <fcntl.h>
@@ -59,7 +59,7 @@ __sread(void *cookie, char *buf, int n)
 }
 
 int
-__swrite(void *cookie, char const *buf, int n)
+__swrite(void *cookie, const char *buf, int n)
 {
 	FILE *fp = cookie;
 
