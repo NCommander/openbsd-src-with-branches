@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.32 2001/11/06 19:53:18 miod Exp $	*/
+/*	$OpenBSD: audio.c,v 1.33 2002/01/09 17:59:37 mickey Exp $	*/
 /*	$NetBSD: audio.c,v 1.105 1998/09/27 16:43:56 christos Exp $	*/
 
 /*
@@ -1776,7 +1776,7 @@ audio_ioctl(dev, cmd, addr, flag, p)
 
 	default:
 		DPRINTF(("audio_ioctl: unknown ioctl\n"));
-		error = EINVAL;
+		error = ENOTTY;
 		break;
 	}
 	DPRINTF(("audio_ioctl(%d,'%c',%d) result %d\n",
@@ -3025,7 +3025,7 @@ mixer_ioctl(dev, cmd, addr, flag, p)
 		break;
 
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 		break;
 	}
 	DPRINTF(("mixer_ioctl(%d,'%c',%d) result %d\n",
