@@ -1,5 +1,5 @@
 #	$OpenBSD$
 
-SUBDIR= inst kcadp kcoth upgr
+SUBDIR= inst kc upgr
 
 .include <bsd.subdir.mk>
