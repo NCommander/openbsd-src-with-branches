@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: percent_x.c,v 1.1 1997/02/26 03:06:55 downsj Exp $	*/
 
  /*
   * percent_x() takes a string and performs %<char> expansions. It aborts the
@@ -16,13 +16,14 @@
 #if 0
 static char sccsid[] = "@(#) percent_x.c 1.4 94/12/28 17:42:37";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: percent_x.c,v 1.1 1997/02/26 03:06:55 downsj Exp $";
 #endif
 #endif
 
 /* System libraries. */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <syslog.h>
 #include <string.h>
 #include <unistd.h>
