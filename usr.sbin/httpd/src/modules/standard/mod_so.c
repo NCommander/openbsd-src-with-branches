@@ -1,9 +1,9 @@
-/*	$OpenBSD: mod_so.c,v 1.10 2003/04/30 23:08:18 avsm Exp $ */
+/*	$OpenBSD: mod_so.c,v 1.11 2003/07/18 21:16:37 david Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
