@@ -1,4 +1,4 @@
-/*	$OpenBSD: lst.h,v 1.6 1998/12/05 00:06:28 espie Exp $	*/
+/*	$OpenBSD: lst.h,v 1.7 1999/07/29 19:55:19 deraadt Exp $	*/
 /*	$NetBSD: lst.h,v 1.7 1996/11/06 17:59:12 christos Exp $	*/
 
 /*
@@ -79,7 +79,7 @@ typedef	struct	LstNode	*LstNode;
  * Creation/destruction functions
  */
 /* Create a new list */
-Lst		Lst_Init __P((Boolean));
+Lst		Lst_Init __P((void));
 /* Duplicate an existing list */
 Lst		Lst_Duplicate __P((Lst, ClientData (*)(ClientData)));
 /* Destroy an old one */

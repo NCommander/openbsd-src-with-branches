@@ -1,4 +1,4 @@
-/*	$OpenBSD: lstInt.h,v 1.4 1996/11/30 21:09:18 millert Exp $	*/
+/*	$OpenBSD: lstInt.h,v 1.6 1998/12/05 00:06:32 espie Exp $	*/
 /*	$NetBSD: lstInt.h,v 1.7 1996/11/06 17:59:44 christos Exp $	*/
 
 /*
@@ -72,8 +72,6 @@ typedef enum {
 typedef struct	{
 	ListNode  	firstPtr; /* first node in list */
 	ListNode  	lastPtr;  /* last node in list */
-	Boolean	  	isCirc;	  /* true if the list should be considered
-				   * circular */
 /*
  * fields for sequential access
  */
