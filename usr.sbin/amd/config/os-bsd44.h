@@ -1,4 +1,4 @@
-/*	$OpenBSD: os-bsd44.h,v 1.5 1996/08/22 00:34:28 deraadt Exp $	*/
+/*	$OpenBSD: os-bsd44.h,v 1.6 1996/11/29 22:59:42 imp Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -41,11 +41,6 @@
  *
  * 4.4 BSD definitions for Amd (automounter)
  */
-
-/*
- * Does the compiler grok void *
- */
-#define	VOIDP
 
 /*
  * Which version of the Sun RPC library we are using

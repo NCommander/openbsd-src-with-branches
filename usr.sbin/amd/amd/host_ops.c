@@ -1,4 +1,4 @@
-/*	$OpenBSD: host_ops.c,v 1.8 2002/08/03 08:29:31 pvalchev Exp $	*/
+/*	$OpenBSD: host_ops.c,v 1.9 2002/08/03 21:49:24 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -203,7 +203,7 @@ fetch_fhandle(CLIENT *client, char *dir, fhstatus *fhp)
  * Scan mount table to see if something already mounted
  */
 static int
-already_mounted(mntlist *mlist, char*dir)
+already_mounted(mntlist *mlist, char *dir)
 {
 	mntlist *ml;
 
