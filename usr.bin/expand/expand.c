@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.c,v 1.5 2003/06/03 02:56:07 millert Exp $	*/
+/*	$OpenBSD: expand.c,v 1.6 2003/06/10 22:20:46 deraadt Exp $	*/
 /*	$NetBSD: expand.c,v 1.5 1995/09/02 06:19:46 jtc Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)expand.c	8.1 (Berkeley) 6/9/93";
 #endif
-static char rcsid[] = "$OpenBSD: expand.c,v 1.5 2003/06/03 02:56:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: expand.c,v 1.6 2003/06/10 22:20:46 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -54,8 +54,8 @@ static char rcsid[] = "$OpenBSD: expand.c,v 1.5 2003/06/03 02:56:07 millert Exp 
 int	nstops;
 int	tabstops[100];
 
-static void getstops();
-static void usage();
+static void getstops(char *);
+static void usage(void);
 
 int
 main(int argc, char *argv[])
