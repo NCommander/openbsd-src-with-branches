@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.25 2000/01/28 19:45:04 art Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.27 2000/01/31 19:57:18 deraadt Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -70,6 +70,8 @@
 int	nprocs = 1;		/* process 0 */
 int	randompid;		/* when set to 1, pid's go random */
 pid_t	lastpid;
+struct	forkstat forkstat;
+
 
 /*ARGSUSED*/
 int
