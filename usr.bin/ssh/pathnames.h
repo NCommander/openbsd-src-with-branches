@@ -1,4 +1,4 @@
-/*	$OpenBSD: pathnames.h,v 1.4 2001/02/08 22:28:07 stevesk Exp $	*/
+/*	$OpenBSD: pathnames.h,v 1.5 2001/04/12 19:15:24 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -102,6 +102,9 @@
  * Default location of askpass
  */
 #define _PATH_SSH_ASKPASS_DEFAULT	"/usr/X11R6/bin/ssh-askpass"
+
+/* xauth for X11 forwarding */
+#define _PATH_XAUTH			"/usr/X11R6/bin/xauth"
 
 /* for scp */
 #define _PATH_CP			"cp"
