@@ -127,3 +127,4 @@ char	*strncpy __P((char *, const char *, size_t));
 int	 strcmp __P((const char *, const char *));
 int	 strncmp __P((const char *, const char *, size_t));
 int	 strncasecmp __P((const char *, const char *, size_t));
+int	 getsn __P((char *, int));
