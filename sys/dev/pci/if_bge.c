@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.55 2005/03/27 16:14:43 krw Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.56 2005/04/01 02:49:03 brad Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2001
@@ -2381,6 +2381,10 @@ bge_intr(xsc)
 	if (!(CSR_READ_4(sc, BGE_MISC_LOCAL_CTL) & BGE_MLC_INTR_STATE))
 		return (0);
 #endif
+	if (!(sc->bge_rdata->bge_status_block.bge_status &
+	    BGE_STATFLAG_UPDATED)) /* shared interrupt */
+		return(0);
+
 	/* Ack interrupt and stop others from occurring. */
 	CSR_WRITE_4(sc, BGE_MBX_IRQ0_LO, 1);
 
