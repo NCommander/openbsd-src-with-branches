@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.55 1998/07/24 17:54:39 millert Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.56 1998/09/16 22:43:15 deraadt Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -976,6 +976,11 @@ mvme88k
 # ./usr/share/man/cat4/pc532
 pc532
 # ./usr/share/man/cat4/pc532
+..
+
+# ./usr/share/man/cat4/powerpc
+powerpc
+# ./usr/share/man/cat4/powerpc
 ..
 
 # ./usr/share/man/cat4/pmax
