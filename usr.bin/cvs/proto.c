@@ -71,8 +71,6 @@ extern int   cvs_trace;
 extern int   cvs_nolog;
 extern int   cvs_readonly;
 
-extern struct cvsroot *cvs_root;
-
 
 
 static int  cvs_resp_validreq  (int, char *);
