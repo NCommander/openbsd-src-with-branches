@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 1997/04/05 04:26:54 millert Exp $
+#	$OpenBSD: Makefile,v 1.5 1997/05/05 06:01:53 millert Exp $
 #	$NetBSD: Makefile,v 1.12 1997/04/17 07:27:49 thorpej Exp $
 
 S=	${.CURDIR}/../../../..
@@ -18,6 +18,7 @@ HEADERSIZE_PROG = headersize
 CLEANFILES+= ${PROG}.sym ${PROG}.nosym ${HEADERSIZE_PROG}
 
 DEFNS= -DPRIMARY_BOOTBLOCK
+DEFNS+= -DALPHA_BOOT_ECOFF -DALPHA_BOOT_ELF
 
 AFLAGS += -DASSEMBLER ${DEFNS}
 CPPFLAGS += -I${.CURDIR}/../.. -I${S} ${DEFNS}
