@@ -1,4 +1,4 @@
-#    $OpenBSD: GNUmakefile,v 1.7 2003/06/03 14:28:16 ho Exp $
+#    $OpenBSD: GNUmakefile,v 1.8 2004/08/02 15:30:33 ho Exp $
 
 #
 # Copyright (c) 1998, 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -131,7 +131,7 @@ all: ${PROG} mksubdirs
 ifneq ($(findstring install,$(MAKECMDGOALS)),install)
 # Skip 'regress' until the regress/ structure has gmake makefiles for it.
 #SUBDIR:=	regress
-SUBDIR:=	
+SUBDIR:=
 mksubdirs:
 	$(foreach DIR, ${SUBDIR}, \
 		cd ${DIR}; ${MAKE} ${MAKEFLAGS} CFLAGS="${CFLAGS}" \

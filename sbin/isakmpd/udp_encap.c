@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_encap.c,v 1.4 2004/07/07 09:13:01 hshoexer Exp $	*/
+/*	$OpenBSD: udp_encap.c,v 1.5 2004/08/03 10:54:09 ho Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999, 2001 Niklas Hallqvist.  All rights reserved.
@@ -237,7 +237,7 @@ udp_encap_create(char *name)
 	struct sockaddr		*dst, *addr;
 	struct conf_list	*addr_list = 0;
 	struct conf_list_node	*addr_node;
-	char 	*addr_str, *port_str;
+	char	*addr_str, *port_str;
 
 	port_str = conf_get_str(name, "Port"); /* XXX "Encap-port" ? */
 	if (!port_str)

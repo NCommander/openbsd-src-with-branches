@@ -1,4 +1,4 @@
-/*	$OpenBSD: nat_traversal.c,v 1.5 2004/07/29 08:54:08 ho Exp $	*/
+/*	$OpenBSD: nat_traversal.c,v 1.6 2004/08/03 10:54:09 ho Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -430,7 +430,7 @@ nat_t_setup_keepalive(struct sa *sa)
 {
 	struct sockaddr *src;
 	struct timeval now;
-	
+
 	if (sa->initiator)
 		sa->transport->vtbl->get_src(sa->transport, &src);
 	else
