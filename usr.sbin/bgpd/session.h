@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.40 2004/04/13 22:53:29 henning Exp $ */
+/*	$OpenBSD: session.h,v 1.42 2004/04/16 04:52:26 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -197,7 +197,7 @@ int	 merge_config(struct bgpd_config *, struct bgpd_config *,
 	    struct peer *);
 
 /* rde.c */
-int	 rde_main(struct bgpd_config *, struct peer *, struct network_head *,
+int	 rde_main(struct bgpd_config *, struct network_head *,
 	    struct filter_head *, struct mrt_head *, int[2], int[2]);
 
 /* control.c */
