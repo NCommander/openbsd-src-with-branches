@@ -70,11 +70,18 @@ cvs_checkout(int argc, char **argv)
 		return (EX_USAGE);
 	}
 
-	if (cvs_root->cr_method == CVS_METHOD_LOCAL) {
-		return (0);
+	cvs_root = cvsroot_get(".");
+	if (cvs_root->cr_method != CVS_METHOD_LOCAL) {
+		cvs_client_connect();
 	}
 
-	cvs_client_sendreq(CVS_REQ_ARGUMENT, argv[0], 0);
+	cvs_client_sendarg(argv[0], 0);
+	cvs_client_senddir(".");
+	cvs_client_sendreq(CVS_REQ_XPANDMOD, NULL, 1);
+
+	cvs_client_sendarg(argv[0], 0);
+	cvs_client_senddir(".");
+	cvs_client_sendreq(CVS_REQ_CO, NULL, 1);
 
 	return (0);
 }
