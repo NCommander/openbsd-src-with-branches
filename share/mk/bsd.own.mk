@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.54 2001/09/24 15:29:11 art Exp $
+#	$OpenBSD: bsd.own.mk,v 1.55 2001/09/24 20:12:10 jason Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -88,6 +88,9 @@ NLSDIR?=	/usr/share/nls
 NLSGRP?=	bin
 NLSOWN?=	root
 NLSMODE?=	${NONBINMODE}
+
+# Shared files for system gnu configure
+GNUSYSTEM_AUX_DIR?=/usr/share/gnu
 
 INSTALL_COPY?=	-c
 .ifndef DEBUG
