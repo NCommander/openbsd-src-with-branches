@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: assert.c,v 1.5 2002/06/10 14:59:01 espie Exp $";
+static char *rcsid = "$OpenBSD: assert.c,v 1.6 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -37,9 +37,7 @@ static char *rcsid = "$OpenBSD: assert.c,v 1.5 2002/06/10 14:59:01 espie Exp $";
 #include <stdlib.h>
 
 void
-__assert(file, line, failedexpr)
-	const char *file, *failedexpr;
-	int line;
+__assert(const char *file, int line, const char *failedexpr)
 {
 	(void)fprintf(stderr,
 	    "assertion \"%s\" failed: file \"%s\", line %d\n",

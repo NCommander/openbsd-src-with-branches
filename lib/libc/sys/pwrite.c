@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwrite.c,v 1.4 2002/09/17 21:16:01 deraadt Exp $	 */
+/*	$OpenBSD: pwrite.c,v 1.5 2003/06/02 20:18:39 millert Exp $	 */
 
 /*
  * Copyright (c) 1992, 1993
@@ -30,7 +30,7 @@
  */
 
 #if defined(SYSLIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: pwrite.c,v 1.4 2002/09/17 21:16:01 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: pwrite.c,v 1.5 2003/06/02 20:18:39 millert Exp $";
 #endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -42,11 +42,7 @@ static char rcsid[] = "$OpenBSD: pwrite.c,v 1.4 2002/09/17 21:16:01 deraadt Exp 
  * is not supplied by GCC 1.X but is supplied by GCC 2.X.
  */
 ssize_t
-pwrite(fd, buf, nbyte, offset)
-	int fd;
-	const void *buf;
-	size_t nbyte;
-	off_t offset;
+pwrite(int fd, const void *buf, size_t nbyte, off_t offset)
 {
 	extern off_t __syscall();
 	quad_t q;

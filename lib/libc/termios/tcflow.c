@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: tcflow.c,v 1.2 1996/08/19 08:34:38 tholo Exp $";
+static char rcsid[] = "$OpenBSD: tcflow.c,v 1.3 2003/06/02 20:18:39 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/ioctl.h>
@@ -37,8 +37,7 @@ static char rcsid[] = "$OpenBSD: tcflow.c,v 1.2 1996/08/19 08:34:38 tholo Exp $"
 #include <errno.h>
 
 int
-tcflow(fd, action)
-	int fd, action;
+tcflow(int fd, int action)
 {
 	struct termios term;
 	u_char c;

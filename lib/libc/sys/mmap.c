@@ -28,7 +28,7 @@
  */
 
 #if defined(SYSLIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: mmap.c,v 1.10 2002/09/17 21:16:01 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mmap.c,v 1.11 2003/06/02 20:18:39 millert Exp $";
 #endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -44,13 +44,7 @@ quad_t __syscall(quad_t, ...);
  * is not supplied by GCC 1.X but is supplied by GCC 2.X.
  */
 void *
-mmap(addr, len, prot, flags, fd, offset)
-	void	*addr;
-	size_t	len;
-	int	prot;
-	int	flags;
-	int	fd;
-	off_t	offset;
+mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
 
 	return((void *)(long)__syscall((quad_t)SYS_mmap, addr, len, prot,

@@ -5,9 +5,14 @@
 
 #include <machine/asm.h>
 
+#APP
+	.stabs "warning: strcpy() is almost always misused, consider using strlcpy()",30,0,0,0
+	.stabs "_strcpy",1,0,0,0
+#NO_APP
+
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: strcpy.S,v 1.2 1996/08/19 08:13:17 tholo Exp $"
 #endif
 
 /*

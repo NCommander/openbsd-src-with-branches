@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getloadavg.c,v 1.3 2001/11/05 22:20:18 art Exp $";
+static char rcsid[] = "$OpenBSD: getloadavg.c,v 1.4 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -45,9 +45,7 @@ static char rcsid[] = "$OpenBSD: getloadavg.c,v 1.3 2001/11/05 22:20:18 art Exp 
  * Return number of samples retrieved, or -1 on error.
  */
 int
-getloadavg(loadavg, nelem)
-	double loadavg[];
-	int nelem;
+getloadavg(double loadavg[], int nelem)
 {
 	struct loadavg loadinfo;
 	int i, mib[2];

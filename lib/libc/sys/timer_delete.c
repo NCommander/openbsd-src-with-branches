@@ -1,5 +1,5 @@
 #if defined(SYSLIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: timer_delete.c,v 1.2 1997/04/26 08:49:33 tholo Exp $";
+static char rcsid[] = "$OpenBSD: timer_delete.c,v 1.3 1997/04/30 05:49:29 tholo Exp $";
 #endif /* SYSLIBC_SCCS and not lint */
 
 #include <signal.h>
@@ -8,8 +8,7 @@ static char rcsid[] = "$OpenBSD: timer_delete.c,v 1.2 1997/04/26 08:49:33 tholo 
 
 /* ARGSUSED */
 int
-timer_delete(timerid)
-	timer_t timerid;
+timer_delete(timer_t timerid)
 {
 	errno = ENOSYS;
 	return -1;

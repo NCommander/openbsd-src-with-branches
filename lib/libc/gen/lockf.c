@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lockf.c,v 1.2 2003/01/07 22:02:46 miod Exp $	*/
 /*	$NetBSD: lockf.c,v 1.1 1997/12/20 20:23:18 kleink Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: lockf.c,v 1.2 2003/01/07 22:02:46 miod Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
@@ -46,10 +46,7 @@ static char rcsid[] = "$OpenBSD$";
 #include <unistd.h>
 
 int
-lockf(filedes, function, size)
-	int filedes;
-	int function;
-	off_t size;
+lockf(int filedes, int function, off_t size)
 {
 	struct flock fl;
 	int cmd;

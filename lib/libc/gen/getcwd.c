@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getcwd.c,v 1.7 2002/11/24 01:52:27 cloder Exp $";
+static char rcsid[] = "$OpenBSD: getcwd.c,v 1.8 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -46,9 +46,7 @@ static char rcsid[] = "$OpenBSD: getcwd.c,v 1.7 2002/11/24 01:52:27 cloder Exp $
 	    (dp->d_name[1] == '.' && dp->d_name[2] == '\0')))
 
 char *
-getcwd(pt, size)
-	char *pt;
-	size_t size;
+getcwd(char *pt, size_t size)
 {
 	register struct dirent *dp;
 	register DIR *dir = NULL;

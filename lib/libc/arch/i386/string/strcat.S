@@ -5,9 +5,14 @@
 
 #include <machine/asm.h>
 
+#APP
+	.stabs "warning: strcat() is almost always misused, consider using strlcat()",30,0,0,0
+	.stabs "_strcat",1,0,0,0
+#NO_APP
+
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: strcat.S,v 1.2 1996/08/19 08:13:12 tholo Exp $"
 #endif
 
 /*

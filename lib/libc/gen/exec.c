@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: exec.c,v 1.14 2002/12/31 01:06:15 millert Exp $";
+static char rcsid[] = "$OpenBSD: exec.c,v 1.15 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -124,18 +124,14 @@ execlp(const char *name, const char *arg, ...)
 }
 
 int
-execv(name, argv)
-	const char *name;
-	char * const *argv;
+execv(const char *name, char * const *argv)
 {
 	(void)execve(name, argv, environ);
 	return (-1);
 }
 
 int
-execvp(name, argv)
-	const char *name;
-	char * const *argv;
+execvp(const char *name, char * const *argv)
 {
 	char **memp;
 	register int cnt, lp, ln, len;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: preadv.c,v 1.4 2002/09/17 21:16:01 deraadt Exp $	*/
+/*	$OpenBSD: preadv.c,v 1.5 2003/06/02 20:18:39 millert Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -30,7 +30,7 @@
  */
 
 #if defined(SYSLIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: preadv.c,v 1.4 2002/09/17 21:16:01 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: preadv.c,v 1.5 2003/06/02 20:18:39 millert Exp $";
 #endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -43,11 +43,7 @@ static char rcsid[] = "$OpenBSD: preadv.c,v 1.4 2002/09/17 21:16:01 deraadt Exp 
  * is not supplied by GCC 1.X but is supplied by GCC 2.X.
  */
 ssize_t
-preadv(fd, iovp, iovcnt, offset)
-	int fd;
-	const struct iovec *iovp;
-	int iovcnt;
-	off_t offset;
+preadv(int fd, const struct iovec *iovp, int iovcnt, off_t offset)
 {
 	extern off_t __syscall();
 	quad_t q;

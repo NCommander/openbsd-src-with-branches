@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: tcsetattr.c,v 1.2 1996/08/19 08:34:42 tholo Exp $";
+static char rcsid[] = "$OpenBSD: tcsetattr.c,v 1.3 2003/06/02 20:18:40 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/ioctl.h>
@@ -36,9 +36,7 @@ static char rcsid[] = "$OpenBSD: tcsetattr.c,v 1.2 1996/08/19 08:34:42 tholo Exp
 #include <errno.h>
 
 int
-tcsetattr(fd, opt, t)
-	int fd, opt;
-	const struct termios *t;
+tcsetattr(int fd, int opt, const struct termios *t)
 {
 	struct termios localterm;
 
