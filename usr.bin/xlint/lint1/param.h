@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.5 1996/12/21 21:16:43 rahnds Exp $	*/
+/*	$OpenBSD: param.h,v 1.6 1997/01/09 03:18:58 rahnds Exp $	*/
 /*	$NetBSD: param.h,v 1.6 1996/04/01 21:47:57 mark Exp $	*/
 
 /*
@@ -86,6 +86,9 @@
 #define PTRDIFF_IS_LONG		0
 #define SIZEOF_IS_ULONG		0
 #elif __powerpc__
+#define PTRDIFF_IS_LONG		0
+#define SIZEOF_IS_ULONG		0
+#elif __mvme88k__
 #define PTRDIFF_IS_LONG		0
 #define SIZEOF_IS_ULONG		0
 #else
