@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.15 1997/09/29 23:01:06 mickey Exp $
+#	$OpenBSD: Makefile,v 1.16 1997/10/22 23:28:30 mickey Exp $
 
 PROG=	boot
 SRCS=	srt0.S boot.c cmd.c bootarg.c conf.c
@@ -7,6 +7,7 @@ SRCS=	srt0.S boot.c cmd.c bootarg.c conf.c
 LD=ld
 LDFLAGS+=-nostdlib -Ttext $(LINKADDR) -z -x -Bstatic
 MAN=	boot.8
+MLINKS=	boot.8 boot.conf.8
 S	=${.CURDIR}/../../../..
 SADIR=	${.CURDIR}/..
 
