@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.6 2001/05/03 02:20:33 aaron Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.7 2001/07/25 04:54:37 mickey Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.66 2001/04/06 22:54:15 augustss Exp $        */
 
 /*
@@ -453,6 +453,7 @@ ukbd_enable(void *v, int on)
 		/* Disable interrupts. */
 		usbd_abort_pipe(sc->sc_intrpipe);
 		usbd_close_pipe(sc->sc_intrpipe);
+		sc->sc_intrpipe = NULL;
 	}
 	sc->sc_enabled = on;
 
@@ -513,6 +514,13 @@ USB_DETACH(ukbd)
 	/* No need to do reference counting of ukbd, wskbd has all the goo. */
 	if (sc->sc_wskbddev != NULL)
 		rv = config_detach(sc->sc_wskbddev, flags);
+
+	/* The console keyboard does not get a disable call, so check pipe. */
+	if (sc->sc_intrpipe != NULL) {
+		usbd_abort_pipe(sc->sc_intrpipe);
+		usbd_close_pipe(sc->sc_intrpipe);
+		sc->sc_intrpipe = NULL;
+	}
 
 	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev,
 			   USBDEV(sc->sc_dev));
