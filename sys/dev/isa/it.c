@@ -1,7 +1,7 @@
-/*	$OpenBSD: it.c,v 1.2 2003/05/28 19:21:11 grange Exp $	*/
+/*	$OpenBSD: it.c,v 1.3 2003/10/19 17:29:41 grange Exp $	*/
 
 /*
- * Copyright (c) 2003 Julien Bordet <zejames@greygats.org>
+ * Copyright (c) 2003 Julien Bordet <zejames@greyhats.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
