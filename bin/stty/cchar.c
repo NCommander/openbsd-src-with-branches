@@ -110,8 +110,8 @@ csearch(argvp, ip)
 	tmp.name = name;
 	if (!(cp = (struct cchar *)bsearch(&tmp, cchars1,
 	    sizeof(cchars1)/sizeof(struct cchar) - 1, sizeof(struct cchar),
-	    c_cchar)) && !(cp = (struct cchar *)bsearch(&tmp, cchars1,
-	    sizeof(cchars1)/sizeof(struct cchar) - 1, sizeof(struct cchar),
+	    c_cchar)) && !(cp = (struct cchar *)bsearch(&tmp, cchars2,
+	    sizeof(cchars2)/sizeof(struct cchar) - 1, sizeof(struct cchar),
 	    c_cchar)))
 		return (0);
 
