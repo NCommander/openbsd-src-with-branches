@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.4 1996/08/11 22:32:42 niklas Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.5 1996/11/02 00:35:50 millert Exp $	*/
 /*	$NetBSD: iostat.c,v 1.10 1996/10/25 18:21:58 scottr Exp $	*/
 
 /*
@@ -176,8 +176,10 @@ main(argc, argv)
 	 * Discard setgid privileges if not the running kernel so that bad
 	 * guys can't print interesting stuff from kernel memory.
 	 */
-	if (nlistf != NULL || memf != NULL)
+	if (nlistf != NULL || memf != NULL) {
+		setegid(getgid());
 		setgid(getgid());
+	}
 
 	dkinit(0);
 	dkreadstats();
