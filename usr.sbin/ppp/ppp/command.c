@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: command.c,v 1.72 2002/03/31 02:38:49 brian Exp $
+ * $OpenBSD: command.c,v 1.73 2002/05/16 01:13:39 brian Exp $
  */
 
 #include <sys/param.h>
@@ -163,7 +163,7 @@
 #define NEG_MPPE	54
 #define NEG_CHAP81	55
 
-const char Version[] = "3.0.4";
+const char Version[] = "3.0.5";
 
 static int ShowCommand(struct cmdargs const *);
 static int TerminalCommand(struct cmdargs const *);
