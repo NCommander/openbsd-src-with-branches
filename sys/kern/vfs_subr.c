@@ -1780,21 +1780,40 @@ vfs_syncwait(verbose)
 	int verbose;
 {
 	register struct buf *bp;
-	int iter, nbusy;
+	int iter, nbusy, dcount, s;
 
 	sys_sync(&proc0, (void *)0, (register_t *)0);
  
 	/* Wait for sync to finish. */
+	dcount = 10000;
 	for (iter = 0; iter < 20; iter++) {
 		nbusy = 0;
-		for (bp = &buf[nbuf]; --bp >= buf; )
+		for (bp = &buf[nbuf]; --bp >= buf; ) {
 			if ((bp->b_flags & (B_BUSY|B_INVAL)) == B_BUSY)
 				nbusy++;
-			if (nbusy == 0)
-				break;
-			if (verbose)
-				printf("%d ", nbusy);
-			DELAY(40000 * iter);
+			/*
+			 * With soft updates, some buffers that are
+			 * written will be remarked as dirty until other
+			 * buffers are written.
+			 */
+			if (bp->b_flags & B_DELWRI) {
+				s = splbio();
+				bremfree(bp);
+				bp->b_flags |= B_BUSY;
+				splx(s);
+				nbusy++;
+				bawrite(bp);
+				if (dcount-- <= 0) {
+					printf("softdep ");
+					return 1;
+				}
+			}
+		}
+		if (nbusy == 0)
+			break;
+		if (verbose)
+			printf("%d ", nbusy);
+		DELAY(40000 * iter);
 	}   
 
 	return nbusy;
