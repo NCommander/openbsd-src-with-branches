@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_var.h,v 1.13 2000/01/02 09:00:19 angelos Exp $	*/
+/*	$OpenBSD: ip_var.h,v 1.14 2000/09/18 22:06:38 provos Exp $	*/
 /*	$NetBSD: ip_var.h,v 1.16 1996/02/13 23:43:20 christos Exp $	*/
 
 /*
@@ -146,6 +146,7 @@ struct	ipstat {
 	u_long	ips_rcvmemdrop;		/* frags dropped for lack of memory */
 	u_long	ips_toolong;		/* ip length > max ip packet size */
 	u_long	ips_nogif;		/* no match gif found */
+	u_long	ips_badaddr;		/* invalid address on header */
 };
 
 #ifdef _KERNEL
