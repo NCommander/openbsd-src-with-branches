@@ -1,6 +1,0 @@
-#	$OpenBSD$
-
-SUBDIR+= libiberty libio libstdc++ librx libg++ etc
-
-
-.include <bsd.subdir.mk>
