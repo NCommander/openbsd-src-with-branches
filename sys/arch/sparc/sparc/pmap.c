@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.65 2000/01/27 00:18:43 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.66 2000/01/27 02:06:24 art Exp $	*/
 /*	$NetBSD: pmap.c,v 1.118 1998/05/19 19:00:18 thorpej Exp $ */
 
 /*
@@ -2487,7 +2487,7 @@ pv_unlink4m(pv, pm, va)
 			if (BADALIAS(va, npv->pv_va) ||
 			    (npv->pv_flags & PV_C4M) == 0)
 				return;
-		pv->pv_flags &= PV_ANC;
+		pv->pv_flags &= ~PV_ANC;
 		pv_changepte4m(pv, SRMMU_PG_C, 0);
 	}
 }
