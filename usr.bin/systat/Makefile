@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2001/06/27 07:13:39 art Exp $
+#	$OpenBSD: Makefile,v 1.14 2002/02/17 07:52:38 hugh Exp $
 
 PROG=	systat
 
@@ -11,8 +11,6 @@ DPADD=	${LIBCURSES} ${LIBM} ${LIBKVM}
 LDADD=	-lcurses -lm -lkvm
 BINGRP=	kmem
 BINMODE=2555
-
-CPPFLAGS+=-DINET6
 
 .if (${MACHINE_ARCH} == "vax")
 cmds.o:
