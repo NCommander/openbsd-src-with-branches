@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.72 2002/06/24 11:09:01 art Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.73 2002/07/06 19:14:20 nordin Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -840,7 +840,7 @@ sysctl_file(where, sizep)
 	/*
 	 * followed by an array of file structures
 	 */
-	for (fp = filehead.lh_first; fp != 0; fp = fp->f_list.le_next) {
+	LIST_FOREACH(fp, &filehead, f_list) {
 		if (buflen < sizeof(struct file)) {
 			*sizep = where - start;
 			return (ENOMEM);
