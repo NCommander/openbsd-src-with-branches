@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.4 2002/03/14 01:26:37 millert Exp $ */
+/*	$OpenBSD: clock.c,v 1.5 2002/04/27 23:21:05 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -381,7 +381,9 @@ void
 delay(us)
 	int us;
 {
+#if (NPCC > 0) || (NPCCTWO > 0)
 	volatile register int c;
+#endif
 
 	switch (clockbus) {
 #if NPCC > 0

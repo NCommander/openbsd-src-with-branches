@@ -1,4 +1,4 @@
-/*	$OpenBSD: sram.c,v 1.8 2002/03/14 01:26:37 millert Exp $ */
+/*	$OpenBSD: sram.c,v 1.9 2002/04/27 23:21:05 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -93,7 +93,9 @@ sramattach(parent, self, args)
 {
 	struct confargs *ca = args;
 	struct sramsoftc *sc = (struct sramsoftc *)self;
+#ifdef MVME162
 	struct mcreg *mc;
+#endif
 
 	switch (cputyp) {
 #ifdef MVME162
