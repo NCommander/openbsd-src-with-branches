@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 1996/06/23 14:30:02 deraadt Exp $
+# $OpenBSD: Makefile,v 1.3 1996/08/21 06:04:08 tholo Exp $
 
 SRCS=	config_slot.c pcmcia_conf.c
 #dumpreg.c
@@ -10,6 +10,6 @@ PROG=	config_slot
 NOMAN=
 
 pcmcia_conf.o: pcmcia_conf.c
-	$(CC) $(CFLAGS) -D_KERNEL -c $<
+	${COMPILE.c} -D_KERNEL $<
 
 .include <bsd.prog.mk>
