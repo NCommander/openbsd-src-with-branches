@@ -1,4 +1,4 @@
-/*	$OpenBSD: monitor.h,v 1.3 2002/03/26 03:24:01 stevesk Exp $	*/
+/*	$OpenBSD: monitor.h,v 1.4 2002/05/12 23:53:45 djm Exp $	*/
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -49,7 +49,7 @@ enum monitor_reqtype {
 	MONITOR_REQ_RSAKEYALLOWED, MONITOR_ANS_RSAKEYALLOWED,
 	MONITOR_REQ_RSACHALLENGE, MONITOR_ANS_RSACHALLENGE,
 	MONITOR_REQ_RSARESPONSE, MONITOR_ANS_RSARESPONSE,
-	MONITOR_REQ_TERM,
+	MONITOR_REQ_TERM
 };
 
 struct mm_master;
