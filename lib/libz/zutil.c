@@ -1,4 +1,4 @@
-/*	$OpenBSD: zutil.c,v 1.3 1998/08/08 20:57:33 millert Exp $	*/
+/*	$OpenBSD: zutil.c,v 1.4 2000/03/02 00:29:52 todd Exp $	*/
 /* zutil.c -- target dependent utility functions for the compression library
  * Copyright (C) 1995-1998 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h 
@@ -211,6 +211,8 @@ voidpf zcalloc (opaque, items, size)
     unsigned size;
 {
     if (opaque) items += size - size; /* make compiler happy */
+    if (items * size == 0)
+	return (NULL);
     return (voidpf)calloc(items, size);
 }
 
