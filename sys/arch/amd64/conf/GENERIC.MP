@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 include "arch/amd64/conf/GENERIC"
 
 option	MULTIPROCESSOR
