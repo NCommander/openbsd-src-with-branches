@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: tga.c,v 1.15 1999/12/06 19:25:59 drochner Exp $ */
 
 /*

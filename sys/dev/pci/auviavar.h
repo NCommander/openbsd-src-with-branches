@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: auviavar.h,v 1.1 2000/03/31 04:45:29 tsarna Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: auvia.c,v 1.3.4.1 2000/06/30 16:27:49 simonb Exp $	*/
 
 /*-

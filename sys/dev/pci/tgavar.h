@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: tgavar.h,v 1.8 2000/04/02 19:01:11 nathanw Exp $ */
 
 /*
