@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.41 2002/03/17 18:22:25 art Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.42 2003/06/02 23:28:07 millert Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -498,7 +498,7 @@ vn_lock(struct vnode *vp, int flags, struct proc *p)
 		if (vp->v_flag & VXLOCK) {
 			vp->v_flag |= VXWANT;
 			simple_unlock(&vp->v_interlock);
-			tsleep((caddr_t)vp, PINOD, "vn_lock", 0);
+			tsleep(vp, PINOD, "vn_lock", 0);
 			error = ENOENT;
 		} else {
 			error = VOP_LOCK(vp, flags | LK_INTERLOCK, p);
