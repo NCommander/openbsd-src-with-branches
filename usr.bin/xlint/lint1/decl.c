@@ -1,4 +1,4 @@
-/*	$OpenBSD: decl.c,v 1.7 2002/02/16 21:27:59 millert Exp $	*/
+/*	$OpenBSD: decl.c,v 1.8 2003/11/08 19:17:29 jmc Exp $	*/
 /*	$NetBSD: decl.c,v 1.11 1995/10/02 17:34:16 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: decl.c,v 1.7 2002/02/16 21:27:59 millert Exp $";
+static char rcsid[] = "$OpenBSD: decl.c,v 1.8 2003/11/08 19:17:29 jmc Exp $";
 #endif
 
 #include <sys/param.h>
@@ -205,7 +205,7 @@ initdecl()
 /*
  * Returns a shared type structure vor arithmetic types and void.
  *
- * It's important do duplicate this structure (using duptyp() or tdupdyp())
+ * It's important to duplicate this structure (using duptyp() or tduptyp())
  * if it is to be modified (adding qualifiers or anything else).
  */
 type_t *
