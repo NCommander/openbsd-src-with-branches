@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_autoconf.c,v 1.29 2001/09/01 05:48:18 jason Exp $	*/
+/*	$OpenBSD: subr_autoconf.c,v 1.30 2002/03/14 01:27:04 millert Exp $	*/
 /*	$NetBSD: subr_autoconf.c,v 1.21 1996/04/04 06:06:18 cgd Exp $	*/
 
 /*
@@ -49,9 +49,9 @@
 
 #include <sys/param.h>
 #include <sys/device.h>
+#include <sys/limits.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>
-#include <machine/limits.h>
 /* Extra stuff from Matthias Drochner <drochner@zelux6.zel.kfa-juelich.de> */
 #include <sys/queue.h>
 

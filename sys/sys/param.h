@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.46 2002/01/30 20:45:35 nordin Exp $	*/
+/*	$OpenBSD: param.h,v 1.47 2002/03/22 23:29:28 deraadt Exp $	*/
 /*	$NetBSD: param.h,v 1.23 1996/03/17 01:02:29 thorpej Exp $	*/
 
 /*-
@@ -95,8 +95,8 @@
 #include <sys/signal.h>
 
 /* Machine type dependent parameters. */
+#include <sys/limits.h>
 #include <machine/param.h>
-#include <machine/limits.h>
 
 /*
  * Priorities.  Note that with 32 run queues, differences less than 4 are
