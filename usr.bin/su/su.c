@@ -427,7 +427,7 @@ koktologin(name, realm, toname)
 	register AUTH_DAT *kdata;
 	AUTH_DAT kdata_st;
 
-	memset((void *)&kdata_st, 0, sizeof(*kdata_st));
+	memset((void *)&kdata_st, 0, sizeof(kdata_st));
 	kdata = &kdata_st;
 
 	(void)strncpy(kdata->pname, name, sizeof(kdata->pname) - 1);
@@ -435,7 +435,7 @@ koktologin(name, realm, toname)
 
 	(void)strncpy(kdata->pinst,
 	    ((strcmp(toname, "root") == 0) ? "root" : ""), sizeof(kdata->pinst) - 1);
-	kdata->pinst[sizeof(kdata->pinst) -1] '\0';
+	kdata->pinst[sizeof(kdata->pinst) -1] = '\0';
 
 	(void)strncpy(kdata->prealm, realm, sizeof(kdata->prealm) - 1);
 	kdata->prealm[sizeof(kdata->prealm) -1] = '\0';
