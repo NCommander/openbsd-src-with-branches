@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: ypprot_err.c,v 1.2 1996/07/01 07:09:18 deraadt Exp $";
+static char *rcsid = "$OpenBSD: ypprot_err.c,v 1.3 1996/08/19 08:35:13 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -52,7 +52,7 @@ int
 ypprot_err(incode)
 	unsigned int    incode;
 {
-	switch (incode) {
+	switch ((int)incode) {
 	case YP_TRUE:
 		return 0;
 	case YP_FALSE:
