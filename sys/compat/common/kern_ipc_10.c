@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ipc_10.c,v 1.3.10.2 2001/07/04 10:39:14 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_ipc_10.c,v 1.4 1995/10/07 06:26:25 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 /*
  * Note that while we no longer have a COMPAT_10 kernel option,

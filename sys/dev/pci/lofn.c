@@ -1,4 +1,4 @@
-/*	$OpenBSD: lofn.c,v 1.7 2001/06/26 23:34:18 jason Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -44,7 +44,7 @@
 #include <sys/mbuf.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <crypto/cryptodev.h>
 #include <dev/rndvar.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig_43.c,v 1.3.16.1 2001/05/14 22:04:19 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_sig_43.c,v 1.7 1996/03/14 19:31:47 christos Exp $	*/
 
 /*
@@ -65,7 +65,7 @@
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/user.h>		/* for coredump */
 
 int

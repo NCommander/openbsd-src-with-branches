@@ -1,4 +1,4 @@
-/*      $OpenBSD: cryptombuf.c,v 1.3 2001/06/23 18:30:36 deraadt Exp $	*/
+/*      $OpenBSD$	*/
 
 /*
  * Copyright (c) 1999 Theo de Raadt
@@ -35,7 +35,7 @@
 #include <sys/kernel.h>
 #include <sys/mbuf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <crypto/cryptodev.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_43.c,v 1.1.16.1 2001/07/04 10:39:16 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: vm_43.c,v 1.1 1996/02/05 01:58:29 christos Exp $	*/
 
 /*
@@ -62,7 +62,7 @@
 
 #include <miscfs/specfs/specdev.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 /* ARGSUSED */
 int

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.4.4.2 2001/07/04 10:40:20 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -51,7 +51,7 @@
 
 #include <machine/bus.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsi_disk.h>
@@ -1640,7 +1640,8 @@ aac_map_command(struct aac_ccb *ccb)
 			return (error);
 		}
 
-		bus_dmamap_sync(sc->sc_dmat, ccb->ac_dmamap_xfer,
+		bus_dmamap_sync(sc->sc_dmat, ccb->ac_dmamap_xfer, 0,
+		    ccb->ac_dmamap_xfer->dm_mapsize,
 		    (xs->flags & SCSI_DATA_IN) ? BUS_DMASYNC_PREREAD :
 		    BUS_DMASYNC_PREWRITE);
 	}
@@ -1666,7 +1667,8 @@ aac_unmap_command(struct aac_ccb *ccb)
 #endif
 
 	if (xs->datalen != 0) {
-		bus_dmamap_sync(sc->sc_dmat, ccb->ac_dmamap_xfer,
+		bus_dmamap_sync(sc->sc_dmat, ccb->ac_dmamap_xfer, 0,
+		    ccb->ac_dmamap_xfer->dm_mapsize,
 		    (xs->flags & SCSI_DATA_IN) ? BUS_DMASYNC_POSTREAD :
 		    BUS_DMASYNC_POSTWRITE);
 

@@ -1,5 +1,5 @@
-/*	$OpenBSD: if_cuereg.h,v 1.4.2.1 2001/05/14 22:26:19 niklas Exp $ */
-/*	$NetBSD: if_cuereg.h,v 1.11 2000/04/08 20:54:38 augustss Exp $	*/
+/*	$OpenBSD$ */
+/*	$NetBSD: if_cuereg.h,v 1.14 2001/01/21 22:09:24 augustss Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
  *	Bill Paul <wpaul@ee.columbia.edu>.  All rights reserved.

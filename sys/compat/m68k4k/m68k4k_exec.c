@@ -1,4 +1,4 @@
-/*	$OpenBSD: m68k4k_exec.c,v 1.2 1999/01/11 05:12:14 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: m68k4k_exec.c,v 1.1 1996/09/10 22:01:20 thorpej Exp $	*/
 
 /*
@@ -54,7 +54,7 @@
 #include <sys/exec.h>
 #include <sys/resourcevar.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <compat/m68k4k/m68k4k_exec.h>
 

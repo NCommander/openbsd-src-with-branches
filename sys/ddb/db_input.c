@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_input.c,v 1.4 1996/04/21 22:19:01 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_input.c,v 1.7 1996/02/05 01:57:02 christos Exp $	*/
 
 /* 
@@ -33,7 +33,7 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>
 

@@ -51,7 +51,6 @@
 
 #include <machine/endian.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
  
 #include <net/if.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_stat.c,v 1.5 2000/09/07 17:52:23 ericj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ibcs2_stat.c,v 1.5 1996/05/03 17:05:32 christos Exp $	*/
 
 /*
@@ -42,7 +42,7 @@
 #include <sys/vnode.h>
 #include <sys/syscallargs.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <compat/ibcs2/ibcs2_types.h>
 #include <compat/ibcs2/ibcs2_fcntl.h>

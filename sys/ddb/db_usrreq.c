@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 
 #include <ddb/db_var.h>

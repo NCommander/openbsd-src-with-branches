@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_ioasic.c,v 1.4.8.1 2001/05/14 22:26:17 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_le_ioasic.c,v 1.2 1996/05/07 02:24:56 thorpej Exp $	*/
 
 /*
@@ -42,7 +42,6 @@
 #include <net/if.h>
 #include <net/if_media.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #ifdef INET

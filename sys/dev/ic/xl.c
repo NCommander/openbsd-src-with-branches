@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.23.4.2 2001/07/04 10:41:21 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -142,7 +142,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
 
 #include <dev/ic/xlreg.h>
 

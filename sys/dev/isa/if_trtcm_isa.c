@@ -43,6 +43,7 @@
 #include <sys/socket.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
+#include <sys/timeout.h>
 
 #include <net/if.h>
 #include <net/if_media.h>

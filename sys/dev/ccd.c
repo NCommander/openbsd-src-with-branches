@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccd.c,v 1.41.2.1 2001/07/04 10:40:09 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ccd.c,v 1.33 1996/05/05 04:21:14 thorpej Exp $	*/
 
 /*-
@@ -116,7 +116,6 @@
 
 #include <dev/ccdvar.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #ifdef __GNUC__

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_examine.c,v 1.7 1997/07/07 19:45:22 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_examine.c,v 1.11 1996/03/30 22:30:07 christos Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>		/* type definitions */
 

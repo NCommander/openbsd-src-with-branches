@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.41.4.2 2001/07/04 10:42:10 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_de.c,v 1.45 1997/06/09 00:34:18 thorpej Exp $	*/
 
 /*-
@@ -90,7 +90,7 @@
 #include <netns/ns_if.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #if defined(__FreeBSD__)
 #include <vm/pmap.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti.c,v 1.5.4.1 2001/05/14 22:24:15 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2000-2001 Michael Shalayeff
@@ -42,7 +42,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm.h>
 
 #include <machine/bus.h>

@@ -1,6 +1,5 @@
 /*	$OpenBSD$	*/
 /*	$NetBSD: uplcom.c,v 1.20 2001/07/31 12:33:11 ichiro Exp $	*/
-
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
  * All rights reserved.

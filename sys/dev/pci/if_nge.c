@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nge.c,v 1.4 2001/07/02 06:53:43 nate Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -109,7 +109,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

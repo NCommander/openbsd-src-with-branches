@@ -1,4 +1,4 @@
-/*	$OpenBSD: ramdisk.c,v 1.11.2.1 2001/07/04 10:40:12 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ramdisk.c,v 1.8 1996/04/12 08:30:09 leo Exp $	*/
 
 /*
@@ -59,7 +59,6 @@
 #include <sys/disklabel.h>
 #include <sys/dkio.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <dev/ramdisk.h>

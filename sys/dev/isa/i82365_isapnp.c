@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365_isapnp.c,v 1.1.4.1 2001/05/14 22:24:37 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: i82365_isapnp.c,v 1.8 2000/02/23 17:22:11 soren Exp $	*/
 
 /*
@@ -40,7 +40,7 @@
 #include <sys/extent.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <machine/intr.h>

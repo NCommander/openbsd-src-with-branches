@@ -56,7 +56,7 @@ struct usbd_endpoint {
 
 struct usbd_bus_methods {
 	usbd_status	      (*open_pipe)(struct usbd_pipe *pipe);
-	void		      (*soft_intr)(struct usbd_bus *);
+	void		      (*soft_intr)(void *);
 	void		      (*do_poll)(struct usbd_bus *);
 	usbd_status	      (*allocm)(struct usbd_bus *, usb_dma_t *,
 					u_int32_t bufsize);
@@ -115,7 +115,17 @@ struct usbd_bus {
 #define USBREV_1_0	2
 #define USBREV_1_1	3
 #define USBREV_2_0	4
-#define USBREV_STR { "unknown", "pre 1.0", "1.0", "1.1" }
+#define USBREV_STR { "unknown", "pre 1.0", "1.0", "1.1", "2.0" }
+
+#if 0
+#ifdef USB_USE_SOFTINTR
+#ifdef __HAVE_GENERIC_SOFT_INTERRUPTS
+	void		       *soft; /* soft interrupt cookie */
+#else
+	struct callout		softi;
+#endif
+#endif
+#endif
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 	bus_dma_tag_t		dmatag;	/* DMA tag */

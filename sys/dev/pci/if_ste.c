@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ste.c,v 1.5.2.3 2001/07/04 10:42:22 niklas Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -64,7 +64,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
 
 #include <sys/device.h>
 

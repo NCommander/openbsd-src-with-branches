@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_run.c,v 1.12.4.1 2001/05/14 22:06:59 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_run.c,v 1.8 1996/02/05 01:57:12 christos Exp $	*/
 
 /* 
@@ -36,7 +36,7 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>
 

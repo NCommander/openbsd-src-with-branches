@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.6.4.3 2001/07/04 10:42:29 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -87,7 +87,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_isa.c,v 1.13 1998/03/30 20:49:22 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_le_isa.c,v 1.2 1996/05/12 23:52:56 mycroft Exp $	*/
 
 /*-
@@ -58,7 +58,7 @@
 #include <netinet/if_ether.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/intr.h>

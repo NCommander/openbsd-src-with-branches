@@ -1,4 +1,4 @@
-/*	$OpenBSD: bktr_os.c,v 1.1.4.2 2001/07/04 10:43:17 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /* $FreeBSD: src/sys/dev/bktr/bktr_os.c,v 1.20 2000/10/20 08:16:53 roger Exp $ */
 
 /*
@@ -148,7 +148,7 @@ SYSCTL_INT(_hw_bt848, OID_AUTO, slow_msp_audio, CTLFLAG_RW, &bt848_slow_msp_audi
 #include <sys/select.h>
 #include <sys/vnode.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <sys/device.h>
 #include <dev/pci/pcivar.h>

@@ -232,7 +232,7 @@ usb_add_task(usbd_device_handle dev, struct usb_task *task)
 		TAILQ_INSERT_TAIL(&sc->sc_tasks, task, next);
 		task->onqueue = 1;
 	} else
-	DPRINTFN(3,("usb_add_task: sc=%p task=%p on q\n", sc, task));
+		DPRINTFN(3,("usb_add_task: sc=%p task=%p on q\n", sc, task));
 	wakeup(&sc->sc_tasks);
 	splx(s);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_file.c,v 1.6.12.1 2001/05/14 22:04:29 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: hpux_file.c,v 1.5 1997/04/27 21:40:48 thorpej Exp $	*/
 
 /*
@@ -218,8 +218,9 @@ hpux_sys_fcntl(p, v, retval)
 	struct flock fl;
 	struct vnode *vp;
 	struct sys_fcntl_args fa;
+	struct filedesc *fdp;
 
-	if ((fp = fd_getfile(fdp, SCARG(uap, fd)) == NULL)
+	if ((fp = fd_getfile(fdp, SCARG(uap, fd))) == NULL)
 		return (EBADF);
 
 	pop = &p->p_fd->fd_ofileflags[SCARG(uap, fd)];

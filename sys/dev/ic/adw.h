@@ -1,4 +1,4 @@
-/*	$OpenBSD: adw.h,v 1.3.2.1 2001/05/14 22:23:21 niklas Exp $ */
+/*	$OpenBSD$ */
 /*      $NetBSD: adw.h,v 1.9 2000/05/26 15:13:43 dante Exp $        */
 
 /*
@@ -115,14 +115,5 @@ int adw_intr __P((void *arg));
 ADW_CCB *adw_ccb_phys_kv __P((ADW_SOFTC *, u_int32_t));
 
 /******************************************************************************/
-
-#ifdef __HAS_NEW_BUS_DMAMAP_SYNC
-#define	adw_bus_dmamap_sync(tag, map, off, len, op)	\
-    bus_dmamap_sync((tag), (map), (off), (len), (op))
-#else
-#define	adw_bus_dmamap_sync(tag, map, off, len, op)	\
-    bus_dmamap_sync((tag), (map), (op))
-#endif
-
 
 #endif /* _ADVANSYS_ADW_H_ */

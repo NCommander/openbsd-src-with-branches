@@ -1,4 +1,4 @@
-/*	$OpenBSD: adwlib.c,v 1.3.2.2 2001/05/14 22:23:21 niklas Exp $ */
+/*	$OpenBSD$ */
 /* $NetBSD: adwlib.c,v 1.20 2000/07/04 04:17:03 itojun Exp $        */
 
 /*
@@ -68,7 +68,7 @@
 
 #include <dev/pci/pcidevs.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <dev/ic/adwlib.h>
 #include <dev/microcode/adw/adwmcode.h>

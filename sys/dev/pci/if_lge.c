@@ -106,8 +106,8 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
-#include <vm/pmap.h>            /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
+#include <uvm/uvm_pmap.h>            /* for vtophys */
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
@@ -959,7 +959,6 @@ void lge_rxeof(sc, cnt)
 	struct lge_softc	*sc;
 	int			cnt;
 {
-        struct ether_header	*eh;
         struct mbuf		*m;
         struct ifnet		*ifp;
 	struct lge_rx_desc	*cur_rx;
@@ -1015,10 +1014,6 @@ void lge_rxeof(sc, cnt)
 		}
 
 		ifp->if_ipackets++;
-		eh = mtod(m, struct ether_header *);
-
-		/* Remove header from mbuf and pass it on. */
-		m_adj(m, sizeof(struct ether_header));
 
 #if NBPFILTER > 0
 		/*
@@ -1063,7 +1058,7 @@ void lge_rxeof(sc, cnt)
 				m->m_pkthdr.csum |= M_UDP_CSUM_IN_OK;
 		}
 
-		ether_input(ifp, eh, m);
+		ether_input_mbuf(ifp, m);
 	}
 
 	sc->lge_cdata.lge_rx_cons = i;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_ipc.c,v 1.4 1996/10/17 19:15:47 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ibcs2_ipc.c,v 1.7 1997/01/18 01:51:41 mycroft Exp $	*/
 
 /*
@@ -56,7 +56,7 @@
 #include <sys/shm.h>
 #include <sys/syscallargs.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <compat/ibcs2/ibcs2_types.h>
 #include <compat/ibcs2/ibcs2_signal.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.10.2.2 2001/07/04 10:40:17 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -90,7 +90,7 @@
 #endif
 #include <sys/vnode.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/intr.h>
 #include <machine/bus.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: midway.c,v 1.25.4.1 2001/05/14 22:24:00 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	(sync'd to midway.c 1.68)	*/
 
 /*
@@ -132,7 +132,7 @@
 #include <net/if.h>
 #include <net/if_atm.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #ifdef INET
 #include <netinet/if_atm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_pcmcia.c,v 1.7 2001/06/23 01:56:10 millert Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -124,6 +124,11 @@ static const struct wi_pcmcia_product {
 	  PCMCIA_CIS_COREGA_WIRELESS_LAN_PCCB_11,
 	  "Corega Wireless LAN PCCB-11",
 	},
+	{ PCMCIA_VENDOR_INTEL,
+	  PCMCIA_PRODUCT_INTEL_PRO_WLAN_2011,
+	  PCMCIA_CIS_INTEL_PRO_WLAN_2011,
+	  "Intel PRO/Wireless 2011",
+	},
 	{ PCMCIA_VENDOR_INTERSIL,
 	  PCMCIA_PRODUCT_INTERSIL_PRISM2,
 	  PCMCIA_CIS_INTERSIL_PRISM2,
@@ -193,6 +198,11 @@ static const struct wi_pcmcia_product {
 	  PCMCIA_PRODUCT_GEMTEK_WLAN,
 	  PCMCIA_CIS_GEMTEK_WLAN,
 	  "GEMTEK Prism2_5 WaveLAN Card"
+	},
+	{ PCMCIA_VENDOR_ELSA,
+	  PCMCIA_PRODUCT_ELSA_XI800_IEEE,
+	  PCMCIA_CIS_ELSA_XI800_IEEE,
+	  "ELSA XI800 CF Wireless LAN"
 	},
 	{ 0,
 	  0,

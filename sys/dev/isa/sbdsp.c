@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbdsp.c,v 1.16 2001/04/12 07:46:46 csapuntz Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -54,7 +54,7 @@
 #include <sys/device.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/intr.h>
@@ -2226,11 +2226,11 @@ sb_round(addr, size)
 	return size;
 }
 
-int
+paddr_t
 sb_mappage(addr, mem, off, prot)
 	void *addr;
         void *mem;
-        int off;
+        off_t off;
 	int prot;
 {
 	return isa_mappage(mem, off, prot);

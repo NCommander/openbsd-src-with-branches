@@ -1,5 +1,5 @@
-/*	$OpenBSD: ucomvar.h,v 1.6.2.1 2001/05/14 22:26:20 niklas Exp $ */
-/*	$NetBSD: ucomvar.h,v 1.8 2000/09/03 19:15:45 augustss Exp $	*/
+/*	$OpenBSD$ */
+/*	$NetBSD: ucomvar.h,v 1.9 2001/01/23 21:56:17 augustss Exp $	*/
 
 /*
  * Copyright (c) 1999 The NetBSD Foundation, Inc.

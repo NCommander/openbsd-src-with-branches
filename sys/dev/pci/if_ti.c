@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti.c,v 1.9.2.3 2001/07/04 10:42:23 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -110,7 +110,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
 #include <machine/bus.h>
 
 #include <dev/pci/pcireg.h>

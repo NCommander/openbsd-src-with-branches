@@ -1,4 +1,4 @@
-/* $OpenBSD: tga.c,v 1.6.4.2 2001/07/04 10:43:04 niklas Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: tga.c,v 1.31 2001/02/11 19:34:58 nathanw Exp $ */
 
 /*
@@ -55,7 +55,6 @@
 #include <dev/rasops/rasops.h>
 #include <dev/wsfont/wsfont.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #ifdef __alpha__

@@ -90,6 +90,11 @@
 #include <dev/ic/am79c930var.h>
 #include <dev/ic/awireg.h>
 #include <dev/ic/awivar.h>
+#include <dev/rndvar.h>
+#endif
+
+#ifdef __OpenBSD__
+#include <dev/rndvar.h>
 #endif
 
 #ifdef __NetBSD__

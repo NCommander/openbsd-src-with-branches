@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_exec.c,v 1.9 1999/01/11 05:12:12 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ibcs2_exec.c,v 1.12 1996/10/12 02:13:52 thorpej Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #include <sys/vnode.h>
 #include <sys/resourcevar.h>
 #include <sys/namei.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <compat/ibcs2/ibcs2_types.h>
 #include <compat/ibcs2/ibcs2_exec.h>

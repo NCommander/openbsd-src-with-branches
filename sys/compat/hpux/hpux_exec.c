@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_exec.c,v 1.11 1999/11/26 16:44:27 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: hpux_exec.c,v 1.8 1997/03/16 10:14:44 thorpej Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/reg.h>

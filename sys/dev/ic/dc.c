@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.27.4.2 2001/07/04 10:40:48 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -122,7 +122,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>		/* for vtophys */
+#include <uvm/uvm_extern.h>		/* for vtophys */
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iy.c,v 1.4.6.1 2001/05/14 22:24:44 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_iy.c,v 1.4 1996/05/12 23:52:53 mycroft Exp $	*/
 /* #define IYDEBUG */
 /* #define IYMEMDEBUG */
@@ -72,7 +72,7 @@
 #include <netns/ns_if.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/intr.h>
