@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.14 2004/07/07 23:10:45 deraadt Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.15 2004/09/15 17:46:43 grange Exp $	*/
 /*	$NetBSD: if_de.c,v 1.27 1997/04/19 15:02:29 ragge Exp $	*/
 
 /*
@@ -256,7 +256,7 @@ deinit(ds)
 	int s,incaddr;
 
 	/* not yet, if address still unknown */
-	if (ifp->if_addrlist.tqh_first == (struct ifaddr *)0)
+	if (TAILQ_EMPTY(&ifp->if_addrlist))
 		return;
 
 	if (ds->ds_flags & DSF_RUNNING)

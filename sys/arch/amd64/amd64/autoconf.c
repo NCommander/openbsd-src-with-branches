@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.6 2004/02/27 23:45:23 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.7 2004/10/23 08:21:26 mjc Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*-
@@ -192,7 +192,7 @@ parsedisk(str, len, defpart, devp)
 	}
 #endif
 
-	for (dv = alldevs.tqh_first; dv != NULL; dv = dv->dv_list.tqe_next) {
+	TAILQ_FOREACH(dv, &alldevs, dv_list) {
 		if (dv->dv_class == DV_DISK &&
 		    strcmp(str, dv->dv_xname) == 0) {
 #ifdef RAMDISK_HOOKS
