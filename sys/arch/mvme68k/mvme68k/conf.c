@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.35 2003/09/23 16:51:11 millert Exp $ */
+/*	$OpenBSD: conf.c,v 1.36 2003/09/26 06:58:04 miod Exp $ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt
@@ -214,6 +214,7 @@ struct cdevsw	cdevsw[] =
 #else
 	cdev_lkm_dummy(),		/* 51 */
 #endif
+	cdev_ptm_init(NPTY,ptm),	/* 52: pseudo-tty ptm device */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

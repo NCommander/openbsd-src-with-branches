@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.41 2003/06/26 13:06:26 miod Exp $ */
+/*	$OpenBSD: conf.c,v 1.42 2003/09/23 16:51:12 millert Exp $ */
 /*	$NetBSD: conf.c,v 1.44 1999/10/27 16:38:54 ragge Exp $	*/
 
 /*-
@@ -438,6 +438,7 @@ struct cdevsw	cdevsw[] =
 #else
 	cdev_notdef(),			/* 74 */
 #endif
+	cdev_ptm_init(NPTY,ptm),	/* 75: pseudo-tty ptm device */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.35 2003/06/02 23:27:56 millert Exp $	*/
+/*	$OpenBSD: conf.c,v 1.36 2003/06/27 16:57:14 nate Exp $	*/
 /*	$NetBSD: conf.c,v 1.17 2001/03/26 12:33:26 lukem Exp $ */
 
 /*
@@ -291,6 +291,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 120 */
 	cdev_disk_init(NRAID,raid),	/* 121: RAIDframe disk driver */
 	cdev_tty_init(NPCONS,pcons),	/* 122: PROM console */
+	cdev_ptm_init(NPTY,ptm),	/* 123: pseudo-tty ptm device */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
