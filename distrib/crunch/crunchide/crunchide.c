@@ -1,4 +1,4 @@
-/*	$OpenBSD: crunchide.c,v 1.13 2001/05/11 14:08:19 art Exp $	*/
+/*	$OpenBSD: crunchide.c,v 1.14 2001/09/18 21:23:41 jason Exp $	*/
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -57,7 +57,7 @@
  *      - arrange that all the BSS segments start at the same address, so
  *	  that the final crunched binary BSS size is the max of all the
  *	  component programs' BSS sizes, rather than their sum.
- */ 
+ */
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

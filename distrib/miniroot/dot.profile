@@ -1,10 +1,10 @@
-#	$OpenBSD: dot.profile,v 1.11 2002/04/13 17:36:56 deraadt Exp $
+#	$OpenBSD: dot.profile,v 1.1 2002/04/22 02:43:16 deraadt Exp $
 #	$NetBSD: dot.profile,v 1.1 1995/12/18 22:54:43 pk Exp $
 #
 # Copyright (c) 1995 Jason R. Thorpe
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
