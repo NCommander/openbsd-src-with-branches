@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.9 2002/09/08 04:33:46 jason Exp $	*/
+/*	$OpenBSD: server.c,v 1.10 2003/06/04 04:46:13 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -145,7 +145,7 @@ server_mode(bpffd, sysname, srvname, ea)
 }
 
 void
-key_gen()
+key_gen(void)
 {
 	u_int32_t r;
 

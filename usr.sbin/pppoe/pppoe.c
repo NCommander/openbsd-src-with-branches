@@ -1,4 +1,4 @@
-/*	$OpenBSD: pppoe.c,v 1.8 2002/09/08 04:33:46 jason Exp $	*/
+/*	$OpenBSD: pppoe.c,v 1.9 2003/06/04 04:46:13 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -372,7 +372,7 @@ getifhwaddr(ifnhint, ifnambuf, ea)
 }
 
 void
-usage()
+usage(void)
 {
 	extern char *__progname;
 
@@ -393,7 +393,7 @@ child_handler(sig)
 }
 
 int
-signal_init()
+signal_init(void)
 {
 	struct sigaction act;
 
