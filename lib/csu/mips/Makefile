@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.8 1997/04/27 20:56:02 millert Exp $
 #	from: @(#)Makefile	8.1 (Berkeley) 6/1/93
-#	$Id: Makefile,v 1.7 1996/12/08 15:22:21 downsj Exp $
 
 CFLAGS+=	-DLIBC_SCCS -I${.CURDIR}
 OBJS=		crt0.o gcrt0.o scrt0.o crtn.o

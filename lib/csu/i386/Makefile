@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.4 1997/07/24 14:24:42 deraadt Exp $
 #	from: @(#)Makefile	5.5 (Berkeley) 5/21/91
-#	$Id: Makefile,v 1.3 1997/04/27 20:56:00 millert Exp $
 
 CFLAGS+=	-fno-omit-frame-pointer -DLIBC_SCCS -I${.CURDIR}/..
 OBJS=		crt0.o gcrt0.o scrt0.o

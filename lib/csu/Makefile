@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.1.1.1 1995/10/18 08:41:17 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1997/11/08 08:13:10 todd Exp $
 
 .if make(obj)
 SUBDIR= alpha i386 m68k mips mvme88k ns32k powerpc sparc vax

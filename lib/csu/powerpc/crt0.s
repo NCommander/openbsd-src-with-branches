@@ -1,4 +1,4 @@
-
+#	$OpenBSD$
 	
 	.section ".data"
 	.comm	environ, 4
