@@ -1,4 +1,4 @@
-/*	$OpenBSD: osdep.h,v 1.10 2004/02/23 20:09:02 deraadt Exp $	*/
+/*	$OpenBSD: osdep.h,v 1.11 2004/02/23 20:13:33 henning Exp $	*/
 
 /* Operating system dependencies... */
 
@@ -64,7 +64,6 @@ extern int h_errno;
 #include <stdarg.h>
 
 #define EOL	'\n'
-#define VOIDPTR void *
 
 #if !defined (TIME_MAX)
 # define TIME_MAX 2147483647
