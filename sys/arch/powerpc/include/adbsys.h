@@ -1,4 +1,4 @@
-/*	$OpenBSD: adbsys.h,v 1.2 2001/03/29 18:41:49 drahn Exp $	*/
+/*	$OpenBSD: adbsys.h,v 1.3 2001/06/29 06:07:08 drahn Exp $	*/
 /*	$NetBSD: adbsys.h,v 1.4 2000/12/19 02:59:24 tsubai Exp $	*/
 
 /*-
@@ -120,6 +120,7 @@ typedef struct adb_dev_s{
 #define ADB_PBEXTKBD	24
 #define ADB_DESIGNKBD	27	/* XXX Needs to be verified XXX */
 #define ADB_PBJPKBD	30
+#define ADB_IBITISOKBD	196
 #define ADB_PBG3JPKBD	201
 
 	/* Interesting mouse handler IDs */
