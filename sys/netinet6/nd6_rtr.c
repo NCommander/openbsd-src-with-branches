@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_rtr.c,v 1.1 1999/12/08 06:50:23 itojun Exp $	*/
+/*	$OpenBSD: nd6_rtr.c,v 1.2 1999/12/10 10:04:28 angelos Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -40,6 +40,7 @@
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
+#include <dev/rndvar.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
