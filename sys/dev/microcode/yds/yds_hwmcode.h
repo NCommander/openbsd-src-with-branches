@@ -1,5 +1,4 @@
-/*	$OpenBSD */
-/*  $NetBSD$    */
+/*	$OpenBSD$	*/
 
 /*=============================================================================
  Copyright (c) 1997-1999  Yamaha Corporation. All Rights Reserved.
