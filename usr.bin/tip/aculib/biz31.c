@@ -1,4 +1,4 @@
-/*	$OpenBSD: biz31.c,v 1.6 2001/10/24 18:38:58 millert Exp $	*/
+/*	$OpenBSD: biz31.c,v 1.7 2003/04/04 21:50:00 deraadt Exp $	*/
 /*	$NetBSD: biz31.c,v 1.5 1997/02/11 09:24:14 mrg Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)biz31.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: biz31.c,v 1.6 2001/10/24 18:38:58 millert Exp $";
+static char rcsid[] = "$OpenBSD: biz31.c,v 1.7 2003/04/04 21:50:00 deraadt Exp $";
 #endif /* not lint */
 
 #include "tip.h"
@@ -122,7 +122,7 @@ biz31f_dialer(num, acu)
 biz31_disconnect()
 {
 
-	write(FD, DISCONNECT_CMD, 4);
+	write(FD, DISCONNECT_CMD, sizeof(DISCONNECT_CMD)-1);
 	sleep(2);
 	tcflush(FD, TCIOFLUSH);
 }
