@@ -713,7 +713,7 @@ trace_add_del(char * action, struct rt_entry *rt)
 /* ARGSUSED */
 static int
 walk_trace(struct radix_node *rn,
-	   struct walkarg *w)
+	   void *w)
 {
 #define RT ((struct rt_entry *)rn)
 	struct rt_spare *rts;
