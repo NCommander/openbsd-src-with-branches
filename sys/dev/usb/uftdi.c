@@ -1,4 +1,4 @@
-/*	$OpenBSD: uftdi.c,v 1.2 2001/02/20 04:15:28 nate Exp $ 	*/
+/*	$OpenBSD: uftdi.c,v 1.3 2001/05/03 02:20:33 aaron Exp $ 	*/
 /*	$NetBSD: uftdi.c,v 1.6 2001/01/23 21:56:17 augustss Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbdi_util.h,v 1.7 2000/11/08 18:10:39 aaron Exp $ */
+/*	$OpenBSD: usbdi_util.h,v 1.8 2001/10/31 04:24:45 nate Exp $ */
 /*	$NetBSD: usbdi_util.h,v 1.23 2001/10/26 17:58:22 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usbdi_util.h,v 1.9 1999/11/17 22:33:50 n_hibma Exp $	*/
 

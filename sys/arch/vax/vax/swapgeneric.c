@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapgeneric.c,v 1.8 2001/04/09 00:59:31 hugh Exp $	*/
+/*	$OpenBSD: swapgeneric.c,v 1.9 2001/09/29 18:40:33 miod Exp $	*/
 /*	$NetBSD: swapgeneric.c,v 1.13 1996/10/13 03:36:01 christos Exp $	*/
 
 /*-
@@ -43,7 +43,7 @@
 #include <sys/param.h>
 #include <sys/conf.h>
 
-int (*mountroot) __P((void)) = NULL;
+int (*mountroot)(void) = NULL;
 
 dev_t	rootdev = NODEV;
 dev_t	dumpdev = NODEV;

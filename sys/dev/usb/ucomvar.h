@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucomvar.h,v 1.8 2002/01/30 20:45:34 nordin Exp $ */
+/*	$OpenBSD: ucomvar.h,v 1.7.2.1 2002/01/31 22:55:39 niklas Exp $ */
 /*	$NetBSD: ucomvar.h,v 1.9 2001/01/23 21:56:17 augustss Exp $	*/
 
 /*

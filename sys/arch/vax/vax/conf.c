@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.31 2001/12/11 23:19:02 miod Exp $ */
+/*	$OpenBSD: conf.c,v 1.32 2001/12/13 09:20:47 hugh Exp $ */
 /*	$NetBSD: conf.c,v 1.44 1999/10/27 16:38:54 ragge Exp $	*/
 
 /*-
@@ -244,7 +244,7 @@ struct	consdev constab[]={
 };
 
 /* Special for console storage */
-#define dev_type_rw(n)	int n __P((dev_t, int, int, struct proc *))
+#define dev_type_rw(n)	int n(dev_t, int, int, struct proc *)
 
 /* plotters - open, close, write, ioctl, select*/
 #define cdev_plotter_init(c,n) { \
@@ -404,6 +404,8 @@ cdev_decl(xfs_dev);
 
 #include <altq/altqconf.h>
 
+#include "systrace.h"
+
 struct cdevsw	cdevsw[] =
 {
 	cdev_cn_init(1,cn),		/* 0: virtual console */
@@ -455,7 +457,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 46  was Datakit */
 	cdev_notdef(),			/* 47 */
 	cdev_notdef(),			/* 48 */
-	cdev_notdef(),			/* 49 */
+	cdev_systrace_init(NSYSTRACE,systrace),	/* 49: system call tracing */
 	cdev_ksyms_init(NKSYMS,ksyms),  /* 50: Kernel symbols device */
 	cdev_cnstore_init(NCRX,crx),	/* 51: Console RX50 at 8200 */
 	cdev_notdef(),			/* 52: was: KDB50/RA?? */

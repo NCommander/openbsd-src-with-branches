@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhcireg.h,v 1.8 2001/05/03 02:20:33 aaron Exp $ */
+/*	$OpenBSD: uhcireg.h,v 1.9 2001/10/31 04:24:44 nate Exp $ */
 /*	$NetBSD: uhcireg.h,v 1.14 2001/08/06 15:15:08 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/uhcireg.h,v 1.12 1999/11/17 22:33:42 n_hibma Exp $ */
 

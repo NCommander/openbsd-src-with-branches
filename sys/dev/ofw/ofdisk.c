@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofdisk.c,v 1.3 1997/11/07 08:07:22 niklas Exp $	*/
+/*	$OpenBSD: ofdisk.c,v 1.4 1998/10/03 21:19:01 millert Exp $	*/
 /*	$NetBSD: ofdisk.c,v 1.3 1996/10/13 01:38:13 christos Exp $	*/
 
 /*
@@ -54,8 +54,8 @@ struct ofd_softc {
 	char sc_name[16];
 };
 
-static int ofdprobe __P((struct device *, void *, void *));
-static void ofdattach __P((struct device *, struct device *, void *));
+static int ofdprobe(struct device *, void *, void *);
+static void ofdattach(struct device *, struct device *, void *);
 
 struct cfattach ofdisk_ca = {
 	sizeof(struct ofd_softc), ofdprobe, ofdattach
@@ -65,7 +65,7 @@ struct cfdriver ofdisk_cd = {
 	NULL, "ofdisk", DV_DISK
 };
 
-void ofdstrategy __P((struct buf *));
+void ofdstrategy(struct buf *);
 
 struct dkdriver ofdkdriver = { ofdstrategy };
 
@@ -236,6 +236,7 @@ ofdstrategy(bp)
 	int read;
 	int (*OF_io)(int, void *, int);
 	daddr_t blkno = bp->b_blkno;
+	int s;
 	
 	bp->b_resid = 0;
 	if (bp->b_bcount == 0)
@@ -272,7 +273,9 @@ ofdstrategy(bp)
 	disk_unbusy(&of->sc_dk, bp->b_bcount - bp->b_resid);
 
 done:
-	biodone(bp);
+	s = splbio();
+	biodone(bp);'
+	splx(s);
 }
 
 static void

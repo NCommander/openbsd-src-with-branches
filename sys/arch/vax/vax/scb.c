@@ -1,4 +1,4 @@
-/*	$OpenBSD: scb.c,v 1.2 2001/06/25 00:43:19 mickey Exp $	*/
+/*	$OpenBSD: scb.c,v 1.3 2001/08/25 13:33:37 hugh Exp $	*/
 /*	$NetBSD: scb.c,v 1.12 2000/06/04 06:16:59 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden.
@@ -49,7 +49,7 @@
 struct scb *scb;
 struct ivec_dsp *scb_vec;
 
-static	void scb_stray __P((void *));
+static	void scb_stray(void *);
 static	volatile int vector, ipl, gotintr;
 
 /*
