@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: nxstack.c,v 1.1 2002/07/01 18:15:51 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include <signal.h>
+#include <string.h>
 
 void
 testfly()
