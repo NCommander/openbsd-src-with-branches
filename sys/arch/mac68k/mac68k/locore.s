@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.36 2004/11/25 18:32:10 miod Exp $	*/
+/*	$OpenBSD: locore.s,v 1.37 2004/11/26 21:21:28 miod Exp $	*/
 /*	$NetBSD: locore.s,v 1.103 1998/07/09 06:02:50 scottr Exp $	*/
 
 /*
@@ -122,6 +122,7 @@ ASLOCAL(tmpstk)
 BSS(esym,4)
 
 ASENTRY_NOPROFILE(start)
+GLOBAL(kernel_start)
 	movw	#PSL_HIGHIPL,sr		| no interrupts.  ever.
 	lea	_ASM_LABEL(tmpstk),sp	| give ourselves a temporary stack
 
