@@ -1,4 +1,4 @@
-/*	$OpenBSD: nxstack-mprotect.c,v 1.1 2002/07/27 06:52:37 mickey Exp $	*/
+/*	$OpenBSD: nxheap-mprotect.c,v 1.1 2002/08/27 16:37:42 matthieu Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define SIZE 256 /* assuming the testfly() will fit */
 
