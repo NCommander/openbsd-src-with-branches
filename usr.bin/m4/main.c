@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.37 2001/02/05 01:57:27 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.38 2001/03/02 00:25:24 aaron Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.37 2001/02/05 01:57:27 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.38 2001/03/02 00:25:24 aaron Exp $";
 #endif
 #endif /* not lint */
 
@@ -162,7 +162,7 @@ static void dump_stack __P((struct position *, int));
 
 static void macro __P((void));
 static void initkwds __P((void));
-static ndptr inspect __P((char, char *));
+static ndptr inspect __P((int, char *));
 static int do_look_ahead __P((int, const char *));
 
 static void enlarge_stack __P((void));
@@ -492,7 +492,7 @@ outputstr(s)
  */
 static ndptr
 inspect(c, tp) 
-	char c;
+	int c;
 	char *tp;
 {
 	char *name = tp;
