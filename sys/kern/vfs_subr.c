@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.69 2001/11/06 19:53:20 miod Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.70 2001/11/12 23:05:52 art Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -447,7 +447,6 @@ getnewvnode(tag, mp, vops, vpp)
 		splx(s);
 #endif
 		vp->v_flag = 0;
-		vp->v_bioflag = 0;
 		vp->v_socket = 0;
 	}
 	vp->v_type = VNON;
