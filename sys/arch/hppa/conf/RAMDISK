@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.10 2003/02/15 20:16:41 miod Exp $
+#	$OpenBSD: RAMDISK,v 1.11 2003/02/15 23:45:50 miod Exp $
 #
 # Diskless kernel config
 #
@@ -121,8 +121,6 @@ gsckbd*	at gsckbc?	# PS/2 keyboard
 wsdisplay*	at sti?
 wskbd*		at gsckbd?
 wskbd*		at hilkbd?
-#wsmouse*	at gscms?
-#wsmouse*	at hms?
 
 #fd*	at fdc?	drive ?	# floppy drives
 
