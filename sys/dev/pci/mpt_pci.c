@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpt_pci.c,v 1.5 2004/06/22 19:00:53 marco Exp $	*/
+/*	$OpenBSD: mpt_pci.c,v 1.6 2004/08/23 21:00:42 marco Exp $	*/
 /*	$NetBSD: mpt_pci.c,v 1.2 2003/07/14 15:47:26 lukem Exp $	*/
 
 /*
@@ -62,11 +62,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * mpt_pci.c:
  *
  * OpenBSD PCI-specific routines for LSI Fusion adapters.
- */     
+ */
 
 #include <sys/cdefs.h>
 /* __KERNEL_RCSID(0, "$NetBSD: mpt_pci.c,v 1.2 2003/07/14 15:47:26 lukem Exp $"); */
