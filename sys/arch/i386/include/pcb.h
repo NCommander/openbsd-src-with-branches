@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.3.16.2 2001/07/14 10:02:40 ho Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.3.16.3 2003/04/11 16:12:57 niklas Exp $	*/
 /*	$NetBSD: pcb.h,v 1.21 1996/01/08 13:51:42 mycroft Exp $	*/
 
 /*-
@@ -61,6 +61,7 @@ struct pcb {
 #define	pcb_cr3	pcb_tss.tss_cr3
 #define	pcb_esp	pcb_tss.tss_esp
 #define	pcb_ebp	pcb_tss.tss_ebp
+#define	pcb_cs	pcb_tss.tss_cs
 #define	pcb_fs	pcb_tss.tss_fs
 #define	pcb_gs	pcb_tss.tss_gs
 #define	pcb_ldt_sel	pcb_tss.tss_ldt

@@ -1,4 +1,4 @@
-/* $OpenBSD: apicvec.s,v 1.1.2.5 2001/10/30 19:21:17 niklas Exp $ */	
+/* $OpenBSD$ */	
 /* $NetBSD: apicvec.s,v 1.1.2.2 2000/02/21 21:54:01 sommerfeld Exp $ */	
 
 /*-
@@ -167,7 +167,7 @@ XINTR(ioapic/**/minor):						\
 	movl	%esp,%eax		/* 0 means frame pointer */	;\
 6:									 \
 	pushl	%eax							;\
-	call	IH_FUN(%ebx)		/* call it */			;\
+	call	*IH_FUN(%ebx)		/* call it */			;\
 	addl	$4,%esp			/* toss the arg */		;\
 	incl	IH_COUNT(%ebx)		/* count the intrs */		;\
 	movl	IH_NEXT(%ebx),%ebx	/* next handler in chain */	;\

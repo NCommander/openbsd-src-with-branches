@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmcall.S,v 1.1.2.1 2000/02/21 22:29:01 niklas Exp $	*/
+/*	$OpenBSD: apmcall.S,v 1.1.2.2 2001/07/04 10:16:31 niklas Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -79,7 +79,7 @@ ENTRY(apmcall)
 	movl	8(%ebp), %eax
 
 	clc
-	lcall	%cs:(_C_LABEL(apm_ep))
+	lcall	%cs:*(_C_LABEL(apm_ep))
 	pushl	%eax
 	setc	%al
 	movzbl	%al, %esi

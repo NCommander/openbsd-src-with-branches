@@ -440,16 +440,19 @@ ioapic_enable(void)
 
 	ioapic_cold = 0;
 
-#if NISA > 0
-	isa_nodefaultirq();
-#endif
-
 	lapic_set_softvectors();
 	lapic_set_lvt();
 
 	for (a = 0; a < 16; a++) {
 		struct ioapic_softc *sc = ioapics[a];
 		if (sc != NULL) {
+#if NISA > 0
+			static int found_one = 0;
+
+			if (!found_one++)
+				isa_nodefaultirq();
+#endif
+
 			printf("%s: enabling\n", sc->sc_dev.dv_xname);
 
 			if (!did_imcr &&

@@ -267,7 +267,7 @@ bitmask_snprintf(val, p, buf, buflen)
         if (sbase == 0)
                 return (buf);   /* punt if not oct, dec, or hex */
 
-        sprintf(snbuf, sbase, val);
+        snprintf(snbuf, sizeof snbuf, sbase, val);
         for (q = snbuf ; *q ; q++) {
                 *bp++ = *q;
                 left--;
@@ -333,7 +333,7 @@ bitmask_snprintf(val, p, buf, buflen)
                                 sep = ',';
                                 PUTSTR(bp, p, left);
                                 PUTBYTE(bp, '=', left);
-                                sprintf(snbuf, sbase, field);
+                                snprintf(snbuf, sizeof snbuf, sbase, field);
                                 q = snbuf; PUTSTR(bp, q, left);
                                 break;
                         case '=':

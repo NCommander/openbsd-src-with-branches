@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.4.4.12 2003/04/05 20:41:11 niklas Exp $	*/
+/*	$OpenBSD: intr.h,v 1.4.4.13 2003/04/06 14:04:33 niklas Exp $	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -244,7 +244,7 @@ softintr(sir, vec)
 	register int sir;
 	register int vec;
 {
-	__asm __volatile("orl %0,_ipending" : : "ir" (sir));
+	__asm __volatile("orl %0,ipending" : : "ir" (sir));
 #ifdef MULTIPROCESSOR
 	i82489_writereg(LAPIC_ICRLO,
 	    vec | LAPIC_DLMODE_FIXED | LAPIC_LVL_ASSERT | LAPIC_DEST_SELF);
