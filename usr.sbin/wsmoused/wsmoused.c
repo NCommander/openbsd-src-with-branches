@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmoused.c,v 1.2 2001/08/12 17:53:16 fgsch Exp $ */
+/* $OpenBSD: wsmoused.c,v 1.3 2001/08/13 06:32:18 pvalchev Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -223,10 +223,13 @@ static void
 terminate(int sig)
 {
 	struct wscons_event event;
+	unsigned int res;
 
 	if (mouse.mfd != -1) {
 		event.type = WSCONS_EVENT_WSMOUSED_OFF;
 		ioctl(mouse.mfd, WSDISPLAYIO_WSMOUSED, &event);
+		res = WSMOUSE_RES_DEFAULT;
+		ioctl(mouse.mfd, WSMOUSEIO_SRES, &res);
 		close(mouse.mfd);
 		mouse.mfd = -1;
 	}
