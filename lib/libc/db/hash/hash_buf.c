@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: hash_buf.c,v 1.3 1996/08/19 08:20:35 tholo Exp $";
+static char rcsid[] = "$OpenBSD: hash_buf.c,v 1.4 1996/10/14 22:17:27 downsj Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -60,6 +60,7 @@ static char rcsid[] = "$OpenBSD: hash_buf.c,v 1.3 1996/08/19 08:20:35 tholo Exp 
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef DEBUG
 #include <assert.h>
