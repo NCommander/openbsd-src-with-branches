@@ -1,4 +1,4 @@
-/*	$OpenBSD: strncpy.c,v 1.1 1996/10/16 11:32:07 mickey Exp $ */
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 1996 Michael Shalayeff
@@ -31,13 +31,11 @@
 #include "stand.h"
 
 char *
-strncpy(s1, s2, n)
-	char *s1;
-	const char *s2;
-	size_t	n;
+strncpy(char *s1, const char *s2, size_t n)
 {
 	char *p = s1;
-	while(n-- && (*s1++ = *s2++) != '\0')
+
+	while (n-- && (*s1++ = *s2++) != '\0')
 		;
 	return p;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ns_output.c,v 1.2.16.1 2002/03/28 14:57:38 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ns_output.c,v 1.8 1996/02/13 22:14:01 christos Exp $	*/
 
 /*
@@ -49,7 +49,7 @@
 #include <netns/idp.h>
 #include <netns/idp_var.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 int ns_hold_output = 0;
 int ns_copy_output = 0;
@@ -61,8 +61,8 @@ ns_output(struct mbuf *m0, ...)
 {
 	struct route *ro;
 	int flags;
-	register struct idp *idp = mtod(m0, struct idp *);
-	register struct ifnet *ifp = 0;
+	struct idp *idp = mtod(m0, struct idp *);
+	struct ifnet *ifp = 0;
 	int error = 0;
 	struct route idproute;
 	struct sockaddr_ns *dst;

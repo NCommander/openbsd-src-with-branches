@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_slvar.h,v 1.4.14.3 2002/03/28 14:57:37 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_slvar.h,v 1.16 1996/05/07 02:40:46 thorpej Exp $	*/
 
 /*-
@@ -66,6 +66,7 @@ struct sl_softc {
 #endif
 	caddr_t	sc_bpf;			/* BPF data */
 	struct timeval sc_lastpacket;	/* for watchdog */
+	LIST_ENTRY(sl_softc) sc_list;	/* all slip interfaces */
 };
 
 /*

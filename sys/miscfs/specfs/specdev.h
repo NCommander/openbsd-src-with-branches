@@ -1,4 +1,4 @@
-/*	$OpenBSD: specdev.h,v 1.7.8.4 2003/03/28 00:00:20 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: specdev.h,v 1.12 1996/02/13 13:13:01 mycroft Exp $	*/
 
 /*
@@ -92,7 +92,7 @@ int	spec_read(void *);
 int	spec_write(void *);
 #define	spec_lease_check nullop
 int	spec_ioctl(void *);
-int	spec_select(void *);
+int	spec_poll(void *);
 int	spec_kqfilter(void *);
 int	spec_fsync(void *);
 #define	spec_remove	spec_badop

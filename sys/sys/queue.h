@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue.h,v 1.14.4.2 2001/07/04 11:00:29 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $	*/
 
 /*
@@ -111,6 +111,11 @@ struct {								\
 	    (var) != SLIST_END(head);					\
 	    (var) = SLIST_NEXT(var, field))
 
+#define	SLIST_FOREACH_PREVPTR(var, varp, head, field)			\
+	for ((varp) = &SLIST_FIRST((head));				\
+	    ((var) = *(varp)) != SLIST_END(head);			\
+	    (varp) = &SLIST_NEXT((var), field))
+
 /*
  * Singly-linked List functions.
  */
@@ -126,6 +131,10 @@ struct {								\
 #define	SLIST_INSERT_HEAD(head, elm, field) do {			\
 	(elm)->field.sle_next = (head)->slh_first;			\
 	(head)->slh_first = (elm);					\
+} while (0)
+
+#define	SLIST_REMOVE_NEXT(head, elm, field) do {			\
+	(elm)->field.sle_next = (elm)->field.sle_next->field.sle_next;	\
 } while (0)
 
 #define	SLIST_REMOVE_HEAD(head, field) do {				\

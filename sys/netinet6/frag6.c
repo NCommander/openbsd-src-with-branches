@@ -133,7 +133,7 @@ do {									\
 void
 frag6_init()
 {
-	ip6_id = arc4random();
+
 	ip6q.ip6q_next = ip6q.ip6q_prev = &ip6q;
 }
 

@@ -845,7 +845,7 @@ ufs_extattr_credcheck(struct vnode *vp, struct ufs_extattr_list_entry *uele,
 	switch (uele->uele_attrnamespace) {
 	case EXTATTR_NAMESPACE_SYSTEM:
 		/* Potentially should be: return (EPERM); */
-		return (suser(cred, &p->p_acflag));
+		return (suser_ucred(cred));
 	case EXTATTR_NAMESPACE_USER:
 		return (VOP_ACCESS(vp, access, cred, p));
 	default:

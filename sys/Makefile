@@ -3,6 +3,8 @@
 
 SUBDIR=	arch/alpha arch/hp300 arch/hppa arch/i386 arch/m68k \
 	arch/mac68k arch/macppc arch/mvme68k arch/mvme88k \
-	arch/mvmeppc arch/sparc arch/sparc64 arch/vax
+	arch/mvmeppc arch/pegasos arch/sparc arch/sparc64 \
+	arch/vax
+# arch/cats arch/amd64
 
 .include <bsd.subdir.mk>

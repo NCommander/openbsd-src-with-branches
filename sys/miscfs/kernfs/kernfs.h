@@ -1,4 +1,4 @@
-/*	$OpenBSD: kernfs.h,v 1.8.2.2 2002/03/28 15:02:00 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kernfs.h,v 1.10 1996/02/09 22:40:21 christos Exp $	*/
 
 /*
@@ -65,7 +65,7 @@ struct kern_target {
 
 struct kernfs_node {
 	TAILQ_ENTRY(kernfs_node) list;
-	struct kern_target *kf_kt;
+	const struct kern_target *kf_kt;
 	struct vnode	*kf_vnode;
 #define kf_type		kf_kt->kt_type
 #define kf_namlen	kf_kt->kt_namlen
@@ -94,9 +94,10 @@ struct kernfs_node {
 	int *, struct ucred **))eopnotsupp)
 
 int	kernfs_init(struct vfsconf *);
-int	kernfs_allocvp(struct kern_target *, struct mount *, struct vnode **);
-struct kern_target 	*kernfs_findtarget(char *, int);
+int	kernfs_poll(void *);
+int	kernfs_allocvp(const struct kern_target *, struct mount *, struct vnode **);
+const struct kern_target *kernfs_findtarget(char *, int);
 extern int (**kernfs_vnodeop_p)(void *);
-extern struct vfsops kernfs_vfsops;
+extern const struct vfsops kernfs_vfsops;
 extern dev_t rrootdev;
 #endif /* _KERNEL */

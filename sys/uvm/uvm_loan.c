@@ -266,19 +266,24 @@ uvm_loan(map, start, len, result, flags)
 			goto fail;
 
 		/*
-		 * now do the loanout
+		 * map now locked.  now do the loanout...
 		 */
 		rv = uvm_loanentry(&ufi, &output, flags);
 		if (rv < 0) 
 			goto fail;
 
 		/*
-		 * done!   advance pointers and unlock.
+		 * done!  the map is unlocked.  advance, if possible.
+		 *
+		 * XXXCDC: could be recoded to hold the map lock with   
+		 *	   smarter code (but it only happens on map entry
+		 *	   boundaries, so it isn't that bad).
 		 */
-		rv <<= PAGE_SHIFT;
-		len -= rv;
-		start += rv;
-		uvmfault_unlockmaps(&ufi, FALSE);
+		if (rv) {
+			rv <<= PAGE_SHIFT;
+			len -= rv;
+			start += rv;
+		}
 	}
 	
 	/*

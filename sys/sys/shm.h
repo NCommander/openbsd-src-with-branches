@@ -156,6 +156,7 @@ void shmfork(struct vmspace *, struct vmspace *);
 void shmexit(struct vmspace *);
 void shmid_n2o(struct shmid_ds *, struct oshmid_ds *);
 int sysctl_sysvshm(int *, u_int, void *, size_t *, void *, size_t);
+int sys_shmat1(struct proc *, void *, register_t *, int);
 
 #else /* !_KERNEL */
 

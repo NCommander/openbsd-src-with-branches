@@ -1,4 +1,4 @@
-/*	$OpenBSD: clnp_debug.c,v 1.2.16.1 2002/03/28 14:57:37 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: clnp_debug.c,v 1.6 1996/02/13 22:08:13 christos Exp $	*/
 
 /*-
@@ -153,7 +153,7 @@ clnp_hexp(src, len, where)
 	int             i;
 
 	for (i = 0; i < len; i++) {
-		register int    j = ((u_char *) src)[i];
+		int    j = ((u_char *) src)[i];
 		*where++ = letters[j >> 4];
 		*where++ = letters[j & 0x0f];
 	}
@@ -255,9 +255,9 @@ clnp_iso_addrp(isoa)
 
 char *
 clnp_saddr_isop(s)
-	register struct sockaddr_iso *s;
+	struct sockaddr_iso *s;
 {
-	register char  *cp = clnp_iso_addrp(&s->siso_addr);
+	char  *cp = clnp_iso_addrp(&s->siso_addr);
 
 	while (*cp)
 		cp++;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.2.2.5 2003/03/28 00:06:54 niklas Exp $ */
+/*	$OpenBSD$ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -137,13 +137,13 @@ ip4_input(struct mbuf *m, ...)
 void
 ipip_input(struct mbuf *m, int iphlen, struct ifnet *gifp)
 {
-	register struct sockaddr_in *sin;
-	register struct ifnet *ifp;
-	register struct ifaddr *ifa;
+	struct sockaddr_in *sin;
+	struct ifnet *ifp;
+	struct ifaddr *ifa;
 	struct ifqueue *ifq = NULL;
 	struct ip *ipo;
 #ifdef INET6
-	register struct sockaddr_in6 *sin6;
+	struct sockaddr_in6 *sin6;
 	struct ip6_hdr *ip6 = NULL;
 	u_int8_t itos;
 #endif

@@ -1,4 +1,4 @@
-/*	$OpenBSD: null.h,v 1.10.8.2 2003/05/16 00:29:43 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: null.h,v 1.13 2001/11/07 04:56:09 enami Exp $	*/
 
 /*
@@ -119,7 +119,7 @@ struct vnode *layer_checkvp(struct vnode *, char *, int);
 #endif
 
 extern int (**nullfs_vnodeop_p)(void *);
-extern struct vfsops nullfs_vfsops;
+extern const struct vfsops nullfs_vfsops;
 
 int nullfs_init(struct vfsconf *);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdesc.h,v 1.5.10.2 2002/03/28 15:02:00 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: fdesc.h,v 1.9 1996/02/09 22:40:03 christos Exp $	*/
 
 /*
@@ -71,5 +71,5 @@ extern int fdesc_init(struct vfsconf *);
 extern int fdesc_root(struct mount *, struct vnode **);
 extern int fdesc_allocvp(fdntype, int, struct mount *, struct vnode **);
 extern int (**fdesc_vnodeop_p)(void *);
-extern struct vfsops fdesc_vfsops;
+extern const struct vfsops fdesc_vfsops;
 #endif /* _KERNEL */

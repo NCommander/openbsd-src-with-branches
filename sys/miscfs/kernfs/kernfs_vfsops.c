@@ -1,4 +1,4 @@
-/*	$OpenBSD: kernfs_vfsops.c,v 1.13.2.7 2003/05/13 19:21:29 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kernfs_vfsops.c,v 1.26 1996/04/22 01:42:27 christos Exp $	*/
 
 /*
@@ -165,7 +165,7 @@ kernfs_root(mp, vpp)
 	struct mount *mp;
 	struct vnode **vpp;
 {
-	struct kern_target *kt;
+	const struct kern_target *kt;
 	int error;
 
 #ifdef KERNFS_DIAGNOSTIC
@@ -209,7 +209,7 @@ kernfs_statfs(mp, sbp, p)
 	return (0);
 }
 
-struct vfsops kernfs_vfsops = {
+const struct vfsops kernfs_vfsops = {
 	kernfs_mount,
 	kernfs_start,
 	kernfs_unmount,

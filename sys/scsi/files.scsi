@@ -43,10 +43,6 @@ file	scsi/ss.c			ss needs-flag
 file	scsi/ss_mustek.c		ss
 file	scsi/ss_scanjet.c		ss
 
-device	su: disk
-attach	su at scsibus
-file	scsi/su.c			su needs-flag
-
 device	uk: disk
 attach	uk at scsibus
 file	scsi/uk.c			uk needs-flag

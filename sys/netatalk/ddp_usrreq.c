@@ -293,7 +293,7 @@ at_pcbsetaddr( ddp, addr, p )
 		return( EINVAL );
 	    }
 	    if ( sat->sat_port < ATPORT_RESERVED &&
-		    suser( p->p_ucred, &p->p_acflag )) {
+		    suser( p, 0 )) {
 		return( EACCES );
 	    }
 	}

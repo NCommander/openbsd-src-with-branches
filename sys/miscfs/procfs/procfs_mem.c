@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_mem.c,v 1.9.6.6 2003/03/28 00:00:20 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: procfs_mem.c,v 1.8 1996/02/09 22:40:50 christos Exp $	*/
 
 /*
@@ -110,7 +110,7 @@ procfs_checkioperm(p, t)
 	if ((t->p_cred->p_ruid != p->p_cred->p_ruid ||
 	    ISSET(t->p_flag, P_SUGIDEXEC) ||
 	    ISSET(t->p_flag, P_SUGID)) &&
-	    (error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	    (error = suser(p, 0)) != 0)
 		return (error);
 
 	if ((t->p_pid == 1) && (securelevel > -1))

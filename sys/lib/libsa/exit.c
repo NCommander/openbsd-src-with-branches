@@ -1,4 +1,4 @@
-/*	$OpenBSD: exit.c,v 1.4.12.1 2002/03/28 15:02:00 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: exit.c,v 1.11 1996/12/01 20:22:19 pk Exp $	*/
 
 /*-
@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 #include "stand.h"
 
@@ -54,7 +54,7 @@ panic(const char *fmt, ...)
 }
 
 void
-exit()
+exit(void)
 {
 	panic("exit");
 	/*NOTREACHED*/

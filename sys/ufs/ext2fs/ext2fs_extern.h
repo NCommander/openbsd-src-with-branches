@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_extern.h,v 1.6.2.6 2002/03/28 14:54:25 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ext2fs_extern.h,v 1.1 1997/06/11 09:33:55 bouyer Exp $	*/
 
 /*-
@@ -136,8 +136,6 @@ int ext2fs_rmdir(void *);
 int ext2fs_symlink(void *);
 int ext2fs_readlink(void *);
 int ext2fs_advlock(void *);
-int ext2fs_vinit(struct mount *, int (**specops)(void *),
-                 int (**fifoops)(void *), struct vnode **);
 int ext2fs_makeinode(int, struct vnode *, struct vnode **,
                      struct componentname *cnp);
 int ext2fs_fsync(void *);

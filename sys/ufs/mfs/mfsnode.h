@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfsnode.h,v 1.7 1998/08/06 19:35:11 csapuntz Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mfsnode.h,v 1.3 1996/02/09 22:31:31 christos Exp $	*/
 
 /*
@@ -60,7 +60,7 @@ struct mfsnode {
 #define	mfs_setattr	mfs_badop
 #define	mfs_read	mfs_badop
 #define	mfs_write	mfs_badop
-#define	mfs_select	mfs_badop
+#define	mfs_poll	mfs_badop
 #define	mfs_mmap	mfs_badop
 #define	mfs_seek	mfs_badop
 #define	mfs_remove	mfs_badop

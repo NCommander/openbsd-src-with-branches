@@ -48,7 +48,7 @@ int xfs_devread(dev_t dev, struct uio * uiop, int ioflag);
 int xfs_devwrite(dev_t dev, struct uio *uiop, int ioflag);
 int xfs_devioctl(dev_t dev, u_long cmd, caddr_t data, int flags,
 		      struct proc * p);
-int xfs_devselect(dev_t dev, int which, struct proc * p);
+int xfs_devpoll(dev_t dev, int events, struct proc * p);
 
 #endif /* _KERNEL */
 

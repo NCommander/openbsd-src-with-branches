@@ -268,7 +268,11 @@ struct scsi_sense_data {
 /*14*/	u_int8_t add_sense_code_qual;
 /*15*/	u_int8_t fru;
 /*16*/	u_int8_t sense_key_spec_1;
-#define	SSD_SCS_VALID	0x80
+#define	SSD_SCS_VALID		0x80
+#define SSD_SCS_CDB_ERROR	0x40
+#define SSD_SCS_SEGMENT_DESC	0x20
+#define SSD_SCS_VALID_BIT_INDEX	0x08
+#define SSD_SCS_BIT_INDEX	0x07
 /*17*/	u_int8_t sense_key_spec_2;
 /*18*/	u_int8_t sense_key_spec_3;
 /*32*/	u_int8_t extra_bytes[14];

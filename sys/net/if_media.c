@@ -136,7 +136,7 @@ ifmedia_add(ifm, mword, data, aux)
 	int data;
 	void *aux;
 {
-	register struct ifmedia_entry *entry;
+	struct ifmedia_entry *entry;
 
 #ifdef IFMEDIA_DEBUG
 	if (ifmedia_debug) {
@@ -253,7 +253,7 @@ ifmedia_ioctl(ifp, ifr, ifm, cmd)
 
 		/*
 		 * If no change, we're done.
-		 * XXX Automedia may invole software intervention.
+		 * XXX Automedia may involve software intervention.
 		 *     Keep going in case the connected media changed.
 		 *     Similarly, if best match changed (kernel debugger?).
 		 */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: union_vfsops.c,v 1.10.2.4 2003/03/28 00:00:21 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: union_vfsops.c,v 1.10 1995/06/18 14:47:47 cgd Exp $	*/
 
 /*
@@ -495,7 +495,7 @@ union_statfs(mp, sbp, p)
 #define union_checkexp ((int (*)(struct mount *, struct mbuf *,	\
 	int *, struct ucred **))eopnotsupp)
 
-struct vfsops union_vfsops = {
+const struct vfsops union_vfsops = {
 	union_mount,
 	union_start,
 	union_unmount,

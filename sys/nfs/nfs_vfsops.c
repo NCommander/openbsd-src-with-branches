@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vfsops.c,v 1.30.2.7 2003/03/28 00:08:46 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfs_vfsops.c,v 1.46.4.1 1996/05/25 22:40:35 fvdl Exp $	*/
 
 /*
@@ -78,7 +78,7 @@ int nfs_checkexp(struct mount *mp, struct mbuf *nam,
 /*
  * nfs vfs operations.
  */
-struct vfsops nfs_vfsops = {
+const struct vfsops nfs_vfsops = {
 	nfs_mount,
 	nfs_start,
 	nfs_unmount,

@@ -52,6 +52,7 @@ struct gif_softc {
 #endif
 	} gifsc_gifscr;
 	int		gif_flags;
+	LIST_ENTRY(gif_softc) gif_list;	/* list of all gifs */
 };
 
 #define gif_ro gifsc_gifscr.gifscr_ro
@@ -63,8 +64,7 @@ struct gif_softc {
 #define	GIF_MTU_MIN	(1280)	/* Minimum MTU */
 #define	GIF_MTU_MAX	(8192)	/* Maximum MTU */
 
-extern int ngif;
-extern struct gif_softc *gif_softc;
+extern LIST_HEAD(gif_softc_head, gif_softc) gif_softc_list;
 
 /* Prototypes */
 int gif_output(struct ifnet *, struct mbuf *,

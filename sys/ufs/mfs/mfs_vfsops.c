@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vfsops.c,v 1.12.2.6 2003/05/13 19:36:57 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mfs_vfsops.c,v 1.10 1996/02/09 22:31:28 christos Exp $	*/
 
 /*
@@ -66,7 +66,7 @@ extern int (**mfs_vnodeop_p)(void *);
 /*
  * mfs vfs operations.
  */
-struct vfsops mfs_vfsops = {
+const struct vfsops mfs_vfsops = {
 	mfs_mount,
 	mfs_start,
 	ffs_unmount,

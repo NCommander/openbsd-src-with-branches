@@ -23,7 +23,7 @@ typedef struct	atareq {
 	u_char	error;		/* error bits */
 } atareq_t;
 
-/* bit defintions for flags */
+/* bit definitions for flags */
 #define ATACMD_READ		0x00000001
 #define ATACMD_WRITE		0x00000002
 #define ATACMD_READREG		0x00000004

@@ -48,4 +48,14 @@ struct sensor {
 
 SLIST_HEAD(sensors_head, sensor);
 
+#ifdef _KERNEL
+extern int nsensors;
+extern struct sensors_head sensors;
+
+#define SENSOR_ADD(s) do { \
+	(s)->num = nsensors++;				\
+	SLIST_INSERT_HEAD(&sensors, (s), list);		\
+} while (0)
+#endif	/* _KERNEL */
+
 #endif	/* !_SYS_SENSORS_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdesc_vfsops.c,v 1.8.2.3 2002/03/28 15:02:00 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: fdesc_vfsops.c,v 1.21 1996/02/09 22:40:07 christos Exp $	*/
 
 /*
@@ -219,7 +219,7 @@ fdesc_sync(mp, waitfor, uc, p)
 #define fdesc_checkexp ((int (*)(struct mount *, struct mbuf *,	\
 	int *, struct ucred **))eopnotsupp)
 
-struct vfsops fdesc_vfsops = {
+const struct vfsops fdesc_vfsops = {
 	fdesc_mount,
 	fdesc_start,
 	fdesc_unmount,

@@ -49,7 +49,7 @@
 #include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/vnode.h>
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 #ifdef	__NetBSD__
 #include <dev/scsipi/scsipi_all.h>
@@ -1455,7 +1455,7 @@ ses_encode(char *b, int amt, uint8_t *ep, int elt, int elm, SesComStat *sp)
  */
 
 static int safte_getconfig(ses_softc_t *);
-static int safte_rdstat(ses_softc_t *, int);;
+static int safte_rdstat(ses_softc_t *, int);
 static int set_objstat_sel(ses_softc_t *, ses_objstat *, int);
 static int wrbuf16(ses_softc_t *, uint8_t, uint8_t, uint8_t, uint8_t, int);
 static void wrslot_stat(ses_softc_t *, int);

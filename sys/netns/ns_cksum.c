@@ -1,4 +1,4 @@
-/*	$OpenBSD: ns_cksum.c,v 1.3.6.1 2001/10/31 03:29:04 nate Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ns_cksum.c,v 1.3 1995/03/08 02:14:53 cgd Exp $	*/
 
 /*
@@ -48,13 +48,13 @@
 
 u_short
 ns_cksum(m, len)
-	register struct mbuf *m;
-	register int len;
+	struct mbuf *m;
+	int len;
 {
-	register u_int16_t *w;
-	register int sum = 0;
-	register int mlen = 0;
-	register int sum2;
+	u_int16_t *w;
+	int sum = 0;
+	int mlen = 0;
+	int sum2;
 
 	union {
 		u_int16_t s[2];

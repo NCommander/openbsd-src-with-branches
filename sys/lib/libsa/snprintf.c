@@ -34,7 +34,7 @@
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 #include "stand.h"
 
@@ -48,8 +48,7 @@ static char *sbuf, *sbuf_end;
 static size_t sbuf_len;
 
 void
-sputchar(c)
-	int c;
+sputchar(int c)
 {
 	if (sbuf < sbuf_end)
 		*sbuf = c;

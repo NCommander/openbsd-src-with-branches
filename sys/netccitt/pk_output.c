@@ -21,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -63,11 +59,11 @@ struct mbuf_cache pk_output_cache = {0}, pk_input_cache;
 
 void
 pk_output(lcp)
-	register struct pklcd *lcp;
+	struct pklcd *lcp;
 {
-	register struct x25_packet *xp;
-	register struct mbuf *m;
-	register struct pkcb *pkp = lcp->lcd_pkp;
+	struct x25_packet *xp;
+	struct mbuf *m;
+	struct pkcb *pkp = lcp->lcd_pkp;
 
 	if (lcp == 0 || pkp == 0) {
 		printf("pk_output: zero arg\n");
@@ -196,9 +192,9 @@ struct mbuf *
 nextpk(lcp)
 	struct pklcd   *lcp;
 {
-	register struct mbuf *m, *n;
+	struct mbuf *m, *n;
 	struct socket  *so = lcp->lcd_so;
-	register struct sockbuf *sb = (so ? &so->so_snd : &lcp->lcd_sb);
+	struct sockbuf *sb = (so ? &so->so_snd : &lcp->lcd_sb);
 
 	if (lcp->lcd_template) {
 		m = lcp->lcd_template;

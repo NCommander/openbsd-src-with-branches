@@ -271,6 +271,7 @@ struct rtdetq {		/* XXX: rtdetq is also defined in ip_mroute.h */
 int	ip6_mrouter_set(int, struct socket *, struct mbuf *);
 int	ip6_mrouter_get(int, struct socket *, struct mbuf **);
 int	ip6_mrouter_done(void);
+void	ip6_mrouter_detach(struct ifnet *);
 int	mrt6_ioctl(int, caddr_t);
 #endif /* _KERNEL */
 

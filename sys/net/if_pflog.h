@@ -67,18 +67,7 @@ struct old_pfloghdr {
 #ifdef _KERNEL
 
 #if NPFLOG > 0
-#define	PFLOG_PACKET(i,x,a,b,c,d,e,f,g) \
-	do { \
-		if (b == AF_INET) { \
-			HTONS(((struct ip *)x)->ip_len); \
-			HTONS(((struct ip *)x)->ip_off); \
-			pflog_packet(i,a,b,c,d,e,f,g); \
-			NTOHS(((struct ip *)x)->ip_len); \
-			NTOHS(((struct ip *)x)->ip_off); \
-		} else { \
-			pflog_packet(i,a,b,c,d,e,f,g); \
-		} \
-	} while (0)
+#define	PFLOG_PACKET(i,x,a,b,c,d,e,f,g) pflog_packet(i,a,b,c,d,e,f,g)
 #else
 #define	PFLOG_PACKET(i,x,a,b,c,d,e,f,g)	((void)0)
 #endif /* NPFLOG > 0 */

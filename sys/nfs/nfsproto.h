@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsproto.h,v 1.2.16.2 2002/03/06 02:17:13 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfsproto.h,v 1.1 1996/02/18 11:54:06 fvdl Exp $	*/
 
 /*
@@ -56,8 +56,8 @@
 #define	NFS_VER3	3
 #define NFS_VER4        4
 #define NFS_V2MAXDATA	8192
-#define	NFS_MAXDGRAMDATA 16384
-#define	NFS_MAXDATA	32768
+#define	NFS_MAXDGRAMDATA 32768
+#define	NFS_MAXDATA	MAXBSIZE
 #define	NFS_MAXPATHLEN	1024
 #define	NFS_MAXNAMLEN	255
 #define	NFS_MAXPKTHDR	404

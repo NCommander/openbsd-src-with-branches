@@ -1,4 +1,4 @@
-/*	$OpenBSD: tprintf.h,v 1.3.16.1 2002/03/28 14:52:02 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: tprintf.h,v 1.10 1996/04/09 20:55:43 cgd Exp $	*/
 
 /*-
@@ -38,4 +38,4 @@ tpr_t	tprintf_open(struct proc *);
 void	tprintf_close(tpr_t);
 
 void	tprintf(tpr_t, const char *fmt, ...)
-    __kprintf_attribute__((__format__(__kprintf__,2,3)));
+    __attribute__((__format__(__kprintf__,2,3)));

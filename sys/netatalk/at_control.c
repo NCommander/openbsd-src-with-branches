@@ -142,7 +142,7 @@ at_control( cmd, data, ifp, p )
 	 * What a great idea this is: Let's reverse the meaning of
 	 * the return...
 	 */
-	if ( suser( p->p_ucred, &p->p_acflag )) {
+	if ( suser( p, 0 )) {
 	    return( EPERM );
 	}
 
@@ -552,7 +552,7 @@ at_broadcast( sat )
  * between the two addresses, makes it's transition
  * Each of the upper and lower ranges might not exist, or might be 
  * representable by 1 or more netmasks. In addition, if both
- * ranges can be represented by the same netmask, then teh can be merged
+ * ranges can be represented by the same netmask, then they can be merged
  * by using the next higher netmask..
  */
 

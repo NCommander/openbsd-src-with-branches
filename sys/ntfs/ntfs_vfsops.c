@@ -1165,7 +1165,7 @@ const struct vnodeopv_desc * const ntfs_vnodeopv_descs[] = {
 	NULL,
 };
 
-struct vfsops ntfs_vfsops = {
+const struct vfsops ntfs_vfsops = {
 	ntfs_mount,
 	ntfs_start,
 	ntfs_unmount,

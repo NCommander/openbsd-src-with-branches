@@ -1,4 +1,4 @@
-/*	$OpenBSD: readdir.c,v 1.4 1997/07/21 15:43:54 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -38,11 +38,10 @@
 
 
 int
-opendir(name)
-	char *name;
+opendir(char *name)
 {
-	int fd;
 	struct stat sb;
+	int fd;
 
 	if (stat(name, &sb) < 0)
 		return -1;
@@ -65,11 +64,9 @@ opendir(name)
 }
 
 int
-readdir(fd, dest)
-	int fd;
-	char *dest;
+readdir(int fd, char *dest)
 {
-	register struct open_file *f = &files[fd];
+	struct open_file *f = &files[fd];
 
 	if (fd < 0 || fd >= SOPEN_MAX ||
 	    !((f = &files[fd])->f_flags & F_READ)) {
@@ -88,8 +85,7 @@ readdir(fd, dest)
 }
 
 void
-closedir(fd)
-	int fd;
+closedir(int fd)
 {
 #ifdef __INTERNAL_LIBSA_CREAD
 	oclose(fd);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: strcmp.c,v 1.2 1996/10/16 11:32:07 mickey Exp $ */
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 1996 Michael Shalayeff
@@ -31,9 +31,7 @@
 #include "stand.h"
 
 int
-strcmp(s1, s2)
-	register const char *s1;
-	register const char *s2;
+strcmp(const char *s1, const char *s2)
 {
 	while(*s1 && *s2 && *s1 == *s2)
 		s1++, s2++;

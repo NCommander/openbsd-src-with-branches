@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockf.h,v 1.2.16.2 2002/03/28 14:52:01 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: lockf.h,v 1.5 1994/06/29 06:44:33 cgd Exp $	*/
 
 /*
@@ -59,6 +59,7 @@ struct lockf {
 #define MAXDEPTH 50
 
 __BEGIN_DECLS
+void	 lf_init(void);
 int	 lf_advlock(struct lockf **,
 	    off_t, caddr_t, int, struct flock *, int);
 int	 lf_clearlock(struct lockf *);

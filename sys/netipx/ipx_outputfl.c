@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_outputfl.c,v 1.5 2000/01/15 18:52:14 fgsch Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  *
@@ -60,8 +60,8 @@ ipx_outputfl(m0, ro, flags)
 	struct route *ro;
 	int flags;
 {
-	register struct ipx *ipx = mtod(m0, struct ipx *);
-	register struct ifnet *ifp = NULL;
+	struct ipx *ipx = mtod(m0, struct ipx *);
+	struct ifnet *ifp = NULL;
 	int error = 0;
 	struct sockaddr_ipx *dst;
 	struct route ipxroute;
@@ -162,7 +162,7 @@ int
 ipx_output_type20(m)
 	struct mbuf *m;
 {
-	register struct ipx *ipx;
+	struct ipx *ipx;
 	union ipx_net *nbnet;
 	struct ipx_ifaddr *ia, *tia = NULL;
 	int error = 0;

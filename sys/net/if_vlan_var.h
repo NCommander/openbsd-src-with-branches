@@ -54,6 +54,7 @@ struct	ifvlan {
 		u_int16_t ifvm_tag; /* tag to apply on packets leaving if */
 	}	ifv_mib;
 	LIST_HEAD(__vlan_mchead, vlan_mc_entry)	vlan_mc_listhead;
+	LIST_ENTRY(ifvlan) ifv_list;	/* all vlan interfaces */
 	int ifv_flags;
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: union.h,v 1.6.10.2 2003/05/16 00:29:43 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: union.h,v 1.13 2002/09/21 18:09:31 christos Exp $	*/
 
 /*
@@ -128,7 +128,7 @@ extern void union_newsize(struct vnode *, off_t, off_t);
 #define OTHERVP(vp) (UPPERVP(vp) ? UPPERVP(vp) : LOWERVP(vp))
 
 extern int (**union_vnodeop_p)(void *);
-extern struct vfsops union_vfsops;
+extern const struct vfsops union_vfsops;
 
 int union_init(struct vfsconf *);
 int union_freevp(struct vnode *);

@@ -41,6 +41,15 @@
  */
 
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/in.h>
+
+#include <netinet/if_ether.h>
+#include <netinet/in_systm.h>
+
+#include "stand.h"
+#include "net.h"
 
 /*
  * Checksum routine for Internet Protocol family headers.
@@ -49,12 +58,10 @@
  * In particular, it should not be this one.
  */
 int
-in_cksum(p, len)
-	register void *p;
-	register int len;
+in_cksum(void *p, int len)
 {
-	register int sum = 0, oddbyte = 0, v = 0;
-	register u_char *cp = p;
+	int sum = 0, oddbyte = 0, v = 0;
+	u_char *cp = p;
 
 	/* we assume < 2^16 bytes being summed */
 	while (len > 0) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: closeall.c,v 1.2 1996/09/23 14:18:50 mickey Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: close.c,v 1.5 1995/09/06 19:53:29 pk Exp $	*/
 
 /*-
@@ -64,11 +64,11 @@
 #include "stand.h"
 
 void
-closeall()
+closeall(void)
 {
 	int i;
 
-        for (i = 0; i < SOPEN_MAX; i++)
-            if (files[i].f_flags != 0)
-                (void)close(i);
+	for (i = 0; i < SOPEN_MAX; i++)
+		if (files[i].f_flags != 0)
+			(void)close(i);
 }

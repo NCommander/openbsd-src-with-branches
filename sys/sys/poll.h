@@ -1,4 +1,4 @@
-/*	$OpenBSD: poll.h,v 1.4.8.5 2003/05/13 19:36:57 ho Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1996 Theo de Raadt
@@ -28,11 +28,13 @@
 #ifndef	_SYS_POLL_H_
 #define	_SYS_POLL_H_
 
-struct pollfd {
+typedef struct pollfd {
 	int 	fd;
 	short	events;
 	short	revents;
-};
+} pollfd_t;
+
+typedef unsigned int	nfds_t;
 
 #define	POLLIN		0x0001
 #define	POLLPRI		0x0002
@@ -52,7 +54,7 @@ struct pollfd {
 #include <ctype.h>
 
 __BEGIN_DECLS
-int   poll(struct pollfd[], int, int);
+int   poll(struct pollfd[], nfds_t, int);
 __END_DECLS
 #endif /* _KERNEL */
 

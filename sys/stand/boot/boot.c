@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.22.8.2 2003/05/13 19:36:57 ho Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2003 Dale Rahn
@@ -44,21 +44,25 @@ static const char *const kernels[] = {
 	NULL
 };
 
+char prog_ident[40];
+char *progname = "BOOT";
+
 extern	const char version[];
 struct cmd_state cmd;
 int bootprompt = 1;
 
 void
-boot(bootdev)
-	dev_t	bootdev;
+boot(dev_t bootdev)
 {
-	register const char *bootfile = kernels[0];
-	register int i = 0, try = 0, st;
+	const char *bootfile = kernels[0];
+	int i = 0, try = 0, st;
 	u_long marks[MARK_MAX];
 
 	machdep();
 
-	printf(">> OpenBSD/" MACHINE " BOOT %s\n", version);
+	snprintf(prog_ident, sizeof(prog_ident),
+	    ">> OpenBSD/" MACHINE " %s %s", progname, version);
+	printf("%s\n", prog_ident);
 
 	devboot(bootdev, cmd.bootdev);
 	strlcpy(cmd.image, bootfile, sizeof(cmd.image));

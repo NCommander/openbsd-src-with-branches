@@ -79,6 +79,7 @@ struct exec {
 #define	MID_POWERPC	149	/* big-endian PowerPC */
 #define	MID_VAX		150	/* vax */
 #define	MID_SPARC64	151	/* LP64 sparc */
+#define	MID_X86_64	152	/* AMD x86-64 */
 #define	MID_M88K	153	/* m88k BSD binary */ 
 #define	MID_HPPA	154	/* hppa */
 #define	MID_HP200	200	/* hp200 (68010) BSD binary */
