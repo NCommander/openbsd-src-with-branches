@@ -1,6 +1,7 @@
-/* evax.h -- Header file for ALPHA EVAX (openVMS/AXP) support.
-   Copyright 1996 Free Software Foundation, Inc.
-   Written by Klaus Kämpf (kkaempf@progis.de)
+/* evax.h -- Header file for ALPHA EVAX (openVMS/Alpha) support.
+   Copyright 1996, 1997 Free Software Foundation, Inc.
+
+   Written by Klaus K"ampf (kkaempf@progis.de)
    of proGIS Softwareentwicklung, Aachen, Germany
 
 This file is part of BFD, the Binary File Descriptor library.
@@ -179,6 +180,7 @@ extern int _bfd_evax_write_edbg PARAMS ((bfd *abfd));
 #define ALPHA_R_OP_PRSHIFT	10
 #define ALPHA_R_LINKAGE		11
 #define ALPHA_R_REFLONG		12
+#define ALPHA_R_CODEADDR	13
 
 /* Object language definitions.  */
 
@@ -279,7 +281,6 @@ struct location_struct {
 #define EVAX_SECTION_COUNT 32
 
 struct evax_private_data_struct {
-  char *filename;			/* Filename of object file   */
   boolean fixup_done;			/* Flag to indicate if all
 					   section pointers and PRIV(sections)
 					   are set up correctly  */
@@ -328,6 +329,9 @@ struct evax_private_data_struct {
 
   int evax_linkage_index;
 
+  /* see tc-alpha.c of gas for a description.  */
+  int flag_hash_long_names;	/* -+, hash instead of truncate */
+  int flag_show_after_trunc;	/* -H, show hashing/truncation */
 };
 
 #define PRIV(name)	((struct evax_private_data_struct *)abfd->tdata.any)->name
@@ -373,7 +377,6 @@ extern void _bfd_evax_output_counted PARAMS ((bfd *abfd, char *value));
 extern void _bfd_evax_output_dump PARAMS ((bfd *abfd, unsigned char *data,
 					   int length));
 extern void _bfd_evax_output_fill PARAMS ((bfd *abfd, int value, int length));
-extern char *_bfd_get_vms_time_string PARAMS ((void));
-extern char *_bfd_evax_basename PARAMS ((char *name));
+extern char *_bfd_evax_length_hash_symbol PARAMS ((bfd *abfd, const char *in));
 
 #endif /* EVAX_H */
