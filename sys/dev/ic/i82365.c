@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365.c,v 1.17 2000/09/05 05:06:58 fgsch Exp $	*/
+/*	$OpenBSD: i82365.c,v 1.18 2001/05/17 03:19:35 fgsch Exp $	*/
 /*	$NetBSD: i82365.c,v 1.10 1998/06/09 07:36:55 thorpej Exp $	*/
 
 /*
@@ -1502,7 +1502,6 @@ void
 pcic_delay(ms)
 	int ms;
 {
-	extern int cold;
 	int ticks;
 
 	ticks = (hz * ms) / 1000000;
