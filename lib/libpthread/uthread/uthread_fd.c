@@ -228,7 +228,7 @@ _thread_fd_table_dup(int from_fd, int to_fd)
 	struct fd_table_entry	*entry;
 	int ret;
 
-	if (from_fd != too_fd) {
+	if (from_fd != to_fd) {
 		/* release any existing to_fd table entry */
 		entry = _thread_fd_table[to_fd];
 		if (entry != NULL) {
