@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosboot.S,v 1.1.2.2 1996/12/15 15:49:34 mickey Exp $	*/
+/*	$OpenBSD: biosboot.S,v 1.1.2.3 1996/12/16 15:19:29 mickey Exp $	*/
 
 	.file	"bootbios.S"
 
@@ -11,7 +11,7 @@
 #define addr32  .byte 0x67
 #define data32  .byte 0x66
 
-#define	BLKCNT	48
+#define	BLKCNT	40
 
 #define BIOSSEG		0x07c0	/* boot loaded here */
 #define BOOTSEG		0x1000	/* /boot placement */
@@ -121,10 +121,7 @@ start:
 	xorl	%eax, %eax
 
 	/* check /boot integrity */
-	es
-	lodsl
-	es
-	lodsl
+	es;lodsl;es;lodsl	/* no need for high word */
 	# cmpw	$OMAGIC, %ax
 	.byte	0x3d
 	.word	OMAGIC
@@ -140,6 +137,23 @@ start:
 	movl    $2b, %esi	/* new line */
 	data32
 	call	message
+
+#if 0
+	data32;es;lodsl	/* text size */
+	data32;es;lodsl	/* data size */
+	data32;es;lodsl	/* bss  size */
+	data32;es;lodsl	/* syms size */
+#else
+	data32
+	addl	$16, %esi
+#endif
+	data32
+	es;lodsl		/* entry */
+	data32
+	addl	$0x20, %eax	/* struct exec */
+	data32
+	addr32
+	movl	%eax, entry_point
 
 	/* change to protected mode */
 	/* guarantee that interrupts are disabled when in prot mode */
@@ -175,10 +189,12 @@ start:
 	movb	%dl, %al	/* discard head (%dh) and random high bits */
 	pushl	%eax
 
-	/* jump to the /boot */
-	call	%es:20(%ebx)
+	/* call	/boot */
+	.byte	0x9a
+entry_point:
+	.long	0
+	.word	8
 halt:
-	data32
 	call	message
 	cli
 	hlt
