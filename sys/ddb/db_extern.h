@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_extern.h,v 1.2 1996/03/11 11:16:07 mickey Exp $	*/
+/*	$OpenBSD: db_extern.h,v 1.4 1996/05/10 13:58:43 mickey Exp $	*/
 /*	$NetBSD: db_extern.h,v 1.1 1996/02/05 01:57:00 christos Exp $	*/
 
 /*
@@ -53,7 +53,7 @@ void db_print_cmd __P((db_expr_t, int, db_expr_t, char *));
 void db_print_loc_and_inst __P((db_addr_t));
 void db_strcpy __P((char *, char *));
 void db_search_cmd __P((db_expr_t, boolean_t, db_expr_t, char *));
-void db_search __P((db_addr_t, int, db_expr_t, db_expr_t, unsigned int));
+void db_search __P((db_addr_t, int, db_expr_t, db_expr_t, db_expr_t));
 
 /* db_expr.c */
 boolean_t db_term __P((db_expr_t *));

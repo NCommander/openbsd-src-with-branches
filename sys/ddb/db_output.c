@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_output.c,v 1.6 1996/07/23 23:54:27 deraadt Exp $	*/
+/*	$OpenBSD: db_output.c,v 1.7 1996/07/24 21:58:03 niklas Exp $	*/
 /*	$NetBSD: db_output.c,v 1.13 1996/04/01 17:27:14 christos Exp $	*/
 
 /* 
@@ -44,6 +44,8 @@
 #include <ddb/db_interface.h>
 #include <ddb/db_sym.h>
 #include <ddb/db_extern.h>
+
+#include <lib/libkern/libkern.h>
 
 /*
  *	Character output - tracks position in line.
