@@ -59,7 +59,8 @@ bootlabelend:
 
 		| clear bss and the kernel location
 bssclr:		movl	#_edata,a0
-		movl	#_end - _edata,d0
+		movl	#_end,d0
+		subl	#_edata,d0
 1:		clrb	a0@+
 		subql	#1,d0
 		bpl	1b
@@ -67,7 +68,8 @@ bssclr:		movl	#_edata,a0
 		| rip the data segment from ROM into ram..
 		movl	#_etext,a2		| start of data
 		movl	#0x4000,a1		| shovel address
-		movl	#_edata - _etext,d0
+		movl	#_edata,d0
+		subl	#_etext,d0
 1:		movb	a2@+,a1@+
 		subql	#1,d0
 		bpl	1b
