@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.96 2004/03/11 14:22:23 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.97 2004/03/11 17:34:01 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -204,7 +204,7 @@ rde_main(struct bgpd_config *config, struct peer *peer_l,
 	msgbuf_clear(&ibuf_main.w);
 
 	log_info("route decision engine exiting");
-	exit(0);
+	_exit(0);
 }
 
 void
