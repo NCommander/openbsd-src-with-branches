@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.454 2004/06/22 07:35:19 cedric Exp $ */
+/*	$OpenBSD: pf.c,v 1.457 2004/07/11 15:54:21 itojun Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1675,6 +1675,8 @@ pf_step_out_of_anchor(int *depth, struct pf_ruleset **rs, int n,
 			}
 		}
 		(*depth)--;
+		if (*depth == 0 && a != NULL)
+			*a = NULL;
 		*rs = f->rs;
 		*r = TAILQ_NEXT(f->r, entries);
 	} while (*r == NULL);
