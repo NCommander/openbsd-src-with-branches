@@ -1,4 +1,4 @@
-/*	$OpenBSD: crossvar.h,v 1.3 1996/06/04 13:40:14 niklas Exp $	*/
+/*	$OpenBSD: crossvar.h,v 1.4 1996/11/28 23:33:08 niklas Exp $	*/
 
 /*
  * Copyright (c) 1994, 1996 Niklas Hallqvist
@@ -61,6 +61,7 @@ struct cross_softc {
 	u_int16_t sc_imask;
 	volatile u_int16_t *sc_status;
 	struct vm_page sc_page[CROSS_BANK_SIZE / NBPG];
+	struct pager_struct sc_pager;
 
 	struct amiga_bus_space sc_iot;
 	struct amiga_bus_space sc_memt;
