@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.8 1999/11/14 22:04:02 d Exp $	*/
+/*	$OpenBSD: vi.c,v 1.9 1999/11/15 21:26:38 fgsch Exp $	*/
 
 /*
  *	vi command editing
@@ -2146,7 +2146,7 @@ char_len(c)
 	return len;
 }
 
-/* Similar to x_zotc(emacs.c), but no tab wierdness */
+/* Similar to x_zotc(emacs.c), but no tab weirdness */
 static void
 x_vi_zotc(c)
 	int c;

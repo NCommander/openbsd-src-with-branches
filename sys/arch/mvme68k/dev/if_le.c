@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.17 2002/03/14 01:26:37 millert Exp $ */
+/*	$OpenBSD: if_le.c,v 1.18 2002/04/27 23:21:05 miod Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993
@@ -278,7 +278,7 @@ lematch(parent, vcf, args)
 	void *vcf, *args;
 {
 	struct confargs *ca = args;
-	/* check physical addr for bogus MVME162 addr @0xffffd200. wierd XXX - smurph */
+	/* check physical addr for bogus MVME162 addr @0xffffd200. weird XXX - smurph */
 	if (cputyp == CPU_162 && ca->ca_paddr == (void *)0xffffd200)
 		return (0);
 
