@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.48 2003/09/07 04:02:03 krw Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.51 2003/10/14 19:38:20 jason Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.20 1996/05/03 19:41:56 christos Exp $	*/
 
 /*-
@@ -132,7 +132,7 @@ cpu_configure()
 	}
 #ifdef CRYPTO
 	/*
-	 * Also, if the chip as crypto available, enable it.
+	 * Also, if the chip has crypto available, enable it.
 	 */
 	if (viac3_crypto_present)
 		viac3_crypto_setup();
