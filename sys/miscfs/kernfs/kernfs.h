@@ -42,6 +42,30 @@
 #define	_PATH_KERNFS	"/kern"		/* Default mountpoint */
 
 #ifdef _KERNEL
+
+struct kern_target {
+	u_char kt_type;
+	u_char kt_namlen;
+	char *kt_name;
+	void *kt_data;
+#define	KTT_NULL	 1
+#define	KTT_TIME	 5
+#define KTT_INT		17
+#define	KTT_STRING	31
+#define KTT_HOSTNAME	47
+#define KTT_AVENRUN	53
+#define KTT_DEVICE	71
+#define	KTT_MSGBUF	89
+#define KTT_USERMEM	91
+#define KTT_DOMAIN	95
+#ifdef IPSEC
+#define KTT_IPSECSPI	107
+#endif
+	u_char kt_tag;
+	u_char kt_vtype;
+	mode_t kt_mode;
+};
+
 struct kernfs_mount {
 	struct vnode	*kf_root;	/* Root node */
 };
