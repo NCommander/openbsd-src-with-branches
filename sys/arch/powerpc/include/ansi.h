@@ -1,4 +1,4 @@
-/*	$OpenBSD: ansi.h,v 1.9 2002/09/15 09:01:59 deraadt Exp $	*/
+/*	$OpenBSD: ansi.h,v 1.10 2003/06/02 23:27:53 millert Exp $	*/
 /*	$NetBSD: ansi.h,v 1.2 1996/11/15 22:38:57 jtc Exp $	*/
 
 /*-
@@ -69,6 +69,7 @@ struct __va_list_tag;
  * defined for ctype.h.
  */
 #define	_BSD_WCHAR_T_	int			/* wchar_t */
+#define	_BSD_WINT_T_	int			/* wint_t */
 #define	_BSD_RUNE_T_	int			/* rune_t */
 
 /*
