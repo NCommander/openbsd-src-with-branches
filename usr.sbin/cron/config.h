@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.14 2003/02/20 19:12:16 millert Exp $	*/
+/*	$OpenBSD: config.h,v 1.15 2003/02/20 20:38:08 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -79,11 +79,6 @@
 			 * places.
 			 */
 #define SYSLOG	 			/*-*/
-
-			/* if you want cron to capitalize its name in ps
-			 * when running a job.  Does not work on SYSV.
-			 */
-#define CAPITALIZE_FOR_PS	 	/*-*/
 
 			/* if you have a tm_gmtoff member in struct tm.
 			 * If not, we will have to compute the value ourselves.
