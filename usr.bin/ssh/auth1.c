@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth1.c,v 1.43 2002/09/09 06:48:06 itojun Exp $");
+RCSID("$OpenBSD: auth1.c,v 1.44 2002/09/26 11:38:43 markus Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -150,7 +150,7 @@ do_authloop(Authctxt *authctxt)
 						snprintf(info, sizeof(info),
 						    " tktuser %.100s",
 						    client_user);
- 
+
  						/* Send response to client */
  						packet_start(
 						    SSH_SMSG_AUTH_KERBEROS_RESPONSE);
