@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.10 1997/06/25 18:18:58 kstailey Exp $	*/
+/*	$OpenBSD: init.c,v 1.11 1997/09/14 10:37:45 deraadt Exp $	*/
 /*	$NetBSD: init.c,v 1.22 1996/05/15 23:29:33 jtc Exp $	*/
 
 /*-
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)init.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.10 1997/06/25 18:18:58 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.11 1997/09/14 10:37:45 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -284,7 +284,7 @@ handle(va_alist)
 {
 	int sig;
 	struct sigaction sa;
-	int mask_everything;
+	sigset_t mask_everything;
 	va_list ap;
 #ifndef __STDC__
 	sig_t handler;
