@@ -1,4 +1,4 @@
-/*	$OpenBSD: look.c,v 1.6 1999/11/20 17:48:59 espie Exp $	*/
+/*	$OpenBSD: look.c,v 1.7 1999/11/25 00:54:22 millert Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -108,11 +108,9 @@ static void
 freent(p)
 	ndptr p;
 {
-	if (!(p->type & STATIC)) {
-		free((char *) p->name);
-		if (p->defn != null)
-			free((char *) p->defn);
-	}
+	free((char *) p->name);
+	if (p->defn != null)
+		free((char *) p->defn);
 	free((char *) p);
 }
 
