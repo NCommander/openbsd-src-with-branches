@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapctl.c,v 1.10 2002/07/03 22:32:33 deraadt Exp $	*/
+/*	$OpenBSD: swapctl.c,v 1.11 2003/03/03 13:41:23 miod Exp $	*/
 /*	$NetBSD: swapctl.c,v 1.9 1998/07/26 20:23:15 mycroft Exp $	*/
 
 /*
@@ -375,11 +375,11 @@ do_fstab(void)
 			if (t != 0)
 				*t = '\0';
 			spec = strdup(s + strlen(NFSMNTPT));
-			if (t != 0)
-				*t = ',';
-
 			if (spec == NULL)
 				errx(1, "Out of memory");
+
+			if (t != 0)
+				*t = ',';
 
 			if (strlen(spec) == 0) {
 				warnx("empty mountpoint");

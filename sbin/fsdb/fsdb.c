@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsdb.c,v 1.14 2003/06/26 08:01:54 tedu Exp $	*/
+/*	$OpenBSD: fsdb.c,v 1.15 2003/08/25 23:28:15 tedu Exp $	*/
 /*	$NetBSD: fsdb.c,v 1.7 1997/01/11 06:50:53 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: fsdb.c,v 1.14 2003/06/26 08:01:54 tedu Exp $";
+static const char rcsid[] = "$OpenBSD: fsdb.c,v 1.15 2003/08/25 23:28:15 tedu Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -250,6 +250,8 @@ cmdloop(void)
 		history(hist, H_ENTER, elline);
 
 		line = strdup(elline);
+		if (line == NULL)
+			errx(1, "out of memory");
 		cmd_argv = crack(line, &cmd_argc);
 		if (cmd_argc) {
 			/*
