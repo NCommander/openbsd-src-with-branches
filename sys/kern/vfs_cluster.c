@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cluster.c,v 1.22 2001/03/21 10:11:22 art Exp $	*/
+/*	$OpenBSD: vfs_cluster.c,v 1.23 2001/05/20 22:18:10 gluk Exp $	*/
 /*	$NetBSD: vfs_cluster.c,v 1.12 1996/04/22 01:39:05 christos Exp $	*/
 
 /*-
@@ -353,6 +353,7 @@ cluster_rbuild(vp, filesize, bp, lbn, blkno, size, run, flags)
 			pagemove(bdata, bdata + tbp->b_bufsize, size);
 		}
 		tbp->b_blkno = bn;
+		tbp->b_flags &= ~(B_DONE | B_ERROR);
 		tbp->b_flags |= flags | B_READ | B_ASYNC;
 		b_save->bs_children[b_save->bs_nchildren++] = tbp;
 	}
