@@ -1,4 +1,5 @@
-/*	$OpenBSD: lstDestroy.c,v 1.10 2000/06/17 14:43:38 espie Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstDestroy.c,v 1.4 1998/12/05 00:06:31 espie Exp $	*/
 /*	$NetBSD: lstDestroy.c,v 1.6 1996/11/06 17:59:37 christos Exp $	*/
 
 /*
@@ -43,15 +44,16 @@
  */
 
 #include	"lstInt.h"
+#include	<stdio.h>
+
 #ifndef lint
 #if 0
 static char sccsid[] = "@(#)lstDestroy.c	8.1 (Berkeley) 6/6/93";
 #else
 UNUSED
-static char rcsid[] = "$OpenBSD: lstDestroy.c,v 1.10 2000/06/17 14:43:38 espie Exp $";
+static char rcsid[] = "$OpenBSD: lstDestroy.c,v 1.4 1998/12/05 00:06:31 espie Exp $";
 #endif
 #endif /* not lint */
-
 
 /*-
  *-----------------------------------------------------------------------
@@ -67,7 +69,7 @@ static char rcsid[] = "$OpenBSD: lstDestroy.c,v 1.10 2000/06/17 14:43:38 espie E
  */
 void
 Lst_Destroy(l, freeProc)
-    Lst	    	  	l;
+    Lst 		l;
     SimpleProc		freeProc;
 {
     LstNode	ln;
@@ -86,3 +88,4 @@ Lst_Destroy(l, freeProc)
 	}
     }
 }
+

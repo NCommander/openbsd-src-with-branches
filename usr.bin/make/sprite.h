@@ -1,3 +1,4 @@
+/*	$OpenPackages$ */
 /*	$OpenBSD: sprite.h,v 1.5 1998/12/05 00:06:29 espie Exp $	*/
 /*	$NetBSD: sprite.h,v 1.6 1996/11/06 17:59:22 christos Exp $	*/
 
@@ -55,7 +56,7 @@ typedef int Boolean;
 #endif
 
 typedef int ReturnStatus;
-#define SUCCESS	0
+#define SUCCESS 0
 #define FAILURE 1
 
 #endif /* _SPRITE */

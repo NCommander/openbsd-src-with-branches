@@ -1,10 +1,12 @@
-/* $OpenPackages$ */
-/* $OpenBSD$ */
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstAppend.c,v 1.4 1998/12/05 00:06:31 espie Exp $	*/
+/* ex:ts=8 sw=4:
+ */
 
 /*
  * Copyright (c) 1999 Marc Espie.
  *
- * Extensive code changes for the OpenBSD project.
+ * Code written for the OpenBSD project.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,11 +29,27 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef VARMODIFIERS_H
-#define VARMODIFIERS_H
-extern char *VarModifiers_Apply(char *, const struct Name *, SymTable *, 
-	Boolean, Boolean *, const char *, int, size_t *);
-extern char *Var_GetTail(char *);
-extern char *Var_GetHead(char *);
-extern void VarModifiers_Init(void);
-#endif
+
+#include	"lstInt.h"
+
+#ifndef lint
+UNUSED
+static char rcsid[] = "$OpenBSD: lstAppend.c,v 1.4 1998/12/05 00:06:31 espie Exp $";
+#endif /* not lint */
+
+/* Add datum to the end of a list only if it wasn't there already.
+ * Returns FAILURE if datum was already there.
+ */
+ReturnStatus
+Lst_AddNew(l, d)
+    Lst 	l;
+    void	*d;
+{
+    if (Lst_Member(l, d) != NULL)
+	return FAILURE;
+    else {
+	Lst_AtEnd(l, d);
+	return SUCCESS;
+    }
+}
+

@@ -1,4 +1,5 @@
-/*	$OpenBSD: lstInit.c,v 1.9 2000/06/17 14:43:39 espie Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstInit.c,v 1.4 1998/12/05 00:06:32 espie Exp $	*/
 /*	$NetBSD: lstInit.c,v 1.5 1996/11/06 17:59:43 christos Exp $	*/
 
 /*
@@ -43,20 +44,20 @@
  */
 
 #include	"lstInt.h"
+
 #ifndef lint
 #if 0
 static char sccsid[] = "@(#)lstInit.c	8.1 (Berkeley) 6/6/93";
 #else
 UNUSED
-static char rcsid[] = "$OpenBSD: lstInit.c,v 1.9 2000/06/17 14:43:39 espie Exp $";
+static char rcsid[] = "$OpenBSD: lstInit.c,v 1.4 1998/12/05 00:06:32 espie Exp $";
 #endif
 #endif /* not lint */
-
 
 /*-
  *-----------------------------------------------------------------------
  * Lst_Init --
- *	Initialize a new list.
+ *	Create and initialize a new list.
  *-----------------------------------------------------------------------
  */
 void
@@ -65,6 +66,5 @@ Lst_Init(l)
 {
     l->firstPtr = NULL;
     l->lastPtr = NULL;
-    l->isOpen = FALSE;
-    l->atEnd = Unknown;
 }
+

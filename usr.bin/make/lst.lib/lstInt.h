@@ -1,4 +1,5 @@
-/*	$OpenBSD: lstInt.h,v 1.10 2000/06/17 14:34:09 espie Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstInt.h,v 1.6 1998/12/05 00:06:32 espie Exp $	*/
 /*	$NetBSD: lstInt.h,v 1.7 1996/11/06 17:59:44 christos Exp $	*/
 
 /*
@@ -50,27 +51,9 @@
 #include	  "lst.h"
 
 /*
- * Flags required for synchronization
- */
-#define LN_DELETED  	0x0001      /* List node should be removed when done */
-
-
-/*
- * PAlloc (var, ptype) --
+ * PAlloc(var, ptype) --
  *	Allocate a pointer-typedef structure 'ptype' into the variable 'var'
  */
-#define	PAlloc(var,ptype)	var = (ptype) emalloc (sizeof (*var))
-
-/*
- * LstNodeValid (ln, l) --
- *	Return TRUE if the LstNode ln is valid with respect to l
- */
-#define LstNodeValid(ln, l)	((ln) == NULL ? FALSE : TRUE)
-
-/*
- * LstIsEmpty (l) --
- *	TRUE if the list l is empty.
- */
-#define LstIsEmpty(l)	((l)->firstPtr == NULL)
+#define PAlloc(var,ptype)	var = (ptype) emalloc (sizeof (*var))
 
 #endif /* _LSTINT_H_ */

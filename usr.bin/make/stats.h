@@ -28,50 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* regression tests */
-#include "make.h"
-#include <stdio.h>
+/* statistical information gathering */
 
-int main(void);
-#define CHECK(s)		\
-do {				\
-    printf("%-65s", #s);	\
-    if (s)			\
-	printf("ok\n"); 	\
-    else {			\
-	printf("failed\n");	\
-	errors++;		\
-    }				\
-} while (0);
+#if defined(STATS_VAR_LOOKUP) || \
+	defined(STATS_GN_CREATION) || \
+	defined(STATS_BUF) || \
+	defined(STATS_HASH)
+#define HAS_STATS
+#endif
 
-int
-main()
-{
-    unsigned int errors = 0;
+#ifdef HAS_STATS
+extern unsigned long *statarray;
+#define STAT_INVOCATIONS	 statarray[0]
+#define STAT_VAR_SEARCHES	 statarray[1]
+#define STAT_VAR_COUNT		 statarray[2]
+#define STAT_VAR_MAXCOUNT	 statarray[3]
+#define STAT_GN_COUNT		 statarray[4]
+#define STAT_TOTAL_BUFS 	 statarray[5]
+#define STAT_DEFAULT_BUFS	 statarray[6]
+#define STAT_WEIRD_BUFS 	 statarray[7]
+#define STAT_BUFS_EXPANSION	 statarray[8]
+#define STAT_WEIRD_INEFFICIENT	 statarray[9]
+#define STAT_VAR_HASH_CREATION	statarray[10]
+#define STAT_VAR_FROM_ENV	statarray[11]
+#define STAT_VAR_CREATION	statarray[12]
+#define STAT_VAR_FIND		statarray[13]
+#define STAT_HASH_CREATION	statarray[14]
+#define STAT_HASH_ENTRIES	statarray[15]
+#define STAT_HASH_EXPAND	statarray[16]
+#define STAT_HASH_LOOKUP	statarray[17]
+#define STAT_HASH_LENGTH	statarray[18]
+#define STAT_HASH_SIZE		statarray[19]
+#define STAT_HASH_POSITIVE	statarray[20]
+#define STAT_USER_SECONDS	statarray[21]
+#define STAT_USER_MS		statarray[22]
+#define STAT_SYS_SECONDS	statarray[23]
+#define STAT_SYS_MS		statarray[24]
+#define STAT_VAR_HASH_MAXSIZE	statarray[25]
+#define STAT_VAR_GHASH_MAXSIZE	statarray[26]
+#define STAT_VAR_POWER		statarray[27]
 
-    CHECK(Str_Match("string", "string") == TRUE);
-    CHECK(Str_Match("string", "string2") == FALSE);
-    CHECK(Str_Match("string", "string*") == TRUE);
-    CHECK(Str_Match("Long string", "Lo*ng") == TRUE);
-    CHECK(Str_Match("Long string", "Lo*ng ") == FALSE);
-    CHECK(Str_Match("Long string", "Lo*ng *") == TRUE);
-    CHECK(Str_Match("string", "stri?g") == TRUE);
-    CHECK(Str_Match("str?ng", "str\\?ng") == TRUE);
-    CHECK(Str_Match("striiiing", "str?*ng") == TRUE);
-    CHECK(Str_Match("Very long string just to see", "******a****") == FALSE);
-    CHECK(Str_Match("d[abc?", "d\\[abc\\?") == TRUE);
-    CHECK(Str_Match("d[abc!", "d\\[abc\\?") == FALSE);
-    CHECK(Str_Match("dwabc?", "d\\[abc\\?") == FALSE);
-    CHECK(Str_Match("da0", "d[bcda]0") == TRUE);
-    CHECK(Str_Match("da0", "d[z-a]0") == TRUE);
-    CHECK(Str_Match("d-0", "d[-a-z]0") == TRUE);
-    CHECK(Str_Match("dy0", "d[a\\-z]0") == FALSE);
-    CHECK(Str_Match("d-0", "d[a\\-z]0") == TRUE);
-    CHECK(Str_Match("dz0", "d[a\\]z]0") == TRUE);
+#define STAT_NUMBER		30
 
-    if (errors != 0)
-	printf("Errors: %d\n", errors);
-    exit(0);
-}
-
+#endif
 
