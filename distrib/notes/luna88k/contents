@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.1 2004/05/16 21:52:22 miod Exp $
+dnl	$OpenBSD: contents,v 1.2 2004/06/07 11:14:15 mickey Exp $
 TopPart
 
 OpenBSDdistsets
@@ -28,6 +28,8 @@ OpenBSDmisc(2154858,7413760)
 dnl Not there yet...
 dnl
 dnl OpenBSDxbase
+dnl
+dnl OpenBSDxetc
 dnl
 dnl OpenBSDxshare
 dnl
