@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:36:10 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 1998/07/24 00:10:32 millert Exp $
 
 PROG=	hangman
 SRCS=	endgame.c extern.c getguess.c getword.c main.c playgame.c \
@@ -6,7 +6,6 @@ SRCS=	endgame.c extern.c getguess.c getword.c main.c playgame.c \
 MAN=	hangman.6
 DPADD=	${LIBCURSES}
 LDADD=	-lcurses
-HIDEGAME=hidegame
 
 .include <bsd.prog.mk>
 

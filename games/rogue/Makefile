@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 1998/08/22 08:55:24 pjanzen Exp $
+#	$OpenBSD: Makefile,v 1.6 2000/07/23 21:58:27 pjanzen Exp $
 #	@(#)Makefile	8.1 (Berkeley) 5/31/93
 
 PROG=	rogue
@@ -8,7 +8,6 @@ SRCS=	hit.c init.c inventory.c level.c machdep.c main.c \
 	room.c save.c score.c spec_hit.c throw.c trap.c use.c zap.c
 DPADD=	${LIBCURSES}
 LDADD=	-lcurses
-HIDEGAME=hidegame
 MAN=	rogue.6
 
 .if make(install)

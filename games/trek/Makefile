@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1998/08/19 07:41:08 pjanzen Exp $
+#	$OpenBSD: Makefile,v 1.4 1999/03/12 03:02:37 pjanzen Exp $
 
 PROG=	trek
 SRCS=	abandon.c attack.c autover.c capture.c check_out.c checkcond.c \
@@ -11,7 +11,6 @@ SRCS=	abandon.c attack.c autover.c capture.c check_out.c checkcond.c \
 MAN=	trek.6
 DPADD=	${LIBM}
 LDADD=	-lm
-HIDEGAME=hidegame
 
 .if make(install)
 SUBDIR+= USD.doc
