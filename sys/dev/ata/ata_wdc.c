@@ -1,4 +1,4 @@
-/*      $OpenBSD: ata_wdc.c,v 1.21 2003/07/23 22:07:15 grange Exp $	*/
+/*      $OpenBSD: ata_wdc.c,v 1.22 2003/09/28 21:01:42 grange Exp $	*/
 /*	$NetBSD: ata_wdc.c,v 1.21 1999/08/09 09:43:11 bouyer Exp $	*/
 
 /*
@@ -96,7 +96,10 @@
 #define DEBUG_PROBE  0x10
 
 #ifdef WDCDEBUG
-int wdcdebug_wd_mask = 0;
+#ifndef WDCDEBUG_WD_MASK
+#define WDCDEBUG_WD_MASK 0x00
+#endif
+int wdcdebug_wd_mask = WDCDEBUG_WD_MASK;
 #define WDCDEBUG_PRINT(args, level) do {	\
 	if ((wdcdebug_wd_mask & (level)) != 0)	\
 		printf args;			\
