@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.1.2.1 2003/10/10 17:04:14 drahn Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.1 2003/10/31 03:54:33 drahn Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -442,7 +442,7 @@ fix_node_irq(int node, struct pcibus_attach_args *pba)
 
 	/*
 	 * if this node has a AAPL,interrupts property, firmware
-	 * has intialized the register correctly.
+	 * has initialized the register correctly.
 	 */
 	len = OF_getprop(node, "AAPL,interrupts", &intr, 4);
 	if (len != 4) {
