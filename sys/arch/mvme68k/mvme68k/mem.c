@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.15 2001/07/25 13:25:32 art Exp $ */
+/*	$OpenBSD: mem.c,v 1.16 2001/11/01 12:13:46 art Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -82,7 +82,6 @@
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 extern u_int lowram;

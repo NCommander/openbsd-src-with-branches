@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.17 2001/06/23 22:03:03 fgsch Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.18 2001/07/25 13:25:33 art Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.33 1997/07/29 17:55:38 fair Exp $	*/
 
 /*-
@@ -135,8 +135,7 @@ Mode of operation:
 #include <netns/ns_if.h>
 #endif
 
-#include <vm/vm.h>
-
+#include <uvm/uvm_extern.h>
 #include <uvm/uvm_map.h>
 
 /*

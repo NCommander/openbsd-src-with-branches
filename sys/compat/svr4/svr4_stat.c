@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_stat.c,v 1.18 2000/06/24 21:00:30 fgsch Exp $	 */
+/*	$OpenBSD: svr4_stat.c,v 1.19 2000/09/07 17:52:24 ericj Exp $	 */
 /*	$NetBSD: svr4_stat.c,v 1.21 1996/04/22 01:16:07 christos Exp $	 */
 
 /*
@@ -43,7 +43,7 @@
 
 #include <sys/time.h>
 #include <sys/ucred.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 
 #include <sys/syscallargs.h>

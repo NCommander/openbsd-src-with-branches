@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.17 2001/09/11 20:05:25 miod Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.18 2001/10/05 00:55:40 nate Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -100,7 +100,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
 #include <machine/bus.h>
 
 #include <dev/mii/mii.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: vsbus_dma.c,v 1.1 2000/10/11 05:45:30 bjc Exp $ */
+/* $OpenBSD: vsbus_dma.c,v 1.2 2001/02/06 04:27:46 hugh Exp $ */
 /* $NetBSD: vsbus_dma.c,v 1.7 2000/07/26 21:50:49 matt Exp $ */
 
 /*-
@@ -45,7 +45,7 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #define _VAX_BUS_DMA_PRIVATE
 #include <machine/bus.h>

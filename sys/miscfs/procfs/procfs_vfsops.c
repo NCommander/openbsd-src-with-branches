@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_vfsops.c,v 1.13 2001/04/09 07:14:23 tholo Exp $	*/
+/*	$OpenBSD: procfs_vfsops.c,v 1.14 2001/06/27 04:58:44 art Exp $	*/
 /*	$NetBSD: procfs_vfsops.c,v 1.25 1996/02/09 22:40:53 christos Exp $	*/
 
 /*
@@ -57,8 +57,6 @@
 #include <sys/malloc.h>
 
 #include <miscfs/procfs/procfs.h>
-
-#include <vm/vm.h>			/* for PAGE_SIZE */
 
 #include <uvm/uvm_extern.h>
 

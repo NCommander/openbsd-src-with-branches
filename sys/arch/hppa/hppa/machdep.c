@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.39 2001/09/12 00:23:33 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.40 2001/09/19 20:50:56 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999-2000 Michael Shalayeff
@@ -67,9 +67,8 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
-#include <vm/vm.h>
-#include <uvm/uvm_page.h>
 #include <uvm/uvm.h>
+#include <uvm/uvm_page.h>
 
 #include <dev/cons.h>
 

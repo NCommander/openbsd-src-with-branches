@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_vnops.c,v 1.18 2001/05/24 07:32:43 aaron Exp $	*/
+/*	$OpenBSD: procfs_vnops.c,v 1.19 2001/06/23 02:14:25 csapuntz Exp $	*/
 /*	$NetBSD: procfs_vnops.c,v 1.40 1996/03/16 23:52:55 christos Exp $	*/
 
 /*
@@ -59,7 +59,7 @@
 #include <sys/ptrace.h>
 #include <sys/stat.h>
 
-#include <vm/vm.h>	/* for PAGE_SIZE */
+#include <uvm/uvm_extern.h>	/* for PAGE_SIZE */
 
 #include <machine/reg.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cia_bus_io.c,v 1.6 1997/01/24 19:57:37 niklas Exp $	*/
+/*	$OpenBSD: cia_bus_io.c,v 1.7 2001/02/06 19:26:39 art Exp $	*/
 /*	$NetBSD: cia_bus_io.c,v 1.6 1996/11/25 03:46:07 cgd Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
 #include <sys/malloc.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 

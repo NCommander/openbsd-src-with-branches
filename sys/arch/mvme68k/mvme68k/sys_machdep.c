@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.10 2001/06/08 08:09:09 art Exp $ */
+/*	$OpenBSD: sys_machdep.c,v 1.11 2001/06/10 14:54:46 miod Exp $ */
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -47,7 +47,7 @@
 #include <sys/mtio.h>
 #include <sys/buf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 

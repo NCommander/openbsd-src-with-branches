@@ -1,4 +1,4 @@
-/*	$OpenBSD: grf.c,v 1.14 2001/09/11 20:05:24 miod Exp $	*/
+/*	$OpenBSD: grf.c,v 1.15 2001/11/01 12:13:46 art Exp $	*/
 /*	$NetBSD: grf.c,v 1.30 1998/08/20 08:33:41 kleink Exp $	*/
 
 /*
@@ -72,8 +72,6 @@
 #include <compat/hpux/hpux.h>
 extern struct emul emul_hpux;
 #endif
-
-#include <vm/vm.h>
 
 #include <uvm/uvm.h>
 

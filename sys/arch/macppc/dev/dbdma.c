@@ -1,4 +1,4 @@
-/*	$OpenBSD: dbdma.c,v 1.2 2001/09/01 17:43:09 drahn Exp $	*/
+/*	$OpenBSD: dbdma.c,v 1.3 2001/09/15 01:51:11 mickey Exp $	*/
 /*	$NetBSD: dbdma.c,v 1.2 1998/08/21 16:13:28 tsubai Exp $	*/
 
 /*
@@ -27,7 +27,7 @@
 #include <sys/malloc.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <macppc/dev/dbdma.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ntptime.c,v 1.9 2001/02/13 20:59:15 art Exp $	*/
+/*	$OpenBSD: kern_ntptime.c,v 1.10 2001/07/04 23:00:58 espie Exp $	*/
 /*	$NetBSD: kern_ntptime.c,v 1.2 1996/03/07 14:31:20 christos Exp $	*/
 
 /******************************************************************************
@@ -62,7 +62,7 @@
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 
 #ifdef NTP

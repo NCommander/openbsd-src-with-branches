@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_pci.c,v 1.17 2001/08/25 10:13:29 art Exp $	*/
+/*	$OpenBSD: if_dc_pci.c,v 1.18 2001/10/06 14:37:48 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -65,7 +65,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>

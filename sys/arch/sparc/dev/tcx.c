@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcx.c,v 1.3 2001/08/17 13:52:29 mickey Exp $	*/
+/*	$OpenBSD: tcx.c,v 1.4 2001/11/01 12:13:46 art Exp $	*/
 /*	$NetBSD: tcx.c,v 1.8 1997/07/29 09:58:14 fair Exp $ */
 
 /* 
@@ -61,7 +61,7 @@
 #include <sys/syslog.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/pmap.h>

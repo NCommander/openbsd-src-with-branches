@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tx.c,v 1.19 2001/08/25 10:13:29 art Exp $	*/
+/*	$OpenBSD: if_tx.c,v 1.20 2001/09/20 17:02:31 mpech Exp $	*/
 /* $FreeBSD: src/sys/pci/if_tx.c,v 1.45 2001/02/07 20:11:02 semenu Exp $ */
 
 /*-
@@ -115,7 +115,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>

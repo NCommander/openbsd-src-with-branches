@@ -1,4 +1,4 @@
-/* $OpenBSD: tsp_dma.c,v 1.1 1999/06/29 06:46:47 ross Exp $ */
+/* $OpenBSD: tsp_dma.c,v 1.1 2000/11/16 04:50:18 ericj Exp $ */
 /* $NetBSD: tsp_dma.c,v 1.1 1999/06/29 06:46:47 ross Exp $ */
 
 /*-
@@ -77,7 +77,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>

@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.1 2001/05/11 09:45:22 art Exp $
+#	$OpenBSD: genassym.cf,v 1.2 2001/09/16 14:28:01 miod Exp $
 
 # Copyright (c) 1994, 1995 Gordon W. Ross
 # Copyright (c) 1993 Adam Glass
@@ -52,7 +52,7 @@ ifdef COMPAT_NETBSD
 include <compat/netbsd/netbsd_syscall.h>
 endif
 
-include <vm/vm.h>
+include <uvm/uvm_extern.h>
 
 # general constants
 export	NBPG

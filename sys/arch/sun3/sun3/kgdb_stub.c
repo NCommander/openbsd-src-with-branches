@@ -1,4 +1,4 @@
-/*	$OpenBSD: kgdb_stub.c,v 1.6 2001/08/12 20:18:30 mickey Exp $	*/
+/*	$OpenBSD: kgdb_stub.c,v 1.7 2001/09/20 17:02:31 mpech Exp $	*/
 /*	$NetBSD: kgdb_stub.c,v 1.6 1996/10/23 16:30:48 gwr Exp $	*/
 
 /*
@@ -52,7 +52,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/control.h>
 #include <machine/cpu.h>

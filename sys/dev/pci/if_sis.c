@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sis.c,v 1.17 2001/08/25 10:13:29 art Exp $ */
+/*	$OpenBSD: if_sis.c,v 1.18 2001/09/23 22:41:25 aaron Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -89,7 +89,7 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>		/* for vtophys */
+#include <uvm/uvm_extern.h>		/* for vtophys */
 
 #include <sys/device.h>
 

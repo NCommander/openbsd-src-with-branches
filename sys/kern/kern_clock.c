@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.27 2000/08/23 20:36:18 art Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.28 2001/08/19 06:10:09 art Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -49,7 +49,7 @@
 #include <sys/proc.h>
 #include <sys/resourcevar.h>
 #include <sys/signalvar.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 #include <sys/timex.h>
 #include <sys/sched.h>

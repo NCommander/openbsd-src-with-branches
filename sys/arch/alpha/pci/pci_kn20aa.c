@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_kn20aa.c,v 1.13 2001/08/17 22:26:58 mickey Exp $	*/
+/*	$OpenBSD: pci_kn20aa.c,v 1.14 2001/09/29 07:14:35 mickey Exp $	*/
 /*	$NetBSD: pci_kn20aa.c,v 1.21 1996/11/17 02:05:27 cgd Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #include <sys/device.h>
 #include <sys/syslog.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 

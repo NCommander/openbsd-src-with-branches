@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc.c,v 1.11 2001/08/23 08:17:40 miod Exp $	*/
+/*	$OpenBSD: asc.c,v 1.12 2001/11/01 12:13:46 art Exp $	*/
 /*	$NetBSD: asc.c,v 1.20 1997/02/24 05:47:33 scottr Exp $	*/
 
 /*
@@ -78,8 +78,8 @@
 #include <sys/fcntl.h>
 #include <sys/timeout.h>
 
-#include <vm/vm.h>
-#include <vm/pmap.h>
+#include <uvm/uvm_extern.h>
+#include <uvm/uvm_pmap.h>
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>

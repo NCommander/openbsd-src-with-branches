@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.11 2001/08/26 14:31:12 miod Exp $ */
+/*	$OpenBSD: mem.c,v 1.12 2001/11/01 12:13:46 art Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -53,7 +53,6 @@
 
 #include <machine/board.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 caddr_t zeropage;

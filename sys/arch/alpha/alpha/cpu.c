@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.c,v 1.9 2001/01/20 20:25:22 art Exp $ */
+/* $OpenBSD: cpu.c,v 1.10 2001/04/15 05:54:39 art Exp $ */
 /* $NetBSD: cpu.c,v 1.44 2000/05/23 05:12:53 thorpej Exp $ */
 
 /*-
@@ -72,7 +72,7 @@
 #include <sys/proc.h>
 #include <sys/user.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/atomic.h>
 #include <machine/autoconf.h>

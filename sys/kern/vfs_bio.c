@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.45 2001/10/11 14:44:10 art Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.47 2001/10/28 19:19:00 deraadt Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -60,7 +60,7 @@
 #include <sys/conf.h>
 #include <sys/kernel.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <miscfs/specfs/specdev.h>
 

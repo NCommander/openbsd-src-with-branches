@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.10 2001/04/29 19:02:45 miod Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.11 2001/05/30 20:35:57 miod Exp $	*/
 /*	$NetBSD: db_machdep.c,v 1.8 1996/11/20 18:57:27 gwr Exp $	*/
 
 /*-
@@ -45,7 +45,7 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/control.h>
 #include <machine/db_machdep.h>

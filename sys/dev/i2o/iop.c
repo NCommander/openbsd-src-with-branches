@@ -1,4 +1,4 @@
-/*	$OpenBSD: iop.c,v 1.19 2001/10/27 20:54:24 mickey Exp $	*/
+/*	$OpenBSD: iop.c,v 1.20 2001/11/05 17:25:58 art Exp $	*/
 /*	$NetBSD: iop.c,v 1.12 2001/03/21 14:27:05 ad Exp $	*/
 
 /*-
@@ -53,7 +53,6 @@
 #include <sys/conf.h>
 #include <sys/kthread.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.38 2001/07/30 14:15:59 art Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.39 2001/11/05 17:25:57 art Exp $	*/
 /*	$NetBSD: isa_machdep.c,v 1.22 1997/06/12 23:57:32 thorpej Exp $	*/
 
 #define ISA_DMA_STATS
@@ -124,7 +124,7 @@
 #include <sys/malloc.h>
 #include <sys/proc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #define _I386_BUS_DMA_PRIVATE
 #include <machine/bus.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_subs.c,v 1.33 2001/08/19 17:45:07 jason Exp $	*/
+/*	$OpenBSD: nfs_subs.c,v 1.34 2001/08/19 18:14:54 art Exp $	*/
 /*	$NetBSD: nfs_subs.c,v 1.27.4.3 1996/07/08 20:34:24 jtc Exp $	*/
 
 /*
@@ -59,7 +59,7 @@
 #include <sys/malloc.h>
 #include <sys/time.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <nfs/rpcv2.h>
 #include <nfs/nfsproto.h>
@@ -72,8 +72,6 @@
 #include <nfs/nfs_var.h>
 
 #include <miscfs/specfs/specdev.h>
-
-#include <vm/vm.h>
 
 #include <netinet/in.h>
 #ifdef ISO

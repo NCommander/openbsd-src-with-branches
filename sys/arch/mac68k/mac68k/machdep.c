@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.82 2001/09/12 00:23:33 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.83 2001/09/19 20:50:56 mickey Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -129,7 +129,6 @@
 void netintr __P((void));
 
 #define	MAXMEM	64*1024	/* XXX - from cmap.h */
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <sys/sysctl.h>

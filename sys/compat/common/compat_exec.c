@@ -1,4 +1,4 @@
-/*	$OpenBSD: compat_exec.c,v 1.4 1999/01/11 05:12:11 millert Exp $	*/
+/*	$OpenBSD: compat_exec.c,v 1.5 1999/11/26 16:44:27 art Exp $	*/
 /*	$NetBSD: compat_exec.c,v 1.1 1996/05/18 15:52:21 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #include <sys/vnode.h>
 #include <sys/exec.h>
 #include <sys/resourcevar.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 /*
  * exec_aout_prep_oldzmagic():

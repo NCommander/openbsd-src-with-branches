@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.13 2001/08/08 15:21:29 millert Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.14 2001/11/04 23:12:46 art Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.7 1996/11/19 04:57:32 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #include <sys/systm.h>
 #include <sys/errno.h>
 #include <sys/device.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <machine/cpu.h>
 #include <sys/sysctl.h>
 

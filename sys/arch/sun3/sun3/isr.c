@@ -1,4 +1,4 @@
-/*	$OpenBSD: isr.c,v 1.13 2001/05/30 20:40:03 miod Exp $	*/
+/*	$OpenBSD: isr.c,v 1.14 2001/06/27 04:44:02 art Exp $	*/
 /*	$NetBSD: isr.c,v 1.25 1996/11/20 18:57:32 gwr Exp $	*/
 
 /*-
@@ -53,8 +53,6 @@
 #include <machine/machdep.h>
 #include <machine/mon.h>
 #include <machine/obio.h>
-
-#include <vm/vm.h>
 
 #include <uvm/uvm_extern.h>
 

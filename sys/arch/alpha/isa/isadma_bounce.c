@@ -1,4 +1,4 @@
-/*	$OpenBSD: isadma_bounce.c,v 1.1 2001/11/05 02:39:56 art Exp $	*/
+/*	$OpenBSD: isadma_bounce.c,v 1.2 2001/11/05 17:25:57 art Exp $	*/
 /* $NetBSD: isadma_bounce.c,v 1.3 2000/06/29 09:02:57 mrg Exp $ */
 
 /*-
@@ -52,7 +52,6 @@
 #include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 extern	paddr_t avail_end;

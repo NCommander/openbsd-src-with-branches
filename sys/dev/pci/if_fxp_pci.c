@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_pci.c,v 1.9 2001/08/25 10:13:29 art Exp $	*/
+/*	$OpenBSD: if_fxp_pci.c,v 1.10 2001/09/04 23:46:23 provos Exp $	*/
 
 /*
  * Copyright (c) 1995, David Greenman
@@ -64,7 +64,7 @@
 
 #include <netinet/if_ether.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/bus.h>

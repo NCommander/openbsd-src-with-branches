@@ -1,5 +1,5 @@
 /*	$NetBSD: mem.c,v 1.31 1996/05/03 19:42:19 christos Exp $	*/
-/*	$OpenBSD: mem.c,v 1.19 2001/07/25 13:25:32 art Exp $ */
+/*	$OpenBSD: mem.c,v 1.20 2001/11/01 12:13:46 art Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -56,8 +56,6 @@
 
 #include <machine/cpu.h>
 #include <machine/conf.h>
-
-#include <vm/vm.h>
 
 #include <uvm/uvm_extern.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.7 2001/05/04 22:48:59 aaron Exp $	*/
+/*	$OpenBSD: intr.c,v 1.8 2001/06/27 04:05:45 art Exp $	*/
 /*	$NetBSD: intr.c,v 1.5 1998/02/16 20:58:30 thorpej Exp $	*/
 
 /*-
@@ -48,7 +48,6 @@
 #include <sys/malloc.h>
 #include <sys/vmmeter.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <net/netisr.h>

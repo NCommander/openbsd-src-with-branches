@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbus.c,v 1.7 1998/12/14 17:51:35 deraadt Exp $	*/
+/*	$OpenBSD: sbus.c,v 1.8 1999/04/18 03:24:25 jason Exp $	*/
 /*	$NetBSD: sbus.c,v 1.17 1997/06/01 22:10:39 pk Exp $ */
 
 /*
@@ -53,7 +53,7 @@
 #include <sys/malloc.h>
 #include <sys/systm.h>
 #include <sys/device.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgeight.c,v 1.10 2001/08/17 13:52:28 mickey Exp $	*/
+/*	$OpenBSD: cgeight.c,v 1.11 2001/11/01 12:13:46 art Exp $	*/
 /*	$NetBSD: cgeight.c,v 1.13 1997/05/24 20:16:04 pk Exp $	*/
 
 /*
@@ -65,7 +65,7 @@
 #include <sys/tty.h>
 #include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/fbio.h>
 #include <machine/autoconf.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_axppci_33.c,v 1.12 2001/06/25 21:49:42 csapuntz Exp $	*/
+/*	$OpenBSD: pci_axppci_33.c,v 1.13 2001/08/17 22:26:58 mickey Exp $	*/
 /*	$NetBSD: pci_axppci_33.c,v 1.10 1996/11/13 21:13:29 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #include <sys/systm.h>
 #include <sys/errno.h>
 #include <sys/device.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/bus.h>

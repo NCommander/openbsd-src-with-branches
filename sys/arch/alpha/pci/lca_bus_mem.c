@@ -1,4 +1,4 @@
-/* $OpenBSD: lca_bus_mem.c,v 1.3 2001/02/06 19:26:39 art Exp $ */
+/* $OpenBSD: lca_bus_mem.c,v 1.4 2001/02/16 16:02:53 jason Exp $ */
 /* $NetBSD: lca_bus_mem.c,v 1.8 1997/09/02 13:19:32 thorpej Exp $ */
 
 /*
@@ -34,7 +34,7 @@
 #include <sys/syslog.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: p9100.c,v 1.4 2001/08/17 13:52:29 mickey Exp $	*/
+/*	$OpenBSD: p9100.c,v 1.5 2001/11/01 12:13:46 art Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -48,7 +48,7 @@
 #include <sys/tty.h>
 #include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/fbio.h>
 #include <machine/autoconf.h>

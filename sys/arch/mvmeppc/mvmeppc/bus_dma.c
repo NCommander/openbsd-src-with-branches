@@ -1,4 +1,4 @@
-/*      $OpenBSD: bus_dma.c,v 1.5 2001/09/19 20:50:57 mickey Exp $        */
+/*      $OpenBSD: bus_dma.c,v 1.6 2001/11/05 17:25:58 art Exp $        */
 /*      $NetBSD: bus_dma.c,v 1.2 2001/06/10 02:31:25 briggs Exp $        */
 
 /*-
@@ -51,7 +51,6 @@
 #include <sys/mbuf.h>
 #include <sys/mount.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm.h>
 #include <uvm/uvm_page.h>
 

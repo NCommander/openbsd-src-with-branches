@@ -1,4 +1,4 @@
-/*	$OpenBSD: lca.c,v 1.12 2001/06/26 21:13:43 art Exp $	*/
+/*	$OpenBSD: lca.c,v 1.13 2001/11/04 23:12:46 art Exp $	*/
 /*	$NetBSD: lca.c,v 1.14 1996/12/05 01:39:35 cgd Exp $	*/
 
 /*-
@@ -70,7 +70,7 @@
 #include <sys/malloc.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/rpb.h>

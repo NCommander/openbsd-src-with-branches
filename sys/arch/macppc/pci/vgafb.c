@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.2 2001/09/13 13:38:45 drahn Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.3 2001/09/17 15:10:36 drahn Exp $	*/
 /*	$NetBSD: vga.c,v 1.3 1996/12/02 22:24:54 cgd Exp $	*/
 
 /*
@@ -34,7 +34,6 @@
 #include <sys/device.h>
 #include <sys/buf.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>

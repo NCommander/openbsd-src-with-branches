@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ve.c,v 1.9 2001/08/26 02:37:07 miod Exp $ */
+/*	$OpenBSD: if_ve.c,v 1.10 2001/09/11 20:05:24 miod Exp $ */
 /*-
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1982, 1992, 1993
@@ -66,7 +66,7 @@
 #include <net/bpfdesc.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>

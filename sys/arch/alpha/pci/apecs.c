@@ -1,4 +1,4 @@
-/*	$OpenBSD: apecs.c,v 1.13 2001/06/26 21:13:43 art Exp $	*/
+/*	$OpenBSD: apecs.c,v 1.14 2001/11/04 23:12:46 art Exp $	*/
 /*	$NetBSD: apecs.c,v 1.16 1996/12/05 01:39:34 cgd Exp $	*/
 
 /*-
@@ -69,7 +69,7 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/rpb.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.4 2001/11/05 04:16:11 fgsch Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.5 2001/11/05 16:50:12 todd Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -106,8 +106,8 @@
 #include <net/bpf.h>
 #endif
 
-#include <vm/vm.h>              /* for vtophys */
-#include <vm/pmap.h>            /* for vtophys */
+#include <uvm/uvm_extern.h>              /* for vtophys */
+#include <uvm/uvm_pmap.h>            /* for vtophys */
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

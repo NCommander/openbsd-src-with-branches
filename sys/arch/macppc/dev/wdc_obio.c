@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc_obio.c,v 1.11 2001/09/01 15:50:00 drahn dead $	*/
+/*	$OpenBSD: wdc_obio.c,v 1.3 2001/09/15 01:51:11 mickey Exp $	*/
 /*	$NetBSD: wdc_obio.c,v 1.15 2001/07/25 20:26:33 bouyer Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <machine/autoconf.h>

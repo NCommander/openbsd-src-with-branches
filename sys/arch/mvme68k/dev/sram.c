@@ -1,4 +1,4 @@
-/*	$OpenBSD: sram.c,v 1.5 1997/11/20 17:02:31 etheisen Exp $ */
+/*	$OpenBSD: sram.c,v 1.6 2001/11/01 12:13:46 art Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -50,7 +50,7 @@
 #include <mvme68k/dev/mcreg.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 struct sramsoftc {
 	struct device	sc_dev;

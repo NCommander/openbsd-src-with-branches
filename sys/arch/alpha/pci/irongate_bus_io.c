@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: irongate_bus_io.c,v 1.2 2001/04/17 14:53:33 art Exp $	*/
 /* $NetBSD: irongate_bus_io.c,v 1.4 2000/06/29 08:58:47 mrg Exp $ */
 
 /*-
@@ -43,7 +43,6 @@
 #include <sys/syslog.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>

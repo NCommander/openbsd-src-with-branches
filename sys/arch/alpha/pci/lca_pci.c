@@ -1,4 +1,4 @@
-/*	$OpenBSD: lca_pci.c,v 1.5 1997/01/24 19:57:44 niklas Exp $	*/
+/*	$OpenBSD: lca_pci.c,v 1.6 2001/02/16 16:02:54 jason Exp $	*/
 /* $NetBSD: lca_pci.c,v 1.13 1997/09/02 13:19:35 thorpej Exp $ */
 
 /*
@@ -33,7 +33,7 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>	/* badaddr proto */
 

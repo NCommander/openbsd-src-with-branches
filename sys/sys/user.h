@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.h,v 1.3 1996/04/21 22:32:17 deraadt Exp $	*/
+/*	$OpenBSD: user.h,v 1.4 2001/04/02 21:43:12 niklas Exp $	*/
 /*	$NetBSD: user.h,v 1.10 1996/04/09 20:55:49 cgd Exp $	*/
 
 /*
@@ -46,7 +46,7 @@
 #include <sys/uio.h>
 #endif
 #include <sys/resourcevar.h>
-#include <vm/vm.h>		/* XXX */
+#include <uvm/uvm_extern.h>		/* XXX */
 #include <sys/sysctl.h>
 
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.35 2001/09/19 20:50:56 mickey Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.36 2001/11/06 01:47:02 art Exp $	*/
 /*	$NetBSD: pmap.c,v 1.68 1999/06/19 19:44:09 is Exp $	*/
 
 /*-
@@ -119,7 +119,6 @@
 #include <sys/msgbuf.h>
 #include <sys/user.h>
 #include <uvm/uvm.h>
-#include <uvm/uvm_extern.h>
 #include <machine/pte.h>
 #include <machine/cpu.h>
 #include <machine/vmparam.h>

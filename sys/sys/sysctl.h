@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.h,v 1.42 2001/08/18 03:32:16 art Exp $	*/
+/*	$OpenBSD: sysctl.h,v 1.43 2001/09/28 01:42:54 millert Exp $	*/
 /*	$NetBSD: sysctl.h,v 1.16 1996/04/09 20:55:36 cgd Exp $	*/
 
 /*
@@ -51,7 +51,7 @@
 #include <sys/proc.h>
 #endif
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 /*
  * Definitions for sysctl call.  The sysctl call uses a hierarchical name

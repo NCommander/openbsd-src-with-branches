@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_misc.c,v 1.17 2001/01/23 05:48:05 csapuntz Exp $	*/
+/*	$OpenBSD: ibcs2_misc.c,v 1.18 2001/07/10 11:07:25 espie Exp $	*/
 /*	$NetBSD: ibcs2_misc.c,v 1.23 1997/01/15 01:37:49 perry Exp $	*/
 
 /*
@@ -86,7 +86,7 @@
 
 #include <miscfs/specfs/specdev.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>		/* must be included after vm.h */
 
 #include <i386/include/reg.h>

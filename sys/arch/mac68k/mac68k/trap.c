@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.28 2001/09/14 08:57:05 art Exp $	*/
+/*	$OpenBSD: trap.c,v 1.29 2001/11/06 18:41:10 art Exp $	*/
 /*	$NetBSD: trap.c,v 1.68 1998/12/22 08:47:07 scottr Exp $	*/
 
 /*
@@ -71,10 +71,8 @@
 
 #include <m68k/fpe/fpu_emulate.h>
 
-#include <vm/vm.h>
-#include <vm/pmap.h>
-
 #include <uvm/uvm_extern.h>
+#include <uvm/uvm_pmap.h>
 
 #ifdef COMPAT_SUNOS
 #include <compat/sunos/sunos_syscall.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.13 2001/06/15 22:45:33 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.14 2001/06/25 00:43:19 mickey Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.45 1999/10/23 14:56:05 ragge Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #include <sys/reboot.h>
 #include <sys/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/sid.h>

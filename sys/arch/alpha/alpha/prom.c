@@ -1,4 +1,4 @@
-/* $OpenBSD: prom.c,v 1.10 2001/04/06 04:42:05 csapuntz Exp $ */
+/* $OpenBSD: prom.c,v 1.11 2001/04/17 04:30:45 aaron Exp $ */
 /* $NetBSD: prom.c,v 1.39 2000/03/06 21:36:05 thorpej Exp $ */
 
 /* 
@@ -28,7 +28,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/lock.h>
 #include <sys/proc.h>
 #include <sys/user.h>

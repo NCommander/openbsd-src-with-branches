@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_break.c,v 1.8 1999/09/11 00:44:59 mickey Exp $	*/
+/*	$OpenBSD: db_break.c,v 1.9 2001/09/19 20:50:58 mickey Exp $	*/
 /*	$NetBSD: db_break.c,v 1.7 1996/03/30 22:30:03 christos Exp $	*/
 
 /* 
@@ -36,7 +36,6 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
-#include <vm/vm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>		/* type definitions */

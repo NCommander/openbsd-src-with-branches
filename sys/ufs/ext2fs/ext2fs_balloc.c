@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_balloc.c,v 1.5 2001/06/23 02:07:50 csapuntz Exp $	*/
+/*	$OpenBSD: ext2fs_balloc.c,v 1.6 2001/09/17 23:31:39 art Exp $	*/
 /*	$NetBSD: ext2fs_balloc.c,v 1.10 2001/07/04 21:16:01 chs Exp $	*/
 
 /*
@@ -45,7 +45,7 @@
 #include <sys/file.h>
 #include <sys/vnode.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
