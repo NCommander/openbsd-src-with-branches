@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptosoft.c,v 1.40 2004/04/14 20:03:05 markus Exp $	*/
+/*	$OpenBSD: cryptosoft.c,v 1.41 2004/05/07 14:42:26 millert Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -619,8 +619,11 @@ swcr_newsession(u_int32_t *sid, struct cryptoini *cri)
 			txf = &enc_xform_null;
 			goto enccommon;
 		enccommon:
-			txf->setkey(&((*swd)->sw_kschedule), cri->cri_key,
-			    cri->cri_klen / 8);
+			if (txf->setkey(&((*swd)->sw_kschedule), cri->cri_key,
+			    cri->cri_klen / 8) < 0) {
+				swcr_freesession(i);
+				return EINVAL;
+			}
 			(*swd)->sw_exf = txf;
 			break;
 
