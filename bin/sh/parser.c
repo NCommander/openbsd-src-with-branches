@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.5 1996/10/20 00:55:02 millert Exp $	*/
+/*	$OpenBSD: parser.c,v 1.6 1996/12/01 05:09:51 millert Exp $	*/
 /*	$NetBSD: parser.c,v 1.31 1996/11/25 20:22:00 christos Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)parser.c	8.7 (Berkeley) 5/16/95";
 #else
-static char rcsid[] = "$OpenBSD: parser.c,v 1.5 1996/10/20 00:55:02 millert Exp $";
+static char rcsid[] = "$OpenBSD: parser.c,v 1.6 1996/12/01 05:09:51 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -1258,7 +1258,9 @@ parsebackq: {
 	struct jmploc *volatile savehandler;
 	int savelen;
 	int saveprompt;
-
+#ifdef lint
+	saveprompt = 0;
+#endif
 	savepbq = parsebackquote;
 	if (setjmp(jmploc.loc)) {
 		if (str)
