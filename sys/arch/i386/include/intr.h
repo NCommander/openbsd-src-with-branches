@@ -46,7 +46,7 @@
 #define	IPL_CLOCK	(NRSVIDT + 0x90)	/* clock */
 #define	IPL_HIGH	(NRSVIDT + 0xa0)	/* everything, except... */
 #define	IPL_IPI		(NRSVIDT + 0xb0)	/* interprocessor interrupt */
-#define NIPL		12
+#define NIPL		16
 
 /* Interrupt sharing types. */
 #define	IST_NONE	0	/* none */
