@@ -1,5 +1,5 @@
 // Main templates for the -*- C++ -*- string classes.
-// Copyright (C) 1994, 1995 Free Software Foundation
+// Copyright (C) 1994, 1995, 1999 Free Software Foundation
 
 // This file is part of the GNU ANSI C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -77,8 +77,15 @@ private:
     void release ()
       {
 	size_t __val;
-	asm ("lock; xaddl %0, %2"
-	     : "=r" (__val) : "0" (-1), "m" (ref) : "memory");
+	// This opcode exists as a .byte instead of as a mnemonic for the
+	// benefit of SCO OpenServer 5.  The system assembler (which is 
+	// essentially required on this target) can't assemble xaddl in 
+	//COFF mode.
+	asm (".byte 0xf0, 0x0f, 0xc1, 0x02" // lock; xaddl %eax, (%edx)
+	    : "=a" (__val)
+	    : "0" (-1), "m" (ref), "d" (&ref)
+	    : "memory");
+
 	if (__val == 1)
 	  delete this;
       }
@@ -173,11 +180,11 @@ public:
     : dat (nilRep.grab ()) { assign (n, c); }
 #ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
-    basic_string(InputIterator begin, InputIterator end)
+    basic_string(InputIterator __begin, InputIterator __end)
 #else
-  basic_string(const_iterator begin, const_iterator end)
+  basic_string(const_iterator __begin, const_iterator __end)
 #endif
-    : dat (nilRep.grab ()) { assign (begin, end); }
+    : dat (nilRep.grab ()) { assign (__begin, __end); }
 
   ~basic_string ()
     { rep ()->release (); }
@@ -201,6 +208,9 @@ public:
 #endif
     { return replace (iend (), iend (), first, last); }
 
+  void push_back(charT __c)
+  { append(1, __c); }
+  
   basic_string& assign (const basic_string& str, size_type pos = 0,
 			size_type n = npos)
     { return replace (0, npos, str, pos, n); }

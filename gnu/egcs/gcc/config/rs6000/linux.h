@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-m elf32ppc %{G*} %{shared:-shared} \
+#define LINK_SPEC "-m elf32ppclinux %{G*} %{shared:-shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
@@ -69,7 +69,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef DEFAULT_VTABLE_THUNKS
 #ifndef USE_GNULIBC_1
-#define DEFAULT_VTABLE_THUNKS 1
+#define DEFAULT_VTABLE_THUNKS 2
 #endif
 
 #undef JUMP_TABLES_IN_TEXT_SECTION

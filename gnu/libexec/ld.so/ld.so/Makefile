@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:55:51 millert Exp $
+#	$OpenBSD: Makefile,v 1.3 1996/09/26 12:22:02 deraadt Exp $
 
 SUBDIR= # libdl
 
@@ -13,8 +13,10 @@ INSTALL_STRIP=
 
 .PATH:	${.CURDIR}/${MACHINE_ARCH}
 
+ELF_LDFLAGS=--shared # using GNU ld
+
 $(PROG):
-	${CC} -shared -e _dl_boot -o ${PROG} `${LORDER} ${OBJS}|tsort -q`
+	$(LD) -x -e _dl_boot $(ELF_LDFLAGS) -o $(PROG) $(OBJS)
 
 
 .include <bsd.prog.mk>

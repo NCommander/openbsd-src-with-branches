@@ -44,7 +44,7 @@ following:
 	following:
 
 		cd .../OSREV		# the top of the tree
-		cd MACHINE/
+		cd powerpc/
 		tar cf <tape_device> base{:--:}OSrev etc{:--:}OSrev
 
 	(Note that you still need to fill in "<tape_device>" in the

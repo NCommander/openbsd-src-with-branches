@@ -1837,7 +1837,8 @@
 
 (define_insn "negdi2"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(neg:DI (match_operand:DI 1 "s_register_operand" "?r,0")))]
+	(neg:DI (match_operand:DI 1 "s_register_operand" "?r,0")))
+   (clobber (reg:CC 24))]
   ""
   "rsbs\\t%Q0, %Q1, #0\;rsc\\t%R0, %R1, #0"
 [(set_attr "conds" "clob")
@@ -2139,14 +2140,12 @@
 [(set_attr "length" "8")])
 
 (define_insn "zero_extendqidi2"
-  [(set (match_operand:DI 0 "s_register_operand" "=r,r")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+	(zero_extend:DI (match_operand:QI 1 "s_register_operand" "r")))]
   ""
-  "@
-   and%?\\t%Q0, %1, #255\;mov%?\\t%R0, #0
-   ldr%?b\\t%Q0, %1\;mov%?\\t%R0, #0"
+  "and%?\\t%Q0, %1, #255\;mov%?\\t%R0, #0"
 [(set_attr "length" "8")
- (set_attr "type" "*,load")])
+ (set_attr "type" "*")])
 
 (define_insn "extendsidi2"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -6216,6 +6215,7 @@
   ""
   "*
 {
+  making_const_table = TRUE;
   switch (GET_MODE_CLASS (GET_MODE (operands[0])))
     {
     case MODE_FLOAT:
@@ -6238,6 +6238,7 @@
   ""
   "*
 {
+  making_const_table = TRUE;
   switch (GET_MODE_CLASS (GET_MODE (operands[0])))
     {
     case MODE_FLOAT:
@@ -6259,7 +6260,7 @@
   [(unspec_volatile [(const_int 0)] 4)]
   ""
   "*
-  /* Nothing to do (currently).  */
+  making_const_table = FALSE;
   return \"\";
 ")
 

@@ -41,10 +41,6 @@ Supported devices {:-include-:}:
 			ST01/02
 			Future Domain TMC-885
 			Future Domain TMC-950
-	RAID controllers:
-		DPT SmartCache III/IV PCI/EISA adapters 
-		ICP-Vortex GDT 6XXXRP series
-		3ware Escalade 3W-5x00, 3W-6x00
 	MDA, CGA, VGA, SVGA, and HGC Display Adapters.  (Note that not
 		all of the display adapters OpenBSD/i386 can work with
 		are supported by X.  See the XFree86 FAQ for more
@@ -173,8 +169,7 @@ Supported devices {:-include-:}:
 			STB TV PCI Television Tuner
 			Miro PC TV
 			Intel Smart Video Recorder III
-		APM v1.1 power management,
-		PCI BIOS v2.x interrupt and address configuration.
+		APM v1.1 power management.
 
 Drivers for hardware marked with "[*]" are NOT included on the
 distribution floppies.  Except as noted above, all other drivers are
@@ -261,15 +256,6 @@ SCSI tapes	st0	first SCSI tape (by SCSI id)
 
 SCSI CD-ROMs	cd0	first SCSI CD-ROM (by SCSI id)
 		cd1	second SCSI CD-ROM (by SCSI id)
-
-DPT SmartCache III/IV PCI/EISA adapters 
-		dpt0	any	any	any
-
-ICP-Vortex GDT 6XXXRP series
-		gdt0	any	any	any
-
-3ware Escalade 3W-5x00, 3W-6x00
-		twe0	any	any	any
 
 SMC/WD 8003, 8013, Elite16, and Elite16 Ultra Ethernet boards
 		we0	0x280	9
@@ -363,7 +349,7 @@ the kernel, the user is presented with a
 
 UKC>
 
-prompt.  At this prompt, a variety of commands may be issued, but the
+prompt.  At this prompt, as variety of commands may be issued, but the
 relevant one to getting the SMC Elite Ultra running is 'disable'.  The
 wt0, el0, and ie1 devices all need to be disabled.  This is done by typing
 'disable' followed by the name of the device, i.e., 'disable wt0', and
@@ -381,42 +367,85 @@ When all three extra devices are disabled and any changes made, the
 'quit' command will exit the UKC.  The kernel should then boot, and find
 your Elite Ultra on device we1.
 
-SPECIAL CARE FOR PCI BIOS
- 
-As all BIOS implementations and subsystems this one has bugs too.
-Sometimes specifications are unclear about interfaces and/or
-data validation.
-These all cause our driver for PCI BIOS to misbehave in more or
-less fatal ways, such as panics on pcibios0 configuration or
-pci device attachments, or unconfigured pci devices due to
-irq and/or I/O address misconfiguration.
+SPECIAL CARE FOR NEWER NOTEBOOK COMPUTERS AND PCMCIA
 
-Fast workaround
+There is a problem on some newer notebooks with OpenBSD's autoconfiguration
+not YET finding the PCI<-->PCMCIA bridge, and therefore not finding any of the
+PCMCIA cards, which can be a nuisance if you're trying to install over
+an Ethernet LAN.
 
-Boot by giving the -c flag to the initial boot request.
-Following the loading of the kernel, the user is presented with a
+The symptoms:
+1) No probe messages indicating any PCMCIA response or any probe response
+   for any PCMCIA cards, and
+2) A probe message like this:
+	Cirrus Logic CL-GD6729 (class bridge, subclass PCMCIA, revision 0xfe)
+	at pci0 dev 4 function 0 not configured
+   The details will vary; the important parts are 
+	class bridge, subclass PCMCIA, ... at pci* ... not configured
 
-UKC>
+Finding the Bridge Address
 
-Then type the following commands:
+Bear in mind that both ISA and PCI are just different ways of electrically
+connecting an adaptor into the PC's memory space. PCI merely provides
+convenient iterators for finding everything on it, which is easier than
+it is on ISA. This is why you get the "not configured" message above.
+But once a device is connected in there, the driver only needs to know its 
+memory mapped address. Now we don't know its address on YOUR brand of PC,
+but we can help you find it out. Someday our software will do this for you,
+of course, but it doesn't as of today.
 
-UKC> change bios0
-165 bios0 at mainbus0 bus -1 flags 0x0
-change [n] y
-bus [-1] ? <enter>
-flags [0] ? 3
-165 bios0 changed
-165 bios0 at mainbus0 bus -1 flags 0x3
-UKC> quit
+Your first try should be 0x3000, which seems to be used on several notebooks.
+If this fails, you need to do some nosing around.
 
-This will disable the pcibios0 attachment.
-Sometimes, especially when hangs occur on particular pci device
-attachments, moving pci cards into a different slot helps.
+The easiest way is to boot up Windows '95, if you have it on a hard disk.
+Right-click on the "My Computer" Icon, select Properties, select the
+Device Manager tab, and double click on PCMCIA Socket, then on the Bridge
+that is listed under this heading. Select Properties at the bottom of
+the window, and click on Resources. Finally you will see an address range,
+in Hex. On my Dell Latitude LM, for example, the range was FCFC-FCFF.
 
-Fixing for good
+If you don't have Windows '95 on a hard disk, there are several possibilities:
+1) But you do have Windows'95 setup floppies? Then look through them for
+the ".INF" files, and rummage around in them until you find it.
+2) You have a friend, or the dealer, who has a similar Notebook PC with
+Windows '95 installed? Proceed as above.
+3) Call Customer Support at the manufacturer, tell them you're having
+a setup problem, and need to know the memory address to set for the
+PCI to PCMCIA bridge. Oh, take a few cans of Jolt and a good book to read
+while waiting on the line.
 
-Try to gather dmesg output from the failing configuration, for
-example by using serial console (see boot(8)) and send it to
-mickey@openbsd.org along with descriptions of your hardware setup.
-Dig in the code and fix problems.
+Fixing it - temporarily
 
+OK, now you have the address and size of the memory window for the PCMCIA
+bridge. Or so you think. To try it out, use the UKC, as described earlier
+(under SMC Elite, above). Basically you use "boot -c" to get into UKC.
+Give the command "change pcicmaster0", and to set the address and iosize
+to the values you found above. Then type "quit", and the boot should
+continue, and you should find your PCMCIA cards.
+
+Note that if the card is an "ep0" (3c589 on PCMCIA) AND you are using
+UTP, you must give the arguments "link0 link1" on the ifconfig command.
+The autoconfig message
+	ep0 at pcmcia0 port 0x300-0x30f irq 10: ep0: address nn:nn:nn:nn:nn:nn,
+		utp/aui/bnc (default utp)
+implies that the default is UTP and you can omit the link* arguments, but
+in fact you cannot!
+
+Fixing it - configuring a new kernel
+
+Follow the normal steps for building a new kernel documented elsewhere.
+For my system I changed the original pcicmaster0 line as follows:
+
+#pcicmaster0	at isa? port 0x3E0 size 2
+#hack for CL PCIC on Dell Lattitude LM; really on PCI, but...
+pcicmaster0	at isa? port 0xFCFC size 4
+
+IRQ's: You probably do NOT have to worry about the IRQ's appearing
+different than what Windows'95 claims. Trust me, and try it.
+
+Fixing it for good
+
+OK, this is the tough part. Somebody has to wade in and rewrite the
+OpenBSD PCMCIA subsystem to support multiple adapters on multiple busses.
+Nobody's done this yet. You have the source, so you truly can
+"Use The Source, Luke."  

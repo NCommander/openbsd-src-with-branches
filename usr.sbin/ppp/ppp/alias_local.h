@@ -14,7 +14,7 @@
     
      <updated several times by original author and Eivind Eklund>
 
-    $OpenBSD: alias_local.h,v 1.9 2000/08/13 22:05:47 brian Exp $
+    $OpenBSD: alias_local.h,v 1.8 2000/06/23 09:47:05 brian Exp $
 */
 #ifndef ALIAS_LOCAL_H
 #define ALIAS_LOCAL_H
@@ -78,10 +78,10 @@ void DifferentialChecksum(u_short *, u_short *, u_short *, int);
 
 /* Internal data access */
 struct alias_link *
-FindIcmpIn(struct in_addr, struct in_addr, u_short, int);
+FindIcmpIn(struct in_addr, struct in_addr, u_short);
 
 struct alias_link *
-FindIcmpOut(struct in_addr, struct in_addr, u_short, int);
+FindIcmpOut(struct in_addr, struct in_addr, u_short);
 
 struct alias_link *
 FindFragmentIn1(struct in_addr, struct in_addr, u_short);
@@ -102,25 +102,22 @@ struct alias_link *
 FindProtoOut(struct in_addr, struct in_addr, u_char);
 
 struct alias_link *
-FindUdpTcpIn (struct in_addr, struct in_addr, u_short, u_short, u_char, int);
+FindUdpTcpIn (struct in_addr, struct in_addr, u_short, u_short, u_char);
 
 struct alias_link *
-FindUdpTcpOut(struct in_addr, struct in_addr, u_short, u_short, u_char, int);
+FindUdpTcpOut(struct in_addr, struct in_addr, u_short, u_short, u_char);
 
 struct alias_link *
-AddPptp(struct in_addr, struct in_addr, struct in_addr, u_int16_t);
+FindPptpIn(struct in_addr, struct in_addr, u_short);
 
 struct alias_link *
-FindPptpOutByCallId(struct in_addr, struct in_addr, u_int16_t);
+FindPptpOut(struct in_addr, struct in_addr, u_short);
 
 struct alias_link *
-FindPptpInByCallId(struct in_addr, struct in_addr, u_int16_t);
+QueryUdpTcpIn (struct in_addr, struct in_addr, u_short, u_short, u_char);
 
 struct alias_link *
-FindPptpOutByPeerCallId(struct in_addr, struct in_addr, u_int16_t);
-
-struct alias_link *
-FindPptpInByPeerCallId(struct in_addr, struct in_addr, u_int16_t);
+QueryUdpTcpOut(struct in_addr, struct in_addr, u_short, u_short, u_char);
 
 struct alias_link *
 FindRtspOut(struct in_addr, struct in_addr, u_short, u_short, u_char);
@@ -162,7 +159,6 @@ void SetExpire(struct alias_link *, int);
 void ClearCheckNewLink(void);
 void SetLastLineCrlfTermed(struct alias_link *, int);
 int GetLastLineCrlfTermed(struct alias_link *);
-void SetDestCallId(struct alias_link *, u_int16_t);
 #ifndef NO_FW_PUNCH
 void PunchFWHole(struct alias_link *);
 #endif
@@ -184,10 +180,10 @@ void AliasHandleIrcOut(struct ip *, struct alias_link *, int);
 void AliasHandleRtspOut(struct ip *, struct alias_link *, int);
 
 /* PPTP routines */
+int  PptpGetCallID(struct ip *, u_short *);
+void PptpSetCallID(struct ip *, u_short);
 void AliasHandlePptpOut(struct ip *, struct alias_link *);
 void AliasHandlePptpIn(struct ip *, struct alias_link *);
-int AliasHandlePptpGreOut(struct ip *);
-int AliasHandlePptpGreIn(struct ip *);
 
 /* NetBIOS routines */
 int AliasHandleUdpNbt(struct ip *, struct alias_link *, struct in_addr *, u_short);

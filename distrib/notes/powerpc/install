@@ -14,6 +14,16 @@ at boot time.  If possible, you should use the parameters it prints.
 another operating system, or because your disk is old enough that the
 kernel can't figure out its geometry.)
 
+If OpenBSD will be sharing the disk with DOS or another operating
+system, you should have already completed the section of these notes
+that instructed you on how to prepare your hard disk.  You should know
+the size of the OpenBSD area of the disk and its offset from the
+beginning of the disk.  You will need this information when setting up
+your OpenBSD partitions.  If your BIOS uses translated geometry, you
+should use this geometry for the remainder of the install.  This is
+only necessary if you are sharing the disk with other operating systems
+that use the translated geometry.
+
 You should now be ready to install OpenBSD.
 
 The following is a walk-through of the steps you will take while
@@ -23,16 +33,14 @@ question.  If you wish to stop the installation, you may hit Control-C
 at any time, but if you do, you'll have to begin the installation
 process again from scratch.
 
-	At this time the system can be installed from the supplied
-	CD boot image or by network loading the bootloader.  Once
-	the bootloader is installed on the local hard drive, the
-	system can boot from it.  Although currently OpenBSD
-	cannot share the same drive as Mac OS due to partitioning
-	issues, systems that support more than one physical drive
-	can dual boot using Open Firmware commands.
+	At this time the system can primarily only be installed
+	by network loading the bootloader. Once the bootloader
+	is installed on the local harddrive the system can boot
+	from local disk, but currently the bootloader cannot be
+	loaded from CD.
 
-	(Refer to "OpenBSD OSREV Release Contents" above for information
-	on how to access and boot from Open Firmware)
+	[include directions on where to look up network booting
+	instructions]
 
 	You will then be presented with the OpenBSD kernel boot
 	messages.  You will want to read them, to determine your
@@ -86,10 +94,11 @@ process again from scratch.
 	DOS or Linux partitions defined on the disk, these will usually
 	show up as partition 'h', 'i' and so on.  It is recommended that
 	you create separate partitions for /usr and /var, and if you have
-	room for it, also for /home.  Currently OpenBSD will not share a
-	disk with any other operating system care should be taken not to
-	overwrite any data on other disks in the system and that no data
-	is on the disk to be used for OpenBSD/MACHINE.
+	room for it, also for /home.
+	Currently OpenBSD will not share a disk with any other operating
+	system care should be taken not to overwrite any data on other
+	disks in the system and that no data is on the disk to be used 
+	for OpenBSD/MACHINE
 
 	Note that all OpenBSD partitions in the disk label must have an
 	offset that makes it start within the OpenBSD part of the disk,

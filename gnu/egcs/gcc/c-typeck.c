@@ -167,7 +167,8 @@ static tree
 qualify_type (type, like)
      tree type, like;
 {
-  return c_build_qualified_type (type, TYPE_QUALS (like));
+  return c_build_qualified_type (type, 
+				 TYPE_QUALS (type) | TYPE_QUALS (like));
 }
 
 /* Return the common type of two types.
@@ -5845,7 +5846,7 @@ add_pending_init (purpose, value)
 	  p = *q;
 	  if (tree_int_cst_lt (purpose, p->purpose))
 	    q = &p->left;
-	  else if (tree_int_cst_lt (p->purpose, purpose))
+	  else if (p->purpose != purpose)
 	    q = &p->right;
 	  else
 	    abort ();
@@ -5859,8 +5860,7 @@ add_pending_init (purpose, value)
 	  if (tree_int_cst_lt (DECL_FIELD_BITPOS (purpose),
 			       DECL_FIELD_BITPOS (p->purpose)))
 	    q = &p->left;
-	  else if (tree_int_cst_lt (DECL_FIELD_BITPOS (p->purpose),
-				    DECL_FIELD_BITPOS (purpose)))
+	  else if (p->purpose != purpose)
 	    q = &p->right;
 	  else
 	    abort ();
@@ -6045,7 +6045,7 @@ pending_init_member (field)
     {
       while (p)
 	{
-	  if (tree_int_cst_equal (field, p->purpose))
+	  if (field == p->purpose)
 	    return 1;
 	  else if (tree_int_cst_lt (field, p->purpose))
 	    p = p->left;

@@ -22,6 +22,9 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time Target Specification.  */
 #define TARGET_VERSION  fputs (" (ARM GNU/Linux with ELF)", stderr);
 
+/* Do not assume anything about header files.  */
+#define NO_IMPLICIT_EXTERN_C
+
 /* We have libgcc2.  */
 #define HAVE_ATEXIT
 
@@ -36,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* This was defined in linux.h.  Define it here also. */
 #undef  DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS   1
+#define DEFAULT_VTABLE_THUNKS   2
 
 /* Handle #pragma weak and #pragma pack.  */
 #define HANDLE_SYSV_PRAGMA
