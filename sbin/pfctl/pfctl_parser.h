@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.h,v 1.11 2001/10/01 17:58:16 markus Exp $ */
+/*	$OpenBSD: pfctl_parser.h,v 1.12 2001/10/04 21:54:15 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -38,6 +38,7 @@
 #define PF_OPT_VERBOSE		0x0004
 #define PF_OPT_NOACTION		0x0008
 #define PF_OPT_QUIET		0x0010
+#define PF_OPT_CLRRULECTRS	0x0020
 
 struct pfctl {
 	int dev;
