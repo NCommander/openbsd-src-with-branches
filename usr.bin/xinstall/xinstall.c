@@ -1,4 +1,4 @@
-/*	$OpenBSD: xinstall.c,v 1.30 2002/01/24 23:01:19 millert Exp $	*/
+/*	$OpenBSD: xinstall.c,v 1.31 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: xinstall.c,v 1.9 1995/12/20 10:25:17 jonathan Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)xinstall.c	8.1 (Berkeley) 7/21/93";
 #endif
-static char rcsid[] = "$OpenBSD: xinstall.c,v 1.30 2002/01/24 23:01:19 millert Exp $";
+static char rcsid[] = "$OpenBSD: xinstall.c,v 1.31 2002/02/16 21:27:59 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -193,7 +193,7 @@ main(argc, argv)
 
 	/* can't do file1 file2 directory/file */
 	if (argc != 2)
-		err(EX_OSERR, "Target: %s", argv[argc-1]);
+		errx(EX_OSERR, "Target: %s", argv[argc-1]);
 
 	if (!no_target) {
 		if (stat(*argv, &from_sb))
