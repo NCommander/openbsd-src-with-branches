@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.39 2000/12/21 16:54:52 aaron Exp $ */
+/* $OpenBSD: machdep.c,v 1.40 2001/01/24 16:59:12 art Exp $ */
 /* $NetBSD: machdep.c,v 1.206 2000/05/23 05:12:54 thorpej Exp $ */
 
 /*-
@@ -789,7 +789,9 @@ nobootinfo:
 	 * Initialize debuggers, and break into them if appropriate.
 	 */
 #ifdef DDB
+#ifdef notyet
 	ddb_init();
+#endif
 
 	if (boothowto & RB_KDB)
 		Debugger();
