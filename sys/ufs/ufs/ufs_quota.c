@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_quota.c,v 1.10 2002/02/20 18:40:49 csapuntz Exp $	*/
+/*	$OpenBSD: ufs_quota.c,v 1.11 2002/02/22 20:37:46 drahn Exp $	*/
 /*	$NetBSD: ufs_quota.c,v 1.8 1996/02/09 22:36:09 christos Exp $	*/
 
 /*
@@ -890,6 +890,8 @@ dqget(vp, id, ump, type, dqp)
 			panic("free dquot isn't");
 		TAILQ_REMOVE(&dqfreelist, dq, dq_freelist);
 		LIST_REMOVE(dq, dq_hash);
+		crfree(dq->dq_cred);
+		dq->dq_cred = NOCRED;
 	}
 	/*
 	 * Initialize the contents of the dquot structure.
@@ -967,8 +969,6 @@ dqrele(vp, dq)
 		(void) dqsync(vp, dq);
 	if (--dq->dq_cnt > 0)
 		return;
-	crfree(dq->dq_cred);
-	dq->dq_cred = NOCRED;
 	TAILQ_INSERT_TAIL(&dqfreelist, dq, dq_freelist);
 }
 
