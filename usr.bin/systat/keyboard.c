@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyboard.c,v 1.14 2003/07/10 00:06:51 david Exp $	*/
+/*	$OpenBSD: keyboard.c,v 1.15 2004/04/14 19:53:04 deraadt Exp $	*/
 /*	$NetBSD: keyboard.c,v 1.2 1995/01/20 08:51:59 jtc Exp $	*/
 
 /*-
@@ -34,12 +34,14 @@
 #if 0
 static char sccsid[] = "@(#)keyboard.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: keyboard.c,v 1.14 2003/07/10 00:06:51 david Exp $";
+static char rcsid[] = "$OpenBSD: keyboard.c,v 1.15 2004/04/14 19:53:04 deraadt Exp $";
 #endif /* not lint */
 
+#include <sys/types.h>
 #include <ctype.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <termios.h>
 #include <errno.h>
 
