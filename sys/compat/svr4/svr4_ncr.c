@@ -1,4 +1,4 @@
-/*	$OpenBSD$	 */
+/*	$OpenBSD: svr4_ncr.c,v 1.2 1996/10/17 19:15:50 niklas Exp $	 */
 
 /*
  * Copyright (c) 1995, 1996 Niklas Hallqvist
@@ -47,7 +47,7 @@ svr4_ncr_sys_rdebug(p, v, retval)
 	void *v;
 	register_t *retval;
 {
-	return ENXIO;
+	return (ENXIO);
 }
 
 #endif /* COMPAT_SVR4_NCR */
