@@ -1,4 +1,4 @@
-/*	$OpenBSD: fld_def.c,v 1.5 1999/05/17 03:04:11 millert Exp $	*/
+/*	$OpenBSD: fld_def.c,v 1.6 2001/01/22 18:02:12 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -75,7 +75,7 @@ NCURSES_EXPORT_VAR(FIELD *) _nc_Default_Field = &default_field;
 |                              int *err )
 |   
 |   Description   :  Create an argument structure for the specified type.
-|                    Use the type-dependant argument list to construct
+|                    Use the type-dependent argument list to construct
 |                    it.
 |
 |   Return Values :  Pointer to argument structure. Maybe NULL.

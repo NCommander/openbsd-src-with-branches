@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_param.h,v 1.7 2001/12/19 08:58:07 art Exp $	*/
+/*	$OpenBSD: uvm_param.h,v 1.8 2003/06/02 23:28:24 millert Exp $	*/
 /*	$NetBSD: uvm_param.h,v 1.5 2001/03/09 01:02:12 chs Exp $	*/
 
 /* 
@@ -82,7 +82,7 @@ typedef int	boolean_t;
 #endif
 
 /*
- *	The machine independent pages are refered to as PAGES.  A page
+ *	The machine independent pages are referred to as PAGES.  A page
  *	is some number of hardware pages, depending on the target machine.
  */
 #define	DEFAULT_PAGE_SIZE	4096

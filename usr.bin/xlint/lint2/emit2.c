@@ -1,4 +1,4 @@
-/*	$OpenBSD: emit2.c,v 1.2 1996/06/26 05:44:22 deraadt Exp $	*/
+/*	$OpenBSD: emit2.c,v 1.3 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: emit2.c,v 1.2 1995/07/03 21:24:44 cgd Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: emit2.c,v 1.2 1996/06/26 05:44:22 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: emit2.c,v 1.3 2002/02/16 21:27:59 millert Exp $";
 #endif
 
 #include <err.h>
@@ -192,7 +192,7 @@ dumpname(hte)
 
 	/*
 	 * If there is a definition, write it. Otherwise write a tentative
-	 * definition. This is neccessary because more than one tentative
+	 * definition. This is necessary because more than one tentative
 	 * definition is allowed (except with sflag).
 	 */
 	def = NULL;

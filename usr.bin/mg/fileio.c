@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.37 2003/08/15 23:09:57 vincent Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.38 2003/08/15 23:23:18 vincent Exp $	*/
 
 /*
  *	POSIX fileio.c
@@ -215,7 +215,7 @@ fbackupfile(const char *fn)
 /*
  * The string "fn" is a file name.
  * Perform any required appending of directory name or case adjustments.
- * If NO_DIR is not defined, the same file should be refered to even if the
+ * If NO_DIR is not defined, the same file should be referred to even if the
  * working directory changes.
  */
 #ifdef SYMBLINK

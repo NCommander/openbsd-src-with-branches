@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-radius.c,v 1.5 2001/08/21 06:21:29 jakob Exp $	*/
+/*	$OpenBSD: print-radius.c,v 1.6 2001/10/24 12:05:11 ho Exp $	*/
 
 /*
  * Copyright (c) 1997 Thomas H. Ptacek. All rights reserved.
@@ -88,7 +88,7 @@ struct radius_atable {
 /* the right way to do this is probably to read these values out
  * of the actual RADIUS dictionary; this would require the machine
  * running tcpdump to have that file installed, and it's not my
- * program, so I'm not going to introduce new dependancies. Oh well. 
+ * program, so I'm not going to introduce new dependencies. Oh well. 
  */
 
 static struct radius_atable radius_atts[] = {

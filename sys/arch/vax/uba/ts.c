@@ -1,4 +1,4 @@
-/*	$OpenBSD: ts.c,v 1.13 2003/08/06 21:08:06 millert Exp $ */
+/*	$OpenBSD: ts.c,v 1.14 2003/11/03 07:06:17 david Exp $ */
 /*	$NetBSD: ts.c,v 1.11 1997/01/11 11:34:43 ragge Exp $ */
 
 /*-
@@ -483,7 +483,7 @@ tsstart (sc, bp)
 			/*
 			 * For some reasons which I don't (yet? :) understand,
 			 * tmscp.c initiates in this situation a GET-UNIT
-			 * command. (Because no data-buffers are neccess. ??)
+			 * command. (Because no data-buffers are necessary?)
 			 */
 			cmd = TS_CMD_STAT;
 			goto do_cmd;

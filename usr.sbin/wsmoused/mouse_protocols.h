@@ -1,4 +1,4 @@
-/* $OpenBSD: mouse_protocols.h,v 1.2 2002/02/15 02:18:39 deraadt Exp $ */
+/* $OpenBSD: mouse_protocols.h,v 1.3 2002/06/11 18:49:18 hin Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -100,11 +100,11 @@
 /* Logitech MouseMan data packet (M+ protocol) */
 #define MOUSE_LMAN_BUTTON2DOWN	0x20	/* middle button, the 4th byte */
 
-/* ALPS GlidePoint extention (variant of M+ protocol) */
+/* ALPS GlidePoint extension (variant of M+ protocol) */
 #define MOUSE_ALPS_BUTTON2DOWN	0x20	/* middle button, the 4th byte */
 #define MOUSE_ALPS_TAP		0x10	/* `tapping' action, the 4th byte */
 
-/* Kinsington Thinking Mouse extention (variant of M+ protocol) */
+/* Kinsington Thinking Mouse extension (variant of M+ protocol) */
 #define MOUSE_THINK_BUTTON2DOWN 0x20	/* lower-left button, the 4th byte */
 #define MOUSE_THINK_BUTTON4DOWN 0x10	/* lower-right button, the 4th byte */
 

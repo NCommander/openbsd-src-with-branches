@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD: keynote.l,v 1.13 2001/09/03 20:14:51 deraadt Exp $ */
+/* $OpenBSD: keynote.l,v 1.14 2002/05/27 06:29:14 deraadt Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -477,7 +477,7 @@ keynote_evaluate_assertion(struct assertion *as)
 {
     YY_BUFFER_STATE keynote_bs;
 
-    /* Non-existant Conditions field means highest return value */
+    /* Non-existent Conditions field means highest return value */
     if (as->as_conditions_s == (char *) NULL)
     {
 	as->as_result = keynote_current_session->ks_values_num - 1;
