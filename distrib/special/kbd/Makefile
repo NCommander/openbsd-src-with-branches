@@ -4,7 +4,7 @@
     (${MACHINE} == "i386") || (${MACHINE} == "macppc") || \
     (${MACHINE} == "sparc") || (${MACHINE} == "sparc64") || \
     (${MACHINE} == "vax") || (${MACHINE} == "amd64") || \
-    (${MACHINE} == "cats") || (${MACHINE} == "pegasos")
+    (${MACHINE} == "cats")
 PROG=	kbd
 COPTS+=	-Os
 

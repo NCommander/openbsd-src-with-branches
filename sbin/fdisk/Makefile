@@ -26,8 +26,8 @@
 #
 
 .if (${MACHINE} == "i386") || (${MACHINE} == "amd64") || \
-    (${MACHINE} == "macppc") || (${MACHINE} == "pegasos") || \
-    (${MACHINE} == "alpha") || (${MACHINE} == "cats")
+    (${MACHINE} == "macppc") || (${MACHINE} == "alpha") || \
+    (${MACHINE} == "cats")
 PROG=	fdisk
 SRCS=	fdisk.c user.c misc.c disk.c mbr.c part.c cmd.c manual.c
 DPADD=	${LIBUTIL}
@@ -53,6 +53,6 @@ NOPROG=yes
 .endif
 
 MAN=	fdisk.8
-MANSUBDIR=i386 amd64 macppc pegasos alpha cats
+MANSUBDIR=i386 amd64 macppc alpha cats
 
 .include <bsd.prog.mk>

@@ -5,10 +5,10 @@
 # architectures to this list!
 #
 .if (${MACHINE} == "i386") || (${MACHINE} == "amd64") || \
-    (${MACHINE} == "macppc") || (${MACHINE} == "pegasos") || \
-    (${MACHINE} == "alpha") || (${MACHINE} == "hppa") || \
-    (${MACHINE} == "sparc") || (${MACHINE} == "sparc64") || \
-    (${MACHINE} == "vax") || (${MACHINE} == "cats")
+    (${MACHINE} == "macppc") || (${MACHINE} == "alpha") || \
+    (${MACHINE} == "hppa") || (${MACHINE} == "sparc") || \
+    (${MACHINE} == "sparc64") || (${MACHINE} == "vax") || \
+    (${MACHINE} == "cats")
     
 PROG=	kbd
 
@@ -21,6 +21,6 @@ NOPROG=	Yes
 .endif
 
 MAN=		kbd.8
-MANSUBDIR=	alpha hppa i386 macppc sparc sparc64 vax pegasos amd64 cats
+MANSUBDIR=	alpha hppa i386 macppc sparc sparc64 vax amd64 cats
 
 .include <bsd.prog.mk>

@@ -2,7 +2,7 @@
 
 .if	make(obj)
 SUBDIR= special alpha crunch hp300 hppa i386 mac68k macppc mvme68k \
-	mvme88k mvmeppc pegasos sparc sparc64 vax amd64 cats
+	mvme88k mvmeppc sparc sparc64 vax amd64 cats
 .elif	!make(install)
 SUBDIR= special
 .endif

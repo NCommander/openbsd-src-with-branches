@@ -26,7 +26,7 @@ BIN1=	bootptab changelist ccd.conf csh.cshrc csh.login csh.logout \
     ${MACHINE} == "cats" || ${MACHINE} == "hppa" || \
     ${MACHINE} == "i386" || ${MACHINE} == "luna88k" || \
     ${MACHINE} == "macppc" || ${MACHINE} == "sparc" || \
-    ${MACHINE} == "sparc64" || ${MACHINE} == "pegasos"
+    ${MACHINE} == "sparc64"
 BIN1+=	wsconsctl.conf
 .endif
 
@@ -340,7 +340,6 @@ MAKEDEVARCHS+= macppc
 MAKEDEVARCHS+= mvme68k
 MAKEDEVARCHS+= mvme88k
 #MAKEDEVARCHS+= mvmeppc
-MAKEDEVARCHS+= pegasos
 MAKEDEVARCHS+= sparc
 MAKEDEVARCHS+= sparc64
 MAKEDEVARCHS+= vax

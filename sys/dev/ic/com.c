@@ -1460,8 +1460,6 @@ comcnprobe(cp)
 	bus_space_tag_t iot = &arc_bus_io;
 #elif defined(hppa)
 	bus_space_tag_t iot = &hppa_bustag;
-#elif defined(__pegasos__)
-	bus_space_tag_t iot = MD_ISA_IOT;
 #else
 	bus_space_tag_t iot = 0;
 #endif

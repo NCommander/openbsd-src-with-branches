@@ -59,6 +59,6 @@ MLINKS+=vnd.4 svnd.4
 
 SUBDIR=	man4.alpha man4.amd64 man4.cats man4.hp300 man4.hppa man4.i386 \
 	man4.luna88k man4.mac68k man4.macppc man4.mvme68k man4.mvme88k \
-	man4.pegasos man4.sparc man4.sparc64 man4.vax
+	man4.sparc man4.sparc64 man4.vax
 
 .include <bsd.prog.mk>

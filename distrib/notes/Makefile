@@ -19,7 +19,7 @@ all:	$(TARG)
 allarchs:
 	@cd $(.CURDIR); \
 	for arch in alpha amd64 cats hp300 hppa i386 mac68k macppc \
-	    mvme68k mvme88k pegasos sparc sparc64 vax; \
+	    mvme68k mvme88k sparc sparc64 vax; \
 	do ${MAKE} M=$$arch; done
 
 $(TARG): $(DEP)

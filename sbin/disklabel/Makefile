@@ -50,7 +50,7 @@ CFLAGS+= -DSEEALSO="\"installboot(8)\"" -DCYLCHECK -DAAT0
 CFLAGS+= -DSEEALSO="\"installboot(8)\""
 .endif
 
-.if (${MACHINE} == "macppc") || (${MACHINE} == "pegasos")
+.if (${MACHINE} == "macppc")
 CFLAGS+= -DDOSLABEL
 CFLAGS+= -DSEEALSO="\"fdisk(8)\""
 .endif

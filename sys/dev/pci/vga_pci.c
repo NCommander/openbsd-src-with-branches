@@ -285,10 +285,6 @@ vga_pci_mmap(void *v, off_t off, int prot)
 #endif
 	}
 #endif
-#ifdef __pegasos__
-	/* XXX */
-		return off;
-#endif
 	return -1;
 }
 
