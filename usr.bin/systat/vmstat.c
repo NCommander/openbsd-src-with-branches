@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmstat.c,v 1.32 2002/02/16 00:18:09 tdeval Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.33 2002/02/16 21:27:54 millert Exp $	*/
 /*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)vmstat.c	8.2 (Berkeley) 1/12/94";
 #endif
-static char rcsid[] = "$OpenBSD: vmstat.c,v 1.32 2002/02/16 00:18:09 tdeval Exp $";
+static char rcsid[] = "$OpenBSD: vmstat.c,v 1.33 2002/02/16 21:27:54 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -453,7 +453,7 @@ showkre()
 	putfloat(avenrun[1], STATROW, STATCOL + 23, 6, 2, 0);
 	putfloat(avenrun[2], STATROW, STATCOL + 29, 6, 2, 0);
 	mvaddstr(STATROW, STATCOL + 53, buf);
-#define pgtokb(pg)	((pg) * s.uvmexp.pagesize / 1024)
+#define pgtokb(pg)	((pg) * (s.uvmexp.pagesize / 1024))
 
 	putint(pgtokb(s.uvmexp.active), MEMROW + 2, MEMCOL + 6, 7);
 	putint(pgtokb(s.uvmexp.active + s.uvmexp.swpginuse),    /* XXX */
