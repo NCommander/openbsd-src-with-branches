@@ -1,7 +1,7 @@
-/*	$OpenBSD: str.c,v 1.6 2002/03/14 06:51:42 mpech Exp $	*/
+/*	$OpenBSD: str.c,v 1.7 2003/04/04 08:56:01 avsm Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: str.c,v 1.6 2002/03/14 06:51:42 mpech Exp $";
+static const char *rcsid = "$OpenBSD: str.c,v 1.7 2003/04/04 08:56:01 avsm Exp $";
 #endif
 
 /*
@@ -95,8 +95,9 @@ copy_string(char *str)
     if (!str)
 	ret = NULL;
     else {
-	ret = (char *)malloc(strlen(str) + 1);
-	strcpy(ret, str);
+	int len = strlen(str) + 1;
+	ret = (char *)malloc(len);
+	strlcpy(ret, str, len);
     }
     return ret;
 }
