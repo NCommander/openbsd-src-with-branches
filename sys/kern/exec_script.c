@@ -72,8 +72,8 @@ exec_script_makecmds(p, epp)
 	char **shellargp, **tmpsap;
 	struct vnode *scriptvp;
 #ifdef SETUIDSCRIPTS
-	uid_t script_uid;
-	gid_t script_gid;
+	uid_t script_uid = -1;
+	gid_t script_gid = -1;
 	u_short script_sbits;
 #endif
 
