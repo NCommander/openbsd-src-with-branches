@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.56 2001/05/30 02:12:24 deraadt Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.57 2001/06/01 00:28:25 angelos Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -1927,7 +1927,7 @@ bridge_filter(sc, ifp, eh, m)
 	if (hlen < sizeof(struct ip))
 		goto dropit;
 	if (hlen > m->m_len) {
-		if ((m = m_pullup(m, sizeof(struct ip))) == NULL)
+		if ((m = m_pullup(m, hlen)) == NULL)
 			return (NULL);
 		ip = mtod(m, struct ip *);
 	}
