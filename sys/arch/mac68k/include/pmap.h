@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.8 1999/04/24 06:39:40 downsj Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.9 2001/05/08 17:30:40 aaron Exp $	*/
 /*	$NetBSD: pmap.h,v 1.26 1999/07/21 03:18:21 briggs Exp $	*/
 
 /*
@@ -188,10 +188,6 @@ extern	char *vmmap;			/* map for mem, dumps, etc. */
 /* pmap.c */
 vm_offset_t pmap_map __P((vaddr_t, paddr_t, paddr_t, int));
 void mac68k_set_pte __P((vm_offset_t va, vm_offset_t pge));
-
-struct proc;
-void	pmap_activate __P((struct proc *));
-void	pmap_deactivate __P((struct proc *));
 
 #endif	/* _KERNEL */
 
