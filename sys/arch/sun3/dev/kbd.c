@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.6 1997/01/15 07:09:29 kstailey Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.3 1997/08/19 11:48:04 kstailey Exp $	*/
 /*	$NetBSD: kbd.c,v 1.8 1996/05/17 19:32:06 gwr Exp $	*/
 
 /*
@@ -76,7 +76,7 @@
 #include <machine/kbd.h>
 #include <machine/kbio.h>
 
-#include "event_var.h"
+#include "../../../dev/sun/event_var.h"
 #include "kbd_xlate.h"
 
 /*
