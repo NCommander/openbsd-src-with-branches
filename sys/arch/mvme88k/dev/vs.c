@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.41 2004/06/10 16:05:22 miod Exp $	*/
+/*	$OpenBSD: vs.c,v 1.42 2004/07/02 14:00:43 miod Exp $	*/
 
 /*
  * Copyright (c) 2004, Miodrag Vallat.
@@ -794,7 +794,7 @@ vs_eintr(void *vsc)
 	case CEVSB_ERR_NR:
 		printf("non-recoverable error\n");
 		break;
-	case CESVB_ERR_PANIC:
+	case CEVSB_ERR_PANIC:
 		printf("board panic\n");
 		break;
 	default:
