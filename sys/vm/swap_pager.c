@@ -1,4 +1,4 @@
-/*	$OpenBSD: swap_pager.c,v 1.10 1997/04/17 01:25:16 niklas Exp $	*/
+/*	$OpenBSD: swap_pager.c,v 1.11 1997/07/25 06:03:04 mickey Exp $	*/
 /*	$NetBSD: swap_pager.c,v 1.27 1996/03/16 23:15:20 christos Exp $	*/
 
 /*
@@ -722,9 +722,9 @@ swap_pager_io(swp, mlist, npages, flags)
 	if ((bp->b_flags & B_READ) == 0) {
 		bp->b_dirtyoff = 0;
 		bp->b_dirtyend = npages * PAGE_SIZE;
-		swapdev_vp->v_numoutput++;
 		s = splbio();
 		swp->sw_poip++;
+		swapdev_vp->v_numoutput++;
 		splx(s);
 		mask = (~(~0 << npages)) << atop(off);
 #ifdef DEBUG
