@@ -1,6 +1,4 @@
-/*	$OpenBSD: sched.h,v 1.3 1999/11/25 07:01:29 d Exp $	*/
-#ifndef _SCHED_H_
-#define _SCHED_H_
+/*	$OpenBSD: sched.h,v 1.4 2000/06/27 19:53:55 art Exp $	*/
 
 /* sched.h: POSIX 1003.1b Process Scheduling header */
 
@@ -37,6 +35,9 @@
  * SUCH DAMAGE.
  *
  */
+
+#ifndef _SCHED_H_
+#define _SCHED_H_
 
 #include <sys/types.h>	/* For pid_t */
 
