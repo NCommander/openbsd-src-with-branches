@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.15 2005/01/14 18:18:19 drahn Exp $
+#	$OpenBSD: GENERIC,v 1.17 2005/01/16 18:13:28 deraadt Exp $
 #
 # GENERIC machine description file
 #
@@ -44,7 +44,7 @@ options 	XSCALE_CACHE_WRITE_THROUGH
 makeoptions	CPUFLAGS="-mcpu=xscale"
 
 #option WSDISPLAY_COMPAT_USL		# VT handling
-#option WSDISPLAY_COMPAT_RAWKBD		# can get raw scancoetes
+#option WSDISPLAY_COMPAT_RAWKBD		# can get raw scancodes
 option WSDISPLAY_DEFAULTSCREENS=2
 #option WSDISPLAY_COMPAT_PCVT		# emulate some ioctls
 
