@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.11 2002/07/04 04:26:40 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.12 2003/06/02 23:32:09 millert Exp $	*/
 /*	$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: util.c,v 1.11 2002/07/04 04:26:40 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: util.c,v 1.12 2003/06/02 23:32:09 millert Exp $";
 #endif
 #endif /* not lint */
 
