@@ -1,4 +1,4 @@
-/*	$OpenBSD: ld.c,v 1.5 1996/12/22 20:54:16 tholo Exp $	*/
+/*	$OpenBSD: ld.c,v 1.6 1997/02/21 07:28:11 tholo Exp $	*/
 
 /*-
  * This code is derived from software copyrighted by the Free Software
@@ -2977,7 +2977,7 @@ perform_relocation(data, data_size, reloc, nreloc, entry, dataseg)
 			case N_DATA:
 			case N_DATA | N_EXT:
 				/*
-				 * A word that points to beginning of the the
+				 * A word that points to beginning of the
 				 * data section initially contains not 0 but
 				 * rather the "address" of that section in
 				 * the input file, which is the length of the
