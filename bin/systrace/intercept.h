@@ -1,4 +1,4 @@
-/*	$OpenBSD: intercept.h,v 1.13 2002/10/16 15:01:08 itojun Exp $	*/
+/*	$OpenBSD: intercept.h,v 1.14 2002/11/26 03:48:07 itojun Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -189,5 +189,7 @@ void intercept_syscall_result(int, pid_t, u_int16_t, int, const char *, int,
     const char *, void *, int, int, void *);
 void intercept_ugid(struct intercept_pid *, uid_t, gid_t);
 void intercept_setpid(struct intercept_pid *, uid_t, gid_t);
+
+int intercept_isvalidsystemcall(char *, char *);
 
 #endif /* _INTERCEPT_H_ */
