@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: install.sh,v 1.138 2003/09/26 00:11:25 krw Exp $
+#	$OpenBSD: install.sh,v 1.139 2003/11/03 05:16:21 david Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997-2002 Todd Miller, Theo de Raadt, Ken Westerback
@@ -375,8 +375,8 @@ while read _dev _mp _fstype _opt _rest; do
 	mount -u -o $_opt $_dev $_mp ||	exit
 done < /etc/fstab
 
-# Create /tmp/sysctl.conf from installed sysctl.conf if appropriate.
-set_machdep_apertureallowed
+# Handle questions...
+questions
 
 echo -n "Saving configuration files..."
 
