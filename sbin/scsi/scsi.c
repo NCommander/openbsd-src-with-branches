@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.c,v 1.2 1997/01/15 23:41:41 millert Exp $	*/
+/*	$OpenBSD: scsi.c,v 1.3 1997/06/24 02:03:00 dgregor Exp $	*/
 /*	$FreeBSD: scsi.c,v 1.11 1996/04/06 11:00:28 joerg Exp $	*/
 
 /*
@@ -941,7 +941,8 @@ void do_probe_all(void)
 }
 #endif
 
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 	struct scsi_addr scaddr;
 
