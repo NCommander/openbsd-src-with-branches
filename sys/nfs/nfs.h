@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs.h,v 1.21 2003/10/22 04:45:54 jmc Exp $	*/
+/*	$OpenBSD: nfs.h,v 1.22 2004/06/21 23:50:37 tholo Exp $	*/
 /*	$NetBSD: nfs.h,v 1.10.4.1 1996/05/27 11:23:56 fvdl Exp $	*/
 
 /*
@@ -435,6 +435,7 @@ struct nfsrv_descript {
 #define ND_KERBFULL	0x40
 #define ND_KERBAUTH	(ND_KERBNICK | ND_KERBFULL)
 
+extern struct pool nfsreqpl;
 extern TAILQ_HEAD(nfsdhead, nfsd) nfsd_head;
 extern int nfsd_head_flag;
 #define	NFSD_CHECKSLP	0x01
