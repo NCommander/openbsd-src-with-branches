@@ -323,8 +323,6 @@ sys_socketpair(p, v, retval)
 	}
 	error = copyout((caddr_t)sv, (caddr_t)SCARG(uap, rsv),
 	    2 * sizeof (int));
-	retval[0] = sv[0];		/* XXX ??? */
-	retval[1] = sv[1];		/* XXX ??? */
 	return (error);
 free4:
 	ffree(fp2);
