@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.5 2004/03/06 21:47:21 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.6 2004/03/07 16:46:17 henning Exp $	*/
 
 /*
  * Copyright (c) 2004 Ryan McBride <mcbride@openbsd.org>
@@ -253,6 +253,7 @@ init		: INIT {
 			else
 				curaction = conf->always.always;
 		}
+		;
 
 if_test		: interface LINK UP		{
 			$$ = new_ifstate($1, IFSD_LINKUP);
@@ -629,7 +630,6 @@ parse_config(char *filename, int opts)
 	curaction = conf->always.always;
 	conf->loglevel = IFSD_LOG_NORMAL;
 	conf->opts = opts;
-
 
 	yyparse();
 
