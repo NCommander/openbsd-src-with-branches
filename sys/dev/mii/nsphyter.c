@@ -1,4 +1,4 @@
-/*	$OpenBSD: nsphyter.c,v 1.7 2004/09/26 00:59:58 brad Exp $	*/
+/*	$OpenBSD: nsphyter.c,v 1.8 2004/09/27 18:25:48 brad Exp $	*/
 /*	$NetBSD: nsphyter.c,v 1.5 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -140,7 +140,7 @@ nsphyterattach(struct device *parent, struct device *self, void *aux)
 	sc->mii_phy = ma->mii_phyno;
 	sc->mii_funcs = &nsphyter_funcs;
 	sc->mii_pdata = mii;
-	sc->mii_flags = mii->mii_flags;
+	sc->mii_flags = ma->mii_flags;
 
 	PHY_RESET(sc);
 

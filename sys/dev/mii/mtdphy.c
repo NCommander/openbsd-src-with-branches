@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtdphy.c,v 1.9 2004/09/26 00:59:58 brad Exp $	*/
+/*	$OpenBSD: mtdphy.c,v 1.10 2004/09/27 18:25:48 brad Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Jason L. Wright (jason@thought.net)
@@ -88,7 +88,7 @@ mtdphyattach(struct device *parent, struct device *self, void *aux)
 	sc->mii_phy = ma->mii_phyno;
 	sc->mii_funcs = &mtdphy_funcs;
 	sc->mii_pdata = mii;
-	sc->mii_flags = mii->mii_flags;
+	sc->mii_flags = ma->mii_flags;
 
 	PHY_RESET(sc);
 
