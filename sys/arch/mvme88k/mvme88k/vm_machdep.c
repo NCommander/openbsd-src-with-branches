@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.58 2004/01/08 14:35:33 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.59 2004/01/12 07:46:17 miod Exp $	*/
 
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -292,6 +292,8 @@ vmapbuf(bp, len)
 		pmap_enter(vm_map_pmap(phys_map), kva, pa,
 			   VM_PROT_READ | VM_PROT_WRITE,
 			   VM_PROT_READ | VM_PROT_WRITE | PMAP_WIRED);
+		pmap_cache_ctrl(pmap_kernel(), kva, kva + PAGE_SIZE,
+		    CACHE_WT | CACHE_GLOBAL);
 		addr += PAGE_SIZE;
 		kva += PAGE_SIZE;
 		len -= PAGE_SIZE;
