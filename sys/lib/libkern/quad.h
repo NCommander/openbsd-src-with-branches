@@ -57,7 +57,7 @@
  */
 
 #include <sys/types.h>
-#ifndef _KERNEL
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <limits.h>
 #else
 #include <machine/limits.h>
