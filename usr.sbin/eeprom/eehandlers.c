@@ -414,7 +414,7 @@ ee_diagpath(ktent, arg)
 	if (arg) {
 		if (strlen(arg) > sizeof(path))
 			BARF(ktent);
-		sprintf(path, arg);
+		snprintf(path, sizeof path, arg);
 		if (doio(ktent, (u_char *)&path[0], sizeof(path), IO_WRITE))
 			FAILEDWRITE(ktent);
 	} else
@@ -443,7 +443,7 @@ ee_banner(ktent, arg)
 			BARF(ktent);
 		if (*arg != '\0') {
 			enable = EE_TRUE;
-			sprintf(string, arg);
+			snprintf(string, sizeof string, arg);
 			if (doio(ktent, (u_char *)string,
 			    sizeof(string), IO_WRITE))
 				FAILEDWRITE(ktent);
