@@ -1,4 +1,4 @@
-/*	$OpenBSD: cert.c,v 1.17 2001/05/31 20:21:25 angelos Exp $	*/
+/*	$OpenBSD: cert.c,v 1.18 2001/06/05 05:59:42 niklas Exp $	*/
 /*	$EOM: cert.c,v 1.18 2000/09/28 12:53:27 niklas Exp $	*/
 
 /*
@@ -48,11 +48,6 @@
 
 #ifdef USE_X509
 #include "x509.h"
-#ifdef KAME
-#  include <openssl/ssl.h>
-#else
-#  include <ssl/ssl.h>
-#endif
 #endif
 
 #ifdef USE_KEYNOTE
