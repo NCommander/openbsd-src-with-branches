@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.c,v 1.3 1995/11/23 02:39:40 cgd Exp $	*/
+/*	$OpenBSD: disk.c,v 1.4 1996/10/30 22:40:42 niklas Exp $	*/
 /*	$NetBSD: disk.c,v 1.3 1995/11/23 02:39:40 cgd Exp $	*/
 
 /*
@@ -44,6 +44,7 @@
 #include <sys/param.h>
 #include <sys/disklabel.h>
 
+#include <machine/rpb.h>
 #include <machine/prom.h>
 
 #include "disk.h"
