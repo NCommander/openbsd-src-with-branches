@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: auth_none.c,v 1.4 1998/12/20 23:45:41 millert Exp $";
+static char *rcsid = "$OpenBSD: auth_none.c,v 1.5 2000/08/24 17:03:19 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -76,10 +76,10 @@ authnone_create()
 	XDR xdr_stream;
 	register XDR *xdrs;
 
-	if (ap == 0) {
+	if (ap == NULL) {
 		ap = (struct authnone_private *)calloc(1, sizeof (*ap));
-		if (ap == 0)
-			return (0);
+		if (ap == NULL)
+			return (NULL);
 		authnone_private = ap;
 	}
 	if (!ap->mcnt) {
@@ -104,7 +104,7 @@ authnone_marshal(client, xdrs)
 {
 	register struct authnone_private *ap = authnone_private;
 
-	if (ap == 0)
+	if (ap == NULL)
 		return (0);
 	return ((*xdrs->x_ops->x_putbytes)(xdrs,
 	    ap->marshalled_client, ap->mcnt));

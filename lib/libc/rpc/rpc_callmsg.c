@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: rpc_callmsg.c,v 1.4 1996/11/14 06:27:18 etheisen Exp $";
+static char *rcsid = "$OpenBSD: rpc_callmsg.c,v 1.5 1999/11/23 22:37:27 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -123,7 +123,8 @@ xdr_callmsg(xdrs, cmsg)
 				if (oa->oa_base == NULL) {
 					oa->oa_base = (caddr_t)
 						mem_alloc(oa->oa_length);
-					/* XXX */
+					if (oa->oa_base == NULL)
+						return (FALSE);
 				}
 				buf = XDR_INLINE(xdrs, RNDUP(oa->oa_length));
 				if (buf == NULL) {
@@ -158,7 +159,8 @@ xdr_callmsg(xdrs, cmsg)
 				if (oa->oa_base == NULL) {
 					oa->oa_base = (caddr_t)
 						mem_alloc(oa->oa_length);
-					/* XXX */
+					if (oa->oa_base == NULL)
+						return (FALSE);
 				}
 				buf = XDR_INLINE(xdrs, RNDUP(oa->oa_length));
 				if (buf == NULL) {
