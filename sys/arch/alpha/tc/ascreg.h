@@ -1,4 +1,4 @@
-/*	$OpenBSD: espreg.h,v 1.3 1996/09/09 18:10:37 cgd Exp $	*/
+/*	$OpenBSD: espreg.h,v 1.4 1996/10/30 22:41:06 niklas Exp $	*/
 /*	$NetBSD: espreg.h,v 1.3 1996/09/09 18:10:37 cgd Exp $	*/
 
 /*
