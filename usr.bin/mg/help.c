@@ -1,4 +1,4 @@
-/*	$OpenBSD: help.c,v 1.5 2001/05/23 16:14:00 art Exp $	*/
+/*	$OpenBSD: help.c,v 1.6 2001/05/23 20:19:44 art Exp $	*/
 
 /*
  * Help functions for Mg 2 
@@ -87,7 +87,7 @@ nextmode:
 		*pep = '\0';
 	}
 found:
-	if (funct == rescan)
+	if (funct == rescan || funct == selfinsert)
 		ewprintf("%k is not bound to any function");
 	else if ((pep = function_name(funct)) != NULL)
 		ewprintf("%k runs the command %s", pep);
