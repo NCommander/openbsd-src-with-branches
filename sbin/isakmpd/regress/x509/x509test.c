@@ -1,4 +1,5 @@
-/*	$Id: x509test.c,v 1.3 1998/08/21 14:33:12 provos Exp $	*/
+/*	$OpenBSD: x509test.c,v 1.4 1999/02/26 04:08:29 niklas Exp $	*/
+/*	$EOM: x509test.c,v 1.3 1998/08/21 14:33:12 provos Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
