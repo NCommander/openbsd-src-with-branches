@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.109 2003/01/07 17:47:21 jason Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.110 2003/02/16 21:30:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -1529,7 +1529,7 @@ bridge_span(sc, eh, morig)
 			continue;
 		}
 
-		error = bridge_ifenqueue(sc, ifp, m);
+		error = bridge_ifenqueue(sc, ifp, mc);
 		if (error)
 			continue;
 	}
