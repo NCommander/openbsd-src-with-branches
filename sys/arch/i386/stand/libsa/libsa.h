@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.30 2000/03/05 18:40:59 niklas Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.31 2000/10/09 20:37:19 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -41,6 +41,7 @@
 void gateA20 __P((int));
 
 void smpprobe __P((void));
+void pciprobe __P((void));
 void memprobe __P((void));
 void diskprobe __P((void));
 void apmprobe __P((void));
