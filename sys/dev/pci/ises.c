@@ -1,4 +1,4 @@
-/*	$OpenBSD: ises.c,v 1.20 2002/03/14 03:16:06 millert Exp $	*/
+/*	$OpenBSD: ises.c,v 1.21 2002/07/05 21:03:46 jason Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Håkan Olsson (ho@crt.se)
@@ -1469,7 +1469,7 @@ errout:
 		free(q, M_DEVBUF);
 	}
 	crp->crp_etype = err;
-	crp->crp_callback(crp);
+	crypto_done(crp);
 	return (0);
 }
 
