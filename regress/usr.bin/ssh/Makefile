@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 2003/04/04 09:34:22 djm Exp $
+#	$OpenBSD: Makefile,v 1.23 2003/06/12 15:43:32 markus Exp $
 
 REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7
 
@@ -28,6 +28,7 @@ LTESTS= 	connect \
 		sftp-badcmds \
 		sftp-batch \
 		reconfigure \
+		dynamic-forward \
 		forwarding
 
 USER!=		id -un
