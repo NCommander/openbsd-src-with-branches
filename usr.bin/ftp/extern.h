@@ -46,7 +46,7 @@ void    abortsend __P(());
 void	account __P((int, char **));
 int	another __P((int *, char ***, char *));
 void	blkfree __P((char **));
-void	cd __P((int, char **));
+int	cd __P((int, char **));
 void	cdup __P((int, char **));
 void	changetype __P((int, int));
 void	cmdabort __P(());

@@ -1079,7 +1079,7 @@ setdebug(argc, argv)
  * Set current working directory
  * on remote machine.
  */
-void
+int
 cd(argc, argv)
 	int argc;
 	char *argv[];
@@ -1090,11 +1090,17 @@ cd(argc, argv)
 		code = -1;
 		return;
 	}
-	if (command("CWD %s", argv[1]) == ERROR && code == 500) {
-		if (verbose)
-			printf("CWD command not recognized, trying XCWD\n");
-		(void) command("XCWD %s", argv[1]);
+	if (command("CWD %s", argv[1]) == ERROR) {
+		if (code == 500) {
+			if (verbose)
+		  		printf("CWD command not recognized, "
+				       "trying XCWD\n");
+			return(command("XCWD %s", argv[1]));
+		}
+		else
+			return(-1);
 	}
+	return(0);
 }
 
 /*
