@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.10 2001/01/12 23:49:52 mickey Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.11 2001/07/05 10:00:28 art Exp $	*/
 
 /*
  * Copyright (c) 1998-2000 Michael Shalayeff
@@ -767,8 +767,8 @@ mbus_dmamem_unmap(void *v, caddr_t kva, size_t size)
 {
 }
 
-int
-mbus_dmamem_mmap(void *v, bus_dma_segment_t *segs, int nsegs, int off,
+paddr_t
+mbus_dmamem_mmap(void *v, bus_dma_segment_t *segs, int nsegs, off_t off,
 		 int prot, int flags)
 {
 	panic("_dmamem_mmap: not implemented");

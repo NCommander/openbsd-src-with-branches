@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscbus.c,v 1.11 2001/03/22 23:29:27 mickey Exp $	*/
+/*	$OpenBSD: gscbus.c,v 1.12 2001/07/30 14:15:59 art Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -403,7 +403,7 @@ gsc_dmamem_mmap(v, segs, nsegs, off, prot, flags)
 	void *v;
 	bus_dma_segment_t *segs;
 	int nsegs;
-	int off;
+	off_t off;
 	int prot;
 	int flags;
 {
