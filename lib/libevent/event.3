@@ -1,4 +1,4 @@
-.\"	$OpenBSD: event.3,v 1.1.1.1 2002/06/15 18:01:37 provos Exp $
+.\"	$OpenBSD: event.3,v 1.2 2002/06/25 15:39:38 mpech Exp $
 .\"
 .\" Copyright (c) 2000 Artur Grabowski <art@openbsd.org>
 .\" All rights reserved.
@@ -50,6 +50,7 @@
 .Nm signal_initialized
 .Nd execute a function when a specific event occurs
 .Sh SYNOPSIS
+.Fd #include <sys/time.h>
 .Fd #include <event.h>
 .Ft void
 .Fn "event_init"
