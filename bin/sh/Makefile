@@ -37,12 +37,12 @@ nodes.c nodes.h: mknodes ${.CURDIR}/nodetypes ${.CURDIR}/nodes.c.pat
 	./mknodes ${.CURDIR}/nodetypes ${.CURDIR}/nodes.c.pat
 
 mknodes: ${.CURDIR}/mknodes.c
-	${CC} ${CFLAGS} ${.CURDIR}/mknodes.c -o $@
+	${HOSTCC} ${CFLAGS} ${.CURDIR}/mknodes.c -o $@
 
 syntax.c syntax.h: mksyntax
 	./mksyntax
 
 mksyntax: ${.CURDIR}/mksyntax.c ${.CURDIR}/parser.h
-	${CC} ${CFLAGS} ${.CURDIR}/mksyntax.c -o $@
+	${HOSTCC} ${CFLAGS} ${.CURDIR}/mksyntax.c -o $@
 
 .include <bsd.prog.mk>
