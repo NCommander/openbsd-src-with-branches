@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.7 1996/11/28 23:33:03 niklas Exp $	*/
+/*	$OpenBSD: trap.c,v 1.8 1997/01/16 09:23:30 niklas Exp $	*/
 /*	$NetBSD: trap.c,v 1.52 1996/11/13 06:22:20 thorpej Exp $	*/
 
 /*
@@ -498,7 +498,7 @@ trapmmufault(type, code, v, fp, p, sticks)
 nogo:
 #endif
 	if (type == T_MMUFLT) {
-		if (p && p->p_addr->u_pcb.pcb_onfault) {
+		if (p && p->p_addr && p->p_addr->u_pcb.pcb_onfault) {
 			trapcpfault(p, fp);
 			return;
 		}
