@@ -640,6 +640,7 @@ u_int
 cvs_acl_eval(struct cvs_op *op)
 {
 	u_int res;
+	char fpath[MAXPATHLEN];
 	CVSFILE *cf;
 	struct acl_rule *rule;
 
@@ -653,9 +654,11 @@ cvs_acl_eval(struct cvs_op *op)
 			continue;
 
 		/* see if one of the files has a matching path */
-		TAILQ_FOREACH(cf, &(op->co_files), cf_list)
-			if (!cvs_acl_matchpath(cf->cf_path, rule->ar_path))
+		TAILQ_FOREACH(cf, &(op->co_files), cf_list) {
+			/* XXX borked */
+			if (!cvs_acl_matchpath(fpath, rule->ar_path))
 				continue;
+		}
 
 		res = rule->ar_act;
 

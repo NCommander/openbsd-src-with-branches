@@ -384,7 +384,7 @@ cvs_resp_sticky(struct cvsroot *root, int type, char *line)
 	cf = cvs_file_find(sdir, file);
 	if (cf == NULL) {
 		/* attempt to create it */
-		cf = cvs_file_create(line, DT_DIR, 0755);
+		cf = cvs_file_create(sdir, line, DT_DIR, 0755);
 		if (cf == NULL)
 			return (-1);
 		cf->cf_ddat->cd_repo = strdup(line);
@@ -395,7 +395,8 @@ cvs_resp_sticky(struct cvsroot *root, int type, char *line)
 
 		/* add a directory entry to the parent */
 		if (CVS_DIR_ENTRIES(sdir) != NULL) {
-			snprintf(buf, sizeof(buf), "D/%s////", cf->cf_name);
+			snprintf(buf, sizeof(buf), "D/%s////",
+			    CVS_FILE_NAME(cf));
 			ent = cvs_ent_parse(buf);
 			if (ent == NULL)
 				cvs_log(LP_ERR,
