@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_cap.c,v 1.13 2002/10/09 20:36:19 millert Exp $	*/
+/*	$OpenBSD: login_cap.c,v 1.14 2002/11/22 19:47:03 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995,1997 Berkeley Software Design, Inc. All rights reserved.
@@ -947,7 +947,7 @@ secure_path(char *path)
 		syslog(LOG_ERR, "%s: not owned by root", path);
 		return (-1);
 	} else if (sb.st_mode & (S_IWGRP | S_IWOTH)) {
-		syslog(LOG_ERR, "%s: writeable by non-root", path);
+		syslog(LOG_ERR, "%s: writable by non-root", path);
 		return (-1);
 	}
 	return (0);
