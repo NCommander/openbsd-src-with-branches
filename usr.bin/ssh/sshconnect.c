@@ -13,7 +13,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect.c,v 1.154 2003/11/21 11:57:03 djm Exp $");
+RCSID("$OpenBSD: sshconnect.c,v 1.155 2003/12/09 21:53:37 markus Exp $");
 
 #include <openssl/bn.h>
 
@@ -227,12 +227,12 @@ timeout_connect(int sockfd, const struct sockaddr *serv_addr,
 	if (timeout <= 0)
 		return (connect(sockfd, serv_addr, addrlen));
 
-	if (fcntl(sockfd, F_SETFL, O_NONBLOCK) < 0)
-		return (-1);
-
+	set_nonblock(sockfd);
 	rc = connect(sockfd, serv_addr, addrlen);
-	if (rc == 0)
+	if (rc == 0) {
+		unset_nonblock(sockfd);
 		return (0);
+	}
 	if (errno != EINPROGRESS)
 		return (-1);
 
@@ -273,6 +273,7 @@ timeout_connect(int sockfd, const struct sockaddr *serv_addr,
 			break;
 		}
 		result = 0;
+		unset_nonblock(sockfd);
 		break;
 	default:
 		/* Should not occur */
