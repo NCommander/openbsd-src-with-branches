@@ -1,3 +1,6 @@
+/*	$OpenBSD: frexp.c,v 1.1 1995/02/10 17:50:22 cgd Exp $	*/
+/*	$NetBSD: frexp.c,v 1.1 1995/02/10 17:50:22 cgd Exp $	*/
+
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
  * All rights reserved.
@@ -26,7 +29,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD$";
+static char *rcsid = "$OpenBSD: frexp.c,v 1.2 1996/08/19 08:10:37 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>

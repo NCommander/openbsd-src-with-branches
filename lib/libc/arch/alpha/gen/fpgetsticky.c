@@ -1,3 +1,6 @@
+/*	$OpenBSD: fpgetsticky.c,v 1.1 1995/04/29 05:10:59 cgd Exp $	*/
+/*	$NetBSD: fpgetsticky.c,v 1.1 1995/04/29 05:10:59 cgd Exp $	*/
+
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
  * All rights reserved.
@@ -30,7 +33,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD$";
+static char *rcsid = "$OpenBSD: fpgetsticky.c,v 1.2 1996/08/19 08:10:30 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ieeefp.h>
