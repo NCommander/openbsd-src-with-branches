@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.167 2003/08/21 19:12:08 frantzen Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.168 2003/08/22 14:59:30 frantzen Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -412,7 +412,7 @@ struct pf_os_fingerprint {
 };
 
 struct pf_osfp_ioctl {
-	struct pf_osfp_entry 	fp_os;
+	struct pf_osfp_entry	fp_os;
 	pf_tcpopts_t		fp_tcpopts;	/* packed TCP options */
 	u_int16_t		fp_wsize;	/* TCP window size */
 	u_int16_t		fp_psize;	/* ip->ip_len */
