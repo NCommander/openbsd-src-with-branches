@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1997/05/07 16:23:05 niklas Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/05/08 00:50:01 niklas Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -20,7 +20,7 @@ REALIMAGE!=	echo /tmp/image.${PID}
 STRIP?=		strip
 GZIP?=		gzip
 GZIPFLAGS?=	-9f
-INSTALLBOOT?=	/usr/mdec/installboot
+INSTALLBOOT?=	/usr/mdec/installboot -v
 
 FLOPPY?=	floppy.fs
 FLOPPYBLKS?=	2880
