@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect2.c,v 1.77 2001/06/24 05:35:34 markus Exp $");
+RCSID("$OpenBSD: sshconnect2.c,v 1.78 2001/06/24 05:47:13 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/md5.h>
@@ -461,7 +461,7 @@ userauth_passwd(Authctxt *authctxt)
 	return 1;
 }
 
-void
+static void
 clear_auth_state(Authctxt *authctxt)
 {
 	/* XXX clear authentication state */
@@ -976,7 +976,8 @@ authmethod_get(char *authlist)
 
 
 #define	DELIM	","
-char *
+
+static char *
 authmethods_get(void)
 {
 	Authmethod *method = NULL;
