@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.14 2003/05/14 01:34:35 millert Exp $	*/
+/*	$OpenBSD: server.c,v 1.15 2003/06/03 02:56:15 millert Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -36,7 +36,7 @@ static char RCSid[] __attribute__((__unused__)) =
 "$From: server.c,v 1.10 1999/08/04 15:57:33 christos Exp $";
 #else
 static char RCSid[] __attribute__((__unused__)) =
-"$OpenBSD: server.c,v 1.14 2003/05/14 01:34:35 millert Exp $";
+"$OpenBSD: server.c,v 1.15 2003/06/03 02:56:15 millert Exp $";
 #endif
 
 static char sccsid[] __attribute__((__unused__)) =
@@ -1182,7 +1182,7 @@ recvlink(char *new, opt_t opts, int mode, off_t size)
 	}
 
 	uptodate = 0;
-	if ((i = readlink(target, tbuf, sizeof(tbuf))) != -1) {
+	if ((i = readlink(target, tbuf, sizeof(tbuf)-1)) != -1) {
 		tbuf[i] = '\0';
 		if (i == size && strncmp(buf, tbuf, (int) size) == 0)
 			uptodate = 1;
