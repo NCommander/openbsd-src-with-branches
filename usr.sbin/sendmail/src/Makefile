@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 1997/01/17 04:49:01 downsj Exp $
+#	$OpenBSD: Makefile,v 1.11 1997/03/04 07:07:21 downsj Exp $
 #
 #  OpenBSD Makefile
 #
@@ -18,7 +18,7 @@ PROG=	sendmail
 # spiral snail, but it will work.
 DBMDEF=	-DNEWDB
 
-.if defined(YP)
+.if (${YP} == "yes")
 DBMDEF+=-DNIS
 .endif
 
