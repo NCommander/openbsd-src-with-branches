@@ -1,4 +1,4 @@
-/*      $OpenBSD: pf_key_v2.c,v 1.120 2002/12/06 20:28:20 ho Exp $  */
+/*      $OpenBSD: pf_key_v2.c,v 1.121 2003/01/09 13:10:34 ho Exp $  */
 /*	$EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	*/
 
 /*
@@ -2101,9 +2101,9 @@ pf_key_v2_flow (struct sockaddr *laddr, struct sockaddr *lmask,
     rmask_str = 0;
 
   LOG_DBG ((LOG_SYSDEP, 50, "pf_key_v2_flow: src %s %s dst %s %s",
-	    laddr_str ? laddr_str : "<??\?>", lmask_str ? laddr_str : "<??\?>",
-	    raddr_str ? laddr_str : "<??\?>",
-	    rmask_str ? laddr_str : "<??\?>"));
+	    laddr_str ? laddr_str : "<??\?>", lmask_str ? lmask_str : "<??\?>",
+	    raddr_str ? raddr_str : "<??\?>",
+	    rmask_str ? rmask_str : "<??\?>"));
 
   if (laddr_str)
     free (laddr_str);
