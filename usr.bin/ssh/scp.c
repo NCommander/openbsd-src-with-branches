@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.88 2002/04/06 18:24:09 mouring Exp $");
+RCSID("$OpenBSD: scp.c,v 1.89 2002/06/08 12:36:53 markus Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -929,9 +929,9 @@ void
 usage(void)
 {
 	(void) fprintf(stderr,
-	    "usage: scp [-pqrvBC46] [-F config] [-S ssh] [-P port] [-c cipher] [-i identity]\n"
-	    "           [-o option] f1 f2\n"
-	    "   or: scp [options] f1 ... fn directory\n");
+	    "usage: scp [-pqrvBC46] [-F config] [-S program] [-P port]\n"
+	    "           [-c cipher] [-i identity] [-o option]\n"
+	    "           [[user@]host1:]file1 [...] [[user@]host2:]file2\n");
 	exit(1);
 }
 
