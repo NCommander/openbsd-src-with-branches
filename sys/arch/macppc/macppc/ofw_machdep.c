@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.c,v 1.1 2001/09/01 15:44:20 drahn Exp $	*/
+/*	$OpenBSD: ofw_machdep.c,v 1.2 2001/09/11 06:47:00 mickey Exp $	*/
 /*	$NetBSD: ofw_machdep.c,v 1.1 1996/09/30 16:34:50 ws Exp $	*/
 
 /*
@@ -151,6 +151,10 @@ save_ofw_mapping()
 	if (OF_getprop(chosen, "stdout", &stdout, sizeof stdout) != sizeof stdout)
 	{
 		return 0;
+	}
+	if (stdout == 0) {
+		/* If the screen is to be console, but not active, open it */
+		stdout = OF_open("screen");
 	}
 	OF_stdout = stdout;
 
