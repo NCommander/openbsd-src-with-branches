@@ -1,4 +1,4 @@
-/*	$OpenBSD: afssys_openbsd.c,v 1.1 2000/03/02 10:17:28 art Exp $	*/
+/*	$OpenBSD: afssys_openbsd.c,v 1.2 2002/06/09 01:52:45 hin Exp $	*/
 /*	$KTH: afssys.c,v 1.57 1998/05/09 17:19:03 joda Exp $	*/
 
 /*
