@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.8 1997/01/24 19:41:20 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.10 1997/02/27 23:32:57 michaels Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1996/03/26 23:54:16 mrg Exp $	*/
 
 /*-
@@ -229,6 +229,7 @@ extern int Zflag;
 extern int vfpart;
 extern int patime;
 extern int pmtime;
+extern int nodirs;
 extern int pmode;
 extern int pids;
 extern int exit_val;
