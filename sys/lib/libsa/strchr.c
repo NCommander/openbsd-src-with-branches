@@ -1,4 +1,4 @@
-/*	$OpenBSD: strchr.c,v 1.1 1997/05/04 23:33:39 millert Exp $	*/
+/*	$OpenBSD: strchr.c,v 1.1 1997/05/05 14:32:16 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -34,13 +34,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: strchr.c,v 1.1 1997/05/04 23:33:39 millert Exp $";
+static char *rcsid = "$OpenBSD: strchr.c,v 1.1 1997/05/05 14:32:16 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
-#ifndef _KERNEL
+#ifndef _STANDALONE
 #include <string.h>
 #else
-#include <lib/libkern/libkern.h>
+#include <lib/libsa/stand.h>
 #endif
 
 char *
