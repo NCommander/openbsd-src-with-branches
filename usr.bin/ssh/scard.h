@@ -22,12 +22,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $OpenBSD: scard.h,v 1.3 2001/06/26 17:27:24 markus Exp $ */
+/* $OpenBSD: scard.h,v 1.4 2001/07/04 23:13:10 markus Exp $ */
 
 #include <openssl/engine.h>
 
 #ifndef SCARD_H
 #define SCARD_H
+
+#define SCARD_ERROR_FAIL	-1
+#define SCARD_ERROR_NOCARD	-2
+#define SCARD_ERROR_APPLET	-3
 
 Key	*sc_get_key(int);
 ENGINE	*sc_get_engine(void);
