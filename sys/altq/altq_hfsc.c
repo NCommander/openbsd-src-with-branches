@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_hfsc.c,v 1.1.2.3 2003/03/27 22:28:25 niklas Exp $	*/
+/*	$OpenBSD: altq_hfsc.c,v 1.1.2.4 2003/05/13 19:21:26 ho Exp $	*/
 /*	$KAME: altq_hfsc.c,v 1.17 2002/11/29 07:48:33 kjc Exp $	*/
 
 /*
@@ -450,16 +450,18 @@ hfsc_class_create(struct hfsc_if *hif, struct service_curve *rsc,
 	if (flags & HFCF_DEFAULTCLASS)
 		hif->hif_defaultclass = cl;
 
-	/* add this class to the children list of the parent */
 	if (parent == NULL) {
 		/* this is root class */
-	}
-	else if ((p = parent->cl_children) == NULL)
-		parent->cl_children = cl;
-	else {
-		while (p->cl_siblings != NULL)
-			p = p->cl_siblings;
-		p->cl_siblings = cl;
+		hif->hif_rootclass = cl;
+	} else {
+		/* add this class to the children list of the parent */
+		if ((p = parent->cl_children) == NULL)
+			parent->cl_children = cl;
+		else {
+			while (p->cl_siblings != NULL)
+				p = p->cl_siblings;
+			p->cl_siblings = cl;
+		}
 	}
 	splx(s);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: exec_elf.c,v 1.29.2.9 2003/05/16 00:29:43 niklas Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -197,7 +197,7 @@ ELFNAME(check_header)(Elf_Ehdr *ehdr, int type)
 
 /*
  * Check header for validity; return 0 for ok, ENOEXEC if error.
- * Remeber OS tag for callers sake.
+ * Remember OS tag for callers sake.
  */
 int
 ELFNAME(olf_check_header)(Elf_Ehdr *ehdr, int type, u_int8_t *os)
