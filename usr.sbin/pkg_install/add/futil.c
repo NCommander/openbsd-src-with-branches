@@ -1,7 +1,7 @@
-/*	$OpenBSD: futil.c,v 1.3 1997/01/17 07:14:11 millert Exp $	*/
+/*	$OpenBSD: futil.c,v 1.4 1998/09/07 22:30:13 marc Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: futil.c,v 1.3 1997/01/17 07:14:11 millert Exp $";
+static const char *rcsid = "$OpenBSD: futil.c,v 1.4 1998/09/07 22:30:13 marc Exp $";
 #endif
 
 /*
@@ -74,21 +74,17 @@ apply_perms(char *dir, char *arg)
     else
 	cd_to = dir;
 
+    if (Owner || Group) {
+	char *real_owner = Owner ? Owner : "";
+	char *real_group = Group ? Group : "";
+
+	if (vsystem("cd %s && chown -R %s:%s %s", cd_to, real_owner , 
+		real_group, arg))
+	    warnx("couldn't change owner/group of '%s' to '%s:%s'",
+		   arg, real_owner, real_group);
+    }  
     if (Mode)
 	if (vsystem("cd %s && chmod -R %s %s", cd_to, Mode, arg))
 	    warnx("couldn't change modes of '%s' to '%s'", arg, Mode);
-    if (Owner && Group) {
-	if (vsystem("cd %s && chown -R %s.%s %s", cd_to, Owner, Group, arg))
-	    warnx("couldn't change owner/group of '%s' to '%s.%s'",
-		   arg, Owner, Group);
-	return;
-    }
-    if (Owner) {
-	if (vsystem("cd %s && chown -R %s %s", cd_to, Owner, arg))
-	    warnx("couldn't change owner of '%s' to '%s'", arg, Owner);
-	return;
-    } else if (Group)
-	if (vsystem("cd %s && chgrp -R %s %s", cd_to, Group, arg))
-	    warnx("couldn't change group of '%s' to '%s'", arg, Group);
 }
 
