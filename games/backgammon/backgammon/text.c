@@ -1,4 +1,4 @@
-/*	$OpenBSD: text.c,v 1.2 1998/03/19 11:13:10 pjanzen Exp $	*/
+/*	$OpenBSD: text.c,v 1.3 1999/07/31 21:57:35 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)text.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: text.c,v 1.2 1998/03/19 11:13:10 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: text.c,v 1.3 1999/07/31 21:57:35 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -121,13 +121,13 @@ text(t)
 			writec('\n');
 		} else {
 			writel("-->");
-			fixtty(&raw);
+			fixtty(&traw);
 			while ((i = readc()) != ' ' && i != '\n');
 			fixtty(&noech);
 			clear();
 		}
 		t++;
 	}
-	fixtty(&raw);
+	fixtty(&traw);
 	return(0);
 }
