@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.34 2001/11/06 19:53:16 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.35 2001/11/07 01:18:00 art Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.30 1997/03/10 23:55:40 pk Exp $ */
 
 /*
@@ -333,10 +333,6 @@ vmapbuf(bp, sz)
 		if (!(cpuinfo.flags & CPUFLG_CACHE_MANDATORY))
 			pa |= PMAP_NC;
 
-		/*
-		 * pmap_enter distributes this mapping to all
-		 * contexts... maybe we should avoid this extra work
-		 */
 		pmap_enter(pmap_kernel(), kva, pa,
 			   VM_PROT_READ | VM_PROT_WRITE, PMAP_WIRED);
 
