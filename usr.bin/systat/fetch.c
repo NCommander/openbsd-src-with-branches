@@ -42,7 +42,6 @@ static char rcsid[] = "$OpenBSD: fetch.c,v 1.2 1996/06/26 05:40:06 deraadt Exp $
 #endif /* not lint */
 
 #include <sys/types.h>
-#include <signal.h>
 #include "systat.h"
 #include "extern.h"
 
@@ -55,6 +54,7 @@ kvm_ckread(a, b, l)
 		if (verbose)
 			error("error reading kmem at %x\n", a);
 		return (0);
-	} else
+	} 
+	else
 		return (1);
 }

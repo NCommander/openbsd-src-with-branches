@@ -42,6 +42,7 @@ static char sccsid[] = "@(#)swap.c	8.3 (Berkeley) 4/29/95";
 static char rcsid[] = "$OpenBSD: swap.c,v 1.11 1999/05/22 21:41:58 weingart Exp $";
 #endif /* not lint */
 
+
 #include <sys/cdefs.h>
 #include <sys/param.h>
 #include <sys/buf.h>

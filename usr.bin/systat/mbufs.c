@@ -48,7 +48,6 @@ static char rcsid[] = "$OpenBSD: mbufs.c,v 1.6 2001/11/19 19:02:16 mpech Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <nlist.h>
-#include <err.h>
 #include <paths.h>
 #include "systat.h"
 #include "extern.h"
@@ -108,7 +107,7 @@ showmbufs()
 	if (mb == 0)
 		return;
 	for (j = 0; j < wnd->_maxy; j++) {
-		max = 0, index = -1;
+		max = 0, index = -1; 
 		for (i = 0; i < wnd->_maxy; i++)
 			if (mb->m_mtypes[i] > max) {
 				max = mb->m_mtypes[i];

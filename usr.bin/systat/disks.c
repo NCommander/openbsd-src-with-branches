@@ -43,7 +43,6 @@ static char rcsid[] = "$OpenBSD: disks.c,v 1.9 2001/11/19 19:02:16 mpech Exp $";
 
 #include <string.h>
 #include <ctype.h>
-#include <signal.h>
 #include "systat.h"
 #include "extern.h"
 static void dkselect(char *args, int truefalse, int selections[]);

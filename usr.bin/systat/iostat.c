@@ -48,6 +48,7 @@ static char rcsid[] = "$OpenBSD: iostat.c,v 1.13 2001/11/19 19:02:16 mpech Exp $
 
 #include <string.h>
 #include <stdlib.h>
+#include <nlist.h>
 #include <paths.h>
 #include "systat.h"
 #include "extern.h"
@@ -209,7 +210,7 @@ showiostat()
 
 	/*
 	 * Interrupt CPU state not calculated yet.
-	 */
+	 */ 
 	for (i = 0; i < CPUSTATES; i++)
 		stat1(row++, i);
 

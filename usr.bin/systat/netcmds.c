@@ -327,8 +327,8 @@ checkhost(inp)
 
 	if (hosts)
 	for (p = hosts; p < hosts+nhosts; p++) {
-		if (((struct sockaddr *)&p->addr)->sa_family == AF_INET &&
-		    !(inp->inp_flags & INP_IPV6)) {
+		if (((struct sockaddr *)&p->addr)->sa_family == AF_INET
+		 && !(inp->inp_flags & INP_IPV6)) {
 			struct sockaddr_in *sin;
 			sin = (struct sockaddr_in *)&p->addr;
 			if (sin->sin_addr.s_addr == inp->inp_laddr.s_addr ||
@@ -336,8 +336,8 @@ checkhost(inp)
 				return (p->onoff);
 		}
 #ifdef INET6
-		if (((struct sockaddr *)&p->addr)->sa_family == AF_INET6 &&
-		    (inp->inp_flags & INP_IPV6)) {
+		if (((struct sockaddr *)&p->addr)->sa_family == AF_INET6
+		 && (inp->inp_flags & INP_IPV6)) {
 			struct sockaddr_in6 *sin6;
 			sin6 = (struct sockaddr_in6 *)&p->addr;
 			if (IN6_ARE_ADDR_EQUAL(&sin6->sin6_addr, &inp->inp_laddr6) ||
@@ -366,7 +366,7 @@ showhosts()
 		sa = (struct sockaddr *)&p->addr;
 		if (getnameinfo(sa, sa->sa_len, hbuf, sizeof(hbuf), NULL, 0,
 				flags) != 0)
-			strlcpy(hbuf, "(invalid)", sizeof hbuf);
+			strcpy(hbuf, "(invalid)");
 		if (!p->onoff)
 			addch('!');
 		printw("%s ", hbuf);
