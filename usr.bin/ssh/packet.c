@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: packet.c,v 1.82 2001/12/28 14:50:54 markus Exp $");
+RCSID("$OpenBSD: packet.c,v 1.83 2001/12/29 21:56:01 stevesk Exp $");
 
 #include "xmalloc.h"
 #include "buffer.h"
@@ -892,7 +892,7 @@ packet_read_poll2(u_int32_t *seqnr_p)
 int
 packet_read_poll_seqnr(u_int32_t *seqnr_p)
 {
-	int reason;
+	int reason, seqnr;
 	u_char type;
 	char *msg;
 
@@ -919,6 +919,10 @@ packet_read_poll_seqnr(u_int32_t *seqnr_p)
 					reason, msg);
 				xfree(msg);
 				fatal_cleanup();
+				break;
+			case SSH2_MSG_UNIMPLEMENTED:
+				seqnr = packet_get_int();
+				debug("Received SSH2_MSG_UNIMPLEMENTED for %d", seqnr);
 				break;
 			default:
 				return type;
