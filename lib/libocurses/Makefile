@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 1998/11/30 16:12:25 millert Exp $
+#	$OpenBSD: Makefile,v 1.7 1998/12/02 15:45:43 espie Exp $
 
 CFLAGS+=#-DTFILE=\"/dev/ttyp0\"
 CFLAGS+=-D_CURSES_PRIVATE -I${.CURDIR}
@@ -22,12 +22,18 @@ includes:
 	    ${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
 	    curses.h ${DESTDIR}/usr/include/ocurses.h
 
+.include <bsd.own.mk>
+
 # Link libotermcap to libocurses for programs that need full compatibility
 # with the old termcap behavior
 afterinstall:
-	-cd ${DESTDIR}/usr/lib; \
+	-cd ${DESTDIR}${LIBDIR}; \
 	for i in ${_LIBS}; do \
 	    ln -f $$i `echo $$i | sed 's/ocurses/otermcap/'`; \
 	done
+.if (${DEBUGLIBS:L} == "yes")
+	-cd ${DESTDIR}${LIBDIR}/debug; \
+	    ln -f lib${LIB}.a lib`echo ${LIB} | sed 's/ocurses/otermcap/'`.a
+.endif
 
 .include <bsd.lib.mk>
