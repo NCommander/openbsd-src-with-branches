@@ -463,6 +463,7 @@ typedef u_int8_t pci_revision_t;
 /*
  * Power Management Control Status Register; access via capability pointer.
  */
+#define PCI_PMCSR		0x04
 #define PCI_PMCSR_STATE_MASK	0x03
 #define PCI_PMCSR_STATE_D0	0x00
 #define PCI_PMCSR_STATE_D1	0x01
