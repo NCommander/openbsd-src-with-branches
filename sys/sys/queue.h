@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue.h,v 1.24 2003/12/16 21:08:20 millert Exp $	*/
+/*	$OpenBSD: queue.h,v 1.25 2004/04/08 16:08:21 henning Exp $	*/
 /*	$NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $	*/
 
 /*
@@ -284,8 +284,8 @@ struct {								\
 	(listelm)->field.sqe_next = (elm);				\
 } while (0)
 
-#define SIMPLEQ_REMOVE_HEAD(head, elm, field) do {			\
-	if (((head)->sqh_first = (elm)->field.sqe_next) == NULL)	\
+#define SIMPLEQ_REMOVE_HEAD(head, field) do {			\
+	if (((head)->sqh_first = (head)->sqh_first->field.sqe_next) == NULL) \
 		(head)->sqh_last = &(head)->sqh_first;			\
 } while (0)
 
