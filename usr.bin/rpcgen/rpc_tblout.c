@@ -39,9 +39,7 @@ static char sccsid[] = "@(#)rpc_tblout.c 1.4 89/02/22 (C) 1988 SMI";
  */
 #include <sys/cdefs.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "rpc_scan.h"
 #include "rpc_parse.h"
 #include "rpc_util.h"
 
@@ -60,8 +58,8 @@ static char null_entry[] = "\n\t(char *(*)())0,\n\
 
 static char tbl_nproc[] = "int %s_nproc =\n\tsizeof(%s_table)/sizeof(%s_table[0]);\n\n";
 
-static void write_table __P((definition *));
-static void printit __P((char *, char *));
+static write_table __P((definition *));
+static printit __P((char *, char *));
 
 void
 write_tables()
@@ -78,7 +76,7 @@ write_tables()
 	}
 }
 
-static void
+static
 write_table(def)
 	definition *def;
 {
@@ -145,7 +143,7 @@ write_table(def)
 	}
 }
 
-static void
+static
 printit(prefix, type)
 	char *prefix;
 	char *type;

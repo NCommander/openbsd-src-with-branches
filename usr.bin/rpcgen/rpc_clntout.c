@@ -44,8 +44,10 @@ static char sccsid[] = "@(#)rpc_clntout.c 1.11 89/02/22 (C) 1987 SMI";
 #include "rpc_parse.h"
 #include "rpc_util.h"
 
-static void write_program __P((definition *));
+static write_program __P((definition *));
 static void printbody __P((proc_list *));
+
+extern pdeclaration();
 
 #define DEFAULT_TIMEOUT 25	/* in seconds */
 static char RESULT[] = "clnt_res";
@@ -69,7 +71,7 @@ write_stubs()
 	}
 }
 
-static void
+static
 write_program(def)
 	definition *def;
 {
@@ -163,6 +165,7 @@ printbody(proc)
 {
   decl_list *l;
   bool_t args2 = (proc->arg_num > 1);
+  int i;
 
   /* For new style with multiple arguments, need a structure in which
      to stuff the arguments. */
