@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lookup.c,v 1.4 1996/06/26 05:38:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSid[] = 
-"$OpenBSD: lookup.c,v 1.3 1996/03/05 03:16:07 dm Exp $";
+"$OpenBSD: lookup.c,v 1.4 1996/06/26 05:38:13 deraadt Exp $";
 
 static char sccsid[] = "@(#)lookup.c	5.1 (Berkeley) 6/6/85";
 
@@ -138,6 +138,8 @@ lookup(name, action, value)	/* %% in name.  Ignore quotas in name */
 
 	debugmsg(DM_CALL, "lookup(%s, %d, %x)", name, action, value);
 
+	if (strlen(name) > sizeof(ebuf)-12)
+		yyerror("name is too long");
 	n = 0;
 	for (cp = name; *cp; )
 		n += *cp++;
