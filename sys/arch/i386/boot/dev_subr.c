@@ -33,45 +33,25 @@
  */
 
 #include <libsa.h>
-#include <biosdev.h>
+#include "biosdev.h"
 
-char *names[] = {
-	"/boot", "/oboot", "/boot.old"
-};
+/* pass dev_t to the open routines */
+int
+devopen(struct open_file *f, const char *fname, char **file)
+{
+	struct devsw *dp;
+
+	*file = (char *)fname;
+	f->f_dev = dp = &devsw[0];
+
+	return (*dp->dv_open)(f, *file);
+}
 
 void
-boot(drive)
-	int drive;
+putchar(c)
+	int	c;
 {
-	register int currname = 0;
-		
-	gateA20(1);
-
-	do {
-		/*
-		 * As a default set it to the first partition of the first
-		 * floppy or hard drive	
-		 */
-		part = 0;
-		unit = drive&0x7f;
-		maj = (drive&0x80 ? 0 : 2);         /* a good first bet */
-
-		if (currname == NENTS(names))
-			currname = 0;
-
-		printf("loading %s: ", names[currname]);
-		exec (names[currname], (caddr_t)0x10000, boothowto);
-		printf("\n");
-		currname++;
-
-	} while (1);
+	if (c == '\n')
+		putc('\r');
+	putc(c);
 }
-
-#ifdef	EXEC_DEBUG
-int
-getchar()
-{
-	asm("hlt");
-	return 0;
-}
-#endif

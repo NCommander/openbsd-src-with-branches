@@ -33,45 +33,19 @@
  */
 
 #include <libsa.h>
-#include <biosdev.h>
+#include <ufs.h>
+#include "biosdev.h"
 
-char *names[] = {
-	"/boot", "/oboot", "/boot.old"
+int	debug = 1;
+
+struct fs_ops file_system[] = {
+	/* no readdir and write, hope none call 'em */
+	{ ufs_open, ufs_close, ufs_read, NULL, NULL, NULL, NULL },
 };
+int nfsys = NENTS(file_system);
 
-void
-boot(drive)
-	int drive;
-{
-	register int currname = 0;
-		
-	gateA20(1);
+struct devsw	devsw[] = {
+	{ "BIOS", biosstrategy, biosopen, biosclose, biosioctl },
+};
+int	ndevsw = NENTS(devsw);
 
-	do {
-		/*
-		 * As a default set it to the first partition of the first
-		 * floppy or hard drive	
-		 */
-		part = 0;
-		unit = drive&0x7f;
-		maj = (drive&0x80 ? 0 : 2);         /* a good first bet */
-
-		if (currname == NENTS(names))
-			currname = 0;
-
-		printf("loading %s: ", names[currname]);
-		exec (names[currname], (caddr_t)0x10000, boothowto);
-		printf("\n");
-		currname++;
-
-	} while (1);
-}
-
-#ifdef	EXEC_DEBUG
-int
-getchar()
-{
-	asm("hlt");
-	return 0;
-}
-#endif

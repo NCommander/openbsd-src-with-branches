@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: table.c,v 1.6 1994/10/27 04:14:42 cgd Exp $	*/
 
 /*
