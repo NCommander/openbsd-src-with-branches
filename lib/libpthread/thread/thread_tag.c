@@ -1,10 +1,11 @@
-/* $OpenBSD$ */
+/* $OpenBSD: thread_tag.c,v 1.1 2004/06/07 21:11:23 marc Exp $ */
 
 /* PUBLIC DOMAIN: No Rights Reserved. Marco S Hyman <marc@snafu.org> */
 
 #include <sys/time.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "thread_private.h"
 #include "pthread.h"
