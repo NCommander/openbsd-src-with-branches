@@ -9,22 +9,22 @@
 
 package Data::Dumper;
 
-$VERSION = $VERSION = '2.101';
+$VERSION = '2.121_02';
 
 #$| = 1;
 
-require 5.004;
+use 5.006_001;
 require Exporter;
-require DynaLoader;
+use XSLoader ();
 require overload;
 
 use Carp;
 
-@ISA = qw(Exporter DynaLoader);
+@ISA = qw(Exporter);
 @EXPORT = qw(Dumper);
 @EXPORT_OK = qw(DumperX);
 
-bootstrap Data::Dumper;
+XSLoader::load 'Data::Dumper';
 
 # module vars and their defaults
 $Indent = 2 unless defined $Indent;
@@ -39,7 +39,11 @@ $Deepcopy = 0 unless defined $Deepcopy;
 $Quotekeys = 1 unless defined $Quotekeys;
 $Bless = "bless" unless defined $Bless;
 #$Expdepth = 0 unless defined $Expdepth;
-#$Maxdepth = 0 unless defined $Maxdepth;
+$Maxdepth = 0 unless defined $Maxdepth;
+$Pair = ' => ' unless defined $Pair;
+$Useperl = 0 unless defined $Useperl;
+$Sortkeys = 0 unless defined $Sortkeys;
+$Deparse = 0 unless defined $Deparse;
 
 #
 # expects an arrayref of values to be dumped.
@@ -61,6 +65,7 @@ sub new {
 	     xpad       => "",          # padding-per-level
 	     apad       => "",          # added padding for hash keys n such
 	     sep        => "",          # list separator
+	     pair	=> $Pair,	# hash key/value separator: defaults to ' => '
 	     seen       => {},          # local (nested) refs (id => [name, val])
 	     todump     => $v,          # values to dump []
 	     names      => $n,          # optional names for values []
@@ -74,7 +79,10 @@ sub new {
              quotekeys	=> $Quotekeys,  # quote hash keys
              'bless'	=> $Bless,	# keyword to use for "bless"
 #	     expdepth   => $Expdepth,   # cutoff depth for explicit dumping
-#	     maxdepth	=> $Maxdepth,   # depth beyond which we give up
+	     maxdepth	=> $Maxdepth,   # depth beyond which we give up
+	     useperl    => $Useperl,    # use the pure Perl implementation
+	     sortkeys   => $Sortkeys,   # flag or filter for sorting hash keys
+	     deparse	=> $Deparse,	# use B::Deparse for coderefs
 	   };
 
   if ($Indent > 0) {
@@ -146,11 +154,19 @@ sub Names {
 
 sub DESTROY {}
 
+sub Dump {
+    return &Dumpxs
+	unless $Data::Dumper::Useperl || (ref($_[0]) && $_[0]->{useperl}) ||
+	       $Data::Dumper::Useqq   || (ref($_[0]) && $_[0]->{useqq}) ||
+	       $Data::Dumper::Deparse || (ref($_[0]) && $_[0]->{deparse});
+    return &Dumpperl;
+}
+
 #
 # dump the refs in the current dumper object.
 # expects same args as new() if called via package name.
 #
-sub Dump {
+sub Dumpperl {
   my($s) = shift;
   my(@out, $val, $name);
   my($i) = 0;
@@ -202,6 +218,8 @@ sub Dump {
 #
 # twist, toil and turn;
 # and recurse, of course.
+# sometimes sordidly;
+# and curse if no recourse.
 #
 sub _dump {
   my($s, $val, $name) = @_;
@@ -214,14 +232,13 @@ sub _dump {
   if ($type) {
 
     # prep it, if it looks like an object
-    if ($type =~ /[a-z_:]/) {
-      my $freezer = $s->{freezer};
-      $val->$freezer() if $freezer && UNIVERSAL::can($val, $freezer);
+    if (my $freezer = $s->{freezer}) {
+      $val->$freezer() if UNIVERSAL::can($val, $freezer);
     }
 
     ($realpack, $realtype, $id) =
       (overload::StrVal($val) =~ /^(?:(.*)\=)?([^=]*)\(([^\(]*)\)$/);
-    
+
     # if it has a name, we need to either look it up, or keep a tab
     # on it so we know when we hit it later
     if (defined($name) and length($name)) {
@@ -231,7 +248,7 @@ sub _dump {
 	  if ($s->{purity} and $s->{level} > 0) {
 	    $out = ($realtype eq 'HASH')  ? '{}' :
 	      ($realtype eq 'ARRAY') ? '[]' :
-		"''" ;
+		'do{my $o}' ;
 	    push @post, $name . " = " . $s->{seen}{$id}[0];
 	  }
 	  else {
@@ -259,16 +276,34 @@ sub _dump {
       }
     }
 
-    $s->{level}++;
-    $ipad = $s->{xpad} x $s->{level};
+    if ($realpack and $realpack eq 'Regexp') {
+	$out = "$val";
+	$out =~ s,/,\\/,g;
+	return "qr/$out/";
+    }
 
-    if ($realpack) {          # we have a blessed ref
+    # If purity is not set and maxdepth is set, then check depth: 
+    # if we have reached maximum depth, return the string
+    # representation of the thing we are currently examining
+    # at this depth (i.e., 'Foo=ARRAY(0xdeadbeef)'). 
+    if (!$s->{purity}
+	and $s->{maxdepth} > 0
+	and $s->{level} >= $s->{maxdepth})
+    {
+      return qq['$val'];
+    }
+
+    # we have a blessed ref
+    if ($realpack) {
       $out = $s->{'bless'} . '( ';
       $blesspad = $s->{apad};
       $s->{apad} .= '       ' if ($s->{indent} >= 2);
     }
-    
-    if ($realtype eq 'SCALAR') {
+
+    $s->{level}++;
+    $ipad = $s->{xpad} x $s->{level};
+
+    if ($realtype eq 'SCALAR' || $realtype eq 'REF') {
       if ($realpack) {
 	$out .= 'do{\\(my $o = ' . $s->_dump($$val, "\${$name}") . ')}';
       }
@@ -299,20 +334,37 @@ sub _dump {
       $out .= ($name =~ /^\@/) ? ')' : ']';
     }
     elsif ($realtype eq 'HASH') {
-      my($k, $v, $pad, $lpad, $mname);
+      my($k, $v, $pad, $lpad, $mname, $pair);
       $out .= ($name =~ /^\%/) ? '(' : '{';
       $pad = $s->{sep} . $s->{pad} . $s->{apad};
       $lpad = $s->{apad};
+      $pair = $s->{pair};
       ($name =~ /^\%(.*)$/) ? ($mname = "\$" . $1) :
 	# omit -> if $foo->[0]->{bar}, but not ${$foo->[0]}->{bar}
 	($name =~ /^\\?[\%\@\*\$][^{].*[]}]$/) ? ($mname = $name) :
 	  ($mname = $name . '->');
       $mname .= '->' if $mname =~ /^\*.+\{[A-Z]+\}$/;
-      while (($k, $v) = each %$val) {
+      my ($sortkeys, $keys, $key) = ("$s->{sortkeys}");
+      if ($sortkeys) {
+	if (ref($s->{sortkeys}) eq 'CODE') {
+	  $keys = $s->{sortkeys}($val);
+	  unless (ref($keys) eq 'ARRAY') {
+	    carp "Sortkeys subroutine did not return ARRAYREF";
+	    $keys = [];
+	  }
+	}
+	else {
+	  $keys = [ sort keys %$val ];
+	}
+      }
+      while (($k, $v) = ! $sortkeys ? (each %$val) :
+	     @$keys ? ($key = shift(@$keys), $val->{$key}) :
+	     () ) 
+      {
 	my $nk = $s->_dump($k, "");
 	$nk = $1 if !$s->{quotekeys} and $nk =~ /^[\"\']([A-Za-z_]\w*)[\"\']$/;
 	$sname = $mname . '{' . $nk . '}';
-	$out .= $pad . $ipad . $nk . " => ";
+	$out .= $pad . $ipad . $nk . $pair;
 
 	# temporarily alter apad
 	$s->{apad} .= (" " x (length($nk) + 4)) if $s->{indent} >= 2;
@@ -326,8 +378,16 @@ sub _dump {
       $out .= ($name =~ /^\%/) ? ')' : '}';
     }
     elsif ($realtype eq 'CODE') {
-      $out .= 'sub { "DUMMY" }';
-      carp "Encountered CODE ref, using dummy placeholder" if $s->{purity};
+      if ($s->{deparse}) {
+	require B::Deparse;
+	my $sub =  'sub ' . (B::Deparse->new)->coderef2text($val);
+	$pad    =  $s->{sep} . $s->{pad} . $s->{apad} . $s->{xpad} x ($s->{level} - 1);
+	$sub    =~ s/\n/$pad/gse;
+	$out   .=  $sub;
+      } else {
+        $out .= 'sub { "DUMMY" }';
+        carp "Encountered CODE ref, using dummy placeholder" if $s->{purity};
+      }
     }
     else {
       croak "Can\'t handle $realtype type.";
@@ -389,11 +449,12 @@ sub _dump {
     elsif (!defined($val)) {
       $out .= "undef";
     }
-    elsif ($val =~ /^-?[1-9]\d{0,8}$/) { # safe decimal number
+    elsif ($val =~ /^(?:0|-?[1-9]\d{0,8})\z/) { # safe decimal number
       $out .= $val;
     }
     else {				 # string
-      if ($s->{useqq}) {
+      if ($s->{useqq} or $val =~ tr/\0-\377//c) {
+        # Fall back to qq if there's unicode
 	$out .= qquote($val, $s->{useqq});
       }
       else {
@@ -422,9 +483,7 @@ sub Dumper {
   return Data::Dumper->Dump([@_]);
 }
 
-#
-# same, only calls the XS version
-#
+# compat stub
 sub DumperX {
   return Data::Dumper->Dumpxs([@_], []);
 }
@@ -459,6 +518,11 @@ sub Indent {
   else {
     return $s->{indent};
   }
+}
+
+sub Pair {
+    my($s, $v) = @_;
+    defined($v) ? (($s->{pair} = $v), return $s) : $s->{pair};
 }
 
 sub Pad {
@@ -511,6 +575,26 @@ sub Bless {
   defined($v) ? (($s->{'bless'} = $v), return $s) : $s->{'bless'};
 }
 
+sub Maxdepth {
+  my($s, $v) = @_;
+  defined($v) ? (($s->{'maxdepth'} = $v), return $s) : $s->{'maxdepth'};
+}
+
+sub Useperl {
+  my($s, $v) = @_;
+  defined($v) ? (($s->{'useperl'} = $v), return $s) : $s->{'useperl'};
+}
+
+sub Sortkeys {
+  my($s, $v) = @_;
+  defined($v) ? (($s->{'sortkeys'} = $v), return $s) : $s->{'sortkeys'};
+}
+
+sub Deparse {
+  my($s, $v) = @_;
+  defined($v) ? (($s->{'deparse'} = $v), return $s) : $s->{'deparse'};
+}
+
 # used by qquote below
 my %esc = (  
     "\a" => "\\a",
@@ -526,27 +610,44 @@ my %esc = (
 sub qquote {
   local($_) = shift;
   s/([\\\"\@\$])/\\$1/g;
-  return qq("$_") unless /[^\040-\176]/;  # fast exit
+  my $bytes; { use bytes; $bytes = length }
+  s/([^\x00-\x7f])/'\x{'.sprintf("%x",ord($1)).'}'/ge if $bytes > length;
+  return qq("$_") unless 
+    /[^ !"\#\$%&'()*+,\-.\/0-9:;<=>?\@A-Z[\\\]^_`a-z{|}~]/;  # fast exit
 
   my $high = shift || "";
   s/([\a\b\t\n\f\r\e])/$esc{$1}/g;
 
-  # no need for 3 digits in escape for these
-  s/([\0-\037])(?!\d)/'\\'.sprintf('%o',ord($1))/eg;
-
-  s/([\0-\037\177])/'\\'.sprintf('%03o',ord($1))/eg;
-  if ($high eq "iso8859") {
-    s/([\200-\240])/'\\'.sprintf('%o',ord($1))/eg;
-  } elsif ($high eq "utf8") {
-#   use utf8;
-#   $str =~ s/([^\040-\176])/sprintf "\\x{%04x}", ord($1)/ge;
-  } elsif ($high eq "8bit") {
-      # leave it as it is
-  } else {
-    s/([\0-\037\177-\377])/'\\'.sprintf('%03o',ord($1))/eg;
+  if (ord('^')==94)  { # ascii
+    # no need for 3 digits in escape for these
+    s/([\0-\037])(?!\d)/'\\'.sprintf('%o',ord($1))/eg;
+    s/([\0-\037\177])/'\\'.sprintf('%03o',ord($1))/eg;
+    # all but last branch below not supported --BEHAVIOR SUBJECT TO CHANGE--
+    if ($high eq "iso8859") {
+      s/([\200-\240])/'\\'.sprintf('%o',ord($1))/eg;
+    } elsif ($high eq "utf8") {
+#     use utf8;
+#     $str =~ s/([^\040-\176])/sprintf "\\x{%04x}", ord($1)/ge;
+    } elsif ($high eq "8bit") {
+        # leave it as it is
+    } else {
+      s/([\200-\377])/'\\'.sprintf('%03o',ord($1))/eg;
+      s/([^\040-\176])/sprintf "\\x{%04x}", ord($1)/ge;
+    }
   }
+  else { # ebcdic
+      s{([^ !"\#\$%&'()*+,\-.\/0-9:;<=>?\@A-Z[\\\]^_`a-z{|}~])(?!\d)}
+       {my $v = ord($1); '\\'.sprintf(($v <= 037 ? '%o' : '%03o'), $v)}eg;
+      s{([^ !"\#\$%&'()*+,\-.\/0-9:;<=>?\@A-Z[\\\]^_`a-z{|}~])}
+       {'\\'.sprintf('%03o',ord($1))}eg;
+  }
+
   return qq("$_");
 }
+
+# helper sub to sort hash keys in Perl < 5.8.0 where we don't have
+# access to sortsv() from XS
+sub _sortkeys { [ sort keys %{$_[0]} ] }
 
 1;
 __END__
@@ -554,7 +655,6 @@ __END__
 =head1 NAME
 
 Data::Dumper - stringified perl data structures, suitable for both printing and C<eval>
-
 
 =head1 SYNOPSIS
 
@@ -568,7 +668,7 @@ Data::Dumper - stringified perl data structures, suitable for both printing and 
 
     # configuration variables
     {
-      local $Data::Dump::Purity = 1;
+      local $Data::Dumper::Purity = 1;
       eval Data::Dumper->Dump([$foo, $bar], [qw(foo *ary)]);
     }
 
@@ -603,7 +703,8 @@ The default output of self-referential structures can be C<eval>ed, but the
 nested references to C<$VAR>I<n> will be undefined, since a recursive
 structure cannot be constructed using one Perl statement.  You should set the
 C<Purity> flag to 1 to get additional statements that will correctly fill in
-these references.
+these references.  Moreover, if C<eval>ed when strictures are in effect,
+you need to ensure that any variables it accesses are previously declared.
 
 In the extended usage form, the references to be dumped can be given
 user-specified names.  If a name begins with a C<*>, the output will 
@@ -647,17 +748,11 @@ the last.
 
 Returns the stringified form of the values stored in the object (preserving
 the order in which they were supplied to C<new>), subject to the
-configuration options below.  In an array context, it returns a list
+configuration options below.  In a list context, it returns a list
 of strings corresponding to the supplied values.
 
 The second form, for convenience, simply calls the C<new> method on its
 arguments before dumping the object immediately.
-
-=item I<$OBJ>->Dumpxs  I<or>  I<PACKAGE>->Dumpxs(I<ARRAYREF [>, I<ARRAYREF]>)
-
-This method is available if you were able to compile and install the XSUB
-extension to C<Data::Dumper>. It is exactly identical to the C<Dump> method 
-above, only about 4 to 5 times faster, since it is written entirely in C.
 
 =item I<$OBJ>->Seen(I<[HASHREF]>)
 
@@ -667,9 +762,9 @@ references are not dumped; instead, their names are inserted wherever they
 are encountered subsequently.  This is useful especially for properly
 dumping subroutine references.
 
-Expects a anonymous hash of name => value pairs.  Same rules apply for names
+Expects an anonymous hash of name => value pairs.  Same rules apply for names
 as in C<new>.  If no argument is supplied, will return the "seen" list of
-name => value pairs, in an array context.  Otherwise, returns the object
+name => value pairs, in a list context.  Otherwise, returns the object
 itself.
 
 =item I<$OBJ>->Values(I<[ARRAYREF]>)
@@ -700,13 +795,7 @@ itself.
 Returns the stringified form of the values in the list, subject to the
 configuration options below.  The values will be named C<$VAR>I<n> in the
 output, where I<n> is a numeric suffix.  Will return a list of strings
-in an array context.
-
-=item DumperX(I<LIST>)
-
-Identical to the C<Dumper()> function above, but this calls the XSUB 
-implementation.  Only available if you were able to compile and install
-the XSUB extensions in C<Data::Dumper>.
+in a list context.
 
 =back
 
@@ -727,7 +816,9 @@ so that they can be chained together nicely.
 
 =over 4
 
-=item $Data::Dumper::Indent  I<or>  I<$OBJ>->Indent(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Indent  I<or>  I<$OBJ>->Indent(I<[NEWVAL]>)
 
 Controls the style of indentation.  It can be set to 0, 1, 2 or 3.  Style 0
 spews output without any newlines, indentation, or spaces between list
@@ -740,40 +831,52 @@ up).  Style 3 is like style 2, but also annotates the elements of arrays
 with their index (but the comment is on its own line, so array output
 consumes twice the number of lines).  Style 2 is the default.
 
-=item $Data::Dumper::Purity  I<or>  I<$OBJ>->Purity(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Purity  I<or>  I<$OBJ>->Purity(I<[NEWVAL]>)
 
 Controls the degree to which the output can be C<eval>ed to recreate the
 supplied reference structures.  Setting it to 1 will output additional perl
 statements that will correctly recreate nested references.  The default is
 0.
 
-=item $Data::Dumper::Pad  I<or>  I<$OBJ>->Pad(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Pad  I<or>  I<$OBJ>->Pad(I<[NEWVAL]>)
 
 Specifies the string that will be prefixed to every line of the output.
 Empty string by default.
 
-=item $Data::Dumper::Varname  I<or>  I<$OBJ>->Varname(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Varname  I<or>  I<$OBJ>->Varname(I<[NEWVAL]>)
 
 Contains the prefix to use for tagging variable names in the output. The
 default is "VAR".
 
-=item $Data::Dumper::Useqq  I<or>  I<$OBJ>->Useqq(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Useqq  I<or>  I<$OBJ>->Useqq(I<[NEWVAL]>)
 
 When set, enables the use of double quotes for representing string values.
 Whitespace other than space will be represented as C<[\n\t\r]>, "unsafe"
 characters will be backslashed, and unprintable characters will be output as
 quoted octal integers.  Since setting this variable imposes a performance
-penalty, the default is 0.  The C<Dumpxs()> method does not honor this
-flag yet.
+penalty, the default is 0.  C<Dump()> will run slower if this flag is set,
+since the fast XSUB implementation doesn't support it yet.
 
-=item $Data::Dumper::Terse  I<or>  I<$OBJ>->Terse(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Terse  I<or>  I<$OBJ>->Terse(I<[NEWVAL]>)
 
 When set, Data::Dumper will emit single, non-self-referential values as
 atoms/terms rather than statements.  This means that the C<$VAR>I<n> names
 will be avoided where possible, but be advised that such output may not
 always be parseable by C<eval>.
 
-=item $Data::Dumper::Freezer  I<or>  $I<OBJ>->Freezer(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Freezer  I<or>  $I<OBJ>->Freezer(I<[NEWVAL]>)
 
 Can be set to a method name, or to an empty string to disable the feature.
 Data::Dumper will invoke that method via the object before attempting to
@@ -784,35 +887,108 @@ method can be called via the object, and that the object ends up containing
 only perl data types after the method has been called.  Defaults to an empty
 string.
 
-=item $Data::Dumper::Toaster  I<or>  $I<OBJ>->Toaster(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Toaster  I<or>  $I<OBJ>->Toaster(I<[NEWVAL]>)
 
 Can be set to a method name, or to an empty string to disable the feature.
 Data::Dumper will emit a method call for any objects that are to be dumped
-using the syntax C<bless(DATA, CLASS)->METHOD()>.  Note that this means that
+using the syntax C<bless(DATA, CLASS)-E<gt>METHOD()>.  Note that this means that
 the method specified will have to perform any modifications required on the
 object (like creating new state within it, and/or reblessing it in a
 different package) and then return it.  The client is responsible for making
 sure the method can be called via the object, and that it returns a valid
 object.  Defaults to an empty string.
 
-=item $Data::Dumper::Deepcopy  I<or>  $I<OBJ>->Deepcopy(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Deepcopy  I<or>  $I<OBJ>->Deepcopy(I<[NEWVAL]>)
 
 Can be set to a boolean value to enable deep copies of structures.
 Cross-referencing will then only be done when absolutely essential
 (i.e., to break reference cycles).  Default is 0.
 
-=item $Data::Dumper::Quotekeys  I<or>  $I<OBJ>->Quotekeys(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Quotekeys  I<or>  $I<OBJ>->Quotekeys(I<[NEWVAL]>)
 
 Can be set to a boolean value to control whether hash keys are quoted.
 A false value will avoid quoting hash keys when it looks like a simple
 string.  Default is 1, which will always enclose hash keys in quotes.
 
-=item $Data::Dumper::Bless  I<or>  $I<OBJ>->Bless(I<[NEWVAL]>)
+=item *
+
+$Data::Dumper::Bless  I<or>  $I<OBJ>->Bless(I<[NEWVAL]>)
 
 Can be set to a string that specifies an alternative to the C<bless>
 builtin operator used to create objects.  A function with the specified
 name should exist, and should accept the same arguments as the builtin.
 Default is C<bless>.
+
+=item *
+
+$Data::Dumper::Pair  I<or>  $I<OBJ>->Pair(I<[NEWVAL]>)
+
+Can be set to a string that specifies the separator between hash keys
+and values. To dump nested hash, array and scalar values to JavaScript,
+use: C<$Data::Dumper::Pair = ' : ';>. Implementing C<bless> in JavaScript
+is left as an exercise for the reader.
+A function with the specified name exists, and accepts the same arguments
+as the builtin.
+
+Default is: C< =E<gt> >.
+
+=item *
+
+$Data::Dumper::Maxdepth  I<or>  $I<OBJ>->Maxdepth(I<[NEWVAL]>)
+
+Can be set to a positive integer that specifies the depth beyond which
+which we don't venture into a structure.  Has no effect when
+C<Data::Dumper::Purity> is set.  (Useful in debugger when we often don't
+want to see more than enough).  Default is 0, which means there is 
+no maximum depth. 
+
+=item *
+
+$Data::Dumper::Useperl  I<or>  $I<OBJ>->Useperl(I<[NEWVAL]>)
+
+Can be set to a boolean value which controls whether the pure Perl
+implementation of C<Data::Dumper> is used. The C<Data::Dumper> module is
+a dual implementation, with almost all functionality written in both
+pure Perl and also in XS ('C'). Since the XS version is much faster, it
+will always be used if possible. This option lets you override the
+default behavior, usually for testing purposes only. Default is 0, which
+means the XS implementation will be used if possible.
+
+=item *
+
+$Data::Dumper::Sortkeys  I<or>  $I<OBJ>->Sortkeys(I<[NEWVAL]>)
+
+Can be set to a boolean value to control whether hash keys are dumped in
+sorted order. A true value will cause the keys of all hashes to be
+dumped in Perl's default sort order. Can also be set to a subroutine
+reference which will be called for each hash that is dumped. In this
+case C<Data::Dumper> will call the subroutine once for each hash,
+passing it the reference of the hash. The purpose of the subroutine is
+to return a reference to an array of the keys that will be dumped, in
+the order that they should be dumped. Using this feature, you can
+control both the order of the keys, and which keys are actually used. In
+other words, this subroutine acts as a filter by which you can exclude
+certain keys from being dumped. Default is 0, which means that hash keys
+are not sorted.
+
+=item *
+
+$Data::Dumper::Deparse  I<or>  $I<OBJ>->Deparse(I<[NEWVAL]>)
+
+Can be set to a boolean value to control whether code references are
+turned into perl source code. If set to a true value, C<B::Deparse>
+will be used to get the source of the code reference. Using this option
+will force using the Perl implementation of the dumper, since the fast
+XSUB implementation doesn't support it.
+
+Caution : use this option only if you know that your coderefs will be
+properly reconstructed by C<B::Deparse>.
 
 =back
 
@@ -847,7 +1023,7 @@ distribution for more examples.)
     $boo = [ 1, [], "abcd", \*foo,
              {1 => 'a', 023 => 'b', 0x45 => 'c'}, 
              \\"p\q\'r", $foo, $fuz];
-    
+
     ########
     # simple usage
     ########
@@ -868,12 +1044,15 @@ distribution for more examples.)
 
     $Data::Dumper::Useqq = 1;          # print strings in double quotes
     print Dumper($boo);
-    
-    
+
+    $Data::Dumper::Pair = " : ";       # specify hash key/value separator
+    print Dumper($boo);
+
+
     ########
     # recursive structures
     ########
-    
+
     @c = ('c');
     $c = \@c;
     $b = {};
@@ -882,37 +1061,52 @@ distribution for more examples.)
     $b->{b} = $a->[1];
     $b->{c} = $a->[2];
     print Data::Dumper->Dump([$a,$b,$c], [qw(a b c)]);
-    
-    
+
+
     $Data::Dumper::Purity = 1;         # fill in the holes for eval
     print Data::Dumper->Dump([$a, $b], [qw(*a b)]); # print as @a
     print Data::Dumper->Dump([$b, $a], [qw(*b a)]); # print as %b
-    
-    
+
+
     $Data::Dumper::Deepcopy = 1;       # avoid cross-refs
     print Data::Dumper->Dump([$b, $a], [qw(*b a)]);
-    
-    
+
+
     $Data::Dumper::Purity = 0;         # avoid cross-refs
     print Data::Dumper->Dump([$b, $a], [qw(*b a)]);
-    
-    
+
+    ########
+    # deep structures
+    ########
+
+    $a = "pearl";
+    $b = [ $a ];
+    $c = { 'b' => $b };
+    $d = [ $c ];
+    $e = { 'd' => $d };
+    $f = { 'e' => $e };
+    print Data::Dumper->Dump([$f], [qw(f)]);
+
+    $Data::Dumper::Maxdepth = 3;       # no deeper than 3 refs down
+    print Data::Dumper->Dump([$f], [qw(f)]);
+
+
     ########
     # object-oriented usage
     ########
-    
+
     $d = Data::Dumper->new([$a,$b], [qw(a b)]);
     $d->Seen({'*c' => $c});            # stash a ref without printing it
     $d->Indent(3);
     print $d->Dump;
     $d->Reset->Purity(0);              # empty the seen cache
     print join "----\n", $d->Dump;
-    
-    
+
+
     ########
     # persistence
     ########
-    
+
     package Foo;
     sub new { bless { state => 'awake' }, shift }
     sub Freeze {
@@ -921,7 +1115,7 @@ distribution for more examples.)
 	$s->{state} = 'asleep';
 	return bless $s, 'Foo::ZZZ';
     }
-    
+
     package Foo::ZZZ;
     sub Thaw {
         my $s = shift;
@@ -929,7 +1123,7 @@ distribution for more examples.)
 	$s->{state} = 'awake';
 	return bless $s, 'Foo';
     }
-    
+
     package Foo;
     use Data::Dumper;
     $a = Foo->new;
@@ -940,12 +1134,12 @@ distribution for more examples.)
     print $c;
     $d = eval $c;
     print Data::Dumper->Dump([$d], ['d']);
-    
-    
+
+
     ########
     # symbol substitution (useful for recreating CODE refs)
     ########
-    
+
     sub foo { print "foo speaking\n" }
     *other = \&foo;
     $bar = [ \&other ];
@@ -954,16 +1148,41 @@ distribution for more examples.)
     print $d->Dump;
 
 
+    ########
+    # sorting and filtering hash keys
+    ########
+
+    $Data::Dumper::Sortkeys = \&my_filter;
+    my $foo = { map { (ord, "$_$_$_") } 'I'..'Q' };
+    my $bar = { %$foo };
+    my $baz = { reverse %$foo };
+    print Dumper [ $foo, $bar, $baz ];
+
+    sub my_filter {
+        my ($hash) = @_;
+        # return an array ref containing the hash keys to dump
+        # in the order that you want them to be dumped
+        return [
+          # Sort the keys of %$foo in reverse numeric order
+            $hash eq $foo ? (sort {$b <=> $a} keys %$hash) :
+          # Only dump the odd number keys of %$bar
+            $hash eq $bar ? (grep {$_ % 2} keys %$hash) :
+          # Sort keys in default order for all other hashes
+            (sort keys %$hash)
+        ];
+    }
+
 =head1 BUGS
 
 Due to limitations of Perl subroutine call semantics, you cannot pass an
 array or hash.  Prepend it with a C<\> to pass its reference instead.  This
-will be remedied in time, with the arrival of prototypes in later versions
-of Perl.  For now, you need to use the extended usage form, and prepend the
+will be remedied in time, now that Perl has subroutine prototypes.
+For now, you need to use the extended usage form, and prepend the
 name with a C<*> to output it as a hash or array.
 
 C<Data::Dumper> cheats with CODE references.  If a code reference is
-encountered in the structure being processed, an anonymous subroutine that
+encountered in the structure being processed (and if you haven't set
+the C<Deparse> flag), an anonymous subroutine that
 contains the string '"DUMMY"' will be inserted in its place, and a warning
 will be printed if C<Purity> is set.  You can C<eval> the result, but bear
 in mind that the anonymous sub that gets created is just a placeholder.
@@ -974,24 +1193,37 @@ to have, you can use the C<Seen> method to pre-seed the internal reference
 table and make the dumped output point to them, instead.  See L<EXAMPLES>
 above.
 
-The C<Useqq> flag is not honored by C<Dumpxs()> (it always outputs
-strings in single quotes).
+The C<Useqq> and C<Deparse> flags makes Dump() run slower, since the
+XSUB implementation does not support them.
 
 SCALAR objects have the weirdest looking C<bless> workaround.
 
+Pure Perl version of C<Data::Dumper> escapes UTF-8 strings correctly
+only in Perl 5.8.0 and later.
+
+=head2 NOTE
+
+Starting from Perl 5.8.1 different runs of Perl will have different
+ordering of hash keys.  The change was done for greater security,
+see L<perlsec/"Algorithmic Complexity Attacks">.  This means that
+different runs of Perl will have different Data::Dumper outputs if
+the data contains hashes.  If you need to have identical Data::Dumper
+outputs from different runs of Perl, use the environment variable
+PERL_HASH_SEED, see L<perlrun/PERL_HASH_SEED>.  Using this restores
+the old (platform-specific) ordering: an even prettier solution might
+be to use the C<Sortkeys> filter of Data::Dumper.
 
 =head1 AUTHOR
 
-Gurusamy Sarathy        gsar@umich.edu
+Gurusamy Sarathy        gsar@activestate.com
 
 Copyright (c) 1996-98 Gurusamy Sarathy. All rights reserved.
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-
 =head1 VERSION
 
-Version 2.10    (31 Oct 1998)
+Version 2.121  (Aug 24 2003)
 
 =head1 SEE ALSO
 

@@ -1,3 +1,129 @@
+2001-01-01  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	1999-12-07  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+	* stl_deque.h (_Deque_base::const_iterator): Change third
+	template argument to pointer type.
+	Reported by Carlo Wood <carlo@node1500a.a2000.nl>
+
+	1999-11-10  Benjamin Kosnik  <bkoz@haight.constant.com>
+		    Matthias Klose  <doko@cs.tu-berlin.de>
+	* stl_rope.h: Fix initialization order.
+	* stl_deque.h: Use static_casts<size_type>(signed_type).
+
+2000-11-24  Magnus Fromreide <magfr@lysator.liu.se>
+
+	* sstream: Backport libstdc++-V3 sstream to V2.
+
+2000-04-24  Magnus Fromreide  <magfr@lysator.liu.se>
+
+	* sstream: New file.
+	* Makefile.in (HEADERS): Add it.
+
+2000-03-12  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/bastring.h (basic_string<>::push_back): Define.
+
+Tue Mar  7 21:37:56 2000  Jeffrey A Law  (law@cygnus.com)
+
+	1999-11-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/valarray_meta.h (_DEFINE_EXPR_UNARY_FUNCTION): Don't forget
+	to define tanh. 
+
+	1999-11-05  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/valarray_meta.h (_DEFINE_EXPR_UNARY_FUNCTION):  When
+	building meta-expressions don't forget to take the contained
+	closures.
+
+	1999-10-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/valarray_meta.h: (_BinClos::_BinClos): Fix typo.
+
+	1999-09-17 Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/complext.cc (pow): Don't expect floating point promotion
+	in presence of template argument deduction.  There is no such
+	thing. 
+
+2000-02-06 Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/valarray_array.h (__valarray_copy): Fix typo.
+
+1999-12-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+	* std/bastring.h (basic_string::basic_string): Rename parameters
+	to avoid shadow warnings.
+	* std/bastring.cc (alloc): Likewise.
+
+Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.2 Released.
+
+Mon Aug 16 01:29:24 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.1 Released.
+
+Thu Aug  5 02:00:13 1999  Loren Rittle  <ljrittle@acm.org>
+
+	* Makefile.in (MARLINK, MSHLINK): Handle library version
+	number components with more than one numeric digit.
+
+Mon Aug  2 00:40:10 1999  Jeffrey A Law  (law@cygnus.com)
+
+	1999-07-16  Markus Gyger (mgyger@gmu.edu)
+	* stdexcepti.cc (__out_of_range): Use std:: qualifier for names 
+	in std.
+	(__length_error): Likewise.
+
+Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+Sat Jul 17 23:49:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (INTERFACE): Bump to 3.
+
+Fri Jul  9 01:20:23 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (VERSION): Bump to 2.10.0.
+
+Tue Jun  8 00:21:11 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (*-*-freebsd2*): Add missing '*' at end of configure
+	string.
+
+1999-06-05  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/std_valarray.h: Don't #include unconditionally <alloca.h>
+
+1999-06-05  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/std_valarray.h: New file.
+	  * std/slice.h: New file.
+	  * std/slice_array.h: New file.
+	  * std/gslice.h: New file.
+	  * std/gslice_array.h: New file.
+	  * std/mask_array.h: New file.
+	  * std/indirect_array.h: New file.
+	  * std/valarray_array.h: New file.
+	  * std/valarray_array.tcc: New file.
+	  * std/valarray_meta.h: New file.
+	  * valarray.cc: New file.
+	  * valarray: New file
+
+	  * Makefile.in (OBJS): add valarray.o
+	  (HEADERS): add valarray
+	  (valarray.o): define dependency on valarray.cc
+	  (install): make it possible to install valarray file.
+	
+Wed Jun  2 00:21:54 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* std/bastring.h (class basic_string:Rep): Encode xlock opcode
+	as .bytes instead of mnemonics.
+
+1999-05-20  Angela Marie Thomas <angela@cygnus.com>
+
+	* configure.in: Test for ${compiler_name}.exe as well.
+
 1999-05-15  Mark Kettenis  <kettenis@gnu.org>
 
 	* configure.in: Add shared library support for the Hurd

@@ -1,3 +1,156 @@
+Mon Mar 13 01:00:55 2000  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* stw.h (struct _ffestw_): Change type of uses_ to int.
+
+Fri Feb 18 13:36:50 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* g77spec.c (lang_specific_driver): Use GCCBUGURL.
+
+Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.2 Released.
+
+Mon Aug 16 01:29:24 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.1 Released.
+
+Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * g77spec.c: Update URLS and mail addresses.
+        * root.texi: Update URLS and mail addresses.
+
+Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+	* version.c: No longer a prerelease.
+
+Sat Jul 17 21:57:07 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* root.texi: Clear DEVEOPMENT per Craig's instructions.
+
+1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+        
+	* root.texi: Update e-mail addresses to gcc.gnu.org.
+	* g77spec.c (lang_specific_driver): Updated URL with bug reporting 
+	instructions to gcc.gnu.org.  Removed e-mail address.
+
+Sat Jul 17 11:28:43 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* root.texi, g77install.texi: Switchover to GCC terminology.
+	Also, FSF-G77 had been mistakenly set at some point.
+
+Thu Jul  8 15:38:50 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Describe DATE intrinsic fix.
+
+Tue Jun 29 10:10:25 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi: Undo Friday's change, as there's now a fix
+	available from netlib.
+	* news.texi: Document the fix.
+
+Mon Jun 28 10:43:11 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (ffecom_prepare_expr_): A COMPLEX intrinsic needs
+	a temp even if -fno-f2c.
+
+	* version.c: Bump version.
+
+Fri Jun 25 11:06:32 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi: Describe K(5)=10*3 NAMELIST-read bug.
+
+Mon Jun 21 12:40:17 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* g77.texi: Update links.
+
+Wed Jun 16 11:43:02 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Mention BACKSPACE fix to libg2c.
+
+Mon Jun  7 08:42:40 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in: Any target using libsubdir must depend
+	on installdirs.
+
+Sat Jun  5 23:50:36 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Describe a few more missing features people
+	have emailed me about.
+
+Sat Jun  5 17:03:23 1999  Craig Burley  <craig@jcb-sc.com>
+
+	From Dave Love to egcs-patches on 20 May 1999 17:38:38 +0100:
+	* g77.texi: Clean up fossil text vis-a-vis Intel CPUs.
+
+Fri Jun  4 13:56:56 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in: Use libsubdir, not prefix, to store
+	temporary lang-f77 `flag' file.
+
+Fri Jun  4 10:26:04 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi (News): Mention GCC 2.95 in favor of EGCS 1.2.
+	Mention that libg2c is multilibbed.
+
+Fri Jun  4 10:09:50 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Missing Features): Add `Better Warnings'
+	item.
+
+Fri May 28 16:51:41 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Fix thinko.
+
+Wed May 26 14:43:27 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Document Tue May 18 03:52:04 1999 patch.
+	Fix a grammo.
+
+Wed May 26 14:25:07 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi, news.texi, root.texi, version.c: Start renaming
+	EGCS 1.2 to GCC 2.95, and start using 0.5.25 to designate
+	the version of g77 within GCC 2.95.
+
+Wed May 26 11:45:21 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Rename -fsubscript-check to -fbounds-check and
+	-ff2c-subscript-check to -ffortran-bounds-check:
+	* g77.texi: Rename options in docs, clarify usage.
+	* lang-options.h: Rename options, clarify doclets.
+	* news.texi: Rename options, don't bother with fortran-specific
+	option.
+	* top.c (ffe_decode_option): Rename recognized strings.
+
+Tue May 25 18:21:09 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (FFECOM_FASTER_ARRAY_REFS): Delete this vestige,
+	now that -fflatten-arrays exists.
+
+Tue May 25 17:48:34 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix 19990525-0.f:
+	* com.c (ffecom_arg_ptr_to_expr): Strip off parens around
+	CHARACTER expression.
+	(ffecom_prepare_expr_): Ditto.
+
+Tue May 18 03:52:04 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Support use of back end's improved open-coding of complex divide:
+	* com.c (ffecom_tree_divide_): Use RDIV_EXPR for complex divide,
+	instead of run-time call to [cz]_div, if `-Os' option specified.
+	(lang_init_options): Tell back end we want support for wide range
+	of inputs to complex divide.
+
+	* Bump version.
+
+Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* lang-specs.h: Define __GNUC__ and __GNUC_MINOR__ only if -no-gcc
+	was not given.
+
 Thu May 13 12:23:20 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Fix INTEGER*8 subscripts in array references:

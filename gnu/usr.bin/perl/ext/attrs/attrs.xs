@@ -1,3 +1,4 @@
+#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -16,16 +17,20 @@ get_flag(char *attr)
 MODULE = attrs		PACKAGE = attrs
 
 void
-import(Class, ...)
-char *	Class
+import(...)
     ALIAS:
 	unimport = 1
     PREINIT:
 	int i;
-	CV *cv;
     PPCODE:
+       if (items < 1)
+           Perl_croak(aTHX_ "Usage: %s(Class, ...)", GvNAME(CvGV(cv)));
 	if (!PL_compcv || !(cv = CvOUTSIDE(PL_compcv)))
 	    croak("can't set attributes outside a subroutine scope");
+	if (ckWARN(WARN_DEPRECATED))
+	    Perl_warner(aTHX_ packWARN(WARN_DEPRECATED),
+			"pragma \"attrs\" is deprecated, "
+			"use \"sub NAME : ATTRS\" instead");
 	for (i = 1; i < items; i++) {
 	    STRLEN n_a;
 	    char *attr = SvPV(ST(i), n_a);
@@ -55,7 +60,7 @@ SV *	sub
 	if (!sub)
 	    croak("invalid subroutine reference or name");
 	if (CvFLAGS(sub) & CVf_METHOD)
-	    XPUSHs(sv_2mortal(newSVpv("method", 0)));
+	    XPUSHs(sv_2mortal(newSVpvn("method", 6)));
 	if (CvFLAGS(sub) & CVf_LOCKED)
-	    XPUSHs(sv_2mortal(newSVpv("locked", 0)));
+	    XPUSHs(sv_2mortal(newSVpvn("locked", 6)));
 

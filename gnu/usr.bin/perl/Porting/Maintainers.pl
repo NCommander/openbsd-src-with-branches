@@ -17,6 +17,7 @@ package Maintainers;
 	'craig'		=> 'Craig Berry <craigberry@mac.com>',
 	'dankogai'	=> 'Dan Kogai <dankogai@cpan.org>',
 	'dconway'	=> 'Damian Conway <dconway@cpan.org>',
+	'dmanura'	=> 'David Manura <dmanura@cpan.org>',
 	'drolsky'	=> 'Dave Rolsky <drolsky@cpan.org>',
 	'elizabeth'	=> 'Elizabeth Mattijsen <liz@dijkmat.nl>',
 	'gbarr'		=> 'Graham Barr <gbarr@cpan.org>',
@@ -31,16 +32,17 @@ package Maintainers;
 	'laun'		=> 'Wolfgang Laun <Wolfgang.Laun@alcatel.at>',
 	'lstein'	=> 'Lincoln D. Stein <lds@cpan.org>',
 	'marekr'	=> 'Marek Rouchal <marekr@cpan.org>',
-	'mjd'		=> 'Mark-Jason Dominus <mjd@cpan.org>',
+	'mhx'		=> 'Marcus Holland-Moritz <mhx@cpan.org>',
+	'mjd'		=> 'Mark-Jason Dominus <mjd@plover.com>',
 	'muir'		=> 'David Muir Sharnoff <muir@cpan.org>',
 	'neilb'		=> 'Neil Bowers <neilb@cpan.org>',
 	'ni-s'		=> 'Nick Ing-Simmons <nick@ing-simmons.net>',
 	'p5p'		=> 'perl5-porters <perl5-porters@perl.org>',
 	'perlfaq'	=> 'perlfaq-workers <perlfaq-workers@perl.org>',
-	'perlref'	=> 'Mark-Jason Dominus <mjd@cpan.org>',
 	'petdance'	=> 'Andy Lester <petdance@cpan.org>',
 	'pmqs'		=> 'Paul Marquess <pmqs@cpan.org>',
 	'pvhp'		=> 'Peter Prymmer <pvhp@best.com>',
+	'rgarcia'	=> 'Rafael Garcia-Suarez <rgarcia@cpan.org>',
 	'rmbarker'	=> 'Robin Barker <rmbarker@cpan.org>',
 	'rra'		=> 'Russ Allbery <rra@cpan.org>',
 	'sadahiro'	=> 'SADAHIRO Tomoyuki <SADAHIRO@cpan.org>',
@@ -79,6 +81,13 @@ package Maintainers;
 		'CPAN'		=> 0,
 		},
 
+	'base' =>
+		{
+		'MAINTAINER'	=> 'mschwern',
+		'FILES'		=> q[lib/base.pm lib/fields.pm lib/base],
+		'CPAN'		=> 1,
+		},
+
 	'bignum' =>
 		{
 		'MAINTAINER'	=> 'tels',
@@ -107,6 +116,13 @@ package Maintainers;
 		'CPAN'		=> 1,
 		},
 
+	'Cwd' =>
+		{
+		'MAINTAINER'	=> 'kwilliams',
+		'FILES'		=> q[ext/Cwd lib/Cwd.pm],
+		'CPAN'		=> 1,
+		},
+
 	'Data::Dumper' =>
 		{
 		'MAINTAINER'	=> 'ilyam', # Not gsar.
@@ -123,7 +139,7 @@ package Maintainers;
 
 	'Devel::PPPort' =>
 		{
-		'MAINTAINER'	=> 'pmqs',
+		'MAINTAINER'	=> 'mhx',
 		'FILES'		=> q[ext/Devel/PPPort],
 		'CPAN'		=> 1,
 		},
@@ -131,7 +147,7 @@ package Maintainers;
 	'Digest' =>
 		{
 		'MAINTAINER'	=> 'gaas',
-		'FILES'		=> q[lib/Digest.{pm,t}],
+		'FILES'		=> q[lib/Digest.pm lib/Digest],
 		'CPAN'		=> 1,
 		},
 
@@ -319,7 +335,7 @@ package Maintainers;
 		{
 		'MAINTAINER'	=> 'p5p',
 		'FILES'		=> q[ext/PerlIO],
-		'CPAN'		=> 1,
+		'CPAN'		=> 0,
 		},
 
 	'perlio-doc' =>
@@ -339,10 +355,10 @@ package Maintainers;
 		'CPAN'		=> 1,
 		},
 
-	'perlref' =>
+	'perlreftut' =>
 		{
 		'MAINTAINER'	=> 'mjd',
-		'FILES'		=> q[pod/perlref.pod],
+		'FILES'		=> q[pod/perlreftut.pod],
 		'CPAN'		=> 0,
 		},
 
@@ -403,7 +419,7 @@ package Maintainers;
 
 	'Safe' =>
 		{
-		'MAINTAINER'	=> 'abergman',
+		'MAINTAINER'	=> 'rgarcia',
 		'FILES'		=> q[ext/Safe],
 		'CPAN'		=> 1,
 		},
@@ -417,7 +433,7 @@ package Maintainers;
 
 	'Switch' =>
 		{
-		'MAINTAINER'	=> 'dconway',
+		'MAINTAINER'	=> 'rgarcia',
 		'FILES'		=> q[lib/Switch.pm lib/Switch],
 		'CPAN'		=> 1,
 		},
@@ -432,7 +448,7 @@ package Maintainers;
 
 	'Text::Balanced' =>
 		{
-		'MAINTAINER'	=> 'dconway',
+		'MAINTAINER'	=> 'dmanura',
 		'FILES'		=> q[lib/Text/Balanced.pm lib/Text/Balanced],
 		'CPAN'		=> 1,
 		},
@@ -492,7 +508,7 @@ package Maintainers;
 		{
 		'MAINTAINER' => 'abergman',
 		'FILES'	 => q[ext/threads],
-		'CPAN'		=> 1,
+		'CPAN'		=> 0,
 		},
 
 	'Tie::File' =>

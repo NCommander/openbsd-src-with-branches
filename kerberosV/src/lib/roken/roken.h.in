@@ -1,6 +1,6 @@
 /* -*- C -*- */
 /*
- * Copyright (c) 1995 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: roken.h.in,v 1.148 2001/01/27 05:28:09 assar Exp $ */
+/* $KTH: roken.h.in,v 1.169 2002/08/26 21:43:38 assar Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,8 +47,20 @@ struct sockaddr_dl;
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_BITYPES_H
+#include <sys/bitypes.h>
+#endif
+#ifdef HAVE_BIND_BITYPES_H
+#include <bind/bitypes.h>
+#endif
+#ifdef HAVE_NETINET_IN6_MACHTYPES_H
+#include <netinet/in6_machtypes.h>
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -80,11 +92,14 @@ struct sockaddr_dl;
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
+#ifdef HAVE_ARPA_NAMESER_H
+#include <arpa/nameser.h>
+#endif
+#ifdef HAVE_RESOLV_H
+#include <resolv.h>
+#endif
 #ifdef HAVE_SYSLOG_H
 #include <syslog.h>
-#endif
-#ifdef HAVE_WINSOCK_H
-#include <winsock.h>
 #endif
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
@@ -123,6 +138,10 @@ struct sockaddr_dl;
 #else
 #define ROKEN_LIB_FUNCTION
 #endif
+#endif
+
+#ifndef HAVE_SSIZE_T
+typedef int ssize_t;
 #endif
 
 #include <roken-common.h>
@@ -184,7 +203,7 @@ int vasnprintf (char **ret, size_t max_sz, const char *format, va_list ap)
 char * strdup(const char *old);
 #endif
 
-#ifndef HAVE_STRNDUP
+#if !defined(HAVE_STRNDUP) || defined(NEED_STRNDUP_PROTO)
 char * strndup(const char *old, size_t sz);
 #endif
 
@@ -352,6 +371,14 @@ mkstemp(char *template);
 void pidfile (const char*);
 #endif
 
+#ifndef HAVE_BSWAP32
+unsigned int bswap32(unsigned int);
+#endif
+
+#ifndef HAVE_BSWAP16
+unsigned short bswap16(unsigned short);
+#endif
+
 #ifndef HAVE_FLOCK
 #ifndef LOCK_SH
 #define LOCK_SH   1		/* Shared lock */
@@ -372,8 +399,6 @@ int flock(int fd, int operation);
 time_t tm2time (struct tm tm, int local);
 
 int unix_verify_user(char *user, char *password);
-
-void mini_inetd (int port);
 
 int roken_concat (char *s, size_t len, ...);
 
@@ -547,6 +572,19 @@ char *
 strptime (const char *buf, const char *format, struct tm *timeptr);
 #endif
 
+#ifndef HAVE_EMALLOC
+void *emalloc (size_t);
+#endif
+#ifndef HAVE_ECALLOC
+void *ecalloc(size_t num, size_t sz);
+#endif
+#ifndef HAVE_EREALLOC
+void *erealloc (void *, size_t);
+#endif
+#ifndef HAVE_ESTRDUP
+char *estrdup (const char *);
+#endif
+
 /*
  * kludges and such
  */
@@ -587,7 +625,58 @@ struct hostent* roken_gethostbyaddr(const void*, size_t, int);
 #define roken_getsockname(a,b,c) getsockname(a, b, (void*)c)
 #endif
 
+#ifndef HAVE_SETPROGNAME
+void setprogname(const char *argv0);
+#endif
+
+#ifndef HAVE_GETPROGNAME
+const char *getprogname(void);
+#endif
+
+void mini_inetd_addrinfo (struct addrinfo*);
+void mini_inetd (int port);
+
 void set_progname(char *argv0);
 const char *get_progname(void);
+
+#ifndef HAVE_LOCALTIME_R
+struct tm *
+localtime_r(const time_t *timer, struct tm *result);
+#endif
+
+#if !defined(HAVE_STRSVIS) || defined(NEED_STRSVIS_PROTO)
+int
+strsvis(char *dst, const char *src, int flag, const char *extra);
+#endif
+
+#if !defined(HAVE_STRUNVIS) || defined(NEED_STRUNVIS_PROTO)
+int
+strunvis(char *dst, const char *src);
+#endif
+
+#if !defined(HAVE_STRVIS) || defined(NEED_STRVIS_PROTO)
+int
+strvis(char *dst, const char *src, int flag);
+#endif
+
+#if !defined(HAVE_STRVISX) || defined(NEED_STRVISX_PROTO)
+int
+strvisx(char *dst, const char *src, size_t len, int flag);
+#endif
+
+#if !defined(HAVE_SVIS) || defined(NEED_SVIS_PROTO)
+char *
+svis(char *dst, int c, int flag, int nextc, const char *extra);
+#endif
+
+#if !defined(HAVE_UNVIS) || defined(NEED_UNVIS_PROTO)
+int
+unvis(char *cp, int c, int *astate, int flag);
+#endif
+
+#if !defined(HAVE_VIS) || defined(NEED_VIS_PROTO)
+char *
+vis(char *dst, int c, int flag, int nextc);
+#endif
 
 ROKEN_CPP_END

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include <krb5_locl.h>
 
-RCSID("$KTH: mk_safe.c,v 1.24 2000/08/18 06:48:40 assar Exp $");
+RCSID("$KTH: mk_safe.c,v 1.28.4.1 2004/03/07 12:46:43 lha Exp $");
 
 krb5_error_code
 krb5_mk_safe(krb5_context context,
@@ -52,6 +52,14 @@ krb5_mk_safe(krb5_context context,
   size_t len;
   u_int32_t tmp_seq;
   krb5_crypto crypto;
+  krb5_keyblock *key;
+
+  if (auth_context->local_subkey)
+      key = auth_context->local_subkey;
+  else if (auth_context->remote_subkey)
+      key = auth_context->remote_subkey;
+  else
+      key = auth_context->keyblock;
 
   s.pvno = 5;
   s.msg_type = krb_safe;
@@ -61,7 +69,7 @@ krb5_mk_safe(krb5_context context,
 
   sec2                   = sec;
   s.safe_body.timestamp  = &sec2;
-  usec2                  = usec2;
+  usec2                  = usec;
   s.safe_body.usec       = &usec2;
   if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_SEQUENCE) {
       tmp_seq = auth_context->local_seqnumber;
@@ -76,16 +84,12 @@ krb5_mk_safe(krb5_context context,
   s.cksum.checksum.data   = NULL;
   s.cksum.checksum.length = 0;
 
-  buf_size = length_KRB_SAFE(&s);
-  buf = malloc(buf_size + 128); /* add some for checksum */
-  if(buf == NULL)
-      return ENOMEM;
-  ret = encode_KRB_SAFE (buf + buf_size - 1, buf_size, &s, &len);
-  if (ret) {
-      free (buf);
+  ASN1_MALLOC_ENCODE(KRB_SAFE, buf, buf_size, &s, &len, ret);
+  if (ret)
       return ret;
-  }
-  ret = krb5_crypto_init(context, auth_context->keyblock, 0, &crypto);
+  if(buf_size != len)
+      krb5_abortx(context, "internal error in ASN.1 encoder");
+  ret = krb5_crypto_init(context, key, 0, &crypto);
   if (ret) {
       free (buf);
       return ret;
@@ -93,7 +97,8 @@ krb5_mk_safe(krb5_context context,
   ret = krb5_create_checksum(context, 
 			     crypto,
 			     KRB5_KU_KRB_SAFE_CKSUM,
-			     buf + buf_size - len,
+			     0,
+			     buf,
 			     len,
 			     &s.cksum);
   krb5_crypto_destroy(context, crypto);
@@ -102,22 +107,16 @@ krb5_mk_safe(krb5_context context,
       return ret;
   }
 
-  buf_size = length_KRB_SAFE(&s);
-  buf = realloc(buf, buf_size);
-  if(buf == NULL)
-      return ENOMEM;
-  
-  ret = encode_KRB_SAFE (buf + buf_size - 1, buf_size, &s, &len);
+  free(buf);
+  ASN1_MALLOC_ENCODE(KRB_SAFE, buf, buf_size, &s, &len, ret);
   free_Checksum (&s.cksum);
+  if(ret)
+      return ret;
+  if(buf_size != len)
+      krb5_abortx(context, "internal error in ASN.1 encoder");
 
   outbuf->length = len;
-  outbuf->data   = malloc (len);
-  if (outbuf->data == NULL) {
-      free (buf);
-      return ENOMEM;
-  }
-  memcpy (outbuf->data, buf + buf_size - len, len);
-  free (buf);
+  outbuf->data   = buf;
   if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_SEQUENCE)
       auth_context->local_seqnumber =
 	  (auth_context->local_seqnumber + 1) & 0xFFFFFFFF;

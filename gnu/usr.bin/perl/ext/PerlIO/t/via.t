@@ -1,8 +1,5 @@
 #!./perl
 
-use strict;
-use warnings;
-
 BEGIN {
     chdir 't' if -d 't';
     @INC = '../lib';
@@ -10,11 +7,19 @@ BEGIN {
 	print "1..0 # Skip: not perlio\n";
 	exit 0;
     }
+    require Config;
+    if (($Config::Config{'extensions'} !~ m!\bPerlIO/via\b!) ){
+        print "1..0 # Skip -- Perl configured without PerlIO::via module\n";
+        exit 0;
+    }
 }
+
+use strict;
+use warnings;
 
 my $tmp = "via$$";
 
-use Test::More tests => 16;
+use Test::More tests => 18;
 
 my $fh;
 my $a = join("", map { chr } 0..255) x 10;
@@ -58,7 +63,14 @@ is($a, $b, 'compare original data with filtered version');
 
     close($fh);
 
+{
+package Incomplete::Module; 
+}
 
+    $warnings = '';
+    no warnings 'layer';
+    ok( ! open($fh,">via(Incomplete::Module)", $tmp), 'open via Incomplete::Module will fail');
+    is( $warnings, "",  "don't warn about unknown package" );
 
     $warnings = '';
     no warnings 'layer';

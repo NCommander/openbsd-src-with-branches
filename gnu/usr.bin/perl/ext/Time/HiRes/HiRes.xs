@@ -1,13 +1,19 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "ppport.h"
+#if defined(__CYGWIN__) && defined(HAS_W32API_WINDOWS_H)
+# include <w32api/windows.h>
+# define CYGWIN_WITH_W32API
+#endif
 #ifdef WIN32
-#include <time.h>
+# include <time.h>
 #else
-#include <sys/time.h>
+# include <sys/time.h>
 #endif
 #ifdef HAS_SELECT
 # ifdef I_SYS_SELECT
@@ -18,48 +24,40 @@ extern "C" {
 }
 #endif
 
-static IV
-constant(char *name, int arg)
-{
-    errno = 0;
-    switch (*name) {
-    case 'I':
-      if (strEQ(name, "ITIMER_REAL"))
-#ifdef ITIMER_REAL
-	return ITIMER_REAL;
-#else
-	goto not_there;
+#ifndef PerlProc_pause
+#   define PerlProc_pause() Pause()
 #endif
-      if (strEQ(name, "ITIMER_REALPROF"))
-#ifdef ITIMER_REALPROF
-	return ITIMER_REALPROF;
-#else
-	goto not_there;
-#endif
-      if (strEQ(name, "ITIMER_VIRTUAL"))
-#ifdef ITIMER_VIRTUAL
-	return ITIMER_VIRTUAL;
-#else
-	goto not_there;
-#endif
-      if (strEQ(name, "ITIMER_PROF"))
-#ifdef ITIMER_PROF
-	return ITIMER_PROF;
-#else
-	goto not_there;
-#endif
-      break;
-    }
-    errno = EINVAL;
-    return 0;
 
-not_there:
-    errno = ENOENT;
-    return 0;
-}
+#ifdef HAS_PAUSE
+#   define Pause   pause
+#else
+#   define Pause() sleep(~0) /* Zzz for a long time. */
+#endif
 
-#if !defined(HAS_GETTIMEOFDAY) && defined(WIN32)
-#define HAS_GETTIMEOFDAY
+/* Though the cpp define ITIMER_VIRTUAL is available the functionality
+ * is not supported in Cygwin as of August 2004, ditto for Win32.
+ * Neither are ITIMER_PROF or ITIMER_REALPROF implemented.  --jhi
+ */
+#if defined(__CYGWIN__) || defined(WIN32)
+#   undef ITIMER_VIRTUAL
+#   undef ITIMER_PROF
+#   undef ITIMER_REALPROF
+#endif
+
+/* 5.004 doesn't define PL_sv_undef */
+#ifndef ATLEASTFIVEOHOHFIVE
+# ifndef PL_sv_undef
+#  define PL_sv_undef sv_undef
+# endif
+#endif
+
+#include "const-c.inc"
+
+#if defined(WIN32) || defined(CYGWIN_WITH_W32API)
+
+#ifndef HAS_GETTIMEOFDAY
+#   define HAS_GETTIMEOFDAY
+#endif
 
 /* shows up in winsock.h?
 struct timeval {
@@ -73,23 +71,74 @@ typedef union {
     FILETIME		ft_val;
 } FT_t;
 
+#define MY_CXT_KEY "Time::HiRes_" XS_VERSION
+
+typedef struct {
+    unsigned long run_count;
+    unsigned __int64 base_ticks;
+    unsigned __int64 tick_frequency;
+    FT_t base_systime_as_filetime;
+    unsigned __int64 reset_time;
+} my_cxt_t;
+
+START_MY_CXT
+
 /* Number of 100 nanosecond units from 1/1/1601 to 1/1/1970 */
 #ifdef __GNUC__
-#define Const64(x) x##LL
+# define Const64(x) x##LL
 #else
-#define Const64(x) x##i64
+# define Const64(x) x##i64
 #endif
 #define EPOCH_BIAS  Const64(116444736000000000)
 
 /* NOTE: This does not compute the timezone info (doing so can be expensive,
  * and appears to be unsupported even by glibc) */
-int
-gettimeofday (struct timeval *tp, void *not_used)
+
+/* dMY_CXT needs a Perl context and we don't want to call PERL_GET_CONTEXT
+   for performance reasons */
+
+#undef gettimeofday
+#define gettimeofday(tp, not_used) _gettimeofday(aTHX_ tp, not_used)
+
+/* If the performance counter delta drifts more than 0.5 seconds from the
+ * system time then we recalibrate to the system time.  This means we may
+ * move *backwards* in time! */
+#define MAX_PERF_COUNTER_SKEW Const64(5000000) /* 0.5 seconds */
+
+/* Reset reading from the performance counter every five minutes.
+ * Many PC clocks just seem to be so bad. */
+#define MAX_PERF_COUNTER_TICKS Const64(300000000) /* 300 seconds */
+
+static int
+_gettimeofday(pTHX_ struct timeval *tp, void *not_used)
 {
+    dMY_CXT;
+
+    unsigned __int64 ticks;
     FT_t ft;
 
-    /* this returns time in 100-nanosecond units  (i.e. tens of usecs) */
-    GetSystemTimeAsFileTime(&ft.ft_val);
+    if (MY_CXT.run_count++ == 0 ||
+	MY_CXT.base_systime_as_filetime.ft_i64 > MY_CXT.reset_time) {
+        QueryPerformanceFrequency((LARGE_INTEGER*)&MY_CXT.tick_frequency);
+        QueryPerformanceCounter((LARGE_INTEGER*)&MY_CXT.base_ticks);
+        GetSystemTimeAsFileTime(&MY_CXT.base_systime_as_filetime.ft_val);
+        ft.ft_i64 = MY_CXT.base_systime_as_filetime.ft_i64;
+	MY_CXT.reset_time = ft.ft_i64 + MAX_PERF_COUNTER_TICKS;
+    }
+    else {
+	__int64 diff;
+        QueryPerformanceCounter((LARGE_INTEGER*)&ticks);
+        ticks -= MY_CXT.base_ticks;
+        ft.ft_i64 = MY_CXT.base_systime_as_filetime.ft_i64
+                    + Const64(10000000) * (ticks / MY_CXT.tick_frequency)
+                    +(Const64(10000000) * (ticks % MY_CXT.tick_frequency)) / MY_CXT.tick_frequency;
+	diff = ft.ft_i64 - MY_CXT.base_systime_as_filetime.ft_i64;
+	if (diff < -MAX_PERF_COUNTER_SKEW || diff > MAX_PERF_COUNTER_SKEW) {
+	    MY_CXT.base_ticks += ticks;
+            GetSystemTimeAsFileTime(&MY_CXT.base_systime_as_filetime.ft_val);
+            ft.ft_i64 = MY_CXT.base_systime_as_filetime.ft_i64;
+	}
+    }
 
     /* seconds since epoch */
     tp->tv_sec = (long)((ft.ft_i64 - EPOCH_BIAS) / Const64(10000000));
@@ -97,6 +146,15 @@ gettimeofday (struct timeval *tp, void *not_used)
     /* microseconds remaining */
     tp->tv_usec = (long)((ft.ft_i64 / Const64(10)) % Const64(1000000));
 
+    return 0;
+}
+#endif
+
+#if defined(WIN32) && !defined(ATLEASTFIVEOHOHFIVE)
+static unsigned int
+sleep(unsigned int t)
+{
+    Sleep(t*1000);
     return 0;
 }
 #endif
@@ -286,6 +344,25 @@ gettimeofday (struct timeval *tp, void *tpz)
  return 0;
 }
 #endif
+
+
+ /* Do not use H A S _ N A N O S L E E P
+  * so that Perl Configure doesn't scan for it.
+  * The TIME_HIRES_NANOSLEEP is set by Makefile.PL. */
+#if !defined(HAS_USLEEP) && defined(TIME_HIRES_NANOSLEEP)
+#define HAS_USLEEP
+#define usleep hrt_nanosleep  /* could conflict with ncurses for static build */
+
+void
+hrt_nanosleep(unsigned long usec)
+{
+    struct timespec res;
+    res.tv_sec = usec/1000/1000;
+    res.tv_nsec = ( usec - res.tv_sec*1000*1000 ) * 1000;
+    nanosleep(&res, NULL);
+}
+#endif
+
 
 #if !defined(HAS_USLEEP) && defined(HAS_SELECT)
 #ifndef SELECT_IS_BROKEN
@@ -531,12 +608,10 @@ ualarm_AST(Alarm *a)
 
 #endif /* !HAS_UALARM && VMS */
 
-
-
 #ifdef HAS_GETTIMEOFDAY
 
 static int
-myU2time(UV *ret)
+myU2time(pTHX_ UV *ret)
 {
   struct timeval Tp;
   int status;
@@ -549,6 +624,9 @@ myU2time(UV *ret)
 static NV
 myNVtime()
 {
+#ifdef WIN32
+  dTHX;
+#endif
   struct timeval Tp;
   int status;
   status = gettimeofday (&Tp, NULL);
@@ -562,19 +640,32 @@ MODULE = Time::HiRes            PACKAGE = Time::HiRes
 PROTOTYPES: ENABLE
 
 BOOT:
-#ifdef HAS_GETTIMEOFDAY
 {
-  UV auv[2];
-  hv_store(PL_modglobal, "Time::NVtime", 12, newSViv(PTR2IV(myNVtime)), 0);
-  if (myU2time(auv) == 0)
-    hv_store(PL_modglobal, "Time::U2time", 12, newSViv((IV) auv[0]), 0);
+#ifdef MY_CXT_KEY
+  MY_CXT_INIT;
+#endif
+#ifdef ATLEASTFIVEOHOHFIVE
+#ifdef HAS_GETTIMEOFDAY
+  {
+    UV auv[2];
+    hv_store(PL_modglobal, "Time::NVtime", 12, newSViv(PTR2IV(myNVtime)), 0);
+    if (myU2time(aTHX_ auv) == 0)
+      hv_store(PL_modglobal, "Time::U2time", 12, newSViv((IV) auv[0]), 0);
+  }
+#endif
+#endif
 }
+
+#if defined(USE_ITHREADS) && defined(MY_CXT_KEY)
+
+void
+CLONE(...)
+    CODE:
+    MY_CXT_CLONE;
+
 #endif
 
-IV
-constant(name, arg)
-	char *		name
-	int		arg
+INCLUDE: const-xs.inc
 
 #if defined(HAS_USLEEP) && defined(HAS_GETTIMEOFDAY)
 
@@ -621,6 +712,17 @@ sleep(...)
 	         UV useconds = (UV)(1E6 * (seconds - (UV)seconds));
 		 if (seconds >= 1.0)
 		     sleep((U32)seconds);
+		 if ((IV)useconds < 0) {
+#if defined(__sparc64__) && defined(__GNUC__)
+		   /* Sparc64 gcc 2.95.3 (e.g. on NetBSD) has a bug
+		    * where (0.5 - (UV)(0.5)) will under certain
+		    * circumstances (if the double is cast to UV more
+		    * than once?) evaluate to -0.5, instead of 0.5. */
+		   useconds = -(IV)useconds;
+#endif
+		   if ((IV)useconds < 0)
+		     croak("Time::HiRes::sleep(%"NVgf"): internal error: useconds < 0 (unsigned %"UVuf" signed %"IVdf")", seconds, useconds, (IV)useconds);
+		 }
 		 usleep(useconds);
 	    } else
 	        croak("Time::HiRes::sleep(%"NVgf"): negative time not invented yet", seconds);
@@ -779,41 +881,3 @@ getitimer(which)
 
 #endif
 
-# $Id: HiRes.xs,v 1.11 1999/03/16 02:27:38 wegscd Exp wegscd $
-
-# $Log: HiRes.xs,v $
-# Revision 1.11  1999/03/16 02:27:38  wegscd
-# Add U2time, NVtime. Fix symbols for static link.
-#
-# Revision 1.10  1998/09/30 02:36:25  wegscd
-# Add VMS changes.
-#
-# Revision 1.9  1998/07/07 02:42:06  wegscd
-# Win32 usleep()
-#
-# Revision 1.8  1998/07/02 01:47:26  wegscd
-# Add Win32 code for gettimeofday.
-#
-# Revision 1.7  1997/11/13 02:08:12  wegscd
-# Add missing EXTEND in gettimeofday() scalar code.
-#
-# Revision 1.6  1997/11/11 02:32:35  wegscd
-# Do something useful when calling gettimeofday() in a scalar context.
-# The patch is courtesy of Gisle Aas.
-#
-# Revision 1.5  1997/11/06 03:10:47  wegscd
-# Fake ualarm() if we have setitimer.
-#
-# Revision 1.4  1997/11/05 05:41:23  wegscd
-# Turn prototypes ON (suggested by Gisle Aas)
-#
-# Revision 1.3  1997/10/13 20:56:15  wegscd
-# Add PROTOTYPES: DISABLE
-#
-# Revision 1.2  1997/05/23 01:01:38  wegscd
-# Conditional compilation, depending on what the OS gives us.
-#
-# Revision 1.1  1996/09/03 18:26:35  wegscd
-# Initial revision
-#
-#

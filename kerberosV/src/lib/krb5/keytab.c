@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: keytab.c,v 1.46 2000/02/07 03:18:05 assar Exp $");
+RCSID("$KTH: keytab.c,v 1.55 2003/03/27 03:45:01 lha Exp $");
 
 /*
  * Register a new keytab in `ops'
@@ -46,10 +46,17 @@ krb5_kt_register(krb5_context context,
 {
     struct krb5_keytab_data *tmp;
 
+    if (strlen(ops->prefix) > KRB5_KT_PREFIX_MAX_LEN - 1) {
+	krb5_set_error_string(context, "krb5_kt_register; prefix too long");
+	return KRB5_KT_NAME_TOOLONG;
+    }
+
     tmp = realloc(context->kt_types,
 		  (context->num_kt_types + 1) * sizeof(*context->kt_types));
-    if(tmp == NULL)
+    if(tmp == NULL) {
+	krb5_set_error_string(context, "malloc: out of memory");
 	return ENOMEM;
+    }
     memcpy(&tmp[context->num_kt_types], ops,
 	   sizeof(tmp[context->num_kt_types]));
     context->kt_types = tmp;
@@ -86,15 +93,20 @@ krb5_kt_resolve(krb5_context context,
     }
     
     for(i = 0; i < context->num_kt_types; i++) {
-	if(strncmp(type, context->kt_types[i].prefix, type_len) == 0)
+	if(strncasecmp(type, context->kt_types[i].prefix, type_len) == 0)
 	    break;
     }
-    if(i == context->num_kt_types)
+    if(i == context->num_kt_types) {
+	krb5_set_error_string(context, "unknown keytab type %.*s", 
+			      (int)type_len, type);
 	return KRB5_KT_UNKNOWN_TYPE;
+    }
     
     k = malloc (sizeof(*k));
-    if (k == NULL)
+    if (k == NULL) {
+	krb5_set_error_string(context, "malloc: out of memory");
 	return ENOMEM;
+    }
     memcpy(k, &context->kt_types[i], sizeof(*k));
     k->data = NULL;
     ret = (*k->resolve)(context, residual, k);
@@ -114,8 +126,41 @@ krb5_kt_resolve(krb5_context context,
 krb5_error_code
 krb5_kt_default_name(krb5_context context, char *name, size_t namesize)
 {
-    if (strlcpy (name, context->default_keytab, namesize) >= namesize)
+    if (strlcpy (name, context->default_keytab, namesize) >= namesize) {
+	krb5_clear_error_string (context);
 	return KRB5_CONFIG_NOTENUFSPACE;
+    }
+    return 0;
+}
+
+/*
+ * copy the name of the default modify keytab into `name'.
+ * Return 0 or KRB5_CONFIG_NOTENUFSPACE if `namesize' is too short.
+ */
+
+krb5_error_code
+krb5_kt_default_modify_name(krb5_context context, char *name, size_t namesize)
+{
+    const char *kt = NULL;
+    if(context->default_keytab_modify == NULL) {
+	if(strncasecmp(context->default_keytab, "ANY:", 4) != 0)
+	    kt = context->default_keytab;
+	else {
+	    size_t len = strcspn(context->default_keytab + 4, ",");
+	    if(len >= namesize) {
+		krb5_clear_error_string(context);
+		return KRB5_CONFIG_NOTENUFSPACE;
+	    }
+	    strlcpy(name, context->default_keytab + 4, namesize);
+	    name[len] = '\0';
+	    return 0;
+	}    
+    } else
+	kt = context->default_keytab_modify;
+    if (strlcpy (name, kt, namesize) >= namesize) {
+	krb5_clear_error_string (context);
+	return KRB5_CONFIG_NOTENUFSPACE;
+    }
     return 0;
 }
 
@@ -163,6 +208,21 @@ krb5_kt_read_service_key(krb5_context context,
     ret = krb5_copy_keyblock (context, &entry.keyblock, key);
     krb5_kt_free_entry(context, &entry);
     return ret;
+}
+
+/*
+ * Return the type of the `keytab' in the string `prefix of length
+ * `prefixsize'.
+ */
+
+krb5_error_code
+krb5_kt_get_type(krb5_context context,
+		 krb5_keytab keytab,
+		 char *prefix,
+		 size_t prefixsize)
+{
+    strlcpy(prefix, keytab->prefix, prefixsize);
+    return 0;
 }
 
 /*
@@ -222,6 +282,7 @@ krb5_kt_compare(krb5_context context,
 /*
  * Retrieve the keytab entry for `principal, kvno, enctype' into `entry'
  * from the keytab `id'.
+ * kvno == 0 is a wildcard and gives the keytab with the highest vno.
  * Return 0 or an error.
  */
 
@@ -247,7 +308,10 @@ krb5_kt_get_entry(krb5_context context,
     entry->vno = 0;
     while (krb5_kt_next_entry(context, id, &tmp, &cursor) == 0) {
 	if (krb5_kt_compare(context, &tmp, principal, 0, enctype)) {
-	    if (kvno == tmp.vno) {
+	    /* the file keytab might only store the lower 8 bits of
+	       the kvno, so only compare those bits */
+	    if (kvno == tmp.vno
+		|| (tmp.vno < 256 && kvno % 256 == tmp.vno)) {
 		krb5_kt_copy_entry_contents (context, &tmp, entry);
 		krb5_kt_free_entry (context, &tmp);
 		krb5_kt_end_seq_get(context, id, &cursor);
@@ -261,16 +325,31 @@ krb5_kt_get_entry(krb5_context context,
 	krb5_kt_free_entry(context, &tmp);
     }
     krb5_kt_end_seq_get (context, id, &cursor);
-    if (entry->vno)
+    if (entry->vno) {
 	return 0;
-    else
+    } else {
+	char princ[256], kt_name[256], kvno_str[25];
+
+	krb5_unparse_name_fixed (context, principal, princ, sizeof(princ));
+	krb5_kt_get_name (context, id, kt_name, sizeof(kt_name));
+
+	if (kvno)
+	    snprintf(kvno_str, sizeof(kvno_str), "(kvno %d)", kvno);
+	else
+	    kvno_str[0] = '\0';
+
+	krb5_set_error_string (context,
+ 			       "failed to find %s%s in keytab %s",
+			       princ,
+			       kvno_str,
+			       kt_name);
 	return KRB5_KT_NOTFOUND;
+    }
 }
 
 /*
  * Copy the contents of `in' into `out'.
- * Return 0 or an error.
- */
+ * Return 0 or an error.  */
 
 krb5_error_code
 krb5_kt_copy_entry_contents(krb5_context context,
@@ -339,8 +418,12 @@ krb5_kt_start_seq_get(krb5_context context,
 		      krb5_keytab id,
 		      krb5_kt_cursor *cursor)
 {
-    if(id->start_seq_get == NULL)
+    if(id->start_seq_get == NULL) {
+	krb5_set_error_string(context,
+			      "start_seq_get is not supported in the %s "
+			      " keytab", id->prefix);
 	return HEIM_ERR_OPNOTSUPP;
+    }
     return (*id->start_seq_get)(context, id, cursor);
 }
 
@@ -356,8 +439,12 @@ krb5_kt_next_entry(krb5_context context,
 		   krb5_keytab_entry *entry,
 		   krb5_kt_cursor *cursor)
 {
-    if(id->next_entry == NULL)
+    if(id->next_entry == NULL) {
+	krb5_set_error_string(context,
+			      "next_entry is not supported in the %s "
+			      " keytab", id->prefix);
 	return HEIM_ERR_OPNOTSUPP;
+    }
     return (*id->next_entry)(context, id, entry, cursor);
 }
 
@@ -370,8 +457,12 @@ krb5_kt_end_seq_get(krb5_context context,
 		    krb5_keytab id,
 		    krb5_kt_cursor *cursor)
 {
-    if(id->end_seq_get == NULL)
+    if(id->end_seq_get == NULL) {
+	krb5_set_error_string(context,
+			      "end_seq_get is not supported in the %s "
+			      " keytab", id->prefix);
 	return HEIM_ERR_OPNOTSUPP;
+    }
     return (*id->end_seq_get)(context, id, cursor);
 }
 
@@ -385,8 +476,11 @@ krb5_kt_add_entry(krb5_context context,
 		  krb5_keytab id,
 		  krb5_keytab_entry *entry)
 {
-    if(id->add == NULL)
+    if(id->add == NULL) {
+	krb5_set_error_string(context, "Add is not supported in the %s keytab",
+			      id->prefix);
 	return KRB5_KT_NOWRITE;
+    }
     entry->timestamp = time(NULL);
     return (*id->add)(context, id,entry);
 }
@@ -401,7 +495,11 @@ krb5_kt_remove_entry(krb5_context context,
 		     krb5_keytab id,
 		     krb5_keytab_entry *entry)
 {
-    if(id->remove == NULL)
+    if(id->remove == NULL) {
+	krb5_set_error_string(context,
+			      "Remove is not supported in the %s keytab",
+			      id->prefix);
 	return KRB5_KT_NOWRITE;
+    }
     return (*id->remove)(context, id, entry);
 }

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -Tw
+#!/usr/bin/perl -w
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -12,14 +12,12 @@ BEGIN {
 
 use strict;
 
-use Test::More tests => 146;
+use Test::More tests => 170;
 
-
-use_ok('Test::Harness::Straps');
+BEGIN { use_ok('Test::Harness::Straps'); }
 
 my $strap = Test::Harness::Straps->new;
-ok( defined $strap && $strap->isa("Test::Harness::Straps"),         'new()' );
-
+isa_ok( $strap, 'Test::Harness::Straps', 'new()' );
 
 ### Testing _is_comment()
 
@@ -37,8 +35,10 @@ my %comments = (
                 "#"                                 => '',
                );
 
-while( my($line, $line_comment) = each %comments ) {
+for my $line ( sort keys %comments ) {
+    my $line_comment = $comments{$line};
     my $strap = Test::Harness::Straps->new;
+    isa_ok( $strap, 'Test::Harness::Straps' );
 
     my $name = substr($line, 0, 20);
     ok( $strap->_is_comment($line, \$comment),        "  comment '$name'"   );
@@ -72,7 +72,9 @@ my @attribs = qw(max skip_all todo);
 my %headers = (
    '1..2'                               => { max => 2 },
    '1..1'                               => { max => 1 },
-   '1..0'                               => { max => 0 },
+   '1..0'                               => { max => 0,
+                                             skip_all => '',
+                                           },
    '1..0 # Skipped: no leverage found'  => { max      => 0,
                                              skip_all => 'no leverage found',
                                            },
@@ -84,24 +86,26 @@ my %headers = (
                                            },
    '1..10 todo 2 4 10'                  => { max        => 10,
                                              'todo'       => { 2  => 1,
-                                                             4  => 1,
-                                                             10 => 1,
+                                                               4  => 1,
+                                                               10 => 1,
                                                            },
                                            },
    '1..10 todo'                         => { max        => 10 },
    '1..192 todo 4 2 13 192 # Skip skip skip because'   => 
                                            { max     => 192,
                                              'todo'    => { 4   => 1, 
-                                                          2   => 1, 
-                                                          13  => 1, 
-                                                          192 => 1,
+                                                            2   => 1, 
+                                                            13  => 1, 
+                                                            192 => 1,
                                                         },
                                              skip_all => 'skip skip because'
                                            }
 );
 
-while( my($header, $expect) = each %headers ) {
+for my $header ( sort keys %headers ) {
+    my $expect = $headers{$header};
     my $strap = Test::Harness::Straps->new;
+    isa_ok( $strap, 'Test::Harness::Straps' );
 
     ok( $strap->_is_header($header),    "_is_header() is a header '$header'" );
 
@@ -167,7 +171,8 @@ my %tests = (
                                    },
             );
 
-while( my($line, $expect) = each %tests ) {
+for my $line ( sort keys %tests ) {
+    my $expect = $tests{$line};
     my %test;
     ok( $strap->_is_test($line, \%test),    "_is_test() spots '$line'" );
 
@@ -183,6 +188,8 @@ my @untests = (
               );
 foreach my $line (@untests) {
     my $strap = Test::Harness::Straps->new;
+    isa_ok( $strap, 'Test::Harness::Straps' );
+
     my %test = ();
     ok( !$strap->_is_test($line, \%test),    "_is_test() disregards '$line'" );
 
@@ -200,8 +207,11 @@ my %bails = (
              'bail out! - Out of coffee' => '- Out of coffee',
             );
 
-while( my($line, $expect) = each %bails ) {
+for my $line ( sort keys %bails ) {
+    my $expect = $bails{$line};
     my $strap = Test::Harness::Straps->new;
+    isa_ok( $strap, 'Test::Harness::Straps' );
+
     my $reason;
     ok( $strap->_is_bail_out($line, \$reason), "_is_bail_out() spots '$line'");
     is( $reason, $expect,                       '  with the right reason' );
@@ -216,6 +226,8 @@ my @unbails = (
 
 foreach my $line (@unbails) {
     my $strap = Test::Harness::Straps->new;
+    isa_ok( $strap, 'Test::Harness::Straps' );
+
     my $reason;
 
     ok( !$strap->_is_bail_out($line, \$reason),  

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "gssapi_locl.h"
 
-RCSID("$KTH: encapsulate.c,v 1.5 2000/08/27 02:46:23 assar Exp $");
+RCSID("$KTH: encapsulate.c,v 1.6.6.1 2003/09/18 21:47:44 lha Exp $");
 
 void
 gssapi_krb5_encap_length (size_t data_len,
@@ -72,12 +72,33 @@ gssapi_krb5_make_header (u_char *p,
     return p;
 }
 
+u_char *
+_gssapi_make_mech_header(u_char *p,
+			 size_t len)
+{
+    int e;
+    size_t len_len, foo;
+
+    *p++ = 0x60;
+    len_len = length_len(len);
+    e = der_put_length (p + len_len - 1, len_len, len, &foo);
+    if(e || foo != len_len)
+	abort ();
+    p += len_len;
+    *p++ = 0x06;
+    *p++ = GSS_KRB5_MECHANISM->length;
+    memcpy (p, GSS_KRB5_MECHANISM->elements, GSS_KRB5_MECHANISM->length);
+    p += GSS_KRB5_MECHANISM->length;
+    return p;
+}
+
 /*
  * Give it a krb5_data and it will encapsulate with extra GSS-API wrappings.
  */
 
 OM_uint32
 gssapi_krb5_encapsulate(
+			OM_uint32 *minor_status,    
 			const krb5_data *in_data,
 			gss_buffer_t output_token,
 			u_char *type
@@ -90,8 +111,10 @@ gssapi_krb5_encapsulate(
     
     output_token->length = outer_len;
     output_token->value  = malloc (outer_len);
-    if (output_token->value == NULL)
+    if (output_token->value == NULL) {
+	*minor_status = ENOMEM;
 	return GSS_S_FAILURE;
+    }	
 
     p = gssapi_krb5_make_header (output_token->value, len, type);
     memcpy (p, in_data->data, in_data->length);

@@ -1,10 +1,10 @@
 #
-# $Id: Encode.pm,v 1.75 2002/06/01 18:07:42 dankogai Exp $
+# $Id: Encode.pm,v 2.8 2004/10/24 12:32:06 dankogai Exp $
 #
 package Encode;
 use strict;
-our $VERSION = do { my @r = (q$Revision: 1.75 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
-our $DEBUG = 0;
+our $VERSION = do { my @r = (q$Revision: 2.8 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+sub DEBUG () { 0 }
 use XSLoader ();
 XSLoader::load(__PACKAGE__, $VERSION);
 
@@ -15,7 +15,7 @@ use base qw/Exporter/;
 
 our @EXPORT = qw(
   decode  decode_utf8  encode  encode_utf8
-  encodings  find_encoding
+  encodings  find_encoding clone_encoding
 );
 
 our @FB_FLAGS  = qw(DIE_ON_ERR WARN_ON_ERR RETURN_ON_ERR LEAVE_SRC
@@ -60,7 +60,7 @@ sub encodings
     }else{
 	%enc = %Encoding;
 	for my $mod (map {m/::/o ? $_ : "Encode::$_" } @_){
-	    $DEBUG and warn $mod;
+	    DEBUG and warn $mod;
 	    for my $enc (keys %ExtModule){
 		$ExtModule{$enc} eq $mod and $enc{$enc} = $mod;
 	    }
@@ -95,7 +95,7 @@ sub getEncoding
 {
     my ($class, $name, $skip_external) = @_;
 
-    ref($name) && $name->can('new_sequence') and return $name;
+    ref($name) && $name->can('renew') and return $name;
     exists $Encoding{$name} and return $Encoding{$name};
     my $lc = lc $name;
     exists $Encoding{$lc} and return $Encoding{$lc};
@@ -116,21 +116,31 @@ sub getEncoding
     return;
 }
 
-sub find_encoding
+sub find_encoding($;$)
 {
     my ($name, $skip_external) = @_;
     return __PACKAGE__->getEncoding($name,$skip_external);
 }
 
-sub resolve_alias {
+sub resolve_alias($){
     my $obj = find_encoding(shift);
     defined $obj and return $obj->name;
     return;
 }
 
+sub clone_encoding($){
+    my $obj = find_encoding(shift);
+    ref $obj or return;
+    eval { require Storable };
+    $@ and return;
+    return Storable::dclone($obj);
+}
+
 sub encode($$;$)
 {
     my ($name, $string, $check) = @_;
+    return undef unless defined $string;
+    return undef if ref $string;
     $check ||=0;
     my $enc = find_encoding($name);
     unless(defined $enc){
@@ -138,13 +148,15 @@ sub encode($$;$)
 	Carp::croak("Unknown encoding '$name'");
     }
     my $octets = $enc->encode($string,$check);
-    return undef if ($check && length($string));
+    $_[1] = $string if $check;
     return $octets;
 }
 
 sub decode($$;$)
 {
     my ($name,$octets,$check) = @_;
+    return undef unless defined $octets;
+    return undef if ref $octets;
     $check ||=0;
     my $enc = find_encoding($name);
     unless(defined $enc){
@@ -159,6 +171,7 @@ sub decode($$;$)
 sub from_to($$$;$)
 {
     my ($string,$from,$to,$check) = @_;
+    return undef unless defined $string;
     $check ||=0;
     my $f = find_encoding($from);
     unless (defined $f){
@@ -184,14 +197,18 @@ sub encode_utf8($)
     return $str;
 }
 
-sub decode_utf8($)
+sub decode_utf8($;$)
 {
-    my ($str) = @_;
-    return undef unless utf8::decode($str);
-    return $str;
+    my ($str, $check) = @_;
+    if ($check){
+	return decode("utf8", $str, $check);
+    }else{
+	return undef unless utf8::decode($str);
+	return $str;
+    }
 }
 
-predefine_encodings();
+predefine_encodings(1);
 
 #
 # This is to restore %Encoding if really needed;
@@ -199,6 +216,8 @@ predefine_encodings();
 
 sub predefine_encodings{
     use Encode::Encoding;
+    no warnings 'redefine';
+    my $use_xs = shift;
     if ($ON_EBCDIC) {
 	# was in Encode::UTF_EBCDIC
 	package Encode::UTF_EBCDIC;
@@ -243,20 +262,41 @@ sub predefine_encodings{
 	# was in Encode::utf8
 	package Encode::utf8;
 	push @Encode::utf8::ISA, 'Encode::Encoding';
-	*decode = sub{
-	    my ($obj,$octets,$chk) = @_;
-	    my $str = Encode::decode_utf8($octets);
-	    if (defined $str) {
+	# 
+	if ($use_xs){
+	    Encode::DEBUG and warn __PACKAGE__, " XS on";
+	    *decode = \&decode_xs;
+	    *encode = \&encode_xs;
+	}else{
+	    Encode::DEBUG and warn __PACKAGE__, " XS off";
+	    *decode = sub{
+		my ($obj,$octets,$chk) = @_;
+		my $str = Encode::decode_utf8($octets);
+		if (defined $str) {
+		    $_[1] = '' if $chk;
+		    return $str;
+		}
+		return undef;
+	    };
+	    *encode = sub {
+		my ($obj,$string,$chk) = @_;
+		my $octets = Encode::encode_utf8($string);
 		$_[1] = '' if $chk;
-		return $str;
+		return $octets;
+	    };
+	}
+	*cat_decode = sub{ # ($obj, $dst, $src, $pos, $trm, $chk)
+	    my ($obj, undef, undef, $pos, $trm) = @_; # currently ignores $chk
+	    my ($rdst, $rsrc, $rpos) = \@_[1,2,3];
+	    use bytes;
+	    if ((my $npos = index($$rsrc, $trm, $pos)) >= 0) {
+		$$rdst .= substr($$rsrc, $pos, $npos - $pos + length($trm));
+		$$rpos = $npos + length($trm);
+		return 1;
 	    }
-	    return undef;
-	};
-	*encode = sub {
-	    my ($obj,$string,$chk) = @_;
-	    my $octets = Encode::encode_utf8($string);
-	    $_[1] = '' if $chk;
-	    return $octets;
+	    $$rdst .= substr($$rsrc, $pos);
+	    $$rpos = length($$rsrc);
+	    return '';
 	};
 	$Encode::Encoding{utf8} =
 	    bless {Name => "utf8"} => "Encode::utf8";
@@ -391,7 +431,8 @@ decode($valid_encoding, '') is harmless and warnless.
 
 Converts B<in-place> data between two encodings. The data in $octets
 must be encoded as octets and not as characters in Perl's internal
-format. For example, to convert ISO-8859-1 data to Microsoft's CP1250 encoding:
+format. For example, to convert ISO-8859-1 data to Microsoft's CP1250
+encoding:
 
   from_to($octets, "iso-8859-1", "cp1250");
 
@@ -402,8 +443,8 @@ and to convert it back:
 Note that because the conversion happens in place, the data to be
 converted cannot be a string constant; it must be a scalar variable.
 
-from_to() returns the length of the converted string in octets on success, undef
-otherwise.
+from_to() returns the length of the converted string in octets on
+success, I<undef> on error.
 
 B<CAVEAT>: The following operations look the same but are not quite so;
 
@@ -513,40 +554,51 @@ method.
   perlio_ok("euc-jp")
 
 Fortunately, all encodings that come with Encode core are PerlIO-savvy
-except for hz and ISO-2022-kr.  For gory details, see L<Encode::Encoding> and L<Encode::PerlIO>.
+except for hz and ISO-2022-kr.  For gory details, see
+L<Encode::Encoding> and L<Encode::PerlIO>.
 
 =head1 Handling Malformed Data
 
+The optional I<CHECK> argument is used as follows.  When you omit it,
+Encode::FB_DEFAULT ( == 0 ) is assumed.
+
 =over 2
 
-The I<CHECK> argument is used as follows.  When you omit it,
-the behaviour is the same as if you had passed a value of 0 for
-I<CHECK>.
+=item B<NOTE:> Not all encoding suppport this feature
+
+Some encodings ignore I<CHECK> argument.  For example,
+L<Encode::Unicode> ignores I<CHECK> and it always croaks on error.
+
+=back
+
+Now here is the list of I<CHECK> values available
+
+=over 2
 
 =item I<CHECK> = Encode::FB_DEFAULT ( == 0)
 
-If I<CHECK> is 0, (en|de)code will put a I<substitution character>
-in place of a malformed character.  For UCM-based encodings,
-E<lt>subcharE<gt> will be used.  For Unicode, the code point C<0xFFFD> is used.
-If the data is supposed to be UTF-8, an optional lexical warning
-(category utf8) is given.
+If I<CHECK> is 0, (en|de)code will put a I<substitution character> in
+place of a malformed character.  When you encode to UCM-based encodings,
+E<lt>subcharE<gt> will be used.  When you decode from UCM-based
+encodings, the code point C<0xFFFD> is used.  If the data is supposed
+to be UTF-8, an optional lexical warning (category utf8) is given.
 
 =item I<CHECK> = Encode::FB_CROAK ( == 1)
 
 If I<CHECK> is 1, methods will die on error immediately with an error
 message.  Therefore, when I<CHECK> is set to 1,  you should trap the
-fatal error with eval{} unless you really want to let it die on error.
+error with eval{} unless you really want to let it die.
 
 =item I<CHECK> = Encode::FB_QUIET
 
 If I<CHECK> is set to Encode::FB_QUIET, (en|de)code will immediately
-return the portion of the data that has been processed so far when
-an error occurs. The data argument will be overwritten with
-everything after that point (that is, the unprocessed part of data).
-This is handy when you have to call decode repeatedly in the case
-where your source data may contain partial multi-byte character
-sequences, for example because you are reading with a fixed-width
-buffer. Here is some sample code that does exactly this:
+return the portion of the data that has been processed so far when an
+error occurs. The data argument will be overwritten with everything
+after that point (that is, the unprocessed part of data).  This is
+handy when you have to call decode repeatedly in the case where your
+source data may contain partial multi-byte character sequences,
+(i.e. you are reading with a fixed-width buffer). Here is a sample
+code that does exactly this:
 
   my $data = ''; my $utf8 = '';
   while(defined(read $fh, $buffer, 256)){
@@ -577,8 +629,8 @@ where I<HHHH> is the Unicode ID of the character that cannot be found
 in the character repertoire of the encoding.
 
 HTML/XML character reference modes are about the same, in place of
-C<\x{I<HHHH>}>, HTML uses C<&#I<NNNN>>; where I<NNNN> is a decimal digit and
-XML uses C<&#xI<HHHH>>; where I<HHHH> is the hexadecimal digit.
+C<\x{I<HHHH>}>, HTML uses C<&#I<NNNN>;> where I<NNNN> is a decimal digit and
+XML uses C<&#xI<HHHH>;> where I<HHHH> is the hexadecimal digit.
 
 =item The bitmask
 
@@ -595,6 +647,8 @@ constants via C<use Encode qw(:fallback_all)>.
  PERLQQ        0x0100                                        X
  HTMLCREF      0x0200
  XMLCREF       0x0400
+
+=back
 
 =head2 Unimplemented fallback schemes
 
@@ -664,7 +718,7 @@ Here is how Encode takes care of the utf8 flag.
 
 When you encode, the resulting utf8 flag is always off.
 
-=item
+=item *
 
 When you decode, the resulting utf8 flag is on unless you can
 unambiguously represent data.  Here is the definition of
@@ -702,6 +756,8 @@ implementation.  As such, they are efficient but may change.
 [INTERNAL] Tests whether the UTF-8 flag is turned on in the STRING.
 If CHECK is true, also checks the data in STRING for being well-formed
 UTF-8.  Returns true if successful, false otherwise.
+
+As of perl 5.8.1, L<utf8> also has utf8::is_utf8().
 
 =item _utf8_on(STRING)
 

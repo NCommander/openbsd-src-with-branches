@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,27 +33,27 @@
 
 #include "gssapi_locl.h"
 
-RCSID("$KTH: unwrap.c,v 1.15 2001/01/29 02:08:58 assar Exp $");
+RCSID("$KTH: unwrap.c,v 1.22.2.1 2003/09/18 22:05:22 lha Exp $");
 
 OM_uint32
-gss_krb5_getsomekey(const gss_ctx_id_t context_handle,
-		    krb5_keyblock **key)
+gss_krb5_get_remotekey(const gss_ctx_id_t context_handle,
+		       krb5_keyblock **key)
 {
-    /* XXX this is ugly, and probably incorrect... */
     krb5_keyblock *skey;
-    krb5_auth_con_getlocalsubkey(gssapi_krb5_context,
-				 context_handle->auth_context, 
-				 &skey);
+
+    krb5_auth_con_getremotesubkey(gssapi_krb5_context,
+				  context_handle->auth_context, 
+				  &skey);
     if(skey == NULL)
-	krb5_auth_con_getremotesubkey(gssapi_krb5_context,
-				      context_handle->auth_context, 
-				      &skey);
+	krb5_auth_con_getlocalsubkey(gssapi_krb5_context,
+				     context_handle->auth_context, 
+				     &skey);
     if(skey == NULL)
 	krb5_auth_con_getkey(gssapi_krb5_context,
 			     context_handle->auth_context, 
 			     &skey);
     if(skey == NULL)
-	return GSS_S_FAILURE;
+	return GSS_KRB5_S_KG_NO_SUBKEY; /* XXX */
     *key = skey;
     return 0;
 }
@@ -174,7 +174,7 @@ unwrap_des
     return GSS_S_BAD_MIC;
   }
 
-  krb5_auth_setremoteseqnumber (gssapi_krb5_context,
+  krb5_auth_con_setremoteseqnumber (gssapi_krb5_context,
 				context_handle->auth_context,
 				++seq_number);
 
@@ -249,6 +249,7 @@ unwrap_des3
       ret = krb5_crypto_init(gssapi_krb5_context, key,
 			     ETYPE_DES3_CBC_NONE, &crypto);
       if (ret) {
+	  gssapi_krb5_set_error_string ();
 	  *minor_status = ret;
 	  return GSS_S_FAILURE;
       }
@@ -256,6 +257,7 @@ unwrap_des3
 			 p, input_message_buffer->length - len, &tmp);
       krb5_crypto_destroy(gssapi_krb5_context, crypto);
       if (ret) {
+	  gssapi_krb5_set_error_string ();
 	  *minor_status = ret;
 	  return GSS_S_FAILURE;
       }
@@ -290,8 +292,9 @@ unwrap_des3
   p -= 28;
 
   ret = krb5_crypto_init(gssapi_krb5_context, key,
-			 ETYPE_DES3_CBC_NONE_IVEC, &crypto);
+			 ETYPE_DES3_CBC_NONE, &crypto);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       *minor_status = ret;
       return GSS_S_FAILURE;
   }
@@ -307,6 +310,7 @@ unwrap_des3
   }
   krb5_crypto_destroy (gssapi_krb5_context, crypto);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       *minor_status = ret;
       return GSS_S_FAILURE;
   }
@@ -321,7 +325,7 @@ unwrap_des3
       return GSS_S_BAD_MIC;
   }
 
-  krb5_auth_setremoteseqnumber (gssapi_krb5_context,
+  krb5_auth_con_setremoteseqnumber (gssapi_krb5_context,
 				context_handle->auth_context,
 				++seq_number);
 
@@ -337,6 +341,7 @@ unwrap_des3
 
   ret = krb5_crypto_init(gssapi_krb5_context, key, 0, &crypto);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       *minor_status = ret;
       return GSS_S_FAILURE;
   }
@@ -348,6 +353,7 @@ unwrap_des3
 			      &csum);
   krb5_crypto_destroy (gssapi_krb5_context, crypto);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       *minor_status = ret;
       return GSS_S_FAILURE;
   }
@@ -378,12 +384,17 @@ OM_uint32 gss_unwrap
   OM_uint32 ret;
   krb5_keytype keytype;
 
-  ret = gss_krb5_getsomekey(context_handle, &key);
+  if (qop_state != NULL)
+      *qop_state = GSS_C_QOP_DEFAULT;
+  ret = gss_krb5_get_remotekey(context_handle, &key);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       *minor_status = ret;
       return GSS_S_FAILURE;
   }
   krb5_enctype_to_keytype (gssapi_krb5_context, key->keytype, &keytype);
+
+  *minor_status = 0;
 
   switch (keytype) {
   case KEYTYPE_DES :
@@ -395,6 +406,11 @@ OM_uint32 gss_unwrap
       ret = unwrap_des3 (minor_status, context_handle,
 			 input_message_buffer, output_message_buffer,
 			 conf_state, qop_state, key);
+      break;
+  case KEYTYPE_ARCFOUR:
+      ret = _gssapi_unwrap_arcfour (minor_status, context_handle,
+				    input_message_buffer, output_message_buffer,
+				    conf_state, qop_state, key);
       break;
   default :
       *minor_status = KRB5_PROG_ETYPE_NOSUPP;

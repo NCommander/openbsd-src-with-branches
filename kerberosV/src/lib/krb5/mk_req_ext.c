@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include <krb5_locl.h>
 
-RCSID("$KTH: mk_req_ext.c,v 1.24 2000/11/15 07:01:26 assar Exp $");
+RCSID("$KTH: mk_req_ext.c,v 1.26.4.1 2003/09/18 20:34:30 lha Exp $");
 
 krb5_error_code
 krb5_mk_req_internal(krb5_context context,
@@ -62,6 +62,12 @@ krb5_mk_req_internal(krb5_context context,
   if(ret)
       return ret;
       
+  if(ac->local_subkey == NULL && (ap_req_options & AP_OPTS_USE_SUBKEY)) {
+      ret = krb5_auth_con_generatelocalsubkey(context, ac, &in_creds->session);
+      if(ret)
+	  return ret;
+  }
+
 #if 0
   {
       /* This is somewhat bogus since we're possibly overwriting a
@@ -99,7 +105,17 @@ krb5_mk_req_internal(krb5_context context,
 	  /* this is to make DCE secd (and older MIT kdcs?) happy */
 	  ret = krb5_create_checksum(context, 
 				     NULL,
+				     0,
 				     CKSUMTYPE_RSA_MD4,
+				     in_data->data,
+				     in_data->length,
+				     &c);
+      } else if(ac->keyblock->keytype == ETYPE_ARCFOUR_HMAC_MD5) {
+	  /* this is to make MS kdc happy */ 
+	  ret = krb5_create_checksum(context, 
+				     NULL,
+				     0,
+				     CKSUMTYPE_RSA_MD5,
 				     in_data->data,
 				     in_data->length,
 				     &c);
@@ -112,6 +128,7 @@ krb5_mk_req_internal(krb5_context context,
 	  ret = krb5_create_checksum(context, 
 				     crypto,
 				     checksum_usage,
+				     0,
 				     in_data->data,
 				     in_data->length,
 				     &c);

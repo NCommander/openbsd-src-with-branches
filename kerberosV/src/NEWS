@@ -1,3 +1,190 @@
+Changes in release 0.6.3
+
+ * fix vulnerabilities in ftpd
+
+ * support for linux AFS /proc "syscalls"
+
+ * support for RFC3244 (Windows 2000 Kerberos Change/Set Password) in
+   kpasswdd
+
+ * fix possible KDC denial of service
+
+ * bug fixes
+
+Changes in release 0.6.2
+
+ * Fix possible buffer overrun in v4 kadmin (which now defaults to off)
+
+Changes in release 0.6.1
+
+ * Fixed ARCFOUR suppport
+
+ * Cross realm vulnerability
+
+ * kdc: fix denial of service attack
+
+ * kdc: stop clients from renewing tickets into the future
+
+ * bug fixes
+	
+Changes in release 0.6
+
+* The DES3 GSS-API mechanism has been changed to inter-operate with
+  other GSSAPI implementations. See man page for gssapi(3) how to turn
+  on generation of correct MIC messages. Next major release of heimdal 
+  will generate correct MIC by default.
+
+* More complete GSS-API support
+
+* Better AFS support: kdc (524) supports 2b; 524 in kdc and AFS
+  support in applications no longer requires Kerberos 4 libs
+
+* Kerberos 4 support in kdc defaults to turned off (includes ka and 524)
+
+* other bug fixes
+
+Changes in release 0.5.2
+
+ * kdc: add option for disabling v4 cross-realm (defaults to off)
+
+ * bug fixes
+
+Changes in release 0.5.1
+
+ * kadmind: fix remote exploit
+
+ * kadmind: add option to disable kerberos 4
+
+ * kdc: make sure kaserver token life is positive
+
+ * telnet: use the session key if there is no subkey
+
+ * fix EPSV parsing in ftp
+
+ * other bug fixes
+
+Changes in release 0.5
+
+ * add --detach option to kdc
+
+ * allow setting forward and forwardable option in telnet from
+   .telnetrc, with override from command line
+
+ * accept addresses with or without ports in krb5_rd_cred
+
+ * make it work with modern openssl
+
+ * use our own string2key function even with openssl (that handles weak
+   keys incorrectly)
+
+ * more system-specific requirements in login
+
+ * do not use getlogin() to determine root in su
+
+ * telnet: abort if telnetd does not support encryption
+
+ * update autoconf to 2.53
+
+ * update config.guess, config.sub
+
+ * other bug fixes
+
+Changes in release 0.4e
+
+ * improve libcrypto and database autoconf tests
+
+ * do not care about salting of server principals when serving v4 requests
+
+ * some improvements to gssapi library
+
+ * test for existing compile_et/libcom_err
+
+ * portability fixes
+
+ * bug fixes
+
+Changes in release 0.4d
+
+ * fix some problems when using libcrypto from openssl
+
+ * handle /dev/ptmx `unix98' ptys on Linux
+
+ * add some forgotten man pages
+
+ * rsh: clean-up and add man page
+
+ * fix -A and -a in builtin-ls in tpd
+
+ * fix building problem on Irix
+
+ * make `ktutil get' more efficient
+
+ * bug fixes
+
+Changes in release 0.4c
+
+ * fix buffer overrun in telnetd
+
+ * repair some of the v4 fallback code in kinit
+
+ * add more shared library dependencies
+
+ * simplify and fix hprop handling of v4 databases
+
+ * fix some building problems (osf's sia and osfc2 login)
+
+ * bug fixes
+
+Changes in release 0.4b
+
+ * update the shared library version numbers correctly
+
+Changes in release 0.4a
+
+ * corrected key used for checksum in mk_safe, unfortunately this
+   makes it backwards incompatible
+
+ * update to autoconf 2.50, libtool 1.4
+
+ * re-write dns/config lookups (krb5_krbhst API)
+
+ * make order of using subkeys consistent
+
+ * add man page links
+
+ * add more man pages
+
+ * remove rfc2052 support, now only rfc2782 is supported
+
+ * always build with kaserver protocol support in the KDC (assuming
+   KRB4 is enabled) and support for reading kaserver databases in
+   hprop
+
+Changes in release 0.3f
+
+ * change default keytab to ANY:FILE:/etc/krb5.keytab,krb4:/etc/srvtab,
+   the new keytab type that tries both of these in order (SRVTAB is
+   also an alias for krb4:)
+
+ * improve error reporting and error handling (error messages should
+   be more detailed and more useful)
+
+ * improve building with openssl
+
+ * add kadmin -K, rcp -F 
+
+ * fix two incorrect weak DES keys
+
+ * fix building of kaserver compat in KDC
+
+ * the API is closer to what MIT krb5 is using
+
+ * more compatible with windows 2000
+
+ * removed some memory leaks
+
+ * bug fixes
+
 Changes in release 0.3e
 
  * rcp program included

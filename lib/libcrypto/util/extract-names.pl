@@ -9,8 +9,10 @@ while(<STDIN>) {
     } elsif ($name) {
 	if (/ - /) {
 	    s/ - .*//;
-	    s/[ \t,]+/ /g;
-	    push @words, split ' ';
+	    s/,[ \t]+/,/g;
+	    s/^[ \t]+//g;
+	    s/[ \t]+$//g;
+	    push @words, split ',';
 	}
     }
     if (/^=head1 *NAME *$/) {
