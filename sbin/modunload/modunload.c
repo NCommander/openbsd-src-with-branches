@@ -1,4 +1,4 @@
-/*	$OpenBSD: modunload.c,v 1.5 1997/01/15 23:41:14 millert Exp $	*/
+/*	$OpenBSD: modunload.c,v 1.6 1998/11/18 10:43:04 art Exp $	*/
 /*	$NetBSD: modunload.c,v 1.9 1995/05/28 05:23:05 jtc Exp $	*/
 
 /*
@@ -81,7 +81,8 @@ main(argc, argv)
 		switch (c) {
 		case 'i':
 			modnum = strtol(optarg, &endptr, 0);
-			if (*endptr != '\0')
+			if (modnum == LONG_MIN || modnum == LONG_MAX ||
+			    *endptr != '\0')
                                 errx(1, "not a valid number");
 			break;	/* number */
 		case 'n':
