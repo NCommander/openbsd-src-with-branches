@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.23 2001/02/04 10:07:02 deraadt Exp $
+#	$OpenBSD: GENERIC,v 1.24 2001/02/13 14:50:33 deraadt Exp $
 #
 # PPC GENERIC config file
 #
@@ -11,6 +11,7 @@ maxusers	32
 # actual machine type probed via name of openfirmware root node.
 option		SYS_TYPE=APPL
 
+option		UVM
 option		FIREPOWERBUGS
 option		PPC_MPC106_BUG
 option		PCIVERBOSE
