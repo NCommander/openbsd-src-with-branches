@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.35 2004/05/31 10:48:48 mpf Exp $	*/
+/*	$OpenBSD: in.c,v 1.36 2004/06/21 23:48:09 mcbride Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -452,7 +452,7 @@ cleanup:
 #ifdef MROUTING
 	case SIOCGETVIFCNT:
 	case SIOCGETSGCNT:
-		return (mrt_ioctl(cmd, data));
+		return (mrt_ioctl(so, cmd, data));
 #endif /* MROUTING */
 
 	default:
