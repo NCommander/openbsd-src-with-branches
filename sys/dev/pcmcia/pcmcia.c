@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmcia.c,v 1.24 1999/08/16 21:46:11 fgsch Exp $	*/
+/*	$OpenBSD: pcmcia.c,v 1.25 2000/02/05 22:10:50 deraadt Exp $	*/
 /*	$NetBSD: pcmcia.c,v 1.9 1998/08/13 02:10:55 eeh Exp $	*/
 
 /*
@@ -102,6 +102,12 @@ pcmcia_match(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
+	struct cfdata *cf = match;
+	struct pcmciabus_attach_args *paa = aux;
+
+	if (strcmp(paa->paa_busname, cf->cf_driver->cd_name))
+		return 0;
+
 	/* If the autoconfiguration got this far, there's a socket here. */
 	return (1);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.18 1999/09/17 09:57:12 espie Exp $	*/
+/*	$OpenBSD: bus.h,v 1.19 2000/03/15 03:56:49 todd Exp $	*/
 /*	$NetBSD: bus.h,v 1.6 1996/11/10 03:19:25 thorpej Exp $	*/
 
 /*-
@@ -94,6 +94,9 @@ typedef	int bus_space_tag_t;
 typedef	u_long bus_space_handle_t;
 
 int	bus_space_map __P((bus_space_tag_t t, bus_addr_t addr,
+	    bus_size_t size, int cacheable, bus_space_handle_t *bshp));
+/* like bus_space_map(), but without extent map checking/allocation */
+int	_bus_space_map __P((bus_space_tag_t t, bus_addr_t addr,
 	    bus_size_t size, int cacheable, bus_space_handle_t *bshp));
 void	bus_space_unmap __P((bus_space_tag_t t, bus_space_handle_t bsh,
 	    bus_size_t size));
