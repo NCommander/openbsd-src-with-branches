@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgpctl.8,v 1.14 2004/02/01 22:20:09 henning Exp $
+.\" $OpenBSD: bgpctl.8,v 1.15 2004/03/12 17:42:25 claudio Exp $
 .\"
 .\" Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
 .\"
@@ -100,6 +100,12 @@ Take the bgp session to the specified neighbor up.
 .It Li neighbor Ar address down
 Take the bgp session to the specified neighbor down.
 .El
+.Pp
+Commands to switch between displays may be abbreviated to the
+minimum unambiguous prefix; for example,
+.Dq s s
+for
+.Dq show summary
 .Sh FILES
 .Bl -tag -width "/etc/bgpd.conf" -compact
 .It Pa /etc/bgpd.conf
