@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop.c,v 1.31 2003/10/21 18:58:49 jmc Exp $ */
+/*	$OpenBSD: siop.c,v 1.32 2004/04/18 00:49:28 krw Exp $ */
 /*	$NetBSD: siop.c,v 1.65 2002/11/08 22:04:41 bouyer Exp $	*/
 
 /*
@@ -884,7 +884,7 @@ scintr:
 					return(1);
 				default:
 					panic("invalid retval from "
-					    "siop_wdtr_neg()");
+					    "siop_sdtr_neg()");
 				}
 				return(1);
 			}
