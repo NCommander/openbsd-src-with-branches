@@ -93,6 +93,7 @@ struct emulation {
 
 static struct emulation emulations[] = {
 	{ "native",	syscallnames,		SYS_MAXSYSCALL },
+	{ "aout",	syscallnames,		SYS_MAXSYSCALL },
 	{ "hpux",	hpux_syscallnames,	HPUX_SYS_MAXSYSCALL },
 	{ "ibcs2",	ibcs2_syscallnames,	IBCS2_SYS_MAXSYSCALL },
 	{ "linux",	linux_syscallnames,	LINUX_SYS_MAXSYSCALL },
