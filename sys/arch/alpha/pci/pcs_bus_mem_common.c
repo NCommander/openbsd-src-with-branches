@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcs_bus_mem_common.c,v 1.7 1997/07/06 18:28:01 niklas Exp $	*/
+/*	$OpenBSD: pcs_bus_mem_common.c,v 1.8 1997/07/19 20:44:15 niklas Exp $	*/
 /*	$NetBSD: pcs_bus_mem_common.c,v 1.15 1996/12/02 22:19:36 cgd Exp $	*/
 
 /*
@@ -42,8 +42,6 @@
 
 #define	__C(A,B)	__CONCAT(A,B)
 #define	__S(S)		__STRING(S)
-
-#define MIN(x,y)	((x) < (y) ? (x) : (y))
 
 /* mapping/unmapping */
 int		__C(CHIP,_mem_map) __P((void *, bus_addr_t, bus_size_t, int,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss.c,v 1.39 1999/05/11 23:52:47 kstailey Exp $	*/
+/*	$OpenBSD: ss.c,v 1.40 1999/05/11 23:57:44 kstailey Exp $	*/
 /*	$NetBSD: ss.c,v 1.10 1996/05/05 19:52:55 christos Exp $	*/
 
 /*
@@ -53,8 +53,6 @@
 
 #define SSMODE(z)	( minor(z)       & 0x03)
 #define SSUNIT(z)	((minor(z) >> 4)       )
-
-#define	MIN(a,b) (((a)<(b))?(a):(b))
 
 /*
  * If the mode is 3 (e.g. minor = 3,7,11,15)

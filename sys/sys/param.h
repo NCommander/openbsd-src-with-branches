@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.27 2000/01/14 23:37:21 deraadt Exp $	*/
+/*	$OpenBSD: param.h,v 1.28 2000/04/08 05:06:24 deraadt Exp $	*/
 /*	$NetBSD: param.h,v 1.23 1996/03/17 01:02:29 thorpej Exp $	*/
 
 /*-
@@ -191,10 +191,8 @@
 #define powerof2(x)	((((x)-1)&(x))==0)
 
 /* Macros for min/max. */
-#ifndef _KERNEL
 #define	MIN(a,b) (((a)<(b))?(a):(b))
 #define	MAX(a,b) (((a)>(b))?(a):(b))
-#endif
 
 /*
  * Constants for setting the parameters of the kernel memory allocator.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.132 2000/05/15 06:14:25 niklas Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.133 2000/05/24 21:07:51 bjc Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -169,8 +169,6 @@ extern struct proc *npxproc;
 #endif
 
 #include "bios.h"
-
-#define	MIN(a,b) (((a)<(b))?(a):(b))
 
 /*
  * The following defines are for the code in setup_buffers that tries to
