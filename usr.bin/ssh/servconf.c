@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: servconf.c,v 1.135 2004/07/11 17:48:47 deraadt Exp $");
+RCSID("$OpenBSD: servconf.c,v 1.136 2004/08/11 11:09:54 dtucker Exp $");
 
 #include "ssh.h"
 #include "log.h"
@@ -938,7 +938,7 @@ parse_server_config(ServerOptions *options, const char *filename, Buffer *conf)
 	debug2("%s: config %s len %d", __func__, filename, buffer_len(conf));
 
 	obuf = cbuf = xstrdup(buffer_ptr(conf));
-	linenum = 0;
+	linenum = 1;
 	while((cp = strsep(&cbuf, "\n")) != NULL) {
 		if (process_server_config_line(options, cp, filename,
 		    linenum++) != 0)
