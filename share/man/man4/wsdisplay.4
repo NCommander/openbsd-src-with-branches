@@ -1,4 +1,4 @@
-.\" $OpenBSD: wsdisplay.4,v 1.26 2004/02/29 21:44:04 miod Exp $
+.\" $OpenBSD: wsdisplay.4,v 1.27 2004/03/12 22:03:50 jmc Exp $
 .\" $NetBSD: wsdisplay.4,v 1.5 2000/05/13 15:22:19 mycroft Exp $
 .\"
 .\" Copyright (c) 1999 Matthias Drochner.
@@ -171,10 +171,10 @@ Consult the back-end drivers' documentation for which features are supported
 for each particular hardware type.
 .Sh FILES
 .Bl -tag -width /usr/include/dev/wscons/wsconsio.h -compact
-.It Pa /dev/ttyC*
+.It Pa /dev/tty[C-F]*
 terminal devices (per screen)
-.It Pa /dev/ttyCcfg
-control device
+.It Pa /dev/tty[C-F]cfg
+control device (per screen)
 .It Pa /usr/include/dev/wscons/wsconsio.h
 .El
 .Sh SEE ALSO
