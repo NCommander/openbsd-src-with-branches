@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_ieee.h,v 1.22 2004/03/18 16:16:10 millert Exp $	*/
+/*	$OpenBSD: if_wi_ieee.h,v 1.23 2004/06/22 20:48:00 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -46,19 +46,11 @@
  */
 
 #ifndef SIOCSWAVELAN
-#ifdef __FreeBSD__
 #define SIOCSWAVELAN	SIOCSIFGENERIC
-#else	/* !__FreeBSD__ */
-#define SIOCSWAVELAN	SIOCSIFASYNCMAP
-#endif	/* __FreeBSD__ */
 #endif
 
 #ifndef SIOCGWAVELAN
-#ifdef __FreeBSD__
 #define SIOCGWAVELAN	SIOCGIFGENERIC
-#else	/* !__FreeBSD__ */
-#define SIOCGWAVELAN	SIOCGIFASYNCMAP
-#endif	/* __FreeBSD__ */
 #endif
 
 /*
