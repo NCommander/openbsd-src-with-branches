@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.7 1996/09/27 15:34:49 deraadt Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.8 1996/09/27 15:36:09 deraadt Exp $	*/
 /*	$NetBSD: fdisk.c,v 1.11 1995/10/04 23:11:19 ghudson Exp $	*/
 
 /*
@@ -28,7 +28,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fdisk.c,v 1.7 1996/09/27 15:34:49 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fdisk.c,v 1.8 1996/09/27 15:36:09 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -68,7 +68,7 @@ struct mboot {
 	u_int8_t	padding[2];	/* force the longs to be long alligned */
 	u_int8_t	bootinst[DOSPARTOFF];
 	struct		dos_partition parts[4];
-	u_int32_t	signature;
+	u_int16_t	signature;
 } mboot;
 
 #define ACTIVE		0x80
