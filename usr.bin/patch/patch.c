@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: patch.c,v 1.2 1996/06/10 11:21:31 niklas Exp $	*/
 
 /* patch - a program to apply diffs to original files
  *
@@ -9,7 +9,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: patch.c,v 1.1.1.1 1995/10/18 08:45:55 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: patch.c,v 1.2 1996/06/10 11:21:31 niklas Exp $";
 #endif /* not lint */
 
 #include "INTERN.h"
@@ -784,9 +784,14 @@ void
 init_output(name)
 char *name;
 {
-    ofp = fopen(name, "w");
-    if (ofp == Nullfp)
+    int fd;
+
+    if ((fd = open(name, O_EXCL|O_CREAT|O_RDWR, 0666)) == -1 ||
+	(ofp = fdopen(fd, "w")) == NULL) {
+	if (fd != -1)
+		close(fd);
 	pfatal2("can't create %s", name);
+    }
 }
 
 /* Open a file to put hunks we can't locate. */
@@ -795,9 +800,14 @@ void
 init_reject(name)
 char *name;
 {
-    rejfp = fopen(name, "w");
-    if (rejfp == Nullfp)
+    int fd;
+
+    if ((fd = open(name, O_EXCL|O_CREAT|O_RDWR, 0666)) == -1 ||
+	(rejfp = fdopen(fd, "w")) == NULL) {
+	if (fd != -1)
+		close(fd);
 	pfatal2("can't create %s", name);
+    }
 }
 
 /* Copy input file to output, up to wherever hunk is to be applied. */
