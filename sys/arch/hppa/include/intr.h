@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.8 1999/08/14 03:36:11 mickey Exp $	*/
+/*	$OpenBSD: intr.h,v 1.9 2000/07/06 15:25:03 ho Exp $	*/
 
 /* 
  * Copyright (c) 1990,1991,1992,1994 The University of Utah and
@@ -88,12 +88,14 @@
 
 /* software interrupt register */
 extern u_int32_t sir;
+extern int astpending;
 
 #define	SIR_CLOCK	0x01
 #define	SIR_NET		0x02
 
 #define	setsoftclock()		(sir |= SIR_CLOCK)
 #define	setsoftnet()		(sir |= SIR_NET)
+#define	setsoftast()		(astpending = 1)
 
 #endif	/* !_LOCORE */
 #endif	/* _MACHINE_INTR_H_ */

@@ -99,7 +99,7 @@ const char *trap_type[] = {
 int trap_types = sizeof(trap_type)/sizeof(trap_type[0]);
 
 u_int32_t sir;
-int want_resched;
+int want_resched, astpending;
 
 void pmap_hptdump __P((void));
 void cpu_intr __P((struct trapframe *frame));
@@ -308,7 +308,7 @@ ddb_regs = *frame;
 	case T_ITLBMISSNA:	case T_USER | T_ITLBMISSNA:
 	case T_DTLBMISSNA:	case T_USER | T_DTLBMISSNA:
 	case T_TLB_DIRTY:	case T_USER | T_TLB_DIRTY:
-		va = trunc_page(va);
+		va = hppa_trunc_page(va);
 		vm = p->p_vmspace;
 
 		if (!vm) {
