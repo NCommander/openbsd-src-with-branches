@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_msdos.c,v 1.10 1997/06/20 14:44:39 kstailey Exp $	*/
+/*	$OpenBSD: mount_msdos.c,v 1.11 1998/12/21 14:21:23 art Exp $	*/
 /*	$NetBSD: mount_msdos.c,v 1.16 1996/10/24 00:12:50 cgd Exp $	*/
 
 /*
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.10 1997/06/20 14:44:39 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.11 1998/12/21 14:21:23 art Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -155,7 +155,7 @@ main(argc, argv)
 			break;
 		case EINVAL:
 			errcause =
-			    "specified device does not match mounted device";
+			    "not an MSDOS filesystem";
 			break;
 		default:
 			errcause = strerror(errno);
