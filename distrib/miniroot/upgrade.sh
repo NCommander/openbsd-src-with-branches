@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: upgrade.sh,v 1.11 1999/10/08 03:54:14 millert Exp $
+#	$OpenBSD: upgrade.sh,v 1.12 2000/03/19 01:14:03 espie Exp $
 #	$NetBSD: upgrade.sh,v 1.2.4.5 1996/08/27 18:15:08 gwr Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -297,6 +297,7 @@ esac
 	md_installboot ${ROOTDISK}
 )
 populateusrlocal
+test -x /mnt/upgrade.site && /mnt/usr/sbin/chroot /mnt /upgrade.site
 
 unmount_fs /tmp/fstab.shadow
 
