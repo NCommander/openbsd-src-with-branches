@@ -1,4 +1,4 @@
-/*	$OpenbSD$	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright 1994 the XFree86 Project Inc. 

@@ -1,5 +1,4 @@
-/*	$OpenbSD$	*/
-
+/*	$OpenBSD$	*/
 /*
  * Loadable Kernel Module for XFree86 Aperture driver
  *
