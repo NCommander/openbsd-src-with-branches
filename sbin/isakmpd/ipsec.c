@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec.c,v 1.43 2001/04/15 16:09:16 ho Exp $	*/
+/*	$OpenBSD: ipsec.c,v 1.44 2001/04/24 07:27:37 niklas Exp $	*/
 /*	$EOM: ipsec.c,v 1.143 2000/12/11 23:57:42 niklas Exp $	*/
 
 /*
@@ -306,11 +306,11 @@ ipsec_finalize_exchange (struct message *msg)
 	      for (proto = TAILQ_FIRST (&sa->protos), last_proto = 0; proto;
 		   proto = TAILQ_NEXT (proto, link))
 		{
-		  if (sysdep_ipsec_set_spi (sa, proto, 0)
+		  if (sysdep_ipsec_set_spi (sa, proto, 0, isakmp_sa)
 		      || (last_proto
 			  && sysdep_ipsec_group_spis (sa, last_proto, proto,
 						      0))
-		      || sysdep_ipsec_set_spi (sa, proto, 1)
+		      || sysdep_ipsec_set_spi (sa, proto, 1, isakmp_sa)
 		      || (last_proto
 			  && sysdep_ipsec_group_spis (sa, last_proto, proto,
 						      1)))
