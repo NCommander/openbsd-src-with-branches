@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * X9.9 calculator
  * This software is provided AS IS with no express or implied warranty
