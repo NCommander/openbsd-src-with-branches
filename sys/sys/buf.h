@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.h,v 1.9 1997/10/06 20:21:03 deraadt Exp $	*/
+/*	$OpenBSD: buf.h,v 1.10 1997/11/06 05:59:07 csapuntz Exp $	*/
 /*	$NetBSD: buf.h,v 1.25 1997/04/09 21:12:17 mycroft Exp $	*/
 
 /*
@@ -46,6 +46,8 @@
 #include <sys/queue.h>
 
 #define NOLIST ((struct buf *)0x87654321)
+
+struct buf;
 
 /*
  * To avoid including <ufs/ffs/softdep.h>
