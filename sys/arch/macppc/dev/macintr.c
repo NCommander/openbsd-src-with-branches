@@ -1,4 +1,4 @@
-/*	$OpenBSD: macintr.c,v 1.22 2003/12/20 22:40:26 miod Exp $	*/
+/*	$OpenBSD: macintr.c,v 1.23 2004/06/28 02:49:10 aaron Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -162,7 +162,7 @@ macintr_attach(struct device *parent, struct device *self, void *aux)
 	macintr_collect_preconf_intr();
 
 	mac_intr_establish(parent, 0x14, IST_LEVEL, IPL_HIGH,
-	    macintr_prog_button, (void *)0x14, "prog button");
+	    macintr_prog_button, (void *)0x14, "progbutton");
 
 	ppc_intr_enable(1);
 
