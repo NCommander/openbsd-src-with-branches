@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.63 2005/02/06 17:10:13 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.64 2005/04/02 16:41:09 henning Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -2259,7 +2259,7 @@ res_hnok(const char *name)
 		else if (ch == '_' && warn == 0) {
 			warning("warning: hostname %s contains an "
 				"underscore which violates RFC 952", name);
-				warn++;
+			warn++;
 		}
 		pch = ch, ch = nch;
 	}
