@@ -635,7 +635,6 @@ product ATI MACH32		0x4158	Mach32
 product ATI MACH64_CT		0x4354	Mach64 CT
 product ATI MACH64_CX		0x4358	Mach64 CX
 product ATI MACH64_ET		0x4554	Mach64 ET
-product ATI MACH64_VT		0x4654	Mach64 VT
 product ATI RAGEPRO		0x4742	Rage Pro
 product ATI MACH64_GD		0x4744  Mach64 GD
 product ATI MACH64_GI		0x4749  Mach64 GI
@@ -979,7 +978,7 @@ product NUMBER9 I128_T2R	0x493D	Imagine-128 T2R
 /* NVidia products */
 product	NVIDIA	NV1		0x0008	NV1
 product NVIDIA	DAC64		0x0009	DAC64
-product	NVIDIA	Riva TNT	0x0020	Riva TNT
+product	NVIDIA	RIVA_TNT	0x0020	Riva TNT
 
 /* Oak Technologies products */
 product OAKTECH OTI1007		0x0107	OTI107
