@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.5 1996/11/28 23:27:48 niklas Exp $	*/
+/*	$OpenBSD: cy.c,v 1.6 1996/12/03 05:28:21 kstailey Exp $	*/
 
 /*
  * cy.c
@@ -438,6 +438,7 @@ cyopen(dev, flag, mode, p)
 	    error = ttysleep(tp, &tp->t_rawq, TTIPRI | PCATCH, "cydcd", 0);
 	    if(error != 0) {
 		splx(s);
+		CLR(tp->t_state, TS_WOPEN);
 		return error;
 	    }
 	}
