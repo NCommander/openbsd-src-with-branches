@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.33 1998/04/01 20:22:48 millert Exp $
+#	$OpenBSD: install.md,v 1.34 1998/04/11 09:47:09 deraadt Exp $
 #
 #
 # Copyright rc) 1996 The NetBSD Foundation, Inc.
@@ -100,7 +100,7 @@ q' | ed /mnt/etc/sysctl.conf 2> /dev/null
 		*)
 			;;
 	esac
-
+	echo
 }
 
 md_native_fstype() {
