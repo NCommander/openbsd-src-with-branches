@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_icmp.c,v 1.30 2000/10/17 22:33:51 provos Exp $	*/
+/*	$OpenBSD: ip_icmp.c,v 1.31 2000/12/11 19:12:22 provos Exp $	*/
 /*	$NetBSD: ip_icmp.c,v 1.19 1996/02/13 23:42:22 christos Exp $	*/
 
 /*
@@ -768,7 +768,6 @@ icmp_mtudisc_clone(struct sockaddr *dst)
 		    RTF_GATEWAY | RTF_HOST | RTF_DYNAMIC, &nrt);
 		if (error) {
 			rtfree(rt);
-			rtfree(nrt);
 			return (NULL);
 		}
 		nrt->rt_rmx = rt->rt_rmx;
