@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.17 2002/06/12 06:07:16 mpech Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.18 2003/06/03 02:56:14 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)docmd.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: docmd.c,v 1.17 2002/06/12 06:07:16 mpech Exp $";
+static char *rcsid = "$OpenBSD: docmd.c,v 1.18 2003/06/03 02:56:14 millert Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -193,7 +193,7 @@ done:
 			nextihead = ihead->nextp;
 			if ((opts & IGNLNKS) || ihead->count == 0)
 				continue;
-			log(lfp, "%s: Warning: missing links\n",
+			logit(lfp, "%s: Warning: missing links\n",
 				ihead->pathname);
 			free(ihead);
 		}
@@ -328,7 +328,7 @@ lostconn(signo)
 {
 	if (iamremote)
 		cleanup(0);
-	log(lfp, "rdist: lost connection\n");
+	logit(lfp, "rdist: lost connection\n");
 	if (rem >= 0) {
 		(void) close(rem);
 		rem = -1;
@@ -480,7 +480,7 @@ cmptime(name)
 	}
 
 	if (stb.st_mtime > lastmod)
-		log(tfp, "new: %s\n", name);
+		logit(tfp, "new: %s\n", name);
 }
 
 static void
