@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.331 2003/02/25 20:59:09 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.332 2003/02/26 20:27:20 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -3379,8 +3379,8 @@ int
 check_rulestate(int desired_state)
 {
 	if (require_order && (rulestate > desired_state)) {
-		yyerror("Rules must be in order: options, scrub, "
-		    "queue, NAT, filter");
+		yyerror("Rules must be in order: options, normalization, "
+		    "queueing, translation, filtering");
 		return (1);
 	}
 	rulestate = desired_state;
