@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_tracemse.c,v 1.1 1999/01/18 19:10:24 millert Exp $	*/
+/*	$OpenBSD: lib_tracemse.c,v 1.2 2001/01/22 18:01:58 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -48,8 +48,8 @@ _tracemouse(MEVENT const *ep)
 {
     static char buf[80];
 
-    (void) sprintf(buf, "id %2d  at (%2d, %2d, %2d) state %4lx = {",
-		   ep->id, ep->x, ep->y, ep->z, ep->bstate);
+    (void) snprintf(buf, sizeof(buf), "id %2d  at (%2d, %2d, %2d) state %4lx = {",
+		    ep->id, ep->x, ep->y, ep->z, ep->bstate);
 
 #define SHOW(m, s) if ((ep->bstate & m)==m) {strcat(buf,s); strcat(buf, ", ");}
     SHOW(BUTTON1_RELEASED, "release-1")
