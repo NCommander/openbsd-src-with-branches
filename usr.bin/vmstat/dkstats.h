@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkstats.h,v 1.6 2001/05/14 07:09:59 angelos Exp $	*/
+/*	$OpenBSD: dkstats.h,v 1.7 2002/02/16 21:27:58 millert Exp $	*/
 /*	$NetBSD: dkstats.h,v 1.1 1996/05/10 23:19:28 thorpej Exp $	*/
 
 /*
@@ -38,6 +38,7 @@
 
 /* poseur disk entry to hold the information we're interested in. */
 struct _disk {
+	int		  dk_ndrive;	/* # of drives. */
 	int		 *dk_select;	/* Display stats for selected disks. */
 	char		**dk_name;	/* Disk names (sd0, wd1, etc). */
 	u_int64_t	 *dk_xfer;	/* # of transfers. */
