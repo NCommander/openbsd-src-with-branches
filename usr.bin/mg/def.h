@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.38 2002/03/16 20:29:21 vincent Exp $	*/
+/*	$OpenBSD: def.h,v 1.39 2002/03/18 01:45:54 vincent Exp $	*/
 
 #include <sys/queue.h>
 
@@ -330,6 +330,7 @@ int	 d_rename(int, int);
 /* file.c X */
 int	 fileinsert(int, int);
 int	 filevisit(int, int);
+int	 filevisitro(int, int);
 int	 poptofile(int, int);
 BUFFER  *findbuffer(char *);
 int	 readin(char *);
