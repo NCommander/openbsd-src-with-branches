@@ -1393,7 +1393,7 @@ static keymap_t	scan_codes[KB_NUM_KEYS] = {
     KB_ASCII,  "-",      "_",      "\037",   "",       "",  /* 12 - */
     KB_ASCII,  "=",      "+",      "+",      "",       "",  /* 13 = */
     KB_ASCII,  "\177",   "\177",   "\010",   "",       "",  /* 14 backspace */
-    KB_ASCII,  "\t",     "\177\t", "\t",     "",       "",  /* 15 tab */
+    KB_ASCII,  "\t",     "\t",     "\t",     "",       "",  /* 15 tab */
     KB_ASCII,  "q",      "Q",      "\021",   "",       "",  /* 16 q */
     KB_ASCII,  "w",      "W",      "\027",   "",       "",  /* 17 w */
     KB_ASCII,  "e",      "E",      "\005",   "",       "",  /* 18 e */
