@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.22 2002/01/13 03:37:08 jason Exp $	*/
+/*	$OpenBSD: conf.c,v 1.23 2002/01/16 21:36:18 jason Exp $	*/
 /*	$NetBSD: conf.c,v 1.17 2001/03/26 12:33:26 lukem Exp $ */
 
 /*
@@ -74,7 +74,6 @@
 #include "fb.h"
 #endif
 #define NFB 0
-#include "kbd.h"
 #include "ms.h"
 #if 0
 #include "sunkbd.h"
