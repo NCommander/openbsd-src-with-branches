@@ -91,11 +91,11 @@ md_get_msgbuf() {
 }
 
 md_get_diskdevs() {
-	md_get_msgbuf | egrep "^[sw]d[0-9] "
+	md_get_msgbuf | egrep "^[sw]d[0-9]+ " | sed 's/ .*//'
 }
 
 md_get_cddevs() {
-	md_get_msgbuf | egrep "^cd[0-9] "
+	md_get_msgbuf | egrep "^a?cd[0-9]+ " | sed 's/ .*//'
 }
 
 md_get_ifdevs() {
