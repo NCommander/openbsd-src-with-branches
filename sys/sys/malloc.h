@@ -1,4 +1,4 @@
-/*	$OpenBSD: malloc.h,v 1.22 1999/05/27 23:52:03 art Exp $	*/
+/*	$OpenBSD: malloc.h,v 1.23 1999/06/01 23:43:41 ho Exp $	*/
 /*	$NetBSD: malloc.h,v 1.39 1998/07/12 19:52:01 augustss Exp $	*/
 
 /*
@@ -154,6 +154,10 @@
 #define M_UVMAOBJ	99	/* UVM aobj and realted */
 #define M_POOL		100	/* Pool memory */
 
+#define	M_USB		101	/* USB general */
+#define	M_USBDEV	102	/* USB device driver */
+#define	M_USBHC		103	/* USB host controller */
+
 #define	M_TEMP		127	/* misc temporary data buffers */
 #define M_LAST          128     /* Must be last type + 1 */
 
@@ -260,8 +264,10 @@
 	"UVM amap",	/* 98 M_UVMAMAP */ \
 	"UVM aobj",	/* 99 M_UVMAOBJ */ \
 	"pool",		/* 100 M_POOL */ \
-	NULL, \
-	NULL, NULL, NULL, NULL, NULL, \
+	"USB",		/* 101 M_USB */ \
+	"USB device",	/* 102 M_USBDEV */ \
+	"USB HC",	/* 103 M_USBHC */ \
+	NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, NULL, \
 	NULL, NULL, NULL, NULL, NULL, \
