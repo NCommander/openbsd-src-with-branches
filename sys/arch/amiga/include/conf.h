@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.12 2000/09/02 13:45:40 espie Exp $	*/
+/*	$OpenBSD: conf.h,v 1.13 2001/06/27 06:18:29 angelos Exp $	*/
 /*	$NetBSD: conf.h,v 1.4 1996/11/30 01:13:07 is Exp $	*/
 
 /*
@@ -56,9 +56,6 @@ cdev_decl(msc);
 cdev_decl(par);
 
 cdev_decl(ser);
-
-bdev_decl(sw);
-cdev_decl(sw);
 
 cdev_decl(view);
 
