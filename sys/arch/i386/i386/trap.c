@@ -132,7 +132,7 @@ userret(p, pc, oticks)
 		addupc_task(p, pc, (int)(p->p_sticks - oticks) * psratio);
 	}                   
 
-	curpriority = p->p_priority;
+	p->p_cpu->ci_schedstate.spc_curpriority = p->p_priority;
 }
 
 char	*trap_type[] = {

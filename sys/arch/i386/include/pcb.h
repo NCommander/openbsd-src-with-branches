@@ -89,10 +89,4 @@ struct md_coredump {
 	long	md_pad[8];
 };    
 
-#ifdef _KERNEL
-#ifndef MULTIPROCESSOR
-struct pcb *curpcb;		/* our current running pcb */
-#endif
-#endif
-
 #endif /* _I386_PCB_H_ */

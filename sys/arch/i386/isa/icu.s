@@ -1,4 +1,4 @@
-/*	$OpenBSD: icu.s,v 1.12.2.16 2004/02/19 10:48:42 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: icu.s,v 1.45 1996/01/07 03:59:34 mycroft Exp $	*/
 
 /*-
@@ -34,17 +34,10 @@
 
 	.data
 	.globl	_C_LABEL(imen),_C_LABEL(ipending),_C_LABEL(netisr)
-#ifndef MULTIPROCESSOR
-	.globl	_C_LABEL(astpending)
-#endif
 _C_LABEL(imen):
 	.long	0xffff		# interrupt mask enable (all off)
 _C_LABEL(ipending):
 	.long	0		# interupts pending
-#ifndef MULTIPROCESSOR
-_C_LABEL(astpending):
-	.long	0		# async software traps (softints) pending
-#endif
 _C_LABEL(netisr):
 	.long	0		# scheduling bits for network
 

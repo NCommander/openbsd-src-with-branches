@@ -119,8 +119,8 @@ boolean_t pteclrbits(paddr_t pa, u_int mask, u_int clear);
  * Really simple. 0x0->0x80000000 contain 1->1 mappings of the physical
  * memory. - XXX
  */
-#define PMAP_MAP_POOLPAGE(pg)		((vaddr_t)VM_PAGE_TO_PHYS(pg))
-#define PMAP_UNMAP_POOLPAGE(va)		PHYS_TO_VM_PAGE((paddr_t)va)
+#define pmap_map_direct(pg)		((vaddr_t)VM_PAGE_TO_PHYS(pg))
+#define pmap_unmap_direct(va)		PHYS_TO_VM_PAGE((paddr_t)va)
 
 void pmap_bootstrap(u_int kernelstart, u_int kernelend);
 

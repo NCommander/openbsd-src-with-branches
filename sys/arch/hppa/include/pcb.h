@@ -37,6 +37,7 @@ struct pcb {
 	u_int pcb_onfault;		/* SW copy fault handler */
 	pa_space_t pcb_space;		/* copy pmap_space, for asm's sake */
 	vaddr_t pcb_uva;		/* KVA for U-area */
+	u_int pcb_ksp;			/* kernel sp for ctxsw */
 };
 
 struct md_coredump {

@@ -108,8 +108,8 @@ extern	struct pmap kernel_pmap_store;
  * Real nice (fast) routines to get the virtual address of a physical page
  * (and vice versa).
  */
-#define PMAP_MAP_POOLPAGE(pg)	(VM_PAGE_TO_PHYS(pg) | KERNBASE)
-#define PMAP_UNMAP_POOLPAGE(va) PHYS_TO_VM_PAGE((va) & ~KERNBASE)
+#define pmap_map_direct(pg)	(VM_PAGE_TO_PHYS(pg) | KERNBASE)
+#define pmap_unmap_direct(va) PHYS_TO_VM_PAGE((va) & ~KERNBASE)
 
 #define PMAP_STEAL_MEMORY
 

@@ -46,9 +46,6 @@
 extern volatile u_int32_t lapic_tpr;	/* Current interrupt priority level. */
 
 extern volatile u_int32_t ipending;	/* Interrupts pending. */
-#ifndef MULTIPROCESSOR
-extern volatile u_int32_t astpending;	/* Async software traps (softints) pending. */
-#endif
 extern int imask[];	/* Bitmasks telling what interrupts are blocked. */
 extern int iunmask[];	/* Bitmasks telling what interrupts are accepted. */
 
