@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_quota.c,v 1.5 1997/10/06 20:21:48 deraadt Exp $	*/
+/*	$OpenBSD: ufs_quota.c,v 1.6 1997/11/06 05:59:28 csapuntz Exp $	*/
 /*	$NetBSD: ufs_quota.c,v 1.8 1996/02/09 22:36:09 christos Exp $	*/
 
 /*
@@ -688,7 +688,7 @@ void
 dqinit()
 {
 
-	dqhashtbl = hashinit(desiredvnodes, M_DQUOT, &dqhash);
+	dqhashtbl = hashinit(desiredvnodes, M_DQUOT, M_WAITOK, &dqhash);
 	TAILQ_INIT(&dqfreelist);
 }
 

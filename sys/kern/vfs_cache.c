@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vfs_cache.c,v 1.2 1996/03/03 17:20:23 niklas Exp $	*/
 /*	$NetBSD: vfs_cache.c,v 1.13 1996/02/04 02:18:09 christos Exp $	*/
 
 /*
@@ -227,7 +227,7 @@ nchinit()
 {
 
 	TAILQ_INIT(&nclruhead);
-	nchashtbl = hashinit(desiredvnodes, M_CACHE, &nchash);
+	nchashtbl = hashinit(desiredvnodes, M_CACHE, M_WAITOK, &nchash);
 }
 
 /*

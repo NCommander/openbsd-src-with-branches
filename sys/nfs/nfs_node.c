@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.11 1998/08/06 19:34:58 csapuntz Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.12 1998/08/21 23:16:39 csapuntz Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -71,7 +71,7 @@ void
 nfs_nhinit()
 {
 
-	nfsnodehashtbl = hashinit(desiredvnodes, M_NFSNODE, &nfsnodehash);
+	nfsnodehashtbl = hashinit(desiredvnodes, M_NFSNODE, M_WAITOK, &nfsnodehash);
 }
 
 /*

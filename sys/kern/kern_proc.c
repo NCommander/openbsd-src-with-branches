@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.4 1998/02/20 13:47:22 niklas Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.5 1998/03/02 07:19:11 todd Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -89,9 +89,9 @@ procinit()
 
 	LIST_INIT(&allproc);
 	LIST_INIT(&zombproc);
-	pidhashtbl = hashinit(maxproc / 4, M_PROC, &pidhash);
-	pgrphashtbl = hashinit(maxproc / 4, M_PROC, &pgrphash);
-	uihashtbl = hashinit(maxproc / 16, M_PROC, &uihash);
+	pidhashtbl = hashinit(maxproc / 4, M_PROC, M_WAITOK, &pidhash);
+	pgrphashtbl = hashinit(maxproc / 4, M_PROC, M_WAITOK, &pgrphash);
+	uihashtbl = hashinit(maxproc / 16, M_PROC, M_WAITOK, &uihash);
 }
 
 /*
