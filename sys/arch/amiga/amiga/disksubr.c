@@ -111,7 +111,7 @@ readdisklabel(dev, strat, lp, clp)
 
 	clp->rdblock = RDBNULL;
 	/*
-	 * give some guarnteed validity to
+	 * give some guaranteed validity to
 	 * the disklabel
 	 */
 	if (lp->d_secperunit == 0)
