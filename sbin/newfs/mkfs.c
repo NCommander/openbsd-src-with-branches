@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.13 1999/12/03 19:24:17 art Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.14 2000/09/22 19:21:30 millert Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mkfs.c	8.3 (Berkeley) 2/3/94";
 #else
-static char rcsid[] = "$OpenBSD: mkfs.c,v 1.13 1999/12/03 19:24:17 art Exp $";
+static char rcsid[] = "$OpenBSD: mkfs.c,v 1.14 2000/09/22 19:21:30 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -1062,7 +1062,7 @@ void
 started()
 {
 
-	exit(0);
+	_exit(0);
 }
 
 /*
