@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-add.c,v 1.61 2002/06/19 00:27:55 deraadt Exp $");
+RCSID("$OpenBSD: ssh-add.c,v 1.62 2002/06/26 14:51:33 markus Exp $");
 
 #include <openssl/evp.h>
 
@@ -284,7 +284,7 @@ usage(void)
 	fprintf(stderr, "  -d          Delete identity.\n");
 	fprintf(stderr, "  -D          Delete all identities.\n");
 	fprintf(stderr, "  -x          Lock agent.\n");
-	fprintf(stderr, "  -x          Unlock agent.\n");
+	fprintf(stderr, "  -X          Unlock agent.\n");
 	fprintf(stderr, "  -t life     Set lifetime (in seconds) when adding identities.\n");
 #ifdef SMARTCARD
 	fprintf(stderr, "  -s reader   Add key in smartcard reader.\n");
