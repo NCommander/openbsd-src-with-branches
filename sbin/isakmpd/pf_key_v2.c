@@ -1,4 +1,4 @@
-/*      $OpenBSD: pf_key_v2.c,v 1.41 2000/12/15 06:34:54 provos Exp $  */
+/*      $OpenBSD: pf_key_v2.c,v 1.42 2001/01/05 19:30:37 angelos Exp $  */
 /*	$EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	*/
 
 /*
@@ -2008,7 +2008,8 @@ pf_key_v2_expire (struct pf_key_v2_msg *pmsg)
 
   if (life->sadb_lifetime_exttype == SADB_EXT_LIFETIME_HARD)
     {
-      /* This SA is still referenced by the software timeout.
+      /*
+       * This SA is still referenced by the software timeout.
        * However, sa_free will clean up all timeouts and
        * decrement reference counters.  We need to reference it
        * so that sa_release() works.
