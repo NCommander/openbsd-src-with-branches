@@ -262,6 +262,8 @@ Lcisloop:
 Lcistoolong:
 	moveq	#ENAMETOOLONG,d0	| ran out of space
 Lcisnull:
+	cmpl	sp@(8),a1		| do not attempt to clear last byte
+	beq	Lcisdone		| if we faulted on first write
 	subql	#1, a1
 	clrb	a1@+			| clear last byte
 Lcisdone:
@@ -276,8 +278,6 @@ Lcisexit:
 	rts
 Lcisfault:
 	moveq	#EFAULT,d0
-	cmpl	sp@(8),a1		| do not attempt to clear last byte
-	beq	Lcisdone		| if we faulted on first write
 	bra	Lcisnull
 
 /*
