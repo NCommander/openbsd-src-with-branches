@@ -1,3 +1,4 @@
+/*	$OpenBSD: kbd.h,v 1.3 1996/01/24 22:40:40 gwr Exp $	*/
 /*	$NetBSD: kbd.h,v 1.3 1996/01/24 22:40:40 gwr Exp $	*/
 
 /*

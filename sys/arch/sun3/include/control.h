@@ -1,3 +1,4 @@
+/*	$OpenBSD: control.h,v 1.14 1996/11/20 18:57:06 gwr Exp $	*/
 /*	$NetBSD: control.h,v 1.14 1996/11/20 18:57:06 gwr Exp $	*/
 
 /*-

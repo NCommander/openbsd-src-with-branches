@@ -1,3 +1,4 @@
+/*	$OpenBSD: cpufunc.h,v 1.6 1996/11/20 18:57:07 gwr Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.6 1996/11/20 18:57:07 gwr Exp $	*/
 
 /*-

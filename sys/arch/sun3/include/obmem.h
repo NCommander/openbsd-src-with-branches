@@ -1,3 +1,4 @@
+/*	$OpenBSD: obmem.h,v 1.7 1996/11/20 18:57:15 gwr Exp $	*/
 /*	$NetBSD: obmem.h,v 1.7 1996/11/20 18:57:15 gwr Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pte.h,v 1.11 1996/11/20 18:57:18 gwr Exp $	*/
 /*	$NetBSD: pte.h,v 1.11 1996/11/20 18:57:18 gwr Exp $	*/
 
 /*-
