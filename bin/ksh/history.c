@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.12 2000/10/12 10:51:13 art Exp $	*/
+/*	$OpenBSD: history.c,v 1.13 2002/08/03 17:00:09 marc Exp $	*/
 
 /*
  * command history
@@ -891,7 +891,7 @@ typedef enum state {
 	shdr,		/* expecting a header */
 	sline,		/* looking for a null byte to end the line */
 	sn1,		/* bytes 1 to 4 of a line no */
-	sn2, sn3, sn4,
+	sn2, sn3, sn4
 } State;
 
 static int
