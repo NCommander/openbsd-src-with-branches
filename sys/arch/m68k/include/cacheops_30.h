@@ -1,4 +1,4 @@
-/*	$OpenBSD: cacheops_30.h,v 1.3 2001/05/15 01:43:14 millert Exp $	*/
+/*	$OpenBSD: cacheops_30.h,v 1.4 2002/03/14 01:26:34 millert Exp $	*/
 /*	$NetBSD: cacheops_30.h,v 1.1 1997/06/02 20:26:40 leo Exp $	*/
 
 /*-
@@ -112,6 +112,8 @@ ICPA_30()
 #define	DCIS_30()
 #define	DCIU_30()
 #define	DCIAS_30(va)
+#define	DCFA_30()
+#define	DCPA_30()
 
 
 void PCIA_30(void);
