@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2000/02/05 08:43:17 niklas Exp $
+#	$OpenBSD: Makefile,v 1.10 2004/03/31 21:22:06 mickey Exp $
 
 TARGET_MACHINE_ARCH?=	${MACHINE_ARCH}
 
@@ -14,6 +14,11 @@ CFLAGS+=	-DMID_MACHINE_OVERRIDE=MID_M68K
 CPPFLAGS+=-I.
 beforedepend:
 	ln -sf ${.CURDIR}/../../sys/arch/m68k/include m68k
+.elif ${TARGET_MACHINE_ARCH} == "m88k"
+CFLAGS+=	-DMID_MACHINE_OVERRIDE=MID_M88K
+CPPFLAGS+=-I.
+beforedepend:
+	ln -sf ${.CURDIR}/../../sys/arch/m88k/include m88k
 .elif ${TARGET_MACHINE_ARCH} == "ns32k"
 CFLAGS+=	-DMID_MACHINE_OVERRIDE=MID_NS32K
 .elif ${TARGET_MACHINE_ARCH} == "sparc"
