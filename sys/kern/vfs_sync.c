@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.27 2004/08/03 13:34:48 art Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.28 2004/08/15 18:22:29 pedro Exp $  */
 
 /*
  *  Portions of this code are:
@@ -86,7 +86,7 @@ struct proc *syncerproc;
  * Similarly, directory updates are more critical, so are only delayed
  * about a third the time that file data is delayed. Thus, there are
  * SYNCER_MAXDELAY queues that are processed round-robin at a rate of
- * one each second (driven off the filesystem syner process). The
+ * one each second (driven off the filesystem syncer process). The
  * syncer_delayno variable indicates the next queue that is to be processed.
  * Items that need to be processed soon are placed in this queue:
  *
