@@ -464,9 +464,6 @@ int 	vn_rdwr(enum uio_rw rw, struct vnode *vp, caddr_t base,
 int	vn_lock(struct vnode *vp, int flags, struct proc *p);
 
 int	vop_generic_abortop(void *);
-int	vop_generic_islocked(void *);
-int	vop_generic_lock(void *);
-int	vop_generic_unlock(void *);
 int	vop_generic_revoke(void *);
 int	vop_generic_kqfilter(void *);
 int	vop_generic_mmap(void *);
