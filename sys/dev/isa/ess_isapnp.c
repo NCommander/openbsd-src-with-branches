@@ -1,4 +1,4 @@
-/*	$OpenBSD: ess_isa.c,v 1.4 1999/03/18 20:57:11 mycroft Exp $	*/
+/*	$OpenBSD: ess_isapnp.c,v 1.1 1999/06/22 16:20:03 niklas Exp $	*/
 /*	$NetBSD: ess_isa.c,v 1.4 1999/03/18 20:57:11 mycroft Exp $	*/
 
 /*-
@@ -41,6 +41,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
+#include <sys/timeout.h>
 
 #include <machine/cpu.h>
 #include <machine/bus.h>
