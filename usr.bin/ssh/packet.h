@@ -11,7 +11,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* RCSID("$OpenBSD: packet.h,v 1.20 2001/02/28 09:57:07 markus Exp $"); */
+/* RCSID("$OpenBSD: packet.h,v 1.21 2001/02/28 21:27:47 markus Exp $"); */
 
 #ifndef PACKET_H
 #define PACKET_H
@@ -178,8 +178,8 @@ extern int max_packet_size;
 int     packet_set_maxsize(int s);
 #define packet_get_maxsize() max_packet_size
 
-/* Stores tty modes from the fd into current packet. */
-void    tty_make_modes(int fd);
+/* Stores tty modes from the fd or tiop into current packet. */
+void    tty_make_modes(int fd, struct termios *tiop);
 
 /* Parses tty modes for the fd from the current packet. */
 void    tty_parse_modes(int fd, int *n_bytes_ptr);
