@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.10 2003/08/05 02:04:58 mickey Exp $	*/
+/*	$OpenBSD: intr.c,v 1.11 2003/08/07 19:47:33 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -244,8 +244,8 @@ cpu_intr(void *v)
 			cpl = 0;
 			printf("stray interrupt %d\n", bit);
 		}
-		mtctl(0, CR_EIEM);
 #endif
+		mtctl(0, CR_EIEM);
 	}
 	cpl = s;
 }
