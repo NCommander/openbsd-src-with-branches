@@ -399,6 +399,10 @@ const struct ne2000dev {
       PCMCIA_CIS_NETGEAR_FA410TXC,
       0, -1, { 0x00, 0x48, 0x54 } },
 
+    { PCMCIA_VENDOR_NETGEAR, PCMCIA_PRODUCT_NETGEAR_FA411,
+      PCMCIA_CIS_NETGEAR_FA411,
+      0, -1, { 0x00, 0x40, 0xf4 } },
+
 #if 0
     /* the rest of these are stolen from the linux pcnet pcmcia device
        driver.  Since I don't know the manfid or cis info strings for

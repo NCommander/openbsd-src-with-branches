@@ -595,6 +595,8 @@ uhci_allocm(struct usbd_bus *bus, usb_dma_t *dma, u_int32_t size)
 		uhci_soft_td_t **stds;
 		DPRINTF(("uhci_allocm: get %d TDs\n", n));
 		stds = malloc(sizeof(uhci_soft_td_t *) * n, M_TEMP, M_NOWAIT);
+		if (stds == NULL)
+			panic("uhci_allocm");
 		memset(stds, 0, sizeof(uhci_soft_td_t *) * n);
 		for(i=0; i < n; i++)
 			stds[i] = uhci_alloc_std(sc);

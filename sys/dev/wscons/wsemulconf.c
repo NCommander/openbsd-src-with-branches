@@ -31,6 +31,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "wsdisplay.h"
+
 #include <sys/cdefs.h>
 
 #include <sys/param.h>
@@ -43,7 +45,7 @@
 #include <dev/wscons/wscons_callbacks.h>
 
 static const struct wsemul_ops *wsemul_conf[] = {
-#ifdef WSEMUL_SUN
+#if defined(WSEMUL_SUN) || (NWSEMUL_SUN > 0)
 	&wsemul_sun_ops,
 #endif
 #ifndef WSEMUL_NO_VT100

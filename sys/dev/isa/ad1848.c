@@ -1640,9 +1640,10 @@ ad1848_intr(arg)
 }
 
 void *
-ad1848_malloc(addr, size, pool, flags)
+ad1848_malloc(addr, direction, size, pool, flags)
 	void *addr;
-	unsigned long size;
+	int direction;
+	size_t size;
 	int pool;
 	int flags;
 {
@@ -1660,10 +1661,11 @@ ad1848_free(addr, ptr, pool)
 	isa_free(ptr, pool);
 }
 
-unsigned long
-ad1848_round(addr, size)
+size_t
+ad1848_round(addr, direction, size)
 	void *addr;
-	unsigned long size;
+	int direction;
+	size_t size;
 {
 	if (size > MAX_ISADMA)
 		size = MAX_ISADMA;

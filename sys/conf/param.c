@@ -92,7 +92,7 @@ int	maxproc = NPROC;
 #define	NVNODE (NPROC * 2 + NTEXT + 100)
 int	desiredvnodes = NVNODE;
 int	maxfiles = 3 * (NPROC + MAXUSERS) + 80;
-int	nmbclusters = NMBCLUSTERS;
+int	nmbclust = NMBCLUSTERS;
 
 #ifndef MBLOWAT
 #define MBLOWAT		16

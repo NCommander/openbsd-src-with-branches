@@ -158,7 +158,13 @@ hmeattach_pci(parent, self, aux)
 	sc->sc_mac = hsc->hsc_memh + 0x6000;
 	sc->sc_mif = hsc->hsc_memh + 0x7000;
 
-	myetheraddr(sc->sc_enaddr);
+#ifdef __sparc__
+        myetheraddr(sc->sc_enaddr);
+#endif
+#ifdef __powerpc__
+	pci_ether_hw_addr(pa->pa_pc, sc->sc_enaddr);
+#endif
+
 
 	sc->sc_burst = 16;	/* XXX */
 

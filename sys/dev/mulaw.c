@@ -491,3 +491,87 @@ slinear8_to_alaw(v, p, cc)
 		++p;
 	}
 }
+
+/*
+ * same as mulaw_to_ulinear16_le(), plus expand mono to stereo
+ */
+void
+mulaw_to_ulinear16_le_mts(v, p, cc)
+	void *v;
+	u_char *p;
+	int cc;
+{
+	u_char *q = p;
+
+	p += cc;
+	q += cc * 4;
+	while (--cc >= 0) {
+		--p;
+		q -= 4;
+		q[1] = q[3] = mulawtolin16[*p][0];
+		q[0] = q[2] = mulawtolin16[*p][1];
+	}
+}
+
+/*
+ * same as mulaw_to_ulinear16_be(), plus expand mono to stereo
+ */
+void
+mulaw_to_ulinear16_be_mts(v, p, cc)
+	void *v;
+	u_char *p;
+	int cc;
+{
+	u_char *q = p;
+
+	p += cc;
+	q += cc * 4;
+	while (--cc >= 0) {
+		--p;
+		q -= 4;
+		q[0] = q[2] = mulawtolin16[*p][0];
+		q[1] = q[3] = mulawtolin16[*p][1];
+	}
+}
+
+/*
+ * same as alaw_to_slinear16_le(), plus expand mono to stereo
+ */
+void
+alaw_to_slinear16_le_mts(v, p, cc)
+	void *v;
+	u_char *p;
+	int cc;
+{
+	u_char *q = p;
+
+	p += cc;
+	q += cc * 4;
+	while (--cc >= 0) {
+		--p;
+		q -= 4;
+		q[1] = q[3] = alawtolin16[*p][0] ^ 0x80;
+		q[0] = q[2] = alawtolin16[*p][1];
+	}
+}
+
+/*
+ * same as alaw_to_slinear16_be(), plus expand mono to stereo
+ */
+void
+alaw_to_slinear16_be_mts(v, p, cc)
+	void *v;
+	u_char *p;
+	int cc;
+{
+	u_char *q = p;
+
+	p += cc;
+	q += cc * 4;
+	while (--cc >= 0) {
+		--p;
+		q -= 4;
+		q[0] = q[2] = alawtolin16[*p][0] ^ 0x80;
+		q[1] = q[3] = alawtolin16[*p][1];
+	}
+}

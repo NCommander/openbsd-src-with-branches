@@ -57,7 +57,7 @@ struct wsemul_ops {
 #ifdef WSEMUL_DUMB
 extern const struct wsemul_ops wsemul_dumb_ops;
 #endif
-#ifdef WSEMUL_SUN
+#if defined(WSEMUL_SUN) || NWSEMUL_SUN > 0
 extern const struct wsemul_ops wsemul_sun_ops;
 #endif
 #ifndef WSEMUL_NO_VT100

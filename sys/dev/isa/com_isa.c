@@ -76,6 +76,11 @@
 
 #include <dev/isa/isavar.h>
 
+#ifdef KGDB
+extern int com_kgdb_addr;
+static bus_space_handle_t com_kgdb_ioh;
+#endif
+
 int com_isa_probe(struct device *, void *, void *);
 void com_isa_attach(struct device *, struct device *, void *);
 

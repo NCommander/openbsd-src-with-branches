@@ -1,4 +1,4 @@
-/*	$OpenBSD: rijndael.h,v 1.3.2.2 2001/07/04 10:40:01 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /**
  * rijndael-alg-fst.h
@@ -32,8 +32,8 @@
 #define MAXKB	(256/8)
 #define MAXNR	14
 
-typedef unsigned char	u8;	
-typedef unsigned short	u16;	
+typedef unsigned char	u8;
+typedef unsigned short	u16;
 typedef unsigned int	u32;
 
 /*  The structure for key information */

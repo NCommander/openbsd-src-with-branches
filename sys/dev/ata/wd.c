@@ -1042,7 +1042,7 @@ wdioctl(dev, xfer, addr, flag, p)
 #endif
 		
 	default:
-		error = wdc_ioctl(wd->drvp, xfer, addr, flag);
+		error = wdc_ioctl(wd->drvp, xfer, addr, flag, p);
 		goto exit;
 	}
 

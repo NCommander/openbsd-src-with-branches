@@ -757,7 +757,6 @@ qe_eint(sc, why)
 	}
 
 	if (why & QE_CR_STAT_CLOSS) {
-		printf("%s: no carrier, link down?\n", sc->sc_dev.dv_xname);
 		ifp->if_oerrors++;
 		r |= 1;
 	}

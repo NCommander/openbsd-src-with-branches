@@ -121,6 +121,7 @@ le_ioasic_attach(parent, self, aux)
 			VM_PROT_READ|VM_PROT_WRITE);
 		va += PAGE_SIZE;
 	}
+	pmap_update(pmap_kernel());
 	/*
 	 * XXXEND
 	 */

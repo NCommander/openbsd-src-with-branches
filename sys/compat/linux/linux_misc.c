@@ -1022,6 +1022,7 @@ linux_sys_getdents(p, v, retval)
 	args.resid = nbytes;
 	args.outp = (caddr_t)SCARG(uap, dirent);
 
+	FREF(fp);
 	if ((error = readdir_with_callback(fp, &fp->f_offset, nbytes,
 	    linux_readdir_callback, &args)) != 0)
 		goto exit;
@@ -1029,6 +1030,7 @@ linux_sys_getdents(p, v, retval)
 	*retval = nbytes - args.resid;
 
  exit:
+	FRELE(fp);
 	return (error);
 }
 

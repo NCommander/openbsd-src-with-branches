@@ -97,6 +97,10 @@
 #include <dev/rndvar.h>
 #endif
 
+#ifdef __OpenBSD__
+#include <dev/rndvar.h>
+#endif
+
 #ifdef __NetBSD__
 #include <crypto/arc4/arc4.h>
 #endif

@@ -137,15 +137,13 @@ struct audio_hw_if fms_hw_if = {
 	fms_set_port,
 	fms_get_port,
 	fms_query_devinfo,
-	NULL,
+	fms_malloc,
 	fms_free,
-	NULL,
+	fms_round_buffersize,
 	fms_mappage,
 	fms_get_props,
 	fms_trigger_output,
-	fms_trigger_input,
-	fms_malloc,
-	fms_round_buffersize,
+	fms_trigger_input
 };
 
 int	fms_attach_codec __P((void *, struct ac97_codec_if *));

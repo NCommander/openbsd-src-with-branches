@@ -252,15 +252,13 @@ struct audio_hw_if maestro_hw_if = {
 	maestro_set_port,
 	maestro_get_port,
 	maestro_query_devinfo,
-	NULL,
+	maestro_malloc,
 	maestro_free,
-	NULL,
+	maestro_round_buffersize,
 	maestro_mappage,
 	maestro_get_props,
 	maestro_trigger_output,
-	maestro_trigger_input,
-	maestro_malloc,
-	maestro_round_buffersize
+	maestro_trigger_input
 };
 
 struct audio_device maestro_audev = {

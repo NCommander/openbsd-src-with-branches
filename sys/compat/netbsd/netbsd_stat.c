@@ -1,4 +1,4 @@
-/*	$OpenBSD: netbsd_stat.c,v 1.5.4.1 2001/07/04 10:39:32 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -195,7 +195,9 @@ netbsd_sys___fstat13(p, v, retval)
 	if ((fp = fd_getfile(fdp, fd)) == NULL)
 		return (EBADF);
 
+	FREF(fp);
 	error = (*fp->f_ops->fo_stat)(fp, &sb, p);
+	FRELE(fp);
 	if (error)
 		return (error);
 	openbsd_to_netbsd_stat(&sb, &nsb);

@@ -1548,7 +1548,7 @@ fxp_ioctl(ifp, command, data)
 	default:
 		error = EINVAL;
 	}
-	(void) splx(s);
+	splx(s);
 	return (error);
 }
 

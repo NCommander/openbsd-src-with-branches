@@ -304,6 +304,8 @@ void sk_vpd_read(sc)
 
 	pos += sizeof(res);
 	sc->sk_vpd_prodname = malloc(res.vr_len + 1, M_DEVBUF, M_NOWAIT);
+	if (sc->sk_vpd_prodname == NULL)
+		panic("sk_vpd_read");
 	for (i = 0; i < res.vr_len; i++)
 		sc->sk_vpd_prodname[i] = sk_vpd_readbyte(sc, i + pos);
 	sc->sk_vpd_prodname[i] = '\0';
@@ -319,6 +321,8 @@ void sk_vpd_read(sc)
 
 	pos += sizeof(res);
 	sc->sk_vpd_readonly = malloc(res.vr_len, M_DEVBUF, M_NOWAIT);
+	if (sc->sk_vpd_readonly == NULL)
+		panic("sk_vpd_read");
 	for (i = 0; i < res.vr_len + 1; i++)
 		sc->sk_vpd_readonly[i] = sk_vpd_readbyte(sc, i + pos);
 
@@ -745,7 +749,7 @@ sk_ioctl(ifp, command, data)
 		break;
 	}
 
-	(void)splx(s);
+	splx(s);
 
 	return(error);
 }
@@ -1885,7 +1889,7 @@ void sk_init(xsc)
 		printf("%s: initialization failed: no "
 		    "memory for rx buffers\n", sc_if->sk_dev.dv_xname);
 		sk_stop(sc_if);
-		(void)splx(s);
+		splx(s);
 		return;
 	}
 	sk_init_tx_ring(sc_if);

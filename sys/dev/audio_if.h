@@ -114,9 +114,9 @@ struct audio_hw_if {
 	/* Allocate/free memory for the ring buffer. Usually malloc/free. */
 	/* The _old interfaces have been deprecated and will not be
 	   called in newer kernels if the new interfaces are present */
-	void	*(*allocm_old)__P((void *, unsigned long, int, int));
+	void	*(*allocm)__P((void *, int, size_t, int, int));
 	void	(*freem)__P((void *, void *, int));
-	unsigned long (*round_buffersize_old)__P((void *, unsigned long));
+	size_t	(*round_buffersize)__P((void *, int, size_t));
 	paddr_t	(*mappage)__P((void *, void *, off_t, int));
 
 	int 	(*get_props)__P((void *)); /* device properties */
@@ -125,9 +125,6 @@ struct audio_hw_if {
 		    void (*)(void *), void *, struct audio_params *));
 	int	(*trigger_input)__P((void *, void *, void *, int,
 		    void (*)(void *), void *, struct audio_params *));
-
-	void	*(*allocm)__P((void *, int, size_t, int, int));
-	size_t  (*round_buffersize)__P((void *, int, size_t));
 };
 
 struct audio_attach_args {

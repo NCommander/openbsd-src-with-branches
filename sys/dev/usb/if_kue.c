@@ -135,7 +135,7 @@
 #include <dev/usb/usbdevs.h>
 
 #include <dev/usb/if_kuereg.h>
-#include <dev/usb/kue_fw.h>
+#include <dev/microcode/kue/kue_fw.h>
 
 #ifdef KUE_DEBUG
 #define DPRINTF(x)	if (kuedebug) logprintf x

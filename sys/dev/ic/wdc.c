@@ -659,7 +659,7 @@ wdcattach(chp)
 	if (inited == 0) {
 		/* Initialize the wdc_xfer pool. */
 		pool_init(&wdc_xfer_pool, sizeof(struct wdc_xfer), 0,
-		    0, 0, "wdcspl", 0, NULL, NULL, M_DEVBUF);
+		    0, 0, "wdcspl", NULL);
 		inited++;
 	}
 	TAILQ_INIT(&chp->ch_queue->sc_xfer);
@@ -1244,6 +1244,10 @@ wdc_probe_caps(drvp, params)
 			    ATA_CONFIG_DMA_OFF;
 			drvp->drive_flags |= DRIVE_DMA | DRIVE_MODE;
 		}
+	}
+	if ((wdc->cap & WDC_CAPABILITY_UDMA) == 0) {
+		/* don't care about UDMA modes */
+		return;
 	}
 	if (cf_flags & ATA_CONFIG_UDMA_SET) {
 		if ((cf_flags & ATA_CONFIG_UDMA_MODES) ==
@@ -1979,11 +1983,12 @@ bad:
 }
 
 int
-wdc_ioctl(drvp, xfer, addr, flag)
+wdc_ioctl(drvp, xfer, addr, flag, p)
 	struct ata_drive_datas *drvp;
 	u_long xfer;
 	caddr_t addr;
 	int flag;
+	struct proc *p;
 {
 	int error = 0;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_fcntl.c,v 1.6 2000/04/21 15:50:22 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ibcs2_fcntl.c,v 1.6 1996/05/03 17:05:20 christos Exp $	*/
 
 /*
@@ -185,11 +185,14 @@ ibcs2_sys_open(p, v, retval)
 
 	if (!ret && !noctty && SESS_LEADER(p) && !(p->p_flag & P_CONTROLT)) {
 		struct filedesc *fdp = p->p_fd;
-		struct file *fp = fdp->fd_ofiles[*retval];
+		struct file *fp;
 
-		/* ignore any error, just give it a try */
+		if ((fp = fd_getfile(fdp, *retval)) == NULL)
+			return EBADF;
+		FREF(fp);
 		if (fp->f_type == DTYPE_VNODE)
 			(fp->f_ops->fo_ioctl)(fp, TIOCSCTTY, (caddr_t) 0, p);
+		FRELE(fp);
 	}
 	return ret;
 }

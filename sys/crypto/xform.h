@@ -1,4 +1,4 @@
-/*	$OpenBSD: xform.h,v 1.1.2.3 2001/07/04 10:40:05 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -9,7 +9,7 @@
  *
  * Copyright (c) 2000 Angelos D. Keromytis
  *
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all source code copies of any software which is or includes a copy or
  * modification of this software. 

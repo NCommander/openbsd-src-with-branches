@@ -1090,7 +1090,7 @@ siop_scsicmd_end(siop_cmd)
 		    0, siop_cmd->dmamap_data->dm_mapsize,
 		    BUS_DMASYNC_PREREAD);
 		bus_dmamap_sync(sc->sc_dmat, siop_cmd->dmamap_cmd,
-		    0, siop_cmd->dmamap_data->dm_mapsize,
+		    0, siop_cmd->dmamap_cmd->dm_mapsize,
 		    BUS_DMASYNC_PREWRITE);
 
 		siop_setuptables(siop_cmd);
@@ -1354,7 +1354,7 @@ siop_scsicmd(xs)
 		    BUS_DMASYNC_PREREAD : BUS_DMASYNC_PREWRITE);
 	}
 	bus_dmamap_sync(sc->sc_dmat, siop_cmd->dmamap_cmd,
-	    0, siop_cmd->dmamap_data->dm_mapsize,
+	    0, siop_cmd->dmamap_cmd->dm_mapsize,
 	    BUS_DMASYNC_PREWRITE);
 
 	siop_setuptables(siop_cmd);

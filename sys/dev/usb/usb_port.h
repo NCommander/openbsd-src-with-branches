@@ -236,8 +236,6 @@ __CONCAT(dname,_detach)(self, flags) \
 #define xs_control		flags
 #define xs_status		status
 
-#define	memcpy(d, s, l)		bcopy((s),(d),(l))
-#define	memset(d, v, l)		bzero((d),(l))
 #define bswap32(x)		swap32(x)
 #define bswap16(x)		swap16(x)
 

@@ -51,7 +51,7 @@
 #include <dev/usb/ezload.h>
 
 const struct ezdata uyap_firmware[] = {
-#include "dev/usb/uyap_firmware.h"
+#include "dev/microcode/uyap/uyap_firmware.h"
 };
 const struct ezdata *uyap_firmwares[] = { uyap_firmware, NULL };
 

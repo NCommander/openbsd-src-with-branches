@@ -330,7 +330,7 @@ cac_cmd(struct cac_softc *sc, int command, void *data, int datasize,
 #endif
 
 	if ((ccb = cac_ccb_alloc(sc, 0)) == NULL) {
-		printf("%s: unable to alloc CCB", sc->sc_dv.dv_xname);
+		printf("%s: unable to alloc CCB\n", sc->sc_dv.dv_xname);
 		return (ENOMEM);
 	}
 

@@ -1374,7 +1374,7 @@ vr_init(xsc)
 		printf("%s: initialization failed: no memory for rx buffers\n",
 							sc->sc_dev.dv_xname);
 		vr_stop(sc);
-		(void)splx(s);
+		splx(s);
 		return;
 	}
 
@@ -1427,7 +1427,7 @@ vr_init(xsc)
 	if (!timeout_pending(&sc->sc_to))
 		timeout_add(&sc->sc_to, hz);
 
-	(void)splx(s);
+	splx(s);
 }
 
 /*
@@ -1527,7 +1527,7 @@ vr_ioctl(ifp, command, data)
 		break;
 	}
 
-	(void)splx(s);
+	splx(s);
 
 	return(error);
 }
