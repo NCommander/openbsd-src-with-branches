@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.h,v 1.12 2000/01/25 22:06:27 jason Exp $	*/
+/*	$OpenBSD: if_bridge.h,v 1.13 2000/12/12 03:41:22 jason Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -196,7 +196,6 @@ struct bridge_iflist {
 	struct bridge_timer		bif_message_age_timer;
 	struct bridge_timer		bif_forward_delay_timer;
 	struct bstp_config_unit		bif_config_bpdu;
-	struct bstp_tcn_unit		bif_tcn_bpdu;
 	u_int16_t			bif_port_id;
 	u_int16_t			bif_designated_port;
 	u_int8_t			bif_state;
