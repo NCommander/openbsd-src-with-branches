@@ -1,4 +1,4 @@
-/*	$NetBSD: conf.c,v 1.1.1.1 1995/06/01 20:38:08 gwr Exp $	*/
+/*	$OpenBSD: conf.c,v 1.1.1.1 1995/06/01 20:38:08 gwr Exp $	*/
 
 #include <sys/types.h>
 #include <machine/prom.h>
