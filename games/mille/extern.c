@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.c,v 1.2 1998/09/22 04:08:22 pjanzen Exp $	*/
+/*	$OpenBSD: extern.c,v 1.3 1999/09/25 15:52:20 pjanzen Exp $	*/
 /*	$NetBSD: extern.c,v 1.4 1995/03/24 05:01:36 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)extern.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: extern.c,v 1.2 1998/09/22 04:08:22 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: extern.c,v 1.3 1999/09/25 15:52:20 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,7 +69,7 @@ const char	*Fromfile = NULL,	/* startup file for game		*/
 		"Flat Tire",
 		"Accident",
 		"Stop",
-		"Speed Limit", 
+		"Speed Limit",
 		"Gasoline",
 		"Spare Tire",
 		"Repairs",

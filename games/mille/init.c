@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: init.c,v 1.3 1998/09/22 04:08:22 pjanzen Exp $	*/
 /*	$NetBSD: init.c,v 1.5 1995/03/24 05:01:40 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: init.c,v 1.3 1998/09/22 04:08:22 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,7 +69,7 @@ init()
 			pp->hand[j] = *--Topcard;
 			if (i == COMP) {
 				account(card = *Topcard);
-				if (issafety(card))
+				if (is_safety(card))
 					pp->safety[card - S_CONV] = S_IN_HAND;
 			}
 		}
