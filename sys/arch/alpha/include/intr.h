@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.h,v 1.13 2002/03/14 01:26:27 millert Exp $ */
+/* $OpenBSD: intr.h,v 1.14 2002/03/14 03:15:50 millert Exp $ */
 /* $NetBSD: intr.h,v 1.26 2000/06/03 20:47:41 thorpej Exp $ */
 
 /*-
@@ -106,6 +106,9 @@
 #define	IST_LEVEL	3	/* level-triggered */
 
 #ifdef	_KERNEL
+
+/* SPL asserts */
+#define	splassert(wantipl)	/* nothing */
 
 /* IPL-lowering/restoring macros */
 #define splx(s)								\

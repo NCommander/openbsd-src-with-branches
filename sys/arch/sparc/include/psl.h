@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.9 2002/03/14 01:26:43 millert Exp $	*/
+/*	$OpenBSD: psl.h,v 1.10 2002/04/28 03:51:19 art Exp $	*/
 /*	$NetBSD: psl.h,v 1.12 1997/03/10 21:49:11 pk Exp $ */
 
 /*
@@ -106,6 +106,9 @@ static __inline int spl0(void);
 static __inline int splhigh(void);
 static __inline void splx(int);
 static __inline int getmid(void);
+
+/* SPL asserts */
+#define	splassert(wantipl)	/* nothing */
 
 /*
  * GCC pseudo-functions for manipulating PSR (primarily PIL field).

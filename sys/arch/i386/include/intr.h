@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.12 2001/12/14 08:35:12 niklas Exp $	*/
+/*	$OpenBSD: intr.h,v 1.13 2002/03/14 01:26:33 millert Exp $	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -110,6 +110,9 @@ static __inline int splraise(int);
 static __inline int spllower(int);
 #define SPLX_DECL void splx(int);
 static __inline void softintr(int);
+
+/* SPL asserts */
+#define	splassert(wantipl)	/* nothing */
 
 /*
  * Raise current interrupt priority level, and return the old one.

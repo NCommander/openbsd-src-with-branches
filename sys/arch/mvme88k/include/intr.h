@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.7 2002/02/10 23:15:05 deraadt Exp $	*/
+/*	$OpenBSD: intr.h,v 1.8 2002/03/14 01:26:39 millert Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -90,6 +90,9 @@ int spl0(void);
 #endif /* _LOCORE */
 
 /* needs major cleanup - XXX nivas */
+
+/* SPL asserts */
+#define	splassert(wantipl)	/* nothing */
 
 #if 0
 spl0 is a function by itself. I really am serious about the clean up
