@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstatd.c,v 1.18 2004/06/02 02:21:15 brad Exp $	*/
+/*	$OpenBSD: rstatd.c,v 1.19 2004/09/15 19:05:35 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993, John Brezak
@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rstatd.c,v 1.18 2004/06/02 02:21:15 brad Exp $";
+static char rcsid[] = "$OpenBSD: rstatd.c,v 1.19 2004/09/15 19:05:35 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -153,8 +153,8 @@ my_svc_run(void)
 
 	for (;;) {
 		if (wantupdatestat) {
-			updatestat();
 			wantupdatestat = 0;
+			updatestat();
 		}
 		if (gotsig) {
 			(void) pmap_unset(RSTATPROG, RSTATVERS_TIME);
