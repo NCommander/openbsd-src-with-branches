@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: lebuffervar.h,v 1.2 1998/07/27 19:25:34 pk Exp $ */
 
 /*-
