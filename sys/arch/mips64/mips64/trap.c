@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.11 2004/09/22 14:39:44 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.12 2004/09/23 08:42:38 pefo Exp $	*/
 /* tracked to 1.23 */
 
 /*
@@ -760,13 +760,13 @@ printf("SIG-BUSB @%p pc %p, ra %p\n", trapframe->badvaddr, trapframe->pc, trapfr
 	default:
 	err:
 		disableintr();
-#ifndef DDB
+#if !defined(DDB) && defined(DEBUG)
 		trapDump("trap");
 #endif
 		printf("\nTrap cause = %d Frame %p\n", type, trapframe);
 		printf("Trap PC %p RA %p\n", trapframe->pc, trapframe->ra);
-		stacktrace(!USERMODE(trapframe->sr) ? trapframe : p->p_md.md_regs);
 #ifdef DDB
+		stacktrace(!USERMODE(trapframe->sr) ? trapframe : p->p_md.md_regs);
 		kdb_trap(type, trapframe);
 #endif
 		panic("trap");
