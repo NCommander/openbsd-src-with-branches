@@ -1,4 +1,5 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD$ */
+/*	$NetBSD: kvm_private.h,v 1.6 1996/03/18 22:33:54 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
