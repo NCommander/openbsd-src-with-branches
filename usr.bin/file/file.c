@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.5 1997/02/09 23:58:22 millert Exp $	*/
+/*	$OpenBSD: file.c,v 1.6 1998/07/10 15:05:20 mickey Exp $	*/
 
 /*
  * file - find type of a file or files - main program.
@@ -27,7 +27,7 @@
  * 4. This notice may not be removed or altered.
  */
 #ifndef	lint
-static char *moduleid = "$OpenBSD: file.c,v 1.5 1997/02/09 23:58:22 millert Exp $";
+static char *moduleid = "$OpenBSD: file.c,v 1.6 1998/07/10 15:05:20 mickey Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -152,8 +152,10 @@ char *argv[];
 	}
 
 	if (optind == argc) {
-		if (!didsomefiles)
-			err(2, USAGE, __progname);
+		if (!didsomefiles) {
+			fprintf(stderr, USAGE, __progname);
+			exit(2);
+		}
 	} else {
 		int i, wid, nw;
 		for (wid = 0, i = optind; i < argc; i++) {
