@@ -1047,6 +1047,8 @@ acd_size(acd, flags)
 
 	ATAPI_DEBUG_PRINT(("acd_size: %ld %ld\n", acd->params.blksize,
 	    acd->params.disksize));
+	if (acd->params.blksize > 2048)
+		acd->params.blksize = 2048;
 	return acd->params.disksize;
 }
 
