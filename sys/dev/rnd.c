@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.52 2002/01/03 09:23:22 nordin Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.53 2002/01/10 18:49:07 mickey Exp $	*/
 
 /*
  * random.c -- A strong random number generator
@@ -356,7 +356,7 @@ int	rnd_debug = 0x0000;
 /* pIII/333 reported to have some drops w/ these numbers */
 #define QEVLEN (1024 / sizeof(struct rand_event))
 #define QEVSLOW (QEVLEN * 3 / 4) /* yet another 0.75 for 60-minutes hour /-; */
-#define QEVSBITS 12
+#define QEVSBITS 10
 
 /* There is actually only one of these, globally. */
 struct random_bucket {
