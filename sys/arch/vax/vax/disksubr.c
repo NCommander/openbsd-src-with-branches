@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.16 2002/01/25 01:20:39 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.17 2002/03/14 01:26:48 millert Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1999/06/30 18:48:06 ragge Exp $	*/
 
 /*
@@ -168,6 +168,12 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 			*lp = *dlp;
 		}
 	}
+
+#if defined(CD9660)
+	if (msg && iso_disklabelspoof(dev, strat, lp) == 0)
+		msg = NULL;
+#endif
+
 	bp->b_flags = B_INVAL | B_AGE | B_READ;
 	brelse(bp);
 	return (msg);
