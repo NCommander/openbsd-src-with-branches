@@ -1,4 +1,4 @@
-/* $OpenBSD: ipsecadm.c,v 1.34 2000/04/21 17:32:24 deraadt Exp $ */
+/* $OpenBSD: ipsecadm.c,v 1.35 2000/04/22 01:53:41 angelos Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -197,7 +197,7 @@ usage()
 	    "\t  -key <val>\t\t\tkey material to be used\n"
 	    "\t  -keyfile <file>\t\tfile to read key material from\n"
 	    "\t  -authkey <val>\t\tkey material for auth in new esp\n"
-	    "\t  -authkeyfile <file>\t\tfile to read key material from\n"
+	    "\t  -authkeyfile <file>\t\tfile to read authkey material from\n"
 	    "\t  -proto <val>\t\t\tsecurity protocol\n"
 	    "\t  -chain\t\t\tSPI chain delete\n"
 	    "\t  -transport <val>\t\tprotocol number for flow\n"
