@@ -252,6 +252,8 @@ cvs_file_create(const char *path, u_int type, mode_t mode)
 			return (NULL);
 		}
 
+		cfp->cf_ddat->cd_ent = cvs_ent_open(path, O_RDWR);
+
 	}
 	else {
 		fd = open(path, O_WRONLY|O_CREAT|O_EXCL, mode);
