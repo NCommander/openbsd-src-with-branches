@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.5 1997/09/01 18:30:15 deraadt Exp $	*/
+/*	$OpenBSD: tree.c,v 1.6 1998/06/25 19:02:24 millert Exp $	*/
 
 /*
  * command tree climbing
@@ -310,6 +310,7 @@ tputS(wp, shf)
 			while (*wp != 0)
 				tputC(*wp++, shf);
 			tputc(')', shf);
+			wp++;
 			break;
 		  case EXPRSUB:
 			tputc('$', shf);
@@ -319,6 +320,7 @@ tputS(wp, shf)
 				tputC(*wp++, shf);
 			tputc(')', shf);
 			tputc(')', shf);
+			wp++;
 			break;
 		  case OQUOTE:
 		  	quoted = 1;
