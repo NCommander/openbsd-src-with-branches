@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: exec.c,v 1.13 2000/06/13 09:57:51 brian Exp $
+ *	$OpenBSD: exec.c,v 1.14 2000/06/22 20:50:44 brian Exp $
  */
 
 #include <sys/param.h>
@@ -137,7 +137,9 @@ exec_Create(struct physical *p)
           close(pidpipe[0]);
           close(fids[0]);
           timer_TermService();
+#ifndef NOSUID
           setuid(ID0realuid());
+#endif
 
           child_status = 0;
           switch ((pid = vfork())) {

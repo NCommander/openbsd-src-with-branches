@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: command.c,v 1.48 2000/08/16 09:07:27 brian Exp $
+ * $OpenBSD: command.c,v 1.49 2000/08/18 00:02:02 brian Exp $
  *
  */
 #include <sys/param.h>
@@ -519,7 +519,9 @@ ShellCommand(struct cmdargs const *arg, int bg)
     for (i = getdtablesize(); i > STDERR_FILENO; i--)
       fcntl(i, F_SETFD, 1);
 
+#ifndef NOSUID
     setuid(ID0realuid());
+#endif
     if (arg->argc > arg->argn) {
       /* substitute pseudo args */
       char *argv[MAXARGS];
