@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.15 2002/05/27 19:48:27 deraadt Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.16 2002/05/28 03:04:38 itojun Exp $	*/
 /*	$KAME: frag6.c,v 1.40 2002/05/27 21:40:31 itojun Exp $	*/
 
 /*
@@ -732,7 +732,7 @@ void
 frag6_slowtimo()
 {
 	struct ip6q *q6;
-	int s = splnet();
+	int s = splsoftnet();
 
 	IP6Q_LOCK();
 	q6 = ip6q.ip6q_next;
