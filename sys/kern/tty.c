@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.10 1996/08/29 07:46:35 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.12 1996/11/04 03:28:07 deraadt Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -215,8 +215,8 @@ ttyclose(tp)
 
 /* Is 'c' a line delimiter ("break" character)? */
 #define	TTBREAKC(c)							\
-	((c) == '\n' || ((c) == cc[VEOF] ||				\
-	(c) == cc[VEOL] || (((c) == cc[VEOL2]) && (c) != _POSIX_VDISABLE)))
+	((c) == '\n' || (((c) == cc[VEOF] || (c) == cc[VEOL] ||		\
+	(c) == cc[VEOL2]) && (c) != _POSIX_VDISABLE))
 
 
 /*
