@@ -1,4 +1,4 @@
-/*	$OpenBSD: brconfig.c,v 1.10 1999/03/23 08:10:20 deraadt Exp $	*/
+/*	$OpenBSD: brconfig.c,v 1.11 1999/05/24 04:01:21 jason Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
