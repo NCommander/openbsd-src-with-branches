@@ -519,10 +519,10 @@ rawname(cp)
 	if (dp == NULL)
 		return (NULL);
 	*dp = '\0';
-	(void)strcpy(rawbuf, cp);
+	(void)strncpy(rawbuf, cp, MAXPATHLEN);
 	*dp = '/';
-	(void)strcat(rawbuf, "/r");
-	(void)strcat(rawbuf, dp + 1);
+	(void)strncat(rawbuf, "/r", MAXPATHLEN - 1 - strlen(rawbuf));
+	(void)strncat(rawbuf, dp + 1, MAXPATHLEN - 1 - strlen(rawbuf));
 	return (rawbuf);
 }
 
