@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: etc.c,v 1.4 2002/05/24 00:25:42 ericj Exp $ */
 
 /* Public Domain */
 
@@ -7,6 +7,7 @@
 #include <err.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ld.h"
 
 #define	OOM_MSG	"Out of memory"
 

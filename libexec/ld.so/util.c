@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.14 2003/05/30 01:13:53 drahn Exp $	*/
+/*	$OpenBSD: util.c,v 1.15 2003/06/09 16:10:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -39,6 +39,8 @@
  * this would end up dragging too much code from libc here.
  */
 long __guard[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+void __stack_smash_handler(char [], int);
 
 void
 __stack_smash_handler(char func[], int damaged)
@@ -120,7 +122,7 @@ _dl_free(void *p)
 
 
 unsigned int
-_dl_random(void)   
+_dl_random(void)
 {
 	int mib[2];
 	unsigned int rnd;
