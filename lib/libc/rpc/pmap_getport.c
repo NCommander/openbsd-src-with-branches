@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_getport.c,v 1.4 1996/12/10 07:46:41 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pmap_getport.c,v 1.5 1997/07/09 03:05:04 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -38,6 +38,7 @@ static char *rcsid = "$OpenBSD: pmap_getport.c,v 1.4 1996/12/10 07:46:41 deraadt
  * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
+#include <unistd.h>
 #include <rpc/rpc.h>
 #include <rpc/pmap_prot.h>
 #include <rpc/pmap_clnt.h>
