@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.1 1997/01/31 05:11:04 rahnds Exp $
+#       $OpenBSD: install.md,v 1.2 1997/02/06 07:07:11 rahnds Exp $
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -75,7 +75,7 @@ md_get_partition_range() {
 }
 
 md_installboot() {
-	echo "Nothing to do."
+	echo "This must be done later by hand"
 }
 md_labeldisk() {
 	echo "huh"
@@ -256,6 +256,8 @@ __congratulations_1
 }
 
 md_native_fstype() {
+}
+md_native_fsopts() {
 }
 
 md_makerootwritable() {
