@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.70 1998/01/04 11:34:49 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.72 1998/01/09 12:33:21 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.202 1996/05/18 15:54:59 christos Exp $	*/
 
 /*-
@@ -120,6 +120,8 @@
 #if NNPX > 0
 extern struct proc *npxproc;
 #endif
+
+#include "bios.h"
 
 /* the following is used externally (sysctl_hw) */
 char machine[] = "i386";		/* cpu "architecture" */
