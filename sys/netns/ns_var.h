@@ -11,6 +11,7 @@ struct ns_addr;
 struct route;
 struct ifnet_en;
 struct in_addr;
+struct sockaddr;
 
 /* ns.c */
 int ns_control __P((struct socket *, u_long, caddr_t, struct ifnet *));
