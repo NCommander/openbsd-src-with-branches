@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.1 1999/12/08 06:50:23 itojun Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.2 1999/12/10 10:04:28 angelos Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -1251,6 +1251,7 @@ nd6_ioctl(cmd, data, ifp)
 
 		if ((rt = nd6_lookup(&nb_addr, 0, ifp)) == NULL) {
 			error = EINVAL;
+			splx(s);
 			break;
 		}
 		ln = (struct llinfo_nd6 *)rt->rt_llinfo;
