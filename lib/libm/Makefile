@@ -137,7 +137,9 @@ MAN+=	acos.3 acosh.3 asin.3 asinh.3 atan.3 atan2.3 atanh.3 ceil.3 \
 
 .if (${MACHINE_ARCH} == "i386")
 LINKS=	/usr/lib/libm.a /usr/lib/libm_i387.a
+.if !defined(NOPROFILE)
 LINKS+=	/usr/lib/libm_p.a /usr/lib/libm_i387_p.a
+.endif
 LINKS+= /usr/lib/libm.so.${SHLIB_MAJOR}.${SHLIB_MINOR} \
 	/usr/lib/libm_i387.so.${SHLIB_MAJOR}.${SHLIB_MINOR}
 LINKS+= /usr/lib/libm_pic.a /usr/lib/libm_i387_pic.a
