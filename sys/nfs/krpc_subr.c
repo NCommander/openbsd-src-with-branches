@@ -1,4 +1,4 @@
-/*	$OpenBSD: krpc_subr.c,v 1.9 1998/02/28 14:03:08 deraadt Exp $	*/
+/*	$OpenBSD: krpc_subr.c,v 1.10 2001/05/16 12:48:32 ho Exp $	*/
 /*	$NetBSD: krpc_subr.c,v 1.12.4.1 1996/06/07 00:52:26 cgd Exp $	*/
 
 /*
@@ -216,7 +216,7 @@ krpc_call(sa, prog, vers, func, data, from_p)
 	from = NULL;
 
 	/*
-	 * Create socket and set its recieve timeout.
+	 * Create socket and set its receive timeout.
 	 */
 	if ((error = socreate(AF_INET, &so, SOCK_DGRAM, 0)))
 		goto out;
