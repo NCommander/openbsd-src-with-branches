@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_cap.c,v 1.16 2003/03/31 15:47:03 millert Exp $	*/
+/*	$OpenBSD: login_cap.c,v 1.17 2003/06/25 21:16:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995,1997 Berkeley Software Design, Inc. All rights reserved.
@@ -109,7 +109,7 @@ login_getclass(class)
 		case -1:
 			if ((res = open(classfiles[0], 0)) >= 0)
 				close(res);
-			if (strcmp(lc->lc_class, LOGIN_DEFCLASS) == NULL &&
+			if (strcmp(lc->lc_class, LOGIN_DEFCLASS) == 0 &&
 			    res < 0)
 				return (lc);
 			syslog(LOG_ERR, "%s: unknown class", lc->lc_class);
