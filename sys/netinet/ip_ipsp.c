@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.69 2000/01/10 06:59:22 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.70 2000/01/11 00:44:32 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -368,7 +368,7 @@ check_ipsec_policy(struct inpcb *inp, void *daddr)
 	bzero(&tdb2, sizeof(tdb2));
 	tdb2.tdb_satype = get_sa_require(inp);
 
-	/* Always require PFS */
+	/* Check for PFS */
 	if (ipsec_require_pfs)
 	  tdb2.tdb_flags |= TDBF_PFS;
 
