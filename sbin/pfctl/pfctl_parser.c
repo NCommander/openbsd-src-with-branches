@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.105 2002/11/19 23:34:02 dhartmei Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.106 2002/11/23 05:22:24 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -396,7 +396,7 @@ print_fromto(struct pf_rule_addr *src, struct pf_rule_addr *dst,
 }
 
 void
-print_pool(struct pf_pool *pool, int af, int id)
+print_pool(struct pf_pool *pool, sa_family_t af, int id)
 {
 	struct pf_pooladdr *pooladdr;
 
