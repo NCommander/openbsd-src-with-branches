@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_var.h,v 1.26 2002/07/03 21:19:08 miod Exp $	*/
+/*	$OpenBSD: ip_var.h,v 1.27 2002/12/09 00:45:37 millert Exp $	*/
 /*	$NetBSD: ip_var.h,v 1.16 1996/02/13 23:43:20 christos Exp $	*/
 
 /*
@@ -159,7 +159,7 @@ struct	ipstat {
 #define	IP_MTUDISC		0x0400		/* pmtu discovery, set DF */
 
 extern struct ipstat ipstat;
-LIST_HEAD(ipqhead, ipq)	ipq;		/* ip reass. queue */
+extern LIST_HEAD(ipqhead, ipq)	ipq;	/* ip reass. queue */
 extern int ip_defttl;			/* default IP ttl */
 
 extern int ip_mtudisc;			/* mtu discovery */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: specdev.h,v 1.13 2002/03/14 01:27:08 millert Exp $	*/
+/*	$OpenBSD: specdev.h,v 1.14 2002/11/08 04:34:17 art Exp $	*/
 /*	$NetBSD: specdev.h,v 1.12 1996/02/13 13:13:01 mycroft Exp $	*/
 
 /*
@@ -68,7 +68,7 @@ struct specinfo {
 #define	SPECHASH(rdev)	(((unsigned)((rdev>>5)+(rdev)))%SPECHSZ)
 #endif
 
-struct vnode *speclisth[SPECHSZ];
+extern struct vnode *speclisth[SPECHSZ];
 
 /*
  * Prototypes for special file operations on vnodes.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.69 2002/06/26 00:13:47 angelos Exp $ */
+/*	$OpenBSD: ip_ah.c,v 1.70 2002/07/05 23:20:53 angelos Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -72,6 +72,8 @@
 #else
 #define DPRINTF(x)
 #endif
+
+struct ahstat ahstat;
 
 /*
  * ah_attach() is called from the transformation initialization code.

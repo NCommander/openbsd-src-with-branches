@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.76 2002/11/07 15:16:39 ho Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.77 2003/02/01 14:11:40 dhartmei Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -73,6 +73,8 @@
 #else
 #define DPRINTF(x)
 #endif
+
+struct espstat espstat;
 
 /*
  * esp_attach() is called from the transformation initialization code.
