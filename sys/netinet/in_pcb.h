@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.29 2000/10/11 09:14:11 itojun Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.30 2001/02/08 18:46:22 itojun Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -272,8 +272,4 @@ struct 	in6_addr *in6_selectsrc __P((struct sockaddr_in6 *,
 				     struct in6_addr *, int *));
 int	in6_selecthlim __P((struct inpcb *, struct ifnet *));
 int	in6_pcbsetport __P((struct in6_addr *, struct inpcb *));
-int in6_embedscope __P((struct in6_addr *, const struct sockaddr_in6 *,
-	struct inpcb *, struct ifnet **));
-int in6_recoverscope __P((struct sockaddr_in6 *, const struct in6_addr *,
-	struct ifnet *));
 #endif
