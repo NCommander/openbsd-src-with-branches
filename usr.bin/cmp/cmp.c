@@ -114,26 +114,38 @@ endargs:
 	}
 	if (strcmp(file2 = argv[1], "-") == 0) {
 		if (special)
-			errx(ERR_EXIT,
-				"standard input may only be specified once");
+			if (sflag)
+				exit(ERR_EXIT);
+			else
+				errx(ERR_EXIT,
+					"standard input may only be specified once");
 		special = 1;
 		fd2 = 0;
 		file2 = "stdin";
 	}
 	else if ((fd2 = open(file2, O_RDONLY, 0)) < 0)
-		err(ERR_EXIT, "%s", file2);
+		if (sflag)
+			exit(ERR_EXIT);
+		else
+			err(ERR_EXIT, "%s", file2);
 
 	skip1 = argc > 2 ? strtoq(argv[2], NULL, 10) : 0;
 	skip2 = argc == 4 ? strtoq(argv[3], NULL, 10) : 0;
 
 	if (!special) {
 		if (fstat(fd1, &sb1))
-			err(ERR_EXIT, "%s", file1);
+			if (sflag)
+				exit(ERR_EXIT);
+			else
+				err(ERR_EXIT, "%s", file1);
 		if (!S_ISREG(sb1.st_mode))
 			special = 1;
 		else {
 			if (fstat(fd2, &sb2))
-				err(ERR_EXIT, "%s", file2);
+				if (sflag)
+					exit(ERR_EXIT);
+				else
+					err(ERR_EXIT, "%s", file2);
 			if (!S_ISREG(sb2.st_mode))
 				special = 1;
 		}
