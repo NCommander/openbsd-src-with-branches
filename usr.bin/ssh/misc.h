@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.h,v 1.5 2001/05/03 23:09:52 mouring Exp $	*/
+/*	$OpenBSD: misc.h,v 1.6 2001/05/08 19:45:24 mouring Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -17,8 +17,9 @@ char	*chop(char *s);
 /* return next token in configuration line */
 char	*strdelim(char **s);
 
-/* set filedescriptor to non-blocking */
+/* set/unset filedescriptor to non-blocking */
 void	set_nonblock(int fd);
+void	unset_nonblock(int fd);
 
 struct passwd * pwcopy(struct passwd *pw);
 
