@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.3 2001/08/28 19:35:04 deraadt Exp $ */
+/*	$OpenBSD: util.c,v 1.4 2001/09/05 12:42:31 dhartmei Exp $ */
 
 /*
  * Copyright (c) 1996-2001
@@ -69,6 +69,7 @@ debuglog(int debug_level, const char *fmt, ...)
 
 	if (Debug_Level >= debug_level)
 		vsyslog(LOG_DEBUG, fmt, ap);
+	va_end(ap);
 }
 
 int
