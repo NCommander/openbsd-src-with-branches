@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.21 2002/02/14 14:24:21 deraadt Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.22 2002/02/16 21:27:49 millert Exp $	*/
 
 /*
  *		Buffer handling.
@@ -343,15 +343,18 @@ addlinef(BUFFER *bp, char *fmt, ...)
 	char   dummy[1];
 
 	va_start(ap, fmt);
-	ntext = vsnprintf(dummy, 1, fmt, ap) + 1;
+	ntext = vsnprintf(dummy, 1, fmt, ap);
 	if (ntext == -1) {
 		va_end(ap);
 		return FALSE;
 	}
+	ntext++;
 	if ((lp = lalloc(ntext)) == NULL) {
 		va_end(ap);
 		return FALSE;
 	}
+	va_end(ap);
+	va_start(ap, fmt);
 	vsnprintf(lp->l_text, ntext, fmt, ap);
 	lp->l_used--;
 	va_end(ap);
