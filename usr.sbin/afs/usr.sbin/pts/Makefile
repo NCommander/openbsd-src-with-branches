@@ -3,10 +3,13 @@
 AFSTOPDIR	= ../..
 .include <../../Makefile.inc>
 
+.PATH:	$(ROKENSRC)
+
 PROG	= pts
-SRCS	= pts.c
-LDADD	+= ${LIBARLA} ${LIBROKEN} -lkafs -lkrb -lkrb5 -lcrypto -lasn1 -lreadline -ldes -lcurses
-DPADD	+= ${LIBARLA} ${LIBROKEN} ${LIBKAFS}
+SRCS	= pts.c \
+	  estrdup.c
+LDADD	+= ${LIBARLA} -lkrb5 -lcrypto -lasn1 -lreadline -ldes -lcurses
+DPADD	+= ${LIBARLA}
 
 .PATH: ${AFSSRCDIR}/appl/pts
 

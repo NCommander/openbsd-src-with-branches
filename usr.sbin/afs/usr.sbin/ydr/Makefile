@@ -3,14 +3,18 @@
 AFSTOPDIR=	../..
 .include <../../Makefile.inc>
 
-SRCS		+= main.c output.c symbol.c types.c lex.c parse.c list.c hash.c
+.PATH:	$(ROKENSRC)
+
+test:
+	echo $(ROKENSRC)
+
+SRCS		+= main.c output.c symbol.c types.c lex.c parse.c list.c \
+		   hash.c arlamath.c emalloc.c estrdup.c strupr.c
 CLEANFILES	+= lex.c parse.c parse.h y.tab.h
 CFLAGS		+= -DCPP='"/usr/bin/cpp"'
 MAN		=
 BINDIR		= ${DESTDIR}/usr/bin
 PROG		= ydr
-LDADD		+= ${LIBROKEN}
-DPADD		+= ${LIBROKEN}
 
 CFLAGS		+= -I${AFSSRC}/util -I.
 
