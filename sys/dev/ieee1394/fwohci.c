@@ -1,4 +1,4 @@
-/*	$OpenBSD: fwohci.c,v 1.12 2003/01/13 07:16:20 tdeval Exp $	*/
+/*	$OpenBSD: fwohci.c,v 1.13 2003/04/27 11:22:53 ho Exp $	*/
 /*	$NetBSD: fwohci.c,v 1.54 2002/03/29 05:06:42 jmc Exp $	*/
 
 /*
@@ -2641,7 +2641,7 @@ fwohci_at_done(struct fwohci_softc *sc, struct fwohci_ctx *fc, int force)
 }
 
 /*
- * Asynchronous Transmit Reponse -- in response of request packet.
+ * Asynchronous Transmit Reponse -- in response to request packet.
  */
 void
 fwohci_atrs_output(struct fwohci_softc *sc, int rcode, struct fwohci_pkt *req,

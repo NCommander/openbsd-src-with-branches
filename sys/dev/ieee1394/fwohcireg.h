@@ -1,4 +1,4 @@
-/*	$OpenBSD: fwohcireg.h,v 1.2 2002/12/13 02:52:04 tdeval Exp $	*/
+/*	$OpenBSD: fwohcireg.h,v 1.3 2003/01/12 12:04:29 tdeval Exp $	*/
 /*	$NetBSD: fwohcireg.h,v 1.11 2002/01/26 16:34:27 ichiro Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
  */
 #define	PCI_INTERFACE_OHCI			0x10
 
-/* The OHCI Regisers are in PCI BAR0.
+/* The OHCI Registers are in PCI BAR0.
  */
 #define	PCI_OHCI_MAP_REGISTER			0x10
 
