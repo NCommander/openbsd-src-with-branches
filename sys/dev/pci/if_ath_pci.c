@@ -1,4 +1,4 @@
-/*      $OpenBSD$   */
+/*      $OpenBSD: if_ath_pci.c,v 1.1 2004/11/02 02:45:37 reyk Exp $   */
 /*	$NetBSD: if_ath_pci.c,v 1.7 2004/06/30 05:58:17 mycroft Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 /*
- * PCI/Cardbus front-end for the Atheros Wireless LAN controller driver.
+ * PCI front-end for the Atheros Wireless LAN controller driver.
  */
 
 #include <sys/param.h>
