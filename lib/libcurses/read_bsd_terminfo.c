@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: read_bsd_terminfo.c,v 1.1 1998/07/23 21:19:58 millert Exp $	*/
 
 /*
  * Copyright (c) 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -31,7 +31,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: read_bsd_terminfo.c,v 1.1 1998/07/23 21:19:58 millert Exp $";
 #endif
 
 #include <curses.priv.h>
@@ -80,7 +80,7 @@ _nc_read_bsd_terminfo_entry(tn, tp)
      * exists.
      */
     if ((termpath = getenv("TERMINFO")) != NULL)
-	strlpy(pathbuf, termpath, sizeof(pathbuf));
+	strlcpy(pathbuf, termpath, sizeof(pathbuf));
     else {
 	/* $HOME/.terminfo or just .terminfo if no $HOME */
 	if ((home = getenv("HOME")) != NULL) {
