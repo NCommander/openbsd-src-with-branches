@@ -6,7 +6,7 @@ MAN=	kbd.8
 
 SRCS=	main.c
 CFLAGS+=-I${.CURDIR}
-.if ${MACHINE} == "i386"
+.if (${MACHINE} == "i386") || (${MACHINE} == "arc")
 SRCS+=	kbd_i386.c
 .else
 SRCS+=	kbd_void.c
