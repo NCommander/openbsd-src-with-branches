@@ -26,6 +26,8 @@ SRCS+=	adddi3.c anddi3.c ashldi3.c ashrdi3.c cmpdi2.c divdi3.c iordi3.c \
 # Other stuff
 SRCS+=	md5.c
 
+CLEANFILES+= lib${LIB}.o lib${LIB}.po
+
 # mcount cannot be compiled with profiling
 mcount.po: mcount.o
 	cp mcount.o mcount.po
