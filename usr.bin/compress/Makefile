@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.17 2003/07/31 07:39:04 otto Exp $
+#	$OpenBSD: Makefile,v 1.18 2003/08/03 01:28:38 deraadt Exp $
 
 PROG=	compress
-SRCS=	main.c zopen.c gzopen.c
+SRCS=	main.c zopen.c gzopen.c nullopen.c
 MAN=	compress.1 zmore.1 zdiff.1 zforce.1 gzexe.1 znew.1
 LINKS=	${BINDIR}/compress ${BINDIR}/uncompress \
 	${BINDIR}/compress ${BINDIR}/zcat \

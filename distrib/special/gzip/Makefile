@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.1 2002/02/08 20:12:37 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2003/06/22 22:25:23 deraadt Exp $
 
 PROG=	gzip
-SRCS=	main.c zopen.c gzopen.c
+SRCS=	main.c gzopen.c
 MAN=
-COPTS+=-Os
+COPTS+=-Os -DSMALL
 .PATH:  ${.CURDIR}/../../../usr.bin/compress
 
 LDADD=-lz
