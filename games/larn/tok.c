@@ -1,12 +1,13 @@
-/*	$OpenBSD: tok.c,v 1.2 1998/09/15 05:12:33 pjanzen Exp $	*/
+/*	$OpenBSD: tok.c,v 1.3 1999/03/27 03:45:50 pjanzen Exp $	*/
 /*	$NetBSD: tok.c,v 1.5 1997/10/18 20:03:54 christos Exp $	*/
 
 /* tok.c		Larn is copyrighted 1986 by Noah Morgan. */
 #ifndef lint
-static char rcsid[] = "$OpenBSD: tok.c,v 1.2 1998/09/15 05:12:33 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: tok.c,v 1.3 1999/03/27 03:45:50 pjanzen Exp $";
 #endif				/* not lint */
 
 #include <sys/types.h>
+#include <ctype.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <stdlib.h>

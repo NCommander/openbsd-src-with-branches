@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: monster.c,v 1.3 1998/09/15 05:12:32 pjanzen Exp $	*/
 /*	$NetBSD: monster.c,v 1.5 1997/10/18 20:03:29 christos Exp $	*/
 
 /*
@@ -100,9 +100,10 @@
  *
  */
 #ifndef lint
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: monster.c,v 1.3 1998/09/15 05:12:32 pjanzen Exp $";
 #endif				/* not lint */
 
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include "header.h"
