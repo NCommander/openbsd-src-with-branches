@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.28 1995/04/19 22:37:27 smurph Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.5 2001/03/08 00:02:17 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -79,7 +79,13 @@ static char *ctrlreg[64] = {
 	"fcr63(FPCR)"
 };
 
-#define printval(x)  if (x<0) db_printf ("-0x%X", -x); else db_printf("0x%X",x)
+#define printval(x) \
+	do { \
+		if ((x) < 0) \
+			db_printf("-0x%X", -(x)); \
+		else \
+			db_printf("0x%X", (x));	\
+	} while (0)
 
 /* Handlers immediate integer arithmetic instructions */      
 static void

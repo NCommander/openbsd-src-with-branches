@@ -1,15 +1,16 @@
-#	$OpenBSD: Makefile,v 1.4 1995/10/08 23:44:02 gwr Exp $
+#	$OpenBSD: Makefile,v 1.4 2000/05/25 21:55:03 deraadt Exp $
 
-PROG=	installboot
 MAN=	installboot.8
 MANSUBDIR=/mvme68k
 
+.if ${MACHINE} == "mvme68k"
+PROG=	installboot
 BINDIR=/usr/mdec
 DPADD=${LIBUTIL}
 LDADD=-lutil
-
-# Need this to work in the miniroot
-
 LDSTATIC=-static
+.else
+NOPROG=
+.endif
 
 .include <bsd.prog.mk>

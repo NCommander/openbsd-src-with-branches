@@ -1,12 +1,13 @@
-#	$OpenBSD: Makefile,v 1.17 1998/05/28 20:52:34 mickey Exp $
+#	$OpenBSD: Makefile,v 1.20 2000/06/08 00:56:07 mickey Exp $
 
+MAN=	biosboot.8
+
+.if ${MACHINE} == "i386"
 PROG=	biosboot
 SRCS=	biosboot.S
 LD=ld
 LDFLAGS=-nostdlib -Ttext 0 -N -x -Bstatic
 INSTALL_STRIP=
-MAN=	biosboot.8
-MANSUBDIR=/i386
 SADIR=	${.CURDIR}/..
 
 ${PROG}: $(OBJS) $(DPADD)
@@ -14,8 +15,12 @@ ${PROG}: $(OBJS) $(DPADD)
 	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS) $(LDADD)
 	@size $(PROG)
 
-.include <bsd.prog.mk>
-
 CPPFLAGS+=-DLOADADDR=$(LOADADDR) -DBOOTMAGIC=$(BOOTMAGIC)
 CPPFLAGS+=${DEBUGFLAGS}
 #AFLAGS+=-Wa,-a
+.else
+NOPROG=
+.endif
+
+.include <bsd.prog.mk>
+

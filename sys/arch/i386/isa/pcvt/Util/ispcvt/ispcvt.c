@@ -1,4 +1,4 @@
-/*	$OpenBSD: ispcvt.c,v 1.8 1999/11/26 02:11:15 deraadt Exp $	*/
+/*	$OpenBSD: ispcvt.c,v 1.10 2000/12/07 18:19:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis
@@ -116,12 +116,7 @@ char *argv[];
 		if((fd = open(device, O_RDWR)) == -1)
 		{
 			if(verbose)
-			{
-				char buffer[80];
-				strcpy(buffer,"ERROR opening ");
-				strncat(buffer,device,sizeof(buffer) - strlen(buffer));
-				perror(buffer);
-			}
+				err(1, "ERROR opening %s", device);
 			exit(1);
 		}
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: pmap_bootstrap.c,v 1.7 2001/04/05 20:39:40 deraadt Exp $ */
 
 /* 
  * Copyright (c) 1995 Theo de Raadt

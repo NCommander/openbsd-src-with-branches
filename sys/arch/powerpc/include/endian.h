@@ -1,4 +1,4 @@
-/*	$OpenBSD: endian.h,v 1.9 1997/11/09 23:05:15 niklas Exp $ */
+/*	$OpenBSD: endian.h,v 1.11 2001/03/02 20:45:21 jason Exp $ */
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -34,5 +34,7 @@
 
 #define BYTE_ORDER BIG_ENDIAN
 #include <sys/endian.h>
+
+#define	__STRICT_ALIGNMENT
 
 #endif /* _POWERPC_ENDIAN_H_ */

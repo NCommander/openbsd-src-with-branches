@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.18 2000/01/06 03:21:42 smurph Exp $ */
+/*	$OpenBSD: cl.c,v 1.21 2000/07/06 12:54:55 art Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -33,7 +33,6 @@
 /* DMA mode still does not work!!! */
 
 #include <sys/param.h>
-#include <sys/callout.h>
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
@@ -49,6 +48,10 @@
 #include <mvme68k/dev/clreg.h>
 #include <sys/syslog.h>
 #include "cl.h"
+
+#ifdef DDB
+#include <ddb/db_var.h>
+#endif
 
 #include "pcctwo.h"
 
@@ -1639,9 +1642,7 @@ cl_rxintr(sc)
 	int i;
 	u_char reoir;
 	u_char buffer[CL_FIFO_MAX +1];
-#ifdef CONSOLEBREAKDDB
 	int wantddb = 0;
-#endif
 	
 	rir = sc->cl_reg->cl_rir;
 	if((rir & 0x40) == 0x0) {
@@ -1674,10 +1675,8 @@ cl_rxintr(sc)
 		reoir = 0x08;
 	} else
 	if (risrl & 0x01) {
-#ifdef CONSOLEBREAKDDB
 		if (sc->sc_cl[channel].cl_consio)
 			wantddb = 1;
-#endif
 		cl_break(sc, channel);
 		reoir = 0x08;
 	}
@@ -1802,8 +1801,8 @@ channel, nbuf, cnt, status);
 		reoir = 0x08;
 		sc->cl_reg->cl_reoir = reoir;
 	}
-#ifdef CONSOLEBREAKDDB
-	if (wantddb)
+#ifdef DDB
+	if (wantddb && db_console)
 		Debugger();
 #endif
 	return 1;

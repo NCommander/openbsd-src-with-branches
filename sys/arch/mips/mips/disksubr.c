@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.8 1999/01/08 04:29:07 millert Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.11 2000/10/18 21:00:37 mickey Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -59,7 +59,7 @@ dk_establish(dk, dev)
 
 /*
  * Attempt to read a disk label from a device
- * using the indicated stategy routine.
+ * using the indicated strategy routine.
  * The label must be partly set up before this:
  * secpercyl, secsize and anything required for a block i/o read
  * operation in the driver's strategy/start routines
@@ -232,6 +232,7 @@ donot:
 					n++;
 					break;
 				case DOSPTYP_EXTEND:
+				case DOSPTYP_EXTENDL:
 					part_blkno = get_le(&dp2->dp_start) + extoff;
 					if (!extoff)
 						extoff = get_le(&dp2->dp_start);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bioscons.c,v 1.16 1998/05/28 20:52:39 mickey Exp $	*/
+/*	$OpenBSD: bioscons.c,v 1.20 2001/03/03 03:34:13 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -42,19 +42,6 @@
 #include <dev/cons.h>
 #include <lib/libsa/stand.h>
 #include "debug.h"
-
-int comspeed __P((dev_t, int));
-
-int
-cnspeed(dev, sp)
-	dev_t	dev;
-	int	sp;
-{
-	if (major(dev) == 8)	/* comN */
-		return comspeed(dev, sp);
-	/* pc0 and anything else */
-	return 9600;
-}
 
 /* XXX cannot trust NVRAM on this.  Maybe later we make a real probe.  */
 #if 0
@@ -101,7 +88,7 @@ pc_getc(dev)
 	}
 
 	__asm __volatile(DOINT(0x16) : "=a" (rv) : "0" (0x000) :
-	    "%ecx", "edx", "cc" );
+	    "%ecx", "%edx", "cc" );
 	return (rv & 0xff);
 }
 
@@ -225,7 +212,16 @@ com_putc(dev, c)
 {
 	register int rv;
 
+	dev = minor(dev) & 0x7f;
+
+	/* check online (DSR) */
 	__asm __volatile(DOINT(0x14) : "=a" (rv) :
-	    "d" (minor(dev)), "0" (c | 0x100) : "%ecx", "cc" );
+	    "0" (0x300), "d" (dev) : "%ecx", "cc" );
+	if ( !(rv & 0x20) )
+		return;
+
+	/* send character */
+	__asm __volatile(DOINT(0x14) : "=a" (rv) :
+	    "0" (c | 0x100), "d" (dev) : "%ecx", "cc" );
 }
 
