@@ -1,4 +1,4 @@
-/*	$OpenBSD: klogin.c,v 1.5 1997/06/29 11:10:33 provos Exp $	*/
+/*	$OpenBSD: klogin.c,v 1.6 1998/03/26 20:28:09 art Exp $	*/
 /*	$NetBSD: klogin.c,v 1.7 1996/05/21 22:07:04 mrg Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)klogin.c	8.3 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$OpenBSD: klogin.c,v 1.5 1997/06/29 11:10:33 provos Exp $";
+static char rcsid[] = "$OpenBSD: klogin.c,v 1.6 1998/03/26 20:28:09 art Exp $";
 #endif /* not lint */
 
 #ifdef KERBEROS
@@ -177,7 +177,7 @@ klogin(pw, instance, localhost, password)
 		 * this condition!
 		 */
 		if (strcmp(instance, "root") == 0) {
-		  syslog(LOG_ERR, "Kerberos %s root instance login refused\n",
+		  syslog(LOG_ERR, "Kerberos %s root instance login refused",
 			 pw->pw_name);
 		  dest_tkt();
 		  return (1);
@@ -213,7 +213,7 @@ klogin(pw, instance, localhost, password)
 
 	/* undecipherable: probably didn't have a srvtab on the local host */
 	if (kerror == RD_AP_UNDEC) {
-		syslog(LOG_NOTICE, "krb_rd_req: (%s)\n", krb_err_txt[kerror]);
+		syslog(LOG_NOTICE, "krb_rd_req: (%s)", krb_err_txt[kerror]);
 		dest_tkt();
 		return (1);
 	}
