@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2002/03/07 14:27:08 art Exp $
+#	$OpenBSD: Makefile,v 1.3 2002/03/15 16:41:05 jason Exp $
 
 .include <bsd.own.mk>
 
@@ -35,7 +35,7 @@ CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE}
 
 .if (${MACHINE_ARCH} != ${MACHINE}) && exists(arch/${MACHINE_ARCH}/Makefile.inc)
 .PATH: ${.CURDIR}/arch/${MACHINE_ARCH}
-.include arch/${MACHINE_ARCH}/Makefile.inc
+.include "arch/${MACHINE_ARCH}/Makefile.inc"
 CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE_ARCH}
 .endif
 
