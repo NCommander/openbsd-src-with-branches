@@ -1,10 +1,9 @@
-/*	$OpenBSD: auth-options.h,v 1.10 2001/06/26 17:27:22 markus Exp $	*/
+/*	$OpenBSD: auth-options.h,v 1.12 2002/07/21 18:34:43 stevesk Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
- * Functions to interface with the SSH_AUTHENTICATION_FD socket.
  *
  * As far as I am concerned, the code I have written for this software
  * can be used freely for any purpose.  Any derived versions of this

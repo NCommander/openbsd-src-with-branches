@@ -11,7 +11,4 @@ distribution:
 	install -C -o root -g wheel -m 0644 ${.CURDIR}/sshd_config \
 	    ${DESTDIR}/etc/ssh/sshd_config
 
-beforeinstall:
-	install -d -m 0755 -o root -g wheel ${DESTDIR}/var/empty
-
 .include <bsd.subdir.mk>

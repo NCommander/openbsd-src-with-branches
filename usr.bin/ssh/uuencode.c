@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: uuencode.c,v 1.14 2002/02/25 16:33:27 markus Exp $");
+RCSID("$OpenBSD: uuencode.c,v 1.16 2002/09/09 14:54:15 markus Exp $");
 
 #include "xmalloc.h"
 #include "uuencode.h"
@@ -60,7 +60,7 @@ uudecode(const char *src, u_char *target, size_t targsize)
 void
 dump_base64(FILE *fp, u_char *data, u_int len)
 {
-	u_char *buf = xmalloc(2*len);
+	char *buf = xmalloc(2*len);
 	int i, n;
 
 	n = uuencode(data, len, buf, 2*len);
