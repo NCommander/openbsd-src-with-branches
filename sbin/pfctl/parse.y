@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.44 2001/11/26 16:50:25 jasoni Exp $	*/
+/*	$OpenBSD: parse.y,v 1.45 2001/12/03 21:52:08 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1531,9 +1531,9 @@ top:
 				if (isdigit(c))
 					c -= '0';
 				else if (c >= 'a' && c <= 'f')
-					c -= 'a';
+					c -= 'a' - 10;
 				else if (c >= 'A' && c <= 'F')
-					c -= 'A';
+					c -= 'A' - 10;
 				else
 					break;
 			}
