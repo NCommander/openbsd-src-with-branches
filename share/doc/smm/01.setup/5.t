@@ -1,4 +1,4 @@
-.\"	$OpenBSD: 5.t,v 1.2 2001/02/03 08:15:07 niklas Exp $
+.\"	$OpenBSD: 5.t,v 1.3 2003/06/02 23:30:11 millert Exp $
 .\"
 .\" Copyright (c) 1980, 1986, 1988, 1993 The Regents of the University of California.
 .\" All rights reserved.
@@ -337,7 +337,7 @@ The generation of redirects may be disabled with the configuration option
 IPSENDREDIRECTS=0 or while the system is running by using the command:
 .DS
 .ft CW
-sysctl -w net.inet.ip.redirect=0
+sysctl net.inet.ip.redirect=0
 .DE
 in environments where it may cause difficulties.
 .Sh 2 "Network databases"
