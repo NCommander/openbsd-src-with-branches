@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread_private.h,v 1.45 2003/02/14 03:58:42 marc Exp $	*/
+/*	$OpenBSD: pthread_private.h,v 1.46 2003/05/13 16:49:32 marc Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -624,7 +624,6 @@ struct pthread {
 	 */
 	sigset_t	sigmask;
 	sigset_t	sigpend;
-	int		sigmask_seqno;
 
 	/* Thread state: */
 	enum pthread_state	state;
