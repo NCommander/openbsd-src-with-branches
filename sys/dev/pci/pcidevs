@@ -1,4 +1,4 @@
-$OpenBSD: pcidevs,v 1.806 2004/12/06 16:06:01 mickey Exp $
+$OpenBSD: pcidevs,v 1.807 2004/12/07 11:06:56 jsg Exp $
 /*	$NetBSD: pcidevs,v 1.30 1997/06/24 06:20:24 thorpej Exp $ 	*/
 
 /*
@@ -1687,6 +1687,7 @@ product MENTOR PCI0660		0x0660	PCI
 product MENTOR PCI0661		0x0661	PCI-PCI
 
 /* Mitsubishi Electronics */
+product MITSUBISHIELEC 4D30T	0x0301	Powerstorm 4D30T
 product MITSUBISHIELEC GUI	0x0304	GUI Accel
 
 /* Motorola products */
