@@ -79,11 +79,9 @@ extern int mkstemps ();
    If success, DIR is returned.
    Otherwise NULL is returned.  */
 
-static const char *try PARAMS ((const char *, const char *));
-
-static const char *
+static char *
 try (dir, base)
-     const char *dir, *base;
+     char *dir, *base;
 {
   if (base != 0)
     return base;
@@ -104,7 +102,7 @@ try (dir, base)
 char *
 choose_temp_base ()
 {
-  const char *base = 0;
+  char *base = 0;
   char *temp_filename;
   int len;
   static char tmp[] = { DIR_SEPARATOR, 't', 'm', 'p', 0 };
@@ -149,7 +147,7 @@ char *
 make_temp_file (suffix)
      const char *suffix;
 {
-  const char *base = 0;
+  char *base = 0;
   char *temp_filename;
   int base_len, suffix_len;
   int fd;
