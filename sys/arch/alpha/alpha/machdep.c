@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.14 1997/01/17 05:53:37 kstailey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.15 1997/01/24 19:56:37 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.61 1996/12/07 01:54:49 cgd Exp $	*/
 
 /*
@@ -1134,10 +1134,12 @@ int sigpid = 0;
  * Send an interrupt to process.
  */
 void
-sendsig(catcher, sig, mask, code)
+sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	struct proc *p = curproc;
 	struct sigcontext *scp, ksc;
