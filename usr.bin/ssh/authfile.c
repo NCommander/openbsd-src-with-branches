@@ -36,7 +36,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: authfile.c,v 1.52 2003/03/13 11:42:18 markus Exp $");
+RCSID("$OpenBSD: authfile.c,v 1.53 2003/05/11 16:56:48 markus Exp $");
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -511,7 +511,7 @@ key_perm_ok(int fd, const char *filename)
 		error("@         WARNING: UNPROTECTED PRIVATE KEY FILE!          @");
 		error("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 		error("Permissions 0%3.3o for '%s' are too open.",
-		    st.st_mode & 0777, filename);
+		    (u_int)st.st_mode & 0777, filename);
 		error("It is recommended that your private key files are NOT accessible by others.");
 		error("This private key will be ignored.");
 		return 0;
