@@ -1,4 +1,4 @@
-/*	$OpenBSD: jobs.c,v 1.25 2004/12/18 22:11:43 millert Exp $	*/
+/*	$OpenBSD: jobs.c,v 1.26 2004/12/18 22:12:23 millert Exp $	*/
 
 /*
  * Process and job control
@@ -789,7 +789,7 @@ j_njobs(void)
 	sigprocmask(SIG_BLOCK, &sm_sigchld, &omask);
 	for (j = job_list; j; j = j->next)
 		nj++;
-		
+
 	sigprocmask(SIG_SETMASK, &omask, (sigset_t *) 0);
 	return nj;
 }
