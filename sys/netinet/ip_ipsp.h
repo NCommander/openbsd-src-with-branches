@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.41 1999/08/10 11:35:26 ho Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.42 1999/09/29 09:11:21 niklas Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -471,6 +471,11 @@ extern int ipe4_output(struct mbuf *, struct sockaddr_encap *, struct tdb *,
 		       struct mbuf **);
 extern void ipe4_input __P((struct mbuf *, ...));
 extern void ip4_input __P((struct mbuf *, ...));
+
+/* XF_ETHERIP */
+extern int etherip_output(struct mbuf *, struct sockaddr_encap *, struct tdb *,
+		          struct mbuf **);
+extern void etherip_input __P((struct mbuf *, ...));
 
 /* XF_OLD_AH */
 extern int ah_old_attach(void);
