@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.40 1998/09/07 00:47:11 niklas Exp $
+#	$OpenBSD: Makefile,v 1.41 1998/09/30 13:27:28 art Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -61,7 +61,7 @@ includes:
 
 beforeinstall:
 .ifndef DESTDIR
-	(cd ${.CURDIR}/etc && ${MAKE} DESTDIR=/ distrib-dirs)
+	(cd ${.CURDIR}/etc && ${MAKE} DESTDIR= distrib-dirs)
 .else
 	(cd ${.CURDIR}/etc && ${MAKE} distrib-dirs)
 .endif
