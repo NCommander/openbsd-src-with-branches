@@ -1,3 +1,4 @@
+/*	$OpenBSD: nfsv2.h,v 1.2 1996/02/26 23:05:23 gwr Exp $	*/
 /*	$NetBSD: nfsv2.h,v 1.2 1996/02/26 23:05:23 gwr Exp $	*/
 
 /*

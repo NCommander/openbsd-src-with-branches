@@ -1,3 +1,4 @@
+/* $OpenBSD: div.S,v 1.2 1996/04/26 20:05:28 mark Exp $ */
 /* $NetBSD: div.S,v 1.2 1996/04/26 20:05:28 mark Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: setjmp.S,v 1.3 1995/11/30 01:00:12 jtc Exp $	*/
 /*	$NetBSD: setjmp.S,v 1.3 1995/11/30 01:00:12 jtc Exp $	*/
 
 /* 

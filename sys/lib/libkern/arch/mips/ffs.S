@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #include "DEFS.h"
 
 
