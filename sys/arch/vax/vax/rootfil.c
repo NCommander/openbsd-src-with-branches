@@ -1,4 +1,4 @@
-/*	$OpenBSD: rootfil.c,v 1.11 2001/06/15 22:45:33 miod Exp $	*/
+/*	$OpenBSD: rootfil.c,v 1.12 2002/06/11 09:36:24 hugh Exp $	*/
 /*	$NetBSD: rootfil.c,v 1.14 1996/10/13 03:35:58 christos Exp $	*/
 
 /*
@@ -413,55 +413,6 @@ getstr(char *buf, int size) {
 	cnpollc(0);
 	return (len);
 }
-
-#if 0
-static int
-getstr(cp, size)
-        char *cp;
-        int size;
-{
-        char *lp;
-        int c;
-        int len;
-
-        lp = cp;
-        len = 0;
-        for (;;) {
-                c = cngetc();
-                switch (c) {
-                case '\n':
-                case '\r':
-                        printf("\n");
-                        *lp++ = '\0';
-                        return (len);
-                case '\b':
-                case '\177':
-                case '#':
-                        if (len) {
-                                --len;
-                                --lp;
-                                printf("\b \b");
-                        }
-                        continue;
-                case '@':
-                case 'u'&037:
-                        len = 0;
-                        lp = cp;
-                        printf("\n");
-                        continue;
-                default:
-                        if (len + 1 >= size || c < ' ') {
-                                printf("\007");
-                                continue;
-                        }
-                        printf("%c", c);
-                        ++len;
-                        *lp++ = c;
-                }
-        }
-}
-
-#endif
 
 /*
  * Configure swap space and related parameters.
