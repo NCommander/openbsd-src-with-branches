@@ -100,7 +100,8 @@ extern vm_offset_t ppc_kvm_size;
 
 #define	VM_PHYS_SIZE		(USRIOSIZE * PAGE_SIZE)
 
-struct pmap_physseg {
+#define __HAVE_PMAP_PHYSSEG
+struct pmap_physselg {
 	struct pv_entry *pvent;
 	char *attrs;
 	/* NULL ??? */
