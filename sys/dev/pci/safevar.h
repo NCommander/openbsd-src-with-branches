@@ -152,9 +152,6 @@ struct safe_softc {
 	struct resource		*sc_sr;		/* memory resource */
 	bus_dma_tag_t		sc_dmat;
 	u_int			sc_chiprev;	/* major/minor chip revision */
-	int			sc_flags;	/* device specific flags */
-#define	SAFE_FLAGS_KEY		0x01		/* has key accelerator */
-#define	SAFE_FLAGS_RNG		0x02		/* hardware rng */
 	int			sc_suspended;
 	int			sc_needwakeup;	/* notify crypto layer */
 	int32_t			sc_cid;		/* crypto tag */
