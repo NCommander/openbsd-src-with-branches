@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.21 2003/06/03 02:56:09 millert Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.22 2003/07/02 20:54:17 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -39,7 +39,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)kdump.c	8.4 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$OpenBSD: kdump.c,v 1.21 2003/06/03 02:56:09 millert Exp $";
+static char *rcsid = "$OpenBSD: kdump.c,v 1.22 2003/07/02 20:54:17 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -220,9 +220,12 @@ main(int argc, char *argv[])
 		if ((ktrlen = ktr_header.ktr_len) < 0)
 			errx(1, "bogus length 0x%x", ktrlen);
 		if (ktrlen > size) {
-			m = (void *)realloc(m, ktrlen+1);
-			if (m == NULL)
+			void *newm;
+
+			newm = realloc(m, ktrlen+1);
+			if (newm == NULL)
 				errx(1, "%s", strerror(ENOMEM));
+			m = newm;
 			size = ktrlen;
 		}
 		if (ktrlen && fread_tail(m, ktrlen, 1) == 0)
