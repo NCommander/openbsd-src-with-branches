@@ -22,7 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keysign.c,v 1.9 2002/12/19 00:07:02 djm Exp $");
+RCSID("$OpenBSD: ssh-keysign.c,v 1.13 2003/07/03 08:09:06 djm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -42,14 +42,15 @@ RCSID("$OpenBSD: ssh-keysign.c,v 1.9 2002/12/19 00:07:02 djm Exp $");
 #include "pathnames.h"
 #include "readconf.h"
 
-uid_t original_real_uid;	/* XXX readconf.c needs this */
+/* XXX readconf.c needs these */
+uid_t original_real_uid;
 
 static int
 valid_request(struct passwd *pw, char *host, Key **ret, u_char *data,
     u_int datalen)
 {
 	Buffer b;
-	Key *key;
+	Key *key = NULL;
 	u_char *pkblob;
 	u_int blen, len;
 	char *pkalg, *p;

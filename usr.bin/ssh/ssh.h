@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.h,v 1.70 2002/06/03 12:04:07 deraadt Exp $	*/
+/*	$OpenBSD: ssh.h,v 1.74 2003/09/01 13:52:18 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -78,9 +78,6 @@
  * protocol.)
  */
 #define SSH_SESSION_KEY_LENGTH		32
-
-/* Name of Kerberos service for SSH to use. */
-#define KRB4_SERVICE_NAME		"rcmd"
 
 /* Used to identify ``EscapeChar none'' */
 #define SSH_ESCAPECHAR_NONE		-2

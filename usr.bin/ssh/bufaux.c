@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: bufaux.c,v 1.27 2002/06/26 08:53:12 markus Exp $");
+RCSID("$OpenBSD: bufaux.c,v 1.29 2003/04/08 20:21:28 itojun Exp $");
 
 #include <openssl/bn.h>
 #include "bufaux.h"
@@ -119,7 +119,7 @@ buffer_put_bignum2(Buffer *buffer, BIGNUM *value)
 		/**XXX should be two's-complement */
 		int i, carry;
 		u_char *uc = buf;
-		log("negativ!");
+		logit("negativ!");
 		for (i = bytes-1, carry = 1; i>=0; i--) {
 			uc[i] ^= 0xff;
 			if (carry)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: scard.h,v 1.10 2002/03/25 17:34:27 markus Exp $	*/
+/*	$OpenBSD: scard.h,v 1.12 2003/06/12 19:12:03 markus Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -36,5 +36,6 @@
 Key	**sc_get_keys(const char *, const char *);
 void	 sc_close(void);
 int	 sc_put_key(Key *, const char *);
+char	*sc_get_key_label(Key *);
 
 #endif
