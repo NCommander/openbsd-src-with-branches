@@ -1,4 +1,4 @@
-/*      $OpenBSD: pciide.c,v 1.54 2001/06/25 23:00:55 csapuntz Exp $     */
+/*      $OpenBSD: pciide.c,v 1.55 2001/06/26 05:58:38 csapuntz Exp $     */
 /*	$NetBSD: pciide.c,v 1.110 2001/03/20 17:56:46 bouyer Exp $	*/
 
 /*
@@ -473,7 +473,6 @@ void	pciide_map_compat_intr __P(( struct pci_attach_args *,
 	    struct pciide_channel *, int, int));
 void	pciide_unmap_compat_intr __P(( struct pci_attach_args *,
 	    struct pciide_channel *, int, int));
-int	pciide_print __P((void *, const char *pnp));
 int	pciide_compat_intr __P((void *));
 int	pciide_pci_intr __P((void *));
 const struct pciide_product_desc* pciide_lookup_product __P((u_int32_t));
