@@ -1,4 +1,4 @@
-/*	$OpenBSD: modstat.c,v 1.15 2002/01/08 04:59:24 ericj Exp $	*/
+/*	$OpenBSD: modstat.c,v 1.16 2002/01/08 17:16:38 ericj Exp $	*/
 
 /*
  * Copyright (c) 1993 Terrence R. Lambert.
@@ -54,7 +54,6 @@ static char *type_names[] = {
 	"SYSCALL",
 	"VFS",
 	"DEV",
-	"STRMOD",
 	"EXEC",
 	"MISC"
 };
