@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.27 2004/01/28 22:12:33 henning Exp $ */
+/*	$OpenBSD: log.c,v 1.28 2004/02/25 23:55:40 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -77,7 +77,8 @@ static const char *suberr_open_names[] = {
 	"BGPID invalid",
 	"optional parameter error",
 	"Authentication error",
-	"unacceptable holdtime"
+	"unacceptable holdtime",
+	"unsupported capability"
 };
 
 static const char *suberr_update_names[] = {
