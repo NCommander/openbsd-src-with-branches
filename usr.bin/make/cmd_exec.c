@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: cmd_exec.c,v 1.2 2002/07/31 19:29:20 mickey Exp $ */
+/*	$OpenBSD: cmd_exec.c,v 1.3 2002/08/05 17:04:36 millert Exp $ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *
@@ -126,7 +126,7 @@ Cmd_Exec(cmd, err)
 	/* The result is null terminated, Convert newlines to spaces. */
 	cp = result + length - 1;
 
-	if (*cp == '\n')
+	if (cp >= result && *cp == '\n')
 	    /* A final newline is just stripped.  */
 	    *cp-- = '\0';
 
