@@ -1,11 +1,11 @@
-/*	$OpenBSD: ns_main.c,v 1.8 1998/03/20 03:06:51 angelos Exp $	*/
+/*	$OpenBSD: ns_main.c,v 1.9 1998/04/18 08:12:34 deraadt Exp $	*/
 
 #if !defined(lint) && !defined(SABER)
 #if 0
 static char sccsid[] = "@(#)ns_main.c	4.55 (Berkeley) 7/1/91";
 static char rcsid[] = "$From: ns_main.c,v 8.24 1996/11/26 10:11:22 vixie Exp $";
 #else
-static char rcsid[] = "$OpenBSD: ns_main.c,v 1.8 1998/03/20 03:06:51 angelos Exp $";
+static char rcsid[] = "$OpenBSD: ns_main.c,v 1.9 1998/04/18 08:12:34 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -168,7 +168,7 @@ usage()
 }
 
 /*ARGSUSED*/
-void
+int
 main(argc, argv, envp)
 	int argc;
 	char *argv[], *envp[];
