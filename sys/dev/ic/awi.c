@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: awi.c,v 1.26 2000/07/21 04:48:55 onoe Exp $	*/
 
 /*-
