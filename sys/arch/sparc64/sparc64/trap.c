@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.4 2001/08/23 17:40:05 art Exp $	*/
+/*	$OpenBSD: trap.c,v 1.5 2001/08/25 12:27:30 art Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -49,7 +49,6 @@
  *	@(#)trap.c	8.4 (Berkeley) 9/23/93
  */
 
-#define DEBUG
 #define NEW_FPSTATE
 
 #include <sys/param.h>
