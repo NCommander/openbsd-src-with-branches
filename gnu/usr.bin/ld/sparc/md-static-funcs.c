@@ -1,4 +1,4 @@
-/* *	$OpenBSD: md-static-funcs.c,v 1.1.1.1 1995/10/18 08:40:58 deraadt Exp $*/
+/* *	$OpenBSD: md-static-funcs.c,v 1.2 1998/03/26 19:47:32 niklas Exp $*/
 
 /*
  *
@@ -14,8 +14,8 @@ struct relocation_info	*r;
 long			relocation;
 char			*addr;
 {
-	register unsigned long	mask;
-	register unsigned long	shift;
+	unsigned long	mask;
+	unsigned long	shift;
 
 	switch (r->r_type) {
 	case RELOC_32:

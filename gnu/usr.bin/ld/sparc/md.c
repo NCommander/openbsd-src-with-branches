@@ -1,4 +1,4 @@
-/* *	$OpenBSD: md.c,v 1.6 1998/03/26 19:47:33 niklas Exp $*/
+/* *	$OpenBSD: md.c,v 1.7 1999/05/10 16:20:47 espie Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -119,7 +119,7 @@ md_relocate(r, relocation, addr, relocatable_output)
 	unsigned char		*addr;
 	int			relocatable_output;
 {
-	register unsigned long	mask;
+	unsigned long	mask;
 
 	if (relocatable_output) {
 		/*
