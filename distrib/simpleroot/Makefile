@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 1997/05/14 18:39:05 niklas Exp $
+#	$OpenBSD: Makefile,v 1.8 1997/05/15 12:33:06 graichen Exp $
 
 # Revision is 2.1
 REV=		21
@@ -35,7 +35,7 @@ all:
 .ifdef BOOT_DISKLABEL
 	disklabel -B ${BOOT_DISKLABEL} ${VND} ${DISKTYPE}
 .endif
-	newfs ${NEWFSOPTS} ${VND_RDEV} ${DISKTYPE}
+	newfs ${NEWFSOPTS} ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}
 .ifdef BOOT_INSTALLBOOT
 	/usr/mdec/installboot -v ${MOUNT_POINT}/boot ${BOOT_INSTALLBOOT} ${VND}

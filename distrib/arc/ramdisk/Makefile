@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 1997/05/24 14:21:00 pefo Exp $
+#	$OpenBSD: Makefile,v 1.7 1997/09/05 21:16:46 deraadt Exp $
 
 # NOTE! We don't do crunched yet!
 
@@ -55,7 +55,7 @@ rd_setup:
 	dd if=/dev/zero of=${REALIMAGE} bs=512 count=${NBLKS}
 	vnconfig -v -c ${VND} ${REALIMAGE}
 	disklabel -w -r ${VND} ${DISKTYPE}
-	newfs ${NEWFSARGS} ${VND_RDEV} ${DISKTYPE}
+	newfs ${NEWFSARGS} ${VND_RDEV}
 	fsck ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}
 
