@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgmap.c,v 1.2 2000/10/09 23:11:57 bjc Exp $	*/
+/*	$OpenBSD: sgmap.c,v 1.3 2001/02/06 04:27:45 hugh Exp $	*/
 /* $NetBSD: sgmap.c,v 1.8 2000/06/29 07:14:34 mrg Exp $ */
 
 /*-
@@ -243,7 +243,7 @@ vax_sgmap_load(t, map, buf, buflen, p, flags, sgmap)
 		 * Get the physical address for this segment.
 		 */
 		if (p != NULL)
-			pa = pmap_extract(p->p_vmspace->vm_map.pmap, va);
+			pmap_extract(p->p_vmspace->vm_map.pmap, va, &pa);
 		else
 			pa = kvtophys(va);
 

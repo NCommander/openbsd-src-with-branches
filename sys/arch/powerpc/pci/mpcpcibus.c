@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.24 2001/03/29 20:02:52 drahn Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.25 2001/03/29 20:05:04 drahn Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -722,7 +722,7 @@ vtophys(p)
 		pa = va;
 	}
 	else {
-		pa = pmap_extract(vm_map_pmap(phys_map), va);
+		pmap_extract(vm_map_pmap(phys_map), va, &pa);
 	}
 	return(pa | ((pci_map_a == 1) ? MPC106_PCI_CPUMEM : 0 ));
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_pager.c,v 1.8 1997/11/06 05:59:37 csapuntz Exp $	*/
+/*	$OpenBSD: vm_pager.c,v 1.9 1999/09/03 18:02:29 art Exp $	*/
 /*	$NetBSD: vm_pager.c,v 1.21 1996/03/16 23:15:25 christos Exp $	*/
 
 /* 
@@ -381,8 +381,7 @@ vm_pager_atop(kva)
 {
 	vm_offset_t pa;
 
-	pa = pmap_extract(vm_map_pmap(pager_map), kva);
-	if (pa == 0)
+	if (pmap_extract(vm_map_pmap(pager_map), kva, &pa) == FALSE)
 		panic("vm_pager_atop");
 	return (PHYS_TO_VM_PAGE(pa));
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.34 1999/07/23 13:18:04 niklas Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.35 2000/07/06 08:44:28 ho Exp $	*/
 /*	$NetBSD: isa_machdep.c,v 1.22 1997/06/12 23:57:32 thorpej Exp $	*/
 
 #define ISA_DMA_STATS
@@ -1047,7 +1047,7 @@ _isa_dma_check_buffer(buf, buflen, segcnt, boundary, p)
 		/*
 		 * Get physical address for this segment.
 		 */
-		pa = pmap_extract(pmap, (vm_offset_t)vaddr);
+		pmap_extract(pmap, (vm_offset_t)vaddr, &pa);
 		pa = trunc_page(pa);
 
 		/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.6 2000/01/01 19:41:00 deraadt Exp $	*/
+/*	$OpenBSD: iommu.c,v 1.7 2001/05/10 10:34:46 art Exp $	*/
 /*	$NetBSD: iommu.c,v 1.13 1997/07/29 09:42:04 fair Exp $ */
 
 /*
@@ -371,7 +371,7 @@ if ((int)sc->sc_dvmacur + len > 0)
 	iovaddr = tva = sc->sc_dvmacur;
 	sc->sc_dvmacur += len;
 	while (len) {
-		pa = pmap_extract(pmap_kernel(), va);
+		pmap_extract(pmap_kernel(), va, &pa);
 
 #define IOMMU_PPNSHIFT	8
 #define IOMMU_V		0x00000002
