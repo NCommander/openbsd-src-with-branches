@@ -1,4 +1,4 @@
-/*	$OpenBSD: tokenadm.c,v 1.3 2001/10/24 13:06:36 mpech Exp $	*/
+/*	$OpenBSD: tokenadm.c,v 1.4 2002/05/30 19:09:05 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -212,7 +212,7 @@ usage:
 
 	argv += optind - 1;
 	while (*++argv)
-		switch(what) {
+		switch (what) {
 		case LIST:
 			if (tokendb_getrec(*argv, &tokenrec)) {
 				printf("%s: no such user\n", *argv);
