@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_physio.c,v 1.5 1999/02/26 05:13:22 art Exp $	*/
+/*	$OpenBSD: kern_physio.c,v 1.6 1999/11/05 01:19:13 mickey Exp $	*/
 /*	$NetBSD: kern_physio.c,v 1.28 1997/05/19 10:43:28 pk Exp $	*/
 
 /*-
@@ -137,6 +137,7 @@ physio(strategy, bp, dev, flags, minphys, uio)
 	bp->b_dev = dev;
 	bp->b_error = 0;
 	bp->b_proc = p;
+	LIST_INIT(&bp->b_dep);
 
 	/*
 	 * [while there are data to transfer and no I/O error]
