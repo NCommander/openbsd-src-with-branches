@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: raw_usrreq.c,v 1.2 1996/03/03 21:07:18 niklas Exp $	*/
 /*	$NetBSD: raw_usrreq.c,v 1.11 1996/02/13 22:00:43 christos Exp $	*/
 
 /*
@@ -227,8 +227,10 @@ raw_usrreq(so, req, m, nam, control)
 		}
 		error = raw_bind(so, nam);
 		break;
+#else
+	case PRU_CONNECT:
+	case PRU_BIND:
 #endif
-
 	case PRU_CONNECT2:
 		error = EOPNOTSUPP;
 		goto release;
