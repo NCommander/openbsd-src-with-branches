@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rmp_var.h,v 1.7.2.1 1995/11/14 08:45:43 thorpej Exp $	*/
 
 /*
