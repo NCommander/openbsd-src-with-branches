@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_ieee80211.h,v 1.2 2000/09/04 04:02:08 mickey Exp $	*/
 /*	$NetBSD: if_ieee80211.h,v 1.4 2000/07/05 02:35:53 onoe Exp $	*/
 
 
@@ -134,4 +134,4 @@ struct ieee80211_nwkey {
 #define	SIOCS80211NWKEY		 _IOW('i', 232, struct ieee80211_nwkey)
 #define	SIOCG80211NWKEY		_IOWR('i', 233, struct ieee80211_nwkey)
 
-#endif /* !_NET_IF_IEEE80211_H_ */
+#endif /* _NET_IF_IEEE80211_H_ */

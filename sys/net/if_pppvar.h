@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppvar.h,v 1.7 1998/05/08 05:02:08 millert Exp $	*/
+/*	$OpenBSD: if_pppvar.h,v 1.8 2000/06/30 01:05:19 art Exp $	*/
 /*	$NetBSD: if_pppvar.h,v 1.5 1997/01/03 07:23:29 mikel Exp $	*/
 /*
  * if_pppvar.h - private structures and declarations for PPP.
@@ -114,5 +114,4 @@ void	ppp_restart __P((struct ppp_softc *sc));
 int	pppoutput __P((struct ifnet *, struct mbuf *,
 		       struct sockaddr *, struct rtentry *));
 #endif /* _KERNEL */
-
 #endif /* _NET_IF_PPPVAR_H_ */
