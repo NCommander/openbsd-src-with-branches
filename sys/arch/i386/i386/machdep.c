@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.284 2004/02/27 21:46:44 grange Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.285 2004/03/10 23:02:53 tom Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -114,8 +114,6 @@
 #include <stand/boot/bootarg.h>
 
 #include <uvm/uvm_extern.h>
-
-#include <sys/sysctl.h>
 
 #define _I386_BUS_DMA_PRIVATE
 #include <machine/bus.h>
