@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2002/09/02 19:56:55 avsm Exp $
+#	$OpenBSD: Makefile,v 1.14 2002/09/02 22:37:18 avsm Exp $
 
 #
 # To run full regression tests you just need two steps:
@@ -52,7 +52,7 @@ _REGRESS_CLEAN=rm -f ${_REGRESS_TMP}
 	echo Mailing regress results to ${REGRESS_MAIL} ...
 	echo If you want them to be also logged locally, you can set the
 	echo REGRESS_LOG make variable to the full path of a log file.
-	(sysctl -n kern.version && cat ${_REGRESS_TMP}) | /usr/bin/mail -s "Regress:  `uname -a`" ${REGRESS_MAIL}
+	(sysctl -n kern.version && cat ${_REGRESS_TMP}) | /usr/bin/mail -s "Regress: `uname -a`" ${REGRESS_MAIL}
 .endif
 	echo ====================================================================
 	${_REGRESS_CLEAN}
