@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_autoconf.c,v 1.20 1998/02/20 14:51:57 niklas Exp $	*/
+/*	$OpenBSD: subr_autoconf.c,v 1.21 1998/05/11 09:59:39 niklas Exp $	*/
 /*	$NetBSD: subr_autoconf.c,v 1.21 1996/04/04 06:06:18 cgd Exp $	*/
 
 /*
@@ -147,7 +147,7 @@ mapply(m, cf)
 		pri = (*m->fn)(m->parent, match, m->aux);
 	else {
 	        if (cf->cf_attach->ca_match == NULL) {
-			panic("mapply: no match function for '%s' device\n",
+			panic("mapply: no match function for '%s' device",
 			    cf->cf_driver->cd_name);
 		}
 		pri = (*cf->cf_attach->ca_match)(m->parent, match, m->aux);

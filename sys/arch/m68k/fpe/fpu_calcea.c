@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_calcea.c,v 1.4 1997/01/13 11:51:03 niklas Exp $	*/
+/*	$OpenBSD: fpu_calcea.c,v 1.5 1997/02/13 21:49:15 kstailey Exp $	*/
 /*	$NetBSD: fpu_calcea.c,v 1.7 1996/10/16 06:27:05 scottr Exp $	*/
 
 /*
@@ -70,7 +70,7 @@ fpu_decode_ea(frame, insn, ea, modreg)
 
 #ifdef DEBUG
     if (insn->is_datasize < 0) {
-	panic("decode_ea: called with uninitialized datasize\n");
+	panic("decode_ea: called with uninitialized datasize");
     }
 #endif
 

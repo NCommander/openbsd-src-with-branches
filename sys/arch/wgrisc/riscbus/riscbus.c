@@ -1,4 +1,4 @@
-/*	$OpenBSD: riscbus.c,v 1.2 1997/02/23 21:59:31 pefo Exp $ */
+/*	$OpenBSD: riscbus.c,v 1.3 1997/08/24 12:01:14 pefo Exp $ */
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -274,7 +274,7 @@ int
 riscbus_intrnull(val)
 	void *val;
 {
-	panic("uncaught RISCBUS interrupt for slot %d\n", val);
+	panic("uncaught RISCBUS interrupt for slot %d", val);
 }
 
 /*

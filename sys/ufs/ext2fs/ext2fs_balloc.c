@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_balloc.c,v 1.2 1997/05/30 08:33:39 downsj Exp $	*/
+/*	$OpenBSD: ext2fs_balloc.c,v 1.3 1997/06/12 21:09:31 downsj Exp $	*/
 /*	$NetBSD: ext2fs_balloc.c,v 1.1 1997/06/11 09:33:44 bouyer Exp $	*/
 
 /*
@@ -121,7 +121,7 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 		return(error);
 #ifdef DIAGNOSTIC
 	if (num < 1)
-		panic ("ext2fs_balloc: ufs_getlbns returned indirect block\n");
+		panic ("ext2fs_balloc: ufs_getlbns returned indirect block");
 #endif
 	/*
 	 * Fetch the first indirect block allocating if necessary.

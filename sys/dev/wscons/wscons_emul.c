@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_emul.c,v 1.11 1997/07/31 13:40:04 kstailey Exp $	*/
+/*	$OpenBSD: wscons_emul.c,v 1.12 1997/11/06 12:26:59 niklas Exp $	*/
 /*	$NetBSD: wscons_emul.c,v 1.7 1996/11/19 05:23:13 cgd Exp $	*/
 
 /*
@@ -437,7 +437,7 @@ wscons_emul_input(we, cp, n)
 
 		default:
 #ifdef DIAGNOSTIC
-			panic("wscons_emul: invalid state %d\n", we->ac_state);
+			panic("wscons_emul: invalid state %d", we->ac_state);
 #endif
 			/* try to recover, if things get screwed up... */
 			newstate = ANSICONS_STATE_NORMAL;

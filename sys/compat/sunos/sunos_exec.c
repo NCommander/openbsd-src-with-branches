@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunos_exec.c,v 1.6 1996/08/31 09:24:04 pefo Exp $	*/
+/*	$OpenBSD: sunos_exec.c,v 1.7 1996/12/23 02:56:50 deraadt Exp $	*/
 /*	$NetBSD: sunos_exec.c,v 1.11 1996/05/05 12:01:47 briggs Exp $	*/
 
 /*
@@ -175,7 +175,7 @@ sunos_exec_aout_prep_zmagic(p, epp)
 	    epp->ep_vp->v_writecount != 0) {
 #ifdef DIAGNOSTIC
 		if (epp->ep_vp->v_flag & VTEXT)
-			panic("exec: a VTEXT vnode has writecount != 0\n");
+			panic("exec: a VTEXT vnode has writecount != 0");
 #endif
 		return ETXTBSY;
 	}

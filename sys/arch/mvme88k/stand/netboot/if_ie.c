@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.2 1998/08/22 08:38:00 smurph Exp $ */
+/*	$OpenBSD: if_ie.c,v 1.3 1998/12/15 06:32:35 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -146,7 +146,7 @@ ie_error(nif, str, ier)
 	char   *str;
 	volatile struct iereg *ier;
 {
-	panic("ie%d: unknown error\n", nif->nif_unit);
+	panic("ie%d: unknown error", nif->nif_unit);
 }
 
 ieack(ier, iem)

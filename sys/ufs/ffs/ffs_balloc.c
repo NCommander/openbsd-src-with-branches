@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_balloc.c,v 1.5 1997/10/06 20:21:34 deraadt Exp $	*/
+/*	$OpenBSD: ffs_balloc.c,v 1.6 1997/11/06 05:59:17 csapuntz Exp $	*/
 /*	$NetBSD: ffs_balloc.c,v 1.3 1996/02/09 22:22:21 christos Exp $	*/
 
 /*
@@ -197,7 +197,7 @@ ffs_balloc(v)
 		return(error);
 #ifdef DIAGNOSTIC
 	if (num < 1)
-		panic ("ffs_balloc: ufs_bmaparray returned indirect block\n");
+		panic ("ffs_balloc: ufs_bmaparray returned indirect block");
 #endif
 	/*
 	 * Fetch the first indirect block allocating if necessary.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: isr.c,v 1.6 1997/01/16 04:04:24 kstailey Exp $	*/
+/*	$OpenBSD: isr.c,v 1.7 1997/07/23 06:58:30 denny Exp $	*/
 /*	$NetBSD: isr.c,v 1.25 1996/11/20 18:57:32 gwr Exp $	*/
 
 /*-
@@ -292,7 +292,7 @@ set_vector_entry(entry, handler)
 	void (*handler) __P((void));
 {
 	if ((entry <0) || (entry >= NVECTORS))
-		panic("set_vector_entry: setting vector too high or low\n");
+		panic("set_vector_entry: setting vector too high or low");
 	vector_table[entry] =  handler;
 }
 
@@ -301,6 +301,6 @@ get_vector_entry(entry)
 	int entry;
 {
 	if ((entry <0) || (entry >= NVECTORS))
-		panic("get_vector_entry: setting vector too high or low\n");
+		panic("get_vector_entry: setting vector too high or low");
 	return (unsigned int) vector_table[entry];
 }

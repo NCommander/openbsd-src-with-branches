@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccom.c,v 1.25 1998/06/28 01:47:23 angelos Exp $	*/
+/*	$OpenBSD: pccom.c,v 1.26 1998/10/07 02:10:52 downsj Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -836,7 +836,7 @@ comattach(parent, self, aux)
 		sc->sc_fifolen = 128;
 		break;
 	default:
-		panic("comattach: bad fifo type\n");
+		panic("comattach: bad fifo type");
 	}
 
 	/* clear and disable fifo */

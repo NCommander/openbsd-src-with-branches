@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc.c,v 1.8 1997/12/12 17:13:56 gene Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.9 1998/02/20 13:43:23 niklas Exp $	*/
 /*	$NetBSD: kern_malloc.c,v 1.15.4.2 1996/06/13 17:10:56 cgd Exp $	*/
 
 /*
@@ -300,7 +300,7 @@ free(addr, type)
 	else
 		alloc = addrmask[kup->ku_indx];
 	if (((u_long)addr & alloc) != 0)
-		panic("free: unaligned addr %p, size %ld, type %s, mask %ld\n",
+		panic("free: unaligned addr %p, size %ld, type %s, mask %ld",
 			addr, size, memname[type], alloc);
 #endif /* DIAGNOSTIC */
 	if (size > MAXALLOCSAVE) {

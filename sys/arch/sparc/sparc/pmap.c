@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.21 1998/05/10 18:30:40 deraadt Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.22 1998/05/29 16:21:35 jason Exp $	*/
 /*	$NetBSD: pmap.c,v 1.118 1998/05/19 19:00:18 thorpej Exp $ */
 
 /*
@@ -821,7 +821,7 @@ pmap_next_page(paddr)
 #ifdef DIAGNOSTIC
         /* Any available memory remaining? */
         if (avail_next >= avail_end) {
-		panic("pmap_next_page: too much memory?!\n");
+		panic("pmap_next_page: too much memory?!");
 	}
 #endif
 

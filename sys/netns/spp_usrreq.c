@@ -1,4 +1,4 @@
-/*	$OpenBSD: spp_usrreq.c,v 1.6 1998/01/03 22:32:57 deraadt Exp $	*/
+/*	$OpenBSD: spp_usrreq.c,v 1.7 1998/03/10 08:29:14 deraadt Exp $	*/
 /*	$NetBSD: spp_usrreq.c,v 1.9 1996/02/13 22:14:13 christos Exp $	*/
 
 /*
@@ -104,7 +104,7 @@ spp_input(m, va_alist)
 
 	sppstat.spps_rcvtotal++;
 	if (nsp == 0) {
-		panic("No nspcb in spp_input\n");
+		panic("No nspcb in spp_input");
 		return;
 	}
 

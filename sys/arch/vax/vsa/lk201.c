@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lk201.c,v 1.2 1997/05/29 00:05:34 niklas Exp $	*/
 
 /*
  * The LK201 keycode mapping routine is here, along with initialization
@@ -331,7 +331,7 @@ LKgetc(dev)
 #endif
 
 	if (raw_kbd_getc == NULL) {
-		panic("Reading from LK-201 before keyboard driver diverted\n");
+		panic("Reading from LK-201 before keyboard driver diverted");
 		return (-1);
 	}
 

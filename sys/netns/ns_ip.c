@@ -1,4 +1,4 @@
-/*	$OpenBSD: ns_ip.c,v 1.6 1996/05/22 12:02:43 deraadt Exp $	*/
+/*	$OpenBSD: ns_ip.c,v 1.7 1996/10/21 10:58:19 mickey Exp $	*/
 /*	$NetBSD: ns_ip.c,v 1.16 1996/05/09 22:29:40 scottr Exp $	*/
 
 /*
@@ -322,7 +322,7 @@ void
 nsipstart(ifp)
 	struct ifnet *ifp;
 {
-	panic("nsip_start called\n");
+	panic("nsip_start called");
 }
 
 struct ifreq ifr = {"nsip0"};		/* XXX */

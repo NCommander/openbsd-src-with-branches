@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioasic.c,v 1.5 1996/11/23 21:45:00 kstailey Exp $	*/
+/*	$OpenBSD: ioasic.c,v 1.6 1997/01/24 19:58:13 niklas Exp $	*/
 /*	$NetBSD: ioasic.c,v 1.10 1996/12/05 01:39:41 cgd Exp $	*/
 
 /*
@@ -283,7 +283,7 @@ ioasic_intrnull(val)
 	void *val;
 {
 
-	panic("ioasic_intrnull: uncaught IOASIC intr for cookie %ld\n",
+	panic("ioasic_intrnull: uncaught IOASIC intr for cookie %ld",
 	    (u_long)val);
 }
 

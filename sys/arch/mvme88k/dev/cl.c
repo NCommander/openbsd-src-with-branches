@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.1.1.1 1997/03/03 19:32:04 rahnds Exp $ */
+/*	$OpenBSD: cl.c,v 1.2 1998/12/15 05:52:29 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -374,7 +374,7 @@ clattach(parent, self, aux)
 		break;
 	default:	
 		/* oops */
-		panic ("cl driver on unknown bus\n");
+		panic ("cl driver on unknown bus");
 	}
 
 	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_txintrcnt);

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: trap.c,v 1.1 1999/01/01 16:10:29 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -162,7 +162,7 @@ trap(type, frame)
 		ret = vm_fault(map, va, FAULT_TYPE(opcode), FALSE);
 		if (ret == KERN_SUCCESS)
 			break;
-		panic("trap: vm_fault(%p, %x, %d, %d): %d\n",
+		panic("trap: vm_fault(%p, %x, %d, %d): %d",
 		      map, va, FAULT_TYPE(opcode), 0, ret);
 		break;
 	default:

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bus_space.c,v 1.1 1998/04/27 02:01:45 gene Exp $	*/
 /*	$NetBSD: bus_space.c,v 1.2 1998/04/24 05:27:24 scottr Exp $	*/
 
 /*-
@@ -280,7 +280,7 @@ mac68k_bus_space_probe(t, bsh, offset, sz)
 		break;
 	case 8:
 	default:
-		panic("bus_space_probe: unsupported data size %d\n", sz);
+		panic("bus_space_probe: unsupported data size %d", sz);
 		/* NOTREACHED */
 	}
 

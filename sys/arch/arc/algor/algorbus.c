@@ -1,4 +1,4 @@
-/*	$OpenBSD: algorbus.c,v 1.4 1998/01/29 14:54:45 pefo Exp $ */
+/*	$OpenBSD: algorbus.c,v 1.5 1998/03/16 09:38:25 pefo Exp $ */
 
 /*
  * Copyright (c) 1996, 1997, 1998 Per Fogelstrom, Opsycon AB
@@ -398,7 +398,7 @@ int
 algor_intrnull(val)
 	void *val;
 {
-	panic("uncaught ALGOR intr for slot %d\n", val);
+	panic("uncaught ALGOR intr for slot %d", val);
 }
 
 /*

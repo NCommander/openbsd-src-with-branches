@@ -1,4 +1,4 @@
-/*      $OpenBSD: trap.c,v 1.9 1997/10/08 07:12:08 niklas Exp $     */
+/*      $OpenBSD: trap.c,v 1.10 1998/05/11 16:19:13 niklas Exp $     */
 /*      $NetBSD: trap.c,v 1.28 1997/07/28 21:48:33 ragge Exp $     */
 
 /*
@@ -250,7 +250,7 @@ faulter:
 				faultaddr = (u_int)pm->pm_pcb->P1BR +
 				    ((testaddr >> PGSHIFT) << 2);
 			} else
-				panic("pageflt: PTE fault in SPT\n");
+				panic("pageflt: PTE fault in SPT");
 
 			rv = vm_fault(pte_map, faultaddr & ~PAGE_MASK, 
 			    VM_PROT_WRITE|VM_PROT_READ, FALSE);

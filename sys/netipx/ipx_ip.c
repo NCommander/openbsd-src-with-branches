@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_ip.c,v 1.1 1996/08/16 09:16:00 mickey Exp $	*/
+/*	$OpenBSD: ipx_ip.c,v 1.3 1996/10/26 09:34:51 mickey Exp $	*/
 
 /*-
  *
@@ -310,7 +310,7 @@ void
 ipxipstart(ifp)
 struct ifnet *ifp;
 {
-	panic("ipxip_start called\n");
+	panic("ipxip_start called");
 }
 
 struct ifreq ifr_ipxip = {"ipx0"};

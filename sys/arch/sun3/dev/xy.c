@@ -1,4 +1,4 @@
-/*	$OpenBSD: xy.c,v 1.10 1997/08/08 21:46:54 niklas Exp $	*/
+/*	$OpenBSD: xy.c,v 1.11 1998/10/03 21:18:59 millert Exp $	*/
 /* $NetBSD: xy.c,v 1.11 1996/10/13 03:47:40 christos Exp $ */
 
 /*
@@ -1371,7 +1371,7 @@ xyc_submit_iorq(xycsc, iorq, type)
 	if (iopb == NULL) { /* nothing doing? */
 		if (type == XY_SUB_NORM || type == XY_SUB_NOQ) 
 			return(XY_ERR_AOK);
-		panic("xyc_submit_iorq: xyc_chain failed!\n");
+		panic("xyc_submit_iorq: xyc_chain failed!");
 	}
 	iopbaddr = dvma_kvtopa((long) iopb, BUS_VME16);
 	

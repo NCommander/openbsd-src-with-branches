@@ -1,4 +1,4 @@
-/*	$OpenBSD: umap_vnops.c,v 1.10 1998/08/06 19:34:50 csapuntz Exp $	*/
+/*	$OpenBSD: umap_vnops.c,v 1.11 1998/08/06 23:06:20 csapuntz Exp $	*/
 /*	$NetBSD: umap_vnops.c,v 1.5.4.1 1996/05/25 22:13:35 jtc Exp $	*/
 
 /*
@@ -130,7 +130,7 @@ umap_bypass(v)
 	 */
 	if (descp->vdesc_vp_offsets == NULL ||
 	    descp->vdesc_vp_offsets[0] == VDESC_NO_OFFSET)
-		panic ("umap_bypass: no vp's in map.\n");
+		panic ("umap_bypass: no vp's in map.");
 #endif
 
 	/*
