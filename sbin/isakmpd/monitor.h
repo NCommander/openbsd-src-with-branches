@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.h,v 1.7 2004/03/19 14:04:43 hshoexer Exp $	 */
+/* $OpenBSD: monitor.h,v 1.8 2004/04/15 18:39:26 deraadt Exp $	 */
 
 /*
  * Copyright (c) 2003 Håkan Olsson.  All rights reserved.
@@ -59,7 +59,7 @@ struct monitor_dirents {
 	struct dirent **dirents;
 };
 
-pid_t           monitor_init(void);
+pid_t           monitor_init(int);
 void            monitor_loop(int);
 
 int             mm_send_fd(int, int);
