@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.6 1997/12/10 20:24:17 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.9 1999/09/06 13:29:32 espie Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: misc.c,v 1.6 1997/12/10 20:24:17 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.9 1999/09/06 13:29:32 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -197,7 +197,7 @@ void enlarge_bufspace()
 	bp = (bp-buf)+newbuf;
 	bufbase = (bufbase-buf)+newbuf;
 	buf = newbuf;
-	endpbb = buf+strsize;
+	endpbb = buf+bufsize;
 }
 
 /*
