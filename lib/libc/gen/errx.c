@@ -32,18 +32,12 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: errx.c,v 1.4 2002/02/19 19:39:36 millert Exp $";
+static char rcsid[] = "$OpenBSD: errx.c,v 1.5 2002/06/08 04:52:55 fgsch Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/cdefs.h>
 #include <err.h>
 #include <stdarg.h>
-
-#ifdef __indr_reference
-__indr_reference(_errx, errx);
-#else
-__weak_alias(errx, _errx);
-#endif
 
 __dead void
 _errx(int eval, const char *fmt, ...)
@@ -54,3 +48,6 @@ _errx(int eval, const char *fmt, ...)
 	_verrx(eval, fmt, ap);
 	va_end(ap);
 }
+
+__weak_alias(errx, _errx);
+
