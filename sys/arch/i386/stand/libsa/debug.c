@@ -1,4 +1,4 @@
-/*	$OpenBSD: debug.c,v 1.5 1998/04/18 07:39:44 deraadt Exp $	*/
+/*	$OpenBSD: debug.c,v 1.6 1998/04/18 22:24:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -35,12 +35,6 @@
 #include <lib/libsa/stand.h>
 #include <debug.h>
 #include <dev/cons.h>
-
-#ifdef __STDC__
-void dprintf __P((const char *fmt, ...));
-#else
-void dprintf ();
-#endif
 
 #define	VBASE	(0xb8000)
 
