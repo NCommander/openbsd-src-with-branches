@@ -1,4 +1,4 @@
-/*	$OpenBSD: dnssec.c,v 1.5 2001/06/29 03:39:04 ho Exp $	*/
+/*	$OpenBSD: dnssec.c,v 1.6 2001/06/29 18:52:16 ho Exp $	*/
 
 /*
  * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
@@ -57,7 +57,6 @@ struct dns_rdata_key {
   unsigned char *data;
 };
 
-/* XXX IPv4 specific */
 void *
 dns_get_key (int type, struct message *msg, int *keylen)
 {
