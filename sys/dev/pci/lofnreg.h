@@ -1,7 +1,7 @@
-/*	$OpenBSD: lofnreg.h,v 1.12 2002/04/08 17:49:42 jason Exp $	*/
+/*	$OpenBSD: lofnreg.h,v 1.13 2002/05/08 19:09:25 jason Exp $	*/
 
 /*
- * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
+ * Copyright (c) 2001-2002 Jason L. Wright (jason@thought.net)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
