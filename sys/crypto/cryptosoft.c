@@ -462,7 +462,7 @@ swcr_newsession(u_int32_t *sid, struct cryptoini *cri)
 		txf = &enc_xform_skipjack;
                 goto enccommon;
 
-            case CRYPTO_RIJNDAEL128_CBC:
+	    case CRYPTO_RIJNDAEL128_CBC:
                 txf = &enc_xform_rijndael128;
                 goto enccommon;
 
@@ -608,7 +608,7 @@ swcr_freesession(u_int64_t tid)
 	    case CRYPTO_BLF_CBC:
 	    case CRYPTO_CAST_CBC:
 	    case CRYPTO_SKIPJACK_CBC:
-            case CRYPTO_RIJNDAEL128_CBC:
+	    case CRYPTO_RIJNDAEL128_CBC:
 		txf = swd->sw_exf;
 
 		if (swd->sw_kschedule)
