@@ -376,6 +376,7 @@ struct swdevt {
 extern struct swdevt swdevt[];
 
 int	chrtoblk __P((dev_t));
+int	blktochr __P((dev_t));
 int	iskmemdev __P((dev_t));
 int	iszerodev __P((dev_t));
 
