@@ -140,16 +140,16 @@ cgsix*	at sbus? slot ? offset ?
 wsdisplay* at cgsix?
 
 # Sun "tcx" accelerated color framebuffer.
-tcx*	at sbus? slot ? offset ?
+tcx*	at sbus? slot ? offset ? flags 0x0000
 wsdisplay* at tcx?
 
 # Sun "cgfourteen" accelerated 24-bit framebuffer.
-cgfourteen0 at obio0 addr 0x9c000000		# sun4m
-cgfourteen1 at obio0 addr 0x90000000		# sun4m
+cgfourteen0 at obio0 addr 0x9c000000 flags 0x0000	# sun4m
+cgfourteen1 at obio0 addr 0x90000000 flags 0x0000	# sun4m
 wsdisplay* at cgfourteen?
 
 # Sun "cgtwelve" (GS) accelerated 24-bit framebuffer.
-cgtwelve*	at sbus? slot ? offset ?
+cgtwelve*	at sbus? slot ? offset ? flags 0x0000
 wsdisplay* at cgtwelve?
 
 # Vigra VS10 or VS12 framebuffer.

@@ -47,12 +47,12 @@
 
 /*
  * Frame buffer device flags.
- *
- * XXX add flags to run 24 bit framebuffers in 8 bit mode if possible?
  */
 
 #define	FB_PFOUR	0x00010000	/* indicates fb is a pfour fb */
-#define FB_USERMASK	(0)		/* flags that the user can set */
+#define FB_FORCELOW	0x00000001	/* run 24 bit fb in 8 bit mode */
+					/* or cg12 in 1 bit mode */
+#define FB_USERMASK	(0xffff)	/* flags that the user can set */
 
 /*
  * Common frame buffer variables.

@@ -162,7 +162,7 @@ bwtwo*	at sbus? slot ? offset ?
 #cgnine0 at vmel0 addr 0x08000000 level 4
 cgthree* at sbus? slot ? offset ?
 cgsix* at sbus? slot ? offset ?
-cgtwelve* at sbus? slot ? offset ?
+cgtwelve* at sbus? slot ? offset ? flags 0x0000
 vigra*	at sbus? slot ? offset ?
 
 wsdisplay* at bwtwo?

@@ -186,7 +186,7 @@ device	cgfourteen: wsemuldisplaydev, rasops8, rasops32, wsemul_sun
 attach	cgfourteen at obio
 file	arch/sparc/dev/cgfourteen.c	cgfourteen
 
-device	cgtwelve: wsemuldisplaydev, rasops32, wsemul_sun
+device	cgtwelve: wsemuldisplaydev, rasops1, rasops32, wsemul_sun
 attach	cgtwelve at sbus
 file	arch/sparc/dev/cgtwelve.c	cgtwelve
 
