@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.5 2000/03/02 00:29:51 todd Exp $
+# $OpenBSD: Makefile,v 1.6 2001/06/23 21:34:40 millert Exp $
 
 LIB=	skey
 SRCS=	skeylogin.c skeysubr.c put.c
 HDRS=	skey.h
-MAN+=	skey.3
+MAN+=	skey.3 skey.5
 MLINKS+=skey.3 atob8.3 skey.3 backspace.3 skey.3 btoa8.3 skey.3 btoe.3 \
 	skey.3 etob.3 skey.3 f.3 skey.3 htoi.3 skey.3 keycrunch.3 \
 	skey.3 put8.3 skey.3 readpass.3 skey.3 readskey.3 skey.3 rip.3 \
