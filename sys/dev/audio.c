@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.31 2001/11/01 12:13:46 art Exp $	*/
+/*	$OpenBSD: audio.c,v 1.32 2001/11/06 19:53:18 miod Exp $	*/
 /*	$NetBSD: audio.c,v 1.105 1998/09/27 16:43:56 christos Exp $	*/
 
 /*
@@ -3014,6 +3014,8 @@ mixer_ioctl(dev, cmd, addr, flag, p)
 		break;
 
 	case AUDIO_MIXER_WRITE:
+		if (!(flag & FWRITE))
+			return (EACCES);
 		DPRINTF(("AUDIO_MIXER_WRITE\n"));
 		error = hw->set_port(sc->hw_hdl, (mixer_ctrl_t *)addr);
 		if (!error && hw->commit_settings)
