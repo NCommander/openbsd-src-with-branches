@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.11 2003/03/13 09:03:07 deraadt Exp $	*/
+/*	$OpenBSD: vi.c,v 1.12 2003/10/16 22:08:48 millert Exp $	*/
 
 /*
  *	vi command editing
@@ -14,7 +14,7 @@
 #include "ksh_stat.h"		/* completion */
 #include "edit.h"
 
-#define CMDLEN		1024
+#define CMDLEN		2048
 #define Ctrl(c)		(c&0x1f)
 #define	is_wordch(c)	(letnum(c))
 
