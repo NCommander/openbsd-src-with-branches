@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.8 2002/03/14 03:16:02 millert Exp $	*/
+/*	$OpenBSD: dc.c,v 1.9 2003/06/02 23:27:59 millert Exp $	*/
 /*	$NetBSD: dc.c,v 1.4 1996/10/13 03:36:10 christos Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
@@ -57,7 +57,7 @@
 /*
  * DC7085 (DZ-11 look alike) Driver
  *
- * bertram 13-apr-1996: slightly modfied for DC367B in VS2000
+ * bertram 13-apr-1996: slightly modified for DC367B in VS2000
  */
 #include <sys/param.h>
 #include <sys/systm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.27 2004/01/14 20:50:48 miod Exp $ */
+/*	$OpenBSD: vs.c,v 1.28 2004/01/20 16:48:27 miod Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -904,11 +904,11 @@ vs_eintr(vsc)
 	case CEVSB_ERR_BD:	/* Bad direction */
 		printf("%s: Bad Direction!\n", vs_name(sc));
 		break;
-	case CEVSB_ERR_NR:	/* Non-Recoverabl Error */
+	case CEVSB_ERR_NR:	/* Non-Recoverable Error */
 		printf("%s: Non-Recoverable error!\n", vs_name(sc));
 		break;
-	case CESVB_ERR_PANIC:	/* Board Painc!!! */
-		printf("%s: Board Painc!!!\n", vs_name(sc));
+	case CESVB_ERR_PANIC:	/* Board Panic!!! */
+		printf("%s: Board Panic!!!\n", vs_name(sc));
 		break;
 	default:
 		printf("%s: Uh oh!... Error 0x%x\n", vs_name(sc), ecode);

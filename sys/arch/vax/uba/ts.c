@@ -1,4 +1,4 @@
-/*	$OpenBSD: ts.c,v 1.14 2003/11/03 07:06:17 david Exp $ */
+/*	$OpenBSD: ts.c,v 1.15 2003/11/08 19:17:28 jmc Exp $ */
 /*	$NetBSD: ts.c,v 1.11 1997/01/11 11:34:43 ragge Exp $ */
 
 /*-
@@ -305,7 +305,7 @@ tsexec (ctlr, cmd)
 	case TS_CMD_WTM:	cmdName = "Write Tape Mark";		break;
 	case TS_CMD_WTMR:	cmdName = "Write Tape Mark (Retry)";	break;
 	case TS_CMD_STAT:	cmdName = "Get Status (END)";		break;
-	default:		cmdName = "unexptected Command";	break;
+	default:		cmdName = "Unexpected Command";		break;
 	}
 #endif
 
