@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.44 2001/09/10 22:44:47 jason Exp $
+#	$OpenBSD: Makefile,v 1.31.2.5 2001/09/27 00:16:05 miod Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -48,8 +48,8 @@ LDADD+= -lwrap
 DPADD+= ${LIBWRAP}
 .endif
 
-.if (${SKEY:L} == "yes")
-CFLAGS+= -DSKEY
-LDADD+= -lskey
-DPADD+= ${SKEY}
-.endif
+#.if (${SKEY:L} == "yes")
+#CFLAGS+= -DSKEY
+#LDADD+= -lskey
+#DPADD+= ${SKEY}
+#.endif
