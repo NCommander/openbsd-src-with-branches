@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.3 2000/06/20 04:57:47 jason Exp $	*/
+/*	$OpenBSD: client.c,v 1.4 2000/08/03 20:21:35 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -374,8 +374,10 @@ getpackets(bfd, srv, sysname, myea, rmea)
 				goto next;
 			if (pppfd < 0)
 				goto next;
-			if (bpf_to_ppp(pppfd, len, mpkt) <= 0)
+			if ((r = bpf_to_ppp(pppfd, len, mpkt)) < 0)
 				return (-1);
+			if (r == 0)
+				continue;
 		}
 next:
 		pkt += BPF_WORDALIGN(bh->bh_hdrlen + bh->bh_caplen);
