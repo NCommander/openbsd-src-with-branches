@@ -1,4 +1,4 @@
-/*	$OpenBSD*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB (www.opsycon.se).
