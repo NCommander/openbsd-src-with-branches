@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.old.c,v 1.5 1999/07/18 18:00:02 deraadt Exp $	*/
+/*	$OpenBSD: pmap.old.c,v 1.6 1999/09/10 23:41:39 kstailey Exp $	*/
 /*	$NetBSD: pmap.old.c,v 1.14 1996/11/13 21:13:10 cgd Exp $	*/
 
 /* 
@@ -2149,7 +2149,7 @@ pmap_emulate_reference(p, v, user, write)
 		if (p->p_vmspace == NULL)
 			panic("pmap_emulate_reference: bad p_vmspace");
 #endif
-		pte = pmap_pte(&p->p_vmspace->vm_pmap, v);
+		pte = pmap_pte(p->p_vmspace->vm_map.pmap, v);
 	}
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW) {
