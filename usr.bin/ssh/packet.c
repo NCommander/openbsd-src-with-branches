@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: packet.c,v 1.72 2001/11/10 13:37:20 markus Exp $");
+RCSID("$OpenBSD: packet.c,v 1.73 2001/12/05 03:56:39 itojun Exp $");
 
 #include "xmalloc.h"
 #include "buffer.h"
@@ -900,7 +900,7 @@ packet_read_poll(int *payload_len_ptr)
 			type = packet_read_poll2(payload_len_ptr);
 			if (type)
 				DBG(debug("received packet type %d", type));
-			switch(type) {
+			switch (type) {
 			case SSH2_MSG_IGNORE:
 				break;
 			case SSH2_MSG_DEBUG:
@@ -925,7 +925,7 @@ packet_read_poll(int *payload_len_ptr)
 			}
 		} else {
 			type = packet_read_poll1(payload_len_ptr);
-			switch(type) {
+			switch (type) {
 			case SSH_MSG_IGNORE:
 				break;
 			case SSH_MSG_DEBUG:

@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: bufaux.c,v 1.16 2001/01/16 23:58:08 deraadt Exp $");
+RCSID("$OpenBSD: bufaux.c,v 1.17 2001/01/21 19:05:45 markus Exp $");
 
 #include <openssl/bn.h>
 #include "bufaux.h"
@@ -121,7 +121,7 @@ buffer_put_bignum2(Buffer *buffer, BIGNUM *value)
 		log("negativ!");
 		for(i = bytes-1, carry = 1; i>=0; i--) {
 			uc[i] ^= 0xff;
-			if(carry)
+			if (carry)
 				carry = !++uc[i];
 		}
 	}
