@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.11 1996/08/05 01:17:25 deraadt Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.12 1996/08/24 04:56:39 deraadt Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -179,7 +179,7 @@ in_pcbbind(v, nam)
 		inp->inp_laddr = sin->sin_addr;
 	}
 	if (lport == 0) {
-		u_int16_t first, last, old;
+		u_int16_t first, last, old = 0;
 		int count;
 		int loopcount = 0;
 
