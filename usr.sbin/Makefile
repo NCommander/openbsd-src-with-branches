@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.88 2002/04/01 17:47:53 beck Exp $
+#	$OpenBSD: Makefile,v 1.89 2002/06/19 08:45:23 deraadt Exp $
 
 # not yet done: catman
 
@@ -21,7 +21,7 @@ SUBDIR=	ac accton adduser altq amd arp authpf \
 # mrouted mrinfo mtrace map-mbone
 
 # IPv6
-SUBDIR+=faithd ifmcstat ndp rip6query route6d rtadvd rtsold traceroute6
+SUBDIR+=faithd ndp rip6query route6d rtadvd rtsold traceroute6
 
 # Arch dependent tools, with manpages
 SUBDIR+=iteconfig grfconfig videomode
