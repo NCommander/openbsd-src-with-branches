@@ -13,7 +13,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect1.c,v 1.37 2001/06/26 16:15:24 dugsong Exp $");
+RCSID("$OpenBSD: sshconnect1.c,v 1.38 2001/06/26 20:14:11 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/evp.h>
@@ -1271,4 +1271,6 @@ ssh_userauth1(const char *local_user, const char *server_user, char *host,
 		send_afs_tokens();
 	}
 #endif /* AFS */
+
+	return;	/* need statement after label */
 }
