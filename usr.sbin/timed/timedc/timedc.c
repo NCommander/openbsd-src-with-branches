@@ -1,4 +1,4 @@
-/*	$OpenBSD: timedc.c,v 1.9 2003/06/02 23:36:55 millert Exp $	*/
+/*	$OpenBSD: timedc.c,v 1.10 2003/06/12 21:09:48 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
@@ -127,7 +127,7 @@ main(int argc, char *argv[])
 				siginterrupt(SIGINT, 0);
 				continue;
 			}
-			quit();
+			quit(0, NULL);
 		}
 		siginterrupt(SIGINT, 0);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmds.c,v 1.16 2003/06/02 23:36:55 millert Exp $	*/
+/*	$OpenBSD: cmds.c,v 1.17 2003/06/12 21:09:48 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
@@ -34,7 +34,7 @@ static char sccsid[] = "@(#)cmds.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
 
 #ifdef sgi
-#ident "$Revision: 1.16 $"
+#ident "$Revision: 1.17 $"
 #endif
 
 #include "timedc.h"
@@ -396,7 +396,7 @@ bail:
  * quits timedc
  */
 void
-quit(void)
+quit(int ignored, char *unused[])
 {
 	exit(0);
 }

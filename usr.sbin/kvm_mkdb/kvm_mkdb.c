@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mkdb.c,v 1.12 2003/04/06 23:21:41 tedu Exp $	*/
+/*	$OpenBSD: kvm_mkdb.c,v 1.13 2003/06/02 23:36:53 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -39,7 +39,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)kvm_mkdb.c	8.3 (Berkeley) 5/4/95";
 #else
-static const char rcsid[] = "$OpenBSD: kvm_mkdb.c,v 1.12 2003/04/06 23:21:41 tedu Exp $";
+static const char rcsid[] = "$OpenBSD: kvm_mkdb.c,v 1.13 2003/06/02 23:36:53 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -76,9 +76,7 @@ HASHINFO openinfo = {
 };
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct rlimit rl;
 	int fd, rval, ch, verbose = 0;
@@ -129,11 +127,7 @@ main(argc, argv)
 }
 
 int
-kvm_mkdb(fd, nlistpath, nlistname, verbose)
-	int fd;
-	char *nlistpath;
-	char *nlistname;
-	int verbose;
+kvm_mkdb(int fd, char *nlistpath, char *nlistname, int verbose)
 {
 	DB *db;
 	char dbtemp[MAXPATHLEN], dbname[MAXPATHLEN];
@@ -178,7 +172,7 @@ kvm_mkdb(fd, nlistpath, nlistname, verbose)
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr, "usage: kvm_mkdb [-v] [file]\n");
 	exit(1);
