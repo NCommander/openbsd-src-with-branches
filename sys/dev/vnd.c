@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.21 1998/03/10 17:40:37 millert Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.22 1998/08/04 22:01:54 millert Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -294,7 +294,7 @@ vndgetdisklabel(dev, sc)
 	 * Call the generic disklabel extraction routine
 	 */
 	errstring = readdisklabel(VNDLABELDEV(dev), vndstrategy, lp,
-	    sc->sc_dk.dk_cpulabel);
+	    sc->sc_dk.dk_cpulabel, 0);
 	if (errstring) {
 		/*printf("%s: %s\n", sc->sc_dev.dv_xname, errstring);*/
 		return;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.7 1997/09/08 06:14:50 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.8 1998/02/14 07:01:06 gene Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.22 1997/11/26 04:18:20 briggs Exp $	*/
 
 /*
@@ -474,11 +474,12 @@ done:
  * then we assume that it's a real disklabel and return it.
  */
 char *
-readdisklabel(dev, strat, lp, osdep)
+readdisklabel(dev, strat, lp, osdep, spoofonly)
 	dev_t dev;
 	void (*strat)(struct buf *);
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
+	int spoofonly;
 {
 	register struct buf *bp;
 	char *msg = NULL;
@@ -490,6 +491,11 @@ readdisklabel(dev, strat, lp, osdep)
 	if (lp->d_secpercyl == 0) {
 		return msg = "Zero secpercyl";
 	}
+
+	/* don't read the on-disk label if we are in spoofed-only mode */
+	if (spoofonly)
+		return (NULL);
+
 	bp = geteblk((int)lp->d_secsize * MAXPARTITIONS);
 
 	bp->b_dev = dev;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.4 1996/11/23 21:45:30 kstailey Exp $	*/
+/*	$OpenBSD: fd.c,v 1.5 1997/04/19 17:19:52 pefo Exp $	*/
 /*	$NetBSD: fd.c,v 1.78 1995/07/04 07:23:09 mycroft Exp $	*/
 
 /*-
@@ -1109,7 +1109,7 @@ fdioctl(dev, cmd, addr, flag)
 		buffer.d_type = DTYPE_FLOPPY;
 		buffer.d_secsize = FDC_BSIZE;
 
-		if (readdisklabel(dev, fdstrategy, &buffer, NULL) != NULL)
+		if (readdisklabel(dev, fdstrategy, &buffer, NULL, 0) != NULL)
 			return EINVAL;
 
 		*(struct disklabel *)addr = buffer;

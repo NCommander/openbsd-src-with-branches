@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.29 1998/05/02 16:48:21 millert Exp $	*/
+/*	$OpenBSD: sd.c,v 1.30 1998/10/01 05:11:11 millert Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*
@@ -863,7 +863,7 @@ sdgetdisklabel(dev, sd)
 	 * Call the generic disklabel extraction routine
 	 */
 	errstring = readdisklabel(SDLABELDEV(dev), sdstrategy, lp,
-	    sd->sc_dk.dk_cpulabel);
+	    sd->sc_dk.dk_cpulabel, 0);
 	if (errstring) {
 		/*printf("%s: %s\n", sd->sc_dev.dv_xname, errstring);*/
 		return;

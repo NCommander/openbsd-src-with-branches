@@ -1,4 +1,4 @@
-/*	$OpenBSD: ramdisk.c,v 1.6 1997/02/06 04:30:35 rahnds Exp $	*/
+/*	$OpenBSD: ramdisk.c,v 1.7 1997/10/18 10:37:03 deraadt Exp $	*/
 /*	$NetBSD: ramdisk.c,v 1.8 1996/04/12 08:30:09 leo Exp $	*/
 
 /*
@@ -521,7 +521,7 @@ rdgetdisklabel(dev, sc)
 	/*
 	 * Call the generic disklabel extraction routine
 	 */
-	errstring = readdisklabel(RDLABELDEV(dev), rdstrategy, &lp, &clp);
+	errstring = readdisklabel(RDLABELDEV(dev), rdstrategy, &lp, &clp, 0);
 	if (errstring) {
 		/*printf("%s: %s\n", sc->sc_dev.dv_xname, errstring);*/
 		return NULL;

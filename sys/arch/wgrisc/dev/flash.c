@@ -1,4 +1,4 @@
-/*	$OpenBSD: flash.c,v 1.1 1997/02/23 21:59:27 pefo Exp $ */
+/*	$OpenBSD: flash.c,v 1.2 1997/08/24 12:01:13 pefo Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -844,7 +844,7 @@ flgetdisklabel(dev, sc)
 	/*
 	 * Call the generic disklabel extraction routine
 	 */
-	errstring = readdisklabel(FLLABELDEV(dev), flstrategy, lp, &clp);
+	errstring = readdisklabel(FLLABELDEV(dev), flstrategy, lp, &clp, 0);
 	if (errstring) {
 		printf("%s: %s\n", sc->sc_dev.dv_xname, errstring);
 	}
