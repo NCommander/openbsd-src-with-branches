@@ -1,4 +1,4 @@
-/*	$OpenBSD: authpf.c,v 1.71 2003/11/14 15:31:07 henning Exp $	*/
+/*	$OpenBSD: authpf.c,v 1.72 2003/12/10 04:10:37 beck Exp $	*/
 
 /*
  * Copyright (C) 1998 - 2002 Bob Beck (beck@openbsd.org).
@@ -852,6 +852,13 @@ int
 pfctl_set_logif(struct pfctl *pf, char *ifname)
 {
 	fprintf(stderr, "set loginterface not supported in authpf\n");
+	return (1);
+}
+
+int
+pfctl_set_hostid(struct pfctl *pf, u_int32_t hostid)
+{
+	fprintf(stderr, "set hostid not supported in authpf\n");
 	return (1);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.41 2003/11/28 10:05:43 jmc Exp $	*/
+/*	$OpenBSD: main.c,v 1.42 2003/11/28 23:10:49 jmc Exp $	*/
 /*	$NetBSD: main.c,v 1.9 1996/05/07 02:55:02 thorpej Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)main.c	8.4 (Berkeley) 3/1/94";
 #else
-static char *rcsid = "$OpenBSD: main.c,v 1.41 2003/11/28 10:05:43 jmc Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.42 2003/11/28 23:10:49 jmc Exp $";
 #endif
 #endif /* not lint */
 
@@ -181,6 +181,8 @@ struct nlist nl[] = {
 	{ "_rawcbtable" },
 #define	N_RAWIP6TABLE	57
 	{ "_rawin6pcbtable" },
+#define N_PFSYNCSTAT	58
+	{ "_pfsyncstats" },
 	{ ""},
 };
 
@@ -214,6 +216,8 @@ struct protox {
 	  ipcomp_stats,	"ipcomp" },
  	{ -1,		N_CARPSTAT,	1,	0,
  	  carp_stats,	"carp" },
+ 	{ -1,		N_PFSYNCSTAT,	1,	0,
+ 	  pfsync_stats,	"pfsync" },
 	{ -1,		-1,		0,	0,
 	  0,		0 }
 };
