@@ -1,4 +1,4 @@
-/*	$OpenBSD: mail.local.c,v 1.24 2002/07/03 23:39:03 deraadt Exp $	*/
+/*	$OpenBSD: mail.local.c,v 1.25 2003/06/02 19:38:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1996-1998 Theo de Raadt <deraadt@theos.com>
@@ -41,7 +41,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)mail.local.c	5.6 (Berkeley) 6/19/91";
 #else
-static char rcsid[] = "$OpenBSD: mail.local.c,v 1.24 2002/07/03 23:39:03 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mail.local.c,v 1.25 2003/06/02 19:38:24 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -215,7 +215,7 @@ retry:
 			goto bad;
 		}
 		if ((mbfd = open(path, O_APPEND|O_CREAT|O_EXCL|O_WRONLY|O_EXLOCK,
-		     S_IRUSR|S_IWUSR)) < 0) {
+		    S_IRUSR|S_IWUSR)) < 0) {
 			if (errno == EEXIST) {
 				/* file appeared since lstat */
 				goto retry;

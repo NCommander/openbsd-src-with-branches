@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.68 2004/06/29 11:19:06 mickey Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.69 2004/07/04 22:45:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Theo de Raadt.  All rights reserved.
@@ -972,7 +972,7 @@ main(int argc, char *argv[])
 			break;
 		}
 	}
-	
+
 	if (!greylist)
 		maxblack = maxcon;
 	else if (maxblack > maxcon)
@@ -1056,7 +1056,7 @@ main(int argc, char *argv[])
 		}
 		jail_pid = fork();
 		switch(jail_pid) {
-		case -1: 
+		case -1:
 			syslog(LOG_ERR, "fork (%m)");
 			exit(1);
 		case 0:
