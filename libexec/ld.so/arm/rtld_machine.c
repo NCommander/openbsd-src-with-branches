@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.4 2004/05/25 15:56:18 deraadt Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.5 2004/05/25 18:07:20 mickey Exp $ */
 
 /*
  * Copyright (c) 2004 Dale Rahn
@@ -151,17 +151,6 @@ static int reloc_target_bitmask[] = {
 #undef _BM
 };
 #define RELOC_VALUE_BITMASK(t)	(reloc_target_bitmask[t])
-
-void
-_dl_bcopy(const void *src, void *dest, int size)
-{
-	unsigned const char *psrc = src;
-	unsigned char *pdest = dest;
-	int i;
-
-	for (i = 0; i < size; i++)
-		pdest[i] = psrc[i];
-}
 
 #define R_TYPE(x) R_ARM_ ## x
 

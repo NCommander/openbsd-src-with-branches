@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.29 2003/09/05 03:56:58 drahn Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.30 2004/05/25 18:07:20 mickey Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -44,18 +44,6 @@
 #include "syscall.h"
 #include "archdep.h"
 #include "resolve.h"
-
-void
-_dl_bcopy(const void *src, void *dest, int size)
-{
-	unsigned const char *psrc = src;
-	unsigned char *pdest = dest;
-	int i;
-
-	for (i = 0; i < size; i++) {
-		pdest[i] = psrc[i];
-	}
-}
 
 int
 _dl_md_reloc(elf_object_t *object, int rel, int relasz)
