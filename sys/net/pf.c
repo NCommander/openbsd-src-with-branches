@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.163.2.3 2001/12/13 19:52:37 jason Exp $ */
+/*	$OpenBSD: pf.c,v 1.163.2.4 2002/02/21 04:23:24 jason Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2997,7 +2997,7 @@ pf_test_udp(struct pf_rule **rm, int direction, struct ifnet *ifp,
 		}
 		/* check incoming packet for BINAT */
 		else if ((binat = pf_get_binat(PF_IN, ifp, IPPROTO_UDP,
-		    daddr, daddr, af)) != NULL) {
+		    daddr, saddr, af)) != NULL) {
 			PF_ACPY(&baddr, daddr, af);
 			bport = uh->uh_dport;
 			pf_change_ap(daddr, &uh->uh_dport, pd->ip_sum,
