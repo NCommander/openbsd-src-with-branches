@@ -1,4 +1,4 @@
-/*	$OpenBSD: exchange.c,v 1.41 2001/02/24 03:59:54 angelos Exp $	*/
+/*	$OpenBSD: exchange.c,v 1.42 2001/03/28 22:33:48 angelos Exp $	*/
 /*	$EOM: exchange.c,v 1.143 2000/12/04 00:02:25 angelos Exp $	*/
 
 /*
@@ -1709,7 +1709,7 @@ exchange_establish (char *name,
 
 	  if (conf_get_num (peer, "Phase", 0) != 1)
 	    {
-	      log_error ("exchange_establish: "
+	      log_print ("exchange_establish: "
 			 "[%s]:ISAKMP-peer's (%s) phase is not 1", name, peer);
 	      return;
 	    }
