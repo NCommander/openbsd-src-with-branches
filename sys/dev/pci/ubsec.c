@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.103 2002/06/17 08:05:47 deraadt Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.104 2002/07/03 00:19:33 jason Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -1407,7 +1407,7 @@ ubsec_callback2(sc, q)
 			krp->krp_status = E2BIG;
 		else
 			ubsec_kshift_l(me->me_shiftbits,
-			    me->me_C.dma_vaddr, me->me_modbits,
+			    me->me_C.dma_vaddr, me->me_normbits,
 			    krp->krp_param[UBS_MODEXP_PAR_C].crp_p,
 			    krp->krp_param[UBS_MODEXP_PAR_C].crp_nbits);
 
@@ -1850,6 +1850,7 @@ ubsec_kprocess_modexp(sc, krp)
 
 	me->me_modbits = nbits;
 	me->me_shiftbits = shiftbits;
+	me->me_normbits = normbits;
 
 	/* Sanity check: result bits must be >= true modulus bits. */
 	if (krp->krp_param[UBS_MODEXP_PAR_C].crp_nbits < nbits) {
