@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.c,v 1.6 2002/06/18 23:06:57 angelos Exp $ */
+/* $OpenBSD: ip_ipcomp.c,v 1.7 2002/06/20 03:49:02 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -626,8 +626,8 @@ ipcomp_output_cb(cp)
 	s = spltdb();
 
 	tdb = gettdb(tc->tc_spi, &tc->tc_dst, tc->tc_proto);
-	FREE(tc, M_XDATA);
 	if (tdb == NULL) {
+		FREE(tc, M_XDATA);
 		ipcompstat.ipcomps_notdb++;
 		DPRINTF(("ipcomp_output_cb(): TDB expired while in crypto\n"));
 		goto baddone;
@@ -644,11 +644,14 @@ ipcomp_output_cb(cp)
 			return crypto_dispatch(crp);
 		}
 
+		FREE(tc, M_XDATA);
 		ipcompstat.ipcomps_noxform++;
 		DPRINTF(("ipcomp_output_cb(): crypto error %d\n",
 		    crp->crp_etype));
 		goto baddone;
-	}
+	} else
+		FREE(tc, M_XDATA);
+
 	/* Shouldn't happen... */
 	if (m == NULL) {
 		ipcompstat.ipcomps_crypto++;
