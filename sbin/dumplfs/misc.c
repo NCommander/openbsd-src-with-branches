@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.2 1996/06/23 14:30:19 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.3 2003/06/02 20:06:14 millert Exp $	*/
 /*	$NetBSD: misc.c,v 1.3 1995/03/18 14:55:23 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: misc.c,v 1.2 1996/06/23 14:30:19 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.3 2003/06/02 20:06:14 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,11 +49,7 @@ static char rcsid[] = "$OpenBSD: misc.c,v 1.2 1996/06/23 14:30:19 deraadt Exp $"
 #include "extern.h"
 
 void
-get(fd, off, p, len)
-	int fd;
-	off_t off;
-	void *p;
-	size_t len;
+get(int fd, off_t off, void *p, size_t len)
 {
 	int rbytes;
 
