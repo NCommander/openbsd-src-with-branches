@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus_machdep.c,v 1.4 2000/10/31 18:56:40 deraadt Exp $ */
+/*	$OpenBSD: rbus_machdep.c,v 1.5 2000/11/21 14:23:33 aaron Exp $ */
 /*	$NetBSD: rbus_machdep.c,v 1.2 1999/10/15 06:43:06 haya Exp $	*/
 
 /*
@@ -54,7 +54,6 @@
 
 #include <dev/pci/pcivar.h>
 #include <arch/i386/pci/pcibiosvar.h>
-#include <arch/i386/pci/pci_addr_fixup.h>
 
 
 
