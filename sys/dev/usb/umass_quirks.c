@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass_quirks.c,v 1.6 2003/05/19 01:02:39 nate Exp $	*/
+/*	$OpenBSD: umass_quirks.c,v 1.7 2003/11/27 12:35:58 henning Exp $	*/
 /*	$NetBSD: umass_quirks.c,v 1.39 2003/05/08 15:19:47 augustss Exp $	*/
 
 /*
@@ -347,7 +347,7 @@ Static const struct umass_quirk umass_quirks[] = {
 	{ { USB_VENDOR_SHUTTLE, USB_PRODUCT_SHUTTLE_EUSB },
 	  UMASS_WPROTO_CBI_I, UMASS_CPROTO_ATAPI,
 	  UMASS_QUIRK_NO_START_STOP,
-	  PQUIRK_NOTUR,
+	  PQUIRK_NOTUR | PQUIRK_NOSENSE,
 	  UMATCH_VENDOR_PRODUCT,
 	  umass_init_shuttle, NULL
 	},
