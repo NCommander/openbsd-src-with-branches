@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.59 2002/04/27 15:29:30 art Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.60 2002/05/16 00:03:05 art Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -1014,6 +1014,8 @@ void
 biodone(bp)
 	struct buf *bp;
 {
+	splassert(IPL_BIO);
+
 	if (ISSET(bp->b_flags, B_DONE))
 		panic("biodone already");
 	SET(bp->b_flags, B_DONE);		/* note that it's done */
