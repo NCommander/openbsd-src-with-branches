@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.27 2002/03/27 17:42:37 millert Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.28 2002/04/15 23:24:42 deraadt Exp $	*/
 
 /*
  *	POSIX fileio.c
@@ -174,6 +174,7 @@ fbackupfile(const char *fn)
 	}
 	if (stat(fn, &sb) == -1) {
 		ewprintf("Can't stat %s : %s", fn, strerror(errno));
+		free(nname);
 		return (FALSE);
 	}
 
@@ -191,8 +192,8 @@ fbackupfile(const char *fn)
 	}
 	while ((nread = read(from, buf, sizeof(buf))) > 0) {
 		if (write(to, buf, nread) != nread) {
-		    nread = -1;
-		    break;
+			nread = -1;
+			break;
 		}
 	}
 	serrno = errno;
