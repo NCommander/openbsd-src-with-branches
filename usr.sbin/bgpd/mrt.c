@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.40 2004/08/10 13:46:28 claudio Exp $ */
+/*	$OpenBSD: mrt.c,v 1.41 2004/08/10 13:50:10 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -371,7 +371,7 @@ mrt_write(struct mrt *mrt)
 		mrt->queued--;
 		buf_free(b);
 	}
-	if (r == -1) {
+	if (r <= -1) {
 		log_warn("mrt dump write");
 		mrt_clean(mrt);
 		return (-1);
