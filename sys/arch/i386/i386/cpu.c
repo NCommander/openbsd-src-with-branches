@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.1.2.10 2004/03/14 22:08:20 niklas Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.1.2.11 2004/03/18 02:09:28 niklas Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -414,6 +414,7 @@ cpu_boot_secondary (ci)
 		Debugger();
 	}
 
+	CPU_START_CLEANUP(ci);
 }
 
 /*
