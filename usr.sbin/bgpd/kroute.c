@@ -1,7 +1,7 @@
-/*	$OpenBSD: kroute.c,v 1.45 2004/01/02 01:46:20 deraadt Exp $ */
+/*	$OpenBSD: kroute.c,v 1.46 2004/01/05 16:17:22 henning Exp $ */
 
 /*
- * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
+ * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

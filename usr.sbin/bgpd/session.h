@@ -1,7 +1,7 @@
-/*	$OpenBSD: session.h,v 1.10 2004/01/04 20:07:30 henning Exp $ */
+/*	$OpenBSD: session.h,v 1.11 2004/01/05 22:57:58 claudio Exp $ */
 
 /*
- * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
+ * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

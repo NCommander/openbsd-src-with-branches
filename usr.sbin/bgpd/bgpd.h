@@ -1,7 +1,7 @@
-/*	$OpenBSD: bgpd.h,v 1.53 2004/01/05 16:21:14 henning Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.54 2004/01/05 22:57:59 claudio Exp $ */
 
 /*
- * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
+ * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

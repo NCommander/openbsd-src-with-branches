@@ -1,7 +1,7 @@
-/*	$OpenBSD: control.c,v 1.9 2004/01/04 19:39:46 henning Exp $ */
+/*	$OpenBSD: control.c,v 1.10 2004/01/05 16:21:14 henning Exp $ */
 
 /*
- * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
+ * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

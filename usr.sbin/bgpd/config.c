@@ -1,7 +1,7 @@
-/*	$OpenBSD: config.c,v 1.14 2004/01/03 20:22:07 henning Exp $ */
+/*	$OpenBSD: config.c,v 1.15 2004/01/03 20:37:34 henning Exp $ */
 
 /*
- * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
+ * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
