@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.38 1999/07/06 20:17:52 cmetz Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.39 1999/07/15 14:15:41 niklas Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -440,11 +440,12 @@ extern u_int32_t reserve_spi(u_int32_t, u_int32_t, union sockaddr_union *,
 extern struct tdb *gettdb(u_int32_t, union sockaddr_union *, u_int8_t);
 extern void puttdb(struct tdb *);
 extern void tdb_delete(struct tdb *, int, int);
-extern int tdb_init (struct tdb *, u_int16_t, struct ipsecinit *);
+extern int tdb_init(struct tdb *, u_int16_t, struct ipsecinit *);
 extern void tdb_expiration(struct tdb *, int);
 /* Flag values for the last argument of tdb_expiration().  */
 #define TDBEXP_EARLY	1	/* The tdb is likely to end up early.  */
 #define TDBEXP_TIMEOUT	2	/* Maintain expiration timeout.  */
+extern int tdb_walk(int (*)(struct tdb *, void *), void *);
 extern void handle_expirations(void *);
 
 /* Flow management routines */
