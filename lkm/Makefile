@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.2 1996/06/02 04:51:31 tholo Exp $
+#	$OpenBSD: Makefile,v 1.3 1998/02/24 22:32:52 deraadt Exp $
 
-SUBDIR+= ipl
+SUBDIR+= 
 
 #.if ${MACHINE_ARCH} == "i386"
 #SUBDIR+= ap
