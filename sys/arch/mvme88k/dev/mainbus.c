@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.8 2002/03/14 01:26:39 millert Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.7 2001/12/19 07:04:41 smurph Exp $ */
 /*  Copyright (c) 1998 Steve Murphree, Jr. */
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -7,7 +7,6 @@
 #include <sys/device.h>
 #include <sys/disklabel.h>
 
-#include <machine/cmmu.h>
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
 
@@ -70,14 +69,7 @@ mainbus_attach(parent, self, args)
 	struct device *parent, *self;
 	void *args;
 {
-	extern char cpu_model[];
-
-	printf(": %s\n", cpu_model);
-
-	/*
-	 * Display cpu/mmu details. Only for the master CPU so far.
-	 */
-	cpu_configuration_print(1);
+	printf (" machine type MVME%x\n", brdtyp);
 
 	/* XXX
 	 * should have a please-attach-first list for mainbus,

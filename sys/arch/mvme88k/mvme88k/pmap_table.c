@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_table.c,v 1.14 2001/12/22 09:49:39 smurph Exp $	*/
+/*	$OpenBSD: pmap_table.c,v 1.13 2001/12/22 07:35:43 smurph Exp $	*/
 
 /* 
  * Mach Operating System
@@ -30,63 +30,74 @@
 #include <sys/systm.h>
 #include <sys/types.h>
 #include <machine/board.h>
-#include <machine/cmmu.h>
+#include <machine/cmmu.h>		/* CMMU stuff */
 #include <uvm/uvm_extern.h>
-#include <machine/pmap_table.h>
+#include <machine/pmap_table.h>		/* pmap_table.h*/
 
-#define	R	VM_PROT_READ
-#define	RW	(VM_PROT_READ | VM_PROT_WRITE)
-#define	CW	CACHE_WT
-#define	CI	CACHE_INH
-#define	CG	CACHE_GLOBAL
+#define R VM_PROT_READ
+#define RW VM_PROT_READ|VM_PROT_WRITE
+#define CW CACHE_WT
+#define CI CACHE_INH
+#define CG CACHE_GLOBAL
 
+#undef VEQR_ADDR
+#define VEQR_ADDR 0
 /*  phys_start, virt_start, size, prot, cacheability */
 #ifdef MVME187
-const pmap_table_entry
-m187_board_table[] = {
-	{ BUG187_START, BUG187_START, round_page(BUG187_SIZE), RW, CI },
-	{ SRAM_START  , SRAM_START  , round_page(SRAM_SIZE)  , RW, CG },
-	{ OBIO_START  , OBIO_START  , round_page(OBIO_SIZE)  , RW, CI },
-	{ 0, 0, 0xffffffff, 0, 0 },
+static pmap_table_entry m187_board_table[] = {
+	{ BUGROM_START, BUGROM_START, BUGROM_SIZE, RW, CI},
+	{ SRAM_START  , SRAM_START  , SRAM_SIZE  , RW, CG},
+	{ OBIO_START  , OBIO_START  , OBIO_SIZE  , RW, CI},
+	{ 0           , 0           , 0xffffffff , 0 , 0},
 };
 #endif 
 
 #ifdef MVME188
-const pmap_table_entry
-m188_board_table[] = {
-	{ MVME188_UTILITY, MVME188_UTILITY,
-	    round_page(MVME188_UTILITY_SIZE), RW, CI },
-	{ 0, 0, 0xffffffff, 0, 0 },
+static pmap_table_entry m188_board_table[] = {
+	{ MVME188_UTILITY, MVME188_UTILITY, MVME188_UTILITY_SIZE, RW, CI},
+	{ 0           , 0           , 0xffffffff , 0,  0},
 };
 #endif 
 
 #ifdef MVME197
-const pmap_table_entry
-m197_board_table[] = {
-	{ FLASH_START, FLASH_START, round_page(FLASH_SIZE), RW, CI },
-	{ OBIO_START , OBIO_START , round_page(OBIO_SIZE) , RW, CI },
-	/* No need to mention BUG here - it is contained inside OBIO */
-	{ 0, 0, 0xffffffff, 0, 0 },
+static pmap_table_entry m197_board_table[] = {
+	{ BUGROM_START, BUGROM_START, BUGROM_SIZE, RW, CI},
+	{ OBIO_START  , OBIO_START  , OBIO_SIZE  , RW, CI},
+	{ 0           , 0           , 0xffffffff , 0 , 0},
 };
 #endif 
 
 pmap_table_t 
-pmap_table_build(void)
+pmap_table_build(endoftext)
+	unsigned endoftext;
 {
+	unsigned int i;
+	pmap_table_t bt, pbt;
+
 	switch (brdtyp) {
 #ifdef MVME187
 	case BRD_187:
-		return m187_board_table;
+		bt = m187_board_table;
+		break;
 #endif 
 #ifdef MVME188
 	case BRD_188:
-		return m188_board_table;
+		bt = m188_board_table;
+		break;
 #endif 
 #ifdef MVME197
 	case BRD_197:
-		return m197_board_table;
+		bt = m197_board_table;
+		break;
 #endif 
-	default:
-		return NULL;	/* silence warning */
 	}
+
+	/* round off all entries to nearest segment */
+	pbt = bt;
+	for (i = 0; pbt->size != 0xffffffff; i++) {
+		if (pbt->size>0)
+			pbt->size = (pbt->size + PAGE_MASK) & ~PAGE_MASK;
+		pbt++;
+	}
+	return bt;
 }

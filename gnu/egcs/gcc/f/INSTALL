@@ -13,9 +13,10 @@ Installing GNU Fortran
 
    The following information describes how to install `g77'.
 
-   Note that, for `egcs' users, much of the information is obsolete,
-and is superceded by the `egcs' installation procedures.  Such
-information is accordingly omitted and flagged as such.
+   Note that, for users of the GCC-2.95 version of `g77', much of the
+information is obsolete, and is superceded by the GCC installation
+procedures.  Such information is accordingly omitted and flagged as
+such.
 
    *Warning:* The information below is still under development, and
 might not accurately reflect the `g77' code base of which it is a part.
@@ -24,17 +25,17 @@ particularly concentrated on any version of this information that is
 distributed as part of a *released* `g77'.
 
    In particular, while this information is intended to apply to the
-EGCS-1.2 version of `g77', only an official *release* of that version
+GCC-2.95 version of `g77', only an official *release* of that version
 is expected to contain documentation that is most consistent with the
 `g77' product in that version.
 
-   The following information was last updated on 1999-05-10:
+   The following information was last updated on 1999-07-17:
 
 Prerequisites
 =============
 
-   For `egcs' users, this information is superceded by the `egcs'
-installation instructions.
+   For users of the GCC-2.95 version of `g77', this information is
+superceded by the GCC installation instructions.
 
 Problems Installing
 ===================
@@ -83,7 +84,7 @@ not yet established.
 Missing strtoul or bsearch
 ..........................
 
-   This information does not apply to the `egcs' version of `g77'.
+   This information does not apply to the GCC-2.95 version of `g77',
 
 Cleanup Kills Stage Directories
 ...............................
@@ -334,18 +335,18 @@ support 64-bit systems.
 Quick Start
 ===========
 
-   For `egcs' users, this information is superceded by the `egcs'
-installation instructions.
+   For users of the GCC-2.95 version of `g77', this information is
+superceded by the GCC installation instructions.
 
 Complete Installation
 =====================
 
-   For `egcs' users, this information is superceded by the `egcs'
-installation instructions.
+   For users of the GCC-2.95 version of `g77', this information is
+superceded by the GCC installation instructions.
 
 Distributing Binaries
 =====================
 
-   For `egcs' users, this information is superceded by the `egcs'
-installation instructions.
+   For users of the GCC-2.95 version of `g77', this information is
+superceded by the GCC installation instructions.
 

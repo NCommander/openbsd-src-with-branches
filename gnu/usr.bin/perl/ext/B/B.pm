@@ -6,15 +6,24 @@
 #      License or the Artistic License, as specified in the README file.
 #
 package B;
-require DynaLoader;
-require Exporter;
-@ISA = qw(Exporter DynaLoader);
-@EXPORT_OK = qw(byteload_fh byteload_string minus_c ppname
-		class peekop cast_I32 cstring cchar hash threadsv_names
-		main_root main_start main_cv svref_2object
-		walkoptree walkoptree_slow walkoptree_exec walksymtable
-		parents comppadlist sv_undef compile_stats timing_info init_av);
 
+our $VERSION = '1.01';
+
+use XSLoader ();
+require Exporter;
+@ISA = qw(Exporter);
+
+# walkoptree_slow comes from B.pm (you are there),
+# walkoptree comes from B.xs
+@EXPORT_OK = qw(minus_c ppname save_BEGINs
+		class peekop cast_I32 cstring cchar hash threadsv_names
+		main_root main_start main_cv svref_2object opnumber
+		amagic_generation perlstring
+		walkoptree_slow walkoptree walkoptree_exec walksymtable
+		parents comppadlist sv_undef compile_stats timing_info
+		begin_av init_av end_av regex_padav);
+
+sub OPf_KIDS ();
 use strict;
 @B::SV::ISA = 'B::OBJECT';
 @B::NULL::ISA = 'B::SV';
@@ -38,10 +47,9 @@ use strict;
 @B::UNOP::ISA = 'B::OP';
 @B::BINOP::ISA = 'B::UNOP';
 @B::LOGOP::ISA = 'B::UNOP';
-@B::CONDOP::ISA = 'B::UNOP';
 @B::LISTOP::ISA = 'B::BINOP';
 @B::SVOP::ISA = 'B::OP';
-@B::GVOP::ISA = 'B::OP';
+@B::PADOP::ISA = 'B::OP';
 @B::PVOP::ISA = 'B::OP';
 @B::CVOP::ISA = 'B::OP';
 @B::LOOP::ISA = 'B::LISTOP';
@@ -55,6 +63,30 @@ use strict;
     package B::OBJECT;
 }
 
+sub B::GV::SAFENAME {
+  my $name = (shift())->NAME;
+
+  # The regex below corresponds to the isCONTROLVAR macro
+  # from toke.c
+
+  $name =~ s/^([\cA-\cZ\c\\c[\c]\c?\c_\c^])/"^".
+	chr( utf8::unicode_to_native( 64 ^ ord($1) ))/e;
+
+  # When we say unicode_to_native we really mean ascii_to_native,
+  # which matters iff this is a non-ASCII platform (EBCDIC).
+
+  return $name;
+}
+
+sub B::IV::int_value {
+  my ($self) = @_;
+  return (($self->FLAGS() & SVf_IVisUV()) ? $self->UVX : $self->IV);
+}
+
+sub B::NULL::as_string() {""}
+sub B::IV::as_string()   {goto &B::IV::int_value}
+sub B::PV::as_string()   {goto &B::PV::PV}
+
 my $debug;
 my $op_count = 0;
 my @parents = ();
@@ -64,10 +96,6 @@ sub debug {
     $debug = $value;
     walkoptree_debug($value);
 }
-
-# sub OPf_KIDS;
-# add to .xs for perl5.002
-sub OPf_KIDS () { 4 }
 
 sub class {
     my $obj = shift;
@@ -81,7 +109,7 @@ sub parents { \@parents }
 # For debugging
 sub peekop {
     my $op = shift;
-    return sprintf("%s (0x%x) %s", class($op), $$op, $op->ppaddr);
+    return sprintf("%s (0x%x) %s", class($op), $$op, $op->name);
 }
 
 sub walkoptree_slow {
@@ -98,6 +126,11 @@ sub walkoptree_slow {
 	}
 	shift @parents;
     }
+    if (class($op) eq 'PMOP' && $op->pmreplroot && ${$op->pmreplroot}) {
+	unshift(@parents, $op);
+	walkoptree_slow($op->pmreplroot, $method, $level + 1);
+	shift @parents;
+    }
 }
 
 sub compile_stats {
@@ -112,6 +145,11 @@ sub timing_info {
 }
 
 my %symtable;
+
+sub clearsym {
+    %symtable = ();
+}
+
 sub savesym {
     my ($obj, $value) = @_;
 #    warn(sprintf("savesym: sym_%x => %s\n", $$obj, $value)); # debug
@@ -125,6 +163,7 @@ sub objsym {
 
 sub walkoptree_exec {
     my ($op, $method, $level) = @_;
+    $level ||= 0;
     my ($sym, $ppname);
     my $prefix = "    " x $level;
     for (; $$op; $op = $op->next) {
@@ -135,37 +174,26 @@ sub walkoptree_exec {
 	}
 	savesym($op, sprintf("%s (0x%lx)", class($op), $$op));
 	$op->$method($level);
-	$ppname = $op->ppaddr;
-	if ($ppname =~ /^pp_(or|and|mapwhile|grepwhile|entertry)$/) {
+	$ppname = $op->name;
+	if ($ppname =~
+	    /^(or|and|mapwhile|grepwhile|entertry|range|cond_expr)$/)
+	{
 	    print $prefix, uc($1), " => {\n";
 	    walkoptree_exec($op->other, $method, $level + 1);
 	    print $prefix, "}\n";
-	} elsif ($ppname eq "pp_match" || $ppname eq "pp_subst") {
+	} elsif ($ppname eq "match" || $ppname eq "subst") {
 	    my $pmreplstart = $op->pmreplstart;
 	    if ($$pmreplstart) {
 		print $prefix, "PMREPLSTART => {\n";
 		walkoptree_exec($pmreplstart, $method, $level + 1);
 		print $prefix, "}\n";
 	    }
-	} elsif ($ppname eq "pp_substcont") {
+	} elsif ($ppname eq "substcont") {
 	    print $prefix, "SUBSTCONT => {\n";
 	    walkoptree_exec($op->other->pmreplstart, $method, $level + 1);
 	    print $prefix, "}\n";
 	    $op = $op->other;
-	} elsif ($ppname eq "pp_cond_expr") {
-	    # pp_cond_expr never returns op_next
-	    print $prefix, "TRUE => {\n";
-	    walkoptree_exec($op->true, $method, $level + 1);
-	    print $prefix, "}\n";
-	    $op = $op->false;
-	    redo;
-	} elsif ($ppname eq "pp_range") {
-	    print $prefix, "TRUE => {\n";
-	    walkoptree_exec($op->true, $method, $level + 1);
-	    print $prefix, "}\n", $prefix, "FALSE => {\n";
-	    walkoptree_exec($op->false, $method, $level + 1);
-	    print $prefix, "}\n";
-	} elsif ($ppname eq "pp_enterloop") {
+	} elsif ($ppname eq "enterloop") {
 	    print $prefix, "REDO => {\n";
 	    walkoptree_exec($op->redoop, $method, $level + 1);
 	    print $prefix, "}\n", $prefix, "NEXT => {\n";
@@ -173,7 +201,7 @@ sub walkoptree_exec {
 	    print $prefix, "}\n", $prefix, "LAST => {\n";
 	    walkoptree_exec($op->lastop,  $method, $level + 1);
 	    print $prefix, "}\n";
-	} elsif ($ppname eq "pp_subst") {
+	} elsif ($ppname eq "subst") {
 	    my $replstart = $op->pmreplstart;
 	    if ($$replstart) {
 		print $prefix, "SUBST => {\n";
@@ -187,16 +215,19 @@ sub walkoptree_exec {
 sub walksymtable {
     my ($symref, $method, $recurse, $prefix) = @_;
     my $sym;
-    no strict 'vars';
-    local(*glob);
-    while (($sym, *glob) = each %$symref) {
+    my $ref;
+    my $fullname;
+    no strict 'refs';
+    $prefix = '' unless defined $prefix;
+    while (($sym, $ref) = each %$symref) {
+        $fullname = "*main::".$prefix.$sym;
 	if ($sym =~ /::$/) {
 	    $sym = $prefix . $sym;
-	    if ($sym ne "main::" && &$recurse($sym)) {
-		walksymtable(\%glob, $method, $recurse, $sym);
+	    if ($sym ne "main::" && $sym ne "<none>::" && &$recurse($sym)) {
+               walksymtable(\%$fullname, $method, $recurse, $sym);
 	    }
 	} else {
-	    svref_2object(\*glob)->EGV->$method();
+           svref_2object(\*$fullname)->$method();
 	}
     }
 }
@@ -267,7 +298,7 @@ sub walksymtable {
     }
 }
 
-bootstrap B;
+XSLoader::load 'B';
 
 1;
 
@@ -334,7 +365,21 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =item IV
 
+Returns the value of the IV, I<interpreted as
+a signed integer>. This will be misleading
+if C<FLAGS & SVf_IVisUV>. Perhaps you want the
+C<int_value> method instead?
+
 =item IVX
+
+=item UVX
+
+=item int_value
+
+This method returns the value of the IV as an integer.
+It differs from C<IV> in that it returns the correct
+value regardless of whether it's stored signed or
+unsigned.
 
 =item needs64bits
 
@@ -366,6 +411,27 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =item PV
 
+This method is the one you usually want. It constructs a
+string using the length and offset information in the struct:
+for ordinary scalars it will return the string that you'd see
+from Perl, even if it contains null characters.
+
+=item RV
+
+Same as B::RV::RV, except that it will die() if the PV isn't
+a reference.
+
+=item PVX
+
+This method is less often useful. It assumes that the string
+stored in the struct is null-terminated, and disregards the
+length information.
+
+It is the appropriate method to use if you need to get the name
+of a lexical variable from a padname array. Lexical variable names
+are always stored with a null terminator, and the length field
+(SvCUR) is overloaded for other purposes and can't be relied on here.
+
 =back
 
 =head2 B::PVMG METHODS
@@ -384,6 +450,10 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =item MOREMAGIC
 
+=item precomp
+
+Only valid on r-magic, returns the string that generated the regexp.
+
 =item PRIVATE
 
 =item TYPE
@@ -392,7 +462,14 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =item OBJ
 
+Will die() if called on r-magic.
+
 =item PTR
+
+=item REGEX
+
+Only valid on r-magic, returns the integer value of the REGEX stored
+in the MAGIC.
 
 =back
 
@@ -428,7 +505,26 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =over 4
 
+=item is_empty
+
+This method returns TRUE if the GP field of the GV is NULL.
+
 =item NAME
+
+=item SAFENAME
+
+This method returns the name of the glob, but if the first
+character of the name is a control character, then it converts
+it to ^X first, so that *^G would return "^G" rather than "\cG".
+
+It's useful if you want to print out the name of a variable.
+If you restrict yourself to globs which exist at compile-time
+then the result ought to be unambiguous, because code like
+C<${"^G"} = 1> is compiled as two ops - a constant string and
+a dereference (rv2gv) - so that the glob is created at runtime.
+
+If you're working with globs at runtime, and need to disambiguate
+*^G from *{"^G"}, then you should use the raw NAME method.
 
 =item STASH
 
@@ -449,6 +545,8 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 =item CVGEN
 
 =item LINE
+
+=item FILE
 
 =item FILEGV
 
@@ -488,6 +586,13 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =item IoFLAGS
 
+=item IsSTD
+
+Takes one arguments ( 'stdin' | 'stdout' | 'stderr' ) and returns true
+if the IoIFP of the object is equal to the handle whose name was
+passed as argument ( i.e. $io->IsSTD('stderr') is true if
+IoIFP($io) == PerlIO_stdin() ).
+
 =back
 
 =head2 B::AV METHODS
@@ -518,7 +623,7 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =item GV
 
-=item FILEGV
+=item FILE
 
 =item DEPTH
 
@@ -530,7 +635,11 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =item XSUBANY
 
+For constant subroutines, returns the constant SV returned by the subroutine.
+
 =item CvFLAGS
+
+=item const_sv
 
 =back
 
@@ -556,8 +665,8 @@ C<REFCNT> (corresponding to the C function C<SvREFCNT>).
 
 =head2 OP-RELATED CLASSES
 
-B::OP, B::UNOP, B::BINOP, B::LOGOP, B::CONDOP, B::LISTOP, B::PMOP,
-B::SVOP, B::GVOP, B::PVOP, B::CVOP, B::LOOP, B::COP.
+B::OP, B::UNOP, B::BINOP, B::LOGOP, B::LISTOP, B::PMOP,
+B::SVOP, B::PADOP, B::PVOP, B::CVOP, B::LOOP, B::COP.
 These classes correspond in
 the obvious way to the underlying C structures of similar names. The
 inheritance hierarchy mimics the underlying C "inheritance". Access
@@ -572,9 +681,14 @@ leading "class indication" prefix removed (op_).
 
 =item sibling
 
+=item name
+
+This returns the op name as a string (e.g. "add", "rv2av").
+
 =item ppaddr
 
-This returns the function name as a string (e.g. pp_add, pp_rv2av).
+This returns the function name as a string (e.g. "PL_ppaddr[OP_ADD]",
+"PL_ppaddr[OP_RV2AV]").
 
 =item desc
 
@@ -617,16 +731,6 @@ This returns the op description from the global C PL_op_desc array
 
 =back
 
-=head2 B::CONDOP METHODS
-
-=over 4
-
-=item true
-
-=item false
-
-=back
-
 =head2 B::LISTOP METHOD
 
 =over 4
@@ -649,9 +753,15 @@ This returns the op description from the global C PL_op_desc array
 
 =item pmflags
 
+=item pmdynflags
+
 =item pmpermflags
 
 =item precomp
+
+=item pmoffet
+
+Only when perl was compiled with ithreads.
 
 =back
 
@@ -661,13 +771,15 @@ This returns the op description from the global C PL_op_desc array
 
 =item sv
 
+=item gv
+
 =back
 
-=head2 B::GVOP METHOD
+=head2 B::PADOP METHOD
 
 =over 4
 
-=item gv
+=item padix
 
 =back
 
@@ -699,7 +811,7 @@ This returns the op description from the global C PL_op_desc array
 
 =item stash
 
-=item filegv
+=item file
 
 =item cop_seq
 
@@ -726,6 +838,14 @@ program.
 
 Returns the AV object (i.e. in class B::AV) representing INIT blocks.
 
+=item begin_av
+
+Returns the AV object (i.e. in class B::AV) representing BEGIN blocks.
+
+=item end_av
+
+Returns the AV object (i.e. in class B::AV) representing END blocks.
+
 =item main_root
 
 Returns the root op (i.e. an object in the appropriate B::OP-derived
@@ -739,6 +859,10 @@ Returns the starting op of the main part of the Perl program.
 
 Returns the AV object (i.e. in class B::AV) of the global comppadlist.
 
+=item regex_padav
+
+Only when perl was compiled with ithreads.
+
 =item sv_undef
 
 Returns the SV object corresponding to the C variable C<sv_undef>.
@@ -750,6 +874,10 @@ Returns the SV object corresponding to the C variable C<sv_yes>.
 =item sv_no
 
 Returns the SV object corresponding to the C variable C<sv_no>.
+
+=item amagic_generation
+
+Returns the SV object corresponding to the C variable C<amagic_generation>.
 
 =item walkoptree(OP, METHOD)
 
@@ -766,19 +894,31 @@ DEBUG argument is non-zero, it sets the debugging flag to that. See
 the description of C<walkoptree> above for what the debugging flag
 does.
 
-=item walksymtable(SYMREF, METHOD, RECURSE)
+=item walksymtable(SYMREF, METHOD, RECURSE, PREFIX)
 
 Walk the symbol table starting at SYMREF and call METHOD on each
-symbol visited. When the walk reached package symbols "Foo::" it
-invokes RECURSE and only recurses into the package if that sub
-returns true.
+symbol (a B::GV object) visited.  When the walk reaches package
+symbols (such as "Foo::") it invokes RECURSE, passing in the symbol
+name, and only recurses into the package if that sub returns true.
+
+PREFIX is the name of the SYMREF you're walking.
+
+For example...
+
+  # Walk CGI's symbol table calling print_subs on each symbol.
+  # Only recurse into CGI::Util::
+  walksymtable(\%CGI::, 'print_subs', sub { $_[0] eq 'CGI::Util::' },
+               'CGI::');
+
+print_subs() is a B::GV method you have declared.
+
 
 =item svref_2object(SV)
 
 Takes any Perl variable and turns it into an object in the
 appropriate B::OP-derived or B::SV-derived class. Apart from functions
 such as C<main_root>, this is the primary way to get an initial
-"handle" on a internal perl data structure which can then be followed
+"handle" on an internal perl data structure which can then be followed
 with the other access methods.
 
 =item ppname(OPNUM)
@@ -806,6 +946,11 @@ is only useful in a BEGIN block or else the flag is set too late.
 Returns a double-quote-surrounded escaped version of STR which can
 be used as a string in C source code.
 
+=item perlstring(STR)
+
+Returns a double-quote-surrounded escaped version of STR which can
+be used as a string in Perl source code.
+
 =item class(OBJ)
 
 Returns the class of an object without the part of the classname
@@ -816,11 +961,6 @@ preceding the first "::". This is used to turn "B::UNOP" into
 
 In a perl compiled for threads, this returns a list of the special
 per-thread threadsv variables.
-
-=item byteload_fh(FILEHANDLE)
-
-Load the contents of FILEHANDLE as bytecode. See documentation for
-the B<Bytecode> module in F<B::Backend> for how to generate bytecode.
 
 =back
 

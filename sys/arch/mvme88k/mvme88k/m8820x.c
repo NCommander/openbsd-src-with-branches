@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x.c,v 1.17 2003/09/16 20:46:11 miod Exp $	*/
+/*	$OpenBSD: m8820x.c,v 1.15 2003/08/09 21:19:59 miod Exp $	*/
 /*
  * Copyright (c) 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -771,56 +771,35 @@ m8820x_cpu_configuration_print(master)
 
 	simple_lock(&print_lock);
 
-	printf("cpu%d: ", cpu);
-	if (proctype != 0) {
-		printf("unknown model arch 0x%x rev 0x%x\n",
-		    proctype, procvers);
-		simple_unlock(&print_lock);
-		return;
-	}
-
-	printf("M88100 rev 0x%x", procvers);
-#if 0	/* not useful yet */
-	if (brdtyp == BRD_188)
-		printf(", %s", master ? "master" : "slave");
-#endif
-	printf(", %d CMMU", cpu_cmmu_ratio);
-
-	for (mmu = cpu * cpu_cmmu_ratio; mmu < (cpu + 1) * cpu_cmmu_ratio;
-	    mmu++) {
-		int idr = m8820x_cmmu_get(mmu, CMMU_IDR);
-		int mmuid = (0xe00000 & idr)>>21;
-		int access = m8820x_cmmu[mmu].cmmu_access;
-
-		if ((mmu - cpu * cpu_cmmu_ratio) % 2 == 0)
-			printf("\ncpu%d: ", cpu);
-		else
-			printf(", ");
-
-		if (mmutypes[mmuid][0] == 'U')
-			printf("unknown model id 0x%x", mmuid);
-		else
-			printf("%s", mmutypes[mmuid]);
-		printf(" rev 0x%x, %s %scache",
-		    (idr & 0x1f0000) >> 16,
-		    access == CMMU_ACS_BOTH ? "global" :
-		    (access == CMMU_ACS_USER ? "user" : "sup"),
-		    m8820x_cmmu[mmu].which == INST_CMMU ? "I" : "D");
-	}
-	printf("\n");
+	printf("Processor %d: ", cpu);
+	if (proctype)
+		printf("Architectural Revision 0x%x UNKNOWN CPU TYPE Version 0x%x\n",
+		       proctype, procvers);
+	else
+		printf("M88100 Version 0x%x\n", procvers);
 
 #ifndef ERRATA__XXX_USR
-	{
-		static int errata_warn = 0;
-
-		if (proctype != 0 && procvers < 2) {
-			if (!errata_warn++)
-				printf("WARNING: M88100 bug workaround code "
-				    "not enabled.\nPlease recompile the kernel "
-				    "with option ERRATA__XXX_USR !\n");
-		}
-	}
+	if (procvers < 2)
+		printf("WARNING: M88100 bug workaround code not enabled!!!\n");
 #endif
+
+	for (mmu = cpu*cpu_cmmu_ratio; mmu < (cpu+1)*cpu_cmmu_ratio; mmu++) {
+		int idr = m8820x_cmmu_get(mmu, CMMU_IDR);
+		int mmuid = (0xe00000 & idr)>>21;
+
+		printf(" %s %s Cache: ",
+		       (m8820x_cmmu[mmu].cmmu_access == CMMU_ACS_BOTH) ?  "Spv and User" :
+		       ((m8820x_cmmu[mmu].cmmu_access == CMMU_ACS_USER) ? "User        " :
+			"Supervisor  "),
+		       (m8820x_cmmu[mmu].which == INST_CMMU) ?   "Instruction" :
+		       "Data       ");
+		if (mmutypes[mmuid][0] == 'U')
+			printf("Type 0x%x ", mmuid);
+		else
+			printf("%s ", mmutypes[mmuid]);
+		printf("Version 0x%x\n", (idr & 0x1f0000)>>16);
+	}
+	printf  (" Configured as %s and started\n", master ? "master" : "slave");
 
 	simple_unlock(&print_lock);
 }
@@ -874,14 +853,18 @@ m8820x_cmmu_init()
 			 * Set the SCTR, SAPR, and UAPR to some known state
 			 * (I don't trust the reset to do it).
 			 */
-			tmp = 0 & ~(
-			    CMMU_SCTR_PE |   /* not parity enable */
-			    CMMU_SCTR_SE | /* not snoop enable */
-			    CMMU_SCTR_PR);  /* not priority arbitration */
+			tmp =
+			! CMMU_SCTR_PE |   /* not parity enable */
+			! CMMU_SCTR_SE | /* not snoop enable */
+			! CMMU_SCTR_PR ;  /* not priority arbitration */
 			m8820x_cmmu[cmmu_num].cmmu_regs->sctr = tmp;
 
-			tmp = ((0x00000 << PG_BITS) | AREA_D_WT | AREA_D_G |
-			    AREA_D_CI) & ~AREA_D_TE;
+			tmp =
+			(0x00000 << PG_BITS) |  /* segment table base address */
+			AREA_D_WT |	 /* write through */
+			AREA_D_G  | /* global */
+			AREA_D_CI | /* cache inhibit */
+			! AREA_D_TE ;	/* not translation enable */
 			m8820x_cmmu[cmmu_num].cmmu_regs->sapr =
 			m8820x_cmmu[cmmu_num].cmmu_regs->uapr = tmp;
 
@@ -922,9 +905,14 @@ m8820x_cmmu_init()
 		 * breakpoints, etc, and modify code.
 		 */
 		if (brdtyp == BRD_188) {
-			tmp = CMMU_SCTR_SE & ~(CMMU_SCTR_PE | CMMU_SCTR_PR);
+			tmp =
+			! CMMU_SCTR_PE |  /* not parity enable */
+			CMMU_SCTR_SE |	/* snoop enable */
+			! CMMU_SCTR_PR ;  /* not priority arbitration */
 		} else {
-			tmp = 0 & ~(CMMU_SCTR_PE | CMMU_SCTR_PR);
+			tmp =
+			! CMMU_SCTR_PE |  /* not parity enable */
+			! CMMU_SCTR_PR ;  /* not priority arbitration */
 		}
 		m8820x_cmmu_set(CMMU_SCTR, tmp, 0, cpu, DATA_CMMU, 0, 0);
 		m8820x_cmmu_set(CMMU_SCTR, tmp, 0, cpu, INST_CMMU, 0, 0);
@@ -947,11 +935,21 @@ m8820x_cmmu_init()
 		 * be cached, and we don't have those no-caching zones
 		 * set up yet....
 		 */
-		tmp = ((0x00000 << PG_BITS) | AREA_D_WT | AREA_D_G | AREA_D_CI)
-		    & ~AREA_D_TE;
+		tmp =
+		(0x00000 << PG_BITS) | /* segment table base address */
+		AREA_D_WT |	  /* write through */
+		AREA_D_G  |	  /* global */
+		AREA_D_CI |	  /* cache inhibit */
+		! AREA_D_TE ;	  /* not translation enable */
+		/*
+		REGS(cpu, INST_CMMU).sapr = tmp;
+		*/
 		m8820x_cmmu_set(CMMU_SAPR, tmp, MODE_VAL,
 			      cpu, INST_CMMU, 0, 0);
 
+		/*
+		REGS(cpu, DATA_CMMU).scr = CMMU_FLUSH_SUPER_ALL;
+		*/
 		m8820x_cmmu_set(CMMU_SCR, CMMU_FLUSH_SUPER_ALL, ACCESS_VAL|MODE_VAL,
 			      cpu, DATA_CMMU, CMMU_ACS_SUPER, 0);
 	}
@@ -972,15 +970,24 @@ m8820x_cmmu_shutdown_now()
 	 */
 	for (cmmu_num = 0; cmmu_num < MAX_CMMUS; cmmu_num++) {
 		if (brdtyp == BRD_188) {
-			tmp = 0 & ~(CMMU_SCTR_PE | CMMU_SCTR_SE | CMMU_SCTR_PR);
+			tmp =
+			! CMMU_SCTR_PE |   /* parity enable */
+			! CMMU_SCTR_SE |   /* snoop enable */
+			! CMMU_SCTR_PR ;   /* priority arbitration */
 		} else {
-			tmp = 0 & ~(CMMU_SCTR_PE | CMMU_SCTR_PR);
+			tmp =
+			! CMMU_SCTR_PE |   /* parity enable */
+			! CMMU_SCTR_PR ;   /* priority arbitration */
 		}
 
 		m8820x_cmmu[cmmu_num].cmmu_regs->sctr = tmp;
 
-		tmp = ((0x00000 << PG_BITS) | AREA_D_CI) &
-		    ~(AREA_D_WT | AREA_D_G | AREA_D_TE);
+		tmp = 
+		(0x00000 << PG_BITS) |  /* segment table base address */
+		! AREA_D_WT |	   /* write through */
+		! AREA_D_G  |	   /* global */
+		AREA_D_CI |	   /* cache inhibit */
+		! AREA_D_TE ;	   /* translation disable */
 
 		m8820x_cmmu[cmmu_num].cmmu_regs->sapr = tmp;
 		m8820x_cmmu[cmmu_num].cmmu_regs->uapr = tmp;
@@ -1020,7 +1027,7 @@ m8820x_cmmu_parity_enable()
  * Better be at splhigh, or even better, with interrupts
  * disabled.
  */
-#define ILLADDRESS	0x0F000000 	/* any faulty address */
+#define ILLADDRESS	U(0x0F000000) 	/* any faulty address */
 
 unsigned 
 m8820x_cmmu_cpu_number()
@@ -1058,6 +1065,27 @@ m8820x_cmmu_cpu_number()
 	CMMU_UNLOCK;
 	return 0; /* to make compiler happy */
 }
+
+#if 0
+/*
+ * Functions that actually modify CMMU registers.
+ */
+void
+m8820x_cmmu_remote_set(unsigned cpu, unsigned r, unsigned data, unsigned x)
+{
+	*(unsigned *volatile)(r + (char *)&REGS(cpu,data)) = x;
+}
+
+/*
+ * cmmu_cpu_lock should be held when called if read
+ * the CMMU_SCR or CMMU_SAR.
+ */
+unsigned
+m8820x_cmmu_remote_get(unsigned cpu, unsigned r, unsigned data)
+{
+	return (*(unsigned *volatile)(r + (char *)&REGS(cpu,data)));
+}
+#endif 
 
 /* Needs no locking - read only registers */
 unsigned
@@ -1133,6 +1161,10 @@ m8820x_cmmu_set_batc_entry(cpu, entry_no, data, value)
 #ifdef SHADOW_BATC
 	CMMU(cpu,data)->batc[entry_no] = value;
 #endif
+#if 0 /* was for debugging piece (peace?) of mind */
+	REGS(cpu,data).scr = CMMU_FLUSH_SUPER_ALL;
+	REGS(cpu,data).scr = CMMU_FLUSH_USER_ALL;
+#endif
 	CMMU_UNLOCK;
 }
 
@@ -1157,6 +1189,12 @@ m8820x_cmmu_set_pair_batc_entry(cpu, entry_no, value)
 	CMMU(cpu,INST_CMMU)->batc[entry_no] = value;
 #endif
 
+#if 0  /* was for debugging piece (peace?) of mind */
+	REGS(cpu,INST_CMMU).scr = CMMU_FLUSH_SUPER_ALL;
+	REGS(cpu,INST_CMMU).scr = CMMU_FLUSH_USER_ALL;
+	REGS(cpu,DATA_CMMU).scr = CMMU_FLUSH_SUPER_ALL;
+	REGS(cpu,DATA_CMMU).scr = CMMU_FLUSH_USER_ALL;
+#endif
 	CMMU_UNLOCK;
 }
 
