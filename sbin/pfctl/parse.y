@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.46 2001/12/05 17:11:54 dhartmei Exp $	*/
+/*	$OpenBSD: parse.y,v 1.47 2001/12/10 18:08:12 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1004,7 +1004,7 @@ yyerror(char *fmt, ...)
 	errors = 1;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "%s:%d: ", infile, yyval.lineno);
+	fprintf(stderr, "%s:%d: ", infile, yylval.lineno);
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
 	va_end(ap);
