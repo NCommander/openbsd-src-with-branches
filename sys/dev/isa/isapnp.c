@@ -1,4 +1,4 @@
-/*	$OpenBSD: isapnp.c,v 1.3 1996/08/15 06:33:28 deraadt Exp $	*/
+/*	$OpenBSD: isapnp.c,v 1.4 1996/08/15 17:28:40 shawn Exp $	*/
 
 /*
  * Copyright (c) 1996, Shawn Hsiao <shawn@alpha.secc.fju.edu.tw>
@@ -169,6 +169,8 @@ isapnpattach(parent, self, aux)
 			break;
 		}
 	}
+	if (num_pnp_devs == 0)
+		printf(": 0 devices");
 	printf("\n");
 }
 
