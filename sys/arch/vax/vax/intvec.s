@@ -72,9 +72,6 @@ ENTRY(stray/**/vecnr)		; \
 	popr $0x3f		; \
 	rei
 
-#define	PUSHR	pushr	$0x3f
-#define	POPR	popr	$0x3f
-
 #define KSTACK 0
 #define ISTACK 1
 #define INTVEC(label,stack)	\
@@ -322,31 +319,7 @@ ENTRY(rxcs);	/* console interrupt from some other processor */
 	STRAY(0,A8)
 	STRAY(0,AC)
 
-ENTRY(netint)
-	PUSHR
-#ifdef INET
-#if NARP > 0
-	bbcc	$NETISR_ARP,_netisr,1f; calls $0,_arpintr; 1:
-#endif
-	bbcc	$NETISR_IP,_netisr,1f; calls $0,_ipintr; 1:
-#endif
-#ifdef NETATALK
-	bbcc	$NETISR_ATALK,_netisr,1f; calls $0,_atintr; 1:
-#endif
-#ifdef NS
-	bbcc	$NETISR_NS,_netisr,1f; calls $0,_nsintr; 1:
-#endif
-#ifdef ISO
-	bbcc	$NETISR_ISO,_netisr,1f; calls $0,_clnlintr; 1:
-#endif
-#ifdef CCITT
-	bbcc	$NETISR_CCITT,_netisr,1f; calls $0,_ccittintr; 1:
-#endif
-#if NPPP > 0
-	bbcc	$NETISR_PPP,_netisr,1f; calls $0,_pppintr; 1:
-#endif
-	POPR
-	rei
+	FASTINTR(netint,netintr)	#network packet interrupt
 
 	STRAY(0,B4)
 	STRAY(0,B8)
