@@ -32,13 +32,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD$";
+static char *rcsid = "$OpenBSD: creat.c,v 1.2 1996/08/19 08:19:18 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <fcntl.h>
 
 int
-#if __STDC__
+#ifdef __STDC__
 creat(const char *path, mode_t mode)
 #else
 creat(path, mode)

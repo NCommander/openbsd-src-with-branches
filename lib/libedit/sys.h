@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys.h,v 1.2 1997/01/16 05:18:46 millert Exp $	*/
+/*	$OpenBSD: sys.h,v 1.3 1997/03/14 05:13:04 millert Exp $	*/
 /*	$NetBSD: sys.h,v 1.3 1997/01/11 06:48:12 lukem Exp $	*/
 
 /*-
@@ -62,7 +62,7 @@
 
 #ifndef _PTR_T
 # define _PTR_T
-# if __STDC__
+# ifdef __STDC__
 typedef void* ptr_t;
 # else
 typedef char* ptr_t;
@@ -71,7 +71,7 @@ typedef char* ptr_t;
 
 #ifndef _IOCTL_T
 # define _IOCTL_T
-# if __STDC__
+# ifdef __STDC__
 typedef void* ioctl_t;
 # else
 typedef char* ioctl_t;

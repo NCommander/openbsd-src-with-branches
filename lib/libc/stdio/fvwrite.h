@@ -1,4 +1,4 @@
-/*	$OpenBSD: fvwrite.h,v 1.3 1995/02/02 02:09:47 jtc Exp $	*/
+/*	$OpenBSD: fvwrite.h,v 1.2 1996/08/19 08:32:49 tholo Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -49,7 +49,7 @@ struct __suio {
 	int	uio_resid;
 };
 
-#if __STDC__ || c_plusplus
+#if defined(__STDC__) || defined(c_plusplus)
 extern int __sfvwrite(FILE *, struct __suio *);
 #else
 extern int __sfvwrite();

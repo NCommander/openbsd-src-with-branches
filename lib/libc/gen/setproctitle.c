@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.3 1996/10/23 16:43:03 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.4 1996/10/23 17:15:44 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -54,7 +54,7 @@ static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.3 1996/10/23 16:43:03 deraad
 extern char *__progname;		/* Program name, from crt0. */
 
 void
-#if __STDC__
+#ifdef __STDC__
 setproctitle(const char *fmt, ...)
 #else
 setproctitle(fmt, va_alist)
@@ -68,7 +68,7 @@ setproctitle(fmt, va_alist)
 	static char buf[MAX_PROCTITLE], *bufp = buf;
 	int used;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);

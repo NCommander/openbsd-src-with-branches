@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: tcsetpgrp.c,v 1.2 1995/06/26 23:06:13 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tcsetpgrp.c,v 1.2 1996/08/19 08:34:44 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -40,7 +40,7 @@ static char rcsid[] = "$OpenBSD: tcsetpgrp.c,v 1.2 1995/06/26 23:06:13 jtc Exp $
 #include <termios.h>
 
 int
-#if __STDC__
+#ifdef __STDC__
 tcsetpgrp(int fd, pid_t pgrp)
 #else
 tcsetpgrp(fd, pgrp)

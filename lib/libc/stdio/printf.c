@@ -35,18 +35,18 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: printf.c,v 1.5 1995/02/02 02:10:13 jtc Exp $";
+static char rcsid[] = "$OpenBSD: printf.c,v 1.2 1996/08/19 08:32:57 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
 int
-#if __STDC__
+#ifdef __STDC__
 printf(char const *fmt, ...)
 #else
 printf(fmt, va_alist)
@@ -57,7 +57,7 @@ printf(fmt, va_alist)
 	int ret;
 	va_list ap;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);

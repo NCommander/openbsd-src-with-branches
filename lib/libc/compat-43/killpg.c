@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: killpg.c,v 1.1.1.1 1995/10/18 08:41:46 deraadt Exp $";
+static char *rcsid = "$OpenBSD: killpg.c,v 1.2 1996/08/19 08:19:27 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -43,7 +43,7 @@ static char *rcsid = "$OpenBSD: killpg.c,v 1.1.1.1 1995/10/18 08:41:46 deraadt E
  * Backwards-compatible killpg().
  */
 int
-#if __STDC__
+#ifdef __STDC__
 killpg(pid_t pgid, int sig)
 #else
 killpg(pgid, sig)
