@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.10 1997/06/03 22:27:17 grr Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.11 1997/11/17 09:14:05 niklas Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mkfs.c	8.3 (Berkeley) 2/3/94";
 #else
-static char rcsid[] = "$OpenBSD: mkfs.c,v 1.10 1997/06/03 22:27:17 grr Exp $";
+static char rcsid[] = "$OpenBSD: mkfs.c,v 1.11 1997/11/17 09:14:05 niklas Exp $";
 #endif
 #endif /* not lint */
 
@@ -105,6 +105,7 @@ extern int	maxbpg;		/* maximum blocks per file in a cyl group */
 extern int	nrpos;		/* # of distinguished rotational positions */
 extern int	bbsize;		/* boot block size */
 extern int	sbsize;		/* superblock size */
+extern int	quiet;		/* quiet flag */
 extern u_long	memleft;	/* virtual memory available */
 extern caddr_t	membase;	/* start address of memory based filesystem */
 static caddr_t	malloc(), calloc();
@@ -609,13 +610,13 @@ next:
 	 * Now build the cylinders group blocks and
 	 * then print out indices of cylinder groups.
 	 */
-	if (!mfs)
+	if (!quiet)
 		printf("super-block backups (for fsck -b #) at:\n");
 	i = 0;
 	width = charsperline();
 	for (cylno = 0; cylno < sblock.fs_ncg; cylno++) {
 		initcg(cylno, utime);
-		if (mfs)
+		if (quiet)
 			continue;
 		j = sprintf(tmpbuf, " %d,",
 			fsbtodb(&sblock, cgsblock(&sblock, cylno)));
@@ -627,7 +628,7 @@ next:
 		printf("%s", tmpbuf);
 		fflush(stdout);
 	}
-	if (!mfs)
+	if (!quiet)
 		printf("\n");
 	if (Nflag && !mfs)
 		exit(0);

@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: install.sh,v 1.50 1999/04/07 22:59:27 deraadt Exp $
+#	$OpenBSD: install.sh,v 1.51 1999/04/08 06:16:15 deraadt Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997,1998 Todd Miller, Theo de Raadt
@@ -296,7 +296,7 @@ __get_filesystems_1
 	echo	"Creating filesystems..."
 	(
 		while read _device_name _junk; do
-			newfs /dev/r${_device_name}
+			newfs -q /dev/r${_device_name}
 		done
 	) < ${FILESYSTEMS}
 else
