@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.2 1996/03/03 17:20:20 niklas Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.3 1996/08/24 04:56:37 deraadt Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -160,7 +160,7 @@ sonewconn1(head, connstatus)
 	register struct socket *so;
 	int soqueue = connstatus ? 1 : 0;
 
-	if (head->so_qlen + head->so_q0len > 3 * head->so_qlimit / 2)
+	if (head->so_qlen + head->so_q0len > head->so_qlimit * 3)
 		return ((struct socket *)0);
 	MALLOC(so, struct socket *, sizeof(*so), M_SOCKET, M_DONTWAIT);
 	if (so == NULL) 
