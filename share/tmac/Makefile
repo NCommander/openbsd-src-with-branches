@@ -1,15 +1,13 @@
-#	$OpenBSD: Makefile,v 1.2 1996/09/03 22:51:15 etheisen Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/03/02 14:46:54 todd Exp $
 #	from: @(#)Makefile	6.13 (Berkeley) 3/20/91
 
 BINDIR= /usr/share
 FILES=	tmac.andoc
-LINKS=	${BINDIR}/tmac/tmac.andoc ${BINDIR}/tmac/tmac.an
+LINKS=	${BINDIR}/tmac/tmac.andoc ${BINDIR}/tmac/tmac.an \
+	${BINDIR}/tmac/mdoc/doc ${BINDIR}/tmac/tmac.doc
 NOOBJ=	noobj
 
 SUBDIR=	mdoc
-
-# old macros not currently installed...
-OFILES=	tmac.an.v6compat tmac.an6n tmac.an6t tmac.a tmac.cp tmac.doc.old
 
 all clean cleandir depend lint tags:
 
