@@ -38,7 +38,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: sigprocmask.S,v 1.3 1997/07/23 20:55:23 kstailey Exp $"
+	.asciz "$OpenBSD: sigprocmask.S,v 1.4 1998/11/20 11:18:30 d Exp $"
 #endif /* SYSLIBC_SCCS */
 
 SYSENTRY(sigprocmask)
@@ -62,7 +62,7 @@ out:
 	ret
 err:
 #ifdef PIC
-	jmp	PIC_PLT(cerror)
+	jmp	PIC_PLT(__cerror)
 #else
-	jmp	cerror
+	jmp	__cerror
 #endif

@@ -38,7 +38,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: sigsuspend.S,v 1.2 1996/08/19 08:13:44 tholo Exp $"
+	.asciz "$OpenBSD: sigsuspend.S,v 1.3 1998/11/20 11:18:30 d Exp $"
 #endif /* SYSLIBC_SCCS */
 
 SYSENTRY(sigsuspend)
@@ -52,7 +52,7 @@ SYSENTRY(sigsuspend)
 	ret
 err:
 #ifdef PIC
-	jmp	PIC_PLT(cerror)
+	jmp	PIC_PLT(__cerror)
 #else
-	jmp	cerror
+	jmp	__cerror
 #endif
