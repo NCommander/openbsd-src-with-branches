@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.29 2003/06/26 07:53:27 deraadt Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.30 2003/09/02 15:17:51 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -303,6 +303,13 @@ _dl_show_objects(void)
 		    (void *)(object->load_addr + object->load_size),
 		    objtypename, object->refcount, object->load_name);
 		object = object->next;
+	}
+	{
+		extern int _dl_symcachestat_hits;
+		extern int _dl_symcachestat_lookups;
+	DL_DEB(("symcache lookups %d hits %d ratio %d% hits\n",
+	    _dl_symcachestat_lookups, _dl_symcachestat_hits,
+	    (_dl_symcachestat_hits * 100) / _dl_symcachestat_lookups));
 	}
 }
 
