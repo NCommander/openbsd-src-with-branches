@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.20 1996/08/29 18:03:27 downsj Exp $	*/
+/*	$OpenBSD: fd.c,v 1.21 1996/09/01 20:58:26 downsj Exp $	*/
 /*	$NetBSD: fd.c,v 1.90 1996/05/12 23:12:03 mycroft Exp $	*/
 
 /*-
@@ -76,9 +76,6 @@
 #include <i386/isa/nvram.h>
 
 #include <i386/isa/fdlink.h>
-
-#define FDUNIT(dev)	(minor(dev) / 8)
-#define FDTYPE(dev)	(minor(dev) % 8)
 
 /* XXX misuse a flag to identify format operation */
 #define B_FORMAT B_XXX
