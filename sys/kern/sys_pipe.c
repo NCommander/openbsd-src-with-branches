@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.32 2001/06/05 18:28:18 provos Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.33 2001/06/23 06:04:34 art Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -72,6 +72,7 @@ int	pipe_close __P((struct file *, struct proc *));
 int	pipe_select __P((struct file *, int which, struct proc *));
 int	pipe_kqfilter __P((struct file *fp, struct knote *kn));
 int	pipe_ioctl __P((struct file *, u_long, caddr_t, struct proc *));
+int	pipe_stat __P((struct file *fp, struct stat *ub, struct proc *p));
 
 static struct fileops pipeops = {
 	pipe_read, pipe_write, pipe_ioctl, pipe_select, pipe_kqfilter,
