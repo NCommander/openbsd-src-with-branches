@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.6 1997/05/25 08:20:32 grr Exp $
-#	$OpenBSD: Makefile.inc,v 1.6 1997/05/25 08:20:32 grr Exp $
+#	$OpenBSD: Makefile.inc,v 1.7 1997/05/25 22:56:41 grr Exp $
 
 IMAGESIZE?=		4352 # 2Mb & change in 512 byte blocks
 BOOT_INSTALLBOOT?=	/usr/mdec/bootxx
