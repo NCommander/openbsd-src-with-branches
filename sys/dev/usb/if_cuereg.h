@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cuereg.h,v 1.4 2001/05/03 02:20:32 aaron Exp $ */
+/*	$OpenBSD: if_cuereg.h,v 1.5 2001/10/31 04:24:44 nate Exp $ */
 /*	$NetBSD: if_cuereg.h,v 1.14 2001/01/21 22:09:24 augustss Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -118,7 +118,6 @@
 #define CUE_MCAST_TABLE_LEN			64
 
 #define CUE_TIMEOUT		1000
-#define ETHER_ALIGN		2
 #define CUE_BUFSZ		1536
 #define CUE_MIN_FRAMELEN	60
 #define CUE_RX_FRAMES		1

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_skreg.h,v 1.9 2003/08/01 04:46:13 nate Exp $	*/
+/*	$OpenBSD: if_skreg.h,v 1.10 2003/08/12 05:23:06 nate Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -1447,4 +1447,3 @@ struct skc_attach_args {
 
 #define SK_MAXUNIT	256
 #define SK_TIMEOUT	1000
-#define ETHER_ALIGN	2
