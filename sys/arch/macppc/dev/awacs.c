@@ -1,4 +1,4 @@
-/*	$OpenBSD: awacs.c,v 1.3 2001/09/11 20:05:24 miod Exp $	*/
+/*	$OpenBSD: awacs.c,v 1.4 2001/09/15 01:51:11 mickey Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-
@@ -397,7 +397,6 @@ awacs_intr(v)
 
 	if (reason & AWACS_CTL_CNTRLERR) {
 		/* change outputs ?? */
-		printf("should change inputs\n");
 	}
 	if (reason & AWACS_CTL_PORTCHG) {
 #ifdef DEBUG
