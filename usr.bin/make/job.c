@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: job.c,v 1.52 2002/07/31 19:29:20 mickey Exp $	*/
+/*	$OpenBSD: job.c,v 1.53 2003/02/18 13:14:43 jmc Exp $	*/
 /*	$NetBSD: job.c,v 1.16 1996/11/06 17:59:08 christos Exp $	*/
 
 /*
@@ -1349,7 +1349,7 @@ JobMakeArgv(job, argv)
 	 * Bourne shell thinks its second argument is a file to source.
 	 * Grrrr. Note the ten-character limitation on the combined arguments.
 	 */
-	(void)sprintf(args, "-%s%s",
+	(void)snprintf(args, sizeof(args), "-%s%s",
 		      ((job->flags & JOB_IGNERR) ? "" :
 		       (commandShell->exit ? commandShell->exit : "")),
 		      ((job->flags & JOB_SILENT) ? "" :
@@ -1731,7 +1731,7 @@ JobStart(gn, flags, previous)
 	} else {
 	    (void)fprintf(stdout, "Remaking `%s'\n", gn->name);
 	    (void)fflush(stdout);
-	    (void)strcpy(job->outFile, TMPPAT);
+	    (void)strlcpy(job->outFile, TMPPAT, sizeof(job->outFile));
 	    if ((job->outFd = mkstemp(job->outFile)) == -1)
 		Punt("Cannot create temp file: %s", strerror(errno));
 	    (void)fcntl(job->outFd, F_SETFD, 1);
@@ -2182,7 +2182,7 @@ Job_Init(maxproc, maxlocal)
     GNode	  *begin;     /* node for commands to do at the very start */
     int 	  tfd;
 
-    (void)strcpy(tfile, TMPPAT);
+    (void)strlcpy(tfile, TMPPAT, sizeof(tfile));
     if ((tfd = mkstemp(tfile)) == -1)
 	Punt("Cannot create temp file: %s", strerror(errno));
     else
