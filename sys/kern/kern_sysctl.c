@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.30 2000/02/22 19:28:03 deraadt Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.31 2000/03/03 11:31:43 art Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -777,7 +777,7 @@ again:
 		needed += sizeof(struct kinfo_proc);
 	}
 	if (doingzomb == 0) {
-		p = zombproc.lh_first;
+		p = LIST_FIRST(&zombproc);
 		doingzomb++;
 		goto again;
 	}

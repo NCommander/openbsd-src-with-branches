@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.17 1999/09/05 22:20:45 tholo Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.18 2000/03/03 11:31:43 art Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -816,7 +816,7 @@ db_show_all_procs(addr, haddr, count, modif)
 		p = LIST_NEXT(p, p_list);
 		if (p == 0 && doingzomb == 0) {
 			doingzomb = 1;
-			p = zombproc.lh_first;
+			p = LIST_FIRST(&zombproc);
 		}
 	}
 }
