@@ -1,11 +1,12 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1993-1998 by Darren Reed.
  *
  * Redistribution and use in source and binary forms are permitted
  * provided that this notice is preserved and due credit is given
  * to the original author and the contributors.
- * $Id: kmem.h,v 2.1 1999/08/04 17:30:10 darrenr Exp $
+ * $IPFilter: kmem.h,v 2.1 1999/08/04 17:30:10 darrenr Exp $
  */
 
 #ifndef	__KMEM_H__

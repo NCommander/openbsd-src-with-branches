@@ -1,11 +1,12 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1999 by Darren Reed.
  *
  * Redistribution and use in source and binary forms are permitted
  * provided that this notice is preserved and due credit is given
  * to the original author and the contributors.
- * $Id: facpri.h,v 1.2 1999/08/01 11:10:46 darrenr Exp $
+ * $IPFilter: facpri.h,v 1.2 1999/08/01 11:10:46 darrenr Exp $
  */
 
 #ifndef	__FACPRI_H__

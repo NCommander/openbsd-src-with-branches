@@ -1,4 +1,5 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Simple RCMD transparent proxy for in-kernel use.  For use with the NAT
  * code.

@@ -1,4 +1,5 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1993-1998 by Darren Reed.
  *
@@ -61,7 +62,7 @@ tcpdump -nqte
 
 #if !defined(lint)
 static const char sccsid[] = "@(#)ipft_td.c	1.8 2/4/96 (C)1995 Darren Reed";
-static const char rcsid[] = "@(#)$Id: ipft_td.c,v 2.1 1999/08/04 17:30:04 darrenr Exp $";
+static const char rcsid[] = "@(#)$IPFilter: ipft_td.c,v 2.1 1999/08/04 17:30:04 darrenr Exp $";
 #endif
 
 static	int	tcpd_open __P((char *));

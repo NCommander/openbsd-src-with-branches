@@ -1,4 +1,5 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1993-1998 by Darren Reed.
  *
@@ -38,7 +39,7 @@
 #include "ipt.h"
 
 #if !defined(lint)
-static const char rcsid[] = "@(#)$Id: ipft_sn.c,v 2.1 1999/08/04 17:30:04 darrenr Exp $";
+static const char rcsid[] = "@(#)$IPFilter: ipft_sn.c,v 2.1 1999/08/04 17:30:04 darrenr Exp $";
 #endif
 
 struct	llc	{

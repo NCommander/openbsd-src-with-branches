@@ -1,4 +1,5 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1997-1998 by Darren Reed & Guido Van Rooij.
  *
@@ -6,7 +7,7 @@
  * provided that this notice is preserved and due credit is given
  * to the original author and the contributors.
  *
- * $Id: ip_auth.h,v 2.1 1999/08/04 17:29:54 darrenr Exp $
+ * $IPFilter: ip_auth.h,v 2.1 1999/08/04 17:29:54 darrenr Exp $
  *
  */
 #ifndef	__IP_AUTH_H__

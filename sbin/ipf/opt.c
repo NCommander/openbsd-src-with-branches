@@ -1,4 +1,5 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1993-1998 by Darren Reed.
  *
@@ -28,7 +29,7 @@
 
 #if !defined(lint)
 static const char sccsid[] = "@(#)opt.c	1.8 4/10/96 (C) 1993-1995 Darren Reed";
-static const char rcsid[] = "@(#)$Id: opt.c,v 2.1 1999/08/04 17:30:15 darrenr Exp $";
+static const char rcsid[] = "@(#)$IPFilter: opt.c,v 2.1 1999/08/04 17:30:15 darrenr Exp $";
 #endif
 
 extern	int	opts;

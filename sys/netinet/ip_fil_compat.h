@@ -1,4 +1,5 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1993-1998 by Darren Reed.
  *
@@ -7,7 +8,7 @@
  * to the original author and the contributors.
  *
  * @(#)ip_compat.h	1.8 1/14/96
- * $Id: ip_compat.h,v 2.1.2.3 1999/11/18 13:55:26 darrenr Exp $
+ * $IPFilter: ip_compat.h,v 2.1.2.3 1999/11/18 13:55:26 darrenr Exp $
  */
 
 #ifndef	__IP_COMPAT_H__
