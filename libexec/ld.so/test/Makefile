@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2000/10/13 05:15:17 drahn Exp $
+#	$OpenBSD: Makefile,v 1.5 2001/05/28 21:27:50 drahn Exp $
 
 DIR=/usr/src/libexec/ld.so/obj/ld.so
 .if (${MACHINE_ARCH} != "mips")
@@ -45,6 +45,14 @@ libB.so:	B.o
 
 CCtest:	libA.so libB.so tst.o
 	g++ ${LDFLAGS} -o $@ tst.o libB.so libA.so
+
+run:
+	@echo running CCtest
+	LD_LIBRARY_PATH=. CCtest
+	@echo running dltest -l bar -f bar
+	LD_LIBRARY_PATH=. dltest -l bar -f bar
+	@echo running dltest -l foo -f foo
+	LD_LIBRARY_PATH=. dltest -l foo -f foo
 
 .include <bsd.prog.mk>
 .include <bsd.subdir.mk>
