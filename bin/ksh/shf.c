@@ -1,4 +1,4 @@
-/*	$OpenBSD: shf.c,v 1.5 1999/01/19 20:41:56 millert Exp $	*/
+/*	$OpenBSD: shf.c,v 1.6 1999/06/15 01:18:36 millert Exp $	*/
 
 /*
  *  Shell file I/O routines
@@ -357,7 +357,6 @@ shf_emptybuf(shf, flags)
 		shf->rp = nbuf + (shf->rp - shf->buf);
 		shf->wp = nbuf + (shf->wp - shf->buf);
 		shf->rbsize += shf->wbsize;
-		shf->wbsize += shf->wbsize;
 		shf->wnleft += shf->wbsize;
 		shf->wbsize *= 2;
 		shf->buf = nbuf;
