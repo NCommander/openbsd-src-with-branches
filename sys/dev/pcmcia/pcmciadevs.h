@@ -4,7 +4,7 @@
  * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.
  *
  * generated from:
- *		OpenBSD: pcmciadevs,v 1.21 1999/08/15 19:10:32 fgsch Exp 
+ *		OpenBSD: pcmciadevs,v 1.22 1999/08/18 05:29:48 d Exp 
  */
 /* $NetBSD: pcmciadevs,v 1.13 1998/08/17 23:10:12 thorpej Exp $ */
 
