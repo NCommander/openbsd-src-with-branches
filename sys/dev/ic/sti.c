@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti.c,v 1.25 2003/05/24 17:42:29 miod Exp $	*/
+/*	$OpenBSD: sti.c,v 1.26 2003/06/02 19:24:22 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000-2003 Michael Shalayeff
@@ -252,6 +252,7 @@ sti_attach_common(sc)
 	if ((error = uvm_map_protect(kernel_map, sc->sc_code,
 	    sc->sc_code + round_page(size), UVM_PROT_RX, FALSE))) {
 		printf(": uvm_map_protect failed (%d)\n", error);
+		uvm_km_free(kernel_map, sc->sc_code, round_page(size));
 		return;
 	}
 
