@@ -1,4 +1,4 @@
-/*	$OpenBSD: term.c,v 1.2 1996/09/21 06:23:22 downsj Exp $	*/
+/*	$OpenBSD: term.c,v 1.3 1996/09/22 01:18:07 downsj Exp $	*/
 /* vi:set ts=4 sw=4:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
@@ -1362,7 +1362,8 @@ getlinecol()
 {
 	char_u			tbuf[TBUFSZ];
 
-	if (term_strings[KS_NAME] != NULL && TGETENT(tbuf, term_strings[KS_NAME]) > 0)
+	if (term_strings[KS_NAME] != NULL && *term_strings[KS_NAME] != NUL &&
+			TGETENT(tbuf, term_strings[KS_NAME]) > 0)
 	{
 		if (Columns == 0)
 			Columns = tgetnum("co");
