@@ -1,4 +1,4 @@
-/*	$OpenBSD: prt3270.c,v 1.4 2003/04/04 22:13:10 deraadt Exp $	*/
+/*	$OpenBSD: prt3270.c,v 1.5 2003/06/03 02:56:19 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)prt3270.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: prt3270.c,v 1.4 2003/04/04 22:13:10 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: prt3270.c,v 1.5 2003/06/03 02:56:19 millert Exp $";
 #endif /* not lint */
 
 #if defined(unix)
@@ -518,7 +518,7 @@ int	c;
 {
     if (!isascii(c)) {
 	fflush(stdout);
-	fprintf(stderr, "Non-hex digit 0x%x.\n");
+	fprintf(stderr, "Non-hex digit 0x%x.\n", c);
 	fflush(stderr);
 	return 0;
     } else {
