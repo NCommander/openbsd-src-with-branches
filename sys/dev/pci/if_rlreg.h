@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rlreg.h,v 1.8 1999/06/29 06:02:37 jason Exp $	*/
+/*	$OpenBSD: if_rlreg.h,v 1.9 1999/11/17 03:23:52 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -361,11 +361,7 @@ struct rl_softc {
 	void *			sc_ih;		/* interrupt vectoring */
 	bus_space_handle_t	rl_bhandle;	/* bus space handle */
 	bus_space_tag_t		rl_btag;	/* bus space tag */
-#if 0
 	bus_dma_tag_t		sc_dmat;
-	bus_dmamap_t		sc_dma_mem;
-	size_t			sc_dma_mapsize;
-#endif
 	struct arpcom		arpcom;		/* interface info */
 	struct mii_data		sc_mii;		/* MII information */
 	u_int8_t		rl_type;
