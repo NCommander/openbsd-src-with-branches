@@ -1,4 +1,4 @@
-/*	$OpenBSD: ch.c,v 1.6 1996/08/12 10:21:41 deraadt Exp $	*/
+/*	$OpenBSD: ch.c,v 1.7 1997/04/14 04:09:05 downsj Exp $	*/
 /*	$NetBSD: ch.c,v 1.26 1997/02/21 22:06:52 thorpej Exp $	*/
 
 /*
@@ -601,7 +601,7 @@ ch_getelemstatus(sc, first, count, data, datalen)
 	 * Send command to changer.
 	 */
 	return (scsi_scsi_cmd(sc->sc_link, (struct scsi_generic *)&cmd,
-	    sizeof(cmd), (u_char *)data, datalen, CHRETRIES, 100000, NULL, 0));
+	    sizeof(cmd), (u_char *)data, datalen, CHRETRIES, 100000, NULL, SCSI_DATA_IN));
 }
 
 
