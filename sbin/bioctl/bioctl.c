@@ -1,6 +1,6 @@
-/* $OpenBSD$       */
+/* $OpenBSD: bioctl.c,v 1.1 2005/03/29 22:04:21 marco Exp $       */
 /*
- * Copyright (c) 2004 Marco Peereboom
+ * Copyright (c) 2004, 2005 Marco Peereboom
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
