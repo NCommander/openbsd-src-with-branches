@@ -176,5 +176,5 @@ ukioctl(dev, cmd, addr, flag, p)
 {
 	register struct uk_softc *uk = uk_cd.cd_devs[UKUNIT(dev)];
 
-	return scsi_do_ioctl(uk->sc_link, dev, cmd, addr, flag, p);
+	return scsi_do_safeioctl(uk->sc_link, dev, cmd, addr, flag, p);
 }
