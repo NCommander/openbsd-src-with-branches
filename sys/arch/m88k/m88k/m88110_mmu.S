@@ -1,4 +1,4 @@
-#	$OpenBSD: m88110_mmu.S,v 1.8 2003/08/11 20:45:17 miod Exp $
+#	$OpenBSD: m88110_mmu.S,v 1.9 2003/08/20 20:33:47 miod Exp $
 /*
  * Copyright (c) 2000 Steve Murphree, Jr.
  * All rights reserved.
