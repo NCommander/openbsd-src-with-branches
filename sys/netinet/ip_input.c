@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.112 2003/06/02 23:28:14 millert Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.113 2003/07/09 22:03:16 itojun Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -604,6 +604,7 @@ found:
 			ipstat.ips_reassembled++;
 			ip = mtod(m, struct ip *);
 			hlen = ip->ip_hl << 2;
+			ip->ip_len = htons(ntohs(ip->ip_len) + hlen);
 		} else
 			if (fp)
 				ip_freef(fp);
