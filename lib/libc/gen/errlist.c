@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: errlist.c,v 1.2 1996/08/19 08:22:32 tholo Exp $";
+static char *rcsid = "$OpenBSD: errlist.c,v 1.3 1996/09/15 09:30:59 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #ifdef lint
@@ -139,5 +139,8 @@ const char *const
 	"No locks available",			/* 77 - ENOLCK */
 	"Function not implemented",		/* 78 - ENOSYS */
 	"Inappropriate file type or format",	/* 79 - EFTYPE */
+	"Authentication error",			/* 80 - EAUTH */
+	"Need authenticator",			/* 81 - ENEEDAUTH */
+	"IPsec processing failure",		/* 82 - EIPSEC */
 };
 int _sys_nerr = { sizeof _sys_errlist/sizeof _sys_errlist[0] };
