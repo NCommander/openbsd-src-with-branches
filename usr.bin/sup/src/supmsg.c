@@ -1,4 +1,4 @@
-/*	$OpenBSD: supmsg.c,v 1.6 2001/05/02 22:56:54 millert Exp $	*/
+/*	$OpenBSD: supmsg.c,v 1.7 2001/05/04 22:16:17 millert Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -599,7 +599,7 @@ va_dcl
 				x = writestring(NULL);
 			if (x == SCMOK)
 				x = writemend();
-			return (x);
+			goto done;
 		}
 		if (x == SCMOK)
 			x = writestring(t->Tname);
@@ -608,7 +608,7 @@ va_dcl
 		if (t->Tmode == 0) {
 			if (x == SCMOK)
 				x = writemend();
-			return (x);
+			goto done;
 		}
 		if (x == SCMOK)
 			x = writeint(t->Tflags);
@@ -633,8 +633,10 @@ va_dcl
 	} else {
 		char *linkname, *execcmd;
 
-		if (t == NULL)
-			return (SCMERR);
+		if (t == NULL) {
+			x = SCMERR;
+			goto done;
+		}
 		x = readmsg (MSGRECV);
 		if (x == SCMOK)
 			x = readstring(&t->Tname);
@@ -642,7 +644,7 @@ va_dcl
 			x = readmend();
 			if (x == SCMOK)
 				x = (*xferfile)(NULL, args);
-			return (x);
+			goto done;
 		}
 		if (x == SCMOK)
 			x = readint(&t->Tmode);
@@ -650,7 +652,7 @@ va_dcl
 			x = readmend();
 			if (x == SCMOK)
 				x = (*xferfile)(t, args);
-			return (x);
+			goto done;
 		}
 		if (x == SCMOK)
 			x = readint(&t->Tflags);
@@ -685,6 +687,8 @@ va_dcl
 		if (x == SCMOK)
 			x = readmend();
 	}
+
+done:
 	va_end(args);
 	return (x);
 }
