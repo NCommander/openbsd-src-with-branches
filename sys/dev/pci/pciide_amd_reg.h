@@ -1,4 +1,5 @@
-/*	$OpenBSD: pciide_amd_reg.h,v 1.1 2000/03/24 17:47:41 chris Exp $ 	*/
+/*	$OpenBSD: pciide_amd_reg.h,v 1.2 2000/07/07 18:42:17 chris Exp $ 	*/
+/*	$NetBSD: pciide_amd_reg.h,v 1.2 2000/07/06 15:08:11 bouyer Exp $	*/
 
 /*
  * Copyright (c) 2000 David Sainty.
