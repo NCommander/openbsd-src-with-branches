@@ -110,7 +110,6 @@
 #include <sys/vnode.h>
 #include <sys/cpu.h>
 
-#include <dev/dev_conf.h>
 #include <dev/ccdvar.h>
 
 #if defined(CCDDEBUG) && !defined(DEBUG)
