@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ukcutil.c,v 1.1 1999/10/04 20:00:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -30,10 +30,11 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: ukcutil.c,v 1.1 1999/10/04 20:00:52 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/device.h>
 #include <limits.h>
 #include <nlist.h>
@@ -1212,6 +1213,7 @@ process_history(len,buf)
 	char *c;
 	int devno,newno;
 	short unit,state;
+	struct timezone *tz;
 
 	if (len == 0) {
 		printf("History is empty\n");
@@ -1261,6 +1263,15 @@ process_history(len,buf)
 			c++;
 			devno = atoi(c);
 			enable(devno);
+			while (*c != '\n') c++; c++;
+			break;
+		case 't':
+			c++; c++;
+			tz = (struct timezone *)adjust((caddr_t)nl[TZ_TZ].
+			    n_value);
+			tz->tz_minuteswest = atoi(c);
+			while (*c != ' ') c++; c++;
+			tz->tz_dsttime = atoi(c);
 			while (*c != '\n') c++; c++;
 			break;
 		case 'q':
