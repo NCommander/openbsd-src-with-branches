@@ -1,4 +1,4 @@
-/*	$OpenBSD: suff.c,v 1.13 1999/03/06 20:27:40 millert Exp $	*/
+/*	$OpenBSD: suff.c,v 1.14 1999/10/05 22:06:24 espie Exp $	*/
 /*	$NetBSD: suff.c,v 1.13 1996/11/06 17:59:25 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)suff.c	8.4 (Berkeley) 3/21/94";
 #else
-static char rcsid[] = "$OpenBSD: suff.c,v 1.13 1999/03/06 20:27:40 millert Exp $";
+static char rcsid[] = "$OpenBSD: suff.c,v 1.14 1999/10/05 22:06:24 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -1732,9 +1732,7 @@ SuffFindArchiveDeps(gn, slst)
      * Copy in the variables from the member node to this one.
      */
     for (i = (sizeof(copy)/sizeof(copy[0]))-1; i >= 0; i--) {
-	char *p1;
-	Var_Set(copy[i], Var_Value(copy[i], mem, &p1), gn);
-	efree(p1);
+	Var_Set(copy[i], Var_Value(copy[i], mem), gn);
 
     }
 
