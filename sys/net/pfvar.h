@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.134 2003/01/21 22:23:49 dhartmei Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.135 2003/02/08 20:13:20 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -618,7 +618,7 @@ struct pf_pdesc {
 #define PFUDPS_NSTATES		3	/* number of state levels */
 
 #define PFUDPS_NAMES { \
-	"NO TRAFFIC", \
+	"NO_TRAFFIC", \
 	"SINGLE", \
 	"MULTIPLE", \
 	NULL \
@@ -632,7 +632,7 @@ struct pf_pdesc {
 #define PFOTHERS_NSTATES	3	/* number of state levels */
 
 #define PFOTHERS_NAMES { \
-	"NO TRAFFIC", \
+	"NO_TRAFFIC", \
 	"SINGLE", \
 	"MULTIPLE", \
 	NULL \
