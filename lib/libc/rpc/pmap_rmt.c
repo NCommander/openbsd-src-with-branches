@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_rmt.c,v 1.9 1996/09/02 05:01:14 deraadt Exp $";
+static char *rcsid = "$OpenBSD: pmap_rmt.c,v 1.10 1996/09/15 09:31:37 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -242,7 +242,7 @@ clnt_broadcast(prog, vers, proc, xargs, argsp, xresults, resultsp, eachresult)
 	static u_int32_t disrupt;
 
 	if (disrupt == 0)
-		disrupt = (u_int32_t)resultsp;
+		disrupt = (u_int32_t)(long)resultsp;
 
 	/*
 	 * initialization: create a socket, a broadcast address, and
