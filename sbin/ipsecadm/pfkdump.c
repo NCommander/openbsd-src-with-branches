@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkdump.c,v 1.11 2004/02/02 16:04:54 markus Exp $	*/
+/*	$OpenBSD: pfkdump.c,v 1.12 2004/04/27 18:26:35 markus Exp $	*/
 
 /*
  * Copyright (c) 2003 Markus Friedl.  All rights reserved.
@@ -106,6 +106,9 @@ struct idname ext_types[] = {
 	{ SADB_X_EXT_REMOTE_AUTH,	"x_remote_auth",	print_auth },
 	{ SADB_X_EXT_SUPPORTED_COMP,	"x_supported_comp",	print_supp },
 	{ SADB_X_EXT_UDPENCAP,		"x_udpencap",		print_udpenc },
+#ifdef SADB_X_EXT_LIFETIME_LASTUSE
+	{ SADB_X_EXT_LIFETIME_LASTUSE,	"x_lifetime_lastuse",	print_life },
+#endif
 	{ 0,				NULL,			NULL }
 };
 
