@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.c,v 1.13 2001/06/23 01:54:37 kjell Exp $	*/
+/*	$OpenBSD: disk.c,v 1.14 2002/01/18 08:38:26 kjell Exp $	*/
 
 /*
  * Copyright (c) 1997, 2001 Tobias Weingartner
@@ -123,7 +123,8 @@ DISK_getbiosmetrics(name)
 	bios_diskinfo_t di;
 	DISK_metrics *bm;
 	struct stat st;
-	int mib[4], size, fd;
+	int mib[4], fd;
+	size_t size;
 	dev_t devno;
 
 	if ((fd = DISK_open(name, O_RDONLY)) == -1)
