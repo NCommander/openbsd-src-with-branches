@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.189 2002/02/09 17:37:34 deraadt Exp $
+#	$OpenBSD: rc,v 1.190 2002/02/17 20:26:03 tdeval Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -64,7 +64,7 @@ for dev in 0 1 2 3; do
 done
 
 # Check parity on raid devices.
-raidctl -v -P all
+raidctl -P all
 
 swapctl -A -t blk
 
