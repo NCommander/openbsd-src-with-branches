@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.53 2003/12/19 22:42:13 tedu Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.54 2003/12/20 18:23:18 tedu Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -193,6 +193,7 @@ int     est_setperf(void *, size_t *, void *, size_t);
 
 /* longrun.c */
 #if !defined(SMALL_KERNEL) && defined(I586_CPU)
+void	longrun_init(void);
 int	longrun_cpuspeed(void *, size_t *, void *, size_t);
 int	longrun_setperf(void *, size_t *, void *, size_t);
 #endif
