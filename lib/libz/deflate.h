@@ -1,3 +1,4 @@
+/*	$OpenBSD: deflate.h,v 1.2 1998/08/08 20:57:13 millert Exp $	*/
 /* deflate.h -- internal compression state
  * Copyright (C) 1995-1998 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h 
@@ -8,7 +9,6 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* @(#) $Id$ */
 
 #ifndef _DEFLATE_H
 #define _DEFLATE_H

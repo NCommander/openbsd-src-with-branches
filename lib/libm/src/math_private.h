@@ -1,3 +1,4 @@
+/*	$OpenBSD: math_private.h,v 1.4 1996/11/14 14:21:51 etheisen Exp $	*/
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -11,7 +12,6 @@
 
 /*
  * from: @(#)fdlibm.h 5.1 93/09/24
- * $Id: math_private.h,v 1.3 1996/05/24 10:57:43 deraadt Exp $
  */
 
 #ifndef _MATH_PRIVATE_H_
