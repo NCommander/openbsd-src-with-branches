@@ -592,7 +592,7 @@ wihap_auth_req(struct wi_softc *sc, struct wi_frame *rxfrm,
 		/* Check for too many stations.
 		 */
 		if (whi->n_stations >= WIHAP_MAX_STATIONS) {
-			status = IEEE80211_STATUS_TOO_MANY_STATIONS;
+			status = IEEE80211_STATUS_TOOMANY;
 			goto fail;
 		}
 
@@ -605,7 +605,7 @@ wihap_auth_req(struct wi_softc *sc, struct wi_frame *rxfrm,
 		splx(s);
 		if (sta == NULL) {
 			/* Out of memory! */
-			status = IEEE80211_STATUS_TOO_MANY_STATIONS;
+			status = IEEE80211_STATUS_TOOMANY;
 			goto fail;
 		}
 	}
@@ -787,7 +787,7 @@ wihap_assoc_req(struct wi_softc *sc, struct wi_frame *rxfrm,
 	if (wihap_check_rates(sta, rates, rates_len) < 0) {
 		if (sc->sc_arpcom.ac_if.if_flags & IFF_DEBUG)
 			printf("wihap_assoc_req: rates mismatch.\n");
-		status = IEEE80211_STATUS_RATES;
+		status = IEEE80211_STATUS_BASIC_RATE;
 		goto fail;
 	}
 
