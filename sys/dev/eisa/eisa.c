@@ -1,4 +1,4 @@
-/*	$OpenBSD: eisa.c,v 1.6 1996/11/28 23:27:38 niklas Exp $	*/
+/*	$OpenBSD: eisa.c,v 1.7 2000/04/14 03:29:01 smurph Exp $	*/
 /*	$NetBSD: eisa.c,v 1.15 1996/10/21 22:31:01 thorpej Exp $	*/
 
 /*
@@ -237,7 +237,7 @@ eisa_devinfo(id, cp)
 	const char *name;
 	int onlyvendor;
 #ifdef EISAVERBOSE
-	struct eisa_knowndev *edp;
+	const struct eisa_knowndev *edp;
 	int match;
 	const char *unmatched = "unknown ";
 #else
