@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.103 2004/05/03 15:18:18 drahn Exp $
+#	$OpenBSD: Makefile,v 1.104 2004/08/06 22:30:54 pefo Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -236,8 +236,7 @@ ${CROSSBINUTILS}:	${CROSSINCLUDES}
 .endif
 	(cd ${.CURDIR}/usr.bin/nm; \
 	    MAKEOBJDIR=obj.${MACHINE}.${TARGET} \
-	    ${MAKE} TARGET_MACHINE_ARCH=`cat ${CROSSDIR}/TARGET_ARCH` \
-	    NOMAN= depend all; \
+	    ${MAKE} NOMAN= depend all; \
 	    DESTDIR=${CROSSDIR} MAKEOBJDIR=obj.${MACHINE}.${TARGET} \
 	    ${MAKE} NOMAN= install)
 	ln -sf ${CROSSDIR}/usr/bin/nm \
