@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:46:09 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1996/06/26 05:39:31 deraadt Exp $
 
 PROG=	strip
 
 realinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 600 strip \
+	${INSTALL} ${COPY} -o ${BINOWN} -g ${BINGRP} -m 600 strip \
 	    ${DESTDIR}${BINDIR}
 	./strip ${DESTDIR}${BINDIR}/strip
 	chmod ${BINMODE} ${DESTDIR}${BINDIR}/strip
