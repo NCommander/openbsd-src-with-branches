@@ -10,11 +10,7 @@ License, or (at your option) any later version.
 This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
+General Public License for more details.  */
 
 /* Written by Jan Brittenson, bson@gnu.ai.mit.edu.  */
 
@@ -24,7 +20,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #include <sys/types.h>
 #include <stdio.h>
-#define NDEBUG
 #include <assert.h>
 
 #if STDC_HEADERS
@@ -76,7 +71,7 @@ getstr (lineptr, n, stream, terminator, offset)
 	 always (unless we get an error while reading the first char)
 	 NUL-terminate the line buffer.  */
 
-      assert(*n - nchars_avail == read_pos - *lineptr);
+      assert((*lineptr + *n) == (read_pos + nchars_avail));
       if (nchars_avail < 2)
 	{
 	  if (*n > MIN_CHUNK)
@@ -89,7 +84,7 @@ getstr (lineptr, n, stream, terminator, offset)
 	  if (!*lineptr)
 	    return -1;
 	  read_pos = *n - nchars_avail + *lineptr;
-	  assert(*n - nchars_avail == read_pos - *lineptr);
+	  assert((*lineptr + *n) == (read_pos + nchars_avail));
 	}
 
       if (c == EOF || ferror (stream))

@@ -8,11 +8,7 @@
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   GNU General Public License for more details.  */
 
 #include "cvs.h"
 #include "getline.h"
@@ -35,6 +31,14 @@ static int attr_read_attempted;
 /* Have the in-memory attributes been modified since we read them?  */
 static int attrs_modified;
 
+/* More in-memory attributes: linked list of unrecognized
+   fileattr lines.  We pass these on unchanged.  */
+struct unrecog {
+    char *line;
+    struct unrecog *next;
+};
+static struct unrecog *unrecog_head;
+
 /* Note that if noone calls fileattr_get, this is very cheap.  No stat(),
    no open(), no nothing.  */
 void
@@ -45,13 +49,16 @@ fileattr_startdir (repos)
     fileattr_stored_repos = xstrdup (repos);
     assert (attrlist == NULL);
     attr_read_attempted = 0;
+    assert (unrecog_head == NULL);
 }
 
 static void
 fileattr_delproc (node)
     Node *node;
 {
+    assert (node->data != NULL);
     free (node->data);
+    node->data = NULL;
 }
 
 /* Read all the attributes for the current directory into memory.  */
@@ -82,7 +89,7 @@ fileattr_read ()
     strcat (fname, CVSREP_FILEATTR);
 
     attr_read_attempted = 1;
-    fp = fopen (fname, "r");
+    fp = CVS_FOPEN (fname, FOPEN_BINARY_READ);
     if (fp == NULL)
     {
 	if (!existence_error (errno))
@@ -110,7 +117,12 @@ fileattr_read ()
 	    newnode->delproc = fileattr_delproc;
 	    newnode->key = xstrdup (line + 1);
 	    newnode->data = xstrdup (p);
-	    addnode (attrlist, newnode);
+	    if (addnode (attrlist, newnode) != 0)
+		/* If the same filename appears twice in the file, discard
+		   any line other than the first for that filename.  This
+		   is the way that CVS has behaved since file attributes
+		   were first introduced.  */
+		free (newnode);
 	}
 	else if (line[0] == 'D')
 	{
@@ -121,7 +133,17 @@ fileattr_read ()
 	    ++p;
 	    fileattr_default_attrs = xstrdup (p);
 	}
-	/* else just ignore the line, for future expansion.  */
+	else
+	{
+	    /* Unrecognized type, we want to just preserve the line without
+	       changing it, for future expansion.  */
+	    struct unrecog *new;
+
+	    new = (struct unrecog *) xmalloc (sizeof (struct unrecog));
+	    new->line = xstrdup (line);
+	    new->next = unrecog_head;
+	    unrecog_head = new;
+	}
     }
     if (ferror (fp))
 	error (0, errno, "cannot read %s", fname);
@@ -135,8 +157,8 @@ fileattr_read ()
 
 char *
 fileattr_get (filename, attrname)
-    char *filename;
-    char *attrname;
+    const char *filename;
+    const char *attrname;
 {
     Node *node;
     size_t attrname_len = strlen (attrname);
@@ -149,12 +171,18 @@ fileattr_get (filename, attrname)
 	   an error message.  */
 	return NULL;
 
-    node = findnode (attrlist, filename);
-    if (node == NULL)
-	/* A file not mentioned has no attributes.  */
-	return NULL;
-    p = node->data;
-    while (1) {
+    if (filename == NULL)
+	p = fileattr_default_attrs;
+    else
+    {
+	node = findnode (attrlist, filename);
+	if (node == NULL)
+	    /* A file not mentioned has no attributes.  */
+	    return NULL;
+	p = node->data;
+    }
+    while (p)
+    {
 	if (strncmp (attrname, p, attrname_len) == 0
 	    && p[attrname_len] == '=')
 	{
@@ -172,8 +200,8 @@ fileattr_get (filename, attrname)
 
 char *
 fileattr_get0 (filename, attrname)
-    char *filename;
-    char *attrname;
+    const char *filename;
+    const char *attrname;
 {
     char *cp;
     char *cpend;
@@ -194,8 +222,8 @@ fileattr_get0 (filename, attrname)
 char *
 fileattr_modify (list, attrname, attrval, namevalsep, entsep)
     char *list;
-    char *attrname;
-    char *attrval;
+    const char *attrname;
+    const char *attrval;
     int namevalsep;
     int entsep;
 {
@@ -290,14 +318,12 @@ fileattr_modify (list, attrname, attrval, namevalsep, entsep)
 
 void
 fileattr_set (filename, attrname, attrval)
-    char *filename;
-    char *attrname;
-    char *attrval;
+    const char *filename;
+    const char *attrname;
+    const char *attrval;
 {
     Node *node;
     char *p;
-
-    attrs_modified = 1;
 
     if (filename == NULL)
     {
@@ -306,6 +332,7 @@ fileattr_set (filename, attrname, attrval)
 	if (fileattr_default_attrs != NULL)
 	    free (fileattr_default_attrs);
 	fileattr_default_attrs = p;
+	attrs_modified = 1;
 	return;
     }
     if (attrlist == NULL)
@@ -338,16 +365,20 @@ fileattr_set (filename, attrname, attrval)
     }
 
     p = fileattr_modify (node->data, attrname, attrval, '=', ';');
-    free (node->data);
     if (p == NULL)
 	delnode (node);
     else
+    {
+	free (node->data);
 	node->data = p;
+    }
+
+    attrs_modified = 1;
 }
 
 void
 fileattr_newfile (filename)
-    char *filename;
+    const char *filename;
 {
     Node *node;
 
@@ -384,7 +415,7 @@ writeattr_proc (node, data)
     fputs (node->key, fp);
     fputs ("\t", fp);
     fputs (node->data, fp);
-    fputs ("\n", fp);
+    fputs ("\012", fp);
     return 0;
 }
 
@@ -414,7 +445,9 @@ fileattr_write ()
     strcat (fname, "/");
     strcat (fname, CVSREP_FILEATTR);
 
-    if (list_isempty (attrlist) && fileattr_default_attrs == NULL)
+    if (list_isempty (attrlist)
+	&& fileattr_default_attrs == NULL
+	&& unrecog_head == NULL)
     {
 	/* There are no attributes.  */
 	if (unlink_file (fname) < 0)
@@ -431,7 +464,7 @@ fileattr_write ()
 	strcpy (fname, fileattr_stored_repos);
 	strcat (fname, "/");
 	strcat (fname, CVSREP);
-	if (rmdir (fname) < 0)
+	if (CVS_RMDIR (fname) < 0)
 	{
 	    if (errno != ENOTEMPTY
 
@@ -447,7 +480,7 @@ fileattr_write ()
     }
 
     omask = umask (cvsumask);
-    fp = fopen (fname, "w");
+    fp = CVS_FOPEN (fname, FOPEN_BINARY_WRITE);
     if (fp == NULL)
     {
 	if (existence_error (errno))
@@ -472,7 +505,7 @@ fileattr_write ()
 	    }
 	    free (repname);
 
-	    fp = fopen (fname, "w");
+	    fp = CVS_FOPEN (fname, FOPEN_BINARY_WRITE);
 	}
 	if (fp == NULL)
 	{
@@ -482,13 +515,32 @@ fileattr_write ()
 	}
     }
     (void) umask (omask);
+
+    /* First write the "F" attributes.  */
     walklist (attrlist, writeattr_proc, fp);
+
+    /* Then the "D" attribute.  */
     if (fileattr_default_attrs != NULL)
     {
 	fputs ("D\t", fp);
 	fputs (fileattr_default_attrs, fp);
-	fputs ("\n", fp);
+	fputs ("\012", fp);
     }
+
+    /* Then any other attributes.  */
+    while (unrecog_head != NULL)
+    {
+	struct unrecog *p;
+
+	p = unrecog_head;
+	fputs (p->line, fp);
+	fputs ("\012", fp);
+
+	unrecog_head = p->next;
+	free (p->line);
+	free (p);
+    }
+
     if (fclose (fp) < 0)
 	error (0, errno, "cannot close %s", fname);
     attrs_modified = 0;

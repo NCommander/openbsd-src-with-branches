@@ -3,7 +3,7 @@
 #
 # XXX: FIXME: handle multiple '-f logfile' arguments
 #
-# XXX -- I HATE Perl!  This will be re-written in shell/awk/sed soon!
+# XXX -- I HATE Perl!  This *will* be re-written in shell/awk/sed soon!
 #
 
 # Usage:  log.pl [[-m user] ...] [-s] -f logfile 'dirname file ...'
@@ -133,7 +133,7 @@ close(IN);
 
 print OUT "\n";
 
-# after log information, do an 'cvs -Qqv status' on each file in the arguments.
+# after log information, do an 'cvs -Qq status -v' on each file in the arguments.
 #
 if ($dostatus != 0) {
 	while (@files) {

@@ -1,3 +1,56 @@
+Fri May 30 22:11:52 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* pwd.c: Remove $Header; we decided to get rid of these some time
+	ago.
+
+Wed Mar 12 16:10:01 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* config.h (HAVE_SETVBUF): Removed; no longer used.
+
+Mon Mar 10 15:28:07 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* Makefile.in (dist-dir): Don't distribute Makefile.  I don't know
+	why we were distributing it in the first place (aping the OS/2
+	port?  If so the two _are_ different; that OS/2 port uses Makefile
+	for builds).
+
+Sun Mar  2 21:56:28 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* README.MacCVS: Be a little more explicit about what
+	MacCVS68k.sit.hqx and MacCVSPPC.sit.hqx are; at least one user got
+	confused and throught they were CVS executables.
+
+Wed Jan 29 18:26:09 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* options.h (GREP): Removed; no longer used.
+
+Tue Jan 28 18:29:03 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* config.h: Remove SIZEOF_INT and SIZEOF_LONG; no longer needed
+	with lib/md5.c changes.
+
+Thu Jan  2 13:42:14 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* filesubr.c, pwd.c: Remove "675" paragraph;
+	see ../ChangeLog for rationale.
+
+Wed Jan  1 22:49:49 1997  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* options.h: Reword comment for TMPDIR_DFLT to make it clear that
+	this isn't specific to the pserver server.
+
+Mon Oct 28 09:22:09 1996  Jim Kingdon  <kingdon@harvey.cyclic.com>
+
+	* mac_init.c (macos_error_cleanup): Removed; SYSTEM_CLEANUP (aka
+	MacOS_Cleanup) now gets called in the cases in question.
+	(MacOS_Initialize): Don't call error_set_cleanup.
+	* README.MacCVS: Adjust description of problem which should be
+	fixed by above change.
+
+Tue Oct  8 12:37:25 1996  Ian Lance Taylor  <ian@cygnus.com>
+
+	* options.h (HAD_RCS4): Remove; no longer used.
+
 Mon Sept 30 13:17:07 1996  Mike Ladwig  <mike@twinpeaks.prc.com>
 
 	* ae_if.c (DoScript): Fixed bug cutting off the last character of

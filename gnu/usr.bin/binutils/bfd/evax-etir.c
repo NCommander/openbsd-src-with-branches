@@ -1,11 +1,11 @@
-/* evax-etir.c -- BFD back-end for ALPHA EVAX (openVMS/AXP) files.
-   Copyright 1996 Free Software Foundation, Inc.
+/* evax-etir.c -- BFD back-end for ALPHA EVAX (openVMS/Alpha) files.
+   Copyright 1996, 1997 Free Software Foundation, Inc.
    ETIR record handling functions
 
    go and read the openVMS linker manual (esp. appendix B)
    if you don't know what's going on here :-)
 
-   Written by Klaus Kämpf (kkaempf@progis.de)
+   Written by Klaus K"ampf (kkaempf@progis.de)
    of proGIS Softwareentwicklung, Aachen, Germany
 
 This program is free software; you can redistribute it and/or modify
@@ -1121,8 +1121,6 @@ _bfd_evax_write_etir (abfd)
   asection *section;
   evax_section *sptr;
   int nextoffset;
-  char uname[200];
-  char *nptr, *uptr;
 
 #if EVAX_DEBUG
   evax_debug (2, "evax_write_etir(%p)\n", abfd);
@@ -1247,19 +1245,8 @@ _bfd_evax_write_etir (abfd)
 				    _bfd_evax_output_begin (abfd,
 							    ETIR_S_C_STO_GBL_LW,
 							    -1);
-				    uptr = uname;
-				    nptr = (char *)sym->name;
-				    while (*nptr)
-				      {
-					if (islower (*nptr))
-					  *uptr = toupper (*nptr);
-					else
-					  *uptr = *nptr;
-					nptr++;
-					uptr++;
-				      }
-				    *uptr = 0;
-				    _bfd_evax_output_counted (abfd, uname);
+				    _bfd_evax_output_counted (abfd,
+							      _bfd_evax_length_hash_symbol (abfd, sym->name));
 				    _bfd_evax_output_flush (abfd);
 				  }
 				else if (bfd_is_abs_section (sym->section))
@@ -1324,19 +1311,8 @@ _bfd_evax_write_etir (abfd)
 				    _bfd_evax_output_begin (abfd,
 							    ETIR_S_C_STO_GBL,
 							    -1);
-				    uptr = uname;
-				    nptr = (char *)sym->name;
-				    while (*nptr)
-				      {
-					if (islower (*nptr))
-					  *uptr = toupper (*nptr);
-					else
-					  *uptr = *nptr;
-					nptr++;
-					uptr++;
-				      }
-				    *uptr = 0;
-				    _bfd_evax_output_counted (abfd, uname);
+				    _bfd_evax_output_counted (abfd,
+							      _bfd_evax_length_hash_symbol (abfd, sym->name));
 				    _bfd_evax_output_flush (abfd);
 				  }
 				else if (bfd_is_abs_section (sym->section))
@@ -1397,42 +1373,12 @@ _bfd_evax_write_etir (abfd)
 				evax_output_begin(abfd, ETIR_S_C_STO_HINT_GBL, -1);
 				evax_output_long(abfd, (unsigned long)(sec->index));
 				evax_output_quad(abfd, (uquad)addr);
-				uptr = uname;
-				nptr = (char *)(*(*rptr)->sym_ptr_ptr)->name;
-				while (*nptr)
-				  {
-				    if (islower (*nptr))
-				      *uptr = toupper (*nptr);
-				    else
-				      *uptr = *nptr;
-				    nptr++;
-				    uptr++;
-				  }
-				*uptr = 0;
 
-				evax_output_counted(abfd, uname);
+				evax_output_counted(abfd, _bfd_evax_length_hash_symbol (abfd, sym->name));
 				evax_output_flush(abfd);
 #endif
 			      }
 			      break;
-#if 0
-			    case ALPHA_R_BRADDR:
-			      break;
-			    case ALPHA_R_SREL16:
-			      break;
-			    case ALPHA_R_SREL32:
-			      break;
-			    case ALPHA_R_SREL64:
-			      break;
-			    case ALPHA_R_OP_PUSH:
-			      break;
-			    case ALPHA_R_OP_STORE:
-			      break;
-			    case ALPHA_R_OP_PSUB:
-			      break;
-			    case ALPHA_R_OP_PRSHIFT:
-			      break;
-#endif
 			    case ALPHA_R_LINKAGE:
 			      {
 				if (_bfd_evax_output_check (abfd, 64) < 0)
@@ -1447,20 +1393,29 @@ _bfd_evax_write_etir (abfd)
 				_bfd_evax_output_long (abfd,
 						       (unsigned long)PRIV(evax_linkage_index));
 				PRIV(evax_linkage_index) += 2;
-				uptr = uname;
-				nptr = (char *)(*(*rptr)->sym_ptr_ptr)->name;
-				while (*nptr)
-				  {
-				    if (islower (*nptr))
-				      *uptr = toupper (*nptr);
-				    else
-				      *uptr = *nptr;
-				    nptr++;
-				    uptr++;
-				  }
-				*uptr = 0;
-				_bfd_evax_output_counted (abfd, uname);
+				_bfd_evax_output_counted (abfd,
+							  _bfd_evax_length_hash_symbol (abfd, sym->name));
 				_bfd_evax_output_byte (abfd, 0);
+				_bfd_evax_output_flush (abfd);
+			      }
+			      break;
+
+			    case ALPHA_R_CODEADDR:
+			      {
+				if (_bfd_evax_output_check (abfd,
+							    strlen((char *)sym->name))
+				    < 0)
+				  {
+				    end_etir_record (abfd);
+				    start_etir_record (abfd,
+						       section->index,
+						       vaddr, false);
+				  }
+				_bfd_evax_output_begin (abfd,
+							ETIR_S_C_STO_CA,
+							-1);
+				_bfd_evax_output_counted (abfd,
+							  _bfd_evax_length_hash_symbol (abfd, sym->name));
 				_bfd_evax_output_flush (abfd);
 			      }
 			      break;

@@ -83,17 +83,8 @@
 /* Define if the closedir function returns void instead of int.  */
 /* #undef VOID_CLOSEDIR */
 
-/* Define if you want direct TCP access to server */
-#define USE_DIRECT_TCP 1
-
 /* Define if you have MIT Kerberos version 4 available.  */
 /* #undef HAVE_KERBEROS */
-
-/* The number of bytes in a int.  */
-#define SIZEOF_INT 4
-
-/* The number of bytes in a long.  */
-#define SIZEOF_LONG 4
 
 /* Define if you have the fchmod function.  */
 /* #undef HAVE_FCHMOD */
@@ -125,14 +116,8 @@
 /* Define if you have the strdup function */
 #define HAVE_STRDUP 1
 
-/* Define if you have the mkfifo function.  */
-/* #undef HAVE_MKFIFO */
-
 /* Define if you have the putenv function.  */
 /* #undef HAVE_PUTENV */
-
-/* Define if you have the setvbuf function.  */
-/* #undef HAVE_SETVBUF */
 
 /* Define if you have the timezone function.  */
 /* #undef HAVE_TIMEZONE */
