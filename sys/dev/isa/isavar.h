@@ -1,4 +1,4 @@
-/*	$OpenBSD: isavar.h,v 1.7 1996/04/18 23:47:43 niklas Exp $	*/
+/*	$OpenBSD: isavar.h,v 1.8 1996/04/21 22:24:16 deraadt Exp $	*/
 /*	$NetBSD: isavar.h,v 1.21 1996/04/11 22:20:50 cgd Exp $	*/
 
 /*
@@ -52,11 +52,14 @@
  */
 struct isabus_attach_args;
 
-#if (alpha + i386 != 1)
+#if (alpha + amiga + i386 != 1)
 ERROR: COMPILING FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
 #endif
 #if alpha
 #include <alpha/isa/isa_machdep.h>
+#endif
+#if amiga
+#include <amiga/isa/isa_machdep.h>
 #endif
 #if i386
 #include <i386/isa/isa_machdep.h>
