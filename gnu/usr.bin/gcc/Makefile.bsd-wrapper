@@ -63,6 +63,9 @@ GCCINC=	/usr/lib/gcc-lib/${GCCARCH}/$V/include
 all:	config.status
 	exec ${MAKE} ${MAKE_FLAGS} all doc
 
+tconfig.h: config.status
+	exec ${MAKE} ${MAKE_FLAGS} tconfig.h
+
 tree-check.h: config.status
 	exec ${MAKE} ${MAKE_FLAGS} $@
 
