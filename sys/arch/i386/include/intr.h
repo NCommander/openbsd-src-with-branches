@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.16 2002/06/11 05:03:13 art Exp $	*/
+/*	$OpenBSD: intr.h,v 1.17 2002/07/19 16:23:29 art Exp $	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -142,7 +142,7 @@ splraise(ncpl)
 
 	if (ncpl > ocpl)
 		cpl = ncpl;
-	__asm __volatile("");
+	__asm __volatile("":::"memory");
 	return (ocpl);
 }
 
@@ -155,7 +155,7 @@ void									\
 splx(ncpl)								\
 	int ncpl;							\
 {									\
-	__asm __volatile("");						\
+	__asm __volatile("":::"memory");				\
 	cpl = ncpl;							\
 	if (ipending & IUNMASK(ncpl))					\
 		Xspllower();						\
