@@ -1,4 +1,4 @@
-/* $OpenBSD: if_wi_pcmcia.c,v 1.26 2002/04/06 21:58:12 millert Exp $ */
+/* $OpenBSD: if_wi_pcmcia.c,v 1.27 2002/04/07 23:23:49 millert Exp $ */
 /* $NetBSD: if_wi_pcmcia.c,v 1.14 2001/11/26 04:34:56 ichiro Exp $ */
 
 /*
@@ -388,13 +388,13 @@ wi_pcmcia_detach(dev, flags)
 	if (ifp->if_flags & IFF_RUNNING)
 		wi_stop(sc);
 
+	sc->wi_flags = 0;
+
 	pcmcia_io_unmap(psc->sc_pf, psc->sc_io_window);
 	pcmcia_io_free(psc->sc_pf, &psc->sc_pcioh);
 
 	ether_ifdetach(ifp);
 	if_detach(ifp);
-
-	sc->wi_flags = 0;
 
 	return (0);
 }
