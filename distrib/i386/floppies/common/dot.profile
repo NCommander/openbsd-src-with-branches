@@ -1,4 +1,4 @@
-#	$OpenBSD: dot.profile,v 1.9 1998/04/13 01:17:22 deraadt Exp $
+#	$OpenBSD: dot.profile,v 1.1 1999/08/06 20:49:08 deraadt Exp $
 #	$NetBSD: dot.profile,v 1.1 1995/12/18 22:54:43 pk Exp $
 #
 # Copyright (c) 1995 Jason R. Thorpe
@@ -37,6 +37,7 @@ export HISTFILE=/.sh_history
 umask 022
 
 set -o emacs # emacs-style command line editing
+alias dmesg="cat /kern/msgbuf"
 
 # XXX
 # the TERM/EDITOR stuff is really well enough parameterized to be moved
