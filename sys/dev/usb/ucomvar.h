@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: ucomvar.h,v 1.2 2000/02/08 09:18:02 augustss Exp $	*/
 
 /*
