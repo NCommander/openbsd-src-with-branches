@@ -36,7 +36,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: authfile.c,v 1.30 2001/03/26 23:12:42 markus Exp $");
+RCSID("$OpenBSD: authfile.c,v 1.31 2001/04/15 16:58:03 markus Exp $");
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -447,7 +447,7 @@ key_load_private_pem(int fd, int type, const char *passphrase,
 	}
 	pk = PEM_read_PrivateKey(fp, NULL, NULL, (char *)passphrase);
 	if (pk == NULL) {
-		error("PEM_read_PrivateKey failed");
+		debug("PEM_read_PrivateKey failed");
 		(void)ERR_get_error();
 	} else if (pk->type == EVP_PKEY_RSA &&
 	     (type == KEY_UNSPEC||type==KEY_RSA)) {
