@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp-proxy.c,v 1.31 2003/06/28 01:04:57 deraadt Exp $ */
+/*	$OpenBSD: ftp-proxy.c,v 1.32 2003/07/29 14:46:06 henning Exp $ */
 
 /*
  * Copyright (c) 1996-2001
@@ -119,7 +119,7 @@ int max_port = IPPORT_HILASTAUTO;
  * listening on.
  *
  * If the socket we are listening on gets a connection then we connect
- * to the other side's socket.  Similarily, if a connected socket is
+ * to the other side's socket.  Similarly, if a connected socket is
  * shutdown then we shutdown the other side's socket.
  */
 

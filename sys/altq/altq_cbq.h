@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_cbq.h,v 1.7 2003/04/02 14:51:45 henning Exp $	*/
+/*	$OpenBSD: altq_cbq.h,v 1.8 2003/08/20 12:33:57 henning Exp $	*/
 /*	$KAME: altq_cbq.h,v 1.5 2000/12/02 13:44:40 kjc Exp $	*/
 
 /*
@@ -50,7 +50,7 @@ extern "C" {
 #define	ROOT_CLASS_HANDLE	0xfffffffe
 #define	DEFAULT_CLASS_HANDLE	0xfffffffd
 
-/* class flags shoud be same as class flags in rm_class.h */
+/* class flags should be same as class flags in rm_class.h */
 #define	CBQCLF_RED		0x0001	/* use RED */
 #define	CBQCLF_ECN		0x0002  /* use RED/ECN */
 #define	CBQCLF_RIO		0x0004  /* use RIO */

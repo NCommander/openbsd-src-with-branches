@@ -1,6 +1,6 @@
-# $OpenBSD$
+# $OpenBSD: queue4,v 1.1 2003/04/29 12:48:35 henning Exp $
 #
-# Hierarchial queueing for a university.
+# Hierarchical queueing for a university.
 # Three faculties; engineering, law and art are defined.
 # Departments under the engineering faculty are defined as child queues.
 # The total bandwidth for engineering faculty is shared between three
