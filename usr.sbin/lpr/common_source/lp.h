@@ -1,4 +1,4 @@
-/*	$OpenBSD: $	*/
+/*	$OpenBSD: lp.h,v 1.3 1997/01/17 16:11:35 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -125,6 +125,6 @@ void     rmjob __P((void));
 void     rmremote __P((void));
 void     show __P((char *, char *, int));
 int      startdaemon __P((char *));
-void     warn __P((void));
+void     nodaemon __P((void));
 void     delay __P((int));
 __END_DECLS
