@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile,v 1.4 2000/04/14 02:52:35 itojun Exp $
+#	$OpenBSD: Makefile,v 1.5 2001/12/01 23:27:23 miod Exp $
 
 PROG=	rarpd
 SRCS=	rarpd.c arptab.c
 MAN=	rarpd.8
-CPPFLAGS+=-DHAVE_IFADDRS_H
 LDADD+=	-lutil
 DPADD+=	${LIBUTIL}
 
