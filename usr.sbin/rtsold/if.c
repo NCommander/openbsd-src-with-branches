@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.16 2003/05/15 14:40:53 itojun Exp $	*/
+/*	$OpenBSD: if.c,v 1.17 2003/10/05 15:29:28 deraadt Exp $	*/
 /*	$KAME: if.c,v 1.18 2002/05/31 10:10:03 itojun Exp $	*/
 
 /*
@@ -294,6 +294,22 @@ getinet6sysctl(int code)
 	mib[3] = code;
 	size = sizeof(value);
 	if (sysctl(mib, sizeof(mib)/sizeof(mib[0]), &value, &size, NULL, 0) < 0)
+		return -1;
+	else
+		return value;
+}
+
+int
+setinet6sysctl(int code, int newval)
+{
+	int mib[] = { CTL_NET, PF_INET6, IPPROTO_IPV6, 0 };
+	int value;
+	size_t size;
+
+	mib[3] = code;
+	size = sizeof(value);
+	if (sysctl(mib, sizeof(mib)/sizeof(mib[0]), &value, &size,
+	    &newval, sizeof(newval)) < 0)
 		return -1;
 	else
 		return value;
