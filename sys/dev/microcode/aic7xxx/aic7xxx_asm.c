@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*+M*************************************************************************
  * Adaptec AIC7770/AIC7870 sequencer code assembler.
  *
@@ -43,7 +45,7 @@
  * are token separators.
  *
  *-M*************************************************************************/
-static char id[] = "$Id: aic7xxx_asm.c,v 1.12 1996/03/31 03:02:35 gibbs Exp $";
+static char id[] = "$Id: aic7xxx_asm.c,v 1.5 1996/06/27 21:15:54 shawn Exp $";
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>

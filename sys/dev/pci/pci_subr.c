@@ -1,5 +1,5 @@
-/*	$OpenBSD: pci_subr.c,v 1.2 1996/04/18 23:48:03 niklas Exp $	*/
-/*	$NetBSD: pci_subr.c,v 1.17 1996/03/02 02:28:48 cgd Exp $	*/
+/*	$OpenBSD: pci_subr.c,v 1.3 1996/10/31 03:29:11 millert Exp $	*/
+/*	$NetBSD: pci_subr.c,v 1.19 1996/10/13 01:38:29 christos Exp $	*/
 
 /*
  * Copyright (c) 1995, 1996 Christopher G. Demetriou.  All rights reserved.

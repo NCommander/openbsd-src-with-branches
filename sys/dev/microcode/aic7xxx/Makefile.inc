@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile.inc,v 1.4 1996/05/20 00:48:43 thorpej Exp $
 #	$NetBSD: Makefile.inc,v 1.4 1996/05/20 00:48:43 thorpej Exp $
 
 .if target(aic7xxx.o)
