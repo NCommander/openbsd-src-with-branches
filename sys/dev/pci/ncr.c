@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr.c,v 1.40 1998/07/21 07:16:37 downsj Exp $	*/
+/*	$OpenBSD: ncr.c,v 1.41 1998/08/07 16:48:19 pefo Exp $	*/
 /*	$NetBSD: ncr.c,v 1.63 1997/09/23 02:39:15 perry Exp $	*/
 
 /**************************************************************************
@@ -1465,7 +1465,7 @@ static	void	ncr_attach	(pcici_t tag, int unit);
 
 #if 0
 static char ident[] =
-	"\n$OpenBSD: ncr.c,v 1.40 1998/07/21 07:16:37 downsj Exp $\n";
+	"\n$OpenBSD: ncr.c,v 1.41 1998/08/07 16:48:19 pefo Exp $\n";
 #endif
 
 static const u_long	ncr_version = NCR_VERSION	* 11
@@ -3383,7 +3383,7 @@ static void ncr_script_copy_and_bind (ncb_p np, ncrcmd *src, ncrcmd *dst, int le
 					}
 					/* fall through */
 				default:
-					panic("ncr_script_copy_and_bind: weird relocation %x @ %ld\n", old, (long)(src - start));
+					panic("ncr_script_copy_and_bind: weird relocation %x @ %ld", old, (long)(src - start));
 					break;
 				}
 
