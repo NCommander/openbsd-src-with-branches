@@ -103,7 +103,7 @@ struct cfattach wdc_obio_ca = {
 
 int	wdc_obio_dma_init(void *, int, int, void *, size_t, int);
 void	wdc_obio_dma_start(void *, int, int);
-int	wdc_obio_dma_finish(void *, int, int);
+int	wdc_obio_dma_finish(void *, int, int, int);
 void	wdc_obio_adjust_timing(struct channel_softc *);
 void	wdc_obio_ata4_adjust_timing(struct channel_softc *);
 void	wdc_obio_ata6_adjust_timing(struct channel_softc *);
@@ -564,7 +564,7 @@ wdc_obio_dma_start(void *v, int channel, int drive)
 }
 
 int
-wdc_obio_dma_finish(void *v, int channel, int drive)
+wdc_obio_dma_finish(void *v, int channel, int drive, int force)
 {
 	struct wdc_obio_softc *sc = v;
 
