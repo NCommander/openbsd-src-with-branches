@@ -1,4 +1,4 @@
-/*	$OpenBSD: rln.c,v 1.11 2001/06/24 20:59:40 fgsch Exp $	*/
+/*	$OpenBSD: rln.c,v 1.12 2001/06/27 06:34:43 kjc Exp $	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public Domain.
  *
@@ -142,7 +142,6 @@ rlnconfig(sc)
 	ifp->if_ioctl = rlnioctl;
 	ifp->if_watchdog = rlnwatchdog;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_NOTRAILERS;
-	IFQ_SET_MAXLEN(&ifp->if_snd, IFQ_MAXLEN);
 	IFQ_SET_READY(&ifp->if_snd);
 	if_attach(ifp);
 	ether_ifattach(ifp);
