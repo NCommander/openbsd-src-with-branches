@@ -1,4 +1,4 @@
-/*	$OpenBSD: odsyntax.c,v 1.4 2001/07/12 05:17:10 deraadt Exp $	*/
+/*	$OpenBSD: odsyntax.c,v 1.5 2001/07/18 17:17:39 pvalchev Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)odsyntax.c	5.4 (Berkeley) 3/8/91";*/
-static char rcsid[] = "$OpenBSD: odsyntax.c,v 1.4 2001/07/12 05:17:10 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: odsyntax.c,v 1.5 2001/07/18 17:17:39 pvalchev Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -46,6 +46,7 @@ static char rcsid[] = "$OpenBSD: odsyntax.c,v 1.4 2001/07/12 05:17:10 deraadt Ex
 
 int deprecated;
 
+void
 oldsyntax(argc, argvp)
 	int argc;
 	char ***argvp;
