@@ -113,9 +113,6 @@ SYSTEM_LD_TAIL+=; \
 LINKFLAGS+=	-S
 .endif
 
-bsd.rd: bsd
-	echo cp $@ $@.rd; ./rdsetroot bsd.rd < mr.fs;
-	
 %LOAD
 
 assym.h: $S/kern/genassym.sh ${PPC}/mvmeppc/genassym.cf
