@@ -1,7 +1,7 @@
-/*	$OpenBSD: perform.c,v 1.26 2003/04/19 10:46:16 henning Exp $	*/
+/*	$OpenBSD: perform.c,v 1.27 2003/07/04 17:31:19 avsm Exp $	*/
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: perform.c,v 1.26 2003/04/19 10:46:16 henning Exp $";
+static const char rcsid[] = "$OpenBSD: perform.c,v 1.27 2003/07/04 17:31:19 avsm Exp $";
 #endif
 
 /*
@@ -227,7 +227,11 @@ pkg_do(char *pkg)
 
     setenv(PKG_PREFIX_VNAME, (p = find_plist(&Plist, PLIST_CWD)) ? p->name : ".", 1);
     /* Protect against old packages with bogus @name fields */
-    PkgName = (p = find_plist(&Plist, PLIST_NAME)) ? p->name : "anonymous";
+    PkgName = (p = find_plist(&Plist, PLIST_NAME)) ? p->name : NULL;
+    if (PkgName == NULL) {
+	pwarnx("package name not set in package file");
+	goto bomb;
+    }
 
     /* See if we're already registered */
     (void) snprintf(LogDir, sizeof(LogDir), "%s/%s", dbdir, PkgName);
