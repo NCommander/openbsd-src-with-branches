@@ -1,9 +1,6 @@
-/*	$OpenBSD: panic.h,v 1.2 1996/06/26 05:31:29 deraadt Exp $	*/
-/*	$NetBSD: panic.h,v 1.2 1995/03/25 18:13:35 glass Exp $	*/
-
-/*
- *  panic.h -  header for at(1)
- *  Copyright (c) 1993 Thomas Koenig
+/* 
+ *  perm.h -  header for at(1)
+ *  Copyright (C) 1994  Thomas Koenig
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,7 +23,4 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-void panic	__P((char *));
-void perr	__P((char *));
-void perr2	__P((char *, char *));
-void usage	__P((void));
+int check_permission __P((void));
