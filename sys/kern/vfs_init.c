@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_init.c,v 1.13 2002/05/20 05:27:40 mickey Exp $	*/
+/*	$OpenBSD: vfs_init.c,v 1.14 2003/06/02 23:28:07 millert Exp $	*/
 /*	$NetBSD: vfs_init.c,v 1.6 1996/02/09 19:00:58 christos Exp $	*/
 
 /*
@@ -228,8 +228,6 @@ vfs_op_init()
 /*
  * Routines having to do with the management of the vnode table.
  */
-extern struct vnodeops dead_vnodeops;
-extern struct vnodeops spec_vnodeops;
 struct vattr va_null;
 
 /*
