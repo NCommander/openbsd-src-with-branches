@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.16 2003/06/10 22:20:46 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.17 2003/09/26 22:22:26 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: main.c,v 1.16 2003/06/10 22:20:46 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.17 2003/09/26 22:22:26 tedu Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -141,6 +141,6 @@ static void
 usage(void)
 {
 	(void)fprintf(stderr,
-	    "usage: find [-dHhLXxW] [-f file] file [...] [expression]\n");
+	    "usage: find [-dHhLWXx] [-f file] file [...] [expression]\n");
 	exit(1);
 }
