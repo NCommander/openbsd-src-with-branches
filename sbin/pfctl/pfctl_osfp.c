@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_osfp.c,v 1.3 2003/08/22 21:50:34 david Exp $ */
+/*	$OpenBSD: pfctl_osfp.c,v 1.4 2003/08/27 17:42:00 frantzen Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@openbsd.org>
@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "pfctl_parser.h"
+#include "pfctl.h"
 
 #ifndef MIN
 # define MIN(a,b)	(((a) < (b)) ? (a) : (b))
@@ -308,11 +309,15 @@ pfctl_load_fingerprints(int dev, int opts)
 void
 pfctl_show_fingerprints(int opts)
 {
-	printf("Passive OS Fingerprints:\n");
-	printf("\tClass\tVersion\tSubtype(subversion)\n");
-	printf("\t-----\t-------\t-------------------\n");
-	sort_name_list(opts, &classes);
-	print_name_list(opts, &classes, "\t");
+	if (LIST_FIRST(&classes) != NULL) {
+		if (opts & PF_OPT_SHOWALL)
+			pfctl_print_title("OS FINGERPRINTS:");
+		
+		printf("Class\tVersion\tSubtype(subversion)\n");
+		printf("-----\t-------\t-------------------\n");
+		sort_name_list(opts, &classes);
+		print_name_list(opts, &classes, "");
+	}
 }
 
 /* Lookup a fingerprint */
