@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2001/09/12 05:16:25 jason Exp $
+# $OpenBSD: Makefile,v 1.7 2001/09/27 04:55:16 art Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -11,7 +11,7 @@ SRCS=	kadmind.c server.c version4.c kadm_conn.c
 .PATH:	${KRB5SRC}/kadmin
 CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/lib/kadm5
 LDADD+=	-lhdb -lkadm5srv -lkrb5 -lkrb -ldes ${LIBROKEN} -lasn1 -lcrypto \
-	-lcom_err -lkafs
+	-lcom_err -lkafs -lutil
 
 .include <bsd.prog.mk>
 
