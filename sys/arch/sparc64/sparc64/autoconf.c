@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.31 2003/04/06 18:54:19 ho Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.32 2003/06/02 23:27:56 millert Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -986,8 +986,6 @@ mainbus_match(parent, cf, aux)
 
 	return (1);
 }
-
-int autoconf_nzs = 0;	/* must be global so obio.c can see it */
 
 /*
  * Attach the mainbus.
