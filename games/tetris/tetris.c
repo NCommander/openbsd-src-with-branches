@@ -1,4 +1,4 @@
-/*	$OpenBSD: tetris.c,v 1.4 1998/09/24 06:45:08 pjanzen Exp $	*/
+/*	$OpenBSD: tetris.c,v 1.5 1999/02/12 04:08:55 deraadt Exp $	*/
 /*	$NetBSD: tetris.c,v 1.2 1995/04/22 07:42:47 cgd Exp $	*/
 
 /*-
@@ -163,7 +163,7 @@ main(argc, argv)
 	for (i = 0; i <= 5; i++) {
 		for (j = i+1; j <= 5; j++) {
 			if (keys[i] == keys[j])
-				errx(1, "Duplicate command keys specified.");
+				errx(1, "duplicate command keys specified.");
 		}
 		if (keys[i] == ' ')
 			strcpy(key_write[i], "<space>");
@@ -308,6 +308,6 @@ onintr(signo)
 void
 usage()
 {
-	(void)fprintf(stderr, "usage: tetris [-s] [-l level] [-k keys]\n");
+	(void)fprintf(stderr, "usage: tetris [-s] [-k keys] [-l level]\n");
 	exit(1);
 }
