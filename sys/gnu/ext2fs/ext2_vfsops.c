@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2_vfsops.c,v 1.2 1996/06/24 10:23:21 downsj Exp $	*/
+/*	$OpenBSD: ext2_vfsops.c,v 1.3 1996/06/27 06:48:41 downsj Exp $	*/
 
 /*
  *  modified for EXT2FS support in Lites 1.1
@@ -86,7 +86,7 @@ static int ext2_unmount __P((struct mount *, int, struct proc *));
 static int ext2_vget __P((struct mount *, ino_t, struct vnode **));
 static int ext2_vptofh __P((struct vnode *, struct fid *));
 
-static struct vfsops ext2fs_vfsops = {
+struct vfsops ext2fs_vfsops = {
 	MOUNT_EXT2FS,
 	ext2_mount,
 	ufs_start,		/* empty function */
