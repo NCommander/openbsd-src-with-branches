@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.10 1996/05/10 12:44:49 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.11 1996/08/27 10:46:52 downsj Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 #undef DEBUG
@@ -280,6 +280,9 @@ trap(frame)
 #endif
 	case T_SEGNPFLT|T_USER:
 	case T_STKFLT|T_USER:
+		trapsignal(p, SIGSEGV, type &~ T_USER);
+		goto out;
+
 	case T_ALIGNFLT|T_USER:
 		trapsignal(p, SIGBUS, type &~ T_USER);
 		goto out;
