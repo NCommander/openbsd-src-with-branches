@@ -1,9 +1,13 @@
-# $OpenBSD: Makefile,v 1.1 2001/10/07 13:24:56 espie Exp $
+# $OpenBSD: Makefile,v 1.2 2004/07/09 21:56:32 david Exp $
 
 NOMAN=
 NOPROG=
 
+.if ${USE_GCC3:L:Myes}
+TESTDIR=${BSDSRCDIR}/gnu/usr.bin/gcc
+.else
 TESTDIR=${BSDSRCDIR}/gnu/egcs/gcc
+.endif
 
 regress: 
 	@if ${RUNTEST} --help >/dev/null; then \
