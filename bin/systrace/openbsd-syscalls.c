@@ -1,4 +1,4 @@
-/*	$OpenBSD: openbsd-syscalls.c,v 1.15 2002/10/16 15:01:08 itojun Exp $	*/
+/*	$OpenBSD: openbsd-syscalls.c,v 1.16 2002/11/26 03:48:07 itojun Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -346,9 +346,9 @@ obsd_translate_flags(short flags)
 }
 
 static int
-obsd_translate_errno(int errno)
+obsd_translate_errno(int nerrno)
 {
-	return (errno);
+	return (nerrno);
 }
 
 static int
