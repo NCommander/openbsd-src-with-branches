@@ -1,4 +1,4 @@
-/*	$OpenBSD: wss.c,v 1.15 1998/04/26 21:03:03 provos Exp $	*/
+/*	$OpenBSD: wss.c,v 1.16 1998/05/08 18:37:24 csapuntz Exp $	*/
 /*	$NetBSD: wss.c,v 1.42 1998/01/19 22:18:23 augustss Exp $	*/
 
 /*
@@ -110,6 +110,8 @@ struct audio_hw_if wss_hw_if = {
 	ad1848_round,
 	ad1848_mappage,
 	ad1848_get_props,
+	NULL,
+	NULL
 };
 
 /*
