@@ -1,4 +1,4 @@
-/*	$NetBSD: hpibvar.h,v 1.6 1995/03/28 18:16:09 jtc Exp $	*/
+/*	$NetBSD: hpibvar.h,v 1.8 1996/02/14 02:44:31 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990, 1993
@@ -68,6 +68,8 @@
 
 struct	hpib_softc {
 	struct	hp_ctlr *sc_hc;
+	struct	hpib_controller *sc_controller;
+	char	*sc_descrip;
 	int	sc_flags;
 	struct	devqueue sc_dq;
 	struct	devqueue sc_sq;
@@ -76,6 +78,21 @@ struct	hpib_softc {
 	char	*sc_addr;
 	int	sc_count;
 	int	sc_curcnt;
+};
+
+/*
+ * Each of the HP-IB controller drivers fills in this structure, which
+ * is used by the indirect driver to call controller-specific functions.
+ */
+struct	hpib_controller {
+	void	(*hpib_reset) __P((int));
+	int	(*hpib_send) __P((int, int, int, void *, int));
+	int	(*hpib_recv) __P((int, int, int, void *, int));
+	int	(*hpib_ppoll) __P((int));
+	void	(*hpib_ppwatch) __P((void *));
+	void	(*hpib_go) __P((int, int, int, void *, int, int, int));
+	void	(*hpib_done) __P((int));
+	int	(*hpib_intr) __P((void *));
 };
 
 /* sc_flags */
@@ -91,6 +108,8 @@ extern	struct hpib_softc hpib_softc[];
 extern	caddr_t internalhpib;
 extern	int hpibtimeout;
 extern	int hpibdmathresh;
-void	fhpibppwatch __P((void *arg));
-void	nhpibppwatch __P((void *arg));
+
+void	hpibreset __P((int));
+int	hpibsend __P((int, int, int, void *, int));
+int	hpibrecv __P((int, int, int, void *, int));
 #endif

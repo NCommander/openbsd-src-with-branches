@@ -171,6 +171,10 @@ CXX_FOR_TARGET = ` \
 # install.
 LD_PROG	= ld.new
 
+# Target to use for installing unformatted man-pages.  Some systems may not
+# want them installed.
+INSTALL_MAN = install-man
+
 all: $(LD_PROG)
 .PHONY: all
 
@@ -208,6 +212,7 @@ ALL_EMULATIONS = \
 	edelta68.o \
 	eebmon29k.o \
 	eelf32_sparc.o \
+	eelf32arc.o \
 	eelf32b4300.o \
 	eelf32bmip.o \
 	eelf32ebmip.o \
@@ -386,6 +391,9 @@ eebmon29k.c: $(srcdir)/emulparams/ebmon29k.sh \
 eelf32_sparc.c: $(srcdir)/emulparams/elf32_sparc.sh \
   $(srcdir)/emultempl/elf32.em $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} elf32_sparc "$(tdir_elf32_sparc)"
+eelf32arc.c: $(srcdir)/emulparams/elf32arc.sh \
+  $(srcdir)/emultempl/elfarc.em $(srcdir)/scripttempl/elfmips.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} elf32arc "$(tdir_elf32arc)"
 eelf32b4300.c: $(srcdir)/emulparams/elf32b4300.sh \
   $(srcdir)/emultempl/elf32.em $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} elf32b4300 "$(tdir_elf32b4300)"
@@ -914,9 +922,8 @@ TAGS:
 	etags -t $(srcdir)/*.[chly] *.[chly]
 
 
-install: 
+install: $(INSTALL_MAN)
 	$(INSTALL_XFORM) ld.new $(bindir)/ld
-	$(INSTALL_XFORM1) $(srcdir)/ld.1 $(man1dir)/ld.1
 	for f in ldscripts/*; do \
 	  $(INSTALL_DATA) $$f $(scriptdir)/$$f ; \
 	done
@@ -926,6 +933,9 @@ install:
 	  rm -f $(tooldir)/bin/ld; \
 	  ln $(bindir)/$$n $(tooldir)/bin/ld >/dev/null 2>/dev/null \
 	   || $(INSTALL_PROGRAM) ld.new $(tooldir)/bin/ld
+
+install-man:
+	$(INSTALL_XFORM1) $(srcdir)/ld.1 $(man1dir)/ld.1
 
 install-info: ld.info
 	if [ -r ld.info ]; then \

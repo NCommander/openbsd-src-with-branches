@@ -36,16 +36,22 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)reboot.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: reboot.S,v 1.3 1994/12/15 17:25:15 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 LEAF(reboot)
+#ifdef ABICALLS
+	subu	sp, sp, 32
+	.cprestore 16
+#endif
+	.set	reorder
 	li	v0, SYS_reboot
 	syscall
 	bne	a3, zero, 1f
 	jal	_C_LABEL(abort)
 1:
-	j	_C_LABEL(cerror)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
 END(reboot)

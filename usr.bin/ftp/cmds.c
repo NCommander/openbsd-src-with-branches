@@ -1,3 +1,4 @@
+/*      $OpenBSD: cmds.c,v 1.4 1996/09/16 02:26:06 deraadt Exp $      */
 /*      $NetBSD: cmds.c,v 1.8 1995/09/08 01:06:05 tls Exp $      */
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)cmds.c	8.6 (Berkeley) 10/9/94";
 #else
-static char rcsid[] = "$NetBSD: cmds.c,v 1.8 1995/09/08 01:06:05 tls Exp $";
+static char rcsid[] = "$OpenBSD: cmds.c,v 1.4 1996/09/16 02:26:06 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,6 +62,7 @@ static char rcsid[] = "$NetBSD: cmds.c,v 1.8 1995/09/08 01:06:05 tls Exp $";
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "ftp_var.h"
 #include "pathnames.h"
@@ -781,6 +783,7 @@ remglob(argv,doswitch)
 	char temp[16];
 	static char buf[MAXPATHLEN];
 	static FILE *ftemp = NULL;
+	int fd; 
 	static char **args;
 	int oldverbose, oldhash;
 	char *cp, *mode;
@@ -805,8 +808,18 @@ remglob(argv,doswitch)
 		return (cp);
 	}
 	if (ftemp == NULL) {
-		(void) strcpy(temp, _PATH_TMP);
+		(void) strcpy(temp, _PATH_TMPFILE);
 		(void) mktemp(temp);
+		/* create a zero-byte version of the file so that
+		 * people can't play symlink games.
+		*/
+		fd = open (temp, O_CREAT | O_EXCL | O_WRONLY, 600);
+		if (fd < 0) {
+			printf ("temporary file %s already exists\n",temp);
+			close (fd);
+			return NULL;
+		}
+       	       close (fd);
 		oldverbose = verbose, verbose = 0;
 		oldhash = hash, hash = 0;
 		if (doswitch) {
@@ -1205,6 +1218,9 @@ ls(argc, argv)
 			return;
 	}
 	recvrequest(cmd, argv[2], argv[1], "w", 0);
+
+	/* flush results in case commands are coming from a pipe */
+	fflush(stdout);
 }
 
 /*

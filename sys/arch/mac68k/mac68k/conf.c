@@ -1,4 +1,5 @@
-/*	$NetBSD: conf.c,v 1.28 1995/08/17 17:40:52 thorpej Exp $	*/
+/*	$OpenBSD: conf.c,v 1.9 1996/07/15 14:57:03 mickey Exp $	*/
+/*	$NetBSD: conf.c,v 1.34 1996/06/19 02:20:54 briggs Exp $	*/
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -31,39 +32,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
-*/
-/*-
- * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
- *			Michael L. Finch, Bradley A. Grantham, and
- *			Lawrence A. Kesteloot
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the Alice Group.
- * 4. The names of the Alice Group or any of its members may not be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE ALICE GROUP ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE ALICE GROUP BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 /*-
  * Derived a long time ago from
@@ -94,12 +62,9 @@ bdev_decl(ch);
 bdev_decl(vnd);
 #include "ccd.h"
 bdev_decl(ccd);
-
-#ifdef LKM
-int	lkmenodev();
-#else
-#define lkmenodev	enodev
-#endif
+#include "rd.h"
+bdev_decl(rd);
+/* No cdev for rd */
 
 struct bdevsw	bdevsw[] =
 {
@@ -113,12 +78,16 @@ struct bdevsw	bdevsw[] =
 	bdev_notdef(),        	 	/* 7 */
 	bdev_disk_init(NVND,vnd),	/* 8: vnode disk driver */
 	bdev_disk_init(NCCD,ccd),	/* 9: concatenated disk driver */
-	bdev_lkm_dummy(),		/* 10 */
-	bdev_lkm_dummy(),		/* 11 */
-	bdev_lkm_dummy(),		/* 12 */
-	bdev_lkm_dummy(),		/* 13 */
+	bdev_notdef(),        	 	/* 10 */
+	bdev_notdef(),        	 	/* 11 */
+	bdev_notdef(),        	 	/* 12 */
+	bdev_disk_init(NRD,rd),	 	/* 13: RAM disk -- for install */
 	bdev_lkm_dummy(),		/* 14 */
 	bdev_lkm_dummy(),		/* 15 */
+	bdev_lkm_dummy(),		/* 16 */
+	bdev_lkm_dummy(),		/* 17 */
+	bdev_lkm_dummy(),		/* 18 */
+	bdev_lkm_dummy(),		/* 19 */
 };
 int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 
@@ -148,20 +117,25 @@ cdev_decl(ptc);
 cdev_decl(log);
 cdev_decl(st);
 cdev_decl(sd);
+cdev_decl(cd);
 cdev_decl(fd);
 #include "grf.h"
 cdev_decl(grf);
 #define NADB 1 /* #include "adb.h" */
 cdev_decl(adb);
-#include "ser.h"
-cdev_decl(ser);
-cdev_decl(cd);
+#include "zsc.h"
+cdev_decl(zsc);
+#include "zstty.h"
+cdev_decl(zs);
 cdev_decl(vnd);
 cdev_decl(ccd);
 #include "bpfilter.h"
 cdev_decl(bpf);
 #include "tun.h"
 cdev_decl(tun);
+dev_decl(filedesc,open);
+#include "random.h"
+cdev_decl(random);
 
 #ifdef LKM
 #define NLKM	1
@@ -170,6 +144,14 @@ cdev_decl(tun);
 #endif
 
 cdev_decl(lkm);
+
+/* open, close, read, ioctl */
+cdev_decl(ipl);
+#ifdef IPFILTER
+#define NIPF 1
+#else
+#define NIPF 0
+#endif
 
 struct cdevsw	cdevsw[] =
 {
@@ -185,7 +167,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 9 */
 	cdev_grf_init(1,grf),		/* 10: frame buffer */
 	cdev_tty_init(NITE,ite),	/* 11: console terminal emulator */
-	cdev_tty_init(NSER,ser),	/* 12: 2 mac serial ports -- BG*/
+	cdev_tty_init(NZSTTY,zs),	/* 12: 2 mac serial ports -- BG*/
 	cdev_disk_init(NSD,sd),		/* 13: SCSI disk */
 	cdev_tape_init(NST,st),		/* 14: SCSI tape */
 	cdev_disk_init(NCD,cd),		/* 15: SCSI CD-ROM */
@@ -195,7 +177,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 18 */
 	cdev_disk_init(NVND,vnd),	/* 19: vnode disk driver */
 	cdev_disk_init(NCCD,ccd),	/* 20: concatenated disk driver */
-	cdev_fd_init(1,fd),		/* 21: file descriptor pseudo-device */
+	cdev_fd_init(1,filedesc),	/* 21: file descriptor pseudo-device */
 	cdev_bpftun_init(NBPFILTER,bpf),/* 22: Berkeley packet filter */
 	cdev_mouse_init(NADB,adb),	/* 23: ADB event interface */
 	cdev_bpftun_init(NTUN,tun),	/* 24: network tunnel */
@@ -206,6 +188,8 @@ struct cdevsw	cdevsw[] =
 	cdev_lkm_dummy(),		/* 29 */
 	cdev_lkm_dummy(),		/* 30 */
 	cdev_lkm_dummy(),		/* 31 */
+	cdev_gen_ipf(NIPF,ipl),         /* 32: IP filter log */
+	cdev_random_init(NRANDOM,random), /* 33: random data source */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
@@ -236,6 +220,7 @@ iskmemdev(dev)
 /*
  * Returns true if dev is /dev/zero.
  */
+int
 iszerodev(dev)
 	dev_t	dev;
 {
@@ -280,6 +265,7 @@ static int chrtoblktab[] = {
 	/* 31 */	NODEV,
 };
 
+dev_t
 chrtoblk(dev)
 	dev_t	dev;
 {
@@ -295,15 +281,15 @@ chrtoblk(dev)
 
 #define itecnpollc	nullcnpollc
 cons_decl(ite);
-#define sercnpollc	nullcnpollc
-cons_decl(ser);
+#define zscnpollc	nullcnpollc
+cons_decl(zs);
 
 struct	consdev constab[] = {
 #if NITE > 0
 	cons_init(ite),
 #endif
-#if NSER > 0
-	cons_init(ser),
+#if NZSTTY > 0
+	cons_init(zs),
 #endif
 	{ 0 },
 };

@@ -1,3 +1,5 @@
+.\"	$OpenBSD$
+.\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -30,17 +32,18 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)pwd_mkdb.8	8.1 (Berkeley) 6/6/93
-.\"	$Id: pwd_mkdb.8,v 1.5 1994/09/16 21:05:14 mycroft Exp $
 .\"
 .Dd June 6, 1993
 .Dt PWD_MKDB 8
-.Os
+.Os OpenBSD
 .Sh NAME
 .Nm pwd_mkdb
 .Nd "generate the password databases"
 .Sh SYNOPSIS
 .Nm pwd_mkdb
+.Op Fl c
 .Op Fl p
+.Op Fl d Ar directory
 .Ar file
 .Sh DESCRIPTION
 .Nm Pwd_mkdb
@@ -61,9 +64,15 @@ different from the historic Version 7 style format.
 .Pp
 The options are as follows:
 .Bl -tag -width flag
+.It Fl c
+Check if the password file is in the correct format. Do not
+change, add, or remove any files.
 .It Fl p
 Create a Version 7 style password file and install it into
 .Dq Pa /etc/passwd .
+.It Fl d
+Operate in a base directory other than the default of
+.Dq Pa /etc .
 .El
 .Pp
 The two databases differ in that the secure version contains the user's 

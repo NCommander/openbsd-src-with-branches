@@ -1,4 +1,5 @@
-/*	$NetBSD: eval.c,v 1.27 1995/09/11 17:05:41 christos Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: eval.c,v 1.29.4.1 1996/06/10 19:36:36 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)eval.c	8.9 (Berkeley) 6/8/95";
 #else
-static char sccsid[] = "$NetBSD: eval.c,v 1.27 1995/09/11 17:05:41 christos Exp $";
+static char sccsid[] = "$NetBSD: eval.c,v 1.29.4.1 1996/06/10 19:36:36 jtc Exp $";
 #endif
 #endif /* not lint */
 
@@ -230,17 +231,15 @@ evaltree(n, flags)
 		evalsubshell(n, flags);
 		break;
 	case NIF: {
-		int status; 
-
 		evaltree(n->nif.test, EV_TESTED);
-		status = exitstatus;
-		exitstatus = 0;
 		if (evalskip)
 			goto out;
-		if (status == 0)
+		if (exitstatus == 0)
 			evaltree(n->nif.ifpart, flags);
 		else if (n->nif.elsepart)
 			evaltree(n->nif.elsepart, flags);
+		else
+			exitstatus = 0;
 		break;
 	}
 	case NWHILE:
@@ -927,11 +926,8 @@ breakcmd(argc, argv)
 	int argc;
 	char **argv; 
 {
-	int n;
+	int n = argc > 1 ? number(argv[1]) : 1;
 
-	n = 1;
-	if (argc > 1)
-		n = number(argv[1]);
 	if (n > loopnest)
 		n = loopnest;
 	if (n > 0) {
@@ -951,11 +947,8 @@ returncmd(argc, argv)
 	int argc;
 	char **argv; 
 {
-	int ret;
+	int ret = argc > 1 ? number(argv[1]) : oexitstatus;
 
-	ret = exitstatus;
-	if (argc > 1)
-		ret = number(argv[1]);
 	if (funcnest) {
 		evalskip = SKIPFUNC;
 		skipcount = 1;

@@ -1,7 +1,8 @@
-/*	$NetBSD: pcivgavar.h,v 1.2 1995/08/03 01:17:21 cgd Exp $	*/
+/*	$OpenBSD: pcivgavar.h,v 1.5 1996/04/12 06:08:58 cgd Exp $	*/
+/*	$NetBSD: pcivgavar.h,v 1.5 1996/04/12 06:08:58 cgd Exp $	*/
 
 /*
- * Copyright (c) 1995 Carnegie-Mellon University.
+ * Copyright (c) 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -28,10 +29,13 @@
  */
 
 struct pcivga_devconfig {
+	bus_chipset_tag_t dc_bc;
+	pci_chipset_tag_t dc_pc;
+
 	pcitag_t	dc_pcitag;	/* PCI tag */
 
-	u_int16_t	*dc_crtat;	/* VGA screen memory */
-	int		dc_iobase;	/* VGA I/O address */
+	bus_io_handle_t	dc_ioh;
+	bus_mem_handle_t dc_memh;
 
 	int		dc_ncol, dc_nrow; /* screen width & height */
 	int		dc_ccol, dc_crow; /* current cursor position */
@@ -39,8 +43,6 @@ struct pcivga_devconfig {
 	char		dc_so;		/* in standout mode? */
 	char		dc_at;		/* normal attributes */
 	char		dc_so_at;	/* standout attributes */
-
-	struct ansicons	dc_ansicons;	/* ansi console emulator info XXX */
 };
 	
 struct pcivga_softc {
@@ -50,11 +52,11 @@ struct pcivga_softc {
 	void	*sc_intr;		/* interrupt handler info */
 };
 
-#define	PCIVGA_CURSOR_OFF	-1	/* pass to pcivga_cpos to disable */
+#define	DEVICE_IS_PCIVGA(class, id)					\
+	    (((PCI_CLASS(class) == PCI_CLASS_DISPLAY &&			\
+	      PCI_SUBCLASS(class) == PCI_SUBCLASS_DISPLAY_VGA) ||	\
+	     (PCI_CLASS(class) == PCI_CLASS_PREHISTORIC &&		\
+	      PCI_SUBCLASS(class) == PCI_SUBCLASS_PREHISTORIC_VGA)) ? 1 : 0)
 
-void	pcivga_cursor __P((void *, int, int));
-void	pcivga_putstr __P((void *, int, int, char *, int));
-void	pcivga_copycols __P((void *, int, int, int,int));
-void	pcivga_erasecols __P((void *, int, int, int));
-void	pcivga_copyrows __P((void *, int, int, int));
-void	pcivga_eraserows __P((void *, int, int));
+void    pcivga_console __P((bus_chipset_tag_t, pci_chipset_tag_t, int, int,
+	    int));

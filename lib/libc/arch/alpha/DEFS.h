@@ -1,4 +1,4 @@
-/*	$NetBSD: DEFS.h,v 1.1 1995/02/10 17:49:48 cgd Exp $	*/
+/*	$OpenBSD: DEFS.h,v 1.1 1995/02/10 17:49:48 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.

@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.8 1995/08/13 00:03:11 mycroft Exp $	*/
+/*	$OpenBSD: param.h,v 1.12 1996/03/04 05:04:10 cgd Exp $	*/
+/*	$NetBSD: param.h,v 1.12 1996/03/04 05:04:10 cgd Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,7 +46,9 @@
 /*
  * Machine dependent constants for the Alpha.
  */
+#define	_MACHINE	alpha
 #define	MACHINE		"alpha"
+#define	_MACHINE_ARCH	alpha
 #define	MACHINE_ARCH	"alpha"
 #define	MID_MACHINE	MID_ALPHA
 
@@ -70,7 +73,7 @@
 #define	NBSEG		(1 << SEGSHIFT)			/* bytes/segment (8M) */
 #define	SEGOFSET	(NBSEG-1)			/* byte off. into seg */
 
-#define	KERNBASE	0xfffffe0000000000	/* start of kernel virtual */
+#define	KERNBASE	0xfffffc0000230000	/* start of kernel virtual */
 #define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
 
 #define	DEV_BSIZE	512
@@ -157,14 +160,12 @@
 #define	splhigh()               pal_swpipl(PSL_IPL_HIGH)
 
 #ifdef _KERNEL
-#ifndef LOCORE
+#ifndef _LOCORE
 
 /* This was calibrated empirically */
 extern	u_int64_t cycles_per_usec;
-#define	DELAY(n)	{ 						\
-	register long long N = cycles_per_usec * (n);			\
-	do N -= 3; while (N > 0);					\
-}
+int delay __P((int));
+#define	DELAY(n)	delay(n)
 
 int spl0 __P((void));					/* drop ipl to zero */
 

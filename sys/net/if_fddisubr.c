@@ -1,4 +1,4 @@
-/*	$NetBSD: if_fddisubr.c,v 1.2 1995/08/19 04:35:29 cgd Exp $	*/
+/*	$NetBSD: if_fddisubr.c,v 1.5 1996/05/07 23:20:21 christos Exp $	*/
 
 /*
  * Copyright (c) 1995
@@ -68,6 +68,11 @@
 #include <net/if_fddi.h>
 #endif
 
+#ifdef IPX
+#include <netipx/ipx.h>
+#include <netipx/ipx_if.h>
+#endif
+
 #ifdef NS
 #include <netns/ns.h>
 #include <netns/ns_if.h>
@@ -104,7 +109,7 @@ extern struct ifqueue pkintrq;
 #define	llc_snap	llc_un.type_snap
 #endif
 
-#if defined(__bsdi__) || defined(__NetBSD__)
+#if defined(__bsdi__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #define	RTALLOC1(a, b)			rtalloc1(a, b)
 #define	ARPRESOLVE(a, b, c, d, e, f)	arpresolve(a, b, c, d, e)
 #define	TYPEHTONS(t)			(t)
@@ -116,8 +121,6 @@ extern struct ifqueue pkintrq;
 /*
  * FDDI output routine.
  * Encapsulate a packet of type family for the local net.
- * Use trailer local net encapsulation if enough data in first
- * packet leaves a multiple of 512 bytes of data in remainder.
  * Assumes that ifp is actually pointer to arpcom structure.
  */
 int
@@ -127,7 +130,7 @@ fddi_output(ifp, m0, dst, rt0)
 	struct sockaddr *dst;
 	struct rtentry *rt0;
 {
-	short type;
+	u_int16_t type;
 	int s, error = 0;
  	u_char edst[6];
 	register struct mbuf *m = m0;
@@ -139,9 +142,9 @@ fddi_output(ifp, m0, dst, rt0)
 	if ((ifp->if_flags & (IFF_UP|IFF_RUNNING)) != (IFF_UP|IFF_RUNNING))
 		senderr(ENETDOWN);
 	ifp->if_lastchange = time;
-	if (rt = rt0) {
+	if ((rt = rt0) != NULL) {
 		if ((rt->rt_flags & RTF_UP) == 0) {
-			if (rt0 = rt = RTALLOC1(dst, 1))
+			if ((rt0 = rt = RTALLOC1(dst, 1)) != NULL)
 				rt->rt_refcnt--;
 			else 
 				senderr(EHOSTUNREACH);
@@ -173,6 +176,18 @@ fddi_output(ifp, m0, dst, rt0)
 		type = htons(ETHERTYPE_IP);
 		break;
 #endif
+#ifdef IPX
+	case AF_IPX:
+		type = htons(ETHERTYPE_IPX);
+ 		bcopy((caddr_t)&(((struct sockaddr_ipx*)dst)->sipx_addr.x_host),
+		    (caddr_t)edst, sizeof (edst));
+		if (!bcmp((caddr_t)edst, (caddr_t)&ipx_thishost, sizeof(edst)))
+			return (looutput(ifp, m, dst, rt));
+		/* If broadcasting on a simplex interface, loopback a copy */
+		if ((m->m_flags & M_BCAST) && (ifp->if_flags & IFF_SIMPLEX))
+			mcopy = m_copy(m, 0, (int)M_COPYALL);
+		break;
+#endif
 #ifdef NS
 	case AF_NS:
 		type = htons(ETHERTYPE_NS);
@@ -194,9 +209,9 @@ fddi_output(ifp, m0, dst, rt0)
 		if (rt && (sdl = (struct sockaddr_dl *)rt->rt_gateway) &&
 		    sdl->sdl_family == AF_LINK && sdl->sdl_alen > 0) {
 			bcopy(LLADDR(sdl), (caddr_t)edst, sizeof(edst));
-		} else if (error =
+		} else if ((error =
 			    iso_snparesolve(ifp, (struct sockaddr_iso *)dst,
-					    (char *)edst, &snpalen))
+					    (char *)edst, &snpalen)) != 0)
 			goto bad; /* Not Resolved */
 		/* If broadcasting on a simplex interface, loopback a copy */
 		if (*edst & 1)
@@ -219,6 +234,7 @@ fddi_output(ifp, m0, dst, rt0)
 		l = mtod(m, struct llc *);
 		l->llc_dsap = l->llc_ssap = LLC_ISO_LSAP;
 		l->llc_control = LLC_UI;
+#if defined(__FreeBSD__)
 		IFDEBUG(D_ETHER)
 			int i;
 			printf("unoutput: sending pkt to: ");
@@ -226,13 +242,14 @@ fddi_output(ifp, m0, dst, rt0)
 				printf("%x ", edst[i] & 0xff);
 			printf("\n");
 		ENDDEBUG
+#endif
 		} break;
 #endif /* ISO */
 #ifdef	LLC
 /*	case AF_NSAP: */
 	case AF_CCITT: {
 		register struct sockaddr_dl *sdl = 
-			(struct sockaddr_dl *) rt -> rt_gateway;
+			(struct sockaddr_dl *) rt->rt_gateway;
 
 		if (sdl && sdl->sdl_family == AF_LINK
 		    && sdl->sdl_alen > 0) {
@@ -261,8 +278,8 @@ fddi_output(ifp, m0, dst, rt0)
 			for (i=0; i<6; i++)
 				printf("%x ", edst[i] & 0xff);
 			printf(" len 0x%x dsap 0x%x ssap 0x%x control 0x%x\n", 
-			       type & 0xff, l->llc_dsap & 0xff, l->llc_ssap &0xff,
-			       l->llc_control & 0xff);
+			    m->m_pkthdr.len, l->llc_dsap & 0xff, l->llc_ssap &0xff,
+			    l->llc_control & 0xff);
 
 		}
 #endif /* LLC_DEBUG */
@@ -316,14 +333,14 @@ fddi_output(ifp, m0, dst, rt0)
 	}
 #endif
 	default:
-		printf("%s%d: can't handle af%d\n", ifp->if_name, ifp->if_unit,
+		printf("%s: can't handle af%d\n", ifp->if_xname,
 			dst->sa_family);
 		senderr(EAFNOSUPPORT);
 	}
 
-
 	if (mcopy)
 		(void) looutput(ifp, mcopy, dst, rt);
+
 	if (type != 0) {
 		register struct llc *l;
 		M_PREPEND(m, sizeof (struct llc), M_DONTWAIT);
@@ -406,17 +423,17 @@ fddi_input(ifp, fh, m)
 
 	l = mtod(m, struct llc *);
 	switch (l->llc_dsap) {
-#if defined(INET) || defined(NS) || defined(DECNET)
+#if defined(INET) || defined(IPX) || defined(NS) || defined(DECNET)
 	case LLC_SNAP_LSAP:
 	{
-		unsigned fddi_type;
+		u_int16_t etype;
 		if (l->llc_control != LLC_UI || l->llc_ssap != LLC_SNAP_LSAP)
 			goto dropanyway;
 		if (l->llc_snap.org_code[0] != 0 || l->llc_snap.org_code[1] != 0|| l->llc_snap.org_code[2] != 0)
 			goto dropanyway;
-		fddi_type = ntohs(l->llc_snap.ether_type);
+		etype = ntohs(l->llc_snap.ether_type);
 		m_adj(m, 8);
-		switch (fddi_type) {
+		switch (etype) {
 #ifdef INET
 		case ETHERTYPE_IP:
 			schednetisr(NETISR_IP);
@@ -426,6 +443,12 @@ fddi_input(ifp, fh, m)
 		case ETHERTYPE_ARP:
 			schednetisr(NETISR_ARP);
 			inq = &arpintrq;
+			break;
+#endif
+#ifdef IPX
+		case ETHERTYPE_IPX:
+			schednetisr(NETISR_IPX);
+			inq = &ipxintrq;
 			break;
 #endif
 #ifdef NS
@@ -441,13 +464,13 @@ fddi_input(ifp, fh, m)
 			break;
 #endif
 		default:
-			/* printf("fddi_input: unknown protocol 0x%x\n", fddi_type); */
+			/* printf("fddi_input: unknown protocol 0x%x\n", etype); */
 			ifp->if_noproto++;
 			goto dropanyway;
 		}
 		break;
 	}
-#endif /* INET || NS */
+#endif /* INET || IPX || NS || DECNET */
 #ifdef	ISO
 	case LLC_ISO_LSAP: 
 		switch (l->llc_control) {
@@ -463,9 +486,11 @@ fddi_input(ifp, fh, m)
 				if (m == 0)
 					return;
 				*mtod(m, struct fddi_header *) = *fh;
+#if defined(__FreeBSD__)
 				IFDEBUG(D_ETHER)
 					printf("clnp packet");
 				ENDDEBUG
+#endif
 				schednetisr(NETISR_ISO);
 				inq = &clnlintrq;
 				break;
@@ -563,7 +588,8 @@ fddi_ifattach(ifp)
 	ifp->if_addrlen = 6;
 	ifp->if_hdrlen = 21;
 	ifp->if_mtu = FDDIMTU;
-#ifdef __NetBSD__
+	ifp->if_output = fddi_output;
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	for (ifa = ifp->if_addrlist.tqh_first; ifa != 0;
 	    ifa = ifa->ifa_list.tqe_next)
 #else

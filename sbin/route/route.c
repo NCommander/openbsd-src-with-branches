@@ -1,4 +1,5 @@
-/*	$NetBSD: route.c,v 1.14 1995/04/20 20:52:46 mycroft Exp $	*/
+/*	$OpenBSD: route.c,v 1.8 1996/08/16 09:26:11 mickey Exp $	*/
+/*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
  * Copyright (c) 1983, 1989, 1991, 1993
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)route.c	8.3 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$NetBSD: route.c,v 1.14 1995/04/20 20:52:46 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: route.c,v 1.8 1996/08/16 09:26:11 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,6 +60,7 @@ static char rcsid[] = "$NetBSD: route.c,v 1.14 1995/04/20 20:52:46 mycroft Exp $
 #include <net/if_dl.h>
 #include <netinet/in.h>
 #include <netns/ns.h>
+#include <netipx/ipx.h>
 #include <netiso/iso.h>
 #include <netccitt/x25.h>
 #include <arpa/inet.h>
@@ -85,6 +87,7 @@ union	sockunion {
 	struct	sockaddr sa;
 	struct	sockaddr_in sin;
 	struct	sockaddr_ns sns;
+	struct	sockaddr_ipx sipx;
 	struct	sockaddr_iso siso;
 	struct	sockaddr_dl sdl;
 	struct	sockaddr_x25 sx25;
@@ -163,7 +166,6 @@ main(argc, argv)
 		case 'd':
 			debugonly = 1;
 			break;
-		case '?':
 		default:
 			usage((char *)NULL);
 		}
@@ -233,6 +235,9 @@ flushroutes(argc, argv)
 			case K_XNS:
 				af = AF_NS;
 				break;
+			case K_IPX:
+				af = AF_IPX;
+				break;
 			case K_LINK:
 				af = AF_LINK;
 				break;
@@ -267,7 +272,7 @@ bad:			usage(*argv);
 		rtm = (struct rt_msghdr *)next;
 		if (verbose)
 			print_rtmsg(rtm, rtm->rtm_msglen);
-		if ((rtm->rtm_flags & RTF_GATEWAY) == 0)
+		if ((rtm->rtm_flags & (RTF_GATEWAY|RTF_STATIC|RTF_LLINFO)) == 0)
 			continue;
 		if (af) {
 			struct sockaddr *sa = (struct sockaddr *)(rtm + 1);
@@ -308,11 +313,12 @@ routename(sa)
 	struct sockaddr *sa;
 {
 	register char *cp;
-	static char line[50];
+	static char line[MAXHOSTNAMELEN];
 	struct hostent *hp;
 	static char domain[MAXHOSTNAMELEN + 1];
 	static int first = 1;
 	char *ns_print();
+	char *ipx_print();
 
 	if (first) {
 		first = 0;
@@ -358,6 +364,9 @@ routename(sa)
 	case AF_NS:
 		return (ns_print((struct sockaddr_ns *)sa));
 
+	case AF_IPX:
+		return (ipx_print((struct sockaddr_ipx *)sa));
+
 	case AF_LINK:
 		return (link_ntoa((struct sockaddr_dl *)sa));
 
@@ -394,6 +403,7 @@ netname(sa)
 	register u_long i;
 	int subnetshift;
 	char *ns_print();
+	char *ipx_print();
 
 	switch (sa->sa_family) {
 
@@ -449,6 +459,9 @@ netname(sa)
 
 	case AF_NS:
 		return (ns_print((struct sockaddr_ns *)sa));
+
+	case AF_IPX:
+		return (ipx_print((struct sockaddr_ipx *)sa));
 
 	case AF_LINK:
 		return (link_ntoa((struct sockaddr_dl *)sa));
@@ -543,6 +556,10 @@ newroute(argc, argv)
 				af = AF_NS;
 				aflen = sizeof(struct sockaddr_ns);
 				break;
+			case K_IPX:
+				af = AF_IPX;
+				aflen = sizeof(struct sockaddr_ipx);
+				break;
 			case K_IFACE:
 			case K_INTERFACE:
 				iflag++;
@@ -584,28 +601,34 @@ newroute(argc, argv)
 				flags |= RTF_STATIC;
 				break;
 			case K_IFA:
-				argc--;
+				if (!--argc)
+					usage(1+*argv);
 				(void) getaddr(RTA_IFA, *++argv, 0);
 				break;
 			case K_IFP:
-				argc--;
+				if (!--argc)
+					usage(1+*argv);
 				(void) getaddr(RTA_IFP, *++argv, 0);
 				break;
 			case K_GENMASK:
-				argc--;
+				if (!--argc)
+					usage(1+*argv);
 				(void) getaddr(RTA_GENMASK, *++argv, 0);
 				break;
 			case K_GATEWAY:
-				argc--;
+				if (!--argc)
+					usage(1+*argv);
 				(void) getaddr(RTA_GATEWAY, *++argv, 0);
 				break;
 			case K_DST:
-				argc--;
+				if (!--argc)
+					usage(1+*argv);
 				ishost = getaddr(RTA_DST, *++argv, &hp);
 				dest = *argv;
 				break;
 			case K_NETMASK:
-				argc--;
+				if (!--argc)
+					usage(1+*argv);
 				(void) getaddr(RTA_NETMASK, *++argv, 0);
 				/* FALLTHROUGH */
 			case K_NET:
@@ -619,7 +642,8 @@ newroute(argc, argv)
 			case K_SSTHRESH:
 			case K_RTT:
 			case K_RTTVAR:
-				argc--;
+				if (!--argc)
+					usage(1+*argv);
 				set_metric(*++argv, key);
 				break;
 			default:
@@ -636,7 +660,7 @@ newroute(argc, argv)
 				int ret = atoi(*argv);
 
 				if (ret == 0) {
-				    if (strcmp(*argv, "0") == 0)
+				    if (!qflag && strcmp(*argv, "0") == 0)
 				        printf("%s,%s",
 					    "old usage of trailing 0",
 					    "assuming route to if\n");
@@ -645,8 +669,10 @@ newroute(argc, argv)
 				    iflag = 1;
 				    continue;
 				} else if (ret > 0 && ret < 10) {
-				    printf("old usage of trailing digit, ");
-				    printf("assuming route via gateway\n");
+				    if (!qflag) {
+				        printf("old usage of trailing digit, ");
+				        printf("assuming route via gateway\n");
+				    }
 				    iflag = 0;
 				    continue;
 				}
@@ -679,16 +705,19 @@ newroute(argc, argv)
 	if (*cmd == 'g')
 		exit(0);
 	oerrno = errno;
-	(void) printf("%s %s %s", cmd, ishost? "host" : "net", dest);
-	if (*gateway) {
-		(void) printf(": gateway %s", gateway);
-		if (attempts > 1 && ret == 0 && af == AF_INET)
-		    (void) printf(" (%s)",
-			inet_ntoa(((struct sockaddr_in *)&route.rt_gateway)->sin_addr));
+	if (!qflag) {
+		(void) printf("%s %s %s", cmd, ishost? "host" : "net", dest);
+		if (*gateway) {
+			(void) printf(": gateway %s", gateway);
+			if (attempts > 1 && ret == 0 && af == AF_INET)
+			    (void) printf(" (%s)",
+				inet_ntoa(((struct sockaddr_in *)
+					   &route.rt_gateway)->sin_addr));
+		}
+		if (ret == 0)
+			(void) printf("\n");
 	}
-	if (ret == 0)
-		(void) printf("\n");
-	else {
+	if (ret != 0) {
 		switch (oerrno) {
 		case ESRCH:
 			err = "not in table";
@@ -761,6 +790,7 @@ getaddr(which, s, hpp)
 {
 	register sup su;
 	struct ns_addr ns_addr();
+	struct ipx_addr ipx_addr();
 	struct iso_addr *iso_addr();
 	struct hostent *hp;
 	struct netent *np;
@@ -825,6 +855,19 @@ getaddr(which, s, hpp)
 		su->sns.sns_addr = ns_addr(s);
 		return (!ns_nullhost(su->sns.sns_addr));
 
+	case AF_IPX:
+		if (which == RTA_DST) {
+			extern short ipx_bh[3];
+			struct sockaddr_ipx *sms = &(so_mask.sipx);
+			memset(sms, 0, sizeof(*sms));
+			sms->sipx_family = 0;
+			sms->sipx_len = 6;
+			sms->sipx_addr.ipx_net = *(union ipx_net *)ipx_bh;
+			rtm_addrs |= RTA_NETMASK;
+		}
+		su->sipx.sipx_addr = ipx_addr(s);
+		return (!ipx_nullhost(su->sipx.sipx_addr));
+
 	case AF_OSI:
 		su->siso.siso_addr = *iso_addr(s);
 		if (which == RTA_NETMASK || which == RTA_GENMASK) {
@@ -856,7 +899,7 @@ getaddr(which, s, hpp)
 	if (hpp == NULL)
 		hpp = &hp;
 	*hpp = NULL;
-	if (((val = inet_addr(s)) != -1) &&
+	if (((val = inet_addr(s)) != INADDR_NONE) &&
 	    (which != RTA_DST || forcenet == 0)) {
 		su->sin.sin_addr.s_addr = val;
 		if (inet_lnaof(su->sin.sin_addr) != INADDR_ANY)
@@ -866,7 +909,7 @@ getaddr(which, s, hpp)
 			goto netdone;
 		}
 	}
-	if ((val = inet_network(s)) != -1 ||
+	if ((val = inet_network(s)) != INADDR_NONE ||
 	    ((np = getnetbyname(s)) != NULL && (val = np->n_net) != 0)) {
 netdone:
 		if (which == RTA_DST)
@@ -909,7 +952,8 @@ ns_print(sns)
 	struct ns_addr work;
 	union { union ns_net net_e; u_long long_e; } net;
 	u_short port;
-	static char mybuf[50], cport[10], chost[25];
+	static char mybuf[50];
+	char cport[10], chost[25];
 	char *host = "";
 	register char *p;
 	register u_char *q;
@@ -921,7 +965,7 @@ ns_print(sns)
 	if (ns_nullhost(work) && net.long_e == 0) {
 		if (!port)
 			return ("*.*");
-		(void) sprintf(mybuf, "*.%XH", port);
+		(void) sprintf(mybuf, "*.0x%x", port);
 		return (mybuf);
 	}
 
@@ -931,6 +975,51 @@ ns_print(sns)
 		host = "*";
 	else {
 		q = work.x_host.c_host;
+		(void) sprintf(chost, "0x%02x%02x%02x%02x%02x%02x",
+			q[0], q[1], q[2], q[3], q[4], q[5]);
+		host = chost;
+	}
+	if (port)
+		(void) sprintf(cport, ".0x%x", htons(port));
+	else
+		*cport = '\0';
+
+	(void) sprintf(mybuf,"0x%x.%s%s", ntohl(net.long_e), host, cport);
+	return (mybuf);
+}
+
+short ipx_nullh[] = {0,0,0};
+short ipx_bh[] = {-1,-1,-1};
+
+char *
+ipx_print(sipx)
+	struct sockaddr_ipx *sipx;
+{
+	struct ipx_addr work;
+	union { union ipx_net net_e; u_long long_e; } net;
+	u_short port;
+	static char mybuf[50], cport[10], chost[25];
+	char *host = "";
+	register char *p;
+	register u_char *q;
+
+	work = sipx->sipx_addr;
+	port = ntohs(work.ipx_port);
+	work.ipx_port = 0;
+	net.net_e  = work.ipx_net;
+	if (ipx_nullhost(work) && net.long_e == 0) {
+		if (!port)
+			return ("*.*");
+		(void) sprintf(mybuf, "*.%XH", port);
+		return (mybuf);
+	}
+
+	if (memcmp(ipx_bh, work.ipx_host.c_host, 6) == 0)
+		host = "any";
+	else if (memcmp(ipx_nullh, work.ipx_host.c_host, 6) == 0)
+		host = "*";
+	else {
+		q = work.ipx_host.c_host;
 		(void) sprintf(chost, "%02X%02X%02X%02X%02X%02XH",
 			q[0], q[1], q[2], q[3], q[4], q[5]);
 		for (p = chost; *p == '0' && p < chost + 12; p++)
@@ -1082,6 +1171,7 @@ mask_addr()
 		return;
 	switch (so_dst.sa.sa_family) {
 	case AF_NS:
+	case AF_IPX:
 	case AF_INET:
 	case AF_CCITT:
 	case 0:
@@ -1364,6 +1454,10 @@ sodump(su, which)
 	case AF_NS:
 		(void) printf("%s: xns %s; ",
 		    which, ns_ntoa(su->sns.sns_addr));
+		break;
+	case AF_IPX:
+		(void) printf("%s: ipx %s; ",
+		    which, ipx_ntoa(su->sipx.sipx_addr));
 		break;
 	}
 	(void) fflush(stdout);

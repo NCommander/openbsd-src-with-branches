@@ -44,12 +44,13 @@ touch version
 v=`cat version` u=${USER-root} d=`pwd` h=`hostname` t=`date`
 id=`basename ${d}`
 
-ost="NetBSD"
-osr="1.1_ALPHA"
+ost="OpenBSD"
+osr="2.0"
 
 echo "char ostype[] = \"${ost}\";" > vers.c
 echo "char osrelease[] = \"${osr}\";" >> vers.c
-echo "char sccs[4] = { '@', '(', '#', ')' };" >> vers.c
+echo "char osversion[] = \"${id}#${v}\";" >> vers.c
+echo "char sccs[8] = { ' ', ' ', ' ', ' ', '@', '(', '#', ')' };" >> vers.c
 echo \
   "char version[] = \
     \"${ost} ${osr} (${id}) #${v}: ${t}\\n    ${u}@${h}:${d}\\n\";" \

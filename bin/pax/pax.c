@@ -1,4 +1,5 @@
-/*	$NetBSD: pax.c,v 1.4 1995/03/21 09:07:39 cgd Exp $	*/
+/*	$OpenBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $	*/
+/*	$NetBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1992 Keith Muller.
@@ -47,7 +48,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pax.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$NetBSD: pax.c,v 1.4 1995/03/21 09:07:39 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $";
 #endif
 #endif /* not lint */
 
@@ -83,6 +84,7 @@ int	nflag;			/* select first archive member match */
 int	tflag;			/* restore access time after read */
 int	uflag;			/* ignore older modification time files */
 int	vflag;			/* produce verbose output */
+int	zflag;			/* use gzip */
 int	Dflag;			/* same as uflag except inode change time */
 int	Hflag;			/* follow command line symlinks (write only) */
 int	Lflag;			/* follow symlinks when writing */
@@ -287,9 +289,9 @@ sig_cleanup(which_sig)
 	 */
 	vflag = vfpart = 1;
 	if (which_sig == SIGXCPU)
-		warn(0, "Cpu time limit reached, cleaning up.");
+		paxwarn(0, "Cpu time limit reached, cleaning up.");
 	else
-		warn(0, "Signal caught, cleaning up.");
+		paxwarn(0, "Signal caught, cleaning up.");
 
 	ar_close();
 	proc_dir();
@@ -367,7 +369,7 @@ gen_init()
 	    (sigaddset(&s_mask,SIGINT) < 0)||(sigaddset(&s_mask,SIGHUP) < 0) ||
 	    (sigaddset(&s_mask,SIGPIPE) < 0)||(sigaddset(&s_mask,SIGQUIT)<0) ||
 	    (sigaddset(&s_mask,SIGXCPU) < 0)||(sigaddset(&s_mask,SIGXFSZ)<0)) {
-		warn(1, "Unable to set up signal mask");
+		paxwarn(1, "Unable to set up signal mask");
 		return(-1);
 	}
 	n_hand.sa_mask = s_mask;

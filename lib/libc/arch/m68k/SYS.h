@@ -34,8 +34,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)SYS.h	5.5 (Berkeley) 5/7/91
- *	$Id: SYS.h,v 1.4 1994/08/04 05:02:31 chopps Exp $
+ *	$OpenBSD: SYS.h,v 1.1.1.1 1995/10/18 08:41:27 deraadt Exp $
  */
 
 #include <sys/syscall.h>

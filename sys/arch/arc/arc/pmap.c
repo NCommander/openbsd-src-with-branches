@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmap.c,v 1.5 1996/09/24 19:37:25 pefo Exp $	*/
 /* 
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)pmap.c	8.4 (Berkeley) 1/26/94
- *      $Id: pmap.c,v 1.4 1996/06/06 23:07:44 deraadt Exp $
+ *      $Id: pmap.c,v 1.5 1996/09/24 19:37:25 pefo Exp $
  */
 
 /*
@@ -81,6 +81,7 @@
 
 #include <machine/cpu.h>
 #include <machine/pte.h>
+#include <machine/memconf.h>
 
 extern vm_page_t vm_page_alloc1 __P((void));
 extern void vm_page_free1 __P((vm_page_t));
@@ -107,8 +108,23 @@ typedef struct pv_entry {
 pv_entry_t	pv_table;	/* array of entries, one per page */
 int	pmap_remove_pv();
 
+#ifdef MACHINE_NONCONTIG
+static	vm_offset_t	avail_next;
+static	vm_offset_t	avail_remaining;
+
+struct physseg {
+	vm_offset_t	start;
+	vm_offset_t	end;
+	int		first_page;
+} physsegs[MAXMEMSEGS+1];
+
+#define	pa_index(pa)	pmap_page_index(pa)
+
+#else
 #define pa_index(pa)		atop((pa) - first_phys_addr)
-#define pa_to_pvh(pa)		(&pv_table[pa_index(pa)])
+#endif /* MACHINE_NONCONTIG */
+
+#define pa_to_pvh(pa)	(&pv_table[pa_index(pa)])
 
 #ifdef DEBUG
 struct {
@@ -135,7 +151,6 @@ struct {
 	int pvsearch;
 } remove_stats;
 
-int pmapdebug = 0;
 #define PDB_FOLLOW	0x0001
 #define PDB_INIT	0x0002
 #define PDB_ENTER	0x0004
@@ -150,6 +165,10 @@ int pmapdebug = 0;
 #define PDB_PARANOIA	0x2000
 #define PDB_WIRING	0x4000
 #define PDB_PVDUMP	0x8000
+
+extern int _ftext[];
+extern int _end[];
+int pmapdebug = 0x0;
 
 #endif /* DEBUG */
 
@@ -177,10 +196,13 @@ void
 pmap_bootstrap(firstaddr)
 	vm_offset_t firstaddr;
 {
-	register int i;
+	register int i, n, nextpage;
 	register pt_entry_t *spte;
+	struct physseg *pseg;
 	vm_offset_t start = firstaddr;
-	extern int maxmem, physmem;
+	extern int physmem;
+
+/*XXX*/	char pbuf[100];
 
 #define	valloc(name, type, num) \
 	    (name) = (type *)firstaddr; firstaddr = (vm_offset_t)((name)+(num))
@@ -192,6 +214,7 @@ pmap_bootstrap(firstaddr)
 	 */
 	Sysmapsize = (VM_KMEM_SIZE + VM_MBUF_SIZE + VM_PHYS_SIZE +
 		nbuf * MAXBSIZE + 16 * NCARGS) / NBPG + 1024 + 256;
+	Sysmapsize += maxproc * UPAGES * 2;
 #ifdef SYSVSHM
 	Sysmapsize += shminfo.shmall;
 #endif
@@ -206,18 +229,67 @@ pmap_bootstrap(firstaddr)
 	 * phys_start and phys_end but its better to use kseg0 addresses
 	 * rather than kernel virtual addresses mapped through the TLB.
 	 */
-	i = maxmem - pica_btop(CACHED_TO_PHYS(firstaddr));
+#ifdef MACHINE_NONCONTIG
+	i = 0;
+	for( n = 0; n < MAXMEMSEGS; n++) {
+		i += mips_btop(mem_layout[n].mem_size);
+	}
+#else
+	i = physmem - mips_btop(CACHED_TO_PHYS(firstaddr));
+#endif /*MACHINE_NONCONTIG*/
 	valloc(pv_table, struct pv_entry, i);
 
 	/*
 	 * Clear allocated memory.
 	 */
-	firstaddr = pica_round_page(firstaddr);
+	firstaddr = mips_round_page(firstaddr);
 	bzero((caddr_t)start, firstaddr - start);
 
 	avail_start = CACHED_TO_PHYS(firstaddr);
-	avail_end = pica_ptob(maxmem);
-	mem_size = avail_end - avail_start;
+	avail_end = mips_ptob(physmem);
+
+#ifdef MACHINE_NONCONTIG
+	avail_remaining = 0;
+	nextpage = 0;
+
+	/*
+	 * Now set up memory areas. Be careful to remove areas used
+         * for the OS and for exception vector stuff.
+         */
+	pseg = &physsegs[0];
+
+	for( i = 0; i < MAXMEMSEGS; i++) {
+		/* Adjust for the kernel exeption vectors and sys data area */
+		if(mem_layout[i].mem_start < 0x20000) { 
+			if((mem_layout[i].mem_start + mem_layout[i].mem_size) < 0x8000)
+				continue;	/* To small skip it */
+			mem_layout[i].mem_size -= 0x20000 - mem_layout[i].mem_start;
+			mem_layout[i].mem_start = 0x20000;  /* Adjust to be above vec's */
+		}
+		/* Adjust for the kernel expansion area (bufs etc) */
+		if((mem_layout[i].mem_start + mem_layout[i].mem_size > CACHED_TO_PHYS(_ftext)) && 
+		   (mem_layout[i].mem_start < CACHED_TO_PHYS(avail_start))) { 
+			mem_layout[i].mem_size -= CACHED_TO_PHYS(avail_start) - mem_layout[i].mem_start;
+			mem_layout[i].mem_start = CACHED_TO_PHYS(avail_start);
+		}
+
+		if(mem_layout[i].mem_size == 0)
+			continue;
+
+		pseg->start = mem_layout[i].mem_start;
+		pseg->end = pseg->start + mem_layout[i].mem_size;
+		pseg->first_page = nextpage;
+		nextpage += (pseg->end - pseg->start) / NBPG;
+		avail_remaining += (pseg->end - pseg->start) / NBPG;
+#if 0
+/*XXX*/	sprintf(pbuf,"segment = %d start 0x%x end 0x%x avail %d page %d\n", i, pseg->start, pseg->end, avail_remaining, nextpage); bios_putstring(pbuf);
+#endif
+		pseg++;
+	}
+
+	avail_next = physsegs[0].start;
+
+#endif /* MACHINE_NONCONTIG */
 
 	virtual_avail = VM_MIN_KERNEL_ADDRESS;
 	virtual_end = VM_MIN_KERNEL_ADDRESS + Sysmapsize * NBPG;
@@ -272,15 +344,74 @@ pmap_bootstrap_alloc(size)
  *	system needs to map virtual memory.
  */
 void
+#ifdef MACHINE_NONCONTIG
+pmap_init()
+#else
 pmap_init(phys_start, phys_end)
 	vm_offset_t phys_start, phys_end;
+#endif
 {
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_INIT))
-		printf("pmap_init(%x, %x)\n", phys_start, phys_end);
+#ifdef MACHINE_NONCONTIG
+		printf("pmap_init(%lx, %lx)\n", avail_start, avail_end);
+#else
+		printf("pmap_init(%lx, %lx)\n", phys_start, phys_end);
 #endif
+#endif /*DEBUG*/
 }
+
+#ifdef MACHINE_NONCONTIG
+inline int
+pmap_page_index(pa)
+    vm_offset_t pa;
+{
+	struct physseg *ps = &physsegs[0];
+	while (ps->start) {
+		if(pa >= ps->start && pa < ps->end) {
+			return(atop(pa - ps->start) + ps->first_page);
+		}
+		ps++;
+	}
+	return -1;
+}
+
+unsigned int
+pmap_free_pages()
+{
+	 return avail_remaining;
+}
+
+void
+pmap_virtual_space(startp, endp)
+	vm_offset_t  *startp;
+	vm_offset_t  *endp;
+{
+	*startp = virtual_avail;
+	*endp = virtual_end;
+}
+
+int
+pmap_next_page(p_addr)
+	vm_offset_t *p_addr;
+{
+	static int cur_seg = 0;
+
+	if (physsegs[cur_seg].start == 0)
+		return FALSE;
+	if (avail_next == physsegs[cur_seg].end) {
+		avail_next = physsegs[++cur_seg].start;
+	}
+
+	if (avail_next == 0)
+		return FALSE;
+	*p_addr = avail_next;
+	avail_next += NBPG;
+	avail_remaining--;
+	return TRUE;
+}
+#endif /*MACHINE_NONCONTIG*/
 
 /*
  *	Create and return a physical map.
@@ -351,7 +482,13 @@ pmap_pinit(pmap)
 		vm_page_t mem;
 		void pmap_zero_page();
 
-		mem = vm_page_alloc1();
+		do {
+			mem = vm_page_alloc1();
+			if (mem == NULL) {
+				VM_WAIT;	/* XXX What else can we do */
+			}			/* XXX Deadlock situations? */
+		} while (mem == NULL);
+
 		pmap_zero_page(VM_PAGE_TO_PHYS(mem));
 		pmap->pm_segtab = stp = (struct segtab *)
 			PHYS_TO_CACHED(VM_PAGE_TO_PHYS(mem));
@@ -444,7 +581,7 @@ pmap_release(pmap)
 					panic("pmap_release: segmap not empty");
 			}
 #endif
-			MachHitFlushDCache(pte, PAGE_SIZE);
+			R4K_HitFlushDCache(pte, PAGE_SIZE);
 			vm_page_free1(
 				PHYS_TO_VM_PAGE(CACHED_TO_PHYS(pte)));
 			pmap->pm_segtab->seg_tab[i] = NULL;
@@ -517,7 +654,7 @@ pmap_remove(pmap, sva, eva)
 				pmap->pm_stats.wired_count--;
 			pmap->pm_stats.resident_count--;
 			if(pmap_remove_pv(pmap, sva, pfn_to_vad(entry))) {
-				MachFlushDCache(sva, PAGE_SIZE);
+				R4K_FlushDCache(sva, PAGE_SIZE);
 			}
 #ifdef ATTR
 			pmap_attributes[atop(pfn_to_vad(entry))] = 0;
@@ -526,7 +663,7 @@ pmap_remove(pmap, sva, eva)
 			 * Flush the TLB for the given address.
 			 */
 			pte->pt_entry = PG_NV | PG_G; /* See above about G bit */
-			MachTLBFlushAddr(sva);
+			R4K_TLBFlushAddr(sva);
 #ifdef DEBUG
 			remove_stats.flushes++;
 
@@ -540,7 +677,7 @@ pmap_remove(pmap, sva, eva)
 		panic("pmap_remove: uva not in range");
 #endif
 	while (sva < eva) {
-		nssva = pica_trunc_seg(sva) + NBSEG;
+		nssva = mips_trunc_seg(sva) + NBSEG;
 		if (nssva == 0 || nssva > eva)
 			nssva = eva;
 		/*
@@ -563,7 +700,7 @@ pmap_remove(pmap, sva, eva)
 				pmap->pm_stats.wired_count--;
 			pmap->pm_stats.resident_count--;
 			if(pmap_remove_pv(pmap, sva, pfn_to_vad(entry))) {
-				MachFlushDCache(sva, PAGE_SIZE);
+				R4K_FlushDCache(sva, PAGE_SIZE);
 			}
 #ifdef ATTR
 			pmap_attributes[atop(pfn_to_vad(entry))] = 0;
@@ -573,7 +710,7 @@ pmap_remove(pmap, sva, eva)
 			 * Flush the TLB for the given address.
 			 */
 			if (pmap->pm_tlbgen == tlbpid_gen) {
-				MachTLBFlushAddr(sva | (pmap->pm_tlbpid <<
+				R4K_TLBFlushAddr(sva | (pmap->pm_tlbpid <<
 					VMTLB_PID_SHIFT));
 #ifdef DEBUG
 				remove_stats.flushes++;
@@ -700,7 +837,7 @@ pmap_protect(pmap, sva, eva, prot)
 			/*
 			 * Update the TLB if the given address is in the cache.
 			 */
-			MachTLBUpdate(sva, entry);
+			R4K_TLBUpdate(sva, entry);
 		}
 		return;
 	}
@@ -710,7 +847,7 @@ pmap_protect(pmap, sva, eva, prot)
 		panic("pmap_protect: uva not in range");
 #endif
 	while (sva < eva) {
-		nssva = pica_trunc_seg(sva) + NBSEG;
+		nssva = mips_trunc_seg(sva) + NBSEG;
 		if (nssva == 0 || nssva > eva)
 			nssva = eva;
 		/*
@@ -735,7 +872,7 @@ pmap_protect(pmap, sva, eva, prot)
 			 * Update the TLB if the given address is in the cache.
 			 */
 			if (pmap->pm_tlbgen == tlbpid_gen)
-				MachTLBUpdate(sva | (pmap->pm_tlbpid <<
+				R4K_TLBUpdate(sva | (pmap->pm_tlbpid <<
 					VMTLB_PID_SHIFT), entry);
 		}
 	}
@@ -790,7 +927,7 @@ pmap_page_cache(pa,mode)
 			if (entry & PG_V) {
 				entry = (entry & ~PG_CACHEMODE) | newmode;
 				pte->pt_entry = entry;
-				MachTLBUpdate(pv->pv_va, entry);
+				R4K_TLBUpdate(pv->pv_va, entry);
 			}
 		}
 		else {
@@ -801,7 +938,7 @@ pmap_page_cache(pa,mode)
 					entry = (entry & ~PG_CACHEMODE) | newmode;
 					pte->pt_entry = entry;
 					if (pv->pv_pmap->pm_tlbgen == tlbpid_gen)
-						MachTLBUpdate(pv->pv_va | (pv->pv_pmap->pm_tlbpid <<
+						R4K_TLBUpdate(pv->pv_va | (pv->pv_pmap->pm_tlbpid <<
 							VMTLB_PID_SHIFT), entry);
 				}
 			}
@@ -876,7 +1013,9 @@ pmap_enter(pmap, va, pa, prot, wired)
 				 * just record page as dirty.
 				 */
 				npte = PG_RWPAGE;
+#if 0 /*XXX*/
 				mem->flags &= ~PG_CLEAN;
+#endif
 			} else
 #ifdef ATTR
 				if ((pmap_attributes[atop(pa)] &
@@ -930,10 +1069,10 @@ pmap_enter(pmap, va, pa, prot, wired)
 					/*
 					 * Check cache aliasing incompatibility
 					 */
-					if((npv->pv_va & machCacheAliasMask) != (va & machCacheAliasMask)) {
+					if((npv->pv_va & CpuCacheAliasMask) != (va & CpuCacheAliasMask)) {
 						printf("pmap_enter: creating uncached mapping 0x%x, 0x%x.\n",npv->pv_va, va);
 						pmap_page_cache(pa,PV_UNCACHED);
-						MachFlushDCache(pv->pv_va, PAGE_SIZE);
+						R4K_FlushDCache(pv->pv_va, PAGE_SIZE);
 						npte = (npte & ~PG_CACHEMODE) | PG_UNCACHED;
 						break;
 					}
@@ -1015,7 +1154,7 @@ pmap_enter(pmap, va, pa, prot, wired)
 	 * NOTE: we only support cache flush for read only text.
 	 */
 	if (prot == (VM_PROT_READ | VM_PROT_EXECUTE))
-		MachFlushICache(PHYS_TO_CACHED(pa), PAGE_SIZE);
+		R4K_FlushICache(PHYS_TO_CACHED(pa), PAGE_SIZE);
 
 	if (!pmap->pm_segtab) {
 		/* enter entries into kernel pmap */
@@ -1036,13 +1175,19 @@ pmap_enter(pmap, va, pa, prot, wired)
 		/*
 		 * Update the same virtual address entry.
 		 */
-		j = MachTLBUpdate(va, npte);
+		j = R4K_TLBUpdate(va, npte);
 		pte->pt_entry = npte;
 		return;
 	}
 
 	if (!(pte = pmap_segmap(pmap, va))) {
-		mem = vm_page_alloc1();
+		do {
+			mem = vm_page_alloc1();
+			if (mem == NULL) {
+				VM_WAIT;	/* XXX What else can we do */
+			}			/* XXX Deadlock situations? */
+		} while (mem == NULL);
+
 		pmap_zero_page(VM_PAGE_TO_PHYS(mem));
 		pmap_segmap(pmap, va) = pte = (pt_entry_t *)
 			PHYS_TO_CACHED(VM_PAGE_TO_PHYS(mem));
@@ -1078,7 +1223,7 @@ pmap_enter(pmap, va, pa, prot, wired)
 	}
 	pte->pt_entry = npte;
 	if (pmap->pm_tlbgen == tlbpid_gen)
-		j = MachTLBUpdate(va | (pmap->pm_tlbpid <<
+		j = R4K_TLBUpdate(va | (pmap->pm_tlbpid <<
 			VMTLB_PID_SHIFT), npte);
 }
 
@@ -1255,7 +1400,7 @@ pmap_zero_page(phys)
 		printf("pmap_zero_page(%x)\n", phys);
 #endif
 /*XXX FIXME Not very sophisticated */
-	MachFlushCache();
+	R4K_FlushCache();
 	p = (int *)PHYS_TO_CACHED(phys);
 	end = p + PAGE_SIZE / sizeof(int);
 	do {
@@ -1266,7 +1411,7 @@ pmap_zero_page(phys)
 		p += 4;
 	} while (p != end);
 /*XXX FIXME Not very sophisticated */
-	MachFlushCache();
+	R4K_FlushCache();
 }
 
 /*
@@ -1285,7 +1430,7 @@ pmap_copy_page(src, dst)
 		printf("pmap_copy_page(%x, %x)\n", src, dst);
 #endif
 /*XXX FIXME Not very sophisticated */
-	MachFlushCache();
+	R4K_FlushCache();
 	s = (int *)PHYS_TO_CACHED(src);
 	d = (int *)PHYS_TO_CACHED(dst);
 	end = s + PAGE_SIZE / sizeof(int);
@@ -1302,7 +1447,7 @@ pmap_copy_page(src, dst)
 		d += 4;
 	} while (s != end);
 /*XXX FIXME Not very sophisticated */
-	MachFlushCache();
+	R4K_FlushCache();
 }
 
 /*
@@ -1412,7 +1557,7 @@ pmap_phys_address(ppn)
 	if (pmapdebug & PDB_FOLLOW)
 		printf("pmap_phys_address(%x)\n", ppn);
 #endif
-	return (pica_ptob(ppn));
+	return (mips_ptob(ppn));
 }
 
 /*
@@ -1439,7 +1584,7 @@ pmap_alloc_tlbpid(p)
 	if (pmap->pm_tlbgen != tlbpid_gen) {
 		id = tlbpid_cnt;
 		if (id == VMNUM_PIDS) {
-			MachTLBFlush();
+			R4K_TLBFlush();
 			/* reserve tlbpid_gen == 0 to alway mean invalid */
 			if (++tlbpid_gen == 0)
 				tlbpid_gen = 1;

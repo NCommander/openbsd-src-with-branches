@@ -1543,6 +1543,9 @@ if test "${target}" = "${host}"; then
 EOF
 
 	;;
+  alpha*-*-openbsd*)
+	COREFILE=netbsd-core.o
+	;;
   alpha*-*-*)		COREFILE=osf-core.o ;;
   arm-*-riscix)		COREFILE=trad-core.o ;;
   hppa*-*-hpux*)	COREFILE=hpux-core.o ;;
@@ -1572,6 +1575,9 @@ EOF
 
 	;;
   i[3456]86-*-netbsd*)
+	COREFILE=netbsd-core.o
+	;;
+  i[3456]86-*-openbsd*)
 	COREFILE=netbsd-core.o
 	;;
   i[3456]86-esix-sysv3*)
@@ -1626,6 +1632,9 @@ EOF
 
 	;;
   mips-*-netbsd*)
+	COREFILE=netbsd-core.o
+	;;
+  mips-*-openbsd*)
 	COREFILE=netbsd-core.o
 	;;
   mips-dec-*)
@@ -1698,6 +1707,9 @@ EOF
   m68*-*-netbsd*)
 	COREFILE=netbsd-core.o
 	;;
+  m68*-*-openbsd*)
+	COREFILE=netbsd-core.o
+	;;
   m68*-apple-aux*)
 	COREFILE=trad-core.o
 	cat >> confdefs.h <<\EOF
@@ -1724,12 +1736,18 @@ EOF
   ns32k-*-netbsd*)
 	COREFILE=netbsd-core.o
 	;;
+  ns32k-*-openbsd*)
+	COREFILE=netbsd-core.o
+	;;
   rs6000-*-lynx*)	COREFILE=lynx-core.o ;;
   rs6000-*-aix4*)	COREFILE=rs6000-core.o ;;
   rs6000-*-*)		COREFILE=rs6000-core.o ;;
   powerpc-*-aix4*)	COREFILE=rs6000-core.o ;;
   powerpc-*-aix*)	COREFILE=rs6000-core.o ;;
   sparc-*-netbsd*)
+	COREFILE=netbsd-core.o
+	;;
+  sparc-*-openbsd*)
 	COREFILE=netbsd-core.o
 	;;
   tahoe-*-*)
@@ -1928,6 +1946,8 @@ do
     bfd_elf64_little_generic_vec) tb="$tb elf64-gen.o elf64.o $elf"
 				target64=true ;;
     bfd_elf64_sparc_vec)	tb="$tb elf64-sparc.o elf64.o $elf"
+				target64=true ;;
+    bsd_ecoffalpha_little_vec)	tb="$tb coff-alpha.o ecoff.o ecofflink.o"
 				target64=true ;;
     cisco_core_vec)		tb="$tb cisco-core.o" ;;
     demo_64_vec)		tb="$tb demo64.o aout64.o"

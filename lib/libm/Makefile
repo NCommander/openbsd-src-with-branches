@@ -1,4 +1,5 @@
-#  $NetBSD: Makefile,v 1.27 1995/10/10 23:43:31 ragge Exp $
+#  $NetBSD: Makefile,v 1.28 1995/11/20 22:06:19 jtc Exp $
+#  $OpenBSD$
 #
 #  @(#)Makefile 5.1beta 93/09/24 
 # 
@@ -75,10 +76,9 @@ CFLAGS+= -D_MULTI_LIBM -D_POSIX_MODE
 LIB=	m
 COMMON_SRCS = e_acos.c e_acosf.c e_acosh.c e_acoshf.c e_asin.c e_asinf.c \
 	e_atan2.c e_atan2f.c e_atanh.c e_atanhf.c e_cosh.c e_coshf.c e_exp.c \
-	e_expf.c e_fmod.c e_fmodf.c e_gamma.c e_gamma_r.c e_gammaf.c \
-	e_gammaf_r.c e_hypot.c e_hypotf.c e_j0.c e_j0f.c e_j1.c e_j1f.c \
-	e_jn.c e_jnf.c e_lgamma.c e_lgamma_r.c e_lgammaf.c e_lgammaf_r.c \
-	e_log.c e_log10.c e_log10f.c e_logf.c e_pow.c e_powf.c e_rem_pio2.c \
+	e_expf.c e_fmod.c e_fmodf.c e_hypot.c e_hypotf.c e_j0.c e_j0f.c \
+	e_j1.c e_j1f.c e_jn.c e_jnf.c e_lgamma_r.c e_lgammaf_r.c e_log.c \
+	e_log10.c e_log10f.c e_logf.c e_pow.c e_powf.c e_rem_pio2.c \
 	e_rem_pio2f.c e_remainder.c e_remainderf.c e_scalb.c e_scalbf.c \
 	e_sinh.c e_sinhf.c e_sqrt.c e_sqrtf.c \
 	k_cos.c k_cosf.c k_rem_pio2.c k_rem_pio2f.c k_sin.c k_sinf.c \
@@ -121,8 +121,15 @@ SRCS=	${COMMON_SRCS}
 # Substitute common sources with any arch specific sources 
 .for i in ${ARCH_SRCS}
     SRCS:=${SRCS:S/${i:S/.S/.c/}/$i/}
+    LSRCS+=${i:S/.S/.c/}
 .endfor
 
+.if (${MACHINE_ARCH} == "vax")
+.for i in ${NOIEEE_ARCH}
+    SRCS:=${SRCS:S/${i:S/.S/.c/}/$i/}
+    LSRCS+=${i:S/.S/.c/}
+.endfor
+.endif
 
 MAN+=	acos.3 acosh.3 asin.3 asinh.3 atan.3 atan2.3 atanh.3 ceil.3 \
 	cos.3 cosh.3 erf.3 exp.3 fabs.3 floor.3 fmod.3 hypot.3 ieee.3 \

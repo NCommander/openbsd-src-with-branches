@@ -1,4 +1,5 @@
-/*	$NetBSD: pathnames.h,v 1.3 1995/06/14 15:19:52 christos Exp $	*/
+/*	$OpenBSD: pathnames.h,v 1.4 1996/08/24 18:11:59 imp Exp $	*/
+/*	$NetBSD: pathnames.h,v 1.5 1996/08/30 17:59:41 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -33,10 +34,17 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)pathnames.h	5.2 (Berkeley) 6/1/90
- *	$Id: pathnames.h,v 1.3 1995/06/14 15:19:52 christos Exp $
  */
 
+#ifndef _PATH_OBJDIR
 #define	_PATH_OBJDIR		"obj"
+#endif /* !_PATH_OBJDIR */
+#ifndef _PATH_DEFSHELLDIR
 #define	_PATH_DEFSHELLDIR	"/bin"
-#define	_PATH_DEFSYSMK		"/usr/share/mk/sys.mk"
+#endif /* !_PATH_DEFSHELLDIR */
+#ifndef _PATH_DEFSYSMK
+#define	_PATH_DEFSYSMK		"sys.mk"
+#endif /* ! _PATH_DEFSYSMK */
+#ifndef _PATH_DEFSYSPATH
 #define	_PATH_DEFSYSPATH	"/usr/share/mk"
+#endif /* ! _PATH_DEFSYSPATH */

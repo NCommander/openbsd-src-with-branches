@@ -1,5 +1,6 @@
 #!/bin/sh -
 #
+#	$OpenBSD: MAKEDEV,v 1.6 1996/08/28 08:55:27 deraadt Exp $
 #	@(#)MAKEDEV	8.1 (Berkeley) 6/9/93
 #
 
@@ -29,6 +30,7 @@
 #	cfb*	raw interface to turbochannel PMAG-BA color frame buffer
 #	xcfb*	raw interface to maxine graphics devices
 #	mfb*	raw interface to mono graphics devices
+#	*random	random data source
 
 PATH=/sbin:/bin/:/usr/bin:/usr/sbin
 umask 77
@@ -38,9 +40,9 @@ case $i in
 
 std)
 	mknod console		c 0 0
-	mknod drum		c 1 0	; chmod 640 drum ; chgrp kmem drum
-	mknod kmem		c 3 1	; chmod 640 kmem ; chgrp kmem kmem
-	mknod mem		c 3 0	; chmod 640 mem ; chgrp kmem mem
+	mknod drum		c 1 0	; chmod 640 drum ; chown root.kmem drum
+	mknod kmem		c 3 1	; chmod 640 kmem ; chown root.kmem kmem
+	mknod mem		c 3 0	; chmod 640 mem ; chown root.kmem mem
 	mknod null		c 3 2	; chmod 666 null
 	mknod zero              c 3 12  ; chmod 666 zero
 	mknod tty		c 2 0	; chmod 666 tty
@@ -89,6 +91,11 @@ bpf*)
 	chown root.wheel bpf$unit
 	;;
 
+ipl)
+	mknod ipl c 88 0
+	chown root.wheel ipl
+	;;
+
 #tun*)
 #	unit=`expr $i : 'tun\(.*\)'`
 #	rm -f tun$unit
@@ -131,7 +138,7 @@ rz*|vnd*|vn*|ccd*)
 		mknod r${name}${unit}g	c $chr `expr $unit '*' 8 + 6`
 		mknod r${name}${unit}h	c $chr `expr $unit '*' 8 + 7`
 		fi
-		chgrp operator ${name}${unit}[a-h] r${name}${unit}[a-h]
+		chown root.operator ${name}${unit}[a-h] r${name}${unit}[a-h]
 		chmod 640 ${name}${unit}[a-h] r${name}${unit}[a-h]
 		;;
 	*)
@@ -231,8 +238,8 @@ pty*)
 		umask 0
 		eval `echo $offset $name | awk ' { b=$1; n=$2 } END {
 			for (i = 0; i < 16; i++)
-				printf("mknod tty%s%x c 4 %d; \
-					mknod pty%s%x c 5 %d; ", \
+				printf("mknod tty%s%x c 4 %d;" \
+					"mknod pty%s%x c 5 %d; ", \
 					n, i, b+i, n, i, b+i); }'`
 		umask 77
 		if [ $class = 1 ]; then
@@ -240,6 +247,17 @@ pty*)
 		fi
 		;;
 	esac
+	;;
+
+random|srandom|urandom|prandom|arandom)
+	rm -f random urandom srandom prandom arandom
+	mknod  random c 89 0
+	mknod srandom c 89 1
+	mknod urandom c 89 2
+	mknod prandom c 89 3
+	mknod arandom c 89 4
+	chown root.wheel random srandom urandom prandom arandom
+	chmod 644 random srandom urandom prandom arandom
 	;;
 
 local)

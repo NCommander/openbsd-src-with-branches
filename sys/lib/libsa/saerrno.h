@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: saerrno.h,v 1.6 1995/09/18 21:19:45 pk Exp $	*/
 
 /*
@@ -36,6 +37,8 @@
  */
 
 #include <sys/errno.h>
+
+extern int errno;
 
 /* special stand error codes */
 #define	EADAPT	(ELAST+1)	/* bad adaptor */

@@ -1,5 +1,3 @@
-/*	$NetBSD: svc_auth_unix.c,v 1.3 1995/02/25 03:01:58 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_auth_unix.c 1.28 88/02/08 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_auth_unix.c	2.3 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_auth_unix.c,v 1.3 1995/02/25 03:01:58 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: svc_auth_unix.c,v 1.2 1996/07/20 06:12:42 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * svc_auth_unix.c
@@ -84,7 +80,7 @@ _svcauth_unix(rqst, msg)
 			stat = AUTH_BADCRED;
 			goto done;
 		}
-		bcopy((caddr_t)buf, aup->aup_machname, (u_int)str_len);
+		memcpy(aup->aup_machname, (caddr_t)buf, (u_int)str_len);
 		aup->aup_machname[str_len] = 0;
 		str_len = RNDUP(str_len);
 		buf += str_len / sizeof (int32_t);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.3 1996/06/07 21:25:17 deraadt Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.3 1996/08/26 11:12:02 pefo Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -62,7 +62,9 @@
 #define	PHYS_TO_UNCACHED(x) 	((unsigned)(x) | UNCACHED_MEMORY_ADDR)
 #define VA_TO_CINDEX(x) 	((unsigned)(x) & 0xffffff | CACHED_MEMORY_ADDR)
 
+#if 0
 #define CODE_START		0x80080000
+#endif
 
 #ifdef _KERNEL
 /*
@@ -274,7 +276,7 @@
 #endif /* _KERNEL */
 
 /*
- * Exported definitions unique to pica/mips cpu support.
+ * Exported definitions unique to mips cpu support.
  */
 
 /*
@@ -295,6 +297,7 @@
 struct clockframe {
 	int	pc;	/* program counter at time of interrupt */
 	int	sr;	/* status register at time of interrupt */
+	int	cr;	/* cause register at time of interrupt */
 };
 
 #define	CLKF_USERMODE(framep)	((framep)->sr & SR_KSU_USER)
@@ -401,11 +404,12 @@ union cpuprid {
 #if defined(_KERNEL) && !defined(_LOCORE)
 union	cpuprid cpu_id;
 union	cpuprid fpu_id;
-u_int	machPrimaryDataCacheSize;
-u_int	machPrimaryInstCacheSize;
-u_int	machPrimaryDataCacheLSize;
-u_int	machPrimaryInstCacheLSize;
-u_int	machCacheAliasMask;
+u_int	CpuPrimaryDataCacheSize;
+u_int	CpuPrimaryInstCacheSize;
+u_int	CpuPrimaryDataCacheLSize;
+u_int	CpuPrimaryInstCacheLSize;
+u_int	CpuCacheAliasMask;
+u_int	CpuTwoWayCache;
 extern	struct intr_tab intr_tab[];
 #endif
 

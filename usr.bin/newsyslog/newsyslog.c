@@ -1,3 +1,5 @@
+/*	$OpenBSD: newsyslog.c,v 1.5 1996/08/31 14:20:36 deraadt Exp $	*/
+
 /*
  * This file contains changes from the Open Software Foundation.
  */
@@ -24,12 +26,10 @@ provided "as is" without express or implied warranty.
  *      newsyslog - roll over selected logs at the appropriate time,
  *              keeping the a specified number of backup files around.
  *
- *      $Source: /a/cvsroot/src/usr.bin/newsyslog/newsyslog.c,v $
- *      $Author: jtc $
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: newsyslog.c,v 1.9 1995/01/21 21:53:46 jtc Exp $";
+static char rcsid[] = "$OpenBSD: newsyslog.c,v 1.5 1996/08/31 14:20:36 deraadt Exp $";
 #endif /* not lint */
 
 #ifndef CONF
@@ -180,7 +180,7 @@ PRS(argc,argv)
         progname = argv[0];
         timenow = time((time_t *) 0);
         daytime = ctime(&timenow) + 4;
-        daytime[16] = '\0';
+        daytime[15] = '\0';
 
         /* Let's find the pid of syslogd */
         syslog_pid = 0;
@@ -380,6 +380,7 @@ dotrim(log,numdays,flags,perm,owner_uid,group_gid)
         char    zfile1[128], zfile2[128];
         int     fd;
         struct  stat st;
+	int	days = numdays;
 
 #ifdef _IBMR2
 /* AIX 3.1 has a broken fchown- if the owner_uid is -1, it will actually */
@@ -427,10 +428,18 @@ dotrim(log,numdays,flags,perm,owner_uid,group_gid)
         if (!noaction && !(flags & CE_BINARY))
                 (void) log_trim(log);  /* Report the trimming to the old log */
 
-        if (noaction) 
-                printf("mv %s to %s\n",log,file1);
-        else
-                (void) rename(log,file1);
+	if (days == 0) {
+		if (noaction)
+			printf("rm %s\n",log);
+		else
+			(void) unlink(log);
+	} else {
+		if (noaction) 
+	                printf("mv %s to %s\n",log,file1);
+	        else
+	                (void) rename(log,file1);
+	}
+
         if (noaction) 
                 printf("Start new log...");
         else {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: list.h,v 1.4 1995/06/14 15:19:28 christos Exp $	*/
 /*	$NetBSD: list.h,v 1.4 1995/06/14 15:19:28 christos Exp $	*/
 
 /*

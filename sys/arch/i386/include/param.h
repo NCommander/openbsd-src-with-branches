@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.26 1995/06/26 06:55:58 cgd Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: param.h,v 1.29 1996/03/04 05:04:26 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -43,16 +44,18 @@
  */
 
 #ifdef _KERNEL
-#ifdef LOCORE
+#ifdef _LOCORE
 #include <machine/psl.h>
 #else
 #include <machine/cpu.h>
 #endif
 #endif
 
-#define MACHINE		"i386"
-#define MACHINE_ARCH	"i386"
-#define MID_MACHINE	MID_I386
+#define	_MACHINE	i386
+#define	MACHINE		"i386"
+#define	_MACHINE_ARCH	i386
+#define	MACHINE_ARCH	"i386"
+#define	MID_MACHINE	MID_I386
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value

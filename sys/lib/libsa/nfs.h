@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: nfs.h,v 1.4 1995/09/18 21:19:39 pk Exp $	*/
 
 /*-

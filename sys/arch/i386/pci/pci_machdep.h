@@ -1,6 +1,8 @@
-/*	$NetBSD: pci_machdep.h,v 1.3 1995/04/17 12:08:00 cgd Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.2 1996/04/18 19:22:23 niklas Exp $	*/
+/*	$NetBSD: pci_machdep.h,v 1.5 1996/03/27 04:01:16 cgd Exp $	*/
 
 /*
+ * Copyright (c) 1996 Christopher G. Demetriou.  All rights reserved.
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,34 +33,63 @@
 
 /*
  * Machine-specific definitions for PCI autoconfiguration.
- *
- * See the comments in pci_machdep.c for more explanation.
  */
 
 /*
+ * i386-specific PCI structure and type definitions.
+ * NOT TO BE USED DIRECTLY BY MACHINE INDEPENDENT CODE.
+ *
  * Configuration tag; created from a {bus,device,function} triplet by
  * pci_make_tag(), and passed to pci_conf_read() and pci_conf_write().
  * We could instead always pass the {bus,device,function} triplet to
  * the read and write routines, but this would cause extra overhead.
  *
- * Machines other than PCs are likely to use the equivalent of mode 1
- * tags always.  Mode 2 is historical and deprecated by the Revision
- * 2.0 specification.
+ * Mode 2 is historical and deprecated by the Revision 2.0 specification.
  */
-typedef union {
-	u_long mode1;
+union i386_pci_tag_u {
+	u_int32_t mode1;
 	struct {
-		u_short port;
-		u_char enable;
-		u_char forward;
+		u_int16_t port;
+		u_int8_t enable;
+		u_int8_t forward;
 	} mode2;
-} pcitag_t;
+};
 
 /*
- * Type of a value read from or written to a configuration register.
- * Always 32 bits.
+ * Types provided to machine-independent PCI code
  */
-typedef u_int32_t pcireg_t;
+typedef void *pci_chipset_tag_t;
+typedef union i386_pci_tag_u pcitag_t;
+typedef int pci_intr_handle_t;
 
+/*
+ * i386-specific PCI variables and functions.
+ * NOT TO BE USED DIRECTLY BY MACHINE INDEPENDENT CODE.
+ */
 extern int pci_mode;
-extern int pci_mode_detect __P((void));
+int		pci_mode_detect __P((void));
+
+/*
+ * Functions provided to machine-independent PCI code.
+ */
+void		pci_attach_hook __P((struct device *, struct device *,
+		    struct pcibus_attach_args *));
+int		pci_bus_maxdevs __P((pci_chipset_tag_t, int));
+pcitag_t	pci_make_tag __P((pci_chipset_tag_t, int, int, int));
+pcireg_t	pci_conf_read __P((pci_chipset_tag_t, pcitag_t, int));
+void		pci_conf_write __P((pci_chipset_tag_t, pcitag_t, int,
+		    pcireg_t));
+int		pci_intr_map __P((pci_chipset_tag_t, pcitag_t, int, int,
+		    pci_intr_handle_t *));
+const char	*pci_intr_string __P((pci_chipset_tag_t, pci_intr_handle_t));
+void		*pci_intr_establish __P((pci_chipset_tag_t, pci_intr_handle_t,
+		    int, int (*)(void *), void *, char *));
+void		pci_intr_disestablish __P((pci_chipset_tag_t, void *));
+
+/*
+ * Compatibility functions, to map the old i386 PCI functions to the new ones.
+ * NOT TO BE USED BY NEW CODE.
+ */
+void		*pci_map_int __P((pcitag_t, int, int (*)(void *), void *));
+int		pci_map_io __P((pcitag_t, int, int *));
+int		pci_map_mem __P((pcitag_t, int, vm_offset_t *, vm_offset_t *));

@@ -1,7 +1,35 @@
-/*	$NetBSD: locore.s,v 1.40 1995/05/12 18:24:46 mycroft Exp $	*/
+/*	$OpenBSD: locore.s,v 1.8 1996/05/29 16:37:17 chuck Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1980, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -43,7 +71,7 @@
  *	@(#)locore.s	8.6 (Berkeley) 5/27/94
  */
 
-#include "assym.s"
+#include "assym.h"
 #include <machine/prom.h>
 
 /*
@@ -82,21 +110,32 @@ tmpstk:
 start:
 	movw	#PSL_HIGHIPL,sr		| no interrupts
 	movl	#0,a5			| RAM starts at 0
-	movl	sp@(4),d7		| get boothowto
-	movl	sp@(8),d6		| get bootdev
-	movl	sp@(12),a4		| get _esym
-
-	RELOC(_smini,a0)
-	movl	sp@(16),a0@		| get _smini
-	RELOC(_emini,a0)
-	movl	sp@(20),a0@		| get _emini
+	movl	sp@(4), d7		| get boothowto
+	movl	sp@(8), d6		| get bootaddr
+	movl	sp@(12),d5		| get bootctrllun
+	movl	sp@(16),d4		| get bootdevlun
+	movl	sp@(20),d3		| get bootpart
+	movl	sp@(24),d2		| get esyms
+	/* note: d2-d7 in use */
 
 	RELOC(tmpstk, a0)
 	movl	a0,sp			| give ourselves a temporary stack
 
+	RELOC(_edata, a0)		| clear out BSS
+	movl	#_end-4,d0		| (must be <= 256 kB)
+	subl	#_edata,d0
+	lsrl	#2,d0
+1:	clrl	a0@+
+	dbra	d0,1b
+
 	movc	vbr,d0			| save prom's trap #15 vector
 	RELOC(_promvbr, a0)
 	movl	d0, a0@
+	RELOC(_esym, a0)
+	movl	d2,a0@			| store end of symbol table
+	/* note: d2 now free, d3-d7 still in use */
+	RELOC(_lowram, a0)
+	movl	a5,a0@			| store start of physical memory
 
 	clrl	sp@-
 	trap	#15
@@ -108,11 +147,6 @@ start:
 1:	movb	a1@+, a0@+
 	subql	#1, d0
 	bne	1b
-
-	RELOC(_esym, a0)
-	movl	a4,a0@			| store end of symbol table
-	RELOC(_lowram, a0)
-	movl	a5,a0@			| store start of physical memory
 
 	clrl	d0
 	RELOC(_brdid, a1)
@@ -330,22 +364,16 @@ Lstart1:
 	movl	d1,a0@			| and physmem
 /* configure kernel and proc0 VA space so we can get going */
 	.globl	_Sysseg, _pmap_bootstrap, _avail_start
-#ifdef MFS
-	/* preserve miniroot if it exists */
-	RELOC(_emini,a0)		| end of miniroot
-	movl	a0@,d5
-	jne	Lstart2
-#endif
 #ifdef DDB
 	RELOC(_esym,a0)			| end of static kernel test/data/syms
-	movl	a0@,d5
+	movl	a0@,d2
 	jne	Lstart2
 #endif
-	movl	#_end,d5		| end of static kernel text/data
+	movl	#_end,d2		| end of static kernel text/data
 Lstart2:
-	addl	#NBPG-1,d5
-	andl	#PG_FRAME,d5		| round to a page
-	movl	d5,a4
+	addl	#NBPG-1,d2
+	andl	#PG_FRAME,d2		| round to a page
+	movl	d2,a4
 	addl	a5,a4			| convert to PA
 #if 0
 	| XXX clear from end-of-kernel to 1M, as a workaround for an
@@ -454,8 +482,12 @@ Lnocache0:
 	movl	#_vectab,d2		| set VBR
 	movc	d2,vbr
 	movw	#PSL_LOWIPL,sr		| lower SPL
-	movl	d7,_boothowto		| save reboot flags
-	movl	d6,_bootdev		|   and boot device
+	movl	d3, _bootpart		| save bootpart
+	movl	d4, _bootdevlun		| save bootdevlun
+	movl	d5, _bootctrllun	| save bootctrllun
+	movl	d6, _bootaddr		| save bootaddr
+	movl	d7, _boothowto		| save boothowto
+	/* d3-d7 now free */
 
 /*
  * Create a fake exception frame so that cpu_fork() can copy it.
@@ -625,18 +657,38 @@ Lbe10:
 	cmpw	#12,d0			| address error vector?
 	jeq	Lisaerr			| yes, go to it
 	movl	d1,a0			| fault address
-	ptestr	#1,a0@,#7		| do a table search
+	movl	sp@,d0			| function code from ssw
+	btst	#8,d0			| data fault?
+	jne	Lbe10a
+	movql	#1,d0			| user program access FC
+					| (we dont seperate data/program)
+	btst	#5,a1@			| supervisor mode?
+	jeq	Lbe10a			| if no, done
+	movql	#5,d0			| else supervisor program access
+Lbe10a:
+	ptestr	d0,a0@,#7		| do a table search
 	pmove	psr,sp@			| save result
-	btst	#7,sp@			| bus error bit set?
-	jeq	Lismerr			| no, must be MMU fault
-	clrw	sp@			| yes, re-clear pad word
-	jra	Lisberr			| and process as normal bus error
+	movb	sp@,d1
+	btst	#2,d1			| invalid (incl. limit viol. and berr)?
+	jeq	Lmightnotbemerr		| no -> wp check
+	btst	#7,d1			| is it MMU table berr?
+	jeq	Lismerr			| no, must be fast
+	jra	Lisberr1		| real bus err needs not be fast.
+Lmightnotbemerr:
+	btst	#3,d1			| write protect bit set?
+	jeq	Lisberr1		| no: must be bus error
+	movl	sp@,d0			| ssw into low word of d0
+	andw	#0xc0,d0		| Write protect is set on page:
+	cmpw	#0x40,d0		| was it read cycle?
+	jeq	Lisberr1		| yes, was not WPE, must be bus err
 Lismerr:
 	movl	#T_MMUFLT,sp@-		| show that we are an MMU fault
 	jra	Ltrapnstkadj		| and deal with it
 Lisaerr:
 	movl	#T_ADDRERR,sp@-		| mark address error
 	jra	Ltrapnstkadj		| and deal with it
+Lisberr1:
+	clrw	sp@			| re-clear pad word
 Lisberr:
 	movl	#T_BUSERR,sp@-		| mark bus error
 Ltrapnstkadj:
@@ -950,42 +1002,7 @@ _trace:
 	moveq	#T_TRACE,d0
 	jra	fault
 
-/*
- * The sigreturn() syscall comes here.  It requires special handling
- * because we must open a hole in the stack to fill in the (possibly much
- * larger) original stack frame.
- */
-sigreturn:
-	lea	sp@(-84),sp		| leave enough space for largest frame
-	movl	sp@(84),sp@		| move up current 8 byte frame
-	movl	sp@(88),sp@(4)
-	movl	#84,sp@-		| default: adjust by 84 bytes
-	moveml	#0xFFFF,sp@-		| save user registers
-	movl	usp,a0			| save the user SP
-	movl	a0,sp@(FR_SP)		|   in the savearea
-	movl	#SYS_sigreturn,sp@-	| push syscall number
-	jbsr	_syscall		| handle it
-	addql	#4,sp			| pop syscall#
-	movl	sp@(FR_SP),a0		| grab and restore
-	movl	a0,usp			|   user SP
-	lea	sp@(FR_HW),a1		| pointer to HW frame
-	movw	sp@(FR_ADJ),d0		| do we need to adjust the stack?
-	jeq	Lsigr1			| no, just continue
-	moveq	#92,d1			| total size
-	subw	d0,d1			|  - hole size = frame size
-	lea	a1@(92),a0		| destination
-	addw	d1,a1			| source
-	lsrw	#1,d1			| convert to word count
-	subqw	#1,d1			| minus 1 for dbf
-Lsigrlp:
-	movw	a1@-,a0@-		| copy a word
-	dbf	d1,Lsigrlp		| continue
-	movl	a0,a1			| new HW frame base
-Lsigr1:
-	movl	a1,sp@(FR_SP)		| new SP value
-	moveml	sp@+,#0x7FFF		| restore user registers
-	movl	sp@,sp			| and our SP
-	jra	rei			| all done
+#include <m68k/m68k/sigreturn.s>
 
 /*
  * Interrupt handlers.
@@ -1785,138 +1802,6 @@ ENTRY(_remque)
 	movw	d0,sr
 	rts
 
-/*
- * bzero(addr, count)
- */
-ALTENTRY(blkclr, _bzero)
-ENTRY(bzero)
-	movl	sp@(4),a0	| address
-	movl	sp@(8),d0	| count
-	jeq	Lbzdone		| if zero, nothing to do
-	movl	a0,d1
-	btst	#0,d1		| address odd?
-	jeq	Lbzeven		| no, can copy words
-	clrb	a0@+		| yes, zero byte to get to even boundary
-	subql	#1,d0		| decrement count
-	jeq	Lbzdone		| none left, all done
-Lbzeven:
-	movl	d0,d1
-	andl	#31,d0
-	lsrl	#5,d1		| convert count to 8*longword count
-	jeq	Lbzbyte		| no such blocks, zero byte at a time
-Lbzloop:
-	clrl	a0@+; clrl	a0@+; clrl	a0@+; clrl	a0@+;
-	clrl	a0@+; clrl	a0@+; clrl	a0@+; clrl	a0@+;
-	subql	#1,d1		| one more block zeroed
-	jne	Lbzloop		| more to go, do it
-	tstl	d0		| partial block left?
-	jeq	Lbzdone		| no, all done
-Lbzbyte:
-	clrb	a0@+
-	subql	#1,d0		| one more byte cleared
-	jne	Lbzbyte		| more to go, do it
-Lbzdone:
-	rts
-
-/*
- * strlen(str)
- */
-ENTRY(strlen)
-	moveq	#-1,d0
-	movl	sp@(4),a0	| string
-Lslloop:
-	addql	#1,d0		| increment count
-	tstb	a0@+		| null?
-	jne	Lslloop		| no, keep going
-	rts
-
-/*
- * bcmp(s1, s2, len)
- *
- * WARNING!  This guy only works with counts up to 64K
- */
-ENTRY(bcmp)
-	movl	sp@(4),a0		| string 1
-	movl	sp@(8),a1		| string 2
-	moveq	#0,d0
-	movw	sp@(14),d0		| length
-	jeq	Lcmpdone		| if zero, nothing to do
-	subqw	#1,d0			| set up for DBcc loop
-Lcmploop:
-	cmpmb	a0@+,a1@+		| equal?
-	dbne	d0,Lcmploop		| yes, keep going
-	addqw	#1,d0			| +1 gives zero on match
-Lcmpdone:
-	rts
-
-/*
- * {ov}bcopy(from, to, len)
- *
- * Works for counts up to 128K.
- */
-ALTENTRY(ovbcopy, _bcopy)
-ENTRY(bcopy)
-	movl	sp@(12),d0		| get count
-	jeq	Lcpyexit		| if zero, return
-	movl	sp@(4),a0		| src address
-	movl	sp@(8),a1		| dest address
-	cmpl	a1,a0			| src before dest?
-	jlt	Lcpyback		| yes, copy backwards (avoids overlap)
-	movl	a0,d1
-	btst	#0,d1			| src address odd?
-	jeq	Lcfeven			| no, go check dest
-	movb	a0@+,a1@+		| yes, copy a byte
-	subql	#1,d0			| update count
-	jeq	Lcpyexit		| exit if done
-Lcfeven:
-	movl	a1,d1
-	btst	#0,d1			| dest address odd?
-	jne	Lcfbyte			| yes, must copy by bytes
-	movl	d0,d1			| no, get count
-	lsrl	#2,d1			| convert to longwords
-	jeq	Lcfbyte			| no longwords, copy bytes
-	subql	#1,d1			| set up for dbf
-Lcflloop:
-	movl	a0@+,a1@+		| copy longwords
-	dbf	d1,Lcflloop		| til done
-	andl	#3,d0			| get remaining count
-	jeq	Lcpyexit		| done if none
-Lcfbyte:
-	subql	#1,d0			| set up for dbf
-Lcfbloop:
-	movb	a0@+,a1@+		| copy bytes
-	dbf	d0,Lcfbloop		| til done
-Lcpyexit:
-	rts
-Lcpyback:
-	addl	d0,a0			| add count to src
-	addl	d0,a1			| add count to dest
-	movl	a0,d1
-	btst	#0,d1			| src address odd?
-	jeq	Lcbeven			| no, go check dest
-	movb	a0@-,a1@-		| yes, copy a byte
-	subql	#1,d0			| update count
-	jeq	Lcpyexit		| exit if done
-Lcbeven:
-	movl	a1,d1
-	btst	#0,d1			| dest address odd?
-	jne	Lcbbyte			| yes, must copy by bytes
-	movl	d0,d1			| no, get count
-	lsrl	#2,d1			| convert to longwords
-	jeq	Lcbbyte			| no longwords, copy bytes
-	subql	#1,d1			| set up for dbf
-Lcblloop:
-	movl	a0@-,a1@-		| copy longwords
-	dbf	d1,Lcblloop		| til done
-	andl	#3,d0			| get remaining count
-	jeq	Lcpyexit		| done if none
-Lcbbyte:
-	subql	#1,d0			| set up for dbf
-Lcbbloop:
-	movb	a0@-,a1@-		| copy bytes
-	dbf	d0,Lcbbloop		| til done
-	rts
-
 #ifdef FPCOPROC
 /*
  * Save and restore 68881 state.
@@ -1991,13 +1876,19 @@ Lbootnot040:
 
 not147:
 	movl	#0xfff40000,a0		| MVME16x: "struct vme2reg *"
-	movl	a0@(60),d0
+	movl	a0@(0x60),d0
 	movl	d0,d1
 	andl	#0x40000000,d1		| is VME2_TCTL_SCON set?
 	beq	1f			| not SCON. may not use SRESET.
 	orw	#0x00800000,d0		| ok, assert VME2_TCTL_SRST
-	movl	d0,a0@(60)
+	movl	d0,a0@(0x60)
 1:
+	| lets try the local bus reset
+	movl	#0xfff40000,a0		| MVME16x: "struct vme2reg *"
+	movl	a0@(0x104),d0
+	orw	#0x00000080,d0
+	movl	d0,a0@(0x104)
+	| lets try jumping off to rom.
 	movl	#0xff800000,a0		| if we get here, SRESET did not work.
 	movl	a0@(4),a0		| try jumping directly to the ROM.
 	jsr	a0@

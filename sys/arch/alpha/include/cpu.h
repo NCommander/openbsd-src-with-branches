@@ -1,4 +1,5 @@
-/*	$NetBSD: cpu.h,v 1.6 1995/06/28 02:55:18 cgd Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.7.4.1 1996/06/14 20:42:44 cgd Exp $	*/
+/*	$NetBSD: cpu.h,v 1.7.4.1 1996/06/14 20:42:44 cgd Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -56,7 +57,6 @@
  * referenced in generic code
  */
 #define	cpu_wait(p)			/* nothing */
-#define	cpu_setstack(p, ap)		(p)->p_addr->u_pcb.pcb_usp
 
 /*
  * Arguments to hardclock and gatherstats encapsulate the previous
@@ -116,11 +116,13 @@ extern u_int64_t ssir;
  * CTL_MACHDEP definitions.
  */
 #define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
+#define	CPU_ROOT_DEVICE		2	/* string: root device name */
+#define	CPU_MAXID		3	/* number of valid machdep ids */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
 	{ "console_device", CTLTYPE_STRUCT }, \
+	{ "root_device", CTLTYPE_STRING }, \
 }
 
 #endif /* _ALPHA_CPU_H_ */

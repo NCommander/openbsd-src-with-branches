@@ -1,7 +1,9 @@
-#	$NetBSD: Makefile,v 1.4 1995/09/16 13:18:27 ragge Exp $
+#	$OpenBSD$
+#	$NetBSD: Makefile,v 1.9 1996/03/16 11:03:12 ragge Exp $
 #
 
 INCPATH=-I. -I../../.. -I../.. -I../../../lib/libsa
+.PATH:	${.CURDIR}/../../../lib/libkern
 
 CC=	cc
 AS=	as
@@ -10,13 +12,13 @@ S=      ../../..
 RELOC=	100000
 CFLAGS+=-O ${INCPATH} -DSTANDALONE -DRELOC=0x${RELOC} -D_VAX_INLINE_
 
-DEVS=	autoconf.o hp.o ra.o tmscp.o
+DEVS=	autoconf.o hp.o ra.o tmscp.o ctu.o
 
-.include "$S/lib/libkern/Makefile.inc"
-LIBKERN=        ${KERNLIB}
+LIBKERN=libkern.a
+KERNOBJ=__main.o strlen.o strcmp.o strncmp.o strncpy.o min.o strcpy.o
 
 .include "$S/lib/libsa/Makefile.inc"
-LIBSA=		${SA_LIB}
+LIBSA=		${SALIB}
 
 all:	xxboot boot copy edlabel
 
@@ -95,9 +97,25 @@ init.o:	init.c
 bootxx.o: bootxx.c 
 	${CC} -c ${CFLAGS} $*.c
 
+#
+libkern.a: ${KERNOBJ}
+	@echo Creating standalone kern library
+	@ar rv libkern.a `lorder ${KERNOBJ} | tsort`
+
+#
+install: boot xxboot
+	install -c -o ${BINOWN} -g ${BINGRP} -m 444 boot ${DESTDIR}/
+	install -c -o ${BINOWN} -g ${BINGRP} -m 444 xxboot ${DESTDIR}/usr/mdec
+	rm -f ${DESTDIR}/usr/mdec/raboot
+	ln ${DESTDIR}/usr/mdec/xxboot ${DESTDIR}/usr/mdec/raboot
+	rm -f ${DESTDIR}/usr/mdec/hpboot
+	ln ${DESTDIR}/usr/mdec/xxboot ${DESTDIR}/usr/mdec/hpboot
+
 clean::
 	rm -f start.o romread.o bootxx.o init.o xxboot boot racopy \
 	libsvax.a udiv.o urem.o consio.o ${DEVS} edlabel edlabel.o
 	rm -f conf.o boot.o rom.o racopy.o srt0.o devopen.o rootcopy.o \
 	copy copy.o
+
+.include <bsd.prog.mk>
 

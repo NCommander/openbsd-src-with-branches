@@ -1,4 +1,5 @@
-/*	$NetBSD: cpu.h,v 1.25 1995/09/14 02:48:09 briggs Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.8 1996/06/23 15:35:59 briggs Exp $	*/
+/*	$NetBSD: cpu.h,v 1.40 1996/07/12 17:09:26 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -69,8 +70,10 @@
    but there isn't time to do anything about that right now...
  */
 
-#ifndef _MACHINE_CPU_H_
-#define _MACHINE_CPU_H_	1
+#ifndef _CPU_MACHINE_
+#define _CPU_MACHINE_
+
+#include <machine/pcb.h>
 
 /*
  * definitions of cpu-dependent requirements
@@ -78,8 +81,8 @@
  */
 #define	cpu_swapin(p)			/* nothing */
 #define	cpu_wait(p)			/* nothing */
-#define cpu_setstack(p, ap)		(p)->p_md.md_regs[SP] = ap
-#define	cpu_swapout(p)
+#define	cpu_swapout(p)			/* nothing */
+void cpu_set_kpc __P((struct proc *, void (*)(struct proc *)));
 
 /*
  * Arguments to hardclock, softclock and gatherstats
@@ -183,6 +186,7 @@ extern unsigned char ssir;
 #define MACH_MACC660AV		60
 #define MACH_MACP460		62
 #define MACH_MACPB180C		71
+#define	MACH_MACPB500		72
 #define MACH_MACPB270		77
 #define MACH_MACQ840AV		78
 #define MACH_MACP550		80
@@ -191,6 +195,10 @@ extern unsigned char ssir;
 #define MACH_MACLC475		89
 #define MACH_MACLC575		92
 #define MACH_MACQ605		94
+#define MACH_MACQ630		98
+#define MACH_MACPB280		102
+#define MACH_MACPB280C		103
+#define MACH_MACPB150		115
 
 /*
  * Machine classes.  These define subsets of the above machines.
@@ -202,8 +210,10 @@ extern unsigned char ssir;
 #define MACH_CLASSIIvx	0x0006	/* Similar to IIsi -- different via2 emul? */
 #define MACH_CLASSLC	0x0007	/* Low-Cost/Performa/Wal-Mart Macs. */
 #define MACH_CLASSPB	0x0008	/* Powerbooks.  Power management. */
+#define MACH_CLASSDUO	0x0009	/* Powerbooks Duos.  More integration/Docks. */
 #define MACH_CLASSIIfx	0x0080	/* The IIfx is in a class by itself. */
-#define MACH_CLASSQ	0x0100	/* Centris/Quadras. */
+#define MACH_CLASSQ	0x0100	/* non-A/V Centris/Quadras. */
+#define MACH_CLASSAV	0x0101	/* A/V Centris/Quadras. */
 
 #define MACH_68020	0
 #define MACH_68030	1
@@ -232,6 +242,12 @@ struct mac68k_machine_S {
 	int			do_graybars;
 	int			serial_boot_echo;
 	int			serial_console;
+	int			modem_flags;
+	int			modem_cts_clk;
+	int			modem_dcd_clk;
+	int			print_flags;
+	int			print_cts_clk;
+	int			print_dcd_clk;
 	/*
 	 * Misc. hardware info.
 	 */
@@ -264,14 +280,10 @@ extern	unsigned long		load_addr;
 
 /* physical memory sections */
 #define	ROMBASE		(0x40800000)
-#define	ROMLEN		(0x01000000)		/* 16MB should be plenty! */
-#define	ROMMAPSIZE	btoc(ROMLEN)		/* 16k of page tables.  */
+#define	ROMLEN		(0x00200000)		/* 2MB should be enough! */
+#define	ROMMAPSIZE	btoc(ROMLEN)		/* 32k of page tables.  */
 
-/* This should not be used.  Use IOBase, instead. */
-#define INTIOBASE	(0x50000000)
-
-#define INTIOTOP	(IOBase+0x01000000)
-#define IIOMAPSIZE	btoc(0x01000000)
+#define IIOMAPSIZE	btoc(0x00100000)
 
 /* XXX -- Need to do something about superspace.
  * Technically, NuBus superspace starts at 0x60000000, but no
@@ -285,7 +297,6 @@ extern	unsigned long		load_addr;
 #define NBTOP		0xFF000000	/* NUBUS space */
 #define NBMAPSIZE	btoc(NBTOP-NBBASE)	/* ~ 96 megs */
 #define NBMEMSIZE	0x01000000	/* 16 megs per card */
-#define NBROMOFFSET	0x00FF0000	/* Last 64K == ROM */
 
 /*
  * 68851 and 68030 MMU
@@ -348,4 +359,31 @@ extern	unsigned long		load_addr;
 #define CACHE4_ON	(IC4_ENABLE|DC4_ENABLE)
 #define CACHE4_OFF	0x00000000
 
-#endif	/* !_MACHINE_CPU_H_ */
+__BEGIN_DECLS
+/* machdep.c */
+u_int get_mapping __P((void));
+
+/* locore.s */
+void	m68881_restore __P((struct fpframe *));
+void	m68881_save __P((struct fpframe *));
+u_int	getsfc __P((void));
+u_int	getdfc __P((void));
+void	TBIA __P((void));
+void	TBIAS __P((void));
+void	TBIS __P((vm_offset_t));
+void	DCFP __P((vm_offset_t));
+void	ICPP __P((vm_offset_t));
+void	DCIU __P((void));
+void	ICIA __P((void));
+void	DCFL __P((vm_offset_t));
+int	suline __P((caddr_t, caddr_t));
+int	susword __P((caddr_t, u_int));
+void	savectx __P((struct pcb *));
+void	proc_trampoline __P((void));
+
+/* trap.c */
+void	child_return __P((struct proc *, struct frame));
+
+__END_DECLS
+
+#endif	/* _CPU_MACHINE_ */

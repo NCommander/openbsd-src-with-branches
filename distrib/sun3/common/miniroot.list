@@ -1,15 +1,18 @@
-#	$NetBSD: miniroot.list,v 1.1.1.1 1995/10/08 23:07:48 gwr Exp $
+#	$NetBSD: miniroot.list,v 1.2.6.1 1996/08/29 03:19:32 gwr Exp $
+
+# These are scripts:
+COPY	${DESTDIR}/usr/bin/false	bin
+COPY	${DESTDIR}/usr/bin/true 	bin
 
 # From usr/mdec:
 COPY	${DESTDIR}/usr/mdec/bootxx	usr/mdec
 COPY	${DESTDIR}/usr/mdec/installboot	usr/mdec
 COPY	${DESTDIR}/usr/mdec/netboot	usr/mdec
+COPY	${DESTDIR}/usr/mdec/tapeboot	usr/mdec
 COPY	${DESTDIR}/usr/mdec/ufsboot	usr/mdec
 LINK		usr/mdec/ufsboot	ufsboot
-# XXX - How to do installboot?
 
 # various files that we need in /etc for the install
-COPY	${DESTDIR}/etc/disktab  	etc
 COPY	${DESTDIR}/etc/group		etc
 COPY	${DESTDIR}/etc/master.passwd	etc
 COPY	${DESTDIR}/etc/passwd		etc
@@ -18,24 +21,27 @@ COPY	${DESTDIR}/etc/pwd.db		etc
 COPY	${DESTDIR}/etc/services		etc
 COPY	${DESTDIR}/etc/spwd.db		etc
 
+# some /etc files get special handling (for MFS /tmp yuck)
+COPY	${DESTDIR}/etc/disktab		etc/disktab.shadow
+SYMLINK	/tmp/disktab.shadow		etc/disktab
+SYMLINK	/tmp/fstab.shadow		etc/fstab
+SYMLINK	/tmp/resolv.conf.shadow		etc/resolv.conf
+SYMLINK	/tmp/hosts			etc/hosts
+
 # copy the MAKEDEV script and make some devices
-COPY	${DESTDIR}/dev/MAKEDEV	dev/MAKEDEV
-SPECIAL	cd dev; sh MAKEDEV std rd0 sd0 sd2 st0
-SPECIAL	/bin/rm dev/MAKEDEV
-SPECIAL	mkfifo dev/pipe
+COPY	${DESTDIR}/dev/MAKEDEV		dev
+COPY	${DESTDIR}/dev/MAKEDEV.local	dev
+SPECIAL	cd dev; sh MAKEDEV all
 
-# and the common installation tools
-COPY	${TOPDIR}/common/dot.cmnutils	.cmnutils
-
-# the disktab explanation file (XXX need this?)
-# COPY	${TOPDIR}/common/mr.disktab	etc/disktab.preinstall
-
-# and the miniroot installation tools
-COPY	${TOPDIR}/common/mr.instutils	.instutils
+# copy the miniroot installation tools
 COPY	${TOPDIR}/common/mr.profile	.profile
 COPY	${TOPDIR}/common/mr.termcap	usr/share/misc/termcap
 
-# and the "install" command
-COPY	${TOPDIR}/common/install.sh	install
-SPECIAL 		chmod 755 install
+COPY	${TOPDIR}/common/install.md	install.md
+COPY	${OBJDIR}/install.sub		install.sub
+SPECIAL chmod 644 install.md install.sub
+
+COPY	${TOPDIR}/../miniroot/install.sh install
+COPY	${TOPDIR}/../miniroot/upgrade.sh upgrade
+SPECIAL chmod 755 install upgrade
 

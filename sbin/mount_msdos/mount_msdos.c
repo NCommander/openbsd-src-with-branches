@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_msdos.c,v 1.10 1995/03/18 14:57:38 cgd Exp $	*/
+/*	$OpenBSD: mount_msdos.c,v 1.14 1996/04/13 05:35:47 cgd Exp $	*/
+/*	$NetBSD: mount_msdos.c,v 1.14 1996/04/13 05:35:47 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -31,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: mount_msdos.c,v 1.10 1995/03/18 14:57:38 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.14 1996/04/13 05:35:47 cgd Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -49,7 +50,7 @@ static char rcsid[] = "$NetBSD: mount_msdos.c,v 1.10 1995/03/18 14:57:38 cgd Exp
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
@@ -72,8 +73,20 @@ main(argc, argv)
 	mntflags = set_gid = set_uid = set_mask = 0;
 	(void)memset(&args, '\0', sizeof(args));
 
-	while ((c = getopt(argc, argv, "u:g:m:o:")) != EOF) {
+	while ((c = getopt(argc, argv, "Gsl9u:g:m:o:")) != EOF) {
 		switch (c) {
+		case 'G':
+			args.flags |= MSDOSFSMNT_GEMDOSFS;
+			break;
+		case 's':
+			args.flags |= MSDOSFSMNT_SHORTNAME;
+			break;
+		case 'l':
+			args.flags |= MSDOSFSMNT_LONGNAME;
+			break;
+		case '9':
+			args.flags |= MSDOSFSMNT_NOWIN95;
+			break;
 		case 'u':
 			args.uid = a_uid(optarg);
 			set_uid = 1;

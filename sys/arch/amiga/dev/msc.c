@@ -1,4 +1,5 @@
-/*	$NetBSD: msc.c,v 1.2 1995/10/07 18:18:26 chopps Exp $ */
+/*	$OpenBSD: msc.c,v 1.3 1996/04/21 22:15:39 deraadt Exp $ */
+/*	$NetBSD: msc.c,v 1.6.4.1 1996/06/06 04:53:17 mhitch Exp $ */
 
 /*
  * Copyright (c) 1993 Zik.
@@ -58,7 +59,6 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/proc.h>
-#include <sys/conf.h>
 #include <sys/file.h>
 #include <sys/malloc.h>
 #include <sys/uio.h>
@@ -69,11 +69,14 @@
 #include <amiga/amiga/device.h>
 #include <amiga/dev/zbusvar.h>
 #include <amiga/dev/mscreg.h>
-#include "machine/cpu.h"
+#include <machine/cpu.h>
 
 #include <amiga/amiga/custom.h>
 #include <amiga/amiga/cia.h>
 #include <amiga/amiga/cc.h>
+
+#include <sys/conf.h>
+#include <machine/conf.h>
 
 /* 6502 code for A2232 card */
 #include "msc6502.h"
@@ -103,8 +106,8 @@
  * you have three boards with minor device numbers from 0 to 45.
  */
 
-int	mscparam();
-int	mscstart __P((struct tty *));
+int	mscparam __P((struct tty *, struct termios *));
+void	mscstart __P((struct tty *));
 int	mschwiflow __P((struct tty *, int));
 int	mscinitcard __P((struct zbus_args *));
 
@@ -116,45 +119,45 @@ struct	tty *msc_tty[MSCTTYS];		/* ttys for all lines */
 struct	vbl_node msc_vbl_node[NMSC];	/* vbl interrupt node per board */
 
 struct speedtab mscspeedtab_normal[] = {
-	0,	0,
-	50,	MSCPARAM_B50,
-	75,	MSCPARAM_B75,
-	110,	MSCPARAM_B110,
-	134,	MSCPARAM_B134,
-	150,	MSCPARAM_B150,
-	300,	MSCPARAM_B300,
-	600,	MSCPARAM_B600,
-	1200,	MSCPARAM_B1200,
-	1800,	MSCPARAM_B1800,
-	2400,	MSCPARAM_B2400,
-	3600,	MSCPARAM_B3600,
-	4800,	MSCPARAM_B4800,
-	7200,	MSCPARAM_B7200,
-	9600,	MSCPARAM_B9600,
-	19200,	MSCPARAM_B19200,
-	115200,	MSCPARAM_B115200,
-	-1,	-1
+	{ 0,		0		},
+	{ 50,		MSCPARAM_B50	},
+	{ 75,		MSCPARAM_B75 	},
+	{ 110,		MSCPARAM_B110 	},
+	{ 134,		MSCPARAM_B134	},
+	{ 150,		MSCPARAM_B150	},
+	{ 300,		MSCPARAM_B300	},
+	{ 600,		MSCPARAM_B600	},
+	{ 1200,		MSCPARAM_B1200	},
+	{ 1800,		MSCPARAM_B1800	},
+	{ 2400,		MSCPARAM_B2400	},
+	{ 3600,		MSCPARAM_B3600	},
+	{ 4800,		MSCPARAM_B4800	},
+	{ 7200,		MSCPARAM_B7200	},
+	{ 9600,		MSCPARAM_B9600	},
+	{ 19200,	MSCPARAM_B19200	},
+	{ 115200,	MSCPARAM_B115200 },
+	{ -1,		-1		}
 };
   
 struct speedtab mscspeedtab_turbo[] = {
-	0,	0,
-	100,	MSCPARAM_B50,
-	150,	MSCPARAM_B75,
-	220,	MSCPARAM_B110,
-	269,	MSCPARAM_B134,
-	300,	MSCPARAM_B150,
-	600,	MSCPARAM_B300,
-	1200,	MSCPARAM_B600,
-	2400,	MSCPARAM_B1200,
-	3600,	MSCPARAM_B1800,
-	4800,	MSCPARAM_B2400,
-	7200,	MSCPARAM_B3600,
-	9600,	MSCPARAM_B4800,
-	14400,	MSCPARAM_B7200,
-	19200,	MSCPARAM_B9600,
-	38400,	MSCPARAM_B19200,
-	230400,	MSCPARAM_B115200,
-	-1,	-1
+	{ 0,		0		},
+	{ 100,		MSCPARAM_B50	},
+	{ 150,		MSCPARAM_B75	},
+	{ 220,		MSCPARAM_B110	},
+	{ 269,		MSCPARAM_B134	},
+	{ 300,		MSCPARAM_B150	},
+	{ 600,		MSCPARAM_B300	},
+	{ 1200,		MSCPARAM_B600	},
+	{ 2400,		MSCPARAM_B1200	},
+	{ 3600,		MSCPARAM_B1800	},
+	{ 4800,		MSCPARAM_B2400	},
+	{ 7200,		MSCPARAM_B3600	},
+	{ 9600,		MSCPARAM_B4800	},
+	{ 14400,	MSCPARAM_B7200	},
+	{ 19200,	MSCPARAM_B9600	},
+	{ 38400,	MSCPARAM_B19200	},
+	{ 230400,	MSCPARAM_B115200 },
+	{ -1,		-1		}
 };
   
 struct   speedtab *mscspeedtab;
@@ -162,16 +165,19 @@ struct   speedtab *mscspeedtab;
 int mscmctl __P((dev_t dev, int bits, int howto));
 void mscmint __P((register void *data));
 
-int mscmatch __P((struct device *, struct cfdata *, void *));
+int mscmatch __P((struct device *, void *, void *));
 void mscattach __P((struct device *, struct device *, void *));
 
 #define	SWFLAGS(dev)	(msc->openflags | (MSCDIALIN(dev) ? 0 : TIOCFLAG_SOFTCAR))
 #define	DEBUG_MSC	0
 #define	DEBUG_CD	0
 
-struct cfdriver msccd = {
-	NULL, "msc", (cfmatch_t) mscmatch, mscattach, DV_TTY,
-	sizeof(struct device), NULL, 0
+struct cfattach msc_ca = {
+	sizeof(struct device), mscmatch, mscattach
+};
+
+struct cfdriver msc_cd = {
+	NULL, "msc",DV_TTY, NULL, 0
 };
 
 #if DEBUG_MSC
@@ -199,10 +205,9 @@ bugi(msc, string)
 #endif
 
 int
-mscmatch(pdp, cdp, auxp)
+mscmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -319,6 +324,7 @@ mscopen(dev, flag, mode, p)
   if (!msc_tty[ttyn]) {
 
       tp = ttymalloc();
+      tty_attach(tp);
       msc_tty[ttyn] = tp;
       msc_tty[ttyn+1] = (struct tty *)NULL;
 
@@ -814,7 +820,7 @@ NoRoomForYa:
 int
 mscioctl(dev, cmd, data, flag, p)
 	dev_t dev;
-	int cmd;
+	u_long cmd;
 	caddr_t data;
 	int flag;
 	struct proc *p;
@@ -926,7 +932,7 @@ mscparam(tp, t)
 	register struct tty *tp;
 	register struct termios *t;
 {
-  register int cfcr, cflag = t->c_cflag;
+  register int cflag = t->c_cflag;
   int slot;
   struct mscdevice *msc;
   volatile struct mscstatus *ms;
@@ -1039,7 +1045,7 @@ mschwiflow(tp, flag)
 
 }
 
-int
+void
 mscstart(tp)
 	register struct tty *tp;
 {
@@ -1155,12 +1161,14 @@ mscstop(tp, flag)
 	int flag;			/* defaulted to int anyway */
 {
 	register int s;
+#if 0
 	struct mscdevice *msc;
 	volatile struct mscstatus *ms;
+#endif
 
 	s = spltty();
 	if (tp->t_state & TS_BUSY) {
-		if (tp->t_state & TS_TTSTOP == 0) {
+		if ((tp->t_state & TS_TTSTOP) == 0) {
 			tp->t_state |= TS_FLUSH;
 #if 0
 			msc = &mscdev[MSCSLOT(tp->t_dev)];
@@ -1171,6 +1179,7 @@ mscstop(tp, flag)
 		}
 	}
 	splx(s);
+	return 0;
 }
  
 /*

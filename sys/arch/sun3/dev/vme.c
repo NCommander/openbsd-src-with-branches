@@ -1,4 +1,4 @@
-/*	$NetBSD: vme.c,v 1.1 1994/12/12 18:59:26 gwr Exp $	*/
+/*	$NetBSD: vme.c,v 1.3 1996/03/26 15:16:19 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
@@ -37,62 +37,63 @@
 #include <machine/autoconf.h>
 /* #include <machine/vme.h> */
 
-static int  vme_match __P((struct device *, void *, void *));
-static void vme16attach __P((struct device *, struct device *, void *));
-static void vme32attach __P((struct device *, struct device *, void *));
-static void vme16scan __P((struct device *, void *));
-static void vme32scan __P((struct device *, void *));
+static int  vmes_match __P((struct device *, void *, void *));
+static int  vmel_match __P((struct device *, void *, void *));
 
-struct cfdriver vmescd = {
-	NULL, "vmes", vme_match, vme16attach, DV_DULL,
-	sizeof(struct device), 0 };
+static void vme_attach __P((struct device *, struct device *, void *));
 
-struct cfdriver vmelcd = {
-	NULL, "vmel", vme_match, vme32attach, DV_DULL,
-	sizeof(struct device), 0 };
+struct cfattach vmes_ca = {
+	sizeof(struct device), vmes_match, vme_attach
+};
 
-int vme_match(parent, vcf, aux)
+struct cfdriver vmes_cd = {
+	NULL, "vmes", DV_DULL
+};
+
+struct cfattach vmel_ca = {
+	sizeof(struct device), vmel_match, vme_attach
+};
+
+struct cfdriver vmel_cd = {
+	NULL, "vmel", DV_DULL
+};
+
+
+/* Does this machine have a VME bus? */
+extern int cpu_has_vme;
+
+static int
+vmes_match(parent, vcf, aux)
 	struct device *parent;
 	void *vcf, *aux;
 {
-	/* Does this machine have a VME bus? */
-	extern int cpu_has_vme;
+	struct confargs *ca = aux;
 
+	if (ca->ca_bustype != BUS_VME16)
+		return (0);
+	return (cpu_has_vme);
+}
+
+static int
+vmel_match(parent, vcf, aux)
+	struct device *parent;
+	void *vcf, *aux;
+{
+	struct confargs *ca = aux;
+
+	if (ca->ca_bustype != BUS_VME32)
+		return (0);
 	return (cpu_has_vme);
 }
 
 static void
-vme16attach(parent, self, args)
+vme_attach(parent, self, args)
 	struct device *parent;
 	struct device *self;
 	void *args;
 {
 	printf("\n");
-	config_scan(vme16scan, self);
-}
 
-static void
-vme16scan(parent, child)
-	struct device *parent;
-	void *child;
-{
-	bus_scan(parent, child, BUS_VME16);
-}
-
-static void
-vme32attach(parent, self, args)
-	struct device *parent;
-	struct device *self;
-	void *args;
-{
-	printf("\n");
-	config_scan(vme32scan, self);
-}
-
-static void
-vme32scan(parent, child)
-	struct device *parent;
-	void *child;
-{
-	bus_scan(parent, child, BUS_VME32);
+	/* We know ca_bustype == BUS_VMExx */
+	(void) config_search(bus_scan, self, args);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: swap.c,v 1.4 1995/08/31 22:20:19 jtc Exp $	*/
+/*	$OpenBSD: swap.c,v 1.5 1996/08/06 18:48:16 deraadt Exp $	*/
+/*	$NetBSD: swap.c,v 1.5 1996/05/10 23:16:38 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1992, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)swap.c	8.3 (Berkeley) 4/29/95";
 #endif
-static char rcsid[] = "$NetBSD: swap.c,v 1.4 1995/08/31 22:20:19 jtc Exp $";
+static char rcsid[] = "$OpenBSD: swap.c,v 1.5 1996/08/06 18:48:16 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -63,8 +64,6 @@ static char rcsid[] = "$NetBSD: swap.c,v 1.4 1995/08/31 22:20:19 jtc Exp $";
 
 extern char *getbsize __P((int *headerlenp, long *blocksizep));
 void showspace __P((char *header, int hlen, long blocksize));
-
-kvm_t	*kd;
 
 struct nlist syms[] = {
 	{ "_swapmap" },	/* list of free swap areas */
@@ -129,6 +128,9 @@ initswap()
 		strcpy(msgbuf, "systat: swap: cannot find");
 		for (i = 0; syms[i].n_name != NULL; i++) {
 			if (syms[i].n_value == 0) {
+				if (strlen(msgbuf) + strlen(syms[i].n_name) +2 >
+				    sizeof (msgbuf))
+					continue;
 				strcat(msgbuf, " ");
 				strcat(msgbuf, syms[i].n_name);
 			}

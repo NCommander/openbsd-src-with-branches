@@ -1,3 +1,4 @@
+/*	$OpenBSD: scsiio.h,v 1.3 1996/07/11 22:17:47 pefo Exp $	*/
 /*	$NetBSD: scsiio.h,v 1.3 1994/06/29 06:45:09 cgd Exp $	*/
 
 #ifndef _SYS_SCSIIO_H_
@@ -59,6 +60,6 @@ struct	scsi_addr {
 #define SCIOCDECONFIG	_IO('Q', 5)	/* please dissappear */
 #define SCIOCRECONFIG	_IO('Q', 6)	/* please check again */
 #define SCIOCRESET	_IO('Q', 7)	/* reset the device */
-
+#define	SCIOCREASSIGN	_IOW('Q', 8, int)	/* reassign block */
 
 #endif /* _SYS_SCSIIO_H_ */

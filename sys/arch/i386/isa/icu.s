@@ -1,4 +1,5 @@
-/*	$NetBSD: icu.s,v 1.43 1995/10/11 04:20:31 mycroft Exp $	*/
+/*	$OpenBSD: icu.s,v 1.7 1996/08/16 02:51:31 deraadt Exp $	*/
+/*	$NetBSD: icu.s,v 1.45 1996/01/07 03:59:34 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -64,7 +65,6 @@ _splx:
  *   esi - address to resume loop at
  *   edi - scratch for Xsoftnet
  */
-ENTRY(spllower)
 IDTVEC(spllower)
 	pushl	%ebx
 	pushl	%esi
@@ -103,6 +103,7 @@ IDTVEC(doreti)
 	bsfl    %eax,%eax               # slow, but not worth optimizing
 	btrl    %eax,_ipending
 	jnc     1b			# some intr cleared the in-memory bit
+	cli
 	jmp	*_Xresume(,%eax,4)
 2:	/* Check for ASTs on exit to user mode. */
 	cli
@@ -118,6 +119,7 @@ IDTVEC(doreti)
 	sti
 	/* Pushed T_ASTFLT into tf_trapno on entry. */
 	call	_trap
+	jmp	2b
 3:	INTRFASTEXIT
 
 
@@ -125,8 +127,15 @@ IDTVEC(doreti)
  * Soft interrupt handlers
  */
 
+#include "pccom.h"
+
 IDTVEC(softtty)
-	/* XXXX nothing for now */
+#if NPCCOM > 0
+	leal	SIR_TTYMASK(%ebx),%eax
+	movl	%eax,_cpl
+	call	_comsoft
+	movl	%ebx,_cpl
+#endif
 	jmp	%esi
 
 #define DONET(s, c) \
@@ -151,6 +160,9 @@ IDTVEC(softnet)
 #ifdef IMP
 	DONET(NETISR_IMP, _impintr)
 #endif
+#ifdef IPX
+	DONET(NETISR_IPX, _ipxintr)
+#endif
 #ifdef NS
 	DONET(NETISR_NS, _nsintr)
 #endif
@@ -159,6 +171,9 @@ IDTVEC(softnet)
 #endif
 #ifdef CCITT
 	DONET(NETISR_CCITT, _ccittintr)
+#endif
+#ifdef NATM
+	DONET(NETISR_NATM, _natmintr)
 #endif
 #include "ppp.h"
 #if NPPP > 0

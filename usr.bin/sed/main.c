@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -43,7 +45,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/3/94"; */
-static char *rcsid = "$Id: main.c,v 1.7 1995/02/23 17:25:23 jtc Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.2 1996/05/21 21:50:46 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -255,7 +257,8 @@ mf_fgets(sp, spflag)
 {
 	static FILE *f;		/* Current open file */
 	size_t len;
-	char c, *p;
+	char *p;
+	int c;
 
 	if (f == NULL)
 		/* Advance to first non-empty file */

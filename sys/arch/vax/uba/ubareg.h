@@ -1,4 +1,4 @@
-/*	$NetBSD: ubareg.h,v 1.3 1995/02/13 00:44:23 ragge Exp $	*/
+/*	$NetBSD: ubareg.h,v 1.7 1996/04/08 18:37:35 ragge Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
@@ -81,18 +81,21 @@
  * address space, and the return from the allocation routine
  * can accommodate at most 2047 (ubavar.h: UBA_MAXMR);
  * QBAPAGES must be at least UBAPAGES.  Choose pragmatically.
+ * 
+ * Is there ever any need to have QBAPAGES != UBAPAGES???
+ * Wont work now anyway, QBAPAGES _must_ be .eq. UBAPAGES.
  */
 #define	UBAPAGES	496
 #define	NUBMREG		496
-#if defined(GATEWAY) && !defined(QNIVERT)
-#define	QBAPAGES	1024
-#else
+/* #if defined(GATEWAY) && !defined(QNIVERT) */
+/* #define	QBAPAGES	1024 */
+/* #else */
 #define	QBAPAGES	UBAPAGES
-#endif
+/* #endif */
 #define	UBAIOADDR	0760000		/* start of I/O page */
 #define	UBAIOPAGES	16
 
-#ifndef LOCORE
+#ifndef _LOCORE
 /*
  * DWBUA hardware registers.
  */
@@ -220,7 +223,7 @@ struct uba_regs {
 #define	UBADPR_BS	0x007f0000	/* buffer state field */
 #define	UBADPR_BUBA	0x0000ffff	/* buffered UNIBUS address */
 #define	UBA_PURGE780(uba, bdp) \
-    ((uba)->uba_dpr[bdp] |= UBADPR_BNE)
+    ((uba)->uba_dpr[(int)bdp] |= UBADPR_BNE)
 #else
 #define UBA_PURGE780(uba, bdp)
 #endif
@@ -231,8 +234,8 @@ struct uba_regs {
 #define	UBADPR_PURGE	0x00000001	/* purge bdp */
 /* the DELAY is for a hardware problem */
 #define	UBA_PURGE750(uba, bdp) { \
-    ((uba)->uba_dpr[bdp] |= (UBADPR_PURGE|UBADPR_NXM|UBADPR_UCE)); \
-    {int N=8;while(N--);} \
+    ((uba)->uba_dpr[(int)bdp] |= (UBADPR_PURGE|UBADPR_NXM|UBADPR_UCE)); \
+    {volatile int N=8;while(N--);} \
 }
 #else
 #define UBA_PURGE750(uba, bdp)
@@ -314,7 +317,7 @@ struct uba_regs {
 #define	UMEM8200(i)	(0x20400000+(i)*0x40000)
 #endif
 
-#if VAX8600
+#if VAX8600 || VAX780
 #define	UMEMA8600(i)	(0x20100000+(i)*0x40000)
 #define	UMEMB8600(i)	(0x22100000+(i)*0x40000)
 #endif

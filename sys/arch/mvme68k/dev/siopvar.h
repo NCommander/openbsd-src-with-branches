@@ -1,6 +1,7 @@
-/*	$NetBSD: siopvar.h,v 1.11 1995/08/18 15:28:14 chopps Exp $	*/
+/*	$OpenBSD$ */
 
 /*
+ * Copyright (c) 1995 Theo de Raadt
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
  *
@@ -142,7 +143,8 @@ struct	siop_softc {
 				       nexus_list;
 
 	struct siop_acb *sc_nexus;	/* current command */
-	struct siop_acb sc_acb[8];	/* the real command blocks */
+#define SIOP_NACB 8
+	struct siop_acb *sc_acb;	/* the real command blocks */
 	struct siop_tinfo sc_tinfo[8];
 
 	u_short	sc_clock_freq;

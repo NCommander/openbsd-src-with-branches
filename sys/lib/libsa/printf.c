@@ -1,4 +1,5 @@
-/*	$NetBSD: printf.c,v 1.6 1995/09/03 20:51:21 pk Exp $	*/
+/*	$OpenBSD: printf.c,v 1.2 1996/02/29 13:29:23 niklas Exp $	*/
+/*	$NetBSD: printf.c,v 1.7 1996/02/08 20:19:36 gwr Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -72,6 +73,7 @@ static void kprintn __P((void (*)(int), u_long, int));
 static void sputchar __P((int));
 static void kprintf __P((void (*)(int), const char *, va_list));
 
+#ifndef	NO_SPRINTF
 static char *sbuf;
 
 static void
@@ -101,6 +103,7 @@ sprintf(buf, fmt, va_alist)
 	va_end(ap);
 	*sbuf = '\0';
 }
+#endif	/* NO_SPRINTF */
 
 void
 #ifdef __STDC__
@@ -119,6 +122,12 @@ printf(fmt, va_alist)
 #endif
 	kprintf(putchar, fmt, ap);
 	va_end(ap);
+}
+
+void
+vprintf(const char *fmt, va_list ap)
+{
+	kprintf(putchar, fmt, ap);
 }
 
 void

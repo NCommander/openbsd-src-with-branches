@@ -74,9 +74,9 @@
 
 static void check_scroll ( struct video_state *svsp );
 static void hp_entry ( U_char ch, struct video_state *svsp );
-static void vt_coldinit ( void );
 static void wrfkl ( int num, u_char *string, struct video_state *svsp );
 static void writefkl ( int num, u_char *string, struct video_state *svsp );
+static __inline void write_char (struct	video_state *, u_short, u_short ch);
 
 
 /*---------------------------------------------------------------------------*
@@ -172,7 +172,7 @@ sput (u_char *s, U_char kernel, int len, int page)
     attrib = kernel ? kern_attr : svsp->c_attr;
 
     while (len-- > 0)
-    if (ch = (*(s++)))
+    if ((ch = (*(s++))) != 0)
     {
 	if(svsp->sevenbit)
 		ch &= 0x7f;
@@ -976,7 +976,7 @@ sput (u_char *s, U_char kernel, int len, int page)
 /*---------------------------------------------------------------------------*
  *	this is the absolute cold initialization of the emulator
  *---------------------------------------------------------------------------*/
-static void
+void
 vt_coldinit(void)
 {
 	extern u_short csd_ascii[];		/* pcvt_tbl.h */
@@ -1293,7 +1293,7 @@ vt_coldinit(void)
 
 			if (filllen > 0)
 				fillw(user_attr | ' ',
-				      svsp->Crtat+svsp->cur_offset,
+				      (caddr_t)(svsp->Crtat+svsp->cur_offset),
 				      filllen);
 		}
 		svsp->smode.mode = VT_AUTO;
@@ -1423,7 +1423,7 @@ vt_coldmalloc(void)
 		{
 			vs[nscr].Crtat = vs[nscr].Memory;
 			fillw(user_attr | ' ',
-				vs[nscr].Crtat,
+				(caddr_t)(vs[nscr].Crtat),
 				vs[nscr].maxcol * vs[nscr].screen_rowsize);
 			totalscreens++;
 		}
@@ -1643,7 +1643,7 @@ set_emulation_mode(struct video_state *svsp, int mode)
 	else if(mode == M_PUREVT)	/* hp/vt-mode -> vt-pure */
 	{
 		fillw(user_attr | ' ',
-		      svsp->Crtat + svsp->screen_rows * svsp->maxcol,
+		      (caddr_t)(svsp->Crtat + svsp->screen_rows * svsp->maxcol),
 		      (svsp->screen_rowsize - svsp->screen_rows)
 		      * svsp->maxcol);
 
@@ -1919,7 +1919,7 @@ vt_col(struct video_state *svsp, int cols)
 		swritefkl(0,(u_char *)"132     COLUMNS*",svsp);
 
 	fillw(user_attr | ' ',
-		svsp->Crtat,
+		(caddr_t)(svsp->Crtat),
 		svsp->maxcol * svsp->screen_rowsize);
 
 	clr_parms(svsp);		/* escape parameter init */
@@ -1966,7 +1966,7 @@ update_hp(struct video_state *svsp)
 		return;
 
 	fillw (user_attr | ' ',
-	       svsp->Crtat + svsp->screen_rows * svsp->maxcol,
+	       (caddr_t)(svsp->Crtat + svsp->screen_rows * svsp->maxcol),
 	       (svsp->screen_rowsize - svsp->screen_rows) * svsp->maxcol);
 
 	if (!svsp->labels_on)

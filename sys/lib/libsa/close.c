@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: close.c,v 1.5 1995/09/06 19:53:29 pk Exp $	*/
 
 /*-
@@ -65,6 +66,7 @@
  */
 
 #include "stand.h"
+#include "saerrno.h"
 
 int
 close(fd)
@@ -91,15 +93,4 @@ close(fd)
 		return (-1);
 	}
 	return (0);
-}
-
-
-void
-closeall()
-{
-	int i;
-
-        for (i = 0; i < SOPEN_MAX; i++)
-            if (files[i].f_flags != 0)
-                (void)close(i);
 }

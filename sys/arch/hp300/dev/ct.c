@@ -1,4 +1,4 @@
-/*	$NetBSD: ct.c,v 1.12 1995/10/09 07:57:43 thorpej Exp $	*/
+/*	$NetBSD: ct.c,v 1.15 1996/02/14 02:44:02 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990, 1993
@@ -64,10 +64,10 @@
 /* number of eof marks to remember */
 #define EOFS	128
 
-int	ctinit(), ctstart(), ctgo(), ctintr();
-void	ctstrategy(), ctdone();
+int	ctmatch(), ctstart(), ctgo(), ctintr();
+void	ctattach(), ctstrategy(), ctdone();
 struct	driver ctdriver = {
-	ctinit, "ct", ctstart, ctgo, ctintr,
+	ctmatch, ctattach, "ct", ctstart, ctgo, ctintr,
 };
 
 struct	ct_softc {
@@ -135,7 +135,8 @@ int ctdebug = 0;
 #define CT_BSF		0x02
 #endif
 
-ctinit(hd)
+int
+ctmatch(hd)
 	register struct hp_device *hd;
 {
 	register struct ct_softc *sc = &ct_softc[hd->hp_unit];
@@ -145,20 +146,34 @@ ctinit(hd)
 		bp->b_actb = &bp->b_actf;
 	sc->sc_hd = hd;
 	sc->sc_punit = ctpunit(hd->hp_flags);
-	if (ctident(sc, hd) < 0)
-		return(0);
+	if (ctident(sc, hd, 0) < 0)
+		return (0);
+
+	return (1);
+}
+
+void
+ctattach(hd)
+	register struct hp_device *hd;
+{
+	struct ct_softc *sc = &ct_softc[hd->hp_unit];
+
+	(void)ctident(sc, hd, 1);	/* XXX Ick. */
+
 	ctreset(sc, hd);
+	sc->sc_dq.dq_softc = sc;
 	sc->sc_dq.dq_ctlr = hd->hp_ctlr;
 	sc->sc_dq.dq_unit = hd->hp_unit;
 	sc->sc_dq.dq_slave = hd->hp_slave;
 	sc->sc_dq.dq_driver = &ctdriver;
 	sc->sc_flags |= CTF_ALIVE;
-	return(1);
 }
 
-ctident(sc, hd)
+int
+ctident(sc, hd, verbose)
 	register struct ct_softc *sc;
 	register struct hp_device *hd;
+	int verbose;
 {
 	struct ct_describe desc;
 	u_char stat, cmd[3];
@@ -216,8 +231,9 @@ ctident(sc, hd)
 		sc->sc_type = CT88140;
 		break;
 	}
-	printf("ct%d: %s %stape\n", hd->hp_unit, ctinfo[id].desc,
-	       (sc->sc_flags & CTF_CANSTREAM) ? "streaming " : " ");
+	if (verbose)
+		printf(": %s %stape\n", ctinfo[id].desc,
+		    (sc->sc_flags & CTF_CANSTREAM) ? "streaming " : " ");
 	return(id);
 }
 
@@ -318,8 +334,9 @@ ctclose(dev, flag)
 			sc->sc_eofp--;
 #ifdef DEBUG
 		if(ctdebug & CT_BSF)
-			printf("ct%d: ctclose backup eofs prt %d blk %d\n",
-			       UNIT(dev), sc->sc_eofp, sc->sc_eofs[sc->sc_eofp]);
+			printf("%s: ctclose backup eofs prt %d blk %d\n",
+			       sc->sc_hd->hp_xname, sc->sc_eofp,
+			       sc->sc_eofs[sc->sc_eofp]);
 #endif
 	}
 	if ((minor(dev) & CT_NOREW) == 0)
@@ -364,22 +381,22 @@ ctcommand(dev, cmd, cnt)
 		bp->b_un.b_addr = nbp->b_un.b_addr;
 		bp->b_bcount = MAXBSIZE;
 	}
-again:
-	bp->b_flags = B_BUSY;
-	if (cmd == MTBSF) {
-		sc->sc_blkno = sc->sc_eofs[sc->sc_eofp];
-		sc->sc_eofp--;
+
+	while (cnt-- > 0) {
+		bp->b_flags = B_BUSY;
+		if (cmd == MTBSF) {
+			sc->sc_blkno = sc->sc_eofs[sc->sc_eofp];
+			sc->sc_eofp--;
 #ifdef DEBUG
-		if (ctdebug & CT_BSF)
-			printf("ct%d: backup eof pos %d blk %d\n",
-			       UNIT(dev), sc->sc_eofp, 
-			       sc->sc_eofs[sc->sc_eofp]);
+			if (ctdebug & CT_BSF)
+				printf("%s: backup eof pos %d blk %d\n",
+				    sc->sc_hd->hp_xname, sc->sc_eofp, 
+				    sc->sc_eofs[sc->sc_eofp]);
 #endif
+		}
+		ctstrategy(bp);
+		iowait(bp);
 	}
-	ctstrategy(bp);
-	iowait(bp);
-	if (--cnt > 0)
-		goto again;
 	bp->b_flags = 0;
 	sc->sc_flags &= ~CTF_CMD;
 	if (nbp)
@@ -428,7 +445,6 @@ ctstart(unit)
 	register int i;
 
 	bp = cttab[unit].b_actf;
-again:
 	if ((sc->sc_flags & CTF_CMD) && sc->sc_bp == bp) {
 		switch(sc->sc_cmd) {
 
@@ -469,7 +485,8 @@ again:
 			sc->sc_blkno = 0;
 #ifdef DEBUG
 			if(ctdebug & CT_BSF)
-				printf("ct%d: clearing eofs\n", unit);
+				printf("%s: clearing eofs\n",
+				    sc->sc_hd->hp_xname);
 #endif
 			for (i=0; i<EOFS; i++)
 				sc->sc_eofs[i] = 0;
@@ -619,16 +636,18 @@ cteof(sc, bp)
 #endif
 }
 
-ctintr(unit)
-	register int unit;
+int
+ctintr(arg)
+	void *arg;
 {
-	register struct ct_softc *sc = &ct_softc[unit];
+	register struct ct_softc *sc = arg;
 	register struct buf *bp, *dp;
 	u_char stat;
+	int unit = sc->sc_hd->hp_unit;
 
 	bp = cttab[unit].b_actf;
 	if (bp == NULL) {
-		printf("ct%d: bp == NULL\n", unit);
+		printf("%s: bp == NULL\n", sc->sc_hd->hp_xname);
 		return;
 	}
 	if (sc->sc_flags & CTF_IO) {
@@ -683,17 +702,19 @@ ctintr(unit)
 			if (sc->sc_stat.c_aef & 0x5800) {
 				if (sc->sc_stat.c_aef & 0x4000)
 					tprintf(sc->sc_tpr,
-						"ct%d: uninitialized media\n",
-						unit);
+						"%s: uninitialized media\n",
+						sc->sc_hd->hp_xname);
 				if (sc->sc_stat.c_aef & 0x1000)
 					tprintf(sc->sc_tpr,
-						"ct%d: not ready\n", unit);
+						"%s: not ready\n",
+						sc->sc_hd->hp_xname);
 				if (sc->sc_stat.c_aef & 0x0800)
 					tprintf(sc->sc_tpr,
-						"ct%d: write protect\n", unit);
+						"%s: write protect\n",
+						sc->sc_hd->hp_xname);
 			} else {
-				printf("ct%d err: v%d u%d ru%d bn%d, ",
-				       unit,
+				printf("%s err: v%d u%d ru%d bn%d, ",
+				       sc->sc_hd->hp_xname,
 				       (sc->sc_stat.c_vu>>4)&0xF,
 				       sc->sc_stat.c_vu&0xF,
 				       sc->sc_stat.c_pend,
@@ -705,7 +726,8 @@ ctintr(unit)
 				       sc->sc_stat.c_ief);
 			}
 		} else
-			printf("ct%d: request status failed\n", unit);
+			printf("%s: request status failed\n",
+			    sc->sc_hd->hp_xname);
 		bp->b_flags |= B_ERROR;
 		bp->b_error = EIO;
 		goto done;
@@ -784,7 +806,6 @@ ctread(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-
 	return (physio(ctstrategy, NULL, dev, B_READ, minphys, uio));
 }
 
@@ -794,7 +815,6 @@ ctwrite(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-
 	/* XXX: check for hardware write-protect? */
 	return (physio(ctstrategy, NULL, dev, B_WRITE, minphys, uio));
 }
@@ -867,8 +887,8 @@ ctaddeof(unit)
 	}
 #ifdef DEBUG
 	if (ctdebug & CT_BSF)
-		printf("ct%d: add eof pos %d blk %d\n",
-		       unit, sc->sc_eofp,
+		printf("%s: add eof pos %d blk %d\n",
+		       sc->sc_hd->hp_xname, sc->sc_eofp,
 		       sc->sc_eofs[sc->sc_eofp]);
 #endif
 }

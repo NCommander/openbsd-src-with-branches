@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: trap.c,v 1.5 1996/09/02 11:33:24 pefo Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -39,7 +39,7 @@
  * from: Utah Hdr: trap.c 1.32 91/04/06
  *
  *	from: @(#)trap.c	8.5 (Berkeley) 1/11/94
- *      $Id: trap.c,v 1.7 1996/06/06 23:07:46 deraadt Exp $
+ *      $Id: trap.c,v 1.5 1996/09/02 11:33:24 pefo Exp $
  */
 
 #include <sys/param.h>
@@ -71,6 +71,7 @@
 #include <vm/vm_page.h>
 
 #include <arc/pica/pica.h>
+#include <arc/arc/arctype.h>
 
 #include <sys/cdefs.h>
 #include <sys/syslog.h>
@@ -226,6 +227,7 @@ static void arc_errintr();
 extern const struct callback *callv;
 extern volatile struct chiptime *Mach_clock_addr;
 extern u_long intrcnt[];
+extern u_int cputype;
 
 /*
  * Handle an exception.
@@ -289,7 +291,7 @@ trap(statusReg, causeReg, vadr, pc, args)
 			if (!(entry & PG_V) || (entry & PG_M))
 				panic("trap: ktlbmod: invalid pte");
 #endif
-			if (pmap_is_page_ro(pmap_kernel(), pica_trunc_page(vadr), entry)) {
+			if (pmap_is_page_ro(pmap_kernel(), mips_trunc_page(vadr), entry)) {
 				/* write to read only page in the kernel */
 				ftype = VM_PROT_WRITE;
 				goto kernel_fault;
@@ -297,7 +299,7 @@ trap(statusReg, causeReg, vadr, pc, args)
 			entry |= PG_M;
 			pte->pt_entry = entry;
 			vadr &= ~PGOFSET;
-			MachTLBUpdate(vadr, entry);
+			R4K_TLBUpdate(vadr, entry);
 			pa = pfn_to_vad(entry);
 #ifdef ATTR
 			pmap_attributes[atop(pa)] |= PMAP_ATTR_MOD;
@@ -326,16 +328,15 @@ trap(statusReg, causeReg, vadr, pc, args)
 			panic("trap: utlbmod: invalid pte");
 		}
 #endif
-		if (pmap_is_page_ro(pmap, pica_trunc_page(vadr), entry)) {
+		if (pmap_is_page_ro(pmap, mips_trunc_page(vadr), entry)) {
 			/* write to read only page */
 			ftype = VM_PROT_WRITE;
 			goto dofault;
 		}
 		entry |= PG_M;
 		pte->pt_entry = entry;
-		vadr = (vadr & ~PGOFSET) |
-			(pmap->pm_tlbpid << VMTLB_PID_SHIFT);
-		MachTLBUpdate(vadr, entry);
+		vadr = (vadr & ~PGOFSET) | (pmap->pm_tlbpid << VMTLB_PID_SHIFT);
+		R4K_TLBUpdate(vadr, entry);
 		pa = pfn_to_vad(entry);
 #ifdef ATTR
 		pmap_attributes[atop(pa)] |= PMAP_ATTR_MOD;
@@ -619,7 +620,7 @@ trap(statusReg, causeReg, vadr, pc, args)
 			locr0[A3] = 1;
 		}
 		if(code == SYS_ptrace)
-			MachFlushCache();
+			R4K_FlushCache();
 	done:
 #ifdef SYSCALL_DEBUG
 		scdebug_ret(p, code, i, rval);
@@ -667,7 +668,7 @@ trap(statusReg, causeReg, vadr, pc, args)
 		uio.uio_rw = UIO_WRITE;
 		uio.uio_procp = curproc;
 		i = procfs_domem(p, p, NULL, &uio);
-		MachFlushCache();
+		R4K_FlushCache();
 
 		if (i < 0)
 			printf("Warning: can't restore instruction at %x: %x\n",
@@ -838,6 +839,9 @@ interrupt(statusReg, causeReg, pc, what, args)
 
 	cnt.v_intr++;
 	mask = causeReg & statusReg;	/* pending interrupts & enable mask */
+	cf.pc = pc;
+	cf.sr = statusReg;
+	cf.cr = causeReg;
 
 	/*
 	 *  Check off all enabled interrupts. Called interrupt routine
@@ -845,7 +849,7 @@ interrupt(statusReg, causeReg, pc, what, args)
 	 */
 	for(i = 0; i < 5; i++) {
 		if(cpu_int_tab[i].int_mask & mask) {
-			causeReg &= (*cpu_int_tab[i].int_hand)(mask, pc, statusReg, causeReg);
+			causeReg &= (*cpu_int_tab[i].int_hand)(mask, &cf);
 		}
 	}
 	/*
@@ -905,13 +909,17 @@ interrupt(statusReg, causeReg, pc, what, args)
 	}
 }
 
-
+/*
+ *	Set up handler for external interrupt events.
+ *	Events are checked in priority order.
+ */
+void
 set_intr(mask, int_hand, prio)
 	int	mask;
 	int	(*int_hand)();
 	int	prio;
 {
-	if(prio > 4)
+	if(prio > 5)
 		panic("set_intr: to high priority");
 
 	if(cpu_int_tab[prio].int_mask != 0)
@@ -924,7 +932,17 @@ set_intr(mask, int_hand, prio)
 	/*
 	 *  Update external interrupt mask but don't enable clock.
 	 */
-	out32(PICA_SYS_EXT_IMASK, cpu_int_mask & (~INT_MASK_4 >> 10));
+	switch(cputype) {
+	case ACER_PICA_61:
+	case MAGNUM:
+		out32(R4030_SYS_EXT_IMASK, cpu_int_mask & (~INT_MASK_4 >> 10));
+		break;
+
+	case DESKSTATION_TYNE:
+		break;
+	case DESKSTATION_RPC44:
+		break;
+	}
 }
 
 /*
@@ -1243,7 +1261,7 @@ cpu_singlestep(p)
 	uio.uio_rw = UIO_WRITE;
 	uio.uio_procp = curproc;
 	i = procfs_domem(curproc, p, NULL, &uio);
-	MachFlushCache();
+	R4K_FlushCache();
 
 	if (i < 0)
 		return (EFAULT);
@@ -1271,7 +1289,7 @@ kdbpeek(addr)
 
 /* forward */
 char *fn_name(unsigned addr);
-void stacktrace_subr __P((int, int, int, int, void (*)(const char*, ...)));
+void stacktrace_subr __P((int, int, int, int, int (*)(const char*, ...)));
 
 /*
  * Print a stack backtrace.
@@ -1293,7 +1311,7 @@ logstacktrace(a0, a1, a2, a3)
 void
 stacktrace_subr(a0, a1, a2, a3, printfn)
 	int a0, a1, a2, a3;
-	void (*printfn) __P((const char*, ...));
+	int (*printfn) __P((const char*, ...));
 {
 	unsigned pc, sp, fp, ra, va, subr;
 	unsigned instr, mask;

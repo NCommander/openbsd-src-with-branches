@@ -1,7 +1,8 @@
-/*	$NetBSD: vm_machdep.c,v 1.4 1995/06/28 02:45:23 cgd Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.9 1996/04/23 15:26:10 cgd Exp $	*/
+/*	$NetBSD: vm_machdep.c,v 1.9 1996/04/23 15:26:10 cgd Exp $	*/
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -130,6 +131,7 @@ cpu_exit(p)
  * address in each process; in the future we will probably relocate
  * the frame pointers on the stack after copying.
  */
+void
 cpu_fork(p1, p2)
 	register struct proc *p1, *p2;
 {
@@ -137,6 +139,7 @@ cpu_fork(p1, p2)
 	pt_entry_t *ptep;
 	int i;
 	extern struct proc *fpcurproc;
+	extern void proc_trampoline(), rei(), child_return();
 
 	p2->p_md.md_tf = p1->p_md.md_tf;
 	p2->p_md.md_flags = p1->p_md.md_flags & MDP_FPUSED;
@@ -148,6 +151,16 @@ cpu_fork(p1, p2)
 	ptep = kvtopte(up);
 	p2->p_md.md_pcbpaddr =
 	    &((struct user *)(PG_PFNUM(*ptep) << PGSHIFT))->u_pcb;
+
+	/*
+	 * Simulate a write to the process's U-area pages,
+	 * so that the system doesn't lose badly.
+	 * (If this isn't done, the kernel can't read or
+	 * write the kernel stack.  "Ouch!")
+	 */
+	for (i = 0; i < UPAGES; i++)
+		pmap_emulate_reference(p2, (vm_offset_t)up + i * PAGE_SIZE,
+		    0, 1);
 
 	/*
 	 * Copy floating point state from the FP chip to the PCB
@@ -203,15 +216,20 @@ cpu_fork(p1, p2)
 		p2tf->tf_regs[FRAME_A4] = 1;		/* is child */
 
 		/*
-		 * Arrange for continuation at rei().  Note that the
-		 * child process doesn't stay in the kernel for long!
+		 * Arrange for continuation at child_return(), which
+		 * will return to rei().  Note that the child process
+		 * doesn't stay in the kernel for long!
+		 * 
+		 * This is an inlined version of cpu_set_kpc.
 		 */
-		up->u_pcb.pcb_ksp = (u_int64_t)p2tf;
-		up->u_pcb.pcb_context[7] = (u_int64_t)rei;
-		up->u_pcb.pcb_context[8] = 0;
+		up->u_pcb.pcb_ksp = (u_int64_t)p2tf;	
+		up->u_pcb.pcb_context[0] =
+		    (u_int64_t)child_return;		/* s0: pc */
+		up->u_pcb.pcb_context[1] =
+		    (u_int64_t)rei;			/* s1: ra */
+		up->u_pcb.pcb_context[7] =
+		    (u_int64_t)proc_trampoline;		/* ra: assembly magic */
 	}
-
-	return (0);
 }
 
 /*
@@ -223,18 +241,20 @@ cpu_fork(p1, p2)
  *
  * Note that it's assumed that when the named process returns, rei()
  * should be invoked, to return to user mode.
+ *
+ * (Note that cpu_fork(), above, uses an open-coded version of this.)
  */
 void
 cpu_set_kpc(p, pc)
 	struct proc *p;
-	u_int64_t pc;
+	void (*pc) __P((struct proc *));
 {
 	struct pcb *pcbp;
 	extern void proc_trampoline();
 	extern void rei();
 
 	pcbp = &p->p_addr->u_pcb;
-	pcbp->pcb_context[0] = pc;		/* s0 - pc to invoke */
+	pcbp->pcb_context[0] = (u_int64_t)pc;	/* s0 - pc to invoke */
 	pcbp->pcb_context[1] = (u_int64_t)rei;	/* s1 - return address */
 	pcbp->pcb_context[7] =
 	    (u_int64_t)proc_trampoline;		/* ra - assembly magic */
@@ -260,6 +280,16 @@ cpu_swapin(p)
 	ptep = kvtopte(up);
 	p->p_md.md_pcbpaddr =
 	    &((struct user *)(PG_PFNUM(*ptep) << PGSHIFT))->u_pcb;
+
+	/*
+	 * Simulate a write to the process's U-area pages,
+	 * so that the system doesn't lose badly.
+	 * (If this isn't done, the kernel can't read or
+	 * write the kernel stack.  "Ouch!")
+	 */
+	for (i = 0; i < UPAGES; i++)
+		pmap_emulate_reference(p, (vm_offset_t)up + i * PAGE_SIZE,
+		    0, 1);
 }
 
 /*
@@ -289,22 +319,25 @@ cpu_swapout(p)
  * Both addresses are assumed to reside in the Sysmap,
  * and size must be a multiple of CLSIZE.
  */
+void
 pagemove(from, to, size)
 	register caddr_t from, to;
-	int size;
+	size_t size;
 {
 	register pt_entry_t *fpte, *tpte;
+	ssize_t todo;
 
 	if (size % CLBYTES)
 		panic("pagemove");
 	fpte = kvtopte(from);
 	tpte = kvtopte(to);
-	while (size > 0) {
+	todo = size;			/* if testing > 0, need sign... */
+	while (todo > 0) {
 		TBIS(from);
 		*tpte++ = *fpte;
 		*fpte = 0;
 		fpte++;
-		size -= NBPG;
+		todo -= NBPG;
 		from += NBPG;
 		to += NBPG;
 	}
@@ -330,6 +363,7 @@ extern vm_map_t phys_map;
  * All requests are (re)mapped into kernel VA space via the useriomap
  * (a name with only slightly more meaning than "kernelmap")
  */
+void
 vmapbuf(bp, len)
 	struct buf *bp;
 	vm_size_t len;
@@ -361,6 +395,7 @@ vmapbuf(bp, len)
  * Free the io map PTEs associated with this IO operation.
  * We also invalidate the TLB entries and restore the original b_addr.
  */
+void
 vunmapbuf(bp, len)
 	struct buf *bp;
 	vm_size_t len;

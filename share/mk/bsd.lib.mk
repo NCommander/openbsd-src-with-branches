@@ -1,4 +1,5 @@
-#	$NetBSD: bsd.lib.mk,v 1.65 1995/09/30 12:21:33 pk Exp $
+#	$OpenBSD: bsd.lib.mk,v 1.7 1996/07/22 09:11:32 deraadt Exp $
+#	$NetBSD: bsd.lib.mk,v 1.67 1996/01/17 20:39:26 mycroft Exp $
 #	@(#)bsd.lib.mk	5.26 (Berkeley) 5/2/91
 
 .if exists(${.CURDIR}/../Makefile.inc)
@@ -82,7 +83,9 @@ SHLIB_MINOR != . ${.CURDIR}/shlib_version ; echo $$minor
 	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
 	@rm -f ${.TARGET}.o
 
-.if !defined(PICFLAG)
+CFLAGS+=	${COPTS}
+
+.if !defined(PICFLAG) && (${MACHINE_ARCH} != "mips")
 PICFLAG=-fpic
 .endif
 
@@ -93,7 +96,9 @@ _LIBS=lib${LIB}.a
 .endif
 
 .if !defined(NOPIC)
+.if (${MACHINE_ARCH} != "mips")
 _LIBS+=lib${LIB}_pic.a
+.endif
 .if defined(SHLIB_MAJOR) && defined(SHLIB_MINOR)
 _LIBS+=lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}
 .endif
@@ -110,28 +115,36 @@ OBJS+=	${SRCS:N*.h:R:S/$/.o/g}
 lib${LIB}.a:: ${OBJS}
 	@echo building standard ${LIB} library
 	@rm -f lib${LIB}.a
-	@${AR} cq lib${LIB}.a `lorder ${OBJS} | tsort`
+	@${AR} cq lib${LIB}.a `lorder ${OBJS} | tsort -q`
 	${RANLIB} lib${LIB}.a
 
 POBJS+=	${OBJS:.o=.po}
 lib${LIB}_p.a:: ${POBJS}
 	@echo building profiled ${LIB} library
 	@rm -f lib${LIB}_p.a
-	@${AR} cq lib${LIB}_p.a `lorder ${POBJS} | tsort`
+	@${AR} cq lib${LIB}_p.a `lorder ${POBJS} | tsort -q`
 	${RANLIB} lib${LIB}_p.a
 
 SOBJS+=	${OBJS:.o=.so}
 lib${LIB}_pic.a:: ${SOBJS}
 	@echo building shared object ${LIB} library
 	@rm -f lib${LIB}_pic.a
-	@${AR} cq lib${LIB}_pic.a `lorder ${SOBJS} | tsort`
+	@${AR} cq lib${LIB}_pic.a `lorder ${SOBJS} | tsort -q`
 	${RANLIB} lib${LIB}_pic.a
 
+.if (${MACHINE_ARCH} != "mips") 
 lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}: lib${LIB}_pic.a ${DPADD}
 	@echo building shared ${LIB} library \(version ${SHLIB_MAJOR}.${SHLIB_MINOR}\)
 	@rm -f lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}
 	$(LD) -x -Bshareable -Bforcearchive \
 	    -o lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR} lib${LIB}_pic.a ${LDADD}
+.else
+lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}: lib${LIB}.a ${DPADD}
+	@echo building shared ${LIB} library \(version ${SHLIB_MAJOR}.${SHLIB_MINOR}\)
+	@rm -f lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR}
+	$(LD) -x -shared --whole-archive -soname lib${LIB}.so.${SHLIB_MAJOR} \
+	    -o lib${LIB}.so.${SHLIB_MAJOR}.${SHLIB_MINOR} lib${LIB}.a ${LDADD}
+.endif
 
 LOBJS+=	${LSRCS:.c=.ln} ${SRCS:M*.c:.c=.ln}
 # the following looks XXX to me... -- cgd
@@ -169,20 +182,26 @@ realinstall:
 #	ranlib lib${LIB}.a
 	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m 600 lib${LIB}.a \
 	    ${DESTDIR}${LIBDIR}
+.if (${COPY} != "-p")
 	${RANLIB} -t ${DESTDIR}${LIBDIR}/lib${LIB}.a
+.endif
 	chmod ${LIBMODE} ${DESTDIR}${LIBDIR}/lib${LIB}.a
 .if !defined(NOPROFILE)
 #	ranlib lib${LIB}_p.a
 	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m 600 \
 	    lib${LIB}_p.a ${DESTDIR}${LIBDIR}
+.if (${COPY} != "-p")
 	${RANLIB} -t ${DESTDIR}${LIBDIR}/lib${LIB}_p.a
+.endif
 	chmod ${LIBMODE} ${DESTDIR}${LIBDIR}/lib${LIB}_p.a
 .endif
-.if !defined(NOPIC)
+.if !defined(NOPIC) && (${MACHINE_ARCH} != "mips") 
 #	ranlib lib${LIB}_pic.a
 	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m 600 \
 	    lib${LIB}_pic.a ${DESTDIR}${LIBDIR}
+.if (${COPY} != "-p")
 	${RANLIB} -t ${DESTDIR}${LIBDIR}/lib${LIB}_pic.a
+.endif
 	chmod ${LIBMODE} ${DESTDIR}${LIBDIR}/lib${LIB}_pic.a
 .endif
 .if !defined(NOPIC) && defined(SHLIB_MAJOR) && defined(SHLIB_MINOR)
@@ -223,3 +242,4 @@ realinstall: beforeinstall
 .include <bsd.obj.mk>
 .include <bsd.dep.mk>
 .include <bsd.subdir.mk>
+.include <bsd.sys.mk>

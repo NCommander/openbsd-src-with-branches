@@ -1,4 +1,5 @@
-/*	$NetBSD: slattach.c,v 1.16 1995/03/21 18:48:59 mycroft Exp $	*/
+/*	$OpenBSD: slattach.c,v 1.3 1996/06/23 14:32:44 deraadt Exp $	*/
+/*	$NetBSD: slattach.c,v 1.17 1996/05/19 21:57:39 jonathan Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)slattach.c	8.2 (Berkeley) 1/7/94";
 #else
-static char rcsid[] = "$NetBSD: slattach.c,v 1.16 1995/03/21 18:48:59 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: slattach.c,v 1.3 1996/06/23 14:32:44 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -76,19 +77,22 @@ char	devicename[32];
 
 void	usage __P((void));
 
+int ttydisc __P((char *));
+
+
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
 	register int fd;
-	register char *dev = argv[1];
+	register char *dev;
 	struct termios tty;
 	tcflag_t cflag = HUPCL;
 	int ch;
 	sigset_t sigset;
 
-	while ((ch = getopt(argc, argv, "hms:")) != -1) {
+	while ((ch = getopt(argc, argv, "hms:t:")) != -1) {
 		switch (ch) {
 		case 'h':
 			cflag |= CRTSCTS;
@@ -98,6 +102,9 @@ main(argc, argv)
 			break;
 		case 's':
 			speed = atoi(optarg);
+			break;
+		case 'r': case 't':
+			slipdisc = ttydisc(optarg);
 			break;
 		case '?':
 		default:
@@ -141,10 +148,25 @@ main(argc, argv)
 		sigsuspend(&sigset);
 }
 
+int
+ttydisc(name)
+     char *name;
+{
+	if (strcmp(name, "slip") == 0)
+		return(SLIPDISC);
+#ifdef STRIPDISC
+	else if (strcmp(name, "strip") == 0)
+  		return(STRIPDISC);
+#endif
+	else
+		usage();
+}
+
 void
 usage()
 {
 
-	(void)fprintf(stderr, "usage: slattach [-hm] [-s baudrate] ttyname\n");
+	(void)fprintf(stderr,
+		      "usage: slattach [-t ldisc] [-hm] [-s baudrate] ttyname\n");
 	exit(1);
 }

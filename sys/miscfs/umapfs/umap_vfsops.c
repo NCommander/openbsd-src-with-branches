@@ -1,4 +1,5 @@
-/*	$NetBSD: umap_vfsops.c,v 1.8 1995/06/18 14:47:44 cgd Exp $	*/
+/*	$OpenBSD: umap_vfsops.c,v 1.6 1996/03/30 01:40:48 mickey Exp $	*/
+/*	$NetBSD: umap_vfsops.c,v 1.9 1996/02/09 22:41:05 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -54,6 +55,20 @@
 #include <sys/malloc.h>
 #include <miscfs/umapfs/umap.h>
 
+int	umapfs_mount __P((struct mount *, char *, caddr_t,
+			  struct nameidata *, struct proc *));
+int	umapfs_start __P((struct mount *, int, struct proc *));
+int	umapfs_unmount __P((struct mount *, int, struct proc *));
+int	umapfs_root __P((struct mount *, struct vnode **));
+int	umapfs_quotactl __P((struct mount *, int, uid_t, caddr_t,
+			     struct proc *));
+int	umapfs_statfs __P((struct mount *, struct statfs *, struct proc *));
+int	umapfs_sync __P((struct mount *, int, struct ucred *, struct proc *));
+int	umapfs_vget __P((struct mount *, ino_t, struct vnode **));
+int	umapfs_fhtovp __P((struct mount *, struct fid *, struct mbuf *,
+			   struct vnode **, int *, struct ucred **));
+int	umapfs_vptofh __P((struct vnode *, struct fid *));
+
 /*
  * Mount umap layer
  */
@@ -71,8 +86,9 @@ umapfs_mount(mp, path, data, ndp, p)
 	struct umap_mount *amp;
 	size_t size;
 	int error;
-
 #ifdef UMAPFS_DIAGNOSTIC
+	int i;
+
 	printf("umapfs_mount(mp = %x)\n", mp);
 #endif
 
@@ -87,7 +103,8 @@ umapfs_mount(mp, path, data, ndp, p)
 	/*
 	 * Get argument
 	 */
-	if (error = copyin(data, (caddr_t)&args, sizeof(struct umap_args)))
+	error = copyin(data, (caddr_t)&args, sizeof(struct umap_args));
+	if (error)
 		return (error);
 
 	/*
@@ -95,7 +112,7 @@ umapfs_mount(mp, path, data, ndp, p)
 	 */
 	NDINIT(ndp, LOOKUP, FOLLOW|WANTPARENT|LOCKLEAF,
 		UIO_USERSPACE, args.target, p);
-	if (error = namei(ndp))
+	if ((error = namei(ndp)) != 0)
 		return (error);
 
 	/*
@@ -128,26 +145,26 @@ umapfs_mount(mp, path, data, ndp, p)
 	/* 
 	 * Now copy in the number of entries and maps for umap mapping.
 	 */
-	amp->info_nentries = args.nentries;
+	amp->info_unentries = args.unentries;
 	amp->info_gnentries = args.gnentries;
-	error = copyin(args.mapdata, (caddr_t)amp->info_mapdata, 
-	    2*sizeof(u_long)*args.nentries);
+	error = copyin(args.umapdata, (caddr_t)amp->info_umapdata, 
+	    2*sizeof(**amp->info_umapdata)*args.unentries);
 	if (error)
 		return (error);
 
-#ifdef UMAP_DIAGNOSTIC
-	printf("umap_mount:nentries %d\n",args.nentries);
+#ifdef UMAPFS_DIAGNOSTIC
+	printf("umap_mount:unentries %d\n",args.unentries);
 	for (i = 0; i < args.nentries; i++)
-		printf("   %d maps to %d\n", amp->info_mapdata[i][0],
-	 	    amp->info_mapdata[i][1]);
+		printf("   %d maps to %d\n", amp->info_umapdata[i][0],
+	 	    amp->info_umapdata[i][1]);
 #endif
 
 	error = copyin(args.gmapdata, (caddr_t)amp->info_gmapdata, 
-	    2*sizeof(u_long)*args.nentries);
+	    2*sizeof(**amp->info_gmapdata)*args.gnentries);
 	if (error)
 		return (error);
 
-#ifdef UMAP_DIAGNOSTIC
+#ifdef UMAPFS_DIAGNOSTIC
 	printf("umap_mount:gnentries %d\n",args.gnentries);
 	for (i = 0; i < args.gnentries; i++)
 		printf("	group %d maps to %d\n", 
@@ -184,7 +201,7 @@ umapfs_mount(mp, path, data, ndp, p)
 	if (UMAPVPTOLOWERVP(umapm_rootvp)->v_mount->mnt_flag & MNT_LOCAL)
 		mp->mnt_flag |= MNT_LOCAL;
 	mp->mnt_data = (qaddr_t) amp;
-	getnewfsid(mp, makefstype(MOUNT_LOFS));
+	getnewfsid(mp, makefstype(MOUNT_UMAP));
 
 	(void) copyinstr(path, mp->mnt_stat.f_mntonname, MNAMELEN - 1, &size);
 	bzero(mp->mnt_stat.f_mntonname + size, MNAMELEN - size);
@@ -211,7 +228,6 @@ umapfs_start(mp, flags, p)
 {
 
 	return (0);
-	/* return (VFS_START(MOUNTTOUMAPMOUNT(mp)->umapm_vfs, flags, p)); */
 }
 
 /*
@@ -249,9 +265,9 @@ umapfs_unmount(mp, mntflags, p)
 	if (mntinvalbuf(mp, 1))
 		return (EBUSY);
 #endif
-	if (umapm_rootvp->v_usecount > 1)
+	if (umapm_rootvp->v_usecount > 1 && !(flags & FORCECLOSE))
 		return (EBUSY);
-	if (error = vflush(mp, umapm_rootvp, flags))
+	if ((error = vflush(mp, umapm_rootvp, flags)) != 0)
 		return (error);
 
 #ifdef UMAPFS_DIAGNOSTIC
@@ -305,8 +321,7 @@ umapfs_quotactl(mp, cmd, uid, arg, p)
 	caddr_t arg;
 	struct proc *p;
 {
-
-	return (VFS_QUOTACTL(MOUNTTOUMAPMOUNT(mp)->umapm_vfs, cmd, uid, arg, p));
+	return VFS_QUOTACTL(MOUNTTOUMAPMOUNT(mp)->umapm_vfs, cmd, uid, arg, p);
 }
 
 int
@@ -357,7 +372,6 @@ umapfs_sync(mp, waitfor, cred, p)
 	struct ucred *cred;
 	struct proc *p;
 {
-
 	/*
 	 * XXX - Assumes no data cached at umap layer.
 	 */
@@ -370,8 +384,7 @@ umapfs_vget(mp, ino, vpp)
 	ino_t ino;
 	struct vnode **vpp;
 {
-	
-	return (VFS_VGET(MOUNTTOUMAPMOUNT(mp)->umapm_vfs, ino, vpp));
+	return VFS_VGET(MOUNTTOUMAPMOUNT(mp)->umapm_vfs, ino, vpp);
 }
 
 int
@@ -383,8 +396,7 @@ umapfs_fhtovp(mp, fidp, nam, vpp, exflagsp, credanonp)
 	int *exflagsp;
 	struct ucred**credanonp;
 {
-
-	return (EOPNOTSUPP);
+	return VFS_FHTOVP(MOUNTTOUMAPMOUNT(mp)->umapm_vfs, fidp, nam, vpp, exflagsp, credanonp);
 }
 
 int
@@ -392,11 +404,8 @@ umapfs_vptofh(vp, fhp)
 	struct vnode *vp;
 	struct fid *fhp;
 {
-
-	return (EOPNOTSUPP);
+	return VFS_VPTOFH(UMAPVPTOLOWERVP(vp), fhp);
 }
-
-int umapfs_init __P((void));
 
 struct vfsops umap_vfsops = {
 	MOUNT_UMAP,

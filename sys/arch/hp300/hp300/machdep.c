@@ -1,4 +1,4 @@
-/*	$NetBSD: machdep.c,v 1.52 1995/10/07 06:25:31 mycroft Exp $	*/
+/*	$NetBSD: machdep.c,v 1.66 1996/05/18 23:30:09 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -75,16 +75,17 @@
 #include <sys/shm.h>
 #endif
 
+#include <machine/autoconf.h>
 #include <machine/cpu.h>
 #include <machine/reg.h>
 #include <machine/psl.h>
 #include <machine/pte.h>
+
 #include <dev/cons.h>
-#include <hp300/hp300/isr.h>
-#include <net/netisr.h>
 
 #define	MAXMEM	64*1024*CLSIZE	/* XXX - from cmap.h */
 #include <vm/vm_kern.h>
+#include <vm/vm_param.h>
 
 /* the following is used externally (sysctl_hw) */
 char machine[] = "hp300";		/* cpu "architecture" */
@@ -123,53 +124,53 @@ extern struct emul emul_hpux;
 #endif
 
 /*
+ * Select code of console.  Set to -1 if console is on
+ * "internal" framebuffer.
+ */
+int	conscode;
+int	consinit_active;	/* flag for driver init routines */
+caddr_t	conaddr;		/* for drivers in cn_init() */
+int	convasize;		/* size of mapped console device */
+int	conforced;		/* console has been forced */
+
+/*
+ * Note that the value of delay_divisor is roughly
+ * 2048 / cpuspeed (where cpuspeed is in MHz) on 68020
+ * and 68030 systems.  See clock.c for the delay
+ * calibration algorithm.
+ */
+int	cpuspeed;		/* relative cpu speed; XXX skewed on 68040 */
+int	delay_divisor;		/* delay constant */
+
+/*
  * Console initialization: called early on from main,
  * before vm init or startup.  Do enough configuration
  * to choose and initialize a console.
  */
+void
 consinit()
 {
+	extern struct map extiomap[];
 
 	/*
-	 * Set cpuspeed immediately since cninit() called routines
-	 * might use delay.  Note that we only set it if a custom value
-	 * has not already been specified.
+	 * Initialize some variables for sanity.
 	 */
-	if (cpuspeed == 0) {
-		switch (machineid) {
-		case HP_320:
-		case HP_330:
-		case HP_340:
-			cpuspeed = MHZ_16;
-			break;
-		case HP_350:
-		case HP_360:
-		case HP_380:
-			cpuspeed = MHZ_25;
-			break;
-		case HP_370:
-		case HP_433:
-			cpuspeed = MHZ_33;
-			break;
-		case HP_375:
-			cpuspeed = MHZ_50;
-			break;
-		default:	/* assume the fastest */
-			cpuspeed = MHZ_50;
-			break;
-		}
-		if (mmutype == MMU_68040)
-			cpuspeed *= 2;	/* XXX */
-	}
+	consinit_active = 1;
+	convasize = 0;
+	conforced = 0;
+	conscode = 1024;		/* invalid */
+
 	/*
-         * Find what hardware is attached to this machine.
-         */
-	find_devs();
+	 * Initialize the DIO resource map.
+	 */
+	rminit(extiomap, (long)EIOMAPSIZE, (long)1, "extio", EIOMAPSIZE/16);
 
 	/*
 	 * Initialize the console before we print anything out.
 	 */
-	cninit();
+	hp300_cninit();
+
+	consinit_active = 0;
 
 #ifdef DDB
 	ddb_init();
@@ -570,6 +571,7 @@ identifycpu()
 	}
 	strcat(cpu_model, ")");
 	printf("%s\n", cpu_model);
+	printf("delay constant for this cpu: %d\n", delay_divisor);
 	/*
 	 * Now that we have told the user what they have,
 	 * let them know if that machine type isn't configured.
@@ -773,7 +775,7 @@ sendsig(catcher, sig, mask, code)
 	fsize = sizeof(struct sigframe);
 	if ((psp->ps_flags & SAS_ALTSTACK) && !oonstack &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(psp->ps_sigstk.ss_sp +
 					 psp->ps_sigstk.ss_size - fsize);
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else
@@ -1104,12 +1106,20 @@ void
 boot(howto)
 	register int howto;
 {
+	extern int cold;
+
 	/* take a snap shot before clobbering any registers */
 	if (curproc && curproc->p_addr)
 		savectx(curproc->p_addr);
 
+	/* If system is cold, just halt. */
+	if (cold) {
+		howto |= RB_HALT;
+		goto haltsys;
+	}
+
 	boothowto = howto;
-	if ((howto&RB_NOSYNC) == 0 && waittime < 0) {
+	if ((howto & RB_NOSYNC) == 0 && waittime < 0) {
 		waittime = 0;
 		vfs_shutdown();
 		/*
@@ -1118,16 +1128,36 @@ boot(howto)
 		 */
 		resettodr();
 	}
-	splhigh();			/* extreme priority */
-	if (howto&RB_HALT) {
-		printf("halted\n\n");
-		asm("	stop	#0x2700");
-	} else {
-		if (howto & RB_DUMP)
-			dumpsys();
-		doboot();
-		/*NOTREACHED*/
+
+	/* Disable interrupts. */
+	splhigh();
+
+	/* If rebooting and a dump is requested do it. */
+	if (howto & RB_DUMP)
+		dumpsys();
+
+ haltsys:
+	/* Run any shutdown hooks. */
+	doshutdownhooks();
+
+#if defined(PANICWAIT) && !defined(DDB)
+	if ((howto & RB_HALT) == 0 && panicstr) {
+		printf("hit any key to reboot...\n");
+		(void)cngetc();
+		printf("\n");
 	}
+#endif
+
+	/* Finally, halt/reboot the system. */
+	if (howto & RB_HALT) {
+		printf("System halted.\n\n");
+		asm("	stop	#0x2700");
+		/* NOTREACHED */
+	}
+
+	printf("rebooting...\n");
+	DELAY(1000000);
+	doboot();
 	/*NOTREACHED*/
 }
 
@@ -1294,89 +1324,6 @@ badbaddr(addr)
 	i = *(volatile char *)addr;
 	nofault = (int *) 0;
 	return(0);
-}
-
-netintr()
-{
-#ifdef INET
-	if (netisr & (1 << NETISR_ARP)) {
-		netisr &= ~(1 << NETISR_ARP);
-		arpintr();
-	}
-	if (netisr & (1 << NETISR_IP)) {
-		netisr &= ~(1 << NETISR_IP);
-		ipintr();
-	}
-#endif
-#ifdef NS
-	if (netisr & (1 << NETISR_NS)) {
-		netisr &= ~(1 << NETISR_NS);
-		nsintr();
-	}
-#endif
-#ifdef ISO
-	if (netisr & (1 << NETISR_ISO)) {
-		netisr &= ~(1 << NETISR_ISO);
-		clnlintr();
-	}
-#endif
-#ifdef CCITT
-	if (netisr & (1 << NETISR_CCITT)) {
-		netisr &= ~(1 << NETISR_CCITT);
-		ccittintr();
-	}
-#endif
-#include "ppp.h"
-#if NPPP > 0
-	if (netisr & (1 << NETISR_PPP)) {
-		netisr &= ~(1 << NETISR_PPP);
-		pppintr();
-	}
-#endif
-}
-
-intrhand(sr)
-	int sr;
-{
-	register struct isr *isr;
-	register int found = 0;
-	register int ipl;
-	extern struct isr isrqueue[];
-	static int straycount;
-
-	ipl = (sr >> 8) & 7;
-	switch (ipl) {
-
-	case 3:
-	case 4:
-	case 5:
-		ipl = ISRIPL(ipl);
-		isr = isrqueue[ipl].isr_forw;
-		for (; isr != &isrqueue[ipl]; isr = isr->isr_forw) {
-			if ((isr->isr_intr)(isr->isr_arg)) {
-				found++;
-				break;
-			}
-		}
-		if (found)
-			straycount = 0;
-		else if (++straycount > 50)
-			panic("intrhand: stray interrupt");
-		else
-			printf("stray interrupt, sr 0x%x\n", sr);
-		break;
-
-	case 0:
-	case 1:
-	case 2:
-	case 6:
-	case 7:
-		if (++straycount > 50)
-			panic("intrhand: unexpected sr");
-		else
-			printf("intrhand: unexpected sr 0x%x\n", sr);
-		break;
-	}
 }
 
 #if (defined(DDB) || defined(DEBUG)) && !defined(PANICBUTTON)
@@ -1657,24 +1604,6 @@ hexstr(val, len)
 	return(nbuf);
 }
 
-#ifdef STACKCHECK
-char oflowmsg[] = "k-stack overflow";
-char uflowmsg[] = "k-stack underflow";
-
-badkstack(oflow, fr)
-	int oflow;
-	struct frame fr;
-{
-	extern char kstackatbase[];
-
-	printf("%s: sp should be %x\n", 
-	       oflow ? oflowmsg : uflowmsg,
-	       kstackatbase - (exframesize[fr.f_format] + 8));
-	regdump(&fr, 0);
-	panic(oflow ? oflowmsg : uflowmsg);
-}
-#endif
-
 /*
  * cpu_exec_aout_makecmds():
  *	cpu-dependent a.out format hook for execve().
@@ -1705,14 +1634,19 @@ cpu_exec_aout_makecmds(p, epp)
 	midmag = mid << 16 | magic;
 
 	switch (midmag) {
+#if defined(COMPAT_M68K4K)
+	case (MID_M68K4K << 16) | ZMAGIC:
+		error = cpu_exec_aout_prep_m68k4k(p, epp);
+		break;
+#endif
 #ifdef COMPAT_NOMID
 	case (MID_ZERO << 16) | ZMAGIC:
-		error = cpu_exec_aout_prep_oldzmagic(p, epp);
+		error = exec_aout_prep_oldzmagic(p, epp);
 		break;
 #endif
 #ifdef COMPAT_44
 	case (MID_HP300 << 16) | ZMAGIC:
-		error = cpu_exec_aout_prep_oldzmagic(p, epp);
+		error = exec_aout_prep_oldzmagic(p, epp);
 		break;
 #endif
 	default:
@@ -1725,30 +1659,23 @@ cpu_exec_aout_makecmds(p, epp)
 #endif
 }
 
-#if defined(COMPAT_NOMID) || defined(COMPAT_44)
-/*
- * cpu_exec_aout_prep_oldzmagic():
- *	Prepare the vmcmds to build a vmspace for an old
- *	(i.e. USRTEXT == 0) binary.
- *
- * Cloned from exec_aout_prep_zmagic() in kern/exec_aout.c; a more verbose
- * description of operation is there.
- */
+#if defined(COMPAT_M68K4K)
 int
-cpu_exec_aout_prep_oldzmagic(p, epp)
+cpu_exec_aout_prep_m68k4k(p, epp)
 	struct proc *p;
 	struct exec_package *epp;
 {
 	struct exec *execp = epp->ep_hdr;
 
-	epp->ep_taddr = 0;
+	epp->ep_taddr = 4096;
 	epp->ep_tsize = execp->a_text;
 	epp->ep_daddr = epp->ep_taddr + execp->a_text;
 	epp->ep_dsize = execp->a_data + execp->a_bss;
 	epp->ep_entry = execp->a_entry;
 
 	/*
-	 * check if vnode is in open for writing, because we want to			 * demand-page out of it.  if it is, don't do it, for various
+	 * check if vnode is in open for writing, because we want to
+	 * demand-page out of it.  if it is, don't do it, for various
 	 * reasons
 	 */
 	if ((execp->a_text != 0 || execp->a_data != 0) &&
@@ -1763,13 +1690,11 @@ cpu_exec_aout_prep_oldzmagic(p, epp)
 
 	/* set up command for text segment */
 	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_pagedvn, execp->a_text,
-	    epp->ep_taddr, epp->ep_vp, NBPG, /* XXX - should NBPG be CLBYTES? */
-	    VM_PROT_READ|VM_PROT_EXECUTE);
+	    epp->ep_taddr, epp->ep_vp, 0, VM_PROT_READ|VM_PROT_EXECUTE);
 
 	/* set up command for data segment */
 	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_pagedvn, execp->a_data,
-	    epp->ep_daddr, epp->ep_vp,
-	    execp->a_text + NBPG, /* XXX - should NBPG be CLBYTES? */
+	    epp->ep_daddr, epp->ep_vp, execp->a_text,
 	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
 	/* set up command for bss segment */
@@ -1779,4 +1704,4 @@ cpu_exec_aout_prep_oldzmagic(p, epp)
 
 	return exec_aout_setup_stack(p, epp);
 }
-#endif /* COMPAT_NOMID */
+#endif /* COMPAT_M68K4K */

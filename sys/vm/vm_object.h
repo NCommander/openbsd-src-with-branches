@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_object.h,v 1.16 1995/03/29 22:10:28 briggs Exp $	*/
 /*	$NetBSD: vm_object.h,v 1.16 1995/03/29 22:10:28 briggs Exp $	*/
 
 /* 
@@ -98,7 +99,11 @@ struct vm_object {
 	struct vm_object	*shadow;	/* My shadow */
 	vm_offset_t		shadow_offset;	/* Offset in shadow */
 	TAILQ_ENTRY(vm_object)	cached_list;	/* for persistence */
+	LIST_HEAD(, vm_object)	shadowers;	/* set of shadowers */
+	LIST_ENTRY(vm_object)	shadowers_list;	/* link to next shadower of
+						   this object's shadow */
 };
+
 /*
  * Flags
  */
@@ -167,7 +172,7 @@ void		 vm_object_prefer __P((vm_object_t,
 		    vm_offset_t, vm_offset_t *));
 void		 vm_object_print __P((vm_object_t, boolean_t));
 void		 _vm_object_print __P((vm_object_t, boolean_t,
-		    void (*)(const char *, ...)));
+		    int (*)(const char *, ...)));
 void		 vm_object_reference __P((vm_object_t));
 void		 vm_object_remove __P((vm_pager_t));
 void		 vm_object_setpager __P((vm_object_t,

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)display.c	5.11 (Berkeley) 3/9/91";*/
-static char rcsid[] = "$Id: display.c,v 1.2 1993/08/01 18:14:49 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: display.c,v 1.2 1996/05/21 21:51:51 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -279,7 +281,7 @@ extern off_t skip;			/* bytes to skip */
 next(argv)
 	char **argv;
 {
-	extern int errno, exitval;
+	extern int exitval;
 	static int done;
 	int statok;
 
@@ -316,7 +318,6 @@ doskip(fname, statok)
 	char *fname;
 	int statok;
 {
-	extern int errno;
 	struct stat sbuf;
 
 	if (statok) {
@@ -354,8 +355,6 @@ emalloc(size)
 
 nomem()
 {
-	extern int errno;
-
 	(void)fprintf(stderr, "hexdump: %s.\n", strerror(errno));
 	exit(1);
 }

@@ -1,4 +1,5 @@
 #!/bin/sh
+#	$OpenBSD$
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -27,10 +28,8 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-#	$Id: upgrade.sh,v 1.3 1994/10/18 07:03:16 glass Exp $
 
-#	NetBSD upgrade script.
+#	OpenBSD upgrade script.
 #	In a perfect world, this would be a nice C program, with a reasonable
 #	user interface.
 
@@ -38,7 +37,7 @@ DT=/etc/disktab				# /etc/disktab
 FSTABDIR=/mnt/etc			# /mnt/etc
 #DONTDOIT=echo
 
-VERSION=1.0
+VERSION=1.1
 FSTAB=${FSTABDIR}/fstab
 
 getresp() {
@@ -48,9 +47,9 @@ getresp() {
 	fi
 }
 
-echo	"Welcome to the NetBSD ${VERSION} upgrade program."
+echo	"Welcome to the OpenBSD ${VERSION} upgrade program."
 echo	""
-echo	"This program is designed to help you put the new version of NetBSD"
+echo	"This program is designed to help you put the new version of OpenBSD"
 echo	"on your hard disk, in a simple and rational way.  To upgrade, you"
 echo	"must have plenty of free space on all partitions which will be"
 echo	"upgraded.  If you have at least 1MB free on your root partition,"
@@ -230,23 +229,23 @@ echo	"Done."
 echo	""
 echo	"Copying bootstrapping binaries and config files to the hard drive..."
 $DONTDOIT cp /mnt/.profile /mnt/.profile.bak
-$DONTDOIT tar --exclude etc --one-file-system -cf - . | (cd /mnt ; tar --unlink -xpf - )
+$DONTDOIT pax -rw -X -k . /mnt
 $DONTDOIT mv /mnt/etc/rc /mnt/etc/rc.bak
 $DONTDOIT cp /tmp/.hdprofile /mnt/.profile
 
 echo	""
 echo	"Mounting remaining partitions..."
-chroot /mnt mount -at ufs > /dev/null 2>&1
+chroot /mnt mount -at ffs > /dev/null 2>&1
 echo	"Done."
 
 echo    ""
 echo    ""
 echo	"OK!  The preliminary work of setting up your disk is now complete,"
-echo	"and you can now upgrade the actual NetBSD software."
+echo	"and you can now upgrade the actual OpenBSD software."
 echo	""
 echo	"Right now, your hard disk is mounted on /mnt.  You should consult"
 echo	"the installation notes to determine how to load and install the new"
-echo	"NetBSD distribution sets, and how to clean up after the upgrade"
+echo	"OpenBSD distribution sets, and how to clean up after the upgrade"
 echo	"software, when you are done."
 echo	""
 echo	"GOOD LUCK!"

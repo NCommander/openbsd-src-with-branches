@@ -42,7 +42,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)repquota.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: repquota.c,v 1.7 1995/01/03 02:06:31 cgd Exp $";
+static char *rcsid = "$Id: repquota.c,v 1.6 1996/04/25 11:04:14 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -88,9 +88,10 @@ main(argc, argv)
 	long i, argnum, done = 0;
 	extern char *optarg;
 	extern int optind;
-	char ch, *qfnp;
+	char *qfnp;
+	int ch;
 
-	while ((ch = getopt(argc, argv, "aguv")) != EOF) {
+	while ((ch = getopt(argc, argv, "aguv")) != -1) {
 		switch(ch) {
 		case 'a':
 			aflag++;
@@ -131,7 +132,9 @@ main(argc, argv)
 	}
 	setfsent();
 	while ((fs = getfsent()) != NULL) {
-		if (strcmp(fs->fs_vfstype, "ufs"))
+		if (strcmp(fs->fs_vfstype, "ffs") &&
+		    strcmp(fs->fs_vfstype, "ufs") &&
+		    strcmp(fs->fs_vfstype, "mfs"))
 			continue;
 		if (aflag) {
 			if (gflag && hasquota(fs, GRPQUOTA, &qfnp))
@@ -143,9 +146,9 @@ main(argc, argv)
 		if ((argnum = oneof(fs->fs_file, argv, argc)) >= 0 ||
 		    (argnum = oneof(fs->fs_spec, argv, argc)) >= 0) {
 			done |= 1 << argnum;
-			if (gflag && hasquota(fs, GRPQUOTA, &qfnp))
+			if (gflag)
 				errs += repquota(fs, GRPQUOTA, qfnp);
-			if (uflag && hasquota(fs, USRQUOTA, &qfnp))
+			if (uflag)
 				errs += repquota(fs, USRQUOTA, qfnp);
 		}
 	}

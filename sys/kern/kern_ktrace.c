@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_ktrace.c,v 1.20 1995/10/07 06:28:16 mycroft Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -49,6 +50,13 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
+
+struct ktr_header *ktrgetheader __P((int));
+int ktrops __P((struct proc *, struct proc *, int, int, struct vnode *));
+int ktrsetchildren __P((struct proc *, struct proc *, int, int,
+			struct vnode *));
+void ktrwrite __P((struct vnode *, struct ktr_header *));
+int ktrcanset __P((struct proc *, struct proc *));
 
 struct ktr_header *
 ktrgetheader(type)
@@ -266,7 +274,7 @@ sys_ktrace(curp, v, retval)
 	register struct vnode *vp = NULL;
 	register struct proc *p;
 	struct pgrp *pg;
-	int facs = SCARG(uap, facs) & ~KTRFAC_ROOT;
+	int facs = SCARG(uap, facs) & ~((unsigned) KTRFAC_ROOT);
 	int ops = KTROP(SCARG(uap, ops));
 	int descend = SCARG(uap, ops) & KTRFLAG_DESCEND;
 	int ret = 0;
@@ -280,7 +288,7 @@ sys_ktrace(curp, v, retval)
 		 */
 		NDINIT(&nd, LOOKUP, FOLLOW, UIO_USERSPACE, SCARG(uap, fname),
 		    curp);
-		if (error = vn_open(&nd, FREAD|FWRITE, 0)) {
+		if ((error = vn_open(&nd, FREAD|FWRITE, 0)) != 0) {
 			curp->p_traceflag &= ~KTRFAC_ACTIVE;
 			return (error);
 		}
@@ -391,9 +399,17 @@ ktrops(curp, p, ops, facs, vp)
 		}
 	}
 
+	/*
+	 * Emit an emulation record, every time there is a ktrace
+	 * change/attach request. 
+	 */
+	if (KTRPOINT(p, KTR_EMUL))
+		ktremul(p->p_tracep, p->p_emul->e_name);
+
 	return (1);
 }
 
+int
 ktrsetchildren(curp, top, ops, facs, vp)
 	struct proc *curp, *top;
 	int ops, facs;
@@ -425,6 +441,7 @@ ktrsetchildren(curp, top, ops, facs, vp)
 	/*NOTREACHED*/
 }
 
+void
 ktrwrite(vp, kth)
 	struct vnode *vp;
 	register struct ktr_header *kth;
@@ -479,6 +496,7 @@ ktrwrite(vp, kth)
  *
  * TODO: check groups.  use caller effective gid.
  */
+int
 ktrcanset(callp, targetp)
 	struct proc *callp, *targetp;
 {

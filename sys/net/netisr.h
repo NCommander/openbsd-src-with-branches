@@ -59,12 +59,22 @@
 #define	NETISR_ISO	7		/* same as AF_ISO */
 #define	NETISR_CCITT	10		/* same as AF_CCITT */
 #define	NETISR_ARP	18		/* same as AF_LINK */
-#define NETISR_PPP	26		/* for PPP processing */
+#define NETISR_IPX	23		/* same as AF_IPX */
+#define NETISR_ISDN	26		/* same as AF_E164 */
+#define NETISR_NATM	27		/* same as AF_ATM */
+#define NETISR_PPP	28		/* for PPP processing */
 
-#define	schednetisr(anisr)	{ netisr |= 1<<(anisr); setsoftnet(); }
-
-#ifndef LOCORE
+#ifndef _LOCORE
 #ifdef _KERNEL
 int	netisr;				/* scheduling bits for network */
+
+#include "random.h"
+#if NRANDOM > 0
+#include <dev/rndvar.h>
+#define	schednetisr(anisr)	\
+	{ netisr |= 1<<(anisr); add_net_randomness(anisr); setsoftnet(); }
+#else
+#define	schednetisr(anisr)	{ netisr |= 1<<(anisr); setsoftnet(); }
+#endif
 #endif
 #endif

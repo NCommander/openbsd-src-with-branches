@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_socket.c,v 1.12 1995/10/07 06:27:13 mycroft Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: linux_socket.c,v 1.14 1996/04/05 00:01:50 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -70,6 +71,36 @@
  * calls to copy them in themselves. To make it look better, they
  * are copied to structures.
  */
+
+int linux_to_bsd_domain __P((int));
+int linux_socket __P((struct proc *, struct linux_socket_args *, register_t *));
+int linux_bind __P((struct proc *, struct linux_bind_args *, register_t *));
+int linux_connect __P((struct proc *, struct linux_connect_args *,
+    register_t *));
+int linux_listen __P((struct proc *, struct linux_listen_args *, register_t *));
+int linux_accept __P((struct proc *, struct linux_accept_args *, register_t *));
+int linux_getsockname __P((struct proc *, struct linux_getsockname_args *,
+    register_t *));
+int linux_getpeername __P((struct proc *, struct linux_getpeername_args *,
+    register_t *));
+int linux_socketpair __P((struct proc *, struct linux_socketpair_args *,
+    register_t *));
+int linux_send __P((struct proc *, struct linux_send_args *, register_t *));
+int linux_recv __P((struct proc *, struct linux_recv_args *, register_t *));
+int linux_sendto __P((struct proc *, struct linux_sendto_args *, register_t *));
+int linux_recvfrom __P((struct proc *, struct linux_recvfrom_args *,
+    register_t *));
+int linux_shutdown __P((struct proc *, struct linux_shutdown_args *,
+    register_t *));
+int linux_to_bsd_sopt_level __P((int));
+int linux_to_bsd_so_sockopt __P((int));
+int linux_to_bsd_ip_sockopt __P((int));
+int linux_to_bsd_tcp_sockopt __P((int));
+int linux_to_bsd_udp_sockopt __P((int));
+int linux_setsockopt __P((struct proc *, struct linux_setsockopt_args *,
+    register_t *));
+int linux_getsockopt __P((struct proc *, struct linux_getsockopt_args *,
+    register_t *));
 
 /*
  * Convert between Linux and BSD socket domain values
@@ -701,4 +732,54 @@ linux_sys_socketcall(p, v, retval)
 	default:
 		return ENOSYS;
 	}
+}
+
+int
+linux_ioctl_socket(p, uap, retval)
+	register struct proc *p;
+	register struct linux_sys_ioctl_args /* {
+		syscallarg(int) fd;
+		syscallarg(u_long) com;
+		syscallarg(caddr_t) data;
+	} */ *uap;
+	register_t *retval;
+{
+	u_long com;
+	struct sys_ioctl_args ia;
+
+	com = SCARG(uap, com);
+	retval[0] = 0;
+
+	switch (com) {
+	case LINUX_SIOCGIFCONF:
+		SCARG(&ia, com) = OSIOCGIFCONF;
+		break;
+	case LINUX_SIOCGIFFLAGS:
+		SCARG(&ia, com) = SIOCGIFFLAGS;
+		break;
+	case LINUX_SIOCGIFADDR:
+		SCARG(&ia, com) = OSIOCGIFADDR;
+		break;
+	case LINUX_SIOCGIFDSTADDR:
+		SCARG(&ia, com) = OSIOCGIFDSTADDR;
+		break;
+	case LINUX_SIOCGIFBRDADDR:
+		SCARG(&ia, com) = OSIOCGIFBRDADDR;
+		break;
+	case LINUX_SIOCGIFNETMASK:
+		SCARG(&ia, com) = OSIOCGIFNETMASK;
+		break;
+	case LINUX_SIOCADDMULTI:
+		SCARG(&ia, com) = SIOCADDMULTI;
+		break;
+	case LINUX_SIOCDELMULTI:
+		SCARG(&ia, com) = SIOCDELMULTI;
+		break;
+	default:
+		return EINVAL;
+	}
+
+	SCARG(&ia, fd) = SCARG(uap, fd);
+	SCARG(&ia, data) = SCARG(uap, data);
+	return sys_ioctl(p, &ia, retval);
 }

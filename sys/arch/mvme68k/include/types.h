@@ -1,4 +1,4 @@
-/*	$NetBSD: types.h,v 1.2 1994/10/26 02:33:58 cgd Exp $	*/
+/*	$OpenBSD$ */
 
 #ifndef _MACHINE_TYPES_H_
 #define _MACHINE_TYPES_H_

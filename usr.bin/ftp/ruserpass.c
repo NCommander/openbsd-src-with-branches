@@ -1,3 +1,4 @@
+/*      $OpenBSD: ruserpass.c,v 1.6 1995/09/08 01:06:43 tls Exp $      */
 /*      $NetBSD: ruserpass.c,v 1.6 1995/09/08 01:06:43 tls Exp $      */
 
 /*

@@ -1,5 +1,3 @@
-/*	$NetBSD: getgrent.c,v 1.13 1995/07/28 05:43:57 phil Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,28 +33,27 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getgrent.c	8.2 (Berkeley) 3/21/94";
-#else
-static char rcsid[] = "$NetBSD: getgrent.c,v 1.13 1995/07/28 05:43:57 phil Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getgrent.c,v 1.4 1996/08/19 08:23:29 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <grp.h>
 #ifdef YP
 #include <rpc/rpc.h>
-#include <rpcsvc/yp_prot.h>
+#include <rpcsvc/yp.h>
 #include <rpcsvc/ypclnt.h>
+#include "ypinternal.h"
 #endif
 
 static FILE *_gr_fp;
 static struct group _gr_group;
 static int _gr_stayopen;
-static int grscan(), start_gr();
+static int grscan __P((int, gid_t, const char *));
+static int start_gr __P((void));
 
 #define	MAXGRP		200
 static char *members[MAXGRP];
@@ -159,8 +156,9 @@ endgrent()
 
 static int
 grscan(search, gid, name)
-	register int search, gid;
-	register char *name;
+	register int search;
+	register gid_t gid;
+	register const char *name;
 {
 	register char *cp, **m;
 	char *bp;

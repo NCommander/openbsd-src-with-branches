@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.arc,v 1.5 1996/09/24 19:37:26 pefo Exp $
 
 #	@(#)Makefile.arc	8.2 (Berkeley) 2/16/94
 #
@@ -26,7 +26,7 @@
 AS?=	as
 CC?=	cc
 CPP?=	cpp
-LD=	ld.ok			# XXX TEMPORARY
+LD?=	ld
 STRIP?=	strip -d
 TOUCH?=	touch -f -c
 
@@ -93,9 +93,9 @@ SYSTEM_LD=	-@if [ X${DEBUG} = X-g ]; \
 		then strip=-X; \
 		else strip=-x; \
 		fi; \
-		echo ${LD} $$strip -N -o $@ -e start -Ttext 80080000 \
+		echo ${LD} $$strip -o $@ -e start -T ../../conf/ld.script \
 			'$${SYSTEM_OBJ}' vers.o; \
-		${LD} $$strip -N -o $@ -e start -Ttext 80080000 \
+		${LD} $$strip -o $@ -e start -T ../../conf/ld.script \
 			${SYSTEM_OBJ} vers.o
 #
 SYSTEM_LD_TAIL=	chmod 755 $@; \
@@ -109,12 +109,12 @@ newvers:
 	${CC} $(CFLAGS) -c vers.c
 
 clean::
-	rm -f eddep bsd bsd.gdb tags *.o locore.i [a-z]*.s \
+	rm -f eddep bsd bsd.gdb bsd.ecoff tags *.o locore.i [a-z]*.s \
 	    Errs errs linterrs makelinks genassym
 
 lint: /tmp param.c
 	@lint -hbxn -DGENERIC -Dvolatile= ${COPTS} ${PARAM} -UKGDB \
-	    ${ARC}/arc/Locore.c ${CFILES} ${ARC}/arc/swapgeneric.c \
+	    ${ARC}/arc/Locore.c ${CFILES} \
 	    ioconf.c param.c
 
 symbols.sort: ${ARC}/arc/symbols.raw
@@ -142,10 +142,10 @@ assym.h: genassym
 	./genassym >assym.h
 
 genassym: genassym.o
-	${CC} -o $@ genassym.o
+	${HOSTCC} -o $@ genassym.o
 
 genassym.o: ${ARC}/arc/genassym.c
-	${CC} ${INCLUDES} ${IDENT} -D_KERNEL -Darc -c $<
+	${HOSTCC} ${INCLUDES} ${IDENT} -D_KERNEL -Darc -c $<
 
 links:
 	egrep '#if' ${CFILES} | sed -f $S/conf/defines | \

@@ -1,14 +1,21 @@
-#	$NetBSD: bsd.obj.mk,v 1.7 1995/06/10 20:46:35 mycroft Exp $
+#	$OpenBSD: bsd.obj.mk,v 1.4 1996/08/23 17:45:10 niklas Exp $
+#	$NetBSD: bsd.obj.mk,v 1.9 1996/04/10 21:08:05 thorpej Exp $
 
 .if !target(obj)
 .if defined(NOOBJ)
 obj:
 .else
 
-.if defined(OBJMACHINE)
-__objdir=	obj.${MACHINE}
+.if defined(MAKEOBJDIR)
+__baseobjdir=	${MAKEOBJDIR}
 .else
-__objdir=	obj
+__baseobjdir=	obj
+.endif
+
+.if defined(OBJMACHINE)
+__objdir=	${__baseobjdir}.${MACHINE}
+.else
+__objdir=	${__baseobjdir}
 .endif
 
 .if defined(USR_OBJMACHINE)
@@ -23,9 +30,9 @@ __usrobjdirpf=
 .endif
 .endif
 
-obj: _SUBDIRUSE
+obj! _SUBDIRUSE
 	@cd ${.CURDIR}; rm -f ${__objdir} > /dev/null 2>&1 || true; \
-	here=`pwd`; subdir=`echo $$here | sed 's,^${BSDSRCDIR}/,,'`; \
+	here=`/bin/pwd`; subdir=$${here#${BSDSRCDIR}/}; \
 	if test $$here != $$subdir ; then \
 		dest=${__usrobjdir}/$$subdir${__usrobjdirpf} ; \
 		echo "$$here/${__objdir} -> $$dest"; \

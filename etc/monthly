@@ -1,10 +1,16 @@
 #!/bin/sh -
-#
-#	@(#)monthly	5.5 (Berkeley) 6/17/91
-#
+#	$OpenBSD$
 
 host=`hostname -s`
 echo "Subject: $host monthly run output"
+
+if [ -f /etc/monthly.local ];then
+	echo ""
+	echo "Running monthly.local:"
+	. /etc/monthly.local
+else
+	echo "Nothing to do!"
+fi
 
 # echo ""
 # echo "Doing login accounting:"
@@ -17,5 +23,4 @@ echo "Subject: $host monthly run output"
 #	aculog
 #	cron
 
-echo "Nothing to do!"
 #echo "."

@@ -56,10 +56,11 @@
 #define	_PATH_MAN	"/usr/share/man"
 #define	_PATH_MEM	"/dev/mem"
 #define	_PATH_NOLOGIN	"/etc/nologin"
+#define	_PATH_RSH	"/usr/bin/rsh"
 #define	_PATH_SENDMAIL	"/usr/sbin/sendmail"
 #define	_PATH_SHELLS	"/etc/shells"
 #define	_PATH_TTY	"/dev/tty"
-#define	_PATH_UNIX	"/netbsd"
+#define	_PATH_UNIX	"/bsd"
 #define	_PATH_VI	"/usr/bin/vi"
 
 /* Provide trailing slash, since mostly used for building pathnames. */

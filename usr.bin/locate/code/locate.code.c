@@ -1,4 +1,4 @@
-/*	$NetBSD: locate.code.c,v 1.5 1995/08/31 22:36:33 jtc Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -34,6 +34,8 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * 	$Id: locate.code.c,v 1.5 1996/08/31 14:51:18 wosch Exp $
  */
 
 #ifndef lint
@@ -44,9 +46,10 @@ static char copyright[] =
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)locate.code.c	8.4 (Berkeley) 5/4/95";
+static char sccsid[] = "@(#)locate.code.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD$";
 #endif
-static char rcsid[] = "$NetBSD: locate.code.c,v 1.5 1995/08/31 22:36:33 jtc Exp $";
 #endif /* not lint */
 
 /*
@@ -85,37 +88,48 @@ static char rcsid[] = "$NetBSD: locate.code.c,v 1.5 1995/08/31 22:36:33 jtc Exp 
  */
 
 #include <sys/param.h>
-
 #include <err.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-
+#include <stdio.h>
 #include "locate.h"
 
 #define	BGBUFSIZE	(NBG * 2)	/* size of bigram buffer */
 
-char buf1[MAXPATHLEN] = " ";	
-char buf2[MAXPATHLEN];
+u_char buf1[MAXPATHLEN] = " ";	
+u_char buf2[MAXPATHLEN];
 char bigrams[BGBUFSIZE + 1] = { 0 };
 
+#define LOOKUP 1 /* use a lookup array instead a function, 3x faster */
+
+#ifdef LOOKUP
+#define BGINDEX(x) (big[(u_int)*x][(u_int)*(x+1)])
+typedef u_char bg_t;
+bg_t big[UCHAR_MAX][UCHAR_MAX];
+#else
+#define BGINDEX(x) bgindex(x)
+typedef int bg_t;
 int	bgindex __P((char *));
+#endif /* LOOKUP */
+
+
 void	usage __P((void));
+extern int optind;
+extern int optopt;
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register char *cp, *oldpath, *path;
+	register u_char *cp, *oldpath, *path;
 	int ch, code, count, diffcount, oldcount;
 	FILE *fp;
+	register int i, j;
 
 	while ((ch = getopt(argc, argv, "")) != EOF)
 		switch(ch) {
-		case '?':
 		default:
 			usage();
 		}
@@ -130,30 +144,44 @@ main(argc, argv)
 
 	/* First copy bigram array to stdout. */
 	(void)fgets(bigrams, BGBUFSIZE + 1, fp);
+
 	if (fwrite(bigrams, 1, BGBUFSIZE, stdout) != BGBUFSIZE)
 		err(1, "stdout");
 	(void)fclose(fp);
 
+#ifdef LOOKUP
+	/* init lookup table */
+	for (i = 0; i < UCHAR_MAX; i++)
+	    	for (j = 0; j < UCHAR_MAX; j++) 
+			big[i][j] = (bg_t)-1;
+
+	for (cp = bigrams, i = 0; *cp != '\0'; i += 2, cp += 2)
+	        big[(int)*cp][(int)*(cp + 1)] = (bg_t)i;
+#endif /* LOOKUP */
+
 	oldpath = buf1;
 	path = buf2;
 	oldcount = 0;
+
 	while (fgets(path, sizeof(buf2), stdin) != NULL) {
-		/* Truncate newline. */
-		cp = path + strlen(path) - 1;
-		if (cp > path && *cp == '\n')
-			*cp = '\0';
+
+	    	/* skip empty lines */
+		if (*path == '\n')
+			continue;
 
 		/* Squelch characters that would botch the decoding. */
 		for (cp = path; *cp != '\0'; cp++) {
-			*cp &= PARITY-1;
-			if (*cp <= SWITCH)
+			/* chop newline */
+			if (*cp == '\n')
+				*cp = '\0';
+			/* range */
+			else if (*cp < ASCII_MIN || *cp > ASCII_MAX)
 				*cp = '?';
 		}
 
 		/* Skip longest common prefix. */
-		for (cp = path; *cp == *oldpath; cp++, oldpath++)
-			if (*oldpath == '\0')
-				break;
+		for (cp = path; *cp == *oldpath && *cp != '\0'; cp++, oldpath++);
+
 		count = cp - path;
 		diffcount = count - oldcount + OFFSET;
 		oldcount = count;
@@ -171,7 +199,7 @@ main(argc, argv)
 					err(1, "stdout");
 				break;
 			}
-			if ((code = bgindex(cp)) < 0) {
+			if ((code = BGINDEX(cp)) == (bg_t)-1) {
 				if (putchar(*cp++) == EOF ||
 				    putchar(*cp++) == EOF)
 					err(1, "stdout");
@@ -196,6 +224,7 @@ main(argc, argv)
 	exit(0);
 }
 
+#ifndef LOOKUP
 int
 bgindex(bg)			/* Return location of bg in bigrams or -1. */
 	char *bg;
@@ -204,11 +233,12 @@ bgindex(bg)			/* Return location of bg in bigrams or -1. */
 
 	bg0 = bg[0];
 	bg1 = bg[1];
-	for (p = bigrams; *p != '\0'; p++)
+	for (p = bigrams; *p != NULL; p++)
 		if (*p++ == bg0 && *p == bg1)
 			break;
-	return (*p == '\0' ? -1 : --p - bigrams);
+	return (*p == NUL ? -1 : (--p - bigrams));
 }
+#endif /* !LOOKUP */
 
 void
 usage()

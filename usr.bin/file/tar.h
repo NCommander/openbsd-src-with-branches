@@ -1,3 +1,4 @@
+/* * $OpenBSD: tar.h,v 1.1.1.1 1995/10/18 08:45:09 deraadt Exp $ # checkin only*/
 /*
  * Header file for public domain tar (tape archive) program.
  *
@@ -5,7 +6,6 @@
  *
  * Created 25 August 1985 by John Gilmore, ihnp4!hoptoad!gnu.
  *
- * $Id: tar.h,v 1.4 1995/03/25 22:36:45 christos Exp $ # checkin only
  */
 
 /*

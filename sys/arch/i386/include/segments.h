@@ -1,4 +1,4 @@
-/*	$NetBSD: segments.h,v 1.20 1995/10/12 17:57:01 mycroft Exp $	*/
+/*	$NetBSD: segments.h,v 1.23 1996/02/01 22:31:03 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -70,9 +70,9 @@
 #define	KERNELMODE(c, f)	(ISPL(c) == SEL_KPL)
 #endif
 
-#ifndef LOCORE
+#ifndef _LOCORE
 
-#if __GNUC__ >= 2
+#if __GNUC__ == 2 && __GNUC_MINOR__ < 7
 #pragma pack(1)
 #endif
 
@@ -90,7 +90,7 @@ struct segment_descriptor {
 	unsigned sd_def32:1;		/* default 32 vs 16 bit size */
 	unsigned sd_gran:1;		/* limit granularity (byte/page) */
 	unsigned sd_hibase:8;		/* segment base address (msb) */
-};
+} __attribute__((packed));
 
 /*
  * Gate descriptors (e.g. indirect descriptors)
@@ -104,7 +104,7 @@ struct gate_descriptor {
 	unsigned gd_dpl:2;		/* segment descriptor priority level */
 	unsigned gd_p:1;		/* segment descriptor present */
 	unsigned gd_hioffset:16;	/* gate offset (msb) */
-};
+} __attribute__((packed));
 
 /*
  * Generic descriptor
@@ -112,7 +112,7 @@ struct gate_descriptor {
 union descriptor {
 	struct segment_descriptor sd;
 	struct gate_descriptor gd;
-};
+} __attribute__((packed));
 
 /*
  * region descriptors, used to load gdt/idt tables before segments yet exist.
@@ -120,9 +120,9 @@ union descriptor {
 struct region_descriptor {
 	unsigned rd_limit:16;		/* segment extent */
 	unsigned rd_base:32;		/* base address  */
-};
+} __attribute__((packed));
 
-#if __GNUC__ >= 2
+#if __GNUC__ == 2 && __GNUC_MINOR__ < 7
 #pragma pack(4)
 #endif
 
@@ -136,7 +136,7 @@ void setsegment __P((struct segment_descriptor *, void *, size_t, int, int,
     int, int));
 #endif /* _KERNEL */
 
-#endif /* !LOCORE */
+#endif /* !_LOCORE */
 
 /* system segments and gate types */
 #define	SDT_SYSNULL	 0	/* system null */
@@ -217,7 +217,10 @@ void setsegment __P((struct segment_descriptor *, void *, size_t, int, int,
 #define	GLDT_SEL	3	/* Default LDT descriptor */
 #define	GUCODE_SEL	4	/* User code descriptor */
 #define	GUDATA_SEL	5	/* User data descriptor */
-#define	NGDT 		6
+#define	GAPM32CODE_SEL	6
+#define	GAPM16CODE_SEL	7
+#define	GAPMDATA_SEL	8
+#define	NGDT		9
 
 /*
  * Entries in the Local Descriptor Table (LDT)

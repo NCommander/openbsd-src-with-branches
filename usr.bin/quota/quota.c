@@ -1,3 +1,5 @@
+/*	$OpenBSD: quota.c,v 1.6 1996/08/06 18:38:48 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1980, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -42,7 +44,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)quota.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: quota.c,v 1.9 1995/06/18 11:00:49 cgd Exp $";
+static char rcsid[] = "$OpenBSD: quota.c,v 1.6 1996/08/06 18:38:48 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -92,11 +94,11 @@ main(argc, argv)
 	int ngroups; 
 	gid_t mygid, gidset[NGROUPS];
 	int i, gflag = 0, uflag = 0;
-	char ch;
+	int ch;
 	extern char *optarg;
 	extern int optind, errno;
 
-	while ((ch = getopt(argc, argv, "ugvq")) != EOF) {
+	while ((ch = getopt(argc, argv, "ugvq")) != -1) {
 		switch(ch) {
 		case 'g':
 			gflag++;
@@ -452,8 +454,9 @@ getprivs(id, quotatype)
 		if (strncmp(fst[i].f_fstypename, "nfs", MFSNAMELEN) == 0) {
 			if (getnfsquota(&fst[i], NULL, qup, id, quotatype) == 0)
 				continue;
-		} else if (strncmp(fst[i].f_fstypename, "ufs",
-		    MFSNAMELEN) == 0) {
+		} else if (!strncmp(fst[i].f_fstypename, "ffs", MFSNAMELEN) ||
+		    !strncmp(fst[i].f_fstypename, "ufs", MFSNAMELEN) ||
+		    !strncmp(fst[i].f_fstypename, "mfs", MFSNAMELEN)) {
 			/*
 			 * XXX
 			 * UFS filesystems must be in /etc/fstab, and must
@@ -496,11 +499,13 @@ ufshasquota(fs, type, qfnamep)
 	char *opt, *cp;
 
 	if (!initname) {
-		sprintf(usrname, "%s%s", qfextension[USRQUOTA], qfname);
-		sprintf(grpname, "%s%s", qfextension[GRPQUOTA], qfname);
+		snprintf(usrname, sizeof usrname, "%s%s",
+		    qfextension[USRQUOTA], qfname);
+		snprintf(grpname, sizeof grpname, "%s%s",
+		    qfextension[GRPQUOTA], qfname);
 		initname = 1;
 	}
-	strcpy(buf, fs->fs_mntops);
+	strncpy(buf, fs->fs_mntops, sizeof buf);
 	for (opt = strtok(buf, ","); opt; opt = strtok(NULL, ",")) {
 		if (cp = index(opt, '='))
 			*cp++ = '\0';
@@ -515,7 +520,8 @@ ufshasquota(fs, type, qfnamep)
 		*qfnamep = cp;
 		return (1);
 	}
-	(void) sprintf(buf, "%s/%s.%s", fs->fs_file, qfname, qfextension[type]);
+	(void) snprintf(buf, sizeof buf, "%s/%s.%s",
+	    fs->fs_file, qfname, qfextension[type]);
 	*qfnamep = buf;
 	return (1);
 }

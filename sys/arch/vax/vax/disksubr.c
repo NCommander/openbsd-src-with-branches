@@ -1,4 +1,4 @@
-/*	$NetBSD: disksubr.c,v 1.6 1995/05/08 19:10:53 ragge Exp $	*/
+/*	$NetBSD: disksubr.c,v 1.10 1996/05/19 16:44:02 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988 Regents of the University of California.
@@ -35,13 +35,14 @@
  *	@(#)ufs_disksubr.c	7.16 (Berkeley) 5/4/91
  */
 
-#include "param.h"
-#include "systm.h"
-#include "buf.h"
-#include "dkbad.h"
-#include "disklabel.h"
-#include "syslog.h"
-#include "machine/macros.h"
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/buf.h>
+#include <sys/dkbad.h>
+#include <sys/disklabel.h>
+#include <sys/syslog.h>
+
+#include <machine/macros.h>
 
 /* XXX encoding of disk minor numbers, should be elsewhere... */
 #define dkunit(dev)		(minor(dev) >> 3)
@@ -50,7 +51,10 @@
 
 #define	b_cylin	b_resid
 
-#define		RAW_PART	3
+int	cpu_setdisklabel __P((struct disklabel *, struct disklabel *, u_long,
+	    struct cpu_disklabel *));
+int	cpu_writedisklabel __P((dev_t, void (*)(struct buf *),
+	    struct disklabel *, struct cpu_disklabel *));
 
 /*
  * Determine the size of the transfer, and make sure it is
@@ -58,15 +62,16 @@
  * if needed, and signal errors or early completion.
  */
 int
-bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
+bounds_check_with_label(bp, lp, wlabel)
+	struct	buf *bp;
+	struct	disklabel *lp;
+	int	wlabel;
 {
 	struct partition *p = lp->d_partitions + dkpart(bp->b_dev);
-	int labelsect = lp->d_partitions[0].p_offset;
+	int labelsect = lp->d_partitions[2].p_offset;
 	int maxsz = p->p_size,
 		sz = (bp->b_bcount + DEV_BSIZE - 1) >> DEV_BSHIFT;
-
 	/* overwriting disk label ? */
-	/* XXX should also protect bootstrap in first 8K */
         if (bp->b_blkno + p->p_offset <= LABELSECTOR + labelsect &&
 #if LABELSECTOR != 0
             bp->b_blkno + p->p_offset + sz > LABELSECTOR + labelsect &&
@@ -75,15 +80,6 @@ bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
                 bp->b_error = EROFS;
                 goto bad;
         }
-
-#if	defined(DOSBBSECTOR) && defined(notyet)
-	/* overwriting master boot record? */
-        if (bp->b_blkno + p->p_offset <= DOSBBSECTOR &&
-            (bp->b_flags & B_READ) == 0 && wlabel == 0) {
-                bp->b_error = EROFS;
-                goto bad;
-        }
-#endif
 
 	/* beyond partition? */
         if (bp->b_blkno < 0 || bp->b_blkno + sz > maxsz) {
@@ -110,17 +106,11 @@ bad:
 	return(-1);
 }
 
-/* NYFIL */
-
-/* encoding of disk minor numbers, should be elsewhere... */
-#define dkunit(dev)		(minor(dev) >> 3)
-#define dkpart(dev)		(minor(dev) & 7)
-#define dkminor(unit, part)	(((unit) << 3) | (part))
-
 /*
  * Check new disk label for sensibility
  * before setting it.
  */
+int
 setdisklabel(olp, nlp, openmask, osdep)
 	register struct disklabel *olp, *nlp;
 	u_long openmask;
@@ -133,9 +123,10 @@ setdisklabel(olp, nlp, openmask, osdep)
 /*
  * Write disk label back to device after modification.
  */
+int
 writedisklabel(dev, strat, lp, osdep)
 	dev_t dev;
-	void (*strat)();
+	void (*strat) __P((struct buf *));
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
 {
@@ -156,7 +147,7 @@ writedisklabel(dev, strat, lp, osdep)
 char *
 readdisklabel(dev, strat, lp, osdep)
 	dev_t dev;
-	void (*strat)();
+	void (*strat) __P((struct buf *));
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
 {
@@ -204,6 +195,7 @@ readdisklabel(dev, strat, lp, osdep)
  * Check new disk label for sensibility
  * before setting it.
  */
+int
 cpu_setdisklabel(olp, nlp, openmask, osdep)
 	register struct disklabel *olp, *nlp;
 	u_long openmask;
@@ -248,9 +240,10 @@ cpu_setdisklabel(olp, nlp, openmask, osdep)
 /*
  * Write disk label back to device after modification.
  */
+int
 cpu_writedisklabel(dev, strat, lp, osdep)
 	dev_t dev;
-	int (*strat)();
+	void (*strat) __P((struct buf *));
 	register struct disklabel *lp;
 	struct cpu_disklabel *osdep;
 {
@@ -271,7 +264,7 @@ cpu_writedisklabel(dev, strat, lp, osdep)
 	bp->b_bcount = lp->d_secsize;
 	bp->b_flags = B_READ;
 	(*strat)(bp);
-	if (error = biowait(bp))
+	if ((error = biowait(bp)))
 		goto done;
 	for (dlp = (struct disklabel *)bp->b_un.b_addr;
 	    dlp <= (struct disklabel *)

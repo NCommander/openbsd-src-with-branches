@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)setlocale.c	8.1 (Berkeley) 7/4/93";
+static char rcsid[] = "$OpenBSD: setlocale.c,v 1.3 1996/08/26 00:17:18 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
@@ -91,7 +91,8 @@ setlocale(category, locale)
 	int found, i, len;
 	char *env, *r;
 
-	if (!PathLocale && !(PathLocale = getenv("PATH_LOCALE")))
+	if (issetugid() != 0 ||
+	    (!PathLocale && !(PathLocale = getenv("PATH_LOCALE"))))
 		PathLocale = _PATH_LOCALE;
 
 	if (category < 0 || category >= _LC_LAST)
@@ -229,4 +230,5 @@ loadlocale(category)
 		case LC_TIME:
 			return (NULL);
 	}
+	return (NULL);
 }

@@ -1,3 +1,6 @@
+/*	$OpenBSD: pac.c,v 1.3 1996/04/21 23:40:48 deraadt Exp $ */
+/*	$NetBSD: pac.c,v 1.7 1996/03/21 18:21:20 jtc Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -100,7 +103,7 @@ static struct	hent *lookup __P((char []));
 static int	qucmp __P((const void *, const void *));
 static void	rewrite __P((void));
 
-void
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -166,8 +169,13 @@ fprintf(stderr,
 		(void) enter(--cp);
 		allflag = 0;
 	}
-	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
+	if (printer == NULL) {
+		char *p;
+
 		printer = DEFLP;
+		if ((p = getenv("PRINTER")) != NULL)
+			printer = p;
+	}
 	if (!chkprinter(printer)) {
 		printf("pac: unknown printer %s\n", printer);
 		exit(2);
@@ -210,7 +218,7 @@ account(acct)
 
 	while (fgets(linebuf, BUFSIZ, acct) != NULL) {
 		cp = linebuf;
-		while (any(*cp, " t\t"))
+		while (any(*cp, " \t"))
 			cp++;
 		t = atof(cp);
 		while (any(*cp, ".0123456789"))

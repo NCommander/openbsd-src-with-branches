@@ -32,17 +32,14 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)pipe.s	5.1 (Berkeley) 4/23/90
- *	$Id: pipe.S,v 1.3 1994/01/24 19:24:43 jtc Exp $
  */
 
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: pipe.S,v 1.3 1994/01/24 19:24:43 jtc Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
-
 #include "SYS.h"
+
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIB_SCCS */
 
 SYSCALL(pipe)
 	movl	4(%esp),%ecx

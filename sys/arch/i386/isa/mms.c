@@ -1,4 +1,4 @@
-/*	$NetBSD: mms.c,v 1.19 1995/10/05 22:06:51 mycroft Exp $	*/
+/*	$NetBSD: mms.c,v 1.24 1996/05/12 23:12:18 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994 Charles Hannum.
@@ -37,8 +37,10 @@
 #include <sys/device.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 #include <machine/mouse.h>
+#include <machine/conf.h>
 
 #include <dev/isa/isavar.h>
 
@@ -68,8 +70,12 @@ int mmsprobe __P((struct device *, void *, void *));
 void mmsattach __P((struct device *, struct device *, void *));
 int mmsintr __P((void *));
 
-struct cfdriver mmscd = {
-	NULL, "mms", mmsprobe, mmsattach, DV_TTY, sizeof(struct mms_softc)
+struct cfattach mms_ca = {
+	sizeof(struct mms_softc), mmsprobe, mmsattach
+};
+
+struct cfdriver mms_cd = {
+	NULL, "mms", DV_TTY
 };
 
 #define	MMSUNIT(dev)	(minor(dev))
@@ -109,21 +115,23 @@ mmsattach(parent, self, aux)
 	sc->sc_iobase = iobase;
 	sc->sc_state = 0;
 
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_PULSE, ISA_IPL_TTY,
-	    mmsintr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_PULSE,
+	    IPL_TTY, mmsintr, sc, sc->sc_dev.dv_xname);
 }
 
 int
-mmsopen(dev, flag)
+mmsopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
 	int unit = MMSUNIT(dev);
 	struct mms_softc *sc;
 
-	if (unit >= mmscd.cd_ndevs)
+	if (unit >= mms_cd.cd_ndevs)
 		return ENXIO;
-	sc = mmscd.cd_devs[unit];
+	sc = mms_cd.cd_devs[unit];
 	if (!sc)
 		return ENXIO;
 
@@ -145,11 +153,13 @@ mmsopen(dev, flag)
 }
 
 int
-mmsclose(dev, flag)
+mmsclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
-	struct mms_softc *sc = mmscd.cd_devs[MMSUNIT(dev)];
+	struct mms_softc *sc = mms_cd.cd_devs[MMSUNIT(dev)];
 
 	/* Disable interrupts. */
 	outb(sc->sc_iobase + MMS_ADDR, 0x87);
@@ -167,9 +177,9 @@ mmsread(dev, uio, flag)
 	struct uio *uio;
 	int flag;
 {
-	struct mms_softc *sc = mmscd.cd_devs[MMSUNIT(dev)];
+	struct mms_softc *sc = mms_cd.cd_devs[MMSUNIT(dev)];
 	int s;
-	int error;
+	int error = 0;
 	size_t length;
 	u_char buffer[MMS_CHUNK];
 
@@ -182,7 +192,8 @@ mmsread(dev, uio, flag)
 			return EWOULDBLOCK;
 		}
 		sc->sc_state |= MMS_ASLP;
-		if (error = tsleep((caddr_t)sc, PZERO | PCATCH, "mmsrea", 0)) {
+		error = tsleep((caddr_t)sc, PZERO | PCATCH, "mmsrea", 0);
+		if (error) {
 			sc->sc_state &= ~MMS_ASLP;
 			splx(s);
 			return error;
@@ -201,7 +212,7 @@ mmsread(dev, uio, flag)
 		(void) q_to_b(&sc->sc_q, buffer, length);
 
 		/* Copy the data to the user process. */
-		if (error = uiomove(buffer, length, uio))
+		if ((error = uiomove(buffer, length, uio)) != 0)
 			break;
 	}
 
@@ -209,13 +220,14 @@ mmsread(dev, uio, flag)
 }
 
 int
-mmsioctl(dev, cmd, addr, flag)
+mmsioctl(dev, cmd, addr, flag, p)
 	dev_t dev;
 	u_long cmd;
 	caddr_t addr;
 	int flag;
+	struct proc *p;
 {
-	struct mms_softc *sc = mmscd.cd_devs[MMSUNIT(dev)];
+	struct mms_softc *sc = mms_cd.cd_devs[MMSUNIT(dev)];
 	struct mouseinfo info;
 	int s;
 	int error;
@@ -327,7 +339,7 @@ mmsselect(dev, rw, p)
 	int rw;
 	struct proc *p;
 {
-	struct mms_softc *sc = mmscd.cd_devs[MMSUNIT(dev)];
+	struct mms_softc *sc = mms_cd.cd_devs[MMSUNIT(dev)];
 	int s;
 	int ret;
 

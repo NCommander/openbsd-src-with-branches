@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -39,12 +41,15 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)passwd.c	5.5 (Berkeley) 7/6/91";*/
-static char rcsid[] = "$Id: passwd.c,v 1.7 1995/02/12 17:45:56 phil Exp $";
+static char rcsid[] = "$OpenBSD: passwd.c,v 1.3 1996/05/03 18:23:34 tholo Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#ifdef KERBEROS
+#include <kerberosIV/krb.h>
+#endif
 
 /*
  * Note on configuration:
@@ -69,9 +74,11 @@ main(argc, argv)
 	char *username;
 	int status = 0;
 	char *basename;
-
 #if defined(KERBEROS) || defined(KERBEROS5)
-	use_kerberos = 1;
+	extern char realm[];
+
+	if (krb_get_lrealm(realm,1) == KSUCCESS)
+		use_kerberos = 1;
 #endif
 #ifdef	YP
 	use_yp = _yp_check(NULL);
@@ -80,21 +87,6 @@ main(argc, argv)
 	basename = strrchr(argv[0], '/');
 	if (basename == NULL)
 		basename = argv[0];
-	if (strcmp(basename, "yppasswd") == 0) {
-#ifdef YP
-		if (!use_yp) {
-			fprintf(stderr, "yppasswd: YP not in use.\n");
-			exit (1);
-		}
-		use_kerberos = 0;
-		use_yp = 1;
-		force_yp = 1;
-#else
-		fprintf(stderr, "yppasswd: YP not compiled in\n");
-		exit(1);
-#endif
-	}
-
 	
 	while ((ch = getopt(argc, argv, "lky")) != EOF)
 		switch (ch) {

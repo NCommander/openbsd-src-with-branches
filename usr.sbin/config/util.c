@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: util.c,v 1.2 1996/03/25 15:55:16 niklas Exp $	*/
+/*	$NetBSD: util.c,v 1.4 1996/03/17 11:50:16 cgd Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -40,7 +43,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)util.c	8.1 (Berkeley) 6/6/93
- *	$Id: util.c,v 1.1 1995/04/28 06:55:28 cgd Exp $
  */
 
 #include <ctype.h>
@@ -58,7 +60,7 @@
 static void nomem __P((void));
 static void vxerror __P((const char *, int, const char *, va_list));
 
-/* 
+/*
  * Malloc, with abort on error.
  */
 void *
@@ -69,10 +71,11 @@ emalloc(size)
 
 	if ((p = malloc(size)) == NULL)
 		nomem();
+	memset(p, 0, size);
 	return (p);
 }
 
-/* 
+/*
  * Realloc, with abort on error.
  */
 void *
@@ -118,10 +121,11 @@ path(file)
 static struct nvlist *nvhead;
 
 struct nvlist *
-newnv(name, str, ptr, i)
+newnv(name, str, ptr, i, next)
 	const char *name, *str;
 	void *ptr;
 	int i;
+	struct nvlist *next;
 {
 	register struct nvlist *nv;
 
@@ -129,7 +133,7 @@ newnv(name, str, ptr, i)
 		nv = emalloc(sizeof(*nv));
 	else
 		nvhead = nv->nv_next;
-	nv->nv_next = NULL;
+	nv->nv_next = next;
 	nv->nv_name = name;
 	if (ptr == NULL)
 		nv->nv_str = str;

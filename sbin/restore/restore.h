@@ -1,3 +1,4 @@
+/*	$OpenBSD: restore.h,v 1.7 1995/03/18 14:59:53 cgd Exp $	*/
 /*	$NetBSD: restore.h,v 1.7 1995/03/18 14:59:53 cgd Exp $	*/
 
 /*

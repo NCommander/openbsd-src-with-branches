@@ -1,4 +1,4 @@
-/*      $NetBSD: cpu.h,v 1.12 1995/06/05 17:17:57 ragge Exp $      */
+/*      $NetBSD: cpu.h,v 1.17 1996/05/19 16:43:16 ragge Exp $      */
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden
@@ -32,24 +32,27 @@
 
  /* All bugs are subject to removal without further notice */
 
-#include "sys/cdefs.h"
-#include "machine/mtpr.h"
-#include "machine/pcb.h"
+#include <sys/cdefs.h>
+#include <sys/device.h>
+
+#include <machine/mtpr.h>
+#include <machine/pcb.h>
 
 #define enablertclock()
 #define	cpu_wait(p)
 #define	cpu_swapout(p)
 
 
-extern volatile int cpunumber;
+extern int cpunumber, cpu_type;
 extern struct cpu_dep cpu_calls[];
 
 struct	cpu_dep {
-	int	(*cpu_loinit)(); /* Locore init before everything else */
-	int	(*cpu_clock)();	 /* CPU dependent clock handling */
-	int	(*cpu_mchk)();   /* Machine check handling */
-	int	(*cpu_memerr)(); /* Memory subsystem errors */
-	int	(*cpu_conf)();	 /* Autoconfiguration */
+	void	(*cpu_steal_pages) __P((void)); /* pmap init before mm is on */
+	int	(*cpu_clock) __P((void)); /* CPU dependent clock handling */
+	int	(*cpu_mchk) __P((caddr_t));   /* Machine check handling */
+	void	(*cpu_memerr) __P((void)); /* Memory subsystem errors */
+	    /* Autoconfiguration */
+	void	(*cpu_conf) __P((struct device *, struct device *, void *));
 };
 
 struct clockframe {
@@ -86,3 +89,17 @@ extern	int     want_resched;   /* resched() was called */
  */
 #define need_proftick(p) {(p)->p_flag |= P_OWEUPC; mtpr(AST_OK,PR_ASTLVL); }
 
+/* Some low-level prototypes */
+int	badaddr __P((caddr_t, int));
+void	cpu_set_kpc __P((struct proc *, void (*)(struct proc *)));
+void	cpu_swapin __P((struct proc *));
+int	hp_getdev __P((int, int));
+void	configure __P((void));
+void	dumpconf __P((void));
+void	dumpsys __P((void));
+void	setroot __P((void));
+void	setconf __P((void));
+void	swapconf __P((void));
+#ifdef DDB
+int	kdbrint __P((int));
+#endif

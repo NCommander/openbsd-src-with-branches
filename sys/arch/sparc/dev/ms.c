@@ -1,4 +1,5 @@
-/*	$NetBSD: ms.c,v 1.5 1995/08/29 22:15:35 pk Exp $ */
+/*	$OpenBSD$	*/
+/*	$NetBSD: ms.c,v 1.8 1996/04/01 17:29:52 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -49,15 +50,20 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/syslog.h>
 #include <sys/systm.h>
 #include <sys/tty.h>
+#include <sys/signalvar.h>
+#include <sys/conf.h>
 
 #include <machine/vuid_event.h>
+#include <machine/cpu.h>
+#include <machine/kbd.h>
+#include <machine/conf.h>
+
 #include <sparc/dev/event_var.h>
 
 /*
@@ -92,7 +98,8 @@ struct ms_softc {
 void
 ms_serial(tp, iopen, iclose)
 	struct tty *tp;
-	void (*iopen)(), (*iclose)();
+	void (*iopen) __P((struct tty *));
+	void (*iclose) __P((struct tty *));
 {
 
 	ms_softc.ms_mouse = tp;
@@ -242,20 +249,11 @@ msopen(dev, flags, mode, p)
 	int flags, mode;
 	struct proc *p;
 {
-	int s, error;
 
 	if (ms_softc.ms_events.ev_io)
 		return (EBUSY);
 	ms_softc.ms_events.ev_io = p;
 	ev_init(&ms_softc.ms_events);	/* may cause sleep */
-
-#if defined(SUN4)
-	if (cputyp == CPU_SUN4) {
-		/* We need to set the baud rate on the mouse. */
-		ms_softc.ms_mouse->t_ispeed =
-		    ms_softc.ms_mouse->t_ospeed = 1200;
-	}
-#endif
 
 	(*ms_softc.ms_open)(ms_softc.ms_mouse);
 	ms_softc.ms_ready = 1;		/* start accepting events */
@@ -305,8 +303,6 @@ msioctl(dev, cmd, data, flag, p)
 	int flag;
 	struct proc *p;
 {
-	int s;
-
 	switch (cmd) {
 
 	case FIONBIO:		/* we will remove this someday (soon???) */

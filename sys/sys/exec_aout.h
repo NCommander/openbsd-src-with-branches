@@ -1,4 +1,5 @@
-/*	$NetBSD: exec_aout.h,v 1.12 1995/08/18 15:32:58 pk Exp $	*/
+/*	$OpenBSD: exec_aout.h,v 1.4 1996/05/22 12:07:34 deraadt Exp $	*/
+/*	$NetBSD: exec_aout.h,v 1.15 1996/05/18 17:20:54 christos Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -67,7 +68,7 @@ struct exec {
 #define	MID_HP200	200	/* hp200 (68010) BSD binary */
 #define	MID_I386	134	/* i386 BSD binary */
 #define	MID_M68K	135	/* m68k BSD binary with 8K page sizes */
-#define	MID_M68K4K	136	/* m68k BSD binary with 4K page sizes */
+#define	MID_M68K4K	136	/* DO NOT USE: m68k BSD binary with 4K page sizes */
 #define	MID_NS32532	137	/* ns32532 */
 #define	MID_SPARC	138	/* sparc */
 #define	MID_PMAX	139	/* pmax */
@@ -172,9 +173,22 @@ struct exec {
 int	exec_aout_makecmds __P((struct proc *, struct exec_package *));
 
 /* functions which prepare various a.out executable types */
+/*
+ * MI portion
+ */
 int	exec_aout_prep_zmagic __P((struct proc *, struct exec_package *));
 int	exec_aout_prep_nmagic __P((struct proc *, struct exec_package *));
 int	exec_aout_prep_omagic __P((struct proc *, struct exec_package *));
 int	exec_aout_setup_stack __P((struct proc *, struct exec_package *));
+
+/* For compatibility modules */
+int	exec_aout_prep_oldzmagic __P((struct proc *, struct exec_package *));
+int	exec_aout_prep_oldnmagic __P((struct proc *, struct exec_package *));
+int	exec_aout_prep_oldomagic __P((struct proc *, struct exec_package *));
+
+/*
+ * MD portion
+ */
+int cpu_exec_aout_makecmds __P((struct proc *, struct exec_package *));
 
 #endif /* _KERNEL */

@@ -1,4 +1,4 @@
-/*	$NetBSD: ethertype.h,v 1.2 1995/03/06 19:10:06 mycroft Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1993, 1994

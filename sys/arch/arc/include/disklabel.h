@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.2 1996/06/06 23:06:36 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.4 1996/09/24 12:07:08 deraadt Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.2 1995/01/18 06:37:55 mellon Exp $	*/
 
 /*
@@ -34,9 +34,11 @@
 #ifndef _MACHINE_DISKLABEL_H_
 #define _MACHINE_DISKLABEL_H_
 
-#define	LABELSECTOR	0			/* sector containing label */
-#define	LABELOFFSET	64			/* offset of label in sector */
-#define	MAXPARTITIONS	8			/* number of partitions */
+#define	LABELSECTOR	1			/* sector containing label */
+#define	LABELOFFSET	0			/* offset of label in sector */
+#define	MAXPARTITIONS	16			/* number of partitions */
+#define	PARTITIONSHIFT	4			/* log2 */
+#define	PARTITIONMASK	0xf			
 #define	RAW_PART	2			/* raw partition: xx?c */
 
 /* DOS partition table -- used when the system is booted from a dos
@@ -60,8 +62,13 @@ struct dos_partition {
 } dos_partitions[NDOSPART];
 
 /* Known DOS partition types. */
-#define	DOSPTYP_386BSD	0xa5		/* 386BSD partition type */
+#define DOSPTYP_386BSD	0xa5		/* 386BSD partition type */
 #define DOSPTYP_NETBSD	DOSPTYP_386BSD	/* NetBSD partition type (XXX) */
+#define DOSPTYP_OPENBSD	0xa6		/* OpenBSD partition type */
+#define DOSPTYP_FAT12   0x1
+#define DOSPTYP_FAT16S  0x4
+#define DOSPTYP_FAT16B  0x6
+#define DOSPTYP_FAT16C  0xe
 
 #include <sys/dkbad.h>
 struct cpu_disklabel {

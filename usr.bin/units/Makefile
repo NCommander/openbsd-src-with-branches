@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.1 1993/10/27 03:31:49 cgd Exp $
+#	$OpenBSD$
 
 PROG=	units
 

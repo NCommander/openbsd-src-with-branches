@@ -1,4 +1,5 @@
-/*	$NetBSD: pms.c,v 1.23 1995/10/05 22:06:54 mycroft Exp $	*/
+/*	$OpenBSD: pms.c,v 1.9 1996/05/25 22:17:52 deraadt Exp $	*/
+/*	$NetBSD: pms.c,v 1.29 1996/05/12 23:12:42 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1994 Charles Hannum.
@@ -50,8 +51,10 @@
 #include <sys/device.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 #include <machine/mouse.h>
+#include <machine/conf.h>
 
 #include <dev/isa/isavar.h>
 
@@ -104,18 +107,27 @@ int pmsprobe __P((struct device *, void *, void *));
 void pmsattach __P((struct device *, struct device *, void *));
 int pmsintr __P((void *));
 
-struct cfdriver pmscd = {
-	NULL, "pms", pmsprobe, pmsattach, DV_TTY, sizeof(struct pms_softc)
+struct cfattach pms_ca = {
+	sizeof(struct pms_softc), pmsprobe, pmsattach,
+};
+
+struct cfdriver pms_cd = {
+	NULL, "pms", DV_TTY
 };
 
 #define	PMSUNIT(dev)	(minor(dev))
 
-static inline void
+static __inline void pms_flush __P((void));
+static __inline void pms_dev_cmd __P((u_char));
+static __inline void pms_pit_cmd __P((u_char));
+static __inline void pms_aux_cmd __P((u_char));
+
+static __inline void
 pms_flush()
 {
 	u_char c;
 
-	while (c = inb(PMS_STATUS) & 0x03)
+	while ((c = inb(PMS_STATUS) & 0x03) != 0)
 		if ((c & PMS_OBUF_FULL) == PMS_OBUF_FULL) {
 			/* XXX - delay is needed to prevent some keyboards from
 			   wedging when the system boots */
@@ -124,7 +136,7 @@ pms_flush()
 		}
 }
 
-static inline void
+static __inline void
 pms_dev_cmd(value)
 	u_char value;
 {
@@ -135,7 +147,7 @@ pms_dev_cmd(value)
 	outb(PMS_DATA, value);
 }
 
-static inline void
+static __inline void
 pms_aux_cmd(value)
 	u_char value;
 {
@@ -144,7 +156,7 @@ pms_aux_cmd(value)
 	outb(PMS_CNTRL, value);
 }
 
-static inline void
+static __inline void
 pms_pit_cmd(value)
 	u_char value;
 {
@@ -155,18 +167,33 @@ pms_pit_cmd(value)
 	outb(PMS_DATA, value);
 }
 
+/*
+ * XXX needs more work yet.  We should have a `pckbd_attach_args' that
+ * provides the parent's io port and our irq.
+ */
 int
 pmsprobe(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
-	struct isa_attach_args *ia = aux;
+	struct cfdata *cf = match;
 	u_char x;
 
-	if (ia->ia_iobase != 0x60)
-		return 0;
+	/*
+	 * We only attach to the keyboard controller via
+	 * the console drivers. (We really wish we could be the
+	 * child of a real keyboard controller driver.)
+	 */
+	if ((parent == NULL) ||
+	   ((strcmp(parent->dv_cfdata->cf_driver->cd_name, "pc") != 0) &&
+	    (strcmp(parent->dv_cfdata->cf_driver->cd_name, "vt") != 0)))
+		return (0);
 
-	pms_dev_cmd(PMS_RESET);
+	/* Can't wildcard IRQ. */
+	if (cf->cf_loc[0] == -1)
+		return (0);
+
+	/*pms_dev_cmd(PMS_RESET);*/
 	pms_aux_cmd(PMS_AUX_TEST);
 	delay(1000);
 	x = inb(PMS_DATA);
@@ -174,8 +201,6 @@ pmsprobe(parent, match, aux)
 	if (x & 0x04)
 		return 0;
 
-	ia->ia_iosize = PMS_NPORTS;
-	ia->ia_msize = 0;
 	return 1;
 }
 
@@ -185,28 +210,31 @@ pmsattach(parent, self, aux)
 	void *aux;
 {
 	struct pms_softc *sc = (void *)self;
-	struct isa_attach_args *ia = aux;
+	int irq = self->dv_cfdata->cf_loc[0];
+	isa_chipset_tag_t ic = aux;			/* XXX */
 
-	printf("\n");
+	printf(" irq %d\n", irq);
 
 	/* Other initialization was done by pmsprobe. */
 	sc->sc_state = 0;
 
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_TTY,
-	    pmsintr, sc);
+	sc->sc_ih = isa_intr_establish(ic, irq, IST_EDGE, IPL_TTY,
+	    pmsintr, sc, sc->sc_dev.dv_xname);
 }
 
 int
-pmsopen(dev, flag)
+pmsopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
 	int unit = PMSUNIT(dev);
 	struct pms_softc *sc;
 
-	if (unit >= pmscd.cd_ndevs)
+	if (unit >= pms_cd.cd_ndevs)
 		return ENXIO;
-	sc = pmscd.cd_devs[unit];
+	sc = pms_cd.cd_devs[unit];
 	if (!sc)
 		return ENXIO;
 
@@ -237,14 +265,16 @@ pmsopen(dev, flag)
 }
 
 int
-pmsclose(dev, flag)
+pmsclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
-	struct pms_softc *sc = pmscd.cd_devs[PMSUNIT(dev)];
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
 
 	/* Disable interrupts. */
-	pms_dev_cmd(PMS_DEV_DISABLE);
+	/* pms_dev_cmd(PMS_DEV_DISABLE); */
 	pms_pit_cmd(PMS_INT_DISABLE);
 	pms_aux_cmd(PMS_AUX_DISABLE);
 
@@ -261,9 +291,9 @@ pmsread(dev, uio, flag)
 	struct uio *uio;
 	int flag;
 {
-	struct pms_softc *sc = pmscd.cd_devs[PMSUNIT(dev)];
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
 	int s;
-	int error;
+	int error = 0;
 	size_t length;
 	u_char buffer[PMS_CHUNK];
 
@@ -276,7 +306,8 @@ pmsread(dev, uio, flag)
 			return EWOULDBLOCK;
 		}
 		sc->sc_state |= PMS_ASLP;
-		if (error = tsleep((caddr_t)sc, PZERO | PCATCH, "pmsrea", 0)) {
+		error = tsleep((caddr_t)sc, PZERO | PCATCH, "pmsrea", 0);
+		if (error) {
 			sc->sc_state &= ~PMS_ASLP;
 			splx(s);
 			return error;
@@ -295,7 +326,7 @@ pmsread(dev, uio, flag)
 		(void) q_to_b(&sc->sc_q, buffer, length);
 
 		/* Copy the data to the user process. */
-		if (error = uiomove(buffer, length, uio))
+		if ((error = uiomove(buffer, length, uio)) != 0)
 			break;
 	}
 
@@ -303,13 +334,14 @@ pmsread(dev, uio, flag)
 }
 
 int
-pmsioctl(dev, cmd, addr, flag)
+pmsioctl(dev, cmd, addr, flag, p)
 	dev_t dev;
 	u_long cmd;
 	caddr_t addr;
 	int flag;
+	struct proc *p;
 {
-	struct pms_softc *sc = pmscd.cd_devs[PMSUNIT(dev)];
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
 	struct mouseinfo info;
 	int s;
 	int error;
@@ -432,7 +464,7 @@ pmsselect(dev, rw, p)
 	int rw;
 	struct proc *p;
 {
-	struct pms_softc *sc = pmscd.cd_devs[PMSUNIT(dev)];
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
 	int s;
 	int ret;
 

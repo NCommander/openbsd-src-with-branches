@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_statvfs.h,v 1.1 1995/01/08 21:31:39 christos Exp $	 */
 /*	$NetBSD: svr4_statvfs.h,v 1.1 1995/01/08 21:31:39 christos Exp $	 */
 
 /*

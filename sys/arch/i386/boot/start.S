@@ -62,7 +62,8 @@ LOADSZ		=	15	# size of unix boot
 PARTSTART	=	0x1be	# starting address of partition table
 NUMPART		=	4	# number of partitions in partition table
 PARTSZ		=	16	# each partition table entry is 16 bytes
-BSDPART		=	0xA5	# value of boot_ind, means bootable partition
+BSDPART		=	0xA6	# OpenBSD partition identification
+OLDBSDPART	=	0xA5	# 386/Net/FreeBSD partition identification
 BOOTABLE	=	0x80	# value of boot_ind, means bootable partition
 
 	.text	
@@ -70,6 +71,7 @@ BOOTABLE	=	0x80	# value of boot_ind, means bootable partition
 
 ENTRY(boot1)
 start:
+#ifndef DOSREAD
 	# start (aka boot1) is loaded at 0x0:0x7c00 but we want 0x7c0:0
 	# ljmp to the next instruction to adjust %cs
 	data32
@@ -163,7 +165,7 @@ hd:	/**** load sector 0 into the BOOTSEG ****/
 	data32
 	jb	read_error
 
-	/***# find the first 386BSD partition *****/
+	/***# find the first OpenBSD partition *****/
 	data32
 	movl	$PARTSTART, %ebx
 	data32
@@ -178,12 +180,33 @@ again:
 	addl	$PARTSZ, %ebx
 	data32
 	loop	again
+
+	/***# find the first 386/Net/FreeBSD partition *****/
+	data32
+	movl	$PARTSTART, %ebx
+	data32
+	movl	$NUMPART, %ecx
+again2:
+	addr32
+	movb    %es:4(%ebx), %al
+	cmpb	$OLDBSDPART, %al
+	data32
+	je	found
+	data32
+	addl	$PARTSZ, %ebx
+	data32
+	loop	again2
 	data32
 	movl	$enoboot, %esi
 	data32
 	jmp	err_stop
+#else /* !DOSREAD */
+      movb    $0xff, %dl
+      jmp     _C_LABEL(boot2)
+#endif /* DOSREAD */
 
 
+#ifndef DOSREAD
 /*
 # BIOS call "INT 0x13 Function 0x2" to read sectors from disk into memory
 #       Call with       %ah = 0x2
@@ -264,6 +287,7 @@ message:
 	data32
 	pushl	%edx
 
+#endif
 nextb:
 	cld
 	lodsb			# load a byte into %al
@@ -371,6 +395,7 @@ endofcode:
 /* throw in a partition in case we are block0 as well */
 /* flag, head, sec, cyl, typ, ehead, esect, ecyl, start, len */
 	. = _C_LABEL(boot1) + PARTSTART
+startoflabel:
 	.byte	0x0,0,0,0,0,0,0,0
 	.long	0,0
 	.byte	0x0,0,0,0,0,0,0,0

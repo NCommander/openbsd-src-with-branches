@@ -1,4 +1,4 @@
-/*	$Id$	*/
+/*	$Id: kadmin.c,v 1.2 1995/12/14 08:43:44 tholo Exp $	*/
 
 /* 
  * Copyright (C) 1989 by the Massachusetts Institute of Technology
@@ -287,6 +287,7 @@ static int inited = 0;
 static void
 do_init(int argc, char **argv)
 {
+    char *dot, admin[MAXHOSTNAMELEN];
     struct passwd *pw;
     int c;
 #define OPTION_STRING "u:r:m"
@@ -298,14 +299,21 @@ do_init(int argc, char **argv)
 	 * This is only as a default/initial realm; we don't care 
 	 * about failure.
 	 */
-	if (krb_get_lrealm(default_realm, 1) != KSUCCESS)
-	    strcpy(default_realm, KRB_REALM);
+	if (krb_get_lrealm(default_realm, 1) != KSUCCESS) {
+	    fprintf(stderr,
+		    "Could not determine local realm name.\n");
+	}
+
+	c = krb_get_admhst(admin, default_realm, 1);
+	if (c == KSUCCESS && (dot = strchr(admin, '.')) != NULL)
+	    *dot = '\0';
 
 	/* 
 	 * If we can reach the local realm, initialize to it.  Otherwise,
 	 * don't initialize.
 	 */
-	if (kadm_init_link(PWSERV_NAME, KRB_MASTER, krbrlm) != KADM_SUCCESS)
+	if (c == KSUCCESS &&
+	    kadm_init_link(PWSERV_NAME, admin, default_realm) != KADM_SUCCESS)
 	    bzero(krbrlm, sizeof(krbrlm));
 	else
 	    strcpy(krbrlm, default_realm);
@@ -354,7 +362,8 @@ main(int argc, char **argv)
 	ss_perror(sci_idx, code, "creating invocation");
 	exit(1);
     }
-    (void) sprintf(tktstring, "/tmp/tkt_adm_%d",(int)getpid());
+    (void) snprintf(tktstring, sizeof(tktstring), "/tmp/tkt_adm_%d",
+	(int)getpid());
     krb_set_tkt_string(tktstring);
 
     do_init(argc, argv);
@@ -370,6 +379,7 @@ main(int argc, char **argv)
 static int
 setvals(Kadm_vals *vals, char *string)
 {
+    char *dot, admin[MAXHOSTNAMELEN];
     char realm[REALM_SZ];
     int status = KADM_SUCCESS;
 
@@ -385,8 +395,12 @@ setvals(Kadm_vals *vals, char *string)
     if (!realm[0])
 	strcpy(realm, default_realm);
     if (strcmp(realm, krbrlm)) {
+	if ((status = krb_get_admhst(admin, realm, 1)) != KSUCCESS)
+            return(status);
+	if (status == KSUCCESS && (dot = strchr(admin, '.')) != NULL)
+	    *dot = '\0';
 	strcpy(krbrlm, realm);
-	if ((status = kadm_init_link(PWSERV_NAME, KRB_MASTER, krbrlm)) 
+	if ((status = kadm_init_link(PWSERV_NAME, admin, krbrlm)) 
 	    != KADM_SUCCESS)
 	    printf("kadm error for realm %s: %s\n", 
 		   krbrlm, error_message(status));
@@ -422,7 +436,8 @@ change_password(int argc, char **argv)
 	    return;
 
 	/* get the new password */
-	(void) sprintf(pw_prompt, "New password for %s:", argv[1]);
+	(void) snprintf(pw_prompt, sizeof(pw_prompt), "New password for %s:",
+	    argv[1]);
 	
 	if (get_password(&new.key_low, &new.key_high,
 			 pw_prompt, SWAP) == GOOD_PW) {
@@ -461,7 +476,8 @@ change_admin_password(int argc, char **argv)
     if (get_admin_password() != GOOD_PW)
 	return;
 
-    (void) sprintf(prompt_pw, "New password for %s.admin:",myname);
+    (void) snprintf(prompt_pw, sizeof(prompt_pw), "New password for %s.admin:",
+	myname);
     if (get_password(&low, &high, prompt_pw, DONTSWAP) == GOOD_PW) {
 	bcopy((char *)&low,(char *) newkey,4);
 	bcopy((char *)&high, (char *)(((int32_t *) newkey) + 1),4);
@@ -511,7 +527,8 @@ add_new_key(int argc, char **argv)
 	get_expdate(&new);
 
 	/* get the new password */
-	(void) sprintf(pw_prompt, "Password for %s:", argv[1]);
+	(void) snprintf(pw_prompt, sizeof(pw_prompt), "Password for %s:",
+	    argv[1]);
 	
 	if (get_password(&new.key_low, &new.key_high,
 			 pw_prompt, SWAP) == GOOD_PW) {

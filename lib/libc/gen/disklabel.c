@@ -1,5 +1,3 @@
-/*	$NetBSD: disklabel.c,v 1.11 1995/06/07 13:14:09 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)disklabel.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: disklabel.c,v 1.11 1995/06/07 13:14:09 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: disklabel.c,v 1.2 1996/08/19 08:22:24 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -54,7 +48,6 @@ static char rcsid[] = "$NetBSD: disklabel.c,v 1.11 1995/06/07 13:14:09 cgd Exp $
 #include <string.h>
 #include <unistd.h>
 
-static void	error __P((int));
 static int	gettype __P((char *, char **));
 
 struct disklabel *
@@ -178,18 +171,4 @@ gettype(t, names)
 	if (isdigit(*t))
 		return (atoi(t));
 	return (0);
-}
-
-static void
-error(err)
-	int err;
-{
-	char *p;
-
-	(void)write(STDERR_FILENO, "disktab: ", 9);
-	(void)write(STDERR_FILENO, _PATH_DISKTAB, sizeof(_PATH_DISKTAB) - 1);
-	(void)write(STDERR_FILENO, ": ", 2);
-	p = strerror(err);
-	(void)write(STDERR_FILENO, p, strlen(p));
-	(void)write(STDERR_FILENO, "\n", 1);
 }

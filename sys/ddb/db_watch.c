@@ -1,8 +1,9 @@
-/*	$NetBSD: db_watch.c,v 1.7 1994/10/09 08:30:15 mycroft Exp $	*/
+/*	$OpenBSD$ */
+/*	$NetBSD: db_watch.c,v 1.9 1996/03/30 22:30:12 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  * 	Author: Richard P. Draves, Carnegie Mellon University
  *	Date:	10/90
@@ -38,7 +39,11 @@
 #include <ddb/db_watch.h>
 #include <ddb/db_lex.h>
 #include <ddb/db_access.h>
+#include <ddb/db_run.h>
 #include <ddb/db_sym.h>
+#include <ddb/db_output.h>
+#include <ddb/db_command.h>
+#include <ddb/db_extern.h>
 
 /*
  * Watchpoints.
@@ -158,7 +163,7 @@ db_list_watchpoints()
 	for (watch = db_watchpoint_list;
 	     watch != 0;
 	     watch = watch->link)
-	    db_printf("%s%8x  %8x  %x\n",
+	    db_printf("%s%p  %8lx  %lx\n",
 		      db_map_current(watch->map) ? "*" : " ",
 		      watch->map, watch->loaddr,
 		      watch->hiaddr - watch->loaddr);
@@ -198,8 +203,13 @@ db_watchpoint_cmd(addr, have_addr, count, modif)
 }
 
 /* list watchpoints */
+/*ARGSUSED*/
 void
-db_listwatch_cmd()
+db_listwatch_cmd(addr, have_addr, count, modif)
+	db_expr_t	addr;
+	int		have_addr;
+	db_expr_t	count;
+	char *		modif;
 {
 	db_list_watchpoints();
 }

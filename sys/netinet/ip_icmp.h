@@ -1,4 +1,5 @@
-/*	$NetBSD: ip_icmp.h,v 1.9 1995/04/17 05:32:57 cgd Exp $	*/
+/*	$OpenBSD: ip_icmp.h,v 1.2 1996/03/03 22:30:36 niklas Exp $	*/
+/*	$NetBSD: ip_icmp.h,v 1.10 1996/02/13 23:42:28 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -41,6 +42,14 @@
  */
 
 /*
+ * ICMP Router Advertisement data
+ */
+struct icmp_ra_addr {
+	n_long ira_addr;
+	n_long ira_preference;
+};
+
+/*
  * Structure of an icmp header.
  */
 struct icmp {
@@ -61,6 +70,12 @@ struct icmp {
 			  n_short ipm_void;    
 			  n_short ipm_nextmtu;
 		} ih_pmtu;
+
+		struct ih_rtradv {
+			u_int8_t irt_num_addrs;
+			u_int8_t irt_wpa;
+			n_short irt_lifetime;
+		} ih_rtradv;
 	} icmp_hun;
 #define	icmp_pptr	  icmp_hun.ih_pptr
 #define	icmp_gwaddr	  icmp_hun.ih_gwaddr
@@ -69,6 +84,9 @@ struct icmp {
 #define	icmp_void	  icmp_hun.ih_void
 #define	icmp_pmvoid	  icmp_hun.ih_pmtu.ipm_void
 #define	icmp_nextmtu	  icmp_hun.ih_pmtu.ipm_nextmtu
+#define	icmp_num_addrs	  icmp_hun.ih_rtradv.irt_num_addrs
+#define	icmp_wpa	  icmp_hun.ih_rtradv.irt_wpa
+#define	icmp_lifetime	  icmp_hun.ih_rtradv.irt_lifetime
 	union {
 		struct id_ts {
 			  n_time its_otime;
@@ -155,7 +173,7 @@ struct icmp {
 
 #ifdef _KERNEL
 void	icmp_error __P((struct mbuf *, int, int, n_long, struct ifnet *));
-void	icmp_input __P((struct mbuf *, int));
+void	icmp_input __P((struct mbuf *, ...));
 void	icmp_reflect __P((struct mbuf *));
 void	icmp_send __P((struct mbuf *, struct mbuf *));
 int	icmp_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));

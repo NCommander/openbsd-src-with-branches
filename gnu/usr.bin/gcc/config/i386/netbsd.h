@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* This goes away when the math-emulator is fixed */
 #define TARGET_CPU_DEFAULT 0400		/* TARGET_NO_FANCY_MATH_387 */
 
@@ -29,8 +31,6 @@
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
-
-#define HANDLE_SYSV_PRAGMA
 
 /* There are conflicting reports about whether this system uses
    a different assembler syntax.  wilson@cygnus.com says # is right.  */

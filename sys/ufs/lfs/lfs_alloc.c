@@ -1,7 +1,8 @@
-/*	$NetBSD: lfs_alloc.c,v 1.2 1994/06/29 06:46:47 cgd Exp $	*/
+/*	$OpenBSD: lfs_alloc.c,v 1.4 1996/04/21 22:32:39 deraadt Exp $	*/
+/*	$NetBSD: lfs_alloc.c,v 1.4 1996/03/25 12:53:37 pk Exp $	*/
 
 /*
- * Copyright (c) 1991, 1993
+ * Copyright (c) 1991, 1993, 1995
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,11 +33,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)lfs_alloc.c	8.4 (Berkeley) 1/4/94
+ *	@(#)lfs_alloc.c	8.7 (Berkeley) 5/14/95
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/kernel.h>
+#include <sys/proc.h>
 #include <sys/buf.h>
 #include <sys/vnode.h>
 #include <sys/syslog.h>
@@ -48,6 +51,7 @@
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/ufsmount.h>
+#include <ufs/ufs/ufs_extern.h>
 
 #include <ufs/lfs/lfs.h>
 #include <ufs/lfs/lfs_extern.h>
@@ -57,20 +61,21 @@ extern u_long nextgennumber;
 /* Allocate a new inode. */
 /* ARGSUSED */
 int
-lfs_valloc(ap)
+lfs_valloc(v)
+	void *v;
+{
 	struct vop_valloc_args /* {
 		struct vnode *a_pvp;
 		int a_mode;
 		struct ucred *a_cred;
 		struct vnode **a_vpp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct lfs *fs;
 	struct buf *bp;
 	struct ifile *ifp;
 	struct inode *ip;
 	struct vnode *vp;
-	daddr_t blkno;
+	ufs_daddr_t blkno;
 	ino_t new_ino;
 	u_long i, max;
 	int error;
@@ -97,7 +102,7 @@ lfs_valloc(ap)
 		vp = fs->lfs_ivnode;
 		ip = VTOI(vp);
 		blkno = lblkno(fs, ip->i_size);
-		lfs_balloc(vp, fs->lfs_bsize, blkno, &bp);
+		lfs_balloc(vp, 0, fs->lfs_bsize, blkno, &bp);
 		ip->i_size += fs->lfs_bsize;
 		vnode_pager_setsize(vp, (u_long)ip->i_size);
 		vnode_pager_uncache(vp);
@@ -113,12 +118,12 @@ lfs_valloc(ap)
 		}
 		ifp--;
 		ifp->if_nextfree = LFS_UNUSED_INUM;
-		if (error = VOP_BWRITE(bp))
+		if ((error = VOP_BWRITE(bp)) != 0)
 			return (error);
 	}
 
 	/* Create a vnode to associate with the inode. */
-	if (error = lfs_vcreate(ap->a_pvp->v_mount, new_ino, &vp))
+	if ((error = lfs_vcreate(ap->a_pvp->v_mount, new_ino, &vp)) != 0)
 		return (error);
 
 
@@ -135,7 +140,8 @@ lfs_valloc(ap)
 	/* Insert into the inode hash table. */
 	ufs_ihashins(ip);
 
-	if (error = ufs_vinit(vp->v_mount, lfs_specop_p, LFS_FIFOOPS, &vp)) {
+	error = ufs_vinit(vp->v_mount, lfs_specop_p, LFS_FIFOOPS, &vp);
+	if (error) {
 		vput(vp);
 		*ap->a_vpp = NULL;
 		return (error);
@@ -158,13 +164,16 @@ lfs_vcreate(mp, ino, vpp)
 	ino_t ino;
 	struct vnode **vpp;
 {
-	extern int (**lfs_vnodeop_p)();
+	extern int (**lfs_vnodeop_p) __P((void *));
 	struct inode *ip;
 	struct ufsmount *ump;
-	int error, i;
+	int error;
+#ifdef QUOTA
+	int i;
+#endif
 
 	/* Create the vnode. */
-	if (error = getnewvnode(VT_LFS, mp, lfs_vnodeop_p, vpp)) {
+	if ((error = getnewvnode(VT_LFS, mp, lfs_vnodeop_p, vpp)) != 0) {
 		*vpp = NULL;
 		return (error);
 	}
@@ -180,8 +189,6 @@ lfs_vcreate(mp, ino, vpp)
 	ip->i_flag = IN_MODIFIED;
 	ip->i_dev = ump->um_dev;
 	ip->i_number = ip->i_din.di_inumber = ino;
-ip->i_din.di_spare[0] = 0xdeadbeef;
-ip->i_din.di_spare[1] = 0xdeadbeef;
 	ip->i_lfs = ump->um_lfs;
 #ifdef QUOTA
 	for (i = 0; i < MAXQUOTAS; i++)
@@ -199,19 +206,20 @@ ip->i_din.di_spare[1] = 0xdeadbeef;
 /* Free an inode. */
 /* ARGUSED */
 int
-lfs_vfree(ap)
+lfs_vfree(v)
+	void *v;
+{
 	struct vop_vfree_args /* {
 		struct vnode *a_pvp;
 		ino_t a_ino;
 		int a_mode;
-	} */ *ap;
-{
+	} */ *ap = v;
 	SEGUSE *sup;
 	struct buf *bp;
 	struct ifile *ifp;
 	struct inode *ip;
 	struct lfs *fs;
-	daddr_t old_iaddr;
+	ufs_daddr_t old_iaddr;
 	ino_t ino;
 
 	/* Get the inode number and file system. */

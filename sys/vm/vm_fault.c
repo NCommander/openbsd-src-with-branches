@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_fault.c,v 1.16 1994/09/07 20:25:07 mycroft Exp $	*/
+/*	$OpenBSD: vm_fault.c,v 1.3 1996/05/23 08:34:51 deraadt Exp $	*/
+/*	$NetBSD: vm_fault.c,v 1.18 1996/05/20 17:40:02 mrg Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -69,7 +70,9 @@
  */
 
 #include <sys/param.h>
+#include <sys/proc.h>
 #include <sys/systm.h>
+#include <sys/user.h>
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
@@ -188,6 +191,10 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 	vm_object_lock(first_object);
 
 	first_object->ref_count++;
+#ifdef DIAGNOSTIC
+	if (first_object->paging_in_progress == 0xdead)
+		panic("vm_fault: first_object deallocated");
+#endif
 	first_object->paging_in_progress++;
 
 	/*
@@ -324,6 +331,8 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			 */
 			UNLOCK_MAP;
 			cnt.v_pageins++;
+			if (curproc)
+				curproc->p_addr->u_stats.p_ru.ru_majflt++;
 			rv = vm_pager_get(object->pager, m, TRUE);
 
 			/*
@@ -420,6 +429,10 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 				object->paging_in_progress--;
 			vm_object_unlock(object);
 			object = next_object;
+#ifdef DIAGNOSTIC
+			if (object->paging_in_progress == 0xdead)
+				panic("vm_fault: object deallocated (1)");
+#endif
 			object->paging_in_progress++;
 		}
 	}
@@ -519,6 +532,10 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			 */
 			object->paging_in_progress--;
 			vm_object_collapse(object);
+#ifdef DIAGNOSTIC
+			if (object->paging_in_progress == 0xdead)
+				panic("vm_fault: object deallocated (2)");
+#endif
 			object->paging_in_progress++;
 		}
 		else {
@@ -571,7 +588,7 @@ vm_fault(map, vaddr, fault_type, change_wiring)
 			copy_offset = first_offset
 				- copy_object->shadow_offset;
 			copy_m = vm_page_lookup(copy_object, copy_offset);
-			if (page_exists = (copy_m != NULL)) {
+			if ((page_exists = (copy_m != NULL)) != 0) {
 				if (copy_m->flags & PG_BUSY) {
 #ifdef DOTHREADS
 					int	wait_result;

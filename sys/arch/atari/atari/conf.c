@@ -1,4 +1,4 @@
-/*	$NetBSD: conf.c,v 1.10.2.1 1995/10/12 08:18:59 leo Exp $	*/
+/*	$OpenBSD: conf.c,v 1.6 1996/07/15 14:57:02 mickey Exp $	*/
 
 /*
  * Copyright (c) 1991 The Regents of the University of California.
@@ -49,12 +49,6 @@
 #endif
 
 int	ttselect	__P((dev_t, int, struct proc *));
-
-#ifndef LKM
-#define	lkmenodev	enodev
-#else
-int	lkmenodev();
-#endif
 
 #define	bdev_rd_init(c,n) { \
 	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,strategy), \
@@ -158,6 +152,16 @@ cdev_decl(tun);
 #define NLKM 0
 #endif
 cdev_decl(lkm);
+#include "random.h"
+cdev_decl(random);
+
+/* open, close, read, ioctl */
+cdev_decl(ipl);
+#ifdef IPFILTER
+#define NIPF 1
+#else
+#define NIPF 0
+#endif
 
 struct cdevsw	cdevsw[] =
 {
@@ -192,6 +196,8 @@ struct cdevsw	cdevsw[] =
 	cdev_lkm_dummy(),		/* 26 */
 	cdev_disk_init(NCCD,ccd),	/* 27: concatenated disk driver */
 	cdev_bpftun_init(NTUN,tun),	/* 28: network tunnel */
+	cdev_gen_ipf(NIPF,ipl),         /* 29: IP filter log */
+	cdev_random_init(NRANDOM,random), /* 30: random data source */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

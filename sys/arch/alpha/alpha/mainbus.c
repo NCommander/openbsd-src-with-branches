@@ -1,7 +1,8 @@
-/*	$NetBSD: mainbus.c,v 1.4 1995/08/03 01:01:26 cgd Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.9 1996/04/12 06:07:35 cgd Exp $	*/
+/*	$NetBSD: mainbus.c,v 1.9 1996/04/12 06:07:35 cgd Exp $	*/
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -44,9 +45,14 @@ struct mainbus_softc {
 static int	mbmatch __P((struct device *, void *, void *));
 static void	mbattach __P((struct device *, struct device *, void *));
 static int	mbprint __P((void *, char *));
-struct cfdriver mainbuscd =
-    { NULL, "mainbus", mbmatch, mbattach, DV_DULL,
-	sizeof (struct mainbus_softc) };
+
+struct cfattach mainbus_ca = {
+	sizeof(struct mainbus_softc), mbmatch, mbattach
+};
+
+struct cfdriver mainbus_cd = {
+	NULL, "mainbus", DV_DULL
+};
 
 void	mb_intr_establish __P((struct confargs *, int (*)(void *), void *));
 void	mb_intr_disestablish __P((struct confargs *));
@@ -111,7 +117,7 @@ mbattach(parent, self, aux)
 		nca.ca_slot = 0;
 		nca.ca_offset = 0;
 		nca.ca_bus = &sc->sc_bus;
-		if (config_found(self, &nca, mbprint))
+		if (config_found(self, &nca, mbprint) != NULL)
 			cpuattachcnt++;
 	}
 	if (ncpus != cpuattachcnt)
@@ -125,12 +131,6 @@ mbattach(parent, self, aux)
 		nca.ca_bus = &sc->sc_bus;
 		config_found(self, &nca, mbprint);
 	}
-
-	/*
-	 * XXX: note that the following should be at various places in
-	 * machdep.c.
-	 */
-	/* WEIRD: Note that the "LCA" CPU attches the PCI bus directly... */
 }
 
 static int
@@ -138,9 +138,11 @@ mbprint(aux, pnp)
 	void *aux;
 	char *pnp;
 {
+	struct confargs *ca = aux;
 
 	if (pnp)
-		return (QUIET);
+		printf("%s at %s", ca->ca_name, pnp);
+
 	return (UNCONF);
 }
 

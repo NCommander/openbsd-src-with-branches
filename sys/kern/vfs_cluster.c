@@ -1,4 +1,5 @@
-/*	$NetBSD: vfs_cluster.c,v 1.8 1995/07/24 21:19:50 cgd Exp $	*/
+/*	$OpenBSD: vfs_cluster.c,v 1.4 1996/05/02 13:12:33 deraadt Exp $	*/
+/*	$NetBSD: vfs_cluster.c,v 1.12 1996/04/22 01:39:05 christos Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -42,11 +43,12 @@
 #include <sys/mount.h>
 #include <sys/trace.h>
 #include <sys/malloc.h>
+#include <sys/systm.h>
 #include <sys/resourcevar.h>
-#include <lib/libkern/libkern.h>
+
+#include <vm/vm.h>
 
 #ifdef DEBUG
-#include <vm/vm.h>
 #include <sys/sysctl.h>
 int doreallocblks = 0;
 struct ctldebug debug13 = { "doreallocblks", &doreallocblks };
@@ -108,6 +110,7 @@ int	doclusterraz = 0;
  *	rbp is the read-ahead block.
  *	If either is NULL, then you don't have to do the I/O.
  */
+int
 cluster_read(vp, filesize, lblkno, size, cred, bpp)
 	struct vnode *vp;
 	u_quad_t filesize;
@@ -294,7 +297,7 @@ cluster_rbuild(vp, filesize, bp, lbn, blkno, size, run, flags)
 
 #ifdef DIAGNOSTIC
 	if (size != vp->v_mount->mnt_stat.f_iosize)
-		panic("cluster_rbuild: size %d != filesize %d\n",
+		panic("cluster_rbuild: size %ld != filesize %ld\n",
 			size, vp->v_mount->mnt_stat.f_iosize);
 #endif
 	if (size * (lbn + run + 1) > filesize)
@@ -621,7 +624,7 @@ cluster_wbuild(vp, last_bp, size, start_lbn, len, lbn)
 
 #ifdef DIAGNOSTIC
 	if (size != vp->v_mount->mnt_stat.f_iosize)
-		panic("cluster_wbuild: size %d != filesize %d\n",
+		panic("cluster_wbuild: size %ld != filesize %ld\n",
 			size, vp->v_mount->mnt_stat.f_iosize);
 #endif
 redo:
@@ -683,7 +686,7 @@ redo:
 		 * case we don't want to write it twice).
 		 */
 		if (!incore(vp, start_lbn) ||
-		    last_bp == NULL && start_lbn == lbn)
+		    (last_bp == NULL && start_lbn == lbn))
 			break;
 
 		/*
@@ -704,7 +707,7 @@ redo:
 
 		/* Move memory from children to parent */
 		if (tbp->b_blkno != (bp->b_blkno + btodb(bp->b_bufsize))) {
-			printf("Clustered Block: %d addr %x bufsize: %d\n",
+			printf("Clustered Block: %d addr %x bufsize: %ld\n",
 			    bp->b_lblkno, bp->b_blkno, bp->b_bufsize);
 			printf("Child Block: %d addr: %x\n", tbp->b_lblkno,
 			    tbp->b_blkno);
@@ -716,6 +719,8 @@ redo:
 		bp->b_bufsize += size;
 
 		tbp->b_bufsize -= size;
+		if (tbp->b_flags & B_DELWRI)
+			TAILQ_REMOVE(&bdirties, tbp, b_synclist);
 		tbp->b_flags &= ~(B_READ | B_DONE | B_ERROR | B_DELWRI);
 		/*
 		 * We might as well AGE the buffer here; it's either empty, or

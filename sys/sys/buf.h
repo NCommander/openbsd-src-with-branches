@@ -1,4 +1,5 @@
-/*	$NetBSD: buf.h,v 1.21 1995/08/12 20:31:53 mycroft Exp $	*/
+/*	$OpenBSD: buf.h,v 1.3 1996/03/31 13:16:37 mickey Exp $	*/
+/*	$NetBSD: buf.h,v 1.24 1996/02/18 11:55:45 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -53,6 +54,8 @@ struct buf {
 	LIST_ENTRY(buf) b_hash;		/* Hash chain. */
 	LIST_ENTRY(buf) b_vnbufs;	/* Buffer's associated vnode. */
 	TAILQ_ENTRY(buf) b_freelist;	/* Free list position if not active. */
+	TAILQ_ENTRY(buf) b_synclist;	/* List of diry buffers to be written out */
+	long b_synctime;		/* Time this buffer should be flushed */
 	struct	buf *b_actf, **b_actb;	/* Device driver queue when active. */
 	struct  proc *b_proc;		/* Associated proc; NULL if kernel. */
 	volatile long	b_flags;	/* B_* flags. */
@@ -95,7 +98,7 @@ struct buf {
  * These flags are kept in b_flags.
  */
 #define	B_AGE		0x00000001	/* Move to age queue when I/O done. */
-#define	B_APPENDWRITE	0x00000002	/* Append-write in progress. */
+#define	B_NEEDCOMMIT	0x00000002	/* Needs committing to stable storage */
 #define	B_ASYNC		0x00000004	/* Start I/O, do not wait. */
 #define	B_BAD		0x00000008	/* Bad block revectoring in progress. */
 #define	B_BUSY		0x00000010	/* I/O in progress. */
@@ -157,26 +160,27 @@ struct	buf *swbuf;		/* Swap I/O buffer headers. */
 int	nswbuf;			/* Number of swap I/O buffer headers. */
 struct	buf bswlist;		/* Head of swap I/O buffer headers free list. */
 struct	buf *bclnlist;		/* Head of cleaned page list. */
+TAILQ_HEAD(, buf) bdirties;	/* Dirty buffer list for update daemon */
 
 __BEGIN_DECLS
-int	allocbuf __P((struct buf *, int));
+void	allocbuf __P((struct buf *, int));
 void	bawrite __P((struct buf *));
 void	bdwrite __P((struct buf *));
 void	biodone __P((struct buf *));
 int	biowait __P((struct buf *));
 int	bread __P((struct vnode *, daddr_t, int,
-	    struct ucred *, struct buf **));
+		   struct ucred *, struct buf **));
 int	breada __P((struct vnode *, daddr_t, int, daddr_t, int,
-	    struct ucred *, struct buf **));
+		    struct ucred *, struct buf **));
 int	breadn __P((struct vnode *, daddr_t, int, daddr_t *, int *, int,
-	    struct ucred *, struct buf **));
+		    struct ucred *, struct buf **));
 void	brelse __P((struct buf *));
 void	bremfree __P((struct buf *));
 void	bufinit __P((void));
 int	bwrite __P((struct buf *));
 void	cluster_callback __P((struct buf *));
 int	cluster_read __P((struct vnode *, u_quad_t, daddr_t, long,
-	    struct ucred *, struct buf **));
+			  struct ucred *, struct buf **));
 void	cluster_write __P((struct buf *, u_quad_t));
 struct buf *getblk __P((struct vnode *, daddr_t, int, int, int));
 struct buf *geteblk __P((int));
@@ -185,7 +189,10 @@ struct buf *incore __P((struct vnode *, daddr_t));
 
 void	minphys __P((struct buf *bp));
 int	physio __P((void (*strategy)(struct buf *), struct buf *bp, dev_t dev,
-	    int flags, void (*minphys)(struct buf *), struct uio *uio));
+		    int flags, void (*minphys)(struct buf *), struct uio *uio));
+void  brelvp __P((struct buf *));
+void  reassignbuf __P((struct buf *, struct vnode *));
+void  bgetvp __P((struct vnode *, struct buf *));
 __END_DECLS
 #endif
 #endif /* !_SYS_BUF_H_ */

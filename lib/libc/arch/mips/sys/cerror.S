@@ -36,10 +36,10 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)cerror.s	8.1 (Berkeley) 6/16/93")
-	ASMSTR("$Id: cerror.S,v 1.3 1994/12/15 17:25:09 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 	.globl	_C_LABEL(errno)
 LEAF(cerror)

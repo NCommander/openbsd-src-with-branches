@@ -1,4 +1,4 @@
-/*	$NetBSD: param.h,v 1.23 1995/08/13 00:22:40 mycroft Exp $	*/
+/*	$NetBSD: param.h,v 1.26 1996/05/17 15:38:08 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,9 +45,11 @@
 /*
  * Machine dependent constants for HP9000 series 300.
  */
+#define	_MACHINE	hp300
 #define	MACHINE		"hp300"
+#define	_MACHINE_ARCH	m68k
 #define	MACHINE_ARCH	"m68k"
-#define	MID_MACHINE	MID_M68K4K
+#define	MID_MACHINE	MID_M68K
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value for all
@@ -176,12 +178,11 @@
 /* watch out for side effects */
 #define splx(s)         (s & PSL_IPL ? _spl(s) : spl0())
 
-#ifdef _KERNEL
-#ifndef LOCORE
-int	cpuspeed;
-#define	DELAY(n)	{ register int N = cpuspeed * (n); while (--N > 0); }
-#endif
-#endif
+#if defined(_KERNEL) && !defined(_LOCORE)
+extern void _delay __P((u_int));
+#define	delay(us)	_delay((us) << 8)
+#define DELAY(us)	delay(us)
+#endif /* _KERNEL && !_LOCORE */
 
 #ifdef COMPAT_HPUX
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pat_rep.c,v 1.3 1996/06/23 14:20:38 deraadt Exp $	*/
 /*	$NetBSD: pat_rep.c,v 1.4 1995/03/21 09:07:33 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)pat_rep.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$NetBSD: pat_rep.c,v 1.4 1995/03/21 09:07:33 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pat_rep.c,v 1.3 1996/06/23 14:20:38 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,7 +51,6 @@ static char rcsid[] = "$NetBSD: pat_rep.c,v 1.4 1995/03/21 09:07:33 cgd Exp $";
 #include <sys/stat.h>
 #include <sys/param.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -124,7 +124,7 @@ rep_add(str)
 	 * throw out the bad parameters
 	 */
 	if ((str == NULL) || (*str == '\0')) {
-		warn(1, "Empty replacement string");
+		paxwarn(1, "Empty replacement string");
 		return(-1);
 	}
 
@@ -133,7 +133,7 @@ rep_add(str)
 	 * this expression
 	 */
 	if ((pt1 = strchr(str+1, *str)) == NULL) {
-		warn(1, "Invalid replacement string %s", str);
+		paxwarn(1, "Invalid replacement string %s", str);
 		return(-1);
 	}
 
@@ -142,7 +142,7 @@ rep_add(str)
 	 * and split out the regular expression and try to compile it
 	 */
 	if ((rep = (REPLACE *)malloc(sizeof(REPLACE))) == NULL) {
-		warn(1, "Unable to allocate memory for replacement string");
+		paxwarn(1, "Unable to allocate memory for replacement string");
 		return(-1);
 	}
 
@@ -152,7 +152,7 @@ rep_add(str)
 #	else
 	if ((res = regcomp(&(rep->rcmp), str+1, 0)) != 0) {
 		regerror(res, &(rep->rcmp), rebuf, sizeof(rebuf));
-		warn(1, "%s while compiling regular expression %s", rebuf, str);
+		paxwarn(1, "%s while compiling regular expression %s", rebuf, str);
 #	endif
 		(void)free((char *)rep);
 		return(-1);
@@ -171,7 +171,7 @@ rep_add(str)
 		regfree(&(rep->rcmp));
 #		endif
 		(void)free((char *)rep);
-		warn(1, "Invalid replacement string %s", str);
+		paxwarn(1, "Invalid replacement string %s", str);
 		return(-1);
 	}
 
@@ -201,7 +201,7 @@ rep_add(str)
 #			endif
 			(void)free((char *)rep);
 			*pt1 = *str;
-			warn(1, "Invalid replacement string option %s", str);
+			paxwarn(1, "Invalid replacement string option %s", str);
 			return(-1);
 		}
 		++pt2;
@@ -246,7 +246,7 @@ pat_add(str)
 	 * throw out the junk
 	 */
 	if ((str == NULL) || (*str == '\0')) {
-		warn(1, "Empty pattern string");
+		paxwarn(1, "Empty pattern string");
 		return(-1);
 	}
 
@@ -256,7 +256,7 @@ pat_add(str)
 	 * node to the end of the pattern list
 	 */
 	if ((pt = (PATTERN *)malloc(sizeof(PATTERN))) == NULL) {
-		warn(1, "Unable to allocate memory for pattern string");
+		paxwarn(1, "Unable to allocate memory for pattern string");
 		return(-1);
 	}
 
@@ -299,7 +299,7 @@ pat_chk()
 		if (pt->flgs & MTCH)
 			continue;
 		if (!wban) {
-			warn(1, "WARNING! These patterns were not matched:");
+			paxwarn(1, "WARNING! These patterns were not matched:");
 			++wban;
 		}
 		(void)fprintf(stderr, "%s\n", pt->pstr);
@@ -378,7 +378,7 @@ pat_sel(arcn)
 			*pt->pend = '\0';
 			
 		if ((pt->pstr = strdup(arcn->name)) == NULL) {
-			warn(1, "Pattern select out of memory");
+			paxwarn(1, "Pattern select out of memory");
 			if (pt->pend != NULL)
 				*pt->pend = '/';
 			pt->pend = NULL;
@@ -426,7 +426,7 @@ pat_sel(arcn)
 		/*
 		 * should never happen....
 		 */
-		warn(1, "Pattern list inconsistant");
+		paxwarn(1, "Pattern list inconsistant");
 		return(-1);
 	}
 	*ppt = pt->fow;
@@ -621,7 +621,7 @@ range_match(pattern, test)
 	int negate;
 	int ok = 0;
 
-	if (negate = (*pattern == '!'))
+	if ((negate = (*pattern == '!')) != 0)
 		++pattern;
 
 	while ((c = *pattern++) != ']') {
@@ -781,6 +781,7 @@ tty_rename(arcn)
 	tty_prnt("Processing continues, name changed to: %s\n", tmpname);
 	res = add_name(arcn->name, arcn->nlen, tmpname);
 	arcn->nlen = l_strncpy(arcn->name, tmpname, PAXPATHLEN+1);
+	arcn->name[PAXPATHLEN] = '\0';
 	if (res < 0)
 		return(-1);
 	return(0);
@@ -860,7 +861,7 @@ fix_path(or_name, or_len, dir_name, dir_len)
 		--dest;
 	}
 	if ((len = dest - or_name) > PAXPATHLEN) {
-		warn(1, "File name %s/%s, too long", dir_name, start);
+		paxwarn(1, "File name %s/%s, too long", dir_name, start);
 		return(-1);
 	}
 	*or_len = len;
@@ -987,7 +988,7 @@ rep_name(name, nlen, prnt)
 			    < 0) {
 #			endif
 				if (prnt)
-					warn(1, "Replacement name error %s",
+					paxwarn(1, "Replacement name error %s",
 					    name);
 				return(1);
 			}
@@ -1038,7 +1039,7 @@ rep_name(name, nlen, prnt)
 		*outpt = '\0';
 		if ((outpt == endpt) && (*inpt != '\0')) {
 			if (prnt)
-				warn(1,"Replacement name too long %s >> %s",
+				paxwarn(1,"Replacement name too long %s >> %s",
 				    name, nname);
 			return(1);
 		} 
@@ -1061,6 +1062,7 @@ rep_name(name, nlen, prnt)
 		if (*nname == '\0') 
 			return(1);
 		*nlen = l_strncpy(name, nname, PAXPATHLEN + 1);
+		name[PAXPATHLEN] = '\0';
 	}
 	return(0);
 }

@@ -1,4 +1,4 @@
-/*	$NetBSD: if_ie.c,v 1.5 1995/04/11 06:05:11 mycroft Exp $ */
+/*	$NetBSD: if_ie.c,v 1.10 1996/03/26 22:04:14 gwr Exp $ */
 
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles Hannum.
@@ -92,7 +92,7 @@
    shall have the I (IE_CMD_INTR) bit set in the command.  This way,
    when an interrupt arrives at ieintr(), it is immediately possible
    to tell what precisely caused it.  ANY OTHER command-sending
-   routines should run at splimp(), and should post an acknowledgement
+   routines should run at splnet(), and should post an acknowledgement
    to every interrupt they generate.
 */
 
@@ -128,11 +128,6 @@
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
 #include <vm/vm.h>
 
 /*
@@ -147,8 +142,8 @@
 #include <machine/pmap.h>
 
 #include "i82586.h"
-#include "if_ie.h"
-#include "if_ie_subr.h"
+#include "if_iereg.h"
+#include "if_ievar.h"
 
 static struct mbuf *last_not_for_us;
 
@@ -178,8 +173,6 @@ static int command_and_wait __P((struct ie_softc *, int,
     void volatile *, int));
 static void ierint __P((struct ie_softc *));
 static void ietint __P((struct ie_softc *));
-static int ieget __P((struct ie_softc *, struct mbuf **,
-		      struct ether_header *, int *));
 static void setup_bufs __P((struct ie_softc *));
 static int mc_setup __P((struct ie_softc *, void *));
 static void mc_reset __P((struct ie_softc *));
@@ -190,12 +183,11 @@ int     in_ierint = 0;
 int     in_ietint = 0;
 #endif
 
-void    ie_attach();
 
-struct cfdriver iecd = {
-	NULL, "ie", ie_md_match, ie_attach,
-	DV_IFNET, sizeof(struct ie_softc),
+struct cfdriver ie_cd = {
+	NULL, "ie", DV_IFNET
 };
+
 
 /*
  * address generation macros
@@ -265,21 +257,32 @@ ie_ack(sc, mask)
  * then modified beyond recognition...
  */
 void
-ie_attach(parent, self, aux)
-	struct device *parent, *self;
-	void   *aux;
+ie_attach(sc)
+	struct ie_softc *sc;
 {
-	struct ie_softc *sc = (void *) self;
 	struct ifnet *ifp = &sc->sc_if;
+	int off;
 
-	/*
-	 * Do machine-dependent parts of attach.
-	 */
-	ie_md_attach(parent, self, aux);
+	/* MD code has done its part before calling this. */
 	printf(" hwaddr %s\n", ether_sprintf(sc->sc_addr));
 
+	/* Allocate from end of buffer space for ISCP, SCB */
+	off = sc->buf_area_sz;
+	off &= ~3;
+
+	/* Space for ISCP */
+	off -= sizeof(*sc->iscp);
+	sc->iscp = (volatile void *) (sc->buf_area + off);
+
+	/* Space for SCB */
+	off -= sizeof(*sc->scb);
+	sc->scb  = (volatile void *) (sc->buf_area + off);
+
+	/* Remainder is for buffers, etc. */
+	sc->buf_area_sz = off;
+
 	/*
-	 * Setup for transmit/receive
+	 * Setup RAM for transmit/receive
 	 */
 	if (ie_setupram(sc) == 0) {
 		printf(": RAM CONFIG FAILED!\n");
@@ -291,7 +294,7 @@ ie_attach(parent, self, aux)
 	 * Initialize and attach S/W interface
 	 */
 	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = iecd.cd_name;
+	ifp->if_name = ie_cd.cd_name;
 	ifp->if_start = iestart;
 	ifp->if_ioctl = ieioctl;
 	ifp->if_watchdog = iewatchdog;
@@ -314,7 +317,7 @@ void
 iewatchdog(unit)
 	short   unit;
 {
-	struct ie_softc *sc = iecd.cd_devs[unit];
+	struct ie_softc *sc = ie_cd.cd_devs[unit];
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 	++sc->sc_arpcom.ac_if.if_oerrors;
@@ -500,18 +503,26 @@ ietint(sc)
 /*
  * Compare two Ether/802 addresses for equality, inlined and
  * unrolled for speed.  I'd love to have an inline assembler
- * version of this...
+ * version of this...   XXX: Who wanted that? mycroft?
+ * I wrote one, but the following is just as efficient.
+ * This expands to 10 short m68k instructions! -gwr
+ * Note: use this like bcmp()
  */
-static inline int
-ether_equal(one, two)
+static inline u_short
+ether_cmp(one, two)
 	u_char *one, *two;
 {
+	register u_short *a = (u_short *) one;
+	register u_short *b = (u_short *) two;
+	register u_short diff;
 
-	if (one[0] != two[0] || one[1] != two[1] || one[2] != two[2] ||
-	    one[3] != two[3] || one[4] != two[4] || one[5] != two[5])
-		return 0;
-	return 1;
+	diff  = *a++ - *b++;
+	diff |= *a++ - *b++;
+	diff |= *a++ - *b++;
+
+	return (diff);
 }
+#define	ether_equal !ether_cmp
 
 /*
  * Check for a valid address.  to_bpf is filled in with one of the following:
@@ -1026,7 +1037,7 @@ void
 iestart(ifp)
 	struct ifnet *ifp;
 {
-	struct ie_softc *sc = iecd.cd_devs[ifp->if_unit];
+	struct ie_softc *sc = ie_cd.cd_devs[ifp->if_unit];
 	struct mbuf *m0, *m;
 	u_char *buffer;
 	u_short len;
@@ -1084,7 +1095,7 @@ ie_setupram(sc)
 	volatile struct ie_sys_ctl_block *scb;
 	int     s;
 
-	s = splimp();
+	s = splnet();
 
 	scp = sc->scp;
 	(sc->sc_bzero)((char *) scp, sizeof *scp);
@@ -1124,7 +1135,7 @@ void
 iereset(sc)
 	struct ie_softc *sc;
 {
-	int s = splimp();
+	int s = splnet();
 
 	printf("%s: reset\n", sc->sc_dev.dv_xname);
 
@@ -1191,7 +1202,7 @@ command_and_wait(sc, cmd, pcmd, mask)
 		/*
 		 * XXX
 		 * I don't think this timeout works on suns.
-		 * we are at splimp() in the loop, and the timeout
+		 * we are at splnet() in the loop, and the timeout
 		 * stuff runs at software spl (so it is masked off?).
 		 */
 
@@ -1413,7 +1424,7 @@ setup_bufs(sc)
 
 /*
  * Run the multicast setup command.
- * Called at splimp().
+ * Called at splnet().
  */
 static int
 mc_setup(sc, ptr)
@@ -1447,7 +1458,7 @@ mc_setup(sc, ptr)
  * This includes executing the CONFIGURE, IA-SETUP, and MC-SETUP commands,
  * starting the receiver unit, and clearing interrupts.
  *
- * THIS ROUTINE MUST BE CALLED AT splimp() OR HIGHER.
+ * THIS ROUTINE MUST BE CALLED AT splnet() OR HIGHER.
  */
 int
 ieinit(sc)
@@ -1545,12 +1556,17 @@ ieioctl(ifp, cmd, data)
 	u_long	cmd;
 	caddr_t data;
 {
-	struct ie_softc *sc = iecd.cd_devs[ifp->if_unit];
+	struct ie_softc *sc = ie_cd.cd_devs[ifp->if_unit];
 	struct ifaddr *ifa = (struct ifaddr *) data;
 	struct ifreq *ifr = (struct ifreq *) data;
 	int     s, error = 0;
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (cmd) {
 
@@ -1564,24 +1580,6 @@ ieioctl(ifp, cmd, data)
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
 #endif
-#ifdef NS
-		/* XXX - This code is probably wrong. */
-		case AF_NS:
-		    {
-			struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				bcopy(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			/* Set new address. */
-			ieinit(sc);
-			break;
-		    }
-#endif /* NS */
 		default:
 			ieinit(sc);
 			break;

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_ioctl.h,v 1.3 1996/04/18 17:48:32 niklas Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -75,10 +77,8 @@
 #define PCVTIDMAJOR   3			/* driver id - major release	*/
 #define PCVTIDMINOR   32		/* driver id - minor release	*/
 
-#if defined(KERNEL) || defined(_KERNEL)
-#include "ioctl.h"
-#else
 #include <sys/ioctl.h>
+#if !defined(KERNEL) && !defined(_KERNEL)
 #include <sys/types.h>
 #endif
 
@@ -268,22 +268,30 @@ struct mousedefs {
 #define VGA_S3_924	22	/* S3 924 */
 #define VGA_S3_80x	23	/* S3 801/805 */
 #define VGA_S3_928	24	/* S3 928 */
-#define VGA_S3_UNKNOWN	25	/* unknown S3 chipset */
+#define	VGA_S3_864	25	/* S3 864 */
+#define	VGA_S3_964	26	/* S3 964 */
+#define	VGA_S3_732	27	/* S3 732 (Trio32) */
+#define	VGA_S3_764	28	/* S3 764 (Trio64) */
+#define	VGA_S3_866	29	/* S3 866 */
+#define VGA_S3_868	30	/* S3 868 */
+#define VGA_S3_968	31	/* S3 968 */
+#define VGA_S3_765	32	/* S3 765 (Trio64 V+) */
+#define VGA_S3_UNKNOWN	33	/* unknown S3 chipset */
 
 #define VGA_F_CIR	6	/* FAMILY CIRRUS */
-#define VGA_CL_GD5402	26	/* Cirrus CL-GD5402	*/
-#define VGA_CL_GD5402r1	27	/* Cirrus CL-GD5402r1	*/
-#define VGA_CL_GD5420	28	/* Cirrus CL-GD5420	*/
-#define VGA_CL_GD5420r1	29	/* Cirrus CL-GD5420r1	*/
-#define VGA_CL_GD5422	30	/* Cirrus CL-GD5422	*/
-#define VGA_CL_GD5424	31	/* Cirrus CL-GD5424	*/
-#define VGA_CL_GD5426	32	/* Cirrus CL-GD5426	*/
-#define VGA_CL_GD5428	33	/* Cirrus CL-GD5428	*/
-#define VGA_CL_GD5430	34	/* Cirrus CL-GD543x	*/
-#define	VGA_CL_GD6225	35	/* Cirrus CL-GD62x5	*/
-#define VGA_CL_UNKNOWN	36	/* Unknown Cirrus CL	*/
+#define VGA_CL_GD5402	34	/* Cirrus CL-GD5402	*/
+#define VGA_CL_GD5402r1	35	/* Cirrus CL-GD5402r1	*/
+#define VGA_CL_GD5420	36	/* Cirrus CL-GD5420	*/
+#define VGA_CL_GD5420r1	37	/* Cirrus CL-GD5420r1	*/
+#define VGA_CL_GD5422	38	/* Cirrus CL-GD5422	*/
+#define VGA_CL_GD5424	39	/* Cirrus CL-GD5424	*/
+#define VGA_CL_GD5426	40	/* Cirrus CL-GD5426	*/
+#define VGA_CL_GD5428	41	/* Cirrus CL-GD5428	*/
+#define VGA_CL_GD5430	42	/* Cirrus CL-GD543x	*/
+#define	VGA_CL_GD6225	43	/* Cirrus CL-GD62x5	*/
+#define VGA_CL_UNKNOWN	44	/* Unknown Cirrus CL	*/
 
-#define VGA_MAX_CHIPSET	37	/* max no of chips	*/
+#define VGA_MAX_CHIPSET	45	/* max no of chips	*/
 
 /*****************************************************************************/
 /* NOTE: update the 'scon' utility when adding support for more chipsets !!! */
@@ -429,8 +437,6 @@ struct pcvtinfo {			/* compile time option values */
 	u_int opsysrel;			/* Release */
 	u_int nscreens;			/* PCVT_NSCREENS */
 	u_int scanset;			/* PCVT_SCANSET */
-	u_int updatefast;		/* PCVT_UPDATEFAST */
-	u_int updateslow;		/* PCVT_UPDATESLOW */
 	u_int sysbeepf;			/* PCVT_SYSBEEPF */
 	u_int pcburst;			/* PCVT_PCBURST */
 	u_int kbd_fifo_sz;		/* PCVT_KBD_FIFO_SZ */
@@ -463,7 +469,6 @@ struct pcvtinfo {			/* compile time option values */
 #define CONF_INHIBIT_NUMLOCK	0x00200000
 #define CONF_META_ESC		0x00400000
 #define CONF_NOFASTSCROLL	0x00800000
-#define CONF_SLOW_INTERRUPT	0x01000000
 #define CONF_KBD_FIFO		0x02000000
 #define CONF_NO_LED_UPDATE	0x04000000
 };

@@ -1,4 +1,5 @@
-/*	$NetBSD: audio_if.h,v 1.5 1995/07/19 19:58:23 brezak Exp $	*/
+/*	$OpenBSD: audio_if.h,v 1.3 1996/03/02 00:29:20 niklas Exp $	*/
+/*	$NetBSD: audio_if.h,v 1.7 1996/03/07 15:00:10 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Havard Eidnes.
@@ -37,6 +38,8 @@
 /*
  * Generic interface to hardware driver.
  */
+
+struct audio_softc;
 
 struct audio_hw_if {
 	int	(*open)__P((dev_t, int));	/* open hardware */
@@ -91,8 +94,10 @@ struct audio_hw_if {
 	void	(*sw_decode)__P((void *, int, u_char *, int));
 
 	/* Start input/output routines. These usually control DMA. */
-	int	(*start_output)__P((void *, void *, int, void (*)(), void *));
-	int	(*start_input)__P((void *, void *, int, void (*)(), void *));
+	int	(*start_output)__P((void *, void *, int,
+				    void (*)(void *), void *));
+	int	(*start_input)__P((void *, void *, int,
+				   void (*)(void *), void *));
 	int	(*halt_output)__P((void *));
 	int	(*halt_input)__P((void *));
 	int	(*cont_output)__P((void *));
@@ -132,4 +137,4 @@ extern int	audio_hardware_detach __P((struct audio_hw_if *));
 #define AUDIODEV(x)		(minor(x)&0xf0)
 
 #define splaudio splbio		/* XXX */
-#define ISA_IPL_AUDIO ISA_IPL_BIO /* XXX */
+#define IPL_AUDIO IPL_BIO	/* XXX */

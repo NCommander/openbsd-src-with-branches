@@ -266,7 +266,7 @@ int lsrrlen = 0;
 
 u_char packet[512], *outpacket;	/* last inbound (icmp) packet */
 
-int wait_for_reply __P((int, struct sockaddr_in *));
+int wait_for_reply __P((int, struct sockaddr_in *, struct timeval *));
 void send_probe __P((int, int, struct sockaddr_in *));
 double deltaT __P((struct timeval *, struct timeval *));
 int packet_ok __P((u_char *, int, struct sockaddr_in *, int));
@@ -303,6 +303,16 @@ main(argc, argv)
 	struct sockaddr_in from, to;
 	int ch, i, lsrr, on, probe, seq, tos, ttl;
 	struct ip *ip;
+
+	if ((pe = getprotobyname("icmp")) == NULL) {
+		Fprintf(stderr, "icmp: unknown protocol\n");
+		exit(10);
+	}
+	if ((s = socket(AF_INET, SOCK_RAW, pe->p_proto)) < 0)
+		err(5, "icmp socket");
+	if ((sndsock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0)
+		err(5, "raw socket");
+	setuid(getuid());
 
 	lsrr = 0;
 	on = 1;
@@ -390,7 +400,7 @@ main(argc, argv)
 			errx(1, "unknown host %s", *argv);
 		to.sin_family = hp->h_addrtype;
 		memcpy(&to.sin_addr, hp->h_addr, hp->h_length);
-		hostname = hp->h_name;
+		hostname = strdup(hp->h_name);
 	}
 	if (*++argv)
 		datalen = atoi(*argv);
@@ -426,22 +436,12 @@ main(argc, argv)
 
 	ident = (getpid() & 0xffff) | 0x8000;
 
-	if ((pe = getprotobyname("icmp")) == NULL) {
-		Fprintf(stderr, "icmp: unknown protocol\n");
-		exit(10);
-	}
-	if ((s = socket(AF_INET, SOCK_RAW, pe->p_proto)) < 0)
-		err(5, "icmp socket");
 	if (options & SO_DEBUG)
 		(void) setsockopt(s, SOL_SOCKET, SO_DEBUG,
 				  (char *)&on, sizeof(on));
 	if (options & SO_DONTROUTE)
 		(void) setsockopt(s, SOL_SOCKET, SO_DONTROUTE,
 				  (char *)&on, sizeof(on));
-
-	if ((sndsock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0)
-		err(5, "raw socket");
-
 #ifdef SO_SNDBUF
 	if (setsockopt(sndsock, SOL_SOCKET, SO_SNDBUF, (char *)&datalen,
 		       sizeof(datalen)) < 0)
@@ -462,7 +462,7 @@ main(argc, argv)
 	if (source) {
 		(void) memset(&from, 0, sizeof(struct sockaddr));
 		from.sin_family = AF_INET;
-		if (inet_aton(source, &from.sin_addr) != 0)
+		if (inet_aton(source, &from.sin_addr) == 0)
 			errx(1, "unknown host %s", source);
 		ip->ip_src = from.sin_addr;
 #ifndef IP_HDRINCL
@@ -491,8 +491,12 @@ main(argc, argv)
 
 			(void) gettimeofday(&t1, &tz);
 			send_probe(++seq, ttl, &to);
-			while (cc = wait_for_reply(s, &from)) {
+			while (cc = wait_for_reply(s, &from, &t1)) {
 				(void) gettimeofday(&t2, &tz);
+				if (t2.tv_sec - t1.tv_sec > waittime) {
+					cc = 0;
+					break;
+				}
 				if ((i = packet_ok(packet, cc, &from, seq))) {
 					if (from.sin_addr.s_addr != lastaddr) {
 						print(packet, cc, &from);
@@ -528,6 +532,14 @@ main(argc, argv)
 						++unreachable;
 						Printf(" !S");
 						break;
+					case ICMP_UNREACH_NET_PROHIB:
+						++unreachable;
+						Printf(" !A");
+						break;
+					case ICMP_UNREACH_HOST_PROHIB:
+						++unreachable;
+						Printf(" !C");
+						break;
 					}
 					break;
 				}
@@ -543,18 +555,27 @@ main(argc, argv)
 }
 
 int
-wait_for_reply(sock, from)
+wait_for_reply(sock, from, sent)
 	int sock;
 	struct sockaddr_in *from;
+	struct timeval *sent;
 {
 	fd_set fds;
-	struct timeval wait;
+	struct timeval now, wait;
 	int cc = 0;
 	int fromlen = sizeof (*from);
 
 	FD_ZERO(&fds);
 	FD_SET(sock, &fds);
-	wait.tv_sec = waittime; wait.tv_usec = 0;
+	gettimeofday(&now, NULL);
+	wait.tv_sec = (sent->tv_sec + waittime) - now.tv_sec;
+	wait.tv_usec =  sent->tv_usec - now.tv_usec;
+	if (wait.tv_usec < 0) {
+		wait.tv_usec += 1000000;
+		wait.tv_sec--;
+	}
+	if (wait.tv_sec < 0)
+		wait.tv_sec = wait.tv_usec = 0;
 
 	if (select(sock+1, &fds, (fd_set *)0, (fd_set *)0, &wait) > 0)
 		cc=recvfrom(s, (char *)packet, sizeof(packet), 0,
@@ -696,8 +717,8 @@ packet_ok(buf, cc, from, seq)
 		int i;
 		u_long *lp = (u_long *)&icp->icmp_ip;
 
-		Printf("\n%d bytes from %s to %s", cc,
-			inet_ntoa(from->sin_addr), inet_ntoa(ip->ip_dst));
+		Printf("\n%d bytes from %s", cc, inet_ntoa(from->sin_addr));
+		Printf(" to %s", inet_ntoa(ip->ip_dst));
 		Printf(": icmp type %d (%s) code %d\n", type, pr_type(type),
 		       icp->icmp_code);
 		for (i = 4; i < cc ; i += sizeof(long))
@@ -781,7 +802,7 @@ inetname(in)
 	struct in_addr in;
 {
 	register char *cp;
-	static char line[50];
+	static char line[MAXHOSTNAMELEN];
 	struct hostent *hp;
 	static char domain[MAXHOSTNAMELEN + 1];
 	static int first = 1;

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1983 The Regents of the University of California.
  * All rights reserved.
@@ -39,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)ruptime.c	5.8 (Berkeley) 7/21/90";*/
-static char rcsid[] = "$Id: ruptime.c,v 1.4 1994/04/05 02:18:43 cgd Exp $";
+static char rcsid[] = "$OpenBSD: ruptime.c,v 1.1.1.1 1995/10/18 08:46:04 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>

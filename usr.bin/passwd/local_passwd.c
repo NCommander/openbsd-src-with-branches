@@ -1,3 +1,5 @@
+/*	$OpenBSD: local_passwd.c,v 1.3 1996/06/26 05:37:46 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -33,14 +35,18 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)local_passwd.c	5.5 (Berkeley) 5/6/91";*/
-static char rcsid[] = "$Id: local_passwd.c,v 1.7 1994/12/24 17:27:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: local_passwd.c,v 1.3 1996/06/26 05:37:46 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <pwd.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <util.h>
 
 uid_t uid;
 
@@ -70,8 +76,16 @@ local_passwd(uname)
 	}
 
 	pw_init();
-	pfd = pw_lock();
-	tfd = pw_tmp();
+	tfd = pw_lock(0);
+	if (tfd < 0) {
+		if (errno == EEXIST)
+			errx(1, "the passwd file is busy.");
+		else
+			err(1, "can't open passwd temp file");
+	}
+	pfd = open(_PATH_MASTERPASSWD, O_RDONLY, 0);
+	if (pfd < 0)
+		pw_error(_PATH_MASTERPASSWD, 1, 1);
 
 	/*
 	 * Get the new password.  Reset passwd change time to zero; when
@@ -82,7 +96,7 @@ local_passwd(uname)
 	pw->pw_change = 0;
 	pw_copy(pfd, tfd, pw);
 
-	if (!pw_mkdb())
+	if (pw_mkdb() < 0)
 		pw_error((char *)NULL, 0, 1);
 	return(0);
 }

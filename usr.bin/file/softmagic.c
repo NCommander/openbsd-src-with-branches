@@ -1,3 +1,4 @@
+/*	$OpenBSD: softmagic.c,v 1.1.1.1 1995/10/18 08:45:09 deraadt Exp $	*/
 /*
  * softmagic - interpret variable magic from /etc/magic
  *
@@ -33,8 +34,7 @@
 #include "file.h"
 
 #ifndef	lint
-static char *moduleid = 
-	"@(#)$Id: softmagic.c,v 1.9 1995/05/21 00:13:32 christos Exp $";
+static char *moduleid = "$OpenBSD$";
 #endif	/* lint */
 
 static int match	__P((unsigned char *, int));

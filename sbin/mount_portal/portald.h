@@ -1,3 +1,4 @@
+/*	$OpenBSD: portald.h,v 1.4 1995/04/23 10:33:23 cgd Exp $	*/
 /*	$NetBSD: portald.h,v 1.4 1995/04/23 10:33:23 cgd Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: tcp_output.c,v 1.13 1995/04/13 20:09:23 cgd Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.4 1996/09/12 06:19:56 tholo Exp $	*/
+/*	$NetBSD: tcp_output.c,v 1.14 1996/02/13 23:43:53 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1990, 1993
@@ -59,6 +60,11 @@
 #include <netinet/tcp_var.h>
 #include <netinet/tcpip.h>
 #include <netinet/tcp_debug.h>
+
+#ifdef TUBA
+#include <netiso/iso.h>
+#include <netiso/tuba_table.h>
+#endif
 
 #ifdef notyet
 extern struct mbuf *m_copypack();
@@ -148,15 +154,18 @@ again:
 		 * but we haven't been called to retransmit,
 		 * len will be -1.  Otherwise, window shrank
 		 * after we sent into it.  If window shrank to 0,
-		 * cancel pending retransmit and pull snd_nxt
-		 * back to (closed) window.  We will enter persist
-		 * state below.  If the window didn't close completely,
-		 * just wait for an ACK.
+		 * calcel pending retransmit, pull snd_nxt back
+		 * to (closed) window, and set the persist timer
+		 * if it isn't already running.  If the window
+		 * didn't close completely, just wait for an ACK.
 		 */
 		len = 0;
 		if (win == 0) {
 			tp->t_timer[TCPT_REXMT] = 0;
+			tp->t_rxtshift = 0;
 			tp->snd_nxt = tp->snd_una;
+			if (tp->t_timer[TCPT_PERSIST] == 0)
+				tcp_setpersist(tp);
 		}
 	}
 	if (len > tp->t_maxseg) {
@@ -323,10 +332,10 @@ send:
 	 * Adjust data length if insertion of options will
 	 * bump the packet length beyond the t_maxseg length.
 	 */
-	 if (len > tp->t_maxseg - optlen) {
+	if (len > tp->t_maxseg - optlen) {
 		len = tp->t_maxseg - optlen;
-		flags &= ~TH_FIN;
 		sendalot = 1;
+		flags &= ~TH_FIN;
 	 }
 
 #ifdef DIAGNOSTIC
@@ -374,8 +383,11 @@ send:
 			m->m_len += len;
 		} else {
 			m->m_next = m_copy(so->so_snd.sb_mb, off, (int) len);
-			if (m->m_next == 0)
-				len = 0;
+			if (m->m_next == 0) {
+				(void) m_free(m);
+				error = ENOBUFS;
+				goto out;
+			}
 		}
 #endif
 		/*
@@ -415,8 +427,8 @@ send:
 	 * window for use in delaying messages about window sizes.
 	 * If resending a FIN, be sure not to use a new sequence number.
 	 */
-	if (flags & TH_FIN && tp->t_flags & TF_SENTFIN && 
-	    tp->snd_nxt == tp->snd_max)
+	if ((flags & TH_FIN) && (tp->t_flags & TF_SENTFIN) && 
+	    (tp->snd_nxt == tp->snd_max))
 		tp->snd_nxt--;
 	/*
 	 * If we are doing retransmissions, then snd_nxt will
@@ -451,6 +463,8 @@ send:
 		win = (long)TCP_MAXWIN << tp->rcv_scale;
 	if (win < (long)(tp->rcv_adv - tp->rcv_nxt))
 		win = (long)(tp->rcv_adv - tp->rcv_nxt);
+	if (flags & TH_RST)
+		win = 0;
 	ti->ti_win = htons((u_int16_t) (win>>tp->rcv_scale));
 	if (SEQ_GT(tp->snd_up, tp->snd_nxt)) {
 		ti->ti_urp = htons((u_int16_t)(tp->snd_up - tp->snd_nxt));

@@ -34,12 +34,12 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)bzero.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: bzero.S,v 1.3 1994/12/15 17:24:58 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /* bzero(s1, n) */
 
@@ -50,7 +50,7 @@ LEAF(bzero)
 	and	a3, a3, 3
 	beq	a3, zero, 1f		# skip if word aligned
 	subu	a1, a1, a3		# subtract from remaining count
-	swr	zero, 0(a0)		# clear 1, 2, or 3 bytes to align
+	SWHI	zero, 0(a0)		# clear 1, 2, or 3 bytes to align
 	addu	a0, a0, a3
 1:
 	and	v0, a1, 3		# compute number of words left

@@ -1,5 +1,3 @@
-/*	$NetBSD: gethostnamadr.c,v 1.13 1995/05/21 16:21:14 mycroft Exp $	*/
-
 /*-
  * Copyright (c) 1985, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -54,12 +52,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)gethostnamadr.c	8.1 (Berkeley) 6/4/93";
-static char rcsid[] = "$Id: gethnamaddr.c,v 4.9.1.1 1993/05/02 22:43:03 vixie Rel ";
-#else
-static char rcsid[] = "$NetBSD: gethostnamadr.c,v 1.13 1995/05/21 16:21:14 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: gethostnamadr.c,v 1.10 1996/09/27 18:37:11 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -75,8 +68,9 @@ static char rcsid[] = "$NetBSD: gethostnamadr.c,v 1.13 1995/05/21 16:21:14 mycro
 #include <string.h>
 #ifdef YP
 #include <rpc/rpc.h>
-#include <rpcsvc/yp_prot.h>
+#include <rpcsvc/yp.h>
 #include <rpcsvc/ypclnt.h>
+#include "ypinternal.h"
 #endif
 
 #define	MAXALIASES	35
@@ -107,14 +101,39 @@ typedef union {
 } querybuf;
 
 typedef union {
-    int32_t al;
-    char ac;
+	int32_t al;
+	char ac;
 } align;
 
 static int qcomp __P((struct in_addr **, struct in_addr **));
 static struct hostent *getanswer __P((querybuf *, int, int));
+static int hbadchar __P((char *));
 
 extern int h_errno;
+
+static int
+hbadchar(p)
+	char *p;
+{
+	char c;
+
+	/*
+	 * Many people do not obey RFC 822 and 1035.  The valid
+	 * characters are a-z, A-Z, 0-9, '-' and . But the others
+	 * tested for below can happen, and we must be more permissive
+	 * until those idiots clean up their act.
+	 */
+	while ((c = *p++)) {
+		if (('a' >= c && c <= 'z') ||
+		    ('A' >= c && c <= 'Z') ||
+		    ('0' >= c && c <= '9'))
+			continue;
+		if (strchr("-_/.[]\\", c) ||
+		    (c == '.' && p[1] == '.'))
+			return 1;
+	}
+	return 0;
+}
 
 static struct hostent *
 getanswer(answer, anslen, iquery)
@@ -130,6 +149,7 @@ getanswer(answer, anslen, iquery)
 	int type, class, buflen, ancount, qdcount;
 	int haveanswer, getclass = C_ANY;
 	char **hap;
+	int good = 1;
 
 	eom = answer->buf + anslen;
 	/*
@@ -144,14 +164,17 @@ getanswer(answer, anslen, iquery)
 	if (qdcount) {
 		if (iquery) {
 			if ((n = dn_expand((u_char *)answer->buf,
-			    (u_char *)eom, (u_char *)cp, (u_char *)bp,
+			    (u_char *)eom, (u_char *)cp, bp,
 			    buflen)) < 0) {
 				h_errno = NO_RECOVERY;
 				return ((struct hostent *) NULL);
 			}
 			cp += n + QFIXEDSZ;
 			host.h_name = bp;
-			n = strlen(bp) + 1;
+			n = strlen(bp);
+			if (n >= MAXHOSTNAMELEN)
+				host.h_name[MAXHOSTNAMELEN-1] = '\0';
+			n++;
 			bp += n;
 			buflen -= n;
 		} else
@@ -174,7 +197,7 @@ getanswer(answer, anslen, iquery)
 	haveanswer = 0;
 	while (--ancount >= 0 && cp < eom) {
 		if ((n = dn_expand((u_char *)answer->buf, (u_char *)eom,
-		    (u_char *)cp, (u_char *)bp, buflen)) < 0)
+		    (u_char *)cp, bp, buflen)) < 0)
 			break;
 		cp += n;
 		type = _getshort(cp);
@@ -189,18 +212,23 @@ getanswer(answer, anslen, iquery)
 				continue;
 			*ap++ = bp;
 			n = strlen(bp) + 1;
+			if (n > MAXHOSTNAMELEN)
+				bp[MAXHOSTNAMELEN-1] = '\0';
 			bp += n;
 			buflen -= n;
 			continue;
 		}
 		if (iquery && type == T_PTR) {
 			if ((n = dn_expand((u_char *)answer->buf,
-			    (u_char *)eom, (u_char *)cp, (u_char *)bp,
+			    (u_char *)eom, (u_char *)cp, bp,
 			    buflen)) < 0)
 				break;
 			cp += n;
 			host.h_name = bp;
-			return(&host);
+			n = strlen(host.h_name);
+			if (n >= MAXHOSTNAMELEN)
+				host.h_name[MAXHOSTNAMELEN-1] = '\0';
+			goto gotent;
 		}
 		if (iquery || type != T_A)  {
 #ifdef DEBUG
@@ -211,6 +239,7 @@ getanswer(answer, anslen, iquery)
 			cp += n;
 			continue;
 		}
+
 		if (haveanswer) {
 			if (n != host.h_length) {
 				cp += n;
@@ -224,9 +253,13 @@ getanswer(answer, anslen, iquery)
 			host.h_length = n;
 			getclass = class;
 			host.h_addrtype = (class == C_IN) ? AF_INET : AF_UNSPEC;
+			if (host.h_addrtype == AF_INET)
+				host.h_length = INADDRSZ;
 			if (!iquery) {
 				host.h_name = bp;
 				bp += strlen(bp) + 1;
+				if (strlen(host.h_name) >= MAXHOSTNAMELEN)
+					host.h_name[MAXHOSTNAMELEN-1] = '\0';
 			}
 		}
 
@@ -244,19 +277,27 @@ getanswer(answer, anslen, iquery)
 		cp += n;
 		haveanswer++;
 	}
-	if (haveanswer) {
-		*ap = NULL;
-		*hap = NULL;
-		if (_res.nsort) {
-			qsort(host.h_addr_list, haveanswer,
-			    sizeof(struct in_addr),
-			    (int (*)__P((const void *, const void *)))qcomp);
-		}
-		return (&host);
-	} else {
+	if (!haveanswer) {
 		h_errno = TRY_AGAIN;
 		return ((struct hostent *) NULL);
 	}
+	*ap = NULL;
+	*hap = NULL;
+	if (_res.nsort) {
+		qsort(host.h_addr_list, haveanswer,
+		    sizeof(struct in_addr),
+		    (int (*)__P((const void *, const void *)))qcomp);
+	}
+gotent:
+	if (hbadchar(host.h_name))
+		good = 0;
+	for (ap = host_aliases; good && *ap; ap++)
+		if (hbadchar(*ap))
+			good = 0;
+	if (good)
+		return (&host);
+	h_errno = NO_RECOVERY;
+	return ((struct hostent *) NULL);
 }
 
 struct hostent *
@@ -368,11 +409,11 @@ gethostbyaddr(addr, len, type)
 		switch (lookups[i]) {
 #ifdef YP
 		case 'y':
-			hp = _yp_gethtbyaddr(addr, len, type);
+			hp = _yp_gethtbyaddr(addr);
 			break;
 #endif
 		case 'b':
-			n = res_query(qbuf, C_IN, T_PTR, (char *)&buf, sizeof(buf));
+			n = res_query(qbuf, C_IN, T_PTR, (u_char *)&buf, sizeof(buf));
 			if (n < 0) {
 #ifdef DEBUG
 				if (_res.options & RES_DEBUG)
@@ -469,7 +510,7 @@ again:
 
 struct hostent *
 _gethtbyname(name)
-	char *name;
+	const char *name;
 {
 	register struct hostent *p;
 	register char **cp;
@@ -537,7 +578,7 @@ _yphostent(line)
 
 	host.h_name = NULL;
 	host.h_addr_list = h_addr_ptrs;
-	host.h_length = sizeof(u_int32_t);
+	host.h_length = INADDRSZ;
 	host.h_addrtype = AF_INET;
 	hap = h_addr_ptrs;
 	buf = host_addrs;
@@ -598,9 +639,8 @@ done:
 }
 
 struct hostent *
-_yp_gethtbyaddr(addr, len, type)
+_yp_gethtbyaddr(addr)
 	const char *addr;
-	int len, type;
 {
 	struct hostent *hp = (struct hostent *)NULL;
 	static char *__ypcurrent;

@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: A3000,v 1.7 1994/10/26 02:02:23 cgd Exp $
 
 #
@@ -40,7 +41,6 @@ options		NULLFS		# Loopback filesystem
 options		FIFO		# FIFO operations on vnodes
 
 options		SWAPPAGER	# Pager for swap device
-options		VNODEPAGER	# Pager for vnodes
 options		DEVPAGER	# Pager
 
 #
@@ -49,7 +49,7 @@ options		DEVPAGER	# Pager
 options		"COMPAT_09"	# fs type binary compatability (name vs number)
 options		COMPAT_SUNOS	# Support to run Sun-3 executables
 options		"COMPAT_43"	# 4.3 BSD compatible system calls
-options		"TCP_COMPAT_42"	# Use 4.2 BSD style TCP
+#options		"TCP_COMPAT_42"	# Use 4.2 BSD style TCP
 options		"COMPAT_NOMID"	# ???
 
 #
@@ -78,7 +78,7 @@ options		GENERIC		# Mini-root boot support
 #
 # Build one kernel that can boot from any disk.
 #
-config		netbsd swap on generic
+config		bsd swap on generic
 
 pseudo-device	view	10	# View (graphics mapping)
 pseudo-device	pty	16	# Pseudo-tty support

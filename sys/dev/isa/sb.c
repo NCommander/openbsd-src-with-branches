@@ -1,4 +1,5 @@
-/*	$NetBSD: sb.c,v 1.27 1995/07/19 19:58:53 brezak Exp $	*/
+/*	$OpenBSD: sb.c,v 1.10 1996/05/07 07:37:37 deraadt Exp $	*/
+/*	$NetBSD: sb.c,v 1.36 1996/05/12 23:53:33 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -43,6 +44,7 @@
 #include <sys/proc.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <sys/audioio.h>
@@ -71,11 +73,15 @@ struct sb_softc {
 	struct	sbdsp_softc sc_sbdsp;
 };
 
-int	sbprobe();
+int	sbprobe __P((struct device *, void *, void *));
 void	sbattach __P((struct device *, struct device *, void *));
 
-struct cfdriver sbcd = {
-	NULL, "sb", sbprobe, sbattach, DV_DULL, sizeof(struct sbdsp_softc)
+struct cfattach sb_ca = {
+	sizeof(struct sbdsp_softc), sbprobe, sbattach
+};
+
+struct cfdriver sb_cd = {
+	NULL, "sb", DV_DULL
 };
 
 struct audio_device sb_device = {
@@ -85,10 +91,6 @@ struct audio_device sb_device = {
 };
 
 int	sbopen __P((dev_t, int));
-
-int	sbprobe();
-void	sbattach();
-
 int	sb_getdev __P((void *, struct audio_device *));
 
 /*
@@ -143,15 +145,18 @@ struct audio_hw_if sb_hw_if = {
  * Probe for the soundblaster hardware.
  */
 int
-sbprobe(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+sbprobe(parent, match, aux)
+	struct device *parent;
+	void *match, *aux;
 {
-	register struct sbdsp_softc *sc = (void *)self;
+	register struct sbdsp_softc *sc = match;
 	register struct isa_attach_args *ia = aux;
-	register u_short iobase = ia->ia_iobase;
+	register int iobase = ia->ia_iobase;
+	static u_char drq_conf[4] = {
+		0x01, 0x02, -1, 0x08
+	};
 	static u_char irq_conf[11] = {
-	    -1, -1, 0x01, -1, -1, 0x02, -1, 0x04, -1, 0x01, 0x08
+		-1, -1, 0x01, -1, -1, 0x02, -1, 0x04, -1, 0x01, 0x08
 	};
 
 	if (!SB_BASE_VALID(ia->ia_iobase)) {
@@ -159,6 +164,9 @@ sbprobe(parent, self, aux)
 		return 0;
 	}
 	sc->sc_iobase = iobase;
+	sc->sc_irq = ia->ia_irq;
+	sc->sc_drq = ia->ia_drq;
+
 	if (sbdsp_probe(sc) == 0) {
 		DPRINTF(("sb: sbdsp probe failed\n"));
 		return 0;
@@ -172,10 +180,8 @@ sbprobe(parent, self, aux)
 			printf("sb: configured dma chan %d invalid\n", ia->ia_drq);
 			return 0;
 		}
-		if (ISSB16CLASS(sc)) {
-			sbdsp_mix_write(sc, SBP_SET_DRQ, 
-					1 << ia->ia_drq);
-		}
+		if (ISSB16CLASS(sc))
+			sbdsp_mix_write(sc, SBP_SET_DRQ, drq_conf[ia->ia_drq]);
 	}
 	else {
 		if (!SB_DRQ_VALID(ia->ia_drq)) {
@@ -210,10 +216,8 @@ sbprobe(parent, self, aux)
 			printf("sb: configured irq %d invalid\n", ia->ia_irq);
 			return 0;
 		}
-		if (ISSB16CLASS(sc)) {
-			sbdsp_mix_write(sc, SBP_SET_IRQ, 
-					irq_conf[ia->ia_irq]);
-		}
+		if (ISSB16CLASS(sc))
+			sbdsp_mix_write(sc, SBP_SET_IRQ, irq_conf[ia->ia_irq]);
 	}
 	else {
 		if (!SB_IRQ_VALID(ia->ia_irq)) {
@@ -222,9 +226,6 @@ sbprobe(parent, self, aux)
 		}
 	}
 
-	sc->sc_irq = ia->ia_irq;
-	sc->sc_drq = ia->ia_drq;
-	
 	if (ISSBPROCLASS(sc))
 		ia->ia_iosize = SBP_NPORT;
 	else
@@ -239,7 +240,7 @@ sbforceintr(aux)
 {
 	static char dmabuf;
 	struct isa_attach_args *ia = aux;
-	u_short iobase = ia->ia_iobase;
+	int iobase = ia->ia_iobase;
 
 	/*
 	 * Set up a DMA read of one byte.
@@ -252,7 +253,7 @@ sbforceintr(aux)
 	 * it is needed (and you pay the latency).  Also, you might
 	 * never need the buffer anyway.)
 	 */
-	at_dma(B_READ, &dmabuf, 1, ia->ia_drq);
+	at_dma(DMAMODE_READ, &dmabuf, 1, ia->ia_drq);
 	if (sbdsp_wdsp(iobase, SB_DSP_RDMA) == 0) {
 		(void)sbdsp_wdsp(iobase, 0);
 		(void)sbdsp_wdsp(iobase, 0);
@@ -271,17 +272,12 @@ sbattach(parent, self, aux)
 {
 	register struct sbdsp_softc *sc = (struct sbdsp_softc *)self;
 	struct isa_attach_args *ia = (struct isa_attach_args *)aux;
-	register u_short iobase = ia->ia_iobase;
 	int err;
 	
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_AUDIO,
-				       sbdsp_intr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_AUDIO, sbdsp_intr, sc, sc->sc_dev.dv_xname);
 
 	sbdsp_attach(sc);
-
-	sprintf(sb_device.version, "%d.%d", 
-		SBVER_MAJOR(sc->sc_model),
-		SBVER_MINOR(sc->sc_model));
 
 	if ((err = audio_hardware_attach(&sb_hw_if, sc)) != 0)
 		printf("sb: could not attach to audio pseudo-device driver (%d)\n", err);
@@ -299,10 +295,10 @@ sbopen(dev, flags)
     struct sbdsp_softc *sc;
     int unit = AUDIOUNIT(dev);
     
-    if (unit >= sbcd.cd_ndevs)
+    if (unit >= sb_cd.cd_ndevs)
 	return ENODEV;
     
-    sc = sbcd.cd_devs[unit];
+    sc = sb_cd.cd_devs[unit];
     if (!sc)
 	return ENXIO;
     
@@ -314,6 +310,16 @@ sb_getdev(addr, retp)
 	void *addr;
 	struct audio_device *retp;
 {
-	*retp = sb_device;
+	struct sbdsp_softc *sc = addr;
+
+	if (sc->sc_model & MODEL_JAZZ16)
+		strncpy(retp->name, "MV Jazz16", sizeof(retp->name));
+	else
+		strncpy(retp->name, "SoundBlaster", sizeof(retp->name));
+	sprintf(retp->version, "%d.%d", 
+		SBVER_MAJOR(sc->sc_model),
+		SBVER_MINOR(sc->sc_model));
+	strncpy(retp->config, "sb", sizeof(retp->config));
+		
 	return 0;
 }

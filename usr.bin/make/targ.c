@@ -1,4 +1,5 @@
-/*	$NetBSD: targ.c,v 1.5 1995/06/14 15:20:08 christos Exp $	*/
+/*	$OpenBSD: targ.c,v 1.3 1996/04/21 23:43:28 deraadt Exp $	*/
+/*	$NetBSD: targ.c,v 1.9 1996/08/30 17:59:43 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -40,7 +41,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)targ.c	5.9 (Berkeley) 3/1/91"; */
-static char *rcsid = "$Id: targ.c,v 1.5 1995/06/14 15:20:08 christos Exp $";
+static char *rcsid = "$Id: targ.c,v 1.3 1996/04/21 23:43:28 deraadt Exp $";
 #endif /* not lint */
 
 /*-
@@ -161,7 +162,7 @@ Targ_NewGN (name)
     register GNode *gn;
 
     gn = (GNode *) emalloc (sizeof (GNode));
-    gn->name = strdup (name);
+    gn->name = estrdup (name);
     gn->path = (char *) 0;
     if (name[0] == '-' && name[1] == 'l') {
 	gn->type = OP_LIB;
@@ -172,6 +173,7 @@ Targ_NewGN (name)
     gn->make = 	    	FALSE;
     gn->made = 	    	UNMADE;
     gn->childMade = 	FALSE;
+    gn->order =		0;
     gn->mtime = gn->cmtime = 0;
     gn->iParents =  	Lst_Init (FALSE);
     gn->cohorts =   	Lst_Init (FALSE);
@@ -470,9 +472,9 @@ Targ_FmtTime (time)
 
     parts = localtime(&time);
 
-    sprintf (buf, "%d:%02d:%02d %s %d, 19%d",
+    sprintf (buf, "%d:%02d:%02d %s %d, %d",
 	     parts->tm_hour, parts->tm_min, parts->tm_sec,
-	     months[parts->tm_mon], parts->tm_mday, parts->tm_year);
+	     months[parts->tm_mon], parts->tm_mday, 1900 + parts->tm_year);
     return(buf);
 }
     

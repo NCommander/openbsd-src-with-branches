@@ -1,4 +1,4 @@
-# @(#)southamerica	7.8
+# @(#)southamerica	7.12
 
 # This data is by no means authoritative; if you think you know better,
 # go ahead and edit the file (and please send any changes to
@@ -107,6 +107,12 @@ Zone America/Buenos_Aires -3:53:48 -	LMT	1894 Nov
 			-4:00	Arg	A%sT	1969 Oct 5
 			-3:00	Arg	AR%sT
 
+# Aruba
+# Zone	NAME		GMTOFF	RULES	FORMAT	[UNTIL]
+Zone	America/Aruba	-4:40:24 -	LMT	1912 Feb 12	# Oranjestad
+			-4:30	-	NAST	1965	# Netherlands Antilles
+			-4:00	-	AST
+
 # Bolivia
 # Zone	NAME		GMTOFF	RULES	FORMAT	[UNTIL]
 Zone	America/La_Paz	-4:32:36 -	LMT	1890
@@ -121,8 +127,8 @@ Zone	America/La_Paz	-4:32:36 -	LMT	1890
 # ending dates, giving them as "estimated date(s) based on previous year".  We
 # infer a rule here from one example, always a dangerous practice....  Yes,
 # they really do switch on Saturday, according to the OAG.
-# "Brazil/Acre" is for the Territory of Acre; "Brazil/DeNoronha" is for
-# Fernando De Noronha.
+# "[America/Porto_Acre]" is for the Territory of Acre;
+# "[America/Noronha]" is for Fernando De Noronha.
 
 # From Bob Devine (January 28, 1988):
 # The only information I found is that there was no DST up to 1985.
@@ -158,7 +164,6 @@ Zone	America/La_Paz	-4:32:36 -	LMT	1890
 # about time zone changes after 1990 Feb 11.
 
 # Rule	NAME	FROM	TO	TYPE	IN	ON	AT	SAVE	LETTER/S
-Rule	Brazil	1914	only	-	Jan	 1	 0:00	0	S
 Rule	Brazil	1931	only	-	Oct	 3	11:00	1	D
 Rule	Brazil	1932	1933	-	Apr	 1	 0:00	0	S
 Rule	Brazil	1932	only	-	Oct	 3	 0:00	1	D
@@ -199,21 +204,17 @@ Zone America/Porto_Acre	-4:31:12 -	LMT	1914
 
 # Chile
 
-# From Guy Harris:
-# The OAG lists October 11, 1987 and March 12, 1988 as the starting and
-# ending dates, giving them as "estimated date(s) based on previous year."
-
-# From Bob Devine (January 28, 1988):
-# Chile has had 2nd Sunday in October to 2nd Sunday in March DST since 1977.
-# Switch is at midnight. OAG is right.
+# From Eduardo Krell (1995-10-19):
+# The law says to switch to DST at midnight [24:00] on the second SATURDAY
+# of October....  The law is the same for March and October.
 
 # Rule	NAME	FROM	TO	TYPE	IN	ON	AT	SAVE	LETTER/S
 Rule	Chile	1918	only	-	Sep	1	0:00	1:00	D
 Rule	Chile	1919	only	-	Jul	2	0:00	0	S
 Rule	Chile	1927	1931	-	Sep	1	0:00	1:00	D
 Rule	Chile	1928	1932	-	Apr	1	0:00	0	S
-Rule	Chile	1969	max	-	Oct	Sun>=8	0:00	1:00	D
-Rule	Chile	1970	max	-	Mar	Sun>=8	0:00	0	S
+Rule	Chile	1969	max	-	Oct	Sun>=9	0:00	1:00	D
+Rule	Chile	1970	max	-	Mar	Sun>=9	0:00	0	S
 # Zone	NAME		GMTOFF	RULES	FORMAT	[UNTIL]
 Zone America/Santiago	-4:42:40 -	LMT	1890
 			-4:43	-	SMT	1910	    # Santiago Mean Time
@@ -254,7 +255,6 @@ Zone Pacific/Galapagos	-5:58:24 -	LMT	1931 # Puerto Baquerizo Moreno
 
 # Falklands
 # Rule	NAME	FROM	TO	TYPE	IN	ON	AT	SAVE	LETTER/S
-Rule	Falk	1912	only	-	Mar	12	0:00	0	S
 Rule	Falk	1937	1938	-	Sep	lastSun	0:00	1:00	D
 Rule	Falk	1938	1942	-	Mar	Sun>=19	0:00	0	S
 Rule	Falk	1939	only	-	Oct	1	0:00	1:00	D
@@ -297,7 +297,6 @@ Zone	America/Guyana	-3:52:40 -	LMT	1915 Mar	# Georgetown
 
 # From Shanks (1991):
 # Rule	NAME	FROM	TO	TYPE	IN	ON	AT	SAVE	LETTER/S
-Rule	Para	1974	only	-	Apr	 1	0:00	0	S
 Rule	Para	1975	1978	-	Oct	 1	0:00	1:00	D
 Rule	Para	1975	1978	-	Mar	 1	0:00	0	S
 # Shanks says 1979 was all DST.
@@ -314,7 +313,6 @@ Zone America/Asuncion	-3:50:40 -	LMT	1890
 
 # Peru
 # Rule	NAME	FROM	TO	TYPE	IN	ON	AT	SAVE	LETTER/S
-Rule	Peru	1908	only	-	Jul	28	0:00	0	S
 Rule	Peru	1938	only	-	Jan	 1	0:00	1:00	D
 Rule	Peru	1938	only	-	Apr	 1	0:00	0	S
 Rule	Peru	1938	1939	-	Sep	lastSun	0:00	1:00	D
@@ -334,7 +332,7 @@ Zone Atlantic/South_Georgia -2:26:08 -	LMT	1890		# Grytviken
 			-2:00	-	FST
 
 # South Sandwich Is
-# no information
+# uninhabited
 
 # Suriname
 # Zone	NAME		GMTOFF	RULES	FORMAT	[UNTIL]
@@ -352,10 +350,8 @@ Zone America/Port_of_Spain -4:06:04 -	LMT	1912 Mar 2
 # Uruguay
 # From Paul Eggert <eggert@twinsun.com> (November 18, 1993):
 # Uruguay wins the prize for the strangest peacetime manipulation of the rules.
-# Your guess is as good as mine for what happened after 1989.
 # From Shanks (1991):
 # Rule	NAME	FROM	TO	TYPE	IN	ON	AT	SAVE	LETTER/S
-Rule	Uruguay	1920	only	-	May	 1	 0:00	0	S
 # Whitman gives 1923 Oct 1; go with Shanks.
 Rule	Uruguay	1923	only	-	Oct	 2	 0:00	0:30	HD
 Rule	Uruguay	1924	1926	-	Apr	 1	 0:00	0	S

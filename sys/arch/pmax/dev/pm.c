@@ -1,4 +1,4 @@
-/*	$NetBSD: pm.c,v 1.8.2.1 1995/10/17 00:19:23 jonathan Exp $	*/
+/*	$NetBSD: pm.c,v 1.14.4.1 1996/09/09 20:49:38 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -56,9 +56,9 @@
  */
 
 
-#include <fb.h>
-#include <pm.h>
-#include <dc.h>
+#include "fb.h"
+#include "pm.h"
+#include "dc.h"
 #if NPM > 0
 #if NDC == 0
 pm needs dc device
@@ -72,6 +72,7 @@ pm needs dc device
 #include <sys/errno.h>
 #include <sys/proc.h>
 #include <sys/mman.h>
+#include <sys/malloc.h>
 
 #include <vm/vm.h>
 
@@ -113,10 +114,6 @@ extern void pmScreenInit __P((struct fbinfo *fi));
 static void pmLoadCursor __P((struct fbinfo *fi, u_short *ptr));
 void pmPosCursor __P((struct fbinfo *fi, int x, int y));
 
-#ifdef notyet /* these should be removed */
-static void pmRestoreCursorColor __P(());
-
-#endif
 void bt478CursorColor __P((struct fbinfo *fi, u_int *color));
 void bt478InitColorMap __P((struct fbinfo *fi));
 
@@ -151,7 +148,7 @@ void genKbdEvent(), genMouseEvent(), genMouseButtons();
 extern void pmEventQueueInit __P((pmEventQueue *qe));
 
 #define CMAP_BITS	(3 * 256)		/* 256 entries, 3 bytes per. */
-static u_char cmap_bits [NPM * CMAP_BITS];	/* One colormap per pm... */
+static u_char cmap_bits [CMAP_BITS];		/* colormap for console... */
 
 
 /*
@@ -163,8 +160,12 @@ static u_char cmap_bits [NPM * CMAP_BITS];	/* One colormap per pm... */
 int pmmatch __P((struct device *, void *, void *));
 void pmattach __P((struct device *, struct device *, void *));
 
-struct cfdriver pmcd = {
-	NULL, "pm", pmmatch, pmattach, DV_DULL, sizeof(struct device), 0
+struct cfattach pm_ca = {
+	sizeof(struct device), pmmatch, pmattach
+};
+
+struct cfdriver pm_cd = {
+	NULL, "pm", DV_DULL
 };
 
 /* new-style raster-cons "driver" methods */
@@ -188,22 +189,15 @@ pmmatch(parent, match, aux)
 {
 	struct cfdata *cf = match;
 	struct confargs *ca = aux;
-	static int npms = 1;
-	caddr_t pmaddr = BUS_CVTADDR(ca);
-
+	caddr_t pmaddr = (caddr_t)ca->ca_addr;
 
 	/* make sure that we're looking for this type of device. */
-	if (!BUS_MATCHNAME(ca, "pm"))
+	if (strcmp(ca->ca_name, "pm") != 0)
 		return (0);
 
 	if (badaddr(pmaddr, 4))
 		return (0);
 
-#ifdef notyet
-	/* if it can't have the one mentioned, reject it */
-	if (cf->cf_unit >= npms)
-		return (0);
-#endif
 	return (1);
 }
 
@@ -214,20 +208,21 @@ pmattach(parent, self, aux)
 	void *aux;
 {
 	struct confargs *ca = aux;
-	caddr_t pmaddr = BUS_CVTADDR(ca);
+	caddr_t pmaddr = (caddr_t)ca->ca_addr;
 
 	if (!pminit(&pmfi, 0, 0))
 		return;
 
 	/* no interrupts for PM */
 	/*BUS_INTR_ESTABLISH(ca, sccintr, self->dv_unit);*/
+	printf("\n");
 	return;
 }
 
 
 /*
- * Test to see if device is present.
- * Return true if found and initialized ok.
+ * pmax FB initialization.  This is abstracted out from pmbattch() so
+ * that a console framebuffer can be initialized early in boot.
  */
 pminit(fi, unit, silent)
 	struct fbinfo *fi;
@@ -236,7 +231,21 @@ pminit(fi, unit, silent)
 {
 	register PCCRegs *pcc = (PCCRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_PCC);
 
-	if (fi == 0) fi = &pmfi;
+	/*XXX*/
+	/*
+	 * If this device is being intialized as the console, malloc()
+	 * is not yet up and we must use statically-allocated space.
+	 */
+	if (fi == NULL) {
+		fi = &pmfi;	/* XXX */
+  		fi->fi_cmap_bits = (caddr_t)cmap_bits;
+	} else {
+    		fi->fi_cmap_bits = malloc(CMAP_BITS, M_DEVBUF, M_NOWAIT);
+		if (fi->fi_cmap_bits == NULL) {
+			printf("pm%d: no memory for cmap 0x%x\n", unit);
+			return (0);
+		}
+	}
 
 	/* Set address of frame buffer... */
 	fi->fi_pixels = (caddr_t)MACH_PHYS_TO_UNCACHED(KN01_PHYS_FBUF_START);
@@ -310,7 +319,7 @@ pminit(fi, unit, silent)
 	/*
 	 * Initialize the color map, the screen, and the mouse.
 	 */
-	bt478init(&pmfi);
+	bt478init(fi);
 
 	/*
 	 * Initialize old-style pmax screen info.
@@ -326,7 +335,7 @@ pminit(fi, unit, silent)
 
 
 #ifdef notanymore
-	bt478InitColorMap(&pmfi);	/* done inside bt478init() */
+	bt478InitColorMap(fi);	/* done inside bt478init() */
 #endif
 
 	/*
@@ -380,141 +389,6 @@ pmLoadCursor(fi, cur)
 	curReg &= ~PCC_LODSA;
 	pcc->cmdr = curReg;
 }
-
-#if 0
-/*
- * ----------------------------------------------------------------------------
- *
- * pmRestoreCursorColor --
- *
- *	Routine to restore the color of the cursor.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- * ----------------------------------------------------------------------------
- */
-static void
-pmRestoreCursorColor(fi)
-	struct fbinfo *fi;
-{
-	register VDACRegs *vdac = (VDACRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_VDAC);
-	register int i;
-
-	vdac->overWA = 0x04;
-	MachEmptyWriteBuffer();
-	for (i = 0; i < 3; i++) {  
-		vdac->over = bg_RGB[i];
-		MachEmptyWriteBuffer();
-	}
-
-	vdac->overWA = 0x08;
-	MachEmptyWriteBuffer();
-	vdac->over = 0x00;
-	MachEmptyWriteBuffer();
-	vdac->over = 0x00;
-	MachEmptyWriteBuffer();
-	vdac->over = 0x7f;
-	MachEmptyWriteBuffer();
-
-	vdac->overWA = 0x0c;
-	MachEmptyWriteBuffer();
-	for (i = 0; i < 3; i++) {
-		vdac->over = fg_RGB[i];
-		MachEmptyWriteBuffer();
-	}
-}
-
-/*
- * ----------------------------------------------------------------------------
- *
- * pmCursorColor --
- *
- *	Set the color of the cursor.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- * ----------------------------------------------------------------------------
- */
-static void
-pmCursorColor(color)
-	unsigned int color[];
-{
-	register int i, j;
-
-	for (i = 0; i < 3; i++)
-		bg_RGB[i] = (u_char)(color[i] >> 8);
-
-	for (i = 3, j = 0; i < 6; i++, j++)
-		fg_RGB[j] = (u_char)(color[i] >> 8);
-
-	pmRestoreCursorColor();
-}
-
-/*
- * ----------------------------------------------------------------------------
- *
- * pmInitColorMap --
- *
- *	Initialize the color map.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The colormap is initialized appropriately whether it is color or 
- *	monochrome.
- *
- * ----------------------------------------------------------------------------
- */
-static void
-pmInitColorMap()
-{
-	register VDACRegs *vdac = (VDACRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_VDAC);
-	register int i;
-
-	*(volatile char *)MACH_PHYS_TO_UNCACHED(KN01_PHYS_COLMASK_START) = 0xff;
-	MachEmptyWriteBuffer();
-
-	if (fi->fi_type.fb_depth == 1) {
-		vdac->mapWA = 0; MachEmptyWriteBuffer();
-		for (i = 0; i < 256; i++) {
-			vdac->map = (i < 128) ? 0x00 : 0xff;
-			MachEmptyWriteBuffer();
-			vdac->map = (i < 128) ? 0x00 : 0xff;
-			MachEmptyWriteBuffer();
-			vdac->map = (i < 128) ? 0x00 : 0xff;
-			MachEmptyWriteBuffer();
-		}
-	} else {
-		vdac->mapWA = 0; MachEmptyWriteBuffer();
-		vdac->map = 0; MachEmptyWriteBuffer();
-		vdac->map = 0; MachEmptyWriteBuffer();
-		vdac->map = 0; MachEmptyWriteBuffer();
-
-		for (i = 1; i < 256; i++) {
-			vdac->map = 0xff; MachEmptyWriteBuffer();
-			vdac->map = 0xff; MachEmptyWriteBuffer();
-			vdac->map = 0xff; MachEmptyWriteBuffer();
-		}
-	}
-
-	for (i = 0; i < 3; i++) {
-		bg_RGB[i] = 0x00;
-		fg_RGB[i] = 0xff;
-	}
-	pmRestoreCursorColor();
-}
-
-
-#endif /* 0 */
 
 /* should zap pmloadcolormap too, but i haven't fixed the callers yet */
 

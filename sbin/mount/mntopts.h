@@ -1,3 +1,4 @@
+/*	$OpenBSD: mntopts.h,v 1.3 1995/03/18 14:56:59 cgd Exp $	*/
 /*	$NetBSD: mntopts.h,v 1.3 1995/03/18 14:56:59 cgd Exp $	*/
 
 /*-

@@ -1,5 +1,3 @@
-/*	$NetBSD: sleep.c,v 1.10 1995/05/03 12:52:43 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,16 +32,15 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sleep.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: sleep.c,v 1.10 1995/05/03 12:52:43 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: sleep.c,v 1.5 1996/09/15 09:31:05 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/time.h>
 #include <signal.h>
 #include <unistd.h>
+
+static void sleephandler __P((int));
+static volatile int ringring;
 
 unsigned int
 sleep(seconds)
@@ -53,7 +50,6 @@ sleep(seconds)
 	struct sigaction act, oact;
 	struct timeval diff;
 	sigset_t set, oset;
-	static void sleephandler();
 
 	if (!seconds)
 		return 0;
@@ -99,12 +95,24 @@ sleep(seconds)
 
 	set = oset;
 	sigdelset(&set, SIGALRM);
+	ringring = 0;
  	(void) sigsuspend(&set);
 
-	sigaction(SIGALRM, &oact, NULL);
+	if (!ringring) {
+		struct itimerval nulltv;
+		/*
+		 * Interrupted by other signal; allow for pending 
+		 * SIGALRM to be processed before resetting handler,
+		 * after first turning off the timer.
+		 */
+		timerclear(&nulltv.it_interval);
+		timerclear(&nulltv.it_value);
+		(void) setitimer(ITIMER_REAL, &nulltv, &itv);
+	} else
+		timerclear(&itv.it_value);
 	sigprocmask(SIG_SETMASK, &oset, NULL);
-
-	(void) setitimer(ITIMER_REAL, &oitv, &itv);
+	sigaction(SIGALRM, &oact, NULL);
+	(void) setitimer(ITIMER_REAL, &oitv, NULL);
 
 	if (timerisset(&diff))
 		timeradd(&itv.it_value, &diff, &itv.it_value);
@@ -112,8 +120,10 @@ sleep(seconds)
 	return (itv.it_value.tv_sec);
 }
 
+/* ARGSUSED */
 static void
-sleephandler()
+sleephandler(sig)
+	int sig;
 {
-
+	ringring = 1;
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: expr.c,v 1.3 1995/04/28 23:27:15 jtc Exp $	*/
+/*	$OpenBSD: expr.c,v 1.3 1996/06/23 14:20:10 deraadt Exp $	*/
+/*	$NetBSD: expr.c,v 1.3.6.1 1996/06/04 20:41:47 cgd Exp $	*/
 
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
@@ -156,7 +157,7 @@ to_string(vp)
 	if (tmp == NULL) {
 		err(2, NULL);
 	}
-	sprintf(tmp, "%d", vp->u.i);
+	snprintf(tmp, 25, "%d", vp->u.i);
 	vp->type = string;
 	vp->u.s = tmp;
 }
@@ -484,10 +485,7 @@ main(argc, argv)
 {
 	struct val     *vp;
 
-	if (!setlocale(LC_ALL, "")) {
-		fprintf(stderr,
-			"setlocale failed, continuing with \"C\" locale.");
-	}
+	(void) setlocale(LC_ALL, "");
 	av = argv + 1;
 
 	nexttoken();

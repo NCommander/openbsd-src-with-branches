@@ -1,4 +1,5 @@
-/*	$NetBSD: pmap.h,v 1.21 1995/10/11 04:20:20 mycroft Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.5 1996/05/09 10:16:47 deraadt Exp $	*/
+/*	$NetBSD: pmap.h,v 1.23 1996/05/03 19:26:30 christos Exp $	*/
 
 /* 
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -67,7 +68,7 @@
  */
 #define	PTDPTDI		0x3df		/* ptd entry that points to ptd! */
 #define	KPTDI		0x3e0		/* start of kernel virtual pde's */
-#define	NKPDE		12
+#define	NKPDE		31
 #define	APTDPTDI	0x3ff		/* start of alternate page directory */
 
 /*
@@ -84,7 +85,6 @@ extern int	PTDpaddr;	/* physical address of kernel PTD */
 void pmap_bootstrap __P((vm_offset_t start));
 boolean_t pmap_testbit __P((vm_offset_t, int));
 void pmap_changebit __P((vm_offset_t, int, int));
-__pure u_int pmap_page_index __P((vm_offset_t));
 #endif
 
 /*
@@ -160,6 +160,8 @@ struct pv_entry		*pv_table;	/* array of entries, one per page */
 #define	pmap_resident_count(pmap)	((pmap)->pm_stats.resident_count)
 #define	pmap_update()			tlbflush()
 
+vm_offset_t reserve_dumppages __P((vm_offset_t));
+
 static __inline void
 pmap_clear_modify(vm_offset_t pa)
 {
@@ -195,6 +197,8 @@ pmap_phys_address(int ppn)
 {
 	return i386_ptob(ppn);
 }
+
+void pmap_activate __P((pmap_t, struct pcb *));
 
 #endif	/* _KERNEL */
 

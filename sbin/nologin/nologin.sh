@@ -1,4 +1,5 @@
 #!/bin/sh -
+#	$OpenBSD: nologin.sh,v 1.4 1995/04/23 10:33:30 cgd Exp $
 #	$NetBSD: nologin.sh,v 1.4 1995/04/23 10:33:30 cgd Exp $
 #
 # Copyright (c) 1992, 1993

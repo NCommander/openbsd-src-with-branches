@@ -1,3 +1,4 @@
+/*	$OpenBSD: file.c,v 1.2 1995/12/14 03:30:03 deraadt Exp $	*/
 /*
  * file - find type of a file or files - main program.
  *
@@ -25,8 +26,7 @@
  * 4. This notice may not be removed or altered.
  */
 #ifndef	lint
-static char *moduleid = 
-	"@(#)$Id: file.c,v 1.7 1995/07/13 13:22:58 mycroft Exp $";
+static char *moduleid = "$OpenBSD$";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -51,9 +51,9 @@ static char *moduleid =
 #include "file.h"
 
 #ifdef S_IFLNK
-# define USAGE  "Usage: %s [-vczL] [-f namefile] [-m magicfile] file...\n"
+# define USAGE  "Usage: %s [-vczL] [-f namefile] [-m magicfiles] file...\n"
 #else
-# define USAGE  "Usage: %s [-vcz] [-f namefile] [-m magicfile] file...\n"
+# define USAGE  "Usage: %s [-vcz] [-f namefile] [-m magicfiles] file...\n"
 #endif
 
 #ifndef MAGIC

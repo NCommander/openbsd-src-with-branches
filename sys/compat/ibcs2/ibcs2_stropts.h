@@ -1,3 +1,6 @@
+/*	$OpenBSD: ibcs2_stropts.h,v 1.2 1996/05/03 17:05:33 christos Exp $	*/
+/*	$NetBSD: ibcs2_stropts.h,v 1.2 1996/05/03 17:05:33 christos Exp $	*/
+
 /*
  * ibcs2_stropts.h
  * Copyright (c) 1995 Scott Bartram

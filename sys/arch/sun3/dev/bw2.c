@@ -1,4 +1,4 @@
-/*	$NetBSD: bw2.c,v 1.4 1995/04/10 07:05:56 mycroft Exp $	*/
+/*	$NetBSD: bw2.c,v 1.6 1996/03/17 02:03:41 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -81,9 +81,13 @@ struct bw2_softc {
 static void	bw2attach __P((struct device *, struct device *, void *));
 static int	bw2match __P((struct device *, void *, void *));
 
-struct cfdriver bwtwocd = {
-	NULL, "bwtwo", bw2match, bw2attach,
-	DV_DULL, sizeof(struct bw2_softc) };
+struct cfattach bwtwo_ca = {
+	sizeof(struct bw2_softc), bw2match, bw2attach
+};
+
+struct cfdriver bwtwo_cd = {
+	NULL, "bwtwo", DV_DULL
+};
 
 /* XXX we do not handle frame buffer interrupts */
 
@@ -108,12 +112,14 @@ bw2match(parent, vcf, args)
 	struct confargs *ca = args;
 	int x;
 
+#if 0	/* XXX - Assume only one is in use anyway... */
 	/*
 	 * This driver only supports one unit because the
 	 * system enable register is used for blanking.
 	 */
 	if (cf->cf_unit != 0)
 		return (0);
+#endif
 
 	if (ca->ca_paddr == -1) {
 		if (cpu_machine_id == SUN3_MACH_50)
@@ -182,7 +188,7 @@ bw2open(dev, flags, mode, p)
 {
 	int unit = minor(dev);
 
-	if (unit >= bwtwocd.cd_ndevs || bwtwocd.cd_devs[unit] == NULL)
+	if (unit >= bwtwo_cd.cd_ndevs || bwtwo_cd.cd_devs[unit] == NULL)
 		return (ENXIO);
 	return (0);
 }
@@ -205,7 +211,7 @@ bw2ioctl(dev, cmd, data, flags, p)
 	int flags;
 	struct proc *p;
 {
-	struct bw2_softc *sc = bwtwocd.cd_devs[minor(dev)];
+	struct bw2_softc *sc = bwtwo_cd.cd_devs[minor(dev)];
 
 	return (fbioctlfb(&sc->sc_fb, cmd, data));
 }
@@ -219,7 +225,7 @@ bw2mmap(dev, off, prot)
 	dev_t dev;
 	int off, prot;
 {
-	struct bw2_softc *sc = bwtwocd.cd_devs[minor(dev)];
+	struct bw2_softc *sc = bwtwo_cd.cd_devs[minor(dev)];
 
 	if (off & PGOFSET)
 		return (-1);

@@ -1,3 +1,5 @@
+/*	$OpenBSD: rup.c,v 1.3 1996/08/16 09:10:29 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1993, John Brezak
  * All rights reserved.
@@ -32,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rup.c,v 1.10 1994/02/05 14:58:14 pk Exp $";
+static char rcsid[] = "$OpenBSD: rup.c,v 1.3 1996/08/16 09:10:29 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -116,7 +118,7 @@ compare(d1, d2)
 	case SORT_HOST:
 		return strcmp(d1->host, d2->host);
 	case SORT_LDAV:
-		return d1->statstime.avenrun[0] 
+		return d1->statstime.avenrun[0]
 			- d2->statstime.avenrun[0];
 	case SORT_UPTIME:
 		return d1->statstime.boottime.tv_sec 
@@ -135,7 +137,7 @@ remember_rup_data(host, st)
         if (rup_data_idx >= rup_data_max) {
                 rup_data_max += 16;
                 rup_data = realloc (rup_data, 
-				rup_data_max * sizeof(struct rup_data));
+		    rup_data_max * sizeof(struct rup_data));
                 if (rup_data == NULL) {
                         err (1, NULL);
 			/* NOTREACHED */
@@ -159,8 +161,7 @@ rstat_reply(replyp, raddrp)
 
 	if (!search_host(raddrp->sin_addr)) {
 		hp = gethostbyaddr((char *)&raddrp->sin_addr.s_addr,
-			sizeof(struct in_addr), AF_INET);
-
+		    sizeof(struct in_addr), AF_INET);
 		if (hp)
 			host = hp->h_name;
 		else
@@ -168,11 +169,10 @@ rstat_reply(replyp, raddrp)
 
 		remember_host(raddrp->sin_addr);
 
-		if (sort_type != SORT_NONE) {
+		if (sort_type != SORT_NONE)
 			remember_rup_data(host, host_stat);
-		} else {
+		else
 			print_rup_data(host, host_stat);
-		}
 	}
 
 	return (0);
@@ -202,13 +202,13 @@ print_rup_data(host, host_stat)
 
 	if (host_uptime.tm_yday != 0)
 		sprintf(days_buf, "%3d day%s, ", host_uptime.tm_yday,
-			(host_uptime.tm_yday > 1) ? "s" : "");
+		    (host_uptime.tm_yday > 1) ? "s" : "");
 	else
 		days_buf[0] = '\0';
 
 	if (host_uptime.tm_hour != 0)
 		sprintf(hours_buf, "%2d:%02d, ",
-			host_uptime.tm_hour, host_uptime.tm_min);
+		    host_uptime.tm_hour, host_uptime.tm_min);
 	else
 		if (host_uptime.tm_min != 0)
 			sprintf(hours_buf, "%2d mins, ", host_uptime.tm_min);
@@ -216,15 +216,16 @@ print_rup_data(host, host_stat)
 			hours_buf[0] = '\0';
 
 	if (printtime)
-		printf(" %2d:%02d%cm", host_time.tm_hour % 12,
-			host_time.tm_min,
-			(host_time.tm_hour >= 12) ? 'p' : 'a');
+		printf(" %2d:%02d%cm",
+		    (host_time.tm_hour % 12) ? (host_time.tm_hour % 12) : 12,
+		    host_time.tm_min,
+		    (host_time.tm_hour >= 12) ? 'p' : 'a');
 
 	printf(" up %9.9s%9.9s load average: %.2f %.2f %.2f\n",
-		days_buf, hours_buf,
-		(double)host_stat->avenrun[0]/FSCALE,
-		(double)host_stat->avenrun[1]/FSCALE,
-		(double)host_stat->avenrun[2]/FSCALE);
+	    days_buf, hours_buf,
+	    (double)host_stat->avenrun[0]/FSCALE,
+	    (double)host_stat->avenrun[1]/FSCALE,
+	    (double)host_stat->avenrun[2]/FSCALE);
 
 	return(0);
 }
@@ -245,7 +246,8 @@ onehost(host)
 	}
 
 	bzero((char *)&host_stat, sizeof(host_stat));
-	if (clnt_call(rstat_clnt, RSTATPROC_STATS, xdr_void, NULL, xdr_statstime, &host_stat, timeout) != RPC_SUCCESS) {
+	if (clnt_call(rstat_clnt, RSTATPROC_STATS, xdr_void, NULL,
+	    xdr_statstime, &host_stat, timeout) != RPC_SUCCESS) {
 		warnx("%s",  clnt_sperror(rstat_clnt, host));
 		return;
 	}
@@ -267,8 +269,7 @@ allhosts()
 	}
 
 	clnt_stat = clnt_broadcast(RSTATPROG, RSTATVERS_TIME, RSTATPROC_STATS,
-				   xdr_void, NULL,
-				   xdr_statstime, &host_stat, rstat_reply);
+	    xdr_void, NULL, xdr_statstime, &host_stat, rstat_reply);
 	if (clnt_stat != RPC_SUCCESS && clnt_stat != RPC_TIMEDOUT) {
 		warnx("%s", clnt_sperrno(clnt_stat));
 		exit(1);
@@ -276,10 +277,12 @@ allhosts()
 
 	if (sort_type != SORT_NONE) {
 		putchar('\n');
-		qsort(rup_data, rup_data_idx, sizeof(struct rup_data), compare);
+		qsort(rup_data, rup_data_idx, sizeof(struct rup_data),
+		    compare);
 
 		for (i = 0; i < rup_data_idx; i++) {
-			print_rup_data(rup_data[i].host, &rup_data[i].statstime);
+			print_rup_data(rup_data[i].host,
+			    &rup_data[i].statstime);
 		}
 	}
 }

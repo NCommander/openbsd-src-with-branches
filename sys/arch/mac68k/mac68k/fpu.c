@@ -1,4 +1,5 @@
-/*	$NetBSD: fpu.c,v 1.10 1995/08/12 04:10:37 briggs Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.3 1996/05/26 18:36:18 briggs Exp $	*/
+/*	$NetBSD: fpu.c,v 1.16 1996/06/11 02:56:22 scottr Exp $	*/
 
 /*
  * Copyright (c) 1995 Gordon W. Ross
@@ -45,18 +46,28 @@
 #include <machine/cpu.h>
 #include <machine/frame.h>
 
-#include <setjmp.h>
-
 extern int fpu_type;
 extern int *nofault;
 
-extern int  matchbyname __P((struct device *, void *, void *));
+static int  fpu_match __P((struct device *, void *, void *));
 static void fpu_attach __P((struct device *, struct device *, void *));
 static int  fpu_probe __P((void));
 
-struct cfdriver fpucd = {
-	NULL, "fpu", matchbyname, fpu_attach,
-	DV_DULL, sizeof(struct device), 0 };
+struct cfattach fpu_ca = {
+	sizeof(struct device), fpu_match, fpu_attach
+};
+
+struct cfdriver fpu_cd = {
+	NULL, "fpu", DV_DULL, 0
+};
+
+static int
+fpu_match(pdp, match, auxp)
+	struct device	*pdp;
+	void	*match, *auxp;
+{
+	return 1;
+}
 
 static char *fpu_descr[] = {
 #ifdef	FPU_EMULATE
@@ -76,10 +87,9 @@ fpu_attach(parent, self, args)
 	void *args;
 {
 	char *descr;
-	int enab_reg;
 
 	fpu_type = fpu_probe();
-	if ((0 <= fpu_type) && (fpu_type <= 2))
+	if ((0 <= fpu_type) && (fpu_type <= 3))
 		descr = fpu_descr[fpu_type];
 	else
 		descr = "unknown type";
@@ -95,11 +105,11 @@ fpu_probe()
 	 * We, of course, need to have enough room for either.
 	 */
 	int	fpframe[60 / sizeof(int)];
-	jmp_buf	faultbuf;
+	label_t	faultbuf;
 	u_char	b;
 
 	nofault = (int *) &faultbuf;
-	if (setjmp(faultbuf)) {
+	if (setjmp(&faultbuf)) {
 		nofault = (int *) 0;
 		return(0);
 	}
@@ -135,7 +145,7 @@ fpu_probe()
 	 * Now, restore a NULL state to reset the FPU.
 	 */
 	fpframe[0] = fpframe[1] = 0;
-	m68881_restore(fpframe);
+	m68881_restore((struct fpframe *) fpframe);
 
 	/*
 	 * The size of a 68881 IDLE frame is 0x18

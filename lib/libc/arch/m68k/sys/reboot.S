@@ -35,11 +35,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#if defined(SYSLIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)reboot.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: reboot.S,v 1.1 1993/11/25 23:39:31 paulus Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD: reboot.S,v 1.1.1.1 1995/10/18 08:41:32 deraadt Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 

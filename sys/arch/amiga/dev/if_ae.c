@@ -1,4 +1,5 @@
-/*	$NetBSD: if_ae.c,v 1.3 1995/10/07 18:12:42 chopps Exp $	*/
+/*	$OpenBSD: if_ae.c,v 1.4 1996/04/21 22:15:21 deraadt Exp $	*/
+/*	$NetBSD: if_ae.c,v 1.8.4.1 1996/05/26 17:26:41 is Exp $	*/
 
 /*
  * Copyright (c) 1995 Bernd Ernesti and Klaus Burkert. All rights reserved.
@@ -83,17 +84,6 @@
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
-#if defined(CCITT) && defined(LLC)
-#include <sys/socketvar.h>  
-#include <netccitt/x25.h>
-extern llc_ctlinput(), cons_rtrequest();
-#endif  
-
 #if NBPFILTER > 0
 #include <net/bpf.h>
 #include <net/bpfdesc.h>
@@ -131,13 +121,13 @@ static u_int16_t	revision;
 
 int	aematch __P((struct device *, void *, void *));
 void	aeattach __P((struct device *, struct device *, void *));
-void	aewatchdog __P((int));
+void	aewatchdog __P((struct ifnet *));
 void	aestop __P((struct ae_softc *));
 void	aememinit __P((struct ae_softc *));
 void	aereset __P((struct ae_softc *));
 void	aeinit __P((struct ae_softc *));
 void	aestart __P((struct ifnet *));
-int	aeintr __P((struct ae_softc *));
+int	aeintr __P((void *));
 void	aetint __P((struct ae_softc *));
 void	aerint __P((struct ae_softc *));
 void	aeread __P((struct ae_softc *, u_char *, int));
@@ -145,12 +135,16 @@ static	void wcopyfrom __P((char *, char *, int));
 static	void wcopyto __P((char *, char *, int));
 static	void wzero __P((char *, int));
 int	aeput __P((char *, struct mbuf *));
-struct	mbuf *aeget __P((struct ae_softc *,u_char *, int));
+struct	mbuf *aeget __P((struct ae_softc *, u_char *, int));
 int	aeioctl __P((struct ifnet *, u_long, caddr_t));
 void	aesetladrf __P((struct arpcom *, u_int16_t *));
 
-struct cfdriver aecd = {
-	NULL, "ae", aematch, aeattach, DV_IFNET, sizeof(struct ae_softc)
+struct cfattach ae_ca = {
+	sizeof(struct ae_softc), aematch, aeattach
+};
+
+struct cfdriver ae_cd = {
+	NULL, "ae", DV_IFNET
 };
 
 int
@@ -206,18 +200,13 @@ aeattach(parent, self, aux)
 	 * Manufacturer decides the 3 first bytes, i.e. ethernet vendor ID.
 	 */
 
-	/*
-	 * currently borrowed from C= 
-	 * the next four lines will soon have to be altered 
-	 */
-
 	sc->sc_arpcom.ac_enaddr[0] = 0x00;
-	sc->sc_arpcom.ac_enaddr[1] = 0x80;
-	sc->sc_arpcom.ac_enaddr[2] = 0x10;
+	sc->sc_arpcom.ac_enaddr[1] = 0x60;
+	sc->sc_arpcom.ac_enaddr[2] = 0x30;
 
-	sc->sc_arpcom.ac_enaddr[3] = ((ser >> 16) & 0x0f) | 0xf0; /* to diff from A2065 */
-	sc->sc_arpcom.ac_enaddr[4] = (ser >>  8 ) & 0xff;
-	sc->sc_arpcom.ac_enaddr[5] = (ser       ) & 0xff;
+	sc->sc_arpcom.ac_enaddr[3] = (ser >> 16) & 0xff;
+	sc->sc_arpcom.ac_enaddr[4] = (ser >> 8) & 0xff;
+	sc->sc_arpcom.ac_enaddr[5] = ser & 0xff;
 
 	printf("%s: hardware address %s 32K", sc->sc_dev.dv_xname,
 		ether_sprintf(sc->sc_arpcom.ac_enaddr));
@@ -232,8 +221,8 @@ aeattach(parent, self, aux)
 
 	splx (s);
 
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = aecd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_ioctl = aeioctl;
 	ifp->if_watchdog = aewatchdog;
 	ifp->if_output = ether_output;
@@ -255,10 +244,10 @@ aeattach(parent, self, aux)
 }
 
 void
-aewatchdog(unit)
-	short unit;
+aewatchdog(ifp)
+	struct ifnet *ifp;
 {
-	struct ae_softc *sc = aecd.cd_devs[unit];
+	struct ae_softc *sc = ifp->if_softc;
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 	++sc->sc_arpcom.ac_if.if_oerrors;
@@ -282,7 +271,9 @@ void
 aememinit(sc)
 	register struct ae_softc *sc;
 {        
+#if NBPFILTER > 0
 	register struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+#endif
 	/*
 	 * This structure is referenced from the CARD's/PCnet-ISA's point
 	 * of view, thus the 0x8000 address which is the buffer RAM area
@@ -338,7 +329,7 @@ aereset(sc)
 {
 	int s;
 
-	s = splimp();
+	s = splnet();
 	aeinit(sc);
 	splx(s);
 }
@@ -443,7 +434,7 @@ void
 aestart(ifp)
 	struct ifnet *ifp;
 {
-	register struct ae_softc *sc = aecd.cd_devs[ifp->if_unit];
+	register struct ae_softc *sc = ifp->if_softc;
 	register int bix;
 	register struct aetmd *tmd;
 	register struct mbuf *m;
@@ -495,9 +486,10 @@ aestart(ifp)
 }
 
 int
-aeintr(sc)
-	register struct ae_softc *sc;
+aeintr(arg)
+	void *arg;
 {
+	register struct ae_softc *sc = arg;
 	register struct aereg1 *aer1;
 	register struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 	register u_int16_t stat;
@@ -823,7 +815,7 @@ wcopyto(a1, a2, length) /* bcopy() word-wise */
 		*b2++ = *b1++;
 
 	if (length & 0x0001) {
-		i = (*b2 & 0x00ff) | (*b1 & 0xff00);	/* copy trailing byte */
+		i = (*b2 & 0x00ff) | (a1[length-1] & 0x00ff)<<8;	/* copy trailing byte */
 		*b2 = i;
 	}
 }
@@ -953,12 +945,17 @@ aeioctl(ifp, cmd, data)
 	u_long cmd;
 	caddr_t data;
 {
-	struct ae_softc *sc = aecd.cd_devs[ifp->if_unit];
+	struct ae_softc *sc = ifp->if_softc;
 	struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (cmd) {
 
@@ -972,37 +969,11 @@ aeioctl(ifp, cmd, data)
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
 #endif
-#ifdef NS
-		case AF_NS:
-		    {
-			register struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				wcopyto(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			aeinit(sc); /* does ae_setaddr() */
-			break;
-		    }
-#endif
 		default:
 			aeinit(sc);
 			break;
 		}
 		break;
-
-#if defined(CCITT) && defined(LLC)
-	case SIOCSIFCONF_X25:
-		ifp->if_flags |= IFF_UP;
-		ifa->ifa_rtrequest = (void (*)())cons_rtrequest; /* XXX */
-		error = x25_llcglue(PRC_IFUP, ifa->ifa_addr);
-		if (error == 0)
-			aeinit(sc);
-		break;
-#endif /* CCITT && LLC */
 
 	case SIOCSIFFLAGS:
 		if ((ifp->if_flags & IFF_UP) == 0 &&

@@ -1,10 +1,12 @@
-#	$Id: Makefile,v 1.12 1995/01/02 22:33:28 cgd Exp $
+#	$OpenBSD: Makefile,v 1.6 1996/06/02 20:22:33 tholo Exp $
 
 .include "../../Makefile.inc"
 
 CFLAGS += -I${.CURDIR} -I.
-LDADD += -lcurses -ltermcap -ltelnet -lcrypt
-DPADD += ${LIBCURSES} ${LIBTERMCAP} /usr/lib/libtelnet.a ${LIBCRYPT}
+#LDADD += -locurses -ltermcap -ltelnet -lcrypt
+LDADD += -locurses -ltermcap -ltelnet
+#DPADD += ${LIBOLDCURSES} ${LIBTERMCAP} /usr/lib/libtelnet.a ${LIBCRYPT}
+DPADD += ${LIBOLDCURSES} ${LIBTERMCAP} /usr/lib/libtelnet.a
 
 SRCS += apilib.c api_bsd.c api_exch.c asc_ebc.c astosc.c dctype.c
 SRCS += disp_asc.c ebc_disp.c
@@ -29,16 +31,20 @@ DEPSRCS += tn3270.c utilities.c
 PROG = tn3270
 
 MKASTOSC!=cd $(.CURDIR)/../tools/mkastosc; \
-	printf "xxx:\n\techo \$${.OBJDIR}/mkastosc\n" | ${MAKE} -r -s -f - xxx
+	printf "xxx:\n\techo \$${.OBJDIR}/mkastosc\n" | \
+	${MAKE} -r -s -f - xxx | grep mkastosc
 
 MKASTODS!=cd $(.CURDIR)/../tools/mkastods; \
-	printf "xxx:\n\techo \$${.OBJDIR}/mkastods\n" | ${MAKE} -r -s -f - xxx
+	printf "xxx:\n\techo \$${.OBJDIR}/mkastods\n" | \
+	${MAKE} -r -s -f - xxx | grep mkastods
 
 MKDSTOAS!=cd $(.CURDIR)/../tools/mkdstoas; \
-	printf "xxx:\n\techo \$${.OBJDIR}/mkdstoas\n" | ${MAKE} -r -s -f - xxx
+	printf "xxx:\n\techo \$${.OBJDIR}/mkdstoas\n" | \
+	${MAKE} -r -s -f - xxx | grep mkdstoas
 
 MKHITS!=cd $(.CURDIR)/../tools/mkhits; \
-	printf "xxx:\n\techo \$${.OBJDIR}/mkhits\n" | ${MAKE} -r -s -f - xxx
+	printf "xxx:\n\techo \$${.OBJDIR}/mkhits\n" | \
+	${MAKE} -r -s -f - xxx | grep mkhits
 
 astosc.o: astosc.OUT
 CLEANFILES += astosc.OUT astosc.out

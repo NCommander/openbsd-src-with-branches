@@ -1,4 +1,5 @@
-/*	$NetBSD: showmount.c,v 1.5 1995/08/31 22:26:08 jtc Exp $	*/
+/*	$OpenBSD: showmount.c,v 1.7 1996/05/01 18:14:10 cgd Exp $	*/
+/*	$NetBSD: showmount.c,v 1.7 1996/05/01 18:14:10 cgd Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1995
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)showmount.c	8.3 (Berkeley) 3/29/95";
 #endif
-static char rcsid[] = "$NetBSD: showmount.c,v 1.5 1995/08/31 22:26:08 jtc Exp $";
+static char rcsid[] = "$OpenBSD: showmount.c,v 1.7 1996/05/01 18:14:10 cgd Exp $";
 #endif not lint
 
 #include <sys/types.h>
@@ -114,9 +115,10 @@ main(argc, argv)
 	struct exportslist *exp;
 	struct grouplist *grp;
 	int estat, rpcs = 0, mntvers = 1;
-	char ch, *host;
+	char *host;
+	int ch;
 
-	while ((ch = getopt(argc, argv, "ade3")) != EOF)
+	while ((ch = getopt(argc, argv, "ade3")) != -1)
 		switch((char)ch) {
 		case 'a':
 			if (type == 0) {
@@ -157,16 +159,16 @@ main(argc, argv)
 		if ((estat = callrpc(host, RPCPROG_MNT, mntvers,
 			RPCMNT_DUMP, xdr_void, (char *)0,
 			xdr_mntdump, (char *)&mntdump)) != 0) {
+			fprintf(stderr, "showmount: Can't do Mountdump rpc: ");
 			clnt_perrno(estat);
-			fprintf(stderr, ": Can't do Mountdump rpc\n");
 			exit(1);
 		}
 	if (rpcs & DOEXPORTS)
 		if ((estat = callrpc(host, RPCPROG_MNT, mntvers,
 			RPCMNT_EXPORT, xdr_void, (char *)0,
 			xdr_exports, (char *)&exports)) != 0) {
+			fprintf(stderr, "showmount: Can't do Exports rpc: ");
 			clnt_perrno(estat);
-			fprintf(stderr, ": Can't do Exports rpc\n");
 			exit(1);
 		}
 
@@ -336,7 +338,7 @@ void
 usage()
 {
 
-	fprintf(stderr, "usage: showmount [-ade] host\n");
+	fprintf(stderr, "usage: showmount [-ade3] host\n");
 	exit(1);
 }
 

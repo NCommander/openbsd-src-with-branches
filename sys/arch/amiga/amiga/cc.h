@@ -1,4 +1,5 @@
-/*	$NetBSD: cc.h,v 1.6 1994/10/26 02:01:37 cgd Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: cc.h,v 1.7 1996/04/21 21:06:52 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -147,6 +148,8 @@ vm_offset_t chipmem_end;
 #define CHIPMEMTOP	(0x00200000)
 #define NCHIPMEMPG	btoc(CHIPMEMTOP - CHIPMEMBASE)
 
+typedef void (*handler_func_t) __P((int));
+
 /*
  * Prototypes.
  */
@@ -183,5 +186,10 @@ void * alloc_chipmem __P((u_long));
 void free_chipmem __P((void *));
 u_long avail_chipmem __P((int));
 u_long sizeof_chipmem __P((void *));
+
+void wait_tof __P((void));
+void vbl_handler __P((void));
+void *chipmem_steal __P((long));
+
 #endif /* _CC_H */
 

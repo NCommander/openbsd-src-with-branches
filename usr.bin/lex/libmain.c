@@ -1,6 +1,8 @@
+/*	$OpenBSD: libmain.c,v 1.2 1996/06/26 05:35:36 deraadt Exp $	*/
+
 /* libmain - flex run-time support library "main" function */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/libmain.c,v 1.3 1995/06/05 19:44:52 pk Exp $ */
+/* $Header: /home/daffy/u0/vern/flex/RCS/libmain.c,v 1.4 95/09/27 12:47:55 vern Exp $ */
 
 #include <sys/cdefs.h>
 
@@ -13,5 +15,8 @@ int argc;
 char *argv[];
 char *envp[];
 	{
-	return yylex();
+	while ( yylex() != 0 )
+		;
+
+	return 0;
 	}

@@ -1,3 +1,4 @@
+/*	$OpenBSD: lint1.h,v 1.6 1995/10/02 17:31:41 jpo Exp $	*/
 /*	$NetBSD: lint1.h,v 1.6 1995/10/02 17:31:41 jpo Exp $	*/
 
 /*

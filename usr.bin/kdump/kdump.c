@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -41,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)kdump.c	8.4 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$NetBSD: kdump.c,v 1.12 1995/08/31 23:18:33 jtc Exp $";
+static char *rcsid = "$OpenBSD: kdump.c,v 1.13 1996/05/13 21:12:25 christos Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -100,7 +102,7 @@ struct emulation {
 };
 
 static struct emulation emulations[] = {
-	{ "netbsd",	     syscallnames,        SYS_MAXSYSCALL },
+	{ "native",	     syscallnames,        SYS_MAXSYSCALL },
 	{ "hpux",	hpux_syscallnames,   HPUX_SYS_MAXSYSCALL },
 	{ "ibcs2",     ibcs2_syscallnames,  IBCS2_SYS_MAXSYSCALL },
 	{ "linux",     linux_syscallnames,  LINUX_SYS_MAXSYSCALL },
@@ -129,7 +131,7 @@ main(argc, argv)
 	register void *m;
 	int trpoints = ALL_POINTS;
 
-	current = &emulations[0];	/* NetBSD */
+	current = &emulations[0];	/* native */
 
 	while ((ch = getopt(argc, argv, "e:f:dlm:nRTt:")) != -1)
 		switch (ch) {
@@ -278,6 +280,25 @@ dumpheader(kth)
 	(void)printf("%s  ", type);
 }
 
+void
+ioctldecode(cmd)
+	u_long cmd;
+{
+	char dirbuf[4], *dir = dirbuf;
+
+	if (cmd & IOC_OUT)
+		*dir++ = 'W';
+	if (cmd & IOC_IN)
+		*dir++ = 'R';
+	*dir = '\0';
+
+	printf(decimal ? ",_IO%s('%c',%ld" : ",_IO%s('%c',%#lx",
+	    dirbuf, (cmd >> 8) & 0xff, cmd & 0xff);
+	if ((cmd & IOC_VOID) == 0)
+		printf(decimal ? ",%ld)" : ",%#lx)", (cmd >> 16) & 0xff);
+	else
+		printf(")");
+}
 
 ktrsyscall(ktr)
 	register struct ktr_syscall *ktr;
@@ -304,14 +325,8 @@ ktrsyscall(ktr)
 				argsize -= sizeof(register_t);
 				if ((cp = ioctlname(*ap)) != NULL)
 					(void)printf(",%s", cp);
-				else {
-					if (decimal)
-						(void)printf(",%ld",
-						    (long)*ap);
-					else
-						(void)printf(",%#lx ",
-						    (long)*ap);
-				}
+				else
+					ioctldecode(*ap);
 				c = ',';
 				ap++;
 				argsize -= sizeof(register_t);

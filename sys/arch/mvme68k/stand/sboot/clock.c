@@ -1,4 +1,4 @@
-/*	$NetBSD: clock.c,v 1.20 1995/02/16 21:51:38 pk Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1992, 1993

@@ -1,3 +1,5 @@
+/*	$OpenBSD: function.c,v 1.6 1996/09/01 04:30:17 tholo Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)function.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
+static char rcsid[] = "$OpenBSD: function.c,v 1.6 1996/09/01 04:30:17 tholo Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -45,6 +47,7 @@ static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
 #include <sys/wait.h>
 #include <sys/mount.h>
 
+#include <dirent.h>
 #include <err.h>
 #include <errno.h>
 #include <fnmatch.h>
@@ -211,6 +214,48 @@ c_depth()
 	return (palloc(N_DEPTH, f_always_true));
 }
  
+/*
+ * -empty functions --
+ *
+ *	True if the file or directory is empty
+ */
+int
+f_empty(plan, entry)
+	PLAN *plan;
+	FTSENT *entry;
+{
+	if (S_ISREG(entry->fts_statp->st_mode) && entry->fts_statp->st_size == 0)
+		return (1);
+	if (S_ISDIR(entry->fts_statp->st_mode)) {
+		struct dirent *dp;
+		int empty;
+		DIR *dir;
+
+		empty = 1;
+		dir = opendir(entry->fts_accpath);
+		if (dir == NULL)
+			err(1, "%s", entry->fts_accpath);
+		for (dp = readdir(dir); dp; dp = readdir(dir))
+			if (dp->d_name[0] != '.' ||
+			    (dp->d_name[1] != '\0' &&
+			     (dp->d_name[1] != '.' || dp->d_name[2] != '\0'))) {
+				empty = 0;
+				break;
+			}
+		closedir(dir);
+		return (empty);
+	}
+	return (0);
+}
+
+PLAN *
+c_empty()
+{
+	ftsoptions &= ~FTS_NOSTAT;
+
+	return (palloc(N_EMPTY, f_empty));
+}
+
 /*
  * [-exec | -ok] utility [arg ... ] ; functions --
  *
@@ -539,6 +584,62 @@ c_ls()
 	isoutput = 1;
     
 	return (palloc(N_LS, f_ls));
+}
+
+/*
+ * - maxdepth n functions --
+ *
+ *	True if the current search depth is less than or equal to the
+ *	maximum depth specified
+ */
+int
+f_maxdepth(plan, entry)
+	PLAN *plan;
+	FTSENT *entry;
+{
+	extern FTS *tree;
+
+	if (entry->fts_level >= plan->max_data)
+		fts_set(tree, entry, FTS_SKIP);
+	return (entry->fts_level <= plan->max_data);
+}
+
+PLAN *
+c_maxdepth(arg)
+	char *arg;
+{
+	PLAN *new;
+
+	new = palloc(N_MAXDEPTH, f_maxdepth);
+	new->max_data = atoi(arg);
+	return (new);
+}
+
+/*
+ * - mindepth n functions --
+ *
+ *	True if the current search depth is greater than or equal to the
+ *	minimum depth specified
+ */
+int
+f_mindepth(plan, entry)
+	PLAN *plan;
+	FTSENT *entry;
+{
+	extern FTS *tree;
+
+	return (entry->fts_level >= plan->min_data);
+}
+
+PLAN *
+c_mindepth(arg)
+	char *arg;
+{
+	PLAN *new;
+
+	new = palloc(N_MINDEPTH, f_mindepth);
+	new->min_data = atoi(arg);
+	return (new);
 }
 
 /*
@@ -875,6 +976,11 @@ c_type(typestring)
 	ftsoptions &= ~FTS_NOSTAT;
 
 	switch (typestring[0]) {
+#ifdef S_IFWHT
+	case 'W':
+		mask = S_IFWHT;
+		break;
+#endif
 	case 'b':
 		mask = S_IFBLK;
 		break;

@@ -1,4 +1,5 @@
-#	$NetBSD: bsd.subdir.mk,v 1.10 1995/07/24 04:22:29 cgd Exp $
+#	$OpenBSD: bsd.subdir.mk,v 1.6 1996/03/16 05:32:40 etheisen Exp $
+#	$NetBSD: bsd.subdir.mk,v 1.11 1996/04/04 02:05:06 jtc Exp $
 #	@(#)bsd.subdir.mk	5.9 (Berkeley) 2/1/91
 
 .if !target(.MAIN)
@@ -18,9 +19,13 @@ _SUBDIRUSE: .USE
 		else \
 			_nextdir_="$${_THISDIR_}/$${_newdir_}"; \
 		fi; \
+		_makefile_spec_=""; \
+		if [ -e ${.CURDIR}/$${_newdir_}/Makefile.bsd-wrapper ]; then \
+			_makefile_spec_="-f Makefile.bsd-wrapper"; \
+		fi; \
 		echo "===> $${_nextdir_}"; \
 		cd ${.CURDIR}/$${_newdir_}; \
-		${MAKE} _THISDIR_="$${_nextdir_}" \
+		${MAKE} $${_makefile_spec_} _THISDIR_="$${_nextdir_}" \
 		    ${.TARGET:S/realinstall/install/:S/.depend/depend/}); \
 	done
 
@@ -30,9 +35,13 @@ ${SUBDIR}::
 	else \
 		_newdir_=${.TARGET}; \
 	fi; \
+	_makefile_spec_=""; \
+	if [ -f ${.CURDIR}/$${_newdir_}/Makefile.bsd-wrapper ]; then \
+		_makefile_spec_="-f Makefile.bsd-wrapper"; \
+	fi; \
 	echo "===> $${_newdir_}"; \
 	cd ${.CURDIR}/$${_newdir_}; \
-	${MAKE} _THISDIR_="$${_newdir_}" all
+	${MAKE} $${_makefile_spec_} _THISDIR_="$${_newdir_}" all
 .endif
 
 .if !target(install)
@@ -58,6 +67,10 @@ clean: _SUBDIRUSE
 
 .if !target(cleandir)
 cleandir: _SUBDIRUSE
+.endif
+
+.if !target(includes)
+includes: _SUBDIRUSE
 .endif
 
 .if !target(depend)

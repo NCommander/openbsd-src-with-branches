@@ -1,4 +1,4 @@
-/*	$NetBSD: zs.c,v 1.9 1995/09/23 20:29:17 leo Exp $	*/
+/*	$NetBSD: zs.c,v 1.14 1996/01/23 09:35:15 leo Exp $	*/
 
 /*
  * Copyright (c) 1995 L. Weppelman (Atari modifications)
@@ -60,6 +60,7 @@
 #include <sys/conf.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
+#include <sys/malloc.h>
 #include <sys/tty.h>
 #include <sys/time.h>
 #include <sys/kernel.h>
@@ -69,6 +70,7 @@
 #include <machine/iomap.h>
 #include <machine/scu.h>
 #include <machine/mfp.h>
+#include <machine/video.h>
 
 #include <dev/ic/z8530reg.h>
 #include <atari/dev/zsvar.h>
@@ -79,7 +81,7 @@
 
 #if NZS > 0
 
-#define PCLK	(8000000)	/* PCLK pin input clock rate */
+#define PCLK	(8053976)	/* PCLK pin input clock rate */
 
 #define splzs	spl5
 
@@ -106,7 +108,7 @@ static u_char zs_init_regs[16] = {
 /*  6 */	0,
 /*  7 */	0,
 /*  8 */	0,
-/*  9 */	ZSWR9_VECTOR_INCL_STAT,
+/*  9 */	ZSWR9_MASTER_IE | ZSWR9_VECTOR_INCL_STAT,
 /* 10 */	ZSWR10_NRZ,
 /* 11 */	ZSWR11_TXCLK_BAUD | ZSWR11_RXCLK_BAUD,
 /* 12 */	0,
@@ -306,6 +308,21 @@ struct proc	*p;
 	if(zs >= zscd.cd_ndevs || (zi = zscd.cd_devs[zs]) == NULL)
 		return (ENXIO);
 	cs = &zi->zi_cs[unit & 1];
+
+	/*
+	 * When port A (ser02) is selected on the TT, make sure
+	 * the port is enabled.
+	 */
+	if((machineid & ATARI_TT) && !(unit & 1)) {
+		SOUND->sd_selr = YM_IOA;
+		SOUND->sd_wdat = SOUND->sd_rdat | PA_SER2;
+	}
+
+	if (cs->cs_rbuf == NULL) {
+		cs->cs_rbuf = malloc(ZLRB_RING_SIZE * sizeof(int), M_DEVBUF,
+								   M_WAITOK);
+	}
+
 	tp = cs->cs_ttyp;
 	if(tp == NULL) {
 		cs->cs_ttyp  = tp = ttymalloc();
@@ -402,7 +419,9 @@ struct proc	*p;
 	/*
 	 * Drop all lines and cancel interrupts
 	 */
-	zs_loadchannelregs(&zi->zi_zs->zs_chan[unit & 1], zs_init_regs);
+	s = splzs();
+	zs_loadchannelregs(cs->cs_zc, zs_init_regs);
+	splx(s);
 	return (0);
 }
 
@@ -813,7 +832,7 @@ struct proc	*p;
 		if(userbits & TIOCFLAG_SOFTCAR && userbits & TIOCFLAG_CLOCAL)
 			return(EINVAL);
 		if(userbits & TIOCFLAG_MDMBUF)	/* don't support this (yet?) */
-			return(ENXIO);
+			return(ENODEV);
 
 		s = splzs();
 		if((userbits & TIOCFLAG_SOFTCAR)) {

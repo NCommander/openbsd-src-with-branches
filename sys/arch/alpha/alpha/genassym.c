@@ -1,4 +1,5 @@
-/*	$NetBSD: genassym.c,v 1.2 1995/03/24 15:07:10 cgd Exp $	*/
+/*	$OpenBSD: genassym.c,v 1.4 1996/05/17 18:29:41 cgd Exp $	*/
+/*	$NetBSD: genassym.c,v 1.4 1996/05/17 18:29:41 cgd Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990, 1993
@@ -51,17 +52,14 @@
 #include <machine/rpb.h>
 #include <machine/trap.h>
 
-#ifdef notdef /* XXX */
-#include <errno.h>
-#include <stdio.h>
 #include <stddef.h>
-#include <string.h>
-#include <unistd.h>
-#else /* XXX */
-#define	offsetof(type, member)	((size_t)(&((type *)0)->member))
-#endif /* XXX */
+#include <stdio.h>
+#include <err.h>
 
-extern int errno;
+void	def __P((char *, long));
+int	main __P((int argc, char **argv));
+
+#define	off(what, s, m)	def(what, (int)offsetof(s, m))
 
 void
 def(what, val)
@@ -69,18 +67,14 @@ def(what, val)
 	long val;
 {
 
-	if (printf("#define\t%s\t%ld\n", what, val) < 0) {
-#ifdef notdef /* XXX */
-		(void)fprintf(stderr, "genassym: printf: %s\n",
-		    strerror(errno));
-#endif /* XXX */
-		exit(1);
-	}
+	if (printf("#define\t%s\t%ld\n", what, val) < 0)
+		err(1, "printf");
 }
 
-#define	off(what, s, m)	def(what, (int)offsetof(s, m))
-
-main()
+int
+main(argc, argv)
+	int argc;
+	char **argv;
 {
 
 	/* general constants */

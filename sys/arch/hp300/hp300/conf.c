@@ -1,4 +1,4 @@
-/*	$NetBSD: conf.c,v 1.29 1995/07/04 07:16:04 mycroft Exp $	*/
+/*	$NetBSD: conf.c,v 1.31 1996/03/14 21:26:28 christos Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -140,6 +140,7 @@ cdev_decl(ccd);
 cdev_decl(vnd);
 cdev_decl(st);
 cdev_decl(fd);
+dev_decl(filedesc,open);
 #include "bpfilter.h"
 cdev_decl(bpf);
 #include "tun.h"
@@ -150,6 +151,8 @@ cdev_decl(tun);
 #define	NLKM	0
 #endif
 cdev_decl(lkm);
+#include "random.h"
+cdev_decl(random);
 
 struct cdevsw	cdevsw[] =
 {
@@ -174,16 +177,17 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 18 */
 	cdev_disk_init(NVND,vnd),	/* 19: vnode disk driver */
 	cdev_tape_init(NST,st),		/* 20: SCSI tape */
-	cdev_fd_init(1,fd),		/* 21: file descriptor pseudo-device */
+	cdev_fd_init(1,filedesc),	/* 21: file descriptor pseudo-device */
 	cdev_bpftun_init(NBPFILTER,bpf),/* 22: Berkeley packet filter */
 	cdev_bpftun_init(NTUN,tun),	/* 23: network tunnel */
 	cdev_lkm_init(NLKM,lkm),	/* 24: loadable module driver */
-	cdev_lkm_dummy(),		/* 25 */
+	cdev_random_init(NRANDOM,random), /* 25: random generator */
 	cdev_lkm_dummy(),		/* 26 */
 	cdev_lkm_dummy(),		/* 27 */
 	cdev_lkm_dummy(),		/* 28 */
 	cdev_lkm_dummy(),		/* 29 */
 	cdev_lkm_dummy(),		/* 30 */
+	cdev_lkm_dummy(),		/* 31 */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
@@ -280,16 +284,46 @@ chrtoblk(dev)
  */
 #include <dev/cons.h>
 
-#define	itecnpollc	nullcnpollc
-cons_decl(ite);
-#define	dcacnpollc	nullcnpollc
+#define dvboxcngetc		itecngetc
+#define dvboxcnputc		itecnputc
+#define dvboxcnpollc		nullcnpollc
+cons_decl(dvbox);
+
+#define gboxcngetc		itecngetc
+#define gboxcnputc		itecnputc
+#define gboxcnpollc		nullcnpollc
+cons_decl(gbox);
+
+#define hypercngetc		itecngetc
+#define hypercnputc		itecnputc
+#define hypercnpollc		nullcnpollc
+cons_decl(hyper);
+
+#define rboxcngetc		itecngetc
+#define rboxcnputc		itecnputc
+#define rboxcnpollc		nullcnpollc
+cons_decl(rbox);
+
+#define topcatcngetc		itecngetc
+#define topcatcnputc		itecnputc
+#define topcatcnpollc		nullcnpollc
+cons_decl(topcat);
+
+#define	dcacnpollc		nullcnpollc
 cons_decl(dca);
-#define	dcmcnpollc	nullcnpollc
+
+#define	dcmcnpollc		nullcnpollc
 cons_decl(dcm);
 
 struct	consdev constab[] = {
 #if NITE > 0
-	cons_init(ite),
+#if NGRF > 0			/* XXX */
+	cons_init(dvbox),
+	cons_init(gbox),
+	cons_init(hyper),
+	cons_init(rbox),
+	cons_init(topcat),
+#endif
 #endif
 #if NDCA > 0
 	cons_init(dca),

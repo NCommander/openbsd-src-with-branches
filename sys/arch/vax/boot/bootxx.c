@@ -1,4 +1,4 @@
-/* $NetBSD: bootxx.c,v 1.3 1995/09/16 13:01:06 ragge Exp $ */
+/* $NetBSD: bootxx.c,v 1.5 1996/02/17 18:23:21 ragge Exp $ */
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
  * All rights reserved.
@@ -41,13 +41,14 @@
 #include "lib/libsa/stand.h"
 #include "lib/libsa/ufs.h"
 
-#include "../mba/mbareg.h"
-#include "../mba/hpreg.h"
-
 #include "../include/pte.h"
 #include "../include/sid.h"
 #include "../include/mtpr.h"
 #include "../include/reg.h"
+#include "../include/rpb.h"
+
+#include "../mba/mbareg.h"
+#include "../mba/hpreg.h"
 
 #define NRSP 0 /* Kludge */
 #define NCMD 0 /* Kludge */
@@ -93,7 +94,7 @@ main()
                 is_mvax = 1;
                 cpu_sie = *((int *) 0x20040004) >> 24;
                 cpu_type |= cpu_sie;
-		rpb = bootregs[11];
+		rpb = (struct rpb *)bootregs[11];
 		bootdev = rpb->devtyp;
 
                 break;
@@ -196,6 +197,10 @@ getbootdev()
 		is_tmscp = 1;	/* use tape spec in mscp routines */
 		break;
 
+	case 64:
+		major = 8;
+		break;
+
 	default:
 		printf("Unsupported boot device %d, trying anyway.\n", bootdev);
 		boothowto |= (RB_SINGLE | RB_ASKNAME);
@@ -235,7 +240,7 @@ devopen(f, fname, file)
 	char		line[64];
 
 	f->f_dev = &devsw[0];
-	*file = fname;
+	*file = (char *)fname;
 
 	/*
 	 * On uVAX we need to init [T]MSCP ctlr to be able to use it.
@@ -275,7 +280,7 @@ devopen(f, fname, file)
 	 * but it doesn't hurt to always get it.
 	 */
 	if (!is_tmscp) {
-		msg = getdisklabel(LABELOFFSET + RELOC, &lp);
+		msg = getdisklabel((void *)LABELOFFSET + RELOC, &lp);
 		if (msg) {
 			printf("getdisklabel: %s\n", msg);
 		}
@@ -321,7 +326,7 @@ romstrategy(sc, func, dblk, size, buf, rsize)
 		case 17: /* MSCP */
 			uda.uda_cmd.mscp_seq.seq_lbn = dblk;
 			uda.uda_cmd.mscp_seq.seq_bytecount = size;
-			uda.uda_cmd.mscp_seq.seq_buffer = buf;
+			uda.uda_cmd.mscp_seq.seq_buffer = (int)buf;
 			uda.uda_cmd.mscp_unit = rpb->unit;
 			command(M_OP_READ, 0);
 			break;
@@ -340,7 +345,8 @@ romstrategy(sc, func, dblk, size, buf, rsize)
 			for (i = 0 ; i < size/512 ; i++) {
 				uda.uda_cmd.mscp_seq.seq_lbn = 1;
 				uda.uda_cmd.mscp_seq.seq_bytecount = 512;
-				uda.uda_cmd.mscp_seq.seq_buffer = buf + i * 512;
+				uda.uda_cmd.mscp_seq.seq_buffer =
+				    (int)buf + i * 512;
 				uda.uda_cmd.mscp_unit = rpb->unit;
 				command(M_OP_READ, 0);
 			}
@@ -380,7 +386,7 @@ hpread(block, size, buf)
 	pfnum = (u_int) buf >> PGSHIFT;
 
 	for (mapnr = 0, nsize = size; (nsize + NBPG) > 0; nsize -= NBPG)
-		mr->mba_map[mapnr++] = PG_V | pfnum++;
+		*(int *)&mr->mba_map[mapnr++] = PG_V | pfnum++;
 	mr->mba_var = ((u_int) buf & PGOFSET);
 	mr->mba_bc = (~size) + 1;
 	bn = block;

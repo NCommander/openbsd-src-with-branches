@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.2 1996/06/26 05:35:38 deraadt Exp $	*/
+
 /* flex - tool to generate fast lexical analyzers */
 
 /*-
@@ -32,7 +34,7 @@ char copyright[] =
  All rights reserved.\n";
 #endif /* not lint */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/main.c,v 1.9 1995/05/05 05:35:34 jtc Exp $ */
+/* $Header: /home/daffy/u0/vern/flex/RCS/main.c,v 2.64 96/05/25 20:42:42 vern Exp $ */
 
 
 #include "flexdef.h"
@@ -585,7 +587,7 @@ int argc;
 char **argv;
 	{
 	int i, sawcmpflag;
-	char *arg, *mktemp();
+	char *arg;
 
 	printstats = syntaxerror = trace = spprdflt = caseins = false;
 	lex_compat = C_plus_plus = backing_up_report = ddebug = fulltbl = false;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: db_access.c,v 1.4 1996/04/17 05:29:35 mickey Exp $	*/
 /*	$NetBSD: db_access.c,v 1.8 1994/10/09 08:37:35 mycroft Exp $	*/
 
 /* 
@@ -23,7 +24,7 @@
  *  Pittsburgh PA 15213-3890
  * 
  * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -44,9 +45,10 @@
 
 int db_extend[] = {	/* table for sign-extending */
 	0,
-	0xFFFFFF80,
-	0xFFFF8000,
-	0xFF800000
+	(int)0xFFFFFF80,
+	(int)0xFFFF8000,
+	(int)0xFF800000,
+	(int)0x80000000
 };
 
 db_expr_t

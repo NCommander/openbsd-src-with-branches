@@ -1,4 +1,4 @@
-/*	$NetBSD: ubavar.h,v 1.6 1995/05/11 16:53:17 jtc Exp $	*/
+/*	$NetBSD: ubavar.h,v 1.15 1996/04/08 18:37:36 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986 Regents of the University of California.
@@ -39,14 +39,15 @@
  * This file contains definitions related to the kernel structures
  * for dealing with the unibus adapters.
  *
- * Each uba has a uba_hd structure.
+ * Each uba has a uba_softc structure.
  * Each unibus controller which is not a device has a uba_ctlr structure.
  * Each unibus device has a uba_device structure.
  */
 
-#ifndef LOCORE
+#include <sys/buf.h>
+#include <sys/device.h>
 
-#include "sys/buf.h"
+#include <machine/trap.h> /* For struct ivec_dsp */
 /*
  * Per-uba structure.
  *
@@ -68,7 +69,8 @@
  * the unibus driver in resource wait (mrwant, bdpwant); these
  * wait states are also recorded here.
  */
-struct	uba_hd {
+struct	uba_softc {
+	struct	device uh_dev;		/* Device struct, autoconfig */
 	int	uh_type;		/* type of adaptor */
 	struct	uba_regs *uh_uba;	/* virt addr of uba adaptor regs */
 	struct	uba_regs *uh_physuba;	/* phys addr of uba adaptor regs */
@@ -76,7 +78,11 @@ struct	uba_hd {
 	int	uh_memsize;		/* size of uba memory, pages */
 	caddr_t	uh_mem;			/* start of uba memory address space */
 	caddr_t	uh_iopage;		/* start of uba io page */
-	int	(**Nuh_vec)();		/* interrupt vector */
+	void	(**uh_reset) __P((int));/* UBA reset function array */
+	int	*uh_resarg;		/* array of ubareset args */
+	int	uh_resno;		/* Number of devices to reset */
+	struct	ivec_dsp *uh_idsp;	/* Interrupt dispatch area */
+	u_int	*uh_iarea;		/* Interrupt vector array */
 	struct	uba_device *uh_actf;	/* head of queue to transfer */
 	struct	uba_device *uh_actl;	/* tail of queue to transfer */
 	short	uh_mrwant;		/* someone is waiting for map reg */
@@ -93,10 +99,11 @@ struct	uba_hd {
 	int	uh_lastmem;		/* limit of any unibus memory */
 #define	UAMSIZ	100
 	struct	map *uh_map;		/* register free map */
+	struct	ivec_dsp uh_dw780;	/* Interrupt handles for DW780 */
 };
 
 /* given a pointer to uba_regs, find DWBUA registers */
-/* this should be replaced with a union in uba_hd */
+/* this should be replaced with a union in uba_softc */
 #define	BUA(uba)	((struct dwbua_regs *)(uba))
 
 /*
@@ -115,9 +122,9 @@ struct uba_ctlr {
 	short	um_ctlr;	/* controller index in driver */
 	short	um_ubanum;	/* the uba it is on */
 	short	um_alive;	/* controller exists */
-	int	(*um_intr)();	/* interrupt handler(s) */
+	void	(*um_intr) __P((int));	/* interrupt handler(s) XXX */
 	caddr_t	um_addr;	/* address of device in i/o space */
-	struct	uba_hd *um_hd;
+	struct	uba_softc *um_hd;
 /* the driver saves the prototype command here for use in its go routine */
 	int	um_cmd;		/* communication to dgo() */
 	int	um_ubinfo;	/* save unibus registers, etc */
@@ -147,7 +154,7 @@ struct uba_device {
 	short	ui_ctlr;	/* mass ctlr number; -1 if none */
 	short	ui_ubanum;	/* the uba it is on */
 	short	ui_slave;	/* slave on controller */
-	int	(*ui_intr)();	/* interrupt handler(s) */
+	void	(*ui_intr) __P((int));	/* interrupt handler(s) XXX */
 	caddr_t	ui_addr;	/* address of device in i/o space */
 	short	ui_dk;		/* if init 1 set to number for iostat */
 	int	ui_flags;	/* parameter from system specification */
@@ -158,7 +165,7 @@ struct uba_device {
 	struct	uba_device *ui_forw;
 /* if the device is connected to a controller, this is the controller */
 	struct	uba_ctlr *ui_mi;
-	struct	uba_hd *ui_hd;
+	struct	uba_softc *ui_hd;
 };
 
 /*
@@ -169,10 +176,15 @@ struct uba_device {
  * These are used at boot time by the configuration program.
  */
 struct uba_driver {
-	int	(*ud_probe)();		/* see if a driver is really there */
-	int	(*ud_slave)();		/* see if a slave is there */
-	int	(*ud_attach)();		/* setup driver for a slave */
-	int	(*ud_dgo)();		/* fill csr/ba to start transfer */
+	    /* see if a driver is really there XXX*/
+	int	(*ud_probe) __P((caddr_t, int, struct uba_ctlr *,
+	    struct  uba_softc *));
+	    /* see if a slave is there XXX */
+	int	(*ud_slave) __P((struct uba_device *, caddr_t));
+	    /* setup driver for a slave XXX */
+	void	(*ud_attach) __P((struct uba_device *));
+	    /* fill csr/ba to start transfer XXX */
+	void	(*ud_dgo) __P((struct uba_ctlr *));
 	u_short	*ud_addr;		/* device csr addresses */
 	char	*ud_dname;		/* name of a device */
 	struct	uba_device **ud_dinfo;	/* backpointers to ubdinit structs */
@@ -180,9 +192,24 @@ struct uba_driver {
 	struct	uba_ctlr **ud_minfo;	/* backpointers to ubminit structs */
 	short	ud_xclu;		/* want exclusive use of bdp's */
 	short	ud_keepbdp;		/* hang on to bdp's once allocated */
-	int	(*ud_ubamem)();		/* see if dedicated memory is present */
+	int	(*ud_ubamem) __P((struct uba_device *, int));
+	    /* see if dedicated memory is present */
 };
-#endif
+
+/*
+ * uba_attach_args is used during autoconfiguration. It is sent
+ * from ubascan() to each (possible) device.
+ */
+struct uba_attach_args {
+	caddr_t	ua_addr;
+	    /* Pointer to int routine, filled in by probe*/
+	void	(*ua_ivec) __P((int));
+	    /* UBA reset routine, filled in by probe */
+	void	(*ua_reset) __P((int));
+	int	ua_iaddr;
+	int	ua_br;
+	int	ua_cvec;
+};
 
 /*
  * Flags to UBA map/bdp allocation routines
@@ -217,15 +244,9 @@ struct ubinfo {
 	(((bdp) << 28) | ((nmr) << 20) | ((mr) << 9) | (off))
 #endif
 
-#ifndef LOCORE
+#ifndef _LOCORE
 #ifdef _KERNEL
 #define	ubago(ui)	ubaqueue(ui, 0)
-
-/*
- * UBA related kernel variables
- */
-int	numuba;					/* number of uba's */
-struct	uba_hd uba_hd[];
 
 /*
  * Ubminit and ubdinit initialize the mass storage controller and
@@ -234,33 +255,16 @@ struct	uba_hd uba_hd[];
 extern	struct	uba_ctlr ubminit[];
 extern	struct	uba_device ubdinit[];
 
-/*
- * UNIBUS device address space is mapped by UMEMmap
- * into virtual address umem[][].
- * The IO page is mapped to the last 8K of each.
- * This should be enlarged for the Q22 bus.
- */
-extern	struct pte *UMEMmap[];	/* uba device addr pte's */
-/* extern	char umem[][512*NBPG];		/* uba device addr space */
-extern char *Numem;
-#define	Tumem(x)	(Numem+(UBAPAGES+UBAIOPAGES)*NBPG*x)
+extern	struct cfdriver	uba_cd;
 
-/*
- * Since some VAXen vector their unibus interrupts
- * just adjacent to the system control block, we must
- * allocate space there when running on ``any'' cpu.  This space is
- * used for the vectors for all ubas.
- */
-extern	int (*UNIvec[][128])();			/* unibus vec for ubas */
-extern	int (*eUNIvec)();			/* end of unibus vec */
+void	ubainit __P((struct uba_softc *));
+void    ubasetvec __P((struct device *, int, void (*) __P((int))));
+int	uballoc __P((int, caddr_t, int, int));
+void	ubarelse __P((int, int *));
+int	ubaqueue __P((struct uba_device *, int));
+void	ubadone __P((struct uba_ctlr *));
+void	ubareset __P((int));
+int	ubasetup __P((int, struct buf *, int));
 
-#if defined(VAX780) || defined(VAX8600)
-/*
- * On DW780's, we must set the scb vectors for the nexus of the
- * UNIbus adaptors to vector to locore unibus adaptor interrupt dispatchers
- * which make 780's look like the other VAXen.
- */
-extern	Xua0int(), Xua1int(), Xua2int(), Xua3int();
-#endif VAX780
 #endif /* _KERNEL */
-#endif !LOCORE
+#endif !_LOCORE

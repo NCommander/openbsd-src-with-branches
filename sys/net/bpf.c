@@ -1,4 +1,5 @@
-/*	$NetBSD: bpf.c,v 1.23 1995/09/27 18:30:37 thorpej Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.4 1996/05/10 12:31:05 deraadt Exp $	*/
+/*	$NetBSD: bpf.c,v 1.27 1996/05/07 05:26:02 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993
@@ -51,6 +52,7 @@
 #include <sys/user.h>
 #include <sys/ioctl.h>
 #include <sys/map.h>
+#include <sys/conf.h>
 
 #include <sys/file.h>
 #if defined(sparc) && BSD < 199103
@@ -122,13 +124,18 @@ static void	bpf_ifname __P((struct ifnet *, struct ifreq *));
 static void	bpf_ifname __P((struct ifnet *, struct ifreq *));
 static void	bpf_mcopy __P((const void *, void *, size_t));
 static int	bpf_movein __P((struct uio *, int,
-		    struct mbuf **, struct sockaddr *));
+			        struct mbuf **, struct sockaddr *));
+static void	bpf_attachd __P((struct bpf_d *, struct bpf_if *));
+static void	bpf_detachd __P((struct bpf_d *));
 static int	bpf_setif __P((struct bpf_d *, struct ifreq *));
 static int	bpf_setif __P((struct bpf_d *, struct ifreq *));
+#if BSD >= 199103
+int		bpfselect __P((dev_t, int, struct proc *));
+#endif
 static __inline void
 		bpf_wakeup __P((struct bpf_d *));
-static void	catchpacket __P((struct bpf_d *, u_char *, size_t,
-		    size_t, void (*)(const void *, void *, size_t)));
+static void	catchpacket __P((struct bpf_d *, u_char *, size_t, size_t,
+				 void (*)(const void *, void *, size_t)));
 static void	reset_d __P((struct bpf_d *));
 
 static int
@@ -317,9 +324,11 @@ bpf_detachd(d)
  */
 /* ARGSUSED */
 int
-bpfopen(dev, flag)
+bpfopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
 	register struct bpf_d *d;
 
@@ -347,9 +356,11 @@ bpfopen(dev, flag)
  */
 /* ARGSUSED */
 int
-bpfclose(dev, flag)
+bpfclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
 	register struct bpf_d *d = &bpf_dtab[minor(dev)];
 	register int s;
@@ -417,9 +428,10 @@ bpf_sleep(d)
  *  bpfread - read next chunk of packets from buffers
  */
 int
-bpfread(dev, uio)
+bpfread(dev, uio, ioflag)
 	dev_t dev;
 	register struct uio *uio;
+	int ioflag;
 {
 	register struct bpf_d *d = &bpf_dtab[minor(dev)];
 	int error;
@@ -514,7 +526,7 @@ bpf_wakeup(d)
 	if (d->bd_async && d->bd_sig)
 		if (d->bd_pgid > 0)
 			gsignal (d->bd_pgid, d->bd_sig);
-		else if (p = pfind (-d->bd_pgid))
+		else if ((p = pfind (-d->bd_pgid)) != NULL)
 			psignal (p, d->bd_sig);
 
 #if BSD >= 199103
@@ -531,9 +543,10 @@ bpf_wakeup(d)
 }
 
 int
-bpfwrite(dev, uio)
+bpfwrite(dev, uio, ioflag)
 	dev_t dev;
 	struct uio *uio;
+	int ioflag;
 {
 	register struct bpf_d *d = &bpf_dtab[minor(dev)];
 	struct ifnet *ifp;
@@ -605,11 +618,12 @@ reset_d(d)
  */
 /* ARGSUSED */
 int
-bpfioctl(dev, cmd, addr, flag)
+bpfioctl(dev, cmd, addr, flag, p)
 	dev_t dev;
 	u_long cmd;
 	caddr_t addr;
 	int flag;
+	struct proc *p;
 {
 	register struct bpf_d *d = &bpf_dtab[minor(dev)];
 	int s, error = 0;
@@ -737,6 +751,8 @@ bpfioctl(dev, cmd, addr, flag)
 
 			/* Compute number of ticks. */
 			d->bd_rtout = tv->tv_sec * hz + tv->tv_usec / tick;
+			if (d->bd_rtout == 0 && tv->tv_usec != 0)
+				d->bd_rtout = 1;
 			break;
 		}
 
@@ -885,34 +901,39 @@ bpf_setif(d, ifr)
 {
 	struct bpf_if *bp;
 	char *cp;
-	int unit, s, error;
+	int unit_seen, i, s, error;
 
 	/*
-	 * Separate string into name part and unit number.  Put a null
-	 * byte at the end of the name part, and compute the number.
-	 * If the a unit number is unspecified, the default is 0,
-	 * as initialized above.  XXX This should be common code.
+	 * Make sure the provided name has a unit number, and default
+	 * it to '0' if not specified.
+	 * XXX This is ugly ... do this differently?
 	 */
-	unit = 0;
+	unit_seen = 0;
 	cp = ifr->ifr_name;
-	cp[sizeof(ifr->ifr_name) - 1] = '\0';
-	while (*cp++) {
-		if (*cp >= '0' && *cp <= '9') {
-			unit = *cp - '0';
-			*cp++ = '\0';
-			while (*cp)
-				unit = 10 * unit + *cp++ - '0';
-			break;
+	cp[sizeof(ifr->ifr_name) - 1] = '\0';	/* sanity */
+	while (*cp++)
+		if (*cp >= '0' && *cp <= '9')
+			unit_seen = 1;
+	if (!unit_seen) {
+		/* Make sure to leave room for the '\0'. */
+		for (i = 0; i < (IFNAMSIZ - 1); ++i) {
+			if ((ifr->ifr_name[i] >= 'a' &&
+			     ifr->ifr_name[i] <= 'z') ||
+			    (ifr->ifr_name[i] >= 'A' &&
+			     ifr->ifr_name[i] <= 'Z'))
+				continue;
+			ifr->ifr_name[i] = '0';
 		}
 	}
+
 	/*
 	 * Look through attached interfaces for the named one.
 	 */
 	for (bp = bpf_iflist; bp != 0; bp = bp->bif_next) {
 		struct ifnet *ifp = bp->bif_ifp;
 
-		if (ifp == 0 || unit != ifp->if_unit
-		    || strcmp(ifp->if_name, ifr->ifr_name) != 0)
+		if (ifp == 0 ||
+		    strcmp(ifp->if_xname, ifr->ifr_name) != 0)
 			continue;
 		/*
 		 * We found the requested interface.
@@ -948,22 +969,15 @@ bpf_setif(d, ifr)
 }
 
 /*
- * Convert an interface name plus unit number of an ifp to a single
- * name which is returned in the ifr.
+ * Copy the interface name to the ifreq.
  */
 static void
 bpf_ifname(ifp, ifr)
 	struct ifnet *ifp;
 	struct ifreq *ifr;
 {
-	char *s = ifp->if_name;
-	char *d = ifr->ifr_name;
 
-	while (*d++ = *s++)
-		continue;
-	/* XXX Assume that unit number is less than 10. */
-	*d++ = ifp->if_unit + '0';
-	*d = '\0';
+	bcopy(ifp->if_xname, ifr->ifr_name, IFNAMSIZ);
 }
 
 /*
@@ -1286,7 +1300,7 @@ bpfattach(driverp, ifp, dlt, hdrlen)
 			D_MARKFREE(&bpf_dtab[i]);
 
 #if 0
-	printf("bpf: %s%d attached\n", ifp->if_name, ifp->if_unit);
+	printf("bpf: %s attached\n", ifp->if_xname);
 #endif
 }
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: if_ethersubr.c,v 1.15 1995/09/29 03:37:43 phil Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.4 1996/04/19 18:12:28 mickey Exp $	*/
+/*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1989, 1993
@@ -66,6 +67,11 @@
 #include <netns/ns_if.h>
 #endif
 
+#ifdef IPX
+#include <netipx/ipx.h>
+#include <netipx/ipx_if.h>
+#endif
+
 #ifdef ISO
 #include <netiso/argo_debug.h>
 #include <netiso/iso.h>
@@ -74,22 +80,84 @@
 #endif
 
 #ifdef LLC
+#include <netccitt/x25.h>
+#include <netccitt/pk.h>
+#include <netccitt/pk_extern.h>
 #include <netccitt/dll.h>
 #include <netccitt/llc_var.h>
 #endif
 
 #if defined(LLC) && defined(CCITT)
-extern struct ifqueue pkintrq;
+#include <sys/socketvar.h>
 #endif
 
 u_char	etherbroadcastaddr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 #define senderr(e) { error = (e); goto bad;}
 
+
+int
+ether_ioctl(ifp, arp, cmd, data)
+	register struct ifnet *ifp;
+	struct arpcom *arp;
+	u_long cmd;
+	caddr_t data;
+{
+	struct ifaddr *ifa = (struct ifaddr *)data;
+	int	error = 0;
+
+	switch (cmd) {
+
+#if	defined(CCITT) && defined(LLC)
+	case SIOCSIFCONF_X25:
+		ifp->if_flags |= IFF_UP;
+		ifa->ifa_rtrequest = cons_rtrequest;
+		error = x25_llcglue(PRC_IFUP, ifa->ifa_addr);
+		break;
+#endif /* CCITT && LLC */
+	case SIOCSIFADDR:
+		switch (ifa->ifa_addr->sa_family) {
+#ifdef IPX
+		case AF_IPX:
+		    {
+			struct ipx_addr *ina = &IA_SIPX(ifa)->sipx_addr;
+
+			if (ipx_nullhost(*ina))
+				ina->ipx_host =
+					*(union ipx_host *)(arp->ac_enaddr);
+			else
+				bcopy (ina->ipx_host.c_host,
+				       arp->ac_enaddr, sizeof(arp->ac_enaddr));
+			break;
+		    }
+#endif /* IPX */
+#ifdef NS
+		/* XXX - This code is probably wrong. */
+		case AF_NS:
+		    {
+			struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
+
+			if (ns_nullhost(*ina))
+				ina->x_host =
+					*(union ns_host *)(arp->ac_enaddr);
+			else
+				bcopy(ina->x_host.c_host,
+				      arp->ac_enaddr, sizeof(arp->ac_enaddr));
+			break;
+		    }
+#endif /* NS */
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	return error;
+}
+
 /*
  * Ethernet output routine.
  * Encapsulate a packet of type family for the local net.
- * Use trailer local net encapsulation if enough data in first
- * packet leaves a multiple of 512 bytes of data in remainder.
  * Assumes that ifp is actually pointer to arpcom structure.
  */
 int
@@ -111,9 +179,9 @@ ether_output(ifp, m0, dst, rt0)
 	if ((ifp->if_flags & (IFF_UP|IFF_RUNNING)) != (IFF_UP|IFF_RUNNING))
 		senderr(ENETDOWN);
 	ifp->if_lastchange = time;
-	if (rt = rt0) {
+	if ((rt = rt0) != NULL) {
 		if ((rt->rt_flags & RTF_UP) == 0) {
-			if (rt0 = rt = rtalloc1(dst, 1))
+			if ((rt0 = rt = rtalloc1(dst, 1)) != NULL)
 				rt->rt_refcnt--;
 			else 
 				senderr(EHOSTUNREACH);
@@ -142,15 +210,27 @@ ether_output(ifp, m0, dst, rt0)
 		/* If broadcasting on a simplex interface, loopback a copy */
 		if ((m->m_flags & M_BCAST) && (ifp->if_flags & IFF_SIMPLEX))
 			mcopy = m_copy(m, 0, (int)M_COPYALL);
-		etype = ETHERTYPE_IP;
+		etype = htons(ETHERTYPE_IP);
 		break;
 #endif
 #ifdef NS
 	case AF_NS:
-		etype = ETHERTYPE_NS;
+		etype = htons(ETHERTYPE_NS);
  		bcopy((caddr_t)&(((struct sockaddr_ns *)dst)->sns_addr.x_host),
 		    (caddr_t)edst, sizeof (edst));
 		if (!bcmp((caddr_t)edst, (caddr_t)&ns_thishost, sizeof(edst)))
+			return (looutput(ifp, m, dst, rt));
+		/* If broadcasting on a simplex interface, loopback a copy */
+		if ((m->m_flags & M_BCAST) && (ifp->if_flags & IFF_SIMPLEX))
+			mcopy = m_copy(m, 0, (int)M_COPYALL);
+		break;
+#endif
+#ifdef IPX
+	case AF_IPX:
+		etype = htons(satosipx(dst)->sipx_type);
+ 		bcopy((caddr_t)&satosipx(dst)->sipx_addr.ipx_host,
+		    (caddr_t)edst, sizeof (edst));
+		if (!bcmp((caddr_t)edst, (caddr_t)&ipx_thishost, sizeof(edst)))
 			return (looutput(ifp, m, dst, rt));
 		/* If broadcasting on a simplex interface, loopback a copy */
 		if ((m->m_flags & M_BCAST) && (ifp->if_flags & IFF_SIMPLEX))
@@ -166,10 +246,12 @@ ether_output(ifp, m0, dst, rt0)
 		if (rt && (sdl = (struct sockaddr_dl *)rt->rt_gateway) &&
 		    sdl->sdl_family == AF_LINK && sdl->sdl_alen > 0) {
 			bcopy(LLADDR(sdl), (caddr_t)edst, sizeof(edst));
-		} else if (error =
-			    iso_snparesolve(ifp, (struct sockaddr_iso *)dst,
-					    (char *)edst, &snpalen))
-			goto bad; /* Not Resolved */
+		} else {
+			error = iso_snparesolve(ifp, (struct sockaddr_iso *)dst,
+						(char *)edst, &snpalen);
+			if (error)
+				goto bad; /* Not Resolved */
+		}
 		/* If broadcasting on a simplex interface, loopback a copy */
 		if (*edst & 1)
 			m->m_flags |= (M_BCAST|M_MCAST);
@@ -187,17 +269,19 @@ ether_output(ifp, m0, dst, rt0)
 		M_PREPEND(m, 3, M_DONTWAIT);
 		if (m == NULL)
 			return (0);
-		etype = m->m_pkthdr.len;
+		etype = htons(m->m_pkthdr.len);
 		l = mtod(m, struct llc *);
 		l->llc_dsap = l->llc_ssap = LLC_ISO_LSAP;
 		l->llc_control = LLC_UI;
-		IFDEBUG(D_ETHER)
+#ifdef ARGO_DEBUG
+		if (argo_debug[D_ETHER]) {
 			int i;
 			printf("unoutput: sending pkt to: ");
 			for (i=0; i<6; i++)
 				printf("%x ", edst[i] & 0xff);
 			printf("\n");
-		ENDDEBUG
+		}
+#endif
 		} break;
 #endif /* ISO */
 #ifdef	LLC
@@ -222,7 +306,7 @@ ether_output(ifp, m0, dst, rt0)
 				      (caddr_t)eh->ether_shost, sizeof (edst));
 			}
 		}
-		etype = m->m_pkthdr.len;
+		etype = htons(m->m_pkthdr.len);
 #ifdef LLC_DEBUG
 		{
 			int i;
@@ -232,8 +316,8 @@ ether_output(ifp, m0, dst, rt0)
 			for (i=0; i<6; i++)
 				printf("%x ", edst[i] & 0xff);
 			printf(" len 0x%x dsap 0x%x ssap 0x%x control 0x%x\n", 
-			       etype & 0xff, l->llc_dsap & 0xff, l->llc_ssap &0xff,
-			       l->llc_control & 0xff);
+			    m->m_pkthdr.len, l->llc_dsap & 0xff, l->llc_ssap &0xff,
+			    l->llc_control & 0xff);
 
 		}
 #endif /* LLC_DEBUG */
@@ -244,18 +328,18 @@ ether_output(ifp, m0, dst, rt0)
 		eh = (struct ether_header *)dst->sa_data;
  		bcopy((caddr_t)eh->ether_dhost, (caddr_t)edst, sizeof (edst));
 		/* AF_UNSPEC doesn't swap the byte order of the ether_type. */
-		etype = ntohs(eh->ether_type);
+		etype = eh->ether_type;
 		break;
 
 	default:
-		printf("%s%d: can't handle af%d\n", ifp->if_name, ifp->if_unit,
+		printf("%s: can't handle af%d\n", ifp->if_xname,
 			dst->sa_family);
 		senderr(EAFNOSUPPORT);
 	}
 
-
 	if (mcopy)
 		(void) looutput(ifp, mcopy, dst, rt);
+
 	/*
 	 * Add local net header.  If no space in first mbuf,
 	 * allocate another.
@@ -264,7 +348,6 @@ ether_output(ifp, m0, dst, rt0)
 	if (m == 0)
 		senderr(ENOBUFS);
 	eh = mtod(m, struct ether_header *);
-	etype = htons(etype);
 	bcopy((caddr_t)&etype,(caddr_t)&eh->ether_type,
 		sizeof(eh->ether_type));
  	bcopy((caddr_t)edst, (caddr_t)eh->ether_dhost, sizeof (edst));
@@ -307,10 +390,12 @@ ether_input(ifp, eh, m)
 	struct mbuf *m;
 {
 	register struct ifqueue *inq;
-	register struct llc *l;
 	u_int16_t etype;
-	struct arpcom *ac = (struct arpcom *)ifp;
 	int s;
+#if defined (ISO) || defined (LLC)
+	register struct llc *l;
+	struct arpcom *ac = (struct arpcom *)ifp;
+#endif
 
 	if ((ifp->if_flags & IFF_UP) == 0) {
 		m_freem(m);
@@ -345,12 +430,21 @@ ether_input(ifp, eh, m)
 		revarpinput(m);	/* XXX queue? */
 		return;
 #endif
+#ifdef IPX
+	case ETHERTYPE_8022:
+	case ETHERTYPE_8022TR:
+	case ETHERTYPE_8023:
+	case ETHERTYPE_SNAP:
+	case ETHERTYPE_II:
+		schednetisr(NETISR_IPX);
+		inq = &ipxintrq;
+		break;
+#endif
 #ifdef NS
 	case ETHERTYPE_NS:
 		schednetisr(NETISR_NS);
 		inq = &nsintrq;
 		break;
-
 #endif
 	default:
 #if defined (ISO) || defined (LLC)
@@ -375,9 +469,10 @@ ether_input(ifp, eh, m)
 					if (m == 0)
 						return;
 					*mtod(m, struct ether_header *) = *eh;
-					IFDEBUG(D_ETHER)
+#ifdef ARGO_DEBUG
+					if (argo_debug[D_ETHER])
 						printf("clnp packet");
-					ENDDEBUG
+#endif
 					schednetisr(NETISR_ISO);
 					inq = &clnlintrq;
 					break;
@@ -613,7 +708,6 @@ ether_delmulti(ifr, ac)
 	register struct arpcom *ac;
 {
 	register struct ether_multi *enm;
-	register struct ether_multi **p;
 	struct sockaddr_in *sin;
 	u_char addrlo[6];
 	u_char addrhi[6];

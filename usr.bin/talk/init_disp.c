@@ -1,3 +1,4 @@
+/*	$OpenBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $	*/
 /*	$NetBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)init_disp.c	8.2 (Berkeley) 2/16/94";
 #endif
-static char rcsid[] = "$NetBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $";
+static char rcsid[] = "$OpenBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $";
 #endif /* not lint */
 
 /*
@@ -89,7 +90,11 @@ init_display()
 	wclear(his_win.x_win);
 
 	line_win = newwin(1, COLS, my_win.x_nlines, 0);
+#ifdef NCURSES_VERSION
+	whline(line_win, '-', COLS);
+#else
 	box(line_win, '-', '-');
+#endif
 	wrefresh(line_win);
 	/* let them know we are working on it */
 	current_state = "No connection yet";

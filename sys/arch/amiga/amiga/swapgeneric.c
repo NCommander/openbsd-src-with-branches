@@ -1,4 +1,5 @@
-/*	$NetBSD: swapgeneric.c,v 1.19 1995/04/19 13:02:57 chopps Exp $	*/
+/*	$OpenBSD: swapgeneric.c,v 1.5 1996/05/29 10:14:35 niklas Exp $	*/
+/*	$NetBSD: swapgeneric.c,v 1.24 1996/05/21 17:15:40 is Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986 Regents of the University of California.
@@ -45,16 +46,23 @@
 #include <sys/fcntl.h>		/* XXXX and all that uses it */
 #include <sys/proc.h>		/* XXXX and all that uses it */
 #include <sys/disk.h>
+#include <dev/cons.h>
+#include <machine/cpu.h>
 
 #include "fd.h"
 #include "sd.h"
+#include "wd.h"
 #include "cd.h"
+#include "acd.h"
 
-#if NCD > 0
-int cd9660_mountroot();
+#if NCD + NACD > 0
+#include <sys/mount.h>
+#include <isofs/cd9660/iso.h>
 #endif
-int ffs_mountroot();
-int (*mountroot)() = ffs_mountroot;
+#include <ufs/ffs/ffs_extern.h>
+int (*mountroot) __P((void)) = ffs_mountroot;
+
+void gets __P((char *));
 
 /*
  * Generic configuration;  all in one
@@ -68,13 +76,19 @@ struct	swdevt swdevt[] = {
 };
 
 #if NFD > 0
-extern	struct cfdriver fdcd;
+extern	struct cfdriver fd_cd;
 #endif
 #if NSD > 0
-extern	struct cfdriver sdcd;
+extern	struct cfdriver sd_cd;
+#endif
+#if NWD > 0
+extern	struct cfdriver wd_cd;
 #endif
 #if NCD > 0
-extern	struct cfdriver cdcd;
+extern	struct cfdriver cd_cd;
+#endif
+#if NACD > 0
+extern	struct cfdriver acd_cd;
 #endif
 
 struct genericconf {
@@ -91,16 +105,24 @@ struct genericconf {
  */
 struct genericconf genericconf[] = {
 #if NFD > 0
-	{&fdcd,	makedev(2, 0)},
+	{&fd_cd,	makedev(2, 0)},
 #endif
 #if NSD > 0
-	{&sdcd,	makedev(4, 0)},
+	{&sd_cd,	makedev(4, 0)},
+#endif
+#if NWD > 0
+	{&wd_cd,	makedev(0, 0)},
 #endif
 #if NCD > 0
-	{&cdcd,	makedev(7, 0)},
+	{&cd_cd,	makedev(7, 0)},
+#endif
+#if NACD > 0
+	{&acd_cd,	makedev(15, 0)},
 #endif
 	{ 0 },
 };
+
+struct genericconf * getgenconf __P((char *)); 
 
 struct genericconf *
 getgenconf(bp)
@@ -131,9 +153,12 @@ getgenconf(bp)
 	return(gc);
 }
 
+#ifdef GENERIC
+void
 setconf()
 {
-	struct dkdevice *dkp;
+	struct disk *dkp;
+	struct device **devpp;
 	struct partition *pp;
 	struct genericconf *gc;
 	struct bdevsw *bdp;
@@ -157,16 +182,20 @@ setconf()
 		unit &= 0x7;
 		goto found;
 	}
+
 	for (gc = genericconf; gc->gc_driver; gc++) {
 		for (unit = gc->gc_driver->cd_ndevs - 1; unit >= 0; unit--) { 
 			if (gc->gc_driver->cd_devs[unit] == NULL)
 				continue;
+
 			/*
-			 * this is a hack these drivers should use
-			 * dk_dev and not another instance directly above.
+			 * Find the disk corresponding to the current
+			 * device.
 			 */
-			dkp = (struct dkdevice *)
-			   ((struct device *)gc->gc_driver->cd_devs[unit] + 1);
+			devpp = (struct device **)gc->gc_driver->cd_devs;
+			if ((dkp = disk_find(devpp[unit]->dv_xname)) == NULL)
+				continue;
+
 			if (dkp->dk_driver == NULL ||
 			    dkp->dk_driver->d_strategy == NULL)
 				continue;
@@ -179,7 +208,7 @@ setconf()
 				continue;
 			bdp->d_close(MAKEDISKDEV(major(gc->gc_root), unit, 
 			    0), FREAD | FNONBLOCK, 0, curproc);
-			pp = &dkp->dk_label.d_partitions[0];
+			pp = &dkp->dk_label->d_partitions[0];
 			if (pp->p_size == 0 || pp->p_fstype != FS_BSDFFS)
 				continue;
 			goto found;
@@ -189,7 +218,6 @@ setconf()
 	asm("stop #0x2700");
 	/*NOTREACHED*/
 found:
-
 	gc->gc_root = MAKEDISKDEV(major(gc->gc_root), unit, 0);
 	rootdev = gc->gc_root;
 #if NCD > 0
@@ -204,7 +232,9 @@ justdoswap:
 	if (swaponroot)
 		rootdev = dumpdev;
 }
+#endif
 
+void
 gets(cp)
 	char *cp;
 {

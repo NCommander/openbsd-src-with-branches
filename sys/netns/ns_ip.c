@@ -1,4 +1,5 @@
-/*	$NetBSD: ns_ip.c,v 1.13 1995/06/13 08:37:05 mycroft Exp $	*/
+/*	$OpenBSD: ns_ip.c,v 1.5 1996/05/12 03:18:34 mickey Exp $	*/
+/*	$NetBSD: ns_ip.c,v 1.16 1996/05/09 22:29:40 scottr Exp $	*/
 
 /*
  * Copyright (c) 1984, 1985, 1986, 1987, 1993
@@ -50,6 +51,8 @@
 #include <sys/ioctl.h>
 #include <sys/protosw.h>
 
+#include <machine/cpu.h>	/* XXX for setsoftnet().  This must die. */
+
 #include <net/if.h>
 #include <net/netisr.h>
 #include <net/route.h>
@@ -64,6 +67,8 @@
 #include <netns/ns_if.h>
 #include <netns/idp.h>
 
+#include <machine/stdarg.h>
+
 struct ifnet_en {
 	struct ifnet ifen_ifnet;
 	struct route ifen_route;
@@ -74,8 +79,10 @@ struct ifnet_en {
 
 int	nsipoutput(), nsipioctl();
 void	nsipstart();
+void	nsip_rtchange __P((register struct in_addr *dst));
 #define LOMTU	(1024+512);
 
+int	nsipif_unit;			/* XXX */
 struct ifnet nsipif;
 struct ifnet_en *nsip_list;		/* list of all hosts and gateways or
 					broadcast addrs */
@@ -88,7 +95,7 @@ nsipattach()
 
 	if (nsipif.if_mtu == 0) {
 		ifp = &nsipif;
-		ifp->if_name = "nsip";
+		sprintf(ifp->if_xname, "nsip%d", nsipif_unit);
 		ifp->if_mtu = LOMTU;
 		ifp->if_ioctl = nsipioctl;
 		ifp->if_output = nsipoutput;
@@ -102,14 +109,20 @@ nsipattach()
 	nsip_list = m;
 	ifp = &m->ifen_ifnet;
 
-	ifp->if_name = "nsip";
+	sprintf(ifp->if_xname, "nsip%d", nsipif_unit++);
 	ifp->if_mtu = LOMTU;
 	ifp->if_ioctl = nsipioctl;
 	ifp->if_output = nsipoutput;
 	ifp->if_start = nsipstart;
 	ifp->if_flags = IFF_POINTOPOINT;
-	ifp->if_unit = nsipif.if_unit++;
 	if_attach(ifp);
+
+	/*
+	 * XXX Emulate the side effect of incrementing nsipif.if_unit
+	 * XXX in the days before if_xname.
+	 */
+	bzero(nsipif.if_xname, sizeof(nsipif.if_xname));
+	sprintf(nsipif.if_xname, "nsip%d", nsipif_unit);
 
 	return (m);
 }
@@ -155,14 +168,19 @@ struct mbuf *nsip_badlen;
 struct mbuf *nsip_lastin;
 int nsip_hold_input;
 
-idpip_input(m, ifp)
-	register struct mbuf *m;
-	struct ifnet *ifp;
+void
+idpip_input(struct mbuf *m, ...)
 {
+	struct ifnet *ifp;
 	register struct ip *ip;
 	register struct idp *idp;
 	register struct ifqueue *ifq = &nsintrq;
 	int len, s;
+	va_list	ap;
+
+	va_start(ap, m);
+	ifp = va_arg(ap, struct ifnet *);
+	va_end(ap);
 
 	if (nsip_hold_input) {
 		if (nsip_lastin) {
@@ -308,7 +326,7 @@ nsipstart(ifp)
 	panic("nsip_start called\n");
 }
 
-struct ifreq ifr = {"nsip0"};
+struct ifreq ifr = {"nsip0"};		/* XXX */
 
 nsip_route(m)
 	register struct mbuf *m;
@@ -347,9 +365,9 @@ nsip_route(m)
 		    ia = ia->ia_list.tqe_next)
 			if (ia->ia_ifp == ifp)
 				break;
-		if (ia == 0)
-			ia = in_ifaddr;
-		if (ia == 0) {
+		if (ia == NULL)
+			ia = in_ifaddr.tqh_first;
+		if (ia == NULL) {
 			RTFREE(ro.ro_rt);
 			return (EADDRNOTAVAIL);
 		}
@@ -376,7 +394,8 @@ nsip_route(m)
 	/*
 	 * now configure this as a point to point link
 	 */
-	ifr.ifr_name[4] = '0' + nsipif.if_unit - 1;
+	bzero(ifr.ifr_name, sizeof(ifr.ifr_name));
+	sprintf(ifr.ifr_name, "nsip%d", nsipif_unit - 1);
 	ifr.ifr_dstaddr = *snstosa(ns_dst);
 	(void)ns_control((struct socket *)0, SIOCSIFDSTADDR, (caddr_t)&ifr,
 			(struct ifnet *)ifn);
@@ -385,6 +404,7 @@ nsip_route(m)
 			(struct ifnet *)ifn));
 }
 
+int
 nsip_free(ifp)
 struct ifnet *ifp;
 {
@@ -399,13 +419,14 @@ struct ifnet *ifp;
 	return (0);
 }
 
-nsip_ctlinput(cmd, sa)
+void *
+nsip_ctlinput(cmd, sa, v)
 	int cmd;
 	struct sockaddr *sa;
+	void *v;
 {
 	extern u_char inetctlerrmap[];
 	struct sockaddr_in *sin;
-	int in_rtchange();
 
 	if ((unsigned)cmd >= PRC_NCMDS)
 		return;
@@ -425,8 +446,10 @@ nsip_ctlinput(cmd, sa)
 		nsip_rtchange(&sin->sin_addr);
 		break;
 	}
+	return NULL;
 }
 
+void
 nsip_rtchange(dst)
 	register struct in_addr *dst;
 {

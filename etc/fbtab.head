@@ -1,0 +1,4 @@
+#	$OpenBSD$
+# login(1) reads this file to determine which devices should be owned to
+# the new user. Format is:
+# login-tty	perm	device:[device]:...

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dirs.c,v 1.7 1996/08/02 11:26:23 deraadt Exp $	*/
 /*	$NetBSD: dirs.c,v 1.16 1995/06/19 00:20:11 cgd Exp $	*/
 
 /*
@@ -42,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)dirs.c	8.5 (Berkeley) 8/31/94";
 #else
-static char rcsid[] = "$NetBSD: dirs.c,v 1.16 1995/06/19 00:20:11 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dirs.c,v 1.7 1996/08/02 11:26:23 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -111,9 +112,9 @@ struct rstdirdesc {
 static long	seekpt;
 static FILE	*df, *mf;
 static RST_DIR	*dirp;
-static char	dirfile[32] = "#";	/* No file */
-static char	modefile[32] = "#";	/* No file */
-static char	dot[2] = ".";		/* So it can be modified */
+static char	dirfile[MAXPATHLEN] = "#";	/* No file */
+static char	modefile[MAXPATHLEN] = "#";	/* No file */
+static char	dot[2] = ".";			/* So it can be modified */
 
 /*
  * Format of old style directories.
@@ -149,11 +150,23 @@ extractdirs(genmode)
 	register struct dinode *ip;
 	struct inotab *itp;
 	struct direct nulldir;
+	int fd;
 
 	vprintf(stdout, "Extract directories from tape\n");
-	(void) sprintf(dirfile, "%s/rstdir%d", _PATH_TMP, dumpdate);
-	df = fopen(dirfile, "w");
-	if (df == NULL) {
+	(void) sprintf(dirfile, "%srstdir%d", _PATH_TMP, dumpdate);
+	if (command != 'r' && command != 'R') {
+		(void *) strcat(dirfile, "-XXXXXX");
+		if (mktemp(dirfile) == NULL) {
+			fprintf(stderr,
+			    "restore: %s - cannot mktemp directory temporary\n",
+			    dirfile);
+			exit(1);
+		}
+	}
+	if ((fd = open(dirfile, O_RDWR|O_CREAT|O_EXCL, 0666)) == -1 ||
+	    (df = fdopen(fd, "w")) == NULL) {
+		if (fd != -1)
+			close(fd);
 		fprintf(stderr,
 		    "restore: %s - cannot create directory temporary\n",
 		    dirfile);
@@ -161,9 +174,20 @@ extractdirs(genmode)
 		exit(1);
 	}
 	if (genmode != 0) {
-		(void) sprintf(modefile, "%s/rstmode%d", _PATH_TMP, dumpdate);
-		mf = fopen(modefile, "w");
-		if (mf == NULL) {
+		(void) sprintf(modefile, "%srstmode%d", _PATH_TMP, dumpdate);
+		if (command != 'r' && command != 'R') {
+			(void *) strcat(modefile, "-XXXXXX");
+			if (mktemp(modefile) == NULL) {
+				fprintf(stderr,
+				    "restore: %s - cannot mktemp modefile\n",
+				    modefile);
+				exit(1);
+			}
+		}
+		if ((fd = open(modefile, O_RDWR|O_CREAT|O_EXCL,
+		    0666)) == -1 || (mf = fdopen(fd, "w")) == NULL) {
+			if (fd != -1)
+				close(fd);
 			fprintf(stderr,
 			    "restore: %s - cannot create modefile \n",
 			    modefile);
@@ -208,7 +232,7 @@ void
 skipdirs()
 {
 
-	while ((curfile.dip->di_mode & IFMT) == IFDIR) {
+	while (curfile.dip && (curfile.dip->di_mode & IFMT) == IFDIR) {
 		skipfile();
 	}
 }
@@ -591,7 +615,13 @@ setdirmodes(flags)
 	char *cp;
 	
 	vprintf(stdout, "Set directory mode, owner, and times.\n");
-	(void) sprintf(modefile, "%s/rstmode%d", _PATH_TMP, dumpdate);
+	if (command == 'r' || command == 'R')
+		(void) sprintf(modefile, "%srstmode%d", _PATH_TMP, dumpdate);
+	if (modefile[0] == '#') {
+		panic("modefile not defined\n");
+		fprintf(stderr, "directory mode, owner, and times not set\n");
+		return;
+	}
 	mf = fopen(modefile, "r");
 	if (mf == NULL) {
 		fprintf(stderr, "fopen: %s\n", strerror(errno));

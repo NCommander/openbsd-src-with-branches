@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile.inc,v 1.23 1995/03/02 09:09:07 chopps Exp $
-#	@(#)Makefile.inc	8.2 (Berkeley) 9/5/93
+#	$OpenBSD: Makefile.inc,v 1.7 1996/08/22 20:11:19 millert Exp $
 
 # net sources
 .PATH: ${.CURDIR}/arch/${MACHINE_ARCH}/net ${.CURDIR}/net
@@ -8,9 +7,10 @@ SRCS+=	gethostnamadr.c getnetbyaddr.c getnetbyname.c getnetent.c \
 	getproto.c getprotoent.c getprotoname.c getservbyname.c \
 	getservbyport.c getservent.c herror.c inet_addr.c inet_lnaof.c \
 	inet_makeaddr.c inet_netof.c inet_network.c inet_ntoa.c \
-	iso_addr.c linkaddr.c ns_addr.c ns_ntoa.c rcmd.c recv.c res_comp.c \
-	res_debug.c res_init.c res_mkquery.c res_query.c res_send.c \
-	send.c sethostent.c ethers.c
+	ipx_addr.c ipx_ntoa.c \
+	iso_addr.c linkaddr.c ns_addr.c ns_ntoa.c nsap_addr.c rcmd.c recv.c \
+	res_comp.c res_debug.c res_init.c res_mkquery.c res_query.c \
+	res_send.c send.c sethostent.c ethers.c rcmdsh.c
 
 # machine-dependent net sources
 # m-d Makefile.inc must include sources for:
@@ -18,8 +18,9 @@ SRCS+=	gethostnamadr.c getnetbyaddr.c getnetbyname.c getnetent.c \
 
 .include "${.CURDIR}/arch/${MACHINE_ARCH}/net/Makefile.inc"
 
-MAN+=	byteorder.3 gethostbyname.3 getnetent.3 getprotoent.3 getservent.3 \
-	inet.3 linkaddr.3 ns.3 rcmd.3 resolver.3 ethers.3
+MAN+=	byteorder.3 ethers.3 gethostbyname.3 getnetent.3 getprotoent.3 \
+	getservent.3 inet.3 iso_addr.3 link_addr.3 ns.3 ipx.3 rcmd.3 rcmdsh.3 \
+	resolver.3
 
 MLINKS+=byteorder.3 htonl.3 byteorder.3 htons.3 byteorder.3 ntohl.3 \
 	byteorder.3 ntohs.3
@@ -38,7 +39,9 @@ MLINKS+=inet.3 addr.3 inet.3 inet_addr.3 inet.3 inet_aton.3 \
 	inet.3 inet_lnaof.3 inet.3 inet_makeaddr.3 inet.3 inet_netof.3 \
 	inet.3 inet_network.3 inet.3 inet_ntoa.3 inet.3 network.3 \
 	inet.3 ntoa.3
-MLINKS+=linkaddr.3 linkntoa.3
+MLINKS+=iso_addr.3 iso_ntoa.3
+MLINKS+=link_addr.3 link_ntoa.3
+MLINKS+=ipx.3 ipx_addr.3 ipx.3 ipx_ntoa.3
 MLINKS+=ns.3 ns_addr.3 ns.3 ns_ntoa.3
 MLINKS+=rcmd.3 iruserok.3 rcmd.3 rresvport.3 rcmd.3 ruserok.3
 MLINKS+=resolver.3 dn_comp.3 resolver.3 dn_expand.3 resolver.3 res_init.3 \

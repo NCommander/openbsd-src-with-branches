@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.18 1996/06/22 23:12:14 pefo Exp $	*/
+/*	$OpenBSD: ace.c,v 1.5 1996/09/02 09:01:49 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*-
@@ -57,6 +57,7 @@
 #include <sys/types.h>
 #include <sys/device.h>
 
+#include <arc/arc/arctype.h>
 #include <machine/bus.h>
 #include <machine/intr.h>
 
@@ -69,7 +70,7 @@
 #endif
 #define	com_lcr	com_cfcr
 
-#include "com.h"
+#include "ace.h"
 
 
 #define	COM_IBUFSIZE	(2 * 512)
@@ -111,6 +112,8 @@ struct com_softc {
 	u_char sc_msr, sc_mcr, sc_lcr, sc_ier;
 	u_char sc_dtr;
 
+	u_char	sc_cua;
+
 	u_char *sc_ibuf, *sc_ibufp, *sc_ibufhigh, *sc_ibufend;
 	u_char sc_ibufs[2][COM_IBUFSIZE];
 };
@@ -129,11 +132,11 @@ cdev_decl(com);
 bdev_decl(com);
 
 struct consdev;
-void	comcnprobe	__P((struct consdev *));
-void	comcninit	__P((struct consdev *));
-int	comcngetc	__P((dev_t));
-void	comcnputc	__P((dev_t, int));
-void	comcnpollc	__P((dev_t, int));
+void	acecnprobe	__P((struct consdev *));
+void	acecninit	__P((struct consdev *));
+int	acecngetc	__P((dev_t));
+void	acecnputc	__P((dev_t, int));
+void	acecnpollc	__P((dev_t, int));
 
 static u_char tiocm_xxx2mcr __P((int));
 
@@ -169,7 +172,7 @@ struct cfattach ace_pica_ca = {
 
 
 struct cfdriver ace_cd = {
-	NULL, "com", DV_TTY
+	NULL, "ace", DV_TTY
 };
 
 void cominit __P((bus_chipset_tag_t, bus_io_handle_t, int));
@@ -201,7 +204,8 @@ extern int kgdb_rate;
 extern int kgdb_debug_init;
 #endif
 
-#define	COMUNIT(x)	(minor(x))
+#define	DEVUNIT(x)	(minor(x) & 0x7f)
+#define	DEVCUA(x)	(minor(x) & 0x80)
 
 /* Macros to clear/set/test flags. */
 #define	SET(t, f)	(t) |= (f)
@@ -777,12 +781,12 @@ comattach(parent, self, aux)
 }
 
 int
-comopen(dev, flag, mode, p)
+aceopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
 	struct proc *p;
 {
-	int unit = COMUNIT(dev);
+	int unit = DEVUNIT(dev);
 	struct com_softc *sc;
 	bus_chipset_tag_t bc;
 	bus_io_handle_t ioh;
@@ -790,17 +794,19 @@ comopen(dev, flag, mode, p)
 	int s;
 	int error = 0;
  
-	if (unit >= com_cd.cd_ndevs)
+	if (unit >= ace_cd.cd_ndevs)
 		return ENXIO;
-	sc = com_cd.cd_devs[unit];
+	sc = ace_cd.cd_devs[unit];
 	if (!sc || ISSET(sc->sc_hwflags, COM_HW_ABSENT|COM_HW_ABSENT_PENDING))
 		return ENXIO;
 
+	s = spltty();
 	if (!sc->sc_tty) {
 		tp = sc->sc_tty = ttymalloc();
 		tty_attach(tp);
 	} else
 		tp = sc->sc_tty;
+	splx(s);
 
 	tp->t_oproc = comstart;
 	tp->t_param = comparam;
@@ -886,7 +892,7 @@ comopen(dev, flag, mode, p)
 		bus_io_write_1(bc, ioh, com_ier, sc->sc_ier);
 
 		sc->sc_msr = bus_io_read_1(bc, ioh, com_msr);
-		if (ISSET(sc->sc_swflags, COM_SW_SOFTCAR) ||
+		if (ISSET(sc->sc_swflags, COM_SW_SOFTCAR) || DEVCUA(dev) ||
 		    ISSET(sc->sc_msr, MSR_DCD) || ISSET(tp->t_cflag, MDMBUF))
 			SET(tp->t_state, TS_CARR_ON);
 		else
@@ -896,9 +902,25 @@ comopen(dev, flag, mode, p)
 	else
 		s = spltty();
 
+	if (DEVCUA(dev)) {
+		if (ISSET(tp->t_state, TS_ISOPEN)) {
+			/* Ah, but someone already is dialed in... */
+			splx(s);
+			return EBUSY;
+		}
+		sc->sc_cua = 1;		/* We go into CUA mode */
+	}
+
 	/* wait for carrier if necessary */
-	if (!ISSET(flag, O_NONBLOCK))
-		while (!ISSET(tp->t_cflag, CLOCAL) &&
+	if (ISSET(flag, O_NONBLOCK)) {
+		if (!DEVCUA(dev) && sc->sc_cua) {
+			/* Opening TTY non-blocking... but the CUA is busy */
+			splx(s);
+			return EBUSY;
+		}
+	} else {
+		while (!(DEVCUA(dev) && sc->sc_cua) &&
+		    !ISSET(tp->t_cflag, CLOCAL) &&
 		    !ISSET(tp->t_state, TS_CARR_ON)) {
 			SET(tp->t_state, TS_WOPEN);
 			error = ttysleep(tp, &tp->t_rawq, TTIPRI | PCATCH,
@@ -906,23 +928,26 @@ comopen(dev, flag, mode, p)
 			if (error) {
 				/* XXX should turn off chip if we're the
 				   only waiter */
+				if (DEVCUA(dev))
+					sc->sc_cua = 0;
 				splx(s);
 				return error;
 			}
 		}
+	}
 	splx(s);
 
 	return (*linesw[tp->t_line].l_open)(dev, tp);
 }
  
 int
-comclose(dev, flag, mode, p)
+aceclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
 	struct proc *p;
 {
-	int unit = COMUNIT(dev);
-	struct com_softc *sc = com_cd.cd_devs[unit];
+	int unit = DEVUNIT(dev);
+	struct com_softc *sc = ace_cd.cd_devs[unit];
 	struct tty *tp = sc->sc_tty;
 	bus_chipset_tag_t bc = sc->sc_bc;
 	bus_io_handle_t ioh = sc->sc_ioh;
@@ -948,12 +973,13 @@ comclose(dev, flag, mode, p)
 	CLR(tp->t_state, TS_BUSY | TS_FLUSH);
 	if (--comsopen == 0)
 		untimeout(compoll, NULL);
+	sc->sc_cua = 0;
 	splx(s);
 	ttyclose(tp);
 #ifdef COM_DEBUG
 	/* mark it ready for more use if reattached earlier */
 	if (ISSET(sc->sc_hwflags, COM_HW_ABSENT_PENDING)) {
-	    printf("comclose pending cleared\n");
+	    printf("aceclose pending cleared\n");
 	}
 #endif
 	CLR(sc->sc_hwflags, COM_HW_ABSENT_PENDING);
@@ -968,12 +994,12 @@ comclose(dev, flag, mode, p)
 }
  
 int
-comread(dev, uio, flag)
+aceread(dev, uio, flag)
 	dev_t dev;
 	struct uio *uio;
 	int flag;
 {
-	struct com_softc *sc = com_cd.cd_devs[COMUNIT(dev)];
+	struct com_softc *sc = ace_cd.cd_devs[DEVUNIT(dev)];
 	struct tty *tp = sc->sc_tty;
  
 	if (ISSET(sc->sc_hwflags, COM_HW_ABSENT|COM_HW_ABSENT_PENDING)) {
@@ -987,12 +1013,12 @@ comread(dev, uio, flag)
 }
  
 int
-comwrite(dev, uio, flag)
+acewrite(dev, uio, flag)
 	dev_t dev;
 	struct uio *uio;
 	int flag;
 {
-	struct com_softc *sc = com_cd.cd_devs[COMUNIT(dev)];
+	struct com_softc *sc = ace_cd.cd_devs[DEVUNIT(dev)];
 	struct tty *tp = sc->sc_tty;
  
 	if (ISSET(sc->sc_hwflags, COM_HW_ABSENT|COM_HW_ABSENT_PENDING)) {
@@ -1006,10 +1032,10 @@ comwrite(dev, uio, flag)
 }
 
 struct tty *
-comtty(dev)
+acetty(dev)
 	dev_t dev;
 {
-	struct com_softc *sc = com_cd.cd_devs[COMUNIT(dev)];
+	struct com_softc *sc = ace_cd.cd_devs[DEVUNIT(dev)];
 	struct tty *tp = sc->sc_tty;
 
 	return (tp);
@@ -1029,15 +1055,15 @@ tiocm_xxx2mcr(data)
 }
 
 int
-comioctl(dev, cmd, data, flag, p)
+aceioctl(dev, cmd, data, flag, p)
 	dev_t dev;
 	u_long cmd;
 	caddr_t data;
 	int flag;
 	struct proc *p;
 {
-	int unit = COMUNIT(dev);
-	struct com_softc *sc = com_cd.cd_devs[unit];
+	int unit = DEVUNIT(dev);
+	struct com_softc *sc = ace_cd.cd_devs[unit];
 	struct tty *tp = sc->sc_tty;
 	bus_chipset_tag_t bc = sc->sc_bc;
 	bus_io_handle_t ioh = sc->sc_ioh;
@@ -1156,7 +1182,7 @@ comparam(tp, t)
 	struct tty *tp;
 	struct termios *t;
 {
-	struct com_softc *sc = com_cd.cd_devs[COMUNIT(tp->t_dev)];
+	struct com_softc *sc = ace_cd.cd_devs[DEVUNIT(tp->t_dev)];
 	bus_chipset_tag_t bc = sc->sc_bc;
 	bus_io_handle_t ioh = sc->sc_ioh;
 	int ospeed = comspeed(t->c_ospeed);
@@ -1212,7 +1238,7 @@ comparam(tp, t)
 	 * Set the FIFO threshold based on the receive speed, if we are
 	 * changing it.
 	 */
-#if 1
+#if 0 /* XXX CHECK WHY SPEED IS NOT INIT CORRECTLY */
 	if (tp->t_ispeed != t->c_ispeed) {
 #else
 	if (1) {
@@ -1314,7 +1340,7 @@ void
 comstart(tp)
 	struct tty *tp;
 {
-	struct com_softc *sc = com_cd.cd_devs[COMUNIT(tp->t_dev)];
+	struct com_softc *sc = ace_cd.cd_devs[DEVUNIT(tp->t_dev)];
 	bus_chipset_tag_t bc = sc->sc_bc;
 	bus_io_handle_t ioh = sc->sc_ioh;
 	int s;
@@ -1385,7 +1411,7 @@ stopped:
  * Stop output on a line.
  */
 int
-comstop(tp, flag)
+acestop(tp, flag)
 	struct tty *tp;
 	int flag;
 {
@@ -1447,8 +1473,8 @@ compoll(arg)
 	comevents = 0;
 	splx(s);
 
-	for (unit = 0; unit < com_cd.cd_ndevs; unit++) {
-		sc = com_cd.cd_devs[unit];
+	for (unit = 0; unit < ace_cd.cd_ndevs; unit++) {
+		sc = ace_cd.cd_devs[unit];
 		if (sc == 0 || sc->sc_ibufp == sc->sc_ibuf)
 			continue;
 
@@ -1648,32 +1674,33 @@ ohfudge:
 #include <dev/cons.h>
 
 void
-comcnprobe(cp)
+acecnprobe(cp)
 	struct consdev *cp;
 {
 	/* XXX NEEDS TO BE FIXED XXX */
+	extern int cputype;
 	bus_chipset_tag_t bc = 0;
 	bus_io_handle_t ioh;
 	int found;
 
-#if 0
+	cp->cn_pri = CN_DEAD;
+
+	if(cputype != ACER_PICA_61)
+		return;
+
 	if (bus_io_map(bc, CONADDR, COM_NPORTS, &ioh)) {
 		cp->cn_pri = CN_DEAD;
 		return;
 	}
-#else
 	ioh = CONADDR;
-#endif
 	found = comprobe1(bc, ioh, CONADDR);
-	bus_io_unmap(bc, ioh, COM_NPORTS);
 	if (!found) {
-		cp->cn_pri = CN_DEAD;
 		return;
 	}
 
 	/* locate the major number */
 	for (commajor = 0; commajor < nchrdev; commajor++)
-		if (cdevsw[commajor].d_open == comopen)
+		if (cdevsw[commajor].d_open == aceopen)
 			break;
 
 	/* initialize required fields */
@@ -1686,7 +1713,7 @@ comcnprobe(cp)
 }
 
 void
-comcninit(cp)
+acecninit(cp)
 	struct consdev *cp;
 {
 
@@ -1695,7 +1722,7 @@ comcninit(cp)
 	comconsbc = ???;
 #endif
 	if (bus_io_map(comconsbc, CONADDR, COM_NPORTS, &comconsioh))
-		panic("comcninit: mapping failed");
+		panic("acecninit: mapping failed");
 
 	cominit(comconsbc, comconsioh, comdefaultrate);
 	comconsaddr = CONADDR;
@@ -1723,7 +1750,7 @@ cominit(bc, ioh, rate)
 }
 
 int
-comcngetc(dev)
+acecngetc(dev)
 	dev_t dev;
 {
 	int s = splhigh();
@@ -1743,7 +1770,7 @@ comcngetc(dev)
  * Console kernel output character routine.
  */
 void
-comcnputc(dev, c)
+acecnputc(dev, c)
 	dev_t dev;
 	int c;
 {
@@ -1775,7 +1802,7 @@ comcnputc(dev, c)
 }
 
 void
-comcnpollc(dev, on)
+acecnpollc(dev, on)
 	dev_t dev;
 	int on;
 {

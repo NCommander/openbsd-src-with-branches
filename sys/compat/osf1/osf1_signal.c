@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/namei.h>
@@ -186,7 +188,7 @@ osf1_to_bsd_sigaltstack(oss, bss)
 	struct sigaltstack *bss;
 {
 
-	bss->ss_base = oss->ss_sp;
+	bss->ss_sp = oss->ss_sp;
 	bss->ss_size = oss->ss_size;
 	bss->ss_flags = 0;
 
@@ -202,7 +204,7 @@ bsd_to_osf1_sigaltstack(bss, oss)
 	struct osf1_sigaltstack *oss;
 {
 
-	oss->ss_sp = bss->ss_base;
+	oss->ss_sp = bss->ss_sp;
 	oss->ss_size = bss->ss_size;
 	oss->ss_flags = 0;
 

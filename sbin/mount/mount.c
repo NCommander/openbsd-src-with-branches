@@ -1,4 +1,5 @@
-/*	$NetBSD: mount.c,v 1.23 1995/08/22 19:58:33 jtc Exp $	*/
+/*	$OpenBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
+/*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
  * Copyright (c) 1980, 1989, 1993, 1994
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount.c	8.19 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$NetBSD: mount.c,v 1.23 1995/08/22 19:58:33 jtc Exp $";
+static char rcsid[] = "$OpenBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $";
 #endif
 #endif /* not lint */
 
@@ -80,18 +81,24 @@ void	usage __P((void));
 /* Map from mount otions to printable formats. */
 static struct opt {
 	int o_opt;
+	int o_silent;
 	const char *o_name;
 } optnames[] = {
-	{ MNT_ASYNC,		"asynchronous" },
-	{ MNT_EXPORTED,		"NFS exported" },
-	{ MNT_LOCAL,		"local" },
-	{ MNT_NODEV,		"nodev" },
-	{ MNT_NOEXEC,		"noexec" },
-	{ MNT_NOSUID,		"nosuid" },
-	{ MNT_QUOTA,		"with quotas" },
-	{ MNT_RDONLY,		"read-only" },
-	{ MNT_SYNCHRONOUS,	"synchronous" },
-	{ MNT_UNION,		"union" },
+	{ MNT_ASYNC,		0,	"asynchronous" },
+	{ MNT_DEFEXPORTED,	1,	"exported to the world" },
+	{ MNT_EXKERB,		1,	"kerberos uid mapping" },
+	{ MNT_EXPORTED,		0,	"NFS exported" },
+	{ MNT_EXPORTANON,	1,	"anon uid mapping" },
+	{ MNT_EXRDONLY,		1,	"exported read-only" },
+	{ MNT_LOCAL,		0,	"local" },
+	{ MNT_NODEV,		0,	"nodev" },
+	{ MNT_NOEXEC,		0,	"noexec" },
+	{ MNT_NOSUID,		0,	"nosuid" },
+	{ MNT_QUOTA,		0,	"with quotas" },
+	{ MNT_RDONLY,		0,	"read-only" },
+	{ MNT_ROOTFS,		1,	"root file system" },
+	{ MNT_SYNCHRONOUS,	0,	"synchronous" },
+	{ MNT_UNION,		0,	"union" },
 	{ NULL }
 };
 
@@ -286,6 +293,7 @@ mountfs(vfstype, spec, name, flags, options, mntopts, skipmounted)
 	pid_t pid;
 	int argc, i, status;
 	char *optbuf, execname[MAXPATHLEN + 1], mntpath[MAXPATHLEN];
+	char mountname[MAXPATHLEN];
 
 	if (realpath(name, mntpath) == NULL) {
 		warn("realpath %s", name);
@@ -363,6 +371,9 @@ mountfs(vfstype, spec, name, flags, options, mntopts, skipmounted)
 		do {
 			(void)snprintf(execname,
 			    sizeof(execname), "%s/mount_%s", *edir, vfstype);
+			(void)snprintf(mountname,
+			    sizeof(mountname), "mount_%s", vfstype);
+			argv[0] = mountname;
 			execv(execname, (char * const *)argv);
 			if (errno != ENOENT)
 				warn("exec %s for %s", execname, name);
@@ -415,9 +426,14 @@ prmount(sf)
 	flags = sf->f_flags & MNT_VISFLAGMASK;
 	for (f = 0, o = optnames; flags && o->o_opt; o++)
 		if (flags & o->o_opt) {
-			(void)printf("%s%s", !f++ ? " (" : ", ", o->o_name);
+			if (!o->o_silent)
+				(void)printf("%s%s", !f++ ? " (" : ", ",
+				    o->o_name);
 			flags &= ~o->o_opt;
 		}
+	if (flags)
+		(void)printf("%sunknown flag%s %#x", !f++ ? " (" : ", ", 
+		    flags & (flags - 1) ? "s" : "", flags);
 	(void)printf(f ? ")\n" : "\n");
 }
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: if_ether.h,v 1.20 1995/06/12 00:47:27 mycroft Exp $	*/
+/*	$OpenBSD: if_ether.h,v 1.4 1996/07/03 08:09:45 deraadt Exp $	*/
+/*	$NetBSD: if_ether.h,v 1.22 1996/05/11 13:00:00 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -119,7 +120,7 @@ struct	ether_arp {
 struct	arpcom {
 	struct	 ifnet ac_if;			/* network-visible interface */
 	u_int8_t ac_enaddr[ETHER_ADDR_LEN];	/* ethernet hardware address */
-	struct	 in_addr ac_ipaddr;		/* copy of ip address- XXX */
+	char	 ac__pad[2];			/* pad for some machines */
 	LIST_HEAD(, ether_multi) ac_multiaddrs;	/* list of ether multicast addrs */
 	int	 ac_multicnt;			/* length of ac_multiaddrs list */
 };
@@ -231,3 +232,28 @@ struct ether_multistep {
 	(step).e_enm = (ac)->ac_multiaddrs.lh_first; \
 	ETHER_NEXT_MULTI((step), (enm)); \
 }
+
+#ifdef _KERNEL
+
+void arp_rtrequest __P((int, struct rtentry *, struct sockaddr *));
+int arpresolve __P((struct arpcom *, struct rtentry *, struct mbuf *,
+		    struct sockaddr *, u_char *));
+void arpintr __P((void));
+int arpioctl __P((u_long, caddr_t));
+void arp_ifinit __P((struct arpcom *, struct ifaddr *));
+void revarpinput __P((struct mbuf *));
+void in_revarpinput __P((struct mbuf *));
+void revarprequest __P((struct ifnet *));
+int revarpwhoarewe __P((struct ifnet *, struct in_addr *, struct in_addr *));
+int revarpwhoami __P((struct in_addr *, struct ifnet *));
+int db_show_arptab __P((void));
+
+#else
+
+char *ether_ntoa __P((struct ether_addr *));
+struct ether_addr *ether_aton __P((char *));
+int ether_ntohost __P((char *, struct ether_addr *));
+int ether_hostton __P((char *, struct ether_addr *));
+int ether_line __P((char *, struct ether_addr *, char *));
+
+#endif

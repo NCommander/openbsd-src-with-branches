@@ -1,3 +1,4 @@
+/*	$OpenBSD: reboot.c,v 1.3 1996/07/11 23:29:09 weingart Exp $	*/
 /*	$NetBSD: reboot.c,v 1.8 1995/10/05 05:36:22 mycroft Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)reboot.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: reboot.c,v 1.8 1995/10/05 05:36:22 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: reboot.c,v 1.3 1996/07/11 23:29:09 weingart Exp $";
 #endif
 #endif /* not lint */
 
@@ -72,7 +73,15 @@ main(argc, argv)
 	int ch, howto, lflag, nflag, qflag, sverrno;
 	char *p, *user;
 
-	if (!strcmp((p = rindex(*argv, '/')) ? p + 1 : *argv, "halt")) {
+	/* Get our name */
+	p = rindex(*argv, '/');
+	if(p == NULL) p = *argv;
+	else p++;
+
+	/* Nuke login shell */
+	if(*p == '-') p++;
+
+	if (!strcmp(p, "halt")) {
 		dohalt = 1;
 		howto = RB_HALT;
 	} else
@@ -139,8 +148,18 @@ main(argc, argv)
 	(void)signal(SIGHUP, SIG_IGN);
 
 	/* Send a SIGTERM first, a chance to save the buffers. */
-	if (kill(-1, SIGTERM) == -1)
-		err("SIGTERM processes: %s", strerror(errno));
+	if (kill(-1, SIGTERM) == -1) {
+		/*
+		 * If ESRCH, everything's OK: we're the only non-system
+		 * process!  That can happen e.g. via 'exec reboot' in
+		 * single-user mode.
+		 */
+		if (errno != ESRCH) {
+			(void)fprintf(stderr, "%s: SIGTERM processes: %s",
+			    dohalt ? "halt" : "reboot", strerror(errno));
+			goto restart;
+		}
+	}
 
 	/*
 	 * After the processes receive the signal, start the rest of the

@@ -1,4 +1,5 @@
-/*	$NetBSD: tcp_var.h,v 1.14 1995/09/30 07:02:08 thorpej Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.4 1996/09/12 06:19:57 tholo Exp $	*/
+/*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993, 1994
@@ -43,8 +44,7 @@
  * Tcp control block, one per tcp; fields:
  */
 struct tcpcb {
-	struct	tcpiphdr *seg_next, *seg_prev;
-					/* list of control blocks */
+	struct ipqehead segq;		/* sequencing queue */
 	short	t_state;		/* state of this connection */
 	short	t_timer[TCPT_NTIMERS];	/* tcp timers */
 	short	t_rxtshift;		/* log(2) of rexmt exp. backoff */
@@ -163,16 +163,6 @@ struct tcpcb {
 #define	TCP_REXMTVAL(tp) \
 	((((tp)->t_srtt >> TCP_RTT_SHIFT) + (tp)->t_rttvar) >> 2)
 
-/* XXX
- * We want to avoid doing m_pullup on incoming packets but that
- * means avoiding dtom on the tcp reassembly code.  That in turn means
- * keeping an mbuf pointer in the reassembly queue (since we might
- * have a cluster).  As a quick hack, the source & destination
- * port numbers (which are no longer needed once we've located the
- * tcpcb) are overlayed with an mbuf pointer.
- */
-#define REASS_MBUF(ti) (*(struct mbuf **)&((ti)->ti_t))
-
 /*
  * TCP statistics.
  * Many of these should be kept per connection,
@@ -191,6 +181,7 @@ struct	tcpstat {
 	u_long	tcps_timeoutdrop;	/* conn. dropped in rxmt timeout */
 	u_long	tcps_rexmttimeo;	/* retransmit timeouts */
 	u_long	tcps_persisttimeo;	/* persist timeouts */
+	u_long	tcps_persistdrop;	/* connections dropped in persist */
 	u_long	tcps_keeptimeo;		/* keepalive timeouts */
 	u_long	tcps_keepprobe;		/* keepalive probes sent */
 	u_long	tcps_keepdrops;		/* connections dropped in keepalive */
@@ -211,6 +202,7 @@ struct	tcpstat {
 	u_long	tcps_rcvbyte;		/* bytes received in sequence */
 	u_long	tcps_rcvbadsum;		/* packets received with ccksum errs */
 	u_long	tcps_rcvbadoff;		/* packets received with bad offset */
+	u_long	tcps_rcvmemdrop;	/* packets dropped for lack of memory */
 	u_long	tcps_rcvshort;		/* packets received too short */
 	u_long	tcps_rcvduppack;	/* duplicate-only packets received */
 	u_long	tcps_rcvdupbyte;	/* duplicate-only bytes received */
@@ -230,7 +222,9 @@ struct	tcpstat {
 	u_long	tcps_pawsdrop;		/* segments dropped due to PAWS */
 	u_long	tcps_predack;		/* times hdr predict ok for acks */
 	u_long	tcps_preddat;		/* times hdr predict ok for data pkts */
-	u_long	tcps_pcbcachemiss;
+
+	u_long	tcps_pcbhashmiss;	/* input packets missing pcb hash */
+	u_long	tcps_noport;		/* no socket on port */
 };
 
 /*
@@ -238,11 +232,13 @@ struct	tcpstat {
  */
 			/* enable/disable RFC1323 timestamps/scaling */
 #define	TCPCTL_RFC1323		1
-#define	TCPCTL_MAXID		2
+#define	TCPCTL_KEEPINITTIME	2
+#define	TCPCTL_MAXID		3
 
 #define	TCPCTL_NAMES { \
 	{ 0, 0 }, \
 	{ "rfc1323",	CTLTYPE_INT }, \
+	{ "keepinittime",	CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL
@@ -255,7 +251,7 @@ int	 tcp_attach __P((struct socket *));
 void	 tcp_canceltimers __P((struct tcpcb *));
 struct tcpcb *
 	 tcp_close __P((struct tcpcb *));
-void	 tcp_ctlinput __P((int, struct sockaddr *, struct ip *));
+void	 *tcp_ctlinput __P((int, struct sockaddr *, void *));
 int	 tcp_ctloutput __P((int, struct socket *, int, int, struct mbuf **));
 struct tcpcb *
 	 tcp_disconnect __P((struct tcpcb *));
@@ -266,7 +262,7 @@ void	 tcp_dooptions __P((struct tcpcb *,
 void	 tcp_drain __P((void));
 void	 tcp_fasttimo __P((void));
 void	 tcp_init __P((void));
-void	 tcp_input __P((struct mbuf *, int));
+void	 tcp_input __P((struct mbuf *, ...));
 int	 tcp_mss __P((struct tcpcb *, u_int));
 struct tcpcb *
 	 tcp_newtcpcb __P((struct inpcb *));
@@ -291,4 +287,5 @@ int	 tcp_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
 int	 tcp_usrreq __P((struct socket *,
 	    int, struct mbuf *, struct mbuf *, struct mbuf *));
 void	 tcp_xmit_timer __P((struct tcpcb *, int));
+void	 tcpdropoldhalfopen __P((struct tcpcb *, u_int16_t));
 #endif

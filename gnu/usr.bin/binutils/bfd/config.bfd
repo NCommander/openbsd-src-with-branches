@@ -47,6 +47,14 @@ case "${targ}" in
     targ_defvec=ecoffalpha_little_vec
     targ_selvecs=nlm32_alpha_vec
     ;;
+  alpha-*-netbsd*)
+    targ_defvec=bsd_ecoffalpha_little_vec
+    targ_selvecs=ecoffalpha_little_vec
+    ;;
+  alpha-*-openbsd*)
+    targ_defvec=bsd_ecoffalpha_little_vec
+    targ_selvecs=ecoffalpha_little_vec
+    ;;
   alpha-*-linuxecoff*)
     targ_defvec=ecoffalpha_little_vec
     targ_selvecs=bfd_elf64_alpha_vec
@@ -156,6 +164,11 @@ case "${targ}" in
     targ_underscore=yes
     ;;
   i[3456]86-*-netbsd*)
+    targ_defvec=i386netbsd_vec
+    targ_selvecs=i386bsd_vec
+    targ_underscore=yes
+    ;;
+  i[3456]86-*-openbsd*)
     targ_defvec=i386netbsd_vec
     targ_selvecs=i386bsd_vec
     targ_underscore=yes
@@ -288,6 +301,16 @@ case "${targ}" in
     targ_selvecs="m68k4knetbsd_vec hp300bsd_vec sunos_big_vec"
     targ_underscore=yes
     ;;
+  m68*-hp*-openbsd*)
+    targ_defvec=m68k4knetbsd_vec
+    targ_selvecs="m68knetbsd_vec hp300bsd_vec sunos_big_vec"
+    targ_underscore=yes
+    ;;
+  m68*-*-openbsd*)
+    targ_defvec=m68knetbsd_vec
+    targ_selvecs="m68k4knetbsd_vec hp300bsd_vec sunos_big_vec"
+    targ_underscore=yes
+    ;;
   m68*-*-sunos* | m68*-*-os68k* | m68*-*-vxworks* | m68*-netx-* | \
   m68*-*-bsd* | m68*-*-vsta*)
     targ_defvec=sunos_big_vec
@@ -329,6 +352,14 @@ case "${targ}" in
     targ_selvecs=ecoff_little_vec
     ;;
   mips-dec-netbsd*)
+    targ_defvec=bfd_elf32_littlemips_vec
+    targ_selvecs=bfd_elf32_bigmips_vec
+    ;;
+  mips-dec-openbsd*)
+    targ_defvec=bfd_elf32_littlemips_vec
+    targ_selvecs=bfd_elf32_bigmips_vec
+    ;;
+  mips-arc-openbsd*)
     targ_defvec=bfd_elf32_littlemips_vec
     targ_selvecs=bfd_elf32_bigmips_vec
     ;;
@@ -389,6 +420,10 @@ case "${targ}" in
     targ_defvec=pc532netbsd_vec
     targ_underscore=yes
     ;;
+  ns32k-*-openbsd*)
+    targ_defvec=pc532netbsd_vec
+    targ_underscore=yes
+    ;;
 
   powerpc-*-aix*)
     targ_defvec=rs6000coff_vec
@@ -430,6 +465,10 @@ case "${targ}" in
     targ_selvecs=sparclynx_aout_vec
     ;;
   sparc-*-netbsd*)
+    targ_defvec=sparcnetbsd_vec
+    targ_underscore=yes
+    ;;
+  sparc-*-openbsd*)
     targ_defvec=sparcnetbsd_vec
     targ_underscore=yes
     ;;

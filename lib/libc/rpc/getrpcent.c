@@ -1,5 +1,3 @@
-/*	$NetBSD: getrpcent.c,v 1.4 1995/02/25 03:01:45 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -31,9 +29,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)getrpcent.c 1.14 91/03/11 Copyr 1984 Sun Micro";*/
-static char *rcsid = "$NetBSD: getrpcent.c,v 1.4 1995/02/25 03:01:45 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: getrpcent.c,v 1.6 1996/09/02 05:32:50 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * Copyright (c) 1984 by Sun Microsystems, Inc.
@@ -103,14 +100,15 @@ getrpcbyname(name)
 	setrpcent(0);
 	while (rpc = getrpcent()) {
 		if (strcmp(rpc->r_name, name) == 0)
-			return (rpc);
+			goto done;
 		for (rp = rpc->r_aliases; *rp != NULL; rp++) {
 			if (strcmp(*rp, name) == 0)
-				return (rpc);
+				goto done;
 		}
 	}
+done:
 	endrpcent();
-	return (NULL);
+	return (rpc);
 }
 
 void
@@ -144,15 +142,14 @@ endrpcent()
 struct rpcent *
 getrpcent()
 {
-	struct rpcent *hp;
-	int reason;
 	register struct rpcdata *d = _rpcdata();
 
 	if (d == 0)
 		return(NULL);
 	if (d->rpcf == NULL && (d->rpcf = fopen(RPCDB, "r")) == NULL)
 		return (NULL);
-        if (fgets(d->line, BUFSIZ, d->rpcf) == NULL)
+	/* -1 so there is room to append a \n below */
+        if (fgets(d->line, BUFSIZ-1, d->rpcf) == NULL)
 		return (NULL);
 	return (interpret(d->line, strlen(d->line)));
 }
@@ -168,9 +165,10 @@ interpret(val, len)
 
 	if (d == 0)
 		return (0);
-	(void) strncpy(d->line, val, len);
+	(void) strncpy(d->line, val, BUFSIZ);
+	d->line[BUFSIZ] = '\0';
 	p = d->line;
-	d->line[len] = '\n';
+	p[len] = '\n';
 	if (*p == '#')
 		return (getrpcent());
 	cp = strpbrk(p, "#\n");

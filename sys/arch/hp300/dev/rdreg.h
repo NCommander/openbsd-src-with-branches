@@ -1,4 +1,4 @@
-/*	$NetBSD: rdreg.h,v 1.5 1994/10/26 07:24:54 cgd Exp $	*/
+/*	$NetBSD: rdreg.h,v 1.7 1996/02/09 18:00:37 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -270,7 +270,7 @@ struct rd_describe {
 #define	C_SREL		0x3b
 #define	C_SSM		0x3e
 #define	C_SRAM		0x48
-#define	C_REL		0x140
+#define C_REL		0xc0
 
 #define	C_CMD		0x05
 #define	C_EXEC		0x0e

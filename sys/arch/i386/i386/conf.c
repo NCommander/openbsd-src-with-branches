@@ -1,4 +1,5 @@
-/*	$NetBSD: conf.c,v 1.67 1995/08/17 17:40:50 thorpej Exp $	*/
+/*	$OpenBSD: conf.c,v 1.22 1996/08/29 09:26:04 deraadt Exp $	*/
+/*	$NetBSD: conf.c,v 1.75 1996/05/03 19:40:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -37,21 +38,12 @@
 #include <sys/conf.h>
 #include <sys/vnode.h>
 
-int	ttselect	__P((dev_t, int, struct proc *));
-
-#ifndef LKM
-#define	lkmenodev	enodev
-#else
-int	lkmenodev();
-#endif
-
 #include "wdc.h"
 bdev_decl(wd);
 bdev_decl(sw);
 #include "fdc.h"
-#define	fdopen	Fdopen	/* conflicts with fdopen() in kern_descrip.c */
+#include "fd.h"
 bdev_decl(fd);
-#undef	fdopen
 #include "wt.h"
 bdev_decl(wt);
 #include "sd.h"
@@ -60,6 +52,10 @@ bdev_decl(sd);
 bdev_decl(st);
 #include "cd.h"
 bdev_decl(cd);
+#include "uk.h"
+cdev_decl(uk);
+#include "acd.h"
+bdev_decl(acd);
 #include "mcd.h"
 bdev_decl(mcd);
 #include "vnd.h"
@@ -68,14 +64,15 @@ bdev_decl(vnd);
 bdev_decl(scd);
 #include "ccd.h"
 bdev_decl(ccd);
+#include "rd.h"
+bdev_decl(rd);
+/* no cdev for rd */
 
 struct bdevsw	bdevsw[] =
 {
 	bdev_disk_init(NWDC,wd),	/* 0: ST506/ESDI/IDE disk */
 	bdev_swap_init(1,sw),		/* 1: swap pseudo-device */
-#define	fdopen	Fdopen
-	bdev_disk_init(NFDC,fd),	/* 2: floppy diskette */
-#undef	fdopen
+	bdev_disk_init(NFD,fd),		/* 2: floppy diskette */
 	bdev_tape_init(NWT,wt),		/* 3: QIC-02/QIC-36 tape */
 	bdev_disk_init(NSD,sd),		/* 4: SCSI disk */
 	bdev_tape_init(NST,st),		/* 5: SCSI tape */
@@ -90,6 +87,8 @@ struct bdevsw	bdevsw[] =
 	bdev_disk_init(NVND,vnd),	/* 14: vnode disk driver */
 	bdev_disk_init(NSCD,scd),	/* 15: Sony CD-ROM */
 	bdev_disk_init(NCCD,ccd),	/* 16: concatenated disk driver */
+	bdev_disk_init(NRD,rd),		/* 17: ram disk driver */
+	bdev_disk_init(NACD,acd),	/* 18: ATAPI CD-ROM */
 };
 int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 
@@ -111,6 +110,20 @@ int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
 	0, seltrue, (dev_type_mmap((*))) enodev }
 
+/* open, close, read, ioctl */
+#define cdev_joy_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) enodev, 0, seltrue, \
+	(dev_type_mmap((*))) enodev }
+
+/* open, close, ioctl, select -- XXX should be a generic device */
+#define cdev_ocis_init(c,n) { \
+        dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
+        (dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+        (dev_type_stop((*))) enodev, 0,  dev_init(c,n,select), \
+        (dev_type_mmap((*))) enodev, 0 }
+
 cdev_decl(cn);
 cdev_decl(ctty);
 #define	mmread	mmrw
@@ -127,10 +140,9 @@ cdev_decl(pts);
 cdev_decl(ptc);
 cdev_decl(log);
 #include "com.h"
+#include "pccom.h"
 cdev_decl(com);
-#define	fdopen	Fdopen
 cdev_decl(fd);
-#undef	fdopen
 cdev_decl(wt);
 cdev_decl(scd);
 #include "pc.h"
@@ -138,21 +150,21 @@ cdev_decl(scd);
 cdev_decl(pc);
 cdev_decl(sd);
 cdev_decl(st);
+#include "ss.h"
+cdev_decl(ss);
 cdev_decl(cd);
+cdev_decl(acd);
 #include "lpt.h"
 cdev_decl(lpt);
 #include "ch.h"
 cdev_decl(ch);
-dev_decl(fd,open);
+dev_decl(filedesc,open);
 #include "bpfilter.h"
 cdev_decl(bpf);
-#include "speaker.h"
+#include "pcmcia.h"
+cdev_decl(pcmcia);
+#include "spkr.h"
 cdev_decl(spkr);
-#ifdef LKM
-#define	NLKM	1
-#else
-#define	NLKM	0
-#endif
 cdev_decl(lkm);
 #include "mms.h"
 cdev_decl(mms);
@@ -170,6 +182,26 @@ cdev_decl(vnd);
 cdev_decl(audio);
 cdev_decl(svr4_net);
 cdev_decl(ccd);
+#include "joy.h"
+cdev_decl(joy);
+#include "apm.h"
+cdev_decl(apm);
+#include "random.h"
+cdev_decl(random);
+#include "pctr.h"
+cdev_decl(pctr);
+
+cdev_decl(ipl);
+#ifdef IPFILTER
+#define NIPF 1
+#else
+#define NIPF 0
+#endif
+
+/* XXX -- this needs to be supported by config(8)! */
+#if (NCOM > 0) && (NPCCOM > 0)
+#error com and pccom are mutually exclusive.  Sorry.
+#endif
 
 struct cdevsw	cdevsw[] =
 {
@@ -181,10 +213,12 @@ struct cdevsw	cdevsw[] =
 	cdev_tty_init(NPTY,pts),	/* 5: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 6: pseudo-tty master */
 	cdev_log_init(1,log),		/* 7: /dev/klog */
+#if NPCCOM > 0
+	cdev_tty_init(NPCCOM,com),	/* 8: serial port */
+#else
 	cdev_tty_init(NCOM,com),	/* 8: serial port */
-#define	fdopen	Fdopen
-	cdev_disk_init(NFDC,fd),	/* 9: floppy disk */
-#undef	fdopen
+#endif
+	cdev_disk_init(NFD,fd),		/* 9: floppy disk */
 	cdev_tape_init(NWT,wt),		/* 10: QIC-02/QIC-36 tape */
 	cdev_disk_init(NSCD,scd),	/* 11: Sony CD-ROM */
 	cdev_pc_init(NPC + NVT,pc),	/* 12: PC console */
@@ -194,15 +228,15 @@ struct cdevsw	cdevsw[] =
 	cdev_lpt_init(NLPT,lpt),	/* 16: parallel printer */
 	cdev_ch_init(NCH,ch),		/* 17: SCSI autochanger */
 	cdev_disk_init(NCCD,ccd),	/* 18: concatenated disk driver */
-	cdev_notdef(),			/* 19 */
-	cdev_notdef(),			/* 20 */
-	cdev_notdef(),			/* 21 */
-	cdev_fd_init(1,fd),		/* 22: file descriptor pseudo-device */
+	cdev_ss_init(NSS,ss),           /* 19: SCSI scanner */
+	cdev_uk_init(NUK,uk),		/* 20: unknown SCSI */
+	cdev_ocis_init(NAPM,apm),	/* 21: Advancded Power Management */
+	cdev_fd_init(1,filedesc),	/* 22: file descriptor pseudo-device */
 	cdev_bpftun_init(NBPFILTER,bpf),/* 23: Berkeley packet filter */
-	cdev_notdef(),			/* 24 */
-	cdev_notdef(),			/* 25 */
-	cdev_notdef(),			/* 26 */
-	cdev_spkr_init(NSPEAKER,spkr),	/* 27: PC speaker */
+	cdev_disk_init(NACD,acd),	/* 24: ATAPI CD-ROM */
+	cdev_ocis_init(NPCMCIA,pcmcia), /* 25: PCMCIA Bus */
+	cdev_joy_init(NJOY,joy),        /* 26: joystick */
+	cdev_spkr_init(NSPKR,spkr),	/* 27: PC speaker */
 	cdev_lkm_init(NLKM,lkm),	/* 28: loadable module driver */
 	cdev_lkm_dummy(),		/* 29 */
 	cdev_lkm_dummy(),		/* 30 */
@@ -223,6 +257,9 @@ struct cdevsw	cdevsw[] =
 #else
 	cdev_notdef(),			/* 43 */
 #endif
+	cdev_gen_ipf(NIPF,ipl),         /* 44 ip filtering */
+	cdev_random_init(NRANDOM,random), /* 45 random data source */
+	cdev_uk_init(NPCTR,pctr),	/* 46: pentium performance counters */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
@@ -242,16 +279,18 @@ dev_t	swapdev = makedev(1, 0);
 /*
  * Returns true if dev is /dev/mem or /dev/kmem.
  */
+int
 iskmemdev(dev)
 	dev_t dev;
 {
 
-	return (major(dev) == mem_no && minor(dev) < 2);
+	return (major(dev) == mem_no && (minor(dev) < 2 || minor(dev) == 14));
 }
 
 /*
  * Returns true if dev is /dev/zero.
  */
+int
 iszerodev(dev)
 	dev_t dev;
 {
@@ -317,6 +356,7 @@ static int chrtoblktbl[] = {
 /*
  * Convert a character device number to a block device number.
  */
+dev_t
 chrtoblk(dev)
 	dev_t dev;
 {
@@ -345,7 +385,7 @@ struct	consdev constab[] = {
 #if NPC + NVT > 0
 	cons_init(pc),
 #endif
-#if NCOM > 0
+#if NCOM + NPCCOM > 0
 	cons_init(com),
 #endif
 	{ 0 },

@@ -1,3 +1,5 @@
+/*	$OpenBSD: upap.c,v 1.2 1996/03/25 15:55:58 niklas Exp $	*/
+
 /*
  * upap.c - User/Password Authentication Protocol.
  *
@@ -18,7 +20,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: upap.c,v 1.6 1995/07/04 23:48:10 paulus Exp $";
+static char rcsid[] = "$OpenBSD: upap.c,v 1.2 1996/03/25 15:55:58 niklas Exp $";
 #endif
 
 /*
@@ -34,9 +36,37 @@ static char rcsid[] = "$Id: upap.c,v 1.6 1995/07/04 23:48:10 paulus Exp $";
 #include "pppd.h"
 #include "upap.h"
 
+/*
+ * Protocol entry points.
+ */
+static void upap_init __P((int));
+static void upap_lowerup __P((int));
+static void upap_lowerdown __P((int));
+static void upap_input __P((int, u_char *, int));
+static void upap_protrej __P((int));
+static int  upap_printpkt __P((u_char *, int,
+                               void (*) __P((void *, char *, ...)), void *));
+
+struct protent pap_protent = {
+    PPP_PAP,
+    upap_init,
+    upap_input,
+    upap_protrej,
+    upap_lowerup,
+    upap_lowerdown,
+    NULL,
+    NULL,
+    upap_printpkt,
+    NULL,
+    1,
+    "PAP",
+    NULL,
+    NULL,
+    NULL
+
+};
 
 upap_state upap[NUM_PPP];		/* UPAP state; one for each unit */
-
 
 static void upap_timeout __P((caddr_t));
 static void upap_reqtimeout __P((caddr_t));
@@ -50,7 +80,7 @@ static void upap_sresp __P((upap_state *, int, int, char *, int));
 /*
  * upap_init - Initialize a UPAP unit.
  */
-void
+static void
 upap_init(unit)
     int unit;
 {
@@ -170,7 +200,7 @@ upap_reqtimeout(arg)
  *
  * Start authenticating if pending.
  */
-void
+static void
 upap_lowerup(unit)
     int unit;
 {
@@ -197,7 +227,7 @@ upap_lowerup(unit)
  *
  * Cancel all timeouts.
  */
-void
+static void
 upap_lowerdown(unit)
     int unit;
 {
@@ -218,7 +248,7 @@ upap_lowerdown(unit)
  *
  * This shouldn't happen.  In any case, pretend lower layer went down.
  */
-void
+static void
 upap_protrej(unit)
     int unit;
 {
@@ -239,7 +269,7 @@ upap_protrej(unit)
 /*
  * upap_input - Input UPAP packet.
  */
-void
+static void
 upap_input(unit, inpacket, l)
     int unit;
     u_char *inpacket;
@@ -356,11 +386,12 @@ upap_rauthreq(u, inp, id, len)
     retcode = check_passwd(u->us_unit, ruser, ruserlen, rpasswd,
 			   rpasswdlen, &msg, &msglen);
 
+    BZERO(rpasswd, rpasswdlen);
     upap_sresp(u, retcode, id, msg, msglen);
 
     if (retcode == UPAP_AUTHACK) {
 	u->us_serverstate = UPAPSS_OPEN;
-	auth_peer_success(u->us_unit, PPP_PAP);
+        auth_peer_success(u->us_unit, PPP_PAP, ruser, ruserlen);
     } else {
 	u->us_serverstate = UPAPSS_BADAUTH;
 	auth_peer_fail(u->us_unit, PPP_PAP);
@@ -515,11 +546,11 @@ upap_sresp(u, code, id, msg, msglen)
 /*
  * upap_printpkt - print the contents of a PAP packet.
  */
-char *upap_codenames[] = {
+static char *upap_codenames[] = {
     "AuthReq", "AuthAck", "AuthNak"
 };
 
-int
+static int
 upap_printpkt(p, plen, printer, arg)
     u_char *p;
     int plen;

@@ -1,5 +1,3 @@
-/*	$NetBSD: brk.S,v 1.1 1995/02/10 17:50:30 cgd Exp $	*/
-
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
  * All rights reserved.
@@ -29,6 +27,11 @@
 
 #include "SYS.h"
 
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
+
 	.globl	_end
 IMPORT(curbrk, 8)
 
@@ -38,7 +41,8 @@ EXPORT(minbrk)
 
 	.text
 LEAF(brk, 1)
-	SETGP(pv)
+	br	pv, 1f				/* XXX profiling */
+1:	SETGP(pv)
 	ldq	v0, minbrk
 	cmpult  a0, v0, t0
 	cmovne  t0, v0, a0

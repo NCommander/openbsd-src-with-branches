@@ -1,3 +1,4 @@
+/*	$OpenBSD: parsetime.c,v 1.3 1995/03/25 18:13:36 glass Exp $	*/
 /*	$NetBSD: parsetime.c,v 1.3 1995/03/25 18:13:36 glass Exp $	*/
 
 /* 
@@ -119,7 +120,7 @@ static size_t sc_len;   /* scanner - lenght of token buffer */
 static int sc_tokid;	/* scanner - token id */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: parsetime.c,v 1.3 1995/03/25 18:13:36 glass Exp $";
+static char rcsid[] = "$OpenBSD: parsetime.c,v 1.3 1995/03/25 18:13:36 glass Exp $";
 #endif
 
 /* Local functions */
@@ -349,15 +350,14 @@ tod(tm)
     if (token() == DOT) {
 	expect(NUMBER);
 	minute = atoi(sc_token);
-	if (minute > 59)
-	    panic("garbled time");
 	token();
     } else if (tlen == 4) {
 	minute = hour%100;
-	if (minute > 59)
-	    panic("garbeld time");
 	hour = hour/100;
     }
+
+    if (minute > 59)
+	panic("garbled time");
 
     /*
      * check if an AM or PM specifier was given
@@ -365,6 +365,8 @@ tod(tm)
     if (sc_tokid == AM || sc_tokid == PM) {
 	if (hour > 12)
 	    panic("garbled time");
+	else if (hour == 12)
+	    hour = 0;
 
 	if (sc_tokid == PM)
 	    hour += 12;
@@ -382,10 +384,6 @@ tod(tm)
 
     tm->tm_hour = hour;
     tm->tm_min = minute;
-    if (tm->tm_hour == 24) {
-	tm->tm_hour = 0;
-	tm->tm_mday++;
-    }
 } /* tod */
 
 

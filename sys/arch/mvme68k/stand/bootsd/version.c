@@ -1,9 +1,8 @@
-/*	$NetBSD$	 */
+/*	$OpenBSD: version.c,v 1.5 1996/05/16 02:46:57 chuck Exp $ */
 
 /*
- *	NOTE ANY CHANGES YOU MAKE TO THE BOOTBLOCKS HERE.
- *
- *	1.1
+ * make a random change to this file when you want the bootblock
+ * revision to increase. like change this x to a q, or something.
  */
 
-char *version = "$Revision: 1.1x $";
+char *version = "$Revision: 1.5 $";

@@ -1,4 +1,5 @@
-/*	$NetBSD: svr4_misc.c,v 1.28 1995/10/09 11:24:17 mycroft Exp $	 */
+/*	$OpenBSD: svr4_misc.c,v 1.5 1996/08/01 00:50:53 niklas Exp $	 */
+/*	$NetBSD: svr4_misc.c,v 1.36 1996/03/30 22:38:02 christos Exp $	 */
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -37,7 +38,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/namei.h>
-#include <sys/dir.h>
+#include <sys/dirent.h>
 #include <sys/proc.h>
 #include <sys/file.h>
 #include <sys/stat.h>
@@ -60,6 +61,8 @@
 #include <sys/times.h>
 #include <sys/sem.h>
 #include <sys/msg.h>
+#include <sys/ptrace.h>
+#include <sys/signalvar.h>
 
 #include <netinet/in.h>
 #include <sys/syscallargs.h>
@@ -79,7 +82,6 @@
 #include <compat/svr4/svr4_sysconfig.h>
 
 #include <vm/vm.h>
-/* XXX */ extern struct proc *pfind();
 
 static __inline clock_t timeval_to_clock_t __P((struct timeval *));
 static int svr4_setinfo	__P((struct proc *, int, svr4_siginfo_t *));
@@ -90,6 +92,9 @@ static int svr4_hrtcntl	__P((struct proc *, struct svr4_hrtcntl_args *,
 static void bsd_statfs_to_svr4_statvfs __P((const struct statfs *,
 					    struct svr4_statvfs *));
 static struct proc *svr4_pfind __P((pid_t pid));
+
+static int svr4_mknod __P((struct proc *, register_t *, char *,
+			   svr4_mode_t, svr4_dev_t));
 
 int
 svr4_sys_wait(p, v, retval)
@@ -306,9 +311,6 @@ svr4_sys_mmap(p, v, retval)
 	register_t *retval;
 {
 	struct svr4_sys_mmap_args	*uap = v;
-	struct filedesc		*fdp;
-	struct file		*fp;
-	struct vnode		*vp;
 	struct sys_mmap_args	 mm;
 	caddr_t 		 rp;
 #define _MAP_NEW	0x80000000
@@ -365,6 +367,32 @@ svr4_sys_fchroot(p, v, retval)
 	return 0;
 }
 
+static int
+svr4_mknod(p, retval, path, mode, dev)
+	struct proc *p;
+	register_t *retval;
+	char *path;
+	svr4_mode_t mode;
+	svr4_dev_t dev;
+{
+	caddr_t sg = stackgap_init(p->p_emul);
+
+	SVR4_CHECK_ALT_EXIST(p, &sg, path);
+
+	if (S_ISFIFO(mode)) {
+		struct sys_mkfifo_args ap;
+		SCARG(&ap, path) = path;
+		SCARG(&ap, mode) = mode;
+		return sys_mkfifo(p, &ap, retval);
+	} else {
+		struct sys_mknod_args ap;
+		SCARG(&ap, path) = path;
+		SCARG(&ap, mode) = mode;
+		SCARG(&ap, dev) = dev;
+		return sys_mknod(p, &ap, retval);
+	}
+}
+
 
 int
 svr4_sys_mknod(p, v, retval)
@@ -373,22 +401,22 @@ svr4_sys_mknod(p, v, retval)
 	register_t *retval;
 {
 	struct svr4_sys_mknod_args *uap = v;
-	caddr_t sg = stackgap_init(p->p_emul);
-	SVR4_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
-
-	if (S_ISFIFO(SCARG(uap, mode))) {
-		struct sys_mkfifo_args ap;
-		SCARG(&ap, path) = SCARG(uap, path);
-		SCARG(&ap, mode) = SCARG(uap, mode);
-		return sys_mkfifo(p, &ap, retval);
-	} else {
-		struct sys_mknod_args ap;
-		SCARG(&ap, path) = SCARG(uap, path);
-		SCARG(&ap, mode) = SCARG(uap, mode);
-		SCARG(&ap, dev) = SCARG(uap, dev);
-		return sys_mknod(p, &ap, retval);
-	}
+	return svr4_mknod(p, retval,
+			  SCARG(uap, path), SCARG(uap, mode), SCARG(uap, dev));
 }
+
+
+int
+svr4_sys_xmknod(p, v, retval)
+	register struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct svr4_sys_xmknod_args *uap = v;
+	return svr4_mknod(p, retval,
+			  SCARG(uap, path), SCARG(uap, mode), SCARG(uap, dev));
+}
+
 
 int
 svr4_sys_vhangup(p, v, retval)
@@ -556,7 +584,7 @@ svr4_sys_break(p, v, retval)
 	new = round_page(SCARG(uap, nsize));
 	diff = new - old;
 
-	DPRINTF(("break(1): old %x new %x diff %x\n", old, new, diff));
+	DPRINTF(("break(1): old %lx new %lx diff %x\n", old, new, diff));
 
 	if (diff > p->p_rlimit[RLIMIT_DATA].rlim_cur)
 		return ENOMEM;
@@ -566,7 +594,7 @@ svr4_sys_break(p, v, retval)
 		 vm->vm_dsize, ctob(vm->vm_dsize)));
 
 	diff = new - old;
-	DPRINTF(("break(3): old %x new %x diff %x\n", old, new, diff));
+	DPRINTF(("break(3): old %lx new %lx diff %x\n", old, new, diff));
 
 	if (diff > 0) {
 		rv = vm_allocate(&vm->vm_map, &old, diff, FALSE);
@@ -618,7 +646,7 @@ svr4_sys_times(p, v, retval)
 	if (error)
 		return error;
 
-	if (error = copyin(ru, &r, sizeof r))
+	if ((error = copyin(ru, &r, sizeof r)) != 0)
 		return error;
 
 	tms.tms_utime = timeval_to_clock_t(&r.ru_utime);
@@ -629,7 +657,7 @@ svr4_sys_times(p, v, retval)
 	if (error)
 		return error;
 
-	if (error = copyin(ru, &r, sizeof r))
+	if ((error = copyin(ru, &r, sizeof r)) != 0)
 		return error;
 
 	tms.tms_cutime = timeval_to_clock_t(&r.ru_utime);
@@ -844,8 +872,6 @@ svr4_sys_hrtsys(p, v, retval)
 	register_t *retval;
 {
 	struct svr4_sys_hrtsys_args *uap = v;
-	int error;
-	struct timeval tv;
 
 	switch (SCARG(uap, cmd)) {
 	case SVR4_HRT_CNTL:
@@ -885,8 +911,13 @@ svr4_setinfo(p, st, s)
 
 	if (p) {
 		i.si_pid = p->p_pid;
-		i.si_stime = p->p_ru->ru_stime.tv_sec;
-		i.si_utime = p->p_ru->ru_utime.tv_sec;
+		if (p->p_stat == SZOMB) {
+			i.si_stime = p->p_ru->ru_stime.tv_sec;
+			i.si_utime = p->p_ru->ru_utime.tv_sec;
+		} else {
+			i.si_stime = p->p_stats->p_ru.ru_stime.tv_sec;
+			i.si_utime = p->p_stats->p_ru.ru_utime.tv_sec;
+		}
 	}
 
 	if (WIFEXITED(st)) {
@@ -909,7 +940,7 @@ svr4_setinfo(p, st, s)
 			i.si_code = SVR4_CLD_KILLED;
 	}
 
-	DPRINTF(("siginfo [pid %d signo %d code %d errno %d status %d]\n",
+	DPRINTF(("siginfo [pid %ld signo %d code %d errno %d status %d]\n",
 		 i.si_pid, i.si_signo, i.si_code, i.si_errno, i.si_status));
 
 	return copyout(&i, s, sizeof(i));
@@ -944,9 +975,9 @@ svr4_sys_waitsys(p, v, retval)
 		return EINVAL;
 	}
 
-	DPRINTF(("waitsys(%d, %d, %x, %x)\n", 
-	         SCARG(uap, grp), SCARG(uap, id), SCARG(uap, info),
-	         SCARG(uap, options)));
+	DPRINTF(("waitsys(%d, %d, %p, %x)\n", 
+	         SCARG(uap, grp), SCARG(uap, id),
+		 SCARG(uap, info), SCARG(uap, options)));
 
 loop:
 	nfound = 0;
@@ -1031,8 +1062,6 @@ loop:
 			DPRINTF(("jobcontrol %d\n", q->p_pid));
 		        if (((SCARG(uap, options) & SVR4_WNOWAIT)) == 0)
 				q->p_flag |= P_WAITED;
-			else
-				DPRINTF(("Don't wait\n"));
 			*retval = 0;
 			return svr4_setinfo(q, W_STOPCODE(q->p_xstat),
 					    SCARG(uap, info));
@@ -1049,7 +1078,7 @@ loop:
 		return 0;
 	}
 
-	if (error = tsleep((caddr_t)p, PWAIT | PCATCH, "svr4_wait", 0))
+	if ((error = tsleep((caddr_t)p, PWAIT | PCATCH, "svr4_wait", 0)) != 0)
 		return error;
 	goto loop;
 }

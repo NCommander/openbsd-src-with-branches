@@ -1,3 +1,4 @@
+/*	$OpenBSD: cfdev.h,v 1.3 1995/04/02 20:38:17 chopps Exp $	*/
 /*	$NetBSD: cfdev.h,v 1.3 1995/04/02 20:38:17 chopps Exp $	*/
 
 /*

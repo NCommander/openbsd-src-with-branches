@@ -1,4 +1,5 @@
-/*	$NetBSD: wss.c,v 1.6 1995/07/07 02:15:12 brezak Exp $	*/
+/*	$OpenBSD: wss.c,v 1.12 1996/05/29 08:18:01 mickey Exp $	*/
+/*	$NetBSD: wss.c,v 1.13 1996/05/12 23:54:16 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994 John Brezak
@@ -45,6 +46,7 @@
 #include <sys/buf.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <sys/audioio.h>
@@ -56,6 +58,7 @@
 #include <dev/ic/ad1848reg.h>
 #include <dev/isa/ad1848var.h>
 #include <dev/isa/wssreg.h>
+#include <dev/isa/opti.h>
 
 /*
  * Mixer devices
@@ -101,10 +104,7 @@ struct audio_device wss_device = {
 	"WSS"
 };
 
-int	wssprobe();
-void	wssattach();
 int	wssopen __P((dev_t, int));
-
 int	wss_getdev __P((void *, struct audio_device *));
 int	wss_setfd __P((void *, int));
 
@@ -116,6 +116,8 @@ int	wss_mixer_set_port __P((void *, mixer_ctrl_t *));
 int	wss_mixer_get_port __P((void *, mixer_ctrl_t *));
 int	wss_query_devinfo __P((void *, mixer_devinfo_t *));
 
+static int wss_to_vol __P((mixer_ctrl_t *, struct ad1848_volume *));
+static int wss_from_vol __P((mixer_ctrl_t *, struct ad1848_volume *));
 /*
  * Define our interface to the higher level audio driver.
  */
@@ -164,21 +166,28 @@ struct audio_hw_if wss_hw_if = {
 #define at_dma(flags, ptr, cc, chan)	isa_dmastart(flags, ptr, cc, chan)
 #endif
 
-struct cfdriver wsscd = {
-	NULL, "wss", wssprobe, wssattach, DV_DULL, sizeof(struct wss_softc)
+int	wssprobe __P((struct device *, void *, void *));
+void	wssattach __P((struct device *, struct device *, void *));
+
+struct cfattach wss_ca = {
+	sizeof(struct wss_softc), wssprobe, wssattach
+};
+
+struct cfdriver wss_cd = {
+	NULL, "wss", DV_DULL
 };
 
 /*
  * Probe for the Microsoft Sound System hardware.
  */
 int
-wssprobe(parent, self, aux)
-    struct device *parent, *self;
-    void *aux;
+wssprobe(parent, match, aux)
+    struct device *parent;
+    void *match, *aux;
 {
-    register struct wss_softc *sc = (void *)self;
+    register struct wss_softc *sc = match;
     register struct isa_attach_args *ia = aux;
-    register u_short iobase = ia->ia_iobase;
+    register int iobase = ia->ia_iobase;
     static u_char interrupt_bits[12] = {
 	-1, -1, -1, -1, -1, -1, -1, 0x08, -1, 0x10, 0x18, 0x20
     };
@@ -189,11 +198,22 @@ wssprobe(parent, self, aux)
 	return 0;
     }
 
+    if( !opti_snd_setup( OPTI_WSS, iobase, ia->ia_irq, ia->ia_drq ) )
+#ifdef DEBUG
+       printf("ad_detect_A: could not setup OPTi chipset.\n");
+#else
+       ;
+#endif
+
     sc->sc_ad1848.sc_iobase = iobase;
 
     /* Is there an ad1848 chip at the WSS iobase ? */
-    if (ad1848_probe(&sc->sc_ad1848) == 0)
+    if (ad1848_probe(&sc->sc_ad1848) == 0) {
+#if 0
+	printf("ad_detect_A: no ad1848 found.\n");
+#endif
 	return 0;
+    }
 	
     ia->ia_iosize = WSS_NPORT;
 
@@ -241,7 +261,7 @@ wssattach(parent, self, aux)
 {
     register struct wss_softc *sc = (struct wss_softc *)self;
     struct isa_attach_args *ia = (struct isa_attach_args *)aux;
-    register u_short iobase = ia->ia_iobase;
+    register int iobase = ia->ia_iobase;
     int err;
     
     sc->sc_ad1848.sc_recdrq = ia->ia_drq;
@@ -249,8 +269,8 @@ wssattach(parent, self, aux)
 #ifdef NEWCONFIG
     isa_establish(&sc->sc_id, &sc->sc_dev);
 #endif
-    sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_AUDIO,
-				   ad1848_intr, &sc->sc_ad1848);
+    sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE, IPL_AUDIO,
+        ad1848_intr, &sc->sc_ad1848, sc->sc_dev.dv_xname);
 
     ad1848_attach(&sc->sc_ad1848);
     
@@ -305,10 +325,10 @@ wssopen(dev, flags)
     struct wss_softc *sc;
     int unit = AUDIOUNIT(dev);
     
-    if (unit >= wsscd.cd_ndevs)
+    if (unit >= wss_cd.cd_ndevs)
 	return ENODEV;
     
-    sc = wsscd.cd_devs[unit];
+    sc = wss_cd.cd_devs[unit];
     if (!sc)
 	return ENXIO;
     
@@ -357,7 +377,6 @@ wss_set_in_port(addr, port)
     int port;
 {
     register struct ad1848_softc *ac = addr;
-    register struct wss_softc *sc = ac->parent;
 	
     DPRINTF(("wss_set_in_port: %d\n", port));
 
@@ -384,7 +403,6 @@ wss_get_in_port(addr)
     void *addr;
 {
     register struct ad1848_softc *ac = addr;
-    register struct wss_softc *sc = ac->parent;
     int port = WSS_MIC_IN_LVL;
     
     switch(ad1848_get_rec_port(ac)) {
@@ -412,7 +430,6 @@ wss_mixer_set_port(addr, cp)
     register struct ad1848_softc *ac = addr;
     register struct wss_softc *sc = ac->parent;
     struct ad1848_volume vol;
-    u_char eq;
     int error = EINVAL;
     
     DPRINTF(("wss_mixer_set_port: dev=%d type=%d\n", cp->dev, cp->type));
@@ -499,7 +516,6 @@ wss_mixer_get_port(addr, cp)
     register struct ad1848_softc *ac = addr;
     register struct wss_softc *sc = ac->parent;
     struct ad1848_volume vol;
-    u_char eq;
     int error = EINVAL;
     
     DPRINTF(("wss_mixer_get_port: port=%d\n", cp->dev));
@@ -586,9 +602,6 @@ wss_query_devinfo(addr, dip)
     void *addr;
     register mixer_devinfo_t *dip;
 {
-    register struct ad1848_softc *ac = addr;
-    register struct wss_softc *sc = ac->parent;
-
     DPRINTF(("wss_query_devinfo: index=%d\n", dip->index));
 
     switch(dip->index) {

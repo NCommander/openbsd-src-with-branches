@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.10 1995/10/01 06:00:32 phil Exp $
 
 LIB=	sa
@@ -8,15 +9,17 @@ DIR=${SAREL}${SADIR}
 
 #DEBUGFLAGS= -DNETIF_DEBUG -DETHER_DEBUG -DNFS_DEBUG -DRPC_DEBUG -DRARP_DEBUG -DDEBUG -DPARANOID -Wall
 #DEBUGFLAGS= -ansi -pedantic -Wall
-CFLAGS+=-DSTANDALONE -DCOMPAT_UFS $(DEBUGFLAGS) -I${DIR} -I${DIR}/../..
+AFLAGS+=${XAFLAGS}
+CFLAGS+=${XCFLAGS} -D_STANDALONE -DCOMPAT_UFS $(DEBUGFLAGS) -I${DIR} -I${DIR}/../..
+CPPFLAGS+=${XCPPFLAGS}
 
 # stand routines
-SRCS+=	alloc.c bcopy.c exit.c exec.c getfile.c gets.c globals.c \
-	printf.c strerror.c
+SRCS+=	alloc.c bcopy.c memcpy.c exit.c exec.c getfile.c gets.c globals.c \
+	printf.c strerror.c strcmp.c
 
 # io routines
-SRCS+=	close.c dev.c disklabel.c ioctl.c lseek.c open.c read.c \
-	stat.c write.c
+SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c ioctl.c \
+	lseek.c open.c nullfs.c read.c stat.c fstat.c write.c
 
 .if !defined(NO_NET)
 # network routines

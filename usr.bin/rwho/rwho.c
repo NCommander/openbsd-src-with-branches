@@ -1,3 +1,5 @@
+/*	$OpenBSD: rwho.c,v 1.3 1996/08/30 11:10:32 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983 The Regents of the University of California.
  * All rights reserved.
@@ -39,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rwho.c	5.5 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: rwho.c,v 1.4 1994/12/24 17:38:21 cgd Exp $";
+static char rcsid[] = "$OpenBSD: rwho.c,v 1.3 1996/08/30 11:10:32 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -48,11 +50,12 @@ static char rcsid[] = "$Id: rwho.c,v 1.4 1994/12/24 17:38:21 cgd Exp $";
 #include <protocols/rwhod.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 DIR	*dirp;
 
 struct	whod wd;
-int	utmpcmp();
 #define	NUSERS	1000
 struct	myutmp {
 	char	myhost[MAXHOSTNAMELEN];
@@ -61,16 +64,19 @@ struct	myutmp {
 } myutmp[NUSERS];
 int	nusers;
 
+int	utmpcmp __P((struct myutmp *, struct myutmp *));
+
 #define	WHDRSIZE	(sizeof (wd) - sizeof (wd.wd_we))
 /* 
  * this macro should be shared with ruptime.
  */
 #define	down(w,now)	((now) - (w)->wd_recvtime > 11 * 60)
 
-char	*ctime(), *strcpy();
+char	*ctime();
 time_t	now;
 int	aflg;
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -102,7 +108,7 @@ main(argc, argv)
 	}
 	mp = myutmp;
 	(void)time(&now);
-	while (dp = readdir(dirp)) {
+	while ((dp = readdir(dirp))) {
 		if (dp->d_ino == 0 || strncmp(dp->d_name, "whod.", 5))
 			continue;
 		f = open(dp->d_name, O_RDONLY);
@@ -129,12 +135,15 @@ main(argc, argv)
 				exit(1);
 			}
 			mp->myutmp = we->we_utmp; mp->myidle = we->we_idle;
-			(void) strcpy(mp->myhost, w->wd_hostname);
+			(void) strncpy(mp->myhost, w->wd_hostname,
+			    sizeof(mp->myhost)-1);
+			mp->myhost[sizeof(mp->myhost)-1] = '\0';
 			nusers++; we++; mp++;
 		}
 		(void) close(f);
 	}
-	qsort((char *)myutmp, nusers, sizeof (struct myutmp), utmpcmp);
+	qsort((char *)myutmp, nusers, sizeof (struct myutmp),
+	    (int (*)())utmpcmp);
 	mp = myutmp;
 	width = 0;
 	for (i = 0; i < nusers; i++) {
@@ -171,6 +180,7 @@ main(argc, argv)
 	exit(0);
 }
 
+int
 utmpcmp(u1, u2)
 	struct myutmp *u1, *u2;
 {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: vmmeter.h,v 1.3 1996/03/03 12:12:47 niklas Exp $	*/
 /*	$NetBSD: vmmeter.h,v 1.9 1995/03/26 20:25:04 jtc Exp $	*/
 
 /*-
@@ -34,6 +35,9 @@
  *
  *	@(#)vmmeter.h	8.2 (Berkeley) 7/10/94
  */
+
+#ifndef	__VMMETER_H__
+#define	__VMMETER_H__
 
 /*
  * System wide statistics counters.
@@ -111,6 +115,23 @@ struct	vmtotal total;
 #endif
 
 /*
+ * Fork/vfork/rfork accounting.
+ */
+struct  forkstat
+{
+	int	cntfork;	/* number of fork() calls */
+	int	cntvfork;	/* number of vfork() calls */
+	int	cntrfork;	/* number of rfork() calls */
+	int	sizfork;	/* VM pages affected by fork() */
+	int	sizvfork;	/* VM pages affected by vfork() */
+	int	sizrfork;	/* VM pages affected by rfork() */
+};
+
+#ifdef _KERNEL
+struct forkstat forkstat;
+#endif
+
+/*
  * Optional instrumentation.
  */
 #ifdef PGINPROF
@@ -147,3 +168,5 @@ int	rres;
 u_int rectime;		/* accumulator for reclaim times */
 u_int pgintime;		/* accumulator for page in times */
 #endif
+
+#endif /* __VMMETER_H__ */

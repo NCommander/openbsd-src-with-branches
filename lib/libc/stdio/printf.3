@@ -1,4 +1,4 @@
-.\"	$NetBSD: printf.3,v 1.5 1995/02/02 01:15:49 jtc Exp $
+.\"	$OpenBSD: printf.3,v 1.5 1995/02/02 01:15:49 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -34,8 +34,6 @@
 .\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.\"
-.\"     @(#)printf.3	8.1 (Berkeley) 6/4/93
 .\"
 .Dd June 4, 1993
 .Dt PRINTF 3
@@ -172,6 +170,17 @@ After the
 .Cm % ,
 the following appear in sequence:
 .Bl -bullet
+.It
+An optional field, consisting of a decimal digit string followed by a
+.Cm $ ,
+specifying the next argument to access.
+If this field is not provided, the argument following the last
+argument accessed will be used.
+Arguments are numbered starting at
+.Cm 1 .
+If unaccessed arguments in the format string are interspersed with
+ones that are accessed the results will be indeterminate.
+
 .It
 Zero or more of the following flags:
 .Bl -hyphen
@@ -391,6 +400,8 @@ A character that specifies the type of conversion to be applied.
 A field width or precision, or both, may be indicated by
 an asterisk
 .Ql *
+or an asterisk followed by one or more decimal digits and a
+.Ql $
 instead of a
 digit string.
 In this case, an
@@ -399,6 +410,8 @@ argument supplies the field width or precision.
 A negative field width is treated as a left adjustment flag followed by a
 positive field width; a negative precision is treated as though it were
 missing.
+If a single format directive mixes positional (nn$) and
+non-positional arguments, the results are undefined.
 .Pp
 The conversion specifiers and their meanings are:
 .Bl -tag -width "diouxX"

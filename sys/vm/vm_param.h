@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_param.h,v 1.5 1996/03/24 18:07:59 tholo Exp $	*/
 /*	$NetBSD: vm_param.h,v 1.12 1995/03/26 20:39:16 jtc Exp $	*/
 
 /* 
@@ -76,7 +77,7 @@
 /*
  * This belongs in types.h, but breaks too many existing programs.
  */
-typedef int	boolean_t;
+typedef	int	boolean_t;
 #define	TRUE	1
 #define	FALSE	0
 

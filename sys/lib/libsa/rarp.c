@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rarp.c,v 1.10 1995/09/23 03:36:10 gwr Exp $	*/
 
 /*

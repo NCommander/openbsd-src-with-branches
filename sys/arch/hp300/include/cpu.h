@@ -1,4 +1,4 @@
-/*	$NetBSD: cpu.h,v 1.14 1995/06/28 02:55:45 cgd Exp $	*/
+/*	$NetBSD: cpu.h,v 1.19 1996/05/17 15:37:07 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -42,6 +42,9 @@
  *	@(#)cpu.h	8.4 (Berkeley) 1/5/94
  */
 
+#ifndef _HP300_CPU_H_
+#define	_HP300_CPU_H_
+
 /*
  * Exported definitions unique to hp300/68k cpu support.
  */
@@ -52,7 +55,6 @@
  */
 #define	cpu_swapin(p)			/* nothing */
 #define	cpu_wait(p)			/* nothing */
-#define cpu_setstack(p, ap)		(p)->p_md.md_regs[SP] = ap
 #define	cpu_swapout(p)			/* nothing */
 
 /*
@@ -126,6 +128,58 @@ extern unsigned char ssir;
 	{ "console_device", CTLTYPE_STRUCT }, \
 }
 
+#ifdef _KERNEL
+/*
+ * Associate HP 9000/300 models with CPU/MMU combinations.
+ */
+
+/*
+ * HP 68020-based computers.  HP320 and HP350 have an HP MMU.
+ * HP330 has a Motorola MMU.
+ */
+#if (defined(HP320) || defined(HP330) || defined(HP350))
+#ifndef M68020
+#define	M68020
+#endif /* ! M68020 */
+
+#if defined(HP330) && !defined(M68K_MMU_MOTOROLA)
+#define	M68K_MMU_MOTOROLA
+#endif /* HP330 && ! M68K_MMU_MOTOROLA */
+
+#if (defined(HP320) || defined(HP350)) && !defined(M68K_MMU_HP)
+#define M68K_MMU_HP		/* include cheezy VAC support */
+#endif /* (HP320 || HP350) && ! M68K_MMU_HP */
+#endif /* HP320 || HP330 || HP350 */
+
+/*
+ * HP 68030-based computers.  HP375 includes support for the
+ * 345, 400t, and 400s.
+ */
+#if (defined(HP340) || defined(HP360) || defined(HP370) || defined(HP375))
+#ifndef M68030
+#define	M68030
+#endif /* ! M68030 */
+
+#ifndef M68K_MMU_MOTOROLA
+#define	M68K_MMU_MOTOROLA
+#endif /* ! M68K_MMU_MOTOROLA */
+#endif /* HP340 || HP360 || HP370 || HP375 */
+
+/*
+ * HP 68040-based computers.  HP380 includes support for the
+ * 425t, 425s, and 433s.
+ */
+#if defined(HP380)
+#ifndef M68040
+#define	M68040
+#endif /* ! M68040 */
+
+#ifndef M68K_MMU_MOTOROLA
+#define	M68K_MMU_MOTOROLA
+#endif /* ! M68K_MMU_MOTOROLA */
+#endif /* HP380 */
+#endif /* _KERNEL */
+
 /*
  * The rest of this should probably be moved to ../hp300/hp300cpu.h,
  * although some of it could probably be put into generic 68k headers.
@@ -153,16 +207,17 @@ extern unsigned char ssir;
 #define	EC_NONE		0	/* no external cache */
 #define	EC_VIRT		1	/* external virtual address cache */
 
-/* values for cpuspeed (not really related to clock speed due to caches) */
-#define	MHZ_8		1
-#define	MHZ_16		2
-#define	MHZ_25		3
-#define	MHZ_33		4
-#define	MHZ_50		6
-
 #ifdef _KERNEL
-extern	int machineid, mmutype, ectype;
+extern	int machineid;		/* CPU model */
+extern	int mmutype;		/* MMU on this host */
+extern	int ectype;		/* External cache type */
+extern	int cpuspeed;		/* CPU speed, in MHz */
+
 extern	char *intiobase, *intiolimit;
+extern	void (*vectab[]) __P((void));
+
+void	doboot __P((void))
+	__attribute__((__noreturn__));
 
 /* what is this supposed to do? i.e. how is it different than startrtclock? */
 #define	enablertclock()
@@ -302,3 +357,5 @@ extern	char *intiobase, *intiolimit;
 
 #define	CACHE4_ON	(IC4_ENABLE|DC4_ENABLE)
 #define	CACHE4_OFF	(0)
+
+#endif /* _HP300_CPU_H_ */

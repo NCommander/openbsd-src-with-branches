@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: bsd.doc.mk,v 1.20 1994/07/26 19:42:37 mycroft Exp $
 #	@(#)bsd.doc.mk	8.1 (Berkeley) 8/14/93
 
@@ -50,7 +51,7 @@ spell: ${SRCS}
 
 BINDIR?=	/usr/share/doc
 BINGRP?=	bin
-BINOWN?=	bin
+BINOWN?=	root
 BINMODE?=	444
 
 .include <bsd.own.mk>

@@ -1,4 +1,4 @@
-/*	$NetBSD: clock.c,v 1.7.2.1 1995/10/15 14:17:17 ragge Exp $	*/
+/*      $NetBSD: clock.c,v 1.14 1996/05/19 16:43:57 ragge Exp $  */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -32,9 +32,12 @@
 
 #include <sys/param.h>
 #include <sys/kernel.h>
+#include <sys/systm.h>
+#include <sys/device.h>
 
-#include "machine/mtpr.h"
-#include "machine/sid.h"
+#include <machine/mtpr.h>
+#include <machine/sid.h>
+#include <machine/uvaxII.h>
 
 #define SEC_PER_DAY (60*60*24)
 
@@ -102,7 +105,7 @@ inittodr(fs_time)
 {
 
 	unsigned long tmp_year, sluttid, year_ticks;
-	int clock_stopped;
+	int clock_stopped = 0;
 
 	sluttid = fs_time;
 	year = (fs_time / SEC_PER_DAY / 365) * 365 * SEC_PER_DAY;
@@ -111,8 +114,9 @@ inittodr(fs_time)
 	    ((tmp_year % 4 && tmp_year != 32) ? 365 : 366);
 
 	switch (cpunumber) {
-#if VAX750
+#if VAX750 || VAX650
 	case VAX_750:
+	case VAX_650:
 		year_ticks = mfpr(PR_TODR);
 		clock_stopped = todrstopped;
 		break;
@@ -120,6 +124,12 @@ inittodr(fs_time)
 #if VAX630 || VAX410
 	case VAX_78032:
 		year_ticks = uvaxII_gettodr(&clock_stopped);
+		break;
+#endif
+#if VAX780 || VAX8600
+	case VAX_780:
+	case VAX_8600:
+		year_ticks = mfpr(PR_TODR);
 		break;
 #endif
 	default:
@@ -131,9 +141,10 @@ inittodr(fs_time)
 		printf(
 	"Internal clock not started. Using time from file system.\n");
 		switch (cpunumber) {
-#if VAX750
+#if VAX750 || VAX650
 		case VAX_750:
-			/*+1 so the clock won't be stopped */
+		case VAX_650:
+			/* +1 so the clock won't be stopped */
 			mtpr((fs_time - year) * 100 + 1, PR_TODR);
 			break;
 #endif
@@ -147,12 +158,13 @@ inittodr(fs_time)
 	} else if (year_ticks / 100 > fs_time - year + SEC_PER_DAY * 3) {
 		printf(
 	"WARNING: Clock has gained %d days - CHECK AND RESET THE DATE.\n",
-		    (year_ticks / 100 - (fs_time - year)) / SEC_PER_DAY);
+		    (int)(year_ticks / 100 - (fs_time - year)) / SEC_PER_DAY);
 		sluttid = year + (year_ticks / 100);
 	} else if (year_ticks / 100 < fs_time - year) {
 		printf(
 		"WARNING: Clock has lost time - CHECK AND RESET THE DATE.\n");
-	} else sluttid = year + (year_ticks / 100);
+	} else
+		sluttid = year + (year_ticks / 100);
 	time.tv_sec = sluttid;
 }
 
@@ -181,30 +193,39 @@ resettodr()
 		uvaxII_settodr((time.tv_sec - year) * 100 + 1);
 		break;
 #endif
+	default:
+		mtpr((time.tv_sec - year) * 100, PR_TODR);
 	};
 	todrstopped = 0;
 }
 
 /*
- * Unfortunately the 78032 cpu chip (MicroVAXII cpu) does not have a functional
- * todr register, so this function is necessary.
- * (the x and y variables are used to confuse the optimizer enough to ensure
- *  that the code actually loops:-)
+ * A delayloop that delays about the number of milliseconds that is
+ * given as argument.
  */
-int
-todr()
+void
+delay(i)
+	int i;
 {
-      int delaycnt, x = 4, y = 4;
-      static int todr_val;
+	int	mul;
 
-      if (cpunumber != VAX_78032)
-	      return (mfpr(PR_TODR));
-
-      /*
-       * Loop for approximately 10msec and then return todr_val + 1.
-       */
-      delaycnt = 5000;
-      while (delaycnt > 0)
-	      delaycnt = delaycnt - x + 3 + y - 4;
-      return (++todr_val);
+	switch (cpunumber) {
+#if VAX750 || VAX630 || VAX780
+	case VAX_750:
+	case VAX_78032:
+	case VAX_780:
+		mul = 1; /* <= 1 VUPS */
+		break;
+#endif
+#if VAX650
+	case VAX_650:
+		mul = 3; /* <= 3 VUPS */
+		break;
+#endif
+	default:	/* Would be enough... */
+	case VAX_8600:
+		mul = 6; /* <= 6 VUPS */
+		break;
+	}
+	asm ("1: sobgtr %0, 1b" : : "r" (mul * i));
 }

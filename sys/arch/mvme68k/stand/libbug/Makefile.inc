@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 LIB_BUG_DIR=${S}/arch/${MACHINE}/stand/libbug
 
 LIBBUG_DIR!= cd ${LIB_BUG_DIR}; \

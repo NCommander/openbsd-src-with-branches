@@ -1,3 +1,4 @@
+/*	$OpenBSD: parsetime.h,v 1.2 1995/03/25 18:13:37 glass Exp $	*/
 /*	$NetBSD: parsetime.h,v 1.2 1995/03/25 18:13:37 glass Exp $	*/
 
 /*

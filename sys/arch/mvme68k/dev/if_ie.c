@@ -1,4 +1,4 @@
-/*	$NetBSD: if_ie.c,v 1.15 1995/04/11 09:18:09 pk Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.6 1996/05/10 12:42:23 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt
@@ -28,6 +28,9 @@
  *	University of Vermont and State Agricultural College and Garrett A.
  *	Wollman, by William F. Jolitz, and by the University of California,
  *	Berkeley, Lawrence Berkeley Laboratory, and its contributors.
+ *    and
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. Neither the names of the Universities nor the names of the authors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
@@ -87,7 +90,7 @@ Mode of operation:
    shall have the I (IE_CMD_INTR) bit set in the command.  This way,
    when an interrupt arrives at ieintr(), it is immediately possible
    to tell what precisely caused it.  ANY OTHER command-sending
-   routines should run at splimp(), and should post an acknowledgement
+   routines should run at splnet(), and should post an acknowledgement
    to every interrupt they generate.
 
 */
@@ -122,11 +125,6 @@ Mode of operation:
 #include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
-
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
 #endif
 
 #include <vm/vm.h>
@@ -291,7 +289,7 @@ static void ie_obreset __P((struct ie_softc *));
 static void ie_obattend __P((struct ie_softc *));
 static void ie_obrun __P((struct ie_softc *));
 
-void iewatchdog __P((/* short */));
+void iewatchdog __P((struct ifnet *));
 int ieintr __P((void *));
 int iefailintr __P((void *));
 int ieinit __P((struct ie_softc *));
@@ -320,8 +318,12 @@ int in_ietint = 0;
 int iematch();
 void ieattach();
 
-struct cfdriver iecd = {
-	NULL, "ie", iematch, ieattach, DV_IFNET, sizeof(struct ie_softc)
+struct cfattach ie_ca = {
+	sizeof(struct ie_softc), iematch, ieattach
+};
+
+struct cfdriver ie_cd = {
+	NULL, "ie", DV_IFNET, 0
 };
 
 /*
@@ -448,6 +450,10 @@ ieattach(parent, self, aux)
 	sc->sc_reg = ca->ca_vaddr;
 	ieo = (volatile struct ieob *) sc->sc_reg;
 
+        /* Are we the boot device? */
+        if (ca->ca_paddr == bootaddr)
+                bootdv = self;
+
 	sc->sc_maddr = etherbuf;	/* maddr = vaddr */
 	pa = pmap_extract(pmap_kernel(), (vm_offset_t)sc->sc_maddr);
 	if (pa == 0) panic("ie pmap_extract");
@@ -485,8 +491,8 @@ ieattach(parent, self, aux)
 		/* XXX should reclaim resources? */
 		return;
 	}
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = iecd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_start = iestart;
 	ifp->if_ioctl = ieioctl;
 	ifp->if_watchdog = iewatchdog;
@@ -544,10 +550,10 @@ ieattach(parent, self, aux)
  * an interrupt after a transmit has been started on it.
  */
 void
-iewatchdog(unit)
-	short unit;
+iewatchdog(ifp)
+	struct ifnet *ifp;
 {
-	struct ie_softc *sc = iecd.cd_devs[unit];
+	struct ie_softc *sc = ifp->if_softc;
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 	++sc->sc_arpcom.ac_if.if_oerrors;
@@ -1285,7 +1291,7 @@ void
 iestart(ifp)
 	struct ifnet *ifp;
 {
-	struct ie_softc *sc = iecd.cd_devs[ifp->if_unit];
+	struct ie_softc *sc = ifp->if_softc;
 	struct mbuf *m0, *m;
 	u_char *buffer;
 	u_short len;
@@ -1344,7 +1350,7 @@ ie_setupram(sc)
 	volatile struct ie_sys_ctl_block *scb;
 	int     s;
 
-	s = splimp();
+	s = splnet();
 
 	iscp = sc->iscp;
 	(sc->memzero)((char *) iscp, sizeof *iscp);
@@ -1378,7 +1384,7 @@ void
 iereset(sc)
 	struct ie_softc *sc;
 {
-	int s = splimp();
+	int s = splnet();
 
 	printf("%s: reset\n", sc->sc_dev.dv_xname);
 
@@ -1447,7 +1453,7 @@ command_and_wait(sc, cmd, pcmd, mask)
                 /*
                  * XXX
                  * I don't think this timeout works on suns.
-                 * we are at splimp() in the loop, and the timeout
+                 * we are at splnet() in the loop, and the timeout
                  * stuff runs at software spl (so it is masked off?).
                  */
 
@@ -1685,7 +1691,7 @@ setup_bufs(sc)
 
 /*
  * Run the multicast setup command.
- * Called at splimp().
+ * Called at splnet().
  */
 static int
 mc_setup(sc, ptr)
@@ -1720,7 +1726,7 @@ mc_setup(sc, ptr)
  * includes executing the CONFIGURE, IA-SETUP, and MC-SETUP commands, starting
  * the receiver unit, and clearing interrupts.
  *
- * THIS ROUTINE MUST BE CALLED AT splimp() OR HIGHER.
+ * THIS ROUTINE MUST BE CALLED AT splnet() OR HIGHER.
  */
 int
 ieinit(sc)
@@ -1817,12 +1823,17 @@ ieioctl(ifp, cmd, data)
 	u_long cmd;
 	caddr_t data;
 {
-	struct ie_softc *sc = iecd.cd_devs[ifp->if_unit];
+	struct ie_softc *sc = ifp->if_softc;
 	struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch(cmd) {
 
@@ -1836,24 +1847,6 @@ ieioctl(ifp, cmd, data)
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
 #endif
-#ifdef NS
-		/* XXX - This code is probably wrong. */
-		case AF_NS:
-		    {
-			struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				bcopy(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			/* Set new address. */
-			ieinit(sc);
-			break;
-		    }
-#endif /* NS */
 		default:
 			ieinit(sc);
 			break;

@@ -39,7 +39,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)tftpd.c	5.13 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: tftpd.c,v 1.7 1995/06/04 20:48:22 jtc Exp $";
+static char rcsid[] = "$Id: tftpd.c,v 1.2 1996/08/11 23:22:00 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -66,10 +66,7 @@ static char rcsid[] = "$Id: tftpd.c,v 1.7 1995/06/04 20:48:22 jtc Exp $";
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-
-/* XXX svr4 defines UID_NOBODY and GID_NOBODY constants in <sys/param.h> */
-#define UID_NOBODY	32767
-#define GID_NOBODY	32766
+#include <pwd.h>
 
 #define	TIMEOUT		5
 
@@ -98,11 +95,13 @@ usage()
 	exit(1);
 }
 
+int
 main(argc, argv)
 	int    argc;
 	char **argv;
 {
 	register struct tftphdr *tp;
+	struct passwd *pw;
 	register int n = 0;
 	int on = 1;
 	int fd = 0;
@@ -135,20 +134,19 @@ main(argc, argv)
 		}
 	}
 
+	pw = getpwnam("nobody");
+	if (!pw) {
+		syslog(LOG_ERR, "no nobody: %m\n");
+		exit(1);
+	}
+
 	if (secure && chroot(".")) {
 		syslog(LOG_ERR, "chroot: %m\n");
 		exit(1);
 	}
 
-	if (setgid(GID_NOBODY)) {
-		syslog(LOG_ERR, "setgid: %m");
-		exit(1);
-	}
-
-	if (setuid(UID_NOBODY)) {
-		syslog(LOG_ERR, "setuid: %m");
-		exit(1);
-	}
+	(void) setgid(pw->pw_gid);
+	(void) setuid(pw->pw_uid);
 
 	if (ioctl(fd, FIONBIO, &on) < 0) {
 		syslog(LOG_ERR, "ioctl(FIONBIO): %m\n");

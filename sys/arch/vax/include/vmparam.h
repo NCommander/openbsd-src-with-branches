@@ -1,4 +1,4 @@
-/*	$NetBSD: vmparam.h,v 1.9 1995/08/22 04:28:20 ragge Exp $	*/
+/*	$NetBSD: vmparam.h,v 1.11 1996/02/02 19:08:43 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -39,7 +39,7 @@
  *
  *	@(#)vmparam.h	5.9 (Berkeley) 5/12/91
  */
-#ifndef ASSEMBLER
+#ifndef _LOCORE
 #include <vm/vm_param.h>
 #endif
 
@@ -106,9 +106,9 @@
  * Ptsizes are in PTEs.
  */
 
-#define	USRPTSIZE 	((MAXDSIZ >> PG_SHIFT) * maxproc)
-#define	KALLOCMEM	(((1*1024*1024*maxproc)>>PG_SHIFT)/4)
-#define SYSPTSIZE	(((USRPTSIZE * 4) >> PG_SHIFT) + UPAGES * maxproc + \
+#define	USRPTSIZE 	((MAXDSIZ >> PGSHIFT) * maxproc)
+#define	KALLOCMEM	(((1*1024*1024*maxproc)>>PGSHIFT)/4)
+#define SYSPTSIZE	(((USRPTSIZE * 4) >> PGSHIFT) + UPAGES * maxproc + \
 			    KALLOCMEM)
 
 /*

@@ -1,5 +1,3 @@
-/*	$NetBSD: getpwent.c,v 1.14 1995/07/28 05:43:01 phil Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,11 +33,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getpwent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getpwent.c,v 1.14 1995/07/28 05:43:01 phil Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getpwent.c,v 1.5 1996/09/15 10:09:11 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -58,8 +52,9 @@ static char rcsid[] = "$NetBSD: getpwent.c,v 1.14 1995/07/28 05:43:01 phil Exp $
 #include <machine/param.h>
 #include <stdio.h>
 #include <rpc/rpc.h>
-#include <rpcsvc/yp_prot.h>
+#include <rpcsvc/yp.h>
 #include <rpcsvc/ypclnt.h>
+#include "ypinternal.h"
 #endif
 
 static struct passwd _pw_passwd;	/* password structure */
@@ -264,7 +259,6 @@ getpwent()
 	DBT key;
 	char bf[sizeof(_pw_keynum) + 1];
 #ifdef YP
-	char *cp;
 	static char *name = (char *)NULL;
 	const char *user, *host, *dom;
 	int has_yppw;
@@ -600,8 +594,6 @@ pwnam_netgrp:
 					break;
 				}
 				break;
-
-				continue;
 			}
 			if(strcmp(_pw_passwd.pw_name, name) == 0) {
 				if (!_pw_stayopen) {
@@ -651,12 +643,13 @@ struct passwd *
 getpwuid(uid_t uid)
 #else
 getpwuid(uid)
-	int uid;
+	uid_t uid;
 #endif
 {
 	DBT key;
 	char bf[sizeof(_pw_keynum) + 1];
-	int keyuid, rval;
+	uid_t keyuid;
+	int rval;
 
 	if (!_pw_db && !__initdb())
 		return((struct passwd *)NULL);
@@ -672,7 +665,7 @@ getpwuid(uid)
 		int s = -1;
 		const char *host, *user, *dom;
 
-		sprintf(uidbuf, "%d", uid);
+		sprintf(uidbuf, "%u", uid);
 		for(_pw_keynum=1; _pw_keynum; _pw_keynum++) {
 			bf[0] = _PW_KEYBYNUM;
 			bcopy((char *)&_pw_keynum, bf + 1, sizeof(_pw_keynum));
@@ -787,8 +780,6 @@ pwuid_netgrp:
 					break;
 				}
 				break;
-
-				continue;
 			}
 			if( _pw_passwd.pw_uid == uid) {
 				if (!_pw_stayopen) {

@@ -1,4 +1,5 @@
-.\"	$NetBSD: mt.1,v 1.6 1995/08/22 19:36:00 jtc Exp $
+.\"	$OpenBSD: mt.1,v 1.5 1996/06/12 07:50:57 downsj Exp $
+.\"	$NetBSD: mt.1,v 1.8 1996/05/21 10:23:55 mrg Exp $
 .\"
 .\" Copyright (c) 1981, 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -33,17 +34,21 @@
 .\"
 .\"	@(#)mt.1	8.1 (Berkeley) 6/6/93
 .\"
-.Dd June 6, 1993
+.Dd June 12, 1996
 .Dt MT 1
-.Os BSD 4
+.Os OpenBSD
 .Sh NAME
-.Nm mt
-.Nd magnetic tape manipulating program
+.Nm mt ,
+.Nm eject
+.Nd magnetic tape and removable media manipulating program
 .Sh SYNOPSIS
 .Nm mt
 .Op Fl f Ar tapename
 .Ar command
 .Op Ar count
+.Nm eject
+.Op Fl f
+.Ar tapename
 .Sh DESCRIPTION
 .Nm Mt
 is used to give commands to a magnetic tape drive.
@@ -56,6 +61,15 @@ Note
 that
 .Ar tapename
 must reference a raw (not block) tape device.
+If
+.Ar tapename
+is of the form
+.Dq host:tapename ,
+or
+.Dq user@host:tapename ,
+.Nm mt
+writes to the named tape device on the remote host using
+.Xr rmt 8 .
 .Pp
 The available commands are listed below.  Only as many
 characters as are required to uniquely identify a command
@@ -86,7 +100,10 @@ Rewind the tape
 (Count is ignored).
 .It Cm offline , rewoffl
 Rewind the tape and place the tape unit off-line
-(Count is ignored).
+(Count is ignored).  On non-tape removable media, the
+.Cm offline
+command causes the media to be ejected when the last operation on it
+closes (i.e., the filesystem is unmounted).
 .It Cm status
 Print status information about the tape unit.
 .It Cm retension
@@ -95,7 +112,22 @@ Retensions the tape (if this operation is supported by the tape unit).
 Erases the tape (if this operation is supported by the tape unit).
 .It Cm eom
 Forward space to the end of the media.
+.It Cm blocksize
+Set the tape blocksize to
+.Ar count
+bytes.
+.It Cm density
+Set the tape density code to
+.Ar count
+as specified in the SCSI2 specification.
 .El
+.Pp
+.Nm Eject
+is simply an alias for
+.Nm mt ,
+with the
+.Cm offline
+command specified.
 .Pp
 If a tape name is not specified, and the environment variable
 .Ev TAPE
@@ -125,6 +157,8 @@ is not given.
 Raw SCSI tape interface
 .It Pa /dev/rmt*
 Raw magnetic tape interface
+.It Pa /usr/src/sys/scsi/scsi_tape.h
+List of SCSI2 density codes
 .El
 .Sh SEE ALSO
 .\".Xr mtio 4 ,

@@ -1,4 +1,4 @@
-/*	$NetBSD: sys_machdep.c,v 1.8 1995/04/22 20:25:54 christos Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -240,18 +240,6 @@ cachectl(req, addr, len)
 	return(error);
 }
 
-int
-sysarch(p, uap, retval)
-	struct proc *p;
-	struct sysarch_args /* {
-		syscallarg(int) op;
-		syscallarg(char *) parms;
-	} */ *uap;
-	register_t *retval;
-{
-	return ENOSYS;
-}
-
 /*
  * DMA cache control
  */
@@ -294,4 +282,18 @@ dma_cachectl(addr, len)
 	}
 #endif	/* M68040 */
 	return(0);
+}
+
+int
+sys_sysarch(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct sysarch_args /* {
+		syscallarg(int) op;
+		syscallarg(char *) parms;
+	} */ *uap = v;
+
+	return ENOSYS;
 }

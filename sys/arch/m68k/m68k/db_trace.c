@@ -1,4 +1,5 @@
-/*	$NetBSD: db_trace.c,v 1.12 1995/05/24 20:23:34 gwr Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.4 1996/05/09 22:30:11 niklas Exp $	*/
+/*	$NetBSD: db_trace.c,v 1.16 1996/04/29 20:50:29 leo Exp $	*/
 
 /* 
  * Mach Operating System
@@ -28,21 +29,23 @@
 
 #include <sys/param.h>
 #include <sys/proc.h>
-#include <setjmp.h>
+#include <sys/systm.h>
 
 #include <machine/db_machdep.h>
 
+#include <ddb/db_interface.h>
+#include <ddb/db_output.h>
 #include <ddb/db_access.h>
 #include <ddb/db_sym.h>
 #include <ddb/db_variables.h>
 
-jmp_buf	*db_recover;
+extern label_t	*db_recover;
 
 /*
  * Register list
  */
-static int db_var_short(struct db_variable *, db_expr_t *, int);
-extern int ddb_regs_ssp;
+static int db_var_short __P((struct db_variable *, db_expr_t *, int));
+
 struct db_variable db_regs[] = {
 	{ "d0",	(int *)&ddb_regs.d0,	FCN_NULL },
 	{ "d1",	(int *)&ddb_regs.d1,	FCN_NULL },
@@ -59,14 +62,14 @@ struct db_variable db_regs[] = {
 	{ "a4",	(int *)&ddb_regs.a4,	FCN_NULL },
 	{ "a5",	(int *)&ddb_regs.a5,	FCN_NULL },
 	{ "a6",	(int *)&ddb_regs.a6,	FCN_NULL },
-	{ "ssp",&ddb_regs_ssp,  	FCN_NULL },
-	{ "usp",(int *)&ddb_regs.sp,	FCN_NULL },
+	{ "sp",	(int *)&ddb_regs.sp,	FCN_NULL },
 	{ "pc",	(int *)&ddb_regs.pc,	FCN_NULL },
 	{ "sr",	(int *)&ddb_regs.sr,	db_var_short }
 };
 struct db_variable *db_eregs = db_regs + sizeof(db_regs)/sizeof(db_regs[0]);
 
-static int db_var_short(varp, valp, op)
+static int
+db_var_short(varp, valp, op)
     struct db_variable *varp;
     db_expr_t *valp;
     int op;
@@ -75,6 +78,7 @@ static int db_var_short(varp, valp, op)
 	*valp = (db_expr_t) *((short*)varp->valuep);
     else
 	*((short*)varp->valuep) = (short) *valp;
+    return(0);
 }
 
 #define	MAXINT	0x7fffffff
@@ -105,11 +109,18 @@ struct stackpos {
 	 int	k_regloc[NREGISTERS];
 };
 
+static void findentry __P((struct stackpos *));
+static void findregs __P((struct stackpos *, db_addr_t));
+static int  nextframe __P((struct stackpos *, int));
+static void stacktop __P((struct mc68020_saved_state *, struct stackpos *));
+
+
 #define FR_SAVFP	0
 #define FR_SAVPC	4
 #define K_CALLTRAMP	1	/* for k_flags: caller is __sigtramp */
 #define K_SIGTRAMP	2	/* for k_flags: this is   __sigtramp */
 
+static void
 stacktop(regs, sp)
 	register struct mc68020_saved_state *regs;
 	register struct stackpos *sp;
@@ -163,9 +174,7 @@ stacktop(regs, sp)
 #define JSRPC	0x4eba0000	/* jsr PC@( )    */
 #define LONGBIT 0x00010000
 #define BSR	0x61000000	/* bsr x	 */
-#ifdef	mc68020
 #define BSRL	0x61ff0000	/* bsrl x	 */
-#endif	mc68020
 #define BYTE3	0x0000ff00
 #define LOBYTE	0x000000ff
 #define ADQMSK	0xf1ff0000
@@ -175,14 +184,14 @@ stacktop(regs, sp)
 struct nlist *	trampsym = 0;
 struct nlist *	funcsym = 0;
 
+static int
 nextframe(sp, kerneltrace)
 	register struct stackpos *sp;
 	int kerneltrace;
 {
-	int		val, regp, i;
+	int		i;
 	db_addr_t	addr;
 	db_addr_t	calladdr;
-	register int	instruc;
 	db_addr_t	oldfp = sp->k_fp;
 
 	/*
@@ -251,6 +260,7 @@ nextframe(sp, kerneltrace)
 	return (sp->k_fp);
 }
 
+static void
 findentry(sp)
 	register struct stackpos *sp;
 { 
@@ -262,11 +272,13 @@ findentry(sp)
 	 */
 	register	instruc;
 	register	val;
-	db_addr_t	addr, calladdr, nextword;
-	jmp_buf		db_jmpbuf;
-	jmp_buf		*savejmp = db_recover;
+	db_addr_t	addr, nextword;
+	label_t		db_jmpbuf;
+	label_t		*savejmp;
 
-	if (setjmp(*(db_recover = &db_jmpbuf))) {
+	savejmp = db_recover;
+	db_recover = &db_jmpbuf;
+	if (setjmp(&db_jmpbuf)) {
 		/* oops -- we touched something we ought not to have */
 		/* cannot trace caller of "start" */
 		sp->k_entry = MAXINT;
@@ -293,12 +305,10 @@ findentry(sp)
 		/* longword offset here */
 		sp->k_caller = addr - 6;
 		sp->k_entry  = nextword;
-#ifdef	mc68020
 	} else if ((instruc & HIWORD) == BSRL) {
 		/* longword self-relative offset */
 		sp->k_caller = addr - 6;
 		sp->k_entry  = nextword + (addr - 4);
-#endif	mc68020
 	} else {
 		instruc = nextword;
 		if ((instruc & HIWORD) == JSR) {
@@ -393,6 +403,7 @@ findentry(sp)
  * Look at the procedure prolog of the current called procedure.
  * Figure out which registers we saved, and where they are
  */
+static void
 findregs(sp, addr)
 	register struct stackpos *sp;
 	register db_addr_t addr;
@@ -400,6 +411,7 @@ findregs(sp, addr)
 	register long instruc, val, i;
 	int  regp;
 
+	regp = 0;
 	instruc = get(addr, ISP);
 	if ((instruc & HIWORD) == LINKLA6) {
 		instruc = get(addr + 2, ISP);
@@ -462,12 +474,11 @@ db_stack_trace_cmd(addr, have_addr, count, modif)
 	db_expr_t	count;
 	char		*modif;
 {
-	int i, val, nargs, spa;
+	int i, val, nargs;
 	db_addr_t	regp;
 	char *		name;
 	struct stackpos pos;
 	boolean_t	kernel_only = TRUE;
-	boolean_t	trace_thread = FALSE;
 
 	{
 		register char *cp = modif;

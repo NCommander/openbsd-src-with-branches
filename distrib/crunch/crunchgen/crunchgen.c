@@ -1,3 +1,4 @@
+/*	$OpenBSD: crunchgen.c,v 1.5 1996/09/27 06:06:58 etheisen Exp $	*/
 /*
  * Copyright (c) 1994 University of Maryland
  * All Rights Reserved.
@@ -45,6 +46,20 @@
 #define MAXLINELEN	16384
 #define MAXFIELDS 	 2048
 
+/* XXX - This should be runtime configurable */
+/*
+ * We might have more than one makefile
+ * name on any given platform. Make sure
+ * default name is last though.
+ */
+char  *mf_name[] = {
+#if defined(MF_NAMES)
+     MF_NAMES,
+#else
+    "Makefile",
+#endif
+    NULL
+};
 
 /* internal representation of conf file: */
 
@@ -59,7 +74,7 @@ typedef struct strlst {
 
 typedef struct prog {
     struct prog *next;
-    char *name, *ident;
+    char *name, *ident, *mf_name;
     char *srcdir, *objdir;
     strlst_t *objs, *objpaths;
     strlst_t *links;
@@ -476,6 +491,7 @@ void fillin_program(prog_t *p)
     char path[MAXPATHLEN];
     char *srcparent;
     strlst_t *s;
+    int i;
 
     sprintf(line, "filling in parms for %s", p->name);
     status(line);
@@ -502,9 +518,21 @@ void fillin_program(prog_t *p)
         }
     }
 
-    if(p->srcdir) sprintf(path, "%s/Makefile", p->srcdir);
-    if(!p->objs && p->srcdir && is_nonempty_file(path))
-	fillin_program_objs(p, path);
+    /* We have a sourcedir and no explict objs, try */
+    /* to find makefile and get objs from it. */
+    if (p->srcdir && !p->objs) {
+        for (i = 0; mf_name[i] != NULL; i++) {
+            sprintf(path, "%s/%s", p->srcdir, mf_name[i]);
+            if (is_nonempty_file(path)) {
+		p->mf_name = mf_name[i];
+                fillin_program_objs(p, path);
+                break;
+            }
+        }
+    }
+
+
+
 
     if(!p->objpaths && p->objdir && p->objs)
 	for(s = p->objs; s != NULL; s = s->next) {
@@ -778,8 +806,8 @@ void prog_makefile_rules(FILE *outmk, prog_t *p)
 	fprintf(outmk, "%s_OBJS=", p->ident);
 	output_strlst(outmk, p->objs);
 	fprintf(outmk, "%s_make:\n", p->ident);
-	fprintf(outmk, "\t(cd $(%s_SRCDIR); make $(%s_OBJS))\n\n", 
-		p->ident, p->ident);
+	fprintf(outmk, "\t(cd $(%s_SRCDIR); make -f %s $(%s_OBJS))\n\n", 
+		p->ident, p->mf_name, p->ident);
     }
     else
 	fprintf(outmk, "%s_make:\n\t@echo \"** cannot make objs for %s\"\n\n", 

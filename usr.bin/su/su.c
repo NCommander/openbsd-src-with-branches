@@ -1,3 +1,5 @@
+/*	$OpenBSD: su.c,v 1.5 1996/07/22 01:58:55 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -39,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)su.c	5.26 (Berkeley) 7/6/91";*/
-static char rcsid[] = "$Id: su.c,v 1.10 1994/05/24 06:52:23 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: su.c,v 1.5 1996/07/22 01:58:55 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -155,7 +157,8 @@ main(argc, argv)
 #endif
 	    {
 		/* only allow those in group zero to su to root. */
-		if (pwd->pw_uid == 0 && (gr = getgrgid((gid_t)0)))
+		if (pwd->pw_uid == 0 && (gr = getgrgid((gid_t)0))
+		    && gr->gr_mem && *(gr->gr_mem))
 			for (g = gr->gr_mem;; ++g) {
 				if (!*g) {
 					(void)fprintf(stderr,
@@ -238,11 +241,17 @@ badlogin:
 			cleanenv[0] = NULL;
 			environ = cleanenv;
 			(void)setenv("PATH", _PATH_DEFPATH, 1);
-			(void)setenv("TERM", p, 1);
+			if (p)
+				(void)setenv("TERM", p, 1);
+
+			seteuid(pwd->pw_uid);
+			setegid(pwd->pw_gid);
 			if (chdir(pwd->pw_dir) < 0) {
 				fprintf(stderr, "su: no directory\n");
 				exit(1);
 			}
+			seteuid(0);
+			setegid(0);	/* XXX use a saved gid instead? */
 		}
 		if (asthem || pwd->pw_uid)
 			(void)setenv("USER", pwd->pw_name, 1);
@@ -311,7 +320,6 @@ kerberos(username, user, uid)
 	char *username, *user;
 	int uid;
 {
-	extern char *krb_err_txt[];
 	KTEXT_ST ticket;
 	AUTH_DAT authdata;
 	struct hostent *hp;

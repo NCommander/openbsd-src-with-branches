@@ -1,3 +1,4 @@
+.\"	$OpenBSD: xargs.1,v 1.6 1994/11/14 06:51:40 jtc Exp $
 .\"	$NetBSD: xargs.1,v 1.6 1994/11/14 06:51:40 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
@@ -45,6 +46,7 @@
 .Nd "construct argument list(s) and execute utility"
 .Sh SYNOPSIS
 .Nm xargs
+.Op Fl 0
 .Op Fl t
 .Oo Op Fl x
 .Fl n Ar number
@@ -81,6 +83,16 @@ Any single character, including newlines, may be escaped by a backslash.
 .Pp
 The options are as follows:
 .Bl -tag -width indent
+.It Fl 0
+Changes
+.Nm xargs
+to expect NUL
+(``\\0'')
+characters as seperators, instead of spaces and newlines.
+This is expected to be used in concert with the
+.Fl print0
+function in
+.Nm find .
 .It Fl n Ar number
 Set the maximum number of arguments taken from standard input for each
 invocation of the utility.

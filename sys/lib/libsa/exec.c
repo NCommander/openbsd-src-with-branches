@@ -1,4 +1,5 @@
-/*	$NetBSD: exec.c,v 1.10 1995/08/04 07:37:03 thorpej Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: exec.c,v 1.12.4.1 1996/06/02 12:08:48 ragge Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -33,13 +34,13 @@
  * SUCH DAMAGE.
  */
 
-#include <string.h>
 #include <sys/param.h>
 #include <sys/reboot.h>
 #ifndef INSECURE
 #include <sys/stat.h>
 #endif
 #include <a.out.h>
+#include <string.h>
 
 #include "stand.h"
 
@@ -83,7 +84,7 @@ exec(path, loadaddr, howto)
 	}
 
         /* Text */
-	printf("%d", x.a_text);
+	printf("%ld", x.a_text);
 	addr = loadaddr;
 #ifdef NO_LSEEK
 	if (N_GETMAGIC(x) == ZMAGIC && read(io, (char *)addr, 0x400) == -1)
@@ -95,17 +96,17 @@ exec(path, loadaddr, howto)
 		goto shread;
 	addr += x.a_text;
 	if (N_GETMAGIC(x) == ZMAGIC || N_GETMAGIC(x) == NMAGIC)
-		while ((int)addr & (N_PAGSIZ(x) - 1))
+		while ((long)addr & (N_PAGSIZ(x) - 1))
 			*addr++ = 0;
 
         /* Data */
-	printf("+%d", x.a_data);
+	printf("+%ld", x.a_data);
 	if (read(io, addr, x.a_data) != x.a_data)
 		goto shread;
 	addr += x.a_data;
 
         /* Bss */
-	printf("+%d", x.a_bss);
+	printf("+%ld", x.a_bss);
 	for (i = 0; i < x.a_bss; i++)
 		*addr++ = 0;
 
@@ -113,7 +114,7 @@ exec(path, loadaddr, howto)
 	ssym = addr;
 	bcopy(&x.a_syms, addr, sizeof(x.a_syms));
 	addr += sizeof(x.a_syms);
-	printf("+[%d", x.a_syms);
+	printf("+[%ld", x.a_syms);
 	if (read(io, addr, x.a_syms) != x.a_syms)
 		goto shread;
 	addr += x.a_syms;

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: machdep.c,v 1.14 1996/09/19 22:30:07 pefo Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -38,7 +38,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)machdep.c	8.3 (Berkeley) 1/12/94
- *      $Id: machdep.c,v 1.9 1996/06/06 23:07:37 deraadt Exp $
+ *      $Id: machdep.c,v 1.14 1996/09/19 22:30:07 pefo Exp $
  */
 
 /* from: Utah Hdr: machdep.c 1.63 91/04/24 */
@@ -83,13 +83,16 @@
 #include <machine/psl.h>
 #include <machine/pte.h>
 #include <machine/autoconf.h>
+#include <machine/memconf.h>
 
 #include <sys/exec_ecoff.h>
 
 #include <dev/cons.h>
 
-#include <arc/pica/pica.h>
 #include <arc/arc/arctype.h>
+#include <arc/arc/arcbios.h>
+#include <arc/pica/pica.h>
+#include <arc/dti/desktech.h>
 
 #include <asc.h>
 
@@ -120,15 +123,14 @@ int	bufpages = BUFPAGES;
 int	bufpages = 0;
 #endif
 int	msgbufmapped = 0;	/* set when safe to use msgbuf */
-int	maxmem;			/* max memory per process */
 int	physmem;		/* max supported memory, changes to actual */
-int	memcfg;			/* memory config register */
-int	brdcfg;			/* motherboard config register */
 int	cpucfg;			/* Value of processor config register */
 int	cputype;		/* Mother board type */
 int	ncpu = 1;		/* At least one cpu in the system */
 int	isa_io_base;		/* Base address of ISA io port space */
 int	isa_mem_base;		/* Base address of ISA memory space */
+
+struct mem_descriptor mem_layout[MAXMEMSEGS];
 
 extern	int Mach_spl0(), Mach_spl1(), Mach_spl2(), Mach_spl3();
 extern	int Mach_spl4(), Mach_spl5(), splhigh();
@@ -139,8 +141,8 @@ int	(*Mach_spltty)() = splhigh;
 int	(*Mach_splclock)() = splhigh;
 int	(*Mach_splstatclock)() = splhigh;
 
-void vid_print_string(const char *str);
-void vid_putchar(dev_t dev, char c);
+static void tlb_init_pica();
+static void tlb_init_tyne();
 
 
 /*
@@ -166,20 +168,19 @@ mips_init(argc, argv, code)
 	register char *cp;
 	register int i;
 	register unsigned firstaddr;
-	register caddr_t v;
+	register caddr_t sysend;
 	caddr_t start;
 	struct tlb tlb;
 	extern char edata[], end[];
 	extern char MachTLBMiss[], MachTLBMissEnd[];
 	extern char MachException[], MachExceptionEnd[];
 
-vid_print_string("Starting\n");
-	/* clear the BSS segment in NetBSD code */
-	v = (caddr_t)pica_round_page(end);
-	bzero(edata, v - edata);
+	/* clear the BSS segment in OpenBSD code */
+	sysend = (caddr_t)mips_round_page(end);
+	bzero(edata, sysend - edata);
 
-	/* check what model platform we are running on */
-	cputype = ACER_PICA_61; /* FIXME find systemtype */
+	/* Initialize the CPU type */
+	bios_ident();
 
 	/*
 	 * Get config register now as mapped from BIOS since we are
@@ -188,34 +189,61 @@ vid_print_string("Starting\n");
 	 */
 
 	switch (cputype) {
-	case ACER_PICA_61:	/* ALI PICA 61 */
-		memcfg = in32(PICA_MEMORY_SIZE_REG);
-		brdcfg = in32(PICA_CONFIG_REG);
+	case ACER_PICA_61:	/* ALI PICA 61 and MAGNUM is almost the */
+	case MAGNUM:		/* Same kind of hardware. NEC goes here too */
+		if(cputype == MAGNUM) {
+			strcpy(cpu_model, "MIPS Magnum");
+		}
+		else {
+			strcpy(cpu_model, "Acer Pica-61");
+		}
 		isa_io_base = PICA_V_ISA_IO;
 		isa_mem_base = PICA_V_ISA_MEM;
-		break;
-	default:
-		memcfg = -1;
-		break;
-	}
 
-	/* look at argv[0] and compute bootdev */
+		/*
+		 * Set up interrupt handling and I/O addresses.
+		 */
+#if 0 /* XXX FIXME */
+		Mach_splnet = Mach_spl1;
+		Mach_splbio = Mach_spl0;
+		Mach_splimp = Mach_spl1;
+		Mach_spltty = Mach_spl2;
+		Mach_splstatclock = Mach_spl3;
+#endif
+		break;
+
+	case DESKSTATION_RPC44:
+		strcpy(cpu_model, "Deskstation rPC44");
+		isa_io_base = 0xb0000000;		/*XXX*/
+		isa_mem_base = 0xa0000000;		/*XXX*/
+		break;
+
+	case DESKSTATION_TYNE:
+		strcpy(cpu_model, "Deskstation Tyne");
+		isa_io_base = TYNE_V_ISA_IO;
+		isa_mem_base = TYNE_V_ISA_MEM;
+		break;
+
+	default:
+		bios_putstring("kernel not configured for this system\n");
+		boot(RB_HALT | RB_NOSYNC);
+	}
+	physmem = btoc(physmem);
+
+	/* look at argv[0] and compute bootdev for autoconfig setup */
 	makebootdev(argv[0]);
 
 	/*
 	 * Look at arguments passed to us and compute boothowto.
+	 * Default to SINGLE and ASKNAME if no args.
 	 */
-#ifdef GENERIC
 	boothowto = RB_SINGLE | RB_ASKNAME;
-#else
-	boothowto = RB_SINGLE;
-#endif
 #ifdef KADB
 	boothowto |= RB_KDB;
 #endif
 	if (argc > 1) {
 		for (i = 1; i < argc; i++) {
-			if(strncmp("OSLOADOPTIONS=",argv[i],14) == 0) {
+			if(strncasecmp("osloadoptions=",argv[i],14) == 0) {
 				for (cp = argv[i]+14; *cp; cp++) {
 					switch (*cp) {
 					case 'a': /* autoboot */
@@ -251,7 +279,7 @@ vid_print_string("Starting\n");
 	 */
 	if (boothowto & RB_MINIROOT) {
 		boothowto |= RB_DFLTROOT;
-		v += mfs_initminiroot(v);
+		sysend += mfs_initminiroot(sysend);
 	}
 #endif
 
@@ -259,52 +287,32 @@ vid_print_string("Starting\n");
 	 * Now its time to abandon the BIOS and be self supplying.
 	 * Start with cleaning out the TLB. Bye bye Microsoft....
 	 */
-	MachSetWIRED(0);
-	MachTLBFlush();
-	MachSetWIRED(VMWIRED_ENTRIES);
+	R4K_SetWIRED(0);
+	R4K_TLBFlush();
+	R4K_SetWIRED(VMWIRED_ENTRIES);
+	
+	switch (cputype) {
+	case ACER_PICA_61:
+	case MAGNUM:
+		tlb_init_pica();
+		break;
 
-	/*
-	 * Set up mapping for hardware the way we want it!
-	 */
+	case DESKSTATION_TYNE:
+		tlb_init_tyne();
+		break;
 
-	tlb.tlb_mask = PG_SIZE_256K;
-	tlb.tlb_hi = vad_to_vpn(PICA_V_LOCAL_IO_BASE);
-	tlb.tlb_lo0 = vad_to_pfn(PICA_P_LOCAL_IO_BASE) | PG_IOPAGE;
-	tlb.tlb_lo1 = vad_to_pfn(PICA_P_INT_SOURCE) | PG_IOPAGE;
-	MachTLBWriteIndexed(1, &tlb);
+	case DESKSTATION_RPC44:
+        break;
+	}
 
-	tlb.tlb_mask = PG_SIZE_1M;
-	tlb.tlb_hi = vad_to_vpn(PICA_V_LOCAL_VIDEO_CTRL);
-	tlb.tlb_lo0 = vad_to_pfn(PICA_P_LOCAL_VIDEO_CTRL) | PG_IOPAGE;
-	tlb.tlb_lo1 = vad_to_pfn(PICA_P_LOCAL_VIDEO_CTRL + PICA_S_LOCAL_VIDEO_CTRL/2) | PG_IOPAGE;
-	MachTLBWriteIndexed(2, &tlb);
-	
-	tlb.tlb_mask = PG_SIZE_1M;
-	tlb.tlb_hi = vad_to_vpn(PICA_V_EXTND_VIDEO_CTRL);
-	tlb.tlb_lo0 = vad_to_pfn(PICA_P_EXTND_VIDEO_CTRL) | PG_IOPAGE;
-	tlb.tlb_lo1 = vad_to_pfn(PICA_P_EXTND_VIDEO_CTRL + PICA_S_EXTND_VIDEO_CTRL/2) | PG_IOPAGE;
-	MachTLBWriteIndexed(3, &tlb);
-	
-	tlb.tlb_mask = PG_SIZE_4M;
-	tlb.tlb_hi = vad_to_vpn(PICA_V_LOCAL_VIDEO);
-	tlb.tlb_lo0 = vad_to_pfn(PICA_P_LOCAL_VIDEO) | PG_IOPAGE;
-	tlb.tlb_lo1 = vad_to_pfn(PICA_P_LOCAL_VIDEO + PICA_S_LOCAL_VIDEO/2) | PG_IOPAGE;
-	MachTLBWriteIndexed(4, &tlb);
-	
-	tlb.tlb_mask = PG_SIZE_16M;
-	tlb.tlb_hi = vad_to_vpn(PICA_V_ISA_IO);
-	tlb.tlb_lo0 = vad_to_pfn(PICA_P_ISA_IO) | PG_IOPAGE;
-	tlb.tlb_lo1 = vad_to_pfn(PICA_P_ISA_MEM) | PG_IOPAGE;
-	MachTLBWriteIndexed(5, &tlb);
-	
 	/*
 	 * Init mapping for u page(s) for proc[0], pm_tlbpid 1.
 	 */
-	v = (caddr_t)((int)v+3 & -4);
-	start = v;
-	curproc->p_addr = proc0paddr = (struct user *)v;
+	sysend = (caddr_t)((int)sysend + 3 & -4);
+	start = sysend;
+	curproc->p_addr = proc0paddr = (struct user *)sysend;
 	curproc->p_md.md_regs = proc0paddr->u_pcb.pcb_regs;
-	firstaddr = CACHED_TO_PHYS(v);
+	firstaddr = CACHED_TO_PHYS(sysend);
 	for (i = 0; i < UPAGES; i+=2) {
 		tlb.tlb_mask = PG_SIZE_4K;
 		tlb.tlb_hi = vad_to_vpn((UADDR + (i << PGSHIFT))) | 1;
@@ -312,31 +320,31 @@ vid_print_string("Starting\n");
 		tlb.tlb_lo1 = vad_to_pfn(firstaddr + NBPG) | PG_V | PG_M | PG_CACHED;
 		curproc->p_md.md_upte[i] = tlb.tlb_lo0;
 		curproc->p_md.md_upte[i+1] = tlb.tlb_lo1;
-		MachTLBWriteIndexed(i,&tlb);
+		R4K_TLBWriteIndexed(i,&tlb);
 		firstaddr += NBPG * 2;
 	}
-	v += UPAGES * NBPG;
-	v = (caddr_t)((int)v+3 & -4);
-	MachSetPID(1);
+	sysend += UPAGES * NBPG;
+	sysend = (caddr_t)((int)sysend+3 & -4);
+	R4K_SetPID(1);
 
 	/*
 	 * init nullproc for swtch_exit().
 	 * init mapping for u page(s), pm_tlbpid 0
 	 * This could be used for an idle process.
 	 */
-	nullproc.p_addr = (struct user *)v;
+	nullproc.p_addr = (struct user *)sysend;
 	nullproc.p_md.md_regs = nullproc.p_addr->u_pcb.pcb_regs;
 	bcopy("nullproc", nullproc.p_comm, sizeof("nullproc"));
-	firstaddr = CACHED_TO_PHYS(v);
+	firstaddr = CACHED_TO_PHYS(sysend);
 	for (i = 0; i < UPAGES; i+=2) {
 		nullproc.p_md.md_upte[i] = vad_to_pfn(firstaddr) | PG_V | PG_M | PG_CACHED;
 		nullproc.p_md.md_upte[i+1] = vad_to_pfn(firstaddr + NBPG) | PG_V | PG_M | PG_CACHED;
 		firstaddr += NBPG * 2;
 	}
-	v += UPAGES * NBPG;
+	sysend += UPAGES * NBPG;
 
 	/* clear pages for u areas */
-	bzero(start, v - start);
+	bzero(start, sysend - start);
 
 	/*
 	 * Copy down exception vector code.
@@ -351,100 +359,32 @@ vid_print_string("Starting\n");
 	/*
 	 * Clear out the I and D caches.
 	 */
-	cpucfg = MachConfigCache();
-	MachFlushCache();
-
-	/* check what model platform we are running on */
-	switch (cputype) {
-	case ACER_PICA_61:	/* ALI PICA 61 */
-		/*
-		 * Set up interrupt handling and I/O addresses.
-		 */
-#if 0 /* XXX FIXME */
-		Mach_splnet = Mach_spl1;
-		Mach_splbio = Mach_spl0;
-		Mach_splimp = Mach_spl1;
-		Mach_spltty = Mach_spl2;
-		Mach_splstatclock = Mach_spl3;
-#endif
-		strcpy(cpu_model, "PICA_61");
-		break;
-
-	default:
-		printf("kernel not configured for systype 0x%x\n", i);
-		boot(RB_HALT | RB_NOSYNC);
-	}
+	cpucfg = R4K_ConfigCache();
+	R4K_FlushCache();
 
 	/*
-	 * Find out how much memory is available.
+	 * Initialize error message buffer.
 	 */
-
-	switch (cputype) {
-	case ACER_PICA_61:	/* ALI PICA 61 */
-		/*
-		 * Size is determined from the memory config register.
-		 *  d0-d2 = bank 0 size (sim id)
-		 *  d3-d5 = bank 1 size
-		 *  d6 = bus width. (doubels memory size)
-		 */
-		if((memcfg & 7) <= 5)
-			physmem = 2097152 << (memcfg & 7);
-		if(((memcfg >> 3) & 7) <= 5)
-			physmem += 2097152 << ((memcfg >> 3) & 7);
-
-		if((memcfg & 0x40) == 0)
-			physmem += physmem;	/* 128 bit config */
-
-		physmem = btoc(physmem);
-		break;
-
-	default:
-		physmem = btoc((u_int)v - KERNBASE);
-		cp = (char *)PHYS_TO_UNCACHED(physmem << PGSHIFT);
-		while (cp < (char *)MAX_MEM_ADDR) {
-			if (badaddr(cp, 4))
-				break;
-			i = *(int *)cp;
-			*(int *)cp = 0xa5a5a5a5;
-			/*
-			 * Data will persist on the bus if we read it right away
-			 * Have to be tricky here.
-			 */
-			((int *)cp)[4] = 0x5a5a5a5a;
-			wbflush();
-			if (*(int *)cp != 0xa5a5a5a5)
-				break;
-			*(int *)cp = i;
-			cp += NBPG;
-			physmem++;
-		}
-		break;
-	}
-
-	maxmem = physmem;
-
-	/*
-	 * Initialize error message buffer (at end of core).
-	 */
-	maxmem -= btoc(sizeof (struct msgbuf));
-	msgbufp = (struct msgbuf *)(PHYS_TO_CACHED(maxmem << PGSHIFT));
+	msgbufp = (struct msgbuf *)(sysend);
+	sysend = (caddr_t)(sysend + (sizeof(struct msgbuf)));
 	msgbufmapped = 1;
 
 	/*
 	 * Allocate space for system data structures.
-	 * The first available kernel virtual address is in "v".
-	 * As pages of kernel virtual memory are allocated, "v" is incremented.
+	 * The first available kernel virtual address is in "sysend".
+	 * As pages of kernel virtual memory are allocated, "sysend"
+	 * is incremented.
 	 *
 	 * These data structures are allocated here instead of cpu_startup()
 	 * because physical memory is directly addressable. We don't have
 	 * to map these into virtual address space.
 	 */
-	start = v;
+	start = sysend;
 
 #define	valloc(name, type, num) \
-	    (name) = (type *)v; v = (caddr_t)((name)+(num))
+	    (name) = (type *)sysend; sysend = (caddr_t)((name)+(num))
 #define	valloclim(name, type, num, lim) \
-	    (name) = (type *)v; v = (caddr_t)((lim) = ((name)+(num)))
+	    (name) = (type *)sysend; sysend = (caddr_t)((lim) = ((name)+(num)))
 #ifdef REAL_CLISTS
 	valloc(cfree, struct cblock, nclist);
 #endif
@@ -491,12 +431,79 @@ vid_print_string("Starting\n");
 	/*
 	 * Clear allocated memory.
 	 */
-	bzero(start, v - start);
+	bzero(start, sysend - start);
 
 	/*
 	 * Initialize the virtual memory system.
 	 */
-	pmap_bootstrap((vm_offset_t)v);
+	pmap_bootstrap((vm_offset_t)sysend);
+}
+
+void
+tlb_init_pica()
+{
+	struct tlb tlb;
+
+	tlb.tlb_mask = PG_SIZE_256K;
+	tlb.tlb_hi = vad_to_vpn(R4030_V_LOCAL_IO_BASE);
+	tlb.tlb_lo0 = vad_to_pfn(R4030_P_LOCAL_IO_BASE) | PG_IOPAGE;
+	tlb.tlb_lo1 = vad_to_pfn(PICA_P_INT_SOURCE) | PG_IOPAGE;
+	R4K_TLBWriteIndexed(1, &tlb);
+
+	tlb.tlb_mask = PG_SIZE_1M;
+	tlb.tlb_hi = vad_to_vpn(PICA_V_LOCAL_VIDEO_CTRL);
+	tlb.tlb_lo0 = vad_to_pfn(PICA_P_LOCAL_VIDEO_CTRL) | PG_IOPAGE;
+	tlb.tlb_lo1 = vad_to_pfn(PICA_P_LOCAL_VIDEO_CTRL + PICA_S_LOCAL_VIDEO_CTRL/2) | PG_IOPAGE;
+	R4K_TLBWriteIndexed(2, &tlb);
+	
+	tlb.tlb_mask = PG_SIZE_1M;
+	tlb.tlb_hi = vad_to_vpn(PICA_V_EXTND_VIDEO_CTRL);
+	tlb.tlb_lo0 = vad_to_pfn(PICA_P_EXTND_VIDEO_CTRL) | PG_IOPAGE;
+	tlb.tlb_lo1 = vad_to_pfn(PICA_P_EXTND_VIDEO_CTRL + PICA_S_EXTND_VIDEO_CTRL/2) | PG_IOPAGE;
+	R4K_TLBWriteIndexed(3, &tlb);
+	
+	tlb.tlb_mask = PG_SIZE_4M;
+	tlb.tlb_hi = vad_to_vpn(PICA_V_LOCAL_VIDEO);
+	tlb.tlb_lo0 = vad_to_pfn(PICA_P_LOCAL_VIDEO) | PG_IOPAGE;
+	tlb.tlb_lo1 = vad_to_pfn(PICA_P_LOCAL_VIDEO + PICA_S_LOCAL_VIDEO/2) | PG_IOPAGE;
+	R4K_TLBWriteIndexed(4, &tlb);
+	
+	tlb.tlb_mask = PG_SIZE_16M;
+	tlb.tlb_hi = vad_to_vpn(PICA_V_ISA_IO);
+	tlb.tlb_lo0 = vad_to_pfn(PICA_P_ISA_IO) | PG_IOPAGE;
+	tlb.tlb_lo1 = vad_to_pfn(PICA_P_ISA_MEM) | PG_IOPAGE;
+	R4K_TLBWriteIndexed(5, &tlb);
+}
+
+void
+tlb_init_tyne()
+{
+	struct tlb tlb;
+
+	tlb.tlb_mask = PG_SIZE_256K;
+	tlb.tlb_hi = vad_to_vpn(TYNE_V_BOUNCE);
+	tlb.tlb_lo0 = vad_to_pfn64(TYNE_P_BOUNCE) | PG_IOPAGE;
+	tlb.tlb_lo1 = PG_G;
+	R4K_TLBWriteIndexed(1, &tlb);
+
+	tlb.tlb_mask = PG_SIZE_1M;
+	tlb.tlb_hi = vad_to_vpn(TYNE_V_ISA_IO);
+	tlb.tlb_lo0 = vad_to_pfn64(TYNE_P_ISA_IO) | PG_IOPAGE;
+	tlb.tlb_lo1 = PG_G;
+	R4K_TLBWriteIndexed(2, &tlb);
+
+	tlb.tlb_mask = PG_SIZE_1M;
+	tlb.tlb_hi = vad_to_vpn(TYNE_V_ISA_MEM);
+	tlb.tlb_lo0 = vad_to_pfn64(TYNE_P_ISA_MEM) | PG_IOPAGE;
+	tlb.tlb_lo1 = PG_G;
+	R4K_TLBWriteIndexed(3, &tlb);
+
+	tlb.tlb_mask = PG_SIZE_4K;
+	tlb.tlb_hi = vad_to_vpn(0xe3000000);
+	tlb.tlb_lo0 = 0x03ffc000 | PG_IOPAGE;
+	tlb.tlb_lo1 = PG_G;
+	R4K_TLBWriteIndexed(4, &tlb);
+
 }
 
 /*
@@ -618,7 +625,16 @@ cpu_startup()
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
 	configure();
+
+	spl0();		/* safe to turn interrupts on now */
 }
 
 /*
@@ -899,14 +915,18 @@ boot(howto)
 		resettodr();
 	}
 	(void) splhigh();		/* extreme priority */
-	if (howto & RB_HALT)
+	if (howto & RB_HALT) {
 		printf("System halted.\n");
+		while(1); /* Forever */
+	}
 	else {
 		if (howto & RB_DUMP)
 			dumpsys();
 		printf("System restart.\n");
+		delay(2000000);
+		__asm__(" li $2, 0xbfc00000; jr $2; nop\n");
+		while(1); /* Forever */
 	}
-	while(1); /* Forever */
 	/*NOTREACHED*/
 }
 
@@ -1017,14 +1037,16 @@ microtime(tvp)
 initcpu()
 {
 
-	/*
-	 * Disable all interrupts. New masks will be set up
-	 * during system configuration
-	 */
-	out16(PICA_SYS_LB_IE,0x000);
-	out32(PICA_SYS_EXT_IMASK, 0x00);
-
-	spl0();		/* safe to turn interrupts on now */
+	switch(cputype) {
+	case ACER_PICA_61:
+		/*
+		 * Disable all interrupts. New masks will be set up
+		 * during system configuration
+		 */
+		out16(PICA_SYS_LB_IE,0x000);
+		out32(R4030_SYS_EXT_IMASK, 0x00);
+		break;
+	}
 }
 
 /*
@@ -1088,78 +1110,4 @@ atoi(s)
 		val = -val;
 out:
 	return val;	
-}
-
-/*
- * This code is temporary for debugging at startup
- */
-
-static int vid_xpos=0, vid_ypos=0;
-
-static void 
-vid_wrchar(char c)
-{
-	volatile unsigned short *video;
-
-	video = (unsigned short *)(0xe08b8000) + vid_ypos * 80 + vid_xpos;
-	*video = (*video & 0xff00) | 0x0f00 | (unsigned short)c;
-}
-
-static void
-vid_scroll()
-{
-	volatile unsigned short *video;
-	int i;
-
-	video = (unsigned short *)(0xe08b8000);
-	for(i = 0; i < 80 * 24; i++) {
-		*video = *(video + 80);
-		video++;
-	}
-	for(i = 0; i < 80; i++) {
-		*video = *video & 0xff00 | ' ';
-		video++;
-	}
-}
-void
-vid_print_string(const char *str)
-{
-	unsigned char c;
-
-	while(c = *str++) {
-		vid_putchar((dev_t)0, c);
-	}
-}
-
-void
-vid_putchar(dev_t dev, char c)
-{
-	switch(c) {
-	case '\n':
-		vid_xpos = 0;
-		if(vid_ypos == 24)
-			vid_scroll();
-		else
-			vid_ypos++;
-		DELAY(500000);
-		break;
-
-	case '\r':
-		vid_xpos = 0;
-		break;
-
-	case '\t':
-		do {
-			vid_putchar(dev, ' ');
-		} while(vid_xpos & 7);
-		break;
-
-	default:
-		vid_wrchar(c);
-		vid_xpos++;
-		if(vid_xpos == 80) {
-			vid_xpos = 0;
-			vid_putchar(dev, '\n');
-		}
-	}
 }

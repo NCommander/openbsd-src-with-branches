@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_sig.c,v 1.50 1995/10/07 06:28:25 mycroft Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.5 1996/09/03 05:01:45 deraadt Exp $	*/
+/*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -59,6 +60,7 @@
 #include <sys/syslog.h>
 #include <sys/stat.h>
 #include <sys/core.h>
+#include <sys/ptrace.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
@@ -69,6 +71,7 @@
 #include <sys/user.h>		/* for coredump */
 
 void stop __P((struct proc *p));
+void killproc __P((struct proc *, char *));
 
 /*
  * Can process p, with pcred pc, send the signal signum to process q?
@@ -82,6 +85,7 @@ void stop __P((struct proc *p));
 	    ((signum) == SIGCONT && (q)->p_session == (p)->p_session))
 
 /* ARGSUSED */
+int
 sys_sigaction(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -121,19 +125,22 @@ sys_sigaction(p, v, retval)
 		if ((sa->sa_mask & bit) == 0)
 			sa->sa_flags |= SA_NODEFER;
 		sa->sa_mask &= ~bit;
-		if (error = copyout((caddr_t)sa, (caddr_t)SCARG(uap, osa),
-		    sizeof (vec)))
+		error = copyout((caddr_t)sa, (caddr_t)SCARG(uap, osa),
+				sizeof (vec));
+		if (error)
 			return (error);
 	}
 	if (SCARG(uap, nsa)) {
-		if (error = copyin((caddr_t)SCARG(uap, nsa), (caddr_t)sa,
-		    sizeof (vec)))
+		error = copyin((caddr_t)SCARG(uap, nsa), (caddr_t)sa,
+			       sizeof (vec));
+		if (error)
 			return (error);
 		setsigvec(p, signum, sa);
 	}
 	return (0);
 }
 
+void
 setsigvec(p, signum, sa)
 	register struct proc *p;
 	int signum;
@@ -247,7 +254,7 @@ execsigs(p)
 	 */
 	ps->ps_sigstk.ss_flags = SS_DISABLE;
 	ps->ps_sigstk.ss_size = 0;
-	ps->ps_sigstk.ss_base = 0;
+	ps->ps_sigstk.ss_sp = 0;
 	ps->ps_flags = 0;
 }
 
@@ -257,6 +264,7 @@ execsigs(p)
  * and return old mask as return value;
  * the library stub does the rest.
  */
+int
 sys_sigprocmask(p, v, retval)
 	register struct proc *p;
 	void *v;
@@ -293,6 +301,7 @@ sys_sigprocmask(p, v, retval)
 }
 
 /* ARGSUSED */
+int
 sys_sigpending(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -337,6 +346,7 @@ sys_sigsuspend(p, v, retval)
 }
 
 /* ARGSUSED */
+int
 sys_sigaltstack(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -358,8 +368,8 @@ sys_sigaltstack(p, v, retval)
 		return (error);
 	if (SCARG(uap, nss) == 0)
 		return (0);
-	if (error = copyin((caddr_t)SCARG(uap, nss), (caddr_t)&ss,
-	    sizeof (ss)))
+	error = copyin((caddr_t)SCARG(uap, nss), (caddr_t)&ss, sizeof (ss));
+	if (error)
 		return (error);
 	if (ss.ss_flags & SS_DISABLE) {
 		if (psp->ps_sigstk.ss_flags & SS_ONSTACK)
@@ -420,6 +430,7 @@ sys_kill(cp, v, retval)
  * Common code for kill process group/broadcast kill.
  * cp is calling process.
  */
+int
 killpg1(cp, signum, pgid, all)
 	register struct proc *cp;
 	int signum, pgid, all;
@@ -991,6 +1002,7 @@ postsig(signum)
 /*
  * Kill the current process for stated reason.
  */
+void
 killproc(p, why)
 	struct proc *p;
 	char *why;
@@ -1009,7 +1021,7 @@ killproc(p, why)
  * If dumping core, save the signal number for the debugger.  Calls exit and
  * does not return.
  */
-int
+void
 sigexit(p, signum)
 	register struct proc *p;
 	int signum;
@@ -1043,14 +1055,19 @@ coredump(p)
 	char name[MAXCOMLEN+6];		/* progname.core */
 	struct core core;
 
-	if (pcred->p_svuid != pcred->p_ruid || pcred->p_svgid != pcred->p_rgid)
+	if (!(pcred->p_svuid == pcred->p_ruid && pcred->p_ruid == 0) &&
+	    (pcred->p_svuid != pcred->p_ruid ||
+	    cred->cr_uid != pcred->p_ruid ||
+	    pcred->p_svgid != pcred->p_rgid ||
+	    cred->cr_gid != pcred->p_rgid))
 		return (EFAULT);
 	if (USPACE + ctob(vm->vm_dsize + vm->vm_ssize) >=
 	    p->p_rlimit[RLIMIT_CORE].rlim_cur)
 		return (EFAULT);
 	sprintf(name, "%s.core", p->p_comm);
 	NDINIT(&nd, LOOKUP, FOLLOW, UIO_SYSSPACE, name, p);
-	if (error = vn_open(&nd, O_CREAT | FWRITE, S_IRUSR | S_IWUSR))
+	error = vn_open(&nd, O_CREAT | FWRITE, S_IRUSR | S_IWUSR);
+	if (error)
 		return (error);
 	vp = nd.ni_vp;
 

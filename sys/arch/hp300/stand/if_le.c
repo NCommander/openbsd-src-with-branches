@@ -1,4 +1,4 @@
-/*	$NetBSD: if_le.c,v 1.6 1995/09/02 05:04:18 thorpej Exp $	*/
+/*	$NetBSD: if_le.c,v 1.8 1996/01/01 18:10:54 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1993 Adam Glass
@@ -40,7 +40,7 @@
 #include <lib/libsa/netif.h>
 
 #include <hp300/dev/device.h>
-#include <hp300/dev/if_lereg.h>
+#include <hp300/stand/if_lereg.h>
 
 #include "samachdep.h"
 
@@ -501,8 +501,18 @@ le_poll(desc, pkt, len)
 	if (!length)
 		goto cleanup;
 	length -= 4;
-	if (length > 0)
+
+	if (length > 0) {
+		/*
+		 * If the length of the packet is greater than the size of the
+		 * buffer, we have to truncate it, to avoid Bad Things.
+		 * XXX Is this the right thing to do?
+		 */
+		if (length > len)
+			length = len;
+
 		bcopy(sc->sc_rbuf + (BUFSIZE * sc->sc_next_rd), pkt, length);
+	}
 
 cleanup:
 	cdm->mcnt = 0;

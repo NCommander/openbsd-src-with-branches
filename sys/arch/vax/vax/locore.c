@@ -1,4 +1,4 @@
-/*	$NetBSD: locore.c,v 1.8 1995/06/16 15:36:42 ragge Exp $	*/
+/*	$NetBSD: locore.c,v 1.15 1996/05/19 16:44:07 ragge Exp $	*/
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -33,26 +33,29 @@
  /* All bugs are subject to removal without further notice */
 		
 
-#include "sys/param.h"
-#include "sys/types.h"
-#include "sys/reboot.h"
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/reboot.h>
+#include <sys/device.h>
 
-#include "vm/vm.h"
+#include <vm/vm.h>
 
-#include "machine/cpu.h"
-#include "machine/sid.h"
-#include "machine/uvaxII.h"
-#include "machine/loconf.h"
-#include "machine/param.h"
-#include "machine/vmparam.h"
-#include "machine/pcb.h"
+#include <dev/cons.h>
 
-#define ROUND_PAGE(x)   (((uint)(x)+PAGE_SIZE-1)& ~(PAGE_SIZE-1))
+#include <machine/cpu.h>
+#include <machine/sid.h>
+#include <machine/param.h>
+#include <machine/vmparam.h>
+#include <machine/pcb.h>
+#include <machine/pmap.h>
+
+void	start __P((void));
+void	main __P((void));
 
 u_int	proc0paddr;
-volatile int	cpunumber, *Sysmap, boothowto, cpu_type;
-volatile char *esym;
-extern volatile int bootdev;
+int	cpunumber, *Sysmap, boothowto, cpu_type;
+char	*esym;
+extern	int bootdev;
 
 /*
  * Start is called from boot; the first routine that is called
@@ -61,40 +64,41 @@ extern volatile int bootdev;
  * management is disabled, and no interrupt system is active.
  * We shall be at kernel stack when called; not interrupt stack.
  */
-
-start(how, dev)
+void
+start()
 {
-	extern u_int *end;
-	extern void *scratch;
-	register curtop;
+	extern	u_int *end;
+	extern	void *scratch;
+	register tmpptr;
 
-	mtpr(0x1f,PR_IPL); /* No interrupts before istack is ok, please */
-#ifdef COMPAT_RENO
+	mtpr(0x1f, PR_IPL); /* No interrupts before istack is ok, please */
+
+	/*
+	 * We can be running either in system or user space when
+	 * getting here. Need to figure out which and take care
+	 * of it. We also save all registers if panic gets called.
+	 */
 	asm("
-	movl	r9,_esym
-	movl	r10,_bootdev
-	movl	r11,_boothowto
+	bisl2	$0x80000000, r9
+	movl	r9, _esym
+	movl	r10, _bootdev
+	movl	r11, _boothowto
 	jsb	ett
-ett:	cmpl	(sp)+,$0x80000000
+ett:	cmpl	(sp)+, $0x80000000
 	bleq	tvo	# New boot
 	pushl	$0x001f0000
-	pushl	$to_kmem
+	pushl	$tokmem
 	rei
 tvo:	movl	(sp)+,_boothowto
 	movl	(sp)+,_bootdev
-to_kmem:
+tokmem: movw	$0xfff, _panic
 	");
-#else
-	bootdev=dev;
-	boothowto=how;
-#endif
 
-/*
- * FIRST we must set up kernel stack, directly after end.
- * This is the only thing we have to setup here, rest in pmap.
- */
-
-	PAGE_SIZE = NBPG*2; /* Set logical page size */
+	/*
+	 * FIRST we must set up kernel stack, directly after end.
+	 * This is the only thing we have to setup here, rest in pmap.
+	 */
+	PAGE_SIZE = NBPG * 2; /* Set logical page size */
 #ifdef DDB
 	if ((boothowto & RB_KDB) != 0)
 		proc0paddr = ROUND_PAGE(esym) | 0x80000000;
@@ -102,48 +106,45 @@ to_kmem:
 #endif
 		proc0paddr = ROUND_PAGE(&end);
 
-	mtpr(proc0paddr, PR_PCBB); /* must be set before ksp for some cpus */
-	mtpr(proc0paddr+UPAGES*NBPG,PR_KSP); /* new kernel stack */
+	tmpptr = proc0paddr & 0x7fffffff;
+	mtpr(tmpptr, PR_PCBB); /* must be set before ksp for some cpus */
+	mtpr(proc0paddr + UPAGES * NBPG, PR_KSP); /* new kernel stack */
 
 	/*
 	 * Set logical page size and put Sysmap on its place.
 	 */
-	Sysmap=(u_int *)ROUND_PAGE(mfpr(PR_KSP));
+	Sysmap = (u_int *)ROUND_PAGE(mfpr(PR_KSP));
 
 	/* Be sure some important internal registers have safe values */
         ((struct pcb *)proc0paddr)->P0LR = 0;
-        ((struct pcb *)proc0paddr)->P0BR = 0;
+        ((struct pcb *)proc0paddr)->P0BR = (void *)0x80000000;
         ((struct pcb *)proc0paddr)->P1LR = 0;
         ((struct pcb *)proc0paddr)->P1BR = (void *)0x80000000;
         ((struct pcb *)proc0paddr)->iftrap = NULL;
-	mtpr(0,PR_P0LR);
-	mtpr(0,PR_P0BR);
-	mtpr(0,PR_P1LR);
-	mtpr(0x80000000,PR_P1BR);
+	mtpr(0, PR_P0LR);
+	mtpr(0x80000000, PR_P0BR);
+	mtpr(0, PR_P1LR);
+	mtpr(0x80000000, PR_P1BR);
 
-	mtpr(512,PR_SCBB); /* SCB at physical addr 512 */
-	mtpr(0,PR_ESP); /* Must be zero, used in page fault routine */
-	mtpr(AST_NO,PR_ASTLVL);
+	mtpr(0, PR_SCBB); /* SCB at physical addr  */
+	mtpr(0, PR_ESP); /* Must be zero, used in page fault routine */
+	mtpr(AST_NO, PR_ASTLVL);
 	
 	cninit();
 
 	/* Count up memory etc... early machine dependent routines */
-	if((cpunumber=MACHID(mfpr(PR_SID)))>VAX_MAX) cpunumber=0;
-	cpu_type=mfpr(PR_SID);
-#if VAX630 || VAX410
-        if (cpunumber == VAX_78032)
-                cpu_type=(((*UVAXIISID) >> 24) & 0xff)|(cpu_type & 0xff000000);
-#endif
+	if ((cpunumber = MACHID(mfpr(PR_SID))) > VAX_MAX)
+		cpunumber = 0;
+	cpu_type = mfpr(PR_SID);
 	pmap_bootstrap();
 
 	((struct pcb *)proc0paddr)->framep = scratch;
 
 	/*
-	 * change mode down to userspace is done by faking an stack
+	 * Change mode down to userspace is done by faking a stack
 	 * frame that is setup in cpu_set_kpc(). Not done by returning
 	 * from main anymore.
 	 */
 	main();
-
 	/* NOTREACHED */
 }

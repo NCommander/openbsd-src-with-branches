@@ -1,3 +1,4 @@
+.\"	$OpenBSD: csh.g,v 1.3 1995/03/21 09:03:42 cgd Exp $
 .\"	$NetBSD: csh.g,v 1.3 1995/03/21 09:03:42 cgd Exp $
 .\"
 .\" Copyright (c) 1980, 1993

@@ -1,4 +1,4 @@
-/*	$NetBSD: crt0.s,v 1.2 1995/10/09 23:54:37 cgd Exp $	*/
+/*	$NetBSD: crt0.s,v 1.5 1996/05/16 21:56:22 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -29,13 +29,6 @@
 
 #include <machine/asm.h>
 
-#define	SETGP(pv)	ldgp	gp,0(pv)
-
-#define	MF_FPCR(x)	mf_fpcr	x
-#define	MT_FPCR(x)	mt_fpcr	x
-#define	JMP(loc)	br	zero,loc
-#define	CONST(c,reg)	ldiq	reg, c
-
 /*
  * Set up the global variables provided by crt0:
  *	environ and __progname
@@ -63,7 +56,7 @@ LEAF(__start, 0)		/* XXX */
 #ifdef MCRT0
 eprol:
 	lda	a0, eprol
-	lda	a1, _etext
+	lda	a1, etext
 	CALL(monstartup)	/* monstartup(eprol, etext); */
 	lda	a0, _mcleanup
 	CALL(atexit)		/* atext(_mcleanup); */
@@ -81,6 +74,7 @@ eprol:
 	stq	a0, __progname	/* store the program name */
 2:
 	/* call main() */
+__callmain:
 	mov	s0, a0
 	mov	s1, a1
 	mov	s2, a2
@@ -101,7 +95,6 @@ LEAF(moncontrol, 0)
 END(moncontrol)
 
 LEAF(_mcount, 0)
-	/* XXX -- dunno what we have to do here! */
-	call_pal 0x81	/* XXX op_bugchk */
+        ret     zero, (at_reg), 1
 END(_mcount)
 #endif

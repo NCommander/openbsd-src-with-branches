@@ -1,4 +1,4 @@
-.\"	$NetBSD: sysctl.3,v 1.7 1995/09/30 07:03:54 thorpej Exp $
+.\"	$OpenBSD: sysctl.3,v 1.3 1996/08/19 08:26:26 tholo Exp $
 .\"
 .\" Copyright (c) 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,8 +31,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)sysctl.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd "June 4, 1993"
 .Dt SYSCTL 3
 .Os
@@ -40,6 +38,7 @@
 .Nm sysctl
 .Nd get or set system information
 .Sh SYNOPSIS
+.Fd #include <sys/param.h>
 .Fd #include <sys/sysctl.h>
 .Ft int
 .Fn sysctl "int *name" "u_int namelen" "void *oldp" "size_t *oldlenp" "void *newp" "size_t newlen"
@@ -596,8 +595,7 @@ The returned data consists of a
 .Sh RETURN VALUES
 If the call to
 .Nm sysctl
-is successful, 0 is returned.
-Otherwise \-1 is returned and
+is unsuccessful \-1 is returned and
 .Va errno
 is set appropriately.
 .Sh ERRORS

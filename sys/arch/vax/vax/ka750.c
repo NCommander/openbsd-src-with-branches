@@ -1,4 +1,4 @@
-/*	$NetBSD: ka750.c,v 1.5.2.1 1995/10/15 14:18:49 ragge Exp $	*/
+/*	$NetBSD: ka750.c,v 1.12 1996/04/08 18:32:42 ragge Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1988 The Regents of the University of California.
@@ -37,82 +37,69 @@
  *      @(#)autoconf.c  7.20 (Berkeley) 5/9/91
  */
 
-/* All bugs are subject to removal without further notice */
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/device.h>
+#include <sys/systm.h>
 
-#if VAX750
+#include <vm/vm.h>
+#include <vm/vm_kern.h>
 
-#include "sys/param.h"
-#include "sys/types.h"
-#include "sys/device.h"
-#include "machine/ka750.h"
-#include "machine/nexus.h"
-#include "machine/pte.h"
-#include "machine/mtpr.h"
-#include "vax/uba/ubavar.h"
-#include "vax/uba/ubareg.h"
+#include <machine/ka750.h>
+#include <machine/pte.h>
+#include <machine/cpu.h>
+#include <machine/mtpr.h>
+#include <machine/scb.h>
+#include <vax/uba/ubavar.h>
+#include <vax/uba/ubareg.h>
 
-#include "mba.h"
-#include "uba.h"
+void	ctuattach __P((void));
 
-#include "vm/vm.h"
-#include "vm/vm_kern.h"
-#include "vax/include/pmap.h"
-
-struct nexus *nexus;
-
-int
-ka750_conf()
+/*
+ * ka750_conf() is called by cpu_attach to do the cpu_specific setup.
+ */
+void
+ka750_conf(parent, self, aux)
+	struct	device *parent, *self;
+	void	*aux;
 {
-	extern char cpu_model[];
+	extern	char cpu_model[];
 
 	strcpy(cpu_model,"VAX 11/750");
-	config_rootfound("backplane",(void *)75);
-}
-
-int
-conf_750(){
-	extern int cpu_type, nmba, numuba;
-
 	printf(": 11/750, hardware rev %d, ucode rev %d\n",
-		V750HARDW(cpu_type), V750UCODE(cpu_type));
+	    V750HARDW(cpu_type), V750UCODE(cpu_type));
+	printf("%s: ", self->dv_xname);
+	if (mfpr(PR_ACCS) & 255) {
+		printf("FPA present, enabling.\n");
+		mtpr(0x8000, PR_ACCS);
+	} else
+		printf("no FPA\n");
+
+	/* Call ctuattach() here so it can setup its vectors. */
+	ctuattach();
 }
 
-ka750_clock(){
-	u_int i;
 /*
- * It's time to start clocks in system...
+ * ka750_clock() makes the 11/750 interrupt clock and todr
+ * register start counting.
  */
-	i=~10000; /* Complement of 10000 milliseconds */
-	mtpr(i,PR_NICR); /* Load in count register */
-	mtpr(0x51,PR_ICCS); /* Start clock and enable interrupt */
-	if(mfpr(PR_TODR)){
+int
+ka750_clock()
+{
+
+	mtpr(-10000, PR_NICR); /* Load in count register */
+	mtpr(0x800000d1, PR_ICCS); /* Start clock and enable interrupt */
+	if (mfpr(PR_TODR)) {
 		/* todr running */
 		return 0;
 	} else {
 		/* Start TODR register. */
-		mtpr(1,PR_TODR);
+		mtpr(1, PR_TODR);
 		return 1;
 	}
 
 }
 
-#if NMBA < 1
-/*
- * Dummy routine; should never be called.
- * Should also be somewhere else, but it doesn't matter right now :)
- */
-mbainterrupt(){return;}
-#endif
-
-
-/*
- * 750-specific code.
- */
-
-
-#include "sys/param.h"
-
-/* #include "mem.h" */
 
 extern volatile caddr_t mcraddr[];
 
@@ -135,34 +122,48 @@ struct	mcr750 {
 #define	M750_ADDR(err)	(((err) >> 9) & 0x7fff)
 
 /* enable crd interrupts */
+void
 ka750_memenable(sa,self)
 	struct sbi_attach_args *sa;
 	struct device *self;
 {
-	extern int nmcr;
-	int k,l,m,cardinfo;
-	struct mcr750 *mcr=(struct mcr750 *)sa->nexaddr;
+	int k, l, m, cardinfo;
+	struct mcr750 *mcr = (struct mcr750 *)sa->nexaddr;
 	
-	mcraddr[self->dv_unit]=(caddr_t)sa->nexaddr;
+	mcraddr[self->dv_unit] = (caddr_t)sa->nexaddr;
 
 	/* We will use this info for error reporting - later! */
-	cardinfo=mcr->mc_inf;
-	switch((cardinfo>>24)&3){
+	cardinfo = mcr->mc_inf;
+	switch ((cardinfo >> 24) & 3) {
 	case 0: printf(": L0011 ");
 		break;
+
 	case 1: printf(": L0016 ");
-		m=cardinfo&0xaaaa;
-		for(k=l=0;k<16;k++){if(m&1)l++;m>>=1;}
+		m = cardinfo & 0xaaaa;
+		for (k = l = 0; k < 16; k++){
+			if (m & 1)
+				l++;
+			m >>= 1;
+		}
 		printf("with %d M8750",l);
 		break;
+
 	case 3: printf(": L0022 ");
-		m=cardinfo&0x5555;
-		for(k=l=0;k<16;k++){if(m&1)l++;m>>=1;}
+		m = cardinfo & 0x5555;
+		for (k = l = 0; k < 16; k++) {
+			if (m & 1)
+				l++;
+			m>>=1;
+		}
 		printf("with %d M7199",l);
-		m=cardinfo&0xaaaa;
-		if(m){
-		for(k=l=0;k<16;k++){if(m&1)l++;m>>=1;}
-		printf(" and %d M8750",l);
+		m = cardinfo & 0xaaaa;
+		if (m) {
+			for (k = l = 0; k < 16; k++) {
+				if (m & 1)
+					l++;
+				m >>= 1;
+			}
+			printf(" and %d M8750",l);
 		}
 		break;
 	}
@@ -173,6 +174,7 @@ ka750_memenable(sa,self)
 }
 
 /* log crd errors */
+void
 ka750_memerr()
 {
 	register struct mcr750 *mcr = (struct mcr750 *)mcraddr[0];
@@ -209,6 +211,7 @@ struct mc750frame {
 #define MC750_TBERR	2		/* type code of cp tbuf par */
 #define	MC750_TBPAR	4		/* tbuf par bit in mcesr */
 
+int
 ka750_mchk(cmcf)
 	caddr_t cmcf;
 {
@@ -229,8 +232,26 @@ ka750_mchk(cmcf)
 	mtpr(0xf, PR_MCESR);
 	if (type == MC750_TBERR && (mcf->mc5_mcesr&0xe) == MC750_TBPAR) {
 		printf("tbuf par: flushing and returning\n");
-		return (0);
+		return (MCHK_RECOVERED);
 	}
-	return (-1);
+	return (MCHK_PANIC);
 }
-#endif
+
+void
+ka750_steal_pages()
+{
+	extern	vm_offset_t avail_start, virtual_avail;
+	extern	struct nexus *nexus;
+	int	junk;
+
+	/*
+	 * We take away the pages we need, one for SCB and the rest
+	 * for UBA vectors == 1 + 2 will alloc all needed space.
+	 * We also set up virtual area for SBI.
+	 */
+	MAPPHYS(junk, V750PGS, VM_PROT_READ|VM_PROT_WRITE);
+	MAPVIRT(nexus, btoc(NEX750SZ));
+	pmap_map((vm_offset_t)nexus, NEX750, NEX750 + NEX750SZ,
+	    VM_PROT_READ|VM_PROT_WRITE);
+}
+

@@ -1,4 +1,5 @@
-/*	$NetBSD: ls.c,v 1.15 1995/09/07 06:42:58 jtc Exp $	*/
+/*    $OpenBSD: ls.c,v 1.3 1996/06/23 14:20:19 deraadt Exp $      */
+/*    $NetBSD: ls.c,v 1.16 1996/02/14 05:58:53 jtc Exp $      */
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ls.c	8.7 (Berkeley) 8/5/94";
 #else
-static char rcsid[] = "$NetBSD: ls.c,v 1.15 1995/09/07 06:42:58 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ls.c,v 1.3 1996/06/23 14:20:19 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -118,12 +119,10 @@ main(argc, argv)
 
 	/* Terminal defaults to -Cq, non-terminal defaults to -1. */
 	if (isatty(STDOUT_FILENO)) {
-		if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) == -1 ||
-		    !win.ws_col) {
-			if ((p = getenv("COLUMNS")) != NULL)
-				termwidth = atoi(p);
-		}
-		else
+              if ((p = getenv("COLUMNS")) != NULL)
+                      termwidth = atoi(p);
+              else if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) == 0 &&
+                  win.ws_col > 0)
 			termwidth = win.ws_col;
 		f_column = f_nonprint = 1;
 	} else
@@ -219,7 +218,6 @@ main(argc, argv)
 			f_whiteout = 1;
 			break;
 		default:
-		case '?':
 			usage();
 		}
 	}

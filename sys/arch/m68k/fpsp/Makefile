@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.8 1996/06/16 10:33:44 deraadt Exp $
 #	$NetBSD: Makefile,v 1.4 1994/10/26 07:48:46 cgd Exp $
 
 #	MOTOROLA MICROPROCESSOR & MEMORY TECHNOLOGY GROUP
@@ -325,7 +326,7 @@ l_stwotox.s: stwotox.s
 #
 #	Extract all files from SCCS directory
 #
-clean:
+clean cleandir:
 	rm -f $(H_FILES)
 	rm -f $(S_FILES)
 	rm -f $(O_FILES)
@@ -334,5 +335,15 @@ clean:
 	rm -f $(LIB_O_FILES)
 	rm -f $(LIB_TARGET)
 
-clobber:	clean
+_SUBDIRUSE:
 
+all:
+
+depend:
+
+install:
+
+includes:
+
+.include <bsd.obj.mk>
+.include <bsd.own.mk>

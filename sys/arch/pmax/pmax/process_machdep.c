@@ -1,4 +1,4 @@
-/*	$NetBSD: process_machdep.c,v 1.3 1994/10/26 21:10:40 cgd Exp $	*/
+/*	$NetBSD: process_machdep.c,v 1.5 1996/03/20 01:30:49 jonathan Exp $	*/
 
 /*
  * Copyright (c) 1994 Adam Glass   
@@ -74,11 +74,13 @@
 #include <machine/psl.h>
 #include <machine/reg.h>
 
+
 int
 process_read_regs(p, regs)
 	struct proc *p;
 	struct reg *regs;
 {
+	bcopy(p->p_md.md_regs, (caddr_t)regs, sizeof(struct reg));
 	return (0);
 }
 
@@ -87,6 +89,12 @@ process_write_regs(p, regs)
 	struct proc *p;
 	struct reg *regs;
 {
+	bcopy((caddr_t)regs, p->p_md.md_regs, sizeof(struct reg));
+	/*
+	 * XXX: is it safe to let users set system coprocessor regs?
+	 * XXX: Clear to user set bits!!
+	 */
+	/*p->p_md.md_tf->tf_psr = psr | (regs->r_psr & PSR_ICC);*/
 	return (0);
 }
 
@@ -94,6 +102,9 @@ int
 process_sstep(p, sstep)
 	struct proc *p;
 {
+	/* XXX correct semantics: sstep once or forevermore? */
+	if(sstep)
+		cpu_singlestep(p);
 	return (0);
 }
 
@@ -102,6 +113,7 @@ process_set_pc(p, addr)
 	struct proc *p;
 	caddr_t addr;
 {
+	p->p_md.md_regs[PC] = (int)addr;
 	return (0);
 }
 

@@ -1,4 +1,4 @@
-/*	$NetBSD: param.h,v 1.9 1995/03/28 18:15:38 jtc Exp $	*/
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,7 +45,9 @@
 /*
  * Machine dependent constants for mvme68k, based on HP9000 series 300.
  */
+#define	_MACHINE 	"mvme68k"
 #define	MACHINE 	"mvme68k"
+#define	_MACHINE_ARCH	"m68k"
 #define	MACHINE_ARCH	"m68k"
 #define	MID_MACHINE	MID_M68K
 
@@ -98,9 +100,9 @@
 
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
 #else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	1024		/* map size, max cluster allocation */
 #endif
 #endif
 

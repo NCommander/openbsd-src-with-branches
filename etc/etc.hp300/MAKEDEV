@@ -1,6 +1,7 @@
 #!/bin/sh -
 #
-#	$NetBSD: MAKEDEV,v 1.11 1995/09/30 21:59:57 thorpej Exp $
+#	$OpenBSD: MAKEDEV,v 1.7 1996/07/23 06:32:55 etheisen Exp $
+#	$NetBSD: MAKEDEV,v 1.12 1995/11/05 23:50:22 thorpej Exp $
 #
 # Copyright (c) 1990 The Regents of the University of California.
 # All rights reserved.
@@ -74,15 +75,16 @@ all)
 	sh MAKEDEV std fd ct0 ct1 st0 st1 ccd0 ccd1 ccd2 rd0 rd1 rd2
 	sh MAKEDEV sd0 sd1 sd2 pty0 vnd0 vnd1 vnd2 vnd3
 	sh MAKEDEV hil grf0 ite0 dca0 dcm0 dcm1 dcm2 dcm3
-	sh MAKEDEV bpf0 bpf1 bpf2 bpf3 tun0 tun1 tun2 tun3 lkm
+	sh MAKEDEV bpf0 bpf1 bpf2 bpf3 ipl tun0 tun1 tun2 tun3 lkm rnd
 	sh MAKEDEV local
 	;;
 
 std)
+	rm -f console drum kmem mem null zero tty klog stdin stdout stderr
 	mknod console		c 0 0
-	mknod drum		c 3 0	; chmod 640 drum ; chgrp kmem drum
-	mknod kmem		c 2 1	; chmod 640 kmem ; chgrp kmem kmem
-	mknod mem		c 2 0	; chmod 640 mem ; chgrp kmem mem
+	mknod drum		c 3 0	; chmod 640 drum ; chown root.kmem drum
+	mknod kmem		c 2 1	; chmod 640 kmem ; chown root.kmem kmem
+	mknod mem		c 2 0	; chmod 640 mem ; chown root.kmem mem
 	mknod null		c 2 2	; chmod 666 null
 	mknod zero		c 2 12	; chmod 666 zero
 	mknod tty		c 1 0	; chmod 666 tty
@@ -116,6 +118,8 @@ ct*|mt*|st*)
 		twelve=`expr $unit + 12`; twenty=`expr $unit + 20`
 		#
 		# block devices don't work so don't make them
+		#rm -f ${name}${unit} ${name}${four} ${name}${eight} \
+		#    ${name}${twelve} n${name}${unit} n${name}${eight}
 		#mknod ${name}${unit}	b $blk $unit
 		#mknod ${name}${four}	b $blk $four
 		#mknod ${name}${eight}	b $blk $eight
@@ -123,6 +127,8 @@ ct*|mt*|st*)
 		#mknod n${name}${unit}	b $blk $four ;: sanity w/pdp11 v7
 		#mknod n${name}${eight}	b $blk $twelve ;: ditto
 		#
+		rm -f r${name}${unit} r${name}${four} r${name}${eight} \
+		    r${name}${twelve} nr${name}${unit} nr${name}${eight}
 		mknod r${name}${unit}	c $chr $unit
 		mknod r${name}${four}	c $chr $four
 		mknod r${name}${eight}	c $chr $eight
@@ -143,6 +149,11 @@ bpf*)
 	mknod bpf$unit c 22 $unit
 	chmod 600 bpf$unit
 	chown root.wheel bpf$unit
+	;;
+
+ipl)
+	mknod ipl c 31 0
+	chown root.wheel ipl
 	;;
 
 tun*)
@@ -181,7 +192,7 @@ ccd*|fd*|rd*|sd*|vnd*)
 		mknod r${name}${unit}f	c $chr `expr $unit '*' 8 + 5`
 		mknod r${name}${unit}g	c $chr `expr $unit '*' 8 + 6`
 		mknod r${name}${unit}h	c $chr `expr $unit '*' 8 + 7`
-		chgrp operator ${name}${unit}[a-h] r${name}${unit}[a-h]
+		chown root.operator ${name}${unit}[a-h] r${name}${unit}[a-h]
 		chmod 640 ${name}${unit}[a-h] r${name}${unit}[a-h]
 		;;
 	*)
@@ -192,9 +203,11 @@ ccd*|fd*|rd*|sd*|vnd*)
 	;;
 
 dca*)
+	# XXX What about dca cards?
 	unit=`expr $i : 'dca\(.*\)'`
 	case $unit in
 	0)
+		rm -f tty0
 		mknod tty0 c 12 0
 		;;
 	*)
@@ -209,7 +222,7 @@ dcm*)
 	0|1|2|3)
 		eval `echo $unit | awk ' { unit = $1; u = 4 * $1 } END {
 		for (i = 0; i < 4; i++)
-		printf("mknod tty0%x c 15 %d; ",u+i,u+i); }'`
+		printf("rm -f tty0%x; mknod tty0%x c 15 %d; ",u+i,u+i,u+i); }'`
 	;;
 	*)
 		echo bad unit for dcm in: $i
@@ -221,6 +234,7 @@ ite*)
 	unit=`expr $i : 'ite\(.*\)'`
 	case $unit in
 	0|1|2|3)
+		rm -f ttye${unit}
 		mknod ttye${unit} c 13 ${unit}
 		;;
 	*)
@@ -233,6 +247,7 @@ grf*)
 	unit=`expr $i : 'grf\(.*\)'`
 	case $unit in
 	0|1|2|3)
+		rm -f grf${unit}
 		mknod grf${unit} c 10 ${unit}; chmod 666 grf${unit}
 #		echo "grf${unit}: use MAKEDEV.hpux to make HP-UX names for device"
 		;;
@@ -245,6 +260,7 @@ grf*)
 hil)
 	for unit in 0 1 2 3 4 5 6 7
 	do
+		rm -f hil${unit} locator keyboard
 		mknod hil${unit} c 14 ${unit}
 		if [ -f /usr/sbin/hilinfo ]
 		then
@@ -298,9 +314,10 @@ pty*)
 		umask 0
 		eval `echo $offset $name | awk ' { b=$1; n=$2 } END {
 			for (i = 0; i < 16; i++)
-				printf("mknod tty%s%x c 4 %d; \
-					mknod pty%s%x c 5 %d; ", \
-					n, i, b+i, n, i, b+i); }'`
+				printf("rm -f tty%s%x pty%s%x;" \
+					"mknod tty%s%x c 4 %d;" \
+					"mknod pty%s%x c 5 %d; ", \
+					n, i, n, i, n, i, b+i, n, i, b+i); }'`
 		umask 77
 		if [ $class = 1 ]; then
 			mv ttyqf ttyv0; mv ptyqf ptyv0

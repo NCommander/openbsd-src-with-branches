@@ -1,4 +1,5 @@
-/*	$NetBSD: proc.h,v 1.41 1995/08/13 09:04:43 mycroft Exp $	*/
+/*	$OpenBSD: proc.h,v 1.9 1996/08/25 09:51:47 deraadt Exp $	*/
+/*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
  * Copyright (c) 1986, 1989, 1991, 1993
@@ -91,6 +92,7 @@ struct	emul {
 					/* Set registers before execution */
 	void	(*e_setregs) __P((struct proc *, struct exec_package *,
 				  u_long, register_t *));
+	int	(*e_fixup) __P((struct proc *, struct exec_package *));
 	char	*e_sigcode;		/* Start of sigcode */
 	char	*e_esigcode;		/* End of sigcode */
 };
@@ -138,7 +140,7 @@ struct	proc {
 #define	p_startzero	p_oppid
 
 	pid_t	p_oppid;	 /* Save parent pid during ptrace. XXX */
-	int	p_dupfd;	 /* Sideways return value from fdopen. XXX */
+	int	p_dupfd;	 /* Sideways return value from filedescopen. XXX */
 
 	/* scheduling */
 	u_int	p_estcpu;	 /* Time averaged value of p_cpticks. */
@@ -230,6 +232,7 @@ struct	proc {
 /* XXX Not sure what to do with these, yet. */
 #define	P_FSTRACE	0x10000	/* tracing via file system (elsewhere?) */
 #define	P_SSTEP		0x20000	/* process needs single-step fixup ??? */
+#define	P_SUGIDEXEC	0x40000	/* last execve() was a setuid/setgid execve() */
 
 /*
  * MOVE TO ucred.h?
@@ -311,5 +314,13 @@ void	swapin __P((struct proc *));
 int	tsleep __P((void *chan, int pri, char *wmesg, int timo));
 void	unsleep __P((struct proc *));
 void	wakeup __P((void *chan));
+void	exit1 __P((struct proc *, int));
+int	fork1 __P((struct proc *, int, int, register_t *));
+void	kmeminit __P((void));
+void	rqinit __P((void));
+int	groupmember __P((gid_t, struct ucred *));
+void	cpu_switch __P((struct proc *));
+void	cpu_wait __P((struct proc *));
+void	cpu_exit __P((struct proc *));
 #endif	/* _KERNEL */
 #endif	/* !_SYS_PROC_H_ */

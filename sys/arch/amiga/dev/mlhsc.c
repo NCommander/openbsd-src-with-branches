@@ -1,4 +1,5 @@
-/*	$NetBSD: mlhsc.c,v 1.8 1995/02/12 19:19:18 chopps Exp $	*/
+/*	$OpenBSD: mlhsc.c,v 1.2 1996/04/21 22:15:38 deraadt Exp $	*/
+/*	$NetBSD: mlhsc.c,v 1.10 1996/04/21 21:12:12 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -49,7 +50,7 @@
 
 int mlhscprint __P((void *auxp, char *));
 void mlhscattach __P((struct device *, struct device *, void *));
-int mlhscmatch __P((struct device *, struct cfdata *, void *));
+int mlhscmatch __P((struct device *, void *, void *));
 
 int mlhsc_dma_xfer_in __P((struct sci_softc *dev, int len,
     register u_char *buf, int phase));
@@ -70,26 +71,30 @@ struct scsi_device mlhsc_scsidev = {
 	NULL,		/* Use default done routine */
 };
 
-#define QPRINTF
-
 #ifdef DEBUG
-extern int sci_debug;
+extern int sci_debug;  
+#define QPRINTF(a) if (sci_debug > 1) printf a
+#else
+#define QPRINTF(a)
 #endif
 
 extern int sci_data_wait;
 
-struct cfdriver mlhsccd = {
-	NULL, "mlhsc", (cfmatch_t)mlhscmatch, mlhscattach, 
-	DV_DULL, sizeof(struct sci_softc), NULL, 0 };
+struct cfattach mlhsc_ca = {
+	sizeof(struct sci_softc), mlhscmatch, mlhscattach
+};
+
+struct cfdriver mlhsc_cd = {
+	NULL, "mlhsc", DV_DULL, NULL, 0
+};
 
 /*
  * if we are my Hacker's SCSI board we are here.
  */
 int
-mlhscmatch(pdp, cdp, auxp)
+mlhscmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -174,10 +179,11 @@ mlhsc_dma_xfer_in (dev, len, buf, phase)
 {
 	int wait = sci_data_wait;
 	u_char csr;
-	u_char *obp = buf;
 	volatile register u_char *sci_dma = dev->sci_data + 16;
 	volatile register u_char *sci_csr = dev->sci_csr;
-	volatile register u_char *sci_icmd = dev->sci_icmd;
+#ifdef DEBUG
+	u_char *obp = buf;
+#endif
 
 	csr = *dev->sci_bus_csr;
 
@@ -261,10 +267,8 @@ mlhsc_dma_xfer_out (dev, len, buf, phase)
 {
 	int wait = sci_data_wait;
 	u_char csr;
-	u_char *obp = buf;
 	volatile register u_char *sci_dma = dev->sci_data + 16;
 	volatile register u_char *sci_csr = dev->sci_csr;
-	volatile register u_char *sci_icmd = dev->sci_icmd;
 
 	csr = *dev->sci_bus_csr;
 

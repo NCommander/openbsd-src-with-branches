@@ -1,4 +1,5 @@
-/*	$NetBSD: wesc.c,v 1.10 1995/09/16 16:11:32 chopps Exp $	*/
+/*	$OpenBSD: wesc.c,v 1.3 1996/04/21 22:15:47 deraadt Exp $	*/
+/*	$NetBSD: wesc.c,v 1.13 1996/04/21 21:12:42 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -52,8 +53,11 @@
 
 int wescprint __P((void *auxp, char *));
 void wescattach __P((struct device *, struct device *, void *));
-int wescmatch __P((struct device *, struct cfdata *, void *));
-int wesc_dmaintr __P((struct siop_softc *));
+int wescmatch __P((struct device *, void *, void *));
+int wesc_dmaintr __P((void *));
+#ifdef DEBUG
+void wesc_dump __P((void));
+#endif
 
 struct scsi_adapter wesc_scsiswitch = {
 	siop_scsicmd,
@@ -73,18 +77,21 @@ struct scsi_device wesc_scsidev = {
 #ifdef DEBUG
 #endif
 
-struct cfdriver wesccd = {
-	NULL, "wesc", (cfmatch_t)wescmatch, wescattach, 
-	DV_DULL, sizeof(struct siop_softc), NULL, 0 };
+struct cfattach wesc_ca = {
+	sizeof(struct siop_softc), wescmatch, wescattach
+};
+
+struct cfdriver wesc_cd = {
+	NULL, "wesc", DV_DULL, NULL, 0
+};
 
 /*
  * if we are an MacroSystemsUS Warp Engine
  */
 int
-wescmatch(pdp, cdp, auxp)
+wescmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -114,7 +121,8 @@ wescattach(pdp, dp, auxp)
 	 * CTEST7 = SC0, TT1
 	 */
 	sc->sc_clock_freq = 50;		/* Clock = 50Mhz */
-	sc->sc_ctest7 = 0x22;		/* SC0 + TT1 */
+	sc->sc_ctest7 = SIOP_CTEST7_SC0 | SIOP_CTEST7_TT1;
+	sc->sc_dcntl = 0x00;
 
 	sc->sc_link.adapter_softc = sc;
 	sc->sc_link.adapter_target = 7;
@@ -150,9 +158,10 @@ wescprint(auxp, pnp)
 
 
 int
-wesc_dmaintr(sc)
-	struct siop_softc *sc;
+wesc_dmaintr(arg)
+	void *arg;
 {
+	struct siop_softc *sc = arg;
 	siop_regmap_p rp;
 	u_char istat;
 
@@ -179,8 +188,8 @@ wesc_dump()
 {
 	int i;
 
-	for (i = 0; i < wesccd.cd_ndevs; ++i)
-		if (wesccd.cd_devs[i])
-			siop_dump(wesccd.cd_devs[i]);
+	for (i = 0; i < wesc_cd.cd_ndevs; ++i)
+		if (wesc_cd.cd_devs[i])
+			siop_dump(wesc_cd.cd_devs[i]);
 }
 #endif

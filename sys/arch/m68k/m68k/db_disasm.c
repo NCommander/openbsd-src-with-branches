@@ -1,4 +1,5 @@
-/*	$NetBSD: db_disasm.c,v 1.12 1994/11/14 20:53:52 gwr Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.2 1996/04/21 22:17:44 deraadt Exp $	*/
+/*	$NetBSD: db_disasm.c,v 1.14 1996/04/29 20:50:26 leo Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -67,6 +68,7 @@
 #include <machine/db_machdep.h>
 
 #include <ddb/db_sym.h>
+#include <ddb/db_output.h>
 #include <m68k/m68k/db_disasm.h>
 
 void get_modregstr __P((dis_buffer_t *, int, int, int, int));
@@ -170,10 +172,6 @@ db_disasm(loc, moto_syntax)
 	u_short opc;
 	dis_func_t *func;
 	dis_buffer_t dbuf;
-	char *symname = NULL;
-	db_expr_t diff;
-	db_sym_t sym;
-	struct nlist *nl;
 
 	dbuf.casm = dbuf.dasm = asm_buffer;
 	dbuf.cinfo = dbuf.info = info_buffer;
@@ -507,6 +505,7 @@ opcode_move(dbuf, opc)
 {
 	int sz, lused;
 
+	sz = 0;
 	switch (OPCODE_MAP(opc)) {
 	case 0x1:		/* move.b */
 		sz = SIZE_BYTE;
@@ -553,7 +552,6 @@ opcode_misc(dbuf, opc)
 {
 	char *tmp;
 	int sz;
-	u_short  ext;
 
 	tmp = NULL;
 	    
@@ -1369,7 +1367,7 @@ opcode_fpu(dbuf, opc)
 	u_short opc;
 {
 	u_short ext;
-	int sz, type, opmode;
+	int type, opmode;
 
 	type = BITFIELD(opc,8,6);
 	switch (type) {
@@ -1581,7 +1579,8 @@ opcode_fmove_ext(dbuf, opc, ext)
 	u_short opc, ext;
 {
 	int sz;
-	
+
+	sz = 0;
 	if (BITFIELD(ext,15,13) == 3) {
 		/* fmove r ==> m */
 		addstr(dbuf, "fmov");
@@ -1684,7 +1683,7 @@ opcode_mmu(dbuf, opc)
 	u_short opc;
 {
 	u_short ext;
-	int sz, type, opmode;
+	int type;
 
 	type = BITFIELD(opc,8,6);
 	switch (type) {
@@ -1846,6 +1845,8 @@ opcode_pmove(dbuf, opc, ext)
 	const char *reg;
 	int rtom, sz, preg;
 
+	reg  = "???";
+	sz   = 0;
 	rtom = ISBITSET(ext, 9);
 	preg = BITFIELD(ext, 12, 10);
 	
@@ -1954,10 +1955,10 @@ print_fcode(dbuf, fc)
 	dis_buffer_t *dbuf;
 	u_short fc;
 {
-	if (ISBITSET(fc, 5))
-		printu_bf(dbuf, fc, 4, 0);
-	else if (ISBITSET(fc, 4))
-		PRINT_DREG(dbuf, BITFIELD(fc, 3, 0));
+	if (ISBITSET(fc, 4))
+		printu_bf(dbuf, fc, 3, 0);
+	else if (ISBITSET(fc, 3))
+		PRINT_DREG(dbuf, BITFIELD(fc, 2, 0));
 	else if (fc == 1)
 		addstr(dbuf, "sfc");
 	else
@@ -1968,9 +1969,6 @@ opcode_mmu040(dbuf, opc)
 	dis_buffer_t *dbuf;
 	u_short opc;
 {
-	u_short ext;
-	int sz, type;
-
 	if (ISBITSET(opc, 6)) {
 		addstr(dbuf, "ptest");
 		if (ISBITSET(opc, 5))
@@ -2269,7 +2267,7 @@ addstr(dbuf, s)
 	dis_buffer_t *dbuf;
 	const char *s;
 {
-	while (*dbuf->casm++ = *s++)
+	while ((*dbuf->casm++ = *s++))
 		;
 	dbuf->casm--;
 }
@@ -2282,7 +2280,7 @@ iaddstr(dbuf, s)
 	dis_buffer_t *dbuf;
 	const char *s;
 {
-	while (*dbuf->cinfo++ = *s++)
+	while ((*dbuf->cinfo++ = *s++))
 		;
 	dbuf->cinfo--;
 }
@@ -2297,6 +2295,8 @@ get_modregstr_moto(dbuf, bit, mod, sz, dd)
 	u_short ext;
 	int disp, odisp, bd, od, reg;
 	
+	odisp = 0;
+
 	/* check to see if we have been given the mod */
 	if (mod != GETMOD_BEFORE && mod != GETMOD_AFTER)
 		reg = BITFIELD(*dbuf->val, bit, bit-2);
@@ -2502,6 +2502,7 @@ get_modregstr_mit(dbuf, bit, mod, sz, dd)
 	u_short ext;
 	int disp, odisp, bd, od, reg;
 	
+	disp = odisp = 0;
 	/* check to see if we have been given the mod */
 	if (mod != GETMOD_BEFORE && mod != GETMOD_AFTER)
 		reg = BITFIELD(*dbuf->val, bit, bit-2);
@@ -2817,6 +2818,7 @@ get_fpustdGEN(dbuf,ext,name)
 	 * it is.
 	 */
 
+	sz = 0;
 	addchar(*name++);
 	if (ISBITSET(ext,7)) {
 		if(ISBITSET(ext,2))
@@ -3067,7 +3069,7 @@ printu_wb(dbuf, val, sz, base)
 		*++p = "0123456789abcdef"[val % base];
 	} while (val /= base);
 
-	while (ch = *p--)
+	while ((ch = *p--))
 		addchar(ch);
 	
 	*dbuf->casm = 0;
@@ -3108,7 +3110,7 @@ iprintu_wb(dbuf, val, sz, base)
 		*++p = "0123456789abcdef"[val % base];
 	} while (val /= base);
 
-	while (ch = *p--)
+	while ((ch = *p--))
 		iaddchar(ch);
 	
 	*dbuf->cinfo = 0;

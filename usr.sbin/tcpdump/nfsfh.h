@@ -1,7 +1,7 @@
-/*	$NetBSD: nfsfh.h,v 1.2 1995/03/06 19:10:39 mycroft Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Header: nfsfh.h,v 1.3 94/06/12 14:32:58 leres Exp
+ * Header: nfsfh.h,v 1.4 95/10/19 20:27:44 leres Exp
  *
  * nfsfh.h - NFS file handle definitions (for portable use)
  *
@@ -15,8 +15,8 @@
  * that we might be spying upon use different external representations.
  */
 typedef struct {
-	u_long	Minor;	/* upper case to avoid clashing with macro names */
-	u_long	Major;
+	u_int32_t Minor;	/* upper case to avoid clashing with macro names */
+	u_int32_t Major;
 } my_devt;
 
 #define	dev_eq(a,b)	((a.Minor == b.Minor) && (a.Major == b.Major))
@@ -27,7 +27,7 @@ typedef struct {
  */
 typedef	struct {
 	my_devt	fsid_dev;
-	u_long	fsid_code;
+	u_int32_t fsid_code;
 } my_fsid;
 
 #define	fsid_eq(a,b)	((a.fsid_code == b.fsid_code) &&\

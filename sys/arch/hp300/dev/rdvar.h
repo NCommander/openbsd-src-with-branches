@@ -1,4 +1,4 @@
-/*	$NetBSD: rdvar.h,v 1.2 1994/10/26 07:24:56 cgd Exp $	*/
+/*	$NetBSD: rdvar.h,v 1.4.4.1 1996/06/06 16:22:03 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -46,25 +46,22 @@ struct	rdidentinfo {
 	short	ri_hwid;		/* 2 byte HW id */
 	short	ri_maxunum;		/* maximum allowed unit number */
 	char	*ri_desc;		/* drive type description */
+	int	ri_nbpt;		/* DEV_BSIZE blocks per track */
+	int	ri_ntpc;		/* tracks per cylinder */
+	int	ri_ncyl;		/* cylinders per unit */
 	int	ri_nblocks;		/* DEV_BSIZE blocks on disk */
-};
-
-struct	rdinfo {
-	struct	disklabel ri_label;	/* label */
-	int	ri_bopen;		/* mask of open block devs */
-	int	ri_copen;		/* mask of open char devs */
-	int	ri_open;		/* composite mask of open devs */
 };
 
 struct	rd_softc {
 	struct	hp_device *sc_hd;
+	struct	disk sc_dkdev;
+	char	sc_xname[8];
 	int	sc_flags;
 	short	sc_type;
 	short	sc_punit;
 	char	*sc_addr;
 	int	sc_resid;
-	u_int	sc_wpms;
-	struct	rdinfo sc_info;
+	struct	rd_describe sc_rddesc;
 	struct	devqueue sc_dq;
 	struct	rd_iocmd sc_ioc;
 	struct	rd_rscmd sc_rsc;
@@ -100,3 +97,8 @@ struct rdstats {
 
 #define	RDRETRY		5
 #define RDWAITC		1	/* min time for timeout in seconds */
+
+#ifdef _KERNEL
+extern	struct rdidentinfo rdidentinfo[];
+extern	struct rd_softc rd_softc[];
+#endif

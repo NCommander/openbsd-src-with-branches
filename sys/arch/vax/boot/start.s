@@ -1,4 +1,4 @@
-/*	$NetBSD: start.s,v 1.4 1995/09/16 16:20:21 ragge Exp $ */
+/*	$NetBSD: start.s,v 1.7 1996/02/02 19:08:33 mycroft Exp $ */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -36,14 +36,12 @@
  /* All bugs are subject to removal without further notice */
 		
 
-#define	LOCORE
-#include "sys/disklabel.h"
-#undef LOCORE
+#define	_LOCORE
 
-#define ASSEMBLER
+#include "sys/disklabel.h"
+
 #include "../include/mtpr.h"
 #include "../include/asm.h"		
-#include "bootdefs.h"
 
 _start:	.globl _start		# this is the symbolic name for the start
 				# of code to be relocated. We can use this

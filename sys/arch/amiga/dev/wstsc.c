@@ -1,4 +1,5 @@
-/*	$NetBSD: wstsc.c,v 1.9 1995/08/18 15:28:17 chopps Exp $	*/
+/*	$OpenBSD: wstsc.c,v 1.2 1996/04/21 22:15:48 deraadt Exp $	*/
+/*	$NetBSD: wstsc.c,v 1.12 1996/04/28 06:49:35 mhitch Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -49,7 +50,7 @@
 
 int wstscprint __P((void *auxp, char *));
 void wstscattach __P((struct device *, struct device *, void *));
-int wstscmatch __P((struct device *, struct cfdata *, void *));
+int wstscmatch __P((struct device *, void *, void *));
 
 int wstsc_dma_xfer_in __P((struct sci_softc *dev, int len,
     register u_char *buf, int phase));
@@ -59,7 +60,7 @@ int wstsc_dma_xfer_in2 __P((struct sci_softc *dev, int len,
     register u_short *buf, int phase));
 int wstsc_dma_xfer_out2 __P((struct sci_softc *dev, int len,
     register u_short *buf, int phase));
-int wstsc_intr __P((struct sci_softc *));
+int wstsc_intr __P((void *));
 
 struct scsi_adapter wstsc_scsiswitch = {
 	sci_scsicmd,
@@ -75,28 +76,32 @@ struct scsi_device wstsc_scsidev = {
 	NULL,		/* Use default done routine */
 };
 
-#define QPRINTF
-
 #ifdef DEBUG
 extern int sci_debug;
+#define QPRINTF(a) if (sci_debug > 1) printf a
+#else
+#define QPRINTF(a)
 #endif
 
 extern int sci_data_wait;
 
 int supradma_pseudo = 0;	/* 0=none, 1=byte, 2=word */
 
-struct cfdriver wstsccd = {
-	NULL, "wstsc", (cfmatch_t)wstscmatch, wstscattach, 
-	DV_DULL, sizeof(struct sci_softc), NULL, 0 };
+struct cfattach wstsc_ca = {
+	sizeof(struct sci_softc), wstscmatch, wstscattach
+};
+
+struct cfdriver wstsc_cd = {
+	NULL, "wstsc", DV_DULL, NULL, 0
+};
 
 /*
  * if this a Supra WordSync board
  */
 int
-wstscmatch(pdp, cdp, auxp)
+wstscmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -148,8 +153,8 @@ wstscattach(pdp, dp, auxp)
 	sc->sci_irecv = rp + 14;
 
 	if (supradma_pseudo == 2) {
-		sc->dma_xfer_in = wstsc_dma_xfer_in2;
-		sc->dma_xfer_out = wstsc_dma_xfer_out2;
+		sc->dma_xfer_in = (int(*)(struct sci_softc *, int, u_char *, int))wstsc_dma_xfer_in2;
+		sc->dma_xfer_out = (int(*)(struct sci_softc *, int, u_char *, int))wstsc_dma_xfer_out2;
 	}
 	else if (supradma_pseudo == 1) {
 		sc->dma_xfer_in = wstsc_dma_xfer_in;
@@ -197,10 +202,11 @@ wstsc_dma_xfer_in (dev, len, buf, phase)
 	int phase;
 {
 	int wait = sci_data_wait;
-	u_char csr;
-	u_char *obp = (u_char *) buf;
 	volatile register u_char *sci_dma = dev->sci_idata;
 	volatile register u_char *sci_csr = dev->sci_csr;
+#ifdef DEBUG
+	u_char *obp = (u_char *) buf;
+#endif
 
 	QPRINTF(("supradma_in %d, csr=%02x\n", len, *dev->sci_bus_csr));
 
@@ -283,8 +289,6 @@ wstsc_dma_xfer_out (dev, len, buf, phase)
 	int phase;
 {
 	int wait = sci_data_wait;
-	u_char csr;
-	u_char *obp = buf;
 	volatile register u_char *sci_dma = dev->sci_data;
 	volatile register u_char *sci_csr = dev->sci_csr;
 
@@ -308,7 +312,7 @@ wstsc_dma_xfer_out (dev, len, buf, phase)
 #ifdef DEBUG
 				if (sci_debug)
 					printf("supradma_out fail: l%d i%x w%d\n",
-					len, csr, wait);
+					len, *dev->sci_bus_csr, wait);
 #endif
 				*dev->sci_mode = 0;
 				return 0;
@@ -337,11 +341,14 @@ wstsc_dma_xfer_in2 (dev, len, buf, phase)
 	register u_short *buf;
 	int phase;
 {
-	int wait = sci_data_wait;
-	u_char csr;
-	u_char *obp = (u_char *) buf;
 	volatile register u_short *sci_dma = (u_short *)(dev->sci_idata + 0x10);
 	volatile register u_char *sci_csr = dev->sci_csr + 0x10;
+#ifdef DEBUG
+	u_char *obp = (u_char *) buf;
+#endif
+#if 0
+	int wait = sci_data_wait;
+#endif
 
 	QPRINTF(("supradma_in2 %d, csr=%02x\n", len, *dev->sci_bus_csr));
 
@@ -424,11 +431,14 @@ wstsc_dma_xfer_out2 (dev, len, buf, phase)
 	register u_short *buf;
 	int phase;
 {
-	int wait = sci_data_wait;
-	u_char csr;
-	u_char *obp = (u_char *) buf;
 	volatile register u_short *sci_dma = (ushort *)(dev->sci_data + 0x10);
 	volatile register u_char *sci_bus_csr = dev->sci_bus_csr;
+#ifdef DEBUG
+	u_char *obp = (u_char *) buf;
+#endif
+#if 0
+	int wait = sci_data_wait;
+#endif
 
 	QPRINTF(("supradma_out2 %d, csr=%02x\n", len, *dev->sci_bus_csr));
 
@@ -521,10 +531,10 @@ wstsc_dma_xfer_out2 (dev, len, buf, phase)
 }
 
 int
-wstsc_intr(dev)
-	struct sci_softc *dev;
+wstsc_intr(arg)
+	void *arg;
 {
-	int i, found;
+	struct sci_softc *dev = arg;
 	u_char stat;
 
 	if ((*(dev->sci_csr + 0x10) & SCI_CSR_INT) == 0)

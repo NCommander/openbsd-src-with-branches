@@ -1,5 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.2 1996/06/06 23:06:33 deraadt Exp $	*/
-/*	$NetBSD: bus.h,v 1.2 1996/04/05 23:59:37 thorpej Exp $	*/
+/*	$OpenBSD: bus.h,v 1.5 1996/09/18 11:39:24 niklas Exp $	*/
 
 /*
  * Copyright (c) 1996 Christopher G. Demetriou.  All rights reserved.
@@ -101,10 +100,9 @@ struct arc_isa_busmap {
 				!!! bus_io_write_multi_8 unimplimented !!!
 #endif
 
-int	bus_mem_map __P((bus_chipset_tag_t t, bus_mem_addr_t bpa,
-	    bus_mem_size_t size, int cacheable, bus_mem_handle_t *mhp));
-void	bus_mem_unmap __P((bus_chipset_tag_t t, bus_mem_handle_t memh,
-	    bus_mem_size_t size));
+#define bus_mem_map(t, addr, size, cacheable, mhp)			\
+    (*mhp = (bus_mem_handle_t)(t == NULL ? addr : addr + (ulong)(t->isa_mem_base)), 0)
+#define bus_mem_unmap(t, ioh, size)
 
 #define	bus_mem_read_1(t, h, o)		(*(volatile u_int8_t *)((h) + (o)))
 #define	bus_mem_read_2(t, h, o)		(*(volatile u_int16_t *)((h) + (o)))
@@ -121,12 +119,26 @@ void	bus_mem_unmap __P((bus_chipset_tag_t t, bus_mem_handle_t memh,
     ((void)(*(volatile u_int64_t *)((h) + (o)) = (v)))
 
 /* These are extensions to the general NetBSD bus interface.  */
-#define bus_to_host_2(t, v) (v)
-#define bus_to_host_4(t, v) (v)
-#define bus_to_host_8(t, v) (v)
+#define	bus_io_read_raw_multi_1(t, h, o, a, c)	\
+					insb((h) + (o), (a), (c))
+#define	bus_io_read_raw_multi_2(t, h, o, a, c)	\
+					insw((h) + (o), (a), ((c) >> 1))
+#define	bus_io_read_raw_multi_4(t, h, o, a, c)	\
+					insl((h) + (o), (a), ((c) >> 2))
+#if 0 /* Cause a link error for bus_io_read_raw_multi_8 */
+#define	bus_io_read_raw_multi_8(t, h, o, a, c)	\
+				!!! bus_io_read_raw_multi_8 unimplemented !!!
+#endif
 
-#define bus_from_host_2(t, v) (v)
-#define bus_from_host_4(t, v) (v)
-#define bus_from_host_8(t, v) (v)
+#define	bus_io_write_raw_multi_1(t, h, o, a, c)	\
+					outsb((h) + (o), (a), (c))
+#define	bus_io_write_raw_multi_2(t, h, o, a, c)	\
+					outsw((h) + (o), (a), ((c) >> 1))
+#define	bus_io_write_raw_multi_4(t, h, o, a, c)	\
+					outsl((h) + (o), (a), ((c) >> 2))
+#if 0 /* Cause a link error for bus_io_write_raw_multi_8 */
+#define	bus_io_write_raw_multi_8(t, h, o, a, c)	\
+				!!! bus_io_write_raw_multi_8 unimplimented !!!
+#endif
 
 #endif /* _ARC_BUS_H_ */

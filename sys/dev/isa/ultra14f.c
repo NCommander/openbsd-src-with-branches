@@ -1,4 +1,5 @@
-/*	$NetBSD: ultra14f.c,v 1.57 1995/10/04 00:35:07 mycroft Exp $	*/
+/*	$OpenBSD: ultra14f.c,v 1.14 1996/05/07 07:37:54 deraadt Exp $	*/
+/*	$NetBSD: ultra14f.c,v 1.66 1996/05/12 23:53:54 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
@@ -63,9 +64,11 @@
 #include <sys/proc.h>
 #include <sys/user.h>
 
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <dev/isa/isavar.h>
+#include <dev/isa/isadmavar.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
@@ -262,11 +265,11 @@ struct uha_softc {
 	int sc_iobase;
 	int sc_irq, sc_drq;
 
-	void (*send_mbox)();
-	int (*abort)();
-	int (*poll)();
-	int (*intr)();
-	void (*init)();
+	void (*send_mbox) __P((struct uha_softc *, struct uha_mscp *));
+	int (*abort) __P((struct uha_softc *, struct uha_mscp *));
+	int (*poll) __P((struct uha_softc *, struct scsi_xfer *, int));
+	int (*intr) __P((void *));
+	void (*init) __P((struct uha_softc *));
 
 	struct uha_mscp *mscphash[MSCP_HASH_SIZE];
 	TAILQ_HEAD(, uha_mscp) free_mscp;
@@ -300,6 +303,9 @@ void uha_timeout __P((void *arg));
 void uha_print_mscp __P((struct uha_mscp *));
 void uha_print_active_mscp __P((struct uha_softc *));
 #endif
+static __inline void uha_init_mscp __P((struct uha_softc *, struct uha_mscp *));
+static __inline void uha_reset_mscp __P((struct uha_softc *, 
+    struct uha_mscp *));
 
 u_long	scratch;
 #define UHA_SHOWMSCPS 0x01
@@ -326,8 +332,12 @@ int	uhaprobe __P((struct device *, void *, void *));
 void	uhaattach __P((struct device *, struct device *, void *));
 int	uhaprint __P((void *, char *));
 
-struct cfdriver uhacd = {
-	NULL, "uha", uhaprobe, uhaattach, DV_DULL, sizeof(struct uha_softc)
+struct cfattach uha_ca = {
+	sizeof(struct uha_softc), uhaprobe, uhaattach
+};
+
+struct cfdriver uha_cd = {
+	NULL, "uha", DV_DULL
 };
 
 /*
@@ -535,8 +545,6 @@ uhaprobe(parent, match, aux)
 	struct uha_softc *uha = match;
 	struct isa_attach_args *ia = aux;
 
-	uha->sc_iobase = ia->ia_iobase;
-
 	/*
 	 * Try initialise a unit at this location
 	 * sets up dma and bus speed, loads uha->sc_irq
@@ -608,8 +616,8 @@ uhaattach(parent, self, aux)
 #ifdef NEWCONFIG
 	isa_establish(&uha->sc_id, &uha->sc_dev);
 #endif
-	uha->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_BIO,
-	    uha->intr, uha);
+	uha->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_BIO, uha->intr, uha, uha->sc_dev.dv_xname);
 
 	/*
 	 * ask the adapter what subunits are present
@@ -807,7 +815,7 @@ uha_free_mscp(uha, mscp, flags)
 	splx(s);
 }
 
-static inline void
+static __inline void
 uha_init_mscp(uha, mscp)
 	struct uha_softc *uha;
 	struct uha_mscp *mscp;
@@ -825,7 +833,7 @@ uha_init_mscp(uha, mscp)
 	uha->mscphash[hashnum] = mscp;
 }
 
-static inline void
+static __inline void
 uha_reset_mscp(uha, mscp)
 	struct uha_softc *uha;
 	struct uha_mscp *mscp;
@@ -860,8 +868,10 @@ uha_get_mscp(uha, flags)
 			break;
 		}
 		if (uha->nummscps < UHA_MSCP_MAX) {
-			if (mscp = (struct uha_mscp *) malloc(sizeof(struct uha_mscp),
-			    M_TEMP, M_NOWAIT)) {
+			mscp = (struct uha_mscp *)
+			    malloc(sizeof(struct uha_mscp),
+			    M_TEMP, M_NOWAIT);
+			if (mscp) {
 				uha_init_mscp(uha, mscp);
 				uha->nummscps++;
 			} else {
@@ -911,22 +921,22 @@ u14_find(uha, ia)
 	struct uha_softc *uha;
 	struct isa_attach_args *ia;
 {
-	int iobase = uha->sc_iobase;
+	int iobase = ia->ia_iobase;
 	u_short model, config;
 	int resetcount = 4000;	/* 4 secs? */
 
 	if (ia->ia_iobase == IOBASEUNK)
 		return ENXIO;
 
-	model = htons(inw(iobase + U14_ID));
+	model = (inb(iobase + U14_ID) << 8) | inb(iobase + U14_ID + 1);
 	if ((model & 0xfff0) != 0x5640)
 		return ENXIO;
 
-	config = htons(inw(iobase + U14_CONFIG));
+	config = (inb(iobase + U14_CONFIG) << 8) | inb(iobase + U14_CONFIG + 1);
 
 	switch (model & 0x000f) {
 	case 0x0001:
-		/* This is a 34f, and doens't need an ISA DMA channel. */
+		/* This is a 34f, and doesn't need an ISA DMA channel. */
 		uha->sc_drq = DRQUNK;
 		break;
 	default:
@@ -941,7 +951,8 @@ u14_find(uha, ia)
 			uha->sc_drq = 7;
 			break;
 		default:
-			printf("illegal dma setting %x\n", config & U14_DMA_MASK);
+			printf("%s: illegal drq setting %x\n",
+			    uha->sc_dev.dv_xname, config & U14_DMA_MASK);
 			return EIO;
 		}
 		break;
@@ -961,7 +972,8 @@ u14_find(uha, ia)
 		uha->sc_irq = 15;
 		break;
 	default:
-		printf("illegal int setting %x\n", config & U14_IRQ_MASK);
+		printf("%s: illegal irq setting %x\n", uha->sc_dev.dv_xname,
+		    config & U14_IRQ_MASK);
 		return EIO;
 	}
 
@@ -977,7 +989,7 @@ u14_find(uha, ia)
 	}
 	if (!resetcount) {
 		printf("%s: board timed out during reset\n",
-			uha->sc_dev.dv_xname);
+		    uha->sc_dev.dv_xname);
 		return ENXIO;
 	}
 
@@ -988,6 +1000,7 @@ u14_find(uha, ia)
 	uha->intr = u14intr;
 	uha->init = u14_init;
 
+	uha->sc_iobase = iobase;
 	return 0;
 }
 
@@ -1056,7 +1069,8 @@ u24_find(uha, ia)
 			uha->sc_irq = 15;
 			break;
 		default:
-			printf("illegal int setting %x\n", irq_ch);
+			printf("%s: illegal irq setting %x\n",
+			    uha->sc_dev.dv_xname, irq_ch);
 			continue;
 		}
 
@@ -1072,7 +1086,7 @@ u24_find(uha, ia)
 		}
 		if (!resetcount) {
 			printf("%s: board timed out during reset\n",
-				uha->sc_dev.dv_xname);
+			    uha->sc_dev.dv_xname);
 			continue;
 		}
 
@@ -1083,6 +1097,7 @@ u24_find(uha, ia)
 		uha->intr = u24intr;
 		uha->init = u24_init;
 
+		uha->sc_iobase = ia->ia_iobase = iobase;
 		return 0;
 	}
 
@@ -1100,8 +1115,8 @@ u14_init(uha)
 	printf("u14_init: lmask=%02x, smask=%02x\n",
 	    inb(iobase + U14_LMASK), inb(iobase + U14_SMASK));
 #endif
-	outb(0xd1, iobase + U14_LMASK);	/* XXX */
-	outb(0x91, iobase + U14_SMASK);	/* XXX */
+	outb(iobase + U14_LMASK, 0xd1);	/* XXX */
+	outb(iobase + U14_SMASK, 0x91);	/* XXX */
 }
 
 void
@@ -1118,8 +1133,8 @@ u24_init(uha)
 	printf("u24_init: lmask=%02x, smask=%02x\n",
 	    inb(iobase + U24_LMASK), inb(iobase + U24_SMASK));
 #endif
-	outb(0xd2, iobase + U24_LMASK);	/* XXX */
-	outb(0x92, iobase + U24_SMASK);	/* XXX */
+	outb(iobase + U24_LMASK, 0xd2);	/* XXX */
+	outb(iobase + U24_SMASK, 0x92);	/* XXX */
 }
 
 void
@@ -1147,7 +1162,9 @@ uha_scsi_cmd(xs)
 	int seg;		/* scatter gather seg being worked on */
 	u_long thiskv, thisphys, nextphys;
 	int bytes_this_seg, bytes_this_page, datalen, flags;
+#ifdef TFS
 	struct iovec *iovp;
+#endif
 	int s;
 
 	SC_DEBUG(sc_link, SDEV_DB2, ("uha_scsi_cmd\n"));
@@ -1358,10 +1375,10 @@ uha_print_mscp(mscp)
 {
 
 	printf("mscp:%x op:%x cmdlen:%d senlen:%d\n",
-		mscp, mscp->opcode, mscp->cdblen, mscp->senselen);
+	    mscp, mscp->opcode, mscp->scsi_cmd_length, mscp->req_sense_length);
 	printf("	sg:%d sgnum:%x datlen:%d hstat:%x tstat:%x flags:%x\n",
-		mscp->sgth, mscp->sg_num, mscp->datalen, mscp->host_stat,
-		mscp->target_stat, mscp->flags);
+	    mscp->sgth, mscp->sg_num, mscp->datalen, mscp->host_stat,
+	    mscp->target_stat, mscp->flags);
 	show_scsi_cmd(mscp->xs);
 }
 

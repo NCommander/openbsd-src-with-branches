@@ -1,10 +1,10 @@
 #!/bin/sh -
 #
-#	$NetBSD: netstart,v 1.21 1995/10/08 18:11:40 thorpej Exp $
-#	@(#)netstart	5.9 (Berkeley) 3/30/91
+#	$OpenBSD: netstart,v 1.10 1996/09/04 10:25:55 deraadt Exp $
 
 # set these to "NO" to turn them off.  otherwise, they're used as flags
 routed_flags=-q
+mrouted_flags=NO	# for 'normal' use: mrouted_flags=""
 rarpd_flags=NO		# for 'normal' use: rarpd_flags="-a"
 bootparamd_flags=NO	# for 'normal' use: bootparamd_flags=""
 rbootd_flags=NO		# for 'normal' use: rbootd_flags=""
@@ -19,12 +19,19 @@ nfs_client=NO
 gated=NO
 kerberos_server=NO
 amd=NO
+ipfilter=NO
+portmap=YES			# almost always needed
+inetd=YES			# almost always needed
+lpd=NO				# printing daemons
 
 # miscellaneous other flags
 # only used if the appropriate server is marked YES above
 gated_flags=
 amd_dir=/amd			# AMD's mount directory
 amd_master=/etc/amd/master	# AMD 'master' map
+ipfilter_rules=/etc/ipf.rules	# Rules for IP packet filtering
+ipmon_flags=-s			# To disable logging, use ipmon_flags=NO
+rfc1323=YES			# TCP RFC1323 extensions (disable if tcp is slow)
 
 # /etc/myname contains my symbolic name
 #
@@ -32,6 +39,15 @@ hostname=`cat /etc/myname`
 hostname $hostname
 if [ -f /etc/defaultdomain ]; then
 	domainname `cat /etc/defaultdomain`
+fi
+
+# Configure the IP filter before configuring network interfaces
+#
+if [ X"${ipfilter}" = X"YES" -a -f "${ipfilter_rules}" ]; then
+	echo 'configuring IP filter'
+	ipf -Fa -f ${ipfilter_rules} -E
+else
+	ipfilter=NO
 fi
 
 # configure all of the interfaces which we know about.
@@ -94,9 +110,30 @@ ifconfig lo0 inet localhost
 
 # use loopback, not the wire
 route add $hostname localhost
+route add -net 127 127.0.0.1 -reject
+
+# default multicast route
+route add -net 224.0.0.0 -interface $hostname
 
 # /etc/mygate, if it exists, contains the name of my gateway host
 # that name must be in /etc/hosts.
 if [ -f /etc/mygate ]; then
 	route add default `cat /etc/mygate`
+fi
+
+# /etc/ifaliases, if it exists, contains the names of additional IP
+# addresses for each interface. It is formatted as a series of lines
+# that contain
+#	interface address netmask
+if [ -f /etc/ifaliases ]; then
+(
+	# delete comments and blank lines
+	set -- `sed -e 's/#.*$//' /etc/ifaliases | grep -v '^$'`
+
+	while [ $# -ge 3 ] ; do
+		ifconfig $1 inet alias $2 netmask $3
+		route add $2 localhost
+		shift 3
+	done
+)
 fi

@@ -1,4 +1,5 @@
-/*	$Id: regmagic.h,v 1.2 1993/08/02 17:49:32 mycroft Exp $ */
+/*	$OpenBSD$	*/
+/*	$Id: regmagic.h,v 1.1.1.1 1995/10/18 08:42:35 deraadt Exp $ */
 
 /*
  * The first byte of the regexp internal "program" is actually this magic

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: netif.h,v 1.4 1995/09/14 23:45:30 pk Exp $	*/
 
 #ifndef __SYS_LIBNETBOOT_NETIF_H

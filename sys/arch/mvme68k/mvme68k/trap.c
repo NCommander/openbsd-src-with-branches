@@ -1,7 +1,35 @@
-/*	$NetBSD: trap.c,v 1.36 1995/05/12 18:24:53 mycroft Exp $	*/
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -135,6 +163,10 @@ void (*sir_routines[NSIR])();
 void *sir_args[NSIR];
 u_char next_sir;
 
+int writeback __P((struct frame *fp, int docachepush));
+static inline void userret __P((struct proc *p, struct frame *fp,
+    u_quad_t oticks, u_int faultaddr, int fromtrap));
+
 /*
  * trap and syscall both need the following work done before returning
  * to user mode.
@@ -226,9 +258,6 @@ trap(type, code, v, frame)
 	struct frame frame;
 {
 	extern char fubail[], subail[];
-#ifdef DDB
-	extern int trap0, trap1, trap2, trap12, trap15, illinst;
-#endif
 	register struct proc *p;
 	register int i;
 	u_int ucode;
@@ -411,13 +440,8 @@ copyfault:
 	case T_TRACE:		/* kernel trace trap */
 	case T_TRAP15:		/* SUN trace trap */
 #ifdef DDB
-		if (type == T_TRAP15 ||
-		    (frame.f_pc != trap0 && frame.f_pc != trap1 &&
-		     frame.f_pc != trap2 && frame.f_pc != trap12 &&
-		     frame.f_pc != trap15 && frame.f_pc != illinst)) {
-			if (kdb_trap(type, &frame))
-				return;
-		}
+		if (kdb_trap(type, &frame))
+			return;
 #endif
 		frame.f_sr &= ~PSL_T;
 		i = SIGTRAP;
@@ -433,7 +457,7 @@ copyfault:
 		 * DONT trap on it..
 		 */
 		if (p->p_emul == &emul_sunos) {
-			userret(p, frame.f_pc, sticks);
+			userret(p, &frame, sticks, v, 1);
 			return;
 		}
 #endif
@@ -587,7 +611,7 @@ copyfault:
 			goto dopanic;
 		}
 		ucode = v;
-		i = (rv == KERN_PROTECTION_FAILURE) ? SIGBUS : SIGSEGV;
+		i = SIGSEGV;
 		break;
 	    }
 	}
@@ -616,6 +640,7 @@ char wberrstr[] =
 	"WARNING: pid %d(%s) writeback [%s] failed, pc=%x fa=%x wba=%x wbd=%x\n";
 #endif
 
+int
 writeback(fp, docachepush)
 	struct frame *fp;
 	int docachepush;
@@ -842,22 +867,10 @@ writeback(fp, docachepush)
 	}
 	p->p_addr->u_pcb.pcb_onfault = oonfault;
 	/*
-	 * Determine the cause of the failure if any translating to
-	 * a signal.  If the corresponding VA is valid and RO it is
-	 * a protection fault (SIGBUS) otherwise consider it an
-	 * illegal reference (SIGSEGV).
+	 * Any problems are SIGSEGV's
 	 */
-	if (err) {
-		if (vm_map_check_protection(&p->p_vmspace->vm_map,
-					    trunc_page(fa), round_page(fa),
-					    VM_PROT_READ) &&
-		    !vm_map_check_protection(&p->p_vmspace->vm_map,
-					     trunc_page(fa), round_page(fa),
-					     VM_PROT_WRITE))
-			err = SIGBUS;
-		else
-			err = SIGSEGV;
-	}
+	if (err)
+		err = SIGSEGV;
 	return(err);
 }
 
@@ -956,7 +969,7 @@ syscall(code, frame)
 		 * on the stack to skip, the argument follows the syscall
 		 * number without a gap.
 		 */
-		if (code != SUNOS_SYS_sunos_sigreturn) {
+		if (code != SUNOS_SYS_sigreturn) {
 			frame.f_regs[SP] += sizeof (int);
 			/*
 			 * remember that we adjusted the SP,
@@ -1135,6 +1148,26 @@ hardintr(pc, evec, frame)
 #endif /* !INTR_ASM */
 
 /*
+ * find a useable interrupt vector in the range start, end. It starts at
+ * the end of the range, and searches backwards (to increase the chances
+ * of not conflicting with more normal users)
+ */
+int
+intr_findvec(start, end)
+	int start, end;
+{
+	extern u_long *vectab[], hardtrap, badtrap;
+	int vec;
+
+	if (start < 0 || end > 255 || start > end)
+		return (-1);
+	for (vec = end; vec > start; --vec)
+		if (vectab[vec] == &badtrap || vectab[vec] == &hardtrap)
+			return (vec);
+	return (-1);
+}
+
+/*
  * Chain the interrupt handler in. But first check if the vector
  * offset chosen is legal. It either must be a badtrap (not allocated
  * for a `system' purpose), or it must be a hardtrap (ie. already
@@ -1164,24 +1197,6 @@ intr_establish(vec, ih)
 	} else
 		intrs[vec] = ih;
 	return (0);
-}
-
-/*
- * find a useable vector for devices that don't specify one
- */
-int
-intr_freevec()
-{
-	extern u_long *vectab[], hardtrap, badtrap;
-	int i;
-
-	for (i = 255; i; --i)
-		if (vectab[i] == &badtrap)
-			return (i);
-	for (i = 255; i; --i)
-		if (vectab[i] == &hardtrap)
-			return (i);
-	return (-1);
 }
 
 #ifdef DDB

@@ -133,8 +133,13 @@ main(argc, argv)
 			}
 		}
 	}
-	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
+	if (printer == NULL) {
+		char *p;
+
 		printer = DEFLP;
+		if ((p = getenv("PRINTER")) != NULL)
+			printer = p;
+	}
 
 	rmjob();
 	exit(0);

@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: mkswap.c,v 1.2 1996/03/25 15:55:10 niklas Exp $	*/
+/*	$NetBSD: mkswap.c,v 1.4 1996/03/17 20:36:25 christos Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -40,7 +43,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mkswap.c	8.1 (Berkeley) 6/6/93
- *	$Id: mkswap.c,v 1.1 1995/04/28 06:55:17 cgd Exp $
  */
 
 #include <sys/param.h>
@@ -119,9 +121,9 @@ mkoneswap(cf)
 		goto wrerror;
 	mountroot =
 	    cf->cf_root->nv_str == s_nfs ? "nfs_mountroot" : "ffs_mountroot";
-	if (fprintf(fp, "extern int %s();\n", mountroot) < 0)
+	if (fprintf(fp, "extern int %s __P((void *));\n", mountroot) < 0)
 		goto wrerror;
-	if (fprintf(fp, "int (*mountroot)() = %s;\n", mountroot) < 0)
+	if (fprintf(fp, "int (*mountroot) __P((void *)) = %s;\n", mountroot) < 0)
 		goto wrerror;
 
 	if (fclose(fp)) {

@@ -1,5 +1,3 @@
-/*	$NetBSD: tempnam.c,v 1.6 1995/02/02 02:10:42 jtc Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,10 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)tempnam.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: tempnam.c,v 1.6 1995/02/02 02:10:42 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tempnam.c,v 1.3 1996/08/25 10:11:08 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -61,7 +56,7 @@ tempnam(dir, pfx)
 	if (!pfx)
 		pfx = "tmp.";
 
-	if (f = getenv("TMPDIR")) {
+	if (issetugid() == 0 && (f = getenv("TMPDIR"))) {
 		(void)snprintf(name, MAXPATHLEN, "%s%s%sXXXXXX", f,
 		    *(f + strlen(f) - 1) == '/'? "": "/", pfx);
 		if (f = mktemp(name))

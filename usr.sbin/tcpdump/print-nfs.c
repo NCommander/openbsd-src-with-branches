@@ -1,7 +1,7 @@
-/*	$NetBSD: print-nfs.c,v 1.4 1995/04/24 13:27:45 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,7 @@
 
 #ifndef lint
 static char rcsid[] =
-    "@(#) Header: print-nfs.c,v 1.41 94/06/12 14:35:15 leres Exp (LBL)";
+    "@(#) Header: print-nfs.c,v 1.52 95/10/22 02:46:29 leres Exp (LBL)";
 #endif
 
 #include <sys/param.h>
@@ -31,6 +31,10 @@ static char rcsid[] =
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#if __STDC__
+struct mbuf;
+struct rtentry;
+#endif
 #include <net/if.h>
 
 #include <netinet/in.h>
@@ -39,28 +43,23 @@ static char rcsid[] =
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 
-#ifdef SOLARIS
-#include <tiuser.h>
-#endif
 #include <rpc/rpc.h>
-#include <rpc/pmap_prot.h>
 
 #include <ctype.h>
+#include <pcap.h>
 #include <stdio.h>
-#include <errno.h>
 #include <string.h>
 
 #include "interface.h"
 #include "addrtoname.h"
-#include "extract.h"			/* must come after interface.h */
 
 #include "nfsv2.h"
 #include "nfsfh.h"
 
-static void nfs_printfh(const u_int32 *);
+static void nfs_printfh(const u_int32_t *);
 static void xid_map_enter(const struct rpc_msg *, const struct ip *);
-static int32 xid_map_find(const struct rpc_msg *, const struct ip *);
-static void interp_reply(const struct rpc_msg *, u_int32, int);
+static int32_t xid_map_find(const struct rpc_msg *, const struct ip *);
+static void interp_reply(const struct rpc_msg *, u_int32_t, int);
 
 void
 nfsreply_print(register const u_char *bp, int length,
@@ -68,7 +67,7 @@ nfsreply_print(register const u_char *bp, int length,
 {
 	register const struct rpc_msg *rp;
 	register const struct ip *ip;
-	int32 proc;
+	int32_t proc;
 
 	rp = (const struct rpc_msg *)bp;
 	ip = (const struct ip *)bp2;
@@ -77,7 +76,7 @@ nfsreply_print(register const u_char *bp, int length,
 		(void)printf("%s.nfs > %s.%x: reply %s %d",
 			     ipaddr_string(&ip->ip_src),
 			     ipaddr_string(&ip->ip_dst),
-			     ntohl(rp->rm_xid),
+			     (u_int32_t)ntohl(rp->rm_xid),
 			     ntohl(rp->rm_reply.rp_stat) == MSG_ACCEPTED?
 				     "ok":"ERR",
 			     length);
@@ -86,25 +85,25 @@ nfsreply_print(register const u_char *bp, int length,
 			     ipaddr_string(&ip->ip_src),
 			     NFS_PORT,
 			     ipaddr_string(&ip->ip_dst),
-			     ntohl(rp->rm_xid),
+			     (u_int32_t)ntohl(rp->rm_xid),
 			     ntohl(rp->rm_reply.rp_stat) == MSG_ACCEPTED?
 			     	"ok":"ERR",
 			     length);
 
 	proc = xid_map_find(rp, ip);
 	if (proc >= 0)
-		interp_reply(rp, (u_int32)proc, length);
+		interp_reply(rp, (u_int32_t)proc, length);
 }
 
 /*
  * Return a pointer to the first file handle in the packet.
  * If the packet was truncated, return 0.
  */
-static const u_int32 *
+static const u_int32_t *
 parsereq(register const struct rpc_msg *rp, register int length)
 {
-	register const u_int32 *dp = (u_int32 *)&rp->rm_call.cb_cred;
-	register const u_int32 *ep = (u_int32 *)snapend;
+	register const u_int32_t *dp = (u_int32_t *)&rp->rm_call.cb_cred;
+	register const u_int32_t *ep = (u_int32_t *)snapend;
 	register u_int len;
 
 	if (&dp[2] >= ep)
@@ -114,13 +113,15 @@ parsereq(register const struct rpc_msg *rp, register int length)
 	 */
 	len =  ntohl(dp[1]);
 	if (dp < ep && len < length) {
-		dp += (len + (2 * sizeof(u_int32) + 3)) / sizeof(u_int32);
-		len = ntohl(dp[1]);
-		if ((dp < ep) && (len < length)) {
-			dp += (len + (2 * sizeof(u_int32) + 3)) /
-				sizeof(u_int32);
-			if (dp < ep)
-				return (dp);
+		dp += (len + (2 * sizeof(u_int32_t) + 3)) / sizeof(u_int32_t);
+		if (&dp[2] < ep) {
+			len = ntohl(dp[1]);
+			if (dp < ep && len < length) {
+				dp += (len + (2 * sizeof(u_int32_t) + 3)) /
+					sizeof(u_int32_t);
+				if (dp < ep)
+					return (dp);
+			}
 		}
 	}
 	return (0);
@@ -130,10 +131,10 @@ parsereq(register const struct rpc_msg *rp, register int length)
  * Print out an NFS file handle and return a pointer to following word.
  * If packet was truncated, return 0.
  */
-static const u_int32 *
-parsefh(register const u_int32 *dp)
+static const u_int32_t *
+parsefh(register const u_int32_t *dp)
 {
-	if (dp + 8 <= (u_int32 *)snapend) {
+	if (dp + 8 <= (u_int32_t *)snapend) {
 		nfs_printfh(dp);
 		return (dp + 8);
 	}
@@ -144,10 +145,10 @@ parsefh(register const u_int32 *dp)
  * Print out a file name and return pointer to 32-bit word past it.
  * If packet was truncated, return 0.
  */
-static const u_int32 *
-parsefn(register const u_int32 *dp)
+static const u_int32_t *
+parsefn(register const u_int32_t *dp)
 {
-	register u_int32 len;
+	register u_int32_t len;
 	register const u_char *cp;
 
 	/* Bail if we don't have the string length */
@@ -174,8 +175,8 @@ parsefn(register const u_int32 *dp)
  * Return pointer to 32-bit word past file name.
  * If packet was truncated (or there was some other error), return 0.
  */
-static const u_int32 *
-parsefhn(register const u_int32 *dp)
+static const u_int32_t *
+parsefhn(register const u_int32_t *dp)
 {
 	dp = parsefh(dp);
 	if (dp == 0)
@@ -189,7 +190,7 @@ nfsreq_print(register const u_char *bp, int length, register const u_char *bp2)
 {
 	register const struct rpc_msg *rp;
 	register const struct ip *ip;
-	register const u_int32 *dp;
+	register const u_int32_t *dp;
 	register const u_char *ep;
 
 #define TCHECK(p, l) if ((u_char *)(p) > ep - l) break
@@ -200,13 +201,13 @@ nfsreq_print(register const u_char *bp, int length, register const u_char *bp2)
 	if (!nflag)
 		(void)printf("%s.%x > %s.nfs: %d",
 			     ipaddr_string(&ip->ip_src),
-			     ntohl(rp->rm_xid),
+			     (u_int32_t)ntohl(rp->rm_xid),
 			     ipaddr_string(&ip->ip_dst),
 			     length);
 	else
 		(void)printf("%s.%x > %s.%x: %d",
 			     ipaddr_string(&ip->ip_src),
-			     ntohl(rp->rm_xid),
+			     (u_int32_t)ntohl(rp->rm_xid),
 			     ipaddr_string(&ip->ip_dst),
 			     NFS_PORT,
 			     length);
@@ -259,8 +260,9 @@ nfsreq_print(register const u_char *bp, int length, register const u_char *bp2)
 		if ((dp = parsereq(rp, length)) != 0 &&
 		    (dp = parsefh(dp)) != 0) {
 			TCHECK(dp, 3 * sizeof(*dp));
-			printf(" %lu bytes @ %lu",
-			       ntohl(dp[1]), ntohl(dp[0]));
+			printf(" %u bytes @ %u",
+			    (u_int32_t)ntohl(dp[1]),
+			    (u_int32_t)ntohl(dp[0]));
 			return;
 		}
 		break;
@@ -271,9 +273,11 @@ nfsreq_print(register const u_char *bp, int length, register const u_char *bp2)
 		if ((dp = parsereq(rp, length)) != 0 &&
 		    (dp = parsefh(dp)) != 0) {
 			TCHECK(dp, 4 * sizeof(*dp));
-			printf(" %lu (%lu) bytes @ %lu (%lu)",
-			       ntohl(dp[3]), ntohl(dp[2]),
-			       ntohl(dp[1]), ntohl(dp[0]));
+			printf(" %u (%u) bytes @ %u (%u)",
+			    (u_int32_t)ntohl(dp[3]),
+			    (u_int32_t)ntohl(dp[2]),
+			    (u_int32_t)ntohl(dp[1]),
+			    (u_int32_t)ntohl(dp[0]));
 			return;
 		}
 		break;
@@ -283,9 +287,11 @@ nfsreq_print(register const u_char *bp, int length, register const u_char *bp2)
 		if ((dp = parsereq(rp, length)) != 0 &&
 		    (dp = parsefh(dp)) != 0) {
 			TCHECK(dp, 4 * sizeof(*dp));
-			printf(" %lu (%lu) bytes @ %lu (%lu)",
-			       ntohl(dp[3]), ntohl(dp[2]),
-			       ntohl(dp[1]), ntohl(dp[0]));
+			printf(" %u (%u) bytes @ %u (%u)",
+			    (u_int32_t)ntohl(dp[3]),
+			    (u_int32_t)ntohl(dp[2]),
+			    (u_int32_t)ntohl(dp[1]),
+			    (u_int32_t)ntohl(dp[0]));
 			return;
 		}
 		break;
@@ -353,7 +359,9 @@ nfsreq_print(register const u_char *bp, int length, register const u_char *bp2)
 			 * Print the offset as signed, since -1 is common,
 			 * but offsets > 2^31 aren't.
 			 */
-			printf(" %lu bytes @ %ld", ntohl(dp[1]), ntohl(dp[0]));
+			printf(" %u bytes @ %d",
+			    (u_int32_t)ntohl(dp[1]),
+			    (u_int32_t)ntohl(dp[0]));
 			return;
 		}
 		break;
@@ -365,7 +373,7 @@ nfsreq_print(register const u_char *bp, int length, register const u_char *bp2)
 		break;
 
 	default:
-		printf(" proc-%lu", ntohl(rp->rm_call.cb_proc));
+		printf(" proc-%u", (u_int32_t)ntohl(rp->rm_call.cb_proc));
 		return;
 	}
 	fputs(" [|nfs]", stdout);
@@ -382,7 +390,7 @@ nfsreq_print(register const u_char *bp, int length, register const u_char *bp2)
  * additional hacking on the parser code.
  */
 static void
-nfs_printfh(register const u_int32 *dp)
+nfs_printfh(register const u_int32_t *dp)
 {
 	my_fsid fsid;
 	ino_t ino;
@@ -401,12 +409,13 @@ nfs_printfh(register const u_int32 *dp)
 	    if (sfsname)
 		*sfsname = 0;
 
-	    (void)printf(" fh %s/%ld", temp, ino);
+	    (void)printf(" fh %s/%u", temp, (u_int32_t)ino);
 	}
 	else {
-	    (void)printf(" fh %d,%d/%ld",
-			fsid.fsid_dev.Major, fsid.fsid_dev.Minor,
-			ino);
+	    (void)printf(" fh %u,%u/%u",
+		fsid.fsid_dev.Major,
+		fsid.fsid_dev.Minor,
+		(u_int32_t)ino);
 	}
 }
 
@@ -417,10 +426,10 @@ nfs_printfh(register const u_int32 *dp)
  */
 
 struct xid_map_entry {
-	u_int32		xid;		/* transaction ID (net order) */
+	u_int32_t		xid;		/* transaction ID (net order) */
 	struct in_addr	client;		/* client IP address (net order) */
 	struct in_addr	server;		/* server IP address (net order) */
-	u_int32		proc;		/* call proc number (host order) */
+	u_int32_t		proc;		/* call proc number (host order) */
 };
 
 /*
@@ -453,14 +462,14 @@ xid_map_enter(const struct rpc_msg *rp, const struct ip *ip)
 }
 
 /* Returns NFSPROC_xxx or -1 on failure */
-static int32
+static int32_t
 xid_map_find(const struct rpc_msg *rp, const struct ip *ip)
 {
 	int i;
 	struct xid_map_entry *xmep;
-	u_int32 xid = rp->rm_xid;
-	u_int32 clip = ip->ip_dst.s_addr;
-	u_int32 sip = ip->ip_src.s_addr;
+	u_int32_t xid = rp->rm_xid;
+	u_int32_t clip = ip->ip_dst.s_addr;
+	u_int32_t sip = ip->ip_src.s_addr;
 
 	/* Start searching from where we last left off */
 	i = xid_map_hint;
@@ -470,7 +479,7 @@ xid_map_find(const struct rpc_msg *rp, const struct ip *ip)
 		    xmep->server.s_addr == sip) {
 			/* match */
 			xid_map_hint = i;
-			return ((int32)xmep->proc);
+			return ((int32_t)xmep->proc);
 		}
 		if (++i >= XIDMAPSIZE)
 			i = 0;
@@ -488,11 +497,11 @@ xid_map_find(const struct rpc_msg *rp, const struct ip *ip)
  * Return a pointer to the beginning of the actual results.
  * If the packet was truncated, return 0.
  */
-static const u_int32 *
+static const u_int32_t *
 parserep(register const struct rpc_msg *rp, register int length)
 {
-	register const u_int32 *dp;
-	register const u_int32 *ep = (const u_int32 *)snapend;
+	register const u_int32_t *dp;
+	register const u_int32_t *ep = (const u_int32_t *)snapend;
 	int len;
 	enum accept_stat astat;
 
@@ -500,7 +509,7 @@ parserep(register const struct rpc_msg *rp, register int length)
 	 * Portability note:
 	 * Here we find the address of the ar_verf credentials.
 	 * Originally, this calculation was
-	 *	dp = (u_int32 *)&rp->rm_reply.rp_acpt.ar_verf
+	 *	dp = (u_int32_t *)&rp->rm_reply.rp_acpt.ar_verf
 	 * On the wire, the rp_acpt field starts immediately after
 	 * the (32 bit) rp_stat field.  However, rp_acpt (which is a
 	 * "struct accepted_reply") contains a "struct opaque_auth",
@@ -511,7 +520,7 @@ parserep(register const struct rpc_msg *rp, register int length)
 	 * representation.  Instead, we skip past the rp_stat field,
 	 * which is an "enum" and so occupies one 32-bit word.
 	 */
-	dp = ((const u_int32 *)&rp->rm_reply) + 1;
+	dp = ((const u_int32_t *)&rp->rm_reply) + 1;
 	if (&dp[1] >= ep)
 		return(0);
 	len = ntohl(dp[1]);
@@ -520,7 +529,7 @@ parserep(register const struct rpc_msg *rp, register int length)
 	/*
 	 * skip past the ar_verf credentials.
 	 */
-	dp += (len + (2*sizeof(u_int32) + 3)) / sizeof(u_int32);
+	dp += (len + (2*sizeof(u_int32_t) + 3)) / sizeof(u_int32_t);
 	if (dp >= ep)
 		return(0);
 
@@ -559,47 +568,34 @@ parserep(register const struct rpc_msg *rp, register int length)
 	}
 	/* successful return */
 	if ((sizeof(astat) + ((char *)dp)) < (char *)ep)
-		return((u_int32 *) (sizeof(astat) + ((char *)dp)));
+		return((u_int32_t *) (sizeof(astat) + ((char *)dp)));
 
 	return (0);
 }
 
 #define T2CHECK(p, l) if ((u_char *)(p) > ((u_char *)snapend) - l) return(0)
 
-/*
- * Not all systems have strerror().
- */
-static char *
-strerr(int errno)
+static const u_int32_t *
+parsestatus(const u_int32_t *dp)
 {
-
-	return (strerror(errno));
-}
-
-static const u_int32 *
-parsestatus(const u_int32 *dp)
-{
-	int errno;
+	int errnum;
 	T2CHECK(dp, 4);
 
-	errno = ntohl(dp[0]);
-	if (errno != 0) {
+	errnum = ntohl(dp[0]);
+	if (errnum != 0) {
 		char *errmsg;
 
 		if (qflag)
 			return(0);
 
-		errmsg = strerr(errno);
-		if (errmsg)
-			printf(" ERROR: %s", errmsg);
-		else
-			printf(" ERROR: %d", errno);
+		errmsg = pcap_strerror(errnum);
+		printf(" ERROR: %s", errmsg);
 		return(0);
 	}
 	return (dp + 1);
 }
 
-static struct token type2str[] = {
+static struct tok type2str[] = {
 	{ NFNON,	"NON" },
 	{ NFREG,	"REG" },
 	{ NFDIR,	"DIR" },
@@ -609,8 +605,8 @@ static struct token type2str[] = {
 	{ 0,		NULL }
 };
 
-static const u_int32 *
-parsefattr(const u_int32 *dp, int verbose)
+static const u_int32_t *
+parsefattr(const u_int32_t *dp, int verbose)
 {
 	const struct nfsv2_fattr *fap;
 
@@ -618,40 +614,45 @@ parsefattr(const u_int32 *dp, int verbose)
 
 	fap = (const struct nfsv2_fattr *)dp;
 	if (verbose)
-		printf(" %s %o ids %d/%d sz %d ",
-		    tok2str(type2str, "unk-ft %d ", ntohl(fap->fa_type)),
-		       ntohl(fap->fa_mode), ntohl(fap->fa_uid),
-		       ntohl(fap->fa_gid), ntohl(fap->fa_nfssize));
+		printf(" %s %o ids %u/%u sz %u ",
+		    tok2str(type2str, "unk-ft %d ",
+		    (u_int32_t)ntohl(fap->fa_type)),
+		    (u_int32_t)ntohl(fap->fa_mode),
+		    (u_int32_t)ntohl(fap->fa_uid),
+		    (u_int32_t)ntohl(fap->fa_gid),
+		    (u_int32_t)ntohl(fap->fa_nfssize));
 	/* print lots more stuff */
 	if (verbose > 1) {
-		printf("nlink %d rdev %x fsid %x nodeid %x a/m/ctime ",
-		       ntohl(fap->fa_nlink), ntohl(fap->fa_nfsrdev),
-		       ntohl(fap->fa_nfsfsid), ntohl(fap->fa_nfsfileid));
-		printf("%d.%06d ",
-		       ntohl(fap->fa_nfsatime.nfs_sec),
-		       ntohl(fap->fa_nfsatime.nfs_usec));
-		printf("%d.%06d ",
-		       ntohl(fap->fa_nfsmtime.nfs_sec),
-		       ntohl(fap->fa_nfsmtime.nfs_usec));
-		printf("%d.%06d ",
-		       ntohl(fap->fa_nfsctime.nfs_sec),
-		       ntohl(fap->fa_nfsctime.nfs_usec));
+		printf("nlink %u rdev %x fsid %x nodeid %x a/m/ctime ",
+		    (u_int32_t)ntohl(fap->fa_nlink),
+		    (u_int32_t)ntohl(fap->fa_nfsrdev),
+		    (u_int32_t)ntohl(fap->fa_nfsfsid),
+		    (u_int32_t)ntohl(fap->fa_nfsfileid));
+		printf("%u.%06u ",
+		    (u_int32_t)ntohl(fap->fa_nfsatime.nfs_sec),
+		    (u_int32_t)ntohl(fap->fa_nfsatime.nfs_usec));
+		printf("%u.%06u ",
+		    (u_int32_t)ntohl(fap->fa_nfsmtime.nfs_sec),
+		    (u_int32_t)ntohl(fap->fa_nfsmtime.nfs_usec));
+		printf("%u.%06u ",
+		    (u_int32_t)ntohl(fap->fa_nfsctime.nfs_sec),
+		    (u_int32_t)ntohl(fap->fa_nfsctime.nfs_usec));
 	}
-	return ((const u_int32 *)&fap[1]);
+	return ((const u_int32_t *)&fap[1]);
 }
 
 static int
-parseattrstat(const u_int32 *dp, int verbose)
+parseattrstat(const u_int32_t *dp, int verbose)
 {
 	dp = parsestatus(dp);
 	if (dp == NULL)
 		return (0);
 
-	return ((long)parsefattr(dp, verbose));
+	return (parsefattr(dp, verbose) != NULL);
 }
 
 static int
-parsediropres(const u_int32 *dp)
+parsediropres(const u_int32_t *dp)
 {
 	dp = parsestatus(dp);
 	if (dp == NULL)
@@ -665,7 +666,7 @@ parsediropres(const u_int32 *dp)
 }
 
 static int
-parselinkres(const u_int32 *dp)
+parselinkres(const u_int32_t *dp)
 {
 	dp = parsestatus(dp);
 	if (dp == NULL)
@@ -676,7 +677,7 @@ parselinkres(const u_int32 *dp)
 }
 
 static int
-parsestatfs(const u_int32 *dp)
+parsestatfs(const u_int32_t *dp)
 {
 	const struct nfsv2_statfs *sfsp;
 
@@ -690,16 +691,18 @@ parsestatfs(const u_int32 *dp)
 	T2CHECK(dp, 20);
 
 	sfsp = (const struct nfsv2_statfs *)dp;
-	printf(" tsize %d bsize %d blocks %d bfree %d bavail %d",
-	       ntohl(sfsp->sf_tsize), ntohl(sfsp->sf_bsize),
-	       ntohl(sfsp->sf_blocks), ntohl(sfsp->sf_bfree),
-	       ntohl(sfsp->sf_bavail));
+	printf(" tsize %u bsize %u blocks %u bfree %u bavail %u",
+	    (u_int32_t)ntohl(sfsp->sf_tsize),
+	    (u_int32_t)ntohl(sfsp->sf_bsize),
+	    (u_int32_t)ntohl(sfsp->sf_blocks),
+	    (u_int32_t)ntohl(sfsp->sf_bfree),
+	    (u_int32_t)ntohl(sfsp->sf_bavail));
 
 	return (1);
 }
 
 static int
-parserddires(const u_int32 *dp)
+parserddires(const u_int32_t *dp)
 {
 	dp = parsestatus(dp);
 	if (dp == 0)
@@ -708,7 +711,9 @@ parserddires(const u_int32 *dp)
 		return (1);
 
 	T2CHECK(dp, 12);
-	printf(" offset %x size %d ", ntohl(dp[0]), ntohl(dp[1]));
+	printf(" offset %x size %u ",
+	    (u_int32_t)ntohl(dp[0]),
+	    (u_int32_t)ntohl(dp[1]));
 	if (dp[2] != 0)
 		printf("eof");
 
@@ -716,9 +721,9 @@ parserddires(const u_int32 *dp)
 }
 
 static void
-interp_reply(const struct rpc_msg *rp, u_int32 proc, int length)
+interp_reply(const struct rpc_msg *rp, u_int32_t proc, int length)
 {
-	register const u_int32 *dp;
+	register const u_int32_t *dp;
 
 	switch (proc) {
 
@@ -849,7 +854,7 @@ interp_reply(const struct rpc_msg *rp, u_int32 proc, int length)
 		break;
 
 	default:
-		printf(" proc-%lu", proc);
+		printf(" proc-%u", proc);
 		return;
 	}
 	fputs(" [|nfs]", stdout);

@@ -1,29 +1,28 @@
 #	from: @(#)Makefile	8.1 (Berkeley) 6/10/93
-#	     $Id: Makefile,v 1.5 1995/05/17 03:49:16 rahn Exp rahn $
+#	$OpenBSD: Makefile,v 1.6 1996/05/16 02:49:07 chuck Exp $
 
 RELOC=0x3F0000 
 
 S=	${.CURDIR}/../../../..
-DEFS= -DSTANDALONE -DCOMPAT_NOLABEL # -DROMPRF
-INCPATH=-I${.CURDIR} -I${.CURDIR}/../../include -I${S} -I${S}/lib/libsa
+DEFS= 
+INCPATH=-I${.CURDIR} -I${.CURDIR}/../libsa -I${.CURDIR}/../libbug \
+	-I${.CURDIR}/../../include -I${S} -I${S}/lib/libsa
 CFLAGS=	-O2 ${INCPATH} ${DEFS} ${COPTS}
-CLEANFILES+=sdboot bootst bootst.bug
-
-#.PATH: ${S}/arch/${MACHINE_ARCH}/${MACHINE_ARCH}
-#.PATH: ${S}/lib/libsa
+CLEANFILES+=stboot bootst bootst.bug
 
 .include "${S}/arch/${MACHINE}/stand/libsa/Makefile.inc"
 .include "${S}/arch/${MACHINE}/stand/libbug/Makefile.inc"
 .include "${S}/arch/${MACHINE}/stand/bugcrt/Makefile.inc"
 .include "${S}/arch/${MACHINE}/stand/wrtvid/Makefile.inc"
 
-SRCS=   bootst.c
+SRCS=   boot.c conf.c dev_tape.c rawfs.c version.c
+
 
 LIBS=	${LIBSA} ${LIBBUG}
 
 OBJS= ${SRCS:N*.h:R:S/$/.o/g}
 
-BOOTS=	bootst sdboot
+BOOTS=	bootst stboot
 ALL=	${BOOTS} 
 
 all: ${ALL}
@@ -32,7 +31,7 @@ bootst.bug:	${OBJS} ${BUGCRT} ${LIBS}
 	${LD} -s -N -T ${RELOC} ${BUGCRT} ${OBJS} ${LIBS} -o $@
 	@size bootst.bug
 
-bootst sdboot: bootst.bug ${WRTVID}
+bootst stboot: bootst.bug ${WRTVID}
 	${WRTVID} bootst.bug
 
 install:

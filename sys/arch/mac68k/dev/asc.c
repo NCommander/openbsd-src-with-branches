@@ -1,4 +1,5 @@
-/*	$NetBSD: asc.c,v 1.8 1995/09/21 03:36:25 briggs Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: asc.c,v 1.11 1996/05/05 06:16:26 briggs Exp $	*/
 
 /*-
  * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
@@ -46,6 +47,7 @@
 #include <sys/device.h>
 #include <machine/cpu.h>
 
+#include "ascvar.h"
 
 /* Global ASC location */
 volatile unsigned char *ASCBase = (unsigned char *) 0x14000;
@@ -57,26 +59,24 @@ static int bell_length = 10;
 static int bell_volume = 100;
 static int bell_ringing = 0;
 
-static int ascprobe __P((struct device *, struct cfdata *, void *));
+static int  ascmatch __P((struct device *, void *, void *));
 static void ascattach __P((struct device *, struct device *, void *));
-extern int matchbyname __P((struct device *, void *, void *));
 
-struct cfdriver asccd =
-{NULL, "asc", matchbyname, ascattach,
-DV_DULL, sizeof(struct device), NULL, 0};
+struct cfattach asc_ca = {
+	sizeof(struct device), ascmatch, ascattach
+};
+
+struct cfdriver asc_cd = {
+	NULL, "asc", DV_DULL, NULL, 0
+};
 
 static int
-ascprobe(parent, cf, aux)
-	struct device *parent;
-	struct cfdata *cf;
-	void   *aux;
+ascmatch(pdp, match, auxp)
+	struct device	*pdp;
+	void	*match, *auxp;
 {
-	if (strcmp(*((char **) aux), asccd.cd_name))
-		return 0;
-
 	return 1;
 }
-
 
 static void
 ascattach(parent, dev, aux)
@@ -84,15 +84,13 @@ ascattach(parent, dev, aux)
 	void   *aux;
 {
 	printf(" Apple sound chip.\n");
-
-	ASCBase = IOBase + ASCBase;
 }
 
 int 
-asc_setbellparams(
-    int freq,
-    int length,
-    int volume)
+asc_setbellparams(freq, length, volume)
+    int freq;
+    int length;
+    int volume;
 {
 	/* I only perform these checks for sanity. */
 	/* I suppose someone might want a bell that rings */
@@ -114,10 +112,10 @@ asc_setbellparams(
 
 
 int 
-asc_getbellparams(
-    int *freq,
-    int *length,
-    int *volume)
+asc_getbellparams(freq, length, volume)
+    int *freq;
+    int *length;
+    int *volume;
 {
 	*freq = bell_freq;
 	*length = bell_length;
@@ -128,8 +126,8 @@ asc_getbellparams(
 
 
 void 
-asc_bellstop(
-    int param)
+asc_bellstop(param)
+    int param;
 {
 	if (bell_ringing > 1000 || bell_ringing < 0)
 		panic("bell got out of synch?????");
@@ -186,4 +184,6 @@ asc_ringbell()
 	}
 	bell_ringing++;
 	timeout((void *) asc_bellstop, 0, bell_length);
+
+	return 0;
 }

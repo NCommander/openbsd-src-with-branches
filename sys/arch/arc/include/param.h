@@ -1,4 +1,4 @@
-/*      $OpenBSD: param.h,v 1.4 1996/06/06 23:06:53 deraadt Exp $ */
+/*      $OpenBSD: param.h,v 1.4 1996/08/26 11:12:03 pefo Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -42,12 +42,15 @@
  */
 
 /*
- * Machine dependent constants for Acer Labs PICA_61.
+ * Machine dependent constants for ARC BIOS MIPS machines:
+ *	Acer Labs PICA_61
+ *	Deskstation rPC44
+ *	Deskstation Tyne
+ *	Etc
  */
 #define	MACHINE	     "arc"
 #define MACHINE_ARCH "mips"
-#define MID_PICA MID_PMAX /* For the moment */
-#define MID_MACHINE  MID_PICA
+#define MID_MACHINE  MID_PMAX	/* XXX Bogus, but we need it for now... */
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value for all
@@ -67,13 +70,13 @@
 #define	SEGSHIFT	22		/* LOG2(NBSEG) */
 
 #define	KERNBASE	0x80000000	/* start of kernel virtual */
-#define	KERNTEXTOFF	0x80080000	/* start of kernel text for kvm_mkdb */
 #define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
 
 #define	DEV_BSIZE	512
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
 #define BLKDEV_IOSIZE	2048
-#define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
+/* XXX Maxphys temporary changed to 32K while SCSI driver is fixed. */
+#define	MAXPHYS		(32 * 1024)	/* max raw I/O transfer size */
 
 #define	CLSIZE		1
 #define	CLSIZELOG2	0
@@ -111,7 +114,7 @@
  * Size of kernel malloc arena in CLBYTES-sized logical pages
  */ 
 #ifndef NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(512*1024/CLBYTES)
+#define	NKMEMCLUSTERS	(4096*1024/CLBYTES)
 #endif
 
 /* pages ("clicks") (4096 bytes) to disk blocks */
@@ -137,10 +140,10 @@
 /*
  * Mach derived conversion macros
  */
-#define pica_round_page(x)	((((unsigned)(x)) + NBPG - 1) & ~(NBPG-1))
-#define pica_trunc_page(x)	((unsigned)(x) & ~(NBPG-1))
-#define pica_btop(x)		((unsigned)(x) >> PGSHIFT)
-#define pica_ptob(x)		((unsigned)(x) << PGSHIFT)
+#define mips_round_page(x)	((((unsigned)(x)) + NBPG - 1) & ~(NBPG-1))
+#define mips_trunc_page(x)	((unsigned)(x) & ~(NBPG-1))
+#define mips_btop(x)		((unsigned)(x) >> PGSHIFT)
+#define mips_ptob(x)		((unsigned)(x) << PGSHIFT)
 
 #ifdef _KERNEL
 #ifndef _LOCORE

@@ -1,12 +1,13 @@
-#	$NetBSD: Makefile,v 1.3 1994/11/20 20:51:32 deraadt Exp $
+#	$NetBSD: Makefile,v 1.4 1996/03/25 22:48:09 mrg Exp $
 
 # from: @(#)Makefile	8.1 (Berkeley) 6/11/93
 #
 # Makefile for sparc links, tags file
 
+SUBDIR= stand
+
 NOPROG=	noprog
 NOMAN=	noman
-NOOBJ=	noobj
 
 DIRS=	conf dev fpu include rcons sbus sparc
 
@@ -27,3 +28,4 @@ tags:
 	sort -o tags tags
 
 .include <bsd.prog.mk>
+.include <bsd.subdir.mk>

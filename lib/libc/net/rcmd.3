@@ -1,4 +1,4 @@
-.\"	$NetBSD: rcmd.3,v 1.8 1995/02/25 06:20:52 cgd Exp $
+.\"	$OpenBSD: rcmd.3,v 1.6 1996/09/02 21:36:58 millert Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,8 +31,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)rcmd.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd June 4, 1993
 .Dt RCMD 3
 .Os BSD 4.2
@@ -49,16 +47,30 @@
 .Ft int
 .Fn rresvport "int *port"
 .Ft int
-.Fn iruserok "u_long raddr" "int superuser" "const char *ruser" "const char *luser"
+.Fn iruserok "u_int32_t raddr" "int superuser" "const char *ruser" "const char *luser"
 .Ft int
 .Fn ruserok "const char *rhost" "int superuser" "const char *ruser" "const char *luser"
 .Sh DESCRIPTION
 The
 .Fn rcmd
 function
-is used by the super-user to execute a command on
-a remote machine using an authentication scheme based
-on reserved port numbers.
+is used by the super-user to execute a command on a remote
+machine using an authentication scheme based on reserved
+port numbers.  If the calling process is not setuid and the
+.Li RSH
+environmental variable is set and
+.Fa inport
+is
+.Li shell/tcp ,
+.Xr rcmdsh 3
+is called instead with the value of
+.Li RSH .
+Alternately, if the user is not the super-user,
+.Fn rcmd
+will invoke
+.Xr rcmdsh 3
+to run the command via
+.Xr rsh 1 .
 The
 .Fn rresvport
 function
@@ -90,6 +102,9 @@ is set to the standard name of the host
 and a connection is established to a server
 residing at the well-known Internet port
 .Fa inport .
+If the user is not the super-user, the only valid port is
+.Li shell/tcp ,
+(usually port 514).
 .Pp
 If the connection succeeds,
 a socket in the Internet domain of type
@@ -121,6 +136,9 @@ command) will be made the same as the
 and no
 provision is made for sending arbitrary signals to the remote process,
 although you may be able to get its attention by using out-of-band data.
+Note that if the user is not the super-user,
+.Fa fd2p
+must be 0.
 .Pp
 The protocol is described in detail in
 .Xr rshd 8 .
@@ -134,6 +152,9 @@ by
 and several other functions.  Privileged Internet ports are those
 in the range 0 to 1023.  Only the super-user
 is allowed to bind an address of this sort to a socket.
+.Fn rresvport
+needs to be seeded with a port number; if that port
+is not available it will find another.
 .Pp
 The
 .Fn iruserok
@@ -195,6 +216,7 @@ is overloaded to mean ``All network ports in use.''
 .Xr rsh 1 ,
 .Xr intro 2 ,
 .Xr rexec 3 ,
+.Xr rcmdsh 3 ,
 .Xr rexecd 8 ,
 .Xr rlogind 8 ,
 .Xr rshd 8

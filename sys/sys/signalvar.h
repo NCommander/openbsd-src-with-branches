@@ -1,4 +1,5 @@
-/*	$NetBSD: signalvar.h,v 1.14 1995/08/13 22:48:47 mycroft Exp $	*/
+/*	$OpenBSD: signalvar.h,v 1.2 1996/03/03 12:12:19 niklas Exp $	*/
+/*	$NetBSD: signalvar.h,v 1.17 1996/04/22 01:23:31 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -66,8 +67,8 @@ struct	sigacts {
 #define	SAS_ALTSTACK	0x02		/* have alternate signal stack */
 
 /* additional signal action values, used only temporarily/internally */
-#define	SIG_CATCH	(void (*)())2
-#define	SIG_HOLD	(void (*)())3
+#define	SIG_CATCH	(void (*) __P((int)))2
+#define	SIG_HOLD	(void (*) __P((int)))3
 
 /*
  * get signal action for process and signal; currently only for current process
@@ -81,8 +82,8 @@ struct	sigacts {
  */
 #define	CURSIG(p)							\
 	(((p)->p_siglist == 0 ||					\
-	    ((p)->p_flag & P_TRACED) == 0 &&				\
-	    ((p)->p_siglist & ~(p)->p_sigmask) == 0) ?			\
+	    (((p)->p_flag & P_TRACED) == 0 &&				\
+	    ((p)->p_siglist & ~(p)->p_sigmask) == 0)) ?			\
 	    0 : issignal(p))
 
 /*
@@ -160,10 +161,18 @@ void	postsig __P((int sig));
 void	psignal __P((struct proc *p, int sig));
 void	siginit __P((struct proc *p));
 void	trapsignal __P((struct proc *p, int sig, u_long code));
+void	sigexit __P((struct proc *, int));
+void	setsigvec __P((struct proc *, int, struct sigaction *));
+int	killpg1 __P((struct proc *, int, int, int));
 
 /*
  * Machine-dependent functions:
  */
 void	sendsig __P((sig_t action, int sig, int returnmask, u_long code));
+struct core;
+struct vnode;
+struct ucred;
+int	cpu_coredump __P((struct proc *, struct vnode *, struct ucred *,
+			  struct core *));
 #endif	/* _KERNEL */
 #endif	/* !_SYS_SIGNALVAR_H_ */

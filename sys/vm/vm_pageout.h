@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_pageout.h,v 1.11 1995/03/26 20:39:14 jtc Exp $	*/
 /*	$NetBSD: vm_pageout.h,v 1.11 1995/03/26 20:39:14 jtc Exp $	*/
 
 /* 

@@ -1,4 +1,4 @@
-/*	$NetBSD: db_machdep.c,v 1.5 1995/06/27 14:44:49 gwr Exp $	*/
+/*	$NetBSD: db_machdep.c,v 1.7 1996/02/16 20:08:44 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
@@ -44,90 +44,6 @@
 
 #include <machine/pte.h>
 
-/*
- * Interface to the debugger for virtual memory read/write.
- *
- * To write in the text segment, we have to first make
- * the page writable, do the write, then restore the PTE.
- * For writes outside the text segment, and all reads,
- * just do the access -- if it causes a fault, the debugger
- * will recover with a longjmp to an appropriate place.
- */
-
-/*
- * Read bytes from kernel address space for debugger.
- * This used to check for valid PTEs, but now that
- * traps in DDB work correctly, "Just Do It!"
- */
-void
-db_read_bytes(addr, size, data)
-	vm_offset_t	addr;
-	register int	size;
-	register char	*data;
-{
-	register char	*src;
-
-	src = (char *)addr;
-	while (--size >= 0)
-		*data++ = *src++;
-}
-
-/*
- * Write one byte somewhere in kernel text.
- * It does not matter if this is slow.
- */
-static void
-db_write_text(dst, ch)
-	char *dst;
-	int ch;
-{
-	int		oldpte, tmppte;
-	vm_offset_t pgva = sun3_trunc_page((long)dst);
-	extern int cache_size;
-
-	/* Flush read-only VAC entry so we'll see the new one. */
-#ifdef	HAVECACHE
-	if (cache_size)
-		cache_flush_page(pgva);
-#endif
-	oldpte = get_pte(pgva);
-	if ((oldpte & PG_VALID) == 0) {
-		db_printf(" address 0x%x not a valid page\n", dst);
-		return;
-	}
-	tmppte = oldpte | PG_WRITE | PG_NC;
-
-	set_pte(pgva, tmppte);
-
-	/* Now we can write in this page of kernel text... */
-	*dst = (char) ch;
-
-	/* Temporary PTE was non-cacheable; no flush needed. */
-	set_pte(pgva, oldpte);
-	ICIA();
-}
-
-/*
- * Write bytes to kernel address space for debugger.
- */
-void
-db_write_bytes(addr, size, data)
-	vm_offset_t	addr;
-	int	size;
-	char	*data;
-{
-	extern char	kernel_text[], etext[] ;
-	char	*dst;
-
-	dst = (char *)addr;
-	while (--size >= 0) {
-		if ((dst >= kernel_text) && (dst < etext))
-			db_write_text(dst, *data);
-		else
-			*dst = *data;
-		dst++; data++;
-	}
-}
 
 static char *pgt_names[] = {
 	"MEM", "OBIO", "VMES", "VMEL" };

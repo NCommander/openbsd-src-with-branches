@@ -1,3 +1,4 @@
+/*	$OpenBSD: echo.c,v 1.7 1995/03/21 09:10:49 cgd Exp $	*/
 /*	$NetBSD: echo.c,v 1.7 1995/03/21 09:10:49 cgd Exp $	*/
 
 /*-

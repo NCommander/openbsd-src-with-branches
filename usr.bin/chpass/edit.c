@@ -1,4 +1,5 @@
-/*	$NetBSD: edit.c,v 1.5 1995/07/28 07:03:41 phil Exp $	*/
+/*	$OpenBSD: edit.c,v 1.10 1996/09/01 13:06:51 deraadt Exp $	*/
+/*	$NetBSD: edit.c,v 1.6 1996/05/15 21:50:45 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)edit.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: edit.c,v 1.5 1995/07/28 07:03:41 phil Exp $";
+static char rcsid[] = "$OpenBSD: edit.c,v 1.10 1996/09/01 13:06:51 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,31 +54,29 @@ static char rcsid[] = "$NetBSD: edit.c,v 1.5 1995/07/28 07:03:41 phil Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <pw_scan.h>
-#include <pw_util.h>
+#include <util.h>
 
 #include "chpass.h"
 
-extern char *tempname;
-
 void
-edit(pw)
+edit(tempname, pw)
+	char *tempname;
 	struct passwd *pw;
 {
 	struct stat begin, end;
 
 	for (;;) {
-		if (stat(tempname, &begin))
+		if (lstat(tempname, &begin) == -1 || S_ISLNK(begin.st_mode))
 			pw_error(tempname, 1, 1);
-		pw_edit(1);
-		if (stat(tempname, &end))
+		pw_edit(1, tempname);
+		if (lstat(tempname, &end) == -1 || S_ISLNK(end.st_mode))
 			pw_error(tempname, 1, 1);
 		if (begin.st_mtime == end.st_mtime) {
 			warnx("no changes made");
+			unlink(tempname);
 			pw_error(NULL, 0, 0);
 		}
-		if (verify(pw))
+		if (verify(tempname, pw))
 			break;
 		pw_prompt();
 	}
@@ -89,7 +88,8 @@ edit(pw)
  *	set conditional flag if the user gets to edit the shell.
  */
 void
-display(fd, pw)
+display(tempname, fd, pw)
+	char *tempname;
 	int fd;
 	struct passwd *pw;
 {
@@ -103,7 +103,7 @@ display(fd, pw)
 	    "#Changing user database information for %s.\n", pw->pw_name);
 	if (!uid) {
 		(void)fprintf(fp, "Login: %s\n", pw->pw_name);
-		(void)fprintf(fp, "Password: %s\n", pw->pw_passwd);
+		(void)fprintf(fp, "Encrypted password: %s\n", pw->pw_passwd);
 		(void)fprintf(fp, "Uid [#]: %d\n", pw->pw_uid);
 		(void)fprintf(fp, "Gid [# or name]: %d\n", pw->pw_gid);
 		(void)fprintf(fp, "Change [month day year]: %s\n",
@@ -140,14 +140,15 @@ display(fd, pw)
 }
 
 int
-verify(pw)
+verify(tempname, pw)
+	char *tempname;
 	struct passwd *pw;
 {
 	ENTRY *ep;
 	char *p;
 	struct stat sb;
 	FILE *fp;
-	int len;
+	int len, alen, line;
 	static char buf[LINE_MAX];
 
 	if (!(fp = fopen(tempname, "r")))
@@ -158,17 +159,19 @@ verify(pw)
 		warnx("corrupted temporary file");
 		goto bad;
 	}
+	line = 0;
 	while (fgets(buf, sizeof(buf), fp)) {
+		line++;
 		if (!buf[0] || buf[0] == '#')
 			continue;
 		if (!(p = strchr(buf, '\n'))) {
-			warnx("line too long");
+			warnx("line %d too long", line);
 			goto bad;
 		}
 		*p = '\0';
 		for (ep = list;; ++ep) {
 			if (!ep->prompt) {
-				warnx("unrecognized field");
+				warnx("unrecognized field on line %d", line);
 				goto bad;
 			}
 			if (!strncasecmp(buf, ep->prompt, ep->len)) {
@@ -179,7 +182,7 @@ verify(pw)
 					goto bad;
 				}
 				if (!(p = strchr(buf, ':'))) {
-					warnx("line corrupted");
+					warnx("line %d corrupted", line);
 					goto bad;
 				}
 				while (isspace(*++p));
@@ -202,6 +205,9 @@ bad:					(void)fclose(fp);
 	/* Build the gecos field. */
 	len = strlen(list[E_NAME].save) + strlen(list[E_BPHONE].save) +
 	    strlen(list[E_HPHONE].save) + strlen(list[E_LOCATE].save) + 4;
+	for (alen = 0, p = list[E_NAME].save; *p; p++)
+		if (*p == '&')
+			alen = alen + strlen(pw->pw_name) - 1;
 	if (!(p = malloc(len)))
 		err(1, NULL);
 	(void)sprintf(pw->pw_gecos = p, "%s,%s,%s,%s", list[E_NAME].save,
@@ -211,9 +217,13 @@ bad:					(void)fclose(fp);
 	    "%s:%s:%d:%d:%s:%ld:%ld:%s:%s:%s",
 	    pw->pw_name, pw->pw_passwd, pw->pw_uid, pw->pw_gid, pw->pw_class,
 	    pw->pw_change, pw->pw_expire, pw->pw_gecos, pw->pw_dir,
-	    pw->pw_shell) >= sizeof(buf)) {
+	    pw->pw_shell) >= 1023 ||
+	    strlen(buf) + alen >= 1023) {
 		warnx("entries too long");
+		free(p);
 		return (0);
 	}
+	free(p);
+
 	return (pw_scan(buf, pw, (int *)NULL));
 }

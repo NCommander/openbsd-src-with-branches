@@ -1,4 +1,5 @@
-/*	$NetBSD: svr4_sockio.c,v 1.5 1995/10/07 06:27:48 mycroft Exp $	 */
+/*	$OpenBSD: svr4_sockio.c,v 1.4 1996/04/21 22:18:26 deraadt Exp $	 */
+/*	$NetBSD: svr4_sockio.c,v 1.10 1996/05/03 17:09:15 christos Exp $	 */
 
 /*
  * Copyright (c) 1995 Christos Zoulas
@@ -76,18 +77,15 @@ bsd_to_svr4_flags(bf)
 }
 
 int
-svr4_sockioctl(fp, cmd, data, p, retval)
+svr4_sock_ioctl(fp, p, retval, fd, cmd, data)
 	struct file *fp;
-	u_long cmd;
-	caddr_t data;
 	struct proc *p;
 	register_t *retval;
-{
-	struct filedesc *fdp = p->p_fd;
-	caddr_t sg = stackgap_init(p->p_emul);
-	int error;
 	int fd;
-	int num;
+	u_long cmd;
+	caddr_t data;
+{
+	int error;
 	int (*ctl) __P((struct file *, u_long,  caddr_t, struct proc *)) =
 			fp->f_ops->fo_ioctl;
 
@@ -96,10 +94,34 @@ svr4_sockioctl(fp, cmd, data, p, retval)
 	switch (cmd) {
 	case SVR4_SIOCGIFNUM:
 		{
-			extern int if_index;
+			struct ifnet *ifp;
+			struct ifaddr *ifa;
+			int ifnum = 0;
 
-			DPRINTF(("SIOCGIFNUM %d\n", if_index));
-			return copyout(&if_index, data, sizeof(if_index));
+			/*
+			 * This does not return the number of physical
+			 * interfaces (if_index), but the number of interfaces
+			 * + addresses like ifconf() does, because this number
+			 * is used by code that will call SVR4_SIOCGIFCONF to
+			 * find the space needed for SVR4_SIOCGIFCONF. So we
+			 * count the number of ifreq entries that the next
+			 * SVR4_SIOCGIFCONF will return. Maybe a more correct
+			 * fix is to make SVR4_SIOCGIFCONF return only one
+			 * entry per physical interface?
+			 */
+
+			for (ifp = ifnet.tqh_first;
+			     ifp != 0; ifp = ifp->if_list.tqe_next)
+				if ((ifa = ifp->if_addrlist.tqh_first) == NULL)
+					ifnum++;
+				else
+					for (;ifa != NULL;
+					    ifa = ifa->ifa_list.tqe_next)
+						ifnum++;
+
+
+			DPRINTF(("SIOCGIFNUM %d\n", ifnum));
+			return copyout(&ifnum, data, sizeof(ifnum));
 		}
 
 	case SVR4_SIOCGIFFLAGS:
@@ -110,15 +132,20 @@ svr4_sockioctl(fp, cmd, data, p, retval)
 			if ((error = copyin(data, &sr, sizeof(sr))) != 0)
 				return error;
 
-			(void) strcpy(br.ifr_name, sr.svr4_ifr_name);
+			(void) strncpy(br.ifr_name, sr.svr4_ifr_name,
+			    sizeof(br.ifr_name));
+
 			if ((error = (*ctl)(fp, SIOCGIFFLAGS, 
-					    (caddr_t) &br, p)) != 0)
+					    (caddr_t) &br, p)) != 0) {
+				DPRINTF(("SIOCGIFFLAGS %s: error %d\n", 
+					 sr.svr4_ifr_name, error));
 				return error;
+			}
 
 			sr.svr4_ifr_flags = bsd_to_svr4_flags(br.ifr_flags);
-			DPRINTF(("SIOCGIFFLAGS %s = %d\n", 
+			DPRINTF(("SIOCGIFFLAGS %s = %x\n", 
 				sr.svr4_ifr_name, sr.svr4_ifr_flags));
-			return 0;
+			return copyout(&sr, data, sizeof(sr));
 		}
 
 	case SVR4_SIOCGIFCONF:
@@ -127,6 +154,10 @@ svr4_sockioctl(fp, cmd, data, p, retval)
 
 			if ((error = copyin(data, &sc, sizeof(sc))) != 0)
 				return error;
+
+			DPRINTF(("ifreq %d svr4_ifreq %d ifc_len %d\n",
+				sizeof(struct ifreq), sizeof(struct svr4_ifreq),
+				sc.svr4_ifc_len));
 
 			if ((error = (*ctl)(fp, OSIOCGIFCONF,
 					    (caddr_t) &sc, p)) != 0)
@@ -138,7 +169,7 @@ svr4_sockioctl(fp, cmd, data, p, retval)
 
 
 	default:
-		DPRINTF(("Unknown svr4 sockio %x\n", cmd));
+		DPRINTF(("Unknown svr4 sockio %lx\n", cmd));
 		return 0;	/* ENOSYS really */
 	}
 }

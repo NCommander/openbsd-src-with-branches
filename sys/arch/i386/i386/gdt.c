@@ -1,3 +1,42 @@
+/*	$OpenBSD: gdt.c,v 1.9 1996/05/07 07:21:38 deraadt Exp $	*/
+/*	$NetBSD: gdt.c,v 1.8 1996/05/03 19:42:06 christos Exp $	*/
+
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by John T. Kohl and Charles M. Hannum.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
@@ -8,7 +47,7 @@
 
 #include <machine/gdt.h>
 
-#define	GDTSTART	64
+#define	MINGDTSIZ	512
 #define	MAXGDTSIZ	8192
 
 union descriptor *dynamic_gdt = gdt;
@@ -21,6 +60,15 @@ int gdt_flags;
 #define	GDT_LOCKED	0x1
 #define	GDT_WANTED	0x2
 
+static __inline void gdt_lock __P((void));
+static __inline void gdt_unlock __P((void));
+void gdt_compact __P((void));
+void gdt_init __P((void));
+void gdt_grow __P((void));
+void gdt_shrink __P((void));
+int gdt_get_slot __P((void));
+void gdt_put_slot __P((int));
+
 /*
  * Lock and unlock the GDT, to avoid races in case gdt_{ge,pu}t_slot() sleep
  * waiting for memory.
@@ -30,7 +78,7 @@ int gdt_flags;
  * some time after the GDT is unlocked, so gdt_compact() could attempt to
  * reclaim it.
  */
-static inline void
+static __inline void
 gdt_lock()
 {
 
@@ -41,7 +89,7 @@ gdt_lock()
 	gdt_flags |= GDT_LOCKED;
 }
 
-static inline void
+static __inline void
 gdt_unlock()
 {
 
@@ -108,30 +156,49 @@ gdt_compact()
  * Grow or shrink the GDT.
  */
 void
-gdt_resize(newsize)
-	int newsize;
+gdt_init()
 {
-	size_t old_len, new_len;
-	union descriptor *old_gdt, *new_gdt;
+	size_t max_len, min_len;
 	struct region_descriptor region;
 
-	old_len = gdt_size * sizeof(union descriptor);
-	old_gdt = dynamic_gdt;
-	gdt_size = newsize;
-	new_len = gdt_size * sizeof(union descriptor);
-	new_gdt = (union descriptor *)kmem_alloc(kernel_map, new_len);
-	if (new_len > old_len) {
-		bcopy(old_gdt, new_gdt, old_len);
-		bzero((caddr_t)new_gdt + old_len, new_len - old_len);
-	} else
-		bcopy(old_gdt, new_gdt, new_len);
-	dynamic_gdt = new_gdt;
+	max_len = MAXGDTSIZ * sizeof(union descriptor);
+	min_len = MINGDTSIZ * sizeof(union descriptor);
+	gdt_size = MINGDTSIZ;
 
-	setregion(&region, new_gdt, new_len - 1);
+	dynamic_gdt = (union descriptor *)kmem_alloc_pageable(kernel_map,
+	    max_len);
+	vm_map_pageable(kernel_map, (vm_offset_t)dynamic_gdt,
+	    (vm_offset_t)dynamic_gdt + min_len, FALSE);
+	bcopy(gdt, dynamic_gdt, NGDT * sizeof(union descriptor));
+
+	setregion(&region, dynamic_gdt, max_len - 1);
 	lgdt(&region);
+}
 
-	if (old_gdt != gdt)
-		kmem_free(kernel_map, (vm_offset_t)old_gdt, old_len);
+void
+gdt_grow()
+{
+	size_t old_len, new_len;
+
+	old_len = gdt_size * sizeof(union descriptor);
+	gdt_size <<= 1;
+	new_len = old_len << 1;
+
+	vm_map_pageable(kernel_map, (vm_offset_t)dynamic_gdt + old_len,
+	    (vm_offset_t)dynamic_gdt + new_len, FALSE);
+}
+
+void
+gdt_shrink()
+{
+	size_t old_len, new_len;
+
+	old_len = gdt_size * sizeof(union descriptor);
+	gdt_size >>= 1;
+	new_len = old_len >> 1;
+
+	vm_map_pageable(kernel_map, (vm_offset_t)dynamic_gdt + new_len,
+	    (vm_offset_t)dynamic_gdt + old_len, TRUE);
 }
 
 /*
@@ -159,9 +226,9 @@ gdt_get_slot()
 			if (gdt_size >= MAXGDTSIZ)
 				panic("gdt_get_slot botch 2");
 			if (dynamic_gdt == gdt)
-				gdt_resize(GDTSTART);
+				gdt_init();
 			else
-				gdt_resize(gdt_size * 2);
+				gdt_grow();
 		}
 		slot = gdt_next++;
 	}
@@ -189,9 +256,9 @@ gdt_put_slot(slot)
 	 * almost 2x as many processes as are now running without
 	 * having to grow the GDT.
 	 */
-	if (gdt_size > GDTSTART && gdt_count < gdt_size / 4) {
+	if (gdt_size > MINGDTSIZ && gdt_count <= gdt_size / 4) {
 		gdt_compact();
-		gdt_resize(gdt_size / 2);
+		gdt_shrink();
 	} else {
 		dynamic_gdt[slot].gd.gd_selector = gdt_free;
 		gdt_free = slot;

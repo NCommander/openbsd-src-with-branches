@@ -1,4 +1,5 @@
-/*	$NetBSD: make.h,v 1.6 1995/06/14 15:19:43 christos Exp $	*/
+/*	$OpenBSD: make.h,v 1.5 1996/03/27 19:32:39 niklas Exp $	*/
+/*	$NetBSD: make.h,v 1.10 1996/08/13 16:39:30 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1993
@@ -52,13 +53,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#ifndef MAKE_BOOTSTRAP
+#if !defined(MAKE_BOOTSTRAP) && defined(BSD)
 #include <sys/cdefs.h>
 #else
+#ifndef __P
 #if defined(__STDC__) || defined(__cplusplus)
 #define	__P(protos)	protos		/* full-blown ANSI C */
 #else
 #define	__P(protos)	()		/* traditional C preprocessor */    
+#endif
 #endif
 #endif
 #if __STDC__
@@ -102,6 +105,7 @@ typedef struct GNode {
     char            *name;     	/* The target's name */
     char    	    *path;     	/* The full pathname of the file */
     int             type;      	/* Its type (see the OP flags, below) */
+    int		    order;	/* Its wait weight */
 
     Boolean         make;      	/* TRUE if this target needs to be remade */
     enum {
@@ -324,6 +328,8 @@ extern time_t 	now;	    	/* The time at the start of this whole
 				 * process */
 
 extern Boolean	oldVars;    	/* Do old-style variable substitution */
+
+extern Lst	sysIncPath;	/* The system include path. */
 
 /*
  * debug control:

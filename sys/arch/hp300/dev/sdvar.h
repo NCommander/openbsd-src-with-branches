@@ -1,4 +1,4 @@
-/*	$NetBSD: sdvar.h,v 1.2.2.1 1995/10/15 10:11:06 thorpej Exp $	*/
+/*	$NetBSD: sdvar.h,v 1.4.4.1 1996/06/06 16:22:06 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -38,15 +38,10 @@
  *	@(#)sdvar.h	8.1 (Berkeley) 6/10/93
  */
 
-struct sdinfo {
-	struct	disklabel si_label;	/* label */
-	int	si_bopen;		/* mask of open block devs */
-	int	si_copen;		/* mask of open char devs */
-	int	si_open;		/* composite mask of open devs */
-};
-
 struct	sd_softc {
 	struct	hp_device *sc_hd;
+	struct	disk sc_dkdev;
+	char	sc_xname[8];
 	struct	devqueue sc_dq;
 	int	sc_format_pid;	/* process using "format" mode */
 	short	sc_flags;
@@ -57,8 +52,6 @@ struct	sd_softc {
 	int	sc_blksize;	/* device block size in bytes */
 	u_int	sc_heads;	/* number of heads (tracks) */
 	u_int	sc_cyls;	/* number of cylinders */
-	u_int	sc_wpms;	/* average xfer rate in 16 bit wds/sec. */
-	struct	sdinfo sc_info;	/* disklabel and related info */
 };
 
 /* sc_flags values */

@@ -1,4 +1,5 @@
-/*	$NetBSD: exec.h,v 1.57 1995/10/10 01:27:07 mycroft Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: exec.h,v 1.59 1996/02/09 18:25:09 christos Exp $	*/
 
 /*-
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -69,7 +70,7 @@ struct ps_strings {
  */
 #if defined(COMPAT_SUNOS) || defined(COMPAT_ULTRIX) || \
     defined(COMPAT_IBCS2) || defined(COMPAT_SVR4) || defined(COMPAT_OSF1) || \
-    defined(COMPAT_LINUX) || defined(COMPAT_FREEBSD)
+    defined(COMPAT_LINUX) || defined(COMPAT_FREEBSD) || defined(COMPAT_HPUX)
 #define	STACKGAPLEN	400	/* plenty enough for now */
 #else
 #define	STACKGAPLEN	0
@@ -133,6 +134,9 @@ struct exec_package {
 	int	ep_fd;			/* a file descriptor we're holding */
 	struct  emul *ep_emul;		/* os emulation */
 	void	*ep_emul_arg;		/* emulation argument */
+	void	*ep_emul_argp;		/* emulation argument pointer */
+	char	*ep_interp;		/* name of interpreter if any */
+	u_long	ep_interp_pos;		/* interpreter load position */
 };
 #define	EXEC_INDIR	0x0001		/* script handling already done */
 #define	EXEC_HASFD	0x0002		/* holding a shell script */
@@ -167,6 +171,7 @@ void	*copyargs		__P((struct exec_package *, struct ps_strings *,
 				     void *, void *));
 void	setregs			__P((struct proc *, struct exec_package *,
 				     u_long, register_t *));
+int	check_exec		__P((struct proc *, struct exec_package *));
 
 #ifdef DEBUG
 void	new_vmcmd __P((struct exec_vmcmd_set *evsp,

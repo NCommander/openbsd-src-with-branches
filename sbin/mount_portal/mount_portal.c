@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_portal.c,v 1.6 1995/06/08 12:38:07 cgd Exp $	*/
+/*	$OpenBSD: mount_portal.c,v 1.3 1996/06/23 14:31:32 deraadt Exp $	*/
+/*	$NetBSD: mount_portal.c,v 1.8 1996/04/13 01:31:54 jtc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994
@@ -46,7 +47,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_portal.c	8.4 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_portal.c,v 1.6 1995/06/08 12:38:07 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_portal.c,v 1.3 1996/06/23 14:31:32 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,10 +70,12 @@ static char rcsid[] = "$NetBSD: mount_portal.c,v 1.6 1995/06/08 12:38:07 cgd Exp
 #include "pathnames.h"
 #include "portald.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
+
+static char *mountpt;		/* made available to signal handler */
 
 static void usage __P((void));
 
@@ -98,6 +101,15 @@ sighup(sig)
 	readcf = 1;
 }
 
+static void
+sigterm(sig)
+	int sig;
+{
+	if (unmount(mountpt, MNT_FORCE) < 0)
+		syslog(LOG_WARNING, "sigterm: unmounting %s failed: %s",
+		       mountpt, strerror(errno));
+}
+
 int
 main(argc, argv)
 	int argc;
@@ -106,9 +118,9 @@ main(argc, argv)
 	struct portal_args args;
 	struct sockaddr_un un;
 	char *conf;
-	char *mountpt;
 	int mntflags = 0;
 	char tag[32];
+	mode_t um;
 
 	qelem q;
 	int rc;
@@ -160,15 +172,18 @@ main(argc, argv)
 		fprintf(stderr, "mount_portal: socket: %s\n", strerror(errno));
 		exit(1);
 	}
+
+	um = umask(077);
 	(void) unlink(un.sun_path);
 	if (bind(so, (struct sockaddr *) &un, sizeof(un)) < 0)
 		err(1, NULL);
 	(void) unlink(un.sun_path);
+	(void) umask(um);
 
 	(void) listen(so, 5);
 
 	args.pa_socket = so;
-	sprintf(tag, "portal:%d", getpid());
+	sprintf(tag, "portal:%d", getpid() + 1);
 	args.pa_config = tag;
 
 	rc = mount(MOUNT_PORTAL, mountpt, mntflags, &args);
@@ -190,6 +205,7 @@ main(argc, argv)
 
 	signal(SIGCHLD, sigchld);
 	signal(SIGHUP, sighup);
+	signal(SIGTERM, sigterm);
 
 	/*
 	 * Just loop waiting for new connections and activating them

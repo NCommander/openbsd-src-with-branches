@@ -1,15 +1,16 @@
-#	$Id$
+#	$Id: Makefile,v 1.4 1996/06/21 18:23:10 tholo Exp $
 
 LIB=	ss
 SRCS=	ss_err.c data.c error.c execute_cmd.c help.c invocation.c list_rqs.c \
 	listen.c pager.c parse.c prompt.c request_tbl.c requests.c \
 	std_rqs.c
-CFLAGS+=-I. -I${.CURDIR} -I${.CURDIR}/../com_err
+CFLAGS+=-I. -I${.CURDIR}/.. -I${.CURDIR} -I${.CURDIR}/../com_err
 LDADD+=	${COM_ERR}
 CLEANFILES+=	ss_err.c ss_err.h std_rqs.c ss
 
 ss_err.h ss_err.c:	${.CURDIR}/ss_err.et
 	test -e ss_err.et || ln -s ${.CURDIR}/ss_err.et .
+	cd ${.CURDIR}/../compile_et; ${MAKE}
 	${COMPILE_ET} ss_err.et
 	-test -h ss_err.et && rm ss_err.et
 
@@ -18,7 +19,7 @@ std_rqs.c:		${.CURDIR}/std_rqs.ct
 	${MK_CMDS} std_rqs.ct
 	-test -h std_rqs.ct && rm std_rqs.ct
 
-beforeinstall:
+includes: ss_err.h
 	-cd ${.OBJDIR}; \
 	    if [ -f ss_err.h ]; then \
 		cmp -s ss_err.h ${DESTDIR}/usr/include/ss/ss_err.h || \
@@ -29,6 +30,6 @@ beforeinstall:
 	    fi
 
 beforedepend:
-	ln -s . ss
+	test -h ss || ln -s . ss
 
 .include <bsd.lib.mk>

@@ -1,9 +1,10 @@
+#	$OpenBSD: Makefile,v 1.3 1996/03/09 09:16:46 niklas Exp $
 #	$NetBSD: Makefile,v 1.4 1995/03/24 03:58:22 cgd Exp $
 #	@(#)Makefile	8.1 (Berkeley) 5/31/93
 
 PROG=	phantasia
 SRCS=	main.c fight.c io.c interplayer.c gamesupport.c misc.c phantglobs.c
-DPADD=	${LIBM} ${LIBCURSES} ${LIBTERM} ${LIBCOMPAT}
+DPADD=	${LIBM} ${LIBCURSES} ${LIBTERMLIB} ${LIBCOMPAT}
 LDADD=	-lm -lcurses -ltermlib -lcompat
 HIDEGAME=hidegame
 MAN=	phantasia.6
@@ -11,8 +12,15 @@ CLEANFILES+=map setup setup.o
 
 all: setup phantasia
 
-setup: phantglobs.o setup.o monsters.asc ${LIBM} 
-	${CC} phantglobs.o setup.o -o ${.TARGET} -lm
+setup.o: setup.c
+	${HOSTCC} -c ${CFLAGS} -o ${.TARGET} ${.CURDIR}/setup.c
+
+phantglobs.o.bld: phantglobs.c
+	${HOSTCC} -c ${CFLAGS} -o ${.TARGET} ${.CURDIR}/phantglobs.c
+
+setup: phantglobs.o.bld setup.o monsters.asc ${LIBM} 
+	${HOSTCC} ${CFLAGS} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} \
+		  phantglobs.o.bld setup.o ${LDADD}
 
 beforeinstall: 
 	./setup -m ${.CURDIR}/monsters.asc
@@ -22,7 +30,7 @@ beforeinstall:
 # PLOTDEVICE is used for plotting the map.  Change as appropriate.
 
 map: map.c
-	${CC} -O ${.CURDIR}/map.c -lplot -o ${.TARGET}
+	${HOSTCC} -O ${.CURDIR}/map.c -lplot -o ${.TARGET}
 	./map | plot > /dev/tty
 
 # XXX this rule shouldn't be here.

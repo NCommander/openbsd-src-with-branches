@@ -1,3 +1,4 @@
+/*	$OpenBSD: gen_subs.c,v 1.5 1995/03/21 09:07:26 cgd Exp $	*/
 /*	$NetBSD: gen_subs.c,v 1.5 1995/03/21 09:07:26 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)gen_subs.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: gen_subs.c,v 1.5 1995/03/21 09:07:26 cgd Exp $";
+static char rcsid[] = "$OpenBSD: gen_subs.c,v 1.5 1995/03/21 09:07:26 cgd Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,7 +51,6 @@ static char rcsid[] = "$NetBSD: gen_subs.c,v 1.5 1995/03/21 09:07:26 cgd Exp $";
 #include <sys/stat.h>
 #include <sys/param.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <tzfile.h>
 #include <utmp.h>
 #include <unistd.h>
@@ -139,9 +139,9 @@ ls_list(arcn, now)
 #		ifdef NET2_STAT
 		(void)printf("%4u,%4u ", MAJOR(sbp->st_rdev),
 #		else
-		(void)printf("%4lu,%4lu ", MAJOR(sbp->st_rdev),
+		(void)printf("%4lu,%4lu ", (unsigned long)MAJOR(sbp->st_rdev),
 #		endif
-		    MINOR(sbp->st_rdev));
+		    (unsigned long)MINOR(sbp->st_rdev));
 	else {
 #		ifdef NET2_STAT
 		(void)printf("%9lu ", sbp->st_size);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cache.c,v 1.3 1996/06/23 14:20:30 deraadt Exp $	*/
 /*	$NetBSD: cache.c,v 1.4 1995/03/21 09:07:10 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)cache.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: cache.c,v 1.4 1995/03/21 09:07:10 cgd Exp $";
+static char rcsid[] = "$OpenBSD: cache.c,v 1.3 1996/06/23 14:20:30 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,7 +52,6 @@ static char rcsid[] = "$NetBSD: cache.c,v 1.4 1995/03/21 09:07:10 cgd Exp $";
 #include <sys/param.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <pwd.h>
 #include <grp.h>
 #include <unistd.h>
@@ -97,7 +97,7 @@ uidtb_start()
 		return(-1);
 	if ((uidtb = (UIDC **)calloc(UID_SZ, sizeof(UIDC *))) == NULL) {
 		++fail;
-		warn(1, "Unable to allocate memory for user id cache table");
+		paxwarn(1, "Unable to allocate memory for user id cache table");
 		return(-1);
 	}
 	return(0);
@@ -126,7 +126,7 @@ gidtb_start()
 		return(-1);
 	if ((gidtb = (GIDC **)calloc(GID_SZ, sizeof(GIDC *))) == NULL) {
 		++fail;
-		warn(1, "Unable to allocate memory for group id cache table");
+		paxwarn(1, "Unable to allocate memory for group id cache table");
 		return(-1);
 	}
 	return(0);
@@ -155,7 +155,7 @@ usrtb_start()
 		return(-1);
 	if ((usrtb = (UIDC **)calloc(UNM_SZ, sizeof(UIDC *))) == NULL) {
 		++fail;
-		warn(1, "Unable to allocate memory for user name cache table");
+		paxwarn(1, "Unable to allocate memory for user name cache table");
 		return(-1);
 	}
 	return(0);
@@ -184,7 +184,7 @@ grptb_start()
 		return(-1);
 	if ((grptb = (GIDC **)calloc(GNM_SZ, sizeof(GIDC *))) == NULL) {
 		++fail;
-		warn(1,"Unable to allocate memory for group name cache table");
+		paxwarn(1,"Unable to allocate memory for group name cache table");
 		return(-1);
 	}
 	return(0);
@@ -247,9 +247,10 @@ name_uid(uid, frc)
 		ptr->uid = uid;
 		ptr->valid = INVALID;
 #		ifdef NET2_STAT
-		(void)sprintf(ptr->name, "%u", uid);
+		(void)snprintf(ptr->name, sizeof(ptr->name), "%u", uid);
 #		else
-		(void)sprintf(ptr->name, "%lu", uid);
+		(void)snprintf(ptr->name, sizeof(ptr->name), "%lu",
+			       (unsigned long)uid);
 #		endif
 		if (frc == 0)
 			return("");
@@ -324,9 +325,10 @@ name_gid(gid, frc)
 		ptr->gid = gid;
 		ptr->valid = INVALID;
 #		ifdef NET2_STAT
-		(void)sprintf(ptr->name, "%u", gid);
+		(void)snprintf(ptr->name, sizeof(ptr->name), "%u", gid);
 #		else
-		(void)sprintf(ptr->name, "%lu", gid);
+		(void)snprintf(ptr->name, sizeof(ptr->name), "%lu",
+			       (unsigned long)gid);
 #		endif
 		if (frc == 0)
 			return("");

@@ -1,4 +1,5 @@
-/*	$NetBSD: atzsc.c,v 1.13 1995/09/04 13:04:42 chopps Exp $	*/
+/*	$OpenBSD: atzsc.c,v 1.2 1996/04/21 22:14:59 deraadt Exp $	*/
+/*	$NetBSD: atzsc.c,v 1.16 1996/04/21 21:10:51 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -53,13 +54,17 @@
 
 int atzscprint __P((void *auxp, char *));
 void atzscattach __P((struct device *, struct device *, void *));
-int atzscmatch __P((struct device *, struct cfdata *, void *));
+int atzscmatch __P((struct device *, void *, void *));
 
 void atzsc_enintr __P((struct sbic_softc *));
 void atzsc_dmastop __P((struct sbic_softc *));
 int atzsc_dmanext __P((struct sbic_softc *));
-int atzsc_dmaintr __P((struct sbic_softc *));
+int atzsc_dmaintr __P((void *));
 int atzsc_dmago __P((struct sbic_softc *, char *, int, int));
+
+#ifdef DEBUG
+void atzsc_dump __P((void));
+#endif
 
 struct scsi_adapter atzsc_scsiswitch = {
 	sbic_scsicmd,
@@ -80,18 +85,21 @@ struct scsi_device atzsc_scsidev = {
 int	atzsc_dmadebug = 0;
 #endif
 
-struct cfdriver atzsccd = {
-	NULL, "atzsc", (cfmatch_t)atzscmatch, atzscattach,
-	DV_DULL, sizeof(struct sbic_softc), NULL, 0 };
+struct cfattach atzsc_ca = {
+	sizeof(struct sbic_softc), atzscmatch, atzscattach
+};
+
+struct cfdriver atzsc_cd = {
+	NULL, "atzsc", DV_DULL, NULL, 0
+};
 
 /*
  * if we are an A3000 we are here.
  */
 int
-atzscmatch(pdp, cdp, auxp)
+atzscmatch(pdp, match, auxp)
 	struct device *pdp;
-	struct cfdata *cdp;
-	void *auxp;
+	void *match, *auxp;
 {
 	struct zbus_args *zap;
 
@@ -153,7 +161,7 @@ atzscattach(pdp, dp, auxp)
 	sc->sc_sbicp = (sbic_regmap_p) ((int)rp + 0x91);
 	sc->sc_clkfreq = sbic_clock_override ? sbic_clock_override : 77;
 	
-	printf(": dmamask 0x%x\n", ~sc->sc_dmamask);
+	printf(": dmamask 0x%lx\n", ~sc->sc_dmamask);
 
 	sc->sc_link.adapter_softc = sc;
 	sc->sc_link.adapter_target = 7;
@@ -263,9 +271,10 @@ atzsc_dmastop(dev)
 }
 
 int
-atzsc_dmaintr(dev)
-	struct sbic_softc *dev;
+atzsc_dmaintr(arg)
+	void *arg;
 {
+	struct sbic_softc *dev = arg;
 	volatile struct sdmac *sdp;
 	int stat, found;
 
@@ -308,7 +317,6 @@ atzsc_dmanext(dev)
 	struct sbic_softc *dev;
 {
 	volatile struct sdmac *sdp;
-	int i, stat;
 
 	sdp = dev->sc_cregs;
 
@@ -346,8 +354,8 @@ atzsc_dump()
 {
 	int i;
 
-	for (i = 0; i < atzsccd.cd_ndevs; ++i)
-		if (atzsccd.cd_devs[i])
-			sbic_dump(atzsccd.cd_devs[i]);
+	for (i = 0; i < atzsc_cd.cd_ndevs; ++i)
+		if (atzsc_cd.cd_devs[i])
+			sbic_dump(atzsc_cd.cd_devs[i]);
 }
 #endif

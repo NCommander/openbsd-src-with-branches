@@ -1,4 +1,5 @@
-/*	$NetBSD: extern.h,v 1.4 1995/03/21 09:07:16 cgd Exp $	*/
+/*	$OpenBSD: extern.h,v 1.4 1996/06/23 14:20:33 deraadt Exp $	*/
+/*	$NetBSD: extern.h,v 1.5 1996/03/26 23:54:16 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1992 Keith Muller.
@@ -215,6 +216,7 @@ extern int nflag;
 extern int tflag;
 extern int uflag;
 extern int vflag;
+extern int zflag;
 extern int Dflag;
 extern int Hflag;
 extern int Lflag;
@@ -288,5 +290,5 @@ int ustar_wr __P((register ARCHD *));
 int tty_init __P((void));
 void tty_prnt __P((char *, ...));
 int tty_read __P((char *, int));
-void warn __P((int, char *, ...));
+void paxwarn __P((int, char *, ...));
 void syswarn __P((int, int, char *, ...));

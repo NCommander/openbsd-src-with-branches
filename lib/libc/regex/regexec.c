@@ -1,5 +1,3 @@
-/*	$NetBSD: regexec.c,v 1.6 1995/02/27 13:29:48 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
  * Copyright (c) 1992, 1993, 1994
@@ -35,16 +33,10 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)regexec.c	8.3 (Berkeley) 3/20/94
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)regexec.c	8.3 (Berkeley) 3/20/94";
-#else
-static char rcsid[] = "$NetBSD: regexec.c,v 1.6 1995/02/27 13:29:48 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: regexec.c,v 1.3 1996/08/19 08:31:15 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -65,8 +57,6 @@ static char rcsid[] = "$NetBSD: regexec.c,v 1.6 1995/02/27 13:29:48 cgd Exp $";
 #include "utils.h"
 #include "regex2.h"
 
-static int nope = 0;		/* for use in asserts; shuts lint up */
-
 /* macros for manipulating states, small version */
 #define	states	long
 #define	states1	states		/* for later use in regexec() decision */
@@ -82,7 +72,7 @@ static int nope = 0;		/* for use in asserts; shuts lint up */
 #define	SETUP(v)	((v) = 0)
 #define	onestate	long
 #define	INIT(o, n)	((o) = (unsigned long)1 << (n))
-#define	INC(o)	((unsigned long)(o) <<= 1)
+#define	INC(o)		((o) = (unsigned long)(o) << 1)
 #define	ISSTATEIN(v, o)	(((v) & (o)) != 0)
 /* some abbreviations; note that some of these know variable names! */
 /* do "if I'm here, I can also be there" etc without branches */

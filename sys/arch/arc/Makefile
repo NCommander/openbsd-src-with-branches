@@ -1,14 +1,17 @@
 #	from: @(#)Makefile	8.1 (Berkeley) 6/16/93
-#	$Id: Makefile,v 1.2 1996/05/15 07:09:06 pefo Exp $
+#	$Id: Makefile,v 1.2 1996/07/16 07:46:11 pefo Exp $
 
-# Makefile for pica links, tags file
+# Makefile for arc links, tags file
 
 .include "../../kern/Make.tags.inc"
 
 all:
 	@echo "make links or tags only"
 
-DIRS=	conf dev dist include pica
+DIRS=	arc conf dev include isa pica
+NOPROG=	noprog
+NOOBJ=	noobj
+NOOBJ=	noman
 
 links::
 	-for i in ${DIRS}; do \

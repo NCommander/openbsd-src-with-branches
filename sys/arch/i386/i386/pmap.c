@@ -1,4 +1,5 @@
-/*	$NetBSD: pmap.c,v 1.33 1995/06/26 05:21:58 cgd Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.12 1996/06/16 10:24:19 deraadt Exp $	*/
+/*	$NetBSD: pmap.c,v 1.36 1996/05/03 19:42:22 christos Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -79,6 +80,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/user.h>
@@ -93,6 +95,7 @@
 #include <i386/isa/isa_machdep.h>
 
 #include "isa.h"
+#include "isadma.h"
 
 /*
  * Allocate various and sundry SYSMAPs used in the days of old VM
@@ -180,6 +183,14 @@ TAILQ_HEAD(pv_page_list, pv_page) pv_page_freelist;
 int		pv_nfree;
 
 pt_entry_t *pmap_pte __P((pmap_t, vm_offset_t));
+struct pv_entry * pmap_alloc_pv __P((void));
+void pmap_free_pv __P((struct pv_entry *));
+void i386_protection_init __P((void));
+void pmap_collect_pv __P((void));
+__inline void pmap_remove_pv __P((pmap_t, vm_offset_t, u_int));
+__inline void pmap_enter_pv __P((pmap_t, vm_offset_t, u_int));
+void pmap_deactivate __P((pmap_t, struct pcb *));
+void pmap_remove_all __P((vm_offset_t));
 
 #if BSDVM_COMPAT
 #include <sys/msgbuf.h>
@@ -212,9 +223,6 @@ pmap_bootstrap(virtual_start)
 	vm_offset_t va;
 	pt_entry_t *pte;
 #endif
-	extern int physmem;
-	extern vm_offset_t reserve_dumppages(vm_offset_t);
-
 	/* XXX: allow for msgbuf */
 	avail_end -= i386_round_page(sizeof(struct msgbuf));
 
@@ -276,8 +284,14 @@ pmap_bootstrap(virtual_start)
 	 * reserve special hunk of memory for use by bus dma as a bounce
 	 * buffer (contiguous virtual *and* physical memory).  XXX
 	 */
-#if NISA > 0
-	isaphysmem = pmap_steal_memory(DMA_BOUNCE * NBPG);
+#if NISA > 0 && NISADMA > 0
+	if (ctob(physmem) >= 0x1000000) {
+		isaphysmem = pmap_steal_memory(DMA_BOUNCE * NBPG);
+		isaphysmempgs = DMA_BOUNCE;
+	} else {
+		isaphysmem = pmap_steal_memory(DMA_BOUNCE_LOW * NBPG);
+		isaphysmempgs = DMA_BOUNCE_LOW;
+	}
 #endif
 
 	pmap_update();
@@ -301,9 +315,8 @@ pmap_virtual_space(startp, endp)
 void
 pmap_init()
 {
-	vm_offset_t addr, addr2;
+	vm_offset_t addr;
 	vm_size_t s;
-	int rv;
 
 	if (PAGE_SIZE != NBPG)
 		panic("pmap_init: CLSIZE != 1");
@@ -368,7 +381,6 @@ pmap_free_pv(pv)
 	struct pv_entry *pv;
 {
 	register struct pv_page *pvp;
-	register int i;
 
 	pvp = (struct pv_page *) trunc_page(pv);
 	switch (++pvp->pvp_pgi.pgi_nfree) {
@@ -828,7 +840,9 @@ reduce wiring count on page table pages as references drop
 
 		*pte = 0;
 
+#ifndef __GNUC__
 	next:
+#endif
 		sva += NBPG;
 		pte++;
 	}
@@ -1006,7 +1020,9 @@ pmap_protect(pmap, sva, eva, prot)
 			i386prot |= PG_u | PG_RW;
 		pmap_pte_set_prot(pte, i386prot);
 
+#ifndef __GNUC__
 	next:
+#endif
 		sva += NBPG;
 		pte++;
 	}
@@ -1061,13 +1077,54 @@ pmap_enter(pmap, va, pa, prot, wired)
 		enter_stats.user++;
 #endif
 
-	/*
-	 * Page Directory table entry not valid, we need a new PT page
-	 */
 	pte = pmap_pte(pmap, va);
-	if (!pte)
-		panic("ptdi %x", pmap->pm_pdir[PTDPTDI]);
+	if (!pte) {
+		/*
+		 * Page Directory table entry not valid, we need a new PT page
+		 *
+		 * we want to vm_fault in a new zero-filled PT page for our
+		 * use.   in order to do this, we want to call vm_fault()
+		 * with the VA of where we want to put the PTE.   but in
+		 * order to call vm_fault() we need to know which vm_map
+		 * we are faulting in.    in the m68k pmap's this is easy
+		 * since all PT pages live in one global vm_map ("pt_map")
+		 * and we have a lot of virtual space we can use for the
+		 * pt_map (since the kernel doesn't have to share its 4GB
+		 * address space with processes).    but in the i386 port
+		 * the kernel must live in the top part of the virtual 
+		 * address space and PT pages live in their process' vm_map
+		 * rather than a global one.    the problem is that we have
+		 * no way of knowing which vm_map is the correct one to 
+		 * fault on.
+		 * 
+		 * XXX: see NetBSD PR#1834 and Mycroft's posting to 
+		 *	tech-kern on 7 Jan 1996.
+		 *
+		 * rather than always calling panic, we try and make an 
+		 * educated guess as to which vm_map to use by using curproc.
+		 * this is a workaround and may not fully solve the problem?
+	 	 */
 
+		struct vm_map *vmap;
+		int rv;
+		vm_offset_t v;
+
+		if (curproc == NULL || curproc->p_vmspace == NULL ||
+		  	pmap != &curproc->p_vmspace->vm_pmap)
+				panic("ptdi %x", pmap->pm_pdir[PTDPTDI]);
+
+		/* our guess about the vm_map was good!  fault it in.  */
+
+		vmap = &curproc->p_vmspace->vm_map;
+		v = trunc_page(vtopte(va));
+		rv = vm_fault(vmap, v, VM_PROT_READ|VM_PROT_WRITE, FALSE);
+		if (rv != KERN_SUCCESS)
+			panic("ptdi2 %x", pmap->pm_pdir[PTDPTDI]);
+		vm_map_pageable(vmap, v, round_page(v+1), FALSE);
+		pte = pmap_pte(pmap, va);
+		if (!pte) 
+			panic("ptdi3 %x", pmap->pm_pdir[PTDPTDI]);
+	}
 #ifdef DEBUG
 	if (pmapdebug & PDB_ENTER)
 		printf("enter: pte %x, *pte %x ", pte, *pte);
@@ -1079,7 +1136,8 @@ pmap_enter(pmap, va, pa, prot, wired)
 		/*
 		 * Check for wiring change and adjust statistics.
 		 */
-		if (wired && !pmap_pte_w(pte) || !wired && pmap_pte_w(pte)) {
+		if ((wired && !pmap_pte_w(pte)) ||
+		    (!wired && pmap_pte_w(pte))) {
 			/*
 			 * We don't worry about wiring PT pages as they remain
 			 * resident as long as there are valid mappings in them.
@@ -1245,7 +1303,7 @@ pmap_change_wiring(pmap, va, wired)
 	}
 #endif
 
-	if (wired && !pmap_pte_w(pte) || !wired && pmap_pte_w(pte)) {
+	if ((wired && !pmap_pte_w(pte)) || (!wired && pmap_pte_w(pte))) {
 		if (wired)
 			pmap->pm_stats.wired_count++;
 		else
@@ -1361,14 +1419,9 @@ void
 pmap_collect(pmap)
 	pmap_t pmap;
 {
-	register vm_offset_t pa;
-	register struct pv_entry *pv;
-	register pt_entry_t *pte;
-	vm_offset_t kpa;
-	int s;
-
 #ifdef DEBUG
-	printf("pmap_collect(%x) ", pmap);
+	if (pmapdebug & PDB_FOLLOW)
+		printf("pmap_collect(%x) ", pmap);
 #endif
 
 	if (pmap != pmap_kernel())
@@ -1376,13 +1429,16 @@ pmap_collect(pmap)
 
 }
 
-#if 0
+#if DEBUG
 void
 pmap_dump_pvlist(phys, m)
 	vm_offset_t phys;
 	char *m;
 {
 	register struct pv_entry *pv;
+
+	if (!(pmapdebug & PDB_PARANOIA))
+		return;
 
 	if (!pmap_initialized)
 		return;
@@ -1529,7 +1585,7 @@ pmap_pageable(pmap, sva, eva, pageable)
 /*
  * Miscellaneous support routines follow
  */
-
+void
 i386_protection_init()
 {
 

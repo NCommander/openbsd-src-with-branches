@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: mkioconf.c,v 1.5 1996/07/07 22:02:20 maja Exp $	*/
+/*	$NetBSD: mkioconf.c,v 1.38 1996/03/17 06:29:27 cgd Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -40,7 +43,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mkioconf.c	8.1 (Berkeley) 6/6/93
- *	$Id: mkioconf.c,v 1.35 1995/04/28 06:55:13 cgd Exp $
  */
 
 #include <sys/param.h>
@@ -58,6 +60,7 @@ static int emitcfdata __P((FILE *));
 static int emitexterns __P((FILE *));
 static int emithdr __P((FILE *));
 static int emitloc __P((FILE *));
+static int emitlocnames __P((FILE *));
 static int emitpseudo __P((FILE *));
 static int emitpv __P((FILE *));
 static int emitroots __P((FILE *));
@@ -92,7 +95,8 @@ mkioconf()
 	}
 	v = emithdr(fp);
 	if (v != 0 || emitvec(fp) || emitexterns(fp) || emitloc(fp) ||
-	    emitpv(fp) || emitcfdata(fp) || emitroots(fp) || emitpseudo(fp)) {
+	    emitlocnames(fp) || emitpv(fp) || emitcfdata(fp) ||
+	    emitroots(fp) || emitpseudo(fp)) {
 		if (v >= 0)
 			(void)fprintf(stderr,
 			    "config: error writing %s: %s\n",
@@ -159,13 +163,22 @@ emitexterns(fp)
 	register FILE *fp;
 {
 	register struct devbase *d;
+	register struct deva *da;
 
 	NEWLINE;
 	for (d = allbases; d != NULL; d = d->d_next) {
-		if (d->d_ihead == NULL)
+		if (!devbase_has_instances(d, WILD))
 			continue;
-		if (fprintf(fp, "extern struct cfdriver %scd;\n",
+		if (fprintf(fp, "extern struct cfdriver %s_cd;\n",
 			    d->d_name) < 0)
+			return (1);
+	}
+	NEWLINE;
+	for (da = alldevas; da != NULL; da = da->d_next) {
+		if (!deva_has_instances(da, WILD))
+			continue;
+		if (fprintf(fp, "extern struct cfattach %s_ca;\n",
+			    da->d_name) < 0)
 			return (1);
 	}
 	NEWLINE;
@@ -187,6 +200,128 @@ static int loc[%d] = {", locators.used) < 0)
 	return (fprintf(fp, "\n};\n") < 0);
 }
 
+static int nlocnames, maxlocnames = 8;
+static char **locnames;
+
+short
+addlocname(name)
+	char *name;
+{
+	int i;
+
+	if (locnames == NULL || nlocnames+1 > maxlocnames) {
+		maxlocnames *= 4;
+		locnames = (char **)realloc(locnames, maxlocnames * sizeof(char *));
+	}
+	for (i = 0; i < nlocnames; i++)
+		if (strcmp(name, locnames[i]) == 0)
+			return (i);
+	/*printf("adding %s at %d\n", name, nlocnames);*/
+	locnames[nlocnames++] = name;
+	return (nlocnames - 1);
+}
+
+static int nlocnami, maxlocnami = 8;
+static short *locnami;
+
+void
+addlocnami(index)
+	short index;
+{
+	if (locnami == NULL || nlocnami+1 > maxlocnami) {
+		maxlocnami *= 4;
+		locnami = (short *)realloc(locnami, maxlocnami * sizeof(short));
+	}
+	locnami[nlocnami++] = index;
+}
+
+
+/*
+ * Emit locator names
+ * XXX the locnamp[] table is not compressed like it should be!
+ */
+static int
+emitlocnames(fp)
+	register FILE *fp;
+{
+	register struct devi **p, *i;
+	register struct nvlist *nv;
+	register struct attr *a;
+	int added, start;
+	int v, j, x;
+
+#if 1
+	addlocnami(-1);
+	for (p = packed; (i = *p) != NULL; p++) {
+		/*printf("child %s\n", i->i_name);*/
+
+		/* initialize all uninitialized parents */
+		for (x = 0; x < i->i_pvlen; x++) {
+			if (i->i_parents[x]->i_plocnami)
+				continue;
+			start = nlocnami;
+
+			/* add all the names */
+			a = i->i_atattr;
+			nv = a->a_locs;
+			added = 0;
+			for (nv = a->a_locs, v = 0; nv != NULL;
+			    nv = nv->nv_next, v++) {
+				addlocnami(addlocname(nv->nv_name));
+				added = 1;
+			}
+			/* terminate list of names */
+			if (added)
+				addlocnami(-1);
+			else
+				start--;
+
+			/*printf("bus %s starts at %d\n", i->i_parents[x]->i_name,
+			    start);*/
+			i->i_parents[x]->i_plocnami = start;
+
+		}
+	}
+	for (p = packed; (i = *p) != NULL; p++)
+		if (i->i_pvlen)
+			i->i_locnami = i->i_parents[0]->i_plocnami;
+#else
+	addlocnami(-1);
+	for (p = packed; (i = *p) != NULL; p++) {
+
+		i->i_locnami = nlocnami;
+
+		/* add all the names */
+		a = i->i_atattr;
+		nv = a->a_locs;
+		for (nv = a->a_locs, v = 0; nv != NULL; nv = nv->nv_next, v++)
+			addlocnami(addlocname(nv->nv_name));
+
+		/* terminate list of names */
+		addlocnami(-1);
+
+	}
+#endif
+	if (fprintf(fp, "\nchar *locnames[] = {\n") < 0)
+		return (1);
+	for (j = 0; j < nlocnames; j++)
+		if (fprintf(fp, "\t\"%s\",\n", locnames[j]) < 0)
+			return (1);
+	if (fprintf(fp, "};\n\n") < 0)
+		return (1);
+
+	if (fprintf(fp,
+	    "/* each entry is an index into locnames[]; -1 terminates */\n") < 0)
+		return (1);
+	if (fprintf(fp, "short locnamp[] = {") < 0)
+		return (1);
+	for (j = 0; j < nlocnami; j++)
+		if (fprintf(fp, "%s%d,", SEP(j, 8), locnami[j]) < 0)
+			return (1);
+	return (fprintf(fp, "\n};\n") < 0);
+}
+
+
 /*
  * Emit global parents-vector.
  */
@@ -196,8 +331,11 @@ emitpv(fp)
 {
 	register int i;
 
+	if (fprintf(fp, "\n/* size of parent vectors */\n\
+int pv_size = %d;\n", parents.used) < 0)
+		return (1);
 	if (fprintf(fp, "\n/* parent vectors */\n\
-static short pv[%d] = {", parents.used) < 0)
+short pv[%d] = {", parents.used) < 0)
 		return (1);
 	for (i = 0; i < parents.used; i++)
 		if (fprintf(fp, "%s%d,", SEP(i, 16), parents.vec[i]) < 0)
@@ -214,7 +352,7 @@ emitcfdata(fp)
 {
 	register struct devi **p, *i, **par;
 	register int unit, v;
-	register const char *vs, *state, *basename;
+	register const char *vs, *state, *basename, *attachment;
 	register struct nvlist *nv;
 	register struct attr *a;
 	char *loc;
@@ -223,9 +361,11 @@ emitcfdata(fp)
 	if (fprintf(fp, "\n\
 #define NORM FSTATE_NOTFOUND\n\
 #define STAR FSTATE_STAR\n\
+#define DNRM FSTATE_DNOTFOUND\n\
+#define DSTR FSTATE_DSTAR\n\
 \n\
 struct cfdata cfdata[] = {\n\
-\t/* driver     unit state    loc     flags parents ivstubs */\n") < 0)
+    /* attachment       driver        unit  state loc     flags parents nm ivstubs */\n") < 0)
 		return (1);
 	for (p = packed; (i = *p) != NULL; p++) {
 		/* the description */
@@ -249,12 +389,21 @@ struct cfdata cfdata[] = {\n\
 
 		/* then the actual defining line */
 		basename = i->i_base->d_name;
+		attachment = i->i_atdeva->d_name;
 		if (i->i_unit == STAR) {
 			unit = i->i_base->d_umax;
-			state = "STAR";
+			if (i->i_disable) {
+				state = "DSTR";
+			} else {
+				state = "STAR";
+			}
 		} else {
 			unit = i->i_unit;
-			state = "NORM";
+			if (i->i_disable) {
+				state = "DNRM";
+			} else {
+				state = "NORM";
+			}
 		}
 		if (i->i_ivoff < 0) {
 			vs = "";
@@ -269,12 +418,18 @@ struct cfdata cfdata[] = {\n\
 		} else
 			loc = "loc";
 		if (fprintf(fp, "\
-\t{&%scd,%s%2d, %s, %7s, %#6x, pv+%2d, %s%d},\n",
+    {&%s_ca,%s&%s_cd,%s%2d, %s, %7s, %#4x, pv+%2d, %d, %s%d},\n",
+		    attachment, strlen(attachment) < 6 ? "\t\t" : "\t",
 		    basename, strlen(basename) < 3 ? "\t\t" : "\t", unit,
-		    state, loc, i->i_cfflags, i->i_pvoff, vs, v) < 0)
+		    state, loc, i->i_cfflags, i->i_pvoff, i->i_locnami,
+		    vs, v) < 0)
 			return (1);
 	}
-	return (fputs("\t{0}\n};\n", fp) < 0);
+	if (fprintf(fp, "    {0},\n    {0},\n    {0},\n    {0},\n") < 0)
+		return (1);
+	if (fprintf(fp, "    {0},\n    {0},\n    {0},\n    {0},\n") < 0)
+		return (1);
+	return (fputs("    {(struct cfattach *)-1}\n};\n", fp) < 0);
 }
 
 /*
@@ -285,6 +440,7 @@ emitroots(fp)
 	register FILE *fp;
 {
 	register struct devi **p, *i;
+	int cnt = 0;
 
 	if (fputs("\nshort cfroots[] = {\n", fp) < 0)
 		return (1);
@@ -299,8 +455,12 @@ emitroots(fp)
 		if (fprintf(fp, "\t%2d /* %s */,\n",
 		    i->i_cfindex, i->i_name) < 0)
 			return (1);
+		cnt++;
 	}
-	return (fputs("\t-1\n};\n", fp) < 0);
+	if (fputs("\t-1\n};\n", fp) < 0)
+		return (1);
+
+	return(fprintf(fp, "\nint cfroots_size = %d;\n", cnt+1) < 0);
 }
 
 /*
@@ -344,7 +504,7 @@ emitvec(fp)
 
 	nvec = 0;
 	for (p = packed; (i = *p) != NULL; p++) {
-		if ((head = i->i_base->d_vectors) == NULL)
+		if ((head = i->i_atdeva->d_vectors) == NULL)
 			continue;
 		if ((unit = i->i_unit) == STAR)
 			panic("emitvec unit==STAR");
@@ -364,7 +524,7 @@ emitvec(fp)
 		return (1);
 	nvec = 0;
 	for (p = packed; (i = *p) != NULL; p++) {
-		if ((head = i->i_base->d_vectors) == NULL)
+		if ((head = i->i_atdeva->d_vectors) == NULL)
 			continue;
 		i->i_ivoff = nvec;
 		unit = i->i_unit;

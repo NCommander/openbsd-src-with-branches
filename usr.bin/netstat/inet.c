@@ -1,3 +1,4 @@
+/*	$OpenBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)inet.c	8.4 (Berkeley) 4/20/94";
 #else
-static char *rcsid = "$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $";
+static char *rcsid = "$OpenBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $";
 #endif
 #endif /* not lint */
 
@@ -227,7 +228,7 @@ tcp_stats(off, name)
 	p(tcps_keepdrops, "\t\t%d connection%s dropped by keepalive\n");
 	p(tcps_predack, "\t%d correct ACK header prediction%s\n");
 	p(tcps_preddat, "\t%d correct data packet header prediction%s\n");
-	p3(tcps_pcbcachemiss, "\t%d PCB cache miss%s\n");
+	p3(tcps_pcbhashmiss, "\t%d PCB cache miss%s\n");
 #undef p
 #undef p2
 #undef p3

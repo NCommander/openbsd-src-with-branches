@@ -1,4 +1,5 @@
-/*	$NetBSD: var.c,v 1.11 1995/06/14 15:20:13 christos Exp $	*/
+/*	$OpenBSD: var.c,v 1.3 1996/06/26 05:36:39 deraadt Exp $	*/
+/*	$NetBSD: var.c,v 1.14 1996/08/13 16:42:25 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -42,7 +43,7 @@
 #if 0
 static char sccsid[] = "@(#)var.c	5.7 (Berkeley) 6/1/90";
 #else
-static char rcsid[] = "$NetBSD: var.c,v 1.11 1995/06/14 15:20:13 christos Exp $";
+static char rcsid[] = "$OpenBSD: var.c,v 1.3 1996/06/26 05:36:39 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -165,7 +166,9 @@ static Boolean VarTail __P((char *, Boolean, Buffer, ClientData));
 static Boolean VarSuffix __P((char *, Boolean, Buffer, ClientData));
 static Boolean VarRoot __P((char *, Boolean, Buffer, ClientData));
 static Boolean VarMatch __P((char *, Boolean, Buffer, ClientData));
+#ifdef SYSVVARSUB
 static Boolean VarSYSVMatch __P((char *, Boolean, Buffer, ClientData));
+#endif
 static Boolean VarNoMatch __P((char *, Boolean, Buffer, ClientData));
 static Boolean VarSubstitute __P((char *, Boolean, Buffer, ClientData));
 static char *VarModify __P((char *, Boolean (*)(char *, Boolean, Buffer,
@@ -279,7 +282,7 @@ VarFind (name, ctxt, flags)
 	    int	  	len;
 	    
 	    v = (Var *) emalloc(sizeof(Var));
-	    v->name = strdup(name);
+	    v->name = estrdup(name);
 
 	    len = strlen(env);
 	    
@@ -332,7 +335,7 @@ VarAdd (name, val, ctxt)
 
     v = (Var *) emalloc (sizeof (Var));
 
-    v->name = strdup (name);
+    v->name = estrdup (name);
 
     len = val ? strlen(val) : 0;
     v->val = Buf_Init(len+1);
@@ -782,8 +785,7 @@ VarMatch (word, addSpace, buf, pattern)
     return(addSpace);
 }
 
-
-
+#ifdef SYSVVARSUB
 /*-
  *-----------------------------------------------------------------------
  * VarSYSVMatch --
@@ -825,6 +827,7 @@ VarSYSVMatch (word, addSpace, buf, patp)
 
     return(addSpace);
 }
+#endif
 
 
 /*-
@@ -1116,7 +1119,7 @@ Var_Parse (str, ctxt, err, lengthPtr, freePtr)
     Boolean 	    haveModifier;/* TRUE if have modifiers for the variable */
     register char   endc;    	/* Ending character when variable in parens
 				 * or braces */
-    register char   startc;	/* Starting character when variable in parens
+    register char   startc=0;	/* Starting character when variable in parens
 				 * or braces */
     int             cnt;	/* Used to count brace pairs when variable in
 				 * in parens or braces */
@@ -1633,7 +1636,22 @@ Var_Parse (str, ctxt, err, lengthPtr, freePtr)
 			break;
 		    }
 		    /*FALLTHRU*/
-		default: {
+#ifdef SUNSHCMD
+		case 's':
+		    if (tstr[1] == 'h' && (tstr[2] == endc || tstr[2] == ':')) {
+			char *err;
+			newStr = Cmd_Exec (str, &err);
+			if (err)
+			    Error (err, str);
+			cp = tstr + 2;
+			termc = *cp;
+			break;
+		    }
+		    /*FALLTHRU*/
+#endif
+		default:
+		{
+#ifdef SYSVVARSUB
 		    /*
 		     * This can either be a bogus modifier or a System-V
 		     * substitution command.
@@ -1700,7 +1718,9 @@ Var_Parse (str, ctxt, err, lengthPtr, freePtr)
 			pattern.lhs[pattern.leftLen] = '=';
 			pattern.rhs[pattern.rightLen] = endc;
 			termc = endc;
-		    } else {
+		    } else
+#endif
+		    {
 			Error ("Unknown modifier '%c'\n", *tstr);
 			for (cp = tstr+1;
 			     *cp != ':' && *cp != endc && *cp != '\0';

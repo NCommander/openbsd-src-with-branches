@@ -1,4 +1,5 @@
-/*	$NetBSD: ar_io.c,v 1.4 1995/03/21 09:07:04 cgd Exp $	*/
+/*	$OpenBSD: ar_io.c,v 1.4 1996/06/23 14:20:28 deraadt Exp $	*/
+/*	$NetBSD: ar_io.c,v 1.5 1996/03/26 23:54:13 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1992 Keith Muller.
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)ar_io.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$NetBSD: ar_io.c,v 1.4 1995/03/21 09:07:04 cgd Exp $";
+static char rcsid[] = "$OpenBSD: ar_io.c,v 1.4 1996/06/23 14:20:28 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,9 +57,10 @@ static char rcsid[] = "$NetBSD: ar_io.c,v 1.4 1995/03/21 09:07:04 cgd Exp $";
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <err.h>
+#include <zlib.h>
 #include "pax.h"
 #include "extern.h"
 
@@ -83,8 +85,11 @@ static struct stat arsb;		/* stat of archive device at open */
 static int invld_rec;			/* tape has out of spec record size */
 static int wr_trail = 1;		/* trailer was rewritten in append */
 static int can_unlnk = 0;		/* do we unlink null archives?  */
+static gzFile gzf;			/* file pointer for gzip archives */
+static FILE *cfp;			/* file pointer for compress archives */
 char *arcname;                  	/* printable name of archive */
 
+FILE *zdopen __P((int, const char *));
 static int get_phys __P((void));
 extern sigset_t s_mask;
 
@@ -108,8 +113,14 @@ ar_open(name)
 {
         struct mtget mb;
 
-	if (arfd != -1)
-		(void)close(arfd);
+	if (arfd != -1) {
+		if (zflag == GZIP_CMP)
+			(void)gzclose(gzf);
+		else if (zflag == COMPRESS_CMP)
+			(void)fclose(cfp);
+		else
+			(void)close(arfd);
+	}
 	arfd = -1;
 	can_unlnk = did_io = io_ok = invld_rec = 0;
 	artyp = ISREG;
@@ -126,6 +137,10 @@ ar_open(name)
 			arcname = STDN;
 		} else if ((arfd = open(name, EXT_MODE, DMOD)) < 0)
 			syswarn(0, errno, "Failed open to read on %s", name);
+		if (zflag == GZIP_CMP)
+			gzf = gzdopen(arfd, "r");
+		else if (zflag == COMPRESS_CMP)
+			cfp = zdopen(arfd, "r");
 		break;
 	case ARCHIVE:
 		if (name == NULL) {
@@ -135,8 +150,14 @@ ar_open(name)
 			syswarn(0, errno, "Failed open to write on %s", name);
 		else
 			can_unlnk = 1;
+		if (zflag == GZIP_CMP)
+			gzf = gzdopen(arfd, "w");
+		else if (zflag == COMPRESS_CMP)
+			cfp = zdopen(arfd, "w");
 		break;
 	case APPND:
+		if (zflag)
+			err(1, "can not compress while appending");
 		if (name == NULL) {
 			arfd = STDOUT_FILENO;
 			arcname = STDO;
@@ -160,15 +181,25 @@ ar_open(name)
 	 */
 	if (fstat(arfd, &arsb) < 0) {
 		syswarn(0, errno, "Failed stat on %s", arcname);
-		(void)close(arfd);
+		if (zflag == GZIP_CMP)
+			(void)gzclose(gzf);
+		else if (zflag == COMPRESS_CMP)
+			(void)fclose(cfp);
+		else
+			(void)close(arfd);
 		arfd = -1;
 		can_unlnk = 0;
 		return(-1);
 	}
 	if (S_ISDIR(arsb.st_mode)) {
-		warn(0, "Cannot write an archive on top of a directory %s",
+		paxwarn(0, "Cannot write an archive on top of a directory %s",
 		    arcname);
-		(void)close(arfd);
+		if (zflag == GZIP_CMP)
+			(void)gzclose(gzf);
+		else if (zflag == COMPRESS_CMP)
+			(void)fclose(cfp);
+		else
+			(void)close(arfd);
 		arfd = -1;
 		can_unlnk = 0;
 		return(-1);
@@ -340,7 +371,12 @@ ar_close()
 		can_unlnk = 0;
 	}
 
-	(void)close(arfd);
+	if (zflag == GZIP_CMP)
+		(void)gzclose(gzf);
+	else if (zflag == COMPRESS_CMP)
+		(void)fclose(cfp);
+	else
+		(void)close(arfd);
 
 	if (vflag && (artyp == ISTAPE)) {
 		(void)fputs("done.\n", outf);
@@ -432,8 +468,18 @@ ar_drain()
 	/*
 	 * keep reading until pipe is drained
 	 */
-	while ((res = read(arfd, drbuf, sizeof(drbuf))) > 0)
-		;
+	if (zflag == GZIP_CMP) {
+		while ((res = gzread(gzf, drbuf, sizeof(drbuf))) > 0)
+			;
+	}
+	else if (zflag == COMPRESS_CMP) {
+		while ((res = fread(drbuf, 1, sizeof(drbuf), cfp)) > 0)
+			;
+	}
+	else {
+		while ((res = read(arfd, drbuf, sizeof(drbuf))) > 0)
+			;
+	}
 	lstrval = res;
 }
 
@@ -499,13 +545,18 @@ ar_app_ok()
 #endif
 {
 	if (artyp == ISPIPE) {
-		warn(1, "Cannot append to an archive obtained from a pipe.");
+		paxwarn(1, "Cannot append to an archive obtained from a pipe.");
+		return(-1);
+	}
+
+	if (zflag) {
+		paxwarn(1, "Cannot append to a compressed archive.");
 		return(-1);
 	}
 
 	if (!invld_rec)
 		return(0);
-	warn(1,"Cannot append, device record size %d does not support %s spec",
+	paxwarn(1,"Cannot append, device record size %d does not support %s spec",
 		rdblksz, argv0);
 	return(-1);
 }
@@ -542,32 +593,34 @@ ar_read(buf, cnt)
 	 */
 	switch (artyp) {
 	case ISTAPE:
-		if ((res = read(arfd, buf, cnt)) > 0) {
-			/*
-			 * CAUTION: tape systems may not always return the same
-			 * sized records so we leave blksz == MAXBLK. The
-			 * physical record size that a tape drive supports is
-			 * very hard to determine in a uniform and portable
-			 * manner.
-			 */
-			io_ok = 1;
-			if (res != rdblksz) {
+		if (!zflag) {
+			if ((res = read(arfd, buf, cnt)) > 0) {
 				/*
-				 * Record size changed. If this is happens on
-				 * any record after the first, we probably have
-				 * a tape drive which has a fixed record size
-				 * we are getting multiple records in a single
-				 * read). Watch out for record blocking that
-				 * violates pax spec (must be a multiple of
-				 * BLKMULT).
+				 * CAUTION: tape systems may not always return the same
+				 * sized records so we leave blksz == MAXBLK. The
+				 * physical record size that a tape drive supports is
+				 * very hard to determine in a uniform and portable
+				 * manner.
 				 */
-				rdblksz = res;
-				if (rdblksz % BLKMULT)
-					invld_rec = 1;
+				io_ok = 1;
+				if (res != rdblksz) {
+					/*
+					 * Record size changed. If this is happens on
+					 * any record after the first, we probably have
+					 * a tape drive which has a fixed record size
+					 * we are getting multiple records in a single
+					 * read). Watch out for record blocking that
+					 * violates pax spec (must be a multiple of
+					 * BLKMULT).
+					 */
+					rdblksz = res;
+					if (rdblksz % BLKMULT)
+						invld_rec = 1;
+				}
+				return(res);
 			}
-			return(res);
+			break;
 		}
-		break;
 	case ISREG:
 	case ISBLK:
 	case ISCHR:
@@ -580,9 +633,23 @@ ar_read(buf, cnt)
 		 * and return. Trying to do anything else with them runs the
 		 * risk of failure.
 		 */
-		if ((res = read(arfd, buf, cnt)) > 0) {
-			io_ok = 1;
-			return(res);
+		if (zflag == GZIP_CMP) {
+			if ((res = gzread(gzf, buf, cnt)) > 0) {
+				io_ok = 1;
+				return(res);
+			}
+		}
+		else if (zflag == COMPRESS_CMP) {
+			if ((res = fread(buf, 1, cnt, cfp)) > 0) {
+				io_ok = 1;
+				return(res);
+			}
+		}
+		else {
+			if ((res = read(arfd, buf, cnt)) > 0) {
+				io_ok = 1;
+				return(res);
+			}
 		}
 		break;
 	}
@@ -594,7 +661,7 @@ ar_read(buf, cnt)
 	if (res < 0)
 		syswarn(1, errno, "Failed read on archive volume %d", arvol);
 	else
-		warn(0, "End of archive volume %d reached", arvol);
+		paxwarn(0, "End of archive volume %d reached", arvol);
 	return(res);
 } 
 
@@ -629,10 +696,26 @@ ar_write(buf, bsz)
 	if (lstrval <= 0)
 		return(lstrval);
 
-	if ((res = write(arfd, buf, bsz)) == bsz) {
-		wr_trail = 1;
-		io_ok = 1;
-		return(bsz);
+	if (zflag == GZIP_CMP) {
+		if ((res = gzwrite(gzf, buf, bsz)) == bsz) {
+			wr_trail = 1;
+			io_ok = 1;
+			return(bsz);
+		}
+	}
+	else if (zflag == COMPRESS_CMP) {
+		if ((res = fwrite(buf, 1, bsz, cfp)) == bsz) {
+			wr_trail = 1;
+			io_ok = 1;
+			return(bsz);
+		}
+	}
+	else {
+		if ((res = write(arfd, buf, bsz)) == bsz) {
+			wr_trail = 1;
+			io_ok = 1;
+			return(bsz);
+		}
 	}
 	/*
 	 * write broke, see what we can do with it. We try to send any partial
@@ -643,53 +726,55 @@ ar_write(buf, bsz)
 	else
 		lstrval = 0;
 
-	switch (artyp) {
-	case ISREG:
-		if ((res > 0) && (res % BLKMULT)) {
+	if (!zflag) {
+		switch (artyp) {
+		case ISREG:
+			if ((res > 0) && (res % BLKMULT)) {
+				/*
+			 	 * try to fix up partial writes which are not BLKMULT
+				 * in size by forcing the runt record to next archive
+				 * volume
+			 	 */
+				if ((cpos = lseek(arfd, (off_t)0L, SEEK_CUR)) < 0)
+					break;
+				cpos -= (off_t)res;
+				if (ftruncate(arfd, cpos) < 0)
+					break;
+				res = lstrval = 0;
+				break;
+			}
+			if (res >= 0)
+				break;
 			/*
-		 	 * try to fix up partial writes which are not BLKMULT
-			 * in size by forcing the runt record to next archive
-			 * volume
-		 	 */
-			if ((cpos = lseek(arfd, (off_t)0L, SEEK_CUR)) < 0)
+			 * if file is out of space, handle it like a return of 0
+			 */
+			if ((errno == ENOSPC) || (errno == EFBIG) || (errno == EDQUOT))
+				res = lstrval = 0;
+			break;
+		case ISTAPE:
+		case ISCHR:
+		case ISBLK:
+			if (res >= 0)
 				break;
-			cpos -= (off_t)res;
-			if (ftruncate(arfd, cpos) < 0)
-				break;
-			res = lstrval = 0;
+			if (errno == EACCES) {
+				paxwarn(0, "Write failed, archive is write protected.");
+				res = lstrval = 0;
+				return(0);
+			}
+			/*
+			 * see if we reached the end of media, if so force a change to
+			 * the next volume
+			 */
+			if ((errno == ENOSPC) || (errno == EIO) || (errno == ENXIO))
+				res = lstrval = 0;
+			break;
+		case ISPIPE:
+		default:
+			/*
+			 * we cannot fix errors to these devices
+			 */
 			break;
 		}
-		if (res >= 0)
-			break;
-		/*
-		 * if file is out of space, handle it like a return of 0
-		 */
-		if ((errno == ENOSPC) || (errno == EFBIG) || (errno == EDQUOT))
-			res = lstrval = 0;
-		break;
-	case ISTAPE:
-	case ISCHR:
-	case ISBLK:
-		if (res >= 0)
-			break;
-		if (errno == EACCES) {
-			warn(0, "Write failed, archive is write protected.");
-			res = lstrval = 0;
-			return(0);
-		}
-		/*
-		 * see if we reached the end of media, if so force a change to
-		 * the next volume
-		 */
-		if ((errno == ENOSPC) || (errno == EIO) || (errno == ENXIO))
-			res = lstrval = 0;
-		break;
-	case ISPIPE:
-	default:
-		/*
-		 * we cannot fix errors to these devices
-		 */
-		break;
 	}
 
 	/*
@@ -711,18 +796,18 @@ ar_write(buf, bsz)
 	 * must quit right away.
 	 */
 	if (!wr_trail && (res <= 0)) {
-		warn(1,"Unable to append, trailer re-write failed. Quitting.");
+		paxwarn(1,"Unable to append, trailer re-write failed. Quitting.");
 		return(res);
 	}
 		
 	if (res == 0) 
-		warn(0, "End of archive volume %d reached", arvol);
+		paxwarn(0, "End of archive volume %d reached", arvol);
 	else if (res < 0)
 		syswarn(1, errno, "Failed write to archive volume: %d", arvol);
 	else if (!frmt->blkalgn || ((res % frmt->blkalgn) == 0))
-		warn(0,"WARNING: partial archive write. Archive MAY BE FLAWED");
+		paxwarn(0,"WARNING: partial archive write. Archive MAY BE FLAWED");
 	else
-		warn(1,"WARNING: partial archive write. Archive IS FLAWED");
+		paxwarn(1,"WARNING: partial archive write. Archive IS FLAWED");
 	return(res);
 }
 
@@ -756,62 +841,66 @@ ar_rdsync()
 		return(-1);
 
 	if ((act == APPND) || (act == ARCHIVE)) {
-		warn(1, "Cannot allow updates to an archive with flaws.");
+		paxwarn(1, "Cannot allow updates to an archive with flaws.");
 		return(-1);
 	}
 	if (io_ok)
 		did_io = 1;
 
-	switch(artyp) {
-	case ISTAPE:
-		/*
-		 * if the last i/o was a successful data transfer, we assume
-		 * the fault is just a bad record on the tape that we are now
-		 * past. If we did not get any data since the last resync try
-		 * to move the tape foward one PHYSICAL record past any
-		 * damaged tape section. Some tape drives are stubborn and need
-		 * to be pushed.
-		 */
-		if (io_ok) {
-			io_ok = 0;
+	if (zflag)
+		io_ok = 0;
+	else {
+		switch(artyp) {
+		case ISTAPE:
+			/*
+		 	 * if the last i/o was a successful data transfer, we assume
+		 	 * the fault is just a bad record on the tape that we are now
+		 	 * past. If we did not get any data since the last resync try
+		 	 * to move the tape foward one PHYSICAL record past any
+		 	 * damaged tape section. Some tape drives are stubborn and need
+		 	 * to be pushed.
+		 	 */
+			if (io_ok) {
+				io_ok = 0;
+				lstrval = 1;
+				break;
+			}
+			mb.mt_op = MTFSR;
+			mb.mt_count = 1;
+			if (ioctl(arfd, MTIOCTOP, &mb) < 0)
+				break;
 			lstrval = 1;
 			break;
+		case ISREG:
+		case ISCHR:
+		case ISBLK:
+			/*
+		 	 * try to step over the bad part of the device.
+		 	 */
+			io_ok = 0;
+			if (((fsbz = arsb.st_blksize) <= 0) || (artyp != ISREG))
+				fsbz = BLKMULT;
+			if ((cpos = lseek(arfd, (off_t)0L, SEEK_CUR)) < 0)
+				break;
+			mpos = fsbz - (cpos % (off_t)fsbz);
+			if (lseek(arfd, mpos, SEEK_CUR) < 0) 
+				break;
+			lstrval = 1;
+			break;
+		case ISPIPE:
+		default:
+			/*
+		 	 * cannot recover on these archive device types
+		 	 */
+			io_ok = 0;
+			break;
 		}
-		mb.mt_op = MTFSR;
-		mb.mt_count = 1;
-		if (ioctl(arfd, MTIOCTOP, &mb) < 0)
-			break;
-		lstrval = 1;
-		break;
-	case ISREG:
-	case ISCHR:
-	case ISBLK:
-		/*
-		 * try to step over the bad part of the device.
-		 */
-		io_ok = 0;
-		if (((fsbz = arsb.st_blksize) <= 0) || (artyp != ISREG))
-			fsbz = BLKMULT;
-		if ((cpos = lseek(arfd, (off_t)0L, SEEK_CUR)) < 0)
-			break;
-		mpos = fsbz - (cpos % (off_t)fsbz);
-		if (lseek(arfd, mpos, SEEK_CUR) < 0) 
-			break;
-		lstrval = 1;
-		break;
-	case ISPIPE:
-	default:
-		/*
-		 * cannot recover on these archive device types
-		 */
-		io_ok = 0;
-		break;
 	}
 	if (lstrval <= 0) {
-		warn(1, "Unable to recover from an archive read failure.");
+		paxwarn(1, "Unable to recover from an archive read failure.");
 		return(-1);
 	}
-	warn(0, "Attempting to recover from an archive read failure.");
+	paxwarn(0, "Attempting to recover from an archive read failure.");
 	return(0);
 }
 
@@ -839,7 +928,7 @@ ar_fow(sksz, skipped)
 	off_t mpos;
 
 	*skipped = 0;
-	if (sksz <= 0)
+	if (zflag || sksz <= 0)
 		return(0);
 
 	/*
@@ -910,6 +999,19 @@ ar_rev(sksz)
 	if (lstrval < 0)
 		return(lstrval);
 
+	if (zflag) {
+		if (sksz <= 0) {
+			lstrval = 1;
+			return 0;
+		}
+		/*
+		 * cannot go backwards on these critters
+		 */
+		paxwarn(1, "Reverse positioning on pipes is not supported.");
+		lstrval = -1;
+		return(-1);
+	}
+
 	switch(artyp) {
 	case ISPIPE:
 		if (sksz <= 0) 
@@ -917,7 +1019,7 @@ ar_rev(sksz)
 		/*
 		 * cannot go backwards on these critters
 		 */
-		warn(1, "Reverse positioning on pipes is not supported.");
+		paxwarn(1, "Reverse positioning on pipes is not supported.");
 		lstrval = -1;
 		return(-1);
 	case ISREG:
@@ -953,7 +1055,7 @@ ar_rev(sksz)
 				/*
 				 * this should never happen
 				 */
-				warn(1,"Reverse position on previous volume.");
+				paxwarn(1,"Reverse position on previous volume.");
 				lstrval = -1;
 				return(-1);
 			}
@@ -995,7 +1097,7 @@ ar_rev(sksz)
 		 * ok we have to move. Make sure the tape drive can do it.
 		 */
 		if (sksz % phyblk) {
-			warn(1,
+			paxwarn(1,
 			    "Tape drive unable to backspace requested amount");
 			lstrval = -1;
 			return(-1);
@@ -1042,6 +1144,11 @@ get_phys()
 	register int phyblk;
 	struct mtop mb;
 	char scbuf[MAXBLK];
+
+	if (zflag) {
+		syswarn(1, errno, "Cannot determine archive tape blocksize.");
+		return(-1);
+	}
 
 	/*
 	 * move to the file mark, and then back up one record and read it.
@@ -1119,7 +1226,7 @@ get_phys()
 	 * never fail).
 	 */
 	if (padsz % phyblk) {
-		warn(1, "Tape drive unable to backspace requested amount");
+		paxwarn(1, "Tape drive unable to backspace requested amount");
 		return(-1);
 	}
 
@@ -1281,7 +1388,7 @@ ar_next()
 			if ((arcname = strdup(buf)) == NULL) {
 				done = 1;
 				lstrval = -1;
-				warn(0, "Cannot save archive name.");
+				paxwarn(0, "Cannot save archive name.");
 				return(-1);
 			}
 			freeit = 1;

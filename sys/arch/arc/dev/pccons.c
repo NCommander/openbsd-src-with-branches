@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pccons.c,v 1.8 1996/09/19 00:30:38 imp Exp $	*/
 /*	$NetBSD: pccons.c,v 1.89 1995/05/04 19:35:20 cgd Exp $	*/
 
 /*-
@@ -48,21 +48,20 @@
  */
 
 #include <sys/param.h>
-#include <sys/kernel.h>
 #include <sys/systm.h>
-#include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-#include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/callout.h>
 #include <sys/syslog.h>
-#include <sys/vnode.h>
 #include <sys/device.h>
-#include <sys/file.h>
+#include <sys/conf.h>
+#include <sys/vnode.h>
+#include <sys/fcntl.h>
+#include <sys/kernel.h>
 
 #include <dev/cons.h>
 
@@ -71,10 +70,15 @@
 #include <machine/autoconf.h>
 #include <machine/display.h>
 #include <machine/pccons.h>
+#include <arc/arc/arctype.h>
 #include <arc/pica/pica.h>
+#include <arc/dti/desktech.h>
 
 #include <dev/isa/isavar.h>
+#include <arc/isa/isa_machdep.h>
 #include <machine/kbdreg.h>
+
+extern int cputype;
 
 #define	XFREE86_BUG_COMPAT
 
@@ -96,7 +100,7 @@ static u_char lock_state = 0x00,	/* all off */
 	      old_typematic_rate = 0xff;
 static u_short cursor_shape = 0xffff,	/* don't update until set by user */
 	       old_cursor_shape = 0xffff;
-static keymap_t scan_codes[KB_NUM_KEYS];/* keyboard translation table */
+static pccons_keymap_t scan_codes[KB_NUM_KEYS];/* keyboard translation table */
 int pc_xmode = 0;
 
 /*
@@ -112,6 +116,7 @@ static struct video_state {
 	int 	cx, cy;		/* escape parameters */
 	int 	row, col;	/* current cursor position */
 	int 	nrow, ncol, nchr;	/* current screen geometry */
+	int	offset;		/* Saved cursor pos */
 	u_char	state;		/* parser state */
 #define	VSS_ESCAPE	1
 #define	VSS_EBRACE	2
@@ -143,13 +148,17 @@ int pcprobe __P((struct device *, void *, void *));
 void pcattach __P((struct device *, struct device *, void *));
 int pcintr __P((void *));
 
-struct cfattach pc_ca = {
-	 sizeof(struct pc_softc), pcprobe, pcattach
-};
 struct cfdriver pc_cd = {
 	NULL, "pc", DV_TTY, NULL, 0
 };
 
+struct cfattach pc_pica_ca = {
+	 sizeof(struct pc_softc), pcprobe, pcattach
+};
+
+struct cfattach pc_isa_ca = {
+	 sizeof(struct pc_softc), pcprobe, pcattach
+};
 int pmsprobe __P((struct device *, void *, void *));
 void pmsattach __P((struct device *, struct device *, void *));
 int pmsintr __P((void *));
@@ -163,11 +172,15 @@ struct cfdriver pms_cd = {
 
 #define	PMSUNIT(dev)	(minor(dev))
 
-#define	COL		80
-#define	ROW		25
 #define	CHR		2
 
-static unsigned int addr_6845 = MONO_BASE;
+static unsigned int addr_6845;
+static unsigned int mono_base = 0x3b4;
+static unsigned int mono_buf = 0xb0000;
+static unsigned int cga_base = 0x3d4;
+static unsigned int cga_buf = 0xb8000;
+static unsigned int kbd_cmdp = 0x64;
+static unsigned int kbd_datap = 0x60;
 
 char *sget __P((void));
 void sput __P((u_char *, int));
@@ -187,7 +200,7 @@ kbd_wait_output()
 	u_int i;
 
 	for (i = 100000; i; i--)
-		if ((inb(KBSTATP) & KBS_IBF) == 0) {
+		if ((inb(kbd_cmdp) & KBS_IBF) == 0) {
 			KBD_DELAY;
 			return 1;
 		}
@@ -200,7 +213,7 @@ kbd_wait_input()
 	u_int i;
 
 	for (i = 100000; i; i--)
-		if ((inb(KBSTATP) & KBS_DIB) != 0) {
+		if ((inb(kbd_cmdp) & KBS_DIB) != 0) {
 			KBD_DELAY;
 			return 1;
 		}
@@ -212,12 +225,12 @@ kbd_flush_input()
 {
 	u_char c;
 
-	while (c = inb(KBSTATP) & 0x03)
+	while (c = inb(kbd_cmdp) & 0x03)
 		if ((c & KBS_DIB) == KBS_DIB) {
 			/* XXX - delay is needed to prevent some keyboards from
 			   wedging when the system boots */
 			delay(6);
-			(void) inb(KBDATAP);
+			(void) inb(kbd_datap);
 		}
 }
 
@@ -232,10 +245,10 @@ kbc_get8042cmd()
 
 	if (!kbd_wait_output())
 		return -1;
-	outb(KBCMDP, K_RDCMDBYTE);
+	outb(kbd_cmdp, K_RDCMDBYTE);
 	if (!kbd_wait_input())
 		return -1;
-	return inb(KBDATAP);
+	return inb(kbd_datap);
 }
 #endif
 
@@ -249,10 +262,10 @@ kbc_put8042cmd(val)
 
 	if (!kbd_wait_output())
 		return 0;
-	outb(KBCMDP, K_LDCMDBYTE);
+	outb(kbd_cmdp, K_LDCMDBYTE);
 	if (!kbd_wait_output())
 		return 0;
-	outb(KBOUTP, val);
+	outb(kbd_datap, val);
 	return 1;
 }
 
@@ -270,7 +283,7 @@ kbd_cmd(val, polling)
 	if(!polling) {
 		i = spltty();
 		if(kb_oq_get == kb_oq_put) {
-			outb(KBOUTP, val);
+			outb(kbd_datap, val);
 		}
 		kb_oq[kb_oq_put] = val;
 		kb_oq_put = (kb_oq_put + 1) & 7;
@@ -280,13 +293,13 @@ kbd_cmd(val, polling)
 	else do {
 		if (!kbd_wait_output())
 			return 0;
-		outb(KBOUTP, val);
+		outb(kbd_datap, val);
 		for (i = 100000; i; i--) {
-			if (inb(KBSTATP) & KBS_DIB) {
+			if (inb(kbd_cmdp) & KBS_DIB) {
 				register u_char c;
 
 				KBD_DELAY;
-				c = inb(KBDATAP);
+				c = inb(kbd_datap);
 				if (c == KBR_ACK || c == KBR_ECHO) {
 					return 1;
 				}
@@ -407,8 +420,10 @@ pcprobe(parent, cfdata, aux)
 	u_int i;
 
 	/* Make shure we're looking for this type of device */
-	if(!BUS_MATCHNAME(ca, "pc"))
-		return(0);
+	if(!strcmp((parent)->dv_cfdata->cf_driver->cd_name, "pica")) {
+		if(!BUS_MATCHNAME(ca, "pc"))
+			return(0);
+	}
 
 	/* Enable interrupts and keyboard, etc. */
 	if (!kbc_put8042cmd(CMDBYTE)) {
@@ -425,11 +440,11 @@ pcprobe(parent, cfdata, aux)
 		goto lose;
 	}
 	for (i = 600000; i; i--)
-		if ((inb(KBSTATP) & KBS_DIB) != 0) {
+		if ((inb(kbd_cmdp) & KBS_DIB) != 0) {
 			KBD_DELAY;
 			break;
 		}
-	if (i == 0 || inb(KBDATAP) != KBR_RSTDONE) {
+	if (i == 0 || inb(kbd_datap) != KBR_RSTDONE) {
 		printf("pcprobe: reset error %d\n", 2);
 		goto lose;
 	}
@@ -488,12 +503,22 @@ pcattach(parent, self, aux)
 	void *aux;
 {
 	struct confargs *ca = aux;
+	struct isa_attach_args *ia = aux;
 	struct pc_softc *sc = (void *)self;
 
 	printf(": %s\n", vs.color ? "color" : "mono");
 	do_async_update(1);
 
-	BUS_INTR_ESTABLISH(ca, pcintr, (void *)(long)sc);
+	switch(cputype) {
+	case ACER_PICA_61:
+		BUS_INTR_ESTABLISH(ca, pcintr, (void *)(long)sc);
+		break;
+	case DESKSTATION_RPC44:                     /* XXX ick */
+	case DESKSTATION_TYNE:
+		isa_intr_establish(ia->ia_ic, ia->ia_irq, 1,
+			2, pcintr, sc, sc->sc_dev.dv_xname);	/*XXX ick */
+		break;
+	}
 }
 
 int
@@ -603,7 +628,7 @@ pcintr(arg)
 	register struct tty *tp = sc->sc_tty;
 	u_char *cp;
 
-	if ((inb(KBSTATP) & KBS_DIB) == 0)
+	if ((inb(kbd_cmdp) & KBS_DIB) == 0)
 		return 0;
 	if (polling)
 		return 1;
@@ -615,7 +640,7 @@ pcintr(arg)
 			do
 				(*linesw[tp->t_line].l_rint)(*cp++, tp);
 			while (*cp);
-	} while (inb(KBSTATP) & KBS_DIB);
+	} while (inb(kbd_cmdp) & KBS_DIB);
 	return 1;
 }
 
@@ -674,7 +699,7 @@ pcioctl(dev, cmd, data, flag, p)
 		return 0;
  	}
 	case CONSOLE_SET_KEYMAP: {
-		keymap_t *map = (keymap_t *) data;
+		pccons_keymap_t *map = (pccons_keymap_t *) data;
 		int i;
 
 		if (!data)
@@ -687,13 +712,13 @@ pcioctl(dev, cmd, data, flag, p)
 			    map[i].shift_altgr[KB_CODE_SIZE-1])
 				return EINVAL;
 
-		bcopy(data,scan_codes,sizeof(keymap_t[KB_NUM_KEYS]));
+		bcopy(data, scan_codes, sizeof(pccons_keymap_t[KB_NUM_KEYS]));
 		return 0;
 	}
 	case CONSOLE_GET_KEYMAP:
 		if (!data)
 			return EINVAL;
-		bcopy(scan_codes,data,sizeof(keymap_t[KB_NUM_KEYS]));
+		bcopy(scan_codes, data, sizeof(pccons_keymap_t[KB_NUM_KEYS]));
 		return 0;
 
 	default:
@@ -776,6 +801,39 @@ pccninit(cp)
 	 * For now, don't screw with it.
 	 */
 	/* crtat = 0; */
+	switch(cputype) {
+
+	case ACER_PICA_61:
+		mono_base += PICA_V_LOCAL_VIDEO_CTRL;
+		mono_buf += PICA_V_LOCAL_VIDEO;
+		cga_base += PICA_V_LOCAL_VIDEO_CTRL;
+		cga_buf += PICA_V_LOCAL_VIDEO;
+		kbd_cmdp = PICA_SYS_KBD + 0x61;
+		kbd_datap = PICA_SYS_KBD + 0x60;
+		break;
+
+	case DESKSTATION_TYNE:
+		mono_base += TYNE_V_ISA_IO;
+		mono_buf += TYNE_V_ISA_MEM;
+		cga_base += TYNE_V_ISA_IO;
+		cga_buf += TYNE_V_ISA_MEM;
+		kbd_cmdp = TYNE_V_ISA_IO + 0x64;
+		kbd_datap = TYNE_V_ISA_IO + 0x60;
+		outb(TYNE_V_ISA_IO + 0x3ce, 6);		/* Correct video mode */
+		outb(TYNE_V_ISA_IO + 0x3cf, inb(TYNE_V_ISA_IO + 0x3cf) | 0xc);
+		kbc_put8042cmd(CMDBYTE);		/* Want XT codes.. */
+		break;
+
+	case DESKSTATION_RPC44:
+		mono_base += isa_io_base;
+		mono_buf += isa_mem_base;
+		cga_base += isa_io_base;
+		cga_buf = isa_mem_base + 0xa0000;
+		kbd_cmdp = isa_io_base + 0x64;
+		kbd_datap = isa_io_base + 0x60;
+		kbc_put8042cmd(CMDBYTE);		/* Want XT codes.. */
+		break;
+	}
 }
 
 /* ARGSUSED */
@@ -805,7 +863,7 @@ pccngetc(dev)
 
 	do {
 		/* wait for byte */
-		while ((inb(KBSTATP) & KBS_DIB) == 0);
+		while ((inb(kbd_cmdp) & KBS_DIB) == 0);
 		/* see if it's worthwhile */
 		cp = sget();
 	} while (!cp);
@@ -908,28 +966,22 @@ sput(cp, n)
 		return;
 
 	if (crtat == 0) {
-		u_short volatile *cp;
+		volatile u_short *cp;
 		u_short was;
 		unsigned cursorat;
 
-		cp = (u_short *)CGA_BUF;
+		cp = (volatile u_short *)cga_buf;
 		was = *cp;
-		*cp = (u_short) 0xA55A;
+		*cp = (volatile u_short) 0xA55A;
 		if (*cp != 0xA55A) {
-			cp = (u_short *)MONO_BUF;
-			addr_6845 = MONO_BASE;
+			cp = (volatile u_short *)mono_buf;
+			addr_6845 = mono_base;
 			vs.color = 0;
 		} else {
 			*cp = was;
-			addr_6845 = CGA_BASE;
+			addr_6845 = cga_base;
 			vs.color = 1;
 		}
-
-		/* Extract cursor location */
-		outb(addr_6845, 14);
-		cursorat = inb(addr_6845+1) << 8;
-		outb(addr_6845, 15);
-		cursorat |= inb(addr_6845+1);
 
 #ifdef FAT_CURSOR
 		cursor_shape = 0x0012;
@@ -937,13 +989,15 @@ sput(cp, n)
 		get_cursor_shape();
 #endif
 
-		Crtat = (u_short *)cp;
-		crtat = (u_short *)(cp + cursorat);
-
-		vs.ncol = COL;
-		vs.nrow = ROW;
-		vs.nchr = COL * ROW;
+		bios_display_info(&vs.col, &vs.row, &vs.ncol, &vs.nrow);
+		vs.nchr = vs.ncol * vs.nrow;
+		vs.col--;
+		vs.row--;
+		cursorat = vs.ncol * vs.row + vs.col;
 		vs.at = FG_LIGHTGREY | BG_BLACK;
+
+		Crtat = (u_short *)cp;
+		crtat = Crtat + cursorat;
 
 		if (vs.color == 0)
 			vs.so_at = FG_BLACK | BG_LIGHTGREY;
@@ -967,24 +1021,29 @@ sput(cp, n)
 				vs.state = VSS_ESCAPE;
 			break;
 
+		case 0x9B:	/* CSI */
+			vs.cx = vs.cy = 0;
+			vs.state = VSS_EBRACE;
+			break;
+
 		case '\t': {
 			int inccol = 8 - (vs.col & 7);
 			crtat += inccol;
 			vs.col += inccol;
 		}
 		maybe_scroll:
-			if (vs.col >= COL) {
-				vs.col -= COL;
+			if (vs.col >= vs.ncol) {
+				vs.col -= vs.ncol;
 				scroll = 1;
 			}
 			break;
 
-		case '\010':
+		case '\b':
 			if (crtat <= Crtat)
 				break;
 			--crtat;
 			if (--vs.col < 0)
-				vs.col += COL;	/* non-destructive backspace */
+				vs.col += vs.ncol;	/* non-destructive backspace */
 			break;
 
 		case '\r':
@@ -998,7 +1057,6 @@ sput(cp, n)
 			break;
 
 		default:
-		bypass:
 			switch (vs.state) {
 			case 0:
 				if (c == '\a')
@@ -1034,21 +1092,35 @@ sput(cp, n)
 				}
 				break;
 			case VSS_ESCAPE:
-				if (c == '[') {	/* Start ESC [ sequence */
-					vs.cx = vs.cy = 0;
-					vs.state = VSS_EBRACE;
-				} else if (c == 'c') { /* Clear screen & home */
-					fillw((vs.at << 8) | ' ', Crtat,
-					    vs.nchr);
-					crtat = Crtat;
-					vs.col = 0;
-					vs.state = 0;
-				} else { /* Invalid, clear state */
-					wrtchar(c, vs.so_at); 
-					vs.state = 0;
-					goto maybe_scroll;
+				switch (c) {
+					case '[': /* Start ESC [ sequence */
+						vs.cx = vs.cy = 0;
+						vs.state = VSS_EBRACE;
+						break;
+					case 'c': /* Create screen & home */
+						fillw((vs.at << 8) | ' ',
+						    Crtat, vs.nchr);
+						crtat = Crtat;
+						vs.col = 0;
+						vs.state = 0;
+						break;
+					case '7': /* save cursor pos */
+						vs.offset = crtat - Crtat;
+						vs.state = 0;
+						break;
+					case '8': /* restore cursor pos */
+						crtat = Crtat + vs.offset;
+						vs.row = vs.offset / vs.ncol;
+						vs.col = vs.offset % vs.ncol;
+						vs.state = 0;
+						break;
+					default: /* Invalid, clear state */
+						wrtchar(c, vs.so_at); 
+						vs.state = 0;
+						goto maybe_scroll;
 				}
 				break;
+
 			default: /* VSS_EBRACE or VSS_EPARAM */
 				switch (c) {
 					int pos;
@@ -1129,17 +1201,20 @@ sput(cp, n)
 					switch (vs.cx) {
 					case 0:
 						/* ... to end of display */
-						fillw((vs.at << 8) | ' ', crtat,
+						fillw((vs.at << 8) | ' ',
+						    crtat,
 						    Crtat + vs.nchr - crtat);
 						break;
 					case 1:
 						/* ... to next location */
-						fillw((vs.at << 8) | ' ', Crtat,
+						fillw((vs.at << 8) | ' ',
+						    Crtat,
 						    crtat - Crtat + 1);
 						break;
 					case 2:
 						/* ... whole display */
-						fillw((vs.at << 8) | ' ', Crtat,
+						fillw((vs.at << 8) | ' ',
+						    Crtat,
 						    vs.nchr);
 						break;
 					}
@@ -1149,7 +1224,8 @@ sput(cp, n)
 					switch (vs.cx) {
 					case 0:
 						/* ... current to EOL */
-						fillw((vs.at << 8) | ' ', crtat,
+						fillw((vs.at << 8) | ' ',
+						    crtat,
 						    vs.ncol - vs.col);
 						break;
 					case 1:
@@ -1265,6 +1341,16 @@ sput(cp, n)
 					    ((vs.cy << 4) & BG_MASK);
 					vs.state = 0;
 					break;
+				case 's': /* save cursor pos */
+					vs.offset = crtat - Crtat;
+					vs.state = 0;
+					break;
+				case 'u': /* restore cursor pos */
+					crtat = Crtat + vs.offset;
+					vs.row = vs.offset / vs.ncol;
+					vs.col = vs.offset % vs.ncol;
+					vs.state = 0;
+					break;
 				case 'x': /* set attributes */
 					switch (vs.cx) {
 					case 0:
@@ -1316,14 +1402,15 @@ sput(cp, n)
 				if (!kernel) {
 					int s = spltty();
 					if (lock_state & KB_SCROLL)
-						tsleep((caddr_t)&lock_state,
+						tsleep(&lock_state,
 						    PUSER, "pcputc", 0);
 					splx(s);
 				}
 				bcopy(Crtat + vs.ncol, Crtat,
 				    (vs.nchr - vs.ncol) * CHR);
 				fillw((vs.at << 8) | ' ',
-				    Crtat + vs.nchr - vs.ncol, vs.ncol);
+				    Crtat + vs.nchr - vs.ncol,
+				    vs.ncol);
 				crtat -= vs.ncol;
 			}
 		}
@@ -1331,7 +1418,9 @@ sput(cp, n)
 	async_update();
 }
 
-static keymap_t	scan_codes[KB_NUM_KEYS] = {
+/* the unshifted code for KB_SHIFT keys is used by X to distinguish between
+   left and right shift when reading the keyboard map */
+static pccons_keymap_t	scan_codes[KB_NUM_KEYS] = {
 /*  type       unshift   shift     control   altgr     shift_altgr scancode */
     KB_NONE,   "",       "",       "",       "",       "",  /* 0 unused */
     KB_ASCII,  "\033",   "\033",   "\033",   "",       "",  /* 1 ESCape */
@@ -1375,7 +1464,7 @@ static keymap_t	scan_codes[KB_NUM_KEYS] = {
     KB_ASCII,  ";",      ":",      ";",      "",       "",  /* 39 ; */
     KB_ASCII,  "'",      "\"",     "'",      "",       "",  /* 40 ' */
     KB_ASCII,  "`",      "~",      "`",      "",       "",  /* 41 ` */
-    KB_SHIFT,  "",       "",       "",       "",       "",  /* 42 shift */
+    KB_SHIFT,  "\001",   "",       "",       "",       "",  /* 42 shift */
     KB_ASCII,  "\\",     "|",      "\034",   "",       "",  /* 43 \ */
     KB_ASCII,  "z",      "Z",      "\032",   "",       "",  /* 44 z */
     KB_ASCII,  "x",      "X",      "\030",   "",       "",  /* 45 x */
@@ -1387,7 +1476,7 @@ static keymap_t	scan_codes[KB_NUM_KEYS] = {
     KB_ASCII,  ",",      "<",      "<",      "",       "",  /* 51 , */
     KB_ASCII,  ".",      ">",      ">",      "",       "",  /* 52 . */
     KB_ASCII,  "/",      "?",      "\037",   "",       "",  /* 53 / */
-    KB_SHIFT,  "",       "",       "",       "",       "",  /* 54 shift */
+    KB_SHIFT,  "\002",   "",       "",       "",       "",  /* 54 shift */
     KB_KP,     "*",      "*",      "*",      "",       "",  /* 55 kp * */
     KB_ALT,    "",       "",       "",       "",       "",  /* 56 alt */
     KB_ASCII,  " ",      " ",      "\000",   "",       "",  /* 57 space */
@@ -1475,17 +1564,17 @@ sget()
 
 top:
 	KBD_DELAY;
-	dt = inb(KBDATAP);
+	dt = inb(kbd_datap);
 
 	switch (dt) {
 	case KBR_ACK: case KBR_ECHO:
 		kb_oq_get = (kb_oq_get + 1) & 7;
 		if(kb_oq_get != kb_oq_put) {
-			outb(KBOUTP, kb_oq[kb_oq_get]);
+			outb(kbd_datap, kb_oq[kb_oq_get]);
 		}
 		goto loop;
 	case KBR_RESEND:
-		outb(KBOUTP, kb_oq[kb_oq_get]);
+		outb(kbd_datap, kb_oq[kb_oq_get]);
 		goto loop;
 	}
 
@@ -1688,7 +1777,7 @@ printf("keycode %d\n",dt);
 
 	extended = 0;
 loop:
-	if ((inb(KBSTATP) & KBS_DIB) == 0)
+	if ((inb(kbd_cmdp) & KBS_DIB) == 0)
 		return 0;
 	goto top;
 }
@@ -1701,11 +1790,11 @@ pcmmap(dev, offset, nprot)
 {
 
 	if (offset >= 0xa0000 && offset < 0xc0000)
-		return pica_btop(PICA_P_LOCAL_VIDEO + offset);
+		return mips_btop(PICA_P_LOCAL_VIDEO + offset);
 	if (offset >= 0x0000 && offset < 0x10000)
-		return pica_btop(PICA_P_LOCAL_VIDEO_CTRL + offset);
+		return mips_btop(PICA_P_LOCAL_VIDEO_CTRL + offset);
 	if (offset >= 0x40000000 && offset < 0x40800000)
-		return pica_btop(PICA_P_LOCAL_VIDEO + offset - 0x40000000);
+		return mips_btop(PICA_P_LOCAL_VIDEO + offset - 0x40000000);
 	return -1;
 }
 
@@ -1734,7 +1823,6 @@ pc_xmode_off()
 #endif
 	async_update();
 }
-/*	$NetBSD: pms.c,v 1.21 1995/04/18 02:25:18 mycroft Exp $	*/
 
 #include <machine/mouse.h>
 
@@ -1771,9 +1859,9 @@ pms_dev_cmd(value)
 	u_char value;
 {
 	kbd_flush_input();
-	outb(KBCMDP, 0xd4);
+	outb(kbd_cmdp, 0xd4);
 	kbd_flush_input();
-	outb(KBDATAP, value);
+	outb(kbd_datap, value);
 }
 
 static inline void
@@ -1781,7 +1869,7 @@ pms_aux_cmd(value)
 	u_char value;
 {
 	kbd_flush_input();
-	outb(KBCMDP, value);
+	outb(kbd_cmdp, value);
 }
 
 static inline void
@@ -1789,9 +1877,9 @@ pms_pit_cmd(value)
 	u_char value;
 {
 	kbd_flush_input();
-	outb(KBCMDP, 0x60);
+	outb(kbd_cmdp, 0x60);
 	kbd_flush_input();
-	outb(KBDATAP, value);
+	outb(kbd_datap, value);
 }
 
 int
@@ -1809,7 +1897,7 @@ pmsprobe(parent, probe, aux)
 	pms_dev_cmd(KBC_RESET);
 	pms_aux_cmd(PMS_MAGIC_1);
 	delay(10000);
-	x = inb(KBDATAP);
+	x = inb(kbd_datap);
 	pms_pit_cmd(PMS_INT_DISABLE);
 	if (x & 0x04)
 		return 0;
@@ -2017,20 +2105,20 @@ pmsintr(arg)
 	switch (state) {
 
 	case 0:
-		buttons = inb(KBDATAP);
+		buttons = inb(kbd_datap);
 		if ((buttons & 0xc0) == 0)
 			++state;
 		break;
 
 	case 1:
-		dx = inb(KBDATAP);
+		dx = inb(kbd_datap);
 		/* Bounding at -127 avoids a bug in XFree86. */
 		dx = (dx == -128) ? -127 : dx;
 		++state;
 		break;
 
 	case 2:
-		dy = inb(KBDATAP);
+		dy = inb(kbd_datap);
 		dy = (dy == -128) ? -127 : dy;
 		state = 0;
 
@@ -2091,4 +2179,5 @@ pmsselect(dev, rw, p)
 	splx(s);
 
 	return ret;
+
 }

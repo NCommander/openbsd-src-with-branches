@@ -1,4 +1,4 @@
-#	$Id: list,v 1.4 1995/08/14 01:50:19 cgd Exp $
+#	$Id: list,v 1.8 1996/09/27 03:24:01 deraadt Exp $
 
 # copy the crunched binary, link to it, and kill it
 COPY	${OBJDIR}/instbin	instbin
@@ -18,10 +18,13 @@ LINK	instbin			bin/rm
 LINK	instbin			bin/sh
 LINK	instbin			bin/stty
 LINK	instbin			bin/sync
+LINK	instbin			bin/tar
 LINK	instbin			bin/test
 LINK	instbin			bin/[
 LINK	instbin			sbin/disklabel
+LINK	instbin			sbin/fdisk
 LINK	instbin			sbin/fsck
+LINK	instbin			sbin/fsck_ffs
 LINK	instbin			sbin/halt
 LINK	instbin			sbin/ifconfig
 LINK	instbin			sbin/init
@@ -31,8 +34,10 @@ LINK	instbin			sbin/mount_cd9660
 LINK	instbin			sbin/mount_ffs
 LINK	instbin			sbin/mount_msdos
 LINK	instbin			sbin/mount_nfs
+LINK	instbin			sbin/mount_kernfs
 LINK	instbin			sbin/newfs
 LINK	instbin			sbin/ping
+LINK	instbin			sbin/restore
 LINK	instbin			sbin/reboot
 LINK	instbin			sbin/route
 LINK	instbin			sbin/shutdown
@@ -41,18 +46,14 @@ LINK	instbin			sbin/umount
 SYMLINK	/bin/cat		usr/bin/awk
 SYMLINK	/bin/cat		usr/bin/chgrp
 SYMLINK	/bin/cat		usr/bin/ftp
-SYMLINK	/bin/cat		usr/bin/gunzip
-SYMLINK	/bin/cat		usr/bin/gzcat
-SYMLINK	/bin/cat		usr/bin/gzip
-SYMLINK	/bin/cat		usr/bin/more
+SYMLINK	/bin/cat		usr/bin/less
+SYMLINK	/bin/cat		usr/bin/rsh
 SYMLINK	/bin/cat		usr/bin/sed
 SYMLINK	/bin/cat		usr/bin/strings
-SYMLINK	/bin/cat		usr/bin/tar
 SYMLINK	/bin/cat		usr/bin/tip
 SYMLINK	/bin/cat		usr/sbin/bad144
 SYMLINK	/bin/cat		usr/sbin/chown
 SYMLINK	/bin/cat		usr/sbin/chroot
-SYMLINK	/bin/cat		usr/sbin/update
 SPECIAL	/bin/rm instbin
 
 # copy the MAKEDEV script and make some devices

@@ -1,4 +1,5 @@
-/*	$NetBSD: systm.h,v 1.37 1995/09/19 21:40:36 thorpej Exp $	*/
+/*	$OpenBSD: systm.h,v 1.8 1996/07/23 23:54:17 deraadt Exp $	*/
+/*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1988, 1991, 1993
@@ -40,6 +41,8 @@
  *	@(#)systm.h	8.4 (Berkeley) 2/23/94
  */
 
+#include <machine/stdarg.h>
+
 /*
  * The `securelevel' variable controls the security level of the system.
  * It can only be decreased by process 1 (/sbin/init).
@@ -52,7 +55,7 @@
  *	raw disks of mounted filesystems, /dev/mem, and /dev/kmem are
  *	read-only.
  *    2	highly secure mode - same as (1) plus raw disks are always
- *	read-only whether mounted or not. This level precludes tampering 
+ *	read-only whether mounted or not. This level precludes tampering
  *	with filesystems by unmounting them, but also inhibits running
  *	newfs while the system is secured.
  *
@@ -104,35 +107,54 @@ extern int nsysent;
 
 extern int boothowto;		/* reboot flags, from console subsystem */
 
-/* casts to keep lint happy */
-#define	insque(q,p)	_insque((caddr_t)q,(caddr_t)p)
-#define	remque(q)	_remque((caddr_t)q)
+extern void (*v_putc) __P((int)); /* Virtual console putc routine */
+
+extern	void	_insque	__P((void *, void *));
+extern	void	_remque	__P((void *));
+
+/* casts to keep lint happy, but it should be happy with void * */
+#define	insque(q,p)	_insque(q, p)
+#define	remque(q)	_remque(q)
 
 /*
  * General function declarations.
  */
-int	nullop __P((void));
+int	nullop __P((void *));
 int	enodev __P((void));
+int	enosys __P((void));
 int	enoioctl __P((void));
 int	enxio __P((void));
 int	eopnotsupp __P((void));
+
+int	lkmenodev __P((void));
+
 int	seltrue __P((dev_t dev, int which, struct proc *p));
 void	*hashinit __P((int count, int type, u_long *hashmask));
-int	nosys __P((struct proc *, void *, register_t *));
+int	sys_nosys __P((struct proc *, void *, register_t *));
 
-#ifdef __GNUC__
-volatile void	panic __P((const char *, ...));
+void	panic __P((const char *, ...))
+#ifdef __KPRINTF_ATTRIBUTE__
+    __kprintf_attribute__((__noreturn__,__format__(__kprintf__,1,2)));
 #else
-void	panic __P((const char *, ...));
+    __attribute__((__noreturn__));
 #endif
+int	printf __P((const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,1,2)));
+void	uprintf __P((const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,1,2)));
+int	vsprintf __P((char *, const char *, va_list))
+    __kprintf_attribute__((__format__(__kprintf__,2,3)));
+int	sprintf __P((char *buf, const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,2,3)));
+void	ttyprintf __P((struct tty *, const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,2,3)));
+
 void	tablefull __P((const char *));
-void	printf __P((const char *, ...));
-int	sprintf __P((char *buf, const char *, ...));
-void	ttyprintf __P((struct tty *, const char *, ...));
 
 void	bcopy __P((const void *from, void *to, size_t len));
 void	ovbcopy __P((const void *from, void *to, size_t len));
 void	bzero __P((void *buf, size_t len));
+int	bcmp __P((const void *b1, const void *b2, size_t len));
 
 int	copystr __P((void *kfaddr, void *kdaddr, size_t len, size_t *done));
 int	copyinstr __P((void *udaddr, void *kaddr, size_t len, size_t *done));
@@ -150,7 +172,10 @@ long	fuword __P((void *base));
 long	fuiword __P((void *base));
 int	suword __P((void *base, long word));
 int	suiword __P((void *base, long word));
+int	fuswintr __P((caddr_t));
+int	suswintr __P((caddr_t, u_int));
 
+struct timeval;
 int	hzto __P((struct timeval *tv));
 void	timeout __P((void (*func)(void *), void *arg, int ticks));
 void	untimeout __P((void (*func)(void *), void *arg));
@@ -160,10 +185,14 @@ struct clockframe;
 void	hardclock __P((struct clockframe *frame));
 void	softclock __P((void));
 void	statclock __P((struct clockframe *frame));
+#ifdef NTP
+void	hardupdate __P((long offset));
+#endif
 
 void	initclocks __P((void));
 void	inittodr __P((time_t));
 void	resettodr __P((void));
+void	cpu_initclocks __P((void));
 
 void	startprofclock __P((struct proc *));
 void	stopprofclock __P((struct proc *));
@@ -177,10 +206,30 @@ void	*shutdownhook_establish __P((void (*)(void *), void *));
 void	shutdownhook_disestablish __P((void *));
 void	doshutdownhooks __P((void));
 
+int	uiomove __P((caddr_t, int, struct uio *));
+
+int	setjmp	__P((label_t *));
+void	longjmp	__P((label_t *));
+
+void	consinit __P((void));
+
+void	cpu_startup __P((void));
+void	cpu_set_kpc __P((struct proc *, void (*)(struct proc *)));
+
+
+#ifdef GPROF
+void	kmstartup __P((void));
+#endif
+
 #include <lib/libkern/libkern.h>
 
 #ifdef DDB
 /* debugger entry points */
-int	Debugger __P((void));	/* in DDB only */
+void	Debugger __P((void));	/* in DDB only */
 int	read_symtab_from_file __P((struct proc *,struct vnode *,const char *));
 #endif
+
+#ifdef BOOT_CONFIG
+void	user_config __P((void));
+#endif
+

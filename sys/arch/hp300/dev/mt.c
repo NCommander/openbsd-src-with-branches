@@ -1,4 +1,4 @@
-/*	$NetBSD: mt.c,v 1.1 1995/10/02 00:28:20 thorpej Exp $	*/
+/*	$NetBSD: mt.c,v 1.3 1996/02/14 02:44:40 thorpej Exp $	*/
 
 /* 
  * Copyright (c) 1992, The University of Utah and
@@ -62,6 +62,7 @@ struct	mtinfo {
 int	nmtinfo = sizeof(mtinfo) / sizeof(mtinfo[0]);
 
 struct	mt_softc {
+	struct	hp_device *sc_hd;
 	short	sc_hpibno;	/* logical HPIB this slave it attached to */
 	short	sc_slave;	/* HPIB slave address (0-6) */
 	short	sc_flags;	/* see below */
@@ -90,13 +91,36 @@ int	mtdebug = 0;
 #define B_CMD		B_XXX		/* command buf instead of data */
 #define	b_cmd		b_blkno		/* blkno holds cmd when B_CMD */
 
-int	mtinit(), mtintr();
-void	mtustart(), mtstart(), mtgo(), mtstrategy();
+int	mtmatch(), mtintr();
+void	mtattach(), mtustart(), mtstart(), mtgo(), mtstrategy();
 struct	driver mtdriver = {
-	mtinit, "mt", (int (*)()) mtstart, (int (*)()) mtgo, mtintr,
+	mtmatch, mtattach, "mt", (int (*)()) mtstart, (int (*)()) mtgo, mtintr,
 };
 
-mtinit(hd)
+int
+mtmatch(hd)
+	register struct hp_device *hd;
+{
+	register int unit;
+	register int hpibno = hd->hp_ctlr;
+	register int slave = hd->hp_slave;
+	register struct mt_softc *sc = &mt_softc[hd->hp_unit];
+	register int id;
+	register struct buf *bp;
+
+	sc->sc_hd = hd;
+
+	for (bp = mttab; bp < &mttab[NMT]; bp++)
+		bp->b_actb = &bp->b_actf;
+	unit = hpibid(hpibno, slave);
+	for (id = 0; id < nmtinfo; id++)
+		if (unit == mtinfo[id].hwid)
+			return (1);
+	return (0);			/* not a known HP magtape */
+}
+
+void
+mtattach(hd)
 	register struct hp_device *hd;
 {
 	register int unit;
@@ -105,29 +129,26 @@ mtinit(hd)
 	register struct mt_softc *sc;
 	register int id;
 	register struct buf *bp;
-  
-	for (bp = mttab; bp < &mttab[NMT]; bp++)
-		bp->b_actb = &bp->b_actf;
+
+	/* XXX Ick. */
 	unit = hpibid(hpibno, slave);
 	for (id = 0; id < nmtinfo; id++)
 		if (unit == mtinfo[id].hwid)
-			goto gottype;
-	return (0);			/* not a known HP magtape */
+			break;
 
-    gottype:
 	unit = hd->hp_unit;
 	sc = &mt_softc[unit];
 	sc->sc_type = mtinfo[id].hwid;
-	printf("mt%d: %s tape\n", unit, mtinfo[id].desc);
+	printf(": %s tape\n", mtinfo[id].desc);
 
 	sc->sc_hpibno = hpibno;
 	sc->sc_slave = slave;
 	sc->sc_flags = MTF_EXISTS;
+	sc->sc_dq.dq_softc = sc;
 	sc->sc_dq.dq_ctlr = hpibno;
 	sc->sc_dq.dq_unit = unit;
 	sc->sc_dq.dq_slave = slave;
 	sc->sc_dq.dq_driver = &mtdriver;
-	return (1);
 }
 
 /*
@@ -248,7 +269,7 @@ mtopen(dev, flag, mode, p)
 		goto errout;
 	}
 	if (!(sc->sc_stat1 & SR1_ONLINE)) {
-		uprintf("mt%d: not online\n", unit);
+		uprintf("%s: not online\n", sc->sc_hd->hp_xname);
 		error = EIO;
 		goto errout;
 	}
@@ -285,7 +306,8 @@ mtopen(dev, flag, mode, p)
 	if (flag & FWRITE) {
 		if (!(sc->sc_stat1 & SR1_BOT)) {
 			if (sc->sc_density != req_den) {
-				uprintf("mt%d: can't change density mid-tape\n", unit);
+				uprintf("%s: can't change density mid-tape\n",
+				    sc->sc_hd->hp_xname);
 				error = EIO;
 				goto errout;
 			}
@@ -376,8 +398,8 @@ mtstrategy(bp)
 #if 0
 		if (bp->b_bcount & ((1 << WRITE_BITS_IGNORED) - 1)) {
 			tprintf(sc->sc_ttyp,
-				"mt%d: write record must be multiple of %d\n",
-				unit, 1 << WRITE_BITS_IGNORED);
+				"%s: write record must be multiple of %d\n",
+				sc->sc_hd->hp_xname, 1 << WRITE_BITS_IGNORED);
 			goto error;
 		}
 #endif
@@ -396,8 +418,8 @@ mtstrategy(bp)
 		}
 		if (bp->b_bcount > s) {
 			tprintf(sc->sc_ttyp,
-				"mt%d: write record (%d) too big: limit (%d)\n",
-				unit, bp->b_bcount, s);
+				"%s: write record (%d) too big: limit (%d)\n",
+				sc->sc_hd->hp_xname, bp->b_bcount, s);
 	    error:
 			bp->b_flags |= B_ERROR;
 			bp->b_error = EIO;
@@ -432,13 +454,14 @@ mtustart(unit)
         { hpib_softc[unit].sc_flags &= ~HPIBF_PPOLL; }
 
 void
-spl_mtintr(unit)
-	int unit;
+spl_mtintr(arg)
+	void *arg;
 {
+	struct mt_softc *sc = arg;
 	int s = splbio();
 
-	hpibppclear(mt_softc[unit].sc_hpibno);
-	mtintr(unit);
+	hpibppclear(sc->sc_hpibno);
+	mtintr(sc);
 	(void) splx(s);
 }
 
@@ -587,7 +610,7 @@ mtstart(unit)
 				log(LOG_ERR, "mt%d can't reset\n", unit);
 				goto fatalerror;
 			}
-			timeout(spl_mtintr, (void *)unit, 4 * hz);
+			timeout(spl_mtintr, (void *)sc, 4 * hz);
 			hpibawait(sc->sc_hpibno, sc->sc_slave);
 			return;
 
@@ -674,12 +697,14 @@ mtgo(unit)
 	       bp->b_un.b_addr, bp->b_bcount, rw, rw != 0);
 }
 
-mtintr(unit)
-	register int unit;
+int
+mtintr(arg)
+	void *arg;
 {
-	register struct mt_softc *sc = &mt_softc[unit];
+	register struct mt_softc *sc = arg;
 	register struct buf *bp, *dp;
 	register int i;
+	int unit = sc->sc_hd->hp_unit;
 	u_char	cmdbuf[4];
 
 	bp = mttab[unit].b_actf;
@@ -723,7 +748,7 @@ mtintr(unit)
 		 * to the request for DSJ.  It's probably just "busy" figuring
 		 * it out and will know in a little bit...
 		 */
-		timeout(spl_mtintr, (void *)unit, hz >> 5);
+		timeout(spl_mtintr, (void *)sc, hz >> 5);
 		return;
 
 	    default:
@@ -732,15 +757,15 @@ mtintr(unit)
 	}
 	if (sc->sc_stat1 & (SR1_ERR | SR1_REJECT)) {
 		i = sc->sc_stat4 & SR4_ERCLMASK;
-		log(LOG_ERR, "mt%d: %s error, retry %d, SR2/3 %x/%x, code %d\n",
-			unit, i == SR4_DEVICE ? "device" :
+		log(LOG_ERR, "%s: %s error, retry %d, SR2/3 %x/%x, code %d\n",
+			sc->sc_hd->hp_xname, i == SR4_DEVICE ? "device" :
 			(i == SR4_PROTOCOL ? "protocol" :
 			(i == SR4_SELFTEST ? "selftest" : "unknown")),
 			sc->sc_stat4 & SR4_RETRYMASK, sc->sc_stat2,
 			sc->sc_stat3, sc->sc_stat5);
 
 		if ((bp->b_flags & B_CMD) && bp->b_cmd == MTRESET)
-			untimeout(spl_mtintr, (void *)unit);
+			untimeout(spl_mtintr, (void *)sc);
 		if (sc->sc_stat3 & SR3_POWERUP)
 			sc->sc_flags &= MTF_OPEN | MTF_EXISTS;
 		goto error;
@@ -749,8 +774,8 @@ mtintr(unit)
 	 * Report and clear any soft errors.
 	 */
 	if (sc->sc_stat1 & SR1_SOFTERR) {
-		log(LOG_WARNING, "mt%d: soft error, retry %d\n",
-			unit, sc->sc_stat4 & SR4_RETRYMASK);
+		log(LOG_WARNING, "%s: soft error, retry %d\n",
+			sc->sc_hd->hp_xname, sc->sc_stat4 & SR4_RETRYMASK);
 		sc->sc_stat1 &= ~SR1_SOFTERR;
 	}
 	/*
@@ -792,7 +817,7 @@ mtintr(unit)
 				sc->sc_flags |= MTF_HITBOF;
 		}
 		if (bp->b_cmd == MTRESET) {
-			untimeout(spl_mtintr, (void *)unit);
+			untimeout(spl_mtintr, (void *)sc);
 			sc->sc_flags |= MTF_ALIVE;
 		}
 	} else {
@@ -810,8 +835,8 @@ mtintr(unit)
 				unit, bp->b_bcount, bp->b_resid);
 		} else {
 			tprintf(sc->sc_ttyp,
-				"mt%d: record (%d) larger than wanted (%d)\n",
-				unit, i, bp->b_bcount);
+				"%s: record (%d) larger than wanted (%d)\n",
+				sc->sc_hd->hp_xname, i, bp->b_bcount);
     error:
 			sc->sc_flags &= ~MTF_IO;
 			bp->b_error = EIO;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dir.h,v 1.3 1995/06/14 15:19:11 christos Exp $	*/
 /*	$NetBSD: dir.h,v 1.3 1995/06/14 15:19:11 christos Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$NetBSD: pmap.h,v 1.8 1995/04/12 01:55:35 mellon Exp $	*/
+/*	$NetBSD: pmap.h,v 1.9 1996/03/19 04:15:15 jonathan Exp $	*/
 
 /* 
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -64,8 +64,8 @@
  * dynamically allocated at boot time.
  */
 
-#define pmax_trunc_seg(x)	((vm_offset_t)(x) & ~SEGOFSET)
-#define pmax_round_seg(x)	(((vm_offset_t)(x) + SEGOFSET) & ~SEGOFSET)
+#define mips_trunc_seg(x)	((vm_offset_t)(x) & ~SEGOFSET)
+#define mips_round_seg(x)	(((vm_offset_t)(x) + SEGOFSET) & ~SEGOFSET)
 #define pmap_segmap(m, v)	((m)->pm_segtab->seg_tab[((v) >> SEGSHIFT)])
 
 #define PMAP_SEGTABSIZE		512
@@ -103,3 +103,5 @@ struct pmap kernel_pmap_store;
 #endif	/* _KERNEL */
 
 #endif	/* _PMAP_MACHINE_ */
+#define pmax_trunc_seg(a) mips_trunc_seg(a)
+#define pmax_round_seg(a) mips_round_seg(a)

@@ -1,6 +1,7 @@
-/*	$NetBSD: autoconf.c,v 1.11 1995/09/02 23:36:09 thorpej Exp $	*/
+/*	$NetBSD: autoconf.c,v 1.20 1996/05/18 01:39:57 thorpej Exp $	*/
 
 /*
+ * Copyright (c) 1996 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -58,11 +59,17 @@
 #include <sys/conf.h>
 #include <sys/dmap.h>
 #include <sys/reboot.h>
+#include <sys/device.h>
 
+#include <dev/cons.h>
+
+#include <machine/autoconf.h>
 #include <machine/vmparam.h>
 #include <machine/cpu.h>
 #include <machine/pte.h>
+
 #include <hp300/hp300/isr.h>
+
 #include <hp300/dev/device.h>
 #include <hp300/dev/grfreg.h>
 #include <hp300/dev/hilreg.h>
@@ -73,9 +80,6 @@
  * the machine.
  */
 int	cold;		    /* if 1, still working on cold-start */
-int	dkn;		    /* number of iostat dk numbers assigned so far */
-int	cpuspeed = 0;	    /* relative cpu speed -- can be patched */	
-struct	isr isrqueue[NISR];
 struct	hp_hw sc_table[MAXCTLRS];
 
 /* XXX must be allocated statically because of early console init */
@@ -88,6 +92,11 @@ extern	char *extiobase;
 int	acdebug = 0;
 #endif
 
+#ifndef NEWCONFIG	/* XXX */
+struct	devicelist alldevs;
+struct	evcntlist allevents;
+#endif
+
 /*
  * Determine mass storage and memory configuration for a machine.
  */
@@ -95,6 +104,12 @@ configure()
 {
 	register struct hp_hw *hw;
 	int found;
+
+	/*
+	 * Find out what hardware is attached to the machine.
+	 * XXX goes away with new config.
+	 */
+	find_devs();
 
 	/*
 	 * XXX: these should be consolidated into some kind of table
@@ -113,7 +128,7 @@ configure()
 			found = find_controller(hw);
 		else
 			found = find_device(hw);
-#ifdef DEBUG
+
 		if (!found) {
 			int sc = patosc(hw->hw_pa);
 
@@ -123,7 +138,6 @@ configure()
 			else
 				printf("csr at %x\n", sc);
 		}
-#endif
 	}
 
 #if GENERIC
@@ -199,25 +213,38 @@ find_controller(hw)
 	if (match_c == NULL)
 		return(0);
 	/*
-	 * Found a match, attempt to initialize and configure all attached
-	 * slaves.  Note, we can still fail if HW won't initialize.
+	 * Found a configuration match, now let's see if the hardware
+	 * agrees with us.  If it does, attach it.
 	 */
 	hc = match_c;
 	oaddr = hc->hp_addr;
 	hc->hp_addr = hw->hw_kva;
-	if ((*hc->hp_driver->d_init)(hc)) {
+	hc->hp_args = hw;
+	if ((*hc->hp_driver->d_match)(hc)) {
 		hc->hp_alive = 1;
-		printf("%s%d", hc->hp_driver->d_name, hc->hp_unit);
+
+		/* Set up external name. */
+		bzero(hc->hp_xname, sizeof(hc->hp_xname));
+		sprintf(hc->hp_xname, "%s%d", hc->hp_driver->d_name,
+		    hc->hp_unit);
+
+		/* Print what we've found. */
+		printf("%s at ", hc->hp_xname);
 		sc = patosc(hw->hw_pa);
 		if (sc < 256)
-			printf(" at sc%d,", sc);
+			printf("scode%d", sc);
 		else
-			printf(" csr 0x%x,", sc);
+			printf("addr 0x%x,", sc);
 		printf(" ipl %d", hc->hp_ipl);
 		if (hc->hp_flags)
 			printf(" flags 0x%x", hc->hp_flags);
-		printf("\n");
-		find_slaves(hc);
+
+		/*
+		 * Call device "attach" routine.  It will print the
+		 * newline for us.
+		 */
+		(*hc->hp_driver->d_attach)(hc);
+		find_slaves(hc);	/* XXX do this in attach? */
 	} else
 		hc->hp_addr = oaddr;
 	return(1);
@@ -289,25 +316,38 @@ find_device(hw)
 	if (match_d == NULL)
 		return(0);
 	/*
-	 * Found a match, attempt to initialize.
-	 * Note, we can still fail if HW won't initialize.
+	 * Found a configuration match, now let's see if the hardware
+	 * agrees with us.  If it does, attach it.
 	 */
 	hd = match_d;
 	oaddr = hd->hp_addr;
 	hd->hp_addr = hw->hw_kva;
-	if ((*hd->hp_driver->d_init)(hd)) {
+	hd->hp_args = hw;
+	if ((*hd->hp_driver->d_match)(hd)) {
 		hd->hp_alive = 1;
-		printf("%s%d", hd->hp_driver->d_name, hd->hp_unit);
+
+		/* Set up external name. */
+		bzero(hd->hp_xname, sizeof(hd->hp_xname));
+		sprintf(hd->hp_xname, "%s%d", hd->hp_driver->d_name,
+		    hd->hp_unit);
+
+		/* Print what we've found. */
+		printf("%s at ", hd->hp_xname);
 		sc = patosc(hw->hw_pa);
 		if (sc < 256)
-			printf(" at sc%d", sc);
+			printf("scode%d", sc);
 		else
-			printf(" csr 0x%x", sc);
+			printf("addr 0x%x", sc);
 		if (hd->hp_ipl)
-			printf(", ipl %d", hd->hp_ipl);
+			printf(" ipl %d", hd->hp_ipl);
 		if (hd->hp_flags)
-			printf(", flags 0x%x", hd->hp_flags);
-		printf("\n");
+			printf(" flags 0x%x", hd->hp_flags);
+
+		/*
+		 * Call device "attach" routine.  It will print the
+		 * newline for us.
+		 */
+		(*hd->hp_driver->d_attach)(hd);
 	} else
 		hd->hp_addr = oaddr;
 	return(1);
@@ -360,8 +400,7 @@ find_busslaves(hc, startslave, endslave)
 #define LASTSLAVE(s) (startslave < endslave ? (s)-- : (s)++)
 #ifdef DEBUG
 	if (acdebug)
-		printf("find_busslaves: for %s%d\n",
-		       hc->hp_driver->d_name, hc->hp_unit);
+		printf("find_busslaves: for %s\n", hc->hp_xname);
 #endif
 	NEXTSLAVE(endslave);
 	for (s = startslave; s != endslave; NEXTSLAVE(s)) {
@@ -453,24 +492,35 @@ find_busslaves(hc, startslave, endslave)
 				       hd->hp_unit, hd->hp_slave);
 #endif
 
-			if ((*hd->hp_driver->d_init)(hd)) {
+			if ((*hd->hp_driver->d_match)(hd)) {
 #ifdef DEBUG
 				if (acdebug)
 					printf("found\n");
 #endif
-				printf("%s%d at %s%d, slave %d",
-				       hd->hp_driver->d_name, hd->hp_unit,
-				       hc->hp_driver->d_name, hd->hp_ctlr,
+				/* Set up external name. */
+				bzero(hd->hp_xname, sizeof(hd->hp_xname));
+				sprintf(hd->hp_xname, "%s%d",
+				    hd->hp_driver->d_name,
+				    hd->hp_unit);
+
+				/* Print what we've found. */
+				printf("%s at %s slave %d",
+				       hd->hp_xname, hc->hp_xname,
 				       hd->hp_slave);
 				if (hd->hp_flags)
 					printf(" flags 0x%x", hd->hp_flags);
-				printf("\n");
 				hd->hp_alive = 1;
 				if (hd->hp_dk && dkn < DK_NDRIVE)
 					hd->hp_dk = dkn++;
 				else
 					hd->hp_dk = -1;
 				rescan = 1;
+
+				/*
+				 * Call the device "attach" routine.
+				 * It will print the newline for us.
+				 */
+				 (*hd->hp_driver->d_attach)(hd);
 			} else {
 #ifdef DEBUG
 				if (acdebug)
@@ -613,6 +663,107 @@ same_hw_device(hw, hd)
 char notmappedmsg[] = "WARNING: no space to map IO card, ignored\n";
 
 /*
+ * Scan all select codes, passing the corresponding VA to (*func)().
+ * (*func)() is a driver-specific routine that looks for the console
+ * hardware.
+ */
+void
+console_scan(func, arg)
+	int (*func) __P((int, caddr_t, void *));
+	void *arg;
+{
+	int size, scode, sctop;
+	caddr_t pa, va;
+
+	/*
+	 * Scan all select codes.  Check each location for some
+	 * hardware.  If there's something there, call (*func)().
+	 */
+	sctop = (machineid == HP_320) ? 32 : 256;
+	for (scode = 0; scode < sctop; ++scode) {
+		/*
+		 * Abort mission if console has been forced.
+		 */
+		if (conforced)
+			return;
+
+		/*
+		 * Skip over the select code hole and
+		 * the internal HP-IB controller.
+		 */
+		if (((scode >= 32) && (scode < 132)) ||
+		    ((scode == 7) && internalhpib))
+			continue;
+
+		/* Map current PA. */
+		pa = sctopa(scode);
+		va = iomap(pa, NBPG);
+		if (va == 0)
+			continue;
+
+		/* Check to see if hardware exists. */
+		if (badaddr(va)) {
+			iounmap(va, NBPG);
+			continue;
+		}
+
+		/*
+		 * Hardware present, call callback.  Driver returns
+		 * size of region to map if console probe successful
+		 * and worthwhile.
+		 */
+		size = (*func)(scode, va, arg);
+		iounmap(va, NBPG);
+		if (size) {
+			/* Free last mapping. */
+			if (convasize)
+				iounmap(conaddr, convasize);
+			convasize = 0;
+
+			/* Remap to correct size. */
+			va = iomap(pa, size);
+			if (va == 0)
+				continue;
+
+			/* Save this state for next time. */
+			conscode = scode;
+			conaddr = va;
+			convasize = size;
+		}
+	}
+}
+
+/*
+ * Special version of cninit().  Actually, crippled somewhat.
+ * This version lets the drivers assign cn_tab.
+ */
+void
+hp300_cninit()
+{
+	struct consdev *cp;
+	extern struct consdev constab[];
+
+	cn_tab = NULL;
+
+	/*
+	 * Call all of the console probe functions.
+	 */
+	for (cp = constab; cp->cn_probe; cp++)
+		(*cp->cn_probe)(cp);
+
+	/*
+	 * No console, we can handle it.
+	 */
+	if (cn_tab == NULL)
+		return;
+
+	/*
+	 * Turn on the console.
+	 */
+	(*cn_tab->cn_init)(cn_tab);
+}
+
+/*
  * Scan the IO space looking for devices.
  */
 find_devs()
@@ -620,14 +771,9 @@ find_devs()
 	short sc;
 	u_char *id_reg;
 	register caddr_t addr;
-	register struct hp_hw *hw;
+	register struct hp_hw *hw = sc_table;
 	int didmap, sctop;
 
-	/*
-	 * Initialize IO resource map for iomap().
-	 */
-	rminit(extiomap, (long)EIOMAPSIZE, (long)1, "extio", EIOMAPSIZE/16);
-	hw = sc_table;
 	/*
 	 * Probe all select codes + internal display addr
 	 */
@@ -646,6 +792,14 @@ find_devs()
 		} else if (sc == 7 && internalhpib) {
 			hw->hw_pa = (caddr_t) 0x478000;
 			addr = internalhpib = (caddr_t) IIOV(hw->hw_pa);
+			didmap = 0;
+		} else if (sc == conscode) {
+			/*
+			 * If this is the console, it's already been
+			 * mapped, and the address is known.
+			 */
+			hw->hw_pa = sctopa(sc);
+			addr = conaddr;
 			didmap = 0;
 		} else {
 			hw->hw_pa = sctopa(sc);
@@ -886,6 +1040,7 @@ iomap(pa, size)
 	return(kva);
 }
 
+void
 iounmap(kva, size)
 	caddr_t kva;
 	int size;
@@ -901,27 +1056,6 @@ iounmap(kva, size)
 	physunaccess(kva, size);
 	ix = btoc(kva - extiobase) + 1;
 	rmfree(extiomap, btoc(size), ix);
-}
-
-isrinit()
-{
-	register int i;
-
-	for (i = 0; i < NISR; i++)
-		isrqueue[i].isr_forw = isrqueue[i].isr_back = &isrqueue[i];
-}
-
-void
-isrlink(isr)
-	register struct isr *isr;
-{
-	int i = ISRIPL(isr->isr_ipl);
-
-	if (i < 0 || i >= NISR) {
-		printf("bad IPL %d\n", i);
-		panic("configure");
-	}
-	insque(isr, isrqueue[i].isr_back);
 }
 
 /*
@@ -1061,3 +1195,13 @@ setroot()
 		dumpdev = swdevt[0].sw_dev;
 #endif
 }
+
+#ifndef NEWCONFIG	/* XXX */
+void
+config_init()
+{
+
+	TAILQ_INIT(&alldevs);
+	TAILQ_INIT(&allevents);
+}
+#endif

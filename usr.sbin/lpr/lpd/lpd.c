@@ -1,3 +1,6 @@
+/*	$OpenBSD: lpd.c,v 1.8 1996/09/21 21:02:15 deraadt Exp $ */
+/*	$NetBSD: lpd.c,v 1.7 1996/04/24 14:54:06 mrg Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +42,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)lpd.c	8.4 (Berkeley) 4/17/94";
+static char sccsid[] = "@(#)lpd.c	8.7 (Berkeley) 5/10/95";
 #endif /* not lint */
 
 /*
@@ -77,6 +80,7 @@ static char sccsid[] = "@(#)lpd.c	8.4 (Berkeley) 4/17/94";
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #include <netinet/in.h>
 
 #include <netdb.h>
@@ -103,6 +107,7 @@ static void       mcleanup __P((int));
 static void       doit __P((void));
 static void       startup __P((void));
 static void       chkhost __P((struct sockaddr_in *));
+static int	  ckqueue __P((char *));
 
 uid_t	uid, euid;
 
@@ -180,6 +185,7 @@ main(argc, argv)
 	}
 #define	mask(s)	(1 << ((s) - 1))
 	omask = sigblock(mask(SIGHUP)|mask(SIGINT)|mask(SIGQUIT)|mask(SIGTERM));
+	(void) umask(07);
 	signal(SIGHUP, mcleanup);
 	signal(SIGINT, mcleanup);
 	signal(SIGQUIT, mcleanup);
@@ -194,6 +200,7 @@ main(argc, argv)
 		syslog(LOG_ERR, "ubind: %m");
 		exit(1);
 	}
+	(void) umask(0);
 	sigsetmask(omask);
 	FD_ZERO(&defreadfds);
 	FD_SET(funix, &defreadfds);
@@ -246,6 +253,10 @@ main(argc, argv)
 			domain = AF_INET, fromlen = sizeof(frominet);
 			s = accept(finet,
 			    (struct sockaddr *)&frominet, &fromlen);
+			if (frominet.sin_port == htons(20)) {
+				close(s);
+				continue;
+			}
 		}
 		if (s < 0) {
 			if (errno != EINTR)
@@ -433,11 +444,17 @@ startup()
 	 * Restart the daemons.
 	 */
 	while (cgetnext(&buf, printcapdb) > 0) {
+		if (ckqueue(buf) <= 0) {
+			free(buf);
+			continue;	/* no work to do for this printer */
+		}
 		for (cp = buf; *cp; cp++)
 			if (*cp == '|' || *cp == ':') {
 				*cp = '\0';
 				break;
 			}
+		if (lflag)
+			syslog(LOG_INFO, "work for %s", buf);
 		if ((pid = fork()) < 0) {
 			syslog(LOG_WARNING, "startup: cannot fork");
 			mcleanup(0);
@@ -446,8 +463,35 @@ startup()
 			printer = buf;
 			cgetclose();
 			printjob();
+			/* NOTREACHED */
 		}
+		else free(buf);
 	}
+}
+
+/*
+ * Make sure there's some work to do before forking off a child
+ */
+static int
+ckqueue(cap)
+	char *cap;
+{
+	register struct dirent *d;
+	DIR *dirp;
+	char *spooldir;
+
+	if (cgetstr(cap, "sd", &spooldir) == -1)
+		spooldir = _PATH_DEFSPOOL;
+	if ((dirp = opendir(spooldir)) == NULL)
+		return (-1);
+	while ((d = readdir(dirp)) != NULL) {
+		if (d->d_name[0] != 'c' || d->d_name[1] != 'f')
+			continue;	/* daemon control files only */
+		closedir(dirp);
+		return (1);		/* found something */
+	}
+	closedir(dirp);
+	return (0);
 }
 
 #define DUMMY ":nobody::"
@@ -463,9 +507,11 @@ chkhost(f)
 	register FILE *hostf;
 	int first = 1;
 	extern char *inet_ntoa();
+	int good = 0;
 
 	f->sin_port = ntohs(f->sin_port);
-	if (f->sin_family != AF_INET || f->sin_port >= IPPORT_RESERVED)
+	if (f->sin_family != AF_INET || f->sin_port >= IPPORT_RESERVED ||
+	    f->sin_port == 20)
 		fatal("Malformed from address");
 
 	/* Need real hostname for temporary filenames */
@@ -475,9 +521,23 @@ chkhost(f)
 		fatal("Host name for your address (%s) unknown",
 			inet_ntoa(f->sin_addr));
 
-	(void) strncpy(fromb, hp->h_name, sizeof(fromb));
+	(void) strncpy(fromb, hp->h_name, sizeof(fromb)-1);
 	from[sizeof(fromb) - 1] = '\0';
 	from = fromb;
+
+	/* Check for spoof, ala rlogind */
+	hp = gethostbyname(fromb);
+	if (!hp)
+		fatal("hostname for your address (%s) unknown",
+		    inet_ntoa(f->sin_addr));
+	for (; good == 0 && hp->h_addr_list[0] != NULL; hp->h_addr_list++) {
+		if (!bcmp(hp->h_addr_list[0], (caddr_t)&f->sin_addr,
+		    sizeof(f->sin_addr)))
+			good = 1;
+	}
+	if (good == 0)
+		fatal("address for your hostname (%s) not matched",
+		    inet_ntoa(f->sin_addr));
 
 	hostf = fopen(_PATH_HOSTSEQUIV, "r");
 again:
@@ -497,15 +557,3 @@ again:
 	fatal("Your host does not have line printer access");
 	/*NOTREACHED*/
 }
-
-
-
-
-
-
-
-
-
-
-
-

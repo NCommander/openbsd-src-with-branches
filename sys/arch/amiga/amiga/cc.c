@@ -1,4 +1,5 @@
-/*	$NetBSD: cc.c,v 1.7 1994/10/26 02:01:36 cgd Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: cc.c,v 1.9 1996/04/21 21:06:50 veego Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
@@ -42,6 +43,8 @@
 #else
 #define INLINE
 #endif
+
+void	defchannel_handler __P((int));
 
 /* init all the "custom chips" */
 void
@@ -323,12 +326,13 @@ copper_handler()
  */
 
 struct audio_channel {
-	u_short  play_count;
+	u_short  play_count;		/* number of times to loop sample */
+	handler_func_t handler;		/* interupt handler for channel */
 };
 
 /* - channel[4] */
 /* the data for each audio channel and what to do with it. */
-static struct audio_channel channel[4];
+struct audio_channel channel[4];
 
 /* audio vbl node for vbl function  */
 struct vbl_node audio_vbl_node;    
@@ -346,8 +350,10 @@ cc_init_audio()
 	/*
 	 * initialize audio channels to off.
 	 */
-	for (i=0; i < 4; i++)
+	for (i=0; i < 4; i++) {
 		channel[i].play_count = 0;
+		channel[i].handler = defchannel_handler;
+	}
 }
 
 
@@ -393,22 +399,14 @@ audio_handler()
 		if ((ir & (flag << 7)) == 0)
 			continue;
 
-		if (channel[i].play_count)
-			channel[i].play_count--;
-		else {
-			/*
-			 * disable DMA to this channel and
-			 * disable interrupts to this channel
-			 */
-			custom.dmacon = flag;
-			custom.intena = (flag << 7);
-		}
+		if (channel[i].handler)
+			channel[i].handler(i);
+
 		/*
 		 * clear this channels interrupt.
 		 */
 		custom.intreq = (flag << 7);
 	}
-
 out:
 	/*
 	 * enable audio interupts with dma still set.
@@ -416,6 +414,27 @@ out:
 	audio_dma = custom.dmaconr;
 	audio_dma &= (DMAF_AUD0|DMAF_AUD1|DMAF_AUD2|DMAF_AUD3);
 	custom.intena = INTF_SETCLR | (audio_dma << 7);
+}
+
+/*
+ * this is the channel handler used by the system
+ * other software modules are free to install their own
+ * handler
+ */
+void
+defchannel_handler(i)
+	int i;
+{
+	if (channel[i].play_count)
+		channel[i].play_count--;
+	else {
+		/*
+		 * disable DMA to this channel and
+		 * disable interrupts to this channel
+		 */
+		custom.dmacon = (1 << i);
+		custom.intena = (1 << (i + 7));
+	}
 }
 
 void
@@ -430,19 +449,22 @@ play_sample(len, data, period, volume, channels, count)
 
 	/* load the channels */
 	for (ch = 0; ch < 4; ch++) {
-		if ((dmabits & (ch << ch)) == 0)
+		if ((dmabits & (1 << ch)) == 0)
 			continue;
-		custom.aud[ch].len = len;
-		custom.aud[ch].lc = data;
+		/* busy */
+		if (channel[ch].handler != defchannel_handler)
+			continue;
+		channel[ch].play_count = count;
 		custom.aud[ch].per = period;
 		custom.aud[ch].vol = volume;
-		channel[ch].play_count = count;
+		custom.aud[ch].len = len;
+		custom.aud[ch].lc = data;
 	}
 	/*
 	 * turn on interrupts and enable dma for channels and
 	 */
 	custom.intena = INTF_SETCLR | (dmabits << 7);
-	custom.dmacon = DMAF_SETCLR | dmabits;
+	custom.dmacon = DMAF_SETCLR | DMAF_MASTER | dmabits;
 }
 
 /*
@@ -478,7 +500,6 @@ void *
 alloc_chipmem(size)
 	u_long size;
 {
-	void *mem;
 	int s;
 	struct mem_node *mn, *new;
 

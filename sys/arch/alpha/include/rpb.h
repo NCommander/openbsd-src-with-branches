@@ -1,4 +1,5 @@
-/*	$NetBSD: rpb.h,v 1.5 1995/06/28 01:14:41 cgd Exp $	*/
+/*	$OpenBSD: rpb.h,v 1.7 1996/04/29 16:23:11 cgd Exp $	*/
+/*	$NetBSD: rpb.h,v 1.7 1996/04/29 16:23:11 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -58,8 +59,10 @@ struct rpb {
 #define	ST_DEC_2100_A500	9		/* "Sable" (?) */
 #define	ST_DEC_APXVME_64	10		/* "AXPvme" (VME?) */
 #define	ST_DEC_AXPPCI_33	11		/* "NoName" (PCI/ISA?) */
+#define	ST_DEC_21000		12		/* "TurboLaser" (?) */
 #define	ST_DEC_2100_A50		13		/* "Avanti" (PCI/ISA) */
 #define	ST_DEC_MUSTANG		14		/* "Mustang" (?) */
+#define	ST_DEC_KN20AA		15		/* kn20aa (PCI/EISA) */
 #define	ST_DEC_1000		17		/* "Mikasa" (PCI/ISA?) */
 
 	u_int64_t	rpb_type;		/*  50: */
@@ -167,7 +170,6 @@ struct pcs {
 #define	PCS_PV			0x000040	/* PALcode valid */
 #define	PCS_PMV			0x000080	/* PALcode memory valid */
 #define	PCS_PL			0x000100	/* PALcode loaded */
-#define	PCS_PE			0x000200	/* primary eligible (SMP) */
 
 #define	PCS_HALT_REQ		0xff0000	/* halt request mask */
 #define	PCS_HALT_DEFAULT	0x000000
@@ -225,7 +227,7 @@ struct pcs {
 
 #define	PCS_VAR_VAXFP		0x0000000000000001	/* VAX FP support */
 #define	PCS_VAR_IEEEFP		0x0000000000000002	/* IEEE FP support */
-#define	PCS_VAR_IOACCESS	0x0000000000000004	/* Has I/O access */
+#define	PCS_VAR_PE		0x0000000000000004	/* Primary Eligible */
 #define	PCS_VAR_RESERVED	0xfffffffffffffff8	/* Reserved */
 
 	char		pcs_proc_revision[8];	/*  C0: only first 4 valid */

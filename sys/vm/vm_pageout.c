@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_pageout.c,v 1.22 1995/06/28 02:58:51 cgd Exp $	*/
+/*	$OpenBSD: vm_pageout.c,v 1.3 1996/08/02 00:06:04 niklas Exp $	*/
+/*	$NetBSD: vm_pageout.c,v 1.23 1996/02/05 01:54:07 christos Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -69,6 +70,8 @@
  */
 
 #include <sys/param.h>
+#include <sys/proc.h>
+#include <sys/systm.h>
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
@@ -274,6 +277,10 @@ vm_pageout_page(m, object)
 	if (object->pager == NULL)
 		vm_object_collapse(object);
 
+#ifdef DIAGNOSTIC
+	if (object->paging_in_progress == 0xdead)
+		panic("vm_pageout_page: object deallocated");
+#endif
 	object->paging_in_progress++;
 	vm_object_unlock(object);
 
@@ -318,14 +325,13 @@ vm_pageout_page(m, object)
 		break;
 	case VM_PAGER_AGAIN:
 	{
-		extern int lbolt;
-
 		/*
 		 * FAIL on a write is interpreted to mean a resource
 		 * shortage, so we put pause for awhile and try again.
 		 * XXX could get stuck here.
 		 */
-		(void) tsleep((caddr_t)&lbolt, PZERO|PCATCH, "pageout", 0);
+		(void) tsleep((caddr_t)&vm_pages_needed, PZERO|PCATCH,
+		    "pageout", 100);
 		break;
 	}
 	case VM_PAGER_FAIL:
@@ -375,6 +381,7 @@ vm_pageout_cluster(m, object)
 	vm_offset_t offset, loff, hoff;
 	vm_page_t plist[MAXPOCLUSTER], *plistp, p;
 	int postatus, ix, count;
+	extern int lbolt;
 
 	/*
 	 * Determine the range of pages that can be part of a cluster
@@ -441,6 +448,10 @@ vm_pageout_cluster(m, object)
 	 * in case it blocks.
 	 */
 	vm_page_unlock_queues();
+#ifdef DIAGNOSTIC
+	if (object->paging_in_progress == 0xdead)
+		panic("vm_pageout_cluster: object deallocated");
+#endif
 	object->paging_in_progress++;
 	vm_object_unlock(object);
 again:
@@ -450,8 +461,6 @@ again:
 	 * XXX rethink this
 	 */
 	if (postatus == VM_PAGER_AGAIN) {
-		extern int lbolt;
-
 		(void) tsleep((caddr_t)&lbolt, PZERO|PCATCH, "pageout", 0);
 		goto again;
 	} else if (postatus == VM_PAGER_BAD)

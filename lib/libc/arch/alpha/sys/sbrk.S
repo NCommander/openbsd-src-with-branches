@@ -1,5 +1,3 @@
-/*	$NetBSD: sbrk.S,v 1.1 1995/02/10 17:50:38 cgd Exp $	*/
-
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
  * All rights reserved.
@@ -29,6 +27,11 @@
 
 #include "SYS.h"
 
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
+
 	.globl	_end
 
 	.data
@@ -37,7 +40,8 @@ EXPORT(curbrk)
 
 	.text
 LEAF(sbrk, 1)
-	SETGP(pv)
+	br	pv, 1f				/* XXX profiling */
+1:	SETGP(pv)
 	ldq	a1, curbrk
 	addq	a0, a1, a0
 	SYSCALL_NOLABEL(break)

@@ -1,7 +1,8 @@
-/*	$NetBSD: scc.c,v 1.9 1995/08/03 00:52:17 cgd Exp $	*/
+/*	$OpenBSD: scc.c,v 1.16.4.2 1996/06/03 19:44:41 cgd Exp $	*/
+/*	$NetBSD: scc.c,v 1.16.4.2 1996/06/03 19:44:41 cgd Exp $	*/
 
 /* 
- * Copyright (c) 1991,1990,1989,1994,1995 Carnegie Mellon University
+ * Copyright (c) 1991,1990,1989,1994,1995,1996 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -63,7 +64,7 @@
  *	@(#)scc.c	8.2 (Berkeley) 11/30/93
  */
 
-#include <scc.h>
+#include "scc.h"
 #if NSCC > 0
 /*
  * Intel 82530 dual usart chip driver. Supports the serial port(s) on the
@@ -96,13 +97,15 @@
 #include <dev/ic/z8530reg.h>
 #include <alpha/tc/sccreg.h>
 #include <alpha/tc/sccvar.h>
+#if 0
 #include <pmax/dev/fbreg.h>
+#endif
 
-#include <machine/autoconf.h>
 #include <machine/rpb.h>
 
-#include <alpha/tc/asic.h>
-#include <alpha/tc/tc.h>
+#include <dev/tc/tcvar.h>
+#include <alpha/tc/ioasicreg.h>
+#include <dev/tc/ioasicvar.h>
 
 extern void ttrstrt	__P((void *));
 
@@ -173,8 +176,14 @@ struct speedtab sccspeedtab[] = {
 /* Definition of the driver for autoconfig. */
 static int      sccmatch(struct device *, void *, void *);
 static void     sccattach(struct device *, struct device *, void *);
-struct cfdriver scccd =
-    { NULL, "scc", sccmatch, sccattach, DV_TTY, sizeof (struct scc_softc) };
+
+struct cfattach scc_ca = {
+	sizeof (struct scc_softc), sccmatch, sccattach,
+};
+
+struct cfdriver scc_cd = {
+	NULL, "scc", DV_TTY,
+};
 
 int		sccGetc __P((dev_t));
 void		sccPutc __P((dev_t, int));
@@ -203,13 +212,13 @@ sccmatch(parent, cfdata, aux)
 	void *aux;
 {
 	struct cfdata *cf = cfdata;
-	struct confargs *ca = aux;
+	struct ioasicdev_attach_args *d = aux;
 	void *sccaddr;
 
 	/* XXX BUS TYPE? */
 
 	/* Make sure that we're looking for this type of device. */
-	if (!BUS_MATCHNAME(ca, "scc"))
+	if (strncmp(d->iada_modname, "z8530   ", TC_ROM_LLEN))
 		return (0);
 
 	/* XXX MATCH CFLOC */
@@ -217,9 +226,9 @@ sccmatch(parent, cfdata, aux)
 		return (0);
 
 	/* Get the address, and check it for validity. */
-	sccaddr = BUS_CVTADDR(ca);
+	sccaddr = (void *)d->iada_addr;
 #ifdef SPARSE
-	sccaddr = TC_DENSE_TO_SPARSE(sccaddr);
+	sccaddr = (void *)TC_DENSE_TO_SPARSE((tc_addr_t)sccaddr);
 #endif
 	if (badaddr(sccaddr, 2))
 		return (0);
@@ -232,20 +241,20 @@ scc_alphaintr(onoff)
 	int onoff;
 {
 	if (onoff) {
-		*(volatile u_int *)ASIC_REG_IMSK(asic_base) |=
-		    ASIC_INTR_SCC_1 | ASIC_INTR_SCC_0;
+		*(volatile u_int *)IOASIC_REG_IMSK(ioasic_base) |=
+		    IOASIC_INTR_SCC_1 | IOASIC_INTR_SCC_0;
 #if !defined(DEC_3000_300) && defined(SCC_DMA)
-		*(volatile u_int *)ASIC_REG_CSR(asic_base) |=
-		    ASIC_CSR_DMAEN_T1 | ASIC_CSR_DMAEN_R1 |
-		    ASIC_CSR_DMAEN_T2 | ASIC_CSR_DMAEN_R2;
+		*(volatile u_int *)IOASIC_REG_CSR(ioasic_base) |=
+		    IOASIC_CSR_DMAEN_T1 | IOASIC_CSR_DMAEN_R1 |
+		    IOASIC_CSR_DMAEN_T2 | IOASIC_CSR_DMAEN_R2;
 #endif
 	} else {
-		*(volatile u_int *)ASIC_REG_IMSK(asic_base) &=
-		    ~(ASIC_INTR_SCC_1 | ASIC_INTR_SCC_0);
+		*(volatile u_int *)IOASIC_REG_IMSK(ioasic_base) &=
+		    ~(IOASIC_INTR_SCC_1 | IOASIC_INTR_SCC_0);
 #if !defined(DEC_3000_300) && defined(SCC_DMA)
-		*(volatile u_int *)ASIC_REG_CSR(asic_base) &=
-		    ~(ASIC_CSR_DMAEN_T1 | ASIC_CSR_DMAEN_R1 |
-		    ASIC_CSR_DMAEN_T2 | ASIC_CSR_DMAEN_R2);
+		*(volatile u_int *)IOASIC_REG_CSR(ioasic_base) &=
+		    ~(IOASIC_CSR_DMAEN_T1 | IOASIC_CSR_DMAEN_R1 |
+		    IOASIC_CSR_DMAEN_T2 | IOASIC_CSR_DMAEN_R2);
 #endif
 	}
 	wbflush();
@@ -258,7 +267,7 @@ sccattach(parent, self, aux)
         void *aux;
 {
 	struct scc_softc *sc = (struct scc_softc *)self;
-	struct confargs *ca = aux;
+	struct ioasicdev_attach_args *d = aux;
 	struct pdma *pdp;
 	struct tty *tp;
 	void *sccaddr;
@@ -269,13 +278,14 @@ sccattach(parent, self, aux)
 	extern int cputype;
 
 	/* Get the address, and check it for validity. */
-	sccaddr = BUS_CVTADDR(ca);
+	sccaddr = (void *)d->iada_addr;
 #ifdef SPARSE
-	sccaddr = TC_DENSE_TO_SPARSE(sccaddr);
+	sccaddr = (void *)TC_DENSE_TO_SPARSE((tc_addr_t)sccaddr);
 #endif
 
 	/* Register the interrupt handler. */
-	BUS_INTR_ESTABLISH(ca, sccintr, (void *)(long)sc->sc_dv.dv_unit);
+	ioasic_intr_establish(parent, d->iada_cookie, TC_IPL_TTY,
+	    sccintr, (void *)(long)sc->sc_dv.dv_unit);
 
 	/*
 	 * For a remote console, wait a while for previous output to
@@ -296,6 +306,8 @@ sccattach(parent, self, aux)
 	for (cntr = 0; cntr < 2; cntr++) {
 		pdp->p_addr = (void *)sccaddr;
 		tp = scc_tty[sc->sc_dv.dv_unit * 2 + cntr] = ttymalloc();
+		if (cntr == 0)
+			tty_attach(tp);
 		pdp->p_arg = (long)tp;
 		pdp->p_fcn = (void (*)())0;
 		tp->t_dev = (dev_t)((sc->sc_dv.dv_unit << 1) | cntr);
@@ -346,7 +358,7 @@ sccattach(parent, self, aux)
                 s = spltty();
                 ctty.t_dev = makedev(SCCDEV,
                     sc->sc_dv.dv_unit == 0 ? SCCCOMM2_PORT : SCCCOMM3_PORT);
-                cterm.c_cflag = CS8;
+                cterm.c_cflag = (TTYDEF_CFLAG & ~(CSIZE | PARENB)) | CS8;
                 cterm.c_ospeed = cterm.c_ispeed = 9600;
                 (void) sccparam(&ctty, &cterm);
                 DELAY(1000);
@@ -454,9 +466,9 @@ sccopen(dev, flag, mode, p)
 	int s, error = 0;
 
 	unit = SCCUNIT(dev);
-	if (unit >= scccd.cd_ndevs)
+	if (unit >= scc_cd.cd_ndevs)
 		return (ENXIO);
-	sc = scccd.cd_devs[unit];
+	sc = scc_cd.cd_devs[unit];
 	if (!sc)
 		return (ENXIO);
 
@@ -464,8 +476,10 @@ sccopen(dev, flag, mode, p)
 	if (sc->scc_pdma[line].p_addr == NULL)
 		return (ENXIO);
 	tp = scc_tty[minor(dev)];
-	if (tp == NULL)
+	if (tp == NULL) {
 		tp = scc_tty[minor(dev)] = ttymalloc();
+		tty_attach(tp);
+	}
 	tp->t_oproc = sccstart;
 	tp->t_param = sccparam;
 	tp->t_dev = dev;
@@ -511,7 +525,7 @@ sccclose(dev, flag, mode, p)
 	int flag, mode;
 	struct proc *p;
 {
-	register struct scc_softc *sc = scccd.cd_devs[SCCUNIT(dev)];
+	register struct scc_softc *sc = scc_cd.cd_devs[SCCUNIT(dev)];
 	register struct tty *tp;
 	register int line;
 
@@ -583,7 +597,7 @@ sccioctl(dev, cmd, data, flag, p)
 		return (error);
 
 	line = SCCLINE(dev);
-	sc = scccd.cd_devs[SCCUNIT(dev)];
+	sc = scc_cd.cd_devs[SCCUNIT(dev)];
 	switch (cmd) {
 
 	case TIOCSBRK:
@@ -668,7 +682,7 @@ sccparam(tp, t)
 		return (0);
 	}
 
-	sc = scccd.cd_devs[SCCUNIT(tp->t_dev)];
+	sc = scc_cd.cd_devs[SCCUNIT(tp->t_dev)];
 	line = SCCLINE(tp->t_dev);
 	regs = (scc_regmap_t *)sc->scc_pdma[line].p_addr;
 
@@ -763,7 +777,7 @@ sccparam(tp, t)
 	SCC_WRITE_REG(regs, line, SCC_WR9, value);
 	SCC_WRITE_REG(regs, line, SCC_WR1, sc->scc_wreg[line].wr1);
 
-	scc_alphaintr(1);
+	scc_alphaintr(1);			/* XXX XXX XXX */
 
 	return (0);
 }
@@ -783,7 +797,7 @@ sccintr(xxxunit)
 	register int cc, chan, rr1, rr2, rr3;
 	int overrun = 0;
 
-	sc = scccd.cd_devs[unit];
+	sc = scc_cd.cd_devs[unit];
 	regs = (scc_regmap_t *)sc->scc_pdma[0].p_addr;
 	unit <<= 1;
 	for (;;) {
@@ -874,6 +888,7 @@ sccintr(xxxunit)
 		 * Now for mousey
 		 */
 		} else if (tp == scc_tty[SCCMOUSE_PORT] && sccMouseButtons) {
+#if 0
 			register MouseReport *mrp;
 			static MouseReport currentRep;
 
@@ -906,6 +921,7 @@ sccintr(xxxunit)
 				}
 				(*sccMouseButtons)(mrp);
 			}
+#endif
 			continue;
 		}
 		if (!(tp->t_state & TS_ISOPEN)) {
@@ -943,7 +959,7 @@ sccstart(tp)
 	u_char temp;
 	int s, sendone;
 
-	sc = scccd.cd_devs[SCCUNIT(tp->t_dev)];
+	sc = scc_cd.cd_devs[SCCUNIT(tp->t_dev)];
 	dp = &sc->scc_pdma[SCCLINE(tp->t_dev)];
 	regs = (scc_regmap_t *)dp->p_addr;
 	s = spltty();
@@ -977,6 +993,7 @@ sccstart(tp)
 		}
 		goto out;
 	}
+#if 0
 	if (tp->t_flags & (RAW|LITOUT))
 		cc = ndqb(&tp->t_outq, 0);
 	else {
@@ -988,6 +1005,9 @@ sccstart(tp)
 			goto out;
 		}
 	}
+#else
+	cc = ndqb(&tp->t_outq, 0);
+#endif
 	tp->t_state |= TS_BUSY;
 	dp->p_end = dp->p_mem = tp->t_outq.c_cf;
 	dp->p_end += cc;
@@ -1029,7 +1049,7 @@ sccstop(tp, flag)
 	register struct scc_softc *sc;
 	register int s;
 
-	sc = scccd.cd_devs[SCCUNIT(tp->t_dev)];
+	sc = scc_cd.cd_devs[SCCUNIT(tp->t_dev)];
 	dp = &sc->scc_pdma[SCCLINE(tp->t_dev)];
 	s = spltty();
 	if (tp->t_state & TS_BUSY) {
@@ -1053,7 +1073,7 @@ sccmctl(dev, bits, how)
 	register u_char value;
 	int s;
 
-	sc = scccd.cd_devs[SCCUNIT(dev)];
+	sc = scc_cd.cd_devs[SCCUNIT(dev)];
 	line = SCCLINE(dev);
 	regs = (scc_regmap_t *)sc->scc_pdma[line].p_addr;
 	s = spltty();
@@ -1117,7 +1137,7 @@ scc_modem_intr(dev)
 	register u_char value;
 	int s;
 
-	sc = scccd.cd_devs[SCCUNIT(dev)];
+	sc = scc_cd.cd_devs[SCCUNIT(dev)];
 	tp = scc_tty[minor(dev)];
 	chan = SCCLINE(dev);
 	regs = (scc_regmap_t *)sc->scc_pdma[chan].p_addr;
@@ -1155,7 +1175,7 @@ sccGetc(dev)
 	int s;
 
 	line = SCCLINE(dev);
-	sc = scccd.cd_devs[SCCUNIT(dev)];
+	sc = scc_cd.cd_devs[SCCUNIT(dev)];
 	regs = (scc_regmap_t *)sc->scc_pdma[line].p_addr;
 	if (!regs)
 		return (0);
@@ -1197,7 +1217,7 @@ sccPutc(dev, c)
 
 	s = splhigh();
 	line = SCCLINE(dev);
-	sc = scccd.cd_devs[SCCUNIT(dev)];
+	sc = scc_cd.cd_devs[SCCUNIT(dev)];
 	regs = (scc_regmap_t *)sc->scc_pdma[line].p_addr;
 
 	/*

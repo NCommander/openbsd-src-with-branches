@@ -1,16 +1,25 @@
-/*	$NetBSD: zic.c,v 1.2 1995/03/10 18:12:44 jtc Exp $	*/
-
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)zic.c	7.50";
-#endif /* !defined NOID */
-#endif /* !defined lint */
+#if defined(LIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD$";
+#endif /* LIBC_SCCS and not lint */
 
 #include "private.h"
 #include "tzfile.h"
 #ifdef unix
 #include "sys/stat.h"			/* for umask manifest constants */
 #endif /* defined unix */
+
+/*
+** On some ancient hosts, predicates like `isspace(C)' are defined
+** only if isascii(C) || C == EOF.  Modern hosts obey the C Standard,
+** which says they are defined only if C == ((unsigned char) C) || C == EOF.
+** Neither the C Standard nor Posix require that `isascii' exist.
+** For portability, we check both ancient and modern requirements.
+** If isascii is not defined, the isascii check succeeds trivially.
+*/
+#include "ctype.h"
+#ifndef isascii
+#define isascii(x) 1
+#endif
 
 struct rule {
 	const char *	r_filename;
@@ -129,10 +138,8 @@ static int		errors;
 static const char *	filename;
 static int		leapcnt;
 static int		linenum;
-static int		max_int;
 static time_t		max_time;
 static int		max_year;
-static int		min_int;
 static time_t		min_time;
 static int		min_year;
 static int		noise;
@@ -141,7 +148,6 @@ static int		rlinenum;
 static const char *	progname;
 static int		timecnt;
 static int		typecnt;
-static int		tt_signed;
 
 /*
 ** Line codes.
@@ -569,36 +575,42 @@ const char * const	tofile;
 	ifree(toname);
 }
 
+#ifndef INT_MAX
+#define INT_MAX	((int) (((unsigned)~0)>>1))
+#endif /* !defined INT_MAX */
+
+#ifndef INT_MIN
+#define INT_MIN	((int) ~(((unsigned)~0)>>1))
+#endif /* !defined INT_MIN */
+
+/*
+** The tz file format currently allows at most 32-bit quantities.
+** This restriction should be removed before signed 32-bit values
+** wrap around in 2038, but unfortunately this will require a
+** change to the tz file format.
+*/
+
+#define MAX_BITS_IN_FILE	32
+#define TIME_T_BITS_IN_FILE	((TYPE_BIT(time_t) < MAX_BITS_IN_FILE) ? \
+					TYPE_BIT(time_t) : MAX_BITS_IN_FILE)
+
 static void
 setboundaries P((void))
 {
-	register time_t	bit;
-	register int bii;
-
-	for (bit = 1; bit > 0; bit <<= 1)
-		continue;
-	if (bit == 0) {		/* time_t is an unsigned type */
-		tt_signed = FALSE;
-		min_time = 0;
-		max_time = ~(time_t) 0;
-		if (sflag)
-			max_time >>= 1;
-	} else {
-		tt_signed = TRUE;
-		min_time = bit;
-		max_time = bit;
-		++max_time;
-		max_time = -max_time;
+	if (TYPE_SIGNED(time_t)) {
+		min_time = ~ (time_t) 0;
+		min_time <<= TIME_T_BITS_IN_FILE - 1;
+		max_time = ~ (time_t) 0 - min_time;
 		if (sflag)
 			min_time = 0;
+	} else {
+		min_time = 0;
+		max_time = 2 - sflag;
+		max_time <<= TIME_T_BITS_IN_FILE - 1;
+		--max_time;
 	}
 	min_year = TM_YEAR_BASE + gmtime(&min_time)->tm_year;
 	max_year = TM_YEAR_BASE + gmtime(&max_time)->tm_year;
-
-	for (bii = 1; bii > 0; bii <<= 1)
-		continue;
-	min_int = bii;
-	max_int = -1 - bii;
 }
 
 static int
@@ -718,7 +730,7 @@ const char *	name;
 		while (fields[nfields] != NULL) {
 			static char	nada;
 
-			if (ciequal(fields[nfields], "-"))
+			if (strcmp(fields[nfields], "-") == 0)
 				fields[nfields] = &nada;
 			++nfields;
 		}
@@ -1033,7 +1045,7 @@ const int		nfields;
 			return;
 	}
 	dayoff = oadd(dayoff, eitol(day - 1));
-	if (dayoff < 0 && !tt_signed) {
+	if (dayoff < 0 && !TYPE_SIGNED(time_t)) {
 		error("time before zero");
 		return;
 	}
@@ -1156,10 +1168,10 @@ const char * const		timep;
 	lp = byword(cp, begin_years);
 	if (lp != NULL) switch ((int) lp->l_value) {
 		case YR_MINIMUM:
-			rp->r_loyear = min_int;
+			rp->r_loyear = INT_MIN;
 			break;
 		case YR_MAXIMUM:
-			rp->r_loyear = max_int;
+			rp->r_loyear = INT_MAX;
 			break;
 		default:	/* "cannot happen" */
 			(void) fprintf(stderr,
@@ -1173,10 +1185,10 @@ const char * const		timep;
 	cp = hiyearp;
 	if ((lp = byword(cp, end_years)) != NULL) switch ((int) lp->l_value) {
 		case YR_MINIMUM:
-			rp->r_hiyear = min_int;
+			rp->r_hiyear = INT_MIN;
 			break;
 		case YR_MAXIMUM:
-			rp->r_hiyear = max_int;
+			rp->r_hiyear = INT_MAX;
 			break;
 		case YR_ONLY:
 			rp->r_hiyear = rp->r_loyear;
@@ -1699,8 +1711,9 @@ const char * const	type;
 
 static int
 lowerit(a)
-const int	a;
+int	a;
 {
+	a = (unsigned char) a;
 	return (isascii(a) && isupper(a)) ? tolower(a) : a;
 }
 
@@ -1724,9 +1737,10 @@ register const char *	word;
 		return FALSE;
 	++word;
 	while (*++abbr != '\0')
-		do if (*word == '\0')
-			return FALSE;
-				while (lowerit(*word++) != lowerit(*abbr));
+		do {
+			if (*word == '\0')
+				return FALSE;
+		} while (lowerit(*word++) != lowerit(*abbr));
 	return TRUE;
 }
 
@@ -1772,7 +1786,7 @@ register char *	cp;
 		emalloc((int) ((strlen(cp) + 1) * sizeof *array));
 	nsubs = 0;
 	for ( ; ; ) {
-		while (isascii(*cp) && isspace(*cp))
+		while (isascii(*cp) && isspace((unsigned char) *cp))
 			++cp;
 		if (*cp == '\0' || *cp == '#')
 			break;
@@ -1785,8 +1799,8 @@ register char *	cp;
 					++dp;
 				else	error("Odd number of quotation marks");
 		} while (*cp != '\0' && *cp != '#' &&
-			(!isascii(*cp) || !isspace(*cp)));
-		if (isascii(*cp) && isspace(*cp))
+			(!isascii(*cp) || !isspace((unsigned char) *cp)));
+		if (isascii(*cp) && isspace((unsigned char) *cp))
 			++cp;
 		*dp = '\0';
 	}
@@ -1842,9 +1856,9 @@ register const int			wantedy;
 	register long	dayoff;			/* with a nod to Margaret O. */
 	register time_t	t;
 
-	if (wantedy == min_int)
+	if (wantedy == INT_MIN)
 		return min_time;
-	if (wantedy == max_int)
+	if (wantedy == INT_MAX)
 		return max_time;
 	dayoff = 0;
 	m = TM_JANUARY;
@@ -1907,7 +1921,7 @@ register const int			wantedy;
 			(void) exit(EXIT_FAILURE);
 		}
 	}
-	if (dayoff < 0 && !tt_signed)
+	if (dayoff < 0 && !TYPE_SIGNED(time_t))
 		return min_time;
 	t = (time_t) dayoff * SECSPERDAY;
 	/*
@@ -1949,8 +1963,8 @@ char * const	argname;
 		/*
 		** DOS drive specifier?
 		*/
-		if (strlen(name) == 2 && isascii(name[0]) &&
-			isalpha(name[0]) && name[1] == ':') {
+		if (isalpha((unsigned char) name[0]) &&
+			name[1] == ':' && name[2] == '\0') {
 				*cp = '/';
 				continue;
 		}

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.6 1995/03/18 14:56:41 cgd Exp $
 #	$NetBSD: Makefile,v 1.6 1995/03/18 14:56:41 cgd Exp $
 #
 # Makefile for modload

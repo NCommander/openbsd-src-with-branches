@@ -1,6 +1,7 @@
-/*	$NetBSD: ite.c,v 1.27 1995/04/19 19:15:51 mycroft Exp $	*/
+/*	$NetBSD: ite.c,v 1.29.4.1 1996/06/06 15:39:12 thorpej Exp $	*/
 
 /*
+ * Copyright (c) 1996 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -62,6 +63,10 @@
 #include <sys/systm.h>
 #include <sys/malloc.h>
 
+#include <machine/autoconf.h>
+
+#include <dev/cons.h>
+
 #include <hp300/dev/grfioctl.h>
 #include <hp300/dev/grfvar.h>
 #include <hp300/dev/itevar.h>
@@ -86,11 +91,25 @@
 int	iteburst = 64;
 
 int	nite = NITE;
-struct	tty *ite_tty[NITE];
-struct  ite_softc *kbd_ite = NULL;
+struct  ite_data *kbd_ite = NULL;
 struct  ite_softc ite_softc[NITE];
 
-void	itestart();
+/*
+ * Terminal emulator state information, statically allocated
+ * for the benefit of the console.
+ */
+struct	ite_data ite_cn;
+
+void	iteinit __P((struct ite_data *));
+void	iteputchar __P((int, struct ite_data *));
+void	itecheckwrap __P((struct ite_data *, struct itesw *));
+void	ite_dchar __P((struct ite_data *, struct itesw *));
+void	ite_ichar __P((struct ite_data *, struct itesw *));
+void	ite_dline __P((struct ite_data *, struct itesw *));
+void	ite_iline __P((struct ite_data *, struct itesw *));
+void	ite_clrtoeol __P((struct ite_data *, struct itesw *, int, int));
+void	ite_clrtoeos __P((struct ite_data *, struct itesw *));
+void	itestart __P((struct tty *));
 
 /*
  * Primary attribute buffer to be used by the first bitmapped console
@@ -116,51 +135,96 @@ u_char  console_attributes[0x2200];
  * Dummy for pseudo-device config.
  */
 /*ARGSUSED*/
+void
 iteattach(n)
 	int n;
 {
 }
 
 /*
+ * Allocate storage for ite data structures.
+ * XXX This is a kludge and will go away with new config.
+ */
+void
+ite_attach_grf(unit, isconsole)
+	int unit, isconsole;
+{
+	struct ite_softc *ite = &ite_softc[unit];
+	struct grf_softc *grf = &grf_softc[unit];
+
+	/*
+	 * Check to see if our structure is pre-allocated.
+	 */
+	if (isconsole) {
+		ite->sc_data = &ite_cn;
+
+		/*
+		 * We didn't know which unit this would be during
+		 * the console probe, so we have to fixup cn_dev here.
+		 */
+		cn_tab->cn_dev = makedev(ite_major(), unit);
+	} else {
+		ite->sc_data =
+		    (struct ite_data *)malloc(sizeof(struct ite_data),
+		    M_DEVBUF, M_NOWAIT);
+		if (ite->sc_data == NULL) {
+			printf("ite_attach_grf: malloc for ite_data failed\n");
+			return;
+		}
+		bzero(ite->sc_data, sizeof(struct ite_data));
+	}
+	
+	/*
+	 * Cross-reference the ite and the grf.
+	 */
+	ite->sc_grf = grf;
+	grf->sc_ite = ite;
+
+	printf("ite%d at grf%d: attached\n", unit, unit);
+}
+
+/*
  * Perform functions necessary to setup device as a terminal emulator.
  */
-iteon(dev, flag)
-	dev_t dev;
+int
+iteon(ip, flag)
+	struct ite_data *ip;
 	int flag;
 {
-	int unit = UNIT(dev);
-	struct tty *tp = ite_tty[unit];
-	struct ite_softc *ip = &ite_softc[unit];
 
-	if (unit < 0 || unit >= NITE || (ip->flags&ITE_ALIVE) == 0)
+	if ((ip->flags & ITE_ALIVE) == 0)
 		return(ENXIO);
+
 	/* force ite active, overriding graphics mode */
 	if (flag & 1) {
 		ip->flags |= ITE_ACTIVE;
 		ip->flags &= ~(ITE_INGRF|ITE_INITED);
 	}
+
 	/* leave graphics mode */
 	if (flag & 2) {
 		ip->flags &= ~ITE_INGRF;
 		if ((ip->flags & ITE_ACTIVE) == 0)
 			return(0);
 	}
+
 	ip->flags |= ITE_ACTIVE;
 	if (ip->flags & ITE_INGRF)
 		return(0);
+
 	if (kbd_ite == NULL || kbd_ite == ip) {
 		kbd_ite = ip;
-		kbdenable(unit);
+		kbdenable(0);		/* XXX */
 	}
-	iteinit(dev);
+
+	iteinit(ip);
 	return(0);
 }
 
-iteinit(dev)
-     dev_t dev;
+void
+iteinit(ip)
+	struct ite_data *ip;
 {
-	int unit = UNIT(dev);
-	struct ite_softc *ip = &ite_softc[unit];
 
 	if (ip->flags & ITE_INITED)
 		return;
@@ -190,11 +254,11 @@ iteinit(dev)
  * Deinit'ing the console every time leads to a very active
  * screen when processing /etc/rc.
  */
-iteoff(dev, flag)
-	dev_t dev;
+void
+iteoff(ip, flag)
+	struct ite_data *ip;
 	int flag;
 {
-	register struct ite_softc *ip = &ite_softc[UNIT(dev)];
 
 	if (flag & 2) {
 		ip->flags |= ITE_INGRF;
@@ -205,7 +269,15 @@ iteoff(dev, flag)
 	if ((flag & 1) ||
 	    (ip->flags & (ITE_INGRF|ITE_ISCONS|ITE_INITED)) == ITE_INITED)
 		(*ip->isw->ite_deinit)(ip);
-	if ((flag & 2) == 0)
+
+	/*
+	 * XXX When the system is rebooted with "reboot", init(8)
+	 * kills the last process to have the console open.
+	 * If we don't revent the the ITE_ACTIVE bit from being
+	 * cleared, we will never see messages printed during
+	 * the process of rebooting.
+	 */
+	if ((flag & 2) == 0 && (ip->flags & ITE_ISCONS) == 0)
 		ip->flags &= ~ITE_ACTIVE;
 }
 
@@ -216,21 +288,23 @@ iteopen(dev, mode, devtype, p)
 	int mode, devtype;
 	struct proc *p;
 {
-	int unit = UNIT(dev);
-	register struct tty *tp;
-	register struct ite_softc *ip = &ite_softc[unit];
-	register int error;
+	int unit = ITEUNIT(dev);
+	struct tty *tp;
+	struct ite_softc *sc = &ite_softc[unit];
+	struct ite_data *ip = sc->sc_data;
+	int error;
 	int first = 0;
 
-	if (!ite_tty[unit])
-		tp = ite_tty[unit] = ttymalloc();
-	else
-		tp = ite_tty[unit];
+	if (ip->tty == NULL) {
+	 	tp = ip->tty = ttymalloc();
+		tty_attach(tp);
+	} else
+		tp = ip->tty;
 	if ((tp->t_state&(TS_ISOPEN|TS_XCLUDE)) == (TS_ISOPEN|TS_XCLUDE)
 	    && p->p_ucred->cr_uid != 0)
 		return (EBUSY);
 	if ((ip->flags & ITE_ACTIVE) == 0) {
-		error = iteon(dev, 0);
+		error = iteon(ip, 0);
 		if (error)
 			return (error);
 		first = 1;
@@ -253,7 +327,7 @@ iteopen(dev, mode, devtype, p)
 		tp->t_winsize.ws_row = ip->rows;
 		tp->t_winsize.ws_col = ip->cols;
 	} else if (first)
-		iteoff(dev, 0);
+		iteoff(ip, 0);
 	return (error);
 }
 
@@ -264,14 +338,17 @@ iteclose(dev, flag, mode, p)
 	int flag, mode;
 	struct proc *p;
 {
-	register struct tty *tp = ite_tty[UNIT(dev)];
+	struct ite_softc *sc = &ite_softc[ITEUNIT(dev)];
+	struct ite_data *ip = sc->sc_data;
+	struct tty *tp = ip->tty;
 
 	(*linesw[tp->t_line].l_close)(tp, flag);
 	ttyclose(tp);
-	iteoff(dev, 0);
+	iteoff(ip, 0);
 #if 0
+	tty_detach(tp);
 	ttyfree(tp);
-	ite_tty[UNIT(dev)] = (struct tty *)0;
+	ip->tty = (struct tty *)0;
 #endif
 	return(0);
 }
@@ -282,7 +359,8 @@ iteread(dev, uio, flag)
 	struct uio *uio;
 	int flag;
 {
-	register struct tty *tp = ite_tty[UNIT(dev)];
+	struct ite_softc *sc = &ite_softc[ITEUNIT(dev)];
+	struct tty *tp = sc->sc_data->tty;
 
 	return ((*linesw[tp->t_line].l_read)(tp, uio, flag));
 }
@@ -293,7 +371,8 @@ itewrite(dev, uio, flag)
 	struct uio *uio;
 	int flag;
 {
-	register struct tty *tp = ite_tty[UNIT(dev)];
+	struct ite_softc *sc = &ite_softc[ITEUNIT(dev)];
+	struct tty *tp = sc->sc_data->tty;
 
 	return ((*linesw[tp->t_line].l_write)(tp, uio, flag));
 }
@@ -302,8 +381,9 @@ struct tty *
 itetty(dev)
 	dev_t dev;
 {
+	struct ite_softc *sc = &ite_softc[ITEUNIT(dev)];
 
-	return (ite_tty[UNIT(dev)]);
+	return (sc->sc_data->tty);
 }
 
 int
@@ -314,7 +394,9 @@ iteioctl(dev, cmd, addr, flag, p)
 	int flag;
 	struct proc *p;
 {
-	register struct tty *tp = ite_tty[UNIT(dev)];
+	struct ite_softc *sc = &ite_softc[ITEUNIT(dev)];
+	struct ite_data *ip = sc->sc_data;
+	struct tty *tp = ip->tty;
 	int error;
 
 	error = (*linesw[tp->t_line].l_ioctl)(tp, cmd, addr, flag, p);
@@ -332,7 +414,11 @@ itestart(tp)
 {
 	register int cc, s;
 	int hiwat = 0, hadcursor = 0;
-	struct ite_softc *ip;
+	struct ite_softc *sc;
+	struct ite_data *ip;
+
+	sc = &ite_softc[ITEUNIT(tp->t_dev)];
+	ip = sc->sc_data;
 
 	/*
 	 * (Potentially) lower priority.  We only need to protect ourselves
@@ -357,7 +443,7 @@ itestart(tp)
 	 * Handle common (?) case
 	 */
 	if (cc == 1) {
-		iteputchar(getc(&tp->t_outq), tp->t_dev);
+		iteputchar(getc(&tp->t_outq), ip);
 	} else if (cc) {
 		/*
 		 * Limit the amount of output we do in one burst
@@ -371,14 +457,13 @@ itestart(tp)
 		 * Turn off cursor while we output multiple characters.
 		 * Saves a lot of expensive window move operations.
 		 */
-		ip = &ite_softc[UNIT(tp->t_dev)];
 		if (ip->flags & ITE_CURSORON) {
 			ite_erasecursor(ip, ip->isw);
 			ip->flags &= ~ITE_CURSORON;
 			hadcursor = 1;
 		}
 		while (--cc >= 0)
-			iteputchar(getc(&tp->t_outq), tp->t_dev);
+			iteputchar(getc(&tp->t_outq), ip);
 		if (hadcursor) {
 			ip->flags |= ITE_CURSORON;
 			ite_drawcursor(ip, ip->isw);
@@ -400,13 +485,14 @@ itestop(tp, flag)
 
 }
 
+void
 itefilter(stat, c)
-	register char stat, c;
+	char stat, c;
 {
 	static int capsmode = 0;
 	static int metamode = 0;
   	register char code, *str;
-	struct tty *kbd_tty = ite_tty[kbd_ite - ite_softc];
+	struct tty *kbd_tty = kbd_ite->tty;
 
 	if (kbd_tty == NULL)
 		return;
@@ -460,14 +546,13 @@ itefilter(stat, c)
 	}
 }
 
-iteputchar(c, dev)
-	register int c;
-	dev_t dev;  
+void
+iteputchar(c, ip)
+	int c;
+	struct ite_data *ip;
 {
-	int unit = UNIT(dev);
-	register struct ite_softc *ip = &ite_softc[unit];
-	register struct itesw *sp = ip->isw;
-	register int n;
+	struct itesw *sp = ip->isw;
+	int n;
 
 	if ((ip->flags & (ITE_ACTIVE|ITE_INGRF)) != ITE_ACTIVE)
 	  	return;
@@ -697,7 +782,7 @@ ignore:
 		break;
 
 	case '\t':
-		if (ip->curx < TABEND(unit)) {
+		if (ip->curx < TABEND(ip)) {
 			n = TABSIZE - (ip->curx & (TABSIZE - 1));
 			ip->curx += n;
 			ite_movecursor(ip, sp);
@@ -707,7 +792,7 @@ ignore:
 
 	case CTRL('G'):
 		if (ip == kbd_ite)
-			kbdbell(unit);
+			kbdbell(0);	/* XXX */
 		break;
 
 	case ESC:
@@ -730,9 +815,10 @@ ignore:
 	}
 }
 
+void
 itecheckwrap(ip, sp)
-     register struct ite_softc *ip;
-     register struct itesw *sp;
+     struct ite_data *ip;
+     struct itesw *sp;
 {
 	if (++ip->curx == ip->cols) {
 		ip->curx = 0;
@@ -748,9 +834,10 @@ itecheckwrap(ip, sp)
 	ite_movecursor(ip, sp);
 }
 
+void
 ite_dchar(ip, sp)
-     register struct ite_softc *ip;
-     register struct itesw *sp;
+     struct ite_data *ip;
+     struct itesw *sp;
 {
 	if (ip->curx < ip->cols - 1) {
 		ite_erasecursor(ip, sp);
@@ -763,9 +850,10 @@ ite_dchar(ip, sp)
 	ite_drawcursor(ip, sp);
 }
 
+void
 ite_ichar(ip, sp)
-     register struct ite_softc *ip;
-     register struct itesw *sp;
+     struct ite_data *ip;
+     struct itesw *sp;
 {
 	if (ip->curx < ip->cols - 1) {
 		ite_erasecursor(ip, sp);
@@ -778,9 +866,10 @@ ite_ichar(ip, sp)
 	ite_drawcursor(ip, sp);
 }
 
+void
 ite_dline(ip, sp)
-     register struct ite_softc *ip;
-     register struct itesw *sp;
+     struct ite_data *ip;
+     struct itesw *sp;
 {
 	if (ip->cury < ip->rows - 1) {
 		ite_erasecursor(ip, sp);
@@ -791,9 +880,10 @@ ite_dline(ip, sp)
 	ite_clrtoeol(ip, sp, ip->rows - 1, 0);
 }
 
+void
 ite_iline(ip, sp)
-     register struct ite_softc *ip;
-     register struct itesw *sp;
+     struct ite_data *ip;
+     struct itesw *sp;
 {
 	if (ip->cury < ip->rows - 1) {
 		ite_erasecursor(ip, sp);
@@ -804,116 +894,48 @@ ite_iline(ip, sp)
 	ite_clrtoeol(ip, sp, ip->cury, 0);
 }
 
+void
 ite_clrtoeol(ip, sp, y, x)
-     register struct ite_softc *ip;
-     register struct itesw *sp;
-     register int y, x;
+     struct ite_data *ip;
+     struct itesw *sp;
+     int y, x;
 {
 	(*sp->ite_clear)(ip, y, x, 1, ip->cols - x);
 	attrclr(ip, y, x, 1, ip->cols - x);
 	ite_drawcursor(ip, sp);
 }
 
+void
 ite_clrtoeos(ip, sp)
-     register struct ite_softc *ip;
-     register struct itesw *sp;
+     struct ite_data *ip;
+     struct itesw *sp;
 {
 	(*sp->ite_clear)(ip, ip->cury, 0, ip->rows - ip->cury, ip->cols);
 	attrclr(ip, ip->cury, 0, ip->rows - ip->cury, ip->cols);
 	ite_drawcursor(ip, sp);
 }
 
-/*
- * Console functions
- */
-#include <dev/cons.h>
-#ifdef hp300
-#include <hp300/dev/grfreg.h>
-#endif
-
-#ifdef DEBUG
-/*
- * Minimum ITE number at which to start looking for a console.
- * Setting to 0 will do normal search, 1 will skip first ITE device,
- * NITE will skip ITEs and use serial port.
- */
-int	whichconsole = 0;
-#endif
-
-void
-itecnprobe(cp)
-	struct consdev *cp;
+int
+ite_major()
 {
-	register struct ite_softc *ip;
-	int i, sw, maj, unit, pri;
+	static int itemaj, initialized;
+
+	/* Only compute once. */
+	if (initialized)
+		return (itemaj);
+	initialized = 1;
 
 	/* locate the major number */
-	for (maj = 0; maj < nchrdev; maj++)
-		if (cdevsw[maj].d_open == iteopen)
-			break;
+	for (itemaj = 0; itemaj < nchrdev; itemaj++)
+		if (cdevsw[itemaj].d_open == iteopen)
 
-	/* urk! */
-	grfconfig();
-
-	/* check all the individual displays and find the best */
-	unit = -1;
-	pri = CN_DEAD;
-	for (i = 0; i < NITE; i++) {
-		struct grf_softc *gp = &grf_softc[i];
-
-		ip = &ite_softc[i];
-		if ((gp->g_flags & GF_ALIVE) == 0)
-			continue;
-		ip->flags = (ITE_ALIVE|ITE_CONSOLE);
-
-		/* locate the proper switch table. */
-		for (sw = 0; sw < nitesw; sw++)
-			if (itesw[sw].ite_hwid == gp->g_sw->gd_hwid)
-				break;
-
-		if (sw == nitesw)
-			continue;
-#ifdef DEBUG
-		if (i < whichconsole)
-			continue;
-#endif
-		ip->isw = &itesw[sw];
-		ip->grf = gp;
-#ifdef hp300
-		if ((int)gp->g_display.gd_regaddr == GRFIADDR) {
-			pri = CN_INTERNAL;
-			unit = i;
-		} else if (unit < 0) {
-			pri = CN_NORMAL;
-			unit = i;
-		}
-#endif
-#ifdef hp800
-		/* XXX use the first one for now */
-		if (unit < 0) {
-			pri = CN_INTERNAL;
-			unit = i;
-		}
-#endif
-	}
-
-	/* initialize required fields */
-	cp->cn_dev = makedev(maj, unit);
-	cp->cn_pri = pri;
+	return (itemaj);
 }
 
-void
-itecninit(cp)
-	struct consdev *cp;
-{
-	int unit = UNIT(cp->cn_dev);
-	struct ite_softc *ip = &ite_softc[unit];
-
-	ip->attrbuf = console_attributes;
-	iteinit(cp->cn_dev);
-	ip->flags |= (ITE_ACTIVE|ITE_ISCONS);
-	kbd_ite = ip;
-}
+/*
+ * Console functions.  Console probes are done by the individual
+ * framebuffer drivers.
+ */
 
 /*ARGSUSED*/
 int
@@ -941,19 +963,20 @@ itecngetc(dev)
 	return(c);
 }
 
+/* ARGSUSED */
 void
 itecnputc(dev, c)
 	dev_t dev;
 	int c;
 {
 	static int paniced = 0;
-	struct ite_softc *ip = &ite_softc[UNIT(dev)];
+	struct ite_data *ip = &ite_cn;
 
 	if (panicstr && !paniced &&
 	    (ip->flags & (ITE_ACTIVE|ITE_INGRF)) != ITE_ACTIVE) {
-		(void) iteon(dev, 3);
+		(void) iteon(ip, 3);
 		paniced = 1;
 	}
-	iteputchar(c, dev);
+	iteputchar(c, ip);
 }
 #endif

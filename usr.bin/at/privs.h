@@ -1,3 +1,4 @@
+/*	$OpenBSD: privs.h,v 1.3 1995/03/25 18:13:41 glass Exp $	*/
 /*	$NetBSD: privs.h,v 1.3 1995/03/25 18:13:41 glass Exp $	*/
 
 /*

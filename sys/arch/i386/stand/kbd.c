@@ -1,3 +1,4 @@
+/*	$OpenBSD: kbd.c,v 1.4 1996/09/23 14:46:51 mickey Exp $	*/
 /*	$NetBSD: kbd.c,v 1.3 1994/10/27 04:21:56 cgd Exp $	*/
 
 /*-
@@ -38,6 +39,8 @@
  *	@(#)kbd.c	7.4 (Berkeley) 5/4/91
  */
 
+#include <i386/isa/kbdreg.h>
+
 #define	L		0x01	/* locking function */
 #define	SHF		0x02	/* keyboard shift */
 #define	ALT		0x04	/* alternate shift -- alternate chars */
@@ -49,6 +52,7 @@
 
 typedef unsigned char u_char;
 
+void wait(int n);
 u_char inb();
 
 #ifdef notdef
@@ -132,10 +136,7 @@ struct key {
 u_char shfts, ctls, alts, caps, num, stp;
 #endif
 
-#define	KBSTATP	0x64	/* kbd status port */
-#define		KBS_INP_BUF_FUL	0x02	/* kbd char ready */
-#define	KBDATAP	0x60	/* kbd data port */
-#define	KBSTATUSPORT	0x61	/* kbd status */
+#define	KBS_INP_BUF_FUL	0x02	/* kbd char ready */
 
 u_char odt, bdt;
 
@@ -143,11 +144,11 @@ u_char kbd() {
 	u_char dt, brk, act;
 	
 loop:
-	while(inb(0x64)&1 == 0);
-	dt = inb(0x60);
+	while(inb(KBSTATP) & KBS_DIB == 0);
+	dt = inb(KBDATAP);
 	do {
-		while(inb(0x64)&1 == 0);
-	} while(dt == inb(0x60));
+		while(inb(KBSTATP) & KBS_DIB == 0);
+	} while(dt == inb(KBDATAP));
 	odt = dt;
 
 	brk = dt & 0x80 ; dt = dt & 0x7f ;
@@ -191,9 +192,9 @@ loop:
 			chr -= 'a' - 'A' ;
 		}
 		/*do
-			while(inb(0x64)&1 == 0) ;
-		while (inb(0x60) == (chr | 0x80));
-		while(inb(0x64)&1 == 1) inb(0x60);A*/
+			while(inb(KBSTATP) & KBS_DIB == 0) ;
+		while (inb(KBDATAP) == (chr | 0x80));
+		while(inb(KBSTATP)&KBS_DIB == KBS_DIB) inb(KBDATAP);A*/
 		return(chr);
 	}
 #else
@@ -203,14 +204,15 @@ loop:
 	goto loop;
 }
 
-scankbd() {
-u_char c;
+scankbd()
+{
+	u_char c;
 	
 #ifdef notdef
-	c = inb(0x60);
+	c = inb(KBDATAP);
 	if (c == 83) exit();
 	/*if (c == 0xaa) return (0);
-	if (c == 0xfa) return (0);*/
+	if (c == KBR_ACK) return (0);*/
 
 	if (bdt == 0) {  bdt = c&0x7f; return(0); }
 
@@ -229,26 +231,29 @@ kbdreset()
 	u_char c;
 
 	/* Enable interrupts and keyboard controller */
-	while (inb(0x64)&2); outb(0x64,0x60);
-	while (inb(0x64)&2); outb(0x60,0x4D);
+	while (inb(KBSTATP)&KBS_IBF);
+	outb(KBCMDP,KBC_RAMWRITE);
+
+	while (inb(KBSTATP)&KBS_IBF);
+	outb(KBOUTP,KC8_TRANS|KC8_CPU|KC8_KENABLE);
 
 	/* Start keyboard stuff RESET */
-	while (inb(0x64)&2);	/* wait input ready */
-	outb(0x60,0xFF);	/* RESET */
+	while (inb(KBSTATP)&KBS_IBF);	/* wait input ready */
+	outb(KBOUTP,KBC_RESET);	/* RESET */
 
-	while((c=inb(0x60))!=0xFA) ;
+	while((c=inb(KBDATAP)) != KBR_ACK) ;
 
 	/* While we are here, defeat gatea20 */
-	while (inb(0x64)&2);	/* wait input ready */
-	outb(0x64,0xd1);	
-	while (inb(0x64)&2);	/* wait input ready */
-	outb(0x60,0xdf);	
-	while (inb(0x64)&2);	/* wait input ready */
+	while (inb(KBSTATP)&KBS_IBF);	/* wait input ready */
+	outb(KBCMDP,0xd1);
+	while (inb(KBSTATP)&KBS_IBF);	/* wait input ready */
+	outb(KBOUTP,0xdf);
+	while (inb(KBSTATP)&KBS_IBF);	/* wait input ready */
 	odt = bdt = 0;
-	inb(0x60);
+	inb(KBDATAP);
 }
 
-#ifdef notdef;
+#ifdef notdef
 u_char getchar() {
 	u_char c;
 
@@ -262,8 +267,18 @@ u_char getchar() {
 
 reset_cpu() {
 
-	while (inb(0x64)&2);	/* wait input ready */
-	outb(0x64,0xFE);	/* Reset Command */
+	while (inb(KBSTATP)&KBS_IBF);	/* wait input ready */
+	outb(KBCMDP,KBC_PULSE0);	/* Reset Command */
 	wait(4000000);
 	/* NOTREACHED */
+}
+
+void
+wait(n)
+	int	n;
+{
+	int v;
+
+	while(n-- && (v = scankbd()) == 0);
+	if (v) kbdreset();
 }

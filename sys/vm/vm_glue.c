@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_glue.c,v 1.47 1995/08/13 09:04:47 mycroft Exp $	*/
+/*	$OpenBSD: vm_glue.c,v 1.19 1996/07/23 23:54:22 deraadt Exp $    */
+/*	$NetBSD: vm_glue.c,v 1.55.4.1 1996/06/13 17:25:45 cgd Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -68,6 +69,9 @@
 #include <sys/resourcevar.h>
 #include <sys/buf.h>
 #include <sys/user.h>
+#ifdef SYSVSHM
+#include <sys/shm.h>
+#endif
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
@@ -179,14 +183,10 @@ vslock(addr, len)
 }
 
 void
-vsunlock(addr, len, dirtied)
+vsunlock(addr, len)
 	caddr_t	addr;
 	u_int	len;
-	int dirtied;
 {
-#ifdef	lint
-	dirtied++;
-#endif
 	vm_map_pageable(&curproc->p_vmspace->vm_map, trunc_page(addr),
 			round_page(addr+len), TRUE);
 }
@@ -202,10 +202,13 @@ vsunlock(addr, len, dirtied)
  * after cpu_fork returns in the child process.  We do nothing here
  * after cpu_fork returns.
  */
+#ifdef __FORK_BRAINDAMAGE
 int
-vm_fork(p1, p2, isvfork)
+#else
+void
+#endif
+vm_fork(p1, p2)
 	register struct proc *p1, *p2;
-	int isvfork;
 {
 	register struct user *up;
 	vm_offset_t addr;
@@ -222,14 +225,18 @@ vm_fork(p1, p2, isvfork)
 
 #ifdef SYSVSHM
 	if (p1->p_vmspace->vm_shm)
-		shmfork(p1, p2, isvfork);
+		shmfork(p1, p2);
 #endif
 
-#if !defined(i386) && !defined(pc532)
+#if !defined(pc532) && !defined(vax)
 	/*
 	 * Allocate a wired-down (for now) pcb and kernel stack for the process
 	 */
+#if defined(arc) || defined(pica)
+	addr = kmem_alloc_upage(kernel_map, USPACE);
+#else
 	addr = kmem_alloc_pageable(kernel_map, USPACE);
+#endif
 	if (addr == 0)
 		panic("vm_fork: no more kernel virtual memory");
 	vm_map_pageable(kernel_map, addr, addr + USPACE, FALSE);
@@ -272,6 +279,8 @@ vm_fork(p1, p2, isvfork)
 	(void)vm_map_inherit(vp, addr, VM_MAX_ADDRESS, VM_INHERIT_NONE);
 	}
 #endif
+
+#ifdef __FORK_BRAINDAMAGE
 	/*
 	 * cpu_fork will copy and update the kernel stack and pcb,
 	 * and make the child ready to run.  It marks the child
@@ -280,6 +289,15 @@ vm_fork(p1, p2, isvfork)
 	 * once in the child.
 	 */
 	return (cpu_fork(p1, p2));
+#else
+	/*
+	 * cpu_fork will copy and update the kernel stack and pcb,
+	 * and make the child ready to run.  The child will exit
+	 * directly to user mode on its first time slice, and will
+	 * not return here.
+	 */
+	cpu_fork(p1, p2);
+#endif
 }
 
 /*
@@ -339,6 +357,7 @@ swapin(p)
 	p->p_flag |= P_INMEM;
 	splx(s);
 	p->p_swtime = 0;
+	++cnt.v_swpin;
 }
 
 /*
@@ -374,7 +393,7 @@ loop:
 	}
 #ifdef DEBUG
 	if (swapdebug & SDB_FOLLOW)
-		printf("scheduler: running, procp %x pri %d\n", pp, ppri);
+		printf("scheduler: running, procp %p pri %d\n", pp, ppri);
 #endif
 	/*
 	 * Nothing to do, back to sleep
@@ -392,9 +411,13 @@ loop:
 	if (cnt.v_free_count > atop(USPACE)) {
 #ifdef DEBUG
 		if (swapdebug & SDB_SWAPIN)
-			printf("swapin: pid %d(%s)@%x, pri %d free %d\n",
+			printf("swapin: pid %d(%s)@%p, pri %d free %d\n",
 			       p->p_pid, p->p_comm, p->p_addr,
 			       ppri, cnt.v_free_count);
+#endif
+#if defined(arc) || defined(pica)
+			vm_map_pageable(kernel_map, (vm_offset_t)p->p_addr,
+			    (vm_offset_t)p->p_addr + atop(USPACE), FALSE);
 #endif
 		swapin(p);
 		goto loop;
@@ -480,7 +503,7 @@ swapout_threads()
 			p = outp2;
 #ifdef DEBUG
 		if (swapdebug & SDB_SWAPOUT)
-			printf("swapout_threads: no duds, try procp %x\n", p);
+			printf("swapout_threads: no duds, try procp %p\n", p);
 #endif
 		if (p)
 			swapout(p);
@@ -492,11 +515,11 @@ swapout(p)
 	register struct proc *p;
 {
 	vm_offset_t addr;
-	vm_size_t size;
+	int s;
 
 #ifdef DEBUG
 	if (swapdebug & SDB_SWAPOUT)
-		printf("swapout: pid %d(%s)@%x, stat %x pri %d free %d\n",
+		printf("swapout: pid %d(%s)@%p, stat %x pri %d free %d\n",
 		       p->p_pid, p->p_comm, p->p_addr, p->p_stat,
 		       p->p_slptime, cnt.v_free_count);
 #endif
@@ -510,20 +533,20 @@ swapout(p)
 	/*
 	 * Unwire the to-be-swapped process's user struct and kernel stack.
 	 */
-	addr = (vm_offset_t) p->p_addr;
-	size = round_page(USPACE);
-	vm_map_pageable(kernel_map, addr, addr+size, TRUE);
+	addr = (vm_offset_t)p->p_addr;
+	vm_map_pageable(kernel_map, addr, addr + USPACE, TRUE);
 	pmap_collect(vm_map_pmap(&p->p_vmspace->vm_map));
 
 	/*
 	 * Mark it as (potentially) swapped out.
 	 */
-	(void) splhigh();
+	s = splstatclock();
 	p->p_flag &= ~P_INMEM;
 	if (p->p_stat == SRUN)
 		remrq(p);
-	(void) spl0();
+	splx(s);
 	p->p_swtime = 0;
+	++cnt.v_swpout;
 }
 
 /*
@@ -569,16 +592,6 @@ thread_sleep(event, lock, ruptible)
 	splx(s);
 }
 
-void
-thread_wakeup(event)
-	void *event;
-{
-	int s = splhigh();
-
-	wakeup(event);
-	splx(s);
-}
-
 /*
  * DEBUG stuff
  */
@@ -590,7 +603,7 @@ int indent = 0;
 /*ARGSUSED2*/
 void
 #if __STDC__
-iprintf(void (*pr)(const char *, ...), const char *fmt, ...)
+iprintf(int (*pr)(const char *, ...), const char *fmt, ...)
 #else
 iprintf(pr, fmt /* , va_alist */)
 	void (*pr)();
@@ -606,6 +619,6 @@ iprintf(pr, fmt /* , va_alist */)
 	while (--i >= 0)
 		(*pr)(" ");
 	va_start(ap, fmt);
-	(*pr)("%r", fmt, ap);
+	(*pr)("%:", fmt, ap);
 	va_end(ap);
 }

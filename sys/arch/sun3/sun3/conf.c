@@ -1,4 +1,4 @@
-/*	$NetBSD: conf.c,v 1.44 1995/10/08 23:46:27 gwr Exp $	*/
+/*	$NetBSD: conf.c,v 1.48 1996/03/14 21:35:47 christos Exp $	*/
 
 /*-
  * Copyright (c) 1994 Adam Glass, Gordon W. Ross
@@ -125,7 +125,7 @@ cdev_decl(ctty);
 #define	mmwrite	mmrw
 cdev_decl(mm);
 
-#include "zs.h"
+#define NZS 2 /* XXX: temporary hack */
 cdev_decl(zs);
 cdev_decl(kd);
 cdev_decl(ms);
@@ -164,6 +164,11 @@ cdev_decl(bpf);
 #include "tun.h"
 cdev_decl(tun);
 
+#include "random.h"
+cdev_decl(random);
+
+dev_decl(filedesc,open);
+
 
 struct cdevsw	cdevsw[] =
 {
@@ -180,7 +185,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 10: systech multi-terminal board */
 	cdev_notdef(),			/* 11: DES encryption chip */
 	cdev_tty_init(NZS,zs),		/* 12: Zilog 8350 serial port */
-	cdev_mouse_init(NZS-1,ms),	/* 13: Sun mouse */
+	cdev_mouse_init(NKD,ms),	/* 13: Sun mouse */
 	cdev_notdef(),			/* 14: cgone */
 	cdev_notdef(),			/* 15: /dev/winXXX */
 	cdev_log_init(1,log),		/* 16: /dev/klog */
@@ -190,13 +195,13 @@ struct cdevsw	cdevsw[] =
 	cdev_tty_init(NPTY,pts),	/* 20: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 21: pseudo-tty master */
 	cdev_fb_init(1,fb),		/* 22: /dev/fb indirect driver */
-	cdev_fd_init(1,fd),		/* 23: file descriptor pseudo-device */
+	cdev_fd_init(1,filedesc),	/* 23: file descriptor pseudo-device */
 	cdev_bpftun_init(NTUN,tun),	/* 24: network tunnel */
 	cdev_notdef(),			/* 25: sun pi? */
 	cdev_notdef(),			/* 26: bwone */
 	cdev_fb_init(NBWTWO,bw2),	/* 27: bwtwo */
 	cdev_notdef(),			/* 28: Systech VPC-2200 versatec/centronics */
-	cdev_mouse_init(NZS-1,kbd),	/* 29: Sun keyboard */
+	cdev_mouse_init(NKD,kbd),	/* 29: Sun keyboard */
 	cdev_tape_init(NXT,xt),		/* 30: Xylogics tape */
 	cdev_fb_init(NCGTWO,cg2),	/* 31: cgtwo */
 	cdev_notdef(),			/* 32: /dev/gpone */
@@ -239,6 +244,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 69: /dev/audio */
 	cdev_notdef(),			/* 70: open prom */
 	cdev_notdef(),			/* 71: (sg?) */
+	cdev_random_init(NRANDOM,random), /* 72: random data source */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
@@ -368,28 +374,3 @@ chrtoblk(dev)
 	return (makedev(blkmaj, minor(dev)));
 }
 
-/*
- * This entire table could be autoconfig()ed but that would mean that
- * the kernel's idea of the console could be out of sync with that of
- * the standalone boot.  I think it best that they both use the same
- * known algorithm unless we see a pressing need otherwise.
- */
-#include <dev/cons.h>
-
-cons_decl(kd);
-#define	zscnpollc	nullcnpollc
-
-cons_decl(zs);
-dev_type_cnprobe(zscnprobe_a);
-dev_type_cnprobe(zscnprobe_b);
-
-struct	consdev constab[] = {
-#if NZS > 0
-	{ zscnprobe_a, zscninit, zscngetc, zscnputc, zscnpollc },
-	{ zscnprobe_b, zscninit, zscngetc, zscnputc, zscnpollc },
-#endif
-#if NKD > 1
-	cons_init(kd),
-#endif
-	{ 0 },	/* REQIURED! */
-};

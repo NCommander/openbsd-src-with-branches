@@ -1,5 +1,6 @@
+/*	$OpenBSD$	*/
 /*
- *	$NetBSD: fdvar.h,v 1.3 1995/04/07 19:46:15 pk Exp $
+ *	$NetBSD: fdvar.h,v 1.4 1996/02/01 22:32:29 mycroft Exp $
  *
  * Copyright (c) 1995 Paul Kranenburg
  * All rights reserved.
@@ -36,7 +37,7 @@
 
 #define FDC_NSTATUS	10
 
-#if !defined(LOCORE)
+#ifndef _LOCORE
 struct fdcio {
 	/*
 	 * 82072 (sun4c) and 82077 (sun4m) controllers have different
@@ -62,9 +63,9 @@ struct fdcio {
 	/*
 	 * Statictics.
 	 */
-	struct	evcnt	fdcio_intrcnt;
+	struct	evcnt fdcio_intrcnt;
 };
-#endif /* LOCORE */
+#endif /* _LOCORE */
 
 /* istate values */
 #define ISTATE_IDLE		0	/* No HW interrupt expected */
@@ -72,5 +73,5 @@ struct fdcio {
 #define ISTATE_SENSEI		2	/* Do SENSEI on next HW interrupt */
 #define ISTATE_DMA		3	/* Pseudo-DMA in progress */
 
-#define FDIOCEJECT	_IO('f', 24)
+#define SUNOS_FDIOCEJECT	_IO('f', 24)
 

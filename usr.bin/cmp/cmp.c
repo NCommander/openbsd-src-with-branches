@@ -1,3 +1,4 @@
+/*      $OpenBSD: cmp.c,v 1.2 1996/06/26 05:32:05 deraadt Exp $      */
 /*      $NetBSD: cmp.c,v 1.7 1995/09/08 03:22:56 tls Exp $      */
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cmp.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: cmp.c,v 1.7 1995/09/08 03:22:56 tls Exp $";
+static char rcsid[] = "$OpenBSD: cmp.c,v 1.2 1996/06/26 05:32:05 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -105,30 +106,46 @@ endargs:
 		fd1 = 0;
 		file1 = "stdin";
 	}
-	else if ((fd1 = open(file1, O_RDONLY, 0)) < 0)
-		err(ERR_EXIT, "%s", file1);
+	else if ((fd1 = open(file1, O_RDONLY, 0)) < 0) {
+		if (sflag)
+			exit(ERR_EXIT);
+		else
+			err(ERR_EXIT, "%s", file1);
+	}
 	if (strcmp(file2 = argv[1], "-") == 0) {
 		if (special)
-			errx(ERR_EXIT,
-				"standard input may only be specified once");
+			if (sflag)
+				exit(ERR_EXIT);
+			else
+				errx(ERR_EXIT,
+					"standard input may only be specified once");
 		special = 1;
 		fd2 = 0;
 		file2 = "stdin";
 	}
 	else if ((fd2 = open(file2, O_RDONLY, 0)) < 0)
-		err(ERR_EXIT, "%s", file2);
+		if (sflag)
+			exit(ERR_EXIT);
+		else
+			err(ERR_EXIT, "%s", file2);
 
 	skip1 = argc > 2 ? strtoq(argv[2], NULL, 10) : 0;
 	skip2 = argc == 4 ? strtoq(argv[3], NULL, 10) : 0;
 
 	if (!special) {
 		if (fstat(fd1, &sb1))
-			err(ERR_EXIT, "%s", file1);
+			if (sflag)
+				exit(ERR_EXIT);
+			else
+				err(ERR_EXIT, "%s", file1);
 		if (!S_ISREG(sb1.st_mode))
 			special = 1;
 		else {
 			if (fstat(fd2, &sb2))
-				err(ERR_EXIT, "%s", file2);
+				if (sflag)
+					exit(ERR_EXIT);
+				else
+					err(ERR_EXIT, "%s", file2);
 			if (!S_ISREG(sb2.st_mode))
 				special = 1;
 		}
@@ -139,7 +156,7 @@ endargs:
 	else
 		c_regular(fd1, file1, skip1, sb1.st_size,
 		    fd2, file2, skip2, sb2.st_size);
-	exit(0);
+	return 0;
 }
 
 static void

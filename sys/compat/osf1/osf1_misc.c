@@ -1,3 +1,4 @@
+2/*	$OpenBSD: osf1_misc.c,v 1.4 1996/08/25 12:19:53 deraadt Exp $	*/
 /*	$NetBSD: osf1_misc.c,v 1.7 1995/10/07 06:53:04 mycroft Exp $	*/
 
 /*
@@ -71,6 +72,7 @@ struct emul emul_osf1 = {
 	0,
 	copyargs,
 	cpu_exec_ecoff_setregs,
+	NULL,
 	sigcode,
 	esigcode,
 };
@@ -545,6 +547,26 @@ osf1_sys_fcntl(p, v, retval)
 }
 
 int
+osf1_sys_poll(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	register struct osf1_sys_poll_args /* {
+		syscallarg(struct pollfd *) fds;
+		syscallarg(unsigned int) nfds;
+		syscallarg(int) timeout;
+	} */ *uap = v;
+	struct sys_poll_args a;
+
+	SCARG(&a, fds) = SCARG(uap, fds);
+	SCARG(&a, nfds) = SCARG(uap, nfds);
+	SCARG(&a, timeout) = SCARG(uap, timeout);
+
+	return sys_poll(p, &a, retval);
+}
+
+int
 osf1_sys_socket(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -934,4 +956,18 @@ osf1_sys_madvise(p, v, retval)
 
 	/* XXX */
 	return EINVAL;
+}
+
+int
+osf1_sys_execve(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct osf1_sys_execve_args *uap = v;
+
+	caddr_t sg = stackgap_init(p->p_emul);
+	OSF1_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
+
+	return (sys_execve(p, (struct sys_execve_args *)&uap, retval));
 }

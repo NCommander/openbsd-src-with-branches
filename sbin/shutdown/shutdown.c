@@ -1,3 +1,4 @@
+/*	$OpenBSD: shutdown.c,v 1.4 1996/09/02 12:21:57 deraadt Exp $	*/
 /*	$NetBSD: shutdown.c,v 1.9 1995/03/18 15:01:09 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)shutdown.c	8.2 (Berkeley) 2/16/94";
 #else
-static char rcsid[] = "$NetBSD: shutdown.c,v 1.9 1995/03/18 15:01:09 cgd Exp $";
+static char rcsid[] = "$OpenBSD: shutdown.c,v 1.4 1996/09/02 12:21:57 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -268,6 +269,11 @@ loop()
 
 static jmp_buf alarmbuf;
 
+static char *restricted_environ[] = {
+	"PATH=" _PATH_STDPATH,
+	NULL
+};
+
 void
 timewarn(timeleft)
 	int timeleft;
@@ -276,12 +282,14 @@ timewarn(timeleft)
 	static char hostname[MAXHOSTNAMELEN + 1];
 	FILE *pf;
 	char wcmd[MAXPATHLEN + 4];
+	extern char **environ;
 
 	if (!first++)
 		(void)gethostname(hostname, sizeof(hostname));
 
 	/* undoc -n option to wall suppresses normal wall banner */
 	(void)snprintf(wcmd, sizeof(wcmd), "%s -n", _PATH_WALL);
+	environ = restricted_environ;
 	if (!(pf = popen(wcmd, "w"))) {
 		syslog(LOG_ERR, "shutdown: can't find %s: %m", _PATH_WALL);
 		return;
@@ -352,12 +360,12 @@ die_you_gravy_sucking_pig_dog()
 	(void)printf("\nkill -HUP 1\n");
 #else
 	if (doreboot) {
-		execle(_PATH_REBOOT, "reboot", "-l", nosync, 0);
+		execle(_PATH_REBOOT, "reboot", "-l", nosync, NULL, NULL);
 		syslog(LOG_ERR, "shutdown: can't exec %s: %m.", _PATH_REBOOT);
 		perror("shutdown");
 	}
 	else if (dohalt) {
-		execle(_PATH_HALT, "halt", "-l", nosync, 0);
+		execle(_PATH_HALT, "halt", "-l", nosync, NULL, NULL);
 		syslog(LOG_ERR, "shutdown: can't exec %s: %m.", _PATH_HALT);
 		perror("shutdown");
 	}

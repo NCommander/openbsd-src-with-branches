@@ -1,4 +1,5 @@
-/*	$NetBSD: kernfs_vfsops.c,v 1.24 1995/06/18 14:47:27 cgd Exp $	*/
+/*	$OpenBSD: kernfs_vfsops.c,v 1.2 1996/02/27 07:55:18 niklas Exp $	*/
+/*	$NetBSD: kernfs_vfsops.c,v 1.26 1996/04/22 01:42:27 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -51,15 +52,33 @@
 #include <sys/mount.h>
 #include <sys/namei.h>
 #include <sys/malloc.h>
+#include <sys/vmmeter.h>	/* for cnt */
 
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/kernfs/kernfs.h>
 
 dev_t rrootdev = NODEV;
 
+void	kernfs_init __P((void));
+void	kernfs_get_rrootdev __P((void));
+int	kernfs_mount __P((struct mount *, char *, caddr_t, struct nameidata *,
+			  struct proc *));
+int	kernfs_start __P((struct mount *, int, struct proc *));
+int	kernfs_unmount __P((struct mount *, int, struct proc *));
+int	kernfs_root __P((struct mount *, struct vnode **));
+int	kernfs_statfs __P((struct mount *, struct statfs *, struct proc *));
+int	kernfs_quotactl __P((struct mount *, int, uid_t, caddr_t,
+			     struct proc *));
+int	kernfs_sync __P((struct mount *, int, struct ucred *, struct proc *));
+int	kernfs_vget __P((struct mount *, ino_t, struct vnode **));
+int	kernfs_fhtovp __P((struct mount *, struct fid *, struct mbuf *,
+			   struct vnode **, int *, struct ucred **));
+int	kernfs_vptofh __P((struct vnode *, struct fid *));
+
+/*ARGSUSED*/
+void
 kernfs_init()
 {
-
 }
 
 void
@@ -88,6 +107,7 @@ kernfs_get_rrootdev()
 /*
  * Mount the Kernel params filesystem
  */
+int
 kernfs_mount(mp, path, data, ndp, p)
 	struct mount *mp;
 	char *path;
@@ -110,7 +130,8 @@ kernfs_mount(mp, path, data, ndp, p)
 	if (mp->mnt_flag & MNT_UPDATE)
 		return (EOPNOTSUPP);
 
-	if (error = getnewvnode(VT_KERNFS, mp, kernfs_vnodeop_p, &rvp))
+	error = getnewvnode(VT_KERNFS, mp, kernfs_vnodeop_p, &rvp);
+	if (error)
 		return (error);
 
 	MALLOC(fmp, struct kernfs_mount *, sizeof(struct kernfs_mount),
@@ -137,6 +158,7 @@ kernfs_mount(mp, path, data, ndp, p)
 	return (0);
 }
 
+int
 kernfs_start(mp, flags, p)
 	struct mount *mp;
 	int flags;
@@ -146,6 +168,7 @@ kernfs_start(mp, flags, p)
 	return (0);
 }
 
+int
 kernfs_unmount(mp, mntflags, p)
 	struct mount *mp;
 	int mntflags;
@@ -177,7 +200,7 @@ kernfs_unmount(mp, mntflags, p)
 #ifdef KERNFS_DIAGNOSTIC
 	printf("kernfs_unmount: calling vflush\n");
 #endif
-	if (error = vflush(mp, rootvp, flags))
+	if ((error = vflush(mp, rootvp, flags)) != 0)
 		return (error);
 
 #ifdef KERNFS_DIAGNOSTIC
@@ -196,6 +219,7 @@ kernfs_unmount(mp, mntflags, p)
 	return (0);
 }
 
+int
 kernfs_root(mp, vpp)
 	struct mount *mp;
 	struct vnode **vpp;
@@ -216,6 +240,7 @@ kernfs_root(mp, vpp)
 	return (0);
 }
 
+int
 kernfs_quotactl(mp, cmd, uid, arg, p)
 	struct mount *mp;
 	int cmd;
@@ -227,11 +252,13 @@ kernfs_quotactl(mp, cmd, uid, arg, p)
 	return (EOPNOTSUPP);
 }
 
+int
 kernfs_statfs(mp, sbp, p)
 	struct mount *mp;
 	struct statfs *sbp;
 	struct proc *p;
 {
+	extern long numvnodes; /* XXX */
 
 #ifdef KERNFS_DIAGNOSTIC
 	printf("kernfs_statfs(mp = %x)\n", mp);
@@ -242,13 +269,13 @@ kernfs_statfs(mp, sbp, p)
 #else
 	sbp->f_type = 0;
 #endif
-	sbp->f_bsize = DEV_BSIZE;
-	sbp->f_iosize = DEV_BSIZE;
-	sbp->f_blocks = 2;		/* 1K to keep df happy */
-	sbp->f_bfree = 0;
+	sbp->f_bsize = cnt.v_page_size;
+	sbp->f_iosize = cnt.v_page_size;
+	sbp->f_blocks = physmem;
+	sbp->f_bfree = physmem - cnt.v_wire_count;
 	sbp->f_bavail = 0;
-	sbp->f_files = 0;
-	sbp->f_ffree = 0;
+	sbp->f_files = desiredvnodes;
+	sbp->f_ffree = desiredvnodes - numvnodes;
 	if (sbp != &mp->mnt_stat) {
 		bcopy(&mp->mnt_stat.f_fsid, &sbp->f_fsid, sizeof(sbp->f_fsid));
 		bcopy(mp->mnt_stat.f_mntonname, sbp->f_mntonname, MNAMELEN);
@@ -258,9 +285,13 @@ kernfs_statfs(mp, sbp, p)
 	return (0);
 }
 
-kernfs_sync(mp, waitfor)
+/*ARGSUSED*/
+int
+kernfs_sync(mp, waitfor, uc, p)
 	struct mount *mp;
 	int waitfor;
+	struct ucred *uc;
+	struct proc *p;
 {
 
 	return (0);
@@ -270,6 +301,7 @@ kernfs_sync(mp, waitfor)
  * Kernfs flat namespace lookup.
  * Currently unsupported.
  */
+int
 kernfs_vget(mp, ino, vpp)
 	struct mount *mp;
 	ino_t ino;
@@ -279,17 +311,22 @@ kernfs_vget(mp, ino, vpp)
 	return (EOPNOTSUPP);
 }
 
-
-kernfs_fhtovp(mp, fhp, setgen, vpp)
+/*ARGSUSED*/
+int
+kernfs_fhtovp(mp, fhp, mb, vpp, what, anon)
 	struct mount *mp;
 	struct fid *fhp;
-	int setgen;
+	struct mbuf *mb;
 	struct vnode **vpp;
+	int *what;
+	struct ucred **anon;
 {
 
 	return (EOPNOTSUPP);
 }
 
+/*ARGSUSED*/
+int
 kernfs_vptofh(vp, fhp)
 	struct vnode *vp;
 	struct fid *fhp;

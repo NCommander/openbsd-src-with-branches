@@ -1,4 +1,4 @@
-/*	$NetBSD: pte.h,v 1.4 1994/10/26 07:26:40 cgd Exp $	*/
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1988 University of Utah.

@@ -1,11 +1,13 @@
-/*	$NetBSD: ethers.c,v 1.5 1995/02/25 06:20:28 cgd Exp $	*/
-
 /* 
  * ethers(3N) a la Sun.
  *
  * Written by Roland McGrath <roland@frob.com> 10/14/93.
  * Public domain.
  */
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD$";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -56,6 +58,7 @@ ether_aton(s)
 	return NULL;
 }
 
+int
 ether_ntohost(hostname, e)
 	char *hostname;
 	struct ether_addr *e;
@@ -110,6 +113,7 @@ ether_ntohost(hostname, e)
 	return -1;
 }
 
+int
 ether_hostton(hostname, e)
 	char *hostname;
 	struct ether_addr *e;
@@ -156,6 +160,7 @@ ether_hostton(hostname, e)
 	return -1;
 }
 
+int
 ether_line(l, e, hostname)
 	char *l;
 	struct ether_addr *e;

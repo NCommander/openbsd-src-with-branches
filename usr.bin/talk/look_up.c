@@ -1,3 +1,4 @@
+/*	$OpenBSD: look_up.c,v 1.3 1994/12/09 02:14:21 jtc Exp $	*/
 /*	$NetBSD: look_up.c,v 1.3 1994/12/09 02:14:21 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)look_up.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: look_up.c,v 1.3 1994/12/09 02:14:21 jtc Exp $";
+static char rcsid[] = "$OpenBSD: look_up.c,v 1.3 1994/12/09 02:14:21 jtc Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -54,7 +55,6 @@ static char rcsid[] = "$NetBSD: look_up.c,v 1.3 1994/12/09 02:14:21 jtc Exp $";
 check_local()
 {
 	CTL_RESPONSE response;
-	register CTL_RESPONSE *rp = &response;
 
 	/* the rest of msg was set up in get_names */
 #ifdef MSG_EOR
@@ -65,7 +65,7 @@ check_local()
 	msg.ctl_addr = *(struct sockaddr *)&ctl_addr;
 #endif
 	/* must be initiating a talk */
-	if (!look_for_invite(rp))
+	if (!look_for_invite(&response))
 		return (0);
 	/*
 	 * There was an invitation waiting for us, 
@@ -73,11 +73,11 @@ check_local()
 	 */
 	current_state = "Waiting to connect with caller";
 	do {
-		if (rp->addr.sa_family != AF_INET)
+		if (ntohs(response.addr.sa_family) != AF_INET)
 			p_error("Response uses invalid network address");
 		errno = 0;
-		if (connect(sockt,
-		    (struct sockaddr *)&rp->addr, sizeof (rp->addr)) != -1)
+		if (connect(sockt, (struct sockaddr *)&response.addr,
+			    sizeof (response.addr)) != -1)
 			return (1);
 	} while (errno == EINTR);
 	if (errno == ECONNREFUSED) {
@@ -87,7 +87,7 @@ check_local()
 		 * invitation. (We know there are no newer invitations,
 		 * the talkd works LIFO.)
 		 */
-		ctl_transact(his_machine_addr, msg, DELETE, rp);
+		ctl_transact(his_machine_addr, msg, DELETE, &response);
 		close(sockt);
 		open_sockt();
 		return (0);

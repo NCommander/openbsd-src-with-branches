@@ -39,13 +39,14 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)mail.local.c	5.6 (Berkeley) 6/19/91";*/
-static char rcsid[] = "$Id: mail.local.c,v 1.9 1995/06/03 22:47:20 mycroft Exp $";
+static char rcsid[] = "$Id: mail.local.c,v 1.6 1996/08/29 07:21:58 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/signal.h>
 #include <syslog.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -66,7 +67,11 @@ void	err __P((int, const char *, ...));
 void	notifybiff __P((char *));
 int	store __P((char *));
 void	usage __P((void));
+int	dohold __P((void));
+int	getlock __P((char *, struct passwd *));
+void	rellock __P((void));
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -74,14 +79,14 @@ main(argc, argv)
 	extern int optind;
 	extern char *optarg;
 	struct passwd *pw;
-	int ch, fd, eval, lockfile=0;
+	int ch, fd, eval, lockfile=1, holdme=0;
 	uid_t uid;
 	char *from;
 
 	openlog("mail.local", LOG_PERROR, LOG_MAIL);
 
 	from = NULL;
-	while ((ch = getopt(argc, argv, "ldf:r:")) != EOF)
+	while ((ch = getopt(argc, argv, "lLdf:r:")) != EOF)
 		switch(ch) {
 		case 'd':		/* backward compatible */
 			break;
@@ -92,7 +97,13 @@ main(argc, argv)
 			from = optarg;
 			break;
 		case 'l':
-			lockfile++;
+			lockfile=1;
+			break;
+		case 'L':
+			lockfile=0;
+			break;
+		case 'H':
+			holdme=1;
 			break;
 		case '?':
 		default:
@@ -103,6 +114,9 @@ main(argc, argv)
 
 	if (!*argv)
 		usage();
+
+	if (holdme)
+		exit(dohold());
 
 	/*
 	 * If from not specified, use the name from getlogin() if the
@@ -120,6 +134,48 @@ main(argc, argv)
 	exit(eval);
 }
 
+void
+unhold()
+{
+	rellock();
+	exit(0);
+}
+
+int
+dohold()
+{
+	struct passwd *pw;
+	char *from, c;
+	int holdfd;
+
+	signal(SIGTERM, unhold);
+	signal(SIGINT, unhold);
+	signal(SIGHUP, unhold);
+
+	from = getlogin();
+	if (from) {
+		pw = getpwnam(from);
+		if (pw == NULL)
+			return (1);
+	} else {
+		pw = getpwuid(getuid());
+		if (pw)
+			from = pw->pw_name;
+		else
+			return (1);
+	}
+
+	holdfd = getlock(from, pw);
+	if (holdfd == -1)
+		return (1);
+
+	while (read(0, &c, 1) == -1 && errno == EINTR)
+		;
+	rellock();
+	return (0);
+}
+
+int
 store(from)
 	char *from;
 {
@@ -163,15 +219,123 @@ store(from)
 	return(fd);
 }
 
+void
+baditem(path)
+	char *path;
+{
+	char npath[MAXPATHLEN];
+
+	if (unlink(path) == 0)
+		return;
+	snprintf(npath, sizeof npath, "%s/XXXXXXXXX", _PATH_MAILDIR);
+	if (mktemp(npath) == NULL)
+		return;
+	if (rename(path, npath) != -1)
+		err(NOTFATAL, "nasty spool item %s renamed to %s",
+		    path, npath);
+}
+
+char lpath[MAXPATHLEN];
+
+void
+rellock()
+{
+	if (lpath[0])
+		unlink(lpath);
+}
+
+int
+getlock(name, pw)
+	char *name;
+	struct passwd *pw;
+{
+	struct stat sb, fsb;
+	int lfd=-1;
+	char buf[8*1024];
+	int tries = 0;
+
+	(void)snprintf(lpath, sizeof lpath, "%s/%s.lock",
+	    _PATH_MAILDIR, name);
+
+	if (stat(_PATH_MAILDIR, &sb) != -1 &&
+	    (sb.st_mode & S_IWOTH) == S_IWOTH) {
+		/*
+		 * We have a writeable spool, deal with it as
+		 * securely as possible.
+		 */
+		time_t ctim = -1;
+
+		seteuid(pw->pw_uid);
+		if (lstat(lpath, &sb) != -1)
+			ctim = sb.st_ctime;
+		while (1) {
+			/*
+			 * Deal with existing user.lock files
+			 * or directories or symbolic links that
+			 * should not be here.
+			 */
+			if (readlink(lpath, buf, sizeof buf) != -1) {
+				if (lstat(lpath, &sb) != -1 &&
+				    S_ISLNK(fsb.st_mode)) {
+					seteuid(sb.st_uid);
+					unlink(lpath);
+					seteuid(pw->pw_uid);
+				}
+				goto again;
+			}
+			if ((lfd = open(lpath, O_CREAT|O_WRONLY|O_EXCL|O_EXLOCK,
+			    S_IRUSR|S_IWUSR)) != -1)
+				break;
+again:
+			if (tries > 10) {
+				err(NOTFATAL, "%s: %s", lpath,
+				    strerror(errno));
+				seteuid(0);
+				return(-1);
+			}
+			if (tries > 9 &&
+			    (lfd = open(lpath, O_WRONLY|O_EXLOCK, 0)) != -1) {
+				if (fstat(lfd, &fsb) != -1 &&
+				    lstat(lpath, &sb) != -1) {
+					if (fsb.st_dev == sb.st_dev &&
+					    fsb.st_ino == sb.st_ino &&
+					    ctim == fsb.st_ctime ) {
+						seteuid(fsb.st_uid);
+						baditem(lpath);
+						seteuid(pw->pw_uid);
+					}
+				}
+			}
+			sleep(1 << tries);
+			tries++;
+			continue;
+		}
+		seteuid(0);
+	} else {
+		/*
+		 * Only root can write the spool directory.
+		 */
+ 		if ((lfd = open(lpath, O_CREAT|O_WRONLY|O_EXCL,
+ 		    S_IRUSR|S_IWUSR)) < 0) {
+ 			err(NOTFATAL, "%s: %s", lpath, strerror(errno));
+ 			return(-1);
+		}
+	}
+	return (lfd);
+}
+
+
+
+int
 deliver(fd, name, lockfile)
 	int fd;
 	char *name;
 	int lockfile;
 {
-	struct stat sb;
+	struct stat sb, fsb;
 	struct passwd *pw;
-	int created, mbfd, nr, nw, off, rval=0, lfd=-1;
-	char biffmsg[100], buf[8*1024], path[MAXPATHLEN], lpath[MAXPATHLEN];
+	int mbfd=-1, nr, nw, off, rval=1, lfd=-1;
+	char biffmsg[100], buf[8*1024], path[MAXPATHLEN];
 	off_t curoff;
 
 	/*
@@ -183,37 +347,72 @@ deliver(fd, name, lockfile)
 		return(1);
 	}
 
-	(void)sprintf(path, "%s/%s", _PATH_MAILDIR, name);
+	(void)snprintf(path, sizeof path, "%s/%s", _PATH_MAILDIR, name);
 
-	if(lockfile) {
-		(void)sprintf(lpath, "%s/%s.lock", _PATH_MAILDIR, name);
+	if (lockfile) {
+		lfd = getlock(name, pw);
+		if (lfd == -1)
+			return (1);
+	}
 
-		if((lfd = open(lpath, O_CREAT|O_WRONLY|O_EXCL,
+	/* after this point, always exit via bad to remove lockfile */
+retry:
+	if (lstat(path, &sb)) {
+		if (errno != ENOENT) {
+			err(NOTFATAL, "%s: %s", path, strerror(errno));
+			goto bad;
+		}
+		if ((mbfd = open(path, O_APPEND|O_CREAT|O_EXCL|O_WRONLY|O_EXLOCK,
+		     S_IRUSR|S_IWUSR)) < 0) {
+			if (errno == EEXIST) {
+				/* file appeared since lstat */
+				goto retry;
+			} else {
+				err(NOTFATAL, "%s: %s", path, strerror(errno));
+				goto bad;
+			}
+		}
+		/*
+		 * Set the owner and group.  Historically, binmail repeated
+		 * this at each mail delivery.  We no longer do this, assuming
+		 * that if the ownership or permissions were changed there
+		 * was a reason for doing so.
+		 */
+		if (fchown(mbfd, pw->pw_uid, pw->pw_gid) < 0) {
+			err(NOTFATAL, "chown %u:%u: %s",
+			    pw->pw_uid, pw->pw_gid, name);
+			goto bad;
+		}
+	} else {
+		if (sb.st_nlink != 1 || S_ISLNK(sb.st_mode)) {
+			err(NOTFATAL, "%s: linked file", path);
+			goto bad;
+		}
+		if ((mbfd = open(path, O_APPEND|O_WRONLY|O_EXLOCK,
 		    S_IRUSR|S_IWUSR)) < 0) {
-			err(NOTFATAL, "%s: %s", lpath, strerror(errno));
-			return(1);
+			err(NOTFATAL, "%s: %s", path, strerror(errno));
+			goto bad;
+		}
+		if (fstat(mbfd, &fsb)) {
+			/* relating error to path may be bad style */
+			err(NOTFATAL, "%s: %s", path, strerror(errno));
+			goto bad;
+		}
+		if (sb.st_dev != fsb.st_dev || sb.st_ino != fsb.st_ino) {
+			err(NOTFATAL, "%s: changed after open", path);
+			goto bad;
+		}
+		/* paranoia? */
+		if (fsb.st_nlink != 1 || S_ISLNK(fsb.st_mode)) {
+			err(NOTFATAL, "%s: linked file", path);
+			goto bad;
 		}
 	}
 
-	if (!(created = lstat(path, &sb)) &&
-	    (sb.st_nlink != 1 || S_ISLNK(sb.st_mode))) {
-		err(NOTFATAL, "%s: linked file", path);
-		return(1);
-	}
-	if((mbfd = open(path, O_APPEND|O_WRONLY|O_EXLOCK,
-	    S_IRUSR|S_IWUSR)) < 0) {
-		if ((mbfd = open(path, O_APPEND|O_CREAT|O_WRONLY|O_EXLOCK,
-		    S_IRUSR|S_IWUSR)) < 0) {
-		err(NOTFATAL, "%s: %s", path, strerror(errno));
-		return(1);
-	}
-	}
-
 	curoff = lseek(mbfd, 0, SEEK_END);
-	(void)sprintf(biffmsg, "%s@%qd\n", name, curoff);
+	(void)snprintf(biffmsg, sizeof biffmsg, "%s@%qd\n", name, curoff);
 	if (lseek(fd, 0, SEEK_SET) == (off_t)-1) {
 		err(FATAL, "temporary file: %s", strerror(errno));
-		rval = 1;
 		goto bad;
 	}
 
@@ -221,32 +420,27 @@ deliver(fd, name, lockfile)
 		for (off = 0; off < nr;  off += nw)
 			if ((nw = write(mbfd, buf + off, nr - off)) < 0) {
 				err(NOTFATAL, "%s: %s", path, strerror(errno));
-				goto trunc;
+				(void)ftruncate(mbfd, curoff);
+				goto bad;
 			}
-	if (nr < 0) {
+
+	if (nr == 0) {
+		rval = 0;
+	} else {
 		err(FATAL, "temporary file: %s", strerror(errno));
-trunc:		(void)ftruncate(mbfd, curoff);
-		rval = 1;
+		(void)ftruncate(mbfd, curoff);
 	}
 
-	/*
-	 * Set the owner and group.  Historically, binmail repeated this at
-	 * each mail delivery.  We no longer do this, assuming that if the
-	 * ownership or permissions were changed there was a reason for doing
-	 * so.
-	 */
 bad:
-	if(lockfile) {
-		if(lfd >= 0) {
-			unlink(lpath);
-			close(lfd);
-		}
+	if (lfd != -1) {
+		rellock();
+		close(lfd);
 	}
-	if (created) 
-		(void)fchown(mbfd, pw->pw_uid, pw->pw_gid);
 
-	(void)fsync(mbfd);		/* Don't wait for update. */
-	(void)close(mbfd);		/* Implicit unlock. */
+	if (mbfd != -1) {
+		(void)fsync(mbfd);		/* Don't wait for update. */
+		(void)close(mbfd);		/* Implicit unlock. */
+	}
 
 	if (!rval)
 		notifybiff(biffmsg);

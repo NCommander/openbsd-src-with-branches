@@ -1,7 +1,7 @@
-/*	$NetBSD: print-ether.c,v 1.3 1995/03/06 19:11:10 mycroft Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-    "@(#) Header: print-ether.c,v 1.37 94/06/10 17:01:29 mccanne Exp (LBL)";
+    "@(#) Header: print-ether.c,v 1.39 96/06/03 03:05:27 leres Exp (LBL)";
 #endif
 
 #include <sys/param.h>
@@ -30,6 +30,10 @@ static char rcsid[] =
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#if __STDC__
+struct mbuf;
+struct rtentry;
+#endif
 #include <net/if.h>
 
 #include <netinet/in.h>

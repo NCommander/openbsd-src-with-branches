@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: asc.c,v 1.2 1996/08/26 11:11:59 pefo Exp $	*/
 /*	$NetBSD: asc.c,v 1.10 1994/12/05 19:11:12 dean Exp $	*/
 
 /*-
@@ -459,7 +459,7 @@ void asc_minphys __P((struct buf *));
 
 struct scsi_adapter asc_switch = {
 	asc_scsi_cmd,
-/*XXX*/	asc_minphys,	/* no max transfer size, DMA driver negotiates */
+	asc_minphys,
 	NULL,
 	NULL,
 };
@@ -619,6 +619,7 @@ void
 asc_minphys(bp)
 	struct buf *bp;
 {
+	minphys(bp);
 }
 
 /*
@@ -642,7 +643,7 @@ asc_scsi_cmd(xs)
 	 *  Flush caches for any data buffer
 	 */
 	if(xs->datalen != 0) {
-		MachHitFlushDCache(xs->data, xs->datalen);
+		R4K_HitFlushDCache(xs->data, xs->datalen);
 	}
 	/*
 	 *  The hack on the next few lines are to avoid buffers
@@ -1397,7 +1398,7 @@ asc_end(asc, status, ss, ir)
 			state->buf = (vm_offset_t)&scsicmd->sense;
 			state->buflen = sizeof(struct scsi_sense_data);
 			state->flags |= CHECK_SENSE;
-			MachHitFlushDCache(state->buf, state->buflen);
+			R4K_HitFlushDCache(state->buf, state->buflen);
 			asc->cmd[target] = scsicmd;
 			asc_startcmd(asc, target);
 			return(0);

@@ -1,4 +1,4 @@
-/*	$NetBSD: disksubr.c,v 1.9 1995/05/30 15:38:14 gwr Exp $	*/
+/*	$NetBSD: disksubr.c,v 1.12 1996/04/26 18:37:58 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
@@ -46,10 +46,10 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
-#include <sys/disklabel.h>
-
 #include <sys/device.h>
+#include <sys/disklabel.h>
 #include <sys/disk.h>
+#include <sys/dkbad.h>
 
 #include <machine/sun_disklabel.h>
 
@@ -151,9 +151,9 @@ setdisklabel(olp, nlp, openmask, clp)
 	int i;
 
 	/* sanity clause */
-	if (nlp->d_secpercyl == 0 || nlp->d_secsize == 0
-		|| (nlp->d_secsize % DEV_BSIZE) != 0)
-			return(EINVAL);
+	if ((nlp->d_secpercyl == 0) || (nlp->d_secsize == 0) ||
+	    (nlp->d_secsize % DEV_BSIZE) != 0)
+		return(EINVAL);
 
 	/* special case to allow disklabel to be invalidated */
 	if (nlp->d_magic == 0xffffffff) {
@@ -161,7 +161,8 @@ setdisklabel(olp, nlp, openmask, clp)
 		return (0);
 	}
 
-	if (nlp->d_magic != DISKMAGIC || nlp->d_magic2 != DISKMAGIC ||
+	if (nlp->d_magic != DISKMAGIC ||
+	    nlp->d_magic2 != DISKMAGIC ||
 	    dkcksum(nlp) != 0)
 		return (EINVAL);
 
@@ -172,21 +173,12 @@ setdisklabel(olp, nlp, openmask, clp)
 			return (EBUSY);
 		opp = &olp->d_partitions[i];
 		npp = &nlp->d_partitions[i];
-		if (npp->p_offset != opp->p_offset || npp->p_size < opp->p_size)
+		if (npp->p_offset != opp->p_offset ||
+		    npp->p_size   <  opp->p_size)
 			return (EBUSY);
-		/*
-		 * Copy internally-set partition information
-		 * if new label doesn't include it.		XXX
-		 */
-		if (npp->p_fstype == FS_UNUSED && opp->p_fstype != FS_UNUSED) {
-			npp->p_fstype = opp->p_fstype;
-			npp->p_fsize = opp->p_fsize;
-			npp->p_frag = opp->p_frag;
-			npp->p_cpg = opp->p_cpg;
-		}
 	}
- 	nlp->d_checksum = 0;
- 	nlp->d_checksum = dkcksum(nlp);
+
+	/* We did not modify the new label, so the checksum is OK. */
 	*olp = *nlp;
 	return (0);
 }
@@ -281,12 +273,21 @@ bad:
 	return(-1);
 }
 
-/* XXX - What is this for?  Where does it belong? -gwr */
+/*
+ * This function appears to be called by each disk driver.
+ * Aparently this is to give this MD code a chance to do
+ * additional "device registration" types of work. (?)
+ * For example, the sparc port uses this to record the
+ * device node for the PROM-specified boot device.
+ *
+ * XXX: return value not documented (ignored everywhere)
+ */
 void
 dk_establish(dk, dev)
-	struct dkdevice *dk;
+	struct disk *dk;
 	struct device *dev;
 {
+	return;
 }
 
 /************************************************************************
@@ -338,7 +339,8 @@ disklabel_sun_to_bsd(cp, lp)
 		return("SunOS disk label, bad checksum");
 
 	/* Format conversion. */
-	lp->d_magic = 0;	/* denote as pseudo */
+	lp->d_magic = DISKMAGIC;
+	lp->d_magic2 = DISKMAGIC;
 	memcpy(lp->d_packname, sl->sl_text, sizeof(lp->d_packname));
 
 	lp->d_secsize = 512;
@@ -365,9 +367,28 @@ disklabel_sun_to_bsd(cp, lp)
 		npp = &lp->d_partitions[i];
 		npp->p_offset = spp->sdkp_cyloffset * secpercyl;
 		npp->p_size = spp->sdkp_nsectors;
-		if (npp->p_size)
+		if (npp->p_size == 0)
+			npp->p_fstype = FS_UNUSED;
+		else {
+			/* Partition has non-zero size.  Set type, etc. */
 			npp->p_fstype = sun_fstypes[i];
+			/*
+			 * The sun label does not store the FFS fields,
+			 * so just set them with default values here.
+			 * XXX: This keeps newfs from trying to rewrite
+			 * XXX: the disk label in the most common case.
+			 * XXX: (Should remove that code from newfs...)
+			 */
+			if (npp->p_fstype == FS_BSDFFS) {
+				npp->p_fsize = 1024;
+				npp->p_frag = 8;
+				npp->p_cpg = 16;
+			}
+		}
 	}
+
+	lp->d_checksum = 0;
+	lp->d_checksum = dkcksum(lp);
 
 	return(NULL);
 }
@@ -388,6 +409,9 @@ disklabel_bsd_to_sun(lp, cp)
 	struct sun_dkpart *spp;
 	int i, secpercyl;
 	u_short cksum, *sp1, *sp2;
+
+	if (lp->d_secsize != 512)
+	    return (EINVAL);
 
 	sl = (struct sun_disklabel *)cp;
 
@@ -423,4 +447,28 @@ disklabel_bsd_to_sun(lp, cp)
 	sl->sl_cksum = cksum;
 
 	return(0);
+}
+
+/*
+ * Search the bad sector table looking for the specified sector.
+ * Return index if found.
+ * Return -1 if not found.
+ */
+int
+isbad(bt, cyl, trk, sec)
+	register struct dkbad *bt;
+{
+	register int i;
+	register long blk, bblk;
+
+	blk = ((long)cyl << 16) + (trk << 8) + sec;
+	for (i = 0; i < 126; i++) {
+		bblk = ((long)bt->bt_bad[i].bt_cyl << 16) +
+			bt->bt_bad[i].bt_trksec;
+		if (blk == bblk)
+			return (i);
+		if (blk < bblk || bblk < 0)
+			break;
+	}
+	return (-1);
 }

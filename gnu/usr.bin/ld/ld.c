@@ -1,3 +1,5 @@
+/*	$OpenBSD: ld.c,v 1.3 1996/03/30 15:29:59 niklas Exp $	*/
+
 /*-
  * This code is derived from software copyrighted by the Free Software
  * Foundation.
@@ -8,7 +10,9 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)ld.c	6.10 (Berkeley) 5/22/91";
+#endif
 #endif /* not lint */
 
 /* Linker `ld' for GNU
@@ -31,10 +35,6 @@ static char sccsid[] = "@(#)ld.c	6.10 (Berkeley) 5/22/91";
 /* Written by Richard Stallman with some help from Eric Albert.
    Set, indirect, and warning symbol features added by Randy Smith. */
 
-/*
- *	$Id: ld.c,v 1.44 1995/08/04 21:49:00 pk Exp $
- */
-   
 /* Define how to initialize system-dependent header fields.  */
 
 #include <sys/param.h>
@@ -1891,7 +1891,14 @@ digest_pass1()
 			}
 		}
 
-		if (sp->defined) {
+		/*
+		 * If this symbol has acquired final definition, we're done.
+		 * Commons must be allowed to bind to shared object data
+		 * definitions.
+		 */
+		if (sp->defined &&
+		    (sp->common_size == 0 ||
+		     relocatable_output || building_shared_object)) {
 			if ((sp->defined & N_TYPE) == N_SETV)
 				/* Allocate zero entry in set vector */
 				setv_fill_count++;
@@ -1924,7 +1931,7 @@ digest_pass1()
 			continue;
 		}
 
-		spsave=sp;
+		spsave=sp; /*XXX*/
 	again:
 		for (lsp = sp->sorefs; lsp; lsp = lsp->next) {
 			register struct nlist *p = &lsp->nzlist.nlist;
@@ -1933,6 +1940,27 @@ digest_pass1()
 			if ((type & N_EXT) && type != (N_UNDF | N_EXT) &&
 			    (type & N_TYPE) != N_FN) {
 				/* non-common definition */
+				if (sp->common_size) {
+					/*
+					 * This common has an so defn; switch
+					 * to it iff defn is: data, first-class
+					 * and not weak.
+					 */
+					if (N_AUX(p) != AUX_OBJECT ||
+					    N_ISWEAK(p) ||
+					    (lsp->entry->flags & E_SECONDCLASS))
+						continue;
+
+					/*
+					 * Change common to so ref. First,
+					 * downgrade common to undefined.
+					 */
+					sp->common_size = 0;
+					sp->defined = 0;
+					common_defined_global_count--;
+					undefined_global_sym_count++;
+				}
+
 				sp->def_lsp = lsp;
 				sp->so_defined = type;
 				sp->aux = N_AUX(p);
@@ -1952,9 +1980,9 @@ printf("pass1: SO definition for %s, type %x in %s at %#x\n",
 	sp->def_lsp->nzlist.nz_value);
 #endif
 			sp->def_lsp->entry->flags |= E_SYMBOLS_USED;
-			if (sp->flags & GS_REFERENCED)
+			if (sp->flags & GS_REFERENCED) {
 				undefined_global_sym_count--;
-			else
+			} else
 				sp->flags |= GS_REFERENCED;
 			if (undefined_global_sym_count < 0)
 				errx(1, "internal error: digest_pass1,2: "
@@ -1965,8 +1993,19 @@ printf("pass1: SO definition for %s, type %x in %s at %#x\n",
 				sp = sp->alias;
 				goto again;
 			}
+		} else if (sp->defined) {
+			if (sp->common_size == 0)
+				errx(1, "internal error: digest_pass1,3: "
+					"%s: not a common: %x",
+					sp->name, sp->defined);
+			/*
+			 * Common not bound to shared object data; treat
+			 * it now like other defined symbols were above.
+			 */
+			if (!sp->alias)
+				defined_global_sym_count++;
 		}
-		sp=spsave;
+		sp=spsave; /*XXX*/
 	} END_EACH_SYMBOL;
 
 	if (setv_fill_count != set_sect_size/sizeof(long))
@@ -2227,7 +2266,7 @@ consider_file_section_lengths(entry)
 	entry->data_start_address = data_size;
 	data_size += entry->header.a_data;
 	entry->bss_start_address = bss_size;
-	bss_size += entry->header.a_bss;
+	bss_size += MALIGN(entry->header.a_bss);
 
 	text_reloc_size += entry->header.a_trsize;
 	data_reloc_size += entry->header.a_drsize;
@@ -2734,7 +2773,6 @@ copy_data(entry)
  * relocation info, in core. NRELOC says how many there are.
  */
 
-/* HACK: md.c may need access to this */
 int	pc_relocation;
 
 void
@@ -2754,9 +2792,9 @@ perform_relocation(data, data_size, reloc, nreloc, entry, dataseg)
 	int data_relocation = entry->data_start_address - entry->header.a_text;
 	int bss_relocation = entry->bss_start_address -
 				entry->header.a_text - entry->header.a_data;
-	pc_relocation = dataseg?
-			entry->data_start_address - entry->header.a_text:
-			entry->text_start_address;
+	pc_relocation = dataseg
+			? entry->data_start_address - entry->header.a_text
+			: entry->text_start_address;
 
 	for (; r < end; r++) {
 		int	addr = RELOC_ADDRESS(r);
@@ -3120,18 +3158,6 @@ coptxtrel(entry)
 				RELOC_SYMBOL(r) = (sp->defined & N_TYPE);
 			} else
 				RELOC_SYMBOL(r) = sp->symbolnum;
-#ifdef RELOC_ADD_EXTRA
-			/*
-			 * If we aren't going to be adding in the
-			 * value in memory on the next pass of the
-			 * loader, then we need to add it in from the
-			 * relocation entry, unless the symbol remains
-			 * external in our output. Otherwise the work we
-			 * did in this pass is lost.
-			 */
-			if (!RELOC_MEMORY_ADD_P(r) && !RELOC_EXTERN_P(r))
-				RELOC_ADD_EXTRA(r) += sp->value;
-#endif
 		} else
 			/*
 			 * Global symbols come first.

@@ -1,4 +1,5 @@
-/*	$NetBSD: lock.c,v 1.7 1995/06/27 00:16:17 jtc Exp $	*/
+/*	$OpenBSD: lock.c,v 1.5 1996/08/06 18:10:23 deraadt Exp $	*/
+/*	$NetBSD: lock.c,v 1.8 1996/05/07 18:32:31 jtc Exp $	*/
 
 /*
  * Copyright (c) 1980, 1987, 1993
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)lock.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: lock.c,v 1.7 1995/06/27 00:16:17 jtc Exp $";
+static char rcsid[] = "$OpenBSD: lock.c,v 1.5 1996/08/06 18:10:23 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -66,8 +67,10 @@ static char rcsid[] = "$NetBSD: lock.c,v 1.7 1995/06/27 00:16:17 jtc Exp $";
 #include <err.h>
 #include <pwd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <termios.h>
+#include <unistd.h>
 
 #define	TIMEOUT	15
 
@@ -77,6 +80,7 @@ struct timeval	timeout;
 struct timeval	zerotime;
 struct termios	tty, ntty;
 long	nexttime;			/* keep the timeout time */
+int		no_timeout;			/* lock terminal forever */
 
 /*ARGSUSED*/
 main(argc, argv)
@@ -84,7 +88,6 @@ main(argc, argv)
 	char **argv;
 {
 	extern char *optarg;
-	extern int errno, optind;
 	struct passwd *pw;
 	struct timeval timval;
 	struct itimerval ntimer, otimer;
@@ -93,16 +96,17 @@ main(argc, argv)
 	int ch, sectimeout, usemine;
 	char *ap, *mypw, *ttynam, *tzn;
 	char hostname[MAXHOSTNAMELEN], s[BUFSIZ], s1[BUFSIZ];
-	char *crypt(), *ttyname();
+	char *crypt();
 
 	sectimeout = TIMEOUT;
 	mypw = NULL;
 	usemine = 0;
+	no_timeout = 0;
 
 	if (!(pw = getpwuid(getuid())))
 		errx(1, "unknown uid %d.", getuid());
 	
-	while ((ch = getopt(argc, argv, "pt:")) != EOF)
+	while ((ch = getopt(argc, argv, "npt:")) != EOF)
 		switch((char)ch) {
 		case 't':
 			if ((sectimeout = atoi(optarg)) <= 0)
@@ -112,10 +116,12 @@ main(argc, argv)
 			usemine = 1;
 			mypw = strdup(pw->pw_passwd);
 			break;
+		case 'n':
+			no_timeout = 1;
+			break;
 		case '?':
 		default:
-			(void)fprintf(stderr,
-			    "usage: lock [-p] [-t timeout]\n");
+			fprintf(stderr, "usage: lock [-n] [-p] [-t timeout]\n");
 			exit(1);
 	}
 	timeout.tv_sec = sectimeout * 60;
@@ -142,10 +148,10 @@ main(argc, argv)
 
 	if (!mypw) {
 		/* get key and check again */
-		(void)printf("Key: ");
+		printf("Key: ");
 		if (!fgets(s, sizeof(s), stdin) || *s == '\n')
 			quit();
-		(void)printf("\nAgain: ");
+		printf("\nAgain: ");
 		/*
 		 * Don't need EOF test here, if we get EOF, then s1 != s
 		 * and the right things will happen.
@@ -157,7 +163,7 @@ main(argc, argv)
 			(void)tcsetattr(0, TCSADRAIN, &tty);
 			exit(1);
 		}
-		s[0] = NULL;
+		s[0] = '\0';
 		mypw = s1;
 	}
 
@@ -169,14 +175,20 @@ main(argc, argv)
 
 	ntimer.it_interval = zerotime;
 	ntimer.it_value = timeout;
-	setitimer(ITIMER_REAL, &ntimer, &otimer);
+	if (!no_timeout)
+		setitimer(ITIMER_REAL, &ntimer, &otimer);
 
 	/* header info */
-(void)printf("lock: %s on %s. timeout in %d minutes\ntime now is %.20s%s%s",
-	    ttynam, hostname, sectimeout, ap, tzn, ap + 19);
+	if (no_timeout) {
+		printf("lock: %s on %s. no timeout\ntime now is %.20s%s%s",
+		    ttynam, hostname, ap, tzn, ap + 19);
+	} else {
+		printf("lock: %s on %s. timeout in %d minutes\ntime now is %.20s%s%s",
+		    ttynam, hostname, sectimeout, ap, tzn, ap + 19);
+	}
 
 	for (;;) {
-		(void)printf("Key: ");
+		printf("Key: ");
 		if (!fgets(s, sizeof(s), stdin)) {
 			clearerr(stdin);
 			hi();
@@ -195,7 +207,7 @@ main(argc, argv)
 		}
 		else if (!strcmp(s, s1))
 			break;
-		(void)printf("\a\n");
+		printf("\a\n");
 		if (tcsetattr(0, TCSADRAIN, &ntty) < 0)
 			exit(1);
 	}
@@ -209,7 +221,8 @@ main(argc, argv)
  * for our needs. Instead we roll our own.
  */
 int
-skey_auth(char *user)
+skey_auth(user)
+	char *user;
 {
 	char s[128], *ask, *skey_keyinfo __P((char *name));
 	int ret = 0;
@@ -234,15 +247,22 @@ hi()
 {
 	struct timeval timval;
 
-	if (!gettimeofday(&timval, (struct timezone *)NULL))
-(void)printf("lock: type in the unlock key. timeout in %ld:%ld minutes\n",
-	    (nexttime - timval.tv_sec) / 60, (nexttime - timval.tv_sec) % 60);
+	if (!gettimeofday(&timval, (struct timezone *)NULL)) {
+		(void)printf("lock: type in the unlock key. ");
+		if (no_timeout) {
+			putchar('\n');
+		} else {
+			printf("timeout in %ld:%ld minutes\n",
+			    (nexttime - timval.tv_sec) / 60,
+			    (nexttime - timval.tv_sec) % 60);
+		}
+	}
 }
 
 void
 quit()
 {
-	(void)putchar('\n');
+	putchar('\n');
 	(void)tcsetattr(0, TCSADRAIN, &tty);
 	exit(0);
 }
@@ -250,7 +270,9 @@ quit()
 void
 bye()
 {
-	(void)tcsetattr(0, TCSADRAIN, &tty);
-	(void)printf("lock: timeout\n");
-	exit(1);
+	if (!no_timeout) {
+		(void)tcsetattr(0, TCSADRAIN, &tty);
+		printf("lock: timeout\n");
+		exit(1);
+	}
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: hpux_net.c,v 1.12 1995/10/07 06:26:37 mycroft Exp $	*/
 /*	$NetBSD: hpux_net.c,v 1.12 1995/10/07 06:26:37 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_kbd.c,v 1.8 1996/08/29 09:26:10 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -87,6 +89,11 @@ static void sfkey9(void), sfkey10(void), sfkey11(void), sfkey12(void);
 static void cfkey1(void), cfkey2(void),  cfkey3(void),  cfkey4(void);
 static void cfkey5(void), cfkey6(void),  cfkey7(void),  cfkey8(void);
 static void cfkey9(void), cfkey10(void), cfkey11(void), cfkey12(void);
+
+static inline int kbd_wait_output(void);
+static inline int kbd_wait_input(void);
+int kbd_response(void);
+
 
 static void	doreset ( void );
 static void	ovlinit ( int force );
@@ -264,16 +271,40 @@ settpmrate(int rate)
 /*---------------------------------------------------------------------------*
  *	Pass command to keyboard controller (8042)
  *---------------------------------------------------------------------------*/
+static inline int
+kbd_wait_output()
+{
+	u_int i;
+
+	for (i = 100000; i; i--)
+		if ((inb(CONTROLLER_CTRL) & STATUS_INPBF) == 0) {
+			PCVT_KBD_DELAY();
+			return 1;
+		}
+	return 0;
+}
+
+static inline int
+kbd_wait_input()
+{
+	u_int i;
+
+	for (i = 100000; i; i--)
+		if ((inb(CONTROLLER_CTRL) & STATUS_OUTPBF) != 0) {
+			PCVT_KBD_DELAY();
+			return 1;
+		}
+	return 0;
+}
+
 static int
 kbc_8042cmd(int val)
 {
-	unsigned timeo;
 
-	timeo = 100000; 	/* > 100 msec */
-	while (inb(CONTROLLER_CTRL) & STATUS_INPBF)
-		if (--timeo == 0)
-			return (-1);
+	if (!kbd_wait_output())
+		return (-1);
 	outb(CONTROLLER_CTRL, val);
+
 	return (0);
 }
 
@@ -283,12 +314,9 @@ kbc_8042cmd(int val)
 int
 kbd_cmd(int val)
 {
-	unsigned timeo;
 
-	timeo = 100000; 	/* > 100 msec */
-	while (inb(CONTROLLER_CTRL) & STATUS_INPBF)
-		if (--timeo == 0)
-			return (-1);
+	if (!kbd_wait_output())
+		return (-1);
 	outb(CONTROLLER_DATA, val);
 
 #if PCVT_SHOWKEYS
@@ -306,14 +334,9 @@ int
 kbd_response(void)
 {
 	u_char ch;
-	unsigned timeo;
 
-	timeo = 500000; 	/* > 500 msec (KEYB_R_SELFOK requires 87) */
-	while (!(inb(CONTROLLER_CTRL) & STATUS_OUTPBF))
-		if (--timeo == 0)
-			return (-1);
-
-	PCVT_KBD_DELAY();		/* 7 us delay */
+	if (!kbd_wait_input())
+		return (-1);
 	ch = inb(CONTROLLER_DATA);
 
 #if PCVT_SHOWKEYS
@@ -332,7 +355,7 @@ kbd_setmode(int mode)
 #if PCVT_SCANSET > 1		/* switch only if we are running */
 				/*           keyboard scancode 2 */
 
-	int cmd, timeo = 10000;
+	int cmd;
 
 #if PCVT_USEKBDSEC
 	cmd =                  COMMAND_SYSFLG | COMMAND_IRQEN;
@@ -344,15 +367,8 @@ kbd_setmode(int mode)
 		cmd |= COMMAND_PCSCAN;	/*     yes, setup command */
 
 	kbc_8042cmd(CONTR_WRITE);
+	kbc_cmd(cmd);
 	
-	while (inb(CONTROLLER_CTRL) & STATUS_INPBF)
-	{
-		if (--timeo == 0)
-			break;
-	}
-	
-	outb(CONTROLLER_DATA, cmd);
-
 #endif /* PCVT_SCANSET > 1 */
 
 	if(mode == K_RAW)
@@ -510,6 +526,10 @@ r_entry:
 				goto query_kbd_id;
 			}
 			else if(response == KEYB_R_MF2ID2HP)
+			{
+				keyboard_type = KB_MFII;
+			}
+			else if(response == KEYB_R_MF2ID2TP)
 			{
 				keyboard_type = KB_MFII;
 			}
@@ -699,7 +719,7 @@ xlatkey2ascii(U_short key)
 #endif
 	static Ovl_tbl	thisdef;
 	int		n;
-	void		(*fnc)();
+	void		(*fnc)(void);
 
 	if(key==0)			/* ignore the NON-KEY */
 		return 0;
@@ -943,7 +963,7 @@ sgetc(int noblock)
 	u_char		key;
 	u_short		type;
 
-#if PCVT_KBD_FIFO && PCVT_SLOW_INTERRUPT
+#if PCVT_KBD_FIFO
 	int		s;
 #endif
 
@@ -983,9 +1003,9 @@ loop:
 		else			/* source = keyboard fifo */
 		{
 			dt = pcvt_kbd_fifo[pcvt_kbd_rptr++];
-			PCVT_DISABLE_INTR();
+			s = spltty();
 			pcvt_kbd_count--;
-			PCVT_ENABLE_INTR();
+			splx(s);
 			if (pcvt_kbd_rptr >= PCVT_KBD_FIFO_SZ)
 				pcvt_kbd_rptr = 0;
 		}
@@ -1215,7 +1235,13 @@ loop:
 					 * less than half a second
 					 */
 					now = time;
+
+#if PCVT_NETBSD > 100
+					timersub(&now,&mouse.lastmove,&now);
+#else
 					timevalsub(&now, &mouse.lastmove);
+#endif
+
 					mouse.lastmove = time;
 					accel = (now.tv_sec == 0
 						 && now.tv_usec
@@ -1260,9 +1286,9 @@ no_mouse_event:
 		else			/* source = keyboard fifo */
 		{
 			dt = pcvt_kbd_fifo[pcvt_kbd_rptr++]; /* yes, get it ! */
-			PCVT_DISABLE_INTR();
+			s = spltty();
 			pcvt_kbd_count--;
-			PCVT_ENABLE_INTR();
+			splx(s);
 			if (pcvt_kbd_rptr >= PCVT_KBD_FIFO_SZ)
 				pcvt_kbd_rptr = 0;
 		}

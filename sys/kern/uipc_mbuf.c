@@ -1,4 +1,5 @@
-/*	$NetBSD: uipc_mbuf.c,v 1.13 1994/10/30 21:48:06 cgd Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.4 1996/09/02 18:14:15 dm Exp $	*/
+/*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1991, 1993
@@ -47,11 +48,14 @@
 #include <sys/domain.h>
 #include <sys/protosw.h>
 
+#include <machine/cpu.h>
+
 #include <vm/vm.h>
 
 extern	vm_map_t mb_map;
 struct	mbuf *mbutl;
 char	*mclrefcnt;
+int	needqueuedrain;
 
 void
 mbinit()
@@ -73,23 +77,30 @@ bad:
  * Must be called at splimp.
  */
 /* ARGSUSED */
+int
 m_clalloc(ncl, nowait)
 	register int ncl;
 	int nowait;
 {
-	static int logged;
+	volatile static struct timeval lastlogged;
+	struct timeval curtime, logdiff;
 	register caddr_t p;
 	register int i;
-	int npg;
+	int npg, s;
 
 	npg = ncl * CLSIZE;
 	p = (caddr_t)kmem_malloc(mb_map, ctob(npg), !nowait);
 	if (p == NULL) {
-		if (logged == 0) {
-			logged++;
+		s = splclock();
+		curtime = time;
+		splx(s);
+		timersub(&curtime, &lastlogged, &logdiff);
+		if (logdiff.tv_sec >= 60) {
+			lastlogged = curtime;
 			log(LOG_ERR, "mb_map full\n");
 		}
-		return (0);
+		m_reclaim();
+		return (mclfree != NULL);
 	}
 	ncl = ncl * CLBYTES / MCLBYTES;
 	for (i = 0; i < ncl; i++) {
@@ -112,6 +123,11 @@ m_retry(i, t)
 {
 	register struct mbuf *m;
 
+	if (i & M_DONTWAIT) {
+		needqueuedrain = 1;
+		setsoftnet ();
+		return (NULL);
+	}
 	m_reclaim();
 #define m_retry(i, t)	(struct mbuf *)0
 	MGET(m, i, t);
@@ -128,6 +144,11 @@ m_retryhdr(i, t)
 {
 	register struct mbuf *m;
 
+	if (i & M_DONTWAIT) {
+		needqueuedrain = 1;
+		setsoftnet ();
+		return (NULL);
+	}
 	m_reclaim();
 #define m_retryhdr(i, t) (struct mbuf *)0
 	MGETHDR(m, i, t);
@@ -135,12 +156,14 @@ m_retryhdr(i, t)
 	return (m);
 }
 
+void
 m_reclaim()
 {
 	register struct domain *dp;
 	register struct protosw *pr;
 	int s = splimp();
 
+	needqueuedrain = 0;
 	for (dp = domains; dp; dp = dp->dom_next)
 		for (pr = dp->dom_protosw; pr < dp->dom_protoswNPROTOSW; pr++)
 			if (pr->pr_drain)
@@ -207,7 +230,7 @@ m_freem(m)
 		return;
 	do {
 		MFREE(m, n);
-	} while (m = n);
+	} while ((m = n) != NULL);
 }
 
 /*
@@ -321,6 +344,7 @@ nospace:
  * Copy data from an mbuf chain starting "off" bytes from the beginning,
  * continuing for "len" bytes, into the indicated buffer.
  */
+void
 m_copydata(m, off, len, cp)
 	register struct mbuf *m;
 	register int off;
@@ -356,6 +380,7 @@ m_copydata(m, off, len, cp)
  * Both chains must be of the same type (e.g. MT_DATA).
  * Any m_pkthdr is not updated.
  */
+void
 m_cat(m, n)
 	register struct mbuf *m, *n;
 {
@@ -445,7 +470,7 @@ m_adj(mp, req_len)
 			}
 			count -= m->m_len;
 		}
-		while (m = m->m_next)
+		while ((m = m->m_next) != NULL)
 			m->m_len = 0;
 	}
 }
@@ -591,7 +616,7 @@ m_devget(buf, totlen, off0, ifp, copy)
 	char *buf;
 	int totlen, off0;
 	struct ifnet *ifp;
-	void (*copy)();
+	void (*copy) __P((const void *, void *, size_t));
 {
 	register struct mbuf *m;
 	struct mbuf *top = 0, **mp = &top;
@@ -644,9 +669,9 @@ m_devget(buf, totlen, off0, ifp, copy)
 				len = m->m_len;
 		}
 		if (copy)
-			copy(cp, mtod(m, caddr_t), (unsigned)len);
+			copy(cp, mtod(m, caddr_t), (size_t)len);
 		else
-			bcopy(cp, mtod(m, caddr_t), (unsigned)len);
+			bcopy(cp, mtod(m, caddr_t), (size_t)len);
 		cp += len;
 		*mp = m;
 		mp = &m->m_next;

@@ -1,4 +1,5 @@
-/*	$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $	*/
+/*	$OpenBSD: login.c,v 1.6 1996/07/31 12:21:43 deraadt Exp $	*/
+/*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1987, 1988, 1991, 1993, 1994
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $";
+static char rcsid[] = "$OpenBSD: login.c,v 1.6 1996/07/31 12:21:43 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -72,6 +73,7 @@ static char rcsid[] = "$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $";
 #include <tzfile.h>
 #include <unistd.h>
 #include <utmp.h>
+#include <util.h>
 
 #include "pathnames.h"
 
@@ -336,6 +338,9 @@ main(argc, argv)
 	if (!rootlogin)
 		checknologin();
 
+	setegid(pwd->pw_gid);
+	seteuid(pwd->pw_uid);
+
 	if (chdir(pwd->pw_dir) < 0) {
 		(void)printf("No home directory %s!\n", pwd->pw_dir);
 		if (chdir("/"))
@@ -345,6 +350,9 @@ main(argc, argv)
 	}
 
 	quietlog = access(_PATH_HUSHLOGIN, F_OK) == 0;
+
+	seteuid(0);
+	setegid(0);	/* XXX use a saved gid instead? */
 
 	if (pwd->pw_change || pwd->pw_expire)
 		(void)gettimeofday(&tp, (struct timezone *)NULL);
@@ -375,6 +383,8 @@ main(argc, argv)
 	login(&utmp);
 
 	dolastlog(quietlog);
+
+	login_fbtab(tty, pwd->pw_uid, pwd->pw_gid);
 
 	(void)chown(ttyn, pwd->pw_uid,
 	    (gr = getgrnam(TTYGRPNAME)) ? gr->gr_gid : pwd->pw_gid);
@@ -427,10 +437,12 @@ main(argc, argv)
 #endif
 
 	if (!quietlog) {
+#if 0
 		(void)printf("%s\n\t%s  %s\n\n",
 	    "Copyright (c) 1980, 1983, 1986, 1988, 1990, 1991, 1993, 1994",
 		    "The Regents of the University of California. ",
 		    "All rights reserved.");
+#endif
 		motd();
 		(void)snprintf(tbuf,
 		    sizeof(tbuf), "%s/%s", _PATH_MAILDIR, pwd->pw_name);
@@ -467,12 +479,9 @@ pwcheck(user, p, salt, passwd)
 {
 #ifdef SKEY
 	if (strcasecmp(p, "s/key") == 0) {
-		if (skey_haskey(user)) {
-			fprintf(stderr, "You have no s/key. ");
+		if (skey_haskey(user))
 			return 1;
-		} else {
-			return skey_authenticate(user);
-		}
+		return skey_authenticate(user);
 	}
 #endif
 	return strcmp(crypt(p, salt), passwd);

@@ -9,7 +9,7 @@ machine		pc532
 maxusers	8			# estimated number of users
 options		TIMEZONE=0, DST=0	# time zone to read RTC in
 options		SWAPPAGER		# paging
-options		VNODEPAGER,DEVPAGER	# vnode and device node caching
+options		DEVPAGER		# device node caching
 
 #options	DDB			# kernel debugger; recommended
 #options	DIAGNOSTIC		# internal consistency checking
@@ -63,7 +63,8 @@ options		GENERIC
 
 membus0 at root
 
-ncr0 at membus?
+#ncr0 at membus?
+oldncr0 at membus?
 
 scsibus0 at scsi?
 

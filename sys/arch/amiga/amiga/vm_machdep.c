@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_machdep.c,v 1.24 1995/08/18 15:27:41 chopps Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: vm_machdep.c,v 1.29 1996/04/25 05:57:38 veego Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -59,6 +60,10 @@
 #include <vm/vm_kern.h>
 #include <machine/pte.h>
 
+/* XXX - Put this in some header file? */
+void child_return __P((struct proc *, struct frame));
+
+
 /*
  * Finish a fork operation, with process p2 nearly set up.
  * Copy and update the kernel stack and pcb, making the child
@@ -68,6 +73,7 @@
  * address in each process; in the future we will probably relocate
  * the frame pointers on the stack after copying.
  */
+void
 cpu_fork(p1, p2)
 	register struct proc *p1, *p2;
 {
@@ -75,7 +81,6 @@ cpu_fork(p1, p2)
 	register struct trapframe *tf;
 	register struct switchframe *sf;
 	extern struct pcb *curpcb;
-	extern void proc_trampoline(), child_return();
 
 	p2->p_md.md_flags = p1->p_md.md_flags;
 
@@ -97,8 +102,6 @@ cpu_fork(p1, p2)
 	pcb->pcb_regs[6] = (int)child_return;	/* A2 */
 	pcb->pcb_regs[7] = (int)p2;		/* A3 */
 	pcb->pcb_regs[11] = (int)sf;		/* SSP */
-
-	return (0);
 }
 
 /*
@@ -113,17 +116,16 @@ cpu_fork(p1, p2)
  */
 void
 cpu_set_kpc(p, pc)
-	struct proc *p;
-	u_int32_t pc;
+	struct proc	*p;
+	void		(*pc) __P((struct proc *));
 {
 	struct pcb *pcbp;
 	struct switchframe *sf;
-	extern void proc_trampoline(), child_return();
 
 	pcbp = &p->p_addr->u_pcb;
 	sf = (struct switchframe *)pcbp->pcb_regs[11];
 	sf->sf_pc = (u_int)proc_trampoline;
-	pcbp->pcb_regs[6] = pc;			/* A2 */
+	pcbp->pcb_regs[6] = (int)pc;		/* A2 */
 	pcbp->pcb_regs[7] = (int)p;		/* A3 */
 }
 
@@ -151,9 +153,10 @@ cpu_exit(p)
  * Both addresses are assumed to reside in the Sysmap,
  * and size must be a multiple of CLSIZE.
  */
+void
 pagemove(from, to, size)
 	register caddr_t from, to;
-	int size;
+	size_t size;
 {
 	register vm_offset_t pa;
 
@@ -184,6 +187,7 @@ pagemove(from, to, size)
  * kernel VA space at `vaddr'.  Read/write and cache-inhibit status
  * are specified by `prot'.
  */ 
+void
 physaccess(vaddr, paddr, size, prot)
 	caddr_t vaddr, paddr;
 	register int size, prot;
@@ -203,6 +207,7 @@ physaccess(vaddr, paddr, size, prot)
 	TBIAS();
 }
 
+void
 physunaccess(vaddr, size)
 	caddr_t vaddr;
 	register int size;
@@ -302,6 +307,7 @@ cpu_coredump(p, vp, cred, chdr)
  * Look at _lev6intr in locore.s for more details.
  */
 /*ARGSUSED*/
+void
 setredzone(pte, vaddr)
 	u_int *pte;
 	caddr_t vaddr;
@@ -311,6 +317,7 @@ setredzone(pte, vaddr)
 /*
  * Convert kernel VA to physical address
  */
+int
 kvtop(addr)
 	register caddr_t addr;
 {
@@ -342,8 +349,11 @@ extern vm_map_t phys_map;
  * All requests are (re)mapped into kernel VA space via the useriomap
  * (a name with only slightly more meaning than "kernelmap")
  */
-vmapbuf(bp)
+/*ARGSUSED*/
+void
+vmapbuf(bp, sz)
 	register struct buf *bp;
+	vm_size_t sz;
 {
 	register int npf;
 	register caddr_t addr;
@@ -377,8 +387,11 @@ vmapbuf(bp)
  * Free the io map PTEs associated with this IO operation.
  * We also invalidate the TLB entries and restore the original b_addr.
  */
-vunmapbuf(bp)
+/*ARGSUSED*/
+void
+vunmapbuf(bp, sz)
 	register struct buf *bp;
+	vm_size_t sz;
 {
 	register int npf;
 	register caddr_t addr = bp->b_un.b_addr;

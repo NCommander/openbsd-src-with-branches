@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq.c	8.1 (Berkeley) 6/7/93
- *	$Id: amq.c,v 1.4 1994/06/13 20:48:20 mycroft Exp $
+ *	$Id: amq.c,v 1.1 1995/10/18 08:47:13 deraadt Exp $
  */
 
 /*
@@ -52,7 +52,7 @@ char copyright[] = "\
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$Id: amq.c,v 1.4 1994/06/13 20:48:20 mycroft Exp $";
+static char rcsid[] = "$Id: amq.c,v 1.1 1995/10/18 08:47:13 deraadt Exp $";
 static char sccsid[] = "@(#)amq.c	8.1 (Berkeley) 6/7/93";
 #endif /* not lint */
 

@@ -1,4 +1,4 @@
-/*	$NetBSD: hil.c,v 1.19 1995/04/22 20:25:45 christos Exp $	*/
+/*	$NetBSD: hil.c,v 1.22 1996/02/14 02:44:24 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -72,7 +72,7 @@
 #include "hil.h"
 #endif
 
-struct  hilloop hilloop[NHIL];
+struct  hil_softc hil_softc[NHIL];
 struct	_hilbell default_bell = { BELLDUR, BELLFREQ };
 #ifdef hp800
 int	hilspl;
@@ -100,7 +100,7 @@ hilsoftinit(unit, hilbase)
 	int unit;
 	struct hil_dev *hilbase;
 {
-  	register struct hilloop *hilp = &hilloop[unit];
+  	register struct hil_softc *hilp = &hil_softc[unit];
 	register int i;
 
 #ifdef DEBUG
@@ -136,7 +136,7 @@ hilinit(unit, hilbase)
 	int unit;
 	struct hil_dev *hilbase;
 {
-  	register struct hilloop *hilp = &hilloop[unit];
+  	register struct hil_softc *hilp = &hil_softc[unit];
 #ifdef DEBUG
 	if (hildebug & HDB_FOLLOW)
 		printf("hilinit(%d, %x)\n", unit, hilbase);
@@ -161,9 +161,10 @@ hilopen(dev, flags, mode, p)
 	int flags, mode;
 	struct proc *p;
 {
-  	register struct hilloop *hilp = &hilloop[HILLOOP(dev)];
+  	register struct hil_softc *hilp = &hil_softc[HILLOOP(dev)];
 	register struct hilloopdev *dptr;
 	u_char device = HILUNIT(dev);
+	int s;
 
 #ifdef DEBUG
 	if (hildebug & HDB_FOLLOW)
@@ -219,7 +220,7 @@ hilopen(dev, flags, mode, p)
 	/*
 	 * Opened the keyboard, put in raw mode.
 	 */
-	(void) splhil();
+	s = splhil();
 	if (device == hilp->hl_kbddev) {
 		u_char mask = 0;
 		send_hil_cmd(hilp->hl_addr, HIL_WRITEKBDSADR, &mask, 1, NULL);
@@ -229,7 +230,7 @@ hilopen(dev, flags, mode, p)
 			printf("hilopen: keyboard %d raw\n", hilp->hl_kbddev);
 #endif
 	}
-	(void) spl0();
+	splx(s);
 	return (0);
 }
 
@@ -239,12 +240,13 @@ hilclose(dev, flags, mode, p)
 	int flags, mode;
 	struct proc *p;
 {
-  	register struct hilloop *hilp = &hilloop[HILLOOP(dev)];
+  	register struct hil_softc *hilp = &hil_softc[HILLOOP(dev)];
 	register struct hilloopdev *dptr;
 	register int i;
 	u_char device = HILUNIT(dev);
 	char mask, lpctrl;
-	extern struct emul emul_netbsd;
+	int s;
+	extern struct emul emul_native;
 
 #ifdef DEBUG
 	if (hildebug & HDB_FOLLOW)
@@ -255,7 +257,7 @@ hilclose(dev, flags, mode, p)
 	if (device && (dptr->hd_flags & HIL_PSEUDO))
 		return (0);
 
-	if (p && p->p_emul == &emul_netbsd) {
+	if (p && p->p_emul == &emul_native) {
 		/*
 		 * If this is the loop device,
 		 * free up all queues belonging to this process.
@@ -263,16 +265,16 @@ hilclose(dev, flags, mode, p)
 		if (device == 0) {
 			for (i = 0; i < NHILQ; i++)
 				if (hilp->hl_queue[i].hq_procp == p)
-					(void) hilqfree(hilp, i);
+					(void) hilqfree(hilp, i, p);
 		} else {
 			mask = ~hildevmask(device);
-			(void) splhil();
+			s = splhil();
 			for (i = 0; i < NHILQ; i++)
 				if (hilp->hl_queue[i].hq_procp == p) {
 					dptr->hd_qmask &= ~hilqmask(i);
 					hilp->hl_queue[i].hq_devmask &= mask;
 				}
-			(void) spl0();
+			splx(s);
 		}
 	}
 	/*
@@ -283,7 +285,7 @@ hilclose(dev, flags, mode, p)
 	/*
 	 * Set keyboard back to cooked mode when closed.
 	 */
-	(void) splhil();
+	s = splhil();
 	if (device && device == hilp->hl_kbddev) {
 		mask = 1 << (hilp->hl_kbddev - 1);
 		send_hil_cmd(hilp->hl_addr, HIL_WRITEKBDSADR, &mask, 1, NULL);
@@ -309,7 +311,7 @@ hilclose(dev, flags, mode, p)
 #endif
 		kbdenable(HILLOOP(dev));
 	}
-	(void) spl0();
+	splx(s);
 	return (0);
 }
 
@@ -320,12 +322,12 @@ hilread(dev, uio)
 	dev_t dev;
 	register struct uio *uio;
 {
-	struct hilloop *hilp = &hilloop[HILLOOP(dev)];
+	struct hil_softc *hilp = &hil_softc[HILLOOP(dev)];
 	register struct hilloopdev *dptr;
 	register int cc;
 	u_char device = HILUNIT(dev);
 	u_char buf[HILBUFSIZE];
-	int error;
+	int error, s;
 
 #if 0
 	/*
@@ -342,7 +344,7 @@ hilread(dev, uio)
 	if ((dptr->hd_flags & HIL_READIN) == 0)
 		return(ENODEV);
 
-	(void) splhil();
+	s = splhil();
 	while (dptr->hd_queue.c_cc == 0) {
 		if (dptr->hd_flags & HIL_NOBLOCK) {
 			spl0();
@@ -354,7 +356,7 @@ hilread(dev, uio)
 			return (error);
 		}
 	}
-	(void) spl0();
+	splx(s);
 
 	error = 0;
 	while (uio->uio_resid > 0 && error == 0) {
@@ -373,7 +375,7 @@ hilioctl(dev, cmd, data, flag, p)
 	caddr_t data;
 	struct proc *p;
 {
-	register struct hilloop *hilp = &hilloop[HILLOOP(dev)];
+	register struct hil_softc *hilp = &hil_softc[HILLOOP(dev)];
 	char device = HILUNIT(dev);
 	struct hilloopdev *dptr;
 	register int i;
@@ -503,19 +505,19 @@ hilioctl(dev, cmd, data, flag, p)
 		break;
 
         case HILIOCALLOCQ:
-		error = hilqalloc(hilp, (struct hilqinfo *)data);
+		error = hilqalloc(hilp, (struct hilqinfo *)data, p);
 		break;
 
         case HILIOCFREEQ:
-		error = hilqfree(hilp, ((struct hilqinfo *)data)->qid);
+		error = hilqfree(hilp, ((struct hilqinfo *)data)->qid, p);
 		break;
 
         case HILIOCMAPQ:
-		error = hilqmap(hilp, *(int *)data, device);
+		error = hilqmap(hilp, *(int *)data, device, p);
 		break;
 
         case HILIOCUNMAPQ:
-		error = hilqunmap(hilp, *(int *)data, device);
+		error = hilqunmap(hilp, *(int *)data, device, p);
 		break;
 
 	case HILIOCHPUX:
@@ -550,7 +552,7 @@ hpuxhilioctl(dev, cmd, data, flag)
 	int cmd, flag;
 	caddr_t data;
 {
-	register struct hilloop *hilp = &hilloop[HILLOOP(dev)];
+	register struct hil_softc *hilp = &hil_softc[HILLOOP(dev)];
 	char device = HILUNIT(dev);
 	struct hilloopdev *dptr;
 	register int i;
@@ -684,7 +686,7 @@ hilselect(dev, rw, p)
 	int rw;
 	struct proc *p;
 {
-	register struct hilloop *hilp = &hilloop[HILLOOP(dev)];
+	register struct hil_softc *hilp = &hil_softc[HILLOOP(dev)];
 	register struct hilloopdev *dptr;
 	register struct hiliqueue *qp;
 	register int mask;
@@ -749,9 +751,9 @@ hilint(unit)
 	int unit;
 {
 #ifdef hp300
-	struct hilloop *hilp = &hilloop[0]; /* XXX how do we know on 300? */
+	struct hil_softc *hilp = &hil_softc[0]; /* XXX how do we know on 300? */
 #else
-	struct hilloop *hilp = &hilloop[unit];
+	struct hil_softc *hilp = &hil_softc[unit];
 #endif
 	register struct hil_dev *hildevice = hilp->hl_addr;
 	u_char c, stat;
@@ -764,7 +766,7 @@ hilint(unit)
 #include "ite.h"
 
 hil_process_int(hilp, stat, c)
-	register struct hilloop *hilp;
+	register struct hil_softc *hilp;
 	register u_char stat, c;
 {
 #ifdef DEBUG
@@ -844,7 +846,7 @@ hil_process_int(hilp, stat, c)
 	((eq)->size == HEVQSIZE && (eq)->tail >= 0 && (eq)->tail < HEVQSIZE)
 
 hilevent(hilp)
-	struct hilloop *hilp;
+	struct hil_softc *hilp;
 {
 	register struct hilloopdev *dptr = &hilp->hl_device[hilp->hl_actdev];
 	register int len, mask, qnum;
@@ -953,7 +955,7 @@ hilevent(hilp)
 #undef HQFULL
 
 hpuxhilevent(hilp, dptr)
-	register struct hilloop *hilp;
+	register struct hil_softc *hilp;
 	register struct hilloopdev *dptr;
 {
 	register int len;
@@ -996,11 +998,11 @@ hpuxhilevent(hilp, dptr)
  * Shared queue manipulation routines
  */
 
-hilqalloc(hilp, qip)
-	register struct hilloop *hilp;
+hilqalloc(hilp, qip, p)
+	register struct hil_softc *hilp;
 	struct hilqinfo *qip;
+	struct proc *p;
 {
-	struct proc *p = curproc;		/* XXX */
 
 #ifdef DEBUG
 	if (hildebug & HDB_FOLLOW)
@@ -1009,11 +1011,11 @@ hilqalloc(hilp, qip)
 	return(EINVAL);
 }
 
-hilqfree(hilp, qnum)
-	register struct hilloop *hilp;
+hilqfree(hilp, qnum, p)
+	register struct hil_softc *hilp;
 	register int qnum;
+	struct proc *p;
 {
-	struct proc *p = curproc;		/* XXX */
 
 #ifdef DEBUG
 	if (hildebug & HDB_FOLLOW)
@@ -1022,11 +1024,11 @@ hilqfree(hilp, qnum)
 	return(EINVAL);
 }
 
-hilqmap(hilp, qnum, device)
-	register struct hilloop *hilp;
+hilqmap(hilp, qnum, device, p)
+	register struct hil_softc *hilp;
 	register int qnum, device;
+	struct proc *p;
 {
-	struct proc *p = curproc;		/* XXX */
 	register struct hilloopdev *dptr = &hilp->hl_device[device];
 	int s;
 
@@ -1058,11 +1060,11 @@ hilqmap(hilp, qnum, device)
 	return(0);
 }
 
-hilqunmap(hilp, qnum, device)
-	register struct hilloop *hilp;
+hilqunmap(hilp, qnum, device, p)
+	register struct hil_softc *hilp;
 	register int qnum, device;
+	struct proc *p;
 {
-	struct proc *p = curproc;		/* XXX */
 	int s;
 
 #ifdef DEBUG
@@ -1096,7 +1098,7 @@ hilqunmap(hilp, qnum, device)
 kbdbell(unit)
 	int unit;
 {
-	struct hilloop *hilp = &hilloop[unit];
+	struct hil_softc *hilp = &hil_softc[unit];
 
 	hilbeep(hilp, &default_bell);
 }
@@ -1104,7 +1106,7 @@ kbdbell(unit)
 kbdenable(unit)
 	int unit;
 {
-	struct hilloop *hilp = &hilloop[unit];
+	struct hil_softc *hilp = &hil_softc[unit];
 	register struct hil_dev *hildevice = hilp->hl_addr;
 	char db;
 
@@ -1133,7 +1135,7 @@ kbddisable(unit)
 kbdgetc(unit, statp)
 	int unit, *statp;
 {
-	struct hilloop *hilp = &hilloop[unit];
+	struct hil_softc *hilp = &hil_softc[unit];
 	register struct hil_dev *hildevice = hilp->hl_addr;
 	register int c, stat;
 	int s;
@@ -1160,9 +1162,9 @@ kbdnmi(unit)
 	int unit;
 {
 #ifdef hp300
-	struct hilloop *hilp = &hilloop[0]; /* XXX how do we know on 300? */
+	struct hil_softc *hilp = &hil_softc[0]; /* XXX how do we know on 300? */
 #else
-	struct hilloop *hilp = &hilloop[unit];
+	struct hil_softc *hilp = &hil_softc[unit];
 #endif
 #ifdef hp300
 	if ((*KBDNMISTAT & KBDNMI) == 0)
@@ -1186,7 +1188,7 @@ kbdnmi(unit)
 hilinfo(unit)
 	int unit;
 {
-  	register struct hilloop *hilp = &hilloop[unit];
+  	register struct hil_softc *hilp = &hil_softc[unit];
 	register int id, len;
 	register struct kbdmap *km;
 
@@ -1244,7 +1246,7 @@ hilinfo(unit)
  * we prefer to just assume people won't move things around.
  */
 hilconfig(hilp)
-	register struct hilloop *hilp;
+	register struct hil_softc *hilp;
 {
 	u_char db;
 	int s;
@@ -1348,7 +1350,7 @@ hilconfig(hilp)
 }
 
 hilreset(hilp)
-	struct hilloop *hilp;
+	struct hil_softc *hilp;
 {
 	register struct hil_dev *hildevice = hilp->hl_addr;
 	u_char db;
@@ -1388,7 +1390,7 @@ hilreset(hilp)
 }
 
 hilbeep(hilp, bp)
-	struct hilloop *hilp;
+	struct hil_softc *hilp;
 	register struct _hilbell *bp;
 {
 	u_char buf[2];
@@ -1402,7 +1404,7 @@ hilbeep(hilp, bp)
  * Locate and return the address of the first ID module, 0 if none present.
  */
 hiliddev(hilp)
-	register struct hilloop *hilp;
+	register struct hil_softc *hilp;
 {
 	register int i, len;
 
@@ -1510,7 +1512,7 @@ send_hil_cmd(hildevice, cmd, data, dlen, rdata)
  * splimp (clock only interrupts) seems to be good enough in practice.
  */
 send_hildev_cmd(hilp, device, cmd)
-	register struct hilloop *hilp;
+	register struct hil_softc *hilp;
 	char device, cmd;
 {
 	register struct hil_dev *hildevice = hilp->hl_addr;
@@ -1614,7 +1616,7 @@ pollon(hildevice)
 
 #ifdef DEBUG
 printhilpollbuf(hilp)
-	register struct hilloop *hilp;
+	register struct hil_softc *hilp;
 {
   	register u_char *cp;
 	register int i, len;
@@ -1627,7 +1629,7 @@ printhilpollbuf(hilp)
 }
 
 printhilcmdbuf(hilp)
-	register struct hilloop *hilp;
+	register struct hil_softc *hilp;
 {
   	register u_char *cp;
 	register int i, len;
@@ -1640,7 +1642,7 @@ printhilcmdbuf(hilp)
 }
 
 hilreport(hilp)
-	register struct hilloop *hilp;
+	register struct hil_softc *hilp;
 {
 	register int i, len;
 	int s = splhil();

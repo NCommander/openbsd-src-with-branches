@@ -1,6 +1,35 @@
-/*	$NetBSD: conf.c,v 1.28 1995/04/19 22:37:27 mycroft Exp $	*/
+/*	$OpenBSD: conf.c,v 1.8 1996/07/15 14:57:04 mickey Exp $ */
 
 /*-
+ * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1991 The Regents of the University of California.
  * All rights reserved.
  *
@@ -58,12 +87,10 @@ bdev_decl(ch);
 bdev_decl(xd);
 #include "vnd.h"
 bdev_decl(vnd);
-
-#ifdef LKM
-int	lkmenodev();
-#else
-#define	lkmenodev	enodev
-#endif
+#include "ccd.h"
+bdev_decl(ccd);
+#include "rd.h"
+bdev_decl(rd);
 
 struct bdevsw	bdevsw[] =
 {
@@ -72,11 +99,11 @@ struct bdevsw	bdevsw[] =
 	bdev_notdef(),			/* 2 */
 	bdev_swap_init(1,sw),		/* 3: swap pseudo-device */
 	bdev_disk_init(NSD,sd),		/* 4: SCSI disk */
-	bdev_tape_init(NST,st),		/* 5: SCSI tape */
-	bdev_disk_init(NCD,cd),		/* 6: SCSI CD-ROM */
-	bdev_notdef(),			/* 7 */
-	bdev_disk_init(NVND,vnd),	/* 8: vnode disk driver */
-	bdev_notdef(),			/* 9 */
+	bdev_disk_init(NCCD,ccd),	/* 5: concatenated disk driver */
+	bdev_disk_init(NVND,vnd),	/* 6: vnode disk driver */
+	bdev_tape_init(NST,st),		/* 7: SCSI tape */
+	bdev_disk_init(NCD,cd),		/* 8: SCSI CD-ROM */
+	bdev_disk_init(NRD,rd),		/* 9: RAM disk - for install tape */
 	bdev_disk_init(NXD,xd),		/* 10: XD disk */
 	bdev_notdef(),			/* 11 */
 	bdev_notdef(),			/* 12 */
@@ -151,12 +178,17 @@ cdev_decl(sd);
 cdev_decl(cd);
 cdev_decl(xd);
 cdev_decl(vnd);
+cdev_decl(ccd);
+
+dev_decl(filedesc,open);
 
 #include "bpfilter.h"
 cdev_decl(bpf);
 
 #include "tun.h"
 cdev_decl(tun);
+#include "random.h"
+cdev_decl(random);
 
 #ifdef LKM
 #define NLKM 1
@@ -165,6 +197,14 @@ cdev_decl(tun);
 #endif
 
 cdev_decl(lkm);
+
+/* open, close, read, ioctl */
+cdev_decl(ipl);
+#ifdef IPFILTER
+#define NIPF 1
+#else
+#define NIPF 0
+#endif
 
 struct cdevsw	cdevsw[] =
 {
@@ -189,7 +229,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 18 */
 	cdev_disk_init(NVND,vnd),	/* 19: vnode disk */
 	cdev_tape_init(NST,st),		/* 20: SCSI tape */
-	cdev_fd_init(1,fd),		/* 21: file descriptor pseudo-dev */
+	cdev_fd_init(1,filedesc),	/* 21: file descriptor pseudo-dev */
 	cdev_bpftun_init(NBPFILTER,bpf),/* 22: berkeley packet filter */
 	cdev_bpftun_init(NTUN,tun),	/* 23: network tunnel */
 	cdev_lkm_init(NLKM,lkm),	/* 24: loadable module driver */
@@ -207,6 +247,8 @@ struct cdevsw	cdevsw[] =
 	cdev_lkm_dummy(),		/* 36 */
 	cdev_lkm_dummy(),		/* 37 */
 	cdev_lkm_dummy(),		/* 38 */
+	cdev_gen_ipf(NIPF,ipl),         /* 39: IP filter */
+	cdev_random_init(NRANDOM,random), /* 40: random data source */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

@@ -1,6 +1,8 @@
+/*	$OpenBSD: lookup.c,v 1.6 1996/07/12 07:23:59 mickey Exp $	*/
+
 /*
- * Copyright (c) 1983, 1993
- *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1983 Regents of the University of California.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,8 +34,14 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)lookup.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$Id: lookup.c,v 1.3 1994/03/07 05:05:33 cgd Exp $";
+static char RCSid[] = 
+"$OpenBSD: lookup.c,v 1.6 1996/07/12 07:23:59 mickey Exp $";
+
+static char sccsid[] = "@(#)lookup.c	5.1 (Berkeley) 6/6/85";
+
+static char copyright[] =
+"@(#) Copyright (c) 1983 Regents of the University of California.\n\
+ All rights reserved.\n";
 #endif /* not lint */
 
 #include "defs.h"
@@ -54,7 +62,6 @@ static struct syment *hashtab[HASHSIZE];
 /*
  * Define a variable from a command line argument.
  */
-void
 define(name)
 	char *name;
 {
@@ -62,10 +69,9 @@ define(name)
 	register struct namelist *nl;
 	struct namelist *value;
 
-	if (debug)
-		printf("define(%s)\n", name);
+	debugmsg(DM_CALL, "define(%s)", name);
 
-	cp = index(name, '=');
+	cp = strchr(name, '=');
 	if (cp == NULL)
 		value = NULL;
 	else if (cp[1] == '\0') {
@@ -75,6 +81,7 @@ define(name)
 		*cp++ = '\0';
 		value = makenl(cp);
 	} else {
+		value = NULL;
 		nl = NULL;
 		*cp++ = '\0';
 		do
@@ -119,7 +126,7 @@ define(name)
  */
 
 struct namelist *
-lookup(name, action, value)
+lookup(name, action, value)	/* %% in name.  Ignore quotas in name */
 	char *name;
 	int action;
 	struct namelist *value;
@@ -127,10 +134,9 @@ lookup(name, action, value)
 	register unsigned n;
 	register char *cp;
 	register struct syment *s;
-	char buf[256];
+	char ebuf[BUFSIZ];
 
-	if (debug)
-		printf("lookup(%s, %d, %x)\n", name, action, value);
+	debugmsg(DM_CALL, "lookup(%s, %d, %x)", name, action, value);
 
 	n = 0;
 	for (cp = name; *cp; )
@@ -142,26 +148,26 @@ lookup(name, action, value)
 			continue;
 		if (action != LOOKUP) {
 			if (action != INSERT || s->s_type != CONST) {
-				(void)sprintf(buf, "%s redefined", name);
-				yyerror(buf);
+				(void) snprintf(ebuf, sizeof(ebuf),
+						"%s redefined", name);
+				yyerror(ebuf);
 			}
 		}
 		return(s->s_value);
 	}
 
 	if (action == LOOKUP) {
-		(void)sprintf(buf, "%s undefined", name);
-		yyerror(buf);
+		(void) snprintf(ebuf, sizeof(ebuf), "%s undefined", name);
+		yyerror(ebuf);
 		return(NULL);
 	}
 
 	s = ALLOC(syment);
-	if (s == NULL)
-		fatal("ran out of memory\n");
 	s->s_next = hashtab[n];
 	hashtab[n] = s;
 	s->s_type = action == INSERT ? VAR : CONST;
 	s->s_name = name;
 	s->s_value = value;
+
 	return(value);
 }

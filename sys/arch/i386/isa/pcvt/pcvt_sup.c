@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_sup.c,v 1.4 1996/05/07 13:07:04 mickey Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -265,8 +267,6 @@ vgapcvtinfo(struct pcvtinfo *data)
 
 	data->nscreens	= PCVT_NSCREENS;
 	data->scanset	= PCVT_SCANSET;
-	data->updatefast= PCVT_UPDATEFAST;
-	data->updateslow= PCVT_UPDATESLOW;
 	data->sysbeepf	= PCVT_SYSBEEPF;
 
 #if PCVT_NETBSD || PCVT_FREEBSD >= 200
@@ -354,9 +354,6 @@ vgapcvtinfo(struct pcvtinfo *data)
 #endif
 #if PCVT_MDAFASTSCROLL
 	| CONF_MDAFASTSCROLL
-#endif
-#if PCVT_SLOW_INTERRUPT
-	| CONF_SLOW_INTERRUPT
 #endif
 #if PCVT_NO_LED_UPDATE
 	| CONF_NO_LED_UPDATE
@@ -865,42 +862,30 @@ vgapaletteio(unsigned idx, struct rgb *val, int writeit)
  *
  *	update asynchronous: cursor, cursor pos displ, sys load, keyb scan
  *
- *	arg is:
- *		UPDATE_START = 0 = do update; requeue
- *		UPDATE_STOP  = 1 = suspend updates
- *		UPDATE_KERN  = 2 = do update for kernel printfs
- *
  *---------------------------------------------------------------------------*/
 void
-async_update(int arg)
+async_update()
 {
+	static int lastadr = 0;
 	static int lastpos = 0;
-	static int counter = PCVT_UPDATESLOW;
-
-#ifdef XSERVER
-	/* need a method to suspend the updates */
-
-	if(arg == UPDATE_STOP)
-	{
-		untimeout((TIMEOUT_FUNC_T)async_update, UPDATE_START);
-		return;
-	}
-#endif /* XSERVER */
 
 	/* first check if update is possible */
 
+	if(vsp->vt_status & VT_GRAFX)
+		return;
+
 	if(chargen_access)		/* does someone load characters? */
-		goto async_update_exit;	/*  yes, do not update anything */
+		return;			/*  yes, do not update anything */
 
 #if PCVT_SCREENSAVER
-	if(reset_screen_saver && (counter == PCVT_UPDATESLOW))
+	if(reset_screen_saver)
 	{
 		pcvt_scrnsv_reset();	/* yes, do it */
 		reset_screen_saver = 0;	/* re-init */
 	}
 	else if(scrnsv_active)		/* is the screen not blanked? */
 	{
-		goto async_update_exit;	/* do not update anything */
+		return;			/* do not update anything */
 	}
 #endif /* PCVT_SCREENSAVER */
 
@@ -908,22 +893,26 @@ async_update(int arg)
 	/* this takes place on EVERY virtual screen (if not in X mode etc...)*/
 	/*-------------------------------------------------------------------*/
 
-	if ( cursor_pos_valid &&
-	    (lastpos != (vsp->Crtat + vsp->cur_offset - Crtat)))
+	if (cursor_pos_valid)
 	{
-		lastpos = vsp->Crtat + vsp->cur_offset - Crtat;
-	 	outb(addr_6845, CRTC_CURSORH);	/* high register */
-		outb(addr_6845+1, ((lastpos) >> 8));
-		outb(addr_6845, CRTC_CURSORL);	/* low register */
-		outb(addr_6845+1, (lastpos));
+		if (lastadr != (vsp->Crtat - Crtat))
+		{
+			lastadr = vsp->Crtat - Crtat;
+		 	outb(addr_6845, CRTC_STARTADRH);	/* high register */
+			outb(addr_6845+1, ((lastadr) >> 8));
+			outb(addr_6845, CRTC_STARTADRL);	/* low register */
+			outb(addr_6845+1, (lastadr));
+		}
+
+		if (lastpos != (lastadr + vsp->cur_offset))
+		{
+			lastpos = lastadr + vsp->cur_offset;
+		 	outb(addr_6845, CRTC_CURSORH);	/* high register */
+			outb(addr_6845+1, ((lastpos) >> 8));
+			outb(addr_6845, CRTC_CURSORL);	/* low register */
+			outb(addr_6845+1, (lastpos));
+		}
 	}
-
-	if (arg == UPDATE_KERN)		/* Magic arg: for kernel printfs */
-		return;
-
-	if(--counter)			/* below is possible update */
-		goto async_update_exit;	/*  just now and then ..... */
-	counter = PCVT_UPDATESLOW;	/* caution, see screensaver above !! */
 
 	/*-------------------------------------------------------------------*/
 	/* this takes place ONLY on screen 0 if in HP mode, labels on, !X    */
@@ -1054,13 +1043,6 @@ async_update(int arg)
 		*(p + LABEL_ROWH) = (user_attr | (((vsp->row+1)/10) + '0'));
 		*(p + LABEL_ROWL) = (user_attr | (((vsp->row+1)%10) + '0'));
 	}
-
-async_update_exit:
-
- 	if(arg == UPDATE_START)
-	{
-	   timeout((TIMEOUT_FUNC_T)async_update, UPDATE_START, PCVT_UPDATEFAST);
-	}
 }
 
 /*---------------------------------------------------------------------------*
@@ -1102,11 +1084,11 @@ set_charset(struct video_state *svsp, int curvgacs)
 		}
 		if (newrows < newsize)
 			fillw(user_attr | ' ',
-			      svsp->Crtat + newrows * svsp->maxcol,
+			      (caddr_t)(svsp->Crtat + newrows * svsp->maxcol),
 			      (newsize - newrows) * svsp->maxcol);
 	} else if (oldrows < newsize)
 		fillw(user_attr | ' ',
-		      svsp->Crtat + oldrows * svsp->maxcol,
+		      (caddr_t)(svsp->Crtat + oldrows * svsp->maxcol),
 		      (newsize - oldrows) * svsp->maxcol);
 
 	svsp->screen_rowsize = newsize;
@@ -1921,7 +1903,7 @@ scrnsv_timedout(void *arg)
 	{
 		/* second call, now blank the screen */
 		/* fill screen with blanks */
-		fillw(/* (BLACK<<8) + */ ' ', vsp->Crtat, scrnsv_size / 2);
+		fillw(/* (BLACK<<8) + */ ' ', (caddr_t)(vsp->Crtat), scrnsv_size / 2);
 
 #if PCVT_PRETTYSCRNS
 		scrnsv_current = vsp->Crtat;

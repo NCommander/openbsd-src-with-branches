@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.21 1995/08/13 01:52:16 briggs Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: param.h,v 1.26 1996/05/05 06:17:49 briggs Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -76,17 +77,19 @@
  *	@(#)param.h	7.8 (Berkeley) 6/28/91
  */
 
-#ifndef _MACHINE_PARAM_H_
-#define _MACHINE_PARAM_H_	1
+#ifndef _PARAM_MACHINE_
+#define _PARAM_MACHINE_
 
 #ifndef PSL_IPL
-#include "machine/psl.h"
+#include <machine/psl.h>
 #endif /* PSL_IPL */
 
 /*
  * Machine dependent constants for Macintosh II-and-similar series.
  */
+#define	_MACHINE	mac68k
 #define	MACHINE		"mac68k"
+#define	_MACHINE_ARCH	m68k
 #define	MACHINE_ARCH	"m68k"
 #define	MID_MACHINE	MID_M68K
 
@@ -179,51 +182,11 @@
 #define mac68k_btop(x)		((unsigned)(x) >> PGSHIFT)
 #define mac68k_ptob(x)		((unsigned)(x) << PGSHIFT)
 
-/*
- * spl functions; all but spl0 are done in-line
- */
+#include <machine/psl.h>
 
-#define _spl(s) \
-({ \
-        register int _spl_r; \
-\
-        __asm __volatile ("clrl %0; movew sr,%0; movew %1,sr" : \
-                "&=d" (_spl_r) : "di" (s)); \
-        _spl_r; \
-})
-
-/* spl0 requires checking for software interrupts */
-#define spl1()  _spl(PSL_S|PSL_IPL1)
-#define spl2()  _spl(PSL_S|PSL_IPL2)
-#define spl3()  _spl(PSL_S|PSL_IPL3)
-#define spl4()  _spl(PSL_S|PSL_IPL4)
-#define spl5()  _spl(PSL_S|PSL_IPL5)
-#define spl6()  _spl(PSL_S|PSL_IPL6)
-#define spl7()  _spl(PSL_S|PSL_IPL7)
-
-/* These should be used for:
-   1) ensuring mutual exclusion (why use processor level?)
-   2) allowing faster devices to take priority
-
-   Note that on the mac, most things are masked at spl1, almost
-   everything at spl2, and everything but the panic switch and
-   power at spl4.
- */
-#define splsoftclock()  spl1()	/* disallow softclock */
-#define splsoftnet()    spl1()	/* disallow network */
-#define splclock()      spl1()	/* disallow clock interrupt */
-#define splbio()        spl2()	/* disallow block I/O */
-#define splnet()        spl2()	/* disallow network */
-#define spltty()        spl4()	/* disallow tty interrupts (serial) */
-#define splimp()        spl4()	/* disallow imput */
-#define splhigh()       spl7()	/* disallow everything */
-#define splsched()      spl7()	/* disallow scheduling */
-
-#define splstatclock()  spl2()	/* This should be splclock... */
-
-/* watch out for side effects */
-#define splx(s)         ((s) & PSL_IPL ? _spl(s) : spl0())
-
+#if defined(_KERNEL) && !defined(_LOCORE)
+void	delay		__P((unsigned));
 #define DELAY(ms)	delay(ms)
+#endif	/* _KERNEL && !_LOCORE */
 
-#endif /* _MACHINE_PARAM_H_ */
+#endif /* _PARAM_MACHINE_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: main.h,v 1.8 1995/05/11 21:29:27 christos Exp $	*/
 /*	$NetBSD: main.h,v 1.8 1995/05/11 21:29:27 christos Exp $	*/
 
 /*-

@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
+/*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994
@@ -48,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_cd9660.c	8.4 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,7 +65,7 @@ static char rcsid[] = "$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	MOPT_UPDATE,
 	{ NULL }

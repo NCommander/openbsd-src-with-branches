@@ -1,4 +1,5 @@
-/*	$NetBSD: vmparam.h,v 1.13 1994/10/26 02:06:47 cgd Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: vmparam.h,v 1.14 1996/04/21 21:13:23 veego Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -60,8 +61,8 @@
  */
 
 /* Sun settings. Still hope, that I might get sun3 binaries to work... */
-#define	USRTEXT		0x2000
-#define	USRSTACK	0x0E000000
+#define	USRTEXT		(vm_offset_t)0x2000
+#define	USRSTACK	(vm_offset_t)0x0E000000
 #define	LOWPAGES	btoc(USRTEXT)
 #define KUSER_AREA	(-UPAGES*NBPG)
 /*
@@ -75,13 +76,13 @@
 #define	DFLDSIZ		(32*1024*1024)		/* initial data size limit */
 #endif
 #ifndef MAXDSIZ
-#define	MAXDSIZ		(32*1024*1024)		/* max data size */
+#define	MAXDSIZ		(128*1024*1024)		/* max data size */
 #endif
 #ifndef	DFLSSIZ
 #define	DFLSSIZ		(2*1024*1024)		/* initial stack size limit */
 #endif
 #ifndef	MAXSSIZ
-#define	MAXSSIZ		MAXDSIZ			/* max stack size */
+#define	MAXSSIZ		(32*1024*1024)		/* max stack size */
 #endif
 
 /*

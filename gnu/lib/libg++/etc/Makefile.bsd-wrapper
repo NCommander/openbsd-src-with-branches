@@ -1,0 +1,15 @@
+#       $OpenBSD$
+
+FILES=  cfg-paper.info* configure.info* standards.info*
+MAN=	configure.cat1
+
+all clean cleandir depend lint tags:
+
+afterinstall:
+	@-cd $(.CURDIR); for i in $(FILES); do \
+		cmp -s $$i $(DESTDIR)/usr/share/info/$$i || \
+		install -c -o $(BINOWN) -g $(BINGRP) -m $(NONBINMODE) \
+		$$i $(DESTDIR)/usr/share/info/$$i; \
+	done
+
+.include <bsd.prog.mk>

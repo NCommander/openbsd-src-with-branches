@@ -1,7 +1,5 @@
-/*	$NetBSD: locore.s,v 1.139 1995/10/11 04:19:40 mycroft Exp $	*/
+/*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
-#undef DIAGNOSTIC
-#define DIAGNOSTIC
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles M. Hannum.  All rights reserved.
  * Copyright (c) 1990 The Regents of the University of California.
@@ -42,7 +40,9 @@
  */
 
 #include "npx.h"
-#include "assym.s"
+#include "assym.h"
+#include "apm.h"
+#include "pctr.h"
 
 #include <sys/errno.h>
 #include <sys/syscall.h>
@@ -101,8 +101,6 @@
 	movl	$GSEL(GDATA_SEL, SEL_KPL),%eax	; \
 	movl	%ax,%ds		; \
 	movl	%ax,%es
-#define	INTREXIT \
-	jmp	_Xdoreti
 #define	INTRFASTEXIT \
 	popl	%es		; \
 	popl	%ds		; \
@@ -136,6 +134,20 @@
 	.set	_APTD,(_APTmap + APTDPTDI * NBPG)
 	.set	_APTDpde,(_PTD + APTDPTDI * 4)		# XXX 4 == sizeof pde
 
+#ifdef        GPROF
+#define       PENTRY(name)    \
+	ENTRY(name) \
+	pushl	%ebp; \
+	movl	%esp,%ebp; \
+	pushl	%ebx; \
+	pushl	_cpl; \
+	movl	$0,_cpl; \
+	call	_Xspllower; \
+	call	mcount; \
+	popl	_cpl; \
+	leal	4(%esp),%esp; \
+	popl	%ebp
+#endif
 #define	ENTRY(name)	.globl _/**/name; ALIGN_TEXT; _/**/name:
 #define	ALTENTRY(name)	.globl _/**/name; _/**/name:
 
@@ -146,6 +158,16 @@
 
 	.globl	_cpu,_cpu_vendor,_cold,_esym,_boothowto,_bootdev,_atdevbase
 	.globl	_cyloffset,_proc0paddr,_curpcb,_PTDpaddr,_dynamic_gdt
+#if NAPM > 0
+#include <machine/apmvar.h>
+	.globl	_apminfo
+	.globl	_apm_current_gdt_pdesc	/* current GDT pseudo desc. */
+	.globl	_bootstrap_gdt
+_apm_current_gdt_pdesc:	
+	.word	0, 0, 0
+_bootstrap_gdt:	
+	.space SIZEOF_GDTE * BOOTSTRAP_GDT_NUM
+#endif
 _cpu:		.long	0	# are we 386, 386sx, or 486
 _cpu_vendor:	.space	16	# vendor string returned by `cpuid' instruction
 _cold:		.long	1	# cold till we are not
@@ -181,6 +203,102 @@ start:	movw	$0x1234,0x472			# warm boot
 	jz	1f
 	addl	$KERNBASE,%eax
 1: 	movl	%eax,RELOC(_esym)
+
+#if NAPM > 0
+
+	/*
+	 * Setup APM BIOS:
+	 *
+	 * APM BIOS initialization should be done from real mode or V86 mode.
+	 *
+	 * (by HOSOKAWA, Tatsumi <hosokawa@mt.cs.keio.ac.jp>)
+	 */
+
+	/*
+	 * Cleanup %fs and %gs:
+	 *
+	 * Some BIOS bootstrap routine store junk value into %fs
+	 * and %gs.
+	 */
+
+	xorl	%eax, %eax
+	movw	%ax, %fs
+	movw	%ax, %gs
+
+	/* get GDT base */
+	sgdt	RELOC(_apm_current_gdt_pdesc)
+
+	/* copy GDT to _bootstrap_gdt */
+	xorl	%ecx, %ecx
+	movw	RELOC(_apm_current_gdt_pdesc), %cx
+	movl	RELOC(_apm_current_gdt_pdesc)+2, %esi
+	lea	RELOC(_bootstrap_gdt), %edi
+	cld
+	rep
+	movsb
+
+	/* setup GDT pseudo descriptor */
+	movw	$(SIZEOF_GDTE*BOOTSTRAP_GDT_NUM), %ax
+	movw	%ax, RELOC(_apm_current_gdt_pdesc)
+	leal	RELOC(_bootstrap_gdt), %eax
+	movl	%eax, RELOC(_apm_current_gdt_pdesc)+2
+
+	/* load new GDTR */
+	lgdt	RELOC(_apm_current_gdt_pdesc)
+
+	/* 
+	 * Copy APM initializer under 1MB boundary:
+	 *
+	 * APM initializer program must switch the CPU to real mode.
+	 * But NetBSD kernel runs above 1MB boundary. So we must 
+	 * copy the initializer code to conventional memory.
+	 */
+	movl	RELOC(_apm_init_image_size), %ecx	/* size */
+	lea	RELOC(_apm_init_image), %esi		/* source */
+	movl	$ APM_OURADDR, %edi			/* destination */
+	cld
+	rep
+	movsb
+
+	/* setup GDT for APM initializer */
+	lea	RELOC(_bootstrap_gdt), %ecx
+	movl	$(APM_OURADDR), %eax	/* use %ax for 15..0 */
+	movl	%eax, %ebx
+	shrl	$16, %ebx		/* use %bl for 23..16 */
+					/* use %bh for 31..24 */
+#define APM_SETUP_GDT(index, attrib) \
+	movl	$(index), %si ; \
+	lea	0(%ecx,%esi,8), %edx ; \
+	movw	$0xffff, (%edx) ; \
+	movw	%ax, 2(%edx) ; \
+	movb	%bl, 4(%edx) ; \
+	movw	$(attrib), 5(%edx) ; \
+	movb	%bh, 7(%edx)
+
+	APM_SETUP_GDT(APM_INIT_CS_INDEX  , CS32_ATTRIB)
+	APM_SETUP_GDT(APM_INIT_DS_INDEX  , DS32_ATTRIB)
+	APM_SETUP_GDT(APM_INIT_CS16_INDEX, CS16_ATTRIB)
+
+	/*
+	 * Call the initializer:
+	 *
+	 * direct intersegment call to conventional memory code
+	 */
+	.byte	0x9a		/* actually, lcall $APM_INIT_CS_SEL, $0 */
+	.long	0
+	.word	APM_INIT_CS_SEL
+
+	movw	%ax,RELOC(_apminfo+APM_DETAIL)
+	movw	%di,RELOC(_apminfo+APM_DETAIL)+2
+	movl	%ebx,RELOC(_apminfo+APM_ENTRY)
+	movw	%cx,RELOC(_apminfo+APM_CODE32)
+	shrl	$16, %ecx
+	movw	%cx,RELOC(_apminfo+APM_CODE16)
+	movw	%dx,RELOC(_apminfo+APM_DATA)
+	movw	%si,RELOC(_apminfo+APM_CODE32_LEN)
+	shrl	$16, %esi
+	movw	%si,RELOC(_apminfo+APM_DATA_LEN)
+#endif /* APM */
 
 	/* First, reset the PSL. */
 	pushl	$PSL_MBO
@@ -320,6 +438,11 @@ try586:	/* Use the `cpuid' instruction. */
 	jb	is486			# less than a Pentium
 	movl	$CPU_586,RELOC(_cpu)
 
+	xorl %eax,%eax
+	xorl %edx,%edx
+	movl $0x10,%ecx
+	.byte 0xf, 0x30			# wrmsr (or trap on non-pentium :-)
+
 2:
 	/*
 	 * Finished with old stack; load new %esp now instead of later so we
@@ -367,7 +490,7 @@ try586:	/* Use the `cpuid' instruction. */
 #endif
 
 	/* Calculate where to start the bootstrap tables. */
-	movl	%edi,%esi			# edi = esym ?: end
+	movl	%edi,%esi			# edi = esym ? esym : end
 	addl	$PGOFSET,%esi			# page align up
 	andl	$~PGOFSET,%esi
 
@@ -476,6 +599,11 @@ begin:
 	pushl	%eax
 	call	_init386		# wire 386 chip for unix operation
 	addl	$4,%esp
+
+	/* Clear segment registers; always null in proc0. */
+	xorl	%ecx,%ecx
+	movl	%cx,%fs
+	movl	%cx,%gs
 
 	call 	_main
 
@@ -693,8 +821,14 @@ ENTRY(bcopyw)
  * bcopy(caddr_t from, caddr_t to, size_t len);
  * Copy len bytes.
  */
+#ifdef        GPROF
+ENTRY(ovbcopy)
+	jmp _bcopy
+PENTRY(bcopy)
+#else
 ENTRY(bcopy)
 ALTENTRY(ovbcopy)
+#endif
 	pushl	%esi
 	pushl	%edi
 	movl	12(%esp),%esi
@@ -745,7 +879,11 @@ ALTENTRY(ovbcopy)
  * copyout(caddr_t from, caddr_t to, size_t len);
  * Copy len bytes into the user's address space.
  */
+#ifdef        GPROF
+PENTRY(copyout)
+#else
 ENTRY(copyout)
+#endif
 	pushl	%esi
 	pushl	%edi
 	movl	_curpcb,%eax
@@ -840,7 +978,11 @@ ENTRY(copyout)
  * copyin(caddr_t from, caddr_t to, size_t len);
  * Copy len bytes from the user's address space.
  */
+#ifdef        GPROF
+PENTRY(copyin)
+#else
 ENTRY(copyin)
+#endif
 	pushl	%esi
 	pushl	%edi
 	movl	_curpcb,%eax
@@ -1480,6 +1622,9 @@ ENTRY(remrq)
 3:	.asciz	"remrq"
 #endif /* DIAGNOSTIC */
 
+#if NAPM > 0
+	.globl _apm_cpu_idle,_apm_cpu_busy,_apm_dobusy
+#endif
 /*
  * When no processes are on the runq, cpu_switch() branches to here to wait for
  * something to come ready.
@@ -1490,7 +1635,21 @@ ENTRY(idle)
 	testl	%ecx,%ecx
 	jnz	sw1
 	sti
+#if NAPM > 0
+	call	_apm_cpu_idle
 	hlt
+	cmpl	$0,_apm_dobusy
+	je	1f
+	call	_apm_cpu_busy
+1:
+#else /* NAPM == 0 */
+#if NPCTR > 0
+	addl	$1,_pctr_idlcnt
+	adcl	$0,_pctr_idlcnt+4
+#else /* NPCTR == 0 */
+	hlt
+#endif /* NPCTR == 0 */
+#endif /* NAPM == 0 */
 	jmp	_idle
 
 #ifdef DIAGNOSTIC
@@ -1525,7 +1684,7 @@ ENTRY(cpu_switch)
 	movl	$0,_curproc
 
 	movl	$0,_cpl			# spl0()
-	call	_spllower		# process pending interrupts
+	call	_Xspllower		# process pending interrupts
 
 switch_search:
 	/*
@@ -1758,9 +1917,8 @@ ENTRY(switch_exit)
 	jmp	switch_search
 
 /*
- * savectx(struct pcb *pcb, int altreturn);
- * Update pcb, saving current processor state and arranging for alternate
- * return in cpu_switch() if altreturn is true.
+ * savectx(struct pcb *pcb);
+ * Update pcb, saving current processor state.
  */
 ENTRY(savectx)
 	movl	4(%esp),%edx		# edx = p->p_addr
@@ -1872,7 +2030,7 @@ IDTVEC(fpu)
 	incl	_cnt+V_TRAP
 	call	_npxintr
 	addl	$4,%esp
-	INTREXIT
+	INTRFASTEXIT
 #else
 	ZTRAP(T_ARITHTRAP)
 #endif
@@ -1916,6 +2074,7 @@ calltrap:
 	sti
 	movl	$T_ASTFLT,TF_TRAPNO(%esp)
 	call	_trap
+	jmp	2b
 #ifndef DIAGNOSTIC
 1:	INTRFASTEXIT
 #else /* DIAGNOSTIC */
@@ -1982,6 +2141,7 @@ syscall1:
 	sti
 	/* Pushed T_ASTFLT into tf_trapno on entry. */
 	call	_trap
+	jmp	2b
 #ifndef DIAGNOSTIC
 1:	INTRFASTEXIT
 #else /* DIAGNOSTIC */
@@ -2008,7 +2168,11 @@ syscall1:
  *	write len zero bytes to the string b.
  */
 
+#ifdef        GPROF
+PENTRY(bzero)
+#else
 ENTRY(bzero)
+#endif
 	pushl	%edi
 	movl	8(%esp),%edi
 	movl	12(%esp),%edx
@@ -2074,3 +2238,78 @@ ENTRY(bzero)
 
 	popl	%edi
 	ret
+	
+#if NAPM > 0
+/*
+ * int apmcall(int function, struct apmregs *regs):
+ * 	call the APM protected mode bios function FUNCTION for BIOS selection
+ * 	WHICHBIOS.
+ *	Fills in *regs with registers as returned by APM.
+ *	returns nonzero if error returned by APM.
+ */
+apmstatus:	.long 0
+ENTRY(apmcall)
+	pushl	%ebp
+	movl	%esp,%ebp
+	pushl	%esi
+	pushl	%edi
+	pushl	%ebx
+	
+#if defined(DEBUG) || defined(DIAGNOSTIC)
+	pushl	%ds		
+	pushl	%es
+	pushl	%fs
+	pushl	%gs
+	xorl	%ax,%ax
+/*	movl	%ax,%ds		# can't toss %ds, we need it for apmstatus*/
+	movl	%ax,%es
+	movl	%ax,%fs
+	movl	%ax,%gs
+#endif
+	movb	%cs:8(%ebp),%al
+	movb	$0x53,%ah
+	movl	%cs:12(%ebp),%ebx
+	movw	%cs:APMREG_CX(%ebx),%cx
+	movw	%cs:APMREG_DX(%ebx),%dx
+	movw	%cs:APMREG_BX(%ebx),%bx
+	pushfl
+	cli
+	pushl	%ds
+	lcall	%cs:(_apminfo+APM_CALL)
+	popl	%ds
+	setc	apmstatus
+	popfl
+#if defined(DEBUG) || defined(DIAGNOSTIC)
+	popl	%gs
+	popl	%fs
+	popl	%es
+	popl	%ds		# see above
+#endif
+	movl	12(%ebp),%esi
+	movw	%ax,APMREG_AX(%esi)
+	movw	%bx,APMREG_BX(%esi)
+	movw	%cx,APMREG_CX(%esi)
+	movw	%dx,APMREG_DX(%esi)
+/* todo: do something with %edi? */
+	cmpl	$0,apmstatus
+	jne	1f
+	xorl	%eax,%eax
+1:	
+	popl	%ebx
+	popl	%edi
+	popl	%esi
+	popl	%ebp
+	ret
+		
+_apm_init_image:
+	.globl	_apm_init_image
+
+8:
+#include "lib/apm_init/apm_init.inc"
+9:
+
+_apm_init_image_size:
+	.globl	_apm_init_image_size
+	.long	9b - 8b
+
+#endif /* APM */

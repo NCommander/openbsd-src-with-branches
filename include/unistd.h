@@ -1,4 +1,5 @@
-/*	$NetBSD: unistd.h,v 1.25 1995/03/19 22:51:38 mycroft Exp $	*/
+/*	$OpenBSD: unistd.h,v 1.7 1996/08/22 20:36:59 millert Exp $ */
+/*	$NetBSD: unistd.h,v 1.26.4.1 1996/05/28 02:31:51 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -126,8 +127,8 @@ int	 getpagesize __P((void));
 char	*getpass __P((const char *));
 char	*getusershell __P((void));
 char	*getwd __P((char *));			/* obsoleted by getcwd() */
-int	 initgroups __P((const char *, int));
-int	 iruserok __P((u_long, int, const char *, const char *));
+int	 initgroups __P((const char *, gid_t));
+int	 iruserok __P((u_int32_t, int, const char *, const char *));
 int	 mknod __P((const char *, mode_t, dev_t));
 int	 mkstemp __P((char *));
 char	*mktemp __P((char *));
@@ -135,14 +136,17 @@ int	 nfssvc __P((int, void *));
 int	 nice __P((int));
 void	 psignal __P((unsigned int, const char *));
 extern __const char *__const sys_siglist[];
-int	 profil __P((char *, int, int, int));
+int	 profil __P((char *, size_t, u_long, u_int));
 int	 rcmd __P((char **, int, const char *,
 		const char *, const char *, int *));
+int	 rcmdsh __P((char **, int, const char *,
+		const char *, const char *, char *));
 char	*re_comp __P((const char *));
 int	 re_exec __P((const char *));
 int	 readlink __P((const char *, char *, int));
 int	 reboot __P((int));
 int	 revoke __P((const char *));
+int	 rfork __P((int opts));
 int	 rresvport __P((int *));
 int	 ruserok __P((const char *, int, const char *, const char *));
 char	*sbrk __P((int));
@@ -151,7 +155,7 @@ int	 setdomainname __P((const char *, int));
 int	 setegid __P((gid_t));
 int	 seteuid __P((uid_t));
 int	 setgroups __P((int, const gid_t *));
-void	 sethostid __P((long));
+int	 sethostid __P((long));
 int	 sethostname __P((const char *, int));
 int	 setkey __P((const char *));
 int	 setlogin __P((const char *));
@@ -173,6 +177,7 @@ int	 undelete __P((const char *));
 void	 usleep __P((u_int));
 void	*valloc __P((size_t));			/* obsoleted by malloc() */
 pid_t	 vfork __P((void));
+int	 issetugid __P((void));
 
 int	 getopt __P((int, char * const *, const char *));
 extern	 char *optarg;			/* getopt(3) external variables */

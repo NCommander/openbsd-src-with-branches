@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef _OSF1_SIGNAL_H
 #define _OSF1_SIGNAL_H
 

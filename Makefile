@@ -1,14 +1,17 @@
+#	$OpenBSD: Makefile,v 1.11 1996/06/02 07:22:46 tholo Exp $
 #	$NetBSD: Makefile,v 1.25 1995/10/09 02:11:28 thorpej Exp $
+
+.include <bsd.own.mk>	# for NOMAN, if it's there.
 
 # NOTE THAT etc *DOES NOT* BELONG IN THE LIST BELOW
 
 SUBDIR+= lib include bin libexec sbin usr.bin usr.sbin share games
 SUBDIR+= gnu
 
-SUBDIR+= sys
+SUBDIR+= sys lkm
 
-.if exists(domestic) && !defined(EXPORTABLE_SYSTEM)
-SUBDIR+= domestic
+.if defined(KERBEROS)
+SUBDIR+= kerberosIV
 .endif
 
 .if exists(regress)
@@ -21,10 +24,16 @@ regression-tests:
 	@(cd ${.CURDIR}/regress && ${MAKE} regress)
 .endif
 
-.include <bsd.own.mk>	# for NOMAN, if it's there.
+includes:
+	(cd ${.CURDIR}/include; ${MAKE} includes)	
 
-#beforeinstall:
-#	(cd ${.CURDIR}/etc && ${MAKE} DESTDIR=/ distrib-dirs)
+beforeinstall:
+.ifndef DESTDIR
+	(cd ${.CURDIR}/etc && ${MAKE} DESTDIR=/ distrib-dirs)
+.else
+	(cd ${.CURDIR}/etc && ${MAKE} distrib-dirs)
+.endif
+	(cd ${.CURDIR}/include; ${MAKE} includes)
 
 afterinstall:
 .ifndef NOMAN
@@ -32,15 +41,13 @@ afterinstall:
 .endif
 
 build:
-	(cd ${.CURDIR}/include && ${MAKE} install)
+	(cd ${.CURDIR}/share/mk && ${MAKE} install)
+	(cd ${.CURDIR}/include; ${MAKE} includes)
 	${MAKE} cleandir
 	(cd ${.CURDIR}/lib && ${MAKE} depend && ${MAKE} && ${MAKE} install)
 	(cd ${.CURDIR}/gnu/lib && ${MAKE} depend && ${MAKE} && ${MAKE} install)
-.if exists(domestic)
-	(cd ${.CURDIR}/domestic/libcrypt && ${MAKE} depend && ${MAKE} && ${MAKE} install)
-.endif
-.if exists(kerberosIV)
-	(cd ${.CURDIR}/kerberosIV && ${MAKE} depend && ${MAKE} && ${MAKE} install)
+.if defined(KERBEROS)
+	(cd ${.CURDIR}/kerberosIV && ${MAKE} build)
 .endif
 	${MAKE} depend && ${MAKE} && ${MAKE} install
 

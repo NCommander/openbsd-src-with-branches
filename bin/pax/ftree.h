@@ -1,3 +1,4 @@
+/*	$OpenBSD: ftree.h,v 1.3 1995/03/21 09:07:23 cgd Exp $	*/
 /*	$NetBSD: ftree.h,v 1.3 1995/03/21 09:07:23 cgd Exp $	*/
 
 /*-

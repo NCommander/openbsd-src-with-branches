@@ -1,3 +1,4 @@
+/*	$OpenBSD: stty.c,v 1.3 1996/08/02 12:08:25 deraadt Exp $	*/
 /*	$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $	*/
 
 /*-
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)stty.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $";
+static char rcsid[] = "$OpenBSD: stty.c,v 1.3 1996/08/02 12:08:25 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -91,7 +92,6 @@ main(argc, argv)
 		case 'g':
 			fmt = GFLAG;
 			break;
-		case '?':
 		default:
 			goto args;
 		}
@@ -99,10 +99,10 @@ main(argc, argv)
 args:	argc -= optind;
 	argv += optind;
 
-	if (ioctl(i.fd, TIOCGETD, &i.ldisc) < 0)
-		err(1, "TIOCGETD");
 	if (tcgetattr(i.fd, &i.t) < 0)
-		err(1, "tcgetattr");
+		errx(1, "not a terminal");
+	if (ioctl(i.fd, TIOCGETD, &i.ldisc) < 0	)
+		err(1, "TIOCGETD");
 	if (ioctl(i.fd, TIOCGWINSZ, &i.win) < 0)
 		warn("TIOCGWINSZ");
 

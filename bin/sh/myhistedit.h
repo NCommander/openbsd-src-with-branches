@@ -1,3 +1,4 @@
+/*	$OpenBSD: myhistedit.h,v 1.4 1995/05/11 21:29:40 christos Exp $	*/
 /*	$NetBSD: myhistedit.h,v 1.4 1995/05/11 21:29:40 christos Exp $	*/
 
 /*-

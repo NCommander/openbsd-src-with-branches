@@ -1,7 +1,8 @@
-/*	$NetBSD: disksubr.c,v 1.3 1995/04/22 12:43:22 cgd Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.6 1996/04/29 16:34:50 cgd Exp $	*/
+/*	$NetBSD: disksubr.c,v 1.6 1996/04/29 16:34:50 cgd Exp $	*/
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Authors: Keith Bostic, Chris G. Demetriou
@@ -43,9 +44,9 @@
 extern struct device *bootdv;
 
 /* was this the boot device ? */
-int
+void
 dk_establish(dk, dev)
-	struct dkdevice *dk;
+	struct disk *dk;
 	struct device *dev;
 {
 #ifdef NOTDEF
@@ -57,14 +58,12 @@ dk_establish(dk, dev)
 
 	if (bp == NULL) {
 		printf("no boot path\n");
-		return -1;
 	}
 	sprintf(name, "%s%d", bp->name, CRAZYMAP(bp->val[0]));
 	if (strcmp(name, dev->dv_xname) == 0) {
 		bootdv = dev;
 	}
 #endif
-	return 1;
 }
 
 /*

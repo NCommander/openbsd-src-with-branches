@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: disksubr.c,v 1.3 1995/04/22 12:43:22 cgd Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.4 1996/09/22 11:26:09 pefo Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -52,11 +51,10 @@ dk_establish(dk, dev)
 }
 
 /*
- * Attempt to read a disk label from a device
- * using the indicated stategy routine.
+ * Attempt to read a disk label from a device * using the indicated stategy routine.
  * The label must be partly set up before this:
- * secpercyl and anything required in the strategy routine
- * (e.g., sector size) must be filled in before calling us.
+ *     secpercyl and anything required in the strategy routine
+ *     (e.g., sector size) must be filled in before calling us.
  * Returns null on success and an error string on failure.
  */
 char *
@@ -70,8 +68,7 @@ readdisklabel(dev, strat, lp, clp)
 	struct disklabel *dlp;
 	struct dos_partition *dp = clp->dosparts;
 	char *msg = NULL;
-	int dospartoff = 0;
-	int i;
+	int dospart, dospartoff, i;
 
 	/* minimal requirements for archtypal disk label */
 	if (lp->d_secperunit == 0)
@@ -88,6 +85,8 @@ readdisklabel(dev, strat, lp, clp)
 	/* obtain buffer to probe drive with */
 	bp = geteblk((int)lp->d_secsize);
 	bp->b_dev = dev;
+	dospartoff = 0;
+	dospart = -1;
 
 	/* do dos partitions in the process of getting disklabel? */
 	if (dp) {
@@ -102,22 +101,35 @@ readdisklabel(dev, strat, lp, clp)
 		if (biowait(bp)) {
 			msg = "dos partition I/O error";
 			goto done;
-		} else if (*(unsigned int *)(bp->b_data) == 0x8ec033fa) {
+		}
+		if (*(unsigned int *)(bp->b_data) == 0x8efac033) {
 			/* XXX how do we check veracity/bounds of this? */
 			bcopy(bp->b_data + DOSPARTOFF, dp, NDOSPART * sizeof(*dp));
-			for (i = 0; i < NDOSPART; i++, dp++) {
-				/* is this ours? */
-				if (dp->dp_size && dp->dp_typ == DOSPTYP_386BSD
-				    && dospartoff == 0) {
-					dospartoff = dp->dp_start;
 
-					/* set part a to show NetBSD part */
-					lp->d_partitions[0].p_size = dp->dp_size;
-					lp->d_partitions[0].p_offset = dp->dp_start;
-					lp->d_ntracks = dp->dp_ehd + 1;
-					lp->d_nsectors = DPSECT(dp->dp_esect);
-					lp->d_secpercyl = lp->d_ntracks * lp->d_nsectors;
-				}
+			for (i = 0, dp = clp->dosparts; i < NDOSPART; i++, dp++) {
+				if (dp->dp_size && dp->dp_typ == DOSPTYP_OPENBSD
+				    && dospart < 0)
+					dospart = i;
+			}
+			for (i = 0, dp = clp->dosparts; i < NDOSPART; i++, dp++) {
+				if (dp->dp_size && dp->dp_typ == DOSPTYP_386BSD
+				    && dospart < 0)
+					dospart = i;
+			}
+			if(dospart >= 0) {
+				/*
+				 * set part a to show OpenBSD part
+				 */
+				dp = clp->dosparts+dospart;
+				dospartoff = dp->dp_start;
+
+				lp->d_partitions[0].p_size = dp->dp_size;
+				lp->d_partitions[0].p_offset = dp->dp_start;
+				lp->d_partitions[RAW_PART].p_size = dp->dp_size;
+				lp->d_partitions[RAW_PART].p_offset = dp->dp_start;
+				lp->d_ntracks = dp->dp_ehd + 1;
+				lp->d_nsectors = DPSECT(dp->dp_esect);
+				lp->d_secpercyl = lp->d_ntracks * lp->d_nsectors;
 			}
 		}
 			
@@ -138,7 +150,7 @@ readdisklabel(dev, strat, lp, clp)
 	dlp = (struct disklabel *)(bp->b_un.b_addr + LABELOFFSET);
 	if (dlp->d_magic == DISKMAGIC) {
 		if (dkcksum(dlp)) {
-			msg = "NetBSD disk label corrupted";
+			msg = "OpenBSD disk label corrupted";
 			goto done;
 		}
 		*lp = *dlp;
@@ -167,15 +179,6 @@ setdisklabel(olp, nlp, openmask, clp)
 	if (nlp->d_secpercyl == 0 || nlp->d_secsize == 0 ||
 	    (nlp->d_secsize % DEV_BSIZE) != 0)
 		return(EINVAL);
-
-#ifdef notdef
-	/* XXX WHY WAS THIS HERE?! */
-	/* special case to allow disklabel to be invalidated */
-	if (nlp->d_magic == 0xffffffff) { 
-		*olp = *nlp;
-		return (0);
-	}
-#endif
 
 	if (nlp->d_magic != DISKMAGIC || nlp->d_magic2 != DISKMAGIC ||
 		dkcksum(nlp) != 0)
@@ -223,10 +226,12 @@ writedisklabel(dev, strat, lp, clp)
 	struct disklabel *dlp;
 	struct dos_partition *dp = clp->dosparts;
 	int error = 0, i;
-	int dospartoff = 0;
+	int dospart, dospartoff;
 
 	bp = geteblk((int)lp->d_secsize);
 	bp->b_dev = dev;
+	dospart = -1;
+	dospartoff = 0;
 
 	/* do dos partitions in the process of getting disklabel? */
 	if (dp) {
@@ -238,13 +243,21 @@ writedisklabel(dev, strat, lp, clp)
 		(*strat)(bp);
 
 		if (((error = biowait(bp)) == 0) 
-		   && *(unsigned int *)(bp->b_data) == 0x8ec033fa) {
+		   && *(unsigned int *)(bp->b_data) == 0x8efac033) {
 			/* XXX how do we check veracity/bounds of this? */
 			bcopy(bp->b_data + DOSPARTOFF, dp, NDOSPART * sizeof(*dp));
-			for (i = 0; i < NDOSPART; i++, dp++) {
-				/* is this ours? */
+
+			for (i = 0, dp = clp->dosparts; i < NDOSPART; i++, dp++) {
+				if (dp->dp_size && dp->dp_typ == DOSPTYP_OPENBSD
+				    && dospart < 0) {
+					dospart = i;
+					dospartoff = dp->dp_start;
+				}
+			}
+			for (i = 0, dp = clp->dosparts; i < NDOSPART; i++, dp++) {
 				if (dp->dp_size && dp->dp_typ == DOSPTYP_386BSD
-				    && dospartoff == 0) {
+				    && dospart < 0) {
+					dospart = i;
 					dospartoff = dp->dp_start;
 				}
 			}
@@ -283,7 +296,7 @@ bounds_check_with_label(bp, lp, wlabel)
 	struct disklabel *lp;
 	int wlabel;
 {
-#define dkpart(dev) (minor(dev) & 7)
+#define dkpart(dev) (minor(dev) % MAXPARTITIONS )
 
 	struct partition *p = lp->d_partitions + dkpart(bp->b_dev);
 	int labelsect = lp->d_partitions[RAW_PART].p_offset;

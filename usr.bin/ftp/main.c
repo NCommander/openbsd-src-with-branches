@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.5 1996/06/26 05:33:38 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1985, 1989, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -41,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 10/9/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.10 1995/09/15 00:32:33 pk Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.5 1996/06/26 05:33:38 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,7 +52,9 @@ static char rcsid[] = "$NetBSD: main.c,v 1.10 1995/09/15 00:32:33 pk Exp $";
  */
 /*#include <sys/ioctl.h>*/
 #include <sys/types.h>
+#include <sys/file.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #include <arpa/ftp.h>
 
@@ -74,6 +78,7 @@ main(argc, argv)
 	int ch, top;
 	struct passwd *pw = NULL;
 	char *cp, homedir[MAXPATHLEN];
+	int force_port = 0;
 
 	sp = getservbyname("ftp", "tcp");
 	if (sp == 0)
@@ -82,7 +87,7 @@ main(argc, argv)
 	interactive = 1;
 	autologin = 1;
 
-	while ((ch = getopt(argc, argv, "dgintv")) != EOF) {
+	while ((ch = getopt(argc, argv, "p:dgintv")) != EOF) {
 		switch (ch) {
 		case 'd':
 			options |= SO_DEBUG;
@@ -99,6 +104,10 @@ main(argc, argv)
 
 		case 'n':
 			autologin = 0;
+			break;
+
+		case 'p':
+			force_port = atoi(optarg);
 			break;
 
 		case 't':
@@ -138,6 +147,92 @@ main(argc, argv)
 	if (pw != NULL) {
 		home = homedir;
 		(void) strcpy(home, pw->pw_dir);
+	}
+	if (argc > 0 && strchr(argv[0], ':')) {
+		int ret = 0;
+		anonftp = 1;
+
+		while (argc > 0 && strchr(argv[0], ':')) {
+			char *xargv[5];
+			extern char *__progname;
+			char portstr[20], *p, *bufp = NULL;
+			char *host = NULL, *dir = NULL, *file = NULL;
+			int xargc = 2;
+
+			if (setjmp(toplevel))
+				exit(0);
+			(void) signal(SIGINT, intr);
+			(void) signal(SIGPIPE, lostpeer);
+			xargv[0] = __progname;
+
+			host = strdup(argv[0]);
+			if (host == NULL) {
+				ret = 1;
+				goto bail;
+			}
+			if (!strncmp(host, "http://", strlen("http://"))) {
+				http_fetch(host);
+				goto bail;
+			}
+			if (strncmp(host, "ftp://", sizeof("ftp://")-1) == 0) {
+				host += sizeof("ftp://") - 1;
+				p = strchr(host, '/');
+			} else
+				p = strchr(host, ':');
+			*p = '\0';
+			dir = ++p;
+			p = strrchr(p, '/');
+			if (p) {
+				*p = '\0';
+				file = ++p;
+			} else {
+				file = dir;
+				dir = NULL;
+			}
+
+			xargv[1] = host;
+			xargv[2] = NULL;
+			xargc = 2;
+			if (force_port) {
+				xargv[2] = portstr;
+				snprintf(portstr, sizeof portstr, "%d",
+				    force_port);
+				xargc++;
+			}
+			setpeer(xargc, xargv);
+			if (!connected) {
+				printf("failed to connect to %s\n", host);
+				ret = 1;
+				goto bail;
+			}
+
+			setbinary(NULL, 0);
+
+			if (dir) {
+				xargv[1] = dir;
+				xargv[2] = NULL;
+				xargc = 2;
+				cd(xargc, xargv);
+			}
+
+			/* fetch file */
+			xargv[1] = file;
+			xargv[2] = NULL;
+			xargc = 2;
+			get(xargc, xargv);
+
+			/* get ready for the next file */
+bail:
+			if (bufp) {
+				free(bufp);
+				bufp = NULL;
+			}
+			if (connected)
+				disconnect(1, xargv);
+			--argc;
+			argv++;
+		}
+		exit(ret);
 	}
 	if (argc > 0) {
 		char *xargv[5];
@@ -287,6 +382,9 @@ getcmd(name)
 	char *p, *q;
 	struct cmd *c, *found;
 	int nmatches, longest;
+
+	if (name == NULL)
+		return (0);
 
 	longest = 0;
 	nmatches = 0;

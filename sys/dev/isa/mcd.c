@@ -1,4 +1,5 @@
-/*	$NetBSD: mcd.c,v 1.42 1995/08/05 23:47:52 mycroft Exp $	*/
+/*	$OpenBSD: mcd.c,v 1.16 1996/06/10 00:48:05 deraadt Exp $ */
+/*	$NetBSD: mcd.c,v 1.49 1996/05/12 23:53:11 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -66,6 +67,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <sys/ioctl.h>
+#include <sys/mtio.h>
 #include <sys/cdio.h>
 #include <sys/errno.h>
 #include <sys/disklabel.h>
@@ -73,10 +75,12 @@
 #include <sys/disk.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <dev/isa/isavar.h>
 #include <dev/isa/mcdreg.h>
+#include <dev/isa/opti.h>
 
 #ifndef MCDDEBUG
 #define MCD_TRACE(fmt,a,b,c,d)
@@ -107,7 +111,7 @@ struct mcd_mbx {
 
 struct mcd_softc {
 	struct	device sc_dev;
-	struct	dkdevice sc_dk;
+	struct	disk sc_dk;
 	void *sc_ih;
 
 	int	iobase;
@@ -115,12 +119,14 @@ struct mcd_softc {
 
 	char	*type;
 	u_char	readcmd;
+	u_char	attached;
 	int	flags;
 #define	MCDF_LOCKED	0x01
 #define	MCDF_WANTED	0x02
 #define	MCDF_WLABEL	0x04	/* label is writable */
 #define	MCDF_LABELLING	0x08	/* writing label */
 #define	MCDF_LOADED	0x10	/* parameters loaded */
+#define	MCDF_EJECTING	0x20	/* please eject at close */
 	short	status;
 	short	audio_status;
 	int	blksize;
@@ -138,10 +144,9 @@ struct mcd_softc {
 };
 
 /* prototypes */
-int mcdopen __P((dev_t, int, int, struct proc *));
-int mcdclose __P((dev_t, int, int));
-int mcdioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
-int mcdsize __P((dev_t));
+/* XXX does not belong here */
+cdev_decl(mcd);
+bdev_decl(mcd);
 
 static int bcd2bin __P((bcd_t));
 static bcd_t bin2bcd __P((int));
@@ -177,14 +182,21 @@ int mcd_setlock __P((struct mcd_softc *, int));
 int mcdprobe __P((struct device *, void *, void *));
 void mcdattach __P((struct device *, struct device *, void *));
 
-struct cfdriver mcdcd = {
-	NULL, "mcd", mcdprobe, mcdattach, DV_DISK, sizeof(struct mcd_softc)
+struct cfattach mcd_ca = {
+	sizeof(struct mcd_softc), mcdprobe, mcdattach
 };
 
-void mcdgetdisklabel __P((struct mcd_softc *));
-int mcd_get_parms __P((struct mcd_softc *));
-void mcdstrategy __P((struct buf *));
-void mcdstart __P((struct mcd_softc *));
+struct cfdriver mcd_cd = {
+	NULL, "mcd", DV_DISK
+};
+
+void	mcdgetdisklabel __P((struct mcd_softc *));
+int	mcd_get_parms __P((struct mcd_softc *));
+void	mcdstrategy __P((struct buf *));
+void	mcdstart __P((struct mcd_softc *));
+int	mcdlock __P((struct mcd_softc *));
+void	mcdunlock __P((struct mcd_softc *));
+void	mcd_pseudointr __P((void *));
 
 struct dkdriver mcddkdriver = { mcdstrategy };
 
@@ -207,6 +219,15 @@ mcdattach(parent, self, aux)
 	struct isa_attach_args *ia = aux;
 	struct mcd_mbox mbx;
 
+	/*
+	 * Initialize and attach the disk structure.
+	 */
+	sc->sc_dk.dk_driver = &mcddkdriver;
+	sc->sc_dk.dk_name = sc->sc_dev.dv_xname;
+	disk_attach(&sc->sc_dk);
+
+	dk_establish(&sc->sc_dk, &sc->sc_dev);
+
 	printf(": model %s\n", sc->type != 0 ? sc->type : "unknown");
 
 	(void) mcd_setlock(sc, MCD_LK_UNLOCK);
@@ -220,10 +241,8 @@ mcdattach(parent, self, aux)
 
 	mcd_soft_reset(sc);
 
-	sc->sc_dk.dk_driver = &mcddkdriver;
-
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_BIO,
-	    mcdintr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_BIO, mcdintr, sc, sc->sc_dev.dv_xname);
 }
 
 /*
@@ -273,13 +292,13 @@ mcdopen(dev, flag, fmt, p)
 	struct mcd_softc *sc;
 
 	unit = MCDUNIT(dev);
-	if (unit >= mcdcd.cd_ndevs)
+	if (unit >= mcd_cd.cd_ndevs)
 		return ENXIO;
-	sc = mcdcd.cd_devs[unit];
+	sc = mcd_cd.cd_devs[unit];
 	if (!sc)
 		return ENXIO;
 
-	if (error = mcdlock(sc))
+	if ((error = mcdlock(sc)) != 0)
 		return error;
 
 	if (sc->sc_dk.dk_openmask != 0) {
@@ -332,8 +351,8 @@ mcdopen(dev, flag, fmt, p)
 	
 	/* Check that the partition exists. */
 	if (part != RAW_PART &&
-	    (part >= sc->sc_dk.dk_label.d_npartitions ||
-	     sc->sc_dk.dk_label.d_partitions[part].p_fstype == FS_UNUSED)) {
+	    (part >= sc->sc_dk.dk_label->d_npartitions ||
+	     sc->sc_dk.dk_label->d_partitions[part].p_fstype == FS_UNUSED)) {
 		error = ENXIO;
 		goto bad;
 	}
@@ -369,17 +388,18 @@ bad3:
 }
 
 int
-mcdclose(dev, flag, fmt)
+mcdclose(dev, flag, fmt, p)
 	dev_t dev;
 	int flag, fmt;
+	struct proc *p;
 {
-	struct mcd_softc *sc = mcdcd.cd_devs[MCDUNIT(dev)];
+	struct mcd_softc *sc = mcd_cd.cd_devs[MCDUNIT(dev)];
 	int part = MCDPART(dev);
 	int error;
 	
 	MCD_TRACE("close: partition=%d\n", part, 0, 0, 0);
 
-	if (error = mcdlock(sc))
+	if ((error = mcdlock(sc)) != 0)
 		return error;
 
 	switch (fmt) {
@@ -399,8 +419,11 @@ mcdclose(dev, flag, fmt)
 		(void) mcd_setmode(sc, MCD_MD_SLEEP);
 #endif
 		(void) mcd_setlock(sc, MCD_LK_UNLOCK);
+		if (sc->flags & MCDF_EJECTING) {
+			mcd_eject(sc);
+			sc->flags &= ~MCDF_EJECTING;
+		}
 	}
-
 	mcdunlock(sc);
 	return 0;
 }
@@ -409,7 +432,7 @@ void
 mcdstrategy(bp)
 	struct buf *bp;
 {
-	struct mcd_softc *sc = mcdcd.cd_devs[MCDUNIT(bp->b_dev)];
+	struct mcd_softc *sc = mcd_cd.cd_devs[MCDUNIT(bp->b_dev)];
 	int s;
 	
 	/* Test validity. */
@@ -417,7 +440,7 @@ mcdstrategy(bp)
 	    bp->b_blkno, bp->b_bcount, 0);
 	if (bp->b_blkno < 0 ||
 	    (bp->b_bcount % sc->blksize) != 0) {
-		printf("%s: strategy: blkno = %d bcount = %d\n",
+		printf("%s: strategy: blkno = %d bcount = %ld\n",
 		    sc->sc_dev.dv_xname, bp->b_blkno, bp->b_bcount);
 		bp->b_error = EINVAL;
 		goto bad;
@@ -439,7 +462,7 @@ mcdstrategy(bp)
 	 * If end of partition, just return.
 	 */
 	if (MCDPART(bp->b_dev) != RAW_PART &&
-	    bounds_check_with_label(bp, &sc->sc_dk.dk_label,
+	    bounds_check_with_label(bp, sc->sc_dk.dk_label,
 	    (sc->flags & (MCDF_WLABEL|MCDF_LABELLING)) != 0) <= 0)
 		goto done;
 	
@@ -492,12 +515,17 @@ loop:
 
 	dp->b_active = 1;
 
+	/* Instrumentation. */
+	s = splbio();
+	disk_busy(&sc->sc_dk);
+	splx(s);
+
 	sc->mbx.retry = MCD_RDRETRIES;
 	sc->mbx.bp = bp;
 	sc->mbx.blkno = bp->b_blkno / (sc->blksize / DEV_BSIZE);
 	if (MCDPART(bp->b_dev) != RAW_PART) {
 		struct partition *p;
-		p = &sc->sc_dk.dk_label.d_partitions[MCDPART(bp->b_dev)];
+		p = &sc->sc_dk.dk_label->d_partitions[MCDPART(bp->b_dev)];
 		sc->mbx.blkno += p->p_offset;
 	}
 	sc->mbx.nblk = bp->b_bcount / sc->blksize;
@@ -512,18 +540,20 @@ loop:
 }
 
 int
-mcdread(dev, uio)
+mcdread(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
+	int flags;
 {
 
 	return (physio(mcdstrategy, NULL, dev, B_READ, minphys, uio));
 }
 
 int
-mcdwrite(dev, uio)
+mcdwrite(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
+	int flags;
 {
 
 	return (physio(mcdstrategy, NULL, dev, B_WRITE, minphys, uio));
@@ -537,7 +567,7 @@ mcdioctl(dev, cmd, addr, flag, p)
 	int flag;
 	struct proc *p;
 {
-	struct mcd_softc *sc = mcdcd.cd_devs[MCDUNIT(dev)];
+	struct mcd_softc *sc = mcd_cd.cd_devs[MCDUNIT(dev)];
 	int error;
 	
 	MCD_TRACE("ioctl: cmd=0x%x\n", cmd, 0, 0, 0);
@@ -547,13 +577,13 @@ mcdioctl(dev, cmd, addr, flag, p)
 
 	switch (cmd) {
 	case DIOCGDINFO:
-		*(struct disklabel *)addr = sc->sc_dk.dk_label;
+		*(struct disklabel *)addr = *(sc->sc_dk.dk_label);
 		return 0;
 
 	case DIOCGPART:
-		((struct partinfo *)addr)->disklab = &sc->sc_dk.dk_label;
+		((struct partinfo *)addr)->disklab = sc->sc_dk.dk_label;
 		((struct partinfo *)addr)->part =
-		    &sc->sc_dk.dk_label.d_partitions[MCDPART(dev)];
+		    &sc->sc_dk.dk_label->d_partitions[MCDPART(dev)];
 		return 0;
 
 	case DIOCWDINFO:
@@ -561,13 +591,13 @@ mcdioctl(dev, cmd, addr, flag, p)
 		if ((flag & FWRITE) == 0)
 			return EBADF;
 
-		if (error = mcdlock(sc))
+		if ((error = mcdlock(sc)) != 0)
 			return error;
 		sc->flags |= MCDF_LABELLING;
 
-		error = setdisklabel(&sc->sc_dk.dk_label,
+		error = setdisklabel(sc->sc_dk.dk_label,
 		    (struct disklabel *)addr, /*sc->sc_dk.dk_openmask : */0,
-		    &sc->sc_dk.dk_cpulabel);
+		    sc->sc_dk.dk_cpulabel);
 		if (error == 0) {
 		}
 
@@ -607,12 +637,21 @@ mcdioctl(dev, cmd, addr, flag, p)
 		return EINVAL;
 	case CDIOCSTOP:
 		return mcd_stop(sc);
-	case CDIOCEJECT:
-		return mcd_eject(sc);
+	case MTIOCTOP:
+		if (((struct mtop *)addr)->mt_op != MTOFFL)
+			return EIO;
+		/* FALLTHROUGH */
+	case CDIOCEJECT: /* FALLTHROUGH */
+	case DIOCEJECT:
+		sc->flags |= MCDF_EJECTING;
+		return (0);
 	case CDIOCALLOW:
 		return mcd_setlock(sc, MCD_LK_UNLOCK);
 	case CDIOCPREVENT:
 		return mcd_setlock(sc, MCD_LK_LOCK);
+	case DIOCLOCK:
+		return mcd_setlock(sc,
+		    (*(int *)addr) ? MCD_LK_LOCK : MCD_LK_UNLOCK);
 	case CDIOCSETDEBUG:
 		sc->debug = 1;
 		return 0;
@@ -639,10 +678,10 @@ void
 mcdgetdisklabel(sc)
 	struct mcd_softc *sc;
 {
-	struct disklabel *lp = &sc->sc_dk.dk_label;
+	struct disklabel *lp = sc->sc_dk.dk_label;
 	
 	bzero(lp, sizeof(struct disklabel));
-	bzero(&sc->sc_dk.dk_cpulabel, sizeof(struct cpu_disklabel));
+	bzero(sc->sc_dk.dk_cpulabel, sizeof(struct cpu_disklabel));
 
 	lp->d_secsize = sc->blksize;
 	lp->d_ntracks = 1;
@@ -734,6 +773,9 @@ mcdprobe(parent, match, aux)
 
 	sc->iobase = iobase;
 
+	if( !opti_cd_setup( OPTI_MITSUMI, iobase, ia->ia_irq, ia->ia_drq ) )
+		/* printf("mcdprobe: could not setup OPTi chipset.\n") */;
+
 	/* Send a reset. */
 	outb(iobase + MCD_RESET, 0);
 	delay(1000000);
@@ -783,13 +825,16 @@ mcdprobe(parent, match, aux)
 		sc->readcmd = MCD_CMDREADDOUBLESPEED;
 		break;
 	default:
+#ifdef MCDDEBUG
 		printf("%s: unrecognized drive version %c%02x; will try to use it anyway\n",
 		    sc->sc_dev.dv_xname,
 		    mbx.res.data.continfo.code, mbx.res.data.continfo.version);
+#endif
 		sc->type = 0;
 		break;
 	}
 
+	sc->attached = 1;
 	ia->ia_iosize = 4;
 	ia->ia_msize = 0;
 	return 1;
@@ -841,7 +886,7 @@ mcd_getresult(sc, res)
 	if ((x = mcd_getreply(sc)) < 0) {
 		if (sc->debug)
 			printf(" timeout\n");
-		else
+		else if (sc->attached)
 			printf("%s: timeout in getresult\n", sc->sc_dev.dv_xname);
 		return EIO;
 	}
@@ -987,9 +1032,10 @@ msf2hsg(msf, relative)
 }
 
 void
-mcd_pseudointr(sc)
-	struct mcd_softc *sc;
+mcd_pseudointr(v)
+	void *v;
 {
+	struct mcd_softc *sc = v;
 	int s;
 
 	s = splbio();
@@ -1111,6 +1157,7 @@ mcdintr(arg)
 
 		/* Return buffer. */
 		bp->b_resid = 0;
+		disk_unbusy(&sc->sc_dk, bp->b_bcount);
 		biodone(bp);
 
 		mcdstart(sc);
@@ -1139,10 +1186,10 @@ readerr:
 		printf("; giving up\n");
 
 changed:
-harderr:
 	/* Invalidate the buffer. */
 	bp->b_flags |= B_ERROR;
 	bp->b_resid = bp->b_bcount - mbx->skip;
+	disk_unbusy(&sc->sc_dk, (bp->b_bcount - bp->b_resid));
 	biodone(bp);
 
 	mcdstart(sc);
@@ -1352,17 +1399,20 @@ mcd_toc_entries(sc, te)
 		data.entries[n].track = bcd2bin(sc->toc[trk].toc.idx_no);
 		switch (te->address_format) {
 		case CD_MSF_FORMAT:
-			data.entries[n].addr[0] = 0;
-			data.entries[n].addr[1] = bcd2bin(sc->toc[trk].toc.absolute_pos[0]);
-			data.entries[n].addr[2] = bcd2bin(sc->toc[trk].toc.absolute_pos[1]);
-			data.entries[n].addr[3] = bcd2bin(sc->toc[trk].toc.absolute_pos[2]);
+			data.entries[n].addr.addr[0] = 0;
+			data.entries[n].addr.addr[1] =
+			    bcd2bin(sc->toc[trk].toc.absolute_pos[0]);
+			data.entries[n].addr.addr[2] =
+			    bcd2bin(sc->toc[trk].toc.absolute_pos[1]);
+			data.entries[n].addr.addr[3] =
+			    bcd2bin(sc->toc[trk].toc.absolute_pos[2]);
 			break;
 		case CD_LBA_FORMAT:
 			lba = msf2hsg(sc->toc[trk].toc.absolute_pos, 0);
-			data.entries[n].addr[0] = lba >> 24;
-			data.entries[n].addr[1] = lba >> 16;
-			data.entries[n].addr[2] = lba >> 8;
-			data.entries[n].addr[3] = lba;
+			data.entries[n].addr.addr[0] = lba >> 24;
+			data.entries[n].addr.addr[1] = lba >> 16;
+			data.entries[n].addr.addr[2] = lba >> 8;
+			data.entries[n].addr.addr[3] = lba;
 			break;
 		}
 		n++;
@@ -1472,14 +1522,20 @@ mcd_read_subchannel(sc, ch)
 		data.what.position.index_number = bcd2bin(q.current.idx_no);
 		switch (ch->address_format) {
 		case CD_MSF_FORMAT:
-			data.what.position.reladdr[0] = 0;
-			data.what.position.reladdr[1] = bcd2bin(q.current.relative_pos[0]);
-			data.what.position.reladdr[2] = bcd2bin(q.current.relative_pos[1]);
-			data.what.position.reladdr[3] = bcd2bin(q.current.relative_pos[2]);
-			data.what.position.absaddr[0] = 0;
-			data.what.position.absaddr[1] = bcd2bin(q.current.absolute_pos[0]);
-			data.what.position.absaddr[2] = bcd2bin(q.current.absolute_pos[1]);
-			data.what.position.absaddr[3] = bcd2bin(q.current.absolute_pos[2]);
+			data.what.position.reladdr.addr[0] = 0;
+			data.what.position.reladdr.addr[1] =
+			    bcd2bin(q.current.relative_pos[0]);
+			data.what.position.reladdr.addr[2] =
+			    bcd2bin(q.current.relative_pos[1]);
+			data.what.position.reladdr.addr[3] =
+			    bcd2bin(q.current.relative_pos[2]);
+			data.what.position.absaddr.addr[0] = 0;
+			data.what.position.absaddr.addr[1] =
+			    bcd2bin(q.current.absolute_pos[0]);
+			data.what.position.absaddr.addr[2] =
+			    bcd2bin(q.current.absolute_pos[1]);
+			data.what.position.absaddr.addr[3] =
+			    bcd2bin(q.current.absolute_pos[2]);
 			break;
 		case CD_LBA_FORMAT:
 			lba = msf2hsg(q.current.relative_pos, 1);
@@ -1490,15 +1546,15 @@ mcd_read_subchannel(sc, ch)
 			 */
 			if (data.what.position.index_number == 0x00)
 				lba = -lba;
-			data.what.position.reladdr[0] = lba >> 24;
-			data.what.position.reladdr[1] = lba >> 16;
-			data.what.position.reladdr[2] = lba >> 8;
-			data.what.position.reladdr[3] = lba;
+			data.what.position.reladdr.addr[0] = lba >> 24;
+			data.what.position.reladdr.addr[1] = lba >> 16;
+			data.what.position.reladdr.addr[2] = lba >> 8;
+			data.what.position.reladdr.addr[3] = lba;
 			lba = msf2hsg(q.current.absolute_pos, 0);
-			data.what.position.absaddr[0] = lba >> 24;
-			data.what.position.absaddr[1] = lba >> 16;
-			data.what.position.absaddr[2] = lba >> 8;
-			data.what.position.absaddr[3] = lba;
+			data.what.position.absaddr.addr[0] = lba >> 24;
+			data.what.position.absaddr.addr[1] = lba >> 16;
+			data.what.position.absaddr.addr[2] = lba >> 8;
+			data.what.position.absaddr.addr[3] = lba;
 			break;
 		}
 		break;

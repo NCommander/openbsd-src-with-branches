@@ -1,5 +1,3 @@
-/*	$NetBSD: inet_addr.c,v 1.5 1995/02/25 06:20:41 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)inet_addr.c	8.1 (Berkeley) 6/17/93";
-#else
-static char rcsid[] = "$NetBSD: inet_addr.c,v 1.5 1995/02/25 06:20:41 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: inet_addr.c,v 1.6 1996/02/02 15:22:23 mrg Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -130,6 +124,9 @@ inet_aton(cp, addr)
 	 */
 	n = pp - parts + 1;
 	switch (n) {
+
+	case 0:
+		return (0);		/* initial nondigit */
 
 	case 1:				/* a -- 32 bits */
 		break;

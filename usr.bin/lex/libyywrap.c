@@ -1,6 +1,8 @@
+/*	$OpenBSD: libyywrap.c,v 1.2 1996/06/26 05:35:37 deraadt Exp $	*/
+
 /* libyywrap - flex run-time support library "yywrap" function */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/libyywrap.c,v 1.3 1995/06/05 19:44:55 pk Exp $ */
+/* $Header: /home/daffy/u0/vern/flex/RCS/libyywrap.c,v 1.1 93/10/02 15:23:09 vern Exp $ */
 
 #include <sys/cdefs.h>
 

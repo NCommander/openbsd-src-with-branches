@@ -1,4 +1,5 @@
-/*	$NetBSD: print.c,v 1.10 1995/03/21 09:11:24 cgd Exp $	*/
+/*	$OpenBSD: print.c,v 1.4 1996/08/02 12:10:39 deraadt Exp $	*/
+/*	$NetBSD: print.c,v 1.11 1996/05/07 18:20:10 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$NetBSD: print.c,v 1.10 1995/03/21 09:11:24 cgd Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.4 1996/08/02 12:10:39 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,7 +53,7 @@ static char rcsid[] = "$NetBSD: print.c,v 1.10 1995/03/21 09:11:24 cgd Exp $";
 
 static void  binit __P((char *));
 static void  bput __P((char *));
-static char *ccval __P((struct cchar *, int));
+static char *ccval __P((const struct cchar *, int));
 
 void
 print(tp, wp, ldisc, fmt)
@@ -61,7 +62,7 @@ print(tp, wp, ldisc, fmt)
 	int ldisc;
 	enum FMT fmt;
 {
-	struct cchar *p;
+	const struct cchar *p;
 	long tmp;
 	u_char *cc;
 	int cnt, ispeed, ospeed;
@@ -192,8 +193,10 @@ print(tp, wp, ldisc, fmt)
 			if (fmt != BSD && cc[p->sub] == p->def)
 				continue;
 #define	WD	"%-8s"
-			(void)sprintf(buf1 + cnt * 8, WD, p->name);
-			(void)sprintf(buf2 + cnt * 8, WD, ccval(p, cc[p->sub]));
+			(void)snprintf(buf1 + cnt * 8, sizeof(buf1) - cnt * 8,
+			    WD, p->name);
+			(void)snprintf(buf2 + cnt * 8, sizeof(buf2) - cnt * 8,
+			    WD, ccval(p, cc[p->sub]));
 			if (++cnt == LINELENGTH / 8) {
 				cnt = 0;
 				(void)printf("%s\n", buf1);
@@ -241,19 +244,18 @@ bput(s)
 
 static char *
 ccval(p, c)
-	struct cchar *p;
+	const struct cchar *p;
 	int c;
 {
 	static char buf[5];
 	char *bp;
 
-	if (c == _POSIX_VDISABLE)
-		return ("<undef>");
-
 	if (p->sub == VMIN || p->sub == VTIME) {
 		(void)snprintf(buf, sizeof(buf), "%d", c);
 		return (buf);
 	}
+	if (c == _POSIX_VDISABLE)
+		return ("<undef>");
 	bp = buf;
 	if (c & 0200) {
 		*bp++ = 'M';

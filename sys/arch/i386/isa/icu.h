@@ -1,4 +1,4 @@
-/*	$NetBSD: icu.h,v 1.17 1994/11/04 19:13:49 mycroft Exp $	*/
+/*	$NetBSD: icu.h,v 1.19 1996/02/01 22:31:21 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -46,28 +46,16 @@
 #ifndef	_I386_ISA_ICU_H_
 #define	_I386_ISA_ICU_H_
 
-#ifndef	LOCORE
+#ifndef	_LOCORE
 
 /*
  * Interrupt "level" mechanism variables, masks, and macros
  */
 extern	unsigned imen;		/* interrupt mask enable */
 
-#define	INTRUNMASK(msk,s)	(msk &= ~(s))
-#define	INTREN(s)		(INTRUNMASK(imen, s), SET_ICUS())
-#define	INTRMASK(msk,s)		(msk |= (s))
-#define	INTRDIS(s)		(INTRMASK(imen, s), SET_ICUS())
-#if 0
-#define SET_ICUS()	(outb(IO_ICU1 + 1, imen), outb(IU_ICU2 + 1, imen >> 8))
-#else
-/*
- * XXX - IO_ICU* are defined in isa.h, not icu.h, and nothing much bothers to
- * include isa.h, while too many things include icu.h.
- */
-#define SET_ICUS()	(outb(0x21, imen), outb(0xa1, imen >> 8))
-#endif
+#define SET_ICUS()	(outb(IO_ICU1 + 1, imen), outb(IO_ICU2 + 1, imen >> 8))
 
-#endif /* !LOCORE */
+#endif /* !_LOCORE */
 
 /*
  * Interrupt enable bits -- in order of priority

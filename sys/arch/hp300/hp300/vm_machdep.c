@@ -1,4 +1,4 @@
-/*	$NetBSD: vm_machdep.c,v 1.25 1995/08/07 06:13:57 mycroft Exp $	*/
+/*	$NetBSD: vm_machdep.c,v 1.30 1996/05/09 21:26:08 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -68,7 +68,7 @@
  * address in each process; in the future we will probably relocate
  * the frame pointers on the stack after copying.
  */
-int
+void
 cpu_fork(p1, p2)
 	register struct proc *p1, *p2;
 {
@@ -98,17 +98,15 @@ cpu_fork(p1, p2)
 	pcb->pcb_regs[6] = (int)child_return;	/* A2 */
 	pcb->pcb_regs[7] = (int)p2;		/* A3 */
 	pcb->pcb_regs[11] = (int)sf;		/* SSP */
-
-	return (0);
 }
 
 void
 cpu_set_kpc(p, pc)
 	struct proc *p;
-	u_long pc;
+	void (*pc) __P((struct proc *));
 {
 
-	p->p_addr->u_pcb.pcb_regs[6] = pc;	/* A2 */
+	p->p_addr->u_pcb.pcb_regs[6] = (int) pc;	/* A2 */
 }
 
 /*
@@ -202,9 +200,10 @@ cpu_coredump(p, vp, cred, chdr)
  * Both addresses are assumed to reside in the Sysmap,
  * and size must be a multiple of CLSIZE.
  */
+void
 pagemove(from, to, size)
 	register caddr_t from, to;
-	int size;
+	size_t size;
 {
 	register vm_offset_t pa;
 
@@ -305,8 +304,11 @@ extern vm_map_t phys_map;
  * is a total crock, the multiple mappings of these physical pages should
  * be reflected in the higher-level VM structures to avoid problems.
  */
-vmapbuf(bp)
+/*ARGSUSED*/
+void
+vmapbuf(bp, sz)
 	register struct buf *bp;
+	vm_size_t sz;
 {
 	register int npf;
 	register caddr_t addr;
@@ -339,8 +341,11 @@ vmapbuf(bp)
 /*
  * Free the io map PTEs associated with this IO operation.
  */
-vunmapbuf(bp)
+/*ARGSUSED*/
+void
+vunmapbuf(bp, sz)
 	register struct buf *bp;
+	vm_size_t sz;
 {
 	register caddr_t addr;
 	register int npf;

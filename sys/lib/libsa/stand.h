@@ -1,4 +1,5 @@
-/*	$NetBSD: stand.h,v 1.12 1995/09/18 21:19:47 pk Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: stand.h,v 1.13 1996/01/13 22:25:42 leo Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -63,6 +64,7 @@ struct fs_ops {
 };
 
 extern struct fs_ops file_system[];
+extern int nfsys;
 
 /* where values for lseek(2) */
 #define	SEEK_SET	0	/* set file offset to offset */
@@ -93,7 +95,6 @@ struct open_file {
 
 #define	SOPEN_MAX	4
 extern struct open_file files[];
-extern int nfsys;
 
 /* f_flags values */
 #define	F_READ		0x0001	/* file opened for reading */
@@ -102,7 +103,10 @@ extern int nfsys;
 #define F_NODEV		0x0008	/* network open - no device */
 
 #define isupper(c)	((c) >= 'A' && (c) <= 'Z')
+#define islower(c)	((c) >= 'a' && (c) <= 'z')
+#define	isalpha(c)	(isupper(c)||islower(c))
 #define tolower(c)	((c) - 'A' + 'a')
+#define toupper(c)	((c) - 'a' + 'A')
 #define isspace(c)	((c) == ' ' || (c) == '\t')
 #define isdigit(c)	((c) >= '0' && (c) <= '9')
 
@@ -111,18 +115,20 @@ void	*alloc __P((unsigned int));
 void	free __P((void *, unsigned int));
 struct	disklabel;
 char	*getdisklabel __P((const char *, struct disklabel *));
+u_int	dkcksum __P((struct disklabel *));
 
 void	printf __P((const char *, ...));
 void	sprintf __P((char *, const char *, ...));
 void	twiddle __P((void));
 void	gets __P((char *));
 __dead void	panic __P((const char *, ...)) __attribute__((noreturn));
-__dead void _rtt __P((void)) __attribute__((noreturn));
+__dead void	_rtt __P((void)) __attribute__((noreturn));
 void	bcopy __P((const void *, void *, size_t));
-int	getchar __P((void));
+void	*memcpy __P((void *, const void *, size_t));
 void	exec __P((char *, char *, int));
 int	open __P((const char *, int));
 int	close __P((int));
+void	closeall __P((void));
 ssize_t	read __P((int, void *, size_t));
 ssize_t	write __P((int, void *, size_t));
     

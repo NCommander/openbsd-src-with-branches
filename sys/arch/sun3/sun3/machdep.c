@@ -1,4 +1,4 @@
-/*	$NetBSD: machdep.c,v 1.66 1995/10/07 06:26:13 mycroft Exp $	*/
+/*	$NetBSD: machdep.c,v 1.71 1996/03/26 15:16:53 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Gordon W. Ross
@@ -92,14 +92,13 @@
 
 #include <net/netisr.h>
 
-#include <setjmp.h>
-
 #include "cache.h"
 
 extern char *cpu_string;
 extern char version[];
 extern short exframesize[];
 extern vm_offset_t vmmap;	/* XXX - poor name.  See mem.c */
+extern int cold;
 
 int physmem;
 int fpu_type;
@@ -221,7 +220,8 @@ allocsys(v)
  * kernel memory allocator is ready for use, but before
  * the creation of processes 1,2, and mountroot, etc.
  */
-void cpu_startup()
+void
+cpu_startup()
 {
 	caddr_t v;
 	int sz, i;
@@ -239,6 +239,8 @@ void cpu_startup()
 	 */
 	printf(version);
 	identifycpu();
+	initfpu();	/* also prints FPU type */
+
 	printf("real mem = %d\n", ctob(physmem));
 
 	/*
@@ -293,10 +295,11 @@ void cpu_startup()
 				 16*NCARGS, TRUE);
 
 	/*
-	 * Allocate a submap for physio
+	 * We don't use a submap for physio, and use a separate map
+	 * for DVMA allocations.  Our vmapbuf just maps pages into
+	 * the kernel map (any kernel mapping is OK) and then the
+	 * device drivers clone the kernel mappings into DVMA space.
 	 */
-	phys_map = kmem_suballoc(kernel_map, &minaddr, &maxaddr,
-				 VM_PHYS_SIZE, TRUE);
 
 	/*
 	 * Finally, allocate mbuf pool.  Since mclrefcnt is an off-size
@@ -345,6 +348,13 @@ void cpu_startup()
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
 	configure();
 }
 
@@ -379,6 +389,7 @@ setregs(p, pack, stack, retval)
  */
 char	machine[] = "sun3";		/* cpu "architecture" */
 char	cpu_model[120];
+extern	long hostid;
 
 void
 identifycpu()
@@ -393,7 +404,7 @@ identifycpu()
     /* should eventually include whether it has a VAC, mc6888x version, etc */
 	strcat(cpu_model, cpu_string);
 
-	printf("Model: %s\n", cpu_model);
+	printf("Model: %s (hostid %x)\n", cpu_model, hostid);
 }
 
 /*
@@ -490,7 +501,7 @@ sendsig(catcher, sig, mask, code)
 	fsize = sizeof(struct sigframe);
 	if ((psp->ps_flags & SAS_ALTSTACK) && !oonstack &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(psp->ps_sigstk.ss_sp +
 		    psp->ps_sigstk.ss_size - fsize);
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else
@@ -750,15 +761,21 @@ sys_sigreturn(p, v, retval)
 int waittime = -1;	/* XXX - Who else looks at this? -gwr */
 static void reboot_sync()
 {
+	extern struct proc proc0;
 	struct buf *bp;
 	int iter, nbusy;
 
 	/* Check waittime here to localize its use to this function. */
 	if (waittime >= 0)
 		return;
+	/* fix curproc */
+	if (curproc == NULL)
+		curproc = &proc0;
 	waittime = 0;
 	vfs_shutdown();
 }
+
+struct pcb dumppcb;
 
 /*
  * Common part of the BSD and SunOS reboot system calls.
@@ -770,9 +787,9 @@ int reboot2(howto, user_boot_string)
 	char *bs, *p;
 	char default_boot_string[8];
 
-	/* take a snap shot before clobbering any registers */
-	if (curproc && curproc->p_addr)
-		savectx(curproc->p_addr);
+	/* If system is cold, just halt. (early panic?) */
+	if (cold)
+		goto haltsys;
 
 	if ((howto & RB_NOSYNC) == 0) {
 		reboot_sync();
@@ -787,12 +804,20 @@ int reboot2(howto, user_boot_string)
 		/* resettodr(); */
 	}
 
-	/* Write out a crash dump if asked. */
+	/* Disable interrupts. */
 	splhigh();
-	if (howto & RB_DUMP)
+
+	/* Write out a crash dump if asked. */
+	if (howto & RB_DUMP) {
+		savectx(&dumppcb);
 		dumpsys();
+	}
+
+	/* run any shutdown hooks */
+	doshutdownhooks();
 
 	if (howto & RB_HALT) {
+	haltsys:
 		printf("Kernel halted.\n");
 		sun3_mon_halt();
 	}
@@ -839,6 +864,8 @@ void boot(howto)
 	int howto;
 {
 	(void) reboot2(howto, NULL);
+	for(;;);
+	/* NOTREACHED */
 }
 
 /*
@@ -936,11 +963,11 @@ int
 peek_word(addr)
 	register caddr_t addr;
 {
-	jmp_buf		faultbuf;
+	label_t		faultbuf;
 	register int x;
 
 	nofault = (long*)&faultbuf;
-	if (setjmp(nofault)) {
+	if (setjmp(&faultbuf)) {
 		nofault = NULL;
 		return(-1);
 	}
@@ -954,11 +981,11 @@ int
 peek_byte(addr)
 	register caddr_t addr;
 {
-	jmp_buf 	faultbuf;
+	label_t 	faultbuf;
 	register int x;
 
 	nofault = (long*)&faultbuf;
-	if (setjmp(nofault)) {
+	if (setjmp(&faultbuf)) {
 		nofault = NULL;
 		return(-1);
 	}

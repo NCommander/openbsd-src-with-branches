@@ -1,4 +1,4 @@
-/*	$NetBSD: genassym.c,v 1.15 1995/05/25 01:09:13 mycroft Exp $	*/
+/*	$NetBSD: genassym.c,v 1.19 1996/05/17 15:20:55 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990, 1993
@@ -39,8 +39,6 @@
 #define _VA_LIST_ _BSD_VA_LIST_
 #define _PTRDIFF_T_ _BSD_PTRDIFF_T_
 
-#define _KERNEL
-
 #include <sys/param.h>
 #include <sys/buf.h>
 #include <sys/map.h>
@@ -50,6 +48,8 @@
 #include <sys/syscall.h>
 #include <sys/user.h>
 
+#include <vm/vm.h>
+
 #include <machine/cpu.h>
 #include <machine/trap.h>
 #include <machine/psl.h>
@@ -57,7 +57,6 @@
 #include <machine/pte.h>
 
 #include <hp300/hp300/clockreg.h>
-#include <vm/vm.h>
 #ifdef USELEDS
 #include <hp300/hp300/led.h>
 #endif
@@ -66,7 +65,6 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
-#include <unistd.h>
 
 extern int errno;
 
@@ -98,6 +96,45 @@ flush()
 
 main()
 {
+	/* CPU types */
+#ifdef M68020
+	def("M68020", 1);
+#endif
+#ifdef M68030
+	def("M68030", 1);
+#endif
+#ifdef M68040
+	def("M68040", 1);
+#endif
+
+	/* MMU types */
+#ifdef M68K_MMU_MOTOROLA
+	def("M68K_MMU_MOTOROLA", 1);
+#endif
+#ifdef M68K_MMU_HP
+	def("M68K_MMU_HP", 1);
+#endif
+	def("MMU_68040", MMU_68040);
+	def("MMU_68030", MMU_68030);
+	def("MMU_HP", MMU_HP);
+	def("MMU_68851", MMU_68851);
+
+	/* values for machineid */
+	def("HP_320", HP_320);
+	def("HP_330", HP_330);
+	def("HP_350", HP_350);
+	def("HP_360", HP_360);
+	def("HP_370", HP_370);
+	def("HP_340", HP_340);
+	def("HP_375", HP_375);
+	def("HP_380", HP_380);
+	def("HP_433", HP_433);
+
+	/* values for ectype */
+	def("EC_PHYS", EC_PHYS);
+	def("EC_NONE", EC_NONE);
+	def("EC_VIRT", EC_VIRT);
+
 	/* general constants */
 	def("UPAGES", UPAGES);
 	def("USPACE", USPACE);

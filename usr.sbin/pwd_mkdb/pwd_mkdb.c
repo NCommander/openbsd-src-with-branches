@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*-
  * Copyright (c) 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -40,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)pwd_mkdb.c	8.5 (Berkeley) 4/20/94";*/
-static char *rcsid = "$Id: pwd_mkdb.c,v 1.6 1995/07/28 07:13:52 phil Exp $";
+static char *rcsid = "$Id: pwd_mkdb.c,v 1.6 1996/08/30 14:24:48 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -57,8 +58,7 @@ static char *rcsid = "$Id: pwd_mkdb.c,v 1.6 1995/07/28 07:13:52 phil Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "pw_scan.h"
+#include <util.h>
 
 #define	INSECURE	1
 #define	SECURE		2
@@ -80,12 +80,14 @@ HASHINFO openinfo = {
 static enum state { FILE_INSECURE, FILE_SECURE, FILE_ORIG } clean;
 static struct passwd pwd;			/* password structure */
 static char *pname;				/* password file name */
+static char *basedir;
 
 void	cleanup __P((void));
 void	error __P((char *));
 void	mv __P((char *, char *));
 int	scan __P((FILE *, struct passwd *, int *));
 void	usage __P((void));
+char	*changedir __P((char *path, char *dir));
 
 int
 main(argc, argv)
@@ -100,15 +102,24 @@ main(argc, argv)
 	char *p, *t;
 	char buf[MAX(MAXPATHLEN, LINE_MAX * 2)], tbuf[1024];
 	int hasyp = 0;
+	int cflag = 0;
 	DBT ypdata, ypkey;
 
 	makeold = 0;
-	while ((ch = getopt(argc, argv, "pv")) != EOF)
+	while ((ch = getopt(argc, argv, "cpvd:")) != EOF)
 		switch(ch) {
+		case 'c':			/* verify only */
+			cflag = 1;
+			break;
 		case 'p':			/* create V7 "file.orig" */
 			makeold = 1;
 			break;
 		case 'v':			/* backward compatible */
+			break;
+		case 'd':
+			basedir = optarg;
+			if (strlen(basedir) > MAXPATHLEN - 40)
+				error("basedir too long");
 			break;
 		case '?':
 		default:
@@ -135,13 +146,20 @@ main(argc, argv)
 	/* We don't care what the user wants. */
 	(void)umask(0);
 
-	pname = *argv;
+	pname = strdup(changedir(*argv, basedir));
 	/* Open the original password file */
 	if (!(fp = fopen(pname, "r")))
 		error(pname);
 
+	/* check only if password database is valid */
+	if (cflag) {
+		for (cnt = 1; scan(fp, &pwd, &flags); ++cnt);
+		exit(0);
+	}
+
 	/* Open the temporary insecure password database. */
-	(void)snprintf(buf, sizeof(buf), "%s.tmp", _PATH_MP_DB);
+	(void)snprintf(buf, sizeof(buf), "%s.tmp",
+	    changedir(_PATH_MP_DB, basedir));
 	dp = dbopen(buf,
 	    O_RDWR|O_CREAT|O_EXCL, PERM_INSECURE, DB_HASH, &openinfo);
 	if (dp == NULL)
@@ -233,9 +251,10 @@ main(argc, argv)
 
 		/* Create original format password file entry */
 		if (makeold)
-			(void)fprintf(oldfp, "%s:*:%d:%d:%s:%s:%s\n",
+			if (fprintf(oldfp, "%s:*:%d:%d:%s:%s:%s\n",
 			    pwd.pw_name, pwd.pw_uid, pwd.pw_gid, pwd.pw_gecos,
-			    pwd.pw_dir, pwd.pw_shell);
+			    pwd.pw_dir, pwd.pw_shell) == EOF)
+				error("write old");
 	}
 
 	/* Store YP token, if needed. */
@@ -249,14 +268,17 @@ main(argc, argv)
 			error("put");
 	}
 
-	(void)(dp->close)(dp);
+	if ((dp->close)(dp))
+		error("close dp");
 	if (makeold) {
 		(void)fflush(oldfp);
-		(void)fclose(oldfp);
+		if (fclose(oldfp) == EOF)
+			error("close old");
 	}
 
 	/* Open the temporary encrypted password database. */
-	(void)snprintf(buf, sizeof(buf), "%s.tmp", _PATH_SMP_DB);
+	(void)snprintf(buf, sizeof(buf), "%s.tmp",
+	    changedir(_PATH_SMP_DB, basedir));
 	edp = dbopen(buf,
 	    O_RDWR|O_CREAT|O_EXCL, PERM_SECURE, DB_HASH, &openinfo);
 	if (!edp)
@@ -320,20 +342,23 @@ main(argc, argv)
 			error("put");
 	}
 
-	(void)(edp->close)(edp);
+	if ((edp->close)(edp))
+		error("close edp");
 
 	/* Set master.passwd permissions, in case caller forgot. */
 	(void)fchmod(fileno(fp), S_IRUSR|S_IWUSR);
 	(void)fclose(fp);
 
 	/* Install as the real password files. */
-	(void)snprintf(buf, sizeof(buf), "%s.tmp", _PATH_MP_DB);
-	mv(buf, _PATH_MP_DB);
-	(void)snprintf(buf, sizeof(buf), "%s.tmp", _PATH_SMP_DB);
-	mv(buf, _PATH_SMP_DB);
+	(void)snprintf(buf, sizeof(buf), "%s.tmp",
+	    changedir(_PATH_MP_DB, basedir));
+	mv(buf, changedir(_PATH_MP_DB, basedir));
+	(void)snprintf(buf, sizeof(buf), "%s.tmp",
+	    changedir(_PATH_SMP_DB, basedir));
+	mv(buf, changedir(_PATH_SMP_DB, basedir));
 	if (makeold) {
 		(void)snprintf(buf, sizeof(buf), "%s.orig", pname);
-		mv(buf, _PATH_PASSWD);
+		mv(buf, changedir(_PATH_PASSWD, basedir));
 	}
 	/*
 	 * Move the master password LAST -- chpass(1), passwd(1) and vipw(8)
@@ -341,7 +366,7 @@ main(argc, argv)
 	 * The rename means that everything is unlocked, as the original file
 	 * can no longer be accessed.
 	 */
-	mv(pname, _PATH_MASTERPASSWD);
+	mv(pname, changedir(_PATH_MASTERPASSWD, basedir));
 	exit(0);
 }
 
@@ -413,11 +438,13 @@ cleanup()
 		(void)unlink(buf);
 		/* FALLTHROUGH */
 	case FILE_SECURE:
-		(void)snprintf(buf, sizeof(buf), "%s.tmp", _PATH_SMP_DB);
+		(void)snprintf(buf, sizeof(buf), "%s.tmp",
+		    changedir(_PATH_SMP_DB, basedir));
 		(void)unlink(buf);
 		/* FALLTHROUGH */
 	case FILE_INSECURE:
-		(void)snprintf(buf, sizeof(buf), "%s.tmp", _PATH_MP_DB);
+		(void)snprintf(buf, sizeof(buf), "%s.tmp",
+		    changedir(_PATH_MP_DB, basedir));
 		(void)unlink(buf);
 	}
 }
@@ -426,6 +453,25 @@ void
 usage()
 {
 
-	(void)fprintf(stderr, "usage: pwd_mkdb [-p] file\n");
+	(void)fprintf(stderr, "usage: pwd_mkdb [-cp] [-d basedir] file\n");
 	exit(1);
+}
+
+char *
+changedir(path, dir)
+	char *path, *dir;
+{
+	static char fixed[MAXPATHLEN];
+	char *p;
+
+	if (!dir)
+		return (path);
+
+	p = strrchr(path, '/');
+	strcpy(fixed, dir);
+	if (p) {
+		strcat(fixed, "/");
+		strcat(fixed, p + 1);
+	}
+	return (fixed);
 }

@@ -1,4 +1,4 @@
-Installing NetBSD is a relatively complex process, but, if you have
+Installing OpenBSD is a relatively complex process, but, if you have
 this document in hand and are careful to read and remember the
 information which is presented to you by the install program, it
 shouldn't be too much trouble.
@@ -6,44 +6,63 @@ shouldn't be too much trouble.
 Before you begin, you must have already prepared your hard disk as
 detailed in the section on preparing your system for install.
 
-The following is a walk-through of the steps necessary to get NetBSD
+The following is a walk-through of the steps necessary to get OpenBSD
 installed on your hard disk.  If you wish to stop the installation,
 you may hit Control-C at any prompt, but if you do, you'll have to
 begin again from scratch.
 
->>>	transfer installation file system to the swap partition.
->>>	Does this go here, or in the hard disk prep section?
+	Transfer the install miniroot filesystem onto the hard disk
+	partition used by OpenBSD for swapping, as described in the
+	"Preparing your System for OpenBSD Installation" section above.
 
->>>	Getting loadbsd, ixemul.library, and netbsd onto AmigaDOS
->>>	partition.
-	Next you need to get yourself into NetBSD by loading the
+	You then need to have "ixemul.library" in your LIBS: directory
+	on AmigaDOS.  You also need to have the "loadbsd" program
+	in your command path.  If AmigaDOS complains about loadbsd
+	not being an executable file, be sure that the "Execute"
+	protection bit is set.  If not, set it with the command:
+		Protect loadbsd add e
+
+	Next you need to get yourself into OpenBSD by loading the
 	kernel from AmigaDOS with loadbsd like so:
 
-		loadbsd -b netbsd
+		loadbsd -b bsd
+
+	If you have an AGA machine, and your monitor will handle
+	the dblNTSC mode, you may also include the "-A" option to
+	enable the dblNTSC display mode.
 
 	You should see the screen clear and some information about
 	your system as the kernel configures the hardware.  Note which
 	hard disk device(s) are configured (sd0, sd1, etc).  Then
 	you will be prompted for a root device.  At this time type
-	'sd0*'.
->>>	Need to document what device number to actually use.
+	'sd0*', where '0' is the device which contains the swap
+	partition you created during the hard disk preparation.
+
+	If the system should hang after entering the root device, try
+	again with
+
+		loadbsd -I ff -b bsd
+
+	This disables synchronous transfer on all SCSI devices.
 
 	The system should continue to boot.  For now ignore WARNING:
-	messages about bad dates in clocks and swap space.  Eventually
->>>	                                       ^^^^^^^^^^???
-	you will be asked to enter the pathname of the shell, just
-	hit return.  After a short while you should see a welcome
-	message and a prompt, asking if you wish to proceed with the
-	installation.
+	messages about bad dates in clocks.  Eventually you will be
+	asked to enter the pathname of the shell, just hit return.
+	After a short while you should see a welcome message and a
+	prompt, asking if you wish to proceed with the installation.
 
 	If you wish to proceed, enter "y" and then return.
 
 	If you have configured your hard drive[s] correctly it
 	should find the drive and partition that you selected to
-	use as your root.
+	use as your root.  You will be prompted for which device
+	you want to use for your root.  If you have multiple disks
+	present with root partitions defined, you will need to be
+	sure you enter the device name of the correct partition you
+	want to install OpenBSD on.
 
 	YOU ARE NOW AT THE POINT OF NO RETURN.  If you confirm that
-	you want to install NetBSD, your hard drive will be modified,
+	you want to install OpenBSD, your hard drive will be modified,
 	and perhaps its contents scrambled at the whim of the install
 	program.
 
@@ -79,7 +98,7 @@ begin again from scratch.
 	two file systems.  This fstab will be in /mnt/etc.
 
 	What you do from this point on depends on which media you're
-	using to install NetBSD.  Follow the appropriate instructions,
+	using to install OpenBSD.  Follow the appropriate instructions,
 	given below.
 
 	To install from an AmigaDOS partition:
@@ -90,7 +109,7 @@ begin again from scratch.
 		type:
 			
 			mkdir /mnt/ados
-			mount_ados /dev/sd0d /mnt/ados
+			mount_ados -o ro /dev/sd0d /mnt/ados
 
 		You can use `disklabel sd0' to find out what types
 		of partitions are on the disk `sd0'.
@@ -110,11 +129,11 @@ begin again from scratch.
 		to extract.  For example, to extract the base
 		distribution, use the command:
 
-			Extract base11
+			Extract base20
 
 		and to extract the games distribution:
 
-			Extract game11
+			Extract game20
 
 		If the distribution sets are in different directories,
 		you will need to cd to each directory in turn, runing
@@ -157,11 +176,11 @@ begin again from scratch.
 		wish to extract.  For example, to extract the base
 		distribution, use the command:
 
-			Extract base11
+			Extract base20
 
 		and to extract the games distribution:
 
-			Extract game11
+			Extract game20
 
 		After the extraction is complete, go to the location
 		of the next set you want to extract, "Set_tmp_dir"
@@ -180,7 +199,7 @@ begin again from scratch.
 		files for the game09 set, after the "Extract game09"
 		command has completed, issue the command:
 
-			rm game11.??
+			rm game20.??
 
 		Once you have extracted all sets and are at the "#" prompt
 		again, proceed to the section "Configuring Your System,"
@@ -192,7 +211,6 @@ begin again from scratch.
 		for the installation files.  /mnt/usr/distrib is
 		suggested.
 
->>> Document using ppp or slip?
 		Configure the appropriate ethernet interface i.e. le0
 		if you have a 2065 or ed0 if you have a AMIGNET from
 		Hydra Systems.
@@ -210,6 +228,11 @@ begin again from scratch.
 		or with a special netmask
 
 			ifconfig ed0 128.32.240.167 netmask 0xffffff00
+
+		You should also be able to use SLIP or PPP as the network
+		connection.
+		[XXX instructions for ppp or slip would be usefull
+		perhaps the next release]
 
 		If the NFS server or FTP server is not on a directly-
 		connected network, you should set up a route to it
@@ -267,26 +290,21 @@ network configuration information.
 
 Once you have supplied `Configure' all that it requests, your machine
 will be configured well enough that when you reboot it it will
-almost be a completely functional NetBSD system.  Note you should
-ignore the errors from `chown' they will be corrected shortly.
+almost be a completely functional OpenBSD system.
+
+>>> Copy the kernel from the miniroot filesystem at this point <<<
 
 Once you are done with `Configure', halt the system with the "halt"
 command (wait for "halted" to be displayed) and reboot.  Then again
-boot NetBSD this time with the command:
+boot OpenBSD this time with the command:
 
 
-	loadbsd netbsd
+	loadbsd bsd
 
 You need to do your final tweeks now.  First mount your file systems
 like so:
 
 	mount -av
-
-Next you need to re-make your devices to get the ownership correct:
-
-	cd /dev
-	MAKEDEV all
->>> Is this step still needed? - check on it!
 
 Your system is now complete but not completely configured; you
 should adjust the /etc/sendmail.cf file as necessary to suit your
@@ -294,6 +312,15 @@ site and/or disable sendmail and other network related programs.
 These things can be found in /etc/netstart.  Use vi, if you installed
 the man pages you can type `man vi' or `man ed' for instructions
 on how to use these somewhat non-intuitive editors.
+
+You should also put a copy of the bsd kernel in your root partition.
+This can be done easily by mounting the AmigaDOS partition containing
+the kernel you used to start OpenBSD and copying the "bsd" file to
+the root:
+	mount -r -t ados /dev/sd0d /mnt
+	cp /mnt/bsd /
+(where /dev/sd0d is the AmigaDOS partition where you have bsd, and
+/mnt/bsd is the appropriate path of the bsd file).
 
 Once you are done with the rest of configuration unmount your file
 systems and halt your system, then reboot:
@@ -306,9 +333,7 @@ systems and halt your system, then reboot:
 Finally you can now boot your system and it will be completely
 functional:
 
-	loadbsd -a netbsd
+	loadbsd -a bsd
 
 When it boots off of the hard drive, you will have a complete
-NetBSD system!  CONGRATULATIONS! (You really deserve them!!!)
-
->>> Missing the step to transfer the netbsd kernel to /
+OpenBSD system!  CONGRATULATIONS! (You really deserve them!!!)

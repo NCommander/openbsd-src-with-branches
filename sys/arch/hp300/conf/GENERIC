@@ -1,4 +1,4 @@
-#	$NetBSD: GENERIC,v 1.6 1995/10/10 02:12:41 thorpej Exp $
+#	$NetBSD: GENERIC,v 1.9 1996/02/24 00:54:53 thorpej Exp $
 #
 # Generic kernel - one size fits all.
 #
@@ -16,16 +16,16 @@ ident		GENERIC
 
 # Need to set locally
 timezone	8 dst
-maxusers	16
+maxusers	32
 
 # Standard system options
 options		SWAPPAGER		# swap pager (anonymous and swap space)
-options		VNODEPAGER		# vnode pager (mapped files)
 options		DEVPAGER		# device pager (mapped devices)
 options         "COMPAT_43"             # compatibility with 4.3BSD interfaces
 options         "COMPAT_44"             # compatibility with 4.4BSD binaries
 options         "COMPAT_09"             # compatibility with NetBSD 0.9
 options		"COMPAT_10"		# compatibility with NetBSD 1.0
+options		COMPAT_M68K4K		# NetBSD compatibility
 options         SYSVSHM                 # System V-style shared memory
 options         SYSVSEM                 # System V-style semaphores
 options         SYSVMSG                 # System V-style message queues
@@ -48,23 +48,27 @@ options		MFS		# Memory-based filesystem
 options		INET		# Internet protocols
 options		GATEWAY		# IP forwarding + larger mb_map
 options		MROUTING	# Multicast routing
-options		"TCP_COMPAT_42"	# compatibility with 4.2BSD TCP/IP
+#options		"TCP_COMPAT_42"	# compatibility with 4.2BSD TCP/IP
 
 # Options for HP hardware
 options		FPSP		# floating point interface for 68040
 options		USELEDS		# make the lights twinkle
 options		COMPAT_NOLABEL	# defaults for unlabeled disks
 #options	PANICBUTTON	# two fast <reset>s on HIL dump kernel
+#options	CONSCODE="9"	# force console at this select code
 
-# XXX DOESN'T WORK YET!
-#options	COMPAT_HPUX	# HP-UX binary compatibility
+#
+# HP-UX binary compatibility.
+# NOTE: THIS IS STILL VERY EXPERIMENTAL.  YOUR MILEAGE MAY VARY.
+#
+options	COMPAT_HPUX		# HP-UX binary compatibility
 
 # Debugging options
 options		DDB		# Kernel Dynamic Debugger
 
 # If the kernel isn't named `GENERIC', uncomment the line below.
 #options	GENERIC		# Generic swap support
-config		netbsd swap generic
+config		bsd swap generic
 
 master		hpib0	at scode7
 master		hpib1	at scode?

@@ -1,5 +1,3 @@
-/*	$NetBSD: res_init.c,v 1.8 1995/06/03 22:33:36 mycroft Exp $	*/
-
 /*-
  * Copyright (c) 1985, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -54,12 +52,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)res_init.c	8.1 (Berkeley) 6/7/93";
-static char rcsid[] = "$Id: res_init.c,v 4.9.1.1 1993/05/02 22:43:03 vixie Rel ";
-#else
-static char rcsid[] = "$NetBSD: res_init.c,v 1.8 1995/06/03 22:33:36 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: res_init.c,v 1.9 1996/09/22 05:14:05 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -92,11 +85,23 @@ struct __res_state _res = {
  * there will have precedence.  Otherwise, the server address is set to
  * INADDR_ANY and the default domain name comes from the gethostname().
  *
- * The configuration file should only be used if you want to redefine your
- * domain or run without a server on your machine.
+ * An interrim version of this code (BIND 4.9, pre-4.4BSD) used 127.0.0.1
+ * rather than INADDR_ANY ("0.0.0.0") as the default name server address
+ * since it was noted that INADDR_ANY actually meant ``the first interface
+ * you "ifconfig"'d at boot time'' and if this was a SLIP or PPP interface,
+ * it had to be "up" in order for you to reach your own name server.  It
+ * was later decided that since the recommended practice is to always 
+ * install local static routes through 127.0.0.1 for all your network
+ * interfaces, that we could solve this problem without a code change.
+ *
+ * The configuration file should always be used, since it is the only way
+ * to specify a default domain.  If you are running a server on your local
+ * machine, you should say "nameserver 0.0.0.0" or "nameserver 127.0.0.1"
+ * in the configuration file.
  *
  * Return 0 if completes successfully, -1 on error
  */
+int
 res_init()
 {
 	register FILE *fp;
@@ -107,7 +112,9 @@ res_init()
 	int haveenv = 0;
 	int havesearch = 0;
 	int nsort = 0;
-	u_long mask;
+
+	if (_res.id == 0)
+		_res.id = res_randomid();
 
 	_res.nsaddr.sin_len = sizeof(struct sockaddr_in);
 	_res.nsaddr.sin_family = AF_INET;
@@ -123,8 +130,9 @@ res_init()
 	strncpy(_res.lookups, "f", sizeof _res.lookups);
 
 	/* Allow user to override the local domain definition */
-	if ((cp = getenv("LOCALDOMAIN")) != NULL) {
+	if (issetugid() == 0 && (cp = getenv("LOCALDOMAIN")) != NULL) {
 		(void)strncpy(_res.defdname, cp, sizeof(_res.defdname) - 1);
+		_res.defdname[sizeof(_res.defdname) - 1] = '\0';
 		if ((cp = strpbrk(_res.defdname, " \t\n")) != NULL)
 			*cp = '\0';
 		haveenv++;
@@ -177,6 +185,7 @@ res_init()
 			    continue;
 		    (void)strncpy(_res.defdname, cp,
 				  sizeof(_res.defdname) - 1);
+		    _res.defdname[sizeof(_res.defdname) - 1] = '\0';
 		    if ((cp = strpbrk(_res.defdname, " \t\n")) != NULL)
 			    *cp = '\0';
 		    havesearch = 0;
@@ -220,6 +229,7 @@ res_init()
 			    continue;
 		    (void)strncpy(_res.defdname, cp,
 				  sizeof(_res.defdname) - 1);
+		    _res.defdname[sizeof(_res.defdname) - 1] = '\0';
 		    if ((cp = strchr(_res.defdname, '\n')) != NULL)
 			    *cp = '\0';
 		    /*
@@ -327,12 +337,15 @@ res_init()
 #endif
 	}
 
-	if ((cp = getenv("RES_OPTIONS")) != NULL)
+	if (issetugid())
+		_res.options |= RES_NOALIASES;
+	else if ((cp = getenv("RES_OPTIONS")) != NULL)
 		res_setoptions(cp, "env");
 	_res.options |= RES_INIT;
 	return (0);
 }
 
+/* ARGSUSED */
 static void
 res_setoptions(options, source)
 	char *options, *source;
@@ -391,4 +404,13 @@ net_mask(in)		/* XXX - should really use system's version of this */
 	if (IN_CLASSB(i))
 		return (htonl(IN_CLASSB_NET));
 	return (htonl(IN_CLASSC_NET));
+}
+
+u_int16_t
+res_randomid()
+{
+	struct timeval now;
+
+	gettimeofday(&now, NULL);
+	return (0xffff & (now.tv_sec ^ now.tv_usec ^ getpid()));
 }

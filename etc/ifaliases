@@ -1,0 +1,5 @@
+# $OpenBSD$
+# This file contains a list of IP addresses aliases in the form
+# 	interface address netmask
+# ie:
+# 	ep0 124.125.126.129 255.255.255.0

@@ -1,4 +1,5 @@
-/*	$NetBSD: ansi.h,v 1.2 1995/02/16 03:08:04 cgd Exp $	*/
+/*	$OpenBSD: ansi.h,v 1.4 1996/03/16 01:31:45 jtc Exp $	*/
+/*	$NetBSD: ansi.h,v 1.4 1996/03/16 01:31:45 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -52,11 +53,11 @@
 #define	_BSD_SIZE_T_	unsigned long		/* sizeof() */
 #define	_BSD_SSIZE_T_	long			/* byte count or error */
 #define	_BSD_TIME_T_	int			/* time() */
-struct __va_list {
+typedef struct {
 	char *base;
 	long offset;
-};
-#define	_BSD_VA_LIST_	struct __va_list	/* va_list */
+} __va_list;
+#define	_BSD_VA_LIST_	__va_list		/* va_list */
 
 /*
  * Runes (wchar_t) is declared to be an ``int'' instead of the more natural
@@ -73,6 +74,7 @@ struct __va_list {
  * defined for ctype.h.
  */
 #define	_BSD_WCHAR_T_	int			/* wchar_t */
+#define _BSD_WINT_T_	int			/* wint_t */
 #define	_BSD_RUNE_T_	int			/* rune_t */
 
 #endif	/* _ANSI_H_ */

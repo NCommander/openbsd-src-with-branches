@@ -1,4 +1,5 @@
-#	$NetBSD: files.mac68k,v 1.35 1995/09/03 03:37:32 briggs Exp $
+#	$OpenBSD: files.mac68k,v 1.6 1996/06/23 16:18:02 briggs Exp $
+#	$NetBSD: files.mac68k,v 1.50 1996/08/05 01:00:15 scottr Exp $
 
 # mac68k-specific configuration info
 
@@ -7,54 +8,98 @@ maxpartitions 8
 
 maxusers 2 8 64
 
-device mainbus at root { }		# no locators (yet?)
+device mainbus { }			# no locators (yet?)
+attach mainbus at root
 
-device	nubus at mainbus { slot = -1, id = -1, claimed = 0 }
+device	obio {}
+attach	obio at mainbus
+file	arch/mac68k/dev/obio.c		obio
+
+device	nubus {}
+attach	nubus at mainbus
 file	arch/mac68k/dev/nubus.c		nubus
 
-device	ser at mainbus: tty
-file	arch/mac68k/dev/ser.c		ser needs-flag
-
-device	adb at mainbus
+device	adb
+attach	adb at obio
 file	arch/mac68k/dev/adb.c		adb
 file	arch/mac68k/dev/adbsys.c
 file	arch/mac68k/dev/adbsysasm.s
 
-device	asc at mainbus
+device	asc
+attach	asc at obio
 file	arch/mac68k/dev/asc.c		asc
 
-device	fpu at mainbus
-file	arch/mac68k/mac68k/fpu.c	fpu
+define grfbus {}
+file	arch/mac68k/dev/grf_subr.c	grfbus
 
-device	grf at nubus
-file	arch/mac68k/dev/grf.c		grf needs-count
-file	arch/mac68k/dev/grf_mv.c	grf
-file	arch/mac68k/dev/grf_iv.c	grf
-device	ite at mainbus
-file	arch/mac68k/dev/ite.c		ite needs-flag
+device	intvid: grfbus
+attach	intvid at obio
+file	arch/mac68k/dev/grf_iv.c	intvid
 
-device	ae at nubus: ifnet, ether
+device	macvid: grfbus
+attach	macvid at nubus
+file	arch/mac68k/dev/grf_mv.c	macvid
+
+device	grf {}				# eventually, we'll attach ITEs here
+attach	grf at grfbus
+file	arch/mac68k/dev/grf.c		grf needs-flag
+
+device	ae: ifnet, ether
+attach	ae at nubus
 file	arch/mac68k/dev/if_ae.c		ae needs-flag
 
-include "../../../scsi/files.scsi"
-major	{sd = 4}
-major	{st = 5}
-major	{cd = 6}
+device	ite
+attach	ite at grf
+file	arch/mac68k/dev/ite.c		ite needs-flag
 
-device	ncrscsi at mainbus: scsi
+device	sn: ifnet, ether
+attach	sn at obio
+file	arch/mac68k/dev/if_sn.c		sn needs-flag
+
+include "../../../scsi/files.scsi"
+
+# Option 1 for ncr5380 support
+device	ncrscsi: scsi
+attach	ncrscsi at obio
 file	arch/mac68k/dev/mac68k5380.c	ncrscsi needs-flag
 
-device	ncr96scsi at mainbus: scsi
+# Option 2 for ncr5380 support
+device	sbc: scsi, ncr5380sbc
+attach	sbc at obio
+file	arch/mac68k/dev/sbc.c		sbc
+
+device	ncr96scsi: scsi
+attach	ncr96scsi at obio
 file	arch/mac68k/dev/scsi96.c	ncr96scsi needs-flag
 
+device	zsc { channel = -1 }
+attach	zsc at obio
+file	arch/mac68k/dev/zs.c		zsc needs-flag
+file	arch/mac68k/dev/z8530sc.c	zsc
+#file	dev/ic/z8530sc.c		zsc
+
+device	zstty: tty
+attach	zstty at zsc
+file	arch/mac68k/dev/z8530tty.c	zstty needs-flag
+#file	dev/ic/z8530tty.c		zstty needs-flag
+
+# This one is out of alphabetical order
+device	fpu
+attach	fpu at obio
+file	arch/mac68k/mac68k/fpu.c	fpu
+
 file	arch/m68k/m68k/copy.s
-file	arch/m68k/fpe/fpu_emulate.c		fpu_emulate
+file	arch/m68k/m68k/db_memrw.c	ddb
+include "../../m68k/fpe/files.fpe"
+
 file	arch/mac68k/mac68k/autoconf.c
 file	arch/mac68k/mac68k/clock.c
+file	arch/mac68k/mac68k/conf.c
 file	arch/mac68k/mac68k/disksubr.c		disk
 file	arch/mac68k/mac68k/machdep.c
 file	arch/mac68k/mac68k/macrom.c
 file	arch/mac68k/mac68k/macromasm.s
+file	arch/mac68k/mac68k/mainbus.c
 file	arch/mac68k/mac68k/mem.c
 file	arch/mac68k/mac68k/pmap.c
 file	arch/mac68k/mac68k/pmap_bootstrap.c
@@ -68,7 +113,17 @@ file	arch/mac68k/mac68k/vm_machdep.c
 file	dev/cons.c
 file	dev/cninit.c
 
+# RAM Disk for installs
+#     These files are out of order
+pseudo-device	rd
+file	dev/ramdisk.c			rd needs-flag
+file	arch/mac68k/dev/rd_root.c	ramdisk_hooks
+
+major	{sd = 4}
+major	{st = 5}
+major	{cd = 6}
 major	{vnd = 8}
+major	{rd = 13}
 
 # Compatibility modules
 

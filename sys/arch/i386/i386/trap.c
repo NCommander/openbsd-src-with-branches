@@ -1,4 +1,5 @@
-/*	$NetBSD: trap.c,v 1.89.2.1 1995/10/15 06:54:03 mycroft Exp $	*/
+/*	$OpenBSD: trap.c,v 1.10 1996/05/10 12:44:49 deraadt Exp $	*/
+/*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 #undef DEBUG
 #define DEBUG
@@ -66,14 +67,17 @@
 #include <machine/psl.h>
 #include <machine/reg.h>
 #include <machine/trap.h>
+#ifdef DDB
+#include <machine/db_machdep.h>
+#endif
 
 #ifdef COMPAT_IBCS2
 #include <compat/ibcs2/ibcs2_errno.h>
 #include <compat/ibcs2/ibcs2_exec.h>
 extern struct emul emul_ibcs2;
 #endif
-#ifdef COMPAT_LINUX
 #include <sys/exec.h>
+#ifdef COMPAT_LINUX
 #include <compat/linux/linux_syscall.h>
 extern struct emul emul_linux_aout, emul_linux_elf;
 #endif
@@ -83,11 +87,16 @@ extern struct emul emul_freebsd;
 
 #include "npx.h"
 
+static __inline void userret __P((struct proc *, int, u_quad_t));
+void trap __P((struct trapframe));
+int trapwrite __P((unsigned));
+void syscall __P((struct trapframe));
+
 /*
  * Define the code needed before returning to user mode, for
  * trap and syscall.
  */
-static inline void
+static __inline void
 userret(p, pc, oticks)
 	register struct proc *p;
 	int pc;
@@ -172,7 +181,7 @@ trap(frame)
 	register struct proc *p = curproc;
 	int type = frame.tf_trapno;
 	u_quad_t sticks;
-	struct pcb *pcb;
+	struct pcb *pcb = NULL;
 	extern char fusubail[],
 		    resume_iret[], resume_pop_ds[], resume_pop_es[];
 	struct trapframe *vframe;
@@ -185,7 +194,7 @@ trap(frame)
 		printf("trap %d code %x eip %x cs %x eflags %x cr2 %x cpl %x\n",
 		    frame.tf_trapno, frame.tf_err, frame.tf_eip, frame.tf_cs,
 		    frame.tf_eflags, rcr2(), cpl);
-		printf("curproc %x\n", curproc);
+		printf("curproc %p\n", curproc);
 	}
 #endif
 
@@ -262,9 +271,15 @@ trap(frame)
 		frame.tf_eip = resume;
 		return;
 
+	case T_PROTFLT|T_USER:		/* protection fault */
+#ifdef VM86
+		if (frame.tf_eflags & PSL_VM) {
+			vm86_gpfault(p, type & ~T_USER);
+			goto out;
+		}
+#endif
 	case T_SEGNPFLT|T_USER:
 	case T_STKFLT|T_USER:
-	case T_PROTFLT|T_USER:		/* protection fault */
 	case T_ALIGNFLT|T_USER:
 		trapsignal(p, SIGBUS, type &~ T_USER);
 		goto out;
@@ -283,7 +298,7 @@ trap(frame)
 		goto out;
 
 	case T_DNA|T_USER: {
-#ifdef MATH_EMULATE
+#if defined(MATH_EMULATE) || defined(GPL_MATH_EMULATE)
 		int rv;
 		if ((rv = math_emulate(&frame)) == 0) {
 			if (frame.tf_eflags & PSL_T)
@@ -356,7 +371,7 @@ trap(frame)
 
 #ifdef DIAGNOSTIC
 		if (map == kernel_map && va == 0) {
-			printf("trap: bad kernel access at %x\n", va);
+			printf("trap: bad kernel access at %lx\n", va);
 			goto we_re_toast;
 		}
 #endif
@@ -402,12 +417,11 @@ trap(frame)
 		if (type == T_PAGEFLT) {
 			if (pcb->pcb_onfault != 0)
 				goto copyfault;
-			printf("vm_fault(%x, %x, %x, 0) -> %x\n",
+			printf("vm_fault(%p, %lx, %x, 0) -> %x\n",
 			    map, va, ftype, rv);
 			goto we_re_toast;
 		}
-		trapsignal(p, (rv == KERN_PROTECTION_FAILURE)
-		    ? SIGBUS : SIGSEGV, T_PAGEFLT);
+		trapsignal(p, SIGSEGV, T_PAGEFLT);
 		break;
 	}
 
@@ -420,8 +434,9 @@ trap(frame)
 
 	case T_BPTFLT|T_USER:		/* bpt instruction fault */
 	case T_TRCTRAP|T_USER:		/* trace trap */
+#if defined(MATH_EMULATE) || defined(GPL_MATH_EMULATE)
 	trace:
-		frame.tf_eflags &= ~PSL_T;
+#endif
 		trapsignal(p, SIGTRAP, type &~ T_USER);
 		break;
 
@@ -520,6 +535,17 @@ syscall(frame)
 			code = IBCS2_CVT_HIGH_SYSCALL(code);
 #endif
 	params = (caddr_t)frame.tf_esp + sizeof(int);
+
+#ifdef VM86
+	/*
+	 * VM86 mode application found our syscall trap gate by accident; let
+	 * it get a SIGSYS and have the VM86 handler in the process take care
+	 * of it.
+	 */
+	if (frame.tf_eflags & PSL_VM)
+		code = -1;
+	else
+#endif
 
 	switch (code) {
 	case SYS_syscall:
@@ -650,16 +676,7 @@ child_return(p, frame)
 	struct trapframe frame;
 {
 
-#ifdef COMPAT_LINUX
-	if (p->p_emul == &emul_linux_aout || p->p_emul == &emul_linux_elf) {
-		frame.tf_eax = 0;
-		frame.tf_edx = 0;
-	} else
-#endif
-	{
-		frame.tf_eax = p->p_pid;
-		frame.tf_edx = 1;
-	}
+	frame.tf_eax = 0;
 	frame.tf_eflags &= ~PSL_C;
 
 	userret(p, frame.tf_eip, 0);

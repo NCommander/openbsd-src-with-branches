@@ -1,5 +1,8 @@
 %{
-/* 
+/*	$OpenBSD: scan.l,v 1.4 1996/06/29 17:06:54 deraadt Exp $	*/
+/*	$NetBSD: scan.l,v 1.4 1996/03/17 06:29:35 cgd Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -41,7 +44,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)scan.l	8.1 (Berkeley) 6/6/93
- *	$Id: scan.l,v 1.1 1995/04/28 06:55:21 cgd Exp $
  */
 
 #include <sys/param.h>
@@ -85,10 +87,12 @@ WORD	[A-Za-z_][-A-Za-z_0-9]*
 		/* plain keywords */
 and		{ return AND; }
 at		{ return AT; }
+attach		{ return ATTACH; }
 compile-with	{ return COMPILE_WITH; }
 config		{ return CONFIG; }
 define		{ return DEFINE; }
 device		{ return DEVICE; }
+disable		{ return DISABLE; }
 dumps		{ return DUMPS; }
 flags		{ return FLAGS; }
 file		{ return XFILE; }
@@ -101,10 +105,12 @@ maxpartitions	{ return MAXPARTITIONS; }
 minor		{ return MINOR; }
 on		{ return ON; }
 options		{ return OPTIONS; }
+option		{ return OPTIONS; }
 "pseudo-device"	{ return PSEUDO_DEVICE; }
 root		{ return ROOT; }
 swap		{ return SWAP; }
 vector		{ return VECTOR; }
+with		{ return WITH; }
 
 		/* keywords with values */
 config-dependent { yylval.val = FI_CONFIGDEP; return FFLAG; }

@@ -616,7 +616,7 @@ check_fileproc (finfo)
 		{
 		    error (0, 0,
 			   "file `%s' still contains conflict indicators",
-			   finfo->fullname);d673 2
+			   finfo->fullname);
 		    freevers_ts (&vers);
 		    return (1);
 		}
@@ -624,8 +624,6 @@ check_fileproc (finfo)
 
 	    if (status == T_REMOVED && vers->tag && isdigit (*vers->tag))
 	    {
-		if (finfo->update_dir[0] == '\0')
-		    error (0, 0,
 		error (0, 0,
 	"cannot remove file `%s' which has a numeric sticky tag of `%s'",
 			   finfo->fullname, vers->tag);

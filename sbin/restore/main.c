@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.9 1995/03/18 14:59:46 cgd Exp $	*/
+/*	$OpenBSD: main.c,v 1.4 1996/09/01 15:27:29 deraadt Exp $	*/
+/*	$NetBSD: main.c,v 1.11 1996/03/15 22:39:39 scottr Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.3 (Berkeley) 9/13/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.9 1995/03/18 14:59:46 cgd Exp $";
+static char rcsid[] = "$NetBSD: main.c,v 1.11 1996/03/15 22:39:39 scottr Exp $";
 #endif
 #endif /* not lint */
 
@@ -88,13 +89,18 @@ main(argc, argv)
 {
 	int ch;
 	ino_t ino;
-	char *inputdev = _PATH_DEFTAPE;
+	char *inputdev;
 	char *symtbl = "./restoresymtable";
 	char *p, name[MAXPATHLEN];
+
+	/* Temp files should *not* be readable.  We set permissions later. */
+	(void) umask(077);
 
 	if (argc < 2)
 		usage();
 
+	if ((inputdev = getenv("TAPE")) == NULL)
+		inputdev = _PATH_DEFTAPE;
 	obsolete(&argc, &argv);
 	while ((ch = getopt(argc, argv, "b:cdf:himNRrs:tvxy")) != EOF)
 		switch(ch) {

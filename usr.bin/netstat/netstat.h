@@ -1,4 +1,5 @@
-/*	$NetBSD: netstat.h,v 1.5 1995/10/03 21:42:45 thorpej Exp $	*/
+/*	$OpenBSD: netstat.h,v 1.3 1996/06/26 05:37:24 deraadt Exp $	*/
+/*	$NetBSD: netstat.h,v 1.6 1996/05/07 02:55:05 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -52,11 +53,10 @@ int	tflag;		/* show i/f watchdog timers */
 int	interval;	/* repeat interval for i/f stats */
 
 char	*interface;	/* desired i/f for stats, or NULL for all i/fs */
-int	unit;		/* unit number for above */
 
 int	af;		/* address family */
 
-char	*prog;		/* program name */
+extern	char *__progname; /* program name, from crt0.o */
 
 
 int	kread __P((u_long addr, char *buf, int size));
@@ -82,17 +82,24 @@ void	pr_rthdr __P(());
 void	pr_family __P((int));
 void	rt_stats __P((u_long));
 char	*ns_phost __P((struct sockaddr *));
+char	*ipx_phost __P((struct sockaddr *));
 void	upHex __P((char *));
 
 char	*routename __P((u_int32_t));
 char	*netname __P((u_int32_t, u_int32_t));
 char	*ns_print __P((struct sockaddr *));
+char	*ipx_print __P((struct sockaddr *));
 void	routepr __P((u_long));
 
 void	nsprotopr __P((u_long, char *));
 void	spp_stats __P((u_long, char *));
 void	idp_stats __P((u_long, char *));
 void	nserr_stats __P((u_long, char *));
+
+void	ipxprotopr __P((u_long, char *));
+void	spx_stats __P((u_long, char *));
+void	ipx_stats __P((u_long, char *));
+void	ipxerr_stats __P((u_long, char *));
 
 void	intpr __P((int, u_long));
 

@@ -1,9 +1,8 @@
-/*	$NetBSD: le_poll.c,v 1.3 1994/10/26 09:11:48 cgd Exp $	*/
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
- * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -14,8 +13,9 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by Theo de Raadt
- * 4. The name of the Author may not be used to endorse or promote products
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
@@ -44,7 +44,10 @@
 #define NRXBUF	16
 #define IE_RBUF_SIZE	ETHER_MAX_LEN
 
+#include <machine/prom.h>
+
 #include "stand.h"
+#include "libsa.h"
 #include "netif.h"
 #include "config.h"
 
@@ -56,12 +59,12 @@ int     ie_debug = 0;
 void ie_stop __P((struct netif *));
 void ie_end __P((struct netif *));
 void ie_error __P((struct netif *, char *, volatile struct iereg *));
-int ie_get __P((struct iodesc *, void *, int, time_t));
+int ie_get __P((struct iodesc *, void *, size_t, time_t));
 void ie_init __P((struct iodesc *, void *));
 int ie_match __P((struct netif *, void *));
 int ie_poll __P((struct iodesc *, void *, int));
 int ie_probe __P((struct netif *, void *));
-int ie_put __P((struct iodesc *, void *, int));
+int ie_put __P((struct iodesc *, void *, size_t));
 void ie_reset __P((struct netif *, u_char *));
 
 struct netif_stats ie_stats;
@@ -107,9 +110,8 @@ ie_match(nif, machdep_hint)
 {
 	char   *name;
 	int     i, val = 0;
-	extern int cputyp;
 
-	if (cputyp == CPU_147)
+	if (bugargs.cputyp == CPU_147)
 		return (0);
 	name = machdep_hint;
 	if (name && !bcmp(ie_driver.netif_bname, name, 2))
@@ -132,13 +134,12 @@ ie_probe(nif, machdep_hint)
 	struct netif *nif;
 	void   *machdep_hint;
 {
-	extern int cputyp;
 
 	/* the set unit is the current unit */
 	if (ie_debug)
 		printf("ie%d: ie_probe called\n", nif->nif_unit);
 
-	if (cputyp != CPU_147)
+	if (bugargs.cputyp != CPU_147)
 		return (0);
 	return (1);
 }
@@ -252,7 +253,7 @@ ie_reset(nif, myea)
 	iem->im_ic.com.ie_cmd_status = 0;
 	iem->im_ic.com.ie_cmd_cmd = IE_CMD_IASETUP | IE_CMD_LAST;
 	iem->im_ic.com.ie_cmd_link = 0xffff;
-	bcopy(myea, &iem->im_ic.ie_address, sizeof iem->im_ic.ie_address);
+	bcopy(myea, (void *)&iem->im_ic.ie_address, sizeof iem->im_ic.ie_address);
 
 	ier->ie_attention = 1;	/* chan attention! */
 	for (t = timo * 10; t--;)
@@ -315,7 +316,7 @@ ie_poll(desc, pkt, len)
 			length = iem->im_rbd[slot].ie_rbd_actual & 0x3fff;
 			if (length > len)
 				length = len;
-			bcopy(&iem->im_rxbuf[slot * IE_RBUF_SIZE],
+			bcopy((void *)&iem->im_rxbuf[slot * IE_RBUF_SIZE],
 			    pkt, length);
 
 			iem->im_rfd[slot].ie_fd_status = 0;
@@ -360,9 +361,9 @@ ie_poll(desc, pkt, len)
 
 int
 ie_put(desc, pkt, len)
-	struct iodesc *desc;
-	void   *pkt;
-	int     len;
+	struct	iodesc *desc;
+	void	*pkt;
+	size_t	len;
 {
 	volatile struct iereg *ier = ie_softc.sc_reg;
 	struct iemem *iem = ie_softc.sc_mem;
@@ -378,7 +379,7 @@ ie_put(desc, pkt, len)
 		;
 
 	/* copy data */
-	bcopy(p, &iem->im_txbuf[xx], len);
+	bcopy(p, (void *)&iem->im_txbuf[xx], len);
 
 	len = MAX(len, ETHER_MIN_LEN);
 
@@ -395,7 +396,8 @@ ie_put(desc, pkt, len)
 	iem->im_xc[xx].com.ie_cmd_link = 0xffff;
 	iem->im_xc[xx].ie_xmit_desc = (int) &iem->im_xd[xx] - (int) iem;
 	iem->im_xc[xx].ie_xmit_length = len;
-	bcopy(p, &iem->im_xc[xx].ie_xmit_addr, sizeof iem->im_xc[xx].ie_xmit_addr);
+	bcopy(p, (void *)&iem->im_xc[xx].ie_xmit_addr,
+	    sizeof iem->im_xc[xx].ie_xmit_addr);
 
 	iem->im_scb.ie_command = IE_CU_START;
 	iem->im_scb.ie_command_list = (int) &iem->im_xc[xx] - (int) iem;
@@ -412,10 +414,10 @@ ie_put(desc, pkt, len)
 
 int
 ie_get(desc, pkt, len, timeout)
-	struct iodesc *desc;
-	void   *pkt;
-	int     len;
-	time_t  timeout;
+	struct	iodesc *desc;
+	void	*pkt;
+	size_t	len;
+	time_t	timeout;
 {
 	time_t  t;
 	int     cc;

@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.2 1996/06/26 05:40:40 deraadt Exp $
 #	$NetBSD: Makefile,v 1.4 1994/12/08 09:30:36 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
 #
 # Files are:
 #	/etc/remote		remote host description file
@@ -38,7 +38,7 @@ CFLAGS+=-I${.CURDIR} \
 .PATH:	${.CURDIR}/aculib
 BINOWN=	uucp
 BINGRP=	dialer
-BINMODE=4510
+BINMODE=4554
 SRCS=	acu.c acutab.c cmds.c cmdtab.c cu.c hunt.c log.c partab.c \
 	remote.c tip.c tipout.c uucplock.c value.c vars.c \
 	biz22.c courier.c df.c dn11.c hayes.c t3000.c v3451.c v831.c ventel.c

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dir.h,v 1.8 1994/06/29 06:43:52 cgd Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: quotacheck.c,v 1.10 1995/03/18 14:59:22 cgd Exp $	*/
+/*	$OpenBSD: quotacheck.c,v 1.12 1996/03/30 22:34:25 mark Exp $	*/
+/*	$NetBSD: quotacheck.c,v 1.12 1996/03/30 22:34:25 mark Exp $	*/
 
 /*
  * Copyright (c) 1980, 1990, 1993
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)quotacheck.c	8.3 (Berkeley) 1/29/94";
 #else
-static char rcsid[] = "$NetBSD: quotacheck.c,v 1.10 1995/03/18 14:59:22 cgd Exp $";
+static char rcsid[] = "$OpenBSD: quotacheck.c,v 1.12 1996/03/30 22:34:25 mark Exp $";
 #endif
 #endif /* not lint */
 
@@ -138,10 +139,11 @@ main(argc, argv)
 	struct quotaname *auxdata;
 	int i, argnum, maxrun, errs;
 	long done = 0;
-	char ch, *name;
+	char *name;
+	int ch;
 
 	errs = maxrun = 0;
-	while ((ch = getopt(argc, argv, "aguvl:")) != EOF) {
+	while ((ch = getopt(argc, argv, "aguvl:")) != -1) {
 		switch(ch) {
 		case 'a':
 			aflag++;
@@ -219,8 +221,11 @@ needchk(fs)
 	register struct quotaname *qnp;
 	char *qfnp;
 
-	if (strcmp(fs->fs_vfstype, "ufs") ||
-	    strcmp(fs->fs_type, FSTAB_RW))
+	if (strcmp(fs->fs_type, FSTAB_RW))
+		return (NULL);
+	if (strcmp(fs->fs_vfstype, "ffs") &&
+	    strcmp(fs->fs_vfstype, "ufs") &&
+	    strcmp(fs->fs_vfstype, "mfs"))
 		return (NULL);
 	if ((qnp = malloc(sizeof(*qnp))) == NULL)
 		err(1, "%s", strerror(errno));

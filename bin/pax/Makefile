@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.3 1996/06/29 05:51:59 tholo Exp $
 #	$NetBSD: Makefile,v 1.4 1995/03/21 09:07:02 cgd Exp $
-#       @(#)Makefile	8.1 (Berkeley) 5/31/93
 
 # To install on versions prior to BSD 4.4 the following may have to be
 # defined with CFLAGS +=
@@ -28,6 +28,12 @@
 PROG=   pax
 SRCS=	ar_io.c ar_subs.c buf_subs.c cache.c cpio.c file_subs.c ftree.c\
 	gen_subs.c getoldopt.c options.c pat_rep.c pax.c sel_subs.c tables.c\
-	tar.c tty_subs.c
+	tar.c tty_subs.c zopen.c
+LDADD+=	-lz
+DPADD+=	${LIBZ}
+MAN=	pax.1 tar.1
+LINKS=	${BINDIR}/pax ${BINDIR}/tar
+
+.PATH:	${.CURDIR}/../../usr.bin/compress
 
 .include <bsd.prog.mk>

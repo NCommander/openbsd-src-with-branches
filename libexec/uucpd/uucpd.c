@@ -42,7 +42,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)uucpd.c	5.10 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: uucpd.c,v 1.4 1995/06/03 22:48:48 mycroft Exp $";
+static char rcsid[] = "$Id: uucpd.c,v 1.3 1996/08/27 10:23:00 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -193,10 +193,11 @@ struct sockaddr_in *sinp;
 	alarm(0);
 	sprintf(Username, "USER=%s", user);
 	dologin(pw, sinp);
+	setlogin(user);
 	setgid(pw->pw_gid);
 	initgroups(pw->pw_name, pw->pw_gid);
-	chdir(pw->pw_dir);
 	setuid(pw->pw_uid);
+	chdir(pw->pw_dir);
 	execl(_PATH_UUCICO, "uucico", (char *)0);
 	perror("uucico server: execl");
 }
@@ -263,11 +264,12 @@ struct sockaddr_in *sin;
 		sizeof (struct in_addr), AF_INET);
 
 	if (hp) {
-		strncpy(remotehost, hp->h_name, sizeof (remotehost));
+		strncpy(remotehost, hp->h_name, sizeof(remotehost)-1);
 		endhostent();
 	} else
 		strncpy(remotehost, inet_ntoa(sin->sin_addr),
-		    sizeof (remotehost));
+		    sizeof(remotehost)-1);
+	remotehost[sizeof(remotehost)-1] = '\0';
 	wtmp = open(_PATH_WTMP, O_WRONLY|O_APPEND);
 	if (wtmp >= 0) {
 		/* hack, but must be unique and no tty line */

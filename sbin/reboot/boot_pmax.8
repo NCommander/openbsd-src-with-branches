@@ -1,3 +1,4 @@
+.\"	$OpenBSD: boot_pmax.8,v 1.3 1996/06/29 18:24:18 mickey Exp $
 .\"	$NetBSD: boot_pmax.8,v 1.1 1995/04/25 23:55:11 mellon Exp $
 .\"
 .\" Copyright (c) 1990, 1991 The Regents of the University of California.
@@ -44,7 +45,7 @@
 system bootstrapping procedures
 .Sh DESCRIPTION
 The
-.Tn NetBSD
+.Tn OpenBSD
 kernel is started by placing it at the beginning of physical memory
 and transferring to the entry point.
 Since the system is not reenterable,
@@ -83,23 +84,23 @@ these cases the network protocol can be used to determine which
 file to boot.  When booting off the tape, no filename should be
 specified, and when booting off of disk, the filename of a kernel
 must be specified.  Generally, the kernel is named
-.Nm netbsd.
+.Nm bsd.
 .Pp
 An example bootpath setting would be:
 .nf
 .sp 1
 .ce 1
-setenv bootpath rz(0,1,0)netbsd
+setenv bootpath rz(0,1,0)bsd
 .fi
 .Pp
 For automatic boots, the ROM automatically passes a
 .Fl a
 argument to the boot
 loader, requesting that
-.Tn NetBSD
+.Tn OpenBSD
 attempt to come up to multi-user mode.   At the boot ROM prompt,
 the user may boot
-.Tn NetBSD
+.Tn OpenBSD
 with either the
 .Nm auto
 or the
@@ -112,7 +113,7 @@ argument is passed to the kernel, requesting a multi-user boot; otherwise
 the
 .Fl s
 argument is passed, requesting that
-.Tn NetBSD
+.Tn OpenBSD
 boot to single user mode.
 .Pp
 When either the
@@ -127,7 +128,7 @@ flag, followed by the path of the kernel to boot, as described above.
 For example:
 .sp 1
 .ce 1
-boot -f rz(0,4,0)netbsd.new
+boot -f rz(0,4,0)bsd.new
 .Pp
 On TurboChannel machines (all DECstation 5000 models), the boot path
 is specified in the boot environment variable, along with any arguments
@@ -140,7 +141,7 @@ must be enclosed in quotes.   For example:
 .nf
 .sp 1
 .ce 1
-setenv boot "3/rz4/netbsd -a"
+setenv boot "3/rz4/bsd -a"
 .fi
 .Pp
 The device from which to boot is specified as the TurboChannel slot
@@ -162,7 +163,7 @@ devices, the option-specific protocol identifier is either mop or tftp.
 Filename requirements are as for the DECstation 2100 and 3100.
 .Pp
 To start
-.Tn NetBSD
+.Tn OpenBSD
 from the boot prompt, the
 .Nm boot
 command must be used.   With no arguments, this simply boots the default
@@ -174,7 +175,7 @@ booted, the path of that kernel may be specified after the boot command as
 described above, and any arguments may be passed similarly.   For example:
 .sp 1
 .ce 1
-boot 3/rz4/netbsd.new -a
+boot 3/rz4/bsd.new -a
 .Sh SEE ALSO
 .Xr crash 8m ,
 .Xr fsck 8 ,

@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 1995 Dale Rahn.
  * All rights reserved.
@@ -30,8 +32,15 @@
 
 #include <sys/param.h>
 #include <sys/buf.h>
+#include <sys/device.h>
 #define DKTYPENAMES
 #include <sys/disklabel.h>
+#include <sys/disk.h>
+
+#include <scsi/scsi_all.h>
+#include <scsi/scsiconf.h>
+
+#include <machine/autoconf.h>
 
 #define b_cylin b_resid
 
@@ -49,10 +58,45 @@ static void printlp __P((struct disklabel *lp, char *str));
 static void printclp __P((struct cpu_disklabel *clp, char *str));
 #endif
 
-int
-dk_establish()
+void
+dk_establish(dk, dev)
+	struct disk *dk;
+	struct device *dev;
 {
-	return(-1);
+	struct scsibus_softc *sbsc;
+	int target, lun;
+
+	if (bootpart == -1) /* ignore flag from controller driver? */
+		return;
+
+	/*
+ 	 * scsi: sd,cd
+ 	 */
+
+	if (strncmp("sd", dev->dv_xname, 2) == 0 ||
+	    strncmp("cd", dev->dv_xname, 2) == 0) {
+
+        	sbsc = (struct scsibus_softc *)dev->dv_parent;
+		if (cputyp == CPU_147) {
+			target = bootctrllun % 8; /* XXX: 147 only */
+			lun = bootdevlun; /* XXX: 147, untested */
+		} else {
+			/* 
+		 	 * XXX: on the 167: 
+		 	 * ignore bootctrllun
+		 	 */
+		 	target = bootdevlun / 10;
+		 	lun = bootdevlun % 10;
+		}
+
+        	if (sbsc->sc_link[target][lun] != NULL &&
+            	    sbsc->sc_link[target][lun]->device_softc == (void *)dev) {
+			bootdv = dev;
+                	return;
+		}
+        }
+
+	return;
 }
 
 /*
@@ -86,7 +130,7 @@ readdisklabel(dev, strat, lp, clp)
 
 	if (biowait(bp)) {
 		msg = "cpu_disklabel read error\n";
-	}else {
+	} else {
 		bcopy(bp->b_data, clp, sizeof (struct cpu_disklabel));
 	}
 
@@ -354,6 +398,23 @@ bsdtocpulabel(lp, clp)
 	clp->checksum = lp->d_checksum;
 	bcopy(&lp->d_partitions[0], clp->vid_4, sizeof(struct partition) * 4);
 	bcopy(&lp->d_partitions[4], clp->cfg_4, sizeof(struct partition) * 12);
+
+	/*
+ 	 * here are the parts of the cpu_disklabel the kernel must init.
+ 	 * see disklabel.h for more details
+ 	 * [note: this used to be handled by 'wrtvid']
+ 	 */
+	bcopy(VID_ID, clp->vid_id, sizeof(clp->vid_id));
+	clp->vid_oss = VID_OSS;
+	clp->vid_osl = VID_OSL;
+	clp->vid_osa_u = VID_OSAU;
+	clp->vid_osa_l = VID_OSAL;
+	clp->vid_cas = VID_CAS;
+	clp->vid_cal = VID_CAL;
+	bcopy(VID_MOT, clp->vid_mot, sizeof(clp->vid_mot));
+	clp->cfg_rec = CFG_REC;
+	clp->cfg_psm = CFG_PSM;
+
 }
 
 static void

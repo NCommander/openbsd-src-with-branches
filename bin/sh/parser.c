@@ -1,4 +1,5 @@
-/*	$NetBSD: parser.c,v 1.26 1995/05/17 00:05:25 christos Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: parser.c,v 1.29 1996/05/09 19:40:08 christos Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)parser.c	8.7 (Berkeley) 5/16/95";
 #else
-static char rcsid[] = "$NetBSD: parser.c,v 1.26 1995/05/17 00:05:25 christos Exp $";
+static char rcsid[] = "$NetBSD: parser.c,v 1.29 1996/05/09 19:40:08 christos Exp $";
 #endif
 #endif /* not lint */
 
@@ -1233,6 +1234,7 @@ parsebackq: {
 	struct jmploc jmploc;
 	struct jmploc *volatile savehandler;
 	int savelen;
+	int saveprompt;
 
 	savepbq = parsebackquote;
 	if (setjmp(jmploc.loc)) {
@@ -1260,17 +1262,49 @@ parsebackq: {
                 register c;
                 int savelen;
                 char *str;
+
  
                 STARTSTACKSTR(out);
-                while ((c = pgetc ()) != '`') {
-                       if (c == '\\') {
-                                c = pgetc ();
+		for (;;) {
+			if (needprompt) {
+				setprompt(2);
+				needprompt = 0;
+			}
+			switch (c = pgetc()) {
+			case '`':
+				goto done;
+
+			case '\\':
+                                if ((c = pgetc()) == '\n') {
+					plinno++;
+					if (doprompt)
+						setprompt(2);
+					else
+						setprompt(0);
+					/*
+					 * If eating a newline, avoid putting
+					 * the newline into the new character
+					 * stream (via the STPUTC after the
+					 * switch).
+					 */
+					continue;
+				}
                                 if (c != '\\' && c != '`' && c != '$'
                                     && (!dblquote || c != '"'))
                                         STPUTC('\\', out);
-                       }
-                       STPUTC(c, out);
+				break;
+
+			case '\n':
+				plinno++;
+				needprompt = doprompt;
+				break;
+
+			default:
+				break;
+			}
+			STPUTC(c, out);
                 }
+done:
                 STPUTC('\0', out);
                 savelen = out - stackblock();
                 if (savelen > 0) {
@@ -1285,13 +1319,30 @@ parsebackq: {
 	*nlpp = (struct nodelist *)stalloc(sizeof (struct nodelist));
 	(*nlpp)->next = NULL;
 	parsebackquote = oldstyle;
+
+	if (oldstyle) {
+		saveprompt = doprompt;
+		doprompt = 0;
+	}
+
 	n = list(0);
-        if (!oldstyle && (readtoken() != TRP))
-                synexpect(TRP);
+
+	if (oldstyle)
+		doprompt = saveprompt;
+	else {
+		if (readtoken() != TRP)
+			synexpect(TRP);
+	}
+
 	(*nlpp)->n = n;
-        /* Start reading from old file again.  */
-        if (oldstyle)
+        if (oldstyle) {
+		/*
+		 * Start reading from old file again, ignoring any pushed back
+		 * tokens left from the backquote parsing
+		 */
                 popfile();
+		tokpushback = 0;
+	}
 	while (stackblocksize() <= savelen)
 		growstackblock();
 	STARTSTACKSTR(out);

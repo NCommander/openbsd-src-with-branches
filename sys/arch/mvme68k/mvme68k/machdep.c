@@ -1,7 +1,35 @@
-/*	$NetBSD: machdep.c,v 1.48 1995/05/16 14:34:19 mycroft Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.11 1996/06/11 10:15:54 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -132,6 +160,7 @@ extern struct emul emul_sunos;
  * before vm init or startup.  Do enough configuration
  * to choose and initialize a console.
  */
+void
 consinit()
 {
 
@@ -363,6 +392,13 @@ again:
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
 	configure();
 }
 
@@ -387,6 +423,17 @@ setregs(p, pack, stack, retval)
 	/* restore a null state frame */
 	p->p_addr->u_pcb.pcb_fpregs.fpf_null = 0;
 	m68881_restore(&p->p_addr->u_pcb.pcb_fpregs);
+#endif
+#ifdef COMPAT_SUNOS
+	/*
+	 * SunOS' ld.so does self-modifying code without knowing
+	 * about the 040's cache purging needs.  So we need to uncache
+	 * writeable executable pages.
+	 */
+	if (p->p_emul == &emul_sunos)
+		p->p_md.md_flags |= MDP_UNCACHE_WX;
+	else
+		p->p_md.md_flags &= ~MDP_UNCACHE_WX;
 #endif
 #ifdef COMPAT_HPUX
 	p->p_md.md_flags &= ~MDP_HPUXMMAP;
@@ -453,6 +500,7 @@ identifycpu()
 	char *t, *mc;
 	char speed[6];
 	char suffix[30];
+	extern u_long fpvect_tab, fpvect_end, fpsp_tab;
 	int len;
 
 	bzero(suffix, sizeof suffix);
@@ -496,6 +544,11 @@ identifycpu()
 	    suffix, speed, mc);
 	switch (mmutype) {
 	case MMU_68040:
+#ifdef FPSP
+		bcopy(&fpsp_tab, &fpvect_tab, &fpvect_end - &fpvect_tab);
+#endif
+		strcat(cpu_model, "+MMU");
+		break;
 	case MMU_68030:
 		strcat(cpu_model, "+MMU");
 		break;
@@ -658,7 +711,7 @@ sendsig(catcher, sig, mask, code)
 	fsize = sizeof(struct sigframe);
 	if ((psp->ps_flags & SAS_ALTSTACK) && !oonstack &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(psp->ps_sigstk.ss_sp +
 					 psp->ps_sigstk.ss_size - fsize);
 		psp->ps_sigstk.ss_flags |= SA_ONSTACK;
 	} else
@@ -814,13 +867,14 @@ sendsig(catcher, sig, mask, code)
  * a machine fault.
  */
 /* ARGSUSED */
-sigreturn(p, uap, retval)
+sys_sigreturn(p, v, retval)
 	struct proc *p;
-	struct sigreturn_args /* {
-		syscallarg(struct sigcontext *) sigcntxp;
-	} */ *uap;
+	void *v;
 	register_t *retval;
 {
+	struct sys_sigreturn_args /* {
+		syscallarg(struct sigcontext *) sigcntxp;
+	} */ *uap = v;
 	register struct sigcontext *scp;
 	register struct frame *frame;
 	register int rf;
@@ -1042,6 +1096,10 @@ boot(howto)
 
 	boothowto = howto;
 	if ((howto&RB_NOSYNC) == 0 && waittime < 0) {
+		extern struct proc proc0;
+		/* do that another panic fly away */
+		if (curproc == NULL)
+			curproc = &proc0;
 		waittime = 0;
 		vfs_shutdown();
 		/*
@@ -1053,8 +1111,6 @@ boot(howto)
 	splhigh();			/* extreme priority */
 	if (howto&RB_HALT) {
 		printf("halted\n\n");
-		while (1)
-			;
 	} else {
 		struct haltvec *hv;
 
@@ -1064,6 +1120,8 @@ boot(howto)
 			(*hv->hv_fn)();
 		doboot();
 	}
+	while (1)
+		;
 	/*NOTREACHED*/
 }
 
@@ -1163,18 +1221,6 @@ dumpsys()
 
 initcpu()
 {
-#ifdef MAPPEDCOPY
-	extern u_int mappedcopysize;
-
-	/*
-	 * Initialize lower bound for doing copyin/copyout using
-	 * page mapping (if not already set).  We don't do this on
-	 * VAC machines as it loses big time.
-	 */
-	if (mappedcopysize == 0) {
-		mappedcopysize = NBPG;
-	}
-#endif
 }
 
 straytrap(pc, evec)
@@ -1189,11 +1235,11 @@ int	*nofault;
 
 int
 badpaddr(addr, size)
-	register caddr_t addr;
+	register void *addr;
 	int size;
 {
 	int off = (int)addr & PGOFSET;
-	caddr_t v, p = (caddr_t)((int)addr & ~PGOFSET);
+	caddr_t v, p = (void *)((int)addr & ~PGOFSET);
 	int x;
 
 	v = mapiodev(p, NBPG);

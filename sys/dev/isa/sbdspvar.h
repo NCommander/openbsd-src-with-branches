@@ -1,4 +1,5 @@
-/*	$NetBSD: sbdspvar.h,v 1.6 1995/05/08 22:02:24 brezak Exp $	*/
+/*	$OpenBSD: sbdspvar.h,v 1.4 1996/04/18 23:47:48 niklas Exp $	*/
+/*	$NetBSD: sbdspvar.h,v 1.13 1996/04/29 20:28:50 christos Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -36,24 +37,26 @@
 
 #define SB_MIC_PORT	0
 #define SB_SPEAKER	1
-#define SB_LINE_IN_PORT	2
-#define SB_DAC_PORT	3
-#define SB_FM_PORT	4
-#define SB_CD_PORT	5
-#define SB_MASTER_VOL	6
-#define SB_TREBLE	7
-#define SB_BASS		8
-#define SB_NDEVS	9
+#define SB_INPUT_CLASS	2
+#define SB_OUTPUT_CLASS	3
+#define SB_LINE_IN_PORT	4
+#define SB_DAC_PORT	5
+#define SB_FM_PORT	6
+#define SB_CD_PORT	7
+#define SB_MASTER_VOL	8
+#define SB_TREBLE	9
+#define SB_BASS		10
+#define SB_NDEVS	11		/* XXX include classes above for
+					   contiguous number space on
+					   original SB */
 
-#define SB_OUTPUT_MODE	9
+/*#define SB_OUTPUT_MODE	9
 #define 	SB_SPKR_MONO	0
-#define 	SB_SPKR_STEREO	1
+#define 	SB_SPKR_STEREO	1*/
 
-#define	SB_RECORD_SOURCE 10
+#define	SB_RECORD_SOURCE 11
 
-#define SB_INPUT_CLASS	11
-#define SB_OUTPUT_CLASS	12
-#define SB_RECORD_CLASS	13
+#define SB_RECORD_CLASS	12
 
 
 /*
@@ -75,16 +78,12 @@ struct sbdsp_softc {
 	struct	isadev sc_id;		/* ISA device */
 	void	*sc_ih;			/* interrupt vectoring */
 
-	u_short	sc_iobase;		/* I/O port base address */
-	u_short sc_irq;			/* interrupt */
-	u_short sc_drq;			/* DMA */
+	int	sc_iobase;		/* I/O port base address */
+	int	sc_irq;			/* interrupt */
+	int	sc_drq;			/* DMA (8-bit) */
+	int	sc_drq16;		/* DMA (16-bit) */
 
 	u_short	sc_open;		/* reference count of open calls */
-	u_short	sc_locked;		/* true when doing HS DMA  */
- 	u_short	sc_adacmode;		/* low/high speed mode indicator */
-
-	u_long	sc_irate;		/* Sample rate for input */
-	u_long	sc_orate;		/* ...and output */
 
 	u_int	gain[SB_NDEVS];		/* kept in SB levels: right/left each
 					   in a nibble */
@@ -93,12 +92,18 @@ struct sbdsp_softc {
 
 	u_int	out_port;		/* output port */
 	u_int	in_port;		/* input port */
+	u_int	in_filter;		/* one of SB_TREBLE_EQ, SB_BASS_EQ, 0 */
 
 	u_int	spkr_state;		/* non-null is on */
 	
+	int	sc_irate, sc_itc;	/* Sample rate for input */
+	int	sc_orate, sc_otc;	/* ...and output */
+
+	int	sc_imode;
+	int	sc_omode;
 #define SB_ADAC_LS 0
 #define SB_ADAC_HS 1
- 	u_short	sc_adactc;		/* current adac time constant */
+
 	u_long	sc_interrupts;		/* number of interrupts taken */
 	void	(*sc_intr)(void*);	/* dma completion intr handler */
 	void	(*sc_mintr)(void*, int);/* midi input intr handler */
@@ -107,25 +112,32 @@ struct sbdsp_softc {
 	int	dmaflags;
 	caddr_t	dmaaddr;
 	vm_size_t	dmacnt;
-	int	sc_last_hsw_size;	/* last HS dma size */
-	int	sc_last_hsr_size;	/* last HS dma size */
-	int	sc_chans;		/* # of channels */
-	char	sc_dmain_inprogress;	/* DMA input in progress? */
-	char	sc_dmaout_inprogress;	/* DMA output in progress? */
+	int	sc_last_hs_size;	/* last HS dma size */
+	int	sc_precision;		/* size of samples */
+	int	sc_channels;		/* # of channels */
+	int	sc_dmadir;		/* DMA direction */
+#define	SB_DMA_NONE	0
+#define	SB_DMA_IN	1
+#define	SB_DMA_OUT	2
 
 	u_int	sc_model;		/* DSP model */
-#define SBVER_MAJOR(v)	((v)>>8)
+#define SBVER_MAJOR(v)	(((v)>>8) & 0xff)
 #define SBVER_MINOR(v)	((v)&0xff)
-};
 
-#define ISSBPRO(sc) \
-	(SBVER_MAJOR((sc)->sc_model) == 3)
+#define MODEL_JAZZ16 0x80000000
+};
 
 #define ISSBPROCLASS(sc) \
 	(SBVER_MAJOR((sc)->sc_model) > 2)
 
+#define ISSBPRO(sc) \
+	(SBVER_MAJOR((sc)->sc_model) == 3)
+
 #define ISSB16CLASS(sc) \
-      (SBVER_MAJOR((sc)->sc_model) > 3)
+	(SBVER_MAJOR((sc)->sc_model) > 3)
+
+#define ISJAZZ16(sc) \
+	((sc)->sc_model & MODEL_JAZZ16)
 
 
 #ifdef _KERNEL
@@ -156,6 +168,8 @@ int	sbdsp_set_precision __P((void *, u_int));
 int	sbdsp_get_precision __P((void *));
 int	sbdsp_set_channels __P((void *, int));
 int	sbdsp_get_channels __P((void *));
+int	sbdsp_set_ifilter __P((void *, int));
+int	sbdsp_get_ifilter __P((void *));
 int	sbdsp_round_blocksize __P((void *, int));
 int	sbdsp_set_out_port __P((void *, int));
 int	sbdsp_get_out_port __P((void *));
@@ -166,8 +180,8 @@ int	sbdsp_get_avail_out_ports __P((void *));
 int	sbdsp_speaker_ctl __P((void *, int));
 int	sbdsp_commit_settings __P((void *));
 
-int	sbdsp_dma_output __P((void *, void *, int, void (*)(), void*));
-int	sbdsp_dma_input __P((void *, void *, int, void (*)(), void*));
+int	sbdsp_dma_output __P((void *, void *, int, void (*)(void *), void*));
+int	sbdsp_dma_input __P((void *, void *, int, void (*)(void *), void*));
 
 int	sbdsp_haltdma __P((void *));
 int	sbdsp_contdma __P((void *));
@@ -180,8 +194,8 @@ int	sbdsp_reset __P((struct sbdsp_softc *));
 void	sbdsp_spkron __P((struct sbdsp_softc *));
 void	sbdsp_spkroff __P((struct sbdsp_softc *));
 
-int	sbdsp_wdsp(u_short iobase, int v);
-int	sbdsp_rdsp(u_short iobase);
+int	sbdsp_wdsp(int iobase, int v);
+int	sbdsp_rdsp(int iobase);
 
 int	sbdsp_intr __P((void *));
 short	sbversion __P((struct sbdsp_softc *));
