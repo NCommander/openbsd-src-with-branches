@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.82 2003/05/14 23:32:35 miod Exp $
+#	$OpenBSD: GENERIC,v 1.83 2003/06/13 19:21:25 deraadt Exp $
 # 	$NetBSD: GENERIC32,v 1.18 2001/07/20 00:07:12 eeh Exp $
 
 machine		sparc64
@@ -6,7 +6,6 @@ machine		sparc64
 include "../../../conf/GENERIC"
 
 option		SUN4U
-option		_LP64
 
 option		PCIVERBOSE
 option		USER_PCICONF	# user-space PCI configuration
