@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1.1.1 2001/06/27 18:23:16 kjc Exp $
 #	$NetBSD: Makefile,v 1.3 2001/01/11 13:15:06 enami Exp $
 
 .include <bsd.own.mk>
@@ -9,6 +9,8 @@ MAN=	altqd.8 altq.conf.5
 SRCS=	altqd.c libaltq2.c
 
 CPPFLAGS+= -DALTQ -I${.CURDIR}/../libaltq
+
+.include <bsd.obj.mk>
 
 .if exists(${.CURDIR}/../libaltq/${__objdir})
 LDADD+=         -L${.CURDIR}/../libaltq/${__objdir} -laltq
