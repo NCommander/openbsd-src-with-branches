@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.6 2000/01/16 00:34:39 angelos Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.7 2001/01/17 19:50:14 angelos Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -402,6 +402,7 @@ gre_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 				if (sc->route.ro_rt == 0) {
 					sc->g_src.s_addr = INADDR_ANY;
 					sc->g_dst.s_addr = INADDR_ANY;
+					splx(s);
 					return EIO; /* Is this is good ? */
 				}
 
