@@ -1,4 +1,4 @@
-/*	$NetBSD$	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (C) 1996 Wolfgang Solfrank.
