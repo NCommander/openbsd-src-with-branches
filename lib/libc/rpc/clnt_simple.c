@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: clnt_simple.c,v 1.2 1996/07/20 06:12:23 deraadt Exp $";
+static char *rcsid = "$OpenBSD: clnt_simple.c,v 1.3 1996/08/19 08:31:28 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /* 
@@ -54,6 +54,7 @@ static struct callrpc_private {
 
 callrpc(host, prognum, versnum, procnum, inproc, in, outproc, out)
 	char *host;
+	int prognum, versnum, procnum;
 	xdrproc_t inproc, outproc;
 	char *in, *out;
 {

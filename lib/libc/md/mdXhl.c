@@ -8,7 +8,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: mdXhl.c,v 1.2 1996/08/19 08:28:30 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdlib.h>
@@ -20,6 +20,7 @@ static char rcsid[] = "$OpenBSD$";
 #include <sys/uio.h>
 #include <unistd.h>
 
+/* ARGSUSED */
 char *
 MDXEnd(MDX_CTX *ctx, char *buf)
 {

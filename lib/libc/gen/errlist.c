@@ -32,10 +32,15 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: errlist.c,v 1.4 1995/02/25 13:40:51 cgd Exp $";
+static char *rcsid = "$OpenBSD: errlist.c,v 1.2 1996/08/19 08:22:32 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
-const char *const _sys_errlist[] = {
+#ifdef lint
+char *
+#else
+const char *const
+#endif
+	_sys_errlist[] = {
 	"Undefined error: 0",			/*  0 - ENOERROR */
 	"Operation not permitted",		/*  1 - EPERM */
 	"No such file or directory",		/*  2 - ENOENT */

@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $";
+static char rcsid[] = "$OpenBSD: getgrouplist.c,v 1.3 1996/08/19 08:23:32 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -50,7 +50,6 @@ getgrouplist(uname, agroup, groups, grpcnt)
 	int *grpcnt;
 {
 	register struct group *grp;
-	register struct passwd *pw;
 	register int i, ngroups;
 	int ret, maxgroups;
 

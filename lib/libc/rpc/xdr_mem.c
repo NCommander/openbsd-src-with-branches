@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_mem.c,v 1.4 1996/02/08 08:06:05 mycroft Exp $";
+static char *rcsid = "$OpenBSD: xdr_mem.c,v 1.4 1996/08/19 08:32:04 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -230,6 +230,7 @@ xdrmem_inline_aligned(xdrs, len)
 	return (buf);
 }
 
+/* ARGSUSED */
 static int32_t *
 xdrmem_inline_unaligned(xdrs, len)
 	register XDR *xdrs;
