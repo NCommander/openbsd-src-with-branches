@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 1999/03/05 04:47:44 tholo Exp $
+#	$OpenBSD: Makefile,v 1.8 1999/03/05 05:08:31 millert Exp $
 #
 # Take termcap/terminfo master file and generate termcap/terminfo .db files
 # master: http://www.tuxedo.org/~esr/terminfo/termtypes.master.gz
@@ -14,7 +14,7 @@ terminfo.src: termtypes.master
 	    -e 's,/usr/lib/tabset,/usr/share/tabset,g' \
 	    > ${.TARGET}
 	@if [ ! -s ${.TARGET} ]; then \
-	    echo ${.TARGET} is zero length! ;\
+	    echo ${.TARGET} is zero length!  You need to update /usr/bin/tic ;\
 	    exit 1 ;\
 	fi
 
@@ -27,7 +27,7 @@ termcap.src: termtypes.master
 	    -e 's,/usr/lib/tabset,/usr/share/tabset,g' \
 	    > ${.TARGET}
 	@if [ ! -s ${.TARGET} ]; then \
-	    echo ${.TARGET} is zero length! ;\
+	    echo ${.TARGET} is zero length!  You need to update /usr/bin/tic ;\
 	    exit 1 ;\
 	fi
 
