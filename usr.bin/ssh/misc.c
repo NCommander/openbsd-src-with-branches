@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.5 2001/04/12 20:09:37 stevesk Exp $	*/
+/*	$OpenBSD: misc.c,v 1.6 2001/05/03 23:09:52 mouring Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: misc.c,v 1.5 2001/04/12 20:09:37 stevesk Exp $");
+RCSID("$OpenBSD: misc.c,v 1.6 2001/05/03 23:09:52 mouring Exp $");
 
 #include "misc.h"
 #include "log.h"
@@ -160,4 +160,25 @@ colon(char *cp)
 			return (0);
 	}
 	return (0);
+}
+
+void
+addargs(arglist *args, char *fmt, ...)
+{
+	va_list ap;
+	char buf[1024];
+
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+
+	if (args->list == NULL) {
+		args->nalloc = 32;
+		args->num = 0;
+	} else if (args->num+2 >= args->nalloc) 
+		args->nalloc *= 2;
+
+	args->list = xrealloc(args->list, args->nalloc * sizeof(char *));
+	args->list[args->num++] = xstrdup(buf);
+	args->list[args->num] = NULL;
 }
