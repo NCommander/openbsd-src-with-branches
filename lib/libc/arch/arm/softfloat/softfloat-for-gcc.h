@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: softfloat-for-gcc.h,v 1.6 2003/07/26 19:24:51 salo Exp $ */
 
 /*

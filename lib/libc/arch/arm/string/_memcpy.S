@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: _memcpy.S,v 1.4 2003/04/05 23:08:52 bjh21 Exp $	*/
 
 /*-

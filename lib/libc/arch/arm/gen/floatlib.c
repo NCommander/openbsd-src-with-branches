@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
 ** libgcc support for software floating point.
 ** Copyright (C) 1991 by Pipeline Associates, Inc.  All rights reserved.

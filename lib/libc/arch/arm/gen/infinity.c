@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: infinity.c,v 1.3 2002/02/19 20:08:19 bjh21 Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: softfloat.c,v 1.1 2002/05/21 23:51:07 bjh21 Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sigsetjmp.S,v 1.3 2002/08/17 19:54:30 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: fpgetmask.c,v 1.3 2002/05/12 13:12:45 bjh21 Exp $ */
 
 /*-

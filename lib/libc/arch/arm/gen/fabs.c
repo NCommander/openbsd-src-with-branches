@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: fabs.c,v 1.2 2002/05/26 11:48:01 wiz Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: bzero.S,v 1.2 2001/07/16 05:50:06 matt Exp $	*/
 
 /*-

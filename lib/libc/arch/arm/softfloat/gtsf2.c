@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: gtsf2.c,v 1.1 2000/06/06 08:15:06 bjh21 Exp $ */
 
 /*

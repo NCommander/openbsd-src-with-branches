@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: fpsetsticky.c,v 1.2 2002/01/13 21:45:54 thorpej Exp $ */
 
 /*-

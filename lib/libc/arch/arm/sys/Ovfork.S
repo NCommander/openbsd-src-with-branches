@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: Ovfork.S,v 1.6 2003/08/07 16:42:03 agc Exp $	*/
 
 /*-

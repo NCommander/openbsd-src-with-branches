@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: modf_ieee754.c,v 1.1 2003/05/12 15:15:16 kleink Exp $ */
 
 /*

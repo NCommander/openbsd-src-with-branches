@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: alloca.S,v 1.3 2003/04/05 23:08:51 bjh21 Exp $	*/
 
 /*

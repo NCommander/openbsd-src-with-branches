@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: timesoftfloat.c,v 1.1 2000/06/06 08:15:11 bjh21 Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+# $OpenBSD$
 # $NetBSD: Makefile.inc,v 1.5 2002/11/23 14:26:04 chris Exp $
 
 SRCS+=  memcpy.S _memcpy.S bcopy.S memmove.S memset.S bzero.S ffs.S strcmp.S

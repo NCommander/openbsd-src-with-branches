@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cerror.S,v 1.5 2003/08/07 16:42:04 agc Exp $	*/
 
 /*-

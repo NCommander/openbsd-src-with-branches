@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sigsuspend.S,v 1.6 2003/08/07 16:42:05 agc Exp $	*/
 
 /*-

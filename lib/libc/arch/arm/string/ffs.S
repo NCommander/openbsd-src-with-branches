@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ffs.S,v 1.5 2003/04/05 23:08:52 bjh21 Exp $	*/
 /*
  * Copyright (c) 2001 Christopher Gilbert

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ldexp.c,v 1.2 2001/11/08 22:45:45 bjh21 Exp $	*/
 
 /*-

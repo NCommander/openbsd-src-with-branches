@@ -1,3 +1,4 @@
+# $OpenBSD$
 # $NetBSD: Makefile.inc,v 1.5 2002/07/10 04:29:06 thorpej Exp $
 
 .include <bsd.own.mk>

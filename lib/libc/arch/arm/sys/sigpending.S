@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: sigpending.S,v 1.5 2003/08/07 16:42:05 agc Exp $	*/
 
 /*-

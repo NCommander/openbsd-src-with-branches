@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* BROKEN */
 
 #include <machine/asm.h>

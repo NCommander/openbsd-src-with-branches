@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: unordsf2.c,v 1.1 2003/05/06 08:58:20 rearnsha Exp $ */
 
 /*
