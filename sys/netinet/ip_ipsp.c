@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.44 1999/05/23 09:04:46 niklas Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.45 1999/06/04 22:40:36 provos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -146,7 +146,7 @@ struct xformsw *xformswNXFORMSW = &xformsw[sizeof(xformsw)/sizeof(xformsw[0])];
 unsigned char ipseczeroes[IPSEC_ZEROES_SIZE]; /* zeroes! */ 
 
 #define TDB_HASHSIZE_INIT 32
-static struct tdb **tdbh;
+static struct tdb **tdbh = NULL;
 static u_int tdb_hashmask = TDB_HASHSIZE_INIT - 1;
 
 /*
@@ -839,6 +839,9 @@ tdb_delete(struct tdb *tdbp, int delchain, int expflags)
     struct inpcb *inp;
     u_int32_t hashval = tdbp->tdb_sproto + tdbp->tdb_spi, i;
     int s;
+
+    if (tdbh == NULL)
+      return;
 
     for (i = 0; i < SA_LEN(&tdbp->tdb_dst.sa); i++)
       hashval += ptr[i];
