@@ -1,5 +1,5 @@
-/*	$OpenBSD: ppb.c,v 1.1 1996/04/18 23:48:09 niklas Exp $	*/
-/*	$NetBSD: ppb.c,v 1.7 1996/03/27 04:08:34 cgd Exp $	*/
+/*	$OpenBSD: ppb.c,v 1.2 1996/04/21 22:25:53 deraadt Exp $	*/
+/*	$NetBSD: ppb.c,v 1.8 1996/05/03 17:33:51 christos Exp $	*/
 
 /*
  * Copyright (c) 1996 Christopher G. Demetriou.  All rights reserved.
@@ -68,7 +68,6 @@ ppbmatch(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
-	struct cfdata *cf = match;
 	struct pci_attach_args *pa = aux;
 
 	/*
