@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_an_pcmcia.c,v 1.6 2001/09/30 00:31:15 art Exp $	*/
+/*	$OpenBSD: if_an_pcmcia.c,v 1.8 2002/06/09 03:14:18 todd Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -132,7 +132,7 @@ an_pcmcia_attach(parent, self, aux)
 	sc->an_bhandle = psc->sc_pcioh.ioh;
 
 	sc->sc_ih = pcmcia_intr_establish(psc->sc_pf, IPL_NET,
-	    an_intr, sc, "");
+	    an_intr, sc, sc->sc_dev.dv_xname);
 	if (sc->sc_ih == NULL)
 		printf("no irq");
 
