@@ -1,4 +1,4 @@
-/*	$OpenBSD: socketvar.h,v 1.3 1996/03/03 12:12:20 niklas Exp $	*/
+/*	$OpenBSD: socketvar.h,v 1.4 1996/04/28 18:57:18 mickey Exp $	*/
 /*	$NetBSD: socketvar.h,v 1.18 1996/02/09 18:25:38 christos Exp $	*/
 
 /*-
@@ -114,7 +114,7 @@ struct socket {
 #define	SS_NBIO			0x100	/* non-blocking ops */
 #define	SS_ASYNC		0x200	/* async i/o notify */
 #define	SS_ISCONFIRMING		0x400	/* deciding to accept connection req */
-
+#define	SS_CONNECTOUT		0x1000	/* connect, not accept, at this end */
 
 /*
  * Macros for sockets and socket buffering.

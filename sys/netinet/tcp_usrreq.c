@@ -201,6 +201,7 @@ tcp_usrreq(so, req, m, nam, control)
 			error = ENOBUFS;
 			break;
 		}
+		so->so_state |= SS_CONNECTOUT;
 		/* Compute window scaling to request.  */
 		while (tp->request_r_scale < TCP_MAX_WINSHIFT &&
 		    (TCP_MAXWIN << tp->request_r_scale) < so->so_rcv.sb_hiwat)
