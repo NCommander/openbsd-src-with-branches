@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.55 2001/02/08 14:38:54 deraadt Exp $");
+RCSID("$OpenBSD: scp.c,v 1.56 2001/02/08 19:30:52 itojun Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -755,8 +755,6 @@ sink(argc, argv)
 
 			need = strlen(targ) + strlen(cp) + 250;
 			if (need > cursize) {
-				if (namebuf)
-					xfree(namebuf);
 				namebuf = xmalloc(need);
 				cursize = need;
 			}
