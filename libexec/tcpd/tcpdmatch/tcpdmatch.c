@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpdmatch.c,v 1.1 1997/02/26 06:17:10 downsj Exp $	*/
+/*	$OpenBSD: tcpdmatch.c,v 1.2 1999/05/23 17:19:23 aaron Exp $	*/
 
  /*
   * tcpdmatch - explain what tcpd would do in a specific case
@@ -19,7 +19,7 @@
 #if 0
 static char sccsid[] = "@(#) tcpdmatch.c 1.5 96/02/11 17:01:36";
 #else
-static char rcsid[] = "$OpenBSD: tcpdmatch.c,v 1.1 1997/02/26 06:17:10 downsj Exp $";
+static char rcsid[] = "$OpenBSD: tcpdmatch.c,v 1.2 1999/05/23 17:19:23 aaron Exp $";
 #endif
 #endif
 
@@ -208,7 +208,7 @@ char  **argv;
      * If a client address is specified, we simulate the effect of client
      * hostname lookup failure.
      */
-    if (dot_quad_addr(client) != INADDR_NONE) {
+    if (dot_quad_addr(client, NULL)) {
 	request_set(&request, RQ_CLIENT_ADDR, client, 0);
 	tcpdmatch(&request);
 	exit(0);
