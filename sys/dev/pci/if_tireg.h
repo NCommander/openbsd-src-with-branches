@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tireg.h,v 1.8 2000/06/07 05:35:03 jason Exp $	*/
+/*	$OpenBSD: if_tireg.h,v 1.9 2000/11/21 03:50:48 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -52,10 +52,6 @@
 #define TI_PCI_SUBSYS			0x02C
 #define TI_PCI_ROMBASE			0x030
 #define TI_PCI_INT			0x03C
-
-#ifndef PCIM_CMD_MWIEN
-#define PCIM_CMD_MWIEN			0x0010
-#endif
 
 /*
  * Alteon AceNIC PCI vendor/device ID.
