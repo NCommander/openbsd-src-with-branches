@@ -1,4 +1,4 @@
-/*	$OpenBSD: move.c,v 1.6 1999/09/30 03:23:59 pjanzen Exp $	*/
+/*	$OpenBSD: move.c,v 1.7 1999/11/25 11:07:53 pjanzen Exp $	*/
 /*	$NetBSD: move.c,v 1.4 1995/03/24 05:01:57 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)move.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: move.c,v 1.6 1999/09/30 03:23:59 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: move.c,v 1.7 1999/11/25 11:07:53 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -297,10 +297,6 @@ protected:
 			pp->total += SC_COUP;
 			pp->hand_tot += SC_COUP;
 			pp->coupscore += SC_COUP;
-			pp->battle = C_GO;
-			pp->can_go = TRUE;
-			if (card == C_RIGHT_WAY && pp->speed == C_LIMIT)
-				pp->speed = C_INIT;
 		}
 		/*
 		 * if not coup, must pick first
