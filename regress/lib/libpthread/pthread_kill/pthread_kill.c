@@ -1,4 +1,4 @@
-/* $OpenBSD: siginfo.c,v 1.5 2002/10/12 03:37:45 marc Exp $ */
+/* $OpenBSD: pthread_kill.c,v 1.1 2002/10/21 18:44:11 marc Exp $ */
 /* PUBLIC DOMAIN Oct 2002 <marc@snafu.org> */
 
 /*
@@ -22,7 +22,7 @@ act_handler(int signal, siginfo_t *siginfo, void *context)
 	CHECKe(sigaction(SIGUSR1, NULL, &sa));
 	ASSERT(sa.sa_handler == SIG_DFL);
 	ASSERT(siginfo != NULL);
-	asprintf(&str, "act_handler: signal %d, siginfo 0x%p, context 0x%p\n",
+	asprintf(&str, "act_handler: signal %d, siginfo %p, context %p\n",
 		 signal, siginfo, context);
 	write(STDOUT_FILENO, str, strlen(str));
 }
