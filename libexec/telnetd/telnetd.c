@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnetd.c,v 1.19 1999/12/10 20:06:48 deraadt Exp $	*/
+/*	$OpenBSD: telnetd.c,v 1.20 1999/12/11 01:59:43 itojun Exp $	*/
 /*	$NetBSD: telnetd.c,v 1.6 1996/03/20 04:25:57 tls Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 static char sccsid[] = "@(#)telnetd.c	8.4 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: telnetd.c,v 1.5 1996/02/28 20:38:23 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: telnetd.c,v 1.19 1999/12/10 20:06:48 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: telnetd.c,v 1.20 1999/12/11 01:59:43 itojun Exp $";
 #endif
 #endif /* not lint */
 
@@ -513,7 +513,7 @@ main(argc, argv)
 	}
 
 #if	defined(IPPROTO_IP) && defined(IP_TOS)
-	{
+	if (from.ss_family == AF_INET) {
 # if	defined(HAS_GETTOS)
 		struct tosent *tp;
 		if (tos < 0 && (tp = gettosbyname("telnet", "tcp")))
