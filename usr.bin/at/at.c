@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.c,v 1.36 2003/03/03 18:23:13 millert Exp $	*/
+/*	$OpenBSD: at.c,v 1.37 2003/03/13 21:28:30 millert Exp $	*/
 
 /*
  *  at.c : Put file into atrun queue
@@ -42,7 +42,7 @@
 #define TIMESIZE 50		/* Size of buffer passed to strftime() */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: at.c,v 1.36 2003/03/03 18:23:13 millert Exp $";
+static const char rcsid[] = "$OpenBSD: at.c,v 1.37 2003/03/13 21:28:30 millert Exp $";
 #endif
 
 /* Variables to remove from the job's environment. */
@@ -913,7 +913,7 @@ main(int argc, char **argv)
 	char queue = DEFAULT_AT_QUEUE;
 	char queue_set = 0;
 	char *options = "q:f:t:bcdlmrv";	/* default options for at */
-	char cwd[MAX_FNAME];
+	char cwd[PATH_MAX];
 	int ch;
 	int aflag = 0;
 	int cflag = 0;
