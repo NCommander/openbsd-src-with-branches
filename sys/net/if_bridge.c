@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.121 2003/06/30 19:09:25 henning Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.122 2003/07/25 10:36:34 itojun Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -2634,7 +2634,7 @@ bridge_send_icmp_err(struct bridge_softc *sc, struct ifnet *ifp,
 	m->m_len += hlen;
 
 	ip->ip_v = IPVERSION;
-	ip->ip_off &= ntohs(IP_DF);
+	ip->ip_off &= htons(IP_DF);
 	ip->ip_id = htons(ip_randomid());
 	ip->ip_ttl = MAXTTL;
 	ip->ip_sum = 0;
