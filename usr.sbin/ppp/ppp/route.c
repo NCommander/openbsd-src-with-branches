@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: route.c,v 1.17 2001/09/04 22:12:46 brian Exp $
+ * $OpenBSD: route.c,v 1.18 2001/11/23 12:38:52 brian Exp $
  */
 
 #include <sys/param.h>
@@ -698,7 +698,7 @@ rt_Set(struct bundle *bundle, int cmd, const struct ncprange *dst,
        const struct ncpaddr *gw, int bang, int quiet)
 {
   struct rtmsg rtmes;
-  int s, nb, wb, width;
+  int s, nb, wb;
   char *cp;
   const char *cmdstr;
   struct sockaddr_storage sadst, samask, sagw;
