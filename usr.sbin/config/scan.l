@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scan.l,v 1.15 2002/02/16 21:28:01 millert Exp $	*/
+/*	$OpenBSD: scan.l,v 1.16 2003/06/02 23:36:52 millert Exp $	*/
 /*	$NetBSD: scan.l,v 1.13 1997/02/02 21:12:37 thorpej Exp $	*/
 
 /*
@@ -112,8 +112,8 @@ root		return ROOT;
 source		return SOURCE;
 swap		return SWAP;
 with		return WITH;
-rmoption        return RMOPTIONS;
-rmoptions       return RMOPTIONS;
+rmoption	return RMOPTIONS;
+rmoptions	return RMOPTIONS;
 
 {PATH}		{
 		yylval.str = intern(yytext);
