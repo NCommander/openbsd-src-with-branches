@@ -36,7 +36,15 @@
  *	from: @(#)pathnames.h	5.2 (Berkeley) 6/1/90
  */
 
+#ifndef _PATH_OBJDIR
 #define	_PATH_OBJDIR		"obj"
+#endif /* !_PATH_OBJDIR */
+#ifndef _PATH_DEFSHELLDIR
 #define	_PATH_DEFSHELLDIR	"/bin"
+#endif /* !_PATH_DEFSHELLDIR */
+#ifndef _PATH_DEFSYSMK
 #define	_PATH_DEFSYSMK		"sys.mk"
+#endif /* ! _PATH_DEFSYSMK */
+#ifndef _PATH_DEFSYSPATH
 #define	_PATH_DEFSYSPATH	"/usr/share/mk"
+#endif /* ! _PATH_DEFSYSPATH */
