@@ -1,4 +1,4 @@
-/*	$OpenBSD: list.c,v 1.1 1999/12/12 14:53:02 d Exp $	*/
+/*	$OpenBSD: list.c,v 1.2 2000/06/30 18:28:03 pjanzen Exp $	*/
 /*
  * Copyright 1999, David Leonard. All rights reserved.
  * Redistribution and use in source and binary forms are permitted
@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
