@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.53 2002/06/10 17:46:41 fgsch Exp $
+#	$OpenBSD: Makefile.inc,v 1.54 2002/07/06 19:14:20 nordin Exp $
 #	$NetBSD: Makefile.inc,v 1.35 1995/10/16 23:49:07 jtc Exp $
 #	@(#)Makefile.inc	8.1 (Berkeley) 6/17/93
 
@@ -6,7 +6,7 @@
 .PATH: ${LIBCSRCDIR}/arch/${MACHINE_ARCH}/sys ${LIBCSRCDIR}/sys
 
 # for now, only arch's below have weak aliases enabled
-.if ${MACHINE_ARCH} != "i386" && ${MACHINE_ARCH} != "powerpc" && ${MACHINE_ARCH} != "sparc64" && ${MACHINE_ARCH} != "alpha"
+.if ${MACHINE_ARCH} != "i386" || ${ELF_TOOLCHAIN} == "yes"
 CFLAGS+=	-D_NO_WEAK_ALIASES
 .endif
 
