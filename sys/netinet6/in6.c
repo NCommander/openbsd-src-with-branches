@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.30 2001/12/07 09:16:07 itojun Exp $	*/
+/*	$OpenBSD: in6.c,v 1.31 2002/03/14 01:27:11 millert Exp $	*/
 /*	$KAME: in6.c,v 1.198 2001/07/18 09:12:38 itojun Exp $	*/
 
 /*
@@ -1646,7 +1646,7 @@ struct in6_addr *addr;
 		}
 	}
 
-	if (bcmp(&in6addr_loopback, addr, sizeof(addr) - 1) == 0) {
+	if (bcmp(&in6addr_loopback, addr, sizeof(*addr) - 1) == 0) {
 		if (addr->s6_addr8[15] == 1) /* loopback */
 			return IPV6_ADDR_SCOPE_NODELOCAL;
 		if (addr->s6_addr8[15] == 0) /* unspecified */
