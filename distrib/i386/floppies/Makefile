@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.4 1996/05/31 22:52:28 mickey Exp $
+#	$OpenBSD: Makefile,v 1.5 1996/06/21 23:13:15 deraadt Exp $
 
-SUBDIR= inst kc upgr
+SUBDIR= kc inst upgr
 
 unconfig:
 	cd kc; ${MAKE} unconfig
