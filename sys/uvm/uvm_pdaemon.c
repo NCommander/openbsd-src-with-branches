@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pdaemon.c,v 1.7 2001/01/29 02:07:48 niklas Exp $	*/
+/*	$OpenBSD: uvm_pdaemon.c,v 1.8 2001/03/08 15:21:37 smart Exp $	*/
 /*	$NetBSD: uvm_pdaemon.c,v 1.17 1999/07/22 22:58:39 thorpej Exp $	*/
 
 /* 
@@ -109,7 +109,8 @@ static void		uvmpd_tune __P((void));
  * => should _not_ be called by the page daemon (to avoid deadlock)
  */
 
-void uvm_wait(wmsg)
+void
+uvm_wait(wmsg)
 	char *wmsg;
 {
 	int timo = 0;

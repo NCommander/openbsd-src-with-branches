@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_fault.c,v 1.7 2001/03/08 15:21:36 smart Exp $	*/
+/*	$OpenBSD: uvm_fault.c,v 1.8 2001/03/09 14:20:51 art Exp $	*/
 /*	$NetBSD: uvm_fault.c,v 1.35 1999/06/16 18:43:28 thorpej Exp $	*/
 
 /*
@@ -1775,7 +1775,7 @@ uvm_fault_unwire(map, start, end)
 	 * the PAs from the pmap.   we also lock out the page daemon so that
 	 * we can call uvm_pageunwire.
 	 */
-	
+
 	uvm_lock_pageq();
 
 	for (va = start; va < end ; va += PAGE_SIZE) {
