@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.51 1999/01/11 14:28:57 niklas Exp $	*/
+/*	$OpenBSD: conf.c,v 1.52 1999/04/28 23:20:59 alex Exp $	*/
 /*	$NetBSD: conf.c,v 1.75 1996/05/03 19:40:20 christos Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 
 #include <machine/conf.h>
 
-#include "wdc.h"
 #include "wd.h"
 bdev_decl(wd);
 bdev_decl(sw);
