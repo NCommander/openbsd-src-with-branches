@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cinfo.c,v 1.3 2001/01/29 01:58:06 niklas Exp $	*/
 
 /*
  *		Character class tables.
@@ -100,7 +100,7 @@ keyname(cp, k)
 		k = CHARMASK(k);/* sign extended char */
 	switch (k) {
 	case CCHR('@'):
-		np = "NUL";
+		np = "C-SPC";
 		break;
 	case CCHR('I'):
 		np = "TAB";
