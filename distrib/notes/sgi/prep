@@ -1,11 +1,11 @@
-dnl	$OpenBSD: prep,v 1.5 2004/10/23 08:52:49 pefo Exp $
+dnl	$OpenBSD: prep,v 1.6 2005/01/22 01:37:58 pvalchev Exp $
 Before you install your system, you should familiarize yourself with the
 ARCS setup and how to run programs from the Command monitor prompt.
 
 Accessing the Maintenance Console:
 
-    When the system starts up, press the ESC key or use the the mouse
-    and click the ``stop for maintenance'' button. Once in the System
+    When the system starts up, press the ESC key or use the mouse and
+    click the ``stop for maintenance'' button. Once in the System
     Maintenance menu, select '5' (or click the appropriate icon if in
     graphics console) to go into the Command Monitor.
 
