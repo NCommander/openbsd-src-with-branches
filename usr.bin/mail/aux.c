@@ -1,4 +1,4 @@
-/*	$OpenBSD: aux.c,v 1.20 2001/11/21 15:26:39 millert Exp $	*/
+/*	$OpenBSD: aux.c,v 1.21 2003/06/03 02:56:11 millert Exp $	*/
 /*	$NetBSD: aux.c,v 1.5 1997/05/13 06:15:52 mikel Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static const char sccsid[] = "@(#)aux.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: aux.c,v 1.20 2001/11/21 15:26:39 millert Exp $";
+static const char rcsid[] = "$OpenBSD: aux.c,v 1.21 2003/06/03 02:56:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -603,7 +603,7 @@ charcount(char *str, int c)
  * Convert c to upper case
  */
 int
-raise(int c)
+chraise(int c)
 {
 
 	if (islower(c))
