@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.h,v 1.17 2002/03/14 01:27:09 millert Exp $	*/
+/*	$OpenBSD: if_bridge.h,v 1.18 2002/04/08 17:49:43 jason Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -275,5 +275,6 @@ struct mbuf *bstp_input(struct bridge_softc *, struct ifnet *,
     struct ether_header *, struct mbuf *);
 void	bstp_initialization(struct bridge_softc *);
 int	bstp_ioctl(struct ifnet *, u_long, caddr_t);
+void	bridge_rtdelete(struct bridge_softc *, struct ifnet *, int);
 #endif /* _KERNEL */
 #endif /* _NET_IF_BRIDGE_H_ */
