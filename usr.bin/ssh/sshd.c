@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.211 2001/11/19 11:20:21 markus Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.212 2001/11/22 12:34:22 markus Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -951,7 +951,7 @@ main(int ac, char **av)
 				error("select: %.100s", strerror(errno));
 			if (received_sigterm) {
 				log("Received signal %d; terminating.",
-				    received_sigterm);
+				    (int) received_sigterm);
 				close_listen_socks();
 				unlink(options.pid_file);
 				exit(255);
