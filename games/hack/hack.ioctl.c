@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.ioctl.c,v 1.3 2001/08/06 22:59:13 pjanzen Exp $	*/
+/*	$OpenBSD: hack.ioctl.c,v 1.4 2003/03/16 21:22:35 camield Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,7 +62,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: hack.ioctl.c,v 1.3 2001/08/06 22:59:13 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
 /* This cannot be part of hack.tty.c (as it was earlier) since on some
@@ -73,17 +73,23 @@ static char rcsid[] = "$OpenBSD: hack.ioctl.c,v 1.3 2001/08/06 22:59:13 pjanzen 
 #include "config.h"
 struct termios termios;
 
-getioctls() {
+void
+getioctls()
+{
 	(void) tcgetattr(fileno(stdin), &termios);
 }
 
-setioctls() {
+void
+setioctls()
+{
 	(void) tcsetattr(fileno(stdin), TCSADRAIN, &termios);
 }
 
 #ifdef SUSPEND		/* implies BSD */
 #include	<signal.h>
-dosuspend() {
+int
+dosuspend()
+{
 #ifdef SIGTSTP
 	if(signal(SIGTSTP, SIG_IGN) == SIG_DFL) {
 		settty((char *) 0);
