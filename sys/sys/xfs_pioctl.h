@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pioctl.h,v 1.2 1998/08/30 17:35:46 art Exp $	*/
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska HÅˆgskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
