@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopprobe.c,v 1.2 1996/09/21 19:12:35 maja Exp $ */
+/*	$OpenBSD: mopprobe.c,v 1.3 1997/01/15 23:44:29 millert Exp $ */
 
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: mopprobe.c,v 1.2 1996/09/21 19:12:35 maja Exp $";
+static char rcsid[] = "$OpenBSD: mopprobe.c,v 1.3 1997/01/15 23:44:29 millert Exp $";
 #endif
 
 /*
@@ -74,7 +74,7 @@ int     oflag = 0;		/* print only once             */
 int	promisc = 1;		/* Need promisc mode           */
 char	*Program;
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;

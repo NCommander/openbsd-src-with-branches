@@ -1,4 +1,4 @@
-/*	$OpenBSD: moptrace.c,v 1.2 1996/09/21 19:12:39 maja Exp $ */
+/*	$OpenBSD: moptrace.c,v 1.3 1997/01/15 23:44:30 millert Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: moptrace.c,v 1.2 1996/09/21 19:12:39 maja Exp $";
+static char rcsid[] = "$OpenBSD: moptrace.c,v 1.3 1997/01/15 23:44:30 millert Exp $";
 #endif
 
 /*
@@ -73,7 +73,7 @@ int	Not4Flag = 0;		/* Ignore MOP V4 messages      */
 int	promisc = 1;		/* Need promisc mode           */
 char	*Program;
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
