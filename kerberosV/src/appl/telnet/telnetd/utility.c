@@ -34,7 +34,7 @@
 #define PRINTOPTIONS
 #include "telnetd.h"
 
-RCSID("$KTH: utility.c,v 1.23 2000/10/08 13:34:27 assar Exp $");
+RCSID("$KTH: utility.c,v 1.26 2001/07/19 15:58:01 assar Exp $");
 
 /*
  * utility functions performing io related tasks
@@ -54,8 +54,6 @@ RCSID("$KTH: utility.c,v 1.23 2000/10/08 13:34:27 assar Exp $");
 int
 ttloop(void)
 {
-    void netflush(void);
-    
     DIAG(TD_REPORT, {
 	output_data("td: ttloop\r\n");
     });
@@ -238,6 +236,8 @@ netclear(void)
 	neturg = 0;
 }  /* end of netclear */
 
+extern int not42;
+
 /*
  *  netflush
  *		Send as much data as possible to the network,
@@ -247,7 +247,6 @@ void
 netflush(void)
 {
     int n;
-    extern int not42;
 
     if ((n = nfrontp - nbackp) > 0) {
 	DIAG(TD_REPORT,
@@ -363,12 +362,18 @@ void fatal(int f, char *msg)
 }
 
 void
-fatalperror(int f, const char *msg)
+fatalperror_errno(int f, const char *msg, int error)
 {
     char buf[BUFSIZ];
     
-    snprintf(buf, sizeof(buf), "%s: %s", msg, strerror(errno));
+    snprintf(buf, sizeof(buf), "%s: %s", msg, strerror(error));
     fatal(f, buf);
+}
+
+void
+fatalperror(int f, const char *msg)
+{
+    fatalperror_errno(f, msg, errno);
 }
 
 char editedhost[32];

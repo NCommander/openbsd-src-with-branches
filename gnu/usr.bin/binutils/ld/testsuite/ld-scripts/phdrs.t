@@ -7,8 +7,10 @@ PHDRS
 
 SECTIONS
 {
-  . = 0x80000 + SIZEOF_HEADERS;
+  /* This test will fail on architectures where the startaddress below
+     is less than the constant MAXPAGESIZE.  */
+  . = 0x800000 + SIZEOF_HEADERS;
   .text : { *(.text) } :text
   .data : { *(.data) } :data
-  /DISCARD/ : { *(.reginfo) }
+  /DISCARD/ : { *(.*) }
 }

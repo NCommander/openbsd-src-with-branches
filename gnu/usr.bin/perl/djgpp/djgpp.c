@@ -117,23 +117,21 @@ pclose (FILE *pp)
 #define EXECF_EXEC 1
 
 static int
-convretcode (int rc,char *prog,int fl)
+convretcode (pTHX_ int rc,char *prog,int fl)
 {
-    if (rc < 0 && PL_dowarn)
-        warn ("Can't %s \"%s\": %s",fl ? "exec" : "spawn",prog,Strerror (errno));
-    if (rc > 0)
-        return rc <<= 8;
-    if (rc < 0)
-        return 255 << 8;
-    return 0;
+    if (rc < 0 && ckWARN(WARN_EXEC))
+        Perl_warner(aTHX_ WARN_EXEC,"Can't %s \"%s\": %s",
+		    fl ? "exec" : "spawn",prog,Strerror (errno));
+    if (rc >= 0)
+        return rc << 8;
+    return -1;
 }
 
 int
-do_aspawn (SV *really,SV **mark,SV **sp)
+do_aspawn (pTHX_ SV *really,SV **mark,SV **sp)
 {
-    dTHR;
     int  rc;
-    char **a,*tmps,**argv;
+    char **a,*tmps,**argv; 
     STRLEN n_a;
 
     if (sp<=mark)
@@ -164,7 +162,7 @@ do_aspawn (SV *really,SV **mark,SV **sp)
 #define EXTRA "\x00\x00\x00\x00\x00\x00"
 
 int
-do_spawn2 (char *cmd,int execf)
+do_spawn2 (pTHX_ char *cmd,int execf)
 {
     char **a,*s,*shell,*metachars;
     int  rc,unixysh;
@@ -232,15 +230,15 @@ doshell:
 }
 
 int
-do_spawn (char *cmd)
+do_spawn (pTHX_ char *cmd)
 {
-    return do_spawn2 (cmd,EXECF_SPAWN);
+    return do_spawn2 (aTHX_ cmd,EXECF_SPAWN);
 }
 
 bool
-do_exec (char *cmd)
+Perl_do_exec (pTHX_ char *cmd)
 {
-    do_spawn2 (cmd,EXECF_EXEC);
+    do_spawn2 (aTHX_ cmd,EXECF_EXEC);
     return FALSE;
 }
 
@@ -333,10 +331,10 @@ glob_handler (__FSEXT_Fnumber n,int *rv,va_list args)
             if ((gi=searchfd (fd))==NULL)
                 break;
 
-            if (siz+gi->pos>gi->size)
-                siz=gi->size-gi->pos;
+            if (siz+gi->pos > gi->size)
+                siz = gi->size - gi->pos;
             memcpy (buf,gi->pos+gi->matches,siz);
-            gi->pos+=siz;
+            gi->pos += siz;
             *rv=siz;
             return 1;
         }
@@ -362,7 +360,7 @@ XS(dos_GetCwd)
     dXSARGS;
 
     if (items)
-        croak ("Usage: Dos::GetCwd()");
+        Perl_croak (aTHX_ "Usage: Dos::GetCwd()");
     {
         char tmp[PATH_MAX+2];
         ST(0)=sv_newmortal ();
@@ -380,7 +378,7 @@ XS(dos_UseLFN)
 }
 
 void
-init_os_extras()
+Perl_init_os_extras(pTHX)
 {
     char *file = __FILE__;
 
@@ -434,3 +432,22 @@ Perl_DJGPP_init (int *argcp,char ***argvp)
         strcpy (perlprefix,"..");
 }
 
+int
+djgpp_fflush (FILE *fp)
+{
+    int res;
+
+    if ((res = fflush(fp)) == 0 && fp) {
+	Stat_t s;
+	if (Fstat(fileno(fp), &s) == 0 && !S_ISSOCK(s.st_mode))
+	    res = fsync(fileno(fp));
+    }
+/*
+ * If the flush succeeded but set end-of-file, we need to clear
+ * the error because our caller may check ferror().  BTW, this
+ * probably means we just flushed an empty file.
+ */
+    if (res == 0 && fp && ferror(fp) == EOF) clearerr(fp);
+
+    return res;
+}

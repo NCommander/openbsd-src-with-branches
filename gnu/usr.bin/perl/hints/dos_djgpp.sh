@@ -3,6 +3,7 @@
 
 # 971015 - archname changed from 'djgpp' to 'dos-djgpp'
 # 971210 - threads support
+# 000222 - added -DPERL_EXTERNAL_GLOB to ccflags
 
 archname='dos-djgpp'
 archobjs='djgpp.o'
@@ -27,6 +28,9 @@ lns='cp'
 
 usenm='true'
 
+# this reportedly causes compile errors in system includes
+i_ieeefp='undef'
+
 d_link='undef'      # these are empty functions in libc.a
 d_symlink='undef'
 d_fork='undef'
@@ -37,9 +41,13 @@ startperl='#!perl'
 case "X$optimize" in
   X)
 	optimize="-O2 -malign-loops=2 -malign-jumps=2 -malign-functions=2"
+	ldflags='-s'
+	;;
+  X*)
+	ldflags=' '
 	;;
 esac
-ldflags='-s'
+ccflags="$ccflags -DPERL_EXTERNAL_GLOB"
 usemymalloc='n'
 timetype='time_t'
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997-2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -35,7 +35,7 @@
 #include <getarg.h>
 #include <parse_bytes.h>
 
-RCSID("$KTH: config.c,v 1.33 2000/09/10 19:27:17 joda Exp $");
+RCSID("$KTH: config.c,v 1.38 2001/08/10 14:02:57 joda Exp $");
 
 static char *config_file;	/* location of kdc config file */
 
@@ -67,9 +67,7 @@ krb5_addresses explicit_addresses;
 char *v4_realm;
 int enable_v4 = -1;
 int enable_524 = -1;
-#endif
-#ifdef KASERVER
-krb5_boolean enable_kaserver = -1;
+int enable_kaserver = -1;
 #endif
 
 static int help_flag;
@@ -106,15 +104,13 @@ static struct getargs args[] = {
 	"v4-realm",	'r',	arg_string, &v4_realm, 
 	"realm to serve v4-requests for"
     },
-#endif
-#ifdef KASERVER
     {
-	"kaserver", 'K', arg_negative_flag,   &enable_kaserver,
-	"turn off kaserver support"
+	"kaserver", 'K', arg_flag,   &enable_kaserver,
+	"enable kaserver support"
     },
 #endif
     {	"ports",	'P', 	arg_string, &port_str,
-	"ports to listen to" 
+	"ports to listen to", "portspec"
     },
     {	"addresses",	0,	arg_strings, &addresses_str,
 	"addresses to listen on", "list of addresses" },
@@ -198,8 +194,11 @@ get_dbinfo(krb5_config_section *cf)
 	if(di->mkey_file == NULL) {
 	    p = strrchr(di->dbname, '.');
 	    if(p == NULL || strchr(p, '/') != NULL)
+		/* final pathname component does not contain a . */
 		asprintf(&di->mkey_file, "%s.mkey", di->dbname);
 	    else
+		/* the filename is something.else, replace .else with
+                   .mkey */
 		asprintf(&di->mkey_file, "%.*s.mkey", 
 			 (int)(p - di->dbname), di->dbname);
 	}
@@ -250,7 +249,7 @@ configure(int argc, char **argv)
     if(config_file == NULL)
 	config_file = _PATH_KDC_CONF;
     
-    if(krb5_config_parse_file(config_file, &cf))
+    if(krb5_config_parse_file(context, config_file, &cf))
 	cf = NULL;
     
     get_dbinfo(cf);
@@ -286,6 +285,7 @@ configure(int argc, char **argv)
 
 	for (i = 0; i < addresses_str.num_strings; ++i)
 	    add_one_address (addresses_str.strings[i], i == 0);
+	free_getarg_strings (&addresses_str);
     } else {
 	char **foo = krb5_config_get_strings (context, cf,
 					      "kdc", "addresses", NULL);
@@ -310,11 +310,11 @@ configure(int argc, char **argv)
 	enable_http = krb5_config_get_bool(context, cf, "kdc", 
 					   "enable-http", NULL);
     check_ticket_addresses = 
-	krb5_config_get_bool(context, cf, "kdc", 
-			     "check-ticket-addresses", NULL);
+	krb5_config_get_bool_default(context, cf, TRUE, "kdc", 
+				     "check-ticket-addresses", NULL);
     allow_null_ticket_addresses = 
-	krb5_config_get_bool(context, cf, "kdc", 
-			     "allow-null-ticket-addresses", NULL);
+	krb5_config_get_bool_default(context, cf, TRUE, "kdc", 
+				     "allow-null-ticket-addresses", NULL);
 
     allow_anonymous = 
 	krb5_config_get_bool(context, cf, "kdc", 
@@ -328,10 +328,8 @@ configure(int argc, char **argv)
 	if(p)
 	    v4_realm = strdup(p);
     }
-#endif
-#ifdef KASERVER
     if (enable_kaserver == -1)
-	enable_kaserver = krb5_config_get_bool_default(context, cf, TRUE,
+	enable_kaserver = krb5_config_get_bool_default(context, cf, FALSE,
 						       "kdc",
 						       "enable-kaserver",
 						       NULL);

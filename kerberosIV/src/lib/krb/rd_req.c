@@ -33,7 +33,7 @@
 
 #include "krb_locl.h"
 
-RCSID("$KTH: rd_req.c,v 1.27.2.1 1999/12/06 22:04:36 assar Exp $");
+RCSID("$KTH: rd_req.c,v 1.28 2000/05/15 00:19:38 assar Exp $");
 
 static struct timeval t_local = { 0, 0 };
 
@@ -141,7 +141,7 @@ krb_rd_req(KTEXT authent,	/* The received message */
 	   char *instance,	/* Service instance */
 	   int32_t from_addr,	/* Net address of originating host */
 	   AUTH_DAT *ad,	/* Structure to be filled in */
-	   char *fn)		/* Filename to get keys from */
+	   char *a_fn)		/* Filename to get keys from */
 {
     static KTEXT_ST ticket;     /* Temp storage for ticket */
     static KTEXT tkt = &ticket;
@@ -168,6 +168,8 @@ krb_rd_req(KTEXT authent,	/* The received message */
     int pvno;
     int type;
     int little_endian;
+
+    const char *fn = a_fn;
 
     unsigned char *p;
 
@@ -205,7 +207,7 @@ krb_rd_req(KTEXT authent,	/* The received message */
      */
     if (fn && (strcmp(st_nam,service) || strcmp(st_inst,instance) ||
                strcmp(st_rlm,realm) || (st_kvno != s_kvno))) {
-        if (*fn == 0) fn = (char *)KEYFILE;
+        if (*fn == 0) fn = KEYFILE;
         st_kvno = s_kvno;
         if (read_service_key(service, instance, realm, s_kvno,
 			     fn, (char *)skey))
@@ -262,7 +264,10 @@ krb_rd_req(KTEXT authent,	/* The received message */
     /* cast req_id->length to int? */
 #define check_ptr() if ((ptr - (char *) req_id->dat) > req_id->length) return(RD_AP_MODIFIED);
 
-    p += krb_get_nir(p, r_aname, r_inst, r_realm); /* XXX no rangecheck */
+    p += krb_get_nir(p,
+		     r_aname, sizeof(r_aname),
+		     r_inst, sizeof(r_inst),
+		     r_realm, sizeof(r_realm));
 
     p += krb_get_int(p, &ad->checksum, 4, little_endian);
 
