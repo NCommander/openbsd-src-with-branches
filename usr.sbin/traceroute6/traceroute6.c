@@ -1,4 +1,4 @@
-/*	$OpenBSD: traceroute6.c,v 1.13 2000/10/07 21:47:31 itojun Exp $	*/
+/*	$OpenBSD: traceroute6.c,v 1.14 2000/12/22 15:17:25 itojun Exp $	*/
 /*	$KAME: traceroute6.c,v 1.39 2000/12/22 15:11:05 itojun Exp $	*/
 
 /*
@@ -583,7 +583,7 @@ main(argc, argv)
 	memcpy(&Dst, res->ai_addr, res->ai_addrlen);
 	hostname = res->ai_canonname ? strdup(res->ai_canonname) : *argv;
 	if (!hostname) {
-		(void)fprintf(stderr, "traceroute6: not enhough core\n");
+		(void)fprintf(stderr, "traceroute6: not enough core\n");
 		exit(1);
 	}
 
