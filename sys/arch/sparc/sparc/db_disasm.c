@@ -796,7 +796,7 @@ struct sparc_insn sparc_i[] = {
 
 db_addr_t
 db_disasm(loc, altfmt)
-	vm_offset_t loc;
+	vaddr_t loc;
 	boolean_t altfmt;
 {
 	struct sparc_insn*	i_ptr = (struct sparc_insn *)&sparc_i;
