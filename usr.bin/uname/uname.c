@@ -1,4 +1,4 @@
-/*	$OpenBSD: uname.c,v 1.2 1996/06/26 05:42:07 deraadt Exp $	*/
+/*	$OpenBSD: uname.c,v 1.3 1998/02/24 00:06:00 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Winning Strategies, Inc.
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: uname.c,v 1.2 1996/06/26 05:42:07 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: uname.c,v 1.3 1998/02/24 00:06:00 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -150,6 +150,6 @@ main(argc, argv)
 static void
 usage()
 {
-	fprintf(stderr, "usage: uname [-amnrsv]\n");
+	fprintf(stderr, "usage: uname [-amnprsv]\n");
 	exit(1);
 }
