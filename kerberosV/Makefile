@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.2 2001/05/25 12:00:47 jakob Exp $
+# $OpenBSD: Makefile,v 1.3 2001/06/05 10:06:20 hin Exp $
 
-SUBDIR	= usr.bin/asn1_compile lib usr.bin libexec usr.sbin
+SUBDIR	= usr.bin/asn1_compile lib usr.bin libexec usr.sbin doc
 
 build:
 	cd lib/roken && exec ${MAKE}
