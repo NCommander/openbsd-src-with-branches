@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.19 2002/02/15 01:06:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.20 2002/02/15 20:28:57 deraadt Exp $
 
 REV=		${OSrev}
 
@@ -26,7 +26,7 @@ STRIP?=		strip
 RDSETROOT?=	rdsetroot
 
 LISTS=		${.CURDIR}/list ${ARCHDIR}/list
-MTREE=		${.CURDIR}/mtree.conf
+MTREE=		${UTILS}/mtree.conf
 
 FLOPPY?=	floppy${REV}.fs
 FLOPPYSIZE?=	2880
