@@ -1,4 +1,4 @@
-/* $OpenBSD: if_wi_pcmcia.c,v 1.17 2002/01/22 14:36:04 mickey Exp $ */
+/* $OpenBSD: if_wi_pcmcia.c,v 1.18 2002/03/14 01:27:01 millert Exp $ */
 /* $NetBSD: if_wi_pcmcia.c,v 1.14 2001/11/26 04:34:56 ichiro Exp $ */
 
 /*
@@ -142,6 +142,11 @@ static const struct wi_pcmcia_product {
 	{ PCMCIA_VENDOR_LINKSYS2,
 	  PCMCIA_PRODUCT_LINKSYS2_IWN,
 	  PCMCIA_CIS_LINKSYS2_IWN,
+	  "Linksys Instant Wireless Network",
+	},
+	{ PCMCIA_VENDOR_LINKSYS2,
+	  PCMCIA_PRODUCT_LINKSYS2_IWN2,
+	  PCMCIA_CIS_LINKSYS2_IWN2,
 	  "Linksys Instant Wireless Network",
 	},
 	{ PCMCIA_VENDOR_LUCENT,
