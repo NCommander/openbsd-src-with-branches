@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.2 2004/02/04 12:16:56 henning Exp $	*/
+/*	$OpenBSD: packet.c,v 1.3 2004/02/06 11:33:22 henning Exp $	*/
 
 /* Packet assembly code, originally contributed by Archie Cobbs. */
 
@@ -267,7 +267,7 @@ decode_udp_ip_header(struct interface_info *interface, unsigned char *buf,
 	sum = wrapsum(checksum((unsigned char *)udp, sizeof(*udp),
 	    checksum(data, len, checksum((unsigned char *)&ip->ip_src,
 		2 * sizeof(ip->ip_src),
-		IPPROTO_UDP + (u_int32_t)ntohs(udp -> uh_ulen)))));
+		IPPROTO_UDP + (u_int32_t)ntohs(udp->uh_ulen)))));
 
 	udp_packets_seen++;
 	if (usum && usum != sum) {
