@@ -1,4 +1,4 @@
-/*	$OpenBSD: cz.c,v 1.4 2001/09/04 04:01:42 nate Exp $ */
+/*	$OpenBSD: cz.c,v 1.5 2002/01/30 20:45:34 nordin Exp $ */
 /*	$NetBSD: cz.c,v 1.15 2001/01/20 19:10:36 thorpej Exp $	*/
 
 /*-
@@ -275,13 +275,9 @@ cz_match(parent, match, aux)
 {
 	struct pci_attach_args *pa = aux;
 
-	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_CYCLADES) {
-		switch (PCI_PRODUCT(pa->pa_id)) {
-		case PCI_PRODUCT_CYCLADES_CYCLOMZ_2:
-			return (1);
-		}
-	}
-
+	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_CYCLADES &&
+	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_CYCLADES_CYCLOMZ_2)
+		return (1);
 	return (0);
 }
 
