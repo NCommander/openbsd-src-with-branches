@@ -1,4 +1,4 @@
-/*	$OpenBSD: canfield.c,v 1.5 2000/07/23 21:49:04 pjanzen Exp $	*/
+/*	$OpenBSD: canfield.c,v 1.6 2002/02/16 21:27:09 millert Exp $	*/
 /*	$NetBSD: canfield.c,v 1.7 1995/05/13 07:28:35 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)canfield.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: canfield.c,v 1.5 2000/07/23 21:49:04 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: canfield.c,v 1.6 2002/02/16 21:27:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -1369,8 +1369,8 @@ getcmd(row, col, cp)
 	int row, col;
 	const char *cp;
 {
-	char cmd[2] = { '\0', '\0'}, ch;
-	int i;
+	char cmd[2] = { '\0', '\0'};
+	int ch, i;
 
 	i = 0;
 	move(row, col);
