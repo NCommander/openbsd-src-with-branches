@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.5 1997/08/04 08:24:54 deraadt Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.7 1997/10/06 20:20:15 deraadt Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -74,6 +74,8 @@ vn_open(ndp, fmode, cmode)
 	struct vattr va;
 	int error;
 
+	if ((fmode & (FREAD|FWRITE)) == 0)
+		return (EINVAL);
 	if (fmode & O_CREAT) {
 		ndp->ni_cnd.cn_nameiop = CREATE;
 		ndp->ni_cnd.cn_flags = LOCKPARENT | LOCKLEAF;
