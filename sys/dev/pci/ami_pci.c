@@ -203,7 +203,7 @@ ami_pci_attach(parent, self, aux)
 		bus_space_unmap(sc->iot, sc->ioh, size);
 	}
 
-	printf(": %s\n", intrstr);
+	printf(": %s", intrstr);
 
 	csr = pci_conf_read(pa->pa_pc, pa->pa_tag, PCI_SUBSYS_ID_REG);
 	for (ssp = ami_pci_subsys; ssp->id; ssp++)
@@ -245,7 +245,7 @@ ami_pci_attach(parent, self, aux)
 	default:		lhc = "32b";
 	}
 
-	sprintf(sc->sc_raidconfig.rc_name, "%s/%s", model, lhc);
+	printf(" %s/%s\n%s", model, lhc, sc->sc_dev.dv_xname);
 
 	if (ami_attach(sc)) {
 		pci_intr_disestablish(pa->pa_pc, sc->sc_ih);

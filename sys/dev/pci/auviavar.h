@@ -53,12 +53,11 @@ struct auvia_softc_chan {
 
 struct auvia_softc {
 	struct device sc_dev;
-	struct audio_device sc_audev;
 	void *sc_ih;			/* interrupt handle */
 
+	char sc_revision[8];
 	u_int sc_flags;
 #define	AUVIA_FLAGS_VT8233	0x0001
-#define	AUVIA_FLAGS_MPB		0x0002	/* use multi-pb */
 
 	pci_chipset_tag_t sc_pc;
 	pcitag_t sc_pt;

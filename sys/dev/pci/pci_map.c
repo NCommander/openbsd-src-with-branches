@@ -208,7 +208,7 @@ nbsd_pci_mem_find(pc, tag, reg, type, basep, sizep, flagsp)
 			*sizep = PCI_MAPREG_MEM64_SIZE(wmask);
 	}
 	if (flagsp != 0)
-		*flagsp = 0 /*PCI_MAPREG_MEM_CACHEABLE(address)*/
+		*flagsp = PCI_MAPREG_MEM_CACHEABLE(address)
 #ifndef __OpenBSD__
 		    ? BUS_SPACE_MAP_CACHEABLE : 0
 #endif

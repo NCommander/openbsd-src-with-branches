@@ -79,8 +79,6 @@ bha_pci_match(parent, match, aux)
 	void *match, *aux;
 {
 	struct pci_attach_args *pa = aux;
-	pci_chipset_tag_t pc = pa->pa_pc;
-	pcireg_t csr;
 	bus_space_tag_t iot;
 	bus_space_handle_t ioh;
 	bus_size_t iosize;
@@ -93,10 +91,6 @@ bha_pci_match(parent, match, aux)
 	if (pci_mapreg_map(pa, PCI_CBIO, PCI_MAPREG_TYPE_IO, 0, &iot, &ioh,
 	    NULL, &iosize, 0))
 		return (0);
-
-	csr = pci_conf_read(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG);
-	pci_conf_write(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG,
-	    csr | PCI_COMMAND_MASTER_ENABLE | PCI_COMMAND_IO_ENABLE);
 
 	rv = bha_find(iot, ioh, NULL);
 	bus_space_unmap(iot, ioh, iosize);
@@ -136,10 +130,6 @@ bha_pci_attach(parent, self, aux)
 		return;
 	}
 
-	csr = pci_conf_read(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG);
-	pci_conf_write(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG,
-	    csr | PCI_COMMAND_MASTER_ENABLE | PCI_COMMAND_IO_ENABLE);
-
 	sc->sc_iot = iot;
 	sc->sc_ioh = ioh;
 	sc->sc_dmat = pa->pa_dmat;
@@ -150,6 +140,10 @@ bha_pci_attach(parent, self, aux)
 	}
 
 	sc->sc_dmaflags = 0;
+
+	csr = pci_conf_read(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG);
+	pci_conf_write(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG,
+	    csr | PCI_COMMAND_MASTER_ENABLE | PCI_COMMAND_IO_ENABLE);
 
 	if (pci_intr_map(pa, &ih)) {
 		printf(": couldn't map interrupt\n");

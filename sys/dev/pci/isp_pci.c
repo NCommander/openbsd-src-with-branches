@@ -621,6 +621,9 @@ isp_pci_attach(struct device *parent, struct device *self, void *aux)
 	if (IS_23XX(isp)) {
 		isp->isp_touched = 1;
 	}
+	if (IS_23XX(isp)) {
+		isp->isp_touched = 1;
+	}
 	data |= PCI_COMMAND_MASTER_ENABLE | PCI_COMMAND_INVALIDATE_ENABLE;
 
 	/*
