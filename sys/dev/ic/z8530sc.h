@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530sc.h,v 1.5 1996/11/28 23:27:56 niklas Exp $	*/
+/*	$OpenBSD: z8530sc.h,v 1.6 1997/01/15 00:41:55 kstailey Exp $	*/
 /*	$NetBSD: z8530sc.h,v 1.4 1996/10/16 20:34:54 gwr Exp $	*/
 
 /*
@@ -117,5 +117,9 @@ struct zsc_attach_args {
 };
 #define ZS_HWFLAG_CONSOLE 1
 
-int zsc_intr_hard __P((void *));
-int zsc_intr_soft __P((void *));
+int  zsc_intr_hard __P((void *));
+int  zsc_intr_soft __P((void *));
+void zs_break __P((struct zs_chanstate *, int));
+int  zs_getspeed __P((struct zs_chanstate *));
+void zs_iflush __P((struct zs_chanstate *));
+void zs_loadchannelregs __P((struct zs_chanstate *));

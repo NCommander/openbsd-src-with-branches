@@ -68,7 +68,10 @@
 #include <dev/ic/z8530reg.h>
 #include <machine/z8530var.h>
 
-int
+static void zsnull_intr __P((struct zs_chanstate *));
+static void zsnull_softint __P((struct zs_chanstate *));
+
+void
 zs_break(cs, set)
 	struct zs_chanstate *cs;
 	int set;
@@ -143,7 +146,6 @@ zs_loadchannelregs(cs)
 	struct zs_chanstate *cs;
 {
 	u_char *reg;
-	int i;
 
 	/* Copy "pending" regs to "current" */
 	bcopy((caddr_t)cs->cs_preg, (caddr_t)cs->cs_creg, 16);
