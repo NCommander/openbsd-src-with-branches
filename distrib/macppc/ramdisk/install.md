@@ -1,7 +1,7 @@
-#	$OpenBSD: install.md,v 1.3 2001/10/08 17:40:40 drahn Exp $
+#	$OpenBSD: install.md,v 1.4 2001/12/23 01:51:52 krw Exp $
 #
 #
-# Copyright rc) 1996 The NetBSD Foundation, Inc.
+# Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
 # This code is derived from software contributed to The NetBSD Foundation
