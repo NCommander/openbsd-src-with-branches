@@ -1,4 +1,4 @@
-/*	$OpenBSD: awi.c,v 1.15 2004/11/23 21:12:23 fgsch Exp $	*/
+/*	$OpenBSD: awi.c,v 1.16 2005/01/15 05:24:10 brad Exp $	*/
 /*	$NetBSD: awi.c,v 1.26 2000/07/21 04:48:55 onoe Exp $	*/
 
 /*-
@@ -138,6 +138,7 @@
 #endif
 
 #include <net80211/ieee80211.h>
+#include <net80211/ieee80211_ioctl.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
