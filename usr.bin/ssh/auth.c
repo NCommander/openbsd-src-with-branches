@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.14 2001/01/21 19:05:43 markus Exp $");
+RCSID("$OpenBSD: auth.c,v 1.15 2001/02/03 10:08:37 markus Exp $");
 
 #include "xmalloc.h"
 #include "match.h"
@@ -115,9 +115,9 @@ allowed_user(struct passwd * pw)
 Authctxt *
 authctxt_new(void)
 {
-        Authctxt *authctxt = xmalloc(sizeof(*authctxt));
-        memset(authctxt, 0, sizeof(*authctxt));
-        return authctxt;
+	Authctxt *authctxt = xmalloc(sizeof(*authctxt));
+	memset(authctxt, 0, sizeof(*authctxt));
+	return authctxt;
 }
 
 struct passwd *

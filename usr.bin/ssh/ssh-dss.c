@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-dss.c,v 1.3 2001/01/19 16:50:58 markus Exp $");
+RCSID("$OpenBSD: ssh-dss.c,v 1.4 2001/01/21 19:05:57 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/evp.h>
@@ -185,7 +185,7 @@ ssh_dss_verify(
 		memset(sigblob, 0, len);
 		xfree(sigblob);
 	}
-	
+
 	/* sha1 the data */
 	dlen = evp_md->md_size;
 	digest = xmalloc(dlen);

@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: packet.c,v 1.46 2001/01/21 19:05:53 markus Exp $");
+RCSID("$OpenBSD: packet.c,v 1.47 2001/02/04 13:30:12 stevesk Exp $");
 
 #include "xmalloc.h"
 #include "buffer.h"
@@ -988,7 +988,7 @@ packet_read_poll(int *payload_len_ptr)
 			default:
 				return type;
 				break;
-			}	
+			}
 		} else {
 			switch(type) {
 			case SSH_MSG_IGNORE:
@@ -1010,7 +1010,7 @@ packet_read_poll(int *payload_len_ptr)
 					DBG(debug("received packet type %d", type));
 				return type;
 				break;
-			}	
+			}
 		}
 	}
 }

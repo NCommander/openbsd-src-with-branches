@@ -29,7 +29,7 @@
 /* XXX: copy between two remote sites */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-client.c,v 1.1 2001/02/04 11:11:54 djm Exp $");
+RCSID("$OpenBSD: sftp-client.c,v 1.2 2001/02/04 15:23:08 deraadt Exp $");
 
 #include "ssh.h"
 #include "buffer.h"
@@ -222,7 +222,7 @@ do_init(int fd_in, int fd_out)
 
 	get_msg(fd_in, &msg);
 
- 	/* Expecting a VERSION reply */
+	/* Expecting a VERSION reply */
 	if ((type = buffer_get_char(&msg)) != SSH2_FXP_VERSION) {
 		error("Invalid packet back from SSH2_FXP_INIT (type %d)",
 		    type);

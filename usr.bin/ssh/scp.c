@@ -75,7 +75,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.50 2001/01/19 15:55:11 markus Exp $");
+RCSID("$OpenBSD: scp.c,v 1.51 2001/01/21 19:05:55 markus Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -292,7 +292,7 @@ main(argc, argv)
 	remin = STDIN_FILENO;
 	remout = STDOUT_FILENO;
 
-	if (fflag) {	
+	if (fflag) {
 		/* Follow "protocol", send data. */
 		(void) response();
 		source(argc, argv);
