@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 1997/06/19 13:58:45 kstailey Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 1997/09/01 18:30:09 deraadt Exp $	*/
 
 /*
  * startup, main loop, enviroments and error handling
@@ -487,9 +487,9 @@ include(name, argc, argv, intr_ok)
 	s->u.shf = shf;
 	s->file = str_save(name, ATEMP);
 	i = shell(s, FALSE);
-	quitenv();
 	source = sold;
 	shf_close(s->u.shf);
+	quitenv();
 	if (old_argv) {
 		e->loc->argv = old_argv;
 		e->loc->argc = old_argc;
