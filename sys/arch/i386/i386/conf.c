@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.36 1997/09/24 22:52:57 mickey Exp $	*/
+/*	$OpenBSD: conf.c,v 1.37 1997/09/24 23:00:02 mickey Exp $	*/
 /*	$NetBSD: conf.c,v 1.75 1996/05/03 19:40:20 christos Exp $	*/
 
 /*
@@ -349,7 +349,7 @@ chrtoblk(dev)
 }
 
 /*
- * Convert a character device number to a block device number.
+ * Convert a block device number to a character device number.
  */
 dev_t
 blktochr(dev)
