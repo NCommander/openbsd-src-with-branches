@@ -1,4 +1,4 @@
-/*	$OpenBSD: trek.h,v 1.6 2002/02/16 21:27:12 millert Exp $	*/
+/*	$OpenBSD: trek.h,v 1.7 2003/06/03 03:01:42 millert Exp $	*/
 /*	$NetBSD: trek.h,v 1.3 1995/04/22 10:59:36 cgd Exp $	*/
 
 /*
@@ -133,7 +133,7 @@ struct device
 	const char	*person;	/* the person who fixes it */
 };
 
-const struct device	Device[NDEV];
+extern const struct device	Device[NDEV];
 
 /***************************  EVENTS  ****************************/
 
