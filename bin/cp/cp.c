@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp.c,v 1.26 2003/06/02 23:32:06 millert Exp $	*/
+/*	$OpenBSD: cp.c,v 1.27 2003/07/29 00:24:14 deraadt Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cp.c	8.5 (Berkeley) 4/29/95";
 #else
-static char rcsid[] = "$OpenBSD: cp.c,v 1.26 2003/06/02 23:32:06 millert Exp $";
+static char rcsid[] = "$OpenBSD: cp.c,v 1.27 2003/07/29 00:24:14 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -361,7 +361,7 @@ copy(char *argv[], enum op type, int fts_options)
 			 * pass.  We can't do this earlier because the mode
 			 * may not allow us write permission.  Furthermore,
 			 * if we set the times during the pre-order pass,
-			 * the they will get changed later when the directory
+			 * they will get changed later when the directory
 			 * is populated.
 			 */
 			if (curr->fts_info == FTS_DP) {
