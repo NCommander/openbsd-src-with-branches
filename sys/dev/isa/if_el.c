@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_el.c,v 1.12 1999/02/28 03:23:37 jason Exp $       */
+/*    $OpenBSD: if_el.c,v 1.13 2001/02/20 19:39:40 mickey Exp $       */
 /*	$NetBSD: if_el.c,v 1.39 1996/05/12 23:52:32 mycroft Exp $	*/
 
 /*
@@ -53,10 +53,6 @@
 
 #include <dev/isa/isavar.h>
 #include <dev/isa/if_elreg.h>
-
-#define ETHER_MIN_LEN	64
-#define ETHER_MAX_LEN	1518
-#define	ETHER_ADDR_LEN	6
 
 /* for debugging convenience */
 #ifdef EL_DEBUG
