@@ -1,4 +1,4 @@
-/*	$OpenBSD: gomoku.h,v 1.5 2002/02/16 21:27:10 millert Exp $	*/
+/*	$OpenBSD: gomoku.h,v 1.6 2002/02/17 19:42:20 millert Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -254,7 +254,7 @@ struct	ovlp_info {
 };
 
 extern	char	*letters;
-extern	char	fmtbuf[];
+extern	char	fmtbuf[128];
 extern	char	pdir[];
 
 extern	int     dd[4];
@@ -305,7 +305,7 @@ void	markcombo(struct combostr *);
 #endif
 void	panic(char *);
 int	pickmove(int);
-void	printcombo(struct combostr *, char *);
+void	printcombo(struct combostr *, char *, size_t);
 void	qlog(char *);
 void	quit(int);
 int	readinput(FILE *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: quiz.c,v 1.11 2002/05/31 03:40:01 pjanzen Exp $	*/
+/*	$OpenBSD: quiz.c,v 1.12 2002/12/06 21:48:51 millert Exp $	*/
 /*	$NetBSD: quiz.c,v 1.9 1995/04/22 10:16:58 cgd Exp $	*/
 
 /*-
@@ -48,7 +48,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)quiz.c	8.3 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD: quiz.c,v 1.11 2002/05/31 03:40:01 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: quiz.c,v 1.12 2002/12/06 21:48:51 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -265,7 +265,7 @@ quiz()
 			qp->q_answered = TRUE;
 			continue;
 		}
-		(void)strcpy(question, t);
+		(void)strlcpy(question, t, sizeof question);
 		s = qp->q_text;
 		for (i = 0; i < cattwo - 1; i++)
 			s = next_cat(s);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: support.c,v 1.4 1999/11/29 06:42:20 millert Exp $	*/
+/*	$OpenBSD: support.c,v 1.5 2001/08/10 23:50:22 pjanzen Exp $	*/
 /*	$NetBSD: support.c,v 1.3 1995/03/21 15:08:59 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)support.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: support.c,v 1.4 1999/11/29 06:42:20 millert Exp $";
+static char rcsid[] = "$OpenBSD: support.c,v 1.5 2001/08/10 23:50:22 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -137,7 +137,7 @@ plyrhand(hand, s)
 	bool win;
 
 	prhand(hand, CINHAND, Playwin, FALSE);
-	(void) sprintf(prompt, "Your %s scores ", s);
+	(void) snprintf(prompt, sizeof prompt, "Your %s scores ", s);
 	i = scorehand(hand, turnover, CINHAND, strcmp(s, "crib") == 0, explain);
 	if ((j = number(0, 29, prompt)) == 19)
 		j = 0;

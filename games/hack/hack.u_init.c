@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.u_init.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $	*/
+/*	$OpenBSD: hack.u_init.c,v 1.5 2003/03/16 21:22:36 camield Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,14 +62,12 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: hack.u_init.c,v 1.4 2001/08/06 22:59:13 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: hack.u_init.c,v 1.5 2003/03/16 21:22:36 camield Exp $";
 #endif /* not lint */
 
 #include "hack.h"
 #include <stdio.h>
 #include <signal.h>
-#define Strcpy	(void) strcpy
-#define	Strcat	(void) strcat
 #define	UNDEF_TYP	0
 #define	UNDEF_SPE	'\177'
 extern struct obj *addinv();
