@@ -1,3 +1,4 @@
+/*	$OpenBSD: exec.h,v 1.7 1996/12/23 02:42:34 deraadt Exp $	*/
 /*	$NetBSD: exec.h,v 1.5 1994/10/26 21:09:39 cgd Exp $	*/
 
 /*-
@@ -37,4 +38,22 @@
 
 #define	__LDPGSZ	4096
 
-#include <machine/reloc.h>
+/*
+ *  Define what exec "formats" we should handle.
+ */
+#define NATIVE_EXEC_ELF
+#define	EXEC_SCRIPT
+
+#define ARCH_ELFSIZE		32
+
+#define ELF_TARG_CLASS		ELFCLASS32
+#define ELF_TARG_DATA		ELFDATA2LSB
+#define ELF_TARG_MACH		EM_MIPS
+
+#define	_NLIST_DO_AOUT
+#define	_NLIST_DO_ELF
+#define	_NLIST_DO_ECOFF
+
+#undef	_KERN_DO_AOUT
+#define	_KERN_DO_ELF
+#define	_KERN_DO_ECOFF

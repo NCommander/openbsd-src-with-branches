@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: dlfcn.c,v 1.2 2000/09/17 17:50:57 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -56,7 +56,7 @@ dlopen(const char *libname, int how)
 {
 	elf_object_t	*object;
 	elf_object_t	*dynobj;
-	Elf32_Dyn	*dynp;
+	Elf_Dyn	*dynp;
 
 	if (_dl_debug) {
 		_dl_printf("loading: %s\n", libname);
@@ -120,7 +120,7 @@ dlsym(void *handle, const char *name)
 	elf_object_t	*object;
 	elf_object_t	*dynobj;
 	void		*retval;
-	const Elf32_Sym	*sym = 0;
+	const Elf_Sym	*sym = 0;
 
 	object = (elf_object_t *)handle;
 	dynobj = _dl_objects;
@@ -266,11 +266,10 @@ static char *otyp[] = {
 
 	object = _dl_objects;
 
-	_dl_printf("Currently loaded modules:\n");
-	_dl_printf("Start    End      Type Ref Name\n");
+	_dl_printf("\tStart    End      Type Ref Name\n");
 
 	while(object) {
-		_dl_printf("%X %X %s  %d  %s\n", object->load_addr,
+		_dl_printf("\t%X %X %s  %d  %s\n", object->load_addr,
 				object->load_size, otyp[object->obj_type],
 				object->refcount, object->load_name);
 		object = object->next;

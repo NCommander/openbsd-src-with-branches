@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.6 1994/12/22 10:26:35 cgd Exp $
+#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:43:14 deraadt Exp $
 
 PROG=	atrun
 BINDIR=	/usr/libexec

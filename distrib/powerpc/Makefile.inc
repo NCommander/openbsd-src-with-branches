@@ -1,7 +1,6 @@
-#	$NetBSD: Makefile.inc,v 1.1 1995/07/18 04:12:57 briggs Exp $
+#	$OpenBSD: Makefile.inc,v 1.7 1998/03/08 00:26:58 deraadt Exp $
 
-# Revision is 1.0
-REV=	10
+REV=	${OSrev}
 
 BSDSRCDIR?=     /usr/src
 SRCSYSDIR?=     ${BSDSRCDIR}/sys

@@ -1,5 +1,8 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * The Apache Software License, Version 1.1
+ *
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,46 +16,44 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. All advertising materials mentioning features or use of this
- *    software must display the following acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Apache Server" and "Apache Group" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. For written permission, please contact
- *    apache@apache.org.
+ * 4. The names "Apache" and "Apache Software Foundation" must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
  *
- * 5. Products derived from this software may not be called "Apache"
- *    nor may "Apache" appear in their names without prior written
- *    permission of the Apache Group.
+ * 5. Products derived from this software may not be called "Apache",
+ *    nor may "Apache" appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
  *
- * 6. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
- *
- * THIS SOFTWARE IS PROVIDED BY THE APACHE GROUP ``AS IS'' AND ANY
- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE APACHE GROUP OR
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
  * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  * ====================================================================
  *
  * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Group and was originally based
- * on public domain software written at the National Center for
- * Supercomputing Applications, University of Illinois, Urbana-Champaign.
- * For more information on the Apache Group and the Apache HTTP server
- * project, please see <http://www.apache.org/>.
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
  *
+ * Portions of this software are based upon public domain software
+ * originally written at the National Center for Supercomputing Applications,
+ * University of Illinois, Urbana-Champaign.
  */
 
 /*
@@ -242,7 +243,7 @@ union record {
 static int ascmagic(request_rec *, unsigned char *, int);
 static int is_tar(unsigned char *, int);
 static int softmagic(request_rec *, unsigned char *, int);
-static void tryit(request_rec *, unsigned char *, int);
+static void tryit(request_rec *, unsigned char *, int, int);
 static int zmagic(request_rec *, unsigned char *, int);
 
 static int getvalue(server_rec *, struct magic *, char **);
@@ -256,7 +257,7 @@ static int mget(request_rec *, union VALUETYPE *, unsigned char *,
 static int mcheck(request_rec *, union VALUETYPE *, struct magic *);
 static void mprint(request_rec *, union VALUETYPE *, struct magic *);
 
-static int uncompress(request_rec *, int, const unsigned char *,
+static int uncompress(request_rec *, int, 
 		      unsigned char **, int);
 static long from_oct(int, char *);
 static int fsmagic(request_rec *r, const char *fn);
@@ -887,7 +888,7 @@ static int magic_process(request_rec *r)
 	magic_rsl_puts(r, MIME_TEXT_UNKNOWN);
     else {
 	buf[nbytes++] = '\0';	/* null-terminate it */
-	tryit(r, buf, nbytes);
+	tryit(r, buf, nbytes, 1); 
     }
 
     (void) ap_pclosef(r->pool, fd);
@@ -897,13 +898,15 @@ static int magic_process(request_rec *r)
 }
 
 
-static void tryit(request_rec *r, unsigned char *buf, int nb)
+static void tryit(request_rec *r, unsigned char *buf, int nb, int checkzmagic)
 {
     /*
      * Try compression stuff
      */
-    if (zmagic(r, buf, nb) == 1)
-	return;
+	if (checkzmagic == 1) {  
+			if (zmagic(r, buf, nb) == 1)
+			return;
+	}
 
     /*
      * try tests in /etc/magic (or surrogate magic file)
@@ -2082,9 +2085,13 @@ static struct {
     char *encoding;	/* MUST be lowercase */
 } compr[] = {
 
+    /* we use gzip here rather than uncompress because we have to pass
+     * it a full filename -- and uncompress only considers filenames
+     * ending with .Z
+     */
     {
 	"\037\235", 2, {
-	    "uncompress", "-c", NULL
+	    "gzip", "-dcq", NULL
 	}, 0, "x-compress"
     },
     {
@@ -2121,8 +2128,8 @@ static int zmagic(request_rec *r, unsigned char *buf, int nbytes)
     if (i == ncompr)
 	return 0;
 
-    if ((newsize = uncompress(r, i, buf, &newbuf, nbytes)) > 0) {
-	tryit(r, newbuf, newsize);
+    if ((newsize = uncompress(r, i, &newbuf, nbytes)) > 0) {
+	tryit(r, newbuf, newsize, 0);
 
 	/* set encoding type in the request record */
 	r->content_encoding = compr[i].encoding;
@@ -2139,6 +2146,13 @@ struct uncompress_parms {
 static int uncompress_child(void *data, child_info *pinfo)
 {
     struct uncompress_parms *parm = data;
+	char *new_argv[4];
+
+	new_argv[0] = compr[parm->method].argv[0];
+	new_argv[1] = compr[parm->method].argv[1];
+	new_argv[2] = parm->r->filename;
+	new_argv[3] = NULL;
+
 #if defined(WIN32)
     int child_pid;
 #endif
@@ -2149,10 +2163,10 @@ static int uncompress_child(void *data, child_info *pinfo)
 
 #if defined(WIN32)
     child_pid = spawnvp(compr[parm->method].argv[0],
-			compr[parm->method].argv);
+			new_argv);
     return (child_pid);
 #else
-    execvp(compr[parm->method].argv[0], compr[parm->method].argv);
+    execvp(compr[parm->method].argv[0], new_argv);
     ap_log_rerror(APLOG_MARK, APLOG_ERR, parm->r,
 		MODNAME ": could not execute `%s'.",
 		compr[parm->method].argv[0]);
@@ -2161,11 +2175,11 @@ static int uncompress_child(void *data, child_info *pinfo)
 }
 
 
-static int uncompress(request_rec *r, int method, const unsigned char *old,
+static int uncompress(request_rec *r, int method, 
 		      unsigned char **newch, int n)
 {
     struct uncompress_parms parm;
-    BUFF *bin, *bout;
+    BUFF *bout;
     pool *sub_pool;
 
     parm.r = r;
@@ -2178,19 +2192,12 @@ static int uncompress(request_rec *r, int method, const unsigned char *old,
     sub_pool = ap_make_sub_pool(r->pool);
 
     if (!ap_bspawn_child(sub_pool, uncompress_child, &parm, kill_always,
-			 &bin, &bout, NULL)) {
+			 NULL, &bout, NULL)) {
 	ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
 		    MODNAME ": couldn't spawn uncompress process: %s", r->uri);
 	return -1;
     }
 
-    if (ap_bwrite(bin, old, n) != n) {
-	ap_destroy_pool(sub_pool);
-	ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
-		    MODNAME ": write failed.");
-	return -1;
-    }
-    ap_bclose(bin);
     *newch = (unsigned char *) ap_palloc(r->pool, n);
     if ((n = ap_bread(bout, *newch, n)) <= 0) {
 	ap_destroy_pool(sub_pool);

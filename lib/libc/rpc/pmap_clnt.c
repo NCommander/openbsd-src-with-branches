@@ -1,5 +1,3 @@
-/*	$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)pmap_clnt.c 1.37 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)pmap_clnt.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: pmap_clnt.c,v 1.8 1997/09/22 05:11:08 millert Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * pmap_clnt.c
@@ -42,6 +38,7 @@ static char *rcsid = "$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $";
  * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
+#include <unistd.h>
 #include <rpc/rpc.h>
 #include <rpc/pmap_prot.h>
 #include <rpc/pmap_clnt.h>
@@ -60,18 +57,20 @@ bool_t
 pmap_set(program, version, protocol, port)
 	u_long program;
 	u_long version;
-	int protocol;
+	u_int protocol;
 	u_short port;
 {
 	struct sockaddr_in myaddress;
-	int socket = -1;
+	int sock = -1;
 	register CLIENT *client;
 	struct pmap parms;
 	bool_t rslt;
 
-	get_myaddress(&myaddress);
+	if (get_myaddress(&myaddress) != 0)
+		return (FALSE);
+	myaddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	client = clntudp_bufcreate(&myaddress, PMAPPROG, PMAPVERS,
-	    timeout, &socket, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
+	    timeout, &sock, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
 	if (client == (CLIENT *)NULL)
 		return (FALSE);
 	parms.pm_prog = program;
@@ -84,7 +83,8 @@ pmap_set(program, version, protocol, port)
 		return (FALSE);
 	}
 	CLNT_DESTROY(client);
-	(void)close(socket);
+	if (sock != -1)
+		(void)close(sock);
 	return (rslt);
 }
 
@@ -98,14 +98,16 @@ pmap_unset(program, version)
 	u_long version;
 {
 	struct sockaddr_in myaddress;
-	int socket = -1;
+	int sock = -1;
 	register CLIENT *client;
 	struct pmap parms;
 	bool_t rslt;
 
-	get_myaddress(&myaddress);
+	if (get_myaddress(&myaddress) != 0)
+		return (FALSE);
+	myaddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	client = clntudp_bufcreate(&myaddress, PMAPPROG, PMAPVERS,
-	    timeout, &socket, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
+	    timeout, &sock, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
 	if (client == (CLIENT *)NULL)
 		return (FALSE);
 	parms.pm_prog = program;
@@ -114,6 +116,7 @@ pmap_unset(program, version)
 	CLNT_CALL(client, PMAPPROC_UNSET, xdr_pmap, &parms, xdr_bool, &rslt,
 	    tottimeout);
 	CLNT_DESTROY(client);
-	(void)close(socket);
+	if (sock != -1)
+		(void)close(sock);
 	return (rslt);
 }

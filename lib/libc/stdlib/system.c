@@ -32,8 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)system.c	5.10 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: system.c,v 1.10 1995/06/14 05:20:01 jtc Exp $";
+static char *rcsid = "$OpenBSD: system.c,v 1.2 1996/08/19 08:33:54 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -53,10 +52,12 @@ system(command)
 	sig_t intsave, quitsave;
 	int omask;
 	int pstat;
-	char *argp[] = {"sh", "-c", (char *) command, NULL};
+	char *argp[] = {"sh", "-c", NULL, NULL};
 
 	if (!command)		/* just checking... */
 		return(1);
+
+	argp[2] = (char *)command;
 
 	omask = sigblock(sigmask(SIGCHLD));
 	switch(pid = vfork()) {

@@ -1,8 +1,9 @@
-/*	$NetBSD: lstNext.c,v 1.4 1995/06/14 15:21:35 christos Exp $	*/
+/*	$OpenBSD: lstNext.c,v 1.7 2000/06/17 14:43:40 espie Exp $	*/
+/*	$NetBSD: lstNext.c,v 1.5 1996/11/06 17:59:49 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,14 +37,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstNext.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstNext.c,v 1.4 1995/06/14 15:21:35 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstNext.c --
  *	Return the next node for a list.
@@ -55,6 +48,15 @@ static char rcsid[] = "$NetBSD: lstNext.c,v 1.4 1995/06/14 15:21:35 christos Exp
  */
 
 #include	"lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstNext.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstNext.c,v 1.7 2000/06/17 14:43:40 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 /*-
  *-----------------------------------------------------------------------
@@ -62,8 +64,8 @@ static char rcsid[] = "$NetBSD: lstNext.c,v 1.4 1995/06/14 15:21:35 christos Exp
  *	Return the next node for the given list.
  *
  * Results:
- *	The next node or NILLNODE if the list has yet to be opened. Also
- *	if the list is non-circular and the end has been reached, NILLNODE
+ *	The next node or NULL if the list has yet to be opened. Also
+ *	if the list is non-circular and the end has been reached, NULL
  *	is returned.
  *
  * Side Effects:
@@ -72,49 +74,45 @@ static char rcsid[] = "$NetBSD: lstNext.c,v 1.4 1995/06/14 15:21:35 christos Exp
  *-----------------------------------------------------------------------
  */
 LstNode
-Lst_Next (l)
+Lst_Next(l)
     Lst	    	  l;
 {
-    register ListNode	tln;
-    register List 	list = (List)l;
-    
-    if ((LstValid (l) == FALSE) ||
-	(list->isOpen == FALSE)) {
-	    return (NILLNODE);
-    }
-    
-    list->prevPtr = list->curPtr;
-    
-    if (list->curPtr == NilListNode) {
-	if (list->atEnd == Unknown) {
+    LstNode	tln;
+
+    if (l->isOpen == FALSE)
+	    return NULL;
+
+    l->prevPtr = l->curPtr;
+
+    if (l->curPtr == NULL) {
+	if (l->atEnd == Unknown) {
 	    /*
 	     * If we're just starting out, atEnd will be Unknown.
 	     * Then we want to start this thing off in the right
 	     * direction -- at the start with atEnd being Middle.
 	     */
-	    list->curPtr = tln = list->firstPtr;
-	    list->atEnd = Middle;
+	    l->curPtr = tln = l->firstPtr;
+	    l->atEnd = Middle;
 	} else {
-	    tln = NilListNode;
-	    list->atEnd = Tail;
+	    tln = NULL;
+	    l->atEnd = Tail;
 	}
     } else {
-	tln = list->curPtr->nextPtr;
-	list->curPtr = tln;
+	tln = l->curPtr->nextPtr;
+	l->curPtr = tln;
 
-	if (tln == list->firstPtr || tln == NilListNode) {
+	if (tln == l->firstPtr || tln == NULL)
 	    /*
 	     * If back at the front, then we've hit the end...
 	     */
-	    list->atEnd = Tail;
-	} else {
+	    l->atEnd = Tail;
+	else
 	    /*
 	     * Reset to Middle if gone past first.
 	     */
-	    list->atEnd = Middle;
-	}
+	    l->atEnd = Middle;
     }
-    
-    return ((LstNode)tln);
+
+    return tln;
 }
 

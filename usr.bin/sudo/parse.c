@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2000 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * This code is derived from software contributed by Chris Jepeway
@@ -50,7 +50,7 @@
 #ifdef HAVE_STRINGS_H
 # include <strings.h>
 #endif /* HAVE_STRINGS_H */
-#if defined(HAVE_FNMATCH) && defined(HAVE_FNMATCH_H)
+#ifdef HAVE_FNMATCH
 # include <fnmatch.h>
 #endif /* HAVE_FNMATCH_H */
 #ifdef HAVE_NETGROUP_H
@@ -91,13 +91,14 @@
 #endif /* HAVE_FNMATCH */
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: parse.c,v 1.121 1999/08/28 10:00:22 millert Exp $";
+static const char rcsid[] = "$Sudo: parse.c,v 1.130 2000/03/23 04:38:19 millert Exp $";
 #endif /* lint */
 
 /*
  * Globals
  */
 int parse_error = FALSE;
+extern int keepall;
 extern FILE *yyin, *yyout;
 
 /*
@@ -111,10 +112,11 @@ static int has_meta	__P((char *));
  * allowed to run the specified command on this host as the target user.
  */
 int
-sudoers_lookup(check_cmnd)
-    int check_cmnd;
+sudoers_lookup(sudo_mode)
+    int sudo_mode;
 {
     int error;
+    int pwcheck;
 
     /* Become sudoers file owner */
     set_perms(PERM_SUDOERS, 0);
@@ -126,6 +128,11 @@ sudoers_lookup(check_cmnd)
 
     /* Allocate space for data structures in the parser. */
     init_parser();
+
+    /* If pwcheck *could* be PWCHECK_ALL or PWCHECK_ANY, keep more state. */
+    if (!(sudo_mode & MODE_RUN) && sudo_mode != MODE_KILL &&
+	sudo_mode != MODE_INVALIDATE)
+	keepall = TRUE;
 
     /* Need to be root while stat'ing things in the parser. */
     set_perms(PERM_ROOT, 0);
@@ -139,34 +146,70 @@ sudoers_lookup(check_cmnd)
 	return(VALIDATE_ERROR);
 
     /*
+     * The pw options may have changed during sudoers parse so we
+     * wait until now to set this.
+     */
+    switch (sudo_mode) {
+	case MODE_VALIDATE:
+	    pwcheck = def_ival(I_VERIFYPW);
+	    break;
+	case MODE_LIST:
+	    pwcheck = def_ival(I_LISTPW);
+	    break;
+	case MODE_KILL:
+	case MODE_INVALIDATE:
+	    pwcheck = PWCHECK_NEVER;
+	    break;
+	default:
+	    pwcheck = 0;
+	    break;
+}
+
+    /*
      * Assume the worst.  If the stack is empty the user was
      * not mentioned at all.
      */
-    error = VALIDATE_NOT_OK;
-    if (check_cmnd == TRUE) {
+    if (def_flag(I_AUTHENTICATE))
+	error = VALIDATE_NOT_OK;
+    else
+	error = VALIDATE_NOT_OK | FLAG_NOPASS;
+    if (pwcheck) {
+	error |= FLAG_NO_CHECK;
+    } else {
 	error |= FLAG_NO_HOST;
 	if (!top)
 	    error |= FLAG_NO_USER;
-    } else
-	error |= FLAG_NO_CHECK;
+    }
 
     /*
-     * Only check the actual command if the check_cmnd flag is set.
-     * It is not set for the "validate" and "list" pseudo-commands.
+     * Only check the actual command if pwcheck flag is not set.
+     * It is set for the "validate", "list" and "kill" pseudo-commands.
      * Always check the host and user.
      */
-    if (check_cmnd == FALSE)
+    if (pwcheck) {
+	int nopass, found;
+
+	if (pwcheck == PWCHECK_NEVER || !def_flag(I_AUTHENTICATE))
+	    nopass = FLAG_NOPASS;
+	else
+	    nopass = -1;
+	found = 0;
 	while (top) {
 	    if (host_matches == TRUE) {
-		/* User may always validate or list on allowed hosts */
-		if (no_passwd == TRUE)
-		    return(VALIDATE_OK | FLAG_NOPASS);
-		else
-		    return(VALIDATE_OK);
+		found = 1;
+		if (pwcheck == PWCHECK_ANY && no_passwd == TRUE)
+		    nopass = FLAG_NOPASS;
+		else if (pwcheck == PWCHECK_ALL && nopass != 0)
+		    nopass = (no_passwd == TRUE) ? FLAG_NOPASS : 0;
 	    }
 	    top--;
 	}
-    else
+	if (found) {
+	    if (nopass == -1)
+		nopass = 0;
+	    return(VALIDATE_OK | nopass);
+	}
+    } else {
 	while (top) {
 	    if (host_matches == TRUE) {
 		error &= ~FLAG_NO_HOST;
@@ -193,6 +236,7 @@ sudoers_lookup(check_cmnd)
 	    }
 	    top--;
 	}
+    }
 
     /*
      * The user was not explicitly granted nor denied access.
@@ -364,6 +408,28 @@ addr_matches(n)
 }
 
 /*
+ * Returns 0 if the hostname matches the pattern and non-zero otherwise.
+ */
+int
+hostname_matches(shost, lhost, pattern)
+    char *shost;
+    char *lhost;
+    char *pattern;
+{
+    if (has_meta(pattern)) {
+	if (strchr(pattern, '.'))
+	    return(fnmatch(pattern, lhost, FNM_CASEFOLD));
+	else
+	    return(fnmatch(pattern, shost, FNM_CASEFOLD));
+    } else {
+	if (strchr(pattern, '.'))
+	    return(strcasecmp(lhost, pattern));
+	else
+	    return(strcasecmp(shost, pattern));
+    }
+}
+
+/*
  *  Returns TRUE if the given user belongs to the named group,
  *  else returns FALSE.
  */
@@ -402,13 +468,14 @@ usergr_matches(group, user)
 
 /*
  * Returns TRUE if "host" and "user" belong to the netgroup "netgr",
- * else return FALSE.  Either of "host" or "user" may be NULL
+ * else return FALSE.  Either of "host", "shost" or "user" may be NULL
  * in which case that argument is not checked...
  */
 int
-netgr_matches(netgr, host, user)
+netgr_matches(netgr, host, shost, user)
     char *netgr;
     char *host;
+    char *shost;
     char *user;
 {
 #ifdef HAVE_GETDOMAINNAME
@@ -433,10 +500,13 @@ netgr_matches(netgr, host, user)
 #endif /* HAVE_GETDOMAINNAME */
 
 #ifdef HAVE_INNETGR
-    return(innetgr(netgr, host, user, domain));
-#else
-    return(FALSE);
+    if (innetgr(netgr, host, user, domain))
+	return(TRUE);
+    else if (host != shost && innetgr(netgr, shost, user, domain))
+	return(TRUE);
 #endif /* HAVE_INNETGR */
+
+    return(FALSE);
 }
 
 /*
@@ -447,7 +517,7 @@ static int
 has_meta(s)
     char *s;
 {
-    register char *t;
+    char *t;
     
     for (t = s; *t; t++) {
 	if (*t == '\\' || *t == '?' || *t == '*' || *t == '[' || *t == ']')

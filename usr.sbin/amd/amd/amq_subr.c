@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq_subr.c	8.1 (Berkeley) 6/6/93
- *	$Id: amq_subr.c,v 1.3 1994/06/13 20:47:03 mycroft Exp $
+ *	$Id: amq_subr.c,v 1.4 1999/08/26 14:57:19 millert Exp $
  */
 
 /*
@@ -173,6 +173,11 @@ extern qelem mfhead;
 	return (amq_mount_info_list *) &mfhead;	/* XXX */
 }
 
+#if 0
+/*
+ * amd does not allocate a separate socket to distinguish local
+ * connects so this "security" check is useless.
+ */
 static int ok_security(rqstp)
 struct svc_req *rqstp;
 {
@@ -201,8 +206,9 @@ struct svc_req *rqstp;
 	char *cp;
 
 	plog(XLOG_INFO, "amq requested mount of %s", s);
+
 	/*
-	 * Minimalist security check.
+	 * Minimalist (read useless) security check.
 	 */
 	if (!ok_security(rqstp)) {
 		rc = EACCES;
@@ -234,6 +240,24 @@ struct svc_req *rqstp;
 		return 0;
 	return &rc;
 }
+#else
+/*
+ * Disable "amq -M" functionality since it is inherently insecure.
+ */
+int *
+amqproc_mount_1(argp, rqstp)
+voidp argp;
+struct svc_req *rqstp;
+{
+	static int rc;
+	char *s = *(amq_string *) argp;
+  
+	plog(XLOG_ERROR, "amq requested mount of %s, but code is disabled", s);
+   
+	rc = EACCES;
+	return &rc;
+}
+#endif
 
 amq_string *
 amqproc_getvers_1(argp, rqstp)
@@ -295,7 +319,8 @@ xdr_amq_mount_tree_node(xdrs, objp)
 	if (!xdr_amq_string(xdrs, &mp->am_mnt->mf_ops->fs_type)) {
 		return (FALSE);
 	}
-	if (!xdr_long(xdrs, &mp->am_stats.s_mtime)) {
+	/* XXX really a time_t, but need to transmit a 32-bit integer */
+	if (!xdr_int(xdrs, (int *)&mp->am_stats.s_mtime)) {
 		return (FALSE);
 	}
 	if (!xdr_u_short(xdrs, &mp->am_stats.s_uid)) {

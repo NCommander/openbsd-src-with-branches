@@ -36,10 +36,10 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)brk.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: brk.S,v 1.5 1995/09/25 19:21:41 jonathan Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 	.globl	minbrk
 	.globl	curbrk
@@ -49,10 +49,26 @@ minbrk:	.word	_C_LABEL(end)
 	.text
 
 LEAF(brk)
+	.set	reorder
 	lw	v0, minbrk
-	bgeu	a0, v0, _C_LABEL(brk)
+	bltu	a0, v0, 1f
+	la	t9, _brk
+	jr	t9
+1:
 	move	a0, v0		# dont allow break < minbrk
-ALEAF(_brk)
+	li	v0, SYS_break
+	syscall
+	bne	a3, zero, 2f
+	sw	a0, curbrk
+	move	v0, zero
+	j	ra
+2:
+	la	t9, _C_LABEL(cerror)
+	jr	t9
+END(brk)
+
+LEAF(_brk)
+	.set	reorder
 	li	v0, SYS_break
 	syscall
 	bne	a3, zero, 1f
@@ -60,5 +76,6 @@ ALEAF(_brk)
 	move	v0, zero
 	j	ra
 1:
-	j	_C_LABEL(cerror)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
 END(brk)

@@ -1,7 +1,8 @@
-/*	$Id: app.h,v 1.2 1998/09/27 21:36:43 niklas Exp $	*/
+/*	$OpenBSD: app.h,v 1.4 1999/02/26 03:31:42 niklas Exp $	*/
+/*	$EOM: app.h,v 1.4 1999/04/02 00:58:16 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,6 +40,7 @@
 extern int app_socket;
 extern int app_none;
 
+extern void app_conf_init_hook (void);
 extern void app_handler (void);
 extern void app_init (void);
 

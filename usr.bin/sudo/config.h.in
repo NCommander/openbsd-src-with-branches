@@ -31,7 +31,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Sudo: config.h.in,v 1.139 1999/11/04 19:01:08 millert Exp $
+ * $Sudo: config.h.in,v 1.144 2000/03/07 04:29:42 millert Exp $
  */
 
 /*
@@ -188,6 +188,9 @@
 /* Define if you have innetgr(3).  */
 #undef HAVE_INNETGR
 
+/* Define if you have initgroups(3).  */
+#undef HAVE_INITGROUPS
+
 /* Define if you have getdomainname(2).  */
 #undef HAVE_GETDOMAINNAME
 
@@ -248,8 +251,8 @@
 /* Define if you have flock(2).  */
 #undef HAVE_FLOCK
 
-/* Define if you have ftruncate(2).  */
-#undef HAVE_FTRUNCATE
+/* Define if you have fstat(2).  */
+#undef HAVE_FSTAT
 
 /* Define if you have setrlimit(2).  */
 #undef HAVE_SETRLIMIT
@@ -297,9 +300,6 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-/* Define if you have the <fnmatch.h> header file.  */
-#undef HAVE_FNMATCH_H
 
 /* Define if you have the <netgroup.h> header file.  */
 #undef HAVE_NETGROUP_H
@@ -490,6 +490,12 @@
 
 /* Define if you use OSF DCE.  */
 #undef HAVE_DCE
+
+/* Define if you use the BSD login capabilities database.  */
+#undef HAVE_LOGIN_CAP_H
+
+/* Define if you use BSD authentication.  */
+#undef HAVE_BSD_AUTH_H
 
 /* Define if you use the FWTK authsrv daemon.  */
 #undef HAVE_FWTK

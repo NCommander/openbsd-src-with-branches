@@ -1,3 +1,4 @@
+/*	$OpenBSD: mbufs.c,v 1.3 1996/06/26 05:40:08 deraadt Exp $	*/
 /*	$NetBSD: mbufs.c,v 1.2 1995/01/20 08:52:02 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mbufs.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: mbufs.c,v 1.2 1995/01/20 08:52:02 jtc Exp $";
+static char rcsid[] = "$OpenBSD: mbufs.c,v 1.3 1996/06/26 05:40:08 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -101,13 +102,13 @@ void
 showmbufs()
 {
 	register int i, j, max, index;
-	char buf[10];
+	char buf[13];
 
 	if (mb == 0)
 		return;
-	for (j = 0; j < wnd->maxy; j++) {
+	for (j = 0; j < wnd->_maxy; j++) {
 		max = 0, index = -1; 
-		for (i = 0; i < wnd->maxy; i++)
+		for (i = 0; i < wnd->_maxy; i++)
 			if (mb->m_mtypes[i] > max) {
 				max = mb->m_mtypes[i];
 				index = i;
@@ -120,7 +121,7 @@ showmbufs()
 			mvwprintw(wnd, 1+j, 0, "%-10.10s", mtnames[index]);
 		wmove(wnd, 1 + j, 10);
 		if (max > 60) {
-			sprintf(buf, " %d", max);
+			snprintf(buf, sizeof buf, " %d", max);
 			max = 60;
 			while (max--)
 				waddch(wnd, 'X');

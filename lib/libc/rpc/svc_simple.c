@@ -1,5 +1,3 @@
-/*	$NetBSD: svc_simple.c,v 1.4 1995/04/14 19:48:28 jtc Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_simple.c 1.18 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_simple.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_simple.c,v 1.4 1995/04/14 19:48:28 jtc Exp $";
-#endif
+static char *rcsid = "$OpenBSD: svc_simple.c,v 1.6 1998/11/22 07:38:25 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /* 
  * svc_simple.c
@@ -46,6 +42,7 @@ static char *rcsid = "$NetBSD: svc_simple.c,v 1.4 1995/04/14 19:48:28 jtc Exp $"
 #include <stdlib.h>
 #include <string.h>
 #include <rpc/rpc.h>
+#include <rpc/pmap_clnt.h>
 #include <sys/socket.h>
 #include <netdb.h>
 
@@ -60,17 +57,19 @@ static void universal();
 static SVCXPRT *transp;
 struct proglst *pl;
 
+int
 registerrpc(prognum, versnum, procnum, progname, inproc, outproc)
+	int prognum, versnum, procnum;
 	char *(*progname)();
 	xdrproc_t inproc, outproc;
 {
 	
 	if (procnum == NULLPROC) {
 		(void) fprintf(stderr,
-		    "can't reassign procedure number %d\n", NULLPROC);
+		    "can't reassign procedure number %u\n", NULLPROC);
 		return (-1);
 	}
-	if (transp == 0) {
+	if (transp == NULL) {
 		transp = svcudp_create(RPC_ANYSOCK);
 		if (transp == NULL) {
 			(void) fprintf(stderr, "couldn't create an rpc server\n");

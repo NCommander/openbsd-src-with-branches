@@ -1,4 +1,5 @@
-#	$NetBSD: Makefile,v 1.10 1994/10/26 02:01:24 cgd Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/01/16 09:23:08 niklas Exp $
+#	$NetBSD: Makefile,v 1.11 1997/01/06 12:33:09 is Exp $
 
 #	@(#)Makefile	7.3 (Berkeley) 6/9/91
 
@@ -11,8 +12,7 @@ COMM=	$S/vm/*.[ch] $S/ufs/*.[ch] $S/sys/*.h $S/compat/sunos/*.[ch] \
 
 # Makefile for amiga tags file
 
-all:
-	@echo "make tags or links only"
+SUBDIR=stand ../m68k
 
 TAMIGA=	$S/arch/amiga/tags
 SAMIGA=	$S/arch/m68k/m68k/*.c $S/arch/m68k/include/*.h \
@@ -41,5 +41,8 @@ links:
 	    rm -f $$i/tags; rm -f $$i/TAGS ; \
 	    ln -s ../tags $$i/tags; ln -s ../TAGS $$i/TAGS; done
 
+obj:	_SUBDIRUSE
+
 .include <bsd.prog.mk>
+.include <bsd.subdir.mk>
 

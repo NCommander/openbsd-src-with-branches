@@ -1,3 +1,4 @@
+# $OpenBSD$
 
 PROG=		pppoe
 MAN=		pppoe.8

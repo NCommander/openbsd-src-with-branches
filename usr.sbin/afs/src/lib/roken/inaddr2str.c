@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -39,7 +38,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: inaddr2str.c,v 1.1 1998/01/13 16:25:24 lha Exp $");
+RCSID("$Id: inaddr2str.c,v 1.1 1998/01/13 16:25:24 lha Exp $");
 #endif
 
 #include <stdlib.h>

@@ -1,5 +1,3 @@
-/*	$NetBSD: ualarm.c,v 1.4 1995/02/25 15:39:33 cgd Exp $	*/
-
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,13 +32,10 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ualarm.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: ualarm.c,v 1.4 1995/02/25 15:39:33 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: ualarm.c,v 1.3 1996/09/15 09:31:08 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#include <sys/types.h>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -51,10 +46,10 @@ static char rcsid[] = "$NetBSD: ualarm.c,v 1.4 1995/02/25 15:39:33 cgd Exp $";
  * If ``reload'' is non-zero, keep generating SIGALRM
  * every ``reload'' microseconds after the first signal.
  */
-unsigned
+useconds_t
 ualarm(usecs, reload)
-	register unsigned usecs;
-	register unsigned reload;
+	register useconds_t usecs;
+	register useconds_t reload;
 {
 	struct itimerval new, old;
 
@@ -65,7 +60,7 @@ ualarm(usecs, reload)
 	new.it_value.tv_sec = usecs / USPS;
 
 	if (setitimer(ITIMER_REAL, &new, &old) == 0)
-		return (old.it_value.tv_sec * USPS + old.it_value.tv_usec);
+		return ((useconds_t)(old.it_value.tv_sec * USPS + old.it_value.tv_usec));
 	/* else */
-		return (-1);
+		return ((useconds_t)-1);
 }

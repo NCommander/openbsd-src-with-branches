@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)mach.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -49,6 +50,8 @@ static char rcsid[] = "$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $";
  *
  * Input is raw and unechoed
  */
+#include <sys/ioctl.h>
+
 #include <ctype.h>
 #include <curses.h>
 #include <fcntl.h>
@@ -97,7 +100,7 @@ setup(sflag, seed)
 		time(&seed);
 	srandom(seed);
 	if (debug)
-		(void) printf("seed = %ld\n", seed);
+		(void) printf("seed = %ld\n", (long) seed);
 	return(0);
 }
 
@@ -140,9 +143,9 @@ results()
  
 	move(SCORE_LINE, SCORE_COL);
 	printw("Percentage: %0.2f%% (%0.2f%% over %d game%s)\n",
-        denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
-        denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
-        ngames, ngames > 1 ? "s" : "");
+	denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
+	denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
+	ngames, ngames > 1 ? "s" : "");
 }
 
 static void

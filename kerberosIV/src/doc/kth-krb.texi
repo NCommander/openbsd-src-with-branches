@@ -25,11 +25,11 @@
 @titlepage
 @title KTH-KRB
 @subtitle Kerberos 4 from KTH
-@subtitle For release 0.10.
+@subtitle Modified for OpenBSD
 @subtitle 1999
 @author Johan Danielsson
 @author Assar Westerlund
-@author last updated $KTH: 1999/12/02 16:58:35 $
+@author minor changes for OpenBSD by Hans Insulander
 
 @def@copynext{@vskip 20pt plus 1fil@penalty-1000}
 @def@copyrightstart{}
@@ -222,7 +222,6 @@ to the following restrictions:
 * What is Kerberos?::           
 * Installing programs::         
 * How to set up a realm::       
-* One-Time Passwords::          
 * Resolving frequent problems::  
 * Acknowledgments::             
 * Index::                       
@@ -235,17 +234,6 @@ Installing programs
 * Installing from source::      
 * Installing a binary distribution::  
 * Finishing the installation::  
-* Authentication modules::      
-
-Finishing the installation
-
-* Authentication modules::      
-
-Authentication modules
-
-* Digital SIA::                 
-* IRIX::                        
-* PAM::                         
 
 How to set up a realm
 
@@ -271,15 +259,8 @@ How to set up the kerberos server
 * Add users to the database::   
 * Automate the startup of the servers::  
 
-One-Time Passwords
-
-* What are one time passwords?::  
-* When to use one time passwords?::  
-* Configuring OTPs::            
-
 Resolving frequent problems
 
-* Problems compiling Kerberos::  
 * Problems with firewalls::     
 * Common error messages::       
 * Is Kerberos year 2000 safe?::  
@@ -291,7 +272,6 @@ Resolving frequent problems
 @include whatis.texi
 @include install.texi
 @include setup.texi
-@include otp.texi
 @include problems.texi
 @include ack.texi
 @include index.texi

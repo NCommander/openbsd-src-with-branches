@@ -1,3 +1,4 @@
+/*	$OpenBSD: gvpbusvar.h,v 1.8 1995/08/18 15:27:55 chopps Exp $	*/
 /*	$NetBSD: gvpbusvar.h,v 1.8 1995/08/18 15:27:55 chopps Exp $	*/
 
 /*

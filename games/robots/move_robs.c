@@ -1,3 +1,4 @@
+/*	$OpenBSD: move_robs.c,v 1.2 1998/07/09 04:34:19 pjanzen Exp $	*/
 /*	$NetBSD: move_robs.c,v 1.3 1995/04/22 10:08:59 cgd Exp $	*/
 
 /*
@@ -37,28 +38,21 @@
 #if 0
 static char sccsid[] = "@(#)move_robs.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: move_robs.c,v 1.3 1995/04/22 10:08:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: move_robs.c,v 1.2 1998/07/09 04:34:19 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-# include	"robots.h"
-# include	<signal.h>
+#include	"robots.h"
 
 /*
  * move_robots:
  *	Move the robots around
  */
 void
-move_robots(was_sig)
-bool	was_sig;
+move_robots()
 {
 	register COORD	*rp;
-	register int	y, x;
-	register int	mindist, d;
-	static COORD	newpos;
 
-	if (Real_time)
-		signal(SIGALRM, move_robots);
 # ifdef DEBUG
 	move(Min.y, Min.x);
 	addch(inch());
@@ -112,12 +106,6 @@ bool	was_sig;
 				Max.x = rp->x;
 		}
 
-	if (was_sig) {
-		refresh();
-		if (Dead || Num_robots <= 0)
-			longjmp(End_move, 0);
-	}
-
 # ifdef DEBUG
 	standout();
 	move(Min.y, Min.x);
@@ -126,16 +114,15 @@ bool	was_sig;
 	addch(inch());
 	standend();
 # endif DEBUG
-	if (Real_time)
-		alarm(3);
 }
 
 /*
  * add_score:
  *	Add a score to the overall point total
  */
+void
 add_score(add)
-int	add;
+	int	add;
 {
 	Score += add;
 	move(Y_SCORE, X_SCORE);
@@ -146,8 +133,9 @@ int	add;
  * sign:
  *	Return the sign of the number
  */
+int
 sign(n)
-int	n;
+	int	n;
 {
 	if (n < 0)
 		return -1;

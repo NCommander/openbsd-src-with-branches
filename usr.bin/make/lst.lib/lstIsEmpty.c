@@ -1,8 +1,9 @@
-/*	$NetBSD: lstIsEmpty.c,v 1.4 1995/06/14 15:21:27 christos Exp $	*/
+/*	$OpenBSD: lstIsEmpty.c,v 1.6 2000/06/17 14:43:40 espie Exp $	*/
+/*	$NetBSD: lstIsEmpty.c,v 1.5 1996/11/06 17:59:47 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,40 +37,32 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstIsEmpty.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstIsEmpty.c,v 1.4 1995/06/14 15:21:27 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstIsEmpty.c --
  *	A single function to decide if a list is empty
  */
 
 #include	"lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstIsEmpty.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstIsEmpty.c,v 1.6 2000/06/17 14:43:40 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 /*-
  *-----------------------------------------------------------------------
  * Lst_IsEmpty --
  *	Return TRUE if the given list is empty.
- *
- * Results:
- *	TRUE if the list is empty, FALSE otherwise.
- *
- * Side Effects:
- *	None.
- *
- *	A list is considered empty if its firstPtr == NilListNode (or if
- *	the list itself is NILLIST).
  *-----------------------------------------------------------------------
  */
 Boolean
-Lst_IsEmpty (l)
+Lst_IsEmpty(l)
     Lst	l;
 {
-    return ( ! LstValid (l) || LstIsEmpty(l));
+    return LstIsEmpty(l);
 }
 

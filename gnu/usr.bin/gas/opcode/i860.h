@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Table of opcodes for the i860.
    Copyright (C) 1989 Free Software Foundation, Inc.
 

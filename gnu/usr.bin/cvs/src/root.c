@@ -16,7 +16,7 @@
    Watch out if the enum is changed in cvs.h! */
 
 char *method_names[] = {
-    "local", "server (rsh)", "pserver", "kserver", "gserver", "ext", "fork"
+    "local", "server (ssh)", "pserver", "kserver", "gserver", "ext", "fork"
 };
 
 #ifndef DEBUG
@@ -397,7 +397,19 @@ parse_cvsroot (CVSroot)
 		CVSroot_username = NULL;
 	}
 
-	if ((p = strchr (cvsroot_copy, ':')) != NULL)
+	if (*cvsroot_copy == '[')
+	{
+		p = strchr(cvsroot_copy, ']');
+		if (p != NULL)
+		{
+			*p = '\0';
+			CVSroot_hostname = xstrdup (cvsroot_copy+1);
+			*p++ = ']';
+			if (*p == ':')
+				cvsroot_copy = p+1;
+		}
+	}
+	else if ((p = strchr (cvsroot_copy, ':')) != NULL)
 	{
 	    *p = '\0';
 	    CVSroot_hostname = xstrdup (cvsroot_copy);

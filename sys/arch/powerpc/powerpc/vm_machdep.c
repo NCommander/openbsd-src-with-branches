@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_machdep.c,v 1.13 2000/06/08 22:25:22 niklas Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.1 1996/09/30 16:34:57 ws Exp $	*/
 
 /*
@@ -34,11 +35,16 @@
 #include <sys/core.h>
 #include <sys/exec.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/user.h>
 #include <sys/vnode.h>
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
+
+#ifdef UVM
+#include <uvm/uvm_extern.h>
+#endif
 
 #include <machine/pcb.h>
 
@@ -46,8 +52,10 @@
  * Finish a fork operation, with process p2 nearly set up.
  */
 void
-cpu_fork(p1, p2)
+cpu_fork(p1, p2, stack, stacksize)
 	struct proc *p1, *p2;
+	void *stack;
+	size_t stacksize;
 {
 	struct trapframe *tf;
 	struct callframe *cf;
@@ -61,7 +69,8 @@ cpu_fork(p1, p2)
 		save_fpu(p1);
 	*pcb = p1->p_addr->u_pcb;
 	
-	pcb->pcb_pm = &p2->p_vmspace->vm_pmap;
+	pcb->pcb_pm = p2->p_vmspace->vm_map.pmap;
+
 	pcb->pcb_pmreal = (struct pmap *)pmap_extract(pmap_kernel(), (vm_offset_t)pcb->pcb_pm);
 	
 	/*
@@ -70,6 +79,13 @@ cpu_fork(p1, p2)
 	stktop1 = (caddr_t)trapframe(p1);
 	stktop2 = (caddr_t)trapframe(p2);
 	bcopy(stktop1, stktop2, sizeof(struct trapframe));
+
+	/*
+	 * If specified, give the child a different stack.
+	 */
+	if (stack != NULL)
+		tf->fixreg[1] = (register_t)stack + stacksize;
+
 	stktop2 = (caddr_t)((u_long)stktop2 & ~15);	/* Align stack pointer */
 	
 	/*
@@ -102,16 +118,17 @@ cpu_fork(p1, p2)
  * Set initial pc of process forked by above.
  */
 void
-cpu_set_kpc(p, pc)
+cpu_set_kpc(p, pc, arg)
 	struct proc *p;
-	u_long pc;
+	void (*pc) __P((void *));
+	void *arg;
 {
 	struct switchframe *sf = (struct switchframe *)p->p_addr->u_pcb.pcb_sp;
 	struct callframe *cf = (struct callframe *)sf->sp;
 	
-	cf->r30 = (int)p;
-	cf->r31 = pc;
-	cf++->lr = pc;
+	cf->r30 = (register_t)arg;
+	cf->r31 = (register_t)pc;
+	cf++->lr = (register_t)pc;
 }
 
 void
@@ -137,7 +154,8 @@ pagemove(from, to, size)
 		pa = pmap_extract(pmap_kernel(), va);
 		pmap_remove(pmap_kernel(), va, va + NBPG);
 		pmap_enter(pmap_kernel(), (vm_offset_t)to, pa,
-			   VM_PROT_READ | VM_PROT_WRITE, 1);
+			   VM_PROT_READ | VM_PROT_WRITE, 1,
+			   VM_PROT_READ | VM_PROT_WRITE);
 		va += NBPG;
 		to += NBPG;
 	}
@@ -159,8 +177,8 @@ cpu_exit(p)
 	if (p == fpuproc)	/* release the fpu */
 		fpuproc = 0;
 	
-	vmspace_free(p->p_vmspace);
-	switchexit(kernel_map, p->p_addr, USPACE);
+	(void)splhigh();
+	switchexit(p);
 }
 
 /*
@@ -178,16 +196,15 @@ cpu_coredump(p, vp, cred, chdr)
 	struct trapframe *tf;
 	int error;
 	
-#if 0
-	CORE_SETMAGIC(*chdr, COREMAGIC, MID_POWERPC, 0);
+#if 1
+	CORE_SETMAGIC(*chdr, COREMAGIC, MID_ZERO, 0);
 	chdr->c_hdrsize = ALIGN(sizeof *chdr);
 	chdr->c_seghdrsize = ALIGN(sizeof cseg);
 	chdr->c_cpusize = sizeof md_core;
 
-	tf = trapframe(p);
-	bcopy(tf, &md_core.frame, sizeof md_core.frame);
+	process_read_regs(p, &md_core);
 	
-	CORE_SETMAGIC(cseg, CORESEGMAGIC, MID_POWERPC, CORE_CPU);
+	CORE_SETMAGIC(cseg, CORESEGMAGIC, MID_ZERO, CORE_CPU);
 	cseg.c_addr = 0;
 	cseg.c_size = chdr->c_cpusize;
 
@@ -223,12 +240,16 @@ vmapbuf(bp, len)
 	faddr = trunc_page(bp->b_saveaddr = bp->b_data);
 	off = (vm_offset_t)bp->b_data - faddr;
 	len = round_page(off + len);
+#ifdef UVM
+	taddr = uvm_km_valloc_wait(phys_map, len);
+#else
 	taddr = kmem_alloc_wait(phys_map, len);
+#endif
 	bp->b_data = (caddr_t)(taddr + off);
 	for (; len > 0; len -= NBPG) {
 		pa = pmap_extract(vm_map_pmap(&bp->b_proc->p_vmspace->vm_map), faddr);
 		pmap_enter(vm_map_pmap(phys_map), taddr, pa,
-			   VM_PROT_READ | VM_PROT_WRITE, 1);
+			   VM_PROT_READ | VM_PROT_WRITE, 1, 0);
 		faddr += NBPG;
 		taddr += NBPG;
 	}
@@ -251,7 +272,11 @@ vunmapbuf(bp, len)
 	addr = trunc_page(bp->b_data);
 	off = (vm_offset_t)bp->b_data - addr;
 	len = round_page(off + len);
+#ifdef UVM
+	uvm_km_free_wakeup(phys_map, addr, len);
+#else
 	kmem_free_wakeup(phys_map, addr, len);
+#endif
 	bp->b_data = bp->b_saveaddr;
 	bp->b_saveaddr = 0;
 }

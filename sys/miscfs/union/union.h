@@ -1,4 +1,5 @@
-/*	$NetBSD: union.h,v 1.8 1995/05/30 18:55:28 mycroft Exp $	*/
+/*	$OpenBSD: union.h,v 1.5 1997/10/06 21:04:48 deraadt Exp $	*/
+/*	$NetBSD: union.h,v 1.9 1996/02/09 22:41:08 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 The Regents of the University of California.
@@ -39,6 +40,8 @@
  *	@(#)union.h	8.9 (Berkeley) 12/10/94
  */
 
+struct vfsconf;
+
 struct union_args {
 	char		*target;	/* Target of loopback  */
 	int		mntflags;	/* Options on the mount */
@@ -62,10 +65,8 @@ struct union_mount {
 /*
  * DEFDIRMODE is the mode bits used to create a shadow directory.
  */
-#define VRWXMODE (VREAD|VWRITE|VEXEC)
-#define VRWMODE (VREAD|VWRITE)
-#define UN_DIRMODE ((VRWXMODE)|(VRWXMODE>>3)|(VRWXMODE>>6))
-#define UN_FILEMODE ((VRWMODE)|(VRWMODE>>3)|(VRWMODE>>6))
+#define UN_DIRMODE	(S_IRWXU|S_IRWXG|S_IRWXO)
+#define UN_FILEMODE	(S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
 
 /*
  * A cache of vnode references
@@ -127,6 +128,10 @@ extern void union_newsize __P((struct vnode *, off_t, off_t));
 #define	UPPERVP(vp) (VTOUNION(vp)->un_uppervp)
 #define OTHERVP(vp) (UPPERVP(vp) ? UPPERVP(vp) : LOWERVP(vp))
 
-extern int (**union_vnodeop_p)();
+extern int (**union_vnodeop_p) __P((void *));
 extern struct vfsops union_vfsops;
+
+int union_init __P((struct vfsconf *));
+int union_freevp __P((struct vnode *));
+
 #endif /* _KERNEL */

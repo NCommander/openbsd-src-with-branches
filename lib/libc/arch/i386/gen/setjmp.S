@@ -32,14 +32,13 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)setjmp.s	5.1 (Berkeley) 4/23/90
- *	$Id: setjmp.S,v 1.6 1994/12/24 01:16:44 jtc Exp $
  */
+
+#include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$Id: setjmp.S,v 1.6 1994/12/24 01:16:44 jtc Exp $"
+	.asciz "$OpenBSD: setjmp.S,v 1.2 1995/12/30 08:15:23 deraadt Exp $"
 #endif
 
 /*
@@ -51,9 +50,6 @@
  * by restoring registers from the stack.
  * The previous signal state is restored.
  */
-
-#include "DEFS.h"
-#include "SYS.h"
 
 ENTRY(setjmp)
 	pushl	$0

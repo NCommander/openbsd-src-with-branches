@@ -1,3 +1,5 @@
+/*	$OpenBSD: kdump.c,v 1.9 1997/11/04 07:58:38 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -41,11 +43,10 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)kdump.c	8.4 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$NetBSD: kdump.c,v 1.12 1995/08/31 23:18:33 jtc Exp $";
+static char *rcsid = "$OpenBSD: kdump.c,v 1.9 1997/11/04 07:58:38 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
-#include <sys/errno.h>
 #include <sys/time.h>
 #include <sys/uio.h>
 #include <sys/ktrace.h>
@@ -73,6 +74,9 @@ struct ktr_header ktr_header;
 
 #include <sys/syscall.h>
 
+#include "../../sys/compat/bsdos/bsdos_syscall.h"
+#include "../../sys/compat/freebsd/freebsd_syscall.h"
+#include "../../sys/compat/netbsd/netbsd_syscall.h"
 #include "../../sys/compat/hpux/hpux_syscall.h"
 #include "../../sys/compat/ibcs2/ibcs2_syscall.h"
 #include "../../sys/compat/linux/linux_syscall.h"
@@ -82,8 +86,18 @@ struct ktr_header ktr_header;
 #include "../../sys/compat/ultrix/ultrix_syscall.h"
 
 #define KTRACE
+#define NFSCLIENT
+#define NFSSERVER
+#define SYSVSEM
+#define SYSVMSG
+#define SYSVSHM
+#define LFS
+#define NTP
 #include "../../sys/kern/syscalls.c"
 
+#include "../../sys/compat/bsdos/bsdos_syscalls.c"
+#include "../../sys/compat/freebsd/freebsd_syscalls.c"
+#include "../../sys/compat/netbsd/netbsd_syscalls.c"
 #include "../../sys/compat/hpux/hpux_syscalls.c"
 #include "../../sys/compat/ibcs2/ibcs2_syscalls.c"
 #include "../../sys/compat/linux/linux_syscalls.c"
@@ -92,6 +106,13 @@ struct ktr_header ktr_header;
 #include "../../sys/compat/svr4/svr4_syscalls.c"
 #include "../../sys/compat/ultrix/ultrix_syscalls.c"
 #undef KTRACE
+#undef NFSCLIENT
+#undef NFSSERVER
+#undef SYSVSEM
+#undef SYSVMSG
+#undef SYSVSHM
+#undef LFS
+#undef NTP
 
 struct emulation {
 	char *name;		/* Emulation name */
@@ -100,15 +121,18 @@ struct emulation {
 };
 
 static struct emulation emulations[] = {
-	{ "netbsd",	     syscallnames,        SYS_MAXSYSCALL },
-	{ "hpux",	hpux_syscallnames,   HPUX_SYS_MAXSYSCALL },
-	{ "ibcs2",     ibcs2_syscallnames,  IBCS2_SYS_MAXSYSCALL },
-	{ "linux",     linux_syscallnames,  LINUX_SYS_MAXSYSCALL },
-	{ "osf1",       osf1_syscallnames,   OSF1_SYS_MAXSYSCALL },
-	{ "sunos",     sunos_syscallnames,  SUNOS_SYS_MAXSYSCALL },
-	{ "svr4",       svr4_syscallnames,   SVR4_SYS_MAXSYSCALL },
-	{ "ultrix",   ultrix_syscallnames, ULTRIX_SYS_MAXSYSCALL },
-	{ NULL,			     NULL,		    NULL }
+	{ "native",	syscallnames,		SYS_MAXSYSCALL },
+	{ "hpux",	hpux_syscallnames,	HPUX_SYS_MAXSYSCALL },
+	{ "ibcs2",	ibcs2_syscallnames,	IBCS2_SYS_MAXSYSCALL },
+	{ "linux",	linux_syscallnames,	LINUX_SYS_MAXSYSCALL },
+	{ "osf1",	osf1_syscallnames,	OSF1_SYS_MAXSYSCALL },
+	{ "sunos",	sunos_syscallnames,	SUNOS_SYS_MAXSYSCALL },
+	{ "svr4",	svr4_syscallnames,	SVR4_SYS_MAXSYSCALL },
+	{ "ultrix",	ultrix_syscallnames,	ULTRIX_SYS_MAXSYSCALL },
+	{ "bsdos",	bsdos_syscallnames,	BSDOS_SYS_MAXSYSCALL },
+	{ "freebsd",	freebsd_syscallnames,	FREEBSD_SYS_MAXSYSCALL },
+	{ "netbsd",	netbsd_syscallnames,	NETBSD_SYS_MAXSYSCALL },
+	{ NULL,		NULL,			NULL }
 };
 
 struct emulation *current;
@@ -129,7 +153,7 @@ main(argc, argv)
 	register void *m;
 	int trpoints = ALL_POINTS;
 
-	current = &emulations[0];	/* NetBSD */
+	current = &emulations[0];	/* native */
 
 	while ((ch = getopt(argc, argv, "e:f:dlm:nRTt:")) != -1)
 		switch (ch) {
@@ -165,10 +189,7 @@ main(argc, argv)
 		default:
 			usage();
 		}
-	argv += optind;
-	argc -= optind;
-
-	if (argc > 1)
+	if (argc > optind)
 		usage();
 
 	m = (void *)malloc(size = 1025);
@@ -278,6 +299,25 @@ dumpheader(kth)
 	(void)printf("%s  ", type);
 }
 
+void
+ioctldecode(cmd)
+	u_long cmd;
+{
+	char dirbuf[4], *dir = dirbuf;
+
+	if (cmd & IOC_IN)
+		*dir++ = 'W';
+	if (cmd & IOC_OUT)
+		*dir++ = 'R';
+	*dir = '\0';
+
+	printf(decimal ? ",_IO%s('%c',%ld" : ",_IO%s('%c',%#lx",
+	    dirbuf, (cmd >> 8) & 0xff, cmd & 0xff);
+	if ((cmd & IOC_VOID) == 0)
+		printf(decimal ? ",%ld)" : ",%#lx)", (cmd >> 16) & 0xff);
+	else
+		printf(")");
+}
 
 ktrsyscall(ktr)
 	register struct ktr_syscall *ktr;
@@ -304,14 +344,8 @@ ktrsyscall(ktr)
 				argsize -= sizeof(register_t);
 				if ((cp = ioctlname(*ap)) != NULL)
 					(void)printf(",%s", cp);
-				else {
-					if (decimal)
-						(void)printf(",%ld",
-						    (long)*ap);
-					else
-						(void)printf(",%#lx ",
-						    (long)*ap);
-				}
+				else
+					ioctldecode(*ap);
 				c = ',';
 				ap++;
 				argsize -= sizeof(register_t);

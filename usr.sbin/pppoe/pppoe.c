@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pppoe.c,v 1.3 2001/02/18 22:52:53 miod Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -186,7 +186,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = ep[4] << 8 | ep[5];
+	insns[idx].k = (ep[4] << 8) | (ep[5] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 1;
 	idx++;
@@ -223,7 +223,8 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = (ep[0]) | (ep[1] << 8) | (ep[3] << 16) | (ep[3] << 24);
+	insns[idx].k =
+	    (ep[0] << 24) | (ep[1] << 16) | (ep[2] << 8) | (ep[3] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 3;
 	idx++;
@@ -234,7 +235,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = (ep[4]) | (ep[5] << 8);
+	insns[idx].k = (ep[4] << 8) | (ep[5] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 1;
 	idx++;
@@ -245,16 +246,14 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_RET | BPF_K;
-	insns[idx].k = (u_int)-1;
-	insns[idx].jt = 0;
-	insns[idx].jf = 0;
+	insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
 	idx++;
 
 	filter.bf_len = idx;
 	filter.bf_insns = insns;
 
-	for (i = 0; 1; i++) {
-		snprintf(device, sizeof(device), "/dev/bpf%d", i++);
+	for (i = 0; ; i++) {
+		snprintf(device, sizeof(device), "/dev/bpf%d", i);
 		fd = open(device, O_RDWR);
 		if (fd < 0) {
 			if (errno != EBUSY)
@@ -392,9 +391,12 @@ void
 child_handler(sig)
 	int sig;
 {
+	int save_errno = errno;
 	int status;
 
-	while (wait3(&status, WNOHANG, NULL) > 0);
+	while (wait3(&status, WNOHANG, NULL) > 0)
+		;
+	errno = save_errno;
 }
 
 int

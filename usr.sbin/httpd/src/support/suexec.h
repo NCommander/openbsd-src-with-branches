@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * Copyright (c) 1995-1999 The Apache Group.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,6 +57,7 @@
 
 /*
  * suexec.h -- user-definable variables for the suexec wrapper code.
+ *             (See README.configure on how to customize these variables.)
  */
 
 
@@ -77,7 +78,7 @@
  *            for suEXEC.  For most systems, 500 or 100 is common.
  */
 #ifndef UID_MIN
-#define UID_MIN 100
+#define UID_MIN 1000
 #endif
 
 /*
@@ -85,7 +86,7 @@
  *            for suEXEC.  For most systems, 100 is common.
  */
 #ifndef GID_MIN
-#define GID_MIN 100
+#define GID_MIN 1000
 #endif
 
 /*
@@ -119,7 +120,7 @@
  *             debugging purposes.
  */
 #ifndef LOG_EXEC
-#define LOG_EXEC "/usr/local/apache/logs/cgi.log"	/* Need me? */
+#define LOG_EXEC "/var/log/suexec.log"	/* Need me? */
 #endif
 
 /*
@@ -128,7 +129,7 @@
  *             that can be used for suEXEC behavior.
  */
 #ifndef DOC_ROOT
-#define DOC_ROOT "/usr/local/apache/htdocs"
+#define DOC_ROOT "/var/www/htdocs"
 #endif
 
 /*
@@ -136,7 +137,9 @@
  *
  */
 #ifndef SAFE_PATH
-#define SAFE_PATH "/usr/local/bin:/usr/bin:/bin"
+#define SAFE_PATH "/usr/bin:/bin:/usr/local/bin"
 #endif
 
 #endif /* _SUEXEC_H */
+
+

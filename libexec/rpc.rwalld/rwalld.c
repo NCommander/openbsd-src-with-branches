@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
  * All rights reserved.
@@ -28,7 +30,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rwalld.c,v 1.9 1995/07/09 00:30:17 pk Exp $";
+static char rcsid[] = "$OpenBSD: rwalld.c,v 1.3 2001/01/17 19:23:27 deraadt Exp $";
 #endif /* not lint */
 
 #include <unistd.h>
@@ -57,8 +59,8 @@ int from_inetd = 1;
 void
 cleanup()
 {
-	(void) pmap_unset(WALLPROG, WALLVERS);
-	exit(0);
+	(void) pmap_unset(WALLPROG, WALLVERS);		/* XXX signal race */
+	_exit(0);
 }
 
 main(argc, argv)
@@ -73,10 +75,14 @@ main(argc, argv)
 
 	if (geteuid() == 0) {
 		struct passwd *pep = getpwnam("nobody");
-		if (pep)
+		if (pep) {
+			seteuid(pep->pw_uid);
 			setuid(pep->pw_uid);
-		else
+		}
+		else {
+			seteuid(getuid());
 			setuid(getuid());
+		}
 	}
 
 	/*

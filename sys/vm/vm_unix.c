@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_unix.c,v 1.18 1995/10/07 06:29:04 mycroft Exp $	*/
+/*	$OpenBSD: vm_unix.c,v 1.8 1997/11/06 05:59:39 csapuntz Exp $	*/
+/*	$NetBSD: vm_unix.c,v 1.19 1996/02/10 00:08:14 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -39,7 +40,7 @@
  *
  * from: Utah $Hdr: vm_unix.c 1.1 89/11/07$
  *
- *	@(#)vm_unix.c	8.1 (Berkeley) 6/11/93
+ *	@(#)vm_unix.c	8.2 (Berkeley) 1/9/95
  */
 
 /*
@@ -73,9 +74,18 @@ sys_obreak(p, v, retval)
 	register int diff;
 
 	old = (vm_offset_t)vm->vm_daddr;
-	new = round_page(SCARG(uap, nsize));
-	if ((int)(new - old) > p->p_rlimit[RLIMIT_DATA].rlim_cur)
+	new = (vm_offset_t)SCARG(uap, nsize);
+
+	/* Check for overflow, round to page */
+	if(round_page(new) < new)
 		return(ENOMEM);
+	new = round_page(new);
+
+	/* Check limit */
+	if ((new > old) && ((new - old) > p->p_rlimit[RLIMIT_DATA].rlim_cur))
+		return(ENOMEM);
+
+	/* Turn the trick */
 	old = round_page(old + ctob(vm->vm_dsize));
 	diff = new - old;
 	if (diff > 0) {
@@ -136,9 +146,11 @@ sys_ovadvise(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#if 0
 	struct sys_ovadvise_args /* {
 		syscallarg(int) anom;
 	} */ *uap = v;
+#endif
 
 	return (EINVAL);
 }
@@ -161,10 +173,9 @@ vm_coredump(p, vp, cred, chdr)
 	if (!map->is_main_map) {
 #ifdef DEBUG
 		uprintf(
-	"vm_coredump: %s map 0x%lx: pmap=0x%lx,ref=%d,nentries=%d,version=%d\n",
+	"vm_coredump: %s map %p: pmap=%p, ref=%d, nentries=%d, version=%d\n",
 			(map->is_main_map ? "Task" : "Share"),
-			(long)map, (long)(map->pmap),
-			map->ref_count, map->nentries,
+			map, (map->pmap), map->ref_count, map->nentries,
 			map->timestamp);
 #endif
 		return EIO;
@@ -177,10 +188,18 @@ vm_coredump(p, vp, cred, chdr)
 
 		if (entry->is_a_map || entry->is_sub_map) {
 #ifdef DEBUG
-		 	uprintf(
-			    "vm_coredump: entry: share=0x%lx, offset=0x%lx\n",
-                            (long) entry->object.share_map,
-                            (long) entry->offset);
+			uprintf("vm_coredump: entry: share=%p, offset=%p\n",
+				entry->object.share_map, entry->offset);
+#endif
+			continue;
+		}
+
+		if (entry->object.vm_object &&
+		    entry->object.vm_object->pager &&
+		    entry->object.vm_object->pager->pg_type == PG_DEVICE) {
+#ifdef DEBUG
+			printf("vm_coredump: skipping dev @ 0x%lx\n",
+			       entry->start);
 #endif
 			continue;
 		}
@@ -215,7 +234,7 @@ vm_coredump(p, vp, cred, chdr)
 		error = vn_rdwr(UIO_WRITE, vp,
 		    (caddr_t)&cseg, chdr->c_seghdrsize,
 		    offset, UIO_SYSSPACE,
-		    IO_NODELOCKED|IO_UNIT, cred, (int *) NULL, p);
+		    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 		if (error)
 			break;
 
@@ -223,7 +242,7 @@ vm_coredump(p, vp, cred, chdr)
 		error = vn_rdwr(UIO_WRITE, vp,
 		    (caddr_t)cseg.c_addr, (int)cseg.c_size,
 		    offset, UIO_USERSPACE,
-		    IO_NODELOCKED|IO_UNIT, cred, (int *) NULL, p);
+		    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 		if (error)
 			break;
 

@@ -1,8 +1,9 @@
-/*	$NetBSD: nonints.h,v 1.6 1995/06/14 15:19:45 christos Exp $	*/
+/*	$OpenBSD: extern.h,v 1.35 2000/11/24 14:29:55 espie Exp $	*/
+/*	$NetBSD: nonints.h,v 1.12 1996/11/06 17:59:19 christos Exp $	*/
 
 /*-
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * Copyright (c) 1988, 1989 by Adam de Boor
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  * Copyright (c) 1989 by Berkeley Softworks
  * All rights reserved.
  *
@@ -37,106 +38,130 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)nonints.h	5.6 (Berkeley) 4/18/91
+ *	from: @(#)nonints.h	8.3 (Berkeley) 3/19/94
  */
 
 /* arch.c */
-ReturnStatus Arch_ParseArchive __P((char **, Lst, GNode *));
-void Arch_Touch __P((GNode *));
-void Arch_TouchLib __P((GNode *));
-int Arch_MTime __P((GNode *));
-int Arch_MemMTime __P((GNode *));
-void Arch_FindLib __P((GNode *, Lst));
-Boolean Arch_LibOODate __P((GNode *));
-void Arch_Init __P((void));
-void Arch_End __P((void));
+extern ReturnStatus Arch_ParseArchive __P((char **, Lst, SymTable *));
+extern void Arch_Touch __P((GNode *));
+extern void Arch_TouchLib __P((GNode *));
+extern TIMESTAMP Arch_MTime __P((GNode *));
+extern TIMESTAMP Arch_MemMTime __P((GNode *));
+extern void Arch_FindLib __P((GNode *, Lst));
+extern Boolean Arch_LibOODate __P((GNode *));
+extern void Arch_Init __P((void));
+extern void Arch_End __P((void));
+extern int Arch_IsLib __P((GNode *));
 
 /* compat.c */
-void Compat_Run __P((Lst));
+extern void Compat_Run __P((Lst));
 
 /* cond.c */
-int Cond_Eval __P((char *));
-void Cond_End __P((void));
+extern int Cond_Eval __P((char *));
+extern void Cond_End __P((void));
+
+#include "error.h"
 
 /* for.c */
-int For_Eval __P((char *));
-void For_Run  __P((void));
+typedef struct For_ For;
+extern For *For_Eval __P((char *));
+extern Boolean For_Accumulate __P((For *, const char *));
+extern void For_Run  __P((For *));
 
 /* main.c */
-void Main_ParseArgLine __P((char *));
-int main __P((int, char **));
-void Error __P((char *, ...));
-void Fatal __P((char *, ...));
-void Punt __P((char *, ...));
-void DieHorribly __P((void));
-int PrintAddr __P((ClientData, ClientData));
-void Finish __P((int));
-char *emalloc __P((size_t));
-void enomem __P((void));
+extern void Main_ParseArgLine __P((char *));
+extern char *Cmd_Exec __P((char *, char **));
+extern void Error __P((char *, ...));
+extern void Fatal __P((char *, ...));
+extern void Punt __P((char *, ...));
+extern void DieHorribly __P((void));
+extern void PrintAddr __P((void *));
+extern void Finish __P((int));
+
+/* make.c */
+extern void Make_TimeStamp __P((GNode *, GNode *));
+extern Boolean Make_OODate __P((GNode *));
+extern void Make_HandleUse __P((GNode *, GNode *));
+extern void Make_Update __P((GNode *));
+extern void Make_DoAllVar __P((GNode *));
+extern Boolean Make_Run __P((Lst));
 
 /* parse.c */
-void Parse_Error __P((int, char *, ...));
-Boolean Parse_AnyExport __P((void));
-Boolean Parse_IsVar __P((char *));
-void Parse_DoVar __P((char *, GNode *));
-void Parse_AddIncludeDir __P((char *));
-void Parse_File __P((char *, FILE *));
-void Parse_Init __P((void));
-void Parse_End __P((void));
-void Parse_FromString __P((char *));
-Lst Parse_MainName __P((void));
+extern void Parse_Error __P((int, char *, ...));
+extern Boolean Parse_AnyExport __P((void));
+extern Boolean Parse_IsVar __P((char *));
+extern void Parse_DoVar __P((char *, GSymT *));
+extern void Parse_AddIncludeDir __P((char *));
+extern void Parse_File __P((char *, FILE *));
+extern void Parse_Init __P((void));
+extern void Parse_End __P((void));
+extern void Parse_FromString __P((char *, unsigned long));
+extern void Parse_MainName __P((Lst));
+extern unsigned long Parse_Getlineno __P((void));
+extern const char *Parse_Getfilename __P((void));
 
 /* str.c */
-void str_init __P((void));
-void str_end __P((void));
-char *str_concat __P((char *, char *, int));
-char **brk_string __P((char *, int *, Boolean));
-char *Str_FindSubstring __P((char *, char *));
-int Str_Match __P((char *, char *));
-char *Str_SYSVMatch __P((char *, char *, int *len));
-void Str_SYSVSubst __P((Buffer, char *, char *, int));
+extern void str_init __P((void));
+extern void str_end __P((void));
+extern char *str_concat __P((const char *, const char *, char));
+extern char **brk_string __P((const char *, int *, Boolean, char **));
+extern const char *iterate_words __P((const char **));
+extern int Str_Match __P((const char *, const char *));
+extern const char *Str_SYSVMatch __P((const char *, const char *, size_t *len));
+extern void Str_SYSVSubst __P((Buffer, const char *, const char *, size_t));
+extern char *interval_dup __P((const char *begin, const char *end));
+extern char *escape_dup __P((const char *, const char *, const char *));
 
 /* suff.c */
-void Suff_ClearSuffixes __P((void));
-Boolean Suff_IsTransform __P((char *));
-GNode *Suff_AddTransform __P((char *));
-int Suff_EndTransform __P((ClientData, ClientData));
-void Suff_AddSuffix __P((char *));
-Lst Suff_GetPath __P((char *));
-void Suff_DoPaths __P((void));
-void Suff_AddInclude __P((char *));
-void Suff_AddLib __P((char *));
-void Suff_FindDeps __P((GNode *));
-void Suff_SetNull __P((char *));
-void Suff_Init __P((void));
-void Suff_End __P((void));
-void Suff_PrintAll __P((void));
+extern void Suff_ClearSuffixes __P((void));
+extern Boolean Suff_IsTransform __P((char *));
+extern GNode *Suff_AddTransform __P((char *));
+extern void Suff_EndTransform __P((void *));
+extern void Suff_AddSuffix __P((char *));
+extern Lst Suff_GetPath __P((char *));
+extern void Suff_DoPaths __P((void));
+extern void Suff_AddInclude __P((char *));
+extern void Suff_AddLib __P((char *));
+extern void Suff_FindDeps __P((GNode *));
+extern void Suff_SetNull __P((char *));
+extern void Suff_Init __P((void));
+extern void Suff_End __P((void));
+extern void Suff_PrintAll __P((void));
 
 /* targ.c */
-void Targ_Init __P((void));
-void Targ_End __P((void));
-GNode *Targ_NewGN __P((char *));
-GNode *Targ_FindNode __P((char *, int));
-Lst Targ_FindList __P((Lst, int));
-Boolean Targ_Ignore __P((GNode *));
-Boolean Targ_Silent __P((GNode *));
-Boolean Targ_Precious __P((GNode *));
-void Targ_SetMain __P((GNode *));
-int Targ_PrintCmd __P((ClientData, ClientData));
-char *Targ_FmtTime __P((time_t));
-void Targ_PrintType __P((int));
-void Targ_PrintGraph __P((int));
+extern void Targ_Init __P((void));
+extern void Targ_End __P((void));
+extern GNode *Targ_NewGN __P((const char *, const char *));
+extern GNode *Targ_FindNode __P((const char *, int));
+extern void Targ_FindList __P((Lst, Lst));
+extern Boolean Targ_Ignore __P((GNode *));
+extern Boolean Targ_Silent __P((GNode *));
+extern Boolean Targ_Precious __P((GNode *));
+extern void Targ_SetMain __P((GNode *));
+extern void Targ_PrintCmd __P((void *));
+extern char *Targ_FmtTime __P((TIMESTAMP));
+extern void Targ_PrintType __P((int));
+extern void Targ_PrintGraph __P((int));
 
 /* var.c */
-void Var_Delete __P((char *, GNode *));
-void Var_Set __P((char *, char *, GNode *));
-void Var_Append __P((char *, char *, GNode *));
-Boolean Var_Exists __P((char *, GNode *));
-char *Var_Value __P((char *, GNode *, char **));
-char *Var_Parse __P((char *, GNode *, Boolean, int *, Boolean *));
-char *Var_Subst __P((char *, char *, GNode *, Boolean));
-char *Var_GetTail __P((char *));
-char *Var_GetHead __P((char *));
-void Var_Init __P((void));
-void Var_End __P((void));
-void Var_Dump __P((GNode *));
+extern void Var_Delete __P((const char *, GSymT *));
+extern void Var_Set __P((const char *, const char *, GSymT *));
+extern void Varq_Set __P((int, const char *, GNode *));
+extern void Var_Append __P((const char *, const char *, GSymT *));
+extern void Varq_Append __P((int, const char *, GNode *));
+extern Boolean Var_Exists __P((const char *, GSymT *));
+extern Boolean Varq_Exists __P((int, GNode *));
+extern char *Var_Value __P((const char *, GSymT *));
+extern char *Varq_Value __P((int,  GNode *));
+extern char *Var_Parse __P((char *, SymTable *, Boolean, size_t *, Boolean *));
+extern char *Var_Subst __P((char *, SymTable *, Boolean));
+extern char *Var_SubstVar __P((const char *, const char *, const char *, 
+	size_t));
+extern char *Var_GetTail __P((char *));
+extern char *Var_GetHead __P((char *));
+extern void Var_Init __P((void));
+extern void Var_End __P((void));
+extern void Var_Dump __P((GSymT *));
+extern void SymTable_Init __P((SymTable *));
+extern void SymTable_Destroy __P((SymTable *));
+extern void Var_AddCmdline __P((const char *));

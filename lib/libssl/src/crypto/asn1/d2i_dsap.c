@@ -56,24 +56,21 @@
  * [including the GNU Public Licence.]
  */
 
+#ifndef NO_DSA
 #include <stdio.h>
 #include "cryptlib.h"
-#include "bn.h"
-#include "dsa.h"
-#include "objects.h"
-#include "asn1_mac.h"
+#include <openssl/bn.h>
+#include <openssl/dsa.h>
+#include <openssl/objects.h>
+#include <openssl/asn1_mac.h>
 
-/*
- * ASN1err(ASN1_F_D2I_DSAPARAMS,ASN1_R_LENGTH_MISMATCH);
- * ASN1err(ASN1_F_I2D_DSAPARAMS,ASN1_R_UNKNOWN_ATTRIBUTE_TYPE);
- */
+#ifndef NO_NEG_PUBKEY_BUG
+#define d2i_ASN1_INTEGER d2i_ASN1_UINTEGER
+#endif
 
-DSA *d2i_DSAparams(a,pp,length)
-DSA **a;
-unsigned char **pp;
-long length;
+DSA *d2i_DSAparams(DSA **a, unsigned char **pp, long length)
 	{
-	int i=ASN1_R_ERROR_STACK;
+	int i=ERR_R_NESTED_ASN1_ERROR;
 	ASN1_INTEGER *bs=NULL;
 	M_ASN1_D2I_vars(a,DSA *,DSA_new);
 
@@ -86,7 +83,7 @@ long length;
 	M_ASN1_D2I_get(bs,d2i_ASN1_INTEGER);
 	if ((ret->g=BN_bin2bn(bs->data,bs->length,ret->g)) == NULL) goto err_bn;
 
-	ASN1_BIT_STRING_free(bs);
+	M_ASN1_BIT_STRING_free(bs);
 
 	M_ASN1_D2I_Finish_2(a);
 
@@ -95,7 +92,7 @@ err_bn:
 err:
 	ASN1err(ASN1_F_D2I_DSAPARAMS,i);
 	if ((ret != NULL) && ((a == NULL) || (*a != ret))) DSA_free(ret);
-	if (bs != NULL) ASN1_BIT_STRING_free(bs);
+	if (bs != NULL) M_ASN1_BIT_STRING_free(bs);
 	return(NULL);
 	}
-
+#endif

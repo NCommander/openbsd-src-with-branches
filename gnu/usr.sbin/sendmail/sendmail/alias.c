@@ -13,7 +13,7 @@
 #include <sendmail.h>
 
 #ifndef lint
-static char id[] = "@(#)$Id: alias.c,v 8.142.4.9 2000/11/08 20:58:42 geir Exp $";
+static char id[] = "@(#)$Sendmail: alias.c,v 8.142.4.9 2000/11/08 20:58:42 geir Exp $";
 #endif /* ! lint */
 
 # define SEPARATOR ':'

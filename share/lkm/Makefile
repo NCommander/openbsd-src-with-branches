@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:44:20 deraadt Exp $
 #
-#	$Id: Makefile,v 1.12 1995/04/16 19:04:49 mycroft Exp $
 #
 
 FILES=	README syscall vfs misc

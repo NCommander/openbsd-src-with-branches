@@ -1,3 +1,4 @@
+.\"	$OpenBSD: sin.3,v 1.4 1999/07/01 00:06:40 deraadt Exp $
 .\" Copyright (c) 1991 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -31,14 +32,14 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)sin.3	6.7 (Berkeley) 4/19/91
-.\"	$Id: sin.3,v 1.5 1995/04/14 18:40:18 jtc Exp $
 .\"
 .Dd April 19, 1991
 .Dt SIN 3
 .Os
 .Sh NAME
-.Nm sin 
-.Nd sine function
+.Nm sin ,
+.Nm sinf
+.Nd sine functions
 .Sh SYNOPSIS
 .Fd #include <math.h>
 .Ft double
@@ -64,10 +65,10 @@ function returns the sine value.
 .Xr atan2 3 ,
 .Xr cos 3 ,
 .Xr cosh 3 ,
+.Xr math 3 ,
 .Xr sinh 3 ,
 .Xr tan 3 ,
-.Xr tanh 3 ,
-.Xr math 3
+.Xr tanh 3
 .Sh STANDARDS
 The
 .Fn sin

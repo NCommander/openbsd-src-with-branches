@@ -1,5 +1,8 @@
 /* ====================================================================
- * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
+ * The Apache Software License, Version 1.1
+ *
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,46 +16,44 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. All advertising materials mentioning features or use of this
- *    software must display the following acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Apache Server" and "Apache Group" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. For written permission, please contact
- *    apache@apache.org.
+ * 4. The names "Apache" and "Apache Software Foundation" must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
  *
- * 5. Products derived from this software may not be called "Apache"
- *    nor may "Apache" appear in their names without prior written
- *    permission of the Apache Group.
+ * 5. Products derived from this software may not be called "Apache",
+ *    nor may "Apache" appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
  *
- * 6. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
- *
- * THIS SOFTWARE IS PROVIDED BY THE APACHE GROUP ``AS IS'' AND ANY
- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE APACHE GROUP OR
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
  * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  * ====================================================================
  *
  * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Group and was originally based
- * on public domain software written at the National Center for
- * Supercomputing Applications, University of Illinois, Urbana-Champaign.
- * For more information on the Apache Group and the Apache HTTP server
- * project, please see <http://www.apache.org/>.
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
  *
+ * Portions of this software are based upon public domain software
+ * originally written at the National Center for Supercomputing Applications,
+ * University of Illinois, Urbana-Champaign.
  */
 
 /*
@@ -104,7 +105,7 @@ typedef struct {
  * saving cpu cycles.  The counter is never reset, and is used to permit up to
  * 64k requests in a single second by a single child.
  *
- * The 112-bits of unique_id_rec are uuencoded using the alphabet
+ * The 112-bits of unique_id_rec are encoded using the alphabet
  * [A-Za-z0-9@-], resulting in 19 bytes of printable characters.  That is then
  * stuffed into the environment variable UNIQUE_ID so that it is available to
  * other modules.  The alphabet choice differs from normal base64 encoding
@@ -129,16 +130,18 @@ typedef struct {
 /*
  * Sun Jun  7 05:43:49 CEST 1998 -- Alvaro
  * More comments:
- * 1) The UUencoding prodecure is now done in a general way, avoiding the problems
- * with sizes and paddings that can arise depending on the architecture. Now the
- * offsets and sizes of the elements of the unique_id_rec structure are calculated
- * in unique_id_global_init; and then used to duplicate the structure without the
- * paddings that might exist. The multithreaded server fix should be now very easy:
- * just add a new "tid" field to the unique_id_rec structure, and increase by one
- * UNIQUE_ID_REC_MAX.
- * 2) unique_id_rec.stamp has been changed from "time_t" to "unsigned int", because
- * its size is 64bits on some platforms (linux/alpha), and this caused problems with
- * htonl/ntohl. Well, this shouldn't be a problem till year 2106.
+ * 1) The UUencoding prodecure is now done in a general way, avoiding
+ * the problems with sizes and paddings that can arise depending on
+ * the architecture. Now the offsets and sizes of the elements of the
+ * unique_id_rec structure are calculated in unique_id_global_init;
+ * and then used to duplicate the structure without the paddings that
+ * might exist. The multithreaded server fix should be now very easy:
+ * just add a new "tid" field to the unique_id_rec structure, and
+ * increase by one UNIQUE_ID_REC_MAX.
+ * 2) unique_id_rec.stamp has been changed from "time_t" to
+ * "unsigned int", because its size is 64bits on some platforms
+ * (linux/alpha), and this caused problems with htonl/ntohl. Well,
+ * this shouldn't be a problem till year 2106.
  */
 
 static unsigned global_in_addr;
@@ -181,7 +184,7 @@ static void unique_id_global_init(server_rec *s, pool *p)
                                unique_id_rec_size[2] + unique_id_rec_size[3];
 
     /*
-     * Calculate the size of the structure when uuencoded.
+     * Calculate the size of the structure when encoded.
      */
     unique_id_rec_size_uu = (unique_id_rec_total_size*8+5)/6;
 
@@ -192,22 +195,23 @@ static void unique_id_global_init(server_rec *s, pool *p)
      */
     if (gethostname(str, sizeof(str) - 1) != 0) {
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_ALERT, s,
-          "gethostname: mod_unique_id requires the hostname of the server");
+		     "gethostname: mod_unique_id requires the "
+		     "hostname of the server");
         exit(1);
     }
     str[sizeof(str) - 1] = '\0';
 
     if ((hent = gethostbyname(str)) == NULL) {
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_ALERT, s,
-                    "mod_unique_id: unable to gethostbyname(\"%s\")", str);
+		     "mod_unique_id: unable to gethostbyname(\"%s\")", str);
         exit(1);
     }
 
     global_in_addr = ((struct in_addr *) hent->h_addr_list[0])->s_addr;
 
     ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO, s,
-                "mod_unique_id: using ip addr %s",
-                inet_ntoa(*(struct in_addr *) hent->h_addr_list[0]));
+		 "mod_unique_id: using ip addr %s",
+		 inet_ntoa(*(struct in_addr *) hent->h_addr_list[0]));
 
     /*
      * If the server is pummelled with restart requests we could possibly end
@@ -263,7 +267,7 @@ static void unique_id_child_init(server_rec *s, pool *p)
      */
     if (cur_unique_id.pid != pid) {
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_CRIT, s,
-                    "oh no! pids are greater than 32-bits!  I'm broken!");
+		     "oh no! pids are greater than 32-bits!  I'm broken!");
     }
 
     cur_unique_id.in_addr = global_in_addr;
@@ -296,7 +300,7 @@ static void unique_id_child_init(server_rec *s, pool *p)
     cur_unique_id.counter = htons(cur_unique_id.counter);
 }
 
-/* NOTE: This is *NOT* the same encoding used by uuencode ... the last two
+/* NOTE: This is *NOT* the same encoding used by base64encode ... the last two
  * characters should be + and /.  But those two characters have very special
  * meanings in URLs, and we want to make it easy to use identifiers in
  * URLs.  So we replace them with @ and -.
@@ -328,7 +332,8 @@ static int gen_unique_id(request_rec *r)
     /* copy the unique_id if this is an internal redirect (we're never
      * actually called for sub requests, so we don't need to test for
      * them) */
-    if (r->prev && (e = ap_table_get(r->subprocess_env, "REDIRECT_UNIQUE_ID"))) {
+    if (r->prev
+	&& (e = ap_table_get(r->subprocess_env, "REDIRECT_UNIQUE_ID"))) {
 	ap_table_setn(r->subprocess_env, "UNIQUE_ID", e);
 	return DECLINED;
     }
@@ -336,7 +341,8 @@ static int gen_unique_id(request_rec *r)
     cur_unique_id.stamp = htonl((unsigned int)r->request_time);
 
     /* we'll use a temporal buffer to avoid uuencoding the possible internal
-     * paddings of the original structure */
+     * paddings of the original structure
+     */
     x = (unsigned char *) &paddedbuf;
     y = (unsigned char *) &cur_unique_id;
     k = 0;
@@ -347,7 +353,8 @@ static int gen_unique_id(request_rec *r)
         }
     }
     /*
-     * We reset two more bytes just in case padding is needed for the uuencoding.
+     * We reset two more bytes just in case padding is needed for
+     * the uuencoding.
      */
     x[k++] = '\0';
     x[k++] = '\0';
@@ -359,9 +366,13 @@ static int gen_unique_id(request_rec *r)
         y = x + i;
         str[k++] = uuencoder[y[0] >> 2];
         str[k++] = uuencoder[((y[0] & 0x03) << 4) | ((y[1] & 0xf0) >> 4)];
-        if (k == unique_id_rec_size_uu) break;
+        if (k == unique_id_rec_size_uu) {
+	    break;
+	}
         str[k++] = uuencoder[((y[1] & 0x0f) << 2) | ((y[2] & 0xc0) >> 6)];
-        if (k == unique_id_rec_size_uu) break;
+        if (k == unique_id_rec_size_uu) {
+	    break;
+	}
         str[k++] = uuencoder[y[2] & 0x3f];
     }
     str[k++] = '\0';
@@ -375,7 +386,6 @@ static int gen_unique_id(request_rec *r)
 
     return DECLINED;
 }
-
 
 module MODULE_VAR_EXPORT unique_id_module = {
     STANDARD_MODULE_STUFF,

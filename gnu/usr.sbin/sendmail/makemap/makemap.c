@@ -21,7 +21,7 @@ static char copyright[] =
 #endif /* ! lint */
 
 #ifndef lint
-static char id[] = "@(#)$Id: makemap.c,v 8.135.4.13 2000/10/05 23:00:50 gshapiro Exp $";
+static char id[] = "@(#)$Sendmail: makemap.c,v 8.135.4.13 2000/10/05 23:00:50 gshapiro Exp $";
 #endif /* ! lint */
 
 

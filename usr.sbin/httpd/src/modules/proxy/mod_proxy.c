@@ -1,58 +1,59 @@
 /* ====================================================================
- * Copyright (c) 1996-1998 The Apache Group.  All rights reserved.
+ * The Apache Software License, Version 1.1
+ *
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. All advertising materials mentioning features or use of this
- *    software must display the following acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Apache Server" and "Apache Group" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. For written permission, please contact
- *    apache@apache.org.
+ * 4. The names "Apache" and "Apache Software Foundation" must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
  *
- * 5. Products derived from this software may not be called "Apache"
- *    nor may "Apache" appear in their names without prior written
- *    permission of the Apache Group.
+ * 5. Products derived from this software may not be called "Apache",
+ *    nor may "Apache" appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
  *
- * 6. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
- *
- * THIS SOFTWARE IS PROVIDED BY THE APACHE GROUP ``AS IS'' AND ANY
- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE APACHE GROUP OR
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
  * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  * ====================================================================
  *
  * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Group and was originally based
- * on public domain software written at the National Center for
- * Supercomputing Applications, University of Illinois, Urbana-Champaign.
- * For more information on the Apache Group and the Apache HTTP server
- * project, please see <http://www.apache.org/>.
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
  *
+ * Portions of this software are based upon public domain software
+ * originally written at the National Center for Supercomputing Applications,
+ * University of Illinois, Urbana-Champaign.
  */
 
 #include "mod_proxy.h"
@@ -153,7 +154,7 @@ static int proxy_detect(request_rec *r)
 	    && !strcasecmp(r->parsed_uri.scheme, ap_http_method(r))
 	    && ap_matches_request_vhost(r, r->parsed_uri.hostname,
                r->parsed_uri.port_str ? r->parsed_uri.port : ap_default_port(r)))) {
-	    r->proxyreq = 1;
+	    r->proxyreq = STD_PROXY;
 	    r->uri = r->unparsed_uri;
 	    r->filename = ap_pstrcat(r->pool, "proxy:", r->uri, NULL);
 	    r->handler = "proxy-server";
@@ -163,7 +164,7 @@ static int proxy_detect(request_rec *r)
     else if (conf->req && r->method_number == M_CONNECT
 	     && r->parsed_uri.hostname
 	     && r->parsed_uri.port_str) {
-	    r->proxyreq = 1;
+	    r->proxyreq = STD_PROXY;
 	    r->uri = r->unparsed_uri;
 	    r->filename = ap_pstrcat(r->pool, "proxy:", r->uri, NULL);
 	    r->handler = "proxy-server";
@@ -179,7 +180,7 @@ static int proxy_trans(request_rec *r)
     int i, len;
     struct proxy_alias *ent = (struct proxy_alias *) conf->aliases->elts;
 
-    if (r->proxyreq) {
+    if (r->proxyreq != NOT_PROXY) {
 	/* someone has already set up the proxy, it was possibly ourselves
 	 * in proxy_detect
 	 */
@@ -198,7 +199,7 @@ static int proxy_trans(request_rec *r)
            r->filename = ap_pstrcat(r->pool, "proxy:", ent[i].real,
                                  r->uri + len, NULL);
            r->handler = "proxy-server";
-           r->proxyreq = 1;
+           r->proxyreq = PROXY_PASS;
            return OK;
 	}
     }
@@ -214,13 +215,24 @@ static int proxy_trans(request_rec *r)
 static int proxy_fixup(request_rec *r)
 {
     char *url, *p;
+#ifdef EAPI
+    int rc;
+#endif /* EAPI */
 
-    if (!r->proxyreq || strncmp(r->filename, "proxy:", 6) != 0)
+    if (r->proxyreq == NOT_PROXY || strncmp(r->filename, "proxy:", 6) != 0)
 	return DECLINED;
 
     url = &r->filename[6];
 
 /* canonicalise each specific scheme */
+#ifdef EAPI
+    if (ap_hook_use("ap::mod_proxy::canon",
+                    AP_HOOK_SIG3(int,ptr,ptr),
+                    AP_HOOK_DECLINE(DECLINED),
+                    &rc, r, url) && rc != DECLINED)
+        return rc;  
+    else
+#endif /* EAPI */
     if (strncasecmp(url, "http:", 5) == 0)
 	return ap_proxy_http_canon(r, url + 5, "http", DEFAULT_HTTP_PORT);
     else if (strncasecmp(url, "ftp:", 4) == 0)
@@ -236,9 +248,44 @@ static int proxy_fixup(request_rec *r)
 static void proxy_init(server_rec *r, pool *p)
 {
     ap_proxy_garbage_init(r, p);
+#ifdef EAPI
+    ap_hook_use("ap::mod_proxy::init", 
+                AP_HOOK_SIG3(void,ptr,ptr), AP_HOOK_ALL, r, p);
+#endif
 }
 
+#ifdef EAPI
+static void proxy_addmod(module *m)
+{
+    /* export: ap_proxy_http_canon() as `ap::mod_proxy::http::canon' */
+    ap_hook_configure("ap::mod_proxy::http::canon", 
+                      AP_HOOK_SIG5(int,ptr,ptr,ptr,int), AP_HOOK_TOPMOST);
+    ap_hook_register("ap::mod_proxy::http::canon", 
+                     ap_proxy_http_canon, AP_HOOK_NOCTX);
 
+    /* export: ap_proxy_http_handler() as `ap::mod_proxy::http::handler' */
+    ap_hook_configure("ap::mod_proxy::http::handler", 
+                      AP_HOOK_SIG6(int,ptr,ptr,ptr,ptr,int), AP_HOOK_TOPMOST);
+    ap_hook_register("ap::mod_proxy::http::handler", 
+                     ap_proxy_http_handler, AP_HOOK_NOCTX);
+
+    /* export: ap_proxyerror() as `ap::mod_proxy::error' */
+    ap_hook_configure("ap::mod_proxy::error", 
+                      AP_HOOK_SIG3(int,ptr,ptr), AP_HOOK_TOPMOST);
+    ap_hook_register("ap::mod_proxy::error", 
+                     ap_proxyerror, AP_HOOK_NOCTX);
+    return;
+}
+
+static void proxy_remmod(module *m)
+{
+	/* remove the hook references */
+    ap_hook_unregister("ap::mod_proxy::http::canon", ap_proxy_http_canon);
+    ap_hook_unregister("ap::mod_proxy::http::handler", ap_proxy_http_handler);
+    ap_hook_unregister("ap::mod_proxy::error", ap_proxyerror);
+    return;
+}
+#endif /* EAPI */
 
 /* Send a redirection if the request contains a hostname which is not */
 /* fully qualified, i.e. doesn't have a domain name appended. Some proxy */
@@ -252,7 +299,7 @@ static int proxy_needsdomain(request_rec *r, const char *url, const char *domain
     const char *ref;
 
     /* We only want to worry about GETs */
-    if (!r->proxyreq || r->method_number != M_GET || !r->parsed_uri.hostname)
+    if (r->proxyreq == NOT_PROXY || r->method_number != M_GET || !r->parsed_uri.hostname)
 	return DECLINED;
 
     /* If host does contain a dot already, or it is "localhost", decline */
@@ -296,15 +343,15 @@ static int proxy_handler(request_rec *r)
     int direct_connect = 0;
     const char *maxfwd_str;
 
-    if (!r->proxyreq || strncmp(r->filename, "proxy:", 6) != 0)
+    if (r->proxyreq == NOT_PROXY || strncmp(r->filename, "proxy:", 6) != 0)
 	return DECLINED;
 
     if (r->method_number == M_TRACE &&
 	(maxfwd_str = ap_table_get(r->headers_in, "Max-Forwards")) != NULL) {
-	int maxfwd = strtol(maxfwd_str, NULL, 10);
+	long maxfwd = strtol(maxfwd_str, NULL, 10);
 	if (maxfwd < 1) {
 	    int access_status;
-	    r->proxyreq = 0;
+	    r->proxyreq = NOT_PROXY;
 	    if ((access_status = ap_send_http_trace(r)))
 		ap_die(access_status, r);
 	    else
@@ -312,7 +359,7 @@ static int proxy_handler(request_rec *r)
 	    return OK;
 	}
 	ap_table_setn(r->headers_in, "Max-Forwards", 
-		      ap_psprintf(r->pool, "%d", (maxfwd > 0) ? maxfwd-1 : 0));
+		      ap_psprintf(r->pool, "%ld", (maxfwd > 0) ? maxfwd-1 : 0));
     }
 
     if ((rc = ap_setup_client_block(r, REQUEST_CHUNKED_ERROR)))
@@ -368,6 +415,14 @@ static int proxy_handler(request_rec *r)
 		/* CONNECT is a special method that bypasses the normal
 		 * proxy code.
 		 */
+#ifdef EAPI
+		if (!ap_hook_use("ap::mod_proxy::handler",
+				 AP_HOOK_SIG7(int,ptr,ptr,ptr,ptr,int,ptr),
+				 AP_HOOK_DECLINE(DECLINED),
+				 &rc, r, cr, url, 
+				 ents[i].hostname, ents[i].port, 
+				 ents[i].protocol) || rc == DECLINED) {
+#endif /* EAPI */
 		if (r->method_number == M_CONNECT)
 		    rc = ap_proxy_connect_handler(r, cr, url, ents[i].hostname,
 					       ents[i].port);
@@ -377,6 +432,9 @@ static int proxy_handler(request_rec *r)
 					    ents[i].port);
 		else
 		    rc = DECLINED;
+#ifdef EAPI
+		}
+#endif /* EAPI */
 
 		/* an error or success */
 		if (rc != DECLINED && rc != HTTP_BAD_GATEWAY)
@@ -390,6 +448,14 @@ static int proxy_handler(request_rec *r)
  * give up??
  */
     /* handle the scheme */
+#ifdef EAPI
+    if (ap_hook_use("ap::mod_proxy::handler",
+		    AP_HOOK_SIG7(int,ptr,ptr,ptr,ptr,int,ptr),
+		    AP_HOOK_DECLINE(DECLINED),
+		    &rc, r, cr, url, 
+                    NULL, 0, scheme) && rc != DECLINED)
+        return rc;
+#endif /* EAPI */
     if (r->method_number == M_CONNECT)
 	return ap_proxy_connect_handler(r, cr, url, NULL, 0);
     if (strcasecmp(scheme, "http") == 0)
@@ -397,7 +463,7 @@ static int proxy_handler(request_rec *r)
     if (strcasecmp(scheme, "ftp") == 0)
 	return ap_proxy_ftp_handler(r, cr, url);
     else
-	return NOT_IMPLEMENTED;
+	return HTTP_FORBIDDEN;
 }
 
 /* -------------------------------------------------------------- */
@@ -417,18 +483,65 @@ static void *
     ps->allowed_connect_ports = ap_make_array(p, 10, sizeof(int));
     ps->domain = NULL;
     ps->viaopt = via_off; /* initially backward compatible with 1.3.1 */
+    ps->viaopt_set = 0; /* 0 means default */
     ps->req = 0;
+    ps->req_set = 0;
+    ps->recv_buffer_size = 0; /* this default was left unset for some reason */
+    ps->recv_buffer_size_set = 0;
 
     ps->cache.root = NULL;
     ps->cache.space = DEFAULT_CACHE_SPACE;
+    ps->cache.space_set = 0;
     ps->cache.maxexpire = DEFAULT_CACHE_MAXEXPIRE;
+    ps->cache.maxexpire_set = 0;
     ps->cache.defaultexpire = DEFAULT_CACHE_EXPIRE;
+    ps->cache.defaultexpire_set = 0;
     ps->cache.lmfactor = DEFAULT_CACHE_LMFACTOR;
-    ps->cache.gcinterval = -1;
+    ps->cache.lmfactor_set = 0;
+    ps->cache.gcinterval = DEFAULT_CACHE_GCINTERVAL;
+    ps->cache.gcinterval_set = 1;
     /* at these levels, the cache can have 2^18 directories (256,000)  */
     ps->cache.dirlevels = 3;
+    ps->cache.dirlevels_set = 0;
     ps->cache.dirlength = 1;
+    ps->cache.dirlength_set = 0;
     ps->cache.cache_completion = DEFAULT_CACHE_COMPLETION;
+    ps->cache.cache_completion_set = 0;
+
+    return ps;
+}
+
+static void *
+     merge_proxy_config(pool *p, void *basev,
+                        void *overridesv)
+{
+    proxy_server_conf *ps = ap_pcalloc(p, sizeof(proxy_server_conf));
+    proxy_server_conf *base = (proxy_server_conf *) basev;
+    proxy_server_conf *overrides = (proxy_server_conf *) overridesv;
+
+    ps->proxies = ap_append_arrays(p, base->proxies, overrides->proxies);
+    ps->aliases = ap_append_arrays(p, base->aliases, overrides->aliases);
+    ps->raliases = ap_append_arrays(p, base->raliases, overrides->raliases);
+    ps->noproxies = ap_append_arrays(p, base->noproxies, overrides->noproxies);
+    ps->dirconn = ap_append_arrays(p, base->dirconn, overrides->dirconn);
+    ps->nocaches = ap_append_arrays(p, base->nocaches, overrides->nocaches);
+    ps->allowed_connect_ports = ap_append_arrays(p, base->allowed_connect_ports, overrides->allowed_connect_ports);
+
+    ps->domain = (overrides->domain == NULL) ? base->domain : overrides->domain;
+    ps->viaopt = (overrides->viaopt_set == 0) ? base->viaopt : overrides->viaopt;
+    ps->req = (overrides->req_set == 0) ? base->req : overrides->req;
+    ps->recv_buffer_size = (overrides->recv_buffer_size_set == 0) ? base->recv_buffer_size : overrides->recv_buffer_size;
+
+    ps->cache.root = (overrides->cache.root == NULL) ? base->cache.root : overrides->cache.root;
+    ps->cache.space = (overrides->cache.space_set == 0) ? base->cache.space : overrides->cache.space;
+    ps->cache.maxexpire = (overrides->cache.maxexpire_set == 0) ? base->cache.maxexpire : overrides->cache.maxexpire;
+    ps->cache.defaultexpire = (overrides->cache.defaultexpire_set == 0) ? base->cache.defaultexpire : overrides->cache.defaultexpire;
+    ps->cache.lmfactor = (overrides->cache.lmfactor_set == 0) ? base->cache.lmfactor : overrides->cache.lmfactor;
+    ps->cache.gcinterval = (overrides->cache.gcinterval_set == 0) ? base->cache.gcinterval : overrides->cache.gcinterval;
+    /* at these levels, the cache can have 2^18 directories (256,000)  */
+    ps->cache.dirlevels = (overrides->cache.dirlevels_set == 0) ? base->cache.dirlevels : overrides->cache.dirlevels;
+    ps->cache.dirlength = (overrides->cache.dirlength_set == 0) ? base->cache.dirlength : overrides->cache.dirlength;
+    ps->cache.cache_completion = (overrides->cache.cache_completion_set == 0) ? base->cache.cache_completion : overrides->cache.cache_completion;
 
     return ps;
 }
@@ -546,7 +659,7 @@ static const char *
       ap_get_module_config(s->module_config, &proxy_module);
     int *New;
 
-    if (!isdigit(arg[0]))
+    if (!ap_isdigit(arg[0]))
 	return "AllowCONNECT: port number must be numeric";
 
     New = ap_push_array(conf->allowed_connect_ports);
@@ -627,6 +740,7 @@ static const char *
     ap_get_module_config(parms->server->module_config, &proxy_module);
 
     psf->req = flag;
+    psf->req_set = 1;
     return NULL;
 }
 
@@ -641,6 +755,7 @@ static const char *
     if (sscanf(arg, "%d", &val) != 1)
 	return "CacheSize value must be an integer (kBytes)";
     psf->cache.space = val;
+    psf->cache.space_set = 1;
     return NULL;
 }
 
@@ -665,6 +780,7 @@ static const char *
     if (sscanf(arg, "%lg", &val) != 1)
 	return "CacheLastModifiedFactor value must be a float";
     psf->cache.lmfactor = val;
+    psf->cache.lmfactor_set = 1;
 
     return NULL;
 }
@@ -679,6 +795,7 @@ static const char *
     if (sscanf(arg, "%lg", &val) != 1)
 	return "CacheMaxExpire value must be a float";
     psf->cache.maxexpire = (int) (val * (double) SEC_ONE_HR);
+    psf->cache.maxexpire_set = 1;
     return NULL;
 }
 
@@ -692,6 +809,7 @@ static const char *
     if (sscanf(arg, "%lg", &val) != 1)
 	return "CacheDefaultExpire value must be a float";
     psf->cache.defaultexpire = (int) (val * (double) SEC_ONE_HR);
+    psf->cache.defaultexpire_set = 1;
     return NULL;
 }
 
@@ -705,6 +823,7 @@ static const char *
     if (sscanf(arg, "%lg", &val) != 1)
 	return "CacheGcInterval value must be a float";
     psf->cache.gcinterval = (int) (val * (double) SEC_ONE_HR);
+    psf->cache.gcinterval_set = 1;
     return NULL;
 }
 
@@ -721,6 +840,7 @@ static const char *
     if (val * psf->cache.dirlength > CACHEFILE_LEN)
 	return "CacheDirLevels*CacheDirLength value must not be higher than 20";
     psf->cache.dirlevels = val;
+    psf->cache.dirlevels_set = 1;
     return NULL;
 }
 
@@ -737,6 +857,7 @@ static const char *
     if (val * psf->cache.dirlevels > CACHEFILE_LEN)
 	return "CacheDirLevels*CacheDirLength value must not be higher than 20";
     psf->cache.dirlength = val;
+    psf->cache.dirlength_set = 1;
     return NULL;
 }
 
@@ -782,6 +903,7 @@ static const char *
     }
 
     psf->recv_buffer_size = s;
+    psf->recv_buffer_size_set = 1;
     return NULL;
 }
 
@@ -798,6 +920,8 @@ static const char*
 
     if (s > 0)
       psf->cache.cache_completion = ((float)s / 100);
+
+    psf->cache.cache_completion = 1;
     return NULL;    
 }
 
@@ -820,6 +944,7 @@ static const char*
                "off | on | full | block";
     }
 
+    psf->viaopt_set = 1;
     return NULL;    
 }
 
@@ -881,7 +1006,7 @@ module MODULE_VAR_EXPORT proxy_module =
     NULL,			/* create per-directory config structure */
     NULL,			/* merge per-directory config structures */
     create_proxy_config,	/* create per-server config structure */
-    NULL,			/* merge per-server config structures */
+    merge_proxy_config,		/* merge per-server config structures */
     proxy_cmds,			/* command table */
     proxy_handlers,		/* handlers */
     proxy_trans,		/* translate_handler */
@@ -895,4 +1020,12 @@ module MODULE_VAR_EXPORT proxy_module =
     NULL,			/* child_init */
     NULL,			/* child_exit */
     proxy_detect		/* post read-request */
+#ifdef EAPI
+   ,proxy_addmod,		/* EAPI: add_module */
+    proxy_remmod,		/* EAPI: remove_module */
+    NULL,			/* EAPI: rewrite_command */
+    NULL			/* EAPI: new_connection  */
+#endif
 };
+
+

@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.main.c,v 1.3 1995/03/23 08:30:35 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.main.c,v 1.3 1995/03/23 08:30:35 cgd Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -83,7 +85,7 @@ char *argv[];
 
 	/*
 	 * Who am i? Algorithm: 1. Use name as specified in HACKOPTIONS
-	 *			2. Use $USER or $LOGNAME	(if 1. fails)
+	 *			2. Use $LOGNAME or $USER	(if 1. fails)
 	 *			3. Use getlogin()		(if 2. fails)
 	 * The resulting name is overridden by command line options.
 	 * If everything fails, or if the resulting name is some generic
@@ -95,12 +97,14 @@ char *argv[];
 	{ register char *s;
 
 	  initoptions();
-	  if(!*plname && (s = getenv("USER")))
-		(void) strncpy(plname, s, sizeof(plname)-1);
 	  if(!*plname && (s = getenv("LOGNAME")))
+		(void) strncpy(plname, s, sizeof(plname)-1);
+	  if(!*plname && (s = getenv("USER")))
 		(void) strncpy(plname, s, sizeof(plname)-1);
 	  if(!*plname && (s = getlogin()))
 		(void) strncpy(plname, s, sizeof(plname)-1);
+	  if(*plname)
+		plname[sizeof(plname)-1] = '\0';
 	}
 
 	/*
@@ -121,6 +125,7 @@ char *argv[];
 	 */
 	gettty();
 	setbuf(stdout,obuf);
+	umask(007);
 	setrandom();
 	startup();
 	cls();
@@ -162,12 +167,14 @@ char *argv[];
 			break;
 #endif
 		case 'u':
-			if(argv[0][2])
+			if(argv[0][2]) {
 			  (void) strncpy(plname, argv[0]+2, sizeof(plname)-1);
-			else if(argc > 1) {
+			  plname[sizeof(plname)-1] = '\0';
+			} else if(argc > 1) {
 			  argc--;
 			  argv++;
 			  (void) strncpy(plname, argv[0], sizeof(plname)-1);
+			  plname[sizeof(plname)-1] = '\0';
 			} else
 				printf("Player name expected after -u\n");
 			break;
@@ -175,6 +182,7 @@ char *argv[];
 			/* allow -T for Tourist, etc. */
 			(void) strncpy(pl_character, argv[0]+1,
 				sizeof(pl_character)-1);
+			plname[sizeof(pl_character)-1] = '\0';
 
 			/* printf("Unknown option: %s\n", *argv); */
 		}
@@ -231,7 +239,7 @@ char *argv[];
 				register char *gp = genocided;
 
 				while(pm < mons+CMNUM+2){
-					if(!index(sfoo, pm->mlet))
+					if(!strchr(sfoo, pm->mlet))
 						*gp++ = pm->mlet;
 					pm++;
 				}
@@ -245,7 +253,7 @@ char *argv[];
 	setftty();
 	(void) sprintf(SAVEF, "save/%d%s", getuid(), plname);
 	regularize(SAVEF+5);		/* avoid . or / in name */
-	if((fd = open(SAVEF,0)) >= 0 &&
+	if((fd = open(SAVEF, O_RDONLY)) >= 0 &&
 	   (uptodate(fd) || unlink(SAVEF) == 666)) {
 		(void) signal(SIGINT,done1);
 		pline("Restoring old save file...");
@@ -463,8 +471,9 @@ boolean wr;
 	       && strcmp(dir, HACKDIR)		/* and not the default? */
 #endif
 		) {
-		(void) setuid(getuid());		/* Ron Wessels */
-		(void) setgid(getgid());
+		/* revoke */
+		setegid(getgid());
+		setgid(getgid());
 	}
 #endif
 
@@ -486,7 +495,7 @@ boolean wr;
 
 	    if(dir == NULL)
 		dir = ".";
-	    if((fd = open(RECORD, 2)) < 0) {
+	    if((fd = open(RECORD, O_RDWR)) < 0) {
 		printf("Warning: cannot write %s/%s", dir, RECORD);
 		getret();
 	    } else

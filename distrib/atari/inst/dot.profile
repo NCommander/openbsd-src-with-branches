@@ -1,4 +1,5 @@
 #
+#	$OpenBSD: dot.profile,v 1.3 2000/03/01 22:10:01 todd Exp $
 #	$NetBSD: dot.profile,v 1.2 1995/05/10 13:39:28 leo Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
@@ -30,14 +31,17 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-PATH=/sbin:/bin:/usr/bin:/usr/sbin:/
-export PATH
-TERM=vt200
-export TERM
+export PATH=/sbin:/bin:/usr/bin:/usr/sbin:/
+export HISTFILE=/.sh_history
+export TERM=vt200
+
+umask 022
+
+set -o emacs # emacs-style command line editing
 
 # set up some sane defaults
-echo 'erase ^?, werase ^H, kill ^U, intr ^C'
-stty newcrt werase ^H intr ^C kill ^U erase ^? 9600
+echo 'erase ^?, werase ^H, kill ^U, intr ^C, status ^T'
+stty newcrt werase ^H intr ^C kill ^U erase ^? status ^T 9600
 echo ''
 
 # start running update, so that installed software is written as it goes.
@@ -48,5 +52,4 @@ update
 . /.instutils
 
 # run the installation script.
-umask 022
 install

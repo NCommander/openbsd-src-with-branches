@@ -1,3 +1,4 @@
+/*	$OpenBSD: testsyscall.c,v 1.1.1.1 1995/10/18 08:44:21 deraadt Exp $	*/
 /*
  * testsyscall.c
  *
@@ -36,7 +37,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: testsyscall.c,v 1.1 1993/06/08 03:53:42 cgd Exp $
  */
 #include <stdio.h>
 

@@ -1,3 +1,6 @@
+/*	$OpenBSD: ring.h,v 1.3 1998/03/12 04:57:39 art Exp $	*/
+/*	$NetBSD: ring.h,v 1.5 1996/02/28 21:04:09 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,18 +34,10 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)ring.h	8.1 (Berkeley) 6/6/93
- *	$Id: ring.h,v 1.3 1994/02/25 03:00:36 cgd Exp $
  */
 
-#if defined(P)
-# undef P
-#endif
-
-#if defined(__STDC__) || defined(LINT_ARGS)
-# define	P(x)	x
-#else
-# define	P(x)	()
-#endif
+#include <sys/cdefs.h>
+#define P __P
 
 /*
  * This defines a structure for a ring buffer.
@@ -60,6 +55,10 @@ typedef struct {
 			*bottom,	/* lowest address in buffer */
 			*top,		/* highest address+1 in buffer */
 			*mark;		/* marker (user defined) */
+#if    defined(ENCRYPTION)
+    unsigned char	*clearto;       /* Data to this point is clear text */
+    unsigned char	*encryyptedto;  /* Data is encrypted to here */
+#endif
     int		size;		/* size in bytes of buffer */
     u_long	consumetime,	/* help us keep straight full, empty, etc. */
 		supplytime;
@@ -91,7 +90,17 @@ extern int
 	ring_full_count P((Ring *ring)),
 	ring_full_consecutive P((Ring *ring));
 
+#if    defined(ENCRYPTION)
+extern void
+	ring_encrypt (Ring *ring, void (*func)()),
+	ring_clearto (Ring *ring);
+#endif
+
 
 extern void
-    ring_clear_mark(),
-    ring_mark();
+    ring_clear_mark P((Ring *)),
+    ring_mark P((Ring *));
+
+
+extern int
+    ring_at_mark P((Ring *));

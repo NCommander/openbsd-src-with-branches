@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.7 1995/05/28 03:10:06 jtc Exp $	*/
+/*	$OpenBSD: signal.h,v 1.3 1996/09/20 07:27:50 deraadt Exp $	*/
+/*	$NetBSD: signal.h,v 1.8 1996/02/29 00:04:57 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -38,7 +39,6 @@
 #ifndef _USER_SIGNAL_H
 #define _USER_SIGNAL_H
 
-#include <sys/cdefs.h>
 #include <sys/signal.h>
 
 #if !defined(_ANSI_SOURCE)
@@ -110,8 +110,10 @@ int	sigpause __P((int));
 int	sigreturn __P((struct sigcontext *));
 int	sigsetmask __P((int));
 int	sigstack __P((const struct sigstack *, struct sigstack *));
+int	sigaltstack __P((const struct sigaltstack *, struct sigaltstack *));
 int	sigvec __P((int, struct sigvec *, struct sigvec *));
 void	psignal __P((unsigned int, const char *));
+int	sigwait __P((const sigset_t *, int *));
 #endif	/* !_POSIX_SOURCE */
 #endif	/* !_ANSI_SOURCE */
 __END_DECLS

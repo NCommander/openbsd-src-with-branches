@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)termin.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: termin.c,v 1.2 1993/08/01 18:05:59 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: termin.c,v 1.1.1.1 1995/10/18 08:46:20 deraadt Exp $";
 #endif /* not lint */
 
 /* this takes characters from the keyboard, and produces 3270 keystroke

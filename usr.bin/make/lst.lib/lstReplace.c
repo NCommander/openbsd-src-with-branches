@@ -1,8 +1,9 @@
-/*	$NetBSD: lstReplace.c,v 1.4 1995/06/14 15:21:41 christos Exp $	*/
+/*	$OpenBSD: lstReplace.c,v 1.8 2000/06/17 14:34:10 espie Exp $	*/
+/*	$NetBSD: lstReplace.c,v 1.5 1996/11/06 17:59:51 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,44 +37,37 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstReplace.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstReplace.c,v 1.4 1995/06/14 15:21:41 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstReplace.c --
  *	Replace the datum in a node with a new datum
  */
 
 #include	"lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstReplace.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstReplace.c,v 1.8 2000/06/17 14:34:10 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 /*-
  *-----------------------------------------------------------------------
  * Lst_Replace --
  *	Replace the datum in the given node with the new datum
  *
- * Results:
- *	SUCCESS or FAILURE.
- *
  * Side Effects:
  *	The datum field fo the node is altered.
  *
  *-----------------------------------------------------------------------
  */
-ReturnStatus
-Lst_Replace (ln, d)
-    register LstNode	ln;
-    ClientData	  	d;
+void
+Lst_Replace(ln, d)
+    LstNode	ln;
+    void	*d;
 {
-    if (ln == NILLNODE) {
-	return (FAILURE);
-    } else {
-	((ListNode) ln)->datum = d;
-	return (SUCCESS);
-    }
+    if (ln != NULL) 
+	ln->datum = d;
 }
-

@@ -1,4 +1,4 @@
-.\"	$NetBSD: ctermid.3,v 1.4 1995/02/25 15:39:12 cgd Exp $
+.\"	$OpenBSD: ctermid.3,v 1.4 1999/06/04 01:30:10 aaron Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,8 +31,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)ctermid.3	8.1 (Berkeley) 6/4/93
-.\"
 .Dd June 4, 1993
 .Dt CTERMID 3
 .Os
@@ -51,9 +49,7 @@ the current controlling terminal of the calling process.
 .Pp
 If
 .Ar buf
-is the
-.Dv NULL
-pointer, a pointer to a static area is returned.
+is a null pointer, a pointer to a static area is returned.
 Otherwise, the pathname is copied into the memory referenced by
 .Ar buf .
 The argument
@@ -65,15 +61,11 @@ file
 .Aq Pa stdio.h )
 bytes long.
 .Pp
-The current implementation simply returns
-.Ql /dev/tty .
+The current implementation simply generates
+.Qq /dev/tty .
 .Sh RETURN VALUES
-Upon successful completion, a
-.Pf non- Dv NULL
-pointer is returned.
-Otherwise, a
-.Dv NULL
-pointer is returned and the global variable
+Upon successful completion, a non-null pointer is returned.
+Otherwise, a null pointer is returned and the global variable
 .Va errno
 is set to indicate the error.
 .Sh ERRORS
@@ -82,14 +74,13 @@ The current implementation detects no error conditions.
 .Xr ttyname 3
 .Sh STANDARDS
 The
-.Xr ctermid
+.Fn ctermid
 function conforms to
 .St -p1003.1-88 .
 .Sh BUGS
 By default the
 .Fn ctermid
-function
-writes all information to an internal static object.
+function writes all information to an internal static object.
 Subsequent calls to
 .Fn ctermid
 will modify the same object.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: locore.S,v 1.14 2001/03/10 23:14:32 drahn Exp $	*/
 /*	$NetBSD: locore.S,v 1.2 1996/10/16 19:33:09 ws Exp $	*/
 
 /*
@@ -47,27 +48,44 @@
  * Globals
  */
 	.globl	_C_LABEL(esym),_C_LABEL(proc0paddr)
+	.type	_C_LABEL(esym),@object
+	.type	_C_LABEL(proc0paddr),@object
 	.data
-_C_LABEL(esym):	.long	0			/* end of symbol table */
-_C_LABEL(proc0paddr):	.long	0		/* proc0 p_addr */
-idle_u:	.long	0			/* fake uarea during idle after exit */
-openfirmware_entry:	.long	0		/* openfirmware entry point */
+_C_LABEL(esym):		.long	0	/* end of symbol table */
+_C_LABEL(proc0paddr):	.long	0	/* proc0 p_addr */
+idle_u:			.long	0	/* fake uarea during idle after exit */
+
+	.globl _C_LABEL(where)
+	.type  _C_LABEL(where),@object
+_C_LABEL(where):	.long	0
 
 /*
  * Startup entry
  */
 _ENTRY(_C_LABEL(kernel_text))
 _ENTRY(_ASM_LABEL(start))
+/* arguments to start 
+ * r1 - stack provided by firmware/bootloader
+ * r3 - unused
+ * r4 - unused
+ * r5 - firmware pointer (NULL for PPC1bug)
+ * r6 - arg list
+ * r7 - length
+ */
 	.globl	start
+	.type start,@function
 start:
-#ifdef	FIREPOWERBUGS
-	mfmsr	0
-	andi.	0,0,PSL_IR|PSL_DR
-	beq	1f
-
-	bl	_C_LABEL(ofwr_init)
-1:
-#endif
+#ifdef SUPPORT_PPC1BUG
+	mr 	0,5
+	cmpwi	0,0,0
+	bne	1f
+	/* need additional tests for other systems??? */
+	bl	ppc1bug_init
+	b	2f
+#endif /* SUPPORT_PPC1BUG
+1:	/* support openfirmware for Apple and PowerStack w/OFW, ... */
+	bl	ofw_init
+2:
 	li	0,0
 	mtmsr	0			/* Disable FPU/MMU/exceptions */
 	isync
@@ -75,6 +93,7 @@ start:
 /* compute end of kernel memory */
 	lis	8,_end@ha
 	addi	8,8,_end@l
+#if 0
 #if defined(DDB) || defined(KERNFS)
 	lwz	9,0(8)			/* number of symbols */
 	add	8,8,9
@@ -83,12 +102,10 @@ start:
 	lis	9,_C_LABEL(esym)@ha
 	stw	8,_C_LABEL(esym)@l(9)		/* save for symbol handling */
 #endif
+#endif
 	li	9,PGOFSET
 	add	8,8,9
 	andc	8,8,9
-	lis	9,_C_LABEL(OF_buf)@ha
-	stw	8,_C_LABEL(OF_buf)@l(9)
-	addi	8,8,NBPG
 	lis	9,idle_u@ha
 	stw	8,idle_u@l(9)
 	addi	8,8,USPACE		/* space for idle_u */
@@ -99,114 +116,53 @@ start:
 	xor	0,0,0
 	stwu	0,-16(1)		/* end of stack chain */
 	
-	lis	8,openfirmware_entry@ha
-	stw	5,openfirmware_entry@l(8)	/* save client interface handler */
+	li	0, 2
+	lis	9,_C_LABEL(where)@ha
+	stw	0,_C_LABEL(where)@l(9)
+
 	lis	3,start@ha
 	addi	3,3,start@l
 	mr	5,6			/* args string */
 	bl	_C_LABEL(initppc)
 	bl	_C_LABEL(main)
 	b	_C_LABEL(OF_exit)
+
+#define LED_ADDR 0x800008c0
+_ENTRY(_C_LABEL(led_dbg))
+	stwu	1,-32(1)
+	mflr	0
+	stw	0,36(1)
 
-/*
- * OpenFirmware entry point
- */
-_ENTRY(_C_LABEL(openfirmware))
-	mflr	0			/* save return address */
-	stw	0,4(1)
-	stwu	1,-16(1)		/* setup stack frame */
-
-	mfmsr	4			/* save msr */
 	stw	4,8(1)
+	stw	5,12(1)
+	stw	6,16(1)
+	stw	7,20(1)
+	mfmsr	5
 
-	lis	4,openfirmware_entry@ha	/* get firmware entry point */
-	lwz	4,openfirmware_entry@l(4)
-	mtlr	4
-
-	li	0,0			/* turn off any ints/mmu/etc. */
-	mtmsr	0
+	mr	6,5
+	ori	6,6,(PSL_IR|PSL_DR)@l	/* turn on MMU */
+	mtmsr	6
+	sync
 	isync
 
-	blrl				/* call OpenFirmware */
+	lis	4,LED_ADDR@ha
+	addi	4,4,LED_ADDR@l
+	li	7,0
+	ori	3,3,0x2000
+	sthbrx	3,7,4
 
-	lwz	4,8(1)			/* restore msr */
-	mtmsr	4
+	sync
+	mtmsr	5
 	isync
+	lwz	4,8(1)
+	lwz	5,12(1)
+	lwz	6,16(1)
+	lwz	7,20(1)
 
-	lwz	1,0(1)			/* and return */
-	lwz	0,4(1)
+	lwz	0,36(1)
 	mtlr	0
+	addi	1,1,32
 	blr
-
-/*
- * Switch to/from OpenFirmware real mode stack
- *
- * Note: has to be called as the very first thing in OpenFirmware interface routines.
- * E.g.:
- * int
- * OF_xxx(arg1, arg2)
- * type arg1, arg2;
- * {
- *	static struct {
- *		char *name;
- *		int nargs;
- *		int nreturns;
- *		char *method;
- *		int arg1;
- *		int arg2;
- *		int ret;
- *	} args = {
- *		"xxx",
- *		2,
- *		1,
- *	};
- *
- *	ofw_stack();
- *	args.arg1 = arg1;
- *	args.arg2 = arg2;
- *	if (openfirmware(&args) < 0)
- *		return -1;
- *	return args.ret;
- * }
- */
-.lcomm	firmstk,NBPG,8
-
-_ENTRY(_C_LABEL(ofw_stack))
-	mfmsr	8			/* turn off interrupts */
-	andi.	0,8,~(PSL_EE|PSL_RI)@l
-	mtmsr	0
-	stw	8,4(1)			/* abuse return address slot */
-
-	lwz	5,0(1)			/* get length of stack frame */
-	subf	5,1,5
-
-	lis	7,firmstk+NBPG-8@ha
-	addi	7,7,firmstk+NBPG-8@l
-	lis	6,ofw_back@ha
-	addi	6,6,ofw_back@l
-	subf	4,5,7			/* make room for stack frame on new stack */
-	stw	6,-4(7)			/* setup return pointer */
-	stwu	1,-8(7)
-	
-	stw	7,-8(4)
-
-	addi	3,1,8
-	addi	1,4,-8
-	subi	5,5,8
-
-	b	_C_LABEL(ofbcopy)		/* and copy it */
-
-ofw_back:
-	lwz	1,0(1)			/* get callers original stack pointer */
-
-	lwz	0,4(1)			/* get saved msr from abused slot */
-	mtmsr	0
-	
-	lwz	1,0(1)			/* return */
-	lwz	0,4(1)
-	mtlr	0
-	blr
-
 
 /*
  * No processes are runnable, so loop waiting for one.
@@ -226,6 +182,12 @@ _C_LABEL(idle):
 	ori	3,3,PSL_EE		/* reenable ints again */
 	mtmsr	3
 	isync
+	sync
+	/* low power mode */
+	mfmsr	3
+	oris	3, 3, PSL_POW@h
+	mtmsr	3
+	isync
 	
 /* May do some power saving here? */
 
@@ -242,8 +204,16 @@ _ENTRY(_C_LABEL(switchexit))
 	lis	7,_C_LABEL(curpcb)@ha
 	stw	6,_C_LABEL(curpcb)@l(7)
 	addi	1,6,USPACE-16		/* 16 bytes are reserved at stack top */
-/* Now free the old user structure (args are already in r3, r4, r5) */
-	bl	_C_LABEL(kmem_free)
+	/*
+	 * Schedule the vmspace and stack to be freed (the proc arg is
+	 * already in r3).
+	 */
+	bl      _C_LABEL(exit2)
+
+	/* Fall through to cpu_switch to actually select another proc */
+	li      3,0                     /* indicate exited process */
+
+	
 /* Fall through to cpu_switch to actually select another proc */
 
 /*
@@ -260,17 +230,18 @@ _ENTRY(_C_LABEL(cpu_switch))
 	mr	30,3
 	lis	3,_C_LABEL(curproc)@ha
 	xor	31,31,31
-	stw	31,_C_LABEL(curproc)@l(3)	/* Zero to not accumulate cpu time */
+	stw	31,_C_LABEL(curproc)@l(3) /* Zero to not accumulate cpu time */
 	lis	3,_C_LABEL(curpcb)@ha
 	lwz	31,_C_LABEL(curpcb)@l(3)
 
 	xor	3,3,3
-	bl	_C_LABEL(splx)
+	bl	_C_LABEL(lcsplx)
 	stw	3,PCB_SPL(31)		/* save spl */
 
 /* Find a new process */
 	mfmsr	3
-	andi.	3,3,~PSL_EE@l		/* disable interrupts while manipulating runque */
+	andi.	3,3,~PSL_EE@l		/* disable interrupts while
+					   manipulating runque */
 	mtmsr	3
 	isync
 
@@ -369,7 +340,7 @@ switch_exited:
 switch_return:
 	mr	30,7			/* save proc pointer */
 	lwz	3,PCB_SPL(4)
-	bl	_C_LABEL(splx)
+	bl	_C_LABEL(lcsplx)
 
 	mr	3,30			/* get curproc for special fork returns */
 
@@ -390,6 +361,7 @@ switch_return:
 	.data
 intstk:	.space	INTSTK			/* interrupt stack */
 	.global _C_LABEL(intr_depth)
+	.type  _C_LABEL(intr_depth),@object
 _C_LABEL(intr_depth):
 	.long	-1			/* in-use marker */
 #define	SPILLSTK 1024			/* 1K spill stack */
@@ -401,6 +373,8 @@ _C_LABEL(intr_depth):
  */
 	.text
 	.globl	_C_LABEL(trapcode),_C_LABEL(trapsize)
+	.type	_C_LABEL(trapcode),@function
+	.type	_C_LABEL(trapsize),@object
 _C_LABEL(trapcode):
 	mtsprg	1,1			/* save SP */
 	stmw	28,tempsave(0)		/* free r28-r31 */
@@ -423,6 +397,8 @@ _C_LABEL(trapsize) =	.-_C_LABEL(trapcode)
  * and standard pagetable spills
  */
 	.globl	_C_LABEL(dsitrap),_C_LABEL(dsisize)
+	.type	_C_LABEL(dsitrap),@function
+	.type	_C_LABEL(dsisize),@object
 _C_LABEL(dsitrap):
 	stmw	28,disisave(0)		/* free r28-r31 */
 	mfcr	29			/* save CR */
@@ -463,6 +439,8 @@ _C_LABEL(dsisize) =	.-_C_LABEL(dsitrap)
  * Similar to the above for ISI
  */
 	.globl	_C_LABEL(isitrap),_C_LABEL(isisize)
+	.type	_C_LABEL(isitrap),@function
+	.type	_C_LABEL(isisize),@object
 _C_LABEL(isitrap):
 	stmw	28,disisave(0)		/* free r28-r31 */
 	mflr	28			/* save LR */
@@ -490,6 +468,8 @@ _C_LABEL(isisize) =	.-_C_LABEL(isitrap)
  * This one for the external interrupt handler.
  */
 	.globl	_C_LABEL(extint),_C_LABEL(extsize)
+	.type	_C_LABEL(extint),@function
+	.type	_C_LABEL(extsize),@object
 _C_LABEL(extint):
 	mtsprg	1,1			/* save SP */
 	stmw	28,tempsave(0)		/* free r28-r31 */
@@ -511,6 +491,8 @@ _C_LABEL(extsize) =	.-_C_LABEL(extint)
  * And this one for the decrementer interrupt handler.
  */
 	.globl	_C_LABEL(decrint),_C_LABEL(decrsize)
+	.type	_C_LABEL(decrint),@function
+	.type	_C_LABEL(decrsize),@object
 _C_LABEL(decrint):
 	mtsprg	1,1			/* save SP */
 	stmw	28,tempsave(0)		/* free r28-r31 */
@@ -545,6 +527,8 @@ _C_LABEL(decrsize) =	.-_C_LABEL(decrint)
 #define	tlbld	.long	0x7c0007a4+0x800*
 
 	.globl	_C_LABEL(tlbimiss),_C_LABEL(tlbimsize)
+	.type	_C_LABEL(tlbimiss),@function
+	.type	_C_LABEL(tlbimsize),@object
 _C_LABEL(tlbimiss):
 	mfspr	2,HASH1			/* get first pointer */
 	li	1,8
@@ -601,6 +585,8 @@ _C_LABEL(tlbimiss):
 _C_LABEL(tlbimsize) =	.-_C_LABEL(tlbimiss)
 
 	.globl	_C_LABEL(tlbdlmiss),_C_LABEL(tlbdlmsize)
+	.type	_C_LABEL(tlbdlmiss),@function
+	.type	_C_LABEL(tlbdlmsize),@object
 _C_LABEL(tlbdlmiss):
 	mfspr	2,HASH1			/* get first pointer */
 	li	1,8
@@ -652,6 +638,8 @@ _C_LABEL(tlbdlmiss):
 _C_LABEL(tlbdlmsize) =	.-_C_LABEL(tlbdlmiss)
 
 	.globl	_C_LABEL(tlbdsmiss),_C_LABEL(tlbdsmsize)
+	.type	_C_LABEL(tlbdsmiss),@function
+	.type	_C_LABEL(tlbdsmsize),@object
 _C_LABEL(tlbdsmiss):
 	mfspr	2,HASH1			/* get first pointer */
 	li	1,8
@@ -733,6 +721,8 @@ _C_LABEL(tlbdsmsize) =	.-_C_LABEL(tlbdsmiss)
 .lcomm	ipkdbstk,INTSTK			/* ipkdb stack */
 
 	.globl	_C_LABEL(ipkdblow),_C_LABEL(ipkdbsize)
+	.type	_C_LABEL(ipkdblow),@function
+	.type	_C_LABEL(ipkdbsize),@object
 _C_LABEL(ipkdblow):
 	mtsprg	1,1			/* save SP */
 	stmw	28,ipkdbsave(0)		/* free r28-r31 */
@@ -805,7 +795,9 @@ _C_LABEL(ipkdbsize) =	.-_C_LABEL(ipkdblow)
 	mtsprg	3,3;							\
 /* Disable translation, machine check and recoverability: */		\
 	mfmsr	2;							\
-	andi.	2,2,~(PSL_DR|PSL_IR|PSL_ME|PSL_RI);			\
+	lis	3,(PSL_DR|PSL_IR|PSL_ME|PSL_RI)@ha;			\
+	addi	3,3,(PSL_DR|PSL_IR|PSL_ME|PSL_RI)@l;			\
+	andc	2,2,3;							\
 	mtmsr	2;							\
 	isync;								\
 /* Decide whether we return to user mode: */				\
@@ -891,9 +883,10 @@ trapexit:
  * Mostly similar to the above.
  */
 	.globl	_C_LABEL(fork_trampoline)
+	.type	_C_LABEL(fork_trampoline),@function
 _C_LABEL(fork_trampoline):
 	xor	3,3,3
-	bl	_C_LABEL(splx)
+	bl	_C_LABEL(lcsplx)
 	mtlr	31
 	mr	3,30
 	blrl				/* jump indirect to r31 */
@@ -1002,7 +995,7 @@ s_isitrap:
 	stw	30,32(1);		/* saved XER */			\
 	lmw	28,tempsave(0);		/* restore r28-r31 */		\
 	mfctr	6;							\
-	li	5,_C_LABEL(intr_depth)@ha;				\
+	lis	5,_C_LABEL(intr_depth)@ha;				\
 	lwz	5,_C_LABEL(intr_depth)@l(5);				\
 	mfsrr0	4;							\
 	mfsrr1	3;							\
@@ -1020,6 +1013,7 @@ s_isitrap:
 	isync
 
 	.globl	_C_LABEL(extint_call)
+	.type	_C_LABEL(extint_call),@function
 extintr:
 	INTRENTER
 _C_LABEL(extint_call):
@@ -1106,6 +1100,7 @@ decrintr:
  * Deliberate entry to ipkdbtrap
  */
 	.globl	_C_LABEL(ipkdb_trap)
+	.type	_C_LABEL(ipkdb_trap),@function
 _C_LABEL(ipkdb_trap):
 	
 	mtsprg	2,2
@@ -1159,6 +1154,7 @@ _C_LABEL(ipkdbfault):
  * int ipkdbfbyte(unsigned char *p)
  */
 	.globl	_C_LABEL(ipkdbfbyte)
+	.type	_C_LABEL(ipkdbfbyte),@function
 _C_LABEL(ipkdbfbyte):
 	li	9,EXC_DSI		/* establish new fault routine */
 	lwz	5,0(9)
@@ -1185,6 +1181,7 @@ _C_LABEL(ipkdbfbyte):
  * int ipkdbsbyte(unsigned char *p, int c)
  */
 	.globl	_C_LABEL(ipkdbsbyte)
+	.type	_C_LABEL(ipkdbsbyte),@function
 _C_LABEL(ipkdbsbyte):
 	li	9,EXC_DSI		/* establish new fault routine */
 	lwz	5,0(9)
@@ -1222,15 +1219,17 @@ _C_LABEL(ipkdbsbyte):
  * registers.
  */
 	.globl	_C_LABEL(setfault)
+	.type	_C_LABEL(setfault),@function
 _C_LABEL(setfault):
 	mflr	0
 	mfcr	12
+	mfmsr	2
 	lis	4,_C_LABEL(curpcb)@ha
 	lwz	4,_C_LABEL(curpcb)@l(4)
 	stw	3,PCB_FAULT(4)
 	stw	0,0(3)
-	stw	1,4(3)
-	stw	2,8(3)
+	stw	2,4(3)
+	stw	1,8(3)
 	stmw	12,12(3)
 	xor	3,3,3
 	blr
@@ -1243,6 +1242,8 @@ _C_LABEL(setfault):
  * All other registers are unchanged.
  */
 	.globl	_C_LABEL(sigcode),_C_LABEL(esigcode)
+	.type	_C_LABEL(sigcode),@function
+	.type	_C_LABEL(esigcode),@function
 _C_LABEL(sigcode):
 	addi	1,1,-16			/* reserved space for callee */
 	blrl
@@ -1252,3 +1253,55 @@ _C_LABEL(sigcode):
 	li	0,SYS_exit
 	sc				/* exit(errno) */
 _C_LABEL(esigcode):
+
+
+
+	.data
+	.globl   _C_LABEL(intrnames)
+	.type   _C_LABEL(intrnames),@object
+	.globl   _C_LABEL(eintrnames)
+	.type   _C_LABEL(eintrnames),@object
+_C_LABEL(intrnames):
+	.string "irq0" "irq1" "irq2" "irq3"
+	.string "irq4" "irq5" "irq6" "irq7"
+	.string "irq8" "irq9" "irq10" "irq11"
+	.string "irq12" "irq13" "irq14" "irq15"
+	.string "irq16" "irq17" "irq18" "irq19"
+	.string "irq20" "irq21" "irq22" "irq23"
+	.string "irq24" "irq25" "irq26" "irq27"
+	.string "irq28" "irq29" "irq30" "irq31"
+	.string "irq32" "irq33" "irq34" "irq35"
+	.string "irq36" "irq37" "irq38" "irq39"
+	.string "irq40" "irq41" "irq42" "irq43"
+	.string "irq44" "irq45" "irq46" "irq47"
+	.string "irq48" "irq49" "irq50" "irq51"
+	.string "irq52" "irq53" "irq54" "irq55"
+	.string "irq56" "irq57" "irq58" "irq59"
+	.string "irq60" "irq61" "irq62" "irq63"
+	.string "clock" 
+	.space 512
+_C_LABEL(eintrnames):
+	.align 4
+	.globl   _C_LABEL(intrcnt)
+	.type   _C_LABEL(intrcnt),@object
+	.globl   _C_LABEL(eintrcnt)
+	.type   _C_LABEL(eintrcnt),@object
+_C_LABEL(intrcnt):
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0,0,0,0
+	.long 0
+_C_LABEL(eintrcnt):

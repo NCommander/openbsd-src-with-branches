@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef UUENCODE_H
 #define UUENCODE_H
 #include <sys/types.h>

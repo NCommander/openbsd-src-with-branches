@@ -1,4 +1,5 @@
-/*	$NetBSD: netif_of.c,v 1.1 1996/09/30 16:35:02 ws Exp $	*/
+/*	$OpenBSD:$	*/
+/*	$NetBSD: netif_of.c,v 1.1 1997/04/16 20:29:19 thorpej Exp $	*/
 
 /*
  * Copyright (C) 1995 Wolfgang Solfrank.
@@ -41,8 +42,11 @@
 
 #include <sys/param.h>
 #include <sys/socket.h>
+
+#if 0			/* XXX thorpej */
 #include <string.h>
 #include <time.h>
+#endif
 
 #include <net/if.h>
 
@@ -50,12 +54,12 @@
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
 
-#include "stand.h"
-#include "net.h"
-#include "netif.h"
+#include <lib/libsa/stand.h>
+#include <lib/libsa/net.h>
+#include <lib/libsa/netif.h>
 
-#include "ofdev.h"
-#include "openfirm.h"
+#include <powerpc/stand/ofdev.h>
+#include <powerpc/stand/openfirm.h>
 
 static struct netif netif_of;
 
@@ -97,6 +101,8 @@ netif_open(machdep_hint)
 	io->io_netif = &netif_of;
 	
 	/* Put our ethernet address in io->myea */
+	OF_getprop(OF_instance_to_package(op->handle),
+		   "local-mac-address", io->myea, sizeof io->myea) == -1 &&
 	OF_getprop(OF_instance_to_package(op->handle),
 		   "mac-address", io->myea, sizeof io->myea);
 
@@ -173,6 +179,10 @@ netif_put(desc, pkt, len)
 #endif
 	}
 
+	if (op->dmabuf) {
+		bcopy(pkt, op->dmabuf, sendlen);
+		pkt = op->dmabuf;
+	}
 	rv = OF_write(op->handle, pkt, sendlen);
 
 #ifdef	NETIF_DEBUG
@@ -209,7 +219,8 @@ netif_get(desc, pkt, maxlen, timo)
 
 	do {
 		len = OF_read(op->handle, pkt, maxlen);
-	} while ((len == -2) && ((OF_milliseconds() - tick0) < tmo_ms));
+	} while ((len == -2 || len == 0) &&
+		 ((OF_milliseconds() - tick0) < tmo_ms));
 
 #ifdef	NETIF_DEBUG
 	printf("netif_get: received len=%d\n", len);

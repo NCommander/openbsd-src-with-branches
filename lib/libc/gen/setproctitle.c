@@ -1,5 +1,3 @@
-/*	$NetBSD: setproctitle.c,v 1.4 1995/05/16 14:23:06 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1994, 1995 Christopher G. Demetriou
  * All rights reserved.
@@ -32,12 +30,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: setproctitle.c,v 1.4 1995/05/16 14:23:06 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: setproctitle.c,v 1.6 1998/06/23 22:40:27 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/exec.h>
+#include <sys/sysctl.h>
 #include <vm/vm.h>
 
 #include <stdio.h>
@@ -55,7 +54,7 @@ static char rcsid[] = "$NetBSD: setproctitle.c,v 1.4 1995/05/16 14:23:06 mycroft
 extern char *__progname;		/* Program name, from crt0. */
 
 void
-#if __STDC__
+#ifdef __STDC__
 setproctitle(const char *fmt, ...)
 #else
 setproctitle(fmt, va_alist)
@@ -63,22 +62,38 @@ setproctitle(fmt, va_alist)
 	va_dcl
 #endif
 {
+	static struct ps_strings *ps;
 	va_list ap;
+	
 	static char buf[MAX_PROCTITLE], *bufp = buf;
-	int used;
+	size_t used;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
 #endif
 	if (fmt != NULL) {
 		used = snprintf(buf, MAX_PROCTITLE, "%s: ", __progname);
+		if (used >= MAX_PROCTITLE)
+			used = MAX_PROCTITLE - 1;
 		(void)vsnprintf(buf + used, MAX_PROCTITLE - used, fmt, ap);
 	} else
 		(void)snprintf(buf, MAX_PROCTITLE, "%s", __progname);
 	va_end(ap);
 
-	PS_STRINGS->ps_nargvstr = 1;
-	PS_STRINGS->ps_argvstr = &bufp;
+	if (ps == NULL) {
+		struct _ps_strings _ps;
+		int mib[2];
+		size_t len;
+
+		mib[0] = CTL_VM;
+		mib[1] = VM_PSSTRINGS;
+		len = sizeof(_ps);
+		if (sysctl(mib, 2, &_ps, &len, NULL, 0) != 0)
+			return;
+		ps = (struct ps_strings *)_ps.val;
+	}
+	ps->ps_nargvstr = 1;
+	ps->ps_argvstr = &bufp;
 }

@@ -58,25 +58,22 @@
 
 #include <stdio.h>
 #include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "cryptlib.h"
-#include "bn.h"
-#include "evp.h"
-#include "x509.h"
-#include "objects.h"
-#include "buffer.h"
-#include "pem.h"
 
-int ASN1_sign(i2d,algor1,algor2,signature,data,pkey,type)
-int (*i2d)();
-X509_ALGOR *algor1;
-X509_ALGOR *algor2;
-ASN1_BIT_STRING *signature;
-char *data;
-EVP_PKEY *pkey;
-EVP_MD *type;
+#ifndef NO_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
+#include <openssl/bn.h>
+#include <openssl/evp.h>
+#include <openssl/x509.h>
+#include <openssl/objects.h>
+#include <openssl/buffer.h>
+
+int ASN1_sign(int (*i2d)(), X509_ALGOR *algor1, X509_ALGOR *algor2,
+	     ASN1_BIT_STRING *signature, char *data, EVP_PKEY *pkey,
+	     const EVP_MD *type)
 	{
 	EVP_MD_CTX ctx;
 	unsigned char *p,*buf_in=NULL,*buf_out=NULL;
@@ -111,9 +108,9 @@ EVP_MD *type;
 			}
 		}
 	inl=i2d(data,NULL);
-	buf_in=(unsigned char *)Malloc((unsigned int)inl);
+	buf_in=(unsigned char *)OPENSSL_malloc((unsigned int)inl);
 	outll=outl=EVP_PKEY_size(pkey);
-	buf_out=(unsigned char *)Malloc((unsigned int)outl);
+	buf_out=(unsigned char *)OPENSSL_malloc((unsigned int)outl);
 	if ((buf_in == NULL) || (buf_out == NULL))
 		{
 		outl=0;
@@ -132,16 +129,20 @@ EVP_MD *type;
 		ASN1err(ASN1_F_ASN1_SIGN,ERR_R_EVP_LIB);
 		goto err;
 		}
-	if (signature->data != NULL) Free((char *)signature->data);
+	if (signature->data != NULL) OPENSSL_free(signature->data);
 	signature->data=buf_out;
 	buf_out=NULL;
 	signature->length=outl;
-
+	/* In the interests of compatibility, I'll make sure that
+	 * the bit string has a 'not-used bits' value of 0
+	 */
+	signature->flags&= ~(ASN1_STRING_FLAG_BITS_LEFT|0x07);
+	signature->flags|=ASN1_STRING_FLAG_BITS_LEFT;
 err:
 	memset(&ctx,0,sizeof(ctx));
 	if (buf_in != NULL)
-		{ memset((char *)buf_in,0,(unsigned int)inl); Free((char *)buf_in); }
+		{ memset((char *)buf_in,0,(unsigned int)inl); OPENSSL_free(buf_in); }
 	if (buf_out != NULL)
-		{ memset((char *)buf_out,0,outll); Free((char *)buf_out); }
+		{ memset((char *)buf_out,0,outll); OPENSSL_free(buf_out); }
 	return(outl);
 	}

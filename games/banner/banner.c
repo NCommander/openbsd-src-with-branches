@@ -1,3 +1,4 @@
+/*	$OpenBSD: banner.c,v 1.6 1998/08/19 07:40:13 pjanzen Exp $	*/
 /*	$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)banner.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $";
+static char rcsid[] = "$OpenBSD: banner.c,v 1.6 1998/08/19 07:40:13 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,7 +65,7 @@ static char rcsid[] = "$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $";
 #define NBYTES 9271
 
 /* Pointers into data_table for each ASCII char */
-int asc_ptr[NCHARS] = {
+const int asc_ptr[NCHARS] = {
 /* ^@ */   0,      0,      0,      0,      0,      0,      0,      0,
 /* ^H */   0,      0,      0,      0,      0,      0,      0,      0,
 /* ^P */   0,      0,      0,      0,      0,      0,      0,      0,
@@ -91,7 +92,7 @@ int asc_ptr[NCHARS] = {
  * is the next elt in array) and goto second
  * next element in array.
  */
-char data_table[NBYTES] = {
+const char data_table[NBYTES] = {
 /*             0     1     2     3     4     5     6     7     8     9 */
 /*    0 */   129,  227,  130,   34,    6,   90,   19,  129,   32,   10, 
 /*   10 */    74,   40,  129,   31,   12,   64,   53,  129,   30,   14, 
@@ -1032,26 +1033,30 @@ int	width = DWIDTH;	/* -w option: scrunch letters to 80 columns */
 int
 main(argc, argv)
 	int argc;
-	char **argv;
+	char *argv[];
 { 
 	int ch;
 
-	while ((ch = getopt(argc, argv, "w:td")) != EOF)
-		switch(ch) {
-		case 'w':
-			width = atoi(optarg);
-			if (width <= 0)
-				width = 80;
-			break;
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
+
+	while ((ch = getopt(argc, argv, "w:tdh")) != -1)
+		switch (ch) {
 		case 'd':
 			debug = 1;
 			break;
 		case 't':
 			trace = 1;
 			break;
-		case '?':
+		case 'w':
+			width = atoi(optarg);
+			if (width <= 0)
+				errx(1, "illegal argument for -w option");
+			break;
+		case '?': case 'h':
 		default:
-			fprintf(stderr, "usage: banner [-w width]\n");
+			(void)fprintf(stderr, "usage: banner [-w width]\n");
 			exit(1);
 		}
 	argc -= optind;

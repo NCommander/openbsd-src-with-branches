@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #
 # example smtpd_check_rules file.  If you compiled smtpd with
 # CHECK_ADDRESS=1, this file goes in etc/smtpd_check_rules in your

@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -41,7 +40,7 @@
  * Header for credetial cache
  */
 
-/* $KTH: cred.h,v 1.18 1998/05/02 01:03:25 assar Exp $ */
+/* $Id: cred.h,v 1.25 2000/06/08 21:45:06 lha Exp $ */
 
 #ifndef _CRED_H_
 #define _CRED_H_
@@ -51,7 +50,7 @@
 #include <lock.h>
 #ifdef KERBEROS
 #include <des.h>
-#include <kerberosIV/krb.h>
+#include <krb.h>
 #endif /* KERBEROS */
 #include "bool.h"
 #include <xfs/xfs_message.h>
@@ -70,7 +69,8 @@ typedef struct {
 #endif
 
 typedef struct {
-    pag_t cred;
+    xfs_pag_t cred;
+    uid_t uid;
     int type;
     int securityindex;
     long cell;
@@ -85,14 +85,15 @@ typedef struct {
 void cred_init (unsigned nentries);
 
 CredCacheEntry *
-cred_get (long cell, pag_t cred, int type);
+cred_get (long cell, xfs_pag_t cred, int type);
 
 void
 cred_free (CredCacheEntry *ce);
 
 CredCacheEntry *
-cred_add (pag_t cred, int type, int securityindex, long cell,
-	  time_t expire, void *cred_data, size_t cred_data_sz);
+cred_add (xfs_pag_t cred, int type, int securityindex, long cell,
+	  time_t expire, void *cred_data, size_t cred_data_sz,
+	  uid_t uid);
 
 void
 cred_delete (CredCacheEntry *ce);
@@ -101,11 +102,11 @@ void
 cred_expire (CredCacheEntry *ce);
 
 #ifdef KERBEROS
-CredCacheEntry * cred_add_krb4 (pag_t cred, CREDENTIALS *c);
+CredCacheEntry * cred_add_krb4 (xfs_pag_t cred, uid_t uid, CREDENTIALS *c);
 #endif
 
-void cred_status (FILE *f);
+void cred_status (void);
 
-void cred_remove (pag_t cred);
+void cred_remove (xfs_pag_t cred);
 
 #endif /* _CRED_H_ */

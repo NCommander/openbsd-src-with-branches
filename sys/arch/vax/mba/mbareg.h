@@ -1,4 +1,5 @@
-/*	$NetBSD: mbareg.h,v 1.1 1995/02/13 00:44:03 ragge Exp $ */
+/*	$OpenBSD: mbareg.h,v 1.3 1996/02/11 13:19:38 ragge Exp $ */
+/*	$NetBSD: mbareg.h,v 1.3 1996/02/11 13:19:38 ragge Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden
  * All rights reserved.
@@ -29,8 +30,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* mbareg.h - 940320/ragge */
-#include "vax/mba/hpreg.h"
+struct mba_hack {
+	u_int	pad1;
+	u_int	md_ds;		/* unit status */
+	u_int	pad4[2];
+	u_int	md_as;		/* Attention summary */
+	u_int	pad2;
+	u_int	md_dt;		/* unit type */
+	u_int	pad3[25];
+};
 
 struct mba_regs {
 	u_int	mba_csr;
@@ -42,8 +50,8 @@ struct mba_regs {
 	u_int	mba_smr;
 	u_int	mba_car;
 	u_int	utrymme[248];
-	struct	hp_drv hp_drv[8];
-	u_int	mba_map[256];
+	struct	mba_hack mba_md[8];	/* unit specific regs */
+	struct	pte mba_map[256];
 };
 
 /*
@@ -58,6 +66,7 @@ struct mba_regs {
 
 /* Read from mba_sr: */
 #define	MBASR_DTBUSY	0x80000000
+#define	MBASR_NRCONF	0x40000000
 #define	MBASR_CRD	0x20000000
 #define	MBASR_CBHUNG	0x800000
 #define MBASR_PGE	0x80000
@@ -70,11 +79,27 @@ struct mba_regs {
 #define MBASR_DLT	0x800		/* Data LaTe */
 #define MBASR_WCKUE	0x400		/* Write check upper error */
 #define	MBASR_WCKLE	0x200		/* Write check lower error */
-#define	MBASR_MXE	0x100		/* Miss transfer error */
+#define	MBASR_MXF	0x100		/* Miss transfer fault */
 #define	MBASR_MBEXC	0x80		/* Massbuss exception */
 #define	MBASR_MDPE	0x40		/* Massbuss data parity error */
 #define	MBASR_MAPPE	0x20		/* Page frame map parity error */
 #define	MBASR_INVMAP	0x10		/* Invalid map */
 #define MBASR_ERR_STAT	0x8		/* Error status */
-#define	MBASR_NRSTAT	0x2		/* No Response status */
+#define	MBASR_ERRC	0x4		/* Error confirmation */
+#define	MBASR_ISTIMO	0x2		/* Interface sequence timeout */
+#define	MBASR_RDTIMO	0x1		/* Read data timeout status */
 
+/* Definitions in mba_device md_ds */
+#define	MBADS_DPR	0x100		/* Unit present */
+
+/* Definitions in mba_device md_dt */
+#define	MBADT_RP04	0x10
+#define MBADT_RP05	0x11
+#define MBADT_RP06	0x12
+#define MBADT_RP07	0x22
+#define MBADT_RM02	0x15
+#define MBADT_RM03	0x14
+#define MBADT_RM05	0x17
+#define MBADT_RM80	0x16
+#define	MBADT_DRQ	0x800		/* Dual ported */
+#define	MBADT_MOH	0x2000		/* Moving head device */

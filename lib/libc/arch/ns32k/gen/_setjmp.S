@@ -13,17 +13,14 @@
  * LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
  * USE OF THIS SOFTWARE.
  */
-/*
- * HISTORY
- * 29-Apr-92  Johannes Helander (jvh) at Helsinki University of Technology
- *	Created.
- *
- *	$Id: _setjmp.S,v 1.1 1993/10/07 00:20:14 cgd Exp $
- *
- */
 
 #include <machine/asm.h>
 #include <machine/jmpbuf.h>
+
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 ENTRY(_setjmp)
 	movd	4(sp), r2		/* jmp_buf */

@@ -1,7 +1,9 @@
 NOPROG=	noprog
 NOMAN=	noman
 
-SUBDIR=	stand
+.if ${MACHINE} == "powerpc"
+SUBDIR= stand
+.endif
 
 obj:	_SUBDIRUSE
 

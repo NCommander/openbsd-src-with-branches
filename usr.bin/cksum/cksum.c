@@ -1,3 +1,4 @@
+/*	$OpenBSD: cksum.c,v 1.5 2000/11/21 13:22:40 aaron Exp $	*/
 /*	$NetBSD: cksum.c,v 1.7 1995/09/02 05:45:18 jtc Exp $	*/
 
 /*-
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cksum.c	8.2 (Berkeley) 4/28/95";
 #endif
-static char rcsid[] = "$NetBSD: cksum.c,v 1.7 1995/09/02 05:45:18 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cksum.c,v 1.5 2000/11/21 13:22:40 aaron Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -59,10 +60,13 @@ static char rcsid[] = "$NetBSD: cksum.c,v 1.7 1995/09/02 05:45:18 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <locale.h>
 
 #include "extern.h"
 
 void usage __P((void));
+
+extern char *__progname;
 
 int
 main(argc, argv)
@@ -74,7 +78,8 @@ main(argc, argv)
 	char *fn;
 	int (*cfncn) __P((int, u_int32_t *, u_int32_t *));
 	void (*pfncn) __P((char *, u_int32_t, u_int32_t));
-	extern char *__progname;
+
+	setlocale(LC_ALL, "");
 
 	if (!strcmp(__progname, "sum")) {
 		cfncn = csum1;
@@ -130,7 +135,9 @@ main(argc, argv)
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: cksum [-o 1 | 2] [file ...]\n");
+	if (!strcmp(__progname, "cksum"))
+		(void)fprintf(stderr, "usage: cksum [-o 1 | 2] [file ...]\n");
+	else
+		(void)fprintf(stderr, "usage: %s [file ...]\n", __progname);
 	exit(1);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: jmptest.c,v 1.2 1995/01/01 20:55:35 jtc Exp $	*/
 /*	$NetBSD: jmptest.c,v 1.2 1995/01/01 20:55:35 jtc Exp $	*/
 
 /*
@@ -32,6 +33,7 @@
  */
 
 #include <sys/types.h>
+#include <err.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
@@ -101,7 +103,7 @@ main(argc, argv)
 #endif
 
 	sa.sa_handler = aborthandler;
-	sa.sa_mask = 0;
+	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	if (sigaction(SIGABRT, &sa, NULL) == -1)
 		err(1, "sigaction failed");

@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.save.c,v 1.5 1995/03/23 08:31:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.save.c,v 1.5 1995/03/23 08:31:27 cgd Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -71,7 +73,7 @@ dosave0(hu) int hu; {
 
 		if(tmp == dlevel || !level_exists[tmp]) continue;
 		glo(tmp);
-		if((ofd = open(lock, 0)) < 0) {
+		if((ofd = open(lock, O_RDONLY)) < 0) {
 		    if(!hu) pline("Error while saving: cannot read %s.", lock);
 		    (void) close(fd);
 		    (void) unlink(SAVEF);

@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -39,21 +38,22 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: main.c,v 1.9 1998/03/13 04:46:33 assar Exp $");
+RCSID("$Id: main.c,v 1.19 2000/09/06 17:39:21 art Exp $");
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <mem.h>
-#include <fnameutil.h>
+#include <roken.h>
 #include "sym.h"
 #include "output.h"
 #include <err.h>
 #include <roken.h>
 
 extern FILE *yyin;
+
+int parse_errors;
 
 /*
  * ydr - generate stub routines for encode/decoding and RX
@@ -78,12 +78,10 @@ main (int argc, char **argv)
 
     snprintf (tmp_filename, sizeof(tmp_filename),
 	      "ydr_tmp_%u.c", (unsigned)getpid());
-    foo = fopen (tmp_filename, "w");
-    if (foo == NULL)
-	errx (1, "Cannot fopen %s for writing", tmp_filename);
+    foo = efopen (tmp_filename, "w");
     filename = copy_basename (argv[argc - 1]);
     fprintf (foo, "#include \"%s\"\n", argv[argc - 1]);
-    fclose (foo);
+    efclose (foo);
 
     initsym ();
     init_generate (filename);
@@ -108,11 +106,18 @@ main (int argc, char **argv)
     strcat (arg, tmp_filename);
 
     yyin = popen (arg, "r");
+    if (yyin == NULL) {
+	unlink (tmp_filename);
+	err (1, "popen `%s'", arg);
+    }
     free (arg);
     ret = yyparse ();
-    generate_server_switch (serverfile, serverhdrfile);
+    generate_server_switch (serverfile.stream, serverhdrfile.stream);
+    generate_tcpdump_patches (td_file.stream, filename);
     pclose (yyin);
     close_generator (filename);
     unlink (tmp_filename);
-    return ret;
+
+    return ret + parse_errors;
 }
+

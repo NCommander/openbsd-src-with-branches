@@ -1,5 +1,3 @@
-/*	$NetBSD: regexec.c,v 1.6 1995/02/27 13:29:48 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
  * Copyright (c) 1992, 1993, 1994
@@ -43,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)regexec.c	8.3 (Berkeley) 3/20/94";
 #else
-static char rcsid[] = "$NetBSD: regexec.c,v 1.6 1995/02/27 13:29:48 cgd Exp $";
+static char rcsid[] = "$OpenBSD: regexec.c,v 1.6 1997/04/28 20:45:01 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -65,8 +63,6 @@ static char rcsid[] = "$NetBSD: regexec.c,v 1.6 1995/02/27 13:29:48 cgd Exp $";
 #include "utils.h"
 #include "regex2.h"
 
-static int nope = 0;		/* for use in asserts; shuts lint up */
-
 /* macros for manipulating states, small version */
 #define	states	long
 #define	states1	states		/* for later use in regexec() decision */
@@ -82,13 +78,13 @@ static int nope = 0;		/* for use in asserts; shuts lint up */
 #define	SETUP(v)	((v) = 0)
 #define	onestate	long
 #define	INIT(o, n)	((o) = (unsigned long)1 << (n))
-#define	INC(o)	((unsigned long)(o) <<= 1)
+#define	INC(o)		((o) <<= 1)
 #define	ISSTATEIN(v, o)	(((v) & (o)) != 0)
 /* some abbreviations; note that some of these know variable names! */
 /* do "if I'm here, I can also be there" etc without branches */
 #define	FWD(dst, src, n)	((dst) |= ((unsigned long)(src)&(here)) << (n))
 #define	BACK(dst, src, n)	((dst) |= ((unsigned long)(src)&(here)) >> (n))
-#define	ISSETBACK(v, n)	(((v) & ((unsigned long)here >> (n))) != 0)
+#define	ISSETBACK(v, n)		(((v) & ((unsigned long)here >> (n))) != 0)
 /* function names */
 #define SNAMES			/* engine.c looks after details */
 

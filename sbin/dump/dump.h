@@ -1,4 +1,5 @@
-/*	$NetBSD: dump.h,v 1.9 1995/03/18 14:54:57 cgd Exp $	*/
+/*	$OpenBSD: dump.h,v 1.7 1998/07/14 19:04:03 deraadt Exp $	*/
+/*	$NetBSD: dump.h,v 1.11 1997/06/05 11:13:20 lukem Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1993
@@ -71,8 +72,9 @@ int	pipeout;	/* true => output to standard output */
 ino_t	curino;		/* current inumber; used globally */
 int	newtape;	/* new tape flag */
 int	density;	/* density in 0.1" units */
-long	tapesize;	/* estimated tape size, blocks */
+u_int64_t tapesize;	/* estimated tape size, blocks */
 long	tsize;		/* tape size in 0.1" units */
+int	unlimited;	/* if set, write to end of medium */
 long	asize;		/* number of 0.1" units written on current tape */
 int	etapes;		/* estimated number of tapes */
 int	nonodump;	/* if set, do not honor UF_NODUMP user flags */
@@ -81,6 +83,7 @@ int	notify;		/* notify operator flag */
 int	blockswritten;	/* number of blocks written on current tape */
 int	tapeno;		/* current tape number */
 time_t	tstart_writing;	/* when started writing the first tape block */
+long	xferrate;	/* averaged transfer rate of all volumes */
 struct	fs *sblock;	/* the file system super block */
 char	sblock_buf[MAXBSIZE];
 long	dev_bsize;	/* block size of underlying disk device */
@@ -93,20 +96,22 @@ int	tp_bshift;	/* log2(TP_BSIZE) */
 
 /* operator interface functions */
 void	broadcast __P((char *message));
+time_t	do_stats __P((void));
 void	lastdump __P((int arg));	/* int should be char */
 void	msg __P((const char *fmt, ...));
 void	msgtail __P((const char *fmt, ...));
 int	query __P((char *question));
 void	quit __P((const char *fmt, ...));
-void	set_operators __P((void));
+void	statussig __P((int));
 void	timeest __P((void));
-time_t	unctime __P((char *str));
 
-/* mapping rouintes */
+/* mapping routines */
 struct	dinode;
 long	blockest __P((struct dinode *dp));
-int	mapfiles __P((ino_t maxino, long *tapesize));
-int	mapdirs __P((ino_t maxino, long *tapesize));
+void	mapfileino __P((ino_t, u_int64_t *, int *));
+int	mapfiles __P((ino_t maxino, u_int64_t *tapesize, char *disk,
+		    char * const *dirv));
+int	mapdirs __P((ino_t maxino, u_int64_t *tapesize));
 
 /* file dumping routines */
 void	blksout __P((daddr_t *blkp, int frags, ino_t ino));
@@ -144,11 +149,11 @@ void	interrupt __P((int signo));	/* in case operator bangs on console */
  *	Exit status codes
  */
 #define	X_FINOK		0	/* normal exit */
+#define	X_STARTUP	1	/* startup error */
 #define	X_REWRITE	2	/* restart writing from the check point */
 #define	X_ABORT		3	/* abort dump; don't attempt checkpointing */
 
 #define	OPGRENT	"operator"		/* group entry to notify */
-#define DIALUP	"ttyd"			/* prefix for dialups */
 
 struct	fstab *fstabsearch __P((char *key));	/* search fs_file and fs_spec */
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* messages.c - error reporter -
    Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
 
@@ -18,7 +20,7 @@
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #ifndef lint
-static char rcsid[] = "$Id: messages.c,v 1.6 1994/08/25 07:36:33 pk Exp $";
+static char rcsid[] = "$OpenBSD: messages.c,v 1.1.1.1 1995/10/18 08:38:59 deraadt Exp $";
 #endif
 
 #include <stdio.h>

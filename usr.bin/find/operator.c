@@ -1,3 +1,5 @@
+/*	$OpenBSD: operator.c,v 1.4 1999/01/04 21:36:01 millert Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,10 +38,11 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)operator.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: operator.c,v 1.3 1993/12/30 21:15:31 jtc Exp $";
+static char rcsid[] = "$OpenBSD: operator.c,v 1.4 1999/01/04 21:36:01 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #include <err.h>
 #include <fts.h>
@@ -191,7 +194,7 @@ not_squish(plan)
 			int notlevel = 1;
 
 			node = yanknode(&plan);
-			while (node->type == N_NOT) {
+			while (node != NULL && node->type == N_NOT) {
 				++notlevel;
 				node = yanknode(&plan);
 			}
@@ -199,6 +202,8 @@ not_squish(plan)
 				errx(1, "!: no following expression");
 			if (node->type == N_OR)
 				errx(1, "!: nothing between ! and -o");
+			if (node->type == N_EXPR)
+				node = not_squish(node);
 			if (notlevel % 2 != 1)
 				next = node;
 			else

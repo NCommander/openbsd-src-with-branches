@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: grfioctl.h,v 1.5 1994/10/26 07:24:08 cgd Exp $	*/
 
 /*

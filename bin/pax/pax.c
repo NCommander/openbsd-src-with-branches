@@ -1,4 +1,5 @@
-/*	$NetBSD: pax.c,v 1.4 1995/03/21 09:07:39 cgd Exp $	*/
+/*	$OpenBSD: pax.c,v 1.15 2000/06/09 16:37:54 espie Exp $	*/
+/*	$NetBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1992 Keith Muller.
@@ -47,7 +48,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pax.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$NetBSD: pax.c,v 1.4 1995/03/21 09:07:39 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pax.c,v 1.15 2000/06/09 16:37:54 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,7 +61,11 @@ static char rcsid[] = "$NetBSD: pax.c,v 1.4 1995/03/21 09:07:39 cgd Exp $";
 #include <signal.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
+#include <err.h>
+#include <fcntl.h>
+#include <paths.h>
 #include "pax.h"
 #include "extern.h"
 static int gen_init __P((void));
@@ -75,6 +80,7 @@ static int gen_init __P((void));
 int	act = DEFOP;		/* read/write/append/copy */
 FSUB	*frmt = NULL;		/* archive format type */
 int	cflag;			/* match all EXCEPT pattern/file */
+int	cwdfd;			/* starting cwd */
 int	dflag;			/* directory member match only  */
 int	iflag;			/* interactive file/archive rename */
 int	kflag;			/* do not overwrite existing files */
@@ -92,14 +98,19 @@ int	Zflag;			/* same as uflg except after name mode */
 int	vfpart;			/* is partial verbose output in progress */
 int	patime = 1;		/* preserve file access time */
 int	pmtime = 1;		/* preserve file modification times */
+int	nodirs;			/* do not create directories as needed */
 int	pmode;			/* preserve file mode bits */
 int	pids;			/* preserve file uid/gid */
+int	rmleadslash = 0;	/* remove leading '/' from pathnames */
 int	exit_val;		/* exit value */
 int	docrc;			/* check/create file crc */
 char	*dirptr;		/* destination dir in a copy */
 char	*ltmfrmt;		/* -v locale time format (if any) */
 char	*argv0;			/* root of argv[0] */
 sigset_t s_mask;		/* signal mask for cleanup critical sect */
+FILE	*listf = stderr;	/* file pointer to print file list to */
+char	*tempfile;		/* tempfile to use for mkstemp(3) */
+char	*tempbase;		/* basename of tempfile to use for mkstemp(3) */
 
 /*
  *	PAX - Portable Archive Interchange
@@ -221,7 +232,7 @@ sigset_t s_mask;		/* signal mask for cleanup critical sect */
  * Return: 0 if ok, 1 otherwise
  */
 
-#if __STDC__
+#ifdef __STDC__
 int
 main(int argc, char **argv)
 #else
@@ -231,11 +242,41 @@ main(argc, argv)
 	char **argv;
 #endif
 {
+	char *tmpdir;
+	size_t tdlen;
+
+	/*
+	 * Keep a reference to cwd, so we can always come back home.
+	 */
+	cwdfd = open(".", O_RDONLY);
+	if (cwdfd < 0) {
+		syswarn(0, errno, "Can't open current working directory.");
+		return(exit_val);
+	}
+
+	/*
+	 * Where should we put temporary files?
+	 */
+	if ((tmpdir = getenv("TMPDIR")) == NULL || *tmpdir == '\0')
+		tmpdir = _PATH_TMP;
+	tdlen = strlen(tmpdir);
+	while(tdlen > 0 && tmpdir[tdlen - 1] == '/')
+		tdlen--;
+	tempfile = malloc(tdlen + 1 + sizeof(_TFILE_BASE));
+	if (tempfile == NULL) {
+		paxwarn(1, "Cannot allocate memory for temp file name.");
+		return(exit_val);
+	}
+	if (tdlen)
+		memcpy(tempfile, tmpdir, tdlen);
+	tempbase = tempfile + tdlen;
+	*tempbase++ = '/';
+
 	/*
 	 * parse options, determine operational mode, general init
 	 */
 	options(argc, argv);
-        if ((gen_init() < 0) || (tty_init() < 0))
+	if ((gen_init() < 0) || (tty_init() < 0))
 		return(exit_val);
 
 	/*
@@ -249,6 +290,8 @@ main(argc, argv)
 		archive();
 		break;
 	case APPND:
+		if (gzip_program != NULL)
+			err(1, "can not gzip while appending");
 		append();
 		break;
 	case COPY:
@@ -271,7 +314,7 @@ main(argc, argv)
  *	never....
  */
 
-#if __STDC__
+#ifdef __STDC__
 void
 sig_cleanup(int which_sig)
 #else
@@ -287,9 +330,9 @@ sig_cleanup(which_sig)
 	 */
 	vflag = vfpart = 1;
 	if (which_sig == SIGXCPU)
-		warn(0, "Cpu time limit reached, cleaning up.");
+		paxwarn(0, "Cpu time limit reached, cleaning up.");
 	else
-		warn(0, "Signal caught, cleaning up.");
+		paxwarn(0, "Signal caught, cleaning up.");
 
 	ar_close();
 	proc_dir();
@@ -304,7 +347,7 @@ sig_cleanup(which_sig)
  *	when dealing with a medium to large sized archives.
  */
 
-#if __STDC__
+#ifdef __STDC__
 static int
 gen_init(void)
 #else
@@ -367,35 +410,36 @@ gen_init()
 	    (sigaddset(&s_mask,SIGINT) < 0)||(sigaddset(&s_mask,SIGHUP) < 0) ||
 	    (sigaddset(&s_mask,SIGPIPE) < 0)||(sigaddset(&s_mask,SIGQUIT)<0) ||
 	    (sigaddset(&s_mask,SIGXCPU) < 0)||(sigaddset(&s_mask,SIGXFSZ)<0)) {
-		warn(1, "Unable to set up signal mask");
+		paxwarn(1, "Unable to set up signal mask");
 		return(-1);
 	}
+	memset(&n_hand, 0, sizeof n_hand);
 	n_hand.sa_mask = s_mask;
 	n_hand.sa_flags = 0;
 	n_hand.sa_handler = sig_cleanup;
 
 	if ((sigaction(SIGHUP, &n_hand, &o_hand) < 0) &&
-	    (o_hand.sa_handler == SIG_IGN) && 
+	    (o_hand.sa_handler == SIG_IGN) &&
 	    (sigaction(SIGHUP, &o_hand, &o_hand) < 0))
 		goto out;
 
 	if ((sigaction(SIGTERM, &n_hand, &o_hand) < 0) &&
-	    (o_hand.sa_handler == SIG_IGN) && 
+	    (o_hand.sa_handler == SIG_IGN) &&
 	    (sigaction(SIGTERM, &o_hand, &o_hand) < 0))
 		goto out;
 
 	if ((sigaction(SIGINT, &n_hand, &o_hand) < 0) &&
-	    (o_hand.sa_handler == SIG_IGN) && 
+	    (o_hand.sa_handler == SIG_IGN) &&
 	    (sigaction(SIGINT, &o_hand, &o_hand) < 0))
 		goto out;
 
 	if ((sigaction(SIGQUIT, &n_hand, &o_hand) < 0) &&
-	    (o_hand.sa_handler == SIG_IGN) && 
+	    (o_hand.sa_handler == SIG_IGN) &&
 	    (sigaction(SIGQUIT, &o_hand, &o_hand) < 0))
 		goto out;
 
 	if ((sigaction(SIGXCPU, &n_hand, &o_hand) < 0) &&
-	    (o_hand.sa_handler == SIG_IGN) && 
+	    (o_hand.sa_handler == SIG_IGN) &&
 	    (sigaction(SIGXCPU, &o_hand, &o_hand) < 0))
 		goto out;
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dll.h,v 1.3 1995/03/26 20:33:43 jtc Exp $	*/
 /*	$NetBSD: dll.h,v 1.3 1995/03/26 20:33:43 jtc Exp $	*/
 
 /* 

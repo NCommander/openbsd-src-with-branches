@@ -6,7 +6,7 @@
 .\"
 .TH KRB.REALMS 5 "Kerberos Version 4.0" "MIT Project Athena"
 .SH NAME
-/etc/krb.realms \- host to Kerberos realm translation file
+krb.realms \- host to Kerberos realm translation file
 .SH DESCRIPTION
 .I krb.realms
 provides a translation from a hostname to the Kerberos realm name for
@@ -35,4 +35,4 @@ form, the corresponding realm is the realm of the host.
 If no translation entry applies, the host's realm is considered to be
 the hostname's domain portion converted to upper case.
 .SH SEE ALSO
-krb_realmofhost(3)
+.Xr krb_realmofhost 3

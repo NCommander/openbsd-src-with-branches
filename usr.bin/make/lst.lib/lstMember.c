@@ -1,8 +1,9 @@
-/*	$NetBSD: lstMember.c,v 1.4 1995/06/14 15:21:32 christos Exp $	*/
+/*	$OpenBSD: lstMember.c,v 1.7 2000/06/17 14:34:09 espie Exp $	*/
+/*	$NetBSD: lstMember.c,v 1.5 1996/11/06 17:59:48 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,40 +37,31 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstMember.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstMember.c,v 1.4 1995/06/14 15:21:32 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * lstMember.c --
  *	See if a given datum is on a given list.
  */
 
 #include    "lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstMember.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstMember.c,v 1.7 2000/06/17 14:34:09 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 LstNode
-Lst_Member (l, d)
+Lst_Member(l, d)
     Lst	    	  	l;
-    ClientData	  	d;
+    void		*d;
 {
-    List    	  	list = (List) l;
-    register ListNode	lNode;
+    LstNode	lNode;
 
-    lNode = list->firstPtr;
-    if (lNode == NilListNode) {
-	return NILLNODE;
-    }
-    
-    do {
-	if (lNode->datum == d) {
-	    return (LstNode)lNode;
-	}
-	lNode = lNode->nextPtr;
-    } while (lNode != NilListNode && lNode != list->firstPtr);
-
-    return NILLNODE;
+    for (lNode = l->firstPtr; lNode != NULL; lNode = lNode->nextPtr)
+	if (lNode->datum == d)
+	    return lNode;
+    return NULL;
 }

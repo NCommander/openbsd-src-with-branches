@@ -1,3 +1,4 @@
+/*	$OpenBSD: cpu.h,v 1.4 2001/01/15 19:50:39 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -35,16 +36,7 @@
 
 #include <machine/frame.h>
 
-struct machvec {
-	void (*splx) __P((int));
-	void (*irq_establish) __P((int, int, void (*)(void *), void *));
-};
-extern struct machvec machine_interface;
-
 #include <machine/psl.h>
-
-#define	irq_establish(irq, level, handler, arg)	\
-	((*machine_interface.irq_establish)((irq), (level), (handler), (arg)))
 
 #define	CLKF_USERMODE(frame)	(((frame)->srr1 & PSL_PR) != 0)
 #define	CLKF_BASEPRI(frame)	((frame)->pri == 0)
@@ -72,18 +64,20 @@ syncicache(from, len)
 	int len;
 {
 	int l = len;
-	void *p = from;
+	char *p = from;
 	
 	do {
-		asm volatile ("dcbst 0,%0" :: "r"(p));
+		__asm__ __volatile__ ("dcbst 0,%0" :: "r"(p));
 		p += CACHELINESIZE;
 	} while ((l -= CACHELINESIZE) > 0);
-	asm volatile ("sync");
+	__asm__ __volatile__ ("sync");
+	p = from;
+	l = len;
 	do {
-		asm volatile ("icbi 0,%0" :: "r"(from));
-		from += CACHELINESIZE;
-	} while ((len -= CACHELINESIZE) > 0);
-	asm volatile ("isync");
+		__asm__ __volatile__ ("icbi 0,%0" :: "r"(p));
+		p += CACHELINESIZE;
+	} while ((l -= CACHELINESIZE) > 0);
+	__asm__ __volatile__ ("isync");
 }
 
 extern char *bootpath;

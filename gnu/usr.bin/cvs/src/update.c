@@ -1582,6 +1582,7 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
     int retval = 0;
     int retcode = 0;
     int fail;
+    long file_size;
     FILE *e;
     struct patch_file_data data;
 
@@ -1698,6 +1699,9 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
 				vers_ts->options, RUN_TTY,
 				patch_file_write, (void *) &data);
 
+	fseek(e, 0L, SEEK_END);
+	file_size = ftell(e);
+
 	if (fclose (e) < 0)
 	    error (1, errno, "cannot close %s", file2);
 
@@ -1780,6 +1784,16 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
 		   patch can't handle that.  */
 		fail = 1;
 	    }
+	    else {
+		/*
+		 * Don't send a diff if just sending the entire file
+		 * would be smaller
+		 */
+		fseek(e, 0L, SEEK_END);
+		if (file_size < ftell(e))
+		    fail = 1;
+	    }
+
 	    fclose (e);
 	}
     }
@@ -2678,7 +2692,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	    else
 	    {
 		/* If the size of `ftype' changes, fix the sscanf call also */
-		char ftype[16];
+		char ftype[16+1];
 		if (sscanf (n->data, "%16s %lu", ftype,
 			    &dev_long) < 2)
 		    error (1, 0, "%s:%s has bad `special' newphrase %s",
@@ -2756,7 +2770,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	    else
 	    {
 		/* If the size of `ftype' changes, fix the sscanf call also */
-		char ftype[16];
+		char ftype[16+1];
 		if (sscanf (n->data, "%16s %lu", ftype,
 			    &dev_long) < 2)
 		    error (1, 0, "%s:%s has bad `special' newphrase %s",

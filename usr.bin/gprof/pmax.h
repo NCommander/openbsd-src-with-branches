@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmax.h,v 1.2 1995/04/19 07:16:20 cgd Exp $	*/
 /*	$NetBSD: pmax.h,v 1.2 1995/04/19 07:16:20 cgd Exp $	*/
 
 /*-

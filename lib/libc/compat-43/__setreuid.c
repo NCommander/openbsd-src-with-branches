@@ -29,10 +29,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)kern_prot.c	7.21 (Berkeley) 5/3/91
- *	$Id: __setreuid.c,v 1.1 1994/04/10 06:32:40 cgd Exp $
  */
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char *rcsid = "$OpenBSD: __setreuid.c,v 1.3 1996/09/15 09:30:45 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <errno.h>
@@ -42,20 +43,32 @@ int
 __setreuid(ruid, euid)
 	uid_t ruid, euid;
 {
-	static uid_t svuid = -1;
-	
-	if (svuid == -1)
+	static uid_t svuid = (uid_t) -1;
+	uid_t sruid;
+
+	if (svuid == (uid_t) -1)
 		svuid = geteuid();
+
+	sruid = getuid();
 	/*
 	 * we assume that the intent of setting ruid is to be able to get
 	 * back ruid priviledge. So we make sure that we will be able to
 	 * do so, but do not actually set the ruid.
 	 */
-	if (ruid != -1 && ruid != getuid() && ruid != svuid) {
+	if (ruid != (uid_t) -1 && ruid != sruid && ruid != svuid &&
+	    svuid != 0 && sruid != 0) {
 		errno = EPERM;
 		return (-1);
 	}
-	if (euid != -1 && seteuid(euid) < 0)
+
+	/* 
+	 * If we are root and want to change our real uid, do so.
+	 * Since this clobbers our euid, we must do this before
+	 * we seteuid()
+	 */
+	if ((svuid == 0 || sruid == 0) && ruid != -1)
+		setuid(ruid);
+	if (euid != (uid_t) -1 && seteuid(euid) < 0)
 		return (-1);
 	return (0);
 }

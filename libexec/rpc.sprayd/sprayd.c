@@ -1,3 +1,5 @@
+/*	$OpenBSD: sprayd.c,v 1.2 2001/01/17 19:23:28 deraadt Exp $*/
+
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -27,11 +29,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: sprayd.c,v 1.7 1995/03/26 23:36:44 mycroft Exp $
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: sprayd.c,v 1.7 1995/03/26 23:36:44 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: sprayd.c,v 1.2 2001/01/17 19:23:28 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -50,14 +51,14 @@ static int from_inetd = 1;
 void
 cleanup()
 {
-	(void) pmap_unset(SPRAYPROG, SPRAYVERS);
-	exit(0);
+	(void) pmap_unset(SPRAYPROG, SPRAYVERS);	/* XXX signal race */
+	_exit(0);
 }
 
 void
 die()
 {
-	exit(0);
+	_exit(0);
 }
 
 int

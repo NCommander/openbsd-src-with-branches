@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.shknam.c,v 1.3 1995/03/23 08:31:33 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.shknam.c,v 1.3 1995/03/23 08:31:33 cgd Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -140,6 +142,6 @@ register int i;
 		else (void) strcpy(nampt, "Dirk");
 		return;
 	}
-	(void) strncpy(nampt, q[i], PL_NSIZ);
+	(void) strncpy(nampt, q[i], PL_NSIZ-1);
 	nampt[PL_NSIZ-1] = 0;
 }

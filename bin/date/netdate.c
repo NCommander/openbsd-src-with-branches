@@ -1,3 +1,4 @@
+/*	$OpenBSD: netdate.c,v 1.9 1997/06/30 07:08:44 deraadt Exp $	*/
 /*	$NetBSD: netdate.c,v 1.10 1995/09/07 06:21:06 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)netdate.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: netdate.c,v 1.10 1995/09/07 06:21:06 jtc Exp $";
+static char rcsid[] = "$OpenBSD: netdate.c,v 1.9 1997/06/30 07:08:44 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,6 +56,8 @@ static char rcsid[] = "$NetBSD: netdate.c,v 1.10 1995/09/07 06:21:06 jtc Exp $";
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <rpc/rpc.h>		/* bindresvport() proto */
 
 #include "extern.h"
 
@@ -78,9 +81,10 @@ netsettime(tval)
 	struct servent *sp;
 	struct tsp msg;
 	struct sockaddr_in sin, dest, from;
-	fd_set ready;
+	int fdsn;
+	fd_set *fdsp = NULL;
 	long waittime;
-	int s, length, port, timed_ack, found, err;
+	int s, length, timed_ack, found, error;
 	char hostname[MAXHOSTNAMELEN];
 
 	if ((sp = getservbyname("timed", "udp")) == NULL) {
@@ -103,17 +107,7 @@ netsettime(tval)
 	memset(&sin, 0, sizeof(sin));
 	sin.sin_len = sizeof(struct sockaddr_in);
 	sin.sin_family = AF_INET;
-	for (port = IPPORT_RESERVED - 1; port > IPPORT_RESERVED / 2; port--) {
-		sin.sin_port = htons((u_short)port);
-		if (bind(s, (struct sockaddr *)&sin, sizeof(sin)) >= 0)
-			break;
-		if (errno == EADDRINUSE)
-			continue;
-		if (errno != EADDRNOTAVAIL)
-			warn("bind");
-		goto bad;
-	}
-	if (port == IPPORT_RESERVED / 2) {
+	if (bindresvport(s, &sin) < 0) {
 		warnx("all ports in use");
 		goto bad;
 	}
@@ -123,7 +117,8 @@ netsettime(tval)
 		warn("gethostname");
 		goto bad;
 	}
-	(void)strncpy(msg.tsp_name, hostname, sizeof(hostname));
+	(void)strncpy(msg.tsp_name, hostname, sizeof(msg.tsp_name)-1);
+	msg.tsp_name[sizeof(msg.tsp_name)-1] = '\0';
 	msg.tsp_seq = htons((u_short)0);
 	msg.tsp_time.tv_sec = htonl((u_long)tval);
 	msg.tsp_time.tv_usec = htonl((u_long)0);
@@ -140,23 +135,27 @@ netsettime(tval)
 
 	timed_ack = -1;
 	waittime = WAITACK;
+
+	fdsn = howmany(s+1, NFDBITS) * sizeof(fd_mask);
+	if ((fdsp = (fd_set *)malloc(fdsn)) == NULL)
+		err(1, "malloc");
 loop:
 	tout.tv_sec = waittime;
 	tout.tv_usec = 0;
 
-	FD_ZERO(&ready);
-	FD_SET(s, &ready);
-	found = select(FD_SETSIZE, &ready, (fd_set *)0, (fd_set *)0, &tout);
+	memset(fdsp, 0, fdsn);
+	FD_SET(s, fdsp);
+	found = select(s+1, fdsp, NULL, NULL, &tout);
 
-	length = sizeof(err);
+	length = sizeof(error);
 	if (!getsockopt(s,
-	    SOL_SOCKET, SO_ERROR, (char *)&err, &length) && err) {
-		if (err != ECONNREFUSED)
+	    SOL_SOCKET, SO_ERROR, (char *)&error, &length) && error) {
+		if (error != ECONNREFUSED)
 			warn("send (delayed error)");
 		goto bad;
 	}
 
-	if (found > 0 && FD_ISSET(s, &ready)) {
+	if (found > 0 && FD_ISSET(s, fdsp)) {
 		length = sizeof(struct sockaddr_in);
 		if (recvfrom(s, &msg, sizeof(struct tsp), 0,
 		    (struct sockaddr *)&from, &length) < 0) {
@@ -174,9 +173,10 @@ loop:
 			goto loop;
 		case TSP_DATEACK:
 			(void)close(s);
+			free(fdsp);
 			return (0);
 		default:
-			warnx("wrong ack received from timed: %s", 
+			warnx("wrong ack received from timed: %s",
 			    tsptype[msg.tsp_type]);
 			timed_ack = -1;
 			break;
@@ -186,6 +186,8 @@ loop:
 		warnx("can't reach time daemon, time set locally");
 
 bad:
+	if (fdsp)
+		free(fdsp);
 	(void)close(s);
 	return (retval = 2);
 }

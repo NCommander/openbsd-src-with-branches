@@ -1,4 +1,5 @@
-/*	$NetBSD: sysarch.h,v 1.7 1995/10/11 04:20:26 mycroft Exp $	*/
+/*	$OpenBSD: sysarch.h,v 1.8 1996/01/08 13:51:44 mycroft Exp $	*/
+/*	$NetBSD: sysarch.h,v 1.8 1996/01/08 13:51:44 mycroft Exp $	*/
 
 #ifndef _I386_SYSARCH_H_
 #define _I386_SYSARCH_H_
@@ -11,6 +12,7 @@
 #define	I386_IOPL	2
 #define	I386_GET_IOPERM	3
 #define	I386_SET_IOPERM	4
+#define	I386_VM86	5
 
 struct i386_get_ldt_args {
 	int start;

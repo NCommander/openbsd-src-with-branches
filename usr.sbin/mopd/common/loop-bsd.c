@@ -1,3 +1,5 @@
+/*	$OpenBSD: loop-bsd.c,v 1.3 1997/08/18 03:11:30 millert Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -28,11 +30,11 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: loop-bsd.c,v 1.11 1996/08/16 22:41:28 moj Exp $";
+static char rcsid[] = "$OpenBSD: loop-bsd.c,v 1.3 1997/08/18 03:11:30 millert Exp $";
 #endif
 
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <unistd.h>
 #if defined(__bsdi__) || defined(__FreeBSD__)
 #include <sys/time.h>
@@ -135,8 +137,8 @@ Loop()
 	}
 	while (1) {
 		listeners = fds;
-		if (select(maxfd + 1, &listeners, (struct fd_set *) 0,
-			(struct fd_set *) 0, (struct timeval *) 0) < 0) {
+		if (select(maxfd + 1, &listeners, (fd_set *) 0,
+			(fd_set *) 0, (struct timeval *) 0) < 0) {
 			syslog(LOG_ERR, "select: %m");
 			exit(0);
 		}

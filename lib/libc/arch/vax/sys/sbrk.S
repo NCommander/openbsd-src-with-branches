@@ -31,10 +31,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)sbrk.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: sbrk.S,v 1.1 1995/04/17 12:24:05 ragge Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sbrk.S,v 1.3 1998/05/17 10:06:34 niklas Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
@@ -48,7 +48,7 @@ minbrk: .long	_end
 curbrk:	.long	_end
 	.text
 
-ENTRY(sbrk)
+ENTRY(sbrk, R3)
 	addl3	curbrk,4(ap),-(sp)
 	pushl	$1
 	movl	ap,r3

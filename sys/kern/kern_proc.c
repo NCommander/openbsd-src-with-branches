@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_proc.c,v 1.12 1995/03/19 23:44:49 mycroft Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.7 2000/06/05 11:02:50 art Exp $	*/
+/*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -51,6 +52,7 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/signalvar.h>
+#include <sys/pool.h>
 
 /*
  * Structure associated with user cacheing.
@@ -74,6 +76,23 @@ u_long pgrphash;
 struct proclist allproc;
 struct proclist zombproc;
 
+struct pool proc_pool;
+
+/*
+ * Locking of this proclist is special; it's accessed in a
+ * critical section of process exit, and thus locking it can't
+ * modify interrupt state.  We use a simple spin lock for this
+ * proclist.  Processes on this proclist are also on zombproc;
+ * we use the p_hash member to linkup to deadproc.
+ */
+struct simplelock deadproc_slock;
+struct proclist deadproc;		/* dead, but not yet undead */
+
+static void orphanpg __P((struct pgrp *));
+#ifdef DEBUG
+void pgrpdump __P((void));
+#endif
+
 /*
  * Initialize global process hashing structures.
  */
@@ -83,9 +102,16 @@ procinit()
 
 	LIST_INIT(&allproc);
 	LIST_INIT(&zombproc);
-	pidhashtbl = hashinit(maxproc / 4, M_PROC, &pidhash);
-	pgrphashtbl = hashinit(maxproc / 4, M_PROC, &pgrphash);
-	uihashtbl = hashinit(maxproc / 16, M_PROC, &uihash);
+
+	LIST_INIT(&deadproc);
+	simple_lock_init(&deadproc_slock);
+
+	pidhashtbl = hashinit(maxproc / 4, M_PROC, M_WAITOK, &pidhash);
+	pgrphashtbl = hashinit(maxproc / 4, M_PROC, M_WAITOK, &pgrphash);
+	uihashtbl = hashinit(maxproc / 16, M_PROC, M_WAITOK, &uihash);
+
+	pool_init(&proc_pool, sizeof(struct proc), 0, 0, 0, "procpl",
+		0, pool_page_alloc_nointr, pool_page_free_nointr, M_PROC);
 }
 
 /*
@@ -197,10 +223,10 @@ enterpgrp(p, pgid, mksess)
 		if (p->p_pid != pgid)
 			panic("enterpgrp: new pgrp and pid != pgid");
 #endif
-		MALLOC(pgrp, struct pgrp *, sizeof(struct pgrp), M_PGRP,
-		    M_WAITOK);
 		if ((np = pfind(savepid)) == NULL || np != p)
 			return (ESRCH);
+		MALLOC(pgrp, struct pgrp *, sizeof(struct pgrp), M_PGRP,
+		    M_WAITOK);
 		if (mksess) {
 			register struct session *sess;
 
@@ -280,8 +306,6 @@ pgdelete(pgrp)
 	FREE(pgrp, M_PGRP);
 }
 
-static void orphanpg();
-
 /*
  * Adjust pgrp jobc counters when specified process changes process group.
  * We count the number of processes in each process group that "qualify"
@@ -306,11 +330,12 @@ fixjobc(p, pgrp, entering)
 	 * group; if so, adjust count for p's process group.
 	 */
 	if ((hispgrp = p->p_pptr->p_pgrp) != pgrp &&
-	    hispgrp->pg_session == mysession)
+	    hispgrp->pg_session == mysession) {
 		if (entering)
 			pgrp->pg_jobc++;
 		else if (--pgrp->pg_jobc == 0)
 			orphanpg(pgrp);
+	}
 
 	/*
 	 * Check this process' children to see whether they qualify
@@ -320,11 +345,12 @@ fixjobc(p, pgrp, entering)
 	for (p = p->p_children.lh_first; p != 0; p = p->p_sibling.le_next)
 		if ((hispgrp = p->p_pgrp) != pgrp &&
 		    hispgrp->pg_session == mysession &&
-		    p->p_stat != SZOMB)
+		    P_ZOMBIE(p) == 0) {
 			if (entering)
 				hispgrp->pg_jobc++;
 			else if (--hispgrp->pg_jobc == 0)
 				orphanpg(hispgrp);
+		}
 }
 
 /* 
@@ -351,14 +377,15 @@ orphanpg(pg)
 }
 
 #ifdef DEBUG
+void
 pgrpdump()
 {
 	register struct pgrp *pgrp;
 	register struct proc *p;
-	register i;
+	register int i;
 
 	for (i = 0; i <= pgrphash; i++) {
-		if (pgrp = pgrphashtbl[i].lh_first) {
+		if ((pgrp = pgrphashtbl[i].lh_first) != NULL) {
 			printf("\tindx %d\n", i);
 			for (; pgrp != 0; pgrp = pgrp->pg_hash.le_next) {
 				printf("\tpgrp %p, pgid %d, sess %p, sesscnt %d, mem %p\n",

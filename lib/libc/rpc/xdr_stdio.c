@@ -1,5 +1,3 @@
-/*	$NetBSD: xdr_stdio.c,v 1.3 1995/02/25 03:02:09 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)xdr_stdio.c 1.16 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)xdr_stdio.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: xdr_stdio.c,v 1.3 1995/02/25 03:02:09 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: xdr_stdio.c,v 1.3 1996/08/19 08:32:08 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * xdr_stdio.c, XDR implementation on standard i/o file.
@@ -101,7 +97,7 @@ xdrstdio_destroy(xdrs)
 {
 	(void)fflush((FILE *)xdrs->x_private);
 	/* xx should we close the file ?? */
-};
+}
 
 static bool_t
 xdrstdio_getlong(xdrs, lp)
@@ -171,6 +167,7 @@ xdrstdio_setpos(xdrs, pos)
 		FALSE : TRUE);
 }
 
+/* ARGSUSED */
 static int32_t *
 xdrstdio_inline(xdrs, len)
 	XDR *xdrs;

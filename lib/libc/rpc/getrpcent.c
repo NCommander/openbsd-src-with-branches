@@ -1,5 +1,3 @@
-/*	$NetBSD: getrpcent.c,v 1.4 1995/02/25 03:01:45 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -31,9 +29,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)getrpcent.c 1.14 91/03/11 Copyr 1984 Sun Micro";*/
-static char *rcsid = "$NetBSD: getrpcent.c,v 1.4 1995/02/25 03:01:45 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: getrpcent.c,v 1.8 1997/09/22 05:11:07 millert Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * Copyright (c) 1984 by Sun Microsystems, Inc.
@@ -68,7 +65,7 @@ _rpcdata()
 {
 	register struct rpcdata *d = rpcdata;
 
-	if (d == 0) {
+	if (d == NULL) {
 		d = (struct rpcdata *)calloc(1, sizeof (struct rpcdata));
 		rpcdata = d;
 	}
@@ -82,10 +79,10 @@ getrpcbynumber(number)
 	register struct rpcdata *d = _rpcdata();
 	register struct rpcent *p;
 
-	if (d == 0)
+	if (d == NULL)
 		return (0);
 	setrpcent(0);
-	while (p = getrpcent()) {
+	while ((p = getrpcent())) {
 		if (p->r_number == number)
 			break;
 	}
@@ -101,16 +98,17 @@ getrpcbyname(name)
 	char **rp;
 
 	setrpcent(0);
-	while (rpc = getrpcent()) {
+	while ((rpc = getrpcent())) {
 		if (strcmp(rpc->r_name, name) == 0)
-			return (rpc);
+			goto done;
 		for (rp = rpc->r_aliases; *rp != NULL; rp++) {
 			if (strcmp(*rp, name) == 0)
-				return (rpc);
+				goto done;
 		}
 	}
+done:
 	endrpcent();
-	return (NULL);
+	return (rpc);
 }
 
 void
@@ -119,7 +117,7 @@ setrpcent(f)
 {
 	register struct rpcdata *d = _rpcdata();
 
-	if (d == 0)
+	if (d == NULL)
 		return;
 	if (d->rpcf == NULL)
 		d->rpcf = fopen(RPCDB, "r");
@@ -133,7 +131,7 @@ endrpcent()
 {
 	register struct rpcdata *d = _rpcdata();
 
-	if (d == 0)
+	if (d == NULL)
 		return;
 	if (d->rpcf && !d->stayopen) {
 		fclose(d->rpcf);
@@ -144,15 +142,14 @@ endrpcent()
 struct rpcent *
 getrpcent()
 {
-	struct rpcent *hp;
-	int reason;
 	register struct rpcdata *d = _rpcdata();
 
-	if (d == 0)
+	if (d == NULL)
 		return(NULL);
 	if (d->rpcf == NULL && (d->rpcf = fopen(RPCDB, "r")) == NULL)
 		return (NULL);
-        if (fgets(d->line, BUFSIZ, d->rpcf) == NULL)
+	/* -1 so there is room to append a \n below */
+        if (fgets(d->line, BUFSIZ-1, d->rpcf) == NULL)
 		return (NULL);
 	return (interpret(d->line, strlen(d->line)));
 }
@@ -166,11 +163,12 @@ interpret(val, len)
 	char *p;
 	register char *cp, **q;
 
-	if (d == 0)
+	if (d == NULL)
 		return (0);
-	(void) strncpy(d->line, val, len);
+	(void) strncpy(d->line, val, BUFSIZ);
+	d->line[BUFSIZ] = '\0';
 	p = d->line;
-	d->line[len] = '\n';
+	p[len] = '\n';
 	if (*p == '#')
 		return (getrpcent());
 	cp = strpbrk(p, "#\n");

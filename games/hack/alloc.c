@@ -1,5 +1,7 @@
+/*	$OpenBSD$	*/
+
 #ifndef lint
-static char rcsid[] = "$NetBSD: alloc.c,v 1.3 1995/03/23 08:29:14 cgd Exp $";
+static char rcsid[] = "$OpenBSD: alloc.c,v 1.3 1995/03/23 08:29:14 cgd Exp $";
 #endif /* not lint */
 
 #ifdef LINT

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: common.c,v 1.3 2001/03/09 03:24:09 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -119,7 +119,7 @@ runppp(bpffd, sysname)
 	execlp(PPP_PROG, "ppp", "-direct", sysname, NULL);
 	perror("execlp");
 	syslog(LOG_INFO, "%s exec failed: %m", PPP_PROG);
-	_exit(-1);
+	_exit(1);
 }
 
 int
@@ -139,7 +139,7 @@ bpf_to_ppp(pppfd, len, pkt)
 
 	r = writev(pppfd, iov, 2);
 	if (r < 0) {
-		if (errno == EINTR || errno == EPIPE)
+		if (errno == EINTR || errno == EPIPE || errno == ENOBUFS)
 			return (0);
 		return (-1);
 	}
@@ -174,9 +174,6 @@ ppp_to_bpf(bfd, pppfd, myea, rmea, id)
 		return (-1);
 	r -= 2;
 
-	iov[0].iov_len = 2;
-	iov[1].iov_len = r;
-
 	ph.vertype = PPPOE_VERTYPE(1, 1);
 	ph.code = PPPOE_CODE_SESSION;
 	ph.len = htons(r);
@@ -189,7 +186,9 @@ ppp_to_bpf(bfd, pppfd, myea, rmea, id)
 	iov[3].iov_base = &ph;		iov[3].iov_len = sizeof(ph);
 	iov[4].iov_base = pktbuf;	iov[4].iov_len = r;
 
-	return (writev(bfd, iov, 5));
+	r = writev(bfd, iov, 5);
+
+	return (r == -1 && errno == ENOBUFS ? 0 : r);
 }
 
 void

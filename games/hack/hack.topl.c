@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.topl.c,v 1.3 1995/03/23 08:31:40 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.topl.c,v 1.3 1995/03/23 08:31:40 cgd Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -34,7 +36,7 @@ doredotopl(){
 
 redotoplin() {
 	home();
-	if(index(toplines, '\n')) cl_end();
+	if(strchr(toplines, '\n')) cl_end();
 	putstr(toplines);
 	cl_end();
 	tlx = curx;
@@ -129,7 +131,7 @@ register char *line,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6;
 	register int n,n0;
 
 	if(!line || !*line) return;
-	if(!index(line, '%')) (void) strcpy(pbuf,line); else
+	if(!strchr(line, '%')) (void) strcpy(pbuf,line); else
 	(void) sprintf(pbuf,line,arg1,arg2,arg3,arg4,arg5,arg6);
 	if(flags.toplin == 1 && !strcmp(pbuf, toplines)) return;
 	nscr();		/* %% */
@@ -160,7 +162,7 @@ register char *line,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6;
 			if(!n0) n0 = CO-2;
 		}
 		(void) strncpy((tl = eos(toplines)), bp, n0);
-		tl[n0] = 0;
+		tl[n0] = '\0';
 		bp += n0;
 
 		/* remove trailing spaces, but leave one */

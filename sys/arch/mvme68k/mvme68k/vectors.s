@@ -1,6 +1,34 @@
-|	$NetBSD: vectors.s,v 1.6 1994/10/26 07:26:03 cgd Exp $
+/*	$OpenBSD$ */
 
 | Copyright (c) 1995 Theo de Raadt
+|
+| Redistribution and use in source and binary forms, with or without
+| modification, are permitted provided that the following conditions
+| are met:
+| 1. Redistributions of source code must retain the above copyright
+|    notice, this list of conditions and the following disclaimer.
+| 2. Redistributions in binary form must reproduce the above copyright
+|    notice, this list of conditions and the following disclaimer in the
+|    documentation and/or other materials provided with the distribution.
+| 3. All advertising materials mentioning features or use of this software
+|    must display the following acknowledgement:
+|	This product includes software developed under OpenBSD by
+|	Theo de Raadt for Willowglen Singapore.
+| 4. The name of the author may not be used to endorse or promote products
+|    derived from this software without specific prior written permission.
+|
+| THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+| OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+| WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+| ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+| DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+| DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+| OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+| HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+| LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+| OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+| SUCH DAMAGE.
+|
 | Copyright (c) 1988 University of Utah
 | Copyright (c) 1990, 1993
 |	The Regents of the University of California.  All rights reserved.
@@ -95,16 +123,12 @@ _vectab:
 	.long	_illinst	/* 45: TRAP instruction vector */
 	.long	_illinst	/* 46: TRAP instruction vector */
 	.long	_trap15		/* 47: TRAP instruction vector */
-#ifdef FPSP
-	.globl	bsun, inex, dz, unfl, operr, ovfl, snan
-	.long	bsun		/* 48: FPCP branch/set on unordered cond */
-	.long	inex		/* 49: FPCP inexact result */
-	.long	dz		/* 50: FPCP divide by zero */
-	.long	unfl		/* 51: FPCP underflow */
-	.long	operr		/* 52: FPCP operand error */
-	.long	ovfl		/* 53: FPCP overflow */
-	.long	snan		/* 54: FPCP signalling NAN */
-#else
+
+	/*
+	 * 68881/68882: _fpfault zone
+	 */
+	.globl	_fpvect_tab, _fpvect_end
+_fpvect_tab:
 	.globl	_fpfault
 	.long	_fpfault	/* 48: FPCP branch/set on unordered cond */
 	.long	_fpfault	/* 49: FPCP inexact result */
@@ -113,7 +137,7 @@ _vectab:
 	.long	_fpfault	/* 52: FPCP operand error */
 	.long	_fpfault	/* 53: FPCP overflow */
 	.long	_fpfault	/* 54: FPCP signalling NAN */
-#endif
+_fpvect_end:
 
 	.long	_fpunsupp	/* 55: FPCP unimplemented data type */
 	.long	_badtrap	/* 56: unassigned, reserved */
@@ -142,3 +166,20 @@ _vectab:
 	BADTRAP16		/* 208-223: user interrupt vectors */
 	BADTRAP16		/* 224-239: user interrupt vectors */
 	BADTRAP16		/* 240-255: user interrupt vectors */
+
+
+#ifdef FPSP
+	/*
+	 * 68040: this chunk of vectors is copied into the _fpfault zone
+	 */
+	.globl _fpsp_tab
+_fpsp_tab:
+	.globl	bsun, inex, dz, unfl, operr, ovfl, snan
+	.long	bsun		/* 48: FPCP branch/set on unordered cond */
+	.long	inex		/* 49: FPCP inexact result */
+	.long	dz		/* 50: FPCP divide by zero */
+	.long	unfl		/* 51: FPCP underflow */
+	.long	operr		/* 52: FPCP operand error */
+	.long	ovfl		/* 53: FPCP overflow */
+	.long	snan		/* 54: FPCP signalling NAN */
+#endif FPSP

@@ -1,3 +1,5 @@
+/*	$Id$	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -46,7 +48,7 @@ static char sccsid[] = "@(#)timedc.c	5.1 (Berkeley) 5/11/93";
 #endif
 
 #include "timedc.h"
-#include <strings.h>
+#include <string.h>
 #include <signal.h>
 #include <ctype.h>
 #include <setjmp.h>
@@ -77,6 +79,9 @@ main(int argc, char *argv[])
 		fprintf(stderr, "Could not get privileged resources\n");
 		exit(1);
 	}
+	/* revoke privs */
+
+	(void) seteuid(getuid());
 	(void) setuid(getuid());
 
 	if (--argc > 0) {

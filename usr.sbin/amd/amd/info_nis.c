@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)info_nis.c	8.1 (Berkeley) 6/6/93
- *	$Id: info_nis.c,v 1.3 1994/06/13 20:47:27 mycroft Exp $
+ *	$Id: info_nis.c,v 1.3 1996/05/26 10:39:51 deraadt Exp $
  */
 
 /*
@@ -45,9 +45,17 @@
 
 #include "am.h"
 
+#include <unistd.h>
+
 #ifdef HAS_NIS_MAPS
 #include <rpcsvc/yp_prot.h>
 #include <rpcsvc/ypclnt.h>
+#include <time.h>
+
+/*
+ * Sun's NIS+ server in NIS compat mode does not have yp_order()
+ */
+static int has_yp_order = FALSE;
 
 /*
  * Figure out the nis domain name
@@ -69,7 +77,7 @@ static	int nis_not_running = 0;
 
 	if (!*default_domain) {
 		nis_not_running = 1;
-		plog(XLOG_WARNING, "NIS domain name is not set.  NIS ignored.");
+		plog(XLOG_INFO, "NIS domain name is not set.  NIS ignored.");
 		return ENOENT;
 	}
 
@@ -180,20 +188,47 @@ time_t *tp;
 	/*
 	 * Make sure domain initialised
 	 */
-	if (!domain) {
-		int error = determine_nis_domain();
-		if (error)
-			return error;
+	if (has_yp_order) {
+		/* check if map has changed */
+		if (yp_order(domain, map, &order))
+			return EIO;
+		if ((time_t) order > *tp) {
+			*tp = (time_t) order;
+			return -1;
+		}
+	} else {
+		/*
+		 * NIS+ server without yp_order
+		 * Check if timeout has expired to invalidate the cache
+		 */
+		order = time(NULL);
+		if ((time_t)order - *tp > am_timeo) {
+			*tp = (time_t)order;
+			return(-1);
+		}
 	}
 
-	/*
-	 * Check if map has changed
-	 */
-	if (yp_order(domain, map, &order))
-		return EIO;
-	if ((time_t) order > *tp) {
-		*tp = (time_t) order;
-		return -1;
+
+	if (has_yp_order) {
+		/*
+		 * Check if map has changed
+		 */
+		if (yp_order(domain, map, &order))
+			return EIO;
+		if ((time_t) order > *tp) {
+			*tp = (time_t) order;
+			return -1;
+		}
+	} else {
+		/*
+		 * NIS+ server without yp_order
+		 * Check if timeout has expired to invalidate the cache 
+		 */
+		order = time(NULL);
+		if ((time_t)order - *tp > am_timeo) {
+			*tp = (time_t)order;
+			return(-1);
+		}
 	}
 
 	/*
@@ -223,6 +258,8 @@ char *map;
 time_t *tp;
 {
 	int order;
+	int yp_order_result;
+	char *master;
 
 	if (!domain) {
 		int error = determine_nis_domain();
@@ -234,12 +271,29 @@ time_t *tp;
 	 * To see if the map exists, try to find
 	 * a master for it.
 	 */
-	if (yp_order(domain, map, &order))
-		return ENOENT;
-	*tp = (time_t) order;
+	yp_order_result = yp_order(domain, map, &order);
+	switch (yp_order_result) {
+	case 0:
+		has_yp_order = TRUE;
+		*tp = (time_t)order;
 #ifdef DEBUG
-	dlog("NIS master for %s@%s has order %d", map, domain, order);
+		dlog("NIS master for %s@%s has order %d", map, domain, order);
 #endif
+		break;
+	case YPERR_YPERR:
+		plog(XLOG_ERROR, "%s: %s", map, "NIS+ server");
+		/* NIS+ server found ! */
+		has_yp_order = FALSE;
+
+		/* try yp_master() instead */
+		if (yp_master(domain, map, &master))
+			return ENOENT;
+		else
+		        *tp = time(NULL); /* Use fake timestamps */
+		break;
+	default:
+		return ENOENT;
+	}
 	return 0;
 }
 #endif /* HAS_NIS_MAPS */

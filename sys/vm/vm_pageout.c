@@ -1,4 +1,5 @@
-/*	$NetBSD: vm_pageout.c,v 1.22 1995/06/28 02:58:51 cgd Exp $	*/
+/*	$OpenBSD: vm_pageout.c,v 1.10 1998/12/30 12:26:14 art Exp $	*/
+/*	$NetBSD: vm_pageout.c,v 1.23 1996/02/05 01:54:07 christos Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -35,7 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm_pageout.c	8.5 (Berkeley) 2/14/94
+ *	@(#)vm_pageout.c	8.7 (Berkeley) 6/19/95
  *
  *
  * Copyright (c) 1987, 1990 Carnegie-Mellon University.
@@ -69,6 +70,10 @@
  */
 
 #include <sys/param.h>
+#include <sys/proc.h>
+#include <sys/systm.h>
+#include <sys/kernel.h>
+#include <sys/pool.h>
 
 #include <vm/vm.h>
 #include <vm/vm_page.h>
@@ -93,6 +98,34 @@ int	vm_page_max_wired = 0;	/* XXX max # of wired pages system-wide */
 #define MAXPOCLUSTER		(MAXPHYS/NBPG)	/* XXX */
 int doclustered_pageout = 1;
 #endif
+
+/*
+ * Activate the pageout daemon and sleep awaiting more free memory
+ */
+void
+vm_wait(msg)
+	char *msg;
+{
+	int timo = 0;
+
+	if(curproc == pageout_daemon) {
+		/*
+		 * We might be toast here, but IF some paging operations
+		 * are pending then pages will magically appear. We
+		 * usually can't return an error because callers of
+		 * malloc who can wait generally don't check for
+		 * failure.
+		 *
+		 * Only the pageout_daemon wakes up this channel!
+		 */
+		printf("pageout daemon has stalled\n");
+		timo = hz >> 3;
+	}
+	simple_lock(&vm_pages_needed_lock);
+	thread_wakeup(&vm_pages_needed);
+	thread_sleep_msg(&cnt.v_free_count, &vm_pages_needed_lock, FALSE, msg,
+		timo);
+}
 
 /*
  *	vm_pageout_scan does the dirty work for the pageout daemon.
@@ -198,7 +231,6 @@ vm_pageout_scan()
 		object = m->object;
 		if (!vm_object_lock_try(object))
 			continue;
-		cnt.v_pageouts++;
 #ifdef CLUSTERED_PAGEOUT
 		if (object->pager &&
 		    vm_pager_cancluster(object->pager, PG_CLUSTERPUT))
@@ -271,16 +303,29 @@ vm_pageout_page(m, object)
 	 * We must unlock the page queues first.
 	 */
 	vm_page_unlock_queues();
+
+#if 0
+	/*
+	 * vm_object_collapse might want to sleep waiting for pages which
+	 * is not allowed to do in this thread.  Anyway, we now aggressively
+	 * collapse object-chains as early as possible so this call ought
+	 * to not be very useful anyhow.  This is just an educated guess.
+	 * Not doing a collapse operation is never fatal though, so we skip
+	 * it for the time being.  Later we might add some NOWAIT option for
+	 * the collapse code to look at, if it's deemed necessary.
+	 */
 	if (object->pager == NULL)
 		vm_object_collapse(object);
+#endif
 
-	object->paging_in_progress++;
+	vm_object_paging_begin(object);
 	vm_object_unlock(object);
 
 	/*
-	 * Do a wakeup here in case the following operations block.
+	 * We _used_ to wakeup page consumers here, "in case the following
+	 * operations block". That leads to livelock if the pageout fails,
+	 * which is actually quite a common thing for NFS paging.
 	 */
-	thread_wakeup(&cnt.v_free_count);
 
 	/*
 	 * If there is no pager for the page, use the default pager.
@@ -290,7 +335,7 @@ vm_pageout_page(m, object)
 	 */
 	if ((pager = object->pager) == NULL) {
 		pager = vm_pager_allocate(PG_DFLT, (caddr_t)0, object->size,
-					  VM_PROT_ALL, (vm_offset_t)0);
+		    VM_PROT_ALL, (vm_offset_t)0);
 		if (pager != NULL)
 			vm_object_setpager(object, pager, 0, FALSE);
 	}
@@ -301,6 +346,9 @@ vm_pageout_page(m, object)
 	switch (pageout_status) {
 	case VM_PAGER_OK:
 	case VM_PAGER_PEND:
+		/* hmm, don't wakeup if memory is _very_ low? */
+		thread_wakeup(&cnt.v_free_count);
+		cnt.v_pageouts++;
 		cnt.v_pgpgout++;
 		m->flags &= ~PG_LAUNDRY;
 		break;
@@ -318,14 +366,13 @@ vm_pageout_page(m, object)
 		break;
 	case VM_PAGER_AGAIN:
 	{
-		extern int lbolt;
-
 		/*
 		 * FAIL on a write is interpreted to mean a resource
 		 * shortage, so we put pause for awhile and try again.
 		 * XXX could get stuck here.
 		 */
-		(void) tsleep((caddr_t)&lbolt, PZERO|PCATCH, "pageout", 0);
+		(void)tsleep((caddr_t)&vm_pages_needed, PZERO|PCATCH,
+		    "pageout", hz>>3);
 		break;
 	}
 	case VM_PAGER_FAIL:
@@ -351,7 +398,7 @@ vm_pageout_page(m, object)
 	if (pageout_status != VM_PAGER_PEND) {
 		m->flags &= ~PG_BUSY;
 		PAGE_WAKEUP(m);
-		object->paging_in_progress--;
+		vm_object_paging_end(object);
 	}
 }
 
@@ -376,6 +423,7 @@ vm_pageout_cluster(m, object)
 	vm_page_t plist[MAXPOCLUSTER], *plistp, p;
 	int postatus, ix, count;
 
+	cnt.v_pageouts++;
 	/*
 	 * Determine the range of pages that can be part of a cluster
 	 * for this object/offset.  If it is only our single page, just
@@ -441,7 +489,7 @@ vm_pageout_cluster(m, object)
 	 * in case it blocks.
 	 */
 	vm_page_unlock_queues();
-	object->paging_in_progress++;
+	vm_object_paging_begin(object);
 	vm_object_unlock(object);
 again:
 	thread_wakeup(&cnt.v_free_count);
@@ -450,9 +498,8 @@ again:
 	 * XXX rethink this
 	 */
 	if (postatus == VM_PAGER_AGAIN) {
-		extern int lbolt;
-
-		(void) tsleep((caddr_t)&lbolt, PZERO|PCATCH, "pageout", 0);
+		(void)tsleep((caddr_t)&vm_pages_needed, PZERO|PCATCH,
+		    "pageout", 0);
 		goto again;
 	} else if (postatus == VM_PAGER_BAD)
 		panic("vm_pageout_cluster: VM_PAGER_BAD");
@@ -492,7 +539,6 @@ again:
 		if (postatus != VM_PAGER_PEND) {
 			p->flags &= ~PG_BUSY;
 			PAGE_WAKEUP(p);
-
 		}
 	}
 	/*
@@ -500,8 +546,7 @@ again:
 	 * indicator set so that we don't attempt an object collapse.
 	 */
 	if (postatus != VM_PAGER_PEND)
-		object->paging_in_progress--;
-
+		vm_object_paging_end(object);
 }
 #endif
 
@@ -512,6 +557,7 @@ again:
 void
 vm_pageout()
 {
+	pageout_daemon = curproc;
 	(void) spl0();
 
 	/*
@@ -545,7 +591,8 @@ vm_pageout()
 
 	simple_lock(&vm_pages_needed_lock);
 	while (TRUE) {
-		thread_sleep(&vm_pages_needed, &vm_pages_needed_lock, FALSE);
+		thread_sleep_msg(&vm_pages_needed, &vm_pages_needed_lock,
+			FALSE, "paged", 0);
 		/*
 		 * Compute the inactive target for this scan.
 		 * We need to keep a reasonable amount of memory in the
@@ -562,8 +609,10 @@ vm_pageout()
 		 * to clean up async pageouts.
 		 */
 		if (cnt.v_free_count < cnt.v_free_target ||
-		    cnt.v_inactive_count < cnt.v_inactive_target)
+		    cnt.v_inactive_count < cnt.v_inactive_target) {
+			pool_drain(0);
 			vm_pageout_scan();
+		}
 		vm_pager_sync();
 		simple_lock(&vm_pages_needed_lock);
 		thread_wakeup(&cnt.v_free_count);

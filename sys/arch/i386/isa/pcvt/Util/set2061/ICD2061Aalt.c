@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * This code is derived from code available from the STB bulletin board
  */

@@ -29,22 +29,43 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: semctl.c,v 1.3 1995/02/27 11:23:09 cgd Exp $";
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD: semctl.c,v 1.4 1997/07/25 20:30:14 mickey Exp $";
+#endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
+#if __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
+#include <stdlib.h>
 
 #if __STDC__
-int semctl(int semid, int semnum, int cmd, union semun semun)
+int semctl(int semid, int semnum, int cmd, ...)
 #else
-int semctl(semid, int semnum, cmd, semun)
+int semctl(semid, semnum, cmd, va_alist)
 	int semid, semnum;
 	int cmd;
-	union semun semun;
+	va_dcl
 #endif
 {
-	return (__semctl(semid, semnum, cmd, &semun));
+	va_list ap;
+	union semun semun;
+	union semun *semun_ptr = NULL;
+#if __STDC__
+	va_start(ap, cmd);
+#else
+	va_start(ap);
+#endif
+	if (cmd == IPC_SET || cmd == IPC_STAT || cmd == GETALL ||
+	    cmd == SETVAL || cmd == SETALL) {
+		semun = va_arg(ap, union semun);
+		semun_ptr = &semun;
+	}
+	va_end(ap);
+
+	return (__semctl(semid, semnum, cmd, semun_ptr));
 }

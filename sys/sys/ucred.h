@@ -1,3 +1,4 @@
+/*	$OpenBSD: ucred.h,v 1.2 1996/03/03 12:12:37 niklas Exp $	*/
 /*	$NetBSD: ucred.h,v 1.12 1995/06/01 22:44:50 jtc Exp $	*/
 
 /*
@@ -42,7 +43,7 @@
  * Credentials.
  */
 struct ucred {
-	u_short	cr_ref;			/* reference count */
+	u_int	cr_ref;			/* reference count */
 	uid_t	cr_uid;			/* effective user id */
 	gid_t	cr_gid;			/* effective group id */
 	short	cr_ngroups;		/* number of groups */

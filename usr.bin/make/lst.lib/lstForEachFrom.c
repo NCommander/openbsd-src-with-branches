@@ -1,8 +1,9 @@
-/*	$NetBSD: lstForEachFrom.c,v 1.4 1995/06/14 15:21:16 christos Exp $	*/
+/*	$OpenBSD: lstForEachFrom.c,v 1.8 2000/06/17 14:34:08 espie Exp $	*/
+/*	$NetBSD: lstForEachFrom.c,v 1.5 1996/11/06 17:59:42 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,14 +37,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstForEachFrom.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstForEachFrom.c,v 1.4 1995/06/14 15:21:16 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * lstForEachFrom.c --
  *	Perform a given function on all elements of a list starting from
@@ -51,68 +44,45 @@ static char rcsid[] = "$NetBSD: lstForEachFrom.c,v 1.4 1995/06/14 15:21:16 chris
  */
 
 #include	"lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstForEachFrom.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstForEachFrom.c,v 1.8 2000/06/17 14:34:08 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 /*-
  *-----------------------------------------------------------------------
  * Lst_ForEachFrom --
- *	Apply the given function to each element of the given list. The
- *	function should return 0 if traversal should continue and non-
- *	zero if it should abort. 
- *
- * Results:
- *	None.
+ *	Apply the given function to each element of the given list. 
  *
  * Side Effects:
  *	Only those created by the passed-in function.
  *
  *-----------------------------------------------------------------------
  */
-/*VARARGS2*/
 void
-Lst_ForEachFrom (l, ln, proc, d)
-    Lst	    	    	l;
+Lst_ForEachFrom(ln, proc, d)
     LstNode    	  	ln;
-    register int	(*proc)();
-    register ClientData	d;
+    ForEachProc		proc;
+    void		*d;
 {
-    register ListNode	tln = (ListNode)ln;
-    register List 	list = (List)l;
-    register ListNode	next;
-    Boolean 	    	done;
-    int     	    	result;
-    
-    if (!LstValid (list) || LstIsEmpty (list)) {
-	return;
-    }
-    
-    do {
-	/*
-	 * Take care of having the current element deleted out from under
-	 * us.
-	 */
-	
-	next = tln->nextPtr;
-	
-	(void) tln->useCount++;
-	result = (*proc) (tln->datum, d);
-	(void) tln->useCount--;
+    LstNode		tln;
 
-	/*
-	 * We're done with the traversal if
-	 *  - nothing's been added after the current node and
-	 *  - the next node to examine is the first in the queue or
-	 *    doesn't exist.
-	 */
-	done = (next == tln->nextPtr &&
-		(next == NilListNode || next == list->firstPtr));
-	
-	next = tln->nextPtr;
-
-	if (tln->flags & LN_DELETED) {
-	    free((char *)tln);
-	}
-	tln = next;
-    } while (!result && !LstIsEmpty(list) && !done);
-    
+    for (tln = ln; tln != NULL; tln = tln->nextPtr)
+    	(*proc)(tln->datum, d);
 }
 
+void
+Lst_Every(l, proc)
+    Lst    	  	l;
+    SimpleProc		proc;
+{
+    LstNode		tln;
+
+    for (tln = Lst_First(l); tln != NULL; tln = tln->nextPtr)
+    	(*proc)(tln->datum);
+}

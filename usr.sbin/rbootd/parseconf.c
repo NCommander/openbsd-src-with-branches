@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: parseconf.c,v 1.4 1995/10/06 05:12:16 thorpej Exp $	*/
 
 /*
@@ -48,7 +49,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)parseconf.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: parseconf.c,v 1.4 1995/10/06 05:12:16 thorpej Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -130,7 +131,7 @@ ParseConfig()
 		if (*line == '\0' || *line == '#')	/* ignore comment */
 			continue;
 
-		if ((cp = index(line,'#')) != NULL)	/* trash comments */
+		if ((cp = strchr(line,'#')) != NULL)	/* trash comments */
 			*cp = '\0';
 
 		cp = line;				/* init `cp' */
@@ -329,7 +330,7 @@ GetBootFiles()
 	 *  Open current directory to read boot file names.
 	 */
 	if ((dfd = opendir(".")) == NULL) {	/* open BootDir */
-		syslog(LOG_ERR, "GetBootFiles: can't open directory (%s)\n",
+		syslog(LOG_ERR, "GetBootFiles: can't open directory (%s)",
 		       BootDir);
 		return(0);
 	}
@@ -355,7 +356,7 @@ GetBootFiles()
 	(void) closedir(dfd);			/* close BootDir */
 
 	if (i == 0)				/* cant find any boot files */
-		syslog(LOG_ERR, "GetBootFiles: no boot files (%s)\n", BootDir);
+		syslog(LOG_ERR, "GetBootFiles: no boot files (%s)", BootDir);
 
 	return(i);
 }

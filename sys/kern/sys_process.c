@@ -1,4 +1,5 @@
-/*	$NetBSD: sys_process.c,v 1.52 1995/10/07 06:28:36 mycroft Exp $	*/
+/*	$OpenBSD: sys_process.c,v 1.9 2000/11/10 15:33:10 provos Exp $	*/
+/*	$NetBSD: sys_process.c,v 1.55 1996/05/15 06:17:47 tls Exp $	*/
 
 /*-
  * Copyright (c) 1994 Christopher G. Demetriou.  All rights reserved.
@@ -55,6 +56,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/errno.h>
 #include <sys/ptrace.h>
 #include <sys/uio.h>
@@ -63,7 +65,14 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
+#if defined(UVM)
+#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
+#endif
+
 #include <machine/reg.h>
+
+#include <miscfs/procfs/procfs.h>
 
 /* Macros to clear/set/test flags. */
 #define	SET(t, f)	(t) |= (f)
@@ -94,6 +103,7 @@ sys_ptrace(p, v, retval)
 	if (SCARG(uap, req) == PT_TRACE_ME)
 		t = p;
 	else {
+
 		/* Find the process we're supposed to be operating on. */
 		if ((t = pfind(SCARG(uap, pid))) == NULL)
 			return (ESRCH);
@@ -120,13 +130,29 @@ sys_ptrace(p, v, retval)
 			return (EBUSY);
 
 		/*
-		 *	(3) it's not owned by you, or is set-id on exec
-		 *	    (unless you're root).
+		 *	(3) it's not owned by you, or the last exec
+		 *	    gave us setuid/setgid privs (unless
+		 *	    you're root), or...
+		 * 
+		 *      [Note: once P_SUGID gets set in execve(), it stays
+		 *	set until the process does another execve(). Hence
+		 *	this prevents a setuid process which revokes it's
+		 *	special privilidges using setuid() from being
+		 *	traced. This is good security.]
 		 */
 		if ((t->p_cred->p_ruid != p->p_cred->p_ruid ||
 			ISSET(t->p_flag, P_SUGID)) &&
 		    (error = suser(p->p_ucred, &p->p_acflag)) != 0)
 			return (error);
+
+		/*
+		 *	(4) ...it's init, which controls the security level
+		 *	    of the entire system, and the system was not
+		 *          compiled with permanently insecure mode turned
+		 *	    on.
+		 */
+		if ((t->p_pid == 1) && (securelevel > -1))
+			return (EPERM);
 		break;
 
 	case  PT_READ_I:
@@ -189,10 +215,10 @@ sys_ptrace(p, v, retval)
 		t->p_oppid = t->p_pptr->p_pid;
 		return (0);
 
-	case  PT_WRITE_I:		/* XXX no seperate I and D spaces */
+	case  PT_WRITE_I:		/* XXX no separate I and D spaces */
 	case  PT_WRITE_D:
 		write = 1;
-	case  PT_READ_I:		/* XXX no seperate I and D spaces */
+	case  PT_READ_I:		/* XXX no separate I and D spaces */
 	case  PT_READ_D:
 		/* write = 0 done above. */
 		iov.iov_base =
@@ -240,13 +266,14 @@ sys_ptrace(p, v, retval)
 		/*
 		 * Arrange for a single-step, if that's requested and possible.
 		 */
-		if (error = process_sstep(t, SCARG(uap, req) == PT_STEP))
+		error = process_sstep(t, SCARG(uap, req) == PT_STEP);
+		if (error)
 			goto relebad;
 #endif
 
 		/* If the address paramter is not (int *)1, set the pc. */
 		if ((int *)SCARG(uap, addr) != (int *)1)
-			if (error = process_set_pc(t, SCARG(uap, addr)))
+			if ((error = process_set_pc(t, SCARG(uap, addr))) != 0)
 				goto relebad;
 
 		PRELE(t);
@@ -311,7 +338,7 @@ sys_ptrace(p, v, retval)
 		/* write = 0 done above. */
 #endif
 #if defined(PT_SETREGS) || defined(PT_GETREGS)
-		if (!procfs_validregs(t))
+		if (!procfs_validregs(t, NULL))
 			return (EINVAL);
 		else {
 			iov.iov_base = SCARG(uap, addr);
@@ -336,7 +363,7 @@ sys_ptrace(p, v, retval)
 		/* write = 0 done above. */
 #endif
 #if defined(PT_SETFPREGS) || defined(PT_GETFPREGS)
-		if (!procfs_validfpregs(t))
+		if (!procfs_validfpregs(t, NULL))
 			return (EINVAL);
 		else {
 			iov.iov_base = SCARG(uap, addr);
@@ -356,8 +383,10 @@ sys_ptrace(p, v, retval)
 #ifdef DIAGNOSTIC
 	panic("ptrace: impossible");
 #endif
+	return 0;
 }
 
+int
 trace_req(a1)
 	struct proc *a1;
 {

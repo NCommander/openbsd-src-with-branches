@@ -29,10 +29,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)kern_prot.c	7.21 (Berkeley) 5/3/91
- *	$Id: __setregid.c,v 1.1 1994/04/10 06:32:37 cgd Exp $
  */
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char *rcsid = "$OpenBSD: __setregid.c,v 1.3 1996/09/15 09:30:44 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <errno.h>
@@ -42,20 +43,34 @@ int
 __setregid(rgid, egid)
 	gid_t rgid, egid;
 {
-	static gid_t svgid = -1;
+	static gid_t svgid = (gid_t) -1;
+	uid_t ruid, euid;
 
-	if (svgid == -1)
+	if (svgid == (gid_t) -1)
 		svgid = getegid();
+
+	ruid = getuid();
+	euid = geteuid();
+
 	/*
 	 * we assume that the intent of setting rgid is to be able to get
 	 * back rgid priviledge. So we make sure that we will be able to
 	 * do so, but do not actually set the rgid.
 	 */
-	if (rgid != -1 && rgid != getgid() && rgid != svgid) {
+	if (rgid != (gid_t) -1 && rgid != getgid() && rgid != svgid &&
+	    ruid != 0 && euid != 0) {
 		errno = EPERM;
 		return (-1);
 	}
-	if (egid != -1 && setegid(egid) < 0)
+
+	/* 
+	 * If we are root and want to change our real group id, do so.
+	 * Since this clobbers our egid, so we must do this before 
+	 * we setegid().
+	 */
+	if ((ruid == 0 || euid == 0) && rgid != -1)
+		setgid(rgid);
+	if (egid != (gid_t) -1 && setegid(egid) < 0)
 		return (-1);
 	return (0);
 }

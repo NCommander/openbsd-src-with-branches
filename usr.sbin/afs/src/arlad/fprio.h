@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -41,7 +40,7 @@
  * Our cache of volume information.
  */
 
-/* $KTH: fprio.h,v 1.3 1998/06/08 18:55:13 lha Exp $ */
+/* $Id: fprio.h,v 1.5 1999/12/30 03:52:48 lha Exp $ */
 
 #ifndef _FPRIO_
 #define _FPRIO_
@@ -58,10 +57,10 @@ struct fpriorityentry {
 void fprio_init (char *file);
 int  fprio_clear(void);
 void fprio_remove(VenusFid fid);
-void fprio_set(VenusFid fid, unsigned prio);
+void fprio_set(VenusFid fid, Bool prio);
 int  fprio_readin(char *file);
-int  fprio_get(VenusFid fid);
-void fprio_status (FILE *f);
+Bool fprio_get(VenusFid fid);
+void fprio_status (void);
 
 #endif /* _FPRIO_ */
 

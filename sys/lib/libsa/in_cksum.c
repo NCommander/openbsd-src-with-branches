@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: in_cksum.c,v 1.3 1995/04/22 13:53:48 cgd Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
  *	Author and mantainer: 	Luigi Catuogno [luicat@tcfs.unisa.it]
@@ -14,6 +16,8 @@
 #define _TCFSDEFINES_H_
 
 #define UUKEYSIZE	((KEYSIZE / 3 + (KEYSIZE % 3 ? 1 : 0)) * 4)
+#define GKEYSIZE	(KEYSIZE + KEYSIZE/8)
+#define UUGKEYSIZE	((GKEYSIZE / 3 + (GKEYSIZE % 3 ? 1 : 0)) * 4)
 #define TRUE		1
 #define FALSE		0
 #define ONE		1 /* decrement key counter by 1 */
@@ -30,5 +34,3 @@ typedef struct {
 } tcfs_flags;
 
 #endif /* _TCFSDEFINES_H_ */
-
-

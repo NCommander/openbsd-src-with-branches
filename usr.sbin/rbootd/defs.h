@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: defs.h,v 1.5 1995/10/06 05:12:14 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -56,6 +58,9 @@ extern int sc_width, sc_height;
 position(where)
 	int where;
 {
+	if (where >= table_size)
+		where = BOTTOM;
+
 	switch (where)
 	{
 	case BOTTOM:

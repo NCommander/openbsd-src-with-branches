@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.4 1998/09/13 01:30:32 pjanzen Exp $	*/
 /*	$NetBSD: misc.c,v 1.3 1995/03/21 15:07:37 cgd Exp $	*/
 
 /*
@@ -35,20 +36,21 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 5/31/93";
+static char sccsid[] = "@(#)misc.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: misc.c,v 1.3 1995/03/21 15:07:37 cgd Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.4 1998/09/13 01:30:32 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-#include "externs.h"
+#include "extern.h"
 
+int
 card(array, size)		/* for beenthere, injuries */
-	register char *array;
-	int size;
+	const char   *array;
+	int     size;
 {
-	register char *end = array + size;
-	register int i = 0;
+	const char   *end = array + size;
+	int     i = 0;
 
 	while (array < end)
 		if (*array++)
@@ -56,13 +58,14 @@ card(array, size)		/* for beenthere, injuries */
 	return (i);
 }
 
+int
 ucard(array)
-	register unsigned *array;
+	const unsigned int *array;
 {
-	register int j = 0, n;
+	int     j = 0, n;
 
 	for (n = 0; n < NUMOFOBJECTS; n++)
-		if (testbit(array, n))
-			    j++;
+		if (TestBit(array, n))
+			j++;
 	return (j);
 }

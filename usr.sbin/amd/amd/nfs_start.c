@@ -36,12 +36,13 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)nfs_start.c	8.1 (Berkeley) 6/6/93
- *	$Id: nfs_start.c,v 1.3 1994/06/13 20:47:46 mycroft Exp $
+ *	$Id: nfs_start.c,v 1.3 1997/12/17 20:37:37 deraadt Exp $
  */
 
 #include "am.h"
 #include "amq.h"
-#include <sys/signal.h>
+#include <signal.h>
+#include <unistd.h>
 #include <setjmp.h>
 extern jmp_buf select_intr;
 extern int select_intr_valid;
@@ -92,10 +93,10 @@ static char *max_mem = 0;
 	/*if (max_mem == 0) {
 		max_mem = next_mem;
 	} else*/ if (max_mem < next_mem) {
-		dlog("%#x bytes of memory allocated; total is %#x (%d pages)",
-			next_mem - max_mem,
-			next_mem,
-			((int)next_mem+getpagesize()-1)/getpagesize());
+		dlog("%#lx bytes of memory allocated; total is %#lx (%ld pages)",
+			(unsigned long)(next_mem - max_mem),
+			(unsigned long)next_mem,
+			((unsigned long)next_mem+getpagesize()-1)/getpagesize());
 		max_mem = next_mem;
 	}
 }
@@ -104,12 +105,12 @@ static char *max_mem = 0;
 static int do_select(smask, fds, fdp, tvp)
 int smask;
 int fds;
-int *fdp;
+fd_set *fdp;
 struct timeval *tvp;
 {
 	int sig;
 	int nsel;
-	if (sig = setjmp(select_intr)) {
+	if ((sig = setjmp(select_intr))) {
 		select_intr_valid = 0;
 		/* Got a signal */
 		switch (sig) {
@@ -136,8 +137,8 @@ struct timeval *tvp;
 		/*
 		 * Wait for input
 		 */
-		nsel = select(fds, fdp, (int *) 0, (int *) 0,
-				tvp->tv_sec ? tvp : (struct timeval *) 0);
+		nsel = select(fds, fdp, NULL, NULL,
+		    tvp->tv_sec ? tvp : (struct timeval *) 0);
 
 	}
 
@@ -162,31 +163,44 @@ static int rpc_pending_now()
 	struct timeval tvv;
 	int nsel;
 #ifdef FD_SET
-	fd_set readfds;
+	fd_set *fdsp;
+	int fdsn;
 
-	FD_ZERO(&readfds);
-	FD_SET(fwd_sock, &readfds);
+	fdsn = howmany(max_fds+1, NFDBITS) * sizeof(fd_mask);
+	if ((fdsp = (fd_set *)malloc(fdsn)) == NULL)
+		return(0);
+	memset(fdsp, 0, fdsn);
+	FD_SET(fwd_sock, fdsp);
 #else
+	int *fdsp;
 	int readfds = (1 << fwd_sock);
+	fdsp = (int *)malloc(sizeof readfds);
+	memcpy(fdsp, &readfds, sizeof readfds);
 #endif /* FD_SET */
 
 	tvv.tv_sec = tvv.tv_usec = 0;
-	nsel = select(max_fds+1, &readfds, (int *) 0, (int *) 0, &tvv);
-	if (nsel < 1)
+	nsel = select(max_fds+1, fdsp, NULL, NULL, &tvv);
+	if (nsel < 1) {
+		free(fdsp);
 		return(0);
+	}
 #ifdef FD_SET
-	if (FD_ISSET(fwd_sock, &readfds))
+	if (FD_ISSET(fwd_sock, fdsp)) {
+		free(fdsp);
 		return(1);
+	}
 #else
-	if (readfds & (1 << fwd_sock))
+	if (readfds & (1 << fwd_sock)) {
+		free(fdsp);
 		return(1);
+	}
 #endif
+	free(fdsp);
 	return(0);
 }
 
 static serv_state run_rpc(P_void)
 {
-	int dtbsz = max_fds + 1;
 	int smask = sigblock(MASKED_SIGS);
 
 	next_softclock = clocktime();
@@ -203,9 +217,29 @@ static serv_state run_rpc(P_void)
 		int nsel;
 		time_t now;
 #ifdef RPC_4
-		fd_set readfds;
-		readfds = svc_fdset;
-		FD_SET(fwd_sock, &readfds);
+#ifdef __OpenBSD__
+		extern int __svc_fdsetsize;
+		extern fd_set *__svc_fdset;
+		fd_set *fdsp;
+		int fdsn = __svc_fdsetsize;
+		int bytes;
+
+		if (fwd_sock > fdsn)
+			fdsn = fwd_sock;
+		bytes = howmany(fdsn, NFDBITS) * sizeof(fd_mask);
+
+		fdsp = malloc(bytes);
+		memset(fdsp, 0, bytes);
+		memcpy(fdsp, __svc_fdset, bytes);
+		FD_SET(fwd_sock, fdsp);
+#else
+		fd_set *fdsp;
+		int fdsn = FDSETSIZE;
+		bytes = howmany(fdsn, NFDBITS) * sizeof(fd_mask);
+		fdsp = malloc(bytes);
+		memcpy(fdsp, &svc_fdset, bytes);
+		FD_SET(fwd_sock, fdsp);
+#endif
 #else
 #ifdef FD_SET
 		fd_set readfds;
@@ -249,7 +283,7 @@ static serv_state run_rpc(P_void)
 			dlog("Select waits for Godot");
 #endif /* DEBUG */
 
-		nsel = do_select(smask, dtbsz, &readfds, &tvv);
+		nsel = do_select(smask, fdsn + 1, fdsp, &tvv);
 
 
 		switch (nsel) {
@@ -274,17 +308,22 @@ static serv_state run_rpc(P_void)
 			   having responses queue up as a consequence of
 			   retransmissions. */
 #ifdef FD_SET
-			if (FD_ISSET(fwd_sock, &readfds)) {
-				FD_CLR(fwd_sock, &readfds);
-#else
-			if (readfds & (1 << fwd_sock)) {
-				readfds &= ~(1 << fwd_sock);
-#endif
+			if (FD_ISSET(fwd_sock, fdsp)) {
+				FD_CLR(fwd_sock, fdsp);
 				--nsel;	
 				do {
 					fwd_reply();
 				} while (rpc_pending_now() > 0);
 			}
+#else
+			if (readfds & (1 << fwd_sock)) {
+				readfds &= ~(1 << fwd_sock);
+				--nsel;	
+				do {
+					fwd_reply();
+				} while (rpc_pending_now() > 0);
+			}
+#endif
 
 			if (nsel) {
 				/*
@@ -292,7 +331,11 @@ static serv_state run_rpc(P_void)
 				 * RPC request.
 				 */
 #ifdef RPC_4
-				svc_getreqset(&readfds);
+#ifdef __OpenBSD__
+				svc_getreqset2(fdsp, fdsn);
+#else
+				svc_getreqset(fdsp);
+#endif
 #else
 #ifdef FD_SET
 				svc_getreq(readfds.fds_bits[0]);
@@ -303,6 +346,7 @@ static serv_state run_rpc(P_void)
 			}
 			break;
 		}
+		free(fdsp);
 	}
 
 	(void) sigsetmask(smask);

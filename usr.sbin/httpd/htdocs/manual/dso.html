@@ -15,7 +15,7 @@
 <DIV ALIGN="CENTER">
  <IMG SRC="images/sub.gif" ALT="[APACHE DOCUMENTATION]">
  <H3>
-  Apache HTTP Server Version 1.3
+  Apache HTTP Server
  </H3>
 </DIV>
 
@@ -29,7 +29,7 @@ Support
 </H1>
 
 <ADDRESS>Originally written by<BR>
-Ralf S. Engelschall &lt;rse@apache.org&gt, April 1998</ADDRESS>
+Ralf S. Engelschall &lt;rse@apache.org&gt;, April 1998</ADDRESS>
 
 </DIV>
 
@@ -101,6 +101,13 @@ not re-exported and thus not available for use in a DSO.  Finding a way to
 force the linker to export all global symbols is the main problem one has to
 solve when using DSO for extending a program at run-time.
 
+<P>Windows and NetWare provide similar facilities, although they are
+implemented somewhat differently than the description of Unix DSO throughout
+this document.  In particular, DSO modules (DLL's and NLM's, respectively) 
+are built quite differently than their Unix cousins.  This document does not
+attempt to explore the topic of building DSO modules on these platforms.
+The description of mod_so and it's configuration, however, are similar.
+
 <H3>Practical Usage</H3>
 
 <P>The shared library approach is the typical one, because it is what the DSO
@@ -138,17 +145,18 @@ HREF="mod/mod_so.html"><CODE>mod_so</CODE></A>'s <A
 HREF="mod/mod_so.html#loadmodule"><CODE>LoadModule</CODE></A> command in your
 <CODE>httpd.conf</CODE> file to load this module at server startup or restart.
 
-<P>To simplify this creation of DSO files for Apache modules (especially for
-third-party modules) a new support program named <CODE>apxs</CODE> (<EM>APache
-eXtenSion</EM>) is available. It can be used to build DSO based modules
-<EM>outside of</EM> the Apache source tree. The idea is simple: When
-installing Apache the <CODE>configure</CODE>'s <CODE>make install</CODE>
-procedure installs the Apache C header files and puts the platform-dependent
-compiler and linker flags for building DSO files into the <CODE>apxs</CODE>
-program.  This way the user can use <CODE>apxs</CODE> to compile his Apache
-module sources without the Apache distribution source tree and without having
-to fiddle with the platform-dependent compiler and linker flags for DSO
-support.
+<P>To simplify this creation of DSO files for Apache modules
+(especially for third-party modules) a new support program named <a
+href="programs/apxs.html">apxs</a> (<EM>APache eXtenSion</EM>) is
+available. It can be used to build DSO based modules <EM>outside
+of</EM> the Apache source tree. The idea is simple: When installing
+Apache the <CODE>configure</CODE>'s <CODE>make install</CODE>
+procedure installs the Apache C header files and puts the
+platform-dependent compiler and linker flags for building DSO files
+into the <CODE>apxs</CODE> program.  This way the user can use
+<CODE>apxs</CODE> to compile his Apache module sources without the
+Apache distribution source tree and without having to fiddle with the
+platform-dependent compiler and linker flags for DSO support.
 
 <P>To place the complete Apache core program into a DSO library (only required
 on some of the supported platforms to force the linker to export the apache
@@ -172,7 +180,7 @@ code which automatically makes sure the Unix loader is able to load and start
 <P>Apache's <CODE>src/Configure</CODE> script currently has only limited but
 adequate built-in knowledge on how to compile DSO files, because as already
 mentioned this is heavily platform-dependent. Nevertheless all major Unix
-platforms are supported.  The definitive current state (May 1998) is this:
+platforms are supported.  The definitive current state (May 1999) is this:
 
 <P>
 <UL>
@@ -180,20 +188,27 @@ platforms are supported.  The definitive current state (May 1998) is this:
 (actually tested versions in parenthesis)
 
 <PRE>
-o  FreeBSD            (2.1.5, 2.2.5, 2.2.6)
+o  FreeBSD            (2.1.5, 2.2.x, 3.x, 4.x)
 o  OpenBSD            (2.x)
 o  NetBSD             (1.3.1)
+o  BSDI               (3.x, 4.x)
 o  Linux              (Debian/1.3.1, RedHat/4.2)
-o  Solaris            (2.4, 2.5.1, 2.6)
+o  Solaris            (2.4, 2.5, 2.6, 2.7)
 o  SunOS              (4.1.3)
 o  Digital UNIX       (4.0)
-o  IRIX               (6.2)
+o  IRIX               (5.3, 6.2)
 o  HP/UX              (10.20)
 o  UnixWare           (2.01, 2.1.2)
 o  SCO                (5.0.4)
 o  AIX                (3.2, 4.1.5, 4.2, 4.3)
 o  ReliantUNIX/SINIX  (5.43)
 o  SVR4               (-)
+o  Mac OS X Server    (1.0)
+o  Mac OS             (10.0 preview 1)
+o  OpenStep/Mach      (4.2)
+o  DGUX               (??)
+o  NetWare            (5.1)
+o  Windows            (95, 98, NT 4.0, 2000)
 </PRE>
 
 <P>
@@ -309,7 +324,7 @@ of</EM> the Apache source tree:
 
 <P>
 <UL>
-<LI>Build and install via <CODE>apxs</CODE>: 
+<LI>Build and install via <a href="programs/apxs.html">apxs</a>: 
 <TABLE BGCOLOR="#f0f0f0" CELLPADDING=10><TR><TD>
 <PRE>
 $ cd /path/to/3rdparty
@@ -321,7 +336,7 @@ $ apxs -i -a -n foo mod_foo.so
 
 </OL>
 
-<H3>Advantages & Disadvantages</H3>
+<H3>Advantages &amp; Disadvantages</H3>
 
 <P>The above DSO based features of Apache 1.3 have the following advantages:
 
@@ -389,7 +404,7 @@ $ apxs -i -a -n foo mod_foo.so
 
 <HR>
  <H3 ALIGN="CENTER">
-  Apache HTTP Server Version 1.3
+  Apache HTTP Server
  </H3>
 
 <A HREF="./"><IMG SRC="images/index.gif" ALT="Index"></A>

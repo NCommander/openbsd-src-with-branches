@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.lev.c,v 1.3 1995/03/23 08:30:32 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.lev.c,v 1.3 1995/03/23 08:30:32 cgd Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -199,7 +201,7 @@ xchar lev;
 		long newhp;		/* tmoves may be very large */
 
 		mtmp2 = mtmp->nmon;
-		if(index(genocided, mtmp->data->mlet)) {
+		if(strchr(genocided, mtmp->data->mlet)) {
 			mondead(mtmp);
 			continue;
 		}
@@ -210,7 +212,7 @@ xchar lev;
 		}
 
 		newhp = mtmp->mhp +
-			(index(MREGEN, mtmp->data->mlet) ? tmoves : tmoves/20);
+			(strchr(MREGEN, mtmp->data->mlet) ? tmoves : tmoves/20);
 		if(newhp > mtmp->mhpmax)
 			mtmp->mhp = mtmp->mhpmax;
 		else

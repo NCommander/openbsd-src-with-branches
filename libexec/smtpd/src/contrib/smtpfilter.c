@@ -1,10 +1,11 @@
+/* $OpenBSD: smtpfilter.c,v 1.1.1.1 1997/12/12 05:50:28 beck Exp $*/
+
 /*
  * smtpfilter, Filter for filtering headers during forwarding them between
  * smtpfwdd and sendmail. Also logs size of message to syslog; may only
  * be invoked with one recipient.
  *
  * OriginalId: smtpfilter.c,v 1.00 1997/3/28 11:04:08 andre Exp $
- * $Id: smtpfilter.c,v 1.1 1997/04/27 19:31:59 beck Exp $
  */
 
 #define MAX_LINE          1024

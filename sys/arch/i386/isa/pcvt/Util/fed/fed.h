@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1992, 1993, 1994 by Hellmuth Michaelis
  *
@@ -32,7 +34,7 @@
  * 	fed.h, 3.00, last edit-date: [Sun Jan  2 20:10:31 1994]
  */
 
-#include <ncurses.h>
+#include <curses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -109,7 +111,7 @@ void invert ( void );
 void setchr ( char type );
 void setrow ( char type );
 void setcol ( char type );
-void main ( int argc, char *argv[] );
+int main ( int argc, char *argv[] );
 void readfont ( char *filename );
 void dis_cmd ( char *strg );
 void clr_cmd ( void );

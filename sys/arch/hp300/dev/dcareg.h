@@ -1,4 +1,5 @@
-/*	$NetBSD: dcareg.h,v 1.4 1994/10/26 07:23:33 cgd Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: dcareg.h,v 1.6 1996/02/24 00:55:02 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -173,15 +174,3 @@ struct dcadevice {
 #define	MSR_TERI	0x04
 #define	MSR_DDSR	0x02
 #define	MSR_DCTS	0x01
-
-#ifdef hp300
-/* WARNING: Serial console is assumed to be at SC9 */
-#define CONSCODE	(9)
-#endif
-#ifdef hp700
-/* hardwired port addresses */
-#define PORT1		((struct dcadevice *)CORE_RS232_1)
-#define PORT2		((struct dcadevice *)CORE_RS232_2)
-#define CONPORT		PORT1
-#endif
-#define CONUNIT		(0)

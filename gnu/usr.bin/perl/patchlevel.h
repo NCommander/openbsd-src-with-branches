@@ -69,7 +69,9 @@
  */
 #if !defined(PERL_PATCHLEVEL_H_IMPLICIT) && !defined(LOCAL_PATCH_COUNT)
 static	char	*local_patches[] = {
-	NULL
+        NULL
+	,"SUIDMAIL - fixes for suidperl security"
+	,"CHANGE6214 - fixes a coredump in @DB::args"
 	,NULL
 };
 

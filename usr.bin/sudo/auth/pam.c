@@ -57,7 +57,7 @@
 #include "sudo_auth.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: pam.c,v 1.10 1999/10/07 21:21:07 millert Exp $";
+static const char rcsid[] = "$Sudo: pam.c,v 1.15 2000/02/27 03:49:06 millert Exp $";
 #endif /* lint */
 
 static int sudo_conv __P((int, PAM_CONST struct pam_message **,
@@ -90,15 +90,23 @@ pam_verify(pw, prompt, auth)
     char *prompt;
     sudo_auth *auth;
 {
+    int error;
+    const char *s;
     pam_handle_t *pamh = (pam_handle_t *) auth->data;
 
     def_prompt = prompt;	/* for sudo_conv */
 
     /* PAM_SILENT prevents error messages from going to syslog(3) */
-    if (pam_authenticate(pamh, PAM_SILENT) == PAM_SUCCESS)
+    if ((error = pam_authenticate(pamh, PAM_SILENT)) == PAM_SUCCESS)
 	return(AUTH_SUCCESS);
-    else
-	return(AUTH_FAILURE);
+
+    /* Any error other than PAM_AUTH_ERR or PAM_MAXTRIES is probably fatal.  */
+    if (error != PAM_AUTH_ERR && error != PAM_MAXTRIES) {
+	if ((s = pam_strerror(pamh, error)))
+	    log_error(NO_EXIT|NO_MAIL, "pam_authenticate: %s\n", s);
+	return(AUTH_FATAL);
+    }
+    return(AUTH_FAILURE);
 }
 
 int
@@ -125,9 +133,8 @@ sudo_conv(num_msg, msg, response, appdata_ptr)
     VOID *appdata_ptr;
 {
     struct pam_response *pr;
-    struct pam_message *pm;
-    char *p = def_prompt;
-    int echo = 0;
+    PAM_CONST struct pam_message *pm;
+    const char *p = def_prompt;
     extern int nil_pw;
 
     if ((*response = malloc(num_msg * sizeof(struct pam_response))) == NULL)
@@ -137,13 +144,15 @@ sudo_conv(num_msg, msg, response, appdata_ptr)
     for (pr = *response, pm = *msg; num_msg--; pr++, pm++) {
 	switch (pm->msg_style) {
 	    case PAM_PROMPT_ECHO_ON:
-		echo = 1;
+		tgetpass_flags |= TGP_ECHO;
 	    case PAM_PROMPT_ECHO_OFF:
-		/* Override default prompt for unix auth */
-		if (strcmp(p, "Password: ") && strcmp(p, "Password:"))
-		    p = (char *) pm->msg;
+		/* Only override PAM prompt if it matches /^Password: ?/ */
+		if (strncmp(pm->msg, "Password:", 9) || (pm->msg[9] != '\0'
+		    && (pm->msg[9] != ' ' || pm->msg[10] != '\0')))
+		    p = pm->msg;
+		/* Read the password. */
 		pr->resp = estrdup((char *) tgetpass(p,
-		    def_ival(I_PW_TIMEOUT) * 60, !echo));
+		    def_ival(I_PW_TIMEOUT) * 60, tgetpass_flags));
 		if (*pr->resp == '\0')
 		    nil_pw = 1;		/* empty password */
 		break;

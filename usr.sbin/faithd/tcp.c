@@ -1,7 +1,10 @@
+/*	$OpenBSD: tcp.c,v 1.4 2000/09/16 10:33:46 itojun Exp $	*/
+/*	$KAME: tcp.c,v 1.5 2000/09/29 03:48:31 sakane Exp $	*/
+
 /*
  * Copyright (C) 1997 and 1998 WIDE Project.
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +16,7 @@
  * 3. Neither the name of the project nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -89,9 +92,9 @@ sig_child(int sig)
 	pid_t pid;
 
 	pid = wait3(&status, WNOHANG, (struct rusage *)0);
-	if (pid && status)
+	if (pid && WEXITSTATUS(status))
 		syslog(LOG_WARNING, "child %d exit status 0x%x", pid, status);
-	exit_failure("terminate connection due to child termination");
+	exit_success("terminate connection due to child termination");
 }
 
 static void
@@ -191,7 +194,8 @@ relay(int s_rcv, int s_snd, const char *service, int direction)
 	FD_ZERO(&exceptfds);
 	fcntl(s_snd, F_SETFD, O_NONBLOCK);
 	oreadfds = readfds; owritefds = writefds; oexceptfds = exceptfds;
-	FD_SET(s_rcv, &readfds); FD_SET(s_rcv, &exceptfds);
+	FD_SET(s_rcv, &readfds);
+	FD_SET(s_rcv, &exceptfds);
 	oob_exists = 0;
 	maxfd = (s_rcv > s_snd) ? s_rcv : s_snd;
 

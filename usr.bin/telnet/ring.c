@@ -1,3 +1,6 @@
+/*	$OpenBSD: ring.c,v 1.3 1998/03/12 04:57:38 art Exp $	*/
+/*	$NetBSD: ring.c,v 1.7 1996/02/28 21:04:07 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,10 +34,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)ring.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: ring.c,v 1.4 1994/12/24 17:50:06 cgd Exp $";
-#endif /* not lint */
+#include "telnet_locl.h"
 
 /*
  * This defines a structure for a ring buffer.
@@ -46,26 +46,6 @@ static char *rcsid = "$Id: ring.c,v 1.4 1994/12/24 17:50:06 cgd Exp $";
  *]]]
  *
  */
-
-#include	<stdio.h>
-#ifndef NO_STRING_H
-#include	<string.h>
-#endif
-#include	<strings.h>
-#include	<errno.h>
-
-#ifdef	size_t
-#undef	size_t
-#endif
-
-#include	<sys/types.h>
-#ifndef	FILIO_H
-#include	<sys/ioctl.h>
-#endif
-#include	<sys/socket.h>
-
-#include	"ring.h"
-#include	"general.h"
 
 /* Internal macros */
 
@@ -104,8 +84,9 @@ static u_long ring_clock = 0;
 
 /* Buffer state transition routines */
 
-    ring_init(ring, buffer, count)
-Ring *ring;
+    int
+ring_init(ring, buffer, count)
+    Ring *ring;
     unsigned char *buffer;
     int count;
 {
@@ -117,6 +98,9 @@ Ring *ring;
 
     ring->top = ring->bottom+ring->size;
 
+#if    defined(ENCRYPTION)
+    ring->clearto = 0;
+#endif
 
     return 1;
 }
@@ -187,6 +171,15 @@ ring_consumed(ring, count)
 		(ring_subtract(ring, ring->mark, ring->consume) < count)) {
 	ring->mark = 0;
     }
+#if    defined(ENCRYPTION)
+    if (ring->consume < ring->clearto &&
+               ring->clearto <= ring->consume + count)
+	ring->clearto = 0;
+    else if (ring->consume + count > ring->top &&
+               ring->bottom <= ring->clearto &&
+               ring->bottom + ((ring->consume + count) - ring->top))
+	ring->clearto = 0;
+#endif
     ring->consume = ring_increment(ring, ring->consume, count);
     ring->consumetime = ++ring_clock;
     /*
@@ -288,7 +281,7 @@ ring_supply_data(ring, buffer, count)
 
     while (count) {
 	i = MIN(count, ring_empty_consecutive(ring));
-	memcpy(ring->supply, buffer, i);
+	memmove(ring->supply, buffer, i);
 	ring_supplied(ring, i);
 	count -= i;
 	buffer += i;
@@ -310,11 +303,44 @@ ring_consume_data(ring, buffer, count)
 
     while (count) {
 	i = MIN(count, ring_full_consecutive(ring));
-	memcpy(buffer, ring->consume, i);
+	memmove(buffer, ring->consume, i);
 	ring_consumed(ring, i);
 	count -= i;
 	buffer += i;
     }
+}
+#endif
+
+#if    defined(ENCRYPTION)
+void
+ring_encrypt(Ring *ring, void (*encryptor)())
+{
+    unsigned char *s, *c;
+
+    if (ring_empty(ring) || ring->clearto == ring->supply)
+	return;
+
+    if (!(c = ring->clearto))
+	c = ring->consume;
+
+    s = ring->supply;
+    
+    if (s <= c) {
+	(*encryptor)(c, ring->top - c);
+	(*encryptor)(ring->bottom, s - ring->bottom);
+    } else
+	(*encryptor)(c, s - c);
+    
+    ring->clearto = ring->supply;
+}
+
+void
+ring_clearto(Ring *ring)
+{
+    if (!ring_empty(ring))
+	ring->clearto = ring->supply;
+    else
+	ring->clearto = 0;
 }
 #endif
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: driver.h,v 1.3 1995/04/22 10:36:54 cgd Exp $	*/
 
 /*
@@ -32,9 +33,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)driver.h	8.1 (Berkeley) 5/31/93
+ *	@(#)driver.h	8.2 (Berkeley) 5/3/95
  */
 
-#include "externs.h"
+#include "extern.h"
 
-int dtab[];
+extern const int dtab[];

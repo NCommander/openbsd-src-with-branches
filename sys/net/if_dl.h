@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_dl.h,v 1.2 1997/02/24 13:33:58 niklas Exp $	*/
 /*	$NetBSD: if_dl.h,v 1.8 1995/03/26 20:30:13 jtc Exp $	*/
 
 /*
@@ -58,7 +59,7 @@
  */
 struct sockaddr_dl {
 	u_char	  sdl_len;	/* Total length of sockaddr */
-	u_char	  sdl_family;	/* AF_DLI */
+	u_char	  sdl_family;	/* AF_LINK */
 	u_int16_t sdl_index;	/* if != 0, system given index for interface */
 	u_char	  sdl_type;	/* interface type */
 	u_char	  sdl_nlen;	/* interface name length, no trailing 0 reqd. */

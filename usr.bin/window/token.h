@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: token.h,v 1.3 1995/09/28 10:34:41 tls Exp $	*/
 
 /*

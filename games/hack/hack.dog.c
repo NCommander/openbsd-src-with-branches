@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.dog.c,v 1.3 1995/03/23 08:29:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.dog.c,v 1.3 1995/03/23 08:29:59 cgd Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -164,7 +166,7 @@ int info[9];
 			edog->droptime = moves;
 		}
 	} else {
-		if(obj = o_at(omx,omy)) if(!index("0_", obj->olet)){
+		if(obj = o_at(omx,omy)) if(!strchr("0_", obj->olet)){
 		    if((otyp = dogfood(obj)) <= CADAVER){
 			nix = omx;
 			niy = omy;
@@ -398,7 +400,7 @@ register struct obj *obj;
 #ifndef NOWORM
 		mtmp->wormno ||
 #endif NOWORM
-		mtmp->isshk || mtmp->isgd || index(" &@12", mtmp->data->mlet))
+		mtmp->isshk || mtmp->isgd || strchr(" &@12", mtmp->data->mlet))
 		return(0); /* no tame long worms? */
 	if(obj) {
 		if(dogfood(obj) >= MANFOOD) return(0);

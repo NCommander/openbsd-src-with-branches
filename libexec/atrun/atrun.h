@@ -1,3 +1,4 @@
+/*	$OpenBSD: atrun.h,v 1.2 1997/03/01 23:39:44 millert Exp $*/
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
  * All rights reserved.
@@ -27,7 +28,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: atrun.h,v 1.2 1994/01/29 01:49:30 jtc Exp $
  */
 
 #define ATRUN_MAXLOAD	1.5
+#define NOBODY_UID	32767
+#define NOBODY_GID	32767

@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 SUBDIR=crunchgen crunchide
 

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: cosh.3,v 1.5 1999/07/01 00:06:40 deraadt Exp $
 .\" Copyright (c) 1989, 1991 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,14 +31,14 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)cosh.3	5.1 (Berkeley) 5/2/91
-.\"	$Id: cosh.3,v 1.6 1995/04/14 18:40:04 jtc Exp $
 .\"
 .Dd May 2, 1991
 .Dt COSH 3
 .Os
 .Sh NAME
-.Nm cosh
-.Nd hyperbolic cosine function
+.Nm cosh ,
+.Nm coshf
+.Nd hyperbolic cosine functions
 .Sh SYNOPSIS
 .Fd #include <math.h>
 .Ft double
@@ -52,17 +53,21 @@ and
 functions compute the hyperbolic cosine of
 .Fa x .
 .Sh RETURN VALUES
-Exceptional conditions are handled by
-.Xr matherr 3 .
+If the magnitude of x is too large,
+.Fn cosh "x"
+and
+.Fn coshf "x"
+returns Inf and sets the global variable
+.Va errno
+to ERANGE.
 .Sh SEE ALSO
 .Xr acos 3 ,
 .Xr asin 3 ,
 .Xr atan 3 ,
 .Xr atan2 3 ,
 .Xr cos 3 ,
+.Xr math 3 ,
 .Xr sin 3 ,
 .Xr sinh 3 ,
 .Xr tan 3 ,
-.Xr tanh 3 ,
-.Xr math 3 ,
-.Xr matherr 3
+.Xr tanh 3

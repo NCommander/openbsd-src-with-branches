@@ -35,15 +35,14 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#include "DEFS.h"
+
+#if defined(LIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)bcmp.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: bcmp.S,v 1.2 1995/02/08 18:33:12 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /* bcmp(s1, s2, n) */
-
-#include "DEFS.h"
 
 /*
  * This is probably not the best we can do, but it is still 2-10 times

@@ -1,17 +1,10 @@
-#       $Id: Makefile,v 8.5 1999/09/23 22:36:43 ca Exp $
+#	$OpenBSD: Makefile,v 1.3 2000/04/11 07:31:32 form Exp $
 
-SHELL= /bin/sh
-BUILD=   ./Build
-OPTIONS= $(CONFIG) $(FLAGS)
+PROG=	smrsh
+MAN=	smrsh.8
+ENVDEF=	-DNOT_SENDMAIL -DCMDDIR=\"/usr/libexec/sm.bin\"
 
-all: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
-clean: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
-install: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
+WANT_LIBSMUTIL=1
 
-fresh: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) -c
-
-FRC:
+.include "../../../libexec/Makefile.inc"
+.include <bsd.prog.mk>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1999-2000 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@
 #include "sudo.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: defaults.c,v 1.12 1999/11/05 22:11:55 millert Exp $";
+static const char rcsid[] = "$Sudo: defaults.c,v 1.23 2000/03/22 23:40:09 millert Exp $";
 #endif /* lint */
 
 /*
@@ -106,133 +106,162 @@ static int store_str __P((char *, struct sudo_defs_types *, int));
 static int store_syslogfac __P((char *, struct sudo_defs_types *, int));
 static int store_syslogpri __P((char *, struct sudo_defs_types *, int));
 static int store_mode __P((char *, struct sudo_defs_types *, int));
+static int store_pwflag __P((char *, struct sudo_defs_types *, int));
 
 /*
  * Table describing compile-time and run-time options.
  */
 struct sudo_defs_types sudo_defs_table[] = {
     {
-	"syslog_ifac", T_INT, { 0 },
-	NULL
+	"syslog_ifac", T_INT, NULL
     }, {
-	"syslog_igoodpri", T_INT, { 0 },
-	NULL
+	"syslog_igoodpri", T_INT, NULL
     }, {
-	"syslog_ibadpri", T_INT, { 0 },
-	NULL
+	"syslog_ibadpri", T_INT, NULL
     }, {
-	"syslog", T_LOGFAC|T_BOOL, { 0 },
+	"syslog", T_LOGFAC|T_BOOL,
 	"Syslog facility if syslog is being used for logging: %s"
     }, {
-	"syslog_goodpri", T_LOGPRI, { 0 },
+	"syslog_goodpri", T_LOGPRI,
 	"Syslog priority to use when user authenticates successfully: %s"
     }, {
-	"syslog_badpri", T_LOGPRI, { 0 },
+	"syslog_badpri", T_LOGPRI,
 	"Syslog priority to use when user authenticates unsuccessfully: %s"
     }, {
-	"long_otp_prompt", T_FLAG, { 0 },
+	"long_otp_prompt", T_FLAG,
 	"Put OTP prompt on its own line"
     }, {
-	"ignore_dot", T_FLAG, { 0 },
+	"ignore_dot", T_FLAG,
 	"Ignore '.' in $PATH"
     }, {
-	"mail_always", T_FLAG, { 0 },
+	"mail_always", T_FLAG,
 	"Always send mail when sudo is run"
     }, {
-	"mail_no_user", T_FLAG, { 0 },
+	"mail_no_user", T_FLAG,
 	"Send mail if the user is not in sudoers"
     }, {
-	"mail_no_host", T_FLAG, { 0 },
+	"mail_no_host", T_FLAG,
 	"Send mail if the user is not in sudoers for this host"
     }, {
-	"mail_no_perms", T_FLAG, { 0 },
+	"mail_no_perms", T_FLAG,
 	"Send mail if the user is not allowed to run a command"
     }, {
-	"tty_tickets", T_FLAG, { 0 },
+	"tty_tickets", T_FLAG,
 	"Use a separate timestamp for each user/tty combo"
     }, {
-	"lecture", T_FLAG, { 0 },
+	"lecture", T_FLAG,
 	"Lecture user the first time they run sudo"
     }, {
-	"authenticate", T_FLAG, { 0 },
+	"authenticate", T_FLAG,
 	"Require users to authenticate by default"
     }, {
-	"root_sudo", T_FLAG, { 0 },
+	"root_sudo", T_FLAG,
 	"Root may run sudo"
     }, {
-	"log_host", T_FLAG, { 0 },
+	"log_host", T_FLAG,
 	"Log the hostname in the (non-syslog) log file"
     }, {
-	"log_year", T_FLAG, { 0 },
+	"log_year", T_FLAG,
 	"Log the year in the (non-syslog) log file"
     }, {
-	"shell_noargs", T_FLAG, { 0 },
+	"shell_noargs", T_FLAG,
 	"If sudo is invoked with no arguments, start a shell"
     }, {
-	"set_home", T_FLAG, { 0 },
+	"set_home", T_FLAG,
 	"Set $HOME to the target user when starting a shell with -s"
     }, {
-	"path_info", T_FLAG, { 0 },
+	"path_info", T_FLAG,
 	"Allow some information gathering to give useful error messages"
     }, {
-	"fqdn", T_FLAG, { 0 },
+	"fqdn", T_FLAG,
 	"Require fully-qualified hsotnames in the sudoers file"
     }, {
-	"insults", T_FLAG, { 0 },
+	"insults", T_FLAG,
 	"Insult the user when they enter an incorrect password"
     }, {
-	"requiretty", T_FLAG, { 0 },
+	"requiretty", T_FLAG,
 	"Only allow the user to run sudo if they have a tty"
     }, {
-	"loglinelen", T_INT|T_BOOL, { 0 },
+	"env_editor", T_FLAG,
+	"Visudo will honor the EDITOR environment variable"
+    }, {
+	"rootpw", T_FLAG,
+	"Prompt for root's password, not the users's"
+    }, {
+	"runaspw", T_FLAG,
+	"Prompt for the runas_default user's password, not the users's"
+    }, {
+	"targetpw", T_FLAG,
+	"Prompt for the target user's password, not the users's"
+    }, {
+	"use_loginclass", T_FLAG,
+	"Apply defaults in the target user's login class if there is one"
+    }, {
+	"set_logname", T_FLAG,
+	"Set the LOGNAME and USER environment variables"
+    }, {
+	"loglinelen", T_INT|T_BOOL,
 	"Length at which to wrap log file lines (0 for no wrap): %d"
     }, {
-	"timestamp_timeout", T_INT|T_BOOL, { 0 },
+	"timestamp_timeout", T_INT|T_BOOL,
 	"Authentication timestamp timeout: %d minutes"
     }, {
-	"passwd_timeout", T_INT|T_BOOL, { 0 },
+	"passwd_timeout", T_INT|T_BOOL,
 	"Password prompt timeout: %d minutes"
     }, {
-	"passwd_tries", T_INT, { 0 },
+	"passwd_tries", T_INT,
 	"Number of tries to enter a password: %d"
     }, {
-	"umask", T_MODE|T_BOOL, { 0 },
+	"umask", T_MODE|T_BOOL,
 	"Umask to use or 0777 to use user's: 0%o"
     }, {
-	"logfile", T_STR|T_BOOL|T_PATH, { 0 },
+	"logfile", T_STR|T_BOOL|T_PATH,
 	"Path to log file: %s"
     }, {
-	"mailerpath", T_STR|T_BOOL|T_PATH, { 0 },
+	"mailerpath", T_STR|T_BOOL|T_PATH,
 	"Path to mail program: %s"
     }, {
-	"mailerflags", T_STR|T_BOOL, { 0 },
+	"mailerflags", T_STR|T_BOOL,
 	"Flags for mail program: %s"
     }, {
-	"mailto", T_STR|T_BOOL, { 0 },
+	"mailto", T_STR|T_BOOL,
 	"Address to send mail to: %s"
     }, {
-	"mailsub", T_STR, { 0 },
+	"mailsub", T_STR,
 	"Subject line for mail messages: %s"
     }, {
-	"badpass_message", T_STR, { 0 },
+	"badpass_message", T_STR,
 	"Incorrect password message: %s"
     }, {
-	"timestampdir", T_STR|T_PATH, { 0 },
+	"timestampdir", T_STR|T_PATH,
 	"Path to authentication timestamp dir: %s"
     }, {
-	"exempt_group", T_STR|T_BOOL, { 0 },
+	"exempt_group", T_STR|T_BOOL,
 	"Users in this group are exempt from password and PATH requirements: %s"
     }, {
-	"passprompt", T_STR, { 0 },
+	"passprompt", T_STR,
 	"Default password prompt: %s"
     }, {
-	"runas_default", T_STR, { 0 },
+	"runas_default", T_STR,
 	"Default user to run commands as: %s"
     }, {
-	"secure_path", T_STR|T_BOOL, { 0 },
+	"secure_path", T_STR|T_BOOL,
 	"Value to override user's $PATH with: %s"
     }, {
-	NULL, 0, { 0 }, NULL
+	"editor", T_STR|T_PATH,
+	"Path to the editor for use by visudo: %s"
+    }, {
+	"listpw_i", T_INT, NULL
+    }, {
+	"verifypw_i", T_INT, NULL
+    }, {
+	"listpw", T_PWFLAG,
+	"When to require a password for 'list' pseudocommand: %s"
+    }, {
+	"verifypw", T_PWFLAG,
+	"When to require a password for 'verify' pseudocommand: %s"
+    }, {
+	NULL, 0, NULL
     }
 };
 
@@ -254,6 +283,7 @@ dump_defaults()
 		case T_STR:
 		case T_LOGFAC:
 		case T_LOGPRI:
+		case T_PWFLAG:
 		    if (cur->sd_un.str) {
 			(void) printf(cur->desc, cur->sd_un.str);
 			putchar('\n');
@@ -270,12 +300,6 @@ dump_defaults()
 	    }
 	}
     }
-
-#ifdef ENV_EDITOR
-    (void) printf("Default editor for visudo: %s\n", EDITOR);
-#else
-    (void) printf("Editor for visudo: %s\n", EDITOR);
-#endif
 }
 
 /*
@@ -297,7 +321,7 @@ list_options()
 		default:
 		    p = strrchr(cur->desc, ':');
 		    if (p)
-			(void) printf("%s: %.*s\n", cur->name, p - cur->desc,
+			(void) printf("%s: %.*s\n", cur->name, (int)(p - cur->desc),
 			    cur->desc);
 		    else
 			(void) printf("%s: %s\n", cur->name, cur->desc);
@@ -321,8 +345,9 @@ set_default(var, val, op)
     int op;     /* TRUE or FALSE */
 {
     struct sudo_defs_types *cur;
+    int num;
 
-    for (cur = sudo_defs_table; cur->name; cur++) {
+    for (cur = sudo_defs_table, num = 0; cur->name; cur++, num++) {
 	if (strcmp(var, cur->name) == 0)
 	    break;
     }
@@ -360,6 +385,19 @@ set_default(var, val, op)
 		return(FALSE);
 	    }
 	    break;
+	case T_PWFLAG:
+	    if (!store_pwflag(val, cur, op)) {
+		if (val)
+		    (void) fprintf(stderr,
+			"%s: value '%s' is invalid for option '%s'\n", Argv[0],
+			val, var);
+		else
+		    (void) fprintf(stderr,
+			"%s: no value specified for `%s' on line %d\n", Argv[0],
+			var, sudolineno);
+		return(FALSE);
+	    }
+	    break;
 	case T_STR:
 	    if (!val) {
 		/* Check for bogus boolean usage or lack of a value. */
@@ -370,7 +408,7 @@ set_default(var, val, op)
 		    return(FALSE);
 		}
 	    }
-	    if ((cur->type & T_PATH) && *val != '/') {
+	    if ((cur->type & T_PATH) && val && *val != '/') {
 		(void) fprintf(stderr,
 		    "%s: values for `%s' must start with a '/'\n", Argv[0],
 		    var);
@@ -425,6 +463,10 @@ set_default(var, val, op)
 		return(FALSE);
 	    }
 	    cur->sd_un.flag = op;
+
+	    /* Special action for I_FQDN.  Move to own switch if we get more */
+	    if (num == I_FQDN && op)
+		set_fqdn();
 	    break;
     }
 
@@ -448,6 +490,7 @@ init_defaults()
 		case T_STR:
 		case T_LOGFAC:
 		case T_LOGPRI:
+		case T_PWFLAG:
 		    if (def->sd_un.str) {
 			free(def->sd_un.str);
 			def->sd_un.str = NULL;
@@ -505,6 +548,10 @@ init_defaults()
 #ifdef USE_INSULTS
     def_flag(I_INSULTS) = TRUE;
 #endif
+#ifdef ENV_EDITOR
+    def_flag(I_ENV_EDITOR) = TRUE;
+#endif
+    def_flag(I_LOGNAME) = TRUE;
 
     /* Syslog options need special care since they both strings and ints */
 #if (LOGGING & SLOG_SYSLOG)
@@ -512,6 +559,10 @@ init_defaults()
     (void) store_syslogpri(PRI_SUCCESS, &sudo_defs_table[I_GOODPRISTR], TRUE);
     (void) store_syslogpri(PRI_FAILURE, &sudo_defs_table[I_BADPRISTR], TRUE);
 #endif
+
+    /* Password flags also have a string and integer component. */
+    (void) store_pwflag("any", &sudo_defs_table[I_LISTPWSTR], TRUE);
+    (void) store_pwflag("all", &sudo_defs_table[I_VERIFYPWSTR], TRUE);
 
     /* Then initialize the int-like things. */
 #ifdef SUDO_UMASK
@@ -544,6 +595,7 @@ init_defaults()
 #ifdef SECURE_PATH
     def_str(I_SECURE_PATH) = estrdup(SECURE_PATH);
 #endif
+    def_str(I_EDITOR) = estrdup(EDITOR);
 
     /*
      * The following depend on the above values.
@@ -602,8 +654,10 @@ store_syslogfac(val, def, op)
     struct strmap *fac;
 
     if (op == FALSE) {
-	free(def->sd_un.str);
-	def->sd_un.str = NULL;
+	if (def->sd_un.str) {
+	    free(def->sd_un.str);
+	    def->sd_un.str = NULL;
+	}
 	return(TRUE);
     }
 #ifdef LOG_NFACILITIES
@@ -615,13 +669,19 @@ store_syslogfac(val, def, op)
 	return(FALSE);				/* not found */
 
     /* Store both name and number. */
-    if (def->sd_un.str)
+    if (def->sd_un.str) {
 	free(def->sd_un.str);
+	closelog();
+    }
+    openlog(Argv[0], 0, fac->num);
     def->sd_un.str = estrdup(fac->name);
     sudo_defs_table[I_LOGFAC].sd_un.ival = fac->num;
 #else
-    if (def->sd_un.str)
+    if (def->sd_un.str) {
 	free(def->sd_un.str);
+	closelog();
+    }
+    openlog(Argv[0], 0);
     def->sd_un.str = estrdup("default");
 #endif /* LOG_NFACILITIES */
     return(TRUE);
@@ -671,9 +731,56 @@ store_mode(val, def, op)
 	def->sd_un.mode = (mode_t)0777;
     } else {
 	l = strtol(val, &endp, 8);
-	if (*endp != '\0' || l < 0 || l >= 0777)
+	if (*endp != '\0' || l < 0 || l > 0777)
 	    return(FALSE);
 	def->sd_un.mode = (mode_t)l;
     }
+    return(TRUE);
+}
+
+static int
+store_pwflag(val, def, op)
+    char *val;
+    struct sudo_defs_types *def;
+    int op;
+{
+    int isub, flags;
+
+    if (strcmp(def->name, "verifypw") == 0)
+	isub = I_VERIFYPW;
+    else
+	isub = I_LISTPW;
+
+    /* Handle !foo. */
+    if (op == FALSE) {
+	if (def->sd_un.str) {
+	    free(def->sd_un.str);
+	    def->sd_un.str = NULL;
+	}
+	def->sd_un.str = estrdup("never");
+	sudo_defs_table[isub].sd_un.ival = PWCHECK_NEVER;
+	return(TRUE);
+    }
+    if (!val)
+	return(FALSE);
+
+    /* Convert strings to integer values. */
+    if (strcmp(val, "all") == 0)
+	flags = PWCHECK_ALL;
+    else if (strcmp(val, "any") == 0)
+	flags = PWCHECK_ANY;
+    else if (strcmp(val, "never") == 0)
+	flags = PWCHECK_NEVER;
+    else if (strcmp(val, "always") == 0)
+	flags = PWCHECK_ALWAYS;
+    else
+	return(FALSE);
+
+    /* Store both name and number. */
+    if (def->sd_un.str)
+	free(def->sd_un.str);
+    def->sd_un.str = estrdup(val);
+    sudo_defs_table[isub].sd_un.ival = flags;
+
     return(TRUE);
 }

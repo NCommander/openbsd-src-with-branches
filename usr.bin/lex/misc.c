@@ -1,3 +1,5 @@
+/*	$OpenBSD: misc.c,v 1.3 1996/07/13 22:22:09 millert Exp $	*/
+
 /* misc - miscellaneous flex routines */
 
 /*-
@@ -26,7 +28,7 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/misc.c,v 1.7 1995/05/05 05:35:35 jtc Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/misc.c,v 1.3 1996/07/13 22:22:09 millert Exp $ */
 
 #include "flexdef.h"
 
@@ -538,7 +540,7 @@ Char array[];
 		case 'r': return '\r';
 		case 't': return '\t';
 
-#if __STDC__
+#ifdef __STDC__
 		case 'a': return '\a';
 		case 'v': return '\v';
 #else
@@ -725,7 +727,7 @@ register int c;
 			case '\r': return "\\r";
 			case '\t': return "\\t";
 
-#if __STDC__
+#ifdef __STDC__
 			case '\a': return "\\a";
 			case '\v': return "\\v";
 #endif

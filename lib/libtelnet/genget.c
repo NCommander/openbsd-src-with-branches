@@ -1,3 +1,5 @@
+/*	$OpenBSD: genget.c,v 1.3 1997/07/14 01:33:42 millert Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,18 +34,16 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)genget.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: genget.c,v 1.4 1995/06/05 19:46:58 pk Exp $";
+/* from: static char sccsid[] = "@(#)genget.c	8.2 (Berkeley) 5/30/95"; */
+/* from: static char *rcsid = "$NetBSD: genget.c,v 1.5 1996/02/24 01:15:21 jtk Exp $"; */
+static char *rcsid = "$OpenBSD: genget.c,v 1.3 1997/07/14 01:33:42 millert Exp $";
 #endif /* not lint */
+
 
 #include <ctype.h>
 #include "misc-proto.h"
 
-int isprefix __P((char *, char *));
-char **genget __P((char *, char **, int));
-int Ambiguous __P((char *));
-
-#define	LOWER(x) (isupper(x) ? tolower(x) : (x))
+#define	LOWER(x) (isupper((int)x) ? tolower((int)x) : (x))
 /*
  * The prefix function returns 0 if *s1 is not a prefix
  * of *s2.  If *s1 exactly matches *s2, the negative of
@@ -57,18 +57,18 @@ isprefix(s1, s2)
 	char *os1;
 	register char c1, c2;
 
-        if (*s1 == '\0')
-                return(-1);
-        os1 = s1;
+	if (*s1 == '\0')
+		return(-1);
+	os1 = s1;
 	c1 = *s1;
 	c2 = *s2;
-        while (LOWER(c1) == LOWER(c2)) {
+	while (LOWER(c1) == LOWER(c2)) {
 		if (c1 == '\0')
 			break;
-                c1 = *++s1;
-                c2 = *++s2;
-        }
-        return(*s1 ? 0 : (*s2 ? (s1 - os1) : (os1 - s1)));
+		c1 = *++s1;
+		c2 = *++s2;
+	}
+	return(*s1 ? 0 : (*s2 ? (s1 - os1) : (os1 - s1)));
 }
 
 static char *ambiguous;		/* special return value for command routines */
@@ -103,7 +103,7 @@ genget(name, table, stlen)
  */
 	int
 Ambiguous(s)
-	char *s;
+	void *s;
 {
 	return((char **)s == &ambiguous);
 }

@@ -1,3 +1,6 @@
+/*	$OpenBSD: list.c,v 1.9 1997/11/14 00:23:49 millert Exp $	*/
+/*	$NetBSD: list.c,v 1.7 1997/07/09 05:23:36 mikel Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,13 +35,18 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)list.c	8.2 (Berkeley) 4/19/94";
-static char rcsid[] = "$Id: list.c,v 1.3 1994/06/29 05:09:30 deraadt Exp $";
+#if 0
+static char sccsid[] = "@(#)list.c	8.4 (Berkeley) 5/1/95";
+#else
+static char rcsid[] = "$OpenBSD: list.c,v 1.9 1997/11/14 00:23:49 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
 #include <ctype.h>
 #include "extern.h"
+
+int	matchto __P((char *, int));
 
 /*
  * Mail -- a mail program
@@ -57,12 +65,12 @@ getmsglist(buf, vector, flags)
 	char *buf;
 	int *vector, flags;
 {
-	register int *ip;
-	register struct message *mp;
+	int *ip;
+	struct message *mp;
 
 	if (msgCount == 0) {
 		*vector = 0;
-		return 0;
+		return(0);
 	}
 	if (markall(buf, flags) < 0)
 		return(-1);
@@ -101,12 +109,12 @@ struct coltab {
 	int	co_mask;		/* m_status bits to mask */
 	int	co_equal;		/* ... must equal this */
 } coltab[] = {
-	'n',		CMNEW,		MNEW,		MNEW,
-	'o',		CMOLD,		MNEW,		0,
-	'u',		CMUNREAD,	MREAD,		0,
-	'd',		CMDELETED,	MDELETED,	MDELETED,
-	'r',		CMREAD,		MREAD,		MREAD,
-	0,		0,		0,		0
+	{ 'n',		CMNEW,		MNEW,		MNEW },
+	{ 'o',		CMOLD,		MNEW,		0 },
+	{ 'u',		CMUNREAD,	MREAD,		0 },
+	{ 'd',		CMDELETED,	MDELETED,	MDELETED },
+	{ 'r',		CMREAD,		MREAD,		MREAD },
+	{ 0,		0,		0,		0 }
 };
 
 static	int	lastcolmod;
@@ -116,9 +124,9 @@ markall(buf, f)
 	char buf[];
 	int f;
 {
-	register char **np;
-	register int i;
-	register struct message *mp;
+	char **np;
+	int i;
+	struct message *mp;
 	char *namelist[NMLSIZE], *bufp;
 	int tok, beg, mc, star, other, valdot, colmod, colresult;
 
@@ -139,7 +147,7 @@ markall(buf, f)
 		case TNUMBER:
 number:
 			if (star) {
-				printf("No numbers mixed with *\n");
+				puts("No numbers mixed with *");
 				return(-1);
 			}
 			mc++;
@@ -166,14 +174,14 @@ number:
 
 		case TPLUS:
 			if (beg != 0) {
-				printf("Non-numeric second argument\n");
+				puts("Non-numeric second argument");
 				return(-1);
 			}
 			i = valdot;
 			do {
 				i++;
 				if (i > msgCount) {
-					printf("Referencing beyond EOF\n");
+					puts("Referencing beyond EOF");
 					return(-1);
 				}
 			} while ((message[i - 1].m_flag & MDELETED) != f);
@@ -186,7 +194,7 @@ number:
 				do {
 					i--;
 					if (i <= 0) {
-						printf("Referencing before 1\n");
+						puts("Referencing before 1");
 						return(-1);
 					}
 				} while ((message[i - 1].m_flag & MDELETED) != f);
@@ -196,7 +204,7 @@ number:
 
 		case TSTRING:
 			if (beg != 0) {
-				printf("Non-numeric second argument\n");
+				puts("Non-numeric second argument");
 				return(-1);
 			}
 			other++;
@@ -208,9 +216,11 @@ number:
 					return(-1);
 				}
 				colmod |= colresult;
+			} else {
+				if ((com->c_argtype & ~(F|P|I|M|T|W|R))
+							!= (MSGLIST|STRLIST))
+					*np++ = savestr(lexstring);
 			}
-			else
-				*np++ = savestr(lexstring);
 			break;
 
 		case TDOLLAR:
@@ -223,19 +233,19 @@ number:
 
 		case TSTAR:
 			if (other) {
-				printf("Can't mix \"*\" with anything\n");
+				puts("Can't mix \"*\" with anything");
 				return(-1);
 			}
 			star++;
 			break;
 
 		case TERROR:
-			return -1;
+			return(-1);
 		}
 		tok = scan(&bufp);
 	}
 	lastcolmod = colmod;
-	*np = NOSTR;
+	*np = NULL;
 	mc = 0;
 	if (star) {
 		for (i = 0; i < msgCount; i++)
@@ -244,7 +254,7 @@ number:
 				mc++;
 			}
 		if (mc == 0) {
-			printf("No applicable messages.\n");
+			puts("No applicable messages.");
 			return(-1);
 		}
 		return(0);
@@ -268,7 +278,7 @@ number:
 
 	if (np > namelist) {
 		for (i = 1; i <= msgCount; i++) {
-			for (mc = 0, np = &namelist[0]; *np != NOSTR; np++)
+			for (mc = 0, np = &namelist[0]; *np != NULL; np++)
 				if (**np == '/') {
 					if (matchsubj(*np, i)) {
 						mc++;
@@ -298,9 +308,9 @@ number:
 		if (mc == 0) {
 			printf("No applicable messages from {%s",
 				namelist[0]);
-			for (np = &namelist[1]; *np != NOSTR; np++)
+			for (np = &namelist[1]; *np != NULL; np++)
 				printf(", %s", *np);
-			printf("}\n");
+			puts("}");
 			return(-1);
 		}
 	}
@@ -312,7 +322,7 @@ number:
 
 	if (colmod != 0) {
 		for (i = 1; i <= msgCount; i++) {
-			register struct coltab *colp;
+			struct coltab *colp;
 
 			mp = &message[i - 1];
 			for (colp = &coltab[0]; colp->co_char; colp++)
@@ -326,13 +336,13 @@ number:
 			if (mp->m_flag & MMARK)
 				break;
 		if (mp >= &message[msgCount]) {
-			register struct coltab *colp;
+			struct coltab *colp;
 
-			printf("No messages satisfy");
+			fputs("No messages satisfy", stdout);
 			for (colp = &coltab[0]; colp->co_char; colp++)
 				if (colp->co_bit & colmod)
 					printf(" :%c", colp->co_char);
-			printf("\n");
+			putchar('\n');
 			return(-1);
 		}
 	}
@@ -347,7 +357,7 @@ int
 evalcol(col)
 	int col;
 {
-	register struct coltab *colp;
+	struct coltab *colp;
 
 	if (col == 0)
 		return(lastcolmod);
@@ -366,7 +376,7 @@ int
 check(mesg, f)
 	int mesg, f;
 {
-	register struct message *mp;
+	struct message *mp;
 
 	if (mesg < 1 || mesg > msgCount) {
 		printf("%d: Invalid message number\n", mesg);
@@ -390,9 +400,13 @@ getrawlist(line, argv, argc)
 	char **argv;
 	int  argc;
 {
-	register char c, *cp, *cp2, quotec;
+	char c, *cp, *cp2, quotec;
 	int argn;
-	char linebuf[BUFSIZ];
+	char *linebuf;
+	size_t linebufsize = BUFSIZ;
+
+	if ((linebuf = (char *)malloc(linebufsize)) == NULL)
+		errx(1, "Out of memory");
 
 	argn = 0;
 	cp = line;
@@ -402,13 +416,20 @@ getrawlist(line, argv, argc)
 		if (*cp == '\0')
 			break;
 		if (argn >= argc - 1) {
-			printf(
-			"Too many elements in the list; excess discarded.\n");
+			puts("Too many elements in the list; excess discarded.");
 			break;
 		}
 		cp2 = linebuf;
 		quotec = '\0';
 		while ((c = *cp) != '\0') {
+			/* Alloc more space if necessary */
+			if (cp2 - linebuf == linebufsize - 1) {
+				linebufsize += BUFSIZ;
+				linebuf = (char *)realloc(linebuf, linebufsize);
+				if (linebuf == NULL)
+					errx(1, "Out of memory");
+				cp2 = linebuf + linebufsize - BUFSIZ - 1;
+			}
 			cp++;
 			if (quotec != '\0') {
 				if (c == quotec)
@@ -454,8 +475,8 @@ getrawlist(line, argv, argc)
 					if (c == '?')
 						*cp2++ = '\177';
 					/* null doesn't show up anyway */
-					else if (c >= 'A' && c <= '_' ||
-						 c >= 'a' && c <= 'z')
+					else if ((c >= 'A' && c <= '_') ||
+						 (c >= 'a' && c <= 'z'))
 						*cp2++ = c & 037;
 					else {
 						*cp2++ = '^';
@@ -473,8 +494,9 @@ getrawlist(line, argv, argc)
 		*cp2 = '\0';
 		argv[argn++] = savestr(linebuf);
 	}
-	argv[argn] = NOSTR;
-	return argn;
+	argv[argn] = NULL;
+	(void)free(linebuf);
+	return(argn);
 }
 
 /*
@@ -488,24 +510,24 @@ struct lex {
 	char	l_char;
 	char	l_token;
 } singles[] = {
-	'$',	TDOLLAR,
-	'.',	TDOT,
-	'^',	TUP,
-	'*',	TSTAR,
-	'-',	TDASH,
-	'+',	TPLUS,
-	'(',	TOPEN,
-	')',	TCLOSE,
-	0,	0
+	{ '$',	TDOLLAR },
+	{ '.',	TDOT },
+	{ '^',	TUP },
+	{ '*',	TSTAR },
+	{ '-',	TDASH },
+	{ '+',	TPLUS },
+	{ '(',	TOPEN },
+	{ ')',	TCLOSE },
+	{ 0,	0 }
 };
 
 int
 scan(sp)
 	char **sp;
 {
-	register char *cp, *cp2;
-	register int c;
-	register struct lex *lp;
+	char *cp, *cp2;
+	int c;
+	struct lex *lp;
 	int quotec;
 
 	if (regretp >= 0) {
@@ -591,7 +613,7 @@ scan(sp)
 	}
 	if (quotec && c == 0) {
 		fprintf(stderr, "Missing %c\n", quotec);
-		return TERROR;
+		return(TERROR);
 	}
 	*sp = --cp;
 	*cp2 = '\0';
@@ -606,7 +628,7 @@ regret(token)
 	int token;
 {
 	if (++regretp >= REGDEP)
-		panic("Too many regrets");
+		errx(1, "Too many regrets");
 	regretstack[regretp] = token;
 	lexstring[STRINGLEN-1] = '\0';
 	string_stack[regretp] = savestr(lexstring);
@@ -630,19 +652,19 @@ int
 first(f, m)
 	int f, m;
 {
-	register struct message *mp;
+	struct message *mp;
 
 	if (msgCount == 0)
-		return 0;
+		return(0);
 	f &= MDELETED;
 	m &= MDELETED;
 	for (mp = dot; mp < &message[msgCount]; mp++)
 		if ((mp->m_flag & m) == f)
-			return mp - message + 1;
+			return(mp - message + 1);
 	for (mp = dot-1; mp >= &message[0]; mp--)
 		if ((mp->m_flag & m) == f)
-			return mp - message + 1;
-	return 0;
+			return(mp - message + 1);
+	return(0);
 }
 
 /*
@@ -654,10 +676,10 @@ matchsender(str, mesg)
 	char *str;
 	int mesg;
 {
-	register char *cp, *cp2, *backup;
+	char *cp, *cp2, *backup;
 
 	if (!*str)	/* null string matches nothing instead of everything */
-		return 0;
+		return(0);
 	backup = cp2 = nameof(&message[mesg - 1], 0);
 	cp = str;
 	while (*cp2) {
@@ -672,6 +694,47 @@ matchsender(str, mesg)
 }
 
 /*
+ * See if the passed name received the passed message number.  Return true
+ * if so.
+ */
+
+static char *to_fields[] = { "to", "cc", "bcc", NULL };
+
+int
+matchto(str, mesg)
+	char *str;
+{
+	struct message *mp;
+	char *cp, *cp2, *backup, **to;
+
+	str++;
+
+	if (*str == 0)	/* null string matches nothing instead of everything */
+		return(0);
+
+	mp = &message[mesg-1];
+
+	for (to = to_fields; *to; to++) {
+		cp = str;
+		cp2 = hfield(*to, mp);
+		if (cp2 != NULL) {
+			backup = cp2;
+			while (*cp2) {
+				if (*cp == 0)
+					return(1);
+				if (raise(*cp++) != raise(*cp2++)) {
+					cp2 = ++backup;
+					cp = str;
+				}
+			}
+			if (*cp == 0)
+				return(1);
+		}
+	}
+	return(0);
+}
+
+/*
  * See if the given string matches inside the subject field of the
  * given message.  For the purpose of the scan, we ignore case differences.
  * If it does, return true.  The string search argument is assumed to
@@ -679,36 +742,42 @@ matchsender(str, mesg)
  * previous search string.
  */
 
-char lastscan[128];
+char lastscan[STRINGLEN];
 int
 matchsubj(str, mesg)
 	char *str;
 	int mesg;
 {
-	register struct message *mp;
-	register char *cp, *cp2, *backup;
+	struct message *mp;
+	char *cp, *cp2, *backup;
 
 	str++;
-	if (strlen(str) == 0)
+	if (*str == '\0')
 		str = lastscan;
-	else
-		strcpy(lastscan, str);
+	else {
+		strncpy(lastscan, str, sizeof(lastscan) - 1);
+		lastscan[sizeof(lastscan) - 1] = '\0';
+	}
 	mp = &message[mesg-1];
 	
 	/*
 	 * Now look, ignoring case, for the word in the string.
 	 */
 
-	if (value("searchheaders") && (cp = index(str, ':'))) {
+	if (value("searchheaders") && (cp = strchr(str, ':'))) {
+		/* Check for special case "/To:" */
+		if (raise(str[0]) == 'T' && raise(str[1]) == 'O' &&
+		    str[2] == ':')
+			return(matchto(cp, mesg));
 		*cp++ = '\0';
-		cp2 = hfield(str, mp);
+		cp2 = hfield(*str ? str : "subject", mp);
 		cp[-1] = ':';
 		str = cp;
 	} else {
 		cp = str;
 		cp2 = hfield("subject", mp);
 	}
-	if (cp2 == NOSTR)
+	if (cp2 == NULL)
 		return(0);
 	backup = cp2;
 	while (*cp2) {
@@ -729,11 +798,11 @@ void
 mark(mesg)
 	int mesg;
 {
-	register int i;
+	int i;
 
 	i = mesg;
 	if (i < 1 || i > msgCount)
-		panic("Bad message number to mark");
+		errx(1, "Bad message number to mark");
 	message[i-1].m_flag |= MMARK;
 }
 
@@ -744,11 +813,11 @@ void
 unmark(mesg)
 	int mesg;
 {
-	register int i;
+	int i;
 
 	i = mesg;
 	if (i < 1 || i > msgCount)
-		panic("Bad message number to unmark");
+		errx(1, "Bad message number to unmark");
 	message[i-1].m_flag &= ~MMARK;
 }
 
@@ -759,8 +828,8 @@ int
 metamess(meta, f)
 	int meta, f;
 {
-	register int c, m;
-	register struct message *mp;
+	int c, m;
+	struct message *mp;
 
 	c = meta;
 	switch (c) {
@@ -771,7 +840,7 @@ metamess(meta, f)
 		for (mp = &message[0]; mp < &message[msgCount]; mp++)
 			if ((mp->m_flag & MDELETED) == f)
 				return(mp - &message[0] + 1);
-		printf("No applicable messages\n");
+		puts("No applicable messages");
 		return(-1);
 
 	case '$':
@@ -781,11 +850,11 @@ metamess(meta, f)
 		for (mp = &message[msgCount-1]; mp >= &message[0]; mp--)
 			if ((mp->m_flag & MDELETED) == f)
 				return(mp - &message[0] + 1);
-		printf("No applicable messages\n");
+		puts("No applicable messages");
 		return(-1);
 
 	case '.':
-		/* 
+		/*
 		 * Current message.
 		 */
 		m = dot - &message[0] + 1;

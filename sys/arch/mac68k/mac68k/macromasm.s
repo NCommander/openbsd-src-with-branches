@@ -1,4 +1,5 @@
-/*	$NetBSD: macromasm.s,v 1.7 1995/09/17 21:28:39 briggs Exp $	*/
+/*	$OpenBSD: macromasm.s,v 1.7 1997/04/05 15:29:13 briggs Exp $	*/
+/*	$NetBSD: macromasm.s,v 1.11 1996/05/25 14:45:37 briggs Exp $	*/
 
 /*-
  * Copyright (C) 1994	Bradley A. Grantham
@@ -35,7 +36,7 @@
  */
 
 
-#include "assym.s"
+#include "assym.h"
 
 
 	/* Define this symbol as global with (v) value */
@@ -98,7 +99,17 @@
 	loglob(jClkNoMem, 0x54c)	/* Pointer to ClkNoMem function */
 	loglob(PramTransfer, 0x1e4)	/* Transfer buffer used with PRam */
 	loglob(SysParam, 0x1f8) 	/* Place where PRam data gets stored */
+	loglob(ExpandMem, 0x2b6)	/* pointer to Expanded Memory used by */
+					/*   newer ADB routines */
+	loglob(VBLQueue, 0x160)		/* Vertical blanking Queue, unused ? */
+	loglob(VBLQueue_head, 0x162)	/* Vertical blanking Queue, head */
+	loglob(VBLQueue_tail, 0x166)	/* Vertical blanking Queue, tail */
+	loglob(jDTInstall, 0xD9C)	/* short-cut to deferred task mgr */
+					/* trap handler */
 
+	loglob(InitEgretJTVec, 0x2010)	/* pointer to a jump table for */
+					/* InitEgret on AV machines */
+	loglob(jCacheFlush, 0x6f4)	/* setup_pm() needs this */
 
 #if 0
 	/* I wish I knew what these things were */
@@ -114,6 +125,9 @@
 	.global _panic
 	.global _printf
 
+#ifdef MRG_ADB		/* These functions are defined here if using the
+			 * MRG_ADB method of accessing the ADB/PRAM/RTC. 
+			 * They are in adb_direct.c. */
 /*
  * Most of the following glue just takes C function calls, converts
  * the parameters to the MacOS Trap parameters, and then tries to
@@ -124,6 +138,16 @@
  * If some code actually pulls down the a-trap line, we jump right
  * to the ROMs; none of this is called. 
  */
+
+/* Initialize Utils, mainly XPRam */
+	.global _InitUtil
+	/*
+	 * void
+	 */
+_InitUtil:
+	.word 0xa03f
+	rts
+
 
 /* Initialize the ADB ------------------------------------------------------*/
 	.global _ADBReInit
@@ -198,6 +222,7 @@ _ADBOp:
 	movl	sp@(16), d0
 	.word 0xa07c
 	rts
+#endif /* ifdef MRG_ADB */
 
 
 #if 0
@@ -339,6 +364,36 @@ LRE_enter:
 	movl	#-192, d0		| resNotFound; that's pretty accurate.
 	movw	d0, _mrg_ResErr 	| set current ResMan error
 	pascalret(6)			| I hate Pascal.
+
+
+
+function(mrg_CountResources)
+/* Original from WRU: 960120
+ * sp@(4)	u_int32_t  rsrc_type
+ * sp@(8)	u_int16_t  nr_of_rsrcs
+ */
+	movl 	sp@(4), d0
+  	movl	d0, sp@-
+	jbsr	_Count_Resources
+	addl	#4, sp			| pop C params
+	movw	d0, sp@(8)		| store result
+	pascalret(4)
+
+function(mrg_GetIndResource)
+/* Original from WRU: 960120
+ * sp@(4)	u_int16_t  rsrc_index
+ * sp@(6)	u_int32_t  rsrc_type
+ * sp@(10)	caddr_t   *rsrc_handle
+ */
+	movl	sp@(6), a0
+	clrl	d0
+	movw	sp@(4), d0
+  	movl	d0, sp@-
+	movl	a0, sp@-
+	jbsr	_Get_Ind_Resource
+	addl	#8, sp		| pop C params
+	movl	d0, sp@(10)	| store result
+	pascalret(6)
 
 /*
  * I'd like to take a moment here to talk about the calling convention

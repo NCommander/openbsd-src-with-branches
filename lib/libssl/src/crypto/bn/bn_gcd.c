@@ -60,21 +60,20 @@
 #include "cryptlib.h"
 #include "bn_lcl.h"
 
-#ifndef NOPROTO
 static BIGNUM *euclid(BIGNUM *a, BIGNUM *b);
-#else
-static BIGNUM *euclid();
-#endif
 
-int BN_gcd(r,in_a,in_b,ctx)
-BIGNUM *r,*in_a,*in_b;
-BN_CTX *ctx;
+int BN_gcd(BIGNUM *r, BIGNUM *in_a, BIGNUM *in_b, BN_CTX *ctx)
 	{
 	BIGNUM *a,*b,*t;
 	int ret=0;
 
-	a=ctx->bn[ctx->tos];
-	b=ctx->bn[ctx->tos+1];
+	bn_check_top(in_a);
+	bn_check_top(in_b);
+
+	BN_CTX_start(ctx);
+	a = BN_CTX_get(ctx);
+	b = BN_CTX_get(ctx);
+	if (a == NULL || b == NULL) goto err;
 
 	if (BN_copy(a,in_a) == NULL) goto err;
 	if (BN_copy(b,in_b) == NULL) goto err;
@@ -86,14 +85,17 @@ BN_CTX *ctx;
 	if (BN_copy(r,t) == NULL) goto err;
 	ret=1;
 err:
+	BN_CTX_end(ctx);
 	return(ret);
 	}
 
-static BIGNUM *euclid(a,b)
-BIGNUM *a,*b;
+static BIGNUM *euclid(BIGNUM *a, BIGNUM *b)
 	{
 	BIGNUM *t;
 	int shifts=0;
+
+	bn_check_top(a);
+	bn_check_top(b);
 
 	for (;;)
 		{
@@ -142,23 +144,28 @@ err:
 	}
 
 /* solves ax == 1 (mod n) */
-BIGNUM *BN_mod_inverse(a, n, ctx)
-BIGNUM *a;
-BIGNUM *n;
-BN_CTX *ctx;
+BIGNUM *BN_mod_inverse(BIGNUM *in, BIGNUM *a, const BIGNUM *n, BN_CTX *ctx)
 	{
-	BIGNUM *A,*B,*X,*Y,*M,*D,*R;
-	BIGNUM *ret=NULL,*T;
+	BIGNUM *A,*B,*X,*Y,*M,*D,*R=NULL;
+	BIGNUM *T,*ret=NULL;
 	int sign;
 
-	A=ctx->bn[ctx->tos];
-	B=ctx->bn[ctx->tos+1];
-	X=ctx->bn[ctx->tos+2];
-	D=ctx->bn[ctx->tos+3];
-	M=ctx->bn[ctx->tos+4];
-	Y=ctx->bn[ctx->tos+5];
-	ctx->tos+=6;
-	R=BN_new();
+	bn_check_top(a);
+	bn_check_top(n);
+
+	BN_CTX_start(ctx);
+	A = BN_CTX_get(ctx);
+	B = BN_CTX_get(ctx);
+	X = BN_CTX_get(ctx);
+	D = BN_CTX_get(ctx);
+	M = BN_CTX_get(ctx);
+	Y = BN_CTX_get(ctx);
+	if (Y == NULL) goto err;
+
+	if (in == NULL)
+		R=BN_new();
+	else
+		R=in;
 	if (R == NULL) goto err;
 
 	BN_zero(X);
@@ -175,7 +182,7 @@ BN_CTX *ctx;
 		B=M;
 		/* T has a struct, M does not */
 
-		if (!BN_mul(T,D,X)) goto err;
+		if (!BN_mul(T,D,X,ctx)) goto err;
 		if (!BN_add(T,T,Y)) goto err;
 		M=Y;
 		Y=X;
@@ -196,8 +203,8 @@ BN_CTX *ctx;
 		}
 	ret=R;
 err:
-	if ((ret == NULL) && (R != NULL)) BN_free(R);
-	ctx->tos-=6;
+	if ((ret == NULL) && (in == NULL)) BN_free(R);
+	BN_CTX_end(ctx);
 	return(ret);
 	}
 

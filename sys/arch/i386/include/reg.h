@@ -1,3 +1,4 @@
+/*	$OpenBSD: reg.h,v 1.14 1995/10/11 04:20:24 mycroft Exp $	*/
 /*	$NetBSD: reg.h,v 1.14 1995/10/11 04:20:24 mycroft Exp $	*/
 
 /*-

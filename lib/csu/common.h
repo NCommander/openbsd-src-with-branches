@@ -1,4 +1,6 @@
+/*	$OpenBSD: common.h,v 1.3 1995/06/15 21:41:48 pk Exp $	*/
 /*	$NetBSD: common.h,v 1.3 1995/06/15 21:41:48 pk Exp $	*/
+
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
  * All rights reserved.

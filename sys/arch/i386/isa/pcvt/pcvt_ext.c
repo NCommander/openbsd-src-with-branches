@@ -1,3 +1,4 @@
+/*	$OpenBSD: pcvt_ext.c,v 1.28 2000/10/07 03:12:45 aaron Exp $	*/
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -121,6 +122,7 @@ static int regsaved = 0;	/* registers are saved to savearea */
  *	###############################################################
  *
  *---------------------------------------------------------------------------*/
+
 u_char
 vga_chipset(void)
 {
@@ -262,6 +264,17 @@ vga_chipset(void)
 
 			case 0x93:
 				return(VGA_TR9100);
+
+			case 0xe3:
+				can_do_132col = 1;
+				return(VGA_TR9440);
+
+			case 0xd3:
+				can_do_132col = 1;
+				return(VGA_TR9660);
+
+			case 0xf3:
+				return(VGA_TR9750);
 
 			default:
 				return(VGA_TRUNKNOWN);
@@ -429,7 +442,7 @@ vga_chipset(void)
 					}
 					break;
 
-				case 0xA0:
+				case 0xa0:
 					outb(addr_6845, 0x38);
 					outb(addr_6845+1, old1byte);
 					return VGA_S3_80x;
@@ -440,6 +453,55 @@ vga_chipset(void)
 					outb(addr_6845+1, old1byte);
 					can_do_132col = 1;
 					return VGA_S3_928;
+
+				case 0xc0:
+					outb(addr_6845, 0x38);
+					outb(addr_6845+1, old1byte);
+					return VGA_S3_864;
+
+				case 0xd0:
+					outb(addr_6845, 0x38);
+					outb(addr_6845+1, old1byte);
+					return VGA_S3_964;
+
+				case 0xe0:
+					outb(addr_6845, 0x2e);
+					byte = inb(addr_6845+1);
+
+					switch (byte) {
+					case 0x10:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_732;
+					case 0x11:
+						outb(addr_6845, 0x2f);
+						byte = inb(addr_6845+1);
+
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+
+						if ((byte & 0x40) == 0x40)
+							return VGA_S3_765;
+						else
+							return VGA_S3_764;
+					case 0x31:
+					case 0x3d:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_ViRGE;
+					case 0x80:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_866;
+					case 0x90:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_868;
+					case 0xf0:
+						outb(addr_6845, 0x38);
+						outb(addr_6845+1, old1byte);
+						return VGA_S3_968;
+					}
 
 				default:
 					outb(addr_6845, 0x38);
@@ -515,6 +577,7 @@ vga_chipset(void)
 				return VGA_CL_GD5428;
 
 			case 0x28:
+			case 0x2a:	/* GD5434 */
 				can_do_132col = 1;
 				return VGA_CL_GD5430;
 
@@ -551,60 +614,6 @@ s3testwritable(void)
 	outb(addr_6845+1, old);			/* restore */
 
 	return((new1==0) && (new2==0x0f));
-}
-
-/*---------------------------------------------------------------------------*
- *	return ptr to string describing vga type
- *---------------------------------------------------------------------------*/
-char *
-vga_string(int number)
-{
-	static char *vga_tab[] = {
-		"generic",
-		"et4000",
-		"et3000",
-		"pvga1a",
-		"wd90c00",
-		"wd90c10",
-		"wd90c11",
-		"v7 vega",
-		"v7 fast",
-		"v7 ver5",
-		"v7 1024i",
-		"unknown v7",
-		"tvga 8800br",
-		"tvga 8800cs",
-		"tvga 8900b",
-		"tvga 8900c",
-		"tvga 8900cl",
-		"tvga 9000",
-		"tvga 9100",
-		"tvga 9200",
-		"unknown trident",
-		"s3 911",
-		"s3 924",
-		"s3 801/805",
-		"s3 928",
-		"unknown s3",
-		"cl-gd5402",
-		"cl-gd5402r1",
-		"cl-gd5420",
-		"cl-gd5420r1",
-		"cl-gd5422",
-		"cl-gd5424",
-		"cl-gd5426",
-		"cl-gd5428",
-		"cl-gd5430",
-		"cl-gd62x5",
-		"unknown cirrus",
-						/* VGA_MAX_CHIPSET */
-		"vga_string: chipset name table ptr overflow!"
-	};
-
-	if(number > VGA_MAX_CHIPSET)		/* failsafe */
-		number = VGA_MAX_CHIPSET;
-
-	return(vga_tab[number]);
 }
 
 /*---------------------------------------------------------------------------*
@@ -2196,8 +2205,6 @@ switch_screen(int n, int oldgrafx, int newgrafx)
 		if((saved_scrnsv_tmo = scrnsv_timeout))
 			pcvt_set_scrnsv_tmo(0);	/* screensaver off */
 #endif /* PCVT_SCREENSAVER */
-
-		async_update(UPDATE_STOP);	/* status display off */
 	}
 
 	if(!oldgrafx)
@@ -2214,15 +2221,7 @@ switch_screen(int n, int oldgrafx, int newgrafx)
 	/* update global screen pointers/variables */
 	current_video_screen = n;	/* current screen no */
 
-#if !PCVT_NETBSD && !(PCVT_FREEBSD > 110 && PCVT_FREEBSD < 200)
-	pcconsp = &pccons[n];		/* current tty */
-#elif PCVT_FREEBSD > 110 && PCVT_FREEBSD < 200
-	pcconsp = pccons[n];		/* current tty */
-#elif PCVT_NETBSD > 100
 	pcconsp = vs[n].vs_tty;		/* current tty */
-#else
-	pcconsp = pc_tty[n];		/* current tty */
-#endif
 
 	vsp = &vs[n];			/* current video state ptr */
 
@@ -2265,9 +2264,6 @@ switch_screen(int n, int oldgrafx, int newgrafx)
 		    outb(addr_6845, CRTC_CUREND); /* select low register */
 		    outb(addr_6845+1, vsp->cursor_end);
 		}
-
-		/* make status display happy */
-		async_update(UPDATE_START);
 	}
 
 	if(!newgrafx)
@@ -2323,17 +2319,32 @@ switch_screen(int n, int oldgrafx, int newgrafx)
 
 	if(!newgrafx)
 	{
-		update_led();	/* update led's */
-		update_hp(vsp);	/* update fkey labels, if present */
-
+		/*
+		 * update_led() was moved to vgapage() because switching
+		 * from X with kbd leds on under heavy IO (e.g. cd /; ls -R
+		 * in an XTerm) to a VT caused kbd lockup.
+		 * The following remaining problems will be solved later:
+		 * 1. killing X under heavy IO as above, with leds on,
+		 *    still causes kbd lockup
+		 * 2. starting X takes the led state from the first VT, and
+		 *    not from the VT where startx is executed
+		 * 3. switching back and forth between X and VTs causes some
+		 *    mismatch in the kbd led state
+		 * grep update_led in the pcvt sources to see where
+		 * Mathias Schmocker <smat@acm.org>, 27 Nov. 2000
+		 */
+#if 0 
+		update_led(1);	/* update led's */
+#endif 	
 		/* if we switch to a vt with force 24 lines mode and	*/
 		/* pure VT emulation and 25 rows charset, then we have	*/
 		/* to clear the last line on display ...		*/
 
-		if(vsp->force24 && (vsp->vt_pure_mode == M_PUREVT) &&
+		if(vsp->force24 &&
 			(vgacs[vsp->vga_charset].screen_size == SIZ_25ROWS))
 		{
-			fillw(' ', vsp->Crtat + vsp->screen_rows * vsp->maxcol,
+			fillw(' ', (caddr_t)
+				(vsp->Crtat + vsp->screen_rows * vsp->maxcol),
 				vsp->maxcol);
 		}
 	}
@@ -2420,6 +2431,12 @@ vgapage(int new_screen)
 {
 	int x;
 
+	if (IS_SEL_EXISTS(vsp)) 
+		/* hides a potential selection */
+		remove_selection();
+	
+	mouse_hide(); /* hides a potential mouse cursor */
+	
 	if(new_screen < 0 || new_screen >= totalscreens)
 		return EINVAL;
 
@@ -2488,16 +2505,8 @@ vgapage(int new_screen)
 		{
 			/* we are committed */
 			vt_switch_pending = 0;
-
-#if PCVT_FREEBSD > 206
-			/*
-			 * XXX: If pcvt is acting as the systems console,
-			 * avoid panics going to the debugger while we are in
-			 * process mode.
-			 */
-			if(pcvt_is_console)
-				cons_unavail = 0;
-#endif
+			reallocate_scrollbuffer(vsp, scrollback_pages);
+			update_led(1); /* was in switch_screen() before */
 		}
 	}
 	return 0;
@@ -2507,7 +2516,7 @@ vgapage(int new_screen)
  *	VT_USL ioctl handling 
  *---------------------------------------------------------------------------*/
 int
-usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
+usl_vt_ioctl(Dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 {
 	int i, j, error, opri, mode;
 	struct vt_mode newmode;
@@ -2574,16 +2583,6 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 		vsp->proc = p;
 		vsp->pid = p->p_pid;
 
-#if PCVT_FREEBSD > 206
-		/*
-		 * XXX: If pcvt is acting as the systems console,
-		 * avoid panics going to the debugger while we are in
-		 * process mode.
-		 */
-		if(pcvt_is_console)
-			cons_unavail = (newmode.mode == VT_PROCESS);
-#endif
-
 		splx(opri);
 		return 0;
 
@@ -2645,7 +2644,7 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 					 * if the new vt is also in process
 					 * mode, we have to wait until its
 					 * controlling process acknowledged
-					 * the switch
+					 * the switch 
 					 */
 					vsp->vt_status
 						|= VT_WAIT_ACK;
@@ -2657,13 +2656,15 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 				{
 					/* we are committed */
 					vt_switch_pending = 0;
-
-#if PCVT_FREEBSD > 206
-					/* XXX */
-					if(pcvt_is_console)
-						cons_unavail = 0;
-#endif
 				}
+				/*
+				 *  We send here a USR2 signal to the mouse 
+				 *  daemon (moused(8))
+				 *  to tell him he can reuse the mouse device.
+				 */      
+				if (moused_proc)
+					psignal(moused_proc, SIGUSR2);
+
 				return 0;
 			}
 			break;
@@ -2674,12 +2675,14 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 			{
 				vt_switch_pending = 0;
 				vsp->vt_status &= ~VT_WAIT_ACK;
+				/*
+				 *  We send a USR1 signal to the mouse 
+				 *  daemon (moused(8))
+				 *  to ask him to free the mouse device.
+				 */
+				if (moused_proc)
+					psignal(moused_proc, SIGUSR1);
 
-#if PCVT_FREEBSD > 206
-				/* XXX */
-				if(pcvt_is_console)
-					cons_unavail = 1;
-#endif
 				return 0;
 			}
 			break;
@@ -2722,8 +2725,7 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 			int x = spltty();
 			i = current_video_screen;
 			error = 0;
-			while (current_video_screen == i &&
-			       (error == 0 || error == ERESTART))
+			while (current_video_screen == i && error == 0)
 			{
 				vs[i].vt_status |= VT_WAIT_ACT;
 				error = tsleep((caddr_t)&vs[i].smode,
@@ -2735,8 +2737,7 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 		{
 			int x = spltty();
 			error = 0;
-			while (current_video_screen != i &&
-			       (error == 0 || error == ERESTART))
+			while (current_video_screen != i && error == 0)
 			{
 				vs[i].vt_status |= VT_WAIT_ACT;
 				error = tsleep((caddr_t)&vs[i].smode,
@@ -2744,27 +2745,27 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 			}
 			splx(x);
 		}
-		return error;
+		return (error == ERESTART) ? PCVT_ERESTART : error;
 
 	case KDENABIO:
-		/* grant the process IO access; only allowed if euid == 0 */
+		/*
+		 * grant the process IO access; only allowed if euid == 0
+		 * and securelevel <= 1.  XXX -- this is a fairly serious
+		 * hole, but if closed at securelevel 1, would require
+		 * options INSECURE in order to use X at all.
+		 */
 	{
 
-#if PCVT_NETBSD > 9 || PCVT_FREEBSD >= 200
+#if defined(COMPAT_10) || defined(COMPAT_11) || defined(COMPAT_LINUX)
 		struct trapframe *fp = (struct trapframe *)p->p_md.md_regs;
-#elif PCVT_NETBSD || (PCVT_FREEBSD && PCVT_FREEBSD > 102)
-		struct trapframe *fp = (struct trapframe *)p->p_regs;
-#else
-		struct syscframe *fp = (struct syscframe *)p->p_regs;
 #endif
 
-		if(suser(p->p_ucred, &p->p_acflag) != 0)
+		if (suser(p->p_ucred, &p->p_acflag) || securelevel > 1)
 			return (EPERM);
 
-#if PCVT_NETBSD || (PCVT_FREEBSD && PCVT_FREEBSD > 102)
+#if defined(COMPAT_10) || defined(COMPAT_11) || defined(COMPAT_LINUX)
+		/* This is done by i386_iopl(3) now. */
 		fp->tf_eflags |= PSL_IOPL;
-#else
-		fp->sf_eflags |= PSL_IOPL;
 #endif
 
 		return 0;
@@ -2774,17 +2775,11 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 		/* abandon IO access permission */
 	{
 
-#if PCVT_NETBSD > 9 || PCVT_FREEBSD >= 200
+#if defined(COMPAT_10) || defined(COMPAT_11) || defined(COMPAT_LINUX)
+		/* This is done by i386_iopl(3) now. */
 		struct trapframe *fp = (struct trapframe *)p->p_md.md_regs;
 		fp->tf_eflags &= ~PSL_IOPL;
-#elif PCVT_NETBSD || (PCVT_FREEBSD && PCVT_FREEBSD > 102)
-		struct trapframe *fp = (struct trapframe *)p->p_regs;
-		fp->tf_eflags &= ~PSL_IOPL;
-#else
-		struct syscframe *fp = (struct syscframe *)p->p_regs;
-		fp->sf_eflags &= ~PSL_IOPL;
 #endif
-
 		return 0;
 	}
 
@@ -2803,8 +2798,17 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 		case KD_TEXT:
 			haschanged = (vsx->vt_status & VT_GRAFX) != 0;
 			vsx->vt_status &= ~VT_GRAFX;
-			if(haschanged && vsx == vsp)
+			if (haschanged && vsx == vsp)
 				switch_screen(current_video_screen, 1, 0);
+			
+			/*
+			 *  We send here a USR2 signal to the mouse
+			 *  daemon (moused(8))
+			 *  to tell him he can reuse the mouse device.
+			 */                                
+			if (moused_proc)
+				psignal(moused_proc, SIGUSR2);
+
 			return 0;
 
 		case KD_GRAPHICS:
@@ -2815,6 +2819,15 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 			vsx->vt_status |= VT_GRAFX;
 			if(haschanged && vsx == vsp)
 				switch_screen(current_video_screen, 0, 1);
+
+			/*
+			 *  We send a USR1 signal to the mouse
+			 *  daemon (moused(8))
+			 *  to ask him to free the mouse device.
+			 */                                    
+			if (moused_proc)
+				psignal(moused_proc, SIGUSR1);
+			
 			return 0;
 
 		}
@@ -2852,16 +2865,11 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 			int duration = *(int *)data >> 16;
 			int pitch = *(int *)data & 0xffff;
 
-#if PCVT_NETBSD
 			if(pitch != 0)
 			{
 			    sysbeep(PCVT_SYSBEEPF / pitch,
 				    duration * hz / 1000);
 			}
-#else /* PCVT_NETBSD */
-			sysbeep(pitch, duration * hz / 3000);
-#endif /* PCVT_NETBSD */
-
 		}
 		else
 		{
@@ -2900,4 +2908,3 @@ usl_vt_ioctl(Dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 #endif	/* NVT > 0 */
 
 /* ------------------------- E O F ------------------------------------------*/
-

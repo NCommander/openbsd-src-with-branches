@@ -1,5 +1,3 @@
-/*	$NetBSD: rpc_prot.c,v 1.3 1995/04/29 05:26:35 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)rpc_prot.c 1.36 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)rpc_prot.c	2.3 88/08/07 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: rpc_prot.c,v 1.3 1995/04/29 05:26:35 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: rpc_prot.c,v 1.5 1998/02/27 21:02:40 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * rpc_prot.c
@@ -68,7 +64,7 @@ xdr_opaque_auth(xdrs, ap)
 
 	if (xdr_enum(xdrs, &(ap->oa_flavor)))
 		return (xdr_bytes(xdrs, &ap->oa_base,
-			&ap->oa_length, MAX_AUTH_BYTES));
+		    &ap->oa_length, MAX_AUTH_BYTES));
 	return (FALSE);
 }
 
@@ -99,17 +95,17 @@ xdr_accepted_reply(xdrs, ar)
 		return (FALSE);
 	if (! xdr_enum(xdrs, (enum_t *)&(ar->ar_stat)))
 		return (FALSE);
-	switch (ar->ar_stat) {
 
+	switch (ar->ar_stat) {
 	case SUCCESS:
 		return ((*(ar->ar_results.proc))(xdrs, ar->ar_results.where));
-
 	case PROG_MISMATCH:
-		if (! xdr_u_int32_t(xdrs, &(ar->ar_vers.low)))
+		if (!xdr_u_int32_t(xdrs, &(ar->ar_vers.low)))
 			return (FALSE);
 		return (xdr_u_int32_t(xdrs, &(ar->ar_vers.high)));
+	default:
+		return (TRUE);  /* TRUE => open ended set of problems */
 	}
-	return (TRUE);  /* TRUE => open ended set of problems */
 }
 
 /*
@@ -124,13 +120,12 @@ xdr_rejected_reply(xdrs, rr)
 	/* personalized union, rather than calling xdr_union */
 	if (! xdr_enum(xdrs, (enum_t *)&(rr->rj_stat)))
 		return (FALSE);
-	switch (rr->rj_stat) {
 
+	switch (rr->rj_stat) {
 	case RPC_MISMATCH:
-		if (! xdr_u_int32_t(xdrs, &(rr->rj_vers.low)))
+		if (!xdr_u_int32_t(xdrs, &(rr->rj_vers.low)))
 			return (FALSE);
 		return (xdr_u_int32_t(xdrs, &(rr->rj_vers.high)));
-
 	case AUTH_ERROR:
 		return (xdr_enum(xdrs, (enum_t *)&(rr->rj_why)));
 	}
@@ -150,10 +145,9 @@ xdr_replymsg(xdrs, rmsg)
 	register XDR *xdrs;
 	register struct rpc_msg *rmsg;
 {
-	if (
-	    xdr_u_int32_t(xdrs, &(rmsg->rm_xid)) && 
+	if (xdr_u_int32_t(xdrs, &(rmsg->rm_xid)) && 
 	    xdr_enum(xdrs, (enum_t *)&(rmsg->rm_direction)) &&
-	    (rmsg->rm_direction == REPLY) )
+	    rmsg->rm_direction == REPLY)
 		return (xdr_union(xdrs, (enum_t *)&(rmsg->rm_reply.rp_stat),
 		   (caddr_t)&(rmsg->rm_reply.ru), reply_dscrm, NULL_xdrproc_t));
 	return (FALSE);
@@ -173,13 +167,12 @@ xdr_callhdr(xdrs, cmsg)
 
 	cmsg->rm_direction = CALL;
 	cmsg->rm_call.cb_rpcvers = RPC_MSG_VERSION;
-	if (
-	    (xdrs->x_op == XDR_ENCODE) &&
+	if (xdrs->x_op == XDR_ENCODE &&
 	    xdr_u_int32_t(xdrs, &(cmsg->rm_xid)) &&
 	    xdr_enum(xdrs, (enum_t *)&(cmsg->rm_direction)) &&
 	    xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_rpcvers)) &&
-	    xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_prog)) )
-	    return (xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_vers)));
+	    xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_prog)))
+		return (xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_vers)));
 	return (FALSE);
 }
 
@@ -231,7 +224,7 @@ rejected(rjct_stat, error)
 
 	switch (rjct_stat) {
 
-	case RPC_VERSMISMATCH:
+	case RPC_MISMATCH:
 		error->re_status = RPC_VERSMISMATCH;
 		return;
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Opcode table for m680[01234]0/m6888[12]/m68851.
    Copyright (C) 1989, 1991 Free Software Foundation.
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +34,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)lpdchar.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: $";
+#endif
 #endif /* not lint */
 
 /*

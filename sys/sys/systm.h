@@ -1,4 +1,5 @@
-/*	$NetBSD: systm.h,v 1.37 1995/09/19 21:40:36 thorpej Exp $	*/
+/*	$OpenBSD: systm.h,v 1.36 1999/12/02 00:23:35 deraadt Exp $	*/
+/*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1988, 1991, 1993
@@ -40,19 +41,24 @@
  *	@(#)systm.h	8.4 (Berkeley) 2/23/94
  */
 
+#ifndef __SYSTM_H__
+#define __SYSTM_H__
+
+#include <machine/stdarg.h>
+
 /*
  * The `securelevel' variable controls the security level of the system.
  * It can only be decreased by process 1 (/sbin/init).
  *
  * Security levels are as follows:
- *   -1	permannently insecure mode - always run system in level 0 mode.
+ *   -1	permanently insecure mode - always run system in level 0 mode.
  *    0	insecure mode - immutable and append-only flags make be turned off.
  *	All devices may be read or written subject to permission modes.
  *    1	secure mode - immutable and append-only flags may not be changed;
  *	raw disks of mounted filesystems, /dev/mem, and /dev/kmem are
  *	read-only.
  *    2	highly secure mode - same as (1) plus raw disks are always
- *	read-only whether mounted or not. This level precludes tampering 
+ *	read-only whether mounted or not. This level precludes tampering
  *	with filesystems by unmounting them, but also inhibits running
  *	newfs while the system is secured.
  *
@@ -74,8 +80,10 @@ extern char copyright[];	/* system copyright */
 
 extern int nblkdev;		/* number of entries in bdevsw */
 extern int nchrdev;		/* number of entries in cdevsw */
+#if !defined(UVM)
 extern int nswdev;		/* number of swap devices */
 extern int nswap;		/* size of swap space */
+#endif
 
 extern int selwait;		/* select timeout address */
 
@@ -93,81 +101,138 @@ extern struct vnode *rootvp;	/* vnode equivalent to above */
 extern dev_t swapdev;		/* swapping device */
 extern struct vnode *swapdev_vp;/* vnode equivalent to above */
 
+struct proc;
+
+typedef int	sy_call_t __P((struct proc *, void *, register_t *));
+
 extern struct sysent {		/* system call table */
 	short	sy_narg;	/* number of args */
 	short	sy_argsize;	/* total size of arguments */
-				/* implementing function */
-	int	(*sy_call) __P((struct proc *, void *, register_t *));
+	sy_call_t *sy_call;	/* implementing function */
 } sysent[];
-extern int nsysent;
 #define	SCARG(p,k)	((p)->k.datum)	/* get arg from args pointer */
+
+#if defined(_KERNEL) && defined(SYSCALL_DEBUG)
+void scdebug_call __P((struct proc *p, register_t code, register_t retval[]));
+void scdebug_ret __P((struct proc *p, register_t code, int error, register_t retval[]));
+#endif /* _KERNEL && SYSCALL_DEBUG */
 
 extern int boothowto;		/* reboot flags, from console subsystem */
 
-/* casts to keep lint happy */
-#define	insque(q,p)	_insque((caddr_t)q,(caddr_t)p)
-#define	remque(q)	_remque((caddr_t)q)
+extern void (*v_putc) __P((int)); /* Virtual console putc routine */
+
+extern	void	_insque	__P((void *, void *));
+extern	void	_remque	__P((void *));
+
+/* casts to keep lint happy, but it should be happy with void * */
+#define	insque(q,p)	_insque(q, p)
+#define	remque(q)	_remque(q)
 
 /*
  * General function declarations.
  */
-int	nullop __P((void));
+int	nullop __P((void *));
 int	enodev __P((void));
+int	enosys __P((void));
 int	enoioctl __P((void));
 int	enxio __P((void));
-int	eopnotsupp __P((void));
-int	seltrue __P((dev_t dev, int which, struct proc *p));
-void	*hashinit __P((int count, int type, u_long *hashmask));
-int	nosys __P((struct proc *, void *, register_t *));
+int	eopnotsupp __P((void *));
 
-#ifdef __GNUC__
-volatile void	panic __P((const char *, ...));
+int	lkmenodev __P((void));
+
+struct vnodeopv_desc;
+void vfs_opv_init __P((void));
+void vfs_opv_init_explicit __P((struct vnodeopv_desc *));
+void vfs_opv_init_default __P((struct vnodeopv_desc *));
+void vfs_op_init __P((void));
+
+int	seltrue __P((dev_t dev, int which, struct proc *));
+void	*hashinit __P((int, int, int, u_long *));
+int	sys_nosys __P((struct proc *, void *, register_t *));
+
+void	panic __P((const char *, ...))
+#ifdef __KPRINTF_ATTRIBUTE__
+    __kprintf_attribute__((__noreturn__,__format__(__kprintf__,1,2)));
 #else
-void	panic __P((const char *, ...));
+    __attribute__((__noreturn__));
 #endif
+void	__assert __P((const char *, const char *, int, const char *))
+    __attribute__((__noreturn__));
+int	printf __P((const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,1,2)));
+void	uprintf __P((const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,1,2)));
+void	vprintf __P((const char *, _BSD_VA_LIST_));
+int	vsprintf __P((char *, const char *, va_list))
+    __kprintf_attribute__((__format__(__kprintf__,2,3)));
+int	sprintf __P((char *buf, const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,2,3)));
+int	vsnprintf __P((char *, size_t, const char *, va_list))
+    __kprintf_attribute__((__format__(__kprintf__,3,4)));
+int	snprintf __P((char *buf, size_t, const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,3,4)));
+struct tty;
+void	ttyprintf __P((struct tty *, const char *, ...))
+    __kprintf_attribute__((__format__(__kprintf__,2,3)));
+
 void	tablefull __P((const char *));
-void	printf __P((const char *, ...));
-int	sprintf __P((char *buf, const char *, ...));
-void	ttyprintf __P((struct tty *, const char *, ...));
 
-void	bcopy __P((const void *from, void *to, size_t len));
-void	ovbcopy __P((const void *from, void *to, size_t len));
-void	bzero __P((void *buf, size_t len));
-
-int	copystr __P((void *kfaddr, void *kdaddr, size_t len, size_t *done));
-int	copyinstr __P((void *udaddr, void *kaddr, size_t len, size_t *done));
-int	copyoutstr __P((void *kaddr, void *udaddr, size_t len, size_t *done));
-int	copyin __P((void *udaddr, void *kaddr, size_t len));
-int	copyout __P((void *kaddr, void *udaddr, size_t len));
-
-int	fubyte __P((void *base));
-#ifdef notdef
-int	fuibyte __P((void *base));
+#if defined(UVM)
+int	kcopy __P((const void *, void *, size_t));
 #endif
-int	subyte __P((void *base, int byte));
-int	suibyte __P((void *base, int byte));
-long	fuword __P((void *base));
-long	fuiword __P((void *base));
-int	suword __P((void *base, long word));
-int	suiword __P((void *base, long word));
 
-int	hzto __P((struct timeval *tv));
-void	timeout __P((void (*func)(void *), void *arg, int ticks));
-void	untimeout __P((void (*func)(void *), void *arg));
+void	bcopy __P((const void *, void *, size_t));
+void	ovbcopy __P((const void *, void *, size_t));
+void	bzero __P((void *, size_t));
+int	bcmp __P((const void *, const void *, size_t));
+void	*memcpy __P((void *, const void *, size_t));
+void	*memmove __P((void *, const void *, size_t));
+void	*memset __P((void *, int, size_t));
+
+int	copystr __P((const void *, void *, size_t, size_t *));
+int	copyinstr __P((const void *, void *, size_t, size_t *));
+int	copyoutstr __P((const void *, void *, size_t, size_t *));
+int	copyin __P((const void *, void *, size_t));
+int	copyout __P((const void *, void *, size_t));
+
+int	fubyte __P((void *));
+#ifdef notdef
+int	fuibyte __P((void *));
+#endif
+int	subyte __P((void *, int));
+int	suibyte __P((void *, int));
+long	fuword __P((void *));
+long	fuiword __P((void *));
+int	suword __P((void *, long));
+int	suiword __P((void *, long));
+int	fuswintr __P((caddr_t));
+int	suswintr __P((caddr_t, u_int));
+
+struct timeval;
+int	hzto __P((struct timeval *));
+void	timeout __P((void (*)(void *), void *, int));
+void	untimeout __P((void (*)(void *), void *));
 void	realitexpire __P((void *));
 
 struct clockframe;
-void	hardclock __P((struct clockframe *frame));
+void	hardclock __P((struct clockframe *));
 void	softclock __P((void));
-void	statclock __P((struct clockframe *frame));
+void	statclock __P((struct clockframe *));
+#ifdef NTP
+void	hardupdate __P((long offset));
+#ifdef PPS_SYNC
+void	hardpps __P((struct timeval *, long));
+#endif
+#endif
 
 void	initclocks __P((void));
 void	inittodr __P((time_t));
 void	resettodr __P((void));
+void	cpu_initclocks __P((void));
 
 void	startprofclock __P((struct proc *));
 void	stopprofclock __P((struct proc *));
-void	setstatclockrate __P((int hzrate));
+void	setstatclockrate __P((int));
 
 /*
  * Shutdown hooks.  Functions to be run with all interrupts disabled
@@ -177,10 +242,47 @@ void	*shutdownhook_establish __P((void (*)(void *), void *));
 void	shutdownhook_disestablish __P((void *));
 void	doshutdownhooks __P((void));
 
+/*
+ * Power managment hooks.
+ */
+void	*powerhook_establish __P((void (*)(int, void *), void *));
+void	powerhook_disestablish __P((void *));
+void	dopowerhooks __P((int));
+#define PWR_RESUME 0
+#define PWR_SUSPEND 1
+#define PWR_STANDBY 2
+
+struct uio;
+int	uiomove __P((caddr_t, int, struct uio *));
+
+int	setjmp	__P((label_t *));
+void	longjmp	__P((label_t *));
+
+void	consinit __P((void));
+
+void	cpu_startup __P((void));
+void	cpu_set_kpc __P((struct proc *, void (*)(void *), void *));
+extern void (*md_diskconf) __P((void));
+
+
+#ifdef GPROF
+void	kmstartup __P((void));
+#endif
+
+int nfs_mountroot __P((void));
+int dk_mountroot __P((void));
+int (*mountroot)__P((void));
+
 #include <lib/libkern/libkern.h>
 
-#ifdef DDB
+#if defined(DDB) || defined(KGDB)
 /* debugger entry points */
-int	Debugger __P((void));	/* in DDB only */
+void	Debugger __P((void));	/* in DDB only */
 int	read_symtab_from_file __P((struct proc *,struct vnode *,const char *));
 #endif
+
+#ifdef BOOT_CONFIG
+void	user_config __P((void));
+#endif
+
+#endif /* __SYSTM_H__ */

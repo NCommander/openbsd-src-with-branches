@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: reloc.h,v 1.2 1994/11/20 20:53:30 deraadt Exp $ */
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -292,6 +294,8 @@ error(fmt, parg)
 		bell();
 #else
 	c = getchr();
+	if (c == 'q')
+		quit(QUIT_OK);
 	if (c != '\n' && c != '\r' && c != ' ' && c != READ_INTR)
 		ungetcc(c);
 #endif

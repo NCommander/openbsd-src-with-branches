@@ -1,5 +1,3 @@
-/*	$NetBSD: signal.c,v 1.7 1995/03/04 01:56:04 cgd Exp $	*/
-
 /*
  * Copyright (c) 1985, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,17 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)signal.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: signal.c,v 1.7 1995/03/04 01:56:04 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: signal.c,v 1.3 1998/06/03 16:20:22 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
  * Almost backwards compatible signal.
  */
 #include <signal.h>
+#include <string.h>
 
 sigset_t __sigintr;		/* shared with siginterrupt */
 
@@ -55,6 +50,7 @@ signal(s, a)
 {
 	struct sigaction sa, osa;
 
+	memset(&sa, 0, sizeof sa);
 	sa.sa_handler = a;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;

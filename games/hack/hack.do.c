@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.do.c,v 1.3 1995/03/23 08:29:53 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.do.c,v 1.3 1995/03/23 08:29:53 cgd Exp $";
 #endif /* not lint */
 
 /* Contains code for 'd', 'D' (drop), '>', '<' (up, down) and 't' (throw) */
@@ -171,7 +173,7 @@ register boolean at_stairs;
 	else {
 		extern int hackpid;
 
-		if((fd = open(lock,0)) < 0) {
+		if((fd = open(lock, O_RDONLY)) < 0) {
 			pline("Cannot open %s .", lock);
 			pline("Probably someone removed it.");
 			done("tricked");

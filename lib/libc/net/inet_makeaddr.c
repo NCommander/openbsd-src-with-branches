@@ -1,5 +1,3 @@
-/*	$NetBSD: inet_makeaddr.c,v 1.4 1995/02/25 06:20:42 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)inet_makeaddr.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: inet_makeaddr.c,v 1.4 1995/02/25 06:20:42 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: inet_makeaddr.c,v 1.2 1996/08/19 08:29:11 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -51,9 +45,9 @@ static char rcsid[] = "$NetBSD: inet_makeaddr.c,v 1.4 1995/02/25 06:20:42 cgd Ex
  */
 struct in_addr
 inet_makeaddr(net, host)
-	u_long net, host;
+	in_addr_t net, host;
 {
-	u_long addr;
+	in_addr_t addr;
 
 	if (net < 128)
 		addr = (net << IN_CLASSA_NSHIFT) | (host & IN_CLASSA_HOST);

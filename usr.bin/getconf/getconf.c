@@ -1,6 +1,11 @@
-/*
- * Copyright (c) 1994 Winning Strategies, Inc.
+/*	$OpenBSD: getconf.c,v 1.3 1996/06/26 05:33:43 deraadt Exp $	*/
+
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by J.T. Conklin.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,7 +41,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: getconf.c,v 1.2 1994/05/10 00:04:12 jtc Exp $";
+static char rcsid[] = "$OpenBSD: getconf.c,v 1.3 1996/06/26 05:33:43 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -167,7 +172,7 @@ main(argc, argv)
 			break;
 	}
 	if (cp->name == NULL) {
-		err(1, "%s: unknown variable", *argv);
+		errx(1, "%s: unknown variable", *argv);
 		/* NOTREACHED */
 	}
 
@@ -228,7 +233,8 @@ main(argc, argv)
 static void
 usage()
 {
-  fprintf (stderr, "usage: getconf system_var\n");
-  fprintf (stderr, "       getconf path_var pathname\n");
-  exit(1);
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: %s name [pathname]\n", __progname);
+	exit(1);
 }

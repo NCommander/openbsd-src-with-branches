@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: swapnfs.c,v 1.9 1995/04/30 07:03:13 cgd Exp $	*/
 
 /*

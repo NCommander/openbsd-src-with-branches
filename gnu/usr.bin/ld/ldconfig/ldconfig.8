@@ -1,3 +1,4 @@
+.\"	$OpenBSD: ldconfig.8,v 1.5 2000/06/28 15:32:40 form Exp $
 .\"
 .\" Copyright (c) 1993,1995 Paul Kranenburg
 .\" All rights reserved.
@@ -27,17 +28,16 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: ldconfig.8,v 1.4 1995/06/20 23:12:33 pk Exp $
 .\"
 .Dd October 3, 1993
 .Dt LDCONFIG 8
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm ldconfig
 .Nd configure the shared library cache
 .Sh SYNOPSIS
 .Nm ldconfig
-.Op Fl mrsv
+.Op Fl RUmrsv
 .Op Ar directory Ar ...
 .Sh DESCRIPTION
 .Nm
@@ -46,7 +46,7 @@ is used to prepare a set of
 for use by the run-time linker
 .Xr ld.so
 to facilitate quick lookup of shared libraries available in multiple
-directories.  It scans a set of built-in system directories and any
+directories. It scans a set of built-in system directories and any
 .Ar directories
 specified on the command line (in the given order) looking for shared
 libraries and stores the results in the file
@@ -76,17 +76,28 @@ equivalent of the
 switch of
 .Xr ld.
 .Pp
-.Nm Ldconfig
+.Nm
 is typically run as part of the boot sequence.
 .Pp
 The following options are recognized by
-.Nm ldconfig:
+.Nm ldconfig :
 .Bl -tag -width indent
+.It Fl R
+Rescan the previously configured directories. This opens the hints file
+and fetches the directory list from the header. Any additional pathnames
+on the command line are also processed.
+.It Fl U
+Unconfigure directories specified on the command line or remove inaccessible
+directories from search path if no directories specified. This option cannot
+be used with
+.Fl m .
 .It Fl m
 Merge the result of the scan of the directories given as arguments into
-the existing hints file. The default action is to build the hints file afresh.
+the existing hints file. The default action is to build the hints file
+afresh. This option cannot be used with
+.Fl U .
 .It Fl r
-Lists the current contents of
+List the current contents of
 .Xr ld.so.hints
 on the standard output. The hints file will not be modified.
 .It Fl s
@@ -105,11 +116,13 @@ will only load shared libraries from the
 .Ev ld.so.hints
 file. In particular, the
 .Ev LD_LIBRARY_PATH
-is not used to search for libraries. Thus, the role of ldconfig is dual. In
-addition to building a set of hints for quick lookup, it also serves to
+is not used to search for libraries. Thus, the role of
+.Nm
+is dual.
+In addition to building a set of hints for quick lookup, it also serves to
 specify the trusted collection of directories from which shared objects can
 be safely loaded. It is presumed that the set of directories specified to
-.Nm ldconfig
+.Nm
 are under control of the system's administrator.
 .Xr ld.so
 further assists set-user-Id programs by erasing the

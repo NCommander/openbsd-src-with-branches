@@ -1,3 +1,4 @@
+/*	$OpenBSD: mips.h,v 1.3 1995/04/19 07:16:12 cgd Exp $	*/
 /*	$NetBSD: mips.h,v 1.3 1995/04/19 07:16:12 cgd Exp $	*/
 
 /*-

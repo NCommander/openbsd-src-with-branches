@@ -1,3 +1,4 @@
+/*	$OpenBSD: sys_socket.c,v 1.4 2000/04/19 08:34:53 csapuntz Exp $	*/
 /*	$NetBSD: sys_socket.c,v 1.13 1995/08/12 23:59:09 mycroft Exp $	*/
 
 /*
@@ -38,6 +39,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/file.h>
+#include <sys/proc.h>
 #include <sys/mbuf.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
@@ -48,13 +50,16 @@
 #include <net/if.h>
 #include <net/route.h>
 
-struct	fileops socketops =
-    { soo_read, soo_write, soo_ioctl, soo_select, soo_close };
+struct	fileops socketops = {
+	soo_read, soo_write, soo_ioctl, soo_select, soo_kqfilter,
+	soo_close
+};
 
 /* ARGSUSED */
 int
-soo_read(fp, uio, cred)
+soo_read(fp, poff, uio, cred)
 	struct file *fp;
+	off_t *poff;
 	struct uio *uio;
 	struct ucred *cred;
 {
@@ -65,8 +70,9 @@ soo_read(fp, uio, cred)
 
 /* ARGSUSED */
 int
-soo_write(fp, uio, cred)
+soo_write(fp, poff, uio, cred)
 	struct file *fp;
+	off_t *poff;
 	struct uio *uio;
 	struct ucred *cred;
 {
@@ -111,6 +117,8 @@ soo_ioctl(fp, cmd, data, p)
 
 	case SIOCSPGRP:
 		so->so_pgid = *(int *)data;
+		so->so_siguid = p->p_cred->p_ruid;
+		so->so_sigeuid = p->p_ucred->cr_uid;
 		return (0);
 
 	case SIOCGPGRP:

@@ -1,3 +1,5 @@
+/*	$OpenBSD: rmjob.c,v 1.8 1997/07/23 22:12:12 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +34,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "@(#)rmjob.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static char sccsid[] = "@(#)rmjob.c	8.2 (Berkeley) 4/28/95";
+#else
+static char rcsid[] = "$OpenBSD: rmjob.c,v 1.8 1997/07/23 22:12:12 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -94,7 +100,7 @@ rmjob()
 	if (cgetstr(bp,"lo", &LO) < 0)
 		LO = DEFLOCK;
 	cgetstr(bp, "rm", &RM);
-	if (cp = checkremote())
+	if ((cp = checkremote()))
 		printf("Warning: %s\n", cp);
 
 	/*
@@ -210,7 +216,9 @@ process(file)
 	while (getline(cfp)) {
 		switch (line[0]) {
 		case 'U':  /* unlink associated files */
-			do_unlink(file);
+			if (strchr(line+1, '/') || strncmp(line+1, "df", 2))
+				break;
+			do_unlink(line+1);
 		}
 	}
 	(void) fclose(cfp);
@@ -316,7 +324,7 @@ rmremote()
 	register int i, rem;
 	char buf[BUFSIZ];
 
-	if (!sendtorem)
+	if (!remote)
 		return;	/* not sending to a remote machine */
 
 	/*
@@ -325,19 +333,19 @@ rmremote()
 	 */
 	fflush(stdout);
 
-	(void)snprintf(buf, sizeof(buf), "\5%s %s", RP, all ? "-all" : person);
-	cp = buf;
-	for (i = 0; i < users; i++) {
+	(void)snprintf(buf, sizeof(buf)-2, "\5%s %s", RP, all ? "-all" : person);
+	cp = buf + strlen(buf);
+	for (i = 0; i < users && cp-buf+1+strlen(user[i]) < sizeof buf - 2; i++) {
 		cp += strlen(cp);
 		*cp++ = ' ';
 		strcpy(cp, user[i]);
 	}
-	for (i = 0; i < requests; i++) {
+	for (i = 0; i < requests && cp-buf+10 < sizeof(buf) - 2; i++) {
 		cp += strlen(cp);
 		(void) sprintf(cp, " %d", requ[i]);
 	}
 	strcat(cp, "\n");
-	rem = getport(RM);
+	rem = getport(RM, 0);
 	if (rem < 0) {
 		if (from != host)
 			printf("%s: ", host);

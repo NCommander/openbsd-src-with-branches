@@ -1,8 +1,8 @@
-/*	$NetBSD: ufs_bmap.c,v 1.3 1996/02/09 22:36:00 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_bmap.c,v 1.4 1999/04/25 00:36:46 millert Exp $	*/
+/*	$NetBSD: ext2fs_bmap.c,v 1.1 1997/06/11 09:33:46 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1989, 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -40,6 +40,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)ufs_bmap.c	8.6 (Berkeley) 1/21/94
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 #include <sys/param.h>
@@ -49,7 +50,6 @@
 #include <sys/vnode.h>
 #include <sys/mount.h>
 #include <sys/resourcevar.h>
-#include <sys/trace.h>
 
 #include <miscfs/specfs/specdev.h>
 
@@ -88,7 +88,7 @@ ext2fs_bmap(v)
 		return (0);
 
 	return (ext2fs_bmaparray(ap->a_vp, ap->a_bn, ap->a_bnp, NULL, NULL,
-	    ap->a_runp));
+		ap->a_runp));
 }
 
 /*
@@ -119,7 +119,7 @@ ext2fs_bmaparray(vp, bn, bnp, ap, nump, runp)
 	struct ufsmount *ump;
 	struct mount *mp;
 	struct vnode *devvp;
-	struct indir a[NIADDR], *xap;
+	struct indir a[NIADDR+1], *xap;
 	daddr_t daddr;
 	long metalbn;
 	int error, maxrun = 0, num;
@@ -156,9 +156,9 @@ ext2fs_bmaparray(vp, bn, bnp, ap, nump, runp)
 			*bnp = -1;
 		else if (runp)
 			for (++bn; bn < NDADDR && *runp < maxrun &&
-			    is_sequential(ump, ip->i_e2fs_blocks[bn - 1],
+				is_sequential(ump, ip->i_e2fs_blocks[bn - 1],
 							  ip->i_e2fs_blocks[bn]);
-			    ++bn, ++*runp);
+				++bn, ++*runp);
 		return (0);
 	}
 
@@ -187,14 +187,13 @@ ext2fs_bmaparray(vp, bn, bnp, ap, nump, runp)
 		xap->in_exists = 1;
 		bp = getblk(vp, metalbn, mp->mnt_stat.f_iosize, 0, 0);
 		if (bp->b_flags & (B_DONE | B_DELWRI)) {
-			trace(TR_BREADHIT, pack(vp, size), metalbn);
+			;
 		}
 #ifdef DIAGNOSTIC
 		else if (!daddr)
 			panic("ext2fs_bmaparry: indirect block not in cache");
 #endif
 		else {
-			trace(TR_BREADMISS, pack(vp, size), metalbn);
 			bp->b_blkno = blkptrtodb(ump, daddr);
 			bp->b_flags |= B_READ;
 			VOP_STRATEGY(bp);
@@ -208,10 +207,10 @@ ext2fs_bmaparray(vp, bn, bnp, ap, nump, runp)
 		daddr = ((daddr_t *)bp->b_data)[xap->in_off];
 		if (num == 1 && daddr && runp)
 			for (bn = xap->in_off + 1;
-			    bn < MNINDIR(ump) && *runp < maxrun &&
-			    is_sequential(ump, ((daddr_t *)bp->b_data)[bn - 1],
-			    ((daddr_t *)bp->b_data)[bn]);
-			    ++bn, ++*runp);
+				bn < MNINDIR(ump) && *runp < maxrun &&
+				is_sequential(ump, ((daddr_t *)bp->b_data)[bn - 1],
+				((daddr_t *)bp->b_data)[bn]);
+				++bn, ++*runp);
 	}
 	if (bp)
 		brelse(bp);

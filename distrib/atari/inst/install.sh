@@ -1,5 +1,6 @@
 #!/bin/sh
 #
+#	$OpenBSD: install.sh,v 1.2 1995/08/25 19:17:28 leo Exp $
 #	$NetBSD: install.sh,v 1.2 1995/08/25 19:17:28 leo Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou

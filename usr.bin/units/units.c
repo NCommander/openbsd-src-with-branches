@@ -1,3 +1,6 @@
+/*	$OpenBSD: units.c,v 1.6 1999/06/13 16:34:21 pjanzen Exp $	*/
+/*	$NetBSD: units.c,v 1.6 1996/04/06 06:01:03 thorpej Exp $	*/
+
 /*
  * units.c   Copyright (c) 1993 by Adrian Mariano (adrian@cam.cornell.edu)
  *
@@ -13,8 +16,6 @@
  *
  * I would appreciate (though I do not require) receiving a copy of any
  * improvements you might make to this program.
- *
- *	$Id: units.c,v 1.3 1994/12/21 07:22:00 jtc Exp $
  */
 
 #include <ctype.h>
@@ -42,7 +43,7 @@ char *powerstring = "^";
 struct {
 	char *uname;
 	char *uval;
-}      unittable[MAXUNITS];
+} unittable[MAXUNITS];
 
 struct unittype {
 	char *numerator[MAXSUBUNITS];
@@ -53,10 +54,16 @@ struct unittype {
 struct {
 	char *prefixname;
 	char *prefixval;
-}      prefixtable[MAXPREFIXES];
+} prefixtable[MAXPREFIXES];
 
 
 char *NULLUNIT = "";
+
+#ifdef DOS
+#define SEPERATOR	";"
+#else
+#define SEPERATOR	":"
+#endif
 
 int unitcount;
 int prefixcount;
@@ -67,12 +74,11 @@ dupstr(char *str)
 {
 	char *ret;
 
-	ret = malloc(strlen(str) + 1);
+	ret = strdup(str);
 	if (!ret) {
 		fprintf(stderr, "Memory allocation error\n");
 		exit(3);
 	}
-	strcpy(ret, str);
 	return (ret);
 }
 
@@ -102,28 +108,19 @@ readunits(char *userfile)
 			    userfile);
 			exit(1);
 		}
-	}
-	else {
+	} else {
 		unitfile = fopen(UNITSFILE, "rt");
 		if (!unitfile) {
 			char *direc, *env;
 			char filename[1000];
-			char separator[2];
+			char separator[2] = SEPERATOR;
 
 			env = getenv("PATH");
 			if (env) {
-				if (strchr(env, ';'))
-					strcpy(separator, ";");
-				else
-					strcpy(separator, ":");
 				direc = strtok(env, separator);
 				while (direc) {
-					strcpy(filename, "");
-					strncat(filename, direc, 999);
-					strncat(filename, "/",
-					    999 - strlen(filename));
-					strncat(filename, UNITSFILE,
-					    999 - strlen(filename));
+					snprintf(filename, sizeof(filename),
+					    "%s/%s", direc, UNITSFILE);
 					unitfile = fopen(filename, "rt");
 					if (unitfile)
 						break;
@@ -151,7 +148,8 @@ readunits(char *userfile)
 			continue;
 		if (lineptr[strlen(lineptr) - 1] == '-') { /* it's a prefix */
 			if (prefixcount == MAXPREFIXES) {
-				fprintf(stderr, "Memory for prefixes exceeded in line %d\n",
+				fprintf(stderr,
+				    "Memory for prefixes exceeded in line %d\n",
 				    linenum);
 				continue;
 			}
@@ -159,7 +157,8 @@ readunits(char *userfile)
 			prefixtable[prefixcount].prefixname = dupstr(lineptr);
 			for (i = 0; i < prefixcount; i++)
 				if (!strcmp(prefixtable[i].prefixname, lineptr)) {
-					fprintf(stderr, "Redefinition of prefix '%s' on line %d ignored\n",
+					fprintf(stderr,
+					    "Redefinition of prefix '%s' on line %d ignored\n",
 					    lineptr, linenum);
 					continue;
 				}
@@ -175,14 +174,16 @@ readunits(char *userfile)
 		}
 		else {		/* it's not a prefix */
 			if (unitcount == MAXUNITS) {
-				fprintf(stderr, "Memory for units exceeded in line %d\n",
+				fprintf(stderr,
+				    "Memory for units exceeded in line %d\n",
 				    linenum);
 				continue;
 			}
 			unittable[unitcount].uname = dupstr(lineptr);
 			for (i = 0; i < unitcount; i++)
 				if (!strcmp(unittable[i].uname, lineptr)) {
-					fprintf(stderr, "Redefinition of unit '%s' on line %d ignored\n",
+					fprintf(stderr,
+					    "Redefinition of unit '%s' on line %d ignored\n",
 					    lineptr, linenum);
 					continue;
 				}
@@ -438,10 +439,10 @@ lookupunit(char *unit)
 
 	if (unit[strlen(unit) - 1] == '^') {
 		copy = dupstr(unit);
-		copy[strlen(copy) - 1] = 0;
+		copy[strlen(copy) - 1] = '\0';
 		for (i = 0; i < unitcount; i++) {
 			if (!strcmp(unittable[i].uname, copy)) {
-				strcpy(buffer, copy);
+				strlcpy(buffer, copy, sizeof(buffer));
 				free(copy);
 				return buffer;
 			}
@@ -453,7 +454,7 @@ lookupunit(char *unit)
 		copy[strlen(copy) - 1] = 0;
 		for (i = 0; i < unitcount; i++) {
 			if (!strcmp(unittable[i].uname, copy)) {
-				strcpy(buffer, copy);
+				strlcpy(buffer, copy, sizeof(buffer));
 				free(copy);
 				return buffer;
 			}
@@ -462,7 +463,7 @@ lookupunit(char *unit)
 			copy[strlen(copy) - 1] = 0;
 			for (i = 0; i < unitcount; i++) {
 				if (!strcmp(unittable[i].uname, copy)) {
-					strcpy(buffer, copy);
+					strlcpy(buffer, copy, sizeof(buffer));
 					free(copy);
 					return buffer;
 				}
@@ -475,9 +476,8 @@ lookupunit(char *unit)
 			strlen(prefixtable[i].prefixname))) {
 			unit += strlen(prefixtable[i].prefixname);
 			if (!strlen(unit) || lookupunit(unit)) {
-				strcpy(buffer, prefixtable[i].prefixval);
-				strcat(buffer, " ");
-				strcat(buffer, unit);
+				snprintf(buffer, sizeof(buffer),
+				    "%s %s", prefixtable[i].prefixval, unit);
 				return buffer;
 			}
 		}
@@ -617,28 +617,28 @@ showanswer(struct unittype * have, struct unittype * want)
 void 
 usage()
 {
-	fprintf(stderr, "\nunits [-f unitsfile] [-q] [-v] [from-unit to-unit]\n");
-	fprintf(stderr, "\n    -f specify units file\n");
-	fprintf(stderr, "    -q supress prompting (quiet)\n");
+	fprintf(stderr, "units [-f unitsfile] [-q] [-v] [from-unit to-unit]\n");
+	fprintf(stderr, "    -f specify units file\n");
+	fprintf(stderr, "    -q suppress prompting (quiet)\n");
 	fprintf(stderr, "    -v print version number\n");
 	exit(3);
 }
 
 
-void 
+int
 main(int argc, char **argv)
 {
 
 	struct unittype have, want;
 	char havestr[81], wantstr[81];
-	char optchar;
+	int optchar;
 	char *userfile = 0;
 	int quiet = 0;
 
 	extern char *optarg;
 	extern int optind;
 
-	while (EOF != (optchar = getopt(argc, argv, "vqf:"))) {
+	while ((optchar = getopt(argc, argv, "vqf:")) != -1) {
 		switch (optchar) {
 		case 'f':
 			userfile = optarg;
@@ -647,9 +647,11 @@ main(int argc, char **argv)
 			quiet = 1;
 			break;
 		case 'v':
-			fprintf(stderr, "\n  units version %s  Copyright (c) 1993 by Adrian Mariano\n",
+			fprintf(stderr,
+			    "units version %s Copyright (c) 1993 by Adrian Mariano\n",
 			    VERSION);
-			fprintf(stderr, "                    This program may be freely distributed\n");
+			fprintf(stderr,
+			    "This program may be freely distributed\n");
 			usage();
 		default:
 			usage();
@@ -663,8 +665,8 @@ main(int argc, char **argv)
 	readunits(userfile);
 
 	if (optind == argc - 2) {
-		strcpy(havestr, argv[optind]);
-		strcpy(wantstr, argv[optind + 1]);
+		strlcpy(havestr, argv[optind], sizeof(havestr));
+		strlcpy(wantstr, argv[optind + 1], sizeof(wantstr));
 		initializeunit(&have);
 		addunit(&have, havestr, 0);
 		completereduce(&have);
@@ -675,7 +677,7 @@ main(int argc, char **argv)
 	}
 	else {
 		if (!quiet)
-			printf("%d units, %d prefixes\n\n", unitcount,
+			printf("%d units, %d prefixes\n", unitcount,
 			    prefixcount);
 		for (;;) {
 			do {
@@ -683,8 +685,8 @@ main(int argc, char **argv)
 				if (!quiet)
 					printf("You have: ");
 				if (!fgets(havestr, 80, stdin)) {
-					if (!quiet);
-					putchar('\n');
+					if (!quiet)
+						putchar('\n');
 					exit(0);
 				}
 			} while (addunit(&have, havestr, 0) ||
@@ -703,4 +705,5 @@ main(int argc, char **argv)
 			showanswer(&have, &want);
 		}
 	}
+	return (0);
 }

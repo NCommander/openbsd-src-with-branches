@@ -1,3 +1,4 @@
+/*	$OpenBSD: rlogin.c,v 1.21 1998/07/12 08:07:12 deraadt Exp $	*/
 /*	$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rlogin.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: rlogin.c,v 1.21 1998/07/12 08:07:12 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -80,15 +81,20 @@ static char rcsid[] = "$NetBSD: rlogin.c,v 1.8 1995/10/05 09:07:22 mycroft Exp $
 #endif
 
 #ifdef KERBEROS
-#include <kerberosIV/des.h>
+#include <des.h>
 #include <kerberosIV/krb.h>
 
-#include "krb.h"
-
 CREDENTIALS cred;
-Key_schedule schedule;
+des_key_schedule schedule;
 int use_kerberos = 1, doencrypt;
 char dst_realm_buf[REALM_SZ], *dest_realm = NULL;
+
+int des_read __P((int, char *, int));
+int des_write __P((int, char *, int));
+
+int krcmd __P((char **, u_short, char *, char *, int *, char *));
+int krcmd_mutual __P((char **, u_short, char *, char *, int *, char *,
+		      CREDENTIALS *, Key_schedule));
 #endif
 
 #ifndef TIOCPKT_WINDOW
@@ -122,7 +128,7 @@ struct	winsize winsize;
 
 void		catch_child __P((int));
 void		copytochild __P((int));
-__dead void	doit __P((long));
+__dead void	doit __P((int));
 __dead void	done __P((int));
 void		echo __P((char));
 u_int		getescape __P((char *));
@@ -141,6 +147,7 @@ void		writeroob __P((int));
 
 #ifdef	KERBEROS
 void		warning __P((const char *, ...));
+void		desrw_set_key __P((des_cblock *, des_key_schedule *));
 #endif
 #ifdef OLDSUN
 int		get_window_size __P((int, struct winsize *));
@@ -156,15 +163,17 @@ main(argc, argv)
 	struct passwd *pw;
 	struct servent *sp;
 	struct termios tty;
-	long omask;
+	int omask;
 	int argoff, ch, dflag, one, uid;
-	char *host, *p, *user, term[1024];
+	char *host, *p, *user, term[64];
+	struct sockaddr_storage ss;
+	socklen_t sslen;
 
 	argoff = dflag = 0;
 	one = 1;
 	host = user = NULL;
 
-	if (p = rindex(argv[0], '/'))
+	if ((p = strrchr(argv[0], '/')))
 		++p;
 	else
 		p = argv[0];
@@ -183,7 +192,7 @@ main(argc, argv)
 #else
 #define	OPTIONS	"8EKLde:l:"
 #endif
-	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != EOF)
+	while ((ch = getopt(argc - argoff, argv + argoff, OPTIONS)) != -1)
 		switch(ch) {
 		case '8':
 			eight = 1;
@@ -205,20 +214,20 @@ main(argc, argv)
 			break;
 #ifdef KERBEROS
 		case 'k':
+			(void)strncpy(dst_realm_buf, optarg,
+			    sizeof dst_realm_buf-1);
+			dst_realm_buf[sizeof dst_realm_buf-1] = '\0';
 			dest_realm = dst_realm_buf;
-			(void)strncpy(dest_realm, optarg, REALM_SZ);
 			break;
 #endif
 		case 'l':
 			user = optarg;
 			break;
-#ifdef CRYPT
 #ifdef KERBEROS
 		case 'x':
 			doencrypt = 1;
-			des_set_key(cred.session, schedule);
+			desrw_set_key(&cred.session, &schedule);
 			break;
-#endif
 #endif
 		case '?':
 		default:
@@ -260,10 +269,20 @@ main(argc, argv)
 		exit(1);
 	}
 
-	(void)strcpy(term, (p = getenv("TERM")) ? p : "network");
+	(void)strncpy(term, (p = getenv("TERM")) ? p : "network",
+	    sizeof(term) - 1);
+	term[sizeof(term) - 1] = '\0';
+
+	/*
+	 * Add "/baud" only if there is room left; ie. do not send "/19"
+	 * for 19200 baud with a particularily long $TERM
+	 */
 	if (tcgetattr(0, &tty) == 0) {
-		(void)strcat(term, "/");
-		(void)sprintf(term + strlen(term), "%d", cfgetospeed(&tty));
+		char baud[20];		/* more than enough.. */
+
+		(void)sprintf(baud, "/%d", cfgetospeed(&tty));
+		if (strlen(term) + strlen(baud) < sizeof(term) - 1)
+			(void)strcat(term, baud);
 	}
 
 	(void)get_window_size(0, &winsize);
@@ -298,12 +317,10 @@ try_connect:
 		if (dest_realm == NULL)
 			dest_realm = krb_realmofhost(host);
 
-#ifdef CRYPT
 		if (doencrypt)
 			rem = krcmd_mutual(&host, sp->s_port, user, term, 0,
 			    dest_realm, &cred, schedule);
 		else
-#endif /* CRYPT */
 			rem = krcmd(&host, sp->s_port, user, term, 0,
 			    dest_realm);
 		if (rem < 0) {
@@ -321,17 +338,16 @@ try_connect:
 			goto try_connect;
 		}
 	} else {
-#ifdef CRYPT
 		if (doencrypt) {
 			(void)fprintf(stderr,
 			    "rlogin: the -x flag requires Kerberos authentication.\n");
 			exit(1);
 		}
-#endif /* CRYPT */
-		rem = rcmd(&host, sp->s_port, pw->pw_name, user, term, 0);
+		rem = rcmd_af(&host, sp->s_port, pw->pw_name, user, term, 0,
+		    PF_UNSPEC);
 	}
 #else
-	rem = rcmd(&host, sp->s_port, pw->pw_name, user, term, 0);
+	rem = rcmd_af(&host, sp->s_port, pw->pw_name, user, term, 0, PF_UNSPEC);
 #endif /* KERBEROS */
 
 	if (rem < 0)
@@ -341,21 +357,31 @@ try_connect:
 	    setsockopt(rem, SOL_SOCKET, SO_DEBUG, &one, sizeof(one)) < 0)
 		(void)fprintf(stderr, "rlogin: setsockopt: %s.\n",
 		    strerror(errno));
-	one = IPTOS_LOWDELAY;
-	if (setsockopt(rem, IPPROTO_IP, IP_TOS, (char *)&one, sizeof(int)) < 0)
-		perror("rlogin: setsockopt TOS (ignored)");
 
+	sslen = sizeof(ss);
+	if (getsockname(rem, (struct sockaddr *)&ss, &sslen) == 0 &&
+	    ss.ss_family == AF_INET) {
+		one = IPTOS_LOWDELAY;
+		if (setsockopt(rem, IPPROTO_IP, IP_TOS, (char *)&one,
+		    sizeof(int)) < 0)
+			perror("rlogin: setsockopt TOS (ignored)");
+	}
+
+	(void)seteuid(uid);
 	(void)setuid(uid);
 	doit(omask);
 	/*NOTREACHED*/
+
+	return 0;
 }
 
-int child;
+pid_t child;
 
 void
 doit(omask)
-	long omask;
+	int omask;
 {
+	struct sigaction sa;
 
 	(void)signal(SIGINT, SIG_IGN);
 	setsignal(SIGHUP);
@@ -367,14 +393,26 @@ doit(omask)
 		done(1);
 	}
 	if (child == 0) {
+		(void)signal(SIGCHLD, SIG_DFL);
 		if (reader(omask) == 0) {
 			msg("connection closed.");
 			exit(0);
 		}
 		sleep(1);
+
 		msg("\aconnection closed.");
 		exit(1);
 	}
+
+	/*
+	 * Use sigaction() instead of signal() to avoid getting SIGCHLDs
+	 * for stopped children.
+	 */
+	memset(&sa, 0, sizeof sa);
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+	sa.sa_handler = catch_child;
+	(void)sigaction(SIGCHLD, &sa, NULL);
 
 	/*
 	 * We may still own the socket, and may have a pending SIGURG (or might
@@ -384,7 +422,6 @@ doit(omask)
 	 * that were set above.
 	 */
 	(void)sigsetmask(omask);
-	(void)signal(SIGCHLD, catch_child);
 	writer();
 	msg("closed connection.");
 	done(0);
@@ -413,7 +450,8 @@ done(status)
 		/* make sure catch_child does not snap it up */
 		(void)signal(SIGCHLD, SIG_DFL);
 		if (kill(child, SIGKILL) >= 0)
-			while ((w = wait(&wstatus)) > 0 && w != child);
+			while ((w = wait(&wstatus)) > 0 && w != child)
+				;
 	}
 	exit(status);
 }
@@ -439,18 +477,23 @@ void
 catch_child(signo)
 	int signo;
 {
-	union wait status;
-	int pid;
+	int save_errno = errno;
+	int status;
+	pid_t pid;
 
 	for (;;) {
-		pid = wait3((int *)&status, WNOHANG|WUNTRACED, NULL);
+		pid = wait3(&status, WNOHANG, NULL);
 		if (pid == 0)
-			return;
+			break;
 		/* if the child (reader) dies, just quit */
-		if (pid < 0 || (pid == child && !WIFSTOPPED(status)))
-			done((int)(status.w_termsig | status.w_retcode));
+		if (pid == child && !WIFSTOPPED(status)) {
+			child = -1;
+			if (WIFEXITED(status))
+				done(WEXITSTATUS(status));
+			done(WTERMSIG(status));
+		}
 	}
-	/* NOTREACHED */
+	errno = save_errno;
 }
 
 /*
@@ -505,19 +548,17 @@ writer()
 				stop(0);
 				continue;
 			}
-			if (c != escapechar)
-#ifdef CRYPT
+			if (c != escapechar) {
 #ifdef KERBEROS
 				if (doencrypt)
 					(void)des_write(rem,
 					    (char *)&escapechar, 1);
 				else
 #endif
-#endif
 					(void)write(rem, &escapechar, 1);
+			}
 		}
 
-#ifdef CRYPT
 #ifdef KERBEROS
 		if (doencrypt) {
 			if (des_write(rem, &c, 1) == 0) {
@@ -525,7 +566,6 @@ writer()
 				break;
 			}
 		} else
-#endif
 #endif
 			if (write(rem, &c, 1) == 0) {
 				msg("line gone");
@@ -540,7 +580,7 @@ writer()
 }
 
 void
-#if __STDC__
+#ifdef __STDC__
 echo(register char c)
 #else
 echo(c)
@@ -571,9 +611,7 @@ stop(all)
 	int all;
 {
 	mode(0);
-	(void)signal(SIGCHLD, SIG_IGN);
 	(void)kill(all ? 0 : getpid(), SIGTSTP);
-	(void)signal(SIGCHLD, catch_child);
 	mode(1);
 	sigwinch(0);			/* check for size changes */
 }
@@ -610,12 +648,10 @@ sendwindow()
 	wp->ws_xpixel = htons(winsize.ws_xpixel);
 	wp->ws_ypixel = htons(winsize.ws_ypixel);
 
-#ifdef CRYPT
 #ifdef KERBEROS
 	if(doencrypt)
 		(void)des_write(rem, obuf, sizeof(obuf));
 	else
-#endif
 #endif
 		(void)write(rem, obuf, sizeof(obuf));
 }
@@ -627,7 +663,8 @@ sendwindow()
 #define	WRITING	2
 
 jmp_buf rcvtop;
-int ppid, rcvcnt, rcvstate;
+pid_t ppid;
+int rcvcnt, rcvstate;
 char rcvbuf[8 * 1024];
 
 void
@@ -636,6 +673,7 @@ oob(signo)
 {
 	struct termios tty;
 	int atmark, n, rcvd;
+	int save_errno = errno;
 	char waste[BUFSIZ], mark;
 
 	rcvd = 0;
@@ -650,16 +688,21 @@ oob(signo)
 			if (rcvcnt < sizeof(rcvbuf)) {
 				n = read(rem, rcvbuf + rcvcnt,
 				    sizeof(rcvbuf) - rcvcnt);
-				if (n <= 0)
+				if (n <= 0) {
+					errno = save_errno;
 					return;
+				}
 				rcvd += n;
 			} else {
 				n = read(rem, waste, sizeof(waste));
-				if (n <= 0)
+				if (n <= 0) {
+					errno = save_errno;
 					return;
+				}
 			}
 			continue;
 		default:
+			errno = save_errno;
 			return;
 		}
 	}
@@ -710,6 +753,7 @@ oob(signo)
 	 */
 	if (rcvd && rcvstate == READING)
 		longjmp(rcvtop, 1);
+	errno = save_errno;
 }
 
 /* reader: read from remote: line -> 1 */
@@ -717,14 +761,11 @@ int
 reader(omask)
 	int omask;
 {
-	int pid, n, remaining;
+	pid_t pid;
+	int n, remaining;
 	char *bufp;
 
-#if BSD >= 43 || defined(SUNOS4)
 	pid = getpid();		/* modern systems use positives for pid */
-#else
-	pid = -getpid();	/* old broken systems use negatives */
-#endif
 	(void)signal(SIGTTOU, SIG_IGN);
 	(void)signal(SIGURG, oob);
 	ppid = getppid();
@@ -747,12 +788,10 @@ reader(omask)
 		rcvcnt = 0;
 		rcvstate = READING;
 
-#ifdef CRYPT
 #ifdef KERBEROS
 		if (doencrypt)
 			rcvcnt = des_read(rem, rcvbuf, sizeof(rcvbuf));
 		else
-#endif
 #endif
 			rcvcnt = read(rem, rcvbuf, sizeof (rcvbuf));
 		if (rcvcnt == 0)
@@ -784,6 +823,8 @@ mode(f)
 		tty.c_lflag &= ~(ECHO|ICANON|ISIG|IEXTEN);
 		tty.c_iflag &= ~ICRNL;
 		tty.c_oflag &= ~OPOST;
+		tty.c_cc[VMIN] = 1;
+		tty.c_cc[VTIME] = 0;
 		if (eight) {
 			tty.c_iflag &= IXOFF;
 			tty.c_cflag &= ~(CSIZE|PARENB);
@@ -810,7 +851,9 @@ void
 copytochild(signo)
 	int signo;
 {
+	int save_errno = errno;
 	(void)kill(child, SIGURG);
+	errno = save_errno;
 }
 
 void
@@ -823,7 +866,7 @@ msg(str)
 #ifdef KERBEROS
 /* VARARGS */
 void
-#if __STDC__
+#ifdef __STDC__
 warning(const char *fmt, ...)
 #else
 warning(fmt, va_alist)
@@ -831,8 +874,11 @@ warning(fmt, va_alist)
 	va_dcl
 #endif
 {
+	char myrealm[REALM_SZ];
 	va_list ap;
 
+	if (krb_get_lrealm(myrealm, 0) != KSUCCESS)
+		return;
 	(void)fprintf(stderr, "rlogin: warning, using standard rlogin: ");
 #ifdef __STDC__
 	va_start(ap, fmt);
@@ -851,11 +897,7 @@ usage()
 	(void)fprintf(stderr,
 	    "usage: rlogin [ -%s]%s[-e char] [ -l username ] host\n",
 #ifdef KERBEROS
-#ifdef CRYPT
 	    "8EKLx", " [-k realm] ");
-#else
-	    "8EKL", " [-k realm] ");
-#endif
 #else
 	    "8EL", " ");
 #endif

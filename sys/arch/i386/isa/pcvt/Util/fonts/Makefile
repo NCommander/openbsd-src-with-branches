@@ -1,7 +1,11 @@
-FONTS	= 	vt220l.814 vt220h.814 vt220l.808 vt220h.808 \
-		vt220l.816 vt220h.816 vt220l.810 vt220h.810
+#	$OpenBSD: Makefile,v 1.7 2000/05/29 08:17:34 deraadt Exp $
 
-LIBMODE	=	644
+FONTS	= 	vt220l.814 vt220h.814 vt220l.808 vt220h.808 \
+		vt220l.816 vt220h.816 vt220l.810 vt220h.810 \
+		koi8-8x8 koi8-8x10 koi8-8x14 koi8-8x16 \
+		iso8859-1-euro.816
+
+LIBMODE	=	444
 LIBOWN	=	bin
 LIBGRP	=	bin
 CLEANFILES= 	${FONTS}
@@ -51,4 +55,19 @@ vt220l.810: ${.CURDIR}/vt220l.810.uu
 	uudecode ${.CURDIR}/$@.uu
 
 vt220h.810: ${.CURDIR}/vt220h.810.uu
+	uudecode ${.CURDIR}/$@.uu
+
+koi8-8x8: ${.CURDIR}/koi8-8x8.uu
+	uudecode ${.CURDIR}/$@.uu
+
+koi8-8x10: ${.CURDIR}/koi8-8x10.uu
+	uudecode ${.CURDIR}/$@.uu
+
+koi8-8x14: ${.CURDIR}/koi8-8x14.uu
+	uudecode ${.CURDIR}/$@.uu
+
+koi8-8x16: ${.CURDIR}/koi8-8x16.uu
+	uudecode ${.CURDIR}/$@.uu
+
+iso8859-1-euro.816: ${.CURDIR}/iso8859-1-euro.816.uu
 	uudecode ${.CURDIR}/$@.uu

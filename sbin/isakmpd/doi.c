@@ -1,7 +1,8 @@
-/*	$Id: doi.c,v 1.2 1998/08/11 15:03:18 niklas Exp $	*/
+/*	$OpenBSD: doi.c,v 1.4 1999/02/26 03:36:18 niklas Exp $	*/
+/*	$EOM: doi.c,v 1.4 1999/04/02 00:57:36 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +35,8 @@
  */
 
 #include <sys/param.h>
+
+#include "sysdep.h"
 
 #include "doi.h"
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pty.c,v 1.5 1996/08/09 00:26:15 deraadt Exp $	*/
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,7 +34,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /* from: static char sccsid[] = "@(#)pty.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: pty.c,v 1.5 1995/06/05 19:44:01 pk Exp $";
+static char *rcsid = "$Id: pty.c,v 1.5 1996/08/09 00:26:15 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/cdefs.h>
@@ -48,9 +49,9 @@ static char *rcsid = "$Id: pty.c,v 1.5 1995/06/05 19:44:01 pk Exp $";
 #include <string.h>
 #include <grp.h>
 
-int login_tty __P((int));
-int openpty __P((int *, int *, char *, struct termios *, struct winsize *));
-pid_t forkpty __P((int *, char *, struct termios *, struct winsize *));
+#include "util.h"
+
+#define TTY_LETTERS "pqrstuvwxyzPQRST"
 
 int
 openpty(amaster, aslave, name, termp, winp)
@@ -59,7 +60,7 @@ openpty(amaster, aslave, name, termp, winp)
 	struct termios *termp;
 	struct winsize *winp;
 {
-	static char line[] = "/dev/ptyXX";
+	char line[] = "/dev/ptyXX";
 	register const char *cp1, *cp2;
 	register int master, slave, ttygid;
 	struct group *gr;
@@ -69,10 +70,11 @@ openpty(amaster, aslave, name, termp, winp)
 	else
 		ttygid = -1;
 
-	for (cp1 = "pqrstuvwxyzPQRST"; *cp1; cp1++) {
+	for (cp1 = TTY_LETTERS; *cp1; cp1++) {
 		line[8] = *cp1;
 		for (cp2 = "0123456789abcdef"; *cp2; cp2++) {
 			line[9] = *cp2;
+			line[5] = 'p';
 			if ((master = open(line, O_RDWR, 0)) == -1) {
 				if (errno == ENOENT)
 					return (-1);	/* out of ptys */
@@ -95,7 +97,6 @@ openpty(amaster, aslave, name, termp, winp)
 					return (0);
 				}
 				(void) close(master);
-				line[5] = 'p';
 			}
 		}
 	}

@@ -63,13 +63,21 @@
 #ifndef HEADER_LHASH_H
 #define HEADER_LHASH_H
 
+#ifndef NO_FP_API
+#include <stdio.h>
+#endif
+
+#ifndef NO_BIO
+#include <openssl/bio.h>
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
 typedef struct lhash_node_st
 	{
-	char *data;
+	void *data;
 	struct lhash_node_st *next;
 #ifndef NO_HASH_COMP
 	unsigned long hash;
@@ -102,19 +110,25 @@ typedef struct lhash_st
 	unsigned long num_retrieve;
 	unsigned long num_retrieve_miss;
 	unsigned long num_hash_comps;
+
+	int error;
 	} LHASH;
 
 #define LH_LOAD_MULT	256
 
-#ifndef NOPROTO
-LHASH *lh_new(unsigned long (*h)(), int (*c)());
+/* Indicates a malloc() error in the last call, this is only bad
+ * in lh_insert(). */
+#define lh_error(lh)	((lh)->error)
+
+LHASH *lh_new(unsigned long (*h)(/* void *a */), int (*c)(/* void *a,void *b */));
 void lh_free(LHASH *lh);
-char *lh_insert(LHASH *lh, char *data);
-char *lh_delete(LHASH *lh, char *data);
-char *lh_retrieve(LHASH *lh, char *data);
-void lh_doall(LHASH *lh, void (*func)(/* char *b */));
-void lh_doall_arg(LHASH *lh, void (*func)(/*char *a,char *b*/),char *arg);
-unsigned long lh_strhash(char *c);
+void *lh_insert(LHASH *lh, void *data);
+void *lh_delete(LHASH *lh, void *data);
+void *lh_retrieve(LHASH *lh, void *data);
+    void lh_doall(LHASH *lh, void (*func)(/*void *b*/));
+void lh_doall_arg(LHASH *lh, void (*func)(/*void *a,void *b*/),void *arg);
+unsigned long lh_strhash(const char *c);
+unsigned long lh_num_items(LHASH *lh);
 
 #ifndef NO_FP_API
 void lh_stats(LHASH *lh, FILE *out);
@@ -122,31 +136,11 @@ void lh_node_stats(LHASH *lh, FILE *out);
 void lh_node_usage_stats(LHASH *lh, FILE *out);
 #endif
 
-#ifdef HEADER_BIO_H
+#ifndef NO_BIO
 void lh_stats_bio(LHASH *lh, BIO *out);
 void lh_node_stats_bio(LHASH *lh, BIO *out);
 void lh_node_usage_stats_bio(LHASH *lh, BIO *out);
 #endif
-#else
-LHASH *lh_new();
-void lh_free();
-char *lh_insert();
-char *lh_delete();
-char *lh_retrieve();
-void lh_doall();
-void lh_doall_arg();
-unsigned long lh_strhash();
-
-#ifndef NO_FP_API
-void lh_stats();
-void lh_node_stats();
-void lh_node_usage_stats();
-#endif
-void lh_stats_bio();
-void lh_node_stats_bio();
-void lh_node_usage_stats_bio();
-#endif
-
 #ifdef  __cplusplus
 }
 #endif

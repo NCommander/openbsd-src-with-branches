@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
  * All rights reserved.
@@ -42,6 +44,7 @@ extern int top_scroll;
 extern int quiet;
 extern int sc_width, sc_height;
 extern int quit_at_eof;
+extern int less_mode;
 extern int plusoption;
 extern int forw_scroll;
 extern int back_scroll;
@@ -350,8 +353,7 @@ forward(n, force, only_last)
 					pos = position(BOTTOM_PLUS_ONE);
 				} while (pos == NULL_POSITION);
 			}
-		} else
-		{
+		} else {
 			eof_bell();
 			hit_eof++;
 			return;

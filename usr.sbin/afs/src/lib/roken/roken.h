@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -37,7 +36,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: roken.h,v 1.9 1998/06/07 05:19:20 map Exp $ */
+/* $Id: roken.h,v 1.23 2000/08/16 01:23:45 lha Exp $ */
 
 #ifndef __ROKEN_H__
 #define __ROKEN_H__
@@ -65,6 +64,9 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -89,6 +91,10 @@
 
 #if defined(HAVE_SYS_IOCTL_H) && SunOS != 4
 #include <sys/ioctl.h>
+#endif
+
+#ifndef HAVE_SSIZE_T
+typedef int ssize_t;  /* XXX real hot stuff */
 #endif
 
 #if !defined(HAVE_SETSID) && defined(HAVE__SETSID)
@@ -154,11 +160,16 @@ char * strlwr(char *);
 #endif
 
 #ifndef HAVE_STRNLEN
-int strnlen(char*, int);
+size_t strnlen(const char*, size_t);
 #endif
 
 #ifndef HAVE_STRSEP
 char *strsep(char**, const char*);
+#endif
+
+#ifndef HAVE_STRSEP_COPY
+ssize_t strsep_copy(const char **stringp, const char *delim, 
+		    char *buf, size_t len);
 #endif
 
 #ifdef NEED_FCLOSE_PROTO
@@ -203,8 +214,7 @@ char *hstrerror(int herr);
 extern int h_errno;
 #endif
 
-#ifndef HAVE_INET_ATON
-/* Minimal implementation of inet_aton. Doesn't handle hex numbers. */
+#if !defined(HAVE_INET_ATON) || defined(NEED_INET_ATON_PROTO)
 int inet_aton(const char *cp, struct in_addr *adr);
 #endif
 
@@ -214,7 +224,7 @@ char* getcwd(char *path, size_t size);
 
 #ifdef HAVE_PWD_H
 #include <pwd.h>
-struct passwd *k_getpwnam (char *user);
+struct passwd *k_getpwnam (const char *user);
 struct passwd *k_getpwuid (uid_t uid);
 #endif
 
@@ -251,6 +261,13 @@ int rcmd(char **ahost, unsigned short inport, const char *locuser,
 	 const char *remuser, const char *cmd, int *fd2p);
 #endif
 
+#ifndef HAVE_STRUCT_IOVEC
+struct iovec {
+  void		*iov_base;
+  size_t	 iov_len;
+};
+#endif
+
 #ifndef HAVE_WRITEV
 ssize_t
 writev(int d, const struct iovec *iov, int iovcnt);
@@ -259,6 +276,28 @@ writev(int d, const struct iovec *iov, int iovcnt);
 #ifndef HAVE_READV
 ssize_t
 readv(int d, const struct iovec *iov, int iovcnt);
+#endif
+
+#ifndef HAVE_STRUCT_MSGHDR
+struct msghdr {
+  void		*msg_name;
+  size_t	 msg_namelen;
+  struct iovec	*msg_iov;
+  int		 msg_iovlen;
+  void		*msg_control;
+  size_t	 msg_controllen;
+  int		 msg_flags;
+};
+#endif
+
+#ifndef HAVE_RECVMSG
+ssize_t
+recvmsg(int s, struct msghdr *msg, int flags);
+#endif
+
+#ifndef HAVE_SENDMSG
+ssize_t
+sendmsg(int s, const struct msghdr *msg, int flags);
 #endif
 
 #ifndef HAVE_FLOCK
@@ -292,6 +331,8 @@ time_t tm2time (struct tm tm, int local);
 int unix_verify_user(char *user, char *password);
 
 void inaddr2str(struct in_addr addr, char *s, size_t len);
+
+struct in_addr *str2inaddr (const char *s, struct in_addr *ret);
 
 void mini_inetd (int port);
 
@@ -444,15 +485,84 @@ select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
        struct timeval *timeout);
 #endif
 
-#ifndef HAVE_SSIZE_T
-typedef int ssize_t;  /* XXX real hot stuff */
-#endif
-
 #ifdef HAVE_REPAIRABLE_HTONL
 #define htonl(x) __cpu_to_be32(x)
 #define ntohl(x) __be32_to_cpu(x)
 #define htons(x) __cpu_to_be16(x)
 #define ntohs(x) __be16_to_cpu(x)
 #endif
+
+#if !defined(NSIG) && defined(_NSIG)
+#define NSIG _NSIG
+#endif
+
+void *emalloc (size_t sz);
+void *erealloc (void *ptr, size_t sz);
+char *estrdup (const char *);
+
+FILE *efopen(const char *name, const char *mode);
+void efclose(FILE *);
+size_t efread (void *ptr, size_t size, size_t nitems, FILE *stream);
+size_t efwrite (const void *ptr, size_t size, size_t nitems, FILE *stream);
+FILE *epopen(const char *command, const char *type);
+
+/* eefile */
+
+struct _fileblob {
+  FILE *stream;
+  char *curname;
+  char *newname;
+};
+
+typedef struct _fileblob fileblob;
+void eefopen(const char *name, const char *mode, fileblob *f);
+void eefclose(fileblob *);
+size_t eefread (void *ptr, size_t size, size_t nitems, fileblob *stream);
+size_t eefwrite (const void *ptr, size_t size, size_t nitems,
+		 fileblob *stream);
+
+/* copy_dirname */
+
+char *copy_dirname (const char *s);
+
+/* copy_basename */
+
+char *copy_basename (const char *s);
+
+/* strsplit */
+
+int strsplit (char *str, char *pat, ...);
+int vstrsplit (char *str, char *pat, unsigned nsub, char **sub);
+
+/* strmatch */
+
+int
+strmatch (const char *pat, const char *str);
+
+/* strtrim */
+
+char *
+strtrim (char *s_str);
+
+/* timeval */
+
+void timevalfix(struct timeval *t1);
+void timevaladd(struct timeval *t1, const struct timeval *t2);
+void timevalsub(struct timeval *t1, const struct timeval *t2);
+
+/* strcollect */
+char **vstrcollect(va_list *ap);
+char **strcollect(char *first, ...);
+
+const char *
+get_progname(void);
+
+int roken_concat (char *s, size_t len, ...);
+int roken_vconcat (char *s, size_t len, va_list args);
+size_t roken_mconcat (char **s, size_t max_len, ...);
+size_t roken_vmconcat (char **s, size_t max_len, va_list args);
+
+ssize_t net_write (int fd, const void *buf, size_t nbytes);
+ssize_t net_read (int fd, void *buf, size_t nbytes);
 
 #endif /*  __ROKEN_H__ */

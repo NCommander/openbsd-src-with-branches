@@ -4,7 +4,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$Id: nl_langinfo.c,v 1.3 1995/04/28 23:19:37 jtc Exp $";
+static char *rcsid = "$OpenBSD: nl_langinfo.c,v 1.2 1996/08/19 08:28:23 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
@@ -21,7 +21,7 @@ nl_langinfo(item)
 	switch (item) {
 	case D_T_FMT:
 		s = _CurrentTimeLocale->d_t_fmt;
-		break;	
+		break;
 	case D_FMT:
 		s = _CurrentTimeLocale->d_fmt;
 		break;

@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -39,7 +38,7 @@
 
 #include "rxkad_locl.h"
 
-RCSID("$KTH: rxk_clnt.c,v 1.4 1998/02/22 21:12:25 lha Exp $");
+RCSID("$Id: rxk_clnt.c,v 1.6 2000/01/07 17:07:36 assar Exp $");
 
 /* This code also links into the kernel so we need to use osi_Alloc()
  * to avoid calling malloc(). Similar trick with memcpy() */
@@ -163,8 +162,9 @@ client_GetResponse(const struct rx_securityClass *obj_,
   if (rx_SlowReadPacket(pkt, 0, sizeof(c), &c) != sizeof(c))
     return RXKADPACKETSHORT;
 
-  if (ntohl(c.version) != RXKAD_VERSION)
-    return RXKADINCONSISTENCY;
+  if (ntohl(c.version) < RXKAD_VERSION)
+    return RXKADINCONSISTENCY;	/* Don't know how to make vers 1 response. */
+  /* Always make a vers 2 response. */
     
   if (ntohl(c.min_level) > obj->level)
     return RXKADLEVELFAIL;
@@ -307,6 +307,7 @@ rxkad_NewClientSecurityObject(/*rxkad_level*/ int level,
 	des_cblock k;
       } u;
       int32 sched[ROUNDS];
+      u_long next_epoch;
 
       u.rnd[0] = rx_nextCid;
       u.rnd[1] = rx_epoch;
@@ -325,7 +326,9 @@ rxkad_NewClientSecurityObject(/*rxkad_level*/ int level,
 
       /* Set new cid and epoch generator */
       rx_nextCid = u.rnd[0] << RX_CIDSHIFT;
-      rx_SetEpoch(u.rnd[0] ^ u.rnd[1]);
+      next_epoch = u.rnd[0] ^ u.rnd[1];
+      next_epoch &= 0x7FFFFFFF;
+      rx_SetEpoch(next_epoch);
       rxkad_EpochWasSet = 1;
       inited = 1;
     }

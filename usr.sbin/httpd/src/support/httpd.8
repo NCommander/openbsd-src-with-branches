@@ -1,6 +1,6 @@
 .TH httpd 8 "February 1997"
 .\" Copyright (c) 1995-1997 David Robinson. All rights reserved.
-.\" Copyright (c) 1997-1998 The Apache Group. All rights reserved.
+.\" Copyright (c) 1997-1999 The Apache Group. All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -60,7 +60,7 @@ httpd \- Apache hypertext transfer protocol server
 [
 .B \-X
 ] [
-.BI \-L " libexecdir"
+.BI \-R " libexecdir"
 ] [
 .BI \-d " serverroot"
 ] [
@@ -81,6 +81,9 @@ httpd \- Apache hypertext transfer protocol server
 .B \-l
 ] 
 [
+.B \-L
+] 
+[
 .B \-v
 ] 
 [
@@ -90,14 +93,17 @@ httpd \- Apache hypertext transfer protocol server
 .B \-S
 ] 
 [
-.B \-?
+.B \-t
 ] 
+[
+.B \-T
+]
 
 .SH DESCRIPTION
 .B httpd
 is the Apache HyperText Transfer Protocol (HTTP) server program. It is
 designed to be run as a standalone daemon process. When used like this
-is will create a pool of child processes to handle requests. To stop
+it will create a pool of child processes to handle requests. To stop
 it, send a TERM signal to the initial (parent) process. The PID of
 this process is written to a file as given in the configuration file.
 Alternatively 
@@ -115,7 +121,7 @@ compiled into
 .B httpd.
 .SH OPTIONS
 .TP 12
-.BI \-L " libexecdir"
+.BI \-R " libexecdir"
 This option is only available if Apache was built with
 the 
 .I SHARED_CORE
@@ -146,11 +152,14 @@ Sets a configuration \fIparameter\fP which can be used with
 to conditionally skip or process commands.
 .TP
 .B \-h
-Output a list of directives together with expected arguments and
-places where the directive is valid.
+Output a short summary of available command line options.
 .TP
 .B \-l
 Output a list of modules compiled into the server.
+.TP
+.B \-L
+Output a list of directives together with expected arguments and
+places where the directive is valid.
 .TP
 .B \-S
 Show the settings as parsed from the config file (currently only shows the
@@ -160,6 +169,11 @@ virtualhost settings).
 Run syntax tests for configuration files only. The program immediately exits
 after these syntax parsing with either a return code of 0 (Syntax OK) or
 return code not equal to 0 (Syntax Error).
+.TP
+.B \-T
+Same as option 
+.B \-t
+but does not check the configured document roots. 
 .TP
 .B \-X
 Run in single-process mode, for internal debugging purposes only; the daemon
@@ -175,11 +189,6 @@ Print the version of
 Print the version and build parameters of 
 .B httpd
 , and then exit.
-.TP
-.B \-?
-Print a list of the 
-.B httpd 
-options, and then exit.
 .SH FILES
 .PD 0
 .B /usr/local/apache/conf/httpd.conf

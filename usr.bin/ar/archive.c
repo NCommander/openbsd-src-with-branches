@@ -1,4 +1,5 @@
 /*	$NetBSD: archive.c,v 1.7 1995/03/26 03:27:46 glass Exp $	*/
+/*	$OpenBSD: archive.c,v 1.5 1997/11/05 19:47:08 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -124,7 +125,7 @@ close_archive(fd)
 #define	AR_ATOI(from, to, len, base) { \
 	memmove(buf, from, len); \
 	buf[len] = '\0'; \
-	to = strtol(buf, (char **)NULL, base); \
+	to = strtol(buf, NULL, base); \
 }
 
 /*
@@ -208,6 +209,8 @@ put_arobj(cfp, sb)
 	char *name;
 	struct ar_hdr *hdr;
 	off_t size;
+	uid_t uid;
+	gid_t gid;
 
 	/*
 	 * If passed an sb structure, reading a file from disk.  Get stat(2)
@@ -224,26 +227,36 @@ put_arobj(cfp, sb)
 		 * a space, use extended format 1.
 		 */
 		lname = strlen(name);
+		uid = sb->st_uid;
+		gid = sb->st_gid;
+		if (uid > USHRT_MAX) {
+			warnx("warning: uid %u truncated to %u", uid,
+			    USHRT_MAX);
+			uid = USHRT_MAX;
+		}
+		if (gid > USHRT_MAX) {
+			warnx("warning: gid %u truncated to %u", gid,
+			    USHRT_MAX);
+			gid = USHRT_MAX;
+		}
 		if (options & AR_TR) {
 			if (lname > OLDARMAXNAME) {
 				(void)fflush(stdout);
-				warnx("warning: %s truncated to %.*s",
+				warnx("warning: file name %s truncated to %.*s",
 				    name, OLDARMAXNAME, name);
 				(void)fflush(stderr);
 			}
-			(void)sprintf(hb, HDR3, name, sb->st_mtimespec.ts_sec,
-			    sb->st_uid, sb->st_gid, sb->st_mode, sb->st_size,
-			    ARFMAG);
+			(void)sprintf(hb, HDR3, name, (long int)sb->st_mtimespec.tv_sec,
+			    uid, gid, sb->st_mode, sb->st_size, ARFMAG);
 			lname = 0;
 		} else if (lname > sizeof(hdr->ar_name) || strchr(name, ' '))
 			(void)sprintf(hb, HDR1, AR_EFMT1, lname,
-			    sb->st_mtimespec.ts_sec, sb->st_uid, sb->st_gid,
-			    sb->st_mode, sb->st_size + lname, ARFMAG);
+			    (long int)sb->st_mtimespec.tv_sec, uid, gid, sb->st_mode,
+			    sb->st_size + lname, ARFMAG);
 		else {
 			lname = 0;
-			(void)sprintf(hb, HDR2, name, sb->st_mtimespec.ts_sec,
-			    sb->st_uid, sb->st_gid, sb->st_mode, sb->st_size,
-			    ARFMAG);
+			(void)sprintf(hb, HDR2, name, (long int)sb->st_mtimespec.tv_sec,
+			    uid, gid, sb->st_mode, sb->st_size, ARFMAG);
 		}
 		size = sb->st_size;
 	} else {

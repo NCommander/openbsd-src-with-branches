@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ptrace.h,v 1.4 1994/11/20 20:53:27 deraadt Exp $ */
 
 /*

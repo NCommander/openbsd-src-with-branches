@@ -1,3 +1,4 @@
+/*	$OpenBSD: kernel.h,v 1.6 2000/03/03 16:49:24 art Exp $	*/
 /*	$NetBSD: kernel.h,v 1.11 1995/03/03 01:24:16 cgd Exp $	*/
 
 /*-
@@ -64,3 +65,6 @@ extern int hz;			/* system clock's frequency */
 extern int stathz;		/* statistics clock's frequency */
 extern int profhz;		/* profiling clock's frequency */
 extern int lbolt;		/* once a second sleep address */
+extern int tickdelta;
+extern long timedelta;
+

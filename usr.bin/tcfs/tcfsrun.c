@@ -1,3 +1,5 @@
+/*	$OpenBSD: tcfsrun.c,v 1.8 2000/06/20 10:46:52 fgsch Exp $	*/
+
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
  *	Author and mantainer: 	Luigi Catuogno [luicat@tcfs.unisa.it]
@@ -10,17 +12,18 @@
  *	Base utility set v0.1
  */
 
-#include <stdio.h>
 #include <sys/types.h>
-#include <ctype.h>
-#include <pwd.h>
-#include <unistd.h>
 #include <sys/param.h>
 #include <sys/mount.h>
 #include <sys/wait.h>
-#include <des.h>
+#include <ctype.h>
+#include <pwd.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <miscfs/tcfs/tcfs.h>
+#include "tcfslib.h"
 
 char *cmd_def="/bin/sh";
 char *run_usage = "usage: tcfsrun [-p mount-point | -f fs-label] [cmd] [args...]";
@@ -28,29 +31,29 @@ char *run_usage = "usage: tcfsrun [-p mount-point | -f fs-label] [cmd] [args...]
 int
 run_main(int argc, char *argv[], char *envp[])
 {
-	char *key, *fs, *cmd, x;
-	char *args, fspath[MAXPATHLEN], cmdname[MAXPATHLEN];
+	char *key, *cmd = NULL, x;
+	char fspath[MAXPATHLEN], cmdname[MAXPATHLEN];
 	uid_t uid;
 	pid_t pid;
-	int es,i = 1;
-	int havefspath = 0,havecmd = 0;
+	int es;
+	int havefspath = 0, havecmd = 0;
 
 	uid = getuid();
 
-	while ((x = getopt(argc,argv,"p:f:")) != EOF) {
+	while ((x = getopt(argc, argv, "p:f:")) != -1) {
 		switch(x) {
 		case 'p':
 			strlcpy(fspath, optarg, sizeof(fspath));
 			havefspath = 1;
 			break;
 		case 'f':
-			es = tcfs_getfspath(optarg,fspath);
+			es = tcfs_getfspath(optarg, fspath);
 			if (!es) {
 				fprintf(stderr, 
 					"filesystem label not found!\n");
 				exit(1);
 			}
-			havefspath=1;
+			havefspath = 1;
 			break;
 		}
 	}
@@ -62,7 +65,7 @@ run_main(int argc, char *argv[], char *envp[])
 	}
 
 	if (!havefspath) {
-		es = tcfs_getfspath("default",fspath);
+		es = tcfs_getfspath("default", fspath);
 		if (!es)
 			exit(1);
 	}
@@ -77,7 +80,7 @@ run_main(int argc, char *argv[], char *envp[])
 		pid = getpid();
 		if (tcfs_proc_enable(fspath, uid, pid, key) != -1) {
 			setuid(uid);
-			execve(cmd,argv + optind, envp);
+			execve(cmd, argv + optind, envp);
 		}
 
 		fprintf(stderr, "Operation failed\n");
@@ -86,11 +89,9 @@ run_main(int argc, char *argv[], char *envp[])
 	
 	wait(0);
 
-	if (tcfs_proc_disable(fspath,uid,pid) == -1) {
+	if (tcfs_proc_disable(fspath, uid, pid) == -1) {
 		fprintf (stderr, "Problems removing process key\n");
 		exit(1);
 	}
 	exit(0);
 }
-
-

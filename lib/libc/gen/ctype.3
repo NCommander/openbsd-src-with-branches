@@ -1,4 +1,4 @@
-.\"	$NetBSD: ctype.3,v 1.6 1995/02/25 15:39:26 cgd Exp $
+.\"	$OpenBSD: ctype.3,v 1.5 1999/05/29 16:08:54 aaron Exp $
 .\"
 .\" Copyright (c) 1991 Regents of the University of California.
 .\" All rights reserved.
@@ -32,8 +32,6 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)ctype.3	6.5 (Berkeley) 4/19/91
-.\"
 .Dd April 19, 1991
 .Dt CTYPE 3
 .Os
@@ -57,46 +55,61 @@
 .Nd character classification macros
 .Sh SYNOPSIS
 .Fd #include <ctype.h>
-.Fa int c
-.br
-.Fn isalpha c
-.Fn isupper c
-.Fn islower c
-.Fn isdigit c
-.Fn isxdigit c
-.Fn isalnum c
-.Fn isspace c
-.Fn ispunct c
-.Fn isprint c
-.Fn isgraph c
-.Fn iscntrl c
-.Fn isblank c
-.Fn isascii c
-.Fn toupper c
-.Fn tolower c
-.Fn toascii c
+.Ft int
+.Fn isalpha "int c"
+.Ft int
+.Fn isupper "int c"
+.Ft int
+.Fn islower "int c"
+.Ft int
+.Fn isdigit "int c"
+.Ft int
+.Fn isxdigit "int c"
+.Ft int
+.Fn isalnum "int c"
+.Ft int
+.Fn isspace "int c"
+.Ft int
+.Fn ispunct "int c"
+.Ft int
+.Fn isprint "int c"
+.Ft int
+.Fn isgraph "int c"
+.Ft int
+.Fn iscntrl "int c"
+.Ft int
+.Fn isblank "int c"
+.Ft int
+.Fn isascii "int c"
+.Ft int
+.Fn toupper "int c"
+.Ft int
+.Fn tolower "int c"
+.Ft int
+.Fn toascii "int c"
 .Sh DESCRIPTION
 The above macros perform character tests and conversions on the integer
-.Ar c .
+.Fa c .
 .Pp
-See the specific manual pages for more information.
+See each function's own manual page for more information.
 .Sh SEE ALSO
-.Xr isalpha 3 ,
-.Xr isupper 3 ,
-.Xr islower 3 ,
-.Xr isdigit 3 ,
-.Xr isxdigit 3 ,
 .Xr isalnum 3 ,
-.Xr isspace 3 ,
-.Xr ispunct 3 ,
-.Xr isprint 3 ,
-.Xr isgraph 3 ,
-.Xr iscntrl 3 ,
-.Xr isblank 3 ,
+.Xr isalpha 3 ,
 .Xr isascii 3 ,
-.Xr toupper 3 ,
-.Xr tolower 3 ,
+.Xr isblank 3 ,
+.Xr iscntrl 3 ,
+.Xr isdigit 3 ,
+.Xr isgraph 3 ,
+.Xr islower 3 ,
+.Xr isprint 3 ,
+.Xr ispunct 3 ,
+.Xr isspace 3 ,
+.Xr isupper 3 ,
+.Xr isxdigit 3 ,
+.Xr stdio 3 ,
 .Xr toascii 3 ,
+.Xr tolower 3 ,
+.Xr toupper 3 ,
 .Xr ascii 7
 .Sh STANDARDS
 These functions, with the exception of

@@ -21,12 +21,45 @@
 
 <H1 ALIGN="CENTER">Module mod_include</H1>
 
-This module is contained in the <CODE>mod_include.c</CODE> file, and
-is compiled in by default. It provides for server-parsed html
-documents. Several directives beyond the original NCSA definition were
-introduced in Apache 1.2 - these are flagged below with the phrase
-"Apache 1.2 and above".  Of particular significance are the new flow
-control directives documented at the bottom.
+<p>This module provides for documents with Server Side Includes (SSI).</p>
+
+<P><A
+HREF="module-dict.html#Status"
+REL="Help"
+><STRONG>Status:</STRONG></A> Base
+<BR>
+<A
+HREF="module-dict.html#SourceFile"
+REL="Help"
+><STRONG>Source File:</STRONG></A> mod_include.c
+<BR>
+<A
+HREF="module-dict.html#ModuleIdentifier"
+REL="Help"
+><STRONG>Module Identifier:</STRONG></A> includes_module
+</P>
+
+<h2>Summary</h2>
+
+<p>This module provides a handler which will process files before they
+are sent to the client.  The processing is controlled by specially
+formated SGML comments, referred to as <em>elements</em>.  These
+elements allow conditional text, the inclusion other files or
+programs, as well as the setting and printing of environment
+variables.</p>
+
+<p>For an introduction to this topic, we also provide a
+<a href="../howto/ssi.html">tutorial on Server Side Includes</a>.</p>
+
+
+<H2>Directives</H2>
+<UL>
+<LI><A HREF="#xbithack">XBitHack</A>
+</UL>
+
+<p>See also: <a href="core.html#options">Options</a>
+and <a href="mod_mime.html#addhandler">AddHandler</a>.</p>
+
 
 <H2>Enabling Server-Side Includes</H2>
 
@@ -95,15 +128,35 @@ Valid values are <CODE>bytes</CODE> for a count in bytes, or
 routine when printing dates.
 </DL>
 
-<DT><STRONG>echo</STRONG>
+<DT><STRONG><A NAME="echo">echo</a></STRONG>
 <DD>
 This command prints one of the include variables, defined below.
 If the variable is unset, it is printed as <CODE>(none)</CODE>.
 Any dates printed are subject to the currently configured <CODE>timefmt</CODE>.
+
 Attributes:
 <DL>
 <DT>var
 <DD>The value is the name of the variable to print.
+<DT>encoding 
+<DD>Specifies how Apache should encode special characters contained
+in the variable before outputting them.  If set to "none", no encoding
+will be done.  If set to "url", then URL encoding (also known as
+%-encoding; this is appropriate for use within URLs in links, etc.)
+will be performed.  At the start of an <CODE>echo</CODE> element,
+the default is set to "entity", resulting in entity encoding (which
+is appropriate in the context of a block-level HTML element, eg.
+a paragraph of text).  This can be changed by adding an
+<CODE>encoding</CODE> attribute, which will remain in effect until
+the next <CODE>encoding</CODE> attribute is encountered or the
+element ends, whichever comes first.  Note that the
+<CODE>encoding</CODE> attribute must <EM>precede</EM> the corresponding
+<CODE>var</CODE> attribute to be effective, and that only special
+characters as defined in the ISO-8859-1 character encoding will be
+encoded.  This encoding process may not have the desired result if
+a different character encoding is in use.
+Apache 1.3.12 and above; previous versions do no encoding.
+
 </DL>
 
 <DT><STRONG>exec</STRONG>
@@ -187,7 +240,9 @@ output. Thus included files can be nested.
 
 <DT><STRONG>printenv</STRONG>
 <DD>This prints out a listing of all existing variables and their values.
-    No attributes.
+   Starting with Apache 1.3.12, special characters are entity encoded (see the 
+   <A HREF="#echo"><CODE>echo</CODE></A> element for details) before being
+   output.  No attributes.
 <DD>For example: <CODE>&lt;!--#printenv --&gt;</CODE>
 <DD>Apache 1.2 and above.
 
@@ -327,7 +382,7 @@ elements are:
         <DD>true if <EM>test_condition</EM> is true
 <DT>! <EM>test_condition</EM>
         <DD>true if <EM>test_condition</EM> is false
-<DT><EM>test_condition1</EM> && <EM>test_condition2</EM>
+<DT><EM>test_condition1</EM> &amp;&amp; <EM>test_condition2</EM>
         <DD>true if both <EM>test_condition1</EM> and
         <EM>test_condition2</EM> are true
 <DT><EM>test_condition1</EM> || <EM>test_condition2</EM>
@@ -335,13 +390,13 @@ elements are:
         <EM>test_condition2</EM> is true
 </DL>
 
-<P> "<EM>=</EM>" and "<EM>!=</EM>" bind more tightly than "<EM>&&</EM>" and
+<P> "<EM>=</EM>" and "<EM>!=</EM>" bind more tightly than "<EM>&amp;&amp;</EM>" and
     "<EM>||</EM>".
     "<EM>!</EM>" binds most tightly.  Thus, the following are equivalent:
 
 <PRE>
-    &lt;!--#if expr="$a = test1 && $b = test2" --&gt;
-    &lt;!--#if expr="($a = test1) && ($b = test2)" --&gt;
+    &lt;!--#if expr="$a = test1 &amp;&amp; $b = test2" --&gt;
+    &lt;!--#if expr="($a = test1) &amp;&amp; ($b = test2)" --&gt;
 </PRE>
 
 <P> Anything that's not recognized as a variable or an operator is
@@ -356,20 +411,21 @@ elements are:
     <EM>'string1    string2'</EM> results in <EM>string1    string2</EM>
 </PRE>
 
-<HR>
-<H2>Directives</H2>
-<UL>
-<LI><A HREF="#xbithack">XBitHack</A>
-</UL>
+<H2>Using Server Side Includes for ErrorDocuments</H2>
+
+There is <A HREF="../misc/custom_errordocs.html">a document</A> which
+describes how to use the features of mod_include to offer internationalized
+customized server error documents.
+<P>
+
 <HR>
 
-
-<H2><A NAME="xbithack">XBitHack</A></H2>
+<H2><A NAME="xbithack">XBitHack</A> directive</H2>
 <!--%plaintext &lt;?INDEX {\tt XBitHack} directive&gt; -->
 <A
  HREF="directive-dict.html#Syntax"
  REL="Help"
-><STRONG>Syntax:</STRONG></A> XBitHack <EM>status</EM><BR>
+><STRONG>Syntax:</STRONG></A> XBitHack on|off|full<BR>
 <A
  HREF="directive-dict.html#Default"
  REL="Help"
@@ -393,8 +449,7 @@ elements are:
 
 The XBitHack directives controls the parsing of ordinary html documents.
 This directive only affects files associated with the MIME type
-<CODE>text/html</CODE>.
-<EM>Status</EM> can have the following values:
+<CODE>text/html</CODE>.  XBitHack can take on the following values:
 <DL>
 <DT>off
 <DD>No special treatment of executable files.
@@ -413,13 +468,6 @@ the request.
 </DL>
 <P>
 
-<HR>
-<H2>Using Server Side Includes for ErrorDocuments</H2>
-
-There is <A HREF="../misc/custom_errordocs.html">a document</A> which
-describes how to use the features of mod_include to offer internationalized
-customized server error documents.
-<P>
 
 <HR>
 

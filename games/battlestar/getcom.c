@@ -1,3 +1,4 @@
+/*	$OpenBSD: getcom.c,v 1.9 2000/09/24 21:55:25 pjanzen Exp $	*/
 /*	$NetBSD: getcom.c,v 1.3 1995/03/21 15:07:30 cgd Exp $	*/
 
 /*
@@ -37,22 +38,23 @@
 #if 0
 static char sccsid[] = "@(#)getcom.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: getcom.c,v 1.3 1995/03/21 15:07:30 cgd Exp $";
+static char rcsid[] = "$OpenBSD: getcom.c,v 1.9 2000/09/24 21:55:25 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-#include <stdio.h>
-#include <ctype.h>
+#include "extern.h"
 
-char *
+char   *
 getcom(buf, size, prompt, error)
-	char *buf;
-	int size;
-	char *prompt, *error;
+	char   *buf;
+	int     size;
+	const char   *prompt, *error;
 {
 	for (;;) {
-		fputs(prompt, stdout); 
+		fputs(prompt, stdout);
 		if (fgets(buf, size, stdin) == 0) {
+			if (feof(stdin))
+				die(0);
 			clearerr(stdin);
 			continue;
 		}
@@ -63,6 +65,12 @@ getcom(buf, size, prompt, error)
 		if (error)
 			puts(error);
 	}
+	/* If we didn't get to the end of the line, don't read it in next time */
+	if (buf[strlen(buf) - 1] != '\n') {
+		int i;
+		while ((i = getchar()) != '\n' && i != EOF)
+			;
+	}
 	return (buf);
 }
 
@@ -71,35 +79,50 @@ getcom(buf, size, prompt, error)
  * shifts to UPPERCASE if flag > 0, lowercase if flag < 0,
  * and leaves it unchanged if flag = 0
  */
-char *
+char   *
 getword(buf1, buf2, flag)
-	register char *buf1, *buf2;
-	register flag;
+	char   *buf1, *buf2;
+	int     flag;
 {
+	int cnt;
+
+	cnt = 1;
 	while (isspace(*buf1))
 		buf1++;
-	if (*buf1 != ',') {
+	if (*buf1 != ',' && *buf1 != '.') {
 		if (!*buf1) {
-			*buf2 = 0;
+			*buf2 = '\0';
 			return (0);
 		}
-		while (*buf1 && !isspace(*buf1) && *buf1 != ',')
-			if (flag < 0)
-				if (isupper(*buf1))
+		while (cnt < WORDLEN && *buf1 && !isspace(*buf1) &&
+		    *buf1 != ',' && *buf1 != '.')
+			if (flag < 0) {
+				if (isupper(*buf1)) {
 					*buf2++ = tolower(*buf1++);
-				else
+					cnt++;
+				} else {
 					*buf2++ = *buf1++;
-			else if (flag > 0)
-				if (islower(*buf1))
+					cnt++;
+				}
+			} else if (flag > 0) {
+				if (islower(*buf1)) {
 					*buf2++ = toupper(*buf1++);
-				else
+					cnt++;
+				} else {
 					*buf2++ = *buf1++;
-			else
+					cnt++;
+				}
+			} else {
 				*buf2++ = *buf1++;
+				cnt++;
+			}
+		if (cnt == WORDLEN)
+			while (*buf1 && !isspace(*buf1))
+				buf1++;
 	} else
 		*buf2++ = *buf1++;
-	*buf2 = 0;
+	*buf2 = '\0';
 	while (isspace(*buf1))
 		buf1++;
-	return (*buf1 ? buf1 : 0);
+	return (*buf1 ? buf1 : NULL);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: cpu.h,v 1.17 1995/06/28 02:56:05 cgd Exp $ */
+/*	$OpenBSD: cpu.h,v 1.9 2000/05/18 13:31:12 jason Exp $	*/
+/*	$NetBSD: cpu.h,v 1.24 1997/03/15 22:25:15 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -44,16 +45,20 @@
  *	@(#)cpu.h	8.4 (Berkeley) 1/5/94
  */
 
-#ifndef _CPU_H_
-#define _CPU_H_
+#ifndef _SPARC_CPU_H_
+#define _SPARC_CPU_H_
 
 /*
- * CTL_MACHDEP definitinos.
+ * CTL_MACHDEP definitions.
  */
-#define	CPU_MAXID	1	/* no valid machdep ids */
+#define CPU_LED_BLINK	1	/* int: twiddle the power LED */
+#define CPU_VSYNCBLANK	2	/* int: turn off monitors in *blank */
+#define CPU_MAXID	3	/* 2 valid machdep IDs */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
+	{ "led_blink", CTLTYPE_INT }, \
+	{ "vsyncblank", CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL
@@ -70,16 +75,7 @@
  */
 #define	cpu_swapin(p)	/* nothing */
 #define	cpu_swapout(p)	/* nothing */
-#define	cpu_wait(p)	/* nothing */
-
-/*
- * See syscall() for an explanation of the following.  Note that the
- * locore bootstrap code follows the syscall stack protocol.  The
- * framep argument is unused.
- */
-#define cpu_set_init_frame(p, fp) \
-	(p)->p_md.md_tf = (struct trapframe *) \
-	    ((caddr_t)(p)->p_addr + USPACE - sizeof(struct trapframe))
+#define cpu_wait(p)	/* nothing */
 
 /*
  * Arguments to hardclock, softclock and gatherstats encapsulate the
@@ -109,27 +105,37 @@ extern int eintstack[];
 union sir {
 	int	sir_any;
 	char	sir_which[4];
-} sir;
+};
+extern union sir sir;
 
 #define SIR_NET		0
 #define SIR_CLOCK	1
 
-#define	setsoftint()	ienab_bis(IE_L1)
+#if defined(SUN4M)
+extern void	raise __P((int, int));
+#if !(defined(SUN4) || defined(SUN4C))
+#define setsoftint()	raise(0,1)
+#else /* both defined */
+#define setsoftint()	(cputyp == CPU_SUN4M ? raise(0,1) : ienab_bis(IE_L1))
+#endif /* !4,!4c */
+#else	/* 4m not defined */
+#define setsoftint()	ienab_bis(IE_L1)
+#endif /* SUN4M */
+
 #define setsoftnet()	(sir.sir_which[SIR_NET] = 1, setsoftint())
 #define setsoftclock()	(sir.sir_which[SIR_CLOCK] = 1, setsoftint())
-
-int	want_ast;
 
 /*
  * Preempt the current process if in interrupt from user mode,
  * or after the current trap/syscall if in system mode.
  */
-int	want_resched;		/* resched() was called */
+extern int	want_resched;		/* resched() was called */
 #define	need_resched()		(want_resched = 1, want_ast = 1)
+extern int	want_ast;
 
 /*
  * Give a profiling tick to the current process when the user profiling
- * buffer pages are invalid.  On the sparc, request an ast to send us 
+ * buffer pages are invalid.  On the sparc, request an ast to send us
  * through trap(), marking the proc as needing a profiling tick.
  */
 #define	need_proftick(p)	((p)->p_flag |= P_OWEUPC, want_ast = 1)
@@ -140,13 +146,7 @@ int	want_resched;		/* resched() was called */
  */
 #define	signotify(p)		(want_ast = 1)
 
-/*
- * Only one process may own the FPU state.
- *
- * XXX this must be per-cpu (eventually)
- */
-struct	proc *fpproc;		/* FPU owner */
-int	foundfpu;		/* true => we have an FPU */
+extern int	foundfpu;		/* true => we have an FPU */
 
 /*
  * Interrupt handler chains.  Interrupt handlers should return 0 for
@@ -158,8 +158,8 @@ struct intrhand {
 	int	(*ih_fun) __P((void *));
 	void	*ih_arg;
 	struct	intrhand *ih_next;
-} *intrhand[15];
-
+};
+extern struct intrhand *intrhand[15];
 void	intr_establish __P((int level, struct intrhand *));
 void	vmeintr_establish __P((int vec, int level, struct intrhand *));
 
@@ -169,6 +169,71 @@ void	vmeintr_establish __P((int vec, int level, struct intrhand *));
  * trap window).  Such functions must be written in assembly.
  */
 void	intr_fasttrap __P((int level, void (*vec)(void)));
+
+/* auxreg.c */
+void led_blink __P((void *));
+/* scf.c */
+void scfblink __P((void *));
+/* disksubr.c */
+struct dkbad;
+int isbad __P((struct dkbad *bt, int, int, int));
+/* machdep.c */
+int	ldcontrolb __P((caddr_t));
+void	dumpconf __P((void));
+caddr_t	reserve_dumppages __P((caddr_t));
+/* clock.c */
+struct timeval;
+void	lo_microtime __P((struct timeval *));
+int	statintr __P((void *));
+int	clockintr __P((void *));/* level 10 (clock) interrupt code */
+int	statintr __P((void *));	/* level 14 (statclock) interrupt code */
+/* locore.s */
+struct fpstate;
+void	savefpstate __P((struct fpstate *));
+void	loadfpstate __P((struct fpstate *));
+int	probeget __P((caddr_t, int));
+void	write_all_windows __P((void));
+void	write_user_windows __P((void));
+void 	proc_trampoline __P((void));
+struct pcb;
+void	snapshot __P((struct pcb *));
+struct frame *getfp __P((void));
+int	xldcontrolb __P((caddr_t, struct pcb *));
+void	copywords __P((const void *, void *, size_t));
+void	qcopy __P((const void *, void *, size_t));
+void	qzero __P((void *, size_t));
+/* locore2.c */
+void	remrunqueue __P((struct proc *));
+/* trap.c */
+void	kill_user_windows __P((struct proc *));
+int	rwindow_save __P((struct proc *));
+void	child_return __P((struct proc *));
+/* amd7930intr.s */
+void	amd7930_trap __P((void));
+/* cons.c */
+int	cnrom __P((void));
+/* zs.c */
+void zsconsole __P((struct tty *, int, int, int (**)(struct tty *, int)));
+#ifdef KGDB
+void zs_kgdb_init __P((void));
+#endif
+/* fb.c */
+void	fb_unblank __P((void));
+/* cache.c */
+void cache_flush __P((caddr_t, u_int));
+/* kgdb_stub.c */
+#ifdef KGDB
+void kgdb_attach __P((int (*)(void *), void (*)(void *, int), void *));
+void kgdb_connect __P((int));
+void kgdb_panic __P((void));
+#endif
+/* iommu.c */
+void	iommu_enter __P((u_int, u_int));
+void	iommu_remove __P((u_int, u_int));
+/* emul.c */
+struct trapframe;
+int fixalign __P((struct proc *, struct trapframe *));
+int emulinstr __P((int, struct trapframe *));
 
 /*
  *
@@ -187,10 +252,10 @@ void	intr_fasttrap __P((int level, void (*vec)(void)));
 struct trapvec {
 	int	tv_instr[4];		/* the four instructions */
 };
-extern struct trapvec trapbase[256];	/* the 256 vectors */
+extern struct trapvec *trapbase;	/* the 256 vectors */
 
 extern void wzero __P((void *, u_int));
 extern void wcopy __P((const void *, void *, u_int));
 
 #endif /* _KERNEL */
-#endif /* _CPU_H_ */
+#endif /* _SPARC_CPU_H_ */

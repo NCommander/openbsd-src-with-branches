@@ -1,5 +1,3 @@
-/*	$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $	*/
-
 /*
  * Copyright (c) 1989, 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getcwd.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getcwd.c,v 1.5 1998/08/14 21:39:26 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -53,7 +47,7 @@ static char rcsid[] = "$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $";
 
 #define	ISDOT(dp) \
 	(dp->d_name[0] == '.' && (dp->d_name[1] == '\0' || \
-	    dp->d_name[1] == '.' && dp->d_name[2] == '\0'))
+	    (dp->d_name[1] == '.' && dp->d_name[2] == '\0')))
 
 char *
 getcwd(pt, size)
@@ -61,7 +55,7 @@ getcwd(pt, size)
 	size_t size;
 {
 	register struct dirent *dp;
-	register DIR *dir;
+	register DIR *dir = NULL;
 	register dev_t dev;
 	register ino_t ino;
 	register int first;
@@ -141,8 +135,11 @@ getcwd(pt, size)
 		 * possible component name, plus a trailing NULL.
 		 */
 		if (bup + 3  + MAXNAMLEN + 1 >= eup) {
-			if ((up = realloc(up, upsize *= 2)) == NULL)
+			char *nup;
+
+			if ((nup = realloc(up, upsize *= 2)) == NULL)
 				goto err;
+			up = nup;
 			bup = up;
 			eup = up + upsize;
 		}
@@ -193,8 +190,9 @@ getcwd(pt, size)
 		 * Check for length of the current name, preceding slash,
 		 * leading slash.
 		 */
-		if (bpt - pt <= dp->d_namlen + (first ? 1 : 2)) {
+		if (bpt - pt < dp->d_namlen + (first ? 1 : 2)) {
 			size_t len, off;
+			char *npt;
 
 			if (!ptsize) {
 				errno = ERANGE;
@@ -202,8 +200,9 @@ getcwd(pt, size)
 			}
 			off = bpt - pt;
 			len = ept - bpt;
-			if ((pt = realloc(pt, ptsize *= 2)) == NULL)
+			if ((npt = realloc(pt, ptsize *= 2)) == NULL)
 				goto err;
+			pt = npt;
 			bpt = pt + off;
 			ept = pt + ptsize;
 			bcopy(bpt, ept - len, len);
@@ -231,6 +230,9 @@ notfound:
 err:
 	if (ptsize)
 		free(pt);
-	free(up);
+	if (up)
+		free(up);
+	if (dir)
+		(void)closedir(dir);
 	return (NULL);
 }

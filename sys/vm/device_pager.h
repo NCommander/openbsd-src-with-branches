@@ -1,3 +1,4 @@
+/*	$OpenBSD: device_pager.h,v 1.9 1994/06/29 06:47:41 cgd Exp $	*/
 /*	$NetBSD: device_pager.h,v 1.9 1994/06/29 06:47:41 cgd Exp $	*/
 
 /*

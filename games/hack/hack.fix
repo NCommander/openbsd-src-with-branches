@@ -1,3 +1,4 @@
+$OpenBSD: hack.fix,v 1.2 1995/03/23 08:30:17 cgd Exp $
 $NetBSD: hack.fix,v 1.2 1995/03/23 08:30:17 cgd Exp $
 
 /***** unido:net.games.hack / ab /  7:23 pm  Sep 13, 1985*/
@@ -29,8 +30,8 @@ but I think the other fix was intended by the now deleted lines.
 	Andreas
 
 --
-Andreas Bormann                 ab@unido.UUCP
-University of Dortmund          N 51 29' 05"   E 07 24' 42"
+Andreas Bormann			ab@unido.UUCP
+University of Dortmund		N 51 29' 05"   E 07 24' 42"
 West Germany
 
 ------ the diff follows:

@@ -1,3 +1,5 @@
+/*	$OpenBSD: lprm.c,v 1.5 1997/01/17 16:12:47 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)lprm.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: lprm.c,v 1.5 1997/01/17 16:12:47 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -76,7 +82,7 @@ char	*user[MAXUSERS];	/* users to process */
 int	 users;			/* # of users in user array */
 uid_t	 uid, euid;		/* real and effective user id's */
 
-static char	luser[16];	/* buffer for person */
+static char	luser[MAXLOGNAME];	/* buffer for person */
 
 void usage __P((void));
 
@@ -133,8 +139,13 @@ main(argc, argv)
 			}
 		}
 	}
-	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
+	if (printer == NULL) {
+		char *p;
+
 		printer = DEFLP;
+		if ((p = getenv("PRINTER")) != NULL)
+			printer = p;
+	}
 
 	rmjob();
 	exit(0);

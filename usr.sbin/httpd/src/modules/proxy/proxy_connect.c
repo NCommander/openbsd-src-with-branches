@@ -1,58 +1,59 @@
 /* ====================================================================
- * Copyright (c) 1996-1998 The Apache Group.  All rights reserved.
+ * The Apache Software License, Version 1.1
+ *
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. All advertising materials mentioning features or use of this
- *    software must display the following acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Apache Server" and "Apache Group" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. For written permission, please contact
- *    apache@apache.org.
+ * 4. The names "Apache" and "Apache Software Foundation" must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
  *
- * 5. Products derived from this software may not be called "Apache"
- *    nor may "Apache" appear in their names without prior written
- *    permission of the Apache Group.
+ * 5. Products derived from this software may not be called "Apache",
+ *    nor may "Apache" appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
  *
- * 6. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
- *
- * THIS SOFTWARE IS PROVIDED BY THE APACHE GROUP ``AS IS'' AND ANY
- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE APACHE GROUP OR
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
  * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  * ====================================================================
  *
  * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Group and was originally based
- * on public domain software written at the National Center for
- * Supercomputing Applications, University of Illinois, Urbana-Champaign.
- * For more information on the Apache Group and the Apache HTTP server
- * project, please see <http://www.apache.org/>.
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
  *
+ * Portions of this software are based upon public domain software
+ * originally written at the National Center for Supercomputing Applications,
+ * University of Illinois, Urbana-Champaign.
  */
 
 /* CONNECT method for Apache proxy */
@@ -148,7 +149,8 @@ int ap_proxy_connect_handler(request_rec *r, cache_req *c, char *url,
     for (i = 0; i < conf->noproxies->nelts; i++) {
 	if ((npent[i].name != NULL && strstr(host, npent[i].name) != NULL)
 	    || destaddr.s_addr == npent[i].addr.s_addr || npent[i].name[0] == '*')
-	    return ap_proxyerror(r, "Connect to remote machine blocked");
+	    return ap_proxyerror(r, HTTP_FORBIDDEN,
+				 "Connect to remote machine blocked");
     }
 
     /* Check if it is an allowed port */
@@ -175,7 +177,9 @@ int ap_proxy_connect_handler(request_rec *r, cache_req *c, char *url,
     err = ap_proxy_host2addr(proxyhost ? proxyhost : host, &server_hp);
 
     if (err != NULL)
-	return ap_proxyerror(r, err);	/* give up */
+	return ap_proxyerror(r,
+			     proxyhost ? HTTP_BAD_GATEWAY : HTTP_INTERNAL_SERVER_ERROR,
+			     err);
 
     sock = ap_psocket(r->pool, PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == -1) {
@@ -184,7 +188,7 @@ int ap_proxy_connect_handler(request_rec *r, cache_req *c, char *url,
 	return HTTP_INTERNAL_SERVER_ERROR;
     }
 
-#ifndef WIN32
+#ifdef CHECK_FD_SETSIZE
     if (sock >= FD_SETSIZE) {
 	ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_WARNING, NULL,
 	    "proxy_connect_handler: filedescriptor (%u) "
@@ -207,7 +211,7 @@ int ap_proxy_connect_handler(request_rec *r, cache_req *c, char *url,
     }
     if (i == -1) {
 	ap_pclosesocket(r->pool, sock);
-	return ap_proxyerror(r, ap_pstrcat(r->pool,
+	return ap_proxyerror(r, HTTP_INTERNAL_SERVER_ERROR, ap_pstrcat(r->pool,
 					"Could not connect to remote machine:<br>",
 					strerror(errno), NULL));
     }
@@ -223,10 +227,10 @@ int ap_proxy_connect_handler(request_rec *r, cache_req *c, char *url,
 	Explain0("Sending the CONNECT request to the remote proxy");
 	ap_snprintf(buffer, sizeof(buffer), "CONNECT %s HTTP/1.0" CRLF,
 		    r->uri);
-	write(sock, buffer, strlen(buffer));
+	send(sock, buffer, strlen(buffer),0);
 	ap_snprintf(buffer, sizeof(buffer),
 		    "Proxy-agent: %s" CRLF CRLF, ap_get_server_version());
-	write(sock, buffer, strlen(buffer));
+	send(sock, buffer, strlen(buffer),0);
     }
     else {
 	Explain0("Returning 200 OK Status");
@@ -238,34 +242,34 @@ int ap_proxy_connect_handler(request_rec *r, cache_req *c, char *url,
     while (1) {			/* Infinite loop until error (one side closes the connection) */
 	FD_ZERO(&fds);
 	FD_SET(sock, &fds);
-	FD_SET(r->connection->client->fd, &fds);
+	FD_SET(ap_bfileno(r->connection->client, B_WR), &fds);
 
 	Explain0("Going to sleep (select)");
-	i = ap_select((r->connection->client->fd > sock ?
-		       r->connection->client->fd + 1 :
+	i = ap_select((ap_bfileno(r->connection->client, B_WR) > sock ?
+		       ap_bfileno(r->connection->client, B_WR) + 1 :
 		       sock + 1), &fds, NULL, NULL, NULL);
 	Explain1("Woke from select(), i=%d", i);
 
 	if (i) {
 	    if (FD_ISSET(sock, &fds)) {
 		Explain0("sock was set");
-		if ((nbytes = read(sock, buffer, HUGE_STRING_LEN)) != 0) {
+		if ((nbytes = recv(sock, buffer, HUGE_STRING_LEN,0)) != 0) {
 		    if (nbytes == -1)
 			break;
-		    if (write(r->connection->client->fd, buffer, nbytes) == EOF)
+		    if (send(ap_bfileno(r->connection->client, B_WR), buffer, nbytes,0) == EOF)
 			break;
 		    Explain1("Wrote %d bytes to client", nbytes);
 		}
 		else
 		    break;
 	    }
-	    else if (FD_ISSET(r->connection->client->fd, &fds)) {
+	    else if (FD_ISSET(ap_bfileno(r->connection->client, B_WR), &fds)) {
 		Explain0("client->fd was set");
-		if ((nbytes = read(r->connection->client->fd, buffer,
-				   HUGE_STRING_LEN)) != 0) {
+		if ((nbytes = recv(ap_bfileno(r->connection->client, B_WR), buffer,
+				   HUGE_STRING_LEN, 0)) != 0) {
 		    if (nbytes == -1)
 			break;
-		    if (write(sock, buffer, nbytes) == EOF)
+		    if (send(sock, buffer, nbytes, 0) == EOF)
 			break;
 		    Explain1("Wrote %d bytes to server", nbytes);
 		}

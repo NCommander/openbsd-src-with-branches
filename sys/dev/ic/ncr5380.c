@@ -1,3 +1,4 @@
+/*	$OpenBSD: ncr5380.c,v 1.2 1996/10/31 01:01:34 niklas Exp $	*/
 /*	$NetBSD: ncr5380.c,v 1.3 1995/09/26 21:04:27 pk Exp $	*/
 
 /*
@@ -677,7 +678,7 @@ ncr5380_dorequest(sc, target, lun, cmd, cmdlen, databuf, datalen, sent)
 					&stat, &msg);
 #ifdef	DEBUG
 	if (ncr5380_debug) {
-		printf("ncr5380_dorequest: data transfered = %d\n", *sent);
+		printf("ncr5380_dorequest: data transferred = %d\n", *sent);
 	}
 #endif
 

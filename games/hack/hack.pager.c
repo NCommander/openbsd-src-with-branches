@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.pager.c,v 1.4 1995/03/23 08:31:16 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.pager.c,v 1.4 1995/03/23 08:31:16 cgd Exp $";
 #endif /* not lint */
 
 /* This file contains the command routine dowhatis() and a pager. */
@@ -36,7 +38,7 @@ dowhatis()
 		if(q != '\t')
 		while(fgets(buf,BUFSZ,fp))
 		    if(*buf == q) {
-			ep = index(buf, '\n');
+			ep = strchr(buf, '\n');
 			if(ep) *ep = 0;
 			/* else: bad data file */
 			/* Expand tab 'by hand' */
@@ -82,7 +84,7 @@ int strip;	/* nr of chars to be stripped from each line (0 or 1) */
 	bufr = (char *) alloc((unsigned) CO);
 	bufr[CO-1] = 0;
 	while(fgets(bufr,CO-1,fp) && (!strip || *bufr == '\t') && !got_intrup){
-		ep = index(bufr, '\n');
+		ep = strchr(bufr, '\n');
 		if(ep)
 			*ep = 0;
 		if(page_line(bufr+strip)) {
@@ -286,9 +288,9 @@ dohelp()
 	char c;
 
 	pline ("Long or short help? ");
-	while (((c = readchar ()) != 'l') && (c != 's') && !index(quitchars,c))
+	while (((c = readchar ()) != 'l') && (c != 's') && !strchr(quitchars,c))
 		bell ();
-	if (!index(quitchars, c))
+	if (!strchr(quitchars, c))
 		(void) page_file((c == 'l') ? HELP : SHELP, FALSE);
 	return(0);
 }
@@ -301,7 +303,7 @@ boolean silent;
       {
 	/* use external pager; this may give security problems */
 
-	register int fd = open(fnam, 0);
+	register int fd = open(fnam, O_RDONLY);
 
 	if(fd < 0) {
 		if(!silent) pline("Cannot open %s.", fnam);
@@ -380,14 +382,19 @@ union wait {		/* used only for the cast  (union wait *) 0  */
 child(wt) {
 	int status;
 	register int f;
+	char *home;
 
 	f = fork();
 	if(f == 0){		/* child */
 		settty((char *) 0);		/* also calls end_screen() */
-		(void) setuid(getuid());
-		(void) setgid(getgid());
+		/* revoke */
+		setegid(getgid());
+		setgid(getgid());
 #ifdef CHDIR
-		(void) chdir(getenv("HOME"));
+		home = getenv("HOME");
+		if (home == NULL || *home == '\0')
+			home = "/";
+		(void) chdir(home);
 #endif CHDIR
 		return(1);
 	}

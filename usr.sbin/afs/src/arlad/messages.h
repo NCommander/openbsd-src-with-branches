@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -41,14 +40,34 @@
  *
  */
 
-/* $KTH: messages.h,v 1.5 1998/03/25 03:27:20 assar Exp $ */
+/* $Id: messages.h,v 1.15 2000/06/10 16:45:44 assar Exp $ */
 
 #ifndef _MESSAGES_H_
 #define _MESSAGES_H_
 
 void xfs_message_init (void);
 int xfs_message_receive (int fd, struct xfs_message_header *h, u_int size);
-void break_callback (VenusFid fid);
-long afsfid2inode(VenusFid *fid);
+void break_callback (FCacheEntry *e);
+void install_attr (FCacheEntry *e);
+
+long afsfid2inode(const VenusFid *fid);
+
+int
+xfs_attr2afsstorestatus(struct xfs_attr *xa,
+			AFSStoreStatus *storestatus);
+
+void
+update_fid(VenusFid oldfid, FCacheEntry *old_entry,
+	   VenusFid newfid, FCacheEntry *new_entry);
+
+void
+fcacheentry2xfsnode (const VenusFid *fid,
+		     const VenusFid *statfid, 
+		     AFSFetchStatus *status,
+		     struct xfs_msg_node *node,
+                     AccessEntry *ae);
+
+int
+VenusFid_cmp (const VenusFid *fid1, const VenusFid *fid2);
 
 #endif /* _MESSAGES_H_ */

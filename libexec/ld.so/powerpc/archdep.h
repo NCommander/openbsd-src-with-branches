@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: archdep.h,v 1.3 2000/10/19 02:41:57 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -73,8 +73,11 @@
 static inline void
 _dl_dcbf(Elf32_Addr *addr)
 {
-  __asm__ volatile ("li 0, 0\n\t"
-                    "dcbf 0, %0"
+  __asm__ volatile ("dcbst 0, %0\n\t"
+		    "sync\n\t"
+		    "icbi 0, %0\n\t"
+		    "sync\n\t"
+		    "isync"
                     : : "r" (addr) : "0");
 }
 
@@ -121,18 +124,24 @@ _dl_strcpy(char *d, const char *s)
 static inline int
 _dl_strncmp(const char *d, const char *s, int c)
 {
-	while(c-- && *d && *d++ == *s++) {};
+	while(c-- && *d && *d == *s) {
+		d++;
+		s++;
+	};
 	if(c < 0) {
 		return(0);
 	}
-	return(d[-1] - s[-1]);
+	return(*d - *s);
 }
  
 static inline int
 _dl_strcmp(const char *d, const char *s)
 {
-	while(*d && *d++ == *s++) {};
-	return(d[-1] - s[-1]);
+	while(*d && *d == *s) {
+		d++;
+		s++;
+	}
+	return(*d - *s);
 }
  
 static inline const char *

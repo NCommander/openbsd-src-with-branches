@@ -75,7 +75,8 @@ results from DNS lookups) are called the vhost's <EM>address set</EM>.
 
 <P>Unless a <A HREF="../mod/core.html#namevirtualhost">NameVirtualHost</A>
 directive is used for a specific IP address the first vhost with
-that address is treated as an IP-based vhost.
+that address is treated as an IP-based vhost. In 1.3.13 and later that
+includes the IP address <CODE>*</CODE>.
 
 <P>If name-based vhosts should be used a <CODE>NameVirtualHost</CODE>
 directive <EM>must</EM> appear with the IP address set to be used for the
@@ -132,7 +133,7 @@ set.  Note that subsequent <CODE>Port</CODE> statements for this vhost will not
 affect the ports assigned in the address set.
 
 <P>During initialization a list for each IP address
-is generated an inserted into an hash table. If the IP address is
+is generated and inserted into an hash table. If the IP address is
 used in a <CODE>NameVirtualHost</CODE> directive the list contains
 all name-based vhosts for the given IP address. If there are no
 vhosts defined for that address the <CODE>NameVirtualHost</CODE> directive
@@ -207,6 +208,11 @@ served from the <SAMP>_default_</SAMP> vhost if there is such a vhost
 for the port to which the client sent the request. If there is no
 matching <SAMP>_default_</SAMP> vhost the request is served from the
 main_server.
+
+<P>In Apache 1.3.13 and later, if the IP address is not found in the
+hash table then the match against the port number may also result in
+an entry corresponding to a <CODE>NameVirtualHost *</CODE>, which is
+subsequently handled like other name-based vhosts.
 
 <P>If the lookup succeeded (a corresponding list for the IP address was
 found) the next step is to decide if we have to deal with an IP-based
@@ -315,6 +321,8 @@ taken to be a proxy request.
     <CODE>_default_</CODE> vhost which is your standard <CODE>Port</CODE>
     by default. A wildcard port can be specified (<EM>i.e.</EM>,
     <CODE>_default_:*</CODE>) to catch requests to any available port.
+    In Apache 1.3.13 and later this also applies to
+    <CODE>NameVirtualHost *</CODE> vhosts.
     <P>
     
 <LI>The main_server is only used to serve a request if the IP address

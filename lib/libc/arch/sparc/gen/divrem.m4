@@ -1,3 +1,4 @@
+/*	$OpenBSD: divrem.m4,v 1.1.1.1 1995/10/18 08:41:40 deraadt Exp $	*/
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +36,6 @@
  * SUCH DAMAGE.
  *
  * from: Header: divrem.m4,v 1.4 92/06/25 13:23:57 torek Exp
- * $Id: divrem.m4,v 1.2 1995/04/22 09:33:49 pk Exp $
  */
 
 /*

@@ -1,58 +1,59 @@
 /* ====================================================================
- * Copyright (c) 1996-1998 The Apache Group.  All rights reserved.
+ * The Apache Software License, Version 1.1
+ *
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. All advertising materials mentioning features or use of this
- *    software must display the following acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Apache Server" and "Apache Group" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. For written permission, please contact
- *    apache@apache.org.
+ * 4. The names "Apache" and "Apache Software Foundation" must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
  *
- * 5. Products derived from this software may not be called "Apache"
- *    nor may "Apache" appear in their names without prior written
- *    permission of the Apache Group.
+ * 5. Products derived from this software may not be called "Apache",
+ *    nor may "Apache" appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
  *
- * 6. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
- *
- * THIS SOFTWARE IS PROVIDED BY THE APACHE GROUP ``AS IS'' AND ANY
- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE APACHE GROUP OR
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
  * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  * ====================================================================
  *
  * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Group and was originally based
- * on public domain software written at the National Center for
- * Supercomputing Applications, University of Illinois, Urbana-Champaign.
- * For more information on the Apache Group and the Apache HTTP server
- * project, please see <http://www.apache.org/>.
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
  *
+ * Portions of this software are based upon public domain software
+ * originally written at the National Center for Supercomputing Applications,
+ * University of Illinois, Urbana-Champaign.
  */
 
 /* HTTP routines for Apache proxy */
@@ -97,7 +98,8 @@ int ap_proxy_http_canon(request_rec *r, char *url, const char *scheme, int def_p
 	search = r->args;
 
 /* process path */
-    path = ap_proxy_canonenc(r->pool, url, strlen(url), enc_path, r->proxyreq);
+    path = ap_proxy_canonenc(r->pool, url, strlen(url), enc_path,
+			     r->proxyreq);
     if (path == NULL)
 	return HTTP_BAD_REQUEST;
 
@@ -188,6 +190,9 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
     const char *urlptr = NULL;
     const char *datestr;
     struct tbl_do_args tdo;
+#ifdef EAPI
+    char *peer;
+#endif
 
     void *sconf = r->server->module_config;
     proxy_server_conf *conf =
@@ -206,6 +211,12 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 	return HTTP_BAD_REQUEST;
     urlptr += 3;
     destport = DEFAULT_HTTP_PORT;
+#ifdef EAPI
+    ap_hook_use("ap::mod_proxy::http::handler::set_destport", 
+                AP_HOOK_SIG2(int,ptr), 
+                AP_HOOK_TOPMOST,
+                &destport, r);
+#endif /* EAPI */
     strp = strchr(urlptr, '/');
     if (strp == NULL) {
 	desthost = ap_pstrdup(p, urlptr);
@@ -231,9 +242,11 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 /* check if ProxyBlock directive on this host */
     destaddr.s_addr = ap_inet_addr(desthost);
     for (i = 0; i < conf->noproxies->nelts; i++) {
-	if ((npent[i].name != NULL && strstr(desthost, npent[i].name) != NULL)
-	    || destaddr.s_addr == npent[i].addr.s_addr || npent[i].name[0] == '*')
-	    return ap_proxyerror(r, "Connect to remote machine blocked");
+        if (destaddr.s_addr == npent[i].addr.s_addr ||
+            (npent[i].name != NULL &&
+              (npent[i].name[0] == '*' || strstr(desthost, npent[i].name) != NULL)))
+            return ap_proxyerror(r, HTTP_FORBIDDEN,
+                                 "Connect to remote machine blocked");
     }
 
     if (proxyhost != NULL) {
@@ -241,12 +254,18 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 	err = ap_proxy_host2addr(proxyhost, &server_hp);
 	if (err != NULL)
 	    return DECLINED;	/* try another */
+#ifdef EAPI
+	peer = ap_psprintf(p, "%s:%u", proxyhost, proxyport);  
+#endif
     }
     else {
 	server.sin_port = htons(destport);
 	err = ap_proxy_host2addr(desthost, &server_hp);
 	if (err != NULL)
-	    return ap_proxyerror(r, err);	/* give up */
+	    return ap_proxyerror(r, HTTP_INTERNAL_SERVER_ERROR, err);
+#ifdef EAPI
+	peer =  ap_psprintf(p, "%s:%u", desthost, destport);  
+#endif
     }
 
     sock = ap_psocket(p, PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -256,6 +275,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 	return HTTP_INTERNAL_SERVER_ERROR;
     }
 
+#if !defined(TPF) && !defined(BEOS)
     if (conf->recv_buffer_size) {
 	if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF,
 		       (const char *) &conf->recv_buffer_size, sizeof(int))
@@ -264,6 +284,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 			 "setsockopt(SO_RCVBUF): Failed to set ProxyReceiveBufferSize, using default");
 	}
     }
+#endif
 
 #ifdef SINIX_D_RESOLVER_BUG
     {
@@ -291,7 +312,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 	if (proxyhost != NULL)
 	    return DECLINED;	/* try again another way */
 	else
-	    return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ ap_pstrcat(r->pool,
+	    return ap_proxyerror(r, HTTP_BAD_GATEWAY, ap_pstrcat(r->pool,
 				"Could not connect to remote machine: ",
 				strerror(errno), NULL));
     }
@@ -301,13 +322,41 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
     f = ap_bcreate(p, B_RDWR | B_SOCKET);
     ap_bpushfd(f, sock, sock);
 
+#ifdef EAPI
+    {
+        char *errmsg = NULL;
+        ap_hook_use("ap::mod_proxy::http::handler::new_connection", 
+                    AP_HOOK_SIG4(ptr,ptr,ptr,ptr), 
+                    AP_HOOK_DECLINE(NULL),
+                    &errmsg, r, f, peer);
+        if (errmsg != NULL)
+            return ap_proxyerror(r, HTTP_BAD_GATEWAY, errmsg);
+    }
+#endif /* EAPI */
+
     ap_hard_timeout("proxy send", r);
     ap_bvputs(f, r->method, " ", proxyhost ? url : urlptr, " HTTP/1.0" CRLF,
 	   NULL);
+#ifdef EAPI
+    {
+	int rc = DECLINED;
+	ap_hook_use("ap::mod_proxy::http::handler::write_host_header", 
+		    AP_HOOK_SIG6(int,ptr,ptr,ptr,int,ptr), 
+		    AP_HOOK_DECLINE(DECLINED),
+		    &rc, r, f, desthost, destport, destportstr);
+        if (rc == DECLINED) {
+	    if (destportstr != NULL && destport != DEFAULT_HTTP_PORT)
+		ap_bvputs(f, "Host: ", desthost, ":", destportstr, CRLF, NULL);
+	    else
+		ap_bvputs(f, "Host: ", desthost, CRLF, NULL);
+        }
+    }
+#else /* EAPI */
     if (destportstr != NULL && destport != DEFAULT_HTTP_PORT)
 	ap_bvputs(f, "Host: ", desthost, ":", destportstr, CRLF, NULL);
     else
 	ap_bvputs(f, "Host: ", desthost, CRLF, NULL);
+#endif /* EAPI */
 
     if (conf->viaopt == via_block) {
 	/* Block all outgoing Via: headers */
@@ -351,7 +400,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
     }
 
     ap_bputs(CRLF, f);
-/* send the request data, if any. N.B. should we trap SIGPIPE ? */
+/* send the request data, if any. */
 
     if (ap_should_client_block(r)) {
 	while ((i = ap_get_client_block(r, buffer, sizeof buffer)) > 0)
@@ -363,13 +412,19 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
     ap_hard_timeout("proxy receive", r);
 
     len = ap_bgets(buffer, sizeof buffer - 1, f);
-    if (len == -1 || len == 0) {
+    if (len == -1) {
 	ap_bclose(f);
 	ap_kill_timeout(r);
 	ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
-		     "ap_bgets() - proxy receive - Error reading from remote server %s",
-		     proxyhost ? proxyhost : desthost);
-	return ap_proxyerror(r, "Error reading from remote server");
+		     "ap_bgets() - proxy receive - Error reading from remote server %s (length %d)",
+		     proxyhost ? proxyhost : desthost, len);
+	return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+			     "Error reading from remote server");
+    } else if (len == 0) {
+	ap_bclose(f);
+	ap_kill_timeout(r);
+	return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+			     "Document contains no data");
     }
 
 /* Is it an HTTP/1 response?  This is buggy if we ever see an HTTP/1.10 */
@@ -460,10 +515,16 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 	ap_table_set(resp_hdrs, "URI", proxy_location_reverse_map(r, datestr));
 
 /* check if NoCache directive on this host */
-    for (i = 0; i < conf->nocaches->nelts; i++) {
-	if ((ncent[i].name != NULL && strstr(desthost, ncent[i].name) != NULL)
-	    || destaddr.s_addr == ncent[i].addr.s_addr || ncent[i].name[0] == '*')
-	    nocache = 1;
+    if (nocache == 0) {
+	for (i = 0; i < conf->nocaches->nelts; i++) {
+	    if (destaddr.s_addr == ncent[i].addr.s_addr ||
+	        (ncent[i].name != NULL &&
+		  (ncent[i].name[0] == '*' ||
+		   strstr(desthost, ncent[i].name) != NULL))) {
+	       nocache = 1;
+	       break;
+	    }
+	}
     }
 
     i = ap_proxy_cache_update(c, resp_hdrs, !backasswards, nocache);
@@ -478,8 +539,11 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
     if (!r->assbackwards)
 	ap_rvputs(r, "HTTP/1.0 ", r->status_line, CRLF, NULL);
     if (c != NULL && c->fp != NULL &&
-	ap_bvputs(c->fp, "HTTP/1.0 ", r->status_line, CRLF, NULL) == -1)
-	c = ap_proxy_cache_error(c);
+	ap_bvputs(c->fp, "HTTP/1.0 ", r->status_line, CRLF, NULL) == -1) {
+	    ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+		"proxy: error writing status line to %s", c->tempfile);
+	    c = ap_proxy_cache_error(c);
+    }
 
 /* send headers */
     tdo.req = r;
@@ -488,16 +552,22 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 
     if (!r->assbackwards)
 	ap_rputs(CRLF, r);
-    if (c != NULL && c->fp != NULL && ap_bputs(CRLF, c->fp) == -1)
+    if (c != NULL && c->fp != NULL && ap_bputs(CRLF, c->fp) == -1) {
+	ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+	    "proxy: error writing CRLF to %s", c->tempfile);
 	c = ap_proxy_cache_error(c);
+    }
 
     ap_bsetopt(r->connection->client, BO_BYTECT, &zero);
     r->sent_bodyct = 1;
 /* Is it an HTTP/0.9 respose? If so, send the extra data */
     if (backasswards) {
 	ap_bwrite(r->connection->client, buffer, len);
-	if (c != NULL && c->fp != NULL && ap_bwrite(c->fp, buffer, len) != len)
+	if (c != NULL && c->fp != NULL && ap_bwrite(c->fp, buffer, len) != len) {
+	    ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+		"proxy: error writing extra data to %s", c->tempfile);
 	    c = ap_proxy_cache_error(c);
+	}
     }
     ap_kill_timeout(r);
 

@@ -1,4 +1,5 @@
-#	@(#)Makefile	1.8 (Berkeley) 6/8/93
+#	$OpenBSD$
+
 
 DIR=	papers/memfs
 SRCS=	0.t 1.t

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,7 @@ static char sccsid[] = "@(#)measure.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
 
 #ifdef sgi
-#ident "$Revision: 1.5 $"
+#ident "$Revision: 1.2 $"
 #endif
 
 #include "globals.h"
@@ -87,6 +89,7 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 	min_idelta = min_odelta = 0x7fffffff;
 	measure_status = HOSTDOWN;
 	measure_delta = HOSTDOWN;
+	trials = 0;
 	errno = 0;
 
 	/* open raw socket used to measure time differences */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: string.h,v 1.5 1998/11/20 11:18:26 d Exp $	*/
 /*	$NetBSD: string.h,v 1.6 1994/10/26 00:56:30 cgd Exp $	*/
 
 /*-
@@ -45,7 +46,11 @@ typedef	_BSD_SIZE_T_	size_t;
 #endif
 
 #ifndef	NULL
+#ifdef 	__GNUG__
+#define	NULL	__null
+#else
 #define	NULL	0
+#endif
 #endif
 
 #include <sys/cdefs.h>
@@ -72,6 +77,7 @@ char	*strrchr __P((const char *, int));
 size_t	 strspn __P((const char *, const char *));
 char	*strstr __P((const char *, const char *));
 char	*strtok __P((char *, const char *));
+char	*strtok_r __P((char *, const char *, char **));
 size_t	 strxfrm __P((char *, const char *, size_t));
 
 /* Nonstandard routines */
@@ -85,11 +91,12 @@ void	*memccpy __P((void *, const void *, int, size_t));
 char	*rindex __P((const char *, int));
 int	 strcasecmp __P((const char *, const char *));
 char	*strdup __P((const char *));
+size_t	 strlcat __P((char *, const char *, size_t));
+size_t	 strlcpy __P((char *, const char *, size_t));
 void	 strmode __P((int, char *));
 int	 strncasecmp __P((const char *, const char *, size_t));
 char	*strsep __P((char **, const char *));
 char	*strsignal __P((int));
-void	 swab __P((const void *, void *, size_t));
 #endif 
 __END_DECLS
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: c_sh.c,v 1.12 1999/06/15 01:18:33 millert Exp $	*/
 
 /*
  * built-in Bourne commands
@@ -10,6 +10,7 @@
 #include "ksh_times.h"
 
 static	char *clocktos ARGS((clock_t t));
+
 
 /* :, false and true */
 int
@@ -26,14 +27,19 @@ c_shift(wp)
 	register struct block *l = e->loc;
 	register int n;
 	long val;
+	char *arg;
 
-	if (wp[1]) {
-		evaluate(wp[1], &val, FALSE);
+	if (ksh_getopt(wp, &builtin_opt, null) == '?')
+		return 1;
+	arg = wp[builtin_opt.optind];
+
+	if (arg) {
+		evaluate(arg, &val, KSH_UNWIND_ERROR);
 		n = val;
 	} else
 		n = 1;
 	if (n < 0) {
-		bi_errorf("%s: bad number", wp[1]);
+		bi_errorf("%s: bad number", arg);
 		return (1);
 	}
 	if (l->argc < n) {
@@ -174,20 +180,24 @@ c_dot(wp)
 	char **argv;
 	int argc;
 	int i;
+	int err;
 
-	if ((cp = wp[1]) == NULL)
+	if (ksh_getopt(wp, &builtin_opt, null) == '?')
+		return 1;
+
+	if ((cp = wp[builtin_opt.optind]) == NULL)
 		return 0;
-	file = search(cp, path, R_OK);
+	file = search(cp, path, R_OK, &err);
 	if (file == NULL) {
-		bi_errorf("%s: not found", cp);
+		bi_errorf("%s: %s", cp, err ? strerror(err) : "not found");
 		return 1;
 	}
 
 	/* Set positional parameters? */
-	if (wp[2]) {
-		argv = ++wp;
+	if (wp[builtin_opt.optind + 1]) {
+		argv = wp + builtin_opt.optind;
 		argv[0] = e->loc->argv[0]; /* preserve $0 */
-		for (argc = -1; *wp++; argc++)
+		for (argc = 0; argv[argc + 1]; argc++)
 			;
 	} else {
 		argc = 0;
@@ -245,7 +255,7 @@ c_read(wp)
 		switch (optc) {
 #ifdef KSH
 		  case 'p':
-			if ((fd = get_coproc_fd(R_OK, &emsg)) < 0) {
+			if ((fd = coproc_getfd(R_OK, &emsg)) < 0) {
 				bi_errorf("-p: %s", emsg);
 				return 1;
 			}
@@ -280,9 +290,11 @@ c_read(wp)
 
 	if ((cp = strchr(*wp, '?')) != NULL) {
 		*cp = 0;
-		if (Flag(FTALKING)) {
-			/* at&t says it prints prompt on fd if its open
+		if (isatty(fd)) {
+			/* at&t ksh says it prints prompt on fd if it's open
 			 * for writing and is a tty, but it doesn't do it
+			 * (it also doesn't check the interactive flag,
+			 * as is indicated in the Kornshell book).
 			 */
 			shellf("%s", cp+1);
 		}
@@ -290,9 +302,15 @@ c_read(wp)
 
 #ifdef KSH
 	/* If we are reading from the co-process for the first time,
-	 * make sure the other side of the pipe is closed first.
+	 * make sure the other side of the pipe is closed first.  This allows
+	 * the detection of eof.
+	 *
+	 * This is not compatiable with at&t ksh... the fd is kept so another
+	 * coproc can be started with same ouput, however, this means eof
+	 * can't be detected...  This is why it is closed here.
+	 * If this call is removed, remove the eof check below, too.
+	* coproc_readw_close(fd);
 	 */
-	coproc_readw_close(fd);
 #endif /* KSH */
 
 	if (history)
@@ -337,7 +355,7 @@ c_read(wp)
 				expanding = 0;
 				if (c == '\n') {
 					c = 0;
-					if (Flag(FTALKING) && isatty(fd)) {
+					if (Flag(FTALKING_I) && isatty(fd)) {
 						/* set prompt in case this is
 						 * called from .profile or $ENV
 						 */
@@ -369,6 +387,7 @@ c_read(wp)
 				cp--;
 		Xput(cs, cp, '\0');
 		vp = global(*wp);
+		/* Must be done before setting export. */
 		if (vp->flag & RDONLY) {
 			shf_flush(shf);
 			bi_errorf("%s is read only", *wp);
@@ -376,7 +395,10 @@ c_read(wp)
 		}
 		if (Flag(FEXPORT))
 			typeset(*wp, EXPORT, 0, 0, 0);
-		setstr(vp, Xstring(cs, cp));
+		if (!setstr(vp, Xstring(cs, cp), KSH_RETURN_ERROR)) {
+		    shf_flush(shf);
+		    return 1;
+		}
 	}
 
 	shf_flush(shf);
@@ -387,7 +409,10 @@ c_read(wp)
 		Xfree(xs, xp);
 	}
 #ifdef KSH
-	/* if this is the co-process fd, close the file descriptor */
+	/* if this is the co-process fd, close the file descriptor
+	 * (can get eof if and only if all processes are have died, ie,
+	 * coproc.njobs is 0 and the pipe is closed).
+	 */
 	if (c == EOF && !ecode)
 		coproc_read_close(fd);
 #endif /* KSH */
@@ -401,8 +426,38 @@ c_eval(wp)
 {
 	register struct source *s;
 
+	if (ksh_getopt(wp, &builtin_opt, null) == '?')
+		return 1;
 	s = pushs(SWORDS, ATEMP);
-	s->u.strv = wp+1;
+	s->u.strv = wp + builtin_opt.optind;
+	if (!Flag(FPOSIX)) {
+		/*
+		 * Handle case where the command is empty due to failed
+		 * command substitution, eg, eval "$(false)".
+		 * In this case, shell() will not set/change exstat (because
+		 * compiled tree is empty), so will use this value.
+		 * subst_exstat is cleared in execute(), so should be 0 if
+		 * there were no substitutions.
+		 *
+		 * A strict reading of POSIX says we don't do this (though
+		 * it is traditionally done). [from 1003.2-1992]
+		 *    3.9.1: Simple Commands
+		 *	... If there is a command name, execution shall
+		 *	continue as described in 3.9.1.1.  If there
+		 *	is no command name, but the command contained a command
+		 *	substitution, the command shall complete with the exit
+		 *	status of the last command substitution
+		 *    3.9.1.1: Command Search and Execution
+		 *	...(1)...(a) If the command name matches the name of
+		 *	a special built-in utility, that special built-in
+		 *	utility shall be invoked.
+		 * 3.14.5: Eval
+		 *	... If there are no arguments, or only null arguments,
+		 *	eval shall return an exit status of zero.
+		 */
+		exstat = subst_exstat;
+	}
+
 	return shell(s, FALSE);
 }
 
@@ -445,13 +500,18 @@ c_trap(wp)
 		return 0;
 	}
 
-	s = (gettrap(*wp) == NULL) ? *wp++ : NULL; /* get command */
+	/*
+	 * Use case sensitive lookup for first arg so the
+	 * command 'exit' isn't confused with the pseudo-signal
+	 * 'EXIT'.
+	 */
+	s = (gettrap(*wp, FALSE) == NULL) ? *wp++ : NULL; /* get command */
 	if (s != NULL && s[0] == '-' && s[1] == '\0')
 		s = NULL;
 
 	/* set/clear traps */
 	while (*wp != NULL) {
-		p = gettrap(*wp++);
+		p = gettrap(*wp++, TRUE);
 		if (p == NULL) {
 			bi_errorf("bad signal %s", wp[-1]);
 			return 1;
@@ -466,10 +526,19 @@ c_exitreturn(wp)
 	char **wp;
 {
 	int how = LEXIT;
+	int n;
+	char *arg;
 
-	if (wp[1] != NULL && !getn(wp[1], &exstat)) {
-		exstat = 1;
-		warningf(TRUE, "%s: bad number", wp[1]);
+	if (ksh_getopt(wp, &builtin_opt, null) == '?')
+		return 1;
+	arg = wp[builtin_opt.optind];
+
+	if (arg) {
+	    if (!getn(arg, &n)) {
+		    exstat = 1;
+		    warningf(TRUE, "%s: bad number", arg);
+	    } else
+		    exstat = n;
 	}
 	if (wp[0][0] == 'r') { /* return */
 		struct env *ep;
@@ -501,15 +570,20 @@ c_brkcont(wp)
 {
 	int n, quit;
 	struct env *ep, *last_ep = (struct env *) 0;
+	char *arg;
 
-	if (!wp[1])
+	if (ksh_getopt(wp, &builtin_opt, null) == '?')
+		return 1;
+	arg = wp[builtin_opt.optind];
+
+	if (!arg)
 		n = 1;
-	else if (!bi_getn(wp[1], &n))
+	else if (!bi_getn(arg, &n))
 		return 1;
 	quit = n;
 	if (quit <= 0) {
 		/* at&t ksh does this for non-interactive shells only - weird */
-		bi_errorf("bad option `%s'", wp[1]);
+		bi_errorf("%s: bad value", arg);
 		return 1;
 	}
 
@@ -586,6 +660,7 @@ c_unset(wp)
 {
 	register char *id;
 	int optc, unset_var = 1;
+	int ret = 0;
 
 	while ((optc = ksh_getopt(wp, &builtin_opt, "fv")) != EOF)
 		switch (optc) {
@@ -603,14 +678,18 @@ c_unset(wp)
 		if (unset_var) {	/* unset variable */
 			struct tbl *vp = global(id);
 
+			if (!(vp->flag & ISSET))
+			    ret = 1;
 			if ((vp->flag&RDONLY)) {
 				bi_errorf("%s is read only", vp->name);
 				return 1;
 			}
 			unset(vp, strchr(id, '[') ? 1 : 0);
-		} else			/* unset function */
-			define(id, (struct op *)NULL);
-	return 0;
+		} else {		/* unset function */
+			if (define(id, (struct op *) NULL))
+				ret = 1;
+		}
+	return ret;
 }
 
 int
@@ -620,10 +699,10 @@ c_times(wp)
 	struct tms all;
 
 	(void) ksh_times(&all);
-	shprintf("Shell: %8s user ", clocktos(all.tms_utime));
-	shprintf("%8s system\n", clocktos(all.tms_stime));
-	shprintf("Kids:  %8s user ", clocktos(all.tms_cutime));
-	shprintf("%8s system\n", clocktos(all.tms_cstime));
+	shprintf("Shell: %8ss user ", clocktos(all.tms_utime));
+	shprintf("%8ss system\n", clocktos(all.tms_stime));
+	shprintf("Kids:  %8ss user ", clocktos(all.tms_cutime));
+	shprintf("%8ss system\n", clocktos(all.tms_cstime));
 
 	return 0;
 }
@@ -636,40 +715,109 @@ timex(t, f)
 	struct op *t;
 	int f;
 {
-	int rv;
-	struct tms t0, t1;
-	clock_t t0t, t1t;
+#define TF_NOARGS	BIT(0)
+#define TF_NOREAL	BIT(1)		/* don't report real time */
+#define TF_POSIX	BIT(2)		/* report in posix format */
+	int rv = 0;
+	struct tms t0, t1, tms;
+	clock_t t0t, t1t = 0;
+	int tf = 0;
 	extern clock_t j_usrtime, j_systime; /* computed by j_wait */
+	char opts[1];
 
-	j_usrtime = j_systime = 0;
 	t0t = ksh_times(&t0);
-	rv = execute(t->left, f);
-	t1t = ksh_times(&t1);
+	if (t->left) {
+		/*
+		 * Two ways of getting cpu usage of a command: just use t0
+		 * and t1 (which will get cpu usage from other jobs that
+		 * finish while we are executing t->left), or get the
+		 * cpu usage of t->left. at&t ksh does the former, while
+		 * pdksh tries to do the later (the j_usrtime hack doesn't
+		 * really work as it only counts the last job).
+		 */
+		j_usrtime = j_systime = 0;
+		if (t->left->type == TCOM)
+			t->left->str = opts;
+		opts[0] = 0;
+		rv = execute(t->left, f | XTIME);
+		tf |= opts[0];
+		t1t = ksh_times(&t1);
+	} else
+		tf = TF_NOARGS;
 
-	shf_fprintf(shl_out, "%8s real ", clocktos(t1t - t0t));
-	shf_fprintf(shl_out, "%8s user ",
-	       clocktos(t1.tms_utime - t0.tms_utime + j_usrtime));
-	shf_fprintf(shl_out, "%8s system ",
-	       clocktos(t1.tms_stime - t0.tms_stime + j_systime));
-	shf_fprintf(shl_out, newline);
+	if (tf & TF_NOARGS) { /* ksh93 - report shell times (shell+kids) */
+		tf |= TF_NOREAL;
+		tms.tms_utime = t0.tms_utime + t0.tms_cutime;
+		tms.tms_stime = t0.tms_stime + t0.tms_cstime;
+	} else {
+		tms.tms_utime = t1.tms_utime - t0.tms_utime + j_usrtime;
+		tms.tms_stime = t1.tms_stime - t0.tms_stime + j_systime;
+	}
+
+	if (!(tf & TF_NOREAL))
+		shf_fprintf(shl_out,
+			tf & TF_POSIX ? "real %8s\n" : "%8ss real ",
+			clocktos(t1t - t0t));
+	shf_fprintf(shl_out, tf & TF_POSIX ? "user %8s\n" : "%8ss user ",
+		clocktos(tms.tms_utime));
+	shf_fprintf(shl_out, tf & TF_POSIX ? "sys  %8s\n" : "%8ss system\n",
+		clocktos(tms.tms_stime));
+	shf_flush(shl_out);
 
 	return rv;
+}
+
+void
+timex_hook(t, app)
+	struct op *t;
+	char ** volatile *app;
+{
+	char **wp = *app;
+	int optc;
+	int i, j;
+	Getopt opt;
+
+	ksh_getopt_reset(&opt, 0);
+	opt.optind = 0;	/* start at the start */
+	while ((optc = ksh_getopt(wp, &opt, ":p")) != EOF)
+		switch (optc) {
+		  case 'p':
+			t->str[0] |= TF_POSIX;
+			break;
+		  case '?':
+			errorf("time: -%s unknown option", opt.optarg);
+		  case ':':
+			errorf("time: -%s requires an argument",
+				opt.optarg);
+		}
+	/* Copy command words down over options. */
+	if (opt.optind != 0) {
+		for (i = 0; i < opt.optind; i++)
+			afree(wp[i], ATEMP);
+		for (i = 0, j = opt.optind; (wp[i] = wp[j]); i++, j++)
+			;
+	}
+	if (!wp[0])
+		t->str[0] |= TF_NOARGS;
+	*app = wp;
 }
 
 static char *
 clocktos(t)
 	clock_t t;
 {
-	static char temp[20];
+	static char temp[22]; /* enough for 64 bit clock_t */
 	register int i;
 	register char *cp = temp + sizeof(temp);
 
+	/* note: posix says must use max precision, ie, if clk_tck is
+	 * 1000, must print 3 places after decimal (if non-zero, else 1).
+	 */
 	if (CLK_TCK != 100)	/* convert to 1/100'ths */
 	    t = (t < 1000000000/CLK_TCK) ?
 		    (t * 100) / CLK_TCK : (t / CLK_TCK) * 100;
 
 	*--cp = '\0';
-	*--cp = 's';
 	for (i = -2; i <= 0 || t > 0; i++) {
 		if (i == 0)
 			*--cp = '.';
@@ -691,9 +839,16 @@ c_exec(wp)
 		for (i = 0; i < NUFILE; i++) {
 			if (e->savefd[i] > 0)
 				close(e->savefd[i]);
-			/* keep anything > 2 private */
-			if (i > 2 && e->savefd[i])
+			/*
+			 * For ksh keep anything > 2 private,
+			 * for sh, let them be (POSIX says what
+			 * happens is unspecified and the bourne shell
+			 * keeps them open).
+			 */
+#ifdef KSH
+			if (!Flag(FSH) && i > 2 && e->savefd[i])
 				fd_clexec(i);
+#endif /* KSH */
 		}
 		e->savefd = NULL; 
 	}

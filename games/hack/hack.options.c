@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.options.c,v 1.3 1995/03/23 08:31:14 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.options.c,v 1.3 1995/03/23 08:31:14 cgd Exp $";
 #endif /* not lint */
 
 #include "config.h"
@@ -35,11 +37,11 @@ boolean from_env;
 	unsigned num;
 	boolean negated;
 
-	if(op = index(opts, ',')) {
+	if(op = strchr(opts, ',')) {
 		*op++ = 0;
 		parseoptions(op, from_env);
 	}
-	if(op = index(opts, ' ')) {
+	if(op = strchr(opts, ' ')) {
 		op2 = op;
 		while(*op++)
 			if(*op != ' ') *op2++ = *op;
@@ -106,15 +108,16 @@ boolean from_env;
 		  pline("The playername can be set only from HACKOPTIONS.");
 		  return;
 		}
-		op = index(opts,':');
+		op = strchr(opts,':');
 		if(!op) goto bad;
 		(void) strncpy(plname, op+1, sizeof(plname)-1);
+		plname[sizeof(plname)-1] = '\0';
 		return;
 	}
 
 	/* endgame:5t[op] 5a[round] o[wn] */
 	if(!strncmp(opts,"endgame",3)) {
-		op = index(opts,':');
+		op = strchr(opts,':');
 		if(!op) goto bad;
 		op++;
 		while(*op) {

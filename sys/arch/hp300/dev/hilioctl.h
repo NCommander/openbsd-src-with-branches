@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: hilioctl.h,v 1.6 1994/10/26 07:24:14 cgd Exp $	*/
 
 /*

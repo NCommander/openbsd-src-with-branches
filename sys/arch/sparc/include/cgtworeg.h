@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgtworeg.h,v 1.3 1995/10/04 00:21:27 pk Exp $ */
 
 /*

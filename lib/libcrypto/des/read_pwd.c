@@ -56,7 +56,27 @@
  * [including the GNU Public Licence.]
  */
 
+#if !defined(MSDOS) && !defined(VMS) && !defined(WIN32)
+#include <openssl/opensslconf.h>
+#ifdef OPENSSL_UNISTD
+# include OPENSSL_UNISTD
+#else
+# include <unistd.h>
+#endif
+/* If unistd.h defines _POSIX_VERSION, we conclude that we
+ * are on a POSIX system and have sigaction and termios. */
+#if defined(_POSIX_VERSION)
+
+# define SIGACTION
+# if !defined(TERMIOS) && !defined(TERMIO) && !defined(SGTTY)
+# define TERMIOS
+# endif
+
+#endif
+#endif
+
 /* #define SIGACTION */ /* Define this if you have sigaction() */
+
 #ifdef WIN16TTY
 #undef WIN16
 #undef _WINDOWS
@@ -65,10 +85,25 @@
 
 /* 06-Apr-92 Luke Brennan    Support for VMS */
 #include "des_locl.h"
+#include "cryptlib.h"
 #include <signal.h>
+#include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
 #include <errno.h>
+
+#ifdef VMS			/* prototypes for sys$whatever */
+#include <starlet.h>
+#ifdef __DECC
+#pragma message disable DOLLARID
+#endif
+#endif
+
+#ifdef WIN_CONSOLE_BUG
+#include <windows.h>
+#include <wincon.h>
+#endif
+
 
 /* There are 5 types of terminal interface supported,
  * TERMIO, TERMIOS, VMS, MSDOS and SGTTY
@@ -92,7 +127,7 @@
 #undef  SGTTY
 #endif
 
-#if !defined(TERMIO) && !defined(TERMIOS) && !defined(VMS) && !defined(MSDOS)
+#if !defined(TERMIO) && !defined(TERMIOS) && !defined(VMS) && !defined(MSDOS) && !defined(MAC_OS_pre_X) && !defined(MAC_OS_GUSI_SOURCE)
 #undef  TERMIOS
 #undef  TERMIO
 #define SGTTY
@@ -122,11 +157,11 @@
 #define TTY_set(tty,data)	ioctl(tty,TIOCSETP,data)
 #endif
 
-#if !defined(_LIBC) && !defined(MSDOS) && !defined(VMS)
+#if !defined(_LIBC) && !defined(MSDOS) && !defined(VMS) && !defined(MAC_OS_pre_X)
 #include <sys/ioctl.h>
 #endif
 
-#ifdef MSDOS
+#if defined(MSDOS) && !defined(__CYGWIN32__)
 #include <conio.h>
 #define fgets(a,b,c) noecho_fgets(a,b,c)
 #endif
@@ -143,11 +178,19 @@ struct IOSB {
 	};
 #endif
 
+#if defined(MAC_OS_pre_X) || defined(MAC_OS_GUSI_SOURCE)
+/*
+ * This one needs work. As a matter of fact the code is unoperational
+ * and this is only a trick to get it compiled.
+ *					<appro@fy.chalmers.se>
+ */
+#define TTY_STRUCT int
+#endif
+
 #ifndef NX509_SIG
 #define NX509_SIG 32
 #endif
 
-#ifndef NOPROTO
 static void read_till_nl(FILE *);
 static void recsig(int);
 static void pushsig(void);
@@ -155,32 +198,15 @@ static void popsig(void);
 #if defined(MSDOS) && !defined(WIN16)
 static int noecho_fgets(char *buf, int size, FILE *tty);
 #endif
-#else
-static void read_till_nl();
-static void recsig();
-static void pushsig();
-static void popsig();
-#if defined(MSDOS) && !defined(WIN16)
-static int noecho_fgets();
-#endif
-#endif
-
 #ifdef SIGACTION
  static struct sigaction savsig[NX509_SIG];
 #else
-# ifndef NOPROTO
   static void (*savsig[NX509_SIG])(int );
-# else
-  static void (*savsig[NX509_SIG])();
-# endif
 #endif
 static jmp_buf save;
 
-int des_read_pw_string(buf, length, prompt, verify)
-char *buf;
-int length;
-char *prompt;
-int verify;
+int des_read_pw_string(char *buf, int length, const char *prompt,
+	     int verify)
 	{
 	char buff[BUFSIZ];
 	int ret;
@@ -192,8 +218,7 @@ int verify;
 
 #ifndef WIN16
 
-static void read_till_nl(in)
-FILE *in;
+static void read_till_nl(FILE *in)
 	{
 #define SIZE 4
 	char buf[SIZE+1];
@@ -205,12 +230,8 @@ FILE *in;
 
 
 /* return 0 if ok, 1 (or -1) otherwise */
-int des_read_pw(buf, buff, size, prompt, verify)
-char *buf;
-char *buff;
-int size;
-char *prompt;
-int verify;
+int des_read_pw(char *buf, char *buff, int size, const char *prompt,
+	     int verify)
 	{
 #ifdef VMS
 	struct IOSB iosb;
@@ -223,21 +244,38 @@ int verify;
 	TTY_STRUCT tty_orig,tty_new;
 #endif
 #endif
-	int number=5;
-	int ok=0;
-	int ps=0;
-	int is_a_tty=1;
-
-	FILE *tty=NULL;
+	int number;
+	int ok;
+	/* statics are simply to avoid warnings about longjmp clobbering
+	   things */
+	static int ps;
+	int is_a_tty;
+	static FILE *tty;
 	char *p;
 
-#ifndef MSDOS
-	if ((tty=fopen("/dev/tty","r")) == NULL)
-		tty=stdin;
-#else /* MSDOS */
+	if (setjmp(save))
+		{
+		ok=0;
+		goto error;
+		}
+
+	number=5;
+	ok=0;
+	ps=0;
+	is_a_tty=1;
+	tty=NULL;
+
+#ifdef MSDOS
 	if ((tty=fopen("con","r")) == NULL)
 		tty=stdin;
-#endif /* MSDOS */
+#elif defined(MAC_OS_pre_X)
+	tty=stdin;
+#else
+#ifndef MPE
+	if ((tty=fopen("/dev/tty","r")) == NULL)
+#endif
+		tty=stdin;
+#endif
 
 #if defined(TTY_get) && !defined(VMS)
 	if (TTY_get(fileno(tty),&tty_orig) == -1)
@@ -259,19 +297,14 @@ int verify;
 	memcpy(&(tty_new),&(tty_orig),sizeof(tty_orig));
 #endif
 #ifdef VMS
-	status = SYS$ASSIGN(&terminal,&channel,0,0);
+	status = sys$assign(&terminal,&channel,0,0);
 	if (status != SS$_NORMAL)
 		return(-1);
-	status=SYS$QIOW(0,channel,IO$_SENSEMODE,&iosb,0,0,tty_orig,12,0,0,0,0);
+	status=sys$qiow(0,channel,IO$_SENSEMODE,&iosb,0,0,tty_orig,12,0,0,0,0);
 	if ((status != SS$_NORMAL) || (iosb.iosb$w_value != SS$_NORMAL))
 		return(-1);
 #endif
 
-	if (setjmp(save))
-		{
-		ok=0;
-		goto error;
-		}
 	pushsig();
 	ps=1;
 
@@ -281,13 +314,17 @@ int verify;
 
 #if defined(TTY_set) && !defined(VMS)
 	if (is_a_tty && (TTY_set(fileno(tty),&tty_new) == -1))
+#ifdef MPE 
+		; /* MPE lies -- echo really has been disabled */
+#else
 		return(-1);
+#endif
 #endif
 #ifdef VMS
 	tty_new[0] = tty_orig[0];
 	tty_new[1] = tty_orig[1] | TT$M_NOECHO;
 	tty_new[2] = tty_orig[2];
-	status = SYS$QIOW(0,channel,IO$_SETMODE,&iosb,0,0,tty_new,12,0,0,0,0);
+	status = sys$qiow(0,channel,IO$_SETMODE,&iosb,0,0,tty_new,12,0,0,0,0);
 	if ((status != SS$_NORMAL) || (iosb.iosb$w_value != SS$_NORMAL))
 		return(-1);
 #endif
@@ -333,31 +370,26 @@ error:
 	perror("fgets(tty)");
 #endif
 	/* What can we do if there is an error? */
-#if defined(TTY_set) && !defined(VMS) 
+#if defined(TTY_set) && !defined(VMS)
 	if (ps >= 2) TTY_set(fileno(tty),&tty_orig);
 #endif
 #ifdef VMS
 	if (ps >= 2)
-		status = SYS$QIOW(0,channel,IO$_SETMODE,&iosb,0,0
+		status = sys$qiow(0,channel,IO$_SETMODE,&iosb,0,0
 			,tty_orig,12,0,0,0,0);
 #endif
 	
 	if (ps >= 1) popsig();
 	if (stdin != tty) fclose(tty);
 #ifdef VMS
-	status = SYS$DASSGN(channel);
+	status = sys$dassgn(channel);
 #endif
 	return(!ok);
 	}
 
 #else /* WIN16 */
 
-int des_read_pw(buf, buff, size, prompt, verify)
-char *buf;
-char *buff;
-int size;
-char *prompt;
-int verify;
+int des_read_pw(char *buf, char *buff, int size, char *prompt, int verify)
 	{ 
 	memset(buf,0,size);
 	memset(buff,0,size);
@@ -366,9 +398,15 @@ int verify;
 
 #endif
 
-static void pushsig()
+static void pushsig(void)
 	{
 	int i;
+#ifdef SIGACTION
+	struct sigaction sa;
+
+	memset(&sa,0,sizeof sa);
+	sa.sa_handler=recsig;
+#endif
 
 	for (i=1; i<NX509_SIG; i++)
 		{
@@ -381,7 +419,7 @@ static void pushsig()
 			continue;
 #endif
 #ifdef SIGACTION
-		sigaction(i,NULL,&savsig[i]);
+		sigaction(i,&sa,&savsig[i]);
 #else
 		savsig[i]=signal(i,recsig);
 #endif
@@ -392,7 +430,7 @@ static void pushsig()
 #endif
 	}
 
-static void popsig()
+static void popsig(void)
 	{
 	int i;
 
@@ -414,8 +452,7 @@ static void popsig()
 		}
 	}
 
-static void recsig(i)
-int i;
+static void recsig(int i)
 	{
 	longjmp(save,1);
 #ifdef LINT
@@ -424,10 +461,7 @@ int i;
 	}
 
 #if defined(MSDOS) && !defined(WIN16)
-static int noecho_fgets(buf,size,tty)
-char *buf;
-int size;
-FILE *tty;
+static int noecho_fgets(char *buf, int size, FILE *tty)
 	{
 	int i;
 	char *p;
@@ -454,6 +488,18 @@ FILE *tty;
 			break;
 			}
 		}
+#ifdef WIN_CONSOLE_BUG
+/* Win95 has several evil console bugs: one of these is that the
+ * last character read using getch() is passed to the next read: this is
+ * usually a CR so this can be trouble. No STDIO fix seems to work but
+ * flushing the console appears to do the trick.
+ */
+		{
+			HANDLE inh;
+			inh = GetStdHandle(STD_INPUT_HANDLE);
+			FlushConsoleInputBuffer(inh);
+		}
+#endif
 	return(strlen(buf));
 	}
 #endif

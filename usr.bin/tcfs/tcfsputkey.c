@@ -1,3 +1,5 @@
+/*	$OpenBSD: tcfsputkey.c,v 1.11 2000/06/20 18:15:57 aaron Exp $	*/
+
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
  *	Author and mantainer: 	Luigi Catuogno [luicat@tcfs.unisa.it]
@@ -8,30 +10,17 @@
 
 /*
  *	Base utility set v0.1
- *
- *	  $Source: /usr/src/tcfs-utils_0.1/bin/RCS/tcfsputkey.c,v $
- *	   $State: Exp $
- *	$Revision: 1.1 $
- *	  $Author: luicat $
- *	    $Date: 2000/01/14 13:44:04 $
- *
  */
 
-static const char *RCSid="$id: $";
-
-/* RCS_HEADER_ENDS_HERE */
-
-
-
-#include <stdio.h>
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/mount.h>
 #include <ctype.h>
 #include <pwd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <sys/param.h>
-#include <sys/mount.h>
-#include <des.h>
 
 #include <miscfs/tcfs/tcfs.h>
 #include "tcfslib.h"
@@ -41,25 +30,24 @@ static const char *RCSid="$id: $";
 extern char *optarg;
 extern int optind;
 char *putkey_usage=
-"usage: tcfsputkey [-k][-f fliesystem-label][-g group][-p mount-point]\n";
+"usage: tcfsputkey [-k] [-f filesystem-label] [-g group] [-p mount-point]\n";
 
 int
 putkey_main(int argc, char *argv[])
 {
-	u_char *key,*fs,*user,*password,*tcfskey;
+	char *user, *password, *tcfskey;
 	uid_t uid;
-	gid_t gid;
-	int es, treshold;
+	gid_t gid = 0;
+	int es = 0, treshold;
 	char x;
 	tcfspwdb *info;
 	tcfsgpwdb *ginfo;
 	char fslabel[MAXPATHLEN], fspath[MAXPATHLEN];
 	int def = TRUE, havempname = FALSE, havefsname = FALSE;
 	int isgroupkey = FALSE;
-	int havefs = FALSE;
 	int havename = FALSE, havefspath = FALSE, havekey = FALSE;
 
-	while ((x = getopt(argc,argv,"kf:p:g:")) != EOF) {
+	while ((x = getopt(argc, argv, "kf:p:g:")) != -1) {
 		switch(x) {
 		case 'k':
 			def = FALSE;
@@ -78,9 +66,11 @@ putkey_main(int argc, char *argv[])
 			gid = atoi(optarg);
 			if (!gid && optarg[0] != 0) {
 				struct group *grp;
+
 				grp = (struct group *)getgrnam(optarg);
 				if (!grp)
-					tcfs_error(ER_CUSTOM, "Nonexistant group\n");
+					tcfs_error(ER_CUSTOM,
+					    "Nonexistant group\n");
 				gid = grp->gr_gid;
 			}
 			break;
@@ -90,7 +80,7 @@ putkey_main(int argc, char *argv[])
 		}
 	}
 	if (argc - optind)
-		tcfs_error(ER_UNKOPT,NULL);
+		tcfs_error(ER_UNKOPT, NULL);
 
 	if (havefsname && havempname) {
 		tcfs_error(ER_CUSTOM, putkey_usage);
@@ -98,7 +88,7 @@ putkey_main(int argc, char *argv[])
 	}
 			 
 	if (havefsname) {
-		es=tcfs_getfspath(fslabel,fspath);
+		es = tcfs_getfspath(fslabel, fspath);
 		havename = TRUE;
 	}
 
@@ -106,75 +96,76 @@ putkey_main(int argc, char *argv[])
 		havename = TRUE;
 
 	if (!havename)
-		es=tcfs_getfspath("default",fspath);
+		es = tcfs_getfspath("default", fspath);
 
 	if (!es) {
-		tcfs_error(ER_CUSTOM,"fs-label not found!\n");
+		tcfs_error(ER_CUSTOM, "fs-label not found!\n");
 		exit(1);
 	}
 
 	uid = getuid();
 		
 	if (isgroupkey) {
-		if (!unix_auth(&user,&password,TRUE))
-			tcfs_error(ER_AUTH,user);
+		if (!unix_auth(&user, &password, TRUE))
+			tcfs_error(ER_AUTH, user);
 
 		if (!tcfsgpwdbr_new(&ginfo))
-			tcfs_error(ER_MEM,NULL);
+			tcfs_error(ER_MEM, NULL);
 
-		if (!tcfs_ggetpwnam(user,gid,&ginfo))
-			tcfs_error(ER_CUSTOM,"Default key non found");
+		if (!tcfs_ggetpwnam(user, gid, &ginfo))
+			tcfs_error(ER_CUSTOM, "Default key non found");
 
 		if (!strlen(ginfo->gkey))
-			tcfs_error(ER_CUSTOM,"Invalid default key");
+			tcfs_error(ER_CUSTOM, "Invalid default key");
 
-		tcfskey = (char*)malloc(UUKEYSIZE);
+		tcfskey = (char *)malloc(UUKEYSIZE);
 		if (!tcfskey)
-			tcfs_error(ER_MEM,NULL);	
+			tcfs_error(ER_MEM, NULL);	
 
 		treshold = ginfo->soglia;
 
-		tcfs_decrypt_key(user, password, ginfo->gkey, tcfskey,
-				 GROUPKEY);
+		if (!tcfs_decrypt_key(password, ginfo->gkey, tcfskey, GKEYSIZE))
+			tcfs_error(ER_CUSTOM, "Could not decrypt group key");
 
-		es = tcfs_group_enable(fspath,uid,gid,treshold,tcfskey);
+		es = tcfs_group_enable(fspath, uid, gid, treshold, tcfskey);
 
-		if(es == -1) {
-			tcfs_error(ER_CUSTOM,"problems updating filesystem");
+		if (es == -1) {
+			tcfs_error(ER_CUSTOM, "problems updating filesystem");
 		}
 
 		exit(0);
 	}
 
 
-	if(!def) {
+	if (!def) {
 		tcfskey = getpass("Insert tcfs-key:");
 		havekey = TRUE;
 	} else {
-		if(!unix_auth(&user,&password,TRUE))
-			tcfs_error(ER_AUTH,user);
+		if (!unix_auth(&user, &password, TRUE))
+			tcfs_error(ER_AUTH, user);
 				
-		if(!tcfspwdbr_new(&info))
-			tcfs_error(ER_MEM,NULL);	
+		if (!tcfspwdbr_new(&info))
+			tcfs_error(ER_MEM, NULL);	
 
-		if(!tcfs_getpwnam(user,&info))
-			tcfs_error(ER_CUSTOM,"Default key non found");
+		if (!tcfs_getpwnam(user, &info))
+			tcfs_error(ER_CUSTOM, "Default key non found");
 	
-		if(!strlen(info->upw))
-			tcfs_error(ER_CUSTOM,"Invalid default key");
+		if (!strlen(info->upw))
+			tcfs_error(ER_CUSTOM, "Invalid default key");
 
-		tcfskey = (char*)malloc(UUKEYSIZE);
-		if(!tcfskey)
-			tcfs_error(ER_MEM,NULL);	
+		tcfskey = (char *)malloc(UUKEYSIZE);
+		if (!tcfskey)
+			tcfs_error(ER_MEM, NULL);	
 		
-		tcfs_decrypt_key (user, password, info->upw, tcfskey, USERKEY);
+		if (!tcfs_decrypt_key (password, info->upw, tcfskey, KEYSIZE))
+			tcfs_error(ER_CUSTOM, "Could not decrypt key");
 		havekey = TRUE;
 	}
 
 	es = tcfs_user_enable(fspath, uid, tcfskey);
 
-	if(es == -1)
-		tcfs_error(ER_CUSTOM,"problems updating filesystem");
+	if (es == -1)
+		tcfs_error(ER_CUSTOM, "problems updating filesystem");
 
 	exit(0);
 }

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: MAKEDEV.8,v 1.1 1995/09/06 21:31:34 jtc Exp $
 .\"	$NetBSD: MAKEDEV.8,v 1.1 1995/09/06 21:31:34 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -37,7 +38,7 @@
 .Dt MAKEDEV 8 sun3
 .Os
 .Sh NAME
-.Nm makedev
+.Nm MAKEDEV
 .Nd create system and device special files
 .Sh SYNOPSIS
 .Nm MAKEDEV
@@ -106,11 +107,11 @@ SCSI CD-ROM drives
 .It Ar cgtwo#
 Colour frame buffers
 .It Ar cgfour#
-\&"..."
+Colour P4 frame buffers
 .It Ar kbd
 The keyboard
-.\" .It Ar lkm
-.\" Loadable kernel modules.
+.It Ar lkm
+Loadable kernel modules
 .It Ar mouse#
 Mouse ports
 .It Ar pty#
@@ -130,7 +131,7 @@ Onboard Serial ports
 The special file directory.
 .El
 .Sh SEE ALSO
-.Xr mknod 1 , 
 .Xr intro 4 ,
 .Xr config 8 ,
+.Xr mknod 8 ,
 .Xr special 8

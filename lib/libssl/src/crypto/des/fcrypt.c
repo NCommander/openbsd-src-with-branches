@@ -1,9 +1,8 @@
 /* NOCW */
 #include <stdio.h>
 
-/* This version of crypt has been developed from my MIT compatable
+/* This version of crypt has been developed from my MIT compatible
  * DES library.
- * The library is available at pub/Crypto/DES at ftp.psy.uq.oz.au
  * Eric Young (eay@cryptsoft.com)
  */
 
@@ -11,7 +10,7 @@
  * I have included directive PARA for shared memory computers.
  * I have included a directive LONGCRYPT to using this routine to cipher
  * passwords with more then 8 bytes like HP-UX 10.x it used. The MAXPLEN
- * definition is the maximum of lenght of password and can changed. I have
+ * definition is the maximum of length of password and can changed. I have
  * defined 24.
  */
 
@@ -55,7 +54,7 @@ static unsigned const char cov_2char[64]={
 void fcrypt_body(DES_LONG *out,des_key_schedule ks,
 	DES_LONG Eswap0, DES_LONG Eswap1);
 
-#if defined(PERL5) || defined(FreeBSD)
+#if defined(PERL5) || defined(FreeBSD) || defined(__OpenBSD__)
 char *des_crypt(const char *buf,const char *salt);
 #else
 char *crypt(const char *buf,const char *salt);
@@ -69,7 +68,7 @@ char *crypt();
 #endif
 #endif
 
-#if defined(PERL5) || defined(FreeBSD)
+#if defined(PERL5) || defined(FreeBSD) || defined(__OpenBSD__)
 char *des_crypt(buf,salt)
 #else
 char *crypt(buf,salt)
@@ -103,8 +102,8 @@ char *ret;
 	 * returns *\0XXXXXXXXX
 	 * The \0 makes the string look like * so the pwd "*" would
 	 * crypt to "*".  This was found when replacing the crypt in
-	 * our shared libraries.  People found that the disbled
-	 * accounts effectivly had no passwd :-(. */
+	 * our shared libraries.  People found that the disabled
+	 * accounts effectively had no passwd :-(. */
 	x=ret[0]=((salt[0] == '\0')?'A':salt[0]);
 	Eswap0=con_salt[x]<<2;
 	x=ret[1]=((salt[1] == '\0')?'A':salt[1]);
@@ -123,7 +122,7 @@ r=(r+7)/8;
 	for (; i<8; i++)
 		key[i]=0;
 
-	des_set_key((des_cblock *)(key),ks);
+	des_set_key_unchecked(&key,ks);
 	fcrypt_body(&(out[0]),ks,Eswap0,Eswap1);
 
 	ll=out[0]; l2c(ll,b);

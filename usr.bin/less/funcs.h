@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 	public void strtcpy ();
 	public char * save ();
 	public VOID_POINTER ecalloc ();

@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -39,7 +38,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: mini_inetd.c,v 1.3 1998/02/11 01:33:46 assar Exp $");
+RCSID("$Id: mini_inetd.c,v 1.3 1998/02/11 01:33:46 assar Exp $");
 #endif
 
 #include <stdio.h>

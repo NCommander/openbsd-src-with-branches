@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.mklev.c,v 1.3 1995/03/23 08:30:43 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.mklev.c,v 1.3 1995/03/23 08:30:43 cgd Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -679,7 +681,7 @@ register struct mkroom *croom;
 	if(!num || num >= TRAPNUM) {
 		nopierc = (dlevel < 4) ? 1 : 0;
 		nomimic = (dlevel < 9 || goldseen ) ? 1 : 0;
-		if(index(fut_geno, 'M')) nomimic = 1;
+		if(strchr(fut_geno, 'M')) nomimic = 1;
 		kind = rn2(TRAPNUM - nopierc - nomimic);
 		/* note: PIERC = 7, MIMIC = 8, TRAPNUM = 9 */
 	} else kind = num;

@@ -35,15 +35,14 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#include "DEFS.h"
+
+#if defined(LIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)ffs.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: ffs.S,v 1.3 1994/09/09 03:09:03 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /* bit = ffs(value) */
-
-#include "DEFS.h"
 
 ENTRY(ffs)
 	movl	sp@(4),d0

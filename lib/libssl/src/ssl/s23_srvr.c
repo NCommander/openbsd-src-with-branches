@@ -57,26 +57,21 @@
  */
 
 #include <stdio.h>
-#include "buffer.h"
-#include "rand.h"
-#include "objects.h"
-#include "evp.h"
+#include <openssl/buffer.h>
+#include <openssl/rand.h>
+#include <openssl/objects.h>
+#include <openssl/evp.h>
 #include "ssl_locl.h"
 
-#define BREAK break
-
-#ifndef NOPROTO
+static SSL_METHOD *ssl23_get_server_method(int ver);
 int ssl23_get_client_hello(SSL *s);
-#else
-int ssl23_get_client_hello();
-#endif
-
-static SSL_METHOD *ssl23_get_server_method(ver)
-int ver;
+static SSL_METHOD *ssl23_get_server_method(int ver)
 	{
+#ifndef NO_SSL2
 	if (ver == SSL2_VERSION)
 		return(SSLv2_server_method());
-	else if (ver == SSL3_VERSION)
+#endif
+	if (ver == SSL3_VERSION)
 		return(SSLv3_server_method());
 	else if (ver == TLS1_VERSION)
 		return(TLSv1_server_method());
@@ -84,24 +79,23 @@ int ver;
 		return(NULL);
 	}
 
-SSL_METHOD *SSLv23_server_method()
+SSL_METHOD *SSLv23_server_method(void)
 	{
 	static int init=1;
 	static SSL_METHOD SSLv23_server_data;
 
 	if (init)
 		{
-		init=0;
 		memcpy((char *)&SSLv23_server_data,
 			(char *)sslv23_base_method(),sizeof(SSL_METHOD));
 		SSLv23_server_data.ssl_accept=ssl23_accept;
 		SSLv23_server_data.get_ssl_method=ssl23_get_server_method;
+		init=0;
 		}
 	return(&SSLv23_server_data);
 	}
 
-int ssl23_accept(s)
-SSL *s;
+int ssl23_accept(SSL *s)
 	{
 	BUF_MEM *buf;
 	unsigned long Time=time(NULL);
@@ -109,7 +103,7 @@ SSL *s;
 	int ret= -1;
 	int new_state,state;
 
-	RAND_seed((unsigned char *)&Time,sizeof(Time));
+	RAND_add(&Time,sizeof(Time),0);
 	ERR_clear_error();
 	clear_sys_error();
 
@@ -132,6 +126,7 @@ SSL *s;
 		case SSL_ST_BEFORE|SSL_ST_ACCEPT:
 		case SSL_ST_OK|SSL_ST_ACCEPT:
 
+			s->server=1;
 			if (cb != NULL) cb(s,SSL_CB_HANDSHAKE_START,1);
 
 			/* s->version=SSL3_VERSION; */
@@ -155,7 +150,7 @@ SSL *s;
 			ssl3_init_finished_mac(s);
 
 			s->state=SSL23_ST_SR_CLNT_HELLO_A;
-			s->ctx->sess_accept++;
+			s->ctx->stats.sess_accept++;
 			s->init_num=0;
 			break;
 
@@ -166,7 +161,7 @@ SSL *s;
 			ret=ssl23_get_client_hello(s);
 			if (ret >= 0) cb=NULL;
 			goto end;
-			break;
+			/* break; */
 
 		default:
 			SSLerr(SSL_F_SSL23_ACCEPT,SSL_R_UNKNOWN_STATE);
@@ -191,24 +186,41 @@ end:
 	}
 
 
-int ssl23_get_client_hello(s)
-SSL *s;
+int ssl23_get_client_hello(SSL *s)
 	{
-	char buf_space[8];
+	char buf_space[11]; /* Request this many bytes in initial read.
+	                     * We can detect SSL 3.0/TLS 1.0 Client Hellos
+	                     * ('type == 3') correctly only when the following
+	                     * is in a single record, which is not guaranteed by
+	                     * the protocol specification:
+	                     * Byte  Content
+	                     *  0     type            \
+	                     *  1/2   version          > record header
+	                     *  3/4   length          /
+	                     *  5     msg_type        \
+	                     *  6-8   length           > Client Hello message
+	                     *  9/10  client_version  /
+	                     */
 	char *buf= &(buf_space[0]);
 	unsigned char *p,*d,*dd;
 	unsigned int i;
 	unsigned int csl,sil,cl;
-	int n=0,j,tls1=0;
-	int type=0,use_sslv2_strong=0;
+	int n=0,j;
+	int type=0;
+	int v[2];
+#ifndef NO_RSA
+	int use_sslv2_strong=0;
+#endif
 
-	/* read the initial header */
 	if (s->state ==	SSL23_ST_SR_CLNT_HELLO_A)
 		{
+		/* read the initial header */
+		v[0]=v[1]=0;
+
 		if (!ssl3_setup_buffers(s)) goto err;
 
-		n=ssl23_read_bytes(s,7);
-		if (n != 7) return(n);
+		n=ssl23_read_bytes(s, sizeof buf_space);
+		if (n != sizeof buf_space) return(n); /* n == -1 || n == 0 */
 
 		p=s->packet;
 
@@ -216,34 +228,61 @@ SSL *s;
 
 		if ((p[0] & 0x80) && (p[2] == SSL2_MT_CLIENT_HELLO))
 			{
-			/* SSLv2 header */
+			/*
+			 * SSLv2 header
+			 */
 			if ((p[3] == 0x00) && (p[4] == 0x02))
 				{
+				v[0]=p[3]; v[1]=p[4];
 				/* SSLv2 */
 				if (!(s->options & SSL_OP_NO_SSLv2))
 					type=1;
 				}
 			else if (p[3] == SSL3_VERSION_MAJOR)
 				{
+				v[0]=p[3]; v[1]=p[4];
 				/* SSLv3/TLSv1 */
 				if (p[4] >= TLS1_VERSION_MINOR)
 					{
 					if (!(s->options & SSL_OP_NO_TLSv1))
 						{
-						tls1=1;
+						s->version=TLS1_VERSION;
+						/* type=2; */ /* done later to survive restarts */
 						s->state=SSL23_ST_SR_CLNT_HELLO_B;
 						}
 					else if (!(s->options & SSL_OP_NO_SSLv3))
 						{
+						s->version=SSL3_VERSION;
+						/* type=2; */
 						s->state=SSL23_ST_SR_CLNT_HELLO_B;
+						}
+					else if (!(s->options & SSL_OP_NO_SSLv2))
+						{
+						type=1;
 						}
 					}
 				else if (!(s->options & SSL_OP_NO_SSLv3))
+					{
+					s->version=SSL3_VERSION;
+					/* type=2; */
 					s->state=SSL23_ST_SR_CLNT_HELLO_B;
+					}
+				else if (!(s->options & SSL_OP_NO_SSLv2))
+					type=1;
 
 				if (s->options & SSL_OP_NON_EXPORT_FIRST)
+					/* Not only utterly confusing, but broken
+					 * ('fractured programming'?) -- the details
+					 * of this block nearly make it work
+					 * as intended in this environment, but on one
+					 * of the fine points (w.r.t. restarts) it fails.
+					 * The obvious fix would be even more devastating
+					 * to program structure; if you want the functionality,
+					 * throw this away and implement it in a way
+					 * that makes sense */
 					{
-					STACK *sk;
+#if 0
+					STACK_OF(SSL_CIPHER) *sk;
 					SSL_CIPHER *c;
 					int ne2,ne3;
 
@@ -258,7 +297,7 @@ SSL *s;
 					if (n <= 0) return(n);
 					p=s->packet;
 
-					if ((buf=Malloc(n)) == NULL)
+					if ((buf=OPENSSL_malloc(n)) == NULL)
 						{
 						SSLerr(SSL_F_SSL23_GET_CLIENT_HELLO,ERR_R_MALLOC_FAILURE);
 						goto err;
@@ -274,10 +313,10 @@ SSL *s;
 					if (sk != NULL)
 						{
 						ne2=ne3=0;
-						for (j=0; j<sk_num(sk); j++)
+						for (j=0; j<sk_SSL_CIPHER_num(sk); j++)
 							{
-							c=(SSL_CIPHER *)sk_value(sk,j);
-							if (!(c->algorithms & SSL_EXP))
+							c=sk_SSL_CIPHER_value(sk,j);
+							if (!SSL_C_IS_EXPORT(c))
 								{
 								if ((c->id>>24L) == 2L)
 									ne2=1;
@@ -292,48 +331,82 @@ SSL *s;
 							goto next_bit;
 							}
 						}
+#else
+					SSLerr(SSL_F_SSL23_GET_CLIENT_HELLO,SSL_R_UNSUPPORTED_OPTION);
+					goto err;
+#endif
 					}
 				}
 			}
 		else if ((p[0] == SSL3_RT_HANDSHAKE) &&
 			 (p[1] == SSL3_VERSION_MAJOR) &&
-			 (p[5] == SSL3_MT_CLIENT_HELLO))
+			 (p[5] == SSL3_MT_CLIENT_HELLO) &&
+			 ((p[3] == 0 && p[4] < 5 /* silly record length? */)
+				|| (p[9] == p[1])))
 			{
-			/* true SSLv3 or tls1 */
-			if (p[2] >= TLS1_VERSION_MINOR)
+			/*
+			 * SSLv3 or tls1 header
+			 */
+			
+			v[0]=p[1]; /* major version (= SSL3_VERSION_MAJOR) */
+			/* We must look at client_version inside the Client Hello message
+			 * to get the correct minor version.
+			 * However if we have only a pathologically small fragment of the
+			 * Client Hello message, this would be difficult, we'd have
+			 * to read at least one additional record to find out.
+			 * This doesn't usually happen in real life, so we just complain
+			 * for now.
+			 */
+			if (p[3] == 0 && p[4] < 6)
+				{
+				SSLerr(SSL_F_SSL23_GET_CLIENT_HELLO,SSL_R_RECORD_TOO_SMALL);
+				goto err;
+				}
+			v[1]=p[10]; /* minor version according to client_version */
+			if (v[1] >= TLS1_VERSION_MINOR)
 				{
 				if (!(s->options & SSL_OP_NO_TLSv1))
 					{
+					s->version=TLS1_VERSION;
 					type=3;
-					tls1=1;
 					}
 				else if (!(s->options & SSL_OP_NO_SSLv3))
+					{
+					s->version=SSL3_VERSION;
 					type=3;
+					}
 				}
 			else if (!(s->options & SSL_OP_NO_SSLv3))
+				{
+				s->version=SSL3_VERSION;
 				type=3;
+				}
 			}
-		else if ((strncmp("GET ", p,4) == 0) ||
-			 (strncmp("POST ",p,5) == 0) ||
-			 (strncmp("HEAD ",p,5) == 0) ||
-			 (strncmp("PUT ", p,4) == 0))
+		else if ((strncmp("GET ", (char *)p,4) == 0) ||
+			 (strncmp("POST ",(char *)p,5) == 0) ||
+			 (strncmp("HEAD ",(char *)p,5) == 0) ||
+			 (strncmp("PUT ", (char *)p,4) == 0))
 			{
 			SSLerr(SSL_F_SSL23_GET_CLIENT_HELLO,SSL_R_HTTP_REQUEST);
 			goto err;
 			}
-		else if (strncmp("CONNECT",p,7) == 0)
+		else if (strncmp("CONNECT",(char *)p,7) == 0)
 			{
 			SSLerr(SSL_F_SSL23_GET_CLIENT_HELLO,SSL_R_HTTPS_PROXY_REQUEST);
 			goto err;
 			}
 		}
 
-next_bit:
 	if (s->state == SSL23_ST_SR_CLNT_HELLO_B)
 		{
-		/* we have a SSLv3/TLSv1 in a SSLv2 header */
+		/* we have SSLv3/TLSv1 in an SSLv2 header
+		 * (other cases skip this state) */
+
 		type=2;
 		p=s->packet;
+		v[0] = p[3]; /* == SSL3_VERSION_MAJOR */
+		v[1] = p[4];
+
 		n=((p[0]&0x7f)<<8)|p[1];
 		if (n > (1024*4))
 			{
@@ -358,14 +431,11 @@ next_bit:
 			goto err;
 			}
 
-		*(d++)=SSL3_VERSION_MAJOR;
-		if (tls1)
-			*(d++)=TLS1_VERSION_MINOR;
-		else
-			*(d++)=SSL3_VERSION_MINOR;
+		*(d++) = SSL3_VERSION_MAJOR; /* == v[0] */
+		*(d++) = v[1];
 
 		/* lets populate the random area */
-		/* get the chalenge_length */
+		/* get the challenge_length */
 		i=(cl > SSL3_RANDOM_SIZE)?SSL3_RANDOM_SIZE:cl;
 		memset(d,0,SSL3_RANDOM_SIZE);
 		memcpy(&(d[SSL3_RANDOM_SIZE-i]),&(p[csl+sil]),i);
@@ -387,7 +457,7 @@ next_bit:
 			}
 		s2n(j,dd);
 
-		/* compression */
+		/* COMPRESSION */
 		*(d++)=1;
 		*(d++)=0;
 		
@@ -399,8 +469,15 @@ next_bit:
 		s->s3->tmp.message_size=i;
 		}
 
+	/* imaginary new state (for program structure): */
+	/* s->state = SSL23_SR_CLNT_HELLO_C */
+
 	if (type == 1)
 		{
+#ifdef NO_SSL2
+		SSLerr(SSL_F_SSL23_GET_CLIENT_HELLO,SSL_R_UNSUPPORTED_PROTOCOL);
+		goto err;
+#else
 		/* we are talking sslv2 */
 		/* we need to clean up the SSLv3/TLSv1 setup and put in the
 		 * sslv2 stuff. */
@@ -423,12 +500,15 @@ next_bit:
 
 		s->state=SSL2_ST_GET_CLIENT_HELLO_A;
 		if ((s->options & SSL_OP_MSIE_SSLV2_RSA_PADDING) ||
-			use_sslv2_strong)
+			use_sslv2_strong ||
+			(s->options & SSL_OP_NO_TLSv1 && s->options & SSL_OP_NO_SSLv3))
 			s->s2->ssl2_rollback=0;
 		else
+			/* reject SSL 2.0 session if client supports SSL 3.0 or TLS 1.0
+			 * (SSL 3.0 draft/RFC 2246, App. E.2) */
 			s->s2->ssl2_rollback=1;
 
-		/* setup the 5 bytes we have read so we get them from
+		/* setup the n bytes we have read so we get them from
 		 * the sslv2 buffer */
 		s->rstate=SSL_ST_READ_HEADER;
 		s->packet_length=n;
@@ -439,11 +519,12 @@ next_bit:
 
 		s->method=SSLv2_server_method();
 		s->handshake_func=s->method->ssl_accept;
+#endif
 		}
 
 	if ((type == 2) || (type == 3))
 		{
-		/* we have SSLv3/TLSv1 */
+		/* we have SSLv3/TLSv1 (type 2: SSL2 style, type 3: SSL3/TLS style) */
 
 		if (!ssl_init_wbio_buffer(s,1)) goto err;
 
@@ -468,16 +549,13 @@ next_bit:
 			s->s3->rbuf.offset=0;
 			}
 
-		if (tls1)
-			{
-			s->version=TLS1_VERSION;
-			s->method=TLSv1_server_method();
-			}
+		if (s->version == TLS1_VERSION)
+			s->method = TLSv1_server_method();
 		else
-			{
-			s->version=SSL3_VERSION;
-			s->method=SSLv3_server_method();
-			}
+			s->method = SSLv3_server_method();
+#if 0 /* ssl3_get_client_hello does this */
+		s->client_version=(v[0]<<8)|v[1];
+#endif
 		s->handshake_func=s->method->ssl_accept;
 		}
 	
@@ -489,11 +567,10 @@ next_bit:
 		}
 	s->init_num=0;
 
-	if (buf != buf_space) Free(buf);
+	if (buf != buf_space) OPENSSL_free(buf);
 	s->first_packet=1;
 	return(SSL_accept(s));
 err:
-	if (buf != buf_space) Free(buf);
+	if (buf != buf_space) OPENSSL_free(buf);
 	return(-1);
 	}
-

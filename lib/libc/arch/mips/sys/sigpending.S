@@ -36,12 +36,13 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)sigpending.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: sigpending.S,v 1.3 1994/12/15 17:25:18 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sigpending.S,v 1.4 1996/08/19 08:16:26 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
 
-LEAF(sigpending)
+SYSLEAF(sigpending)
+	.set	reorder
 	li	v0, SYS_sigpending	# setlogin(name)
 	syscall
 	bne	a3, zero, 1f
@@ -49,5 +50,6 @@ LEAF(sigpending)
 	move	v0, zero
 	j	ra
 1:
-	j	_C_LABEL(cerror)
-END(sigpending)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
+SYSEND(sigpending)

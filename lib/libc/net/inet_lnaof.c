@@ -1,5 +1,3 @@
-/*	$NetBSD: inet_lnaof.c,v 1.4 1995/02/25 06:20:42 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)inet_lnaof.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: inet_lnaof.c,v 1.4 1995/02/25 06:20:42 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: inet_lnaof.c,v 1.2 1996/08/19 08:29:09 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -50,11 +44,11 @@ static char rcsid[] = "$NetBSD: inet_lnaof.c,v 1.4 1995/02/25 06:20:42 cgd Exp $
  * internet address; handles class a/b/c network
  * number formats.
  */
-u_long
+in_addr_t
 inet_lnaof(in)
 	struct in_addr in;
 {
-	register u_long i = ntohl(in.s_addr);
+	register in_addr_t i = ntohl(in.s_addr);
 
 	if (IN_CLASSA(i))
 		return ((i)&IN_CLASSA_HOST);

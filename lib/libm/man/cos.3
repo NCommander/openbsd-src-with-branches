@@ -1,3 +1,4 @@
+.\"	$OpenBSD: cos.3,v 1.5 1999/07/09 13:35:26 aaron Exp $
 .\" Copyright (c) 1991 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,14 +31,14 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)cos.3	5.1 (Berkeley) 5/2/91
-.\"	$Id: cos.3,v 1.7 1995/04/14 18:40:03 jtc Exp $
 .\"
 .Dd May 2, 1991
 .Dt COS 3
 .Os
 .Sh NAME
-.Nm cos
-.Nd cosine function
+.Nm cos ,
+.Nm cosf
+.Nd cosine functions
 .Sh SYNOPSIS
 .Fd #include <math.h>
 .Ft double
@@ -52,7 +53,7 @@ and
 functions compute the cosine of
 .Fa x
 (measured in radians).
-A large magnitude argument may yield a result with little or no 
+A large magnitude argument may yield a result with little or no
 significance.
 For a discussion of error due to roundoff, see
 .Xr math 3 .
@@ -61,16 +62,16 @@ The
 .Fn cos
 function returns the cosine value.
 .Sh SEE ALSO
-.Xr sin 3 ,
-.Xr tan 3 ,
-.Xr asin 3 ,
 .Xr acos 3 ,
+.Xr asin 3 ,
 .Xr atan 3 ,
 .Xr atan2 3 ,
-.Xr sinh 3 ,
 .Xr cosh 3 ,
-.Xr tanh 3 ,
-.Xr math 3
+.Xr math 3 ,
+.Xr sin 3 ,
+.Xr sinh 3 ,
+.Xr tan 3 ,
+.Xr tanh 3
 .Sh STANDARDS
 The
 .Fn cos

@@ -1,3 +1,4 @@
+/* *	$OpenBSD: extern.h,v 1.1.1.1 1995/10/18 08:45:56 deraadt Exp $*/
 /*-
  * Copyright (c) 1991 Keith Muller.
  * Copyright (c) 1993
@@ -35,7 +36,6 @@
  * SUCH DAMAGE.
  *
  *      from: @(#)extern.h	8.1 (Berkeley) 6/6/93
- *	$Id: extern.h,v 1.1 1994/01/06 15:57:19 cgd Exp $
  */
 
 extern int eoptind;
@@ -45,7 +45,7 @@ void	 addnum __P((char *, int, int));
 int	 egetopt __P((int, char * const *, const char *));
 void	 flsh_errs __P((void));
 int	 horzcol __P((int, char **));
-int	 inln __P((FILE *, char *, int, int *, int, int *));
+int	 inln __P((FILE *, char *, int, int *, int *, int, int *));
 int	 inskip __P((FILE *, int, int));
 void	 mfail __P((void));
 int	 mulfile __P((int, char **));

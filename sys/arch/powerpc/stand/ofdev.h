@@ -1,4 +1,5 @@
-/*	$NetBSD: ofdev.h,v 1.1 1996/09/30 16:35:04 ws Exp $	*/
+/*	$OpenBSD:$	*/
+/*	$NetBSD: ofdev.h,v 1.1 1997/04/16 20:29:22 thorpej Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -38,15 +39,15 @@ struct of_dev {
 	int type;
 	u_long partoff;
 	int bsize;
+	void *dmabuf;
 };
 
 /* Known types: */
 #define	OFDEV_NET	1
 #define	OFDEV_DISK	2
 
-#define	DEFAULT_KERNEL	"/netbsd"
+#define	DEFAULT_KERNEL	"/bsd"
 
 extern char opened_name[];
-extern int floppyboot;
 
 #endif

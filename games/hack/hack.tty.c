@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)hack.tty.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: hack.tty.c,v 1.5 1995/04/29 01:08:54 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: hack.tty.c,v 1.5 1995/04/29 01:08:54 mycroft Exp $";
 #endif
 #endif /* not lint */
 
@@ -87,7 +89,7 @@ gettty(){
 settty(s) char *s; {
 	clear_screen();
 	end_screen();
-	if(s) printf(s);
+	if(s) printf("%s", s);
 	(void) fflush(stdout);
 	if(tcsetattr(0, TCSADRAIN, &inittyb) < 0)
 		perror("Hack (settty)");
@@ -216,7 +218,7 @@ register int c;
 	while((c = readchar()) != '\n') {
 	    if(flags.cbreak) {
 		if(c == ' ') break;
-		if(s && index(s,c)) {
+		if(s && strchr(s,c)) {
 			morc = c;
 			break;
 		}

@@ -1,5 +1,3 @@
-/*	$NetBSD: putc.c,v 1.4 1995/02/02 02:10:14 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,22 +35,44 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)putc.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: putc.c,v 1.4 1995/02/02 02:10:14 jtc Exp $";
+static char rcsid[] = "$OpenBSD: putc.c,v 1.3 1996/10/28 05:32:55 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
+#include <errno.h>
+#include "local.h"
+
+/*
+ * A subroutine version of the macro putc_unlocked.
+ */
+#undef putc_unlocked
+
+int
+putc_unlocked(c, fp)
+	int c;
+	register FILE *fp;
+{
+	if (cantwrite(fp)) {
+		errno = EBADF;
+		return (EOF);
+	}
+	return (__sputc(c, fp));
+}
 
 /*
  * A subroutine version of the macro putc.
  */
 #undef putc
 
+int
 putc(c, fp)
 	int c;
-	register FILE *fp;
+	FILE *fp;
 {
-	return (__sputc(c, fp));
+	int ret;
+
+	flockfile(fp);
+	ret = putc_unlocked(c, fp);
+	funlockfile(fp);
+	return (ret);
 }

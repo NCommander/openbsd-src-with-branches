@@ -1,4 +1,4 @@
-#	$Id: Makefile.inc,v 1.1 1995/10/01 21:22:30 ragge Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 1997/09/26 02:12:09 millert Exp $
 
 # TOP is assumed to be defined by Makefile including this one.
 
@@ -6,9 +6,9 @@ CBIN=		instbin
 COMMONDIR=	${TOP}/inst-common
 
 MOUNT_POINT?=	/mnt
-VND?=		vnd0
-VND_DEV=	/dev/${VND}c
-VND_RDEV=	/dev/r${VND}c
+VND?=		svnd0
+VND_DEV=	/dev/${VND}a
+VND_RDEV=	/dev/r${VND}a
 IMAGE?=		miniroot-${REV}.fs
 BOOTSYS=	bootroot-${REV}.fs
 MDEC=		${DESTDIR}/usr/mdec
@@ -19,8 +19,9 @@ MTREE=		${COMMONDIR}/mtree.conf
 
 all: ${CBIN} bootroot
 	dd if=/dev/zero of=${IMAGE} bs=64k count=32
-	vnconfig -v -c ${VND_DEV} ${IMAGE}
-	newfs -O -m 0 -o space -i 8192 ${VND_RDEV} miniroot
+	vnconfig -v -c ${VND} ${IMAGE}
+	disklabel -w ${VND} miniroot
+	newfs -O -m 0 -o space -i 8192 ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}
 	mtree -def ${MTREE} -p ${MOUNT_POINT}/ -u
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
@@ -29,32 +30,32 @@ all: ${CBIN} bootroot
 	@df -i ${MOUNT_POINT}
 	@echo ""
 	umount -f ${MOUNT_POINT}
-	vnconfig -u ${VND_DEV}
+	vnconfig -u ${VND}
 
-bootroot: edlabel copy xxboot boot
-	dd if=/dev/zero of=${BOOTSYS} bs=64k count=4
-	vnconfig -v -c ${VND_DEV} ${BOOTSYS}
-	newfs -O -m 0 -o space -i 8192 ${VND_RDEV} bootroot
-	dd if=xxboot of=/dev/rvnd0a count=16
+bootroot: xxboot boot
+	dd if=/dev/zero of=${BOOTSYS} bs=512 count=8192
+	vnconfig -v -c ${VND} ${BOOTSYS}
+	disklabel -w ${VND} bootroot
+	newfs -O -m 0 -o space -i 8192 ${VND_RDEV}
+	dd if=xxboot of=${VND_RDEV} count=16
 	mount ${VND_DEV} ${MOUNT_POINT}
-	cp edlabel copy boot ${MOUNT_POINT}
+	cp boot ${MOUNT_POINT}
 	umount -f ${MOUNT_POINT}
-	vnconfig -u ${VND_DEV}
+	vnconfig -u ${VND}
 
-edlabel copy xxboot boot:
-	(cd /sys/arch/vax/boot;make)
-	cp /sys/arch/vax/boot/edlabel .
-	cp /sys/arch/vax/boot/copy .
-	cp /sys/arch/vax/boot/xxboot .
-	cp /sys/arch/vax/boot/boot .
+xxboot boot:
+	(cd /usr/src/sys/arch/vax/boot;make)
+	cp /usr/src/sys/arch/vax/boot/xxboot/xxboot .
+	cp /usr/src/sys/arch/vax/boot/boot/boot .
+
 
 unconfig:
 	-umount -f ${MOUNT_POINT}
-	-vnconfig -u ${VND_DEV} ${IMAGE}
+	-vnconfig -u ${VND} ${IMAGE}
 	-/bin/rm -f ${IMAGE}
 
 ${CBIN}.mk ${CBIN}.cache ${CBIN}.c: ${CRUNCHCONF}
-	crunchgen ${CRUNCHCONF}
+	crunchgen -D ${TOP}/../../ -L ${DESTDIR}/usr/lib ${.ALLSRC}
 
 ${CBIN}: ${CBIN}.mk ${CBIN}.cache ${CBIN}.c
 	make -f ${CBIN}.mk

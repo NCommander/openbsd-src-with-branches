@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.1 1995/10/01 21:22:40 ragge Exp $
 #	$NetBSD: Makefile,v 1.1 1995/10/01 21:22:40 ragge Exp $
 #
 #	Create RX33 floppies.

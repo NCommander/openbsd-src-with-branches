@@ -1,7 +1,8 @@
-/*	$Id: field.c,v 1.5 1998/09/12 19:26:31 niklas Exp $	*/
+/*	$OpenBSD: field.c,v 1.7 1999/04/20 11:32:40 niklas Exp $	*/
+/*	$EOM: field.c,v 1.11 2000/02/20 19:58:37 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +37,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "sysdep.h"
 
 #include "constants.h"
 #include "field.h"
@@ -118,7 +121,9 @@ field_debug_num (u_int8_t *buf, size_t len, struct constant_map **maps)
 
   if (extract_val (buf, len, &val))
     return 0;
-  asprintf (&retval, "%u", val);
+  /* 3 decimal digits are enough to represent each byte.  */
+  retval = malloc (3 * len);
+  snprintf (retval, 3 * len, "%u", val);
   return retval;
 }
 
@@ -138,7 +143,7 @@ field_debug_mask (u_int8_t *buf, size_t len, struct constant_map **maps)
     return 0;
 
   /* Size for brackets, two spaces and a NUL terminator.  */
-  buf_sz = 5;
+  buf_sz = 4;
   retval = malloc (buf_sz);
   if (!retval)
     return 0;
@@ -149,7 +154,7 @@ field_debug_mask (u_int8_t *buf, size_t len, struct constant_map **maps)
       if (val & bit)
 	{
 	  name = constant_name_maps (maps, bit);
-	  buf_sz += strlen (name);
+	  buf_sz += strlen (name) + 1;
 	  new_buf = realloc (retval, buf_sz);
 	  if (!new_buf)
 	    {
@@ -199,7 +204,7 @@ field_dump_field (struct field *f, u_int8_t *buf)
   value = decode_field[(int)f->type] (buf + f->offset, f->len, f->maps);
   if (value)
     {
-      log_debug (LOG_MESSAGE, 70, "%s: %s", f->name, value);
+      LOG_DBG ((LOG_MESSAGE, 70, "%s: %s", f->name, value));
       free (value);
     }
 }
@@ -220,7 +225,7 @@ field_get_num (struct field *f, u_int8_t *buf)
 {
   u_int32_t val;
 
-  if (extract_val(buf + f->offset, f->len, &val))
+  if (extract_val (buf + f->offset, f->len, &val))
     return 0;
   return val;
 }

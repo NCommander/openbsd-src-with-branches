@@ -1,3 +1,4 @@
+/* $OpenBSD: m88100_fp.S,v 1.7 2001/03/07 23:40:35 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -26,14 +27,15 @@
  */
 
 /* Floating point trouble routines */
+#ifndef ASSEMBLER
+#define	ASSEMBLER
+#endif /* ASSEMBLER */
 
-#define LOCORE
-
-#define ASSEMBLER
-
+#include "assym.s"
 #include <machine/trap.h>
 #include <machine/asm.h>
 
+#if defined(MVME187) || defined(MVME188)
 #define psr cr1
 #define spsr cr2
 #define ssb cr3
@@ -122,8 +124,8 @@
 	
 	text
 	align 8
-	global _Xfp_precise
-_Xfp_precise:
+	global _m88100_Xfp_precise
+_m88100_Xfp_precise:
 	or	r29, r3, r0     /*  r29 is now the E.F. */
 	subu	r31, r31, 40
 	st	r1,  r31, 32
@@ -2301,3 +2303,4 @@ Iwritesingle:
 	st	r11, r3 [r2]
 /* Return.. */
 	jmp	r1
+#endif /* defined(MVME187) || defined(MVME188) */

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: keycap.3,v 1.6 1999/07/03 02:11:11 aaron Exp $
+.\"
 .\"
 .\" Copyright (c) 1992,1993,1994 Hellmuth Michaelis
 .\"
@@ -37,6 +39,7 @@
 .\"
 .Dd January 3, 1993
 .Dt KEYCAP 3
+.Os
 .Sh NAME
 .Nm kgetent ,
 .Nm kgetnum ,
@@ -52,7 +55,7 @@
 .Sh DESCRIPTION
 These functions extract and use capabilities from a keyboard capability data
 base, usually
-.Pa /usr/share/misc/keycap ,
+.Pa /usr/share/misc/keycap.pcvt ,
 the format of which is described in
 .Xr keycap 5 .
 .Pp
@@ -110,10 +113,9 @@ function
 returns
 .Dv NULL
 if the capability was not found.
-.Pp
 .Sh FILES
-.Bl -tag -width /usr/share/misc/keycap -compact
-.It Pa /usr/share/misc/keycap
+.Bl -tag -width /usr/share/misc/keycap.pcvt -compact
+.It Pa /usr/share/misc/keycap.pcvt
 Keyboard capabilities database (if nothing else chosen during installation).
 .El
 .Sh SEE ALSO

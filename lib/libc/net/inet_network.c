@@ -1,5 +1,3 @@
-/*	$NetBSD: inet_network.c,v 1.4 1995/02/25 06:20:45 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)inet_network.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: inet_network.c,v 1.4 1995/02/25 06:20:45 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: inet_network.c,v 1.6 1997/04/24 08:35:21 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -51,13 +45,13 @@ static char rcsid[] = "$NetBSD: inet_network.c,v 1.4 1995/02/25 06:20:45 cgd Exp
  * The library routines call this routine to interpret
  * network numbers.
  */
-u_long
+in_addr_t
 inet_network(cp)
 	register const char *cp;
 {
-	register u_long val, base, n;
+	register in_addr_t val, base, n;
 	register char c;
-	u_long parts[4], *pp = parts;
+	in_addr_t parts[4], *pp = parts;
 	register int i;
 
 again:
@@ -66,7 +60,7 @@ again:
 		base = 8, cp++;
 	if (*cp == 'x' || *cp == 'X')
 		base = 16, cp++;
-	while (c = *cp) {
+	while ((c = *cp)) {
 		if (isdigit(c)) {
 			val = (val * base) + (c - '0');
 			cp++;
@@ -80,7 +74,7 @@ again:
 		break;
 	}
 	if (*cp == '.') {
-		if (pp >= parts + 4)
+		if (pp >= parts + 3)
 			return (INADDR_NONE);
 		*pp++ = val, cp++;
 		goto again;
@@ -89,11 +83,10 @@ again:
 		return (INADDR_NONE);
 	*pp++ = val;
 	n = pp - parts;
-	if (n > 4)
-		return (INADDR_NONE);
-	for (val = 0, i = 0; i < n; i++) {
+	for (val = 0, i = 0; i < 4; i++) {
 		val <<= 8;
-		val |= parts[i] & 0xff;
+		if (i < n)
+			val |= parts[i] & 0xff;
 	}
 	return (val);
 }

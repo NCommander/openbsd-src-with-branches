@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.6 1997/08/05 22:50:51 deraadt Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.6 1997/08/05 22:50:51 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,6 +52,7 @@ static char rcsid[] = "$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -82,8 +84,8 @@ summary()
 		(void)write(STDERR_FILENO, buf, strlen(buf));
 	}
 	(void)snprintf(buf, sizeof(buf),
-	    "%u bytes transferred in %u secs (%u bytes/sec)\n",
-	    st.bytes, secs, st.bytes / secs);
+	    "%qd bytes transferred in %ld secs (%qd bytes/sec)\n",
+	    st.bytes, (long)secs, st.bytes / secs);
 	(void)write(STDERR_FILENO, buf, strlen(buf));
 }
 
@@ -92,8 +94,10 @@ void
 summaryx(notused)
 	int notused;
 {
+	int save_errno = errno;
 
 	summary();
+	errno = save_errno;
 }
 
 /* ARGSUSED */

@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.mkobj.c,v 1.3 1995/03/23 08:30:47 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.mkobj.c,v 1.3 1995/03/23 08:30:47 cgd Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -63,7 +65,7 @@ register otyp;
 	otmp->quan = 1;
 	otmp->olet = let;
 	otmp->otyp = otyp;
-	otmp->dknown = index("/=!?*", let) ? 0 : 1;
+	otmp->dknown = strchr("/=!?*", let) ? 0 : 1;
 	switch(let) {
 	case WEAPON_SYM:
 		otmp->quan = (otmp->otyp <= ROCK) ? rn1(6,6) : 1;

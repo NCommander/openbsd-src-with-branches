@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.10 1995/04/10 13:15:26 mycroft Exp $	*/
+/*	$OpenBSD: mem.c,v 1.8 1999/09/03 18:01:14 art Exp $	*/
+/*	$NetBSD: mem.c,v 1.11 1996/05/05 06:18:41 briggs Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -47,6 +48,7 @@
 #include <sys/param.h>
 #include <sys/conf.h>
 #include <sys/buf.h>
+#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
@@ -55,23 +57,37 @@
 
 #include <vm/vm.h>
 
-caddr_t zeropage;
+static caddr_t devzeropage;
+
+#define mmread	mmrw
+#define mmwrite	mmrw
+cdev_decl(mm);
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -115,16 +131,9 @@ mmrw(dev, uio, flags)
 /* minor device 0 is physical memory */
 		case 0:
 			v = uio->uio_offset;
-#if !defined(DEBUG) && 0 /* BG -- serial test needs this. */
-			/* allow reads only in RAM (except for DEBUG) */
-			if (v >= 0x008FFFFC || v < 0) {
-				error = EFAULT;
-				goto unlock;
-			}
-#endif
 			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
 			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+			    VM_PROT_READ : VM_PROT_WRITE, TRUE, 0);
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
@@ -154,13 +163,13 @@ mmrw(dev, uio, flags)
 				c = iov->iov_len;
 				break;
 			}
-			if (zeropage == NULL) {
-				zeropage = (caddr_t)
+			if (devzeropage == NULL) {
+				devzeropage = (caddr_t)
 				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
+				bzero(devzeropage, CLBYTES);
 			}
 			c = min(iov->iov_len, CLBYTES);
-			error = uiomove(zeropage, c, uio);
+			error = uiomove(devzeropage, c, uio);
 			continue;
 
 		default:
@@ -174,7 +183,6 @@ mmrw(dev, uio, flags)
 		uio->uio_resid -= c;
 	}
 	if (minor(dev) == 0) {
-unlock:
 		if (physlock > 1)
 			wakeup((caddr_t)&physlock);
 		physlock = 0;
@@ -187,6 +195,11 @@ mmmmap(dev, off, prot)
 	dev_t dev;
 	int off, prot;
 {
+	extern int numranges;
+	extern u_long low[8];
+	extern u_long high[8];
+	int seg;
+	
 	/*
 	 * /dev/mem is the only one that makes sense through this
 	 * interface.  For /dev/kmem any physaddr we return here
@@ -202,8 +215,21 @@ mmmmap(dev, off, prot)
 	 *
 	 * XXX could be extended to allow access to IO space but must
 	 * be very careful.
-	if ((unsigned)off < lowram || (unsigned)off >= 0xFFFFFFFC)
-		return (-1);
 	 */
-	return (mac68k_btop(off));
+	for (seg = 0; seg < numranges; seg++) {
+		if (((u_long)off >= low[seg]) && ((u_long)off <= high[seg]))
+			return (m68k_btop(off));
+	}
+	return (-1);
+}
+
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
+	return (EOPNOTSUPP);
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: strncmp.c,v 1.5 1997/11/07 15:56:50 niklas Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -33,10 +35,15 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)strncmp.c	5.6 (Berkeley) 1/26/91";*/
-static char *rcsid = "$Id: strncmp.c,v 1.5 1995/10/07 09:26:49 mycroft Exp $";
+static char *rcsid = "$OpenBSD: strncmp.c,v 1.5 1997/11/07 15:56:50 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#include <sys/types.h>
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <string.h>
+#else
+#include <lib/libkern/libkern.h>
+#endif
 
 int
 strncmp(s1, s2, n)
@@ -48,7 +55,7 @@ strncmp(s1, s2, n)
 		return (0);
 	do {
 		if (*s1 != *s2++)
-			return (*(unsigned char *)s1 - *(unsigned char *)--s2);
+			return (*(const u_char *)s1 - *(const u_char *)--s2);
 		if (*s1++ == 0)
 			break;
 	} while (--n != 0);

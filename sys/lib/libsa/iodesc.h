@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iodesc.h,v 1.4 1995/09/23 03:31:50 gwr Exp $	*/
 
 /*

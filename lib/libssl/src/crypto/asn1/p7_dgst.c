@@ -58,17 +58,10 @@
 
 #include <stdio.h>
 #include "cryptlib.h"
-#include "asn1_mac.h"
-#include "x509.h"
+#include <openssl/asn1_mac.h>
+#include <openssl/x509.h>
 
-/*
- * ASN1err(ASN1_F_PKCS7_DIGEST_NEW,ASN1_R_MISSING_EOS);
- * ASN1err(ASN1_F_D2I_PKCS7_DIGEST,ASN1_R_LENGTH_MISMATCH);
- */
-
-int i2d_PKCS7_DIGEST(a,pp)
-PKCS7_DIGEST *a;
-unsigned char **pp;
+int i2d_PKCS7_DIGEST(PKCS7_DIGEST *a, unsigned char **pp)
 	{
 	M_ASN1_I2D_vars(a);
 
@@ -87,10 +80,8 @@ unsigned char **pp;
 	M_ASN1_I2D_finish();
 	}
 
-PKCS7_DIGEST *d2i_PKCS7_DIGEST(a,pp,length)
-PKCS7_DIGEST **a;
-unsigned char **pp;
-long length;
+PKCS7_DIGEST *d2i_PKCS7_DIGEST(PKCS7_DIGEST **a, unsigned char **pp,
+	     long length)
 	{
 	M_ASN1_D2I_vars(a,PKCS7_DIGEST *,PKCS7_DIGEST_new);
 
@@ -104,27 +95,27 @@ long length;
 	M_ASN1_D2I_Finish(a,PKCS7_DIGEST_free,ASN1_F_D2I_PKCS7_DIGEST);
 	}
 
-PKCS7_DIGEST *PKCS7_DIGEST_new()
+PKCS7_DIGEST *PKCS7_DIGEST_new(void)
 	{
 	PKCS7_DIGEST *ret=NULL;
+	ASN1_CTX c;
 
 	M_ASN1_New_Malloc(ret,PKCS7_DIGEST);
-	M_ASN1_New(ret->version,ASN1_INTEGER_new);
+	M_ASN1_New(ret->version,M_ASN1_INTEGER_new);
 	M_ASN1_New(ret->md,X509_ALGOR_new);
 	M_ASN1_New(ret->contents,PKCS7_new);
-	M_ASN1_New(ret->digest,ASN1_OCTET_STRING_new);
+	M_ASN1_New(ret->digest,M_ASN1_OCTET_STRING_new);
 	return(ret);
 	M_ASN1_New_Error(ASN1_F_PKCS7_DIGEST_NEW);
 	}
 
-void PKCS7_DIGEST_free(a)
-PKCS7_DIGEST *a;
+void PKCS7_DIGEST_free(PKCS7_DIGEST *a)
 	{
 	if (a == NULL) return;
-	ASN1_INTEGER_free(a->version);
+	M_ASN1_INTEGER_free(a->version);
 	X509_ALGOR_free(a->md);
 	PKCS7_free(a->contents);
-	ASN1_OCTET_STRING_free(a->digest);
-	Free((char *)a);
+	M_ASN1_OCTET_STRING_free(a->digest);
+	OPENSSL_free(a);
 	}
 

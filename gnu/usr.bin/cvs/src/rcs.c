@@ -3348,7 +3348,7 @@ struct rcs_keyword
     size_t len;
 };
 #define KEYWORD_INIT(s) (s), sizeof (s) - 1
-static const struct rcs_keyword keywords[] =
+static struct rcs_keyword keywords[] =
 {
     { KEYWORD_INIT ("Author") },
     { KEYWORD_INIT ("Date") },
@@ -3361,6 +3361,7 @@ static const struct rcs_keyword keywords[] =
     { KEYWORD_INIT ("Revision") },
     { KEYWORD_INIT ("Source") },
     { KEYWORD_INIT ("State") },
+    { NULL, 0 },
     { NULL, 0 }
 };
 enum keyword
@@ -3375,7 +3376,8 @@ enum keyword
     KEYWORD_RCSFILE,
     KEYWORD_REVISION,
     KEYWORD_SOURCE,
-    KEYWORD_STATE
+    KEYWORD_STATE,
+    KEYWORD_LOCALID
 };
 
 /* Convert an RCS date string into a readable string.  This is like
@@ -3512,6 +3514,11 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 	return;
     }
 
+    if (RCS_citag != NULL && keywords[KEYWORD_LOCALID].string == NULL) {
+	keywords[KEYWORD_LOCALID].string = RCS_citag;
+	keywords[KEYWORD_LOCALID].len = strlen(RCS_citag);
+    }
+
     /* If we are using -kkvl, dig out the locker information if any.  */
     locker = NULL;
     if (expand == KFLAG_KVL)
@@ -3603,6 +3610,7 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 
 	    case KEYWORD_HEADER:
 	    case KEYWORD_ID:
+	    case KEYWORD_LOCALID:
 		{
 		    char *path;
 		    int free_path;
@@ -4234,7 +4242,7 @@ RCS_checkout (rcs, workfile, rev, nametag, options, sout, pfn, callerdat)
 	if (info != NULL)
 	{
 	    /* If the size of `devtype' changes, fix the sscanf call also */
-	    char devtype[16];
+	    char devtype[16+1];
 
 	    if (sscanf (info->data, "%16s %lu",
 			devtype, &devnum_long) < 2)

@@ -1,4 +1,4 @@
-/*	$NetBSD: pmap.c,v 1.9 1995/04/10 12:45:59 mycroft Exp $	*/
+/*	$NetBSD: pmap.c,v 1.17 1997/05/26 23:02:11 jonathan Exp $	*/
 
 /* 
  * Copyright (c) 1992, 1993
@@ -79,7 +79,8 @@
 #include <vm/vm_page.h>
 #include <vm/vm_pageout.h>
 
-#include <machine/machConst.h>
+#include <machine/cpuregs.h>
+#include <machine/locore.h>
 #include <machine/pte.h>
 
 extern vm_page_t vm_page_alloc1 __P((void));
@@ -97,7 +98,6 @@ typedef struct pv_entry {
 } *pv_entry_t;
 
 pv_entry_t	pv_table;	/* array of entries, one per page */
-extern void	pmap_remove_pv();
 
 #define pa_index(pa)		atop((pa) - first_phys_addr)
 #define pa_to_pvh(pa)		(&pv_table[pa_index(pa)])
@@ -152,7 +152,7 @@ vm_offset_t	avail_end;	/* PA of last available physical page */
 vm_size_t	mem_size;	/* memory size in bytes */
 vm_offset_t	virtual_avail;  /* VA of first avail page (after kernel bss)*/
 vm_offset_t	virtual_end;	/* VA of last avail page (end of kernel AS) */
-int		pmaxpagesperpage;	/* PAGE_SIZE / NBPG */
+int		mipspagesperpage;	/* PAGE_SIZE / NBPG */
 #ifdef ATTR
 char		*pmap_attributes;	/* reference and modify bits */
 #endif
@@ -161,6 +161,13 @@ u_int		tlbpid_gen = 1;		/* TLB PID generation count */
 int		tlbpid_cnt = 2;		/* next available TLB PID */
 pt_entry_t	*Sysmap;		/* kernel pte table */
 u_int		Sysmapsize;		/* number of pte's in Sysmap */
+
+
+/* Forward function declarations */
+void	pmap_remove_pv __P((pmap_t pmap, vm_offset_t va, vm_offset_t pa));
+int	pmap_alloc_tlbpid __P((register struct proc *p));
+void	pmap_zero_page __P((vm_offset_t phys));
+
 
 /*
  *	Bootstrap the system enough to run with virtual memory.
@@ -198,23 +205,23 @@ pmap_bootstrap(firstaddr)
 	 * phys_start and phys_end but its better to use kseg0 addresses
 	 * rather than kernel virtual addresses mapped through the TLB.
 	 */
-	i = maxmem - pmax_btop(MACH_CACHED_TO_PHYS(firstaddr));
+	i = maxmem - mips_btop(MIPS_KSEG0_TO_PHYS(firstaddr));
 	valloc(pv_table, struct pv_entry, i);
 
 	/*
 	 * Clear allocated memory.
 	 */
-	firstaddr = pmax_round_page(firstaddr);
+	firstaddr = mips_round_page(firstaddr);
 	bzero((caddr_t)start, firstaddr - start);
 
-	avail_start = MACH_CACHED_TO_PHYS(firstaddr);
-	avail_end = pmax_ptob(maxmem);
+	avail_start = MIPS_KSEG0_TO_PHYS(firstaddr);
+	avail_end = mips_ptob(maxmem);
 	mem_size = avail_end - avail_start;
 
 	virtual_avail = VM_MIN_KERNEL_ADDRESS;
 	virtual_end = VM_MIN_KERNEL_ADDRESS + Sysmapsize * NBPG;
 	/* XXX need to decide how to set cnt.v_page_size */
-	pmaxpagesperpage = 1;
+	mipspagesperpage = 1;
 
 	simple_lock_init(&pmap_kernel()->pm_lock);
 	pmap_kernel()->pm_count = 1;
@@ -241,7 +248,7 @@ pmap_bootstrap_alloc(size)
 	if (vm_page_startup_initialized)
 		panic("pmap_bootstrap_alloc: called after startup initialized");
 
-	val = MACH_PHYS_TO_CACHED(avail_start);
+	val = MIPS_PHYS_TO_KSEG0(avail_start);
 	size = round_page(size);
 	avail_start += size;
 
@@ -261,7 +268,7 @@ pmap_init(phys_start, phys_end)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_INIT))
-		printf("pmap_init(%x, %x)\n", phys_start, phys_end);
+		printf("pmap_init(%lx, %lx)\n", phys_start, phys_end);
 #endif
 }
 
@@ -285,7 +292,7 @@ pmap_create(size)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_CREATE))
-		printf("pmap_create(%x)\n", size);
+		printf("pmap_create(%lx)\n", size);
 #endif
 	/*
 	 * Software use map does not need a pmap
@@ -319,7 +326,7 @@ pmap_pinit(pmap)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_CREATE))
-		printf("pmap_pinit(%x)\n", pmap);
+		printf("pmap_pinit(%p)\n", pmap);
 #endif
 	simple_lock_init(&pmap->pm_lock);
 	pmap->pm_count = 1;
@@ -332,13 +339,12 @@ pmap_pinit(pmap)
 	} else {
 		register struct segtab *stp;
 		vm_page_t mem;
-		void pmap_zero_page();
 
 		mem = vm_page_alloc1();
 		pmap_zero_page(VM_PAGE_TO_PHYS(mem));
 		pmap->pm_segtab = stp = (struct segtab *)
-			MACH_PHYS_TO_CACHED(VM_PAGE_TO_PHYS(mem));
-		i = pmaxpagesperpage * (NBPG / sizeof(struct segtab));
+			MIPS_PHYS_TO_KSEG0(VM_PAGE_TO_PHYS(mem));
+		i = mipspagesperpage * (NBPG / sizeof(struct segtab));
 		s = splimp();
 		while (--i != 0) {
 			stp++;
@@ -352,7 +358,7 @@ pmap_pinit(pmap)
 		if (pmap->pm_segtab->seg_tab[i] != 0)
 			panic("pmap_pinit: pm_segtab != 0");
 #endif
-	if (pmap == &vmspace0.vm_pmap) {
+	if (pmap == vmspace0.vm_map.pmap) {
 		/*
 		 * The initial process has already been allocated a TLBPID
 		 * in mach_init().
@@ -379,7 +385,7 @@ pmap_destroy(pmap)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_CREATE))
-		printf("pmap_destroy(%x)\n", pmap);
+		printf("pmap_destroy(%p)\n", pmap);
 #endif
 	if (pmap == NULL)
 		return;
@@ -405,7 +411,7 @@ pmap_release(pmap)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_CREATE))
-		printf("pmap_release(%x)\n", pmap);
+		printf("pmap_release(%p)\n", pmap);
 #endif
 
 	if (pmap->pm_segtab) {
@@ -422,7 +428,7 @@ pmap_release(pmap)
 			if (!pte)
 				continue;
 			vm_page_free1(
-				PHYS_TO_VM_PAGE(MACH_CACHED_TO_PHYS(pte)));
+				PHYS_TO_VM_PAGE(MIPS_KSEG0_TO_PHYS(pte)));
 #ifdef DIAGNOSTIC
 			for (j = 0; j < NPTEPG; j++) {
 				if (pte->pt_entry)
@@ -449,7 +455,7 @@ pmap_reference(pmap)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_reference(%x)\n", pmap);
+		printf("pmap_reference(%p)\n", pmap);
 #endif
 	if (pmap != NULL) {
 		simple_lock(&pmap->pm_lock);
@@ -475,7 +481,7 @@ pmap_remove(pmap, sva, eva)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_REMOVE|PDB_PROTECT))
-		printf("pmap_remove(%x, %x, %x)\n", pmap, sva, eva);
+		printf("pmap_remove(%p, %lx, %lx)\n", pmap, sva, eva);
 	remove_stats.calls++;
 #endif
 	if (pmap == NULL)
@@ -518,7 +524,7 @@ pmap_remove(pmap, sva, eva)
 		panic("pmap_remove: uva not in range");
 #endif
 	while (sva < eva) {
-		nssva = pmax_trunc_seg(sva) + NBSEG;
+		nssva = mips_trunc_seg(sva) + NBSEG;
 		if (nssva == 0 || nssva > eva)
 			nssva = eva;
 		/*
@@ -550,7 +556,7 @@ pmap_remove(pmap, sva, eva)
 			 */
 			if (pmap->pm_tlbgen == tlbpid_gen) {
 				MachTLBFlushAddr(sva | (pmap->pm_tlbpid <<
-					VMMACH_TLB_PID_SHIFT));
+					MIPS_TLB_PID_SHIFT));
 #ifdef DEBUG
 				remove_stats.flushes++;
 #endif
@@ -575,8 +581,8 @@ pmap_page_protect(pa, prot)
 
 #ifdef DEBUG
 	if ((pmapdebug & (PDB_FOLLOW|PDB_PROTECT)) ||
-	    prot == VM_PROT_NONE && (pmapdebug & PDB_REMOVE))
-		printf("pmap_page_protect(%x, %x)\n", pa, prot);
+	    (prot == VM_PROT_NONE && (pmapdebug & PDB_REMOVE)))
+		printf("pmap_page_protect(%lx, %x)\n", pa, prot);
 #endif
 	if (!IS_VM_PHYSADDR(pa))
 		return;
@@ -641,7 +647,8 @@ pmap_protect(pmap, sva, eva, prot)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_PROTECT))
-		printf("pmap_protect(%x, %x, %x, %x)\n", pmap, sva, eva, prot);
+		printf("pmap_protect(%p, %lx, %lx, %x)\n",
+		    pmap, sva, eva, prot);
 #endif
 	if (pmap == NULL)
 		return;
@@ -686,7 +693,7 @@ pmap_protect(pmap, sva, eva, prot)
 		panic("pmap_protect: uva not in range");
 #endif
 	while (sva < eva) {
-		nssva = pmax_trunc_seg(sva) + NBSEG;
+		nssva = mips_trunc_seg(sva) + NBSEG;
 		if (nssva == 0 || nssva > eva)
 			nssva = eva;
 		/*
@@ -712,10 +719,84 @@ pmap_protect(pmap, sva, eva, prot)
 			 */
 			if (pmap->pm_tlbgen == tlbpid_gen)
 				MachTLBUpdate(sva | (pmap->pm_tlbpid <<
-					VMMACH_TLB_PID_SHIFT), entry);
+					MIPS_TLB_PID_SHIFT), entry);
 		}
 	}
 }
+
+#ifdef MIPS3	/* r4000,r4400,r4600 */
+/*
+ *	Return RO protection of page.
+ */
+int
+pmap_is_page_ro(pmap, va, entry)
+	pmap_t	    pmap;
+	vm_offset_t va;
+	int         entry;
+{
+	return(entry & PG_RO);
+}
+
+/*
+ *	pmap_page_cache:
+ *
+ *	Change all mappings of a page to cached/uncached.
+ */
+void
+pmap_page_cache(pa,mode)
+	vm_offset_t pa;
+{
+	register pv_entry_t pv;
+	register pt_entry_t *pte;
+	register vm_offset_t va;
+	register unsigned entry;
+	register unsigned newmode;
+	int s;
+
+#ifdef DEBUG
+	if (pmapdebug & (PDB_FOLLOW|PDB_ENTER))
+		printf("pmap_page_uncache(%x)\n", pa);
+#endif
+	if (!IS_VM_PHYSADDR(pa))
+		return;
+
+	newmode = mode & PV_UNCACHED ? PG_UNCACHED : PG_CACHED;
+	pv = pa_to_pvh(pa);
+	s = splimp();
+	while (pv) {
+		pv->pv_flags = (pv->pv_flags & ~PV_UNCACHED) | mode;
+		if (!pv->pv_pmap->pm_segtab) {
+		/*
+		 * Change entries in kernel pmap.
+		 */
+			pte = kvtopte(pv->pv_va);
+			entry = pte->pt_entry;
+			if (entry & PG_V) {
+				entry = (entry & ~PG_CACHEMODE) | newmode;
+				pte->pt_entry = entry;
+				MachTLBUpdate(pv->pv_va, entry);
+			}
+		}
+		else {
+			if (pte = pmap_segmap(pv->pv_pmap, pv->pv_va)) {
+				pte += (pv->pv_va >> PGSHIFT) & (NPTEPG - 1);
+				entry = pte->pt_entry;
+				if (entry & PG_V) {
+					entry = (entry & ~PG_CACHEMODE) | newmode;
+					pte->pt_entry = entry;
+					if (pv->pv_pmap->pm_tlbgen == tlbpid_gen)
+						MachTLBUpdate(pv->pv_va | (pv->pv_pmap->pm_tlbpid <<
+							MIPS_TLB_PID_SHIFT), entry);
+				}
+			}
+		}
+		pv = pv->pv_next;
+	}
+
+	splx(s);
+}
+#endif	/* MIPS3 */	/* r4000,r4400,r4600 */
+
 
 /*
  *	Insert the given physical page (p) at
@@ -730,32 +811,37 @@ pmap_protect(pmap, sva, eva, prot)
  *	insert this page into the given map NOW.
  */
 void
-pmap_enter(pmap, va, pa, prot, wired)
+pmap_enter(pmap, va, pa, prot, wired, access_type)
 	register pmap_t pmap;
 	vm_offset_t va;
 	register vm_offset_t pa;
 	vm_prot_t prot;
 	boolean_t wired;
+	vm_prot_t access_type;
 {
 	register pt_entry_t *pte;
 	register u_int npte;
-	register int i, j;
+	register int i;
 	vm_page_t mem;
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_ENTER))
-		printf("pmap_enter(%x, %x, %x, %x, %x)\n",
+		printf("pmap_enter(%p, %lx, %lx, %x, %x)\n",
 		       pmap, va, pa, prot, wired);
 #endif
 #ifdef DIAGNOSTIC
 	if (!pmap)
 		panic("pmap_enter: pmap");
 	if (!pmap->pm_segtab) {
+#ifdef DEBUG
 		enter_stats.kernel++;
+#endif
 		if (va < VM_MIN_KERNEL_ADDRESS || va >= virtual_end)
 			panic("pmap_enter: kva");
 	} else {
+#ifdef DEBUG
 		enter_stats.user++;
+#endif
 		if (va >= VM_MAXUSER_ADDRESS)
 			panic("pmap_enter: uva");
 	}
@@ -805,7 +891,7 @@ pmap_enter(pmap, va, pa, prot, wired)
 		s = splimp();
 #ifdef DEBUG
 		if (pmapdebug & PDB_ENTER)
-			printf("pmap_enter: pv %x: was %x/%x/%x\n",
+			printf("pmap_enter: pv %p: was %lx/%p/%p\n",
 			       pv, pv->pv_va, pv->pv_pmap, pv->pv_next);
 #endif
 		if (pv->pv_pmap == NULL) {
@@ -814,7 +900,7 @@ pmap_enter(pmap, va, pa, prot, wired)
 			 */
 #ifdef DEBUG
 			if (pmapdebug & PDB_PVENTRY)
-				printf("pmap_enter: first pv: pmap %x va %x\n",
+				printf("pmap_enter: first pv: pmap %p va %lx\n",
 					pmap, va);
 			enter_stats.firstpv++;
 #endif
@@ -855,7 +941,7 @@ pmap_enter(pmap, va, pa, prot, wired)
 				}
 #ifdef DEBUG
 			if (pmapdebug & PDB_PVENTRY)
-				printf("pmap_enter: new pv: pmap %x va %x\n",
+				printf("pmap_enter: new pv: pmap %p va %lx\n",
 					pmap, va);
 #endif
 			/* can this cause us to recurse forever? */
@@ -893,17 +979,17 @@ pmap_enter(pmap, va, pa, prot, wired)
 	 * NOTE: we only support cache flush for read only text.
 	 */
 	if (prot == (VM_PROT_READ | VM_PROT_EXECUTE))
-		MachFlushICache(MACH_PHYS_TO_CACHED(pa), PAGE_SIZE);
+		MachFlushICache(MIPS_PHYS_TO_KSEG0(pa), PAGE_SIZE);
 
 	if (!pmap->pm_segtab) {
 		/* enter entries into kernel pmap */
 		pte = kvtopte(va);
 		npte |= pa | PG_V | PG_G;
 		if (wired) {
-			pmap->pm_stats.wired_count += pmaxpagesperpage;
+			pmap->pm_stats.wired_count += mipspagesperpage;
 			npte |= PG_WIRED;
 		}
-		i = pmaxpagesperpage;
+		i = mipspagesperpage;
 		do {
 			if (!(pte->pt_entry & PG_V)) {
 				pmap->pm_stats.resident_count++;
@@ -929,7 +1015,7 @@ pmap_enter(pmap, va, pa, prot, wired)
 		mem = vm_page_alloc1();
 		pmap_zero_page(VM_PAGE_TO_PHYS(mem));
 		pmap_segmap(pmap, va) = pte = (pt_entry_t *)
-			MACH_PHYS_TO_CACHED(VM_PAGE_TO_PHYS(mem));
+			MIPS_PHYS_TO_KSEG0(VM_PAGE_TO_PHYS(mem));
 	}
 	pte += (va >> PGSHIFT) & (NPTEPG - 1);
 
@@ -940,7 +1026,7 @@ pmap_enter(pmap, va, pa, prot, wired)
 	 */
 	npte |= pa | PG_V;
 	if (wired) {
-		pmap->pm_stats.wired_count += pmaxpagesperpage;
+		pmap->pm_stats.wired_count += mipspagesperpage;
 		npte |= PG_WIRED;
 	}
 #ifdef DEBUG
@@ -951,12 +1037,12 @@ pmap_enter(pmap, va, pa, prot, wired)
 		printf("\n");
 	}
 #endif
-	i = pmaxpagesperpage;
+	i = mipspagesperpage;
 	do {
 		pte->pt_entry = npte;
 		if (pmap->pm_tlbgen == tlbpid_gen)
 			MachTLBUpdate(va | (pmap->pm_tlbpid <<
-				VMMACH_TLB_PID_SHIFT), npte);
+				MIPS_TLB_PID_SHIFT), npte);
 		va += NBPG;
 		npte += NBPG;
 		pte++;
@@ -982,7 +1068,7 @@ pmap_change_wiring(pmap, va, wired)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_WIRING))
-		printf("pmap_change_wiring(%x, %x, %x)\n", pmap, va, wired);
+		printf("pmap_change_wiring(%p, %lx, %x)\n", pmap, va, wired);
 #endif
 	if (pmap == NULL)
 		return;
@@ -1005,7 +1091,7 @@ pmap_change_wiring(pmap, va, wired)
 		pte += (va >> PGSHIFT) & (NPTEPG - 1);
 	}
 
-	i = pmaxpagesperpage;
+	i = mipspagesperpage;
 	if (!(pte->pt_entry & PG_WIRED) && p)
 		pmap->pm_stats.wired_count += i;
 	else if ((pte->pt_entry & PG_WIRED) && !p)
@@ -1032,7 +1118,7 @@ pmap_extract(pmap, va)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_extract(%x, %x) -> ", pmap, va);
+		printf("pmap_extract(%p, %lx) -> ", pmap, va);
 #endif
 
 	if (!pmap->pm_segtab) {
@@ -1056,7 +1142,7 @@ pmap_extract(pmap, va)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_extract: pa %x\n", pa);
+		printf("pmap_extract: pa %lx\n", pa);
 #endif
 	return (pa);
 }
@@ -1079,7 +1165,7 @@ pmap_copy(dst_pmap, src_pmap, dst_addr, len, src_addr)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_copy(%x, %x, %x, %x, %x)\n",
+		printf("pmap_copy(%p, %p, %lx, %lx, %lx)\n",
 		       dst_pmap, src_pmap, dst_addr, len, src_addr);
 #endif
 }
@@ -1120,7 +1206,7 @@ pmap_collect(pmap)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_collect(%x)\n", pmap);
+		printf("pmap_collect(%p)\n", pmap);
 #endif
 }
 
@@ -1136,10 +1222,11 @@ pmap_zero_page(phys)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_zero_page(%x)\n", phys);
+		printf("pmap_zero_page(%lx)\n", phys);
 #endif
-	p = (int *)MACH_PHYS_TO_CACHED(phys);
+	p = (int *)MIPS_PHYS_TO_KSEG0(phys);
 	end = p + PAGE_SIZE / sizeof(int);
+	/* XXX blkclr()? */
 	do {
 		p[0] = 0;
 		p[1] = 0;
@@ -1162,10 +1249,10 @@ pmap_copy_page(src, dst)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_copy_page(%x, %x)\n", src, dst);
+		printf("pmap_copy_page(%lx, %lx)\n", src, dst);
 #endif
-	s = (int *)MACH_PHYS_TO_CACHED(src);
-	d = (int *)MACH_PHYS_TO_CACHED(dst);
+	s = (int *)MIPS_PHYS_TO_KSEG0(src);
+	d = (int *)MIPS_PHYS_TO_KSEG0(dst);
 	end = s + PAGE_SIZE / sizeof(int);
 	do {
 		tmp0 = s[0];
@@ -1204,7 +1291,7 @@ pmap_pageable(pmap, sva, eva, pageable)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_pageable(%x, %x, %x, %x)\n",
+		printf("pmap_pageable(%p, %lx, %lx, %x)\n",
 		       pmap, sva, eva, pageable);
 #endif
 }
@@ -1219,7 +1306,7 @@ pmap_clear_modify(pa)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_clear_modify(%x)\n", pa);
+		printf("pmap_clear_modify(%lx)\n", pa);
 #endif
 #ifdef ATTR
 	pmap_attributes[atop(pa)] &= ~PMAP_ATTR_MOD;
@@ -1238,7 +1325,7 @@ pmap_clear_reference(pa)
 
 #ifdef DEBUG
 	if (pmapdebug & PDB_FOLLOW)
-		printf("pmap_clear_reference(%x)\n", pa);
+		printf("pmap_clear_reference(%lx)\n", pa);
 #endif
 #ifdef ATTR
 	pmap_attributes[atop(pa)] &= ~PMAP_ATTR_REF;
@@ -1288,7 +1375,7 @@ pmap_phys_address(ppn)
 	if (pmapdebug & PDB_FOLLOW)
 		printf("pmap_phys_address(%x)\n", ppn);
 #endif
-	return (pmax_ptob(ppn));
+	return (mips_ptob(ppn));
 }
 
 /*
@@ -1311,10 +1398,10 @@ pmap_alloc_tlbpid(p)
 	register pmap_t pmap;
 	register int id;
 
-	pmap = &p->p_vmspace->vm_pmap;
+	pmap = p->p_vmspace->vm_map.pmap;
 	if (pmap->pm_tlbgen != tlbpid_gen) {
 		id = tlbpid_cnt;
-		if (id == VMMACH_NUM_PIDS) {
+		if (id == MIPS_TLB_NUM_PIDS) {
 			MachTLBFlush();
 			/* reserve tlbpid_gen == 0 to alway mean invalid */
 			if (++tlbpid_gen == 0)
@@ -1334,7 +1421,7 @@ pmap_alloc_tlbpid(p)
 				curproc->p_pid, curproc->p_comm);
 		else
 			printf("pmap_alloc_tlbpid: curproc <none> ");
-		printf("segtab %x tlbpid %d pid %d '%s'\n",
+		printf("segtab %p tlbpid %d pid %d '%s'\n",
 			pmap->pm_segtab, id, p->p_pid, p->p_comm);
 	}
 #endif
@@ -1354,7 +1441,7 @@ pmap_remove_pv(pmap, va, pa)
 
 #ifdef DEBUG
 	if (pmapdebug & (PDB_FOLLOW|PDB_PVENTRY))
-		printf("pmap_remove_pv(%x, %x, %x)\n", pmap, va, pa);
+		printf("pmap_remove_pv(%p, %lx, %lx)\n", pmap, va, pa);
 #endif
 	/*
 	 * Remove page from the PV table (raise IPL since we

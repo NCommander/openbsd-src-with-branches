@@ -1,4 +1,4 @@
-.\"	$NetBSD: fflush.3,v 1.4 1995/02/02 01:15:36 jtc Exp $
+.\"	$OpenBSD: fflush.3,v 1.4 1999/05/16 19:55:08 alex Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -34,8 +34,6 @@
 .\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.\"
-.\"     @(#)fflush.3	8.1 (Berkeley) 6/4/93
 .\"
 .Dd June 4, 1993
 .Dt FFLUSH 3
@@ -87,7 +85,7 @@ is set to indicate the error.
 .Sh ERRORS
 .Bl -tag -width Er
 .It Bq Er EBADF
-.Fa Stream
+.Fa stream
 is not an open stream, or, in the case of
 .Fn fflush ,
 not a stream open for writing.
@@ -101,12 +99,11 @@ for any of the errors specified for the routine
 .Xr write 2 .
 .Sh SEE ALSO
 .Xr write 2 ,
-.Xr fopen 3 ,
 .Xr fclose 3 ,
+.Xr fopen 3 ,
 .Xr setbuf 3
 .Sh STANDARDS
 The
 .Fn fflush
-function
-conforms to
+function conforms to
 .St -ansiC .

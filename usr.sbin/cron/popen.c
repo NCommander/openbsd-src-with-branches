@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -24,15 +25,14 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: popen.c,v 1.2 1995/04/14 19:49:35 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: popen.c,v 1.3 1998/08/14 00:32:41 vixie Exp $";
 static char sccsid[] = "@(#)popen.c	5.7 (Berkeley) 2/14/89";
 #endif /* not lint */
 
 #include "cron.h"
-#include <sys/signal.h>
-
 
 #define MAX_ARGS 100
+#define MAX_GARGS 1000
 #define WANT_GLOBBING 0
 
 /*
@@ -44,38 +44,41 @@ static PID_T *pids;
 static int fds;
 
 FILE *
-cron_popen(program, type)
-	char *program, *type;
+cron_popen(program, type, e)
+	char *program;
+	char *type;
+	entry *e;
 {
-	register char *cp;
-	FILE *iop;
+	char *cp;
+	FILE * volatile iop;
 	int argc, pdes[2];
 	PID_T pid;
 	char *argv[MAX_ARGS + 1];
 #if WANT_GLOBBING
 	char **pop, *vv[2];
 	int gargc;
-	char *gargv[1000];
+	char *gargv[MAX_GARGS];
 	extern char **glob(), **copyblk();
 #endif
 
-	if (*type != 'r' && *type != 'w' || type[1])
-		return(NULL);
+	if ((*type != 'r' && *type != 'w') || type[1] != '\0')
+		return (NULL);
 
 	if (!pids) {
-		if ((fds = getdtablesize()) <= 0)
-			return(NULL);
-		if (!(pids = (PID_T *)malloc((u_int)(fds * sizeof(PID_T)))))
-			return(NULL);
+		if ((fds = sysconf(_SC_OPEN_MAX)) <= 0)
+			return (NULL);
+		if (!(pids = (PID_T *)malloc((size_t)(fds * sizeof(PID_T)))))
+			return (NULL);
 		bzero((char *)pids, fds * sizeof(PID_T));
 	}
 	if (pipe(pdes) < 0)
-		return(NULL);
+		return (NULL);
 
 	/* break up string into pieces */
 	for (argc = 0, cp = program; argc < MAX_ARGS; cp = NULL)
 		if (!(argv[argc++] = strtok(cp, " \t\n")))
 			break;
+	argv[MAX_ARGS] = NULL;
 
 #if WANT_GLOBBING
 	/* glob each piece */
@@ -87,7 +90,7 @@ cron_popen(program, type)
 			pop = copyblk(vv);
 		}
 		argv[argc] = (char *)pop;		/* save to free later */
-		while (*pop && gargc < 1000)
+		while (*pop && gargc < MAX_GARGS)
 			gargv[gargc++] = *pop++;
 	}
 	gargv[gargc] = NULL;
@@ -101,6 +104,7 @@ cron_popen(program, type)
 		goto pfree;
 		/* NOTREACHED */
 	case 0:				/* child */
+		closelog();
 		if (*type == 'r') {
 			if (pdes[1] != 1) {
 				dup2(pdes[1], 1);
@@ -114,6 +118,30 @@ cron_popen(program, type)
 				(void)close(pdes[0]);
 			}
 			(void)close(pdes[1]);
+		}
+		if (e) {
+#if defined(LOGIN_CAP)
+			struct passwd *pwd;
+
+			pwd = getpwuid(e->uid);
+			if (pwd == NULL) {
+				fprintf(stderr, "getpwuid: couldn't get entry for %d\n", e->uid);
+				_exit(ERROR_EXIT);
+			}
+			if (setusercontext(0, pwd, e->uid, LOGIN_SETALL) < 0) {
+				fprintf(stderr, "setusercontext failed for %d\n", e->uid);
+				_exit(ERROR_EXIT);
+			}
+#else
+			if (setgid(e->gid) ||
+				setgroups(0, NULL) ||
+				initgroups(env_get("LOGNAME", e->envp), e->gid))
+				    _exit(1);
+			setlogin(env_get("LOGNAME", e->envp));
+			if (setuid(e->uid))
+				_exit(1);
+			chdir(env_get("HOME", e->envp));
+#endif /* LOGIN_CAP */
 		}
 #if WANT_GLOBBING
 		execvp(gargv[0], gargv);
@@ -139,14 +167,14 @@ pfree:
 		free((char *)argv[argc]);
 	}
 #endif
-	return(iop);
+	return (iop);
 }
 
 int
 cron_pclose(iop)
 	FILE *iop;
 {
-	register int fdes;
+	int fdes;
 	int omask;
 	WAIT_T stat_loc;
 	PID_T pid;
@@ -156,7 +184,7 @@ cron_pclose(iop)
 	 * `popened' command, or, if already `pclosed'.
 	 */
 	if (pids == 0 || pids[fdes = fileno(iop)] == 0)
-		return(-1);
+		return (-1);
 	(void)fclose(iop);
 	omask = sigblock(sigmask(SIGINT)|sigmask(SIGQUIT)|sigmask(SIGHUP));
 	while ((pid = wait(&stat_loc)) != pids[fdes] && pid != -1)

@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: flashreg.h,v 1.4 1996/04/28 11:03:20 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -14,7 +14,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
+ *      This product includes software developed under OpenBSD by
+ *	Theo de Raadt for Willowglen Singapore.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -41,11 +42,11 @@
 #define FLCMD_WSETUP		0x40
 #define FLCMD_AWSETUP		0x10
 
-#define FLSR_WSMS		0x80
-#define FLSR_ESS		0x40
-#define FLSR_ES			0x20
-#define FLSR_BWS		0x10
-#define FLSR_VPPS		0x08
+#define FLSR_WSMS		0x80	/* write state machine status */
+#define FLSR_ESS		0x40	/* erase suspend status */
+#define FLSR_ES			0x20	/* erase status */
+#define FLSR_BWS		0x10	/* byte write status */
+#define FLSR_VPPS		0x08	/* Vpp status */
 
 /* manufacturers */
 #define FLMANU_INTEL		0x89
@@ -54,6 +55,7 @@
 #define FLII_INTEL_28F020	0xbd
 #define FLII_INTEL_28F008SA	0xa1
 #define FLII_INTEL_28F008SA_L	0xa2
+#define FLII_INTEL_28F016SA	0xa0
 
 struct flashii {
 	char	*name;

@@ -1,3 +1,6 @@
+/*	$OpenBSD: dump.c,v 1.4 2000/08/13 18:24:00 itojun Exp $	*/
+/*	$KAME: dump.c,v 1.8 2000/10/05 22:20:39 itojun Exp $	*/
+
 /*
  * Copyright (C) 1999 WIDE Project.
  * All rights reserved.
@@ -29,7 +32,9 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/socket.h>
 
+#include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/icmp6.h>
 
@@ -45,6 +50,7 @@ static FILE *fp;
 
 extern struct ifinfo *iflist;
 
+static void dump_interface_status __P((void));
 static char *sec2str __P((time_t));
 char *ifstatstr[] = {"IDLE", "DELAY", "PROBE", "DOWN", "TENTATIVE"};
 
@@ -93,7 +99,7 @@ rtsold_dump_file(dumpfile)
 	char *dumpfile;
 {
 	if ((fp = fopen(dumpfile, "w")) == NULL) {
-		warnmsg(LOG_WARNING, __FUNCTION__, "open a dump file(%s)",
+		warnmsg(LOG_WARNING, __FUNCTION__, "open a dump file(%s): %s",
 			dumpfile, strerror(errno));
 		return;
 	}

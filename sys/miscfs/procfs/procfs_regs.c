@@ -1,3 +1,4 @@
+/*	$OpenBSD: procfs_regs.c,v 1.4 1997/08/29 04:24:38 millert Exp $	*/
 /*	$NetBSD: procfs_regs.c,v 1.9 1995/08/13 09:06:07 mycroft Exp $	*/
 
 /*
@@ -51,8 +52,8 @@
 
 int
 procfs_doregs(curp, p, pfs, uio)
-	struct proc *curp;
-	struct proc *p;
+	struct proc *curp;		/* tracer */
+	struct proc *p;			/* traced */
 	struct pfsnode *pfs;
 	struct uio *uio;
 {
@@ -61,6 +62,9 @@ procfs_doregs(curp, p, pfs, uio)
 	struct reg r;
 	char *kv;
 	int kl;
+
+	if ((error = procfs_checkioperm(curp, p)) != 0)
+		return (error);
 
 	kl = sizeof(r);
 	kv = (char *) &r;
@@ -95,8 +99,9 @@ procfs_doregs(curp, p, pfs, uio)
 }
 
 int
-procfs_validregs(p)
+procfs_validregs(p, mp)
 	struct proc *p;
+	struct mount *mp;
 {
 
 #if defined(PT_SETREGS) || defined(PT_GETREGS)

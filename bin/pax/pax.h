@@ -1,3 +1,4 @@
+/*	$OpenBSD: pax.h,v 1.9 1997/07/23 19:15:58 kstailey Exp $	*/
 /*	$NetBSD: pax.h,v 1.3 1995/03/21 09:07:41 cgd Exp $	*/
 
 /*-
@@ -43,9 +44,10 @@
  * BSD PAX global data structures and constants.
  */
 
-#define	MAXBLK		32256	/* MAX blocksize supported (posix SPEC) */
+#define	MAXBLK		64512	/* MAX blocksize supported (posix SPEC) */
 				/* WARNING: increasing MAXBLK past 32256 */
 				/* will violate posix spec. */
+#define	MAXBLK_POSIX	32256	/* MAX blocksize supported as per POSIX */
 #define BLKMULT		512	/* blocksize must be even mult of 512 bytes */
 				/* Don't even think of changing this */
 #define DEVBLK		8192	/* default read blksize for devices */
@@ -88,7 +90,7 @@ typedef struct {
 	int bsz;		/* default block size. used when the user */
 				/* does not specify a blocksize for writing */
 				/* Appends continue to with the blocksize */
-				/* the archive is currently using.*/
+				/* the archive is currently using. */
 	int hsz;		/* Header size in bytes. this is the size of */
 				/* the smallest header this format supports. */
 				/* Headers are assumed to fit in a BLKMULT. */
@@ -165,6 +167,7 @@ typedef struct {
 typedef struct pattern {
 	char		*pstr;		/* pattern to match, user supplied */
 	char		*pend;		/* end of a prefix match */
+	char		*chdname;	/* the dir to change to if not NULL.  */
 	int		plen;		/* length of pstr */
 	int		flgs;		/* processing/state flags */
 #define MTCH		0x1		/* pattern has been matched */
@@ -226,15 +229,16 @@ typedef struct oplist {
  * General Macros
  */
 #ifndef MIN
-#define        MIN(a,b) (((a)<(b))?(a):(b))
+#define	       MIN(a,b) (((a)<(b))?(a):(b))
 #endif
-#define MAJOR(x)        (((unsigned)(x) >> 8) & 0xff)
-#define MINOR(x)        ((x) & 0xff)
-#define TODEV(x, y)	(((unsigned)(x) << 8) | ((unsigned)(y)))
+#define MAJOR(x)	major(x)
+#define MINOR(x)	minor(x)
+#define TODEV(x, y)	makedev((x), (y))
 
 /*
  * General Defines
  */
-#define HEX	16
-#define OCT	8
-#define _PAX_	1
+#define HEX		16
+#define OCT		8
+#define _PAX_		1
+#define _TFILE_BASE	"paxXXXXXXXXXX"

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: clist.h,v 1.7 1995/03/26 20:23:57 jtc Exp $	*/
 
 /*-

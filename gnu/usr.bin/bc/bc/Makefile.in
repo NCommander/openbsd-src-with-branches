@@ -64,9 +64,9 @@ RANLIB = @RANLIB@
 VERSION = @VERSION@
 YACC = @YACC@
 
-bin_PROGRAMS = bc
+bin_PROGRAMS = gnubc
 
-bc_SOURCES = main.c bc.y scan.l execute.c load.c storage.c util.c global.c
+gnubc_SOURCES = main.c bc.y scan.l execute.c load.c storage.c util.c global.c
 
 EXTRA_DIST = bc.h fix-libmath_h libmath.b sbc.y
 noinst_HEADERS = libmath.h
@@ -94,11 +94,11 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-bc_OBJECTS =  main.o bc.o scan.o execute.o load.o storage.o util.o \
+gnubc_OBJECTS =  main.o bc.o scan.o execute.o load.o storage.o util.o \
 global.o
-bc_LDADD = $(LDADD)
-bc_DEPENDENCIES =  ../lib/libbc.a
-bc_LDFLAGS = 
+gnubc_LDADD = $(LDADD)
+gnubc_DEPENDENCIES =  ../lib/libbc.a
+gnubc_LDFLAGS = 
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
 LEXLIB = @LEXLIB@
 CFLAGS = @CFLAGS@
@@ -113,15 +113,15 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-SOURCES = $(bc_SOURCES)
-OBJECTS = $(bc_OBJECTS)
+SOURCES = $(gnubc_SOURCES)
+OBJECTS = $(gnubc_OBJECTS)
 
 all: Makefile $(PROGRAMS) $(HEADERS)
 
 .SUFFIXES:
-.SUFFIXES: .S .c .l .o .s .y
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps bc/Makefile
+.SUFFIXES: .S .c .o .s
+#$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
+#	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps bc/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -172,18 +172,18 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-bc: $(bc_OBJECTS) $(bc_DEPENDENCIES)
+gnubc: $(gnubc_OBJECTS) $(gnubc_DEPENDENCIES)
 	@rm -f bc
-	$(LINK) $(bc_LDFLAGS) $(bc_OBJECTS) $(bc_LDADD) $(LIBS)
-.y.c:
-	$(YACC) $(YFLAGS) $< && mv y.tab.c $*.c
-	if test -f y.tab.h; then \
-	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
-	else :; fi
+	$(LINK) $(gnubc_LDFLAGS) $(gnubc_OBJECTS) $(gnubc_LDADD) $(LIBS)
+#.y.c:
+#	$(YACC) $(YFLAGS) $< && mv y.tab.c $*.c
+#	if test -f y.tab.h; then \
+#	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
+#	else :; fi
 bc.h: bc.c
 
-.l.c:
-	$(LEX) $(LFLAGS) $< && mv $(LEX_OUTPUT_ROOT).c $@
+#.l.c:
+#	$(LEX) $(LFLAGS) $< && mv $(LEX_OUTPUT_ROOT).c $@
 
 tags: TAGS
 
@@ -282,17 +282,17 @@ install-exec install-data install uninstall all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+# Was $(LDADD), but depending on -lsomelib, is not working
+$(PROGRAMS): ../lib/libbc.a
 
-$(PROGRAMS): $(LDADD)
-
-scan.o: bc.h
+scan.o: $(srcdir)/bc.h
 global.o: libmath.h
 
 libmath.h: libmath.b
 	echo \"\" > libmath.h
 	$(MAKE) fbc
 	./fbc -c $(srcdir)/libmath.b </dev/null >libmath.h
-	$(srcdir)/fix-libmath_h
+	sh $(srcdir)/fix-libmath_h
 	rm -f ./fbc
 
 install-data-local:

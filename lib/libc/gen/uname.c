@@ -1,5 +1,3 @@
-/*	$NetBSD: uname.c,v 1.2 1995/02/25 15:39:38 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)uname.c	8.1 (Berkeley) 1/4/94";
-#else
-static char rcsid[] = "$NetBSD: uname.c,v 1.2 1995/02/25 15:39:38 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: uname.c,v 1.4 1996/08/19 08:27:12 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -51,7 +45,6 @@ uname(name)
 {
 	int mib[2], rval;
 	size_t len;
-	char *p;
 
 	rval = 0;
 
@@ -73,19 +66,16 @@ uname(name)
 	if (sysctl(mib, 2, &name->release, &len, NULL, 0) == -1)
 		rval = -1;
 
-	/* The version may have newlines in it, turn them into spaces. */
 	mib[0] = CTL_KERN;
-	mib[1] = KERN_VERSION;
+	mib[1] = KERN_OSVERSION;
 	len = sizeof(name->version);
-	if (sysctl(mib, 2, &name->version, &len, NULL, 0) == -1)
-		rval = -1;
-	else
-		for (p = name->version; len--; ++p)
-			if (*p == '\n' || *p == '\t')
-				if (len > 1)
-					*p = ' ';
-				else
-					*p = '\0';
+	if (sysctl(mib, 2, &name->version, &len, NULL, 0) == -1) {
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_VERSION;
+		len = sizeof(name->version);
+		if (sysctl(mib, 2, &name->version, &len, NULL, 0) == -1)
+			rval = -1;
+	}
 
 	mib[0] = CTL_HW;
 	mib[1] = HW_MACHINE;

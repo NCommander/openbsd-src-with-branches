@@ -1,4 +1,4 @@
-/*	$NetBSD: pm.c,v 1.8.2.1 1995/10/17 00:19:23 jonathan Exp $	*/
+/*	$NetBSD: pm.c,v 1.19 1996/10/13 03:39:35 christos Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -56,14 +56,6 @@
  */
 
 
-#include <fb.h>
-#include <pm.h>
-#include <dc.h>
-#if NPM > 0
-#if NDC == 0
-pm needs dc device
-#else
-
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/kernel.h>
@@ -72,31 +64,28 @@ pm needs dc device
 #include <sys/errno.h>
 #include <sys/proc.h>
 #include <sys/mman.h>
+#include <sys/malloc.h>
+#include <sys/systm.h>
 
 #include <vm/vm.h>
 
 #include <sys/device.h>
 #include <machine/autoconf.h>
 
-#include <machine/machConst.h>
-#include <machine/dc7085cons.h>
 #include <machine/pmioctl.h>
-
 #include <machine/fbio.h>
 #include <machine/fbvar.h>
 
-#include <pmax/pmax/kn01.h>
-#include <pmax/pmax/pmaxtype.h>
-#include <pmax/pmax/cons.h>
-
 #include <pmax/dev/fbreg.h>
+#include <pmax/dev/pmvar.h>
 
 #include <pmax/dev/pmreg.h>
-#include <pmax/dev/bt478.h>
+#include <pmax/dev/bt478var.h>
 
 /*
  * These need to be mapped into user space.
  */
+extern struct fbuaccess pmu;
 struct fbuaccess pmu;
 static u_short curReg;		/* copy of PCCRegs.cmdr since it's read only */
 
@@ -104,7 +93,6 @@ static u_short curReg;		/* copy of PCCRegs.cmdr since it's read only */
  * rcons methods and globals.
  */
 struct pmax_fbtty pmfb;
-struct fbinfo	pmfi;		/*XXX*/
 
 /*
  * Forward references.
@@ -113,58 +101,36 @@ extern void pmScreenInit __P((struct fbinfo *fi));
 static void pmLoadCursor __P((struct fbinfo *fi, u_short *ptr));
 void pmPosCursor __P((struct fbinfo *fi, int x, int y));
 
-#ifdef notyet /* these should be removed */
-static void pmRestoreCursorColor __P(());
-
-#endif
 void bt478CursorColor __P((struct fbinfo *fi, u_int *color));
 void bt478InitColorMap __P((struct fbinfo *fi));
 
-static void pmLoadColorMap __P ((ColorMap *ptr));	/*XXX*/
 
-
-int pminit __P((struct fbinfo *fi, int unit, int silent));
+int pminit __P((struct fbinfo *fi, int unit, int cold_console_flag));
+int pmattach __P((struct fbinfo *fi, int unit, int cold_console_flag));
 
 static int pm_video_on __P ((struct fbinfo *));
 static int pm_video_off __P ((struct fbinfo *));
-int bt478LoadColorMap __P ((struct fbinfo *, caddr_t, int, int));
-int bt478GetColorMap __P ((struct fbinfo *, caddr_t, int, int));
 
 
-#if 0
-static void pmVDACInit();
-void pmKbdEvent(), pmMouseEvent(), pmMouseButtons();
-#endif
-
-/* pm framebuffers are only found in {dec,vax}station 3100s with dc7085s */
-
-extern void dcPutc();
-extern void (*dcDivertXInput)();
-extern void (*dcMouseEvent)();
-extern void (*dcMouseButtons)();
-extern int pmax_boardtype;
-extern u_short defCursor[32];
-
-void genConfigMouse(), genDeconfigMouse();
-void genKbdEvent(), genMouseEvent(), genMouseButtons();
-
-extern void pmEventQueueInit __P((pmEventQueue *qe));
 
 #define CMAP_BITS	(3 * 256)		/* 256 entries, 3 bytes per. */
-static u_char cmap_bits [NPM * CMAP_BITS];	/* One colormap per pm... */
+static u_char cmap_bits [CMAP_BITS];		/* colormap for console... */
 
 
 /*
- * Autoconfiguration data for config.new.
- * Use static-sized softc until config.old and old autoconfig
- * code is completely gone.
+ * Definition of driver for autoconfiguration.
  */
 
-int pmmatch __P((struct device *, void *, void *));
-void pmattach __P((struct device *, struct device *, void *));
+int old_pmmatch __P((struct device *, void *, void *));
+void old_pmattach __P((struct device *, struct device *, void *));
 
-struct cfdriver pmcd = {
-	NULL, "pm", pmmatch, pmattach, DV_DULL, sizeof(struct device), 0
+struct cfattach old_pm_ca = {
+	sizeof(struct device), old_pmmatch, old_pmattach
+};
+
+extern struct cfdriver pm_cd;
+struct cfdriver pm_cd = {
+	NULL, "pm", DV_DULL
 };
 
 /* new-style raster-cons "driver" methods */
@@ -181,73 +147,70 @@ struct fbdriver pm_driver = {
 };
 
 int
-pmmatch(parent, match, aux)
+old_pmmatch(parent, match, aux)
 	struct device *parent;
 	void *match;
 	void *aux;
 {
-	struct cfdata *cf = match;
 	struct confargs *ca = aux;
-	static int npms = 1;
-	caddr_t pmaddr = BUS_CVTADDR(ca);
-
+	caddr_t pmaddr = (caddr_t)ca->ca_addr;
 
 	/* make sure that we're looking for this type of device. */
-	if (!BUS_MATCHNAME(ca, "pm"))
+	if (strcmp(ca->ca_name, "pm") != 0)
 		return (0);
 
 	if (badaddr(pmaddr, 4))
 		return (0);
 
-#ifdef notyet
-	/* if it can't have the one mentioned, reject it */
-	if (cf->cf_unit >= npms)
-		return (0);
-#endif
 	return (1);
 }
 
 void
-pmattach(parent, self, aux)
+old_pmattach(parent, self, aux)
 	struct device *parent;
 	struct device *self;
 	void *aux;
 {
-	struct confargs *ca = aux;
-	caddr_t pmaddr = BUS_CVTADDR(ca);
+	/*struct confargs *ca = aux;*/
+	/*caddr_t pmaddr = (caddr_t)ca->ca_addr;*/
+	extern struct fbinfo pmfi;	/* XXX */
 
 	if (!pminit(&pmfi, 0, 0))
 		return;
 
 	/* no interrupts for PM */
 	/*BUS_INTR_ESTABLISH(ca, sccintr, self->dv_unit);*/
+	printf("\n");
 	return;
 }
 
 
+
 /*
- * Test to see if device is present.
- * Return true if found and initialized ok.
+ * Machine-independent backend to attach a pm device.
+ * assumes the following fields in struct fbinfo *fi have been set
+ * by the MD front-end:
+ *
+ * fi->fi_pixels	framebuffer raster memory
+ * fi->fi_vdac		vdac register address
+ * fi->fi_base		address of programmable cursor chip registers
+ * fi->fi_type.fb_depth	1 (mono) or 8 (colour)
+ * fi->fi_fbu		QVSS-compatible user-mapped fbinfo struct
  */
-pminit(fi, unit, silent)
+int
+pmattach(fi, unit, cold_console_flag)
 	struct fbinfo *fi;
 	int unit;
-	int silent;
+	int cold_console_flag;
 {
-	register PCCRegs *pcc = (PCCRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_PCC);
+	register PCCRegs *pcc = (PCCRegs *)fi->fi_base;
 
-	if (fi == 0) fi = &pmfi;
-
-	/* Set address of frame buffer... */
-	fi->fi_pixels = (caddr_t)MACH_PHYS_TO_UNCACHED(KN01_PHYS_FBUF_START);
+	/* check for no frame buffer */
+	if (badaddr((char *)fi->fi_pixels, 4))
+		return (0);
 
 	/* Fill in the stuff that differs from monochrome to color. */
-	if (*(volatile u_short *)MACH_PHYS_TO_UNCACHED(KN01_SYS_CSR) &
-	    KN01_CSR_MONO) {
-		/* check for no frame buffer */
-		if (badaddr((char *)fi->fi_pixels, 4))
-			return (0);
-
+	if (fi->fi_type.fb_depth == 1) {
 		fi->fi_type.fb_depth = 1;
 		fi->fi_type.fb_cmsize = 0;
 		fi->fi_type.fb_boardtype = PMAX_FBTYPE_PM_MONO;
@@ -266,36 +229,27 @@ pminit(fi, unit, silent)
 	fi->fi_driver = &pm_driver;
 	fi->fi_pixelsize =
 		((fi->fi_type.fb_depth == 1) ? 1024 / 8 : 1024) * 864;
-	fi->fi_unit = unit;
-	fi->fi_base = (caddr_t)pcc;
-	fi->fi_vdac = (caddr_t)MACH_PHYS_TO_UNCACHED(KN01_SYS_VDAC);
 	fi->fi_blanked = 0;
-	fi->fi_cmap_bits = (caddr_t)&cmap_bits [CMAP_BITS * unit];
+
+	if (cold_console_flag) {
+  		fi->fi_cmap_bits = (caddr_t)cmap_bits;
+	} else {
+    		fi->fi_cmap_bits = malloc(CMAP_BITS, M_DEVBUF, M_NOWAIT);
+		if (fi->fi_cmap_bits == NULL) {
+			printf("pm%d: no memory for cmap\n", unit);
+			return (0);
+		}
+	}
 
 	fi->fi_type.fb_width = 1024;
 	fi->fi_type.fb_height = 864;
 
 
 	/*
-	 * compatibility glue
+	 * Compatibility glue
 	 */
 	fi->fi_glasstty = &pmfb;
 
-
-	/*
-	 * Must be in Uncached space since the fbuaccess structure is
-	 * mapped into the user's address space uncached.
-	 */
-	fi->fi_fbu = (struct fbuaccess *)
-		MACH_PHYS_TO_UNCACHED(MACH_CACHED_TO_PHYS(&pmu));
-	fi->fi_glasstty->KBDPutc = dcPutc;
-	fi->fi_glasstty->kbddev = makedev(DCDEV, DCKBD_PORT);
-
-	if (fi->fi_type.fb_depth == 1) {
-		/* check for no frame buffer */
-		if (badaddr((char *)fi->fi_pixels, 4))
-			return (0);
-	}
 
 	/*
 	 * Initialize the screen.
@@ -310,7 +264,7 @@ pminit(fi, unit, silent)
 	/*
 	 * Initialize the color map, the screen, and the mouse.
 	 */
-	bt478init(&pmfi);
+	bt478init(fi);
 
 	/*
 	 * Initialize old-style pmax screen info.
@@ -326,7 +280,7 @@ pminit(fi, unit, silent)
 
 
 #ifdef notanymore
-	bt478InitColorMap(&pmfi);	/* done inside bt478init() */
+	bt478InitColorMap(fi);	/* done inside bt478init() */
 #endif
 
 	/*
@@ -334,7 +288,7 @@ pminit(fi, unit, silent)
 	 */
 	fi->fi_glasstty = &pmfb; /*XXX*/
 	fbconnect((fi->fi_type.fb_depth == 1) ? "KN01 mfb" : "KN01 cfb",
-		  fi, silent);
+		  fi, cold_console_flag);
 
 
 #ifdef fpinitialized
@@ -342,10 +296,6 @@ pminit(fi, unit, silent)
 #endif
 	return (1);
 }
-
-
-static u_char	bg_RGB[3];	/* background color for the cursor */
-static u_char	fg_RGB[3];	/* foreground color for the cursor */
 
 
 /*
@@ -368,184 +318,17 @@ pmLoadCursor(fi, cur)
 	struct fbinfo *fi;
 	unsigned short *cur;
 {
-	register PCCRegs *pcc = (PCCRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_PCC);
+	register PCCRegs *pcc = (PCCRegs *)fi->fi_base;
 	register int i;
 
 	curReg |= PCC_LODSA;
 	pcc->cmdr = curReg;
 	for (i = 0; i < 32; i++) {
 		pcc->memory = cur[i];
-		MachEmptyWriteBuffer();
+		wbflush();
 	}
 	curReg &= ~PCC_LODSA;
 	pcc->cmdr = curReg;
-}
-
-#if 0
-/*
- * ----------------------------------------------------------------------------
- *
- * pmRestoreCursorColor --
- *
- *	Routine to restore the color of the cursor.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- * ----------------------------------------------------------------------------
- */
-static void
-pmRestoreCursorColor(fi)
-	struct fbinfo *fi;
-{
-	register VDACRegs *vdac = (VDACRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_VDAC);
-	register int i;
-
-	vdac->overWA = 0x04;
-	MachEmptyWriteBuffer();
-	for (i = 0; i < 3; i++) {  
-		vdac->over = bg_RGB[i];
-		MachEmptyWriteBuffer();
-	}
-
-	vdac->overWA = 0x08;
-	MachEmptyWriteBuffer();
-	vdac->over = 0x00;
-	MachEmptyWriteBuffer();
-	vdac->over = 0x00;
-	MachEmptyWriteBuffer();
-	vdac->over = 0x7f;
-	MachEmptyWriteBuffer();
-
-	vdac->overWA = 0x0c;
-	MachEmptyWriteBuffer();
-	for (i = 0; i < 3; i++) {
-		vdac->over = fg_RGB[i];
-		MachEmptyWriteBuffer();
-	}
-}
-
-/*
- * ----------------------------------------------------------------------------
- *
- * pmCursorColor --
- *
- *	Set the color of the cursor.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- * ----------------------------------------------------------------------------
- */
-static void
-pmCursorColor(color)
-	unsigned int color[];
-{
-	register int i, j;
-
-	for (i = 0; i < 3; i++)
-		bg_RGB[i] = (u_char)(color[i] >> 8);
-
-	for (i = 3, j = 0; i < 6; i++, j++)
-		fg_RGB[j] = (u_char)(color[i] >> 8);
-
-	pmRestoreCursorColor();
-}
-
-/*
- * ----------------------------------------------------------------------------
- *
- * pmInitColorMap --
- *
- *	Initialize the color map.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The colormap is initialized appropriately whether it is color or 
- *	monochrome.
- *
- * ----------------------------------------------------------------------------
- */
-static void
-pmInitColorMap()
-{
-	register VDACRegs *vdac = (VDACRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_VDAC);
-	register int i;
-
-	*(volatile char *)MACH_PHYS_TO_UNCACHED(KN01_PHYS_COLMASK_START) = 0xff;
-	MachEmptyWriteBuffer();
-
-	if (fi->fi_type.fb_depth == 1) {
-		vdac->mapWA = 0; MachEmptyWriteBuffer();
-		for (i = 0; i < 256; i++) {
-			vdac->map = (i < 128) ? 0x00 : 0xff;
-			MachEmptyWriteBuffer();
-			vdac->map = (i < 128) ? 0x00 : 0xff;
-			MachEmptyWriteBuffer();
-			vdac->map = (i < 128) ? 0x00 : 0xff;
-			MachEmptyWriteBuffer();
-		}
-	} else {
-		vdac->mapWA = 0; MachEmptyWriteBuffer();
-		vdac->map = 0; MachEmptyWriteBuffer();
-		vdac->map = 0; MachEmptyWriteBuffer();
-		vdac->map = 0; MachEmptyWriteBuffer();
-
-		for (i = 1; i < 256; i++) {
-			vdac->map = 0xff; MachEmptyWriteBuffer();
-			vdac->map = 0xff; MachEmptyWriteBuffer();
-			vdac->map = 0xff; MachEmptyWriteBuffer();
-		}
-	}
-
-	for (i = 0; i < 3; i++) {
-		bg_RGB[i] = 0x00;
-		fg_RGB[i] = 0xff;
-	}
-	pmRestoreCursorColor();
-}
-
-
-#endif /* 0 */
-
-/* should zap pmloadcolormap too, but i haven't fixed the callers yet */
-
-/*
- * ----------------------------------------------------------------------------
- *
- * pmLoadColorMap --
- *
- *	Load the color map.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The color map is loaded.
- *
- * ----------------------------------------------------------------------------
- */
-static void
-pmLoadColorMap(ptr)
-	ColorMap *ptr;
-{
-	register VDACRegs *vdac = (VDACRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_VDAC);
-
-	if (ptr->index > 256)
-		return;
-
-	vdac->mapWA = ptr->index; MachEmptyWriteBuffer();
-	vdac->map = ptr->Entry.red; MachEmptyWriteBuffer();
-	vdac->map = ptr->Entry.green; MachEmptyWriteBuffer();
-	vdac->map = ptr->Entry.blue; MachEmptyWriteBuffer();
 }
 
 
@@ -570,7 +353,7 @@ pmPosCursor(fi, x, y)
 	register struct fbinfo *fi;
 	register int x, y;
 {
-	register PCCRegs *pcc = (PCCRegs *)MACH_PHYS_TO_UNCACHED(KN01_SYS_PCC);
+	register PCCRegs *pcc = (PCCRegs *)fi->fi_base;
 
 	if (y < fi->fi_fbu->scrInfo.min_cur_y ||
 	    y > fi->fi_fbu->scrInfo.max_cur_y)
@@ -584,9 +367,12 @@ pmPosCursor(fi, x, y)
 	pcc->ypos = PCC_Y_OFFSET + y;
 }
 
-/* enable the video display. */
 
-static int pm_video_on (fi)
+/*
+ * Enable the video display.
+ */
+static int
+pm_video_on (fi)
 	struct fbinfo *fi;
 {
 	register PCCRegs *pcc = (PCCRegs *)fi -> fi_base;
@@ -615,6 +401,3 @@ static int pm_video_off (fi)
 	fi -> fi_blanked = 1;
 	return 0;
 }
-
-#endif /* NDC */
-#endif /* NPM */

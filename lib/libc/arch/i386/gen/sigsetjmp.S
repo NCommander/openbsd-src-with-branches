@@ -32,18 +32,14 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)setjmp.s	5.1 (Berkeley) 4/23/90"
- *	$Id: sigsetjmp.S,v 1.7 1994/12/24 01:05:44 jtc Exp $
  */
+
+#include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$Id: sigsetjmp.S,v 1.7 1994/12/24 01:05:44 jtc Exp $"
+	.asciz "$OpenBSD: sigsetjmp.S,v 1.2 1995/12/30 08:15:25 deraadt Exp $"
 #endif
-
-#include "DEFS.h"
-#include "SYS.h"
 
 ENTRY(sigsetjmp)
 	movl	4(%esp),%ecx

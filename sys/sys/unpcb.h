@@ -1,3 +1,4 @@
+/*	$OpenBSD: unpcb.h,v 1.3 1997/11/17 18:09:17 deraadt Exp $	*/
 /*	$NetBSD: unpcb.h,v 1.6 1994/06/29 06:46:08 cgd Exp $	*/
 
 /*
@@ -70,6 +71,7 @@ struct	unpcb {
 	struct	mbuf *unp_addr;		/* bound address of socket */
 	int	unp_cc;			/* copy of rcv.sb_cc */
 	int	unp_mbcnt;		/* copy of rcv.sb_mbcnt */
+	struct	timespec unp_ctime;	/* holds creation time */
 };
 
 #define	sotounpcb(so)	((struct unpcb *)((so)->so_pcb))

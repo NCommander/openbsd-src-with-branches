@@ -32,24 +32,34 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)rand.c	5.6 (Berkeley) 6/24/91";*/
-static char *rcsid = "$Id: rand.c,v 1.4 1994/10/19 03:06:51 cgd Exp $";
+static char *rcsid = "$OpenBSD: rand.c,v 1.5 1998/12/07 16:44:41 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <stdlib.h>
 
-static u_long next = 1;
+static u_int next = 1;
+
+int
+rand_r(seed)
+u_int *seed;
+{
+
+	*seed = *seed * 1103515245 + 12345;
+	return (*seed % ((u_int)RAND_MAX + 1));
+}
 
 int
 rand()
 {
-	return ((next = next * 1103515245 + 12345) % ((u_int)RAND_MAX + 1));
+
+	return (rand_r(&next));
 }
 
 void
 srand(seed)
 u_int seed;
 {
+
 	next = seed;
 }

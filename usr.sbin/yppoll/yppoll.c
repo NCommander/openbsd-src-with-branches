@@ -1,3 +1,6 @@
+/*	$OpenBSD: yppoll.c,v 1.2 1996/05/22 12:13:00 deraadt Exp $ */
+/*	$NetBSD: yppoll.c,v 1.5 1996/05/13 02:46:36 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@fsa.ca>
  * Copyright (c) 1992, 1993 John Brezak
@@ -33,7 +36,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: yppoll.c,v 1.4 1994/08/23 17:03:15 deraadt Exp $";
+static char rcsid[] = "$Id: yppoll.c,v 1.2 1996/05/22 12:13:00 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -90,7 +93,7 @@ get_remote_info(indomain, inmap, server, outorder, outname)
 			exit(1);
 		}
 	} else {
-		rsrv_sin.sin_addr.s_addr = *(u_long *)h->h_addr;
+		rsrv_sin.sin_addr.s_addr = *(u_int32_t *)h->h_addr;
 	}
 
 	tv.tv_sec = 10;

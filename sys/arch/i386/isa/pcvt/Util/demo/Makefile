@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=	playvt
 SRCS=	playvt.c
 DEMOS=	chardemo.vt colors.vt sgr.vt

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Opcode table for the H8-300
    Copyright (C) 1991,1992 Free Software Foundation.
    Written by Steve Chamberlain, sac@cygnus.com.

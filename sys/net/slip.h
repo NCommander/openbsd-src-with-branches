@@ -1,3 +1,4 @@
+/*	$OpenBSD: slip.h,v 1.6 1994/06/29 06:36:53 cgd Exp $	*/
 /*	$NetBSD: slip.h,v 1.6 1994/06/29 06:36:53 cgd Exp $	*/
 
 /*-

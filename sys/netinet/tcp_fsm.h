@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcp_fsm.h,v 1.3 1997/06/14 05:37:12 deraadt Exp $	*/
 /*	$NetBSD: tcp_fsm.h,v 1.6 1994/10/14 16:01:48 mycroft Exp $	*/
 
 /*
@@ -45,13 +46,13 @@
 #define	TCPS_CLOSED		0	/* closed */
 #define	TCPS_LISTEN		1	/* listening for connection */
 #define	TCPS_SYN_SENT		2	/* active, have sent syn */
-#define	TCPS_SYN_RECEIVED	3	/* have send and received syn */
+#define	TCPS_SYN_RECEIVED	3	/* have sent and received syn */
 /* states < TCPS_ESTABLISHED are those where connections not established */
 #define	TCPS_ESTABLISHED	4	/* established */
 #define	TCPS_CLOSE_WAIT		5	/* rcvd fin, waiting for close */
 /* states > TCPS_CLOSE_WAIT are those where user has closed */
 #define	TCPS_FIN_WAIT_1		6	/* have closed, sent fin */
-#define	TCPS_CLOSING		7	/* closed xchd FIN; await FIN ACK */
+#define	TCPS_CLOSING		7	/* closed xchd FIN; await ACK */
 #define	TCPS_LAST_ACK		8	/* had fin and close; await FIN ACK */
 /* states > TCPS_CLOSE_WAIT && < TCPS_FIN_WAIT_2 await ACK of FIN */
 #define	TCPS_FIN_WAIT_2		9	/* have closed, fin is acked */
@@ -71,7 +72,7 @@
 u_char	tcp_outflags[TCP_NSTATES] = {
     TH_RST|TH_ACK, 0, TH_SYN, TH_SYN|TH_ACK,
     TH_ACK, TH_ACK,
-    TH_FIN|TH_ACK, TH_FIN|TH_ACK, TH_FIN|TH_ACK, TH_ACK, TH_ACK,
+    TH_FIN|TH_ACK, TH_ACK, TH_FIN|TH_ACK, TH_ACK, TH_ACK,
 };
 #endif
 

@@ -1,4 +1,5 @@
-#	@(#)Makefile	8.1 (Berkeley) 4/20/94
+#	$OpenBSD$
+
 
 DIR=	papers/nqnfs
 SRCS=	nqnfs.me

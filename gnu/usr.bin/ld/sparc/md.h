@@ -1,3 +1,4 @@
+/* *	$OpenBSD: md.h,v 1.5 1999/05/24 23:22:02 espie Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -27,17 +28,31 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: md.h,v 1.12 1995/08/04 21:32:15 pk Exp $
  */
 
 /*
  * SPARC machine dependent definitions
  */
 
+#if defined(CROSS_LINKER)
+
+#include <sys/endian.h>
+#if BYTE_ORDER != BIG_ENDIAN 
+#define NEED_SWAP
+#endif
+
+#undef __LDPGSZ
+#undef ELF_TARG_DATA
+#undef ELF_TARG_MACH
+#undef relocation_info
+#undef MID_MACHINE
+#define MID_MACHINE MID_SPARC
+#include <sparc/exec.h>
+#endif
 
 #define	MAX_ALIGNMENT	(sizeof (double))
 
-#ifdef NetBSD
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #define PAGSIZ			__LDPGSZ
 
 #define N_SET_FLAG(ex,f)	N_SETMAGIC(ex,N_GETMAGIC(ex), \
@@ -65,7 +80,7 @@
 #undef  relocation_info
 #define relocation_info	                reloc_info_sparc
 #define r_symbolnum			r_index
-#endif /* NetBSD */
+#endif /* __NetBSD__ || __OpenBSD__ */
 
 #define N_BADMID(ex) \
 	(N_GETMID(ex) != 0 && N_GETMID(ex) != MID_MACHINE && \
@@ -124,6 +139,7 @@
 			PIC_TYPE_SMALL : \
 			PIC_TYPE_NONE) )
 
+#define ALLOW_SPARC_MIX
 #define CHECK_GOT_RELOC(r) \
 	((r)->r_type == RELOC_PC10 || (r)->r_type == RELOC_PC22)
 

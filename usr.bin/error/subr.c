@@ -1,3 +1,4 @@
+/*	$OpenBSD: subr.c,v 1.5 1999/12/04 00:09:36 deraadt Exp $	*/
 /*	$NetBSD: subr.c,v 1.4 1995/09/10 15:55:15 christos Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)subr.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: subr.c,v 1.4 1995/09/10 15:55:15 christos Exp $";
+static char rcsid[] = "$OpenBSD: subr.c,v 1.5 1999/12/04 00:09:36 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -48,6 +49,7 @@ static char rcsid[] = "$NetBSD: subr.c,v 1.4 1995/09/10 15:55:15 christos Exp $"
 /*
  *	Arrayify a list of rules
  */
+void
 arrayify(e_length, e_array, header)
 	int	*e_length;
 	Eptr	**e_array;
@@ -74,6 +76,7 @@ arrayify(e_length, e_array, header)
 }
 
 /*VARARGS1*/
+void
 error(msg, a1, a2, a3)
 	char	*msg;
 {
@@ -84,13 +87,15 @@ error(msg, a1, a2, a3)
 	fflush(stderr);
 	exit(6);
 }
+
 /*ARGSUSED*/
 char *Calloc(nelements, size)
 	int	nelements;
 	int	size;
 {
 	char	*back;
-	if ( (back = (char *)calloc(nelements, size)) == (char *)NULL){
+
+	if ( (back = (char *)calloc(nelements, size)) == NULL) {
 		error("Ran out of memory.\n");
 		exit(1);
 	}
@@ -101,8 +106,9 @@ char *strsave(instring)
 	char	*instring;
 {
 	char	*outstring;
-	(void)strcpy(outstring = (char *)Calloc(1, strlen(instring) + 1),
-		instring);
+
+	outstring = (char *)Calloc(1, strlen(instring) + 1);
+	strcpy(outstring, instring);	/* ok */
 	return(outstring);
 }
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: sysv_msg.c,v 1.17 1995/10/07 06:28:40 mycroft Exp $	*/
+/*	$OpenBSD: sysv_msg.c,v 1.7 1999/04/18 18:24:40 deraadt Exp $	*/
+/*	$NetBSD: sysv_msg.c,v 1.19 1996/02/09 19:00:18 christos Exp $	*/
 
 /*
  * Implementation of SVID messages
@@ -36,11 +37,12 @@ int nfree_msgmaps;		/* # of free map entries */
 short free_msgmaps;		/* head of linked list of free map entries */
 struct msg *free_msghdrs;	/* list of free msg headers */
 
-int
+static void msg_freehdr __P((struct msg *));
+
+void
 msginit()
 {
 	register int i;
-	vm_offset_t whocares1, whocares2;
 
 	/*
 	 * msginfo.msgssz should be a power of two for efficiency reasons.
@@ -51,16 +53,11 @@ msginit()
 	i = 8;
 	while (i < 1024 && i != msginfo.msgssz)
 		i <<= 1;
-    	if (i != msginfo.msgssz) {
-		printf("msginfo.msgssz=%d (0x%x)\n", msginfo.msgssz,
-		    msginfo.msgssz);
-		panic("msginfo.msgssz not a small power of 2");
-	}
 
-	if (msginfo.msgseg > 32767) {
-		printf("msginfo.msgseg=%d\n", msginfo.msgseg);
-		panic("msginfo.msgseg > 32767");
-	}
+    	if (i != msginfo.msgssz)
+		panic("msginfo.msgssz %d not a small power of 2", msginfo.msgssz);
+	if (msginfo.msgseg > 32767)
+		panic("msginfo.msgseg %d > 32767", msginfo.msgseg);
 
 	if (msgmaps == NULL)
 		panic("msgmaps is NULL");
@@ -99,8 +96,11 @@ msg_freehdr(msghdr)
 {
 	while (msghdr->msg_ts > 0) {
 		short next;
+
+#ifdef DIAGNOSTIC
 		if (msghdr->msg_spot < 0 || msghdr->msg_spot >= msginfo.msgseg)
 			panic("msghdr->msg_spot out of range");
+#endif
 		next = msgmaps[msghdr->msg_spot].next;
 		msgmaps[msghdr->msg_spot].next = free_msgmaps;
 		free_msgmaps = msghdr->msg_spot;
@@ -111,10 +111,170 @@ msg_freehdr(msghdr)
 		else
 			msghdr->msg_ts = 0;
 	}
+#ifdef DIAGNOSTIC
 	if (msghdr->msg_spot != -1)
 		panic("msghdr->msg_spot != -1");
+#endif
 	msghdr->msg_next = free_msghdrs;
 	free_msghdrs = msghdr;
+}
+
+void
+msqid_n2o(n, o)
+	struct msqid_ds *n;
+	struct omsqid_ds *o;
+{
+	o->msg_first = n->msg_first;
+	o->msg_last = n->msg_last;
+	o->msg_cbytes = n->msg_cbytes;
+	o->msg_qnum = n->msg_qnum;
+	o->msg_qbytes = n->msg_qbytes;
+	o->msg_lspid = n->msg_lspid;
+	o->msg_lrpid = n->msg_lrpid;
+	o->msg_stime = n->msg_stime;
+	o->msg_pad1 = n->msg_pad1;
+	o->msg_rtime = n->msg_rtime;
+	o->msg_pad2 = n->msg_pad2;
+	o->msg_ctime = n->msg_ctime;
+	o->msg_pad3 = n->msg_pad3;
+	bcopy(n->msg_pad4, o->msg_pad4, sizeof o->msg_pad4);
+	ipc_n2o(&n->msg_perm, &o->msg_perm);
+}
+
+int
+sys_omsgctl(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	register struct sys_msgctl_args /* {
+		syscallarg(int) msqid;
+		syscallarg(int) cmd;
+		syscallarg(struct msqid_ds *) buf;
+	} */ *uap = v;
+	int msqid = SCARG(uap, msqid);
+	int cmd = SCARG(uap, cmd);
+	struct msqid_ds *user_msqptr = SCARG(uap, buf);
+	struct ucred *cred = p->p_ucred;
+	int rval, eval;
+	struct omsqid_ds omsqbuf;
+	register struct msqid_ds *msqptr;
+
+#ifdef MSG_DEBUG_OK
+	printf("call to msgctl(%d, %d, %p)\n", msqid, cmd, user_msqptr);
+#endif
+
+	msqid = IPCID_TO_IX(msqid);
+
+	if (msqid < 0 || msqid >= msginfo.msgmni) {
+#ifdef MSG_DEBUG_OK
+		printf("msqid (%d) out of range (0<=msqid<%d)\n", msqid,
+		    msginfo.msgmni);
+#endif
+		return(EINVAL);
+	}
+
+	msqptr = &msqids[msqid];
+
+	if (msqptr->msg_qbytes == 0) {
+#ifdef MSG_DEBUG_OK
+		printf("no such msqid\n");
+#endif
+		return(EINVAL);
+	}
+	if (msqptr->msg_perm.seq != IPCID_TO_SEQ(SCARG(uap, msqid))) {
+#ifdef MSG_DEBUG_OK
+		printf("wrong sequence number\n");
+#endif
+		return(EINVAL);
+	}
+
+	eval = 0;
+	rval = 0;
+
+	switch (cmd) {
+
+	case IPC_RMID:
+	{
+		struct msg *msghdr;
+		if ((eval = ipcperm(cred, &msqptr->msg_perm, IPC_M)) != 0)
+			return(eval);
+		/* Free the message headers */
+		msghdr = msqptr->msg_first;
+		while (msghdr != NULL) {
+			struct msg *msghdr_tmp;
+
+			/* Free the segments of each message */
+			msqptr->msg_cbytes -= msghdr->msg_ts;
+			msqptr->msg_qnum--;
+			msghdr_tmp = msghdr;
+			msghdr = msghdr->msg_next;
+			msg_freehdr(msghdr_tmp);
+		}
+
+#ifdef DIAGNOSTIC
+		if (msqptr->msg_cbytes != 0)
+			panic("sys_omsgctl: msg_cbytes is screwed up");
+		if (msqptr->msg_qnum != 0)
+			panic("sys_omsgctl: msg_qnum is screwed up");
+#endif
+
+		msqptr->msg_qbytes = 0;	/* Mark it as free */
+
+		wakeup((caddr_t)msqptr);
+	}
+
+		break;
+
+	case IPC_SET:
+		if ((eval = ipcperm(cred, &msqptr->msg_perm, IPC_M)))
+			return(eval);
+		if ((eval = copyin(user_msqptr, &omsqbuf, sizeof(omsqbuf))) != 0)
+			return(eval);
+		if (omsqbuf.msg_qbytes > msqptr->msg_qbytes && cred->cr_uid != 0)
+			return(EPERM);
+		if (omsqbuf.msg_qbytes > msginfo.msgmnb) {
+#ifdef MSG_DEBUG_OK
+			printf("can't increase msg_qbytes beyond %d (truncating)\n",
+			    msginfo.msgmnb);
+#endif
+			omsqbuf.msg_qbytes = msginfo.msgmnb;	/* silently restrict qbytes to system limit */
+		}
+		if (omsqbuf.msg_qbytes == 0) {
+#ifdef MSG_DEBUG_OK
+			printf("can't reduce msg_qbytes to 0\n");
+#endif
+			return(EINVAL);		/* non-standard errno! */
+		}
+		msqptr->msg_perm.uid = omsqbuf.msg_perm.uid;	/* change the owner */
+		msqptr->msg_perm.gid = omsqbuf.msg_perm.gid;	/* change the owner */
+		msqptr->msg_perm.mode = (msqptr->msg_perm.mode & ~0777) |
+		    (omsqbuf.msg_perm.mode & 0777);
+		msqptr->msg_qbytes = omsqbuf.msg_qbytes;
+		msqptr->msg_ctime = time.tv_sec;
+		break;
+
+	case IPC_STAT:
+		if ((eval = ipcperm(cred, &msqptr->msg_perm, IPC_R))) {
+#ifdef MSG_DEBUG_OK
+			printf("requester doesn't have read access\n");
+#endif
+			return(eval);
+		}
+		msqid_n2o(msqptr, &omsqbuf);
+		eval = copyout((caddr_t)&omsqbuf, user_msqptr, sizeof omsqbuf);
+		break;
+
+	default:
+#ifdef MSG_DEBUG_OK
+		printf("invalid command %d\n", cmd);
+#endif
+		return(EINVAL);
+	}
+
+	if (eval == 0)
+		*retval = rval;
+	return(eval);
 }
 
 int
@@ -132,7 +292,7 @@ sys_msgctl(p, v, retval)
 	int cmd = SCARG(uap, cmd);
 	struct msqid_ds *user_msqptr = SCARG(uap, buf);
 	struct ucred *cred = p->p_ucred;
-	int i, rval, eval;
+	int rval, eval;
 	struct msqid_ds msqbuf;
 	register struct msqid_ds *msqptr;
 
@@ -173,7 +333,7 @@ sys_msgctl(p, v, retval)
 	case IPC_RMID:
 	{
 		struct msg *msghdr;
-		if ((eval = ipcperm(cred, &msqptr->msg_perm, IPC_M)))
+		if ((eval = ipcperm(cred, &msqptr->msg_perm, IPC_M)) != 0)
 			return(eval);
 		/* Free the message headers */
 		msghdr = msqptr->msg_first;
@@ -188,10 +348,12 @@ sys_msgctl(p, v, retval)
 			msg_freehdr(msghdr_tmp);
 		}
 
+#ifdef DIAGNOSTIC
 		if (msqptr->msg_cbytes != 0)
-			panic("msg_cbytes is screwed up");
+			panic("sys_msgctl: msg_cbytes is screwed up");
 		if (msqptr->msg_qnum != 0)
-			panic("msg_qnum is screwed up");
+			panic("sys_msgctl: msg_qnum is screwed up");
+#endif
 
 		msqptr->msg_qbytes = 0;	/* Mark it as free */
 
@@ -265,7 +427,7 @@ sys_msgget(p, v, retval)
 	int key = SCARG(uap, key);
 	int msgflg = SCARG(uap, msgflg);
 	struct ucred *cred = p->p_ucred;
-	register struct msqid_ds *msqptr;
+	register struct msqid_ds *msqptr = NULL;
 
 #ifdef MSG_DEBUG_OK
 	printf("msgget(0x%x, 0%o)\n", key, msgflg);
@@ -363,12 +525,12 @@ sys_msgsnd(p, v, retval)
 {
 	register struct sys_msgsnd_args /* {
 		syscallarg(int) msqid;
-		syscallarg(void *) msgp;
+		syscallarg(const void *) msgp;
 		syscallarg(size_t) msgsz;
 		syscallarg(int) msgflg;
 	} */ *uap = v;
 	int msqid = SCARG(uap, msqid);
-	char *user_msgp = SCARG(uap, msgp);
+	const char *user_msgp = SCARG(uap, msgp);
 	size_t msgsz = SCARG(uap, msgsz);
 	int msgflg = SCARG(uap, msgflg);
 	int segs_needed, eval;
@@ -422,11 +584,11 @@ sys_msgsnd(p, v, retval)
 		int need_more_resources = 0;
 
 		/*
-		 * check msgsz
+		 * check msgsz [cannot be negative since it is unsigned]
 		 * (inside this loop in case msg_qbytes changes while we sleep)
 		 */
 
-		if (msgsz < 0 || msgsz > msqptr->msg_qbytes) {
+		if (msgsz > msqptr->msg_qbytes) {
 #ifdef MSG_DEBUG_OK
 			printf("msgsz > msqptr->msg_qbytes\n");
 #endif
@@ -530,6 +692,7 @@ sys_msgsnd(p, v, retval)
 	 * Make sure!
 	 */
 
+#ifdef DIAGNOSTIC
 	if (msqptr->msg_perm.mode & MSG_LOCKED)
 		panic("msg_perm.mode & MSG_LOCKED");
 	if (segs_needed > nfree_msgmaps)
@@ -538,14 +701,17 @@ sys_msgsnd(p, v, retval)
 		panic("msgsz + msg_cbytes > msg_qbytes");
 	if (free_msghdrs == NULL)
 		panic("no more msghdrs");
+#endif
 
 	/*
 	 * Re-lock the msqid_ds in case we page-fault when copying in the
 	 * message
 	 */
 
+#ifdef DIAGNOSTIC
 	if ((msqptr->msg_perm.mode & MSG_LOCKED) != 0)
 		panic("msqid_ds is already locked");
+#endif
 	msqptr->msg_perm.mode |= MSG_LOCKED;
 
 	/*
@@ -562,15 +728,19 @@ sys_msgsnd(p, v, retval)
 	 */
 
 	while (segs_needed > 0) {
+#ifdef DIAGNOSTIC
 		if (nfree_msgmaps <= 0)
 			panic("not enough msgmaps");
 		if (free_msgmaps == -1)
 			panic("nil free_msgmaps");
+#endif
 		next = free_msgmaps;
+#ifdef DIAGNOSTIC
 		if (next <= -1)
 			panic("next too low #1");
 		if (next >= msginfo.msgseg)
 			panic("next out of range #1");
+#endif
 #ifdef MSG_DEBUG_OK
 		printf("allocating segment %d to message\n", next);
 #endif
@@ -622,10 +792,12 @@ sys_msgsnd(p, v, retval)
 			tlen = msginfo.msgssz;
 		else
 			tlen = msgsz;
+#ifdef DIAGNOSTIC
 		if (next <= -1)
 			panic("next too low #2");
 		if (next >= msginfo.msgseg)
 			panic("next out of range #2");
+#endif
 		if ((eval = copyin(user_msgp, &msgpool[next * msginfo.msgssz],
 		    tlen)) != 0) {
 #ifdef MSG_DEBUG_OK
@@ -640,9 +812,10 @@ sys_msgsnd(p, v, retval)
 		user_msgp += tlen;
 		next = msgmaps[next].next;
 	}
+#ifdef DIAGNOSTIC
 	if (next != -1)
 		panic("didn't use all the msg segments");
-
+#endif
 	/*
 	 * We've got the message.  Unlock the msqid_ds.
 	 */
@@ -749,12 +922,15 @@ sys_msgrcv(p, v, retval)
 		return(eval);
 	}
 
+#if 0
+	/* cannot happen, msgsz is unsigned */
 	if (msgsz < 0) {
 #ifdef MSG_DEBUG_OK
 		printf("msgsz < 0\n");
 #endif
 		return(EINVAL);
 	}
+#endif
 
 	msghdr = NULL;
 	while (msghdr == NULL) {
@@ -774,8 +950,10 @@ sys_msgrcv(p, v, retval)
 					msqptr->msg_last = NULL;
 				} else {
 					msqptr->msg_first = msghdr->msg_next;
+#ifdef DIAGNOSTIC
 					if (msqptr->msg_first == NULL)
 						panic("msg_first/last screwed up #1");
+#endif
 				}
 			}
 		} else {
@@ -811,17 +989,21 @@ sys_msgrcv(p, v, retval)
 					*prev = msghdr->msg_next;
 					if (msghdr == msqptr->msg_last) {
 						if (previous == NULL) {
+#ifdef DIAGNOSTIC
 							if (prev !=
 							    &msqptr->msg_first)
 								panic("msg_first/last screwed up #2");
+#endif
 							msqptr->msg_first =
 							    NULL;
 							msqptr->msg_last =
 							    NULL;
 						} else {
+#ifdef DIAGNOSTIC
 							if (prev ==
 							    &msqptr->msg_first)
 								panic("msg_first/last screwed up #3");
+#endif
 							msqptr->msg_last =
 							    previous;
 						}
@@ -945,14 +1127,16 @@ sys_msgrcv(p, v, retval)
 	for (len = 0; len < msgsz; len += msginfo.msgssz) {
 		size_t tlen;
 
-		if (msgsz > msginfo.msgssz)
+		if (msgsz - len > msginfo.msgssz)
 			tlen = msginfo.msgssz;
 		else
-			tlen = msgsz;
+			tlen = msgsz - len;
+#ifdef DIAGNOSTIC
 		if (next <= -1)
 			panic("next too low #3");
 		if (next >= msginfo.msgseg)
 			panic("next out of range #3");
+#endif
 		eval = copyout((caddr_t)&msgpool[next * msginfo.msgssz],
 		    user_msgp, tlen);
 		if (eval != 0) {

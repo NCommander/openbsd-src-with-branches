@@ -1,3 +1,4 @@
+/* $OpenBSD: usermgmt.h,v 1.4 1999/12/24 09:08:51 agc Exp $ */
 /* $NetBSD: usermgmt.h,v 1.4 1999/12/24 09:08:51 agc Exp $ */
 
 /*

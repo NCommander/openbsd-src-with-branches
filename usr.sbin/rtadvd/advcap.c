@@ -1,3 +1,6 @@
+/*	$OpenBSD: advcap.c,v 1.3 2000/05/23 11:23:22 itojun Exp $	*/
+/*	$KAME: advcap.c,v 1.5 2001/02/01 09:12:08 jinmei Exp $	*/
+
 /*
  * Copyright (c) 1983 The Regents of the University of California.
  * All rights reserved.
@@ -30,10 +33,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char sccsid[] = "@(#)remcap.c	5.5 (Berkeley) 2/2/91";
-#endif /* not lint */
 
 /*
  * remcap - routines for dealing with the remote host data base
@@ -97,7 +96,7 @@ int getent __P((char *, char *, char *));
 int tnchktc __P((void));
 int tnamatch __P((char *));
 static char *tskip __P((char *));
-int tgetnum __P((char *));
+long long tgetnum __P((char *));
 int tgetflag __P((char *));
 char *tgetstr __P((char *, char **));
 static char *tdecode __P((char *, char **));
@@ -139,7 +138,7 @@ getent(bp, name, cp)
 		tf = open(RM = cp, O_RDONLY);
 	}
 	if (tf < 0) {
-		syslog(LOG_WARNING,
+		syslog(LOG_INFO,
 		       "<%s> open: %s", __FUNCTION__, strerror(errno));
 		return (-2);
 	}
@@ -308,11 +307,11 @@ breakbreak:
  * a # character.  If the option is not found we return -1.
  * Note that we handle octal numbers beginning with 0.
  */
-int
+long long
 tgetnum(id)
 	char *id;
 {
-	register long int i;
+	register long long i;
 	register int base;
 	register char *bp = tbuf;
 

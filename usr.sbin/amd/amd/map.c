@@ -1,3 +1,5 @@
+/*	$OpenBSD: map.c,v 1.3 1997/01/31 14:41:59 graichen Exp $	*/
+
 /*-
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -38,10 +40,12 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)map.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: map.c,v 1.3 1994/06/13 20:47:32 mycroft Exp $";
+static char *rcsid = "$OpenBSD: map.c,v 1.3 1997/01/31 14:41:59 graichen Exp $";
 #endif /* not lint */
 
 #include "am.h"
+
+#include <unistd.h>
 
 /*
  * Generation Numbers.
@@ -283,10 +287,10 @@ am_node *mp;
 	mp->am_ttl += mp->am_timeo;	/* sun's -tl option */
 }
 
-void mk_fattr P((am_node *mp, ftype vntype));
+void mk_fattr P((am_node *mp, int vntype));
 void mk_fattr(mp, vntype)
 am_node *mp;
-ftype vntype;
+int vntype;
 {
 	switch (vntype) {
 	case NFDIR:
@@ -619,10 +623,10 @@ char *dir;
 		 * Patch up PID to match main server...
 		 */
 		if (!foreground) {
-			long pid = getppid();
+			pid_t pid = getppid();
 			((struct am_fh *) &nfh)->fhh_pid = pid;
 #ifdef DEBUG
-			dlog("root_fh substitutes pid %d", pid);
+			dlog("root_fh substitutes pid %d", (int)pid);
 #endif
 		}
 		return &nfh;

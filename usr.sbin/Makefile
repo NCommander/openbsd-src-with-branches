@@ -1,38 +1,36 @@
-#	from: @(#)Makefile	5.6.1.2 (Berkeley) 5/8/91
-#	$Id: Makefile,v 1.56 1995/10/09 03:43:55 chopps Exp $
+#	$OpenBSD: Makefile,v 1.75 2001/04/02 10:11:41 espie Exp $
 
 # not yet done: catman
 
-SUBDIR=	ac accton arp bootpd bootpgw bootpef bootptest \
-	chown chroot config cron dev_mkdb \
-	diskpart edquota gettable gspa htable inetd iostat kgmon \
-	kvm_mkdb lpr map-mbone mrinfo mrouted mtrace mtree named \
-	netgroup_mkdb portmap pppd pstat pwd_mkdb quot quotaon \
-	rarpd rbootd rdconfig rdate repquota rmt \
-	rpc.bootparamd rpc.pcnfsd rwhod \
-	sa sendmail sliplogin slstats spray sysctl \
-	syslogd tcpdump timed traceroute trpt trsp update \
-	vipw vnconfig ypbind yppoll ypset zdump zic
+.include <bsd.own.mk>
 
-# should be listed above, but doesn't work on the Alpha.
-.if   (${MACHINE_ARCH} != "alpha") || make(clean) || make(cleandir)
-SUBDIR+=amd
+SUBDIR=	ac accton adduser amd arp bootpd bootpgw bootpef bootptest \
+	chroot config cron dev_mkdb dhcp \
+	edquota gspa httpd inetd iostat ipfs \
+	ipftest ipmon ipsend kgmon kvm_mkdb lpr \
+	mailwrapper map-mbone mrinfo mopd mrouted mtrace mtree named \
+	netgroup_mkdb openssl pkg pkg_install portmap ppp pppd pppoe pstat \
+	pwd_mkdb quot quotaon rarpd rbootd rdconfig rdate repquota rmt \
+	rpc.bootparamd rpc.lockd rpc.pcnfsd rwhod \
+	sa sesd sliplogin slstats spppcontrol spray \
+	syslogd tcpdump timed traceroute trpt trsp \
+	usbdevs user vipw vnconfig wsmoused zdump zic
+
+# IPv6
+SUBDIR+=faithd ifmcstat ndp rip6query route6d rtadvd rtsold traceroute6
+
+# Arch dependent tools, with manpages
+SUBDIR+=iteconfig grfconfig videomode
+SUBDIR+=bad144 apm apmd fdformat memconfig
+SUBDIR+=eeprom screenblank grfinfo hilinfo
+SUBDIR+=wsconscfg wsfontload
+
+.if (${AFS:L} == "yes")
+SUBDIR+=afs
 .endif
 
-.if   make(clean) || make(cleandir)
-SUBDIR+=bad144 config.old dbsym eeprom grfinfo hilinfo iteconfig screenblank
-.elif ${MACHINE} == "amiga" || ${MACHINE} == "atari"
-SUBDIR+=grfconfig iteconfig videomode
-.elif ${MACHINE} == "hp300"
-SUBDIR+=config.old grfinfo hilinfo
-.elif ${MACHINE} == "i386"
-SUBDIR+=bad144 
-.elif ${MACHINE} == "pmax"
-SUBDIR+=config.old
-.elif ${MACHINE} == "sun3"
-SUBDIR+=dbsym eeprom screenblank
-.elif ${MACHINE} == "sparc"
-SUBDIR+=eeprom screenblank
+.if (${YP:L} == "yes")
+SUBDIR+=ypbind yppoll ypset ypserv
 .endif
 
 .include <bsd.subdir.mk>

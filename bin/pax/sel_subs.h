@@ -1,3 +1,4 @@
+/*	$OpenBSD: sel_subs.h,v 1.3 1995/03/21 09:07:44 cgd Exp $	*/
 /*	$NetBSD: sel_subs.h,v 1.3 1995/03/21 09:07:44 cgd Exp $	*/
 
 /*-

@@ -56,24 +56,21 @@
  * [including the GNU Public Licence.]
  */
 
-/* Origional version from Steven Schoch <schoch@sheba.arc.nasa.gov> */
+/* Original version from Steven Schoch <schoch@sheba.arc.nasa.gov> */
 
+#ifndef NO_DSA
 #include <stdio.h>
 #include "cryptlib.h"
-#include "bn.h"
-#include "dsa.h"
-#include "objects.h"
-#include "asn1_mac.h"
+#include <openssl/bn.h>
+#include <openssl/dsa.h>
+#include <openssl/objects.h>
+#include <openssl/asn1_mac.h>
 
-/*
- * ASN1err(ASN1_F_D2I_DSAPUBLICKEY,ASN1_R_LENGTH_MISMATCH);
- * ASN1err(ASN1_F_I2D_DSAPUBLICKEY,ASN1_R_UNKNOWN_ATTRIBUTE_TYPE);
- */
+#ifndef NO_NEG_PUBKEY_BUG
+#define d2i_ASN1_INTEGER d2i_ASN1_UINTEGER
+#endif
 
-DSA *d2i_DSAPublicKey(a,pp,length)
-DSA **a;
-unsigned char **pp;
-long length;
+DSA *d2i_DSAPublicKey(DSA **a, unsigned char **pp, long length)
 	{
 	int i=ASN1_R_PARSING;
 	ASN1_INTEGER *bs=NULL;
@@ -110,7 +107,7 @@ long length;
 		ret->write_params=1;
 		}
 
-	ASN1_INTEGER_free(bs);
+	M_ASN1_INTEGER_free(bs);
 	bs=NULL;
 	M_ASN1_D2I_Finish_2(a);
 err_bn:
@@ -118,7 +115,7 @@ err_bn:
 err:
 	ASN1err(ASN1_F_D2I_DSAPUBLICKEY,i);
 	if ((ret != NULL) && ((a == NULL) || (*a != ret))) DSA_free(ret);
-	if (bs != NULL) ASN1_INTEGER_free(bs);
+	if (bs != NULL) M_ASN1_INTEGER_free(bs);
 	return(NULL);
 	}
-
+#endif

@@ -1,3 +1,4 @@
+/*	$OpenBSD: strlen.S,v 1.2 1994/10/26 06:40:09 cgd Exp $	*/
 /*	$NetBSD: strlen.S,v 1.2 1994/10/26 06:40:09 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@
 #ifdef notdef
 	.asciz "@(#)strlen.s	8.1 (Berkeley) 6/4/93"
 #endif
-	.asciz "$NetBSD: strlen.S,v 1.2 1994/10/26 06:40:09 cgd Exp $"
+	.asciz "$OpenBSD: strlen.S,v 1.2 1994/10/26 06:40:09 cgd Exp $"
 #endif /* LIBC_SCCS and not lint */
 
 #include "DEFS.h"

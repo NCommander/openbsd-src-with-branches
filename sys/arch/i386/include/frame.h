@@ -1,3 +1,4 @@
+/*	$OpenBSD: frame.h,v 1.12 1995/10/11 04:20:08 mycroft Exp $	*/
 /*	$NetBSD: frame.h,v 1.12 1995/10/11 04:20:08 mycroft Exp $	*/
 
 /*-
@@ -115,8 +116,9 @@ struct switchframe {
  */
 struct sigframe {
 	int	sf_signum;
-	int	sf_code;
+	siginfo_t *sf_sip;
 	struct	sigcontext *sf_scp;
 	sig_t	sf_handler;
 	struct	sigcontext sf_sc;
+	siginfo_t sf_si;
 };

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #define VERSION "1.7b 1985-04-19"
 
 /* Choose one of these */

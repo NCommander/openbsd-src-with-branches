@@ -1,3 +1,5 @@
+/*	$OpenBSD: def.objclass.h,v 1.3 1995/03/23 08:29:34 cgd Exp $*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  *
@@ -58,6 +60,6 @@ extern struct objclass objects[];
  * hack.mkobj.c:	char mkobjstr[] = "))[[!!!!????%%%%/=**";
  * hack.apply.c:   otmp = getobj("0#%", "put in");
  * hack.eat.c:     otmp = getobj("%", "eat");
- * hack.invent.c:          if(index("!%?[)=*(0/\"", sym)){
+ * hack.invent.c:	   if(index("!%?[)=*(0/\"", sym)){
  * hack.invent.c:    || index("%?!*",otmp->olet))){
  */

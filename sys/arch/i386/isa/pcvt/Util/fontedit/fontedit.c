@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * fontedit
  *	Fonteditor for VT220
@@ -30,11 +32,13 @@ void clear_screen();
 #ifdef BSD
 #include <sys/ioctl.h>
 #endif BSD
-#if defined (__NetBSD__) || defined (__FreeBSD__)
+#if defined (__NetBSD__) || defined (__OpenBSD__) || defined (__FreeBSD__)
 #include <sys/termios.h>
 #include <sys/ioctl.h>
-#endif /* __NetBSD__ || __FreeBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ || __FreeBSD__ */
 #include <signal.h>
+#include <string.h>
+#include <unistd.h>
 
 #ifdef CURFIX
 #define CURSORON  "\033[?25h"
@@ -107,17 +111,37 @@ struct termio old_stty, new_stty;
 #ifdef BSD
 struct sgttyb old_stty, new_stty;
 #endif BSD
-#if defined (__NetBSD__) || defined (__FreeBSD__)
+#if defined (__NetBSD__) || defined(__OpenBSD__) || defined (__FreeBSD__)
 struct termios old_stty, new_stty;
-#endif /* __NetBSD__ || __FreeBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ || __FreeBSD__ */
 FILE * font_file = (FILE *)0;
 
+#ifdef __P
+void interrupt __P((void));
+void command __P((void));
+int get_key __P((void));
+void pad __P((void));
+void init_restore __P((void));
+void draw_current __P((void));
+void highlight __P((unsigned int, unsigned int, bool));
+void clear_screen __P((void));
+void move __P((int, int));
+void build_entry __P((unsigned int));
+void extract_entry __P((unsigned int));
+void send_entry __P((int));
+void print_entry __P((register unsigned int, bool));
+void save_table __P((FILE *));
+void get_table __P((FILE *));
+void help __P((void));
+void warning __P((char *));
+#endif
 
 /*
  * Interrupt
  *	Exit gracefully.
  */
 
+void
 interrupt()
 {
 	void clear_screen();
@@ -130,9 +154,9 @@ interrupt()
 #ifdef BSD
         ioctl( 0, TIOCSETP, &old_stty );
 #endif BSD
-#if defined (__NetBSD__) || defined (__FreeBSD__)
+#if defined (__NetBSD__) || defined(__OpenBSD__) || defined (__FreeBSD__)
         ioctl( 0, TIOCSETA, &old_stty );
-#endif /* __NetBSD__ || __FreeBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ || __FreeBSD__ */
 	clear_screen();
 	exit( 0 );
 }
@@ -143,6 +167,7 @@ interrupt()
  *	Grab input/output file and call main command processor.
  */
 	
+int
 main( argc, argv )
 int argc;
 char *argv[];
@@ -187,9 +212,9 @@ char *argv[];
 #ifdef BSD
         ioctl( 0, TIOCGETP, &old_stty );
 #endif BSD
-#if defined (__NetBSD__) || defined (__FreeBSD__)
+#if defined (__NetBSD__) || defined(__OpenBSD__) || defined (__FreeBSD__)
         ioctl( 0, TIOCGETA, &old_stty );
-#endif /* __NetBSD__ || __FreeBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ || __FreeBSD__ */
 	signal( SIGINT, (void *) interrupt );
 	new_stty = old_stty;
 #ifdef SYSV
@@ -197,12 +222,12 @@ char *argv[];
 	new_stty.c_cc[VMIN] = 1;
 	ioctl( 0, TCSETA, &new_stty );
 #endif SYSV
-#if defined (__NetBSD__) || defined (__FreeBSD__)
+#if defined (__NetBSD__) || defined(__OpenBSD__) || defined (__FreeBSD__)
 	new_stty.c_lflag &= ~ICANON;
         new_stty.c_lflag &= ~ECHO;
 	new_stty.c_cc[VMIN] = 1;
 	ioctl( 0, TIOCSETA, &new_stty );
-#endif /* __NetBSD__ || __FreeBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ || __FreeBSD__ */
 #ifdef BSD
 	new_stty.sg_flags |= CBREAK;               
         new_stty.sg_flags &= ~ECHO;
@@ -218,9 +243,9 @@ char *argv[];
 #ifdef BSD
 	ioctl( 0, TIOCSETP, &old_stty );
 #endif BSD
-#if defined (__NetBSD__) || defined (__FreeBSD__)
+#if defined (__NetBSD__) || defined(__OpenBSD__) || defined (__FreeBSD__)
 	ioctl( 0, TIOCSETA, &old_stty );
-#endif /* __NetBSD__ || __FreeBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ || __FreeBSD__ */
 	clear_screen();
 
 	/* Overwrite the old file. */
@@ -231,6 +256,7 @@ char *argv[];
 #ifdef CURFIX
         printf("%s\n",CURSORON);
 #endif CURFIX
+	exit(0);
 }
 
 
@@ -501,6 +527,7 @@ get_key()
  *	Emit nulls so that the terminal can catch up.
  */
 
+void
 pad()
 {
 	int i;
@@ -668,6 +695,7 @@ clear_screen()
  * move
  */
 
+void
 move( y, x )
 int y, x;
 {

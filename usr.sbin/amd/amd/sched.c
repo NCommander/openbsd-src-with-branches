@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)sched.c	8.1 (Berkeley) 6/6/93
- *	$Id: sched.c,v 1.3 1994/06/13 20:48:00 mycroft Exp $
+ *	$Id: sched.c,v 1.2 1997/08/04 19:26:05 deraadt Exp $
  */
 
 /*
@@ -44,7 +44,7 @@
  */
 
 #include "am.h"
-#include <sys/signal.h>
+#include <signal.h>
 #include WAIT
 #include <setjmp.h>
 extern jmp_buf select_intr;
@@ -116,7 +116,7 @@ voidp ca;
 
 	mask = sigblock(sigmask(SIGCHLD));
 
-	if (p->pid = background()) {
+	if ((p->pid = background())) {
 		sigsetmask(mask);
 		return;
 	}
@@ -202,6 +202,7 @@ void sigchld(sig)
 int sig;
 {
 	union wait w;
+	int save_errno = errno;
 	int pid;
 
 #ifdef SYS5_SIGNALS
@@ -240,6 +241,7 @@ int sig;
 #endif /* SYS5_SIGNALS */
 	if (select_intr_valid)
 		longjmp(select_intr, sig);
+	errno = save_errno;
 }
 
 /*

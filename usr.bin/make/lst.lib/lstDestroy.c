@@ -1,8 +1,9 @@
-/*	$NetBSD: lstDestroy.c,v 1.5 1995/06/14 15:20:58 christos Exp $	*/
+/*	$OpenBSD: lstDestroy.c,v 1.10 2000/06/17 14:43:38 espie Exp $	*/
+/*	$NetBSD: lstDestroy.c,v 1.6 1996/11/06 17:59:37 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,20 +37,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstDestroy.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstDestroy.c,v 1.5 1995/06/14 15:20:58 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstDestroy.c --
  *	Nuke a list and all its resources
  */
 
 #include	"lstInt.h"
+#ifndef lint
+#if 0
+static char sccsid[] = "@(#)lstDestroy.c	8.1 (Berkeley) 6/6/93";
+#else
+UNUSED
+static char rcsid[] = "$OpenBSD: lstDestroy.c,v 1.10 2000/06/17 14:43:38 espie Exp $";
+#endif
+#endif /* not lint */
+
 
 /*-
  *-----------------------------------------------------------------------
@@ -58,51 +60,29 @@ static char rcsid[] = "$NetBSD: lstDestroy.c,v 1.5 1995/06/14 15:20:58 christos 
  *	given, it is called with the datum from each node in turn before
  *	the node is freed.
  *
- * Results:
- *	None.
- *
  * Side Effects:
  *	The given list is freed in its entirety.
  *
  *-----------------------------------------------------------------------
  */
 void
-Lst_Destroy (l, freeProc)
+Lst_Destroy(l, freeProc)
     Lst	    	  	l;
-    register void	(*freeProc) __P((ClientData));
+    SimpleProc		freeProc;
 {
-    register ListNode	ln;
-    register ListNode	tln = NilListNode;
-    register List 	list = (List)l;
-    
-    if (l == NILLST || ! l) {
-	/*
-	 * Note the check for l == (Lst)0 to catch uninitialized static Lst's.
-	 * Gross, but useful.
-	 */
-	return;
-    }
-
-    /* To ease scanning */
-    if (list->lastPtr != NilListNode)
-	list->lastPtr->nextPtr = NilListNode;
-    else {
-	free ((Address)l);
-	return;
-    }
+    LstNode	ln;
+    LstNode	tln;
 
     if (freeProc) {
-	for (ln = list->firstPtr; ln != NilListNode; ln = tln) {
+	for (ln = l->firstPtr; ln != NULL; ln = tln) {
 	     tln = ln->nextPtr;
-	     (*freeProc) (ln->datum);
-	     free ((Address)ln);
+	     (*freeProc)(ln->datum);
+	     free(ln);
 	}
     } else {
-	for (ln = list->firstPtr; ln != NilListNode; ln = tln) {
+	for (ln = l->firstPtr; ln != NULL; ln = tln) {
 	     tln = ln->nextPtr;
-	     free ((Address)ln);
+	     free(ln);
 	}
     }
-    
-    free ((Address)l);
 }

@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NOWHERE: dev_hppa.c,v 2.1 1998/06/17 20:51:54 mickey Exp $	*/
+/*	$OpenBSD: dev_hppa.c,v 1.4 1999/02/13 04:43:18 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -39,9 +38,9 @@
 #include <sys/reboot.h>
 #include <dev/cons.h>
 
-#include "dev_hppa.h"
+#include <machine/iomod.h>
 
-struct  pz_device ctdev;	/* cartridge tape (boot) device path */
+#include "dev_hppa.h"
 
 extern int debug;
 
@@ -56,11 +55,12 @@ const struct pdc_devs {
 	int	dev_type;
 } pdc_devs[] = {
 	{ "ct",  0 },
+	{ "dk",  1 },
+	{ "lf",  2 },
 	{ "",   -1 },
 	{ "rd", -1 },
 	{ "sw", -1 },
-	{ "fl",  1 },
-	{ "sd",  1 },
+	{ "fl", -1 },
 };
 
 /* pass dev_t to the open routines */
@@ -70,40 +70,87 @@ devopen(f, fname, file)
 	const char *fname;
 	char **file;
 {
+	register struct hppa_dev *hpd;
 	register const struct pdc_devs *dp = pdc_devs;
 	register int rc = 1;
 
-	*file = (char *)fname;
+	if (!(*file = strchr(fname, ':')))
+		return ENODEV;
+	else
+		(*file)++;
 
-#ifdef DEBUG
+#ifdef DEBUGBUG
 	if (debug)
-		printf("devopen:");
+		printf("devopen: ");
 #endif
 
 	for (dp = pdc_devs; dp < &pdc_devs[NENTS(pdc_devs)]; dp++)
-		if (strncmp(fname, dp->name, sizeof(dp->name)-1))
+		if (!strncmp(fname, dp->name, sizeof(dp->name)-1))
 			break;
 
 	if (dp >= &pdc_devs[NENTS(pdc_devs)] || dp->dev_type < 0)
 		return ENODEV;
+#ifdef DEBUGBUG
+	if (debug)
+		printf("%s\n", dp->name);
+#endif
 
-	if ((rc = (*devsw[dp->dev_type].dv_open)(f, file)) == 0) {
-		f->f_dev = &devsw[dp->dev_type];
-		return 0;
+	if (!(hpd = alloc(sizeof *hpd))) {
+#ifdef DEBUG
+		printf ("devopen: no mem\n");
+#endif
+	} else {
+		bzero(hpd, sizeof *hpd);
+		hpd->bootdev = bootdev;
+		hpd->buf = (char *)(((u_int)hpd->ua_buf + IODC_MINIOSIZ-1) &
+			~(IODC_MINIOSIZ-1));
+		f->f_devdata = hpd;
+		if ((rc = (*devsw[dp->dev_type].dv_open)(f, file)) == 0) {
+			f->f_dev = &devsw[dp->dev_type];
+			return 0;
+		}
+		free (hpd, 0);
+		f->f_devdata = NULL;
 	}
 
-	if ((f->f_flags & F_NODEV) == 0)
+	if (!(f->f_flags & F_NODEV))
 		f->f_dev = &devsw[dp->dev_type];
+
+	if (!f->f_devdata)
+		*file = NULL;
 
 	return rc;
 }
 
 void
-devboot(bootdev, p)
-	dev_t bootdev;
+devboot(dev, p)
+	dev_t dev;
 	char *p;
 {
 	register const char *q;
+	if (!dev) {
+		int type, unit;
+
+		switch (PAGE0->mem_boot.pz_class) {
+		case PCL_RANDOM:
+			type = 1;
+			unit = PAGE0->mem_boot.pz_layers[0];
+			break;
+		case PCL_SEQU:
+			type = 0;
+			unit = PAGE0->mem_boot.pz_layers[0];
+			break;
+		case PCL_NET_MASK|PCL_SEQU:
+			type = 2;
+			unit = 0;
+			break;
+		default:
+			type = 0;
+			unit = 0;
+			break;
+		}
+		dev = bootdev = MAKEBOOTDEV(type, 0, 0, unit, 0);
+	}
 #ifdef _TEST
 	*p++ = '/';
 	*p++ = 'd';
@@ -113,9 +160,9 @@ devboot(bootdev, p)
 	*p++ = 'r';
 #endif
 	/* quick copy device name */
-	for (q = pdc_devs[B_TYPE(bootdev)].name; (*p++ = *q++););
-	*p++ = '0' + B_UNIT(bootdev);
-	*p++ = 'a' + B_PARTITION(bootdev);
+	for (q = pdc_devs[B_TYPE(dev)].name; (*p++ = *q++););
+	p[-1] = '0' + B_UNIT(dev);
+	*p++ = 'a' + B_PARTITION(dev);
 	*p = '\0';
 }
 

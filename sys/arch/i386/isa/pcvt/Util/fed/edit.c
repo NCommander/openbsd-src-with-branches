@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1992, 1993, 1994 by Hellmuth Michaelis
  *

@@ -1,4 +1,5 @@
-/*	$NetBSD: net.c,v 1.1 1996/09/30 16:35:01 ws Exp $	*/
+/*	$OpenBSD:$	*/
+/*	$NetBSD: net.c,v 1.1 1997/04/16 20:29:18 thorpej Exp $	*/
 
 /*
  * Copyright (C) 1995 Wolfgang Solfrank.
@@ -57,9 +58,9 @@
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
 
-#include "stand.h"
-#include "net.h"
-#include "netif.h"
+#include <lib/libsa/stand.h>
+#include <lib/libsa/net.h>
+#include <lib/libsa/netif.h>
 
 char	rootpath[FNAME_SIZE];
 

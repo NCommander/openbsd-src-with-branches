@@ -1,4 +1,4 @@
-/*	$NetBSD: mem.c,v 1.11 1995/05/29 23:57:16 pk Exp $ */
+/*	$OpenBSD: mem.c,v 1.6 2001/01/13 05:18:59 smurph Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -54,6 +54,9 @@
 #include <machine/board.h>
 
 #include <vm/vm.h>
+#if defined(UVM)
+#include <uvm/uvm_extern.h>
+#endif
 
 caddr_t zeropage;
 
@@ -64,7 +67,15 @@ mmopen(dev, flag, mode)
 	int flag, mode;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
@@ -123,7 +134,7 @@ mmrw(dev, uio, flags)
 			}
 			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
 			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+			    VM_PROT_READ : VM_PROT_WRITE, TRUE, 0);
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
@@ -135,6 +146,34 @@ mmrw(dev, uio, flags)
 		case 1:
 			v = uio->uio_offset;
 			c = min(iov->iov_len, MAXPHYS);
+#if defined(UVM)
+			if (!uvm_kernacc((caddr_t)v, c,
+			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
+				return (EFAULT);
+#else
+			if (!kernacc((caddr_t)v, c,
+			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
+				return (EFAULT);
+#endif
+			if (v < NBPG) {
+#ifdef DEBUG
+				/*
+				 * For now, return zeros on read of page 0
+				 * and EFAULT for writes.
+				 */
+				if (uio->uio_rw == UIO_READ) {
+					if (zeropage == NULL) {
+						zeropage = (caddr_t)
+						    malloc(CLBYTES, M_TEMP,
+						    M_WAITOK);
+						bzero(zeropage, CLBYTES);
+					}
+					c = min(c, NBPG - (int)v);
+					v = (vm_offset_t)zeropage;
+				} else
+#endif
+					return (EFAULT);
+			}
 			error = uiomove((caddr_t)v, c, uio);
 			continue;
 
@@ -185,6 +224,17 @@ mmmmap(dev, off, prot)
         dev_t dev;
         int off, prot;
 {
+	return (-1);
+}
 
+/*ARGSUSED*/
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
 	return (EOPNOTSUPP);
 }

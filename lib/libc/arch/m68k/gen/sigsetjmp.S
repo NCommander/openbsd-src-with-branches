@@ -35,11 +35,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#if defined(LIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)_setjmp.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$NetBSD: sigsetjmp.S,v 1.1 1995/05/03 03:43:07 briggs Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD: sigsetjmp.S,v 1.2 1996/08/19 08:14:41 tholo Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * C library -- sigsetjmp, siglongjmp
@@ -59,7 +58,7 @@
 
 ENTRY(sigsetjmp)
 	movl	sp@(8),d1	/* grab the mask */
-        movl	sp@(4),a0	/* grab the area pointer */
+	movl	sp@(4),a0	/* grab the area pointer */
 	movl	d1,a0@(_JBLEN * 4 )	/* save at end of area */
 	tstl	d1
 	bne	dosig

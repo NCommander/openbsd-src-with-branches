@@ -1,4 +1,5 @@
-/*	$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $	*/
+/*	$OpenBSD: login.c,v 1.34 2000/09/15 07:13:48 deraadt Exp $	*/
+/*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1987, 1988, 1991, 1993, 1994
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $";
+static char rcsid[] = "$OpenBSD: login.c,v 1.34 2000/09/15 07:13:48 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -56,11 +57,13 @@ static char rcsid[] = "$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $";
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <sys/file.h>
+#include <sys/wait.h>
 
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <grp.h>
+#include <login_cap.h>
 #include <pwd.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -72,6 +75,8 @@ static char rcsid[] = "$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $";
 #include <tzfile.h>
 #include <unistd.h>
 #include <utmp.h>
+#include <util.h>
+#include <skey.h>
 
 #include "pathnames.h"
 
@@ -82,6 +87,7 @@ void	 getloginname __P((void));
 void	 motd __P((void));
 int	 rootterm __P((char *));
 void	 sigint __P((int));
+void	 sighup __P((int));
 void	 sleepexit __P((int));
 char	*stypeof __P((char *));
 void	 timedout __P((int));
@@ -90,28 +96,33 @@ int	 pwcheck __P((char *, char *, char *, char *));
 int	 klogin __P((struct passwd *, char *, char *, char *));
 void	 kdestroy __P((void));
 void	 dofork __P((void));
+void	 kgettokens __P((char *));
 #endif
 
-extern void login __P((struct utmp *));
+extern int check_failedlogin __P((uid_t));
+extern void log_failedlogin __P((uid_t, char *, char *, char *));
 
 #define	TTYGRPNAME	"tty"		/* name of group to own ttys */
 
 /*
  * This bounds the time given to login.  Not a define so it can
  * be patched on machines where it's too small.
+ * XXX - should be a login.conf variable!
  */
-u_int	timeout = 300;
+u_int		timeout = 300;
 
 #if defined(KERBEROS) || defined(KERBEROS5)
-int	notickets = 1;
-char	*instance;
-char	*krbtkfile_env;
-int	authok;
+int		notickets = 1;
+char		*instance;
+char		*krbtkfile_env;
+int		authok;
 #endif
 
-struct	passwd *pwd;
-int	failures;
-char	term[64], *envinit[1], *hostname, *username, *tty;
+struct	passwd	*pwd;
+login_cap_t	*lc = NULL;
+int		failures;
+char		term[64], *hostname, *tty;
+char		*username = NULL, *rusername = NULL;
 
 int
 main(argc, argv)
@@ -123,9 +134,9 @@ main(argc, argv)
 	struct stat st;
 	struct timeval tp;
 	struct utmp utmp;
-	int ask, ch, cnt, fflag, hflag, pflag, quietlog, rootlogin, rval;
+	int ask, ch, cnt, fflag, hflag, pflag, uflag, quietlog, rootlogin, rval;
 	uid_t uid;
-	char *domain, *p, *salt, *ttyn;
+	char *domain, *p, *salt, *ttyn, *shell;
 	char tbuf[MAXPATHLEN + 2], tname[sizeof(_PATH_TTY) + 10];
 	char localhost[MAXHOSTNAMELEN];
 
@@ -133,6 +144,7 @@ main(argc, argv)
 	(void)alarm(timeout);
 	(void)signal(SIGQUIT, SIG_IGN);
 	(void)signal(SIGINT, SIG_IGN);
+	(void)signal(SIGHUP, sighup);
 	(void)setpriority(PRIO_PROCESS, 0, 0);
 
 	openlog("login", LOG_ODELAY, LOG_AUTH);
@@ -148,10 +160,15 @@ main(argc, argv)
 		syslog(LOG_ERR, "couldn't get local hostname: %m");
 	else
 		domain = strchr(localhost, '.');
+	if (domain) {
+		domain++;
+		if (*domain && strchr(domain, '.') == NULL)
+			domain = localhost;
+	}
 
 	fflag = hflag = pflag = 0;
 	uid = getuid();
-	while ((ch = getopt(argc, argv, "fh:p")) != EOF)
+	while ((ch = getopt(argc, argv, "fh:u:p")) != -1)
 		switch (ch) {
 		case 'f':
 			fflag = 1;
@@ -161,12 +178,18 @@ main(argc, argv)
 				errx(1, "-h option: %s", strerror(EPERM));
 			hflag = 1;
 			if (domain && (p = strchr(optarg, '.')) &&
-			    strcasecmp(p, domain) == 0)
+			    strcasecmp(p+1, domain) == 0)
 				*p = 0;
 			hostname = optarg;
 			break;
 		case 'p':
 			pflag = 1;
+			break;
+		case 'u':
+			if (uid)
+				errx(1, "-u option: %s", strerror(EPERM));
+			uflag = 1;
+			rusername = optarg;
 			break;
 		case '?':
 		default:
@@ -193,7 +216,7 @@ main(argc, argv)
 		(void)snprintf(tname, sizeof(tname), "%s??", _PATH_TTY);
 		ttyn = tname;
 	}
-	if (tty = strrchr(ttyn, '/'))
+	if ((tty = strrchr(ttyn, '/')))
 		++tty;
 	else
 		tty = ttyn;
@@ -201,12 +224,21 @@ main(argc, argv)
 	for (cnt = 0;; ask = 1) {
 #if defined(KERBEROS) || defined(KERBEROS5)
 	        kdestroy();
+		authok = 0;
 #endif
 		if (ask) {
 			fflag = 0;
 			getloginname();
 		}
 		rootlogin = 0;
+
+#if defined(KERBEROS) || defined(KERBEROS5)
+		/*
+		 * Why should anyone with a root instance be able
+		 * to be root here?
+		 */
+		instance = "";
+#endif
 #ifdef	KERBEROS
 		if ((instance = strchr(username, '.')) != NULL) {
 			if (strncmp(instance, ".root", 5) == 0)
@@ -236,15 +268,18 @@ main(argc, argv)
 				badlogin(tbuf);
 			failures = 0;
 		}
-		(void)strcpy(tbuf, username);
+		(void)strlcpy(tbuf, username, sizeof tbuf);
 
-		if (pwd = getpwnam(username))
+		if ((pwd = getpwnam(username)))
 			salt = pwd->pw_passwd;
 		else
 			salt = "xx";
+		lc = login_getclass(pwd ? pwd->pw_class : LOGIN_DEFCLASS);
+		if (!lc)
+		    err(1, "unable to get login class");
 
 		/*
-		 * if we have a valid account name, and it doesn't have a
+		 * If we have a valid account name, and it doesn't have a
 		 * password, or the -f option was specified and the caller
 		 * is root or the caller isn't changing their uid, don't
 		 * authenticate.
@@ -259,6 +294,9 @@ main(argc, argv)
 			} else if (pwd->pw_passwd[0] == '\0') {
 				/* pretend password okay */
 				rval = 0;
+#if defined(KERBEROS) || defined(KERBEROS5)
+				authok = 1;
+#endif
 				goto ttycheck;
 			}
 		}
@@ -274,16 +312,34 @@ main(argc, argv)
 			rval = klogin(pwd, instance, localhost, p);
 			if (rval != 0 && rootlogin && pwd->pw_uid != 0)
 				rootlogin = 0;
-			if (rval == 0)
-				authok = 1;
-			else if (rval == 1) {
+			if (rval == 1) {
+				/* Fall back on password file. */
 				if (pwd->pw_uid != 0)
 					rootlogin = 0;
 				rval = pwcheck(username, p, salt, pwd->pw_passwd);
 			}
+			if (rval == 0)
+				authok = 1;
 #else
 			rval = pwcheck(username, p, salt, pwd->pw_passwd);
 #endif
+		} else {
+#ifdef SKEY
+			if (strcasecmp(p, "s/key") == 0)
+				(void)skey_authenticate(username);
+			else
+#endif
+			{
+				useconds_t us;
+
+				/*
+				 * Sleep between 1 and 3 seconds
+				 * to emulate a crypt.
+				 */
+				us = arc4random() % 3000000;
+				usleep(us);
+			}
+			rval = 1;
 		}
 		memset(p, 0, strlen(p));
 
@@ -295,28 +351,36 @@ main(argc, argv)
 		 * but with insecure terminal, refuse the login attempt.
 		 */
 #if defined(KERBEROS) || defined(KERBEROS5)
-		if (authok == 0)
+		if (authok == 1)
 #endif
-		if (pwd && !rval && rootlogin && !rootterm(tty)) {
+		/* if logging in as root, user must be on a secure tty */
+		if (pwd && rval == 0 && (!rootlogin || rootterm(tty)))
+			break;
+
+		/*
+		 * We don't want to give out info to an attacker trying
+		 * to guess root's password so we always say "login refused"
+		 * in that case, not "Login incorrect".
+		 */
+		if (rootlogin && !rootterm(tty)) {
 			(void)fprintf(stderr,
 			    "%s login refused on this terminal.\n",
-			    pwd->pw_name);
+			    pwd ? pwd->pw_name : "root");
 			if (hostname)
 				syslog(LOG_NOTICE,
-				    "LOGIN %s REFUSED FROM %s ON TTY %s",
-				    pwd->pw_name, hostname, tty);
+				    "LOGIN %s REFUSED FROM %s%s%s ON TTY %s",
+				    pwd ? pwd->pw_name : "root",
+				    rusername ? rusername : "",
+				    rusername ? "@" : "", hostname, tty);
 			else
 				syslog(LOG_NOTICE,
 				    "LOGIN %s REFUSED ON TTY %s",
-				     pwd->pw_name, tty);
-			continue;
-		}
-
-		if (pwd && !rval)
-			break;
-
-		(void)printf("Login incorrect\n");
+				     pwd ? pwd->pw_name : "root", tty);
+		} else
+			(void)printf("Login incorrect\n");
 		failures++;
+		if (pwd)
+			log_failedlogin(pwd->pw_uid, hostname, rusername, tty);
 		/* we allow 10 tries, but after 3 we start backing off */
 		if (++cnt > 3) {
 			if (cnt >= 10) {
@@ -336,36 +400,60 @@ main(argc, argv)
 	if (!rootlogin)
 		checknologin();
 
+	setegid(pwd->pw_gid);
+	seteuid(pwd->pw_uid);
+
 	if (chdir(pwd->pw_dir) < 0) {
 		(void)printf("No home directory %s!\n", pwd->pw_dir);
+		if (login_getcapbool(lc, "requirehome", 0))
+			exit(1);
 		if (chdir("/"))
 			exit(0);
 		pwd->pw_dir = "/";
 		(void)printf("Logging in with home = \"/\".\n");
 	}
 
-	quietlog = access(_PATH_HUSHLOGIN, F_OK) == 0;
+	shell = login_getcapstr(lc, "shell", pwd->pw_shell, pwd->pw_shell);
+	if (*shell == '\0')
+		shell = _PATH_BSHELL;
+	else if (strlen(shell) >= MAXPATHLEN) {
+		syslog(LOG_ERR, "shell path too long: %s", shell);
+		warnx("invalid shell");
+		sleepexit(1);
+	}
+
+	quietlog = ((strcmp(pwd->pw_shell, "/sbin/nologin") == 0) ||
+	    login_getcapbool(lc, "hushlogin", 0) ||
+	    (access(_PATH_HUSHLOGIN, F_OK) == 0));
+
+	seteuid(0);
+	setegid(0);	/* XXX use a saved gid instead? */
 
 	if (pwd->pw_change || pwd->pw_expire)
 		(void)gettimeofday(&tp, (struct timezone *)NULL);
-	if (pwd->pw_change)
-		if (tp.tv_sec >= pwd->pw_change) {
-			(void)printf("Sorry -- your password has expired.\n");
-			sleepexit(1);
-		} else if (pwd->pw_change - tp.tv_sec <
-		    2 * DAYSPERWEEK * SECSPERDAY && !quietlog)
-			(void)printf("Warning: your password expires on %s",
-			    ctime(&pwd->pw_change));
-	if (pwd->pw_expire)
+	if (pwd->pw_expire) {
 		if (tp.tv_sec >= pwd->pw_expire) {
 			(void)printf("Sorry -- your account has expired.\n");
 			sleepexit(1);
-		} else if (pwd->pw_expire - tp.tv_sec <
-		    2 * DAYSPERWEEK * SECSPERDAY && !quietlog)
+		} else if (!quietlog &&pwd->pw_expire - tp.tv_sec <
+		    login_getcaptime(lc, "expire-warn", 
+		    2 * DAYSPERWEEK * SECSPERDAY, 2 * DAYSPERWEEK * SECSPERDAY))
 			(void)printf("Warning: your account expires on %s",
 			    ctime(&pwd->pw_expire));
+	}
+	if (pwd->pw_change) {
+		if (tp.tv_sec >= pwd->pw_change) {
+			(void)printf("Sorry -- your password has expired.\n");
+			sleepexit(1);
+		} else if (!quietlog && pwd->pw_change - tp.tv_sec <
+		    login_getcaptime(lc, "password-warn", 
+		    2 * DAYSPERWEEK * SECSPERDAY, 2 * DAYSPERWEEK * SECSPERDAY))
+			(void)printf("Warning: your password expires on %s",
+			    ctime(&pwd->pw_change));
+	}
 
 	/* Nothing else left to fail -- really log in. */
+	(void)signal(SIGHUP, SIG_DFL);
 	memset((void *)&utmp, 0, sizeof(utmp));
 	(void)time(&utmp.ut_time);
 	(void)strncpy(utmp.ut_name, username, sizeof(utmp.ut_name));
@@ -374,7 +462,11 @@ main(argc, argv)
 	(void)strncpy(utmp.ut_line, tty, sizeof(utmp.ut_line));
 	login(&utmp);
 
+	if (!quietlog)
+		(void)check_failedlogin(pwd->pw_uid);
 	dolastlog(quietlog);
+
+	login_fbtab(tty, pwd->pw_uid, pwd->pw_gid);
 
 	(void)chown(ttyn, pwd->pw_uid,
 	    (gr = getgrnam(TTYGRPNAME)) ? gr->gr_gid : pwd->pw_gid);
@@ -383,43 +475,74 @@ main(argc, argv)
 	if (krbtkfile_env)
 	    dofork();
 #endif
-	(void)setgid(pwd->pw_gid);
-
-	initgroups(username, pwd->pw_gid);
-
-	if (*pwd->pw_shell == '\0')
-		pwd->pw_shell = _PATH_BSHELL;
 
 	/* Destroy environment unless user has requested its preservation. */
-	if (!pflag)
-		environ = envinit;
-	(void)setenv("HOME", pwd->pw_dir, 1);
-	(void)setenv("SHELL", pwd->pw_shell, 1);
+	if (!pflag) {
+		if ((environ = calloc(1, sizeof (char *))) == NULL)
+			err(1, "calloc");
+	} else {
+		char **cpp, **cpp2;
+
+		for (cpp2 = cpp = environ; *cpp; cpp++) {
+			if (strncmp(*cpp, "LD_", 3) &&
+			    strncmp(*cpp, "ENV=", 4) &&
+			    strncmp(*cpp, "BASH_ENV=", 9) &&
+			    strncmp(*cpp, "IFS=", 4))
+				*cpp2++ = *cpp;
+		}
+		*cpp2 = 0;
+	}
+	/* Note: setusercontext(3) will set PATH */
+	if (setenv("HOME", pwd->pw_dir, 1) == -1 ||
+	    setenv("SHELL", shell, 1) == -1) {
+		warn("unable to setenv()");
+		exit(1);
+	}
 	if (term[0] == '\0')
-		(void)strncpy(term, stypeof(tty), sizeof(term));
-	(void)setenv("TERM", term, 0);
-	(void)setenv("LOGNAME", pwd->pw_name, 1);
-	(void)setenv("USER", pwd->pw_name, 1);
-	(void)setenv("PATH", _PATH_DEFPATH, 0);
+		(void)strlcpy(term, stypeof(tty), sizeof(term));
+	if (setenv("TERM", term, 0) == -1 ||
+	    setenv("LOGNAME", pwd->pw_name, 1) == -1 ||
+	    setenv("USER", pwd->pw_name, 1) == -1) {
+		warn("unable to setenv()");
+		exit(1);
+	}
+	if (hostname) {
+		if (setenv("REMOTEHOST", hostname, 1) == -1) {
+			warn("unable to setenv()");
+			exit(1);
+		}
+	}
+	if (rusername) {
+		if (setenv("REMOTEUSER", rusername, 1) == -1) {
+			warn("unable to setenv()");
+			exit(1);
+		}
+	}
 #ifdef KERBEROS
-	if (krbtkfile_env)
-		(void)setenv("KRBTKFILE", krbtkfile_env, 1);
+	if (krbtkfile_env) {
+		if (setenv("KRBTKFILE", krbtkfile_env, 1) == -1) {
+			warn("unable to setenv()");
+			exit(1);
+		}
+	}
 #endif
 #ifdef KERBEROS5
-	if (krbtkfile_env)
-		(void)setenv("KRB5CCNAME", krbtkfile_env, 1);
+	if (krbtkfile_env) {
+		if (setenv("KRB5CCNAME", krbtkfile_env, 1) == -1) {
+			warn("unable to setenv()");
+			exit(1);
+		}
+	}
 #endif
-
-	if (tty[sizeof("tty")-1] == 'd')
-		syslog(LOG_INFO, "DIALUP %s, %s", tty, pwd->pw_name);
-
 	/* If fflag is on, assume caller/authenticator has logged root login. */
-	if (rootlogin && fflag == 0)
+	if (rootlogin && fflag == 0) {
 		if (hostname)
-			syslog(LOG_NOTICE, "ROOT LOGIN (%s) ON %s FROM %s",
-			    username, tty, hostname);
+			syslog(LOG_NOTICE, "ROOT LOGIN (%s) ON %s FROM %s%s%s",
+			    username, tty, rusername ? rusername : "",
+			    rusername ? "@" : "", hostname);
 		else
 			syslog(LOG_NOTICE, "ROOT LOGIN (%s) ON %s", username, tty);
+	}
 
 #if defined(KERBEROS) || defined(KERBEROS5)
 	if (!quietlog && notickets == 1)
@@ -427,10 +550,12 @@ main(argc, argv)
 #endif
 
 	if (!quietlog) {
+#if 0
 		(void)printf("%s\n\t%s  %s\n\n",
 	    "Copyright (c) 1980, 1983, 1986, 1988, 1990, 1991, 1993, 1994",
 		    "The Regents of the University of California. ",
 		    "All rights reserved.");
+#endif
 		motd();
 		(void)snprintf(tbuf,
 		    sizeof(tbuf), "%s/%s", _PATH_MAILDIR, pwd->pw_name);
@@ -445,20 +570,21 @@ main(argc, argv)
 	(void)signal(SIGTSTP, SIG_IGN);
 
 	tbuf[0] = '-';
-	(void)strcpy(tbuf + 1, (p = strrchr(pwd->pw_shell, '/')) ?
-	    p + 1 : pwd->pw_shell);
-
-	if (setlogin(pwd->pw_name) < 0)
-		syslog(LOG_ERR, "setlogin() failure: %m");
+	(void)strlcpy(tbuf + 1, (p = strrchr(shell, '/')) ?
+	    p + 1 : shell, sizeof tbuf - 1);
 
 	/* Discard permissions last so can't get killed and drop core. */
-	if (rootlogin)
-		(void) setuid(0);
-	else
-		(void) setuid(pwd->pw_uid);
+	if (setusercontext(lc, pwd, pwd->pw_uid, LOGIN_SETALL)) {
+		warn("unable to set user context");
+		exit(1);
+	}
 
-	execlp(pwd->pw_shell, tbuf, 0);
-	err(1, "%s", pwd->pw_shell);
+#ifdef KERBEROS
+	kgettokens(pwd->pw_dir);
+#endif
+
+	execlp(shell, tbuf, 0);
+	err(1, "%s", shell);
 }
 
 int
@@ -466,14 +592,8 @@ pwcheck(user, p, salt, passwd)
 	char *user, *p, *salt, *passwd;
 {
 #ifdef SKEY
-	if (strcasecmp(p, "s/key") == 0) {
-		if (skey_haskey(user)) {
-			fprintf(stderr, "You have no s/key. ");
-			return 1;
-		} else {
-			return skey_authenticate(user);
-		}
-	}
+	if (strcasecmp(p, "s/key") == 0)
+		return skey_authenticate(user);
 #endif
 	return strcmp(crypt(p, salt), passwd);
 }
@@ -531,7 +651,7 @@ getloginname()
 			if (p < nbuf + (NBUFSIZ - 1))
 				*p++ = ch;
 		}
-		if (p > nbuf)
+		if (p > nbuf) {
 			if (nbuf[0] == '-')
 				(void)fprintf(stderr,
 				    "login names may not start with '-'.\n");
@@ -540,6 +660,7 @@ getloginname()
 				username = nbuf;
 				break;
 			}
+		}
 	}
 }
 
@@ -560,8 +681,11 @@ motd()
 	int fd, nchars;
 	sig_t oldint;
 	char tbuf[8192];
+	char *motd;
 
-	if ((fd = open(_PATH_MOTDFILE, O_RDONLY, 0)) < 0)
+	motd = login_getcapstr(lc, "welcome", _PATH_MOTDFILE, _PATH_MOTDFILE);
+
+	if ((fd = open(motd, O_RDONLY, 0)) < 0)
 		return;
 	oldint = signal(SIGINT, sigint);
 	if (setjmp(motdinterrupt) == 0)
@@ -592,12 +716,17 @@ void
 checknologin()
 {
 	int fd, nchars;
+	char *nologin;
 	char tbuf[8192];
 
-	if ((fd = open(_PATH_NOLOGIN, O_RDONLY, 0)) >= 0) {
-		while ((nchars = read(fd, tbuf, sizeof(tbuf))) > 0)
-			(void)write(fileno(stdout), tbuf, nchars);
-		sleepexit(0);
+	if (!login_getcapbool(lc, "ignorenologin", 0)) {
+		nologin = login_getcapstr(lc, "nologin", _PATH_NOLOGIN,
+		    _PATH_NOLOGIN);
+		if ((fd = open(nologin, O_RDONLY, 0)) >= 0) {
+			while ((nchars = read(fd, tbuf, sizeof(tbuf))) > 0)
+				(void)write(fileno(stdout), tbuf, nchars);
+			sleepexit(0);
+		}
 	}
 }
 
@@ -609,22 +738,23 @@ dolastlog(quiet)
 	int fd;
 
 	if ((fd = open(_PATH_LASTLOG, O_RDWR, 0)) >= 0) {
-		(void)lseek(fd, (off_t)pwd->pw_uid * sizeof(ll), L_SET);
+		(void)lseek(fd, (off_t)pwd->pw_uid * sizeof(ll), SEEK_SET);
 		if (!quiet) {
 			if (read(fd, (char *)&ll, sizeof(ll)) == sizeof(ll) &&
 			    ll.ll_time != 0) {
 				(void)printf("Last login: %.*s ",
 				    24-5, (char *)ctime(&ll.ll_time));
+				(void)printf("on %.*s",
+				    (int)sizeof(ll.ll_line),
+				    ll.ll_line);
 				if (*ll.ll_host != '\0')
-					(void)printf("from %.*s\n",
+					(void)printf(" from %.*s",
 					    (int)sizeof(ll.ll_host),
 					    ll.ll_host);
-				else
-					(void)printf("on %.*s\n",
-					    (int)sizeof(ll.ll_line),
-					    ll.ll_line);
+				(void)putchar('\n');
 			}
-			(void)lseek(fd, (off_t)pwd->pw_uid * sizeof(ll), L_SET);
+			(void)lseek(fd, (off_t)pwd->pw_uid * sizeof(ll),
+			    SEEK_SET);
 		}
 		memset((void *)&ll, 0, sizeof(ll));
 		(void)time(&ll.ll_time);
@@ -643,11 +773,14 @@ badlogin(name)
 	if (failures == 0)
 		return;
 	if (hostname) {
-		syslog(LOG_NOTICE, "%d LOGIN FAILURE%s FROM %s",
-		    failures, failures > 1 ? "S" : "", hostname);
+		syslog(LOG_NOTICE, "%d LOGIN FAILURE%s FROM %s%s%s",
+		    failures, failures > 1 ? "S" : "",
+		    rusername ? rusername : "", rusername ? "@" : "", hostname);
 		syslog(LOG_AUTHPRIV|LOG_NOTICE,
-		    "%d LOGIN FAILURE%s FROM %s, %s",
-		    failures, failures > 1 ? "S" : "", hostname, name);
+		    "%d LOGIN FAILURE%s FROM %s%s%s, %s",
+		    failures, failures > 1 ? "S" : "",
+		    rusername ? rusername : "", rusername ? "@" : "",
+		    hostname, name);
 	} else {
 		syslog(LOG_NOTICE, "%d LOGIN FAILURE%s ON %s",
 		    failures, failures > 1 ? "S" : "", tty);
@@ -666,7 +799,8 @@ stypeof(ttyid)
 {
 	struct ttyent *t;
 
-	return (ttyid && (t = getttynam(ttyid)) ? t->ty_type : UNKNOWN);
+	return (ttyid && (t = getttynam(ttyid)) ? t->ty_type :
+	    login_getcapstr(lc, "term", UNKNOWN, UNKNOWN));
 }
 
 void
@@ -675,4 +809,13 @@ sleepexit(eval)
 {
 	(void)sleep(5);
 	exit(eval);
+}
+
+void
+sighup(signum)
+	int signum;
+{
+	if (username)
+		badlogin(username);
+	exit(0);
 }

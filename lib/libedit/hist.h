@@ -1,3 +1,6 @@
+/*	$OpenBSD: hist.h,v 1.3 1997/01/16 05:18:34 millert Exp $	*/
+/*	$NetBSD: hist.h,v 1.3 1997/01/11 06:47:56 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -65,6 +68,8 @@ typedef struct el_history_t {
 #define	HIST_LAST(el)		HIST_FUN(el, H_LAST, NULL)
 #define	HIST_PREV(el)		HIST_FUN(el, H_PREV, NULL)
 #define	HIST_EVENT(el, num)	HIST_FUN(el, H_EVENT, num)
+#define	HIST_LOAD(el, fname)	HIST_FUN(el, H_LOAD fname)
+#define	HIST_SAVE(el, fname)	HIST_FUN(el, H_SAVE fname)
 
 protected int 		hist_init	__P((EditLine *));
 protected void 		hist_end	__P((EditLine *));

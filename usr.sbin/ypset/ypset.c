@@ -1,5 +1,8 @@
+/*	$OpenBSD: ypset.c,v 1.4 1996/06/30 17:54:01 deraadt Exp $ */
+/*	$NetBSD: ypset.c,v 1.8 1996/05/13 02:46:33 thorpej Exp $	*/
+
 /*
- * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@fsa.ca>
+ * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,22 +34,26 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "ypset.c,v 1.3 1993/06/12 00:02:37 deraadt Exp";
+static char rcsid[] = "$OpenBSD: ypset.c,v 1.4 1996/06/30 17:54:01 deraadt Exp $";
 #endif
 
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include <netdb.h>
+
 #include <rpc/rpc.h>
 #include <rpc/xdr.h>
-#include <rpcsvc/yp_prot.h>
+#include <rpcsvc/yp.h>
 #include <rpcsvc/ypclnt.h>
 #include <arpa/inet.h>
 
 extern bool_t xdr_domainname();
 
+void
 usage()
 {
 	fprintf(stderr, "Usage:\n");
@@ -54,6 +61,7 @@ usage()
 	exit(1);
 }
 
+int
 bind_tohost(sin, dom, server)
 struct sockaddr_in *sin;
 char *dom, *server;
@@ -64,25 +72,28 @@ char *dom, *server;
 	CLIENT *client;
 	int sock, port;
 	int r;
+	struct in_addr iaddr;
 	
 	if( (port=htons(getrpcport(server, YPPROG, YPPROC_NULL, IPPROTO_UDP))) == 0) {
 		fprintf(stderr, "%s not running ypserv.\n", server);
 		exit(1);
 	}
 
-	bzero(&ypsd, sizeof ypsd);
+	memset(&ypsd, 0, sizeof ypsd);
 
-	if (inet_aton(server, &ypsd.ypsetdom_addr) == 0) {
+	if (inet_aton(server, &iaddr) == 0) {
 		hp = gethostbyname(server);
 		if (hp == NULL) {
 			fprintf(stderr, "ypset: can't find address for %s\n", server);
 			exit(1);
 		}
-		bcopy(hp->h_addr, &ypsd.ypsetdom_addr, sizeof(ypsd.ypsetdom_addr));
+		memmove(&iaddr.s_addr, hp->h_addr, sizeof(iaddr.s_addr));
 	}
-
-	strncpy(ypsd.ypsetdom_domain, dom, sizeof ypsd.ypsetdom_domain);
-	ypsd.ypsetdom_port = port;
+	ypsd.ypsetdom_domain = dom;
+	bcopy(&iaddr.s_addr, &ypsd.ypsetdom_binding.ypbind_binding_addr,
+	    sizeof(ypsd.ypsetdom_binding.ypbind_binding_addr));
+	bcopy(&port, &ypsd.ypsetdom_binding.ypbind_binding_port,
+	    sizeof(ypsd.ypsetdom_binding.ypbind_binding_port));
 	ypsd.ypsetdom_vers = YPVERS;
 	
 	tv.tv_sec = 15;
@@ -122,7 +133,7 @@ char **argv;
 
 	bzero(&sin, sizeof sin);
 	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = htonl(0x7f000001);
+	sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 	while( (c=getopt(argc, argv, "h:d:")) != -1)
 		switch(c) {

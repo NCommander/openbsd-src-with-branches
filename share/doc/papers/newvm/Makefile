@@ -1,4 +1,5 @@
-#	@(#)Makefile	1.4 (Berkeley) 6/8/93
+#	$OpenBSD$
+
 
 DIR=	papers/newvm
 SRCS=	0.t 1.t a.t

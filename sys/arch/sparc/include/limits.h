@@ -1,4 +1,5 @@
-/*	$NetBSD: limits.h,v 1.6 1994/11/20 20:53:14 deraadt Exp $ */
+/*	$OpenBSD: limits.h,v 1.5 1998/03/22 21:15:24 millert Exp $	*/
+/*	$NetBSD: limits.h,v 1.7 1996/01/05 18:10:57 pk Exp $ */
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -41,21 +42,21 @@
 #define	SCHAR_MIN	(-0x7f-1)	/* max value for a signed char */
 #define	SCHAR_MAX	0x7f		/* min value for a signed char */
 
-#define	UCHAR_MAX	0xff		/* max value for an unsigned char */
+#define	UCHAR_MAX	0xffU		/* max value for an unsigned char */
 #define	CHAR_MAX	0x7f		/* max value for a char */
 #define	CHAR_MIN	(-0x7f-1)	/* min value for a char */
 
-#define	USHRT_MAX	0xffff		/* max value for an unsigned short */
+#define	USHRT_MAX	0xffffU		/* max value for an unsigned short */
 #define	SHRT_MAX	0x7fff		/* max value for a short */
 #define	SHRT_MIN	(-0x7fff-1)	/* min value for a short */
 
-#define	UINT_MAX	0xffffffff	/* max value for an unsigned int */
+#define	UINT_MAX	0xffffffffU	/* max value for an unsigned int */
 #define	INT_MAX		0x7fffffff	/* max value for an int */
 #define	INT_MIN		(-0x7fffffff-1)	/* min value for an int */
 
-#define	ULONG_MAX	0xffffffff	/* max value for an unsigned long */
-#define	LONG_MAX	0x7fffffff	/* max value for a long */
-#define	LONG_MIN	(-0x7fffffff-1)	/* min value for a long */
+#define	ULONG_MAX	0xffffffffUL	/* max value for an unsigned long */
+#define	LONG_MAX	0x7fffffffL	/* max value for a long */
+#define	LONG_MIN	(-0x7fffffffL-1)	/* min value for a long */
 
 #if !defined(_ANSI_SOURCE)
 #define	SSIZE_MAX	INT_MAX		/* max value for a ssize_t */
@@ -63,11 +64,17 @@
 #if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
 
+#define	UID_MAX		UINT_MAX	/* max value for a uid_t */
+#define	GID_MAX		UINT_MAX	/* max value for a gid_t */
+
 /* GCC requires that quad constants be written as expressions. */
 #define	UQUAD_MAX	((u_quad_t)0-1)	/* max value for a uquad_t */
 					/* max value for a quad_t */
 #define	QUAD_MAX	((quad_t)(UQUAD_MAX >> 1))
 #define	QUAD_MIN	(-QUAD_MAX-1)	/* min value for a quad_t */
+#define ULLONG_MAX	(UQUAD_MAX)	/* max value for unsigned long long */
+#define LLONG_MAX	(QUAD_MAX)	/* max value for a signed long long */
+#define LLONG_MIN	(QUAD_MIN)	/* min value for a signed long long */
 
 #endif /* !_POSIX_SOURCE && !_XOPEN_SOURCE */
 #endif /* !_ANSI_SOURCE */

@@ -1,4 +1,5 @@
-/*	$NetBSD: ioctl.h,v 1.19 1995/10/10 01:27:09 mycroft Exp $	*/
+/*	$OpenBSD: ioctl.h,v 1.3 1996/03/03 12:11:50 niklas Exp $	*/
+/*	$NetBSD: ioctl.h,v 1.20 1996/01/30 18:21:47 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1990, 1993, 1994
@@ -61,6 +62,7 @@ struct ttysize {
 
 #include <sys/ioccom.h>
 
+#include <sys/dkio.h>
 #include <sys/filio.h>
 #include <sys/sockio.h>
 
@@ -82,6 +84,6 @@ __END_DECLS
  * Kernel level -> options COMPAT_43 or COMPAT_SUNOS or ...
  */
 #if defined(USE_OLD_TTY) || defined(COMPAT_43) || defined(COMPAT_SUNOS) || \
-    defined(COMPAT_SVR4) || defined(COMPAT_FREEBSD)
+    defined(COMPAT_SVR4) || defined(COMPAT_FREEBSD) || defined(COMPAT_OSF1)
 #include <sys/ioctl_compat.h>
 #endif

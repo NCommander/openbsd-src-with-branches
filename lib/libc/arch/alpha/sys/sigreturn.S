@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigreturn.S,v 1.1 1995/02/10 17:50:42 cgd Exp $	*/
 /*	$NetBSD: sigreturn.S,v 1.1 1995/02/10 17:50:42 cgd Exp $	*/
 
 /*
@@ -28,6 +29,11 @@
  */
 
 #include "SYS.h"
+
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sigreturn.S,v 1.2 1996/08/19 08:11:19 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
 
 /*
  * We must preserve the state of the registers as the user has set them up.

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,7 @@ static char sccsid[] = "@(#)acksend.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
 
 #ifdef sgi
-#ident "$Revision: 1.3 $"
+#ident "$Revision: 1.2 $"
 #endif
 
 #include "globals.h"
@@ -56,7 +58,8 @@ xmit(int type,
 	msg.tsp_type = type;
 	msg.tsp_seq = seq;
 	msg.tsp_vers = TSPVERSION;
-	(void)strcpy(msg.tsp_name, hostname);
+	(void)strncpy(msg.tsp_name, hostname, sizeof msg.tsp_name-1);
+	msg.tsp_name[sizeof msg.tsp_name-1] = '\0';
 	bytenetorder(&msg);
 	if (sendto(sock, (char *)&msg, sizeof(struct tsp), 0,
 		   (struct sockaddr*)addr, sizeof(struct sockaddr)) < 0) {

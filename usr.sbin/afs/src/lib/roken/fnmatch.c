@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*	$NetBSD: fnmatch.c,v 1.11 1995/02/27 03:43:06 cgd Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-#	@(#)Makefile	8.1 (Berkeley) 8/14/93
+#	$OpenBSD$
+
 
 DIR=	psd/20.ipctut
 SRCS=	tutor.me

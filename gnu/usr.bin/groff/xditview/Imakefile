@@ -1,5 +1,4 @@
-GROFF_LIBDIR = /usr/local/share/groff
-GROFF_FONTDIR = $(GROFF_LIBDIR)/font
+GROFF_FONTDIR = /usr/share/groff_font
 GROFF_FONTPATH = .:$(GROFF_FONTDIR):/usr/local/lib/font:/usr/lib/font
 DPIS = 75 100
 
@@ -14,7 +13,7 @@ SRCS2 = xtotroff.c XFontName.c DviChar.c
 OBJS2 = xtotroff.o XFontName.o DviChar.o
 INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 MATHLIB = -lm
-DEFINES = $(SIGNAL_DEFINES) -DFONTPATH=\"$(GROFF_FONTPATH)\" # -DX_NOT_STDC_ENV
+DEFINES = -DHAVE_MKSTEMP $(SIGNAL_DEFINES) -DFONTPATH=\"$(GROFF_FONTPATH)\" # -DX_NOT_STDC_ENV
 
 ComplexProgramTarget_1(gxditview,$(LOCAL_LIBRARIES),$(MATHLIB))
 NormalProgramTarget(xtotroff,$(OBJS2),$(DEPXLIB),$(XLIB), /**/)

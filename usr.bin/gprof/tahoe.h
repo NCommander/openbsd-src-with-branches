@@ -1,3 +1,4 @@
+/*	$OpenBSD: tahoe.h,v 1.4 1995/04/19 07:16:29 cgd Exp $	*/
 /*	$NetBSD: tahoe.h,v 1.4 1995/04/19 07:16:29 cgd Exp $	*/
 
 /*

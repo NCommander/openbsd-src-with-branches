@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: conf.c,v 1.5 1995/10/06 05:12:13 thorpej Exp $	*/
 
 /*
@@ -48,7 +49,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)conf.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: conf.c,v 1.5 1995/10/06 05:12:13 thorpej Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
 #include <sys/param.h>

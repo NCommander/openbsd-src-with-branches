@@ -1,3 +1,4 @@
+/*	$OpenBSD: checknr.c,v 1.3 2000/11/21 13:42:23 aaron Exp $	*/
 /*	$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)checknr.c	8.1 (Berkeley) 6/6/93";
 #else 
-static char rcsid[] = "$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $";
+static char rcsid[] = "$OpenBSD: checknr.c,v 1.3 2000/11/21 13:42:23 aaron Exp $";
 #endif
 #endif /* not lint */
 
@@ -262,7 +263,9 @@ char **argv;
 
 usage()
 {
-	printf("Usage: checknr -s -f -a.xx.yy.xx.yy... -c.xx.xx.xx...\n");
+	(void)fprintf(stderr,
+	    "usage: checknr [-fs] [-a.x1.y1.x2.y2. ... .xn.yn] "
+	    "[-c.x1.x2.x3. ... .xn] [file]\n");
 	exit(1);
 }
 

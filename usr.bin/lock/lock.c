@@ -1,4 +1,5 @@
-/*	$NetBSD: lock.c,v 1.7 1995/06/27 00:16:17 jtc Exp $	*/
+/*	$OpenBSD: lock.c,v 1.10 1997/07/27 21:47:07 millert Exp $	*/
+/*	$NetBSD: lock.c,v 1.8 1996/05/07 18:32:31 jtc Exp $	*/
 
 /*
  * Copyright (c) 1980, 1987, 1993
@@ -46,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)lock.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: lock.c,v 1.7 1995/06/27 00:16:17 jtc Exp $";
+static char rcsid[] = "$OpenBSD: lock.c,v 1.10 1997/07/27 21:47:07 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -66,25 +67,34 @@ static char rcsid[] = "$NetBSD: lock.c,v 1.7 1995/06/27 00:16:17 jtc Exp $";
 #include <err.h>
 #include <pwd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <termios.h>
+#include <unistd.h>
+
+#ifdef SKEY
+#include <skey.h>
+#endif
 
 #define	TIMEOUT	15
 
-void quit(), bye(), hi();
+void bye	__P((int));
+void hi		__P((int));
+void quit	__P((int));
+int skey_auth	__P((char *));
 
 struct timeval	timeout;
 struct timeval	zerotime;
 struct termios	tty, ntty;
 long	nexttime;			/* keep the timeout time */
+int	no_timeout;			/* lock terminal forever */
 
 /*ARGSUSED*/
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	extern char *optarg;
-	extern int errno, optind;
 	struct passwd *pw;
 	struct timeval timval;
 	struct itimerval ntimer, otimer;
@@ -93,16 +103,16 @@ main(argc, argv)
 	int ch, sectimeout, usemine;
 	char *ap, *mypw, *ttynam, *tzn;
 	char hostname[MAXHOSTNAMELEN], s[BUFSIZ], s1[BUFSIZ];
-	char *crypt(), *ttyname();
 
 	sectimeout = TIMEOUT;
 	mypw = NULL;
 	usemine = 0;
+	no_timeout = 0;
 
 	if (!(pw = getpwuid(getuid())))
 		errx(1, "unknown uid %d.", getuid());
 	
-	while ((ch = getopt(argc, argv, "pt:")) != EOF)
+	while ((ch = getopt(argc, argv, "npt:")) != -1)
 		switch((char)ch) {
 		case 't':
 			if ((sectimeout = atoi(optarg)) <= 0)
@@ -112,15 +122,18 @@ main(argc, argv)
 			usemine = 1;
 			mypw = strdup(pw->pw_passwd);
 			break;
+		case 'n':
+			no_timeout = 1;
+			break;
 		case '?':
 		default:
 			(void)fprintf(stderr,
-			    "usage: lock [-p] [-t timeout]\n");
+			    "usage: lock [-n] [-p] [-t timeout]\n");
 			exit(1);
 	}
 	timeout.tv_sec = sectimeout * 60;
 
-	setuid(getuid());		/* discard privs */
+	seteuid(getuid());		/* discard what privs we can */
 
 	if (tcgetattr(0, &tty) < 0)	/* get information for header */
 		exit(1);
@@ -142,10 +155,10 @@ main(argc, argv)
 
 	if (!mypw) {
 		/* get key and check again */
-		(void)printf("Key: ");
+		(void)fputs("Key: ", stdout);
 		if (!fgets(s, sizeof(s), stdin) || *s == '\n')
-			quit();
-		(void)printf("\nAgain: ");
+			quit(0);
+		(void)fputs("\nAgain: ", stdout);
 		/*
 		 * Don't need EOF test here, if we get EOF, then s1 != s
 		 * and the right things will happen.
@@ -153,11 +166,11 @@ main(argc, argv)
 		(void)fgets(s1, sizeof(s1), stdin);
 		(void)putchar('\n');
 		if (strcmp(s1, s)) {
-			(void)printf("\alock: passwords didn't match.\n");
+			(void)puts("\alock: passwords didn't match.");
 			(void)tcsetattr(0, TCSADRAIN, &tty);
 			exit(1);
 		}
-		s[0] = NULL;
+		s[0] = '\0';
 		mypw = s1;
 	}
 
@@ -169,24 +182,34 @@ main(argc, argv)
 
 	ntimer.it_interval = zerotime;
 	ntimer.it_value = timeout;
-	setitimer(ITIMER_REAL, &ntimer, &otimer);
+	if (!no_timeout)
+		setitimer(ITIMER_REAL, &ntimer, &otimer);
 
 	/* header info */
-(void)printf("lock: %s on %s. timeout in %d minutes\ntime now is %.20s%s%s",
-	    ttynam, hostname, sectimeout, ap, tzn, ap + 19);
+	if (no_timeout) {
+		(void)printf("lock: %s on %s. no timeout\ntime now is %.20s%s%s",
+		    ttynam, hostname, ap, tzn, ap + 19);
+	} else {
+		(void)printf("lock: %s on %s. timeout in %d minutes\ntime now is %.20s%s%s",
+		    ttynam, hostname, sectimeout, ap, tzn, ap + 19);
+	}
 
 	for (;;) {
-		(void)printf("Key: ");
+		(void)fputs("Key: ", stdout);
 		if (!fgets(s, sizeof(s), stdin)) {
 			clearerr(stdin);
-			hi();
+			hi(0);
 			continue;
 		}
 		if (usemine) {
 			s[strlen(s) - 1] = '\0';
 #ifdef SKEY
 			if (strcasecmp(s, "s/key") == 0) {
-				if (skey_auth(pw->pw_name))
+				/* S/Key lookup needs to be done as root */
+				seteuid(0);
+				ch = skey_auth(pw->pw_name);
+				seteuid(getuid());
+				if (ch)
 					break;
 			}
 #endif
@@ -195,11 +218,13 @@ main(argc, argv)
 		}
 		else if (!strcmp(s, s1))
 			break;
-		(void)printf("\a\n");
+		(void)puts("\a");
 		if (tcsetattr(0, TCSADRAIN, &ntty) < 0)
 			exit(1);
 	}
-	quit();
+
+	quit(0);
+	exit(0);			/*NOTREACHED*/
 }
 
 #ifdef SKEY
@@ -209,48 +234,61 @@ main(argc, argv)
  * for our needs. Instead we roll our own.
  */
 int
-skey_auth(char *user)
+skey_auth(user)
+	char *user;
 {
-	char s[128], *ask, *skey_keyinfo __P((char *name));
+	char s[256], *ask;
 	int ret = 0;
 
 	if (!skey_haskey(user) && (ask = skey_keyinfo(user))) {
-		printf("\n[%s]\nResponse: ", ask);		
+		(void)printf("\n%s\nResponse: ", ask);		
 		if (!fgets(s, sizeof(s), stdin) || *s == '\n')
 			clearerr(stdin);
 		else {
-			s[strlen(s) - 1] = '\0';
+			rip(s);
 			if (skey_passcheck(user, s) != -1)
 				ret = 1;
 		}
 	} else
-		printf("Sorry, you have no s/key.\n");
-	return ret;
+		(void)printf("Sorry, you have no s/key.\n");
+	return(ret);
 }
 #endif
 
 void
-hi()
+hi(dummy)
+	int dummy;
 {
 	struct timeval timval;
 
-	if (!gettimeofday(&timval, (struct timezone *)NULL))
-(void)printf("lock: type in the unlock key. timeout in %ld:%ld minutes\n",
-	    (nexttime - timval.tv_sec) / 60, (nexttime - timval.tv_sec) % 60);
+	if (!gettimeofday(&timval, (struct timezone *)NULL)) {
+		(void)printf("lock: type in the unlock key. ");
+		if (no_timeout) {
+			putchar('\n');
+		} else {
+			(void)printf("timeout in %ld:%ld minutes\n",
+			    (nexttime - timval.tv_sec) / 60,
+			    (nexttime - timval.tv_sec) % 60);
+		}
+	}
 }
 
 void
-quit()
+quit(dummy)
+	int dummy;
 {
-	(void)putchar('\n');
+	putchar('\n');
 	(void)tcsetattr(0, TCSADRAIN, &tty);
 	exit(0);
 }
 
 void
-bye()
+bye(dummy)
+	int dummy;
 {
-	(void)tcsetattr(0, TCSADRAIN, &tty);
-	(void)printf("lock: timeout\n");
-	exit(1);
+	if (!no_timeout) {
+		(void)tcsetattr(0, TCSADRAIN, &tty);
+		(void)puts("lock: timeout");
+		exit(1);
+	}
 }

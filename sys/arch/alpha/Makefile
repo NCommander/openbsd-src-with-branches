@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.3 1996/10/30 22:37:51 niklas Exp $
 #	$NetBSD: Makefile,v 1.3 1995/02/27 16:36:07 cgd Exp $
 
 # Makefile for alpha tags file and boot blocks
@@ -23,7 +24,7 @@ tags:
 
 links:
 	-for i in ${DALPHA}; do \
-	    cd $$i && rm -f tags; ln -s ../tags tags; done
+	    (cd $$i && rm -f tags; ln -s ../tags tags); done
 
 obj: _SUBDIRUSE
 

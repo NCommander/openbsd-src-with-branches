@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: stoc.c,v 1.2 1996/12/21 21:17:53 tholo Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -36,10 +36,15 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)stoc.c	8.1 (Berkeley) 7/24/94";
+#else
+static char rcsid[] = "$OpenBSD$";
+#endif
 #endif /* not lint */
 
 #include "gomoku.h"
+#include <stdlib.h>
 #include <ctype.h>
 
 char	*letters	= "<ABCDEFGHJKLMNOPQRST>";
@@ -49,10 +54,10 @@ struct mvstr {
 	char	*m_text;
 };
 static	struct	mvstr	mv[] = {
-	RESIGN,		"resign",
-	RESIGN,		"quit",
-	SAVE,		"save",
-	-1,		0
+	{RESIGN,	"resign" },
+	{RESIGN,	"quit" },
+	{SAVE,		"save" },
+	{-1,		0}
 };
 
 /*
@@ -75,6 +80,7 @@ stoc(s)
 /*
  * Turn the character form of a move into the spot number form.
  */
+int
 ctos(mp)
 	char *mp;
 {
@@ -94,6 +100,7 @@ ctos(mp)
 /*
  * Turn a letter into a number.
  */
+int
 lton(c)
 	int c;
 {

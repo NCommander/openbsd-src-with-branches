@@ -1,3 +1,5 @@
+/*	$OpenBSD: hack.mfndpos.h,v 1.3 1995/03/23 08:30:41 cgd Exp $*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  *

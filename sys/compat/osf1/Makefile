@@ -9,3 +9,6 @@ ${OBJS}: ${DEP}
 	-mv -f osf1_syscall.h osf1_syscall.h.bak
 	-mv -f osf1_syscallargs.h osf1_syscallargs.h.bak
 	sh ../../kern/makesyscalls.sh syscalls.conf syscalls.master
+
+clean:
+	rm -f ${OBJS}

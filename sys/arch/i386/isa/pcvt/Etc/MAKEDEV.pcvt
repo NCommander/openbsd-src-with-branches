@@ -1,4 +1,6 @@
 #!/bin/sh -
+#	$OpenBSD$
+
 #
 
 PATH=/sbin:/bin/:/usr/bin:/usr/sbin:

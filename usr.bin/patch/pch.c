@@ -1,5 +1,7 @@
+/*	$OpenBSD: pch.c,v 1.10 1999/12/04 01:01:07 provos Exp $	*/
+
 #ifndef lint
-static char rcsid[] = "$Id: pch.c,v 1.2 1993/08/02 17:55:21 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: pch.c,v 1.10 1999/12/04 01:01:07 provos Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -8,6 +10,7 @@ static char rcsid[] = "$Id: pch.c,v 1.2 1993/08/02 17:55:21 mycroft Exp $";
 #include "INTERN.h"
 #include "pch.h"
 
+extern bool check_only;
 /* Patch (diff listing) abstract type. */
 
 static long p_filesize;			/* size of the patch file */
@@ -147,6 +150,7 @@ there_is_another_patch()
 	if (force || batch) {
 	    say1("No file to patch.  Skipping...\n");
 	    filearg[0] = savestr(bestguess);
+	    skip_rest_of_patch = TRUE;
 	    return TRUE;
 	}
 	ask1("File to patch: ");
@@ -304,7 +308,9 @@ intuit_diff_type()
 	    oldname = fetchname(oldtmp, strippath, ok_to_create_file);
 	if (newtmp != Nullch)
 	    newname = fetchname(newtmp, strippath, ok_to_create_file);
-	if (oldname && newname) {
+	if (indname)
+	    filearg[0] = savestr(indname);
+	else if (oldname && newname) {
 	    if (strlen(oldname) < strlen(newname))
 		filearg[0] = savestr(oldname);
 	    else
@@ -314,8 +320,6 @@ intuit_diff_type()
 	    filearg[0] = savestr(oldname);
 	else if (newname)
 	    filearg[0] = savestr(newname);
-	else if (indname)
-	    filearg[0] = savestr(indname);
     }
     if (bestguess) {
 	free(bestguess);
@@ -451,7 +455,7 @@ another_hunk()
 	    p_input_line++;
 	    if (ret == Nullch) {
 		if (p_max - p_end < 4)
-		    Strcpy(buf, "  \n");  /* assume blank lines got chopped */
+		    strcpy(buf, "  \n");  /* assume blank lines got chopped */
 		else {
 		    if (repl_beginning && repl_could_be_missing) {
 			repl_missing = TRUE;
@@ -496,7 +500,7 @@ another_hunk()
 		if (!*s)
 		    malformed ();
 		if (strnEQ(s,"0,0",3))
-		    strcpy(s,s+2);
+		    strcpy(s, s+2);
 		p_first = (LINENUM) atol(s);
 		while (isdigit(*s)) s++;
 		if (*s == ',') {
@@ -779,14 +783,16 @@ another_hunk()
 	fillsrc = 1;
 	filldst = fillsrc + p_ptrn_lines;
 	p_end = filldst + p_repl_lines;
-	Sprintf(buf,"*** %ld,%ld ****\n",p_first,p_first + p_ptrn_lines - 1);
+	Snprintf(buf, sizeof buf, "*** %ld,%ld ****\n", p_first,
+	    p_first + p_ptrn_lines - 1);
 	p_line[0] = savestr(buf);
 	if (out_of_mem) {
 	    p_end = -1;
 	    return FALSE;
 	}
 	p_char[0] = '*';
-        Sprintf(buf,"--- %ld,%ld ----\n",p_newfirst,p_newfirst+p_repl_lines-1);
+        Snprintf(buf, sizeof buf, "--- %ld,%ld ----\n", p_newfirst,
+	    p_newfirst + p_repl_lines - 1);
 	p_line[filldst] = savestr(buf);
 	if (out_of_mem) {
 	    p_end = 0;
@@ -802,7 +808,7 @@ another_hunk()
 	    p_input_line++;
 	    if (ret == Nullch) {
 		if (p_max - filldst < 3)
-		    Strcpy(buf, " \n");  /* assume blank lines got chopped */
+		    strcpy(buf, " \n");  /* assume blank lines got chopped */
 		else {
 		    fatal1("unexpected end of file in patch\n");
 		}
@@ -918,7 +924,8 @@ another_hunk()
 	    grow_hunkmax();
 	p_newfirst = min;
 	p_repl_lines = max - min + 1;
-	Sprintf(buf, "*** %ld,%ld\n", p_first, p_first + p_ptrn_lines - 1);
+	Snprintf(buf, sizeof buf, "*** %ld,%ld\n", p_first,
+	    p_first + p_ptrn_lines - 1);
 	p_line[0] = savestr(buf);
 	if (out_of_mem) {
 	    p_end = -1;
@@ -950,7 +957,7 @@ another_hunk()
 	    if (*buf != '-')
 		fatal2("--- expected at line %ld of patch\n", p_input_line);
 	}
-	Sprintf(buf, "--- %ld,%ld\n", min, max);
+	Snprintf(buf, sizeof(buf), "--- %ld,%ld\n", min, max);
 	p_line[i] = savestr(buf);
 	if (out_of_mem) {
 	    p_end = i-1;
@@ -1017,8 +1024,8 @@ FILE *fp;
 	    else
 		indent++;
 	}
-	if (buf != s)
-	    Strcpy(buf, s);
+	if (buf != s && strlcpy(buf, s, sizeof(buf)) >= sizeof(buf))
+	    fatal1("buffer too small in pgets()\n");
     }
     return ret;
 }
@@ -1225,9 +1232,9 @@ do_ed_script()
 	Unlink(TMPOUTNAME);
 	copy_file(filearg[0], TMPOUTNAME);
 	if (verbose)
-	    Sprintf(buf, "/bin/ed %s", TMPOUTNAME);
+	    Snprintf(buf, sizeof buf, "/bin/ed %s", TMPOUTNAME);
 	else
-	    Sprintf(buf, "/bin/ed - %s", TMPOUTNAME);
+	    Snprintf(buf, sizeof buf, "/bin/ed - %s", TMPOUTNAME);
 	pipefp = popen(buf, "w");
     }
     for (;;) {
@@ -1265,11 +1272,13 @@ do_ed_script()
     Fflush(pipefp);
     Pclose(pipefp);
     ignore_signals();
-    if (move_file(TMPOUTNAME, outname) < 0) {
-	toutkeep = TRUE;
-	chmod(TMPOUTNAME, filemode);
+    if (!check_only) {
+	if (move_file(TMPOUTNAME, outname) < 0) {
+	    toutkeep = TRUE;
+	    chmod(TMPOUTNAME, filemode);
+	}
+	else
+	    chmod(outname, filemode);
     }
-    else
-	chmod(outname, filemode);
     set_signals(1);
 }

@@ -805,7 +805,7 @@ E Protocol error: Root says \"%s\" but pserver says \"%s\"",
 	return;
     }
     (void) sprintf (path, "%s/%s", CVSroot_directory, CVSROOTADM);
-    if (!isaccessible (path, R_OK | X_OK))
+    if (readonlyfs == 0 && !isaccessible (path, R_OK | X_OK))
     {
 	int save_errno = errno;
 	if (alloc_pending (80 + strlen (path)))
@@ -4755,9 +4755,12 @@ static void wait_sig (sig)
      int sig;
 {
     int status;
+    int save_errno = errno;
+
     pid_t r = wait (&status);
     if (r == command_pid)
 	command_pid_is_dead++;
+    errno = save_errno;
 }
 #endif
 

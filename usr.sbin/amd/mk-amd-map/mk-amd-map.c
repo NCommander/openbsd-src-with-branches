@@ -36,7 +36,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93
- *	$Id: mk-amd-map.c,v 1.3 1994/06/13 20:50:42 mycroft Exp $
+ *	$Id: mk-amd-map.c,v 1.2 1997/01/15 23:43:48 millert Exp $
  */
 
 /*
@@ -52,7 +52,7 @@ char copyright[] = "\
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$Id: mk-amd-map.c,v 1.3 1994/06/13 20:50:42 mycroft Exp $";
+static char rcsid[] = "$Id: mk-amd-map.c,v 1.2 1997/01/15 23:43:48 millert Exp $";
 static char sccsid[] = "@(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93";
 #endif /* not lint */
 
@@ -234,7 +234,7 @@ char *argv[];
 	char *map;
 	int rc = 0;
 	DBM *mapd;
-	static char maptmp[] = "dbmXXXXXX";
+	static char maptmp[] = "dbmXXXXXXXXXX";
 	char maptpag[16];
 	char *mappag;
 #ifndef USING_DB
@@ -248,7 +248,7 @@ char *argv[];
 	int ch;
 	extern int optind;
 
-	while ((ch = getopt(argc, argv, "p")) != EOF)
+	while ((ch = getopt(argc, argv, "p")) != -1)
 	switch (ch) {
 	case 'p':
 		printit = 1;

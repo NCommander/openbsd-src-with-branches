@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mkisofs.c,v 1.4 2000/08/02 04:10:45 millert Exp $	*/
 /*
  * Program mkisofs.c - generate iso9660 filesystem  based upon directory
  * tree on hard disk.
@@ -21,7 +21,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$From: mkisofs.c,v 1.9 1997/04/10 02:45:09 eric Rel $";
+static char rcsid[] ="$From: mkisofs.c,v 1.10.1.3 1998/06/02 03:36:16 eric Exp $";
 
 /* ADD_FILES changes made by Ross Biro biro@yggdrasil.com 2/23/95 */
 
@@ -54,14 +54,14 @@ static char rcsid[] ="$From: mkisofs.c,v 1.9 1997/04/10 02:45:09 eric Rel $";
 
 #include "exclude.h"
 
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
 
 struct directory * root = NULL;
 
-static char version_string[] = "mkisofs v1.11";
+static char version_string[] = "mkisofs v1.11.3";
 
 FILE * discimage;
 unsigned int next_extent = 0;
@@ -156,7 +156,7 @@ void FDECL1(read_rcfile, char *, appname)
   if (!rcfile)
     {
       pnt = getenv("HOME");
-      if (pnt && strlen(pnt) + strlen(rcfn) + 2 <= sizeof(filename))
+      if (pnt && *pnt && strlen(pnt) + strlen(rcfn) + 2 <= sizeof(filename))
 	{
 	  strcpy(filename, pnt);
 	  strcat(filename, "/");
@@ -460,7 +460,7 @@ int FDECL2(main, int, argc, char **, argv){
 	usage();
 	exit(1);
       }
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
     {
 	int resource;
     struct rlimit rlp;
@@ -594,7 +594,7 @@ int FDECL2(main, int, argc, char **, argv){
   path_blocks = (path_table_size + (SECTOR_SIZE - 1)) >> 11;
   if (path_blocks & 1) path_blocks++;
 
-  path_table[0] = session_start + 0x14;
+  path_table[0] = session_start + 0x10 + 2 + (use_eltorito ? 1 : 0);
   path_table[1] = 0;
   path_table[2] = path_table[0] + path_blocks;
   path_table[3] = 0;

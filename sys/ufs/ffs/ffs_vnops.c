@@ -1,4 +1,5 @@
-/*	$NetBSD: ffs_vnops.c,v 1.5 1994/12/14 13:03:41 mycroft Exp $	*/
+/*	$OpenBSD: ffs_vnops.c,v 1.15 2001/03/20 17:30:07 gluk Exp $	*/
+/*	$NetBSD: ffs_vnops.c,v 1.7 1996/05/11 18:27:24 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -47,8 +48,14 @@
 #include <sys/mount.h>
 #include <sys/vnode.h>
 #include <sys/malloc.h>
+#include <sys/signalvar.h>
+#include <sys/pool.h>
 
 #include <vm/vm.h>
+
+#if defined(UVM)
+#include <uvm/uvm_extern.h>
+#endif
 
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/fifofs/fifo.h>
@@ -63,7 +70,7 @@
 #include <ufs/ffs/ffs_extern.h>
 
 /* Global vfs data structures for ufs. */
-int (**ffs_vnodeop_p)();
+int (**ffs_vnodeop_p) __P((void *));
 struct vnodeopv_entry_desc ffs_vnodeop_entries[] = {
 	{ &vop_default_desc, vn_default_error },
 	{ &vop_lookup_desc, ufs_lookup },		/* lookup */
@@ -80,6 +87,8 @@ struct vnodeopv_entry_desc ffs_vnodeop_entries[] = {
 	{ &vop_lease_desc, ufs_lease_check },		/* lease */
 	{ &vop_ioctl_desc, ufs_ioctl },			/* ioctl */
 	{ &vop_select_desc, ufs_select },		/* select */
+	{ &vop_kqfilter_desc, ufs_kqfilter },		/* kqfilter */
+	{ &vop_revoke_desc, ufs_revoke },		/* revoke */
 	{ &vop_mmap_desc, ufs_mmap },			/* mmap */
 	{ &vop_fsync_desc, ffs_fsync },			/* fsync */
 	{ &vop_seek_desc, ufs_seek },			/* seek */
@@ -91,7 +100,7 @@ struct vnodeopv_entry_desc ffs_vnodeop_entries[] = {
 	{ &vop_symlink_desc, ufs_symlink },		/* symlink */
 	{ &vop_readdir_desc, ufs_readdir },		/* readdir */
 	{ &vop_readlink_desc, ufs_readlink },		/* readlink */
-	{ &vop_abortop_desc, ufs_abortop },		/* abortop */
+	{ &vop_abortop_desc, vop_generic_abortop },	/* abortop */
 	{ &vop_inactive_desc, ufs_inactive },		/* inactive */
 	{ &vop_reclaim_desc, ffs_reclaim },		/* reclaim */
 	{ &vop_lock_desc, ufs_lock },			/* lock */
@@ -104,17 +113,18 @@ struct vnodeopv_entry_desc ffs_vnodeop_entries[] = {
 	{ &vop_advlock_desc, ufs_advlock },		/* advlock */
 	{ &vop_blkatoff_desc, ffs_blkatoff },		/* blkatoff */
 	{ &vop_valloc_desc, ffs_valloc },		/* valloc */
+	{ &vop_balloc_desc, ffs_balloc },		/* balloc */
 	{ &vop_reallocblks_desc, ffs_reallocblks },	/* reallocblks */
 	{ &vop_vfree_desc, ffs_vfree },			/* vfree */
 	{ &vop_truncate_desc, ffs_truncate },		/* truncate */
 	{ &vop_update_desc, ffs_update },		/* update */
-	{ &vop_bwrite_desc, vn_bwrite },
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ &vop_bwrite_desc, vop_generic_bwrite },
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void*)))NULL }
 };
 struct vnodeopv_desc ffs_vnodeop_opv_desc =
 	{ &ffs_vnodeop_p, ffs_vnodeop_entries };
 
-int (**ffs_specop_p)();
+int (**ffs_specop_p) __P((void *));
 struct vnodeopv_entry_desc ffs_specop_entries[] = {
 	{ &vop_default_desc, vn_default_error },
 	{ &vop_lookup_desc, spec_lookup },		/* lookup */
@@ -130,6 +140,8 @@ struct vnodeopv_entry_desc ffs_specop_entries[] = {
 	{ &vop_lease_desc, spec_lease_check },		/* lease */
 	{ &vop_ioctl_desc, spec_ioctl },		/* ioctl */
 	{ &vop_select_desc, spec_select },		/* select */
+	{ &vop_kqfilter_desc, spec_kqfilter },		/* kqfilter */
+	{ &vop_revoke_desc, spec_revoke },		/* revoke */
 	{ &vop_mmap_desc, spec_mmap },			/* mmap */
 	{ &vop_fsync_desc, ffs_fsync },			/* fsync */
 	{ &vop_seek_desc, spec_seek },			/* seek */
@@ -152,20 +164,21 @@ struct vnodeopv_entry_desc ffs_specop_entries[] = {
 	{ &vop_islocked_desc, ufs_islocked },		/* islocked */
 	{ &vop_pathconf_desc, spec_pathconf },		/* pathconf */
 	{ &vop_advlock_desc, spec_advlock },		/* advlock */
+	{ &vop_vfree_desc, ffs_vfree },			/* vfree */
 	{ &vop_blkatoff_desc, spec_blkatoff },		/* blkatoff */
 	{ &vop_valloc_desc, spec_valloc },		/* valloc */
 	{ &vop_reallocblks_desc, spec_reallocblks },	/* reallocblks */
 	{ &vop_vfree_desc, ffs_vfree },			/* vfree */
 	{ &vop_truncate_desc, spec_truncate },		/* truncate */
 	{ &vop_update_desc, ffs_update },		/* update */
-	{ &vop_bwrite_desc, vn_bwrite },
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ &vop_bwrite_desc, vop_generic_bwrite },
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void *)))NULL }
 };
 struct vnodeopv_desc ffs_specop_opv_desc =
 	{ &ffs_specop_p, ffs_specop_entries };
 
 #ifdef FIFO
-int (**ffs_fifoop_p)();
+int (**ffs_fifoop_p) __P((void *));
 struct vnodeopv_entry_desc ffs_fifoop_entries[] = {
 	{ &vop_default_desc, vn_default_error },
 	{ &vop_lookup_desc, fifo_lookup },		/* lookup */
@@ -181,6 +194,8 @@ struct vnodeopv_entry_desc ffs_fifoop_entries[] = {
 	{ &vop_lease_desc, fifo_lease_check },		/* lease */
 	{ &vop_ioctl_desc, fifo_ioctl },		/* ioctl */
 	{ &vop_select_desc, fifo_select },		/* select */
+	{ &vop_kqfilter_desc, fifo_kqfilter },		/* kqfilter */
+	{ &vop_revoke_desc, fifo_revoke },		/* revoke */
 	{ &vop_mmap_desc, fifo_mmap },			/* mmap */
 	{ &vop_fsync_desc, ffs_fsync },			/* fsync */
 	{ &vop_seek_desc, fifo_seek },			/* seek */
@@ -203,33 +218,25 @@ struct vnodeopv_entry_desc ffs_fifoop_entries[] = {
 	{ &vop_islocked_desc, ufs_islocked },		/* islocked */
 	{ &vop_pathconf_desc, fifo_pathconf },		/* pathconf */
 	{ &vop_advlock_desc, fifo_advlock },		/* advlock */
+	{ &vop_vfree_desc, ffs_vfree },			/* vfree */
 	{ &vop_blkatoff_desc, fifo_blkatoff },		/* blkatoff */
 	{ &vop_valloc_desc, fifo_valloc },		/* valloc */
 	{ &vop_reallocblks_desc, fifo_reallocblks },	/* reallocblks */
 	{ &vop_vfree_desc, ffs_vfree },			/* vfree */
 	{ &vop_truncate_desc, fifo_truncate },		/* truncate */
 	{ &vop_update_desc, ffs_update },		/* update */
-	{ &vop_bwrite_desc, vn_bwrite },
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ &vop_bwrite_desc, vop_generic_bwrite },
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void *)))NULL }
 };
 struct vnodeopv_desc ffs_fifoop_opv_desc =
 	{ &ffs_fifoop_p, ffs_fifoop_entries };
 #endif /* FIFO */
 
-#ifdef DEBUG
 /*
  * Enabling cluster read/write operations.
  */
-#include <sys/sysctl.h>
 int doclusterread = 1;
-struct ctldebug debug11 = { "doclusterread", &doclusterread };
 int doclusterwrite = 1;
-struct ctldebug debug12 = { "doclusterwrite", &doclusterwrite };
-#else
-/* XXX for ufs_readwrite */
-#define doclusterread 1
-#define doclusterwrite 1
-#endif
 
 #include <ufs/ufs/ufs_readwrite.c>
 
@@ -238,38 +245,121 @@ struct ctldebug debug12 = { "doclusterwrite", &doclusterwrite };
  */
 /* ARGSUSED */
 int
-ffs_fsync(ap)
+ffs_fsync(v)
+	void *v;
+{
 	struct vop_fsync_args /* {
 		struct vnode *a_vp;
 		struct ucred *a_cred;
 		int a_waitfor;
 		struct proc *a_p;
-	} */ *ap;
-{
-	register struct vnode *vp = ap->a_vp;
-	struct timeval tv;
+	} */ *ap = v;
+	struct vnode *vp = ap->a_vp;
+	struct buf *bp, *nbp;
+	struct timespec ts;
+	int s, error, passes, skipmeta;
 
-	vflushbuf(vp, ap->a_waitfor == MNT_WAIT);
-	tv = time;
-	return (VOP_UPDATE(ap->a_vp, &tv, &tv, ap->a_waitfor == MNT_WAIT));
+	if (vp->v_type == VBLK &&
+	    vp->v_specmountpoint != NULL &&
+	    (vp->v_specmountpoint->mnt_flag & MNT_SOFTDEP))
+		softdep_fsync_mountdev(vp);
+
+	/*
+	 * Flush all dirty buffers associated with a vnode.
+	 */
+	passes = NIADDR + 1;
+	skipmeta = 0;
+	if (ap->a_waitfor == MNT_WAIT)
+		skipmeta = 1;
+	s = splbio();
+loop:
+	for (bp = LIST_FIRST(&vp->v_dirtyblkhd); bp;
+	     bp = LIST_NEXT(bp, b_vnbufs))
+		bp->b_flags &= ~B_SCANNED;
+	for (bp = LIST_FIRST(&vp->v_dirtyblkhd); bp; bp = nbp) {
+		nbp = LIST_NEXT(bp, b_vnbufs);
+		if (bp->b_flags & (B_BUSY | B_SCANNED))
+			continue;
+		if ((bp->b_flags & B_DELWRI) == 0)
+			panic("ffs_fsync: not dirty");
+		if (skipmeta && bp->b_lblkno < 0)
+			continue;
+		bremfree(bp);
+		bp->b_flags |= B_BUSY | B_SCANNED;
+		splx(s);
+		/*
+		 * On our final pass through, do all I/O synchronously
+		 * so that we can find out if our flush is failing
+		 * because of write errors.
+		 */
+		if (passes > 0 || ap->a_waitfor != MNT_WAIT)
+			(void) bawrite(bp);
+		else if ((error = bwrite(bp)) != 0)
+			return (error);
+		s = splbio();
+		/*
+		 * Since we may have slept during the I/O, we need
+		 * to start from a known point.
+		 */
+		nbp = LIST_FIRST(&vp->v_dirtyblkhd);
+	}
+	if (skipmeta) {
+		skipmeta = 0;
+		goto loop;
+	}
+	if (ap->a_waitfor == MNT_WAIT) {
+		vwaitforio(vp, 0, "ffs_fsync", 0);
+
+		/*
+		 * Ensure that any filesystem metadata associated
+		 * with the vnode has been written.
+		 */
+		splx(s);
+		if ((error = softdep_sync_metadata(ap)) != 0)
+			return (error);
+		s = splbio();
+		if (!LIST_EMPTY(&vp->v_dirtyblkhd)) {
+			/*
+			 * Block devices associated with filesystems may
+			 * have new I/O requests posted for them even if
+			 * the vnode is locked, so no amount of trying will
+			 * get them clean. Thus we give block devices a
+			 * good effort, then just give up. For all other file
+			 * types, go around and try again until it is clean.
+			 */
+			if (passes > 0) {
+				passes -= 1;
+				goto loop;
+			}
+#ifdef DIAGNOSTIC
+			if (vp->v_type != VBLK)
+				vprint("ffs_fsync: dirty", vp);
+#endif
+		}
+	}
+	splx(s);
+	TIMEVAL_TO_TIMESPEC(&time, &ts);
+	return (VOP_UPDATE(vp, &ts, &ts, ap->a_waitfor == MNT_WAIT));
 }
 
 /*
  * Reclaim an inode so that it can be used for other purposes.
  */
 int
-ffs_reclaim(ap)
+ffs_reclaim(v)
+	void *v;
+{
 	struct vop_reclaim_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+		sturct proc *a_p;
+	} */ *ap = v;
 	register struct vnode *vp = ap->a_vp;
 	int error;
 
-	if (error = ufs_reclaim(vp))
+	if ((error = ufs_reclaim(vp, ap->a_p)) != 0)
 		return (error);
-	FREE(vp->v_data, VFSTOUFS(vp->v_mount)->um_devvp->v_tag == VT_MFS ?
-	    M_MFSNODE : M_FFSNODE);
+	/* XXX - same for for both mfs and ffs */
+	pool_put(&ffs_ino_pool, vp->v_data);
 	vp->v_data = NULL;
 	return (0);
 }

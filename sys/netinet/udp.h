@@ -1,3 +1,4 @@
+/*	$OpenBSD: udp.h,v 1.6 1995/04/13 06:37:10 cgd Exp $	*/
 /*	$NetBSD: udp.h,v 1.6 1995/04/13 06:37:10 cgd Exp $	*/
 
 /*
@@ -42,6 +43,6 @@
 struct udphdr {
 	u_int16_t uh_sport;		/* source port */
 	u_int16_t uh_dport;		/* destination port */
-	int16_t	  uh_ulen;		/* udp length */
+	u_int16_t uh_ulen;		/* udp length */
 	u_int16_t uh_sum;		/* udp checksum */
 };

@@ -1,3 +1,6 @@
+/*	$OpenBSD: rtsold.h,v 1.4 2000/08/13 18:24:00 itojun Exp $	*/
+/*	$KAME: rtsold.h,v 1.10 2000/10/05 22:20:39 itojun Exp $	*/
+
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.
@@ -31,7 +34,7 @@ struct ifinfo {
 	struct ifinfo *next;	/* pointer to the next interface */
 
 	struct sockaddr_dl *sdl; /* link-layer address */
-	char ifname[16];	/* interface name */
+	char ifname[IF_NAMESIZE]; /* interface name */
 	int active;		/* interface status */
 	int probeinterval;	/* interval of probe timer(if necessary) */
 	int probetimer;		/* rest of probe timer */
@@ -41,6 +44,7 @@ struct ifinfo {
 	int dadcount;
 	struct timeval timer;
 	struct timeval expire;
+	int errors;		/* # of errors we've got - detect wedge */
 
 	int racnt;		/* total # of valid RAs it have got */
 
@@ -60,11 +64,8 @@ extern struct timeval tm_max;
 extern int dflag;
 struct ifinfo *find_ifinfo __P((int ifindex));
 void rtsol_timer_update __P((struct ifinfo *ifinfo));
-#ifdef __STDC__
-extern void warnmsg __P((int, const char *, const char *, ...));
-#else
-extern void warnmsg __P((int, const char *, const char *, va_list));
-#endif
+extern void warnmsg __P((int, const char *, const char *, ...))
+     __attribute__((__format__(__printf__, 3, 4)));
 
 /* if.c */
 extern int ifinit __P((void));

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ip.h,v 1.5 1999/07/06 20:17:52 cmetz Exp $	*/
 /*	$NetBSD: ip.h,v 1.9 1995/05/15 01:22:44 cgd Exp $	*/
 
 /*
@@ -43,10 +44,6 @@
 
 /*
  * Structure of an internet header, naked of options.
- *
- * We declare ip_len and ip_off to be short, rather than u_short
- * pragmatically since otherwise unsigned comparisons can result
- * against negative integers quite easily, and fail in subtle ways.
  */
 struct ip {
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -58,9 +55,10 @@ struct ip {
 		  ip_hl:4;		/* header length */
 #endif
 	u_int8_t  ip_tos;		/* type of service */
-	int16_t	  ip_len;		/* total length */
+	u_int16_t ip_len;		/* total length */
 	u_int16_t ip_id;		/* identification */
-	int16_t	  ip_off;		/* fragment offset field */
+	u_int16_t ip_off;		/* fragment offset field */
+#define	IP_RF 0x8000			/* reserved fragment flag */
 #define	IP_DF 0x4000			/* dont fragment flag */
 #define	IP_MF 0x2000			/* more fragments flag */
 #define	IP_OFFMASK 0x1fff		/* mask for fragmenting bits */
@@ -79,6 +77,11 @@ struct ip {
 #define	IPTOS_THROUGHPUT	0x08
 #define	IPTOS_RELIABILITY	0x04
 /*	IPTOS_LOWCOST		0x02 XXX */
+#if 1
+/* ECN bits proposed by Sally Floyd */
+#define IPTOS_CE		0x01	/* congestion experienced */
+#define IPTOS_ECT		0x02	/* ECN-capable transport */
+#endif
 
 /*
  * Definitions for IP precedence (also in ip_tos) (hopefully unused)
@@ -169,3 +172,16 @@ struct	ip_timestamp {
 #define	IPTTLDEC	1		/* subtracted when forwarding */
 
 #define	IP_MSS		576		/* default maximum segment size */
+
+/*
+ * This is the real IPv4 psuedo header, used for computing the TCP and UDP
+ * checksums. For the Internet checksum, struct ipovly can be used instead.
+ * For stronger checksums, the real thing must be used.
+ */
+struct ippseudo {
+	struct    in_addr ippseudo_src;	/* source internet address */
+	struct    in_addr ippseudo_dst;	/* destination internet address */
+	u_int8_t  ippseudo_pad;		/* pad, must be zero */
+	u_int8_t  ippseudo_p;		/* protocol */
+	u_int16_t ippseudo_len;		/* protocol length */
+};

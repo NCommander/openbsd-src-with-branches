@@ -1,0 +1,8 @@
+#	$OpenBSD: Makefile.inc,v 1.3 1999/04/27 17:53:32 mickey Exp $
+
+SRCS+=	memchr.c memcmp.c memset.c index.c rindex.c \
+	strcat.c strcmp.c strcpy.c strcspn.c strlen.c \
+	strncat.c strncmp.c strncpy.c strpbrk.c strsep.c \
+	strspn.c strstr.c swab.c
+SRCS+=	bcmp.S bzero.S ffs.S strlcpy.S
+

@@ -1,3 +1,4 @@
+/*	$OpenBSD: images.h,v 1.2 1995/03/18 12:28:19 cgd Exp $	*/
 /*	$NetBSD: images.h,v 1.2 1995/03/18 12:28:19 cgd Exp $	*/
 
 /* 

@@ -32,15 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "@(#)isinf.c	5.1 (Berkeley) 3/18/91"; */
-static char rcsid[] = "";
+static char rcsid[] = "$OpenBSD$";
 #endif /* LIBC_SCCS and not lint */
-
 
 /* I have not verified that this is correct for the ns32532 -- PAN */
 
 #include <sys/types.h>
 
+int
 isnan(d)
 	double d;
 {
@@ -54,6 +53,7 @@ isnan(d)
 	return(p->exp == 2047 && (p->manh || p->manl));
 }
 
+int
 isinf(d)
 	double d;
 {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: keyboard.c,v 1.5 2000/06/04 23:06:17 aaron Exp $	*/
 /*	$NetBSD: keyboard.c,v 1.2 1995/01/20 08:51:59 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)keyboard.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: keyboard.c,v 1.2 1995/01/20 08:51:59 jtc Exp $";
+static char rcsid[] = "$OpenBSD: keyboard.c,v 1.5 2000/06/04 23:06:17 aaron Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -47,7 +48,7 @@ static char rcsid[] = "$NetBSD: keyboard.c,v 1.2 1995/01/20 08:51:59 jtc Exp $";
 #include "systat.h"
 #include "extern.h"
 
-int
+void
 keyboard()
 {
         char ch, line[80];
@@ -58,7 +59,9 @@ keyboard()
                 move(CMDLINE, 0);
                 do {
                         refresh();
-                        ch = getch() & 0177;
+                        if ((ch = getch()) == ERR)
+				exit(1);
+                        ch &= 0177;
                         if (ch == 0177 && ferror(stdin)) {
                                 clearerr(stdin);
                                 continue;
@@ -109,6 +112,11 @@ keyboard()
                                 clrtoeol();
                                 continue;
                         }
+			if (col >= sizeof(line) - 1) {
+				/* line too long */
+				beep();
+				continue;
+			}
                         if (isprint(ch) || ch == ' ') {
                                 line[col] = ch;
                                 mvaddch(CMDLINE, col, ch);

@@ -1,4 +1,5 @@
-/*	$NetBSD: cerror.S,v 1.1 1995/02/10 17:50:31 cgd Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.3 1996/10/17 03:08:17 cgd Exp $	*/
+/*	$NetBSD: cerror.S,v 1.3 1996/10/17 03:08:17 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -29,11 +30,16 @@
 
 #include "SYS.h"
 
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: cerror.S,v 1.2 1996/08/19 08:11:06 tholo Exp $"
+#endif /* SYSLIBC_SCCS */
+
 IMPORT(errno, 4)
 
 LEAF(cerror, 0)
-	br	t0, 1f
-1:	SETGP(t0)
+	br	t0, L1
+L1:	LDGP(t0)
 	stl	v0, errno
 	ldiq	v0, -1
 	RET

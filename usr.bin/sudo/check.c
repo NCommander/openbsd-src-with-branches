@@ -61,7 +61,7 @@
 #include "sudo.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: check.c,v 1.192 1999/10/07 21:20:55 millert Exp $";
+static const char rcsid[] = "$Sudo: check.c,v 1.194 2000/02/15 23:36:03 millert Exp $";
 #endif /* lint */
 
 /* Status codes for timestamp_status() */
@@ -71,7 +71,6 @@ static const char rcsid[] = "$Sudo: check.c,v 1.192 1999/10/07 21:20:55 millert 
 #define TS_NOFILE		3
 #define TS_ERROR		4
 
-       int   user_is_exempt	__P((void));
 static void  build_timestamp	__P((char **, char **));
 static int   timestamp_status	__P((char *, char *, char *, int));
 static char *expand_prompt	__P((char *, char *, char *));
@@ -103,7 +102,7 @@ check_user()
 	prompt = expand_prompt(user_prompt ? user_prompt : def_str(I_PASSPROMPT),
 	    user_name, user_shost);
 
-	verify_user(prompt);
+	verify_user(auth_pw, prompt);
     }
     if (status != TS_ERROR)
 	update_timestamp(timestampdir, timestampfile);
@@ -233,7 +232,7 @@ user_is_exempt()
     if (!(grp = getgrnam(def_str(I_EXEMPT_GRP))))
 	return(FALSE);
 
-    if (getgid() == grp->gr_gid)
+    if (user_gid == grp->gr_gid)
 	return(TRUE);
 
     for (gr_mem = grp->gr_mem; *gr_mem; gr_mem++) {
@@ -252,8 +251,18 @@ build_timestamp(timestampdir, timestampfile)
     char **timestampdir;
     char **timestampfile;
 {
-    char *dirparent = def_str(I_TIMESTAMPDIR);
+    char *dirparent;
+    int len;
 
+    dirparent = def_str(I_TIMESTAMPDIR);
+    len = easprintf(timestampdir, "%s/%s", dirparent, user_name);
+    if (len >= MAXPATHLEN)
+	log_error(0, "timestamp path too long: %s", timestampdir);
+
+    /*
+     * Timestamp file may be a file in the directory or NUL to use
+     * the directory as the timestamp.
+     */
     if (def_flag(I_TTY_TICKETS)) {
 	char *p;
 
@@ -261,17 +270,20 @@ build_timestamp(timestampdir, timestampfile)
 	    p++;
 	else
 	    p = user_tty;
-	if (strlen(dirparent) + strlen(user_name) + strlen(p) + 3 > MAXPATHLEN)
-	    log_error(0, "timestamp path too long: %s/%s/%s", dirparent,
-		user_name, p);
-	easprintf(timestampdir, "%s/%s", dirparent, user_name);
-	easprintf(timestampfile, "%s/%s/%s", dirparent, user_name, p);
-    } else {
-	if (strlen(dirparent) + strlen(user_name) + 2 > MAXPATHLEN)
-	    log_error(0, "timestamp path too long: %s/%s", dirparent, user_name);
-	easprintf(timestampdir, "%s/%s", dirparent, user_name);
+	if (def_flag(I_TARGETPW))
+	    len = easprintf(timestampfile, "%s/%s/%s:%s", dirparent, user_name,
+		p, *user_runas);
+	else
+	    len = easprintf(timestampfile, "%s/%s/%s", dirparent, user_name, p);
+	if (len >= MAXPATHLEN)
+	    log_error(0, "timestamp path too long: %s", timestampfile);
+    } else if (def_flag(I_TARGETPW)) {
+	len = easprintf(timestampfile, "%s/%s/%s", dirparent, user_name,
+	    *user_runas);
+	if (len >= MAXPATHLEN)
+	    log_error(0, "timestamp path too long: %s", timestampfile);
+    } else
 	*timestampfile = NULL;
-    }
 }
 
 /*
@@ -457,9 +469,9 @@ remove_timestamp(remove)
 		status = unlink(timestampfile);
 	    else
 		status = rmdir(timestampdir);
-	    if (status == -1) {
+	    if (status == -1 && errno != ENOENT) {
 		log_error(NO_EXIT, "can't remove %s (%s), will reset to epoch",
-		    strerror(errno), ts);
+		    ts, strerror(errno));
 		remove = FALSE;
 	    }
 	}

@@ -1,10 +1,9 @@
-#	$Id: Makefile,v 1.2 1994/12/22 10:27:12 cgd Exp $
+#	$OpenBSD: Makefile,v 1.5 2000/04/10 20:39:05 ericj Exp $
 
 PROG=	identd
-SRCS=	config.c identd.c netbsd.c parse.c proxy.c version.c
+SRCS=	identd.c openbsd.c parse.c version.c
 MAN=	identd.8
 
-LDADD=	-lkvm
-DPADD=	${LIBKVM}
+CFLAGS+= -Wall -Werror 
 
 .include <bsd.prog.mk>

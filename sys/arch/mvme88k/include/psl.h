@@ -1,3 +1,4 @@
+/*	$OpenBSD: psl.h,v 1.7 2001/03/07 23:37:17 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -44,58 +45,6 @@
 #ifndef __M88K_M88100_PSL_H__
 #define __M88K_M88100_PSL_H__
 
-/* needs major cleanup - XXX nivas */
-
-#if 0
-spl0 is a function by itself. I really am serious about the clean up
-above...
-#define spl0()		spln(0)
-#endif /* 0 */
-#define spl1()		setipl(1)
-#define spl2()		setipl(2)
-#define spl3()		setipl(3)
-#define spl4()		setipl(4)
-#define spl5()		setipl(5)
-#define spl6()		setipl(6)
-#define spl7()		setipl(7)
-
-/*
- * IPL levels.
- * We use 6 as IPL_HIGH so that abort can be programmed at 7 so that
- * it is always possible to break into the system unless interrupts
- * are disabled.
- */
-
-#define IPL_NONE	0
-#define IPL_SOFTCLOCK	1
-#define IPL_SOFTNET	1
-#define IPL_BIO		2
-#define IPL_NET		3
-#define IPL_TTY		3
-#define IPL_CLOCK	5
-#define IPL_STATCLOCK	5
-#define IPL_IMP		6
-#define IPL_VM		6
-#define IPL_HIGH	6
-#define IPL_SCHED	6
-#define IPL_NMI		7
-#define IPL_ABORT	7
-
-#define splnone		spl0
-#define splsoftclock()	setipl(IPL_SOFTCLOCK)
-#define splsoftnet()	setipl(IPL_SOFTNET)
-#define splbio()	setipl(IPL_BIO)
-#define splnet()	setipl(IPL_NET)
-#define spltty()	setipl(IPL_TTY)
-#define splclock()	setipl(IPL_CLOCK)
-#define splstatclock()	setipl(IPL_STATCLOCK)
-#define splimp()	setipl(IPL_IMP)
-#define splvm()		setipl(IPL_VM)
-#define splhigh()	setipl(IPL_HIGH)
-#define splsched()	setipl(IPL_SCHED)
-
-#define splx(x)		((x) ? setipl((x)) : spl0())
-
 /* 
  * 88100 control registers
  */
@@ -110,16 +59,23 @@ above...
 /*
  * processor status register
  */
+#ifndef PSR_MODE
 #define PSR_MODE	0x80000000U	/* supervisor/user mode */
+#endif
 #define PSR_BO		0x40000000U	/* byte-ordering 0:big 1:little */
 #define PSR_SER		0x20000000U	/* serial mode */
 #define PSR_C		0x10000000U	/* carry */
 #define PSR_SFD		0x000003F0U	/* SFU disable */
 #define PSR_SFD1	0x00000008U	/* SFU1 (FPU) disable */
+#ifndef PSR_MXM
 #define PSR_MXM		0x00000004U	/* misaligned access enable */
+#endif
+#ifndef PSR_IND
 #define PSR_IND		0x00000002U	/* interrupt disable */
+#endif
+#ifndef PSR_SFRZ
 #define PSR_SFRZ	0x00000001U	/* shadow freeze */
-
+#endif
 /*
  *	This is used in ext_int() and hard_clock().
  */
@@ -138,7 +94,7 @@ above...
 #define PSR_USER	(PSR_SFD)
 #define PSR_SET_BY_USER	(PSR_BO | PSR_SER | PSR_C | PSR_MXM)
 
-#ifndef	ASSEMBLER
+#ifndef	_LOCORE
 struct psr {
     unsigned
 	psr_mode: 1,

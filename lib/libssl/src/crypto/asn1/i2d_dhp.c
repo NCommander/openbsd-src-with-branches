@@ -56,20 +56,14 @@
  * [including the GNU Public Licence.]
  */
 
+#ifndef NO_DH
 #include <stdio.h>
 #include "cryptlib.h"
-#include "bn.h"
-#include "asn1_mac.h"
-#include "dh.h"
+#include <openssl/bn.h>
+#include <openssl/asn1_mac.h>
+#include <openssl/dh.h>
 
-/*
- * ASN1err(ASN1_F_D2I_DHPARAMS,ASN1_R_LENGTH_MISMATCH);
- * ASN1err(ASN1_F_X509_DHPARAMS_NEW,ASN1_R_LENGTH_MISMATCH);
- */
-
-int i2d_DHparams(a,pp)
-DH *a;
-unsigned char **pp;
+int i2d_DHparams(DH *a, unsigned char **pp)
 	{
 	BIGNUM *num[3];
 	ASN1_INTEGER bs;
@@ -100,13 +94,18 @@ unsigned char **pp;
 		}
 
 	t=ASN1_object_size(1,tot,V_ASN1_SEQUENCE);
-	if (pp == NULL) return(t);
+	if (pp == NULL)
+		{
+		if (num[2] != NULL)
+			BN_free(num[2]);
+		return(t);
+		}
 
 	p= *pp;
 	ASN1_put_object(&p,1,tot,V_ASN1_SEQUENCE,V_ASN1_UNIVERSAL);
 
 	bs.type=V_ASN1_INTEGER;
-	bs.data=(unsigned char *)Malloc(max+4);
+	bs.data=(unsigned char *)OPENSSL_malloc(max+4);
 	if (bs.data == NULL)
 		{
 		ASN1err(ASN1_F_I2D_DHPARAMS,ERR_R_MALLOC_FAILURE);
@@ -119,10 +118,11 @@ unsigned char **pp;
 		bs.length=BN_bn2bin(num[i],bs.data);
 		i2d_ASN1_INTEGER(&bs,&p);
 		}
-	Free((char *)bs.data);
+	OPENSSL_free(bs.data);
 	ret=t;
 err:
 	if (num[2] != NULL) BN_free(num[2]);
 	*pp=p;
 	return(ret);
 	}
+#endif

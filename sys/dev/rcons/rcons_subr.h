@@ -1,3 +1,4 @@
+/*	$OpenBSD: rcons_subr.h,v 1.1 1995/10/04 23:57:28 pk Exp $ */
 /*	$NetBSD: rcons_subr.h,v 1.1 1995/10/04 23:57:28 pk Exp $ */
 
 /*

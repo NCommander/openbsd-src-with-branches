@@ -1,23 +1,36 @@
+/*	$OpenBSD: form.priv.h,v 1.5 1999/05/17 03:04:16 millert Exp $	*/
 
-/***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
+/****************************************************************************
+ * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author: Juergen Pfeifer <juergen.pfeifer@gmx.net> 1995,1997            *
+ ****************************************************************************/
 
 #include "mf_common.h"
 #include "form.h"
@@ -38,6 +51,10 @@
 #define _HAS_ARGS        (0x02) /* Type has arguments                     */
 #define _HAS_CHOICE      (0x04) /* Type has choice methods                */
 #define _RESIDENT        (0x08) /* Type is builtin                        */
+
+/* This are the field options required to be a selectable field in field
+   navigation requests */
+#define O_SELECTABLE (O_ACTIVE | O_VISIBLE)
 
 /* If form is NULL replace form argument by default-form */
 #define Normalize_Form(form)  ((form)=(form)?(form):_nc_Default_Form)
@@ -60,6 +77,9 @@
 #define Single_Line_Field(field) \
    (((field)->rows + (field)->nrow) == 1)
 
+/* Logic to determine whether or not a field is selectable */
+#define Field_Is_Selectable(f)     (((f)->opts & O_SELECTABLE)==O_SELECTABLE)
+#define Field_Is_Not_Selectable(f) (((f)->opts & O_SELECTABLE)!=O_SELECTABLE)
 
 typedef struct typearg {
   struct typearg *left;
@@ -91,3 +111,20 @@ typedef struct typearg {
 
 #define C_BLANK ' '
 #define is_blank(c) ((c)==C_BLANK)
+
+extern NCURSES_EXPORT_VAR(const FIELDTYPE *) _nc_Default_FieldType;
+
+extern NCURSES_EXPORT(TypeArgument *) _nc_Make_Argument (const FIELDTYPE*,va_list*,int*);
+extern NCURSES_EXPORT(TypeArgument *) _nc_Copy_Argument (const FIELDTYPE*,const TypeArgument*, int*);
+extern NCURSES_EXPORT(void) _nc_Free_Argument (const FIELDTYPE*,TypeArgument*);
+extern NCURSES_EXPORT(bool) _nc_Copy_Type (FIELD*, FIELD const *);
+extern NCURSES_EXPORT(void) _nc_Free_Type (FIELD *);
+
+extern NCURSES_EXPORT(int) _nc_Synchronize_Attributes (FIELD*);
+extern NCURSES_EXPORT(int) _nc_Synchronize_Options (FIELD*,Field_Options);
+extern NCURSES_EXPORT(int) _nc_Set_Form_Page (FORM*,int,FIELD*);
+extern NCURSES_EXPORT(int) _nc_Refresh_Current_Field (FORM*);
+extern NCURSES_EXPORT(FIELD *) _nc_First_Active_Field (FORM*);
+extern NCURSES_EXPORT(bool) _nc_Internal_Validation (FORM*);
+extern NCURSES_EXPORT(int) _nc_Set_Current_Field (FORM*,FIELD*);
+extern NCURSES_EXPORT(int) _nc_Position_Form_Cursor (FORM*);

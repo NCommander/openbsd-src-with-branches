@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1987 Regents of the University of California.
  * All rights reserved.
@@ -39,7 +41,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)printenv.c	5.4 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: printenv.c,v 1.4 1993/12/31 19:28:15 jtc Exp $";
+static char rcsid[] = "$OpenBSD: printenv.c,v 1.1.1.1 1995/10/18 08:45:57 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: x25err.h,v 1.5 1994/06/29 06:37:47 cgd Exp $	*/
 /*	$NetBSD: x25err.h,v 1.5 1994/06/29 06:37:47 cgd Exp $	*/
 
 /*

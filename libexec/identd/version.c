@@ -1,2 +1,2 @@
-/* $Id: version.c,v 1.3 1994/02/04 23:20:04 cgd Exp $ */
+/* $OpenBSD: version.c,v 1.1.1.1 1995/10/18 08:43:18 deraadt Exp $ */
 char *version = "2.1.2";

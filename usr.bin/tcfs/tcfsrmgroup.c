@@ -1,3 +1,5 @@
+/*	$OpenBSD: tcfsrmgroup.c,v 1.9 2000/06/20 08:59:53 fgsch Exp $	*/
+
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
  *	Author and mantainer: 	Luigi Catuogno [luicat@tcfs.unisa.it]
@@ -10,8 +12,9 @@
  *	Base utility set v0.1
  */
 
-#include <stdio.h>
 #include <grp.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <miscfs/tcfs/tcfs.h>
 #include "tcfslib.h"
@@ -25,73 +28,76 @@ Remove a TCFS group from the TCFS group database.
   -v           Makes the output a little more verbose\n";
 
 int
-rmgroup_main (int argn, char *argv[])
+rmgroup_main(int argn, char *argv[])
 {
-	int index, val;
-	gid_t gid;
+	int val;
+	gid_t gid = 0;
 	int have_gid = FALSE, be_verbose = FALSE;
 
 	/*
 	 * Going to check the arguments
 	 */
-	while ((val = getopt(argn, argv, "hg:v")) != EOF)
+	while ((val = getopt(argn, argv, "hg:v")) != -1)
 		switch (val) {
 		case 'g':
 			gid = (gid_t)atoi(optarg);
 			if (!gid && optarg[0] != '0') { /* group name given */ 
 				struct group *group_id;
 
-				group_id=getgrnam(optarg);
+				group_id = getgrnam(optarg);
 				if (!group_id)
-					tcfs_error (ER_CUSTOM, "Nonexistent group.");
-				gid=group_id->gr_gid;
+					tcfs_error(ER_CUSTOM, "Nonexistent group.");
+				gid = group_id->gr_gid;
 			}
 
-			have_gid=TRUE;
+			have_gid = TRUE;
 			break;
 		case 'h':
-			show_usage (rmgroup_usage, argv[0]);
-			exit (OK);
+			printf(rmgroup_usage, argv[0]);
+			exit(OK);
 		case 'v':
-			be_verbose=TRUE;
+			be_verbose = TRUE;
 			break;
 		default:
-			fprintf (stderr, "Try %s --help for more informations.\n", argv[0]);
-			exit (ER_UNKOPT);
+			fprintf(stderr,
+			    "Try %s --help for more informations.\n", argv[0]);
+			exit(ER_UNKOPT);
 		}
 
-	if (argn-optind)
-		tcfs_error (ER_UNKOPT, NULL);
+	if (argn - optind)
+		tcfs_error(ER_UNKOPT, NULL);
 
 	if (!have_gid) {
 		char *buff = NULL;
 		int len;
 
-		buff = (char*)calloc(2048, sizeof(char));
+		buff = (char *)malloc(2048);
 		if (!buff)
-			tcfs_error (ER_MEM, NULL);
+			tcfs_error(ER_MEM, NULL);
 
-		printf ("Group id of the TCFS group to remove from the database: ");
-		fgets (buff,2048,stdin);
-		len = strlen(buff) - 2;
+		printf("Group ID of the TCFS group to remove from the database: ");
+		fgets(buff, 2048, stdin);
+		len = strlen(buff) - 1;
 		buff[len] = buff[len] == '\n' ? 0 : buff[len];
-		gid=(gid_t)atoi(buff);
+		gid = (gid_t)atoi(buff);
 
 		if (!gid && optarg[0] != '0') { /* group name given */
 			struct group *group_id;
 
 			group_id = getgrnam(optarg);
 			if (!group_id)
-				tcfs_error (ER_CUSTOM, "Nonexistent group.");
-			gid=group_id->gr_gid;
+				tcfs_error(ER_CUSTOM, "Nonexistent group.");
+			gid = group_id->gr_gid;
 		}
 
-		if (gid <=0 )
-			tcfs_error (ER_CUSTOM, "A positive ID please!");
+		if (gid <= 0)
+			tcfs_error(ER_CUSTOM, "A positive ID please!");
 
-		free (buff);
+		free(buff);
 	}
 
-	if (!tcfs_rmgroup (gid))
-		tcfs_error (ER_CUSTOM, "Wrong ID or an error as occurred.\n");
+	if (!tcfs_rmgroup(gid))
+		tcfs_error(ER_CUSTOM, "Wrong ID or an error as occurred.\n");
+
+	exit(0);
 }

@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -37,7 +36,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: ports.h,v 1.1 1998/04/02 19:34:12 lha Exp $ */
+/* $Id: ports.h,v 1.2 1998/12/06 07:42:15 assar Exp $ */
 
 /*
  * Port numbers.
@@ -48,8 +47,9 @@
 
 extern int afsport, afscallbackport, afsprport, afsvldbport,
    afskaport, afsvolport, afserrorsport, afsbosport,
-   afsupdateport, afsrmtsys ;
+   afsupdateport, afsrmtsys;
 
-void initports (void);
+void ports_init (void);
+const char *ports_num2name(int);
 
 #endif /* _PORTS_H_ */

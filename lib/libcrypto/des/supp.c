@@ -1,3 +1,4 @@
+/*	$OpenBSD: supp.c,v 1.2 1999/09/29 04:36:01 beck Exp $	*/
 /* crypto/des/supp.c */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
@@ -87,18 +88,15 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id$
  */
 
 #include <stdio.h>
 #include "des_locl.h"
 
-void des_cblock_print_file(cb, fp)
-	des_cblock *cb;
-	FILE *fp;
+void des_cblock_print_file(const_des_cblock *cb, FILE *fp)
 {
 	int i;
-	unsigned int *p = (unsigned int *)cb;
+	const unsigned int *p = (const unsigned int *)cb;
 
 	fprintf(fp, " 0x { ");
 	for (i = 0; i < 8; i++) {

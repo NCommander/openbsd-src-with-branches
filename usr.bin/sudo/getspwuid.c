@@ -75,7 +75,7 @@
 #include "sudo.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: getspwuid.c,v 1.55 1999/10/07 21:20:57 millert Exp $";
+static const char rcsid[] = "$Sudo: getspwuid.c,v 1.56 2000/02/18 17:56:26 millert Exp $";
 #endif /* lint */
 
 #ifndef STDC_HEADERS
@@ -93,8 +93,8 @@ int crypt_type = INT_MAX;
 /*
  * Local functions not visible outside getspwuid.c
  */
-static char *sudo_getshell	__P((struct passwd *));
-static char *sudo_getepw	__P((struct passwd *));
+static char *sudo_getshell		__P((struct passwd *));
+static struct passwd *sudo_pwdup	__P((struct passwd *));
 
 
 /*
@@ -110,11 +110,9 @@ sudo_getshell(pw)
     if ((pw_shell = getenv("SHELL")) == NULL)
 	pw_shell = pw->pw_shell;
 
-#ifdef _PATH_BSHELL
     /* empty string "" means bourne shell */
     if (*pw_shell == '\0')
 	pw_shell = _PATH_BSHELL;
-#endif /* _PATH_BSHELL */
 
     return(pw_shell);
 }
@@ -123,7 +121,7 @@ sudo_getshell(pw)
  * Return the encrypted password for the user described by pw.  If shadow
  * passwords are in use, look in the shadow file.
  */
-static char *
+char *
 sudo_getepw(pw)
     struct passwd *pw;
 {
@@ -192,14 +190,11 @@ sudo_getepw(pw)
  * Dynamically allocate space for a struct password and the constituent parts
  * that we care about.  Fills in pw_passwd from shadow file if necessary.
  */
-struct passwd *
-sudo_getpwuid(uid)
-    uid_t uid;
+static struct passwd *
+sudo_pwdup(pw)
+    struct passwd *pw;
 {
-    struct passwd *pw, *local_pw;
-
-    if ((pw = getpwuid(uid)) == NULL)
-	return(NULL);
+    struct passwd *local_pw;
 
     /* Allocate space for a local copy of pw. */
     local_pw = (struct passwd *) emalloc(sizeof(struct passwd));
@@ -210,6 +205,10 @@ sudo_getpwuid(uid)
     (void) memcpy(local_pw, pw, sizeof(struct passwd));
     local_pw->pw_name = estrdup(pw->pw_name);
     local_pw->pw_dir = estrdup(pw->pw_dir);
+    local_pw->pw_gecos = estrdup(pw->pw_gecos);
+#ifdef HAVE_LOGIN_CAP_H
+    local_pw->pw_class = estrdup(pw->pw_class);
+#endif
 
     /* pw_shell is a special case since we overide with $SHELL */
     local_pw->pw_shell = estrdup(sudo_getshell(pw));
@@ -218,4 +217,36 @@ sudo_getpwuid(uid)
     local_pw->pw_passwd = estrdup(sudo_getepw(pw));
 
     return(local_pw);
+}
+
+/*
+ * Get a password entry by uid and allocate space for it.
+ * Fills in pw_passwd from shadow file if necessary.
+ */
+struct passwd *
+sudo_getpwuid(uid)
+    uid_t uid;
+{
+    struct passwd *pw;
+
+    if ((pw = getpwuid(uid)) == NULL)
+	return(NULL);
+    else
+	return(sudo_pwdup(pw));
+}
+
+/*
+ * Get a password entry by name and allocate space for it.
+ * Fills in pw_passwd from shadow file if necessary.
+ */
+struct passwd *
+sudo_getpwnam(name)
+    const char *name;
+{
+    struct passwd *pw;
+
+    if ((pw = getpwnam(name)) == NULL)
+	return(NULL);
+    else
+	return(sudo_pwdup(pw));
 }

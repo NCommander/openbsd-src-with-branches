@@ -1,4 +1,4 @@
-/*	$NetBSD: pathnames.h,v 1.3 1995/04/22 08:19:48 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1989, 1993

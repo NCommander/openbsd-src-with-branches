@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #
 # example smtpd_check_rules file.  If you compiled smtpd with
 # CHECK_ADDRESS=1, this file goes in etc/smtpd_check_rules in your
@@ -40,6 +42,18 @@ noto:ALL:ALL:*@*@*:551 Sorry %H (%I), I don't allow unauthorized relaying. You c
 # filtering for SPAM, and we accomodate them here. 
 #
 allow:ALL:ALL:ALL@hormel.mydomain.com spamboy@otherdomain.com
+
+
+# Block any connections from host in the MAPS rbl at rbl.maps.vix.com
+# Beware that this can throw the baby out with the bathwater.
+noto:RBL.rbl.maps.vix.com:ALL:ALL:550 Mail refused from host %I in MAPS RBL, see http%C//maps.vix.com/rbl/
+
+# Block any connections from a host or connecting address who uses a
+# nameserver for which the address is in the MAPS rbl at rbl.maps.vix.com.
+# Note that this can *really* throw the baby out with the bathwater, 
+# be sure you understand the implications before using the two below.
+noto:NS=RBL.rbl.maps.vix.com:ALL:ALL:550 Mail refused due to nameserver for %H(%I) in MAPS RBL, see http%C//maps.vix.com/rbl/
+noto:ALL:NS=RBL.rbl.maps.vix.com:ALL:550 Mail refused due to nameserver for %F in MAPS RBL, see http%C//maps.vix.com/rbl/
 
 
 # block anyone who uses a major SPAM provider as a nameserver or MX. either

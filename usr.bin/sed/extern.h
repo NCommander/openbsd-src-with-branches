@@ -1,3 +1,4 @@
+/* *	$OpenBSD: extern.h,v 1.1.1.1 1995/10/18 08:46:05 deraadt Exp $*/
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -35,7 +36,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)extern.h	8.1 (Berkeley) 6/6/93
- *	$Id: extern.h,v 1.4 1994/02/03 23:44:52 cgd Exp $
  */
 
 extern struct s_command *prog;

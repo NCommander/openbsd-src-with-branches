@@ -1,3 +1,5 @@
+/*	$OpenBSD: printf.c,v 1.3 1997/01/17 07:13:06 millert Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -41,7 +43,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)printf.c	5.9 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: printf.c,v 1.13 1994/02/03 01:10:49 jtc Exp $";
+static char rcsid[] = "$OpenBSD: printf.c,v 1.3 1997/01/17 07:13:06 millert Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -188,16 +190,16 @@ main(argc, argv)
 				}
 
 				/* skip to field width */
-				for (; index(SKIP1, *fmt); ++fmt) ;
+				for (; strchr(SKIP1, *fmt); ++fmt) ;
 				fieldwidth = *fmt == '*' ? getint() : 0;
 
 				/* skip to possible '.', get following precision */
-				for (; index(SKIP2, *fmt); ++fmt) ;
+				for (; strchr(SKIP2, *fmt); ++fmt) ;
 				if (*fmt == '.')
 					++fmt;
 				precision = *fmt == '*' ? getint() : 0;
 
-				for (; index(SKIP2, *fmt); ++fmt) ;
+				for (; strchr(SKIP2, *fmt); ++fmt) ;
 				if (!*fmt) {
 					warnx ("missing format character");
 					return(1);
@@ -219,8 +221,13 @@ main(argc, argv)
 				}
 				case 'd':
 				case 'i': {
+					long p;
 					char *f = mklong(start, convch);
-					long p = getlong();
+					if (!f) {
+						warnx("out of memory");
+						return (1);
+					}
+					p = getlong();
 					PF(f, p);
 					break;
 				}
@@ -228,8 +235,13 @@ main(argc, argv)
 				case 'u':
 				case 'x':
 				case 'X': {
+					unsigned long p;
 					char *f = mklong(start, convch);
-					unsigned long p = getulong();
+					if (!f) {
+						warnx("out of memory");
+						return (1);
+					}
+					p = getulong();
 					PF(f, p);
 					break;
 				}
@@ -410,10 +422,24 @@ mklong(str, ch)
 	const char *str;
 	char ch;
 {
-	static char copy[64];
+	static char *copy;
+	static int copysize;
 	int len;	
 
 	len = strlen(str) + 2;
+	if (copysize < len) {
+		char *newcopy;
+		copysize = len + 256;
+
+		newcopy = realloc(copy, copysize);
+		if (newcopy == NULL) {
+			copysize = 0;
+			free(copy);
+			copy = NULL;
+			return (NULL);
+		}
+		copy = newcopy;
+	}
 	(void) memmove(copy, str, len - 3);
 	copy[len - 3] = 'l';
 	copy[len - 2] = ch;
@@ -444,7 +470,7 @@ getint()
 	if (!*gargv)
 		return(0);
 
-	if (index(number, **gargv))
+	if (strchr(number, **gargv))
 		return(atoi(*gargv++));
 
 	return 0;

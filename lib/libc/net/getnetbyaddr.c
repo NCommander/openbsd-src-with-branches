@@ -1,5 +1,3 @@
-/*	$NetBSD: getnetbyaddr.c,v 1.4 1995/02/25 06:20:30 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getnetbyaddr.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getnetbyaddr.c,v 1.4 1995/02/25 06:20:30 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getnetbyaddr.c,v 1.4 1997/04/05 21:13:06 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <netdb.h>
@@ -46,14 +40,14 @@ static char rcsid[] = "$NetBSD: getnetbyaddr.c,v 1.4 1995/02/25 06:20:30 cgd Exp
 extern int _net_stayopen;
 
 struct netent *
-getnetbyaddr(net, type)
-	register long net;
+_getnetbyaddr(net, type)
+	register in_addr_t net;
 	register int type;
 {
 	register struct netent *p;
 
 	setnetent(_net_stayopen);
-	while (p = getnetent())
+	while ((p = getnetent()))
 		if (p->n_addrtype == type && p->n_net == net)
 			break;
 	if (!_net_stayopen)

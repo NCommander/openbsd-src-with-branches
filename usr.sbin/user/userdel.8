@@ -1,3 +1,4 @@
+.\" $OpenBSD: userdel.8,v 1.5 2000/04/25 20:11:06 jakob Exp $ */
 .\" $NetBSD: userdel.8,v 1.5 2000/03/13 23:22:55 soren Exp $ */
 .\"
 .\"
@@ -33,15 +34,15 @@
 .\"
 .Dd November 30, 1999
 .Dt USERDEL 8
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm userdel
 .Nd remove a user from the system
 .Sh SYNOPSIS
-.Nm ""
+.Nm userdel
 .Op Fl D
 .Op Fl p Ar preserve-value
-.Nm ""
+.Nm userdel
 .Op Fl p
 .Op Fl r
 .Op Fl v
@@ -104,10 +105,7 @@ utility exits 0 on success, and >0 if an error occurs.
 The
 .Nm
 utility first appeared in
-.Nx 1.5 .
-It is based on the
-.Ar addnerd
-package by the same author.
+.Ox 2.7 .
 .Sh AUTHOR
 The
 .Nm

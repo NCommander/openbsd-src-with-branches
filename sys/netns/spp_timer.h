@@ -1,3 +1,4 @@
+/*	$OpenBSD: spp_timer.h,v 1.6 1995/03/26 20:36:22 jtc Exp $	*/
 /*	$NetBSD: spp_timer.h,v 1.6 1995/03/26 20:36:22 jtc Exp $	*/
 
 /*

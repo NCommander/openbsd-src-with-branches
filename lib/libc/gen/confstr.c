@@ -1,5 +1,3 @@
-/*	$NetBSD: confstr.c,v 1.6 1995/05/13 06:58:18 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)confstr.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: confstr.c,v 1.6 1995/05/13 06:58:18 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: confstr.c,v 1.2 1996/08/19 08:21:59 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -65,15 +59,15 @@ confstr(name, buf, len)
 		mib[0] = CTL_USER;
 		mib[1] = USER_CS_PATH;
 		if (sysctl(mib, 2, NULL, &tlen, NULL, 0) == -1)
-			return (-1);
+			return ((size_t) -1);
 		if (len != 0 && buf != NULL) {
 			if ((p = malloc(tlen)) == NULL)
-				return (-1);
+				return ((size_t) -1);
 			if (sysctl(mib, 2, p, &tlen, NULL, 0) == -1) {
 				sverrno = errno;
 				free(p);
 				errno = sverrno;
-				return (-1);
+				return ((size_t) -1);
 			}
 			/*
 			 * POSIX 1003.2 requires partial return of

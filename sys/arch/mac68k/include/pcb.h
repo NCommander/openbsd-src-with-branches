@@ -1,4 +1,5 @@
-/*	$NetBSD: pcb.h,v 1.6 1995/06/21 03:10:44 briggs Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.3 1996/05/26 18:35:56 briggs Exp $	*/
+/*	$NetBSD: pcb.h,v 1.7 1996/05/05 06:17:51 briggs Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -75,11 +76,13 @@
  *
  *	@(#)pcb.h	7.4 (Berkeley) 5/4/91
  */
+#ifndef	_MAC68K_PCB_H_
+#define	_MAC68K_PCB_H_
 
 #include <machine/frame.h>
 
 /*
- * MacII process control block
+ * mac68k process control block
  */
 struct pcb
 {
@@ -103,3 +106,5 @@ struct pcb
 struct md_coredump {
 	int	md_exec[16];	/* Exec structure for HP-UX (sic) core dumps */
 };
+
+#endif /* _MAC68K_PCB_H_ */

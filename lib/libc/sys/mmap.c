@@ -1,5 +1,3 @@
-/*	$NetBSD: mmap.c,v 1.4 1995/02/27 11:23:07 cgd Exp $	*/
-
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,25 +31,25 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)mmap.c	8.1 (Berkeley) 6/17/93";
-#else
-static char rcsid[] = "$NetBSD: mmap.c,v 1.4 1995/02/27 11:23:07 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD: mmap.c,v 1.7 1997/11/14 21:24:39 deraadt Exp $";
+#endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
 
+#ifdef lint
+quad_t __syscall(quad_t, ...);
+#endif
+
 /*
  * This function provides 64-bit offset padding that
  * is not supplied by GCC 1.X but is supplied by GCC 2.X.
  */
-caddr_t
+void *
 mmap(addr, len, prot, flags, fd, offset)
-	caddr_t addr;
+	void	*addr;
 	size_t	len;
 	int	prot;
 	int	flags;
@@ -59,6 +57,6 @@ mmap(addr, len, prot, flags, fd, offset)
 	off_t	offset;
 {
 
-	return((caddr_t)(long)__syscall((quad_t)SYS_mmap, addr, len, prot,
+	return((void *)(long)__syscall((quad_t)SYS_mmap, addr, len, prot,
 	    flags, fd, 0, offset));
 }

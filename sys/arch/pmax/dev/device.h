@@ -1,4 +1,4 @@
-/*	$NetBSD: device.h,v 1.8 1995/09/25 21:10:03 jonathan Exp $	*/
+/*	$NetBSD: device.h,v 1.12 1997/01/31 02:00:56 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -45,6 +45,7 @@
  * different types of controllers.
  */
 struct ScsiCmd;
+struct device;
 
 struct pmax_driver {
 	char	*d_name;	/* device driver name (e.g., "rz") */
@@ -54,7 +55,8 @@ struct pmax_driver {
 				/* routine to start operation */
 	void	(*d_start) __P((struct ScsiCmd *cmd));
 				/* routine to call when operation complete */
-	void	(*d_done) __P(());
+	void	(*d_done) __P(( int unit, int errno, int buflen,
+			int status_byte));
 				/* routine to call when interrupt is seen */
 	int	(*d_intr) __P((void* sc));
 };
@@ -83,11 +85,11 @@ struct pmax_scsi_device {
 	int		sd_unit;	/* device unit number */
 	int		sd_ctlr;	/* SCSI interface number */
 	int		sd_drive;	/* SCSI address number */
-	int		sd_slave;	/* LUN if device has multiple units */
-	int		sd_dk;		/* used for disk statistics */
+	int		sd_lun;		/* LUN if device has multiple units */
 	int		sd_flags;	/* flags */
 
 	int		sd_alive;	/* true if init routine succeeded */
+	struct device	*sd_devp;	/* new config glue kludge */
 };
 
 /* Define special unit types used by the config program */
@@ -125,4 +127,13 @@ typedef struct ScsiCmd {
 #ifdef _KERNEL
 extern struct pmax_ctlr pmax_cinit[];
 extern struct pmax_scsi_device scsi_dinit[];
-#endif
+
+/*
+ * Old-style pmax driver glue:
+ * Callbacks to add known a controller, and to configure all slaves on
+ * all  known controllers.
+ */
+void pmax_add_scsi __P((struct pmax_driver *dp, int unit));
+void configure_scsi __P((void));
+
+#endif	/* _KERNEL */

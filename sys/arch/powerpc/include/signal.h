@@ -1,3 +1,4 @@
+/*	$OpenBSD: signal.h,v 1.2 1997/02/05 01:33:53 rahnds Exp $	*/
 /*	$NetBSD: signal.h,v 1.1 1996/09/30 16:34:34 ws Exp $	*/
 
 /*
@@ -33,19 +34,35 @@
 #ifndef	_MACHINE_SIGNAL_H_
 #define	_MACHINE_SIGNAL_H_
 
-#include <machine/frame.h>
-
 typedef int sig_atomic_t;
+
+#include <machine/types.h>
+
+/*
+ * We have to save all registers on every trap, because
+ *	1. user could attach this process every time
+ *	2. we must be able to restore all user registers in case of fork
+ * Actually, we do not save the fp registers on trap, since
+ * these are not used by the kernel. They are saved only when switching
+ * between processes using the FPU.
+ *
+ */
+struct trapframe {
+	u_int32_t fixreg[32];
+	u_int32_t lr;
+	u_int32_t cr;
+	u_int32_t xer;
+	u_int32_t ctr;
+	int srr0;
+	int srr1;
+	int dar;			/* dar & dsisr are only filled on a DSI trap */
+	int dsisr;
+	u_int32_t exc;
+};
 
 struct sigcontext {
 	int sc_onstack;			/* saved onstack flag */
 	int sc_mask;			/* saved signal mask */
 	struct trapframe sc_frame;	/* saved registers */
-};
-
-struct sigframe {
-	int sf_signum;
-	int sf_code;
-	struct sigcontext sf_sc;
 };
 #endif	/* _MACHINE_SIGNAL_H_ */

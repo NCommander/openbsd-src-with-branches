@@ -1,4 +1,5 @@
-/*	$NetBSD: vmparam.h,v 1.13 1994/10/26 02:06:47 cgd Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.8 2000/05/27 20:25:04 art Exp $	*/
+/*	$NetBSD: vmparam.h,v 1.16 1997/07/12 16:18:36 perry Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -60,8 +61,8 @@
  */
 
 /* Sun settings. Still hope, that I might get sun3 binaries to work... */
-#define	USRTEXT		0x2000
-#define	USRSTACK	0x0E000000
+#define	USRTEXT		(vm_offset_t)0x2000
+#define	USRSTACK	(vm_offset_t)0x0E000000
 #define	LOWPAGES	btoc(USRTEXT)
 #define KUSER_AREA	(-UPAGES*NBPG)
 /*
@@ -75,13 +76,13 @@
 #define	DFLDSIZ		(32*1024*1024)		/* initial data size limit */
 #endif
 #ifndef MAXDSIZ
-#define	MAXDSIZ		(32*1024*1024)		/* max data size */
+#define	MAXDSIZ		(128*1024*1024)		/* max data size */
 #endif
 #ifndef	DFLSSIZ
 #define	DFLSSIZ		(2*1024*1024)		/* initial stack size limit */
 #endif
 #ifndef	MAXSSIZ
-#define	MAXSSIZ		MAXDSIZ			/* max stack size */
+#define	MAXSSIZ		(32*1024*1024)		/* max stack size */
 #endif
 
 /*
@@ -140,6 +141,10 @@
  * so we loan each swapped in process memory worth 100$, or just admit
  * that we don't consider it worthwhile and swap it out to disk which costs
  * $30/mb or about $0.75.
+ * Update: memory prices have changed recently (9/96). At the current
+ * value of $6 per megabyte, we lend each swapped in process memory worth
+ * $0.15, or just admit that we don't consider it worthwhile and swap it out
+ * to disk which costs $0.20/MB, or just under half a cent.
  */
 #define	SAFERSS		4		/* nominal ``small'' resident set size
 					   protected against replacement */
@@ -160,8 +165,44 @@
 #define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
 #define VM_PHYS_SIZE		(USRIOSIZE*CLBYTES)
 
+#define MACHINE_NEW_NONCONTIG
+
+#define VM_PHYSSEG_MAX		(16)
+#define VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
+#define VM_PHYSSEG_NOADD	/* XXX this should be done right later */
+
+/*
+ * Allow supporting Zorro-II memory as lower priority:
+ *
+ *     - DEFAULT for Zorro-III memory (presumably 32 bit)
+ *     - ZORROII for Zorro-II memory (16 bit, Zorro-II DMA)
+ */
+#define VM_NFREELIST		2
+#define VM_FREELIST_DEFAULT	0
+#define VM_FREELIST_ZORROII	1
+
+/* 
+ * pmap-specific data stored in the vm_physmem[] array.
+ */   
+struct pmap_physseg { 
+	struct pv_entry *pvent;         /* pv table for this seg */
+	char *attrs;                    /* page attributes for this seg */
+}; 
+
 /*
  * number of kernel PT pages (initial only, can grow dynamically)
  */
-#define VM_KERNEL_PT_PAGES	((vm_size_t)2)		/* XXX: SYSPTSIZE */
+#define VM_KERNEL_PT_PAGES	((vm_size_t)8)
+
+/*
+ * XXX Override MI values for number of kernel maps and entries to statically
+ * allocate, as we seem to lose hanging in high IPL with the MI values.
+ */
+#ifndef MAX_KMAP
+#define MAX_KMAP	10
+#endif
+#ifndef MAX_KMAPENT
+#define MAX_KMAPENT	500
+#endif
+
 #endif /* !_MACHINE_VMPARAM_H_ */

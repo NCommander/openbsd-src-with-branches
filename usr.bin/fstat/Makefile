@@ -1,10 +1,16 @@
-#	from: @(#)Makefile	8.1 (Berkeley) 6/6/93
-#	$Id: Makefile,v 1.8 1994/08/03 20:41:58 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2000/01/17 16:26:18 itojun Exp $
 
 PROG=	fstat
 DPADD=	${LIBKVM}
+SRCS=	fstat.c isofs.c
 LDADD=	-lkvm
 BINGRP=	kmem
 BINMODE=2555
 
+CFLAGS+=-DINET6
+
 .include <bsd.prog.mk>
+
+.if (${UVM:L} == "yes")
+CFLAGS+=-DUVM
+.endif

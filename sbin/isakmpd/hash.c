@@ -1,7 +1,9 @@
-/*	$Id: hash.c,v 1.7 1998/07/25 22:04:35 niklas Exp $	*/
+/*	$OpenBSD: hash.c,v 1.5 1999/04/19 20:00:24 niklas Exp $	*/
+/*	$EOM: hash.c,v 1.10 1999/04/17 23:20:34 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +39,8 @@
 #include <string.h>
 #include <md5.h>
 #include <sha1.h>
+
+#include "sysdep.h"
 
 #include "hash.h"
 
@@ -78,7 +82,7 @@ hash_get (enum hashes hashtype)
     if (hashtype == hashes[i].type)
       return &hashes[i];
 
-  return NULL;
+  return 0;
 }
 
 /*
@@ -107,13 +111,13 @@ hmac_init (struct hash *hash, unsigned char *okey, int len)
     }
 
   /* HMAC I and O pad computation */
-  for (i=0; i < blocklen; i++)
+  for (i = 0; i < blocklen; i++)
     key[i] ^= HMAC_IPAD_VAL;
 
   hash->Init (hash->ctx);
   hash->Update (hash->ctx, key, blocklen);
 
-  for (i=0; i < blocklen; i++)
+  for (i = 0; i < blocklen; i++)
     key[i] ^= (HMAC_IPAD_VAL ^ HMAC_OPAD_VAL);
 
   hash->Init (hash->ctx2);

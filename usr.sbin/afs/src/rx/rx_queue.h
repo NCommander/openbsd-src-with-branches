@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
-/* $Header: /usr/local/cvsroot/arla/rx/rx_queue.h,v 1.3 1998/01/28 04:54:22 art Exp $ */
-/* $Source: /usr/local/cvsroot/arla/rx/rx_queue.h,v $ */
+/* $Header: /afs/stacken.kth.se/src/SourceRepository/arla/rx/rx_queue.h,v 1.3 1998/01/28 04:54:22 art Exp $ */
+/* $Source: /afs/stacken.kth.se/src/SourceRepository/arla/rx/rx_queue.h,v $ */
 
 /*
 ****************************************************************************

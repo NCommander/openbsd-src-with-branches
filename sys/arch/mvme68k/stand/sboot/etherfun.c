@@ -1,3 +1,5 @@
+/*	$OpenBSD: etherfun.c,v 1.3 1996/10/16 13:50:00 mickey Exp $ */
+
 /*
  *
  * Copyright (c) 1995 Charles D. Cranor and Seth Widoff
@@ -32,6 +34,7 @@
 /* etherfun.c */
 
 #include <sys/cdefs.h>
+#include <stand.h>
 #include "sboot.h"
 #include "etherfun.h"
 
@@ -102,7 +105,7 @@ do_send_tftp(mesgtype)
 
 	if (mesgtype == 0) {
 		tot = tftp_r + (sizeof(MSG) - 1);
-		myport = (u_short) time();
+		myport = (u_short) ttime();
 		if (myport < 1000)
 			myport += 1000;
 		servport = FTP_PORT;	/* to start */

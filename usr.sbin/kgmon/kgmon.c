@@ -1,3 +1,5 @@
+/*	$OpenBSD: kgmon.c,v 1.3 1997/01/15 23:44:02 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)kgmon.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: kgmon.c,v 1.6 1994/12/23 16:45:33 cgd Exp $";
+static char *rcsid = "$OpenBSD: kgmon.c,v 1.3 1997/01/15 23:44:02 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -87,7 +89,7 @@ main(int argc, char **argv)
 	seteuid(getuid());
 	kmemf = NULL;
 	system = NULL;
-	while ((ch = getopt(argc, argv, "M:N:bhpr")) != EOF) {
+	while ((ch = getopt(argc, argv, "M:N:bhpr")) != -1) {
 		switch((char)ch) {
 
 		case 'M':
@@ -134,8 +136,6 @@ main(int argc, char **argv)
 		}
 	}
 #endif
-	if (system == NULL)
-		system = _PATH_UNIX;
 	accessmode = openfiles(system, kmemf, &kvmvars);
 	mode = getprof(&kvmvars);
 	if (hflag)
@@ -203,7 +203,8 @@ openfiles(system, kmemf, kvp)
 		kern_readonly(GMON_PROF_ON);
 	}
 	if (kvm_nlist(kvp->kd, nl) < 0) {
-		(void)fprintf(stderr, "kgmon: %s: no namelist\n", system);
+		(void)fprintf(stderr, "kgmon: %s: no namelist\n",
+		    system ? system : _PATH_UNIX);
 		exit(3);
 	}
 	if (!nl[N_GMONPARAM].n_value) {

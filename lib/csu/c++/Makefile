@@ -1,6 +1,12 @@
-#	$Id: Makefile,v 1.3 1995/01/07 23:09:08 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.6 1998/09/15 11:01:51 pefo Exp $
 
-CFLAGS+=	-DLIBC_SCCS -fpic
+.include <bsd.own.mk>
+
+CFLAGS+=	-DLIBC_SCCS
+.if !defined(NOPIC)
+CFLAGS+=	-fpic
+.endif
+
 OBJS=		c++rt0.o
 
 all: ${OBJS}
@@ -10,8 +16,8 @@ c++rt0.o: c++rt0.c
 	@${LD} -x -r ${.TARGET}
 	@mv a.out ${.TARGET}
 
-install:
-	install ${COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
+realinstall:
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
 
 .include <bsd.prog.mk>

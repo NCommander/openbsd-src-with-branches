@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2000 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * This code is derived from software contributed by Chris Jepeway
@@ -50,7 +50,7 @@
 #ifdef HAVE_STRINGS_H
 # include <strings.h>
 #endif /* HAVE_STRINGS_H */
-#if defined(HAVE_FNMATCH) && defined(HAVE_FNMATCH_H)
+#ifdef HAVE_FNMATCH
 # include <fnmatch.h>
 #endif /* HAVE_FNMATCH_H */
 #ifdef HAVE_NETGROUP_H
@@ -77,7 +77,7 @@
 #endif /* HAVE_FNMATCH */
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: testsudoers.c,v 1.64 1999/09/08 08:06:19 millert Exp $";
+static const char rcsid[] = "$Sudo: testsudoers.c,v 1.71 2000/03/23 04:38:22 millert Exp $";
 #endif /* lint */
 
 /*
@@ -106,7 +106,7 @@ int
 has_meta(s)
     char *s;
 {
-    register char *t;
+    char *t;
     
     for (t = s; *t; t++) {
 	if (*t == '\\' || *t == '?' || *t == '*' || *t == '[' || *t == ']')
@@ -211,6 +211,25 @@ addr_matches(n)
 }
 
 int
+hostname_matches(shost, lhost, pattern)
+    char *shost;
+    char *lhost;
+    char *pattern;
+{
+    if (has_meta(pattern)) {  
+        if (strchr(pattern, '.'))   
+            return(fnmatch(pattern, lhost, FNM_CASEFOLD));
+        else
+            return(fnmatch(pattern, shost, FNM_CASEFOLD));
+    } else {
+        if (strchr(pattern, '.'))
+            return(strcasecmp(lhost, pattern));
+        else
+            return(strcasecmp(shost, pattern));
+    }
+}
+
+int
 usergr_matches(group, user)
     char *group;
     char *user;
@@ -240,9 +259,10 @@ usergr_matches(group, user)
 }
 
 int
-netgr_matches(netgr, host, user)
+netgr_matches(netgr, host, shost, user)
     char *netgr;
     char *host;
+    char *shost;
     char *user;
 {
 #ifdef HAVE_GETDOMAINNAME
@@ -268,15 +288,24 @@ netgr_matches(netgr, host, user)
 #endif /* HAVE_GETDOMAINNAME */
 
 #ifdef HAVE_INNETGR
-    return(innetgr(netgr, host, user, domain));
-#else
-    return(FALSE);
+    if (innetgr(netgr, host, user, domain))
+	return(TRUE);
+    else if (host != shost && innetgr(netgr, shost, user, domain))
+	return(TRUE);
 #endif /* HAVE_INNETGR */
+
+    return(FALSE);
 }
 
 void
 set_perms(i, j)
     int i, j;
+{
+    return;
+}
+
+void
+set_fqdn()
 {
     return;
 }

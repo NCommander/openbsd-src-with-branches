@@ -1,5 +1,3 @@
-/*	$NetBSD: closedir.c,v 1.4 1995/06/16 07:05:27 jtc Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	Regents of the University of California.  All rights reserved.
@@ -34,17 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)closedir.c	8.1 (Berkeley) 6/10/93";
-#else
-static char rcsid[] = "$NetBSD: closedir.c,v 1.4 1995/06/16 07:05:27 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: closedir.c,v 1.2 1996/08/19 08:21:55 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "thread_private.h"
 
 /*
  * close a directory.
@@ -54,12 +49,17 @@ closedir(dirp)
 	register DIR *dirp;
 {
 	int fd;
+	int ret;
 
+	if ((ret = _FD_LOCK(dirp->dd_fd, FD_READ, NULL)) != 0)
+		return (ret);
 	seekdir(dirp, dirp->dd_rewind);	/* free seekdir storage */
 	fd = dirp->dd_fd;
 	dirp->dd_fd = -1;
 	dirp->dd_loc = 0;
 	free((void *)dirp->dd_buf);
 	free((void *)dirp);
-	return(close(fd));
+	ret = close(fd);
+	_FD_UNLOCK(fd, FD_READ);
+	return (ret);
 }

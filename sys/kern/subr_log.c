@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_log.c,v 1.8 1994/10/30 21:47:47 cgd Exp $	*/
+/*	$OpenBSD: subr_log.c,v 1.6 2000/02/22 19:28:03 deraadt Exp $	*/
+/*	$NetBSD: subr_log.c,v 1.11 1996/03/30 22:24:44 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -46,6 +47,9 @@
 #include <sys/ioctl.h>
 #include <sys/msgbuf.h>
 #include <sys/file.h>
+#include <sys/signalvar.h>
+#include <sys/syslog.h>
+#include <sys/conf.h>
 
 #define LOG_RDPRI	(PZERO + 1)
 
@@ -56,9 +60,47 @@ struct logsoftc {
 	int	sc_state;		/* see above for possibilities */
 	struct	selinfo sc_selp;	/* process waiting on select call */
 	int	sc_pgid;		/* process/group for async I/O */
+	uid_t	sc_siguid;		/* uid for process that set sc_pgid */
+	uid_t	sc_sigeuid;		/* euid for process that set sc_pgid */
 } logsoftc;
 
 int	log_open;			/* also used in log() */
+int	msgbufmapped;			/* is the message buffer mapped */
+int	msgbufenabled;			/* is logging to the buffer enabled */
+struct	msgbuf *msgbufp;		/* the mapped buffer, itself. */
+
+void
+initmsgbuf(buf, bufsize)
+	caddr_t buf;
+	size_t bufsize;
+{
+	register struct msgbuf *mbp;
+	long new_bufs;
+
+	/* Sanity-check the given size. */
+	if (bufsize < sizeof(struct msgbuf))
+		return;
+
+	mbp = msgbufp = (struct msgbuf *)buf;
+
+	new_bufs = bufsize - offsetof(struct msgbuf, msg_bufc);
+	if ((mbp->msg_magic != MSG_MAGIC) || (mbp->msg_bufs != new_bufs) ||
+	    (mbp->msg_bufr < 0) || (mbp->msg_bufr >= mbp->msg_bufs) ||
+	    (mbp->msg_bufx < 0) || (mbp->msg_bufx >= mbp->msg_bufs)) {
+		/*
+		 * If the buffer magic number is wrong, has changed
+		 * size (which shouldn't happen often), or is
+		 * internally inconsistent, initialize it.
+		 */
+
+		bzero(buf, bufsize);
+		mbp->msg_magic = MSG_MAGIC;
+		mbp->msg_bufs = new_bufs;
+	}
+
+	/* mark it as ready for use. */
+	msgbufmapped = msgbufenabled = 1;
+}
 
 /*ARGSUSED*/
 int
@@ -67,25 +109,9 @@ logopen(dev, flags, mode, p)
 	int flags, mode;
 	struct proc *p;
 {
-	register struct msgbuf *mbp = msgbufp;
-
 	if (log_open)
 		return (EBUSY);
 	log_open = 1;
-	logsoftc.sc_pgid = p->p_pid;		/* signal process only */
-	/*
-	 * Potential race here with putchar() but since putchar should be
-	 * called by autoconf, msg_magic should be initialized by the time
-	 * we get here.
-	 */
-	if (mbp->msg_magic != MSG_MAGIC) {
-		register int i;
-
-		mbp->msg_magic = MSG_MAGIC;
-		mbp->msg_bufx = mbp->msg_bufr = 0;
-		for (i=0; i < MSG_BSIZE; i++)
-			mbp->msg_bufc[i] = 0;
-	}
 	return (0);
 }
 
@@ -93,7 +119,8 @@ logopen(dev, flags, mode, p)
 int
 logclose(dev, flag, mode, p)
 	dev_t dev;
-	int flag;
+	int flag, mode;
+	struct proc *p;
 {
 
 	log_open = 0;
@@ -120,8 +147,9 @@ logread(dev, uio, flag)
 			return (EWOULDBLOCK);
 		}
 		logsoftc.sc_state |= LOG_RDWAIT;
-		if (error = tsleep((caddr_t)mbp, LOG_RDPRI | PCATCH,
-		    "klog", 0)) {
+		error = tsleep((caddr_t)mbp, LOG_RDPRI | PCATCH,
+			       "klog", 0);
+		if (error) {
 			splx(s);
 			return (error);
 		}
@@ -132,7 +160,7 @@ logread(dev, uio, flag)
 	while (uio->uio_resid > 0) {
 		l = mbp->msg_bufx - mbp->msg_bufr;
 		if (l < 0)
-			l = MSG_BSIZE - mbp->msg_bufr;
+			l = mbp->msg_bufs - mbp->msg_bufr;
 		l = min(l, uio->uio_resid);
 		if (l == 0)
 			break;
@@ -141,7 +169,7 @@ logread(dev, uio, flag)
 		if (error)
 			break;
 		mbp->msg_bufr += l;
-		if (mbp->msg_bufr < 0 || mbp->msg_bufr >= MSG_BSIZE)
+		if (mbp->msg_bufr < 0 || mbp->msg_bufr >= mbp->msg_bufs)
 			mbp->msg_bufr = 0;
 	}
 	return (error);
@@ -173,17 +201,12 @@ logselect(dev, rw, p)
 void
 logwakeup()
 {
-	struct proc *p;
-
 	if (!log_open)
 		return;
 	selwakeup(&logsoftc.sc_selp);
-	if (logsoftc.sc_state & LOG_ASYNC) {
-		if (logsoftc.sc_pgid < 0)
-			gsignal(-logsoftc.sc_pgid, SIGIO); 
-		else if (p = pfind(logsoftc.sc_pgid))
-			psignal(p, SIGIO);
-	}
+	if (logsoftc.sc_state & LOG_ASYNC)
+		csignal(logsoftc.sc_pgid, SIGIO,
+		    logsoftc.sc_siguid, logsoftc.sc_sigeuid);
 	if (logsoftc.sc_state & LOG_RDWAIT) {
 		wakeup((caddr_t)msgbufp);
 		logsoftc.sc_state &= ~LOG_RDWAIT;
@@ -192,11 +215,12 @@ logwakeup()
 
 /*ARGSUSED*/
 int
-logioctl(dev, com, data, flag)
+logioctl(dev, com, data, flag, p)
 	dev_t dev;
 	u_long com;
 	caddr_t data;
 	int flag;
+	struct proc *p;
 {
 	long l;
 	int s;
@@ -209,7 +233,7 @@ logioctl(dev, com, data, flag)
 		l = msgbufp->msg_bufx - msgbufp->msg_bufr;
 		splx(s);
 		if (l < 0)
-			l += MSG_BSIZE;
+			l += msgbufp->msg_bufs;
 		*(int *)data = l;
 		break;
 
@@ -225,6 +249,8 @@ logioctl(dev, com, data, flag)
 
 	case TIOCSPGRP:
 		logsoftc.sc_pgid = *(int *)data;
+		logsoftc.sc_siguid = p->p_cred->p_ruid;
+		logsoftc.sc_sigeuid = p->p_ucred->cr_uid;
 		break;
 
 	case TIOCGPGRP:

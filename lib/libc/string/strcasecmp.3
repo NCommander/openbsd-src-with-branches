@@ -1,5 +1,7 @@
-.\" Copyright (c) 1990, 1991 The Regents of the University of California.
-.\" All rights reserved.
+.\" $OpenBSD: strcasecmp.3,v 1.5 1999/06/06 15:17:32 aaron Exp $
+.\"
+.\" Copyright (c) 1990, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
 .\"
 .\" This code is derived from software contributed to Berkeley by
 .\" Chris Torek.
@@ -31,14 +33,14 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)strcasecmp.3	5.4 (Berkeley) 4/19/91
-.\"	$Id: strcasecmp.3,v 1.2 1993/08/01 07:43:55 mycroft Exp $
+.\"     @(#)strcasecmp.3	8.1 (Berkeley) 6/9/93
 .\"
-.Dd April 19, 1991
+.Dd June 9, 1993
 .Dt STRCASECMP 3
 .Os
 .Sh NAME
-.Nm strcasecmp
+.Nm strcasecmp ,
+.Nm strncasecmp
 .Nd compare strings, ignoring case
 .Sh SYNOPSIS
 .Fd #include <string.h>
@@ -51,8 +53,7 @@ The
 .Fn strcasecmp
 and
 .Fn strncasecmp
-functions
-compare the null-terminated strings
+functions compare the null-terminated strings
 .Fa s1
 and
 .Fa s2
@@ -68,7 +69,6 @@ The comparison is done using unsigned characters, so that
 is greater than
 .Ql \e0 .
 .Pp
-The
 .Fn strncasecmp
 compares at most
 .Fa len
@@ -84,5 +84,5 @@ The
 .Fn strcasecmp
 and
 .Fn strncasecmp
-functions are
-.Ud .
+functions first appeared in
+.Bx 4.4 .

@@ -1,7 +1,8 @@
+/*	$OpenBSD: error.h,v 1.2 1997/07/23 20:36:27 kstailey Exp $*/
+
 /*
-**	$Id: error.h,v 1.2 1994/02/04 23:17:53 cgd Exp $
 **
-** error.h                                               Error handling macros
+** error.h						 Error handling macros
 **
 ** This program is in the public domain and may be used freely by anyone
 ** who wants to. 

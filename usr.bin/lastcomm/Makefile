@@ -1,6 +1,7 @@
-#	$NetBSD: Makefile,v 1.4 1994/12/22 01:06:58 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.3 1996/06/26 05:34:52 deraadt Exp $
 
 PROG=	lastcomm
+DPADD=	${LIBMATH}
+LDADD=	-lm
 
 .include <bsd.prog.mk>

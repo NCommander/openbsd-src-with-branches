@@ -1,4 +1,6 @@
 #!/bin/sh
+#	$OpenBSD$
+
 
 #
 # install - install a program, script, or datafile

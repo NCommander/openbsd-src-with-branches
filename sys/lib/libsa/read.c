@@ -1,4 +1,5 @@
-/*	$NetBSD: read.c,v 1.5 1995/09/14 23:45:35 pk Exp $	*/
+/*	$OpenBSD: read.c,v 1.3 1996/12/08 15:15:55 niklas Exp $	*/
+/*	$NetBSD: read.c,v 1.7 1996/06/21 20:29:28 pk Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -64,10 +65,15 @@
  * rights to redistribute these changes.
  */
 
+#include <sys/param.h>
 #include "stand.h"
 
 ssize_t
+#ifndef __INTERNAL_LIBSA_CREAD
 read(fd, dest, bcount)
+#else
+oread(fd, dest, bcount)
+#endif
 	int fd;
 	void *dest;
 	size_t bcount;
@@ -82,9 +88,10 @@ read(fd, dest, bcount)
 	if (f->f_flags & F_RAW) {
 		twiddle();
 		errno = (f->f_dev->dv_strategy)(f->f_devdata, F_READ,
-			(daddr_t)0, bcount, dest, &resid);
+			btodb(f->f_offset), bcount, dest, &resid);
 		if (errno)
 			return (-1);
+		f->f_offset += resid;
 		return (resid);
 	}
 	resid = bcount;

@@ -30,16 +30,17 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)fork.2	6.5 (Berkeley) 3/10/91
-.\"	$Id: i386_get_ldt.2,v 1.2 1993/10/09 00:59:10 cgd Exp $
+.\"	$NetBSD: i386_get_ldt.2,v 1.3 1996/01/05 14:56:44 pk Exp $
 .\"
 .Dd September 20, 1993
 .Dt I386_GET_LDT 2
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm i386_get_ldt ,
 .Nm i386_set_ldt
 .Nd manage i386 per-process Local Descriptor Table entries
 .Sh SYNOPSIS
+.Fd #include <sys/types.h>
 .Fd #include <machine/segments.h>
 .Fd #include <machine/sysarch.h>
 .Ft int
@@ -56,7 +57,7 @@ LDT.
 Both routines accept a starting selector number
 .Fa start_sel
 , an array of memory that
-will contain the descriptors to be set or returned 
+will contain the descriptors to be set or returned
 .Fa descs
 , and the number of entries to set or return
 .Fa num_sels .
@@ -64,8 +65,8 @@ will contain the descriptors to be set or returned
 The argument
 .Fa descs
 can be either segment_descriptor or gate_descriptor and are defined in
-.Fd <i386/segements.h> .
-These structures are defined by the architecure
+.Fd <i386/segments.h> .
+These structures are defined by the architecture
 as disjoint bit-fields, so care must be taken in constructing them.
 .Sh RETURN VALUES
 Upon successful completion,
@@ -73,7 +74,7 @@ Upon successful completion,
 returns the number of descriptors currently in the LDT.
 .Fn i386_set_ldt
 returns the first selector set.
-Otherwise, a value of -1 is returned and the global
+Otherwise, a value of \-1 is returned and the global
 variable
 .Va errno
 is set to indicate the error.
@@ -88,7 +89,7 @@ An inappropriate parameter was used for
 .Fa start_sel
 or
 .Fa num_sels .
-.It Bq Er EACESS
+.It Bq Er EACCES
 The caller attempted to use a descriptor that would
 circumvent protection or cause a failure.
 .El

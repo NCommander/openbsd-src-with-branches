@@ -1,3 +1,4 @@
+/*	$OpenBSD: fpgetround.c,v 1.1 1995/04/29 05:09:55 cgd Exp $	*/
 /*	$NetBSD: fpgetround.c,v 1.1 1995/04/29 05:09:55 cgd Exp $	*/
 
 /*
@@ -30,6 +31,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char *rcsid = "$OpenBSD: fpgetround.c,v 1.2 1996/08/19 08:10:28 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <ieeefp.h>

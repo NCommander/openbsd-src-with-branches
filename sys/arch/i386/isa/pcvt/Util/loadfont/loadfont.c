@@ -1,3 +1,5 @@
+/*	$OpenBSD: loadfont.c,v 1.5 1999/05/24 15:37:44 aaron Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis
  *
@@ -47,9 +49,12 @@ static char *id =
  *
  *---------------------------------------------------------------------------*/
  
-#include <stdio.h>
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <machine/pcvt_ioctl.h>
@@ -69,6 +74,7 @@ static void printvgafontattr(int charset);
 static void printheader(void);
 static void usage(void);
 
+int
 main(int argc, char **argv)
 {
 	extern int optind;
@@ -85,13 +91,13 @@ main(int argc, char **argv)
 	int scan_lines = -1;
 	int c;
 	int chr_set = -1;
-	char *filename;
+	char *filename = NULL;
 	int fflag = -1;
 	int info = -1;
 	int dflag = 0;
-	char *device;
+	char *device = NULL;
 	
-	while( (c = getopt(argc, argv, "c:d:f:is:")) != EOF)
+	while( (c = getopt(argc, argv, "c:d:f:is:")) != -1)
 	{
 		switch(c)
 		{
@@ -132,13 +138,7 @@ main(int argc, char **argv)
 	if(dflag)
 	{
 		if((fd = open(device, O_RDWR)) == -1)
-		{
-			char buffer[80];
-			strcpy(buffer,"ERROR opening ");
-			strcat(buffer,device);
-			perror(buffer);
-			exit(1);
-		}
+			err(1, "ERROR opening %s", device);
 	}
 	else
 	{
@@ -146,10 +146,7 @@ main(int argc, char **argv)
 	}
 
 	if(ioctl(fd, VGAGETSCREEN, &screeninfo) == -1)
-	{
-		perror("ioctl VGAGETSCREEN failed");
-		exit(1);
-	}
+		err(1, "ioctl VGAGETSCREEN failed");
 
 	if(info == 1)
 	{
@@ -218,28 +215,18 @@ main(int argc, char **argv)
 	sbp = &sbuf;
 	
 	if((in = fopen(filename, "r")) == NULL)
-	{
-		char buffer[80];
-		sprintf(buffer, "cannot open file %s for reading", filename);
-		perror(buffer);
-		exit(1);
-	}
+		err(1, "cannot open file %s for reading", filename);
 
 	if((fstat(fileno(in), sbp)) != 0)
-	{
-		char buffer[80];
-		sprintf(buffer, "cannot fstat file %s", filename);
-		perror(buffer);
-		exit(1);
-	}
+		err(1, "cannot fstat file %s", filename);
 		
 	chr_height = sbp->st_size / 256; /* 256 chars per font */
 			
 	if(chr_height * 256 != sbp->st_size ||
 	   chr_height < 8 || chr_height > 20) {
 		fprintf(stderr,
-			"File is no valid font file, size = %d.\n",
-			sbp->st_size);
+			"File is no valid font file, size = %ld.\n",
+			(long)sbp->st_size);
 		exit(1);
 	}			
 
@@ -256,9 +243,9 @@ main(int argc, char **argv)
 	   sbp->st_size)
 	{
 		fprintf(stderr,
-			"error reading file %s, size = %d, read = %d, "
+			"error reading file %s, size = %ld, read = %d, "
 			"errno %d\n",
-			argv[1], sbp->st_size, ret, errno);
+			argv[1], (long)sbp->st_size, ret, errno);
 		exit(1);
 	}		
 
@@ -300,10 +287,7 @@ setfont(int charset, int fontloaded, int charscan, int scrscan, int scrrow)
 	vfattr.screen_size = scrrow;
 
 	if(ioctl(fd, VGASETFONTATTR, &vfattr) == -1)
-	{
-		perror("loadfont - ioctl VGASETFONTATTR failed, error");
-		exit(1);
-	}
+		err(1, "loadfont - ioctl VGASETFONTATTR failed, error");
 }
 
 static void
@@ -324,10 +308,7 @@ loadfont(int fontset, int charscanlines, unsigned char *font_table)
 		}
 		font_table += charscanlines;
 		if(ioctl(fd, VGALOADCHAR, &vlc) == -1)
-		{
-			perror("loadfont - ioctl VGALOADCHAR failed, error");
-			exit(1);
-		}
+			err(1, "loadfont - ioctl VGALOADCHAR failed, error");
 	}
 }
 
@@ -339,10 +320,8 @@ printvgafontattr(int charset)
 	vfattr.character_set = charset;
 
 	if(ioctl(fd, VGAGETFONTATTR, &vfattr) == -1)
-	{
-		perror("loadfont - ioctl VGAGETFONTATTR failed, error");
-		exit(1);
-	}
+		err(1, "loadfont - ioctl VGAGETFONTATTR failed, error");
+
 	printf(" %d  ",charset);
 	if(vfattr.font_loaded)
 	{

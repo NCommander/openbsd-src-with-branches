@@ -34,16 +34,17 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)ffs.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: ffs.S,v 1.3 1994/12/15 17:24:59 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /* bit = ffs(value) */
 
 LEAF(ffs)
+	.set	reorder
 	move	v0, zero
 	beq	a0, zero, done
 1:

@@ -13,7 +13,7 @@ divert(-1)
 #
 divert(0)
 
-VERSIONID(`$Id: proto.m4,v 8.446.2.5.2.38 2000/12/28 03:37:28 ca Exp $')
+VERSIONID(`$Sendmail: proto.m4,v 8.446.2.5.2.38 2000/12/28 03:37:28 ca Exp $')
 
 MAILER(local)dnl
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cg2reg.h,v 1.3 1995/04/07 02:54:43 gwr Exp $ */
 /*	$NetBSD: cg2reg.h,v 1.3 1995/04/07 02:54:43 gwr Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.h,v 1.4 1997/01/24 19:57:16 niklas Exp $	*/
 /*	$NetBSD: proc.h,v 1.2 1995/03/24 15:01:36 cgd Exp $	*/
 
 /*
@@ -27,6 +28,7 @@
  * rights to redistribute these changes.
  */
 
+#include <machine/cpu.h>
 /*
  * Machine-dependent part of the proc struct for the Alpha.
  */
@@ -38,3 +40,7 @@ struct mdproc {
 };
 
 #define	MDP_FPUSED	0x0001		/* Process used the FPU */
+
+#ifdef _KERNEL
+void switch_exit __P((struct proc *));
+#endif

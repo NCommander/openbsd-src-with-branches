@@ -1,4 +1,5 @@
-/*	$NetBSD: vmstat.c,v 1.4 1995/04/29 05:54:55 cgd Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.20 1999/10/26 15:43:22 art Exp $	*/
+/*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1983, 1989, 1992, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)vmstat.c	8.2 (Berkeley) 1/12/94";
 #endif
-static char rcsid[] = "$NetBSD: vmstat.c,v 1.4 1995/04/29 05:54:55 cgd Exp $";
+static char rcsid[] = "$OpenBSD: vmstat.c,v 1.20 1999/10/26 15:43:22 art Exp $";
 #endif /* not lint */
 
 /*
@@ -55,6 +56,10 @@ static char rcsid[] = "$NetBSD: vmstat.c,v 1.4 1995/04/29 05:54:55 cgd Exp $";
 #include <sys/sysctl.h>
 #include <vm/vm.h>
 
+#if defined(UVM)
+#include <uvm/uvm_extern.h>
+#endif
+
 #include <ctype.h>
 #include <err.h>
 #include <nlist.h>
@@ -65,22 +70,31 @@ static char rcsid[] = "$NetBSD: vmstat.c,v 1.4 1995/04/29 05:54:55 cgd Exp $";
 #include <utmp.h>
 #include <unistd.h>
 
+#if defined(__i386__)
+#define	_KERNEL
+#include <machine/psl.h>
+#undef _KERNEL
+#endif
+
 #include "systat.h"
 #include "extern.h"
 
 static struct Info {
 	long	time[CPUSTATES];
+#if defined(UVM)
+	struct	uvmexp uvmexp;
+#else
 	struct	vmmeter Cnt;
+#endif
 	struct	vmtotal Total;
-	long	*dk_time;
-	long	*dk_wds;
-	long	*dk_seek;
-	long	*dk_xfer;
-	int	dk_busy;
 	struct	nchstats nchstats;
 	long	nchcount;
 	long	*intrcnt;
 } s, s1, s2, z;
+
+#include "dkstats.h"
+extern struct _disk	cur;
+
 
 #define	cnt s.Cnt
 #define oldcnt s1.Cnt
@@ -138,30 +152,27 @@ closekre(w)
 static struct nlist namelist[] = {
 #define X_CPTIME	0
 	{ "_cp_time" },
+#if defined(UVM)
+#define X_UVMEXP	1
+	{ "_uvmexp" },
+#else
 #define X_CNT		1
 	{ "_cnt" },
-#define X_TOTAL		2
-	{ "_total" },
-#define	X_DK_BUSY	3
-	{ "_dk_busy" },
-#define	X_DK_TIME	4
-	{ "_dk_time" },
-#define	X_DK_XFER	5
-	{ "_dk_xfer" },
-#define	X_DK_WDS	6
-	{ "_dk_wds" },
-#define	X_DK_SEEK	7
-	{ "_dk_seek" },
-#define	X_NCHSTATS	8
+#endif
+#define	X_NCHSTATS	2
 	{ "_nchstats" },
-#define	X_INTRNAMES	9
+#define	X_INTRNAMES	3
 	{ "_intrnames" },
-#define	X_EINTRNAMES	10
+#define	X_EINTRNAMES	4
 	{ "_eintrnames" },
-#define	X_INTRCNT	11
+#define	X_INTRCNT	5
 	{ "_intrcnt" },
-#define	X_EINTRCNT	12
+#define	X_EINTRCNT	6
 	{ "_eintrcnt" },
+#if defined(__i386__)
+#define	X_INTRHAND	7
+	{ "_intrhand" },
+#endif
 	{ "" },
 };
 
@@ -173,7 +184,7 @@ static struct nlist namelist[] = {
 #define MEMROW		 2	/* uses 4 rows and 31 cols */
 #define MEMCOL		 0
 #define PAGEROW		 2	/* uses 4 rows and 26 cols */
-#define PAGECOL		36
+#define PAGECOL		37
 #define INTSROW		 2	/* uses all rows to bottom and 17 cols */
 #define INTSCOL		63
 #define PROCSROW	 7	/* uses 2 rows and 20 cols */
@@ -215,7 +226,7 @@ initkre()
 		}
 	}
 	hertz = stathz ? stathz : hz;
-	if (! dkinit())
+	if (! dkinit(1))
 		return(0);
 	if (dk_ndrive && !once) {
 #define	allocate(e, t) \
@@ -223,14 +234,41 @@ initkre()
     s1./**/e = (t *)calloc(dk_ndrive, sizeof (t)); \
     s2./**/e = (t *)calloc(dk_ndrive, sizeof (t)); \
     z./**/e = (t *)calloc(dk_ndrive, sizeof (t));
-		allocate(dk_time, long);
-		allocate(dk_wds, long);
-		allocate(dk_seek, long);
-		allocate(dk_xfer, long);
 		once = 1;
 #undef allocate
 	}
 	if (nintr == 0) {
+#if defined(__i386__)
+		struct intrhand *intrhand[16], *ihp, ih;
+		char iname[16];
+		int namelen, n;
+
+		NREAD(X_INTRHAND, intrhand, sizeof(intrhand));
+		for (namelen = 0, i = 0; i < 16; i++) {
+			ihp = intrhand[i];
+			while (ihp) {
+				nintr++;
+				KREAD(ihp, &ih, sizeof(ih));
+				KREAD(ih.ih_what, iname, 16);
+				namelen += 1 + strlen(iname);
+				ihp = ih.ih_next;
+			}
+		}
+		intrloc = calloc(nintr, sizeof (long));
+		intrname = calloc(nintr, sizeof (char *));
+		cp = intrnamebuf = malloc(namelen);
+		for (namelen = 0, i = 0, n = 0; i < 16; i++) {
+			ihp = intrhand[i];
+			while (ihp) {
+				KREAD(ihp, &ih, sizeof(ih));
+				KREAD(ih.ih_what, iname, 16);
+				/* XXX strcpy is safe, sized & malloc'd buffer */ 
+				strcpy(intrname[n++] = intrnamebuf + namelen, iname);
+				namelen += 1 + strlen(iname);
+				ihp = ih.ih_next;
+			}
+		}
+#else
 		nintr = (namelist[X_EINTRCNT].n_value -
 			namelist[X_INTRCNT].n_value) / sizeof (long);
 		intrloc = calloc(nintr, sizeof (long));
@@ -254,6 +292,7 @@ initkre()
 			intrname[i] = cp;
 			cp += strlen(cp) + 1;
 		}
+#endif
 		nextintsrow = INTSROW + 2;
 		allocinfo(&s);
 		allocinfo(&s1);
@@ -271,8 +310,8 @@ fetchkre()
 	time_t now;
 
 	time(&now);
-	strcpy(buf, ctime(&now));
-	buf[16] = '\0';
+	strncpy(buf, ctime(&now), sizeof buf-1);
+	buf[sizeof buf-1] = '\0';
 	getinfo(&s, state);
 }
 
@@ -283,21 +322,54 @@ labelkre()
 
 	clear();
 	mvprintw(STATROW, STATCOL + 4, "users    Load");
+#if defined(UVM)
+	mvprintw(MEMROW, MEMCOL,     "          memory totals (in KB)");
+	mvprintw(MEMROW + 1, MEMCOL, "         real   virtual    free");
+	mvprintw(MEMROW + 2, MEMCOL, "Active");
+	mvprintw(MEMROW + 3, MEMCOL, "All");
+
+	mvprintw(PAGEROW, PAGECOL, "        PAGING   SWAPPING ");
+	mvprintw(PAGEROW + 1, PAGECOL, "        in  out   in  out ");
+	mvprintw(PAGEROW + 2, PAGECOL, "ops");
+	mvprintw(PAGEROW + 3, PAGECOL, "pages");
+#else
+
 	mvprintw(MEMROW, MEMCOL, "Mem:KB  REAL        VIRTUAL");
 	mvprintw(MEMROW + 1, MEMCOL, "      Tot Share    Tot  Share");
 	mvprintw(MEMROW + 2, MEMCOL, "Act");
 	mvprintw(MEMROW + 3, MEMCOL, "All");
 
-	mvprintw(MEMROW + 1, MEMCOL + 31, "Free");
+	mvprintw(MEMROW + 1, MEMCOL + 32, "Free");
 
 	mvprintw(PAGEROW, PAGECOL,     "        PAGING   SWAPPING ");
 	mvprintw(PAGEROW + 1, PAGECOL, "        in  out   in  out ");
 	mvprintw(PAGEROW + 2, PAGECOL, "count");
 	mvprintw(PAGEROW + 3, PAGECOL, "pages");
+#endif
 
 	mvprintw(INTSROW, INTSCOL + 3, " Interrupts");
 	mvprintw(INTSROW + 1, INTSCOL + 9, "total");
 
+#if defined(UVM)
+	mvprintw(VMSTATROW + 0, VMSTATCOL + 10, "forks");
+	mvprintw(VMSTATROW + 1, VMSTATCOL + 10, "fkppw");
+	mvprintw(VMSTATROW + 2, VMSTATCOL + 10, "fksvm");
+	mvprintw(VMSTATROW + 3, VMSTATCOL + 10, "pwait");
+	mvprintw(VMSTATROW + 4, VMSTATCOL + 10, "relck");
+	mvprintw(VMSTATROW + 5, VMSTATCOL + 10, "rlkok");
+	mvprintw(VMSTATROW + 6, VMSTATCOL + 10, "noram");
+	mvprintw(VMSTATROW + 7, VMSTATCOL + 10, "ndcpy");
+	mvprintw(VMSTATROW + 8, VMSTATCOL + 10, "fltcp");
+	mvprintw(VMSTATROW + 9, VMSTATCOL + 10, "zfod");
+	mvprintw(VMSTATROW + 10, VMSTATCOL + 10, "cow");
+	mvprintw(VMSTATROW + 11, VMSTATCOL + 10, "fmin");
+	mvprintw(VMSTATROW + 12, VMSTATCOL + 10, "ftarg");
+	mvprintw(VMSTATROW + 13, VMSTATCOL + 10, "itarg");
+	mvprintw(VMSTATROW + 14, VMSTATCOL + 10, "wired");
+	mvprintw(VMSTATROW + 15, VMSTATCOL + 10, "pdfre");
+	if (LINES - 1 > VMSTATROW + 16)
+		mvprintw(VMSTATROW + 16, VMSTATCOL + 10, "pdscn");
+#else
 	mvprintw(VMSTATROW + 0, VMSTATCOL + 10, "cow");
 	mvprintw(VMSTATROW + 1, VMSTATCOL + 10, "objlk");
 	mvprintw(VMSTATROW + 2, VMSTATCOL + 10, "objht");
@@ -316,12 +388,17 @@ labelkre()
 	mvprintw(VMSTATROW + 15, VMSTATCOL + 10, "hdrev");
 	if (LINES - 1 > VMSTATROW + 16)
 		mvprintw(VMSTATROW + 16, VMSTATCOL + 10, "intrn");
+#endif
 
 	mvprintw(GENSTATROW, GENSTATCOL, "  Csw  Trp  Sys  Int  Sof  Flt");
 
 	mvprintw(GRAPHROW, GRAPHCOL,
 		"    . %% Sys    . %% User    . %% Nice    . %% Idle");
-	mvprintw(PROCSROW, PROCSCOL, "Proc:r  p  d  s  w");
+#if defined(UVM)
+	mvprintw(PROCSROW, PROCSCOL, "Proc:r  d  s  w");
+#else
+	mvprintw(PROCSROW, PROCSCOL, "Proc:r  d  s  w  p");
+#endif
 	mvprintw(GRAPHROW + 1, GRAPHCOL,
 		"|    |    |    |    |    |    |    |    |    |    |");
 
@@ -331,13 +408,13 @@ labelkre()
 	mvprintw(DISKROW, DISKCOL, "Discs");
 	mvprintw(DISKROW + 1, DISKCOL, "seeks");
 	mvprintw(DISKROW + 2, DISKCOL, "xfers");
-	mvprintw(DISKROW + 3, DISKCOL, " blks");
-	mvprintw(DISKROW + 4, DISKCOL, " msps");
+	mvprintw(DISKROW + 3, DISKCOL, "Kbyte");
+	mvprintw(DISKROW + 4, DISKCOL, "  sec");
 	j = 0;
 	for (i = 0; i < dk_ndrive && j < MAXDRIVES; i++)
 		if (dk_select[i]) {
 			mvprintw(DISKROW, DISKCOL + 5 + 5 * j,
-				"  %3.3s", dr_name[j]);
+				" %4.4s", dr_name[j]);
 			j++;
 		}
 	for (i = 0; i < nintr; i++) {
@@ -367,9 +444,9 @@ showkre()
 	int i, l, c;
 	static int failcnt = 0;
 
-	for (i = 0; i < dk_ndrive; i++) {
-		X(dk_xfer); X(dk_seek); X(dk_wds); X(dk_time);
-	}
+	
+	if (state == TIME)
+		dkswap();
 	etime = 0;
 	for(i = 0; i < CPUSTATES; i++) {
 		X(time);
@@ -436,12 +513,38 @@ showkre()
 			addch(cpuchar[c]);
 	}
 
+	/*
+	 * The above code does not account for time in the CP_INTR state.
+	 * Thus the total may be less than 100%.  If the total is less than
+	 * the previous total old data may be left on the graph.  The graph
+	 * assumes one character position for every 2 percentage points for
+	 * a total of 50 positions.  Ensure all positions have been filled.
+	 */
+	while ( psiz++ <= 50 )
+		addch(' ');
+
 	putint(ucount(), STATROW, STATCOL, 3);
 	putfloat(avenrun[0], STATROW, STATCOL + 17, 6, 2, 0);
 	putfloat(avenrun[1], STATROW, STATCOL + 23, 6, 2, 0);
 	putfloat(avenrun[2], STATROW, STATCOL + 29, 6, 2, 0);
 	mvaddstr(STATROW, STATCOL + 53, buf);
-#define pgtokb(pg)	((pg) * cnt.v_page_size / 1024)
+#if defined(UVM)
+#define pgtokb(pg)     ((pg) * s.uvmexp.pagesize / 1024)
+#else
+#define pgtokb(pg)     ((pg) * cnt.v_page_size / 1024)
+#endif
+
+#if defined(UVM)
+	putint(pgtokb(s.uvmexp.active), MEMROW + 2, MEMCOL + 6, 7);
+	putint(pgtokb(s.uvmexp.active + s.uvmexp.swpginuse),    /* XXX */
+	    MEMROW + 2, MEMCOL + 16, 7);
+	putint(pgtokb(s.uvmexp.npages - s.uvmexp.free), MEMROW + 3, MEMCOL + 6, 7);
+	putint(pgtokb(s.uvmexp.npages - s.uvmexp.free + s.uvmexp.swpginuse),
+	    MEMROW + 3, MEMCOL + 16, 7);
+	putint(pgtokb(s.uvmexp.free), MEMROW + 2, MEMCOL + 24, 7);
+	putint(pgtokb(s.uvmexp.free + s.uvmexp.swpages - s.uvmexp.swpginuse),
+	    MEMROW + 3, MEMCOL + 24, 7);
+#else
 	putint(pgtokb(total.t_arm), MEMROW + 2, MEMCOL + 3, 6);
 	putint(pgtokb(total.t_armshr), MEMROW + 2, MEMCOL + 9, 6);
 	putint(pgtokb(total.t_avm), MEMROW + 2, MEMCOL + 15, 7);
@@ -450,12 +553,50 @@ showkre()
 	putint(pgtokb(total.t_rmshr), MEMROW + 3, MEMCOL + 9, 6);
 	putint(pgtokb(total.t_vm), MEMROW + 3, MEMCOL + 15, 7);
 	putint(pgtokb(total.t_vmshr), MEMROW + 3, MEMCOL + 22, 7);
-	putint(pgtokb(total.t_free), MEMROW + 2, MEMCOL + 29, 6);
+	putint(pgtokb(total.t_free), MEMROW + 2, MEMCOL + 30, 6);
+#endif
 	putint(total.t_rq - 1, PROCSROW + 1, PROCSCOL + 3, 3);
-	putint(total.t_pw, PROCSROW + 1, PROCSCOL + 6, 3);
-	putint(total.t_dw, PROCSROW + 1, PROCSCOL + 9, 3);
-	putint(total.t_sl, PROCSROW + 1, PROCSCOL + 12, 3);
-	putint(total.t_sw, PROCSROW + 1, PROCSCOL + 15, 3);
+
+	putint(total.t_dw, PROCSROW + 1, PROCSCOL + 6, 3);
+	putint(total.t_sl, PROCSROW + 1, PROCSCOL + 9, 3);
+	putint(total.t_sw, PROCSROW + 1, PROCSCOL + 12, 3);
+#if !defined(UVM)
+	putint(total.t_pw, PROCSROW + 1, PROCSCOL + 15, 3);
+#endif
+#if defined(UVM)
+	PUTRATE(uvmexp.forks, VMSTATROW + 0, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.forks_ppwait, VMSTATROW + 1, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.forks_sharevm, VMSTATROW + 2, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.fltpgwait, VMSTATROW + 3, VMSTATCOL + 4, 5);
+	PUTRATE(uvmexp.fltrelck, VMSTATROW + 4, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.fltrelckok, VMSTATROW + 5, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.fltnoram, VMSTATROW + 6, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.fltamcopy, VMSTATROW + 7, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.flt_prcopy, VMSTATROW + 8, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.flt_przero, VMSTATROW + 9, VMSTATCOL + 3, 6);
+	PUTRATE(uvmexp.flt_acow, VMSTATROW + 10, VMSTATCOL, 9);
+	putint(s.uvmexp.freemin, VMSTATROW + 11, VMSTATCOL, 9);
+	putint(s.uvmexp.freetarg, VMSTATROW + 12, VMSTATCOL, 9);
+	putint(s.uvmexp.inactarg, VMSTATROW + 13, VMSTATCOL, 9);
+	putint(s.uvmexp.wired, VMSTATROW + 14, VMSTATCOL, 9);
+	PUTRATE(uvmexp.pdfreed, VMSTATROW + 15, VMSTATCOL, 9);
+	if (LINES - 1 > VMSTATROW + 16)
+		PUTRATE(uvmexp.pdscans, VMSTATROW + 16, VMSTATCOL, 9);
+
+	PUTRATE(uvmexp.pageins, PAGEROW + 2, PAGECOL + 5, 5);
+	PUTRATE(uvmexp.pdpageouts, PAGEROW + 2, PAGECOL + 10, 5);
+	PUTRATE(uvmexp.swapins, PAGEROW + 2, PAGECOL + 15, 5);
+	PUTRATE(uvmexp.swapouts, PAGEROW + 2, PAGECOL + 20, 5);
+	PUTRATE(uvmexp.pgswapin, PAGEROW + 3, PAGECOL + 5, 5);
+	PUTRATE(uvmexp.pgswapout, PAGEROW + 3, PAGECOL + 10, 5);
+
+	PUTRATE(uvmexp.swtch, GENSTATROW + 1, GENSTATCOL, 5);
+	PUTRATE(uvmexp.traps, GENSTATROW + 1, GENSTATCOL + 5, 5);
+	PUTRATE(uvmexp.syscalls, GENSTATROW + 1, GENSTATCOL + 10, 5);
+	PUTRATE(uvmexp.intrs, GENSTATROW + 1, GENSTATCOL + 15, 5);
+	PUTRATE(uvmexp.softs, GENSTATROW + 1, GENSTATCOL + 20, 5);
+	PUTRATE(uvmexp.faults, GENSTATROW + 1, GENSTATCOL + 25, 5);
+#else
 	PUTRATE(Cnt.v_cow_faults, VMSTATROW + 0, VMSTATCOL + 3, 6);
 	PUTRATE(Cnt.v_lookups, VMSTATROW + 1, VMSTATCOL + 3, 6);
 	PUTRATE(Cnt.v_hits, VMSTATROW + 2, VMSTATCOL + 3, 6);
@@ -473,8 +614,9 @@ showkre()
 	PUTRATE(Cnt.v_reactivated, VMSTATROW + 13, VMSTATCOL, 9);
 	PUTRATE(Cnt.v_scan, VMSTATROW + 14, VMSTATCOL, 9);
 	PUTRATE(Cnt.v_rev, VMSTATROW + 15, VMSTATCOL, 9);
-	if (LINES - 1 > VMSTATROW + 16)
+	if (LINES - 1 > VMSTATROW + 16) {
 		PUTRATE(Cnt.v_intrans, VMSTATROW + 16, VMSTATCOL, 9);
+	}
 	PUTRATE(Cnt.v_pageins, PAGEROW + 2, PAGECOL + 5, 5);
 	PUTRATE(Cnt.v_pageouts, PAGEROW + 2, PAGECOL + 10, 5);
 	PUTRATE(Cnt.v_swpin, PAGEROW + 2, PAGECOL + 15, 5);	/* - */
@@ -489,11 +631,12 @@ showkre()
 	PUTRATE(Cnt.v_intr, GENSTATROW + 1, GENSTATCOL + 15, 5);
 	PUTRATE(Cnt.v_soft, GENSTATROW + 1, GENSTATCOL + 20, 5);
 	PUTRATE(Cnt.v_faults, GENSTATROW + 1, GENSTATCOL + 25, 5);
+#endif
 	mvprintw(DISKROW, DISKCOL + 5, "                              ");
 	for (i = 0, c = 0; i < dk_ndrive && c < MAXDRIVES; i++)
 		if (dk_select[i]) {
 			mvprintw(DISKROW, DISKCOL + 5 + 5 * c,
-				"  %3.3s", dr_name[i]);
+				" %4.4s", dr_name[i]);
 			dinfo(i, ++c);
 		}
 	putint(s.nchcount, NAMEIROW + 2, NAMEICOL, 9);
@@ -546,7 +689,7 @@ ucount()
 		if (utmp.ut_name[0] != '\0')
 			nusers++;
 
-	lseek(ut, 0L, L_SET);
+	lseek(ut, 0, SEEK_SET);
 	return (nusers);
 }
 
@@ -577,7 +720,7 @@ putint(n, l, c, w)
 			addch(' ');
 		return;
 	}
-	sprintf(b, "%*d", w, n);
+	snprintf(b, sizeof b, "%*d", w, n);
 	if (strlen(b) > w) {
 		while (w-- > 0)
 			addch('*');
@@ -599,7 +742,7 @@ putfloat(f, l, c, w, d, nz)
 			addch(' ');
 		return;
 	}
-	sprintf(b, "%*.*f", w, d, f);
+	snprintf(b, sizeof b, "%*.*f", w, d, f);
 	if (strlen(b) > w) {
 		while (--w >= 0)
 			addch('*');
@@ -616,16 +759,32 @@ getinfo(s, st)
 	int mib[2];
 	size_t size;
 	extern int errno;
+#if defined(__i386__)
+	struct intrhand *intrhand[16], *ihp, ih;
+	int i, n;
+#endif
 
+	dkreadstats();
 	NREAD(X_CPTIME, s->time, sizeof s->time);
+#if defined(UVM)
+	NREAD(X_UVMEXP, &s->uvmexp, sizeof s->uvmexp);
+#else
 	NREAD(X_CNT, &s->Cnt, sizeof s->Cnt);
-	NREAD(X_DK_BUSY, &s->dk_busy, LONG);
-	NREAD(X_DK_TIME, s->dk_time, dk_ndrive * LONG);
-	NREAD(X_DK_XFER, s->dk_xfer, dk_ndrive * LONG);
-	NREAD(X_DK_WDS, s->dk_wds, dk_ndrive * LONG);
-	NREAD(X_DK_SEEK, s->dk_seek, dk_ndrive * LONG);
+#endif
 	NREAD(X_NCHSTATS, &s->nchstats, sizeof s->nchstats);
+#if defined(__i386__)
+	NREAD(X_INTRHAND, intrhand, sizeof(intrhand));
+	for (i = 0, n = 0; i < 16; i++) {
+		ihp = intrhand[i];
+		while (ihp) {
+			KREAD(ihp, &ih, sizeof(ih));
+			s->intrcnt[n++] = ih.ih_count;
+			ihp = ih.ih_next;
+		}
+	}
+#else
 	NREAD(X_INTRCNT, s->intrcnt, nintr * LONG);
+#endif
 	size = sizeof(s->Total);
 	mib[0] = CTL_VM;
 	mib[1] = VM_METER;
@@ -649,21 +808,10 @@ static void
 copyinfo(from, to)
 	register struct Info *from, *to;
 {
-	long *time, *wds, *seek, *xfer;
 	long *intrcnt;
 
-	/*
-	 * time, wds, seek, and xfer are malloc'd so we have to
-	 * save the pointers before the structure copy and then 
-	 * copy by hand.
-	 */
-	time = to->dk_time; wds = to->dk_wds; seek = to->dk_seek;
-	xfer = to->dk_xfer; intrcnt = to->intrcnt;
+	intrcnt = to->intrcnt;
 	*to = *from;
-	bcopy(from->dk_time, to->dk_time = time, dk_ndrive * sizeof (long));
-	bcopy(from->dk_wds, to->dk_wds = wds, dk_ndrive * sizeof (long));
-	bcopy(from->dk_seek, to->dk_seek = seek, dk_ndrive * sizeof (long));
-	bcopy(from->dk_xfer, to->dk_xfer = xfer, dk_ndrive * sizeof (long));
 	bcopy(from->intrcnt, to->intrcnt = intrcnt, nintr * sizeof (int));
 }
 
@@ -671,23 +819,18 @@ static void
 dinfo(dn, c)
 	int dn, c;
 {
-	double words, atime, itime, xtime;
+	double words, atime;
 
 	c = DISKCOL + c * 5;
-	atime = s.dk_time[dn];
-	atime /= hertz;
-	words = s.dk_wds[dn]*32.0;	/* number of words transferred */
-	xtime = dk_mspw[dn]*words;	/* transfer time */
-	itime = atime - xtime;		/* time not transferring */
-	if (xtime < 0)
-		itime += xtime, xtime = 0;
-	if (itime < 0)
-		xtime += itime, itime = 0;
-	putint((int)((float)s.dk_seek[dn]/etime+0.5), DISKROW + 1, c, 5);
-	putint((int)((float)s.dk_xfer[dn]/etime+0.5), DISKROW + 2, c, 5);
-	putint((int)(words/etime/512.0 + 0.5), DISKROW + 3, c, 5);
-	if (s.dk_seek[dn])
-		putfloat(itime*1000.0/s.dk_seek[dn], DISKROW + 4, c, 5, 1, 1);
-	else
-		putint(0, DISKROW + 4, c, 5);
+
+	/* time busy in disk activity */
+	atime = (double)cur.dk_time[dn].tv_sec +
+		((double)cur.dk_time[dn].tv_usec / (double)1000000);
+
+	words = cur.dk_bytes[dn] / 1024.0;	/* # of K transferred */
+
+	putint((int)((float)cur.dk_seek[dn]/etime+0.5), DISKROW + 1, c, 5);
+	putint((int)((float)cur.dk_xfer[dn]/etime+0.5), DISKROW + 2, c, 5);
+	putint((int)(words/etime + 0.5), DISKROW + 3, c, 5);
+	putfloat(atime/etime, DISKROW + 4, c, 5, 1, 1);
 }

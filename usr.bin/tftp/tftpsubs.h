@@ -1,3 +1,4 @@
+/*	$OpenBSD: tftpsubs.h,v 1.2 1994/12/08 09:51:32 jtc Exp $	*/
 /*	$NetBSD: tftpsubs.h,v 1.2 1994/12/08 09:51:32 jtc Exp $	*/
 
 /*

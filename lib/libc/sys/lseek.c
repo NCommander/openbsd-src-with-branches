@@ -1,5 +1,3 @@
-/*	$NetBSD: lseek.c,v 1.3 1995/02/27 11:23:04 cgd Exp $	*/
-
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,16 +31,13 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)lseek.c	8.1 (Berkeley) 6/17/93";
-#else
-static char rcsid[] = "$NetBSD: lseek.c,v 1.3 1995/02/27 11:23:04 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD: lseek.c,v 1.5 1997/04/26 08:50:12 tholo Exp $";
+#endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include "thread_private.h"
 
 /*
  * This function provides 64-bit offset padding that
@@ -55,6 +50,13 @@ lseek(fd, offset, whence)
 	int	whence;
 {
 	extern off_t __syscall();
+	off_t retval;
 
-	return(__syscall((quad_t)SYS_lseek, fd, 0, offset, whence));
+	if (_FD_LOCK(fd, FD_RDWR, NULL) != 0) {
+		retval = -1;
+	} else {
+		retval = __syscall((quad_t)SYS_lseek, fd, 0, offset, whence);
+		_FD_UNLOCK(fd, FD_RDWR);
+	}
+	return retval;
 }

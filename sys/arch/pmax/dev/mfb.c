@@ -1,4 +1,4 @@
-/*	$NetBSD: mfb.c,v 1.8 1995/09/11 07:45:41 jonathan Exp $	*/
+/*	$NetBSD: mfb.c,v 1.23 1997/04/19 08:25:31 jonathan Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -80,19 +80,25 @@
  *	v 9.2 90/02/13 22:16:24 shirriff Exp  SPRITE (DECWRL)";
  */
 
-#include <fb.h>
-#include <mfb.h>
+#include "fb.h"
+#include "mfb.h"
 #if NMFB > 0
 #include <sys/param.h>
 #include <sys/kernel.h>
 #include <sys/fcntl.h>
+#include <sys/malloc.h>
 #include <sys/errno.h>
 #include <sys/device.h>
+#include <sys/systm.h>
 
-#include <machine/machConst.h>
+#include <dev/tc/tcvar.h>
+#include <machine/autoconf.h>
+
+#include <machine/cpuregs.h>		/* mips cached->uncached */
 #include <machine/pmioctl.h>
 #include <machine/fbio.h>
 #include <machine/fbvar.h>
+#include <pmax/dev/cfbvar.h>		/* XXX dev/tc ? */ 
 
 #include <pmax/pmax/pmaxtype.h>
 
@@ -107,14 +113,20 @@ struct fbuaccess mfbu;
 struct pmax_fbtty mfbfb;
 struct fbinfo	mfbfi;	/*XXX*/
 
+extern int pmax_boardtype;
+
 /*
  * Forward references.
  */
-extern void fbScreenInit __P((struct fbinfo *fia));
+#define CMAP_BITS	(3 * 256)		/* 256 entries, 3 bytes per. */
+static u_char cmap_bits [CMAP_BITS];		/* colormap for console... */
+
 
 void mfbPosCursor  __P((struct fbinfo *fi, int x, int y));
 
 
+
+int	mfbinit __P((struct fbinfo *fi, caddr_t mfbaddr, int unit, int silent));
 
 #if 1	/* these  go away when we use the abstracted-out chip drivers */
 static void mfbLoadCursor __P((struct fbinfo *fi, u_short *ptr));
@@ -136,15 +148,20 @@ int mfbGetColorMap __P((struct fbinfo *fi, caddr_t, int, int));
 
 static int bt455_video_on __P((struct fbinfo *));
 static int bt455_video_off __P((struct fbinfo *));
-static void bt431_select_reg();
-static void bt431_write_reg(), bt431_init();
-static u_char bt431_read_reg();
+
+static void  bt431_init __P((bt431_regmap_t *regs));
+static void  bt431_select_reg __P((bt431_regmap_t *regs, int regno));
+static void  bt431_write_reg __P((bt431_regmap_t *regs, int regno, int val));
+
+#ifdef notused
+static u_char bt431_read_reg __P((bt431_regmap_t *regs, int regno));
+#endif
+
+
 
 /*
  * old pmax-framebuffer hackery
  */
-void genConfigMouse(), genDeconfigMouse();
-void genKbdEvent(), genMouseEvent(), genMouseButtons();
 extern u_short defCursor[32];
 
 
@@ -173,8 +190,6 @@ struct fbdriver mfb_driver = {
 #define MFB_OFFSET_ROM		0x0		/* Diagnostic ROM */
 #define MFB_FB_SIZE		0x200000	/* frame buffer size */
 
-#include <sys/device.h>
-#include <machine/autoconf.h>
 
 /*
  * Autoconfiguration data for config.new.
@@ -184,22 +199,15 @@ struct fbdriver mfb_driver = {
 
 int mfbmatch __P((struct device *, void *, void *));
 void mfbattach __P((struct device *, struct device *, void *));
+int mfb_intr __P((void *sc));
 
-struct cfdriver mfbcd = {
-	NULL, "mfb", mfbmatch, mfbattach, DV_DULL, sizeof(struct device), 0
+struct cfattach mfb_ca = {
+	sizeof(struct fbinfo), mfbmatch, mfbattach
 };
 
-#if 0
-int
-mfbprobe(addr)
-	caddr_t addr;
-{
-
-	/* make sure that we're looking for this type of device. */
-	if (!BUS_MATCHNAME(ca, "PMAG-AA "))
-		return (0);
-}
-#endif
+struct cfdriver mfb_cd = {
+	NULL, "mfb", DV_DULL
+};
 
 int
 mfbmatch(parent, match, aux)
@@ -207,9 +215,7 @@ mfbmatch(parent, match, aux)
 	void *match;
 	void *aux;
 {
-	struct cfdata *cf = match;
-	struct confargs *ca = aux;
-	static int nmfbs = 1;
+	struct tc_attach_args *ta = aux;
 
 #ifdef FBDRIVER_DOES_ATTACH
 	/* leave configuration  to the fb driver */
@@ -217,14 +223,9 @@ mfbmatch(parent, match, aux)
 #endif
 
 	/* make sure that we're looking for this type of device. */
-	if (!BUS_MATCHNAME(ca, "PMAG-AA "))
+	if (!TC_BUS_MATCHNAME(ta, "PMAG-AA "))
 		return (0);
 
-#ifdef notyet
-	/* if it can't have the one mentioned, reject it */
-	if (cf->cf_unit >= nmfbs)
-		return (0);
-#endif
 	return (1);
 }
 
@@ -234,23 +235,32 @@ mfbattach(parent, self, aux)
 	struct device *self;
 	void *aux;
 {
-	struct confargs *ca = aux;
-	caddr_t base = 	BUS_CVTADDR(ca);
+	struct tc_attach_args *ta = aux;
+	caddr_t mfbaddr = (caddr_t) ta->ta_addr;
 	int unit = self->dv_unit;
-	struct fbinfo *fi = &mfbfi;
+	struct fbinfo *fi = (struct fbinfo *) self;
 
 #ifdef notyet
+	struct fbinfo *fi = &mfbfi;
+
 	/* if this is the console, it's already configured. */
-	if (ca->ca_slotpri == cons_slot)
+	if (ta->ta_cookie == cons_slot)
 		return;	/* XXX patch up f softc pointer */
 #endif
 
-
-	if (!mfbinit(BUS_CVTADDR(ca), unit, 0))
+	if (!mfbinit(fi, mfbaddr, unit, 0))
 		return;
 
-	/* no interrupts for MFB */
-	/*BUS_INTR_ESTABLISH(ca, sccintr, self->dv_unit);*/
+	/*
+	 * 3MIN does not mask un-established TC option interrupts,
+	 * so establish a handler.
+	 * XXX Should store cmap updates in softc and apply in the
+	 * interrupt handler, which interrupts during vertical-retrace.
+	 */
+	if (pmax_boardtype == DS_3MIN) {
+		tc_intr_establish(parent, (void*)ta->ta_cookie, TC_IPL_NONE,
+					mfb_intr, fi);
+	}
 	printf("\n");
 }
 
@@ -259,17 +269,37 @@ mfbattach(parent, self, aux)
  * Initialization
  */
 int
-mfbinit(mfbaddr, unit, silent)
+mfbinit(fi, mfbaddr, unit, silent)
+	struct fbinfo *fi;
 	caddr_t mfbaddr;
 	int unit;
 	int silent;
 {
-	register struct fbinfo *fi = &mfbfi;
+
+	register int isconsole = 0;
+
+	/*
+	 * If this device is being intialized as the console, malloc()
+	 * is not yet up and we must use statically-allocated space.
+	 */
+	if (fi == NULL) {
+		fi = &mfbfi;	/* XXX */
+		fi->fi_cmap_bits = (caddr_t)cmap_bits;
+		isconsole = 1;
+	}
+	else {
+		fi->fi_cmap_bits = malloc(CMAP_BITS, M_DEVBUF, M_NOWAIT);
+		if (fi->fi_cmap_bits == NULL) {
+			printf("mfb%d: no memory for cmap\n", unit);
+			return (0);
+		}
+	}
 
 	/* check for no frame buffer */
-	if (badaddr(mfbaddr, 4))
+	if (badaddr(mfbaddr, 4)) {
+		printf("mfb: bad address 0x%p\n", mfbaddr);
 		return (0);
-
+	}
 
 	/* Fill in main frame buffer info struct. */
 	fi->fi_unit = unit;
@@ -278,14 +308,13 @@ mfbinit(mfbaddr, unit, silent)
 	fi->fi_base = (caddr_t)(mfbaddr + MFB_OFFSET_BT431);
 	fi->fi_vdac = (caddr_t)(mfbaddr + MFB_OFFSET_BT455);
 	fi->fi_size = (fi->fi_pixels + MFB_FB_SIZE) - fi->fi_base;
-	fi->fi_linebytes = 1280;
+	fi->fi_linebytes = 2048;	/* inter-line stride (blitting) */
 	fi->fi_driver = &mfb_driver;
 	fi->fi_blanked = 0;
-	fi->fi_cmap_bits = (caddr_t)0;
 
 	/* Fill in Frame Buffer Type struct. */
 	fi->fi_type.fb_boardtype = PMAX_FBTYPE_MFB;
-	fi->fi_type.fb_width = 1280;
+	fi->fi_type.fb_width = 1280;	/* visible screen pixels */
 	fi->fi_type.fb_height = 1024;
 	fi->fi_type.fb_depth = 8;
 	fi->fi_type.fb_cmsize = 0;
@@ -307,7 +336,7 @@ mfbinit(mfbaddr, unit, silent)
 	 * mapped into the user's address space uncached.
 	 */
 	fi->fi_fbu = (struct fbuaccess *)
-		MACH_PHYS_TO_UNCACHED(MACH_CACHED_TO_PHYS(&mfbu));
+		MIPS_PHYS_TO_KSEG1(MIPS_KSEG0_TO_PHYS(&mfbu));
 
 	/* This is glass-tty state but it's in the shared structure. Ick. */
 	fi->fi_fbu->scrInfo.max_row = 67;
@@ -326,7 +355,9 @@ mfbinit(mfbaddr, unit, silent)
 	if (tb_kbdmouseconfig(fi))
 		return (0);
 
-	mfbInitColorMapBlack(fi, 0);
+	/* white-on-black if console, black-on-black otherwise. */
+	mfbInitColorMapBlack(fi, isconsole);
+
 
 	/*
 	 * Connect to the raster-console pseudo-driver.
@@ -417,11 +448,11 @@ mfbRestoreCursorColor (fi)
 	else
 		fg = 0;
 	regs->addr_ovly = fg;
-	MachEmptyWriteBuffer();
+	wbflush();
 	regs->addr_ovly = fg;
-	MachEmptyWriteBuffer();
+	wbflush();
 	regs->addr_ovly = fg;
-	MachEmptyWriteBuffer();
+	wbflush();
 }
 
 /* Set the color of the cursor. */
@@ -431,7 +462,7 @@ mfbCursorColor(fi, color)
 	struct fbinfo *fi;
 	unsigned int color[];
 {
-	register int i, j;
+	register int i;
 
 	for (i = 0; i < 6; i++)
 		cursor_RGB[i] = (u_char)(color[i] >> 8);
@@ -448,6 +479,7 @@ mfbPosCursor(fi, x, y)
 {
 	bt431_regmap_t *regs = (bt431_regmap_t *)(fi -> fi_base);
 
+#ifdef MELLON
 	if (y < 0)
 	  y = 0;
 	else if (y > fi -> fi_type.fb_width - fi -> fi_cursor.width - 1)
@@ -456,6 +488,15 @@ mfbPosCursor(fi, x, y)
 	  x = 0;
 	else if (x > fi -> fi_type.fb_height - fi -> fi_cursor.height - 1)
 	  x = fi -> fi_type.fb_height - fi -> fi_cursor.height - 1;
+
+#else /* old-style pmax glass tty */
+ 	if (y < fi->fi_fbu->scrInfo.min_cur_y ||
+	    y > fi->fi_fbu->scrInfo.max_cur_y)
+		y = fi->fi_fbu->scrInfo.max_cur_y;
+	if (x < fi->fi_fbu->scrInfo.min_cur_x ||
+	    x > fi->fi_fbu->scrInfo.max_cur_x)
+		x = fi->fi_fbu->scrInfo.max_cur_x;
+#endif /* old-style pmax glass tty */
 
 	fi -> fi_cursor.x = x;
 	fi -> fi_cursor.y = y;
@@ -489,6 +530,8 @@ mfbInitColorMapBlack(fi, blackpix)
 {
 	u_char rgb [3];
 	register int i;
+
+	blackpix = 1; /* XXX XXX XXX defeat screensave bug */
 
 	if (blackpix)
 		rgb [0] = rgb [1] = rgb [2] = 0xff;
@@ -544,14 +587,15 @@ mfbLoadColorMap(fi, bits, index, count)
 	for (i = 0; i < count; i++) {
 		cmap [(i + index) * 3]
 			= regs->addr_cmap_data = cmap_bits [i * 3] >> 4;
-		MachEmptyWriteBuffer();
+		wbflush();
 		cmap [(i + index) * 3 + 1]
 			= regs->addr_cmap_data = cmap_bits [i * 3 + 1] >> 4;
-		MachEmptyWriteBuffer();
+		wbflush();
 		cmap [(i + index) * 3 + 2]
 			= regs->addr_cmap_data = cmap_bits [i * 3 + 2] >> 4;
-		MachEmptyWriteBuffer();
+		wbflush();
 	}
+	return 0;
 }
 
 /* stub for driver */
@@ -573,10 +617,9 @@ mfbGetColorMap(fi, bits, index, count)
 	caddr_t bits;
 	int index, count;
 {
-	bt455_regmap_t *regs = (bt455_regmap_t *)(fi -> fi_vdac);
+	/*bt455_regmap_t *regs = (bt455_regmap_t *)(fi -> fi_vdac);*/
 	u_char *cmap_bits;
 	u_char *cmap;
-	int i;
 
 	if (index > 15 || index < 0 || index + count > 15)
 		return EINVAL;
@@ -599,7 +642,7 @@ bt455_video_on(fi)
 	u_char *cmap;
 
 	if (!fi -> fi_blanked)
-		return;
+		return 0;
 
 	cmap = (u_char *)(fi -> fi_cmap_bits);
 
@@ -607,10 +650,12 @@ bt455_video_on(fi)
 	BT455_SELECT_ENTRY(regs, 0);
 	for (i = 0; i < 6; i++) {
 		regs->addr_cmap_data = cmap [i];
-		MachEmptyWriteBuffer();
+		wbflush();
 	}
 	mfbRestoreCursorColor (fi);
 	fi -> fi_blanked = 0;
+
+	return 0;
 }
 
 /*
@@ -638,7 +683,7 @@ bt455_video_off(fi)
 	u_char *cmap;
 
 	if (fi -> fi_blanked)
-		return;
+		return 0;
 
 	cmap = (u_char *)(fi -> fi_cmap_bits);
 
@@ -649,13 +694,15 @@ bt455_video_off(fi)
 	for (i = 0; i < 6; i++) {
 		cursor_RGB[i] = 0;
 		regs->addr_cmap_data = 0;
-		MachEmptyWriteBuffer();
+		wbflush();
 	}
 		
 	mfbRestoreCursorColor (fi);
 
 	bcopy (cursor_save, cursor_RGB, 6);
-	fi -> fi_blanked = 0;
+	fi -> fi_blanked = 1;
+
+	return 0;
 }
 
 /*
@@ -667,7 +714,7 @@ bt431_select_reg(regs, regno)
 {
 	regs->addr_lo = SET_VALUE(regno & 0xff);
 	regs->addr_hi = SET_VALUE((regno >> 8) & 0xff);
-	MachEmptyWriteBuffer();
+	wbflush();
 }
 
 static void 
@@ -676,9 +723,10 @@ bt431_write_reg(regs, regno, val)
 {
 	bt431_select_reg(regs, regno);
 	regs->addr_reg = SET_VALUE(val);
-	MachEmptyWriteBuffer();
+	wbflush();
 }
 
+#ifdef notused
 static u_char
 bt431_read_reg(regs, regno)
 	bt431_regmap_t *regs;
@@ -686,12 +734,13 @@ bt431_read_reg(regs, regno)
 	bt431_select_reg(regs, regno);
 	return (GET_VALUE(regs->addr_reg));
 }
+#endif
+
 
 static void
 bt431_init(regs)
 	bt431_regmap_t *regs;
 {
-	register int i;
 
 	/* use 4:1 input mux */
 	bt431_write_reg(regs, BT431_REG_CMD,
@@ -714,5 +763,24 @@ bt431_init(regs)
 	BT431_WRITE_REG_AUTOI(regs, 0x00);
 	BT431_WRITE_REG_AUTOI(regs, 0x00);
 }
+
+/*
+ * copied from cfb_intr
+ */
+int
+mfb_intr(sc)
+	void *sc;
+{
+	struct fbinfo *fi = /* XXX (struct fbinfo *)sc */ &mfbfi;
+	volatile int junk;
+	char *slot_addr = (((char *)fi->fi_base) - MFB_OFFSET_BT431);
+
+	/* reset vertical-retrace interrupt by writing a dont-care */
+	junk = *(volatile int*) (slot_addr + MFB_OFFSET_IREQ);
+	*(volatile int*) (slot_addr + MFB_OFFSET_IREQ) = 0;
+
+	return (0);
+}
+
 #endif /* NMFB */
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cache.h,v 1.3 1995/03/21 09:07:12 cgd Exp $	*/
 /*	$NetBSD: cache.h,v 1.3 1995/03/21 09:07:12 cgd Exp $	*/
 
 /*-

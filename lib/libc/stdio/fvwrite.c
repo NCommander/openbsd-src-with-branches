@@ -1,5 +1,3 @@
-/*	$NetBSD: fvwrite.c,v 1.4 1995/02/02 02:09:45 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,14 +35,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fvwrite.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: fvwrite.c,v 1.4 1995/02/02 02:09:45 jtc Exp $";
+static char rcsid[] = "$OpenBSD: fvwrite.c,v 1.8 1998/11/20 06:13:26 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include "local.h"
 #include "fvwrite.h"
 
@@ -68,8 +65,10 @@ __sfvwrite(fp, uio)
 	if ((len = uio->uio_resid) == 0)
 		return (0);
 	/* make sure we can write */
-	if (cantwrite(fp))
+	if (cantwrite(fp)) {
+		errno = EBADF;
 		return (EOF);
+	}
 
 #define	MIN(a, b) ((a) < (b) ? (a) : (b))
 #define	COPY(n)	  (void)memcpy((void *)fp->_p, (void *)p, (size_t)(n))
@@ -111,6 +110,25 @@ __sfvwrite(fp, uio)
 		 */
 		do {
 			GETIOV(;);
+			if ((fp->_flags & (__SALC | __SSTR)) ==
+			    (__SALC | __SSTR) && fp->_w < len) {
+				size_t blen = fp->_p - fp->_bf._base;
+				unsigned char *_base;
+				int _size;
+
+				/* Allocate space exponentially. */
+				_size = fp->_bf._size;
+				do {
+					_size = (_size << 1) + 1;
+				} while (_size < blen + len);
+				_base = realloc(fp->_bf._base, _size + 1);
+				if (_base == NULL)
+					goto err;
+				fp->_w += _size - fp->_bf._size;
+				fp->_bf._base = _base;
+				fp->_bf._size = _size;
+				fp->_p = _base + blen;
+			}
 			w = fp->_w;
 			if (fp->_flags & __SSTR) {
 				if (len < w)

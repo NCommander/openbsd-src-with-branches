@@ -1,3 +1,4 @@
+/*	$OpenBSD: command.c,v 1.2 1995/03/18 12:28:15 cgd Exp $	*/
 /*	$NetBSD: command.c,v 1.2 1995/03/18 12:28:15 cgd Exp $	*/
 
 /* 

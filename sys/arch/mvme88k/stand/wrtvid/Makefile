@@ -1,3 +1,4 @@
+#	$OpenBSD:	$ 
 PROG=	wrtvid
 NOMAN=
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: frame.h,v 1.7 1994/10/26 02:06:15 cgd Exp $	*/
 /*	$NetBSD: frame.h,v 1.7 1994/10/26 02:06:15 cgd Exp $	*/
 
 #ifndef _MACHINE_FRAME_H_

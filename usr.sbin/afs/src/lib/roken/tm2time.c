@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -39,7 +38,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: tm2time.c,v 1.1 1998/01/13 16:25:44 lha Exp $");
+RCSID("$Id: tm2time.c,v 1.1 1998/01/13 16:25:44 lha Exp $");
 #endif
 
 #ifdef TIME_WITH_SYS_TIME

@@ -1,4 +1,5 @@
-/*	$Id: attribute.h,v 1.2 1998/09/29 21:51:07 niklas Exp $	*/
+/*	$OpenBSD: attribute.h,v 1.2 1998/11/15 00:43:49 niklas Exp $	*/
+/*	$EOM: attribute.h,v 1.2 1998/09/29 21:51:07 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

@@ -1,4 +1,5 @@
-/*	$NetBSD: exect.S,v 1.1 1995/02/10 17:50:32 cgd Exp $	*/
+/*	$OpenBSD: exect.S,v 1.3 1996/11/13 22:05:11 niklas Exp $	*/
+/*	$NetBSD: exect.S,v 1.2 1996/10/17 03:08:18 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -29,7 +30,12 @@
 
 #include "SYS.h"
 
-LEAF(exect, 3)
-	SYSCALL_NOLABEL(execve)
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: exect.S,v 1.3 1996/11/13 22:05:11 niklas Exp $"
+#endif /* SYSLIBC_SCCS */
+
+SYSLEAF(exect, 3)
+	CALLSYS_ERROR(execve)
 	RET
-END(exect)
+SYSEND(exect)

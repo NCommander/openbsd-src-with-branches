@@ -61,7 +61,7 @@ FILE *current_infile;
 FILE *objfile;
 FILE *listfile;
 
-char in_name[PATH_MAX + 1];
+char in_name[PATH_MAX];
 
 struct input {
 	FILE	*fp;
@@ -83,7 +83,7 @@ main(int argc, char **argv)
 	hex_name = list_name = 0;
 
 	/* parse options */
-	while ((c = getopt(argc, argv, "o:l:")) != EOF) {
+	while ((c = getopt(argc, argv, "o:l:")) != -1) {
 		switch (c) {
 		case 'o':
 			if (hex_name)
@@ -107,8 +107,7 @@ main(int argc, char **argv)
 		infile = stdin;
 		strcpy(in_name, "<stdin>");
 	} else if (argc == 1) {
-		strncpy(in_name, *argv, PATH_MAX);
-		in_name[PATH_MAX] = 0;
+		strlcpy(in_name, *argv, sizeof(in_name));
 		if ((infile = fopen(in_name, "r")) == NULL)
 			err(1, "fopen");
 	} else 
@@ -249,7 +248,7 @@ yyerror(char *err)
 {
 	extern char *lineptr;
 
-	perr(err);
+	perr("%s", err);
 	longjmp(synerrjmp, 1);
 }
 

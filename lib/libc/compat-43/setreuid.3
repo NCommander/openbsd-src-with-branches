@@ -29,53 +29,53 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)setreuid.2	6.4 (Berkeley) 3/10/91
-.\"	$Id: setreuid.3,v 1.2 1994/06/13 18:50:07 cgd Exp $
+.\"	$OpenBSD: setreuid.3,v 1.7 2000/04/15 11:46:01 aaron Exp $
 .\"
 .Dd March 10, 1991
 .Dt SETREUID 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm setreuid
-.Nd set real and effective user ID's
+.Nd set real and effective user IDs
 .Sh SYNOPSIS
 .Fd #include <unistd.h>
 .Ft int
 .Fn setreuid "int ruid" "int euid"
 .Sh DESCRIPTION
-The real and effective user ID's of the
+The real and effective user IDs of the
 current process are set according to the arguments.
 If
 .Fa ruid
-or 
+or
 .Fa euid
-is -1, the current uid is filled in by the system.
+is \-1, the current UID is filled in by the system.
 Unprivileged users may change the real user
-ID to the effective user ID and vice-versa; only the super-user may
+ID to the effective user ID and vice-versa; only the superuser may
 make other changes.
 .Pp
 The
 .Fn setreuid
 function has been used to swap the real and effective user
 IDs in set-user-ID programs to temporarily relinquish the set-user-ID
-value.  This purpose is now better served by the use of the
+value.
+This purpose is now better served by the use of the
 .Fn seteuid
 function (see
-.Xr setuid 2 ).
+.Xr setuid 2 ) .
 .Pp
 When setting the real and effective user IDs to the same value, the standard
 .Fn setuid
 function is preferred.
 .Sh RETURN VALUES
-Upon successful completion, a value of 0 is returned.  Otherwise,
-a value of -1 is returned and
+Upon successful completion, a value of 0 is returned.
+Otherwise, a value of \-1 is returned and
 .Va errno
 is set to indicate the error.
 .Sh ERRORS
 .Bl -tag -width Er
 .It Bq Er EPERM
-The current process is not the super-user and a change
-other than changing the effective user-id to the real user-id
+The current process is not the superuser and a change
+other than changing the effective user ID to the real user ID
 was specified.
 .El
 .Sh SEE ALSO

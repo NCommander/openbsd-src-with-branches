@@ -1,3 +1,5 @@
+/*	$OpenBSD: def.edog.h,v 1.3 1995/03/23 08:29:18 cgd Exp $*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  *

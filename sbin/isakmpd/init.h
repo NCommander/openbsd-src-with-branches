@@ -1,4 +1,5 @@
-/*	$Id: init.h,v 1.2 1998/07/07 23:36:00 niklas Exp $	*/
+/*	$OpenBSD: init.h,v 1.2 1998/11/15 00:43:55 niklas Exp $	*/
+/*	$EOM: init.h,v 1.2 1998/07/07 23:36:00 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.

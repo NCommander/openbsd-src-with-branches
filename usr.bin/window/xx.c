@@ -1,3 +1,4 @@
+/*	$OpenBSD: xx.c,v 1.3 1997/02/25 00:05:15 downsj Exp $	*/
 /*	$NetBSD: xx.c,v 1.3 1995/09/28 10:36:03 tls Exp $	*/
 
 /*
@@ -40,10 +41,11 @@
 #if 0
 static char sccsid[] = "@(#)xx.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: xx.c,v 1.3 1995/09/28 10:36:03 tls Exp $";
+static char rcsid[] = "$OpenBSD: xx.c,v 1.3 1997/02/25 00:05:15 downsj Exp $";
 #endif
 #endif /* not lint */
 
+#include <stdlib.h>
 #include "ww.h"
 #include "xx.h"
 #include "tt.h"
@@ -56,7 +58,7 @@ xxinit()
 	/* ccinit may choose to change xxbufsize */
 	if (tt.tt_ntoken > 0 && ccinit() < 0)
 		return -1;
-	xxbuf = malloc((unsigned) xxbufsize * sizeof *xxbuf);
+	xxbuf = malloc(xxbufsize * sizeof *xxbuf);
 	if (xxbuf == 0) {
 		wwerrno = WWE_NOMEM;
 		return -1;
@@ -119,7 +121,7 @@ xxalloc()
 		abort();
 	if ((xp = xx_freelist) == 0)
 		/* XXX can't deal with failure */
-		xp = (struct xx *) malloc((unsigned) sizeof *xp);
+		xp = (struct xx *) malloc(sizeof *xp);
 	else
 		xx_freelist = xp->link;
 	if (xx_head == 0)

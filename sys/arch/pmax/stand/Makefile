@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.5 1995/01/18 06:53:36 mellon Exp $
+#	$NetBSD: Makefile,v 1.8 1996/10/18 06:08:15 thorpej Exp $
 #	@(#)Makefile	8.3 (Berkeley) 2/16/94
 
 DESTDIR=
@@ -12,7 +12,7 @@ S=      ${.CURDIR}/../../..
 
 DEFS= -DSTANDALONE -DSMALL
 CFLAGS=	-O2 ${INCPATH} ${DEFS}
-AFLAGS=	-O2 ${INCPATH} ${DEFS} -DLOCORE
+AFLAGS=	-O2 ${INCPATH} ${DEFS} -D_LOCORE
 
 .PATH: ${S}/arch/${MACHINE_ARCH}/${MACHINE_ARCH}
 .PATH: ${S}/stand ${S}/lib/libsa
@@ -72,7 +72,7 @@ boot:	start.o boot.o bootconf.o filesystem.o ${LIBS}
 
 start.o: ${.CURDIR}/start.S
 
-#	${CPP} -E ${CFLAGS:M-[ID]*} -DLOCORE ${AINC} ${.IMPSRC} | \
+#	${CPP} -E ${CFLAGS:M-[ID]*} -D_LOCORE ${AINC} ${.IMPSRC} | \
 #	    ${AS} -o ${.TARGET}
 
 mkboot: ${.CURDIR}/mkboot.c
@@ -98,8 +98,8 @@ clean cleandir:
 
 install:
 	./mkboot boot rzboot bootrz
-	install -o bin -g bin -m 444 rzboot ${DESTDIR}/usr/mdec
-	install -o bin -g bin -m 444 bootrz ${DESTDIR}/usr/mdec
+	${INSTALL} -o ${BINOWN} -g ${BINGRP} -m 444 rzboot ${DESTDIR}/usr/mdec
+	${INSTALL} -o ${BINOWN} -g ${BINGRP} -m 444 bootrz ${DESTDIR}/usr/mdec
 
 depend: ${SRCS}
 	mkdep ${INCPATH} ${DEFS} ${SRCS}

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cc_registers.h,v 1.3 1994/10/26 02:01:38 cgd Exp $	*/
 /*	$NetBSD: cc_registers.h,v 1.3 1994/10/26 02:01:38 cgd Exp $	*/
 
 /*

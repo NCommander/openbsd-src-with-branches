@@ -1,3 +1,5 @@
+/*	$OpenBSD: parse.y,v 1.2 1996/06/26 05:35:40 deraadt Exp $	*/
+
 /* parse.y - parser for flex input */
 
 %token CHAR NUMBER SECTEND SCDECL XSCDECL NAME PREVCCL EOF_OP
@@ -33,7 +35,7 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/parse.y,v 1.7 1995/05/05 05:35:39 jtc Exp $ */
+/* $Header: /home/daffy/u0/vern/flex/RCS/parse.y,v 2.28 95/04/21 11:51:51 vern Exp $ */
 
 
 /* Some versions of bison are broken in that they use alloca() but don't

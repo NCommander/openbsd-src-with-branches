@@ -35,8 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)merge.c	8.2 (Berkeley) 2/14/94";*/
-static char *rcsid = "$Id: merge.c,v 1.2 1994/06/16 05:26:36 mycroft Exp $";
+static char *rcsid = "$OpenBSD: merge.c,v 1.2 1996/08/19 08:33:38 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -148,7 +147,7 @@ mergesort(base, nmemb, size, cmp)
 	    			sense = 0;
 	    		}
 	    		if (!big) {	/* here i = 0 */
-LINEAR:	    			while ((b += size) < t && cmp(q, b) >sense)
+	    			while ((b += size) < t && cmp(q, b) >sense)
 	    				if (++i == 6) {
 	    					big = 1;
 	    					goto EXPONENTIAL;
@@ -169,7 +168,7 @@ EXPONENTIAL:	    		for (i = size; ; i <<= 1)
 	    					goto FASTCASE;
 	    				} else
 	    					b = p;
-SLOWCASE:	    		while (t > b+size) {
+		    		while (t > b+size) {
 	    				i = (((t - b) / size) >> 1) * size;
 	    				if ((*cmp)(q, p = b + i) <= sense)
 	    					t = p;

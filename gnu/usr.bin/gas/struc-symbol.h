@@ -1,3 +1,5 @@
+/*	$OpenBSD: struc-symbol.h,v 1.2 1998/02/15 18:48:59 niklas Exp $	*/
+
 /* struct_symbol.h - Internal symbol structure
    Copyright (C) 1987, 1992 Free Software Foundation, Inc.
    
@@ -16,10 +18,6 @@
    oYou should have received a copy of the GNU General Public License
    along with GAS; see the file COPYING.  If not, write to
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-/*
- * $Id: struc-symbol.h,v 1.8 1994/12/18 16:12:45 pk Exp $
- */
-
 
 #ifndef __struc_symbol_h__
 #define __struc_symbol_h__
@@ -34,13 +32,15 @@ struct symbol			/* our version of an nlist node */
 	long	sy_number;	/* 24 bit symbol number. */
 	/* Symbol numbers start at 0 and are */
 	/* unsigned. */
+
+	/* The value of the symbol.  */
+	expressionS sy_value;
+
 	struct symbol *sy_next;	/* forward chain, or NULL */
 #ifdef SYMBOLS_NEED_BACKPOINTERS
 	struct symbol *sy_previous;	/* backward chain, or NULL */
 #endif /* SYMBOLS_NEED_BACKPOINTERS */
 	struct frag *sy_frag;	/* NULL or -> frag this symbol attaches to. */
-	struct symbol *sy_forward;	/* value is really that of this other symbol */
-	/* We will probably want to add a sy_segment here soon. */
 
 #ifdef PIC
 	/* Force symbol into symbol table, even if local */
@@ -57,6 +57,13 @@ struct symbol			/* our version of an nlist node */
 #define BIND_LOCAL	0	/* currently not used */
 #define BIND_GLOBAL	1	/* currently not used */
 #define BIND_WEAK	2
+
+	/* Whether symbol value has been completely resolved (used during
+	   final pass over symbol table).  */
+	int sy_resolved : 1;
+	/* Whether the symbol value is currently being resolved (used to
+	   detect loops in symbol dependencies).  */
+	int sy_resolving : 1;
 };
 
 typedef struct symbol symbolS;

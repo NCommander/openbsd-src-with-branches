@@ -1,4 +1,5 @@
-/*	$NetBSD: config.h,v 1.4 1995/06/14 15:19:03 christos Exp $	*/
+/*	$OpenBSD: config.h,v 1.7 1996/11/30 21:08:53 millert Exp $	*/
+/*	$NetBSD: config.h,v 1.7 1996/11/06 17:59:03 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -37,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)config.h	5.9 (Berkeley) 6/1/90
+ *	from: @(#)config.h	8.1 (Berkeley) 6/6/93
  */
 
 #define	DEFSHELL	1			/* Bourne shell */
@@ -80,15 +81,40 @@
  *	re-made, causing later targets to appear up-to-date. On systems
  *	that don't have this problem, you should defined this. Under
  *	NFS you probably should not, unless you aren't exporting jobs.
- *
- * POSIX
- *	If the POSIX standard for Make is to be followed. There are
- *	several areas that I dislike, hence this constant.
  */
 #define	LIBSUFF	".a"
 #define	RECHECK
 
-#ifndef RANLIBMAG
-#define RANLIBMAG "__.SYMDEF"
+/*
+ * POSIX
+ *	Adhere to the POSIX 1003.2 draft for the make(1) program.
+ *	- Use MAKEFLAGS instead of MAKE to pick arguments from the
+ *	  environment.
+ *	- Allow empty command lines if starting with tab.
+ */
+#define POSIX
+
+/*
+ * SYSVINCLUDE
+ *	Recognize system V like include directives [include "filename"]
+ * SYSVVARSUB
+ *	Recognize system V like ${VAR:x=y} variable substitutions
+ */
+#define SYSVINCLUDE
+#define SYSVVARSUB
+
+/*
+ * SUNSHCMD
+ *	Recognize SunOS and Solaris:
+ *		VAR :sh= CMD	# Assign VAR to the command substitution of CMD
+ *		${VAR:sh}	# Return the command substitution of the value
+ *				# of ${VAR}
+ */
+#define SUNSHCMD
+
+#if !defined(__svr4__) && !defined(__SVR4) && !defined(__alpha__) && \
+    !defined(__mips__) && !defined(__powerpc__)
+# ifndef RANLIBMAG
+#  define RANLIBMAG "__.SYMDEF"
+# endif
 #endif
-/*#define POSIX*/
