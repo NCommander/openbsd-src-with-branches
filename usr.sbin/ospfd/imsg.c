@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: imsg.c,v 1.1 2005/01/28 14:05:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -116,7 +116,7 @@ imsg_get(struct imsgbuf *ibuf, struct imsg *imsg)
 
 	if (imsg->hdr.len < av) {
 		left = av - imsg->hdr.len;
-		memcpy(&ibuf->r.buf, ibuf->r.buf + imsg->hdr.len, left);
+		memmove(&ibuf->r.buf, ibuf->r.buf + imsg->hdr.len, left);
 		ibuf->r.wpos = left;
 	} else
 		ibuf->r.wpos = 0;
