@@ -1,4 +1,4 @@
-/*	$OpenBSD: pflogd.c,v 1.17 2003/03/01 06:11:20 cloder Exp $	*/
+/*	$OpenBSD: pflogd.c,v 1.18 2003/03/11 02:35:34 kjc Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -179,8 +179,6 @@ init_pcap(void)
 		pcap_close(oldhpcap);
 
 	snaplen = pcap_snapshot(hpcap);
-	logmsg(LOG_NOTICE, "Listening on %s, logging to %s, snaplen %d",
-	    interface, filename, snaplen);
 	return (0);
 }
 
