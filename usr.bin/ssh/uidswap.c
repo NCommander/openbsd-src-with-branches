@@ -109,9 +109,6 @@ restore_uid(void)
 void
 permanently_set_uid(struct passwd *pw)
 {
-	/* it's a no-op unless privileged */
-	if (!privileged)
-		return;
 	if (temporarily_use_uid_effective)
 		fatal("restore_uid: temporarily_use_uid effective");
 	if (setgid(pw->pw_gid) < 0)
