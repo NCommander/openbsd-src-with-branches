@@ -1,4 +1,4 @@
-/*	$OpenBSD: cross.c,v 1.14 2000/05/28 03:28:42 art Exp $	*/
+/*	$OpenBSD: cross.c,v 1.15 2001/06/25 00:43:08 mickey Exp $	*/
 
 /*
  * Copyright (c) 1994, 1996 Niklas Hallqvist, Carsten Hammer
@@ -54,7 +54,7 @@
 #include <amiga/isa/crossreg.h>
 #include <amiga/isa/crossvar.h>
 
-#if defined(UVM)
+#if 1
 void	crossattach __P((struct device *, struct device *, void *));
 int	crossmatch __P((struct device *, void *, void *));
 
