@@ -40,10 +40,8 @@ int really_quiet = 0;
 int quiet = 0;
 int trace = 0;
 int noexec = 0;
-int readonlyfs = 0;
 int logoff = 0;
 mode_t cvsumask = UMASK_DFLT;
-char *RCS_citag = NULL;
 
 char *CurDir;
 
@@ -446,10 +444,6 @@ main (argc, argv)
     }
     if (getenv (CVSREAD_ENV) != NULL)
 	cvswrite = 0;
-    if (getenv (CVSREADONLYFS_ENV)) {
-	readonlyfs = 1;
-	logoff = 1;
-    }
 
     /* Set this to 0 to force getopt initialization.  getopt() sets
        this to 1 internally.  */
@@ -528,7 +522,7 @@ main (argc, argv)
 		(void) fputs (config_string, stdout);
 		(void) fputs ("\n", stdout);
 		(void) fputs ("\
-Copyright (c) 1989-1997 Brian Berliner, david d `zoo' zuhn, \n\
+Copyright (c) 1989-1998 Brian Berliner, david d `zoo' zuhn, \n\
                         Jeff Polk, and other authors\n", stdout);
 		(void) fputs ("\n", stdout);
 		(void) fputs ("CVS may be copied only under the terms of the GNU General Public License,\n", stdout);
@@ -817,7 +811,7 @@ Copyright (c) 1989-1997 Brian Berliner, david d `zoo' zuhn, \n\
 		}
 		(void) strcat (path, "/");
 		(void) strcat (path, CVSROOTADM_HISTORY);
-		if (readonlyfs == 0 && isfile (path) && !isaccessible (path, R_OK | W_OK))
+		if (isfile (path) && !isaccessible (path, R_OK | W_OK))
 		{
 		    save_errno = errno;
 		    error (0, 0, "Sorry, you don't have read/write access to the history file");
@@ -1004,5 +998,5 @@ usage (cpp)
     (void) fprintf (stderr, *cpp++, program_name, command_name);
     for (; *cpp; cpp++)
 	(void) fprintf (stderr, *cpp);
-    error_exit();
+    error_exit ();
 }
