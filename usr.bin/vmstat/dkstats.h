@@ -42,7 +42,7 @@ struct _disk {
 	char		**dk_name;	/* Disk names (sd0, wd1, etc). */
 	u_int64_t	 *dk_xfer;	/* # of transfers. */
 	u_int64_t	 *dk_seek;	/* # of seeks (currently unused). */
-	u_int64_t	 *dk_bytes;	/* # of bytes transfered. */
+	u_int64_t	 *dk_bytes;	/* # of bytes transferred. */
 	struct timeval	 *dk_time;	/* Time spent in disk i/o. */
 	long	tk_nin;			/* TTY Chars in. */
 	long	tk_nout;		/* TTY Chars out. */
