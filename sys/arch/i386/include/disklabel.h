@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.10 1997/08/08 21:46:44 niklas Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.11 1997/08/29 17:22:58 mickey Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.3 1996/03/09 20:52:54 ghudson Exp $	*/
 
 /*
@@ -76,6 +76,7 @@ struct dos_mbr {
 	struct dos_partition	dmbr_parts[NDOSPART]  XXX;
 	u_int16_t		dmbr_sign             XXX;
 };
+#undef XXX
 
 #define DOSMBR_SIGNATURE	(0xaa55)
 
