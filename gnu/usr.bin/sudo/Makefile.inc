@@ -1,3 +1,0 @@
-#	$OpenBSD: Makefile,v 1.5 1998/09/15 02:42:43 millert Exp $
-
-CFLAGS+=-Wall -DSUDOERS_UID=0 -DSUDOERS_GID=0 -DSUDOERS_MODE=0440

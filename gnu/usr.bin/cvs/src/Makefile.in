@@ -71,11 +71,8 @@ CC	 = @CC@
 CFLAGS = @CFLAGS@
 CPPFLAGS =
 LDFLAGS = @LDFLAGS@
-ZLIB = @ZLIB@
 
 INCLUDES = -I. -I.. -I$(srcdir) -I$(top_srcdir)/lib
-ZLIB_INCLUDES = @ZLIB_INCLUDES@
-
 .c.o:
 	$(CC) $(CPPFLAGS) $(INCLUDES) $(DEFS) $(CFLAGS) -c $<
 
@@ -91,7 +88,7 @@ lint:
 install: installdirs
 	@for prog in $(PROGS); do \
 	  echo Installing $$prog in $(bindir); \
-	  $(INSTALL_PROGRAM) $$prog $(bindir)/$$prog ; \
+	  $(INSTALL) $$prog $(bindir)/$$prog ; \
 	done
 
 installdirs:
@@ -100,14 +97,10 @@ installdirs:
 .PHONY: install installdirs
 
 installcheck:
-	RCSBIN=$(bindir) ; export RCSBIN ; $(SHELL) $(srcdir)/sanity.sh $(bindir)/cvs
+	$(SHELL) $(srcdir)/sanity.sh $(bindir)/cvs
 .PHONY: installcheck
 
 check: all
-	if [ -x ../../rcs/src/rcs ] ; then \
-		RCSBIN=`pwd`/../../rcs/src ; \
-		export RCSBIN ; \
-	fi ; \
 	$(SHELL) $(srcdir)/sanity.sh `pwd`/cvs
 .PHONY: check
 
@@ -147,10 +140,10 @@ dist-dir:
 
 # Linking rules.
 
-$(PROGS): ../lib/libcvs.a ../diff/libdiff.a
+$(PROGS): ../lib/libcvs.a ../zlib/libz.a ../diff/libdiff.a
 
 cvs: $(OBJECTS)
-	$(CC) $(OBJECTS) ../lib/libcvs.a ../diff/libdiff.a $(ZLIB) $(LIBS) $(LDFLAGS) -o $@ 
+	$(CC) $(OBJECTS) ../lib/libcvs.a ../zlib/libz.a ../diff/libdiff.a $(LIBS) $(LDFLAGS) -o $@ 
 
 xlint: $(SOURCES)
 	files= ; \
@@ -183,8 +176,8 @@ $(OBJECTS): $(HEADERS) options.h
 rcscmds.o: rcscmds.c $(top_srcdir)/diff/diffrun.h
 	$(CC) $(CPPFLAGS) $(INCLUDES) -I$(top_srcdir)/diff $(DEFS) $(CFLAGS) -c $(srcdir)/rcscmds.c
 
-zlib.o: zlib.c
-	$(CC) $(CPPFLAGS) $(INCLUDES) ${ZLIB_INCLUDES} $(DEFS) $(CFLAGS) -c $(srcdir)/zlib.c
+zlib.o: zlib.c $(top_srcdir)/zlib/zlib.h
+	$(CC) $(CPPFLAGS) $(INCLUDES) -I$(top_srcdir)/zlib $(DEFS) $(CFLAGS) -c $(srcdir)/zlib.c
 
 subdir = src
 Makefile: ../config.status Makefile.in

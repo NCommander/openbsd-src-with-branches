@@ -35,7 +35,7 @@ static int ign_hold = -1;		/* Index where first "temporary" item
 
 const char *ign_default = ". .. core RCSLOG tags TAGS RCS SCCS .make.state\
  .nse_depinfo #* .#* cvslog.* ,* CVS CVS.adm .del-* *.a *.olb *.o *.obj\
- *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$ *.depend";
+ *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$";
 
 #define IGN_GROW 16			/* grow the list by 16 elements at a
 					 * time */
@@ -82,6 +82,11 @@ ign_setup ()
 
     /* Then add entries found in home dir, (if user has one) and file exists */
     home_dir = get_homedir ();
+    /* If we can't find a home directory, ignore ~/.cvsignore.  This may
+       make tracking down problems a bit of a pain, but on the other
+       hand it might be obnoxious to complain when CVS will function
+       just fine without .cvsignore (and many users won't even know what
+       .cvsignore is).  */
     if (home_dir)
     {
 	char *file = xmalloc (strlen (home_dir) + sizeof (CVSDOTIGNORE) + 10);
@@ -176,7 +181,7 @@ ign_add (ign, hold)
 	char save;
 
 	/* ignore whitespace before the token */
-	if (isspace (*ign))
+	if (isspace ((unsigned char) *ign))
 	    continue;
 
 	/*
@@ -184,7 +189,8 @@ ign_add (ign, hold)
 	 * (saving it if necessary).  We also catch * as a special case in a
 	 * global ignore file as an optimization
 	 */
-	if ((!*(ign+1) || isspace (*(ign+1))) && (*ign == '!' || *ign == '*'))
+	if ((!*(ign+1) || isspace ((unsigned char) *(ign+1)))
+	    && (*ign == '!' || *ign == '*'))
 	{
 	    if (!hold)
 	    {
@@ -233,7 +239,7 @@ ign_add (ign, hold)
 	}
 
 	/* find the end of this token */
-	for (mark = ign; *mark && !isspace (*mark); mark++)
+	for (mark = ign; *mark && !isspace ((unsigned char) *mark); mark++)
 	     /* do nothing */ ;
 
 	save = *mark;
@@ -395,11 +401,15 @@ ignore_files (ilist, entries, update_dir, proc)
 
     dirp = CVS_OPENDIR (".");
     if (dirp == NULL)
+    {
+	error (0, errno, "cannot open current directory");
 	return;
+    }
 
     ign_add_file (CVSDOTIGNORE, 1);
     wrap_add_file (CVSDOTWRAPPER, 1);
 
+    errno = 0;
     while ((dp = readdir (dirp)) != NULL)
     {
 	file = dp->d_name;
@@ -476,6 +486,9 @@ ignore_files (ilist, entries, update_dir, proc)
     	}
 
 	(*proc) (file, xdir);
+	errno = 0;
     }
+    if (errno != 0)
+	error (0, errno, "error reading current directory");
     (void) closedir (dirp);
 }
