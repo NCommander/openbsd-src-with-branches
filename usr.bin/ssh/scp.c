@@ -71,7 +71,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.110 2003/10/08 08:27:36 jmc Exp $");
+RCSID("$OpenBSD: scp.c,v 1.111 2003/11/12 10:12:15 dtucker Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -898,7 +898,7 @@ bad:			run_err("%s: %s", np, strerror(errno));
 				cp += j;
 				statbytes += j;
 			} while (amt > 0);
-		
+
 			if (limit)
 				bwlimit(4096);
 

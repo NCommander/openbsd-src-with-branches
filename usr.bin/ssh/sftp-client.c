@@ -28,7 +28,7 @@
 /* XXX: copy between two remote sites */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-client.c,v 1.43 2003/04/08 20:21:29 itojun Exp $");
+RCSID("$OpenBSD: sftp-client.c,v 1.44 2003/06/28 16:23:06 deraadt Exp $");
 
 #include <sys/queue.h>
 
@@ -798,7 +798,7 @@ do_download(struct sftp_conn *conn, char *remote_path, char *local_path,
 		return(-1);
 	}
 
-	local_fd = open(local_path, O_WRONLY | O_CREAT | O_TRUNC, 
+	local_fd = open(local_path, O_WRONLY | O_CREAT | O_TRUNC,
 	    mode | S_IWRITE);
 	if (local_fd == -1) {
 		error("Couldn't open local file \"%s\" for writing: %s",
