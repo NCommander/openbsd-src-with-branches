@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.11 1997/02/23 02:33:05 niklas Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.12 1997/04/10 08:52:52 niklas Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.27 1996/10/13 03:06:34 christos Exp $	*/
 
 /*
@@ -367,7 +367,7 @@ readdisklabel(dev, strat, lp, clp)
 		i = (pp - lp->d_partitions);
 		if (nopname || i == 1) {
 			/*
-			 * either we have no packname yet or we found 
+			 * either we have no packname yet or we found
 			 * the swap partition. copy BCPL string into packname
 			 * [the reason we use the swap partition: the user
 			 *  can supply a decent packname without worry
@@ -453,7 +453,8 @@ setdisklabel(olp, nlp, openmask, clp)
 			return (EBUSY);
 		opp = &olp->d_partitions[i];
 		npp = &nlp->d_partitions[i];
-		if (npp->p_offset != opp->p_offset || npp->p_size < opp->p_size)
+		if (npp->p_offset != opp->p_offset ||
+		    npp->p_size < opp->p_size)
 			return (EBUSY);
 		/*
 		 * Copy internally-set partition information
