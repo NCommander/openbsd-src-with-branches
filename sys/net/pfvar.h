@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.97 2002/10/10 12:29:33 mickey Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.98 2002/10/14 12:58:28 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -791,14 +791,6 @@ extern struct pool		 pf_rdr_pl, pf_state_pl, pf_binat_pl,
 extern struct pool		 pf_altq_pl;
 extern void			 pf_purge_timeout(void *);
 extern int			 pftm_interval;
-extern int			 pf_compare_rules(struct pf_rule *,
-				    struct pf_rule *);
-extern int			 pf_compare_nats(struct pf_nat *,
-				    struct pf_nat *);
-extern int			 pf_compare_binats(struct pf_binat *,
-				    struct pf_binat *);
-extern int			 pf_compare_rdrs(struct pf_rdr *,
-				    struct pf_rdr *);
 extern void			 pf_purge_expired_states(void);
 extern int			 pf_insert_state(struct pf_state *);
 extern struct pf_state		*pf_find_state(struct pf_state_tree *,
