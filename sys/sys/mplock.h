@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2004 Niklas Hallqvist.  All rights reserved.
  *
