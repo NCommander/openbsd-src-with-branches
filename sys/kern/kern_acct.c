@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_acct.c,v 1.11 2003/06/02 23:28:05 millert Exp $	*/
+/*	$OpenBSD: kern_acct.c,v 1.12 2003/08/15 20:32:18 tedu Exp $	*/
 /*	$NetBSD: kern_acct.c,v 1.42 1996/02/04 02:15:12 christos Exp $	*/
 
 /*-
@@ -100,7 +100,7 @@ sys_acct(p, v, retval)
 	register_t *retval;
 {
 	struct sys_acct_args /* {
-		syscallarg(char *) path;
+		syscallarg(const char *) path;
 	} */ *uap = v;
 	struct nameidata nd;
 	int error;
