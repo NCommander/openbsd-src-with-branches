@@ -1,4 +1,4 @@
-/* $OpenBSD: smtpfilter.c,v 1.1.1.1 1997/12/12 05:50:28 beck Exp $*/
+/* $OpenBSD: smtpfilter.c,v 1.2 2001/01/28 19:34:35 niklas Exp $*/
 
 /*
  * smtpfilter, Filter for filtering headers during forwarding them between
@@ -125,7 +125,7 @@ int main( int argc, const char* const argv[] )
           while( (cp = cp2 = strstr( line, MY_INSIDE_DOMAIN )) != NULL ) {
 
             while( cp > line ) {
-              register char c;
+              char c;
               c = *(cp-1);
               if( ! isalnum( c ) && c != '.' && c != '-' )
                 break; 

@@ -1,4 +1,4 @@
-/* * $OpenBSD: etc.c,v 1.1.1.1 2000/06/13 03:40:14 rahnds Exp $*/
+/* * $OpenBSD: etc.c,v 1.2 2001/01/30 02:39:04 brad Exp $*/
 /*
  */
 
@@ -28,7 +28,7 @@ void *
 xmalloc(size)
 	size_t size;
 {
-	register void	*result = (void *)malloc(size);
+	void	*result = (void *)malloc(size);
 
 	if (!result)
 		errx(1, "virtual memory exhausted");
@@ -44,7 +44,7 @@ xrealloc(ptr, size)
 	void *ptr;
 	size_t size;
 {
-	register void	*result;
+	void	*result;
 
 	if (ptr == NULL)
 		result = (void *)malloc(size);
@@ -65,11 +65,11 @@ char *
 concat(s1, s2, s3)
 	const char *s1, *s2, *s3;
 {
-	register int	len1 = strlen(s1),
+	int	len1 = strlen(s1),
 			len2 = strlen(s2),
 			len3 = strlen(s3);
 
-	register char *result = (char *)xmalloc(len1 + len2 + len3 + 1);
+	char *result = (char *)xmalloc(len1 + len2 + len3 + 1);
 
 	strcpy(result, s1);
 	strcpy(result + len1, s2);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: logutmp.c,v 1.2 1998/07/13 02:11:17 millert Exp $	*/
+/*	$OpenBSD: logutmp.c,v 1.3 1999/12/10 10:41:03 deraadt Exp $	*/
 /*
  * Portions Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -95,7 +95,7 @@ login(ut)
 
 int
 logout(line)
-	register char *line;
+	char *line;
 {
 	UTMP ut;
 	int rval;
