@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: global.c,v 1.2 1996/03/28 23:21:57 niklas Exp $	*/
 /*	$NetBSD: global.c,v 1.6 1996/02/28 20:38:14 thorpej Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 static char sccsid[] = "@(#)global.c	8.1 (Berkeley) 6/4/93";
 static char rcsid[] = "$NetBSD: global.c,v 1.6 1996/02/28 20:38:14 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: global.c,v 1.2 1996/03/28 23:21:57 niklas Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,6 +51,24 @@ static char rcsid[] = "$OpenBSD$";
  * we will actually allocate the space.
  */
 
+#include <stdarg.h>
 #include <defs.h>
 #define extern
 #include <ext.h>
+
+int
+output_data (const char *format, ...)
+{
+  va_list args;
+  size_t remaining, ret;
+
+  va_start(args, format);
+  remaining = BUFSIZ - (nfrontp - netobuf);
+  ret = vsnprintf (nfrontp,
+                   remaining,
+                   format,
+                   args);
+  nfrontp += ret;
+  va_end(args);
+  return ret;
+}
