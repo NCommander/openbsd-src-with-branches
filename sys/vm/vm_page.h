@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_page.h,v 1.10 1999/12/30 18:21:56 provos Exp $	*/
+/*	$OpenBSD: vm_page.h,v 1.11 2000/11/10 15:33:11 provos Exp $	*/
 /*	$NetBSD: vm_page.h,v 1.24 1998/02/10 14:09:03 mrg Exp $	*/
 
 /* 
@@ -110,10 +110,8 @@
  */
 
 #include <uvm/uvm_extern.h>
-#include <vm/pglist.h>
-#else
-TAILQ_HEAD(pglist, vm_page);
 #endif /* UVM */
+#include <vm/pglist.h>
 
 struct vm_page {
   TAILQ_ENTRY(vm_page)	pageq;		/* queue info for FIFO
