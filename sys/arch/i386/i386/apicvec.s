@@ -1,4 +1,4 @@
-/* $OpenBSD: apicvec.s,v 1.2 2004/06/13 21:49:15 niklas Exp $ */	
+/* $OpenBSD: apicvec.s,v 1.4 2004/08/12 06:08:50 niklas Exp $ */	
 /* $NetBSD: apicvec.s,v 1.1.2.2 2000/02/21 21:54:01 sommerfeld Exp $ */	
 
 /*-
@@ -179,12 +179,13 @@ _C_LABEL(Xintr_/**/name/**/num):					\
 	MAKE_FRAME							;\
 	pushl	CPL							;\
 	movl	_C_LABEL(lapic_ppr),%eax				;\
-	movl	%eax,CPL						;\
+	orl	$num,%eax						;\
+	movl	_C_LABEL(apic_maxlevel)(,%eax,4),%ebx			;\
+	movl	%ebx,CPL						;\
 	mask(num)			/* mask it in hardware */	;\
 	early_ack(num)			/* and allow other intrs */	;\
 	incl	MY_COUNT+V_INTR		/* statistical info */		;\
 	sti								;\
-	orl	$num,%eax						;\
 	incl	_C_LABEL(apic_intrcount)(,%eax,4)			;\
 	movl	_C_LABEL(apic_intrhand)(,%eax,4),%ebx /* chain head */	;\
 	testl	%ebx,%ebx						;\
