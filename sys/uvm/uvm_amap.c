@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_amap.c,v 1.17.2.3 2002/06/11 03:33:03 art Exp $	*/
+/*	$OpenBSD: uvm_amap.c,v 1.17.2.4 2002/11/04 18:02:32 art Exp $	*/
 /*	$NetBSD: uvm_amap.c,v 1.45 2002/09/15 16:54:27 chs Exp $	*/
 
 /*
@@ -949,16 +949,16 @@ amap_pp_adjref(amap, curslot, slotlen, adjval)
 	vsize_t slotlen;
 	int adjval;
 {
- 	int stopslot, *ppref, lcv, prevlcv;
- 	int ref, len, prevref, prevlen;
+	int stopslot, *ppref, lcv, prevlcv;
+	int ref, len, prevref, prevlen;
 
 	stopslot = curslot + slotlen;
 	ppref = amap->am_ppref;
- 	prevlcv = 0;
+	prevlcv = 0;
 
 	/*
- 	 * first advance to the correct place in the ppref array,
- 	 * fragment if needed.
+	 * first advance to the correct place in the ppref array,
+	 * fragment if needed.
 	 */
 
 	for (lcv = 0 ; lcv < curslot ; lcv += len) {
