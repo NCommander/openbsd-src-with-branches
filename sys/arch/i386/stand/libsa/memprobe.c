@@ -276,8 +276,10 @@ memprobe()
 	printf("\n");
 #endif
 	pm->type = BIOS_MAP_END;
+	/* Register in global var */
+	addbootarg(BOOTARG_MEMMAP, (pm - bm + 1) * sizeof(*bm), bm);
+	memory_map = bm; /* XXX for 'machine mem' command only */
 	printf("mem0:");
-	memory_map = bm;
 
 	/* Get total free memory */
 	for(im = bm; im->type != BIOS_MAP_END; im++) {

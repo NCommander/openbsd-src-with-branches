@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.27 1997/10/17 15:03:20 weingart Exp $
+#	$OpenBSD: Makefile,v 1.28 1997/10/17 18:46:54 weingart Exp $
 
 
 LIB=	sa
@@ -23,7 +23,7 @@ SRCS+=	alloc.c exit.c exec.c getfile.c gets.c globals.c strcmp.c strlen.c \
 	strncmp.c memcmp.c memcpy.c memset.c printf.c strerror.c strncpy.c
 
 # math for cd9660
-SRCS+=	divdi3.c qdivrem.c
+#SRCS+=	divdi3.c qdivrem.c
 
 # io routines
 SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c fstat.c ioctl.c lseek.c \
