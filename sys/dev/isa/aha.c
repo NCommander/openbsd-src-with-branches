@@ -1,4 +1,4 @@
-/*	$OpenBSD: aha.c,v 1.29 1997/07/30 22:12:11 niklas Exp $	*/
+/*	$OpenBSD: aha.c,v 1.30 1997/09/15 19:28:31 flipk Exp $	*/
 /*	$NetBSD: aha.c,v 1.11 1996/05/12 23:51:23 mycroft Exp $	*/
 
 #undef AHADIAG
@@ -1139,9 +1139,9 @@ aha_inquire_setup_information(sc)
 		strcpy(sc->sc_model, "1640");
 		break;
 	case 0x43:
+	case 0x44:		/* Is this 1542C or -CF? */
 		strcpy(sc->sc_model, "1542C");
 		break;
-	case 0x44:
 	case 0x45:
 		strcpy(sc->sc_model, "1542CF");
 		break;
