@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.16 2002/03/14 01:26:54 millert Exp $	*/
+/*	$OpenBSD: ami.c,v 1.17 2002/03/26 18:09:53 mickey Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -1047,6 +1047,7 @@ ami_scsi_raw_cmd(xs)
 		return (COMPLETE);
 	}
 
+	AMI_UNLOCK_AMI(sc, lock);
 	return (SUCCESSFULLY_QUEUED);
 }
 
