@@ -1,4 +1,4 @@
-/*	$OpenBSD: wwsize.c,v 1.5 1997/02/25 00:05:08 downsj Exp $	*/
+/*	$OpenBSD: wwsize.c,v 1.6 1998/04/26 22:49:02 millert Exp $	*/
 /*	$NetBSD: wwsize.c,v 1.5 1996/02/08 20:45:11 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwsize.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: wwsize.c,v 1.5 1997/02/25 00:05:08 downsj Exp $";
+static char rcsid[] = "$OpenBSD: wwsize.c,v 1.6 1998/04/26 22:49:02 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,9 +52,9 @@ static char rcsid[] = "$OpenBSD: wwsize.c,v 1.5 1997/02/25 00:05:08 downsj Exp $
  * Resize a window.  Should be unattached.
  */
 wwsize(w, nrow, ncol)
-register struct ww *w;
+struct ww *w;
 {
-	register i, j;
+	int i, j;
 	int nline;
 	union ww_char **buf = 0;
 	char **win = 0;

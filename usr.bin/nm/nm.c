@@ -1,4 +1,4 @@
-/*	$OpenBSD: nm.c,v 1.13 2001/08/17 14:25:26 espie Exp $	*/
+/*	$OpenBSD: nm.c,v 1.14 2001/08/17 16:29:33 espie Exp $	*/
 /*	$NetBSD: nm.c,v 1.7 1996/01/14 23:04:03 pk Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)nm.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: nm.c,v 1.13 2001/08/17 14:25:26 espie Exp $";
+static char rcsid[] = "$OpenBSD: nm.c,v 1.14 2001/08/17 16:29:33 espie Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -340,7 +340,7 @@ show_objfile(objname, fp)
 {
 	struct nlist *names, *np;
 	struct nlist **snames;
-	register int i, nnames, nrawnames;
+	int i, nnames, nrawnames;
 	struct exec head;
 	long stabsize;
 	char *stab;

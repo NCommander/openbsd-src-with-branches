@@ -1,4 +1,4 @@
-/*	$OpenBSD: strings.c,v 1.4 1997/09/11 11:21:54 deraadt Exp $	*/
+/*	$OpenBSD: strings.c,v 1.5 2000/02/23 19:44:08 provos Exp $	*/
 /*	$NetBSD: strings.c,v 1.7 1995/02/15 15:49:19 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)strings.c	8.2 (Berkeley) 1/28/94";
 #endif
-static char rcsid[] = "$OpenBSD: strings.c,v 1.4 1997/09/11 11:21:54 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: strings.c,v 1.5 2000/02/23 19:44:08 provos Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -84,8 +84,8 @@ main(argc, argv)
 {
 	extern char *optarg;
 	extern int optind;
-	register int ch, cnt;
-	register u_char *C;
+	int ch, cnt;
+	u_char *C;
 	EXEC *head;
 	int exitcode, minlen, maxlen, bfrlen;
 	short asdata, fflg;

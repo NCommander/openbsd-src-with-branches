@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: wwspawn.c,v 1.5 1997/02/25 00:05:09 downsj Exp $	*/
 /*	$NetBSD: wwspawn.c,v 1.4 1995/12/21 08:39:57 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwspawn.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: wwspawn.c,v 1.5 1997/02/25 00:05:09 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,7 +53,7 @@ static char rcsid[] = "$OpenBSD$";
  * So we have to be sneaky about error reporting.
  */
 wwspawn(wp, file, argv)
-register struct ww *wp;
+struct ww *wp;
 char *file;
 char **argv;
 {

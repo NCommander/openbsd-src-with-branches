@@ -1,4 +1,4 @@
-/*	$OpenBSD: banner.c,v 1.3 1998/12/07 20:09:40 deraadt Exp $	*/
+/*	$OpenBSD: banner.c,v 1.4 2001/06/21 16:35:18 lebel Exp $	*/
 /*	$NetBSD: banner.c,v 1.2 1995/04/09 06:00:15 cgd Exp $	*/
 
 /*
@@ -62,7 +62,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)printjob.c	8.2 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$OpenBSD: banner.c,v 1.3 1998/12/07 20:09:40 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: banner.c,v 1.4 2001/06/21 16:35:18 lebel Exp $";
 #endif
 #endif /* not lint */
 
@@ -79,8 +79,8 @@ static long PW = LINELEN;
 
 static char *
 scnline(key, p, c)
-	register int key;
-	register char *p;
+	int key;
+	char *p;
 	int c;
 {
 	int scnwidth;

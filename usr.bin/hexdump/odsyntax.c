@@ -1,4 +1,4 @@
-/*	$OpenBSD: odsyntax.c,v 1.6 2001/09/30 07:17:03 pvalchev Exp $	*/
+/*	$OpenBSD: odsyntax.c,v 1.7 2001/11/02 19:41:06 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)odsyntax.c	5.4 (Berkeley) 3/8/91";*/
-static char rcsid[] = "$OpenBSD: odsyntax.c,v 1.6 2001/09/30 07:17:03 pvalchev Exp $";
+static char rcsid[] = "$OpenBSD: odsyntax.c,v 1.7 2001/11/02 19:41:06 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -160,7 +160,7 @@ odoffset(argc, argvp)
 	char ***argvp;
 {
 	extern off_t skip;
-	register char *num, *p;
+	char *num, *p;
 	int base;
 	char *end;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.4 1999/08/27 08:43:22 fgsch Exp $	*/
+/*	$OpenBSD: misc.c,v 1.5 1999/09/21 13:15:43 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -38,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)misc.c	5.2 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$OpenBSD: misc.c,v 1.4 1999/08/27 08:43:22 fgsch Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.5 1999/09/21 13:15:43 espie Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -101,7 +101,7 @@ const char *
 rname(path)
 	const char *path;
 {
-	register const char *ind;
+	const char *ind;
 
 	return((ind = strrchr(path, '/')) ? ind + 1 : path);
 }

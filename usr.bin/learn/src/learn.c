@@ -2,7 +2,7 @@
  * learn, from V7 UNIX: one of the earliest Computer Based Training (CBT)
  * programs still in existence.
  *
- * $OpenBSD: learn.c,v 1.5 2001/07/09 07:04:48 deraadt Exp $
+ * $OpenBSD: learn.c,v 1.6 2001/07/18 17:17:39 pvalchev Exp $
  */
 
 /****************************************************************
@@ -627,7 +627,7 @@ char *s;
 	/* instead of sh cmd */
 	char p[300];
 	char *np[40];
-	register char *t;
+	char *t;
 	int nv, type, stat;
 
 	type = EASY;	/* we hope */

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lcount.c,v 1.3 2001/01/29 01:57:59 niklas Exp $	*/
 
 /* count lines in something */
 
@@ -31,7 +31,7 @@ THIS SOFTWARE.
 int
 main()
 {
-	register n, c;
+	int n, c;
 
 	n = 0;
 	while ((c = getchar()) != EOF)

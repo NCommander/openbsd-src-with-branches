@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.c,v 1.7 1999/02/27 21:22:19 deraadt Exp $	*/
+/*	$OpenBSD: mbuf.c,v 1.8 2001/05/18 02:41:38 provos Exp $	*/
 /*	$NetBSD: mbuf.c,v 1.9 1996/05/07 02:55:03 thorpej Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)mbuf.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD: mbuf.c,v 1.7 1999/02/27 21:22:19 deraadt Exp $";
+static char *rcsid = "$OpenBSD: mbuf.c,v 1.8 2001/05/18 02:41:38 provos Exp $";
 #endif
 #endif /* not lint */
 
@@ -86,9 +86,9 @@ mbpr(mbaddr, mbpooladdr, mclpooladdr)
 	u_long mbaddr;
 	u_long mbpooladdr, mclpooladdr;
 {
-	register int totmem, totused, totmbufs, totpct;
-	register int i;
-	register struct mbtypes *mp;
+	int totmem, totused, totmbufs, totpct;
+	int i;
+	struct mbtypes *mp;
 
 	if (nmbtypes != 256) {
 		fprintf(stderr,

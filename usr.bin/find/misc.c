@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.5 2001/11/16 23:54:38 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.6 2001/11/17 19:50:53 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -38,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)misc.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: misc.c,v 1.5 2001/11/16 23:54:38 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.6 2001/11/17 19:50:53 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -63,8 +63,8 @@ brace_subst(orig, store, path, len)
 	char *orig, **store, *path;
 	int len;
 {
-	register int plen;
-	register char ch, *p;
+	int plen;
+	char ch, *p;
 
 	plen = strlen(path);
 	for (p = *store; (ch = *orig); ++orig)
@@ -87,7 +87,7 @@ brace_subst(orig, store, path, len)
  */
 int
 queryuser(argv)
-	register char **argv;
+	char **argv;
 {
 	int ch, first, nl;
 

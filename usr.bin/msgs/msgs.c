@@ -1,4 +1,4 @@
-/*	$OpenBSD: msgs.c,v 1.17 2000/08/02 04:10:48 millert Exp $	*/
+/*	$OpenBSD: msgs.c,v 1.18 2001/09/04 23:35:59 millert Exp $	*/
 /*	$NetBSD: msgs.c,v 1.7 1995/09/28 06:57:40 tls Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)msgs.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: msgs.c,v 1.17 2000/08/02 04:10:48 millert Exp $";
+static char rcsid[] = "$OpenBSD: msgs.c,v 1.18 2001/09/04 23:35:59 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -295,7 +295,7 @@ main(argc, argv)
 		lastmsg = 0;
 
 		for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)){
-			register int i = 0;
+			int i = 0;
 
 			cp = dp->d_name;
 			if (dp->d_ino == 0)

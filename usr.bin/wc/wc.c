@@ -1,4 +1,4 @@
-/*	$OpenBSD: wc.c,v 1.4 1999/02/02 03:48:34 millert Exp $	*/
+/*	$OpenBSD: wc.c,v 1.5 2001/07/12 05:17:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1987, 1991, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)wc.c	8.2 (Berkeley) 5/2/95";
 #else
-static char rcsid[] = "$OpenBSD: wc.c,v 1.4 1999/02/02 03:48:34 millert Exp $";
+static char rcsid[] = "$OpenBSD: wc.c,v 1.5 2001/07/12 05:17:31 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -71,7 +71,7 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register int ch;
+	int ch;
 
 	setlocale(LC_ALL, "");
 
@@ -125,10 +125,10 @@ void
 cnt(file)
 	char *file;
 {
-	register u_char *C;
-	register short gotsp;
-	register int len;
-	register int64_t linect, wordct, charct;
+	u_char *C;
+	short gotsp;
+	int len;
+	int64_t linect, wordct, charct;
 	struct stat sbuf;
 	int fd;
 	u_char buf[MAXBSIZE];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: from.c,v 1.6 2000/01/18 04:57:55 millert Exp $	*/
+/*	$OpenBSD: from.c,v 1.7 2001/07/12 05:17:06 deraadt Exp $	*/
 /*	$NetBSD: from.c,v 1.6 1995/09/01 01:39:10 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)from.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: from.c,v 1.6 2000/01/18 04:57:55 millert Exp $";
+static char rcsid[] = "$OpenBSD: from.c,v 1.7 2001/07/12 05:17:06 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -140,7 +140,7 @@ int
 match(line, sender)
 	char *line, *sender;
 {
-	register char ch, pch, first, *p, *t;
+	char ch, pch, first, *p, *t;
 
 	for (first = *sender++;;) {
 		if (isspace(ch = *line))

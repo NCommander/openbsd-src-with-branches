@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cmd1.c,v 1.4 1997/02/25 00:03:55 downsj Exp $	*/
 /*	$NetBSD: cmd1.c,v 1.4 1996/02/08 20:44:59 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)cmd1.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: cmd1.c,v 1.4 1997/02/25 00:03:55 downsj Exp $";
 #endif
 #endif /* not lint */
 
@@ -117,7 +117,7 @@ c_window()
 }
 
 getpos(row, col, minrow, mincol, maxrow, maxcol)
-register int *row, *col;
+int *row, *col;
 int minrow, mincol;
 int maxrow, maxcol;
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.4 1997/02/25 00:03:54 downsj Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.5 2000/04/15 05:22:14 millert Exp $	*/
 /*	$NetBSD: cmd.c,v 1.4 1996/02/08 20:44:57 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)cmd.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: cmd.c,v 1.4 1997/02/25 00:03:54 downsj Exp $";
+static char rcsid[] = "$OpenBSD: cmd.c,v 1.5 2000/04/15 05:22:14 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,8 +50,8 @@ static char rcsid[] = "$OpenBSD: cmd.c,v 1.4 1997/02/25 00:03:54 downsj Exp $";
 
 docmd()
 {
-	register int c;
-	register struct ww *w;
+	int c;
+	struct ww *w;
 	char out = 0;
 
 	while (!out && !quit) {
@@ -222,7 +222,7 @@ docmd()
 struct ww *
 getwindow()
 {
-	register int c;
+	int c;
 	struct ww *w = 0;
 
 	if (!terse)

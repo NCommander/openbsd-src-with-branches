@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttinit.c,v 1.7 2000/04/15 05:22:14 millert Exp $	*/
+/*	$OpenBSD: ttinit.c,v 1.8 2001/02/05 01:57:50 deraadt Exp $	*/
 /*	$NetBSD: ttinit.c,v 1.3 1995/09/28 10:34:50 tls Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)ttinit.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: ttinit.c,v 1.7 2000/04/15 05:22:14 millert Exp $";
+static char rcsid[] = "$OpenBSD: ttinit.c,v 1.8 2001/02/05 01:57:50 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -76,9 +76,9 @@ struct tt_tab tt_tab[] = {
 ttinit()
 {
 	int i;
-	register struct tt_tab *tp;
-	register char *p, *q;
-	register char *t;
+	struct tt_tab *tp;
+	char *p, *q;
+	char *t;
 
 	tt_strp = tt_strings;
 

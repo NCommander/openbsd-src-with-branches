@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmstat.c,v 1.26 2001/11/06 19:20:15 art Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.27 2001/11/18 23:56:49 deraadt Exp $	*/
 /*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)vmstat.c	8.2 (Berkeley) 1/12/94";
 #endif
-static char rcsid[] = "$OpenBSD: vmstat.c,v 1.26 2001/11/06 19:20:15 art Exp $";
+static char rcsid[] = "$OpenBSD: vmstat.c,v 1.27 2001/11/18 23:56:49 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -305,7 +305,7 @@ fetchkre()
 void
 labelkre()
 {
-	register int i, j;
+	int i, j;
 
 	clear();
 	mvprintw(STATROW, STATCOL + 4, "users    Load");
@@ -577,7 +577,7 @@ cmdkre(cmd, args)
 static int
 ucount()
 {
-	register int nusers = 0;
+	int nusers = 0;
 
 	if (ut < 0)
 		return (0);
@@ -594,7 +594,7 @@ cputime(indx)
 	int indx;
 {
 	double t;
-	register int i;
+	int i;
 
 	t = 0;
 	for (i = 0; i < CPUSTATES; i++)
@@ -698,7 +698,7 @@ allocinfo(s)
 
 static void
 copyinfo(from, to)
-	register struct Info *from, *to;
+	struct Info *from, *to;
 {
 	long *intrcnt;
 

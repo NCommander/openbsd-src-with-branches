@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: options.c,v 1.2 1996/06/26 05:41:21 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)options.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: options.c,v 1.1.1.1 1995/10/18 08:46:21 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: options.c,v 1.2 1996/06/26 05:41:21 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -51,7 +51,7 @@ static char rcsid[] = "$OpenBSD: options.c,v 1.1.1.1 1995/10/18 08:46:21 deraadt
 void
 OptInit()
 {
-    register int i;
+    int i;
 
     OptAPLmode = 0;
     OptNullProcessing = 1;		/* improved null processing */

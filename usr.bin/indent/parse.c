@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.3 1997/07/25 22:00:47 mickey Exp $	*/
+/*	$OpenBSD: parse.c,v 1.4 2001/01/08 07:14:42 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -38,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)parse.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: parse.c,v 1.3 1997/07/25 22:00:47 mickey Exp $";
+static char rcsid[] = "$OpenBSD: parse.c,v 1.4 2001/01/08 07:14:42 pjanzen Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -253,7 +253,7 @@ void
 reduce()
 {
 
-    register int i;
+    int i;
 
     for (;;) {			/* keep looping until there is nothing left to
 				 * reduce */

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: outbound.c,v 1.2 1996/06/26 05:41:22 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)outbound.c	4.3 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: outbound.c,v 1.1.1.1 1995/10/18 08:46:21 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: outbound.c,v 1.2 1996/06/26 05:41:22 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -99,9 +99,9 @@ init_ctlr()
 
 
 FieldInc(position)
-register int	position;		/* Position in previous field */
+int	position;		/* Position in previous field */
 {
-    register ScreenImage *ptr;
+    ScreenImage *ptr;
 
     ptr = (ScreenImage *)memNSchr((char *)Host+position+1, ATTR_MASK,
 			HighestScreen()-position, ATTR_MASK, sizeof Host[0]);
@@ -118,7 +118,7 @@ register int	position;		/* Position in previous field */
 FieldDec(position)
 int	position;
 {
-    register ScreenImage *ptr;
+    ScreenImage *ptr;
 
     ptr = (ScreenImage *)memNSchr((char *)(Host+position)-1, ATTR_MASK,
 			position-LowestScreen(), ATTR_MASK, -sizeof Host[0]);
@@ -183,13 +183,13 @@ char	character;
 int
 DataFromNetwork(Buffer, count, control)
 char	*Buffer;				/* what the data is */
-register int	count;				/* and how much there is */
+int	count;					/* and how much there is */
 int	control;				/* this buffer ended block? */
 {
     int origCount;
-    register unsigned char *buffer = (unsigned char *)Buffer;
-    register int c;
-    register int i;
+    unsigned char *buffer = (unsigned char *)Buffer;
+    int c;
+    int i;
     static int Command;
     static int Wcc;
 
