@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.5 2003/12/20 18:50:40 henning Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.6 2003/12/20 19:17:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -342,6 +342,7 @@ dispatch_imsg(int fd, int idx, struct mrt_config *conf,
 			}
 			break;
 		default:
+			break;
 		}
 		imsg_free(&imsg);
 	}
