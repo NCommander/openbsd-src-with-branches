@@ -15,22 +15,37 @@
 #		.data section.
 #	OTHER_BSS_SYMBOLS - symbols that appear at the start of the
 #		.bss section besides __bss_start.
-#	DATA_PLT - .plt should be in data segment, not text segment.
+#	EMBEDDED - whether this is for an embedded system. 
 #
 # When adding sections, do note that the names of some sections are used
 # when specifying the start address of the next.
 #
-test -z "$ENTRY" && ENTRY=_start
+
+# We use a start address of __start for Irix 5, _start for other
+# targets.  This is for compatibility with Irix 5, and with old MIPS
+# ELF toolchains.
+if [ -z "$ENTRY" ]; then
+  case "${target}" in
+  mips*-*-irix5*) ENTRY=__start ;;
+  *) ENTRY=_start ;;
+  esac
+fi
+
+# if this is for an embedded system, don't add SIZEOF_HEADERS.
+if [ -z "$EMBEDDED" ]; then
+   test -z "${TEXT_BASE_ADDRESS}" && TEXT_BASE_ADDRESS="${TEXT_START_ADDR} + SIZEOF_HEADERS"
+else
+   test -z "${TEXT_BASE_ADDRESS}" && TEXT_BASE_ADDRESS="${TEXT_START_ADDR}"
+fi
+
 test -z "${BIG_OUTPUT_FORMAT}" && BIG_OUTPUT_FORMAT=${OUTPUT_FORMAT}
 test -z "${LITTLE_OUTPUT_FORMAT}" && LITTLE_OUTPUT_FORMAT=${OUTPUT_FORMAT}
-if [ -z "$MACHINE" ]; then OUTPUT_ARCH=${ARCH}; else OUTPUT_ARCH=${ARCH}:${MACHINE}; fi
 test "$LD_FLAG" = "N" && DATA_ADDR=.
 INTERP=".interp   ${RELOCATING-0} : { *(.interp) 	}"
-PLT=".plt    ${RELOCATING-0} : { *(.plt)	}"
 cat <<EOF
 OUTPUT_FORMAT("${OUTPUT_FORMAT}", "${BIG_OUTPUT_FORMAT}",
 	      "${LITTLE_OUTPUT_FORMAT}")
-OUTPUT_ARCH(${OUTPUT_ARCH})
+OUTPUT_ARCH(${ARCH})
 ENTRY(${ENTRY})
 
 ${RELOCATING+${LIB_SEARCH_DIRS}}
@@ -44,12 +59,14 @@ ${RELOCATING- /* For some reason, the Solaris linker makes bad executables
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */
-  ${CREATE_SHLIB-${RELOCATING+. = ${TEXT_START_ADDR} + SIZEOF_HEADERS;}}
-  ${CREATE_SHLIB+${RELOCATING+. = SIZEOF_HEADERS;}}
+  ${CREATE_SHLIB-${RELOCATING+. = ${TEXT_BASE_ADDRESS};}}
+  ${CREATE_SHLIB+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR} + SIZEOF_HEADERS;}}
   ${CREATE_SHLIB-${INTERP}}
-  .hash        ${RELOCATING-0} : { *(.hash)		}
-  .dynsym      ${RELOCATING-0} : { *(.dynsym)		}
+  .reginfo     ${RELOCATING-0} : { *(.reginfo) }
+  .dynamic     ${RELOCATING-0} : { *(.dynamic) }
   .dynstr      ${RELOCATING-0} : { *(.dynstr)		}
+  .dynsym      ${RELOCATING-0} : { *(.dynsym)		}
+  .hash        ${RELOCATING-0} : { *(.hash)		}
   .rel.text    ${RELOCATING-0} : { *(.rel.text)		}
   .rela.text   ${RELOCATING-0} : { *(.rela.text) 	}
   .rel.data    ${RELOCATING-0} : { *(.rel.data)		}
@@ -70,47 +87,62 @@ SECTIONS
   .rela.bss    ${RELOCATING-0} : { *(.rela.bss)		}
   .rel.plt     ${RELOCATING-0} : { *(.rel.plt)		}
   .rela.plt    ${RELOCATING-0} : { *(.rela.plt)		}
+  .rodata  ${RELOCATING-0} : { *(.rodata)  }
+  .rodata1 ${RELOCATING-0} : { *(.rodata1) }
   .init        ${RELOCATING-0} : { *(.init)	} =${NOP-0}
-  ${DATA_PLT-${PLT}}
   .text    ${RELOCATING-0} :
   {
-    ${RELOCATING+${TEXT_START_SYMBOLS}}
+    ${CREATE_SHLIB-${RELOCATING+${TEXT_START_SYMBOLS}}}
     *(.text)
+    *(.stub)
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
   } =${NOP-0}
-  ${RELOCATING+_etext = .;}
-  ${RELOCATING+PROVIDE (etext = .);}
+  ${CREATE_SHLIB-${RELOCATING+_etext = .;}}
+  ${CREATE_SHLIB-${RELOCATING+PROVIDE (etext = .);}}
   .fini    ${RELOCATING-0} : { *(.fini)    } =${NOP-0}
-  .rodata  ${RELOCATING-0} : { *(.rodata)  }
-  .rodata1 ${RELOCATING-0} : { *(.rodata1) }
-  ${RELOCATING+${OTHER_READONLY_SECTIONS}}
 
   /* Adjust the address for the data segment.  We want to adjust up to
-     the same address within the page on the next page up.  */
-  ${RELOCATING+. = ${DATA_ADDR-ALIGN(${MAXPAGESIZE}) + (ALIGN(8) & (${MAXPAGESIZE} - 1))};}
-
+     the same address within the page on the next page up.  It would
+     be more correct to do this:
+       ${RELOCATING+. = ${DATA_ADDR-ALIGN(${MAXPAGESIZE})
+		+ ((ALIGN(8) + ${MAXPAGESIZE} - ALIGN(${MAXPAGESIZE}))
+		   & (${MAXPAGESIZE} - 1)};}
+     The current expression does not correctly handle the case of a
+     text segment ending precisely at the end of a page; it causes the
+     data segment to skip a page.  The above expression does not have
+     this problem, but it will currently (2/95) cause BFD to allocate
+     a single segment, combining both text and data, for this case.
+     This will prevent the text segment from being shared among
+     multiple executions of the program; I think that is more
+     important than losing a page of the virtual address space (note
+     that no actual memory is lost; the page which is skipped can not
+     be referenced).  */
+  ${CREATE_SHLIB-${RELOCATING+. += ${DATA_ADDR} - ${TEXT_START_ADDR};}}
+  ${CREATE_SHLIB+${RELOCATING+. += 0x10000;}}
   .data  ${RELOCATING-0} :
   {
-    ${RELOCATING+${DATA_START_SYMBOLS}}
+    ${CREATE_SHLIB-${RELOCATING+${DATA_START_SYMBOLS}}}
     *(.data)
     ${CONSTRUCTING+CONSTRUCTORS}
   }
   .data1 ${RELOCATING-0} : { *(.data1) }
-  ${RELOCATING+${OTHER_READWRITE_SECTIONS}}
   .ctors       ${RELOCATING-0} : { *(.ctors)   }
   .dtors       ${RELOCATING-0} : { *(.dtors)   }
-  .got         ${RELOCATING-0} : { *(.got.plt) *(.got) }
-  .dynamic     ${RELOCATING-0} : { *(.dynamic) }
-  ${DATA_PLT+${PLT}}
+  ${RELOCATING+${OTHER_GOT_SYMBOLS}}
+  .got         ${RELOCATING-0} :
+  {
+    *(.got.plt) *(.got)
+   }
   /* We want the small data sections together, so single-instruction offsets
      can access them all, and initialized data all before uninitialized, so
      we can shorten the on-disk segment size.  */
   .sdata   ${RELOCATING-0} : { *(.sdata) }
-  ${RELOCATING+_edata  =  .;}
-  ${RELOCATING+PROVIDE (edata = .);}
-  ${RELOCATING+__bss_start = .;}
-  ${RELOCATING+${OTHER_BSS_SYMBOLS}}
+  ${RELOCATING+${OTHER_READWRITE_SECTIONS}}
+  ${CREATE_SHLIB-${RELOCATING+_edata  =  .;}}
+  ${CREATE_SHLIB-${RELOCATING+PROVIDE (edata = .);}}
+  ${CREATE_SHLIB-${RELOCATING+__bss_start = .;}}
+  ${CREATE_SHLIB-${RELOCATING+${OTHER_BSS_SYMBOLS}}}
   .sbss    ${RELOCATING-0} : { *(.sbss) *(.scommon) }
   .bss     ${RELOCATING-0} :
   {
@@ -118,8 +150,8 @@ SECTIONS
    *(.bss)
    *(COMMON)
   }
-  ${RELOCATING+_end = . ;}
-  ${RELOCATING+PROVIDE (end = .);}
+  ${CREATE_SHLIB-${RELOCATING+_end = . ;}}
+  ${CREATE_SHLIB-${RELOCATING+PROVIDE (end = .);}}
 
   /* These are needed for ELF backends which have not yet been
      converted to the new style linker.  */
