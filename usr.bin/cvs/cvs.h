@@ -276,6 +276,10 @@ struct cvsroot {
 #define CVS_FST_CONFLICT  5
 #define CVS_FST_PATCHED   6
 
+
+TAILQ_HEAD(cvs_flist, cvs_files);
+
+
 typedef struct cvs_file {
 	char            *cf_path;
 	struct cvs_file *cf_parent;  /* parent directory (NULL if none) */
@@ -285,14 +289,14 @@ typedef struct cvs_file {
 	struct stat     *cf_stat;    /* only available with CF_STAT flag */
 	struct cvs_dir  *cf_ddat;    /* only for directories */
 
-	LIST_ENTRY(cvs_file)  cf_list;
+	TAILQ_ENTRY(cvs_file)  cf_list;
 } CVSFILE;
 
 
 struct cvs_dir {
-	struct cvsroot *cd_root;
-	char           *cd_repo;
-	LIST_HEAD(cvs_flist, cvs_file) cd_files;
+	struct cvsroot  *cd_root;
+	char            *cd_repo;
+	struct cvs_flist cd_files;
 };
 
 #define CVS_HIST_ADDED    'A'
