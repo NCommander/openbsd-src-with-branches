@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.63 2001/06/23 07:08:51 angelos Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.64 2001/06/24 20:12:50 jason Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -776,7 +776,7 @@ bridge_output(ifp, m, sa, rt)
 	 * get there, send to all interfaces.
 	 */
 	dst_if = bridge_rtlookup(sc, dst);
-	if (dst_if == NULL || eh->ether_dhost[0] & 1) {
+	if (dst_if == NULL || ETHER_IS_MULTICAST(eh->ether_dhost)) {
 		struct bridge_iflist *p;
 		struct mbuf *mc;
 		int used = 0;
