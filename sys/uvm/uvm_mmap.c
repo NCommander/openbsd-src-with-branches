@@ -441,8 +441,10 @@ sys_mmap(p, v, retval)
 		 * not fixed: make sure we skip over the largest possible heap.
 		 * we will refine our guess later (e.g. to account for VAC, etc)
 		 */
-
-		if (addr < uvm_map_hint(p, prot))
+		if (addr == 0)
+			addr = uvm_map_hint(p, prot);
+		else if (!(flags & MAP_TRYFIXED) &&
+		    addr < uvm_map_hint(p, prot))
 			addr = uvm_map_hint(p, prot);
 	}
 
