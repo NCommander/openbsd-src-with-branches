@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 1997/10/01 22:12:59 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.11 1997/10/09 16:13:07 niklas Exp $
 
 REV=		22
 
@@ -61,13 +61,13 @@ ${FLOPPY}:	bsd.gz ${BOOT} ${BOOTXX}
 	mount ${VND_DEV} ${MOUNT_POINT}
 	cp ${BOOT} ${MOUNT_POINT}/boot
 	cp bsd.gz ${MOUNT_POINT}/bsd
-	${INSTALLBOOT} -v ${MOUNT_POINT}/boot ${BOOTXX} ${VND_RDEV}
+	${INSTALLBOOT} -v ${MOUNT_POINT}/boot ${BOOTXX} \
+		`echo ${VND_RDEV} | sed -e 's/a$$/c/'`
 	@echo ""
 	@df -i ${MOUNT_POINT}
 	@echo ""
 	umount ${MOUNT_POINT}
 	vnconfig -u ${VND}
-	# some bug can put an extra 8k at the end it seems
 	dd if=${REALIMAGE} of=${FLOPPY} count=${FLOPPYSIZE}
 	rm -f ${REALIMAGE}
 
