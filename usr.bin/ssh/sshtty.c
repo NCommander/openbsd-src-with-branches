@@ -1,18 +1,18 @@
+/* $OpenBSD: sshtty.c,v 1.1 2001/04/14 16:33:20 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
- * Password authentication.  This file contains the functions to check whether
- * the password is valid for the user.
  *
  * As far as I am concerned, the code I have written for this software
  * can be used freely for any purpose.  Any derived versions of this
  * software must be clearly marked as such, and if the derived work is
  * incompatible with the protocol description in the RFC file, it must be
  * called by a name other than "ssh" or "Secure Shell".
- *
- * Copyright (c) 1999 Dug Song.  All rights reserved.
- * Copyright (c) 2000 Markus Friedl.  All rights reserved.
+ */
+/*
+ * Copyright (c) 2001 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2001 Kevin Steves.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,58 +36,61 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-passwd.c,v 1.22 2001/03/20 18:57:04 markus Exp $");
 
-#include "packet.h"
-#include "xmalloc.h"
+#include "sshtty.h"
 #include "log.h"
-#include "servconf.h"
-#include "auth.h"
 
+static struct termios _saved_tio;
+static int _in_raw_mode = 0;
 
-extern ServerOptions options;
-
-/*
- * Tries to authenticate the user using password.  Returns true if
- * authentication succeeds.
- */
 int
-auth_password(Authctxt *authctxt, const char *password)
+in_raw_mode(void)
 {
-	struct passwd * pw = authctxt->pw;
-	char *encrypted_password;
+	return _in_raw_mode;	
+}
 
-	/* deny if no user. */
-	if (pw == NULL)
-		return 0;
-	if (pw->pw_uid == 0 && options.permit_root_login != PERMIT_YES)
-		return 0;
-	if (*password == '\0' && options.permit_empty_passwd == 0)
-		return 0;
-#ifdef BSD_AUTH
-	if (auth_userokay(pw->pw_name, authctxt->style, "auth-ssh",
-	    (char *)password) == 0)
-		return 0;
+struct termios
+get_saved_tio(void)
+{
+	return _saved_tio;
+}
+
+void
+leave_raw_mode(void)
+{
+	if (!_in_raw_mode)
+		return;
+	if (tcsetattr(fileno(stdin), TCSADRAIN, &_saved_tio) == -1)
+		perror("tcsetattr");
 	else
-		return 1;
-#endif
+		_in_raw_mode = 0;
 
-#ifdef KRB4
-	if (options.kerberos_authentication == 1) {
-		int ret = auth_krb4_password(pw, password);
-		if (ret == 1 || ret == 0)
-			return ret;
-		/* Fall back to ordinary passwd authentication. */
+	fatal_remove_cleanup((void (*) (void *)) leave_raw_mode, NULL);
+}
+
+void
+enter_raw_mode(void)
+{
+	struct termios tio;
+
+	if (tcgetattr(fileno(stdin), &tio) == -1) {
+		perror("tcgetattr");
+		return;
 	}
+	_saved_tio = tio;
+	tio.c_iflag |= IGNPAR;
+	tio.c_iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL | IXON | IXANY | IXOFF);
+	tio.c_lflag &= ~(ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHONL);
+#ifdef IEXTEN
+	tio.c_lflag &= ~IEXTEN;
 #endif
+	tio.c_oflag &= ~OPOST;
+	tio.c_cc[VMIN] = 1;
+	tio.c_cc[VTIME] = 0;
+	if (tcsetattr(fileno(stdin), TCSADRAIN, &tio) == -1)
+		perror("tcsetattr");
+	else
+		_in_raw_mode = 1;
 
-	/* Check for users with no password. */
-	if (strcmp(password, "") == 0 && strcmp(pw->pw_passwd, "") == 0)
-		return 1;
-	/* Encrypt the candidate password using the proper salt. */
-	encrypted_password = crypt(password,
-	    (pw->pw_passwd[0] && pw->pw_passwd[1]) ? pw->pw_passwd : "xx");
-
-	/* Authentication is accepted if the encrypted passwords are identical. */
-	return (strcmp(encrypted_password, pw->pw_passwd) == 0);
+	fatal_add_cleanup((void (*) (void *)) leave_raw_mode, NULL);
 }

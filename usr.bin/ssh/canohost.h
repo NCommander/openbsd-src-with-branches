@@ -1,4 +1,4 @@
-/*	$OpenBSD: canohost.h,v 1.4 2001/02/03 10:08:37 markus Exp $	*/
+/*	$OpenBSD: canohost.h,v 1.6 2001/04/12 19:15:24 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -25,9 +25,13 @@ const char *get_canonical_hostname(int reverse_mapping_check);
  */
 const char *get_remote_ipaddr(void);
 
+const char *get_remote_name_or_ip(u_int utmp_len, int reverse_mapping_check);
+
 /* Returns the ipaddr/port number of the peer of the socket. */
 char *	get_peer_ipaddr(int socket);
 int     get_peer_port(int sock);
+char *	get_local_ipaddr(int socket);
+char *	get_local_name(int socket);
 
 /* Returns the port number of the remote/local host. */
 int     get_remote_port(void);
