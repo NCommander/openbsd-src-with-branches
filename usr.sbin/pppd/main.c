@@ -505,7 +505,7 @@ main(argc, argv)
 	}
 
 	if (!demand) {
-	    if (unlink(pidfilename) < 0 && errno != ENOENT) 
+	    if (pidfilename[0] != 0 && unlink(pidfilename) < 0 && errno != ENOENT) 
 		syslog(LOG_WARNING, "unable to delete pid file: %m");
 	    pidfilename[0] = 0;
 	}
