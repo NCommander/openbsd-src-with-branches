@@ -62,7 +62,7 @@ perl.c: ${.CURDIR}/../perl_api/perl.xs ${.CURDIR}/../perl_api/typemap
 .include "../../Makefile.inc"
 .include <bsd.prog.mk>
 
-CATALOGS=	dutch english french german ru_SU.KOI8-R spanish swedish
+CATALOGS=	dutch english french german ru_RU.KOI8-R spanish swedish
 afterinstall:
 	${INSTALL} -d ${DESTDIR}${SHAREDIR}/vi/catalog
 	(cd ${.CURDIR}/../catalog && ${INSTALL} -m ${NONBINMODE} -c ${CATALOGS} ${DESTDIR}/usr/share/vi/catalog )
