@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbrk.S,v 1.4 1996/10/17 03:08:20 cgd Exp $	*/
+/*	$OpenBSD: sbrk.S,v 1.4 1996/11/13 22:05:13 niklas Exp $	*/
 /*	$NetBSD: sbrk.S,v 1.4 1996/10/17 03:08:20 cgd Exp $	*/
 
 /*
@@ -32,23 +32,23 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: sbrk.S,v 1.3 1996/08/19 08:11:14 tholo Exp $"
+	.asciz "$OpenBSD: sbrk.S,v 1.4 1996/11/13 22:05:13 niklas Exp $"
 #endif /* SYSLIBC_SCCS */
 
 	.globl	_end
 
 	.data
-EXPORT(curbrk)
+EXPORT(__curbrk)
 	.quad	_end
 
 	.text
 LEAF(sbrk, 1)
 	br	pv, L1				/* XXX profiling */
 L1:	LDGP(pv)
-	ldq	a1, curbrk
+	ldq	a1, __curbrk
 	addq	a0, a1, a0
 	CALLSYS_ERROR(break)
-	stq	a0, curbrk
+	stq	a0, __curbrk
 	mov	a1, v0
 	RET
 END(sbrk)
