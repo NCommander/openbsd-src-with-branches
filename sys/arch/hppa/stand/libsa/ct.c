@@ -1,5 +1,4 @@
-/*	$OpenBSD: ct.c,v 1.2 1998/07/08 21:34:33 mickey Exp $	*/
-/*	$NOWHERE: ct.c,v 2.2 1998/06/22 18:41:34 mickey Exp $	*/
+/*	$OpenBSD: ct.c,v 1.3 1998/09/29 07:20:44 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff

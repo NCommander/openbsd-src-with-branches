@@ -1,5 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.1.1.1 1998/06/23 18:46:42 mickey Exp $	*/
-/*	$NOWHERE: machdep.c,v 2.0 1998/06/17 20:49:17 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.2 1998/09/29 07:23:48 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
