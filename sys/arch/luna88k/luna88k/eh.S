@@ -1,4 +1,4 @@
-/*   $OpenBSD: eh.S,v 1.3 2004/08/02 08:34:57 miod Exp $   */
+/*   $OpenBSD: eh.S,v 1.4 2004/08/04 22:03:42 miod Exp $   */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -29,6 +29,7 @@
  */
 
 #include <machine/board.h>
+#include <machine/m8820x.h>
 
 /*
  * Save Pbus fault status register from data and inst CMMU.
