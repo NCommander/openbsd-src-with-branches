@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_pic.c,v 1.8 1996/12/08 00:20:49 niklas Exp $	*/
+/*	$OpenBSD: sio_pic.c,v 1.9 1997/01/24 19:57:59 niklas Exp $	*/
 /*	$NetBSD: sio_pic.c,v 1.16 1996/11/17 02:05:26 cgd Exp $	*/
 
 /*
@@ -55,7 +55,9 @@
  * what will happen if new interrupts (that the PROM console doesn't
  * want) are turned on.  I'll burn that bridge when I come to it.
  */
+#ifndef SANE_PROM
 #define	BROKEN_PROM_CONSOLE
+#endif /* SANE_PROM */
 
 /*
  * Private functions and variables.
