@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)regfree.c	8.3 (Berkeley) 3/20/94";
 #else
-static char rcsid[] = "$OpenBSD: regfree.c,v 1.4 2003/06/02 20:18:36 millert Exp $";
+static char rcsid[] = "$OpenBSD: regfree.c,v 1.5 2004/10/17 17:58:54 otto Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -51,7 +51,6 @@ static char rcsid[] = "$OpenBSD: regfree.c,v 1.4 2003/06/02 20:18:36 millert Exp
 
 /*
  - regfree - free everything
- = extern void regfree(regex_t *);
  */
 void
 regfree(regex_t *preg)
