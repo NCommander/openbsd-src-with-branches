@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.5 2003/06/03 02:56:07 millert Exp $	*/
+/*	$OpenBSD: tree.c,v 1.6 2003/06/12 20:58:09 deraadt Exp $	*/
 /*	$NetBSD: tree.c,v 1.4 1995/03/26 20:14:11 glass Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)tree.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: tree.c,v 1.5 2003/06/03 02:56:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: tree.c,v 1.6 2003/06/12 20:58:09 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -68,7 +68,7 @@ pfnote(char *name, int ln)
 		free_tree(head);
 		/*NOSTRICT*/
 		if (!(head = np = (NODE *)malloc(sizeof(NODE))))
-			err(1, "out of space");
+			err(1, NULL);
 	}
 	if (!xflag && !strcmp(name, "main")) {
 		if (!(fp = strrchr(curfile, '/')))
