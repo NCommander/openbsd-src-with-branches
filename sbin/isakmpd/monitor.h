@@ -1,4 +1,4 @@
-/*	$OpenBSD: monitor.h,v 1.3 2003/05/18 19:37:46 ho Exp $	*/
+/*	$OpenBSD: monitor.h,v 1.4 2003/06/03 14:28:16 ho Exp $	*/
 
 /*
  * Copyright (c) 2003 Håkan Olsson.  All rights reserved.
@@ -52,7 +52,7 @@ int	mm_send_fd (int, int);
 int	mm_receive_fd (int);
 
 struct stat;
-FILE 	*monitor_fopen (const char *, const char *);
+FILE	*monitor_fopen (const char *, const char *);
 int	monitor_open (const char *, int, mode_t);
 int	monitor_stat (const char *, struct stat *);
 int	monitor_socket (int, int, int);

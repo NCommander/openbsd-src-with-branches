@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike_quick_mode.c,v 1.68 2003/06/03 12:51:39 ho Exp $	*/
+/*	$OpenBSD: ike_quick_mode.c,v 1.69 2003/06/04 07:31:16 ho Exp $	*/
 /*	$EOM: ike_quick_mode.c,v 1.139 2001/01/26 10:43:17 niklas Exp $	*/
 
 /*
@@ -640,7 +640,7 @@ initiator_send_HASH_SA_NONCE (struct message *msg)
 			    attr =
                               attribute_set_basic (attr,
 						   IPSEC_ATTR_SA_LIFE_DURATION,
-	              				   value);
+						   value);
                           else
                             {
                               value = htonl (value);
