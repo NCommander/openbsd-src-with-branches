@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.12 1996/06/09 03:47:29 briggs Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.13 1996/09/09 04:50:33 tholo Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -426,7 +426,7 @@ hardclock(frame)
 #endif /* !NTP */
 	/* Imprecise 4bsd adjtime() handling */
 	if (timedelta != 0) {
-		delta = tick + tickdelta;
+		delta += tickdelta;
 		timedelta -= tickdelta;
 	}
 
