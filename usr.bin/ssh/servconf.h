@@ -1,4 +1,4 @@
-/*	$OpenBSD: servconf.h,v 1.57 2002/03/20 19:12:25 stevesk Exp $	*/
+/*	$OpenBSD: servconf.h,v 1.58 2002/06/20 23:05:55 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -97,6 +97,7 @@ typedef struct {
 	int     challenge_response_authentication;
 	int     permit_empty_passwd;	/* If false, do not permit empty
 					 * passwords. */
+	int     permit_user_env;	/* If true, read ~/.ssh/environment */
 	int     use_login;	/* If true, login(1) is used */
 	int     compression;	/* If true, compression is allowed */
 	int	allow_tcp_forwarding;
