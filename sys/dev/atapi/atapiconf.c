@@ -1,4 +1,4 @@
-/*	$OpenBSD: atapiconf.c,v 1.12 1996/11/23 21:46:29 kstailey Exp $	*/
+/*	$OpenBSD: atapiconf.c,v 1.13 1997/06/06 23:43:06 provos Exp $	*/
 
 /*
  * Copyright (c) 1996 Manuel Bouyer.  All rights reserved.
@@ -100,7 +100,8 @@ struct atapi_quirk_inquiry_pattern atapi_quirk_inquiry_patterns[] = {
 	 "NEC                 CD-ROM DRIVE:260", "3.04", AQUIRK_CDROM},
 						/* NEC Multispin 2Vi */
 	{ATAPI_DEVICE_TYPE_CD, ATAPI_REMOVABLE,
-	 "UJDCD8730", "1.14", AQUIRK_NODOORLOCK}, /* Acer Notelight 370 */
+	 "UJDCD8730", "1.14", AQUIRK_NODOORLOCK},
+						/* Acer Notelight 370 */
 
 	{0, 0, NULL, NULL, 0}			/* The End */
 };
