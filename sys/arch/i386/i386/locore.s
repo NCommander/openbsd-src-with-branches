@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.42 1998/02/26 20:53:23 weingart Exp $	*/
+/*	$OpenBSD: locore.s,v 1.43 1998/05/10 18:29:49 deraadt Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -1577,14 +1577,13 @@ ENTRY(idle)
 	je	1f
 	call	_apm_cpu_busy
 1:
-#else /* NAPM == 0 */
-#if NPCTR > 0
+#endif
+#if NPCTR > 0 && NAPM == 0
 	addl	$1,_pctr_idlcnt
 	adcl	$0,_pctr_idlcnt+4
-#else /* NPCTR == 0 */
+#else
 	hlt
-#endif /* NPCTR == 0 */
-#endif /* NAPM == 0 */
+#endif
 	jmp	_idle
 
 #ifdef DIAGNOSTIC
