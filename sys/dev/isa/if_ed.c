@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ed.c,v 1.46 2001/07/08 23:38:07 fgsch Exp $	*/
+/*	$OpenBSD: if_ed.c,v 1.47 2001/08/25 10:13:29 art Exp $	*/
 /*	$NetBSD: if_ed.c,v 1.105 1996/10/21 22:40:45 thorpej Exp $	*/
 
 /*
@@ -2294,7 +2294,7 @@ edintr(arg)
 
 			/*
 			 * Decrement buffer in-use count if not zero (can only
-			 * be zero if a transmitter interrupt occured while not
+			 * be zero if a transmitter interrupt occurred while not
 			 * actually transmitting).
 			 * If data is ready to transmit, start it transmitting,
 			 * otherwise defer until after handling receiver.

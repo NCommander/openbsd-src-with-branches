@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: kgdb_stub.c,v 1.1 2001/01/24 09:37:59 hugh Exp $ */
 /*	$NetBSD: kgdb_stub.c,v 1.6 1998/08/30 20:30:57 scottr Exp $	*/
 
 /*
@@ -378,7 +378,7 @@ kgdb_trap(type, regs)
 #endif
 		kgdb_active = 1;
 	} else {
-		/* Tell remote host that an exception has occured. */
+		/* Tell remote host that an exception has occurred. */
 		sprintf(buffer, "S%02x", kgdb_signal(type));
 		kgdb_send(buffer);
 	}

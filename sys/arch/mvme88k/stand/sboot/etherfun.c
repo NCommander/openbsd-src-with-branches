@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: etherfun.c,v 1.2 2001/07/04 08:09:30 niklas Exp $	*/
 
 /*
  *
@@ -162,7 +162,7 @@ do_get_file()
 	do_send_tftp(READ);
 	while (1) {
 		if (le_get(buf, sizeof(buf), 5) == 0) {
-			/* timeout occured */
+			/* timeout occurred */
 			if (last_ack)
 				do_send_tftp(last_ack);
 			else

@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.27 2001/07/27 15:26:16 art Exp $	*/
+/*	$OpenBSD: audio.c,v 1.28 2001/08/11 22:49:19 art Exp $	*/
 /*	$NetBSD: audio.c,v 1.105 1998/09/27 16:43:56 christos Exp $	*/
 
 /*
@@ -1604,7 +1604,7 @@ audio_write(dev, uio, ioflag)
 			saveerror = error;
 			error = audiostartp(sc);
 			if (saveerror != 0) {
-				/* Report the first error that occured. */
+				/* Report the first error that occurred. */
 				error = saveerror;
 			}
 		}
