@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.26 2000/06/27 18:13:23 art Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.27 2000/07/06 07:00:04 art Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -815,7 +815,7 @@ resetpriority(p)
  * queue will not change.  The cpu usage estimator ramps up quite quickly
  * when the process is running (linearly), and decays away exponentially, at
  * a rate which is proportionally slower when the system is busy.  The basic
- * principal is that the system will 90% forget that the process used a lot
+ * principle is that the system will 90% forget that the process used a lot
  * of CPU time in 5 * loadav seconds.  This causes the system to favor
  * processes which haven't run much recently, and to round-robin among other
  * processes.
