@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1995  Sean E. Fagin, John M Vinopal.
  *

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ncr5380reg.h,v 1.2 1996/01/01 22:24:35 thorpej Exp $	*/
 /*	$NetBSD: ncr5380reg.h,v 1.2 1996/01/01 22:24:35 thorpej Exp $	*/
 
 /* 

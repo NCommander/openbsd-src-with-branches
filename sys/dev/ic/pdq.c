@@ -1,3 +1,4 @@
+/*	$OpenBSD: pdq.c,v 1.9 1996/10/13 01:37:26 christos Exp $	*/
 /*	$NetBSD: pdq.c,v 1.9 1996/10/13 01:37:26 christos Exp $	*/
 
 /*-
