@@ -1,4 +1,4 @@
-/*	$OpenBSD: supfilesrv.c,v 1.31 2003/03/10 03:53:32 david Exp $	*/
+/*	$OpenBSD: supfilesrv.c,v 1.32 2003/09/04 03:24:07 beck Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -751,9 +751,7 @@ answer()
 			(void) dup2(netfile,0);
 			(void) dup2(netfile,1);
 			(void) dup2(netfile,2);
-			fd = getdtablesize();
-			while (--fd > 2)
-				(void) close(fd);
+			closefrom(3);
 			execvp(xargv[0], xargv);
 			exit(0);
 		}

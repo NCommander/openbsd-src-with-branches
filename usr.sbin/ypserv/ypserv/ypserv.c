@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.30 2003/06/22 23:57:07 maja Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.31 2003/07/15 06:10:46 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,7 @@
  */
 
 #ifndef LINT
-static const char rcsid[] = "$OpenBSD: ypserv.c,v 1.30 2003/06/22 23:57:07 maja Exp $";
+static const char rcsid[] = "$OpenBSD: ypserv.c,v 1.31 2003/07/15 06:10:46 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -456,9 +456,7 @@ main(int argc, char *argv[])
 		}
 		if (pid)
 			exit(0);
-		size = getdtablesize();
-		for (i = 0; i < size; i++)
-			(void) close(i);
+		closefrom(0);
 		i = open("/dev/console", 2);
 		(void) dup2(i, 1);
 		(void) dup2(i, 2);
