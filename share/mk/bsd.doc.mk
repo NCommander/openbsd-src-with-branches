@@ -51,7 +51,7 @@ spell: ${SRCS}
 
 BINDIR?=	/usr/share/doc
 BINGRP?=	bin
-BINOWN?=	bin
+BINOWN?=	root
 BINMODE?=	444
 
 .include <bsd.own.mk>
