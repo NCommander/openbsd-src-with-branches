@@ -1955,10 +1955,10 @@ print_fcode(dbuf, fc)
 	dis_buffer_t *dbuf;
 	u_short fc;
 {
-	if (ISBITSET(fc, 5))
-		printu_bf(dbuf, fc, 4, 0);
-	else if (ISBITSET(fc, 4))
-		PRINT_DREG(dbuf, BITFIELD(fc, 3, 0));
+	if (ISBITSET(fc, 4))
+		printu_bf(dbuf, fc, 3, 0);
+	else if (ISBITSET(fc, 3))
+		PRINT_DREG(dbuf, BITFIELD(fc, 2, 0));
 	else if (fc == 1)
 		addstr(dbuf, "sfc");
 	else
