@@ -182,7 +182,7 @@ main(argc, argv)
 	struct protoent *proto;
 	struct in_addr saddr;
 	register int i;
-	int ch, fdmask, hold = 1, packlen, preload;
+	int ch, fdmask, hold, packlen, preload;
 	u_char *datap, *packet;
 	char *target, hnamebuf[MAXHOSTNAMELEN];
 	u_char ttl = MAXTTL, loop = 1, df = 0;
@@ -190,14 +190,6 @@ main(argc, argv)
 #ifdef IP_OPTIONS
 	char rspace[3 + 4 * NROUTES + 1];	/* record route space */
 #endif
-
-	if (!(proto = getprotobyname("icmp")))
-		errx(1, "unknown protocol icmp");
-	if ((s = socket(AF_INET, SOCK_RAW, proto->p_proto)) < 0)
-		err(1, "socket");
-
-	/* revoke privs */
-	setuid(getuid());
 
 	preload = 0;
 	datap = &outpack[8 + sizeof(struct timeval)];
@@ -331,6 +323,12 @@ main(argc, argv)
 			*datap++ = i;
 
 	ident = getpid() & 0xFFFF;
+
+	if (!(proto = getprotobyname("icmp")))
+		errx(1, "unknown protocol icmp");
+	if ((s = socket(AF_INET, SOCK_RAW, proto->p_proto)) < 0)
+		err(1, "socket");
+	hold = 1;
 
 	if (options & F_SADDR) {
 		if (IN_MULTICAST(ntohl(to->sin_addr.s_addr)))
