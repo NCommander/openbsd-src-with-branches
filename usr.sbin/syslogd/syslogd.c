@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.55 2002/07/24 22:10:23 millert Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.56 2002/08/08 23:07:12 aaron Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
 #else
-static char rcsid[] = "$OpenBSD: syslogd.c,v 1.55 2002/07/24 22:10:23 millert Exp $";
+static char rcsid[] = "$OpenBSD: syslogd.c,v 1.56 2002/08/08 23:07:12 aaron Exp $";
 #endif
 #endif /* not lint */
 
@@ -229,10 +229,10 @@ int funix[MAXFUNIX];
 int
 main(int argc, char *argv[])
 {
-	int ch, i, fklog, len, linesize, fdsrmax = 0;
+	int ch, i, fklog, linesize, fdsrmax = 0;
 	struct sockaddr_un sunx, fromunix;
 	struct sockaddr_in sin, frominet;
-	socklen_t slen;
+	socklen_t slen, len;
 	fd_set *fdsr = NULL;
 	char *p, *line;
 	FILE *fp;
