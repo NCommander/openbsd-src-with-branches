@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.46 2002/08/08 19:18:12 provos Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.47 2002/11/27 13:31:09 mickey Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -1079,7 +1079,7 @@ sosetopt(so, level, optname, m0)
 				goto bad;
 			}
 			tv = mtod(m, struct timeval *);
-			if (tv->tv_sec * hz + tv->tv_usec / tick > SHRT_MAX) {
+			if (tv->tv_sec > (SHRT_MAX - tv->tv_usec / tick) / hz) {
 				error = EDOM;
 				goto bad;
 			}
