@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.11 1997/08/24 08:07:23 downsj Exp $	*/
+/*	$OpenBSD: tape.c,v 1.12 1998/02/10 20:20:03 deraadt Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -493,7 +493,7 @@ int
 extractfile(name)
 	char *name;
 {
-	int flags;
+	u_int flags;
 	mode_t mode;
 	struct timeval timep[2];
 	struct entry *ep;
