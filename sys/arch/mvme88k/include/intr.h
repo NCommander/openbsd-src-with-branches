@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.4 2001/11/21 19:04:52 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.6 2001/12/16 23:49:46 miod Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -47,7 +47,7 @@
 #define M88K_LEVEL6_IRQ	6
 #define M88K_LEVEL7_IRQ	7
 /* 
- * We keep track of these seperately, but   
+ * We keep track of these separately, but   
  * they will be reflected with the above also.
  */
 #define M88K_CLK_IRQ	8
