@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.13 2000/02/07 04:47:53 assar Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.14 2000/05/19 16:36:03 mickey Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -163,11 +163,7 @@ sys_nfssvc(p, v, retval)
 		(void) tsleep((caddr_t)&nfssvc_sockhead, PSOCK, "nfsd init", 0);
 	}
 	if (SCARG(uap, flag) & NFSSVC_BIOD) {
-#ifdef NFSCLIENT
-		error = nfssvc_iod(p);
-#else
 		error = ENOSYS;
-#endif
 	} else if (SCARG(uap, flag) & NFSSVC_MNTD) {
 #ifndef NFSCLIENT
 		error = ENOSYS;
