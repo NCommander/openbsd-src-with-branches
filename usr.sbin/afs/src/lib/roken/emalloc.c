@@ -1,6 +1,6 @@
 /*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -37,14 +37,26 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: mem.h,v 1.2 1997/11/09 23:48:55 assar Exp $ */
-
-#ifndef _MEM_
-#define _MEM_
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+RCSID("$KTH: emalloc.c,v 1.2 1999/02/13 05:10:55 assar Exp $");
+#endif
 
 #include <stdlib.h>
+#include <err.h>
 
-void *emalloc(size_t sz);
-void *erealloc(void *ptr, size_t sz);
+#include <roken.h>
 
-#endif /* _MEM_ */
+/*
+ * Like malloc but never fails.
+ */
+
+void *
+emalloc (size_t sz)
+{
+    void *tmp = malloc (sz);
+
+    if (tmp == NULL && sz != 0)
+	err (1, "malloc %u", sz);
+    return tmp;
+}

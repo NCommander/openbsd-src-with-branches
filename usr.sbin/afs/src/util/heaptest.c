@@ -1,6 +1,6 @@
 /*	$OpenBSD$	*/
 /*
- * Copyright (c) 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -39,135 +39,82 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: prio.c,v 1.1 1998/07/07 15:57:10 lha Exp $");
 #endif
 
+RCSID("$KTH: heaptest.c,v 1.2 1999/02/13 05:03:25 assar Exp $");
+
+#include <stdio.h>
 #include <stdlib.h>
-#include "bool.h"
-#include "prio.h"
+#include <assert.h>
+#include <err.h>
+#include "heap.h"
 
-#define PRIO_PARENT(x)	(((x) + 1)/ 2 -1 )
-#define PRIO_LEFT(x)	(2 * (i) + 1)
-#define PRIO_RIGHT(x)	(2 * (i) + 2)
+struct foo {
+    int i;
+    heap_ptr hptr;
+};
 
-
-Prio *
-prionew(unsigned size, prio_cmp cmp)
+static int
+cmp(const void *v1, const void *v2)
 {
-    Prio *prio;
+    const struct foo *foo1 = (const struct foo *)v1;
+    const struct foo *foo2 = (const struct foo *)v2;
 
-    if (!size || !cmp)
-	return NULL;
-
-    prio = calloc(sizeof(Prio), 1);
-    if (!prio)
-	return prio;
-
-    prio->heap = calloc(sizeof(Prio), size);
-    if (!prio->heap)
-	free(prio);
-
-    prio->cmp = cmp;
-    prio->sz = size;
-
-    return prio;
+    return foo1->i - foo2->i;
 }
 
-void
-priofree(Prio *prio)
+static int
+testit (unsigned n)
 {
-    if (!prio)
-	return;
+    struct foo *foos, *bars;
+    Heap *h1, *h2;
+    int i;
 
-    free(prio);
-}
-
-static void
-heapify(Prio *prio, unsigned i)
-{
-    unsigned j;
-    void *el;
-
-    if (!prio || i > prio->sz)
-	return;
-
-    el = &prio->heap[0];
-    while (prio->size && i <= PRIO_PARENT(prio->size)) {
-	j = PRIO_LEFT(i);
-	if (j < prio->size) {
-	    if (prio->cmp(prio->heap[i], prio->heap[j]) < 0) 
-		j++;
-	    
-	    if (prio->cmp(prio->heap[0], prio->heap[j]) < 0)
-		break;
-	
-	    prio->heap[i] = prio->heap[j];
-	}
-	i = j;
+    foos = malloc (n * sizeof(*foos));
+    bars = malloc (n * sizeof(*bars));
+    assert (foos != NULL && bars != NULL);
+    h1 = heap_new (n, cmp);
+    h2 = heap_new (n, cmp);
+    assert (h1 != NULL && h2 != NULL);
+    for (i = 0; i < n; ++i) {
+	foos[i].i = bars[i].i = rand();
+	heap_insert (h1, (void *)&foos[i], NULL);
+	heap_insert (h2, (void *)&foos[i], &foos[i].hptr);
+	if (!heap_verify(h1) || !heap_verify(h2))
+	    abort ();
     }
-    prio->heap[i] = el;
-}
-
-
-
-int
-prioinsert(Prio *prio, void *data)
-{
-    void **ptr;
-    unsigned i;
-
-    if (!prio || !data)
-	return -1;
-
-
-    if (prio->sz == prio->size) {
-	ptr = realloc(prio->heap, prio->sz *2);
-	if (!ptr)
-	    return -1;
-
-	prio->heap = ptr;
+    for (i = 0; i < n; ++i) {
+	heap_remove (h2, foos[i].hptr);
+	if (!heap_verify(h2))
+	    abort ();
     }
+    qsort (bars, n, sizeof(*bars), cmp);
+    for (i = 0; i < n; ++i) {
+	struct foo *f = (struct foo *)heap_head (h1);
 
-    i = prio->size++;
-
-    while (i > 0 &&
-	   prio->cmp(data,prio->heap[PRIO_PARENT(i)]) < 0)
-    {
-	prio->heap[i] = prio->heap[PRIO_PARENT(i)];
-        i = PRIO_PARENT(i);
+	if (bars[i].i != f->i)
+	    abort ();
+	heap_remove_head (h1);
+	if (!heap_verify(h1))
+	    abort ();
     }
-    prio->heap[i] = data;
+    heap_delete (h1);
+    heap_delete (h2);
+    free (foos);
+    free (bars);
     return 0;
 }
 
-void *
-priohead(Prio *prio)
+int
+main(int argc, char **argv)
 {
-    if (!prio)
-	return NULL;
-    
-    return prio->heap[0];
+    int i, n;
+
+    if (argc != 2)
+	errx (1, "argc != 2");
+
+    n = atoi (argv[1]);
+    for (i = 0; i < n; ++i)
+	testit (rand () % 1000);
+    return 0;
 }
-
-void
-prioremove(Prio *prio)
-{
-    if (!prio)
-	return;
-
-    if (prioemptyp (prio)) /* underflow */
-	return;
-
-    prio->heap[0] = prio->heap[--prio->size];
-    heapify (prio, prio->size);
-}
-    
-Bool 
-prioemptyp(Prio *prio)
-{
-    if (!prio || prio->size == 0)
-	return TRUE;
-
-    return FALSE;
-}
-

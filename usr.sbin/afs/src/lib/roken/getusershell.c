@@ -36,12 +36,13 @@
 #include <config.h>
 #endif
 
-RCSID("$KTH: getusershell.c,v 1.2 1998/02/12 01:01:58 assar Exp $");
+RCSID("$KTH: getusershell.c,v 1.3 1999/01/03 01:42:03 assar Exp $");
 
 #ifndef HAVE_GETUSERSHELL
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #ifdef HAVE_PATHS_H
 #include <paths.h>
 #endif

@@ -37,13 +37,14 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: service.h,v 1.4 1998/07/14 16:00:50 lha Exp $ */
+/* $KTH: service.h,v 1.5 1998/09/03 18:45:36 lha Exp $ */
 
 /*
  * Service IDs
  */
 
 #define VLDB_SERVICE_ID 52
+#define VOLSER_SERVICE_ID 54
 #define PR_SERVICE_ID   73
 #define FS_SERVICE_ID    1
 #define CM_SERVICE_ID    1

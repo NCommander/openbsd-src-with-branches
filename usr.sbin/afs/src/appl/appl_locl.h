@@ -1,6 +1,7 @@
 /*	$OpenBSD$	*/
+/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -37,7 +38,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: appl_locl.h,v 1.24 1998/07/19 23:50:16 mattiasa Exp $ */
+/* $KTH: appl_locl.h,v 1.26 1999/03/03 15:34:48 assar Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -90,13 +91,18 @@
 #include <getarg.h>
 #include <err.h>
 
+#include <assert.h>
+
 #include <cb.h>
 #include <time.h>
 #include <lock.h>
 #include <ip.h>
 #include <ctype.h>
+#include <rx/rx.h>
+#include <rx/rx_null.h>
+#include <rx/rxgencon.h>
 #ifdef KERBEROS
-#include <kerberosIV/krb.h>
+#include <krb.h>
 #include <des.h>
 #include <rxkad.h>
 #endif

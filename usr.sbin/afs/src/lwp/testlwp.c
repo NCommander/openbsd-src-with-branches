@@ -40,11 +40,11 @@
 /*
  * testlwp
  *
- * Checks if lwp seams to work, and demostrates how to use lwp.
- * Give multiple commands om the argumentline to run several
- * tests on the same time.
+ * Checks if lwp seems to work, and demostrates how to use lwp.  Give
+ * multiple commands on the command line to run several tests at the
+ * same time.
  * 
- * $KTH: testlwp.c,v 1.2 1998/07/15 12:50:58 map Exp $
+ * $KTH: testlwp.c,v 1.3 1998/10/25 19:37:33 joda Exp $
  *
  */
 
@@ -299,7 +299,7 @@ int main(int argc, char **argv)
 	} else if (strcasecmp("cancel", argv[1]) == 0) {
 	    yaEndlessLoop();	 
 	} else if (strcasecmp("version", argv[1]) == 0) {
-	    printf("Version: $KTH: testlwp.c,v 1.2 1998/07/15 12:50:58 map Exp $\n");
+	    printf("Version: $KTH: testlwp.c,v 1.3 1998/10/25 19:37:33 joda Exp $\n");
 	} else {
 	    printf("unknown command %s\n", argv[1]);
 	}

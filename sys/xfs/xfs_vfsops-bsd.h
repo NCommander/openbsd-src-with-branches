@@ -1,29 +1,28 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
  *      This product includes software developed by the Kungliga Tekniska
  *      Högskolan and its contributors.
- * 
+ *
  * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -37,53 +36,54 @@
  * SUCH DAMAGE.
  */
 
-/*
- *
- */
+/* $Id: xfs_vfsops-bsd.h,v 1.2 1999/01/19 19:55:56 art Exp $ */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-RCSID("$KTH: mem.c,v 1.3 1998/02/22 11:22:17 assar Exp $");
-#endif
+#ifndef _xfs_vfsops_bsd_h
+#define _xfs_vfsops_bsd_h
 
-#include <stdio.h>
-#include "mem.h"
+int
+xfs_mount(struct mount * mp,
+	  const char *user_path,
+	  caddr_t user_data,
+	  struct nameidata * ndp,
+	  struct proc * p);
 
-/*
- * Like malloc, but write an error message if not succesful.
- */
+int
+xfs_start(struct mount * mp, int flags, struct proc * p);
 
-void *
-emalloc(size_t sz)
-{
-     void *tmp = malloc(sz);
-     
-     if( tmp )
-	  return tmp;
-     else {
-	  fprintf(stderr, "malloc for %u bytes failed\n", sz);
-	  exit(1);
-     }
-}
+int
+xfs_unmount(struct mount * mp, int mntflags, struct proc *p);
 
-/*
- * Like realloc, but write an error message if not succesful.
- */
+int
+xfs_root(struct mount *mp, struct vnode **vpp);
 
-void *
-erealloc (void *ptr, size_t sz)
-{
-     void *tmp;
+int
+xfs_quotactl(struct mount *mp, int cmd, uid_t uid, caddr_t arg, struct proc *p);
 
-     if (ptr)
-	  tmp = realloc (ptr, sz);
-     else
-	  tmp = malloc (sz);
+int
+xfs_statfs(struct mount *mp, struct statfs *sbp, struct proc *p);
 
-     if (tmp)
-	  return tmp;
-     else {
-	  fprintf (stderr, "realloc for %u bytes failed\n", sz);
-	  exit (1);
-     }
-}
+int
+xfs_sync(struct mount *mp, int waitfor, struct ucred *cred, struct proc *p);
+
+int
+xfs_vget(struct mount * mp,
+	 ino_t ino,
+	 struct vnode ** vpp);
+
+int
+xfs_fhtovp(struct mount * mp,
+	   struct fid * fhp,
+	   struct mbuf * nam,
+	   struct vnode ** vpp,
+	   int *exflagsp,
+	   struct ucred ** credanonp);
+
+int
+xfs_vptofh(struct vnode * vp,
+	   struct fid * fhp);
+
+int
+xfs_dead_lookup(struct vop_lookup_args * ap);
+
+#endif /* _xfs_vfsops_bsd_h */

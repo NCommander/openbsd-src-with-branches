@@ -1,6 +1,6 @@
 /*	$OpenBSD$	*/
 /*
- * Copyright (c) 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -37,34 +37,65 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _TIMEPRIO_H
-#define _TIMEPRIO_H 1
+/*
+ *
+ */
 
-#include <time.h>
-#include "prio.h"
-#include "bool.h"
-
-typedef struct tpel {
-    time_t time;
-    void *data;
-} Tpel;
-
-typedef Prio	Timeprio;
-
-Timeprio *timeprionew(unsigned size);
-
-void timepriofree(Timeprio *prio);
-
-int  timeprioinsert(Timeprio *prio, time_t time, void *data);
-
-void *timepriohead(Timeprio *prio);
-
-void timeprioremove(Timeprio *prio);
-
-Bool timeprioemptyp(Timeprio *prio);
-
-time_t timepriotimehead(Timeprio *prio);
-
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+RCSID("$KTH: eefile.c,v 1.2 1999/03/06 18:02:21 lha Exp $");
 #endif
 
+#include <stdio.h>
+#include <roken.h>
+#include <err.h>
+#include "eefile.h"
 
+void
+eefopen (const char *name, const char *mode, fileblob *f)
+{
+     int streamfd;
+
+     asprintf (&f->curname, "%sXXXXXX", name);
+     if (f->curname == NULL)
+	 err (1, "malloc");
+
+     streamfd = mkstemp(f->curname);
+     f->stream = fdopen (streamfd, mode);
+     if (f->stream == NULL)
+	 err (1, "open %s mode %s", f->curname, mode);
+     f->newname = estrdup(name);
+}
+
+void
+eefclose (fileblob *f)
+{
+     if (fclose (f->stream))
+	 err (1, "close %s", f->curname);
+     if (rename(f->curname, f->newname))
+	 err (1, "rename %s, %s", f->curname, f->newname);
+     free(f->curname);
+     free(f->newname);
+}
+
+size_t
+eefread (void *ptr, size_t size, size_t nitems, fileblob *f)
+{
+     size_t res;
+
+     res = fread (ptr, size, nitems, f->stream);
+     if (res == 0)
+	 err (1, "read %s", f->curname);
+     return res;
+}
+
+size_t
+eefwrite (const void *ptr, size_t size, size_t nitems, fileblob *f)
+{
+     size_t res;
+
+     res = fwrite (ptr, size, nitems, f->stream);
+     if (res == 0)
+	 err (1, "write %s", f->curname);
+     return res;
+}

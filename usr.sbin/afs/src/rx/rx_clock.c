@@ -25,7 +25,7 @@
 
 #include "rx_locl.h"
 
-RCSID("$KTH: rx_clock.c,v 1.4 1998/03/13 01:10:57 art Exp $");
+RCSID("$KTH: rx_clock.c,v 1.5 1998/10/25 19:38:30 joda Exp $");
 
 #ifndef KERNEL
 
@@ -36,6 +36,8 @@ RCSID("$KTH: rx_clock.c,v 1.4 1998/03/13 01:10:57 art Exp $");
 #ifdef	AFS_SUN5_ENV
 #define	STARTVALUE 10000000	       /* Max number of seconds setitimer
 				        * allows, for some reason */
+#elif defined(__uxpv__)
+#define STARTVALUE 42949672
 #else
 #define	STARTVALUE 100000000	       /* Max number of seconds setitimer
 				        * allows, for some reason */

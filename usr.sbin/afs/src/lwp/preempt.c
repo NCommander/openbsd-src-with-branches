@@ -30,10 +30,10 @@
 
 #include <sys/time.h>
 #include <signal.h>
-#include "lwp.h"
+#include <lwp.h>
 #include "preempt.h"
 
-RCSID("$KTH: preempt.c,v 1.5 1998/02/06 03:18:30 art Exp $");
+RCSID("$KTH: preempt.c,v 1.6 1999/02/01 04:56:13 assar Exp $");
 
 char PRE_Block = 0;		/* used in lwp.c and process.s */
 
