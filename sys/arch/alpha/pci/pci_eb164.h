@@ -1,3 +1,4 @@
+/*	$OpenBSD: pci_eb164.h,v 1.1 1996/11/11 21:08:13 cgd Exp $	*/
 /*	$NetBSD: pci_eb164.h,v 1.1 1996/11/11 21:08:13 cgd Exp $	*/
 
 /*

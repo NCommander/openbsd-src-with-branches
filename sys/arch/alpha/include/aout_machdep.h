@@ -1,3 +1,4 @@
+/*	$OpenBSD: aout_machdep.h,v 1.1 1995/02/13 23:07:37 cgd Exp $	*/
 /*	$NetBSD: aout_machdep.h,v 1.1 1995/02/13 23:07:37 cgd Exp $	*/
 
 /*

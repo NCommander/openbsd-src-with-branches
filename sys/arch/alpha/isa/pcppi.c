@@ -1,3 +1,4 @@
+/*	$OpenBSD: pcppi.c,v 1.3 1996/12/05 01:39:31 cgd Exp $	*/
 /*	$NetBSD: pcppi.c,v 1.3 1996/12/05 01:39:31 cgd Exp $	*/
 
 /*
