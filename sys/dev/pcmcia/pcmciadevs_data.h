@@ -4,7 +4,7 @@
  * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.
  *
  * generated from:
- *		OpenBSD: pcmciadevs,v 1.3 1998/09/14 19:21:15 deraadt Exp 
+ *		OpenBSD: pcmciadevs,v 1.4 1998/10/14 07:34:43 fgsch Exp 
  */
 /* $NetBSD: pcmciadevs,v 1.13 1998/08/17 23:10:12 thorpej Exp $ */
 
@@ -143,7 +143,7 @@ struct pcmcia_knowndev pcmcia_knowndevs[] = {
 	    PCMCIA_CIS_LINKSYS_ECARD_1,
 	    0,
 	    "Linksys",
-	    "Linksys EthernetCard"	},
+	    "Linksys EthernetCard or D-Link DE-650"	},
 	},
 	{
 	    PCMCIA_VENDOR_LINKSYS, PCMCIA_PRODUCT_LINKSYS_COMBO_ECARD,
