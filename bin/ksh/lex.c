@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.5 1996/11/21 07:59:32 downsj Exp $	*/
+/*	$OpenBSD: lex.c,v 1.7 1997/06/19 13:58:44 kstailey Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -587,10 +587,12 @@ Done:
 
 		  case '(':  /*)*/
 #ifdef KSH
-			if ((c2 = getsc()) == '(') /*)*/
-				c = MDPAREN;
-			else
-				ungetsc(c2);
+			if (!Flag(FSH)) {
+				if ((c2 = getsc()) == '(') /*)*/
+					c = MDPAREN;
+				else
+					ungetsc(c2);
+			}
 #endif /* KSH */
 			return c;
 		  /*(*/
