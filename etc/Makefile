@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.184 2003/08/21 19:10:19 frantzen Exp $
+#	$OpenBSD: Makefile,v 1.185 2003/09/23 21:37:11 millert Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -79,6 +79,7 @@ distribution-etc-root-var: distrib-dirs
 	${INSTALL} -c -o root -g wheel -m 644 moduli ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 pf.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 644 pf.os ${DESTDIR}/etc
+	${INSTALL} -c -o root -g wheel -m 644 sensorsd.conf ${DESTDIR}/etc
 	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 555 \
 	    etc.${MACHINE}/MAKEDEV ${DESTDIR}/dev
 	cd root; \
