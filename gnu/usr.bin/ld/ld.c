@@ -1,3 +1,4 @@
+/*	$OpenBSD: ld.c,v 1.52 1998/02/20 03:12:51 jonathan Exp $	*/
 /*	$NetBSD: ld.c,v 1.52 1998/02/20 03:12:51 jonathan Exp $	*/
 
 /*-
