@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2003/05/17 05:20:18 mho Exp $
+# $OpenBSD: Makefile,v 1.7 2003/05/17 20:07:23 mho Exp $
 
 KRB5DIR=	${.CURDIR}/../../kerberosV
 GENDIR=		${.CURDIR}/generated
@@ -14,7 +14,7 @@ LIB	= krb5
 .include "Makefile.kafs.inc"
 .include "Makefile.roken.inc"
 .include "Makefile.krb5.inc"
-
+.include "Makefile.com_err.inc"
 
 includes:
 	@test -d ${DESTDIR}/usr/include/kerberosV || \
