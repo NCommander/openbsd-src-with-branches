@@ -1,4 +1,4 @@
-/*	$OpenBSD: gsckbd.c,v 1.1 2003/01/31 22:50:19 miod Exp $	*/
+/*	$OpenBSD: gsckbd.c,v 1.2 2003/02/15 01:01:21 miod Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -155,7 +155,7 @@ struct gsckbd_softc {
 #endif
 };
 
-static int gsckbd_is_console(pckbc_tag_t, pckbc_slot_t);
+int gsckbd_is_console(pckbc_tag_t, pckbc_slot_t);
 
 int gsckbdprobe(struct device *, void *, void *);
 void gsckbdattach(struct device *, struct device *, void *);
@@ -207,7 +207,7 @@ static int	gsckbd_led_decode(int);
 
 struct gsckbd_internal gsckbd_consdata;
 
-static int
+int
 gsckbd_is_console(tag, slot)
 	pckbc_tag_t tag;
 	pckbc_slot_t slot;
