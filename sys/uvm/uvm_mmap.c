@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.4.4.8 2003/03/28 00:08:48 niklas Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.4.4.9 2003/05/13 19:36:58 ho Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -423,7 +423,7 @@ sys_mincore(p, v, retval)
 /*
  * sys_mmap: mmap system call.
  *
- * => file offest and address may not be page aligned
+ * => file offset and address may not be page aligned
  *    - if MAP_FIXED, offset and address must have remainder mod PAGE_SIZE
  *    - if address isn't page aligned the mapping starts at trunc_page(addr)
  *      and the return value is adjusted up by the page offset.
