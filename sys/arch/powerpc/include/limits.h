@@ -1,4 +1,4 @@
-/*	$OpenBSD: limits.h,v 1.6 1998/08/06 15:03:55 pefo Exp $	*/
+/*	$OpenBSD: limits.h,v 1.7 2000/03/20 17:04:33 rahnds Exp $	*/
 /*	$NetBSD: limits.h,v 1.1 1996/09/30 16:34:28 ws Exp $	*/
 
 /*-
@@ -67,6 +67,9 @@
 #define	UQUAD_MAX	0xffffffffffffffffULL		/* max unsigned quad */
 #define	QUAD_MAX	0x7fffffffffffffffLL		/* max signed quad */
 #define	QUAD_MIN	(-0x7fffffffffffffffLL-1)	/* min signed quad */
+#define ULLONG_MAX	(UQUAD_MAX)	/* max value for unsigned long long */
+#define LLONG_MAX	(QUAD_MAX)	/* max value for a signed long long */
+#define LLONG_MIN	(QUAD_MIN)	/* min value for a signed long long */
 #endif	/* !_POSIX_SOURCE && !_XOPEN_SOURCE */
 #endif	/* !_ANSI_SOURCE */
 
