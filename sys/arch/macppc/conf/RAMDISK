@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.15 2002/07/28 01:39:14 krw Exp $
+#	$OpenBSD: RAMDISK,v 1.16 2002/09/12 15:55:56 drahn Exp $
 #
 # PPC GENERIC config file
 #
@@ -167,6 +167,8 @@ pseudo-device	loop	1	# network loopback
 pseudo-device	bpfilter 1	# packet filter
 pseudo-device	rd	1	# ram disk
 pseudo-device	wsmux	2	# mouse & keyboard multiplexor
+
+option		BOOT_CONFIG	# boot-time kernel config
 
 # RAMDISK stuff
 option		MINIROOTSIZE=8192
