@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.12 2001/05/11 15:23:07 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.13 2002/02/10 22:50:48 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -19,7 +19,7 @@ VND_RDEV=	/dev/r${VND}a
 VND_CRDEV=	/dev/r${VND}c
 PID!=		echo $$$$
 REALIMAGE!=	echo /var/tmp/image.${PID}
-LISTFLOPPY=	${.CURDIR}/../common/list_floppy
+LISTFLOPPY?=	${.CURDIR}/../common/list_floppy
 FLOPPYSIZE?=	144
 FLOPPYSECS?=	18
 FLOPPYTYPE?=	floppy3
