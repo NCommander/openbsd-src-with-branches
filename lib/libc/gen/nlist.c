@@ -1,6 +1,3 @@
-/*	$OpenBSD: nlist.c,v 1.12 1996/06/17 06:40:53 etheisen Exp $	*/
-/*	$NetBSD: nlist.c,v 1.7 1996/05/16 20:49:20 cgd Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: nlist.c,v 1.11 1996/06/14 05:01:36 deraadt Exp$";
+static char rcsid[] = "$OpenBSD: nlist.c,v 1.13 1996/07/30 09:22:43 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
