@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.4 2000/06/15 12:31:59 millert Exp $
+#	$OpenBSD: Makefile,v 1.5 2001/09/11 19:02:49 millert Exp $
 
 PROG=	mail.local
 MAN=	mail.local.8
+ENVDEF=	-DNOT_SENDMAIL
 
 WANT_LIBSM=1
 
