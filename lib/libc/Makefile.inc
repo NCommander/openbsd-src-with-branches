@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.5 2001/11/20 01:09:38 pvalchev Exp $
+#	$OpenBSD: Makefile.inc,v 1.6 2002/02/22 21:06:00 drahn Exp $
 #
-# This file contains make rules that are shared by libc and libc_r.
+# This file contains make rules used to build libc
 #
 
 .ifndef LIBCSRCDIR
