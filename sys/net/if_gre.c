@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.24 2002/08/28 15:43:02 pefo Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.25 2003/01/04 22:36:12 deraadt Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -448,7 +448,8 @@ gre_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			ifp->if_flags &= ~IFF_LINK0;
 			break;
 		default:
-			return EPROTONOSUPPORT;
+			error = EPROTONOSUPPORT;
+			break;
 		}
 		break;
 	case GREGPROTO:
