@@ -63,7 +63,11 @@ char *banner[] =
 {
     "#ifndef lint",
     "/*static char yysccsid[] = \"from: @(#)yaccpar	1.9 (Berkeley) 02/21/93\";*/",
-    "static const char yyrcsid[] = \"$OpenBSD: skeleton.c,v 1.11 1998/11/17 06:13:43 dm Exp $\";",
+    "static char yyrcsid[]",
+    "#if __GNUC__ == 2",
+    "  __attribute__ ((unused))",
+    "#endif /* __GNUC__ == 2 */",
+    "  = \"$OpenBSD: skeleton.c,v 1.11 1998/11/17 06:13:43 dm Exp $\";",
     "#endif",
     "#include <stdlib.h>",
     "#define YYBYACC 1",
