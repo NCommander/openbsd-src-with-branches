@@ -46,7 +46,7 @@ struct	msgbuf {
 	char	msg_bufc[1];		/* buffer */
 };
 #ifdef _KERNEL
-struct	msgbuf *msgbufp;
+extern struct msgbuf *msgbufp;
 
 void	initmsgbuf(caddr_t buf, size_t bufsize);
 #endif

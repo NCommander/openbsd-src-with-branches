@@ -504,6 +504,7 @@ struct an_ltv_caps {
 	u_int16_t		an_softcaps;		/* 0x7C */
 	u_int16_t		an_bootblockrev;	/* 0x7E */
 	u_int16_t		an_req_hw_support;	/* 0x80 */
+	u_int16_t		an_rsvd1;		/* 0x82 */
 };
 
 /*
@@ -569,7 +570,7 @@ struct an_ltv_status {
 	u_int16_t		an_max_noise_prev_sec;	/* 0x7A */
 	u_int16_t		an_avg_noise_prev_min;	/* 0x7C */
 	u_int16_t		an_max_noise_prev_min;	/* 0x7E */
-	u_int16_t		an_spare[4];		/* 0x80 */
+	u_int16_t		an_spare[5];		/* 0x80 */
 };
 
 #define AN_STATUS_OPMODE_CONFIGURED		0x0001
@@ -640,7 +641,7 @@ struct an_tx_ring_data {
 
 struct an_softc	{
 	struct device	sc_dev;
-	struct arpcom	arpcom;
+	struct arpcom	sc_arpcom;
 	struct ifmedia	an_ifmedia;
 	void		*sc_ih;
 	struct timeout	an_stat_ch;

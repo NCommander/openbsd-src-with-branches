@@ -1510,9 +1510,15 @@ iestart(ifp)
 			bcopy(mtod(m, caddr_t), buffer, m->m_len);
 			buffer += m->m_len;
 		}
-		len = max(m0->m_pkthdr.len, ETHER_MIN_LEN);
 
 		m_freem(m0);
+
+		if (len < ETHER_MIN_LEN - ETHER_CRC_LEN) {
+			bzero(buffer, ETHER_MIN_LEN - ETHER_CRC_LEN - len);
+			len = ETHER_MIN_LEN - ETHER_CRC_LEN;
+			buffer += ETHER_MIN_LEN - ETHER_CRC_LEN;
+		}
+
 		sc->xmit_buffs[sc->xchead]->ie_xmit_flags = len;
 
 		/* Start the first packet transmitting. */

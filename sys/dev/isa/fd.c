@@ -415,7 +415,9 @@ bad:
 done:
 	/* Toss transfer; we're done early. */
 	bp->b_resid = bp->b_bcount;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 void
@@ -440,6 +442,8 @@ fdfinish(fd, bp)
 	struct buf *bp;
 {
 	struct fdc_softc *fdc = (void *)fd->sc_dev.dv_parent;
+
+	splassert(IPL_BIO);
 
 	/*
 	 * Move this drive to the end of the queue to give others a `fair'

@@ -15,9 +15,9 @@
  * Compile-time config flags
  */
 /*
- * This sets the default for enabling/disablng the tranceiver.
+ * This sets the default for enabling/disablng the transceiver.
  */
-#define WE_FLAGS_DISABLE_TRANCEIVER	0x0001
+#define WE_FLAGS_DISABLE_TRANSCEIVER	0x0001
 
 /*
  * This forces the board to be used in 8/16-bit mode even if it autoconfigs

@@ -11,7 +11,7 @@
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -224,7 +224,7 @@ pdq_eisa_attach(parent, self, aux)
 		printf(": interrupting at %s\n", intrstr);
 
 	bcopy((caddr_t) sc->sc_pdq->pdq_hwaddr.lanaddr_bytes,
-	    sc->sc_ac.ac_enaddr, 6);
+	    sc->sc_arpcom.ac_enaddr, 6);
 
 	pdq_ifattach(sc, NULL);
 

@@ -523,16 +523,12 @@ ioprbs_scsi_cmd(xs)
 			ccb = ioprbs_get_ccb(sc, xs->flags);
 
 			/*
-			 * Are we out of commands, something is wrong.
-			 * 
+			 * We are out of commands, try again in a little while.
 			 */
 			if (ccb == NULL) {
-				printf("%s: no ccb in ioprbs_scsi_cmd",
-				    sc->sc_dv.dv_xname);
 				xs->error = XS_DRIVER_STUFFUP;
-				xs->flags |= ITSDONE;
-				scsi_done(xs);
-				goto ready;
+				IOPRBS_UNLOCK(sc, lock);
+				return (TRY_AGAIN_LATER);
 			}
 
 			ccb->ic_blockno = blockno;

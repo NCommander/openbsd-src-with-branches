@@ -47,11 +47,6 @@ struct radio_hw_if {
 	int     (*search)(void *, int);
 };
 
-struct radio_attach_args {
-	struct radio_hw_if *hwif;
-	void    *hdl;
-};
-
 struct device  *radio_attach_mi(struct radio_hw_if *, void *, struct device *);
 
 #endif /* _SYS_DEV_RADIO_IF_H */

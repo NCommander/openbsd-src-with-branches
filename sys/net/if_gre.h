@@ -141,6 +141,7 @@ struct mobip_h {
 extern	struct gre_softc *gre;
 extern	int ngre;
 extern  int gre_allow;   
+extern  int gre_wccp;
 extern  int ip_mobile_allow;
 
 void	greattach(int);

@@ -91,19 +91,10 @@ pcic_pci_match(parent, match, aux)
 {
 	struct pci_attach_args *pa = (struct pci_attach_args *) aux;
 
-	switch (PCI_VENDOR(pa->pa_id)) {
-	case PCI_VENDOR_CIRRUS:
-		switch(PCI_PRODUCT(pa->pa_id)) {
-		case PCI_PRODUCT_CIRRUS_CL_PD6729:
-			break;
-		default:
-			return (0);
-		}
-		break;
-	default:
-		return (0);
-	}
-	return (1);
+	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_CIRRUS &&
+	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_CIRRUS_CL_PD6729)
+		return (1);
+	return (0);
 }
 
 void pcic_isa_config_interrupts(struct device *);

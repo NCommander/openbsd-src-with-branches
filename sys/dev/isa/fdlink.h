@@ -64,7 +64,7 @@ enum fdc_state {
 	DORECAL,
 	RECALWAIT,
 	RECALTIMEDOUT,
-	RECALCOMPLETE,
+	RECALCOMPLETE
 };
 
 enum fdc_type {

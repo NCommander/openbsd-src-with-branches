@@ -190,7 +190,7 @@ mii_activate(mii, act, phyloc, offloc)
 
 		case DVACT_DEACTIVATE:
 			if (config_deactivate(&child->mii_dev) != 0)
-				panic("%s: config_activate(%d) failed\n",
+				panic("%s: config_activate(%d) failed",
 				    child->mii_dev.dv_xname, act);
 		}
 	}

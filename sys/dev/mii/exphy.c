@@ -109,7 +109,8 @@ exphymatch(parent, match, aux)
 	struct mii_attach_args *ma = aux;
 
 	if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_BROADCOM &&
-	    MII_MODEL(ma->mii_id2) == MII_MODEL_BROADCOM_3C905C)
+	    (MII_MODEL(ma->mii_id2) == MII_MODEL_BROADCOM_3C905B ||
+	     MII_MODEL(ma->mii_id2) == MII_MODEL_BROADCOM_3C905C))
 		return (10);
 
 	/*
@@ -140,6 +141,10 @@ exphyattach(parent, self, aux)
 	     MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_3COM) &&
 	    MII_MODEL(ma->mii_id2) == 0)
 		printf(": 3Com internal media interface\n");
+	else if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_BROADCOM &&
+	    MII_MODEL(ma->mii_id2) == MII_MODEL_BROADCOM_3C905B)
+		printf(": %s, rev. %d\n", MII_STR_BROADCOM_3C905B,
+		    MII_REV(ma->mii_id2));
 	else if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_BROADCOM &&
 	    MII_MODEL(ma->mii_id2) == MII_MODEL_BROADCOM_3C905C)
 		printf(": %s, rev. %d\n", MII_STR_BROADCOM_3C905C,

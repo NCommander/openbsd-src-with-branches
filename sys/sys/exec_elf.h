@@ -399,8 +399,6 @@ typedef struct {
 	} d_un;
 } Elf32_Dyn;
 
-extern Elf32_Dyn	_DYNAMIC[];	/* XXX not 64-bit clean */
-
 typedef struct {
 	Elf64_Xword	d_tag;		/* controls meaning of d_val */
 	union {
@@ -569,6 +567,10 @@ struct elf_args {
 #define ELF_ST_INFO	ELF64_ST_INFO
 
 #define AuxInfo		Aux64Info
+#endif
+
+#ifndef _KERNEL
+extern Elf_Dyn		_DYNAMIC[];
 #endif
 
 #ifdef	_KERNEL

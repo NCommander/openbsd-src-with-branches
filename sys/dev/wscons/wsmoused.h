@@ -73,6 +73,9 @@ void mouse_paste(void);
 
 void mouse_zaxis(int);
 void allocate_copybuffer(struct wsdisplay_softc *);
+void mouse_remove(struct wsdisplay_softc *);
+void wsmoused_release(struct wsdisplay_softc *);
+void wsmoused_wakeup(struct wsdisplay_softc *);
 
 void sysbeep(int, int);
 

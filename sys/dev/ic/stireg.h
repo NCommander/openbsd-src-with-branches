@@ -317,6 +317,7 @@ typedef struct sti_blkmvin {
 	u_int8_t	bg_colour;
 	u_int16_t	srcx, srcy, dstx, dsty;
 	u_int16_t	width, height;
+	u_int16_t	pad;
 	void		*future;
 } *sti_blkmvin_t;
 

@@ -103,7 +103,7 @@ struct wseventvar {
 		wakeup((caddr_t)(ev)); \
 	} \
 	if ((ev)->async) \
-		psignal((ev)->io, SIGIO); \
+		pgsignal((ev)->io->p_pgrp, SIGIO, 0); \
 }
 
 void	wsevent_init(struct wseventvar *);

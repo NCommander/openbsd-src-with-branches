@@ -121,8 +121,6 @@
 #include <dev/pcmcia/pcmciareg.h>
 #include <dev/pcmcia/pcmciadevs.h>
 
-#include <dev/isa/isavar.h>
-
 #include "com.h"
 #ifdef i386
 #include "pccom.h"
@@ -130,6 +128,7 @@
 
 #include <dev/ic/comreg.h>
 #if NPCCOM > 0
+#include <dev/isa/isavar.h>
 #include <i386/isa/pccomvar.h>
 #endif
 #if NCOM > 0
@@ -198,8 +197,7 @@ com_pcmcia_match(parent, match, aux)
 
 	/* 2. Does it have all four 'standard' port ranges? */
 	comportmask = 0;
-	for (cfe = pa->pf->cfe_head.sqh_first; cfe;
-	     cfe = cfe->cfe_list.sqe_next) {
+	SIMPLEQ_FOREACH(cfe, &pa->pf->cfe_head, cfe_list) {
 		switch (cfe->iospace[0].start) {
 		case IO_COM1:
 			comportmask |= 1;

@@ -43,7 +43,7 @@
  */
 /*
  * Todo:
- * 	- look at other PAS drivers (for PAS native suport)
+ * 	- look at other PAS drivers (for PAS native support)
  * 	- use common sb.c once emulation is setup
  */
 

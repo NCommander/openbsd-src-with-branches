@@ -128,6 +128,7 @@
 #define	SIOCBRDGGMA	_IOWR('i', 83, struct ifbrparam)/* get max age */
 #define	SIOCBRDGSMA	 _IOW('i', 83, struct ifbrparam)/* set max age */
 #define	SIOCBRDGSIFPRIO	 _IOW('i', 84, struct ifbreq)	/* set if priority */
+#define	SIOCBRDGSIFCOST	 _IOW('i', 85, struct ifbreq)	/* set if cost */
 
 #define	SIOCBRDGS
 #define GRESADDRS        _IOW('i', 101, struct ifreq)

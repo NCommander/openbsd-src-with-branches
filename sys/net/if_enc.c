@@ -111,12 +111,10 @@ encattach(int nenc)
 	ifp->if_snd.ifq_maxlen = ifqmaxlen;
 	ifp->if_hdrlen = ENC_HDRLEN;
 	if_attach(ifp);
+	if_alloc_sadl(ifp);
 
 #if NBPFILTER > 0
 	bpfattach(&encif[i].sc_if.if_bpf, ifp, DLT_ENC, ENC_HDRLEN);
-#endif
-#ifdef INET6
-	nd6_ifattach(ifp);
 #endif
     }
 }

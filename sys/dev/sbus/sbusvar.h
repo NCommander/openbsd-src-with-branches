@@ -65,7 +65,7 @@ struct sbus_intr {
 	u_int32_t	sbi_vec;	/* vector (always 0?) */
 };
 
-/* Address translation accross busses */
+/* Address translation across busses */
 struct sbus_range {
 	u_int32_t	cspace;		/* Client space */
 	u_int32_t	coffset;	/* Client offset */
@@ -115,8 +115,8 @@ int	sbus_setup_attach_args(
 
 void	sbus_destroy_attach_args(struct sbus_attach_args *);
 
-#define sbus_bus_map(t, bt, a, s, f, v, hp) \
-	bus_space_map2(t, bt, a, s, f, v, hp)
+#define sbus_bus_map(t, slot, offset, sz, flags, unused, hp) \
+	bus_space_map(t, BUS_ADDR(slot, offset), sz, flags, hp)
 
 #if notyet
 /* variables per Sbus */

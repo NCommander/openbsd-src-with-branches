@@ -279,7 +279,7 @@ elf_exec(fd, elf, marks, flags)
 	size_t sz;
 	int first;
 	int havesyms;
-	paddr_t minp = ~0, maxp = 0, pos;
+	paddr_t minp = ~0, maxp = 0, pos = 0;
 	paddr_t offset = marks[MARK_START], shpp, elfp;
 
 	for (first = 1, i = 0; i < elf->e_phnum; i++) {
@@ -349,11 +349,9 @@ elf_exec(fd, elf, marks, flags)
 	/*
 	 * Copy the ELF and section headers.
 	 */
-	maxp = roundup(maxp, sizeof(long));
-	if (flags & (LOAD_HDR|COUNT_HDR)) {
-		elfp = maxp;
+	elfp = maxp = roundup(maxp, sizeof(long));
+	if (flags & (LOAD_HDR|COUNT_HDR))
 		maxp += sizeof(Elf_Ehdr);
-	}
 
 	if (flags & (LOAD_SYM|COUNT_SYM)) {
 		if (lseek(fd, elf->e_shoff, SEEK_SET) == -1)  {

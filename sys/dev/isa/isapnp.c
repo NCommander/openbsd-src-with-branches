@@ -48,6 +48,8 @@
 
 #include <dev/isa/pnpdevs.h>
 
+#include "isadma.h"
+
 void isapnp_init(struct isapnp_softc *);
 static __inline u_char isapnp_shift_bit(struct isapnp_softc *);
 int isapnp_findcard(struct isapnp_softc *);
@@ -259,6 +261,7 @@ isapnp_alloc_drq(isa, i)
 	struct device *isa;
 	struct isapnp_pin *i;
 {
+#if NISADMA > 0
 	int b;
 
 	if (i->bits == 0) {
@@ -271,6 +274,7 @@ isapnp_alloc_drq(isa, i)
 			i->num = b;
 			return 0;
 		}
+#endif
 
 	return EINVAL;
 }
@@ -911,7 +915,7 @@ isapnp_attach(parent, self, aux)
 		/* Good morning card c */
 		isapnp_write_reg(sc, ISAPNP_WAKE, c + 1);
 
-		if ((ipa = isapnp_get_resource(sc, c)) == NULL)
+		if ((ipa = isapnp_get_resource(sc, c, ia)) == NULL)
 			continue;
 
 		DPRINTF(("Selecting attachments\n"));

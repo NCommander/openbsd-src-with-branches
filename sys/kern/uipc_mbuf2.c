@@ -72,10 +72,6 @@
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 
-#define M_SHAREDCLUSTER(m) \
-	(((m)->m_flags & M_EXT) != 0 && \
-	 ((m)->m_ext.ext_free || MCLISREFERENCED((m))))
-
 /* can't call it m_dup(), as freebsd[34] uses m_dup() with different arg */
 static struct mbuf *m_dup1(struct mbuf *, int, int, int);
 
@@ -122,7 +118,7 @@ m_pulldown(m, off, len, offp)
 		return (NULL);	/* mbuf chain too short */
 	}
 
-	sharedcluster = M_SHAREDCLUSTER(n);
+	sharedcluster = M_READONLY(n);
 
 	/*
 	 * the target data is on <n, off>.
@@ -263,6 +259,8 @@ m_dup1(m, off, len, wait)
 	if (copyhdr)
 		M_DUP_PKTHDR(n, m);
 	m_copydata(m, off, len, mtod(n, caddr_t));
+	n->m_len = len;
+
 	return (n);
 }
 
@@ -397,10 +395,9 @@ m_tag_copy_chain(to, from)
 		}
 		if (tprev == NULL)
 			SLIST_INSERT_HEAD(&to->m_pkthdr.tags, t, m_tag_link);
-		else {
+		else
 			SLIST_INSERT_AFTER(tprev, t, m_tag_link);
-			tprev = t;
-		}
+		tprev = t;
 	}
 	return (1);
 }

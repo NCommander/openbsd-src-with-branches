@@ -99,7 +99,7 @@
 #define SIGUSR2 31	/* user defined signal 2 */
 
 /*
- * Language spec sez we must list exactly one parameter, even though we
+ * Language spec says we must list exactly one parameter, even though we
  * actually supply three.  Ugh!
  */
 #define	SIG_DFL		(void (*)(int))0

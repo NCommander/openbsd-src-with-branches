@@ -158,13 +158,14 @@ timeout_add(struct timeout *new, int to_ticks)
 	int s;
 	int old_time;
 
-	timeout_wheel_lock(&s);
 #ifdef DIAGNOSTIC
 	if (!(new->to_flags & TIMEOUT_INITIALIZED))
 		panic("timeout_add: not initialized");
 	if (to_ticks < 0)
 		panic("timeout_add: to_ticks < 0");
 #endif
+
+	timeout_wheel_lock(&s);
 	/* Initialize the time here, it won't change. */
 	old_time = new->to_time;
 	new->to_time = to_ticks + ticks;
@@ -293,7 +294,7 @@ db_show_callout(db_expr_t addr, int haddr, db_expr_t count, char *modif)
 
 	timeout_wheel_lock(&s);
 
-	/* XXX: Show timeout_todo? */
+	db_show_callout_bucket(&timeout_todo);
 	for (b = 0; b < BUCKETS; b++)
 		db_show_callout_bucket(&timeout_wheel[b]);
 

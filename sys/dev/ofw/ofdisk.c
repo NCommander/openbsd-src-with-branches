@@ -236,6 +236,7 @@ ofdstrategy(bp)
 	int read;
 	int (*OF_io)(int, void *, int);
 	daddr_t blkno = bp->b_blkno;
+	int s;
 	
 	bp->b_resid = 0;
 	if (bp->b_bcount == 0)
@@ -272,7 +273,9 @@ ofdstrategy(bp)
 	disk_unbusy(&of->sc_dk, bp->b_bcount - bp->b_resid);
 
 done:
-	biodone(bp);
+	s = splbio();
+	biodone(bp);'
+	splx(s);
 }
 
 static void

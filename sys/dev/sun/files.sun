@@ -3,4 +3,5 @@
 #
 # Configuration file for devices found on Sun machines.
 #
-file dev/sun/event.c
+define	sunkbd
+file	dev/sun/sunkbd.c			sunkbd

@@ -92,10 +92,16 @@
 
 #include <uvm/uvm_extern.h>
 
+struct	mbstat mbstat;		/* mbuf stats */
 struct	pool mbpool;		/* mbuf pool */
 struct	pool mclpool;		/* mbuf cluster pool */
 
 struct vm_map *mb_map;
+
+int max_linkhdr;		/* largest link-level header */
+int max_protohdr;		/* largest protocol header */
+int max_hdr;			/* largest link+protocol header */
+int max_datalen;		/* MHLEN - max_hdr */
 
 void	*mclpool_alloc(struct pool *, int);
 void	mclpool_release(struct pool *, void *);

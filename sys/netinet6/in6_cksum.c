@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_cksum.c,v 1.4.2.2 2001/05/14 22:40:17 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$KAME: in6_cksum.c,v 1.10 2000/12/03 00:53:59 itojun Exp $	*/
 
 /*
@@ -121,7 +121,7 @@ in6_cksum(m, nxt, off, len)
 
 	/* sanity check */
 	if (m->m_pkthdr.len < off + len) {
-		panic("in6_cksum: mbuf len (%d) < off+len (%d+%d)\n",
+		panic("in6_cksum: mbuf len (%d) < off+len (%d+%d)",
 			m->m_pkthdr.len, off, len);
 	}
 
@@ -306,7 +306,7 @@ in6_cksum(m, nxt, off, len)
 			s_util.c[0] = *(char *)w;
 	}
 	if (len)
-		panic("in6_cksum: out of data\n");
+		panic("in6_cksum: out of data");
 	if (mlen == -1) {
 		/* The last mbuf has odd # of bytes. Follow the
 		   standard (the odd byte may be shifted left by 8 bits

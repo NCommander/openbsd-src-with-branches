@@ -45,14 +45,14 @@
 #define BSD4_3	1
 #define BSD4_4	1
 
-#define OpenBSD	200111		/* OpenBSD version (year & month). */
-#define OpenBSD3_0 1		/* OpenBSD 3.0 */
+#define OpenBSD	200305		/* OpenBSD version (year & month). */
+#define OpenBSD3_3 1		/* OpenBSD 3.3 */
 
 #ifndef NULL
 #ifdef 	__GNUG__
 #define	NULL	__null
 #else
-#define	NULL	0
+#define	NULL	0L
 #endif
 #endif
 
@@ -95,8 +95,8 @@
 #include <sys/signal.h>
 
 /* Machine type dependent parameters. */
+#include <sys/limits.h>
 #include <machine/param.h>
-#include <machine/limits.h>
 
 /*
  * Priorities.  Note that with 32 run queues, differences less than 4 are

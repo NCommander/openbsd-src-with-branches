@@ -1,6 +1,6 @@
-/*	$OpenBSD: mii.h,v 1.1.8.3 2001/10/31 03:22:44 nate Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mii.h,v 1.8 2001/05/31 03:06:46 thorpej Exp $	*/
- 
+
 /*
  * Copyright (c) 1997 Manuel Bouyer.  All rights reserved.
  *

@@ -59,6 +59,7 @@ struct file {
 #define	DTYPE_PIPE	3	/* pipe */
 #define	DTYPE_KQUEUE	4	/* event queue */
 #define	DTYPE_CRYPTO	5	/* crypto */
+#define	DTYPE_SYSTRACE	6	/* system call tracing */
 	short	f_type;		/* descriptor type */
 	long	f_count;	/* reference count */
 	long	f_msgcount;	/* references from message queue */

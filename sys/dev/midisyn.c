@@ -413,8 +413,8 @@ midisyn_finetune(base_freq, bend, range, vibrato_cents)
 	}
 
 	semitones = bend / 100;
-	if (semitones > 99)
-		semitones = 99;
+	if (semitones > 23)
+		semitones = 23;
 	cents = bend % 100;
 
 	amount = semitone_tuning[semitones] * multiplier * cent_tuning[cents]

@@ -207,6 +207,7 @@ int	chflags(const char *, unsigned int);
 int	fchflags(int, unsigned int);
 int	fchmod(int, mode_t);
 int	lstat(const char *, struct stat *);
+int	isfdtype(int, int);
 #endif
 __END_DECLS
 #endif

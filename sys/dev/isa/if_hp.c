@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_hp.c,v 1.5.6.1 2001/05/14 22:24:43 niklas Exp $       */
+/*    $OpenBSD$       */
 /*    $NetBSD: if_hp.c,v 1.21 1995/12/24 02:31:31 mycroft Exp $       */
 
 /* XXX THIS DRIVER IS BROKEN.  IT WILL NOT EVEN COMPILE. */
@@ -412,6 +412,7 @@ hpattach(dvp)
 	ifp->if_watchdog = 0;
 	IFQ_SET_READY(&ifp->if_snd);
 	if_attach(ifp);
+	if_alloc_sadl(ifp);
 }
 /*
  * Initialization of interface; set up initialization block

@@ -92,7 +92,6 @@ extern struct rndstats rndstats;
 void enqueue_randomness(int, int);
 void get_random_bytes(void *, size_t);
 u_int32_t arc4random(void);
-int arc4random_8(void);
 
 #endif /* _KERNEL */
 

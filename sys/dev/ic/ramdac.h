@@ -76,6 +76,10 @@ struct ramdac_funcs {
 		    struct wsdisplay_cursor *);
 	int	(*ramdac_get_curcmap)(struct ramdac_cookie *,
 		    struct wsdisplay_cursor *);
+
+	/* XXXrcd:  new test code for setting the DOTCLOCK */
+	int	(*ramdac_set_dotclock)(struct ramdac_cookie *,
+		    unsigned);
 };
 
 #endif

@@ -44,7 +44,7 @@ struct lsi64854_softc {
 
 	bus_space_handle_t	sc_regs;	/* the registers */
 	u_int			sc_rev;		/* revision */
-	int			sc_burst;	/* max suported burst size */
+	int			sc_burst;	/* max supported burst size */
 
 	int			sc_channel;
 #define L64854_CHANNEL_SCSI	1

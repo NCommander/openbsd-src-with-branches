@@ -303,7 +303,7 @@ void lge_miibus_statchg(dev)
 
 	LGE_CLRBIT(sc, LGE_GMIIMODE, LGE_GMIIMODE_SPEED);
 	switch (IFM_SUBTYPE(mii->mii_media_active)) {
-	case IFM_1000_TX:
+	case IFM_1000_T:
 	case IFM_1000_SX:
 		LGE_SETBIT(sc, LGE_GMIIMODE, LGE_SPEED_1000);
 		break;
@@ -586,7 +586,7 @@ void lge_attach(parent, self, aux)
 	/*
 	 * A Level 1 chip was detected. Inform the world.
 	 */
-	printf(": Ethernet address: %s\n", ether_sprintf(eaddr));
+	printf(": address: %s\n", ether_sprintf(eaddr));
 
 	bcopy(eaddr, (char *)&sc->arpcom.ac_enaddr, ETHER_ADDR_LEN);
 
@@ -1147,7 +1147,7 @@ void lge_tick(xsc)
 		    IFM_SUBTYPE(mii->mii_media_active) != IFM_NONE) {
 			sc->lge_link++;
 			if (IFM_SUBTYPE(mii->mii_media_active) == IFM_1000_SX||
-			    IFM_SUBTYPE(mii->mii_media_active) == IFM_1000_TX)
+			    IFM_SUBTYPE(mii->mii_media_active) == IFM_1000_T)
 				printf("%s: gigabit link up\n",
 				       sc->sc_dv.dv_xname);
 			if (!IFQ_IS_EMPTY(&ifp->if_snd))

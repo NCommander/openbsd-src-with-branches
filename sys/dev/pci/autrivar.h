@@ -48,6 +48,7 @@ struct autri_codec_softc {
 	int			status_addr;
 	struct ac97_host_if	host_if;
 	struct ac97_codec_if	*codec_if;
+	int			flags;
 };
 
 struct autri_chstatus {

@@ -211,7 +211,7 @@ xmphy_service(sc, mii, cmd)
 		 */
 		if (++sc->mii_ticks != sc->mii_anegticks)
 			return (0);
-		
+
 		sc->mii_ticks = 0;
 
 		/*

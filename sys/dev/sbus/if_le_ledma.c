@@ -354,7 +354,7 @@ leattach_ledma(parent, self, aux)
 	lesc->sc_dma->sc_client = lesc;
 
 	/* Map device registers */
-	if (bus_space_map2(sa->sa_bustag,
+	if (sbus_bus_map(sa->sa_bustag,
 			   sa->sa_slot,
 			   sa->sa_offset,
 			   sa->sa_size,

@@ -275,13 +275,9 @@ cz_match(parent, match, aux)
 {
 	struct pci_attach_args *pa = aux;
 
-	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_CYCLADES) {
-		switch (PCI_PRODUCT(pa->pa_id)) {
-		case PCI_PRODUCT_CYCLADES_CYCLOMZ_2:
-			return (1);
-		}
-	}
-
+	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_CYCLADES &&
+	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_CYCLADES_CYCLOMZ_2)
+		return (1);
 	return (0);
 }
 

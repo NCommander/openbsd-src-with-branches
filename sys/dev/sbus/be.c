@@ -251,8 +251,8 @@ beattach(parent, self, aux)
 		return;
 	}
 
-	if (bus_space_map2(sa->sa_bustag,
-	    (bus_type_t)sa->sa_reg[0].sbr_slot,
+	if (sbus_bus_map(sa->sa_bustag,
+	    sa->sa_reg[0].sbr_slot,
 	    (bus_addr_t)sa->sa_reg[0].sbr_offset,
 	    (bus_size_t)sa->sa_reg[0].sbr_size,
 	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_cr) != 0) {
@@ -260,8 +260,8 @@ beattach(parent, self, aux)
 		return;
 	}
 
-	if (bus_space_map2(sa->sa_bustag,
-	    (bus_type_t)sa->sa_reg[1].sbr_slot,
+	if (sbus_bus_map(sa->sa_bustag,
+	    sa->sa_reg[1].sbr_slot,
 	    (bus_addr_t)sa->sa_reg[1].sbr_offset,
 	    (bus_size_t)sa->sa_reg[1].sbr_size,
 	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_br) != 0) {
@@ -269,8 +269,8 @@ beattach(parent, self, aux)
 		return;
 	}
 
-	if (bus_space_map2(sa->sa_bustag,
-	    (bus_type_t)sa->sa_reg[2].sbr_slot,
+	if (sbus_bus_map(sa->sa_bustag,
+	    sa->sa_reg[2].sbr_slot,
 	    (bus_addr_t)sa->sa_reg[2].sbr_offset,
 	    (bus_size_t)sa->sa_reg[2].sbr_size,
 	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_tr) != 0) {
@@ -402,7 +402,7 @@ beattach(parent, self, aux)
 #endif
 			if (child->mii_phy != BE_PHY_EXTERNAL ||
 			    child->mii_inst > 0) {
-				printf("%s: cannot accomodate MII device %s"
+				printf("%s: cannot accommodate MII device %s"
 				    " at phy %d, instance %d\n",
 				    sc->sc_dev.dv_xname,
 				    child->mii_dev.dv_xname,

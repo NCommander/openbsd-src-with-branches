@@ -262,8 +262,9 @@ struct aue_softc {
 	int			aue_if_flags;
 	struct aue_cdata	aue_cdata;
 
-	u_int16_t			aue_flags;
+	u_int16_t		aue_flags;
 
+	int			aue_refcnt;
 	char			aue_dying;
 	char			aue_attached;
 	u_int			aue_rx_errs;

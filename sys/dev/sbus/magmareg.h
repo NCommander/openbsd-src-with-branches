@@ -91,7 +91,7 @@ struct cd1400 {
 	bus_space_handle_t cd_regh;	/* chip register handle */
 	bus_space_tag_t cd_regt;	/* chip register tag */
 	int cd_chiprev;			/* chip revision */
-	int cd_clock;			/* clock speed in Mhz */
+	int cd_clock;			/* clock speed in MHz */
 	int cd_parmode;			/* parallel mode operation */
 };
 

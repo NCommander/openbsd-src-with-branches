@@ -102,6 +102,7 @@ faithattach(faith)
 		ifp->if_hdrlen = 0;
 		ifp->if_addrlen = 0;
 		if_attach(ifp);
+		if_alloc_sadl(ifp);
 #if NBPFILTER > 0
 		bpfattach(&ifp->if_bpf, ifp, DLT_NULL, sizeof(u_int));
 #endif
@@ -198,16 +199,8 @@ faithrtrequest(cmd, rt, info)
 	struct rtentry *rt;
 	struct rt_addrinfo *info;
 {
-	if (rt) {
+	if (rt)
 		rt->rt_rmx.rmx_mtu = rt->rt_ifp->if_mtu; /* for ISO */
-		/*
-		 * For optimal performance, the send and receive buffers
-		 * should be at least twice the MTU plus a little more for
-		 * overhead.
-		 */
-		rt->rt_rmx.rmx_recvpipe =
-			rt->rt_rmx.rmx_sendpipe = 3 * FAITHMTU;
-	}
 }
 
 /*

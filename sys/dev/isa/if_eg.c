@@ -581,6 +581,8 @@ loop:
 		bcopy(mtod(m, caddr_t), buffer, m->m_len);
 		buffer += m->m_len;
 	}
+	if (len > m0->m_pkthdr.len)
+		bzero(buffer, len - m0->m_pkthdr.len);
 
 	/* set direction bit: host -> adapter */
 	bus_space_write_1(bst, bsh, EG_CONTROL,

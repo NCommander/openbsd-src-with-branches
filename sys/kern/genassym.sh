@@ -44,7 +44,10 @@ else
 fi
 
 TMPC=`mktemp /tmp/genassym_c.XXXXXX` || exit 1
-TMP=`mktemp /tmp/genassym.XXXXXX` || exit 1
+TMP=`mktemp /tmp/genassym.XXXXXX` || {
+	rm -f ${TMPC}
+	exit 1
+}
 trap "rm -f $TMPC $TMP" 0 1 2 3 15
 
 $awk '

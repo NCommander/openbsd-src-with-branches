@@ -106,9 +106,9 @@ struct dp8390_softc {
  * Compile-time config flags
  */
 /*
- * This sets the default for enabling/disablng the tranceiver.
+ * This sets the default for enabling/disablng the transceiver.
  */
-#define DP8390_DISABLE_TRANCEIVER	0x0001
+#define DP8390_DISABLE_TRANSCEIVER	0x0001
 
 /*
  * This forces the board to be used in 8/16-bit mode even if it autoconfigs

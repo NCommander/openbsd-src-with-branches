@@ -226,7 +226,7 @@ ifmedia_ioctl(ifp, ifr, ifm, cmd)
 	int error = 0, sticky;
 
 	if (ifp == NULL || ifr == NULL || ifm == NULL)
-		return(EINVAL);
+		return (EINVAL);
 
 	switch (cmd) {
 

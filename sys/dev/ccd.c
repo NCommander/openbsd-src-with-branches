@@ -733,7 +733,9 @@ ccdstrategy(bp)
 	splx(s);
 	return;
 done:
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 void
@@ -1002,6 +1004,8 @@ ccdintr(cs, bp)
 	struct buf *bp;
 {
 
+	splassert(IPL_BIO);
+
 #ifdef DEBUG
 	if (ccddebug & CCDB_FOLLOW)
 		printf("ccdintr(%p, %p)\n", cs, bp);
@@ -1029,11 +1033,12 @@ ccdiodone(vbp)
 	int unit = cbp->cb_unit;
 	struct ccd_softc *cs = &ccd_softc[unit];
 	int old_io = cbp->cb_flags & CBF_OLD;
-	int cbflags, s, i;
+	int cbflags, i;
 	long count = bp->b_bcount, off;
 	char *comptype;
 
-	s = splbio();
+	splassert(IPL_BIO);
+
 #ifdef DEBUG
 	if (ccddebug & CCDB_FOLLOW)
 		printf("ccdiodone(%p)\n", cbp);
@@ -1102,7 +1107,6 @@ ccdiodone(vbp)
 		if (bp->b_resid == 0)
 			ccdintr(&ccd_softc[unit], bp);
 	}
-	splx(s);
 }
 
 /* ARGSUSED */
@@ -1296,7 +1300,8 @@ ccdioctl(dev, cmd, data, flag, p)
 		 */
 		if (!ccdmap && !(ccd.ccd_flags & CCDF_OLD))
 			ccdmap = uvm_km_suballoc(kernel_map, &min, &max,
-			    CCD_CLUSTERS * MAXBSIZE, FALSE, FALSE, NULL);
+			    CCD_CLUSTERS * MAXBSIZE, VM_MAP_INTRSAFE,
+			    FALSE, NULL);
 
 		/* Attach the disk. */
 		cs->sc_dkdev.dk_name = cs->sc_xname;

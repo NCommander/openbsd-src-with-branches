@@ -140,7 +140,7 @@ rln_pcmcia_attach(parent, self, aux)
 	struct rln_pcmcia_product *rpp;
 
 	psc->psc_pf = pa->pf;
-	cfe = psc->psc_pf->cfe_head.sqh_first;
+	cfe = SIMPLEQ_FIRST(&psc->psc_pf->cfe_head);
 
 	/* Guess the transfer width we will be using */
 	if (cfe->flags & PCMCIA_CFE_IO16)

@@ -60,7 +60,7 @@
 #if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <limits.h>
 #else
-#include <machine/limits.h>
+#include <sys/limits.h>
 #endif
 
 /*

@@ -97,6 +97,7 @@ struct hme_softc {
 	bus_dmamap_t	sc_rxmap_spare;
 	int	sc_tx_cnt, sc_tx_prod, sc_tx_cons;
 	int	sc_last_rd;
+	u_int32_t sc_tcvr;
 };
 
 

@@ -157,7 +157,7 @@ malloc(size, type, flags)
 
 	indx = BUCKETINDX(size);
 	kbp = &bucket[indx];
-	s = splimp();
+	s = splvm();
 #ifdef KMEMSTATS
 	while (ksp->ks_memuse >= ksp->ks_limit) {
 		if (flags & M_NOWAIT) {
@@ -350,7 +350,7 @@ free(addr, type)
 	kup = btokup(addr);
 	size = 1 << kup->ku_indx;
 	kbp = &bucket[kup->ku_indx];
-	s = splimp();
+	s = splvm();
 #ifdef DIAGNOSTIC
 	/*
 	 * Check for returns of data that do not point to the

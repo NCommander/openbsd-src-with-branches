@@ -164,8 +164,6 @@ struct cfattach wsmouse_ca = {
 extern struct cfdriver wsmouse_cd;
 #endif /* NWSMOUSE > 0 */
 
-cdev_decl(wsmouse);
-
 #if NWSMUX > 0
 struct wsmuxops wsmouse_muxops = {
 	wsmouseopen, wsmousedoclose, wsmousedoioctl, 0, 0, 0
@@ -435,6 +433,16 @@ wsmouse_input(wsmousedev, btns, x, y, z, flags)
 		ADVANCE;
 		ub ^= d;
 	}
+
+	/* XXX fake wscons_event notifying wsmoused(8) to close mouse device */
+	if (flags & WSMOUSE_INPUT_WSMOUSED_CLOSE) {
+			NEXT;
+			ev->type = WSCONS_EVENT_WSMOUSED_CLOSE;
+			ev->value = 0;
+			TIMESTAMP;
+			ADVANCE;
+	}
+
 out:
 	if (any) {
 		sc->sc_ub = ub;

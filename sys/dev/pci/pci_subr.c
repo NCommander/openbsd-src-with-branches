@@ -265,7 +265,7 @@ const struct pci_class pci_class[] = {
 
 #ifdef PCIVERBOSE
 /*
- * Descriptions of of known vendors and devices ("products").
+ * Descriptions of known vendors and devices ("products").
  */
 struct pci_known_vendor {
 	pci_vendor_id_t		vendor;

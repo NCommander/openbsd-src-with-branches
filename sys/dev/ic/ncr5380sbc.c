@@ -1507,7 +1507,7 @@ success:
 /*
  * The message system:
  *
- * This is a revamped message system that now should easier accomodate
+ * This is a revamped message system that now should easier accommodate
  * new messages, if necessary.
  *
  * Currently we accept these messages:

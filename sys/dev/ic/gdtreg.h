@@ -115,6 +115,7 @@
 #define GDT_IO_CHANNEL		0x20000		/* default IO channel */
 #define GDT_INVALID_CHANNEL	0xffff		/* invalid channel */
 
+/* XXX not belonging here */
 /* IOCTLs */
 #define GDTIOCTL_MASK	    ('J' << 8)
 #define GDTIOCTL_GENERAL    (GDTIOCTL_MASK | 0)	/* general IOCTL */

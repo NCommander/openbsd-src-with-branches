@@ -1038,7 +1038,7 @@ bha_find(iot, ioh, sc)
 
 
 /*
- * Disable the ISA-compatiblity ioports on  PCI bha devices,
+ * Disable the ISA-compatibility ioports on PCI bha devices,
  * to ensure they're not autoconfigured a second time as an ISA bha.
  */
 int

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide_amd_reg.h,v 1.3.4.1 2001/05/14 22:25:55 niklas Exp $ 	*/
+/*	$OpenBSD$ 	*/
 /*	$NetBSD: pciide_amd_reg.h,v 1.2 2000/07/06 15:08:11 bouyer Exp $	*/
 
 /*
@@ -57,6 +57,7 @@
 /* Channel enable */
 #define AMD756_CHANSTATUS_EN		0x40
 #define AMD756_CHAN_EN(chan)		(0x01 << (1 - (chan)))
+#define AMD756_CABLE(chan, drive)	(0x00010000 << ((chan) * 2 + (drive)))
 
 /* Data port timing controls */
 #define AMD756_DATATIM 0x48

@@ -71,5 +71,8 @@ int	wsmousedevprint(void *, const char *);
 #define WSMOUSE_INPUT_ABSOLUTE_X	(1<<0)
 #define WSMOUSE_INPUT_ABSOLUTE_Y	(1<<1)
 #define WSMOUSE_INPUT_ABSOLUTE_Z	(1<<2)
+#define WSMOUSE_INPUT_WSMOUSED_CLOSE	(1<<3) /* notify wsmoused(8) to close
+						  mouse device */
+
 void	wsmouse_input(struct device *kbddev, u_int btns,
 			   int x, int y, int z, u_int flags);

@@ -235,19 +235,19 @@ tqphy_status(sc)
 	    PHY_READ(sc, MII_BMSR);
 	if (bmsr & BMSR_LINK)
 		mii->mii_media_status |= IFM_ACTIVE;
- 
+
 	bmcr = PHY_READ(sc, MII_BMCR);
 	if (bmcr & BMCR_ISO) {
 		mii->mii_media_active |= IFM_NONE;
 		mii->mii_media_status = 0;
 		return;
 	}
- 
+
 	if (bmcr & BMCR_LOOP)
 		mii->mii_media_active |= IFM_LOOP;
- 
+
 	if (bmcr & BMCR_AUTOEN) {
-		if ((bmsr & BMSR_ACOMP) == 0) { 
+		if ((bmsr & BMSR_ACOMP) == 0) {
 			/* Erg, still trying, I guess... */
 			mii->mii_media_active |= IFM_NONE;
 			return;
@@ -259,6 +259,6 @@ tqphy_status(sc)
 			mii->mii_media_active |= IFM_10_T;
 		if (diag & DIAG_DPLX)
 			mii->mii_media_active |= IFM_FDX;
-	} else 
+	} else
 		mii->mii_media_active = ife->ifm_media;
 }

@@ -99,7 +99,7 @@
 #endif
 
 /*
- * POSIX 1003.1 specifies a higher granularity for syncronous operations
+ * POSIX 1003.1 specifies a higher granularity for synchronous operations
  * than we support.  Since synchronicity is all or nothing in OpenBSD
  * we just define these to be the same as O_SYNC.
  */

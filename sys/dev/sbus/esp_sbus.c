@@ -77,6 +77,8 @@ struct scsi_device esp_dev = {
 
 /* #define ESP_SBUS_DEBUG */
 
+static int esp_unit_offset;
+
 struct esp_softc {
 	struct ncr53c9x_softc sc_ncr53c9x;	/* glue to MI code */
 	struct sbusdev	sc_sd;			/* sbus device */
@@ -191,6 +193,10 @@ espattach_sbus(parent, self, aux)
 #endif
 
 	if (strcmp("SUNW,fas", sa->sa_name) == 0) {
+		/*
+		 * offset searches for other esp/dma devices.
+		 */
+		esp_unit_offset++;
 
 		/*
 		 * fas has 2 register spaces: dma(lsi64854) and SCSI core (ncr53c9x)
@@ -220,7 +226,7 @@ espattach_sbus(parent, self, aux)
 		      sizeof (lsc->sc_dev.dv_xname));
 
 		/* Map dma registers */
-		if (bus_space_map2(sa->sa_bustag,
+		if (sbus_bus_map(sa->sa_bustag,
 		                   sa->sa_reg[0].sbr_slot,
 			           sa->sa_reg[0].sbr_offset,
 			           sa->sa_reg[0].sbr_size,
@@ -243,7 +249,7 @@ espattach_sbus(parent, self, aux)
 
 		burst = getpropint(sa->sa_node, "burst-sizes", -1);
 
-#if ESP_SBUS_DEBUG
+#ifdef ESP_SBUS_DEBUG
 		printf("espattach_sbus: burst 0x%x, sbus 0x%x\n",
 		    burst, sbusburst);
 #endif
@@ -303,7 +309,7 @@ espattach_sbus(parent, self, aux)
 	 * find the matching esp driver.
 	 */
 	esc->sc_dma = (struct lsi64854_softc *)
-				getdevunit("dma", sc->sc_dev.dv_unit);
+	    getdevunit("dma", sc->sc_dev.dv_unit - esp_unit_offset);
 
 	/*
 	 * and a back pointer to us, for DMA
@@ -326,9 +332,16 @@ espattach_sbus(parent, self, aux)
 	 * Map my registers in, if they aren't already in virtual
 	 * address space.
 	 */
-	if (sa->sa_npromvaddrs)
-		esc->sc_reg = (bus_space_handle_t)sa->sa_promvaddrs[0];
-	else {
+	if (sa->sa_npromvaddrs) {
+		if (bus_space_map(sa->sa_bustag, sa->sa_promvaddrs[0],
+				 sa->sa_size,
+				 BUS_SPACE_MAP_PROMADDRESS | BUS_SPACE_MAP_LINEAR,
+				 &esc->sc_reg) != 0) {
+			printf("%s @ sbus: cannot map registers\n",
+				self->dv_xname);
+			return;
+		}
+	} else {
 		if (sbus_bus_map(sa->sa_bustag, sa->sa_slot,
 				 sa->sa_offset,
 				 sa->sa_size,
@@ -388,10 +401,18 @@ espattach_dma(parent, self, aux)
 	 * Map my registers in, if they aren't already in virtual
 	 * address space.
 	 */
-	if (sa->sa_npromvaddrs)
-		esc->sc_reg = (bus_space_handle_t)sa->sa_promvaddrs[0];
-	else {
-		if (bus_space_map2(sa->sa_bustag,
+	if (sa->sa_npromvaddrs) {
+		if (bus_space_map(sa->sa_bustag,
+				   sa->sa_promvaddrs[0],
+				   sa->sa_size,		/* ??? */
+				   BUS_SPACE_MAP_PROMADDRESS | BUS_SPACE_MAP_LINEAR,
+				   &esc->sc_reg) != 0) {
+			printf("%s @ dma: cannot map registers\n",
+				self->dv_xname);
+			return;
+		}
+	} else {
+		if (sbus_bus_map(sa->sa_bustag,
 				   sa->sa_slot,
 				   sa->sa_offset,
 				   sa->sa_size,
@@ -439,7 +460,7 @@ espattach(esc, gluep)
 	 */
 	sc->sc_glue = gluep;
 
-	/* gimme Mhz */
+	/* gimme MHz */
 	sc->sc_freq /= 1000000;
 
 	/*

@@ -969,7 +969,7 @@ wsemul_vt100_output(cookie, data, count, kernel)
 		}
 #ifdef DIAGNOSTIC
 		if (edp->state > sizeof(vt100_output) / sizeof(vt100_output[0]))
-			panic("wsemul_vt100: invalid state %d\n", edp->state);
+			panic("wsemul_vt100: invalid state %d", edp->state);
 #endif
 		edp->state = vt100_output[edp->state - 1](edp, *data);
 	}

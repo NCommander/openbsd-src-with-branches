@@ -138,6 +138,7 @@ typedef struct ohci_softc {
 	char sc_dying;
 } ohci_softc_t;
 
+void	ohci_reset(ohci_softc_t *);
 usbd_status	ohci_init(ohci_softc_t *);
 int		ohci_intr(void *);
 #if defined(__NetBSD__) || defined(__OpenBSD__)

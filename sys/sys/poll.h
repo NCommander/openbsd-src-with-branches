@@ -52,7 +52,9 @@ struct pollfd {
 #ifndef _KERNEL
 #include <ctype.h>
 
+__BEGIN_DECLS
 int   poll(struct pollfd[], int, int);
+__END_DECLS
 #endif /* _KERNEL */
 
 #endif /* !_SYS_POLL_H_ */

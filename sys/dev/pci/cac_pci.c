@@ -270,7 +270,7 @@ cac_pci_l0_completed(struct cac_softc *sc)
 
 	bus_dmamap_sync(sc->sc_dmat, sc->sc_dmamap, 0,
 	    sc->sc_dmamap->dm_mapsize,
-	    BUS_DMASYNC_PREWRITE | BUS_DMASYNC_PREREAD);
+	    BUS_DMASYNC_POSTWRITE | BUS_DMASYNC_POSTREAD);
 
 	return (ccb);
 }

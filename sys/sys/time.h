@@ -166,7 +166,7 @@ struct clockinfo {
 int	itimerfix(struct timeval *tv);
 int	itimerdecr(struct itimerval *itp, int usec);
 void	microtime(struct timeval *tv);
-void	settime(struct timeval *tv);
+int	settime(struct timeval *tv);
 int	ratecheck(struct timeval *, const struct timeval *);
 int	ppsratecheck(struct timeval *, int *, int);
 #else /* !_KERNEL */

@@ -48,7 +48,7 @@
 
 /*
  * The 79c930 contains a bus interface unit, a media access
- * controller, and a tranceiver attachment interface.
+ * controller, and a transceiver attachment interface.
  * The MAC contains an 80188 CPU core.
  * typical devices built around this chip typically add 32k or 64k of
  * memory for buffers.
@@ -112,7 +112,7 @@
 
 
 /*
- * Tranceiver Attachment Interface Registers (TIR space)
+ * Transceiver Attachment Interface Registers (TIR space)
  * (omitted for now, since host access to them is for diagnostic
  * purposes only).
  */

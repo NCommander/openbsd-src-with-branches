@@ -49,6 +49,7 @@ struct	fddi_header {
 };
 
 #define	FDDIMTU			4470
+#define	FDDIIPMTU		4352
 #define	FDDIMIN			3
 
 #define	FDDIFC_C		0x80	/* 0b10000000 */

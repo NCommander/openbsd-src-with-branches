@@ -613,7 +613,9 @@ errxit:
 		bp->b_error = EIO;
 	}
 xit:
+	s = splbio();
 	biodone(bp);
+	splx(s);
 	return;
 }
 

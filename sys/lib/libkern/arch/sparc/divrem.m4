@@ -136,6 +136,7 @@ L.$1.eval(TWOSUPN+$2):
 
 #include "DEFS.h"
 #include <machine/trap.h>
+#include <machine/asm.h>
 
 	.globl NAME2
 NAME2:

@@ -37,6 +37,9 @@ struct device;
  * WSDISPLAY interfaces
  */
 
+#define WSDISPLAY_MAXSCREEN	12
+#define WSDISPLAY_MAXFONT	8
+
 /*
  * Emulation functions, for displays that can support glass-tty terminal
  * emulations.  These are character oriented, with row and column
@@ -63,14 +66,20 @@ struct wsdisplay_emulops {
 	void	(*eraserows)(void *c, int row, int nrows, long);
 	int	(*alloc_attr)(void *c, int fg, int bg, int flags, long *);
 /* fg / bg values. Made identical to ANSI terminal color codes. */
+/* XXX should be #if NWSEMUL_SUN > 1 */
+#if defined(__sparc__) || defined(__sparc64__)
+#define WSCOL_WHITE	wscol_white
+#define WSCOL_BLACK	wscol_black
+#else
 #define WSCOL_BLACK	0
+#define WSCOL_WHITE	7
+#endif
 #define WSCOL_RED	1
 #define WSCOL_GREEN	2
 #define WSCOL_BROWN	3
 #define WSCOL_BLUE	4
 #define WSCOL_MAGENTA	5
 #define WSCOL_CYAN	6
-#define WSCOL_WHITE	7
 /* flag values: */
 #define WSATTR_REVERSE	1
 #define WSATTR_HILIT	2
@@ -79,6 +88,12 @@ struct wsdisplay_emulops {
 #define WSATTR_WSCOLORS 16
 	/* XXX need a free_attr() ??? */
 };
+
+/* XXX should be #if NWSEMUL_SUN > 1 */
+#if defined(__sparc__) || defined(__sparc64__)
+extern int wscol_white, wscol_black;
+extern int wskernel_fg, wskernel_bg;
+#endif
 
 #define	WSSCREEN_NAME_SIZE	16
 

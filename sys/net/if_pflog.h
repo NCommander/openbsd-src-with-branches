@@ -42,5 +42,23 @@ struct pfloghdr {
 
 #define PFLOG_HDRLEN	sizeof(struct pfloghdr)
 
-extern struct pflog_softc pflogif[];
+#ifdef _KERNEL
+
+#if NPFLOG > 0
+#define	PFLOG_PACKET(i,x,a,b,c,d,e) \
+	do { \
+		if (b == AF_INET) { \
+			HTONS(((struct ip *)x)->ip_len); \
+			HTONS(((struct ip *)x)->ip_off); \
+			pflog_packet(i,a,b,c,d,e); \
+			NTOHS(((struct ip *)x)->ip_len); \
+			NTOHS(((struct ip *)x)->ip_off); \
+		} else { \
+			pflog_packet(i,a,b,c,d,e); \
+		} \
+	} while (0)
+#else
+#define	PFLOG_PACKET(i,x,a,b,c,d,e)	((void)0)
+#endif /* NPFLOG > 0 */
+#endif /* _KERNEL */
 #endif /* _NET_IF_PFLOG_H_ */

@@ -148,6 +148,7 @@ am7990_config(sc)
 #ifdef LANCE_REVC_BUG
 	ifp->if_flags &= ~IFF_MULTICAST;
 #endif
+	ifp->if_baudrate = IF_Mbps(10);
 	IFQ_SET_READY(&ifp->if_snd);
 
 	/* Attach the interface. */

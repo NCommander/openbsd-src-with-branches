@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus.h,v 1.1.8.1 2001/05/14 22:23:14 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: rbus.h,v 1.3 1999/12/15 12:28:55 kleink Exp $	*/
 /*
  * Copyright (c) 1999
@@ -42,7 +42,7 @@
  * 
  *  Ths rbus is a recursive bus-space administrator.  This means a
  *  parent bus-space administrator, which usually belongs to a bus
- *  bridge, makes some child bus-space administorators and gives
+ *  bridge, makes some child bus-space administrators and gives
  *  (restricted) bus-space for children.  There are a root bus-space
  *  administrator which maintains whole bus-space.
  *

@@ -514,7 +514,9 @@ bad:
 	bp->b_flags |= B_ERROR;
 done:
 	bp->b_resid = bp->b_bcount;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 void
@@ -545,7 +547,9 @@ loop:
 		MCD_TRACE("start: drive not valid\n", 0, 0, 0, 0);
 		bp->b_error = EIO;
 		bp->b_flags |= B_ERROR;
+		s = splbio();
 		biodone(bp);
+		splx(s);
 		goto loop;
 	}
 

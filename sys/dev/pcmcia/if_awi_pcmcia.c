@@ -354,7 +354,7 @@ awi_pcmcia_attach(parent, self, aux)
 		    sc->sc_dev.dv_xname);
 		goto no_interrupt;
 	}
-	sc->sc_ifp = &sc->sc_ec.ac_if;
+	sc->sc_ifp = &sc->sc_arpcom.ac_if;
 	sc->sc_cansleep = 1;
 
 	if (awi_attach(sc) != 0) {

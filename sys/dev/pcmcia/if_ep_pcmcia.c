@@ -338,7 +338,7 @@ ep_pcmcia_attach(parent, self, aux)
 		return;
 	}
 
-	printf(" port 0x%lx/%d", psc->sc_pcioh.addr, cfe->iospace[0].length);
+	printf(" port 0x%lx/%d", psc->sc_pcioh.addr, psc->sc_pcioh.size);
 
 	switch (pa->product) {
 	case PCMCIA_PRODUCT_3COM_3C562:

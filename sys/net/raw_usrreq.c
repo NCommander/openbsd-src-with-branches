@@ -283,7 +283,7 @@ raw_usrreq(so, req, m, nam, control)
 	 */
 	case PRU_RCVOOB:
 	case PRU_RCVD:
-		return(EOPNOTSUPP);
+		return (EOPNOTSUPP);
 
 	case PRU_LISTEN:
 	case PRU_ACCEPT:

@@ -270,7 +270,7 @@ struct ncr53c9x_softc {
 
 	struct evcnt sc_intrcnt;		/* intr count */
 	struct timeout sc_watchdog;		/* periodic timer */
-	struct scsi_link sc_link;		/* scsi lint struct */
+	struct scsi_link sc_link;		/* scsi link struct */
 
 	struct ncr53c9x_glue *sc_glue;		/* glue to MD code */
 

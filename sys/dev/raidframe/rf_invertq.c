@@ -1,5 +1,6 @@
-/*	$OpenBSD: rf_invertq.c,v 1.1 1999/01/11 14:29:26 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: rf_invertq.c,v 1.3 1999/02/05 00:06:12 oster Exp $	*/
+
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
  * All rights reserved.

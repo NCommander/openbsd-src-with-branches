@@ -109,6 +109,10 @@ mk48txx_attach(bt, bh, model, year0)
 
 	sz = ALIGN(sizeof(struct todr_chip_handle)) + sizeof(struct mk48txx);
 	handle = malloc(sz, M_DEVBUF, M_NOWAIT);
+	if (handle == NULL) {
+		printf(": failed to allocate memory");
+		return NULL;
+	}
 	mk = (struct mk48txx *)((u_long)handle +
 				 ALIGN(sizeof(struct todr_chip_handle)));
 	handle->cookie = mk;

@@ -391,7 +391,7 @@ dp8390_xmit(sc)
 		    sc->txb_next_tx, sc->txb_inuse, sc->txb_cnt, sc->txb_new);
 
 	if (sc->txb_inuse == 0)
-		panic("dp8390_xmit: no packets to xmit\n");
+		panic("dp8390_xmit: no packets to xmit");
 #endif
 
 	len = sc->txb_len[sc->txb_next_tx];

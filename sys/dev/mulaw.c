@@ -347,6 +347,17 @@ mulaw_to_slinear16_be(v, p, cc)
 }
 
 void
+slinear16_to_mulaw_le(void *v, u_char* p, int cc)
+{
+	u_char *q = p + 1;	/* q points higher byte. */
+
+	while (--cc >= 0) {
+		*p++ = lintomulaw[*q ^ 0x80];
+		q +=2 ;
+	}
+}
+
+void
 ulinear8_to_mulaw(v, p, cc)
 	void *v;
 	u_char *p;

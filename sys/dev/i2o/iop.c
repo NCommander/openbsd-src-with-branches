@@ -272,9 +272,15 @@ iop_init(struct iop_softc *sc, const char *intrstr)
 	int rv, i, nsegs;
 	int state = 0;
 
-	if (iop_ictxhashtbl == NULL)
-		iop_ictxhashtbl = hashinit(IOP_ICTXHASH_NBUCKETS,
-		    M_DEVBUF, M_NOWAIT, &iop_ictxhash);
+	if (iop_ictxhashtbl == NULL) {
+		iop_ictxhashtbl = hashinit(IOP_ICTXHASH_NBUCKETS, M_DEVBUF,
+		    M_NOWAIT, &iop_ictxhash);
+		if (iop_ictxhashtbl == NULL) {
+			printf("%s: cannot allocate hashtable\n",
+			    sc->sc_dv.dv_xname);
+			return;
+		}
+	}
 
 	/* Reset the IOP and request status. */
 	printf("I2O adapter");

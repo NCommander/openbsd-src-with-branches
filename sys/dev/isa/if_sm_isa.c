@@ -191,7 +191,7 @@ sm_isa_attach(parent, self, aux)
 
 	/* XXX Should get Ethernet address from EEPROM!! */
 
-	/* Perform generic intialization. */
+	/* Perform generic initialization. */
 	smc91cxx_attach(sc, NULL);
 
 	/* Establish the interrupt handler. */

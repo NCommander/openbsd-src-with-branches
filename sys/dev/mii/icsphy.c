@@ -37,7 +37,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 /*
  * Copyright (c) 1997 Manuel Bouyer.  All rights reserved.
  *
@@ -116,9 +116,13 @@ icsphymatch(parent, match, aux)
 	if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_xxICS &&
 	    MII_MODEL(ma->mii_id2) == MII_MODEL_xxICS_1890)
 		return (10);
-   
+
         if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_xxICS &&
 	    MII_MODEL(ma->mii_id2) == MII_MODEL_xxICS_1892)
+		return (10);
+
+        if (MII_OUI(ma->mii_id1, ma->mii_id2) == MII_OUI_xxICS &&
+	    MII_MODEL(ma->mii_id2) == MII_MODEL_xxICS_1893)
 		return (10);
 
 	return (0);
@@ -278,7 +282,7 @@ icsphy_reset(sc)
 
 	mii_phy_reset(sc);
 	PHY_WRITE(sc, MII_ICSPHY_ECR2, ECR2_10TPROT|ECR2_Q10T);
-   
+
 	/*
 	 * XXX the ICS1892 doesn't set the BMCR properly after
 	 * XXX reset, which breaks autonegotiation.

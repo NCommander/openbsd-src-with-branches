@@ -1,4 +1,4 @@
-/*	$OpenBSD: auviavar.h,v 1.3.4.1 2001/05/14 22:25:33 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: auviavar.h,v 1.1 2000/03/31 04:45:29 tsarna Exp $	*/
 
 /*-
@@ -56,14 +56,14 @@ struct auvia_softc {
 	void *sc_ih;			/* interrupt handle */
 
 	char sc_revision[8];
+	u_int sc_flags;
+#define	AUVIA_FLAGS_VT8233	0x0001
 
 	pci_chipset_tag_t sc_pc;
 	pcitag_t sc_pt;
 
 	bus_space_tag_t sc_iot;
 	bus_space_handle_t sc_ioh;
-	bus_addr_t sc_ioaddr;
-	bus_size_t sc_iosize;
 	bus_dma_tag_t sc_dmat;
 
 	struct ac97_host_if host_if;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_cardbus.c,v 1.2.6.2 2001/10/31 03:22:40 nate Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: if_fxp_cardbus.c,v 1.12 2000/05/08 18:23:36 thorpej Exp $	*/
 
 /*
@@ -245,7 +245,7 @@ fxp_cardbus_detach(self, flags)
 
 #ifdef DIAGNOSTIC
 	if (ct == NULL)
-		panic("%s: data structure lacks\n", sc->sc_dev.dv_xname);
+		panic("%s: data structure lacks", sc->sc_dev.dv_xname);
 #endif
 
 	rv = fxp_detach(sc);

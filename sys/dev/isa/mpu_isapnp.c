@@ -32,10 +32,6 @@ struct mpu_isapnp_softc {
 	struct mpu_softc sc_mpu;
 };
 
-struct cfdriver mpu_cd = {
-	NULL, "mpu", DV_DULL
-};
-
 struct cfattach mpu_isapnp_ca = {
 	sizeof(struct mpu_isapnp_softc), mpu_isapnp_match, mpu_isapnp_attach
 };

@@ -384,7 +384,8 @@ lockmgr(lkp, flags, interlkp, p)
 		} else if (lkp->lk_sharecount != 0) {
 			lkp->lk_sharecount--;
 			COUNT(p, -1);
-		}
+		} else
+			panic("lockmgr: LK_RELEASE of unlocked lock");
 		if (lkp->lk_waitcount)
 			wakeup((void *)lkp);
 		break;

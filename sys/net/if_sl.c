@@ -218,6 +218,7 @@ slattach(n)
 		sc->sc_fastq.ifq_maxlen = 32;
 		IFQ_SET_READY(&sc->sc_if.if_snd);
 		if_attach(&sc->sc_if);
+		if_alloc_sadl(&sc->sc_if);
 #if NBPFILTER > 0
 		bpfattach(&sc->sc_bpf, &sc->sc_if, DLT_SLIP, SLIP_HDRLEN);
 #endif
@@ -297,7 +298,7 @@ slopen(dev, tp)
 				error = clalloc(&tp->t_outq, 3*SLMTU, 0);
 				if (error) {
 					splx(s);
-					return(error);
+					return (error);
 				}
 			} else
 				sc->sc_oldbufsize = sc->sc_oldbufquot = 0;
@@ -385,9 +386,6 @@ sloutput(ifp, m, dst, rtp)
 	register struct sl_softc *sc = ifp->if_softc;
 	register struct ip *ip;
 	int s, error;
-	ALTQ_DECL(struct altq_pktattr pktattr;)
-
-	IFQ_CLASSIFY(&ifp->if_snd, m, dst->sa_family, &pktattr);
 
 	/*
 	 * `Cannot happen' (see slioctl).  Someday we will extend
@@ -426,7 +424,7 @@ sloutput(ifp, m, dst, rtp)
 			slstart(sc->sc_ttyp);
 		}
 	}
-	IFQ_ENQUEUE(&sc->sc_if.if_snd, m, &pktattr, error);
+	IFQ_ENQUEUE(&sc->sc_if.if_snd, m, NULL, error);
 	if (error) {
 		splx(s);
 		sc->sc_if.if_oerrors++;

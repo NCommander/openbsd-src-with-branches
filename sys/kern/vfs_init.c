@@ -127,7 +127,7 @@ vfs_opv_init_explicit(vfs_opv_desc)
 		bzero(opv_desc_vector, vfs_opv_numops * sizeof(PFI));
 		*(vfs_opv_desc->opv_desc_vector_p) = opv_desc_vector;
 		DODEBUG(printf("vector at %p allocated\n",
-		    opv_desc_vector_p));
+		    opv_desc_vector));
 	}
 
 	for (opve_descp = vfs_opv_desc->opv_desc_ops;

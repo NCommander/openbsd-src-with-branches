@@ -324,7 +324,7 @@
 #define	GEM_MAC_XIF_TX_MII_ENA	0x00000001	/* Enable XIF output drivers */
 #define	GEM_MAC_XIF_MII_LOOPBK	0x00000002	/* Enable MII loopback mode */
 #define	GEM_MAC_XIF_ECHO_DISABL	0x00000004	/* Disable echo */
-#define	GEM_MAC_XIF_MII_MODE	0x00000008	/* Select GMII/MII mode */
+#define	GEM_MAC_XIF_GMII_MODE	0x00000008	/* Select GMII/MII mode */
 #define	GEM_MAC_XIF_MII_BUF_ENA	0x00000010	/* Enable MII recv buffers */
 #define	GEM_MAC_XIF_LINK_LED	0x00000020	/* force link LED active */
 #define	GEM_MAC_XIF_FDPLX_LED	0x00000040	/* force FDPLX LED active */

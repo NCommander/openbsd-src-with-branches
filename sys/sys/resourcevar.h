@@ -58,7 +58,6 @@ struct pstats {
 		u_long	pr_off;		/* pc offset */
 		u_int   pr_scale;	/* pc scaling */
 		u_long	pr_addr;	/* temp storage for addr until AST */
-		u_long	pr_ticks;	/* temp storage for ticks until AST */
 	} p_prof;
 #define	pstat_endcopy	p_start
 	struct	timeval p_start;	/* starting time */
@@ -80,12 +79,10 @@ struct plimit {
 };
 
 /* add user profiling from AST */
-#define	ADDUPROF(p)							\
-	addupc_task(p,							\
-	    (p)->p_stats->p_prof.pr_addr, (p)->p_stats->p_prof.pr_ticks)
+#define	ADDUPROF(p) addupc_task((p), (p)->p_stats->p_prof.pr_addr, 1)
 
 #ifdef _KERNEL
-void	 addupc_intr(struct proc *p, u_long pc, u_int ticks);
+void	 addupc_intr(struct proc *p, u_long pc);
 void	 addupc_task(struct proc *p, u_long pc, u_int ticks);
 void	 calcru(struct proc *p, struct timeval *up, struct timeval *sp,
 	    struct timeval *ip);

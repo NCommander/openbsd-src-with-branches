@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus.c,v 1.2.6.2 2001/10/31 03:22:40 nate Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: rbus.c,v 1.3 1999/11/06 06:20:53 soren Exp $	*/
 /*
  * Copyright (c) 1999
@@ -288,7 +288,6 @@ rbus_new(parent, start, size, offset, flags)
   } else if (flags == RBUS_SPACE_DEDICATE) {
     if (NULL == (ex = extent_create("rbus", start, end, M_DEVBUF, NULL, 0, 
 				    EX_NOCOALESCE|EX_NOWAIT))) {
-      free(rb, M_DEVBUF);
       return NULL;
     }
   } else if (flags == RBUS_SPACE_ASK_PARENT) {
