@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.7 1996/12/09 12:00:14 deraadt Exp $	*/
+/*	$OpenBSD: extern.h,v 1.8 1997/01/24 19:41:20 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1996/03/26 23:54:16 mrg Exp $	*/
 
 /*-
@@ -148,6 +148,7 @@ int unlnk_exist __P((register char *, register int));
 int chk_path __P((register char *, uid_t, gid_t));
 void set_ftime __P((char *fnm, time_t mtime, time_t atime, int frc));
 int set_ids __P((char *, uid_t, gid_t));
+int set_lids __P((char *, uid_t, gid_t));
 void set_pmode __P((char *, mode_t));
 int file_write __P((int, char *, register int, int *, int *, int, char *));
 void file_flush __P((int, char *, int));
