@@ -1,4 +1,4 @@
-/*	$OpenBSD: kill.c,v 1.5 2002/02/16 21:27:07 millert Exp $	*/
+/*	$OpenBSD: kill.c,v 1.6 2002/07/04 04:26:40 deraadt Exp $	*/
 /*	$NetBSD: kill.c,v 1.11 1995/09/07 06:30:27 jtc Exp $	*/
 
 /*
@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)kill.c	8.4 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: kill.c,v 1.5 2002/02/16 21:27:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: kill.c,v 1.6 2002/07/04 04:26:40 deraadt Exp $";
 #endif
 #endif /* not lint */
 

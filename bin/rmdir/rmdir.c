@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmdir.c,v 1.6 2002/02/16 21:27:07 millert Exp $	*/
+/*	$OpenBSD: rmdir.c,v 1.7 2002/07/04 04:26:40 deraadt Exp $	*/
 /*	$NetBSD: rmdir.c,v 1.13 1995/03/21 09:08:31 cgd Exp $	*/
 
 /*-
@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rmdir.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: rmdir.c,v 1.6 2002/02/16 21:27:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: rmdir.c,v 1.7 2002/07/04 04:26:40 deraadt Exp $";
 #endif
 #endif /* not lint */
 
