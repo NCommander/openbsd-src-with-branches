@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2001/02/03 22:48:36 art Exp $
+#	$OpenBSD: Makefile,v 1.11 2001/03/24 18:40:20 tholo Exp $
 #	$NetBSD: Makefile,v 1.6 1996/10/18 05:27:38 thorpej Exp $
 
 CFLAGS+=	-DLIBC_SCCS -DPIC -DELFSIZE=64
@@ -29,7 +29,7 @@ crtbegin.o: crtbegin.c
 	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
 
-crtbeginS.o: crtbegin.c
+crtbeginS.o: crtbeginS.c
 	${COMPILE.c} ${PICFLAG} ${.ALLSRC} -o ${.TARGET}.o
 	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
@@ -39,7 +39,7 @@ crtend.o: crtend.c
 	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
 
-crtendS.o: crtend.c
+crtendS.o: crtendS.c
 	${COMPILE.c} ${PICFLAG} ${.ALLSRC} -o ${.TARGET}.o
 	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
