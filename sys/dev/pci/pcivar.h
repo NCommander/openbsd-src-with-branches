@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcivar.h,v 1.38 2004/08/09 22:26:24 pefo Exp $	*/
+/*	$OpenBSD: pcivar.h,v 1.39 2004/11/30 22:30:47 mickey Exp $	*/
 /*	$NetBSD: pcivar.h,v 1.23 1997/06/06 23:48:05 thorpej Exp $	*/
 
 /*
@@ -208,7 +208,6 @@ int pci_matchbyid(struct pci_attach_args *, const struct pci_matchid *, int);
  */
 const char *pci_findvendor(pcireg_t);
 void	pci_devinfo(pcireg_t, pcireg_t, int, char *, size_t);
-void	set_pci_isa_bridge_callback(void (*)(void *), void *);
 const struct pci_quirkdata *
 	pci_lookup_quirkdata(pci_vendor_id_t, pci_product_id_t);
 void	pciagp_set_pchb(struct pci_attach_args *);
