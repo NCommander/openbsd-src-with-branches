@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2001 Charles Mott <cmott@scientech.com>
+ * Copyright (c) 2001 Charles Mott <cm@linktel.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: alias_irc.c,v 1.8 2001/08/21 04:09:16 brian Exp $
+ * $OpenBSD: alias_irc.c,v 1.9 2001/09/13 10:32:56 brian Exp $
  */
 
 /* Alias_irc.c intercepts packages contain IRC CTCP commands, and

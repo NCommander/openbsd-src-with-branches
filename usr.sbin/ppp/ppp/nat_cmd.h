@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2001 Charles Mott <cmott@scientech.com>
+ * Copyright (c) 2001 Charles Mott <cm@linktel.net>
  *                    Brian Somers <brian@Awfulhak.org>
  * All rights reserved.
  *
@@ -24,7 +24,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: nat_cmd.h,v 1.6 2001/07/09 00:08:55 brian Exp $
+ *	$OpenBSD: nat_cmd.h,v 1.7 2001/08/19 23:22:18 brian Exp $
  */
 
 struct cmdargs;

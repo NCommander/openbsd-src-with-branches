@@ -23,9 +23,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: log.h,v 1.8 2000/08/29 17:02:03 brian Exp $
+ *	$OpenBSD: log.h,v 1.9 2001/08/19 23:22:18 brian Exp $
  */
 
+#define LogLOG		(0)
 #define LogMIN		(1)
 #define LogASYNC	(1)	/* syslog(LOG_INFO, ....)	 */
 #define LogCBCP		(2)
