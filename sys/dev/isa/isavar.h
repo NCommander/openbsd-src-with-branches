@@ -52,7 +52,7 @@
  */
 struct isabus_attach_args;
 
-#if (alpha + amiga + i386 != 1)
+#if (alpha + amiga + i386 + pica != 1)
 ERROR: COMPILING FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
 #endif
 #if alpha
@@ -63,6 +63,9 @@ ERROR: COMPILING FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
 #endif
 #if i386
 #include <i386/isa/isa_machdep.h>
+#endif
+#if pica
+#include <pica/isa/isa_machdep.h>
 #endif
 
 /*
