@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.11 1999/11/25 18:28:06 mickey Exp $	*/
+/*	$OpenBSD: frame.h,v 1.12 2002/02/08 18:10:18 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -34,8 +34,6 @@
 
 #ifndef _MACHINE_FRAME_H_
 #define _MACHINE_FRAME_H_
-
-#include <machine/reg.h>
 
 /*
  * Call frame definitions
