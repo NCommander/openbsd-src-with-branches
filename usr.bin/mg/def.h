@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.26 2002/02/13 22:36:58 vincent Exp $	*/
+/*	$OpenBSD: def.h,v 1.27 2002/02/14 13:41:44 deraadt Exp $	*/
 
 /*
  * This file is the general header file for all parts
@@ -382,7 +382,7 @@ char	*adjustname		__P((char *));
 char	*startupfile		__P((char *));
 int	 copy			__P((char *, char *));
 BUFFER  *dired_			__P((char *));
-int	 d_makename		__P((LINE  *, char *));
+int	 d_makename		__P((LINE  *, char *, int));
 LIST	*make_file_list		__P((char *));
 
 /* kbd.c X */
