@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.h,v 1.10 1999/01/03 05:33:48 millert Exp $ */
+/*	$OpenBSD: common.h,v 1.11 2003/04/08 01:54:26 deraadt Exp $ */
 
 #define DEBUGGING
 
@@ -167,8 +167,6 @@ char *malloc();
 char *realloc();
 long atol();
 char *getenv();
-char *strcpy();
-char *strcat();
 char *strrchr();
 int  mkstemp();
 #if 0				/* This can cause a prototype conflict.  */
