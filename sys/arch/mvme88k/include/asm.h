@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.23 2003/01/14 03:20:14 miod Exp $	*/
+/*	$OpenBSD: asm.h,v 1.24 2003/09/16 20:52:19 miod Exp $	*/
 
 /*
  * Mach Operating System
@@ -219,7 +219,7 @@
 #define FLAG_197			11	/* bit number 11 */
 
 /* REGister OFFset into the E.F. (exception frame) */
-#define REG_OFF(reg_num)  ((reg_num) * 4) /* (num * sizeof(register int))  */
+#define REG_OFF(reg_num)  ((reg_num) * 4) /* (num * sizeof(register_t))  */
 #define GENREG_OFF(num)	(REG_OFF(EF_R0 + (num))) /* GENeral REGister OFFset */
 
 /*
