@@ -1,4 +1,4 @@
-/*	$OpenBSD: bdes.c,v 1.6 2001/11/19 19:02:13 mpech Exp $	*/
+/*	$OpenBSD: bdes.c,v 1.7 2002/02/16 21:27:44 millert Exp $	*/
 /*	$NetBSD: bdes.c,v 1.2 1995/03/26 03:33:19 glass Exp $	*/
 
 /*-
@@ -51,7 +51,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)bdes.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: bdes.c,v 1.6 2001/11/19 19:02:13 mpech Exp $";
+static char rcsid[] = "$OpenBSD: bdes.c,v 1.7 2002/02/16 21:27:44 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -205,6 +205,8 @@ main(ac, av)
 	argc = ac;
 	ac = 1;
 	argv = malloc((argc + 1) * sizeof(char *));
+	if (argv == NULL)
+		errx(1, "out of memory");
 	for (i = 0; i < argc; ++i) {
 		argv[i] = strdup(av[i]);
 		MEMZERO(av[i], strlen(av[i]));
