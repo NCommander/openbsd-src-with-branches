@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_file.c,v 1.20 2002/02/13 19:08:06 art Exp $	*/
+/*	$OpenBSD: linux_file.c,v 1.21 2002/03/14 01:26:50 millert Exp $	*/
 /*	$NetBSD: linux_file.c,v 1.15 1996/05/20 01:59:09 fvdl Exp $	*/
 
 /*
@@ -874,9 +874,6 @@ linux_sys_pread(p, v, retval)
 		syscallarg(linux_off_t) offset;
 	} */ *uap = v;
 	struct sys_pread_args pra;
-	caddr_t sg;
-
-	sg = stackgap_init(p->p_emul);
 	
 	SCARG(&pra, fd) = SCARG(uap, fd);
 	SCARG(&pra, buf) = SCARG(uap, buf);
@@ -902,9 +899,6 @@ linux_sys_pwrite(p, v, retval)
 		syscallarg(linux_off_t) offset;
 	} */ *uap = v;
 	struct sys_pwrite_args pra;
-	caddr_t sg;
-
-	sg = stackgap_init(p->p_emul);
 
 	SCARG(&pra, fd) = SCARG(uap, fd);
 	SCARG(&pra, buf) = SCARG(uap, buf);
