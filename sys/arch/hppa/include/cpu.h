@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.17 2000/07/02 04:11:31 mickey Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.18 2000/07/02 04:14:45 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -122,9 +122,8 @@ extern const char *cpu_typename;
 #ifdef _KERNEL
 #define MD_CACHE_FLUSH 0
 #define MD_CACHE_PURGE 1
-#define MD_CACHE_CTL(CACHE_ADDR,CACHE_SIZE,CACHE_FLUSHTYPE)		\
-	(((CACHE_FLUSHTYPE)? pdcache : fdcache)				\
-		(HPPA_SID_KERNEL,(vaddr_t)CACHE_ADDR,CACHE_SIZE))	\
+#define MD_CACHE_CTL(a,s,t)	\
+	(((t)? pdcache : fdcache) (HPPA_SID_KERNEL,(vaddr_t)(a),(s)))
 
 #define DELAY(x) delay(x)
 
