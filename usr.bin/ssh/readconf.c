@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.118 2003/08/22 10:56:09 markus Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.119 2003/08/28 12:54:34 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -137,7 +137,6 @@ static struct {
 	{ "afstokenpassing", oUnsupported },
 #if defined(GSSAPI)
 	{ "gssapiauthentication", oGssAuthentication },
-	{ "gssapidelegatecreds", oGssDelegateCreds },
 	{ "gssapidelegatecredentials", oGssDelegateCreds },
 #else
 	{ "gssapiauthentication", oUnsupported },
