@@ -1,4 +1,4 @@
-/* $OpenBSD: conf.h,v 1.26 2004/04/07 22:45:49 ho Exp $	 */
+/* $OpenBSD: conf.h,v 1.27 2004/04/15 18:39:25 deraadt Exp $	 */
 /* $EOM: conf.h,v 1.13 2000/09/18 00:01:47 ho Exp $	 */
 
 /*
@@ -52,6 +52,7 @@
 #define CONF_DFLT_VAL_LIFE_QUICK_MODE  "1200,60:86400"
 
 #define CONF_DFLT_VAL_BLF_KEYLEN       "128,96:192"
+#define CONF_DFLT_VAL_AES_KEYLEN       "128,128:256"
 
 #define CONF_DFLT_RETRANSMITS          "3"
 #define CONF_DFLT_EXCH_MAX_TIME        "120"
