@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2002/06/06 00:38:40 markus Exp $
+#	$OpenBSD: Makefile,v 1.15 2002/06/24 12:48:06 wcobb Exp $
 
 REGRESSTARGETS=	t1 t2 t3 t4 t5 t6 t7
 
@@ -19,6 +19,7 @@ LTESTS= 	connect \
 		agent \
 		agent-timeout \
 		keyscan \
+		keygen-change \
 		sftp \
 		forwarding
 
