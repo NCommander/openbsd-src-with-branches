@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.32 2002/03/21 03:02:32 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.33 2002/03/23 13:28:34 espie Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -834,7 +834,7 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	if (namelen != 1)
 		return ENOTDIR;
 	switch (name[0]) {
-		case CPU_ALLOWAPERTURE:
+	case CPU_ALLOWAPERTURE:
 #ifdef APERTURE
 		if (securelevel > 0) 
 			return (sysctl_rdint(oldp, oldlenp, newp, 
