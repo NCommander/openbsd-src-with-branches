@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.128 2002/02/16 00:51:44 markus Exp $");
+RCSID("$OpenBSD: session.c,v 1.130 2002/03/18 17:50:31 provos Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -939,7 +939,7 @@ do_setusercontext(struct passwd *pw)
 		fatal("Failed to set uids to %u.", (u_int) pw->pw_uid);
 }
 
-void
+static void
 launch_login(struct passwd *pw, const char *hostname)
 {
 	/* Launch login(1). */
