@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.30 2003/12/08 10:23:39 markus Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.26 2003/03/25 18:10:06 millert Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -378,7 +378,7 @@ gre_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 		((struct ip *) gh)->ip_hl = (sizeof(struct ip)) >> 2;
 		((struct ip *) gh)->ip_ttl = ip_defttl;
 		((struct ip *) gh)->ip_tos = inp->ip_tos;
-		gh->gi_len = htons(m->m_pkthdr.len);
+		gh->gi_len = m->m_pkthdr.len;
 	}
 
 	ifp->if_opackets++;
