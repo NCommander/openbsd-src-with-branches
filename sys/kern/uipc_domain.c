@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_domain.c,v 1.9 1999/12/08 06:50:17 itojun Exp $	*/
+/*	$OpenBSD: uipc_domain.c,v 1.10 2000/03/23 10:42:29 art Exp $	*/
 /*	$NetBSD: uipc_domain.c,v 1.14 1996/02/09 19:00:44 christos Exp $	*/
 
 /*
@@ -99,6 +99,9 @@ domaininit()
 #endif
 #ifdef CCITT
 	ADDDOMAIN(ccitt);
+#endif
+#ifdef NATM
+	ADDDOMAIN(natm);
 #endif
 #ifdef notdef /* XXXX */
 #include "imp.h"
