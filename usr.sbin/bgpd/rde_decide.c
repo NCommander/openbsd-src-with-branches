@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_decide.c,v 1.37 2004/08/05 18:44:19 claudio Exp $ */
+/*	$OpenBSD: rde_decide.c,v 1.38 2004/08/06 12:04:08 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -97,7 +97,6 @@ int	prefix_cmp(struct prefix *, struct prefix *);
  *  - withdraw of a prefix (prefix_remove)
  *  - state change of the nexthop (nexthop-{in}validate)
  *  - state change of session (session down)
- *
  */
 
 /*
@@ -173,7 +172,7 @@ prefix_cmp(struct prefix *p1, struct prefix *p2)
 
 	fatalx("Uh, oh a politician in the decision process");
 	/* NOTREACHED */
-	return 0;
+	return (0);
 }
 
 /*
