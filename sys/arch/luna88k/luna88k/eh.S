@@ -1,4 +1,4 @@
-/*   $OpenBSD: eh.S,v 1.1 2004/04/21 15:24:00 aoyama Exp $   */
+/*   $OpenBSD: eh.S,v 1.2 2004/07/27 12:16:04 miod Exp $   */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -27,6 +27,8 @@
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
+
+#include <machine/board.h>
 
 /*
  * Save Pbus fault status register from data and inst CMMU.

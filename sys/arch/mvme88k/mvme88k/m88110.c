@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88110.c,v 1.15 2004/06/22 04:55:35 miod Exp $	*/
+/*	$OpenBSD: m88110.c,v 1.16 2004/06/26 20:58:13 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * All rights reserved.
@@ -62,7 +62,6 @@
 #include <sys/systm.h>
 #include <sys/simplelock.h>
 
-#include <machine/board.h>
 #include <machine/cpu_number.h>
 #include <machine/cmmu.h>
 #include <machine/m88110.h>

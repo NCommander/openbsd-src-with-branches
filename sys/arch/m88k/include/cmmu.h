@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmmu.h,v 1.1 2004/04/26 12:34:05 miod Exp $ */
+/*	$OpenBSD: cmmu.h,v 1.2 2004/05/07 18:06:39 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University
@@ -25,12 +25,12 @@
  * the rights to redistribute these changes.
  */
 
-#ifndef	_MACHINE_CMMU_H_
-#define	_MACHINE_CMMU_H_
+#ifndef	_M88K_CMMU_H_
+#define	_M88K_CMMU_H_
 
 #include <machine/mmu.h>
 
-#ifndef	_LOCORE
+#if defined(_KERNEL) && !defined(_LOCORE)
 /*
  * Prototypes and stuff for cmmu.c.
  */
@@ -99,6 +99,6 @@ extern struct cmmu_p *cmmu;
 #define	cmmu_show_translation(a, b, c, d)	(cmmu->cmmu_show_translation_func)(a, b, c, d)
 #define show_apr(ap)		(cmmu->show_apr_func)(ap)
 
-#endif	/* _LOCORE */
+#endif	/* _KERNEL && !_LOCORE */
 
-#endif	/* _MACHINE_CMMU_H_ */
+#endif	/* _M88K_CMMU_H_ */
