@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_conf.h,v 1.7 1996/10/04 07:08:02 downsj Exp $	*/
+/*	$OpenBSD: pcvt_conf.h,v 1.8 1997/05/22 21:18:35 millert Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -197,7 +197,7 @@
 #endif
 
 #if !defined PCVT_PRETTYSCRNS	/* ---------- DEFAULT: OFF ------------ */
-# define PCVT_PRETTYSCRNS 1	/* for the cost of some microseconds of	*/
+# define PCVT_PRETTYSCRNS 0	/* for the cost of some microseconds of	*/
 #elif PCVT_PRETTYSCRNS != 0	/* cpu time this adds a more "pretty"	*/
 # undef PCVT_PRETTYSCRNS	/* version to the screensaver, an "*"	*/
 # define PCVT_PRETTYSCRNS 1	/* in random locations of the display.	*/
