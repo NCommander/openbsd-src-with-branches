@@ -1,4 +1,4 @@
-|	$Id$
+|	$OpenBSD$
 
 | Copyright (c) 1988 Regents of the University of California.
 | All rights reserved.

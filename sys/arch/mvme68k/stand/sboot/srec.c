@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Public domain, believed to be by Mike Price.
  * 

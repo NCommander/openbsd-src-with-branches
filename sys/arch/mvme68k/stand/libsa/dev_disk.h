@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 
 int	disk_open __P((struct open_file *, ...));
 int	disk_close __P((struct open_file *));

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 LIB_SA_DIR=${S}/arch/${MACHINE}/stand/libsa
 
 LIBSA_DIR!= cd ${LIB_SA_DIR}; \

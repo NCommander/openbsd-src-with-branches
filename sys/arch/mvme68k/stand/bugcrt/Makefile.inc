@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 BUG_CRT_DIR=${S}/arch/${MACHINE}/stand/bugcrt
 
 BUGCRT_DIR!= cd ${BUG_CRT_DIR}; \

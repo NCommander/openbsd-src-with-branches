@@ -1,4 +1,4 @@
-#	$Id$
+#	$OpenBSD$
 
 S=	${.CURDIR}/../../../..
 INCL?= -I${.CURDIR} -I${.CURDIR}/../libsa -I${S}/lib/libsa -I${S}

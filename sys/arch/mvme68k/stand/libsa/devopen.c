@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 
 #include <sys/param.h>
 #include <stand.h>

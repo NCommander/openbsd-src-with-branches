@@ -1,4 +1,4 @@
-#	$Id$
+#	$OpenBSD$
 
 RELOC=0x3F0000
 

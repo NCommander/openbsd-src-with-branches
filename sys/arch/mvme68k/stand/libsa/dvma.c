@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 
 /*
  * The easiest way to deal with the need for DVMA mappings is
