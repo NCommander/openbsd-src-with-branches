@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncheck_ffs.c,v 1.5 1997/01/15 23:41:30 millert Exp $	*/
+/*	$OpenBSD: ncheck_ffs.c,v 1.6 2001/07/07 18:26:16 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995, 1996 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
@@ -31,7 +31,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: ncheck_ffs.c,v 1.5 1997/01/15 23:41:30 millert Exp $";
+static char rcsid[] = "$OpenBSD: ncheck_ffs.c,v 1.6 2001/07/07 18:26:16 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -158,8 +158,8 @@ void
 findinodes(maxino)
 	ino_t maxino;
 {
-	register ino_t ino;
-	register struct dinode *dp;
+	ino_t ino;
+	struct dinode *dp;
 	mode_t mode;
 
 	for (ino = ROOTINO; ino < maxino; ino++) {

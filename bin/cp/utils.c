@@ -1,4 +1,4 @@
-/*	$OpenBSD: utils.c,v 1.16 2001/06/25 04:35:31 art Exp $	*/
+/*	$OpenBSD: utils.c,v 1.17 2001/09/06 13:29:08 mpech Exp $	*/
 /*	$NetBSD: utils.c,v 1.6 1997/02/26 14:40:51 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)utils.c	8.3 (Berkeley) 4/1/94";
 #else
-static char rcsid[] = "$OpenBSD: utils.c,v 1.16 2001/06/25 04:35:31 art Exp $";
+static char rcsid[] = "$OpenBSD: utils.c,v 1.17 2001/09/06 13:29:08 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -299,7 +299,7 @@ setfile(fs, fd)
 
 int
 setlink(fs)
-	register struct stat *fs;
+	struct stat *fs;
 {
 
 	if (lchown(to.p_path, fs->st_uid, fs->st_gid)) {
