@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.16 1997/08/25 08:38:45 downsj Exp $	*/
+/*	$OpenBSD: zs.c,v 1.17 1997/09/17 06:47:12 downsj Exp $	*/
 /*	$NetBSD: zs.c,v 1.49 1997/08/31 21:26:37 pk Exp $ */
 
 /*
@@ -1021,7 +1021,8 @@ zsabort(unit)
 #if defined(KGDB)
 	zskgdb(unit);
 #elif defined(DDB)
-	Debugger();
+	if (db_console)
+		Debugger();
 #else
 	printf("stopping on keyboard abort\n");
 	callrom();
