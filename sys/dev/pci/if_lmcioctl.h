@@ -1,4 +1,5 @@
-/*	$Id: if_lmcioctl.h,v 1.9 1999/02/18 10:30:18 explorer Exp $	*/
+/*	$OpenBSD$ */
+/*	$Id: if_lmcioctl.h,v 1.2 1999/10/26 23:47:15 chris Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 LAN Media Corporation (LMC)
@@ -308,6 +309,7 @@ struct lmc___media {
 	void	(* set_link_status)(lmc_softc_t * const, int);
 	void	(* set_crc_length)(lmc_softc_t * const, int);
 	void    (* set_circuit_type)(lmc_softc_t * const, int);
+	void	(* watchdog)(lmc_softc_t * const);
 };
 
 u_int32_t lmc_mii_readreg(lmc_softc_t * const sc, u_int32_t devaddr,

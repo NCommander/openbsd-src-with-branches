@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: if_lmc_common.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
