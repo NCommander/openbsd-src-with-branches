@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.18 2003/03/13 02:38:22 millert Exp $	*/
+/*	$OpenBSD: md5.c,v 1.19 2003/03/23 00:31:23 millert Exp $	*/
 
 /*
  * Copyright (c) 2001,2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -267,7 +267,7 @@ digest_filelist(char *file)
 			continue;
 
 		filename = p + 2;
-		p = strchr(filename, ')');
+		p = strrchr(filename, ')');
 		if (p == NULL || strncmp(p + 1, " = ", (size_t)3) != 0)
 			continue;
 		*p = '\0';
