@@ -1,4 +1,4 @@
-/* $OpenBSD: ipsecadm.c,v 1.22 1999/08/05 22:02:04 ho Exp $ */
+/* $OpenBSD: ipsecadm.c,v 1.23 1999/08/25 15:36:57 angelos Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -387,8 +387,9 @@ main(int argc, char **argv)
 		  }
 		  else
 		  {
-		      fprintf(stderr, "%s: unknown command: %s", argv[0], 
+		      fprintf(stderr, "%s: unknown command: %s\n", argv[0], 
 			      argv[1]);
+		      usage();
 		      exit(1);
 		  }
     
