@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.118 2003/01/03 21:37:44 cedric Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.120 2003/01/03 22:48:17 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1522,6 +1522,5 @@ main(int argc, char *argv[])
 		if (pfctl_clear_rule_counters(dev, opts))
 			error = 1;
 	}
-	close(dev);
 	exit(error);
 }
