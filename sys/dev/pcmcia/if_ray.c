@@ -153,7 +153,7 @@
 #endif
 
 #ifndef	RAY_MODE_DEFAULT
-#define	RAY_MODE_DEFAULT	SC_MODE_INFRA
+#define	RAY_MODE_DEFAULT	SC_MODE_ADHOC
 #endif
 
 #ifndef	RAY_DEF_NWID
