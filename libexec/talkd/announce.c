@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)announce.c	5.9 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: announce.c,v 1.1.1.1 1995/10/18 08:43:22 deraadt Exp $";
+static char rcsid[] = "$Id: announce.c,v 1.2 1996/04/28 23:56:18 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -104,11 +104,12 @@ announce_proc(request, remote_machine)
 	char *remote_machine;
 {
 	int pid, status;
-	char full_tty[32];
+	char full_tty[MAXPATHLEN];
 	FILE *tf;
 	struct stat stbuf;
 
-	(void)sprintf(full_tty, "%s/%s", _PATH_DEV, request->r_tty);
+	(void)snprintf(full_tty, sizeof full_tty, "%s/%s", _PATH_DEV,
+	    request->r_tty);
 	if (access(full_tty, 0) != 0)
 		return (FAILED);
 	if ((tf = fopen(full_tty, "w")) == NULL)
