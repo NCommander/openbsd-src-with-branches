@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.16 1998/01/24 18:21:39 mickey Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.17 1998/02/25 03:45:15 angelos Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -191,8 +191,7 @@ tcp_usrreq(so, req, m, nam, control)
 	 */
 	case PRU_CONNECT:
 		/* Trying to connect to some broadcast address */
-		if (in_broadcast(sin->sin_addr, NULL))
-		{
+		if (in_broadcast(sin->sin_addr, NULL)) {
 			error = EINVAL;
 			break;
 		}
