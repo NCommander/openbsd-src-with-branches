@@ -1,6 +1,3 @@
-/*	$OpenBSD: subdi3.c,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
-/*	$NetBSD: subdi3.c,v 1.5 1995/10/07 09:26:52 mycroft Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,18 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)subdi3.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$OpenBSD: subdi3.c,v 1.3 2003/06/02 23:28:08 millert Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: subdi3.c,v 1.5 2004/10/17 17:49:21 otto Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include "quad.h"
 
 /*
  * Subtract two quad values.  This is trivial since a one-bit carry
- * from a single u_long difference x-y occurs if and only if (x-y) > x.
+ * from a single u_int difference x-y occurs if and only if (x-y) > x.
  */
 quad_t
 __subdi3(quad_t a, quad_t b)
