@@ -5,7 +5,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
 static char elsieid[] = "@(#)asctime.c	7.9";
-static char rcsid[] = "$OpenBSD: asctime.c,v 1.5 1998/11/20 11:18:55 d Exp $";
+static char rcsid[] = "$OpenBSD: asctime.c,v 1.6 1999/01/29 07:09:26 d Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
@@ -69,7 +69,7 @@ const struct tm *	timeptr;
 {
 	/* asctime_r won't exceed this buffer: */
 	static char result[26];
-	_THREAD_PRIVATE_KEY(asctime)
+	_THREAD_PRIVATE_KEY(asctime);
 	char *resultp = (char*) _THREAD_PRIVATE(asctime, result, NULL);
 
 	if (resultp == NULL)

@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: ttyname.c,v 1.5 1998/08/27 06:42:16 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ttyname.c,v 1.6 1998/11/20 11:18:40 d Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -67,7 +67,7 @@ ttyname_r(int fd, char *buf, size_t buflen)
 char *
 ttyname(int fd)
 {
-	_THREAD_PRIVATE_KEY(ttyname)
+	_THREAD_PRIVATE_KEY(ttyname);
 	char * bufp = (char*) _THREAD_PRIVATE(ttyname, buf, NULL);
 	int err;
 
