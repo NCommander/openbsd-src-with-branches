@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.h,v 1.5 1997/03/30 22:05:11 mickey Exp $	*/
+/*	$OpenBSD: ip_ah.h,v 1.6 1997/06/20 05:41:47 provos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -55,6 +55,7 @@ struct ahstat
     u_int32_t	ahs_badauthl;	/* bad authenticator length */
     u_int32_t	ahs_input;	/* Input AH packets */
     u_int32_t	ahs_output;	/* Output AH packets */
+    u_int32_t   ahs_invalid;    /* Trying to use an invalid TDB */
 };
 
 #define AHHMACMD5_KMAX  64              /* max 512 bits key */
