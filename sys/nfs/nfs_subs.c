@@ -1303,8 +1303,7 @@ nfs_getattrcache(vp, vaper)
 	struct nfsnode *np = VTONFS(vp);
 	struct vattr *vap;
 
-	if (np->n_attrstamp == 0 ||
-	    (time_second - np->n_attrstamp) >= nfs_attrtimeo(np)) {
+	if ((time_second - np->n_attrstamp) >= nfs_attrtimeo(np)) {
 		nfsstats.attrcache_misses++;
 		return (ENOENT);
 	}

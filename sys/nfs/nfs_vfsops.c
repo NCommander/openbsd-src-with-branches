@@ -261,6 +261,15 @@ nfs_mountroot()
 	procp = curproc; /* XXX */
 
 	/*
+	 * XXX time must be non-zero when we init the interface or else
+	 * the arp code will wedge.  [Fixed now in if_ether.c]
+	 * However, the NFS attribute cache gives false "hits" when
+	 * time_second < NFS_ATTRTIMEO(np) so keep this in for now.
+	 */
+	if (time_second < NFS_MAXATTRTIMO)
+		time_second = NFS_MAXATTRTIMO;
+
+	/*
 	 * Call nfs_boot_init() to fill in the nfs_diskless struct.
 	 * Side effect:  Finds and configures a network interface.
 	 */
