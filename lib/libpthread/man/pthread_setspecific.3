@@ -1,4 +1,4 @@
-.\" $OpenBSD: pthread_setspecific.3,v 1.8 2001/06/24 23:46:35 jasoni Exp $
+.\" $OpenBSD: pthread_setspecific.3,v 1.9 2002/02/21 20:12:19 fgsch Exp $
 .\"
 .\" Copyright (c) 1996 John Birrell <jb@cimlogic.com.au>.
 .\" All rights reserved.
@@ -69,8 +69,8 @@ may result in lost storage or infinite loops.
 .Sh RETURN VALUES
 If successful, the
 .Fn pthread_setspecific
-function will return zero. Otherwise an error number will be returned to
-indicate the error.
+function will return zero.
+Otherwise an error number will be returned to indicate the error.
 .Sh ERRORS
 .Fn pthread_setspecific
 will fail if:
