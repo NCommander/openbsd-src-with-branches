@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.11 2001/08/15 23:50:34 fgsch Exp $
+# $OpenBSD: Makefile.inc,v 1.12 2001/08/17 22:12:31 pvalchev Exp $
 # $FreeBSD: Makefile.inc,v 1.19 1999/08/28 00:03:19 peter Exp $
 
 # uthread sources
@@ -93,6 +93,7 @@ SRCS+= \
 	uthread_rwlockattr.c \
 	uthread_select.c \
 	uthread_self.c \
+	uthread_sem.c \
 	uthread_sendmsg.c \
 	uthread_sendto.c \
 	uthread_seterrno.c \
