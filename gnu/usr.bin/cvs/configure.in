@@ -99,14 +99,6 @@ dnl so we can go back to a simple check.
 AC_CHECK_LIB(sec, getspnam)
 AC_CHECK_FUNCS(getspnam)
 
-dnl
-dnl Check for a system libz.
-dnl
-AC_CHECK_LIB(z, zlibVersion, ZLIB=-lz , ZLIBSUBDIRS=zlib ZLIB=$srcdir/zlib/libz.a ZLIB_INCLUDES=-I$srcdir/zlib)
-AC_SUBST(ZLIB)
-AC_SUBST(ZLIBSUBDIRS)
-AC_SUBST(ZLIB_INCLUDES)
-
 dnl We always use CVS's regular expression matcher.
 dnl This is because:
 dnl (1) If memory serves, the syntax of the regular expressions
@@ -268,17 +260,32 @@ echo "default place for GSSAPI is $GSSAPI"
 AC_SUBST(GSSAPI)])dnl
 WITH_GSSAPI
 
-AC_MSG_CHECKING([for gssapi.h])
 hold_cppflags=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS -I$GSSAPI/include "
-AC_CHECK_HEADER(gssapi/gssapi.h,
-  [AC_DEFINE(HAVE_GSSAPI)
-   LIBS="$LIBS -L$GSSAPI/lib -lgssapi_krb5 -lkrb5 -lcrypto -lcom_err"
-   includeopt="${includeopt} -I$GSSAPI/include"
-   # This is necessary on Irix 5.3, in order to link against libkrb5 --
-   # there, an_to_ln.o refers to things defined only in -lgen.
-   AC_CHECK_LIB(gen, compile)])
+AC_CHECK_HEADERS(gssapi.h gssapi/gssapi.h gssapi/gssapi_generic.h)
 CPPFLAGS=$hold_cppflags
+
+if test "$ac_cv_header_gssapi_h" = "yes" || test "$ac_cv_header_gssapi_gssapi_h" = "yes"; then
+  AC_DEFINE(HAVE_GSSAPI)
+  includeopt="${includeopt} -I$GSSAPI/include"
+  # FIXME: This is ugly, but these things don't seem to be standardized.
+  if test "$ac_cv_header_gssapi_h" = "yes"; then
+    LIBS="$LIBS -L$GSSAPI/lib -lgssapi -lkrb5 -lasn1 -ldes -lroken"
+  else
+    LIBS="$LIBS -L$GSSAPI/lib -lgssapi_krb5 -lkrb5 -lcrypto -lcom_err"
+  fi
+  save_CPPFLAGS=$CPPFLAGS
+  CPPFLAGS="-I$GSSAPI/include $CPPFLAGS"
+  if test "$ac_cv_header_gssapi_h" = "yes"; then
+    AC_EGREP_HEADER(GSS_C_NT_HOSTBASED_SERVICE, gssapi.h, AC_DEFINE(HAVE_GSS_C_NT_HOSTBASED_SERVICE))
+  else
+    AC_EGREP_HEADER(GSS_C_NT_HOSTBASED_SERVICE, gssapi/gssapi.h, AC_DEFINE(HAVE_GSS_C_NT_HOSTBASED_SERVICE))
+  fi
+  CPPFLAGS=$save_CPPFLAGS
+  # This is necessary on Irix 5.3, in order to link against libkrb5 --
+  # there, an_to_ln.o refers to things defined only in -lgen.
+  AC_CHECK_LIB(gen, compile)
+fi
 
 dnl
 dnl Use --with-encryption to turn on encryption support
@@ -327,18 +334,10 @@ fi])
 ### we couldn't find it, but that interacts badly with the cache
 ### variables, the 'unset' command isn't portable, and I'm not sure
 ### there's any harm in just testing for -lcrypt first.
-###
-### XXX OpenBSD has crypt in libc, but don't carry libcrypt.  However
-### XXX it used to have libcrypt which means old systems that hasn't
-### XXX explicitly removed libcrypt will establish dependencies on the
-### XXX obsolete library.
 
 if test "$enable_server" = yes; then
-AC_CHECK_FUNCS(crypt)
-if test "$ac_cv_func_crypt" = no; then
 AC_CHECK_LIB(crypt, crypt)
 AC_CHECK_FUNCS(crypt)
-fi
 
 if test "$ac_cv_func_crypt" = yes; then
   AC_DEFINE(AUTH_SERVER_SUPPORT)

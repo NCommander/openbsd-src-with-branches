@@ -326,30 +326,6 @@ parse_config (cvsroot)
 		goto error_return;
 	    }
 	}
-	else if (strcmp (line, "tag") == 0) {
-	    RCS_citag = strdup(p);
-	    if (RCS_citag == NULL) {
-		error (0, 0, "%s: no memory for local tag '%s'",
-		       infopath, p);
-		goto error_return;
-	    }
-	}
-	else if (strcmp (line, "umask") == 0) {
-	    cvsumask = (mode_t)(strtol(p, NULL, 8) & 0777);
-	}
-	else if (strcmp (line, "dlimit") == 0) {
-#ifdef BSD
-#include <sys/resource.h>
-	    struct rlimit rl;
-
-	    if (getrlimit(RLIMIT_DATA, &rl) != -1) {
-		rl.rlim_cur = atoi(p);
-		rl.rlim_cur *= 1024;
-
-		(void) setrlimit(RLIMIT_DATA, &rl);
-	    }
-#endif /* BSD */
-	}
 	else if (strcmp (line, "PreservePermissions") == 0)
 	{
 	    if (strcmp (p, "no") == 0)
@@ -367,6 +343,18 @@ warning: this CVS does not support PreservePermissions");
 	    {
 		error (0, 0, "unrecognized value '%s' for PreservePermissions",
 		       p);
+		goto error_return;
+	    }
+	}
+	else if (strcmp (line, "TopLevelAdmin") == 0)
+	{
+	    if (strcmp (p, "no") == 0)
+		top_level_admin = 0;
+	    else if (strcmp (p, "yes") == 0)
+		top_level_admin = 1;
+	    else
+	    {
+		error (0, 0, "unrecognized value '%s' for TopLevelAdmin", p);
 		goto error_return;
 	    }
 	}

@@ -284,14 +284,10 @@ static const char *const config_contents[] = {
     "# in the repository.\n",
     "#PreservePermissions=no\n",
     "\n",
-    "# Set this to the name of a local tag to use in addition to Id\n",
-    "#tag=OurTag\n",
-    "\n",
-    "# Set this to the default umask to use when creating files and directories\n",
-    "#umask=002\n",
-    "\n",
-    "# Set this to the default data resource limit to use\n",
-    "#dlimit=65536\n",
+    "# Set `TopLevelAdmin' to `yes' to create a CVS directory at the top\n",
+    "# level of the new working directory when using the `cvs checkout'\n",
+    "# command.\n",
+    "#TopLevelAdmin=no\n",
     NULL
 };
 
