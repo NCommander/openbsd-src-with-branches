@@ -1,4 +1,4 @@
-/*	$OpenBSD: rs.c,v 1.8 2003/06/03 02:56:15 millert Exp $	*/
+/*	$OpenBSD: rs.c,v 1.9 2003/06/10 22:20:50 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -366,14 +366,18 @@ char **
 getptrs(char **sp)
 {
 	char **p;
+	int newsize, gap;
 
-	allocsize += allocsize;
-	p = (char **)realloc(elem, allocsize * sizeof(char *));
-	if (p == (char **)0)
+	newsize = allocsize * 2;
+	p = realloc(elem, newsize * sizeof(char *));
+	if (p == NULL)
 		err(1, "no memory");
 
-	sp += (p - elem);
-	endelem = (elem = p) + allocsize;
+	gap = p - elem;
+	elem = p;
+	allocsize = newsize;
+	sp += gap;
+	endelem = elem + allocsize;
 	return(sp);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: users.c,v 1.6 2002/09/17 19:37:40 deraadt Exp $	*/
+/*	$OpenBSD: users.c,v 1.7 2003/06/03 02:56:21 millert Exp $	*/
 /*	$NetBSD: users.c,v 1.5 1994/12/20 15:58:19 jtc Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)users.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: users.c,v 1.6 2002/09/17 19:37:40 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: users.c,v 1.7 2003/06/03 02:56:21 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -82,14 +82,18 @@ main(int argc, char *argv[])
 	while (fread((char *)&utmp, sizeof(utmp), 1, stdin) == 1) {
 		if (*utmp.ut_name) {
 			if (ncnt >= nmax) {
-				nmax += 32;
-				names = realloc(names, 
-					sizeof (*names) * nmax);
+				size_t newmax = nmax + 32;
+				namebuf *newnames;
 
-				if (!names) {
+				newnames = realloc(names,
+				    sizeof(*names) * newmax);
+
+				if (newnames == NULL) {
 					err(1, NULL);
 					/* NOTREACHED */
 				}
+				names = newnames;
+				nmax = newmax;
 			}
 
 			(void)strncpy(names[ncnt], utmp.ut_name, UT_NAMESIZE);
