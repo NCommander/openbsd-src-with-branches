@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.2 2004/03/19 20:36:28 canacar Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.4 2004/09/28 17:14:07 jakob Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -122,7 +122,7 @@ isc_priv_init(int lstderr)
 }
 
 int
-isc_drop_privs(const char *username)
+isc_drop_privs(const char *username, const char *dir)
 {
 	struct passwd *pw;
 	
@@ -131,7 +131,7 @@ isc_drop_privs(const char *username)
 		exit(1);
 	}
 
-	if (chroot(pw->pw_dir) == -1)
+	if (chroot(dir ? dir : pw->pw_dir) == -1)
 		fatal("chroot failed");
 
 	if (chdir("/"))
