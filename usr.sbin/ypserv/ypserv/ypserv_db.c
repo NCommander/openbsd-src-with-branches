@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_db.c,v 1.6 1996/06/27 20:25:54 deraadt Exp $ */
+/*	$OpenBSD: ypserv_db.c,v 1.7 1996/09/29 08:11:04 dm Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -34,7 +34,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.6 1996/06/27 20:25:54 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.7 1996/09/29 08:11:04 dm Exp $";
 #endif
 
 /*
@@ -489,7 +489,7 @@ ypdb_get_record(domain, map, key, ypprivate)
 		res.stat = YP_NOKEY;
 		if ((hn = strcmp(map, YP_HOSTNAME)) != 0 &&
 				strcmp(map, YP_HOSTADDR) != 0) 
-			return(res);
+			goto done;
 		/* note: lookup_host needs null terminated string */
 		strncpy(keystr, key.keydat_val, key.keydat_len);
 		keystr[key.keydat_len] = '\0';
