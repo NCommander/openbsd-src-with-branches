@@ -1,4 +1,4 @@
-/*	$OpenBSD: lndir.c,v 1.4 1996/08/19 14:20:18 niklas Exp $	*/
+/*	$OpenBSD: lndir.c,v 1.5 2000/07/20 17:47:17 ericj Exp $	*/
 /* $XConsortium: lndir.c /main/15 1995/08/30 10:56:18 gildea $ */
 
 /* 
@@ -84,8 +84,7 @@ main (argc, argv)
 	int	argc;
 	char 	**argv;
 {
-	int ch;
-    	char *fn, *tn;
+	char *fn, *tn;
 	struct stat fs, ts;
 
         while (++argv, --argc) {
