@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.5 1997/07/06 08:06:40 downsj Exp $
+#	$OpenBSD: RAMDISK,v 1.6 1997/10/20 01:49:02 downsj Exp $
 #
 # Ram disk kernel.
 #
@@ -18,6 +18,7 @@ option	 	HP360
 option	 	HP370
 option	 	HP375
 option	 	HP380
+option		HP385
 option	 	HP400
 option	 	HP425
 option	 	HP433
