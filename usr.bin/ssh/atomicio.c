@@ -24,7 +24,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: atomicio.c,v 1.4 2000/06/20 01:39:37 markus Exp $");
+RCSID("$OpenBSD: atomicio.c,v 1.5 2000/09/07 20:27:49 deraadt Exp $");
 
 #include "xmalloc.h"
 #include "ssh.h"
@@ -49,7 +49,7 @@ atomicio(f, fd, _s, n)
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
 		case 0:
-			return (res);
+			return (pos);
 		default:
 			pos += res;
 		}
