@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: message.c,v 1.3 1998/08/22 08:55:33 pjanzen Exp $	*/
 /*	$NetBSD: message.c,v 1.5 1995/04/22 10:27:43 cgd Exp $	*/
 
 /*
@@ -61,7 +61,7 @@ static char rcsid[] = "$OpenBSD";
 #include <termios.h>
 #include "rogue.h"
 
-char msgs[NMESSAGES][DCOLS] = {"", "", "", "", ""};
+char msgs[NMESSAGES][DCOLS] = {{0}, {0}, {0}, {0}, {0}};
 short msg_col = 0, imsg = -1;
 boolean msg_cleared = 1, rmsg = 0;
 char hunger_str[8] = "";
