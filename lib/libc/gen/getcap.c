@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getcap.c,v 1.11 1997/09/12 08:53:08 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: getcap.c,v 1.12 1998/03/17 23:28:58 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -593,12 +593,12 @@ cgetmatch(buf, name)
 		 */
 		np = name;
 		for (;;)
-			if (*np == '\0')
+			if (*np == '\0') {
 				if (*bp == '|' || *bp == ':' || *bp == '\0')
 					return (0);
 				else
 					break;
-			else
+			} else
 				if (*bp++ != *np++)
 					break;
 

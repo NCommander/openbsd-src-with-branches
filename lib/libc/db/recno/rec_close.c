@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: rec_close.c,v 1.3 1996/08/19 08:20:58 tholo Exp $";
+static char rcsid[] = "$OpenBSD: rec_close.c,v 1.4 1996/09/15 09:30:53 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -79,14 +79,14 @@ __rec_close(dbp)
 	if (F_ISSET(t, R_MEMMAPPED) && munmap(t->bt_smap, t->bt_msize))
 		status = RET_ERROR;
 
-	if (!F_ISSET(t, R_INMEM))
+	if (!F_ISSET(t, R_INMEM)) {
 		if (F_ISSET(t, R_CLOSEFP)) {
 			if (fclose(t->bt_rfp))
 				status = RET_ERROR;
 		} else
 			if (close(t->bt_rfd))
 				status = RET_ERROR;
-
+	}
 	if (__bt_close(dbp) == RET_ERROR)
 		status = RET_ERROR;
 
