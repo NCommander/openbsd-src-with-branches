@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.12 2002/06/07 20:56:38 drahn Exp $ */
+/*	$OpenBSD: util.c,v 1.13 2002/07/25 19:01:15 miod Exp $ */
 /*	$NetBSD: util.c,v 1.8 2000/03/14 08:11:53 sato Exp $ */
 
 /*-
@@ -62,6 +62,7 @@ static const struct nameint kbtype_tab[] = {
 	{ WSKBD_TYPE_PC_XT,	"pc-xt" },
 	{ WSKBD_TYPE_PC_AT,	"pc-at" },
 	{ WSKBD_TYPE_USB,	"usb" },
+	{ WSKBD_TYPE_NEXT,	"NeXT" },
 	{ WSKBD_TYPE_HPC_KBD,	"hpc-kbd" },
 	{ WSKBD_TYPE_HPC_BTN,	"hpc-btn" },
 	{ WSKBD_TYPE_ADB,	"adb" },
