@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.56 2004/06/17 09:43:55 itojun Exp $	*/
+/*	$OpenBSD: in6.c,v 1.57 2004/06/21 23:50:37 tholo Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -2190,7 +2190,7 @@ in6_are_prefix_equal(p1, p2, len)
 	int bytelen, bitlen;
 
 	/* sanity check */
-	if (0 > len || len > 128) {
+	if (0 > len || len >= 128) {
 		log(LOG_ERR, "in6_are_prefix_equal: invalid prefix length(%d)\n",
 		    len);
 		return (0);
@@ -2218,7 +2218,7 @@ in6_prefixlen2mask(maskp, len)
 	int bytelen, bitlen, i;
 
 	/* sanity check */
-	if (0 > len || len > 128) {
+	if (0 > len || len >= 128) {
 		log(LOG_ERR, "in6_prefixlen2mask: invalid prefix length(%d)\n",
 		    len);
 		return;
