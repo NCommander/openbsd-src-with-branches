@@ -59,7 +59,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.77 2001/06/23 15:12:18 itojun Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.78 2001/06/25 08:25:36 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -1271,7 +1271,7 @@ client_init_dispatch_15(void)
 	dispatch_set(SSH_MSG_CHANNEL_CLOSE, &channel_input_ieof);
 	dispatch_set(SSH_MSG_CHANNEL_CLOSE_CONFIRMATION, & channel_input_oclose);
 }
-void
+static void
 client_init_dispatch(void)
 {
 	if (compat20)
