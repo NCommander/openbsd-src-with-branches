@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.119 2004/11/17 01:47:20 itojun Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.120 2004/11/28 23:39:45 canacar Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -77,7 +77,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)ifconfig.c	8.2 (Berkeley) 2/16/94";
 #else
-static const char rcsid[] = "$OpenBSD: ifconfig.c,v 1.119 2004/11/17 01:47:20 itojun Exp $";
+static const char rcsid[] = "$OpenBSD: ifconfig.c,v 1.120 2004/11/28 23:39:45 canacar Exp $";
 #endif
 #endif /* not lint */
 
@@ -2717,6 +2717,8 @@ usage(void)
 	    "\t[syncif iface] [-syncif] [syncpeer peer_address] [-syncpeer]\n"
 	    "\t[phase n] [range netrange] [timeslot timeslot_range]\n"
 	    "\t[802.2] [802.2tr] [802.3] [snap] [EtherII]\n"
+	    "\t[pppoeac access-concentrator] [-pppoeac]\n"
+	    "\t[pppoesvc service] [-pppoesvc]\n"
 	    "       ifconfig -A | -Am | -a | -am [address_family]\n"
 	    "       ifconfig -C\n"
 	    "       ifconfig -m interface [address_family]\n"
