@@ -1,4 +1,4 @@
-/*	$OpenBSD: ddp_usrreq.c,v 1.5 2001/07/06 03:06:28 angelos Exp $	*/
+/*	$OpenBSD: ddp_usrreq.c,v 1.6 2002/03/14 01:27:10 millert Exp $	*/
 
 /*
  * Copyright (c) 1990,1994 Regents of The University of Michigan.
@@ -293,7 +293,7 @@ at_pcbsetaddr( ddp, addr, p )
 		return( EINVAL );
 	    }
 	    if ( sat->sat_port < ATPORT_RESERVED &&
-		    suser( p->p_ucred, &p->p_acflag )) {
+		    suser( p, 0 )) {
 		return( EACCES );
 	    }
 	}

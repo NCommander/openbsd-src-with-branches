@@ -1,4 +1,4 @@
-/*	$OpenBSD: at_control.c,v 1.3 2001/08/19 15:07:34 miod Exp $	*/
+/*	$OpenBSD: at_control.c,v 1.4 2002/03/14 01:27:10 millert Exp $	*/
 
 /*
  * Copyright (c) 1990,1991 Regents of The University of Michigan.
@@ -142,7 +142,7 @@ at_control( cmd, data, ifp, p )
 	 * What a great idea this is: Let's reverse the meaning of
 	 * the return...
 	 */
-	if ( suser( p->p_ucred, &p->p_acflag )) {
+	if ( suser( p, 0 )) {
 	    return( EPERM );
 	}
 
