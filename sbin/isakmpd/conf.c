@@ -1,4 +1,4 @@
-/* $OpenBSD: conf.c,v 1.77 2005/04/04 19:31:11 deraadt Exp $	 */
+/* $OpenBSD: conf.c,v 1.78 2005/04/05 20:46:20 cloder Exp $	 */
 /* $EOM: conf.c,v 1.48 2000/12/04 02:04:29 angelos Exp $	 */
 
 /*
@@ -137,8 +137,8 @@ conf_remove_now(char *section, char *tag)
 	for (cb = LIST_FIRST(&conf_bindings[conf_hash(section)]); cb;
 	    cb = next) {
 		next = LIST_NEXT(cb, link);
-		if (strcasecmp(cb->section, section) == 0
-		    && strcasecmp(cb->tag, tag) == 0) {
+		if (strcasecmp(cb->section, section) == 0 &&
+		    strcasecmp(cb->tag, tag) == 0) {
 			LIST_REMOVE(cb, link);
 			LOG_DBG((LOG_MISC, 95, "[%s]:%s->%s removed", section,
 			    tag, cb->value));
