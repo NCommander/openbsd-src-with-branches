@@ -1,4 +1,4 @@
-/* *	$OpenBSD: md-static-funcs.c,v 1.1.1.1 1995/10/18 08:40:57 deraadt Exp $*/
+/* *	$OpenBSD: md-static-funcs.c,v 1.2 1998/03/26 19:47:12 niklas Exp $*/
 /*
  *
  * Called by ld.so when onanating.
@@ -19,10 +19,7 @@ asm("	movqd -1,r0");
 asm("1:	jump 0(0(sp))");	/* return */
 
 static void
-md_relocate_simple(r, relocation, addr)
-struct relocation_info	*r;
-long			relocation;
-char			*addr;
+md_relocate_simple(struct relocation_info *r, long relocation, char *addr)
 {
     if (r->r_relative) {
     	if (r->r_disp != 2) {
