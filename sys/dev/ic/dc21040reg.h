@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dc21040reg.h,v 1.11 1997/06/08 18:44:02 thorpej Exp $	*/
 
 /*-

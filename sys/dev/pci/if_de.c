@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_de.c,v 1.45 1997/06/09 00:34:18 thorpej Exp $	*/
 
 /*-
