@@ -1,3 +1,4 @@
+/*	$OpenBSD: freebsd_machdep.h,v 1.1 1995/10/10 01:22:35 mycroft Exp $	*/
 /*	$NetBSD: freebsd_machdep.h,v 1.1 1995/10/10 01:22:35 mycroft Exp $	*/
 
 /*

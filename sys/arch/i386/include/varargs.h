@@ -1,3 +1,4 @@
+/*	$OpenBSD: varargs.h,v 1.14 1995/12/26 01:16:26 mycroft Exp $	*/
 /*	$NetBSD: varargs.h,v 1.14 1995/12/26 01:16:26 mycroft Exp $	*/
 
 /*-

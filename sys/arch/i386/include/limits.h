@@ -1,3 +1,4 @@
+/*	$OpenBSD: limits.h,v 1.11 1995/12/21 01:08:59 mycroft Exp $	*/
 /*	$NetBSD: limits.h,v 1.11 1995/12/21 01:08:59 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: tss.h,v 1.6 1995/10/11 04:20:28 mycroft Exp $	*/
 /*	$NetBSD: tss.h,v 1.6 1995/10/11 04:20:28 mycroft Exp $	*/
 
 /*-

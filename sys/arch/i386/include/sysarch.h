@@ -1,3 +1,4 @@
+/*	$OpenBSD: sysarch.h,v 1.8 1996/01/08 13:51:44 mycroft Exp $	*/
 /*	$NetBSD: sysarch.h,v 1.8 1996/01/08 13:51:44 mycroft Exp $	*/
 
 #ifndef _I386_SYSARCH_H_

@@ -1,3 +1,4 @@
+/*	$OpenBSD: stdarg.h,v 1.12 1995/12/25 23:15:31 mycroft Exp $	*/
 /*	$NetBSD: stdarg.h,v 1.12 1995/12/25 23:15:31 mycroft Exp $	*/
 
 /*-

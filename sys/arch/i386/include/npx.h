@@ -1,3 +1,4 @@
+/*	$OpenBSD: npx.h,v 1.11 1994/10/27 04:16:11 cgd Exp $	*/
 /*	$NetBSD: npx.h,v 1.11 1994/10/27 04:16:11 cgd Exp $	*/
 
 /*-
