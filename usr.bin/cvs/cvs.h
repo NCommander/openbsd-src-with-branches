@@ -84,6 +84,7 @@
 
 
 /* defaults */
+#define CVS_SERVER_DEFAULT  "cvs"
 #define CVS_RSH_DEFAULT     "ssh"
 #define CVS_EDITOR_DEFAULT  "vi"
 
@@ -142,6 +143,7 @@ struct cvsroot {
 	/* connection data */
 	FILE   *cr_srvin;
 	FILE   *cr_srvout;
+	FILE   *cr_srverr;
 	char   *cr_version;   /* version of remote server */
 	u_char  cr_vrmask[10];  /* mask of valid requests supported by server */
 };
