@@ -1,4 +1,4 @@
-/*	$OpenBSD: minherit.c,v 1.1 2002/01/31 15:53:12 art Exp $	*/
+/*	$OpenBSD: rfmem.c,v 1.1 2002/02/17 05:10:40 art Exp $	*/
 /*
  * Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfcfdg.c,v 1.1 2002/02/17 05:16:41 art Exp $	*/
+/*	$OpenBSD: rfnowait.c,v 1.1 2002/02/17 05:22:41 art Exp $	*/
 /*
  * Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */
