@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.12 2001/02/19 09:49:51 camield Exp $	*/
+/*	$OpenBSD: edit.c,v 1.13 2001/02/19 19:32:13 camield Exp $	*/
 
 /*
  * Command line editing - common code
@@ -1058,7 +1058,7 @@ x_escape(s, len, putbuf_func)
 	int rval=0;
 
 	for (add = 0, wlen = len; wlen - add > 0; add++) {
-		if (strchr("\\$(){}*&;|<>\"'", s[add]) || strchr(ifs, s[add])) {
+		if (strchr("\\$(){}*&;#|<>\"'", s[add]) || strchr(ifs, s[add])) {
 			if (putbuf_func(s, add) != 0) {
 				rval = -1;
 				break;
