@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccdconfig.c,v 1.8 1997/05/28 21:51:47 deraadt Exp $	*/
+/*	$OpenBSD: ccdconfig.c,v 1.9 1997/09/14 08:52:13 deraadt Exp $	*/
 /*	$NetBSD: ccdconfig.c,v 1.6 1996/05/16 07:11:18 thorpej Exp $	*/
 
 /*-
@@ -77,6 +77,7 @@ struct	flagval {
 	{ "CCDF_SWAP",		CCDF_SWAP },
 	{ "CCDF_UNIFORM",	CCDF_UNIFORM },
 	{ "CCDF_MIRROR",	CCDF_MIRROR },
+	{ "CCDF_OLD",		CCDF_OLD },
 	{ NULL,			0 },
 };
 
