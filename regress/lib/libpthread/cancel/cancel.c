@@ -1,4 +1,4 @@
-/*	$OpenBSD: cancel.c,v 1.2 2001/08/23 04:26:05 fgsch Exp $	*/
+/*	$OpenBSD: cancel.c,v 1.3 2001/09/20 16:43:15 todd Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public Domain. */
 
 #include <pthread.h>
@@ -13,7 +13,8 @@ static pthread_cond_t cond;
 static pthread_mutex_t mutex;
 static struct timespec expiretime;
 
-static int pv_state = 0;
+static volatile int pv_state = 0;
+
 void p() {
 	CHECKr(pthread_mutex_lock(&mutex));
 	if (pv_state <= 0) {
