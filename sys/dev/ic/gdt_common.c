@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt_common.c,v 1.19 2002/03/05 07:51:06 niklas Exp $	*/
+/*	$OpenBSD: gdt_common.c,v 1.20 2002/03/14 01:26:54 millert Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -379,6 +379,8 @@ gdt_attach(gdt)
 
 	gdt->sc_raw_link = malloc(gdt->sc_bus_cnt * sizeof (struct scsi_link),
 				  M_DEVBUF, M_NOWAIT);
+	if (gdt->sc_raw_link == NULL)
+		panic("gdt_attach");
 	bzero(gdt->sc_raw_link, gdt->sc_bus_cnt * sizeof (struct scsi_link));
 
 	for (i = 0; i < gdt->sc_bus_cnt; i++) {
