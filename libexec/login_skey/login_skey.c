@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_skey.c,v 1.10 2002/06/28 01:14:37 deraadt Exp $	*/
+/*	$OpenBSD: login_skey.c,v 1.11 2002/09/06 18:45:07 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995 Berkeley Software Design, Inc. All rights reserved.
@@ -182,7 +182,8 @@ main(int argc, char *argv[])
 		if (haskey)
 			alarm(120);
 		resumed = 0;
-		readpassphrase(skeyprompt, passbuf, sizeof(passbuf), 0);
+		if (!readpassphrase(skeyprompt, passbuf, sizeof(passbuf), 0))
+			exit(1);
 		if (passbuf[0] == '\0')
 			readpassphrase("S/Key Password [echo on]: ",
 			    passbuf, sizeof(passbuf), RPP_ECHO_ON);
