@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rarp.c,v 1.2 1996/09/23 14:19:01 mickey Exp $	*/
 /*	$NetBSD: rarp.c,v 1.10 1995/09/23 03:36:10 gwr Exp $	*/
 
 /*
@@ -194,7 +194,7 @@ rarprecv(d, pkt, len, tleft)
 	{
 #ifdef RARP_DEBUG
 		if (debug)
-			printf("bad hrd/pro/hln/pln\n")
+			printf("bad hrd/pro/hln/pln\n");
 #endif
 		return (-1);
 	}
