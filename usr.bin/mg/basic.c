@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.5 2001/02/12 21:51:55 millert Exp $	*/
+/*	$OpenBSD: basic.c,v 1.6 2001/05/23 22:20:34 art Exp $	*/
 
 /*
  *		Basic cursor motion commands.
@@ -341,8 +341,7 @@ backpage(f, n)
  * These functions are provided for compatibility with Gosling's Emacs. They
  * are used to scroll the display up (or down) one line at a time.
  */
-#ifdef GOSMACS
-void
+int
 forw1page(f, n)
 	int f, n;
 {
@@ -352,9 +351,10 @@ forw1page(f, n)
 		f = FFUNIV;
 	}
 	forwpage(f | FFRAND, n);
+	return TRUE;
 }
 
-void
+int
 back1page(f, n)
 	int f, n;
 {
@@ -364,8 +364,8 @@ back1page(f, n)
 		f = FFUNIV;
 	}
 	backpage(f | FFRAND, n);
+	return TRUE;
 }
-#endif
 
 /*
  * Page the other window. Check to make sure it exists, then
