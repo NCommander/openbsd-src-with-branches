@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.1 1998/01/28 11:14:51 pefo Exp $	*/
+/*	$OpenBSD: proc.h,v 1.3 1998/10/15 21:30:14 imp Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -38,8 +38,8 @@
  *	@(#)proc.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef	_MACHINE_PROC_H_
-#define	_MACHINE_PROC_H_
+#ifndef	_MIPS_PROC_H_
+#define	_MIPS_PROC_H_
 
 /*
  * Machine-dependent part of the proc structure.
@@ -55,4 +55,4 @@ struct mdproc {
 /* md_flags */
 #define	MDP_FPUSED	0x0001	/* floating point coprocessor used */
 
-#endif	/* _MACHINE_PROC_H_ */
+#endif	/* !_MIPS_PROC_H_ */

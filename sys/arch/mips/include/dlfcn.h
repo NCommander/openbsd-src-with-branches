@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.h,v 1.1 1996/10/06 19:59:57 pefo Exp $ */
+/*	$OpenBSD: dlfcn.h,v 1.1 1998/01/28 11:14:39 pefo Exp $ */
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -32,11 +32,11 @@
  *
  */
 
-#ifndef _DLFCN_H
-#define _DLFCN_H 1
+#ifndef _MIPS_DLFCN_H_
+#define _MIPS_DLFCN_H_
  
 /*
  *	This is a dummy file. Empty until libdl has been done.
  */
 
-#endif /* _DLFCN_H */
+#endif /* _MIPS_DLFCN_H_ */
