@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_gre.c,v 1.9 2001/06/05 23:43:46 maja Exp $ */
+/*      $OpenBSD: ip_gre.c,v 1.10 2001/06/08 03:53:46 angelos Exp $ */
 /*	$NetBSD: ip_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -48,6 +48,7 @@
 #if NGRE > 0
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
