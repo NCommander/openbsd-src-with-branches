@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.67 2003/08/21 18:56:07 tedu Exp $	*/
+/*	$OpenBSD: proc.h,v 1.68 2003/11/08 06:11:11 nordin Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -333,7 +333,6 @@ struct	pcred {
 #define FORK_CLEANFILES	0x00000020
 #define FORK_NOZOMBIE	0x00000040
 #define FORK_SHAREVM	0x00000080
-#define FORK_VMNOSTACK	0x00000100
 #define FORK_SIGHAND	0x00000200
 
 #define	PIDHASH(pid)	(&pidhashtbl[(pid) & pidhash])
