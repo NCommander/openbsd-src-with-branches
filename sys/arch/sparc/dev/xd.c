@@ -1,4 +1,4 @@
-/*	$OpenBSD: xd.c,v 1.13 1998/10/03 21:18:58 millert Exp $	*/
+/*	$OpenBSD: xd.c,v 1.14 1999/07/09 21:34:46 art Exp $	*/
 /*	$NetBSD: xd.c,v 1.37 1997/07/29 09:58:16 fair Exp $	*/
 
 /*
@@ -1106,6 +1106,7 @@ xdstrategy(bp)
 
 	/* now we have free iopb's and we are at splbio... start 'em up */
 	if (xdc_startbuf(parent, xd, bp) != XD_ERR_AOK) {
+		splx(s);
 		return;
 	}
 
