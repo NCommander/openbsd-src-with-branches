@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.23 2001/06/27 10:31:51 kjell Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.24 2001/06/28 21:53:42 provos Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -146,7 +146,7 @@ struct pf_rdr {
 #define FCNT_STATE_SEARCH	0
 #define FCNT_STATE_INSERT	1
 #define FCNT_STATE_REMOVALS	2
-#define FCNT_MAX		4
+#define FCNT_MAX		3
 
 #define FCNT_NAMES { \
 	"state searches", \
