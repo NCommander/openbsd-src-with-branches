@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.25 2004/12/20 11:34:26 otto Exp $	*/
+/*	$OpenBSD: edit.c,v 1.26 2004/12/22 17:14:34 millert Exp $	*/
 
 /*
  * Command line editing - common code
@@ -48,6 +48,7 @@ x_init(void)
 #endif /* EMACS */
 }
 
+/* ARGSUSED */
 static void
 x_sigwinch(int sig)
 {

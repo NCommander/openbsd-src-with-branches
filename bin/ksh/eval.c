@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.24 2004/12/22 18:52:37 millert Exp $	*/
+/*	$OpenBSD: eval.c,v 1.25 2005/02/02 07:53:01 otto Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
@@ -712,6 +712,7 @@ varsub(Expand *xp, char *sp, char *word,
 		if ((p=strchr(sp,'[')) && (p[1]=='*'||p[1]=='@') && p[2]==']') {
 			int n = 0;
 			int max = 0;
+
 			vp = global(arrayname(sp));
 			if (vp->flag & (ISSET|ARRAY))
 				zero_ok = 1;
