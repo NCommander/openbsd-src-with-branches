@@ -1,9 +1,8 @@
-/*	$OpenBSD: fd.c,v 1.34 2004/01/12 11:35:08 jmc Exp $	*/
+/*	$OpenBSD: fd.c,v 1.35 2004/02/15 02:45:46 tedu Exp $	*/
 /*	$NetBSD: fd.c,v 1.51 1997/05/24 20:16:19 pk Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles Hannum.
- * Copyright (c) 1995 Paul Kranenburg.
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
  *
