@@ -1,4 +1,4 @@
-/*	$OpenBSD: term.c,v 1.7 2002/11/29 20:13:39 deraadt Exp $	*/
+/*	$OpenBSD: term.c,v 1.8 2003/04/05 00:43:20 tdeval Exp $	*/
 /*	$NetBSD: term.c,v 1.8 1997/01/23 14:02:49 mrg Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)term.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$OpenBSD: term.c,v 1.7 2002/11/29 20:13:39 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: term.c,v 1.8 2003/04/05 00:43:20 tdeval Exp $";
 #endif
 #endif /* not lint && not SCCSID */
 
