@@ -184,6 +184,8 @@ cvsroot_parse(const char *str)
 
 		root->cr_user = cp;
 	}
+	else
+		sp = cp;
 
 	pp = strchr(sp, ':');
 	if (pp != NULL) {
