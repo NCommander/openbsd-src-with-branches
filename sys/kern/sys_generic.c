@@ -163,7 +163,7 @@ sys_readv(p, v, retval)
 	/* note: can't use iovlen until iovcnt is validated */
 	iovlen = SCARG(uap, iovcnt) * sizeof (struct iovec);
 	if (SCARG(uap, iovcnt) > UIO_SMALLIOV) {
-		if (SCARG(uap, iovcnt) > UIO_MAXIOV)
+		if (SCARG(uap, iovcnt) > IOV_MAX)
 			return (EINVAL);
 		MALLOC(iov, struct iovec *, iovlen, M_IOV, M_WAITOK);
 		needfree = iov;
@@ -318,7 +318,7 @@ sys_writev(p, v, retval)
 	/* note: can't use iovlen until iovcnt is validated */
 	iovlen = SCARG(uap, iovcnt) * sizeof (struct iovec);
 	if (SCARG(uap, iovcnt) > UIO_SMALLIOV) {
-		if (SCARG(uap, iovcnt) > UIO_MAXIOV)
+		if (SCARG(uap, iovcnt) > IOV_MAX)
 			return (EINVAL);
 		MALLOC(iov, struct iovec *, iovlen, M_IOV, M_WAITOK);
 		needfree = iov;
