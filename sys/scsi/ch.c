@@ -295,7 +295,8 @@ chioctl(dev, cmd, data, flags, p)
 	/* Implement prevent/allow? */
 
 	default:
-		error = scsi_do_ioctl(sc->sc_link, dev, cmd, data, flags, p);
+		error = scsi_do_safeioctl(sc->sc_link, dev, cmd, data,
+		    flags, p);
 		break;
 	}
 
