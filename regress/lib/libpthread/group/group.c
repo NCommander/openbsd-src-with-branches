@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_group.c,v 1.2 2000/01/08 09:01:29 d Exp $	*/
+/*	$OpenBSD: group.c,v 1.1.1.1 2001/08/15 14:37:11 fgsch Exp $	*/
 /* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 /*
@@ -25,7 +25,7 @@ pthread_mutex_t display2;
 void*
 test(void* arg)
 {
-	gid_t gid = (int)arg;
+	gid_t gid = *(gid_t *)arg;
 	gid_t ogid;
 	struct group grpbuf;
 	struct group *grp;
@@ -152,7 +152,7 @@ main()
 
 	/* Get separate threads to do a group open separately */
 	for (gid = 0; gid < NGRPS; gid++) {
-		CHECKr(pthread_create(&thread[gid], NULL, test, (void *)gid));
+		CHECKr(pthread_create(&thread[gid], NULL, test, (void *)&gid));
 	}
 
 	/* Allow all threads to run their first part */
