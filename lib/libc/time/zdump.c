@@ -1,6 +1,11 @@
+/*
+** This file is in the public domain, so clarified as of
+** Feb 14, 2003 by Arthur David Olson (arthur_david_olson@nih.gov).
+*/
+
 #if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
 static char elsieid[] = "@(#)zdump.c	7.29";
-static char rcsid[] = "$OpenBSD: zdump.c,v 1.8 2001/03/26 15:25:51 millert Exp $";
+static char rcsid[] = "$OpenBSD: zdump.c,v 1.9 2001/06/27 00:58:57 lebel Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
