@@ -1,4 +1,4 @@
-/*	$OpenBSD: who.c,v 1.11 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$OpenBSD: who.c,v 1.12 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: who.c,v 1.4 1994/12/07 04:28:49 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)who.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: who.c,v 1.11 2001/11/19 19:02:18 mpech Exp $";
+static char rcsid[] = "$OpenBSD: who.c,v 1.12 2002/02/16 21:27:59 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -208,7 +208,7 @@ who_am_i(ufp)
 		/* well, at least we know what the tty is */
 		(void)strncpy(usr.ut_line, p, UT_LINESIZE);
 	} else
-		(void)strcpy(usr.ut_line, "tty??");
+		(void)strncpy(usr.ut_line, "tty??", UT_LINESIZE);
 
 	pw = getpwuid(getuid());
 	(void)strncpy(usr.ut_name, pw ? pw->pw_name : "?", UT_NAMESIZE);
