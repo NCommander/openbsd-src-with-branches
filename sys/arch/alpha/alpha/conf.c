@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.24 2001/06/24 21:19:08 art Exp $	*/
+/*	$OpenBSD: conf.c,v 1.25 2001/06/25 03:19:39 kjell Exp $	*/
 /*	$NetBSD: conf.c,v 1.16 1996/10/18 21:26:57 cgd Exp $	*/
 
 /*-
@@ -140,6 +140,10 @@ cdev_decl(ucom);
 cdev_decl(ugen);
 #include "pf.h"
 cdev_decl(pf);
+#ifdef USER_PCICONF
+#include "pci.h"
+cdev_decl(pci);
+#endif
 
 struct cdevsw	cdevsw[] =
 {
@@ -198,6 +202,11 @@ struct cdevsw	cdevsw[] =
 	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
 #else
 	cdev_notdef(),			/* 51 */
+#endif
+#ifdef USER_PCICONF
+	cdev_pci_init(NPCI,pci),	/* 52: PCI user */
+#else
+	cdev_notdef(),
 #endif
 };
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);
