@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.111 2004/11/10 14:48:25 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.112 2004/11/24 22:57:18 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -137,7 +137,7 @@ RB_GENERATE(kif_tree, kif_node, entry, kif_compare)
 int
 kr_init(int fs)
 {
-	int opt;
+	int	opt = 0;
 
 	kr_state.fib_sync = fs;
 
