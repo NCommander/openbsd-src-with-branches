@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef HAVE_BSEARCH
 void	*bsearch __P((const void *, const void *, size_t,
    size_t, int (*)(const void *, const void *)));

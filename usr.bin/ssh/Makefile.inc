@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 CFLAGS+=	-I${.CURDIR}/..
 
 CFLAGS+=	-Wall

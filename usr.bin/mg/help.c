@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Help functions for Mg 2 
  */

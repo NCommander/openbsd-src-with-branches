@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Makefile for less.
 
 #### Start of system configuration section. ####

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # make sure every subprocess has it's exit and that the main one
 # hasn't
 sub fun {

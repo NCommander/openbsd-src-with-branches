@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #	@(#)merge.awk	8.3 (Berkeley) 5/25/94
 #
 # merge index entries into one line per label

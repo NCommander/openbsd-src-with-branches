@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *	Limited parenthesis matching routines
  *

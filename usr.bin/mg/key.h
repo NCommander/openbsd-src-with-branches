@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* key.h: Insert file for mg 2 functions that need to reference key pressed */
 
 #ifndef EXTERN

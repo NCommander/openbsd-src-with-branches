@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #------------------------------------------------------------------------------
 # amigaos:  file(1) magic for AmigaOS binary formats:
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *		Word mode commands.
  * The routines in this file implement commands that work word at a time. 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 int ex __P((SCR **));
 int ex_cmd __P((SCR *));
 int ex_range __P((SCR *, EXCMD *, int *));

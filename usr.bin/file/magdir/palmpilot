@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # start kpilot.magic
 # This must go at the end of $(kde_mimedir)/magic
 # PalmPilot Files

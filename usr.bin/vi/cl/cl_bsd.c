@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1995, 1996
  *	Keith Bostic.  All rights reserved.

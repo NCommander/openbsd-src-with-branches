@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Name:	MG 2a
  *		Directory management functions

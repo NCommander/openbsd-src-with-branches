@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 int ip_addstr __P((SCR *, const char *, size_t));
 int ip_attr __P((SCR *, scr_attr_t, int));
 int ip_baud __P((SCR *, u_long *));

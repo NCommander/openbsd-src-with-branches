@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *		Search commands.
  * The functions in this file implement the search commands (both plain and 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <sys/types.h>
 #include <stddef.h>
 #include <stdlib.h>

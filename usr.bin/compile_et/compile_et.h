@@ -1,3 +1,4 @@
+/* $OpenBSD: compile_et.h,v 1.3 1998/11/22 09:39:46 assar Exp $ */
 /*
  * Copyright (c) 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 

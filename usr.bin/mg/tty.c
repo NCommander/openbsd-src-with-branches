@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Terminfo display driver
  *

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *		Text line handling.
  * 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *	Extended (M-X) commands, rebinding, and	startup file processing.
  */

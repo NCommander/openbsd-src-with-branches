@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *	Terminfo terminal file, nothing special, just make it big
  *	enough for windowing systems.

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * POSIX terminal I/O.
  *

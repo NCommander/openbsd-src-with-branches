@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Spawn.  Actually just suspends Mg.
  * Assumes POSIX job control.

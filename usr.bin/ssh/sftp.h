@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *

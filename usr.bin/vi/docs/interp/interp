@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # @(#)interp	8.5 (Berkeley) 10/19/96
 			Nvi Interpreter API
 

@@ -1,3 +1,5 @@
+.\"	$OpenBSD$
+.\"
 .\" 
 .\" Copyright (c) 1999 Markus Friedl.  All rights reserved.
 .\" 

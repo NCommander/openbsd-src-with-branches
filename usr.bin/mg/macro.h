@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* definitions for keyboard macros */
 
 #ifndef EXTERN

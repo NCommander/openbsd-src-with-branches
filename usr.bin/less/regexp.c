@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * regcomp and regexec -- regsub and regerror are elsewhere
  *

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #define C_SCROLL 0
 #define C_BANG 1
 #define C_HASH 2

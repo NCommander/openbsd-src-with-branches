@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * This file is the general header file for all parts
  * of the Mg display editor. It contains all of the

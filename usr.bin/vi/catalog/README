@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #	@(#)README	8.4 (Berkeley) 11/22/94
 
 Generally, all non-system error and informational messages in nvi are

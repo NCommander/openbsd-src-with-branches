@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *	Terminal independent keyboard handling.
  */

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 .PATH:		${.CURDIR}/..
 
 PROG=	scp

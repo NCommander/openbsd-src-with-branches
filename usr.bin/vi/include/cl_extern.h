@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef HAVE_CURSES_ADDNSTR
 int addnstr __P((char *, int));
 #endif

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *	Echo line reading and writing.
  *

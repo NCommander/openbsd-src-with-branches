@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *		Basic cursor motion commands.
  *

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *	regular expression search commands for Mg
  *

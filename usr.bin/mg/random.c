@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *		Assorted commands.
  * This file contains the command processors for a large assortment of 

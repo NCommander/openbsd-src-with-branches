@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* dired module for mg 2a	 */
 /* by Robert A. Larson		 */
 

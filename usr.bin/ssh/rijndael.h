@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #ifndef _RIJNDAEL_H_
 #define _RIJNDAEL_H_
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Cryptographic attack detector for ssh - Header file
  *

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Keyboard maps.  This is character set dependent.  The terminal specific 
  * parts of building the keymap has been moved to a better place.

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 int tk_addstr __P((SCR *, const char *, size_t));
 int tk_attr __P((SCR *, scr_attr_t, int));
 int tk_baud __P((SCR *, u_long *));

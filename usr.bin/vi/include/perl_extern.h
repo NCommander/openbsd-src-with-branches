@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 int perl_end __P((GS *));
 int perl_init __P((SCR *));
 int perl_screen_end __P((SCR*));

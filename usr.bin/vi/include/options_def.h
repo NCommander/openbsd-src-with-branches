@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #define O_ALTWERASE 0
 #define O_AUTOINDENT 1
 #define O_AUTOPRINT 2

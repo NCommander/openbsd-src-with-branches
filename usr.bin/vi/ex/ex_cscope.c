@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1994, 1996
  *	Rob Mayoff.  All rights reserved.

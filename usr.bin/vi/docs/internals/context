@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #	@(#)context	8.6 (Berkeley) 10/14/94
 
 In historic vi, the previous context mark was always set:

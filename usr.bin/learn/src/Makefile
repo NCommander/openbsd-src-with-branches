@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG = learn
 
 LLIB = /usr/share/learn	# must agree with pathnames.h

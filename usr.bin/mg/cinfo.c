@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *		Character class tables.
  * Do it yourself character classification

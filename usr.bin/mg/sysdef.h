@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *		POSIX system header file
  */

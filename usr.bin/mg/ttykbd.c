@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Name:	MG 2a
  *		Terminfo keyboard driver using key files

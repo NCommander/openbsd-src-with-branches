@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # This is ssh server systemwide configuration file.
 
 Port 22

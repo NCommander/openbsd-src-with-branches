@@ -1,4 +1,5 @@
-#	@(#)Makefile	8.5 (Berkeley) 7/16/94
+#	$OpenBSD$
+
 
 SRCS=	vi.1
 DOCS=	vi.0 vi.0.ps
