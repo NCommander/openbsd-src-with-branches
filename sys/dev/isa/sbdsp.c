@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbdsp.c,v 1.21 2002/03/14 01:26:56 millert Exp $	*/
+/*	$OpenBSD: sbdsp.c,v 1.22 2003/04/27 11:22:53 ho Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -54,7 +54,6 @@
 #include <sys/device.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
-#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/intr.h>

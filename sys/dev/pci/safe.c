@@ -1,4 +1,4 @@
-/*	$OpenBSD: safe.c,v 1.9 2003/08/20 22:23:13 jason Exp $	*/
+/*	$OpenBSD: safe.c,v 1.10 2003/08/22 19:11:22 jason Exp $	*/
 
 /*-
  * Copyright (c) 2003 Sam Leffler, Errno Consulting
@@ -43,8 +43,6 @@
 #include <sys/mbuf.h>
 #include <sys/device.h>
 #include <sys/timeout.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 

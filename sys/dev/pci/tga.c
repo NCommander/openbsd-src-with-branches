@@ -1,4 +1,4 @@
-/* $OpenBSD: tga.c,v 1.20 2003/04/29 21:58:35 miod Exp $ */
+/* $OpenBSD: tga.c,v 1.21 2003/08/31 17:09:12 matthieu Exp $ */
 /* $NetBSD: tga.c,v 1.40 2002/03/13 15:05:18 ad Exp $ */
 
 /*
@@ -55,8 +55,6 @@
 #include <dev/wscons/wscons_raster.h>
 #include <dev/rasops/rasops.h>
 #include <dev/wsfont/wsfont.h>
-
-#include <uvm/uvm_extern.h>
 
 #ifdef __alpha__
 #include <machine/pte.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiop.c,v 1.17 2003/09/29 09:08:19 miod Exp $	*/
+/*	$OpenBSD: osiop.c,v 1.18 2003/10/21 18:58:49 jmc Exp $	*/
 /*	$NetBSD: osiop.c,v 1.9 2002/04/05 18:27:54 bouyer Exp $	*/
 
 /*
@@ -81,8 +81,6 @@
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/kernel.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>

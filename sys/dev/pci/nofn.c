@@ -1,4 +1,4 @@
-/*	$OpenBSD: nofn.c,v 1.8 2003/05/07 23:54:26 avsm Exp $	*/
+/*	$OpenBSD: nofn.c,v 1.9 2003/06/02 19:08:58 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -44,8 +44,6 @@
 #include <sys/mbuf.h>
 #include <sys/device.h>
 #include <sys/queue.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <crypto/cryptodev.h>
 #include <crypto/cryptosoft.h>

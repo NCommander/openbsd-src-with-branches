@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.66 2003/10/17 08:14:09 grange Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.67 2003/10/21 10:00:28 jmc Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -55,8 +55,6 @@
 #include <scsi/scsi_disk.h>
 #include <scsi/scsi_tape.h>
 #include <scsi/scsiconf.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <machine/cpu.h>
