@@ -1,4 +1,4 @@
-/* $OpenBSD: tsort.c,v 1.16 2003/06/10 22:20:53 deraadt Exp $ */
+/* $OpenBSD: tsort.c,v 1.17 2003/09/22 23:39:24 drahn Exp $ */
 /* ex:ts=8 sw=4:
  */
 
@@ -980,6 +980,6 @@ extern char *__progname;
 static void
 usage(void)
 {
-	fprintf(stderr, "Usage: %s [-h file] [-flqrvw] [file]\n", __progname);
+	fprintf(stderr, "Usage: %s [-flqrvw] [-h file] [file]\n", __progname);
 	exit(EX_USAGE);
 }
