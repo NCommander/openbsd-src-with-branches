@@ -23,7 +23,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-udp.c,v 1.22 2003/06/11 20:58:45 markus Exp $ (LBL)";
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-udp.c,v 1.23 2004/01/18 15:33:30 otto Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
