@@ -1,3 +1,4 @@
+/*	$OpenBSD: panic.h,v 1.2 1995/03/25 18:13:35 glass Exp $	*/
 /*	$NetBSD: panic.h,v 1.2 1995/03/25 18:13:35 glass Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.1 1996/01/02 13:49:07 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1996/01/04 01:50:33 deraadt Exp $
 
 NOMAN=
 

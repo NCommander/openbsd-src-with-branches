@@ -1,3 +1,4 @@
+/*	$OpenBSD: gprof.h,v 1.13 1996/04/01 21:54:06 mark Exp $	*/
 /*	$NetBSD: gprof.h,v 1.13 1996/04/01 21:54:06 mark Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)lprint.c	5.13 (Berkeley) 10/31/90";*/
-static char rcsid[] = "$Id: lprint.c,v 1.4 1994/12/24 16:33:51 cgd Exp $";
+static char rcsid[] = "$OpenBSD: lprint.c,v 1.1.1.1 1995/10/18 08:45:14 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>

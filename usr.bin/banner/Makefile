@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.1.1.1 1995/04/09 05:53:04 cgd Exp $
 #	$NetBSD: Makefile,v 1.1.1.1 1995/04/09 05:53:04 cgd Exp $
 
 PROG=	banner

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pi.c,v 1.3 1995/09/02 06:15:44 jtc Exp $	*/
 /*	$NetBSD: pi.c,v 1.3 1995/09/02 06:15:44 jtc Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)pi.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: pi.c,v 1.3 1995/09/02 06:15:44 jtc Exp $";
+static char rcsid[] = "$OpenBSD: pi.c,v 1.3 1995/09/02 06:15:44 jtc Exp $";
 #endif /* not lint */
 
 #include <stdio.h>

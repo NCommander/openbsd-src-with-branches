@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,7 +41,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)id.c	8.3 (Berkeley) 4/28/95";*/
-static char rcsid[] = "$NetBSD: id.c,v 1.7 1995/09/28 08:05:42 perry Exp $";
+static char rcsid[] = "$OpenBSD: id.c,v 1.7 1995/09/28 08:05:42 perry Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>

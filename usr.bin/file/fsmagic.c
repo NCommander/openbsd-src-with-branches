@@ -1,3 +1,4 @@
+/*	$OpenBSD: fsmagic.c,v 1.1.1.1 1995/10/18 08:45:09 deraadt Exp $	*/
 /*
  * fsmagic - magic based on filesystem info - directory, special files, etc.
  *
@@ -45,8 +46,7 @@
 #include "file.h"
 
 #ifndef	lint
-static char *moduleid = 
-	"@(#)$Id: fsmagic.c,v 1.7 1995/04/28 19:23:51 christos Exp $";
+static char *moduleid = "$OpenBSD$";
 #endif	/* lint */
 
 int

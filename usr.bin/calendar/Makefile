@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.6 1995/03/27 08:46:11 glass Exp $
 #	$NetBSD: Makefile,v 1.6 1995/03/27 08:46:11 glass Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
 
 PROG=	calendar
 

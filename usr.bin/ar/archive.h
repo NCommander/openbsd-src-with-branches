@@ -1,3 +1,4 @@
+/*	$OpenBSD: archive.h,v 1.6 1995/03/25 06:39:43 glass Exp $	*/
 /*	$NetBSD: archive.h,v 1.6 1995/03/25 06:39:43 glass Exp $	*/
 
 /*-
