@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.191 2002/11/18 23:37:00 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.192 2002/11/18 23:38:48 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1325,7 +1325,7 @@ icmp_item	: icmptype		{
 					YYERROR;
 				}
 			} else {
-				if ((p = geticmpcodebyname($1, $3,
+				if ((p = geticmpcodebyname($1-1, $3,
 				    AF_INET)) == NULL) {
 					yyerror("unknown icmp-code %s", $3);
 					YYERROR;
@@ -1363,7 +1363,7 @@ icmp6_item	: icmp6type		{
 					YYERROR;
 				}
 			} else {
-				if ((p = geticmpcodebyname($1, $3,
+				if ((p = geticmpcodebyname($1-1, $3,
 				    AF_INET6)) == NULL) {
 					yyerror("unknown icmp6-code %s", $3);
 					YYERROR;
