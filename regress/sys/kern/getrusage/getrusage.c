@@ -1,3 +1,7 @@
+/*	$OpenBSD$	*/
+/*
+ *	Written by Thomas Nordin <nordin@openbsd.org> 2002 Public Domain.
+ */
 #include <err.h>
 #include <limits.h>
 #include <stddef.h>
