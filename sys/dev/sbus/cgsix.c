@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgsix.c,v 1.29 2002/08/06 03:48:45 jason Exp $	*/
+/*	$OpenBSD: cgsix.c,v 1.30 2002/08/12 16:18:59 jason Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -254,7 +254,7 @@ cgsixattach(parent, self, aux)
 	 * will be investigated later.
 	 */
 	if (rev < 5)
-		sc->sc_dev.dv_cfdata->cf_flags &= ~CG6_CFFLAG_NOACCEL;
+		sc->sc_dev.dv_cfdata->cf_flags |= CG6_CFFLAG_NOACCEL;
 
 	if ((sc->sc_dev.dv_cfdata->cf_flags & CG6_CFFLAG_NOACCEL) == 0) {
 		sc->sc_rasops.ri_ops.copyrows = cgsix_ras_copyrows;
