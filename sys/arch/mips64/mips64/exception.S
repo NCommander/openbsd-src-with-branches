@@ -1,4 +1,4 @@
-/*	$OpenBSD: exception.S,v 1.2 2004/08/09 14:57:26 pefo Exp $ */
+/*	$OpenBSD: exception.S,v 1.3 2004/08/10 20:15:47 deraadt Exp $ */
 
 /*
  * Copyright (c) 2002-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -164,7 +164,7 @@ exception:
 
 	LA	k0, u_exception_table
 	PTR_ADDU k0, k0, k1
-#if (_MIPS_SZPTR == 64)
+#ifdef __LP64__
 	PTR_ADDU k0, k0, k1		# yes, twice...
 #endif
 	PTR_L	k0, 0(k0)
@@ -174,7 +174,7 @@ exception:
 k_exception:
 	LA	k0, k_exception_table
 	PTR_ADDU k0, k0, k1
-#if (_MIPS_SZPTR == 64)
+#ifdef __LP64__
 	PTR_ADDU k0, k0, k1		# yes, twice...
 #endif
 	PTR_L	k0, 0(k0)
