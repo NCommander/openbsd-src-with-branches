@@ -1,7 +1,7 @@
-/*	$OpenBSD: util.c,v 1.8 1999/12/04 01:04:14 provos Exp $	*/
+/*	$OpenBSD: util.c,v 1.9 1999/12/04 21:00:03 provos Exp $	*/
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: util.c,v 1.8 1999/12/04 01:04:14 provos Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.9 1999/12/04 21:00:03 provos Exp $";
 #endif /* not lint */
 
 #include "EXTERN.h"
@@ -340,7 +340,7 @@ bool striplast;
 	*s = '\0';
     }
 
-    strcpy(buf, "/bin/mkdir -p ");
+    strlcpy(buf, "/bin/mkdir -p ", sizeof buf);
     if (strlcat(buf, tmpbuf, sizeof(buf)) >= sizeof(buf))
       fatal2("buffer too small to hold %.20s...\n", tmpbuf);
 
