@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.18 1998/03/26 03:17:08 marc Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.19 1998/05/13 10:42:38 deraadt Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fetch.c,v 1.18 1998/03/26 03:17:08 marc Exp $";
+static char rcsid[] = "$OpenBSD: fetch.c,v 1.19 1998/05/13 10:42:38 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -249,13 +249,6 @@ url_get(origline, proxyenv, outfile)
 			continue;
 		}
 		warn("connect");
-		goto cleanup_url_get;
-	}
-
-	while (connect(s, (struct sockaddr *)&sin, sizeof(sin)) == -1) {
-		if (errno == EINTR)
-			continue;
-		warn("Can't connect to %s", host);
 		goto cleanup_url_get;
 	}
 
