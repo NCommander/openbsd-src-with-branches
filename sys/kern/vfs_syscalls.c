@@ -565,16 +565,16 @@ sys_getfsstat(p, v, retval)
 		syscallarg(long) bufsize;
 		syscallarg(int) flags;
 	} */ *uap = v;
-	register struct mount *mp, *nmp;
+	register struct mount *mp;
 	register struct statfs *sp;
 	caddr_t sfsp;
 	long count, maxcount, error;
 
 	maxcount = SCARG(uap, bufsize) / sizeof(struct statfs);
 	sfsp = (caddr_t)SCARG(uap, buf);
-	for (count = 0,
-	     mp = mountlist.cqh_first; mp != (void *)&mountlist; mp = nmp) {
-		nmp = mp->mnt_list.cqe_next;
+	for (count = 0, mp = mountlist.cqh_first;
+	     mp != (void *)&mountlist;
+	     mp = mp->mnt_list.cqe_next) {
 		if (sfsp && count < maxcount &&
 		    ((mp->mnt_flag & MNT_MLOCK) == 0)) {
 			sp = &mp->mnt_stat;
