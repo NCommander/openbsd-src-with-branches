@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.40 2003/11/14 22:41:33 vincent Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.41 2004/07/08 20:48:50 vincent Exp $	*/
 
 /*
  *	POSIX fileio.c
@@ -107,6 +107,15 @@ ffputbuf(BUFFER *bp)
 		if (lforw(lp) != lpend)		/* no implied \n on last line */
 			putc('\n', ffp);
 	}	
+	/*
+	 * XXX should be variable controlled (once we have variables)
+	 */
+	if (llength(lback(lpend)) != 0) {
+		if (eyorn("No newline at end of file, add one") == TRUE) {
+			lnewline_at(lback(lpend), llength(lback(lpend)));
+			putc('\n', ffp);
+		}
+	}
 	return (FIOSUC);
 }
 
