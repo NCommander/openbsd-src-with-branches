@@ -1,4 +1,4 @@
-/*	$OpenBSD: char.h,v 1.3 1997/02/25 00:03:53 downsj Exp $	*/
+/*	$OpenBSD: char.h,v 1.4 1999/11/14 17:34:24 millert Exp $	*/
 /*	$NetBSD: char.h,v 1.3 1995/09/28 10:34:01 tls Exp $	*/
 
 /*
@@ -50,6 +50,9 @@
  * using unctrl() by wwwrite() if ww_unctrl is set.
  */
 #include <curses.h>
+#if defined(TERMINFO) || defined(NCURSES_VERSION)
+#include <term.h>
+#endif
 
 extern char _cmap[];
 #define ctrl(c)		(c & 0x1f)

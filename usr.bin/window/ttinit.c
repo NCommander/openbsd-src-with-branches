@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttinit.c,v 1.5 1999/11/14 17:34:24 millert Exp $	*/
+/*	$OpenBSD: ttinit.c,v 1.6 2000/04/14 18:43:34 millert Exp $	*/
 /*	$NetBSD: ttinit.c,v 1.3 1995/09/28 10:34:50 tls Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)ttinit.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: ttinit.c,v 1.5 1999/11/14 17:34:24 millert Exp $";
+static char rcsid[] = "$OpenBSD: ttinit.c,v 1.6 2000/04/14 18:43:34 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -98,7 +98,7 @@ ttinit()
 	 */
 #ifdef NCURSES_VERSION
 	wwterm = strdup(_nc_first_name(cur_term->type.term_names));
-#else
+#elif !defined(TERMINFO)
 	if ((p = strchr(wwtermcap, '|')) && p - wwtermcap == 2) {
 		/* Skip the two-character short name. */
 		for (p = wwtermcap; *p && *p != '|' && *p != ':'; p++)
