@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_vline.c,v 1.1 1999/01/18 19:10:05 millert Exp $	*/
+/*	$OpenBSD: lib_vline.c,v 1.2 2000/06/19 03:53:46 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,1999,2000 Free Software Foundation, Inc.              *
@@ -42,9 +42,9 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$From: lib_vline.c,v 1.5 2000/04/29 21:14:11 tom Exp $")
+MODULE_ID("$From: lib_vline.c,v 1.7 2000/12/10 02:43:28 tom Exp $")
 
-int
+NCURSES_EXPORT(int)
 wvline(WINDOW *win, chtype ch, int n)
 {
     int code = ERR;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fty_alpha.c,v 1.4 1998/07/24 02:37:42 millert Exp $	*/
+/*	$OpenBSD: fty_alpha.c,v 1.5 1999/05/17 03:04:18 millert Exp $	*/
 
 
 /*
@@ -15,7 +15,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("$From: fty_alpha.c,v 1.9 1999/05/16 17:22:58 juergen Exp $")
+MODULE_ID("$From: fty_alpha.c,v 1.10 2000/12/09 23:46:12 tom Exp $")
 
 typedef struct {
   int width;
@@ -135,6 +135,6 @@ static FIELDTYPE typeALPHA = {
   NULL
 };
 
-FIELDTYPE* TYPE_ALPHA = &typeALPHA;
+NCURSES_EXPORT_VAR(FIELDTYPE*) TYPE_ALPHA = &typeALPHA;
 
 /* fty_alpha.c ends here */
