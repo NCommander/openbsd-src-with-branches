@@ -29,7 +29,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: clnt_simple.c,v 1.6 1996/12/10 07:46:33 deraadt Exp $";
+static char *rcsid = "$OpenBSD: clnt_simple.c,v 1.7 1997/04/06 09:13:02 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /* 
@@ -45,6 +45,7 @@ static char *rcsid = "$OpenBSD: clnt_simple.c,v 1.6 1996/12/10 07:46:33 deraadt 
 #include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <unistd.h>
 
 static struct callrpc_private {
 	CLIENT	*client;
@@ -53,6 +54,7 @@ static struct callrpc_private {
 	char	*oldhost;
 } *callrpc_private;
 
+int
 callrpc(host, prognum, versnum, procnum, inproc, in, outproc, out)
 	char *host;
 	int prognum, versnum, procnum;

@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: svc_auth.c,v 1.2 1996/07/20 06:12:41 deraadt Exp $";
+static char *rcsid = "$OpenBSD: svc_auth.c,v 1.3 1996/08/19 08:31:52 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -62,9 +62,9 @@ enum auth_stat _svcauth_short();	/* short hand unix style */
 static struct {
 	enum auth_stat (*authenticator)();
 } svcauthsw[] = {
-	_svcauth_null,			/* AUTH_NULL */
-	_svcauth_unix,			/* AUTH_UNIX */
-	_svcauth_short,			/* AUTH_SHORT */
+	{ _svcauth_null },		/* AUTH_NULL */
+	{ _svcauth_unix },		/* AUTH_UNIX */
+	{ _svcauth_short }		/* AUTH_SHORT */
 };
 #define	AUTH_MAX	2		/* HIGHEST AUTH NUMBER */
 

@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: rpc_prot.c,v 1.4 1997/07/16 22:33:45 deraadt Exp $";
+static char *rcsid = "$OpenBSD: rpc_prot.c,v 1.5 1998/02/27 21:02:40 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -103,8 +103,9 @@ xdr_accepted_reply(xdrs, ar)
 		if (!xdr_u_int32_t(xdrs, &(ar->ar_vers.low)))
 			return (FALSE);
 		return (xdr_u_int32_t(xdrs, &(ar->ar_vers.high)));
+	default:
+		return (TRUE);  /* TRUE => open ended set of problems */
 	}
-	return (TRUE);  /* TRUE => open ended set of problems */
 }
 
 /*
