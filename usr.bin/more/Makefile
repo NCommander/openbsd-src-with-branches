@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.7 1997/04/27 20:56:51 millert Exp $
+#	$OpenBSD: Makefile,v 1.8 1997/09/21 11:50:08 deraadt Exp $
 
 PROG=	more
-DPADD=	${LIBTERM} ${LIBCOMPAT}
-LDADD=	-ltermcap -lcompat
+DPADD=	${LIBCURSES} ${LIBCOMPAT}
+LDADD=	-lcurses -lcompat
 MLINKS=	more.1 page.1
 LINKS=	${BINDIR}/more ${BINDIR}/page
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1997/02/25 00:03:49 downsj Exp $
+#	$OpenBSD: Makefile,v 1.5 1997/09/21 11:52:06 deraadt Exp $
 
 PROG=	window
 SRCS=	char.c cmd.c cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c cmd7.c \
@@ -15,7 +15,7 @@ SRCS=	char.c cmd.c cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c cmd7.c \
 	wwterminfo.c wwtty.c wwunframe.c wwupdate.c wwwrite.c xx.c xxflush.c \
 	compress.c
 MAN=	window.1
-DPADD=	${LIBTERMCAP}
-LDADD=	-ltermcap
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 
 .include <bsd.prog.mk>

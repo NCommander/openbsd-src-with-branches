@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.2 1996/12/20 00:22:18 downsj Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:36:00 deraadt Exp $
 
 PROG=	gomoku
 SRCS=	bdinit.c bdisp.c main.c makemove.c pickmove.c stoc.c
 MAN=	gomoku.6
-DPADD=	${LIBCURSES} ${LIBTERMLIB}
-LDADD=	-lcurses -ltermlib
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 HIDEGAME=hidegame
 
 .include <bsd.prog.mk>
