@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_debug.c,v 1.4 1999/02/15 05:11:22 millert Exp $	*/
+/*	$OpenBSD: bt_debug.c,v 1.5 2002/02/25 23:45:14 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)bt_debug.c	8.5 (Berkeley) 8/17/94";
 #else
-static char rcsid[] = "$OpenBSD: bt_debug.c,v 1.4 1999/02/15 05:11:22 millert Exp $";
+static const char rcsid[] = "$OpenBSD: bt_debug.c,v 1.5 2002/02/25 23:45:14 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash_func.c,v 1.5 1999/02/15 05:11:24 millert Exp $	*/
+/*	$OpenBSD: hash_func.c,v 1.6 2002/02/16 21:27:22 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)hash_func.c	8.4 (Berkeley) 11/7/95";
 #else
-static char rcsid[] = "$OpenBSD: hash_func.c,v 1.5 1999/02/15 05:11:24 millert Exp $";
+static const char rcsid[] = "$OpenBSD: hash_func.c,v 1.6 2002/02/16 21:27:22 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
