@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.7 2002/05/24 04:17:01 deraadt Exp $ */
+/*	$OpenBSD: archdep.h,v 1.8 2002/07/12 20:18:30 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -67,6 +67,13 @@ _dl_dcbf(Elf32_Addr *addr)
 	    "sync\n\t"
 	    "isync"
 	    : : "r" (addr) : "0");
+}
+
+static inline void
+RELOC_REL(Elf_Rel *r, const Elf_Sym *s, Elf_Addr *p, unsigned long v)
+{
+	/* PowerPC does not use REL type relocations */
+	_dl_exit(20);
 }
 
 static inline void
