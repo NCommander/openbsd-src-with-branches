@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.139 2002/08/06 13:43:33 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.140 2002/08/12 19:36:04 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -2395,7 +2395,7 @@ top:
 	(isalnum(x) || (ispunct(x) && x != '(' && x != ')' && \
 	x != '{' && x != '}' && x != '<' && x != '>' && \
 	x != '!' && x != '=' && x != '/' && x != '#' && \
-	x != ',' && x != '(' && x != ')'))
+	x != ','))
 
 	if (isalnum(c) || c == ':') {
 		do {
