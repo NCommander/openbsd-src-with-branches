@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.6 2002/02/16 21:28:07 millert Exp $	*/
+/*	$OpenBSD: server.c,v 1.7 2002/02/17 19:42:39 millert Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -270,6 +270,7 @@ getpackets(bpffd, sysname, ea)
 				recv_padt(bpffd, ea, &eh, &ph, len, mpkt);
 				break;
 			default:
+				break;
 			}
 		}
 		else if (eh.ether_type == ETHERTYPE_PPPOE) {
