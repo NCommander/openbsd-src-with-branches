@@ -1,4 +1,4 @@
-/*	$OpenBSD: auxioreg.h,v 1.1 1997/08/25 08:38:46 downsj Exp $	*/
+/*	$OpenBSD: auxioreg.h,v 1.2 2002/03/14 01:26:44 millert Exp $	*/
 /*	$NetBSD: auxreg.h,v 1.7 1997/05/17 17:52:52 pk Exp $ */
 
 /*
@@ -123,8 +123,8 @@
 )
 
 #ifndef _LOCORE
-volatile u_char *auxio_reg;	/* Copy of AUXIO_REG */
-u_char auxio_regval;
+extern volatile u_char *auxio_reg;	/* Copy of AUXIO_REG */
+extern u_char auxio_regval;
 unsigned int auxregbisc(int, int);
 #endif
 
