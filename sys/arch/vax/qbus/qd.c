@@ -1,4 +1,4 @@
-/*	$OpenBSD: qd.c,v 1.7 2003/06/02 23:27:58 millert Exp $	*/
+/*	$OpenBSD: qd.c,v 1.8 2003/10/03 16:44:50 miod Exp $	*/
 /*	$NetBSD: qd.c,v 1.17 2000/01/24 02:40:29 matt Exp $	*/
 
 /*-
@@ -1546,7 +1546,7 @@ qdpoll(dev, events, p)
 	   
 		if (events & (POLLIN | POLLRDNORM))  {
 		     /* This is ttnread.  It's static and I don't feel
-		      * like altering platform independant parts of NetBSD
+		      * like altering platform independent parts of NetBSD
 		      */
 		     int nread;
 		     /* if (tp->t_lflag & PENDIN)
