@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.48 2000/11/08 22:09:24 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.49 2002/06/24 18:03:30 tholo Exp $
 
 # Uncomment this to enable tracing in libcurses
 #CURSESTRACE=-DTRACE
@@ -214,10 +214,10 @@ init_keytry.h: make_keys ${.CURDIR}/tinfo/keys.list
 	./make_keys ${.CURDIR}/tinfo/keys.list > ${.TARGET}
 
 make_keys: ${.CURDIR}/tinfo/make_keys.c names.c
-	${HOSTCC} ${CFLAGS} ${LDFLAGS} -o ${.TARGET} ${.CURDIR}/tinfo/make_keys.c ${LDADD}
+	${HOSTCC} ${LDSTATIC} ${CFLAGS} ${LDFLAGS} -o ${.TARGET} ${.CURDIR}/tinfo/make_keys.c ${LDADD}
 
 make_hash: ${.CURDIR}/tinfo/comp_hash.c ${.CURDIR}/hashsize.h
-	${HOSTCC} ${CFLAGS} -DMAIN_PROGRAM ${LDFLAGS} -o ${.TARGET} ${.CURDIR}/tinfo/comp_hash.c ${LDADD}
+	${HOSTCC} ${LDSTATIC} ${CFLAGS} -DMAIN_PROGRAM ${LDFLAGS} -o ${.TARGET} ${.CURDIR}/tinfo/comp_hash.c ${LDADD}
 
 expanded.c: ${.CURDIR}/term.h ${.CURDIR}/curses.priv.h ${.CURDIR}/tty/MKexpanded.sh
 	sh ${.CURDIR}/tty/MKexpanded.sh "${CPP}" ${CPPFLAGS} > ${.TARGET}
