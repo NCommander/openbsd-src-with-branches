@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: compat.c,v 1.42 2001/03/27 17:46:49 provos Exp $");
+RCSID("$OpenBSD: compat.c,v 1.43 2001/04/04 15:50:55 markus Exp $");
 
 #include <regex.h>
 
@@ -64,6 +64,7 @@ compat_datafellows(const char *version)
 					SSH_OLD_DHGEX },
 		{ "^OpenSSH_2\\.3\\.0", SSH_BUG_BANNER|SSH_BUG_BIGENDIANAES|
 					SSH_OLD_DHGEX},
+		{ "^OpenSSH_2\\.3\\.",  SSH_BUG_BIGENDIANAES|SSH_OLD_DHGEX},
 		{ "^OpenSSH_2\\.5\\.[01]p1",
 					SSH_BUG_BIGENDIANAES|SSH_OLD_DHGEX },
 		{ "^OpenSSH_2\\.5\\.[012]",
