@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bus_space.c,v 1.4.4.3 2001/11/13 21:00:53 niklas Exp $	*/
 /*	$NetBSD: bus_space.c,v 1.5 1999/03/26 23:41:30 mycroft Exp $	*/
 
 /*-
@@ -180,7 +180,7 @@ bus_mem_add_mapping(bpa, size, flags, bshp)
 			*pte &= ~PG_CI;
 		else
 			*pte |= PG_CI;
-		pmap_update();
+		TBIA();
 	}
  
 	return 0;

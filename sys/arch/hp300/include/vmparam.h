@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.3.14.1 2001/07/04 10:15:54 niklas Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.3.14.2 2001/10/31 02:52:46 nate Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.16 1998/08/20 08:33:48 kleink Exp $	*/
 
 /*
@@ -160,6 +160,7 @@
 /*
  * pmap-specific data stored in the vm_physmem[] array.
  */
+#define __HAVE_PMAP_PHYSSEG
 struct pmap_physseg {
 	struct pv_entry *pvent;		/* pv table for this seg */
 	char *attrs;			/* page attributes for this seg */

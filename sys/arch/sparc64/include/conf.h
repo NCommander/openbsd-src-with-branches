@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: conf.h,v 1.4.2.2 2001/11/13 21:04:17 niklas Exp $	*/
 /*	$NetBSD: conf.h,v 1.9 2001/03/26 12:33:26 lukem Exp $	*/
 
 /*-
@@ -40,6 +40,8 @@
 #define mmread mmrw
 #define mmwrite mmrw
 cdev_decl(mm);
+
+cdev_decl(crypto);
 
 cdev_decl(ksyms);
 

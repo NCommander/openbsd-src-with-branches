@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.7.14.1 2001/05/14 21:37:31 niklas Exp $	*/
+/*	$OpenBSD: psl.h,v 1.7.14.2 2001/07/04 10:24:04 niklas Exp $	*/
 /*	$NetBSD: psl.h,v 1.14 1998/11/24 17:07:54 kleink Exp $	*/
 
 /*-
@@ -157,7 +157,6 @@ _splraise(int new)
 
 /* Block out all interrupts (except NMI of course). */
 #define splhigh()       spl7()
-#define splsched()      spl7()
 
 #endif	/* KERNEL && !_LOCORE */
 #endif	/* _SUN3_PSL_H_ */

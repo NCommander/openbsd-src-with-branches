@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.9.4.1 2000/03/02 07:04:30 niklas Exp $	*/
+/*	$OpenBSD: param.h,v 1.9.4.2 2001/07/04 10:18:33 niklas Exp $	*/
 /*	$NetBSD: param.h,v 1.28 1997/03/01 06:57:45 scottr Exp $	*/
 
 /*
@@ -97,10 +97,6 @@
 #define	PAGE_MASK	(PAGE_SIZE - 1)
 
 #define	KERNBASE	0x00000000	/* start of kernel virtual */
-
-#define	SEGSHIFT	22		/* LOG2(NBSEG) */
-#define NBSEG		(1 << SEGSHIFT)	/* bytes/segment */
-#define	SEGOFSET	(NBSEG-1)	/* byte offset into segment */
 
 #define	UPAGES		3  		/* pages of u-area */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmmu.h,v 1.1.4.1 2001/04/18 16:11:14 niklas Exp $ */
+/*	$OpenBSD: cmmu.h,v 1.1.4.2 2001/10/31 03:01:18 nate Exp $ */
 /* 
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University
@@ -24,20 +24,9 @@
  * any improvements or extensions that they make and grant Carnegie Mellon 
  * the rights to redistribute these changes.
  */
-/*
- * HISTORY
- * 
- */
 
-
-#ifndef	__MACHINE_CMMU_H__
-#define	__MACHINE_CMMU_H__
-
-#ifndef _LOCORE
-#include <machine/mmu.h>		 /* batc_template_t */
-#endif
-
-#include <machine/board.h>
+#ifndef	_MACHINE_CMMU_H_
+#define	_MACHINE_CMMU_H_
 
 /* Area Description */
 #define AREA_D_WT	0x00000200	/* write through */
@@ -135,4 +124,4 @@ void cmmu_set_pair_batc_entry(
 
 #endif	/* _LOCORE */
 
-#endif	/* __MACHINE_CMMU_H__ */
+#endif	/* _MACHINE_CMMU_H_ */

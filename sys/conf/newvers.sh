@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: newvers.sh,v 1.22.2.2 2001/07/04 10:39:55 niklas Exp $
+#	$OpenBSD: newvers.sh,v 1.22.2.3 2001/10/31 03:11:47 nate Exp $
 #	$NetBSD: newvers.sh,v 1.17.2.1 1995/10/12 05:17:11 jtc Exp $
 #
 # Copyright (c) 1984, 1986, 1990, 1993
@@ -36,7 +36,7 @@
 #
 #	@(#)newvers.sh	8.1 (Berkeley) 4/20/94
 
-if [ ! -r version ]
+if [ ! -r version -o ! -s version ]
 then
 	echo 0 > version
 fi

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: gscbus.c,v 1.9.2.3 2001/11/13 21:00:51 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -167,6 +167,7 @@ gscattach(parent, self, aux)
 	sc->sc_dmatag._dmamem_unmap = gsc_dmamem_unmap;
 	sc->sc_dmatag._dmamem_mmap = gsc_dmamem_mmap;
 
+	ga->ga_hpamask = HPPA_FLEX_MASK;
 	pdc_scanbus(self, &ga->ga_ca, ga->ga_mod, MAXMODBUS);
 }
 
@@ -175,6 +176,10 @@ gscprint(aux, pnp)
 	void *aux;
 	const char *pnp;
 {
+	struct gsc_attach_args *ga = aux;
+
+	if (pnp)
+		printf("%s at %s", ga->ga_name, pnp);
 	return (UNCONF);
 }
 
