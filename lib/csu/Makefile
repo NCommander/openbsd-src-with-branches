@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.2 1997/11/08 08:13:10 todd Exp $
+#	$OpenBSD: Makefile,v 1.3 1999/08/20 14:11:34 niklas Exp $
 
 .if make(obj)
-SUBDIR= alpha i386 m68k mips mvme88k ns32k powerpc sparc vax
+SUBDIR= alpha i386 m68k mips m88k ns32k powerpc sparc vax
 .else
 SUBDIR= ${MACHINE_ARCH}
 .endif
