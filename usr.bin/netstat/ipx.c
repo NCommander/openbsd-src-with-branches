@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx.c,v 1.4 1997/06/29 21:46:01 millert Exp $	*/
+/*	$OpenBSD: ipx.c,v 1.5 1998/02/27 12:07:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)ns.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD: ipx.c,v 1.4 1997/06/29 21:46:01 millert Exp $";
+static char *rcsid = "$OpenBSD: ipx.c,v 1.5 1998/02/27 12:07:34 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,7 +57,9 @@ static char *rcsid = "$OpenBSD: ipx.c,v 1.4 1997/06/29 21:46:01 millert Exp $";
 #include <netipx/ipx_pcb.h>
 #include <netipx/ipx.h>
 #include <netipx/ipx_var.h>
+#ifdef IPXERRORMSGS
 #include <netipx/ipx_error.h>
+#endif /* IPXERRORMSGS */
 #include <netipx/spx.h>
 #include <netipx/spx_timer.h>
 #include <netipx/spx_var.h>
@@ -255,6 +257,7 @@ ipx_stats(off, name)
 	ANY(ipxstat.ipxs_badsum, "packet", " with bad checksums");
 }
 
+#ifdef IPXERRORMSGS
 static	struct {
 	u_short code;
 	char *name;
@@ -344,6 +347,7 @@ ipx_erputil(z, c)
 		where =  ipx_errnames[j].where;
 	ANY(z, name, where);
 }
+#endif /* IPXERRORMSGS */
 
 static struct sockaddr_ipx ssipx = {AF_IPX};
 
