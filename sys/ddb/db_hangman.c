@@ -67,7 +67,7 @@ db_randomsym(lenp)
 {
 	register char	*p, *q;
 		/* choose random symtab */
-	register db_symtab_t	*stab = db_istab(db_random(db_nsymtabs));
+	register db_symtab_t	stab = db_istab(db_random(db_nsymtabs));
 
 		/* choose random symbol from the table */
 	q = db_qualify(X_db_isym(stab, db_random(X_db_nsyms(stab))),stab->name);

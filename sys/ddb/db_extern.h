@@ -34,16 +34,16 @@
 
 /* db_aout.c */
 void X_db_sym_init __P((int *, char *, char *));
-size_t X_db_nsyms __P((db_symtab_t *));
-db_sym_t X_db_isym __P((db_symtab_t *, size_t));
-db_sym_t X_db_lookup __P((db_symtab_t *, char *));
-db_sym_t X_db_search_symbol __P((db_symtab_t *, db_addr_t, db_strategy_t,
+size_t X_db_nsyms __P((db_symtab_t));
+db_sym_t X_db_isym __P((db_symtab_t, size_t));
+db_sym_t X_db_lookup __P((db_symtab_t, char *));
+db_sym_t X_db_search_symbol __P((db_symtab_t, db_addr_t, db_strategy_t,
 				 db_expr_t *));
 void X_db_symbol_values __P((db_sym_t, char **, db_expr_t *));
 void db_printsym __P((db_expr_t, db_strategy_t));
-boolean_t X_db_line_at_pc __P((db_symtab_t *, db_sym_t, char **,
+boolean_t X_db_line_at_pc __P((db_symtab_t, db_sym_t, char **,
 			       int *, db_expr_t));
-int X_db_sym_numargs __P((db_symtab_t *, db_sym_t, int *, char **));
+int X_db_sym_numargs __P((db_symtab_t, db_sym_t, int *, char **));
 void ddb_init __P((void));
 
 /* db_examine.c */
