@@ -1,4 +1,4 @@
-#	$OpenBSD: hosts,v 1.9 2001/12/05 09:58:37 deraadt Exp $
+#	$OpenBSD: hosts,v 1.10 2002/03/17 23:19:20 krw Exp $
 #
 # Host Database
 #
@@ -9,4 +9,5 @@
 #
 ::1		localhost.my.domain localhost
 127.0.0.1	localhost.my.domain localhost
-192.168.254.254	noname
+::1		noname.my.domain noname
+127.0.0.1	noname.my.domain noname
