@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp.c,v 1.22 2003/03/13 09:09:20 deraadt Exp $	*/
+/*	$OpenBSD: cp.c,v 1.24 2003/05/02 20:31:42 nino Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -17,7 +17,7 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgment:
+ *    must display the following acknowledgement:
  *	This product includes software developed by the University of
  *	California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cp.c	8.5 (Berkeley) 4/29/95";
 #else
-static char rcsid[] = "$OpenBSD: cp.c,v 1.22 2003/03/13 09:09:20 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: cp.c,v 1.24 2003/05/02 20:31:42 nino Exp $";
 #endif
 #endif /* not lint */
 
