@@ -1,7 +1,6 @@
-/*	$OpenBSD: exec_elf.h,v 1.7 1996/08/31 09:19:14 pefo Exp $	*/
+/*	$OpenBSD: exec_elf.h,v 1.8 1996/10/27 20:08:26 etheisen Exp $	*/
 /*
- * Copyright (c) 1995, 1996 Erik Theisen
- * All rights reserved.
+ * Copyright (c) 1995, 1996 Erik Theisen.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
