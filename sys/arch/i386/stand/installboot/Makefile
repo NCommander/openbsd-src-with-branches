@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.4 1997/06/23 23:45:16 kstailey Exp $
+#	$OpenBSD: Makefile,v 1.5 1997/08/29 22:28:22 mickey Exp $
 
 PROG=	installboot
 MAN=	installboot.8
+MANSUBDIR=i386
 
 LDADD=	-lutil
 DPADD=	${LIBUTIL}
