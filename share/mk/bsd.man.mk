@@ -20,7 +20,7 @@ NROFF?=		nroff
 	@echo "${NROFF} -mandoc ${.IMPSRC} > ${.TARGET}"
 	@${NROFF} -mandoc ${.IMPSRC} > ${.TARGET} || (rm -f ${.TARGET}; false)
 
-.if defined(MAN) && !empty(MAN)
+.if defined(MAN) && !empty(MAN) && !defined(MANALL)
 MANALL=	${MAN:S/.1$/.cat1/g:S/.2$/.cat2/g:S/.3$/.cat3/g:S/.4$/.cat4/g:S/.5$/.cat5/g:S/.6$/.cat6/g:S/.7$/.cat7/g:S/.8$/.cat8/g:S/.9$/.cat9/g}
 .endif
 
