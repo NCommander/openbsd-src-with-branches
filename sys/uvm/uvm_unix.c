@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_unix.c,v 1.9 2001/05/05 20:57:03 art Exp $	*/
-/*	$NetBSD: uvm_unix.c,v 1.8 1999/03/25 18:48:56 mrg Exp $	*/
+/*	$OpenBSD: uvm_unix.c,v 1.10 2001/05/05 21:26:46 art Exp $	*/
+/*	$NetBSD: uvm_unix.c,v 1.10 1999/12/30 16:09:47 eeh Exp $	*/
 
 /*
  * Copyright (c) 1997 Charles D. Cranor and Washington University.
