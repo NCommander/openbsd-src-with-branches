@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include "def.h"
 #include "kbd.h"
 #include "funmap.h"
