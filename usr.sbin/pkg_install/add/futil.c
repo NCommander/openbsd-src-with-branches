@@ -1,7 +1,7 @@
-/*	$OpenBSD: futil.c,v 1.4 1998/09/07 22:30:13 marc Exp $	*/
+/*	$OpenBSD: futil.c,v 1.5 1999/06/24 17:27:11 espie Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: futil.c,v 1.4 1998/09/07 22:30:13 marc Exp $";
+static const char *rcsid = "$OpenBSD: futil.c,v 1.5 1999/06/24 17:27:11 espie Exp $";
 #endif
 
 /*
@@ -80,11 +80,11 @@ apply_perms(char *dir, char *arg)
 
 	if (vsystem("cd %s && chown -R %s:%s %s", cd_to, real_owner , 
 		real_group, arg))
-	    warnx("couldn't change owner/group of '%s' to '%s:%s'",
+	    pwarnx("couldn't change owner/group of '%s' to '%s:%s'",
 		   arg, real_owner, real_group);
     }  
     if (Mode)
 	if (vsystem("cd %s && chmod -R %s %s", cd_to, Mode, arg))
-	    warnx("couldn't change modes of '%s' to '%s'", arg, Mode);
+	    pwarnx("couldn't change modes of '%s' to '%s'", arg, Mode);
 }
 
