@@ -1,4 +1,4 @@
-/*	$OpenBSD: rootfil.c,v 1.14 1996/10/13 03:35:58 christos Exp $	*/
+/*	$OpenBSD: rootfil.c,v 1.5 1997/05/29 00:05:24 niklas Exp $	*/
 /*	$NetBSD: rootfil.c,v 1.14 1996/10/13 03:35:58 christos Exp $	*/
 
 /*
@@ -63,7 +63,9 @@
 #include "ra.h"
 
 #define DOSWAP                  /* Change swdevt, argdev, and dumpdev too */
+#ifdef MAJA
 u_long  bootdev;                /* should be dev_t, but not until 32 bits */
+#endif
 extern dev_t rootdev, dumpdev;
 
 #define PARTITIONMASK   0x7
