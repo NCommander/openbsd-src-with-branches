@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile.inc,v 1.2 1996/05/21 15:15:18 oki Exp $
+#	$OpenBSD$
 #
 #	etc.x68k/Makefile.inc -- x68k-specific etc Makefile targets
 #

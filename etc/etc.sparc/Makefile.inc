@@ -1,7 +1,5 @@
-#
+#	$OpenBSD$
 #	etc.sparc/Makefile.inc -- sparc-specific etc Makefile targets
-#
-#	$Id: Makefile.inc,v 1.6 1997/05/14 22:06:41 deraadt Exp $
 
 .ifdef DESTDIR
 snap_md: bsd bsd.scsi3 bootblocks distrib

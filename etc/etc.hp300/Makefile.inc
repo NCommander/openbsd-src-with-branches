@@ -1,6 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.3 1997/02/03 07:02:10 downsj Exp $
-#	$NetBSD: Makefile.inc,v 1.2 1996/03/22 05:14:27 scottr Exp $
-#
+#	$OpenBSD: Makefile.inc,v 1.4 1997/02/19 10:07:26 downsj Exp $
 #	etc.hp300/Makefile.inc -- hp300-specific etc Makefile targets
 
 .ifdef DESTDIR

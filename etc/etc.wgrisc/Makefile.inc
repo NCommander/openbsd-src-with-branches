@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.2 1997/04/09 09:10:06 pefo Exp $
+#	$OpenBSD$
 #
 #	etc.wgrisc/Makefile.inc -- wgrisc-specific etc Makefile targets
 

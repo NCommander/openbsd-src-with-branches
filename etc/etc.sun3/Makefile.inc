@@ -1,7 +1,6 @@
+#	$OpenBSD$
 #
 #	etc.sun3/Makefile.inc -- sun3-specific etc Makefile targets
-#
-#	$Id: Makefile.inc,v 1.1.1.1 1995/10/18 08:38:02 deraadt Exp $
 
 .ifdef DESTDIR
 snap_md: bsd-gen bsd-dl
