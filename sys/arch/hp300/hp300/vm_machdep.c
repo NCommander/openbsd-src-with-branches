@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.24 2001/06/08 08:08:46 art Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.25 2001/06/08 13:32:55 millert Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.47 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -243,7 +243,6 @@ pagemove(from, to, size)
 			panic("pagemove 2");
 		if (pmap_extract(pmap_kernel(), (vaddr_t)to, NULL) == TRUE)
 			panic("pagemove 3");
-#endif
 #endif
 #ifdef PMAP_NEW
 		pmap_kremove((vaddr_t)from, PAGE_SIZE);
