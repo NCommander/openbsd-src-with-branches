@@ -102,6 +102,7 @@ ether_ioctl(ifp, arp, cmd, data)
 {
 	struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
+	int	error = 0;
 
 	switch (cmd) {
 
@@ -149,7 +150,8 @@ ether_ioctl(ifp, arp, cmd, data)
 	default:
 		break;
 	}
-	return 0;
+
+	return error;
 }
 
 /*
