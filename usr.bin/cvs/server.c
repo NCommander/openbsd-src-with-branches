@@ -39,9 +39,6 @@
 #include "sock.h"
 
 
-extern struct cvsroot *cvs_root;
-
-
 
 /* argument vector built by the `Argument' and `Argumentx' requests */
 char   **cvs_args;

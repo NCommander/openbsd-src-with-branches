@@ -39,11 +39,6 @@
 #include "rcs.h"
 #include "log.h"
 
-extern struct cvsroot *cvs_root;
-
-
-extern char cvs_loginfo_data[];
-
 
 #define CFT_FILE   1
 #define CFT_DIR    2

@@ -52,8 +52,6 @@ static void cvs_getlog_print   (const char *, RCSFILE *, u_int);
 
 
 
-extern struct cvsroot *cvs_root;
-
 
 /*
  * cvs_getlog()

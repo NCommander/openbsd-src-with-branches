@@ -37,10 +37,6 @@
 
 
 
-extern struct cvsroot *cvs_root;
-
-
-
 int
 cvs_version(int argc, char **argv)
 {
