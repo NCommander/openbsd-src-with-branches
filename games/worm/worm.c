@@ -1,4 +1,4 @@
-/*	$OpenBSD: worm.c,v 1.17 2002/05/31 04:21:30 pjanzen Exp $	*/
+/*	$OpenBSD: worm.c,v 1.18 2002/12/06 21:48:51 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)worm.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: worm.c,v 1.17 2002/05/31 04:21:30 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: worm.c,v 1.18 2002/12/06 21:48:51 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -85,8 +85,8 @@ int visible_len;
 int lastch;
 char outbuf[BUFSIZ];
 
-int wantleave;
-int wantsuspend;
+volatile sig_atomic_t wantleave = 0;
+volatile sig_atomic_t wantsuspend = 0;
 
 void	crash(void);
 void	display(struct body *, char);
