@@ -1,4 +1,4 @@
-/*	$OpenBSD: collect.c,v 1.20 2001/01/16 05:36:08 millert Exp $	*/
+/*	$OpenBSD: collect.c,v 1.21 2001/06/23 23:04:21 millert Exp $	*/
 /*	$NetBSD: collect.c,v 1.9 1997/07/09 05:25:45 mikel Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)collect.c	8.2 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$OpenBSD: collect.c,v 1.20 2001/01/16 05:36:08 millert Exp $";
+static char rcsid[] = "$OpenBSD: collect.c,v 1.21 2001/06/23 23:04:21 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -185,7 +185,8 @@ cont:
 		    value("interactive") != NULL && !lastlong &&
 		    (value("dot") != NULL || value("ignoreeof") != NULL))
 			break;
-		if (linebuf[0] != escape || lastlong) {
+		if (linebuf[0] != escape || value("interactive") == NULL ||
+		    lastlong) {
 			if (putline(collf, linebuf, !longline) < 0)
 				goto err;
 			continue;
