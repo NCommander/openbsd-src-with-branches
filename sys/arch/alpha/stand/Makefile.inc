@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.4 1997/05/05 06:01:45 millert Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 2000/11/08 16:01:24 art Exp $
 #	$NetBSD: Makefile.inc,v 1.8 1997/04/06 08:39:38 cgd Exp $
 
 .include <bsd.own.mk>			# for ELF_TOOLCHAIN definition
@@ -20,6 +20,3 @@ CPPFLAGS+=		-D_STANDALONE
 
 XCPPFLAGS+=		-DHEAP_LIMIT="0x${HEAP_LIMIT}"
 
-.if !defined(ELF_TOOLCHAIN)
-CPPFLAGS+=	-DECOFF_COMPAT
-.endif
