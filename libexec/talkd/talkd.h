@@ -38,6 +38,7 @@ extern int	debug;
 extern char	hostname[];
 
 /* table.c */
+void	init_table __P((void));
 CTL_MSG *find_request __P((CTL_MSG *));
 CTL_MSG *find_match __P((CTL_MSG *));
 void	insert_table __P((CTL_MSG *, CTL_RESPONSE *));
