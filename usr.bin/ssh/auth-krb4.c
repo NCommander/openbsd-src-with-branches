@@ -28,7 +28,7 @@
 #include "ssh.h"
 #include "servconf.h"
 
-RCSID("$OpenBSD: auth-krb4.c,v 1.18 2000/09/07 20:27:49 deraadt Exp $");
+RCSID("$OpenBSD: auth-krb4.c,v 1.19 2000/10/03 18:03:02 markus Exp $");
 
 #ifdef KRB4
 char *ticket = NULL;
@@ -46,7 +46,7 @@ auth_krb4_password(struct passwd * pw, const char *password)
 	AUTH_DAT adata;
 	KTEXT_ST tkt;
 	struct hostent *hp;
-	unsigned long faddr;
+	u_long faddr;
 	char localhost[MAXHOSTNAMELEN];
 	char phost[INST_SZ];
 	char realm[REALM_SZ];

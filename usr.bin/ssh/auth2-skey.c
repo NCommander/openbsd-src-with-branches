@@ -1,5 +1,5 @@
 #include "includes.h"
-RCSID("$OpenBSD$");
+RCSID("$OpenBSD: auth2-skey.c,v 1.1 2000/10/11 20:14:38 markus Exp $");
 
 #include "ssh.h"
 #include "ssh2.h"
@@ -61,7 +61,7 @@ input_userauth_info_response(int type, int plen, void *ctxt)
 {
 	Authctxt *authctxt = ctxt;
 	int authenticated = 0;
-	unsigned int nresp, rlen;
+	u_int nresp, rlen;
 	char *resp, *method;
 
 	if (authctxt == NULL)

@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-options.c,v 1.5 2000/10/09 21:32:34 markus Exp $");
+RCSID("$OpenBSD: auth-options.c,v 1.6 2000/11/15 22:31:36 markus Exp $");
 
 #include "ssh.h"
 #include "packet.h"
@@ -54,7 +54,7 @@ auth_clear_options(void)
 
 /* return 1 if access is granted, 0 if not. side effect: sets key option flags */
 int
-auth_parse_options(struct passwd *pw, char *options, unsigned long linenum)
+auth_parse_options(struct passwd *pw, char *options, u_long linenum)
 {
 	const char *cp;
 	if (!options)
