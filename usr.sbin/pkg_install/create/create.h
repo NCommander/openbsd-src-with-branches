@@ -1,4 +1,4 @@
-/* $OpenBSD: create.h,v 1.2 1998/09/07 22:30:14 marc Exp $ */
+/* $OpenBSD: create.h,v 1.3 1998/10/13 23:09:50 marc Exp $ */
 
 /*
  * FreeBSD install - a package for the installation and maintainance
@@ -36,6 +36,7 @@ extern char	*ExcludeFrom;
 extern char	*Mtree;
 extern char	*Pkgdeps;
 extern char	*Pkgcfl;
+extern char	*BaseDir;
 extern char	PlayPen[];
 extern size_t	PlayPenSize;
 extern int	Dereference;

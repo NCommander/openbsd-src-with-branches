@@ -59,7 +59,13 @@ check_list(char *home, package_t *pkg)
 				p = p->next;
 			break;
 		case PLIST_FILE:
-			(void) snprintf(name, sizeof(name), "%s/%s", there ? there : cwd, p->name);
+			if (BaseDir)
+				(void) snprintf(name, sizeof(name), 
+				    "%s/%s/%s", BaseDir, there ? there : cwd, 
+				    p->name);
+			else
+				(void) snprintf(name, sizeof(name), 
+				    "%s/%s", there ? there : cwd, p->name);
 			if ((cp = MD5File(name, buf)) != NULL) {
 				tmp = new_plist_entry();
 				tmp->name = copy_string(strconcat("MD5:", cp));
