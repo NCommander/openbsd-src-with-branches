@@ -98,6 +98,10 @@ struct socket {
 	void	(*so_upcall) __P((struct socket *so, caddr_t arg, int waitf));
 	caddr_t	so_upcallarg;		/* Arg for above */
 	uid_t	so_uid;			/* who opened the socket */
+        u_char  so_seclevel[4];         /* security levels XXX unused byte 3 */
+#define SL_AUTH       0                 /* Authentication level */
+#define SL_ESP        1                 /* ESP transport level */
+#define SL_NET_ESP    2                 /* ESP network (encapsulation) level */
 };
 
 /*
