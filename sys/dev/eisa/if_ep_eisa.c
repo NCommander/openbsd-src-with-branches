@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_eisa.c,v 1.17 2003/01/10 17:07:09 mickey Exp $	*/
+/*	$OpenBSD: if_ep_eisa.c,v 1.18 2004/05/12 06:35:10 tedu Exp $	*/
 /*	$NetBSD: if_ep_eisa.c,v 1.13 1997/04/18 00:50:33 cgd Exp $	*/
 
 /*
@@ -204,4 +204,7 @@ ep_eisa_attach(parent, self, aux)
 		printf(" %s,", intrstr);
 
 	epconfig(sc, chipset, NULL);
+	/* XXX because epconfig() will not print a newline for vortex chips */
+	if (chipset == EP_CHIPSET_VORTEX)
+		printf("\n");
 }
