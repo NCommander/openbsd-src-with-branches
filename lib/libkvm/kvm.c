@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm.c,v 1.39 2004/07/01 02:04:10 mickey Exp $ */
+/*	$OpenBSD: kvm.c,v 1.40 2004/08/11 18:45:58 jaredy Exp $ */
 /*	$NetBSD: kvm.c,v 1.43 1996/05/05 04:31:59 gwr Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)kvm.c	8.2 (Berkeley) 2/13/94";
 #else
-static char *rcsid = "$OpenBSD: kvm.c,v 1.39 2004/07/01 02:04:10 mickey Exp $";
+static char *rcsid = "$OpenBSD: kvm.c,v 1.40 2004/08/11 18:45:58 jaredy Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -590,7 +590,7 @@ kvm_dump_wrtheader(kvm_t *kd, FILE *fp, int dumpsize)
 
 kvm_t *
 kvm_openfiles(const char *uf, const char *mf, const char *sf,
-    int flag, char *errout)
+    unsigned int flag, char *errout)
 {
 	kvm_t *kd;
 
