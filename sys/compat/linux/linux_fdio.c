@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_fdio.c,v 1.2 2001/10/26 12:03:27 art Exp $	*/
+/*	$OpenBSD: linux_fdio.c,v 1.3 2001/10/26 14:31:31 art Exp $	*/
 /*	$NetBSD: linux_fdio.c,v 1.1 2000/12/10 14:12:16 fvdl Exp $	*/
 
 /*
@@ -66,7 +66,7 @@ linux_ioctl_fdio(struct proc *p, struct linux_sys_ioctl_args *uap,
 	struct filedesc *fdp;
 	struct file *fp;
 	int error;
-	int (*ioctlf) __P((struct file *, u_long, caddr_t, struct proc *));
+	int (*ioctlf)(struct file *, u_long, caddr_t, struct proc *);
 	u_long com;
 	struct fd_type fparams;
 	struct linux_floppy_struct lflop;
@@ -78,6 +78,7 @@ linux_ioctl_fdio(struct proc *p, struct linux_sys_ioctl_args *uap,
 	if ((fp = fd_getfile(fdp, SCARG(uap, fd))) == NULL)
 		return (EBADF);
 
+	FREF(fp);
 	com = SCARG(uap, com);
 	ioctlf = fp->f_ops->fo_ioctl;
 
@@ -144,9 +145,6 @@ linux_ioctl_fdio(struct proc *p, struct linux_sys_ioctl_args *uap,
 		error = EINVAL;
 	}
 
-#ifdef notdef
-	FILE_UNUSE(fp, p);
-#endif
-
+	FRELE(fp);
 	return 0;
 }
