@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.40 1999/09/03 18:01:58 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.41 1999/09/07 03:42:48 jason Exp $	*/
 /*	$NetBSD: machdep.c,v 1.85 1997/09/12 08:55:02 pk Exp $ */
 
 /*
@@ -119,7 +119,6 @@ vm_map_t phys_map = NULL;
 #else
 vm_map_t buffer_map;
 #endif
-extern vaddr_t avail_end;
 
 /*
  * Declare these as initialized data so we can patch them.
@@ -192,9 +191,6 @@ cpu_startup()
 	 */
 	printf(version);
 	/*identifycpu();*/
-#if !defined(MACHINE_NONCONTIG) && !defined(MACHINE_NEW_NONCONTIG)
-	physmem = btoc(avail_end);
-#endif
 	printf("real mem = %d\n", ctob(physmem));
 
 	/*
