@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.h,v 1.21 2003/06/30 20:02:46 cedric Exp $ */
+/*	$OpenBSD: pfctl.h,v 1.22 2003/07/03 09:13:06 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -41,7 +41,7 @@ struct pfr_buffer {
 	void	*pfrb_caddr;	/* malloc'ated memory area */
 };
 #define PFRB_FOREACH(var, buf)				\
-	for((var) = pfr_buf_next((buf), NULL);		\
+	for ((var) = pfr_buf_next((buf), NULL);		\
 	    (var) != NULL;				\
 	    (var) = pfr_buf_next((buf), (var)))
 
