@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.3 1998/04/06 20:24:22 pefo Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.4 1998/08/06 15:04:01 pefo Exp $	*/
 
 /*
  * Copyright (c) 1996 Carnegie-Mellon University.
@@ -34,15 +34,15 @@
 /*
  * Types provided to machine-independent PCI code
  */
-typedef struct p4e_pci_chipset *pci_chipset_tag_t;
+typedef struct ppc_pci_chipset *pci_chipset_tag_t;
 typedef u_long pcitag_t;
 typedef u_long pci_intr_handle_t;
 
 /*
- * p4e-specific PCI structure and type definitions.
+ * ppc-specific PCI structure and type definitions.
  * NOT TO BE USED DIRECTLY BY MACHINE INDEPENDENT CODE.
  */
-struct p4e_pci_chipset {
+struct ppc_pci_chipset {
 	void		*pc_conf_v;
 	void		(*pc_attach_hook) __P((struct device *,
 			    struct device *, struct pcibus_attach_args *));
