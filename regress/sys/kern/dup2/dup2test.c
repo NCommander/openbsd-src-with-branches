@@ -1,3 +1,7 @@
+/*	$OpenBSD$	*/
+/*
+ *	Written by Artur Grabowski <art@openbsd.org> 2001 Public Domain.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
