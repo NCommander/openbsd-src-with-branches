@@ -3490,6 +3490,9 @@ pmap_growkernel(vaddr_t maxkvaddr)
 		va += ALPHA_L2SEG_SIZE;
 	}
 
+	/* Invalidate the L1 PT cache. */
+	pool_cache_invalidate(&pmap_l1pt_cache);
+
 	virtual_end = va;
 
 	simple_unlock(&pmap_growkernel_slock);
