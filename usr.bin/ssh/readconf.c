@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.90 2001/09/19 19:24:18 stevesk Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.91 2001/10/01 21:51:16 markus Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -187,7 +187,7 @@ static struct {
 	{ "smartcarddevice", oSmartcardDevice },
 	{ "clearallforwardings", oClearAllForwardings }, 
 	{ "nohostauthenticationforlocalhost", oNoHostAuthenticationForLocalhost }, 
-	{ NULL, 0 }
+	{ NULL, oBadOption }
 };
 
 /*

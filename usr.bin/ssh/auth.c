@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.28 2001/10/03 10:01:20 markus Exp $");
+RCSID("$OpenBSD: auth.c,v 1.29 2001/11/08 20:02:24 markus Exp $");
 
 #include <libgen.h>
 
@@ -263,7 +263,7 @@ check_key_in_hostfiles(struct passwd *pw, Key *key, const char *host,
 	Key *found;
 	char *user_hostfile;
 	struct stat st;
-	int host_status;
+	HostStatus host_status;
 
 	/* Check if we know the host and its host key. */
 	found = key_new(key->type);
