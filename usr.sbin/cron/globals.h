@@ -1,4 +1,4 @@
-/*	$OpenBSD: globals.h,v 1.2 2001/02/18 20:14:01 millert Exp $	*/
+/*	$OpenBSD: globals.h,v 1.3 2001/02/19 14:33:33 millert Exp $	*/
 
 /*
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
@@ -64,8 +64,7 @@ XTRN int	DebugFlags INIT(0);
 XTRN const char *DebugFlagNames[]
 #ifdef MAIN_PROGRAM
 	= {
-		"ext", "sch", "proc", "pars", "load", "misc", "test", "bit",\
-		NULL
+		"ext", "sch", "proc", "pars", "load", "misc", "test", NULL
 	}
 #endif
 	;
