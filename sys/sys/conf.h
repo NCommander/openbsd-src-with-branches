@@ -330,6 +330,7 @@ extern struct cdevsw cdevsw[];
 	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
 	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
 	0, dev_init(c,n,select), (dev_type_mmap((*))) enodev }
+void	randomattach __P((void));
 
 /* symbolic sleep message strings */
 extern char devopn[], devio[], devwait[], devin[], devout[];
