@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.5 2001/06/27 01:55:28 niklas Exp $	*/
+/*	$OpenBSD: aac.c,v 1.6 2001/07/04 06:49:28 niklas Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -52,7 +52,6 @@
 #include <machine/bus.h>
 
 #include <vm/vm.h>
-#include <vm/pmap.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsi_disk.h>

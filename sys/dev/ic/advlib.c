@@ -1,4 +1,4 @@
-/*	$OpenBSD: advlib.c,v 1.3 1998/11/17 04:25:21 downsj Exp $	*/
+/*	$OpenBSD: advlib.c,v 1.4 2001/04/23 13:33:35 krw Exp $	*/
 /*      $NetBSD: advlib.c,v 1.7 1998/10/28 20:39:46 dante Exp $        */
 
 /*
@@ -69,7 +69,6 @@
 
 #include <vm/vm.h>
 #include <vm/vm_param.h>
-#include <vm/pmap.h>
 
 #include <dev/ic/adv.h>
 #include <dev/ic/advlib.h>

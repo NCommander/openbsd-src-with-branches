@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt_common.c,v 1.12 2001/07/04 06:43:18 niklas Exp $	*/
+/*	$OpenBSD: gdt_common.c,v 1.13 2001/08/03 15:21:40 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -44,7 +44,6 @@
 #include <machine/bus.h>
 
 #include <vm/vm.h>
-#include <vm/pmap.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsi_disk.h>
