@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.97 2001/07/03 04:20:47 deraadt Exp $ */
+/*	$OpenBSD: pf.c,v 1.98 2001/07/04 20:00:38 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -2408,6 +2408,7 @@ pf_reassemble(struct mbuf **m0, struct pf_fragment *frag,
 		}
 
 		frag->fr_flags = 0;
+		frag->fr_max = 0;
 		frag->fr_src = frent->fr_ip->ip_src;
 		frag->fr_dst = frent->fr_ip->ip_dst;
 		frag->fr_p = frent->fr_ip->ip_p;
