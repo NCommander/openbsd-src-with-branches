@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbicreg.h,v 1.3 1997/01/16 09:25:17 niklas Exp $	*/
+/*	$OpenBSD: sbicreg.h,v 1.4 2002/03/14 03:15:51 millert Exp $	*/
 /*	$NetBSD: sbicreg.h,v 1.2 1994/10/26 02:04:40 cgd Exp $	*/
 
 /*
@@ -139,7 +139,7 @@
 /*
  * CDBn registers, note that
  *	cdb11 is used for status byte in target mode (send-status-and-cc)
- *	cdb12 sez if linked command complete, and w/flag if so
+ *	cdb12 says if linked command complete, and w/flag if so
  */
 
 /*
