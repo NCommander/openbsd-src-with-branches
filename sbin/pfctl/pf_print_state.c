@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_print_state.c,v 1.14 2002/12/18 16:09:25 dhartmei Exp $	*/
+/*	$OpenBSD: pf_print_state.c,v 1.15 2003/01/03 21:37:44 cedric Exp $	*/
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -53,8 +53,7 @@
 #include <err.h>
 
 #include "pfctl_parser.h"
-#include "pfctl_radix.h"
-#include "pf_print_state.h"
+#include "pfctl.h"
 
 void	print_name(struct pf_addr *, struct pf_addr *, sa_family_t);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.273 2003/01/03 21:37:44 cedric Exp $	*/
+/*	$OpenBSD: parse.y,v 1.274 2003/01/03 22:22:18 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -54,10 +54,8 @@
 #include <grp.h>
 #include <md5.h>
 
-#include "pf_print_state.h"
 #include "pfctl_parser.h"
-#include "pfctl_radix.h"
-#include "pfctl_altq.h"
+#include "pfctl.h"
 
 static struct pfctl	*pf = NULL;
 static FILE		*fin = NULL;
