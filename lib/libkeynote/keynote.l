@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD$ */
+/* $OpenBSD: keynote.l,v 1.7 2000/02/12 00:26:16 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -298,6 +298,7 @@ keynote_lex_add(void *s, int type)
 		break;
 	}
 
+        keynote_max_lex_list /= 2;
 	keynote_errno = ERROR_MEMORY;
         return -1;
     }
