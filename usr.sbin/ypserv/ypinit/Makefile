@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 1997/04/20 10:00:19 maja Exp $
+#	$OpenBSD: Makefile,v 1.11 1997/04/23 11:34:43 deraadt Exp $
 
 MAN=	ypinit.8
 
@@ -7,7 +7,7 @@ SHFILES= ypinit.sh
 
 install:
 .for script in ${SHFILES}
-	${INSTALL} ${COPY} -o ${BINOWN} -g ${BINGRP} -m ${NONBINMODE} \
+	${INSTALL} ${COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
 	    ${.CURDIR}/${script} ${DESTDIR}${BINDIR}/${script:R}
 .endfor
 .for script in ${DISTFILES}
