@@ -1,4 +1,4 @@
-/*	$OpenBSD: ac97.h,v 1.11 2002/03/14 01:26:53 millert Exp $	*/
+/*	$OpenBSD: ac97.h,v 1.12 2002/04/08 01:43:13 frantzen Exp $	*/
 
 /*
  * Copyright (c) 1999 Constantine Sapuntzakis
@@ -32,6 +32,12 @@ struct ac97_codec_if;
 /*
  * This is the interface used to attach the AC97 compliant CODEC.
  */
+enum ac97_host_flags {
+	AC97_HOST_DONT_READ = 0x1,
+	AC97_HOST_DONT_READANY = 0x2,
+	AC97_HOST_SWAPPED_CHANNELS = 0x4
+};
+
 struct ac97_host_if {
 	void  *arg;
 
@@ -39,12 +45,6 @@ struct ac97_host_if {
 	int (*read)(void *arg, u_int8_t reg, u_int16_t *val);
 	int (*write)(void *arg, u_int8_t reg, u_int16_t val);
 	void (*reset)(void *arg);
-
-	enum ac97_host_flags {
-		AC97_HOST_DONT_READ = 0x1,
-		AC97_HOST_DONT_READANY = 0x2,
-		AC97_HOST_SWAPPED_CHANNELS = 0x4
-	};
 
 	enum ac97_host_flags (*flags)(void *arg);
 };
