@@ -621,7 +621,7 @@ hme_poll_stop(sc)
 	    (HME_FLAG_POLLENABLE | HME_FLAG_POLL))
 		return;
 
-	/* Turn off MIF interrupts, and diable polling */
+	/* Turn off MIF interrupts, and disable polling */
 	tcvr->int_mask = 0xffff;
 	tcvr->cfg &= ~(TCVR_CFG_PENABLE);
 	sc->sc_flags &= ~(HME_FLAG_POLL);
