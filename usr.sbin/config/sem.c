@@ -1,5 +1,5 @@
 /*	$OpenBSD: sem.c,v 1.9 1997/01/18 02:24:19 briggs Exp $	*/
-/*	$NetBSD: sem.c,v 1.14 1997/03/14 20:43:05 leo Exp $	*/
+/*	$NetBSD: sem.c,v 1.10 1996/11/11 23:40:11 gwr Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -63,6 +63,7 @@ const char *s_generic;
 const char *s_nfs;
 static const char *s_qmark;
 
+static struct hashtab *attrtab;		/* for attribute lookup */
 static struct hashtab *cfhashtab;	/* for config lookup */
 static struct hashtab *devitab;		/* etc */
 
