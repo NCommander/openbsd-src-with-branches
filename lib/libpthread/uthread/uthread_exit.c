@@ -29,7 +29,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: uthread_exit.c,v 1.7 1999/01/06 05:29:23 d Exp $
+ * $OpenBSD: uthread_exit.c,v 1.8 1999/05/26 00:18:23 d Exp $
  */
 #include <errno.h>
 #include <unistd.h>
@@ -118,6 +118,8 @@ _thread_exit(const char *fname, int lineno, const char *string)
 	strlcat(s, fname, sizeof s);
 	strlcat(s, " (errno = ", sizeof s);
 	numlcat(s, errno, sizeof s);
+	strlcat(s, ", pid = ", sizeof s);
+	numlcat(s, _thread_sys_getpid(), sizeof s);
 	strlcat(s, ")\n", sizeof s);
 
 	/* Write the string to the standard error file descriptor: */
