@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: print_princ.c,v 1.5 1997/05/07 01:37:13 assar Exp $ */
 
 /* 

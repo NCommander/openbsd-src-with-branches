@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*    $KTH: copykey.c,v 1.10 1997/04/01 08:18:17 joda Exp $"   */
 
 /*
