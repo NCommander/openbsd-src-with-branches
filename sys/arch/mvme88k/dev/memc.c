@@ -1,4 +1,4 @@
-/*	$OpenBSD: memc.c,v 1.2 1998/12/15 05:52:30 smurph Exp $ */
+/*	$OpenBSD: memc.c,v 1.3 1999/05/29 04:41:44 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -43,7 +43,6 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: wl.c,v 1.2 1997/02/11 02:55:44 deraadt Exp $ */
+/*	$OpenBSD: wl.c,v 1.3 1997/02/22 12:09:45 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -31,7 +31,6 @@
  */  
 
 #include <sys/param.h>
-#include <sys/callout.h>
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>

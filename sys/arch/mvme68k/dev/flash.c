@@ -1,4 +1,4 @@
-/*	$OpenBSD: flash.c,v 1.5 1996/04/28 11:11:50 deraadt Exp $ */
+/*	$OpenBSD: flash.c,v 1.6 2000/01/29 04:11:25 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -38,7 +38,6 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>

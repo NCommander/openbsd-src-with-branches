@@ -1,4 +1,4 @@
-/*	$OpenBSD: mc.c,v 1.6 2000/01/06 03:21:42 smurph Exp $ */
+/*	$OpenBSD: mc.c,v 1.7 2000/01/29 04:11:25 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -41,7 +41,6 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
