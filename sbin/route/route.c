@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.21 1997/06/24 03:45:43 millert Exp $	*/
+/*	$OpenBSD: route.c,v 1.22 1997/06/24 04:05:38 millert Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)route.c	8.3 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: route.c,v 1.21 1997/06/24 03:45:43 millert Exp $";
+static char rcsid[] = "$OpenBSD: route.c,v 1.22 1997/06/24 04:05:38 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -259,8 +259,12 @@ flushroutes(argc, argv)
 			case K_OSI:
 				af = AF_ISO;
 				break;
+			case K_ENCAP:
+				af = AF_ENCAP;
+				break;
 			case K_X25:
 				af = AF_CCITT;
+				break;
 			default:
 				goto bad;
 		} else
