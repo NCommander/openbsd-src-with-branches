@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.66 2002/09/11 05:38:47 itojun Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.67 2003/01/07 09:00:33 kjc Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -835,7 +835,7 @@ decapsulate:
 
 			case LLC_XID:
 			case LLC_XID_P:
-				if(m->m_len < ETHER_ADDR_LEN)
+				if (m->m_len < ETHER_ADDR_LEN)
 					goto dropanyway;
 				l->llc_window = 0;
 				l->llc_fid = 9;
