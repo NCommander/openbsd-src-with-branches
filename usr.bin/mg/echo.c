@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.11 2001/05/23 22:23:55 art Exp $	*/
+/*	$OpenBSD: echo.c,v 1.12 2001/05/23 23:29:47 mickey Exp $	*/
 
 /*
  *	Echo line reading and writing.
@@ -654,7 +654,7 @@ eformat(fp, ap)
 				c = *fp++;
 				switch (c) {
 				case 'd':
-					eputl((long)va_arg(ap, long), 10);
+					eputl(va_arg(ap, long), 10);
 					break;
 				default:
 					eputc(c);
