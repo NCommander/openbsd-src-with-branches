@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.56 2002/03/14 01:27:04 millert Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.57 2002/04/18 08:25:04 miod Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -100,6 +100,9 @@ cansignal(p, pc, q, signum)
 {
 	if (pc->pc_ucred->cr_uid == 0)
 		return (1);		/* root can always signal */
+
+	if (p == q)
+		return (1);		/* process can always signal itself */
 
 	if (signum == SIGCONT && q->p_session == p->p_session)
 		return (1);		/* SIGCONT in session */
