@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.73 2000/01/11 03:10:04 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.74 2000/01/13 00:34:31 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -1558,6 +1558,12 @@ ipsp_kern(int off, char **bufp, int len)
 		i++;
 
 	      l+= sprintf(buffer + l, "\tCurrently used by %d flows\n", i);
+
+	      for (i = 0, flow = tdb->tdb_access; flow; flow = flow->flow_next)
+		i++;
+
+	      l+= sprintf(buffer + l,
+			  "\t%d ingress flows specified\n", i);
 
 	      l += sprintf(buffer + l, "\t%u flows have used this SA\n",
 			   tdb->tdb_cur_allocations);
