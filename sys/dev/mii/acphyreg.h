@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: acphyreg.h,v 1.1 2001/08/24 17:54:33 thorpej Exp $	*/
 
 /*

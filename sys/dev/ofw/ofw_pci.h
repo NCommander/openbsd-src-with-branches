@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ofw_pci.h,v 1.4 2001/02/17 16:28:37 mrg Exp $	*/
 
 /*-

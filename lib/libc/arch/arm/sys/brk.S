@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: brk.S,v 1.7 2003/12/26 11:23:44 martin Exp $	*/
 
 /*-
