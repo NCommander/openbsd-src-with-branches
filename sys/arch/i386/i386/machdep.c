@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.304 2004/07/02 23:22:58 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.305 2004/07/05 05:18:42 david Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1380,6 +1380,7 @@ amd_family6_setup(cpu_device, model, step)
 		pagezero = sse2_pagezero;
 	else
 		pagezero = i686_pagezero;
+	k7_powernow_init(curcpu()->ci_signature);
 #endif
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.64 2004/06/21 23:12:14 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.65 2004/06/25 08:41:19 art Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -371,6 +371,8 @@ int     p4tcc_setperf(int);
 
 void	k6_powernow_init(void);
 int	k6_powernow_setperf(int);
+void	k7_powernow_init(uint32_t);
+int	k7_powernow_setperf(int);
 
 
 /* npx.c */
