@@ -1,4 +1,4 @@
-/* $OpenBSD: syslogc.c,v 1.1 2004/01/04 08:30:21 djm Exp $ */
+/* $OpenBSD: syslogc.c,v 1.2 2004/01/05 02:21:06 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller
@@ -102,7 +102,6 @@ main(int argc, char **argv)
 	}
 
 	strlcpy(ctl.sun_path, ctlsock_path, sizeof(ctl.sun_path));
-	ctl.sun_path[sizeof(ctl.sun_path) - 1] = '\0';
 	ctl.sun_family = AF_UNIX;
 
 	if ((ctlsock = socket(PF_UNIX, SOCK_STREAM, 0)) < 0)
