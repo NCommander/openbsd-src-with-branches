@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.17 1999/10/01 02:00:12 jason Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.18 1999/12/05 07:30:31 angelos Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -803,8 +803,8 @@ m_split(m0, len0, wait)
 		MGETHDR(n, wait, m0->m_type);
 		if (n == NULL)
 			return (NULL);
-		n->m_pkthdr.rcvif = m0->m_pkthdr.rcvif;
-		n->m_pkthdr.len = m0->m_pkthdr.len - len0;
+		n->m_pkthdr = m0->m_pkthdr;
+		n->m_pkthdr.len -= len0;
 		olen = m0->m_pkthdr.len;
 		m0->m_pkthdr.len = len0;
 		if (m->m_flags & M_EXT)
