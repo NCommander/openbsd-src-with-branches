@@ -1,4 +1,4 @@
-/*	$OpenBSD: certpatch.c,v 1.17 2001/07/11 00:40:29 angelos Exp $	*/
+/*	$OpenBSD: certpatch.c,v 1.18 2002/06/09 08:13:07 todd Exp $	*/
 /*	$EOM: certpatch.c,v 1.11 2000/12/21 14:50:09 ho Exp $	*/
 
 /*
@@ -186,7 +186,7 @@ main (int argc, char **argv)
 
   if (!strcasecmp (IDTYPE_IP, type))
     {
-      if (inet_aton (id, &saddr) == -1)
+      if (inet_aton (id, &saddr) == 0)
         {
 	  printf ("inet_aton () failed\n");
 	  return (1);
