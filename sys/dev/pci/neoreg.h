@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_fxp.c,v 1.25 2000/03/30 02:49:35 jason Exp $       */
+/*      $OpenBSD: neoreg.h,v 1.1 2000/04/13 00:10:52 csapuntz Exp $       */
 
 /*
  * Copyright (c) 1999 Cameron Grant <gandalf@vilnya.demon.co.uk>
@@ -111,6 +111,15 @@
 #define NM_PBUFFER_END   (NM_PLAYBACK_REG_OFFSET + 0x14)
 #define NM_PBUFFER_WMARK (NM_PLAYBACK_REG_OFFSET + 0xc)
 #define NM_PBUFFER_CURRP (NM_PLAYBACK_REG_OFFSET + 0x8)
+
+#define NM_TOTAL_COEFF_COUNT 0x3158
+
+#define NM_COEFF_SIZES  2*8
+
+struct neo_firmware {
+	const u_int16_t coefficientSizes[NM_COEFF_SIZES];
+	const char coefficients[NM_TOTAL_COEFF_COUNT*4];
+};
 
 
 #endif
