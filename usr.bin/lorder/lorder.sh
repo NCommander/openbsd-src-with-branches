@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	$OpenBSD: lorder.sh,v 1.7 1997/01/25 21:16:44 deraadt Exp $
+#	$OpenBSD: lorder.sh,v 1.8 1998/09/02 06:40:08 deraadt Exp $
 #	$NetBSD: lorder.sh,v 1.3 1995/04/24 07:38:52 cgd Exp $
 #
 # Copyright (c) 1990, 1993
@@ -70,7 +70,7 @@ trap "rm -rf $TDIR; trap 2 ; kill -2 $$" 1 2 3 13 15
 #
 # if the line has " U " it's a globally undefined symbol, put it into
 # the reference file.
-${NM:-nm} -go $* | sed "
+${NM:-nm} -go "$@" | sed "
 	/:$/ {
 		s/://
 		s/.*/& &/
