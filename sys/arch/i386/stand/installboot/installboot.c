@@ -144,7 +144,7 @@ main(argc, argv)
 	if (protosize > SBSIZE - DEV_BSIZE)
 		errx(1, "proto bootblocks too big");
 
-	if ((devfd = open(dev, O_RDWR, 0)) < 0)
+	if ((devfd = open(dev, (nowrite? O_RDONLY:O_RDWR), 0)) < 0)
 		err(1, "open: %s", dev);
 
 	/* Sync filesystems (to clean in-memory superblock?) */

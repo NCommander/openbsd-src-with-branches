@@ -38,10 +38,15 @@
 #include <ufs.h>
 #include <nfs.h>
 #include <cd9660.h>
+#ifdef notdef
+#include <fat.h>
+#include <tftp.h>
+#endif
 #include <netif.h>
 #include "biosdev.h"
 #include "unixdev.h"
 
+const char version[] = "0.99a";
 int	debug = 1;
 
 struct fs_ops file_system[] = {
@@ -70,6 +75,9 @@ struct devsw	devsw[] = {
 #else
 	{ "BIOS", biosstrategy, biosopen, biosclose, biosioctl },
 #endif
+#if 0
+	{ "TFTP", tftpstrategy, tftpopen, tftpclose, tftpioctl },
+#endif
 };
 int	ndevs = NENTS(devsw);
 
@@ -85,7 +93,9 @@ struct consw	consw[] = {
 	{ "unix",unix_probe,unix_putc,unix_getc,unix_ischar},
 #else
 	{ "kbd", kbd_probe, kbd_putc, kbd_getc, kbd_ischar },
+#if 0
 	{ "com", com_probe, com_putc, com_getc, com_ischar },
+#endif
 #endif
 };
 int	ncons = NENTS(consw);

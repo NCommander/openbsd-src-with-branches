@@ -60,5 +60,8 @@ void	com_putc __P((int c));
 int	com_getc __P((void));
 int	com_ischar __P((void));
 
+/* biosmem.S */
+u_int	biosmem __P((int));
+
 /* biostime.S */
 void	usleep __P((u_long));

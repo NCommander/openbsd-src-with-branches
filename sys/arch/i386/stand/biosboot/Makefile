@@ -2,7 +2,8 @@
 
 PROG=	biosboot
 SRCS=	biosboot.S
-AFLAGS+=-DREL=$(REL) #-Wa,-a
+# AFLAGS+=-Wa,-a
+CPPFLAGS+=-DSTART=$(START) -DBOOTMAGIC=$(BOOTMAGIC) -DBOOTREL=$(BOOTREL)
 LDFLAGS=-Wl,-T0,-N,-x -nostdlib
 STRIP=
 MAN=	biosboot.8
@@ -10,12 +11,12 @@ LINKS=	${BINDIR}/biosboot ${BINDIR}/fdboot \
 	${BINDIR}/biosboot ${BINDIR}/wdboot \
 	${BINDIR}/biosboot ${BINDIR}/sdboot \
 
-# XXX - Toby
-# These should not output anything, once /boot is loaded, let
-# it figure out who to talk to (probe the keyboard).  That way
-# we will not need two different types of bootblocks...
-#
-# Uncomment this to make the boot block talk to a serial port.
-# CPPFLAGS+=-DSERIAL=0
+all:	machine-links
+
+machine-links:
+	@rm -f i386 machine
+	@ln -fs ${.CURDIR}/../.. i386
+	@ln -fs ${.CURDIR}/../../include machine
 
 .include <bsd.prog.mk>
+

@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1.2.1 1996/12/03 13:17:05 mickey Exp $
+#	$OpenBSD: Makefile,v 1.2 1997/03/31 03:12:06 weingart Exp $
 
 PROG=	installboot
-CFLAGS+=-DDEBUG -g -Wall
 MAN=	installboot.8
 
 # Need this to work in the miniroot
