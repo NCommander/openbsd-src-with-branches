@@ -1,4 +1,4 @@
-/* $OpenBSD: commands.c,v 1.8 2003/06/12 22:30:23 pvalchev Exp $	 */
+/* $OpenBSD: commands.c,v 1.9 2003/06/13 21:52:24 deraadt Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -317,8 +317,9 @@ show_errors(void)
 char *
 kill_procs(char *str)
 {
-	int signum = SIGTERM, procnum, uid;
+	int signum = SIGTERM, procnum;
 	struct sigdesc *sigp;
+	uid_t uid;
 	char *nptr;
 
 	/* reset error array */
@@ -381,8 +382,9 @@ kill_procs(char *str)
 char *
 renice_procs(char *str)
 {
-	int prio, procnum, uid;
+	uid_t uid;
 	char negate;
+	int prio, procnum;
 
 	ERR_RESET;
 	uid = getuid();
