@@ -8,6 +8,8 @@ NOPROG=	noprog
 NOMAN=	noman
 NOOBJ=	noobj
 
+SUBDIR=	stand
+
 DIRS=	conf dev include mvme68k
 
 links::
@@ -30,3 +32,4 @@ SUBDIR+=stand ../m68k
 obj:	_SUBDIRUSE
 
 .include <bsd.prog.mk>
+.include <bsd.subdir.mk>
