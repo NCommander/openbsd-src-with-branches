@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: defs.c,v 1.12 2000/04/07 23:46:39 brian Exp $
+ *	$OpenBSD: defs.c,v 1.13 2000/08/16 09:07:27 brian Exp $
  */
 
 
@@ -56,7 +56,7 @@
 void
 randinit()
 {
-#if __FreeBSD__ >= 3
+#if defined(__OpenBSD__) || __FreeBSD__ >= 3
   static int initdone;		/* srandomdev() call is only required once */
 
   if (!initdone) {
