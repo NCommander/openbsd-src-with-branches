@@ -1,4 +1,4 @@
-/*	$OpenBSD: est.c,v 1.1 2003/12/18 23:46:19 tedu Exp $ */
+/*	$OpenBSD: est.c,v 1.2 2003/12/19 05:52:27 millert Exp $ */
 /*
  * Copyright (c) 2003 Michael Eriksson.
  * All rights reserved.
@@ -202,7 +202,6 @@ est_init(const char *cpu_device)
 	u_int64_t msr;
 	char *tag;
 	const struct fqlist *fql;
-	extern int cpu_ecxfeature;
 	extern char cpu_brandstr[];
 
 	if ((cpu_ecxfeature & CPUIDECX_EST) == 0)

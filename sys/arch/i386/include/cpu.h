@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.51 2003/07/28 21:15:28 jason Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.52 2003/12/18 23:46:19 tedu Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -143,6 +143,7 @@ struct cpu_cpuid_feature {
 extern int cpu;
 extern int cpu_class;
 extern int cpu_feature;
+extern int cpu_ecxfeature;
 extern int cpu_apmwarn;
 extern int cpu_apmhalt;
 extern int cpuid_level;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.254 2003/12/18 23:46:19 tedu Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.255 2003/12/19 19:03:34 grange Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1066,7 +1066,6 @@ winchip_cpu_setup(cpu_device, model, step)
 	int model, step;
 {
 #if defined(I586_CPU)
-	extern int cpu_feature;
 
 	switch (model) {
 	case 4: /* WinChip C6 */
@@ -1468,7 +1467,6 @@ cyrix3_cpu_setup(cpu_device, model, step)
 	int model, step;
 {
 #if defined(I686_CPU)
-	extern int cpu_feature;
 	unsigned int val;
 
 	switch (model) {
@@ -1627,10 +1625,6 @@ intel686_cpu_setup(cpu_device, model, step)
 	const char *cpu_device;
 	int model, step;
 {
-	extern int cpu_feature, cpuid_level;
-#ifndef SMALL_KERNEL
-	extern int cpu_ecxfeature;
-#endif
 	u_quad_t msr119;
 
 	/*
@@ -1771,8 +1765,6 @@ identifycpu()
 	extern char cpu_vendor[];
 	extern char cpu_brandstr[];
 	extern int cpu_id;
-	extern int cpu_feature;
-	extern int cpu_ecxfeature;
 #ifdef CPUDEBUG
 	extern int cpu_cache_eax, cpu_cache_ebx, cpu_cache_ecx, cpu_cache_edx;
 #else
@@ -3082,7 +3074,6 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 {
 	extern char cpu_vendor[];
 	extern int cpu_id;
-	extern int cpu_feature;
 #if NAPM > 0
 	extern int cpu_apmwarn;
 #endif
