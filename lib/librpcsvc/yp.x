@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: yp.x,v 1.2 1997/08/19 07:54:52 niklas Exp $	*/
 
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -36,7 +36,7 @@
 #ifndef RPC_HDR
 %#ifndef lint
 %/*static char sccsid[] = "from: @(#)yp.x	2.1 88/08/01 4.0 RPCSRC";*/
-%static char rcsid[] = "$OpenBSD: yp.x,v 1.1.1.1 1995/10/18 08:43:10 deraadt Exp $";
+%static char rcsid[] = "$OpenBSD: yp.x,v 1.2 1997/08/19 07:54:52 niklas Exp $";
 %#endif /* not lint */
 #endif
 
@@ -121,8 +121,13 @@ struct ypresp_val {
 
 struct ypresp_key_val {
 	ypstat stat;
+#ifdef STUPID_SUN_BUG /* These are backwards */
 	keydat key;
 	valdat val;
+#else
+	valdat val;
+	keydat key;
+#endif
 };
 
 
@@ -239,7 +244,11 @@ program YPPROG {
 		YPPROC_MATCH(ypreq_key) = 3;
 
 		ypresp_key_val 
+#ifdef STUPID_SUN_BUG /* should be ypreq_nokey */
 		YPPROC_FIRST(ypreq_key) = 4;
+#else
+		YPPROC_FIRST(ypreq_nokey) = 4;
+#endif
 
 		ypresp_key_val 
 		YPPROC_NEXT(ypreq_key) = 5;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_proc.c,v 1.17 2001/11/19 09:03:07 deraadt Exp $ */
+/*	$OpenBSD: ypserv_proc.c,v 1.18 2002/07/19 02:38:40 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,11 +32,11 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv_proc.c,v 1.17 2001/11/19 09:03:07 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ypserv_proc.c,v 1.18 2002/07/19 02:38:40 deraadt Exp $";
 #endif
 
 #include <rpc/rpc.h>
-#include "yp.h"
+#include <rpcsvc/yp.h>
 #include "ypv1.h"
 #include <rpcsvc/ypclnt.h>
 #include <sys/stat.h>
