@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.95 2002/06/19 02:52:23 mickey Exp $	*/
+/*	$OpenBSD: conf.c,v 1.96 2002/06/24 19:00:33 mickey Exp $	*/
 /*	$NetBSD: conf.c,v 1.75 1996/05/03 19:40:20 christos Exp $	*/
 
 /*
@@ -196,7 +196,6 @@ cdev_decl(ksyms);
 #include "cz.h"
 cdev_decl(cztty);
 #include "radio.h"
-cdev_decl(gpr);
 #include "gpr.h"
 
 /* XXX -- this needs to be supported by config(8)! */
