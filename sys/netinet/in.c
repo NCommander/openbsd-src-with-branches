@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.20 2001/06/08 03:53:45 angelos Exp $	*/
+/*	$OpenBSD: in.c,v 1.21 2001/07/23 14:23:21 itojun Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -702,8 +702,8 @@ in_ifinit(ifp, ia, sin, scrub)
 }
 
 #define rtinitflags(x) \
-	(((((x)->ia_ifp->if_flags & (IFF_LOOPBACK | IFF_POINTOPOINT)) != 0) && \
-	  (x)->ia_dstaddr.sin_family == AF_INET) ? RTF_HOST : 0)
+	((((x)->ia_ifp->if_flags & (IFF_LOOPBACK | IFF_POINTOPOINT)) != 0) \
+	    ? RTF_HOST : 0)
 
 /*
  * add a route to prefix ("connected route" in cisco terminology).
