@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.32 2001/05/16 14:34:29 fgsch Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.33 2001/05/25 10:04:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -276,6 +276,7 @@ txp_attach(parent, self, aux)
 	ifp->if_watchdog = txp_watchdog;
 	ifp->if_baudrate = 10000000;
 	ifp->if_snd.ifq_maxlen = TX_ENTRIES;
+	ifp->if_capabilities |= IFCAP_IPSEC;
 	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
 
 	timeout_set(&sc->sc_tick, txp_tick, sc);
