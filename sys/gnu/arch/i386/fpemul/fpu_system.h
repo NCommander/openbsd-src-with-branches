@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_system.h,v 1.1 1996/08/27 10:32:49 downsj Exp $	*/
+/*	$OpenBSD: fpu_system.h,v 1.2 2003/07/30 20:24:03 jason Exp $	*/
 /*
  *  fpu_system.h
  *
@@ -70,7 +70,8 @@
 #include <linux/kernel.h>
 */
 
-#define I387 (*(union i387_union *)&(((struct pcb *)curproc->p_addr)->pcb_savefpu.gplemu))
+#define	I387			(curproc->p_addr->u_pcb.pcb_savefpu.gplemu)
+
 #define FPU_info		(I387.soft.frame)
 
 #define FPU_CS			(*(unsigned short *) &(FPU_info->tf_cs))

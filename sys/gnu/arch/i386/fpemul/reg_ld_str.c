@@ -1,4 +1,4 @@
-/*	$OpenBSD: reg_ld_str.c,v 1.2 2003/01/09 22:27:12 miod Exp $	*/
+/*	$OpenBSD: reg_ld_str.c,v 1.3 2003/07/30 20:24:03 jason Exp $	*/
 /*
  *  reg_ld_str.c
  *
@@ -71,6 +71,7 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 #include <sys/systm.h>
+#include <sys/user.h>
 #include <machine/cpu.h>
 #include <machine/pcb.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fpu_arith.c,v 1.1 1996/08/27 10:32:44 downsj Exp $	*/
 /*
  *  fpu_arith.c
  *
@@ -66,6 +66,7 @@
 
 #include <sys/param.h>
 #include <sys/proc.h>
+#include <sys/user.h>
 #include <machine/cpu.h>
 #include <machine/pcb.h>
 
