@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_var.h,v 1.22 2003/10/15 23:35:42 itojun Exp $	*/
+/*	$OpenBSD: in6_var.h,v 1.23 2004/01/13 06:28:16 mcbride Exp $	*/
 /*	$KAME: in6_var.h,v 1.55 2001/02/16 12:49:45 itojun Exp $	*/
 
 /*
@@ -528,7 +528,7 @@ do {								\
 		for ((in6m) = ia->ia6_multiaddrs.lh_first;	\
 		     (in6m) != NULL &&				\
 		     !IN6_ARE_ADDR_EQUAL(&(in6m)->in6m_addr, &(addr));	\
-		     (in6m) = in6m->in6m_entry.le_next)		\
+		     (in6m) = (in6m)->in6m_entry.le_next)	\
 			continue;				\
 } while (0)
 
