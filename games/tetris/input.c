@@ -1,4 +1,4 @@
-/*	$OpenBSD: input.c,v 1.5 2001/02/04 14:23:27 pjanzen Exp $	*/
+/*	$OpenBSD: input.c,v 1.6 2001/09/05 20:03:07 deraadt Exp $	*/
 /*    $NetBSD: input.c,v 1.3 1996/02/06 22:47:33 jtc Exp $    */
 
 /*-
@@ -48,6 +48,7 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "input.h"
 #include "tetris.h"
