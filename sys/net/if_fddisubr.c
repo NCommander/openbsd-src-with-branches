@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fddisubr.c,v 1.14 1997/09/27 02:35:58 deraadt Exp $	*/
+/*	$OpenBSD: if_fddisubr.c,v 1.15 1998/06/30 21:51:06 beck Exp $	*/
 /*	$NetBSD: if_fddisubr.c,v 1.5 1996/05/07 23:20:21 christos Exp $	*/
 
 /*
@@ -463,7 +463,7 @@ fddi_input(ifp, fh, m)
 			break;
 #endif
 #ifdef DECNET
-		case ETHERTYPE_DECENT:
+		case ETHERTYPE_DECNET:
 			schednetisr(NETISR_DECNET);
 			inq = &decnetintrq;
 			break;
