@@ -284,15 +284,15 @@ crypto_dispatch(struct cryptop *crp)
 {
     int s = splhigh();
 
-    if (crp_req_queue == NULL)
-      crp_req_queue = crp;
-    else
-      *crp_req_queue_tail = crp;
-
-    crp_req_queue_tail = &(crp->crp_next);
-    wakeup((caddr_t) &crp_req_queue);
+    if (crp_req_queue == NULL) {
+	crp_req_queue = crp;
+	crp_req_queue_tail = &(crp->crp_next);
+	wakeup((caddr_t) &crp_req_queue);
+    } else {
+	*crp_req_queue_tail = crp;
+	crp_req_queue_tail = &(crp->crp_next);
+    }
     splx(s);
-
     return 0;
 }
 
