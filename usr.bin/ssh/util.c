@@ -37,9 +37,7 @@ set_nonblock(int fd)
 	debug("fd %d setting O_NONBLOCK", fd);
 	val |= O_NONBLOCK;
 	if (fcntl(fd, F_SETFL, val) == -1)
-		if (errno != ENODEV)
-			error("fcntl(%d, F_SETFL, O_NONBLOCK): %s",
-			    fd, strerror(errno));
+		error("fcntl(%d, F_SETFL, O_NONBLOCK): %s", fd, strerror(errno));
 }
 
 /* Characters considered whitespace in strsep calls. */
