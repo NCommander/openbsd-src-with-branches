@@ -1,4 +1,4 @@
-/*	$OpenBSD: w.c,v 1.16 1997/04/01 07:58:40 millert Exp $	*/
+/*	$OpenBSD: w.c,v 1.17 1997/05/30 18:39:44 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
@@ -424,7 +424,7 @@ pr_header(nowp, nusers)
 					    mins, mins != 1 ? "s" : "");
 			}
 		} else
-			printf(" %d seconds,", uptime);
+			printf(" %d secs,", uptime);
 	}
 
 	/* Print number of users logged in to system */
