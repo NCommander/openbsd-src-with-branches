@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.1 2004/04/21 15:23:52 aoyama Exp $	*/
+/*	$OpenBSD: if_le.c,v 1.2 2004/06/19 18:33:37 miod Exp $	*/
 /*	$NetBSD: if_le.c,v 1.33 1996/11/20 18:56:52 gwr Exp $	*/
 
 /*-
@@ -162,7 +162,8 @@ le_attach(parent, self, aux)
 
 	am7990_config(sc);
 
-        isrlink_autovec(am7990_intr, (void *)sc, ma->ma_ilvl, ISRPRI_NET);
+        isrlink_autovec(am7990_intr, (void *)sc, ma->ma_ilvl, ISRPRI_NET,
+	    self->dv_xname);
 }
 
 /*
