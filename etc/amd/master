@@ -1,0 +1,5 @@
+#	$OpenBSD$
+#
+# Check the amd(8) manual for more information.  Enable amd in /etc/netstart
+# Example:
+#/home	amd.home
