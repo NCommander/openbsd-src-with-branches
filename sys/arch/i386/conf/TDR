@@ -28,7 +28,7 @@ options		SWAPPAGER	# paging; REQUIRED
 options		VNODEPAGER	# mmap() of files
 options		DEVPAGER	# mmap() of devices
 
-#options	DDB		# in-kernel debugger
+options		DDB		# in-kernel debugger
 #options	DIAGNOSTIC	# internal consistency checks
 options		KTRACE		# system call tracing, a la ktrace(1)
 
