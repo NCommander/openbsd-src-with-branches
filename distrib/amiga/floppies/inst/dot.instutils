@@ -59,7 +59,7 @@ Configure()
 	fi
 
 	echo	""
-	if [ -e /mnt/etc/sendmail.cf ]; then
+	if [ -e $ETC/sendmail.cf ]; then
 		echo	"WARNING: A default sendmail.cf exists, and probably"
 		echo	"needs to be tuned and/or replaced, to work properly at"
 		echo	"your site!"
