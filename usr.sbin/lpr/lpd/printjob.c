@@ -1,4 +1,4 @@
-/*	$OpenBSD: printjob.c,v 1.16 1997/07/25 20:12:12 mickey Exp $ */
+/*	$OpenBSD: printjob.c,v 1.17 1997/07/27 20:01:36 deraadt Exp $ */
 /*	$NetBSD: printjob.c,v 1.9.4.3 1996/07/12 22:31:39 jtc Exp $	*/
 
 /*
@@ -1142,6 +1142,7 @@ dofork(action)
 			}
 			initgroups(pw->pw_name, pw->pw_gid);
 			setgid(pw->pw_gid);
+			setlogin(pw->pw_name);
 			setuid(DU);
 		}
 		return (pid);
