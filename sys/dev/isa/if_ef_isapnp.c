@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ef_isapnp.c,v 1.15 2003/06/02 19:08:58 jason Exp $	*/
+/*	$OpenBSD: if_ef_isapnp.c,v 1.16 2004/05/12 06:35:11 tedu Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -429,7 +429,7 @@ efinit(sc)
 	efcompletecmd(sc, EP_COMMAND, TX_RESET);
 
 	bus_space_write_2(iot, ioh, EP_COMMAND,
-	    SET_TX_AVAIL_THRESH | (1536 >> 2));
+	    SET_TX_AVAIL_THRESH | (ETHER_MAX_DIX_LEN >> 2));
 
 	efsetmulti(sc);
 
