@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2002/04/28 09:42:49 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 2002/04/28 18:28:34 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -92,6 +92,7 @@ do_files:
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
 	    REV=${REV} TARGDIR=${MOUNT_POINT} UTILS=${UTILS} \
 	    sh ${TOP}/runlist.sh ${LISTS}
+	rm ${MOUNT_POINT}/${CBIN}
 
 clean cleandir:
 	/bin/rm -f core ${IMAGE} ${CBIN} ${CBIN}.mk ${CBIN}.cache \
