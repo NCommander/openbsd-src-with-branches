@@ -1,4 +1,4 @@
-/*	$OpenBSD: specdev.h,v 1.12 2001/12/19 08:58:06 art Exp $	*/
+/*	$OpenBSD: specdev.h,v 1.13 2002/03/14 01:27:08 millert Exp $	*/
 /*	$NetBSD: specdev.h,v 1.12 1996/02/13 13:13:01 mycroft Exp $	*/
 
 /*
@@ -121,3 +121,5 @@ int	spec_advlock(void *);
 #define	spec_reallocblks spec_badop
 #define	spec_bwrite	vop_generic_bwrite
 #define spec_revoke     vop_generic_revoke
+
+int	spec_vnoperate(void *);
