@@ -1,4 +1,4 @@
-/*	$OpenBSD: fingerd.c,v 1.21 2001/07/08 21:18:07 deraadt Exp $	*/
+/*	$OpenBSD: fingerd.c,v 1.22 2001/08/18 18:31:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)fingerd.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$OpenBSD: fingerd.c,v 1.21 2001/07/08 21:18:07 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fingerd.c,v 1.22 2001/08/18 18:31:21 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -105,19 +105,23 @@ main(argc, argv)
 			user_required = 1;
 			break;
 		case 'S':
-			short_list = 1;
-			av[ac++] = "-s";
+			if (ac < ENTRIES) {
+				short_list = 1;
+				av[ac++] = "-s";
+			}
 			break;
 		case 'm':
-			av[ac++] = "-m";
+			if (ac < ENTRIES)
+				av[ac++] = "-m";
 			break;
 		case 'M':
-			av[ac++] = "-M";
+			if (ac < ENTRIES)
+				av[ac++] = "-M";
 			break;
 		case 'p':
-			av[ac++] = "-p";
+			if (ac < ENTRIES)
+				av[ac++] = "-p";
 			break;
-		case '?':
 		default:
 			usage();
 		}
