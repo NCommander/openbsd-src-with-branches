@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.2 1996/06/26 05:36:11 deraadt Exp $	*/
+/*	$OpenBSD: expr.c,v 1.3 1997/10/24 00:56:53 millert Exp $	*/
 /*	$NetBSD: expr.c,v 1.7 1995/09/28 05:37:31 tls Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)expr.c	8.2 (Berkeley) 4/29/95";
 #else
-static char rcsid[] = "$OpenBSD: expr.c,v 1.2 1996/06/26 05:36:11 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: expr.c,v 1.3 1997/10/24 00:56:53 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -355,7 +355,7 @@ term()
 static int
 exp()
 {
-	register c, vl, vr, n;
+	register int c, vl, vr, n;
 
 	vl = unary();
 	switch (c = skipws()) {
