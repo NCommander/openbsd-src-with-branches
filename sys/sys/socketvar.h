@@ -1,4 +1,4 @@
-/*	$OpenBSD: socketvar.h,v 1.10 1997/02/28 04:04:13 angelos Exp $	*/
+/*	$OpenBSD: socketvar.h,v 1.11 1997/08/31 20:42:02 deraadt Exp $	*/
 /*	$NetBSD: socketvar.h,v 1.18 1996/02/09 18:25:38 christos Exp $	*/
 
 /*-
@@ -99,7 +99,8 @@ struct socket {
 	void	*so_internal;		/* Space for svr4 stream data */
 	void	(*so_upcall) __P((struct socket *so, caddr_t arg, int waitf));
 	caddr_t	so_upcallarg;		/* Arg for above */
-	uid_t	so_uid;			/* who opened the socket */
+	uid_t	so_euid;		/* who opened the socket */
+	uid_t	so_ruid;		/* who opened the socket */
 };
 
 /*

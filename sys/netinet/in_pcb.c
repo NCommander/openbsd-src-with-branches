@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.19 1997/11/30 06:10:43 deraadt Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.21 1998/02/01 21:46:02 deraadt Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -199,10 +199,10 @@ in_pcbbind(v, nam)
 			if (ntohs(lport) < IPPORT_RESERVED &&
 			    (error = suser(p->p_ucred, &p->p_acflag)))
 				return (EACCES);
-			if (so->so_uid) {
+			if (so->so_euid) {
 				t = in_pcblookup(table, zeroin_addr, 0,
 				    sin->sin_addr, lport, INPLOOKUP_WILDCARD);
-				if (t && (so->so_uid != t->inp_socket->so_uid))
+				if (t && (so->so_euid != t->inp_socket->so_euid))
 					return (EADDRINUSE);
 			}
 			t = in_pcblookup(table, zeroin_addr, 0,
