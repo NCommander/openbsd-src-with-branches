@@ -67,8 +67,7 @@ struct	ns_aliasreq {
 
 #define	IA_SNS(ia) (&(((struct ns_ifaddr *)(ia))->ia_addr))
 
-/* This is not the right place for this but where is? */
-#define	ETHERTYPE_NS	0x0600
+#include <net/ethertypes.h>
 
 #ifdef	NSIP
 struct nsip_req {

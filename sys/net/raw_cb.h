@@ -60,7 +60,7 @@ struct rawcb {
 #define	RAWRCVQ		8192
 
 #ifdef _KERNEL
-LIST_HEAD(, rawcb) rawcb;		/* head of list */
+extern LIST_HEAD(rawcbhead, rawcb) rawcb;		/* head of list */
 
 int	 raw_attach(struct socket *, int);
 void	 *raw_ctlinput(int, struct sockaddr *, void *);

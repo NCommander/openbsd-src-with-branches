@@ -11992,7 +11992,6 @@ _C_LABEL(intrcnt):
 	.space	16 * 4
 _C_LABEL(eintrcnt):
 
-	.comm	_C_LABEL(curproc), PTRSZ
 	.comm	_C_LABEL(nwindows), 4
 
 #ifdef DEBUG

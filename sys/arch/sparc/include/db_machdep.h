@@ -51,7 +51,7 @@ typedef struct {
 	struct frame	 db_fr;
 } db_regs_t;
 
-db_regs_t		ddb_regs;	/* register state */
+extern db_regs_t	ddb_regs;	/* register state */
 #define	DDB_REGS	(&ddb_regs)
 #define	DDB_TF		(&ddb_regs.db_tf)
 #define	DDB_FR		(&ddb_regs.db_fr)

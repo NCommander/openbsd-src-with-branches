@@ -49,7 +49,7 @@
  * Sun-4c memory error register.
  * The register is a single word.
  */
-volatile u_int	*par_err_reg;	/* virtual address; NULL if not yet mapped */
+extern volatile u_int	*par_err_reg;	/* virtual address; NULL if not yet mapped */
 
 /*
  * Bits in parity error register.

@@ -124,6 +124,8 @@ memregattach(parent, self, aux)
  * and take the page out of the page pool, but for now...
  */
 
+volatile u_int	*par_err_reg;	/* virtual address; NULL if not yet mapped */
+
 void
 memerr4_4c(issync, ser, sva, aer, ava, tf)
 	unsigned int issync;

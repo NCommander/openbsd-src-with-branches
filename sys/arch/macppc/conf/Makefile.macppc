@@ -40,11 +40,14 @@ CPPFLAGS=	${INCLUDES} ${IDENT} -D_KERNEL \
 		-Dmacppc
 CWARNFLAGS=	-Werror -Wall -Wstrict-prototypes -Wmissing-prototypes \
 		-Wno-uninitialized -Wno-format -Wno-main
-CMACHFLAGS=	-msoft-float -Wa,-m7400 -fno-stack-protector
+CMACHFLAGS=	-msoft-float -Wa,-m7400
+.if ${IDENT:M-DNO_PROPOLICE}
+CMACHFLAGS+=	-fno-stack-protector
+.endif
 COPTS?=		-O2
 CFLAGS=		${DEBUG} ${CWARNFLAGS} ${CMACHFLAGS} ${COPTS} ${PIPE}
 AFLAGS=		-D_LOCORE
-LINKFLAGS=	-N -Ttext 100114 -e start
+LINKFLAGS=	-N -Ttext 100114 -e start --warn-common
 STRIPFLAGS=	-g -X -x
 
 HOSTCC?=	${CC}

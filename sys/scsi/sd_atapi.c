@@ -101,14 +101,15 @@ sd_atapibus_get_parms(sd, dp, flags)
 	case ATAPI_CAP_DESC_CODE_FORMATTED:
 		break;
 
+	case ATAPI_CAP_DESC_CODE_NONE:
+		return SDGP_RESULT_OFFLINE;
+
 	default:
 #ifdef DIAGNOSTIC
 		printf("%s: strange capacity descriptor byte5 0x%x\n",
 		    sd->sc_dev.dv_xname, (u_int)descp->byte5);
 #endif
-		/* FALLTHROUGH */
-	case ATAPI_CAP_DESC_CODE_NONE:
-		return SDGP_RESULT_OFFLINE;
+		break;
 	}
 
 	dp->disksize = _4btol(descp->nblks);

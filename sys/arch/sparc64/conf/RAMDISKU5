@@ -18,6 +18,7 @@ option		TIMEZONE=0	# time zone to adjust RTC time by
 option		DST=0		# daylight saving time used by RTC
 
 option		SMALL_KERNEL
+option		NO_PROPOLICE
 #option		DIAGNOSTIC	# internal consistency checks
 option		FFS		# UFS
 #option		NFSCLIENT	# Network File System client

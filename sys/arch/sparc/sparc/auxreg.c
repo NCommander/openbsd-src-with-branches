@@ -67,6 +67,8 @@ struct cfdriver auxreg_cd = {
 	0, "auxreg", DV_DULL
 };
 
+volatile u_char *auxio_reg;	/* Copy of AUXIO_REG */
+u_char auxio_regval;
 extern int sparc_led_blink;	/* from machdep */
 struct timeout sparc_led_to;
 

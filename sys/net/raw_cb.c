@@ -61,6 +61,7 @@
 
 u_long	raw_sendspace = RAWSNDQ;
 u_long	raw_recvspace = RAWRCVQ;
+struct rawcbhead rawcb;
 
 /*
  * Allocate a control block and a nominal amount

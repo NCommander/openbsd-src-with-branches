@@ -188,16 +188,11 @@ mld6_input(m, off)
 	struct in6_ifaddr *ia;
 	int timer;		/* timer value in the MLD query header */
 
-#ifndef PULLDOWN_TEST
-	IP6_EXTHDR_CHECK(m, off, sizeof(*mldh),);
-	mldh = (struct mld6_hdr *)(mtod(m, caddr_t) + off);
-#else
 	IP6_EXTHDR_GET(mldh, struct mld6_hdr *, m, off, sizeof(*mldh));
 	if (mldh == NULL) {
 		icmp6stat.icp6s_tooshort++;
 		return;
 	}
-#endif
 
 	/* source address validation */
 	ip6 = mtod(m, struct ip6_hdr *);/* in case mpullup */

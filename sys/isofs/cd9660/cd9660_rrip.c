@@ -298,7 +298,7 @@ cd9660_rrip_defname(v, ana)
 {
 	struct iso_directory_record *isodir = v;
 
-	strcpy(ana->outbuf, "..");
+	strlcpy(ana->outbuf, "..", ana->maxlen - *ana->outlen);
 	switch (*isodir->name) {
 	default:
 		isofntrans(isodir->name, isonum_711(isodir->name_len),

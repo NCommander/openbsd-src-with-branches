@@ -68,11 +68,6 @@ include <machine/bsd_openprom.h>
 
 include <sparc/sparc/cpuvar.h>
 
-ifdef notyet
-include <sparc/dev/zsreg.h>
-include <sparc/dev/zsvar.h>
-endif
-
 include <dev/ic/am7930reg.h>
 include <sparc/dev/amd7930var.h>
 

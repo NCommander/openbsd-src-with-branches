@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.9.2.1 2003/03/28 14:05:52 niklas Exp $
+#	$OpenBSD$
 #
 # RAMDISK - bsd.rd configuration file (non-SBC version)
 
@@ -10,6 +10,7 @@ option		RAMDISK_HOOKS
 
 option		SCSITERSE
 option		SMALL_KERNEL
+option		NO_PROPOLICE
 option		TIMEZONE=0
 option		DST=0
 option		FFS		# UFS

@@ -4,6 +4,7 @@
 machine	alpha			# architecture, used by config; REQUIRED
 
 option		SMALL_KERNEL
+option		NO_PROPOLICE
 
 # CPU Support; at least one is REQUIRED
 #option		DEC_3000_500	# Flamingo etc:	3000/[4-9]00*

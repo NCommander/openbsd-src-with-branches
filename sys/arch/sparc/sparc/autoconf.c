@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.33.2.9 2003/03/27 23:49:26 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: autoconf.c,v 1.73 1997/07/29 09:41:53 fair Exp $ */
 
 /*
@@ -94,7 +94,6 @@
  * the configuration process, and are used in initializing
  * the machine.
  */
-int	cold;		/* if 1, still working on cold-start */
 int	fbnode;		/* node ID of ROM's console frame buffer */
 int	optionsnode;	/* node ID of ROM's options */
 int	mmu_3l;		/* SUN4_400 models have a 3-level MMU */

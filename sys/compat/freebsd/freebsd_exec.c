@@ -157,8 +157,12 @@ freebsd_elf_probe(p, epp, itp, pos, os)
 	int error;
 	size_t len;
 
+	/*
+	 * Older FreeBSD ELF binaries use a brand; newer ones use EI_OSABI
+	 */
 	brand = elf32_check_brand(eh);
-	if ((brand == NULL || strcmp(brand, "FreeBSD")) && eh->e_ident[EI_PAD] != 9)
+	if ((brand == NULL || strcmp(brand, "FreeBSD")) &&
+	    eh->e_ident[EI_OSABI] != ELFOSABI_FREEBSD)
 		return (EINVAL);
 	if (itp[0]) {
 		if ((error = emul_find(p, NULL, freebsd_emul_path, itp, &bp, 0)))

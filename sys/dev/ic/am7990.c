@@ -618,9 +618,6 @@ am7990_tint(sc)
 			if (tmd.tmd3 & LE_T3_LCAR) {
 				if (sc->sc_nocarrier)
 					(*sc->sc_nocarrier)(sc);
-				else
-					printf("%s: lost carrier\n",
-					    sc->sc_dev.dv_xname);
 			}
 			if (tmd.tmd3 & LE_T3_LCOL)
 				ifp->if_collisions++;

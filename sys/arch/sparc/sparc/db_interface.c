@@ -58,7 +58,6 @@
 #include <machine/ctlreg.h>
 #include <sparc/sparc/asm.h>
 
-
 /*
  * Read bytes from kernel address space for debugger.
  */
@@ -154,6 +153,8 @@ struct db_variable db_regs[] = {
 struct db_variable *db_eregs = db_regs + sizeof(db_regs)/sizeof(db_regs[0]);
 
 extern label_t	*db_recover;
+
+db_regs_t	ddb_regs;	/* register state */
 
 int	db_active = 0;
 

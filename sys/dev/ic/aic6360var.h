@@ -112,7 +112,7 @@ struct aic_tinfo {
 	u_char  period;		/* Period suggestion */
 	u_char  offset;		/* Offset suggestion */
 	u_char	width;		/* Width suggestion */
-} tinfo_t;
+};
 
 struct aic_softc {
 	struct device sc_dev;

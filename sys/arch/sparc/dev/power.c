@@ -62,6 +62,7 @@ struct cfdriver power_cd = {
 };
 
 static char power_attached = 0;
+volatile u_char *power_reg;
 
 /*
  * This is the driver for the "power" register available on some Sun4m

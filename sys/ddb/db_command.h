@@ -44,6 +44,7 @@ void db_object_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_page_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_extent_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_pool_print_cmd(db_expr_t, int, db_expr_t, char *);
+void db_proc_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_uvmexp_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_machine_commands_install(struct db_command *);
 void db_help_cmd(db_expr_t, int, db_expr_t, char *);

@@ -148,7 +148,7 @@ struct nfsnode {
 /*
  * Queue head for nfsiod's
  */
-TAILQ_HEAD(, buf) nfs_bufq;
+extern TAILQ_HEAD(nfs_bufqhead, buf) nfs_bufq;
 
 #ifdef _KERNEL
 /*

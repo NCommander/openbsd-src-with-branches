@@ -63,6 +63,7 @@
 extern struct proc *nfs_iodwant[NFS_MAXASYNCDAEMON];
 extern int nfs_numasync;
 struct nfsstats nfsstats;
+struct nfs_bufqhead nfs_bufq;
 
 /*
  * Vnode op for read using bio

@@ -1,4 +1,4 @@
-/*      $OpenBSD: eap.c,v 1.8.2.6 2003/03/28 00:38:21 niklas Exp $ */
+/*      $OpenBSD$ */
 /*	$NetBSD: eap.c,v 1.46 2001/09/03 15:07:37 reinoud Exp $ */
 
 /*
@@ -348,6 +348,7 @@ eap1371_read_codec(void *sc_, u_int8_t a, u_int16_t *d)
 	for (to = 0; to < EAP_WRITE_TIMEOUT; to++) {
 		if (!(EREAD4(sc, E1371_CODEC) & E1371_CODEC_WIP))
 			break;
+		delay(1);
 	}
 	if (to == EAP_WRITE_TIMEOUT)
 		printf("%s: eap1371_read_codec timeout 1\n", 
@@ -357,6 +358,7 @@ eap1371_read_codec(void *sc_, u_int8_t a, u_int16_t *d)
 		t = EREAD4(sc, E1371_CODEC);
 		if (t & E1371_CODEC_VALID)
 			break;
+		delay(1);
 	}
 	if (to == EAP_WRITE_TIMEOUT)
 		printf("%s: eap1371_read_codec timeout 2\n", 

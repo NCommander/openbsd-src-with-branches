@@ -54,7 +54,7 @@
 #define	POWER_BITS	"\20\1POWEROFF"
 
 #ifndef _LOCORE
-volatile u_char *power_reg;
+extern volatile u_char *power_reg;
 #endif
 
 void powerdown(void);		/* power off function */

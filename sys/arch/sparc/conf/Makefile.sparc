@@ -45,7 +45,9 @@ CMACHFLAGS=	-mcpu=supersparc
 .else
 CMACHFLAGS=
 .endif
+.if ${IDENT:M-DNO_PROPOLICE}
 CMACHFLAGS+=	-fno-stack-protector
+.endif
 
 CFLAGS=		${DEBUG} -O2 ${CDIAGFLAGS} ${CMACHFLAGS} ${COPTS} ${PIPE}
 # add `-mno-fpu' to work around gcc (last noticed in v2.7.2) bug

@@ -499,7 +499,11 @@ struct swdevt {
 
 #ifdef _KERNEL
 extern struct swdevt swdevt[];
+extern int chrtoblktbl[];
+extern int nchrtoblktbl;
 
+struct bdevsw *bdevsw_lookup(dev_t);
+struct cdevsw *cdevsw_lookup(dev_t);
 int	chrtoblk(dev_t);
 int	blktochr(dev_t);
 int	iskmemdev(dev_t);

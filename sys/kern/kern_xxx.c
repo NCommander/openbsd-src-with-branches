@@ -64,6 +64,16 @@ sys_reboot(p, v, retval)
 	return (0);
 }
 
+#if !defined(NO_PROPOLICE)
+void __stack_smash_handler(char [], int __attribute__((unused)));
+
+void
+__stack_smash_handler(char func[], int damaged)
+{
+	panic("smashed stack in %s", func);
+}
+#endif
+
 #ifdef SYSCALL_DEBUG
 #define	SCDEBUG_CALLS		0x0001	/* show calls */
 #define	SCDEBUG_RETURNS		0x0002	/* show returns */

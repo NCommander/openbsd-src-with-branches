@@ -535,39 +535,7 @@ int	chrtoblktbl[] = {
 	25,	/* 73 */
 	NODEV,	/* 74 */
 };
-
-dev_t
-chrtoblk(dev)
-	dev_t dev;
-{
-	int blkmaj;
-
-	if (major(dev) >= nchrdev ||
-	    major(dev) > sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]))
-		return (NODEV);
-	blkmaj = chrtoblktbl[major(dev)];
-	if (blkmaj == NODEV)
-		return (NODEV);
-	return (makedev(blkmaj, minor(dev)));
-}
-
-/*
- * Convert a character device number to a block device number.
- */
-dev_t
-blktochr(dev)
-    dev_t dev;
-{
-    int blkmaj = major(dev);
-    int i;
-
-    if (blkmaj >= nblkdev)
-        return (NODEV);
-    for (i = 0; i < sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]); i++)
-        if (blkmaj == chrtoblktbl[i])
-            return (makedev(i, minor(dev)));
-    return (NODEV);
-}
+int nchrtoblktbl = sizeof(chrtoblktbl) / sizeof(chrtoblktbl[0]);
 
 /*
  * Returns true if dev is /dev/mem or /dev/kmem.

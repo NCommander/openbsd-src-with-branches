@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.26.2.11 2003/05/13 19:21:28 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -129,7 +129,7 @@ do {									\
  * globals
  */
 
-struct	tty *constty;	/* pointer to console "window" tty */
+extern struct	tty *constty;	/* pointer to console "window" tty */
 int	consintr = 1;	/* ok to handle console interrupts? */
 extern	int log_open;	/* subr_log: is /dev/klog open? */
 const	char *panicstr; /* arg to first call to panic (used as a flag
