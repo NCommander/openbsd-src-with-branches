@@ -1,15 +1,15 @@
-#	$OpenBSD: Makefile,v 1.6 2000/05/29 08:17:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2000/09/01 05:46:02 aaron Exp $
 
-SUBDIR=	keycap cursor fontedit kcon loadfont scon \
-	userkeys vttest ispcvt pcvtdoc fed
-.if ${MACHINE} == "i386"
-SUBDIR+=fonts
-.endif
+#SUBDIR=	keycap cursor fontedit kcon loadfont scon \
+#	userkeys vttest ispcvt pcvtdoc fed
+#.if ${MACHINE} == "i386"
+#SUBDIR+=fonts
+#.endif
 
-.if make(clean) || make(cleandir) || make(obj)
-SUBDIR+=	vgaio kbdio set2061
-SUBDIR+=	demo
-.endif
+#.if make(clean) || make(cleandir) || make(obj)
+#SUBDIR+=	vgaio kbdio set2061
+#SUBDIR+=	demo
+#.endif
 
 includes:
 	-cd ${.CURDIR}; cmp -s ../pcvt_ioctl.h \
