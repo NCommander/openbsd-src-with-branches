@@ -105,6 +105,10 @@ GLOBAL(doboot)
 	 set	r4, r4, 1<23>		/* set SYSRST bit - bit 23 */
 	st	r4, r3, 0x0060		/* and store it back  */
 1:
+	ld	r4, r3, 0x0104		/* try local reset, then */
+	set	r4, r4, 1<7>
+	st	r4, r3, 0x0104
+
 	/*
 	 * We will be here if the reset above failed. In this case,
 	 * we will try to return to bug.
