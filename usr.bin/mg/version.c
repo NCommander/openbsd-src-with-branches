@@ -1,7 +1,7 @@
-/*	$OpenBSD: version.c,v 1.6 2003/05/20 03:08:55 cloder Exp $	*/
+/*	$OpenBSD: version.c,v 1.7 2003/06/01 23:58:04 art Exp $	*/
 
 /*
- * This file contains the string that get written
+ * This file contains the string that gets written
  * out by the emacs-version command.
  */
 
@@ -18,5 +18,5 @@ int
 showversion(int f, int n)
 {
 	ewprintf("%s", version);
-	return TRUE;
+	return (TRUE);
 }
