@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.285 2003/01/09 18:42:44 dhartmei Exp $	*/
+/*	$OpenBSD: parse.y,v 1.286 2003/01/09 19:02:21 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -813,7 +813,7 @@ tableaddr	: STRING {
 			pfctl_append_addr($2, -1, 1);
 		}
 		| '!' STRING '/' number {
-			 pfctl_append_addr($2, $4, 1);
+			pfctl_append_addr($2, $4, 1);
 		}
 		;
 
