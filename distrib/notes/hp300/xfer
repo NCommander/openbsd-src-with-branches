@@ -1,7 +1,8 @@
+dnl	$OpenBSD$
 Installation is supported from several media types, including:
 
 	CD-ROM
-	FFS partitions
+	FFS partitions (for upgrades only)
 	Tape
 	Remote NFS partition
 	FTP
