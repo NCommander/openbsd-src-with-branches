@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pathnames.h,v 1.1 1996/12/04 08:38:59 deraadt Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.1 1996/09/11 20:27:15 christos Exp $	*/
 
 /*
@@ -32,3 +32,4 @@
 
 #define _PATH_SBIN	"/sbin"
 #define _PATH_USRSBIN	"/usr/sbin"
+#define _PATH_MNT	"/mnt"
