@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vfsops.c,v 1.10 1996/05/28 13:44:08 deraadt Exp $	*/
+/*	$OpenBSD: nfs_vfsops.c,v 1.11 1996/06/01 04:43:59 mickey Exp $	*/
 /*	$NetBSD: nfs_vfsops.c,v 1.46.4.1 1996/05/25 22:40:35 fvdl Exp $	*/
 
 /*
@@ -813,7 +813,6 @@ nfs_root(mp, vpp)
 	struct nfsmount *nmp;
 	struct nfsnode *np;
 	int error;
-	struct vattr attrs;
 
 	nmp = VFSTONFS(mp);
 	error = nfs_nget(mp, (nfsfh_t *)nmp->nm_fh, nmp->nm_fhsize, &np);
