@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 1999/10/28 12:09:32 art Exp $
+#	$OpenBSD: Makefile,v 1.11 2000/01/05 11:04:21 itojun Exp $
 
 PROG=	systat
 
@@ -16,6 +16,6 @@ CPPFLAGS+=-DINET6
 
 .include <bsd.prog.mk>
 
-.if (${UVM} == "yes")
+.if (${UVM:L} == "yes")
 CFLAGS+=-DUVM
 .endif

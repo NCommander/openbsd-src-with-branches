@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1997/09/21 11:51:52 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 1999/06/23 18:48:12 art Exp $
 
 PROG=	vmstat
 
@@ -11,6 +11,6 @@ BINMODE=2555
 
 .include <bsd.prog.mk>
 
-.if (${UVM} == "yes")
+.if (${UVM:L} == "yes")
 CFLAGS+=-DUVM
 .endif

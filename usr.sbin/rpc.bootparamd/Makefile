@@ -1,8 +1,8 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.4 1997/09/21 11:44:16 deraadt Exp $
 
 .include <bsd.own.mk>
 
-.if (${YP} == "yes")
+.if (${YP:L} == "yes")
 CFLAGS+=-DYP
 .endif
 
