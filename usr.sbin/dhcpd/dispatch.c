@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.9 2004/05/04 20:28:40 deraadt Exp $ */
+/*	$OpenBSD: dispatch.c,v 1.10 2004/05/25 17:41:54 canacar Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -385,7 +385,7 @@ got_one(struct protocol *l)
 	struct sockaddr_in from;
 	struct hardware hfrom;
 	struct iaddr ifrom;
-	size_t result;
+	ssize_t result;
 	union {
 		unsigned char packbuf[4095];
 		struct dhcp_packet packet;
