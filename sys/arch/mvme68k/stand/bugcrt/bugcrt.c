@@ -1,9 +1,10 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: bugcrt.c,v 1.3 1996/05/19 19:51:48 chuck Exp $ */
 
 #include <sys/types.h>
 #include <machine/prom.h>
 
 #include "libbug.h"
+#include "stand.h"
 
 struct mvmeprom_args bugargs = { 1 };	/* not in BSS */
 
