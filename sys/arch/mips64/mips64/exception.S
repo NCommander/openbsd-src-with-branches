@@ -1,4 +1,4 @@
-/*	$OpenBSD: exception.S,v 1.3 2004/08/10 20:15:47 deraadt Exp $ */
+/*	$OpenBSD: exception.S,v 1.4 2004/09/09 22:11:38 pefo Exp $ */
 
 /*
  * Copyright (c) 2002-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -344,7 +344,7 @@ END(u_intr)
 /*---------------------------------------------------------------- set_sint
  *  Atomic ipending update
  */
-LEAF(set_sint)
+LEAF(set_sint, 0)
 	LA	v1, ipending
 1:
 	ll	v0, 0(v1)
@@ -614,7 +614,7 @@ END(u_syscall)
 /*-------------------------------------------------------------- proc_trampoline
  *	Setup for and return to user.
  */
-LEAF(proc_trampoline)
+LEAF(proc_trampoline, 0)
 	sw	zero, cpl		# lower to spl0
 	lw	t0, ipending
 	beq	t0, zero, 0f
