@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.3 2001/08/22 20:11:09 art Exp $	*/
+/*	$OpenBSD: bus.h,v 1.4 2001/08/23 14:24:58 art Exp $	*/
 /*	$NetBSD: bus.h,v 1.28 2001/07/19 15:32:19 thorpej Exp $	*/
 
 /*-
@@ -75,6 +75,8 @@
 
 #include <machine/types.h>
 #include <machine/ctlreg.h>
+
+#define	__HAS_NEW_BUS_DMAMAP_SYNC
 
 /*
  * Debug hooks
