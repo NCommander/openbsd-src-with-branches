@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1998 WIDE Project.
  * All rights reserved.

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (C) 1994,1995 by Andrey A. Chernov, Moscow, Russia.
  * All rights reserved.
