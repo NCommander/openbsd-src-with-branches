@@ -5,7 +5,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
 static char elsieid[] = "@(#)asctime.c	7.22";
-static char rcsid[] = "$OpenBSD: asctime.c,v 1.7 2000/01/06 08:24:17 d Exp $";
+static char rcsid[] = "$OpenBSD: asctime.c,v 1.8 2004/10/18 22:33:43 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
@@ -84,7 +84,7 @@ int				bufsize;
 		wn, mn,
 		timeptr->tm_mday, timeptr->tm_hour,
 		timeptr->tm_min, timeptr->tm_sec,
-		TM_YEAR_BASE + timeptr->tm_year);
+		year);
 	if (len < bufsize) {
 		return buf;
 	} else {
