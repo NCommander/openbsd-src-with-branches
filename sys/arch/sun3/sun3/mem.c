@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.16 2001/11/01 12:13:46 art Exp $	*/
+/*	$OpenBSD: mem.c,v 1.17 2001/11/06 19:53:16 miod Exp $	*/
 /*	$NetBSD: mem.c,v 1.19 1995/08/08 21:09:01 gwr Exp $	*/
 
 /*
@@ -171,10 +171,12 @@ mmrw(dev, uio, flags)
 			pmap_enter(pmap_kernel(), vmmap,
 			    trunc_page(v), uio->uio_rw == UIO_READ ?
 			    VM_PROT_READ : VM_PROT_WRITE, PMAP_WIRED);
+			pmap_update(pmap_kernel());
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
 			pmap_remove(pmap_kernel(), vmmap, vmmap + NBPG);
+			pmap_update(pmap_kernel());
 			continue;
 
 /* minor device 1 is kernel memory */

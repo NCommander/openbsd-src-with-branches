@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.108 2001/12/07 15:11:49 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.109 2001/12/07 18:06:49 mickey Exp $	*/
 /*	$NetBSD: pmap.c,v 1.118 1998/05/19 19:00:18 thorpej Exp $ */
 
 /*
@@ -245,6 +245,7 @@ pgt_page_alloc(sz, flags, mtype)
 
 	pmap_kenter_pa(va, pa | (nocache ? PMAP_NC : 0),
 	    VM_PROT_READ|VM_PROT_WRITE);
+	pmap_update(pmap_kernel());
         return ((void *)va);
 }       
    
@@ -3342,6 +3343,7 @@ pmap_map(va, pa, endpa, prot)
 		va += pgsize;
 		pa += pgsize;
 	}
+	pmap_update(pmap_kernel());
 	return (va);
 }
 

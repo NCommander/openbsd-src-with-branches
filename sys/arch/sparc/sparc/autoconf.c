@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.43 2001/11/22 09:45:42 art Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.44 2001/12/05 23:58:41 tdeval Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.73 1997/07/29 09:41:53 fair Exp $ */
 
 /*
@@ -353,6 +353,7 @@ bootstrap()
 		pmap_kenter_pa(INTRREG_VA,
 			   INT_ENABLE_REG_PHYSADR | PMAP_NC | PMAP_OBIO,
 			   VM_PROT_READ | VM_PROT_WRITE);
+		pmap_update(pmap_kernel());
 		/* Disable all interrupts */
 		*((unsigned char *)INTRREG_VA) = 0;
 	}
