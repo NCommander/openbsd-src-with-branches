@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.35 2003/12/24 20:09:57 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.36 2003/12/24 21:14:22 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -927,7 +927,7 @@ session_dispatch_msg(struct pollfd *pfd, struct peer *peer)
 			if ((n = read(peer->sock, peer->rbuf->wptr,
 			    peer->rbuf->pkt_len - peer->rbuf->read_len)) ==
 			    -1) {
-				if (errno != EAGAIN && errno != EINTR) {
+				if (errno != EINTR) {
 					log_err(peer, "read error");
 					bgp_fsm(peer, EVNT_CON_FATAL);
 				}
