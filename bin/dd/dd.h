@@ -1,4 +1,4 @@
-/*	$OpenBSD: dd.h,v 1.2 1996/06/23 14:19:48 deraadt Exp $	*/
+/*	$OpenBSD: dd.h,v 1.3 1997/02/14 07:05:20 millert Exp $	*/
 /*	$NetBSD: dd.h,v 1.4 1995/03/21 09:04:08 cgd Exp $	*/
 
 /*-
@@ -72,7 +72,7 @@ typedef struct {
 	size_t	trunc;			/* # of truncated records */
 	size_t	swab;			/* # of odd-length swab blocks */
 	off_t	bytes;			/* # of bytes written */
-	time_t	start;			/* start time of dd */
+	struct	timeval	startv;		/* start time of dd */
 } STAT;
 
 /* Flags (in ddflags). */

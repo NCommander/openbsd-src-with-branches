@@ -1,4 +1,4 @@
-/*	$OpenBSD: args.c,v 1.7 1997/11/15 22:10:22 todd Exp $	*/
+/*	$OpenBSD: args.c,v 1.8 1998/07/09 18:39:23 deraadt Exp $	*/
 /*	$NetBSD: args.c,v 1.7 1996/03/01 01:18:58 jtc Exp $	*/
 
 /*-
@@ -42,11 +42,12 @@
 #if 0
 static char sccsid[] = "@(#)args.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: args.c,v 1.7 1997/11/15 22:10:22 todd Exp $";
+static char rcsid[] = "$OpenBSD: args.c,v 1.8 1998/07/09 18:39:23 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
+#include <sys/time.h>
 
 #include <err.h>
 #include <errno.h>
