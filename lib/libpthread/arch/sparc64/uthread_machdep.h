@@ -1,7 +1,7 @@
-/*	$OpenBSD: uthread_machdep.h,v 1.5 2000/10/04 05:55:35 d Exp $	*/
-/* David Leonard, <d@csee.uq.edu.au>. Public domain. */
+/*	$OpenBSD: uthread_machdep.h,v 1.1 2001/09/10 20:00:14 jason Exp $	*/
+/* Arutr Grabowski <art@openbsd.org>. Public domain. */
 
 struct _machdep_state {
-	int	fp;		/* frame pointer */
-	int	pc;		/* program counter */
+	long	fp;		/* frame pointer */
+	long	pc;		/* program counter */
 };
