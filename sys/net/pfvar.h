@@ -250,6 +250,7 @@ struct pf_rule {
 
 	u_int16_t		 nr;
 	u_int16_t		 return_icmp;
+	u_int16_t		 return_icmp6;
 	u_int16_t		 max_mss;
 
 	struct pf_rule_uid	 uid;
