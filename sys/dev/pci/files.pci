@@ -25,11 +25,6 @@ file	dev/ic/smc93cx6.c		ahc_pci
 attach	bha at pci with bha_pci
 file	dev/pci/bha_pci.c		bha_pci
 
-# Qlogic ISP 10x0 (PCI) family
-# device declaration in sys/conf/files
-attach	isp at pci with isp_pci
-file	dev/pci/isp_pci.c		isp_pci
-
 # Ethernet driver for DC21040-based boards
 device	de: ether, ifnet
 attach	de at pci
