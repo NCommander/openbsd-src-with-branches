@@ -121,7 +121,7 @@ main()
       FD_ZERO(&fds);
       FD_SET(fileno(stdin), &fds);
 
-      if( select(fileno(stdin) + 1, &fds, NULL, NULL, NULL) < 0) {
+      if( select(FD_SETSIZE, &fds, NULL, NULL, NULL) < 0) {
         perror("select");
         exit(1);
       }
@@ -153,6 +153,8 @@ process_line(char *line)
   } else {
     fprintf(stderr, "|%s|\n", line);
   }
+
+  free (line);
 }
 
 int
