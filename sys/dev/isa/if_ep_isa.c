@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_isa.c,v 1.14 1998/06/02 20:29:02 deraadt Exp $	*/
+/*	$OpenBSD: if_ep_isa.c,v 1.15 1998/09/11 12:06:57 fgsch Exp $	*/
 /*	$NetBSD: if_ep_isa.c,v 1.5 1996/05/12 23:52:36 mycroft Exp $	*/
 
 /*
@@ -282,6 +282,8 @@ ep_isa_attach(parent, self, aux)
 	sc->sc_iot = iot;
 	sc->sc_ioh = ioh;
 	sc->bustype = EP_BUS_ISA;
+
+	printf(":");
 
 	chipset = (int)(long)ia->ia_aux;
 	if ((chipset & 0xfff0) == PROD_ID_3C509) {
