@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.3 1998/05/10 11:31:20 downsj Exp $	*/
+/*	$OpenBSD: version.c,v 1.4 1999/08/16 09:43:08 downsj Exp $	*/
 
 /*
  * Record major changes in the boot code here, and increment the version
@@ -18,6 +18,8 @@
  *
  * 2.5			Added SYS_CDBOOT.
  *
+ * 2.6			Fixed RTC reading for 2001.
+ *
  */
 
-const char version[] = "2.5";
+const char version[] = "2.6";
