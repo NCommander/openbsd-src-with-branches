@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.10 2003/12/29 22:05:10 djm Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.11 2003/12/29 22:08:44 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
@@ -57,7 +57,7 @@ enum priv_state {
 	STATE_INIT,		/* just started up */
 	STATE_CONFIG,		/* parsing config file for first time */
 	STATE_RUNNING,		/* running and accepting network traffic */
-	STATE_QUIT,		/* shutting down */
+	STATE_QUIT		/* shutting down */
 };
 
 enum cmd_types {
