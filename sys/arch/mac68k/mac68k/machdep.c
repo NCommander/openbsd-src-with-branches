@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.85 2001/11/07 01:18:00 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.86 2001/11/09 15:25:55 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -218,7 +218,6 @@ unsigned short  mac68k_netipl = PSL_S | PSL_IPL2;
 unsigned short  mac68k_impipl = PSL_S | PSL_IPL2;
 unsigned short  mac68k_clockipl = PSL_S | PSL_IPL2;
 unsigned short  mac68k_statclockipl = PSL_S | PSL_IPL2;
-unsigned short  mac68k_schedipl = PSL_S | PSL_IPL3;
 
 
 /*
