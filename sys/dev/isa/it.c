@@ -1,4 +1,4 @@
-/*	$OpenBSD: it.c,v 1.4 2003/11/05 20:57:10 grange Exp $	*/
+/*	$OpenBSD: it.c,v 1.5 2004/01/12 14:10:53 grange Exp $	*/
 
 /*
  * Copyright (c) 2003 Julien Bordet <zejames@greyhats.org>
@@ -94,7 +94,7 @@ it_match(struct device *parent, void *match, void *aux)
 	cr = bus_space_read_1(iot, ioh, ITC_DATA);
 
 	/* The monitoring may have been enabled by BIOS */
-	if (cr == 0x18 || cr == 0x19)
+	if (cr == 0x11 || cr == 0x18 || cr == 0x19)
 		rv = 1;
 
 	DPRINTF(("it: rv = %d, cr = %x\n", rv, cr));
