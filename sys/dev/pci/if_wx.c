@@ -1,4 +1,4 @@
-/* $OpenBSD: if_wx.c,v 1.11 2001/04/13 00:27:57 mjacob Exp $ */
+/* $OpenBSD: if_wx.c,v 1.12 2001/06/12 15:40:31 niklas Exp $ */
 /*
  * Principal Author: Matthew Jacob
  * Copyright (c) 1999, 2001 by Traakan Software
@@ -1611,10 +1611,12 @@ wx_handle_rxint(wx_softc_t *sc)
 		ifp->if_ipackets++;
 		DPRINTF(sc, ("%s: RECV packet length %d\n",
 		    sc->wx_name, mb->m_pkthdr.len));
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__)
 		eh = mtod(mb, struct ether_header *);
 		m_adj(mb, sizeof (struct ether_header));
 		ether_input(ifp, eh, mb);
+#elif defined(__OpenBSD__)
+		ether_input_mbuf(ifp, mb);
 #else
                 (*ifp->if_input)(ifp, mb);
 #endif
