@@ -116,13 +116,21 @@ maninstall:
 	done
 .endif
 .if defined(MLINKS) && !empty(MLINKS)
-.  for sub in ${MANSUBDIR}
-.     for lnk file in ${MLINKS}
-	@l=${DESTDIR}${MANDIR}${lnk:E}${sub}/${lnk:R}.0${MCOMPRESSSUFFIX}; \
-	t=${DESTDIR}${MANDIR}${file:E}${sub}/${file:R}.0${MCOMPRESSSUFFIX}; \
-	echo $$t -\> $$l; \
-	rm -f $$t; ln $$l $$t;
-.     endfor
+.  for _subdir in ${MANSUBDIR}
+	@set ${MLINKS}; \
+	while test $$# -ge 2; do \
+		name=$$1; \
+		shift; \
+		dir=${DESTDIR}${MANDIR}$${name##*.}; \
+		l=$${dir}${_subdir}/$${name%.*}.0${MCOMPRESSSUFFIX}; \
+		name=$$1; \
+		shift; \
+		dir=${DESTDIR}${MANDIR}$${name##*.}; \
+		t=$${dir}${_subdir}/$${name%.*}.0${MCOMPRESSSUFFIX}; \
+		echo $$t -\> $$l; \
+		rm -f $$t; \
+		ln $$l $$t; \
+	done
 .  endfor
 .endif
 
