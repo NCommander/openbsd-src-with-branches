@@ -1,4 +1,4 @@
-/*	$OpenBSD: umap_vfsops.c,v 1.5 1996/03/25 18:02:57 mickey Exp $	*/
+/*	$OpenBSD: umap_vfsops.c,v 1.6 1996/03/30 01:40:48 mickey Exp $	*/
 /*	$NetBSD: umap_vfsops.c,v 1.9 1996/02/09 22:41:05 christos Exp $	*/
 
 /*
@@ -85,9 +85,10 @@ umapfs_mount(mp, path, data, ndp, p)
 	struct vnode *umapm_rootvp;
 	struct umap_mount *amp;
 	size_t size;
-	int	error,i;
-
+	int error;
 #ifdef UMAPFS_DIAGNOSTIC
+	int i;
+
 	printf("umapfs_mount(mp = %x)\n", mp);
 #endif
 
