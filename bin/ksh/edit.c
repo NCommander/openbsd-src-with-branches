@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.16 2003/05/05 22:02:33 fgsch Exp $	*/
+/*	$OpenBSD: edit.c,v 1.17 2003/06/26 00:09:45 deraadt Exp $	*/
 
 /*
  * Command line editing - common code
@@ -772,7 +772,7 @@ x_locate_word(buf, buflen, pos, startp, is_commandp)
 		;
 	/* Go forwards to end of word */
 	for (end = start; end < buflen && IS_WORDC(buf[end]); end++) {
-		if (buf[end] == '\\' && (end+1) < buflen && buf[end+1] == ' ')
+		if (buf[end] == '\\' && (end+1) < buflen)
 			end++;
 	}
 
