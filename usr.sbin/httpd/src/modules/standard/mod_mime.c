@@ -1,4 +1,4 @@
-/*	$OpenBSD: mod_mime.c,v 1.12 2003/07/18 21:16:37 david Exp $ */
+/*	$OpenBSD: mod_mime.c,v 1.13 2003/08/21 13:11:37 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -352,7 +352,7 @@ static void init_mime(server_rec *s, pool *p)
 
     if (!(f = ap_pcfg_openfile(p, types_confname))) {
         ap_log_error(APLOG_MARK, APLOG_ERR, s,
-		     "could not open mime types log file %s.", types_confname);
+		     "could not open mime types config file %s.", types_confname);
         exit(1);
     }
 
