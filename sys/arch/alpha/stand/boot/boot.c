@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.8 1996/11/27 19:54:52 niklas Exp $	*/
+/*	$OpenBSD: boot.c,v 1.9 1997/05/05 06:01:51 millert Exp $	*/
 /*	$NetBSD: boot.c,v 1.10 1997/01/18 01:58:33 cgd Exp $	*/
 
 /*
@@ -59,7 +59,7 @@ char boot_flags[128];
 
 extern char bootprog_name[], bootprog_rev[], bootprog_date[], bootprog_maker[];
 
-vm_offset_t ffp_save, ptbr_save;
+vm_offset_t ffp_save, ptbr_save, esym;
 
 int debug;
 
@@ -109,7 +109,7 @@ main()
 	printf("\n");
 	if (win) {
 		(void)printf("Entering %s at 0x%lx...\n", name, entry);
-		(*(void (*)())entry)(ffp_save, ptbr_save, 0);
+		(*(void (*)())entry)(ffp_save, ptbr_save, esym);
 	}
 
 	(void)printf("Boot failed!  Halting...\n");
