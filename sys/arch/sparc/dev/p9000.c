@@ -1,4 +1,4 @@
-/*	$OpenBSD: p9000.c,v 1.9 2004/09/29 07:35:11 miod Exp $	*/
+/*	$OpenBSD: p9000.c,v 1.10 2004/11/29 22:07:37 miod Exp $	*/
 
 /*
  * Copyright (c) 2003, Miodrag Vallat.
@@ -376,6 +376,8 @@ p9000_ioctl(void *v, u_long cmd, caddr_t data, int flags, struct proc *p)
 
 	case WSDISPLAYIO_SVIDEO:
 	case WSDISPLAYIO_GVIDEO:
+		break;
+
 	case WSDISPLAYIO_GCURPOS:
 	case WSDISPLAYIO_SCURPOS:
 	case WSDISPLAYIO_GCURMAX:

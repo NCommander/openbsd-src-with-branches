@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.36 2004/11/30 13:23:19 miod Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.37 2004/12/02 02:41:02 brad Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -230,6 +230,8 @@ vgafb_ioctl(v, cmd, data, flags, p)
 
 	case WSDISPLAYIO_SVIDEO:
 	case WSDISPLAYIO_GVIDEO:
+		break;
+
 	case WSDISPLAYIO_GCURPOS:
 	case WSDISPLAYIO_SCURPOS:
 	case WSDISPLAYIO_GCURMAX:

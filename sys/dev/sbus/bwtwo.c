@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwtwo.c,v 1.10 2003/06/27 01:36:53 jason Exp $	*/
+/*	$OpenBSD: bwtwo.c,v 1.11 2004/11/29 22:07:40 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -248,6 +248,8 @@ bwtwo_ioctl(v, cmd, data, flags, p)
 
 	case WSDISPLAYIO_SVIDEO:
 	case WSDISPLAYIO_GVIDEO:
+		break;
+
 	case WSDISPLAYIO_GCURPOS:
 	case WSDISPLAYIO_SCURPOS:
 	case WSDISPLAYIO_GCURMAX:

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgeight.c,v 1.21 2003/06/28 17:05:33 miod Exp $	*/
+/*	$OpenBSD: cgeight.c,v 1.22 2004/11/29 22:07:36 miod Exp $	*/
 /*	$NetBSD: cgeight.c,v 1.13 1997/05/24 20:16:04 pk Exp $	*/
 
 /*
@@ -266,6 +266,8 @@ cgeight_ioctl(v, cmd, data, flags, p)
 
 	case WSDISPLAYIO_SVIDEO:
 	case WSDISPLAYIO_GVIDEO:
+		break;
+
 	case WSDISPLAYIO_GCURPOS:
 	case WSDISPLAYIO_SCURPOS:
 	case WSDISPLAYIO_GCURMAX:

@@ -1,4 +1,4 @@
-/*	$OpenBSD: agten.c,v 1.5 2003/06/28 17:05:33 miod Exp $	*/
+/*	$OpenBSD: agten.c,v 1.6 2004/11/29 22:07:36 miod Exp $	*/
 /*
  * Copyright (c) 2002, 2003, Miodrag Vallat.
  * All rights reserved.
@@ -271,6 +271,8 @@ agten_ioctl(dev, cmd, data, flags, p)
 
 	case WSDISPLAYIO_SVIDEO:
 	case WSDISPLAYIO_GVIDEO:
+		break;
+
 	case WSDISPLAYIO_GCURPOS:
 	case WSDISPLAYIO_SCURPOS:
 	case WSDISPLAYIO_GCURMAX:

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vigra.c,v 1.1 2004/11/29 18:12:51 miod Exp $	*/
+/*	$OpenBSD: vigra.c,v 1.2 2004/11/29 22:07:41 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, Miodrag Vallat.
@@ -398,6 +398,8 @@ vigra_ioctl(void *v, u_long cmd, caddr_t data, int flags, struct proc *p)
 
 	case WSDISPLAYIO_SVIDEO:
 	case WSDISPLAYIO_GVIDEO:
+		break;
+
 	case WSDISPLAYIO_GCURPOS:
 	case WSDISPLAYIO_SCURPOS:
 	case WSDISPLAYIO_GCURMAX:

@@ -1,4 +1,4 @@
-/* $OpenBSD: lunafb.c,v 1.2 2004/04/24 13:37:44 miod Exp $ */
+/* $OpenBSD: lunafb.c,v 1.3 2004/05/10 10:30:23 aoyama Exp $ */
 /* $NetBSD: lunafb.c,v 1.7.6.1 2002/08/07 01:48:34 lukem Exp $ */
 
 /*-
@@ -265,6 +265,8 @@ omfbioctl(v, cmd, data, flag, p)
 
 	case WSDISPLAYIO_SVIDEO:
 	case WSDISPLAYIO_GVIDEO:
+		break;
+
 	case WSDISPLAYIO_GCURPOS:
 	case WSDISPLAYIO_SCURPOS:
 	case WSDISPLAYIO_GCURMAX:
