@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.30 2002/11/24 02:00:36 miod Exp $	*/
+/*	$OpenBSD: fd.c,v 1.31 2002/11/24 15:05:03 miod Exp $	*/
 /*	$NetBSD: fd.c,v 1.51 1997/05/24 20:16:19 pk Exp $	*/
 
 /*-
@@ -1131,7 +1131,7 @@ fdchwintr(fdc)
 		if ((msr & NE7_NDM) == 0) {
 			fdcresult(fdc);
 			fdc->sc_istate = ISTATE_IDLE;
-			ienab_bis(IE_FDSOFT);
+			FD_SET_SWINTR;
 			printf("fdc: overrun: tc = %d\n", fdc->sc_tc);
 			break;
 		}
