@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.19 2001/05/09 15:31:25 art Exp $ */
+/*	$OpenBSD: pmap.c,v 1.20 2001/06/08 08:09:08 art Exp $ */
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -2240,7 +2240,7 @@ pmap_enter_ptpage(pmap, va)
 	register pmap_t pmap;
 	register vm_offset_t va;
 {
-	register vm_offset_t ptpa;
+	vm_offset_t ptpa;
 	register struct pv_entry *pv;
 #ifdef M68060
 	u_int stpa;
