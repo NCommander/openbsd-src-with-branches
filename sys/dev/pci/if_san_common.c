@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_common.c,v 1.3 2004/06/26 22:19:38 mcbride Exp $	*/
+/*	$OpenBSD: if_san_common.c,v 1.4 2004/07/16 15:11:45 alex Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -49,7 +49,6 @@
 # include <sys/timeout.h>
 
 # include <net/bpf.h>
-# include <net/bpfdesc.h>
 # include <net/if_dl.h>
 # include <net/if_types.h>
 # include <net/if.h>
