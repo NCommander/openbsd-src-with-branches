@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.103 2002/12/16 22:59:37 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.104 2002/12/17 12:36:59 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -735,19 +735,16 @@ pfctl_add_altq(struct pfctl *pf, struct pf_altq *a)
 	    (loadopt & (PFCTL_FLAG_ALTQ | PFCTL_FLAG_ALL)) != 0) {
 		memcpy(&pf->paltq->altq, a, sizeof(struct pf_altq));
 		if ((pf->opts & PF_OPT_NOACTION) == 0) {
-			/* only cbq needs a root queue */
-			if (a->scheduler == ALTQT_CBQ ||
-			    a->qname[0] == 0 || a->parent[0] != 0)
-				if (ioctl(pf->dev, DIOCADDALTQ, pf->paltq)) {
-					if (errno == ENXIO)
-						fprintf(stderr,
-						    "qtype not configured\n");
-					else if (errno == ENODEV)
-						fprintf(stderr,
-						    "driver does not support "
-						    "altq\n");
-					err(1, "DIOCADDALTQ");
-				}
+			if (ioctl(pf->dev, DIOCADDALTQ, pf->paltq)) {
+				if (errno == ENXIO)
+					fprintf(stderr,
+					    "qtype not configured\n");
+				else if (errno == ENODEV)
+					fprintf(stderr,
+					    "driver does not support "
+					    "altq\n");
+				err(1, "DIOCADDALTQ");
+			}
 		}
 		pfaltq_store(&pf->paltq->altq);
 	}
