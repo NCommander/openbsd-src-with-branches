@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: pty.c,v 1.22 2001/02/08 19:30:52 itojun Exp $");
+RCSID("$OpenBSD: sshpty.c,v 1.1 2001/03/04 01:46:30 djm Exp $");
 
 #include <util.h>
 #include "sshpty.h"
@@ -272,7 +272,8 @@ pty_setowner(struct passwd *pw, const char *ttyname)
 
 	if (st.st_uid != pw->pw_uid || st.st_gid != gid) {
 		if (chown(ttyname, pw->pw_uid, gid) < 0) {
-			if (errno == EROFS && st.st_uid == pw->pw_uid)
+			if (errno == EROFS && 
+			   (st.st_uid == pw->pw_uid || st.st_uid == 0))
 				error("chown(%.100s, %d, %d) failed: %.100s",
 				      ttyname, pw->pw_uid, gid,
 				      strerror(errno));
