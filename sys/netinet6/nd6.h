@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.h,v 1.19 2002/05/30 05:07:17 itojun Exp $	*/
+/*	$OpenBSD: nd6.h,v 1.20 2002/06/05 01:12:54 itojun Exp $	*/
 /*	$KAME: nd6.h,v 1.93 2002/06/05 00:56:22 itojun Exp $	*/
 
 /*
@@ -100,7 +100,7 @@ struct nd_ifinfo {
 #define IN6_LINKMTU(ifp) \
 	((ND_IFINFO(ifp)->linkmtu && ND_IFINFO(ifp)->linkmtu < (ifp)->if_mtu) \
 	    ? ND_IFINFO(ifp)->linkmtu \
-	    : ((ND_IFINFO(ifp)->maxmtu < (ifp)->if_mtu) \
+	    : ((ND_IFINFO(ifp)->maxmtu && ND_IFINFO(ifp)->maxmtu < (ifp)->if_mtu) \
 		? ND_IFINFO(ifp)->maxmtu : (ifp)->if_mtu))
 #endif
 
