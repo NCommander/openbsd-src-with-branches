@@ -1,4 +1,4 @@
-/*	$OpenBSD: lasi.c,v 1.2 1999/02/25 23:15:31 mickey Exp $	*/
+/*	$OpenBSD: lasi.c,v 1.3 1999/04/20 20:28:32 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998,1999 Michael Shalayeff
@@ -30,7 +30,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define LASIDEBUG 9
+#undef LASIDEBUG
 
 #include <sys/param.h>
 #include <sys/systm.h>
