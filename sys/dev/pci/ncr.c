@@ -166,9 +166,15 @@
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 #ifdef _KERNEL
 #define KERNEL
+
+/*
+ * Normally found in the userland header stddef.h, which isn't available.
+ */
+#define	offsetof(type, member)	((size_t)(&((type *)0)->member))
 #endif
-#endif
+#else
 #include <stddef.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/param.h>
