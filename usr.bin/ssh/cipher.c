@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: cipher.c,v 1.59 2002/06/19 18:01:00 markus Exp $");
+RCSID("$OpenBSD: cipher.c,v 1.60 2002/06/23 03:26:52 deraadt Exp $");
 
 #include "xmalloc.h"
 #include "log.h"
@@ -525,7 +525,7 @@ evp_rijndael(void)
 	rijndal_cbc.cleanup = ssh_rijndael_cleanup;
 	rijndal_cbc.do_cipher = ssh_rijndael_cbc;
 	rijndal_cbc.flags = EVP_CIPH_CBC_MODE | EVP_CIPH_VARIABLE_LENGTH |
-	    EVP_CIPH_ALWAYS_CALL_INIT;
+	    EVP_CIPH_ALWAYS_CALL_INIT | EVP_CIPH_CUSTOM_IV;
 	return (&rijndal_cbc);
 }
 #endif
