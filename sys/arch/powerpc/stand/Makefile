@@ -1,4 +1,4 @@
-#	$OpenBSD:$
+#	$OpenBSD: Makefile,v 1.2 1996/12/28 06:31:08 rahnds Exp $
 #	$NetBSD: Makefile,v 1.1 1996/09/30 16:34:59 ws Exp $
 
 SUBDIR=	boot
@@ -11,10 +11,10 @@ KERN_AS=library
 .include "$S/lib/libsa/Makefile.inc"
 .include "$S/lib/libkern/Makefile.inc"
 
-all:	$(SALIB) ${KERNLIB} _SUBDIRUSE
+all:	${SALIB} ${KERNLIB} _SUBDIRUSE
 
 libdep:
-	@echo $(SALIB) $(KERNLIB)
+	@echo ${.OBJDIR}/${SALIB} $(KERNLIB)
 
 
 ${PROG}:	
