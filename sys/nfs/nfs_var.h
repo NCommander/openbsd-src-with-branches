@@ -274,6 +274,7 @@ int nfsm_uiotombuf __P((struct uio *, struct mbuf **, int, caddr_t *));
 int nfsm_disct __P((struct mbuf **, caddr_t *, int, int, caddr_t *));
 int nfs_adv __P((struct mbuf **, caddr_t *, int, int));
 int nfsm_strtmbuf __P((struct mbuf **, char **, char *, long));
+void nfs_vfs_init __P((void));
 void nfs_init __P((void));
 int nfs_loadattrcache __P((struct vnode **, struct mbuf **, caddr_t *,
 			   struct vattr *));
