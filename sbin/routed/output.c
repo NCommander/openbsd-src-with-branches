@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.7 2001/07/07 18:26:20 deraadt Exp $	*/
+/*	$OpenBSD: output.c,v 1.8 2003/06/02 20:06:17 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -32,7 +32,7 @@
 #if !defined(lint)
 static char sccsid[] = "@(#)output.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: output.c,v 1.7 2001/07/07 18:26:20 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: output.c,v 1.8 2003/06/02 20:06:17 millert Exp $";
 #endif
 
 #include "defs.h"
@@ -670,7 +670,7 @@ supply(struct sockaddr_in *dst,
 	ws.v2.n = ws.v2.base;
 	set_auth(&ws.v2);
 
-	if (supplier) {
+	if (supplier && ifp != NULL) {
 		/*  Fake a default route if asked, and if there is not
 		 * a better, real default route.
 		 */
