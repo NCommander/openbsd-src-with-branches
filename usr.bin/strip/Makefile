@@ -1,9 +1,10 @@
-#	$OpenBSD: Makefile,v 1.6 1997/04/27 20:56:54 millert Exp $
+#	$OpenBSD: Makefile,v 1.7 1998/05/11 07:41:23 niklas Exp $
 
 TARGET_MACHINE_ARCH?=	${MACHINE_ARCH}
 
 PROG=	strip
 
+CFLAGS+=-I${.CURDIR}/../nm
 .if ${TARGET_MACHINE_ARCH} != ${MACHINE_ARCH}
 # XXX should make this automatic
 .if ${TARGET_MACHINE_ARCH} == "i386"
