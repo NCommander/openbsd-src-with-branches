@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.1 2004/01/28 01:39:39 mickey Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.3 2004/02/11 03:07:46 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -311,6 +311,9 @@ void cpu_init_msrs(struct cpu_info *);
 
 /* trap.c */
 void	child_return(void *);
+
+/* dkcsum.c */
+void	dkcsumattach(void);
 
 /* consinit.c */
 void kgdb_port_init(void);
