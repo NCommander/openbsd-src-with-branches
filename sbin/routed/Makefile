@@ -1,10 +1,11 @@
-#	$OpenBSD: Makefile,v 1.7 1997/07/30 23:28:39 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 1997/09/21 11:38:08 deraadt Exp $
 
 PROG=	routed
 SRCS=	if.c input.c main.c output.c parms.c radix.c rdisc.c table.c trace.c
 MAN=	routed.8
 CFLAGS+=-D_ROUTED -D'min(a,b)=(a < b ? a : b)' -D'log=syslog'
 CFLAGS+=-D'panic(s)={log(LOG_ERR,s); exit(1);}'
+CFLAGS+=-D'random()=arc4random()'
 SUBDIR=	rtquery
 DPADD=	${LIBCOMPAT}
 LDADD=	-lcompat
