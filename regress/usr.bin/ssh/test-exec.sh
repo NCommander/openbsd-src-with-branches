@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2002/01/17 13:21:28 markus Exp $
+#	$OpenBSD: test-exec.sh,v 1.1 2002/02/14 23:18:00 markus Exp $
 
 PORT=4242
 USER=`id -un`
@@ -116,6 +116,7 @@ for t in rsa rsa1; do
 	# don't use SUDO for proxy connect
 	echo HostKey $OBJ/$t >> $OBJ/sshd_config_proxy
 done
+chmod 644 $OBJ/authorized_keys_$USER
 
 # start sshd
 $SUDO sshd -f $OBJ/sshd_config -t	|| fatal "sshd_config broken"
