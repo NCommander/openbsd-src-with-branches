@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.5 1997/03/30 19:22:46 provos Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.6 1997/06/17 21:01:01 kstailey Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <err.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <pwd.h>
