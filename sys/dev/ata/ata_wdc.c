@@ -1,3 +1,4 @@
+/*      $OpenBSD$	*/
 /*	$NetBSD: ata_wdc.c,v 1.21 1999/08/09 09:43:11 bouyer Exp $	*/
 
 /*
