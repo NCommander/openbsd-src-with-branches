@@ -1,4 +1,4 @@
-/*	$OpenBSD: func.c,v 1.2 1996/06/26 05:44:13 deraadt Exp $	*/
+/*	$OpenBSD: func.c,v 1.3 1999/10/29 09:01:00 todd Exp $	*/
 /*	$NetBSD: func.c,v 1.7 1995/10/02 17:31:40 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: func.c,v 1.2 1996/06/26 05:44:13 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: func.c,v 1.3 1999/10/29 09:01:00 todd Exp $";
 #endif
 
 #include <stdlib.h>
@@ -369,7 +369,7 @@ funcend()
 	/*
 	 * write the information about the function definition to the
 	 * output file
-	 * inline functions explicitely declared extern are written as
+	 * inline functions explicitly declared extern are written as
 	 * declarations only.
 	 */
 	if (dcs->d_scl == EXTERN && funcsym->s_inline) {

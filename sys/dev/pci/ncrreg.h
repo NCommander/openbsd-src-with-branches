@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr_reg.h,v 1.6 1997/10/11 09:12:20 pefo Exp $	*/
+/*	$OpenBSD: ncrreg.h,v 1.1 1997/12/01 18:58:49 millert Exp $	*/
 /*	$NetBSD: ncrreg.h,v 1.14 1997/09/23 02:27:46 perry Exp $	*/
 
 /**************************************************************************
@@ -637,7 +637,7 @@ struct scr_tblsel {
 
 /*
 **	Bits defining chip features.
-**	For now only some of them are used, since we explicitely 
+**	For now only some of them are used, since we explicitly 
 **	deal with PCI device id and revision id.
 */
 #define FE_LED0		(1<<0)
