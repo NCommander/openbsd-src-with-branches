@@ -1,4 +1,4 @@
-/*	$OpenBSD: nologin.c,v 1.3 2002/07/03 22:32:33 deraadt Exp $	*/
+/*	$OpenBSD: nologin.c,v 1.4 2003/06/04 02:57:30 jolan Exp $	*/
 
 /*
  * Copyright (c) 1997, Jason Downs.  All rights reserved.
@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 

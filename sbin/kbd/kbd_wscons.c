@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd_wscons.c,v 1.13 2003/06/02 21:10:37 maja Exp $ */
+/*	$OpenBSD: kbd_wscons.c,v 1.14 2003/07/02 21:44:58 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Mats O Jansson.  All rights reserved.
@@ -37,6 +37,7 @@
 #include <limits.h>
 #include <nlist.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #define	NUM_KBD	10

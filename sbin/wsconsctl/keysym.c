@@ -1,4 +1,4 @@
-/*	$OpenBSD: keysym.c,v 1.2 2002/02/16 21:27:38 millert Exp $	*/
+/*	$OpenBSD: keysym.c,v 1.3 2002/12/11 18:27:19 deraadt Exp $	*/
 /*	$NetBSD: keysym.c,v 1.3 1999/02/08 11:08:23 hannken Exp $ */
 
 /*-
@@ -40,6 +40,7 @@
 #include <dev/wscons/wsksymdef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "keysym.h"
 #include "wsconsctl.h"
