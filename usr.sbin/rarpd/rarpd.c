@@ -68,10 +68,11 @@ static char rcsid[] = "$OpenBSD: rarpd.c,v 1.2 1995/11/15 07:04:09 deraadt Exp $
  * The structure for each interface.
  */
 struct if_info {
-	int     ii_fd;		/* BPF file descriptor */
-	u_char  ii_eaddr[6];	/* Ethernet address of this interface */
-	u_long  ii_ipaddr;	/* IP address of this interface */
-	u_long  ii_netmask;	/* subnet or net mask */
+	int     ii_fd;			/* BPF file descriptor */
+	char	ii_name[IFNAMSIZ];	/* if name, e.g. "en0" */
+	u_char  ii_eaddr[6];		/* Ethernet address of this interface */
+	u_long  ii_ipaddr;		/* IP address of this interface */
+	u_long  ii_netmask;		/* subnet or net mask */
 	struct if_info *ii_next;
 };
 /*
@@ -195,6 +196,11 @@ init_one(ifname)
 {
 	struct if_info *p;
 
+	/* first check to see if this "if" was already opened? */
+	for(p = iflist; p; p = p->ii_next)
+		if (!strncmp(p->ii_name, ifname, IFNAMSIZ))
+			return;
+
 	p = (struct if_info *)malloc(sizeof(*p));
 	if (p == 0) {
 		err(FATAL, "malloc: %s", strerror(errno));
@@ -204,6 +210,7 @@ init_one(ifname)
 	iflist = p;
 
 	p->ii_fd = rarp_open(ifname);
+	strncpy(p->ii_name, ifname, IFNAMSIZ);
 	lookup_eaddr(ifname, p->ii_eaddr);
 	lookup_ipaddr(ifname, &p->ii_ipaddr, &p->ii_netmask);
 }
