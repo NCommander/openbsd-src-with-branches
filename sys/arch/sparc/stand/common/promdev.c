@@ -416,7 +416,7 @@ getchar()
 			(*promvec->pv_v2bootargs.v2_fd0, (caddr_t)&c, 1)) != 1);
 	else {
                 /* SUN4 PROM: must turn off local echo */
-                extern struct om_vector *oldpvec;
+                struct om_vector *oldpvec = (struct om_vector *)PROM_BASE;
                 int saveecho = 0;
 
                 if (CPU_ISSUN4) {
