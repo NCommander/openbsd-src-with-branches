@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.h,v 1.8 2004/07/29 22:12:15 mcbride Exp $	*/
+/*	$OpenBSD: ip_carp.h,v 1.9 2004/12/07 20:38:47 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -153,7 +153,7 @@ struct carpreq {
 #ifdef _KERNEL
 void		 carp_ifdetach (struct ifnet *);
 void		 carp_proto_input (struct mbuf *, ...);
-void		 carp_carpdev_state(void *);
+void		 carp_carpdev_state(struct ifnet *);
 int		 carp6_proto_input(struct mbuf **, int *, int);
 int		 carp_output(struct ifnet *, struct mbuf *, struct sockaddr *,
 		     struct rtentry *);
