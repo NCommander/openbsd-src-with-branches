@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.195 2004/04/14 10:51:10 cedric Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.196 2004/04/24 23:22:54 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -183,6 +183,7 @@ const struct pf_timeout pf_timeouts[] = {
 	{ "tcp.closing",	PFTM_TCP_CLOSING },
 	{ "tcp.finwait",	PFTM_TCP_FIN_WAIT },
 	{ "tcp.closed",		PFTM_TCP_CLOSED },
+	{ "tcp.tsdiff",		PFTM_TS_DIFF },
 	{ "udp.first",		PFTM_UDP_FIRST_PACKET },
 	{ "udp.single",		PFTM_UDP_SINGLE },
 	{ "udp.multiple",	PFTM_UDP_MULTIPLE },
