@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: isapnp_machdep.c,v 1.3 1998/09/05 15:28:04 christos Exp $	*/
 
 /*-

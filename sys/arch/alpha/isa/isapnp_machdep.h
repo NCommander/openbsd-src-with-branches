@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: isapnp_machdep.h,v 1.5 2000/06/01 00:04:50 cgd Exp $	*/
 
 /*-
