@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: new_pwd.c,v 1.11 1997/05/02 14:28:54 assar Exp $ */
 
 /*

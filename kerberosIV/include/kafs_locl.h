@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: kafs_locl.h,v 1.7 1997/10/14 22:57:11 joda Exp $ */
 
 /*

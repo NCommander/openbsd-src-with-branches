@@ -1,4 +1,4 @@
-/*	$Id: kuser_locl.h,v 1.1.1.1 1995/12/14 06:52:33 tholo Exp $	*/
+/*	$OpenBSD: kuser_locl.h,v 1.2 1997/11/28 12:48:39 art Exp $	*/
 /*      $KTH: kuser_locl.h,v 1.10 1997/05/20 18:40:43 bg Exp $          */
 
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: kstash.c,v 1.10 1997/03/30 17:35:37 assar Exp $ */
 
 /*-

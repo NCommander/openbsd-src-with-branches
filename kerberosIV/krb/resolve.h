@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: resolve.h,v 1.5 1997/05/14 17:41:25 joda Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH krb_log.h,v 1.2 1997/09/26 17:40:33 joda Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/* 	$OpenBSD$	*/
 /* $KTH: sl_locl.h,v 1.4 1997/06/08 01:51:38 assar Exp $ */
 
 /*

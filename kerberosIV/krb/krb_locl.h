@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: krb_locl.h,v 1.44 1997/10/28 15:37:40 bg Exp $ */
 
 /*

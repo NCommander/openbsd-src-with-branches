@@ -1,4 +1,4 @@
-/*	$Id: adm_locl.h,v 1.2 1997/06/29 10:48:34 provos Exp $	*/
+/*	$OpenBSD: adm_locl.h,v 1.3 1997/12/17 10:25:41 art Exp $	*/
 
 /*-
  * Copyright 1987, 1988 by the Student Information Processing Board
