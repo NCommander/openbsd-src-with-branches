@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_espdesmd5.c,v 1.2 1997/02/24 14:06:40 niklas Exp $	*/
+/*	$OpenBSD: ip_espdesmd5.c,v 1.3 1997/02/26 20:53:18 deraadt Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -713,7 +713,8 @@ espdesmd5_output(struct mbuf *m, struct sockaddr_encap *gw, struct tdb *tdb, str
 	  printf("espdesmd5_output: almost done now\n");
 #endif
 
-	bcopy(iv, xd->edx_iv, ESPDESMD5_IVS); /* New IV */
+	if (xd->edx_ivlen)
+  	  bcopy(iv, xd->edx_iv, ESPDESMD5_IVS); /* New IV */
 
 	/* Fix the length and the next protocol, copy back and off we go */
 	ipo.ip_len = htons(sizeof (struct ip) + ohlen + rlen + padding +
