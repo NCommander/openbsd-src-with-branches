@@ -1,4 +1,4 @@
-/*	$OpenBSD: gzopen.c,v 1.8 2003/06/27 19:29:45 millert Exp $	*/
+/*	$OpenBSD: gzopen.c,v 1.9 2003/06/29 21:14:37 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -59,7 +59,7 @@
 */
 
 const char gz_rcsid[] =
-    "$OpenBSD: gzopen.c,v 1.8 2003/06/27 19:29:45 millert Exp $";
+    "$OpenBSD: gzopen.c,v 1.9 2003/06/29 21:14:37 millert Exp $";
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -205,6 +205,11 @@ gz_close(void *cookie)
 		else if (s->z_mode == 'r')
 			err = inflateEnd(&s->z_stream);
 	}
+
+	if (!err)
+		err = close(s->z_fd);
+	else
+		(void)close(s->z_fd);
 
 	free(s);
 
