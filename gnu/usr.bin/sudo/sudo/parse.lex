@@ -1,8 +1,8 @@
 %{
-/*      $OpenBSD: parse.lex,v 1.5 1998/03/31 06:41:06 millert Exp $     */
+/*	$OpenBSD$	*/
 
 /*
- *  CU sudo version 1.5.6
+ *  CU sudo version 1.5.7
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,10 +27,6 @@
  * Chris Jepeway <jepeway@cs.utk.edu>
  */
 
-#ifndef lint
-static char rcsid[] = "$From: parse.lex,v 1.78 1998/09/07 03:09:49 millert Exp $";
-#endif /* lint */
-
 #include "config.h"
 
 #ifdef STDC_HEADERS
@@ -50,8 +46,11 @@ static char rcsid[] = "$From: parse.lex,v 1.78 1998/09/07 03:09:49 millert Exp $
 #include <sys/param.h>
 #include <netinet/in.h>
 #include "sudo.h"
-#include <options.h>
 #include "sudo.tab.h"
+
+#ifndef lint
+static const char rcsid[] = "$From: parse.lex,v 1.82 1998/11/18 04:16:13 millert Exp $";
+#endif /* lint */
 
 #undef yywrap		/* guard against a yywrap macro */
 
