@@ -37,13 +37,13 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: bufaux.c,v 1.15 2001/01/10 22:56:22 markus Exp $");
+RCSID("$OpenBSD: bufaux.c,v 1.16 2001/01/16 23:58:08 deraadt Exp $");
 
-#include "ssh.h"
 #include <openssl/bn.h>
 #include "bufaux.h"
 #include "xmalloc.h"
 #include "getput.h"
+#include "log.h"
 
 /*
  * Stores an BIGNUM in the buffer with a 2-byte msb first bit count, followed

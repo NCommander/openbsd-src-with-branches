@@ -36,10 +36,10 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: log-client.c,v 1.13 2001/01/07 11:28:04 markus Exp $");
+RCSID("$OpenBSD: log-client.c,v 1.14 2001/01/18 16:20:21 markus Exp $");
 
 #include "xmalloc.h"
-#include "ssh.h"
+#include "log.h"
 
 static LogLevel log_level = SYSLOG_LEVEL_INFO;
 

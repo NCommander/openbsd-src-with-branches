@@ -11,10 +11,17 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-/* $OpenBSD: auth-options.h,v 1.6 2000/12/19 23:17:55 markus Exp $ */
+/* $OpenBSD: auth-options.h,v 1.7 2001/01/20 15:55:20 markus Exp $ */
 
 #ifndef AUTH_OPTIONS_H
 #define AUTH_OPTIONS_H
+
+/* Linked list of custom environment strings */
+struct envstring {
+	struct envstring *next;
+	char   *s;
+};
+
 /* Flags that may be set in authorized_keys options. */
 extern int no_port_forwarding_flag;
 extern int no_agent_forwarding_flag;

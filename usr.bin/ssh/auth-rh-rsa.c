@@ -13,19 +13,19 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rh-rsa.c,v 1.19 2000/12/21 15:10:16 markus Exp $");
+RCSID("$OpenBSD: auth-rh-rsa.c,v 1.20 2001/01/19 15:55:10 markus Exp $");
 
 #include "packet.h"
-#include "ssh.h"
 #include "xmalloc.h"
 #include "uidswap.h"
+#include "log.h"
 #include "servconf.h"
-
-#include <openssl/rsa.h>
-#include <openssl/dsa.h>
 #include "key.h"
 #include "hostfile.h"
 #include "pathnames.h"
+#include "auth.h"
+#include "tildexpand.h"
+#include "canohost.h"
 
 /*
  * Tries to authenticate the user using the .rhosts file and the host using

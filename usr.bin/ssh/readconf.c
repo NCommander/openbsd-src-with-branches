@@ -12,14 +12,17 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.56 2001/01/20 17:59:40 deraadt Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.57 2001/01/20 23:02:07 djm Exp $");
 
 #include "ssh.h"
-#include "readconf.h"
-#include "match.h"
 #include "xmalloc.h"
 #include "compat.h"
+#include "cipher.h"
 #include "pathnames.h"
+#include "log.h"
+#include "readconf.h"
+#include "match.h"
+#include "misc.h"
 
 /* Format of the configuration file:
 

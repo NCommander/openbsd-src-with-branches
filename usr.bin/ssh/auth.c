@@ -23,16 +23,16 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.12 2001/01/13 18:56:48 markus Exp $");
+RCSID("$OpenBSD: auth.c,v 1.13 2001/01/18 16:59:59 markus Exp $");
 
 #include "xmalloc.h"
-#include "ssh.h"
 #include "match.h"
-#include "servconf.h"
 #include "groupaccess.h"
-
+#include "log.h"
+#include "servconf.h"
 #include "auth.h"
 #include "auth-options.h"
+#include "canohost.h"
 
 /* import */
 extern ServerOptions options;

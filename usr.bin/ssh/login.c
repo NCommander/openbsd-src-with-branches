@@ -39,11 +39,12 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: login.c,v 1.15 2000/09/07 20:27:52 deraadt Exp $");
+RCSID("$OpenBSD: login.c,v 1.16 2000/12/19 23:17:57 markus Exp $");
 
 #include <util.h>
 #include <utmp.h>
-#include "ssh.h"
+#include "login.h"
+#include "log.h"
 
 /*
  * Returns the time when the user last logged in.  Returns 0 if the

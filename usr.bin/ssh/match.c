@@ -12,9 +12,9 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: match.c,v 1.9 2000/09/07 20:27:52 deraadt Exp $");
+RCSID("$OpenBSD: match.c,v 1.10 2000/12/19 23:17:57 markus Exp $");
 
-#include "ssh.h"
+#include "match.h"
 
 /*
  * Returns true if the given string matches the pattern (which may contain ?

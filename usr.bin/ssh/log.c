@@ -36,9 +36,9 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: log.c,v 1.13 2001/01/07 11:28:05 markus Exp $");
+RCSID("$OpenBSD: log.c,v 1.14 2001/01/18 16:20:21 markus Exp $");
 
-#include "ssh.h"
+#include "log.h"
 #include "xmalloc.h"
 
 /* Fatal messages.  This function never returns. */
