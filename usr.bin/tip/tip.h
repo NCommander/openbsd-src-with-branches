@@ -1,4 +1,4 @@
-/*	$OpenBSD: tip.h,v 1.15 2003/06/03 02:56:18 millert Exp $	*/
+/*	$OpenBSD: tip.h,v 1.16 2003/09/20 18:15:32 millert Exp $	*/
 /*	$NetBSD: tip.h,v 1.7 1997/04/20 00:02:46 mellon Exp $	*/
 
 /*
@@ -234,6 +234,7 @@ extern value_t	vtable[];	/* variable table */
 struct termios	term;		/* current mode of terminal */
 struct termios	defterm;	/* initial mode of terminal */
 struct termios	defchars;	/* current mode with initial chars */
+int	gotdefterm;
 
 FILE	*fscript;		/* FILE for scripting */
 
