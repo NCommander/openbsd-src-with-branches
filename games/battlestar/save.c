@@ -1,4 +1,4 @@
-/*	$OpenBSD: save.c,v 1.8 1999/09/25 20:30:46 pjanzen Exp $	*/
+/*	$OpenBSD: save.c,v 1.9 2003/06/03 03:01:38 millert Exp $	*/
 /*	$NetBSD: save.c,v 1.3 1995/03/21 15:07:57 cgd Exp $	*/
 
 /*
@@ -34,15 +34,14 @@
 #if 0
 static char sccsid[] = "@(#)save.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: save.c,v 1.8 1999/09/25 20:30:46 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: save.c,v 1.9 2003/06/03 03:01:38 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include "extern.h"
 
 void
-restore(filename)
-	const char *filename;
+restore(const char *filename)
 {
 	int     n;
 	int     tmp;
@@ -93,8 +92,7 @@ restore(filename)
 }
 
 void
-save(filename)
-	const char *filename;
+save(const char *filename)
 {
 	int     n;
 	int     tmp;
@@ -156,9 +154,7 @@ save(filename)
  * with malloc(3).
  */
 char *
-save_file_name(filename, len)
-	const char *filename;
-	size_t len;
+save_file_name(const char *filename, size_t len)
 {
 	char   *home;
 	char   *newname;
