@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.37 2000/06/27 00:19:16 fgsch Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.38 2000/06/30 16:00:14 millert Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
 #if 0
 static char sccsid[] = "@(#)ftp.c	8.6 (Berkeley) 10/27/94";
 #else
-static char rcsid[] = "$OpenBSD: ftp.c,v 1.37 2000/06/27 00:19:16 fgsch Exp $";
+static char rcsid[] = "$OpenBSD: ftp.c,v 1.38 2000/06/30 16:00:14 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -165,7 +165,10 @@ hookup(host, port)
 			error = getaddrinfo(host, pbuf, &hints, &res0);
 	}
 	if (error) {
-		warn("%s", gai_strerror(error));
+		if (error == EAI_SERVICE)
+			warnx("%s: bad port number `%s'", host, port);
+		else
+			warnx("%s: %s", host, gai_strerror(error));
 		code = -1;
 		return (0);
 	}
