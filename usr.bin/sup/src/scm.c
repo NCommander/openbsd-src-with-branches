@@ -1,4 +1,4 @@
-/*	$OpenBSD: scm.c,v 1.11 2001/05/02 22:56:53 millert Exp $	*/
+/*	$OpenBSD: scm.c,v 1.12 2001/05/04 22:16:16 millert Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -296,7 +296,7 @@ lock_host_file(lockdir)
 		close(fd);
 		return(-1);
 	}
-	(void)fprintf(f, "%d\n", getpid());
+	(void)fprintf(f, "%d\n", (int) getpid());
 	fflush(f);
 	free(lpath);
 	return(fd);
