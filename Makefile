@@ -24,12 +24,12 @@ regression-tests:
 	@(cd ${.CURDIR}/regress && ${MAKE} regress)
 .endif
 
-#beforeinstall:
-#.ifndef DESTDIR
-#	(cd ${.CURDIR}/etc && ${MAKE} DESTDIR=/ distrib-dirs)
-#.else
-#	(cd ${.CURDIR}/etc && ${MAKE} distrib-dirs)
-#.endif
+beforeinstall:
+.ifndef DESTDIR
+	(cd ${.CURDIR}/etc && ${MAKE} DESTDIR=/ distrib-dirs)
+.else
+	(cd ${.CURDIR}/etc && ${MAKE} distrib-dirs)
+.endif
 
 afterinstall:
 .ifndef NOMAN
@@ -38,7 +38,7 @@ afterinstall:
 
 build:
 	(cd ${.CURDIR}/share/mk && ${MAKE} install)
-	(cd ${.CURDIR}/include && ${MAKE} install)
+	${MAKE} includes
 .if defined(KERBEROS)
 	(cd ${.CURDIR}/kerberosIV/include && ${MAKE} install)
 .endif
