@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.23 2001/05/10 22:46:49 miod Exp $	*/
+/*	$OpenBSD: param.h,v 1.24 2001/05/13 02:37:30 millert Exp $	*/
 /*	$NetBSD: param.h,v 1.34 1996/03/04 05:04:40 cgd Exp $	*/
 
 /*
@@ -94,7 +94,8 @@
 #endif
 #endif
 
-#define MSGBUFSIZE	(NBPG >> 1)
+#define	MSGBUFOFF	0x200
+#define MSGBUFSIZE	(NBPG - MSGBUFOFF)
 
 /*
  * Size of kernel malloc arena in logical pages
