@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.14 2000/09/22 19:21:30 millert Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.15 2001/01/16 03:05:44 deraadt Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)mkfs.c	8.3 (Berkeley) 2/3/94";
 #else
-static char rcsid[] = "$OpenBSD: mkfs.c,v 1.14 2000/09/22 19:21:30 millert Exp $";
+static char rcsid[] = "$OpenBSD: mkfs.c,v 1.15 2001/01/16 03:05:44 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -83,7 +83,6 @@ static char rcsid[] = "$OpenBSD: mkfs.c,v 1.14 2000/09/22 19:21:30 millert Exp $
 extern int	mfs;		/* run as the memory based filesystem */
 extern int	Nflag;		/* run mkfs without writing file system */
 extern int	Oflag;		/* format as an 4.3BSD file system */
-extern int	Uflag;		/* enable soft updates for file system */
 extern int	fssize;		/* file system size */
 extern int	ntracks;	/* # tracks/cylinder */
 extern int	nsectors;	/* # sectors/track */
@@ -188,9 +187,6 @@ mkfs(pp, fsys, fi, fo)
 	} else {
 		sblock.fs_inodefmt = FS_44INODEFMT;
 		sblock.fs_maxsymlinklen = MAXSYMLINKLEN;
-	}
-	if (Uflag) {
-		sblock.fs_flags |= FS_DOSOFTDEP;
 	}
 	/*
 	 * Validate the given file system size.
