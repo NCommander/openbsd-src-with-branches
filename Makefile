@@ -149,8 +149,16 @@ cross-binutils-new:
 	    ${CROSSDIR}/usr/bin/ranlib
 	ln -sf ${CROSSDIR}/usr/bin/`cat ${CROSSDIR}/TARGET_CANON`-nm \
 	    ${CROSSDIR}/usr/bin/nm
+	ln -sf ${CROSSDIR}/usr/bin/`cat ${CROSSDIR}/TARGET_CANON`-strings \
+	    ${CROSSDIR}/usr/bin/strings
 	ln -sf ${CROSSDIR}/usr/bin/`cat ${CROSSDIR}/TARGET_CANON`-lorder \
 	    ${CROSSDIR}/usr/bin/lorder
+	ln -sf ${CROSSDIR}/usr/bin/`cat ${CROSSDIR}/TARGET_CANON`-objcopy \
+	    ${CROSSDIR}/usr/bin/objcopy
+	ln -sf ${CROSSDIR}/usr/bin/`cat ${CROSSDIR}/TARGET_CANON`-objdump \
+	    ${CROSSDIR}/usr/bin/objdump
+	ln -sf ${CROSSDIR}/usr/bin/`cat ${CROSSDIR}/TARGET_CANON`-gdb \
+	    ${CROSSDIR}/usr/bin/gdb
 
 cross-binutils-old: cross-gas cross-ar cross-ld cross-strip cross-size \
 	cross-ranlib cross-nm
