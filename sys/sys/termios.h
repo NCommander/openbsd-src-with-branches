@@ -1,4 +1,4 @@
-/*	$OpenBSD: termios.h,v 1.7 2002/03/14 01:27:14 millert Exp $	*/
+/*	$OpenBSD: termios.h,v 1.8 2003/06/02 23:28:22 millert Exp $	*/
 /*	$NetBSD: termios.h,v 1.14 1996/04/09 20:55:41 cgd Exp $	*/
 
 /*
@@ -109,7 +109,7 @@
 #ifndef _POSIX_SOURCE
 #define ONLCR		0x00000002	/* map NL to CR-NL (ala CRMOD) */
 #define OXTABS		0x00000004	/* expand tabs to spaces */
-#define ONOEOT		0x00000008	/* discard EOT's (^D) on output) */
+#define ONOEOT		0x00000008	/* discard EOT's (^D) on output */
 #define OCRNL		0x00000010	/* map CR to NL */
 #define OLCUC		0x00000020	/* translate lower case to upper case */
 #define ONOCR		0x00000040	/* No CR output at column 0 */
