@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.2 2000/02/02 02:52:05 deraadt Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.3 2000/05/31 22:54:45 chris Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -262,7 +262,7 @@ print_bitinfo(f, bits, binfo)
 
 	for (; binfo->bitmask != NULL; binfo++)
 		if (bits & binfo->bitmask)
-			printf(f, binfo->string);
+			printf(f, "%s", binfo->string);
 }
 
 /*
