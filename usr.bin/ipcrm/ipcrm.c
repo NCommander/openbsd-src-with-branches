@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipcrm.c,v 1.6 2003/10/06 07:31:24 fgsch Exp $*/
+/*	$OpenBSD: ipcrm.c,v 1.7 2004/06/29 17:05:41 mickey Exp $*/
 
 /*
  * Copyright (c) 1994 Adam Glass
@@ -101,6 +101,7 @@ semrm(key_t key, int id)
 	return (semctl(id, 0, IPC_RMID, arg));
 }
 
+/* ARGSUSED */
 void
 not_configured(int signo)
 {
