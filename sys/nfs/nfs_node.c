@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.26 2003/06/02 23:28:19 millert Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.27 2004/08/03 17:11:48 marius Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -221,7 +221,7 @@ nfs_reclaim(v)
 		dp = LIST_FIRST(&np->n_cookies);
 		while (dp) {
 			dp2 = dp;
-			dp = dp->ndm_list.le_next;
+			dp = LIST_NEXT(dp, ndm_list);
 			FREE((caddr_t)dp2, M_NFSDIROFF);
 		}
 	}

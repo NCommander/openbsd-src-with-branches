@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.33 2004/06/04 08:06:04 tedu Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.34 2004/06/21 23:50:38 tholo Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -747,7 +747,7 @@ ext2fs_sync_vnode(struct vnode *vp, void *args)
 	ip = VTOI(vp);
 	if (vp->v_type == VNON || 
 	    ((ip->i_flag & (IN_ACCESS | IN_CHANGE | IN_MODIFIED | IN_UPDATE)) == 0 &&
-		vp->v_dirtyblkhd.lh_first == NULL) ||
+		LIST_EMPTY(&vp->v_dirtyblkhd)) ||
 	    esa->waitfor == MNT_LAZY) {
 		simple_unlock(&vp->v_interlock);
 		return (0);

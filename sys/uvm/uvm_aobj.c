@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.c,v 1.25 2002/01/23 00:39:48 art Exp $	*/
+/*	$OpenBSD: uvm_aobj.c,v 1.26 2002/03/14 01:27:18 millert Exp $	*/
 /*	$NetBSD: uvm_aobj.c,v 1.39 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -833,7 +833,7 @@ uao_flush(uobj, start, stop, flags)
 	 */
 
 	if (by_list) {
-		pp = uobj->memq.tqh_first;
+		pp = TAILQ_FIRST(&uobj->memq);
 	} else {
 		curoff = start;
 		pp = uvm_pagelookup(uobj, curoff);
