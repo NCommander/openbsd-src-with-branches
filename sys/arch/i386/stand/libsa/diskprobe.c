@@ -1,7 +1,7 @@
-/*	$OpenBSD: libsa.h,v 1.18 1997/10/17 15:03:26 weingart Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1996 Michael Shalayeff
+ * Copyright (c) 1997 Tobias Weingartner
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by Michael Shalayeff.
+ *	This product includes software developed by Tobias Weingartner.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -32,21 +32,72 @@
  *
  */
 
-#include <lib/libsa/stand.h>
+#include <sys/param.h>
+#include <machine/biosvar.h>
+#include "biosdev.h"
+#include "libsa.h"
 
-void gateA20 __P((int));
-void smpprobe __P((void));
-void memprobe __P((void));
-void diskprobe __P((void));
-void apmprobe __P((void));
-void devboot __P((dev_t, char *));
-void *alloca __P((size_t));
-void machdep __P((void));
-void time_print __P((void));
 
-extern const char bdevs[][4];
-extern const int nbdevs;
-extern int bootdev; /* XXX pass through the global to exec_i386 */
-extern u_int cnvmem, extmem; /* XXX global pass memprobe()->machdep_start() */
+/* These get passed to kernel */
+bios_diskinfo_t bios_diskinfo[16];
 
-#define MACHINE_CMD	cmd_machine /* we have i386 specific sommands */
+
+void
+diskprobe()
+{
+	int drive, i = 0;
+
+	printf("Probing disks:");
+
+	/* Floppies */
+	for(drive = 0; drive < 4; drive++){
+		u_int32_t p = biosdinfo(drive);
+
+		if(BIOSNSECTS(p) < 2) continue;
+		if(p){
+			u_int32_t t = biosdprobe(drive);
+			if(t & 0x00FF) continue;
+			if(!(t & 0xFF00)) continue;
+
+			printf(" fd%d", drive);
+
+			/* Fill out best we can */
+			bios_diskinfo[i].bsd_major = 2;		/* fd? */
+			bios_diskinfo[i].bios_number = drive;
+			bios_diskinfo[i].bios_cylinders = BIOSNTRACKS(p);
+			bios_diskinfo[i].bios_heads = BIOSNHEADS(p);
+			bios_diskinfo[i].bios_sectors = BIOSNSECTS(p);
+
+			i++;
+		}
+	}
+
+	/* Hard disks */
+	for(drive = 0x80; drive < 0x88; drive++){
+		u_int32_t p = biosdinfo(drive);
+
+		if(BIOSNSECTS(p) < 2) continue;
+		if(p){
+			u_int32_t t = biosdprobe(drive);
+			if(t & 0x00FF) continue;
+			if(!(t & 0xFF00)) continue;
+
+			printf(" hd%d", drive - 128);
+
+			/* Fill out best we can */
+			bios_diskinfo[i].bsd_major = -1;		/* XXX - fill in */
+			bios_diskinfo[i].bios_number = drive;
+			bios_diskinfo[i].bios_cylinders = BIOSNTRACKS(p);
+			bios_diskinfo[i].bios_heads = BIOSNHEADS(p);
+			bios_diskinfo[i].bios_sectors = BIOSNSECTS(p);
+
+			i++;
+		}
+	}
+
+	/* End of list */
+	bios_diskinfo[i].bios_number = -1;
+
+	printf("\n");
+}
+
