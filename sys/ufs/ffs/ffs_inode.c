@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_inode.c,v 1.9 1997/11/06 05:59:18 csapuntz Exp $	*/
+/*	$OpenBSD: ffs_inode.c,v 1.10 1998/11/29 03:47:15 art Exp $	*/
 /*	$NetBSD: ffs_inode.c,v 1.10 1996/05/11 18:27:19 mycroft Exp $	*/
 
 /*
@@ -412,9 +412,6 @@ done:
 	for (i = 0; i < NDADDR; i++)
 		if (newblks[i] != oip->i_ffs_db[i])
 			panic("itrunc2");
-	if (length == 0 &&
-	    (ovp->v_dirtyblkhd.lh_first || ovp->v_cleanblkhd.lh_first))
-		panic("itrunc3");
 #endif /* DIAGNOSTIC */
 	/*
 	 * Put back the real size.
