@@ -23,8 +23,8 @@
 #define _HEADER_H_
 
 /* Functions */
-extern int keynote_sign(int, char **), keynote_sigver(int, char **);
-extern int keynote_verify(int, char **), keynote_keygen(int, char **);
+extern void keynote_sign(int, char **), keynote_sigver(int, char **);
+extern void keynote_verify(int, char **), keynote_keygen(int, char **);
 extern void print_key(FILE *, char *, char *, int, int);
 extern void mystrncpy(char *, char *, int);
 extern void print_space(FILE *, int);

@@ -19,12 +19,22 @@
  * PURPOSE.
  */
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+
+#if STDC_HEADERS
 #include <string.h>
+#endif /* STDC_HEADERS */
+
+#if HAVE_LIMITS_H
 #include <limits.h>
+#endif /* HAVE_LIMITS_H */
 
 #include "keynote.h"
 #include "assertion.h"

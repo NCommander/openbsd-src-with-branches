@@ -19,20 +19,29 @@
  * PURPOSE.
  */
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <ctype.h>
 
-#ifdef WIN32
-#include <ctype.h>
+#if STDC_HEADERS
+#include <string.h>
+#endif /* STDC_HEADERS */
+
+#if HAVE_FCNTL_H
+#include <fcntl.h>
+#endif /* HAVE_FCNTL_H */
+
+#if HAVE_IO_H
 #include <io.h>
-#else /* WIN32 */
+#elif HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* WIN32 */
+#endif /* HAVE_IO_H */
 
 #include "keynote.h"
 #include "header.h"
@@ -44,11 +53,7 @@ sigverusage(void)
     fprintf(stderr, "\t<AssertionFile>\n");
 }
 
-#ifdef WIN32
 void
-#else /* WIN32 */
-int
-#endif /* WIN32 */
 keynote_sigver(int argc, char *argv[])
 {
     struct stat sb;

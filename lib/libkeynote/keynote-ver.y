@@ -28,10 +28,17 @@
 %nonassoc EQ
 %start program
 %{
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+
+#if STDC_HEADERS
+#include <string.h>
+#endif /* STDC_HEADERS */
 
 #include "keynote.h"
 #include "header.h"
