@@ -1,4 +1,4 @@
-/* $OpenBSD: undo.c,v 1.16 2003/05/20 03:08:55 cloder Exp $ */
+/* $OpenBSD: undo.c,v 1.17 2003/06/01 15:53:34 deraadt Exp $ */
 /*
  * Copyright (c) 2002 Vincent Labrecque
  * All rights reserved.
@@ -359,7 +359,7 @@ undo_add_change(LINE *lp, int offset, int size)
  * Show the undo records for the current buffer in a new buffer.
  */
 int
-undo_dump(void)
+undo_dump(int f, int n)
 {
 	struct undo_rec *rec;
 	BUFFER *bp;

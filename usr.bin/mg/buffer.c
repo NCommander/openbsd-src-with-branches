@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.29 2002/06/19 22:05:58 vincent Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.30 2002/07/25 16:40:57 vincent Exp $	*/
 
 /*
  *		Buffer handling.
@@ -11,7 +11,7 @@
 static BUFFER  *makelist(void);
 
 int
-togglereadonly(void)
+togglereadonly(int f, int n)
 {
 	if (!(curbp->b_flag & BFREADONLY)) {
 		curbp->b_flag |= BFREADONLY;
