@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: afskrb.c,v 1.8 1997/10/14 23:00:39 joda Exp $ */
 
 /*
@@ -87,7 +88,7 @@ static char *
 get_realm(kafs_data *data, const char *host)
 {
     char *r = krb_realmofhost(host);
-    if(r)
+    if(r != NULL)
 	return strdup(r);
     return NULL;
 }

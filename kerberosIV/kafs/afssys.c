@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: afssys.c,v 1.53 1997/05/04 02:30:41 assar Exp $ */
 
 /*
