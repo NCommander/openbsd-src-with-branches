@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunos_exec.c,v 1.8 1999/01/11 05:12:14 millert Exp $	*/
+/*	$OpenBSD: sunos_exec.c,v 1.9 1999/07/02 17:53:50 brad Exp $	*/
 /*	$NetBSD: sunos_exec.c,v 1.11 1996/05/05 12:01:47 briggs Exp $	*/
 
 /*
@@ -227,7 +227,7 @@ sunos_exec_aout_prep_nmagic(p, epp)
 	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
 	/* set up command for bss segment */
-	baddr = roundup(epp->ep_daddr + execp->a_data, NBPG);
+	baddr = round_page(epp->ep_daddr + execp->a_data);
 	bsize = epp->ep_daddr + epp->ep_dsize - baddr;
 	if (bsize > 0)
 		NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, bsize, baddr,
@@ -259,7 +259,7 @@ sunos_exec_aout_prep_omagic(p, epp)
 	    SUNOS_N_TXTOFF(*execp, OMAGIC), VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
 	/* set up command for bss segment */
-	baddr = roundup(epp->ep_daddr + execp->a_data, NBPG);
+	baddr = round_page(epp->ep_daddr + execp->a_data);
 	bsize = epp->ep_daddr + epp->ep_dsize - baddr;
 	if (bsize > 0)
 		NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, bsize, baddr,
