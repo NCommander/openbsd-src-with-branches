@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.18 2002/01/01 21:39:42 jason Exp $	*/
+/*	$OpenBSD: qe.c,v 1.19 2002/02/08 18:53:38 jason Exp $	*/
 
 /*
  * Copyright (c) 1998, 2000 Jason L. Wright.
@@ -366,12 +366,13 @@ qe_tint(sc)
 	 * If we freed up at least one descriptor and tx is blocked,
 	 * unblock it and start it up again.
 	 */
-	if ((sc->sc_first_td != bix) && (ifp->if_flags & IFF_OACTIVE)) {
-		ifp->if_flags &= ~IFF_OACTIVE;
-		qestart(ifp);
+	if (sc->sc_first_td != bix) {
+		sc->sc_first_td = bix;
+		if (ifp->if_flags & IFF_OACTIVE) {
+			ifp->if_flags &= ~IFF_OACTIVE;
+			qestart(ifp);
+		}
 	}
-
-	sc->sc_first_td = bix;
 
 	return (1);
 }
