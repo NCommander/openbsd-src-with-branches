@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf64.c,v 1.16 2001/07/09 18:55:21 millert Exp $	*/
+/*	$OpenBSD: exec_elf64.c,v 1.17 2001/07/30 11:56:39 art Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -52,8 +52,6 @@
 
 #include <sys/mman.h>
 #include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/vm_map.h>
 
 #include <machine/cpu.h>
 #include <machine/reg.h>
