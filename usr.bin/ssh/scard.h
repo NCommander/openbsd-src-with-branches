@@ -1,7 +1,5 @@
-/*	$OpenBSD: misc.c,v 1.4 2001/02/28 17:52:54 deraadt Exp $	*/
-
 /*
- * Copyright (c) 2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,19 +22,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $OpenBSD: cli.h,v 1.3 2001/01/16 23:58:09 deraadt Exp $ */
+/* $OpenBSD: scard.h,v 1.6 2001/08/01 22:03:33 markus Exp $ */
 
-#ifndef CLI_H
-#define CLI_H
+#include <openssl/engine.h>
 
-/*
- * Presents a prompt and returns the response allocated with xmalloc().
- * Uses /dev/tty or stdin/out depending on arg.  Optionally disables echo
- * of response depending on arg.  Tries to ensure that no other userland
- * buffer is storing the response.
- */
-char *	cli_read_passphrase(char * prompt, int from_stdin, int echo_enable);
-char *	cli_prompt(char * prompt, int echo_enable);
-void	cli_mesg(char * mesg);
+#ifndef SCARD_H
+#define SCARD_H
 
-#endif /* CLI_H */
+#define SCARD_ERROR_FAIL	-1
+#define SCARD_ERROR_NOCARD	-2
+#define SCARD_ERROR_APPLET	-3
+
+Key	*sc_get_key(const char*);
+ENGINE	*sc_get_engine(void);
+void	 sc_close(void);
+
+#endif

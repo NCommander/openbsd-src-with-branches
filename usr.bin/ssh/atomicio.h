@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomicio.h,v 1.2 2001/01/29 01:58:14 niklas Exp $	*/
+/*	$OpenBSD: atomicio.h,v 1.4 2001/06/26 06:32:46 itojun Exp $	*/
 
 /*
  * Copyright (c) 1995,1999 Theo de Raadt.  All rights reserved.
@@ -28,4 +28,4 @@
 /*
  * Ensure all of data on socket comes through. f==read || f==write
  */
-ssize_t	atomicio(ssize_t (*f)(), int fd, void *s, size_t n);
+ssize_t	atomicio(ssize_t (*)(), int, void *, size_t);
