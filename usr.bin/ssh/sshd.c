@@ -42,7 +42,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.290 2004/03/11 10:21:17 markus Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.291 2004/05/09 01:19:28 djm Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -1688,6 +1688,7 @@ do_ssh2_kex(void)
 	/* start key exchange */
 	kex = kex_setup(myproposal);
 	kex->kex[KEX_DH_GRP1_SHA1] = kexdh_server;
+	kex->kex[KEX_DH_GRP14_SHA1] = kexdh_server;
 	kex->kex[KEX_DH_GEX_SHA1] = kexgex_server;
 	kex->server = 1;
 	kex->client_version_string=client_version_string;
