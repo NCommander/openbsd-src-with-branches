@@ -1,3 +1,4 @@
+dnl	$OpenBSD$
 Installation is supported from several media types, including:
 
 	CD-ROM (NOT supported if booting from floppy)

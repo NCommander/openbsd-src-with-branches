@@ -1,3 +1,4 @@
+dnl	$OpenBSD$
 If your UltraSPARC machine is somewhat old, it might need a firmware update
 before it can be used under OpenBSD. You are advised to try to install
 OpenBSD first; if it can't boot or fails mysteriously, you might need to
