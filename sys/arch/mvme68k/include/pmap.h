@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD$ */
 
 /* 
  * Copyright (c) 1987 Carnegie-Mellon University

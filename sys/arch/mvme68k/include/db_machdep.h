@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD$ */
 
 #define DB_MACHINE_COMMANDS
 

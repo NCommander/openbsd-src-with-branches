@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD$ */
 
 #ifndef _MACHINE_FLOAT_H_
 #define _MACHINE_FLOAT_H_

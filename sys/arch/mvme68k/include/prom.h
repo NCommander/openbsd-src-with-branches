@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -64,7 +64,7 @@
 #define ENVIRONTYPE_NETBOOT	4
 #define ENVIRONTYPE_MEMSIZE	5
 
-#ifndef LOCORE
+#ifndef _LOCORE
 struct prom_netctrl {
 	u_char	dev;
 	u_char	ctrl;
