@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.12 1999/08/15 10:05:07 millert Exp $
+#	$OpenBSD: install.md,v 1.13 1999/09/03 18:55:33 deraadt Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -112,6 +112,11 @@ md_get_diskdevs() {
 md_get_cddevs() {
 	# return available CDROM devices
 	grep "^rz[0-6] " < /kern/msgbuf | cut -d" " -f1 | sort -u
+}
+
+md_get_ifdevs() {
+	# return available network devices
+	grep "^le[0-9] " < /kern/msgbuf | cut -d" " -f1 | sort -u
 }
 
 md_get_partition_range() {
