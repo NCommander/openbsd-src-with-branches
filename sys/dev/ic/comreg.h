@@ -1,4 +1,4 @@
-/*	$OpenBSD: comreg.h,v 1.10 2003/06/02 23:28:02 millert Exp $	*/
+/*	$OpenBSD: comreg.h,v 1.11 2003/06/03 21:09:02 deraadt Exp $	*/
 /*	$NetBSD: comreg.h,v 1.8 1996/02/05 23:01:50 scottr Exp $	*/
 
 /*
@@ -177,6 +177,8 @@
  */
 #ifndef CONADDR
 #define	CONADDR	(0x3f8)
+#else
+#define CONADDR_OVERRIDE
 #endif
 #ifndef CONUNIT
 #define	CONUNIT	(0)
