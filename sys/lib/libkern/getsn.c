@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.10 1996/06/01 11:54:31 deraadt Exp $	*/
+/*	$OpenBSD: getsn.c,v 1.1 1996/06/16 01:14:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Theo de Raadt
@@ -29,6 +29,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <sys/cdefs.h>
+#include <sys/types.h>
+#include <sys/systm.h>
+#include <dev/cons.h>
 
 int
 getsn(cp, size)
