@@ -1,5 +1,9 @@
-dnl $OpenBSD: patterns.m4,v 1.1 2001/09/16 21:09:19 espie Exp $
+dnl $OpenBSD: patterns.m4,v 1.2 2001/09/16 23:00:28 espie Exp $
 patsubst(`quote s in string', `(s)', `\\\1')
 patsubst(`check whether subst
 over several lines
 works as expected', `^', `>>>')
+patsubst(`# This is a line to zap
+# and a second line
+keep this one', `^ *#.*
+')
