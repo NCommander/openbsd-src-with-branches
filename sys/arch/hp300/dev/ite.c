@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite.c,v 1.7 1997/02/03 04:47:38 downsj Exp $	*/
+/*	$OpenBSD: ite.c,v 1.8 1997/02/04 06:21:26 downsj Exp $	*/
 /*	$NetBSD: ite.c,v 1.37 1997/02/02 09:40:31 thorpej Exp $	*/
 
 /*
@@ -167,6 +167,8 @@ iteattach(parent, self, aux)
 			return;
 		}
 		bzero(ite->sc_data, sizeof(struct ite_data));
+		ite->sc_data->isw = (struct itesw *)ga->ga_ite;
+		ite->sc_data->grf = (struct grf_data *)ga->ga_data;
 		ite->sc_data->flags = ITE_ALIVE;
 	}
 
