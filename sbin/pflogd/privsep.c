@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.1 2003/10/22 18:51:55 canacar Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.3 2003/10/22 19:35:44 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003 Can Erkin Acar
@@ -149,7 +149,7 @@ priv_init(void)
 			send_fd(socks[0], fd);
 			close(fd);
 			break;
-			
+
 		default:
 			logmsg(LOG_ERR, "[priv]: unknown command %d", cmd);
 			_exit(1);
