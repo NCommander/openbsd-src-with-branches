@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.2 1997/11/07 10:28:37 niklas Exp $	*/
+/*	$OpenBSD: ffs_softdep_stub.c,v 1.1 1998/03/15 03:53:51 millert Exp $	*/
 
 /*
  * Copyright 1997 Marshall Kirk McKusick. All Rights Reserved.
@@ -246,5 +246,13 @@ softdep_sync_metadata(ap)
 
 	return (0);
 }
+
+void
+softdep_fsync_mountdev(vp)
+	struct vnode *vp;
+{
+	panic("softdep_fsync_mountdev called");
+}
+
 
 #endif /* !FFS_SOFTUPDATES */
