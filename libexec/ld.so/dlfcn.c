@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.5 2001/06/06 12:31:52 art Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.6 2001/06/06 12:45:17 art Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -234,6 +234,8 @@ const char *
 dlerror()
 {
 	switch (_dl_errno) {
+	case 0:	/* NO ERROR */
+		return (NULL);
 	case DL_NOT_FOUND:
 		return ("File not found");
 	case DL_CANT_OPEN:
