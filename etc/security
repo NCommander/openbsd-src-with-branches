@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: security,v 1.37 2000/06/18 06:33:34 todd Exp $
+#	$OpenBSD: security,v 1.38 2000/07/23 19:49:17 rohee Exp $
 #	from: @(#)security	8.1 (Berkeley) 6/9/93
 #
 
@@ -18,7 +18,7 @@ OUTPUT=$DIR/_secure6
 
 if ! mkdir $DIR ; then
 	printf "tmp directory %s already exists, looks like:\n" $DIR
-	ls -alF $DIR
+	ls -alqF $DIR
 	exit 1
 fi
 
