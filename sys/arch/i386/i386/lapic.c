@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.3 2004/06/14 00:06:32 deraadt Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.4 2004/06/28 01:41:53 aaron Exp $	*/
 /* $NetBSD: lapic.c,v 1.1.2.8 2000/02/23 06:10:50 sommerfeld Exp $ */
 
 /*-
@@ -204,7 +204,7 @@ lapic_clockintr(arg)
 
 	hardclock(frame);
 
-	clk_count.ec_count32++;
+	clk_count.ec_count++;
 }
 
 void
