@@ -105,7 +105,11 @@ mainbus_attach(parent, self, aux)
 		config_found(self, &mba.mba_iba, mainbus_print);
 	}
 
+#ifndef AHA284X_HACK
 	if (!bcmp(ISA_HOLE_VADDR(EISA_ID_PADDR), EISA_ID, EISA_ID_LEN)) {
+#else
+	{
+#endif
 		mba.mba_eba.eba_busname = "eisa";
 		mba.mba_eba.eba_bc = NULL;
 		mba.mba_eba.eba_ec = NULL;
