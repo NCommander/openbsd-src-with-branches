@@ -1,4 +1,4 @@
-/*	$OpenBSD: timeout.h,v 1.4 2000/03/23 14:59:23 art Exp $	*/
+/*	$OpenBSD: timeout.h,v 1.5 2000/03/23 15:47:50 art Exp $	*/
 /*
  * Copyright (c) 2000 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -39,7 +39,7 @@
  * touch the internals of this structure, but it's the users responsibility
  * to allocate and deallocate timeouts.
  *
- * Ther functions used to manipulate timeouts are:
+ * The functions used to manipulate timeouts are:
  *  - timeout_set(timeout, function, argument)
  *      Initializes a timeout struct to call the function with the argument.
  *      A timeout only needs to be initialized once.
