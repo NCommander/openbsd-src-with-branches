@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_disp.c,v 1.11 2000/06/30 16:00:21 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $	*/
 
 /*
@@ -79,14 +79,14 @@ init_display()
 	my_win.x_nlines = LINES / 2;
 	my_win.x_ncols = COLS;
 	my_win.x_win = newwin(my_win.x_nlines, my_win.x_ncols, 0, 0);
-	scrollok(my_win.x_win, TRUE);
+	scrollok(my_win.x_win, FALSE);
 	wclear(my_win.x_win);
 
 	his_win.x_nlines = LINES / 2 - 1;
 	his_win.x_ncols = COLS;
 	his_win.x_win = newwin(his_win.x_nlines, his_win.x_ncols,
 	    my_win.x_nlines+1, 0);
-	scrollok(his_win.x_win, TRUE);
+	scrollok(his_win.x_win, FALSE);
 	wclear(his_win.x_win);
 
 	line_win = newwin(1, COLS, my_win.x_nlines, 0);

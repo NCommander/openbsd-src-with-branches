@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.9 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $	*/
 
 /*
@@ -200,10 +200,11 @@ xscroll(win, flag)
 		win->x_col = 0;
 		return;
 	}
+	win->x_line = (win->x_line + 1) % win->x_nlines;
 	win->x_col = 0;
-	if (++win->x_line == win->x_nlines) {
-		--win->x_line;
-		scroll(win->x_win);
-	}
+	wmove(win->x_win, win->x_line, win->x_col);
+	wclrtoeol(win->x_win);
+	wmove(win->x_win, (win->x_line + 1) % win->x_nlines, win->x_col);
+	wclrtoeol(win->x_win);
 	wmove(win->x_win, win->x_line, win->x_col);
 }
