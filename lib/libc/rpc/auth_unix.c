@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: auth_unix.c,v 1.9 1997/11/08 20:51:23 deraadt Exp $";
+static char *rcsid = "$OpenBSD: auth_unix.c,v 1.10 1998/07/09 06:11:56 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -56,11 +56,11 @@ static char *rcsid = "$OpenBSD: auth_unix.c,v 1.9 1997/11/08 20:51:23 deraadt Ex
 /*
  * Unix authenticator operations vector
  */
+static void	authunix_destroy();
 static void	authunix_nextverf();
 static bool_t	authunix_marshal();
-static bool_t	authunix_validate();
 static bool_t	authunix_refresh();
-static void	authunix_destroy();
+static bool_t	authunix_validate();
 
 static struct auth_ops auth_unix_ops = {
 	authunix_nextverf,

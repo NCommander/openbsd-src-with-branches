@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: auth_none.c,v 1.2 1996/07/20 06:12:16 deraadt Exp $";
+static char *rcsid = "$OpenBSD: auth_none.c,v 1.3 1996/08/19 08:31:20 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -48,11 +48,11 @@ static char *rcsid = "$OpenBSD: auth_none.c,v 1.2 1996/07/20 06:12:16 deraadt Ex
 /*
  * Authenticator operations routines
  */
-static void	authnone_verf();
 static void	authnone_destroy();
+static void	authnone_verf();
 static bool_t	authnone_marshal();
-static bool_t	authnone_validate();
 static bool_t	authnone_refresh();
+static bool_t	authnone_validate();
 
 static struct auth_ops ops = {
 	authnone_verf,
