@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.10 2000/11/08 16:00:54 art Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.9.4.1 2001/04/18 16:00:08 niklas Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.16 1996/11/13 21:13:04 cgd Exp $	*/
 
 /*
@@ -81,14 +81,12 @@ static char *findblkname __P((int));
 static int getstr __P((char *cp, int size));
 
 /*
- * configure:
+ * cpu_configure:
  * called at boot time, configure all devices on system
  */
 void
-configure()
+cpu_configure()
 {
-	extern int cold;
-
 	parse_prom_bootdev();
 
         /*

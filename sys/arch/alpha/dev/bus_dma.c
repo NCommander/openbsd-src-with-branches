@@ -1,4 +1,4 @@
-/* $OpenBSD: bus_dma.c,v 1.1 2001/03/21 17:26:38 art Exp $ */
+/* $OpenBSD: bus_dma.c,v 1.1.2.1 2001/04/18 16:00:40 niklas Exp $ */
 /* $NetBSD: bus_dma.c,v 1.40 2000/07/17 04:47:56 thorpej Exp $ */
 
 /*-
@@ -158,8 +158,8 @@ _bus_dmamap_load_buffer_direct_common(t, map, buf, buflen, p, flags,
 		 * Get the physical address for this segment.
 		 */
 		if (p != NULL)
-			curaddr = pmap_extract(p->p_vmspace->vm_map.pmap,
-			    vaddr);
+			pmap_extract(p->p_vmspace->vm_map.pmap, vaddr,
+				&curaddr);
 		else
 			curaddr = vtophys(vaddr);
 
