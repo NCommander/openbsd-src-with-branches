@@ -6,7 +6,7 @@
  * to the original author and the contributors.
  *
  * @(#)ip_fil_compat.h	1.8 1/14/96
- * $Id: ip_fil_compat.h,v 1.1.1.1 1996/06/23 07:27:15 darrenr Exp $
+ * $OpenBSD: ip_fil_compat.h,v 1.1 1996/07/18 05:01:00 dm Exp $
  */
 
 #ifndef	__IP_COMPAT_H_
