@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.18 2000/04/20 10:03:42 art Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.19 2000/04/21 07:39:15 deraadt Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -327,7 +327,7 @@ sys_ktrace(curp, v, retval)
 		 */
 		NDINIT(&nd, LOOKUP, FOLLOW, UIO_USERSPACE, SCARG(uap, fname),
 		    curp);
-		if ((error = vn_open(&nd, FREAD|FWRITE, 0)) != 0) {
+		if ((error = vn_open(&nd, FREAD|FWRITE|O_NOFOLLOW, 0)) != 0) {
 			curp->p_traceflag &= ~KTRFAC_ACTIVE;
 			return (error);
 		}
