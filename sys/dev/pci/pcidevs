@@ -2138,6 +2138,7 @@ product SUNDANCE ST2021		0x2021	ST2021 Gigabit Ethernet
 
 /* Sunix */
 product SUNIX 4065A		0x7168	4065A
+product SUNIX 4018A		0x7268	4018A
 
 /* Surecom products */
 product SURECOM NE34		0x0e34	Surecom NE-34
