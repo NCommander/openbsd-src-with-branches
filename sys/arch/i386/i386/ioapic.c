@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.1.2.10 2004/03/30 09:07:45 niklas Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.1.2.11 2004/06/09 18:37:04 drahn Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -451,7 +451,8 @@ apic_vectorset(struct ioapic_softc *sc, int pin, int minlevel, int maxlevel)
 		 * case here!
 		 */
 		idt_vec_set(nvector, apichandler[nvector & 0xf]);
-		pp->ip_vector = nvector;		pp->ip_minlevel = minlevel;
+		pp->ip_vector = nvector;
+		pp->ip_minlevel = minlevel;
 		pp->ip_maxlevel = maxlevel;
 	}
 	apic_intrhand[pp->ip_vector] = pp->ip_handler;
