@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.114 2003/03/31 22:59:47 millert Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.115 2003/05/03 21:15:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -548,6 +548,11 @@ bridge_ioctl(ifp, cmd, data)
 	case SIOCBRDGSTO:
 		if ((error = suser(prc->p_ucred, &prc->p_acflag)) != 0)
 			break;
+		if (bparam->ifbrp_ctime < 0 ||
+		    bparam->ifbrp_ctime > INT_MAX / hz) {
+			error = EINVAL;
+			break;
+		}
 		sc->sc_brttimeout = bparam->ifbrp_ctime;
 		timeout_del(&sc->sc_brtimeout);
 		if (bparam->ifbrp_ctime != 0)
