@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.35 2001/11/21 21:23:56 csapuntz Exp $	*/
+/*	$OpenBSD: ffs_alloc.c,v 1.36 2001/11/27 05:27:12 art Exp $	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -170,7 +170,7 @@ ffs_realloccg(ip, lbprev, bpref, osize, nsize, cred, bpp, blknop)
 	ufs_daddr_t *blknop;
 {
 	struct fs *fs;
-	struct buf *bp;
+	struct buf *bp = NULL;
 	ufs_daddr_t quota_updated = 0;
 	int cg, request, error;
 	daddr_t bprev, bno;
