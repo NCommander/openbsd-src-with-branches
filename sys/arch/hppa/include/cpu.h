@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.8 1999/05/02 03:41:08 mickey Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.9 1999/06/12 18:13:16 mickey Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -50,7 +50,7 @@
 #define	HPPA_NMODSPBUS	64
 
 #define	clockframe	trapframe
-#define	CLKF_BASEPRI(framep)	((framep)->tf_eiem)
+#define	CLKF_BASEPRI(framep)	((framep)->tf_eiem == ~0U)
 #define	CLKF_PC(framep)		((framep)->tf_iioq_head)
 #define	CLKF_INTR(framep)	(0)	/* XXX */
 #define	CLKF_USERMODE(framep)	(USERMODE((framep)->tf_iioq_head))
