@@ -111,6 +111,7 @@ sighup_handler(int signo)
 void
 sigint_handler(int signo)
 {
+	running = 0;
 }
 
 
