@@ -1,3 +1,5 @@
+/*	$OpenBSD: getput.h,v 1.7 2001/01/10 22:56:22 markus Exp $	*/
+
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -10,8 +12,6 @@
  * incompatible with the protocol description in the RFC file, it must be
  * called by a name other than "ssh" or "Secure Shell".
  */
-
-/* RCSID("$OpenBSD: getput.h,v 1.6 2000/12/19 23:17:56 markus Exp $"); */
 
 #ifndef GETPUT_H
 #define GETPUT_H

@@ -1,5 +1,3 @@
-/*	$OpenBSD: groupaccess.c,v 1.3 2001/01/29 01:58:15 niklas Exp $	*/
-
 /*
  * Copyright (c) 2001 Kevin Steves.  All rights reserved.
  *
@@ -25,6 +23,7 @@
  */
 
 #include "includes.h"
+RCSID("$OpenBSD:$");
 
 #include "groupaccess.h"
 #include "xmalloc.h"

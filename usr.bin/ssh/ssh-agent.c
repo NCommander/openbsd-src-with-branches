@@ -1,5 +1,3 @@
-/*	$OpenBSD: ssh-agent.c,v 1.80 2002/02/04 00:53:39 stevesk Exp $	*/
-
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -37,7 +35,7 @@
 
 #include "includes.h"
 #include <sys/queue.h>
-RCSID("$OpenBSD: ssh-agent.c,v 1.80 2002/02/04 00:53:39 stevesk Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.81 2002/02/05 15:50:12 stevesk Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/md5.h>

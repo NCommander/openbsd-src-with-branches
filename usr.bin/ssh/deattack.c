@@ -1,5 +1,3 @@
-/*	$OpenBSD: deattack.c,v 1.16 2001/12/05 03:56:39 itojun Exp $	*/
-
 /*
  * Cryptographic attack detector for ssh - source code
  *
@@ -20,6 +18,8 @@
  */
 
 #include "includes.h"
+RCSID("$OpenBSD:$");
+
 #include "deattack.h"
 #include "log.h"
 #include "crc32.h"

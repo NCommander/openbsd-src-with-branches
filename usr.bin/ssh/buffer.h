@@ -1,3 +1,5 @@
+/*	$OpenBSD: buffer.h,v 1.10 2001/12/19 17:16:13 stevesk Exp $	*/
+
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -10,8 +12,6 @@
  * incompatible with the protocol description in the RFC file, it must be
  * called by a name other than "ssh" or "Secure Shell".
  */
-
-/* RCSID("$OpenBSD: buffer.h,v 1.9 2001/06/26 17:27:23 markus Exp $"); */
 
 #ifndef BUFFER_H
 #define BUFFER_H

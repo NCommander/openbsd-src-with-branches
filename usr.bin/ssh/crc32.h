@@ -1,3 +1,5 @@
+/*	$OpenBSD: crc32.h,v 1.12 2001/06/26 17:27:23 markus Exp $	*/
+
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1992 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -10,8 +12,6 @@
  * incompatible with the protocol description in the RFC file, it must be
  * called by a name other than "ssh" or "Secure Shell".
  */
-
-/* RCSID("$OpenBSD: crc32.h,v 1.11 2001/06/26 06:32:51 itojun Exp $"); */
 
 #ifndef CRC32_H
 #define CRC32_H

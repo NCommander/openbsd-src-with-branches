@@ -1,3 +1,5 @@
+/*	$OpenBSD: authfile.h,v 1.8 2001/06/26 17:27:22 markus Exp $	*/
+
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -9,8 +11,6 @@
  * incompatible with the protocol description in the RFC file, it must be
  * called by a name other than "ssh" or "Secure Shell".
  */
-
-/* $OpenBSD: authfile.h,v 1.7 2001/06/26 06:32:48 itojun Exp $ */
 
 #ifndef AUTHFILE_H
 #define AUTHFILE_H

@@ -1,4 +1,3 @@
-/* $OpenBSD: sshtty.c,v 1.1 2001/04/14 16:33:20 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -36,6 +35,7 @@
  */
 
 #include "includes.h"
+RCSID("$OpenBSD:$");
 
 #include "sshtty.h"
 #include "log.h"

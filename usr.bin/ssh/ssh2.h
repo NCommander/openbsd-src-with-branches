@@ -1,3 +1,5 @@
+/*	$OpenBSD: ssh2.h,v 1.7 2002/01/11 13:36:43 markus Exp $	*/
+
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -52,7 +54,6 @@
  *
  *     192-255  Local extensions
  */
-/* RCSID("$OpenBSD: ssh2.h,v 1.6 2001/03/27 17:46:49 provos Exp $"); */
 
 /* ranges */
 
