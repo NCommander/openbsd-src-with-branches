@@ -12,7 +12,10 @@ pthread_cancel(pthread)
 {
 	int ret;
 
-	if ((ret = _find_thread(pthread))) {
+	if ((ret = _find_thread(pthread)) != 0) {
+		/* NOTHING */
+	} else if (pthread->state == PS_DEAD || pthread->state == PS_DEADLOCK) {
+		ret = 0;
 	} else if ((pthread->flags & PTHREAD_FLAGS_CANCELED) == 0) {
 		/* Set the thread's I've-been-cancelled flag: */
 		pthread->flags |= PTHREAD_FLAGS_CANCELED;

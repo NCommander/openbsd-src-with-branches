@@ -579,7 +579,7 @@ _thread_kern_sched(struct sigcontext * scp)
 }
 
 void
-_thread_kern_sched_state(enum pthread_state state, const char *fname, int lineno)
+_thread_kern_sched_state(enum pthread_state state, char *fname, int lineno)
 {
 	struct pthread	*curthread = _get_curthread();
 
