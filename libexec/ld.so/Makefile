@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.23 2003/11/20 23:23:09 avsm Exp $
+#	$OpenBSD: Makefile,v 1.24 2004/05/26 19:16:30 mickey Exp $
 
 SUBDIR=ldconfig ldd
 VPATH=${.CURDIR}/../../lib/libc/string
 
 SRCS=	ldasm.S loader.c resolve.c dlfcn.c dl_printf.c rtld_machine.c
-SRCS+=	util.c sod.c strsep.c strtol.c dir.c
+SRCS+=	util.c sod.c strsep.c strtol.c dir.c library_subr.c
 .if (${MACHINE_ARCH} == "i386")
 SRCS+=	library_mquery.c
 .else
