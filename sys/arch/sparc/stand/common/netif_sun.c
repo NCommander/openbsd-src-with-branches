@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: netif_sun.c,v 1.2 1995/09/18 21:31:48 pk Exp $	*/
 
 /*
@@ -47,11 +48,11 @@
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
 
-#include "stand.h"
-#include "net.h"
-#include "netif.h"
+#include <lib/libsa/stand.h>
+#include <lib/libsa/net.h>
+#include <lib/libsa/netif.h>
 
-#include "promdev.h"
+#include <sparc/stand/common/promdev.h>
 
 static struct netif netif_prom;
 

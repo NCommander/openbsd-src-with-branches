@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: version.c,v 1.4 1995/09/16 23:20:39 pk Exp $ */
 
 /*
@@ -37,6 +38,8 @@
  *	1.2	get it to work with V0 bootproms.
  *	1.3	add oldmon support and network support.
  *	1.4	add cd9660 support
+ *
+ *	2.0	OpenBSD reorganization.
  */
 
-char *version = "$Revision: 1.3 $";
+char *version = "2.0";

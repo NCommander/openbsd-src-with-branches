@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: binstall.sh,v 1.4 1996/08/11 09:13:21 downsj Exp $
+#	$OpenBSD: binstall.sh,v 1.5 1996/12/12 08:42:44 deraadt Exp $
 #	$NetBSD: binstall.sh,v 1.3 1996/04/07 20:00:12 thorpej Exp $
 #
 
