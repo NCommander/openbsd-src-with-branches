@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.205 2001/10/01 21:38:53 markus Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.206 2001/10/02 22:56:09 stevesk Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -1149,7 +1149,7 @@ main(int ac, char **av)
 	if (remote_port >= IPPORT_RESERVED ||
 	    remote_port < IPPORT_RESERVED / 2) {
 		debug("Rhosts Authentication disabled, "
-		    "originating port not trusted.");
+		    "originating port %d not trusted.", remote_port);
 		options.rhosts_authentication = 0;
 	}
 #if defined(KRB4) && !defined(KRB5)
