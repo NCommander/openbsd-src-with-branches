@@ -108,7 +108,6 @@ IDTVEC(doreti)
 	bsfl    %eax,%eax               # slow, but not worth optimizing
 	btrl    %eax,_ipending
 	jnc     1b			# some intr cleared the in-memory bit
-	cli
 	jmp	*_Xresume(,%eax,4)
 2:	/* Check for ASTs on exit to user mode. */
 	CHECK_ASTPENDING(%ecx)
