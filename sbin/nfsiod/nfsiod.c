@@ -166,7 +166,8 @@ reapchild(signo)
 	int signo;
 {
 
-	while (wait3(NULL, WNOHANG, NULL) > 0);
+	while (wait3(NULL, WNOHANG, NULL) > 0)
+		;
 }
 
 void
