@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.4 2001/03/15 00:43:08 deraadt Exp $	*/
+/*	$OpenBSD: ami.c,v 1.5 2001/03/26 22:21:41 mickey Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -1052,7 +1052,7 @@ ami_intr(v)
 {
 	struct ami_softc *sc = v;
 	struct ami_iocmd mbox;
-	int i, rv;
+	int i, rv = 0;
 
 	while ((sc->sc_done)(sc, &mbox)) {
 		AMI_DPRINTF(AMI_D_CMD, ("got-%d ", mbox.acc_nstat));
