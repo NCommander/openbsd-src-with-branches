@@ -371,18 +371,7 @@ static int
 keynote_init_environment(void)
 {
 #ifdef CRYPTO
-    int cnt = KEYNOTE_RAND_INIT_LEN, i;
-
-    do
-    {
-        if ((i = RAND_load_file(KEYNOTERNDFILENAME, cnt)) <= 0)
-        {
-            keynote_errno = ERROR_MEMORY;
-	    return -1;
-        }
-    
-        cnt -= i;   
-    } while (cnt > 0);
+    RAND_set_rand_method(RAND_SSLeay());
 #endif /* CRYPTO */
 
     memset(keynote_current_session->ks_env_table, 0,
