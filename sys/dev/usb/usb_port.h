@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_port.h,v 1.39 2002/05/19 18:45:42 miod Exp $ */
+/*	$OpenBSD: usb_port.h,v 1.40 2002/07/25 02:18:11 nate Exp $ */
 /*	$NetBSD: usb_port.h,v 1.44 2001/05/14 20:35:29 bouyer Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_port.h,v 1.21 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -53,7 +53,7 @@
 
 #include "opt_usbverbose.h"
 
-#define USB_USE_SOFTINTR
+#undef USB_USE_SOFTINTR
 
 #ifdef USB_DEBUG
 #define UKBD_DEBUG 1
