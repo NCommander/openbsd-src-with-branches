@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2001/08/22 10:20:41 art Exp $
+#	$OpenBSD: Makefile,v 1.3 2001/09/06 19:12:34 jason Exp $
 
 LIB=	sa
 
@@ -11,6 +11,8 @@ CFLAGS= ${CEXTRAFLAGS} ${AFLAGS} -O2 -D__INTERNAL_LIBSA_CREAD -nostdinc \
 	-I${.CURDIR}/../../.. -I${.CURDIR}/../../../.. \
 	-I${.CURDIR}/../../../../lib/libsa \
 	-I${.OBJDIR}
+
+CPPFLAGS+= -D__INTERNAL_LIBSA_CREAD
 
 # stand routines
 SRCS=	alloc.c exit.c exec.c getfile.c gets.c globals.c \
