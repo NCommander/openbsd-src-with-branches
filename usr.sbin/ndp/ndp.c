@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.13 2002/02/16 21:28:06 millert Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.14 2002/02/17 19:42:38 millert Exp $	*/
 /*	$KAME: ndp.c,v 1.69 2001/07/23 14:46:31 itojun Exp $	*/
 
 /*
@@ -127,7 +127,7 @@
 	((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
 #define ADVANCE(x, n) (x += ROUNDUP((n)->sa_len))
 
-static int pid;
+static pid_t pid;
 static int cflag;
 static int nflag;
 static int tflag;
