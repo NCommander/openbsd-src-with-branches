@@ -1,4 +1,4 @@
-/*	$OpenBSD: redir.c,v 1.3 1996/10/20 00:55:03 millert Exp $	*/
+/*	$OpenBSD: redir.c,v 1.4 1996/12/14 12:18:24 mickey Exp $	*/
 /*	$NetBSD: redir.c,v 1.12 1995/05/11 21:30:10 christos Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)redir.c	8.2 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD: redir.c,v 1.3 1996/10/20 00:55:03 millert Exp $";
+static char rcsid[] = "$OpenBSD: redir.c,v 1.4 1996/12/14 12:18:24 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -241,7 +241,7 @@ openhere(redir)
 			goto out;
 		}
 	}
-	if (forkshell((struct job *)NULL, (union node *)NULL, FORK_NOJOB) == 0) {
+	if (forkshell(NULL, NULL, FORK_NOJOB) == 0) {
 		close(pip[0]);
 		signal(SIGINT, SIG_IGN);
 		signal(SIGQUIT, SIG_IGN);

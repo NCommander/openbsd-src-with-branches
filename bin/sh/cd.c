@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.7 1996/08/22 00:35:24 deraadt Exp $	*/
+/*	$OpenBSD: cd.c,v 1.9 1996/11/03 23:16:09 bitblt Exp $	*/
 /*	$NetBSD: cd.c,v 1.15 1996/03/01 01:58:58 jtc Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)cd.c	8.2 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD: cd.c,v 1.7 1996/08/22 00:35:24 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: cd.c,v 1.9 1996/11/03 23:16:09 bitblt Exp $";
 #endif
 #endif /* not lint */
 
@@ -280,8 +280,8 @@ getpwd()
 		INTOFF;
 		if (pipe(pip) < 0)
 			error("Pipe call failed");
-		jp = makejob((union node *)NULL, 1);
-		if (forkshell(jp, (union node *)NULL, FORK_NOJOB) == 0) {
+		jp = makejob(NULL, 1);
+		if (forkshell(jp, NULL, FORK_NOJOB) == 0) {
 			(void) close(pip[0]);
 			if (pip[1] != 1) {
 				close(1);

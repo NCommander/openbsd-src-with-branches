@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.4 1996/10/20 00:54:47 millert Exp $	*/
+/*	$OpenBSD: eval.c,v 1.5 1996/11/24 17:43:02 millert Exp $	*/
 /*	$NetBSD: eval.c,v 1.33 1996/11/09 01:04:07 christos Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)eval.c	8.9 (Berkeley) 6/8/95";
 #else
-static char sccsid[] = "$OpenBSD: eval.c,v 1.29.4.1 1996/06/10 19:36:36 jtc Exp $";
+static char sccsid[] = "$OpenBSD: eval.c,v 1.5 1996/11/24 17:43:02 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -268,7 +268,7 @@ evaltree(n, flags)
 		evalpipe(n);
 		break;
 	case NCMD:
-		evalcommand(n, flags, (struct backcmd *)NULL);
+		evalcommand(n, flags, NULL);
 		break;
 	default:
 		out1fmt("Node type = %d\n", n->type);
