@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.14 1999/11/17 15:34:13 espie Exp $	*/
+/*	$OpenBSD: misc.c,v 1.15 2000/01/12 17:49:53 espie Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: misc.c,v 1.14 1999/11/17 15:34:13 espie Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.15 2000/01/12 17:49:53 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -324,5 +324,8 @@ release_input(f)
 {
 	if (f->file != stdin)
 	    fclose(f->file);
-	free(f->name);
+	/*
+	 * XXX can't free filename, as there might still be 
+	 * error information pointing to it.
+	 */
 }
