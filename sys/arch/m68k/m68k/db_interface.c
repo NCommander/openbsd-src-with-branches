@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.8 1997/01/19 13:53:11 niklas Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.9 1997/03/21 00:36:39 niklas Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.24 1997/02/18 22:27:32 gwr Exp $	*/
 
 /* 
@@ -43,6 +43,7 @@
 #include <machine/db_machdep.h>
 
 #include <ddb/db_command.h>
+#include <ddb/db_var.h>
 #include <ddb/db_sym.h>
 #include <ddb/db_extern.h>
 
@@ -85,6 +86,9 @@ kdb_trap(type, regs)
 	case -1:
 		break;
 	default:
+		if (!db_panic)
+			return (0);
+
 		kdbprinttrap(type, 0);
 		if (db_recover != 0) {
 			/* This will longjmp back to db_command_loop */
