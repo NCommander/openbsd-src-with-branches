@@ -1,3 +1,4 @@
+/*	$OpenBSD: fpu_sqrt.c,v 1.1 1995/11/03 04:47:18 briggs Exp $ */
 /*	$NetBSD: fpu_sqrt.c,v 1.1 1995/11/03 04:47:18 briggs Exp $ */
 
 /*
