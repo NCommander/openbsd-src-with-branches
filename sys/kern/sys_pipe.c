@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.16 1999/07/13 15:17:50 provos Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.17 1999/07/15 14:07:41 art Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -342,6 +342,8 @@ pipeselwakeup(cpipe)
 		cpipe->pipe_state &= ~PIPE_SEL;
 		selwakeup(&cpipe->pipe_sel);
 	}
+	if ((cpipe->pipe_state & PIPE_ASYNC) && cpipe->pipe_pgid != NO_PID)
+		gsignal(cpipe->pipe_pgid, SIGIO);
 }
 
 /* ARGSUSED */
