@@ -32,7 +32,7 @@
  */
 
 #if !defined(lint) && defined(LIBC_SCCS)
-static char rcsid[] = "$OpenBSD: gmon.c,v 1.12 2002/02/16 21:27:23 millert Exp $";
+static char rcsid[] = "$OpenBSD: gmon.c,v 1.13 2002/05/25 09:11:02 deraadt Exp $";
 #endif
 
 #include <sys/param.h>
@@ -228,6 +228,7 @@ _mcleanup()
 	write(log, dbuf, len);
 #endif
 	hdr = (struct gmonhdr *)&gmonhdr;
+	bzero(hdr, sizeof(*hdr));
 	hdr->lpc = p->lowpc;
 	hdr->hpc = p->highpc;
 	hdr->ncnt = p->kcountsize + sizeof(gmonhdr);
