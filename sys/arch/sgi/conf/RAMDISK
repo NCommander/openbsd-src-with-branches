@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: RAMDISK,v 1.1 2004/08/06 21:12:18 pefo Exp $
 #
 
 machine		sgi mips64
@@ -15,7 +15,6 @@ makeoption	ENDIAN="-EB"
 option		SWAPPAGER	# swap pager (anonymous and swap space)
 option		DEVPAGER	# device pager (mapped devices)
 
-option 		UVM		# uses unified VM system
 option		NATIVE_ELF	# Systems uses ELF as native format
 
 option		DIAGNOSTIC	# extra kernel debugging checks
