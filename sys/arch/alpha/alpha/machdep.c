@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.72 2002/05/03 00:06:16 millert Exp $ */
+/* $OpenBSD: machdep.c,v 1.73 2002/06/04 00:09:08 deraadt Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -428,11 +428,7 @@ nobootinfo:
 	 * stack).
 	 */
 	kernstart = trunc_page((vaddr_t)kernel_text) - 2 * PAGE_SIZE;
-#ifdef DDB
 	kernend = (vaddr_t)round_page((vaddr_t)bootinfo.esym);
-#else
-	kernend = (vaddr_t)round_page((vaddr_t)_end);
-#endif
 
 	kernstartpfn = atop(ALPHA_K0SEG_TO_PHYS(kernstart));
 	kernendpfn = atop(ALPHA_K0SEG_TO_PHYS(kernend));
