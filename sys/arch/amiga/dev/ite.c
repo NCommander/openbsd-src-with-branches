@@ -70,7 +70,6 @@
 #include <amiga/dev/grfvar.h>
 
 #include <machine/conf.h>
-#include <machine/cons.h>
 #include <machine/cpu.h>	/* for is_draco() */
 
 #include "grfcc.h"
