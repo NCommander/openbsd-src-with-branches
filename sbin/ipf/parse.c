@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.13 1997/06/23 01:16:14 deraadt Exp $	*/
+/*	$OpenBSD: parse.c,v 1.14 1997/06/23 17:20:31 kstailey Exp $	*/
 /*
  * (C)opyright 1993-1996 by Darren Reed.
  *
@@ -117,7 +117,6 @@ char	*line;
 						*cpp + 12);
 					return NULL;
 				}
-				fil.fr_icode = icode;
 			}
 		} else if (!strncasecmp(*(cpp+1), "return-rst", 10)) {
 			fil.fr_flags |= FR_RETRST;
