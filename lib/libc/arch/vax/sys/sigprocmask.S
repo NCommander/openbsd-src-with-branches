@@ -33,13 +33,13 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: sigprocmask.S,v 1.3 1998/05/17 10:06:36 niklas Exp $"
+	.asciz "$OpenBSD: sigprocmask.S,v 1.4 2001/08/23 21:58:41 miod Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
 err:
-	jmp	cerror
+	jmp	__cerror
 
 SYSENTRY(sigprocmask)
 	tstl	8(ap)			# check new sigset pointer
