@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_inode.c,v 1.15.2.2 2002/06/11 03:32:50 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ufs_inode.c,v 1.7 1996/05/11 18:27:52 mycroft Exp $	*/
 
 /*
@@ -99,7 +99,7 @@ ufs_inactive(v)
 	if (ip->i_ffs_mode == 0)
 		goto out;
 	if (ip->i_ffs_nlink <= 0 && (vp->v_mount->mnt_flag & MNT_RDONLY) == 0) {
-		if (getinoquota(ip) != 0)
+		if (getinoquota(ip) == 0)
 			(void)ufs_quota_free_inode(ip, NOCRED);
 
 		if (ip->i_ffs_size != 0) {

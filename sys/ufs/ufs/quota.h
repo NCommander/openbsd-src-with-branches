@@ -1,4 +1,4 @@
-/*	$OpenBSD: quota.h,v 1.3.2.1 2002/06/11 03:32:50 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: quota.h,v 1.6 1995/03/26 20:38:17 jtc Exp $	*/
 
 /*
@@ -112,7 +112,7 @@ struct dqblk {
 
 #ifdef _KERNEL
 /*
- * Flargs to ufs_quota_{alloc,free}_{blocks,inode}2
+ * Flags to ufs_quota_{alloc,free}_{blocks,inode}2
  */
 enum ufs_quota_flags {
 	UFS_QUOTA_NOUID = 0x1,		/* Don't change UID quota */

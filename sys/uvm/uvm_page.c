@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.38.2.4 2002/10/29 00:36:50 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_page.c,v 1.80 2002/10/30 02:48:28 simonb Exp $	*/
 
 /*
@@ -1333,11 +1333,11 @@ uvm_page_unbusy(pgs, npgs)
 {
 	struct vm_page *pg;
 	int i;
-	UVMHIST_FUNC("uvm_page_unbusy"); UVMHIST_CALLED(ubchist);
+	UVMHIST_FUNC("uvm_page_unbusy"); UVMHIST_CALLED(pdhist);
 
 	for (i = 0; i < npgs; i++) {
 		pg = pgs[i];
-		if (pg == NULL) {
+		if (pg == NULL || pg == PGO_DONTCARE) {
 			continue;
 		}
 		if (pg->flags & PG_WANTED) {
@@ -1348,7 +1348,7 @@ uvm_page_unbusy(pgs, npgs)
 			pg->flags &= ~PG_RELEASED;
 			uvm_pagefree(pg);
 		} else {
-			UVMHIST_LOG(ubchist, "unbusying pg %p", pg,0,0,0);
+			UVMHIST_LOG(pdhist, "unbusying pg %p", pg,0,0,0);
 			pg->flags &= ~(PG_WANTED|PG_BUSY);
 			UVM_PAGE_OWN(pg, NULL);
 		}

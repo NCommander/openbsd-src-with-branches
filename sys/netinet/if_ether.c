@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.35.2.1 2002/06/11 03:31:36 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -445,8 +445,10 @@ arpintr()
 			continue;
 
 		ar = mtod(m, struct arphdr *);
-		if (ntohs(ar->ar_hrd) != ARPHRD_ETHER)
+		if (ntohs(ar->ar_hrd) != ARPHRD_ETHER) {
+			m_freem(m);
 			continue;
+		}
 
 		len += 2 * (ar->ar_hln + ar->ar_pln);
 		if (m->m_len < len && (m = m_pullup(m, len)) == NULL)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.20.2.1 2002/06/11 03:31:37 art Exp $ */
+/*	$OpenBSD$ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -306,7 +306,10 @@ ipsp_process_packet(struct mbuf *m, struct tdb *tdb, int af, int tunalready)
 	/* Non expansion policy for IPCOMP */
 	if (tdb->tdb_sproto == IPPROTO_IPCOMP) {
 		if ((m->m_pkthdr.len - i) < tdb->tdb_compalgxform->minlen) {
+			extern struct ipcompstat ipcompstat;
+
 			/* No need to compress, leave the packet untouched */
+			ipcompstat.ipcomps_minlen++;
 			return ipsp_process_done(m, tdb);
 		}
 	}

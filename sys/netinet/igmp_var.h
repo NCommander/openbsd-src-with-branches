@@ -1,4 +1,4 @@
-/*	$OpenBSD: igmp_var.h,v 1.4 2001/06/09 07:03:40 angelos Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: igmp_var.h,v 1.9 1996/02/13 23:41:31 christos Exp $	*/
 
 /*
@@ -67,7 +67,7 @@ struct igmpstat {
 };
 
 #ifdef _KERNEL
-struct igmpstat igmpstat;
+extern struct igmpstat igmpstat;
 
 /*
  * Macro to compute a random timer value between 1 and (IGMP_MAX_REPORTING_

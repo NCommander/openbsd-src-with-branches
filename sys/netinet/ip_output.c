@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.140.2.2 2002/06/11 03:31:36 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -66,10 +66,6 @@
 
 #if NPF > 0
 #include <net/pfvar.h>
-#endif
-
-#ifdef vax
-#include <machine/mtpr.h>
 #endif
 
 #ifdef IPSEC
@@ -443,7 +439,7 @@ ip_output(struct mbuf *m0, ...)
 		if ((((m->m_flags & M_MCAST) &&
 		      (ifp->if_flags & IFF_MULTICAST) == 0) ||
 		     ((m->m_flags & M_BCAST) &&
-		      (ifp->if_flags & IFF_BROADCAST) == 0)) && (sproto == 0))  {
+		      (ifp->if_flags & IFF_BROADCAST) == 0)) && (sproto == 0)) {
 			ipstat.ips_noroute++;
 			error = ENETUNREACH;
 			goto bad;
@@ -1493,10 +1489,9 @@ ip_pcbopts(pcbopt, m)
 		return (0);
 	}
 
-#ifndef	vax
 	if (m->m_len % sizeof(int32_t))
 		goto bad;
-#endif
+
 	/*
 	 * IP first-hop destination address will be stored before
 	 * actual options; move other options back

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.h,v 1.28 2001/06/25 05:11:58 angelos Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -88,6 +88,6 @@ struct ah
 
 #ifdef _KERNEL
 extern int ah_enable;
-struct ahstat ahstat;
+extern struct ahstat ahstat;
 #endif /* _KERNEL */
 #endif /* _NETINET_IP_AH_H_ */
