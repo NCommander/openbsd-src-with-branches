@@ -39,7 +39,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)rwhod.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: rwhod.c,v 1.11 1998/07/13 02:11:51 millert Exp $";
+static char rcsid[] = "$OpenBSD: rwhod.c,v 1.12 1998/08/16 21:22:18 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -389,7 +389,7 @@ void
 quit(msg)
 	char *msg;
 {
-	syslog(LOG_ERR, msg);
+	syslog(LOG_ERR, "%s", msg);
 	exit(1);
 }
 
