@@ -1,4 +1,4 @@
-/*	$OpenBSD: gprof.h,v 1.8 2002/05/08 16:46:35 art Exp $	*/
+/*	$OpenBSD: gprof.h,v 1.9 2003/06/03 02:56:08 millert Exp $	*/
 /*	$NetBSD: gprof.h,v 1.13 1996/04/01 21:54:06 mark Exp $	*/
 
 /*
@@ -184,7 +184,7 @@ UNIT	*samples;
 
 unsigned long	s_lowpc;	/* lowpc from the profile file */
 unsigned long	s_highpc;	/* highpc from the profile file */
-unsigned lowpc, highpc;		/* range profiled, in UNIT's */
+unsigned long	lowpc, highpc;	/* range profiled, in UNIT's */
 unsigned sampbytes;		/* number of bytes of samples */
 int	nsamples;		/* number of samples */
 double	actime;			/* accumulated time thus far for putprofline */
