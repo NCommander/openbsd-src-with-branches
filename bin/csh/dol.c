@@ -1,4 +1,4 @@
-/*	$OpenBSD: dol.c,v 1.12 2003/06/02 23:32:07 millert Exp $	*/
+/*	$OpenBSD: dol.c,v 1.13 2003/06/11 21:09:50 deraadt Exp $	*/
 /*	$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)dol.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: dol.c,v 1.12 2003/06/02 23:32:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: dol.c,v 1.13 2003/06/11 21:09:50 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -721,6 +721,7 @@ setDolp(Char *cp)
 		    size_t len = Strlen(cp) + 1 - lhlen + rhlen;
 
 		    np = (Char *) xmalloc(len * sizeof(Char));
+		    *dp = 0;
 		    (void) Strlcpy(np, cp, len);
 		    (void) Strlcat(np, rhsub, len);
 		    (void) Strlcat(np, dp + lhlen, len);
