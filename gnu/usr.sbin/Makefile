@@ -1,5 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1 1997/06/14 07:16:54 downsj Exp $
+#	$OpenBSD: Makefile,v 1.2 1997/07/29 07:16:37 deraadt Exp $
 
-#SUBDIR+=	e2fsprogs
+#SUBDIR+=	e2fsprogs mkisofs
+SUBDIR+=	mkisofs
 
 .include <bsd.subdir.mk>
