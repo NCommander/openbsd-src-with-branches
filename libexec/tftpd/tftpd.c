@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.31 2003/09/24 20:40:19 deraadt Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.32 2004/01/27 02:25:30 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)tftpd.c	5.13 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$OpenBSD: tftpd.c,v 1.31 2003/09/24 20:40:19 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: tftpd.c,v 1.32 2004/01/27 02:25:30 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -175,9 +175,9 @@ main(int argc, char *argv[])
 		ndirs++;
 	}
 
-	pw = getpwnam("nobody");
+	pw = getpwnam("_tftpd");
 	if (!pw) {
-		syslog(LOG_ERR, "no nobody: %m");
+		syslog(LOG_ERR, "no _tftpd: %m");
 		exit(1);
 	}
 
