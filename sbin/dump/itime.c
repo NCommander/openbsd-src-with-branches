@@ -1,4 +1,4 @@
-/*	$OpenBSD: itime.c,v 1.9 2003/06/02 20:06:14 millert Exp $	*/
+/*	$OpenBSD: itime.c,v 1.10 2003/06/26 16:35:21 deraadt Exp $	*/
 /*	$NetBSD: itime.c,v 1.4 1997/04/15 01:09:50 lukem Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)itime.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: itime.c,v 1.9 2003/06/02 20:06:14 millert Exp $";
+static const char rcsid[] = "$OpenBSD: itime.c,v 1.10 2003/06/26 16:35:21 deraadt Exp $";
 #endif
 #endif /* not lint */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dirs.c,v 1.22 2003/07/06 15:42:07 avsm Exp $	*/
+/*	$OpenBSD: dirs.c,v 1.23 2003/07/07 00:51:52 millert Exp $	*/
 /*	$NetBSD: dirs.c,v 1.26 1997/07/01 05:37:49 lukem Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 #if 0
 static char sccsid[] = "@(#)dirs.c	8.5 (Berkeley) 8/31/94";
 #else
-static char rcsid[] = "$OpenBSD: dirs.c,v 1.22 2003/07/06 15:42:07 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: dirs.c,v 1.21 2003/06/02 20:06:16 millert Exp $";
 #endif
 #endif /* not lint */
 

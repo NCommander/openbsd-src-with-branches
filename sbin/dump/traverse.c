@@ -1,4 +1,4 @@
-/*	$OpenBSD: traverse.c,v 1.12 2003/06/02 20:06:14 millert Exp $	*/
+/*	$OpenBSD: traverse.c,v 1.13 2003/06/26 16:35:21 deraadt Exp $	*/
 /*	$NetBSD: traverse.c,v 1.17 1997/06/05 11:13:27 lukem Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)traverse.c	8.2 (Berkeley) 9/23/93";
 #else
-static char rcsid[] = "$OpenBSD: traverse.c,v 1.12 2003/06/02 20:06:14 millert Exp $";
+static const char rcsid[] = "$OpenBSD: traverse.c,v 1.13 2003/06/26 16:35:21 deraadt Exp $";
 #endif
 #endif /* not lint */
 
