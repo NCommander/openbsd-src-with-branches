@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.34 1999/11/05 01:18:01 mickey Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.36 2000/01/20 01:16:50 deraadt Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -506,8 +506,8 @@ sys_execve(p, v, retval)
 		p->p_flag |= P_SUGIDEXEC;
 
 		/*
-		 * For setuid processes, a few caveats apply to stdin, stdout,
-		 * and stderr.
+		 * For set[ug]id processes, a few caveats apply to
+		 * stdin, stdout, and stderr.
 		 */
 		for (i = 0; i < 3; i++) {
 			struct file *fp = NULL;
