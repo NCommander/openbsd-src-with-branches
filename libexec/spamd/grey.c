@@ -1,4 +1,4 @@
-/*	$OpenBSD: grey.c,v 1.16 2004/08/08 19:32:45 deraadt Exp $	*/
+/*	$OpenBSD: grey.c,v 1.17 2004/08/15 21:49:45 millert Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -60,6 +60,7 @@ static char *pargv[11]= {
 
 
 /* If the parent gets a signal, kill off the children and exit */
+/* ARGSUSED */
 static void
 sig_term_chld(int sig)
 {
