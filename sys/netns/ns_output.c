@@ -1,4 +1,4 @@
-/*	$OpenBSD: ns_output.c,v 1.4 2003/06/02 23:28:19 millert Exp $	*/
+/*	$OpenBSD: ns_output.c,v 1.5 2003/12/10 07:22:44 itojun Exp $	*/
 /*	$NetBSD: ns_output.c,v 1.8 1996/02/13 22:14:01 christos Exp $	*/
 
 /*
@@ -49,7 +49,7 @@
 #include <netns/idp.h>
 #include <netns/idp_var.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 int ns_hold_output = 0;
 int ns_copy_output = 0;

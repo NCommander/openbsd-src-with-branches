@@ -1,4 +1,4 @@
-/*	$OpenBSD: hd_output.c,v 1.5 2003/06/02 23:28:13 millert Exp $	*/
+/*	$OpenBSD: hd_output.c,v 1.6 2003/12/10 07:22:42 itojun Exp $	*/
 /*	$NetBSD: hd_output.c,v 1.7 1996/05/07 02:36:06 thorpej Exp $	*/
 
 /*
@@ -55,7 +55,7 @@
 #include <netccitt/x25.h>
 #include <netccitt/pk_extern.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 /*
  *      HDLC OUTPUT INTERFACE

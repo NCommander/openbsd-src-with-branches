@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofcons.c,v 1.10 2003/04/27 11:22:53 ho Exp $	*/
+/*	$OpenBSD: ofcons.c,v 1.11 2003/08/15 20:32:17 tedu Exp $	*/
 /*	$NetBSD: ofcons.c,v 1.3 1996/10/13 01:38:11 christos Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 
 #include <dev/ofw/openfirm.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 struct ofc_softc {
 	struct device of_dev;

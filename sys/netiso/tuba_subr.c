@@ -1,4 +1,4 @@
-/*	$OpenBSD: tuba_subr.c,v 1.12 2003/06/02 23:28:18 millert Exp $	*/
+/*	$OpenBSD: tuba_subr.c,v 1.13 2003/12/10 07:22:44 itojun Exp $	*/
 /*	$NetBSD: tuba_subr.c,v 1.7 1996/02/13 22:12:32 christos Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
 #include <netiso/tuba_table.h>
 #include <dev/rndvar.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 static struct sockaddr_iso null_siso = {sizeof(null_siso), AF_ISO,};
 extern int      tuba_table_size, tcp_keepidle, tcp_keepintvl, tcp_maxidle;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pk_input.c,v 1.6 2003/06/02 23:28:13 millert Exp $	*/
+/*	$OpenBSD: pk_input.c,v 1.7 2003/12/10 07:22:42 itojun Exp $	*/
 /*	$NetBSD: pk_input.c,v 1.7 1996/02/13 22:05:21 christos Exp $	*/
 
 /*
@@ -65,7 +65,7 @@
 #include <netccitt/hd_var.h>
 #endif
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 struct pkcb_q   pkcb_q = {&pkcb_q, &pkcb_q};
 

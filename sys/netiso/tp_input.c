@@ -1,4 +1,4 @@
-/*	$OpenBSD: tp_input.c,v 1.6 2003/06/02 23:28:18 millert Exp $	*/
+/*	$OpenBSD: tp_input.c,v 1.7 2003/12/10 07:22:44 itojun Exp $	*/
 /*	$NetBSD: tp_input.c,v 1.9 1996/03/16 23:13:51 christos Exp $	*/
 
 /*-
@@ -113,7 +113,7 @@ SOFTWARE.
 #include <netccitt/pk.h>
 #include <netccitt/pk_var.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 static struct socket *tp_newsocket(struct socket *, struct sockaddr *,
 					caddr_t, u_int, u_int);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_usrreq.c,v 1.12 2003/06/02 23:28:16 millert Exp $	*/
+/*	$OpenBSD: ipx_usrreq.c,v 1.13 2003/12/10 07:22:43 itojun Exp $	*/
 
 /*-
  *
@@ -62,7 +62,7 @@
 #include <netipx/ipx_var.h>
 #include <netipx/ipx_ip.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 /*
  * IPX protocol implementation.

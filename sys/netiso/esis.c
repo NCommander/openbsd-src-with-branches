@@ -1,4 +1,4 @@
-/*	$OpenBSD: esis.c,v 1.8 2003/06/02 23:28:17 millert Exp $	*/
+/*	$OpenBSD: esis.c,v 1.9 2003/12/10 07:22:43 itojun Exp $	*/
 /*	$NetBSD: esis.c,v 1.14 1996/05/07 02:45:04 thorpej Exp $	*/
 
 /*-
@@ -87,7 +87,7 @@ SOFTWARE.
 #include <netiso/esis.h>
 #include <netiso/argo_debug.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 /*
  *	Global variables to esis implementation
  *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: idp_usrreq.c,v 1.6 2003/06/02 23:28:19 millert Exp $	*/
+/*	$OpenBSD: idp_usrreq.c,v 1.7 2003/12/10 07:22:44 itojun Exp $	*/
 /*	$NetBSD: idp_usrreq.c,v 1.9 1996/02/13 22:13:43 christos Exp $	*/
 
 /*
@@ -53,7 +53,7 @@
 #include <netns/idp_var.h>
 #include <netns/ns_error.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 /*
  * IDP protocol implementation.

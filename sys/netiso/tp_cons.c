@@ -1,4 +1,4 @@
-/*	$OpenBSD: tp_cons.c,v 1.9 2003/06/02 23:28:18 millert Exp $	*/
+/*	$OpenBSD: tp_cons.c,v 1.10 2003/12/10 07:22:44 itojun Exp $	*/
 /*	$NetBSD: tp_cons.c,v 1.8 1996/02/14 21:32:37 christos Exp $	*/
 
 /*-
@@ -105,7 +105,7 @@ SOFTWARE.
 #include <netccitt/pk_var.h>
 #include <netccitt/pk_extern.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 #include <netiso/if_cons.c>
 

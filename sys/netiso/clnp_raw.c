@@ -1,4 +1,4 @@
-/*	$OpenBSD: clnp_raw.c,v 1.5 2003/06/02 23:28:17 millert Exp $	*/
+/*	$OpenBSD: clnp_raw.c,v 1.6 2003/12/10 07:22:43 itojun Exp $	*/
 /*	$NetBSD: clnp_raw.c,v 1.9 1996/02/13 22:08:42 christos Exp $	*/
 
 /*-
@@ -81,7 +81,7 @@ SOFTWARE.
 
 #include <netiso/tp_user.h>	/* XXX -- defines SOL_NETWORK */
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 struct sockproto rclnp_proto = {PF_ISO, 0};
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.33 2003/07/09 22:03:16 itojun Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.34 2003/12/10 07:22:43 itojun Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.27 1996/05/07 02:40:50 thorpej Exp $	*/
 
 /*
@@ -78,7 +78,7 @@
 #include <netinet/igmp_var.h>
 #include <netinet/ip_mroute.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 #define IP_MULTICASTOPTS 0
 #define	M_PULLUP(m, len) \

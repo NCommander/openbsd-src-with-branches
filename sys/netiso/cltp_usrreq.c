@@ -1,4 +1,4 @@
-/*	$OpenBSD: cltp_usrreq.c,v 1.5 2003/09/28 23:17:45 cloder Exp $	*/
+/*	$OpenBSD: cltp_usrreq.c,v 1.6 2003/12/10 07:22:43 itojun Exp $	*/
 /*	$NetBSD: cltp_usrreq.c,v 1.9 1996/02/13 22:08:59 christos Exp $	*/
 
 /*
@@ -55,7 +55,7 @@
 #include <netiso/tp_param.h>
 #include <netiso/tp_var.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 #endif
 
 

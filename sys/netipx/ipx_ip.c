@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_ip.c,v 1.16 2003/07/09 22:03:16 itojun Exp $	*/
+/*	$OpenBSD: ipx_ip.c,v 1.17 2003/12/10 07:22:43 itojun Exp $	*/
 
 /*-
  *
@@ -71,7 +71,7 @@
 #include <netipx/ipx_if.h>
 #include <netipx/ipx_ip.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 struct ifnet ipxipif;
 struct ifnet_en *ipxip_list; /* list of all hosts and gateways or broadcast addrs */

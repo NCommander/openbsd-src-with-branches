@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.57 2003/07/21 22:44:49 tedu Exp $	*/
+/*	$OpenBSD: systm.h,v 1.58 2003/08/24 01:27:07 avsm Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -41,7 +41,7 @@
 #define __SYSTM_H__
 
 #include <sys/queue.h>
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 /*
  * The `securelevel' variable controls the security level of the system.

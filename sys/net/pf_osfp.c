@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_osfp.c,v 1.4 2003/12/18 16:07:38 dhartmei Exp $ */
+/*	$OpenBSD: pf_osfp.c,v 1.5 2003/12/19 20:09:01 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@w4g.org>
@@ -56,7 +56,7 @@ typedef struct pool pool_t;
 # define pool_init(pool, size, a, ao, f, m, p)	(*(pool)) = (size)
 
 # ifdef PFDEBUG
-#  include <stdarg.h>
+#  include <sys/stdarg.h>
 #  define DPFPRINTF(format, x...)	fprintf(stderr, format , ##x)
 # else
 #  define DPFPRINTF(format, x...)	((void)0)
