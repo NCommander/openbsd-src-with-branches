@@ -1,8 +1,0 @@
-KeyNote-Version: 2
-Comment: This policy accepts ESP SAs from a remote that uses the right password
- 	$OpenBSD: policy,v 1.3 1999/11/18 21:45:52 angelos Exp $
-	$EOM: policy,v 1.5 2000/01/26 14:03:07 niklas Exp $
-Authorizer: "POLICY"
-Licensees: "passphrase:mekmitasdigoat"
-Conditions: app_domain == "IPsec policy" &&
-	    esp_present == "yes" -> "true";
