@@ -125,19 +125,15 @@ void
 isa_strayintr(irq)
 	int irq;
 {
-	static u_long strays;
-
-	intrstray[irq]++;
-
         /*
          * Stray interrupts on irq 7 occur when an interrupt line is raised
          * and then lowered before the CPU acknowledges it.  This generally
          * means either the device is screwed or something is cli'ing too
          * long and it's timing out.
          */
-	if (++strays <= 5)
+	if (++intrstray[irq] <= 5)
 		log(LOG_ERR, "stray interrupt %d%s\n", irq,
-		    strays >= 5 ? "; stopped logging" : "");
+		    intrstray[irq] >= 5 ? "; stopped logging" : "");
 }
 
 int fastvec;
