@@ -1,4 +1,4 @@
-/*	$OpenBSD: sab.c,v 1.14 2003/08/15 20:32:15 tedu Exp $	*/
+/*	$OpenBSD: sab.c,v 1.15 2003/10/03 16:44:50 miod Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -243,8 +243,8 @@ sab_attach(parent, self, aux)
 			return;
 		}
 	} else if (ebus_bus_map(sc->sc_bt, 0,
-	    EBUS_PADDR_FROM_REG(&ea->ea_regs[0]), ea->ea_regs[0].size,
-	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_bh) != 0) {
+	    EBUS_PADDR_FROM_REG(&ea->ea_regs[0]), ea->ea_regs[0].size, 0, 0,
+	    &sc->sc_bh) != 0) {
 		printf(": can't map register space\n");
 		return;
 	}
