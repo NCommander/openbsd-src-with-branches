@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: serverloop.c,v 1.81 2001/10/09 21:59:41 markus Exp $");
+RCSID("$OpenBSD: serverloop.c,v 1.82 2001/10/10 22:18:47 markus Exp $");
 
 #include "xmalloc.h"
 #include "packet.h"
@@ -272,8 +272,8 @@ wait_until_can_do_something(fd_set **readsetp, fd_set **writesetp, int *maxfdp,
 	ret = select((*maxfdp)+1, *readsetp, *writesetp, NULL, tvp);
 
 	if (ret == -1) {
-		memset(*readsetp, 0, *maxfdp);
-		memset(*writesetp, 0, *maxfdp);
+		memset(*readsetp, 0, *nallocp);
+		memset(*writesetp, 0, *nallocp);
 		if (errno != EINTR)
 			error("select: %.100s", strerror(errno));
 	} else if (ret == 0 && client_alive_scheduled)
