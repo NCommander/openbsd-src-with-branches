@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_obio.c,v 1.1 2001/06/25 18:11:12 drahn Exp $	*/
+/*	$OpenBSD: if_wi_obio.c,v 1.2 2001/06/25 23:29:56 drahn Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -59,6 +59,8 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #endif
+
+#include <net/if_ieee80211.h>
 
 #include <machine/bus.h>
 #include <machine/autoconf.h>
