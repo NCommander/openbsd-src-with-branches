@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.c,v 1.2 2002/03/15 16:41:06 jason Exp $	*/
+/*	$OpenBSD: signal.c,v 1.3 2002/06/26 13:21:25 todd Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -107,7 +107,7 @@ cmd_signal_ignore(int argc, char **argv, void *arg)
 	}
 
 	l = strtol(signame, &ep, 0);
-	if (signame[0] == '\0' || *ep != '\0' || l < 1 || l > NSIG) {
+	if (signame[0] == '\0' || *ep != '\0' || l < 1 || l >= NSIG) {
 		if (!strncmp("SIG", signame, 3))
 			signame += 3;
 		for (signum = 1; signum < NSIG; signum++) {

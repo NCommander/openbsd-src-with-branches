@@ -1,5 +1,5 @@
 
-/*	$OpenBSD: ns_input.c,v 1.3 1996/12/23 08:47:07 mickey Exp $	*/
+/*	$OpenBSD: ns_input.c,v 1.4 2003/06/02 23:28:19 millert Exp $	*/
 /*	$NetBSD: ns_input.c,v 1.9 1996/02/13 22:13:56 christos Exp $	*/
 
 /*
@@ -262,7 +262,7 @@ idp_ctlinput(cmd, sa, arg)
 	struct ns_errp *errp = NULL;
 	int type;
 
-	if (cmd < 0 || cmd > PRC_NCMDS)
+	if (cmd < 0 || cmd >= PRC_NCMDS)
 		return NULL;
 	if (nsctlerrmap[cmd] == 0)
 		return NULL;		/* XXX */

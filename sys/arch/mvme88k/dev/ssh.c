@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.c,v 1.13 2003/02/11 19:20:26 mickey Exp $	*/
+/*	$OpenBSD: ssh.c,v 1.14 2003/06/02 23:27:52 millert Exp $	*/
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -1193,7 +1193,7 @@ ssh_checkintr(sc, istat, dstat, sstat0, status)
 				n = (n - Ent_dataout) / 16;
 			else
 				n = (n - Ent_datain) / 16;
-			if (n <= 0 && n > DMAMAXIO)
+			if (n <= 0 || n >= DMAMAXIO)
 				printf("TEMP invalid %d\n", n);
 			else {
 				acb->iob_curbuf = (u_long)acb->ds.chain[n].databuf;
