@@ -1,7 +1,7 @@
-/*	$OpenBSD: boot.c,v 1.17 1998/02/24 22:16:02 weingart Exp $	*/
+/*	$OpenBSD: boot.c,v 1.18 1998/05/14 14:39:11 mickey Exp $	*/
 
 /*
- * Copyright (c) 1997 Michael Shalayeff
+ * Copyright (c) 1997,1998 Michael Shalayeff
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

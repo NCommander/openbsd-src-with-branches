@@ -1,7 +1,7 @@
-/*	$OpenBSD: bootarg.h,v 1.3 1997/10/25 06:58:49 mickey Exp $	*/
+/*	$OpenBSD: bootarg.h,v 1.4 1998/05/18 21:51:45 mickey Exp $	*/
 
 /*
- * Copyright (c) 1996,1997,1998 Michael Shalayeff
+ * Copyright (c) 1996-1998 Michael Shalayeff
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
