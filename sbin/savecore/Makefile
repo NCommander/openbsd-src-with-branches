@@ -1,10 +1,13 @@
-#	$OpenBSD: Makefile,v 1.6 1997/09/21 11:38:11 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 1998/04/25 08:31:12 downsj Exp $
 
 PROG=	savecore
 
 # XXX Temporary, until other ports use new libkvm
-.if	(${MACHINE} == "amiga") || \
+.if	(${MACHINE} == "alpha") || \
+	(${MACHINE} == "amiga") || \
 	(${MACHINE} == "atari") || \
+	(${MACHINE} == "powerpc") || \
+	(${MACHINE} == "mvme88k") || \
 	(${MACHINE} == "sparc") || \
 	(${MACHINE} == "sun3") || \
 	(${MACHINE} == "hp300")
