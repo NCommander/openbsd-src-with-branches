@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: servconf.c,v 1.101 2002/02/04 12:15:25 markus Exp $");
+RCSID("$OpenBSD: servconf.c,v 1.102 2002/03/18 17:50:31 provos Exp $");
 
 #if defined(KRB4) || defined(KRB5)
 #include <krb.h>
@@ -726,11 +726,11 @@ parse_flag:
 
 	case sUnprivUser:
 		intptr = &options->unprivileged_user;
-		goto parse_flag;
+		goto parse_int;
 
 	case sUnprivGroup:
 		intptr = &options->unprivileged_group;
-		goto parse_flag;
+		goto parse_int;
 
 	case sUnprivDir:
 		charptr = &options->unprivileged_dir;
