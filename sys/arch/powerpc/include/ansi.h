@@ -1,3 +1,4 @@
+/*	$OpenBSD:$	*/
 /*	$NetBSD: ansi.h,v 1.2 1996/11/15 22:38:57 jtc Exp $	*/
 
 /*-
