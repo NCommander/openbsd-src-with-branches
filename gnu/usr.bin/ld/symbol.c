@@ -1,4 +1,4 @@
-/* * $OpenBSD: symbol.c,v 1.5 2002/07/10 17:28:16 marc Exp $	- symbol table routines*/
+/* * $OpenBSD: symbol.c,v 1.6 2002/07/19 19:28:12 marc Exp $	- symbol table routines*/
 /*
  */
 
@@ -72,7 +72,7 @@ symtab_init(int relocatable_output)
  * Compute the hash code for symbol name KEY.
  */
 
-int
+static int
 hash_string(char *key)
 {
 	char *cp;
