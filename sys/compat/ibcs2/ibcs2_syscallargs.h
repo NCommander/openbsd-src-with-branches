@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_syscallargs.h,v 1.6 1999/06/07 07:18:35 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * System call argument lists.
@@ -189,7 +189,7 @@ struct ibcs2_sys_semsys_args {
 
 struct ibcs2_sys_ioctl_args {
 	syscallarg(int) fd;
-	syscallarg(u_long) cmd;
+	syscallarg(int) cmd;
 	syscallarg(caddr_t) data;
 };
 

@@ -20,24 +20,6 @@
 #include <compat/svr4/svr4_statvfs.h>
 #include <compat/svr4/svr4_acl.h>
 
-#ifdef COMPAT_43
-#define compat_43(func) __CONCAT(compat_43_,func)
-#else
-#define compat_43(func) sys_nosys
-#endif
-
-#ifdef COMPAT_09
-#define compat_09(func) __CONCAT(compat_09_,func)
-#else
-#define compat_09(func) sys_nosys
-#endif
-
-#ifdef COMPAT_10
-#define compat_10(func) __CONCAT(compat_10_,func)
-#else
-#define compat_10(func) sys_nosys
-#endif
-
 #define	s(type)	sizeof(type)
 
 struct sysent svr4_sysent[] = {
