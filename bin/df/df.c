@@ -1,4 +1,4 @@
-/*	$OpenBSD: df.c,v 1.13 1997/04/14 17:38:22 kstailey Exp $	*/
+/*	$OpenBSD: df.c,v 1.14 1997/04/14 20:25:37 kstailey Exp $	*/
 /*	$NetBSD: df.c,v 1.21.2.1 1995/11/01 00:06:11 jtc Exp $	*/
 
 /*
@@ -49,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)df.c	8.7 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: df.c,v 1.13 1997/04/14 17:38:22 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: df.c,v 1.14 1997/04/14 20:25:37 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -451,6 +451,10 @@ ufs_df(file, sfsp)
 		return (-1);
 	}
 	if (bread((off_t)SBOFF, &sblock, SBSIZE) == 0) {
+		(void)close(rfd);
+		return (-1);
+	}
+	if (sblock.fs_magic != FS_MAGIC) {
 		(void)close(rfd);
 		return (-1);
 	}
