@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.54 2000/06/16 21:47:14 provos Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.55 2000/06/18 03:07:48 angelos Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -118,7 +118,9 @@ struct	pcred cred0;
 struct	filedesc0 filedesc0;
 struct	plimit limit0;
 struct	vmspace vmspace0;
-struct	proc *curproc = &proc0;
+#ifndef curproc
+struct	proc *curproc;
+#endif
 struct	proc *initproc;
 
 int	cmask = CMASK;
@@ -394,6 +396,7 @@ main(framep)
 	VREF(filedesc0.fd_fd.fd_cdir);
 	VOP_UNLOCK(rootvnode, 0, p);
 	filedesc0.fd_fd.fd_rdir = NULL;
+
 #if defined(UVM)
 	uvm_swap_init();
 #else
@@ -618,6 +621,7 @@ start_init(arg)
 		arg0 = ucp;
 		uap = (char **)((u_long)ucp & ~ALIGNBYTES);
 #endif
+
 		/*
 		 * Move out the arg pointers.
 		 */
