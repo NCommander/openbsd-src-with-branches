@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.7 2002/02/16 21:27:20 millert Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.1 2003/02/26 18:50:35 drahn Exp $	*/
 /*	$NetBSD: crt0.c,v 1.1 1996/09/12 16:59:02 cgd Exp $	*/
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
@@ -36,7 +36,7 @@
 char **environ;
 char * __progname = "";
 
-char __progname_storage[MAXPATHLEN];
+char __progname_storage[NAME_MAX+1];
 
 #ifdef MCRT0
 extern void     monstartup(u_long, u_long);

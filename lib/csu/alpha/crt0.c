@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.6 2001/02/03 23:16:16 art Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.7 2002/02/16 21:27:20 millert Exp $	*/
 /*	$NetBSD: crt0.c,v 1.1 1996/09/12 16:59:02 cgd Exp $	*/
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
@@ -32,15 +32,17 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: crt0.c,v 1.6 2001/02/03 23:16:16 art Exp $";
+static char rcsid[] = "$OpenBSD: crt0.c,v 1.7 2002/02/16 21:27:20 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdlib.h>
+#include <limits.h>
 
 static char	*_strrchr(char *, char);
 
 char	**environ;
 char	*__progname = "";
+char	__progname_storage[NAME_MAX+1];
 
 #ifdef MCRT0
 extern void	monstartup(u_long, u_long);
@@ -56,6 +58,7 @@ __start(sp, cleanup, obj)
 {
 	long argc;
 	char **argv, *namep;
+	char *s;
 
 	argc = *(long *)sp;
 	argv = sp + 1;
@@ -66,6 +69,11 @@ __start(sp, cleanup, obj)
 			__progname = namep;
 		else
 			__progname++;
+		for (s = __progname_storage; *__progname &&
+		    s < &__progname_storage[sizeof __progname_storage - 1]; )
+			*s++ = *__progname++;
+		*s = '\0';
+		__progname = __progname_storage;
 	}
 
 #ifdef MCRT0
