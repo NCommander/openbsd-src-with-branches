@@ -117,6 +117,17 @@ CXXFLAGS+=	${CXXDIAGFLAGS}
 CFLAGS+=	${COPTS}
 CXXFLAGS+=	${CXXOPTS}
 
+.if !defined(PICFLAG) && (${MACHINE_ARCH} != "mips")
+PICFLAG=-fpic
+.if ${MACHINE_ARCH} == "m68k"
+# Function CSE makes gas -k not recognize external function calls as lazily
+# resolvable symbols, thus sometimes making ld.so report undefined symbol
+# errors on symbols found in shared library members that would never be 
+# called.  Ask niklas@openbsd.org for details.
+PICFLAG+=-fno-function-cse
+.endif
+.endif
+
 _LIBS=lib${LIB}.a
 .if (${DEBUGLIBS:L} == "yes")
 _LIBS+=lib${LIB}_g.a
