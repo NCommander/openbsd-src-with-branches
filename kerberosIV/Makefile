@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 1996/11/15 09:21:23 downsj Exp $
+#	$OpenBSD: Makefile,v 1.9 1997/06/29 10:32:12 provos Exp $
 #	from @(#)Makefile	5.1 (Berkeley) 6/25/90
 
 SUBDIR=
@@ -20,7 +20,6 @@ build:
 	${MAKE} cleandir
 	${MAKE} includes
 	(cd ${.CURDIR}/acl && ${MAKE} depend && ${MAKE} && ${MAKE} install)
-	(cd ${.CURDIR}/des && ${MAKE} depend && ${MAKE} && ${MAKE} install)
 	(cd ${.CURDIR}/krb && ${MAKE} depend && ${MAKE} && ${MAKE} install)
 	(cd ${.CURDIR}/kadm && ${MAKE} depend && ${MAKE} && ${MAKE} install)
 	(cd ${.CURDIR}/kafs && ${MAKE} depend && ${MAKE} && ${MAKE} install)
