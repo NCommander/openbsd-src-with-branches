@@ -1,4 +1,4 @@
-/*	$OpenBSD: Ovfork.S,v 1.3 2003/01/02 21:40:46 miod Exp $	*/
+/*	$OpenBSD: Ovfork.S,v 1.4 2003/01/07 22:01:35 miod Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -39,14 +39,14 @@
 
 #if defined(LIBC_SCCS)
 	.data
-	.string "$OpenBSD: Ovfork.S,v 1.3 2003/01/02 21:40:46 miod Exp $"
+	.string "$OpenBSD: Ovfork.S,v 1.4 2003/01/07 22:01:35 miod Exp $"
 #endif /* LIBC_SCCS */
 
 #include "SYS.h"
 
 /* r2 = pid. r3 = 0 in parent, 1 in child */
 
-SYSENTRY(vfork)
+SYSCALL(vfork)
 	bcnd	eq0,r3,parent
 	or	r2,r0,0
 	or	r3,r0,0
