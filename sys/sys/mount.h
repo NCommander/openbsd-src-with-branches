@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.h,v 1.24 1998/09/01 17:01:07 deraadt Exp $	*/
+/*	$OpenBSD: mount.h,v 1.25 1999/02/19 17:15:44 art Exp $	*/
 /*	$NetBSD: mount.h,v 1.48 1996/02/18 11:55:47 fvdl Exp $	*/
 
 /*
@@ -506,7 +506,8 @@ struct	netcred *vfs_export_lookup	    /* lookup host in fs export list */
 	  __P((struct mount *, struct netexport *, struct mbuf *));
 int	vfs_allocate_syncvnode __P((struct mount *));
 
-void	vfs_shutdown __P((void));	    /* unmount and sync file systems */
+int	vfs_syncwait __P((int));	/* sync and wait for complete */
+void	vfs_shutdown __P((void));	/* unmount and sync file systems */
 long	makefstype __P((char *));
 int	dounmount __P((struct mount *, int, struct proc *));
 void	vfsinit __P((void));
