@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.h,v 1.12 2004/11/14 01:25:14 krw Exp $	*/
+/*	$OpenBSD: aic79xx.h,v 1.13 2004/11/18 01:33:28 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -1165,8 +1165,8 @@ struct ahd_softc {
 	/*
 	 * Timer handles for timer driven callbacks.
 	 */
-	ahd_timer_t		  reset_timer;
-	ahd_timer_t		  stat_timer;
+	aic_timer_t		  reset_timer;
+	aic_timer_t		  stat_timer;
 
 	/*
 	 * Statistics.
