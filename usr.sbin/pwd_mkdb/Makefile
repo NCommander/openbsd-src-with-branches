@@ -1,4 +1,6 @@
-#	$OpenBSD: Makefile,v 1.6 1998/07/15 19:09:45 millert Exp $
+#	$OpenBSD: Makefile,v 1.7 1999/06/06 13:03:05 espie Exp $
+
+# static because it's used by the boot floppy through a chroot.
 
 LDSTATIC=	${STATIC}
 PROG=	pwd_mkdb
