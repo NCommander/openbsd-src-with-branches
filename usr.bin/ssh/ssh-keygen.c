@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.88 2001/12/27 18:10:29 markus Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.89 2001/12/29 21:56:01 stevesk Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -350,7 +350,8 @@ do_convert_from_ssh2(struct passwd *pw)
 		exit(1);
 	}
 	key_free(k);
-	fprintf(stdout, "\n");
+	if (!private)
+		fprintf(stdout, "\n");
 	fclose(fp);
 	exit(0);
 }
