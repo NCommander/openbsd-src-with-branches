@@ -1,4 +1,4 @@
-/*	$OpenBSD: Locore.c,v 1.8 2002/09/15 09:01:59 deraadt Exp $	*/
+/*	$OpenBSD: Locore.c,v 1.9 2003/05/12 08:46:05 jason Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -47,8 +47,7 @@ extern int whichqs;
  * Calls should be made at splstatclock(), and p->p_stat should be SRUN.
  */
 void
-setrunqueue(p)
-	struct proc *p;
+setrunqueue(struct proc *p)
 {
 	struct  prochd *q;
 	struct proc *oldlast;
@@ -71,8 +70,7 @@ setrunqueue(p)
  * Calls should be made at splstatclock().
  */
 void
-remrunqueue(p)
-	struct proc *p;
+remrunqueue(struct proc *p)
 {
 	int which = p->p_priority >> 2;
 	struct prochd *q;
