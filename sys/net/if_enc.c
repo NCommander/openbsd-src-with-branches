@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.22 2000/04/08 16:55:58 angelos Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.23 2000/04/10 01:56:49 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -391,6 +391,7 @@ caddr_t data;
     switch (cmd) 
     {
 	case SIOCSIFADDR:
+	case SIOCAIFADDR
 	case SIOCSIFDSTADDR:
 	    break;
 
