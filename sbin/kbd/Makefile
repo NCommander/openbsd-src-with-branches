@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.18 2004/01/28 17:45:22 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.19 2004/01/29 02:55:48 deraadt Exp $
 
 .if (${MACHINE} == "i386") || (${MACHINE} == "amd64") || \
     (${MACHINE} == "macppc") || (${MACHINE} == "pegasos") || \
@@ -17,6 +17,6 @@ NOPROG=	Yes
 .endif
 
 MAN=		kbd.8
-MANSUBDIR=	alpha hppa i386 macppc sparc sparc64 vax pegosos amd64 cats
+MANSUBDIR=	alpha hppa i386 macppc sparc sparc64 vax pegasos amd64 cats
 
 .include <bsd.prog.mk>
