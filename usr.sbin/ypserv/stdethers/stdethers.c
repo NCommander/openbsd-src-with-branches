@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdethers.c,v 1.9 2003/06/02 21:58:26 maja Exp $ */
+/*	$OpenBSD: stdethers.c,v 1.10 2003/07/15 06:10:46 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,7 @@
  */
 
 #ifndef LINT
-static const char rcsid[] = "$OpenBSD: stdethers.c,v 1.9 2003/06/02 21:58:26 maja Exp $";
+static const char rcsid[] = "$OpenBSD: stdethers.c,v 1.10 2003/07/15 06:10:46 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -36,6 +36,7 @@ static const char rcsid[] = "$OpenBSD: stdethers.c,v 1.9 2003/06/02 21:58:26 maj
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipcp.c,v 1.9 2002/07/01 19:31:37 deraadt Exp $	*/
+/*	$OpenBSD: ipcp.c,v 1.10 2003/04/04 20:25:07 deraadt Exp $	*/
 
 /*
  * ipcp.c - PPP IP Control Protocol.
@@ -46,7 +46,7 @@
 #if 0
 static char rcsid[] = "Id: ipcp.c,v 1.34 1998/04/28 23:38:09 paulus Exp $";
 #else
-static char rcsid[] = "$OpenBSD: ipcp.c,v 1.9 2002/07/01 19:31:37 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ipcp.c,v 1.10 2003/04/04 20:25:07 deraadt Exp $";
 #endif
 #endif
 
@@ -55,6 +55,7 @@ static char rcsid[] = "$OpenBSD: ipcp.c,v 1.9 2002/07/01 19:31:37 deraadt Exp $"
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 #include <netdb.h>
