@@ -1,4 +1,4 @@
-/*	$OpenBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $	*/
+/*	$OpenBSD: chk.c,v 1.2 1996/06/26 05:44:21 deraadt Exp $	*/
 /*	$NetBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: chk.c,v 1.2 1996/06/26 05:44:21 deraadt Exp $";
 #endif
 
 #include <stdlib.h>
@@ -1177,7 +1177,7 @@ chkrvu(hte, def)
 		/* function has return value */
 		used = ignored = 0;
 		for (call = hte->h_calls; call != NULL; call = call->f_nxt) {
-			used |= call->f_rused;
+			used |= call->f_rused || call->f_rdisc;
 			ignored |= !call->f_rused && !call->f_rdisc;
 		}
 		/*
