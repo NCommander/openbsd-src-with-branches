@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.16 2002/10/12 01:09:43 krw Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.17 2003/02/18 13:14:43 jmc Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -874,7 +874,7 @@ mpc_conf_read(cpv, tag, offset)
 	s = splhigh();
 
 	oldh = curpcb->pcb_onfault;
-	if (setfault(env)) {
+	if (setfault(&env)) {
 		/* we faulted during the read? */
 		curpcb->pcb_onfault = oldh;
 		return 0xffffffff;
