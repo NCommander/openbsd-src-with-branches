@@ -581,22 +581,21 @@ sink(argc, argv)
 		if (ch == '\n')
 			*--cp = 0;
 
-#define getnum(t) (t) = 0; while (isdigit(*cp)) (t) = (t) * 10 + (*cp++ - '0');
 		cp = buf;
 		if (*cp == 'T') {
 			setimes++;
 			cp++;
-			getnum(mtime.tv_sec);
-			if (*cp++ != ' ')
+			mtime.tv_sec = strtol(cp, &cp, 10);
+			if (!cp || *cp++ != ' ')
 				SCREWUP("mtime.sec not delimited");
-			getnum(mtime.tv_usec);
-			if (*cp++ != ' ')
+			mtime.tv_usec = strtol(cp, &cp, 10);
+			if (!cp || *cp++ != ' ')
 				SCREWUP("mtime.usec not delimited");
-			getnum(atime.tv_sec);
-			if (*cp++ != ' ')
+			atime.tv_sec = strtol(cp, &cp, 10);
+			if (!cp || *cp++ != ' ')
 				SCREWUP("atime.sec not delimited");
-			getnum(atime.tv_usec);
-			if (*cp++ != '\0')
+			atime.tv_usec = strtol(cp, &cp, 10);
+			if (!cp || *cp++ != '\0')
 				SCREWUP("atime.usec not delimited");
 			(void)write(rem, "", 1);
 			continue;
