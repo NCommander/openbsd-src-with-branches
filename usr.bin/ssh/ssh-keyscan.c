@@ -7,7 +7,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keyscan.c,v 1.28 2001/08/27 22:02:13 danh Exp $");
+RCSID("$OpenBSD: ssh-keyscan.c,v 1.29 2001/08/30 22:22:32 markus Exp $");
 
 #include <sys/queue.h>
 #include <errno.h>
@@ -32,11 +32,7 @@ RCSID("$OpenBSD: ssh-keyscan.c,v 1.28 2001/08/27 22:02:13 danh Exp $");
 
 /* Flag indicating whether IPv4 or IPv6.  This can be set on the command line.
    Default value is AF_UNSPEC means both IPv4 and IPv6. */
-#ifdef IPV4_DEFAULT
-int IPv4or6 = AF_INET;
-#else
 int IPv4or6 = AF_UNSPEC;
-#endif
 
 int ssh_port = SSH_DEFAULT_PORT;
 
