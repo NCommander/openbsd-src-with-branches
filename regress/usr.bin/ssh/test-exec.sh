@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.10 2002/03/15 13:08:56 markus Exp $
+#	$OpenBSD: test-exec.sh,v 1.11 2002/03/21 22:27:00 markus Exp $
 #	Placed in the Public Domain.
 
 PORT=4242
@@ -157,6 +157,8 @@ Host *
 	BatchMode		yes
 	StrictHostKeyChecking	yes
 EOF
+
+rm -f $OBJ/known_hosts
 
 trace "generate keys"
 for t in rsa rsa1; do
