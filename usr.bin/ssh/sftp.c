@@ -16,7 +16,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.56 2004/07/11 17:48:47 deraadt Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.57 2004/11/05 12:19:56 djm Exp $");
 
 #include <glob.h>
 #include <histedit.h>
@@ -1256,8 +1256,11 @@ interactive_loop(int fd_in, int fd_out, char *file1, char *file2)
 		if (remote_is_dir(conn, dir) && file2 == NULL) {
 			printf("Changing to: %s\n", dir);
 			snprintf(cmd, sizeof cmd, "cd \"%s\"", dir);
-			if (parse_dispatch_command(conn, cmd, &pwd, 1) != 0)
+			if (parse_dispatch_command(conn, cmd, &pwd, 1) != 0) {
+				xfree(dir);
+				xfree(pwd);
 				return (-1);
+			}
 		} else {
 			if (file2 == NULL)
 				snprintf(cmd, sizeof cmd, "get %s", dir);
