@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.31 2004/02/26 16:16:41 claudio Exp $ */
+/*	$OpenBSD: session.h,v 1.32 2004/03/01 16:49:24 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -85,6 +85,12 @@ enum suberr_open {
 	ERR_OPEN_OPT,
 	ERR_OPEN_AUTH,
 	ERR_OPEN_HOLDTIME
+};
+
+enum opt_params {
+	OPT_PARAM_NONE,
+	OPT_PARAM_AUTH,
+	OPT_PARAM_CAPABILITIES
 };
 
 struct msg_header {
