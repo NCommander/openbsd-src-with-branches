@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlint.c,v 1.4 1996/11/13 17:43:48 michaels Exp $	*/
+/*	$OpenBSD: xlint.c,v 1.5 1997/04/04 18:41:36 deraadt Exp $	*/
 /*	$NetBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: xlint.c,v 1.4 1996/11/13 17:43:48 michaels Exp $";
+static char rcsid[] = "$OpenBSD: xlint.c,v 1.5 1997/04/04 18:41:36 deraadt Exp $";
 #endif
 
 #include <sys/param.h>
@@ -321,8 +321,11 @@ main(argc, argv)
 	libs = xcalloc(1, sizeof (char *));
 	libsrchpath = xcalloc(1, sizeof (char *));
 
-	appcstrg(&cppflags, "-lang-c");
+	appcstrg(&cppflags, "-x");
+	appcstrg(&cppflags, "c");
 	appcstrg(&cppflags, "-undef");
+	/* even with -undef cpp still identifies as GNUC */
+	appcstrg(&cppflags, "-U__GNUC__");
 	appcstrg(&cppflags, "-$");
 	appcstrg(&cppflags, "-C");
 	appcstrg(&cppflags, "-Wcomment");
