@@ -66,6 +66,7 @@
 #define AM79C930_IO_BASE	0
 #define AM79C930_IO_SIZE	16
 #define AM79C930_IO_SIZE_BIG	40
+#define AM79C930_IO_ALIGN	0x40	/* am79c930 decodes lower 6bits */
 
 
 #define AM79C930_GCR	0	/* General Config Register */

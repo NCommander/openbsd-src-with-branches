@@ -1,4 +1,3 @@
-/*       $OpenBSD: rmd160.c,v 1.1.2.2 2001/05/14 22:06:53 niklas Exp $       */
 /*	$OpenBSD$	*/
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD$ */
 
 /**
  * rijndael-alg-fst.h
