@@ -635,8 +635,8 @@ tcp_ident(oldp, oldlenp, newp, newlen)
 	    lin->sin_addr, lin->sin_port);
 	if (inp == NULL) {
 		++tcpstat.tcps_pcbhashmiss;
-		inp = in_pcblookup(&tcbtable, fin->sin_addr, fin->sin_port,
-		    lin->sin_addr, lin->sin_port, 0);
+		inp = in_pcblookup(&tcbtable, &fin->sin_addr, fin->sin_port,
+		    &lin->sin_addr, lin->sin_port, 0);
 	}
 	if (inp != NULL && (inp->inp_socket->so_state & SS_CONNECTOUT)) {
 		tir.ruid = inp->inp_socket->so_ruid;

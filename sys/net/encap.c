@@ -1,4 +1,4 @@
-/*	$OpenBSD: encap.c,v 1.23 1998/05/24 14:13:57 provos Exp $	*/
+/*	$OpenBSD: encap.c,v 1.24 1998/08/19 13:29:18 provos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -204,8 +204,8 @@ encap_notify_sa(u_int32_t spi, struct in_addr dst, struct in_addr src,
 	if (table != NULL) {
 		/* Protocols with own inpcb tables */
 		bzero((caddr_t)&zeroin_addr, sizeof(zeroin_addr));
-		inp = in_pcblookup(table, dst, dport, zeroin_addr, sport, 
-				   INPLOOKUP_WILDCARD);
+		inp = in_pcblookup(table, &dst, dport, &zeroin_addr, sport, 
+		    INPLOOKUP_WILDCARD);
 	} else {
 		/* RAW protocol - taken from raw_ip.c */
 		/* XXX - we can have more than one inp sleeping here */
