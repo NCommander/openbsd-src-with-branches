@@ -1,11 +1,9 @@
-#	$OpenBSD: Makefile,v 1.5 2001/05/28 21:27:50 drahn Exp $
+#	$OpenBSD: Makefile,v 1.5 2001/05/28 21:38:14 drahn Exp $
 
 DIR=/usr/src/libexec/ld.so/obj/ld.so
-.if (${MACHINE_ARCH} != "mips")
 #necssary to build the shared objects. not necessary for dltest but
 #doesn't hurt
 CFLAGS += -fpic
-.endif
 CFLAGS += -g
 CFLAGS += -I${.CURDIR}/.. -I${.CURDIR}/../${MACHINE_ARCH}
 LDFLAGS += -Wl,--export-dynamic -Wl,-dynamic-linker -Wl,${DIR}

@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile,v 1.8 2000/10/05 15:28:15 mickey Exp $
+#	$OpenBSD: Makefile,v 1.9 2001/03/21 22:27:36 miod Exp $
 
 TARGET_MACHINE_ARCH?=	${MACHINE_ARCH}
 
 .if (${TARGET_MACHINE_ARCH} == "alpha") || \
-    (${TARGET_MACHINE_ARCH} == "mips") || \
     (${TARGET_MACHINE_ARCH} == "powerpc") || \
     (${TARGET_MACHINE_ARCH} == "hppa")
 NOPROG=
