@@ -1,7 +1,7 @@
-/*	$OpenBSD: file.c,v 1.11 2000/04/28 22:13:55 espie Exp $	*/
+/*	$OpenBSD: file.c,v 1.12 2000/05/12 06:06:26 deraadt Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: file.c,v 1.11 2000/04/28 22:13:55 espie Exp $";
+static const char *rcsid = "$OpenBSD: file.c,v 1.12 2000/05/12 06:06:26 deraadt Exp $";
 #endif
 
 /*
@@ -342,7 +342,7 @@ fileGetURL(char *base, char *spec)
 	    tpid = fork();
 	    if (!tpid) {
 		dup2(fileno(ftp), 0);
-		i = execl("/bin/tar", "tar", Verbose ? "-xzvf" : "-xzf", "-", 0);
+		i = execl("/bin/tar", "tar", Verbose ? "-xpzvf" : "-xpzf", "-", 0);
 		exit(i);
 	    }
 	    else {
