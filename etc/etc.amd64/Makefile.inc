@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.4 2004/03/21 23:25:11 tom Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 2004/06/25 11:03:36 deraadt Exp $
 
 .ifdef DESTDIR
 snap_md: bsd bsd.mp distrib bootblocks
@@ -19,6 +19,8 @@ bsd.mp:
 
 bootblocks:
 	cp ${DESTDIR}/usr/mdec/pxeboot ${DESTDIR}/snapshot
+	cp ${DESTDIR}/usr/mdec/cdboot ${DESTDIR}/snapshot
+	cp ${DESTDIR}/usr/mdec/cdbr ${DESTDIR}/snapshot
 
 .PHONY: bsd bootblocks
 
