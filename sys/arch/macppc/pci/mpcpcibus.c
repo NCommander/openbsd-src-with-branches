@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.8 2002/03/14 01:26:37 millert Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.9 2002/03/14 03:15:56 millert Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -696,8 +696,8 @@ mpcpcibrprint(aux, pnp)
 }
 
 /*
- *  Get PCI physical address from given viritual address.
- *  XXX Note that cross page boundarys are *not* guarantee to work!
+ *  Get PCI physical address from given virtual address.
+ *  XXX Note that cross page boundaries are *not* guaranteed to work!
  */
 
 paddr_t
@@ -706,7 +706,7 @@ vtophys(pa)
 {
 	vaddr_t va = (vaddr_t) pa;
 
-	if(va < VM_MIN_KERNEL_ADDRESS)
+	if (va < VM_MIN_KERNEL_ADDRESS)
 		pa = va;
 	else
 		pmap_extract(vm_map_pmap(phys_map), va, &pa);
