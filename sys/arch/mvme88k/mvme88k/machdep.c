@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.48 2001/08/06 20:48:26 miod Exp $	*/
+/* $OpenBSD: machdep.c,v 1.49 2001/08/11 01:57:25 art Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -95,9 +95,7 @@
 #include <dev/cons.h>
 
 #include <vm/vm.h>
-#include <vm/vm_map.h>
 #include <vm/vm_kern.h>
-#include <vm/vm_page.h>
 
 #include <uvm/uvm_extern.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: netbsd_exec.c,v 1.5 1999/09/26 11:07:32 kstailey Exp $	 */
+/*	$OpenBSD: netbsd_exec.c,v 1.6 1999/11/10 15:55:22 mickey Exp $	 */
 /*	$NetBSD: svr4_exec.c,v 1.16 1995/10/14 20:24:20 christos Exp $	 */
 
 /*
@@ -39,8 +39,6 @@
 
 #include <sys/mman.h>
 #include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/vm_map.h>
 
 #include <machine/cpu.h>
 #include <machine/reg.h>

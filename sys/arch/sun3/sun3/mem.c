@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.12 2001/06/27 04:44:03 art Exp $	*/
+/*	$OpenBSD: mem.c,v 1.13 2001/07/25 13:25:33 art Exp $	*/
 /*	$NetBSD: mem.c,v 1.19 1995/08/08 21:09:01 gwr Exp $	*/
 
 /*
@@ -57,7 +57,6 @@
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
-#include <vm/vm_map.h>
 
 #include <machine/conf.h>
 #include <machine/cpu.h>

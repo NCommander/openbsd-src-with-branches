@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ve.c,v 1.6 2001/03/09 05:44:39 smurph Exp $ */
+/*	$OpenBSD: if_ve.c,v 1.7 2001/07/09 22:28:27 fgsch Exp $ */
 /*-
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1982, 1992, 1993
@@ -67,7 +67,6 @@
 #endif
 
 #include <vm/vm.h>
-#include <vm/vm_map.h>
 #include <vm/vm_kern.h>
 
 #include <machine/autoconf.h>

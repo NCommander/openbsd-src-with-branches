@@ -1,4 +1,4 @@
-/*	$OpenBSD: vme.c,v 1.8 2001/03/07 23:45:52 miod Exp $ */
+/*	$OpenBSD: vme.c,v 1.9 2001/03/09 05:44:39 smurph Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1995 Theo de Raadt
@@ -43,7 +43,6 @@
 #include <sys/fcntl.h>
 #include <sys/device.h>
 #include <vm/vm.h>
-#include <vm/vm_map.h>
 #include <vm/vm_kern.h>
 #include "machine/autoconf.h"
 #include "machine/cpu.h"
