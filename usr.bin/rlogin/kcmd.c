@@ -191,7 +191,6 @@ kcmd(sock, ahost, rport, locuser, remuser, cmd, fd2p, ticket, service, realm,
 			goto bad;
 		}
 again:
-		s3 = accept(s2, (struct sockaddr *)&from, &len);
                 s3 = accept(s2, (struct sockaddr *)&from, &len);
 		/*
 		 * XXX careful for ftp bounce attacks. If discovered, shut them
