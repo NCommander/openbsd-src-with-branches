@@ -93,6 +93,27 @@ sub install
 	system('/bin/sh', '-c', $self->{expanded}) unless $not;
 }
 
+package OpenBSD::PackingElement::Arch;
+
+sub check
+{
+	my $self = $_[0];
+
+	my ($machine_arch, $arch);
+	for my $ok (@{$self->{arches}}) {
+		return 1 if $ok eq '*';
+		if (!defined $machine_arch) {
+			chomp($machine_arch = `/usr/bin/arch -s`);
+		}
+		return 1 if $ok eq $machine_arch;
+		if (!defined $arch) {
+			chomp($arch = `/usr/bin/uname -m`);
+		}
+		return 1 if $ok eq $arch;
+	}
+	return undef;
+}
+
 package main;
 
 my $errors = 0;
@@ -412,6 +433,12 @@ while (my $pkg = shift @todo) {
 	if (is_installed($plist->pkgname())) {
 		$handle->close();
 		next;
+	}
+	if ($plist->has('arch')) {
+		unless ($plist->{arch}->check()) {
+			print "$pkg is not for the right architecture\n";
+			next MAINLOOP;
+		}
 	}
 	if (!defined $handle->{solved_dependencies}) {
 		my @deps = solve_dependencies($handle, @todo);
