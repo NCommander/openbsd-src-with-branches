@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sn.c,v 1.1.1.1 1996/06/24 09:07:19 pefo Exp $	*/
+/*	$OpenBSD: if_sn.c,v 1.2 1996/07/30 20:24:22 pefo Exp $	*/
 /*
  * National Semiconductor  SONIC Driver
  * Copyright (c) 1991   Algorithmics Ltd (http://www.algor.co.uk)
@@ -326,6 +326,7 @@ snattach(parent, self, aux)
 	p += NRBA * RBASIZE;
 
 	DMA_MAP(sc->dma, (caddr_t)SONICBUF, p - SONICBUF, SONICBUF - pp);
+	printf(" buf:%d",p - SONICBUF);
 
 #if 0
 	camdump(sc);
@@ -663,7 +664,7 @@ sonicput(sc, m0)
 		int resid = m->m_len;
 
 		if(resid != 0) {
-			MachHitFlushDCache(va, resid);
+			R4K_HitFlushDCache(va, resid);
 			DMA_MAP(sc->dma, (caddr_t)va, resid, fragoffset);
 		}
 		len += resid;
