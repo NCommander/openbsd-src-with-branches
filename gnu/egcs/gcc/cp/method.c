@@ -372,10 +372,16 @@ is_back_referenceable_type (type)
 
   switch (TREE_CODE (type)) 
     {
+    case BOOLEAN_TYPE:
+      if (!flag_do_squangling)
+	/* Even though the mangling of this is just `b', we did
+	   historically generate back-references for it.  */
+	return 1;
+      /* Fall through.  */
+      
     case INTEGER_TYPE:
     case REAL_TYPE:
     case VOID_TYPE:
-    case BOOLEAN_TYPE:
       /* These types have single-character manglings, so there's no
 	 point in generating back-references.  */
       return 0;         
@@ -2225,42 +2231,21 @@ do_build_copy_constructor (fndecl)
       tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
       int i;
 
+      /* Initialize all the base-classes.  */
       for (t = CLASSTYPE_VBASECLASSES (current_class_type); t;
 	   t = TREE_CHAIN (t))
-	{
-	  tree basetype = BINFO_TYPE (t);
-	  tree p = convert_to_reference
-	    (build_reference_type (basetype), parm,
-	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
-	  p = convert_from_reference (p);
-
-	  if (p == error_mark_node)
-	    cp_error ("in default copy constructor");
-	  else 
-	    current_base_init_list = tree_cons (basetype,
-						p, current_base_init_list);
-	}
-	
+	current_base_init_list 
+	  = tree_cons (BINFO_TYPE (t), parm, current_base_init_list);
       for (i = 0; i < n_bases; ++i)
 	{
-	  tree p, basetype = TREE_VEC_ELT (binfos, i);
-	  if (TREE_VIA_VIRTUAL (basetype))
+	  t = TREE_VEC_ELT (binfos, i);
+	  if (TREE_VIA_VIRTUAL (t))
 	    continue; 
 
-	  basetype = BINFO_TYPE (basetype);
-	  p = convert_to_reference
-	    (build_reference_type (basetype), parm,
-	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
-
-	  if (p == error_mark_node) 
-	    cp_error ("in default copy constructor");
-	  else 
-	    {
-	      p = convert_from_reference (p);
-	      current_base_init_list = tree_cons (basetype,
-						  p, current_base_init_list);
-	    }
+	  current_base_init_list 
+	    = tree_cons (BINFO_TYPE (t), parm, current_base_init_list);
 	}
+
       for (; fields; fields = TREE_CHAIN (fields))
 	{
 	  tree init, t;

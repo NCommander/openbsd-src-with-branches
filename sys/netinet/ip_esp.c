@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.24 1999/07/05 20:17:06 deraadt Exp $	*/
+/*	$OpenBSD: ip_esp.c,v 1.23 1999/05/16 21:48:33 niklas Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -57,6 +57,7 @@
 #include <net/route.h>
 #include <net/netisr.h>
 #include <net/bpf.h>
+#include <net/if_enc.h>
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
@@ -72,11 +73,9 @@
 #include <netinet/ip_ipsp.h>
 #include <netinet/ip_esp.h>
 
-#include <net/if_enc.h>
-
 #include "bpfilter.h"
 
-extern struct enc_softc encif[];
+extern struct ifnet encif;
 
 #ifdef ENCDEBUG
 #define DPRINTF(x)	if (encdebug) printf x
@@ -173,10 +172,7 @@ esp_input(m, va_alist)
 	return;
     }
 
-    if (tdbp->tdb_interface)
-      m->m_pkthdr.rcvif = (struct ifnet *) tdbp->tdb_interface;
-    else
-      m->m_pkthdr.rcvif = &encif[0].sc_if;
+    m->m_pkthdr.rcvif = &encif;
 
     /* Register first use, setup expiration timer */
     if (tdbp->tdb_first_use == 0)
@@ -272,7 +268,7 @@ esp_input(m, va_alist)
     m->m_flags |= M_CONF;
 
 #if NBPFILTER > 0
-    if (m->m_pkthdr.rcvif->if_bpf) 
+    if (encif.if_bpf) 
     {
         /*
          * We need to prepend the address family as
@@ -292,7 +288,7 @@ esp_input(m, va_alist)
         m0.m_len = ENC_HDRLEN;
         m0.m_data = (char *) &hdr;
         
-        bpf_mtap(m->m_pkthdr.rcvif->if_bpf, &m0);
+        bpf_mtap(encif.if_bpf, &m0);
     }
 #endif
 

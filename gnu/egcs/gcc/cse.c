@@ -7483,9 +7483,12 @@ cse_insn (insn, libcall_insn)
 		 && GET_CODE (NEXT_INSN (p)) != BARRIER
 		 && GET_CODE (NEXT_INSN (p)) != CODE_LABEL)
 	    {
+	      /* Note, we must update P with the return value from
+		 delete_insn, otherwise we could get an infinite loop
+		 if NEXT_INSN (p) had INSN_DELETED_P set.  */
 	      if (GET_CODE (NEXT_INSN (p)) != NOTE
 		  || NOTE_LINE_NUMBER (NEXT_INSN (p)) == NOTE_INSN_DELETED)
-		delete_insn (NEXT_INSN (p));
+		p = PREV_INSN (delete_insn (NEXT_INSN (p)));
 	      else
 		p = NEXT_INSN (p);
 	    }
@@ -7607,7 +7610,12 @@ cse_insn (insn, libcall_insn)
 	    enum machine_mode mode
 	      = GET_MODE (src) == VOIDmode ? GET_MODE (dest) : GET_MODE (src);
 
-	    if (sets[i].src_elt == 0)
+	    /* Don't put a hard register source into the table if this is
+	       the last insn of a libcall.  */
+	    if (sets[i].src_elt == 0
+		&& (GET_CODE (src) != REG
+		    || REGNO (src) >= FIRST_PSEUDO_REGISTER
+		    || ! find_reg_note (insn, REG_RETVAL, NULL_RTX)))
 	      {
 		register struct table_elt *elt;
 

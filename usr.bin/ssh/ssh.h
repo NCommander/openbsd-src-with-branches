@@ -13,7 +13,7 @@ Generic header file for ssh.
 
 */
 
-/* RCSID("$Id: ssh.h,v 1.14 1999/10/25 20:41:55 markus Exp $"); */
+/* RCSID("$Id: ssh.h,v 1.12 1999/10/16 19:23:35 provos Exp $"); */
 
 #ifndef SSH_H
 #define SSH_H
@@ -119,10 +119,6 @@ only by root, whereas ssh_config should be world-readable. */
 /* Name of the environment variable containing the pathname of the
    authentication socket. */
 #define SSH_AUTHSOCKET_ENV_NAME	"SSH_AUTH_SOCK"
-
-/* Name of the environment variable containing the pathname of the
-   authentication socket. */
-#define SSH_AGENTPID_ENV_NAME	"SSH_AGENT_PID"
 
 /* Force host key length and server key length to differ by at least this
    many bits.  This is to make double encryption with rsaref work. */
@@ -405,7 +401,8 @@ void fatal_add_cleanup(void (*proc)(void *context), void *context);
 /* Removes a cleanup frunction to be called at fatal(). */
 void fatal_remove_cleanup(void (*proc)(void *context), void *context);
 
-/*---------------- definitions for channels ------------------*/
+/*---------------- definitions for x11.c ------------------*/
+
 
 /* Sets specific protocol options. */
 void channel_set_options(int hostname_in_open);
@@ -524,6 +521,10 @@ extern char *xauthfile;
 /* Sends a message to the server to request authentication fd forwarding. */
 void auth_request_forwarding(void);
 
+/* Returns the number of the file descriptor to pass to child programs as
+   the authentication fd. */
+int auth_get_fd(void);
+
 /* Returns the name of the forwarded authentication socket.  Returns NULL
    if there is no forwarded authentication socket.  The returned value points
    to a static buffer. */
@@ -543,6 +544,11 @@ int match_pattern(const char *s, const char *pattern);
 /* Expands tildes in the file name.  Returns data allocated by xmalloc.
    Warning: this calls getpw*. */
 char *tilde_expand_filename(const char *filename, uid_t my_uid);
+
+/* Gets a file descriptor that won't get closed by shell pathname.
+   If pathname is NULL, the path is inferred from the SHELL environment
+   variable or the user id. */
+int get_permanent_fd(const char *pathname);
 
 /* Performs the interactive session.  This handles data transmission between
    the client and the program.  Note that the notion of stdin, stdout, and

@@ -1,4 +1,4 @@
-#	$OpenBSD: DISKLESS,v 1.25 1999/10/29 05:06:36 angelos Exp $
+#	$OpenBSD: DISKLESS,v 1.23 1999/01/02 00:32:56 niklas Exp $
 #	$NetBSD: DISKLESS,v 1.26 1996/05/20 18:17:16 mrg Exp $
 #
 # DISKLESS -- Generic machine setup for diskless boot.

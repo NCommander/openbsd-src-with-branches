@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti.c,v 1.7 1999/10/25 19:39:18 jason Exp $	*/
+/*	$OpenBSD: if_ti.c,v 1.5 1999/10/03 13:06:30 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -491,6 +491,14 @@ void ti_handle_events(sc)
 		switch(e->ti_event) {
 		case TI_EV_LINKSTAT_CHANGED:
 			sc->ti_linkstat = e->ti_code;
+			if (e->ti_code == TI_EV_CODE_LINK_UP)
+				printf("%s: 10/100 link up\n",
+				    sc->sc_dv.dv_xname);
+			else if (e->ti_code == TI_EV_CODE_GIG_LINK_UP)
+				printf("%s: gigabit link up\n",
+				    sc->sc_dv.dv_xname);
+			else if (e->ti_code == TI_EV_CODE_LINK_DOWN)
+				printf("%s: link down\n", sc->sc_dv.dv_xname);
 			break;
 		case TI_EV_ERROR:
 			if (e->ti_code == TI_EV_CODE_ERR_INVAL_CMD)
@@ -552,41 +560,24 @@ void ti_handle_events(sc)
 int ti_alloc_jumbo_mem(sc)
 	struct ti_softc		*sc;
 {
-	caddr_t ptr, kva;
-	bus_dma_segment_t seg;
-	bus_dmamap_t dmamap;
-	int i, rseg;
-	struct ti_jpool_entry *entry;
+	caddr_t			ptr;
+	register int		i;
+	struct ti_jpool_entry   *entry;
 
 	/* Grab a big chunk o' storage. */
-	if (bus_dmamem_alloc(sc->sc_dmatag, TI_JMEM, PAGE_SIZE, 0,
-	    &seg, 1, &rseg, BUS_DMA_NOWAIT)) {
-		printf("%s: can't alloc rx buffers\n", sc->sc_dv.dv_xname);
-		return (ENOBUFS);
+#ifndef UVM
+	sc->ti_cdata.ti_jumbo_buf = (caddr_t) vm_page_alloc_contig(
+	    TI_JMEM, 0x100000, 0xffffffff, PAGE_SIZE);
+#else
+	sc->ti_cdata.ti_jumbo_buf = (caddr_t) uvm_pagealloc_contig(
+	    TI_JMEM, 0x100000, 0xffffffff, PAGE_SIZE);
+#endif
+
+	if (sc->ti_cdata.ti_jumbo_buf == NULL) {
+		printf("%s: no memory for jumbo buffers!\n",
+		    sc->sc_dv.dv_xname);
+		return(ENOBUFS);
 	}
-	if (bus_dmamem_map(sc->sc_dmatag, &seg, rseg, TI_JMEM, &kva,
-	    BUS_DMA_NOWAIT)) {
-		printf("%s: can't map dma buffers (%d bytes)\n",
-		    sc->sc_dv.dv_xname, TI_JMEM);
-		bus_dmamem_free(sc->sc_dmatag, &seg, rseg);
-		return (ENOBUFS);
-	}
-	if (bus_dmamap_create(sc->sc_dmatag, TI_JMEM, 1,
-	    TI_JMEM, 0, BUS_DMA_NOWAIT, &dmamap)) {
-		printf("%s: can't create dma map\n", sc->sc_dv.dv_xname);
-		bus_dmamem_unmap(sc->sc_dmatag, kva, TI_JMEM);
-		bus_dmamem_free(sc->sc_dmatag, &seg, rseg);
-		return (ENOBUFS);
-	}
-	if (bus_dmamap_load(sc->sc_dmatag, dmamap, kva, TI_JMEM,
-	    NULL, BUS_DMA_NOWAIT)) {
-		printf("%s: can't load dma map\n", sc->sc_dv.dv_xname);
-		bus_dmamap_destroy(sc->sc_dmatag, dmamap);
-		bus_dmamem_unmap(sc->sc_dmatag, kva, TI_JMEM);
-		bus_dmamem_free(sc->sc_dmatag, &seg, rseg);
-		return (ENOBUFS);
-	}
-	sc->ti_cdata.ti_jumbo_buf = (caddr_t)kva;
 
 	LIST_INIT(&sc->ti_jfree_listhead);
 	LIST_INIT(&sc->ti_jinuse_listhead);
@@ -603,13 +594,10 @@ int ti_alloc_jumbo_mem(sc)
 		entry = malloc(sizeof(struct ti_jpool_entry), 
 			       M_DEVBUF, M_NOWAIT);
 		if (entry == NULL) {
-			bus_dmamap_unload(sc->sc_dmatag, dmamap);
-			bus_dmamap_destroy(sc->sc_dmatag, dmamap);
-			bus_dmamem_unmap(sc->sc_dmatag, kva, TI_JMEM);
-			bus_dmamem_free(sc->sc_dmatag, &seg, rseg);
+			free(sc->ti_cdata.ti_jumbo_buf, M_DEVBUF);
 			sc->ti_cdata.ti_jumbo_buf = NULL;
-			printf("%s: no memory for jumbo buffer queue\n",
-			    sc->sc_dv.dv_xname);
+			printf("%s: no memory for jumbo "
+			    "buffer queue!\n", sc->sc_dv.dv_xname);
 			return(ENOBUFS);
 		}
 		entry->slot = i;
@@ -1519,12 +1507,9 @@ ti_attach(parent, self, aux)
 	const char *intrstr = NULL;
 	bus_addr_t iobase;
 	bus_size_t iosize;
-	bus_dma_segment_t seg;
-	bus_dmamap_t dmamap;
-	int s, rseg;
+	int s;
 	u_int32_t command;
 	struct ifnet *ifp;
-	caddr_t kva;
 
 	s = splimp();
 
@@ -1604,36 +1589,19 @@ ti_attach(parent, self, aux)
 	     ether_sprintf(sc->arpcom.ac_enaddr));
 
 	/* Allocate the general information block and ring buffers. */
-	sc->sc_dmatag = pa->pa_dmat;
-	if (bus_dmamem_alloc(sc->sc_dmatag, sizeof(struct ti_ring_data),
-	    PAGE_SIZE, 0, &seg, 1, &rseg, BUS_DMA_NOWAIT)) {
-		printf("%s: can't alloc rx buffers\n", sc->sc_dv.dv_xname);
+#ifndef UVM
+	sc->ti_rdata = (struct ti_ring_data *) vm_page_alloc_contig(
+	    sizeof(struct ti_ring_data), 0x100000, 0xffffffff, PAGE_SIZE);
+#else
+	sc->ti_rdata = (struct ti_ring_data *) uvm_pagealloc_contig(
+	    sizeof(struct ti_ring_data), 0x100000, 0xffffffff, PAGE_SIZE);
+#endif
+
+	if (sc->ti_rdata == NULL) {
+		printf("%s: no memory for list buffers!\n", sc->sc_dv.dv_xname);
 		goto fail;
 	}
-	if (bus_dmamem_map(sc->sc_dmatag, &seg, rseg,
-	    sizeof(struct ti_ring_data), &kva, BUS_DMA_NOWAIT)) {
-		printf("%s: can't map dma buffers (%d bytes)\n",
-		       sc->sc_dv.dv_xname, sizeof(struct ti_ring_data));
-		bus_dmamem_free(sc->sc_dmatag, &seg, rseg);
-		goto fail;
-	}
-	if (bus_dmamap_create(sc->sc_dmatag, sizeof(struct ti_ring_data), 1,
-	    sizeof(struct ti_ring_data), 0, BUS_DMA_NOWAIT, &dmamap)) {
-		printf("%s: can't create dma map\n", sc->sc_dv.dv_xname);
-		bus_dmamem_unmap(sc->sc_dmatag, kva,
-		    sizeof(struct ti_ring_data));
-		bus_dmamem_free(sc->sc_dmatag, &seg, rseg);
-		goto fail;
-	}
-	if (bus_dmamap_load(sc->sc_dmatag, dmamap, kva,
-	    sizeof(struct ti_ring_data), NULL, BUS_DMA_NOWAIT)) {
-		bus_dmamap_destroy(sc->sc_dmatag, dmamap);
-		bus_dmamem_unmap(sc->sc_dmatag, kva,
-		    sizeof(struct ti_ring_data));
-		bus_dmamem_free(sc->sc_dmatag, &seg, rseg);
-		goto fail;
-	}
-	sc->ti_rdata = (struct ti_ring_data *)kva;
+
 	bzero(sc->ti_rdata, sizeof(struct ti_ring_data));
 
 	/* Try to allocate memory for jumbo buffers. */

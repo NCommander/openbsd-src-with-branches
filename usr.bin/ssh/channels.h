@@ -1,4 +1,4 @@
-/* RCSID("$Id: channels.h,v 1.3 1999/10/17 16:56:09 markus Exp $"); */
+/* RCSID("$Id: channels.h,v 1.2 1999/10/16 22:29:00 markus Exp $"); */
 
 #ifndef CHANNELS_H
 #define CHANNELS_H
@@ -26,8 +26,9 @@ typedef struct Channel
   int self;		/* my own channel identifier */
   int remote_id;	/* channel identifier for remote peer */
 			/* peer can be reached over encrypted connection, via packet-sent */
-  int istate;		/* input from channel (state of receive half) */
-  int ostate;		/* output to channel  (state of transmit half) */
+  int istate;
+  int ostate;
+  int x11;
   int sock;		/* data socket, linked to this channel */
   Buffer input;		/* data read from socket, to be sent over encrypted connection */
   Buffer output;	/* data received over encrypted connection for send on socket */

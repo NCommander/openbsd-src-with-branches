@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 1999/10/26 15:13:53 art Exp $
+#	$OpenBSD: Makefile,v 1.7 1998/01/05 00:01:55 deraadt Exp $
 
 PROG=	systat
 
@@ -13,7 +13,3 @@ BINGRP=	kmem
 BINMODE=2555
 
 .include <bsd.prog.mk>
-
-.if (${UVM} == "yes")
-CFLAGS+=-DUVM
-.endif

@@ -1,5 +1,3 @@
-/*	$OpenBSD: ssh-agent.c,v 1.15 1999/10/28 08:43:10 markus Exp $	*/
-
 /*
 
 ssh-agent.c
@@ -16,7 +14,7 @@ The authentication agent program.
 */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-agent.c,v 1.15 1999/10/28 08:43:10 markus Exp $");
+RCSID("$Id: ssh-agent.c,v 1.11 1999/10/07 22:46:32 markus Exp $");
 
 #include "ssh.h"
 #include "rsa.h"
@@ -28,7 +26,7 @@ RCSID("$OpenBSD: ssh-agent.c,v 1.15 1999/10/28 08:43:10 markus Exp $");
 #include "getput.h"
 #include "mpaux.h"
 
-#include <ssl/md5.h>
+#include <md5.h>
 
 typedef struct
 {
@@ -134,10 +132,10 @@ process_authentication_challenge(SocketEntry *e)
 	    assert(len <= 32 && len);
 	    memset(buf, 0, 32);
 	    BN_bn2bin(challenge, buf + 32 - len);
-	    MD5_Init(&md);
-	    MD5_Update(&md, buf, 32);
-	    MD5_Update(&md, session_id, 16);
-	    MD5_Final(mdbuf, &md);
+	    MD5Init(&md);
+	    MD5Update(&md, buf, 32);
+	    MD5Update(&md, session_id, 16);
+	    MD5Final(mdbuf, &md);
 	    break;
 
 	  default:
@@ -478,39 +476,17 @@ check_parent_exists(int sig)
   alarm(10);
 }
 
-void
-cleanup_socket(void)
-{
+void cleanup_socket(void) {
   remove(socket_name);
   rmdir(socket_dir);
-}
-
-void
-cleanup_exit(int i)
-{
-  cleanup_socket();
-  exit(i);
-}
-
-void
-usage()
-{
-  extern char *__progname;
-
-  fprintf(stderr, "ssh-agent version %s\n", SSH_VERSION);
-  fprintf(stderr, "Usage: %s [-c | -s] [-k] [command {args...]]\n",
-	  __progname);
-  exit(1);
 }
 
 int
 main(int ac, char **av)
 {
   fd_set readset, writeset;
-  int sock, c_flag = 0, k_flag = 0, s_flag = 0, ch;
+  int sock;
   struct sockaddr_un sunaddr;
-  pid_t pid;
-  char *shell, *format, *pidstr, pidstrbuf[1 + 3 * sizeof pid];
 
   /* check if RSA support exists */
   if (rsa_alive() == 0) {
@@ -521,66 +497,11 @@ main(int ac, char **av)
     exit(1);
   }
 
-  while ((ch = getopt(ac, av, "cks")) != -1)
+  if (ac < 2)
     {
-      switch (ch)
-	{
-	case 'c':
-	  if (s_flag)
-	    usage();
-	  c_flag++;
-	  break;
-	case 'k':
-	  k_flag++;
-	  break;
-	case 's':
-	  if (c_flag)
-	    usage();
-	  s_flag++;
-	  break;
-	default:
-	  usage();
-	}
-    }
-  ac -= optind;
-  av += optind;
-
-  if (ac > 0 && (c_flag || k_flag || s_flag))
-    usage();
-
-  if (ac == 0 && !c_flag && !k_flag && !s_flag)
-    {
-      shell = getenv("SHELL");
-      if (shell != NULL && strncmp(shell + strlen(shell) - 3, "csh", 3) == 0)
-	c_flag = 1;
-    }
-
-  if (k_flag)
-    {
-      pidstr = getenv(SSH_AGENTPID_ENV_NAME);
-      if (pidstr == NULL)
-	{
-	  fprintf(stderr, "%s not set, cannot kill agent\n",
-		  SSH_AGENTPID_ENV_NAME);
-	  exit(1);
-	}
-      pid = atoi(pidstr);
-      if (pid < 1)		/* XXX PID_MAX check too */
-	{
-	  fprintf(stderr, "%s=\"%s\", which is not a good PID\n",
-		  SSH_AGENTPID_ENV_NAME, pidstr);
-	  exit(1);
-	}
-      if (kill(pid, SIGTERM) == -1)
-	{
-	  perror("kill");
-	  exit(1);
-	}
-      format = c_flag ? "unsetenv %s;\n" : "unset %s;\n";
-      printf(format, SSH_AUTHSOCKET_ENV_NAME);
-      printf(format, SSH_AGENTPID_ENV_NAME);
-      printf("echo Agent pid %d killed;\n", pid);
-      exit(0);
+      fprintf(stderr, "ssh-agent version %s\n", SSH_VERSION);
+      fprintf(stderr, "Usage: %s command\n", av[0]);
+      exit(1);
     }
 
   parent_pid = getpid();
@@ -591,16 +512,29 @@ main(int ac, char **av)
       perror("mkdtemp: private socket dir");
       exit(1);
   }
-  snprintf(socket_name, sizeof socket_name, "%s/agent.%d", socket_dir,
-	   parent_pid);
+  snprintf(socket_name, sizeof socket_name, "%s/agent.%d", socket_dir, parent_pid);
+  
+  /* Fork, and have the parent execute the command.  The child continues as
+     the authentication agent. */
+  if (fork() != 0)
+    { /* Parent - execute the given command. */
+      setenv(SSH_AUTHSOCKET_ENV_NAME, socket_name, 1);
+      execvp(av[1], av + 1);
+      perror(av[1]);
+      exit(1);
+    }
 
-  /* Create socket early so it will exist before command gets run from
-     the parent.  */
+  if (atexit(cleanup_socket) < 0) {
+	perror("atexit");
+	cleanup_socket();
+	exit(1);
+  }
+
   sock = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sock < 0)
     {
       perror("socket");
-      cleanup_exit(1);
+      exit(1);
     }
   memset(&sunaddr, 0, sizeof(sunaddr));
   sunaddr.sun_family = AF_UNIX;
@@ -608,69 +542,18 @@ main(int ac, char **av)
   if (bind(sock, (struct sockaddr *)&sunaddr, sizeof(sunaddr)) < 0)
     {
       perror("bind");
-      cleanup_exit(1);
+      exit(1);
     }
   if (listen(sock, 5) < 0)
     {
       perror("listen");
-      cleanup_exit(1);
-    }
-
-  /* Fork, and have the parent execute the command, if any, or present the
-     socket data.  The child continues as the authentication agent. */
-  pid = fork();
-  if (pid == -1)
-    {
-      perror("fork");
       exit(1);
     }
-  if (pid != 0)
-    { /* Parent - execute the given command. */
-      close(sock);
-      snprintf(pidstrbuf, sizeof pidstrbuf, "%d", pid);
-      if (ac == 0)
-	{
-	  format = c_flag ? "setenv %s %s;\n" : "%s=%s; export %s;\n";
-	  printf(format, SSH_AUTHSOCKET_ENV_NAME, socket_name,
-		 SSH_AUTHSOCKET_ENV_NAME);
-	  printf(format, SSH_AGENTPID_ENV_NAME, pidstrbuf,
-		 SSH_AGENTPID_ENV_NAME);
-	  printf("echo Agent pid %d;\n", pid);
-	  exit(0);
-	}
-
-      setenv(SSH_AUTHSOCKET_ENV_NAME, socket_name, 1);
-      setenv(SSH_AGENTPID_ENV_NAME, pidstrbuf, 1);
-      execvp(av[0], av);
-      perror(av[0]);
-      exit(1);
-    }
-
-  close(0);
-  close(1);
-  close(2);
-
-  if (setsid() == -1)
-    {
-      perror("setsid");
-      cleanup_exit(1);
-    }
-
-  if (atexit(cleanup_socket) < 0)
-    {
-      perror("atexit");
-      cleanup_exit(1);
-    }
-
   new_socket(AUTH_SOCKET, sock);
-  if (ac > 0)
-    {
-      signal(SIGALRM, check_parent_exists);
-      alarm(10);
-    }
+  signal(SIGALRM, check_parent_exists);
+  alarm(10);
 
   signal(SIGINT, SIG_IGN);
-  signal(SIGPIPE, SIG_IGN);
   while (1)
     {
       FD_ZERO(&readset);
@@ -680,6 +563,7 @@ main(int ac, char **av)
 	{
 	  if (errno == EINTR)
 	    continue;
+	  perror("select");
 	  exit(1);
 	}
       after_select(&readset, &writeset);

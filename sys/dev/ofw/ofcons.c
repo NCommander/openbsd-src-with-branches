@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofcons.c,v 1.2 1997/11/07 08:07:21 niklas Exp $	*/
+/*	$OpenBSD: ofcons.c,v 1.3 1996/10/13 01:38:11 christos Exp $	*/
 /*	$NetBSD: ofcons.c,v 1.3 1996/10/13 01:38:11 christos Exp $	*/
 
 /*
@@ -53,8 +53,7 @@ struct ofc_softc {
 
 #define	OFBURSTLEN	128	/* max number of bytes to write in one chunk */
 
-static int stdin  = 0;
-static int stdout = 0;
+static int stdin, stdout;
 
 static int ofcmatch __P((struct device *, void *, void *));
 static void ofcattach __P((struct device *, struct device *, void *));
@@ -328,12 +327,6 @@ ofccnputc(dev, c)
 {
 	char ch = c;
 	
-/*#ifdef DEBUG */
-#if 1
-	if (stdout == 0) {
-		ofcprobe();
-	}
-#endif
 	OF_write(stdout, &ch, 1);
 }
 

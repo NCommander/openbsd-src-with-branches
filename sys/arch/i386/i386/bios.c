@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.24 1999/08/25 00:54:18 mickey Exp $	*/
+/*	$OpenBSD: bios.c,v 1.23 1998/11/15 16:33:01 art Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -81,14 +81,10 @@ struct cfdriver bios_cd = {
 
 extern dev_t bootdev;
 
-#if NAPM > 0
-bios_apminfo_t *apm;
-#endif
 #if NPCI > 0
-bios_pciinfo_t *bios_pciinfo;
+bios_pciinfo_t *bios_pciinfo = NULL;
 #endif
-bios_diskinfo_t *bios_diskinfo;
-bios_memmap_t	*bios_memmap;
+bios_diskinfo_t *bios_diskinfo = NULL;
 u_int32_t	bios_cksumlen;
 
 bios_diskinfo_t *bios_getdiskinfo __P((dev_t));
@@ -109,7 +105,7 @@ biosprobe(parent, match, aux)
 	if (bios_cd.cd_ndevs || strcmp(bia->bios_dev, bios_cd.cd_name))
 		return 0;
 
-	if (!(bootapiver & BAPIV_VECTOR) || bootargp == NULL )
+	if (bootapiver < BOOTARG_APIVER || bootargp == NULL )
 		return 0;
 
 	return 1;
@@ -120,12 +116,16 @@ biosattach(parent, self, aux)
 	struct device *parent, *self;
 	void *aux;
 {
-	/* struct bios_softc *sc = (void *) self; */
+	struct bios_softc *sc = (void *) self;
 #if NAPM > 0
 	struct bios_attach_args *bia = aux;
 #endif
+#if NAPM > 0 || defined(DEBUG)
+	bios_apminfo_t *apm = NULL;
+#endif
 	u_int8_t *va = ISA_HOLE_VADDR(0xffff0);
 	char *str;
+	bootarg_t *q;
 
 	switch (va[14]) {
 	default:
@@ -141,65 +141,24 @@ biosattach(parent, self, aux)
 	printf(": %s(%02x) BIOS, date %c%c/%c%c/%c%c\n",
 	    str, va[15], va[5], va[6], va[8], va[9], va[11], va[12]);
 
-#if NAPM > 0
-	if (apm) {
-		struct bios_attach_args ba;
-#if defined(DEBUG) || defined(APMDEBUG)
-		printf("apminfo: %x, code %x[%x]/%x[%x], data %x[%x], ept %x\n",
-		    apm->apm_detail,
-		    apm->apm_code32_base, apm->apm_code_len,
-		    apm->apm_code16_base, apm->apm_code16_len,
-		    apm->apm_data_base, apm->apm_data_len, apm->apm_entry);
-#endif
-		ba.bios_dev = "apm";
-		ba.bios_func = 0x15;
-		ba.bios_memt = bia->bios_memt;
-		ba.bios_iot = bia->bios_iot;
-		ba.bios_apmp = apm;
-		config_found(self, &ba, bios_print);
-	}
-#endif
-}
-
-void
-bios_getopt()
-{
-	bootarg_t *q;
-
-	printf("bootargv:");
+	printf("%s:", sc->sc_dev.dv_xname);
 
 	for(q = bootargp; q->ba_type != BOOTARG_END; q = q->ba_next) {
 		q->ba_next = (bootarg_t *)((caddr_t)q + q->ba_size);
 		switch (q->ba_type) {
 		case BOOTARG_MEMMAP:
-			bios_memmap = (bios_memmap_t *)q->ba_arg;
-			if (bootapiver & BAPIV_BMEMMAP)
-				printf(" memmap %p", bios_memmap);
-			else {
-				register bios_memmap_t *p;
-				printf(" omemmap %p", bios_memmap);
-				/*
-				 * older /boots passed memmap in Kbytes,
-				 * which is very inconvinient from the
-				 * point of view of memory management
-				 */
-				for (p = bios_memmap;
-				     p->type != BIOS_MAP_END; p++) {
-					p->addr /= 1024;
-					p->size *= 1024;
-				}
-			}
+			printf(" memmap %p", q->ba_arg);
 			break;
 		case BOOTARG_DISKINFO:
 			bios_diskinfo = (bios_diskinfo_t *)q->ba_arg;
 			printf(" diskinfo %p", bios_diskinfo);
 			break;
-#if NAPM > 0 || defined(DEBUG)
 		case BOOTARG_APMINFO:
 			printf(" apminfo %p", q->ba_arg);
+#if NAPM > 0 || defined(DEBUG)
 			apm = (bios_apminfo_t *)q->ba_arg;
-			break;
 #endif
+			break;
 		case BOOTARG_CKSUMLEN:
 			bios_cksumlen = *(u_int32_t *)q->ba_arg;
 			printf(" cksumlen %d", bios_cksumlen);
@@ -210,10 +169,6 @@ bios_getopt()
 			printf(" pciinfo %p", bios_pciinfo);
 			break;
 #endif
-		case BOOTARG_CONSDEV:
-			cnset(*(dev_t *)q->ba_arg);
-			break;
-
 		default:
 			printf(" unsupported arg (%d) %p", q->ba_type,
 			    q->ba_arg);
@@ -221,6 +176,23 @@ bios_getopt()
 	}
 	printf("\n");
 
+#if NAPM > 0
+	if (apm) {
+		struct bios_attach_args ba;
+#if defined(DEBUG) || defined(APMDEBUG)
+		printf("apminfo: %x, code %x/%x[%x], data %x[%x], entry %x\n",
+		    apm->apm_detail, apm->apm_code32_base,
+		    apm->apm_code16_base, apm->apm_code_len,
+		    apm->apm_data_base, apm->apm_data_len, apm->apm_entry);
+#endif
+		ba.bios_dev = "apm";
+		ba.bios_func = 0x15;
+		ba.bios_memt = bia->bios_memt;
+		ba.bios_iot = bia->bios_iot;
+		ba.bios_apmp = apm;
+		config_found(self, &ba, bios_print);
+	}
+#endif
 }
 
 int
@@ -347,6 +319,7 @@ bios_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	size_t newlen;
 	struct proc *p;
 {
+	extern u_int cnvmem, extmem; /* locore.s */
 	bios_diskinfo_t *pdi;
 	int biosdev;
 
@@ -354,11 +327,10 @@ bios_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	if (namelen != 1 && name[0] != BIOS_DISKINFO)
 		return (ENOTDIR);		/* overloaded */
 
-	if (!(bootapiver & BAPIV_VECTOR))
-		return EOPNOTSUPP;
-
 	switch (name[0]) {
 	case BIOS_DEV:
+		if (bootapiver < BOOTARG_APIVER)
+			return EOPNOTSUPP;
 		if ((pdi = bios_getdiskinfo(bootdev)) == NULL)
 			return ENXIO;
 		biosdev = pdi->bios_number;
@@ -366,9 +338,15 @@ bios_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	case BIOS_DISKINFO:
 		if (namelen != 2)
 			return ENOTDIR;
+		if (bootapiver < BOOTARG_APIVER)
+			return EOPNOTSUPP;
 		if ((pdi = bios_getdiskinfo(name[1])) == NULL)
 			return ENXIO;
 		return sysctl_rdstruct(oldp, oldlenp, newp, pdi, sizeof(*pdi));
+	case BIOS_CNVMEM:
+		return sysctl_rdint(oldp, oldlenp, newp, cnvmem);
+	case BIOS_EXTMEM:
+		return sysctl_rdint(oldp, oldlenp, newp, extmem);
 	case BIOS_CKSUMLEN:
 		return sysctl_rdint(oldp, oldlenp, newp, bios_cksumlen);
 	default:

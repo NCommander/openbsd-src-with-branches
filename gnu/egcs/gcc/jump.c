@@ -235,7 +235,12 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
   if (!optimize)
     {
-      can_reach_end = calculate_can_reach_end (last_insn, 1, 0);
+      /* CAN_REACH_END is persistent for each function.  Once set it should
+	 not be cleared.  This is especially true for the case where we
+	 delete the NOTE_FUNCTION_END note.  CAN_REACH_END is cleared by
+	 the front-end before compiling each function.  */
+      if (calculate_can_reach_end (last_insn, 1, 0))
+	can_reach_end = 1;
 
       /* Zero the "deleted" flag of all the "deleted" insns.  */
       for (insn = f; insn; insn = NEXT_INSN (insn))
@@ -2068,7 +2073,12 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
     }
 #endif
 
-  can_reach_end = calculate_can_reach_end (last_insn, 0, 1);
+  /* CAN_REACH_END is persistent for each function.  Once set it should
+     not be cleared.  This is especially true for the case where we
+     delete the NOTE_FUNCTION_END note.  CAN_REACH_END is cleared by
+     the front-end before compiling each function.  */
+  if (calculate_can_reach_end (last_insn, 0, 1))
+    can_reach_end = 1;
 
   /* Show JUMP_CHAIN no longer valid.  */
   jump_chain = 0;
@@ -3151,8 +3161,17 @@ can_reverse_comparison_p (comparison, insn)
       )
     {
       rtx prev = prev_nonnote_insn (insn);
-      rtx set = single_set (prev);
+      rtx set;
 
+      /* If the comparison itself was a loop invariant, it could have been
+	 hoisted out of the loop.  If we proceed to unroll such a loop, then
+	 we may not be able to find the comparison when copying the loop.
+
+	 Returning zero in that case is the safe thing to do.  */
+      if (prev == 0)
+	return 0;
+
+      set = single_set (prev);
       if (set == 0 || SET_DEST (set) != arg0)
 	return 0;
 
@@ -3979,20 +3998,36 @@ delete_insn (insn)
      and delete the label if it is now unused.  */
 
   if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))
-    if (--LABEL_NUSES (JUMP_LABEL (insn)) == 0)
-      {
-	/* This can delete NEXT or PREV,
-	   either directly if NEXT is JUMP_LABEL (INSN),
-	   or indirectly through more levels of jumps.  */
-	delete_insn (JUMP_LABEL (insn));
-	/* I feel a little doubtful about this loop,
-	   but I see no clean and sure alternative way
-	   to find the first insn after INSN that is not now deleted.
-	   I hope this works.  */
-	while (next && INSN_DELETED_P (next))
-	  next = NEXT_INSN (next);
-	return next;
-      }
+    {
+      rtx lab = JUMP_LABEL (insn), lab_next;
+
+      if (--LABEL_NUSES (lab) == 0)
+	{
+	  /* This can delete NEXT or PREV,
+	     either directly if NEXT is JUMP_LABEL (INSN),
+	     or indirectly through more levels of jumps.  */
+	  delete_insn (lab);
+
+	  /* I feel a little doubtful about this loop,
+	     but I see no clean and sure alternative way
+	     to find the first insn after INSN that is not now deleted.
+	     I hope this works.  */
+	  while (next && INSN_DELETED_P (next))
+	    next = NEXT_INSN (next);
+	  return next;
+	}
+      else if ((lab_next = next_nonnote_insn (lab)) != NULL
+	       && GET_CODE (lab_next) == JUMP_INSN
+	       && (GET_CODE (PATTERN (lab_next)) == ADDR_VEC
+		   || GET_CODE (PATTERN (lab_next)) == ADDR_DIFF_VEC))
+	{
+	  /* If we're deleting the tablejump, delete the dispatch table.
+	     We may not be able to kill the label immediately preceeding
+	     just yet, as it might be referenced in code leading up to
+	     the tablejump.  */
+	  delete_insn (lab_next);
+	}
+    }
 
   /* Likewise if we're deleting a dispatch table.  */
 

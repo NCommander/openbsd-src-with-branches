@@ -145,19 +145,19 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   int saw_speclang = 0;
 
   /* "-lm" or "-lmath" if it appears on the command line.  */
-  char *saw_math = 0;
+  char *saw_math ATTRIBUTE_UNUSED = 0;
 
   /* "-lc" if it appears on the command line.  */
-  char *saw_libc = 0;
+  char *saw_libc ATTRIBUTE_UNUSED = 0;
 
   /* "-lgcjgc" if it appears on the command line.  */
-  char *saw_gc = 0;
+  char *saw_gc ATTRIBUTE_UNUSED = 0;
 
   /* Saw `-l' option for the thread library.  */
-  char *saw_threadlib = 0;
+  char *saw_threadlib ATTRIBUTE_UNUSED = 0;
 
   /* Saw `-lgcj' on command line.  */
-  int saw_libgcj = 0;
+  int saw_libgcj ATTRIBUTE_UNUSED = 0;
 
   /* Saw -C or -o option, respectively. */
   int saw_C = 0;
@@ -223,6 +223,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	      main_class_name = argv[i] + 7;
 	      added--;
 	    }
+	  else if (strcmp (argv[i], "-fhelp") == 0)
+	    will_link = 0;
 	  else if (strcmp (argv[i], "-v") == 0)
 	    {
 	      saw_verbose_flag = 1;

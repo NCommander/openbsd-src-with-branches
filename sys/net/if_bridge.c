@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.19 1999/10/26 03:40:17 jason Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.17 1999/09/03 12:47:12 jason Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -588,7 +588,7 @@ bridge_output(ifp, m, sa, rt)
 
 	/*
 	 * If the packet is a broadcast or we don't know a better way to
-	 * get there.
+	 * get there, we must broadcast with header rewriting.
 	 */
 	dst_if = bridge_rtlookup(sc, dst);
 	if (dst_if == NULL || eh->ether_dhost[0] & 1) {
@@ -602,10 +602,34 @@ bridge_output(ifp, m, sa, rt)
 				continue;
 			}
 
-			mc = m_copym(m, 0, M_COPYALL, M_NOWAIT);
+			/*
+			 * Make a full copy of the packet (sigh)
+			 */
+			mc = m_copym2(m, 0, M_COPYALL, M_NOWAIT);
 			if (mc == NULL) {
 				sc->sc_if.if_oerrors++;
 				continue;
+			}
+
+			/*
+			 * If packet does not have a multicast or broadcast
+			 * destination, rewrite the header to contain
+			 * the current interface's address.
+			 */
+			if ((eh->ether_shost[0] & 1) == 0) {
+				struct arpcom *cac = (struct arpcom *)p->ifp;
+				struct ether_header *ceh;
+				struct ether_addr *csrc;
+
+				if (mc->m_len < sizeof(*ceh)) {
+					mc = m_pullup(mc, sizeof(*ceh));
+					if (mc == NULL)
+						continue;
+				}
+				ceh = mtod(mc, struct ether_header *);
+				csrc = (struct ether_addr *)
+				    &ceh->ether_shost[0];
+				bcopy(cac->ac_enaddr, csrc, ETHER_ADDR_LEN);
 			}
 
 			sc->sc_if.if_opackets++;
@@ -865,12 +889,8 @@ bridge_input(ifp, eh, m)
 		while (ifl != NULL) {
 			ac = (struct arpcom *)ifl->ifp;
 			if (bcmp(ac->ac_enaddr, eh->ether_dhost,
-			    ETHER_ADDR_LEN) == 0) {
-				bridge_rtupdate(sc,
-				    (struct ether_addr *)&eh->ether_dhost[0],
-				    ifp, 0, IFBAF_DYNAMIC);
+			    ETHER_ADDR_LEN) == 0)
 				return (m);
-			}
 			ifl = LIST_NEXT(ifl, next);
 		}
 		M_PREPEND(m, sizeof(*eh), M_DONTWAIT);

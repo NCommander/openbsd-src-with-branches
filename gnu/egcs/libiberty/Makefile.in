@@ -85,7 +85,12 @@ FLAGS_TO_PASS = \
 	"LDFLAGS=$(LDFLAGS)" \
 	"LOADLIBES=$(LOADLIBES)" \
 	"RANLIB=$(RANLIB)" \
-	"SHELL=$(SHELL)"
+	"SHELL=$(SHELL)" \
+	"prefix=$(prefix)" \
+	"exec_prefix=$(exec_prefix)" \
+	"libdir=$(libdir)" \
+	"libsubdir=$(libsubdir)" \
+	"tooldir=$(tooldir)"
 
 all: stamp-picdir $(TARGETLIB) needed-list required-list all-subdir
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
@@ -120,9 +125,9 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c \
 	fnmatch.c getcwd.c getopt.c getopt1.c getpagesize.c \
 	getruntime.c floatformat.c hex.c index.c insque.c memchr.c \
 	memcmp.c memcpy.c memmove.c memset.c mkstemps.c objalloc.c obstack.c \
-	pexecute.c random.c rename.c rindex.c sigsetmask.c spaces.c \
-	splay-tree.c strcasecmp.c strncasecmp.c strchr.c strdup.c strerror.c \
-	strrchr.c strsignal.c strstr.c strtod.c strtol.c strtoul.c \
+	pexecute.c putenv.c random.c rename.c rindex.c setenv.c sigsetmask.c \
+	spaces.c splay-tree.c strcasecmp.c strncasecmp.c strchr.c strdup.c \
+	strerror.c strrchr.c strsignal.c strstr.c strtod.c strtol.c strtoul.c \
 	tmpnam.c vasprintf.c vfork.c vfprintf.c vprintf.c vsprintf.c \
 	waitpid.c xatexit.c xexit.c xmalloc.c xstrdup.c xstrerror.c
 
@@ -154,13 +159,21 @@ install_to_tooldir: all
 	mv -f $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB).n $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
-# needed-list is used by libstdc++.
+# needed-list is used by libstdc++.  NEEDED is the list of functions
+# to include there.  Do not add anything LGPL to this list; libstdc++
+# can't use anything encumbering.
+NEEDED = atexit calloc memchr memcmp memcpy memmove memset rename strchr \
+	 strerror strrchr strstr strtol strtoul tmpnam vfprintf vprintf \
+	 vfork waitpid bcmp bcopy bzero
 needed-list: Makefile
-	f="$(LIBOBJS) $(ALLOCA) $(EXTRA_OFILES)"; \
-	case $$f in \
-	  *alloca.o*) f="$$f xmalloc.o xexit.o" ;; \
-	esac; \
-	echo $$f > needed-list
+	rm -f needed-list; touch needed-list; \
+	for f in $(NEEDED); do \
+	  for g in $(LIBOBJS) $(EXTRA_OFILES); do \
+	    case "$$g" in \
+	      *$$f*) echo $$g >> needed-list ;; \
+	    esac; \
+	  done; \
+	done
 
 # required-list was used when building a shared bfd/opcodes/libiberty
 # library.  I don't know if it used by anything currently.
@@ -248,6 +261,7 @@ mkstemps.o: config.h
 objalloc.o: $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
 pexecute.o: config.h $(INCDIR)/libiberty.h
+setenv.o: config.h
 spaces.o: $(INCDIR)/libiberty.h
 splay-tree.o: config.h $(INCDIR)/libiberty.h $(INCDIR)/splay-tree.h $(INCDIR)/ansidecl.h
 strerror.o: config.h $(INCDIR)/libiberty.h
