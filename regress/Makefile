@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2004/02/21 19:07:29 espie Exp $
+#	$OpenBSD: Makefile,v 1.18 2004/07/20 06:25:40 david Exp $
 
 #
 # To run full regression tests you just need two steps:
@@ -31,7 +31,7 @@ _REGRESS_CLEAN=exit 0
 .else
 _REGRESS_CLEAN=rm -f ${_REGRESS_TMP}
 .endif
-.MAKEFLAGS+= _REGRESS_TMP=${_REGRESS_TMP}
+MAKE_FLAGS+= _REGRESS_TMP=${_REGRESS_TMP}
 
 .INTERRUPT:
 	${_REGRESS_CLEAN}
