@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.85 1998/04/25 20:31:27 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.86 1998/04/26 21:03:15 provos Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -659,7 +659,7 @@ struct cpu_cpuid_nameclass i386_cpuid_cpus[] = {
 			CPUCLASS_586,
 			{
 				"K5", "K5", "K5", "K5", 0, 0, "K6",
-				0, 0, 0, 0, 0, 0, 0, 0, 0,
+				"K6", "K6 3D", "K6 3D+", 0, 0, 0, 0, 0, 0,
 				"K5 or K6"		/* Default */
 			},
 			NULL
