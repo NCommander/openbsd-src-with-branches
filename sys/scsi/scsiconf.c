@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.c,v 1.56 2001/05/24 04:13:16 angelos Exp $	*/
+/*	$OpenBSD: scsiconf.c,v 1.57 2001/06/22 14:35:43 deraadt Exp $	*/
 /*	$NetBSD: scsiconf.c,v 1.57 1996/05/02 01:09:01 neil Exp $	*/
 
 /*
@@ -153,7 +153,6 @@ scsibusattach(parent, self, aux)
 	struct scsibus_softc *sb = (struct scsibus_softc *)self;
 	struct scsi_link *sc_link_proto = aux;
 	int nbytes, i;
-	extern int cold;
 
 	if (!cold)
 		scsi_autoconf = 0;
