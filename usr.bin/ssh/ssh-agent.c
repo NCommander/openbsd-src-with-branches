@@ -35,7 +35,7 @@
 
 #include "includes.h"
 #include <sys/queue.h>
-RCSID("$OpenBSD: ssh-agent.c,v 1.96 2002/06/23 10:29:52 deraadt Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.97 2002/06/24 14:55:38 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/md5.h>
@@ -930,6 +930,7 @@ main(int ac, char **av)
 	struct sockaddr_un sunaddr;
 	struct rlimit rlim;
 	extern int optind;
+	extern char *optarg;
 	pid_t pid;
 	char pidstrbuf[1 + 3 * sizeof pid];
 
