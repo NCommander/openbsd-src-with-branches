@@ -1,4 +1,4 @@
-/*	$OpenBSD: cu.c,v 1.5 2001/09/09 17:58:41 millert Exp $	*/
+/*	$OpenBSD: cu.c,v 1.6 2001/09/09 19:30:49 millert Exp $	*/
 /*	$NetBSD: cu.c,v 1.5 1997/02/11 09:24:05 mrg Exp $	*/
 
 /*
@@ -38,11 +38,10 @@
 #if 0
 static char sccsid[] = "@(#)cu.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: cu.c,v 1.5 2001/09/09 17:58:41 millert Exp $";
+static char rcsid[] = "$OpenBSD: cu.c,v 1.6 2001/09/09 19:30:49 millert Exp $";
 #endif /* not lint */
 
 #include "tip.h"
-#include <getopt.h>
 
 void	cleanup();
 void	cuusage();
