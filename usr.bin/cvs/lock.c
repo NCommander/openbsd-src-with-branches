@@ -62,4 +62,5 @@ cvs_unlock(const char *path)
 
 
 
+	return (0);
 }
