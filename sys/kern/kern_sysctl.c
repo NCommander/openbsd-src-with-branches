@@ -1551,7 +1551,7 @@ sysctl_emul(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 			enabled = (e->e_flags & EMUL_ENABLED);
 			error = sysctl_int(oldp, oldlenp, newp, newlen,
 			    &enabled);
-			e->e_flags |= (enabled & EMUL_ENABLED);
+			e->e_flags = (enabled & EMUL_ENABLED);
 			return (error);
 		}
 	default:
