@@ -1,4 +1,4 @@
-/* $OpenBSD: ike_quick_mode.c,v 1.85 2004/08/08 19:11:06 deraadt Exp $	 */
+/* $OpenBSD: ike_quick_mode.c,v 1.86 2004/08/14 13:29:50 hshoexer Exp $	 */
 /* $EOM: ike_quick_mode.c,v 1.139 2001/01/26 10:43:17 niklas Exp $	 */
 
 /*
@@ -1739,8 +1739,11 @@ next_sa:
 			    "strdup (\"%s\") failed", name);
 			goto cleanup;
 		}
-	} else if (ignore_policy || strncmp("yes", conf_get_str("General",
-	    "Use-Keynote"), 3)) {
+	} else if (
+#ifdef USE_X509
+	    ignore_policy ||
+#endif
+	    strncmp("yes", conf_get_str("General", "Use-Keynote"), 3)) {
 		log_print("responder_recv_HASH_SA_NONCE: peer proposed "
 		    "invalid phase 2 IDs: %s",
 		        (exchange->doi->decode_ids("initiator id %s, responder"
