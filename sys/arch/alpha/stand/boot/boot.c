@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.9 1997/05/05 06:01:51 millert Exp $	*/
+/*	$OpenBSD: boot.c,v 1.10 1997/07/08 10:42:25 niklas Exp $	*/
 /*	$NetBSD: boot.c,v 1.10 1997/01/18 01:58:33 cgd Exp $	*/
 
 /*
@@ -71,7 +71,7 @@ char *kernelnames[] = {
 	NULL
 };
 
-void
+int
 main()
 {
 	char *name, **namep;
