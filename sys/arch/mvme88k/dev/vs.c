@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.9 2001/08/26 02:37:07 miod Exp $ */
+/*	$OpenBSD: vs.c,v 1.10 2001/08/31 01:52:19 miod Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -49,7 +49,7 @@
 #include <sys/buf.h>
 #include <sys/malloc.h>
 
-#include <vm/vm_param.h>
+#include <uvm/uvm_param.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>

@@ -51,7 +51,7 @@
 #include <machine/mioctl.h>
 #include <machine/vmparam.h>
 
-#include <vm/vm_param.h>
+#include <uvm/uvm_param.h>
 
 #include <mvme88k/dev/memdevs.h>
 #include <mvme88k/dev/nvramreg.h>

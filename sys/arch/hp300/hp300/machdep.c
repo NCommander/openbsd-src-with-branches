@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.64 2001/09/19 20:50:56 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.65 2001/09/20 17:02:30 mpech Exp $	*/
 /*	$NetBSD: machdep.c,v 1.121 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -98,7 +98,6 @@
 #include <dev/cons.h>
 
 #define	MAXMEM	64*1024	/* XXX - from cmap.h */
-#include <vm/vm_param.h>
 #include <uvm/uvm_extern.h>
 
 #include <arch/hp300/dev/hilreg.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: wt.c,v 1.12 1998/01/18 18:58:40 niklas Exp $	*/
+/*	$OpenBSD: wt.c,v 1.13 2000/11/12 01:00:03 mickey Exp $	*/
 /*	$NetBSD: wt.c,v 1.33 1996/05/12 23:54:22 mycroft Exp $	*/
 
 /*
@@ -64,7 +64,7 @@
 #include <sys/conf.h>
 #include <sys/timeout.h>
 
-#include <vm/vm_param.h>
+#include <uvm/uvm_param.h>
 
 #include <machine/intr.h>
 #include <machine/pio.h>
