@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.8 1998/07/24 00:10:15 millert Exp $
+#	$OpenBSD: Makefile,v 1.9 1998/09/21 07:36:04 pjanzen Exp $
 
 PROG=	atc
-CFLAGS+=-DBSD -I${.CURDIR} -I.
+CFLAGS+=-I${.CURDIR} -I.
 SRCS=	extern.c grammar.c graphics.c input.c lex.c list.c log.c \
-	main.c tunable.c update.c
+	main.c update.c
 MAN=	atc.6
 LDADD=	-ll -lm -lcurses
 DPADD=	${LIBL} ${LIBM} ${LIBCURSES}
