@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.36 2001/11/29 08:20:50 itojun Exp $  */
+/*	$OpenBSD: ip_ether.c,v 1.37 2002/03/15 18:19:52 millert Exp $  */
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
  *
@@ -155,7 +155,6 @@ etherip_input(struct mbuf *m, ...)
 		    sizeof(struct etherip_header))) == NULL) {
 			DPRINTF(("etherip_input(): m_pullup() failed\n"));
 			etheripstat.etherip_adrops++;
-			m_freem(m);
 			return;
 		}
 	}
