@@ -146,7 +146,7 @@ svr4_to_bsd_semid_ds(sds, bds)
 	struct semid_ds *bds;
 {
 	svr4_to_bsd_ipc_perm(&sds->sem_perm, &bds->sem_perm);
-	bds->sem_base = (struct sem *) bds->sem_base;
+	bds->sem_base = (struct sem *) sds->sem_base;
 	bds->sem_nsems = sds->sem_nsems;
 	bds->sem_otime = sds->sem_otime;
 	bds->sem_pad1 = sds->sem_pad1;
