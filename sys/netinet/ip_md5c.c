@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * The rest of the code is derived from MD5C.C by RSADSI. Minor cosmetic
  * changes to accomodate it in the kernel by ji.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcp_fsm.h,v 1.6 1994/10/14 16:01:48 mycroft Exp $	*/
 /*	$NetBSD: tcp_fsm.h,v 1.6 1994/10/14 16:01:48 mycroft Exp $	*/
 
 /*

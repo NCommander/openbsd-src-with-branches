@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* lib/des/podd.h */
 /* Copyright (C) 1995 Eric Young (eay@mincom.oz.au)
  * All rights reserved.

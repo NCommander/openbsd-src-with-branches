@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
  * 	(except when noted otherwise).
@@ -56,6 +58,8 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/ip_ipsp.h>
 #include <netinet/ip_esp.h>
+
+void	esp_input __P((struct mbuf *, int));
 
 /*
  * esp_input gets called when we receive an packet with an ESP.

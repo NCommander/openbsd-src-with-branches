@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* lib/des/set_key.c */
 /* Copyright (C) 1995 Eric Young (eay@mincom.oz.au)
  * All rights reserved.

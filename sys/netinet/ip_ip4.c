@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
  * 	(except when noted otherwise).
@@ -58,7 +60,7 @@
 #include <netinet/ip_ip4.h>
 #include <dev/rndvar.h>
 
-
+void	ip4_input __P((struct mbuf *, int));
 
 /*
  * ip4_input gets called when we receive an encapsulated packet,

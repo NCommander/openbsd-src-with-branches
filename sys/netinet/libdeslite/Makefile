@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #
 # This is the "lite" portion of libdes -- just the routines needed
 # to do CBC DES and 3DES for IPSP.

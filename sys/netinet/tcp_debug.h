@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcp_debug.h,v 1.5 1994/06/29 06:38:38 cgd Exp $	*/
 /*	$NetBSD: tcp_debug.h,v 1.5 1994/06/29 06:38:38 cgd Exp $	*/
 
 /*

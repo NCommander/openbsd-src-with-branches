@@ -1,3 +1,4 @@
+/*	$OpenBSD: icmp_var.h,v 1.8 1995/03/26 20:32:19 jtc Exp $	*/
 /*	$NetBSD: icmp_var.h,v 1.8 1995/03/26 20:32:19 jtc Exp $	*/
 
 /*

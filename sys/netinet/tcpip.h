@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcpip.h,v 1.6 1995/11/21 01:07:44 cgd Exp $	*/
 /*	$NetBSD: tcpip.h,v 1.6 1995/11/21 01:07:44 cgd Exp $	*/
 
 /*
