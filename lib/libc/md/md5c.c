@@ -1,5 +1,5 @@
 /* MD5C.C - RSA Data Security, Inc., MD5 message-digest algorithm
- * $FreeBSD$
+ * $OpenBSD$
  */
 
 /* Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
@@ -24,7 +24,7 @@ These notices must be retained in any copies of any part of this
 documentation and/or software.
  */
 
-#include "md5.h"
+#include <md5.h>
 #include <string.h>
 
 typedef unsigned char *POINTER;
