@@ -264,7 +264,7 @@ main(argc, argv)
 		char *p;
 
 		printer = DEFLP;
-		if ((p = getenv("PRINTER"))
+		if ((p = getenv("PRINTER")) == NULL)
 			printer = p;
 	}
 	chkprinter(printer);

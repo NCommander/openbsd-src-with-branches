@@ -173,7 +173,7 @@ fprintf(stderr,
 		char *p;
 
 		printer = DEFLP;
-		if ((p = getenv("PRINTER"))
+		if ((p = getenv("PRINTER")) == NULL)
 			printer = p;
 	}
 	if (!chkprinter(printer)) {
