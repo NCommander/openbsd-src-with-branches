@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.54 2002/01/25 15:00:26 art Exp $	*/
+/*	$OpenBSD: proc.h,v 1.55 2002/01/31 02:12:18 weingart Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -388,7 +388,9 @@ int	fork1 __P((struct proc *, int, int, void *, size_t, void (*)(void *),
 void	rqinit __P((void));
 int	groupmember __P((gid_t, struct ucred *));
 void	cpu_switch __P((struct proc *));
+#if !defined(cpu_wait)
 void	cpu_wait __P((struct proc *));
+#endif
 void	cpu_exit __P((struct proc *));
 
 void	child_return __P((void *));
