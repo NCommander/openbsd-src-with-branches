@@ -1,4 +1,4 @@
-/* 	$OpenBSD: Makefile,v 1.2 2004/02/06 17:31:17 drahn Exp $	*/
+/* 	$OpenBSD: Makefile,v 1.1 2004/12/31 00:04:35 drahn Exp $	*/
 #	$NetBSD: Makefile,v 1.1 2001/06/12 08:32:46 chris Exp $
 
 # Makefile for zaurus tags file and boot blocks
@@ -25,6 +25,6 @@ links:
 	    cd $$i && rm -f tags; ln -s ../tags tags; done
 
 
-SUBDIR=
+SUBDIR=	stand
 
 .include <bsd.subdir.mk>
