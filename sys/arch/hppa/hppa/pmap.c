@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.47 2001/11/06 20:57:21 mickey Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.48 2001/11/28 13:47:38 art Exp $	*/
 
 /*
  * Copyright (c) 1998-2001 Michael Shalayeff
@@ -1611,19 +1611,6 @@ pmap_kenter_pa(va, pa, prot)
 	if (pmapdebug & PDB_ENTER)
 		printf("pmap_kenter_pa: leaving\n");
 #endif
-}
-
-void
-pmap_kenter_pgs(va, pgs, npgs)
-	vaddr_t va;
-	vm_page_t *pgs;
-	int npgs;
-{
-	int i;
-
-	va = hppa_trunc_page(va);
-	for (i = 0; i < npgs; i++)
-		pmap_kenter_pa(va + i*NBPG, VM_PAGE_TO_PHYS(pgs[i]), VM_PROT_ALL);
 }
 
 void
