@@ -117,6 +117,7 @@ int	netisr;
 void	if_detach_queues(struct ifnet *, struct ifqueue *);
 void	if_detached_start(struct ifnet *);
 int	if_detached_ioctl(struct ifnet *, u_long, caddr_t);
+int	if_detached_init(struct ifnet *);
 void	if_detached_watchdog(struct ifnet *);
 
 /*
@@ -417,6 +418,7 @@ if_detach(ifp)
 	ifp->if_flags &= ~IFF_OACTIVE;
 	ifp->if_start = if_detached_start;
 	ifp->if_ioctl = if_detached_ioctl;
+	ifp->if_init = if_detached_init;
 	ifp->if_watchdog = if_detached_watchdog;
 
 #if NBRIDGE > 0
@@ -1190,6 +1192,12 @@ int
 if_detached_ioctl(struct ifnet *ifp, u_long a, caddr_t b)
 {
 	return ENODEV;
+}
+
+int
+if_detached_init(struct ifnet *ifp)
+{
+	return (ENXIO);
 }
 
 void

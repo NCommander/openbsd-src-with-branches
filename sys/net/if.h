@@ -163,6 +163,8 @@ struct ifnet {				/* and the entries */
 	void	(*if_start)(struct ifnet *);
 					/* ioctl routine */
 	int	(*if_ioctl)(struct ifnet *, u_long, caddr_t);
+					/* init routine */
+	int	(*if_init)(struct ifnet *);
 					/* XXX bus reset routine */
 	int	(*if_reset)(struct ifnet *);
 					/* timer routine */
