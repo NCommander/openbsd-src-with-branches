@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcreg.h,v 1.5 2000/01/29 04:11:25 smurph Exp $ */
+/*	$OpenBSD: mcreg.h,v 1.6 2002/03/14 01:26:37 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -174,3 +174,4 @@ void mc_enableflashwrite(int on);
 #define MC_DISFLASHWRITE_OFFSET	0xc8000
 int mc_hasflash(void);
 
+int  mcintr_establish(int, struct intrhand *);
