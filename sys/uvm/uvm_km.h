@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_km.h,v 1.6 2001/03/09 05:34:38 smart Exp $	*/
+/*	$OpenBSD: uvm_km.h,v 1.7 2002/03/14 01:27:18 millert Exp $	*/
 /*	$NetBSD: uvm_km.h,v 1.9 1999/06/21 17:25:11 thorpej Exp $	*/
 
 /*
@@ -49,6 +49,7 @@
  */
 
 void uvm_km_init(vaddr_t, vaddr_t);
+void uvm_km_page_init(void);
 void uvm_km_pgremove(struct uvm_object *, vaddr_t, vaddr_t);
 void uvm_km_pgremove_intrsafe(struct uvm_object *, vaddr_t, vaddr_t);
 
