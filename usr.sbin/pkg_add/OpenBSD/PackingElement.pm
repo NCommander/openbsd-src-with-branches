@@ -1,4 +1,4 @@
-# $OpenBSD: PackingElement.pm,v 1.2 2003/10/31 17:43:20 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.3 2003/11/06 17:46:35 espie Exp $
 #
 # Copyright (c) 2003 Marc Espie.
 # 
@@ -136,6 +136,7 @@ sub write
 {
 	my ($self, $fh) = @_;
 	print $fh "\@ignore\n" if defined $self->{ignore};
+	print $fh "\@comment no checksum\n" if defined $self->{nochecksum};
 	if ($self->{name} =~ m/^\@/) {
 		$self->SUPER::write($fh);
 	} else {
