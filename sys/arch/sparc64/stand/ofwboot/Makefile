@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2001/08/20 19:55:33 jason Exp $
+#	$OpenBSD: Makefile,v 1.3 2001/08/22 10:27:26 art Exp $
 #	$NetBSD: Makefile,v 1.2 2001/03/04 14:50:05 mrg Exp $
 
 CURDIR=	${.CURDIR}
@@ -11,6 +11,7 @@ S=	${CURDIR}/../../../..
 WARNS=		0
 
 PROG?=		ofwboot
+NOMAN=		ja, man!
 SRCS=		srt0.s Locore.c boot.c ofdev.c alloc.c net.c netif_of.c vers.c
 .PATH:		${S}/arch/sparc64/sparc64
 
