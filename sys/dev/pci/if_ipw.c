@@ -1,4 +1,4 @@
-/*	$Id: if_ipw.c,v 1.36 2004/12/10 21:25:52 damien Exp $  */
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 2004

@@ -1,4 +1,4 @@
-/*	$Id: if_iwivar.h,v 1.3 2004/12/04 17:24:06 damien Exp $ */
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 2004

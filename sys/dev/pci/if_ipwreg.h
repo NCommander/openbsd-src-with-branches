@@ -1,4 +1,4 @@
-/*      $Id: if_ipwreg.h,v 1.8 2004/12/05 19:39:22 damien Exp $ */
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 2004
