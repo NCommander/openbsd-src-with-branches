@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.5 2002/07/28 08:44:14 pjanzen Exp $	*/
+/*	$OpenBSD: misc.c,v 1.6 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/23 08:34:47 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: misc.c,v 1.5 2002/07/28 08:44:14 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: misc.c,v 1.6 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -97,7 +97,7 @@ get_int(prompt)
 	char	buf[257];
 
 	for (;;) {
-		printf(prompt);
+		printf("%s", prompt);
 		num = 0;
 		i = 1;
 		for (sp = buf; (c = getchar()) != '\n';) {
