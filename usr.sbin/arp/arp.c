@@ -471,6 +471,7 @@ print_entry(sdl, sin, rtm)
 	char *host;
 	extern int h_errno;
 	struct hostent *hp;
+	char ifname[IF_NAMESIZE];
 
 	if (nflag == 0)
 		hp = gethostbyaddr((caddr_t)&(sin->sin_addr),
@@ -489,6 +490,8 @@ print_entry(sdl, sin, rtm)
 		ether_print(LLADDR(sdl));
 	else
 		(void)printf("(incomplete)");
+	if (if_indextoname(sdl->sdl_index, ifname) != NULL)
+		printf(" on %s", ifname);
 	if (rtm->rtm_flags & RTF_PERMANENT_ARP)
 		(void)printf(" permanent");
 	if (rtm->rtm_rmx.rmx_expire == 0)
