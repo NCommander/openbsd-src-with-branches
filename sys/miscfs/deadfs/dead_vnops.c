@@ -1,4 +1,4 @@
-/*	$OpenBSD: dead_vnops.c,v 1.11 2002/03/14 01:27:07 millert Exp $	*/
+/*	$OpenBSD: dead_vnops.c,v 1.12 2002/05/24 13:41:27 art Exp $	*/
 /*	$NetBSD: dead_vnops.c,v 1.16 1996/02/13 13:12:48 mycroft Exp $	*/
 
 /*
@@ -357,7 +357,7 @@ chkvnlock(vp)
 
 	while (vp->v_flag & VXLOCK) {
 		vp->v_flag |= VXWANT;
-		sleep((caddr_t)vp, PINOD);
+		tsleep(vp, PINOD, "chkvnlock", 0);
 		locked = 1;
 	}
 	return (locked);
