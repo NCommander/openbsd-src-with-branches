@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 1997/03/25 14:31:07 niklas Exp $
+#	$OpenBSD: Makefile,v 1.13 1997/07/06 07:46:20 downsj Exp $
 #	$NetBSD: Makefile,v 1.6 1997/04/25 22:17:33 veego Exp $
 
 #	MOTOROLA MICROPROCESSOR & MEMORY TECHNOLOGY GROUP
@@ -39,7 +39,7 @@
 
 TARGET = fpsp
 
-AS		= cc -x assembler-with-cpp -traditional-cpp -c -m68040 -I${.CURDIR}
+FPSPAS=${CC} -x assembler-with-cpp -traditional-cpp -c -m68040 -I${.CURDIR}
 LD		?= ld
 
 #
@@ -73,7 +73,7 @@ PREFIX		= L_
 .h.defs:
 	sh ${.CURDIR}/asm2gas ${.IMPSRC} >${.TARGET}
 .s.o:
-	$(AS) -o ${.TARGET} ${.IMPSRC}
+	$(FPSPAS) -o ${.TARGET} ${.IMPSRC}
 
 H_FILES = \
 	fpsp.defs \
