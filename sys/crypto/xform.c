@@ -140,7 +140,7 @@ struct enc_xform enc_xform_skipjack =
 
 struct enc_xform enc_xform_rijndael128 =
 {
-    CRYPTO_RIJNDAEL128_CBC, "Rijndael-128",
+    CRYPTO_RIJNDAEL128_CBC, "Rijndael-128/AES",
     16, 8, 32, 16,
     rijndael128_encrypt,
     rijndael128_decrypt,
