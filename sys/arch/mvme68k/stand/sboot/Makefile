@@ -4,6 +4,7 @@ S=	${.CURDIR}/../../../..
 INCL?= -I${.CURDIR} -I${.CURDIR}/../libsa -I${S}/lib/libsa -I${S}
 COPTS?= ${DEFS} ${INCL}
 
+.include "${S}/arch/${MACHINE}/stand/libbug/Makefile.inc"
 .include "${S}/arch/${MACHINE}/stand/libsa/Makefile.inc"
 
 SRCS=   sboot.c clock.c etherfun.c if_le.c
@@ -14,12 +15,12 @@ MDEC_DIR?=/usr/mdec
 
 all:	sboot rboot
 
-sboot.tmp:	XSRT0.o oc_cksum.o ${OBJS} ${LIBSA}
-	ld -N -s -static -T 0x4000 XSRT0.o ${OBJS} oc_cksum.o -o sboot.tmp ${LIBSA}
+sboot.tmp:	XSRT0.o oc_cksum.o ${OBJS} ${LIBSA} ${LIBBUG}
+	ld -N -s -static -T 0x4000 XSRT0.o ${OBJS} oc_cksum.o -o sboot.tmp ${LIBSA} ${LIBBUG}
 
-rboot.tmp:	XBUG.o XSRT0.o oc_cksum.o ${OBJS} ${LIBSA}
+rboot.tmp:	XBUG.o XSRT0.o oc_cksum.o ${OBJS} ${LIBSA} ${LIBBUG}
 	ld -N -s -static -Ttext 0xffa00000 -Tdata 0x4000 XBUG.o XSRT0.o \
-	    ${OBJS} oc_cksum.o -o rboot.tmp ${LIBSA}
+	    ${OBJS} oc_cksum.o -o rboot.tmp ${LIBSA} ${LIBBUG}
 
 srec:	srec.c
 	${CC} ${.CURDIR}/srec.c -o srec
