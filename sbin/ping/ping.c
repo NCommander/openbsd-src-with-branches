@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.12 1996/12/22 03:00:52 deraadt Exp $	*/
+/*	$OpenBSD: ping.c,v 1.13 1997/01/15 23:41:36 millert Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ping.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: ping.c,v 1.12 1996/12/22 03:00:52 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ping.c,v 1.13 1997/01/15 23:41:36 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -377,7 +377,7 @@ main(argc, argv)
 		ip->ip_hl = sizeof(struct ip) >> 2;
 		ip->ip_tos = tos;
 		ip->ip_id = 0;  
-		ip->ip_off = (df?IP_DF:0);
+		ip->ip_off = htons(df?IP_DF:0);
 		ip->ip_ttl = ttl;
 		ip->ip_p = proto->p_proto;
 		ip->ip_src.s_addr = INADDR_ANY;
@@ -553,7 +553,7 @@ pinger()
 
 		packet = (char*)ip;
 		cc += sizeof(struct ip);
-		ip->ip_len = cc;
+		ip->ip_len = htons(cc);
 		ip->ip_sum = in_cksum((u_short *)outpackhdr, cc);
 	}
 
