@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.120 2002/01/29 14:32:03 markus Exp $");
+RCSID("$OpenBSD: session.c,v 1.121 2002/01/29 16:29:02 stevesk Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -1306,6 +1306,7 @@ session_subsystem_req(Session *s)
 			s->is_subsystem = 1;
 			do_exec(s, cmd);
 			success = 1;
+			break;
 		}
 	}
 
