@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: error.c,v 1.6 2001/05/23 12:34:42 espie Exp $ */
+/*	$OpenBSD: error.c,v 1.7 2001/05/29 12:17:05 espie Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -194,7 +194,8 @@ ParseVErrorInternal(va_alist)
 	va_dcl
 #endif
 {
-	(void)fprintf(stderr, "\"%s\", line %lu: ", cfname, clineno);
+	if (cfname)
+	    (void)fprintf(stderr, "\"%s\", line %lu: ", cfname, clineno);
 	if (type == PARSE_WARNING)
 		(void)fprintf(stderr, "warning: ");
 	(void)vfprintf(stderr, fmt, ap);
