@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.30 2003/03/25 19:57:29 miod Exp $
+dnl	$OpenBSD: contents,v 1.31 2003/09/09 22:29:02 miod Exp $
 TopPart
 
 OpenBSDfloppy
@@ -11,7 +11,7 @@ dnl				- AlphaStation 500, 600
 				- AXPpci33 based machines, including
 				  ``Noname'', UDB, Multia
 				- EB164 based machines, including
-				  PC164, 164SX and 164LX
+				  PC164, 164SX, and 164LX
 				- Personal Workstation (Miata)
 
 		floppyB{:--:}OSrev.fs	Another MACHINE boot and installation floppy;
