@@ -1,4 +1,4 @@
-/* $OpenBSD: eephy.c,v 1.4 2002/04/02 13:05:09 nate Exp $ */
+/* $OpenBSD: eephy.c,v 1.5 2002/04/02 14:52:27 lebel Exp $ */
 /*
  * Principal Author: Parag Patel
  * Copyright (c) 2001
@@ -355,9 +355,6 @@ eephy_status(struct mii_softc *sc)
 {
 	struct mii_data *mii = sc->mii_pdata;
 	int bmsr, bmcr, esr, ssr, isr, ar, lpar;
-
-	if ((mii->mii_ifp->if_flags & IFF_UP) == 0)
-		return;
 
 	mii->mii_media_status = IFM_AVALID;
 	mii->mii_media_active = IFM_ETHER;
