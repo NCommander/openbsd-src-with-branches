@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.7 1999/10/08 03:55:42 millert Exp $
+#	$OpenBSD: install.md,v 1.8 2000/06/23 18:53:24 mickey Exp $
 #
 #
 # Copyright rc) 1996 The NetBSD Foundation, Inc.
@@ -108,7 +108,7 @@ md_native_fstype() {
 }
 
 md_native_fsopts() {
-    echo ro
+    echo "ro,-l"
 }
 
 md_checkfordisklabel() {
