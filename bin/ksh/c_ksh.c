@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ksh.c,v 1.11 1999/01/10 17:55:01 millert Exp $	*/
+/*	$OpenBSD: c_ksh.c,v 1.12 1999/06/15 01:18:33 millert Exp $	*/
 
 /*
  * built-in Korn commands: c_*
@@ -1211,6 +1211,7 @@ c_kill(wp)
 						builtin_opt.optarg);
 					return 1;
 				}
+				break;
 			  case '?':
 				return 1;
 			}
