@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.12 1997/02/27 01:48:26 angelos Exp $	*/
+/*	$OpenBSD: inet.c,v 1.13 1997/06/15 13:47:27 deraadt Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)inet.c	8.4 (Berkeley) 4/20/94";
 #else
-static char *rcsid = "$OpenBSD: inet.c,v 1.12 1997/02/27 01:48:26 angelos Exp $";
+static char *rcsid = "$OpenBSD: inet.c,v 1.13 1997/06/15 13:47:27 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -77,6 +77,7 @@ static char *rcsid = "$OpenBSD: inet.c,v 1.12 1997/02/27 01:48:26 angelos Exp $"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "netstat.h"
 
 #include <rpc/rpc.h>
