@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.10 2004/12/18 20:55:52 millert Exp $	*/
+/*	$OpenBSD: expr.c,v 1.11 2004/12/18 21:04:52 millert Exp $	*/
 
 /*
  * Korn expression evaluation
@@ -566,7 +566,7 @@ assign_check(es, op, vasn)
 static struct tbl *
 tempvar()
 {
-	register struct tbl *vp;
+	struct tbl *vp;
 
 	vp = (struct tbl*) alloc(sizeof(struct tbl), ATEMP);
 	vp->flag = ISSET|INTEGER;
