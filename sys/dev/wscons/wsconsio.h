@@ -114,6 +114,7 @@ struct wscons_event {
 #define		WSKBD_TYPE_HIL		13	/* HP HIL */
 #define		WSKBD_TYPE_GSC		14	/* HP PS/2 */
 #define		WSKBD_TYPE_LUNA		15	/* OMRON Luna */
+#define		WSKBD_TYPE_ZAURUS	16	/* Sharp Zaurus */
 
 /* Manipulate the keyboard bell. */
 struct wskbd_bell_data {
