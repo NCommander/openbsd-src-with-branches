@@ -990,7 +990,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 			break;
 		}
 		bcopy(n->state, &ps->state, sizeof(struct pf_state));
-		if (n->state->rule.ptr == NULL)
+		if (n->state->rule.ptr->entries.tqe_prev == NULL)
 			ps->state.rule.nr = -1;
 		else
 			ps->state.rule.nr = n->state->rule.ptr->nr;
@@ -1029,7 +1029,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 				break;
 
 			bcopy(n->state, &pstore, sizeof(pstore));
-			if (n->state->rule.ptr == NULL)
+			if (n->state->rule.ptr->entries.tqe_prev == NULL)
 				pstore.rule.nr = -1;
 			else
 				pstore.rule.nr = n->state->rule.ptr->nr;
