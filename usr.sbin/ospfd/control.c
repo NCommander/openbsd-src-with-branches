@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.5 2005/03/14 16:57:41 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.6 2005/03/14 18:21:29 norby Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -74,8 +74,8 @@ control_init(void)
 
 	if (chmod(OSPFD_SOCKET, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP) == -1) {
 		log_warn("control_init: chmod");
-		(void)unlink(OSPFD_SOCKET);
 		close(fd);
+		(void)unlink(OSPFD_SOCKET);
 		return (-1);
 	}
 
