@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.139 2002/01/08 05:29:13 todd Exp $
+#	$OpenBSD: Makefile,v 1.140 2002/01/08 06:32:15 todd Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -30,7 +30,7 @@ BIN1+=	wsconsctl.conf
 # -rw-rw-r--
 BIN2=	motd
 
-NAMEDB=	localhost.rev root.cache
+NAMEDB=	localhost.rev localhost.v6.rev localhost.zone root.cache
 PCS=	pcs750.bin
 WCS1=	wcs fppwcs poc poc1 poc2 fppoc
 WCS2=	fpevent fppwcs fppwcs_dual hdcwcs load_diags start_fpp wcs wcs_dual
