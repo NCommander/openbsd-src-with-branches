@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxki.c,v 1.15 2003/11/07 10:16:45 jmc Exp $	*/
+/*	$OpenBSD: emuxki.c,v 1.16 2004/02/24 18:22:30 deraadt Exp $	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -407,8 +407,11 @@ emuxki_match(struct device *parent, void *match, void *aux)
 	struct pci_attach_args *pa = aux;
 
 	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_CREATIVELABS &&
-	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_CREATIVELABS_SBLIVE)
+	    (PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_CREATIVELABS_SBLIVE ||
+	     PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_CREATIVELABS_SBLIVE2)
+	{
 		return (1);
+	}
 
 	return (0);
 }
