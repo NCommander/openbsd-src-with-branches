@@ -18,7 +18,7 @@
  */
 
 #include "includes.h"
-RCSID("$Id: login.c,v 1.12 2000/04/14 10:30:31 markus Exp $");
+RCSID("$OpenBSD: login.c,v 1.13 2000/04/19 07:05:49 deraadt Exp $");
 
 #include <util.h>
 #include <utmp.h>

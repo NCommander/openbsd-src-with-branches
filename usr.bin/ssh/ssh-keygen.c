@@ -7,7 +7,7 @@
  */
 
 #include "includes.h"
-RCSID("$Id: ssh-keygen.c,v 1.25 2000/05/08 18:23:07 markus Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.26 2000/05/30 17:32:06 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>

@@ -11,7 +11,7 @@
  *
  */
 
-/* RCSID("$Id: bufaux.h,v 1.5 2000/03/28 20:24:18 markus Exp $"); */
+/* RCSID("$OpenBSD: bufaux.h,v 1.6 2000/04/14 10:30:30 markus Exp $"); */
 
 #ifndef BUFAUX_H
 #define BUFAUX_H

@@ -13,7 +13,7 @@
  *
  */
 
-/* RCSID("$Id: packet.h,v 1.14 2000/04/14 10:09:15 markus Exp $"); */
+/* RCSID("$OpenBSD: packet.h,v 1.15 2000/04/14 10:30:32 markus Exp $"); */
 
 #ifndef PACKET_H
 #define PACKET_H

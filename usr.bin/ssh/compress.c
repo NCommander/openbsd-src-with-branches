@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$Id: compress.c,v 1.6 2000/03/28 20:25:14 markus Exp $");
+RCSID("$OpenBSD: compress.c,v 1.7 2000/04/14 10:30:31 markus Exp $");
 
 #include "ssh.h"
 #include "buffer.h"

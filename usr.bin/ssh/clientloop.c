@@ -16,7 +16,7 @@
  */
 
 #include "includes.h"
-RCSID("$Id: clientloop.c,v 1.25 2000/05/07 18:23:32 markus Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.26 2000/05/08 17:42:24 markus Exp $");
 
 #include "xmalloc.h"
 #include "ssh.h"

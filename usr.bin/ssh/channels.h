@@ -1,4 +1,4 @@
-/* RCSID("$Id: channels.h,v 1.12 2000/05/03 18:03:06 markus Exp $"); */
+/* RCSID("$OpenBSD: channels.h,v 1.13 2000/05/30 17:23:37 markus Exp $"); */
 
 #ifndef CHANNELS_H
 #define CHANNELS_H
