@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2.c,v 1.49 2001/03/28 22:43:31 markus Exp $");
+RCSID("$OpenBSD: auth2.c,v 1.50 2001/04/04 20:32:56 markus Exp $");
 
 #include <openssl/evp.h>
 
@@ -532,7 +532,7 @@ user_key_allowed(struct passwd *pw, Key *key)
 		return 0;
 
 	/* Temporarily use the user's uid. */
-	temporarily_use_uid(pw->pw_uid);
+	temporarily_use_uid(pw);
 
 	/* The authorized keys. */
 	snprintf(file, sizeof file, "%.500s/%.100s", pw->pw_dir,
