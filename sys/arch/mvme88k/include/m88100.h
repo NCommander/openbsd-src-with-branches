@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88100.h,v 1.5 2001/01/14 20:25:24 smurph Exp $ */
+/*	$OpenBSD: m88100.h,v 1.6 2001/02/01 03:38:17 smurph Exp $ */
 /* 
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University
@@ -51,7 +51,7 @@
 #define DMT_WRITE	0x00000002	/* Read/Write Transaction Bit */
 #define	DMT_VALID	0x00000001	/* Valid Transaction Bit */
 
-#ifndef	ASSEMBLER
+#ifndef	_LOCORE
 #include "sys/types.h"
 
 /* dmt_skip is never set by the cpu.  It is used to 

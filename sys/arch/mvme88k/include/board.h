@@ -1,4 +1,4 @@
-/*	$OpenBSD: board.h,v 1.7 2001/01/14 20:25:23 smurph Exp $ */
+/*	$OpenBSD: board.h,v 1.8 2001/02/01 03:38:17 smurph Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -52,7 +52,7 @@
  * Something to put append a 'U' to a long constant if it's C so that
  * it'll be unsigned in both ANSI and traditional.
  */
-#if defined(ASSEMBLER)
+#if defined(_LOCORE)
 #	define U(num)	num
 #else
 #  if defined(__STDC__)
