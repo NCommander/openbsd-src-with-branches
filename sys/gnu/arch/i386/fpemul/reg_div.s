@@ -1,5 +1,5 @@
 	.file	"reg_div.S"
-/*	$OpenBSD$	*/
+/*	$OpenBSD: reg_div.s,v 1.1.16.1 2003/03/28 00:00:19 niklas Exp $	*/
 /*
  *  reg_div.S
  *
@@ -245,8 +245,8 @@ L_arg2_not_inf:
 #endif DENORM_OPERAND
 
 L_copy_arg1:
-	movb	TAG(%esi),%ax
-	movb	%ax,TAG(%edi)
+	movb	TAG(%esi),%al
+	movb	%al,TAG(%edi)
 	movl	EXP(%esi),%eax
 	movl	%eax,EXP(%edi)
 	movl	SIGL(%esi),%eax

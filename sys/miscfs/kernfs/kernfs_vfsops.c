@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kernfs_vfsops.c,v 1.13.2.6 2003/03/28 00:00:20 niklas Exp $	*/
 /*	$NetBSD: kernfs_vfsops.c,v 1.26 1996/04/22 01:42:27 christos Exp $	*/
 
 /*
@@ -179,7 +179,7 @@ kernfs_root(mp, vpp)
 	error = kernfs_allocvp(kt, mp, vpp);
 	if (error)
 		return (error);
-	vn_lock(*vpp, LK_EXCLUSIVE, curproc);
+	vn_lock(*vpp, LK_EXCLUSIVE | LK_RETRY, curproc);
 
 	return (0);
 }

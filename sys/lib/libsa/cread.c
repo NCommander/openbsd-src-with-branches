@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cread.c,v 1.8.6.1 2002/03/28 15:02:00 niklas Exp $	*/
 /*	$NetBSD: cread.c,v 1.2 1997/02/04 18:38:20 thorpej Exp $	*/
 
 /*
@@ -197,7 +197,7 @@ open(fname, mode)
 
 	  if(((fd = oopen(fname, mode)) == -1)
 	     || (mode != 0)) /* compression only for read */
-	  return(fd);
+		return(fd);
 
 	  ss[fd] = s = alloc(sizeof(struct sd));
 	  if(!s) goto errout;
