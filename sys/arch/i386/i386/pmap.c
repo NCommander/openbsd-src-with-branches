@@ -284,6 +284,20 @@ pmap_bootstrap(virtual_start)
 	 */
 	virtual_avail = reserve_dumppages(virtual_avail);
 
+	/*
+	 * reserve special hunk of memory for use by bus dma as a bounce
+	 * buffer (contiguous virtual *and* physical memory).  XXX
+	 */
+#if NISA > 0 && NISADMA > 0
+	if (ctob(physmem) >= 0x1000000) {
+		isaphysmem = pmap_steal_memory(DMA_BOUNCE * NBPG);
+		isaphysmempgs = DMA_BOUNCE;
+	} else {
+		isaphysmem = pmap_steal_memory(DMA_BOUNCE_LOW * NBPG);
+		isaphysmempgs = DMA_BOUNCE_LOW;
+	}
+#endif
+
 	/* flawed, no mappings?? */
 	if (ctob(physmem) > 31*1024*1024 && MAXKPDE != NKPDE) {
 		vm_offset_t p;

@@ -19,9 +19,6 @@ struct isadma_seg {		/* a physical contiguous segment */
 	vm_size_t length;	/* length of this segment (bytes) */
 };
 
-vm_offset_t isadma_alloc __P((vm_size_t, vm_offset_t, int));
-caddr_t isadma_vaddr __P((vm_offset_t));
-void isadma_free __P((vm_offset_t, vm_size_t));
 int isadma_map __P((caddr_t, vm_size_t, struct isadma_seg *, int));
 void isadma_unmap __P((caddr_t, vm_size_t, int, struct isadma_seg *));
 void isadma_copytobuf __P((caddr_t, vm_size_t, int, struct isadma_seg *));
