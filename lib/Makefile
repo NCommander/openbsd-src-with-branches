@@ -2,7 +2,8 @@
 #	$NetBSD: Makefile,v 1.20 1996/05/12 04:30:18 mhitch Exp $
 
 SUBDIR=	csu libarch libc libcompat libcrypt libcurses libedit libl \
-	libm libpcap libresolv librpcsvc libskey libtelnet libterm libutil liby
+	libm libpcap libresolv librpcsvc libskey libtelnet libterm \
+	libtermlib libutil liby
 
 # XXX Temporarely until all ports are able to use libkvm (leo)
 .if	(${MACHINE} == "amiga") || \
