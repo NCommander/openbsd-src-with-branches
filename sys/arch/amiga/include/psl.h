@@ -7,6 +7,10 @@
 #include <m68k/psl.h>
 
 #if defined(_KERNEL) && !defined(_LOCORE)
+static	__inline int splraise __P((int));
+static	__inline int splexact __P((int));
+static	__inline void splx __P((int));
+static	__inline int spllower __P((int));
 
 static __inline int
 splraise(npsl)
