@@ -50,7 +50,7 @@ CMACHFLAGS=
 
 CFLAGS=		${DEBUG} -O2 ${CDIAGFLAGS} ${CMACHFLAGS} ${COPTS}
 AFLAGS=		-x assembler-with-cpp -traditional-cpp -D_LOCORE
-LINKFLAGS=	-z -Ttext F0100000 -e start
+LINKFLAGS=	-z -Ttext E0100000 -e start
 STRIPFLAGS=	-d
 TOUCHFLAGS=	-f -c
 
