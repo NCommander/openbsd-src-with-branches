@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.190 2002/02/15 15:42:52 art Exp $ */
+/*	$OpenBSD: pf.c,v 1.191 2002/02/17 21:48:05 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -980,13 +980,13 @@ pfattach(int num)
 	pool_init(&pf_tree_pl, sizeof(struct pf_tree_node), 0, 0, 0, "pftrpl",
 	    NULL);
 	pool_init(&pf_rule_pl, sizeof(struct pf_rule), 0, 0, 0, "pfrulepl",
-	    NULL);
+	    &pool_allocator_nointr);
 	pool_init(&pf_nat_pl, sizeof(struct pf_nat), 0, 0, 0, "pfnatpl",
-	    NULL);
+	    &pool_allocator_nointr);
 	pool_init(&pf_binat_pl, sizeof(struct pf_binat), 0, 0, 0, "pfbinatpl",
-	    NULL);
+	    &pool_allocator_nointr);
 	pool_init(&pf_rdr_pl, sizeof(struct pf_rdr), 0, 0, 0, "pfrdrpl",
-	    NULL);
+	    &pool_allocator_nointr);
 	pool_init(&pf_state_pl, sizeof(struct pf_state), 0, 0, 0, "pfstatepl",
 	    NULL);
 	pool_init(&pf_sport_pl, sizeof(struct pf_port_node), 0, 0, 0, "pfsport",
