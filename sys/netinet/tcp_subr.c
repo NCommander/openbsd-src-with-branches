@@ -65,7 +65,21 @@
 /* patchable/settable parameters for tcp */
 int 	tcp_mssdflt = TCP_MSS;
 int 	tcp_rttdflt = TCPTV_SRTTDFLT / PR_SLOWHZ;
-int	tcp_do_rfc1323 = 1;
+
+/*
+ * Configure kernel with options "TCP_DO_RFC1323=0" to disable RFC1323 stuff.
+ * This is a good idea over slow SLIP/PPP links, because the timestamp
+ * pretty well destroys the VJ compression (any packet with a timestamp
+ * different from the previous one can't be compressed), as well as adding
+ * more overhead.
+ * XXX "tcp_do_rfc1323" should be sysctl() changeable.
+ * XXX And it should be a settable per route characteristic (with this just
+ * used as the default).
+ */
+#ifndef TCP_DO_RFC1323
+#define TCP_DO_RFC1323 1
+#endif
+int    tcp_do_rfc1323 = TCP_DO_RFC1323;
 
 #ifndef TCBHASHSIZE
 #define	TCBHASHSIZE	128
