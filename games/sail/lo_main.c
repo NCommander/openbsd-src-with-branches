@@ -1,4 +1,4 @@
-/*	$OpenBSD: lo_main.c,v 1.4 2003/04/06 18:50:38 deraadt Exp $	*/
+/*	$OpenBSD: lo_main.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: lo_main.c,v 1.3 1995/04/22 10:36:59 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)lo_main.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: lo_main.c,v 1.4 2003/04/06 18:50:38 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: lo_main.c,v 1.5 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -46,6 +46,7 @@ static char rcsid[] = "$OpenBSD: lo_main.c,v 1.4 2003/04/06 18:50:38 deraadt Exp
 #include <sys/param.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <stdlib.h>
 #include "extern.h"
 #include "pathnames.h"
 

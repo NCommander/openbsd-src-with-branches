@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.6 2003/06/10 22:20:44 deraadt Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.7 2003/07/02 21:04:09 deraadt Exp $	*/
 /*
  * Copyright (c) 1997 Kenneth Stailey.  All rights reserved.
  *
@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <err.h>
 

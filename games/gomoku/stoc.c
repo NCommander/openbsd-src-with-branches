@@ -1,4 +1,4 @@
-/*	$OpenBSD: stoc.c,v 1.5 2003/04/06 18:50:37 deraadt Exp $	*/
+/*	$OpenBSD: stoc.c,v 1.6 2003/06/03 03:01:39 millert Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -35,12 +35,13 @@
 #if 0
 static char sccsid[] = "@(#)stoc.c	8.1 (Berkeley) 7/24/94";
 #else
-static char rcsid[] = "$OpenBSD: stoc.c,v 1.5 2003/04/06 18:50:37 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: stoc.c,v 1.6 2003/06/03 03:01:39 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include "gomoku.h"
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 char	*letters	= "<ABCDEFGHJKLMNOPQRST>";

@@ -1,4 +1,4 @@
-/*	$OpenBSD: var.c,v 1.4 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$OpenBSD: var.c,v 1.5 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: var.c,v 1.4 1995/09/28 10:35:01 tls Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)var.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: var.c,v 1.4 2001/11/19 19:02:18 mpech Exp $";
+static char rcsid[] = "$OpenBSD: var.c,v 1.5 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -45,6 +45,7 @@ static char rcsid[] = "$OpenBSD: var.c,v 1.4 2001/11/19 19:02:18 mpech Exp $";
 #include "var.h"
 #include "string.h"
 #include <stdlib.h>
+#include <string.h>
 
 struct var *
 var_set1(head, name, v)

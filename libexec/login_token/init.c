@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: init.c,v 1.1 2000/12/20 01:41:53 millert Exp $	*/
 
 /*-
  * Copyright (c) 1996 Berkeley Software Design, Inc. All rights reserved.
@@ -36,6 +36,7 @@
 
 #include <sys/types.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "token.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfscores.c,v 1.9 2002/06/23 03:01:13 deraadt Exp $	*/
+/*	$OpenBSD: cfscores.c,v 1.10 2003/06/03 03:01:39 millert Exp $	*/
 /*	$NetBSD: cfscores.c,v 1.3 1995/03/21 15:08:37 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cfscores.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: cfscores.c,v 1.9 2002/06/23 03:01:13 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: cfscores.c,v 1.10 2003/06/03 03:01:39 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +49,7 @@ static char rcsid[] = "$OpenBSD: cfscores.c,v 1.9 2002/06/23 03:01:13 deraadt Ex
 #include <fcntl.h>
 #include <pwd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include "pathnames.h"

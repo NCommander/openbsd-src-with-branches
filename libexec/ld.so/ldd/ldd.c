@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldd.c,v 1.9 2002/05/24 03:44:37 deraadt Exp $	*/
+/*	$OpenBSD: ldd.c,v 1.10 2003/06/03 01:27:31 art Exp $	*/
 /*
  * Copyright (c) 2001 Artur Grabowski <art@openbsd.org>
  * All rights reserved.
@@ -29,6 +29,7 @@
 #include <elf_abi.h>
 #include <err.h>
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <sys/stat.h>

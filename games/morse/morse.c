@@ -1,4 +1,4 @@
-/*	$OpenBSD: morse.c,v 1.9 2002/05/31 03:40:01 pjanzen Exp $	*/
+/*	$OpenBSD: morse.c,v 1.10 2003/06/03 03:01:40 millert Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -39,12 +39,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)morse.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: morse.c,v 1.9 2002/05/31 03:40:01 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: morse.c,v 1.10 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 static char

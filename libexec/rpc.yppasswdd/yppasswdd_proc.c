@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppasswdd_proc.c,v 1.8 2002/06/20 03:43:41 deraadt Exp $	*/
+/*	$OpenBSD: yppasswdd_proc.c,v 1.9 2003/06/02 21:08:26 maja Exp $	*/
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -27,12 +27,13 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: yppasswdd_proc.c,v 1.8 2002/06/20 03:43:41 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: yppasswdd_proc.c,v 1.9 2003/06/02 21:08:26 maja Exp $";
 #endif
 
 #include <sys/types.h>
 #include <rpc/rpc.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: getconf.c,v 1.7 2003/05/21 00:56:50 pjanzen Exp $	*/
+/*	$OpenBSD: getconf.c,v 1.8 2003/06/10 22:20:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -41,11 +41,12 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: getconf.c,v 1.7 2003/05/21 00:56:50 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: getconf.c,v 1.8 2003/06/10 22:20:47 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <limits.h>
 #include <locale.h>
 #include <unistd.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.34 2003/05/14 23:37:05 itojun Exp $	*/
+/*	$OpenBSD: if.c,v 1.35 2003/06/03 02:56:13 millert Exp $	*/
 /*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)if.c	8.2 (Berkeley) 2/21/94";
 #else
-static char *rcsid = "$OpenBSD: if.c,v 1.34 2003/05/14 23:37:05 itojun Exp $";
+static char *rcsid = "$OpenBSD: if.c,v 1.35 2003/06/03 02:56:13 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,6 +59,7 @@ static char *rcsid = "$OpenBSD: if.c,v 1.34 2003/05/14 23:37:05 itojun Exp $";
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 

@@ -1,5 +1,5 @@
 /*
- *	$OpenBSD: locate.bigram.c,v 1.7 2001/11/19 19:02:14 mpech Exp $
+ *	$OpenBSD: locate.bigram.c,v 1.8 2003/06/03 02:56:09 millert Exp $
  *
  * Copyright (c) 1995 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
  * Copyright (c) 1989, 1993
@@ -32,7 +32,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * 	$Id: locate.bigram.c,v 1.7 2001/11/19 19:02:14 mpech Exp $
+ * 	$Id: locate.bigram.c,v 1.8 2003/06/03 02:56:09 millert Exp $
  */
 
 #ifndef lint
@@ -41,7 +41,7 @@ static char copyright[] =
 "@(#) Copyright (c) 1989, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #else
-static char rcsid[] = "$OpenBSD: locate.bigram.c,v 1.7 2001/11/19 19:02:14 mpech Exp $";
+static char rcsid[] = "$OpenBSD: locate.bigram.c,v 1.8 2003/06/03 02:56:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,6 +58,7 @@ static char sccsid[] = "@(#)locate.bigram.c	8.1 (Berkeley) 6/6/93";
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/param.h>			/* for MAXPATHLEN */
 #include "locate.h"
 

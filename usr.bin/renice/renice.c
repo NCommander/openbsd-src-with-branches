@@ -1,4 +1,4 @@
-/*	$OpenBSD: renice.c,v 1.9 2003/06/03 02:56:15 millert Exp $	*/
+/*	$OpenBSD: renice.c,v 1.10 2003/06/10 22:20:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1989, 1993
@@ -39,7 +39,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)renice.c	8.1 (Berkeley) 6/9/93";
 #else
-static char rcsid[] = "$OpenBSD: renice.c,v 1.9 2003/06/03 02:56:15 millert Exp $";
+static char rcsid[] = "$OpenBSD: renice.c,v 1.10 2003/06/10 22:20:50 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +49,7 @@ static char rcsid[] = "$OpenBSD: renice.c,v 1.9 2003/06/03 02:56:15 millert Exp 
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pwd.h>
 #include <err.h>
 #include <errno.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: wwiomux.c,v 1.7 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$OpenBSD: wwiomux.c,v 1.8 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: wwiomux.c,v 1.5 1996/02/08 20:45:09 mycroft Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)wwiomux.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: wwiomux.c,v 1.7 2001/11/19 19:02:18 mpech Exp $";
+static char rcsid[] = "$OpenBSD: wwiomux.c,v 1.8 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +49,7 @@ static char rcsid[] = "$OpenBSD: wwiomux.c,v 1.7 2001/11/19 19:02:18 mpech Exp $
 #endif
 #include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 /*
  * Multiple window output handler.
