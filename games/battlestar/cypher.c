@@ -1,4 +1,4 @@
-/*	$OpenBSD: cypher.c,v 1.3 1997/08/24 21:55:05 deraadt Exp $	*/
+/*	$OpenBSD: cypher.c,v 1.4 1997/09/01 18:13:15 millert Exp $	*/
 /*	$NetBSD: cypher.c,v 1.3 1995/03/21 15:07:15 cgd Exp $	*/
 
 /*
@@ -424,7 +424,7 @@ cypher()
 				break;
 
 			 case QUIT:
-				die();
+				die(0);
 
 			 default:
 				puts("How's that?");
