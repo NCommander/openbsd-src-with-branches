@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssvar.h,v 1.8 2001/06/22 14:35:43 deraadt Exp $	*/
+/*	$OpenBSD: ssvar.h,v 1.9 2002/03/14 01:27:13 millert Exp $	*/
 /*	$NetBSD: ssvar.h,v 1.2 1996/03/30 21:47:11 christos Exp $	*/
 
 /*
@@ -68,7 +68,7 @@ struct ss_softc {
 	struct scsi_link *sc_link;	/* contains our targ, lun, etc.	*/
 	struct scan_io sio;
 	struct buf buf_queue;		/* the queue of pending IO operations */
-	struct quirkdata *quirkdata;	/* if we have a rogue entry */
+	const struct quirkdata *quirkdata; /* if we have a rogue entry */
 	struct ss_special special;	/* special handlers for spec. devices */
 };
 
