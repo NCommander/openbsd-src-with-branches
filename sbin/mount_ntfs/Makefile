@@ -1,10 +1,11 @@
-#	$OpenBSD: Makefile,v 1.2 2003/05/20 03:19:57 tedu Exp $
+#	$OpenBSD: Makefile,v 1.3 2003/05/20 05:05:17 tedu Exp $
 
 .if (${MACHINE} == "i386")
 PROG=	mount_ntfs
 SRCS=	mount_ntfs.c getmntopts.c
-MAN=	mount_ntfs.8
+NOMAN=
 .else
+MAN=	mount_ntfs.8
 NOPROG=
 .endif
 
