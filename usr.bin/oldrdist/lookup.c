@@ -1,4 +1,4 @@
-/*	$OpenBSD: lookup.c,v 1.5 1996/08/22 20:33:21 millert Exp $	*/
+/*	$OpenBSD: lookup.c,v 1.6 2001/11/19 19:02:15 mpech Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)lookup.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: lookup.c,v 1.5 1996/08/22 20:33:21 millert Exp $";
+static char *rcsid = "$OpenBSD: lookup.c,v 1.6 2001/11/19 19:02:15 mpech Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -126,7 +126,7 @@ lookup(name, action, value)
 	int action;
 	struct namelist *value;
 {
-	unsigned n;
+	unsigned int n;
 	char *cp;
 	struct syment *s;
 	char buf[BUFSIZ];
