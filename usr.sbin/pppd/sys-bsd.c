@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys-bsd.c,v 1.5 1996/12/23 13:22:49 mickey Exp $	*/
+/*	$OpenBSD: sys-bsd.c,v 1.6 1997/04/27 21:45:16 deraadt Exp $	*/
 
 /*
  * sys-bsd.c - System-dependent procedures for setting up
@@ -23,7 +23,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: sys-bsd.c,v 1.5 1996/12/23 13:22:49 mickey Exp $";
+static char rcsid[] = "$OpenBSD: sys-bsd.c,v 1.6 1997/04/27 21:45:16 deraadt Exp $";
 #endif
 
 /*
@@ -313,7 +313,7 @@ restore_loop()
 int
 sipxfaddr(unit, network, node)
 	  int unit;
-	  u_long network;
+	  u_int32_t network;
 	  u_char * node;
 {
 	int    skfd; 
