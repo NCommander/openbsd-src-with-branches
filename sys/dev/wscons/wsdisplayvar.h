@@ -1,5 +1,5 @@
-/* $OpenBSD$ */
-/* $NetBSD: wsdisplayvar.h,v 1.14 1999/12/06 18:52:23 drochner Exp $ */
+/* $OpenBSD: wsdisplayvar.h,v 1.1 2000/05/16 23:49:11 mickey Exp $ */
+/* $NetBSD: wsdisplayvar.h,v 1.14.4.1 2000/06/30 16:27:53 simonb Exp $ */
 
 /*
  * Copyright (c) 1996, 1997 Christopher G. Demetriou.  All rights reserved.
