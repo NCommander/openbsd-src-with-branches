@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.56 2004/06/25 09:49:12 pvalchev Exp $g
+#	$OpenBSD: GENERIC,v 1.57 2004/07/20 20:41:49 dhartmei Exp $g
 #
 # PPC GENERIC config file
 #
@@ -169,7 +169,7 @@ scsibus*	at atapiscsi?
 
 # PCI USB Controllers
 ohci*		at pci?				# Open Host Controller
-ehci*		at pci?				# Enhanced Host Controller
+ehci*		at pci? disable			# Enhanced Host Controller
 
 # USB bus support
 usb*		at ohci? flags 0x1
