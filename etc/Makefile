@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.132 2001/09/21 22:13:51 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.133 2001/12/19 02:26:41 form Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -151,7 +151,7 @@ distribution-etc-root-var: distrib-dirs
 		    ${DESTDIR}/etc/ppp; \
 		${INSTALL} -c -o root -g wheel -m 600 pap-secrets \
 		    ${DESTDIR}/etc/ppp; \
-		${INSTALL} -c -o root -g wheel -m 644 ppp.conf.sample \
+		${INSTALL} -c -o root -g wheel -m 600 ppp.conf.sample \
 		    ${DESTDIR}/etc/ppp; \
 		${INSTALL} -c -o root -g wheel -m 644 ppp.linkup.sample \
 		    ${DESTDIR}/etc/ppp; \
