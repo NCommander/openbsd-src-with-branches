@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnw.c,v 1.10 2001/08/17 21:52:16 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -384,7 +384,7 @@ cnw_attach(parent, self, aux)
 
 	/* Enable the card */
 	sc->sc_pf = pa->pf;
-	pcmcia_function_init(sc->sc_pf, sc->sc_pf->cfe_head.sqh_first);
+	pcmcia_function_init(sc->sc_pf, SIMPLEQ_FIRST(&sc->sc_pf->cfe_head));
 	if (pcmcia_function_enable(sc->sc_pf)) {
 		printf(": function enable failed\n");
 		return;

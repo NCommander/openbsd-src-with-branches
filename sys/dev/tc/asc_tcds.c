@@ -177,7 +177,7 @@ asc_tcds_attach(parent, self, aux)
 	sc->sc_id = tcdsdev->tcdsda_id;
 	sc->sc_freq = tcdsdev->tcdsda_freq;
 
-	/* gimme Mhz */
+	/* gimme MHz */
 	sc->sc_freq /= 1000000;
 
 	tcds_intr_establish(parent, tcdsdev->tcdsda_chip, ncr53c9x_intr, sc);

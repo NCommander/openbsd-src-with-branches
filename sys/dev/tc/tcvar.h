@@ -140,7 +140,7 @@ struct tc_builtin {
  * Interrupt establishment functions.
  */
 int	tc_checkslot(tc_addr_t, char *);
-void	tc_devinfo(const char *, char *);
+void	tc_devinfo(const char *, char *, size_t);
 void	tcattach(struct device *, struct device *, void *);
 const struct evcnt *tc_intr_evcnt(struct device *, void *);
 void	tc_intr_establish(struct device *, void *, int, int (*)(void *),

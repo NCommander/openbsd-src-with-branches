@@ -78,7 +78,7 @@
 #define GPR400_SELECT		0x50	/* Select card			*/
 #define  GPR400_DRV0		 0x00	/* Downloaded driver 0		*/
 #define  GPR400_ISODRV		 0x02	/* ISO7816-3 driver		*/
-#define  GPR400_CLK_MASK	 0x08	/* 0: 3.68Mhz, 1: 7.36Mhz	*/
+#define  GPR400_CLK_MASK	 0x08	/* 0: 3.68MHz, 1: 7.36MHz	*/
 #define GPR400_STATUS		0xA0	/* Reader status		*/
 
 #define GPR400_CONT		0x04	/* Chain block			*/
@@ -389,7 +389,7 @@ tlvput(struct gpr_softc *sc, int cmd, u_int8_t *data, int len)
 		n = min(resid, 28);
 		resid -= n;
 
-		if (n)
+		if (resid)
 			cmd |= GPR400_CONT;
 		else
 			cmd &= ~GPR400_CONT;

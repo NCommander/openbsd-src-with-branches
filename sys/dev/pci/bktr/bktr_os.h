@@ -53,8 +53,8 @@ vm_offset_t     get_bktr_mem( int unit, unsigned size );
 #endif
 
 #if (defined(__NetBSD__) || defined(__OpenBSD__))
-vm_offset_t     get_bktr_mem(bktr_ptr_t, bus_dmamap_t *, unsigned size);
-void            free_bktr_mem(bktr_ptr_t, bus_dmamap_t, vm_offset_t);
+vaddr_t		get_bktr_mem(bktr_ptr_t, bus_dmamap_t *, unsigned size);
+void            free_bktr_mem(bktr_ptr_t, bus_dmamap_t, vaddr_t);
 #endif 
 
 /************************************/

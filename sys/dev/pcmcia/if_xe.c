@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.23 2001/08/17 21:52:16 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -1407,7 +1407,7 @@ xe_full_reset(sc)
 		PAGE(sc, 4);
 		/*
 		 * Drive GP1 low to power up ML6692 and GP2 high to power up
-		 * the 10Mhz chip.  XXX What chip is that?  The phy?
+		 * the 10MHz chip.  XXX What chip is that?  The phy?
 		 */
 		bus_space_write_1(bst, bsh, offset + GP0,
 		    GP1_OUT | GP2_OUT | GP2_WR);

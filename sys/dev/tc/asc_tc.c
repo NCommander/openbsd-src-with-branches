@@ -149,7 +149,7 @@ asc_tc_attach(parent, self, aux)
 	sc->sc_id = 7;
 	sc->sc_freq = (ta->ta_busspeed) ? 25000000 : 12500000;
 
-	/* gimme Mhz */
+	/* gimme MHz */
 	sc->sc_freq /= 1000000;
 
 	/*
