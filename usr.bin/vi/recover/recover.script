@@ -1,9 +1,13 @@
-#	@(#)recover.script	8.7 (Berkeley) 8/16/94
+#!/bin/sh -
+#
+#	$OpenBSD$
+#	@(#)recover.in	8.8 (Berkeley) 10/10/96
 #
 # Script to recover nvi edit sessions.
 #
-RECDIR=/var/tmp/vi.recover
-SENDMAIL=/usr/sbin/sendmail
+RECDIR="/var/tmp/vi.recover"
+SENDMAIL="/usr/sbin/sendmail"
+
 echo 'Recovering nvi editor sessions.'
 
 # Check editor backup files.
