@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.13 2000/01/05 16:00:19 espie Exp $	*/
+/*	$OpenBSD: print.c,v 1.11 1999/05/01 23:54:48 deraadt Exp $	*/
 /*	$NetBSD: print.c,v 1.15 1996/12/11 03:25:39 thorpej Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.5 (Berkeley) 7/28/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.13 2000/01/05 16:00:19 espie Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.11 1999/05/01 23:54:48 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -144,6 +144,7 @@ compute_columns(dp, pnum)
 {
 	int colwidth;
 	extern int termwidth;
+	int mywidth;
 
 	colwidth = dp->maxlen;
 	if (f_inode)
@@ -154,14 +155,15 @@ compute_columns(dp, pnum)
 		colwidth += 1;
 
 	colwidth += 1;
+	mywidth = termwidth + 1;	/* no extra space for last column */
 
-	if (termwidth < 2 * colwidth) {
+	if (mywidth < 2 * colwidth) {
 		printscol(dp);
 		return (0);
 	}
 
-	*pnum = termwidth / colwidth;
-	return (termwidth / *pnum);		/* spread out if possible */
+	*pnum = mywidth / colwidth;
+	return (mywidth / *pnum);		/* spread out if possible */
 }
 
 void
@@ -176,7 +178,6 @@ printcol(dp)
 
 	if ( (colwidth = compute_columns(dp, &numcols)) == 0)
 		return;
-
 	/*
 	 * Have to do random access in the linked list -- build a table
 	 * of pointers.
@@ -204,9 +205,11 @@ printcol(dp)
 	if (dp->list->fts_level != FTS_ROOTLEVEL && (f_longform || f_size))
 		(void)printf("total %lu\n", howmany(dp->btotal, blocksize));
 	for (row = 0; row < numrows; ++row) {
-		for (base = row, col = 0; col < numcols; ++col) {
+		for (base = row, col = 0;;) {
 			chcnt = printaname(array[base], dp->s_inode, dp->s_block);
 			if ((base += numrows) >= num)
+				break;
+			if (++col == numcols)
 				break;
 			while (chcnt++ < colwidth)
 				putchar(' ');
@@ -285,13 +288,14 @@ printacol(dp)
 		if (IS_NOPRINT(p))
 			continue;
 		if (col >= numcols) {
-			chcnt = col = 0;
+			col = 0;
 			(void)putchar('\n');
 		}
 		chcnt = printaname(p, dp->s_inode, dp->s_block);
-		while (chcnt++ < colwidth)
-			(void)putchar(' ');
 		col++;
+		if (col < numcols)
+			while (chcnt++ < colwidth)
+				(void)putchar(' ');
 	}
 	(void)putchar('\n');
 }
