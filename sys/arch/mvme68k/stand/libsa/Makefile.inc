@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.3 1996/05/16 02:30:38 chuck Exp $
+#	$OpenBSD: Makefile.inc,v 1.4 1997/04/22 16:07:57 gvf Exp $
 
-LIB_SA_DIR=${S}/arch/${MACHINE}/stand/libsa
+LIB_SA_DIR=${S}/arch/mvme68k/stand/libsa
 
 LIBSA_DIR!= cd ${LIB_SA_DIR}; \
      printf "xxx:\n\techo \$${.OBJDIR}\n" | ${MAKE} -r -s -f - xxx

@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.inc,v 1.1 1997/04/22 16:13:42 gvf Exp $
 
-LIB_Z_DIR=${S}/arch/${MACHINE}/stand/libz
+LIB_Z_DIR=${S}/arch/mvme68k/stand/libz
 
 LIBZ_DIR!= cd ${LIB_Z_DIR}; \
      printf "xxx:\n\techo \$${.OBJDIR}\n" | ${MAKE} -r -s -f - xxx
