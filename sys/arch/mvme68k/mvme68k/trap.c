@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.51 2003/12/20 00:34:32 miod Exp $ */
+/*	$OpenBSD: trap.c,v 1.52 2004/01/15 17:22:27 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -593,7 +593,8 @@ copyfault:
 			 * the current limit and we need to reflect that as an access
 			 * error.
 			 */
-			if ((caddr_t)va >= vm->vm_maxsaddr && map != kernel_map) {
+			if ((vm != NULL && (caddr_t)va >= vm->vm_maxsaddr)
+			    && map != kernel_map) {
 				if (rv == 0) {
 					u_int nss;
 
