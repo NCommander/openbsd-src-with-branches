@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_extern.h,v 1.4 1997/10/06 20:21:35 deraadt Exp $	*/
+/*	$OpenBSD: ffs_extern.h,v 1.5 1997/11/06 05:59:18 csapuntz Exp $	*/
 /*	$NetBSD: ffs_extern.h,v 1.4 1996/02/09 22:22:22 christos Exp $	*/
 
 /*-
@@ -67,6 +67,7 @@ struct uio;
 struct vnode;
 struct mbuf;
 struct cg;
+struct vop_vfree_args;
 
 __BEGIN_DECLS
 
