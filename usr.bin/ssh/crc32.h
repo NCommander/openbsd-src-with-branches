@@ -13,7 +13,7 @@
  *
  */
 
-/* RCSID("$OpenBSD: crc32.h,v 1.5 2000/04/14 10:30:31 markus Exp $"); */
+/* RCSID("$OpenBSD: crc32.h,v 1.6 2000/06/20 01:39:40 markus Exp $"); */
 
 #ifndef CRC32_H
 #define CRC32_H
@@ -22,6 +22,6 @@
  * This computes a 32 bit CRC of the data in the buffer, and returns the CRC.
  * The polynomial used is 0xedb88320.
  */
-unsigned int crc32(const unsigned char *buf, unsigned int len);
+unsigned int ssh_crc32(const unsigned char *buf, unsigned int len);
 
 #endif				/* CRC32_H */
