@@ -70,7 +70,7 @@ cvs_checkout(int argc, char **argv)
 		return (EX_USAGE);
 	}
 
-	dir = cvs_file_get(".", CF_IGNORE|CF_MKADMIN);
+	dir = cvs_file_get(".", CF_IGNORE);
 	root = CVS_DIR_ROOT(dir);
 	if (root->cr_method != CVS_METHOD_LOCAL) {
 		cvs_connect(root);
