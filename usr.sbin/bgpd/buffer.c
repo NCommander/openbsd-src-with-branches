@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.22 2004/07/03 17:19:59 claudio Exp $ */
+/*	$OpenBSD: buffer.c,v 1.23 2004/08/17 15:59:34 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -172,7 +172,7 @@ msgbuf_write(struct msgbuf *msgbuf)
 	}
 
 	if ((n = sendmsg(msgbuf->fd, &msg, 0)) == -1) {
-		if (errno == EAGAIN)	/* cannot write immediately */
+		if (errno == EAGAIN || errno == ENOBUFS)	/* try later */
 			return (0);
 		else
 			return (-1);
