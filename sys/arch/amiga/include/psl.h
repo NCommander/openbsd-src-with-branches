@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.7 1996/05/31 10:46:29 niklas Exp $	*/
+/*	$OpenBSD: psl.h,v 1.8 1997/01/16 09:26:04 niklas Exp $	*/
 /*	$NetBSD: psl.h,v 1.11 1996/11/30 00:33:49 is Exp $	*/
 
 #ifndef _MACHINE_PSL_H_
@@ -115,7 +115,7 @@ spllower(npsl)
  *
  * XXX should ttyspl be volatile? I think not; it is intended to be set only
  * during xxx_attach() time, and will be used only later.
- *   -is
+ *	-is
  */
 
 extern u_int16_t amiga_ttyspl;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.8 1997/01/16 09:23:26 niklas Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.9 1997/09/09 11:05:00 niklas Exp $	*/
 /*	$NetBSD: pmap.c,v 1.39 1997/06/10 18:26:41 veego Exp $	*/
 
 /* 
@@ -2088,7 +2088,7 @@ vm_offset_t
 pmap_phys_address(ppn)
 	int ppn;
 {
-	return(amiga_ptob(ppn));
+	return(m68k_ptob(ppn));
 }
 
 /*
