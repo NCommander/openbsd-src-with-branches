@@ -1,4 +1,4 @@
-/* *	$OpenBSD: md.h,v 1.4 1999/05/10 16:20:47 espie Exp $*/
+/* *	$OpenBSD: md.h,v 1.5 1999/05/24 23:22:02 espie Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -34,8 +34,20 @@
  * SPARC machine dependent definitions
  */
 
-#if defined(CROSS_LINKER) && defined(XHOST) && XHOST==i386
+#if defined(CROSS_LINKER)
+
+#include <sys/endian.h>
+#if BYTE_ORDER != BIG_ENDIAN 
 #define NEED_SWAP
+#endif
+
+#undef __LDPGSZ
+#undef ELF_TARG_DATA
+#undef ELF_TARG_MACH
+#undef relocation_info
+#undef MID_MACHINE
+#define MID_MACHINE MID_SPARC
+#include <sparc/exec.h>
 #endif
 
 #define	MAX_ALIGNMENT	(sizeof (double))
