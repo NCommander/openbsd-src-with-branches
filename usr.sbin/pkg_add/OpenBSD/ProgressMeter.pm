@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ProgressMeter.pm,v 1.1 2004/10/18 12:03:19 espie Exp $
+# $OpenBSD: ProgressMeter.pm,v 1.2 2004/10/18 13:29:14 espie Exp $
 #
 # Copyright (c) 2004 Marc Espie <espie@openbsd.org>
 #
@@ -72,7 +72,6 @@ sub set_header
 		if (!defined $isatty) {
 			$isatty = -t STDERR;
 		}
-		find_window_size();
 	}
 	if ($isatty) {
 		find_window_size();
