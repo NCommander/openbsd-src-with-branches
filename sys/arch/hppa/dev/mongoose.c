@@ -1,4 +1,4 @@
-/*	$OpenBSD: mongoose.c,v 1.15 2004/04/07 18:24:19 mickey Exp $	*/
+/*	$OpenBSD: mongoose.c,v 1.16 2004/10/29 20:23:37 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -55,7 +55,7 @@ struct cfattach mg_gedoens_ca = {
 };
 
 struct cfdriver mongoose_cd = {
-	NULL, "mg", DV_DULL
+	NULL, "mongoose", DV_DULL
 };
 
 /* TODO: DMA guts */
