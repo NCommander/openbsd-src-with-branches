@@ -1,5 +1,5 @@
 # -*- mode: Fundamental; tab-width: 4; -*-
-#	$OpenBSD: bsd.port.mk,v 1.6 1996/08/23 11:37:41 niklas Exp $
+#	$OpenBSD: bsd.port.mk,v 1.7 1996/10/22 14:01:19 niklas Exp $
 #
 #	bsd.port.mk - 940820 Jordan K. Hubbard.
 #	This file is in the public domain.
@@ -227,6 +227,7 @@
 .include "${.CURDIR}/../Makefile.inc"
 .endif
 
+.include <bsd.own.mk>
 
 # These need to be absolute since we don't know how deep in the ports
 # tree we are and thus can't go relative.  They can, of course, be overridden
