@@ -33,7 +33,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: sigsuspend.S,v 1.1 1995/04/17 12:24:10 ragge Exp $"
+	.asciz "$OpenBSD: sigsuspend.S,v 1.2 1996/08/19 08:19:10 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
@@ -41,7 +41,7 @@
 err:
 	jmp	cerror
 
-ENTRY(sigsuspend)
+ENTRY(sigsuspend, 0)
 	movl	*4(ap),4(ap)		# indirect to mask arg
 	chmk	$ SYS_sigsuspend
 	jcs	err

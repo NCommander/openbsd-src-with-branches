@@ -33,7 +33,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: Ovfork.S,v 1.1 1995/04/17 12:23:56 ragge Exp $"
+	.asciz "$OpenBSD: Ovfork.S,v 1.2 1996/08/19 08:18:55 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
 /*
@@ -54,7 +54,7 @@
  * with a ret off this stack... we do the ret before we vfork!
  */
 
-ENTRY(vfork)
+ENTRY(vfork, 0)
 	movl	16(fp),r2	# save return address before we smash it
 	movab	here,16(fp)
 	ret

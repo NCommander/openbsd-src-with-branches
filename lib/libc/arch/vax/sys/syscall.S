@@ -38,12 +38,12 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: syscall.S,v 1.1 1995/04/17 12:24:11 ragge Exp $"
+	.asciz "$OpenBSD: syscall.S,v 1.2 1996/08/19 08:19:11 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
-ENTRY(syscall)
+ENTRY(syscall, 0)
 	movl	4(ap),r0	# syscall number
 	subl3	$1,(ap)+,(ap)	# one fewer arguments
 	chmk	r0
