@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.11 2001/07/05 12:36:59 ho Exp $	*/
+/*	$OpenBSD: util.h,v 1.12 2001/08/22 08:50:40 niklas Exp $	*/
 /*	$EOM: util.h,v 1.10 2000/10/24 13:33:39 niklas Exp $	*/
 
 /*
@@ -66,8 +66,8 @@ extern u_int8_t *getrandom (u_int8_t *, size_t);
 extern int hex2raw (char *, u_int8_t *, size_t);
 extern int ones_test (const u_int8_t *, size_t);
 extern int sockaddr2text (struct sockaddr *, char **, int);
-extern u_int8_t *sockaddr_data (struct sockaddr *);
-extern int sockaddr_len (struct sockaddr *);
+extern u_int8_t *sockaddr_addrdata (struct sockaddr *);
+extern int sockaddr_addrlen (struct sockaddr *);
 extern int text2sockaddr (char *, char *, struct sockaddr **);
 extern void util_ntoa (char **, int, u_int8_t *);
 extern int zero_test (const u_int8_t *, size_t);
