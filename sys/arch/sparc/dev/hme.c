@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.20 1999/08/20 04:55:03 jason Exp $	*/
+/*	$OpenBSD: hme.c,v 1.21 1999/12/10 03:03:56 jason Exp $	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -440,12 +440,6 @@ hmeioctl(ifp, cmd, data)
 			hmestop(sc);
 			hmeinit(sc);
 		}
-#ifdef IEDEBUG   
-		if (ifp->if_flags & IFF_DEBUG)
-			sc->sc_debug = IED_ALL;
-		else
-			sc->sc_debug = 0;
-#endif
 		break;
 
 	case SIOCADDMULTI:
