@@ -1,4 +1,4 @@
-/*	$OpenBSD: asprintf.c,v 1.1 1997/11/29 19:54:48 millert Exp $	*/
+/*	$OpenBSD: asprintf.c,v 1.2 1998/01/12 06:14:30 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: asprintf.c,v 1.1 1997/11/29 19:54:48 millert Exp $";
+static char rcsid[] = "$OpenBSD: asprintf.c,v 1.2 1998/01/12 06:14:30 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -79,6 +79,6 @@ asprintf(str, fmt, va_alist)
 		errno = ENOMEM;
 		ret = -1;
 	}
-	*str = f._bf._base;
+	*str = (char *)f._bf._base;
 	return (ret);
 }
