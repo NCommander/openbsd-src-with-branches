@@ -1,4 +1,4 @@
-/*	$OpenBSD: sod.c,v 1.17 2003/05/08 16:30:52 millert Exp $	*/
+/*	$OpenBSD: sod.c,v 1.18 2003/07/06 20:03:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -95,8 +95,14 @@ _dl_build_sod(const char *name, struct sod *sodp)
 			break;
 		case 1:
 			/* 'so' extension */
-			if (_dl_strcmp(tok, "so") != 0)
-				goto backout;
+			if (_dl_strcmp(tok, "so") != 0) {
+				/*
+				 * filenames such as libX-A.B.so.X.Y
+				 * screw this up, decrement tuplet
+				 * and try to continue.
+				 */
+				 tuplet--;
+			}
 			break;
 		case 2:
 			/* major version extension */
