@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsold.c,v 1.9 2000/10/06 02:46:58 itojun Exp $	*/
+/*	$OpenBSD: rtsold.c,v 1.10 2001/07/09 22:37:33 itojun Exp $	*/
 /*	$KAME: rtsold.c,v 1.32 2001/07/09 22:34:07 itojun Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ int main __P((int argc, char *argv[]));
 
 /* static variables and functions */
 static int mobile_node = 0;
-static int do_dump;
+volatile sig_atomic_t do_dump;
 static char *dumpfilename = "/var/run/rtsold.dump"; /* XXX: should be configurable */
 static char *pidfilename = "/var/run/rtsold.pid"; /* should be configurable */
 
