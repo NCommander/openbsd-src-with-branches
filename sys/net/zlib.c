@@ -1,3 +1,4 @@
+/*	$OpenBSD: zlib.c,v 1.2 1996/03/16 23:55:40 christos Exp $	*/
 /*	$NetBSD: zlib.c,v 1.2 1996/03/16 23:55:40 christos Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: slcompress.h,v 1.9 1995/07/04 06:28:29 paulus Exp $	*/
 /*	$NetBSD: slcompress.h,v 1.9 1995/07/04 06:28:29 paulus Exp $	*/
 
 /*

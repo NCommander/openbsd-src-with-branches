@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_slvar.h,v 1.16 1996/05/07 02:40:46 thorpej Exp $	*/
 /*	$NetBSD: if_slvar.h,v 1.16 1996/05/07 02:40:46 thorpej Exp $	*/
 
 /*-

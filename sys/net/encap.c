@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
  * 	(except when noted otherwise).

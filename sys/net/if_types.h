@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_types.h,v 1.7 1995/02/27 09:10:24 glass Exp $	*/
 /*	$NetBSD: if_types.h,v 1.7 1995/02/27 09:10:24 glass Exp $	*/
 
 /*
