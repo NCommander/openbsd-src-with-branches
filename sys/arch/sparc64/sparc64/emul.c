@@ -1,4 +1,4 @@
-/*	$OpenBSD: emul.c,v 1.2 2001/08/20 20:23:53 jason Exp $	*/
+/*	$OpenBSD: emul.c,v 1.3 2002/03/14 01:26:45 millert Exp $	*/
 /*	$NetBSD: emul.c,v 1.8 2001/06/29 23:58:40 eeh Exp $	*/
 
 /*-
@@ -40,6 +40,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <machine/reg.h>
 #include <machine/instr.h>
 #include <machine/cpu.h>
@@ -454,4 +455,20 @@ emulinstr(pc, tf)
 	}
 
 	return 0;
+}
+
+int
+emul_qf(int32_t insv, struct proc *p, union sigval sv)
+{
+	union instr ins;
+
+	ins.i_int = insv;
+
+	if (ins.i_op3.i_rd & 0x20) {
+		trapsignal(p, SIGILL, 0, ILL_ILLOPN, sv);
+		return (0);
+	}
+
+	trapsignal(p, SIGILL, 0, ILL_ILLOPC, sv);
+	return (0);
 }
