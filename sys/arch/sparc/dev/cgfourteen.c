@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgfourteen.c,v 1.26 2003/06/28 17:05:33 miod Exp $	*/
+/*	$OpenBSD: cgfourteen.c,v 1.27 2004/11/29 22:07:36 miod Exp $	*/
 /*	$NetBSD: cgfourteen.c,v 1.7 1997/05/24 20:16:08 pk Exp $ */
 
 /*
@@ -317,7 +317,7 @@ cgfourteenattach(parent, self, args)
 	fbwscons_setcolormap(&sc->sc_sunfb, cgfourteen_setcolor);
 
 	if (isconsole) {
-		fbwscons_console_init(&sc->sc_sunfb, -1, cgfourteen_burner);
+		fbwscons_console_init(&sc->sc_sunfb, -1);
 		shutdownhook_establish(cgfourteen_prom, sc);
 	}
 

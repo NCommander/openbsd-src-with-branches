@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.37 2004/12/02 02:41:02 brad Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.38 2005/01/05 23:04:25 miod Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -172,7 +172,7 @@ vgafbattach(parent, self, aux)
 		sc->sc_ofhandle = OF_stdout();
 		fbwscons_setcolormap(&sc->sc_sunfb, vgafb_setcolor);
 		sc->sc_sunfb.sf_ro.ri_updatecursor = vgafb_updatecursor;
-		fbwscons_console_init(&sc->sc_sunfb, -1, NULL);
+		fbwscons_console_init(&sc->sc_sunfb, -1);
 	} else {
 		/* sc->sc_ofhandle = XXX */
 	}
