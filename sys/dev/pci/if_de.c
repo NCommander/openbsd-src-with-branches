@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.37 1998/12/02 07:34:59 deraadt Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.38 1999/01/11 04:31:13 jason Exp $	*/
 /*	$NetBSD: if_de.c,v 1.45 1997/06/09 00:34:18 thorpej Exp $	*/
 
 /*-
@@ -5524,8 +5524,9 @@ tulip_pci_attach(
 		printf("\n");
 		return;
 	    }
-	    printf(": %s\n", intrstr);
+	    printf(": %s", intrstr);
 	}
+	printf("\n");
 	sc->tulip_ats = shutdownhook_establish(tulip_shutdown, sc);
 	if (sc->tulip_ats == NULL)
 	    printf("%s: warning: couldn't establish shutdown hook\n",
