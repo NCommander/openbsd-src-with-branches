@@ -186,7 +186,7 @@ X_db_search_symbol(symtab, off, strategy, diffp)
 	db_strategy_t	strategy;
 	db_expr_t	*diffp;		/* in/out */
 {
-	register unsigned int	diff = *diffp;
+	register db_expr_t	diff = *diffp;
 	register struct nlist	*symp = 0;
 	register struct nlist	*sp, *ep;
 
@@ -199,7 +199,7 @@ X_db_search_symbol(symtab, off, strategy, diffp)
 	    if ((sp->n_type & N_STAB) != 0 || (sp->n_type & N_TYPE) == N_FN)
 		continue;
 	    if (off >= sp->n_value) {
-		if (off - sp->n_value < diff) {
+		if (off - sp->n_value < diff || diff < 0) {
 		    diff = off - sp->n_value;
 		    symp = sp;
 		    if (diff == 0 &&
