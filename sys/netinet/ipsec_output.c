@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.29 2004/06/21 23:11:39 markus Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.30 2004/06/21 23:50:37 tholo Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -57,7 +57,7 @@
 #define DPRINTF(x)
 #endif
 
-int	udpencap_enable = 0;	/* disabled by default */
+int	udpencap_enable = 1;	/* enabled by default */
 int	udpencap_port = 4500;	/* triggers decapsulation */
 
 /*
