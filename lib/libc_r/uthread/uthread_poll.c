@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_poll.c,v 1.3 1999/11/25 07:01:41 d Exp $	*/
+/*	$OpenBSD: uthread_poll.c,v 1.4 2000/01/06 08:28:53 d Exp $	*/
 /*
  * Copyright (c) 1999 Daniel Eischen <eischen@vigrid.com>
  * All rights reserved.
@@ -56,7 +56,7 @@ poll(struct pollfd fds[], int nfds, int timeout)
 		numfds = _thread_dtablesize;
 	}
 	/* Check if a timeout was specified: */
-	if (timeout == -1) {
+	if (timeout == INFTIM) {
 		/* Wait for ever: */
 		_thread_kern_set_timeout(NULL);
 	} else if (timeout > 0) {
