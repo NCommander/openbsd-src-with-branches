@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.21 2001/11/09 15:25:55 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.22 2001/11/10 20:11:04 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -1380,8 +1380,10 @@ _bus_dmamap_load_uio(t, map, uio, flags)
 	map->_dm_source = (void *)uio;
 	return (bus_dmamap_load_raw(t, map, segs, i, 
 				    (bus_size_t)len, flags));
-#endif
 	return 0;
+#else
+	return (EOPNOTSUPP);
+#endif
 }
 
 /*
