@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 1997/06/23 23:45:17 kstailey Exp $
+#	$OpenBSD: Makefile,v 1.6 1997/07/18 00:47:20 mickey Exp $
 #	$NetBSD: Makefile,v 1.2 1997/01/22 01:36:30 cgd Exp $
 
 S=${.CURDIR}/../../../..
@@ -15,4 +15,4 @@ machine-links:
 	@ln -fs ${.CURDIR}/../../include machine
 
 .include "${S}/lib/libz/Makefile"
-CFLAGS+=${SACFLAGS} -I${S}/lib/libsa
+CFLAGS+=${SACFLAGS} -I${S}/lib/libsa -DDYNAMIC_CRC_TABLE
