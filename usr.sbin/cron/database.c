@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.14 2004/06/03 18:41:58 millert Exp $	*/
+/*	$OpenBSD: database.c,v 1.15 2004/06/17 22:11:55 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -22,7 +22,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: database.c,v 1.14 2004/06/03 18:41:58 millert Exp $";
+static char const rcsid[] = "$OpenBSD: database.c,v 1.15 2004/06/17 22:11:55 millert Exp $";
 #endif
 
 /* vix 26jan87 [RCS has the log]
@@ -109,8 +109,8 @@ load_database(cron_db *old_db) {
 		if (strlcpy(fname, dp->d_name, sizeof fname) >= sizeof fname)
 			continue;	/* XXX log? */
 
-		if (!glue_strings(tabname, sizeof tabname, SPOOL_DIR,
-				  fname, '/'))
+		if (snprintf(tabname, sizeof tabname, "%s/%s", SPOOL_DIR, fname) >=
+			sizeof(tabname))
 			continue;	/* XXX log? */
 
 		process_crontab(fname, fname, tabname,
