@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: deflate.h,v 1.1 2001/07/05 08:26:04 jjbg Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -52,4 +52,4 @@ struct deflate_buf {
 	int flag;
 };
 
-#endif _CRYPTO_DEFLATE_H_
+#endif /* _CRYPTO_DEFLATE_H_ */
