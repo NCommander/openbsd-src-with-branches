@@ -1,14 +1,10 @@
 /*	$NetBSD: execute.c,v 1.2 1997/10/10 16:33:13 lukem Exp $	*/
+/*	$OpenBSD$	*/
 /*
  *  Hunt
  *  Copyright (c) 1985 Conrad C. Huang, Gregory S. Couch, Kenneth C.R.C. Arnold
  *  San Francisco, California
  */
-
-#include <sys/cdefs.h>
-#ifndef lint
-__RCSID("$NetBSD: execute.c,v 1.2 1997/10/10 16:33:13 lukem Exp $");
-#endif /* not lint */
 
 # include	<stdlib.h>
 # include	"hunt.h"

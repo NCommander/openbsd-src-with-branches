@@ -1,14 +1,10 @@
 /*	$NetBSD: get_names.c,v 1.3 1998/07/06 07:00:31 mrg Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  */
-
-#include <sys/cdefs.h>
-#ifndef lint
-__RCSID("$NetBSD: get_names.c,v 1.3 1998/07/06 07:00:31 mrg Exp $");
-#endif /* not lint */
 
 #include "bsd.h"
 

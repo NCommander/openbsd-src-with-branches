@@ -1,4 +1,5 @@
 /*	$NetBSD: hunt.h,v 1.5 1998/09/13 15:27:28 hubertf Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  *  Hunt

@@ -1,14 +1,10 @@
 /*	$NetBSD: playit.c,v 1.4 1997/10/20 00:37:15 lukem Exp $	*/
+/*	$OpenBSD$	*/
 /*
  *  Hunt
  *  Copyright (c) 1985 Conrad C. Huang, Gregory S. Couch, Kenneth C.R.C. Arnold
  *  San Francisco, California
  */
-
-#include <sys/cdefs.h>
-#ifndef lint
-__RCSID("$NetBSD: playit.c,v 1.4 1997/10/20 00:37:15 lukem Exp $");
-#endif /* not lint */
 
 # include	<sys/file.h>
 # include	<err.h>

@@ -1,4 +1,5 @@
 #	$NetBSD: Makefile,v 1.1 1997/10/04 09:11:21 mrg Exp $
+#	$OpenBSD$
 
 PROG=	huntd
 SRCS=	answer.c ctl.c ctl_transact.c draw.c driver.c execute.c expl.c \
