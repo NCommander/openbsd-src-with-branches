@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: psm.c,v 1.11 2000/06/05 22:20:57 sommerfeld Exp $ */
 
 /*-

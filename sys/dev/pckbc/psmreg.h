@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: psmreg.h,v 1.1 1998/03/22 15:41:28 drochner Exp $ */
 
 /* mouse commands */
