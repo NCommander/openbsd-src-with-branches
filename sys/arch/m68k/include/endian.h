@@ -1,4 +1,4 @@
-/*	$OpenBSD: endian.h,v 1.4 1997/01/13 11:51:10 niklas Exp $	*/
+/*	$OpenBSD: endian.h,v 1.5 1997/04/02 20:40:47 niklas Exp $	*/
 /*	$NetBSD: endian.h,v 1.10 1996/10/13 02:59:55 christos Exp $	*/
 
 /*
@@ -57,6 +57,9 @@
 #define	BYTE_ORDER	BIG_ENDIAN
 
 #include <sys/cdefs.h>
+
+typedef u_int32_t in_addr_t;
+typedef u_int16_t in_port_t;
 
 __BEGIN_DECLS
 #if 0
