@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.10 2002/02/16 21:27:33 millert Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.11 2002/03/14 06:51:41 mpech Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -438,9 +438,10 @@ device_identify(argc, argv)
 		    (inqbuf->atap_capacity[1] << 16) |
 		    inqbuf->atap_capacity[0]);
 
-	if (inqbuf->atap_queuedepth & WDC_QUEUE_DEPTH_MASK)
+	if ((inqbuf->atap_cmd_set2 & ATA_CMD2_RWQ) &&
+	    (inqbuf->atap_queuedepth & WDC_QUEUE_DEPTH_MASK))
 		printf("Device supports command queue depth of %d\n",
-		    inqbuf->atap_queuedepth & 0xf);
+		    (inqbuf->atap_queuedepth & WDC_QUEUE_DEPTH_MASK) + 1);
 
 	printf("Device capabilities:\n");
 	print_bitinfo("\t%s\n", inqbuf->atap_capabilities1, ata_caps);
