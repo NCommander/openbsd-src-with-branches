@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsa.c,v 1.4 2003/11/11 15:14:56 miod Exp $ 	*/
+/*	$OpenBSD: ubsa.c,v 1.5 2004/07/08 22:18:44 deraadt Exp $ 	*/
 /*	$NetBSD: ubsa.c,v 1.5 2002/11/25 00:51:33 fvdl Exp $	*/
 /*-
  * Copyright (c) 2002, Alexander Kabaev <kan.FreeBSD.org>.
@@ -271,8 +271,6 @@ USB_ATTACH(ubsa)
 	 */
 	sc->sc_dtr = -1;
 	sc->sc_rts = -1;
-
-	printf("%s: %s\n", devname, devinfo);
 
 	DPRINTF(("ubsa attach: sc = %p\n", sc));
 
