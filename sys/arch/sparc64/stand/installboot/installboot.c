@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: installboot.c,v 1.8 2001/02/19 22:48:59 cgd Exp $ */
 
 /*-
