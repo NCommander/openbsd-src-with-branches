@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.18 2003/08/06 21:08:05 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.19 2003/09/01 15:47:40 naddy Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -183,7 +183,7 @@ const struct option options[] = {
 #endif
 	{ "xtrace",	'x',		OF_ANY },
 	/* Anonymous flags: used internally by shell only
-	 * (not visable to user)
+	 * (not visible to user)
 	 */
 	{ (char *) 0,	0,		OF_INTERNAL }, /* FTALKING_I */
 };
