@@ -1,4 +1,4 @@
-/*	$OpenBSD: cardbus_exrom.h,v 1.1 2000/04/08 05:50:52 aaron Exp $ */
+/*	$OpenBSD: cardbus_exrom.h,v 1.1.8.1 2001/05/14 22:23:09 niklas Exp $ */
 /* $NetBSD: cardbus_exrom.h,v 1.2 1999/12/15 12:28:54 kleink Exp $ */
 
 /*
@@ -67,7 +67,7 @@ struct cardbus_rom_image {
 SIMPLEQ_HEAD(cardbus_rom_image_head, cardbus_rom_image);
 
 int
-cardbus_read_exrom __P((bus_space_tag_t, bus_space_handle_t, 
-			struct cardbus_rom_image_head*));
+cardbus_read_exrom(bus_space_tag_t, bus_space_handle_t, 
+			struct cardbus_rom_image_head*);
 
 #endif /* !_DEV_CARDBUS_CARDBUS_EXROM_H_ */
