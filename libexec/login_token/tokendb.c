@@ -1,4 +1,4 @@
-/*	$OpenBSD: tokendb.c,v 1.5 2002/11/21 22:00:49 millert Exp $	*/
+/*	$OpenBSD: tokendb.c,v 1.6 2002/11/21 22:17:41 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -229,7 +229,7 @@ tokendb_open(void)
 
 /*
  * Close the token database.  We are holding an unknown lock.
- * Release it, then close the db. Since little can be done 
+ * Release it, then close the db. Since little can be done
  * about errors, we ignore them.
  */
 
@@ -289,7 +289,7 @@ tokendb_nextrec(int reverse_flag, TOKENDB_Rec *tokenrec)
 
 	memset(&data, 0, sizeof(data));
 
-	status = (tokendb->seq)(tokendb, &key, &data, 
+	status = (tokendb->seq)(tokendb, &key, &data,
 		reverse_flag ? R_PREV : R_NEXT);
 
 	if (status) {

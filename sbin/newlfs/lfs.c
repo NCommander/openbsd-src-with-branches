@@ -1,4 +1,4 @@
-/*	$OpenBSD: lfs.c,v 1.6 2002/06/09 08:13:08 todd Exp $	*/
+/*	$OpenBSD: lfs.c,v 1.7 2003/06/02 20:06:16 millert Exp $	*/
 /*	$NetBSD: lfs.c,v 1.8 1995/06/19 21:30:36 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)lfs.c	8.5 (Berkeley) 5/24/95";
 #else
-static char rcsid[] = "$OpenBSD: lfs.c,v 1.6 2002/06/09 08:13:08 todd Exp $";
+static char rcsid[] = "$OpenBSD: lfs.c,v 1.7 2003/06/02 20:06:16 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -419,7 +419,6 @@ make_lfs(fd, lp, partp, minfree, block_size, frag_size, seg_size)
 	/* Make all the other dinodes invalid */
 	for (i = INOPB(lfsp)-3, dip++; i; i--, dip++)
 		dip->di_inumber = LFS_UNUSED_INUM;
-	
 
 	/* Link remaining IFILE entries in free list */
 	for (ip = &ifile[LFS_FIRST_INUM], i = LFS_FIRST_INUM;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.28 2003/06/11 06:22:12 deraadt Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.29 2003/07/10 17:42:59 grange Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -114,7 +114,7 @@ int	smart_cksum(u_int8_t *, int);
 char 	*sec_getpass(int, int);
 
 struct command commands[] = {
-	{ "dump",               device_dump },
+	{ "dump",		device_dump },
 	{ "identify",		device_identify },
 	{ "setidle",		device_setidle },
 	{ "setstandby",		device_setidle },

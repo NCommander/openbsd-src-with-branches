@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.34 2003/06/07 18:31:17 henning Exp $	*/
+/*	$OpenBSD: identd.c,v 1.35 2003/06/28 01:05:21 deraadt Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -141,7 +141,7 @@ alarm_handler(int notused)
 /*
  * Main entry point into this daemon
  */
-int 
+int
 main(int argc, char *argv[])
 {
 	struct sockaddr_storage sa, sa2;
