@@ -1,4 +1,4 @@
-/*	$OpenBSD: spx_debug.c,v 1.2 1996/10/26 09:34:56 mickey Exp $	*/
+/*	$OpenBSD: spx_debug.c,v 1.3 2000/01/11 01:26:21 fgsch Exp $	*/
 
 /*-
  *
@@ -80,7 +80,7 @@ spx_trace(act, ostate, sp, si, req)
 	int req;
 {
 #ifdef IPX
-#ifdef IPXDEBUG
+#ifdef SPXDEBUG
 	u_short seq, ack, len, alo;
 	int flags;
 	struct spx_debug *sd = &spx_debug[spx_debx++];
