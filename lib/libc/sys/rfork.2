@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rfork.2,v 1.14 1999/07/02 17:04:16 aaron Exp $
+.\"	$OpenBSD: rfork.2,v 1.15 2000/10/18 05:12:11 aaron Exp $
 .\"
 .\" This manual page is taken directly from Plan9, and modified to
 .\" describe the actual OpenBSD implementation.  Permission for
@@ -52,6 +52,11 @@ If set, the invoker's file descriptor table (see
 .Xr intro 2 )
 is copied; otherwise the two processes share a
 single table.
+This flag is currently disabled in the kernel for security reasons and needs
+a special kernel compile option to work.
+Please consult
+.Xr options 4
+for information about the RFORK_FDSHARE option.
 .It Dv RFCFDG
 If set, the new process starts with a clean file descriptor table.
 Is mutually exclusive with
