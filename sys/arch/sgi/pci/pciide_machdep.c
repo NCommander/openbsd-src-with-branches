@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide_machdep.c,v 1.1 2004/08/06 21:12:19 pefo Exp $ */
+/*	$OpenBSD: pciide_machdep.c,v 1.2 2004/08/10 19:16:18 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -41,7 +41,7 @@ pciide_machdep_compat_intr_establish(dev, pa, chan, func, arg)
 	struct device *dev;
 	struct pci_attach_args *pa;
 	int chan;
-	int (*func) __P((void *));
+	int (*func)(void *);
 	void *arg;
 {
 	void *cookie = (void *)4;

@@ -1,4 +1,4 @@
-/*      $OpenBSD: param.h,v 1.4 2004/09/09 22:21:41 pefo Exp $ */
+/*      $OpenBSD: param.h,v 1.5 2004/09/17 18:31:51 miod Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -153,8 +153,8 @@
 #ifndef _LOCORE
 
 #define	DELAY(n)	delay(n)
-void delay __P((int));
-void nanodelay __P((int));
+void delay(int);
+void nanodelay(int);
 #endif
 
 #else /* !_KERNEL */
