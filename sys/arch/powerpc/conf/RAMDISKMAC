@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.10 1999/01/23 19:41:30 rahnds Exp $
+#	$OpenBSD: RAMDISKMAC,v 1.1 1999/11/08 23:53:56 rahnds Exp $
 #
 # PPC GENERIC config file
 #
@@ -9,7 +9,7 @@ maxusers	32
 
 # default type, instructs system to try to determin what proper type is
 # actual machine type probed via name of openfirmware root node.
-option		SYS_TYPE=OFWMACH
+option		SYS_TYPE=APPL
 
 option		FIREPOWERBUGS
 options		PPC_MPC106_BUG
