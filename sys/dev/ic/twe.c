@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: twe.c,v 1.1 2000/09/15 16:56:13 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff.  All rights reserved.
@@ -33,7 +33,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define	TWE_DEBUG
+#undef	TWE_DEBUG
 
 #include <sys/param.h>
 #include <sys/systm.h>
