@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1994, Henrik Vestergaard Draboel
  * All rights reserved.

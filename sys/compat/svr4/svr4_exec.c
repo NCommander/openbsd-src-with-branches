@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_exec.c,v 1.16 1995/10/14 20:24:20 christos Exp $	 */
 /*	$NetBSD: svr4_exec.c,v 1.16 1995/10/14 20:24:20 christos Exp $	 */
 
 /*

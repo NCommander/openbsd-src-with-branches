@@ -1,3 +1,4 @@
+/*	$OpenBSD: freebsd_misc.c,v 1.2 1996/05/03 17:03:10 christos Exp $	*/
 /*	$NetBSD: freebsd_misc.c,v 1.2 1996/05/03 17:03:10 christos Exp $	*/
 
 /*

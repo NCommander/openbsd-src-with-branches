@@ -1,3 +1,4 @@
+/*	$OpenBSD: osf1_ioctl.c,v 1.3 1995/10/07 06:27:19 mycroft Exp $	*/
 /*	$NetBSD: osf1_ioctl.c,v 1.3 1995/10/07 06:27:19 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * System call argument lists.
  *

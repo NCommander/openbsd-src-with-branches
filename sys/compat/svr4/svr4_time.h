@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_time.h,v 1.4 1995/12/19 07:13:23 christos Exp $	 */
 /*	$NetBSD: svr4_time.h,v 1.4 1995/12/19 07:13:23 christos Exp $	 */
 
 /*

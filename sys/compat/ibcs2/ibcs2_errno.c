@@ -1,3 +1,4 @@
+/*	$OpenBSD: ibcs2_errno.c,v 1.2 1996/05/03 17:05:16 christos Exp $	*/
 /*	$NetBSD: ibcs2_errno.c,v 1.2 1996/05/03 17:05:16 christos Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ibcs2_stat.c,v 1.5 1996/05/03 17:05:32 christos Exp $	*/
 /*	$NetBSD: ibcs2_stat.c,v 1.5 1996/05/03 17:05:32 christos Exp $	*/
 /*
  * Copyright (c) 1995 Scott Bartram

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.1 1995/10/14 20:24:14 christos Exp $
 #	$NetBSD: Makefile,v 1.1 1995/10/14 20:24:14 christos Exp $
 
 DEP=	syscalls.conf syscalls.master ../../kern/makesyscalls.sh

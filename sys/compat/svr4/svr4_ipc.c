@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_ipc.c,v 1.1 1995/10/14 20:24:30 christos Exp $	*/
 /*	$NetBSD: svr4_ipc.c,v 1.1 1995/10/14 20:24:30 christos Exp $	*/
 
 /*

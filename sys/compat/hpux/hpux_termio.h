@@ -1,3 +1,4 @@
+/*	$OpenBSD: hpux_termio.h,v 1.6 1994/10/26 02:45:20 cgd Exp $	*/
 /*	$NetBSD: hpux_termio.h,v 1.6 1994/10/26 02:45:20 cgd Exp $	*/
 
 /*

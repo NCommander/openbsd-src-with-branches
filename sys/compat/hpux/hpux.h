@@ -1,3 +1,4 @@
+/*	$OpenBSD: hpux.h,v 1.10 1995/12/08 07:54:43 thorpej Exp $	*/
 /*	$NetBSD: hpux.h,v 1.10 1995/12/08 07:54:43 thorpej Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_systeminfo.h,v 1.3 1996/04/22 01:16:04 christos Exp $	 */
 /*	$NetBSD: svr4_systeminfo.h,v 1.3 1996/04/22 01:16:04 christos Exp $	 */
 
 /*

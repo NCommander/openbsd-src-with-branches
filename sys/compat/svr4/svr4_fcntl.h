@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_fcntl.h,v 1.3 1994/10/29 00:43:19 christos Exp $	 */
 /*	$NetBSD: svr4_fcntl.h,v 1.3 1994/10/29 00:43:19 christos Exp $	 */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ultrix_util.h,v 1.1 1996/01/07 13:38:57 jonathan Exp $	*/
 /*	$NetBSD: ultrix_util.h,v 1.1 1996/01/07 13:38:57 jonathan Exp $	*/
 
 /*

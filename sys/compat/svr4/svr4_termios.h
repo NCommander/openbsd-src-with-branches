@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_termios.h,v 1.2 1994/11/18 02:54:21 christos Exp $	 */
 /*	$NetBSD: svr4_termios.h,v 1.2 1994/11/18 02:54:21 christos Exp $	 */
 
 /*

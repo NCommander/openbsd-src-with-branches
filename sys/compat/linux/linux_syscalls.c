@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * System call names.
  *
