@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkboot.c,v 1.5 1998/09/29 07:12:58 mickey Exp $	*/
+/*	$OpenBSD: mkboot.c,v 1.6 1999/05/03 22:47:05 mickey Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mkboot.c,v 1.5 1998/09/29 07:12:58 mickey Exp $";
+static char rcsid[] = "$OpenBSD: mkboot.c,v 1.6 1999/05/03 22:47:05 mickey Exp $";
 #endif /* not lint */
 #endif
 
@@ -110,7 +110,7 @@ main(argc, argv)
 	struct lifvol *lifv = (struct lifvol *)buf;
 	struct lifdir *lifd = (struct lifdir *)(buf + LIF_DIRSTART);
 
-	while ((c = getopt(argc, argv, "vl:")) != EOF) {
+	while ((c = getopt(argc, argv, "vl:")) != -1) {
 		switch (c) {
 		case 'v':
 			verbose++;

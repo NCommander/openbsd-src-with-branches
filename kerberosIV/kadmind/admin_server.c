@@ -1,4 +1,4 @@
-/*	$OpenBSD: admin_server.c,v 1.3 1997/12/15 17:56:21 art Exp $	*/
+/*	$OpenBSD: admin_server.c,v 1.4 1998/08/16 02:42:09 art Exp $	*/
 /* $KTH: admin_server.c,v 1.42 1997/12/04 19:31:39 assar Exp $ */
 
 /* 
@@ -362,7 +362,7 @@ main(int argc, char **argv)		/* admin_server main routine */
 
     memset(krbrlm, 0, sizeof(krbrlm));
 
-    while ((c = getopt(argc, argv, "f:hmnd:a:r:")) != EOF)
+    while ((c = getopt(argc, argv, "f:hmnd:a:r:")) != -1)
 	switch(c) {
 	case 'f':			/* Syslog file name change */
 	    prm.sysfile = optarg;

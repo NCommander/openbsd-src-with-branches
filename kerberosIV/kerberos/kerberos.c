@@ -1,4 +1,4 @@
-/*	$OpenBSD: kerberos.c,v 1.14 1998/08/16 02:42:11 art Exp $	*/
+/*	$OpenBSD: kerberos.c,v 1.15 1998/11/28 23:41:01 art Exp $	*/
 /* $KTH: kerberos.c,v 1.70 1997/09/26 18:06:38 joda Exp $ */
 
 /*
@@ -689,7 +689,7 @@ main(int argc, char **argv)
 
     umask(077);		/* Create protected files */
 
-    while ((c = getopt(argc, argv, "snmp:P:a:l:r:i:")) != EOF) {
+    while ((c = getopt(argc, argv, "snmp:P:a:l:r:i:")) != -1) {
 	switch(c) {
 	case 's':
 	    /*
