@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.1.1.1 1996/12/16 06:56:08 downsj Exp $	*/
+/*	$OpenBSD: main.c,v 1.2 1996/12/19 22:21:28 deraadt Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -45,7 +45,7 @@ static char copyright[] =
 static char sccsid[] = "@(#)main.c	8.4 (Berkeley) 5/4/95";
 #endif /* not lint */
 
-#include <ocurses.h>
+#include <curses.h>
 #include <err.h>
 #include <signal.h>
 #include <stdio.h>
