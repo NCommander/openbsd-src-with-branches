@@ -193,10 +193,10 @@ file miscfs/nullfs/null_vnops.c		nullfs
 file miscfs/portal/portal_vfsops.c	portal
 file miscfs/portal/portal_vnops.c	portal
 file miscfs/procfs/procfs_ctl.c		procfs
-file miscfs/procfs/procfs_fpregs.c	procfs
-file miscfs/procfs/procfs_mem.c		procfs
+file miscfs/procfs/procfs_fpregs.c
+file miscfs/procfs/procfs_mem.c
 file miscfs/procfs/procfs_note.c	procfs
-file miscfs/procfs/procfs_regs.c	procfs
+file miscfs/procfs/procfs_regs.c
 file miscfs/procfs/procfs_status.c	procfs
 file miscfs/procfs/procfs_subr.c	procfs
 file miscfs/procfs/procfs_vfsops.c	procfs
