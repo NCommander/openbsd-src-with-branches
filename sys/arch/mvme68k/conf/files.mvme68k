@@ -137,3 +137,8 @@ file arch/m68k/m68k/db_memrw.c			ddb
 # SunOS Binary Compatibility (COMPAT_SUNOS)
 include	"../../../compat/sunos/files.sunos"
 file	arch/m68k/m68k/sunos_machdep.c		compat_sunos
+
+device wl: tty
+attach wl at vmes
+file arch/mvme68k/dev/wl.c			wl needs-count
+
