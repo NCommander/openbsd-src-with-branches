@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.7 1996/10/15 10:17:32 deraadt Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.8 1996/12/29 12:21:26 graichen Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -665,6 +665,6 @@ Write(fd, bp, size)
 void
 usage()
 {
-	(void)syslog(LOG_ERR, "usage: savecore [-cfvz] [-N system] directory");
+	fprintf(stderr, "usage: savecore [-cfvz] [-N system] directory");
 	exit(1);
 }
