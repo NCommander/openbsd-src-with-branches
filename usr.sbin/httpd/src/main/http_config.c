@@ -1,3 +1,5 @@
+/* $OpenBSD: http_config.c,v 1.13 2003/07/08 09:51:23 david Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -77,6 +79,7 @@
 #include "http_config.h"
 #include "http_core.h"
 #include "http_log.h"		/* for errors in parse_htaccess */
+#include "http_main.h"
 #include "http_request.h"	/* for default_handler (see invoke_handler) */
 #include "http_conf_globals.h"	/* Sigh... */
 #include "http_vhost.h"
@@ -1271,6 +1274,9 @@ CORE_EXPORT(void) ap_process_resource_config(server_rec *s, char *fname, pool *p
 	    return;
     }
 
+    /* if we are already chrooted here, it's a restart. strip chroot then. */
+    ap_server_strip_chroot(fname, 0);
+
     /* don't require conf/httpd.conf if we have a -C or -c switch */
     if((ap_server_pre_read_config->nelts || ap_server_post_read_config->nelts) &&
        !(strcmp(fname, ap_server_root_relative(p, SERVER_CONFIG_FILE)))) {
@@ -1581,8 +1587,11 @@ static void init_config_globals(pool *p)
 
     ap_standalone = 1;
     ap_user_name = DEFAULT_USER;
-    ap_user_id = ap_uname2id(DEFAULT_USER);
-    ap_group_id = ap_gname2id(DEFAULT_GROUP);
+    if (!ap_server_is_chrooted()) { 
+	/* can't work, just keep old setting */
+	ap_user_id = ap_uname2id(DEFAULT_USER);
+	ap_group_id = ap_gname2id(DEFAULT_GROUP);
+    }
     ap_daemons_to_start = DEFAULT_START_DAEMON;
     ap_daemons_min_free = DEFAULT_MIN_FREE_DAEMON;
     ap_daemons_max_free = DEFAULT_MAX_FREE_DAEMON;

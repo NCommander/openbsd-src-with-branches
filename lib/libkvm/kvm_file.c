@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_file.c,v 1.8 2003/06/02 20:18:40 millert Exp $ */
+/*	$NetBSD: kvm_file.c,v 1.5 1996/03/18 22:33:18 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,7 +31,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
+#if 0
 static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
+#else
+static char *rcsid = "$OpenBSD: kvm_file.c,v 1.8 2003/06/02 20:18:40 millert Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -55,10 +58,6 @@ static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #include <nlist.h>
 #include <kvm.h>
 
-#include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/swap_pager.h>
-
 #include <sys/sysctl.h>
 
 #include <limits.h>
@@ -70,10 +69,13 @@ static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #define KREAD(kd, addr, obj) \
 	(kvm_read(kd, addr, obj, sizeof(*obj)) != sizeof(*obj))
 
+static int kvm_deadfiles(kvm_t *kd, int op, int arg, long filehead_o,
+    int nfiles);
+
 /*
  * Get file structures.
  */
-static
+static int
 kvm_deadfiles(kd, op, arg, filehead_o, nfiles)
 	kvm_t *kd;
 	int op, arg, nfiles;
@@ -113,7 +115,7 @@ kvm_deadfiles(kd, op, arg, filehead_o, nfiles)
 		}
 	}
 	if (n != nfiles) {
-		_kvm_err(kd, kd->program, "inconsistant nfiles");
+		_kvm_err(kd, kd->program, "inconsistent nfiles");
 		return (0);
 	}
 	return (nfiles);
@@ -136,7 +138,7 @@ kvm_getfiles(kd, op, arg, cnt)
 		mib[1] = KERN_FILE;
 		st = sysctl(mib, 2, NULL, &size, NULL, 0);
 		if (st == -1) {
-			_kvm_syserr(kd, kd->program, "kvm_getprocs");
+			_kvm_syserr(kd, kd->program, "kvm_getfiles");
 			return (0);
 		}
 		if (kd->argspc == 0)

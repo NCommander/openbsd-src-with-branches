@@ -2,13 +2,10 @@
 **		================================
 */
 
-#include "HTUtils.h"
-#include "tcp.h"
-#include "HTParse.h"
+#include <HTUtils.h>
+#include <HTParse.h>
 
-#include "LYLeaks.h"
-
-#define FREE(x) if (x) {free(x); x = NULL;}
+#include <LYLeaks.h>
 
 #define HEX_ESCAPE '%'
 
@@ -17,12 +14,12 @@ struct struct_parts {
 	char * host;
 	char * absolute;
 	char * relative;
-/*	char * search;		no - treated as part of path */
+	char * search;		/* treated normally as part of path */
 	char * anchor;
 };
 
 
-/*	Strip white space off a string. 			HTStrip()
+/*	Strip white space off a string.				HTStrip()
 **	-------------------------------
 **
 ** On exit,
@@ -30,7 +27,7 @@ struct struct_parts {
 **	All trailing white space is OVERWRITTEN with zero.
 */
 PUBLIC char * HTStrip ARGS1(
-	char *, 	s)
+	char *,		s)
 {
 #define SPACE(c) ((c == ' ') || (c == '\t') || (c == '\n'))
     char * p = s;
@@ -58,7 +55,7 @@ PUBLIC char * HTStrip ARGS1(
 **	Any which are nonzero point to zero terminated strings.
 */
 PRIVATE void scan ARGS2(
-	char *, 		name,
+	char *,			name,
 	struct struct_parts *,	parts)
 {
     char * after_access;
@@ -71,6 +68,7 @@ PRIVATE void scan ARGS2(
     parts->host = NULL;
     parts->absolute = NULL;
     parts->relative = NULL;
+    parts->search = NULL;	/* normally not used - kw */
     parts->anchor = NULL;
 
     /*
@@ -114,6 +112,12 @@ PRIVATE void scan ARGS2(
 	    if (p != NULL) {
 		*p = '\0';			/* Terminate host */
 		parts->absolute = (p + 1);	/* Root has been found */
+	    } else {
+		p = strchr(parts->host, '?');
+		if (p != NULL) {
+		    *p = '\0';			/* Terminate host */
+		    parts->search = (p + 1);
+		}
 	    }
 	} else {
 	    parts->absolute = (p + 1);		/* Root found but no host */
@@ -174,7 +178,7 @@ PRIVATE void scan ARGS2(
 **	wanted		A mask for the bits which are wanted.
 **
 ** On exit,
-**	returns 	A pointer to a calloc'd string which MUST BE FREED
+**	returns		A pointer to a calloc'd string which MUST BE FREED
 */
 PUBLIC char * HTParse ARGS3(
 	CONST char *,	aName,
@@ -190,15 +194,21 @@ PUBLIC char * HTParse ARGS3(
     char * acc_method;
     struct struct_parts given, related;
 
-    if (TRACE)
-	fprintf(stderr,
-		"HTParse: aName:%s   relatedName:%s\n", aName, relatedName);
+    CTRACE((tfp, "HTParse: aName:`%s'\n", aName));
+    CTRACE((tfp, "   relatedName:`%s'\n", relatedName));
 
+    if (wanted & (PARSE_STRICTPATH | PARSE_QUERY)) { /* if detail wanted... */
+	if ((wanted & (PARSE_STRICTPATH | PARSE_QUERY))
+	    == (PARSE_STRICTPATH | PARSE_QUERY)) /* if strictpath AND query */
+	    wanted |= PARSE_PATH; /* then treat as if PARSE_PATH wanted */
+	if (wanted & PARSE_PATH) /* if PARSE_PATH wanted */
+	    wanted &= ~(PARSE_STRICTPATH | PARSE_QUERY); /* ignore details */
+    }
     /*
     **	Allocate the output string.
     */
     len = strlen(aName) + strlen(relatedName) + 10;
-    result = (char *)calloc(1, len);	/* Lots of space: more than enough */
+    result = typecallocn(char, len);	/* Lots of space: more than enough */
     if (result == NULL) {
 	outofmem(__FILE__, "HTParse");
     }
@@ -250,7 +260,7 @@ PUBLIC char * HTParse ARGS3(
     **	this is back to inheriting for identical
     **	schemes whether or not they are "file".
     **	If you want to try it again yourself,
-    **	uncomment the strncasecomp() below. - FM
+    **	uncomment the strcasecomp() below. - FM
     */
     if ((given.access && related.access) &&
 	(/* strcasecomp(given.access, "file") || */
@@ -258,6 +268,7 @@ PUBLIC char * HTParse ARGS3(
 	related.host = NULL;
 	related.absolute = NULL;
 	related.relative = NULL;
+	related.search = NULL;
 	related.anchor = NULL;
     }
 
@@ -281,7 +292,7 @@ PUBLIC char * HTParse ARGS3(
 		if ((p2 = strchr(result, '@')) != NULL)
 		   tail = (p2 + 1);
 		p2 = strchr(tail, ':');
-		if (p2 != NULL && !isdigit((unsigned char)p2[1]))
+		if (p2 != NULL && !isdigit(UCH(p2[1])))
 		    /*
 		    **	Colon not followed by a port number.
 		    */
@@ -317,7 +328,7 @@ PUBLIC char * HTParse ARGS3(
 			if (*h == '.')
 			    *h = '\0';		/* chop final . */
 		    }
-		} else {
+		} else if (p2 != result) {
 		    h = p2;
 		    h--;		/* End of hostname */
 		    if (*h == '.') {
@@ -334,6 +345,23 @@ PUBLIC char * HTParse ARGS3(
 	}
 
     /*
+    **	If host in given or related was ended directly with a '?' (no
+    **  slash), fake the search part into absolute.  This is the only
+    **  case search is returned from scan.  A host must have been present.
+    **  this restores the '?' at which the host part had been truncated in
+    **  scan, we have to do this after host part handling is done. - kw
+    **
+    */
+    if (given.search && *(given.search - 1) == '\0') {
+	given.absolute = given.search - 1;
+	given.absolute[0] = '?';
+    } else if (related.search && !related.absolute &&
+	       *(related.search - 1) == '\0') {
+	related.absolute = related.search - 1;
+	related.absolute[0] = '?';
+    }
+
+    /*
     **	If different hosts, inherit no path.
     */
     if (given.host && related.host)
@@ -346,7 +374,11 @@ PUBLIC char * HTParse ARGS3(
     /*
     **	Handle the path.
     */
-    if (wanted & PARSE_PATH) {
+    if (wanted & (PARSE_PATH | PARSE_STRICTPATH | PARSE_QUERY)) {
+	char *tail = NULL;
+	int want_detail = (wanted & (PARSE_STRICTPATH | PARSE_QUERY));
+	if (want_detail)
+	    tail = result + strlen(result);
 	if (acc_method && !given.absolute && given.relative) {
 	    if (!strcasecomp(acc_method, "nntp") ||
 		!strcasecomp(acc_method, "snews") ||
@@ -365,8 +397,7 @@ PUBLIC char * HTParse ARGS3(
 	    if (wanted & PARSE_PUNCTUATION)
 		strcat(result, "/");
 	    strcat(result, given.absolute);
-	    if (TRACE)
-		fprintf(stderr, "1\n");
+	    CTRACE((tfp, "HTParse: (ABS)\n"));
 	} else if (related.absolute) {		/* Adopt path not name */
 	    strcat(result, "/");
 	    strcat(result, related.absolute);
@@ -380,16 +411,13 @@ PUBLIC char * HTParse ARGS3(
 		strcat(result, given.relative); /* Add given one */
 		HTSimplify (result);
 	    }
-	    if (TRACE)
-		fprintf(stderr, "2\n");
+	    CTRACE((tfp, "HTParse: (Related-ABS)\n"));
 	} else if (given.relative) {
 	    strcat(result, given.relative);		/* what we've got */
-	    if (TRACE)
-		fprintf(stderr, "3\n");
+	    CTRACE((tfp, "HTParse: (REL)\n"));
 	} else if (related.relative) {
 	    strcat(result, related.relative);
-	    if (TRACE)
-		fprintf(stderr, "4\n");
+	    CTRACE((tfp, "HTParse: (Related-REL)\n"));
 	} else {  /* No inheritance */
 	    if (strncasecomp(aName, "lynxcgi:", 8) &&
 		strncasecomp(aName, "lynxexec:", 9) &&
@@ -398,8 +426,24 @@ PUBLIC char * HTParse ARGS3(
 	    }
 	    if (!strcmp(result, "news:/"))
 		result[5] = '*';
-	    if (TRACE)
-		fprintf(stderr, "5\n");
+	    CTRACE((tfp, "HTParse: (No inheritance)\n"));
+	}
+	if (want_detail) {
+	    p = strchr(tail, '?');	/* Search part? */
+	    if (p) {
+		if (PARSE_STRICTPATH) {
+		    *p = '\0';
+		} else {
+		    if (!(wanted & PARSE_PUNCTUATION))
+			p++;
+		    do {
+			*tail++ = *p;
+		    } while (*p++);
+		}
+	    } else {
+		if (wanted & PARSE_QUERY)
+		    *tail = '\0';
+	    }
 	}
     }
 
@@ -414,8 +458,7 @@ PUBLIC char * HTParse ARGS3(
 	    strcat(result, (given.anchor) ?
 			     given.anchor : related.anchor);
 	}
-    if (TRACE)
-	fprintf(stderr, "HTParse: result:%s\n", result);
+    CTRACE((tfp, "HTParse:      result:%s\n", result));
     FREE(rel);
     FREE(name);
 
@@ -441,7 +484,7 @@ PUBLIC char * HTParse ARGS3(
 **	or	../../albert.html
 */
 PUBLIC void HTSimplify ARGS1(
-	char *, 	filename)
+	char *,		filename)
 {
     char *p;
     char *q, *q1;
@@ -588,7 +631,7 @@ PUBLIC void HTSimplify ARGS1(
 **	-------------------
 **
 ** This function creates and returns a string which gives an expression of
-** one address as related to another. Where there is no relation, an absolute
+** one address as related to another.  Where there is no relation, an absolute
 ** address is retured.
 **
 **  On entry,
@@ -639,7 +682,7 @@ PUBLIC char * HTRelative ARGS2(
 	for (; *q && (*q != '#'); q++)
 	    if (*q == '/')
 		levels++;
-	result = (char *)calloc(1, (3*levels + strlen(last_slash) + 1));
+	result = typecallocn(char, 3*levels + strlen(last_slash) + 1);
 	if (result == NULL)
 	    outofmem(__FILE__, "HTRelative");
 	result[0] = '\0';
@@ -647,14 +690,14 @@ PUBLIC char * HTRelative ARGS2(
 	    strcat(result, "../");
 	strcat(result, last_slash+1);
     }
-    if (TRACE)
-	fprintf(stderr, "HT: `%s' expressed relative to\n    `%s' is\n   `%s'.",
-		aName, relatedName, result);
+    CTRACE((tfp,
+	"HTparse: `%s' expressed relative to\n	 `%s' is\n   `%s'.\n",
+		aName, relatedName, result));
     return result;
 }
 
-/*		Escape undesirable characters using %		HTEscape()
-**		-------------------------------------
+/*	Escape undesirable characters using %			HTEscape()
+**	-------------------------------------
 **
 **	This function takes a pointer to a string in which
 **	some characters may be unacceptable unescaped.
@@ -666,8 +709,8 @@ PUBLIC char * HTRelative ARGS2(
 PRIVATE CONST unsigned char isAcceptable[96] =
 
 /*	Bit 0		xalpha		-- see HTFile.h
-**	Bit 1		xpalpha 	-- as xalpha but with plus.
-**	Bit 3 ...	path		-- as xpalphas but with /
+**	Bit 1		xpalpha		-- as xalpha but with plus.
+**	Bit 2 ...	path		-- as xpalphas but with /
 */
     /*	 0 1 2 3 4 5 6 7 8 9 A B C D E F */
     {	 0,0,0,0,0,0,0,0,0,0,7,6,0,7,7,4,	/* 2x	!"#$%&'()*+,-./  */
@@ -689,21 +732,59 @@ PUBLIC char * HTEscape ARGS2(
     char * result;
     int unacceptable = 0;
     for (p = str; *p; p++)
-	if (!ACCEPTABLE((unsigned char)TOASCII(*p)))
+	if (!ACCEPTABLE(UCH(TOASCII(*p))))
 	    unacceptable++;
-    result = (char *)calloc(1, (p-str + unacceptable + unacceptable + 1));
+    result = typecallocn(char, p-str + unacceptable + unacceptable + 1);
     if (result == NULL)
 	outofmem(__FILE__, "HTEscape");
     for (q = result, p = str; *p; p++) {
 	unsigned char a = TOASCII(*p);
 	if (!ACCEPTABLE(a)) {
-	    *q++ = HEX_ESCAPE;	/* Means hex commming */
+	    *q++ = HEX_ESCAPE;	/* Means hex coming */
 	    *q++ = hex[a >> 4];
 	    *q++ = hex[a & 15];
 	}
 	else *q++ = *p;
     }
-    *q++ = '\0';			/* Terminate */
+    *q++ = '\0';		/* Terminate */
+    return result;
+}
+
+/*	Escape unsafe characters using %			HTEscapeUnsafe()
+**	--------------------------------
+**
+**	This function takes a pointer to a string in which
+**	some characters may be that may be unsafe are unescaped.
+**	It returns a string which has these characters
+**	represented by a '%' character followed by two hex digits.
+**
+**	Unlike HTUnEscape(), this routine returns a malloc'd string.
+*/
+#define UNSAFE(ch) (((ch) <= 32) || ((ch) >= 127))
+
+PUBLIC char *HTEscapeUnsafe ARGS1(
+	CONST char *,	str)
+{
+    CONST char * p;
+    char * q;
+    char * result;
+    int unacceptable = 0;
+    for (p = str; *p; p++)
+	if (UNSAFE(UCH(TOASCII(*p))))
+	    unacceptable++;
+    result = typecallocn(char, p-str + unacceptable + unacceptable + 1);
+    if (result == NULL)
+	outofmem(__FILE__, "HTEscapeUnsafe");
+    for (q = result, p = str; *p; p++) {
+	unsigned char a = TOASCII(*p);
+	if (UNSAFE(a)) {
+	    *q++ = HEX_ESCAPE;	/* Means hex coming */
+	    *q++ = hex[a >> 4];
+	    *q++ = hex[a & 15];
+	}
+	else *q++ = *p;
+    }
+    *q++ = '\0';		/* Terminate */
     return result;
 }
 
@@ -727,9 +808,9 @@ PUBLIC char * HTEscapeSP ARGS2(
     char * result;
     int unacceptable = 0;
     for (p = str; *p; p++)
-	if (!(*p == ' ' || ACCEPTABLE((unsigned char)TOASCII(*p))))
+	if (!(*p == ' ' || ACCEPTABLE(UCH(TOASCII(*p)))))
 	    unacceptable++;
-    result = (char *)calloc(1, (p-str + unacceptable + unacceptable + 1));
+    result = typecallocn(char, p-str + unacceptable + unacceptable + 1);
     if (result == NULL)
 	outofmem(__FILE__, "HTEscape");
     for (q = result, p = str; *p; p++) {
@@ -759,13 +840,13 @@ PUBLIC char * HTEscapeSP ARGS2(
 PRIVATE char from_hex ARGS1(
 	char,		c)
 {
-    return  c >= '0' && c <= '9' ?  c - '0'
+    return (char) ( c >= '0' && c <= '9' ?  c - '0'
 	    : c >= 'A' && c <= 'F'? c - 'A' + 10
-	    : c - 'a' + 10;	/* accept small letters just in case */
+	    : c - 'a' + 10);     /* accept small letters just in case */
 }
 
 PUBLIC char * HTUnEscape ARGS1(
-	char *, 	str)
+	char *,		str)
 {
     char * p = str;
     char * q = str;
@@ -779,13 +860,18 @@ PUBLIC char * HTUnEscape ARGS1(
 	     *	Tests shouldn't be needed, but better safe than sorry.
 	     */
 	    p[1] && p[2] &&
-	    isxdigit((unsigned char)p[1]) &&
-	    isxdigit((unsigned char)p[2])) {
+	    isxdigit(UCH(p[1])) &&
+	    isxdigit(UCH(p[2]))) {
 	    p++;
 	    if (*p)
-	        *q = from_hex(*p++) * 16;
-	    if (*p)
-	        *q = FROMASCII(*q + from_hex(*p++));
+		*q = (char) (from_hex(*p++) * 16);
+	    if (*p) {
+		/*
+		** Careful! FROMASCII() may evaluate its arg more than once!
+		*/  /* S/390 -- gil -- 0221 */
+		*q = (char) (*q + from_hex(*p++));
+	    }
+	    *q = FROMASCII(*q);
 	    q++;
 	} else {
 	    *q++ = *p++;
@@ -808,7 +894,7 @@ PUBLIC char * HTUnEscape ARGS1(
 **	The first string is converted in place, as it will never grow.
 */
 PUBLIC char * HTUnEscapeSome ARGS2(
-	char *, 	str,
+	char *,		str,
 	CONST char *,	do_trans)
 {
     char * p = str;
@@ -821,11 +907,12 @@ PUBLIC char * HTUnEscapeSome ARGS2(
     while (*p != '\0') {
 	if (*p == HEX_ESCAPE &&
 	    p[1] && p[2] &&	/* tests shouldn't be needed, but.. */
-	    isxdigit((unsigned char)p[1]) &&
-	    isxdigit((unsigned char)p[2]) &&
-	    (testcode = from_hex(p[1])*16 + from_hex(p[2])) && /* %00 no good*/
+	    isxdigit(UCH(p[1])) &&
+	    isxdigit(UCH(p[2])) &&
+	    (testcode = (char) FROMASCII(from_hex(p[1])*16 +
+		from_hex(p[2]))) && /* %00 no good*/
 	    strchr(do_trans, testcode)) { /* it's one of the ones we want */
-	    *q++ = FROMASCII(testcode);
+	    *q++ = testcode;
 	    p += 3;
 	} else {
 	    *q++ = *p++;
@@ -840,7 +927,7 @@ PUBLIC char * HTUnEscapeSome ARGS2(
 PRIVATE CONST unsigned char crfc[96] =
 
 /*	Bit 0		xalpha		-- need "quoting"
-**	Bit 1		xpalpha 	-- need \escape if quoted
+**	Bit 1		xpalpha		-- need \escape if quoted
 */
     /*	 0 1 2 3 4 5 6 7 8 9 A B C D E F */
     {	 1,0,3,0,0,0,0,0,1,1,0,0,1,0,1,0,	/* 2x	!"#$%&'()*+,-./  */
@@ -866,7 +953,7 @@ PUBLIC void HTMake822Word ARGS1(
 	return;
     }
     for (p = *str; *p; p++) {
-	a = *p;
+	a = TOASCII(*p);  /* S/390 -- gil -- 0240 */
 	if (a < 32 || a >= 128 ||
 	    ((crfc[a-32]) & 1)) {
 	    if (!added)
@@ -881,17 +968,23 @@ PUBLIC void HTMake822Word ARGS1(
     }
     if (!added)
 	return;
-    result = (char *)calloc(1, (p-(*str) + added + 1));
+    result = typecallocn(char, p-(*str) + added + 1);
     if (result == NULL)
 	outofmem(__FILE__, "HTMake822Word");
     result[0] = '"';
+    /*
+    ** Having converted the character to ASCII, we can't use symbolic
+    ** escape codes, since they're in the host character set, which
+    ** is not necessarily ASCII.  Thus we use octal escape codes instead.
+    ** -- gil (Paul Gilmartin) <pg@sweng.stortek.com>
+    */  /* S/390 -- gil -- 0268 */
     for (q = result + 1, p = *str; *p; p++) {
 	a = TOASCII(*p);
-	if ((a != '\t') && ((a & 127) < 32 ||
+	if ((a != '\011') && ((a & 127) < 32 ||
 			    ( a < 128 && ((crfc[a-32]) & 2))))
-	    *q++ = '\\';
+	    *q++ = '\033';
 	*q++ = *p;
-	if (a == '\n' || (a == '\r' && (TOASCII(*(p+1)) != '\n')))
+	if (a == '\012' || (a == '\015' && (TOASCII(*(p+1)) != '\012')))
 	    *q++ = ' ';
     }
     *q++ = '"';

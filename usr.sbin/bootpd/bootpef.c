@@ -21,7 +21,7 @@ SOFTWARE.
 ************************************************************************/
 
 #ifndef lint
-static char rcsid[] = "$Id: bootpef.c,v 1.2 1994/08/22 22:14:46 gwr Exp $";
+static char rcsid[] = "$Id: bootpef.c,v 1.2 1996/08/22 09:24:28 deraadt Exp $";
 #endif
 
 
@@ -139,7 +139,7 @@ usage()
  * Initialization such as command-line processing is done and then the
  * main server loop is started.
  */
-void
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -275,6 +275,7 @@ main(argc, argv)
 		mktagfile(hp);
 		hp = (struct host *) hash_NextEntry(nmhashtable);
 	}
+	return 0;
 }
 
 

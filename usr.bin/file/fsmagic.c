@@ -1,28 +1,33 @@
+/*	$OpenBSD: fsmagic.c,v 1.8 2003/04/07 19:03:46 deraadt Exp $	*/
+
 /*
  * fsmagic - magic based on filesystem info - directory, special files, etc.
  *
- * Copyright (c) Ian F. Darwin, 1987.
- * Written by Ian F. Darwin.
- *
- * This software is not subject to any license of the American Telephone
- * and Telegraph Company or of the Regents of the University of California.
- *
- * Permission is granted to anyone to use this software for any purpose on
- * any computer system, and to alter it and redistribute it freely, subject
- * to the following restrictions:
- *
- * 1. The author is not responsible for the consequences of use of this
- *    software, no matter how awful, even if they arise from flaws in it.
- *
- * 2. The origin of this software must not be misrepresented, either by
- *    explicit claim or by omission.  Since few users ever read sources,
- *    credits must appear in the documentation.
- *
- * 3. Altered versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.  Since few users
- *    ever read sources, credits must appear in the documentation.
- *
- * 4. This notice may not be removed or altered.
+ * Copyright (c) Ian F. Darwin 1986-1995.
+ * Software written by Ian F. Darwin and others;
+ * maintained 1995-present by Christos Zoulas and others.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice immediately at the beginning of the file, without modification,
+ *    this list of conditions, and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 #include <stdio.h>
@@ -31,6 +36,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <err.h>
+#ifndef major
+# if defined(__SVR4) || defined(_SVR4_SOURCE)
+#  include <sys/mkdev.h>
+# endif
+#endif
 #ifndef	major			/* if `major' not defined in types.h, */
 #include <sys/sysmacros.h>	/* try this one. */
 #endif
@@ -45,8 +56,7 @@
 #include "file.h"
 
 #ifndef	lint
-static char *moduleid = 
-	"@(#)$Id: fsmagic.c,v 1.7 1995/04/28 19:23:51 christos Exp $";
+static char *moduleid = "$OpenBSD: fsmagic.c,v 1.8 2003/04/07 19:03:46 deraadt Exp $";
 #endif	/* lint */
 
 int
@@ -84,12 +94,12 @@ struct stat *sb;
 		ckfputs("directory", stdout);
 		return 1;
 	case S_IFCHR:
-		(void) printf("character special (%d/%d)",
-			major(sb->st_rdev), minor(sb->st_rdev));
+		(void) printf("character special (%ld/%ld)",
+			(long) major(sb->st_rdev), (long) minor(sb->st_rdev));
 		return 1;
 	case S_IFBLK:
-		(void) printf("block special (%d/%d)",
-			major(sb->st_rdev), minor(sb->st_rdev));
+		(void) printf("block special (%ld/%ld)",
+			(long) major(sb->st_rdev), (long) minor(sb->st_rdev));
 		return 1;
 	/* TODO add code to handle V7 MUX and Blit MUX files */
 #ifdef	S_IFIFO
@@ -101,7 +111,7 @@ struct stat *sb;
 	case S_IFLNK:
 		{
 			char buf[BUFSIZ+4];
-			register int nch;
+			int nch;
 			struct stat tstatbuf;
 
 			if ((nch = readlink(fn, buf, BUFSIZ-1)) <= 0) {
@@ -125,11 +135,15 @@ struct stat *sb;
 
 			    if ((tmp = strrchr(fn,  '/')) == NULL) {
 				tmp = buf; /* in current directory anyway */
-			    }
-			    else {
-				strcpy (buf2, fn);  /* take directory part */
+			    } else if (strlen(fn) + strlen(buf) > sizeof(buf2)-1) {
+				ckfprintf(stdout, "name too long %s", fn);
+				return 1;
+			    } else {
+				/* ok; take directory part */
+				strlcpy (buf2, fn, sizeof buf2);
 				buf2[tmp-fn+1] = '\0';
-				strcat (buf2, buf); /* plus (relative) symlink */
+				/* ok; plus (relative) symlink */
+				strlcat (buf2, buf, sizeof buf2);
 				tmp = buf2;
 			    }
 			    if (stat(tmp, &tstatbuf) < 0) {
@@ -160,7 +174,7 @@ struct stat *sb;
 	case S_IFREG:
 		break;
 	default:
-		error("invalid mode 0%o.\n", sb->st_mode);
+		errx(1, "invalid mode 0%o", sb->st_mode);
 		/*NOTREACHED*/
 	}
 

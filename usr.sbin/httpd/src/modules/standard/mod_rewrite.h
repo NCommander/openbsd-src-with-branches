@@ -513,6 +513,9 @@ static int compare_lexicography(char *cpNum1, char *cpNum2);
 static char *find_closing_bracket(char *s, int left, int right);
 static char *find_char_in_brackets(char *s, int c, int left, int right);
 
+    /* Find end of bracketed expression */
+static char *find_closing_bracket(char *s, int left, int right);
+
 #endif /* _MOD_REWRITE_H */
 
 /*EOF*/

@@ -1,4 +1,5 @@
-/*	$NetBSD: idp_usrreq.c,v 1.8 1995/08/12 23:59:56 mycroft Exp $	*/
+/*	$OpenBSD: idp_usrreq.c,v 1.5 2002/03/15 18:19:53 millert Exp $	*/
+/*	$NetBSD: idp_usrreq.c,v 1.9 1996/02/13 22:13:43 christos Exp $	*/
 
 /*
  * Copyright (c) 1984, 1985, 1986, 1987, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,6 +33,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/protosw.h>
@@ -50,32 +48,42 @@
 #include <netns/ns.h>
 #include <netns/ns_pcb.h>
 #include <netns/ns_if.h>
+#include <netns/ns_var.h>
 #include <netns/idp.h>
 #include <netns/idp_var.h>
 #include <netns/ns_error.h>
+
+#include <machine/stdarg.h>
 
 /*
  * IDP protocol implementation.
  */
 
-struct	sockaddr_ns idp_ns = { sizeof(idp_ns), AF_NS };
-
 /*
  *  This may also be called for raw listeners.
  */
-idp_input(m, nsp)
-	struct mbuf *m;
-	register struct nspcb *nsp;
+void
+idp_input(struct mbuf *m, ...)
 {
+	register struct nspcb *nsp;
 	register struct idp *idp = mtod(m, struct idp *);
 	struct ifnet *ifp = m->m_pkthdr.rcvif;
+	struct	sockaddr_ns idp_ns;
+	va_list ap;
 
-	if (nsp==0)
+	va_start(ap, m);
+	nsp = va_arg(ap, struct nspcb *);
+	va_end(ap);
+
+	if (nsp == NULL)
 		panic("No nspcb");
 	/*
 	 * Construct sockaddr format source address.
 	 * Stuff source address and datagram in user buffer.
 	 */
+	bzero(&idp_ns, sizeof(idp_ns));
+	idp_ns.sns_len = sizeof(idp_ns);
+	idp_ns.sns_family = AF_NS;
 	idp_ns.sns_addr = idp->idp_sna;
 	if (ns_neteqnn(idp->idp_sna.x_net, ns_zeronet) && ifp) {
 		register struct ifaddr *ifa;
@@ -104,6 +112,7 @@ bad:
 	m_freem(m);
 }
 
+void
 idp_abort(nsp)
 	struct nspcb *nsp;
 {
@@ -116,39 +125,47 @@ idp_abort(nsp)
  * Drop connection, reporting
  * the specified error.
  */
-struct nspcb *
+void
 idp_drop(nsp, errno)
 	register struct nspcb *nsp;
 	int errno;
 {
 	struct socket *so = nsp->nsp_socket;
 
+#if 0
 	/*
 	 * someday, in the xerox world
 	 * we will generate error protocol packets
 	 * announcing that the socket has gone away.
 	 */
-	/*if (TCPS_HAVERCVDSYN(tp->t_state)) {
+	if (TCPS_HAVERCVDSYN(tp->t_state)) {
 		tp->t_state = TCPS_CLOSED;
 		(void) tcp_output(tp);
-	}*/
+	}
+#endif
 	so->so_error = errno;
 	ns_pcbdisconnect(nsp);
 	soisdisconnected(so);
 }
 
 int noIdpRoute;
-idp_output(nsp, m0)
-	struct nspcb *nsp;
-	struct mbuf *m0;
+
+int
+idp_output(struct mbuf *m0, ...)
 {
+	struct nspcb *nsp;
 	register struct mbuf *m;
 	register struct idp *idp;
 	register struct socket *so;
 	register int len = 0;
 	register struct route *ro;
-	struct mbuf *mprev;
+	struct mbuf *mprev = NULL;
 	extern int idpcksum;
+	va_list ap;
+
+	va_start(ap, m0);
+	nsp = va_arg(ap, struct nspcb *);
+	va_end(ap);
 
 	/*
 	 * Calculate data length.
@@ -261,6 +278,7 @@ idp_output(nsp, m0)
 	return (ns_output(m, ro, so->so_options & SO_BROADCAST));
 }
 /* ARGSUSED */
+int
 idp_ctloutput(req, so, level, name, value)
 	int req, level;
 	struct socket *so;
@@ -372,6 +390,7 @@ idp_ctloutput(req, so, level, name, value)
 }
 
 /*ARGSUSED*/
+int
 idp_usrreq(so, req, m, nam, control)
 	struct socket *so;
 	int req;
@@ -456,7 +475,7 @@ idp_usrreq(so, req, m, nam, control)
 	case PRU_SEND:
 	{
 		struct ns_addr laddr;
-		int s;
+		int s = 0;
 
 		if (nam) {
 			laddr = nsp->nsp_laddr;
@@ -479,7 +498,7 @@ idp_usrreq(so, req, m, nam, control)
 				break;
 			}
 		}
-		error = idp_output(nsp, m);
+		error = idp_output(m, nsp);
 		m = NULL;
 		if (nam) {
 			ns_pcbdisconnect(nsp);
@@ -533,7 +552,9 @@ release:
 		m_freem(m);
 	return (error);
 }
+
 /*ARGSUSED*/
+int
 idp_raw_usrreq(so, req, m, nam, control)
 	struct socket *so;
 	int req;

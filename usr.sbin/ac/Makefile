@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.2 1994/12/22 11:31:31 cgd Exp $
+#	$OpenBSD$
 
 PROG=	ac
 MAN=	ac.8

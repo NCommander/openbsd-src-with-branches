@@ -1,3 +1,6 @@
+/*	$OpenBSD: termcap.h,v 1.5 2002/02/17 19:42:25 millert Exp $	*/
+/*	$NetBSD: termcap.h,v 1.2 1997/01/11 06:48:14 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,11 +41,11 @@
 #ifndef _h_termcap
 #define _h_termcap
 
-int   tgetent	__P((char *, char *));
-char *tgetstr	__P((char *, char **));
-int   tgetflag	__P((char *));
-int   tgetnum	__P((char *));
-char *tgoto	__P((char *, int, int));
-char *tputs	__P((char *, int, void (*)(int)));
+int   tgetent(char *, char *);
+char *tgetstr(char *, char **);
+int   tgetflag(char *);
+int   tgetnum(char *);
+char *tgoto(char *, int, int);
+char *tputs(char *, int, void (*)(int));
 
 #endif /* _h_termcap */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -48,7 +48,7 @@
 
 #ifdef _DEFINE
 # ifndef lint
-SM_UNUSED(static char SmailId[]) = "@(#)$Sendmail: sendmail.h,v 8.876 2001/09/04 22:43:05 ca Exp $";
+SM_UNUSED(static char SmailId[]) = "@(#)$Sendmail: sendmail.h,v 8.919.2.17 2003/03/12 22:42:52 gshapiro Exp $";
 # endif /* ! lint */
 #endif /* _DEFINE */
 
@@ -65,6 +65,7 @@ SM_UNUSED(static char SmailId[]) = "@(#)$Sendmail: sendmail.h,v 8.876 2001/09/04
 #include <sm/mbdb.h>
 #include <sm/errstring.h>
 #include <sm/sysexits.h>
+#include <sm/shm.h>
 
 #ifdef LOG
 # include <syslog.h>
@@ -123,18 +124,26 @@ SM_UNUSED(static char SmailId[]) = "@(#)$Sendmail: sendmail.h,v 8.876 2001/09/04
 #endif /* STARTTLS */
 
 #if SASL  /* include the sasl include files if we have them */
-# include <sasl.h>
+
+
+# if SASL == 2 || SASL >= 20000
+#  include <sasl/sasl.h>
+#  include <sasl/saslutil.h>
+# else /* SASL == 2 || SASL >= 20000 */
+#  include <sasl.h>
+#  include <saslutil.h>
+# endif /* SASL == 2 || SASL >= 20000 */
 # if defined(SASL_VERSION_MAJOR) && defined(SASL_VERSION_MINOR) && defined(SASL_VERSION_STEP)
 #  define SASL_VERSION (SASL_VERSION_MAJOR * 10000)  + (SASL_VERSION_MINOR * 100) + SASL_VERSION_STEP
-#  if SASL == 1
+#  if SASL == 1 || SASL == 2
 #   undef SASL
 #   define SASL SASL_VERSION
-#  else /* SASL == 1 */
+#  else /* SASL == 1 || SASL == 2 */
 #   if SASL != SASL_VERSION
   ERROR README: -DSASL (SASL) does not agree with the version of the CYRUS_SASL library (SASL_VERSION)
   ERROR README: see README!
 #   endif /* SASL != SASL_VERSION */
-#  endif /* SASL == 1 */
+#  endif /* SASL == 1 || SASL == 2 */
 # else /* defined(SASL_VERSION_MAJOR) && defined(SASL_VERSION_MINOR) && defined(SASL_VERSION_STEP) */
 #  if SASL == 1
   ERROR README: please set -DSASL to the version of the CYRUS_SASL library
@@ -198,7 +207,7 @@ typedef struct envelope	ENVELOPE;
 typedef struct mailer	MAILER;
 typedef struct queuegrp	QUEUEGRP;
 
-/*
+/*
 **  Address structure.
 **	Addresses are stored internally in this structure.
 */
@@ -284,6 +293,7 @@ typedef struct address ADDRESS;
 #define QS_REMOVED	12		/* removed (removefromlist()) */
 #define QS_DUPLICATE	13		/* duplicate suppressed */
 #define QS_INCLUDED	14		/* :include: delivery */
+#define QS_FATALERR	15		/* fatal error, don't deliver */
 
 /* address state testing primitives */
 #define QS_IS_OK(s)		((s) == QS_OK)
@@ -315,7 +325,7 @@ extern ADDRESS	NullAddress;	/* a null (template) address [main.c] */
 
 /* functions */
 extern void	cataddr __P((char **, char **, char *, int, int));
-extern char	*crackaddr __P((char *));
+extern char	*crackaddr __P((char *, ENVELOPE *));
 extern bool	emptyaddr __P((ADDRESS *));
 extern ADDRESS	*getctladdr __P((ADDRESS *));
 extern int	include __P((char *, bool, ADDRESS *, ADDRESS **, int, ENVELOPE *));
@@ -337,7 +347,7 @@ extern void	setsender __P((char *, ENVELOPE *, char **, int, bool));
 /* macro to simplify the common call to rewrite() */
 #define REWRITE(pvp, rs, env)	rewrite(pvp, rs, 0, env, MAXATOM)
 
-/*
+/*
 **  Mailer definition structure.
 **	Every mailer known to the system is declared in this
 **	structure.  It defines the pathname of the mailer, some
@@ -382,6 +392,9 @@ struct mailer
 #define M_ESMTP		'a'	/* run Extended SMTP */
 #define M_ALIASABLE	'A'	/* user can be LHS of an alias */
 #define M_BLANKEND	'b'	/* ensure blank line at end of message */
+#if _FFR_STRIPBACKSL
+# define M_STRIPBACKSL	'B'	/* strip leading backslash from user */
+#endif /* _FFR_STRIPBACKSL */
 #define M_NOCOMMENT	'c'	/* don't include comment part of address */
 #define M_CANONICAL	'C'	/* make addresses canonical "u@dom" */
 #define M_NOBRACKET	'd'	/* never angle bracket envelope route-addrs */
@@ -443,7 +456,10 @@ struct mailer
 extern void	initerrmailers __P((void));
 extern void	makemailer __P((char *));
 extern void	makequeue __P((char *, bool));
-extern void	runqueueevent __P((int));
+extern void	runqueueevent __P((void));
+#if _FFR_QUEUE_RUN_PARANOIA
+extern bool	checkqueuerunner __P((void));
+#endif /* _FFR_QUEUE_RUN_PARANOIA */
 
 EXTERN MAILER	*FileMailer;	/* ptr to *file* mailer */
 EXTERN MAILER	*InclMailer;	/* ptr to *include* mailer */
@@ -451,7 +467,7 @@ EXTERN MAILER	*LocalMailer;	/* ptr to local mailer */
 EXTERN MAILER	*ProgMailer;	/* ptr to program mailer */
 EXTERN MAILER	*Mailer[MAXMAILERS + 1];
 
-/*
+/*
 **  Queue group definition structure.
 **	Every queue group known to the system is declared in this structure.
 **	It defines the basic pathname of the queue group, some flags
@@ -499,8 +515,11 @@ struct queuegrp
 	int     qg_curnum;	/* current number of queue for queue runs */
 	int	qg_maxrcpt;	/* max recipients per envelope, 0==no limit */
 
-#if 0
+	time_t	qg_nextrun;	/* time for next queue runs */
+#if _FFR_QUEUE_GROUP_SORTORDER
 	short	qg_sortorder;	/* how do we sort this queuerun */
+#endif /* _FFR_QUEUE_GROUP_SORTORDER */
+#if 0
 	long	qg_wkrcptfact;	/* multiplier for # recipients -> priority */
 	long	qg_qfactor;	/* slope of queue function */
 	bool	qg_doqueuerun;	/* XXX flag is it time to do a queuerun */
@@ -517,7 +536,7 @@ extern bool	filesys_free __P((long));
 #endif /* _FFR_ANY_FREE_FS */
 
 #if SASL
-/*
+/*
 **  SASL
 */
 
@@ -552,8 +571,11 @@ extern bool	filesys_free __P((long));
 
 /* SASL options */
 # define SASL_AUTH_AUTH	0x1000		/* use auth= only if authenticated */
-# define SASL_SEC_MASK	0x0fff		/* mask for SASL_SEC_* values: sasl.h */
-# if (SASL_SEC_NOPLAINTEXT & SASL_SEC_MASK) == 0 || \
+# if SASL >= 20101
+#  define SASL_SEC_MASK	SASL_SEC_MAXIMUM /* mask for SASL_SEC_* values: sasl.h */
+# else /* SASL >= 20101 */
+#  define SASL_SEC_MASK	0x0fff		/* mask for SASL_SEC_* values: sasl.h */
+#  if (SASL_SEC_NOPLAINTEXT & SASL_SEC_MASK) == 0 || \
 	(SASL_SEC_NOACTIVE & SASL_SEC_MASK) == 0 || \
 	(SASL_SEC_NODICTIONARY & SASL_SEC_MASK) == 0 || \
 	(SASL_SEC_FORWARD_SECRECY & SASL_SEC_MASK) == 0 || \
@@ -561,19 +583,23 @@ extern bool	filesys_free __P((long));
 	(SASL_SEC_PASS_CREDENTIALS & SASL_SEC_MASK) == 0
 ERROR: change SASL_SEC_MASK_ notify sendmail.org!
 #  endif /* SASL_SEC_NOPLAINTEXT & SASL_SEC_MASK) == 0 ... */
-# define MAXOUTLEN 1024			/* length of output buffer */
+# endif /* SASL >= 20101 */
+# define MAXOUTLEN 8192			/* length of output buffer */
 
 /* functions */
 extern char	*intersect __P((char *, char *, SM_RPOOL_T *));
 extern char	*iteminlist __P((char *, char *, char *));
+# if SASL >= 20000
+extern int	proxy_policy __P((sasl_conn_t *, void *, const char *, unsigned, const char *, unsigned, const char *, unsigned, struct propctx *));
+extern int	safesaslfile __P((void *, const char *, sasl_verify_type_t));
+# else /* SASL >= 20000 */
 extern int	proxy_policy __P((void *, const char *, const char *, const char **, const char **));
-# if SASL > 10515
+#  if SASL > 10515
 extern int	safesaslfile __P((void *, char *, int));
-# else /* SASL > 10515 */
+#  else /* SASL > 10515 */
 extern int	safesaslfile __P((void *, char *));
-# endif /* SASL > 10515 */
-extern int	sasl_decode64 __P((const char *, unsigned, char *, unsigned *));
-extern int	sasl_encode64 __P((const char *, unsigned, char *, unsigned, unsigned *));
+#  endif /* SASL > 10515 */
+# endif /* SASL >= 20000 */
 extern void	stop_sasl_client __P((void));
 
 /* structure to store authinfo */
@@ -585,7 +611,7 @@ EXTERN int	SASLOpts;	/* options for SASL */
 EXTERN int	MaxSLBits;	/* max. encryption bits for SASL */
 #endif /* SASL */
 
-/*
+/*
 **  Structure to store macros.
 */
 typedef struct
@@ -597,7 +623,7 @@ typedef struct
 
 EXTERN MACROS_T		GlobalMacros;
 
-/*
+/*
 **  Information about currently open connections to mailers, or to
 **  hosts that we have looked up recently.
 */
@@ -656,7 +682,7 @@ MCI
 #define MCIF_SIZE	0x00000020	/* SIZE option supported */
 #define MCIF_8BITMIME	0x00000040	/* BODY=8BITMIME supported */
 #define MCIF_7BIT	0x00000080	/* strip this message to 7 bits */
-#define MCIF_MULTSTAT	0x00000100	/* MAIL11V3: handles MULT status */
+/* 0x00000100 unused, was MCIF_MULTSTAT: MAIL11V3: handles MULT status */
 #define MCIF_INHEADER	0x00000200	/* currently outputing header */
 #define MCIF_CVT8TO7	0x00000400	/* convert from 8 to 7 bits */
 #define MCIF_DSN	0x00000800	/* DSN extension supported */
@@ -667,6 +693,7 @@ MCI
 #define MCIF_AUTHACT	0x00010000	/* SASL (AUTH) active */
 #define MCIF_ENHSTAT	0x00020000	/* ENHANCEDSTATUSCODES supported */
 #define MCIF_PIPELINED	0x00040000	/* PIPELINING supported */
+#define MCIF_VERB	0x00080000	/* VERB supported */
 #if STARTTLS
 #define MCIF_TLS	0x00100000	/* STARTTLS supported */
 #define MCIF_TLSACT	0x00200000	/* STARTTLS active */
@@ -711,7 +738,7 @@ EXTERN int	MaxMciCache;		/* maximum entries in MCI cache */
 EXTERN time_t	MciCacheTimeout;	/* maximum idle time on connections */
 EXTERN time_t	MciInfoTimeout;		/* how long 'til we retry down hosts */
 
-/*
+/*
 **  Header structure.
 **	This structure is used internally to store header items.
 */
@@ -768,7 +795,7 @@ extern struct hdrinfo	HdrInfo[];
 #define CHHDR_DEF	0x0001	/* default header */
 #define CHHDR_CHECK	0x0002	/* call ruleset for header */
 #define CHHDR_USER	0x0004	/* header from user */
-#define CHHDR_QUEUE	0x0008	/* header from qf file */
+#define CHHDR_QUEUE	0x0008	/* header from queue file */
 
 /* functions */
 extern void	addheader __P((char *, char *, int, ENVELOPE *));
@@ -781,7 +808,7 @@ extern bool	isheader __P((char *));
 extern void	putfromline __P((MCI *, ENVELOPE *));
 extern void	setupheaders __P((void));
 
-/*
+/*
 **  Performance monitoring
 */
 
@@ -796,7 +823,7 @@ TIMERS
 #define PUSHTIMER(l, t)	{ if (tTd(98, l)) pushtimer(&t); }
 #define POPTIMER(l, t)	{ if (tTd(98, l)) poptimer(&t); }
 
-/*
+/*
 **  Envelope structure.
 **	This structure defines the message itself.  There is usually
 **	only one of these -- for the message that we originally read
@@ -856,14 +883,18 @@ struct envelope
 	char		*e_statmsg;	/* stat msg (changes per delivery).
 					 * readonly. NULL or allocated from
 					 * e_rpool. */
+#if _FFR_QUARANTINE
+	char		*e_quarmsg;	/* why envelope is quarantined */
+	char		e_qfletter;	/* queue file letter on disk */
+#endif /* _FFR_QUARANTINE */
 	char		*e_msgboundary;	/* MIME-style message part boundary */
 	char		*e_origrcpt;	/* original recipient (one only) */
 	char		*e_envid;	/* envelope id from MAIL FROM: line */
 	char		*e_status;	/* DSN status for this message */
 	time_t		e_dtime;	/* time of last delivery attempt */
 	int		e_ntries;	/* number of delivery attempts */
-	dev_t		e_dfdev;	/* df file's device, for crash recov */
-	ino_t		e_dfino;	/* df file's ino, for crash recovery */
+	dev_t		e_dfdev;	/* data file device (crash recovery) */
+	ino_t		e_dfino;	/* data file inode (crash recovery) */
 	MACROS_T	e_macro;	/* macro definitions */
 	MCI		*e_mci;		/* connection info */
 	char		*e_auth_param;	/* readonly; NULL or static storage or
@@ -879,34 +910,34 @@ struct envelope
 };
 
 /* values for e_flags */
-#define EF_OLDSTYLE	0x0000001L	/* use spaces (not commas) in hdrs */
-#define EF_INQUEUE	0x0000002L	/* this message is fully queued */
-#define EF_NO_BODY_RETN	0x0000004L	/* omit message body on error */
-#define EF_CLRQUEUE	0x0000008L	/* disk copy is no longer needed */
-#define EF_SENDRECEIPT	0x0000010L	/* send a return receipt */
-#define EF_FATALERRS	0x0000020L	/* fatal errors occurred */
-#define EF_DELETE_BCC	0x0000040L	/* delete Bcc: headers entirely */
-#define EF_RESPONSE	0x0000080L	/* this is an error or return receipt */
-#define EF_RESENT	0x0000100L	/* this message is being forwarded */
-#define EF_VRFYONLY	0x0000200L	/* verify only (don't expand aliases) */
-#define EF_WARNING	0x0000400L	/* warning message has been sent */
-#define EF_QUEUERUN	0x0000800L	/* this envelope is from queue */
-#define EF_GLOBALERRS	0x0001000L	/* treat errors as global */
-#define EF_PM_NOTIFY	0x0002000L	/* send return mail to postmaster */
-#define EF_METOO	0x0004000L	/* send to me too */
-#define EF_LOGSENDER	0x0008000L	/* need to log the sender */
-#define EF_NORECEIPT	0x0010000L	/* suppress all return-receipts */
-#define EF_HAS8BIT	0x0020000L	/* at least one 8-bit char in body */
-#define EF_NL_NOT_EOL	0x0040000L	/* don't accept raw NL as EOLine */
-#define EF_CRLF_NOT_EOL	0x0080000L	/* don't accept CR-LF as EOLine */
-#define EF_RET_PARAM	0x0100000L	/* RCPT command had RET argument */
-#define EF_HAS_DF	0x0200000L	/* set when df file is instantiated */
-#define EF_IS_MIME	0x0400000L	/* really is a MIME message */
-#define EF_DONT_MIME	0x0800000L	/* never MIME this message */
-#define EF_DISCARD	0x1000000L	/* discard the message */
-#define EF_TOOBIG	0x2000000L	/* message is too big */
-#define EF_SPLIT	0x4000000L	/* envelope has been split */
-#define EF_UNSAFE	0x8000000L	/* unsafe: read from untrusted source */
+#define EF_OLDSTYLE	0x00000001L	/* use spaces (not commas) in hdrs */
+#define EF_INQUEUE	0x00000002L	/* this message is fully queued */
+#define EF_NO_BODY_RETN	0x00000004L	/* omit message body on error */
+#define EF_CLRQUEUE	0x00000008L	/* disk copy is no longer needed */
+#define EF_SENDRECEIPT	0x00000010L	/* send a return receipt */
+#define EF_FATALERRS	0x00000020L	/* fatal errors occurred */
+#define EF_DELETE_BCC	0x00000040L	/* delete Bcc: headers entirely */
+#define EF_RESPONSE	0x00000080L	/* this is an error or return receipt */
+#define EF_RESENT	0x00000100L	/* this message is being forwarded */
+#define EF_VRFYONLY	0x00000200L	/* verify only (don't expand aliases) */
+#define EF_WARNING	0x00000400L	/* warning message has been sent */
+#define EF_QUEUERUN	0x00000800L	/* this envelope is from queue */
+#define EF_GLOBALERRS	0x00001000L	/* treat errors as global */
+#define EF_PM_NOTIFY	0x00002000L	/* send return mail to postmaster */
+#define EF_METOO	0x00004000L	/* send to me too */
+#define EF_LOGSENDER	0x00008000L	/* need to log the sender */
+#define EF_NORECEIPT	0x00010000L	/* suppress all return-receipts */
+#define EF_HAS8BIT	0x00020000L	/* at least one 8-bit char in body */
+#define EF_NL_NOT_EOL	0x00040000L	/* don't accept raw NL as EOLine */
+#define EF_CRLF_NOT_EOL	0x00080000L	/* don't accept CR-LF as EOLine */
+#define EF_RET_PARAM	0x00100000L	/* RCPT command had RET argument */
+#define EF_HAS_DF	0x00200000L	/* set when data file is instantiated */
+#define EF_IS_MIME	0x00400000L	/* really is a MIME message */
+#define EF_DONT_MIME	0x00800000L	/* never MIME this message */
+#define EF_DISCARD	0x01000000L	/* discard the message */
+#define EF_TOOBIG	0x02000000L	/* message is too big */
+#define EF_SPLIT	0x04000000L	/* envelope has been split */
+#define EF_UNSAFE	0x08000000L	/* unsafe: read from untrusted source */
 
 #define DLVR_NOTIFY	0x01
 #define DLVR_RETURN	0x02
@@ -916,17 +947,24 @@ struct envelope
 #define IS_DLVR_TRACE(e)	(((e)->e_dlvr_flag & DLVR_TRACE) != 0)
 #define IS_DLVR_BY(e)		((e)->e_dlvr_flag != 0)
 
+#define BODYTYPE_NONE	(0)
+#define BODYTYPE_7BIT	(1)
+#define BODYTYPE_8BITMIME	(2)
+#define BODYTYPE_ILLEGAL	(-1)
+#define BODYTYPE_VALID(b) ((b) == BODYTYPE_7BIT || (b) == BODYTYPE_8BITMIME)
+
 extern ENVELOPE	BlankEnvelope;
 
 /* functions */
 extern void	clearenvelope __P((ENVELOPE *, bool, SM_RPOOL_T *));
 extern void	dropenvelope __P((ENVELOPE *, bool, bool));
 extern ENVELOPE	*newenvelope __P((ENVELOPE *, ENVELOPE *, SM_RPOOL_T *));
+extern void	clrsessenvelope __P((ENVELOPE *));
 extern void	printenvflags __P((ENVELOPE *));
 extern void	putbody __P((MCI *, ENVELOPE *, char *));
 extern void	putheader __P((MCI *, HDR *, ENVELOPE *, int));
 
-/*
+/*
 **  Message priority classes.
 **
 **	The message class is read directly from the Priority: header
@@ -959,7 +997,7 @@ struct priority
 EXTERN int	NumPriorities;	/* pointer into Priorities */
 EXTERN struct priority	Priorities[MAXPRIORITIES];
 
-/*
+/*
 **  Rewrite rules.
 */
 
@@ -1054,14 +1092,14 @@ extern int	macid_parse __P((char *, char **));
 #define macid(name)  macid_parse(name, NULL)
 extern char	*macname __P((int));
 extern char	*macvalue __P((int, ENVELOPE *));
-extern int	rscheck __P((char *, char *, char *, ENVELOPE *, bool, bool, int, char *, char *));
+extern int	rscheck __P((char *, char *, char *, ENVELOPE *, int, int, char *, char *));
 extern int	rscap __P((char *, char *, char *, ENVELOPE *, char ***, char *, int));
 extern void	setclass __P((int, char *));
 extern int	strtorwset __P((char *, char **, int));
 extern void	translate_dollars __P((char *));
 extern bool	wordinclass __P((char *, int));
 
-/*
+/*
 **  Name canonification short circuit.
 **
 **	If the name server for a host is down, the process of trying to
@@ -1102,7 +1140,7 @@ extern int	getmxrr __P((char *, char **, unsigned short *, bool, int *, bool, in
 extern char	*hostsignature __P((MAILER *, char *));
 extern int	getfallbackmxrr __P((char *));
 
-/*
+/*
 **  Mapping functions
 **
 **	These allow arbitrary mappings in the config file.  The idea
@@ -1163,14 +1201,14 @@ MAP
 #define MF_ALIASWAIT	0x00000800	/* alias map in aliaswait state */
 #define MF_IMPL_HASH	0x00001000	/* implicit: underlying hash database */
 #define MF_IMPL_NDBM	0x00002000	/* implicit: underlying NDBM database */
-#define MF_UNSAFEDB	0x00004000	/* this map is world writable */
+/* 0x00004000	*/
 #define MF_APPEND	0x00008000	/* append new entry on rebuild */
 #define MF_KEEPQUOTES	0x00010000	/* don't dequote key before lookup */
 #define MF_NODEFER	0x00020000	/* don't defer if map lookup fails */
 #define MF_REGEX_NOT	0x00040000	/* regular expression negation */
 #define MF_DEFER	0x00080000	/* don't lookup map in defer mode */
 #define MF_SINGLEMATCH	0x00100000	/* successful only if match one key */
-#define MF_NOREWRITE	0x00200000	/* don't rewrite result, return as-is */
+/*			0x00200000	   available for use */
 #define MF_FILECLASS	0x00400000	/* this is a file class map */
 #define MF_OPENBOGUS	0x00800000	/* open failed, don't call map_close */
 #define MF_CLOSING	0x01000000	/* map is being closed */
@@ -1241,7 +1279,7 @@ extern int	udbexpand __P((ADDRESS *, ADDRESS **, int, ENVELOPE *));
 extern char	*udbsender __P((char *, SM_RPOOL_T *));
 #endif /* USERDB */
 
-/*
+/*
 **  LDAP related items
 */
 #if LDAPMAP
@@ -1271,7 +1309,7 @@ extern bool	ldapmap_parseargs __P((MAP *, char *));
 extern void	ldapmap_set_defaults __P((char *));
 #endif /* LDAPMAP */
 
-/*
+/*
 **  PH related items
 */
 
@@ -1290,7 +1328,7 @@ struct ph_map_struct
 typedef struct ph_map_struct	PH_MAP_STRUCT;
 
 #endif /* PH_MAP */
-/*
+/*
 **  Process List (proclist)
 */
 
@@ -1312,20 +1350,19 @@ typedef struct ph_map_struct	PH_MAP_STRUCT;
 extern void	proc_list_add __P((pid_t, char *, int, int, int));
 extern void	proc_list_clear __P((void));
 extern void	proc_list_display __P((SM_FILE_T *, char *));
-extern int	proc_list_drop __P((pid_t, int *, int *));
+extern void	proc_list_drop __P((pid_t, int, int *));
 extern void	proc_list_probe __P((void));
 extern void	proc_list_set __P((pid_t, char *));
 extern void	proc_list_signal __P((int, int));
 
-/*
+/*
 **  Symbol table definitions
 */
 
 struct symtab
 {
 	char		*s_name;	/* name to be entered */
-	short		s_type;		/* general type (see below) */
-	short		s_len;		/* length of this entry */
+	short		s_symtype;	/* general type (see below) */
 	struct symtab	*s_next;	/* pointer to next in chain */
 	union
 	{
@@ -1408,7 +1445,7 @@ typedef struct symtab	STAB;
 extern STAB	*stab __P((char *, int, int));
 extern void	stabapply __P((void (*)(STAB *, int), int));
 
-/*
+/*
 **  Operation, send, error, and MIME modes
 **
 **	The operation mode describes the basic operation of sendmail.
@@ -1483,6 +1520,7 @@ extern void	set_delivery_mode __P((int, ENVELOPE *));
 #define PXLF_MAPFROM		0x0001	/* map From_ to >From_ */
 #define PXLF_STRIP8BIT		0x0002	/* strip 8th bit */
 #define PXLF_HEADER		0x0004	/* map newlines in headers */
+#define PXLF_NOADDEOL		0x0008	/* if EOL not present, don't add one */
 
 /*
 **  Privacy flags
@@ -1530,6 +1568,13 @@ EXTERN unsigned long	PrivacyFlags;	/* privacy flags */
 #define RF_COPYALL		(RF_COPYPARSE|RF_COPYPADDR)
 #define RF_COPYNONE		0
 
+/*
+**  Flags passed to rscheck
+*/
+
+#define RSF_RMCOMM		0x0001	/* strip comments */
+#define RSF_UNSTRUCTURED	0x0002	/* unstructured, ignore syntax errors */
+#define RSF_COUNT		0x0004	/* count rejections (statistics)? */
 
 /*
 **  Flags passed to mime8to7 and putheader.
@@ -1594,14 +1639,24 @@ extern int	anynet_pton __P((int, const char *, void *));
 # endif /* NETINET6 */
 extern char	*hostnamebyanyaddr __P((SOCKADDR *));
 extern char	*validate_connection __P((SOCKADDR *, char *, ENVELOPE *));
+# if SASL >= 20000
+extern bool	iptostring __P((SOCKADDR *, SOCKADDR_LEN_T, char *, unsigned));
+# endif /* SASL >= 20000 */
 
 #endif /* NETINET || NETINET6 || NETUNIX || NETISO || NETNS || NETX25 */
 
-#if MILTER
-/*
+/*
 **  Mail Filters (milter)
 */
 
+/*
+**  32-bit type used by milter
+**  (needed by libmilter even if MILTER isn't defined)
+*/
+
+typedef SM_INT32	mi_int32;
+
+#if MILTER
 # define SMFTO_WRITE	0		/* Timeout for sending information */
 # define SMFTO_READ	1		/* Timeout waiting for a response */
 # define SMFTO_EOM	2		/* Timeout for ACK/NAK to EOM */
@@ -1613,9 +1668,9 @@ struct milter
 {
 	char		*mf_name;	/* filter name */
 	BITMAP256	mf_flags;	/* MTA flags */
-	unsigned long	mf_fvers;	/* filter version */
-	unsigned long	mf_fflags;	/* filter flags */
-	unsigned long	mf_pflags;	/* protocol flags */
+	mi_int32	mf_fvers;	/* filter version */
+	mi_int32	mf_fflags;	/* filter flags */
+	mi_int32	mf_pflags;	/* protocol flags */
 	char		*mf_conn;	/* connection info */
 	int		mf_sock;	/* connected socket */
 	char		mf_state;	/* state of filter */
@@ -1646,13 +1701,6 @@ extern void	setup_daemon_milters __P(());
 #endif /* MILTER */
 
 /*
-**  32-bit type used by milter
-**  (needed by libmilter even if MILTER isn't defined)
-*/
-
-typedef SM_INT32	mi_int32;
-
-/*
 **  Vendor codes
 **
 **	Vendors can customize sendmail to add special behaviour,
@@ -1672,6 +1720,7 @@ typedef SM_INT32	mi_int32;
 #define VENDOR_HP	3	/* Hewlett-Packard specific config syntax */
 #define VENDOR_IBM	4	/* IBM specific config syntax */
 #define VENDOR_SENDMAIL	5	/* Sendmail, Inc. specific config syntax */
+#define VENDOR_DEC	6	/* Compaq, DEC, Digital */
 
 /* prototypes for vendor-specific hook routines */
 extern void	vendor_daemon_setup __P((ENVELOPE *));
@@ -1690,7 +1739,7 @@ struct termescape
 	char	*te_rv_off;	/* turn reverse-video off */
 };
 
-/*
+/*
 **  Additional definitions
 */
 
@@ -1719,20 +1768,20 @@ struct termescape
 #define D_ISSET		((char)0x03)	/* this client struct is set */
 
 #if STARTTLS
-/*
+/*
 **  TLS
 */
 
 /* what to do in the TLS initialization */
 #define TLS_I_NONE	0x00000000	/* no requirements... */
-#define TLS_I_CERT_EX	0x00000001	/* CERT must exist */
-#define TLS_I_CERT_UNR	0x00000002	/* CERT must be g/o unreadable */
-#define TLS_I_KEY_EX	0x00000004	/* KEY must exist */
-#define TLS_I_KEY_UNR	0x00000008	/* KEY must be g/o unreadable */
-#define TLS_I_CERTP_EX	0x00000010	/* CA CERT PATH must exist */
-#define TLS_I_CERTP_UNR	0x00000020	/* CA CERT PATH must be g/o unreadable */
-#define TLS_I_CERTF_EX	0x00000040	/* CA CERT FILE must exist */
-#define TLS_I_CERTF_UNR	0x00000080	/* CA CERT FILE must be g/o unreadable */
+#define TLS_I_CERT_EX	0x00000001	/* cert must exist */
+#define TLS_I_CERT_UNR	0x00000002	/* cert must be g/o unreadable */
+#define TLS_I_KEY_EX	0x00000004	/* key must exist */
+#define TLS_I_KEY_UNR	0x00000008	/* key must be g/o unreadable */
+#define TLS_I_CERTP_EX	0x00000010	/* CA cert path must exist */
+#define TLS_I_CERTP_UNR	0x00000020	/* CA cert path must be g/o unreadable */
+#define TLS_I_CERTF_EX	0x00000040	/* CA cert file must exist */
+#define TLS_I_CERTF_UNR	0x00000080	/* CA cert file must be g/o unreadable */
 #define TLS_I_RSA_TMP	0x00000100	/* RSA TMP must be generated */
 #define TLS_I_USE_KEY	0x00000200	/* private key must usable */
 #define TLS_I_USE_CERT	0x00000400	/* certificate must be usable */
@@ -1747,7 +1796,7 @@ struct termescape
 #define TLS_I_DH1024	0x00080000	/* generate 1024bit DH param */
 #define TLS_I_DH2048	0x00100000	/* generate 2048bit DH param */
 #define TLS_I_NO_VRFY	0x00200000	/* do not require authentication */
-#define TLS_I_KEY_OUNR	0x00400000	/* KEY must be o unreadable */
+#define TLS_I_KEY_OUNR	0x00400000	/* Key must be other unreadable */
 
 /* require server cert */
 #define TLS_I_SRV_CERT	 (TLS_I_CERT_EX | TLS_I_KEY_EX | \
@@ -1777,24 +1826,40 @@ extern int	endtls __P((SSL *, char *));
 extern void	tlslogerr __P((char *));
 
 
-EXTERN char	*CACERTpath;	/* path to CA certificates (dir. with hashes) */
-EXTERN char	*CACERTfile;	/* file with CA certificate */
-EXTERN char	*CltCERTfile;	/* file with client certificate */
-EXTERN char	*Cltkeyfile;	/* file with client private key */
+EXTERN char	*CACertPath;	/* path to CA certificates (dir. with hashes) */
+EXTERN char	*CACertFile;	/* file with CA certificate */
+EXTERN char	*CltCertFile;	/* file with client certificate */
+EXTERN char	*CltKeyFile;	/* file with client private key */
 # if _FFR_TLS_1
 EXTERN char	*CipherList;	/* list of ciphers */
 EXTERN char	*DHParams5;	/* file with DH parameters (512) */
 # endif /* _FFR_TLS_1 */
 EXTERN char	*DHParams;	/* file with DH parameters */
 EXTERN char	*RandFile;	/* source of random data */
-EXTERN char	*SrvCERTfile;	/* file with server certificate */
-EXTERN char	*Srvkeyfile;	/* file with server private key */
+EXTERN char	*SrvCertFile;	/* file with server certificate */
+EXTERN char	*SrvKeyFile;	/* file with server private key */
 EXTERN unsigned long	TLS_Srv_Opts;	/* TLS server options */
 #endif /* STARTTLS */
 
-/*
+/*
 **  Queue related items
 */
+
+/* queue file names */
+#if _FFR_QUARANTINE
+# define ANYQFL_LETTER '?'
+# define QUARQF_LETTER 'h'
+#else /* _FFR_QUARANTINE */
+/* Before quarantining, ANYQF == NORMQF */
+# define ANYQFL_LETTER 'q'
+#endif /* _FFR_QUARANTINE */
+#define DATAFL_LETTER 'd'
+#define XSCRPT_LETTER 'x'
+#define NORMQF_LETTER 'q'
+#define NEWQFL_LETTER 't'
+
+# define TEMPQF_LETTER 'T'
+# define LOSEQF_LETTER 'Q'
 
 /* queue sort order */
 #define QSO_BYPRIORITY	0		/* sort by message priority */
@@ -1829,6 +1894,13 @@ EXTERN unsigned long	TLS_Srv_Opts;	/* TLS server options */
 #define SAFE_INTERACTIVE	1	/* limit fsync() in -odi */
 #define SAFE_REALLY		2	/* always fsync() */
 
+#if _FFR_QUARANTINE
+/* QueueMode bits */
+# define QM_NORMAL		' '
+# define QM_QUARANTINE		'Q'
+# define QM_LOST		'L'
+#endif /* _FFR_QUARANTINE */
+
 /* Queue Run Limitations */
 struct queue_char
 {
@@ -1836,6 +1908,14 @@ struct queue_char
 	bool			queue_negate;	/* or not match, if set */
 	struct queue_char	*queue_next;
 };
+
+/* run_work_group() flags */
+#define RWG_NONE		0x0000
+#define RWG_FORK		0x0001
+#define RWG_VERBOSE		0x0002
+#define RWG_PERSISTENT		0x0004
+#define RWG_FORCE		0x0008
+#define RWG_RUNALL		0x0010
 
 typedef struct queue_char	QUEUE_CHAR;
 
@@ -1845,7 +1925,10 @@ EXTERN int	MaxQueueChildren;	/* max # of forked queue children */
 EXTERN int	MaxRunnersPerQueue;	/* max # proc's active in queue group */
 EXTERN int	NiceQueueRun;	/* nice queue runs to this value */
 EXTERN int	NumQueue;	/* number of queue groups */
-EXTERN int	QueueFileMode;	/* mode on qf/tf/df files */
+EXTERN int	QueueFileMode;	/* mode on files in mail queue */
+#if _FFR_QUARANTINE
+EXTERN int	QueueMode;	/* which queue items to act upon */
+#endif /* _FFR_QUARANTINE */
 EXTERN int	QueueSortOrder;	/* queue sorting order algorithm */
 EXTERN time_t	MinQueueAge;	/* min delivery interval */
 EXTERN time_t	QueueIntvl;	/* intervals between running the queue */
@@ -1856,6 +1939,9 @@ EXTERN time_t	QueueInitDelay;	/* initial queue delay */
 EXTERN time_t	QueueMaxDelay;	/* maximum queue delay */
 #endif /* _FFR_QUEUEDELAY */
 EXTERN QUEUE_CHAR	*QueueLimitId;		/* limit queue run to id */
+#if _FFR_QUARANTINE
+EXTERN QUEUE_CHAR	*QueueLimitQuarantine;	/* limit queue run to quarantine reason */
+#endif /* _FFR_QUARANTINE */
 EXTERN QUEUE_CHAR	*QueueLimitRecipient;	/* limit queue run to rcpt */
 EXTERN QUEUE_CHAR	*QueueLimitSender;	/* limit queue run to sender */
 EXTERN QUEUEGRP	*Queue[MAXQUEUEGROUPS + 1];	/* queue groups */
@@ -1870,15 +1956,19 @@ extern void	loseqfile __P((ENVELOPE *, char *));
 extern int	name2qid __P((char *));
 extern char	*qid_printname __P((ENVELOPE *));
 extern char	*qid_printqueue __P((int, int));
+#if _FFR_QUARANTINE
+extern void	quarantine_queue __P((char *, int));
+#endif /* _FFR_QUARANTINE */
 extern char	*queuename __P((ENVELOPE *, int));
 extern void	queueup __P((ENVELOPE *, bool, bool));
 extern bool	runqueue __P((bool, bool, bool, bool));
-extern int	run_work_group __P((int, bool, bool, bool, bool));
+extern int	run_work_group __P((int, int));
 extern void	set_def_queueval __P((QUEUEGRP *, bool));
 extern void	setup_queues __P((bool));
 extern bool	setnewqueue __P((ENVELOPE *));
 extern bool	shouldqueue __P((long, time_t));
 extern void	sync_queue_time __P((void));
+extern int	print_single_queue __P((int, int));
 #if REQUIRES_DIR_FSYNC
 # define SYNC_DIR(path, panic) sync_dir(path, panic)
 extern void	sync_dir __P((char *, bool));
@@ -1931,6 +2021,9 @@ EXTERN struct
 #define TOC_NORMAL	0	/* normal delivery */
 #define TOC_URGENT	1	/* urgent delivery */
 #define TOC_NONURGENT	2	/* non-urgent delivery */
+#if _FFR_QUEUERETURN_DSN
+# define TOC_DSN	3	/* DSN delivery */
+#endif /* _FFR_QUEUERETURN_DSN */
 
 /* resolver timeout specifiers */
 #define RES_TO_FIRST	0	/* first attempt */
@@ -1958,7 +2051,8 @@ extern void	inittimeouts __P((char *, bool));
 
 /* variables */
 extern unsigned char	tTdvect[100];	/* trace vector */
-/*
+
+/*
 **  Miscellaneous information.
 */
 
@@ -2025,7 +2119,7 @@ extern unsigned char	tTdvect[100];	/* trace vector */
 		var = _newval; \
 	} while (0)
 
-/*
+/*
 **  Global variables.
 */
 
@@ -2036,7 +2130,7 @@ EXTERN bool	ColonOkInAddr;	/* single colon legal in address */
 EXTERN bool	ConfigFileRead;	/* configuration file has been read */
 #endif /* !defined(_USE_SUN_NSSWITCH_) && !defined(_USE_DEC_SVC_CONF_) */
 EXTERN bool	volatile DataProgress;	/* have we sent anything since last check */
-EXTERN bool	DisConnected;	/* running with OutChannel redirected to xf */
+EXTERN bool	DisConnected;	/* running with OutChannel redirect to transcript file */
 EXTERN bool	DontExpandCnames;	/* do not $[...$] expand CNAMEs */
 EXTERN bool	DontInitGroups;	/* avoid initgroups() because of NIS cost */
 EXTERN bool	DontLockReadFiles;	/* don't read lock support files */
@@ -2056,6 +2150,9 @@ EXTERN bool	NoAlias;	/* suppress aliasing */
 EXTERN bool	NoConnect;	/* don't connect to non-local mailers */
 EXTERN bool	OnlyOneError;	/*  .... or only want to give one SMTP reply */
 EXTERN bool	QuickAbort;	/*  .... but only if we want a quick abort */
+#if _FFR_REQ_DIR_FSYNC_OPT
+EXTERN bool	RequiresDirfsync;	/* requires fsync() for directory */
+#endif /* _FFR_REQ_DIR_FSYNC_OPT */
 EXTERN bool	ResNoAliases;	/* don't use $HOSTALIASES */
 EXTERN bool	volatile RestartWorkGroup; /* daemon needs to restart some work groups */
 EXTERN bool	RrtImpliesDsn;	/* turn Return-Receipt-To: into DSN */
@@ -2116,6 +2213,9 @@ EXTERN int	NumFileSys;	/* number of queue file systems */
 
 EXTERN int	QueueLA;	/* load average starting forced queueing */
 EXTERN int	RefuseLA;	/* load average refusing connections */
+#if _FFR_REJECT_LOG
+EXTERN time_t	RejectLogInterval;	/* time btwn log msgs while refusing */
+#endif /* _FFR_REJECT_LOG */
 EXTERN int	SuperSafe;	/* be extra careful, even if expensive */
 EXTERN int	VendorCode;	/* vendor-specific operation enhancements */
 EXTERN int	Verbose;	/* set if blow-by-blow desired */
@@ -2125,6 +2225,9 @@ EXTERN gid_t	RunAsGid;	/* GID to become for bulk of run */
 EXTERN gid_t	EffGid;		/* effective gid */
 #if SM_CONF_SHM
 EXTERN key_t	ShmKey;		/* shared memory key */
+# if _FFR_SELECT_SHM
+EXTERN char	*ShmKeyFile;	/* shared memory key file */
+# endif /* _FFR_SELECT_SHM */
 #endif /* SM_CONF_SHM */
 EXTERN pid_t	CurrentPid;	/* current process id */
 EXTERN pid_t	DaemonPid;	/* process id of daemon */
@@ -2132,12 +2235,12 @@ EXTERN uid_t	DefUid;		/* default uid to run as */
 EXTERN uid_t	RealUid;	/* real uid of caller */
 EXTERN uid_t	RunAsUid;	/* UID to become for bulk of run */
 EXTERN uid_t	TrustedUid;	/* uid of trusted user for files and startup */
-EXTERN size_t	DataFileBufferSize;	/* size of buffer for in-core df */
+EXTERN size_t	DataFileBufferSize;	/* size of buf for in-core data file */
 EXTERN time_t	DeliverByMin;	/* deliver by minimum time */
 EXTERN time_t	DialDelay;	/* delay between dial-on-demand tries */
 EXTERN time_t	SafeAlias;	/* interval to wait until @:@ in alias file */
 EXTERN time_t	ServiceCacheMaxAge;	/* refresh interval for cache */
-EXTERN size_t	XscriptFileBufferSize;	/* size of buffer for in-core xf */
+EXTERN size_t	XscriptFileBufferSize;	/* size of buf for in-core transcript file */
 EXTERN MODE_T	OldUmask;	/* umask when sendmail starts up */
 EXTERN long	MaxMessageSize;	/* advertised max size we will accept */
 EXTERN long	MinBlocksFree;	/* min # of blocks free on queue fs */
@@ -2263,7 +2366,14 @@ extern int	mailfile __P((char *volatile, MAILER *volatile, ADDRESS *, volatile l
 extern void	sendall __P((ENVELOPE *, int));
 
 /* stats */
-extern void	markstats __P((ENVELOPE *, ADDRESS *, bool));
+#define STATS_NORMAL		'n'
+#if _FFR_QUARANTINE
+# define STATS_QUARANTINE	'q'
+#endif /* _FFR_QUARANTINE */
+#define STATS_REJECT		'r'
+#define STATS_CONNECT		'c'
+
+extern void	markstats __P((ENVELOPE *, ADDRESS *, int));
 extern void	clearstats __P((void));
 extern void	poststats __P((char *));
 
@@ -2297,6 +2407,7 @@ extern void	auth_warning __P((ENVELOPE *, const char *, ...));
 extern int	blocksignal __P((int));
 extern bool	bitintersect __P((BITMAP256, BITMAP256));
 extern bool	bitzerop __P((BITMAP256));
+extern int	check_bodytype __P((char *));
 extern void	buildfname __P((char *, char *, char *, int));
 extern bool	chkclientmodifiers __P((int));
 extern bool	chkdaemonmodifiers __P((int));
@@ -2336,7 +2447,7 @@ extern char	*fgetfolded __P((char *, int, SM_FILE_T *));
 extern void	fill_fd __P((int, char *));
 extern char	*find_character __P((char *, int));
 extern int	finduser __P((char *, bool *, SM_MBDB_T *));
-extern void	finis __P((bool, volatile int));
+extern void	finis __P((bool, bool, volatile int));
 extern void	fixcrlf __P((char *, bool));
 extern long	freediskspace __P((char *, long *));
 #if NETINET6 && NEEDSGETIPNODE
@@ -2370,7 +2481,9 @@ extern void	makeworkgroups __P((void));
 extern void	mark_work_group_restart __P((int, int));
 extern char *	munchstring __P((char *, char **, int));
 extern struct hostent	*myhostname __P((char *, int));
+#if NISPLUS
 extern char	*nisplus_default_domain __P((void));	/* extern for Sun */
+#endif /* NISPLUS */
 extern bool	path_is_dir __P((char *, bool));
 extern int	pickqdir __P((QUEUEGRP *qg, long fsize, ENVELOPE *e));
 extern char	*pintvl __P((time_t, bool));
@@ -2419,7 +2532,11 @@ extern pid_t	sm_wait __P((int *));
 extern bool	split_by_recipient __P((ENVELOPE *e));
 extern void	stop_sendmail __P((void));
 extern char	*str2prt __P((char *));
-extern bool	strcontainedin __P((char *, char *));
+#if _FFR_STRIPBACKSL
+extern void	stripbackslash __P((char *));
+#endif /* _FFR_STRIPBACKSL */
+extern bool	strreplnonprt __P((char *, int));
+extern bool	strcontainedin __P((bool, char *, char *));
 extern int	switch_map_find __P((char *, char *[], short []));
 extern bool	transienterror __P((int));
 #if _FFR_BESTMX_BETTER_TRUNCATION || _FFR_DNSMAP_MULTI

@@ -1,3 +1,5 @@
+/* $OpenBSD: http_core.c,v 1.14 2002/10/07 20:23:06 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -349,6 +351,7 @@ static void *merge_core_dir_configs(pool *a, void *basev, void *newv)
     if (new->cgi_command_args != AP_FLAG_UNSET) {
         conf->cgi_command_args = new->cgi_command_args;
     }
+    ap_server_strip_chroot(conf->d, 0);
 
     return (void*)conf;
 }
@@ -1218,7 +1221,7 @@ static const char *set_document_root(cmd_parms *cmd, void *dummy, char *arg)
 	    return "DocumentRoot must be a directory";
 	}
     }
-    
+    ap_server_strip_chroot(arg, 1);
     conf->ap_document_root = arg;
     return NULL;
 }
@@ -1229,6 +1232,7 @@ API_EXPORT(void) ap_custom_response(request_rec *r, int status, char *string)
 	ap_get_module_config(r->per_dir_config, &core_module);
     int idx;
 
+    ap_server_strip_chroot(conf->d, 0);
     if(conf->response_code_strings == NULL) {
         conf->response_code_strings = 
 	    ap_pcalloc(r->pool,
@@ -1571,6 +1575,7 @@ static const char *dirsection(cmd_parms *cmd, void *dummy, const char *arg)
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 1);
     cmd->override = OR_ALL|ACCESS_CONF;
 
     if (thiscmd->cmd_data) { /* <DirectoryMatch> */
@@ -1578,6 +1583,7 @@ static const char *dirsection(cmd_parms *cmd, void *dummy, const char *arg)
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 1);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED|USE_ICASE);
     }
 #if defined(HAVE_DRIVE_LETTERS) || defined(NETWARE)
@@ -1652,6 +1658,7 @@ static const char *urlsection(cmd_parms *cmd, void *dummy, const char *arg)
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 0);
     cmd->override = OR_ALL|ACCESS_CONF;
 
     if (thiscmd->cmd_data) { /* <LocationMatch> */
@@ -1659,6 +1666,7 @@ static const char *urlsection(cmd_parms *cmd, void *dummy, const char *arg)
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 0);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED);
     }
 
@@ -1720,6 +1728,7 @@ static const char *filesection(cmd_parms *cmd, core_dir_config *c,
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 1);
     /* Only if not an .htaccess file */
     if (!old_path) {
 	cmd->override = OR_ALL|ACCESS_CONF;
@@ -1730,6 +1739,7 @@ static const char *filesection(cmd_parms *cmd, core_dir_config *c,
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 1);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED|USE_ICASE);
     }
     else {
@@ -2103,13 +2113,29 @@ static const char *set_user(cmd_parms *cmd, void *dummy, char *arg)
         return err;
     }
 
+    /*
+     * This is, again, tricky. on restarts, we cannot use uname2id.
+     * keep the old settings for the main server.
+     * barf out on user directives in <VirtualHost> sections.
+     */ 
+
     if (!cmd->server->is_virtual) {
-	ap_user_name = arg;
-	cmd->server->server_uid = ap_user_id = ap_uname2id(arg);
+	if (!ap_server_is_chrooted()) {
+	    ap_user_name = arg;
+	    ap_user_id = ap_uname2id(arg);
+	}
+	cmd->server->server_uid = ap_user_id;
     }
     else {
         if (ap_suexec_enabled) {
-	    cmd->server->server_uid = ap_uname2id(arg);
+	    if (ap_server_is_chrooted()) {
+		fprintf(stderr, "cannot look up uids once chrooted. Thus, User "
+		    "directives inside <VirtualHost> and restarts aren't "
+		    "possible together. Please stop httpd and start a new "
+		    "one\n");
+		exit(1);
+	    } else
+		cmd->server->server_uid = ap_uname2id(arg);
 	}
 	else {
 	    cmd->server->server_uid = ap_user_id;
@@ -2146,11 +2172,21 @@ static const char *set_group(cmd_parms *cmd, void *dummy, char *arg)
     }
 
     if (!cmd->server->is_virtual) {
-	cmd->server->server_gid = ap_group_id = ap_gname2id(arg);
+	if (!ap_server_is_chrooted()) {
+	    ap_group_id = ap_gname2id(arg);
+	}
+	cmd->server->server_gid = ap_group_id;
     }
     else {
         if (ap_suexec_enabled) {
-	    cmd->server->server_gid = ap_gname2id(arg);
+	    if (ap_server_is_chrooted()) {
+		fprintf(stderr, "cannot look up gids once chrooted. Thus, Group"
+		    " directives inside <VirtualHost> and restarts aren't "
+		    "possible together. Please stop httpd and start a new "
+		    "one\n");
+		exit(1);
+	    } else
+		cmd->server->server_gid = ap_gname2id(arg);
 	}
 	else {
 	    cmd->server->server_gid = ap_group_id;
@@ -2173,14 +2209,26 @@ static const char *set_server_root(cmd_parms *cmd, void *dummy, char *arg)
 
     arg = ap_os_canonical_filename(cmd->pool, arg);
 
-    if (!ap_is_directory(arg)) {
-        return "ServerRoot must be a valid directory";
+    /*
+     * This is a bit tricky. On startup we are not chrooted here.
+     * On restarts (graceful or not) we are (unless we're in unsecure mode).
+     * if we would strip off the chroot prefix, nothing (not even "/")
+     * would last.
+     * it's pointless to test wether ServerRoot is a directory if we are
+     * already chrooted into that. 
+     * Of course it's impossible to change ServerRoot without a full restart.
+     * should we abort with an error if ap_server_root != arg?
+     */
+
+    if (!ap_server_is_chrooted()) {
+	if (!ap_is_directory(arg)) {
+	    return "ServerRoot must be a valid directory";
+	}
+	/* ServerRoot is never '/' terminated */
+	while (strlen(ap_server_root) > 1 && ap_server_root[strlen(ap_server_root)-1] == '/')
+	    ap_server_root[strlen(ap_server_root)-1] = '\0';
+	ap_cpystrn(ap_server_root, arg, sizeof(ap_server_root));
     }
-    /* ServerRoot is never '/' terminated */
-    while (strlen(ap_server_root) > 1 && ap_server_root[strlen(ap_server_root)-1] == '/')
-        ap_server_root[strlen(ap_server_root)-1] = '\0';
-    ap_cpystrn(ap_server_root, arg,
-	       sizeof(ap_server_root));
     return NULL;
 }
 
@@ -2763,14 +2811,14 @@ API_EXPORT(const char *) ap_psignature(const char *prefix, request_rec *r)
 	return ap_pstrcat(r->pool, prefix, "<ADDRESS>" SERVER_BASEVERSION
 			  " Server at <A HREF=\"mailto:",
 			  r->server->server_admin, "\">",
-			  ap_escape_html(r->pool, ap_get_server_name(r)), 
-			  "</A> Port ", sport,
+			  ap_escape_html(r->pool, ap_get_server_name(r)),
+                          "</A> Port ", sport,
 			  "</ADDRESS>\n", NULL);
     }
     return ap_pstrcat(r->pool, prefix, "<ADDRESS>" SERVER_BASEVERSION
-		      " Server at ", 
-		      ap_escape_html(r->pool, ap_get_server_name(r)), 
-		      " Port ", sport,
+		      " Server at ",
+                      ap_escape_html(r->pool, ap_get_server_name(r)),
+                      " Port ", sport,
 		      "</ADDRESS>\n", NULL);
 }
 

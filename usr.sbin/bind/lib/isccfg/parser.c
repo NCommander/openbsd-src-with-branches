@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2000-2002  Internet Software Consortium.
+ * Copyright (C) 2000-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: parser.c,v 1.70.2.14 2002/02/08 03:57:47 marka Exp $ */
+/* $ISC: parser.c,v 1.70.2.14.4.2 2003/02/17 07:05:10 marka Exp $ */
 
 #include <config.h>
 
@@ -799,7 +799,12 @@ namedconf_or_view_clauses[] = {
 	{ "key", &cfg_type_key, CFG_CLAUSEFLAG_MULTI },
 	{ "zone", &cfg_type_zone, CFG_CLAUSEFLAG_MULTI },
 	{ "server", &cfg_type_server, CFG_CLAUSEFLAG_MULTI },
+#ifdef ISC_RFC2535
 	{ "trusted-keys", &cfg_type_trustedkeys, CFG_CLAUSEFLAG_MULTI },
+#else
+	{ "trusted-keys", &cfg_type_trustedkeys,
+		 CFG_CLAUSEFLAG_MULTI|CFG_CLAUSEFLAG_OBSOLETE },
+#endif
 	{ NULL, NULL, 0 }
 };
 
@@ -1644,7 +1649,8 @@ parse_unitstring(char *str, isc_resourcevalue_t *valuep) {
 static void
 print_uint64(cfg_printer_t *pctx, cfg_obj_t *obj) {
 	char buf[32];
-	sprintf(buf, "%" ISC_PRINT_QUADFORMAT "u", obj->value.uint64);
+	snprintf(buf, sizeof(buf), "%" ISC_PRINT_QUADFORMAT "u",
+		 obj->value.uint64);
 	print_cstr(pctx, buf);
 }
 
@@ -2765,9 +2771,9 @@ token_addr(cfg_parser_t *pctx, unsigned int flags, isc_netaddr_t *na) {
 			char buf[64];
 			int i;
 
-			strcpy(buf, s);
+			strlcpy(buf, s, sizeof(buf));
 			for (i = 0; i < 3; i++) {
-				strcat(buf, ".0");
+				strlcat(buf, ".0", sizeof(buf));
 				if (inet_pton(AF_INET, buf, &in4a) == 1) {
 					isc_netaddr_fromin(na, &in4a);
 					return (ISC_R_SUCCESS);
@@ -3641,13 +3647,16 @@ parser_complain(cfg_parser_t *pctx, isc_boolean_t is_warning,
 	static char message[2048];
 	int level = ISC_LOG_ERROR;
 	const char *prep = "";
+	size_t len;
 
 	if (is_warning)
 		level = ISC_LOG_WARNING;
 
-	sprintf(where, "%s:%u: ", current_file(pctx), pctx->line);
+	snprintf(where, sizeof(where), "%s:%u: ",
+		 current_file(pctx), pctx->line);
 
-	if ((unsigned int)vsprintf(message, format, args) >= sizeof message)
+	len = vsnprintf(message, sizeof(message), format, args);
+	if (len >= sizeof(message))
 		FATAL_ERROR(__FILE__, __LINE__,
 			    "error message would overflow");
 

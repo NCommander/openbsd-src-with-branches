@@ -1,23 +1,36 @@
+/*	$OpenBSD: menu.priv.h,v 1.6 1999/05/17 03:04:26 millert Exp $	*/
 
-/***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
+/****************************************************************************
+ * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author: Juergen Pfeifer <juergen.pfeifer@gmx.net> 1995,1997            *
+ ****************************************************************************/
 
 /***************************************************************************
 * Module menu.priv.h                                                       *
@@ -30,8 +43,8 @@
 /* Backspace code */
 #define BS (8)
 
-extern ITEM _nc_Default_Item;
-extern MENU _nc_Default_Menu;
+extern NCURSES_EXPORT_VAR(ITEM) _nc_Default_Item;
+extern NCURSES_EXPORT_VAR(MENU) _nc_Default_Menu;
 
 /* Normalize item to default if none was given */
 #define Normalize_Item( item ) ((item)=(item)?(item):&_nc_Default_Item)
@@ -39,13 +52,16 @@ extern MENU _nc_Default_Menu;
 /* Normalize menu to default if none was given */
 #define Normalize_Menu( menu ) ((menu)=(menu)?(menu):&_nc_Default_Menu)
 
+/* Get the user defined (framing) window of the menu */
+#define Get_Menu_UserWin(menu) ((menu)->userwin ? (menu)->userwin : stdscr)
+
 /* Normalize menu window */
 #define Get_Menu_Window(  menu ) \
-   ( (menu)->usersub  ? (menu)->usersub  : (\
-     (menu)->userwin  ? (menu)->userwin  : stdscr ))
+   ((menu)->usersub  ? (menu)->usersub  : Get_Menu_UserWin(menu))
 
 /* menu specific status flags */
 #define _LINK_NEEDED    (0x04)
+#define _MARK_ALLOCATED (0x08)
 
 #define ALL_MENU_OPTS (                 \
 		       O_ONEVALUE     | \
@@ -59,7 +75,7 @@ extern MENU _nc_Default_Menu;
 
 /* Move to the window position of an item and draw it */
 #define Move_And_Post_Item(menu,item) \
-  {wmove((menu)->win,(item)->y,((menu)->itemlen+1)*(item)->x);\
+  {wmove((menu)->win,(menu)->spc_rows*(item)->y,((menu)->itemlen+(menu)->spc_cols)*(item)->x);\
    _nc_Post_Item((menu),(item));}
 
 #define Move_To_Current_Item(menu,item) \
@@ -71,14 +87,14 @@ extern MENU _nc_Default_Menu;
 
 /* This macro ensures, that the item becomes visible, if possible with the
    specified row as the top row of the window. If this is not possible,
-   the top row will be adjusted and the value is stored in the row argument. 
+   the top row will be adjusted and the value is stored in the row argument.
 */
 #define Adjust_Current_Item(menu,row,item) \
   { if ((item)->y < row) \
       row = (item)->y;\
-    if ( (item)->y >= (row + (menu)->height) )\
+    if ( (item)->y >= (row + (menu)->arows) )\
       row = ( (item)->y < ((menu)->rows - row) ) ? \
-            (item)->y : (menu)->rows - (menu)->height;\
+            (item)->y : (menu)->rows - (menu)->arows;\
     _nc_New_TopRow_and_CurrentItem(menu,row,item); }
 
 /* Reset the match pattern buffer */
@@ -86,12 +102,15 @@ extern MENU _nc_Default_Menu;
   { (menu)->pindex = 0; \
     (menu)->pattern[0] = '\0'; }
 
-/* Internal functions. */						
-extern void _nc_Draw_Menu(const MENU *);
-extern void _nc_Show_Menu(const MENU *);
-extern void _nc_Calculate_Item_Length_and_Width(MENU *);
-extern void _nc_Post_Item(const MENU *, const ITEM *);
-extern bool _nc_Connect_Items(MENU *, ITEM **);
-extern void _nc_Disconnect_Items(MENU *);
-extern void _nc_New_TopRow_and_CurrentItem(MENU *,int, ITEM *);
-extern void _nc_Link_Items(MENU *);
+/* Internal functions. */
+extern NCURSES_EXPORT(void) _nc_Draw_Menu (const MENU *);
+extern NCURSES_EXPORT(void) _nc_Show_Menu (const MENU *);
+extern NCURSES_EXPORT(void) _nc_Calculate_Item_Length_and_Width (MENU *);
+extern NCURSES_EXPORT(void) _nc_Post_Item (const MENU *, const ITEM *);
+extern NCURSES_EXPORT(bool) _nc_Connect_Items (MENU *, ITEM **);
+extern NCURSES_EXPORT(void) _nc_Disconnect_Items (MENU *);
+extern NCURSES_EXPORT(void) _nc_New_TopRow_and_CurrentItem (MENU *,int, ITEM *);
+extern NCURSES_EXPORT(void) _nc_Link_Items (MENU *);
+extern NCURSES_EXPORT(int)  _nc_Match_Next_Character_In_Item_Name (MENU*,int,ITEM**);
+extern NCURSES_EXPORT(int)  _nc_menu_cursor_pos (const MENU* menu, const ITEM* item,
+				int* pY, int* pX);

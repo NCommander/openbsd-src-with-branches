@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,8 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)getwd.c	5.1 (Berkeley) 2/20/91";*/
-static char *rcsid = "$Id: getwd.c,v 1.3 1993/08/26 00:43:05 jtc Exp $";
+static char *rcsid = "$OpenBSD: getwd.c,v 1.6 2003/06/02 20:18:33 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -43,13 +38,12 @@ static char *rcsid = "$Id: getwd.c,v 1.3 1993/08/26 00:43:05 jtc Exp $";
 #include <string.h>
 
 char *
-getwd(buf)
-	char *buf;
+getwd(char *buf)
 {
 	char *p;
 
-	if (p = getcwd(buf, MAXPATHLEN))
+	if ((p = getcwd(buf, MAXPATHLEN)))
 		return(p);
-	(void)strcpy(buf, strerror(errno));
+	strlcpy(buf, strerror(errno), MAXPATHLEN);
 	return((char *)NULL);
 }

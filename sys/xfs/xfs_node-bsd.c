@@ -55,7 +55,6 @@ xfs_getnewvnode(struct xfs *xfsp, struct vnode **vpp,
 		struct xfs_handle *handle)
 {
     struct xfs_node *result, *check;
-    struct mount *mp;
     int error;
 
     error = getnewvnode(VT_AFS, NNPFS_TO_VFS(xfsp), xfs_vnodeop_p, vpp);
@@ -703,7 +702,7 @@ xfs_dnlc_lock(struct vnode *dvp,
  * (see the comment above for version information).
  */
 
-#if __NetBSD_Version__ >= 104120000 || OpenBSD > 200211
+#if __NetBSD_Version__ >= 104120000 || defined(__OpenBSD__)
 
 int
 xfs_dnlc_lookup(struct vnode *dvp,

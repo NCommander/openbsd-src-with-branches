@@ -1,4 +1,5 @@
-/*      $NetBSD: eval.c,v 1.4 1995/09/28 05:37:28 tls Exp $      */
+/*	$OpenBSD: eval.c,v 1.49 2003/06/30 21:42:50 espie Exp $	*/
+/*	$NetBSD: eval.c,v 1.7 1996/11/10 21:21:29 pk Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)eval.c	8.2 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$NetBSD: eval.c,v 1.4 1995/09/28 05:37:28 tls Exp $";
+static char rcsid[] = "$OpenBSD: eval.c,v 1.49 2003/06/30 21:42:50 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,54 +52,103 @@ static char rcsid[] = "$NetBSD: eval.c,v 1.4 1995/09/28 05:37:28 tls Exp $";
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
+#include <fcntl.h>
+#include <err.h>
 #include "mdef.h"
 #include "stdd.h"
 #include "extern.h"
 #include "pathnames.h"
 
+static void	dodefn(const char *);
+static void	dopushdef(const char *, const char *);
+static void	dodump(const char *[], int);
+static void	dotrace(const char *[], int, int);
+static void	doifelse(const char *[], int);
+static int	doincl(const char *);
+static int	dopaste(const char *);
+static void	gnu_dochq(const char *[], int);
+static void	dochq(const char *[], int);
+static void	gnu_dochc(const char *[], int);
+static void	dochc(const char *[], int);
+static void	dodiv(int);
+static void	doundiv(const char *[], int);
+static void	dosub(const char *[], int);
+static void	map(char *, const char *, const char *, const char *);
+static const char *handledash(char *, char *, const char *);
+static void	expand_builtin(const char *[], int, int);
+static void	expand_macro(const char *[], int);
+static void	dump_one_def(const char *, struct macro_definition *);
+
+unsigned long	expansion_id;
+
 /*
- * eval - evaluate built-in macros.
+ * eval - eval all macros and builtins calls
  *	  argc - number of elements in argv.
  *	  argv - element vector :
  *			argv[0] = definition of a user
- *				  macro or nil if built-in.
+ *				  macro or NULL if built-in.
  *			argv[1] = name of the macro or
  *				  built-in.
  *			argv[2] = parameters to user-defined
  *			   .	  macro or built-in.
  *			   .
  *
- * Note that the minimum value for argc is 3. A call in the form
- * of macro-or-builtin() will result in:
+ * A call in the form of macro-or-builtin() will result in:
  *			argv[0] = nullstr
  *			argv[1] = macro-or-builtin
  *			argv[2] = nullstr
+ *
+ * argc is 3 for macro-or-builtin() and 2 for macro-or-builtin
  */
-
 void
-eval(argv, argc, td)
-register char *argv[];
-register int argc;
-register int td;
+eval(const char *argv[], int argc, int td, int is_traced)
 {
-	register int c, n;
+	ssize_t mark = -1;
+
+	expansion_id++;
+	if (td & RECDEF) 
+		errx(1, "%s at line %lu: expanding recursive definition for %s",
+			CURRENT_NAME, CURRENT_LINE, argv[1]);
+	if (is_traced)
+		mark = trace(argv, argc, infile+ilevel);
+	if (td == MACRTYPE)
+		expand_macro(argv, argc);
+	else
+		expand_builtin(argv, argc, td);
+    	if (mark != -1)
+		finish_trace(mark);
+}
+
+/*
+ * expand_builtin - evaluate built-in macros.
+ */
+void
+expand_builtin(const char *argv[], int argc, int td)
+{
+	int c, n;
+	int ac;
 	static int sysval = 0;
 
 #ifdef DEBUG
 	printf("argc = %d\n", argc);
 	for (n = 0; n < argc; n++)
 		printf("argv[%d] = %s\n", n, argv[n]);
+	fflush(stdout);
 #endif
+
  /*
   * if argc == 3 and argv[2] is null, then we
   * have macro-or-builtin() type call. We adjust
   * argc to avoid further checking..
   */
+  	ac = argc;
+
 	if (argc == 3 && !*(argv[2]))
 		argc--;
 
-	switch (td & ~STATIC) {
+	switch (td & TYPEMASK) {
 
 	case DEFITYPE:
 		if (argc > 2)
@@ -116,6 +162,14 @@ register int td;
 
 	case DUMPTYPE:
 		dodump(argv, argc);
+		break;
+
+	case TRACEONTYPE:
+		dotrace(argv, argc, 1);
+		break;
+
+	case TRACEOFFTYPE:
+		dotrace(argv, argc, 0);
 		break;
 
 	case EXPRTYPE:
@@ -139,7 +193,7 @@ register int td;
 	 * another definition
 	 */
 		if (argc > 3) {
-			if (lookup(argv[2]) != nil)
+			if (lookup_macro_definition(argv[2]) != NULL)
 				pbstr(argv[3]);
 			else if (argc > 4)
 				pbstr(argv[4]);
@@ -151,8 +205,7 @@ register int td;
 	 * dolen - find the length of the
 	 * argument
 	 */
-		if (argc > 2)
-			pbnum((argc > 2) ? strlen(argv[2]) : 0);
+		pbnum((argc > 2) ? strlen(argv[2]) : 0);
 		break;
 
 	case INCRTYPE:
@@ -190,10 +243,15 @@ register int td;
 		pbnum(sysval);
 		break;
 
+	case ESYSCMDTYPE:
+		if (argc > 2)
+			doesyscmd(argv[2]);
+	    	break;
 	case INCLTYPE:
 		if (argc > 2)
 			if (!doincl(argv[2]))
-				oops("%s: %s", argv[2], strerror(errno));
+				err(1, "%s at line %lu: include(%s)",
+				    CURRENT_NAME, CURRENT_LINE, argv[2]);
 		break;
 
 	case SINCTYPE:
@@ -204,7 +262,8 @@ register int td;
 	case PASTTYPE:
 		if (argc > 2)
 			if (!dopaste(argv[2]))
-				oops("%s: %s", argv[2], strerror(errno));
+				err(1, "%s at line %lu: paste(%s)", 
+				    CURRENT_NAME, CURRENT_LINE, argv[2]);
 		break;
 
 	case SPASTYPE:
@@ -213,11 +272,17 @@ register int td;
 		break;
 #endif
 	case CHNQTYPE:
-		dochq(argv, argc);
+		if (mimic_gnu)
+			gnu_dochq(argv, ac);
+		else
+			dochq(argv, argc);
 		break;
 
 	case CHNCTYPE:
-		dochc(argv, argc);
+		if (mimic_gnu)
+			gnu_dochc(argv, ac);
+		else
+			dochc(argv, argc);
 		break;
 
 	case SUBSTYPE:
@@ -237,14 +302,14 @@ register int td;
 	 */
 		if (argc > 3) {
 			for (n = argc - 1; n > 3; n--) {
-				putback(rquote);
+				pbstr(rquote);
 				pbstr(argv[n]);
-				putback(lquote);
-				putback(',');
+				pbstr(lquote);
+				putback(COMMA);
 			}
-			putback(rquote);
+			pbstr(rquote);
 			pbstr(argv[3]);
-			putback(lquote);
+			pbstr(lquote);
 		}
 		break;
 
@@ -276,7 +341,7 @@ register int td;
 	 */
 		if (argc > 2)
 			for (n = 2; n < argc; n++)
-				remhash(argv[n], ALL);
+				macro_undefine(argv[n]);
 		break;
 
 	case POPDTYPE:
@@ -287,15 +352,28 @@ register int td;
 	 */
 		if (argc > 2)
 			for (n = 2; n < argc; n++)
-				remhash(argv[n], TOP);
+				macro_popdef(argv[n]);
 		break;
 
 	case MKTMTYPE:
 	/*
 	 * dotemp - create a temporary file
 	 */
-		if (argc > 2)
-			pbstr(mktemp(argv[2]));
+		if (argc > 2) {
+			int fd;
+			char *temp;
+
+			temp = xstrdup(argv[2]);
+			
+			fd = mkstemp(temp);
+			if (fd == -1)
+				err(1, 
+	    "%s at line %lu: couldn't make temp file %s", 
+	    CURRENT_NAME, CURRENT_LINE, argv[2]);
+			close(fd);
+			pbstr(temp);
+			free(temp);
+		}
 		break;
 
 	case TRNLTYPE:
@@ -306,14 +384,16 @@ register int td;
 	 * characters in the "to" string.
 	 */
 		if (argc > 3) {
-			char temp[MAXTOK];
+			char *temp;
+
+			temp = xalloc(strlen(argv[2])+1);
 			if (argc > 4)
 				map(temp, argv[2], argv[3], argv[4]);
 			else
 				map(temp, argv[2], argv[3], null);
 			pbstr(temp);
-		}
-		else if (argc > 2)
+			free(temp);
+		} else if (argc > 2)
 			pbstr(argv[2]);
 		break;
 
@@ -369,26 +449,52 @@ register int td;
 				dodefn(argv[n]);
 		break;
 
+	case INDIRTYPE:	/* Indirect call */
+		if (argc > 2)
+			doindir(argv, argc);
+		break;
+	
+	case BUILTINTYPE: /* Builtins only */
+		if (argc > 2)
+			dobuiltin(argv, argc);
+		break;
+
+	case PATSTYPE:
+		if (argc > 2)
+			dopatsubst(argv, argc);
+		break;
+	case REGEXPTYPE:
+		if (argc > 2)
+			doregexp(argv, argc);
+		break;
+	case LINETYPE:
+		doprintlineno(infile+ilevel);
+		break;
+	case FILENAMETYPE:
+		doprintfilename(infile+ilevel);
+		break;
+	case SELFTYPE:
+		pbstr(rquote);
+		pbstr(argv[1]);
+		pbstr(lquote);
+		break;
 	default:
-		oops("%s: major botch.", "eval");
+		errx(1, "%s at line %lu: eval: major botch.",
+			CURRENT_NAME, CURRENT_LINE);
 		break;
 	}
 }
 
-char *dumpfmt = "`%s'\t`%s'\n";	       /* format string for dumpdef   */
-
 /*
- * expand - user-defined macro expansion
+ * expand_macro - user-defined macro expansion
  */
 void
-expand(argv, argc)
-register char *argv[];
-register int argc;
+expand_macro(const char *argv[], int argc)
 {
-	register char *t;
-	register char *p;
-	register int n;
-	register int argno;
+	const char *t;
+	const char *p;
+	int n;
+	int argno;
 
 	t = argv[0];		       /* defn string as a whole */
 	p = t;
@@ -397,7 +503,7 @@ register int argc;
 	p--;			       /* last character of defn */
 	while (p > t) {
 		if (*(p - 1) != ARGFLAG)
-			putback(*p);
+			PUTBACK(*p);
 		else {
 			switch (*p) {
 
@@ -418,15 +524,30 @@ register int argc;
 					pbstr(argv[argno + 1]);
 				break;
 			case '*':
-				for (n = argc - 1; n > 2; n--) {
-					pbstr(argv[n]);
-					putback(',');
-				}
-				pbstr(argv[2]);
+				if (argc > 2) {
+					for (n = argc - 1; n > 2; n--) {
+						pbstr(argv[n]);
+						putback(COMMA);
+					}
+					pbstr(argv[2]);
+			    	}
 				break;
+                        case '@':
+				if (argc > 2) {
+					for (n = argc - 1; n > 2; n--) {
+						pbstr(rquote);
+						pbstr(argv[n]);
+						pbstr(lquote);
+						putback(COMMA);
+					}
+					pbstr(rquote);
+					pbstr(argv[2]);
+					pbstr(lquote);
+				}
+                                break;
 			default:
-				putback(*p);
-				putback('$');
+				PUTBACK(*p);
+				PUTBACK('$');
 				break;
 			}
 			p--;
@@ -434,48 +555,41 @@ register int argc;
 		p--;
 	}
 	if (p == t)		       /* do last character */
-		putback(*p);
+		PUTBACK(*p);
 }
+
 
 /*
  * dodefine - install definition in the table
  */
 void
-dodefine(name, defn)
-register char *name;
-register char *defn;
+dodefine(const char *name, const char *defn)
 {
-	register ndptr p;
-
 	if (!*name)
-		oops("null definition.");
-	if (STREQ(name, defn))
-		oops("%s: recursive definition.", name);
-	if ((p = lookup(name)) == nil)
-		p = addent(name);
-	else if (p->defn != null)
-		free((char *) p->defn);
-	if (!*defn)
-		p->defn = null;
-	else
-		p->defn = xstrdup(defn);
-	p->type = MACRTYPE;
+		errx(1, "%s at line %lu: null definition.", CURRENT_NAME,
+		    CURRENT_LINE);
+	macro_define(name, defn);
 }
 
 /*
  * dodefn - push back a quoted definition of
  *      the given name.
  */
-void
-dodefn(name)
-char *name;
+static void
+dodefn(const char *name)
 {
-	register ndptr p;
+	struct macro_definition *p;
+	char *real;
 
-	if ((p = lookup(name)) != nil && p->defn != null) {
-		putback(rquote);
-		pbstr(p->defn);
-		putback(lquote);
+	if ((p = lookup_macro_definition(name)) != NULL) {
+		if ((p->type & TYPEMASK) == MACRTYPE) {
+			pbstr(rquote);
+			pbstr(p->defn);
+			pbstr(lquote);
+		} else {
+			pbstr(p->defn);
+			pbstr(BUILTIN_MARKER);
+		}
 	}
 }
 
@@ -486,23 +600,29 @@ char *name;
  *      hash bucket, it hides a previous definition from
  *      lookup.
  */
-void
-dopushdef(name, defn)
-register char *name;
-register char *defn;
+static void
+dopushdef(const char *name, const char *defn)
 {
-	register ndptr p;
-
 	if (!*name)
-		oops("null definition");
-	if (STREQ(name, defn))
-		oops("%s: recursive definition.", name);
-	p = addent(name);
-	if (!*defn)
-		p->defn = null;
-	else
-		p->defn = xstrdup(defn);
-	p->type = MACRTYPE;
+		errx(1, "%s at line %lu: null definition", CURRENT_NAME,
+		    CURRENT_LINE);
+	macro_pushdef(name, defn);
+}
+
+/*
+ * dump_one_def - dump the specified definition.
+ */
+static void
+dump_one_def(const char *name, struct macro_definition *p)
+{
+	if (mimic_gnu) {
+		if ((p->type & TYPEMASK) == MACRTYPE)
+			fprintf(traceout, "%s:\t%s\n", name, p->defn);
+		else {
+			fprintf(traceout, "%s:\t<%s>\n", name, p->defn);
+	    	}
+	} else
+		fprintf(traceout, "`%s'\t`%s'\n", name, p->defn);
 }
 
 /*
@@ -510,35 +630,40 @@ register char *defn;
  *      table to stderr. If nothing is specified, the entire
  *      hash table is dumped.
  */
-void
-dodump(argv, argc)
-register char *argv[];
-register int argc;
+static void
+dodump(const char *argv[], int argc)
 {
-	register int n;
-	ndptr p;
+	int n;
+	struct macro_definition *p;
 
 	if (argc > 2) {
 		for (n = 2; n < argc; n++)
-			if ((p = lookup(argv[n])) != nil)
-				fprintf(stderr, dumpfmt, p->name,
-					p->defn);
-	}
-	else {
-		for (n = 0; n < HASHSIZE; n++)
-			for (p = hashtab[n]; p != nil; p = p->nxtptr)
-				fprintf(stderr, dumpfmt, p->name,
-					p->defn);
-	}
+			if ((p = lookup_macro_definition(argv[n])) != NULL)
+				dump_one_def(argv[n], p);
+	} else
+		macro_for_all(dump_one_def);
+}
+
+/*
+ * dotrace - mark some macros as traced/untraced depending upon on.
+ */
+static void
+dotrace(const char *argv[], int argc, int on)
+{
+	int n;
+
+	if (argc > 2) {
+		for (n = 2; n < argc; n++)
+			mark_traced(argv[n], on);
+	} else
+		mark_traced(NULL, on);
 }
 
 /*
  * doifelse - select one of two alternatives - loop.
  */
-void
-doifelse(argv, argc)
-register char *argv[];
-register int argc;
+static void
+doifelse(const char *argv[], int argc)
 {
 	cycle {
 		if (STREQ(argv[2], argv[3]))
@@ -557,18 +682,17 @@ register int argc;
 /*
  * doinclude - include a given file.
  */
-int
-doincl(ifile)
-char *ifile;
+static int
+doincl(const char *ifile)
 {
 	if (ilevel + 1 == MAXINP)
-		oops("too many include files.");
-	if ((infile[ilevel + 1] = fopen(ifile, "r")) != NULL) {
+		errx(1, "%s at line %lu: too many include files.",
+		    CURRENT_NAME, CURRENT_LINE);
+	if (fopen_trypath(infile+ilevel+1, ifile) != NULL) {
 		ilevel++;
 		bbase[ilevel] = bufbase = bp;
 		return (1);
-	}
-	else
+	} else
 		return (0);
 }
 
@@ -577,87 +701,134 @@ char *ifile;
  * dopaste - include a given file without any
  *           macro processing.
  */
-int
-dopaste(pfile)
-char *pfile;
+static int
+dopaste(const char *pfile)
 {
 	FILE *pf;
-	register int c;
+	int c;
 
 	if ((pf = fopen(pfile, "r")) != NULL) {
+		if (synch_lines)
+		    fprintf(active, "#line 1 \"%s\"\n", pfile);
 		while ((c = getc(pf)) != EOF)
 			putc(c, active);
 		(void) fclose(pf);
+		emit_synchline();
 		return (1);
-	}
-	else
+	} else
 		return (0);
 }
 #endif
 
-/*
- * dochq - change quote characters
- */
-void
-dochq(argv, argc)
-register char *argv[];
-register int argc;
+static void
+gnu_dochq(const char *argv[], int ac)
 {
-	if (argc > 2) {
-		if (*argv[2])
-			lquote = *argv[2];
-		if (argc > 3) {
-			if (*argv[3])
-				rquote = *argv[3];
-		}
+	/* In gnu-m4 mode, the only way to restore quotes is to have no
+	 * arguments at all. */
+	if (ac == 2) {
+		lquote[0] = LQUOTE, lquote[1] = EOS;
+		rquote[0] = RQUOTE, rquote[1] = EOS;
+	} else {
+		strlcpy(lquote, argv[2], sizeof(lquote));
+		if(ac > 3)
+			strlcpy(rquote, argv[3], sizeof(rquote));
 		else
-			rquote = lquote;
-	}
-	else {
-		lquote = LQUOTE;
-		rquote = RQUOTE;
+			rquote[0] = EOS;
 	}
 }
 
 /*
- * dochc - change comment characters
+ * dochq - change quote characters
  */
-void
-dochc(argv, argc)
-register char *argv[];
-register int argc;
+static void
+dochq(const char *argv[], int argc)
 {
 	if (argc > 2) {
 		if (*argv[2])
-			scommt = *argv[2];
+			strlcpy(lquote, argv[2], sizeof(lquote));
+		else {
+			lquote[0] = LQUOTE;
+			lquote[1] = EOS;
+		}
 		if (argc > 3) {
 			if (*argv[3])
-				ecommt = *argv[3];
+				strlcpy(rquote, argv[3], sizeof(rquote));
+		} else
+			strlcpy(rquote, lquote, sizeof(rquote));
+	} else {
+		lquote[0] = LQUOTE, lquote[1] = EOS;
+		rquote[0] = RQUOTE, rquote[1] = EOS;
+	}
+}
+
+static void
+gnu_dochc(const char *argv[], int ac)
+{
+	/* In gnu-m4 mode, no arguments mean no comment
+	 * arguments at all. */
+	if (ac == 2) {
+		scommt[0] = EOS;
+		ecommt[0] = EOS;
+	} else {
+		if (*argv[2])
+			strlcpy(scommt, argv[2], sizeof(scommt));
+		else
+			scommt[0] = SCOMMT, scommt[1] = EOS;
+		if(ac > 3 && *argv[3])
+			strlcpy(ecommt, argv[3], sizeof(ecommt));
+		else
+			ecommt[0] = ECOMMT, ecommt[1] = EOS;
+	}
+}
+/*
+ * dochc - change comment characters
+ */
+static void
+dochc(const char *argv[], int argc)
+{
+	if (argc > 2) {
+		if (*argv[2])
+			strlcpy(scommt, argv[2], sizeof(scommt));
+		if (argc > 3) {
+			if (*argv[3])
+				strlcpy(ecommt, argv[3], sizeof(ecommt));
 		}
 		else
-			ecommt = ECOMMT;
+			ecommt[0] = ECOMMT, ecommt[1] = EOS;
 	}
 	else {
-		scommt = SCOMMT;
-		ecommt = ECOMMT;
+		scommt[0] = SCOMMT, scommt[1] = EOS;
+		ecommt[0] = ECOMMT, ecommt[1] = EOS;
 	}
 }
 
 /*
  * dodivert - divert the output to a temporary file
  */
-void
-dodiv(n)
-register int n;
+static void
+dodiv(int n)
 {
-	if (n < 0 || n >= MAXOUT)
+	int fd;
+
+	oindex = n;
+	if (n >= maxout) {
+		if (mimic_gnu)
+			resizedivs(n + 10);
+		else
+			n = 0;		/* bitbucket */
+    	}
+
+	if (n < 0)
 		n = 0;		       /* bitbucket */
 	if (outfile[n] == NULL) {
-		m4temp[UNIQUE] = n + '0';
-		if ((outfile[n] = fopen(m4temp, "w")) == NULL)
-			oops("%s: cannot divert.", m4temp);
+		char fname[] = _PATH_DIVNAME;
+
+		if ((fd = mkstemp(fname)) < 0 || 
+			(outfile[n] = fdopen(fd, "w+")) == NULL)
+				err(1, "%s: cannot divert", fname);
+		if (unlink(fname) == -1)
+			err(1, "%s: cannot unlink", fname);
 	}
-	oindex = n;
 	active = outfile[n];
 }
 
@@ -665,24 +836,22 @@ register int n;
  * doundivert - undivert a specified output, or all
  *              other outputs, in numerical order.
  */
-void
-doundiv(argv, argc)
-register char *argv[];
-register int argc;
+static void
+doundiv(const char *argv[], int argc)
 {
-	register int ind;
-	register int n;
+	int ind;
+	int n;
 
 	if (argc > 2) {
 		for (ind = 2; ind < argc; ind++) {
 			n = atoi(argv[ind]);
-			if (n > 0 && n < MAXOUT && outfile[n] != NULL)
+			if (n > 0 && n < maxout && outfile[n] != NULL)
 				getdiv(n);
 
 		}
 	}
 	else
-		for (n = 1; n < MAXOUT; n++)
+		for (n = 1; n < maxout; n++)
 			if (outfile[n] != NULL)
 				getdiv(n);
 }
@@ -690,30 +859,27 @@ register int argc;
 /*
  * dosub - select substring
  */
-void
-dosub(argv, argc)
-register char *argv[];
-register int argc;
+static void
+dosub(const char *argv[], int argc)
 {
-	register char *ap, *fc, *k;
-	register int nc;
+	const char *ap, *fc, *k;
+	int nc;
 
-	if (argc < 5)
-		nc = MAXTOK;
-	else
-#ifdef EXPR
-		nc = expr(argv[4]);
-#else
-		nc = atoi(argv[4]);
-#endif
 	ap = argv[2];		       /* target string */
 #ifdef EXPR
 	fc = ap + expr(argv[3]);       /* first char */
 #else
 	fc = ap + atoi(argv[3]);       /* first char */
 #endif
+	nc = strlen(fc);
+	if (argc >= 5)
+#ifdef EXPR
+		nc = min(nc, expr(argv[4]));
+#else
+		nc = min(nc, atoi(argv[4]));
+#endif
 	if (fc >= ap && fc < ap + strlen(ap))
-		for (k = fc + min(nc, strlen(fc)) - 1; k >= fc; k--)
+		for (k = fc + nc - 1; k >= fc; k--)
 			putback(*k);
 }
 
@@ -742,55 +908,101 @@ register int argc;
  * about 5 times faster than any algorithm that makes multiple passes over
  * destination string.
  */
-void
-map(dest, src, from, to)
-register char *dest;
-register char *src;
-register char *from;
-register char *to;
+static void
+map(char *dest, const char *src, const char *from, const char *to)
 {
-	register char *tmp;
-	register char sch, dch;
-	static char mapvec[128] = {
-		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-		12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-		24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
-		36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
-		48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-		60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,
-		72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
-		84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
-		96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107,
-		108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119,
-		120, 121, 122, 123, 124, 125, 126, 127
+	const char *tmp;
+	unsigned char sch, dch;
+	static char frombis[257];
+	static char tobis[257];
+	static unsigned char mapvec[256] = {
+	    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+	    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+	    36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
+	    53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+	    70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
+	    87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102,
+	    103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115,
+	    116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128,
+	    129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141,
+	    142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154,
+	    155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167,
+	    168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180,
+	    181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+	    194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206,
+	    207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219,
+	    220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232,
+	    233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245,
+	    246, 247, 248, 249, 250, 251, 252, 253, 254, 255
 	};
 
 	if (*src) {
+		if (mimic_gnu) {
+			/*
+			 * expand character ranges on the fly
+			 */
+			from = handledash(frombis, frombis + 256, from);
+			to = handledash(tobis, tobis + 256, to);
+		}
 		tmp = from;
 	/*
 	 * create a mapping between "from" and
 	 * "to"
 	 */
 		while (*from)
-			mapvec[*from++] = (*to) ? *to++ : (char) 0;
+			mapvec[(unsigned char)(*from++)] = (*to) ? 
+				(unsigned char)(*to++) : 0;
 
 		while (*src) {
-			sch = *src++;
+			sch = (unsigned char)(*src++);
 			dch = mapvec[sch];
 			while (dch != sch) {
 				sch = dch;
 				dch = mapvec[sch];
 			}
-			if (*dest = dch)
+			if ((*dest = (char)dch))
 				dest++;
 		}
 	/*
 	 * restore all the changed characters
 	 */
 		while (*tmp) {
-			mapvec[*tmp] = *tmp;
+			mapvec[(unsigned char)(*tmp)] = (unsigned char)(*tmp);
 			tmp++;
 		}
 	}
-	*dest = (char) 0;
+	*dest = '\0';
+}
+
+
+/*
+ * handledash:
+ *  use buffer to copy the src string, expanding character ranges
+ * on the way.
+ */
+static const char *
+handledash(char *buffer, char *end, const char *src)
+{
+	char *p;
+	
+	p = buffer;
+	while(*src) {
+		if (src[1] == '-' && src[2]) {
+			unsigned char i;
+			for (i = (unsigned char)src[0]; 
+			    i <= (unsigned char)src[2]; i++) {
+				*p++ = i;
+				if (p == end) {
+					*p = '\0';
+					return buffer;
+				}
+			}
+			src += 3;
+		} else
+			*p++ = *src++;
+		if (p == end)
+			break;
+	}
+	*p = '\0';
+	return buffer;
 }

@@ -3,6 +3,9 @@
 #ifndef HTDOS_H
 #define HTDOS_H
 
+#ifndef HTUTILS_H
+#include <HTUtils.h>
+#endif /* HTUTILS_H */
 
 /* PUBLIC                                                       HTDOS_wwwName()
 **              CONVERTS DOS Name into WWW Name
@@ -13,7 +16,7 @@
 **	returns		WWW file specification
 **
 */
-char * HTDOS_wwwName (char * dosname);
+char * HTDOS_wwwName PARAMS((CONST char * dosname));
 
 
 /* PUBLIC                                                       HTDOS_name()
@@ -26,7 +29,12 @@ char * HTDOS_wwwName (char * dosname);
 **
 ** Bug:	Returns pointer to static -- non-reentrant
 */
-char * HTDOS_name (char * wwwname);
+char * HTDOS_name PARAMS((char * wwwname));
 
+#ifdef WIN_EX 
+char * HTDOS_short_name (char * fn);
+#else 
+#define HTDOS_short_name(fn)  fn 
+#endif
 
 #endif /*  HTDOS_H */

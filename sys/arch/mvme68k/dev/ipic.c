@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: ipic.c,v 1.10 2002/06/14 21:34:58 todd Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -37,23 +32,32 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
 #include <sys/fcntl.h>
 #include <sys/device.h>
+
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
+
 #include <mvme68k/dev/ipicreg.h>
 #include <mvme68k/dev/mcreg.h>
 
-void ipicattach __P((struct device *, struct device *, void *));
-int  ipicmatch __P((struct device *, void *, void *));
+void	ipicattach(struct device *, struct device *, void *);
+int	ipicmatch(struct device *, void *, void *);
 
-struct cfdriver ipiccd = {
-	NULL, "ipic", ipicmatch, ipicattach,
-	DV_DULL, sizeof(struct ipicsoftc), 0
+int	ipicprint(void *, const char *);
+int	ipicscan(struct device *, void *, void *);
+caddr_t	ipicmap(struct ipicsoftc *, caddr_t, int);
+void	ipicunmap(struct ipicsoftc *, caddr_t, int);
+
+struct cfattach ipic_ca = {
+	sizeof(struct ipicsoftc), ipicmatch, ipicattach
+};
+
+struct cfdriver ipic_cd = {
+	NULL, "ipic", DV_DULL, 0
 };
 
 int
@@ -65,7 +69,7 @@ ipicmatch(parent, cf, args)
 	struct confargs *ca = args;
 	struct ipicreg *ipic = (struct ipicreg *)ca->ca_vaddr;
 
-	if (badvaddr(ipic, 1) || ipic->ipic_chipid != IPIC_CHIPID)
+	if (badvaddr((vaddr_t)ipic, 1) || ipic->ipic_chipid != IPIC_CHIPID)
 		return (0);
 	return (1);
 }
@@ -73,7 +77,7 @@ ipicmatch(parent, cf, args)
 int
 ipicprint(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
@@ -92,7 +96,6 @@ ipicscan(parent, child, args)
 {
 	struct cfdata *cf = child;
 	struct ipicsoftc *sc = (struct ipicsoftc *)parent;
-	register struct confargs *ca = args;
 	struct confargs oca;
 	int slot, n = 0;
 	caddr_t ipv, ipp;
@@ -106,10 +109,10 @@ ipicscan(parent, child, args)
 	}
 #endif
 
-	/* XXX can we determing IPIC_IPSPACE automatically? */
+	/* XXX can we determine IPIC_IPSPACE automatically? */
 	for (slot = 0; slot < sc->sc_nip; slot++) {
 		ipp = sc->sc_ipspace + (slot * IPIC_IP_MODSIZE);
-		if (badpaddr(ipp + IPIC_IP_IDOFFSET, 2))
+		if (badpaddr((paddr_t)ipp + IPIC_IP_IDOFFSET, 2))
 			continue;
 
 		ipv = mapiodev(ipp, NBPG);
@@ -134,12 +137,12 @@ ipicscan(parent, child, args)
 		oca.ca_ipl = cf->cf_loc[2];
 		oca.ca_vec = cf->cf_loc[3];
 		if (oca.ca_ipl > 0 && oca.ca_vec == -1)
-			oca.ca_vec = intr_freevec();
+			oca.ca_vec = intr_findvec(255, 0);
 
 		oca.ca_master = (void *)sc;
 		oca.ca_name = cf->cf_driver->cd_name;
 
-		if ((*cf->cf_driver->cd_match)(parent, cf, &oca) == 0) {
+		if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0) {
 			unmapiodev(ipv, NBPG);
 			continue;
 		}
@@ -161,7 +164,14 @@ ipicattach(parent, self, args)
 	sc->sc_ipspace = (caddr_t)IPIC_IPSPACE;
 	sc->sc_nip = 2;
 
-	printf(": rev %d\n", sc->sc_ipic->ipic_chiprev);
+	/* 
+	 * Bug in IP2 chip. ipic_chiprev should be 0x01 if 
+	 * the MC chip is rev 1. XXX - smurph
+	 */
+	if (sys_mc->mc_chiprev == 0x01) 
+      printf(": rev 1\n");
+	else
+		printf(": rev %d\n", sc->sc_ipic->ipic_chiprev);
 
 	sc->sc_ipic->ipic_reset = IPIC_RESET;
 	delay(2);

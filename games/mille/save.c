@@ -1,3 +1,4 @@
+/*	$OpenBSD: save.c,v 1.6 2003/04/06 18:50:37 deraadt Exp $	*/
 /*	$NetBSD: save.c,v 1.4 1995/03/24 05:02:13 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,24 +34,12 @@
 #if 0
 static char sccsid[] = "@(#)save.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: save.c,v 1.4 1995/03/24 05:02:13 cgd Exp $";
+static char rcsid[] = "$OpenBSD: save.c,v 1.6 2003/04/06 18:50:37 deraadt Exp $";
 #endif
 #endif /* not lint */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <termios.h>
+#include <time.h>
 #include "mille.h"
-
-#ifndef	unctrl
-#include "unctrl.h"
-#endif
-
-# ifdef	attron
-#	include	<term.h>
-#	define	_tty	cur_term->Nttyb
-# endif	attron
 
 /*
  * @(#)save.c	1.2 (Berkeley) 3/28/83
@@ -62,34 +47,33 @@ static char rcsid[] = "$NetBSD: save.c,v 1.4 1995/03/24 05:02:13 cgd Exp $";
 
 typedef	struct stat	STAT;
 
-char	*ctime();
-
-int	read(), write();
-
 /*
- *	This routine saves the current game for use at a later date
+ *	This routine saves the current game for use at a later date.
+ *	Returns FALSE if it couldn't be done.
  */
+bool
+save()
+{
+	char	*sp;
+	int	outf;
+	time_t	*tp;
+	char	buf[256];
+	time_t	tme;
+	STAT	junk;
+	bool	rv;
 
-save() {
-
-	extern int	errno;
-	reg char	*sp;
-	reg int		outf;
-	reg time_t	*tp;
-	char		buf[80];
-	time_t		tme;
-	STAT		junk;
-
+	sp = NULL;
 	tp = &tme;
 	if (Fromfile && getyn(SAMEFILEPROMPT))
-		strcpy(buf, Fromfile);
+		strlcpy(buf, Fromfile, sizeof(buf));
 	else {
 over:
 		prompt(FILEPROMPT);
 		leaveok(Board, FALSE);
 		refresh();
 		sp = buf;
-		while ((*sp = readch()) != '\n') {
+		while ((*sp = readch()) != '\n' && *sp != '\r' &&
+		    (sp - buf < (int)sizeof(buf))) {
 			if (*sp == killchar())
 				goto over;
 			else if (*sp == erasechar()) {
@@ -131,16 +115,20 @@ over:
 	mvwaddstr(Score, ERR_Y, ERR_X, buf);
 	wrefresh(Score);
 	time(tp);			/* get current time		*/
-	strcpy(buf, ctime(tp));
-	for (sp = buf; *sp != '\n'; sp++)
-		continue;
-	*sp = '\0';
-	varpush(outf, write);
+	rv = varpush(outf, writev);
 	close(outf);
-	wprintw(Score, " [%s]", buf);
+	if (!rv)
+		unlink(buf);
+	else {
+		strlcpy(buf, ctime(tp), sizeof buf);
+		for (sp = buf; *sp != '\n'; sp++)
+			continue;
+		*sp = '\0';
+		wprintw(Score, " [%s]", buf);
+	}
 	wclrtoeol(Score);
 	wrefresh(Score);
-	return TRUE;
+	return rv;
 }
 
 /*
@@ -148,33 +136,29 @@ over:
  * backup was made on exiting, in which case certain things must
  * be cleaned up before the game starts.
  */
+bool
 rest_f(file)
-reg char	*file; {
+	const char	*file;
+{
+	char	*sp;
+	int	inf;
+	char	buf[80];
+	STAT	sbuf;
 
-	reg char	*sp;
-	reg int		inf;
-	char		buf[80];
-	STAT		sbuf;
-
-	if ((inf = open(file, 0)) < 0) {
-		perror(file);
-		exit(1);
-	}
-	if (fstat(inf, &sbuf) < 0) {		/* get file stats	*/
-		perror(file);
-		exit(1);
-	}
-	varpush(inf, read);
+	if ((inf = open(file, O_RDONLY)) < 0)
+		err(1, "%s", file);
+	if (fstat(inf, &sbuf) < 0)		/* get file stats	*/
+		err(1, "%s", file);
+	varpush(inf, readv);
 	close(inf);
-	strcpy(buf, ctime(&sbuf.st_mtime));
+	strlcpy(buf, ctime(&sbuf.st_mtime), sizeof buf);
 	for (sp = buf; *sp != '\n'; sp++)
 		continue;
 	*sp = '\0';
 	/*
 	 * initialize some necessary values
 	 */
-	(void)sprintf(Initstr, "%s [%s]\n", file, buf);
+	(void)snprintf(Initstr, sizeof Initstr, "%s [%s]\n", file, buf);
 	Fromfile = file;
 	return !On_exit;
 }
-

@@ -1,5 +1,5 @@
 /*
- * Portions Copyright (C) 1999-2001  Internet Software Consortium.
+ * Portions Copyright (C) 1999-2001, 2003  Internet Software Consortium.
  * Portions Copyright (C) 1995-2000 by Network Associates, Inc.
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -17,7 +17,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: dnssec-signzone.c,v 1.139.2.1 2001/10/05 00:21:48 bwelling Exp $ */
+/* $ISC: dnssec-signzone.c,v 1.139.2.1.6.3 2003/02/17 07:05:03 marka Exp $ */
 
 #include <config.h>
 
@@ -1487,6 +1487,16 @@ usage(void) {
 	fprintf(stderr, "Signing Keys: ");
 	fprintf(stderr, "(default: all zone keys that have private keys)\n");
 	fprintf(stderr, "\tkeyfile (Kname+alg+tag)\n");
+#ifndef ISC_RFC2535
+	fprintf(stderr,
+"WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING\n"
+"WARNING                                                         WARNING\n"
+"WARNING This version of dnssec-signzone produces zones that are WARNING\n"
+"WARNING incompatible with the forthcoming DS based DNSSEC       WARNING\n"
+"WARNING standard.                                               WARNING\n"
+"WARNING                                                         WARNING\n"
+"WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING\n");
+#endif
 	exit(0);
 }
 
@@ -1597,6 +1607,17 @@ main(int argc, char *argv[]) {
 		}
 	}
 
+#ifndef ISC_RFC2535
+	fprintf(stderr,
+"WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING\n"
+"WARNING                                                         WARNING\n"
+"WARNING This version of dnssec-signzone produces zones that are WARNING\n"
+"WARNING incompatible with the forth coming DS based DNSSEC      WARNING\n"
+"WARNING standard.                                               WARNING\n"
+"WARNING                                                         WARNING\n"
+"WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING\n");
+#endif
+
 	setup_entropy(mctx, randomfile, &ectx);
 	eflags = ISC_ENTROPY_BLOCKING;
 	if (!pseudorandom)
@@ -1648,12 +1669,13 @@ main(int argc, char *argv[]) {
 	argv += 1;
 
 	if (output == NULL) {
+		size_t len;
 		free_output = ISC_TRUE;
-		output = isc_mem_allocate(mctx,
-					  strlen(file) + strlen(".signed") + 1);
+		len = strlen(file) + strlen(".signed") + 1;
+		output = isc_mem_allocate(mctx, len);
 		if (output == NULL)
 			fatal("out of memory");
-		sprintf(output, "%s.signed", file);
+		snprintf(output, len, "%s.signed", file);
 	}
 
 	if (origin == NULL)

@@ -1,7 +1,9 @@
-/*	$Id: gmp_util.h,v 1.1 1998/08/03 19:32:36 provos Exp $	*/
+/*	$OpenBSD: gmp_util.h,v 1.6 2000/06/08 20:49:08 niklas Exp $	*/
+/*	$EOM: gmp_util.h,v 1.4 2000/05/08 13:42:11 ho Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2000 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,8 +33,10 @@
 #ifndef _GMP_UTIL_H_
 #define _GMP_UTIL_H_
 
-u_int32_t mpz_sizeinoctets (mpz_ptr);
-void mpz_getraw (u_int8_t *, mpz_ptr, u_int32_t);
-void mpz_setraw (mpz_ptr, u_int8_t *, u_int32_t);
+#include "math_mp.h"
+
+u_int32_t mpz_sizeinoctets (math_mp_t);
+void mpz_getraw (u_int8_t *, math_mp_t, u_int32_t);
+void mpz_setraw (math_mp_t, u_int8_t *, u_int32_t);
 
 #endif /* _GMP_UTIL_H_ */

@@ -1,5 +1,3 @@
-/*	$NetBSD: getnetent.c,v 1.4 1995/02/25 06:20:33 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getnetent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getnetent.c,v 1.4 1995/02/25 06:20:33 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getnetent.c,v 1.8 1998/03/16 05:06:57 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -81,22 +71,27 @@ endnetent()
 struct netent *
 getnetent()
 {
-	char *p;
-	register char *cp, **q;
+	char *p, *cp, **q;
+	size_t len;
 
 	if (netf == NULL && (netf = fopen(_PATH_NETWORKS, "r" )) == NULL)
 		return (NULL);
 again:
-	p = fgets(line, BUFSIZ, netf);
-	if (p == NULL)
+	if ((p = fgetln(netf, &len)) == NULL)
 		return (NULL);
+	if (p[len-1] == '\n')
+		len--;
+	if (len >= sizeof(line) || len == 0)
+		goto again;
+	p = memcpy(line, p, len);
+	line[len] = '\0';
 	if (*p == '#')
 		goto again;
-	cp = strpbrk(p, "#\n");
-	if (cp == NULL)
-		goto again;
-	*cp = '\0';
+	if ((cp = strchr(p, '#')) != NULL)
+		*cp = '\0';
 	net.n_name = p;
+	if (strlen(net.n_name) >= MAXHOSTNAMELEN-1)
+		net.n_name[MAXHOSTNAMELEN-1] = '\0';
 	cp = strpbrk(p, " \t");
 	if (cp == NULL)
 		goto again;
@@ -116,8 +111,11 @@ again:
 			cp++;
 			continue;
 		}
-		if (q < &net_aliases[MAXALIASES - 1])
+		if (q < &net_aliases[MAXALIASES - 1]) {
 			*q++ = cp;
+			if (strlen(cp) >= MAXHOSTNAMELEN-1)
+				cp[MAXHOSTNAMELEN-1] = '\0';
+		}
 		cp = strpbrk(cp, " \t");
 		if (cp != NULL)
 			*cp++ = '\0';

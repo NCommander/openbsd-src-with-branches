@@ -1,4 +1,4 @@
-/*	$NetBSD$	*/
+/*	$OpenBSD: sbicdma.c,v 1.7 2002/03/14 01:26:37 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -40,7 +35,7 @@
 #include <sys/device.h>
 #include <sys/proc.h>
 #include <sys/conf.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
@@ -51,16 +46,16 @@
 #include <mvme68k/dev/sbicvar.h>
 #include <mvme68k/dev/dmavar.h>
 
-void	sbicdmaattach	__P((struct device *, struct device *, void *));
-int	sbicdmamatch	__P((struct device *, void *, void *));
-int	sbicdmaprint	__P((void *auxp, char *));
+void	sbicdmaattach(struct device *, struct device *, void *);
+int	sbicdmamatch(struct device *, void *, void *);
+int	sbicdmaprint(void *auxp, const char *);
 
-void	sbicdma_dmafree	__P((struct sbic_softc *));
-void	sbicdma_dmastop	__P((struct sbic_softc *));
-int	sbicdma_dmanext	__P((struct sbic_softc *));
-int	sbicdma_dmago	__P((struct sbic_softc *, char *, int, int));
-int	sbicdma_dmaintr	__P((struct sbic_softc *));
-int	sbicdma_scintr	__P((struct sbic_softc *));
+void	sbicdma_dmafree(struct sbic_softc *);
+void	sbicdma_dmastop(struct sbic_softc *);
+int	sbicdma_dmanext(struct sbic_softc *);
+int	sbicdma_dmago(struct sbic_softc *, char *, int, int);
+int	sbicdma_dmaintr(struct sbic_softc *);
+int	sbicdma_scintr(struct sbic_softc *);
 
 struct scsi_adapter sbicdma_scsiswitch = {
 	sbic_scsicmd,
@@ -157,8 +152,8 @@ sbicdmaattach(parent, self, args)
  */
 int
 sbicdmaprint(auxp, pnp)
-	void	*auxp;
-	char	*pnp;
+	void		*auxp;
+	const char	*pnp;
 {
 	if (pnp == NULL)
 		return (UNCONF);
@@ -175,7 +170,7 @@ sbicdma_dmago(sc, va, count, flags)
 	u_char	csr;
 	u_long	pa;
 
-	pa = (u_long)pmap_extract(pmap_kernel(), (vm_offset_t)va);
+	pmap_extract(pmap_kernel(), (vm_offset_t)va, &pa);
 #ifdef DEBUG
 	if (sbicdma_debug)
 		printf("%s: dmago: va 0x%x pa 0x%x cnt %d flags %x\n",

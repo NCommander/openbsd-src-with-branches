@@ -1,4 +1,4 @@
-/*	$PMDB: i386.c,v 1.5 2002/02/21 01:54:44 art Exp $	*/
+/*	$OpenBSD: i386.c,v 1.4 2002/07/22 01:20:50 art Exp $	*/
 /*
  * Copyright (c) 2002 Federico Schwindt <fgsch@openbsd.org>
  * All rights reserved. 
@@ -28,6 +28,7 @@
 #include <sys/ptrace.h>
 #include <machine/reg.h>
 #include <machine/frame.h>
+#include <string.h>
 #include "pmdb.h"
 
 /* 
@@ -58,13 +59,13 @@ md_getframe(struct pstate *ps, int frame, struct md_frame *fram)
 	struct reg r;
 	int count;
 
-	if (ptrace(PT_GETREGS, ps->ps_pid, (caddr_t)&r, 0) != 0)
+	if (process_getregs(ps, &r) != 0)
 		return (-1);
 
 	fr.fp = r.r_ebp;
 	fr.pc = r.r_eip;
 	for (count = 0; count < frame; count++) {
-		if (read_from_pid(ps->ps_pid, fr.fp, &fr, sizeof(fr)) < 0)
+		if (process_read(ps, fr.fp, &fr, sizeof(fr)) < 0)
 			return (-1);
 
 		if (fr.pc < 0x1000)
@@ -74,7 +75,7 @@ md_getframe(struct pstate *ps, int frame, struct md_frame *fram)
 	fram->pc = fr.pc;
 	fram->fp = fr.fp;
 
-	return 0;
+	return (0);
 }
 
 int
@@ -82,10 +83,10 @@ md_getregs(struct pstate *ps, reg *regs)
 {
 	struct reg r;
 
-	if (ptrace(PT_GETREGS, ps->ps_pid, (caddr_t)&r, 0) != 0)
-		return -1;
+	if (process_getregs(ps, &r) != 0)
+		return (-1);
 
 	memcpy(regs, &r, sizeof(r));
 
-	return 0;
+	return (0);
 }

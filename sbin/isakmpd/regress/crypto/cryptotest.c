@@ -1,7 +1,9 @@
-/*	$Id: cryptotest.c,v 1.5 1998/10/07 16:40:49 niklas Exp $	*/
+/*	$OpenBSD: cryptotest.c,v 1.8 2003/06/03 14:39:50 ho Exp $	*/
+/*	$EOM: cryptotest.c,v 1.5 1998/10/07 16:40:49 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -77,7 +74,8 @@ special_test_blf (void)
   u_int8_t *akey = "0123456789ABCDEFF0E1D2C3B4A59687";
   u_int8_t *aiv = "FEDCBA9876543210";
   u_int8_t data[] = "7654321 Now is the time for \0\0\0"; /* len 29 */
-  u_int8_t *acipher = "6B77B4D63006DEE605B156E27403979358DEB9E7154616D959F1652BD5FF92CCE7";
+  u_int8_t *acipher
+    = "6B77B4D63006DEE605B156E27403979358DEB9E7154616D959F1652BD5FF92CCE7";
   u_int8_t key[16], cipher[32], iv[8];
   struct crypto_xf *xf;
   struct keystate *ks;
@@ -87,7 +85,7 @@ special_test_blf (void)
   asc2bin (key, akey, strlen (akey));
   asc2bin (iv, aiv, strlen (aiv));
   asc2bin (cipher, acipher, 64);
-  
+
   xf = crypto_get (BLOWFISH_CBC);
   printf ("Special Test-Case %s: ", xf->name);
 
@@ -126,10 +124,22 @@ main (void)
   test_crypto (BLOWFISH_CBC);
 
   test_crypto (CAST_CBC);
-  
+
+  test_crypto (AES_CBC);
+
   special_test_blf ();
 
   return 1;
+}
+
+ void
+dump_buf (u_int8_t *buf, size_t len)
+{
+  int i;
+
+  for (i = 0; i < len; i++)
+    printf ("%02x ", buf[i]);
+  printf ("\n");
 }
 
 void
@@ -139,7 +149,7 @@ test_crypto (enum transform which)
   struct crypto_xf *xf;
   struct keystate *ks;
   enum cryptoerr err;
-  
+
   xf = crypto_get (which);
   printf ("Testing %s: ", xf->name);
 
@@ -153,6 +163,7 @@ test_crypto (enum transform which)
   SET_KEY (buf, sizeof (buf));
   crypto_init_iv (ks, buf, xf->blocksize);
   crypto_encrypt (ks, buf, sizeof (buf));
+  dump_buf (buf, sizeof buf);
   crypto_decrypt (ks, buf, sizeof (buf));
   if (!verify_buf (buf, sizeof (buf)))
     printf ("FAILED ");

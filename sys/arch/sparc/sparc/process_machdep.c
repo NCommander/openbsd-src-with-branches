@@ -1,4 +1,5 @@
-/*	$NetBSD: process_machdep.c,v 1.5 1994/11/20 20:54:37 deraadt Exp $ */
+/*	$OpenBSD: process_machdep.c,v 1.5 2002/03/14 00:42:24 miod Exp $	*/
+/*	$NetBSD: process_machdep.c,v 1.6 1996/03/14 21:09:26 christos Exp $ */
 
 /*
  * Copyright (c) 1993 The Regents of the University of California.
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -84,6 +81,23 @@ process_read_regs(p, regs)
 }
 
 int
+process_read_fpregs(p, regs)
+	struct proc	*p;
+	struct fpreg	*regs;
+{
+	extern struct fpstate	initfpstate;
+	struct fpstate		*statep = &initfpstate;
+
+	/* NOTE: struct fpreg == struct fpstate */
+	if (p->p_md.md_fpstate)
+		statep = p->p_md.md_fpstate;
+	bcopy(statep, regs, sizeof(struct fpreg));
+	return 0;
+}
+
+#ifdef PTRACE
+
+int
 process_write_regs(p, regs)
 	struct proc *p;
 	struct reg *regs;
@@ -97,6 +111,7 @@ process_write_regs(p, regs)
 int
 process_sstep(p, sstep)
 	struct proc *p;
+	int sstep;
 {
 	if (sstep)
 		return EINVAL;
@@ -114,24 +129,9 @@ process_set_pc(p, addr)
 }
 
 int
-process_read_fpregs(p, regs)
-struct proc	*p;
-struct fpreg	*regs;
-{
-	extern struct fpstate	initfpstate;
-	struct fpstate		*statep = &initfpstate;
-
-	/* NOTE: struct fpreg == struct fpstate */
-	if (p->p_md.md_fpstate)
-		statep = p->p_md.md_fpstate;
-	bcopy(statep, regs, sizeof(struct fpreg));
-	return 0;
-}
-
-int
 process_write_fpregs(p, regs)
-struct proc	*p;
-struct fpreg	*regs;
+	struct proc	*p;
+	struct fpreg	*regs;
 {
 	if (p->p_md.md_fpstate == NULL)
 		return EINVAL;
@@ -139,3 +139,5 @@ struct fpreg	*regs;
 	bcopy(regs, p->p_md.md_fpstate, sizeof(struct fpreg));
 	return 0;
 }
+
+#endif	/* PTRACE */

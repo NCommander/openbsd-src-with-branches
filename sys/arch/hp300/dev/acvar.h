@@ -1,4 +1,5 @@
-/*	$NetBSD: acvar.h,v 1.2 1994/10/26 07:23:27 cgd Exp $	*/
+/*	$OpenBSD: acvar.h,v 1.5 2002/03/14 01:26:30 millert Exp $	*/
+/*	$NetBSD: acvar.h,v 1.4 1997/03/31 07:32:15 scottr Exp $	*/
 
 /*
  * Copyright (c) 1991 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,14 +40,15 @@
  */
 
 struct	ac_softc {
-	struct	hp_device *sc_hd;
+	struct	device sc_dev;
+	int	sc_target;
+	int	sc_lun;
 	int	sc_flags;
 	struct	buf *sc_bp;
 	struct	scsi_fmt_cdb *sc_cmd;
 	struct	acinfo sc_einfo;
-	short	sc_punit;
 	short	sc_picker;
-	struct	devqueue sc_dq;
+	struct	scsiqueue sc_sq;
 };
 
 #define	ACF_ALIVE	0x01
@@ -85,3 +83,14 @@ struct	ac_restatdb {
 		ac_imp:1,	/* 1 == user inserted medium (IEE only) */
 		ac_full:1;	/* element contains media */
 };
+
+#ifdef _KERNEL
+int	accommand(dev_t, int, char *, int);
+
+void	acstart(void *);
+void	acgo(void *);
+void	acintr(void *, int);
+
+int	acgeteinfo(dev_t);
+void	acconvert(char *, char *, int);
+#endif /* _KERNEL */

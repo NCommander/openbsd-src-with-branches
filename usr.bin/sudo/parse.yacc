@@ -1,10 +1,9 @@
 %{
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2003 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
- * This code is derived from software contributed by Chris Jepeway
- * <jepeway@cs.utk.edu>
+ * This code is derived from software contributed by Chris Jepeway.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +33,10 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
 
 /*
@@ -45,30 +48,37 @@
  */
 
 #include "config.h"
-#include <stdio.h>
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-#include <pwd.h>
+
 #include <sys/types.h>
 #include <sys/param.h>
+#include <stdio.h>
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+#endif /* STDC_HEADERS */
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
+#include <pwd.h>
 #if defined(HAVE_MALLOC_H) && !defined(STDC_HEADERS)
-#include <malloc.h>
+# include <malloc.h>
 #endif /* HAVE_MALLOC_H && !STDC_HEADERS */
 #if defined(YYBISON) && defined(HAVE_ALLOCA_H) && !defined(__GNUC__)
-#include <alloca.h>
+# include <alloca.h>
 #endif /* YYBISON && HAVE_ALLOCA_H && !__GNUC__ */
 #ifdef HAVE_LSEARCH
-#include <search.h>
+# include <search.h>
 #endif /* HAVE_LSEARCH */
 
 #include "sudo.h"
@@ -79,7 +89,7 @@
 #endif /* HAVE_LSEARCH */
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: parse.yacc,v 1.166 1999/10/07 21:20:57 millert Exp $";
+static const char rcsid[] = "$Sudo: parse.yacc,v 1.188 2003/04/16 00:42:10 millert Exp $";
 #endif /* lint */
 
 /*
@@ -90,6 +100,8 @@ int errorlineno = -1;
 int clearaliases = TRUE;
 int printmatches = FALSE;
 int pedantic = FALSE;
+int keepall = FALSE;
+int quiet = FALSE;
 
 /*
  * Alias types
@@ -109,7 +121,7 @@ int top = 0, stacksize = 0;
     do { \
 	if (top >= stacksize) { \
 	    while ((stacksize += STACKINCREMENT) < top); \
-	    match = (struct matchstack *) erealloc(match, sizeof(struct matchstack) * stacksize); \
+	    match = (struct matchstack *) erealloc3(match, stacksize, sizeof(struct matchstack)); \
 	} \
 	match[top].user   = -1; \
 	match[top].cmnd   = -1; \
@@ -123,7 +135,7 @@ int top = 0, stacksize = 0;
     do { \
 	if (top >= stacksize) { \
 	    while ((stacksize += STACKINCREMENT) < top); \
-	    match = (struct matchstack *) erealloc(match, sizeof(struct matchstack) * stacksize); \
+	    match = (struct matchstack *) erealloc3(match, stacksize, sizeof(struct matchstack)); \
 	} \
 	match[top].user   = match[top-1].user; \
 	match[top].cmnd   = match[top-1].cmnd; \
@@ -188,10 +200,10 @@ void
 yyerror(s)
     char *s;
 {
-    /* Save the line the first error occured on. */
+    /* Save the line the first error occurred on. */
     if (errorlineno == -1)
 	errorlineno = sudolineno ? sudolineno - 1 : 0;
-    if (s) {
+    if (s && !quiet) {
 #ifndef TRACELEXER
 	(void) fprintf(stderr, ">>> sudoers file: %s, line %d <<<\n", s,
 	    sudolineno ? sudolineno - 1 : 0);
@@ -213,14 +225,15 @@ yyerror(s)
 %start file				/* special start symbol */
 %token <command> COMMAND		/* absolute pathname w/ optional args */
 %token <string>  ALIAS			/* an UPPERCASE alias name */
+%token <string>	 DEFVAR			/* a Defaults variable name */
 %token <string>  NTWKADDR		/* w.x.y.z */
-%token <string>  FQHOST			/* foo.bar.com */
 %token <string>  NETGROUP		/* a netgroup (+NAME) */
 %token <string>  USERGROUP		/* a usergroup (%NAME) */
 %token <string>  WORD			/* a word */
 %token <tok>	 DEFAULTS		/* Defaults entry */
 %token <tok>	 DEFAULTS_HOST		/* Host-specific defaults entry */
 %token <tok>	 DEFAULTS_USER		/* User-specific defaults entry */
+%token <tok>	 DEFAULTS_RUNAS		/* Runas-specific defaults entry */
 %token <tok> 	 RUNAS			/* ( runas_list ) */
 %token <tok> 	 NOPASSWD		/* no passwd req for command */
 %token <tok> 	 PASSWD			/* passwd req for command (default) */
@@ -230,7 +243,7 @@ yyerror(s)
 %token <tok>	 CMNDALIAS		/* Cmnd_Alias keyword */
 %token <tok>	 USERALIAS		/* User_Alias keyword */
 %token <tok>	 RUNASALIAS		/* Runas_Alias keyword */
-%token <tok>	 ':' '=' ',' '!'	/* union member tokens */
+%token <tok>	 ':' '=' ',' '!' '+' '-' /* union member tokens */
 %token <tok>	 ERROR
 
 /*
@@ -242,6 +255,8 @@ yyerror(s)
 %type <BOOLEAN>	 cmnd
 %type <BOOLEAN>	 host
 %type <BOOLEAN>	 runasuser
+%type <BOOLEAN>	 oprunasuser
+%type <BOOLEAN>	 runaslist
 %type <BOOLEAN>	 user
 
 %%
@@ -271,12 +286,17 @@ entry		:	COMMENT
 		;
 
 defaults_line	:	defaults_type defaults_list
+		;
 
 defaults_type	:	DEFAULTS {
 			    defaults_matches = TRUE;
 			}
 		|	DEFAULTS_USER { push; } userlist {
 			    defaults_matches = user_matches;
+			    pop;
+			}
+		|	DEFAULTS_RUNAS { push; } runaslist {
+			    defaults_matches = $3 == TRUE;
 			    pop;
 			}
 		|	DEFAULTS_HOST { push; } hostlist {
@@ -287,30 +307,52 @@ defaults_type	:	DEFAULTS {
 
 defaults_list	:	defaults_entry
 		|	defaults_entry ',' defaults_list
+		;
 
-defaults_entry	:	WORD {
-			    if (defaults_matches && !set_default($1, NULL, 1)) {
+defaults_entry	:	DEFVAR {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, NULL, TRUE)) {
 				yyerror(NULL);
 				YYERROR;
 			    }
 			    free($1);
 			}
-		|	'!' WORD {
-			    if (defaults_matches && !set_default($2, NULL, 0)) {
+		|	'!' DEFVAR {
+			    if (defaults_matches == TRUE &&
+				!set_default($2, NULL, FALSE)) {
 				yyerror(NULL);
 				YYERROR;
 			    }
 			    free($2);
 			}
-		|	WORD '=' WORD {
-			    /* XXX - need to support quoted values */
-			    if (defaults_matches && !set_default($1, $3, 1)) {
+		|	DEFVAR '=' WORD {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, $3, TRUE)) {
 				yyerror(NULL);
 				YYERROR;
 			    }
 			    free($1);
 			    free($3);
 			}
+		|	DEFVAR '+' WORD {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, $3, '+')) {
+				yyerror(NULL);
+				YYERROR;
+			    }
+			    free($1);
+			    free($3);
+			}
+		|	DEFVAR '-' WORD {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, $3, '-')) {
+				yyerror(NULL);
+				YYERROR;
+			    }
+			    free($1);
+			    free($3);
+			}
+		;
 
 privileges	:	privilege
 		|	privileges ':' privilege
@@ -339,6 +381,7 @@ ophost		:	host {
 			    if ($2 != -1)
 				host_matches = ! $2;
 			}
+		;
 
 host		:	ALL {
 			    $$ = TRUE;
@@ -351,21 +394,14 @@ host		:	ALL {
 			    free($1);
 			}
 		|	NETGROUP {
-			    if (netgr_matches($1, user_host, NULL))
+			    if (netgr_matches($1, user_host, user_shost, NULL))
 				$$ = TRUE;
 			    else
 				$$ = -1;
 			    free($1);
 			}
 		|	WORD {
-			    if (strcasecmp(user_shost, $1) == 0)
-				$$ = TRUE;
-			    else
-				$$ = -1;
-			    free($1);
-			}
-		|	FQHOST {
-			    if (strcasecmp(user_host, $1) == 0)
+			    if (hostname_matches(user_shost, user_host, $1) == 0)
 				$$ = TRUE;
 			    else
 				$$ = -1;
@@ -409,6 +445,9 @@ cmndspec	:	runasspec nopasswd opcmnd {
 			     * the user was listed in sudoers.  Also, we
 			     * need to be able to tell whether or not a
 			     * user was listed for this specific host.
+			     *
+			     * If keepall is set and the user matches then
+			     * we need to keep entries around too...
 			     */
 			    if (user_matches != -1 && host_matches != -1 &&
 				cmnd_matches != -1 && runas_matches != -1)
@@ -416,6 +455,8 @@ cmndspec	:	runasspec nopasswd opcmnd {
 			    else if (user_matches != -1 && (top == 1 ||
 				(top == 2 && host_matches != -1 &&
 				match[0].host == -1)))
+				pushcp;
+			    else if (user_matches == TRUE && keepall)
 				pushcp;
 			    cmnd_matches = -1;
 			}
@@ -460,19 +501,24 @@ runasspec	:	/* empty */ {
 			     */
 			    if (runas_matches == -1)
 				runas_matches = (strcmp(*user_runas,
-				    def_str(I_RUNAS_DEF)) == 0);
+				    def_str(I_RUNAS_DEFAULT)) == 0);
 			}
-		|	RUNAS runaslist { ; }
+		|	RUNAS runaslist {
+			    runas_matches = ($2 == TRUE ? TRUE : FALSE);
+			}
 		;
 
-runaslist	:	oprunasuser
-		|	runaslist ',' oprunasuser
+runaslist	:	oprunasuser { ; }
+		|	runaslist ',' oprunasuser {
+			    /* Later entries override earlier ones. */
+			    if ($3 != -1)
+				$$ = $3;
+			    else
+				$$ = $1;
+			}
 		;
 
-oprunasuser	:	runasuser {
-			    if ($1 != -1)
-				runas_matches = $1;
-			}
+oprunasuser	:	runasuser { ; }
 		|	'!' {
 			    if (printmatches == TRUE) {
 				if (in_alias == TRUE)
@@ -482,9 +528,10 @@ oprunasuser	:	runasuser {
 				    append_runas("!", ", ");
 			    }
 			} runasuser {
-			    if ($3 != -1)
-				runas_matches = ! $3;
+			    /* Set $$ to the negation of runasuser */
+			    $$ = ($3 == -1 ? -1 : ! $3);
 			}
+		;
 
 runasuser	:	WORD {
 			    if (printmatches == TRUE) {
@@ -522,7 +569,7 @@ runasuser	:	WORD {
 				    user_matches == TRUE)
 				    append_runas($1, ", ");
 			    }
-			    if (netgr_matches($1, NULL, *user_runas))
+			    if (netgr_matches($1, NULL, NULL, *user_runas))
 				$$ = TRUE;
 			    else
 				$$ = -1;
@@ -673,8 +720,10 @@ hostaliases	:	hostalias
 
 hostalias	:	ALIAS { push; } '=' hostlist {
 			    if ((host_matches != -1 || pedantic) &&
-				!add_alias($1, HOST_ALIAS, host_matches))
+				!add_alias($1, HOST_ALIAS, host_matches)) {
+				yyerror(NULL);
 				YYERROR;
+			    }
 			    pop;
 			}
 		;
@@ -698,8 +747,10 @@ cmndalias	:	ALIAS {
 			     }
 			} '=' cmndlist {
 			    if ((cmnd_matches != -1 || pedantic) &&
-				!add_alias($1, CMND_ALIAS, cmnd_matches))
+				!add_alias($1, CMND_ALIAS, cmnd_matches)) {
+				yyerror(NULL);
 				YYERROR;
+			    }
 			    pop;
 			    free($1);
 
@@ -717,7 +768,6 @@ runasaliases	:	runasalias
 		;
 
 runasalias	:	ALIAS {
-			    push;
 			    if (printmatches == TRUE) {
 				in_alias = TRUE;
 				/* Allocate space for ga_list if necessary. */
@@ -726,10 +776,11 @@ runasalias	:	ALIAS {
 				ga_list[ga_list_len-1].alias = estrdup($1);
 			    }
 			} '=' runaslist {
-			    if ((runas_matches != -1 || pedantic) &&
-				!add_alias($1, RUNAS_ALIAS, runas_matches))
+			    if (($4 != -1 || pedantic) &&
+				!add_alias($1, RUNAS_ALIAS, $4)) {
+				yyerror(NULL);
 				YYERROR;
-			    pop;
+			    }
 			    free($1);
 
 			    if (printmatches == TRUE)
@@ -743,8 +794,10 @@ useraliases	:	useralias
 
 useralias	:	ALIAS { push; }	'=' userlist {
 			    if ((user_matches != -1 || pedantic) &&
-				!add_alias($1, USER_ALIAS, user_matches))
+				!add_alias($1, USER_ALIAS, user_matches)) {
+				yyerror(NULL);
 				YYERROR;
+			    }
 			    pop;
 			    free($1);
 			}
@@ -762,6 +815,7 @@ opuser		:	user {
 			    if ($2 != -1)
 				user_matches = ! $2;
 			}
+		;
 
 user		:	WORD {
 			    if (strcmp($1, user_name) == 0)
@@ -778,7 +832,7 @@ user		:	WORD {
 			    free($1);
 			}
 		|	NETGROUP {
-			    if (netgr_matches($1, NULL, user_name))
+			    if (netgr_matches($1, NULL, NULL, user_name))
 				$$ = TRUE;
 			    else
 				$$ = -1;
@@ -797,8 +851,10 @@ user		:	WORD {
 				    (void) fprintf(stderr,
 					"%s: undeclared User_Alias `%s' referenced near line %d\n",
 					(pedantic == 1) ? "Warning" : "Error", $1, sudolineno);
-				    if (pedantic > 1)
+				    if (pedantic > 1) {
+					yyerror(NULL);
 					YYERROR;
+				    }
 				}
 				$$ = -1;
 			    }
@@ -969,21 +1025,21 @@ dumpaliases()
 void
 list_matches()
 {
-    int i; 
+    size_t count; 
     char *p;
     struct generic_alias *ga, key;
 
     (void) printf("User %s may run the following commands on this host:\n",
 	user_name);
-    for (i = 0; i < cm_list_len; i++) {
+    for (count = 0; count < cm_list_len; count++) {
 
 	/* Print the runas list. */
 	(void) fputs("    ", stdout);
-	if (cm_list[i].runas) {
+	if (cm_list[count].runas) {
 	    (void) putchar('(');
-	    p = strtok(cm_list[i].runas, ", ");
+	    p = strtok(cm_list[count].runas, ", ");
 	    do {
-		if (p != cm_list[i].runas)
+		if (p != cm_list[count].runas)
 		    (void) fputs(", ", stdout);
 
 		key.alias = p;
@@ -996,36 +1052,36 @@ list_matches()
 	    } while ((p = strtok(NULL, ", ")));
 	    (void) fputs(") ", stdout);
 	} else {
-	    (void) printf("(%s) ", def_str(I_RUNAS_DEF));
+	    (void) printf("(%s) ", def_str(I_RUNAS_DEFAULT));
 	}
 
 	/* Is a password required? */
-	if (cm_list[i].nopasswd == TRUE && def_flag(I_AUTHENTICATE))
+	if (cm_list[count].nopasswd == TRUE && def_flag(I_AUTHENTICATE))
 	    (void) fputs("NOPASSWD: ", stdout);
-	else if (cm_list[i].nopasswd == FALSE && !def_flag(I_AUTHENTICATE))
+	else if (cm_list[count].nopasswd == FALSE && !def_flag(I_AUTHENTICATE))
 	    (void) fputs("PASSWD: ", stdout);
 
 	/* Print the actual command or expanded Cmnd_Alias. */
-	key.alias = cm_list[i].cmnd;
+	key.alias = cm_list[count].cmnd;
 	key.type = CMND_ALIAS;
 	if ((ga = (struct generic_alias *) lfind((VOID *) &key,
 	    (VOID *) &ga_list[0], &ga_list_len, sizeof(key), genaliascmp)))
 	    (void) puts(ga->entries);
 	else
-	    (void) puts(cm_list[i].cmnd);
+	    (void) puts(cm_list[count].cmnd);
     }
 
     /* Be nice and free up space now that we are done. */
-    for (i = 0; i < ga_list_len; i++) {
-	free(ga_list[i].alias);
-	free(ga_list[i].entries);
+    for (count = 0; count < ga_list_len; count++) {
+	free(ga_list[count].alias);
+	free(ga_list[count].entries);
     }
     free(ga_list);
     ga_list = NULL;
 
-    for (i = 0; i < cm_list_len; i++) {
-	free(cm_list[i].runas);
-	free(cm_list[i].cmnd);
+    for (count = 0; count < cm_list_len; count++) {
+	free(cm_list[count].runas);
+	free(cm_list[count].cmnd);
     }
     free(cm_list);
     cm_list = NULL;
@@ -1057,6 +1113,7 @@ append(src, dstp, dst_len, dst_size, separator)
     /* Assumes dst will be NULL if not set. */
     if (dst == NULL) {
 	dst = (char *) emalloc(BUFSIZ);
+	*dst = '\0';
 	*dst_size = BUFSIZ;
 	*dst_len = 0;
 	*dstp = dst;
@@ -1072,12 +1129,10 @@ append(src, dstp, dst_len, dst_size, separator)
     }
 
     /* Copy src -> dst adding a separator if appropriate and adjust len. */
-    dst += *dst_len;
-    *dst_len += src_len;
-    *dst = '\0';
     if (separator)
-	(void) strcat(dst, separator);
-    (void) strcat(dst, src);
+	(void) strlcat(dst, separator, *dst_size);
+    (void) strlcat(dst, src, *dst_size);
+    *dst_len += src_len;
 }
 
 /*
@@ -1108,7 +1163,7 @@ expand_ga_list()
 	while ((ga_list_size += STACKINCREMENT) < ga_list_len)
 	    ;
 	ga_list = (struct generic_alias *)
-	    erealloc(ga_list, sizeof(struct generic_alias) * ga_list_size);
+	    erealloc3(ga_list, ga_list_size, sizeof(struct generic_alias));
     }
 
     ga_list[ga_list_len - 1].entries = NULL;
@@ -1127,7 +1182,7 @@ expand_match_list()
 	if (cm_list == NULL)
 	    cm_list_len = 0;		/* start at 0 since it is a subscript */
 	cm_list = (struct command_match *)
-	    erealloc(cm_list, sizeof(struct command_match) * cm_list_size);
+	    erealloc3(cm_list, cm_list_size, sizeof(struct command_match));
     }
 
     cm_list[cm_list_len].runas = cm_list[cm_list_len].cmnd = NULL;
@@ -1154,7 +1209,7 @@ init_parser()
 
     /* Allocate space for the matching stack. */
     stacksize = STACKINCREMENT;
-    match = (struct matchstack *) emalloc(sizeof(struct matchstack) * stacksize);
+    match = (struct matchstack *) emalloc2(stacksize, sizeof(struct matchstack));
 
     /* Allocate space for the match list (for `sudo -l'). */
     if (printmatches == TRUE)

@@ -1675,13 +1675,13 @@ configure-target-libiberty: $(ALL_GCC_C)
 all-target-libiberty: configure-target-libiberty
 all-target: $(ALL_TARGET_MODULES)
 install-target: $(INSTALL_TARGET_MODULES)
-install-gdb: install-tcl install-tk install-itcl install-tix install-libgui
+#install-gdb: install-tcl install-tk install-itcl install-tix install-libgui
 install-sid: install-tcl install-tk
 ### other supporting targets
 
 MAKEDIRS= \
-	$(prefix) \
-	$(exec_prefix)
+	$(DESTDIR)$(prefix) \
+	$(DESTDIR)$(exec_prefix)
 .PHONY: installdirs
 installdirs: mkinstalldirs
 	$(SHELL) $(srcdir)/mkinstalldirs $(MAKEDIRS)

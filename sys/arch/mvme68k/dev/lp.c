@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: lp.c,v 1.6 2002/04/27 23:21:05 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -31,20 +26,21 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
 #include <sys/fcntl.h>
 #include <sys/device.h>
+
 #include <machine/autoconf.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
+
 #include <mvme68k/dev/pccreg.h>
 
 struct lpsoftc {
@@ -53,15 +49,18 @@ struct lpsoftc {
 	struct pccreg	*sc_pcc;
 };
 
-void lpattach __P((struct device *, struct device *, void *));
-int  lpmatch __P((struct device *, void *, void *));
+void lpattach(struct device *, struct device *, void *);
+int  lpmatch(struct device *, void *, void *);
 
-struct cfdriver lpcd = {
-	NULL, "lp", lpmatch, lpattach,
-	DV_DULL, sizeof(struct lpsoftc), 0
+struct cfattach lp_ca = {
+	sizeof(struct lpsoftc), lpmatch, lpattach
 };
 
-int lpintr __P((void *));
+struct cfdriver lp_cd = {
+	NULL, "lp", DV_DULL, 0
+};
+
+int lpintr(void *);
 
 /*
  * a PCC chip always has an lp attached to it.
@@ -99,16 +98,15 @@ int
 lpintr(dev)
 	void *dev;
 {
-	struct lpsoftc *sc = dev; 
-
 	return (0);
 }
 
 /*ARGSUSED*/
 int
-lpopen(dev, flag, mode)
+lpopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -116,9 +114,10 @@ lpopen(dev, flag, mode)
 
 /*ARGSUSED*/
 int
-lpclose(dev, flag, mode)
+lpclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -131,8 +130,10 @@ lpwrite(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
+	return (EOPNOTSUPP);
 }
 
+int
 lpioctl(dev, cmd, data, flag, p)
 	dev_t dev;
 	u_long cmd;
@@ -140,5 +141,6 @@ lpioctl(dev, cmd, data, flag, p)
 	int flag;
 	struct proc *p;
 {
+	return (EOPNOTSUPP);
 }
 

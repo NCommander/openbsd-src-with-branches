@@ -1,6 +1,8 @@
-/*	$NetBSD: rtfps.c,v 1.13 1995/06/26 04:12:01 cgd Exp $	*/
+/*	$OpenBSD: rtfps.c,v 1.18 1999/01/11 01:57:52 millert Exp $       */
+/*	$NetBSD: rtfps.c,v 1.27 1996/10/21 22:41:18 thorpej Exp $	*/
 
 /*
+ * Copyright (c) 1996 Christopher G. Demetriou.  All rights reserved.
  * Copyright (c) 1995 Charles Hannum.  All rights reserved.
  *
  * This code is derived from public-domain software written by
@@ -33,74 +35,109 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/device.h>
+#include <sys/termios.h>
 
-#include <machine/pio.h>
+#include <machine/bus.h>
+#include <machine/intr.h>
 
 #include <dev/isa/isavar.h>
+#include <dev/ic/comreg.h>
+#include <dev/ic/comvar.h>
+
+#define	NSLAVES	4
 
 struct rtfps_softc {
 	struct device sc_dev;
 	void *sc_ih;
 
+	bus_space_tag_t sc_iot;
 	int sc_iobase;
 	int sc_irqport;
-	int sc_alive;		/* mask of slave units attached */
-	void *sc_slaves[4];	/* com device unit numbers */
+	bus_space_handle_t sc_irqioh;
+
+	int sc_alive;			/* mask of slave units attached */
+	void *sc_slaves[NSLAVES];	/* com device unit numbers */
+	bus_space_handle_t sc_slaveioh[NSLAVES];
 };
 
-int rtfpsprobe();
-void rtfpsattach();
-int rtfpsintr __P((void *));
+int rtfpsprobe(struct device *, void *, void *);
+void rtfpsattach(struct device *, struct device *, void *);
+int rtfpsintr(void *);
+int rtfpsprint(void *, const char *);
 
-struct cfdriver rtfpscd = {
-	NULL, "rtfps", rtfpsprobe, rtfpsattach, DV_TTY, sizeof(struct rtfps_softc)
+struct cfattach rtfps_ca = {
+	sizeof(struct rtfps_softc), rtfpsprobe, rtfpsattach
+};
+
+struct cfdriver rtfps_cd = {
+	NULL, "rtfps", DV_TTY
 };
 
 int
 rtfpsprobe(parent, self, aux)
-	struct device *parent, *self;
+	struct device *parent;
+	void *self;
 	void *aux;
 {
 	struct isa_attach_args *ia = aux;
+	int iobase = ia->ia_iobase;
+	bus_space_tag_t iot = ia->ia_iot;
+	bus_space_handle_t ioh;
+	int i, rv = 1;
 
 	/*
 	 * Do the normal com probe for the first UART and assume
-	 * its presence means there is a multiport board there.
+	 * its presence, and the ability to map the other UARTS,
+	 * means there is a multiport board there.
 	 * XXX Needs more robustness.
 	 */
-	ia->ia_iosize = 4 * 8;
-	return comprobe1(ia->ia_iobase);
+
+	/* if the first port is in use as console, then it. */
+	if (iobase == comconsaddr && !comconsattached)
+		goto checkmappings;
+
+	if (bus_space_map(iot, iobase, COM_NPORTS, 0, &ioh)) {
+		rv = 0;
+		goto out;
+	}
+	rv = comprobe1(iot, ioh);
+	bus_space_unmap(iot, ioh, COM_NPORTS);
+	if (rv == 0)
+		goto out;
+
+checkmappings:
+	for (i = 1; i < NSLAVES; i++) {
+		iobase += COM_NPORTS;
+
+		if (iobase == comconsaddr && !comconsattached)
+			continue;
+
+		if (bus_space_map(iot, iobase, COM_NPORTS, 0, &ioh)) {
+			rv = 0;
+			goto out;
+		}
+		bus_space_unmap(iot, ioh, COM_NPORTS);
+	}
+
+out:
+	if (rv)
+		ia->ia_iosize = NSLAVES * COM_NPORTS;
+	return (rv);
 }
 
-struct rtfps_attach_args {
-	int ra_slave;
-};
-
 int
-rtfpssubmatch(parent, match, aux)
-	struct device *parent;
-	void *match, *aux;
-{
-	struct rtfps_softc *sc = (void *)parent;
-	struct cfdata *cf = match;
-	struct isa_attach_args *ia = aux;
-	struct rtfps_attach_args *ra = ia->ia_aux;
-
-	if (cf->cf_loc[0] != -1 && cf->cf_loc[0] != ra->ra_slave)
-		return (0);
-	return ((*cf->cf_driver->cd_match)(parent, match, ia));
-}
-
-int
-rtfpsprint(aux, rtfps)
+rtfpsprint(aux, pnp)
 	void *aux;
-	char *rtfps;
+	const char *pnp;
 {
-	struct isa_attach_args *ia = aux;
-	struct rtfps_attach_args *ra = ia->ia_aux;
+	struct commulti_attach_args *ca = aux;
 
-	printf(" slave %d", ra->ra_slave);
+	if (pnp)
+		printf("com at %s", pnp);
+	printf(" slave %d", ca->ca_slave);
+	return (UNCONF);
 }
 
 void
@@ -110,45 +147,49 @@ rtfpsattach(parent, self, aux)
 {
 	struct rtfps_softc *sc = (void *)self;
 	struct isa_attach_args *ia = aux;
-	struct rtfps_attach_args ra;
-	struct isa_attach_args isa;
+	struct commulti_attach_args ca;
 	static int irqport[] = {
 		IOBASEUNK, IOBASEUNK, IOBASEUNK, IOBASEUNK,
 		IOBASEUNK, IOBASEUNK, IOBASEUNK, IOBASEUNK,
 		IOBASEUNK,     0x2f2,     0x6f2,     0x6f3,
 		IOBASEUNK, IOBASEUNK, IOBASEUNK, IOBASEUNK
 	};
-	int subunit;
+	bus_space_tag_t iot = ia->ia_iot;
+	int i;
 
+	sc->sc_iot = ia->ia_iot;
 	sc->sc_iobase = ia->ia_iobase;
 
 	if (ia->ia_irq >= 16 || irqport[ia->ia_irq] == IOBASEUNK)
 		panic("rtfpsattach: invalid irq");
 	sc->sc_irqport = irqport[ia->ia_irq];
 
-	outb(sc->sc_irqport, 0);
+	for (i = 0; i < NSLAVES; i++)
+		if (bus_space_map(iot, sc->sc_iobase + i * COM_NPORTS,
+		    COM_NPORTS, 0, &sc->sc_slaveioh[i]))
+			panic("rtfpsattach: couldn't map slave %d", i);
+	if (bus_space_map(iot, sc->sc_irqport, 1, 0, &sc->sc_irqioh))
+		panic("rtfpsattach: couldn't map irq port at 0x%x",
+		    sc->sc_irqport);
+
+	bus_space_write_1(iot, sc->sc_irqioh, 0, 0);
 
 	printf("\n");
 
-	isa.ia_aux = &ra;
-	for (ra.ra_slave = 0; ra.ra_slave < 4; ra.ra_slave++) {
-		struct cfdata *cf;
-		isa.ia_iobase = sc->sc_iobase + 8 * ra.ra_slave;
-		isa.ia_iosize = 0x666;
-		isa.ia_irq = IRQUNK;
-		isa.ia_drq = DRQUNK;
-		isa.ia_msize = 0;
-		if ((cf = config_search(rtfpssubmatch, self, &isa)) != 0) {
-			subunit = cf->cf_unit;	/* can change if unit == * */
-			config_attach(self, cf, &isa, rtfpsprint);
-			sc->sc_slaves[ra.ra_slave] =
-			    cf->cf_driver->cd_devs[subunit];
-			sc->sc_alive |= 1 << ra.ra_slave;
-		}
+	for (i = 0; i < NSLAVES; i++) {
+		ca.ca_slave = i;
+		ca.ca_iot = sc->sc_iot;
+		ca.ca_ioh = sc->sc_slaveioh[i];
+		ca.ca_iobase = sc->sc_iobase + i * COM_NPORTS;
+		ca.ca_noien = 0;
+
+		sc->sc_slaves[i] = config_found(self, &ca, rtfpsprint);
+		if (sc->sc_slaves[i] != NULL)
+			sc->sc_alive |= 1 << i;
 	}
 
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_TTY,
-	    rtfpsintr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_TTY, rtfpsintr, sc, sc->sc_dev.dv_xname);
 }
 
 int
@@ -156,10 +197,10 @@ rtfpsintr(arg)
 	void *arg;
 {
 	struct rtfps_softc *sc = arg;
-	int iobase = sc->sc_iobase;
+	bus_space_tag_t iot = sc->sc_iot;
 	int alive = sc->sc_alive;
 
-	outb(sc->sc_irqport, 0);
+	bus_space_write_1(iot, sc->sc_irqioh, 0, 0);
 
 #define	TRY(n) \
 	if (alive & (1 << (n))) \

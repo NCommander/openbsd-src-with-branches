@@ -1,3 +1,5 @@
+/*	$OpenBSD: print.c,v 1.4 2002/09/07 07:58:21 maja Exp $ */
+
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -28,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: print.c,v 1.18 1996/08/16 22:42:08 moj Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.4 2002/09/07 07:58:21 maja Exp $";
 #endif
 
 #include <sys/types.h>
@@ -50,12 +47,12 @@ mopPrintHWA(fd, ap)
 {
 	(void)fprintf(fd, "%x:%x:%x:%x:%x:%x",
 		      ap[0],ap[1],ap[2],ap[3],ap[4],ap[5]);
-	if (ap[0] < 10) (void)fprintf(fd, " ");
-	if (ap[1] < 10) (void)fprintf(fd, " ");
-	if (ap[2] < 10) (void)fprintf(fd, " ");
-	if (ap[3] < 10) (void)fprintf(fd, " ");
-	if (ap[4] < 10) (void)fprintf(fd, " ");
-	if (ap[5] < 10) (void)fprintf(fd, " ");
+	if (ap[0] < 16) (void)fprintf(fd, " ");
+	if (ap[1] < 16) (void)fprintf(fd, " ");
+	if (ap[2] < 16) (void)fprintf(fd, " ");
+	if (ap[3] < 16) (void)fprintf(fd, " ");
+	if (ap[4] < 16) (void)fprintf(fd, " ");
+	if (ap[5] < 16) (void)fprintf(fd, " ");
 }
 
 void
@@ -74,7 +71,7 @@ mopPrintBPTY(fd, bpty)
 		(void)fprintf(fd, "Unknown");
 		break;
 	};
-};
+}
 
 void
 mopPrintPGTY(fd, pgty)

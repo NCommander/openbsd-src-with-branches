@@ -1,3 +1,4 @@
+/*	$OpenBSD: field.c,v 1.5 2003/06/03 02:56:06 millert Exp $	*/
 /*	$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,8 +33,8 @@
 #ifndef lint
 #if 0
 static char sccsid[] = "@(#)field.c	8.4 (Berkeley) 4/2/94";
-#else 
-static char rcsid[] = "$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $";
+#else
+static char rcsid[] = "$OpenBSD: field.c,v 1.5 2003/06/03 02:56:06 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,6 +44,7 @@ static char rcsid[] = "$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $";
 #include <err.h>
 #include <errno.h>
 #include <grp.h>
+#include <paths.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,14 +52,10 @@ static char rcsid[] = "$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $";
 #include <unistd.h>
 
 #include "chpass.h"
-#include "pathnames.h"
 
 /* ARGSUSED */
 int
-p_login(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_login(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p) {
 		warnx("empty login field");
@@ -87,10 +81,7 @@ p_login(p, pw, ep)
 
 /* ARGSUSED */
 int
-p_passwd(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_passwd(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p)
 		pw->pw_passwd = "";	/* "NOLOGIN"; */
@@ -98,16 +89,13 @@ p_passwd(p, pw, ep)
 		warnx("can't save password entry");
 		return (1);
 	}
-	
+
 	return (0);
 }
 
 /* ARGSUSED */
 int
-p_uid(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_uid(char *p, struct passwd *pw, ENTRY *ep)
 {
 	uid_t id;
 	char *np;
@@ -132,10 +120,7 @@ p_uid(p, pw, ep)
 
 /* ARGSUSED */
 int
-p_gid(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_gid(char *p, struct passwd *pw, ENTRY *ep)
 {
 	struct group *gr;
 	gid_t id;
@@ -165,10 +150,7 @@ p_gid(p, pw, ep)
 
 /* ARGSUSED */
 int
-p_class(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_class(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p)
 		pw->pw_class = "";
@@ -176,16 +158,13 @@ p_class(p, pw, ep)
 		warnx("can't save entry");
 		return (1);
 	}
-	
+
 	return (0);
 }
 
 /* ARGSUSED */
 int
-p_change(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_change(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!atot(p, &pw->pw_change))
 		return (0);
@@ -195,10 +174,7 @@ p_change(p, pw, ep)
 
 /* ARGSUSED */
 int
-p_expire(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_expire(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!atot(p, &pw->pw_expire))
 		return (0);
@@ -208,10 +184,7 @@ p_expire(p, pw, ep)
 
 /* ARGSUSED */
 int
-p_gecos(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_gecos(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p)
 		ep->save = "";
@@ -224,10 +197,7 @@ p_gecos(p, pw, ep)
 
 /* ARGSUSED */
 int
-p_hdir(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_hdir(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p) {
 		warnx("empty home directory field");
@@ -242,12 +212,9 @@ p_hdir(p, pw, ep)
 
 /* ARGSUSED */
 int
-p_shell(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_shell(char *p, struct passwd *pw, ENTRY *ep)
 {
-	char *t, *ok_shell();
+	char *t;
 
 	if (!*p) {
 		pw->pw_shell = _PATH_BSHELL;
@@ -263,8 +230,7 @@ p_shell(p, pw, ep)
 			warnx("%s: non-standard shell", p);
 			return (1);
 		}
-	}
-	else
+	} else
 		p = t;
 	if (!(pw->pw_shell = strdup(p))) {
 		warnx("can't save entry");

@@ -1,7 +1,7 @@
-/*	$NetBSD: bt_page.c,v 1.5 1995/02/27 13:20:36 cgd Exp $	*/
+/*	$OpenBSD: bt_page.c,v 1.6 2003/05/01 20:23:40 avsm Exp $	*/
 
 /*-
- * Copyright (c) 1990, 1993
+ * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,9 +31,9 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)bt_page.c	8.2 (Berkeley) 2/21/94";
+static char sccsid[] = "@(#)bt_page.c	8.3 (Berkeley) 7/14/94";
 #else
-static char rcsid[] = "$NetBSD: bt_page.c,v 1.5 1995/02/27 13:20:36 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: bt_page.c,v 1.6 2003/05/01 20:23:40 avsm Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -49,7 +45,8 @@ static char rcsid[] = "$NetBSD: bt_page.c,v 1.5 1995/02/27 13:20:36 cgd Exp $";
 #include "btree.h"
 
 /*
- * __BT_FREE -- Put a page on the freelist.
+ * __bt_free --
+ *	Put a page on the freelist.
  *
  * Parameters:
  *	t:	tree
@@ -57,23 +54,28 @@ static char rcsid[] = "$NetBSD: bt_page.c,v 1.5 1995/02/27 13:20:36 cgd Exp $";
  *
  * Returns:
  *	RET_ERROR, RET_SUCCESS
+ *
+ * Side-effect:
+ *	mpool_put's the page.
  */
 int
 __bt_free(t, h)
 	BTREE *t;
 	PAGE *h;
 {
-	/* Insert the page at the start of the free list. */
+	/* Insert the page at the head of the free list. */
 	h->prevpg = P_INVALID;
 	h->nextpg = t->bt_free;
 	t->bt_free = h->pgno;
+	F_SET(t, B_METADIRTY);
 
 	/* Make sure the page gets written back. */
 	return (mpool_put(t->bt_mp, h, MPOOL_DIRTY));
 }
 
 /*
- * __BT_NEW -- Get a new page, preferably from the freelist.
+ * __bt_new --
+ *	Get a new page, preferably from the freelist.
  *
  * Parameters:
  *	t:	tree
@@ -91,9 +93,10 @@ __bt_new(t, npg)
 
 	if (t->bt_free != P_INVALID &&
 	    (h = mpool_get(t->bt_mp, t->bt_free, 0)) != NULL) {
-			*npg = t->bt_free;
-			t->bt_free = h->nextpg;
-			return (h);
+		*npg = t->bt_free;
+		t->bt_free = h->nextpg;
+		F_SET(t, B_METADIRTY);
+		return (h);
 	}
-	return (mpool_new(t->bt_mp, npg));
+	return (mpool_new(t->bt_mp, npg, MPOOL_PAGE_NEXT));
 }

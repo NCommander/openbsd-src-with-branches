@@ -1,3 +1,4 @@
+/*	$OpenBSD: cut.c,v 1.10 2003/06/03 02:56:07 millert Exp $	*/
 /*	$NetBSD: cut.c,v 1.9 1995/09/02 05:59:23 jtc Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cut.c	8.3 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$NetBSD: cut.c,v 1.9 1995/09/02 05:59:23 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cut.c,v 1.10 2003/06/03 02:56:07 millert Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -65,18 +62,16 @@ int	dflag;
 int	fflag;
 int	sflag;
 
-void	c_cut __P((FILE *, char *));
-void	f_cut __P((FILE *, char *));
-void	get_list __P((char *));
-void	usage __P((void));
+void	c_cut(FILE *, char *);
+void	f_cut(FILE *, char *);
+void	get_list(char *);
+void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	FILE *fp;
-	void (*fcn) __P((FILE *, char *));
+	void (*fcn)(FILE *, char *);
 	int ch;
 
 	setlocale (LC_ALL, "");
@@ -85,7 +80,7 @@ main(argc, argv)
 
 	/* Since we don't support multi-byte characters, the -c and -b 
 	   options are equivalent, and the -n option is meaningless. */
-	while ((ch = getopt(argc, argv, "b:c:d:f:sn")) != EOF)
+	while ((ch = getopt(argc, argv, "b:c:d:f:sn")) != -1)
 		switch(ch) {
 		case 'b':
 		case 'c':
@@ -137,11 +132,10 @@ int autostart, autostop, maxval;
 char positions[_POSIX2_LINE_MAX + 1];
 
 void
-get_list(list)
-	char *list;
+get_list(char *list)
 {
-	register int setautostart, start, stop;
-	register char *pos;
+	int setautostart, start, stop;
+	char *pos;
 	char *p;
 
 	/*
@@ -152,7 +146,7 @@ get_list(list)
 	 * overlapping lists.  We also handle "-3-5" although there's no
 	 * real reason too.
 	 */
-	for (; p = strtok(list, ", \t"); list = NULL) {
+	while ((p = strsep(&list, ", \t"))) {
 		setautostart = start = stop = 0;
 		if (*p == '-') {
 			++p;
@@ -173,15 +167,16 @@ get_list(list)
 			}
 		}
 		if (*p)
-			errx(1, "[-cf] list: illegal list value\n");
+			errx(1, "[-cf] list: illegal list value");
 		if (!stop || !start)
-			errx(1, "[-cf] list: values may not include zero\n");
+			errx(1, "[-cf] list: values may not include zero");
 		if (stop > _POSIX2_LINE_MAX)
-			errx(1, "[-cf] list: %d too large (max %d)\n",
+			errx(1, "[-cf] list: %d too large (max %d)",
 			    stop, _POSIX2_LINE_MAX);
 		if (maxval < stop)
 			maxval = stop;
-		for (pos = positions + start; start++ <= stop; *pos++ = 1);
+		for (pos = positions + start; start++ <= stop; *pos++ = 1)
+			;
 	}
 
 	/* overlapping ranges */
@@ -195,12 +190,10 @@ get_list(list)
 
 /* ARGSUSED */
 void
-c_cut(fp, fname)
-	FILE *fp;
-	char *fname;
+c_cut(FILE *fp, char *fname)
 {
-	register int ch, col;
-	register char *pos;
+	int ch, col;
+	char *pos;
 
 	for (;;) {
 		pos = positions + 1;
@@ -212,37 +205,45 @@ c_cut(fp, fname)
 			if (*pos++)
 				(void)putchar(ch);
 		}
-		if (ch != '\n')
+		if (ch != '\n') {
 			if (autostop)
 				while ((ch = getc(fp)) != EOF && ch != '\n')
 					(void)putchar(ch);
 			else
-				while ((ch = getc(fp)) != EOF && ch != '\n');
+				while ((ch = getc(fp)) != EOF && ch != '\n')
+					;
+		}
 		(void)putchar('\n');
 	}
 }
 
 void
-f_cut(fp, fname)
-	FILE *fp;
-	char *fname;
+f_cut(FILE *fp, char *fname)
 {
-	register int ch, field, isdelim;
-	register char *pos, *p, sep;
+	int ch, field, isdelim;
+	char *pos, *p, sep;
 	int output;
-	char lbuf[_POSIX2_LINE_MAX + 1];
+	size_t len;
+	char *lbuf, *tbuf;
 
-	for (sep = dchar; fgets(lbuf, sizeof(lbuf), fp);) {
+	for (sep = dchar, tbuf = NULL; (lbuf = fgetln(fp, &len));) {
 		output = 0;
+		if (lbuf[len - 1] != '\n') {
+			/* no newline at the end of the last line so add one */
+			if ((tbuf = (char *)malloc(len + 1)) == NULL)
+				err(1, NULL);
+			memcpy(tbuf, lbuf, len);
+			tbuf[len] = '\n';
+			lbuf = tbuf;
+		}
 		for (isdelim = 0, p = lbuf;; ++p) {
-			if (!(ch = *p))
-				errx(1, "%s: line too long.\n", fname);
+			ch = *p;
 			/* this should work if newline is delimiter */
 			if (ch == sep)
 				isdelim = 1;
 			if (ch == '\n') {
 				if (!isdelim && !sflag)
-					(void)printf("%s", lbuf);
+					(void)fwrite(lbuf, len, 1, stdout);
 				break;
 			}
 		}
@@ -257,26 +258,33 @@ f_cut(fp, fname)
 				while ((ch = *p++) != '\n' && ch != sep)
 					(void)putchar(ch);
 			} else
-				while ((ch = *p++) != '\n' && ch != sep);
+				while ((ch = *p++) != '\n' && ch != sep)
+					;
 			if (ch == '\n')
 				break;
 		}
-		if (ch != '\n')
+		if (ch != '\n') {
 			if (autostop) {
 				if (output)
 					(void)putchar(sep);
 				for (; (ch = *p) != '\n'; ++p)
 					(void)putchar(ch);
 			} else
-				for (; (ch = *p) != '\n'; ++p);
+				for (; (ch = *p) != '\n'; ++p)
+					;
+		}
 		(void)putchar('\n');
 	}
+	if (tbuf)
+		free(tbuf);
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-"usage:\tcut -c list [file1 ...]\n\tcut -f list [-s] [-d delim] [file ...]\n");
+		"usage:\tcut -c list [file1 ...]\n"
+		"\tcut -f list [-s] [-d delim] [file ...]\n"
+		"\tcut -b list [-n] [file ...]\n");
 	exit(1);
 }

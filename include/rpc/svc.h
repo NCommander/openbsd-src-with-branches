@@ -1,3 +1,4 @@
+/*	$OpenBSD: svc.h,v 1.6 2002/02/16 21:27:18 millert Exp $	*/
 /*	$NetBSD: svc.h,v 1.9 1995/04/29 05:28:01 cgd Exp $	*/
 
 /*
@@ -78,23 +79,22 @@ typedef struct __rpc_svcxprt {
 	u_short		xp_port;	 /* associated port number */
 	struct xp_ops {
 		/* receive incomming requests */
-		bool_t	(*xp_recv) __P((struct __rpc_svcxprt *,
-			    struct rpc_msg *));
+		bool_t	(*xp_recv)(struct __rpc_svcxprt *,
+			    struct rpc_msg *);
 		/* get transport status */
-		enum xprt_stat (*xp_stat) __P((struct __rpc_svcxprt *));
+		enum xprt_stat (*xp_stat)(struct __rpc_svcxprt *);
 		/* get arguments */
-		bool_t	(*xp_getargs) __P((struct __rpc_svcxprt *, xdrproc_t,
-			    caddr_t));
+		bool_t	(*xp_getargs)(struct __rpc_svcxprt *, xdrproc_t,
+			    caddr_t);
 		/* send reply */
-		bool_t	(*xp_reply) __P((struct __rpc_svcxprt *,
-			    struct rpc_msg *));
+		bool_t	(*xp_reply)(struct __rpc_svcxprt *, struct rpc_msg *);
 		/* free mem allocated for args */
-		bool_t	(*xp_freeargs) __P((struct __rpc_svcxprt *, xdrproc_t,
-			    caddr_t));
+		bool_t	(*xp_freeargs)(struct __rpc_svcxprt *, xdrproc_t,
+			    caddr_t);
 		/* destroy this struct */
-		void	(*xp_destroy) __P((struct __rpc_svcxprt *));
+		void	(*xp_destroy)(struct __rpc_svcxprt *);
 	} *xp_ops;
-	int		xp_addrlen;	 /* length of remote address */
+	socklen_t	xp_addrlen;	 /* length of remote address */
 	struct sockaddr_in xp_raddr;	 /* remote address */
 	struct opaque_auth xp_verf;	 /* raw response verifier */
 	caddr_t		xp_p1;		 /* private */
@@ -169,8 +169,8 @@ struct svc_req {
  *	int protocol;    like TCP or UDP, zero means do not register 
  */
 __BEGIN_DECLS
-extern bool_t	svc_register __P((SVCXPRT *, u_long, u_long,
-		    void (*) __P((struct svc_req *, SVCXPRT *)), int));
+extern bool_t	svc_register(SVCXPRT *, u_long, u_long,
+		    void (*)(struct svc_req *, SVCXPRT *), int);
 __END_DECLS
 
 /*
@@ -181,7 +181,7 @@ __END_DECLS
  *	u_long vers;
  */
 __BEGIN_DECLS
-extern void	svc_unregister __P((u_long, u_long));
+extern void	svc_unregister(u_long, u_long);
 __END_DECLS
 
 /*
@@ -191,7 +191,8 @@ __END_DECLS
  *	SVCXPRT *xprt;
  */
 __BEGIN_DECLS
-extern void	xprt_register	__P((SVCXPRT *));
+extern void	xprt_register(SVCXPRT *);
+extern int	__xprt_register(SVCXPRT *);
 __END_DECLS
 
 /*
@@ -201,7 +202,7 @@ __END_DECLS
  *	SVCXPRT *xprt;
  */
 __BEGIN_DECLS
-extern void	xprt_unregister	__P((SVCXPRT *));
+extern void	xprt_unregister(SVCXPRT *);
 __END_DECLS
 
 
@@ -234,14 +235,14 @@ __END_DECLS
  */
 
 __BEGIN_DECLS
-extern bool_t	svc_sendreply	__P((SVCXPRT *, xdrproc_t, char *));
-extern void	svcerr_decode	__P((SVCXPRT *));
-extern void	svcerr_weakauth	__P((SVCXPRT *));
-extern void	svcerr_noproc	__P((SVCXPRT *));
-extern void	svcerr_progvers	__P((SVCXPRT *, u_long, u_long));
-extern void	svcerr_auth	__P((SVCXPRT *, enum auth_stat));
-extern void	svcerr_noprog	__P((SVCXPRT *));
-extern void	svcerr_systemerr __P((SVCXPRT *));
+extern bool_t	svc_sendreply(SVCXPRT *, xdrproc_t, char *);
+extern void	svcerr_decode(SVCXPRT *);
+extern void	svcerr_weakauth(SVCXPRT *);
+extern void	svcerr_noproc(SVCXPRT *);
+extern void	svcerr_progvers(SVCXPRT *, u_long, u_long);
+extern void	svcerr_auth(SVCXPRT *, enum auth_stat);
+extern void	svcerr_noprog(SVCXPRT *);
+extern void	svcerr_systemerr(SVCXPRT *);
 __END_DECLS
     
 /*
@@ -274,9 +275,10 @@ extern int svc_fds;
 extern void rpctest_service();				/* XXX relic? */
 
 __BEGIN_DECLS
-extern void	svc_getreq	__P((int));
-extern void	svc_getreqset	__P((fd_set *));
-extern void	svc_run		__P((void));
+extern void	svc_getreq(int);
+extern void	svc_getreqset(fd_set *);
+extern void	svc_getreqset2(fd_set *, int);
+extern void	svc_run(void);
 __END_DECLS
 
 /*
@@ -292,7 +294,7 @@ __END_DECLS
  * Memory based rpc for testing and timing.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svcraw_create __P((void));
+extern SVCXPRT *svcraw_create(void);
 __END_DECLS
 
 
@@ -300,8 +302,8 @@ __END_DECLS
  * Udp based rpc.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svcudp_create __P((int));
-extern SVCXPRT *svcudp_bufcreate __P((int, u_int, u_int));
+extern SVCXPRT *svcudp_create(int);
+extern SVCXPRT *svcudp_bufcreate(int, u_int, u_int);
 __END_DECLS
 
 
@@ -309,14 +311,14 @@ __END_DECLS
  * Tcp based rpc.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svctcp_create __P((int, u_int, u_int));
+extern SVCXPRT *svctcp_create(int, u_int, u_int);
 __END_DECLS
 
 /*
  * Fd based rpc.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svcfd_create __P((int, u_int, u_int));
+extern SVCXPRT *svcfd_create(int, u_int, u_int);
 __END_DECLS
 
 #endif /* !_RPC_SVC_H */

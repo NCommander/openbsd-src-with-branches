@@ -1,3 +1,6 @@
+/*	$OpenBSD: search.c,v 1.7 2003/06/01 21:34:58 miod Exp $	*/
+/*	$NetBSD: search.c,v 1.4 1997/01/23 14:02:47 mrg Exp $		*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +34,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)search.c	8.1 (Berkeley) 6/4/93";
+#else
+static const char rcsid[] = "$OpenBSD: search.c,v 1.7 2003/06/01 21:34:58 miod Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -111,8 +114,8 @@ el_match(str, pat)
     regexp *rp;
     int rv;
 #else 
-    extern char *re_comp __P((const char *));
-    extern int re_exec __P((const char *));
+    extern char *re_comp(const char *);
+    extern int re_exec(const char *);
 #endif
 
     if (strstr(str, pat) != NULL)
@@ -152,7 +155,7 @@ c_hmatch(el, str)
     const char *str;
 {
 #ifdef SDEBUG
-    (void) fprintf(el->el_errfile, "match `%s' with `%s'\n",
+    (void)fprintf(el->el_errfile, "match `%s' with `%s'\n",
 		   el->el_search.patbuf, str);
 #endif /* SDEBUG */
     
@@ -173,7 +176,7 @@ c_setpat(el)
 	if (el->el_search.patlen >= EL_BUFSIZ) 
 	    el->el_search.patlen = EL_BUFSIZ -1;
 	if (el->el_search.patlen >= 0)  {
-	    (void) strncpy(el->el_search.patbuf, el->el_line.buffer, 
+	    (void)strncpy(el->el_search.patbuf, el->el_line.buffer, 
 			   el->el_search.patlen);
 	    el->el_search.patbuf[el->el_search.patlen] = '\0';
 	}
@@ -181,10 +184,10 @@ c_setpat(el)
 	    el->el_search.patlen = strlen(el->el_search.patbuf);
     }
 #ifdef SDEBUG
-    (void) fprintf(el->el_errfile, "\neventno = %d\n", el->el_history.eventno);
-    (void) fprintf(el->el_errfile, "patlen = %d\n", el->el_search.patlen);
-    (void) fprintf(el->el_errfile, "patbuf = \"%s\"\n", el->el_search.patbuf);
-    (void) fprintf(el->el_errfile, "cursor %d lastchar %d\n", 
+    (void)fprintf(el->el_errfile, "\neventno = %d\n", el->el_history.eventno);
+    (void)fprintf(el->el_errfile, "patlen = %d\n", el->el_search.patlen);
+    (void)fprintf(el->el_errfile, "patbuf = \"%s\"\n", el->el_search.patbuf);
+    (void)fprintf(el->el_errfile, "cursor %d lastchar %d\n", 
 		   EL_CURSOR(el) - el->el_line.buffer, 
 		   el->el_line.lastchar - el->el_line.buffer);
 #endif
@@ -340,7 +343,7 @@ ce_inc_search(el, dir)
 			    newdir == ED_SEARCH_PREV_HISTORY ? 0 : 0x7fffffff;
 			if (hist_get(el) == CC_ERROR)
 			    /* el->el_history.eventno was fixed by first call */
-			    (void) hist_get(el);
+			    (void)hist_get(el);
 			el->el_line.cursor = newdir == ED_SEARCH_PREV_HISTORY ?
 			    el->el_line.lastchar : el->el_line.buffer;
 		    } else
@@ -364,7 +367,7 @@ ce_inc_search(el, dir)
 		    if (ret != CC_ERROR) {
 			el->el_line.cursor = newdir == ED_SEARCH_PREV_HISTORY ?
 			    el->el_line.lastchar : el->el_line.buffer;
-			(void) ce_search_line(el, &el->el_search.patbuf[1], 
+			(void)ce_search_line(el, &el->el_search.patbuf[1], 
 					      newdir);
 		    }
 		}
@@ -461,10 +464,13 @@ cv_search(el, dir)
 	}
 #ifdef ANCHOR
 	if (el->el_search.patbuf[0] != '.' && el->el_search.patbuf[0] != '*') {
-	    (void) strcpy(tmpbuf, el->el_search.patbuf);
+	    (void)strncpy(tmpbuf, el->el_search.patbuf, sizeof(tmpbuf) - 1);
+	    tmpbuf[sizeof(tmpbuf) - 1] = '\0';
 	    el->el_search.patbuf[0] = '.';
 	    el->el_search.patbuf[1] = '*';
-	    (void) strcpy(&el->el_search.patbuf[2], tmpbuf);
+	    (void)strncpy(&el->el_search.patbuf[2], tmpbuf,
+		EL_BUFSIZ - 3);
+	    el->el_search.patbuf[EL_BUFSIZ - 1] = '\0';
 	    el->el_search.patlen++;
 	    el->el_search.patbuf[el->el_search.patlen++] = '.';
 	    el->el_search.patbuf[el->el_search.patlen++] = '*';
@@ -478,8 +484,10 @@ cv_search(el, dir)
 	tmpbuf[tmplen++] = '*';
 #endif
 	tmpbuf[tmplen] = '\0';
-	(void) strcpy(el->el_search.patbuf, tmpbuf);
-	el->el_search.patlen = tmplen;
+	(void)strncpy(el->el_search.patbuf, tmpbuf,
+	    EL_BUFSIZ - 1);
+	el->el_search.patbuf[EL_BUFSIZ - 1] = '\0';
+	el->el_search.patlen = strlen(el->el_search.patbuf);
     }
     el->el_state.lastcmd = (el_action_t) dir; /* avoid c_setpat */
     el->el_line.cursor = el->el_line.lastchar = el->el_line.buffer;
@@ -541,7 +549,7 @@ cv_repeat_srch(el, c)
     int c;
 {
 #ifdef SDEBUG
-    (void) fprintf(el->el_errfile, "dir %d patlen %d patbuf %s\n", 
+    (void)fprintf(el->el_errfile, "dir %d patlen %d patbuf %s\n", 
 		   c, el->el_search.patlen, el->el_search.patbuf);
 #endif
 

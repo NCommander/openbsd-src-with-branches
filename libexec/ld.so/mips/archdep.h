@@ -1,8 +1,8 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: archdep.h,v 1.5 2003/02/15 22:43:06 drahn Exp $ */
 
 /*
- * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
- * 
+ * Copyright (c) 1998-2002 Opsycon AB, Sweden.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -11,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed under OpenBSD by
- *	Per Fogelstrom, Opsycon AB, Sweden.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -35,6 +29,13 @@
 #ifndef _MIPS_ARCHDEP_H_
 #define _MIPS_ARCHDEP_H_
 
+#include <link.h>
+#include <machine/reloc.h>
+
+#include "syscall.h"
+#include "resolve.h"
+#include "util.h"
+
 #define	DL_MALLOC_ALIGN	4	/* Arch constraint or otherwise */
 
 #define	MACHID	EM_MIPS		/* ELF e_machine ID value checked */
@@ -42,91 +43,56 @@
 #define	RELTYPE	Elf32_Rel
 #define	RELSIZE	sizeof(Elf32_Rel)
 
-/*
- *	Simple reloc of REL32's. Used by bootstrapping.
- */
-#define	SIMPLE_RELOC(r, s, p, v)					\
-	if(ELF32_R_TYPE((r)->r_info) == R_MIPS_REL32) {			\
-		if(ELF32_ST_BIND((s)->st_info) == STB_LOCAL &&		\
-		   (ELF32_ST_TYPE((s)->st_info) == STT_SECTION ||	\
-		    ELF32_ST_TYPE((s)->st_info) == STT_NOTYPE) ) {	\
-			*(p) += (v);					\
-		}							\
-		else {							\
-			*(p) = (v) + (s)->st_value;			\
-		}							\
+static inline void
+RELOC_REL(Elf_Rel *r, const Elf_Sym *s, Elf_Addr *p, unsigned long v)
+{
+}
+
+static inline void
+RELOC_RELA(Elf32_Rela *r, const Elf32_Sym *s, Elf32_Addr *p, unsigned long v)
+{
+	_dl_exit(20);
+}
+
+struct elf_object;
+
+static inline void
+RELOC_GOT(struct elf_object *dynld, long loff)
+{
+	Elf32_Addr *gotp;
+	int i, n;
+	const Elf_Sym *sp;
+
+	/* Do all local gots */
+	gotp = dynld->dyn.pltgot;
+	n = dynld->Dyn.info[DT_MIPS_LOCAL_GOTNO - DT_LOPROC + DT_NUM];
+
+	for (i = ((gotp[1] & 0x80000000) ? 2 : 1); i < n; i++) {
+		gotp[i] += loff;
 	}
+	gotp += n;
 
-/*
- *	The following functions are declared inline so they can
- *	be used before bootstrap linking has been finished.
- */
-extern inline void
-_dl_wrstderr(const char *s)
-{
-	while(*s) {
-		_dl_write(2, s, 1);
-		s++;
-	}
-}
+	/* Do symbol referencing gots. There should be no global... */
+	n =  dynld->Dyn.info[DT_MIPS_SYMTABNO - DT_LOPROC + DT_NUM] -
+	  dynld->Dyn.info[DT_MIPS_GOTSYM - DT_LOPROC + DT_NUM];
+	sp = dynld->dyn.symtab;
+	sp += dynld->Dyn.info[DT_MIPS_GOTSYM - DT_LOPROC + DT_NUM];
 
-extern inline void *
-_dl_memset(void *p, const char v, size_t c)
-{
-	char *ip = p;
-
-	while(c--)
-		*ip++ = v;
-	return(p);
-}
-
-extern inline int
-_dl_strlen(const char *p)
-{
-	const char *s = p;
-
-	while(*s != '\0')
-		s++;
-	return(s - p);
-}
-
-extern inline char *
-_dl_strcpy(char *d, const char *s)
-{
-	char *rd = d;
-
-	while((*d++ = *s++) != '\0');
-
-	return(rd);
-}
-
-extern inline int
-_dl_strncmp(const char *d, const char *s, int c)
-{
-	while(c-- && *d && *d++ == *s++) {};
-	if(c < 0) {
-		return(0);
-	}
-	return(d[-1] - s[-1]);
-}
- 
-extern inline int
-_dl_strcmp(const char *d, const char *s)
-{
-	while(*d && *d++ == *s++) {};
-	return(d[-1] - s[-1]);
-}
- 
-extern inline const char *
-_dl_strchr(const char *p, const int c)
-{
-	while(*p) {
-		if(*p == c) {
-			return(p);
+	while (n--) {
+		if (sp->st_shndx == SHN_UNDEF ||
+		    sp->st_shndx == SHN_COMMON) {
+			_dl_exit(6);
+		} else if (ELF32_ST_TYPE(sp->st_info) == STT_FUNC) {
+			*gotp += loff;
+		} else {
+			*gotp = sp->st_value + loff;
 		}
-		p++;
+		gotp++;
+		sp++;
 	}
-	return(0);
+	dynld->status |= STAT_GOT_DONE;
 }
+
+#define GOT_PERMS PROT_READ
 
 #endif /* _MIPS_ARCHDEP_H_ */

@@ -6,23 +6,23 @@
 
 /*
  * Copyright 1997,1998 by Apple Computer, Inc.
- *              All Rights Reserved 
- *  
- * Permission to use, copy, modify, and distribute this software and 
- * its documentation for any purpose and without fee is hereby granted, 
- * provided that the above copyright notice appears in all copies and 
- * that both the copyright notice and this permission notice appear in 
- * supporting documentation. 
- *  
- * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE 
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
- * FOR A PARTICULAR PURPOSE. 
- *  
- * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR 
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT, 
- * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *              All Rights Reserved
+ *
+ * Permission to use, copy, modify, and distribute this software and
+ * its documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appears in all copies and
+ * that both the copyright notice and this permission notice appear in
+ * supporting documentation.
+ *
+ * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT,
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 // for printf()
@@ -45,6 +45,10 @@
 #include <sys/stat.h>
 #endif
 
+#ifdef __OpenBSD__
+#include <sys/stat.h>
+#endif
+
 #include "file_media.h"
 #include "errors.h"
 
@@ -54,7 +58,7 @@
  */
 #ifdef __linux__
 #define LOFF_MAX 9223372036854775807LL
-extern __loff_t llseek __P ((int __fd, __loff_t __offset, int __whence));
+extern __loff_t llseek(int __fd, __loff_t __offset, int __whence);
 #else
 #define loff_t long
 #define llseek lseek
@@ -135,7 +139,7 @@ file_init(void)
 	return;
     }
     file_inited = 1;
-    
+
     file_info.kind = allocate_media_kind();
 }
 
@@ -156,7 +160,7 @@ compute_block_size(int fd)
     long t;
     int i;
     char *buffer;
-    
+
     max_size = 0;
     for (i = 0; ; i++) {
     	size = potential_block_sizes[i];
@@ -167,7 +171,7 @@ compute_block_size(int fd)
 	    max_size = size;
     	}
     }
-    
+
     buffer = malloc(max_size);
     if (buffer != 0) {
 	for (i = 0; ; i++) {
@@ -195,14 +199,14 @@ open_file_as_media(char *file, int oflag)
     FILE_MEDIA	a;
     int			fd;
     loff_t off;
-#ifdef __linux__
+#if defined(__linux__) || defined(__OpenBSD__)
     struct stat info;
 #endif
 	
     if (file_inited == 0) {
 	    file_init();
     }
-    
+
     a = 0;
     fd = open(file, oflag);
     if (fd >= 0) {
@@ -224,7 +228,7 @@ open_file_as_media(char *file, int oflag)
 	    a->m.do_os_reload = os_reload_file_media;
 	    a->fd = fd;
 	    a->regular_file = 0;
-#ifdef __linux__
+#if defined(__linux__) || defined(__OpenBSD__)
 	    if (fstat(fd, &info) < 0) {
 		error(errno, "can't stat file '%s'", file);
 	    } else {
@@ -324,7 +328,7 @@ long
 close_file_media(MEDIA m)
 {
     FILE_MEDIA a;
-    
+
     a = (FILE_MEDIA) m;
     if (a == 0) {
 	return 0;
@@ -332,7 +336,7 @@ close_file_media(MEDIA m)
 	/* XXX need to error here - this is an internal problem */
 	return 0;
     }
-    
+
     close(a->fd);
     return 1;
 }
@@ -404,11 +408,11 @@ MEDIA_ITERATOR
 create_file_iterator(void)
 {
     FILE_MEDIA_ITERATOR a;
-    
+
     if (file_inited == 0) {
 	file_init();
     }
-    
+
     a = new_file_iterator();
     if (a != 0) {
 	a->m.kind = file_info.kind;
@@ -428,7 +432,7 @@ void
 reset_file_iterator(MEDIA_ITERATOR m)
 {
     FILE_MEDIA_ITERATOR a;
-    
+
     a = (FILE_MEDIA_ITERATOR) m;
     if (a == 0) {
 	/* no media */
@@ -446,7 +450,8 @@ step_file_iterator(MEDIA_ITERATOR m)
     FILE_MEDIA_ITERATOR a;
     char *result;
     struct stat info;
-    
+    size_t len = 20;
+
     a = (FILE_MEDIA_ITERATOR) m;
     if (a == 0) {
 	/* no media */
@@ -474,7 +479,7 @@ step_file_iterator(MEDIA_ITERATOR m)
 		}
 #endif
 		/* generate result */
-		result = (char *) malloc(20);
+		result = (char *) malloc(len);
 		if (result != NULL) {
 		    /*
 		     * for DR3 we should actually iterate through:
@@ -489,13 +494,25 @@ step_file_iterator(MEDIA_ITERATOR m)
 		     */
 		    switch (a->style) {
 		    case kSCSI_Disks:
-			sprintf(result, "/dev/sd%c", 'a'+(int)a->index);
+#ifdef __OpenBSD__
+			snprintf(result, len, "/dev/sd%dc", (int)a->index);
+#else
+			snprintf(result, len, "/dev/sd%c", 'a'+(int)a->index);
+#endif
 			break;
 		    case kATA_Devices:
-			sprintf(result, "/dev/hd%c", 'a'+(int)a->index);
+#ifdef __OpenBSD__
+			snprintf(result, len, "/dev/wd%dc", (int)a->index);
+#else
+			snprintf(result, len, "/dev/hd%c", 'a'+(int)a->index);
+#endif
 			break;
 		    case kSCSI_CDs:
-			sprintf(result, "/dev/scd%c", '0'+(int)a->index);
+#ifdef __OpenBSD__
+			snprintf(result, len, "/dev/cd%dc", (int)a->index);
+#else
+			snprintf(result, len, "/dev/scd%c", '0'+(int)a->index);
+#endif
 			break;
 		    }
 		    if (stat(result, &info) < 0) {

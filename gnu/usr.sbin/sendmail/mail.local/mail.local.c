@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -18,11 +18,12 @@ SM_IDSTR(copyright,
      Copyright (c) 1990, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n")
 
-SM_IDSTR(id, "@(#)$Sendmail: mail.local.c,v 8.232 2001/09/08 01:21:04 gshapiro Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: mail.local.c,v 8.239.2.5 2003/03/15 23:43:20 gshapiro Exp $")
 
 #include <stdlib.h>
 #include <sm/errstring.h>
 #include <sm/io.h>
+#include <sm/limits.h>
 # include <unistd.h>
 # ifdef EX_OK
 #  undef EX_OK		/* unistd.h may have another use for this */
@@ -519,7 +520,7 @@ dolmtp()
 						"Nested MAIL command");
 					continue;
 				}
-				if (sm_strncasecmp(buf+5, "from:", 5) != 0 ||
+				if (sm_strncasecmp(buf + 5, "from:", 5) != 0 ||
 				    ((return_path = parseaddr(buf + 10,
 							      false)) == NULL))
 				{
@@ -656,6 +657,8 @@ store(from, inbody)
 	(void) sm_strlcpy(tmpbuf, _PATH_LOCTMP, sizeof tmpbuf);
 	if ((fd = mkstemp(tmpbuf)) < 0 || (fp = fdopen(fd, "w+")) == NULL)
 	{
+		if (fd >= 0)
+			(void) close(fd);
 		mailerr("451 4.3.0", "Unable to open temporary file");
 		return -1;
 	}
@@ -856,7 +859,7 @@ deliver(fd, name)
 	off_t headerbytes;
 	int readamount;
 #endif /* CONTENTLENGTH */
-	char biffmsg[100], buf[8*1024];
+	char biffmsg[100], buf[8 * 1024];
 	SM_MBDB_T user;
 
 	/*
@@ -1035,7 +1038,12 @@ tryagain:
 			mbfd = -1;
 		}
 	}
-	else if (sb.st_nlink != 1 || !S_ISREG(sb.st_mode))
+	else if (sb.st_nlink != 1)
+	{
+		mailerr("550 5.2.0", "%s: too many links", path);
+		goto err0;
+	}
+	else if (!S_ISREG(sb.st_mode))
 	{
 		mailerr("550 5.2.0", "%s: irregular file", path);
 		goto err0;
@@ -1127,7 +1135,7 @@ tryagain:
 		goto err1;
 	}
 
-	/* Get the starting offset of the new message for biff. */
+	/* Get the starting offset of the new message */
 	curoff = lseek(mbfd, (off_t) 0, SEEK_END);
 	(void) sm_snprintf(biffmsg, sizeof(biffmsg), "%s@%lld\n",
 			   name, (LONGLONG_T) curoff);
@@ -1199,7 +1207,8 @@ err3:
 #ifdef DEBUG
 		fprintf(stderr, "reset euid = %d\n", (int) geteuid());
 #endif /* DEBUG */
-		(void) ftruncate(mbfd, curoff);
+		if (mbfd >= 0)
+			(void) ftruncate(mbfd, curoff);
 err1:		if (mbfd >= 0)
 			(void) close(mbfd);
 err0:		unlockmbox();
@@ -1215,7 +1224,29 @@ err0:		unlockmbox();
 			errcode = "552 5.2.2";
 #endif /* EDQUOT */
 		mailerr(errcode, "%s: %s", path, sm_errstring(errno));
-		(void) truncate(path, curoff);
+		mbfd = open(path, O_WRONLY|EXTRA_MODE, 0);
+		if (mbfd < 0
+		    || fstat(mbfd, &sb) < 0 ||
+		    sb.st_nlink != 1 ||
+		    !S_ISREG(sb.st_mode) ||
+		    sb.st_dev != fsb.st_dev ||
+		    sb.st_ino != fsb.st_ino ||
+# if HAS_ST_GEN && 0		/* AFS returns random values for st_gen */
+		    sb.st_gen != fsb.st_gen ||
+# endif /* HAS_ST_GEN && 0 */
+		    sb.st_uid != fsb.st_uid
+		   )
+		{
+			/* Don't use a bogus file */
+			if (mbfd >= 0)
+			{
+				(void) close(mbfd);
+				mbfd = -1;
+			}
+		}
+
+		/* Attempt to truncate back to pre-write size */
+		goto err3;
 	}
 	else
 		notifybiff(biffmsg);
@@ -1563,11 +1594,7 @@ e_to_sys(num)
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *

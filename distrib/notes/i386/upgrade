@@ -1,193 +1,95 @@
-The upgrade to NetBSD 1.0 is a binary upgrade; it would be prohibitive
-to make users upgrade by compiling and installing the 1.0 sources, and
-it would be very difficult to even compile a set of instructions that
-allowed them to do so.  Because of the various changes to the system,
-the largest being the 64-bit file size support and shared libraries,
-it is impractical to upgrade by recompiling from the sources and
-installing.
+dnl	$OpenBSD: upgrade,v 1.19 2003/09/07 12:01:56 krw Exp $
+dnl OpenBSDUpgrade({:-the CD-ROM or an installation floppy as you would do for
+dnl a new installation-:})
+Due to the change from a.out to ELF binary format in OpenBSD OSREV,
+upgrades can be a complex, delicate process. The best solution, whenever
+possible, is to backup your data and reinstall from scratch.
 
-To do the upgrade, you must have the appropriate kernel-copy floppy
-image on a disk, and the upgr-10.fs floppy image on another.  You must
-also have at least the "base10" binary distribution set available,
-so that you can upgrade with it, using one of the upgrade methods
-described above.  Finally, you must have sufficient disk space
-available to install the new binaries.  Since the old binaries are
-being overwritten in place, you only need space for the new binaries,
-which weren't previously on the system.  If you have a few megabytes
-free on each of your root and /usr partitions, you should have enough
-space.
+The second best solution is to remove all ports, third party programs and
+libraries installed on your system; upgrade; and then add ELF versions of
+the removed files.
 
-Since upgrading involves replacing the boot blocks on your NetBSD
-partition, the kernel, and most of the system binaries, it has the
-potential to cause data loss.  You are strongly advised to BACK UP ANY
-IMPORTANT DATA ON YOUR DISK, whether on the NetBSD partition or on
-another operating system's partition, before beginning the upgrade
-process.
+In all cases, once you start the upgrade you MUST complete it. If the
+upgrade process fails or is abandoned before it completes you will almost
+certainly be left with a non-functional system.
 
-To upgrade your system, follow the following instructions:
+Finally, you cannot use the bsd.rd kernel to upgrade the system. The
+existing bootblocks on your system cannot boot the OSREV bsd.rd.
 
-	Boot your machine using of the appropriate kernel-copy floppy.
-	When presented with the boot prompt (the prompt begins with
-	"Boot" and ends with ":-"), hit return.
+If you must do an upgrade while preserving the functionality of any
+existing a.out binary files, then the rest of this section will guide you
+through that process.
 
-	You will be prompted to insert a file system floppy.  Remove
-	the kernel-copy floppy and insert the upgr-10 floppy, then hit
-	any key to continue booting.
+The two main hurdles in upgrading from an a.out system to an ELF OpenBSD
+OSREV system while preserving the functioning of a.out binaries are:
+- the a.out binary emulation, required for compatibility with a.out
+  binaries using shared libraries, is not enabled by default, and requires
+  an explicit configuration change.
+- a.out shared libraries (lib*.so) need to be moved to a specific location
+  for proper operation of older binaries.
 
-	While booting, you will probably see several warnings.  You
-	should be warned that no swap space is present, and that
-	init(8) cannot find /etc/rc.  Do not be alarmed, these are
-	completely normal.  When you reach the prompt asking you for a
-	shell name, just hit return.
+Before you start the upgrade process, the a.out emulation area needs to be
+set up. It needs to be put inside a /emul/a.out hierarchy. This directory can,
+however, be a symbolic link, should the available space in the root partition
+not be enough.
 
-	You will be presented with some information about the upgrade
-	process and a warning message, and will be asked if you wish
-	to proceed with the upgrade process.  If you answer
-	negatively, the upgrade process will stop, and your disk will
-	not be modified.  If you answer affirmatively, the upgrade
-	process will begin, and your disk will be modified.  You may
-	hit Control-C to stop the upgrade process at any time.
-	However, if you hit it at an inopportune moment, your system
-	may be left in an inconsistent (and possibly unusable) state.
+It is recommended that the following instructions and commands are issued in
+single-user mode.
 
-	You will be asked if you wish to upgrade your file systems to
-	the new file system format.  If you do, reply affirmatively.
-	If you don't have your file systems upgraded now, you should
-	probably do it manually after the install process is complete,
-	by using "fsck -c 2". Read the fsck(8) manual page for more
-	details.
+The /emul/a.out hierarchy should be populated by the a.out shared libraries.
+An easy way to do it is to run the following commands as root:
 
-	The upgrade program will then check your root file system,
-	and, if you approved, will upgrade it to the new file system
-	format.  It will then mount your root file system on /mnt.
+   mkdir -p /emul/a.out/var/run
+   tar cf - /sbin/ldconfig /usr/bin/ldd /usr/libexec/ld.so |
+       tar -C /emul/a.out -xpf -
+   for lib in $(/sbin/ldconfig -r |
+     awk '/=>/ { print $3 }');
+   do
+     dirname $lib;
+   done | sort -u > /root/a.out-libdirs
+   tar cf - $(find $(< /root/a.out-libdirs) -name "lib*.so.*") |
+       tar -C /emul/a.out -xpf -
 
-	If your file systems are being upgraded, the upgrade script
-	will copy the new fsck(8) program to your hard disk and
-	upgrade your remaining file systems.
+Then, a cache of these shared libraries must be generated with:
 
-	The upgrade program will then automatically replace the boot
-	blocks on your disk with newer versions, and mount all of your
-	file systems under /mnt.  (In other words, your root partition
-	will be mounted on /mnt, your /usr partition on /mnt/usr, etc.)
+   cp /var/run/ld.so.hints /var/run/ld.so.hints.backup
+   /sbin/ldconfig -s $(/usr/bin/sed 's,^/,/emul/a.out/,' /root/a.out-libdirs) 
+   /bin/mv /var/run/ld.so.hints /emul/a.out/var/run
+   /bin/mv /var/run/ld.so.hints.backups /var/run/ld.so.hints
 
-	If you don't already have the NetBSD distribution sets on your
-	disk, look in the installation section for information on how
-	to transfer them to your disk.
+The last step before the upgrade is to enable the a.out emulation, in
+order to be sure that /etc/rc.local or any other customization you have
+made to the system will still run:
 
-	If you have only one floppy drive, and don't have the disk
-	space to copy all of the distribution onto the hard drive, you
-	can do the following:
+  echo "kern.emul.aout=1" >> /etc/sysctl.conf
 
-		Install a kernel on the hard drive as detailed a few
-		paragraphs below, then boot off the hard drive.  Now
-		you can copy and install distribution sets
-		incrementally from your lone floppy drive.
+The upgrade is now possible. Boot from the CD-ROM or an installation
+floppy, as you would do for a new installation. 
 
-	Once the distribution sets are transferred to your disk,
-	continue here.  (Obviously, if the NetBSD distribution sets
-	are already on your disk, because you've transferred them
-	before starting the upgrade process, you don't need to
-	transfer them again now!)
+When prompted, select the (U)pgrade option rather than the (I)nstall
+option at the prompt in the install process.
 
-	After the software has been transferred to the machine (or
-	mounted, in the case of upgrading via NFS), change into the
-	directory containing the "base10" distribution set.  Once you
-	are there, run the "Set_tmp_dir" command, and hit return at
-	the prompt to select the default answer for the temporary
-	directory's path name.  (It should be the path name of the
-	directory that you're in.)
+The upgrade script will ask you for the existing root partition, and
+will use the existing filesystems defined in /etc/fstab to install the
+new system in. It will also use your existing network parameters.
 
-	Run the command "Extract base10" to upgrade the base
-	distribution.
+From then, the upgrade procedure is very close to the installation
+procedure described earlier in this document. Note that the upgrade
+procedure will not let you pick the ``etc{:--:}OSrev.tgz'' set, so as to
+preserve your files in `/etc' which you are likely to have customized
+since a previous installation.
 
-	Repeat the above two steps for all of the sets you wish to
-	upgrade.  (For each, change into the directory containing the
-	set, run "Set_tmp_dir" and accept the default path name, then
-	run the "Extract <setname>" command.)
+When the upgrade procedure tells you that the upgrade is complete, do not
+reboot the system yet.
 
-	If you were previously using the security distribution set,
-	you MUST upgrade to the new version, or you will not be able
-	to log in when the upgrade process is complete.  Similarly, if
-	you were not previously using the security set, you must NOT
-	upgrade to the new version.
+However, it is strongly advised that you unpack the etc{:--:}OSrev.tgz set in
+a temporary directory and merge changes by hand, since all components of
+your system may not function correctly until your files in `/etc' are
+updated.
 
-	When you are done upgrading all of the distribution sets you
-	wish to upgrade, issue the command "Cleanup".  It will clean
-	up the installation, by remaking some system databases.  When
-	it is complete, you should use "halt" to halt the system.
+After the upgrade is completed, it is now possible to remove the old a.out
+shared libraries from their initial locations:
 
-	When the system is halted, remove the "upgr-10" floppy from
-	the floppy drive, and replace it with the NetBSD 1.0
-	kernel-copy floppy that you previously booted from. Reboot
-	with that floppy.
-
-	Once again, you will be prompted to insert a file system
-	floppy.  DO NOT replace the kernel-copy floppy, just hit any
-	key.
-
-	Again, While booting, you may see several warnings.  You may
-	be warned that no swap space is present, that init(8) cannot
-	find /etc/rc, and that one or more databases with names like
-	"pwd.db" cannot be found.  Do not be alarmed, as, again, these
-	are completely normal.  Hit return at the prompt asking you
-	for a shell name.
-
-	You will be presented with a shell prompt, at which you should
-	enter the "copy_kernel" command.  It will ask you what
-	partition to copy the kernel to, and you should reply with the
-	name of your root partition (e.g. sd0a or wd0a).
-
-	You will be asked if you are sure that you want to copy the
-	kernel.  Reply affirmatively, and it will check the file
-	system on your root partition, mount it, and copy the kernel.
-	Once the kernel is copied, you should use "halt" to halt the
-	system.
-
-	Once the system is halted, remove the kernel-copy floppy from
-	the floppy disk drive, and hit any key to reboot.
-
-Your system has now been upgraded to NetBSD 1.0.
-
-After a new kernel has been copied to your hard disk, your
-	machine is a complete NetBSD 1.0 system.  However, that
-	doesn't mean that you're finished with the upgrade process.
-	There are several things that you should do, or might have to
-	do, to insure that the system works properly.
-
-	First, if you did not upgrade your file systems to the new
-	file system format during the upgrade process, you may want to
-	do so now, with "fsck -c 2".  If you are unsure about the
-	process, it's suggested that you read the fsck(8) manual page.
-
-	Second, you will probably want to get the etc10 distribution,
-	extract it, and compare its contents with those in your /etc/
-	directory.  You will probably want to replace some of your
-	system configuration files, or incorporate some of the changes
-	in the new versions into yours.
-
-	Third, you will probably want to update the set of device
-	nodes you have in /dev.  If you've changed the contents of
-	/dev by hand, you will need to be careful about this, but if
-	not, you can just cd into /dev, and run the command "sh
-	MAKEDEV all".
-
-	Fourth, you must deal with certain changes in the formats of
-	some of the configuration files.  The most notable change is
-	that the "options" given to many of the file systems in
-	/etc/fstab or by hand have changed, and some of the file
-	systems have changed names.  To find out what the new options
-	are, it's suggested that you read the manual page for the
-	file systems' mount commands, for example mount_nfs(8) for
-	NFS.  (Note that the information for mounts of type "ufs",
-	i.e. Fast File Systems, are contained in the mount(8) man
-	page.)
-
-	Finally, you will want to delete old binaries that were part
-	of the version of NetBSD that you upgraded from and have since
-	been removed from the NetBSD distribution.  You might also
-	want to recompile any locally-built binaries, to take
-	advantage of the shared libraries.  (Note that any new
-	binaries that you build will be dynamically linked, and
-	therefore take advantage of the shared libraries, by default.
-	For information on how to make statically linked binaries,
-	see the cc(1) and ld(1) manual pages.)
+  rm -f $(file $(find $(< /root/a.out-libdirs) -name "lib*.so.*") |
+    awk -F: '/demand paged/ { print $1 }')
+  rm -f /root/a.out-libdirs

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: man.conf.5,v 1.9 2003/06/03 02:56:12 millert Exp $
+.\"
 .\" Copyright (c) 1989, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -86,13 +84,12 @@ be searched if no section is specified by the user.
 .Pp
 The second type of line is preceded with a ``keyword''.
 The possible keywords and their meanings are as follows:
-.Pp
 .Bl -tag -width "_version"
 .It _build
 Man file names, regardless of their format, are expected to end in
-a ``.*'' pattern, i.e. a ``.'' followed by some suffix.
+a ``.*'' pattern, i.e., a ``.'' followed by some suffix.
 The first field of a _build line lists a suffix which indicates
-files which need to be reformated or manipulated in some way before
+files which need to be reformatted or manipulated in some way before
 being displayed to the user.
 The suffix may contain the normal shell globbing characters (NOT
 including curly braces (``{}'')).
@@ -114,7 +111,7 @@ and
 .Fl m
 options.
 .It _suffix
-Man file names, regardless of their format are expected to end in
+Man file names, regardless of their format, are expected to end in
 a ``.*'' pattern, i.e. a ``.'' followed by some suffix.
 Each field of a _suffix line is a suffix which indicates
 files which do not need to be reformatted or manipulated
@@ -138,6 +135,11 @@ be listed per line, as well.
 .Pp
 Empty lines or lines whose first non-whitespace character is a hash
 mark (``#'') are ignored.
+.Sh FILES
+.Bl -tag -width /etc/man.conf -compact
+.It Pa /etc/man.conf
+standard manual directory search path
+.El
 .Sh EXAMPLES
 Given the following
 .Nm man.conf
@@ -157,8 +159,8 @@ By default, the command
 will search for
 ``mktemp.<any_digit>'' and ``mktemp.tbl''
 in the directories
-.Dq Pa /usr/share/man/cat1 , 
-.Dq Pa /usr/share/man/cat2 , 
+.Dq Pa /usr/share/man/cat1 ,
+.Dq Pa /usr/share/man/cat2 ,
 and
 .Dq Pa /usr/share/man/cat3 .
 If on a machine of type ``vax'', the subdirectory ``vax'' in each
@@ -166,7 +168,7 @@ directory would be searched as well, before the directory was
 searched.
 .Pp
 If ``mktemp.tbl'' was found first, the command
-.Dq Li tbl <manual page> | nroff -man
+.Dq Li tbl <manual page> \&| nroff -man
 would be run to build a man page for display to the user.
 .Pp
 The command
@@ -176,15 +178,12 @@ would search the directories
 and
 .Dq Pa /usr/share/man/cat3 ,
 in that order, for
-the mktemp manual page.
+the
+.Xr mktemp 1
+manual page.
 If a subdirectory with the same name as the current machine type
 existed in any of them, it would be searched as well, before each
 of them were searched.
-.Sh FILES
-.Bl -tag -width /etc/man.conf -compact
-.It Pa /etc/man.conf
-Standard manual directory search path.
-.El
 .Sh SEE ALSO
 .Xr apropos 1 ,
 .Xr machine 1 ,

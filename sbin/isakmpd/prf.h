@@ -1,7 +1,9 @@
-/*	$Id: prf.h,v 1.1 1998/07/11 20:06:22 provos Exp $	*/
+/*	$OpenBSD: prf.h,v 1.8 2002/11/21 09:40:34 ho Exp $	*/
+/*	$EOM: prf.h,v 1.1 1998/07/11 20:06:22 provos Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,9 +33,9 @@
 #ifndef _PRF_H_
 #define _PRF_H_
 
-/* Enumeration of possible PRF - Pseudo-Random Functions. */
+/* Enumeration of possible PRF - Pseudo-Random Functions.  */
 enum prfs {
-  PRF_HMAC = 0,			/* No PRFs in drafts, this is the default */
+  PRF_HMAC = 0			/* No PRFs in drafts, this is the default */
 };
 
 struct prf {
@@ -55,7 +52,7 @@ struct prf_hash_ctx {
   void *ctx, *ctx2;		/* Contexts we need for later */
 };
 
-struct prf *prf_alloc (enum prfs, int, char *, int);
+struct prf *prf_alloc (enum prfs, int, unsigned char *, unsigned int);
 void prf_free (struct prf *);
 
 #endif /* _PRF_H_ */

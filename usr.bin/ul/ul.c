@@ -1,3 +1,4 @@
+/*	$OpenBSD: ul.c,v 1.10 2003/06/10 22:20:53 deraadt Exp $	*/
 /*	$NetBSD: ul.c,v 1.3 1994/12/07 00:28:24 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,10 +40,16 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ul.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: ul.c,v 1.3 1994/12/07 00:28:24 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ul.c,v 1.10 2003/06/10 22:20:53 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <curses.h>
+#include <term.h>
 
 #define	IESC	'\033'
 #define	SO	'\016'
@@ -80,12 +83,26 @@ int	halfpos;
 int	upln;
 int	iflag;
 
-int	outchar();
-#define	PRINT(s)	if (s == NULL) /* void */; else tputs(s, 1, outchar)
+int	outchar(int);
+void	initcap(void);
+void	initbuf(void);
+void	mfilter(FILE *);
+void	reverse(void);
+void	fwd(void);
+void	flushln(void);
+void	msetmode(int);
+void	outc(int);
+void	overstrike(void);
+void	iattr(void);
 
-main(argc, argv)
-	int argc;
-	char **argv;
+#define	PRINT(s) \
+	do { \
+		if (s) \
+			tputs(s, 1, outchar); \
+	} while (0)
+
+int
+main(int argc, char *argv[])
 {
 	extern int optind;
 	extern char *optarg;
@@ -93,12 +110,11 @@ main(argc, argv)
 	char *termtype;
 	FILE *f;
 	char termcap[1024];
-	char *getenv(), *strcpy();
 
 	termtype = getenv("TERM");
 	if (termtype == NULL || (argv[0][0] == 'c' && !isatty(1)))
 		termtype = "lpr";
-	while ((c=getopt(argc, argv, "it:T:")) != EOF)
+	while ((c=getopt(argc, argv, "it:T:")) != -1)
 		switch(c) {
 
 		case 't':
@@ -127,7 +143,8 @@ main(argc, argv)
 
 	case 0:
 		/* No such terminal type - assume dumb */
-		(void)strcpy(termcap, "dumb:os:col#80:cr=^M:sf=^J:am:");
+		(void)strlcpy(termcap, "dumb:os:col#80:cr=^M:sf=^J:am:",
+		    sizeof termcap);
 		break;
 	}
 	initcap();
@@ -136,24 +153,26 @@ main(argc, argv)
 			must_overstrike = 1;
 	initbuf();
 	if (optind == argc)
-		filter(stdin);
+		mfilter(stdin);
 	else for (; optind<argc; optind++) {
 		f = fopen(argv[optind],"r");
 		if (f == NULL) {
 			perror(argv[optind]);
 			exit(1);
-		} else
-			filter(f);
+		}
+
+		mfilter(f);
+		fclose(f);
 	}
 	exit(0);
 }
 
-filter(f)
-	FILE *f;
+void
+mfilter(FILE *f)
 {
-	register c;
+	int c;
 
-	while ((c = getc(f)) != EOF) switch(c) {
+	while ((c = getc(f)) != EOF && col < MAXBUF) switch(c) {
 
 	case '\b':
 		if (col > 0)
@@ -261,17 +280,17 @@ filter(f)
 		flushln();
 }
 
-flushln()
+void
+flushln(void)
 {
-	register lastmode;
-	register i;
+	int lastmode, i;
 	int hadmodes = 0;
 
 	lastmode = NORMAL;
 	for (i=0; i<maxcol; i++) {
 		if (obuf[i].c_mode != lastmode) {
 			hadmodes++;
-			setmode(obuf[i].c_mode);
+			msetmode(obuf[i].c_mode);
 			lastmode = obuf[i].c_mode;
 		}
 		if (obuf[i].c_char == '\0') {
@@ -283,7 +302,7 @@ flushln()
 			outc(obuf[i].c_char);
 	}
 	if (lastmode != NORMAL) {
-		setmode(0);
+		msetmode(0);
 	}
 	if (must_overstrike && hadmodes)
 		overstrike();
@@ -300,11 +319,12 @@ flushln()
  * For terminals that can overstrike, overstrike underlines and bolds.
  * We don't do anything with halfline ups and downs, or Greek.
  */
-overstrike()
+void
+overstrike(void)
 {
-	register int i;
+	int i;
 	char lbuf[256];
-	register char *cp = lbuf;
+	char *cp = lbuf;
 	int hadbold=0;
 
 	/* Set up overstrike buffer */
@@ -337,11 +357,12 @@ overstrike()
 	}
 }
 
-iattr()
+void
+iattr(void)
 {
-	register int i;
+	int i;
 	char lbuf[256];
-	register char *cp = lbuf;
+	char *cp = lbuf;
 
 	for (i=0; i<maxcol; i++)
 		switch (obuf[i].c_mode) {
@@ -360,7 +381,8 @@ iattr()
 	putchar('\n');
 }
 
-initbuf()
+void
+initbuf(void)
 {
 
 	bzero((char *)obuf, sizeof (obuf));	/* depends on NORMAL == 0 */
@@ -369,9 +391,10 @@ initbuf()
 	mode &= ALTSET;
 }
 
-fwd()
+void
+fwd(void)
 {
-	register oldcol, oldmax;
+	int oldcol, oldmax;
 
 	oldcol = col;
 	oldmax = maxcol;
@@ -380,7 +403,8 @@ fwd()
 	maxcol = oldmax;
 }
 
-reverse()
+void
+reverse(void)
 {
 	upln++;
 	fwd();
@@ -389,11 +413,11 @@ reverse()
 	upln++;
 }
 
-initcap()
+void
+initcap(void)
 {
 	static char tcapbuf[512];
 	char *bp = tcapbuf;
-	char *getenv(), *tgetstr();
 
 	/* This nonsense attempts to work with both old and new termcap */
 	CURS_UP =		tgetstr("up", &bp);
@@ -442,16 +466,17 @@ initcap()
 	must_use_uc = (UNDER_CHAR && !ENTER_UNDERLINE);
 }
 
-outchar(c)
-	int c;
+int
+outchar(int c)
 {
 	putchar(c & 0177);
+	return (0);
 }
 
 static int curmode = 0;
 
-outc(c)
-	int c;
+void
+outc(int c)
 {
 	putchar(c);
 	if (must_use_uc && (curmode&UNDERL)) {
@@ -460,12 +485,12 @@ outc(c)
 	}
 }
 
-setmode(newmode)
-	int newmode;
+void
+msetmode(int newmode)
 {
 	if (!iflag) {
 		if (curmode != NORMAL && newmode != NORMAL)
-			setmode(NORMAL);
+			msetmode(NORMAL);
 		switch (newmode) {
 		case NORMAL:
 			switch(curmode) {

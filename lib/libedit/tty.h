@@ -1,3 +1,6 @@
+/*	$OpenBSD: tty.h,v 1.5 2002/02/16 21:27:26 millert Exp $	*/
+/*	$NetBSD: tty.h,v 1.4 1997/04/11 21:38:02 christos Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -145,7 +144,12 @@
 # endif /* IEXTEN != 0 */
 #endif /* convex || __convex__ */
 
-
+/*
+ * So that we don't lose job control.
+ */
+#ifdef __SVR4
+# undef CSWTCH
+#endif
 
 #ifndef _POSIX_VDISABLE
 # define _POSIX_VDISABLE ((unsigned char) -1)
@@ -446,20 +450,20 @@
 
 typedef struct { 
     char *t_name;
-    int  t_setmask;
-    int  t_clrmask;
+    u_int t_setmask;
+    u_int t_clrmask;
 } ttyperm_t[NN_IO][M_NN];
 
 typedef unsigned char ttychar_t[NN_IO][C_NCC];
 
-protected int	tty_init	__P((EditLine *));
-protected void	tty_end		__P((EditLine *));
-protected int	tty_stty	__P((EditLine *, int, char**));
-protected int	tty_rawmode	__P((EditLine *));
-protected int	tty_cookedmode	__P((EditLine *));
-protected int	tty_quotemode	__P((EditLine *));
-protected int	tty_noquotemode	__P((EditLine *));
-protected void	tty_bind_char	__P((EditLine *, int));
+protected int	tty_init(EditLine *);
+protected void	tty_end(EditLine *);
+protected int	tty_stty(EditLine *, int, char**);
+protected int	tty_rawmode(EditLine *);
+protected int	tty_cookedmode(EditLine *);
+protected int	tty_quotemode(EditLine *);
+protected int	tty_noquotemode(EditLine *);
+protected void	tty_bind_char(EditLine *, int);
 
 typedef struct {
     ttyperm_t t_t;

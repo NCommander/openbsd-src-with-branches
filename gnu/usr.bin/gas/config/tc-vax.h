@@ -1,8 +1,12 @@
+/*	$OpenBSD: tc-vax.h,v 1.3 1998/02/15 18:49:47 niklas Exp $	*/
+
 /*
  * This file is tc-vax.h.
  */
 
 #define TC_VAX 1
+
+#define AOUT_MACHTYPE 150
 
 #define	LOCAL_LABELS_FB
 #define NO_LISTING

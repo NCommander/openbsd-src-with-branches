@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: savemail.c,v 8.287 2001/09/04 22:43:05 ca Exp $")
+SM_RCSID("@(#)$Sendmail: savemail.c,v 8.299.2.1 2002/10/23 15:08:47 ca Exp $")
 
 static void	errbody __P((MCI *, ENVELOPE *, char *));
 static bool	pruneroute __P((char *));
@@ -32,7 +32,8 @@ static bool	pruneroute __P((char *));
 **			message; otherwise just send the header.
 **
 **	Returns:
-**		true if the df file should be preserved by dropenvelope()
+**		true if savemail panic'ed, (i.e., the data file should
+**		be preserved by dropenvelope())
 **
 **	Side Effects:
 **		Saves the letter, by writing or mailing it back to the
@@ -56,7 +57,7 @@ savemail(e, sendbody)
 	bool sendbody;
 {
 	register SM_FILE_T *fp;
-	bool savedf = false;
+	bool panic = false;
 	int state;
 	auto ADDRESS *q = NULL;
 	register char *p;
@@ -64,6 +65,7 @@ savemail(e, sendbody)
 	int flags;
 	long sff;
 	char buf[MAXLINE + 1];
+	char dlbuf[MAXPATHLEN];
 	SM_MBDB_T user;
 
 
@@ -78,7 +80,7 @@ savemail(e, sendbody)
 	if (e->e_id == NULL)
 	{
 		/* can't return a message with no id */
-		return savedf;
+		return panic;
 	}
 
 	/*
@@ -94,7 +96,7 @@ savemail(e, sendbody)
 			      '\0', NULL, e, false) == NULL)
 		{
 			syserr("553 5.3.5 Cannot parse Postmaster!");
-			finis(true, EX_SOFTWARE);
+			finis(true, true, EX_SOFTWARE);
 		}
 	}
 	e->e_to = NULL;
@@ -134,10 +136,10 @@ savemail(e, sendbody)
 
 	  case EM_QUIET:
 		/* no need to return anything at all */
-		return savedf;
+		return panic;
 
 	  default:
-		syserr("554 5.3.0 savemail: bogus errormode x%x\n",
+		syserr("554 5.3.0 savemail: bogus errormode x%x",
 		       e->e_errormode);
 		state = ESM_MAIL;
 		break;
@@ -150,7 +152,7 @@ savemail(e, sendbody)
 		    bitset(EF_RESPONSE, e->e_parent->e_flags))
 		{
 			/* got an error sending a response -- can it */
-			return savedf;
+			return panic;
 		}
 		state = ESM_POSTMASTER;
 	}
@@ -205,7 +207,8 @@ savemail(e, sendbody)
 			}
 			else
 			{
-				syserr("Cannot open %s", queuename(e, 'x'));
+				syserr("Cannot open %s",
+				       queuename(e, XSCRPT_LETTER));
 				(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
 						     "Transcript of session is unavailable.\r\n");
 			}
@@ -249,17 +252,9 @@ savemail(e, sendbody)
 					break;
 				}
 
-				if (!DontPruneRoutes && pruneroute(from))
-				{
-					ADDRESS *a;
+				if (!DontPruneRoutes)
+					(void) pruneroute(from);
 
-					for (a = e->e_errorqueue; a != NULL;
-					     a = a->q_next)
-					{
-						if (sameaddr(a, &e->e_from))
-							a->q_state = QS_DUPLICATE;
-					}
-				}
 				(void) sendtolist(from, NULLADDR,
 						  &e->e_errorqueue, 0, e);
 			}
@@ -371,20 +366,20 @@ savemail(e, sendbody)
 			p = macvalue('g', e);
 			macdefine(&e->e_macro, A_PERM, 'g', e->e_sender);
 
-			expand("\201z/dead.letter", buf, sizeof buf, e);
+			expand("\201z/dead.letter", dlbuf, sizeof dlbuf, e);
 			sff = SFF_CREAT|SFF_REGONLY|SFF_RUNASREALUID;
 			if (RealUid == 0)
 				sff |= SFF_ROOTOK;
-			e->e_to = buf;
-			if (writable(buf, NULL, sff) &&
-			    mailfile(buf, FileMailer, NULL, sff, e) == EX_OK)
+			e->e_to = dlbuf;
+			if (writable(dlbuf, NULL, sff) &&
+			    mailfile(dlbuf, FileMailer, NULL, sff, e) == EX_OK)
 			{
 				int oldverb = Verbose;
 
 				if (OpMode != MD_DAEMON && OpMode != MD_SMTP)
 					Verbose = 1;
 				if (Verbose > 0)
-					message("Saved message in %s", buf);
+					message("Saved message in %s", dlbuf);
 				Verbose = oldverb;
 				macdefine(&e->e_macro, A_PERM, 'g', p);
 				state = ESM_DONE;
@@ -466,16 +461,16 @@ savemail(e, sendbody)
 		  case ESM_PANIC:
 			/* leave the locked queue & transcript files around */
 			loseqfile(e, "savemail panic");
-			savedf = true;
+			panic = true;
 			errno = 0;
 			syserr("554 savemail: cannot save rejected email anywhere");
 			state = ESM_DONE;
 			break;
 		}
 	}
-	return savedf;
+	return panic;
 }
-/*
+/*
 **  RETURNTOSENDER -- return a message to the sender with an error.
 **
 **	Parameters:
@@ -496,7 +491,7 @@ savemail(e, sendbody)
 */
 
 #define MAXRETURNS	6	/* max depth of returning messages */
-#define ERRORFUDGE	100	/* nominal size of error message text */
+#define ERRORFUDGE	1024	/* nominal size of error message text */
 
 int
 returntosender(msg, returnq, flags, e)
@@ -550,25 +545,7 @@ returntosender(msg, returnq, flags, e)
 	macdefine(&ee->e_macro, A_PERM, 'r', "");
 	macdefine(&ee->e_macro, A_PERM, 's', "localhost");
 	macdefine(&ee->e_macro, A_PERM, '_', "localhost");
-#if SASL
-	macdefine(&ee->e_macro, A_PERM, macid("{auth_type}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{auth_authen}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{auth_author}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{auth_ssf}"), "");
-#endif /* SASL */
-#if STARTTLS
-	macdefine(&ee->e_macro, A_PERM, macid("{cert_issuer}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{cert_subject}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{cipher_bits}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{cipher}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{tls_version}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{verify}"), "");
-# if _FFR_TLS_1
-	macdefine(&ee->e_macro, A_PERM, macid("{alg_bits}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{cn_issuer}"), "");
-	macdefine(&ee->e_macro, A_PERM, macid("{cn_subject}"), "");
-# endif /* _FFR_TLS_1 */
-#endif /* STARTTLS */
+	clrsessenvelope(ee);
 
 	ee->e_puthdr = putheader;
 	ee->e_putbody = errbody;
@@ -590,10 +567,10 @@ returntosender(msg, returnq, flags, e)
 	}
 
 	ee->e_sendqueue = returnq;
-	ee->e_msgsize = ERRORFUDGE;
+	ee->e_msgsize = 0;
 	if (bitset(RTSF_SEND_BODY, flags) &&
 	    !bitset(PRIV_NOBODYRETN, PrivacyFlags))
-		ee->e_msgsize += e->e_msgsize;
+		ee->e_msgsize = ERRORFUDGE + e->e_msgsize;
 	else
 		ee->e_flags |= EF_NO_BODY_RETN;
 
@@ -716,7 +693,7 @@ returntosender(msg, returnq, flags, e)
 	eatheader(ee, true, true);
 
 	/* mark statistics */
-	markstats(ee, NULLADDR, false);
+	markstats(ee, NULLADDR, STATS_NORMAL);
 
 	/* actually deliver the error message */
 	sendall(ee, SM_DELIVER);
@@ -738,7 +715,7 @@ returntosender(msg, returnq, flags, e)
 	}
 	return -1;
 }
-/*
+/*
 **  ERRBODY -- output the body of an error message.
 **
 **	Typically this is a copy of the transcript plus a copy of the
@@ -1353,7 +1330,7 @@ errbody(mci, e, separator)
 	if (errno != 0)
 		syserr("errbody: I/O error");
 }
-/*
+/*
 **  SMTPTODSN -- convert SMTP to DSN status code
 **
 **	Parameters:
@@ -1423,7 +1400,7 @@ smtptodsn(smtpstat)
 		return "4.0.0";
 	return "5.0.0";
 }
-/*
+/*
 **  XTEXTIFY -- take regular text and turn it into DSN-style xtext
 **
 **	Parameters:
@@ -1497,7 +1474,7 @@ xtextify(t, taboo)
 	*p = '\0';
 	return bp;
 }
-/*
+/*
 **  XUNTEXTIFY -- take xtext and turn it into plain text
 **
 **	Parameters:
@@ -1577,7 +1554,7 @@ xuntextify(t)
 	*p = '\0';
 	return bp;
 }
-/*
+/*
 **  XTEXTOK -- check if a string is legal xtext
 **
 **	Xtext is used in Delivery Status Notifications.  The spec was
@@ -1614,7 +1591,7 @@ xtextok(s)
 	}
 	return true;
 }
-/*
+/*
 **  PRUNEROUTE -- prune an RFC-822 source route
 **
 **	Trims down a source route to the last internet-registered hop.

@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: autest.1,v 1.5 2003/04/25 14:10:34 jmc Exp $
 .\"
 .\" Copyright (c) 2002 Jason L. Wright (jason@thought.net)
 .\" All rights reserved.
@@ -11,11 +11,6 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by Jason L. Wright
-.\" 4. The name of the author may not be used to endorse or promote products
-.\"    derived from this software without specific prior written permission.
 .\"
 .\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 .\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -37,11 +32,18 @@
 .Nd test audio encoding output
 .Sh SYNOPSIS
 .Nm autest
+.Op Fl f Ar device
 .Sh DESCRIPTION
 The
 .Nm
-utility opens
-.Ar /dev/sound
+utility opens the
+.Xr audio 4
+device specified with the
+.Fl f
+flag
+or
+.Pa /dev/sound
+if not specified,
 and iterates through all of the encodings supported by the device playing
 a 440Hz tone in the proper format.
 The tone should sound almost identical in each of the formats.
@@ -50,25 +52,26 @@ The tone should sound almost identical in each of the formats.
 can produce tones in any of the following formats and will skip other
 formats if supported by the device:
 .Bl -tag -width XXXXXXXXXX
-.It Cm mulaw
-8bit U-Law companded
-.It Cm alaw
-8bit A-Law companded
+.It Cm mu-law
+8bit mu-law companded
+.It Cm A-law
+8bit A-law companded
 .It Cm adpcm
 4 bit adaptive differential pulse code modulation
 .It Cm ulinear
-8 bit unsigned linear.
+8 bit unsigned linear
 .It Cm ulinear_le
 16 bit unsigned linear little endian
 .It Cm ulinear_be
 16 bit unsigned linear big endian
 .It Cm slinear
-8 bit signed linear
+8 bit signed linear (twos complement)
 .It Cm slinear_le
-16 bit signed linear little endian
+16 bit signed linear little endian (twos complement)
 .It Cm slinear_be
-16 bit signed linear big endian
+16 bit signed linear big endian (twos complement)
+.El
 .Sh SEE ALSO
 .Xr audio 4
 .Sh BUGS
-The ADPCM encoding sounds very noisy on CS4231 (it's probaly incorrect).
+The ADPCM encoding sounds very noisy on CS4231 (it's probably incorrect).

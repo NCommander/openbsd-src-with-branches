@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_pthread_mutex.c,v 1.7 2001/03/13 00:04:38 d Exp $	*/
+/*	$OpenBSD: pthread_mutex.c,v 1.3 2001/11/03 04:33:48 marc Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -44,13 +44,13 @@
 #include <pthread.h>
 #include <pthread_np.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "test.h"
 
 int contention_variable;
 
-void * 
-thread_contention(arg)
-	void *arg;
+static void * 
+thread_contention(void *arg)
 {
 	pthread_mutex_t *mutex = arg;
 
@@ -63,9 +63,8 @@ thread_contention(arg)
 	pthread_exit(NULL);
 }
 
-void
-test_contention_lock(mutex)
-	pthread_mutex_t *mutex;
+static void
+test_contention_lock(pthread_mutex_t *mutex)
 {
 	pthread_t thread;
 
@@ -81,18 +80,16 @@ test_contention_lock(mutex)
 	CHECKr(pthread_mutex_unlock(mutex));
 }
 
-void
-test_nocontention_lock(mutex)
-	pthread_mutex_t *mutex;
+static void
+test_nocontention_lock(pthread_mutex_t *mutex)
 {
 	printf("  test_nocontention_lock()\n");
 	CHECKr(pthread_mutex_lock(mutex));
 	CHECKr(pthread_mutex_unlock(mutex));
 }
 
-void
-test_debug_double_lock(mutex)
-	pthread_mutex_t *mutex;
+static void
+test_debug_double_lock(pthread_mutex_t *mutex)
 {
 	printf("  test_debug_double_lock()\n");
 	CHECKr(pthread_mutex_lock(mutex));
@@ -100,28 +97,26 @@ test_debug_double_lock(mutex)
 	CHECKr(pthread_mutex_unlock(mutex));
 }
 
-void
-test_debug_double_unlock(mutex)
-	pthread_mutex_t *mutex;
+static void
+test_debug_double_unlock(pthread_mutex_t *mutex)
 {
 	printf("  test_debug_double_unlock()\n");
 	CHECKr(pthread_mutex_lock(mutex));
 	CHECKr(pthread_mutex_unlock(mutex));
 	/* Posix D10 says undefined behaviour? */
-	ASSERTe(pthread_mutex_unlock(mutex), != EPERM);
+	ASSERTe(pthread_mutex_unlock(mutex), != 0);
 }
 
-void
-test_nocontention_trylock(mutex)
-	pthread_mutex_t *mutex;
+static void
+test_nocontention_trylock(pthread_mutex_t *mutex)
 {
 	printf("  test_nocontention_trylock()\n");
 	CHECKr(pthread_mutex_trylock(mutex));
 	CHECKr(pthread_mutex_unlock(mutex));
 }
 
-void
-test_mutex_static()
+static void
+test_mutex_static(void)
 {
 	pthread_mutex_t mutex_static = PTHREAD_MUTEX_INITIALIZER;
 
@@ -130,7 +125,7 @@ test_mutex_static()
 	test_contention_lock(&mutex_static);
 }
 
-void
+static void
 test_mutex_fast(void)
 {
 	pthread_mutex_t mutex_fast; 
@@ -142,8 +137,8 @@ test_mutex_fast(void)
 	CHECKr(pthread_mutex_destroy(&mutex_fast));
 }
 
-void
-test_mutex_debug()
+static void
+test_mutex_debug(void)
 {
 	pthread_mutexattr_t mutex_debug_attr; 
 	pthread_mutex_t mutex_debug; 
@@ -160,12 +155,13 @@ test_mutex_debug()
 	CHECKr(pthread_mutex_destroy(&mutex_debug));
 }
 
-void
-test_mutex_recursive()
+static void
+test_mutex_recursive(void)
 {
 	pthread_mutexattr_t mutex_recursive_attr; 
 	pthread_mutex_t mutex_recursive; 
 	int i;
+	int j = 9;
 
 	printf("test_mutex_recursive()\n");
 	CHECKr(pthread_mutexattr_init(&mutex_recursive_attr));
@@ -174,17 +170,18 @@ test_mutex_recursive()
 	CHECKr(pthread_mutex_init(&mutex_recursive, &mutex_recursive_attr));
 
 	CHECKr(pthread_mutex_lock(&mutex_recursive));
-	for (i = 0; i < 9; i++)
+	for (i = 0; i < j; i++)
 		CHECKr(pthread_mutex_lock(&mutex_recursive));
-	for (i = 0; i < 9; i++)
+	for (i = 0; i < j; i++)
 		CHECKr(pthread_mutex_unlock(&mutex_recursive));
 	CHECKr(pthread_mutex_unlock(&mutex_recursive));
 	/* Posix D10 says undefined behaviour? */
 	ASSERTe(pthread_mutex_unlock(&mutex_recursive), != 0);
+	CHECKr(pthread_mutex_destroy(&mutex_recursive));
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	test_mutex_static();
 	test_mutex_fast();

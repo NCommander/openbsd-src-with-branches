@@ -91,6 +91,10 @@
 
 #include <stdarg.h>
 
+#if defined(USE_SETUSERCONTEXT)
+#include <login_cap.h>
+#endif
+
 #include "suexec.h"
 
 /*
@@ -246,7 +250,7 @@ static void clean_env(void)
 	exit(120);
     }
 
-    sprintf(pathbuf, "PATH=%s", SAFE_PATH);
+    snprintf(pathbuf, sizeof(pathbuf), "PATH=%s", SAFE_PATH);
     cleanenv[cidx] = strdup(pathbuf);
     cidx++;
 
@@ -297,7 +301,7 @@ int main(int argc, char *argv[])
      */
     uid = getuid();
     if ((pw = getpwuid(uid)) == NULL) {
-	log_err("crit: invalid uid: (%ld)\n", uid);
+	log_err("crit: invalid uid: (%u)\n", uid);
 	exit(102);
     }
     /*
@@ -469,7 +473,7 @@ int main(int argc, char *argv[])
      * a UID less than UID_MIN.  Tsk tsk.
      */
     if ((uid == 0) || (uid < UID_MIN)) {
-	log_err("crit: cannot run as forbidden uid (%d/%s)\n", uid, cmd);
+	log_err("crit: cannot run as forbidden uid (%u/%s)\n", uid, cmd);
 	exit(107);
     }
 
@@ -478,10 +482,17 @@ int main(int argc, char *argv[])
      * or as a GID less than GID_MIN.  Tsk tsk.
      */
     if ((gid == 0) || (gid < GID_MIN)) {
-	log_err("crit: cannot run as forbidden gid (%d/%s)\n", gid, cmd);
+	log_err("crit: cannot run as forbidden gid (%u/%s)\n", gid, cmd);
 	exit(108);
     }
 
+#if defined(USE_SETUSERCONTEXT)
+    if (setusercontext(NULL, pw, uid,
+	LOGIN_SETALL & ~(LOGIN_SETLOGIN | LOGIN_SETPATH)) != 0) {
+	log_err("emerg: failed to setusercontext (%u: %s)\n", uid, cmd);
+	exit(110);
+    }
+#else
     /*
      * Change UID/GID here so that the following tests work over NFS.
      *
@@ -489,7 +500,7 @@ int main(int argc, char *argv[])
      * and setgid() to the target group. If unsuccessful, error out.
      */
     if (((setgid(gid)) != 0) || (initgroups(actual_uname, gid) != 0)) {
-	log_err("emerg: failed to setgid (%ld: %s)\n", gid, cmd);
+	log_err("emerg: failed to setgid (%u: %s)\n", gid, cmd);
 	exit(109);
     }
 
@@ -497,9 +508,10 @@ int main(int argc, char *argv[])
      * setuid() to the target user.  Error out on fail.
      */
     if ((setuid(uid)) != 0) {
-	log_err("emerg: failed to setuid (%ld: %s)\n", uid, cmd);
+	log_err("emerg: failed to setuid (%u: %s)\n", uid, cmd);
 	exit(110);
     }
+#endif
 
     /*
      * Get the current working directory, as well as the proper
@@ -586,8 +598,8 @@ int main(int argc, char *argv[])
 	(gid != dir_info.st_gid) ||
 	(uid != prg_info.st_uid) ||
 	(gid != prg_info.st_gid)) {
-	log_err("error: target uid/gid (%ld/%ld) mismatch "
-		"with directory (%ld/%ld) or program (%ld/%ld)\n",
+	log_err("error: target uid/gid (%u/%u) mismatch "
+		"with directory (%u/%u) or program (%u/%u)\n",
 		uid, gid,
 		dir_info.st_uid, dir_info.st_gid,
 		prg_info.st_uid, prg_info.st_gid);

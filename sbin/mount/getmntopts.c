@@ -1,3 +1,4 @@
+/*	$OpenBSD: getmntopts.c,v 1.4 2003/06/02 20:06:15 millert Exp $	*/
 /*	$NetBSD: getmntopts.c,v 1.3 1995/03/18 14:56:58 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)getmntopts.c	8.1 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: getmntopts.c,v 1.3 1995/03/18 14:56:58 cgd Exp $";
+static char rcsid[] = "$OpenBSD: getmntopts.c,v 1.4 2003/06/02 20:06:15 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,10 +50,7 @@ static char rcsid[] = "$NetBSD: getmntopts.c,v 1.3 1995/03/18 14:56:58 cgd Exp $
 #include "mntopts.h"
 
 void
-getmntopts(options, m0, flagp)
-	const char *options;
-	const struct mntopt *m0;
-	int *flagp;
+getmntopts(const char *options, const struct mntopt *m0, int *flagp)
 {
 	const struct mntopt *m;
 	int negative;
@@ -79,7 +73,7 @@ getmntopts(options, m0, flagp)
 		 * ignore the assignment as it's handled elsewhere
 		 */
 		p = strchr(opt, '=');
-		if (p)
+		if (p != NULL)
 			 *p = '\0';
 
 		/* Scan option table. */

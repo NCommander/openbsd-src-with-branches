@@ -2915,7 +2915,7 @@ token_for_cell (int fd, struct nnpfs_message_pioctl *h, u_int size,
     tmp = 0;
     memcpy (p, &tmp, sizeof(tmp));
     p += sizeof(tmp);
-    strcpy (p, cell);
+    strlcpy (p, cell, buf + sizeof buf - cell);
     p += strlen(cell) + 1;
 
     len = p - buf;

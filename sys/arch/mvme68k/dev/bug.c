@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: bug.c,v 1.5 2002/04/27 23:21:05 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -35,17 +30,24 @@
  * are preserved.
  */
 #include <sys/param.h>
+
+#include <machine/bugio.h>
 #include <machine/prom.h>
 
 /* flag to traphandler to signify prom call. presumes splhigh() */
 extern volatile int promcall;
+
+void bug_outln(char *, char *);
+void bug_delay(int);
+void bug_stat(void);
+void asm_bug_stat(void);
 
 /* tty routines */
 char
 bug_inchr()
 {
 	int s = splhigh();
-	char a;
+	volatile char a;
 
 	promcall = 1;
 	asm volatile ("subql #2,sp");
@@ -62,7 +64,7 @@ int
 bug_instat()
 {
 	int s = splhigh();
-	short ret;
+	volatile short ret;
 
 	promcall = 1;
 	MVMEPROM_CALL(MVMEPROM_INSTAT);
@@ -126,7 +128,7 @@ int
 bug_diskrd(arg)
 	bug_dskio *arg;
 {
-	int ret;
+	volatile int ret;
 
 	promcall = 1;
 	bug_drdcnt++;
@@ -137,13 +139,14 @@ bug_diskrd(arg)
 	promcall = 0;
 	return (!(ret & 0x4));
 }
+
 /* returns 0: success, nonzero: error */
 u_int bug_dwrcnt = 0;
 int
 bug_diskwr(arg)
 	bug_dskio *arg;
 {
-	int ret;
+	volatile int ret;
 
 	promcall = 1;
 	bug_dwrcnt ++;
@@ -205,17 +208,6 @@ bug_brdid()
 	asm volatile ("movl sp@+,%0" : "=d" (pbrd_id):);
 	promcall = 0;
 	return (pbrd_id);
-}
-
-void
-bug_rtc_rd(ptime)
-	struct bug_time *ptime;
-{
-	promcall = 1;
-	asm volatile ("movl %0,sp@-" :: "a" (ptime));
-	MVMEPROM_CALL(MVMEPROM_RTC_RD);
-	asm volatile ("nop");
-	promcall = 0;
 }
 
 int asm_callbuf[4];

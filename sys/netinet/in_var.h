@@ -1,4 +1,5 @@
-/*	$NetBSD: in_var.h,v 1.15 1995/06/12 00:47:37 mycroft Exp $	*/
+/*	$OpenBSD: in_var.h,v 1.5 2002/03/14 01:27:11 millert Exp $	*/
+/*	$NetBSD: in_var.h,v 1.16 1996/02/13 23:42:15 christos Exp $	*/
 
 /*
  * Copyright (c) 1985, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,6 +31,9 @@
  *
  *	@(#)in_var.h	8.1 (Berkeley) 6/10/93
  */
+
+#ifndef _NETINET_IN_VAR_H_
+#define _NETINET_IN_VAR_H_
 
 #include <sys/queue.h>
 
@@ -79,7 +79,8 @@ struct	in_aliasreq {
 TAILQ_HEAD(in_ifaddrhead, in_ifaddr);
 extern	struct	in_ifaddrhead in_ifaddr;
 extern	struct	ifqueue	ipintrq;		/* ip packet input queue */
-void	in_socktrim __P((struct sockaddr_in *));
+extern	int	inetctlerrmap[];
+void	in_socktrim(struct sockaddr_in *);
 
 
 /*
@@ -205,10 +206,16 @@ struct in_multistep {
 	IN_NEXT_MULTI((step), (inm)); \
 }
 
-int	in_ifinit __P((struct ifnet *,
-	    struct in_ifaddr *, struct sockaddr_in *, int));
-struct	in_multi *in_addmulti __P((struct in_addr *, struct ifnet *));
-int	in_delmulti __P((struct in_multi *));
-void	in_ifscrub __P((struct ifnet *, struct in_ifaddr *));
-int	in_control __P((struct socket *, u_long, caddr_t, struct ifnet *));
+int	in_ifinit(struct ifnet *,
+	    struct in_ifaddr *, struct sockaddr_in *, int);
+struct	in_multi *in_addmulti(struct in_addr *, struct ifnet *);
+void	in_delmulti(struct in_multi *);
+void	in_ifscrub(struct ifnet *, struct in_ifaddr *);
+int	in_control(struct socket *, u_long, caddr_t, struct ifnet *);
 #endif
+
+
+/* INET6 stuff */
+#include <netinet6/in6_var.h>
+
+#endif /* _NETINET_IN_VAR_H_ */

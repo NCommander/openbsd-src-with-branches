@@ -1,4 +1,4 @@
-/*	$PMDB: clit.c,v 1.11 2002/03/07 13:57:28 art Exp $	*/
+/*	$OpenBSD: clit.c,v 1.3 2002/07/12 00:24:53 deraadt Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -207,7 +207,7 @@ cmdloop(void *arg)
 		HistEvent ev;
 #endif
 
-		memset(argv, 0, sizeof(argv));
+		memset(argv, 0, sizeof(char *) * maxargs);
 
 #ifdef __NetBSD__
 		history(hist, &ev, H_ENTER, elline);
@@ -216,6 +216,8 @@ cmdloop(void *arg)
 #endif
 
 		orgline = line = strdup(elline);
+		if (line == NULL)
+			err(1, "strdup");
 
 		argc = 0;
 		for (ap = argv; (*ap = strsep(&line, " \t\n")) != NULL;) {

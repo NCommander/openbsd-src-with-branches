@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2003 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Sudo: compat.h,v 1.54 1999/10/08 01:12:49 millert Exp $
+ * Sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F39502-99-1-0512.
+ *
+ * $Sudo: compat.h,v 1.67 2003/04/16 00:42:09 millert Exp $
  */
 
 #ifndef _SUDO_COMPAT_H
@@ -145,15 +149,35 @@
 #endif
 
 /*
- * Emulate seteuid() for HP-UX via setresuid(2) and seteuid(2) for others.
+ * Simple isblank() macro for systems without it.
  */
-#ifndef HAVE_SETEUID
-# ifdef __hpux
-#  define seteuid(_EUID)	(setresuid((uid_t) -1, _EUID, (uid_t) -1))
-# else
-#  define seteuid(_EUID)	(setreuid((uid_t) -1, _EUID))
-# endif /* __hpux */
-#endif /* HAVE_SETEUID */
+#ifndef HAVE_ISBLANK
+# define isblank(_x)	((_x) == ' ' || (_x) == '\t')
+#endif
+
+/*
+ * Old BSD systems lack strchr(), strrchr(), memset() and memcpy()
+ */
+#if !defined(HAVE_STRCHR) && !defined(strchr)
+# define strchr(_s, _c)	index(_s, _c)
+#endif
+#if !defined(HAVE_STRRCHR) && !defined(strrchr)
+# define strrchr(_s, _c)	rindex(_s, _c)
+#endif
+#if !defined(HAVE_MEMCPY) && !defined(memcpy)
+# define memcpy(_d, _s, _n)	(bcopy(_s, _d, _n))
+#endif
+#if !defined(HAVE_MEMSET) && !defined(memset)
+# define memset(_s, _x, _n)	(bzero(_s, _n))
+#endif
+
+/*
+ * NCR's SVr4 has _innetgr(3) instead of innetgr(3) for some reason.
+ */
+#ifdef HAVE__INNETGR
+# define innetgr(n, h, u, d)	(_innetgr(n, h, u, d))
+# define HAVE_INNETGR 1
+#endif /* HAVE__INNETGR */
 
 /*
  * On POSIX systems, O_NOCTTY is the default so some OS's may lack this define.
@@ -161,5 +185,63 @@
 #ifndef O_NOCTTY
 # define O_NOCTTY	0
 #endif /* O_NOCTTY */
+
+/*
+ * Emulate POSIX signals via sigvec(2)
+ */
+#ifndef HAVE_SIGACTION
+# define SA_ONSTACK	SV_ONSTACK
+# define SA_RESTART	SV_INTERRUPT		/* opposite effect */
+# define SA_RESETHAND	SV_RESETHAND
+# define sa_handler	sv_handler
+# define sa_mask	sv_mask
+# define sa_flags	sv_flags
+typedef struct sigvec sigaction_t;
+typedef int sigset_t;
+int sigaction __P((int sig, const sigaction_t *act, sigaction_t *oact));
+int sigemptyset __P((sigset_t *));
+int sigfillset __P((sigset_t *));
+int sigaddset __P((sigset_t *, int));
+int sigdelset __P((sigset_t *, int));
+int sigismember __P((sigset_t *, int));
+int sigprocmask __P((int, const sigset_t *, sigset_t *));
+#endif
+
+/*
+ * Extra sugar for POSIX signals to deal with the above emulation
+ * as well as the fact that SunOS has a SA_INTERRUPT flag.
+ */
+#ifdef HAVE_SIGACTION
+# ifndef HAVE_SIGACTION_T
+typedef struct sigaction sigaction_t;
+# endif
+# ifndef SA_INTERRUPT
+#  define SA_INTERRUPT	0
+# endif
+# ifndef SA_RESTART
+#  define SA_RESTART	0
+# endif
+#endif
+
+/*
+ * HP-UX 9.x has RLIMIT_* but no RLIM_INFINITY.
+ * Using -1 works because we only check for RLIM_INFINITY and do not set it.
+ */
+#ifndef RLIM_INFINITY
+# define RLIM_INFINITY	(-1)
+#endif
+
+/*
+ * If we lack getprogname(), emulate with __progname if possible.
+ * Otherwise, add a prototype for use with our own getprogname.c.
+ */
+#ifndef HAVE_GETPROGNAME
+# ifdef HAVE___PROGNAME
+extern const char *__progname;
+#  define getprogname()          (__progname)
+# else
+const char *getprogname __P((void));
+#endif /* HAVE___PROGNAME */
+#endif /* !HAVE_GETPROGNAME */
 
 #endif /* _SUDO_COMPAT_H */

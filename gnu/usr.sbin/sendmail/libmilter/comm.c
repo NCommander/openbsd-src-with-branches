@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ *  Copyright (c) 1999-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,15 +9,10 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: comm.c,v 8.43 2001/07/20 20:33:07 ca Exp $")
+SM_RCSID("@(#)$Sendmail: comm.c,v 8.54.2.6 2003/01/03 22:14:40 ca Exp $")
 
 #include "libmilter.h"
 #include <sm/errstring.h>
-
-#define FD_Z	FD_ZERO(&readset);			\
-		FD_SET((unsigned int) sd, &readset);	\
-		FD_ZERO(&excset);			\
-		FD_SET((unsigned int) sd, &excset)
 
 /*
 **  MI_RD_CMD -- read a command
@@ -46,7 +41,7 @@ mi_rd_cmd(sd, timeout, cmd, rlen, name)
 	ssize_t len;
 	mi_int32 expl;
 	ssize_t i;
-	fd_set readset, excset;
+	FD_RD_VAR(rds, excs);
 	int ret;
 	int save_errno;
 	char *buf;
@@ -55,28 +50,31 @@ mi_rd_cmd(sd, timeout, cmd, rlen, name)
 	*cmd = '\0';
 	*rlen = 0;
 
-	if (sd >= FD_SETSIZE)
-	{
-		smi_log(SMI_LOG_ERR, "%s: fd %d is larger than FD_SETSIZE %d",
-			name, sd, FD_SETSIZE);
-		*cmd = SMFIC_SELECT;
-		return NULL;
-	}
-
-	FD_Z;
 	i = 0;
-	while ((ret = select(sd + 1, &readset, NULL, &excset, timeout)) >= 1)
+	for (;;)
 	{
-		if (FD_ISSET(sd, &excset))
+		FD_RD_INIT(sd, rds, excs);
+		ret = FD_RD_READY(sd, rds, excs, timeout);
+		if (ret == 0)
+			break;
+		else if (ret < 0)
+		{
+			if (errno == EINTR)
+				continue;
+			break;
+		}
+		if (FD_IS_RD_EXC(sd, rds, excs))
 		{
 			*cmd = SMFIC_SELECT;
 			return NULL;
 		}
-		if ((len = MI_SOCK_READ(sd, data + i, sizeof data - i)) < 0)
+
+		len = MI_SOCK_READ(sd, data + i, sizeof data - i);
+		if (MI_SOCK_READ_FAIL(len))
 		{
 			smi_log(SMI_LOG_ERR,
 				"%s, mi_rd_cmd: read returned %d: %s",
-				name, len, sm_errstring(errno));
+				name, (int) len, sm_errstring(errno));
 			*cmd = SMFIC_RECVERR;
 			return NULL;
 		}
@@ -88,7 +86,6 @@ mi_rd_cmd(sd, timeout, cmd, rlen, name)
 		if (len >= (ssize_t) sizeof data - i)
 			break;
 		i += len;
-		FD_Z;
 	}
 	if (ret == 0)
 	{
@@ -127,20 +124,30 @@ mi_rd_cmd(sd, timeout, cmd, rlen, name)
 	}
 
 	i = 0;
-	FD_Z;
-	while ((ret = select(sd + 1, &readset, NULL, &excset, timeout)) == 1)
+	for (;;)
 	{
-		if (FD_ISSET(sd, &excset))
+		FD_RD_INIT(sd, rds, excs);
+		ret = FD_RD_READY(sd, rds, excs, timeout);
+		if (ret == 0)
+			break;
+		else if (ret < 0)
+		{
+			if (errno == EINTR)
+				continue;
+			break;
+		}
+		if (FD_IS_RD_EXC(sd, rds, excs))
 		{
 			*cmd = SMFIC_SELECT;
 			free(buf);
 			return NULL;
 		}
-		if ((len = MI_SOCK_READ(sd, buf + i, expl - i)) < 0)
+		len = MI_SOCK_READ(sd, buf + i, expl - i);
+		if (MI_SOCK_READ_FAIL(len))
 		{
 			smi_log(SMI_LOG_ERR,
 				"%s: mi_rd_cmd: read returned %d: %s",
-				name, len, sm_errstring(errno));
+				name, (int) len, sm_errstring(errno));
 			ret = -1;
 			break;
 		}
@@ -166,7 +173,6 @@ mi_rd_cmd(sd, timeout, cmd, rlen, name)
 			return buf;
 		}
 		i += len;
-		FD_Z;
 	}
 
 	save_errno = errno;
@@ -189,7 +195,7 @@ mi_rd_cmd(sd, timeout, cmd, rlen, name)
 	*cmd = SMFIC_UNKNERR;
 	return NULL;
 }
-/*
+/*
 **  MI_WR_CMD -- write a cmd to sd
 **
 **	Parameters:
@@ -203,6 +209,38 @@ mi_rd_cmd(sd, timeout, cmd, rlen, name)
 **		MI_SUCCESS/MI_FAILURE
 */
 
+/*
+**  we don't care much about the timeout here, it's very long anyway
+**  FD_SETSIZE is checked when socket is created.
+**  XXX l == 0 ?
+*/
+
+#define MI_WR(data)	\
+	while (sl > 0)							\
+	{								\
+		FD_WR_INIT(sd, wrs);					\
+		ret = FD_WR_READY(sd, wrs, timeout);			\
+		if (ret == 0)						\
+			return MI_FAILURE;				\
+		if (ret < 0)						\
+		{							\
+			if (errno == EINTR)				\
+				continue;				\
+			else						\
+				return MI_FAILURE;			\
+		}							\
+		l = MI_SOCK_WRITE(sd, (void *) ((data) + i), sl);	\
+		if (l < 0)						\
+		{							\
+			if (errno == EINTR)				\
+				continue;				\
+			else						\
+				return MI_FAILURE;			\
+		}							\
+		i += l;							\
+		sl -= l;						\
+	}
+
 int
 mi_wr_cmd(sd, timeout, cmd, buf, len)
 	socket_t sd;
@@ -215,7 +253,7 @@ mi_wr_cmd(sd, timeout, cmd, buf, len)
 	ssize_t l;
 	mi_int32 nl;
 	int ret;
-	fd_set wrtset;
+	FD_WR_VAR(wrs);
 	char data[MILTER_LEN_BYTES + 1];
 
 	if (len > MILTER_CHUNK_SIZE)
@@ -226,48 +264,15 @@ mi_wr_cmd(sd, timeout, cmd, buf, len)
 	i = 0;
 	sl = MILTER_LEN_BYTES + 1;
 
-	do
-	{
-		FD_ZERO(&wrtset);
-		FD_SET((unsigned int) sd, &wrtset);
-		if ((ret = select(sd + 1, NULL, &wrtset, NULL, timeout)) == 0)
-			return MI_FAILURE;
-	} while (ret < 0 && errno == EINTR);
-	if (ret < 0)
-		return MI_FAILURE;
-
 	/* use writev() instead to send the whole stuff at once? */
-	while ((l = MI_SOCK_WRITE(sd, (void *) (data + i),
-				  sl - i)) < (ssize_t) sl)
-	{
-		if (l < 0)
-			return MI_FAILURE;
-		i += l;
-		sl -= l;
-	}
 
+	MI_WR(data);
 	if (len > 0 && buf == NULL)
 		return MI_FAILURE;
 	if (len == 0 || buf == NULL)
 		return MI_SUCCESS;
 	i = 0;
 	sl = len;
-	do
-	{
-		FD_ZERO(&wrtset);
-		FD_SET((unsigned int) sd, &wrtset);
-		if ((ret = select(sd + 1, NULL, &wrtset, NULL, timeout)) == 0)
-			return MI_FAILURE;
-	} while (ret < 0 && errno == EINTR);
-	if (ret < 0)
-		return MI_FAILURE;
-	while ((l = MI_SOCK_WRITE(sd, (void *) (buf + i),
-				  sl - i)) < (ssize_t) sl)
-	{
-		if (l < 0)
-			return MI_FAILURE;
-		i += l;
-		sl -= l;
-	}
+	MI_WR(buf);
 	return MI_SUCCESS;
 }

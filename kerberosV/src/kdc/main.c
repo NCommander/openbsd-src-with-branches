@@ -38,7 +38,7 @@
 
 RCSID("$KTH: main.c,v 1.27 2002/08/28 21:27:16 joda Exp $");
 
-sig_atomic_t exit_flag = 0;
+volatile sig_atomic_t exit_flag = 0;
 krb5_context context;
 
 #ifdef HAVE_DAEMON
@@ -55,7 +55,6 @@ int
 main(int argc, char **argv)
 {
     krb5_error_code ret;
-    setprogname(argv[0]);
     
     ret = krb5_init_context(&context);
     if (ret)

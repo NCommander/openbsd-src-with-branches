@@ -67,6 +67,9 @@
 /* define if chroot() is available */
 #undef HAVE_CHROOT
 
+/* define if tzset() is available */
+#undef HAVE_TZSET
+
 /* define if struct addrinfo exists */
 #undef HAVE_ADDRINFO
 
@@ -75,6 +78,9 @@
 
 /* define if gai_strerror() exists */
 #undef HAVE_GAISTRERROR
+
+/* define if arc4random() exists */
+#undef HAVE_ARC4RANDOM
 
 /* define if pthread_setconcurrency() should be called to tell the
  * OS how many threads we might want to run.

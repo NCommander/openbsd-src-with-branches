@@ -1,3 +1,5 @@
+/*	$OpenBSD: loop-bsd.c,v 1.6 2002/03/14 16:44:25 mpech Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -28,11 +25,11 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: loop-bsd.c,v 1.11 1996/08/16 22:41:28 moj Exp $";
+static char rcsid[] = "$OpenBSD: loop-bsd.c,v 1.6 2002/03/14 16:44:25 mpech Exp $";
 #endif
 
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <unistd.h>
 #if defined(__bsdi__) || defined(__FreeBSD__)
 #include <sys/time.h>
@@ -91,7 +88,7 @@ mopReadDL()
  */
 struct if_info *iflist;
 
-void   mopProcess    __P((struct if_info *, u_char *));
+void   mopProcess(struct if_info *, u_char *);
 
 /*
  * Loop indefinitely listening for MOP requests on the
@@ -135,8 +132,8 @@ Loop()
 	}
 	while (1) {
 		listeners = fds;
-		if (select(maxfd + 1, &listeners, (struct fd_set *) 0,
-			(struct fd_set *) 0, (struct timeval *) 0) < 0) {
+		if (select(maxfd + 1, &listeners, (fd_set *) 0,
+			(fd_set *) 0, (struct timeval *) 0) < 0) {
 			syslog(LOG_ERR, "select: %m");
 			exit(0);
 		}
@@ -167,7 +164,7 @@ Loop()
 			bp = buf;
 			ep = bp + cc;
 			while (bp < ep) {
-				register int caplen, hdrlen;
+				int caplen, hdrlen;
 
 				caplen = bhp->bh_caplen;
 				hdrlen = bhp->bh_hdrlen;

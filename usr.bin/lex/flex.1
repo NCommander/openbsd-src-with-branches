@@ -1,3 +1,34 @@
+.\"	$OpenBSD: flex.1,v 1.12 2003/02/18 07:43:36 jmc Exp $
+.\" 
+.\" Copyright (c) 1990 The Regents of the University of California.
+.\" All rights reserved.
+.\"
+.\" This code is derived from software contributed to Berkeley by
+.\" Vern Paxson.
+.\"
+.\" The United States Government has rights in this work pursuant
+.\" to contract no. DE-AC03-76SF00098 between the United States
+.\" Department of Energy and the University of California.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" Neither the name of the University nor the names of its contributors
+.\" may be used to endorse or promote products derived from this software
+.\" without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+.\" PURPOSE.
+.\" 
 .TH FLEX 1 "April 1995" "Version 2.5"
 .SH NAME
 flex \- fast lexical analyzer generator
@@ -89,7 +120,7 @@ manual includes both tutorial and reference sections:
 .I flex
 is a tool for generating
 .I scanners:
-programs which recognized lexical patterns in text.
+programs which recognize lexical patterns in text.
 .I flex
 reads
 the given input files, or its standard input if no file names are given,
@@ -214,7 +245,7 @@ A somewhat more complicated example:
                 yyin = fopen( argv[0], "r" );
         else
                 yyin = stdin;
-        
+
         yylex();
         }
 
@@ -257,7 +288,7 @@ Name definitions have the form:
 .fi
 The "name" is a word beginning with a letter or an underscore ('_')
 followed by zero or more letters, digits, '_', or '-' (dash).
-The definition is taken to begin at the first non-white-space character
+The definition is taken to begin at the first non-whitespace character
 following the name and continuing to the end of the line.
 The definition can subsequently be referred to using "{name}", which
 will expand to "(definition)".  For example,
@@ -391,7 +422,7 @@ expressions.  These are:
                  Deficiencies / Bugs section below regarding
                  "dangerous trailing context".)
     ^r         an r, but only at the beginning of a line (i.e.,
-                 which just starting to scan, or right after a
+                 just starting to scan, or right after a
                  newline has been scanned).
     r$         an r, but only at the end of a line (i.e., just
                  before a newline).  Equivalent to "r/\\n".
@@ -490,7 +521,7 @@ For example, the following character classes are all equivalent:
 .nf
 
     [[:alnum:]]
-    [[:alpha:][:digit:]
+    [[:alpha:][:digit:]]
     [[:alpha:]0-9]
     [a-zA-Z0-9]
 
@@ -615,7 +646,7 @@ is that you are restricted in how your actions can modify
 .B yytext
 (see the next section), and calls to the
 .B unput()
-function destroys the present contents of
+function destroy the present contents of
 .B yytext,
 which can be a considerable porting headache when moving between different
 .I lex
@@ -702,7 +733,7 @@ a single blank, and throws away whitespace found at the end of a line:
 .PP
 If the action contains a '{', then the action spans till the balancing '}'
 is found, and the action may cross multiple lines.
-.I flex 
+.I flex
 knows about C strings and comments and won't be fooled by braces found
 within them, but also allows actions to begin with
 .B %{
@@ -1262,7 +1293,7 @@ and not in
 while in the first example it's active in both, because in the first
 example the
 .B example
-startion condition is an
+start condition is an
 .I inclusive
 .B (%s)
 start condition.
@@ -1381,10 +1412,10 @@ maintaining a count of the current input line.
 .fi
 This scanner goes to a bit of trouble to match as much
 text as possible with each rule.  In general, when attempting to write
-a high-speed scanner try to match as much possible in each rule, as
+a high-speed scanner try to match as much as possible in each rule, as
 it's a big win.
 .PP
-Note that start-conditions names are really integer values and
+Note that start-condition names are really integer values and
 can be stored as such.  Thus, the above could be extended in the
 following fashion:
 .nf
@@ -1900,7 +1931,7 @@ interactive to avoid problems due to waiting to fill buffers
 (see the discussion of the
 .B \-I
 flag below).  A non-zero value
-in the macro invocation marks the buffer as interactive, a zero  
+in the macro invocation marks the buffer as interactive, a zero
 value as non-interactive.  Note that use of this macro overrides
 .B %option always-interactive
 or
@@ -1915,7 +1946,7 @@ The macro
 can be used to control whether the current buffer's scanning
 context for the next token match is done as though at the
 beginning of a line.  A non-zero macro argument makes rules anchored with
-'^' active, while a zero argument makes '^' rules inactive.
+\'^' active, while a zero argument makes '^' rules inactive.
 .PP
 The macro
 .B YY_AT_BOL()
@@ -1926,7 +1957,7 @@ In the generated scanner, the actions are all gathered in one large
 switch statement and separated using
 .B YY_BREAK,
 which may be redefined.  By default, it is simply a "break", to separate
-each rule's action from the following rule's.
+each rule's action from the following rules.
 Redefining
 .B YY_BREAK
 allows, for example, C++ users to
@@ -2119,7 +2150,7 @@ The result is large but fast.  This option is equivalent to
 generates a "help" summary of
 .I flex's
 options to
-.I stdout 
+.I stdout
 and then exits.
 .B \-?
 and
@@ -2415,7 +2446,7 @@ and 8-bit scanners.
 specifies that you want flex to generate a C++
 scanner class.  See the section on Generating C++ Scanners below for
 details.
-.TP 
+.TP
 .B \-C[aefFmr]
 controls the degree of table compression and, more generally, trade-offs
 between small scanners and fast scanners.
@@ -2450,7 +2481,7 @@ specifies that the
 scanner tables should be generated -
 .I flex
 should not compress the
-tables by taking advantages of similar transition functions for
+tables by taking advantage of similar transition functions for
 different states.
 .IP
 .B \-CF
@@ -2567,7 +2598,7 @@ changes the default
 .I "yy"
 prefix used by
 .I flex
-for all globally-visible variable and function names to instead be
+for all globally visible variable and function names to instead be
 .I prefix.
 For example,
 .B \-Pfoo
@@ -2616,7 +2647,7 @@ option also renames
 so you now
 .I must
 either
-provide your own (appropriately-named) version of the routine for your
+provide your own (appropriately named) version of the routine for your
 scanner, or use
 .B %option noyywrap,
 as linking with
@@ -2873,7 +2904,7 @@ It is a particularly expensive option.
 Getting rid of backing up is messy and often may be an enormous
 amount of work for a complicated scanner.  In principal, one begins
 by using the
-.B \-b 
+.B \-b
 flag to generate a
 .I lex.backup
 file.  For example, on the input
@@ -3120,7 +3151,7 @@ can't figure this out, and it will plan for possibly needing to back up
 when it has scanned a token like "auto" and then the next character
 is something other than a newline or a letter.  Previously it would
 then just match the "auto" rule and be done, but now it has no "auto"
-rule, only a "auto\\n" rule.  To eliminate the possibility of backing up,
+rule, only an "auto\\n" rule.  To eliminate the possibility of backing up,
 we could either duplicate all rules but without final newlines, or,
 since we never expect to encounter such an input and therefore don't
 how it's classified, we can introduce one more catch-all rule, this
@@ -3143,7 +3174,7 @@ one which doesn't include a newline:
 Compiled with
 .B \-Cf,
 this is about as fast as one can get a
-.I flex 
+.I flex
 scanner to go for this particular problem.
 .PP
 A final note:
@@ -3168,7 +3199,7 @@ provides two different ways to generate scanners for use with C++.  The
 first way is to simply compile a scanner generated by
 .I flex
 using a C++ compiler instead of a C compiler.  You should not encounter
-any compilations errors (please report any you find to the email address
+any compilation errors (please report any you find to the email address
 given in the Author section below).  You can then use C++ code in your
 rule actions instead of C code.  Note that the default input source for
 your scanner remains
@@ -3194,7 +3225,7 @@ When using this option, flex defaults to generating the scanner to the file
 instead of
 .B lex.yy.c.
 The generated scanner includes the header file
-.I FlexLexer.h,
+.I g++/FlexLexer.h,
 which defines the interface to two C++ classes.
 .PP
 The first class,
@@ -3242,12 +3273,12 @@ object pointer and not a
 .B yy_delete_buffer(),
 and
 .B yyrestart()
-(again, the first argument is a
+(again, the first argument is an
 .B istream*
 object pointer).
 .PP
 The second class defined in
-.I FlexLexer.h
+.I g++/FlexLexer.h
 is
 .B yyFlexLexer,
 which is derived from
@@ -3266,7 +3297,7 @@ and
 respectively.
 .TP
 .B virtual int yylex()
-performs the same role is
+performs the same role as
 .B yylex()
 does for ordinary flex scanners: it scans the input stream, consuming
 tokens, until a rule's action returns a value.  If you derive a subclass
@@ -3446,7 +3477,7 @@ option) to rename each
 to some other
 .B xxFlexLexer.
 You then can include
-.B <FlexLexer.h>
+.B <g++/FlexLexer.h>
 in your other sources once per lexer class, first renaming
 .B yyFlexLexer
 as follows:
@@ -3454,11 +3485,11 @@ as follows:
 
     #undef yyFlexLexer
     #define yyFlexLexer xxFlexLexer
-    #include <FlexLexer.h>
+    #include <g++/FlexLexer.h>
 
     #undef yyFlexLexer
     #define yyFlexLexer zzFlexLexer
-    #include <FlexLexer.h>
+    #include <g++/FlexLexer.h>
 
 .fi
 if, for example, you used
@@ -3469,7 +3500,7 @@ for the other.
 .PP
 IMPORTANT: the present form of the scanning class is
 .I experimental
-and may change considerably between major releases. 
+and may change considerably between major releases.
 .SH INCOMPATIBILITIES WITH LEX AND POSIX
 .I flex
 is a rewrite of the AT&T Unix
@@ -3806,7 +3837,7 @@ but that
 failed to notice the fact, meaning that
 .I flex
 scanned the first two sections looking for occurrences of these actions
-and failed to find any, but somehow you snuck some in (via a #include
+and failed to find any, but somehow you snuck some in (via an #include
 file, for example).  Use
 .B %option reject
 or
@@ -3889,7 +3920,7 @@ on some systems).
 generated C++ scanner class, when using
 .B -+.
 .TP
-.I <FlexLexer.h>
+.I <g++/FlexLexer.h>
 header file defining the C++ scanner base class,
 .B FlexLexer,
 and its derived class,
@@ -3917,7 +3948,7 @@ the beginning of the trailing context.  (Note that the POSIX draft
 states that the text matched by such patterns is undefined.)
 .PP
 For some trailing context rules, parts which are actually fixed-length are
-not recognized as such, leading to the abovementioned performance loss.
+not recognized as such, leading to the above mentioned performance loss.
 In particular, parts using '|' or {n} (such as "foo{3}") are always
 considered variable-length.
 .PP
@@ -4009,7 +4040,7 @@ Karl Berry, Peter A. Bigot, Simon Blanchard,
 Keith Bostic, Frederic Brehm, Ian Brockbank, Kin Cho, Nick Christopher,
 Brian Clapper, J.T. Conklin,
 Jason Coughlin, Bill Cox, Nick Cropper, Dave Curtis, Scott David
-Daniels, Chris G. Demetriou, Theo Deraadt,
+Daniels, Chris G. Demetriou, Theo de Raadt,
 Mike Donahue, Chuck Doucette, Tom Epperly, Leo Eskin,
 Chris Faylor, Chris Flatters, Jon Forrest, Jeffrey Friedl,
 Joe Gayda, Kaveh R. Ghazi, Wolfgang Glunz,

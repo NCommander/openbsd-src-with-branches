@@ -19,7 +19,9 @@
 
 #include <net/if_arp.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stdio.h>
+#include <stdlib.h>
 #ifndef	NO_UNISTD
 #include <unistd.h>
 #endif
@@ -130,13 +132,12 @@ setarp(s, ia, ha, len)
 	int status;
 	char buf[256];
 	char *a;
-	extern char *inet_ntoa();
 
 	a = inet_ntoa(*ia);
-	sprintf(buf, "arp -d %s; arp -s %s %s temp",
-		a, a, haddrtoa(ha, len));
+	snprintf(buf, sizeof(buf), "(arp -d %s; arp -s %s %s temp) "
+	    "</dev/null >/dev/null 2>&1", a, a, haddrtoa(ha, len));
 	if (debug > 2)
-		report(LOG_INFO, buf);
+		report(LOG_INFO, "%s", buf);
 	status = system(buf);
 	if (status)
 		report(LOG_ERR, "arp failed, exit code=0x%x", status);
@@ -161,7 +162,8 @@ haddrtoa(haddr, hlen)
 
 	bufptr = haddrbuf;
 	while (hlen > 0) {
-		sprintf(bufptr, "%02X:", (unsigned) (*haddr++ & 0xFF));
+		snprintf(bufptr, sizeof(haddrbuf) - (bufptr - haddrbuf),
+		    "%02X:", (unsigned) (*haddr++ & 0xFF));
 		bufptr += 3;
 		hlen--;
 	}
@@ -229,7 +231,7 @@ static u_char conv802table[256] =
 
 void
 haddr_conv802(addr_in, addr_out, len)
-	register u_char *addr_in, *addr_out;
+	u_char *addr_in, *addr_out;
 	int len;
 {
 	u_char *lim;
@@ -259,6 +261,7 @@ bitrev(n)
 	return r;
 }
 
+int
 main()
 {
 	int i;

@@ -5,7 +5,11 @@
 #ifndef HTVMSUTIL_H
 #define HTVMSUTIL_H
 
-#include <stat.h>
+#ifndef HTUTILS_H
+#include <HTUtils.h>
+#endif
+ 
+#include <HTAnchor.h>
 
 extern BOOL HTVMSFileVersions;	/* Include version numbers in listing? */
 
@@ -83,26 +87,7 @@ PUBLIC BOOL HTVMS_checkAccess PARAMS((
 **	
 */
 PUBLIC char * HTVMS_wwwName PARAMS((
-	char * vmsname));
-
-/* PUBLIC							HTVMS_name()
-**		CONVERTS WWW name into a VMS name
-** ON ENTRY:
-**	nn		Node Name (optional)
-**	fn		WWW file name
-**
-** ON EXIT:
-**	returns 	vms file specification
-**
-** Bug:	Returns pointer to static -- non-reentrant
-*/
-PUBLIC char * HTVMS_name PARAMS((
-	CONST char * nn, 
-	CONST char * fn));
-
-PUBLIC int HTStat PARAMS((
-	CONST char * filename,
-        stat_t * info));
+	CONST char *	vmsname));
 
 PUBLIC int HTVMSBrowseDir PARAMS((
 	CONST char * address,
@@ -110,7 +95,7 @@ PUBLIC int HTVMSBrowseDir PARAMS((
 	HTFormat format_out,
 	HTStream * sink));
 
-#endif /* not HTVMSUTIL_H */
-/*
+extern int HTVMS_remove(char *filename);
+extern void HTVMS_purge(char *filename);
 
-   End of file HTVMSUtil.h.  */
+#endif /* not HTVMSUTIL_H */

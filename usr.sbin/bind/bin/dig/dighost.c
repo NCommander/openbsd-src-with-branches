@@ -54,6 +54,7 @@
 #include <isc/netaddr.h>
 #include <isc/netdb.h>
 #include <isc/print.h>
+#include <isc/random.h>
 #include <isc/result.h>
 #include <isc/string.h>
 #include <isc/task.h>
@@ -299,8 +300,7 @@ make_server(const char *servname) {
 	if (srv == NULL)
 		fatal("Memory allocation failure in %s:%d",
 		      __FILE__, __LINE__);
-	strncpy(srv->servername, servname, MXNAME);
-	srv->servername[MXNAME-1] = 0;
+	strlcpy(srv->servername, servname, MXNAME);
 	ISC_LINK_INIT(srv, link);
 	return (srv);
 }
@@ -409,9 +409,8 @@ clone_lookup(dig_lookup_t *lookold, isc_boolean_t servers) {
 
 	looknew = make_empty_lookup();
 	INSIST(looknew != NULL);
-	strncpy(looknew->textname, lookold->textname, MXNAME);
-	strncpy(looknew->cmdline, lookold->cmdline, MXNAME);
-	looknew->textname[MXNAME-1] = 0;
+	strlcpy(looknew->textname, lookold->textname, MXNAME);
+	strlcpy(looknew->cmdline, lookold->cmdline, MXNAME);
 	looknew->rdtype = lookold->rdtype;
 	looknew->qrdtype = lookold->qrdtype;
 	looknew->rdclass = lookold->rdclass;
@@ -561,8 +560,7 @@ make_searchlist_entry(char *domain) {
 	if (search == NULL)
 		fatal("Memory allocation failure in %s:%d",
 		      __FILE__, __LINE__);
-	strncpy(search->origin, domain, MXNAME);
-	search->origin[MXNAME-1] = 0;
+	strlcpy(search->origin, domain, MXNAME);
 	ISC_LINK_INIT(search, link);
 	return (search);
 }
@@ -689,7 +687,6 @@ setup_libs(void) {
 	 * just use random() now for getting id values, but doing so
 	 * does NOT ensure that id's can't be guessed.
 	 */
-	srandom(getpid());
 
 	result = isc_net_probeipv4();
 	if (result == ISC_R_SUCCESS)
@@ -1162,6 +1159,7 @@ insert_soa(dig_lookup_t *lookup) {
 void
 setup_lookup(dig_lookup_t *lookup) {
 	isc_result_t result;
+	isc_uint32_t id;
 	int len;
 	dig_server_t *serv;
 	dig_query_t *query;
@@ -1275,7 +1273,8 @@ setup_lookup(dig_lookup_t *lookup) {
 	trying(store, lookup);
 	INSIST(dns_name_isabsolute(lookup->name));
 
-	lookup->sendmsg->id = (unsigned short)(random() & 0xFFFF);
+	isc_random_get(&id);
+	lookup->sendmsg->id = (unsigned short)id & 0xFFFF;
 	lookup->sendmsg->opcode = dns_opcode_query;
 	lookup->msgcounter = 0;
 	/*

@@ -1,4 +1,5 @@
-/*	$NetBSD: ww.h,v 1.3 1995/09/28 10:35:07 tls Exp $	*/
+/*	$OpenBSD: ww.h,v 1.8 2002/06/12 06:07:17 mpech Exp $	*/
+/*	$NetBSD: ww.h,v 1.9 1996/10/12 23:46:23 christos Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,9 +41,14 @@
 #include <termios.h>
 #endif
 #include <setjmp.h>
-#include <machine/endian.h>
+#include <sys/types.h>
 
 #define NWW	30		/* maximum number of windows */
+
+/* Macros to clear/set/test flags. */
+#define	SET(t, f)	(t) |= (f)
+#define	CLR(t, f)	(t) &= ~(f)
+#define	ISSET(t, f)	((t) & (f))
 
 	/* a rectangle */
 struct ww_dim {
@@ -64,15 +66,25 @@ struct ww_pos {
 
 	/* the window structure */
 struct ww {
+	int ww_flags;
+
 		/* general flags and states */
-	char ww_state;		/* state of window */
-	char ww_oflags;		/* wwopen flags */
+	int ww_state;		/* state of window */
+#define WWS_INITIAL	0	/* just opened */
+#define WWS_HASPROC	1	/* has process on pty */
+#define WWS_DEAD	3	/* child died */
+#define	ww_oflags	ww_flags
+#define WWO_REVERSE	0x0001	/* make it all reverse video */
+#define WWO_GLASS	0x0002	/* make it all glass */
+#define WWO_FRAME	0x0004	/* this is a frame window */
+#define	WWO_ALLFLAGS	0x0007
 
 		/* information for overlap */
 	struct ww *ww_forw;	/* doubly linked list, for overlapping info */
 	struct ww *ww_back;
-	char ww_index;		/* the window index, for wwindex[] */
-	char ww_order;		/* the overlapping order */
+	unsigned char ww_index;	/* the window index, for wwindex[] */
+#define WWX_NOBODY	NWW
+	int ww_order;		/* the overlapping order */
 
 		/* sizes and positions */
 	struct ww_dim ww_w;	/* window size and pos */
@@ -87,21 +99,26 @@ struct ww {
 	short *ww_nvis;		/* how many ww_buf chars are visible per row */
 
 		/* information for wwwrite() and company */
-	char ww_wstate;		/* state for outputting characters */
+	int ww_wstate;		/* state for outputting characters */
 	char ww_modes;		/* current display modes */
-	char ww_insert;		/* insert mode */
-	char ww_mapnl;		/* map \n to \r\n */
-	char ww_noupdate;	/* don't do updates in wwwrite() */
-	char ww_unctrl;		/* expand control characters */
-	char ww_nointr;		/* wwwrite() not interruptable */
-	char ww_hascursor;	/* has fake cursor */
+#define	ww_wflags	ww_flags
+#define	WWW_INSERT	0x0008	/* insert mode */
+#define	WWW_MAPNL	0x0010	/* map \n to \r\n */
+#define	WWW_NOUPDATE	0x0020	/* don't do updates in wwwrite() */
+#define	WWW_UNCTRL	0x0040	/* expand control characters */
+#define	WWW_NOINTR	0x0080	/* wwwrite() not interruptable */
+#define	WWW_HASCURSOR	0x0100	/* has fake cursor */
 
 		/* things for the window process and io */
-	char ww_ispty;		/* ww_pty is really a pty, not socket pair */
-	char ww_stopped;	/* output stopped */
+	int ww_type;
+#define	WWT_PTY		0	/* pty */
+#define	WWT_SOCKET	1	/* socket pair */
+#define	WWT_INTERNAL	2
+#define	ww_pflags	ww_flags
+#define	WWP_STOPPED	0x0200	/* output stopped */
 	int ww_pty;		/* file descriptor of pty or socket pair */
 	int ww_socket;		/* other end of socket pair */
-	int ww_pid;		/* pid of process, if WWS_HASPROC true */
+	pid_t ww_pid;		/* pid of process, if WWS_HASPROC true */
 	char ww_ttyname[11];	/* "/dev/ttyp?" */
 	char *ww_ob;		/* output buffer */
 	char *ww_obe;		/* end of ww_ob */
@@ -109,10 +126,12 @@ struct ww {
 	char *ww_obq;		/* current write position in ww_ob */
 
 		/* things for the user, they really don't belong here */
-	char ww_id;		/* the user window id */
-	char ww_center;		/* center the label */
-	char ww_hasframe;	/* frame it */
-	char ww_keepopen;	/* keep it open after the process dies */
+	int ww_id;		/* the user window id */
+#define	ww_uflags	ww_flags
+#define	WWU_CENTER	0x0400	/* center the label */
+#define	WWU_HASFRAME	0x0800	/* frame it */
+#define	WWU_KEEPOPEN	0x1000	/* keep it open after the process dies */
+#define	WWU_ALLFLAGS	0x1c00
 	char *ww_label;		/* the user supplied label */
 	struct ww_dim ww_alt;	/* alternate position and size */
 };
@@ -128,7 +147,6 @@ struct ww_tty {
 #else
 	struct termios ww_termios;
 #endif
-	int ww_fflags;
 };
 
 union ww_char {
@@ -168,11 +186,6 @@ struct ww_update {
 #define WWM_USR		0x20	/* user specified mode */
 #define WWM_GLS		0x40	/* window only, glass, i.e., transparent */
 
-	/* ww_state values */
-#define WWS_INITIAL	0	/* just opened */
-#define WWS_HASPROC	1	/* has process on pty */
-#define WWS_DEAD	3	/* child died */
-
 	/* flags for ww_fmap */
 #define WWF_U		0x01
 #define WWF_R		0x02
@@ -181,16 +194,6 @@ struct ww_update {
 #define WWF_MASK	(WWF_U|WWF_R|WWF_D|WWF_L)
 #define WWF_LABEL	0x40
 #define WWF_TOP		0x80
-
-	/* flags to wwopen() */
-#define WWO_PTY		0x01		/* want pty */
-#define WWO_SOCKET	0x02		/* want socket pair */
-#define WWO_REVERSE	0x04		/* make it all reverse video */
-#define WWO_GLASS	0x08		/* make it all glass */
-#define WWO_FRAME	0x10		/* this is a frame window */
-
-	/* special ww_index value */
-#define WWX_NOBODY	NWW
 
 	/* error codes */
 #define WWE_NOERR	0
@@ -223,7 +226,7 @@ char wwavailmodes;		/* actually supported modes */
 char wwcursormodes;		/* the modes for the fake cursor */
 char wwwrap;			/* terminal has auto wrap around */
 int wwdtablesize;		/* result of getdtablesize() call */
-char **wwsmap;			/* the screen map */
+unsigned char **wwsmap;		/* the screen map */
 union ww_char **wwos;		/* the old (current) screen */
 union ww_char **wwns;		/* the new (desired) screen */
 union ww_char **wwcs;		/* the checkpointed screen */
@@ -279,7 +282,7 @@ int wwdocheckpoint;
 
 	/* the window virtual terminal */
 #define WWT_TERM	"window-v2"
-#define WWT_TERMCAP	"WW|window-v2|window program version 2:\
+#define WWT_TERMCAP	"window-v2|window program version 2:\
 	:am:bs:da:db:ms:pt:cr=^M:nl=^J:bl=^G:ta=^I:\
 	:cm=\\EY%+ %+ :le=^H:nd=\\EC:up=\\EA:do=\\EB:ho=\\EH:\
 	:cd=\\EJ:ce=\\EK:cl=\\EE:me=\\Er^?:"
@@ -307,15 +310,6 @@ void wwalarm();
 void wwquit();
 char **wwalloc();
 char *wwerror();
-
-	/* c library functions */
-char *malloc();
-char *calloc();
-char *getenv();
-char *tgetstr();
-char *rindex();
-char *strcpy();
-char *strcat();
 
 #undef MIN
 #undef MAX

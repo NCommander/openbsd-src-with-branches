@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,17 +31,16 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#if defined(SYSLIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)brk.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: brk.S,v 1.4 1994/08/04 05:02:41 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD: brk.S,v 1.3 2002/11/05 00:02:20 miod Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
 	.globl	_end
 	.globl	minbrk
-	.globl	curbrk
+	.globl	__curbrk
 
 	.data
 minbrk:	.long	_end
@@ -68,12 +63,12 @@ ok:
 	trap	#0
 	jcs	err
 #ifdef	PIC
-	movl	a1@(curbrk:w),a0
+	movl	a1@(__curbrk:w),a0
 	movl	sp@(4),a0@
 #else
-	movl	sp@(4),curbrk
+	movl	sp@(4),__curbrk
 #endif
 	clrl	d0
 	rts
 err:
-	jra	cerror
+	jra	__cerror

@@ -1,3 +1,6 @@
+/*	$OpenBSD: chared.h,v 1.5 2002/02/17 19:42:25 millert Exp $	*/
+/*	$NetBSD: chared.h,v 1.2 1997/01/11 06:47:49 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -134,25 +133,23 @@ typedef struct el_chared_t {
 #include "fcns.h"
 
 
-protected int   cv__isword	__P((int));
-protected void  cv_delfini	__P((EditLine *));
-protected char *cv__endword	__P((char *, char *, int));
-protected int   ce__isword	__P((int));
-protected void  cv_undo		__P((EditLine *, int, int, char *));
-protected char *cv_next_word	__P((EditLine*, char *, char *, int, 
-				     int (*)(int)));
-protected char *cv_prev_word	__P((EditLine*, char *, char *, int,
-				     int (*)(int)));
-protected char *c__next_word	__P((char *, char *, int, int (*)(int)));
-protected char *c__prev_word	__P((char *, char *, int, int (*)(int)));
-protected void  c_insert	__P((EditLine *, int));
-protected void  c_delbefore	__P((EditLine *, int));
-protected void  c_delafter	__P((EditLine *, int));
-protected int   c_gets		__P((EditLine *, char *));
-protected int   c_hpos		__P((EditLine *));
+protected int   cv__isword(int);
+protected void  cv_delfini(EditLine *);
+protected char *cv__endword(char *, char *, int);
+protected int   ce__isword(int);
+protected void  cv_undo(EditLine *, int, int, char *);
+protected char *cv_next_word(EditLine*, char *, char *, int, int (*)(int));
+protected char *cv_prev_word(EditLine*, char *, char *, int, int (*)(int));
+protected char *c__next_word(char *, char *, int, int (*)(int));
+protected char *c__prev_word(char *, char *, int, int (*)(int));
+protected void  c_insert(EditLine *, int);
+protected void  c_delbefore(EditLine *, int);
+protected void  c_delafter(EditLine *, int);
+protected int   c_gets(EditLine *, char *);
+protected int   c_hpos(EditLine *);
 
-protected int   ch_init		__P((EditLine *));
-protected void  ch_reset	__P((EditLine *));
-protected void  ch_end		__P((EditLine *));
+protected int   ch_init(EditLine *);
+protected void  ch_reset(EditLine *);
+protected void  ch_end(EditLine *);
 
 #endif /* _h_el_chared */

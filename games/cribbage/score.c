@@ -1,3 +1,4 @@
+/*	$OpenBSD: score.c,v 1.5 2003/04/06 18:50:36 deraadt Exp $	*/
 /*	$NetBSD: score.c,v 1.3 1995/03/21 15:08:57 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)score.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: score.c,v 1.3 1995/03/21 15:08:57 cgd Exp $";
+static char rcsid[] = "$OpenBSD: score.c,v 1.5 2003/04/06 18:50:36 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -109,70 +106,74 @@ static int pairpoints, runpoints;		/* Globals from pairuns. */
  */
 int
 scorehand(hand, starter, n, crb, do_explain)
-	register CARD hand[];
+	CARD hand[];
 	CARD starter;
 	int n;
-	BOOLEAN crb;		/* true if scoring crib */
-	BOOLEAN do_explain;	/* true if must explain this hand */
+	bool crb;		/* true if scoring crib */
+	bool do_explain;	/* true if must explain this hand */
 {
-	register int i, k;
-	register int score;
-	register BOOLEAN flag;
+	int i, k;
+	int score;
+	bool flag;
 	CARD h[(CINHAND + 1)];
 	char buf[32];
 
-	expl[0] = NULL;		/* initialize explanation */
+	expl[0] = '\0';		/* initialize explanation */
 	score = 0;
 	flag = TRUE;
 	k = hand[0].suit;
 	for (i = 0; i < n; i++) {	/* check for flush */
 		flag = (flag && (hand[i].suit == k));
-		if (hand[i].rank == JACK)	/* check for his nibs */
+		if (hand[i].rank == JACK)	/* check for his nobs */
 			if (hand[i].suit == starter.suit) {
 				score++;
 				if (do_explain)
-					strcat(expl, "His Nobs");
+					strlcat(expl, "His Nobs", sizeof expl);
 			}
 		h[i] = hand[i];
 	}
 
 	if (flag && n >= CINHAND) {
-		if (do_explain && expl[0] != NULL)
-			strcat(expl, ", ");
+		if (do_explain && expl[0] != '\0')
+			strlcat(expl, ", ", sizeof expl);
 		if (starter.suit == k) {
 			score += 5;
 			if (do_explain)
-				strcat(expl, "Five-flush");
+				strlcat(expl, "Five-flush", sizeof expl);
 		} else
 			if (!crb) {
 				score += 4;
-				if (do_explain && expl[0] != NULL)
-					strcat(expl, ", Four-flush");
+				if (do_explain && expl[0] != '\0')
+					strlcat(expl, ", Four-flush", sizeof expl);
 				else
-					strcpy(expl, "Four-flush");
+					strlcpy(expl, "Four-flush", sizeof expl);
 			}
 	}
-	if (do_explain && expl[0] != NULL)
-		strcat(expl, ", ");
+	if (do_explain && expl[0] != '\0')
+		strlcat(expl, ", ", sizeof expl);
 	h[n] = starter;
 	sorthand(h, n + 1);	/* sort by rank */
 	i = 2 * fifteens(h, n + 1);
 	score += i;
-	if (do_explain)
+	if (do_explain) {
 		if (i > 0) {
-			(void) sprintf(buf, "%d points in fifteens", i);
-			strcat(expl, buf);
+			(void) snprintf(buf, sizeof buf,
+			    "%d points in fifteens", i);
+			strlcat(expl, buf, sizeof expl);
 		} else
-			strcat(expl, "No fifteens");
+			strlcat(expl, "No fifteens", sizeof expl);
+	}
 	i = pairuns(h, n + 1);
 	score += i;
-	if (do_explain)
+	if (do_explain) {
 		if (i > 0) {
-			(void) sprintf(buf, ", %d points in pairs, %d in runs",
+			(void) snprintf(buf, sizeof buf,
+			    ", %d points in pairs, %d in runs",
 			    pairpoints, runpoints);
-			strcat(expl, buf);
+			strlcat(expl, buf, sizeof expl);
 		} else
-			strcat(expl, ", No pairs/runs");
+			strlcat(expl, ", No pairs/runs", sizeof expl);
+	}
 	return (score);
 }
 
@@ -182,12 +183,12 @@ scorehand(hand, starter, n, crb, do_explain)
  */
 int
 fifteens(hand, n)
-	register CARD hand[];
+	CARD hand[];
 	int n;
 {
-	register int *sp, *np;
-	register int i;
-	register CARD *endp;
+	int *sp, *np;
+	int i;
+	CARD *endp;
 	static int sums[15], nsums[15];
 
 	np = nsums;
@@ -228,10 +229,10 @@ pairuns(h, n)
 	CARD h[];
 	int n;
 {
-	register int i;
+	int i;
 	int runlength, runmult, lastmult, curmult;
 	int mult1, mult2, pair1, pair2;
-	BOOLEAN run;
+	bool run;
 
 	run = TRUE;
 	runlength = 1;
@@ -297,8 +298,8 @@ pegscore(crd, tbl, n, sum)
 	CARD crd, tbl[];
 	int n, sum;
 {
-	BOOLEAN got[RANKS];
-	register int i, j, scr;
+	bool got[RANKS];
+	int i, j, scr;
 	int k, lo, hi;
 
 	sum += VAL(crd.rank);

@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,12 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)bzero.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: bzero.S,v 1.3 1994/12/15 17:24:58 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: bzero.S,v 1.5 2001/01/04 21:45:30 todd Exp $"
+#endif /* LIBC_SCCS */
 
 /* bzero(s1, n) */
 
@@ -50,7 +46,7 @@ LEAF(bzero)
 	and	a3, a3, 3
 	beq	a3, zero, 1f		# skip if word aligned
 	subu	a1, a1, a3		# subtract from remaining count
-	swr	zero, 0(a0)		# clear 1, 2, or 3 bytes to align
+	SWHI	zero, 0(a0)		# clear 1, 2, or 3 bytes to align
 	addu	a0, a0, a3
 1:
 	and	v0, a1, 3		# compute number of words left
@@ -59,7 +55,7 @@ LEAF(bzero)
 	addu	a3, a3, a0		# compute ending address
 2:
 	addu	a0, a0, 4		# clear words
-	bne	a0, a3, 2b		#   unrolling loop doesnt help
+	bne	a0, a3, 2b		#   unrolling loop doesn't help
 	sw	zero, -4(a0)		#   since we are limited by memory speed
 smallclr:
 	ble	a1, zero, 2f

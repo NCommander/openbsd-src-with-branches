@@ -1,49 +1,54 @@
+/*	$OpenBSD: softmagic.c,v 1.9 2003/03/11 21:26:26 ian Exp $	*/
+
 /*
  * softmagic - interpret variable magic from /etc/magic
  *
- * Copyright (c) Ian F. Darwin, 1987.
- * Written by Ian F. Darwin.
- *
- * This software is not subject to any license of the American Telephone
- * and Telegraph Company or of the Regents of the University of California.
- *
- * Permission is granted to anyone to use this software for any purpose on
- * any computer system, and to alter it and redistribute it freely, subject
- * to the following restrictions:
- *
- * 1. The author is not responsible for the consequences of use of this
- *    software, no matter how awful, even if they arise from flaws in it.
- *
- * 2. The origin of this software must not be misrepresented, either by
- *    explicit claim or by omission.  Since few users ever read sources,
- *    credits must appear in the documentation.
- *
- * 3. Altered versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.  Since few users
- *    ever read sources, credits must appear in the documentation.
- *
- * 4. This notice may not be removed or altered.
+ * Copyright (c) Ian F. Darwin 1986-1995.
+ * Software written by Ian F. Darwin and others;
+ * maintained 1995-present by Christos Zoulas and others.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice immediately at the beginning of the file, without modification,
+ *    this list of conditions, and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
+#include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <time.h>
-#include <sys/types.h>
+#include <err.h>
 
 #include "file.h"
 
 #ifndef	lint
-static char *moduleid = 
-	"@(#)$Id: softmagic.c,v 1.9 1995/05/21 00:13:32 christos Exp $";
+static char *moduleid = "$OpenBSD: softmagic.c,v 1.9 2003/03/11 21:26:26 ian Exp $";
 #endif	/* lint */
 
-static int match	__P((unsigned char *, int));
-static int mget		__P((union VALUETYPE *,
-			     unsigned char *, struct magic *, int));
-static int mcheck	__P((union VALUETYPE *, struct magic *));
-static void mprint	__P((union VALUETYPE *, struct magic *));
-static void mdebug	__P((long, char *, int));
-static int mconvert	__P((union VALUETYPE *, struct magic *));
+static int match(unsigned char *, int);
+static int mget(union VALUETYPE *, unsigned char *, struct magic *, int);
+static int mcheck(union VALUETYPE *, struct magic *);
+static int32_t mprint(union VALUETYPE *, struct magic *);
+static void mdebug(int32_t, char *, int);
+static int mconvert(union VALUETYPE *, struct magic *);
 
 /*
  * softmagic - lookup one file in database 
@@ -98,6 +103,13 @@ int nbytes;
 	int cont_level = 0;
 	int need_separator = 0;
 	union VALUETYPE p;
+	static int32_t *tmpoff = NULL;
+	static size_t tmplen = 0;
+	int32_t oldoff = 0;
+
+	if (tmpoff == NULL)
+		if ((tmpoff = (int32_t *) malloc(tmplen = 20)) == NULL)
+			err(1, "malloc");
 
 	for (magindex = 0; magindex < nmagic; magindex++) {
 		/* if main entry matches, print it... */
@@ -113,7 +125,7 @@ int nbytes;
 			    continue;
 		}
 
-		mprint(&p, &magic[magindex]);
+		tmpoff[cont_level] = mprint(&p, &magic[magindex]);
 		/*
 		 * If we printed something, we'll need to print
 		 * a blank before we print something else.
@@ -121,7 +133,10 @@ int nbytes;
 		if (magic[magindex].desc[0])
 			need_separator = 1;
 		/* and any continuations that match */
-		cont_level++;
+		if (++cont_level >= tmplen)
+			if ((tmpoff = (int32_t *) realloc(tmpoff,
+						       tmplen += 20)) == NULL)
+				err(1, "malloc");
 		while (magic[magindex+1].cont_level != 0 && 
 		       ++magindex < nmagic) {
 			if (cont_level >= magic[magindex].cont_level) {
@@ -131,6 +146,10 @@ int nbytes;
 					 * "cont_level" continuations.
 					 */
 					cont_level = magic[magindex].cont_level;
+				}
+				if (magic[magindex].flag & ADD) {
+					oldoff=magic[magindex].offset;
+					magic[magindex].offset += tmpoff[cont_level-1];
 				}
 				if (mget(&p, s, &magic[magindex], nbytes) &&
 				    mcheck(&p, &magic[magindex])) {
@@ -149,7 +168,7 @@ int nbytes;
 						(void) putchar(' ');
 						need_separator = 0;
 					}
-					mprint(&p, &magic[magindex]);
+					tmpoff[cont_level] = mprint(&p, &magic[magindex]);
 					if (magic[magindex].desc[0])
 						need_separator = 1;
 
@@ -158,7 +177,14 @@ int nbytes;
 					 * at a higher level,
 					 * process them.
 					 */
-					cont_level++;
+					if (++cont_level >= tmplen)
+						if ((tmpoff = 
+						    (int32_t *) realloc(tmpoff,
+						    tmplen += 20)) == NULL)
+							err(1, "malloc");
+				}
+				if (magic[magindex].flag & ADD) {
+					 magic[magindex].offset = oldoff;
 				}
 			}
 		}
@@ -167,13 +193,14 @@ int nbytes;
 	return 0;			/* no match at all */
 }
 
-static void
+static int32_t
 mprint(p, m)
 union VALUETYPE *p;
 struct magic *m;
 {
 	char *pp, *rt;
-	unsigned long v;
+	uint32_t v;
+	int32_t t=0 ;
 
 
   	switch (m->type) {
@@ -181,6 +208,7 @@ struct magic *m;
 		v = p->b;
 		v = signextend(m, v) & m->mask;
 		(void) printf(m->desc, (unsigned char) v);
+		t = m->offset + sizeof(char);
 		break;
 
   	case SHORT:
@@ -189,6 +217,7 @@ struct magic *m;
 		v = p->h;
 		v = signextend(m, v) & m->mask;
 		(void) printf(m->desc, (unsigned short) v);
+		t = m->offset + sizeof(short);
 		break;
 
   	case LONG:
@@ -196,17 +225,25 @@ struct magic *m;
   	case LELONG:
 		v = p->l;
 		v = signextend(m, v) & m->mask;
-		(void) printf(m->desc, (unsigned long) v);
+		(void) printf(m->desc, (uint32_t) v);
+		t = m->offset + sizeof(int32_t);
   		break;
 
   	case STRING:
 		if (m->reln == '=') {
 			(void) printf(m->desc, m->value.s);
+			t = m->offset + strlen(m->value.s);
 		}
 		else {
+			if (*m->value.s == '\0') {
+				char *cp = strchr(p->s,'\n');
+				if (cp)
+					*cp = '\0';
+			}
 			(void) printf(m->desc, p->s);
+			t = m->offset + strlen(p->s);
 		}
-		return;
+		break;
 
 	case DATE:
 	case BEDATE:
@@ -215,11 +252,14 @@ struct magic *m;
 		if ((rt = strchr(pp, '\n')) != NULL)
 			*rt = '\0';
 		(void) printf(m->desc, pp);
-		return;
+		t = m->offset + sizeof(time_t);
+		break;
+
 	default:
-		error("invalid m->type (%d) in mprint().\n", m->type);
+		errx(1, "invalid m->type (%d) in mprint().", m->type);
 		/*NOTREACHED*/
 	}
+	return(t);
 }
 
 /*
@@ -230,8 +270,6 @@ mconvert(p, m)
 union VALUETYPE *p;
 struct magic *m;
 {
-	char *rt;
-
 	switch (m->type) {
 	case BYTE:
 	case SHORT:
@@ -239,17 +277,21 @@ struct magic *m;
 	case DATE:
 		return 1;
 	case STRING:
-		/* Null terminate and eat the return */
-		p->s[sizeof(p->s) - 1] = '\0';
-		if ((rt = strchr(p->s, '\n')) != NULL)
-			*rt = '\0';
-		return 1;
+		{
+			char *ptr;
+
+			/* Null terminate and eat the return */
+			p->s[sizeof(p->s) - 1] = '\0';
+			if ((ptr = strchr(p->s, '\n')) != NULL)
+				*ptr = '\0';
+			return 1;
+		}
 	case BESHORT:
 		p->h = (short)((p->hs[0]<<8)|(p->hs[1]));
 		return 1;
 	case BELONG:
 	case BEDATE:
-		p->l = (long)
+		p->l = (int32_t)
 		    ((p->hl[0]<<24)|(p->hl[1]<<16)|(p->hl[2]<<8)|(p->hl[3]));
 		return 1;
 	case LESHORT:
@@ -257,11 +299,11 @@ struct magic *m;
 		return 1;
 	case LELONG:
 	case LEDATE:
-		p->l = (long)
+		p->l = (int32_t)
 		    ((p->hl[3]<<24)|(p->hl[2]<<16)|(p->hl[1]<<8)|(p->hl[0]));
 		return 1;
 	default:
-		error("invalid type %d in mconvert().\n", m->type);
+		errx(1, "invalid type %d in mconvert().", m->type);
 		return 0;
 	}
 }
@@ -269,11 +311,11 @@ struct magic *m;
 
 static void
 mdebug(offset, str, len)
-long offset;
+int32_t offset;
 char *str;
 int len;
 {
-	(void) fprintf(stderr, "mget @%ld: ", offset);
+	(void) fprintf(stderr, "mget @%d: ", offset);
 	showstr(stderr, (char *) str, len);
 	(void) fputc('\n', stderr);
 	(void) fputc('\n', stderr);
@@ -286,7 +328,7 @@ unsigned char	*s;
 struct magic *m;
 int nbytes;
 {
-	long offset = m->offset;
+	int32_t offset = m->offset;
 
 	if (offset + sizeof(union VALUETYPE) <= nbytes)
 		memcpy(p, s + offset, sizeof(union VALUETYPE));
@@ -295,7 +337,7 @@ int nbytes;
 		 * the usefulness of padding with zeroes eludes me, it
 		 * might even cause problems
 		 */
-		long have = nbytes - offset;
+		int32_t have = nbytes - offset;
 		memset(p, 0, sizeof(union VALUETYPE));
 		if (have > 0)
 			memcpy(p, s + offset, have);
@@ -345,8 +387,8 @@ mcheck(p, m)
 union VALUETYPE* p;
 struct magic *m;
 {
-	register unsigned long l = m->value.l;
-	register unsigned long v;
+	uint32_t l = m->value.l;
+	uint32_t v;
 	int matched;
 
 	if ( (m->value.s[0] == 'x') && (m->value.s[1] == '\0') ) {
@@ -384,17 +426,17 @@ struct magic *m;
 		 */
 		v = 0;
 		{
-			register unsigned char *a = (unsigned char*)m->value.s;
-			register unsigned char *b = (unsigned char*)p->s;
-			register int len = m->vallen;
+			unsigned char *a = (unsigned char*)m->value.s;
+			unsigned char *b = (unsigned char*)p->s;
+			int len = m->vallen;
 
 			while (--len >= 0)
-				if ((v = *b++ - *a++) != 0)
+				if ((v = *b++ - *a++) != '\0')
 					break;
 		}
 		break;
 	default:
-		error("invalid type %d in mcheck().\n", m->type);
+		errx(1, "invalid type %d in mcheck().", m->type);
 		return 0;/*NOTREACHED*/
 	}
 
@@ -403,21 +445,21 @@ struct magic *m;
 	switch (m->reln) {
 	case 'x':
 		if (debug)
-			(void) fprintf(stderr, "%lu == *any* = 1\n", v);
+			(void) fprintf(stderr, "%u == *any* = 1\n", v);
 		matched = 1;
 		break;
 
 	case '!':
 		matched = v != l;
 		if (debug)
-			(void) fprintf(stderr, "%lu != %lu = %d\n",
+			(void) fprintf(stderr, "%u != %u = %d\n",
 				       v, l, matched);
 		break;
 
 	case '=':
 		matched = v == l;
 		if (debug)
-			(void) fprintf(stderr, "%lu == %lu = %d\n",
+			(void) fprintf(stderr, "%u == %u = %d\n",
 				       v, l, matched);
 		break;
 
@@ -425,13 +467,13 @@ struct magic *m;
 		if (m->flag & UNSIGNED) {
 			matched = v > l;
 			if (debug)
-				(void) fprintf(stderr, "%lu > %lu = %d\n",
+				(void) fprintf(stderr, "%u > %u = %d\n",
 					       v, l, matched);
 		}
 		else {
-			matched = (long) v > (long) l;
+			matched = (int32_t) v > (int32_t) l;
 			if (debug)
-				(void) fprintf(stderr, "%ld > %ld = %d\n",
+				(void) fprintf(stderr, "%d > %d = %d\n",
 					       v, l, matched);
 		}
 		break;
@@ -440,13 +482,13 @@ struct magic *m;
 		if (m->flag & UNSIGNED) {
 			matched = v < l;
 			if (debug)
-				(void) fprintf(stderr, "%lu < %lu = %d\n",
+				(void) fprintf(stderr, "%u < %u = %d\n",
 					       v, l, matched);
 		}
 		else {
-			matched = (long) v < (long) l;
+			matched = (int32_t) v < (int32_t) l;
 			if (debug)
-				(void) fprintf(stderr, "%ld < %ld = %d\n",
+				(void) fprintf(stderr, "%d < %d = %d\n",
 					       v, l, matched);
 		}
 		break;
@@ -454,20 +496,20 @@ struct magic *m;
 	case '&':
 		matched = (v & l) == l;
 		if (debug)
-			(void) fprintf(stderr, "((%lx & %lx) == %lx) = %d\n",
+			(void) fprintf(stderr, "((%x & %x) == %x) = %d\n",
 				       v, l, l, matched);
 		break;
 
 	case '^':
 		matched = (v & l) != l;
 		if (debug)
-			(void) fprintf(stderr, "((%lx & %lx) != %lx) = %d\n",
+			(void) fprintf(stderr, "((%x & %x) != %x) = %d\n",
 				       v, l, l, matched);
 		break;
 
 	default:
 		matched = 0;
-		error("mcheck: can't happen: invalid relation %d.\n", m->reln);
+		errx(1, "mcheck: can't happen: invalid relation %d.", m->reln);
 		break;/*NOTREACHED*/
 	}
 

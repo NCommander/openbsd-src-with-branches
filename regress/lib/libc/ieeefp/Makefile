@@ -1,12 +1,7 @@
-#	$NetBSD: Makefile,v 1.4 1995/10/03 21:59:36 phil Exp $
+#	$OpenBSD: Makefile,v 1.4 2002/02/16 17:22:40 pvalchev Exp $
+#	$NetBSD: Makefile,v 1.5 1996/04/09 16:54:18 phil Exp $
 
-.if ${MACHINE} == "pc532"
-SUBDIR+= round
-.else
-SUBDIR+= except round
-.endif
-
-regress: _SUBDIRUSE
+SUBDIR+= except inf round
 
 install:
 

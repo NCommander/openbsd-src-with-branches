@@ -1,0 +1,3 @@
+dnl	$OpenBSD$
+OpenBSD/MACHINE is an experimental port of OpenBSD to the Motorola 881x0
+processor-based VME boards.

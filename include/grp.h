@@ -1,3 +1,4 @@
+/*	$OpenBSD: grp.h,v 1.6 2003/06/02 19:34:12 millert Exp $	*/
 /*	$NetBSD: grp.h,v 1.7 1995/04/29 05:30:40 cgd Exp $	*/
 
 /*-
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,6 +40,9 @@
 #ifndef _GRP_H_
 #define	_GRP_H_
 
+#include <sys/cdefs.h>
+#include <sys/types.h>
+
 #if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define	_PATH_GROUP		"/etc/group"
 #endif
@@ -50,23 +50,25 @@
 struct group {
 	char	*gr_name;		/* group name */
 	char	*gr_passwd;		/* group password */
-	int	gr_gid;			/* group id */
+	gid_t	gr_gid;			/* group id */
 	char	**gr_mem;		/* group members */
 };
 
-#include <sys/cdefs.h>
-
 __BEGIN_DECLS
-struct group	*getgrgid __P((gid_t));
-struct group	*getgrnam __P((const char *));
+struct group	*getgrgid(gid_t);
+int		getgrgid_r(gid_t, struct group *, char *,
+		    size_t, struct group **);
+struct group	*getgrnam(const char *);
+int		getgrnam_r(const char *, struct group *, char *,
+		    size_t, struct group **);
 #ifndef _POSIX_SOURCE
-struct group	*getgrent __P((void));
-void		 setgrent __P((void));
-void		 endgrent __P((void));
-void		 setgrfile __P((const char *));
+struct group	*getgrent(void);
+void		 setgrent(void);
+void		 endgrent(void);
+void		 setgrfile(const char *);
 #ifndef _XOPEN_SOURCE
-char		*group_from_gid __P((gid_t, int));
-int		 setgroupent __P((int));
+char		*group_from_gid(gid_t, int);
+int		 setgroupent(int);
 #endif /* !_XOPEN_SOURCE */
 #endif /* !_POSIX_SOURCE */
 __END_DECLS

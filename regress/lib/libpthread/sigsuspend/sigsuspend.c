@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sigsuspend.c,v 1.3 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: sigsuspend.c,v 1.3 2002/10/21 18:58:57 marc Exp $	*/
 /*
  * Copyright (c) 1998 Daniel M. Eischen <eischen@vigrid.com>
  * All rights reserved.
@@ -93,7 +93,10 @@ sigsuspender (void *arg)
 static void
 sighandler (int signo)
 {
+	int save_errno = errno;
+	char buf[8192];
 	sigset_t set;
+	sigset_t tmp;
 	pthread_t self;
 
 	if ((signo >= 0) && (signo <= NSIG))
@@ -101,20 +104,31 @@ sighandler (int signo)
 
 	/*
 	 * If we are running on behalf of the suspender thread,
-	 * ensure that we have the correct mask set.
+	 * ensure that we have the correct mask set.   NOTE: per
+	 * POSIX the current signo will be part of the mask unless
+	 * SA_NODEFER was specified.   Since it isn't in this test
+	 * add the current signal to the original suspender_mask
+	 * before checking.
 	 */
 	self = pthread_self ();
 	if (self == suspender_tid) {
 		sigfifo[fifo_depth] = signo;
 		fifo_depth++;
-		printf ("  -> Suspender thread signal handler caught "
+		snprintf(buf, sizeof buf,
+		    "  -> Suspender thread signal handler caught "
 			"signal %d (%s)\n", signo, strsignal(signo));
+		write(STDOUT_FILENO, buf, strlen(buf));
 		sigprocmask (SIG_SETMASK, NULL, &set);
-		ASSERT(set == suspender_mask);
-	}
-	else
-		printf ("  -> Main thread signal handler caught "
+		tmp = suspender_mask;
+		sigaddset(&tmp, signo);
+		ASSERT(set == tmp);
+	} else {
+		snprintf(buf, sizeof buf,
+		    "  -> Main thread signal handler caught "
 			"signal %d (%s)\n", signo, strsignal(signo));
+		write(STDOUT_FILENO, buf, strlen(buf));
+	}
+	errno = save_errno;
 }
 
 
@@ -197,7 +211,7 @@ int main (int argc, char *argv[])
 	CHECKe(kill (getpid (), SIGURG));
 	sleep (1);
 	/* sigsuspend should wake up for SIGURG */
-	ASSERT(sigcounts[SIGURG] == 3);
+	ASSERT(sigcounts[SIGURG] == 2);
 
 	/*
 	 * Verify that a SIGUSR2 signal will release a sigsuspended

@@ -1,3 +1,4 @@
+/*	$OpenBSD: soelim.c,v 1.6 2003/06/03 02:56:16 millert Exp $	*/
 /*	$NetBSD: soelim.c,v 1.3 1994/12/21 08:11:26 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)soelim.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: soelim.c,v 1.3 1994/12/21 08:11:26 jtc Exp $";
+static char rcsid[] = "$OpenBSD: soelim.c,v 1.6 2003/06/03 02:56:16 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -65,9 +62,10 @@ static char rcsid[] = "$NetBSD: soelim.c,v 1.3 1994/12/21 08:11:26 jtc Exp $";
  */
 #define	STDIN_NAME	"-"
 
-main(argc, argv)
-	int argc;
-	char *argv[];
+int process(char *file);
+
+int
+main(int argc, char *argv[])
 {
 
 	argc--;
@@ -84,11 +82,11 @@ main(argc, argv)
 	exit(0);
 }
 
-int process(file)
-	char *file;
+int
+process(char *file)
 {
-	register char *cp;
-	register int c;
+	char *cp;
+	int c;
 	char fname[BUFSIZ];
 	FILE *soee;
 	int isfile;

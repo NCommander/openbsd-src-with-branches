@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Vax opcde list.
    Copyright (C) 1989, Free Software Foundation, Inc.
 

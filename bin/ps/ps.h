@@ -1,3 +1,4 @@
+/*	$OpenBSD: ps.h,v 1.4 2002/02/16 21:27:07 millert Exp $	*/
 /*	$NetBSD: ps.h,v 1.11 1995/09/29 21:57:03 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -73,8 +70,9 @@ typedef struct var {
 #define	INF127	0x08		/* 127 = infinity: if > 127, print 127. */
 	u_int	flag;
 				/* output routine */
-	void	(*oproc) __P((struct kinfo *, struct varent *));
+	void	(*oproc)(struct kinfo *, struct varent *);
 	short	width;		/* printing width */
+	char	parsed;		/* have we been parsed yet? (avoid dupes) */
 	/*
 	 * The following (optional) elements are hooks for passing information
 	 * to the generic output routines: pvar, evar, uvar (those which print

@@ -1011,7 +1011,6 @@ AddType application/x-pkcs7-crl    .crl
 #   terminal dialog) has to provide the pass phrase on stdout.
 SSLPassPhraseDialog  builtin
 
-#   Inter-Process Session Cache:
 #   Configure the SSL Session Cache: First the mechanism 
 #   to use and second the expiring timeout (in seconds).
 #SSLSessionCache        none
@@ -1181,7 +1180,7 @@ SSLCertificateKeyFile @@ServerRoot@@/conf/ssl.key/server.key
 #     This enables optimized SSL connection renegotiation handling when SSL
 #     directives are used in per-directory context. 
 #SSLOptions +FakeBasicAuth +ExportCertData +CompatEnvVars +StrictRequire
-<Files ~ "\.(cgi|shtml|phtml|php3?)$">
+<Files ~ "\.(cgi|shtml|phtml|php3|php?)$">
     SSLOptions +StdEnvVars
 </Files>
 <Directory "@@ServerRoot@@/cgi-bin">

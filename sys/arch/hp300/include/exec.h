@@ -1,4 +1,5 @@
-/*	$NetBSD: exec.h,v 1.9 1995/03/28 18:16:33 jtc Exp $	*/
+/*	$OpenBSD: exec.h,v 1.7 1997/01/12 15:13:34 downsj Exp $	*/
+/*	$NetBSD: exec.h,v 1.10 1995/11/20 01:15:26 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
@@ -27,42 +28,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _HP300_EXEC_H_
-#define _HP300_EXEC_H_
+#ifndef _MACHINE_EXEC_H_
+#define _MACHINE_EXEC_H_
 
-#ifdef _KERNEL
-
-#ifdef COMPAT_HPUX
-#include "user.h"			/* for pcb */
-#include "hp300/hpux/hpux_exec.h"
-#endif
-
-/*
- * the following, if defined, prepares a set of vmspace commands for
- * a given exectable package defined by epp.
- * The standard executable formats are taken care of automatically;
- * machine-specific ones can be defined using this function.
- */
-int cpu_exec_makecmds __P((struct proc *p, struct exec_package *epp));
-
-/*
- * the following function/macro checks to see if a given machine
- * type (a_mid) field is valid for this architecture
- * a non-zero return value indicates that the machine type is correct.
- */
-#ifdef COMPAT_HPUX
-#define cpu_exec_checkmid(mid) ((mid == MID_HP200) || (mid == MID_HP300) || \
-				(mid == MID_HPUX))
-#else
-#define cpu_exec_checkmid(mid) ((mid == MID_HP200) || (mid == MID_HP300)))
-#endif
-
-#endif /* _KERNEL */
-
-#define __LDPGSZ	4096
+#define __LDPGSZ	8192
 
 /* Relocation format. */
-struct relocation_info_hp300 {
+struct relocation_info_m68k {
 	int r_address;			/* offset in text or data segment */
 	unsigned int r_symbolnum : 24,	/* ordinal number of add symbol */
 			 r_pcrel :  1,	/* 1 if value should be pc-relative */
@@ -73,6 +45,20 @@ struct relocation_info_hp300 {
 		      r_relative :  1,	/* load address relative */
 			  r_copy :  1;	/* run time copy */
 };
-#define relocation_info	relocation_info_hp300
+#define relocation_info	relocation_info_m68k
 
-#endif  /* _HP300_EXEC_H_ */
+#define ARCH_ELFSIZE		32
+
+#define ELF_TARG_CLASS		ELFCLASS32
+#define ELF_TARG_DATA		ELFDATA2MSB
+#define ELF_TARG_MACH		EM_68K
+
+#define _NLIST_DO_AOUT
+#define _NLIST_DO_ELF
+
+#define _KERN_DO_AOUT
+#if defined(COMPAT_LINUX) || defined(COMPAT_SVR4)
+#define _KERN_DO_ELF
+#endif
+
+#endif  /* _MACHINE_EXEC_H_ */

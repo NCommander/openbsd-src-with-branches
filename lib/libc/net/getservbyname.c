@@ -1,5 +1,3 @@
-/*	$NetBSD: getservbyname.c,v 1.4 1995/02/25 06:20:36 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,27 +28,30 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getservbyname.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getservbyname.c,v 1.4 1995/02/25 06:20:36 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getservbyname.c,v 1.5 2000/01/06 08:24:17 d Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <netdb.h>
 #include <string.h>
+#include "thread_private.h"
 
 extern int _serv_stayopen;
 
+_THREAD_PRIVATE_MUTEX(getservbyname_r);
+
 struct servent *
-getservbyname(name, proto)
+getservbyname_r(name, proto, se, buf, buflen)
 	const char *name, *proto;
+	struct servent *se;
+	char *buf;
+	int buflen;
 {
 	register struct servent *p;
 	register char **cp;
 
+	_THREAD_PRIVATE_MUTEX_LOCK(getservbyname_r);
 	setservent(_serv_stayopen);
-	while (p = getservent()) {
+	while ((p = getservent())) {
 		if (strcmp(name, p->s_name) == 0)
 			goto gotname;
 		for (cp = p->s_aliases; *cp; cp++)
@@ -67,5 +64,20 @@ gotname:
 	}
 	if (!_serv_stayopen)
 		endservent();
+	_THREAD_PRIVATE_MUTEX_UNLOCK(getservbyname_r);
 	return (p);
+}
+
+struct servent *getservbyname(name, proto)
+	const char *name, *proto;
+{
+	_THREAD_PRIVATE_KEY(getservbyname);
+	static char buf[4096];
+	char *bufp = (char*)_THREAD_PRIVATE(getservbyname, buf, NULL);
+
+	if (bufp == NULL)
+		return (NULL);
+	return getservbyname_r(name, proto, (struct servent*) bufp, 
+		bufp + sizeof(struct servent), 
+		sizeof buf - sizeof(struct servent) );
 }

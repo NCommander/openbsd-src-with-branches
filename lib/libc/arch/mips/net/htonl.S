@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,20 +30,21 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)htonl.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: htonl.S,v 1.3 1994/12/15 17:24:52 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD: htonl.S,v 1.5 1999/06/02 10:06:58 pefo Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * netorder = htonl(hostorder)
  * hostorder = ntohl(netorder)
  */
-NLEAF(htonl)				# a0 = 0x11223344, return 0x44332211
 ALEAF(ntohl)
-#ifdef MIPSEL
+NLEAF(htonl)				# a0 = 0x11223344, return 0x44332211
+	.set	reorder
+#ifdef __MIPSEL__
 	srl	v1, a0, 24		# v1 = 0x00000011
 	sll	v0, a0, 24		# v0 = 0x44000000
 	or	v0, v0, v1
@@ -58,7 +55,7 @@ ALEAF(ntohl)
 	and	v1, v1, 0xff00		# v1 = 0x00002200
 	or	v0, v0, v1
 #else
-#ifdef MIPSEB
+#ifdef __MIPSEB__
 	move	v0, a0
 #else
 	ERROR

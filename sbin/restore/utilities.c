@@ -1,4 +1,5 @@
-/*	$NetBSD: utilities.c,v 1.9 1995/03/18 14:59:59 cgd Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.12 2003/06/02 20:06:16 millert Exp $	*/
+/*	$NetBSD: utilities.c,v 1.11 1997/03/19 08:42:56 lukem Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)utilities.c	8.4 (Berkeley) 10/18/94";
 #else
-static char rcsid[] = "$NetBSD: utilities.c,v 1.9 1995/03/18 14:59:59 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: utilities.c,v 1.12 2003/06/02 20:06:16 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,7 +44,8 @@ static char rcsid[] = "$NetBSD: utilities.c,v 1.9 1995/03/18 14:59:59 cgd Exp $"
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
 
-#include <errno.h>
+#include <err.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,7 +61,7 @@ void
 pathcheck(name)
 	char *name;
 {
-	register char *cp;
+	char *cp;
 	struct entry *ep;
 	char *start;
 
@@ -90,14 +88,14 @@ pathcheck(name)
  */
 void
 mktempname(ep)
-	register struct entry *ep;
+	struct entry *ep;
 {
 	char oldname[MAXPATHLEN];
 
 	if (ep->e_flags & TMPNAME)
 		badentry(ep, "mktempname: called with TMPNAME");
 	ep->e_flags |= TMPNAME;
-	(void) strcpy(oldname, myname(ep));
+	(void)strlcpy(oldname, myname(ep), sizeof oldname);
 	freename(ep->e_name);
 	ep->e_name = savename(gentempname(ep));
 	ep->e_namlen = strlen(ep->e_name);
@@ -120,7 +118,7 @@ gentempname(ep)
 		i++;
 	if (np == NULL)
 		badentry(ep, "not on ino list");
-	(void) sprintf(name, "%s%d%d", TMPHDR, i, ep->e_ino);
+	(void)snprintf(name, sizeof(name), "%s%ld%d", TMPHDR, i, ep->e_ino);
 	return (name);
 }
 
@@ -132,11 +130,10 @@ renameit(from, to)
 	char *from, *to;
 {
 	if (!Nflag && rename(from, to) < 0) {
-		fprintf(stderr, "warning: cannot rename %s to %s: %s\n",
-		    from, to, strerror(errno));
+		warn("cannot rename %s to %s", from, to);
 		return;
 	}
-	vprintf(stdout, "rename %s to %s\n", from, to);
+	Vprintf(stdout, "rename %s to %s\n", from, to);
 }
 
 /*
@@ -153,10 +150,10 @@ newnode(np)
 	cp = myname(np);
 	if (!Nflag && mkdir(cp, 0777) < 0) {
 		np->e_flags |= EXISTED;
-		fprintf(stderr, "warning: %s: %s\n", cp, strerror(errno));
+		warn("%s", cp);
 		return;
 	}
-	vprintf(stdout, "Make node %s\n", cp);
+	Vprintf(stdout, "Make node %s\n", cp);
 }
 
 /*
@@ -164,7 +161,7 @@ newnode(np)
  */
 void
 removenode(ep)
-	register struct entry *ep;
+	struct entry *ep;
 {
 	char *cp;
 
@@ -176,10 +173,10 @@ removenode(ep)
 	ep->e_flags &= ~TMPNAME;
 	cp = myname(ep);
 	if (!Nflag && rmdir(cp) < 0) {
-		fprintf(stderr, "warning: %s: %s\n", cp, strerror(errno));
+		warn("%s", cp);
 		return;
 	}
-	vprintf(stdout, "Remove node %s\n", cp);
+	Vprintf(stdout, "Remove node %s\n", cp);
 }
 
 /*
@@ -187,7 +184,7 @@ removenode(ep)
  */
 void
 removeleaf(ep)
-	register struct entry *ep;
+	struct entry *ep;
 {
 	char *cp;
 
@@ -197,10 +194,10 @@ removeleaf(ep)
 	ep->e_flags &= ~TMPNAME;
 	cp = myname(ep);
 	if (!Nflag && unlink(cp) < 0) {
-		fprintf(stderr, "warning: %s: %s\n", cp, strerror(errno));
+		warn("%s", cp);
 		return;
 	}
-	vprintf(stdout, "Remove leaf %s\n", cp);
+	Vprintf(stdout, "Remove leaf %s\n", cp);
 }
 
 /*
@@ -214,23 +211,21 @@ linkit(existing, new, type)
 
 	if (type == SYMLINK) {
 		if (!Nflag && symlink(existing, new) < 0) {
-			fprintf(stderr,
-			    "warning: cannot create symbolic link %s->%s: %s\n",
-			    new, existing, strerror(errno));
+			warn("cannot create symbolic link %s->%s",
+			    new, existing);
 			return (FAIL);
 		}
 	} else if (type == HARDLINK) {
 		if (!Nflag && link(existing, new) < 0) {
-			fprintf(stderr,
-			    "warning: cannot create hard link %s->%s: %s\n",
-			    new, existing, strerror(errno));
+			warn("cannot create hard link %s->%s",
+			    new, existing);
 			return (FAIL);
 		}
 	} else {
 		panic("linkit: unknown type %d\n", type);
 		return (FAIL);
 	}
-	vprintf(stdout, "Create %s link %s->%s\n",
+	Vprintf(stdout, "Create %s link %s->%s\n",
 		type == SYMLINK ? "symbolic" : "hard", new, existing);
 	return (GOOD);
 }
@@ -244,11 +239,10 @@ addwhiteout(name)
 {
 
 	if (!Nflag && mknod(name, S_IFWHT, 0) < 0) {
-		fprintf(stderr, "warning: cannot create whiteout %s: %s\n",
-		    name, strerror(errno));
+		warn("cannot create whiteout %s", name);
 		return (FAIL);
 	}
-	vprintf(stdout, "Create whiteout %s\n", name);
+	Vprintf(stdout, "Create whiteout %s\n", name);
 	return (GOOD);
 }
 
@@ -257,7 +251,7 @@ addwhiteout(name)
  */
 void
 delwhiteout(ep)
-	register struct entry *ep;
+	struct entry *ep;
 {
 	char *name;
 
@@ -267,11 +261,10 @@ delwhiteout(ep)
 	ep->e_flags &= ~TMPNAME;
 	name = myname(ep);
 	if (!Nflag && undelete(name) < 0) {
-		fprintf(stderr, "warning: cannot delete whiteout %s: %s\n",
-		    name, strerror(errno));
+		warn("cannot delete whiteout %s", name);
 		return;
 	}
-	vprintf(stdout, "Delete whiteout %s\n", name);
+	Vprintf(stdout, "Delete whiteout %s\n", name);
 }
 
 /*
@@ -281,7 +274,7 @@ ino_t
 lowerbnd(start)
 	ino_t start;
 {
-	register struct entry *ep;
+	struct entry *ep;
 
 	for ( ; start < maxino; start++) {
 		ep = lookupino(start);
@@ -300,7 +293,7 @@ ino_t
 upperbnd(start)
 	ino_t start;
 {
-	register struct entry *ep;
+	struct entry *ep;
 
 	for ( ; start > ROOTINO; start--) {
 		ep = lookupino(start);
@@ -317,7 +310,7 @@ upperbnd(start)
  */
 void
 badentry(ep, msg)
-	register struct entry *ep;
+	struct entry *ep;
 	char *msg;
 {
 
@@ -335,7 +328,7 @@ badentry(ep, msg)
 		    "next hashchain name: %s\n", myname(ep->e_next));
 	fprintf(stderr, "entry type: %s\n",
 		ep->e_type == NODE ? "NODE" : "LEAF");
-	fprintf(stderr, "inode number: %ld\n", ep->e_ino);
+	fprintf(stderr, "inode number: %d\n", ep->e_ino);
 	panic("flags: %s\n", flagvalues(ep));
 }
 
@@ -344,24 +337,24 @@ badentry(ep, msg)
  */
 char *
 flagvalues(ep)
-	register struct entry *ep;
+	struct entry *ep;
 {
 	static char flagbuf[BUFSIZ];
 
-	(void) strcpy(flagbuf, "|NIL");
+	(void)strlcpy(flagbuf, "|NIL", sizeof flagbuf);
 	flagbuf[0] = '\0';
 	if (ep->e_flags & REMOVED)
-		(void) strcat(flagbuf, "|REMOVED");
+		(void)strlcat(flagbuf, "|REMOVED", sizeof flagbuf);
 	if (ep->e_flags & TMPNAME)
-		(void) strcat(flagbuf, "|TMPNAME");
+		(void)strlcat(flagbuf, "|TMPNAME", sizeof flagbuf);
 	if (ep->e_flags & EXTRACT)
-		(void) strcat(flagbuf, "|EXTRACT");
+		(void)strlcat(flagbuf, "|EXTRACT", sizeof flagbuf);
 	if (ep->e_flags & NEW)
-		(void) strcat(flagbuf, "|NEW");
+		(void)strlcat(flagbuf, "|NEW", sizeof flagbuf);
 	if (ep->e_flags & KEEP)
-		(void) strcat(flagbuf, "|KEEP");
+		(void)strlcat(flagbuf, "|KEEP", sizeof flagbuf);
 	if (ep->e_flags & EXISTED)
-		(void) strcat(flagbuf, "|EXISTED");
+		(void)strlcat(flagbuf, "|EXISTED", sizeof flagbuf);
 	return (&flagbuf[1]);
 }
 
@@ -374,7 +367,7 @@ dirlookup(name)
 {
 	struct direct *dp;
 	ino_t ino;
- 
+
 	ino = ((dp = pathsearch(name)) == NULL) ? 0 : dp->d_ino;
 
 	if (ino == 0 || TSTINO(ino, dumpmap) == 0)
@@ -389,11 +382,11 @@ int
 reply(question)
 	char *question;
 {
-	char c;
+	int c;
 
 	do	{
 		fprintf(stderr, "%s? [yn] ", question);
-		(void) fflush(stderr);
+		(void)fflush(stderr);
 		c = getc(terminal);
 		while (c != '\n' && getc(terminal) != '\n')
 			if (feof(terminal))
@@ -407,29 +400,14 @@ reply(question)
 /*
  * handle unexpected inconsistencies
  */
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 void
-#if __STDC__
 panic(const char *fmt, ...)
-#else
-panic(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 
 	vfprintf(stderr, fmt, ap);
+	va_end(ap);
 	if (yflag)
 		return;
 	if (reply("abort") == GOOD) {

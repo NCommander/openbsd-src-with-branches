@@ -1,3 +1,5 @@
+/*	$OpenBSD: strcpy.c,v 1.6 2003/05/12 17:09:18 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1988 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,10 +31,16 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)strcpy.c	5.7 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: strcpy.c,v 1.5 1995/10/07 09:26:46 mycroft Exp $";
+static char *rcsid = "$OpenBSD: strcpy.c,v 1.6 2003/05/12 17:09:18 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <string.h>
+#else
+#include <lib/libkern/libkern.h>
+#endif
+
+__warn_references(strcpy, "warning: strcpy() is often misused, please use strlcpy()");
 
 char *
 strcpy(to, from)
@@ -45,6 +49,6 @@ strcpy(to, from)
 {
 	char *save = to;
 
-	for (; *to = *from; ++from, ++to);
+	for (; (*to = *from) != '\0'; ++from, ++to);
 	return(save);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: intr.h,v 1.5 2002/06/11 05:01:17 art Exp $	*/
 /*	$NetBSD: intr.h,v 1.8 2001/01/14 23:50:30 thorpej Exp $ */
 
 /*-
@@ -37,6 +37,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _SPARC64_INTR_H_
+#define _SPARC64_INTR_H_
+
+#ifndef _SPARC64_INTREG_H_
+#include <sparc64/sparc64/intreg.h>
+#endif
+
+/*
+ * Interrupt handler chains.  Interrupt handlers should return 0 for
+ * ``not me'' or 1 (``I took care of it'').  intr_establish() inserts a
+ * handler into the list.  The handler is called with its (single)
+ * argument, or with a pointer to a clockframe if ih_arg is NULL.
+ */
+struct intrhand {
+        int                     (*ih_fun)(void *);
+        void                    *ih_arg;
+        short                   ih_number;      /* interrupt number */
+                                                /* the H/W provides */
+        char                    ih_pil;         /* interrupt priority */
+        volatile char           ih_busy;        /* handler is on list */
+        struct intrhand         *ih_next;       /* global list */
+        struct intrhand         *ih_pending;    /* pending list */
+        volatile u_int64_t      *ih_map;        /* interrupt map reg */
+        volatile u_int64_t      *ih_clr;        /* clear interrupt reg */
+        u_int64_t               ih_count;       /* # of interrupts */
+        const void              *ih_bus;        /* parent bus */
+        char                    ih_name[1];     /* device name */
+};
+
+extern struct intrhand *intrlev[MAXINTNUM];
+
+void    intr_establish(int, struct intrhand *);
+
 /* XXX - arbitrary numbers; no interpretation is defined yet */
 #define	IPL_NONE	0		/* nothing */
 #define	IPL_SOFTINT	1		/* softint */
@@ -46,19 +79,22 @@
 #define	IPL_NET		PIL_NET		/* network */
 #define	IPL_SOFTSERIAL	4		/* serial */
 #define	IPL_TTY		PIL_TTY		/* terminal */
-#define	IPL_IMP		PIL_IMP		/* memory allocation */
+#define	IPL_VM		PIL_VM		/* memory allocation */
 #define	IPL_AUDIO	PIL_AUD		/* audio */
 #define	IPL_CLOCK	PIL_CLOCK	/* clock */
 #define	IPL_SERIAL	PIL_SER		/* serial */
 #define	IPL_SCHED	PIL_SCHED	/* scheduler */
 #define	IPL_LOCK	PIL_LOCK	/* locks */
+#define IPL_STATCLOCK	PIL_STATCLOCK	/* statclock */
 #define	IPL_HIGH	PIL_HIGH	/* everything */
 
 void *
-softintr_establish __P((int level, void (*fun)(void *), void *arg));
+softintr_establish(int level, void (*fun)(void *), void *arg);
 
 void
-softintr_disestablish __P((void *cookie));
+softintr_disestablish(void *cookie);
 
 void
-softintr_schedule __P((void *cookie));
+softintr_schedule(void *cookie);
+
+#endif /* _SPARC64_INTR_H_ */

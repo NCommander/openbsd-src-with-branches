@@ -1,3 +1,5 @@
+/*	$OpenBSD: cplus-dem.c,v 1.3 2002/07/19 19:28:11 marc Exp $	*/
+
 /*-
  * This code is derived from software copyrighted by the Free Software
  * Foundation.
@@ -5,7 +7,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)cplus-dem.c	5.4 (Berkeley) 4/30/91";*/
-static char rcsid[] = "$Id: cplus-dem.c,v 1.2 1993/08/01 18:46:58 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: cplus-dem.c,v 1.3 2002/07/19 19:28:11 marc Exp $";
 #endif /* not lint */
 
 /* Demangler for GNU C++ 
@@ -182,8 +184,7 @@ static void remember_type ();
 #endif
 
 char *
-cplus_demangle (type)
-     const char *type;
+cplus_demangle(const char *type)
 {
   string decl;
   int n;
@@ -212,10 +213,7 @@ cplus_demangle (type)
 	{
 	  int n = (strlen (type) - 3)*2 + 3 + 2 + 1;
 	  char *tem = (char *) xmalloc (n);
-	  strcpy (tem, type + 3);
-	  strcat (tem, "::~");
-	  strcat (tem, type + 3);
-	  strcat (tem, "()");
+	  snprintf(tem, n, "%s::~%s()", type + 3, type + 3);
 	  return tem;
 	}
       /* static data member */
@@ -223,9 +221,7 @@ cplus_demangle (type)
 	{
 	  int n = strlen (type) + 2;
 	  char *tem = (char *) xmalloc (n);
-	  memcpy (tem, type, p - type);
-	  strcpy (tem + (p - type), "::");
-	  strcpy (tem + (p - type) + 2, p + 1);
+	  snprintf(tem, n, "%.*s::%s", (int)(p - type), type, p + 1);
 	  return tem;
 	}
       /* virtual table */
@@ -233,8 +229,7 @@ cplus_demangle (type)
 	{
 	  int n = strlen (type + 4) + 14 + 1;
 	  char *tem = (char *) xmalloc (n);
-	  strcpy (tem, type + 4);
-	  strcat (tem, " virtual table");
+	  snprintf(tem, n, "%s virtual table", type + 4)
 	  return tem;
 	}
       return NULL;
@@ -345,9 +340,7 @@ cplus_demangle (type)
 }
 
 static int
-get_count (type, count)
-     const char **type;
-     int *count;
+get_count(const char **type, int *count)
 {
   if (!isdigit (**type))
     return 0;
@@ -377,9 +370,7 @@ get_count (type, count)
 /* result will be initialised here; it will be freed on failure */
 
 static int
-do_type (type, result)
-     const char **type;
-     string *result;
+do_type(const char **type, string *result)
 {
   int n;
   int done;
@@ -681,9 +672,7 @@ do_type (type, result)
 /* `result' will be initialised in do_type; it will be freed on failure */
 
 static int
-do_arg (type, result)
-     const char **type;
-     string *result;
+do_arg(const char **type, string *result)
 {
   const char *start = *type;
 
@@ -694,9 +683,7 @@ do_arg (type, result)
 }
 
 static void
-remember_type (start, len)
-     const char *start;
-     int len;
+remember_type(const char *start, int len)
 {
   char *tem;
 
@@ -723,9 +710,7 @@ remember_type (start, len)
    it won't be freed on failure */
 
 static int
-do_args (type, decl)
-     const char **type;
-     string *decl;
+do_args(const char **type, string *decl)
 {
   string arg;
   int need_comma = 0;
@@ -780,8 +765,7 @@ do_args (type, decl)
 }
 
 static void
-munge_function_name (name)
-     string *name;
+munge_function_name(string *name)
 {
   if (!string_empty (name) && name->p - name->b >= 3 
       && name->b[0] == 'o' && name->b[1] == 'p' && name->b[2] == '$')
@@ -842,9 +826,7 @@ munge_function_name (name)
 /* a mini string-handling package */
 
 static void
-string_need (s, n)
-     string *s;
-     int n;
+string_need(string *s, int n)
 {
   if (s->b == NULL)
     {
@@ -865,8 +847,7 @@ string_need (s, n)
 }
 
 static void
-string_delete (s)
-     string *s;
+string_delete(string *s)
 {
   if (s->b != NULL)
     {
@@ -876,30 +857,25 @@ string_delete (s)
 }
 
 static void
-string_init (s)
-     string *s;
+string_init(string *s)
 {
   s->b = s->p = s->e = NULL;
 }
 
 static void 
-string_clear (s)
-     string *s;
+string_clear(string *s)
 {
   s->p = s->b;
 }
 
 static int
-string_empty (s)
-     string *s;
+string_empty(string *s)
 {
   return s->b == s->p;
 }
 
 static void
-string_append (p, s)
-     string *p;
-     const char *s;
+string_append(string *p, const char *s)
 {
   int n;
   if (s == NULL || *s == '\0')
@@ -911,8 +887,7 @@ string_append (p, s)
 }
 
 static void
-string_appends (p, s)
-     string *p, *s;
+string_appends(string *p, string *s)
 {
   int n;
   if (s->b == s->p)
@@ -924,10 +899,7 @@ string_appends (p, s)
 }
 
 static void
-string_appendn (p, s, n)
-     string *p;
-     const char *s;
-     int n;
+string_appendn(string *p, const char *s, int n)
 {
   if (n == 0)
     return;
@@ -937,9 +909,7 @@ string_appendn (p, s, n)
 }
 
 static void
-string_prepend (p, s)
-     string *p;
-     const char *s;
+string_prepend(string *p, const char *s)
 {
   if (s == NULL || *s == '\0')
     return;
@@ -948,8 +918,7 @@ string_prepend (p, s)
 
 #if 0
 static void
-string_prepends (p, s)
-     string *p, *s;
+string_prepends(string *p, string *s)
 {
   if (s->b == s->p)
     return;
@@ -958,10 +927,7 @@ string_prepends (p, s)
 #endif
 
 static void
-string_prependn (p, s, n)
-     string *p;
-     const char *s;
-     int n;
+string_prependn(string *p, const char *s, int n)
 {
   char *q;
 

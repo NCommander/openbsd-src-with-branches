@@ -1,4 +1,5 @@
-/*	$NetBSD: maskbits.h,v 1.2 1994/10/26 07:24:43 cgd Exp $	*/
+/*	$OpenBSD: maskbits.h,v 1.3 1997/04/16 11:56:12 downsj Exp $	*/
+/*	$NetBSD: maskbits.h,v 1.3 1997/03/31 07:37:28 scottr Exp $	*/
 
 /*-
  * Copyright (c) 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -75,7 +72,7 @@ and the number of whole longwords between the ends.
 
 #define getandputrop(psrc, srcbit, dstbit, width, pdst, rop) \
 { \
-  register unsigned int _tmpsrc, _tmpdst; \
+  unsigned int _tmpsrc, _tmpdst; \
   FASTGETBITS(pdst, dstbit, width, _tmpdst); \
   FASTGETBITS(psrc, srcbit, width, _tmpsrc); \
   DoRop(_tmpdst, rop, _tmpsrc, _tmpdst); \
@@ -86,7 +83,7 @@ and the number of whole longwords between the ends.
     	getandputrop(psrc, srcbit, 0, width, pdst, rop)
 
 #define getunalignedword(psrc, x, dst) { \
-        register int _tmp; \
+        int _tmp; \
         FASTGETBITS(psrc, x, 32, _tmp); \
         dst = _tmp; \
 }

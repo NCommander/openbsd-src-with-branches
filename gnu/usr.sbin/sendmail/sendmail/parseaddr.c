@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,13 +13,16 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: parseaddr.c,v 8.340 2001/09/04 22:43:04 ca Exp $")
+SM_RCSID("@(#)$Sendmail: parseaddr.c,v 8.359.2.6 2003/03/27 02:39:53 ca Exp $")
 
 static void	allocaddr __P((ADDRESS *, int, char *, ENVELOPE *));
 static int	callsubr __P((char**, int, ENVELOPE *));
 static char	*map_lookup __P((STAB *, char *, char **, int *, ENVELOPE *));
 static ADDRESS	*buildaddr __P((char **, ADDRESS *, int, ENVELOPE *));
-static bool	hasctrlchar __P((register char *, bool));
+static bool	hasctrlchar __P((register char *, bool, bool));
+
+/* replacement for illegal characters in addresses */
+#define BAD_CHAR_REPLACEMENT	'?'
 
 /*
 **  PARSEADDR -- Parse an address
@@ -138,11 +141,18 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 
 	a = buildaddr(pvp, a, flags, e);
 
-	if (hasctrlchar(a->q_user, isrcpt))
+	if (hasctrlchar(a->q_user, isrcpt, true))
 	{
 		if (tTd(20, 1))
 			sm_dprintf("parseaddr-->bad q_user\n");
-		return NULL;
+
+		/*
+		**  Just mark the address as bad so DSNs work.
+		**  hasctrlchar() has to make sure that the address
+		**  has been sanitized, e.g., shortened.
+		*/
+
+		a->q_state = QS_BADADDR;
 	}
 
 	/*
@@ -152,7 +162,11 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 
 	allocaddr(a, flags, addr, e);
 	if (QS_IS_BADADDR(a->q_state))
+	{
+		/* weed out bad characters in the printable address too */
+		(void) hasctrlchar(a->q_paddr, isrcpt, false);
 		return a;
+	}
 
 	/*
 	**  Select a queue directory for recipient addresses.
@@ -219,7 +233,7 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 
 	return a;
 }
-/*
+/*
 **  INVALIDADDR -- check for address containing characters used for macros
 **
 **	Parameters:
@@ -242,6 +256,7 @@ invalidaddr(addr, delimptr, isrcpt)
 {
 	bool result = false;
 	char savedelim = '\0';
+	char *b = addr;
 	int len = 0;
 
 	if (delimptr != NULL)
@@ -257,12 +272,16 @@ invalidaddr(addr, delimptr, isrcpt)
 		{
 			setstat(EX_USAGE);
 			result = true;
-			break;
+			*addr = BAD_CHAR_REPLACEMENT;
 		}
 		if (++len > MAXNAME - 1)
 		{
-			usrerr("553 5.1.0 Address too long (%d bytes max)",
-			       MAXNAME - 1);
+			char saved = *addr;
+
+			*addr = '\0';
+			usrerr("553 5.1.0 Address \"%s\" too long (%d bytes max)",
+			       b, MAXNAME - 1);
+			*addr = saved;
 			result = true;
 			goto delim;
 		}
@@ -270,16 +289,18 @@ invalidaddr(addr, delimptr, isrcpt)
 	if (result)
 	{
 		if (isrcpt)
-			usrerr("501 5.1.3 Syntax error in mailbox address");
+			usrerr("501 5.1.3 8-bit character in mailbox address \"%s\"",
+			       b);
 		else
-			usrerr("501 5.1.7 Syntax error in mailbox address");
+			usrerr("501 5.1.7 8-bit character in mailbox address \"%s\"",
+			       b);
 	}
 delim:
 	if (delimptr != NULL && savedelim != '\0')
 		*delimptr = savedelim;	/* restore old character at delimptr */
 	return result;
 }
-/*
+/*
 **  HASCTRLCHAR -- check for address containing meta-characters
 **
 **  Checks that the address contains no meta-characters, and contains
@@ -290,6 +311,8 @@ delim:
 **		addr -- the address to check.
 **		isrcpt -- true if the address is for a recipient; false
 **			indicates a from.
+**		complain -- true if an error should issued if the address
+**			is invalid and should be "repaired".
 **
 **	Returns:
 **		true -- if the address has any "wierd" characters or
@@ -298,22 +321,35 @@ delim:
 */
 
 static bool
-hasctrlchar(addr, isrcpt)
+hasctrlchar(addr, isrcpt, complain)
 	register char *addr;
-	bool isrcpt;
+	bool isrcpt, complain;
 {
-	bool result = false;
-	int len = 0;
 	bool quoted = false;
+	int len = 0;
+	char *result = NULL;
+	char *b = addr;
 
 	if (addr == NULL)
 		return false;
 	for (; *addr != '\0'; addr++)
 	{
+		if (++len > MAXNAME - 1)
+		{
+			if (complain)
+			{
+				(void) shorten_rfc822_string(b, MAXNAME - 1);
+				usrerr("553 5.1.0 Address \"%s\" too long (%d bytes max)",
+				       b, MAXNAME - 1);
+				return true;
+			}
+			result = "too long";
+		}
 		if (!quoted && (*addr < 32 || *addr == 127))
 		{
-			result = true;	/* a non-printable */
-			break;
+			result = "non-printable character";
+			*addr = BAD_CHAR_REPLACEMENT;
+			continue;
 		}
 		if (*addr == '"')
 			quoted = !quoted;
@@ -322,35 +358,33 @@ hasctrlchar(addr, isrcpt)
 			/* XXX Generic problem: no '\0' in strings. */
 			if (*++addr == '\0')
 			{
-				result = true;
+				result = "trailing \\ character";
+				*--addr = BAD_CHAR_REPLACEMENT;
 				break;
 			}
 		}
 		if ((*addr & 0340) == 0200)
 		{
 			setstat(EX_USAGE);
-			result = true;
-			break;
-		}
-		if (++len > MAXNAME - 1)
-		{
-			usrerr("553 5.1.0 Address too long (%d bytes max)",
-			       MAXNAME - 1);
-			return true;
+			result = "8-bit character";
+			*addr = BAD_CHAR_REPLACEMENT;
+			continue;
 		}
 	}
 	if (quoted)
-		result = true; /* unbalanced quote */
-	if (result)
+		result = "unbalanced quote"; /* unbalanced quote */
+	if (result != NULL && complain)
 	{
 		if (isrcpt)
-			usrerr("501 5.1.3 Syntax error in mailbox address");
+			usrerr("501 5.1.3 Syntax error in mailbox address \"%s\" (%s)",
+			       b, result);
 		else
-			usrerr("501 5.1.7 Syntax error in mailbox address");
+			usrerr("501 5.1.7 Syntax error in mailbox address \"%s\" (%s)",
+			       b, result);
 	}
-	return result;
+	return result != NULL;
 }
-/*
+/*
 **  ALLOCADDR -- do local allocations of address on demand.
 **
 **	Also lowercases the host name if requested.
@@ -397,7 +431,7 @@ allocaddr(a, flags, paddr, e)
 		a->q_paddr = sm_rpool_strdup_x(e->e_rpool, a->q_user);
 	a->q_qgrp = NOAQGRP;
 }
-/*
+/*
 **  PRESCAN -- Prescan name and make it canonical
 **
 **	Scans a name and turns it into a set of tokens.  This process
@@ -574,7 +608,7 @@ unsigned char	TokTypeNoC[256] =
 };
 
 
-#define NOCHAR		-1	/* signal nothing in lookahead token */
+#define NOCHAR		(-1)	/* signal nothing in lookahead token */
 
 char **
 prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
@@ -660,22 +694,31 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 				/* see if there is room */
 				if (q >= &pvpbuf[pvpbsize - 5])
 				{
+	addrtoolong:
 					usrerr("553 5.1.1 Address too long");
 					if (strlen(addr) > MAXNAME)
 						addr[MAXNAME] = '\0';
 	returnnull:
 					if (delimptr != NULL)
+					{
+						if (p > addr)
+							p--;
 						*delimptr = p;
+					}
 					CurEnv->e_to = saveto;
 					return NULL;
 				}
 
 				/* squirrel it away */
+#if !ALLOW_255
+				if ((char) c == (char) -1 && !tTd(82, 101))
+					c &= 0x7f;
+#endif /* !ALLOW_255 */
 				*q++ = c;
 			}
 
 			/* read a new input character */
-			c = *p++;
+			c = (*p++) & 0x00ff;
 			if (c == '\0')
 			{
 				/* diagnose and patch up bad syntax */
@@ -730,6 +773,9 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 				}
 				else if (c != '!' || state == QST)
 				{
+					/* see if there is room */
+					if (q >= &pvpbuf[pvpbsize - 5])
+						goto addrtoolong;
 					*q++ = '\\';
 					continue;
 				}
@@ -803,7 +849,8 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 				if (isascii(c) && isprint(c))
 					usrerr("553 Illegal character %c", c);
 				else
-					usrerr("553 Illegal character 0x%02x", c);
+					usrerr("553 Illegal character 0x%02x",
+					       c & 0x0ff);
 			}
 			if (bitset(M, newstate))
 				c = NOCHAR;
@@ -814,6 +861,9 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 		/* new token */
 		if (tok != q)
 		{
+			/* see if there is room */
+			if (q >= &pvpbuf[pvpbsize - 5])
+				goto addrtoolong;
 			*q++ = '\0';
 			if (tTd(22, 36))
 			{
@@ -852,7 +902,7 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 	}
 	return av;
 }
-/*
+/*
 **  REWRITE -- apply rewrite rules to token vector.
 **
 **	This routine is an ordered production system.  Each rewrite
@@ -1089,7 +1139,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 				ap = macvalue(rp[1], e);
 				mlp->match_first = avp;
 				if (tTd(21, 2))
-					sm_dprintf("rewrite: LHS $&%s => \"%s\"\n",
+					sm_dprintf("rewrite: LHS $&{%s} => \"%s\"\n",
 						macname(rp[1]),
 						ap == NULL ? "(NULL)" : ap);
 
@@ -1274,7 +1324,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 				}
 				else
 				{
-					/* $&x replacement */
+					/* $&{x} replacement */
 					char *mval = macvalue(rp[1], e);
 					char **xpvp;
 					int trsize = 0;
@@ -1283,7 +1333,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 					char pvpbuf[PSBUFSIZE];
 
 					if (tTd(21, 2))
-						sm_dprintf("rewrite: RHS $&%s => \"%s\"\n",
+						sm_dprintf("rewrite: RHS $&{%s} => \"%s\"\n",
 							macname(rp[1]),
 							mval == NULL ? "(NULL)" : mval);
 					if (mval == NULL || *mval == '\0')
@@ -1524,7 +1574,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 	}
 	return rstat;
 }
-/*
+/*
 **  CALLSUBR -- call subroutines in rewrite vector
 **
 **	Parameters:
@@ -1635,7 +1685,7 @@ callsubr(pvp, reclevel, e)
 	}
 	return rstat;
 }
-/*
+/*
 **  MAP_LOOKUP -- do lookup in map
 **
 **	Parameters:
@@ -1740,7 +1790,7 @@ map_lookup(smap, key, argvect, pstat, e)
 	}
 	return replac;
 }
-/*
+/*
 **  INITERRMAILERS -- initialize error and discard mailers
 **
 **	Parameters:
@@ -1776,7 +1826,7 @@ initerrmailers()
 		errormailer.m_argv = errorargv;
 	}
 }
-/*
+/*
 **  BUILDADDR -- build address from token vector.
 **
 **	Parameters:
@@ -1819,6 +1869,7 @@ buildaddr(tv, a, flags, e)
 	int flags;
 	register ENVELOPE *e;
 {
+	bool tempfail = false;
 	struct mailer **mp;
 	register struct mailer *m;
 	register char *p;
@@ -1846,7 +1897,23 @@ buildaddr(tv, a, flags, e)
 	{
 		syserr("554 5.3.5 buildaddr: no mailer in parsed address");
 badaddr:
-		if (ExitStat == EX_TEMPFAIL)
+#if _FFR_ALLOW_S0_ERROR_4XX
+		/*
+		**  ExitStat may have been set by an earlier map open
+		**  failure (to a permanent error (EX_OSERR) in syserr())
+		**  so we also need to check if this particular $#error
+		**  return wanted a 4XX failure.
+		**
+		**  XXX the real fix is probably to set ExitStat correctly,
+		**  i.e., to EX_TEMPFAIL if the map open is just a temporary
+		**  error.
+		**
+		**  tempfail is tested here even if _FFR_ALLOW_S0_ERROR_4XX
+		**  is not set; that's ok because it is initialized to false.
+		*/
+#endif /* _FFR_ALLOW_S0_ERROR_4XX */
+
+		if (ExitStat == EX_TEMPFAIL || tempfail)
 			a->q_state = QS_QUEUEUP;
 		else
 		{
@@ -1935,6 +2002,10 @@ badaddr:
 			else
 				usrerr(fmt, ubuf + off);
 			/* XXX ubuf[off - 1] = ' '; */
+#if _FFR_ALLOW_S0_ERROR_4XX
+			if (ubuf[0] == '4')
+				tempfail = true;
+#endif /* _FFR_ALLOW_S0_ERROR_4XX */
 		}
 		else
 		{
@@ -2030,7 +2101,8 @@ badaddr:
 	}
 	return a;
 }
-/*
+
+/*
 **  CATADDR -- concatenate pieces of addresses (putting in <LWSP> subs)
 **
 **	Parameters:
@@ -2092,9 +2164,14 @@ cataddr(pvp, evp, buf, sz, spacesub)
 		if (pvp++ == evp)
 			break;
 	}
+#if _FFR_CATCH_LONG_STRINGS
+	/* Don't silently truncate long strings */
+	if (*pvp != NULL)
+		syserr("cataddr: string too long");
+#endif /* _FFR_CATCH_LONG_STRINGS */
 	*p = '\0';
 }
-/*
+/*
 **  SAMEADDR -- Determine if two addresses are the same
 **
 **	This is not just a straight comparison -- if the mailer doesn't
@@ -2153,7 +2230,7 @@ sameaddr(a, b)
 
 	return true;
 }
-/*
+/*
 **  PRINTADDR -- print address (for debugging)
 **
 **	Parameters:
@@ -2357,7 +2434,7 @@ printaddr(a, follow)
 		a = a->q_next;
 	}
 }
-/*
+/*
 **  EMPTYADDR -- return true if this address is empty (``<>'')
 **
 **	Parameters:
@@ -2376,7 +2453,7 @@ emptyaddr(a)
 	return a->q_paddr == NULL || strcmp(a->q_paddr, "<>") == 0 ||
 	       a->q_user == NULL || strcmp(a->q_user, "<>") == 0;
 }
-/*
+/*
 **  REMOTENAME -- return the name relative to the current mailer
 **
 **	Parameters:
@@ -2447,7 +2524,7 @@ remotename(name, m, flags, pstat, e)
 	if (bitset(RF_CANONICAL, flags) || bitnset(M_NOCOMMENT, m->m_flags))
 		fancy = "\201g";
 	else
-		fancy = crackaddr(name);
+		fancy = crackaddr(name, e);
 
 	/*
 	**  Turn the name into canonical form.
@@ -2549,7 +2626,7 @@ remotename(name, m, flags, pstat, e)
 		sm_dprintf("remotename => `%s'\n", buf);
 	return buf;
 }
-/*
+/*
 **  MAPLOCALUSER -- run local username through ruleset 5 for final redirection
 **
 **	Parameters:
@@ -2576,7 +2653,7 @@ maplocaluser(a, sendq, aliaslevel, e)
 	ENVELOPE *e;
 {
 	register char **pvp;
-	register ADDRESS *a1 = NULL;
+	register ADDRESS *SM_NONVOLATILE a1 = NULL;
 	auto char *delimptr;
 	char pvpbuf[PSBUFSIZE];
 
@@ -2653,7 +2730,7 @@ maplocaluser(a, sendq, aliaslevel, e)
 	allocaddr(a1, RF_COPYALL, sm_rpool_strdup_x(e->e_rpool, a->q_paddr), e);
 	(void) recipient(a1, sendq, aliaslevel, e);
 }
-/*
+/*
 **  DEQUOTE_INIT -- initialize dequote map
 **
 **	Parameters:
@@ -2704,7 +2781,7 @@ dequote_init(map, args)
 
 	return true;
 }
-/*
+/*
 **  DEQUOTE_MAP -- unquote an address
 **
 **	Parameters:
@@ -2802,7 +2879,7 @@ dequote_map(map, name, av, statp)
 	*q++ = '\0';
 	return map_rewrite(map, name, strlen(name), NULL);
 }
-/*
+/*
 **  RSCHECK -- check string(s) for validity using rewriting sets
 **
 **	Parameters:
@@ -2810,8 +2887,7 @@ dequote_map(map, name, av, statp)
 **		p1 -- the first string to check.
 **		p2 -- the second string to check -- may be null.
 **		e -- the current envelope.
-**		rmcomm -- remove comments?
-**		cnt -- count rejections (statistics)?
+**		flags -- control some behavior, see RSF_ in sendmail.h
 **		logl -- logging level.
 **		host -- NULL or relay host.
 **		logid -- id for sm_syslog.
@@ -2822,12 +2898,12 @@ dequote_map(map, name, av, statp)
 */
 
 int
-rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
+rscheck(rwset, p1, p2, e, flags, logl, host, logid)
 	char *rwset;
 	char *p1;
 	char *p2;
 	ENVELOPE *e;
-	bool rmcomm, cnt;
+	int flags;
 	int logl;
 	char *host;
 	char *logid;
@@ -2842,6 +2918,10 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 	auto ADDRESS a1;
 	bool saveQuickAbort = QuickAbort;
 	bool saveSuprErrs = SuprErrs;
+#if _FFR_QUARANTINE
+	bool quarantine = false;
+	char ubuf[BUFSIZ * 2];
+#endif /* _FFR_QUARANTINE */
 	char buf0[MAXLINE];
 	char pvpbuf[PSBUFSIZE];
 	extern char MsgBuf[];
@@ -2883,7 +2963,7 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 		SuprErrs = true;
 		QuickAbort = false;
 		pvp = prescan(buf, '\0', pvpbuf, sizeof pvpbuf, NULL,
-			      rmcomm ? NULL : TokTypeNoC);
+			      bitset(RSF_RMCOMM, flags) ? NULL : TokTypeNoC);
 		SuprErrs = saveSuprErrs;
 		if (pvp == NULL)
 		{
@@ -2896,7 +2976,11 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 	*/
 			goto finis;
 		}
+		if (bitset(RSF_UNSTRUCTURED, flags))
+			SuprErrs = true;
 		(void) REWRITE(pvp, rsno, e);
+		if (bitset(RSF_UNSTRUCTURED, flags))
+			SuprErrs = saveSuprErrs;
 		if (pvp[0] == NULL || (pvp[0][0] & 0377) != CANONNET ||
 		    pvp[1] == NULL || (strcmp(pvp[1], "error") != 0 &&
 				       strcmp(pvp[1], "discard") != 0))
@@ -2911,6 +2995,28 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 			e->e_flags |= EF_DISCARD;
 			discard = true;
 		}
+#if _FFR_QUARANTINE
+		else if (strcmp(pvp[1], "error") == 0 &&
+			 pvp[2] != NULL && (pvp[2][0] & 0377) == CANONHOST &&
+			 pvp[3] != NULL && strcmp(pvp[3], "quarantine") == 0)
+		{
+			if (pvp[4] == NULL ||
+			    (pvp[4][0] & 0377) != CANONUSER ||
+			    pvp[5] == NULL)
+				e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool,
+								 rwset);
+			else
+			{
+				cataddr(&(pvp[5]), NULL, ubuf,
+					sizeof ubuf, ' ');
+				e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool,
+								 ubuf);
+			}
+			macdefine(&e->e_macro, A_PERM,
+				  macid("{quarantine}"), e->e_quarmsg);
+			quarantine = true;
+		}
+#endif /* _FFR_QUARANTINE */
 		else
 		{
 			int savelogusrerrs = LogUsrErrs;
@@ -2925,8 +3031,8 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 			ExitStat = saveexitstat;
 			if (!logged)
 			{
-				if (cnt)
-					markstats(e, &a1, true);
+				if (bitset(RSF_COUNT, flags))
+					markstats(e, &a1, STATS_REJECT);
 				logged = true;
 			}
 		}
@@ -2961,6 +3067,12 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 				sm_syslog(LOG_NOTICE, logid,
 					  "ruleset=%s, arg1=%s%s, discard",
 					  rwset, p1, lbuf);
+#if _FFR_QUARANTINE
+			else if (quarantine)
+				sm_syslog(LOG_NOTICE, logid,
+					  "ruleset=%s, arg1=%s%s, quarantine=%s",
+					  rwset, p1, lbuf, ubuf);
+#endif /* _FFR_QUARANTINE */
 			else
 				sm_syslog(LOG_NOTICE, logid,
 					  "ruleset=%s, arg1=%s%s, reject=%s",
@@ -2979,11 +3091,14 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 	SM_END_TRY
 
 	setstat(rstat);
+
+	/* rulesets don't set errno */
+	errno = 0;
 	if (rstat != EX_OK && QuickAbort)
 		sm_exc_raisenew_x(&EtypeQuickAbort, 2);
 	return rstat;
 }
-/*
+/*
 **  RSCAP -- call rewriting set to return capabilities
 **
 **	Parameters:

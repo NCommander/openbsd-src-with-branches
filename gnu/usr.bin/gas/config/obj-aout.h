@@ -1,3 +1,5 @@
+/*	$OpenBSD: obj-aout.h,v 1.2 1996/04/23 00:15:59 niklas Exp $	*/
+
 /* obj-aout.h, a.out object file format for gas, the assembler.
    Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
    
@@ -16,8 +18,6 @@
    You should have received a copy of the GNU General Public
    License along with GAS; see the file COPYING.  If not, write
    to the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-
-   $Id: obj-aout.h,v 1.5 1994/08/13 08:39:28 pk Exp $
  */
 
 
@@ -87,8 +87,6 @@ typedef struct nlist obj_symbol_type; /* Symbol table entry */
 #define S_IS_STABD(s)		(S_GET_NAME(s) == (char *)0)
 
 /* Accessors */
-/* The value of the symbol */
-#define S_GET_VALUE(s)		(((s)->sy_symbol.n_value))
 /* The name of the symbol */
 #define S_GET_NAME(s)		((s)->sy_symbol.n_un.n_name)
 /* The pointer to the string table */
@@ -103,8 +101,6 @@ typedef struct nlist obj_symbol_type; /* Symbol table entry */
 #define S_GET_DESC(s)		((s)->sy_symbol.n_desc)
 
 /* Modifiers */
-/* Set the value of the symbol */
-#define S_SET_VALUE(s,v)	((s)->sy_symbol.n_value = (unsigned long) (v))
 /* Assume that a symbol cannot be simultaneously in more than on segment */
 /* set segment */
 #define S_SET_SEGMENT(s,seg)	((s)->sy_symbol.n_type &= ~N_TYPE,(s)->sy_symbol.n_type|=SEGMENT_TO_SYMBOL_TYPE(seg))
@@ -156,7 +152,7 @@ typedef struct nlist obj_symbol_type; /* Symbol table entry */
 #define EX_DYNAMIC			0x20
 #define EX_PIC				0x10
 #undef AOUT_FLAGS
-#define AOUT_FLAGS			(flagseen['k'] ? EX_PIC : 0)
+#define AOUT_FLAGS			(picmode ? EX_PIC : 0)
 
 #define H_GET_DYNAMIC(h)		(H_GET_FLAGS(h) & EX_DYNAMIC)
 

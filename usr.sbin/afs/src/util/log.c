@@ -62,6 +62,8 @@ RCSID("$arla: log.c,v 1.38 2003/03/13 14:50:58 lha Exp $");
 #include <err.h>
 #include "log.h"
 
+extern char *__progname;
+
 /*
  * The structure for each logging method.
  */

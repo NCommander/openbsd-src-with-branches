@@ -1,4 +1,5 @@
-/*	$NetBSD: ansi.h,v 1.2 1995/02/16 03:08:04 cgd Exp $	*/
+/*	$OpenBSD: ansi.h,v 1.9 2000/02/22 17:29:12 millert Exp $	*/
+/*	$NetBSD: ansi.h,v 1.6 1996/11/15 22:38:45 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -52,11 +49,14 @@
 #define	_BSD_SIZE_T_	unsigned long		/* sizeof() */
 #define	_BSD_SSIZE_T_	long			/* byte count or error */
 #define	_BSD_TIME_T_	int			/* time() */
-struct __va_list {
+typedef struct {
 	char *base;
-	long offset;
-};
-#define	_BSD_VA_LIST_	struct __va_list	/* va_list */
+	int offset;
+	int pad;
+} __va_list;
+#define	_BSD_VA_LIST_	__va_list		/* va_list */
+#define _BSD_CLOCKID_T_	int
+#define _BSD_TIMER_T_	int
 
 /*
  * Runes (wchar_t) is declared to be an ``int'' instead of the more natural
@@ -73,6 +73,13 @@ struct __va_list {
  * defined for ctype.h.
  */
 #define	_BSD_WCHAR_T_	int			/* wchar_t */
+#define _BSD_WINT_T_	int			/* wint_t */
 #define	_BSD_RUNE_T_	int			/* rune_t */
+
+/*
+ * We describe off_t here so its declaration can be visible to
+ * stdio without pulling in all of <sys/type.h>, thus appeasing ANSI.
+ */
+#define _BSD_OFF_T_	long			/* file offset */
 
 #endif	/* _ANSI_H_ */

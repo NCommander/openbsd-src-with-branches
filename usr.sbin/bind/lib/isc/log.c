@@ -1232,7 +1232,7 @@ roll_log(isc_logchannel_t *channel) {
 		 * Remove any excess logs on the way to that value.
 		 */
 		while (--greatest >= FILE_VERSIONS(channel)) {
-			sprintf(current, "%s.%d", path, greatest);
+			snprintf(current, sizeof current, "%s.%d", path, greatest);
 			(void)remove(current);
 		}
 
@@ -1252,13 +1252,13 @@ roll_log(isc_logchannel_t *channel) {
 		return (ISC_R_INVALIDFILE);
 
 	for (i = greatest; i > 0; i--) {
-		sprintf(current, "%s.%d", path, i - 1);
-		sprintf(new, "%s.%d", path, i);
+		snprintf(current, sizeof current, "%s.%d", path, i - 1);
+		snprintf(new, sizeof new, "%s.%d", path, i);
 		(void)isc_file_rename(current, new);
 	}
 
 	if (FILE_VERSIONS(channel) != 0) {
-		sprintf(new, "%s.0", path);
+		snprintf(new, sizeof new, "%s.0", path);
 		(void)isc_file_rename(path, new);
 
 	} else if (FILE_VERSIONS(channel) == 0)
@@ -1357,6 +1357,7 @@ isc_log_doit(isc_log_t *lctx, isc_logcategory_t *category,
 	isc_logchannel_t *channel;
 	isc_logchannellist_t *category_channels;
 	isc_result_t result;
+	size_t len;
 
 	REQUIRE(lctx == NULL || VALID_CONTEXT(lctx));
 	REQUIRE(category != NULL);
@@ -1468,18 +1469,19 @@ isc_log_doit(isc_log_t *lctx, isc_logcategory_t *category,
 		if ((channel->flags & ISC_LOG_PRINTLEVEL) != 0 &&
 		    level_string[0] == '\0') {
 			if (level < ISC_LOG_CRITICAL)
-				sprintf(level_string,
-					isc_msgcat_get(isc_msgcat,
-						       ISC_MSGSET_LOG,
-						       ISC_MSG_LEVEL,
-						       "level %d: "),
-					level);
+				snprintf(level_string, sizeof(level_string),
+					 isc_msgcat_get(isc_msgcat,
+						        ISC_MSGSET_LOG,
+						        ISC_MSG_LEVEL,
+						        "level %d: "),
+					 level);
 			else if (level > ISC_LOG_DYNAMIC)
-				sprintf(level_string, "%s %d: ",
-					log_level_strings[0], level);
+				snprintf(level_string, sizeof(level_string),
+					 "%s %d: ", log_level_strings[0],
+					 level);
 			else
-				sprintf(level_string, "%s: ",
-					log_level_strings[-level]);
+				snprintf(level_string, sizeof(level_string),
+					 "%s: ", log_level_strings[-level]);
 		}
 
 		/*
@@ -1569,16 +1571,17 @@ isc_log_doit(isc_log_t *lctx, isc_logcategory_t *category,
 				 * It wasn't in the duplicate interval,
 				 * so add it to the message list.
 				 */
+				len = strlen(lctx->buffer) + 1;
 				new = isc_mem_get(lctx->mctx,
-						  sizeof(isc_logmessage_t) +
-						  strlen(lctx->buffer) + 1);
+				                  sizeof(isc_logmessage_t)
+						  + len);
 				if (new != NULL) {
 					/*
 					 * Put the text immediately after
-					 * the struct.  The strcpy is safe.
+					 * the struct.  The strlcpy is safer.
 					 */
 					new->text = (char *)(new + 1);
-					strcpy(new->text, lctx->buffer);
+					strlcpy(new->text, lctx->buffer, len);
 
 					if (isc_time_now(&new->time) !=
 					    ISC_R_SUCCESS)

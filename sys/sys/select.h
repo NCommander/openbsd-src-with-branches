@@ -1,3 +1,4 @@
+/*	$OpenBSD: select.h,v 1.5 2002/03/14 01:27:14 millert Exp $	*/
 /*	$NetBSD: select.h,v 1.10 1995/03/26 20:24:38 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,12 +35,15 @@
 #ifndef _SYS_SELECT_H_
 #define	_SYS_SELECT_H_
 
+#include <sys/event.h>			/* for struct klist */
+
 /*
  * Used to maintain information about processes that wish to be
  * notified when I/O becomes possible.
  */
 struct selinfo {
-	pid_t	si_pid;		/* process to be notified */
+	pid_t	si_selpid;	/* process to be notified */
+	struct	klist si_note;	/* kernel note list */
 	short	si_flags;	/* see below */
 };
 #define	SI_COLL	0x0001		/* collision occurred */
@@ -51,8 +51,8 @@ struct selinfo {
 #ifdef _KERNEL
 struct proc;
 
-void	selrecord __P((struct proc *selector, struct selinfo *));
-void	selwakeup __P((struct selinfo *));
+void	selrecord(struct proc *selector, struct selinfo *);
+void	selwakeup(struct selinfo *);
 #endif
 
 #endif /* !_SYS_SELECT_H_ */

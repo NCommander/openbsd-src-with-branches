@@ -1,8 +1,8 @@
-/*	$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: utilities.c,v 1.13 2003/06/02 20:06:15 millert Exp $	*/
+/*	$NetBSD: utilities.c,v 1.6 2001/02/04 21:19:34 christos Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,14 +30,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/5/93";
-#else
-static char rcsid[] = "$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/time.h>
@@ -61,13 +49,14 @@ static char rcsid[] = "$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos 
 
 long	diskreads, totalreads;	/* Disk cache statistics */
 
-static void rwerror __P((char *, daddr_t));
+static void rwerror(char *, daddr_t);
+
+extern int returntosingle;
 
 int
-ftypeok(dp)
-	struct ext2fs_dinode *dp;
+ftypeok(struct ext2fs_dinode *dp)
 {
-	switch (dp->e2di_mode & IFMT) {
+	switch (fs2h16(dp->e2di_mode) & IFMT) {
 
 	case IFDIR:
 	case IFREG:
@@ -80,17 +69,16 @@ ftypeok(dp)
 
 	default:
 		if (debug)
-			printf("bad file type 0%o\n", dp->e2di_mode);
+			printf("bad file type 0%o\n", fs2h16(dp->e2di_mode));
 		return (0);
 	}
 }
 
 int
-reply(question)
-	char *question;
+reply(char *question)
 {
 	int persevere;
-	char c;
+	int c;
 
 	if (preen)
 		pfatal("INTERNAL ERROR: GOT TO reply()");
@@ -122,12 +110,13 @@ reply(question)
  * Malloc buffers and set up cache.
  */
 void
-bufinit()
+bufinit(void)
 {
-	register struct bufarea *bp;
+	struct bufarea *bp;
 	long bufcnt, i;
 	char *bufp;
 
+	diskreads = totalreads = 0;
 	pbp = pdirbp = (struct bufarea *)0;
 	bufhead.b_next = bufhead.b_prev = &bufhead;
 	bufcnt = MAXBUFSPACE / sblock.e2fs_bsize;
@@ -155,11 +144,9 @@ bufinit()
  * Manage a cache of directory blocks.
  */
 struct bufarea *
-getdatablk(blkno, size)
-	daddr_t blkno;
-	long size;
+getdatablk(daddr_t blkno, long size)
 {
-	register struct bufarea *bp;
+	struct bufarea *bp;
 
 	for (bp = bufhead.b_next; bp != &bufhead; bp = bp->b_next)
 		if (bp->b_bno == fsbtodb(&sblock, blkno))
@@ -170,6 +157,7 @@ getdatablk(blkno, size)
 	if (bp == &bufhead)
 		errexit("deadlocked buffer pool\n");
 	getblk(bp, blkno, size);
+	diskreads++;
 	/* fall through */
 foundit:
 	totalreads++;
@@ -184,10 +172,7 @@ foundit:
 }
 
 void
-getblk(bp, blk, size)
-	register struct bufarea *bp;
-	daddr_t blk;
-	long size;
+getblk(struct bufarea *bp, daddr_t blk, long size)
 {
 	daddr_t dblk;
 
@@ -202,11 +187,9 @@ getblk(bp, blk, size)
 }
 
 void
-flush(fd, bp)
-	int fd;
-	register struct bufarea *bp;
+flush(int fd, struct bufarea *bp)
 {
-	register int i, j;
+	int i;
 
 	if (!bp->b_dirty)
 		return;
@@ -228,9 +211,7 @@ flush(fd, bp)
 }
 
 static void
-rwerror(mesg, blk)
-	char *mesg;
-	daddr_t blk;
+rwerror(char *mesg, daddr_t blk)
 {
 
 	if (preen == 0)
@@ -241,10 +222,9 @@ rwerror(mesg, blk)
 }
 
 void
-ckfini(markclean)
-	int markclean;
+ckfini(int markclean)
 {
-	register struct bufarea *bp, *nbp;
+	struct bufarea *bp, *nbp;
 	int cnt = 0;
 
 	if (fswritefd < 0) {
@@ -253,10 +233,13 @@ ckfini(markclean)
 	}
 	flush(fswritefd, &sblk);
 	if (havesb && sblk.b_bno != SBOFF / dev_bsize &&
-	    !preen && reply("UPDATE STANDARD SUPERBLOCK")) {
+	    !preen && reply("UPDATE STANDARD SUPERBLOCKS")) {
 		sblk.b_bno = SBOFF / dev_bsize;
 		sbdirty();
 		flush(fswritefd, &sblk);
+		copyback_sb(&asblk);
+		asblk.b_dirty = 1;
+		flush(fswritefd, &asblk);
 	}
 	for (bp = bufhead.b_prev; bp && bp != &bufhead; bp = nbp) {
 		cnt++;
@@ -290,11 +273,7 @@ ckfini(markclean)
 }
 
 int
-bread(fd, buf, blk, size)
-	int fd;
-	char *buf;
-	daddr_t blk;
-	long size;
+bread(int fd, char *buf, daddr_t blk, long size)
 {
 	char *cp;
 	int i, errs;
@@ -329,11 +308,7 @@ bread(fd, buf, blk, size)
 }
 
 void
-bwrite(fd, buf, blk, size)
-	int fd;
-	char *buf;
-	daddr_t blk;
-	long size;
+bwrite(int fd, char *buf, daddr_t blk, long size)
 {
 	int i;
 	char *cp;
@@ -366,9 +341,9 @@ bwrite(fd, buf, blk, size)
  * allocate a data block
  */
 int
-allocblk()
+allocblk(void)
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < maxfsblock - 1; i++) {
 		if (testbmap(i))
@@ -384,8 +359,7 @@ allocblk()
  * Free a previously allocated block
  */
 void
-freeblk(blkno)
-	daddr_t blkno;
+freeblk(daddr_t blkno)
 {
 	struct inodesc idesc;
 
@@ -398,29 +372,28 @@ freeblk(blkno)
  * Find a pathname
  */
 void
-getpathname(namebuf, curdir, ino)
-	char *namebuf;
-	ino_t curdir, ino;
+getpathname(char *namebuf, size_t buflen, ino_t curdir, ino_t ino)
 {
-	int len;
-	register char *cp;
+	size_t len;
+	char *cp;
 	struct inodesc idesc;
 	static int busy = 0;
 
 	if (curdir == ino && ino == EXT2_ROOTINO) {
-		(void)strcpy(namebuf, "/");
+		(void)strlcpy(namebuf, "/", buflen);
 		return;
 	}
 	if (busy ||
 	    (statemap[curdir] != DSTATE && statemap[curdir] != DFOUND)) {
-		(void)strcpy(namebuf, "?");
+
+		(void)strlcpy(namebuf, "?", buflen);
 		return;
 	}
 	busy = 1;
 	memset(&idesc, 0, sizeof(struct inodesc));
 	idesc.id_type = DATA;
 	idesc.id_fix = IGNORE;
-	cp = &namebuf[MAXPATHLEN - 1];
+	cp = &namebuf[buflen - 1];
 	*cp = '\0';
 	if (curdir != ino) {
 		idesc.id_parent = curdir;
@@ -441,22 +414,22 @@ getpathname(namebuf, curdir, ino)
 			break;
 		len = strlen(namebuf);
 		cp -= len;
-		memcpy(cp, namebuf, (size_t)len);
-		*--cp = '/';
+		memcpy(cp, namebuf, len);
+		*(--cp) = '/';
 		if (cp < &namebuf[EXT2FS_MAXNAMLEN])
 			break;
 		ino = idesc.id_number;
 	}
 	busy = 0;
 	if (ino != EXT2_ROOTINO)
-		*--cp = '?';
-	memcpy(namebuf, cp, (size_t)(&namebuf[MAXPATHLEN] - cp));
+		*(--cp) = '?';
+	memcpy(namebuf, cp, (size_t)(&namebuf[buflen] - cp));
 }
 
 void
-catch(n)
-	int n;
+catch(int n)
 {
+	/* XXX signal race */
 	ckfini(0);
 	exit(12);
 }
@@ -467,11 +440,10 @@ catch(n)
  * so that reboot sequence may be interrupted.
  */
 void
-catchquit(n)
-	int n;
+catchquit(int n)
 {
-	extern returntosingle;
 
+	/* XXX signal race */
 	printf("returning to single-user after filesystem check\n");
 	returntosingle = 1;
 	(void)signal(SIGQUIT, SIG_DFL);
@@ -482,10 +454,10 @@ catchquit(n)
  * Used by child processes in preen.
  */
 void
-voidquit(n)
-	int n;
+voidquit(int n)
 {
 
+	/* XXX signal race */
 	sleep(1);
 	(void)signal(SIGQUIT, SIG_IGN);
 	(void)signal(SIGQUIT, SIG_DFL);
@@ -495,9 +467,7 @@ voidquit(n)
  * determine whether an inode should be fixed.
  */
 int
-dofix(idesc, msg)
-	register struct inodesc *idesc;
-	char *msg;
+dofix(struct inodesc *idesc, char *msg)
 {
 
 	switch (idesc->id_fix) {
@@ -506,7 +476,7 @@ dofix(idesc, msg)
 		if (idesc->id_type == DATA)
 			direrror(idesc->id_number, msg);
 		else
-			pwarn(msg);
+			pwarn("%s", msg);
 		if (preen) {
 			printf(" (SALVAGED)\n");
 			idesc->id_fix = FIX;

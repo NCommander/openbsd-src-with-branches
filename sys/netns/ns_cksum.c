@@ -1,3 +1,4 @@
+/*	$OpenBSD: ns_cksum.c,v 1.4 2001/09/20 17:02:32 mpech Exp $	*/
 /*	$NetBSD: ns_cksum.c,v 1.3 1995/03/08 02:14:53 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,6 +34,7 @@
 
 #include <sys/param.h>
 #include <sys/mbuf.h>
+#include <netns/ns_var.h>
 
 /*
  * Checksum routine for Network Systems Protocol Packets (Big-Endian).
@@ -96,7 +94,7 @@ ns_cksum(m, len)
 		 * 32 bit arithmetic registers for adding,
 		 * with carries from the low added
 		 * into the high (by normal carry-chaining)
-		 * so long as we fold back before 16 carries have occured.
+		 * so long as we fold back before 16 carries have occurred.
 		 */
 		if (1 & (long) w)
 			goto uuuuglyy;

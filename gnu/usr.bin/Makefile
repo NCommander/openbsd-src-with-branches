@@ -1,18 +1,17 @@
-#	$NetBSD: Makefile,v 1.24 1995/09/27 12:46:07 cgd Exp $
+#	$OpenBSD: Makefile,v 1.36 2003/07/30 23:23:25 deraadt Exp $
+#	$NetBSD: Makefile,v 1.35 1996/04/03 21:20:52 chuck Exp $
 
-SUBDIR+=	bc cpio dc diff diff3 gawk grep groff
-SUBDIR+=	gzip rcs sdiff send-pr sort tar
+.include <bsd.own.mk>
 
-# some ports don't use the tool chain in /usr/src
-.if (${MACHINE_ARCH} != "alpha") && (${MACHINE_ARCH} != "mips")
-SUBDIR+=	gas gcc2 gdb ld
+SUBDIR+=	../egcs/gcc
+SUBDIR+=	bc cvs groff lynx rcs sendbug binutils
+
+# some ports use binutils gas and ld, most do not (yet).
+.if ${ELF_TOOLCHAIN:L} == "no"
+SUBDIR+=	gas ld
 .endif
 
-# XXX alpha still needs the /usr/bin/cpp script.
-.if (${MACHINE_ARCH} == "alpha")
-afterinstall:
-	install -c -o $(BINOWN) -g $(BINGRP) -m $(BINMODE) \
-	    $(.CURDIR)/gcc2/cpp/usr.bin.cpp.sh $(DESTDIR)/usr/bin/cpp
-.endif
+# Do these last; texinfo builds the info 'dir' file, perl must be after binutils
+SUBDIR+=	perl texinfo
 
 .include <bsd.subdir.mk>

@@ -1,5 +1,7 @@
-.\" Copyright (c) 1990, 1991 The Regents of the University of California.
-.\" All rights reserved.
+.\"	$OpenBSD: hil.4,v 1.11 2003/03/31 19:40:44 jmc Exp $
+.\"
+.\" Copyright (c) 1990, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
 .\"
 .\" This code is derived from software contributed to Berkeley by
 .\" the Systems Programming Group of the University of Utah Computer
@@ -13,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,10 +31,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)hil.4	5.2 (Berkeley) 3/27/91
-.\"	$Id: hil.4,v 1.2 1993/08/01 07:56:30 mycroft Exp $
+.\"     from: @(#)hil.4	8.2 (Berkeley) 11/30/93
 .\"
-.Dd March 27, 1991
+.Dd November 30, 1993
 .Dt HIL 4 hp300
 .Os
 .Sh NAME
@@ -49,7 +46,7 @@ is the interface used by the Series
 300 computers to connect devices such as keyboards, mice, control knobs,
 and
 .Tn ID
-modules to the machine. 
+modules to the machine.
 .Pp
 Special files
 .Pa /dev/hil[1-7]
@@ -66,7 +63,8 @@ there can only be one keyboard and it must be the first device
 The device file that corresponds to a particular
 .Tn HIL
 device is determined
-by the order of the devices on the loop. For instance, if the
+by the order of the devices on the loop.
+For instance, if the
 .Tn ID
 module
 is the second physical device on the loop, then
@@ -110,7 +108,8 @@ and a header containing the size of the queue, and its head and tail indices.
 The system deposits event data at the tail of the queue,
 a process extracts it from the head.
 Extracting an event is done by copying it from the queue and then updating
-the head appropriately (i.e. head = (head + 1) % qsize).
+the head appropriately (i.e.
+head = (head + 1) % qsize).
 It is up to the process to ensure that packets are removed from the
 queue quickly enough to prevent the queue from filling.
 The system, when it determines that the queue is full,
@@ -118,7 +117,7 @@ will ignore future packets from the device.
 Devices are
 .Em mapped
 to queues via an
-.Xr ioctl 2.
+.Xr ioctl 2 .
 More than one device can be mapped to a single queue and one device can
 be mapped to several queues.
 Queues are implicitly unmapped by a
@@ -128,7 +127,7 @@ cannot be shared between processes.
 .Pp
 Choosing the type of interface is done on a per device basis using
 an
-.Xr ioctl ,
+.Xr ioctl 2 ,
 but each device can only have one interface at any given time.
 .Pp
 .Em Select
@@ -149,12 +148,12 @@ The last close (system-wide) of any device removes that device
 from all queues it was mapped to while the last close of the loop
 pseudo-device unmaps all devices and deallocates all queues.
 .Pp
-.Xr Ioctl 2
+.Xr ioctl 2
 is used to control the
 .Tn HIL
 device.
 The ioctl commands (see
-.Aq Pa hpdev/hilioctl.h )
+.Aq Pa machine/hilioctl.h )
 listed below are separated into two groups.
 The first are those which provide functions identical to
 .Tn HP-UX .
@@ -166,7 +165,7 @@ documentation for more
 complete descriptions of these ioctls.
 The second set of ioctls are specific to this implementation and are
 primarily related to the shared-queue interface.
-.Bl -tag -width HILIOCARO
+.Bl -tag -width HILIOCALLOCQ
 .It Dv HILIOCID
 Identify and Describe
 .Pp
@@ -183,8 +182,8 @@ ioctl.
 .It Dv HILIOCSC
 Report Security Code
 .Pp
-Request the security code record from a device. The security code can
-vary from 1 byte to 15, and is only supported by some
+Request the security code record from a device.
+The security code can vary from 1 byte to 15, and is only supported by some
 .Tn HIL
 devices.
 Identical to the
@@ -194,7 +193,7 @@ ioctl.
 .It Dv HILIOCRN
 Report Name
 .Pp
-An ascii string of up to 15 bytes in length that describes the device
+An ASCII string of up to 15 bytes in length that describes the device
 is returned.
 Identical to the
 .Tn HP-UX
@@ -203,7 +202,7 @@ ioctl.
 .It Dv HILIOCRS
 Report Status
 .Pp
-An ascii string of up to 15 bytes in length that describes the current
+An ASCII string of up to 15 bytes in length that describes the current
 status of the device is returned.
 Identical to the
 .Tn HP-UX
@@ -224,7 +223,7 @@ ioctl.
 .It Dv HILIOCAROFF
 Disable Auto Repeat
 .Pp
-Turn off auto repeat on the keyboard while it is cooked mode.
+Turn off auto repeat on the keyboard while it is in cooked mode.
 Identical to the
 .Tn HP-UX
 .Dv HILDKR
@@ -265,12 +264,12 @@ Allocate and map into user space,
 an
 .Tn HILQ
 structure as defined in
-.Aq Pa hpdev/hilioctl.h .
+.Aq Pa machine/hilioctl.h .
 .Ar Arg
 is a pointer to a
 .Ar hilqinfo
 structure (also described in
-.Aq Pa hpdev/hilioctl.h )
+.Aq Pa machine/hilioctl.h )
 consisting of a
 .Pa qid
 and an
@@ -353,28 +352,7 @@ Individual
 .Tn HIL
 loop devices.
 .El
-.Sh ERRORS
-.Bl -tag -width [EINVAL]
-.It Bq Er ENODEV
-no such HIL loop device.
-.It Bq Er ENXIO
-HIL loop is inoperative.
-.It Bq Er EBUSY
-Another HP-UX process has the device open, or another
-.Bx
-process has the
-device open, and is using it in
-.Tn HP-UX
-mode.
-.It Bq Er EINVAL
-Invalid
-.Xr ioctl
-specification.
-.It Bq Er EMFILE
-No more shared queues available.
-.El
-.Sh HISTORY
-The
-.Nm
-interface
-.Ud
+.Sh SEE ALSO
+.Xr ioctl 2 ,
+.Xr intro 4 ,
+.Xr ite 4

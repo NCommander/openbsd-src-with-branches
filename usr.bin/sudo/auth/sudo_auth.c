@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1999-2002 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,34 +30,48 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
 
 #include "config.h"
 
+#include <sys/types.h>
+#include <sys/param.h>
 #include <stdio.h>
 #ifdef STDC_HEADERS
-#include <stdlib.h>
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
 #endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #ifdef HAVE_STRING_H
-#include <string.h>
+# if defined(HAVE_MEMORY_H) && !defined(STDC_HEADERS)
+#  include <memory.h>
+# endif
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
-#include <sys/param.h>
-#include <sys/types.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
 #include <pwd.h>
 #include <time.h>
+#include <signal.h>
 
 #include "sudo.h"
 #include "sudo_auth.h"
 #include "insults.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: sudo_auth.c,v 1.15 1999/10/13 02:34:55 millert Exp $";
+static const char rcsid[] = "$Sudo: sudo_auth.c,v 1.29 2003/04/16 00:42:10 millert Exp $";
 #endif /* lint */
 
 sudo_auth auth_switch[] = {
@@ -65,9 +79,9 @@ sudo_auth auth_switch[] = {
     AUTH_STANDALONE
 #else
 #  ifndef WITHOUT_PASSWD
-    AUTH_ENTRY(0, "passwd", NULL, NULL, passwd_verify, NULL)
+    AUTH_ENTRY(0, "passwd", passwd_init, NULL, passwd_verify, NULL)
 #  endif
-#  if defined(HAVE_SECUREWARE) && !defined(WITHOUT_PASSWD)
+#  if defined(HAVE_GETPRPWNAM) && !defined(WITHOUT_PASSWD)
     AUTH_ENTRY(0, "secureware", secureware_init, NULL, secureware_verify, NULL)
 #  endif
 #  ifdef HAVE_AFS
@@ -95,14 +109,23 @@ sudo_auth auth_switch[] = {
 int nil_pw;		/* I hate resorting to globals like this... */
 
 void
-verify_user(prompt)
+verify_user(pw, prompt)
+    struct passwd *pw;
     char *prompt;
 {
-    short counter = def_ival(I_PW_TRIES) + 1;
-    short success = AUTH_FAILURE;
-    short status;
-    char *p;
+    int counter = def_ival(I_PASSWD_TRIES) + 1;
+    int success = AUTH_FAILURE;
+    int status;
+    int flags;
+    volatile char *p;
     sudo_auth *auth;
+    sigaction_t sa, osa;
+
+    /* Enable suspend during password entry. */
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    sa.sa_handler = SIG_DFL;
+    (void) sigaction(SIGTSTP, &sa, &osa);
 
     /* Make sure we have at least one auth method. */
     if (auth_switch[0].name == NULL)
@@ -119,16 +142,16 @@ verify_user(prompt)
     for (auth = auth_switch; auth->name; auth++) {
 	if (auth->init && IS_CONFIGURED(auth)) {
 	    if (NEEDS_USER(auth))
-		set_perms(PERM_USER, 0);
+		set_perms(PERM_USER);
 
-	    status = (auth->init)(sudo_user.pw, &prompt, auth);
+	    status = (auth->init)(pw, &prompt, auth);
 	    if (status == AUTH_FAILURE)
 		auth->flags &= ~FLAG_CONFIGURED;
 	    else if (status == AUTH_FATAL)	/* XXX log */
 		exit(1);		/* assume error msg already printed */
 
 	    if (NEEDS_USER(auth))
-		set_perms(PERM_ROOT, 0);
+		set_perms(PERM_ROOT);
 	}
     }
 
@@ -137,16 +160,16 @@ verify_user(prompt)
 	for (auth = auth_switch; auth->name; auth++) {
 	    if (auth->setup && IS_CONFIGURED(auth)) {
 		if (NEEDS_USER(auth))
-		    set_perms(PERM_USER, 0);
+		    set_perms(PERM_USER);
 
-		status = (auth->setup)(sudo_user.pw, &prompt, auth);
+		status = (auth->setup)(pw, &prompt, auth);
 		if (status == AUTH_FAILURE)
 		    auth->flags &= ~FLAG_CONFIGURED;
 		else if (status == AUTH_FATAL)	/* XXX log */
 		    exit(1);		/* assume error msg already printed */
 
 		if (NEEDS_USER(auth))
-		    set_perms(PERM_ROOT, 0);
+		    set_perms(PERM_ROOT);
 	    }
 	}
 
@@ -155,34 +178,36 @@ verify_user(prompt)
 #ifdef AUTH_STANDALONE
 	p = prompt;
 #else
-	p = (char *) tgetpass(prompt, def_ival(I_PW_TIMEOUT) * 60, 1);
+	p = (char *) tgetpass(prompt, def_ival(I_PASSWD_TIMEOUT) * 60,
+	    tgetpass_flags);
 	if (!p || *p == '\0')
 	    nil_pw = 1;
 #endif /* AUTH_STANDALONE */
 
 	/* Call authentication functions. */
-	for (auth = auth_switch; auth->name; auth++) {
+	for (auth = auth_switch; p && auth->name; auth++) {
 	    if (!IS_CONFIGURED(auth))
 		continue;
 
 	    if (NEEDS_USER(auth))
-		set_perms(PERM_USER, 0);
+		set_perms(PERM_USER);
 
-	    success = auth->status = (auth->verify)(sudo_user.pw, p, auth);
+	    success = auth->status = (auth->verify)(pw, (char *)p, auth);
 
 	    if (NEEDS_USER(auth))
-		set_perms(PERM_ROOT, 0);
+		set_perms(PERM_ROOT);
 
 	    if (auth->status != AUTH_FAILURE)
 		goto cleanup;
 	}
 #ifndef AUTH_STANDALONE
-	(void) memset(p, 0, strlen(p));
+	if (p)
+	    (void) memset(p, 0, strlen(p));
 #endif
 
 	/* Exit loop on nil password, but give it a chance to match first. */
 	if (nil_pw) {
-	    if (counter == def_ival(I_PW_TRIES))
+	    if (counter == def_ival(I_PASSWD_TRIES))
 		exit(1);
 	    else
 		break;
@@ -196,27 +221,33 @@ cleanup:
     for (auth = auth_switch; auth->name; auth++) {
 	if (auth->cleanup && IS_CONFIGURED(auth)) {
 	    if (NEEDS_USER(auth))
-		set_perms(PERM_USER, 0);
+		set_perms(PERM_USER);
 
-	    status = (auth->cleanup)(sudo_user.pw, auth);
+	    status = (auth->cleanup)(pw, auth);
 	    if (status == AUTH_FATAL)	/* XXX log */
 		exit(1);		/* assume error msg already printed */
 
 	    if (NEEDS_USER(auth))
-		set_perms(PERM_ROOT, 0);
+		set_perms(PERM_ROOT);
 	}
     }
 
     switch (success) {
 	case AUTH_SUCCESS:
+	    (void) sigaction(SIGTSTP, &osa, NULL);
 	    return;
 	case AUTH_FAILURE:
-	    log_error(NO_MAIL, "%d incorrect password attempt%s",
-		def_ival(I_PW_TRIES) - counter,
-		(def_ival(I_PW_TRIES) - counter == 1) ? "" : "s");
+	    if (def_flag(I_MAIL_BADPASS) || def_flag(I_MAIL_ALWAYS))
+		flags = 0;
+	    else
+		flags = NO_MAIL;
+	    log_error(flags, "%d incorrect password attempt%s",
+		def_ival(I_PASSWD_TRIES) - counter,
+		(def_ival(I_PASSWD_TRIES) - counter == 1) ? "" : "s");
 	case AUTH_FATAL:
 	    exit(1);
     }
+    /* NOTREACHED */
 }
 
 void
@@ -224,11 +255,12 @@ pass_warn(fp)
     FILE *fp;
 {
 
-#ifdef USE_INSULTS
-    (void) fprintf(fp, "%s\n", INSULT);
-#else
-    (void) fprintf(fp, "%s\n", def_str(I_BADPASS_MSG));
-#endif /* USE_INSULTS */
+#ifdef INSULT
+    if (def_flag(I_INSULTS))
+	(void) fprintf(fp, "%s\n", INSULT);
+    else
+#endif
+	(void) fprintf(fp, "%s\n", def_str(I_BADPASS_MESSAGE));
 }
 
 void

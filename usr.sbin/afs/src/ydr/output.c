@@ -159,10 +159,11 @@ print_type (char *name, Type *type, enum argtype argtype,
 	  case YDR_TPOINTER :
 	  {
 	       char *tmp;
+	       size_t len = strlen(name) + 2;
 
-	       tmp = (char *)emalloc (strlen(name) + 2);
+	       tmp = (char *)emalloc (len);
 	       *tmp = '*';
-	       strcpy (tmp+1, name);
+	       strlcpy (tmp+1, name, len - 1);
 	       print_type (tmp, type->subtype, argtype, decl, f);
 	       free (tmp);
 	       break;
@@ -176,11 +177,12 @@ print_type (char *name, Type *type, enum argtype argtype,
 	  case YDR_TVARRAY :
 	  {
 	       char *s;
+	       size_t len = strlen (name) + 6;
 
-	       s = (char *)emalloc (strlen (name) + 6);
+	       s = (char *)emalloc (len);
 	       *s = '*';
-	       strcpy (s + 1, name);
-	       strcat (s, "_len");
+	       strlcpy (s + 1, name, len - 1);
+	       strlcat (s, "_len", len);
 
 	       fprintf (f, "struct {\n");
 	       if (type->indextype)
@@ -188,7 +190,7 @@ print_type (char *name, Type *type, enum argtype argtype,
 	       else
 		    fprintf (f, "unsigned %s", "len");
 	       fprintf (f, ";\n");
-	       strcpy(s + strlen(s) - 3, "val");
+	       strlcpy(s + strlen(s) - 3, "val", len - strlen(s) + 3);
 	       print_type ("*val", type->subtype, argtype, decl, f);
 	       fprintf (f, ";\n} %s", name);
 	       free(s);
@@ -910,8 +912,8 @@ encode_varray (char *name, Type *type, FILE *f, EncodeType encodetype,
      Type lentype = {YDR_TULONG};
      Type *indextype;
 	       
-     strcpy (tmp, name);
-     strcat (tmp, ".len");
+     strlcpy (tmp, name, sizeof tmp);
+     strlcat (tmp, ".len", sizeof tmp);
 
      indextype = type->indextype ? type->indextype : &lentype;
 
@@ -1063,7 +1065,7 @@ encode_pointer (char *name, Type *type, FILE *f, EncodeType encodetype,
      Type booltype = {YDR_TULONG};
      char tmp[256];
 
-     sprintf (tmp, "*(%s)", name);
+     snprintf (tmp, sizeof(tmp), "*(%s)", name);
 
      switch(encodetype) {
      case ENCODE_RX:
@@ -1262,9 +1264,9 @@ encode_entry (List *list, Listitem *item, void *arg)
      char tmp[256];
      struct context *context = (struct context *)arg;
 
-     strcpy (tmp, context->name);
-     strcat (tmp, ".");
-     strcat (tmp, s->name);
+     strlcpy (tmp, context->name, sizeof tmp);
+     strlcat (tmp, ".", sizeof tmp);
+     strlcat (tmp, s->name, sizeof tmp);
 
      if (s->type->type == YDR_TPOINTER
 	 && s->type->subtype->type == YDR_TUSERDEF
@@ -1899,9 +1901,10 @@ genencodein (List *list, Listitem *item, void *arg)
     
     if (a->argtype == TIN || a->argtype == TINOUT) {
 	if (a->type->type == YDR_TPOINTER) {
-	    char *tmp = (char *)emalloc (strlen (a->name) + 4);
+	    size_t len = strlen (a->name) + 4;
+	    char *tmp = (char *)emalloc (len);
 	    
-	    sprintf (tmp, "(*%s)", a->name);
+	    snprintf (tmp, len, "(*%s)", a->name);
 	    
 	    encode_type (tmp, a->type->subtype, f, ENCODE_RX, CLIENT);
 	    free (tmp);
@@ -1919,9 +1922,10 @@ gendecodeout (List *list, Listitem *item, void *arg)
 
      if (a->argtype == TOUT || a->argtype == TINOUT) {
 	 if (a->type->type == YDR_TPOINTER) {
-	     char *tmp = (char *)emalloc (strlen (a->name) + 4);
+	     size_t len = strlen(a->name) + 4;
+	     char *tmp = (char *)emalloc (len);
 	       
-	     sprintf (tmp, "(*%s)", a->name);
+	     snprintf (tmp, len, "(*%s)", a->name);
 
 	     encode_type (tmp, a->type->subtype, f, DECODE_RX, CLIENT);
 	     free (tmp);
@@ -1943,9 +1947,10 @@ gendecodein (List *list, Listitem *item, void *arg)
      else {
 	  if (a->type->type == YDR_TPOINTER) {
 #if 0
-	       char *tmp = (char *)emalloc (strlen (a->name) + 4);
+	       size_t len = strlen(a->name) + 4;
+	       char *tmp = (char *)emalloc (len);
 	       
-	       sprintf (tmp, "(*%s)", a->name);
+	       snprintf (tmp, len, "(*%s)", a->name);
 
 	       encode_type (tmp, a->type->subtype, f, DECODE_RX, SERVER);
 	       free (tmp);
@@ -2415,7 +2420,7 @@ ydr_fopen (const char *name, const char *mode, ydr_file *f)
 {
      int streamfd;
 
-     asprintf (&f->curname, "%sXXXXXX", name);
+     asprintf (&f->curname, "%sXXXXXXXXXX", name);
      if (f->curname == NULL)
 	 err (1, "malloc");
 

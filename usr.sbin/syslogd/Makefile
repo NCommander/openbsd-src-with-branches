@@ -1,9 +1,7 @@
-#	from: @(#)Makefile	5.7 (Berkeley) 9/30/90
-#	$Id: Makefile,v 1.5 1994/12/22 11:43:28 cgd Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:44:29 deraadt Exp $
 
 PROG=	syslogd
-SRCS=	syslogd.c ttymsg.c
-.PATH:	${.CURDIR}/../../usr.bin/wall
+SRCS=	syslogd.c ttymsg.c privsep.c privsep_fdpass.c
 MAN=	syslogd.8 syslog.conf.5
 
 .include <bsd.prog.mk>

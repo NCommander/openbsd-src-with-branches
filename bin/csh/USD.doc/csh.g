@@ -1,3 +1,4 @@
+.\"	$OpenBSD: csh.g,v 1.4 1998/09/24 07:08:38 pjanzen Exp $
 .\"	$NetBSD: csh.g,v 1.3 1995/03/21 09:03:42 cgd Exp $
 .\"
 .\" Copyright (c) 1980, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -235,7 +232,7 @@ Details are given in the shell documentation `csh (1)' (3.7).
 .IP cat
 The
 .I cat
-program catenates a list of specified files on the 
+program concatenates a list of specified files on the 
 .I "standard output" .
 It is usually used to look at the contents of a single file on the terminal,
 to `cat a file' (1.8, 2.3).
@@ -427,7 +424,7 @@ An error message produced by a program is often referred to as a
 Most error messages are not written to the 
 .I "standard output" ,
 since that is often directed away from the terminal (1.3, 1.5).
-Error messsages are instead written to the
+Error messages are instead written to the
 .I "diagnostic output"
 which may be directed away from the terminal, but usually is not.
 Thus 
@@ -933,7 +930,7 @@ file then this will not work and you must use
 .I logout
 to log off the \s-2UNIX\s0 system (2.8).
 .IP \&.logout
-When you log off of \s-2UNIX\s0 the shell will execute commands from
+When you log off \s-2UNIX\s0 the shell will execute commands from
 the file
 .I \&.logout
 in your
@@ -1057,7 +1054,7 @@ The program
 writes a file on your terminal allowing you to control how much text
 is displayed at a time.
 .I More
-can move through the file screenful by screenful, line by line,
+can move through the file screen-full by screen-full, line by line,
 search forward for a string, or start again at the beginning of the file.
 It is generally the easiest way of viewing a file (1.8).
 .IP noclobber
@@ -1507,7 +1504,7 @@ The shell variable
 is set to the 
 .I status 
 returned by the last command.
-It is most useful in shell commmand scripts (3.6).
+It is most useful in shell command scripts (3.6).
 .IP stop
 The
 .I stop

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pf.c,v 1.6 2002/09/07 08:09:49 maja Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  * Copyright (c) 1990 The Regents of the University of California.
@@ -13,11 +15,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -32,7 +29,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: pf.c,v 1.16 1996/08/06 14:19:48 moj Exp $";
+static char rcsid[] = "$OpenBSD: pf.c,v 1.6 2002/09/07 08:09:49 maja Exp $";
 #endif
 
 #include <stdio.h>
@@ -53,7 +50,7 @@ static char rcsid[] = "$Id: pf.c,v 1.16 1996/08/06 14:19:48 moj Exp $";
 
 #include <netdb.h>
 #include <ctype.h>
-#include <strings.h>
+#include <string.h>
 
 #include <syslog.h>
 #include <varargs.h>
@@ -114,7 +111,7 @@ pfInit(interface, mode, protocol, typ)
 	
   	/* Go through all the minors and find one that isn't in use. */
 	do {
-		(void) sprintf(device, "/dev/bpf%d", n++);
+		(void) snprintf(device, sizeof device, "/dev/bpf%d", n++);
 		fd = open(device, mode);
 	} while (fd < 0 && errno == EBUSY);
 
@@ -174,7 +171,8 @@ pfAddMulti(s, interface, addr)
 	struct ifreq ifr;
 	int	fd;
 	
-	strcpy(ifr.ifr_name, interface);
+	strncpy(ifr.ifr_name, interface,sizeof(ifr.ifr_name) - 1);
+	ifr.ifr_name[sizeof(ifr.ifr_name)-1] = 0;
 
 	ifr.ifr_addr.sa_family = AF_UNSPEC;
 	bcopy(addr, ifr.ifr_addr.sa_data, 6);
@@ -209,7 +207,8 @@ pfDelMulti(s, interface, addr)
 	struct ifreq ifr;
 	int	fd;
 	
-	strcpy(ifr.ifr_name, interface);
+	strncpy(ifr.ifr_name, interface, sizeof (ifr.ifr_name) - 1);
+	ifr.ifr_name[sizeof(ifr.ifr_name)-1] = 0;
 	
 	ifr.ifr_addr.sa_family = AF_UNSPEC;
 	bcopy(addr, ifr.ifr_addr.sa_data, 6);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: db_access.c,v 1.7 1997/07/19 22:31:14 niklas Exp $	*/
 /*	$NetBSD: db_access.c,v 1.8 1994/10/09 08:37:35 mycroft Exp $	*/
 
 /* 
@@ -23,7 +24,7 @@
  *  Pittsburgh PA 15213-3890
  * 
  * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -31,6 +32,8 @@
 
 #include <sys/param.h>
 #include <sys/proc.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>		/* type definitions */
 #include <machine/endian.h>
@@ -41,27 +44,20 @@
  * Access unaligned data items on aligned (longword)
  * boundaries.
  */
-
-int db_extend[] = {	/* table for sign-extending */
-	0,
-	0xFFFFFF80,
-	0xFFFF8000,
-	0xFF800000
-};
-
 db_expr_t
 db_get_value(addr, size, is_signed)
 	db_addr_t addr;
-	register size_t size;
+	size_t size;
 	boolean_t is_signed;
 {
-	char data[sizeof(int)];
-	register db_expr_t value;
-	register int i;
+	char data[sizeof(db_expr_t)];
+	db_expr_t value, extend;
+	int i;
 
 	db_read_bytes(addr, size, data);
 
 	value = 0;
+	extend = (~(db_expr_t)0) << (size * 8 - 1);
 #if BYTE_ORDER == LITTLE_ENDIAN
 	for (i = size - 1; i >= 0; i--)
 #else /* BYTE_ORDER == BIG_ENDIAN */
@@ -69,19 +65,19 @@ db_get_value(addr, size, is_signed)
 #endif /* BYTE_ORDER */
 		value = (value << 8) + (data[i] & 0xFF);
 	    
-	if (size < 4 && is_signed && (value & db_extend[size]) != 0)
-		value |= db_extend[size];
+	if (size < sizeof(db_expr_t) && is_signed && (value & extend))
+		value |= extend;
 	return (value);
 }
 
 void
 db_put_value(addr, size, value)
 	db_addr_t addr;
-	register size_t size;
-	register db_expr_t value;
+	size_t size;
+	db_expr_t value;
 {
-	char data[sizeof(int)];
-	register int i;
+	char data[sizeof(db_expr_t)];
+	int i;
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 	for (i = 0; i < size; i++)
@@ -89,7 +85,7 @@ db_put_value(addr, size, value)
 	for (i = size - 1; i >= 0; i--)
 #endif /* BYTE_ORDER */
 	{
-		data[i] = value & 0xFF;
+		data[i] = value & 0xff;
 		value >>= 8;
 	}
 

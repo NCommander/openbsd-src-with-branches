@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_rewrite.c,v 1.18 2003/07/18 21:16:37 david Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -91,6 +93,8 @@
 
 
 #include "mod_rewrite.h"
+#include "http_main.h"
+#include "fdcache.h"
 
 #ifndef NO_WRITEV
 #ifndef NETWARE
@@ -542,12 +546,19 @@ static const char *cmd_rewritemap(cmd_parms *cmd, void *dconf, char *a1,
     new->fpin  = -1;
     new->fpout = -1;
 
+    /* yes, we do it twice. needed for restart awareness */
+    ap_server_strip_chroot(new->checkfile, 0);
+    ap_server_strip_chroot(new->datafile, 0);
+
     if (new->checkfile && (sconf->state == ENGINE_ENABLED)
         && (stat(new->checkfile, &st) == -1)) {
         return ap_pstrcat(cmd->pool,
                           "RewriteMap: map file or program not found:",
                           new->checkfile, NULL);
     }
+
+    ap_server_strip_chroot(new->checkfile, 1);
+    ap_server_strip_chroot(new->datafile, 1);
 
     return NULL;
 }
@@ -3297,8 +3308,14 @@ static void open_rewritelog(server_rec *s, pool *p)
         conf->rewritelogfp = ap_piped_log_write_fd(pl);
     }
     else if (*conf->rewritelogfile != '\0') {
-        if ((conf->rewritelogfp = ap_popenf_ex(p, fname, rewritelog_flags,
-                                            rewritelog_mode, 1)) < 0) {
+	if (ap_server_chroot_desired()) {
+		conf->rewritelogfp = fdcache_open(fname, rewritelog_flags,
+		    rewritelog_mode);
+	} else {
+		conf->rewritelogfp = ap_popenf_ex(p, fname, rewritelog_flags,
+		    rewritelog_mode, 1);
+	}
+        if (conf->rewritelogfp < 0) {
             ap_log_error(APLOG_MARK, APLOG_ERR, s, 
 
                          "mod_rewrite: could not open RewriteLog "
@@ -3365,10 +3382,10 @@ static void rewritelog(request_rec *r, int level, const char *text, ...)
     ap_vsnprintf(str2, sizeof(str2), text, ap);
 
     if (r->main == NULL) {
-        strcpy(type, "initial");
+        strlcpy(type, "initial", sizeof(type));
     }
     else {
-        strcpy(type, "subreq");
+        strlcpy(type, "subreq", sizeof(type));
     }
 
     for (i = 0, req = r; req->prev != NULL; req = req->prev) {
@@ -3623,10 +3640,10 @@ static int rewritemap_program_child(void *cmd, child_info *pinfo)
    /* Need something here!!! Spawn???? */
 #elif defined(OS2)
     /* IBM OS/2 */
-    execl(SHELL_PATH, SHELL_PATH, "/c", (char *)cmd, NULL);
+    execl(SHELL_PATH, SHELL_PATH, "/c", (char *)cmd, (char *)NULL);
 #else
     /* Standard Unix */
-    execl(SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, NULL);
+    execl(SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, (char *)NULL);
 #endif
     return(child_pid);
 }

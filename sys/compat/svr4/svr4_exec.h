@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_exec.h,v 1.5 2000/06/15 05:44:10 brad Exp $	 */
 /*	$NetBSD: svr4_exec.h,v 1.7 1995/07/02 06:16:06 christos Exp $	 */
 
 /*
@@ -40,7 +41,7 @@
  * The following is horrible; there must be a better way. I need to
  * play with brk(2) a bit more.
  */
-#ifdef i386
+#ifdef __i386__
 /*
  * I cannot load the interpreter after the data segment because brk(2)
  * breaks. I have to load it somewhere before. Programs start at
@@ -49,7 +50,7 @@
 #define SVR4_INTERP_ADDR	0x01000000
 #endif
 
-#ifdef sparc
+#ifdef __sparc__
 /*
  * Here programs load at 0x00010000, so I load the interpreter far after
  * the end of the data segment.
@@ -61,7 +62,7 @@
 # define SVR4_INTERP_ADDR	0
 #endif
 
-int svr4_elf_probe __P((struct proc *p, struct exec_package *, char *,
-	u_long *pos));
+int svr4_elf_probe(struct proc *, struct exec_package *, char *, u_long *,
+    u_int8_t *);
 
 #endif /* !_SVR4_EXEC_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.8 2002/12/19 21:29:46 mickey Exp $	*/
 /*	$NetBSD: extern.h,v 1.10 1995/05/21 13:38:27 mycroft Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,48 +38,50 @@ struct var;
 struct varent;
 
 extern fixpt_t ccpu;
-extern int eval, fscale, mempages, nlistread, rawcpu;
+extern int eval, fscale, mempages, nlistread, rawcpu, maxslp;
 extern int sumrusage, termwidth, totwidth;
 extern VAR var[];
 extern VARENT *vhead;
 
 __BEGIN_DECLS
-void	 command __P((KINFO *, VARENT *));
-void	 cputime __P((KINFO *, VARENT *));
-int	 donlist __P((void));
-void	 evar __P((KINFO *, VARENT *));
-void	 fmt_puts __P((char *, int *));
-void	 fmt_putc __P((int, int *));
-double	 getpcpu __P((KINFO *));
-double	 getpmem __P((KINFO *));
-void	 logname __P((KINFO *, VARENT *));
-void	 longtname __P((KINFO *, VARENT *));
-void	 lstarted __P((KINFO *, VARENT *));
-void	 maxrss __P((KINFO *, VARENT *));
-void	 nlisterr __P((struct nlist *));
-void	 p_rssize __P((KINFO *, VARENT *));
-void	 pagein __P((KINFO *, VARENT *));
-void	 parsefmt __P((char *));
-void	 pcpu __P((KINFO *, VARENT *));
-void	 pmem __P((KINFO *, VARENT *));
-void	 pri __P((KINFO *, VARENT *));
-void	 printheader __P((void));
-void	 pvar __P((KINFO *, VARENT *));
-void	 rssize __P((KINFO *, VARENT *));
-void	 runame __P((KINFO *, VARENT *));
-void	 rvar __P((KINFO *, VARENT *));
-void	 showkey __P((void));
-void	 started __P((KINFO *, VARENT *));
-void	 state __P((KINFO *, VARENT *));
-void	 tdev __P((KINFO *, VARENT *));
-void	 tname __P((KINFO *, VARENT *));
-#ifndef NEWVM
-void	 trss __P((KINFO *, VARENT *));
-#endif
-void	 tsize __P((KINFO *, VARENT *));
-void	 ucomm __P((KINFO *, VARENT *));
-void	 uname __P((KINFO *, VARENT *));
-void	 uvar __P((KINFO *, VARENT *));
-void	 vsize __P((KINFO *, VARENT *));
-void	 wchan __P((KINFO *, VARENT *));
+void	 command(KINFO *, VARENT *);
+void	 cputime(KINFO *, VARENT *);
+int	 donlist(void);
+void	 evar(KINFO *, VARENT *);
+void	 emulname(KINFO *, VARENT *);
+void	 fmt_puts(char *, int *);
+void	 fmt_putc(int, int *);
+double	 getpcpu(KINFO *);
+double	 getpmem(KINFO *);
+void	 gname(KINFO *, VARENT *);
+void	 logname(KINFO *, VARENT *);
+void	 longtname(KINFO *, VARENT *);
+void	 lstarted(KINFO *, VARENT *);
+void	 maxrss(KINFO *, VARENT *);
+void	 nlisterr(struct nlist *);
+void	 p_rssize(KINFO *, VARENT *);
+void	 pagein(KINFO *, VARENT *);
+void	 parsefmt(char *);
+void	 pcpu(KINFO *, VARENT *);
+void	 pmem(KINFO *, VARENT *);
+void	 pri(KINFO *, VARENT *);
+void	 printheader(void);
+void	 pvar(KINFO *, VARENT *);
+void	 rgname(KINFO *, VARENT *);
+void	 rssize(KINFO *, VARENT *);
+void	 runame(KINFO *, VARENT *);
+void	 rvar(KINFO *, VARENT *);
+void	 showkey(void);
+void	 started(KINFO *, VARENT *);
+void	 state(KINFO *, VARENT *);
+void	 tdev(KINFO *, VARENT *);
+void	 tname(KINFO *, VARENT *);
+void	 tsize(KINFO *, VARENT *);
+void	 dsize(KINFO *, VARENT *);
+void	 ssize(KINFO *, VARENT *);
+void	 ucomm(KINFO *, VARENT *);
+void	 uname(KINFO *, VARENT *);
+void	 uvar(KINFO *, VARENT *);
+void	 vsize(KINFO *, VARENT *);
+void	 wchan(KINFO *, VARENT *);
 __END_DECLS

@@ -1,3 +1,5 @@
+/*	$OpenBSD: common.h,v 1.3 2001/08/12 12:03:03 heko Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -26,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: common.h,v 1.14 1996/08/13 12:22:29 moj Exp $
+ *	$OpenBSD: common.h,v 1.3 2001/08/12 12:03:03 heko Exp $
  *
  */
 
@@ -89,4 +86,4 @@ struct dllist {
 	long	a_lseek;		/* Keep track of pos in newfile */
 };
 
-#endif _COMMON_H_
+#endif /* _COMMON_H_ */

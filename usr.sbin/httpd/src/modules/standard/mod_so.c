@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_so.c,v 1.11 2003/07/18 21:16:37 david Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -130,6 +132,7 @@
 #include "httpd.h"
 #include "http_config.h"
 #include "http_log.h"
+#include "http_main.h"
 
 module MODULE_VAR_EXPORT so_module;
 
@@ -243,6 +246,7 @@ static const char *load_module(cmd_parms *cmd, void *dummy,
     /*
      * Load the file into the Apache address space
      */
+    ap_server_strip_chroot(szModuleFile, 0);
     if (!(modhandle = ap_os_dso_load(szModuleFile))) {
 	const char *my_error = ap_os_dso_error();
 	return ap_pstrcat (cmd->pool, "Cannot load ", szModuleFile,

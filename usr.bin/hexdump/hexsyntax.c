@@ -1,6 +1,9 @@
+/*	$OpenBSD: hexsyntax.c,v 1.7 2003/06/03 02:56:09 millert Exp $	*/
+/*	$NetBSD: hexsyntax.c,v 1.8 1998/04/08 23:48:57 jeremy Exp $	*/
+
 /*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,28 +32,29 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)hexsyntax.c	5.2 (Berkeley) 5/8/90";*/
-static char rcsid[] = "$Id: hexsyntax.c,v 1.2 1993/08/01 18:14:47 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: hexsyntax.c,v 1.7 2003/06/03 02:56:09 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
+
+#include <err.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "hexdump.h"
 
 off_t skip;				/* bytes to skip */
 
-newsyntax(argc, argvp)
-	int argc;
-	char ***argvp;
+void
+newsyntax(int argc, char ***argvp)
 {
-	extern enum _vflag vflag;
-	extern FS *fshead;
-	extern char *optarg;
-	extern int length, optind;
 	int ch;
 	char *p, **argv;
 
 	argv = *argvp;
-	while ((ch = getopt(argc, argv, "bcde:f:n:os:vx")) != EOF)
+	while ((ch = getopt(argc, argv, "bcCde:f:n:os:vx")) != -1)
 		switch (ch) {
 		case 'b':
 			add("\"%07.7_Ax\n\"");
@@ -63,6 +63,11 @@ newsyntax(argc, argvp)
 		case 'c':
 			add("\"%07.7_Ax\n\"");
 			add("\"%07.7_ax \" 16/1 \"%3_c \" \"\\n\"");
+			break;
+		case 'C':
+			add("\"%08.8_Ax\n\"");
+			add("\"%08.8_ax  \" 8/1 \"%02x \" \"  \" 8/1 \"%02x \" ");
+			add("\"  |\" 16/1 \"%_p\" \"|\\n\"");
 			break;
 		case 'd':
 			add("\"%07.7_Ax\n\"");
@@ -75,22 +80,16 @@ newsyntax(argc, argvp)
 			addfile(optarg);
 			break;
 		case 'n':
-			if ((length = atoi(optarg)) < 0) {
-				(void)fprintf(stderr,
-				    "hexdump: bad length value.\n");
-				exit(1);
-			}
+			if ((length = atoi(optarg)) < 0)
+				errx(1, "%s: bad length value", optarg);
 			break;
 		case 'o':
 			add("\"%07.7_Ax\n\"");
 			add("\"%07.7_ax \" 8/2 \" %06o \" \"\\n\"");
 			break;
 		case 's':
-			if ((skip = strtol(optarg, &p, 0)) < 0) {
-				(void)fprintf(stderr,
-				    "hexdump: bad skip value.\n");
-				exit(1);
-			}
+			if ((skip = strtol(optarg, &p, 0)) < 0)
+				errx(1, "%s: bad skip value", optarg);
 			switch(*p) {
 			case 'b':
 				skip *= 512;
@@ -112,7 +111,6 @@ newsyntax(argc, argvp)
 			break;
 		case '?':
 			usage();
-			exit(1);
 		}
 
 	if (!fshead) {
@@ -123,9 +121,11 @@ newsyntax(argc, argvp)
 	*argvp += optind;
 }
 
-usage()
+void
+usage(void)
 {
-	(void)fprintf(stderr,
-"hexdump: [-bcdovx] [-e fmt] [-f fmt_file] [-n length] [-s skip] [file ...]\n");
+	extern char *__progname;
+	fprintf(stderr, "usage: %s [-bcCdovx] [-e fmt] [-f fmt_file] "
+			"[-n length] [-s skip] [file ...]\n", __progname);
 	exit(1);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cat.c,v 1.14 2002/07/04 04:26:39 deraadt Exp $	*/
 /*	$NetBSD: cat.c,v 1.11 1995/09/07 06:12:54 jtc Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,38 +43,37 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cat.c	8.2 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$NetBSD: cat.c,v 1.11 1995/09/07 06:12:54 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cat.c,v 1.14 2002/07/04 04:26:39 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
 
-#include <locale.h>
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+extern char *__progname;
+
 int bflag, eflag, nflag, sflag, tflag, vflag;
 int rval;
 char *filename;
 
-void cook_args __P((char *argv[]));
-void cook_buf __P((FILE *));
-void raw_args __P((char *argv[]));
-void raw_cat __P((int));
+void cook_args(char *argv[]);
+void cook_buf(FILE *);
+void raw_args(char *argv[]);
+void raw_cat(int);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	extern int optind;
 	int ch;
 
 	setlocale(LC_ALL, "");
@@ -100,16 +96,16 @@ main(argc, argv)
 			tflag = vflag = 1;	/* -t implies -v */
 			break;
 		case 'u':
-			setbuf(stdout, (char *)NULL);
+			setbuf(stdout, NULL);
 			break;
 		case 'v':
 			vflag = 1;
 			break;
 		default:
-		case '?':
 			(void)fprintf(stderr,
-			    "usage: cat [-benstuv] [-] [file ...]\n");
+			    "usage: %s [-benstuv] [-] [file ...]\n", __progname);
 			exit(1);
+			/* NOTREACHED */
 		}
 	argv += optind;
 
@@ -123,10 +119,9 @@ main(argc, argv)
 }
 
 void
-cook_args(argv)
-	char **argv;
+cook_args(char **argv)
 {
-	register FILE *fp;
+	FILE *fp;
 
 	fp = stdin;
 	filename = "stdin";
@@ -136,6 +131,7 @@ cook_args(argv)
 				fp = stdin;
 			else if ((fp = fopen(*argv, "r")) == NULL) {
 				warn("%s", *argv);
+				rval = 1;
 				++argv;
 				continue;
 			}
@@ -148,37 +144,30 @@ cook_args(argv)
 }
 
 void
-cook_buf(fp)
-	register FILE *fp;
+cook_buf(FILE *fp)
 {
-	register int ch, gobble, line, prev;
+	int ch, gobble, line, prev;
 
 	line = gobble = 0;
 	for (prev = '\n'; (ch = getc(fp)) != EOF; prev = ch) {
 		if (prev == '\n') {
-			if (ch == '\n') {
-				if (sflag) {
-					if (!gobble && putchar(ch) == EOF)
-						break;
+			if (sflag) {
+				if (ch == '\n') {
+					if (gobble)
+						continue;
 					gobble = 1;
-					continue;
-				}
-				if (nflag && !bflag) {
-					(void)fprintf(stdout, "%6d\t", ++line);
-					if (ferror(stdout))
-						break;
-				}
-			} else if (nflag) {
+				} else
+					gobble = 0;
+			}
+			if (nflag && (!bflag || ch != '\n')) {
 				(void)fprintf(stdout, "%6d\t", ++line);
 				if (ferror(stdout))
 					break;
 			}
 		}
-		gobble = 0;
 		if (ch == '\n') {
-			if (eflag)
-				if (putchar('$') == EOF)
-					break;
+			if (eflag && putchar('$') == EOF)
+				break;
 		} else if (ch == '\t') {
 			if (tflag) {
 				if (putchar('^') == EOF || putchar('I') == EOF)
@@ -204,6 +193,7 @@ cook_buf(fp)
 	}
 	if (ferror(fp)) {
 		warn("%s", filename);
+		rval = 1;
 		clearerr(fp);
 	}
 	if (ferror(stdout))
@@ -211,10 +201,9 @@ cook_buf(fp)
 }
 
 void
-raw_args(argv)
-	char **argv;
+raw_args(char **argv)
 {
-	register int fd;
+	int fd;
 
 	fd = fileno(stdin);
 	filename = "stdin";
@@ -224,6 +213,7 @@ raw_args(argv)
 				fd = fileno(stdin);
 			else if ((fd = open(*argv, O_RDONLY, 0)) < 0) {
 				warn("%s", *argv);
+				rval = 1;
 				++argv;
 				continue;
 			}
@@ -236,10 +226,9 @@ raw_args(argv)
 }
 
 void
-raw_cat(rfd)
-	register int rfd;
+raw_cat(int rfd)
 {
-	register int nr, nw, off, wfd;
+	int nr, nw, off, wfd;
 	static int bsize;
 	static char *buf;
 	struct stat sbuf;
@@ -250,12 +239,14 @@ raw_cat(rfd)
 			err(1, "%s", filename);
 		bsize = MAX(sbuf.st_blksize, 1024);
 		if ((buf = malloc((u_int)bsize)) == NULL)
-			err(1, NULL);
+			err(1, "buffer");
 	}
 	while ((nr = read(rfd, buf, bsize)) > 0)
 		for (off = 0; nr; nr -= nw, off += nw)
 			if ((nw = write(wfd, buf + off, nr)) < 0)
 				err(1, "stdout");
-	if (nr < 0)
+	if (nr < 0) {
 		warn("%s", filename);
+		rval = 1;
+	}
 }

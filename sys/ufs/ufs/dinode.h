@@ -1,3 +1,4 @@
+/*	$OpenBSD: dinode.h,v 1.7 2003/06/02 23:28:23 millert Exp $	*/
 /*	$NetBSD: dinode.h,v 1.7 1995/06/15 23:22:48 cgd Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,8 +34,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)dinode.h	8.6 (Berkeley) 9/13/94
+ *	@(#)dinode.h	8.9 (Berkeley) 3/29/95
  */
+
+#ifndef _UFS_DINODE_H_
+#define _UFS_DINODE_H_
 
 /*
  * The root inode is the root of the file system.  Inode 0 can't be used for
@@ -64,15 +64,16 @@
  */
 
 typedef int32_t ufs_daddr_t;
+typedef int32_t ufs1_daddr_t;
 #define	NDADDR	12			/* Direct addresses in inode. */
 #define	NIADDR	3			/* Indirect addresses in inode. */
 
-struct dinode {
+struct	ufs1_dinode {
 	u_int16_t	di_mode;	/*   0: IFMT, permissions; see below. */
 	int16_t		di_nlink;	/*   2: File link count. */
 	union {
 		u_int16_t oldids[2];	/*   4: Ffs: old user and group ids. */
-		ino_t	  inumber;	/*   4: Lfs: inode number. */
+		u_int32_t inumber;	/*   4: Lfs: inode number. */
 	} di_u;
 	u_int64_t	di_size;	/*   8: File byte count. */
 	int32_t		di_atime;	/*  16: Last access time. */
@@ -81,8 +82,8 @@ struct dinode {
 	int32_t		di_mtimensec;	/*  28: Last modified time. */
 	int32_t		di_ctime;	/*  32: Last inode change time. */
 	int32_t		di_ctimensec;	/*  36: Last inode change time. */
-	ufs_daddr_t	di_db[NDADDR];	/*  40: Direct disk blocks. */
-	ufs_daddr_t	di_ib[NIADDR];	/*  88: Indirect disk blocks. */
+	ufs1_daddr_t	di_db[NDADDR];	/*  40: Direct disk blocks. */
+	ufs1_daddr_t	di_ib[NIADDR];	/*  88: Indirect disk blocks. */
 	u_int32_t	di_flags;	/* 100: Status flags (chflags). */
 	int32_t		di_blocks;	/* 104: Blocks actually held. */
 	int32_t		di_gen;		/* 108: Generation number. */
@@ -103,7 +104,7 @@ struct dinode {
 #define	di_ouid		di_u.oldids[0]
 #define	di_rdev		di_db[0]
 #define	di_shortlink	di_db
-#define	MAXSYMLINKLEN	((NDADDR + NIADDR) * sizeof(ufs_daddr_t))
+#define	MAXSYMLINKLEN	((NDADDR + NIADDR) * sizeof(ufs1_daddr_t))
 
 /* File permissions. */
 #define	IEXEC		0000100		/* Executable. */
@@ -123,3 +124,5 @@ struct dinode {
 #define	IFLNK		0120000		/* Symbolic link. */
 #define	IFSOCK		0140000		/* UNIX domain socket. */
 #define	IFWHT		0160000		/* Whiteout. */
+
+#endif /* _UFS_DINODE_H_ */

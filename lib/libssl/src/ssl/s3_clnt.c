@@ -117,7 +117,6 @@
 #include <openssl/objects.h>
 #include <openssl/evp.h>
 #include <openssl/md5.h>
-#include "cryptlib.h"
 
 static SSL_METHOD *ssl3_get_client_method(int ver);
 static int ssl3_client_hello(SSL *s);
@@ -169,7 +168,7 @@ int ssl3_connect(SSL *s)
 	long num1;
 	void (*cb)(const SSL *ssl,int type,int val)=NULL;
 	int ret= -1;
-	int new_state,state,skip=0;;
+	int new_state,state,skip=0;
 
 	RAND_add(&Time,sizeof(Time),0);
 	ERR_clear_error();

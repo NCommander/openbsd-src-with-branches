@@ -44,7 +44,7 @@ int client_port = 0;
 static char *pid_filename;
 
 #define _PATH_VAR_RUN "/var/run"
-#define _PATH_DEV_NNPFS0 "/dev/nnpfs0"
+#define _PATH_DEV_NNPFS0 "/dev/xfs0"
 #define _PATH_DEV_STDERR "/dev/stderr"
 
 /*
@@ -243,7 +243,6 @@ main (int argc, char **argv)
     int optind = 0;
     int ret;
 
-    set_progname (argv[0]);
     tzset();
     srand(time(NULL));
 

@@ -51,8 +51,10 @@ char *usage = "bootptest [-h] server-name [vendor-data-template-file]";
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include <poll.h>
 #include <netdb.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "bootp.h"
 #include "bootptest.h"
@@ -72,12 +74,13 @@ unsigned char *packetp;
 unsigned char *snapend;
 int snaplen;
 
-
+extern int getether(char *ifname, u_char *eap);
+extern int send_request(int s);
 /*
  * IP port numbers for client and server obtained from /etc/services
  */
 
-u_short bootps_port, bootpc_port;
+in_port_t bootps_port, bootpc_port;
 
 
 /*
@@ -106,7 +109,7 @@ unsigned char vm_cmu[4] = VM_CMU;
 unsigned char vm_rfc1048[4] = VM_RFC1048;
 short secs;						/* How long client has waited */
 
-char *get_errmsg();
+char *get_errmsg(void);
 extern void bootp_print();
 
 /*
@@ -114,6 +117,7 @@ extern void bootp_print();
  * the receiver loop is started.  Die when interrupted.
  */
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -126,7 +130,9 @@ main(argc, argv)
 	char *vendor_file = NULL;
 	char *bp_file = NULL;
 	int s;				/* Socket file descriptor */
-	int n, tolen, fromlen, recvcnt;
+	int n, tolen, recvcnt;
+	socklen_t fromlen;
+	struct pollfd pfd[1];
 	int use_hwa = 0;
 	int32 vend_magic;
 	int32 xid;
@@ -221,11 +227,11 @@ main(argc, argv)
 	 */
 	sep = getservbyname("bootps", "udp");
 	if (sep) {
-		bootps_port = ntohs((u_short) sep->s_port);
+		bootps_port = ntohs((in_port_t) sep->s_port);
 	} else {
 		fprintf(stderr, "udp/bootps: unknown service -- using port %d\n",
 				IPPORT_BOOTPS);
-		bootps_port = (u_short) IPPORT_BOOTPS;
+		bootps_port = (in_port_t) IPPORT_BOOTPS;
 	}
 
 	/*
@@ -258,7 +264,7 @@ main(argc, argv)
 	} else {
 		fprintf(stderr, "udp/bootpc: unknown service -- using port %d\n",
 				IPPORT_BOOTPC);
-		bootpc_port = (u_short) IPPORT_BOOTPC;
+		bootpc_port = (in_port_t) IPPORT_BOOTPC;
 	}
 
 	/*
@@ -283,10 +289,10 @@ main(argc, argv)
 	bp = (struct bootp *) sndbuf;
 	bzero(bp, sizeof(*bp));
 	bp->bp_op = BOOTREQUEST;
-	xid = (int32) getpid();
+	xid = (int32) getpid();			/* XXX should use arc4random()? */
 	bp->bp_xid = (u_int32) htonl(xid);
 	if (bp_file)
-		strncpy(bp->bp_file, bp_file, BP_FILE_LEN);
+		strlcpy(bp->bp_file, bp_file, BP_FILE_LEN);
 
 	/*
 	 * Fill in the hardware address (or client IP address)
@@ -362,16 +368,12 @@ main(argc, argv)
 	recvcnt = 0;
 	bp->bp_secs = secs = 0;
 	send_request(s);
+	pfd[0].fd = s;
+	pfd[0].events = POLLIN;
 	while (1) {
-		struct timeval tv;
-		int readfds;
-
-		tv.tv_sec = WAITSECS;
-		tv.tv_usec = 0L;
-		readfds = (1 << s);
-		n = select(s + 1, (fd_set *) & readfds, NULL, NULL, &tv);
+		n = poll(pfd, 1, WAITSECS * 1000);
 		if (n < 0) {
-			perror("select");
+			perror("poll");
 			break;
 		}
 		if (n == 0) {
@@ -419,8 +421,7 @@ main(argc, argv)
 	exit(1);
 }
 
-send_request(s)
-	int s;
+int send_request(int s)
 {
 	/* Print the request packet. */
 	printf("Sending to %s", inet_ntoa(sin_server.sin_addr));
@@ -435,6 +436,7 @@ send_request(s)
 		perror("sendto server");
 		exit(1);
 	}
+	return 0;
 }
 
 /*
@@ -443,9 +445,9 @@ send_request(s)
  */
 int
 printfn(s, ep)
-	register u_char *s, *ep;
+	u_char *s, *ep;
 {
-	register u_char c;
+	u_char c;
 
 	putchar('"');
 	while (c = *s++) {
@@ -480,7 +482,7 @@ ipaddr_string(ina)
 	u_char *p;
 
 	p = (u_char *) ina;
-	sprintf(b, "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
+	snprintf(b, sizeof(b), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
 	return (b);
 }
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: cdefs.h,v 1.15 1995/01/19 01:54:52 jtc Exp $	*/
+/*	$OpenBSD: cdefs.h,v 1.9 2003/06/02 23:28:20 millert Exp $	*/
+/*	$NetBSD: cdefs.h,v 1.16 1996/04/03 20:46:39 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,10 +42,20 @@
 
 #if defined(__cplusplus)
 #define	__BEGIN_DECLS	extern "C" {
-#define	__END_DECLS	};
+#define	__END_DECLS	}
 #else
 #define	__BEGIN_DECLS
 #define	__END_DECLS
+#endif
+
+/*
+ * Macro to test if we're using a specific version of gcc or later.
+ */
+#ifdef __GNUC__
+#define __GNUC_PREREQ__(ma, mi) \
+	((__GNUC__ > (ma)) || (__GNUC__ == (ma) && __GNUC_MINOR__ >= (mi)))
+#else
+#define __GNUC_PREREQ__(ma, mi) 0
 #endif
 
 /*
@@ -69,9 +76,9 @@
 #if defined(__cplusplus)
 #define	__inline	inline		/* convert to C++ keyword */
 #else
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(lint)
 #define	__inline			/* delete GCC keyword */
-#endif /* !__GNUC__ */
+#endif /* !__GNUC__ && !lint */
 #endif /* !__cplusplus */
 
 #else	/* !(__STDC__ || __cplusplus) */
@@ -79,12 +86,12 @@
 #define	__CONCAT(x,y)	x/**/y
 #define	__STRING(x)	"x"
 
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(lint)
 #define	__const				/* delete pseudo-ANSI C keywords */
 #define	__inline
 #define	__signed
 #define	__volatile
-#endif	/* !__GNUC__ */
+#endif	/* !__GNUC__ && !lint */
 
 /*
  * In non-ANSI C environments, new programs will want ANSI-only C keywords
@@ -104,17 +111,56 @@
  * GCC1 and some versions of GCC2 declare dead (non-returning) and
  * pure (no side effects) functions using "volatile" and "const";
  * unfortunately, these then cause warnings under "-ansi -pedantic".
- * GCC2 uses a new, peculiar __attribute__((attrs)) style.  All of
- * these work for GNU C++ (modulo a slight glitch in the C++ grammar
- * in the distribution version of 2.5.5).
+ * GCC >= 2.5 uses the __attribute__((attrs)) style.  All of these
+ * work for GNU C++ (modulo a slight glitch in the C++ grammar in
+ * the distribution version of 2.5.5).
  */
-#if !defined(__GNUC__) || __GNUC__ < 2 || \
-	(__GNUC__ == 2 && __GNUC_MINOR__ < 5)
+
+#if !__GNUC_PREREQ__(2, 5)
 #define	__attribute__(x)	/* delete __attribute__ if non-gcc or gcc1 */
 #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
 #define	__dead		__volatile
 #define	__pure		__const
 #endif
+#elif !defined(__STRICT_ANSI__)
+#define __dead		__attribute__((__noreturn__))
+#define __pure		__attribute__((__const__))
+#endif
+
+/*
+ * GNU C version 2.96 adds explicit branch prediction so that
+ * the CPU back-end can hint the processor and also so that
+ * code blocks can be reordered such that the predicted path
+ * sees a more linear flow, thus improving cache behavior, etc.
+ *
+ * The following two macros provide us with a way to utilize this
+ * compiler feature.  Use __predict_true() if you expect the expression
+ * to evaluate to true, and __predict_false() if you expect the
+ * expression to evaluate to false.
+ *
+ * A few notes about usage:
+ *
+ *	* Generally, __predict_false() error condition checks (unless
+ *	  you have some _strong_ reason to do otherwise, in which case
+ *	  document it), and/or __predict_true() `no-error' condition
+ *	  checks, assuming you want to optimize for the no-error case.
+ *
+ *	* Other than that, if you don't know the likelihood of a test
+ *	  succeeding from empirical or other `hard' evidence, don't
+ *	  make predictions.
+ *
+ *	* These are meant to be used in places that are run `a lot'.
+ *	  It is wasteful to make predictions in code that is run
+ *	  seldomly (e.g. at subsystem initialization time) as the
+ *	  basic block reordering that this affects can often generate
+ *	  larger code.
+ */
+#if __GNUC_PREREQ__(2, 96)
+#define __predict_true(exp)	__builtin_expect(((exp) != 0), 1)
+#define __predict_false(exp)	__builtin_expect(((exp) != 0), 0)
+#else
+#define __predict_true(exp)	((exp) != 0)
+#define __predict_false(exp)	((exp) != 0)
 #endif
 
 /* Delete pseudo-keywords wherever they are not available or needed. */

@@ -1784,8 +1784,8 @@ dns_name_totext(dns_name_t *name, isc_boolean_t omit_final_dot,
 					} else {
 						if (trem < 4)
 							return (ISC_R_NOSPACE);
-						sprintf(tdata, "\\%03u",
-							c);
+						snprintf(tdata, trem,
+							 "\\%03u", c);
 						tdata += 4;
 						trem -= 4;
 						ndata++;
@@ -1806,7 +1806,7 @@ dns_name_totext(dns_name_t *name, isc_boolean_t omit_final_dot,
 			if (count == 0)
 				count = 256;
 			nlen--;
-			len = sprintf(num, "%u", count);	/* XXX */
+			len = snprintf(num, sizeof(num), "%u", count);
 			INSIST(len <= 4);
 			bytes = count / 8;
 			if (count % 8 != 0)
@@ -1940,7 +1940,7 @@ dns_name_tofilenametext(dns_name_t *name, isc_boolean_t omit_final_dot,
 				} else {
 					if (trem < 3)
 						return (ISC_R_NOSPACE);
-					sprintf(tdata, "%%%02X", c);
+					snprintf(tdata, trem, "%%%02X", c);
 					tdata += 3;
 					trem -= 3;
 					ndata++;
@@ -1959,7 +1959,7 @@ dns_name_tofilenametext(dns_name_t *name, isc_boolean_t omit_final_dot,
 			if (count == 0)
 				count = 256;
 			nlen--;
-			len = sprintf(num, "%u", count);	/* XXX */
+			len = snprintf(num, sizeof(num), "%u", count);
 			INSIST(len <= 4);
 			bytes = count / 8;
 			if (count % 8 != 0)

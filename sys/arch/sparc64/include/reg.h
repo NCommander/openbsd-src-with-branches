@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: reg.h,v 1.3 2002/06/15 17:23:31 art Exp $	*/
 /*	$NetBSD: reg.h,v 1.8 2001/06/19 12:59:16 wiz Exp $ */
 
 /*
@@ -22,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -129,8 +125,10 @@ struct reg64 {
 	int64_t	r_pc;		/* return pc */
 	int64_t	r_npc;		/* return npc */
 	int	r_y;		/* %y register -- 32-bits */
-	int64_t	r_global[8];	/* global registers in trap's caller */
-	int64_t	r_out[8];	/* output registers in trap's caller */
+	int64_t	r_global[8];	/* %g* registers in trap's caller */
+	int64_t	r_out[8];	/* %o* registers in trap's caller */
+	int64_t r_local[8];	/* %l* registers in trap's caller */
+	int64_t r_in[8];	/* %i* registers in trap's caller */
 };
 
 #include <machine/fsr.h>
@@ -191,19 +189,11 @@ struct fpreg32 {
 	int	fr_fsr;			/* %fsr */
 };
 
-#if defined(__arch64__)
 /* Here we gotta do naughty things to let gdb work on 32-bit binaries */
 #define reg		reg64
 #define fpreg		fpreg64
 #define fpstate		fpstate64
 #define trapframe	trapframe64
 #define rwindow		rwindow64
-#else
-#define reg		reg32
-#define fpreg		fpreg32
-#define fpstate		fpstate32
-#define trapframe	trapframe32
-#define rwindow		rwindow32
-#endif
 
 #endif /* _MACHINE_REG_H_ */

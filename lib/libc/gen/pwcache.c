@@ -1,5 +1,3 @@
-/*	$NetBSD: pwcache.c,v 1.5 1995/05/13 06:58:23 jtc Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)pwcache.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: pwcache.c,v 1.5 1995/05/13 06:58:23 jtc Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: pwcache.c,v 1.5 2001/06/27 00:58:54 lebel Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -47,10 +37,9 @@ static char rcsid[] = "$NetBSD: pwcache.c,v 1.5 1995/05/13 06:58:23 jtc Exp $";
 #include <pwd.h>
 #include <stdio.h>
 #include <string.h>
-#include <utmp.h>
 
 #define	NCACHE	64			/* power of 2 */
-#define	MASK	NCACHE - 1		/* bits to store with */
+#define	MASK	(NCACHE - 1)		/* bits to store with */
 
 char *
 user_from_uid(uid, nouser)
@@ -59,7 +48,7 @@ user_from_uid(uid, nouser)
 {
 	static struct ncache {
 		uid_t	uid;
-		char	name[UT_NAMESIZE + 1];
+		char	name[_PW_NAME_LEN + 1];
 	} c_uid[NCACHE];
 	static int pwopen;
 	static char nbuf[15];		/* 32 bits == 10 digits */
@@ -79,8 +68,7 @@ user_from_uid(uid, nouser)
 			return (nbuf);
 		}
 		cp->uid = uid;
-		(void)strncpy(cp->name, pw->pw_name, UT_NAMESIZE);
-		cp->name[UT_NAMESIZE] = '\0';
+		strlcpy(cp->name, pw->pw_name, sizeof(cp->name));
 	}
 	return (cp->name);
 }
@@ -92,7 +80,7 @@ group_from_gid(gid, nogroup)
 {
 	static struct ncache {
 		gid_t	gid;
-		char	name[UT_NAMESIZE + 1];
+		char	name[_PW_NAME_LEN + 1];
 	} c_gid[NCACHE];
 	static int gropen;
 	static char nbuf[15];		/* 32 bits == 10 digits */
@@ -112,8 +100,7 @@ group_from_gid(gid, nogroup)
 			return (nbuf);
 		}
 		cp->gid = gid;
-		(void)strncpy(cp->name, gr->gr_name, UT_NAMESIZE);
-		cp->name[UT_NAMESIZE] = '\0';
+		strlcpy(cp->name, gr->gr_name, sizeof(cp->name));
 	}
 	return (cp->name);
 }

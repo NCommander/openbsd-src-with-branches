@@ -1,4 +1,5 @@
-/*	$NetBSD: uucplock.c,v 1.6 1995/09/26 06:02:14 jtc Exp $	*/
+/*	$OpenBSD: uucplock.c,v 1.9 2002/06/12 06:07:16 mpech Exp $	*/
+/*	$NetBSD: uucplock.c,v 1.7 1997/02/11 09:24:08 mrg Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,15 +34,17 @@
 #if 0
 static char sccsid[] = "@(#)uucplock.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: uucplock.c,v 1.6 1995/09/26 06:02:14 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: uucplock.c,v 1.9 2002/06/12 06:07:16 mpech Exp $";
 #endif /* not lint */
 
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/dir.h>
+#include <stdio.h>
+#include <string.h>
+#include <signal.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <errno.h>
 #include "pathnames.h"
 
@@ -55,15 +54,16 @@ static char rcsid[] = "$NetBSD: uucplock.c,v 1.6 1995/09/26 06:02:14 jtc Exp $";
  * 	  -1 - failure
  */
 
+int
 uu_lock(ttyname)
 	char *ttyname;
 {
-	int fd, pid;
+	int fd, len;
 	char tbuf[sizeof(_PATH_LOCKDIRNAME) + MAXNAMLEN];
 	char text_pid[81];
-	int len;
+	pid_t pid;
 
-	(void)sprintf(tbuf, _PATH_LOCKDIRNAME, ttyname);
+	(void)snprintf(tbuf, sizeof tbuf, _PATH_LOCKDIRNAME, ttyname);
 	fd = open(tbuf, O_RDWR|O_CREAT|O_EXCL, 0660);
 	if (fd < 0) {
 		/*
@@ -94,9 +94,9 @@ uu_lock(ttyname)
 		 * The process that locked the file isn't running, so
 		 * we'll lock it ourselves
 		 */
-		fprintf(stderr, "Stale lock on %s PID=%d... overriding.\n",
-			ttyname, pid);
-		if (lseek(fd, (off_t)0, L_SET) < 0) {
+		fprintf(stderr, "Stale lock on %s PID=%ld... overriding.\n",
+			ttyname, (long)pid);
+		if (lseek(fd, (off_t)0, SEEK_SET) < 0) {
 			perror(tbuf);
 			(void)close(fd);
 			fprintf(stderr, "Can't seek lock file.\n");
@@ -105,7 +105,7 @@ uu_lock(ttyname)
 		/* fall out and finish the locking process */
 	}
 	pid = getpid();
-	sprintf(text_pid, "%10d\n", pid);
+	(void)snprintf(text_pid, sizeof text_pid, "%10ld\n", (long)pid);
 	len = strlen(text_pid);
 	if (write(fd, text_pid, len) != len) {
 		(void)close(fd);
@@ -117,11 +117,12 @@ uu_lock(ttyname)
 	return(0);
 }
 
+int
 uu_unlock(ttyname)
 	char *ttyname;
 {
 	char tbuf[sizeof(_PATH_LOCKDIRNAME) + MAXNAMLEN];
 
-	(void)sprintf(tbuf, _PATH_LOCKDIRNAME, ttyname);
+	(void)snprintf(tbuf, sizeof tbuf, _PATH_LOCKDIRNAME, ttyname);
 	return(unlink(tbuf));
 }

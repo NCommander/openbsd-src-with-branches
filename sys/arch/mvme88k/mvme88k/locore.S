@@ -1,4 +1,6 @@
+/*	$OpenBSD: locore.S,v 1.29 2003/08/13 08:52:44 miod Exp $	*/
 /*
+ * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
  *
@@ -55,118 +57,116 @@
  * rights to redistribute these changes.
  */
 
-#ifndef ASSEMBLER
-#define ASSEMBLER
-#endif
+#include "assym.h"
+#include "ksyms.h"
 
-#include "machine/asm.h"
-#include "machine/m88100.h"
-#include "machine/trap.h"
-#include "machine/psl.h"
-#include "machine/vmparam.h"      /* INTSTACK_SIZE */
-
-/***********************************************************************/
-
-#ifndef UADDR
-#define	UADDR		0xEEE00000	/* address of u */
-#endif /* UADDR */
+#include <machine/asm.h>
+#include <machine/trap.h>
+#include <machine/m88100.h>
+#include <machine/psl.h>
+#include <machine/param.h>
+#include <machine/vmparam.h>	/* INTSTACK_SIZE */
 
 /*
  * The memory looks like:
- *   0x00000 - 0x01000   : trap vectors
- *   0x01000 - 0x10000	 : first 64k used by BUG
- *   0x10000 == start    : Boot loader jumps here. (for now, this can
- *					handle only NMAGIC - screwy linker)
- *
- ***********************************************************************/
+ *   0x00000 - 0x01000	trap vectors
+ *   0x01000 - 0x10000	first 64k used by BUG
+ *   0x10000 == start	Boot loader jumps here. (for now, this can
+ *			handle only NMAGIC - screwy linker)
+ */
 	text
 
-LABEL(_kernelstart)
-LABEL(_start)
-LABEL(start)
-	br	_start_text
-#if 0
-	.align 4096		  /* VBR points to page aligned list */
-    _LABEL(vector_list)	  /* references memory BELOW this line */
-	#include "machine/exception_vectors.h"
-	word	END_OF_VECTOR_LIST
+GLOBAL(kernelstart)
+GLOBAL(kernel_text)
+GLOBAL(start)
+ASGLOBAL(start)
+	br	_C_LABEL(start_text)
+	br	_C_LABEL(start_text)
+	br	_C_LABEL(start_text)
+	br	_C_LABEL(start_text)
 
-    _LABEL(_msgsw)
-	word 0 /* Bits here turn on/off debugging somewhere. */
-#endif
-
-ENTRY(doboot)
+GLOBAL(doboot)
 	/*
-	 *	Try hitting the SRST bit in VMEchip2 to reset the system.
+	 * Try hitting the SRST bit in VMEchip2 to reset the system.
 	 */
+#ifdef MVME188
+	/* check if it's a mvme188 */
+	or.u	r4, r0, hi16(_C_LABEL(brdtyp))
+	ld	r3, r4, lo16(_C_LABEL(brdtyp))
+	cmp	r4, r3, BRD_188
+	bb1	ne, r4, 1f
+	bsr	_C_LABEL(m188_reset)
+	br	8f
+1:
+#endif	/* MVME188 */
 	or.u	r3,r0, 0xfff4
 	ld	r4,r3, 0x0060		/* read offset (LCSR +0x60) */
-	set	r4,r4,1<23>		/* set SYSRST bit - bit 23 */	
+	set	r4,r4,1<23>		/* set SYSRST bit - bit 23 */
 	st	r4,r3, 0x0060		/* and store it back  */
 
 	/*
-	 *	We will be here if the reset above failed. In this case,
-	 *	we will try to return to bug.
+	 * We will be here if the reset above failed. In this case,
+	 * we will try to return to bug.
 	 *
-	 *	Switch to interrupt stack and call __doboot to take care
-	 *	going to BUG. Need to do this since __doboot turns off the
-	 *	the MMU and we need to be on a 1-to-1 mapped stack so that
-	 *	further calls don't get data access exceptions.
+	 * Switch to interrupt stack and call _doboot to take care
+	 * going to BUG. Need to do this since _doboot turns off the
+	 * the MMU and we need to be on a 1-to-1 mapped stack so that
+	 * further calls don't get data access exceptions.
 	 */
 
 	/* Should we use idle_u instead? XXX nivas */
-	or.u	r31, r0,  hi16(_intstack_end)
-	or	r31, r31, lo16(_intstack_end)
+8:
+	or.u	r31, r0,  hi16(_ASM_LABEL(intstack_end))
+	or	r31, r31, lo16(_ASM_LABEL(intstack_end))
 	clr	r31, r31, 3<0>	/* round down to 8-byte boundary */
 
-	bsr	__doboot
+	bsr	_C_LABEL(_doboot)
 	/*NOTREACHED*/
 
-/**************************************************************************/
-LABEL(_start_text)	/* This is the *real* start upon poweron or reset */
-#ifdef OLD_BOOT_LOADER
+	/* This is the *real* start upon poweron or reset */
+GLOBAL(start_text)
 	/*
 	 * Args passed by boot loader
 	 * 	r2 howto
-	 *	r3 first_addr (first available address)
-	 *	r4 ((Clun << 8) ; Dlun & FF) -> bootdev
-	 *	r5 esym
-	 *	r6 miniroot
-	 */
-	or.u	r13, r0,  hi16(_boothowto)
-	st	r2,  r13, lo16(_boothowto)
-	or.u	r13, r0,  hi16(_first_addr)
-	st	r3,  r13, lo16(_first_addr)
-#if 0
-	or.u	r13, r0,  hi16(_bootdev)
-	st	r4,  r13, lo16(_bootdev)
-#endif
-	or.u	r13, r0,  hi16(_esym)
-	st	r5,  r13, lo16(_esym)
-	or.u	r13, r0,  hi16(_miniroot)
-	st	r6,  r13, lo16(_miniroot)
-#else /* OLD_BOOT_LOADER */
-	/*
-	 * Args passed by boot loader
-	 * 	r2 howto
-	 *	r3 not used
+	 *	r3 boot controler address
 	 *	r4 esym
 	 *	r5 start of mini
 	 *	r6 end miniroot
+	 *	r7 ((Clun << 8) ; Dlun & FF) -> bootdev
+	 *	r8 cpu type (0x187, 0x188, 0x197)
 	 */
-	or.u	r13, r0,  hi16(_boothowto)
-	st	r2,  r13, lo16(_boothowto)
-#if 0
-	or.u	r13, r0,  hi16(_bootdev)
-	st	r3,  r13, lo16(_bootdev)
+/*
+ * (*entry)(flag, bugargs.ctrl_addr, cp, kernel.smini,kernel.emini,
+ *  bootdev, brdtyp);
+ */
+	or.u	r13, r0,  hi16(_C_LABEL(boothowto))
+	st	r2,  r13, lo16(_C_LABEL(boothowto))
+	or.u	r13, r0,  hi16(_C_LABEL(bootaddr))
+	st	r3,  r13, lo16(_C_LABEL(bootaddr))
+	or.u	r13, r0,  hi16(_C_LABEL(first_addr))
+	st	r4,  r13, lo16(_C_LABEL(first_addr))
+#if defined(DDB) || NKSYMS > 0
+	or.u	r13, r0,  hi16(_C_LABEL(esym))
+	st	r4,  r13, lo16(_C_LABEL(esym))
 #endif
-	or.u	r13, r0,  hi16(_first_addr)
-	st	r4,  r13, lo16(_first_addr)
-	or.u	r13, r0,  hi16(_esym)
-	st	r4,  r13, lo16(_esym)
-	or.u	r13, r0,  hi16(_miniroot)
-	st	r5,  r13, lo16(_miniroot)
-#endif /* OLD_BOOT_LOADER */
+	or.u	r13, r0,  hi16(_C_LABEL(bootdev))
+	st	r7,  r13, lo16(_C_LABEL(bootdev))
+	or.u	r13, r0,  hi16(_C_LABEL(brdtyp))
+	st	r8,  r13, lo16(_C_LABEL(brdtyp))
+
+	/* set _cputyp */
+	cmp	r2,  r8, BRD_197	/* r8 contains brdtyp */
+	bb1	ne, r2, 1f	/* if it's a '197, CPU is 88110 */
+	or.u	r13, r0,  hi16(CPU_88110)
+	or	r8,  r13, lo16(CPU_88110)
+	br	2f
+1:
+	or.u	r13, r0,  hi16(CPU_88100)
+	or	r8,  r13, lo16(CPU_88100)
+2:
+	or.u	r13, r0,  hi16(_C_LABEL(cputyp))
+	st	r8,  r13, lo16(_C_LABEL(cputyp))
+
 	/*
 	 * CPU Initialization
 	 *
@@ -201,101 +201,240 @@ LABEL(_start_text)	/* This is the *real* start upon poweron or reset */
 	 *
 	 *	jfriedl@omron.co.jp
 	 */
+
+	cmp	r2, r8, CPU_88110	/* r8 contains cputyp */
+	bb1	eq, r2, 1f	/* if it's a 'mc88110, skip SSBR */
 	stcr	r0, SSBR	/* clear this for later */
+1:
+	stcr	r0, SR0		/* clear "current thread" */
+	stcr	r0, SR1		/* clear the CPU flags */
 
 	set	r11, r0,  1<PSR_SUPERVISOR_MODE_BIT>
 	set	r11, r11, 1<PSR_INTERRUPT_DISABLE_BIT>
-	stcr	r11, PSR
-        FLUSH_PIPELINE
-	/* shadowing, FPU, misalgined access exception: all enabled now.*/
+	set	r11, r11, 1<PSR_GRAPHICS_DISABLE_BIT>
+	/*
+	 * XXX On 88110 processors, force serial instruction execution for now.
+	 * Situation where OoO would break will be hopefully taken care of in
+	 * the near future -- miod
+	 */
 #if 0
-	or.u	r11, r0,  hi16(_vector_list)
-	or	r11, r11, lo16(_vector_list)
-	stcr	r11, VBR
-#endif /* 0 */
-	stcr	r0, VBR
+	clr	r11, r11, 1<PSR_SERIAL_MODE_BIT>
+#else
+	set	r11, r11, 1<PSR_SERIAL_MODE_BIT>
+#endif
+	set	r11, r11, 1<PSR_SERIALIZE_BIT>
+	stcr	r11, PSR
+	FLUSH_PIPELINE
+	stcr	r0,  VBR	/* set Vector Base Register to 0, ALWAYS! */
+	FLUSH_PIPELINE
+	cmp	r2, r8, CPU_88110	/* r8 contains cputyp */
+	bb1	eq, r2, _ASM_LABEL(master_start) /* if it's a '197, skip */
 
+#if 0
+	/* clear BSS. Boot loader might have already done this... */
+	or.u	r2, r0, hi16(_C_LABEL(edata))
+	or	r2, r2, lo16(_C_LABEL(edata))
+	or.u	r4, r0, hi16(_C_LABEL(end))
+	or	r4, r4, lo16(_C_LABEL(end))
+	bsr.n	_bzero		/* bzero(edata, end-edata) */
+	 subu	r3, r4, r2
+#endif
+	/*
+	 * First time to count how many CPUs to attach
+	 */
+	or.u	r11, r0,  hi16(_ASM_LABEL(initialized_cpu_lock))
+	or	r11, r11, lo16(_ASM_LABEL(initialized_cpu_lock))
+1:
+	FLUSH_PIPELINE
+	or	r22, r0,  1
+	xmem	r22, r11, r0	/* If r22 gets 0, we have the lock.. */
+	bcnd	eq0, r22, 3f	/* ..but if not, we must wait */
+2:
+	/* just watch the lock until it looks clear */
+	ld	r22, r11, r0
+	bcnd	eq0, r22, 1b
+	br	2b		/* looks clear -- try to grab */
+3:
+	FLUSH_PIPELINE
+	or.u	r11, r0,  hi16(_ASM_LABEL(initialized_cpus))
+	ld	r22, r11, lo16(_ASM_LABEL(initialized_cpus))
+	add	r23, r22, 1
+	st	r23, r11, lo16(_ASM_LABEL(initialized_cpus))
+
+	or.u	r11, r0,  hi16(_ASM_LABEL(initialized_cpu_lock))
+	st	r0,  r11, lo16(_ASM_LABEL(initialized_cpu_lock))
+	/*
+	 * Now we view with any other processors to see who's the master.
+	 * We first try to obtain a lock to see who's allowed
+	 * to check/set the master lock.
+	 */
+	or.u	r11, r0,  hi16(_ASM_LABEL(inter_processor_lock))
+	or	r11, r11, lo16(_ASM_LABEL(inter_processor_lock))
+1:
+	FLUSH_PIPELINE
+	or	r22, r0,  1
+	xmem	r22, r11, r0		/* If r22 gets 0, we have the lock.. */
+	bcnd	eq0, r22, 4f		/* ..but if not, we must wait */
+2:
+	/* just watch the lock until it looks clear */
+	ld	r22, r11, r0
+	bcnd	ne0, r22, 2b
+	/* since we can be here with caches off, add a few nops to
+	   keep the bus from getting overloaded */
+	or	r2, r0, lo16(1000)
+3:
+	subu	r2, r2, 1
+	bcnd	eq0, r2, 3b
+	br	1b			/* looks clear -- try to grab */
+4:
+	/* now try to grab the master_processor_chosen prize */
+	FLUSH_PIPELINE
+	or.u	r11, r0,  hi16(_ASM_LABEL(master_processor_chosen))
+	or	r11, r11, lo16(_ASM_LABEL(master_processor_chosen))
+	or	r22, r0,  1
+	xmem	r22, r11, r0
+
+	/*
+	 * If r22 is not clear we're a slave,
+	 * otherwise we're first and the master.
+	 *
+	 * Note that we haven't released the interprocessor lock....
+	 * We'll do that when we're ready for another CPU to go.
+	 * (if we're the master, we'll do that in master_start below.
+	 *  if we're a slave, we'll do it in slave_start below).
+	 */
+	bcnd	ne0, r22, _ASM_LABEL(slave_start)
+	/* fall through to master start if that's appropriate */
+
+ASLOCAL(master_start)
 	/*
 	 * Switch to interrupt stack
 	 * Use idle_u's stack instead?
 	 */
-	or.u	r31, r0,  hi16(_intstack_end)
-	or	r31, r31, lo16(_intstack_end)
+	or.u	r31, r0,  hi16(_ASM_LABEL(intstack_end))
+	or	r31, r31, lo16(_ASM_LABEL(intstack_end))
 	clr	r31, r31, 3<0>	/* round down to 8-byte boundary */
 
-	/*
-	 * Want to make the call:
-	 * 	vector_init(VBR, vector_list)
-	 */
-	or.u	r3, r0, hi16(_vector_list)
-	or	r3, r3, lo16(_vector_list)
-	bsr.n	_vector_init
-	ldcr	r2, VBR		
-	
-#if 0
-	/* clear BSS. Boot loader might have already done this... */
-	or.u	r2, r0, hi16(_edata)
-	or	r2, r2, lo16(_edata)
-	or.u	r4, r0, hi16(_end)
-	or	r4, r4, lo16(_end)
-	bsr.n	_bzero		/* bzero(edata, end-edata) */
-	subu	r3, r4, r2
+#ifdef M88110
+#ifdef M88100
+	cmp	r2, r8, CPU_88110 /* r8 contains cputyp */
+	bb1	ne, r2, 1f	/* if it's a 'mc88110, use different vectors */
 #endif
+	or.u	r3, r0, hi16(_C_LABEL(m88110_vector_list))
+	br.n	2f
+	 or	r3, r3, lo16(_C_LABEL(m88110_vector_list))
+1:
+#endif /* M88110 */
+#ifdef M88100
+	or.u	r3, r0, hi16(_C_LABEL(vector_list))
+	or	r3, r3, lo16(_C_LABEL(vector_list))
+#endif /* M88100 */
+2:
+	bsr.n	_C_LABEL(vector_init)
+	 ldcr	r2, VBR
 
 	/* still on int stack */
-	bsr.n	_m187_bootstrap
-	subu	r31, r31, 40
+	bsr.n	_C_LABEL(mvme_bootstrap)
+	 subu	r31, r31, 40
 	addu	r31, r31, 40
-	
+
+	/*
+	 * we now know our cpu number, so we
+	 * can set interrupt_stack[cpu_number()] = intstack
+	 */
+	ldcr	r10, SR1
+	extu	r10, r10, FLAG_CPU_FIELD_WIDTH<0>	/* r10 <-- CPU# */
+
+	/* figure interrupt_stack[cpu_number()] */
+	or.u	r11,  r0, hi16(_C_LABEL(interrupt_stack))
+	or	r11, r11, lo16(_C_LABEL(interrupt_stack))
+	or.u	r12, r0,  hi16(_C_LABEL(intstack))
+	or	r12, r12, lo16(_C_LABEL(intstack))
+	st	r12, r11 [r10]
+
 	/* switch to proc0 uarea */
-	
 	or.u	r10, r0, hi16(UADDR)
 	or	r31, r10,lo16(UADDR)
 	addu	r31, r31, USIZE - 8
 
-	/*
-	 * Block clock interrupts for now. There is a problem with
-	 * clock interrupts when the first clock interrupt is received.
-	 * Hardclock() sees the base priority to be 0 and drops IPL to
-	 * splsofclock() before calling softclock(). This opens up other
-	 * clock interrupts to be received before the first one is ever
-	 * finished. Also, the first entry on calltodo list is stuck for
-	 * ever. As a work around, I will set the IPL to softclock so
-	 * that the CLKF_BASEPRI() check in hardclock() will return false.
-	 * XXX nivas
-	 */
-	 
-#if XXXX
-	bsr.n	_setipl
-	or	r2, r0, IPL_SOFTCLOCK
-	bsr	_enable_interrupt
-	bsr.n	_setipl
-	or	r2, r0, IPL_HIGH
-#endif
 	/* make the call: main() */
-	bsr.n	_main
+	or.u	r2, r0, hi16(UADDR)
+	or	r2, r2,lo16(UADDR)
+	addu	r2, r2, USIZE - 8
 	subu	r31, r31, 40
+	bsr	_C_LABEL(main)
 	addu	r31, r31, 40
-	bsr	_panic
+	bsr	_C_LABEL(panic)
+
+/*
+ *	slave CPUs starts here
+ */
+ASLOCAL(slave_start)
+	/*
+	 * While holding the inter_processor_lock, the slave cpu can use
+	 * the slavestack to call slave_pre_main and determine its cpu number.
+	 * After that, however, it should switch over to the interrupt stack
+	 * associated with its cpu.
+	 */
+
+	/* r31 <-- slavestack */
+	or.u	r31, r0,  hi16(_ASM_LABEL(slavestack_end))
+	or	r31, r31, lo16(_ASM_LABEL(slavestack_end))
+	clr	r31, r31, 3<0>	/* round down to 8-byte boundary */
+
+	bsr.n	_C_LABEL(slave_pre_main)	/* set cpu number */
+	 subu	r31, r31, 48    		/* allocate frame */
+
+	bsr	_C_LABEL(get_slave_stack)
+	addu	r31, r2, INTSTACK_SIZE + 4096
+
+	/*
+	 * SR1 now contains our cpu number. We can now release the
+	 * inter_processor_lock, as we are done with the slavestack.
+	 * We also have an interrupt stack
+	 */
+
+	or.u	r10, r0, hi16(_ASM_LABEL(inter_processor_lock))
+	st	r0, r10, lo16(_ASM_LABEL(inter_processor_lock))
+
+	br.n	_C_LABEL(slave_main)	/* does not return */
+	 subu	r31, r31, 40		/* allocate frame */
+
+GLOBAL(spin_cpu)
+	or.u	r3,   r0,  hi16(_C_LABEL(start_text))
+	or	r3,   r3,  lo16(_C_LABEL(start_text))
+	or	r9,   r0,  0x100		/* .FORKMPU */
+	tb0	0,    r0,  0x200-16		/* call 188Bug */
+	jmp	r1
 
 /*****************************************************************************/
 
 	data
-	.align 4096		  /* VBR points to page aligned list */
-	global _vector_list
-_vector_list:			  /* references memory BELOW this line */
-#include "machine/exception_vectors.h"
-	word	END_OF_VECTOR_LIST
+	.align 4096		/* SDT (segment descriptor table */
+GLOBAL(kernel_sdt)
+	space	(0x2000)	/* 8K - 4K phys, 4K virt*/
+GLOBAL(ret_addr)
+	word 0
+ASLOCAL(initialized_cpu_lock)
+	/* XMEM spin lock -- to count CPUs */
+	word 0
+ASLOCAL(initialized_cpus)
+	/* CPU counter to initialize */
+	word 0
+ASLOCAL(master_processor_chosen)
+	/* The first processor that XMEMs this becomes the master */
+	word 0
+ASLOCAL(inter_processor_lock)
+	/* XMEM spin lock -- controls access to master_processor_chosen */
+	word 0
 
-	global _msgsw
-_msgsw:
-	word 0 			 /* Bits here turn on/off debugging somewhere */
 	.align 4096
-	global	_intstack
-	global	_intstack_end
-_intstack:
-	space	4 * NBPG	/* 16K */
-_intstack_end:
+GLOBAL(intstack)
+	space (4 * NBPG)	/* 16K, just to be safe */
+ASGLOBAL(intstack_end)
+ASGLOBAL(slavestack)
+	space (NBPG)		/* 4K, small, interim stack */
+ASGLOBAL(slavestack_end)
 
 /*
  * When a process exits and its u. area goes away, we set curpcb to point
@@ -306,8 +445,8 @@ _intstack_end:
  * we feel like doing that).
  * Should be page aligned.
  */
-	global	_idle_u
-_idle_u:
+	.align 4096
+GLOBAL(idle_u)
 	space	UPAGES * NBPG
 
 /*
@@ -315,31 +454,32 @@ _idle_u:
  *
  * This must be page aligned
  */
-	global	_u0
-	align	4096
-_u0:	space	UPAGES * NBPG
-estack0:
+	.align	4096
+ASLOCAL(u0)
+	space	UPAGES * NBPG
 
 /*
  * UPAGES get mapped to kstack
  */
 
-	global	_kstack
-_kstack:
+ASGLOBAL(kstack)
 	word	UADDR
 
-#ifdef DDB
-	global	_esym
-_esym:
+#if defined(DDB) || NKSYMS > 0
+GLOBAL(esym)
 	word 	0
-#endif /* DDB */
+#endif /* DDB || NKSYMS > 0 */
 
-	global	_proc0paddr	/* move to C code */
-_proc0paddr:
-	word	_u0		/*  KVA of proc0 uarea */
+GLOBAL(intiobase)
+	word	0		| KVA of base of internal IO space
+GLOBAL(intiolimit)
+	word	0		| KVA of end of internal IO space
+
+GLOBAL(proc0paddr)
+	word	_ASM_LABEL(u0)	/*  KVA of proc0 uarea */
 
 /*
- * _curpcb points to the current pcb (and hence u. area).
+ * curpcb points to the current pcb (and hence u. area).
  * Initially this is the special one.
  */
 /*
@@ -347,22 +487,20 @@ _proc0paddr:
  * I may have to change curpcb to u0 + PCB_USER based on what
  * other parts expect XXX nivas
  */
-	global	_curpcb	/* move to C code */
-_curpcb:	word	_u0	/* curpcb = &u0 */
+GLOBAL(curpcb)
+	word	_ASM_LABEL(u0)	/* curpcb = &u0 */
 
 /*
  * Trampoline code. Gets copied to the top of
  * user stack in exec.
  */
-	global	_sigcode
-_sigcode:
-				/* r31 points to sigframe */
+GLOBAL(sigcode)			/* r31 points to sigframe */
 	ld	r2, r31, 0	/* signo */
 	ld	r3, r31, 4	/* siginfo_t* */
 	ld	r4, r31, 8	/* sigcontext* */
 	ld	r5, r31, 12	/* handler */
 	jsr.n	r5
-	subu	r31, r31, 40	/* give some stack space */
+	 subu	r31, r31, 40	/* give some stack space */
 	addu	r31, r31, 40	/* restore old sp value  */
 	ld	r2,  r31, 8	/* sigcontext* */
 	or	r13,  r0, SYS_sigreturn
@@ -374,5 +512,24 @@ _sigcode:
 	tb0	0, r0, 128	/* syscall trap, exit */
 	or	r0, r0, 0
 	or	r0, r0, 0
-	global	_esigcode
-_esigcode:
+GLOBAL(esigcode)
+
+/* interrupt counters */
+GLOBAL(intrnames)
+	string	"spur\0"
+	string	"lev1\0"
+	string	"lev2\0"
+	string	"lev3\0"
+	string	"lev4\0"
+	string	"lev5\0"
+	string	"lev6\0"
+	string	"lev7\0"
+	string	"clk\0"
+	string	"sclk\0"
+	string	"pclk\0"
+	string	"nmi\0"
+GLOBAL(eintrnames)
+	.align	8
+GLOBAL(intrcnt)
+	word	0,0,0,0,0,0,0,0,0,0,0,0
+GLOBAL(eintrcnt)

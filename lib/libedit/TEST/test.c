@@ -1,3 +1,5 @@
+/*	$OpenBSD: test.c,v 1.4 2003/05/01 21:11:22 avsm Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,7 +39,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)test.c	8.1 (Berkeley) 6/4/93";
+#else
+static const char rcsid[] = "$OpenBSD: test.c,v 1.4 2003/05/01 21:11:22 avsm Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -171,37 +173,68 @@ main(argc, argv)
 #endif
 	if (!continuation && num == 1)
 	    continue;
+
 	if (tok_line(tok, buf, &ac, &av) > 0) {
 	    history(hist, continuation ? H_ADD : H_ENTER, buf);
 	    continuation = 1;
 	    continue;
 	}
+
 	history(hist, continuation ? H_ADD : H_ENTER, buf);
 
 	continuation = 0;
-	if (el_parse(el, ac, av) != -1) {
-	    tok_reset(tok);
-	    continue;
+
+	if (strcmp(av[0], "history") == 0) {
+	    const struct HistEvent *he;
+
+	    switch (ac) {
+	    case 1:
+		for (he = history(hist, H_LAST); he;
+		     he = history(hist, H_PREV))
+		    (void) fprintf(stdout, "%4d %s", he->num, he->str);
+		break;
+
+	    case 2:
+		if (strcmp(av[1], "clear") == 0)
+		     history(hist, H_CLEAR);
+		else
+		     goto badhist;
+		break;
+
+	    case 3:
+		if (strcmp(av[1], "load") == 0)
+		     history(hist, H_LOAD, av[2]);
+		else if (strcmp(av[1], "save") == 0)
+		     history(hist, H_SAVE, av[2]);
+		break;
+
+	    badhist:
+	    default:
+		(void) fprintf(stderr, "Bad history arguments\n");
+		break;
+	    }
+	}
+	else if (el_parse(el, ac, av) == -1) {
+	    switch (fork()) {
+	    case 0:
+		execvp(av[0], av);
+		perror(av[0]);
+		_exit(1);
+		/*NOTREACHED*/
+		break;
+
+	    case -1:
+		perror("fork");
+		break;
+
+	    default:
+		if (wait(&num) == -1)
+		    perror("wait");
+		(void) fprintf(stderr, "Exit %x\n", num);
+		break;
+	    }
 	}
 
-	switch (fork()) {
-	case 0:
-	    execvp(av[0], av);
-	    perror(av[0]);
-	    _exit(1);
-	    /*NOTREACHED*/
-	    break;
-
-	case -1:
-	    perror("fork");
-	    break;
-
-	default:
-	    if (wait(&num) == -1)
-		perror("wait");
-	    (void) fprintf(stderr, "Exit %x\n", num);
-	    break;
-	}
 	tok_reset(tok);
     }
 

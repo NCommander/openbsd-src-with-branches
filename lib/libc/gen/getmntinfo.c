@@ -1,5 +1,3 @@
-/*	$NetBSD: getmntinfo.c,v 1.5 1995/02/27 04:12:53 cgd Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,15 +28,10 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getmntinfo.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getmntinfo.c,v 1.5 1995/02/27 04:12:53 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getmntinfo.c,v 1.4 1999/06/01 15:31:13 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
-#include <sys/ucred.h>
 #include <sys/mount.h>
 #include <stdlib.h>
 
@@ -56,7 +45,7 @@ getmntinfo(mntbufp, flags)
 {
 	static struct statfs *mntbuf;
 	static int mntsize;
-	static long bufsize;
+	static size_t bufsize;
 
 	if (mntsize <= 0 && (mntsize = getfsstat(0, 0, MNT_NOWAIT)) < 0)
 		return (0);
@@ -66,8 +55,10 @@ getmntinfo(mntbufp, flags)
 		if (mntbuf)
 			free(mntbuf);
 		bufsize = (mntsize + 1) * sizeof(struct statfs);
-		if ((mntbuf = (struct statfs *)malloc(bufsize)) == 0)
+		if ((mntbuf = (struct statfs *)malloc(bufsize)) == 0) {
+			bufsize = 0;
 			return (0);
+		}
 		if ((mntsize = getfsstat(mntbuf, bufsize, flags)) < 0)
 			return (0);
 	}

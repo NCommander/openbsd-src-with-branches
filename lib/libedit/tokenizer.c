@@ -1,3 +1,6 @@
+/*	$OpenBSD: tokenizer.c,v 1.7 2003/06/02 20:18:40 millert Exp $	*/
+/*	$NetBSD: tokenizer.c,v 1.2 1997/01/11 06:48:15 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +34,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)tokenizer.c	8.1 (Berkeley) 6/4/93";
+#else
+static const char rcsid[] = "$OpenBSD: tokenizer.c,v 1.7 2003/06/02 20:18:40 millert Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -73,7 +76,7 @@ struct tokenizer {
 };
 
 
-private void tok_finish	__P((Tokenizer *));
+private void tok_finish(Tokenizer *);
 
 
 /* tok_finish():
@@ -360,26 +363,30 @@ tok_line(tok, line, argc, argv)
 
 	if (tok->wptr >= tok->wmax - 4) {
 	    size_t size = tok->wmax - tok->wspace + WINCR;
-	    char *s = (char *) tok_realloc(tok->wspace, size);
-	    /*SUPPRESS 22*/
-	    int offs = s - tok->wspace;
+	    char *s;
+	    int offs;
 
-	    if (offs != 0) {
+	    if ((s = tok_realloc(tok->wspace, size)) == NULL)
+		return -1;
+
+	    if ((offs = s - tok->wspace) != 0) {
 		int i;
 		for (i = 0; i < tok->argc; i++)
 		    tok->argv[i] = tok->argv[i] + offs;
 		tok->wptr   = tok->wptr + offs;
 		tok->wstart = tok->wstart + offs;
-		tok->wmax   = s + size;
 		tok->wspace = s;
 	    }
+	    tok->wmax   = s + size;
 	}
 
 	if (tok->argc >= tok->amax - 4) {
+	    char **nargv = (char **) tok_realloc(tok->argv, (tok->amax + AINCR)
+						 * sizeof(char*));
+	    if (nargv == NULL)
+		return -1;
 	    tok->amax += AINCR;
-	    tok->argv = (char **) tok_realloc(tok->argv, 
-					      tok->amax * sizeof(char*));
+	    tok->argv = nargv;
 	}
-
     }
 }

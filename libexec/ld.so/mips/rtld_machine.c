@@ -1,8 +1,8 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rtld_machine.c,v 1.13 2003/07/28 03:11:00 drahn Exp $ */
 
 /*
- * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
- * 
+ * Copyright (c) 1998-2002 Opsycon AB, Sweden.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -11,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed under OpenBSD by
- *	Per Fogelstrom, Opsycon AB, Sweden.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -41,7 +35,6 @@
 #include "syscall.h"
 #include "archdep.h"
 
-
 int
 _dl_md_reloc(elf_object_t *object, int rel, int relsz)
 {
@@ -51,50 +44,50 @@ _dl_md_reloc(elf_object_t *object, int rel, int relsz)
 	Elf32_Addr loff;
 	Elf32_Rel  *relocs;
 
-	loff   = object->load_offs;
+	loff = object->load_offs;
 	numrel = object->Dyn.info[relsz] / sizeof(Elf32_Rel);
 	relocs = (Elf32_Rel *)(object->Dyn.info[rel]);
 
-	if((object->status & STAT_RELOC_DONE) || !relocs) {
+	if (relocs == NULL)
 		return(0);
-	}
 
-	for(i = 0; i < numrel; i++, relocs++) {
+	for (i = 0; i < numrel; i++, relocs++) {
 		Elf32_Addr r_addr = relocs->r_offset + loff;
-		Elf32_Addr ooff;
+		Elf32_Addr ooff = 0;
 		const Elf32_Sym *sym, *this;
 		const char *symn;
+		int type;
 
-		if(ELF32_R_SYM(relocs->r_info) == 0xffffff) {
+		if (ELF32_R_SYM(relocs->r_info) == 0xffffff)
 			continue;
-		}
 
 		sym = object->dyn.symtab;
 		sym += ELF32_R_SYM(relocs->r_info);
 		this = sym;
 		symn = object->dyn.strtab + sym->st_name;
+		type = ELF32_R_TYPE(relocs->r_info);
 
-		if(ELF32_R_SYM(relocs->r_info) &&
-		   !(ELF32_ST_BIND(sym->st_info) == STB_LOCAL &&
-		     ELF32_ST_TYPE (sym->st_info) == STT_NOTYPE)) {
-			
-			ooff = _dl_find_symbol(symn, _dl_objects, &this, 0, 1);
-			if(!this && ELF32_ST_BIND(sym->st_info) == STB_GLOBAL) {
+		if (ELF32_R_SYM(relocs->r_info) &&
+		    !(ELF32_ST_BIND(sym->st_info) == STB_LOCAL &&
+		    ELF32_ST_TYPE (sym->st_info) == STT_NOTYPE)) {
+			ooff = _dl_find_symbol(symn, _dl_objects, &this,
+			SYM_SEARCH_ALL | SYM_NOWARNNOTFOUND | SYM_PLT,
+			sym->st_size, object);
+			if (!this && ELF32_ST_BIND(sym->st_info) == STB_GLOBAL) {
 				_dl_printf("%s: can't resolve reference '%s'\n",
-						_dl_progname, symn);
+				    _dl_progname, symn);
 				fails++;
 			}
 
 		}
 
-		switch(ELF32_R_TYPE(relocs->r_info)) {
+		switch (ELF32_R_TYPE(relocs->r_info)) {
 		case R_MIPS_REL32:
-			if(ELF32_ST_BIND(sym->st_info) == STB_LOCAL &&
-			   (ELF32_ST_TYPE(sym->st_info) == STT_SECTION ||
+			if (ELF32_ST_BIND(sym->st_info) == STB_LOCAL &&
+			    (ELF32_ST_TYPE(sym->st_info) == STT_SECTION ||
 			    ELF32_ST_TYPE(sym->st_info) == STT_NOTYPE) ) {
-				*(u_int32_t *)r_addr += loff;
-			}
-			else if(this) {
+				*(u_int32_t *)r_addr += loff + sym->st_value;
+			} else if (this) {
 				*(u_int32_t *)r_addr += this->st_value + ooff;
 			}
 			break;
@@ -104,11 +97,11 @@ _dl_md_reloc(elf_object_t *object, int rel, int relsz)
 
 		default:
 			_dl_printf("%s: unsupported relocation '%s'\n",
-					_dl_progname, symn);
+			    _dl_progname, symn);
 			_dl_exit(1);
 		}
 	}
-	object->status |= STAT_RELOC_DONE;
+
 	return(fails);
 }
 
@@ -119,7 +112,7 @@ _dl_md_reloc(elf_object_t *object, int rel, int relsz)
  *	is referenced by other relocations than CALL16 and 26 it
  *	should not be given a stub and have a zero value in the
  *	symbol table. By not doing so, we can't use pointers to
- *	external functions and use them in comparitions...
+ *	external functions and use them in comparisons...
  */
 void
 _dl_md_reloc_got(elf_object_t *object, int lazy)
@@ -131,76 +124,103 @@ _dl_md_reloc_got(elf_object_t *object, int lazy)
 	const Elf32_Sym  *symp;
 	const Elf32_Sym  *this;
 	const char *strt;
+	Elf_Addr ooff;
+	const Elf_Sym *this;
+
+	if (object->status & STAT_GOT_DONE)
+		return;
 
 	lazy = 0;	/* XXX Fix ld before enabling lazy */
 	loff = object->load_offs;
 	strt = object->dyn.strtab;
 	gotp = object->dyn.pltgot;
-	n    = object->Dyn.info[DT_MIPS_LOCAL_GOTNO - DT_LOPROC + DT_NUM];
-
-	if(object->status & STAT_GOT_DONE) {
-		return;
-	}
+	n = object->Dyn.info[DT_MIPS_LOCAL_GOTNO - DT_LOPROC + DT_NUM];
 
 	/*
 	 *  Set up pointers for run time (lazy) resolving.
 	 */
 	gotp[0] = (int)_dl_rt_resolve;
-	if(gotp[1] & 0x80000000) {
+	if (gotp[1] & 0x80000000) {
 		gotp[1] = (int)object | 0x80000000;
 	}
 
-	/*
-	 *  First do all local references.
-	 */
-	for(i = ((gotp[1] & 0x80000000) ? 2 : 1); i < n; i++) {
+	/*  First do all local references. */
+	for (i = ((gotp[1] & 0x80000000) ? 2 : 1); i < n; i++) {
 		gotp[i] += loff;
 	}
 
 	gotp += n;
-	
+
 	symp =  object->dyn.symtab;
 	symp += object->Dyn.info[DT_MIPS_GOTSYM - DT_LOPROC + DT_NUM];
-	n    =  object->Dyn.info[DT_MIPS_SYMTABNO - DT_LOPROC + DT_NUM] -
-		object->Dyn.info[DT_MIPS_GOTSYM - DT_LOPROC + DT_NUM];
+	n =  object->Dyn.info[DT_MIPS_SYMTABNO - DT_LOPROC + DT_NUM] -
+	    object->Dyn.info[DT_MIPS_GOTSYM - DT_LOPROC + DT_NUM];
+
+	this = NULL;
+	ooff = _dl_find_symbol("__got_start", object, &this,
+	    SYM_SEARCH_SELF|SYM_NOWARNNOTFOUND|SYM_PLT, 0, object);
+	if (this != NULL)
+		object->got_addr = ooff + this->st_value;
+
+	this = NULL;
+	ooff = _dl_find_symbol("__got_end", object, &this,
+	    SYM_SEARCH_SELF|SYM_NOWARNNOTFOUND|SYM_PLT, 0, object);
+	if (this != NULL)
+		object->got_size = ooff + this->st_value  - object->got_addr;
+
+	this = NULL;
+	ooff = _dl_find_symbol("__plt_start", object, &this,
+	    SYM_SEARCH_SELF|SYM_NOWARNNOTFOUND|SYM_PLT, 0, object);
+	if (this != NULL)
+		object->plt_addr = ooff + this->st_value;
+
+	this = NULL;
+	ooff = _dl_find_symbol("__plt_end", object, &this,
+	    SYM_SEARCH_SELF|SYM_NOWARNNOTFOUND|SYM_PLT, 0, object);
+	if (this != NULL)
+		object->plt_size = ooff + this->st_value  - object->plt_addr;
 
 	/*
 	 *  Then do all global references according to the ABI.
 	 *  Quickstart is not yet implemented.
 	 */
-	while(n--) {
-		if(symp->st_shndx == SHN_UNDEF &&
-		   ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
-_dl_printf("undef: %s = %X\n", strt + symp->st_name, symp->st_value);
-			if(symp->st_value == 0 || !lazy) {
+	while (n--) {
+		if (symp->st_shndx == SHN_UNDEF &&
+		    ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+DL_DEB(("got: '%s' = %x\n", strt + symp->st_name, symp->st_value));
+			if (symp->st_value == 0 || !lazy) {
 				this = 0;
 				ooff = _dl_find_symbol(strt + symp->st_name,
-						_dl_objects, &this, 0, 1);
-				if(this) {
+				    _dl_objects, &this,
+				    SYM_SEARCH_ALL|SYM_NOWARNNOTFOUND|SYM_PLT,
+				    symp->st_size, object);
+				if (this)
 					*gotp = this->st_value + ooff;
-				}
-			}
-			else {
+			} else
 				*gotp = symp->st_value + ooff;
-			}
-		}
-		else if(symp->st_shndx == SHN_COMMON ||
+		} else if (symp->st_shndx == SHN_COMMON ||
 			symp->st_shndx == SHN_UNDEF) {
 			this = 0;
 			ooff = _dl_find_symbol(strt + symp->st_name,
-						_dl_objects, &this, 0, 1);
-			if(this) {
+			    _dl_objects, &this,
+			    SYM_SEARCH_ALL|SYM_NOWARNNOTFOUND|SYM_PLT,
+			    symp->st_size, object);
+			if (this)
 				*gotp = this->st_value + ooff;
-			}
-		}
-		else if(ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
+		} else if (ELF32_ST_TYPE(symp->st_info) == STT_FUNC) {
 			*gotp += loff;
-		}
-		else {	/* XXX ??? */	/* Resolve all others immediatly */
+		} else {	/* XXX ??? */	/* Resolve all others immediatly */
 			*gotp = symp->st_value + loff;
 		}
 		gotp++;
 		symp++;
 	}
 	object->status |= STAT_GOT_DONE;
+
+	if (object->got_addr != NULL && object->got_size != 0)
+		_dl_mprotect((void*)object->got_addr, object->got_size,
+		    PROT_READ);
+	if (object->plt_addr != NULL && object->plt_size != 0)
+		_dl_mprotect((void*)object->plt_addr, object->plt_size,
+		    PROT_READ|PROT_EXEC);
 }

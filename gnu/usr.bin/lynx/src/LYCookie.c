@@ -16,13 +16,24 @@
 **   ftp://ds.internic.net/internet-drafts/draft-ietf-http-state-man-mec-03.txt
 **		- FM					1997-08-02
 **
+**	Partially checked against:
+**   http://www.ietf.org/internet-drafts/draft-ietf-http-state-man-mec-10.txt
+**		- kw					1998-12-11
+**
 **  TO DO: (roughly in order of decreasing priority)
-      * A means to specify "always allow" and "never allow" domains via
-	a configuration file is needed.
+      * Persistent cookies are still experimental.  Presently cookies
+	lose many pieces of information that distinguish
+	version 1 from version 0 cookies.  There is no easy way around
+	that with the current cookie file format.  Ports are currently
+	not stored persistently at all which is clearly wrong.
+      * We currently don't do anything special for unverifiable
+	transactions to third-party hosts.
+      * We currently don't use effective host names or check for
+	Domain=.local.
       * Hex escaping isn't considered at all.  Any semi-colons, commas,
 	or spaces actually in cookie names or values (i.e., not serving
 	as punctuation for the overall Set-Cookie value) should be hex
-	escaped if not quoted, but presumeably the server is expecting
+	escaped if not quoted, but presumably the server is expecting
 	them to be hex escaped in our Cookie request header as well, so
 	in theory we need not unescape them.  We'll see how this works
 	out in practice.
@@ -39,33 +50,32 @@
 	actively removing cookies and/or domains based on age or frequency
 	of use.
       * If a cookie has the secure flag set, we presently treat only SSL
-	connections as secure.	This may need to be expanded for other
-	secure communication protocols that become standarized.
-      * Cookies could be optionally stored in a file from session to session.
+	connections as secure.  This may need to be expanded for other
+	secure communication protocols that become standardized.
 */
 
-#include "HTUtils.h"
-#include "tcp.h"
-#include "HTAccess.h"
-#include "HTParse.h"
-#include "HTAlert.h"
-#include "LYCurses.h"
-#include "LYSignal.h"
-#include "LYUtils.h"
-#include "LYCharUtils.h"
-#include "LYClean.h"
-#include "LYGlobalDefs.h"
-#include "LYEdit.h"
-#include "LYStrings.h"
-#include "LYSystem.h"
-#include "GridText.h"
-#include "LYUtils.h"
-#include "LYCharUtils.h"
-#include "LYCookie.h"
+#include <HTUtils.h>
+#include <HTAccess.h>
+#include <HTParse.h>
+#include <HTAlert.h>
+#include <LYCurses.h>
+#include <LYUtils.h>
+#include <LYCharUtils.h>
+#include <LYClean.h>
+#include <LYGlobalDefs.h>
+#include <LYEdit.h>
+#include <LYStrings.h>
+#include <GridText.h>
+#include <LYCookie.h>
 
-#include "LYLeaks.h"
+#include <LYLeaks.h>
 
-#define FREE(x) if (x) {free(x); x = NULL;}
+#define max_cookies_domain 50
+#define max_cookies_global 500
+#define max_cookies_buffer 4096
+
+/* default for new domains, one of the invcheck_behaviour_t values: */
+#define DEFAULT_INVCHECK_BV INVCHECK_QUERY
 
 /*
 **  The first level of the cookie list is a list indexed by the domain
@@ -73,7 +83,7 @@
 **  list.  Thus, finding the cookies that apply to a given URL is a
 **  two-level scan; first we check each domain to see if it applies,
 **  and if so, then we check the paths of all the cookies on that
-**  list.   We keep a running total of cookies as we add or delete
+**  list.  We keep a running total of cookies as we add or delete
 **  them
 */
 PRIVATE HTList *domain_list = NULL;
@@ -103,6 +113,8 @@ typedef struct _cookie cookie;
 #define COOKIE_FLAG_EXPIRES_SET 4  /* If set, an expiry date was set */
 #define COOKIE_FLAG_DOMAIN_SET 8   /* If set, an non-default domain was set */
 #define COOKIE_FLAG_PATH_SET 16    /* If set, an non-default path was set */
+#define COOKIE_FLAG_FROM_FILE 32  /* If set, this cookie was persistent */
+
 struct _HTStream
 {
   HTStreamClass * isa;
@@ -120,7 +132,7 @@ PRIVATE void MemAllocCopy ARGS3(
 	return;
     }
 
-    temp = (char *)calloc(1, ((end - start) + 1));
+    temp = typecallocn(char, (end - start) + 1);
     if (temp == NULL)
 	outofmem(__FILE__, "MemAllocCopy");
     LYstrncpy(temp, start, (end - start));
@@ -130,13 +142,11 @@ PRIVATE void MemAllocCopy ARGS3(
 
 PRIVATE cookie * newCookie NOARGS
 {
-    cookie *p = (cookie *)calloc(1, sizeof(cookie));
-    char lynxID[64];
+    cookie *p = typecalloc(cookie);
 
     if (p == NULL)
 	outofmem(__FILE__, "newCookie");
-    sprintf(lynxID, "%p", p);
-    StrAllocCopy(p->lynxID, lynxID);
+    HTSprintf0(&(p->lynxID), "%p", p);
     p->port = 80;
     return p;
 }
@@ -157,6 +167,7 @@ PRIVATE void freeCookie ARGS1(
     }
 }
 
+#ifdef LY_FIND_LEAKS
 PRIVATE void LYCookieJar_free NOARGS
 {
     HTList *dl = domain_list;
@@ -179,26 +190,15 @@ PRIVATE void LYCookieJar_free NOARGS
 	    FREE(de->domain);
 	    HTList_delete(de->cookie_list);
 	    de->cookie_list = NULL;
+	    FREE(dl->object);
 	}
 	dl = dl->next;
-    }
-    if (dump_output_immediately) {
-	cl = cookie_list;
-	while (cl) {
-	    next = cl->next;
-	    co = cl->object;
-	    if (co) {
-		HTList_removeObject(cookie_list, co);
-		freeCookie(co);
-	    }
-	    cl = next;
-	}
-	HTList_delete(cookie_list);
     }
     cookie_list = NULL;
     HTList_delete(domain_list);
     domain_list = NULL;
 }
+#endif /* LY_FIND_LEAKS */
 
 /*
 **  Compare two hostnames as specified in Section 2 of:
@@ -211,19 +211,19 @@ PRIVATE BOOLEAN host_matches ARGS2(
 {
     /*
      *	The following line will handle both numeric IP addresses and
-     *	FQDNs.	Do numeric addresses require special handling?
+     *	FQDNs.  Do numeric addresses require special handling?
      */
-    if (*B != '.' && !strcmp(A, B))
+    if (*B != '.' && !strcasecomp(A, B))
 	return YES;
 
     /*
      *	The following will pass a "dotted tail" match to "a.b.c.e"
-     *	as described in Section 2 of the -05 draft.
+     *	as described in Section 2 of draft-ietf-http-state-man-mec-10.txt.
      */
-    if (*B == '.') {
+    if (*B == '.' && B[1] != '\0' && B[1] != '.' && *A != '.') {
 	int diff = (strlen(A) - strlen(B));
 	if (diff > 0) {
-	    if (!strcmp((A + diff), B))
+	    if (!strcasecomp((A + diff), B))
 		return YES;
 	}
     }
@@ -241,22 +241,58 @@ PRIVATE BOOLEAN port_matches ARGS2(
 {
     CONST char *number = list;
 
-    if (!(number && isdigit(*number)))
+    if (!(number && isdigit(UCH(*number))))
 	return(FALSE);
 
     while (*number != '\0') {
 	if (atoi(number) == port) {
 	    return(TRUE);
 	}
-	while (isdigit(*number)) {
+	while (isdigit(UCH(*number))) {
 	    number++;
 	}
-	while (*number != '\0' && !isdigit(*number)) {
+	while (*number != '\0' && !isdigit(UCH(*number))) {
 	    number++;
 	}
     }
 
     return(FALSE);
+}
+
+/*
+ * Returns the length of the given path ignoring trailing slashes.
+ */
+PRIVATE int ignore_trailing_slash ARGS1(CONST char *, a)
+{
+    int len = strlen(a);
+    while (len > 1 && a[len-1] == '/')
+	--len;
+    return len;
+}
+
+/*
+ * Check if the path 'a' is a prefix of path 'b', ignoring trailing slashes
+ * in either, since they denote an empty component.
+ */
+PRIVATE BOOL is_prefix ARGS2(CONST char *, a, CONST char *, b)
+{
+    int len_a = ignore_trailing_slash(a);
+    int len_b = ignore_trailing_slash(b);
+
+    if (len_a > len_b) {
+	return FALSE;
+    } else {
+	if (strncmp(a, b, len_a) != 0) {
+	    return FALSE;
+	}
+	if (len_a < len_b && (len_a > 1 || a[0] != '/')) {
+	    if (b[len_a] != '\0'
+	     && b[len_a] != '/') {
+		return FALSE;
+	     }
+	}
+    }
+    return TRUE;
 }
 
 /*
@@ -274,40 +310,83 @@ PRIVATE void store_cookie ARGS3(
     CONST char *ptr;
     domain_entry *de = NULL;
     BOOL Replacement = FALSE;
+    int invprompt_reasons = 0;	/* what is wrong with this cookie - kw */
+#define FAILS_COND1 0x01
+#define FAILS_COND4 0x02
 
     if (co == NULL)
 	return;
 
     /*
-     *	Apply sanity checks.
-     *
-     *	Section 4.3.2, condition 1: The value for the Path attribute is
-     *	not a prefix of the request-URI.
+     *	Ensure that the domain list exists.
      */
-    if (strncmp(co->path, path, co->pathlen) != 0) {
-	if (TRACE)
-	    fprintf(stderr,
-	    "store_cookie: Rejecting because '%s' is not a prefix of '%s'.\n",
-		    co->path, path);
-	freeCookie(co);
-	co = NULL;
-	return;
+    if (domain_list == NULL) {
+#ifdef LY_FIND_LEAKS
+	atexit(LYCookieJar_free);
+#endif
+	domain_list = HTList_new();
+	total_cookies = 0;
+    }
+
+    /*
+     *	Look through domain_list to see if the cookie's domain
+     *	is already listed.
+     */
+    cookie_list = NULL;
+    for (hl = domain_list; hl != NULL; hl = hl->next) {
+	de = (domain_entry *)hl->object;
+	if ((de != NULL && de->domain != NULL) &&
+	    !strcasecomp(co->domain, de->domain)) {
+		cookie_list = de->cookie_list;
+		break;
+	}
+    }
+
+    if(hl == NULL) {
+	de = NULL;
+	cookie_list = NULL;
+    }
+
+    /*
+     * Apply sanity checks.
+     *
+     * Section 4.3.2, condition 1:  The value for the Path attribute is
+     * not a prefix of the request-URI.
+     *
+     * If cookie checking for this domain is set to INVCHECK_LOOSE,
+     * then we want to bypass this check.  The user should be queried
+     * if set to INVCHECK_QUERY.
+     */
+    if (!is_prefix(co->path, path)) {
+	invcheck_behaviour_t invcheck_bv = (de ? de->invcheck_bv
+	    				       : DEFAULT_INVCHECK_BV);
+	switch (invcheck_bv) {
+	case INVCHECK_LOOSE:
+	    break;		/* continue as if nothing were wrong */
+
+	case INVCHECK_QUERY:
+	    invprompt_reasons |= FAILS_COND1;
+	    break;		/* will prompt later if we get that far */
+
+	case INVCHECK_STRICT:
+	    CTRACE((tfp, "store_cookie: Rejecting because '%s' is not a prefix of '%s'.\n",
+		   co->path, path));
+	    freeCookie(co);
+	    return;
+	}
     }
     /*
-     *	The next 4 conditions do NOT apply if the domain is still
-     *	the default of request-host.
+     * The next 4 conditions do NOT apply if the domain is still
+     * the default of request-host. (domains - case insensitive).
      */
-    if (strcmp(co->domain, hostname) != 0) {
+    if (strcasecomp(co->domain, hostname) != 0) {
 	/*
 	 *  The hostname does not contain a dot.
 	 */
 	if (strchr(hostname, '.') == NULL) {
-	    if (TRACE)
-		fprintf(stderr,
-			"store_cookie: Rejecting because '%s' has no dot.\n",
-			hostname);
+	    CTRACE((tfp, "store_cookie: Rejecting because '%s' has no dot.\n",
+		    hostname));
 	    freeCookie(co);
-	    co = NULL;
 	    return;
 	}
 
@@ -319,22 +398,16 @@ PRIVATE void store_cookie ARGS3(
 	 *  value otherwise qualified. - FM
 	 */
 	if (co->domain[0] != '.' || co->domain[1] == '\0') {
-	    if (TRACE)
-		fprintf(stderr,
-			"store_cookie: Rejecting domain '%s'.\n",
-			co->domain);
+	    CTRACE((tfp, "store_cookie: Rejecting domain '%s'.\n",
+		    co->domain));
 	    freeCookie(co);
-	    co = NULL;
 	    return;
 	}
 	ptr = strchr((co->domain + 1), '.');
 	if (ptr == NULL || ptr[1] == '\0') {
-	    if (TRACE)
-		fprintf(stderr,
-			"store_cookie: Rejecting domain '%s'.\n",
-			co->domain);
+	    CTRACE((tfp, "store_cookie: Rejecting domain '%s'.\n",
+		    co->domain));
 	    freeCookie(co);
-	    co = NULL;
 	    return;
 	}
 
@@ -343,12 +416,9 @@ PRIVATE void store_cookie ARGS3(
 	 *  not domain-match the Domain attribute.
 	 */
 	if (!host_matches(hostname, co->domain)) {
-	    if (TRACE)
-		fprintf(stderr,
-			"store_cookie: Rejecting domain '%s' for host '%s'.\n",
-			co->domain, hostname);
+	    CTRACE((tfp, "store_cookie: Rejecting domain '%s' for host '%s'.\n",
+		    co->domain, hostname));
 	    freeCookie(co);
-	    co = NULL;
 	    return;
 	}
 
@@ -356,73 +426,96 @@ PRIVATE void store_cookie ARGS3(
 	 *  Section 4.3.2, condition 4: The request-host is an HDN (not IP
 	 *  address) and has the form HD, where D is the value of the Domain
 	 *  attribute, and H is a string that contains one or more dots.
+	 *
+	 *  If cookie checking for this domain is set to INVCHECK_LOOSE,
+	 *  then we want to bypass this check.  The user should be queried
+	 *  if set to INVCHECK_QUERY.
 	 */
 	ptr = ((hostname + strlen(hostname)) - strlen(co->domain));
 	if (strchr(hostname, '.') < ptr) {
-	    char *msg = calloc(1,
-			       (strlen(co->domain) +
-				strlen(hostname) +
-				strlen(INVALID_COOKIE_DOMAIN_CONFIRMATION) +
-				1));
+	    invcheck_behaviour_t invcheck_bv = (de ? de->invcheck_bv
+						   : DEFAULT_INVCHECK_BV);
+	    switch (invcheck_bv) {
+	    case INVCHECK_LOOSE:
+		break;		/* continue as if nothing were wrong */
 
-	    sprintf(msg,
-		    INVALID_COOKIE_DOMAIN_CONFIRMATION,
-		    co->domain,
-		    hostname);
-	    if (!HTConfirm(msg)) {
-		if (TRACE) {
-		    fprintf(stderr,
-		       "store_cookie: Rejecting domain '%s' for host '%s'.\n",
-			    co->domain,
-			    hostname);
-		}
+	    case INVCHECK_QUERY:
+		invprompt_reasons |= FAILS_COND4;
+		break;		/* will prompt later if we get that far */
+
+	    case INVCHECK_STRICT:
+		CTRACE((tfp, "store_cookie: Rejecting because '%s' is not a prefix of '%s'.\n",
+		       co->path, path));
 		freeCookie(co);
-		co = NULL;
+		return;
+	    }
+	}
+    }
+
+    /*
+     *  If we found reasons for issuing an invalid cookie confirmation
+     *  prompt, do that now.  Rejection by the user here is the last
+     *  chance to completely ignore this cookie; after it passes this
+     *  hurdle, it may at least supersede a previous cookie (even if
+     *  it finally gets rejected). - kw
+     */
+    if (invprompt_reasons) {
+	char *msg = 0;
+	if (invprompt_reasons & FAILS_COND4) {
+	    HTSprintf0(&msg,
+		       INVALID_COOKIE_DOMAIN_CONFIRMATION,
+		       co->domain,
+		       hostname);
+	    if (!HTConfirmDefault(msg, NO)) {
+		CTRACE((tfp, "store_cookie: Rejecting domain '%s' for host '%s'.\n",
+					co->domain,
+					hostname));
+		freeCookie(co);
 		FREE(msg);
 		return;
 	    }
-	    FREE(msg);
 	}
-    }
-
-    /*
-     *	Ensure that the domain list exists.
-     */
-    if (domain_list == NULL) {
-	atexit(LYCookieJar_free);
-	domain_list = HTList_new();
-	total_cookies = 0;
-    }
-
-    /*
-     *	Look through domain_list to see if the cookie's domain
-     *	is already listed.
-     */
-    if (dump_output_immediately) { /* Non-interactive, can't respond */
-	if (cookie_list == NULL)
-	    cookie_list = HTList_new();
-    } else {
-	cookie_list = NULL;
-	for (hl = domain_list; hl != NULL; hl = hl->next) {
-	    de = (domain_entry *)hl->object;
-	    if ((de != NULL && de->domain != NULL) &&
-		!strcmp(co->domain, de->domain)) {
-		cookie_list = de->cookie_list;
-		break;
+	if (invprompt_reasons & FAILS_COND1) {
+	    HTSprintf0(&msg,
+		       INVALID_COOKIE_PATH_CONFIRMATION,
+		       co->path, path);
+	    if (!HTConfirmDefault(msg, NO)) {
+		CTRACE((tfp, "store_cookie: Rejecting because '%s' is not a prefix of '%s'.\n",
+		       co->path, path));
+		freeCookie(co);
+		FREE(msg);
+		return;
 	    }
 	}
-	if (hl == NULL) {
-	    /*
-	     *	Domain not found; add a new entry for this domain.
-	     */
-	    de = (domain_entry *)calloc(1, sizeof(domain_entry));
-	    if (de == NULL)
-		outofmem(__FILE__, "store_cookie");
+	FREE(msg);
+    }
+
+    if (hl == NULL) {
+	/*
+	 *	Domain not found; add a new entry for this domain.
+	 */
+	de = typecalloc(domain_entry);
+	if (de == NULL)
+	    outofmem(__FILE__, "store_cookie");
+#if 0	/* was: ifdef EXP_PERSISTENT_COOKIES */
+	/*
+	 * The default behavior for this new domain could be set
+	 * differently if the cookie comes from a file, as the
+	 * code had it originally, but there doesn't seem to be
+	 * a good reason for it any more; setting more permissive
+	 * behavior for individual domains is now possible via
+	 * configuration options. - kw
+	 */
+	if (persistent_cookies
+	 && (co->flags & COOKIE_FLAG_FROM_FILE))
+	    de->bv = ACCEPT_ALWAYS; /* ?? */
+	else
+#endif
 	    de->bv = QUERY_USER;
-	    cookie_list = de->cookie_list = HTList_new();
-	    StrAllocCopy(de->domain, co->domain);
-	    HTList_addObject(domain_list, de);
-	}
+	de->invcheck_bv = DEFAULT_INVCHECK_BV; /* should this go here? */
+	cookie_list = de->cookie_list = HTList_new();
+	StrAllocCopy(de->domain, co->domain);
+	HTList_appendObject(domain_list, de);
     }
 
     /*
@@ -438,7 +531,7 @@ PRIVATE void store_cookie ARGS3(
 	 */
 	if ((c2 != NULL) &&
 	    (c2->flags & COOKIE_FLAG_EXPIRES_SET) &&
-	    c2->expires < now) {
+	    c2->expires <= now) {
 	    HTList_removeObject(cookie_list, c2);
 	    freeCookie(c2);
 	    c2 = NULL;
@@ -448,7 +541,7 @@ PRIVATE void store_cookie ARGS3(
 	 *  Check if this cookie matches the one we're inserting.
 	 */
 	} else if ((c2) &&
-		   !strcmp(co->domain, c2->domain) &&
+		   !strcasecomp(co->domain, c2->domain) &&
 		   !strcmp(co->path, c2->path) &&
 		   !strcmp(co->name, c2->name)) {
 	    HTList_removeObject(cookie_list, c2);
@@ -457,7 +550,23 @@ PRIVATE void store_cookie ARGS3(
 	    total_cookies--;
 	    Replacement = TRUE;
 
-	} else if ((c2) && (c2->pathlen) > (co->pathlen)) {
+	} else if ((c2) && (c2->pathlen) >= (co->pathlen)) {
+	    /*
+	     *  This comparison determines the (tentative) position
+	     *  of the new cookie in the list such that it comes
+	     *  before existing cookies with a less specific path,
+	     *  but after existing cookies of equal (or greater)
+	     *  path length.  Thus it should normally preserve
+	     *  the order of new cookies with the same path as
+	     *  they are received, although this is not required.
+	     *  From RFC 2109 4.3.4:
+
+   If multiple cookies satisfy the criteria above, they are ordered in
+   the Cookie header such that those with more specific Path
+   attributes precede those with less specific.  Ordering with respect
+   to other attributes (e.g., Domain) is unspecified.
+
+	     */
 	    pos++;
 	}
 	hl = next;
@@ -466,27 +575,36 @@ PRIVATE void store_cookie ARGS3(
     /*
      *	Don't bother to add the cookie if it's already expired.
      */
-    if ((co->flags & COOKIE_FLAG_EXPIRES_SET) && co->expires < now) {
+    if ((co->flags & COOKIE_FLAG_EXPIRES_SET) && co->expires <= now) {
 	freeCookie(co);
 	co = NULL;
 
     /*
      *	Don't add the cookie if we're over the domain's limit. - FM
      */
-    } else if (HTList_count(cookie_list) > 50) {
-	if (TRACE)
-	    fprintf(stderr,
-	"store_cookie: Domain's cookie limit exceeded!  Rejecting cookie.\n");
+    } else if (HTList_count(cookie_list) > max_cookies_domain) {
+	CTRACE((tfp, "store_cookie: Domain's cookie limit exceeded!  Rejecting cookie.\n"));
 	freeCookie(co);
 	co = NULL;
 
     /*
      *	Don't add the cookie if we're over the total cookie limit. - FM
      */
-    } else if (total_cookies > 500) {
-	if (TRACE)
-	    fprintf(stderr,
-	"store_cookie: Total cookie limit exceeded!  Rejecting cookie.\n");
+    } else if (total_cookies > max_cookies_global) {
+	CTRACE((tfp, "store_cookie: Total cookie limit exceeded!  Rejecting cookie.\n"));
+	freeCookie(co);
+	co = NULL;
+
+    /*
+     * Don't add the cookie if the value is NULL. - BJP
+     */
+	/*
+	 * Presence of value is now needed (indicated normally by '='),
+	 * but it can now be an empty string.
+	 * - kw 1999-06-24
+	 */
+    } else if (co->value == NULL) { /* should not happen - kw */
+	CTRACE((tfp, "store_cookie: Value is NULL! Not storing cookie.\n"));
 	freeCookie(co);
 	co = NULL;
 
@@ -502,9 +620,20 @@ PRIVATE void store_cookie ARGS3(
     /*
      *	Get confirmation if we need it, and add cookie
      *	if confirmed or 'allow' is set to always. - FM
+     *
+     *  Cookies read from file are accepted without confirmation
+     *  prompting.  (Prompting may actually not be possible if
+     *  LYLoadCookies is called before curses is setup.)  Maybe
+     *  this should instead depend on LYSetCookies and/or
+     *  LYCookieAcceptDomains and/or LYCookieRejectDomains and/or
+     *  LYAcceptAllCookies and/or some other settings. -kw
      */
-    } else if (HTConfirmCookie(de, hostname,
-			       co->domain, co->path, co->name, co->value)) {
+    } else if ((co->flags & COOKIE_FLAG_FROM_FILE)
+	       || HTConfirmCookie(de, hostname, co->name, co->value)) {
+	/*
+	 * Insert the new cookie so that more specific paths (longer
+	 * pathlen) come first in the list. - kw
+	 */
 	HTList_insertObjectAt(cookie_list, co, pos);
 	total_cookies++;
     } else {
@@ -518,8 +647,8 @@ PRIVATE void store_cookie ARGS3(
 **  include in a Cookie: request header. - AK & FM
 */
 PRIVATE char * scan_cookie_sublist ARGS6(
-	CONST char *,	hostname,
-	CONST char *,	path,
+	char *,		hostname,
+	char *,		path,
 	int,		port,
 	HTList *,	sublist,
 	char *, 	header,
@@ -536,25 +665,30 @@ PRIVATE char * scan_cookie_sublist ARGS6(
 	co = (cookie *)hl->object;
 	next = hl->next;
 
-	if (TRACE && co) {
-	    fprintf(stderr, "Checking cookie %lx %s=%s\n",
-			    (long)hl,
-			    (co->name ? co->name : "(no name)"),
-			    (co->value ? co->value : "(no value)"));
-	    fprintf(stderr, "%s %s %d %s %s %d%s\n",
-			    hostname,
-			    (co->domain ? co->domain : "(no domain)"),
-			    host_matches(hostname, co->domain),
-			    path, co->path, ((co->pathlen > 0) ?
-			  strncmp(path, co->path, co->pathlen) : 0),
-			    ((co->flags & COOKIE_FLAG_SECURE) ?
-						   " secure" : ""));
+       if ((co) && /* speed-up host_matches() and limit trace output */
+	   (LYstrstr(hostname, co->domain) != NULL))
+       {
+	    CTRACE((tfp, "Checking cookie %p %s=%s\n",
+			hl,
+			(co->name ? co->name : "(no name)"),
+			(co->value ? co->value : "(no value)")));
+	    CTRACE((tfp, "\t%s %s %d %s %s %d%s\n",
+			hostname,
+			(co->domain ? co->domain : "(no domain)"),
+			host_matches(hostname, co->domain),
+			path, co->path,
+			(co->pathlen > 0)
+			    ? !is_prefix(co->path, path)
+			    : 0,
+			(co->flags & COOKIE_FLAG_SECURE)
+			    ? " secure"
+			    : ""));
 	}
 	/*
 	 *  Check if this cookie has expired, and if so, delete it.
 	 */
 	if (((co) && (co->flags & COOKIE_FLAG_EXPIRES_SET)) &&
-	    co->expires < now) {
+	    co->expires <= now) {
 	    HTList_removeObject(sublist, co);
 	    freeCookie(co);
 	    co = NULL;
@@ -566,7 +700,7 @@ PRIVATE char * scan_cookie_sublist ARGS6(
 	 */
 	if (((co != NULL) &&
 	     host_matches(hostname, co->domain)) &&
-	    (co->pathlen == 0 || !strncmp(path, co->path, co->pathlen))) {
+	    (co->pathlen == 0 || is_prefix(co->path, path))) {
 	    /*
 	     *	Skip if the secure flag is set and we don't have
 	     *	a secure connection.  HTTP.c presently treats only
@@ -596,9 +730,7 @@ PRIVATE char * scan_cookie_sublist ARGS6(
 		     *	the version number goes before the
 		     *	first cookie.
 		     */
-		    char version[16];
-		    sprintf(version, "$Version=\"%d\"; ", co->version);
-		    StrAllocCopy(header, version);
+		    HTSprintf0(&header, "$Version=\"%d\"; ", co->version);
 		    len += strlen(header);
 		}
 	    } else {
@@ -611,10 +743,27 @@ PRIVATE char * scan_cookie_sublist ARGS6(
 		/*
 		 *  Check if we should fold the header. - FM
 		 */
-		if (len > 800) {
-		    StrAllocCat(header, crlftab);
-		    len = 0;
-		}
+
+		/*
+		 * Section 2.2 of RFC1945 says:
+		 *
+		 *  HTTP/1.0 headers may be folded onto multiple lines
+		 *  if each continuation line begins with a space or
+		 *  horizontal tab.  All linear whitespace, including
+		 *  folding, has the same semantics as SP.
+		 *  [...]
+		 *  However, folding of header lines is not expected by
+		 *  some applications, and should not be generated by
+		 *  HTTP/1.0 applications.
+		 *
+		 * This code was causing problems.  Let's not use it. -BJP
+		 */
+
+		/* if (len > 800) { */
+		/*    StrAllocCat(header, crlftab); */
+		/*    len = 0; */
+		/* } */
+
 	    }
 	    /*
 	     *	Include the cookie name=value pair.
@@ -647,7 +796,7 @@ PRIVATE char * scan_cookie_sublist ARGS6(
 		    StrAllocCat(header, "\"");
 		    len += (strlen(co->path) + 10);
 		}
-		if (co->PortList && isdigit((unsigned char)*co->PortList)) {
+		if (co->PortList && isdigit(UCH(*co->PortList))) {
 		    /*
 		     *	Append the port attribute. - FM
 		     */
@@ -692,6 +841,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
     int NumCookies = 0;
     BOOL MaxAgeAttrSet = FALSE;
     BOOL Quoted = FALSE;
+    BOOLEAN invalidport = FALSE;
 
     if (!(SetCookie && *SetCookie) &&
 	!(SetCookie2 && *SetCookie2)) {
@@ -718,25 +868,21 @@ PRIVATE void LYProcessSetCookies ARGS6(
      *	adding each cookie to the CombinedCookies list. - FM
      */
     p = (SetCookie2 ? SetCookie2 : "");
-    if (TRACE && SetCookie && *p) {
-	fprintf(stderr, "LYProcessSetCookies: Using Set-Cookie2 header.\n");
+    if (SetCookie && *p) {
+	CTRACE((tfp, "LYProcessSetCookies: Using Set-Cookie2 header.\n"));
     }
-    while (NumCookies <= 50 && *p) {
+    while (NumCookies <= max_cookies_domain && *p) {
 	attr_start = attr_end = value_start = value_end = NULL;
-	while (*p != '\0' && isspace((unsigned char)*p)) {
-	    p++;
-	}
+	p = LYSkipCBlanks(p);
 	/*
 	 *  Get the attribute name.
 	 */
 	attr_start = p;
-	while (*p != '\0' && !isspace((unsigned char)*p) &&
+	while (*p != '\0' && !isspace(UCH(*p)) &&
 	       *p != '=' && *p != ';' && *p != ',')
 	    p++;
 	attr_end = p;
-	while (*p != '\0' && isspace((unsigned char)*p)) {
-	    p++;
-	}
+	p = LYSkipCBlanks(p);
 
 	/*
 	 *  Check for an '=' delimiter, or an 'expires' name followed
@@ -756,9 +902,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	    if (*p == '=') {
 		p++;
 	    }
-	    while (*p != '\0' && isspace((unsigned char)*p)) {
-		p++;
-	    }
+	    p = LYSkipCBlanks(p);
 	    /*
 	     *	Hack alert!  We must handle Netscape-style cookies with
 	     *		"Expires=Mon, 01-Jan-96 13:45:35 GMT" or
@@ -773,7 +917,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		!strncasecomp(attr_start, "Expires", 7)) {
 		int spaces = 6;
 		value_start = p;
-		if (isdigit((unsigned char)*p)) {
+		if (isdigit(UCH(*p))) {
 		    /*
 		     *	No alphabetic day field. - FM
 		     */
@@ -782,18 +926,18 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		    /*
 		     *	Skip the alphabetic day field. - FM
 		     */
-		    while (*p != '\0' && isalpha((unsigned char)*p)) {
+		    while (*p != '\0' && isalpha(UCH(*p))) {
 			p++;
 		    }
-		    while (*p == ',' || isspace((unsigned char)*p)) {
+		    while (*p == ',' || isspace(UCH(*p))) {
 			p++;
 		    }
 		    spaces--;
 		}
 		while (*p != '\0' && *p != ';' && *p != ',' && spaces) {
 		    p++;
-		    if (isspace((unsigned char)*p)) {
-			while (isspace((unsigned char)*(p + 1)))
+		    if (isspace(UCH(*p))) {
+			while (isspace(UCH(*(p + 1))))
 			    p++;
 			spaces--;
 		    } else if (*p == '-') {
@@ -810,30 +954,26 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	     */
 	    } else if ((attr_end - attr_start) == 4 &&
 		       !strncasecomp(attr_start, "port", 4) &&
-		       isdigit((unsigned char)*p)) {
+		       isdigit(UCH(*p))) {
 		/*
 		 *  The value starts as an unquoted number.
 		 */
 		CONST char *cp, *cp1;
 		value_start = p;
 		while (1) {
-		    while (isdigit((unsigned char)*p))
+		    while (isdigit(UCH(*p)))
 			p++;
 		    value_end = p;
-		    while (isspace((unsigned char)*p))
-			p++;
+		    p = LYSkipCBlanks(p);
 		    if (*p == '\0' || *p == ';')
 			break;
 		    if (*p == ',') {
-			cp = (p + 1);
-			while (*cp != '\0' && isspace((unsigned char)*cp))
-			    cp++;
-			if (*cp != '\0' && isdigit((unsigned char)*cp)) {
+			cp = LYSkipCBlanks(p + 1);
+			if (*cp != '\0' && isdigit(UCH(*cp))) {
 			    cp1 = cp;
-			    while (isdigit((unsigned char)*cp1))
+			    while (isdigit(UCH(*cp1)))
 				cp1++;
-			    while (*cp != '\0' && isspace((unsigned char)*cp))
-				cp1++;
+			    cp1 = LYSkipCBlanks(cp1);
 			    if (*cp1 == '\0' || *cp1 == ',' || *cp1 == ';') {
 				p = cp;
 				continue;
@@ -847,27 +987,38 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		     *	Trim trailing spaces.
 		     */
 		    if ((value_end > value_start) &&
-			isspace((unsigned char)*(value_end - 1))) {
+			isspace(UCH(*(value_end - 1)))) {
 			value_end--;
 			while ((value_end > (value_start + 1)) &&
-			       isspace((unsigned char)*value_end) &&
-			       isspace((unsigned char)*(value_end - 1))) {
+			       isspace(UCH(*value_end)) &&
+			       isspace(UCH(*(value_end - 1)))) {
 			    value_end--;
 			}
 		    }
 		    break;
 		}
 	    } else if (*p == '"') {
+		BOOLEAN escaped = FALSE;
 		/*
-		 *  It's a quoted string.
+		 *  It looks like quoted string.
 		 */
 		p++;
 		value_start = p;
-		while (*p != '\0' && *p != '"')
+		while (*p != '\0' && (*p != '"' || escaped)) {
+		    escaped = (BOOL) (!escaped && *p == '\\');
 		    p++;
-		value_end = p;
-		if (*p == '"')
+		}
+		if (p != value_start && *p == '"' && !escaped) {
+		    value_end = p;
 		    p++;
+		    Quoted = TRUE;
+		} else {
+		    value_start--;
+		    value_end = p;
+		    if (*p)
+			p++;
+		    Quoted = FALSE;
+		}
 	    } else {
 		/*
 		 *  Otherwise, it's an unquoted string.
@@ -880,11 +1031,11 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		 *  Trim trailing spaces.
 		 */
 		if ((value_end > value_start) &&
-		    isspace((unsigned char)*(value_end - 1))) {
+		    isspace(UCH(*(value_end - 1)))) {
 		    value_end--;
 		    while ((value_end > (value_start + 1)) &&
-			   isspace((unsigned char)*value_end) &&
-			   isspace((unsigned char)*(value_end - 1))) {
+			   isspace(UCH(*value_end)) &&
+			   isspace(UCH(*(value_end - 1)))) {
 			value_end--;
 		    }
 		}
@@ -905,13 +1056,18 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	    BOOLEAN known_attr = NO;
 	    char *value = NULL;
 
-	    if (value_end > value_start) {
+	    if (value_start && value_end >= value_start) {
+		/*
+		 * Presence of value is now needed (indicated normally by '=')
+		 * to start a cookie, but it can now be an empty string.
+		 * - kw 1999-06-24
+		 */
 		int value_len = (value_end - value_start);
 
-		if (value_len > 4096) {
-		    value_len = 4096;
+		if (value_len > max_cookies_buffer) {
+		    value_len = max_cookies_buffer;
 		}
-		value = (char *)calloc(1, value_len + 1);
+		value = typecallocn(char, value_len + 1);
 		if (value == NULL)
 		    outofmem(__FILE__, "LYProcessSetCookies");
 		LYstrncpy(value, value_start, value_len);
@@ -976,10 +1132,8 @@ PRIVATE void LYProcessSetCookies ARGS6(
 			 url_type == HTTPS_URL_TYPE)) {
 			length += strlen(cur_cookie->commentURL);
 		    } else {
-			if (TRACE)
-			    fprintf(stderr,
-		     "LYProcessSetCookies: Rejecting commentURL value '%s'\n",
-				    cur_cookie->commentURL);
+			CTRACE((tfp, "LYProcessSetCookies: Rejecting commentURL value '%s'\n",
+				    cur_cookie->commentURL));
 			FREE(cur_cookie->commentURL);
 		    }
 		}
@@ -997,21 +1151,20 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		     *	not an exact match to the hostname, nor
 		     *	is a numeric IP address, add a lead dot.
 		     *	Otherwise, use the value as is. - FM
+		     *	(domains - case insensitive).
 		     */
 		    if (value[0] != '.' && value[0] != '\0' &&
-			value[1] != '\0' && strcmp(value, hostname)) {
+			value[1] != '\0' && strcasecomp(value, hostname)) {
 			char *ptr = strchr(value, '.');
 			if (ptr != NULL && ptr[1] != '\0') {
 			    ptr = value;
 			    while (*ptr == '.' ||
-				   isdigit((unsigned char)*ptr))
+				   isdigit(UCH(*ptr)))
 				ptr++;
 			    if (*ptr != '\0') {
-				if (TRACE) {
-				    fprintf(stderr,
+				CTRACE((tfp,
 	       "LYProcessSetCookies: Adding lead dot for domain value '%s'\n",
-					    value);
-				}
+					    value));
 				StrAllocCopy(cur_cookie->domain, ".");
 				StrAllocCat(cur_cookie->domain, value);
 			    } else {
@@ -1046,11 +1199,14 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		    cur_cookie->PortList == NULL) {
 		    char *cp = value;
 		    while ((*cp != '\0') &&
-			   (isdigit((unsigned char)*cp) ||
+			   (isdigit(UCH(*cp)) ||
 			    *cp == ',' || *cp == ' ')) {
 			cp++;
 		    }
-		    if (*cp == '\0') {
+		    if (*cp == '\0' && !port_matches(port, value)) {
+			invalidport = TRUE;
+			known_attr = YES;
+		    } else if (*cp == '\0') {
 			StrAllocCopy(cur_cookie->PortList, value);
 			length += strlen(cur_cookie->PortList);
 			known_attr = YES;
@@ -1062,9 +1218,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		     *	Don't process a repeat port. - FM
 		     */
 		    if (cur_cookie->PortList == NULL) {
-			char temp[256];
-			sprintf(temp, "%d", port);
-			StrAllocCopy(cur_cookie->PortList, temp);
+			HTSprintf0(&(cur_cookie->PortList), "%d", port);
 			length += strlen(cur_cookie->PortList);
 		    }
 		    known_attr = YES;
@@ -1094,11 +1248,9 @@ PRIVATE void LYProcessSetCookies ARGS6(
 			cur_cookie->expires = (time_t)0;
 		    } else {
 			cur_cookie->expires = (time(NULL) + temp);
-			if (TRACE)
-			    fprintf(stderr,
-				    "LYSetCookie: expires %ld, %s",
+			CTRACE((tfp, "LYSetCookie: expires %ld, %s",
 				    (long) cur_cookie->expires,
-				    ctime(&cur_cookie->expires));
+				    ctime(&cur_cookie->expires)));
 		    }
 		    MaxAgeAttrSet = TRUE;
 		}
@@ -1114,16 +1266,13 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		known_attr = YES;
 		if ((cur_cookie != NULL && !MaxAgeAttrSet) &&
 		     !(cur_cookie->flags & COOKIE_FLAG_EXPIRES_SET)) {
-		    known_attr = YES;
 		    if (value) {
 			cur_cookie->flags |= COOKIE_FLAG_EXPIRES_SET;
 			cur_cookie->expires = LYmktime(value, FALSE);
 			if (cur_cookie->expires > 0) {
-			    if (TRACE)
-				fprintf(stderr,
-					"LYSetCookie: expires %ld, %s",
+			    CTRACE((tfp, "LYSetCookie: expires %ld, %s",
 					(long) cur_cookie->expires,
-					ctime(&cur_cookie->expires));
+					ctime(&cur_cookie->expires)));
 			}
 		    }
 		}
@@ -1137,12 +1286,23 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	     *	new, unknown attribute which doesn't take a value, and
 	     *	ignore it. - FM
 	     */
-	    if (!known_attr && value_end > value_start) {
+	    /* if (!known_attr && value_end > value_start) */
+
+	    /* Is there any reason we don't want to accept cookies with
+	     * no value?  This seems to be needed for sites that reset a
+	     * cookie by nulling out the value.  If this causes problems,
+	     * we can go back to the original behavior above.  - BJP
+	     *
+	     * Presence of value is now needed (indicated normally by '='),
+	     * but it can now be an empty string. - kw 1999-06-24
+	     */
+	    if (!known_attr && value && value_end >= value_start) {
 		/*
 		 *  If we've started a cookie, and it's not too big,
 		 *  save it in the CombinedCookies list. - FM
 		 */
-		if (length <= 4096 && cur_cookie != NULL) {
+		if (length <= max_cookies_buffer && cur_cookie != NULL &&
+		    !invalidport) {
 		    /*
 		     *	Assume version 1 if not set to that or higher. - FM
 		     */
@@ -1151,15 +1311,18 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		    }
 		    HTList_appendObject(CombinedCookies, cur_cookie);
 		} else if (cur_cookie != NULL) {
-		    if (TRACE) {
-			fprintf(stderr,
+		    CTRACE((tfp,
 			"LYProcessSetCookies: Rejecting Set-Cookie2: %s=%s\n",
 				(cur_cookie->name ?
 				 cur_cookie->name : "[no name]"),
 				(cur_cookie->value ?
-				 cur_cookie->value : "[no value]"));
-			fprintf(stderr,
-			"                     due to excessive length!\n");
+				 cur_cookie->value : "[no value]")));
+		    CTRACE((tfp,
+			   invalidport ?
+			   "                     due to excessive length!\n"
+			 : "                     due to invalid port!\n"));
+		    if (invalidport) {
+			NumCookies --;
 		    }
 		    freeCookie(cur_cookie);
 		    cur_cookie = NULL;
@@ -1168,6 +1331,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		 *  Start a new cookie. - FM
 		 */
 		cur_cookie = newCookie();
+		invalidport = FALSE;
 		length = 0;
 		NumCookies++;
 		MemAllocCopy(&(cur_cookie->name), attr_start, attr_end);
@@ -1190,23 +1354,32 @@ PRIVATE void LYProcessSetCookies ARGS6(
      *	Add any final SetCookie2 cookie to the CombinedCookie list
      *	if we are within the length limit. - FM
      */
-    if (NumCookies <= 50 && length <= 4096 && cur_cookie != NULL) {
+    if (NumCookies <= max_cookies_domain
+     && length <= max_cookies_buffer
+     && cur_cookie != NULL && !invalidport) {
 	if (cur_cookie->version < 1) {
 	    cur_cookie->version = 1;
 	}
 	HTList_appendObject(CombinedCookies, cur_cookie);
-    } else if (cur_cookie != NULL) {
-	if (TRACE) {
-	    fprintf(stderr,
-	 "LYProcessSetCookies: Rejecting Set-Cookie2: %s=%s\n",
+    } else if (cur_cookie != NULL && !invalidport) {
+	CTRACE((tfp, "LYProcessSetCookies: Rejecting Set-Cookie2: %s=%s\n",
 		    (cur_cookie->name ? cur_cookie->name : "[no name]"),
-		    (cur_cookie->value ? cur_cookie->value : "[no value]"));
-	    fprintf(stderr,
-	 "                     due to excessive %s%s%s\n",
-		    (length > 4096 ? "length" : ""),
-		    (length > 4096 && NumCookies > 50 ? " and " : ""),
-		    (NumCookies > 50 ? "number!\n" : "!\n"));
-	}
+		    (cur_cookie->value ? cur_cookie->value : "[no value]")));
+	CTRACE((tfp, "                     due to excessive %s%s%s\n",
+		    (length > max_cookies_buffer ? "length" : ""),
+		    (length > max_cookies_buffer &&
+		     NumCookies > max_cookies_domain
+			? " and "
+			: ""),
+		    (NumCookies > max_cookies_domain ? "number!\n" : "!\n")));
+	freeCookie(cur_cookie);
+	cur_cookie = NULL;
+    } else if (cur_cookie != NULL) {			/* invalidport */
+	CTRACE((tfp, "LYProcessSetCookies: Rejecting Set-Cookie2: %s=%s\n",
+		    (cur_cookie->name ? cur_cookie->name : "[no name]"),
+		    (cur_cookie->value ? cur_cookie->value : "[no value]")));
+	CTRACE((tfp, "                     due to invalid port!\n"));
+	NumCookies --;
 	freeCookie(cur_cookie);
 	cur_cookie = NULL;
     }
@@ -1219,25 +1392,21 @@ PRIVATE void LYProcessSetCookies ARGS6(
     NumCookies = 0;
     cur_cookie = NULL;
     p = ((SetCookie && !(SetCookie2 && *SetCookie2)) ? SetCookie : "");
-    if (TRACE && SetCookie2 && *p) {
-	fprintf(stderr, "LYProcessSetCookies: Using Set-Cookie header.\n");
+    if (SetCookie2 && *p) {
+	CTRACE((tfp, "LYProcessSetCookies: Using Set-Cookie header.\n"));
     }
-    while (NumCookies <= 50 && *p) {
+    while (NumCookies <= max_cookies_domain && *p) {
 	attr_start = attr_end = value_start = value_end = NULL;
-	while (*p != '\0' && isspace((unsigned char)*p)) {
-	    p++;
-	}
+	p = LYSkipCBlanks(p);
 	/*
 	 *  Get the attribute name.
 	 */
 	attr_start = p;
-	while (*p != '\0' && !isspace((unsigned char)*p) &&
+	while (*p != '\0' && !isspace(UCH(*p)) &&
 	       *p != '=' && *p != ';' && *p != ',')
 	    p++;
 	attr_end = p;
-	while (*p != '\0' && isspace((unsigned char)*p)) {
-	    p++;
-	}
+	p = LYSkipCBlanks(p);
 
 	/*
 	 *  Check for an '=' delimiter, or an 'expires' name followed
@@ -1253,9 +1422,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	    if (*p == '=') {
 		p++;
 	    }
-	    while (*p != '\0' && isspace((unsigned char)*p)) {
-		p++;
-	    }
+	    p = LYSkipCBlanks(p);
 	    /*
 	     *	Hack alert!  We must handle Netscape-style cookies with
 	     *		"Expires=Mon, 01-Jan-96 13:45:35 GMT" or
@@ -1270,7 +1437,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		!strncasecomp(attr_start, "Expires", 7)) {
 		int spaces = 6;
 		value_start = p;
-		if (isdigit((unsigned char)*p)) {
+		if (isdigit(UCH(*p))) {
 		    /*
 		     *	No alphabetic day field. - FM
 		     */
@@ -1279,18 +1446,18 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		    /*
 		     *	Skip the alphabetic day field. - FM
 		     */
-		    while (*p != '\0' && isalpha((unsigned char)*p)) {
+		    while (*p != '\0' && isalpha(UCH(*p))) {
 			p++;
 		    }
-		    while (*p == ',' || isspace((unsigned char)*p)) {
+		    while (*p == ',' || isspace(UCH(*p))) {
 			p++;
 		    }
 		    spaces--;
 		}
 		while (*p != '\0' && *p != ';' && *p != ',' && spaces) {
 		    p++;
-		    if (isspace((unsigned char)*p)) {
-			while (isspace((unsigned char)*(p + 1)))
+		    if (isspace(UCH(*p))) {
+			while (isspace(UCH(*(p + 1))))
 			    p++;
 			spaces--;
 		    } else if (*p == '-') {
@@ -1307,30 +1474,26 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	     */
 	    } else if ((attr_end - attr_start) == 4 &&
 		       !strncasecomp(attr_start, "port", 4) &&
-		       isdigit((unsigned char)*p)) {
+		       isdigit(UCH(*p))) {
 		/*
 		 *  The value starts as an unquoted number.
 		 */
 		CONST char *cp, *cp1;
 		value_start = p;
 		while (1) {
-		    while (isdigit((unsigned char)*p))
+		    while (isdigit(UCH(*p)))
 			p++;
 		    value_end = p;
-		    while (isspace((unsigned char)*p))
-			p++;
+		    p = LYSkipCBlanks(p);
 		    if (*p == '\0' || *p == ';')
 			break;
 		    if (*p == ',') {
-			cp = (p + 1);
-			while (*cp != '\0' && isspace((unsigned char)*cp))
-			    cp++;
-			if (*cp != '\0' && isdigit((unsigned char)*cp)) {
+			cp = LYSkipCBlanks(p + 1);
+			if (*cp != '\0' && isdigit(UCH(*cp))) {
 			    cp1 = cp;
-			    while (isdigit((unsigned char)*cp1))
+			    while (isdigit(UCH(*cp1)))
 				cp1++;
-			    while (*cp != '\0' && isspace((unsigned char)*cp))
-				cp1++;
+			    cp1 = LYSkipCBlanks(cp1);
 			    if (*cp1 == '\0' || *cp1 == ',' || *cp1 == ';') {
 				p = cp;
 				continue;
@@ -1344,28 +1507,38 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		     *	Trim trailing spaces.
 		     */
 		    if ((value_end > value_start) &&
-			isspace((unsigned char)*(value_end - 1))) {
+			isspace(UCH(*(value_end - 1)))) {
 			value_end--;
 			while ((value_end > (value_start + 1)) &&
-			       isspace((unsigned char)*value_end) &&
-			       isspace((unsigned char)*(value_end - 1))) {
+			       isspace(UCH(*value_end)) &&
+			       isspace(UCH(*(value_end - 1)))) {
 			    value_end--;
 			}
 		    }
 		    break;
 		}
 	    } else if (*p == '"') {
+		BOOLEAN escaped = FALSE;
 		/*
-		 *  It's a quoted string.
+		 *  It looks like quoted string.
 		 */
 		p++;
 		value_start = p;
-		while (*p != '\0' && *p != '"')
+		while (*p != '\0' && (*p != '"' || escaped)) {
+		    escaped = (BOOL) (!escaped && *p == '\\');
 		    p++;
-		value_end = p;
-		if (*p == '"')
+		}
+		if (p != value_start && *p == '"' && !escaped) {
+		    value_end = p;
 		    p++;
-		Quoted = TRUE;
+		    Quoted = TRUE;
+		} else {
+		    value_start--;
+		    value_end = p;
+		    if (*p)
+			p++;
+		    Quoted = FALSE;
+		}
 	    } else {
 		/*
 		 *  Otherwise, it's an unquoted string.
@@ -1378,11 +1551,11 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		 *  Trim trailing spaces.
 		 */
 		if ((value_end > value_start) &&
-		    isspace((unsigned char)*(value_end - 1))) {
+		    isspace(UCH(*(value_end - 1)))) {
 		    value_end--;
 		    while ((value_end > (value_start + 1)) &&
-			   isspace((unsigned char)*value_end) &&
-			   isspace((unsigned char)*(value_end - 1))) {
+			   isspace(UCH(*value_end)) &&
+			   isspace(UCH(*(value_end - 1)))) {
 			value_end--;
 		    }
 		}
@@ -1403,15 +1576,20 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	    BOOLEAN known_attr = NO;
 	    char *value = NULL;
 
-	    if (value_end > value_start) {
+	    if (value_start && value_end >= value_start) {
+		/*
+		 * Presence of value is now needed (indicated normally by '=')
+		 * to start a cookie, but it can now be an empty string.
+		 * - kw 1999-06-24
+		 */
 		int value_len = (value_end - value_start);
 
-		if (value_len > 4096) {
-		    value_len = 4096;
+		if (value_len > max_cookies_buffer) {
+		    value_len = max_cookies_buffer;
 		}
-		value = (char *)calloc(1, value_len + 1);
+		value = typecallocn(char, value_len + 1);
 		if (value == NULL)
-		    outofmem(__FILE__, "LYProcessSetCookie");
+		    outofmem(__FILE__, "LYProcessSetCookies");
 		LYstrncpy(value, value_start, value_len);
 	    }
 	    if (len == 6 && !strncasecomp(attr_start, "secure", 6)) {
@@ -1474,10 +1652,8 @@ PRIVATE void LYProcessSetCookies ARGS6(
 			 url_type == HTTPS_URL_TYPE)) {
 			length += strlen(cur_cookie->commentURL);
 		    } else {
-			if (TRACE)
-			    fprintf(stderr,
-		     "LYProcessSetCookies: Rejecting commentURL value '%s'\n",
-				    cur_cookie->commentURL);
+			CTRACE((tfp, "LYProcessSetCookies: Rejecting commentURL value '%s'\n",
+				    cur_cookie->commentURL));
 			FREE(cur_cookie->commentURL);
 		    }
 		}
@@ -1495,21 +1671,20 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		     *	not an exact match to the hostname, nor
 		     *	is a numeric IP address, add a lead dot.
 		     *	Otherwise, use the value as is. - FM
+		     *	(domains - case insensitive).
 		     */
 		    if (value[0] != '.' && value[0] != '\0' &&
-			value[1] != '\0' && strcmp(value, hostname)) {
+			value[1] != '\0' && strcasecomp(value, hostname)) {
 			char *ptr = strchr(value, '.');
 			if (ptr != NULL && ptr[1] != '\0') {
 			    ptr = value;
 			    while (*ptr == '.' ||
-				   isdigit((unsigned char)*ptr))
+				   isdigit(UCH(*ptr)))
 				ptr++;
 			    if (*ptr != '\0') {
-				if (TRACE) {
-				    fprintf(stderr,
+				CTRACE((tfp,
 	       "LYProcessSetCookies: Adding lead dot for domain value '%s'\n",
-					    value);
-				}
+					    value));
 				StrAllocCopy(cur_cookie->domain, ".");
 				StrAllocCat(cur_cookie->domain, value);
 			    } else {
@@ -1544,11 +1719,11 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		    cur_cookie->PortList == NULL) {
 		    char *cp = value;
 		    while ((*cp != '\0') &&
-			   (isdigit((unsigned char)*cp) ||
+			   (isdigit(UCH(*cp)) ||
 			    *cp == ',' || *cp == ' ')) {
 			cp++;
 		    }
-		    if (*cp == '\0') {
+		    if (*cp == '\0' && port_matches(port, value)) {
 			StrAllocCopy(cur_cookie->PortList, value);
 			length += strlen(cur_cookie->PortList);
 			known_attr = YES;
@@ -1560,9 +1735,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		     *	Don't process a repeat port. - FM
 		     */
 		    if (cur_cookie->PortList == NULL) {
-			char temp[256];
-			sprintf(temp, "%d", port);
-			StrAllocCopy(cur_cookie->PortList, temp);
+			HTSprintf0(&(cur_cookie->PortList), "%d", port);
 			length += strlen(cur_cookie->PortList);
 		    }
 		    known_attr = YES;
@@ -1573,7 +1746,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		    /*
 		     *	Don't process a repeat version. - FM
 		     */
-		    cur_cookie->version < 0) {
+		    cur_cookie->version < 1) {
 		    int temp = strtol(value, NULL, 10);
 		    if (errno != -ERANGE) {
 			cur_cookie->version = temp;
@@ -1618,12 +1791,22 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	     *	new, unknown attribute which doesn't take a value, and
 	     *	ignore it. - FM
 	     */
-	    if (!known_attr && value_end > value_start) {
+	    /* if (!known_attr && value_end > value_start) */
+
+	    /* Is there any reason we don't want to accept cookies with
+	     * no value?  This seems to be needed for sites that reset a
+	     * cookie by nulling out the value.  If this causes problems,
+	     * we can go back to the original behavior above.  - BJP
+	     *
+	     * Presence of value is now needed (indicated normally by '='),
+	     * but it can now be an empty string. - kw 1999-06-24
+	     */
+	    if (!known_attr && value && value_end >= value_start) {
 		/*
 		 *  If we've started a cookie, and it's not too big,
 		 *  save it in the CombinedCookies list. - FM
 		 */
-		if (length <= 4096 && cur_cookie != NULL) {
+		if (length <= max_cookies_buffer && cur_cookie != NULL) {
 		    /*
 		     *	If we had a Set-Cookie2 header, make sure
 		     *	the version is at least 1, and mark it for
@@ -1637,16 +1820,12 @@ PRIVATE void LYProcessSetCookies ARGS6(
 		    }
 		    HTList_appendObject(CombinedCookies, cur_cookie);
 		} else if (cur_cookie != NULL) {
-		    if (TRACE) {
-			fprintf(stderr,
-			"LYProcessSetCookies: Rejecting Set-Cookie: %s=%s\n",
+		    CTRACE((tfp, "LYProcessSetCookies: Rejecting Set-Cookie: %s=%s\n",
 				(cur_cookie->name ?
 				 cur_cookie->name : "[no name]"),
 				(cur_cookie->value ?
-				 cur_cookie->value : "[no value]"));
-			fprintf(stderr,
-			"                     due to excessive length!\n");
-		    }
+				 cur_cookie->value : "[no value]")));
+		    CTRACE((tfp, "                     due to excessive length!\n"));
 		    freeCookie(cur_cookie);
 		    cur_cookie = NULL;
 		}
@@ -1675,7 +1854,7 @@ PRIVATE void LYProcessSetCookies ARGS6(
     /*
      *	Handle the final Set-Cookie cookie if within length limit. - FM
      */
-    if (NumCookies <= 50 && length <= 4096 && cur_cookie != NULL) {
+    if (NumCookies <= max_cookies_domain && length <= max_cookies_buffer && cur_cookie != NULL) {
 	if (SetCookie2 != NULL) {
 	    if (cur_cookie->version < 1) {
 		cur_cookie->version = 1;
@@ -1684,17 +1863,13 @@ PRIVATE void LYProcessSetCookies ARGS6(
 	}
 	HTList_appendObject(CombinedCookies, cur_cookie);
     } else if (cur_cookie != NULL) {
-	if (TRACE) {
-	    fprintf(stderr,
-	  "LYProcessSetCookies: Rejecting Set-Cookie: %s=%s\n",
+	CTRACE((tfp, "LYProcessSetCookies: Rejecting Set-Cookie: %s=%s\n",
 		    (cur_cookie->name ? cur_cookie->name : "[no name]"),
-		    (cur_cookie->value ? cur_cookie->value : "[no value]"));
-	    fprintf(stderr,
-	  "                     due to excessive %s%s%s\n",
-		    (length > 4096 ? "length" : ""),
-		    (length > 4096 && NumCookies > 50 ? " and " : ""),
-		    (NumCookies > 50 ? "number!\n" : "!\n"));
-	}
+		    (cur_cookie->value ? cur_cookie->value : "[no value]")));
+	CTRACE((tfp, "                     due to excessive %s%s%s\n",
+		    (length > max_cookies_buffer ? "length" : ""),
+		    (length > max_cookies_buffer && NumCookies > max_cookies_domain ? " and " : ""),
+		    (NumCookies > max_cookies_domain ? "number!\n" : "!\n")));
 	freeCookie(cur_cookie);
 	cur_cookie = NULL;
     }
@@ -1705,24 +1880,19 @@ PRIVATE void LYProcessSetCookies ARGS6(
      */
     cl = CombinedCookies;
     while (NULL != (co = (cookie *)HTList_nextObject(cl))) {
-	if (TRACE) {
-	    fprintf(stderr, "LYProcessSetCookie: attr=value pair: '%s=%s'\n",
+	CTRACE((tfp, "LYProcessSetCookie: attr=value pair: '%s=%s'\n",
 			    (co->name ? co->name : "[no name]"),
-			    (co->value ? co->value : "[no value]"));
-	    if (co->expires > 0) {
-		fprintf(stderr, "                    expires: %ld, %s\n",
-				 (long)co->expires,
-				 ctime(&co->expires));
-	    }
+			    (co->value ? co->value : "[no value]")));
+	if (co->expires > 0) {
+		CTRACE((tfp, "                    expires: %ld, %s\n",
+			    (long)co->expires,
+			    ctime(&co->expires)));
 	}
 	if (!strncasecomp(address, "https:", 6) &&
 	    LYForceSSLCookiesSecure == TRUE &&
 	    !(co->flags & COOKIE_FLAG_SECURE)) {
 	    co->flags |= COOKIE_FLAG_SECURE;
-	    if (TRACE) {
-		fprintf(stderr,
-			"                    Forced the 'secure' flag on.\n");
-	    }
+	    CTRACE((tfp, "                    Forced the 'secure' flag on.\n"));
 	}
 	store_cookie(co, hostname, path);
     }
@@ -1762,15 +1932,7 @@ PUBLIC void LYSetCookie ARGS3(
     } else if (!strncasecomp(address, "https:", 6)) {
 	port = 443;
     }
-    if (((path = HTParse(address, "",
-			 PARSE_PATH|PARSE_PUNCTUATION)) != NULL) &&
-	(ptr = strrchr(path, '/')) != NULL) {
-	if (ptr == path) {
-	    *(ptr+1) = '\0';	/* Leave a single '/' alone */
-	} else {
-	    *ptr = '\0';
-	}
-    }
+    path = HTParse(address, "", PARSE_PATH|PARSE_PUNCTUATION);
     if (!(SetCookie && *SetCookie) &&
 	!(SetCookie2 && *SetCookie2)) {
 	/*
@@ -1780,23 +1942,19 @@ PUBLIC void LYSetCookie ARGS3(
 	 */
 	BadHeaders = TRUE;
     }
-    if (TRACE) {
-	fprintf(stderr,
-		"LYSetCookie called with host '%s', path '%s',\n",
+    CTRACE((tfp, "LYSetCookie called with host '%s', path '%s',\n",
 		(hostname ? hostname : ""),
-		(path ? path : ""));
-	if (SetCookie) {
-	    fprintf(stderr, "    and Set-Cookie: '%s'\n",
-			    (SetCookie ? SetCookie : ""));
-	}
-	if (SetCookie2) {
-	    fprintf(stderr, "    and Set-Cookie2: '%s'\n",
-			    (SetCookie2 ? SetCookie2 : ""));
-	}
-	if (LYSetCookies == FALSE || BadHeaders == TRUE) {
-	    fprintf(stderr,
-		    "    Ignoring this Set-Cookie/Set-Cookie2 request.\n");
-	}
+		(path ? path : "")));
+    if (SetCookie) {
+	CTRACE((tfp, "    and Set-Cookie: '%s'\n",
+			 (SetCookie ? SetCookie : "")));
+    }
+    if (SetCookie2) {
+	CTRACE((tfp, "    and Set-Cookie2: '%s'\n",
+			 (SetCookie2 ? SetCookie2 : "")));
+    }
+    if (LYSetCookies == FALSE || BadHeaders == TRUE) {
+	CTRACE((tfp, "    Ignoring this Set-Cookie/Set-Cookie2 request.\n"));
     }
 
     /*
@@ -1822,8 +1980,8 @@ PUBLIC void LYSetCookie ARGS3(
 **  if needed. - AK & FM
 */
 PUBLIC char * LYCookie ARGS4(
-	CONST char *,	hostname,
-	CONST char *,	path,
+	char *,		hostname,
+	char *,		path,
 	int,		port,
 	BOOL,		secure)
 {
@@ -1831,13 +1989,10 @@ PUBLIC char * LYCookie ARGS4(
     HTList *hl = domain_list, *next = NULL;
     domain_entry *de;
 
-    if (TRACE) {
-	fprintf(stderr,
-		"LYCookie: Searching for '%s:%d', '%s'.\n",
-		(hostname ? hostname : "(null)"),
+    CTRACE((tfp, "LYCookie: Searching for '%s:%d', '%s'.\n",
+		NONNULL(hostname),
 		port,
-		(path ? path : "(null)"));
-    }
+		NONNULL(path)));
 
     /*
      *	Search the cookie_list elements in the domain_list
@@ -1856,7 +2011,7 @@ PUBLIC char * LYCookie ARGS4(
 		 */
 		header = scan_cookie_sublist(hostname, path, port,
 					     de->cookie_list, header, secure);
-	    } else if (de->bv == QUERY_USER) {
+	    } else if (de->bv == QUERY_USER && de->invcheck_bv == DEFAULT_INVCHECK_BV) {
 		/*
 		 *  No cookies in this domain, and no default
 		 *  accept/reject choice was set by the user,
@@ -1866,7 +2021,7 @@ PUBLIC char * LYCookie ARGS4(
 		HTList_delete(de->cookie_list);
 		de->cookie_list = NULL;
 		HTList_removeObject(domain_list, de);
-		de = NULL;
+		FREE(de);
 	    }
 	}
 	hl = next;
@@ -1874,19 +2029,253 @@ PUBLIC char * LYCookie ARGS4(
     if (header)
 	return(header);
 
-    /*
-     *	If we didn't set a header, perhaps all the cookies have
-     *	expired and we deleted the last of them above, so check
-     *	if we should delete and NULL the domain_list. - FM
-     */
-    if (domain_list) {
-	if (HTList_isEmpty(domain_list)) {
-	    HTList_delete(domain_list);
-	    domain_list = NULL;
-	}
-    }
     return(NULL);
 }
+
+#ifdef EXP_PERSISTENT_COOKIES
+PRIVATE int number_of_file_cookies = 0;
+
+/* rjp - experiment cookie loading */
+PUBLIC void LYLoadCookies ARGS1 (
+	char *,		cookie_file)
+{
+    FILE *cookie_handle;
+    char *buf = NULL;
+    static char domain[256], path[LY_MAXPATH], name[256], value[4100];
+    static char what[8], secure[8], expires_a[16];
+    static struct {
+	char *s;
+	size_t n;
+    } tok_values[] = {
+	{ domain,	sizeof(domain) },
+	{ what,		sizeof(what) },
+	{ path,		sizeof(path) },
+	{ secure,	sizeof(secure) },
+	{ expires_a,	sizeof(expires_a) },
+	{ name,		sizeof(name) },
+	{ value,	sizeof(value) },
+	{ NULL, 0 }
+	};
+    time_t expires;
+
+    cookie_handle = fopen(cookie_file, TXT_R);
+    if (!cookie_handle)
+	return;
+
+    CTRACE((tfp, "LYLoadCookies: reading cookies from %s\n", cookie_file));
+
+    number_of_file_cookies = 0;
+    while (LYSafeGets(&buf, cookie_handle) != 0) {
+	cookie *moo;
+	unsigned i = 0;
+	int tok_loop;
+	char *tok_out, *tok_ptr;
+
+	if ((buf[0] == '\0' || buf[0] == '\n' || buf[0] == '#')) {
+	    continue;
+	}
+
+	number_of_file_cookies ++;
+
+	/*
+	 * Strip out the newline that fgets() puts at the end of a
+	 * cookie.
+	 */
+
+	while(buf[i] != '\n' && buf[i] != 0) {
+	    i++;
+	}
+	if (buf[i] == '\n') {
+	    buf[i++] = '\t';	/* add sep after line if enough space - kw */
+	    buf[i] = '\0';
+	}
+
+	/*
+	 * Tokenise the cookie line into its component parts -
+	 * this only works for Netscape style cookie files at the
+	 * moment.  It may be worth investigating an alternative
+	 * format for Lynx because the Netscape format isn't all
+	 * that useful, or future-proof. - RP
+	 *
+	 * 'fixed' by using strsep instead of strtok.  No idea
+	 * what kind of platform problems this might introduce. - RP
+	 */
+	/*
+	 * This fails when the path is blank
+	 *
+	 * sscanf(buf, "%s\t%s\t%s\t%s\t%d\t%s\t%[ -~]",
+	 *  domain, what, path, secure, &expires, name, value);
+	 */
+	CTRACE((tfp, "LYLoadCookies: tokenising %s\n", buf));
+	tok_ptr = buf;
+	tok_out = LYstrsep(&tok_ptr, "\t");
+	for (tok_loop = 0; tok_out && tok_values[tok_loop].s; tok_loop++) {
+	    CTRACE((tfp, "\t%d:%p:%p:[%s]\n",
+		tok_loop, tok_values[tok_loop].s, tok_out, tok_out));
+	    LYstrncpy(tok_values[tok_loop].s, tok_out, tok_values[tok_loop].n);
+	    /*
+	     * It looks like strtok ignores a leading delimiter,
+	     * which makes things a bit more interesting.  Something
+	     * like "FALSE\t\tFALSE\t" translates to FALSE,FALSE
+	     * instead of FALSE,,FALSE. - RP
+	     */
+	    tok_out = LYstrsep(&tok_ptr, "\t");
+	}
+
+	if (tok_values[tok_loop].s) {
+	    /* tok_out in above loop must have been NULL prematurely - kw */
+	    CTRACE((tfp, "*** wrong format: not enough tokens, ignoring line!\n"));
+	    continue;
+	}
+
+	expires = atol(expires_a);
+	CTRACE((tfp, "expires:\t%s\n", ctime(&expires)));
+/* 	CTRACE((tfp, "%s\t%s\t%s\t%s\t%ld\t%s\t%s\tREADCOOKIE\n", */
+/* 	    domain, what, path, secure, (long) expires, name, value)); */
+	moo = newCookie();
+	StrAllocCopy(moo->domain, domain);
+	StrAllocCopy(moo->path, path);
+	StrAllocCopy(moo->name, name);
+	if (value && value[0] == '"' &&
+	    value[1] && value[strlen(value)-1] == '"' &&
+	    value[strlen(value)-2] != '\\') {
+	    value[strlen(value)-1] = '\0';
+	    StrAllocCopy(moo->value, value+1);
+	    moo->quoted = TRUE;
+	} else {
+	    StrAllocCopy(moo->value, value);
+	}
+	moo->pathlen = strlen(moo->path);
+	/*
+	 *  Justification for following flags:
+	 *  COOKIE_FLAG_FROM_FILE    So we know were it comes from.
+	 *  COOKIE_FLAG_EXPIRES_SET  It must have had an explicit
+	 *			     expiration originally, otherwise
+	 *			     it would not be in the file.
+	 *  COOKIE_FLAG_DOMAIN_SET,  We don't know whether these were
+	 *   COOKIE_FLAG_PATH_SET    explicit or implicit, but this
+	 *			     only matters for sending version 1
+	 *			     cookies; the cookies read from the
+	 *			     file are currently treated all like
+	 *			     version 0 (we don't set moo->version)
+	 *			     so $Domain= and $Path= will normally
+	 *			     not be sent to the server.  But if
+	 *			     these cookies somehow get mixed with
+	 *			     new version 1 cookies we may end up
+	 *			     sending version 1 to the server, and
+	 *			     in that case we should send $Domain
+	 *			     and $Path.  The state-man-mec drafts
+	 *			     and RFC 2109 say that $Domain and
+	 *			     $Path SHOULD be omitted if they were
+	 *			     not given explicitly, but not that
+	 *			     they MUST be omitted.
+	 *			     See 8.2 Cookie Spoofing in draft -10
+	 *			     for a good reason to send them.
+	 *			     However, an explicit domain should be
+	 *			     now prefixed with a dot (unless it is
+	 *			     for a single host), so we check for
+	 *			     that.
+	 *  COOKIE_FLAG_SECURE	     Should have "FALSE" for normal,
+	 *			     otherwise set it.
+	 */
+	moo->flags |= COOKIE_FLAG_FROM_FILE | COOKIE_FLAG_EXPIRES_SET |
+	    		COOKIE_FLAG_PATH_SET;
+	if (domain[0] == '.')
+	    moo->flags |= COOKIE_FLAG_DOMAIN_SET;
+	if (secure[0] != 'F')
+	    moo->flags |= COOKIE_FLAG_SECURE;
+	/* @@@ Should we set port to 443 if secure is set? @@@ */
+	moo->expires = expires;
+	/*
+	 * I don't like using this to store the cookies because it's
+	 * designed to store cookies that have been received from an
+	 * HTTP request, not from a persistent cookie jar.  Hence the
+	 * mucking about with the COOKIE_FLAG_FROM_FILE above. - RP
+	 */
+	store_cookie(moo, domain, path);
+    }
+    LYCloseInput (cookie_handle);
+}
+
+/* rjp - experimental persistent cookie support */
+PUBLIC void LYStoreCookies ARGS1 (
+	char *,		cookie_file)
+{
+    HTList *dl, *cl;
+    domain_entry *de;
+    cookie *co;
+    FILE *cookie_handle;
+    time_t now = time(NULL); /* system specific? - RP */
+
+    if (!strcmp(cookie_file, "/dev/null")) {
+	/* We give /dev/null the Unix meaning, regardless of OS */
+	return;
+    }
+
+    /*
+     *	Check whether we have something to do. - FM
+     */
+    if (HTList_isEmpty(domain_list) &&
+	number_of_file_cookies == 0) {
+	/* No cookies now, and haven't read any,
+	 * so don't bother updating the file.
+	 */
+	return;
+    }
+
+    CTRACE((tfp, "LYStoreCookies: save cookies to %s on exit\n", cookie_file));
+
+    cookie_handle = LYNewTxtFile (cookie_file);
+    if (cookie_handle == NULL) return;
+    for (dl = domain_list; dl != NULL; dl = dl->next) {
+	de = dl->object;
+	if (de == NULL)
+	    /*
+	     *	Fote says the first object is NULL.  Go with that.
+	     */
+	    continue;
+
+	/*
+	 *  Show the domain's cookies. - FM
+	 */
+	for (cl = de->cookie_list; cl != NULL; cl = cl->next) {
+	    /*
+	     *	First object is always NULL. - FM
+	     */
+	    if ((co = (cookie *)cl->object) == NULL)
+		continue;
+
+	    CTRACE((tfp, "LYStoreCookies: %ld cf %ld ", (long) now, (long) co->expires));
+
+	    if ((co->flags & COOKIE_FLAG_DISCARD)) {
+		CTRACE((tfp, "not stored - DISCARD\n"));
+		continue;
+	    } else if (!(co->flags & COOKIE_FLAG_EXPIRES_SET)) {
+		CTRACE((tfp, "not stored - no expiration time\n"));
+		continue;
+	    } else if (co->expires <= now) {
+		CTRACE((tfp, "not stored - EXPIRED\n"));
+		continue;
+	    }
+
+	    fprintf(cookie_handle, "%s\t%s\t%s\t%s\t%ld\t%s\t%s%s%s\n",
+		de->domain,
+		    (de->domain[0] == '.') ? "TRUE" : "FALSE",
+		    co->path,
+		co->flags & COOKIE_FLAG_SECURE ? "TRUE" : "FALSE",
+		(long) co->expires, co->name,
+		    (co->quoted ? "\"" : ""),
+		    co->value,
+		    (co->quoted ? "\"" : ""));
+
+	    CTRACE((tfp, "STORED\n"));
+	}
+    }
+    LYCloseOutput(cookie_handle);
+
+    HTSYS_purge(cookie_file);
+}
+#endif
 
 /*	LYHandleCookies - F.Macrides (macrides@sci.wfeb.edu)
 **	---------------
@@ -1914,7 +2303,7 @@ PRIVATE int LYHandleCookies ARGS4 (
 {
     HTFormat format_in = WWW_HTML;
     HTStream *target = NULL;
-    char buf[1024];
+    char *buf = NULL;
     char *domain = NULL;
     char *lynxID = NULL;
     HTList *dl, *cl, *next;
@@ -1923,16 +2312,14 @@ PRIVATE int LYHandleCookies ARGS4 (
     char *name = NULL, *value = NULL, *path = NULL;
     char *comment = NULL, *Address = NULL, *Title = NULL;
     int ch;
-#ifdef VMS
-    extern BOOLEAN HadVMSInterrupt;
-#endif /* VMS */
 
     /*
      *	Check whether we have something to do. - FM
      */
-    if (domain_list == NULL) {
+    if (HTList_isEmpty(domain_list)) {
 	HTProgress(COOKIE_JAR_IS_EMPTY);
-	sleep(MessageSecs);
+	LYSleepMsg();
+	HTNoDataOK = 1;
 	return(HT_NO_DATA);
     }
 
@@ -1968,7 +2355,8 @@ PRIVATE int LYHandleCookies ARGS4 (
 		 *  First object in the list always is empty. - FM
 		 */
 		continue;
-	    if (!strcmp(domain, de->domain)) {
+	    if (!strcasecomp(domain, de->domain)) {
+		FREE(domain);
 		/*
 		 *  We found the domain.  Check
 		 *  whether a lynxID is present. - FM
@@ -1990,7 +2378,11 @@ PRIVATE int LYHandleCookies ARGS4 (
 			     *	Delete it if confirmed. - FM
 			     */
 			    if (HTConfirm(DELETE_COOKIE_CONFIRMATION) == FALSE)
+			    {
+				FREE(lynxID);
+				HTNoDataOK = 1;
 				return(HT_NO_DATA);
+			    }
 			    HTList_removeObject(de->cookie_list, co);
 			    freeCookie(co);
 			    co = NULL;
@@ -2008,12 +2400,13 @@ PRIVATE int LYHandleCookies ARGS4 (
 				HTList_delete(de->cookie_list);
 				de->cookie_list = NULL;
 				HTList_removeObject(domain_list, de);
-				de = NULL;
+				FREE(de);
 				HTProgress(DOMAIN_EATEN);
 			    } else {
 				HTProgress(COOKIE_EATEN);
 			    }
-			    sleep(MessageSecs);
+			    LYSleepMsg();
+			    HTNoDataOK = 1;
 			    break;
 			}
 		    }
@@ -2029,34 +2422,32 @@ PRIVATE int LYHandleCookies ARGS4 (
 		    } else {
 			_statusline(DELETE_COOKIES_SET_ALLOW_OR_CANCEL);
 		    }
+		    HTNoDataOK = 1;
 		    while (1) {
-			ch = LYgetch();
+			ch = LYgetch_single();
 #ifdef VMS
 			if (HadVMSInterrupt) {
 			    HadVMSInterrupt = FALSE;
 			    ch = 'C';
 			}
 #endif /* VMS */
-			switch(TOUPPER(ch)) {
+			switch(ch) {
 			    case 'A':
 				/*
 				 *  Set to accept all cookies
 				 *  from this domain. - FM
 				 */
-				de->bv = QUERY_USER;
-				_user_message(ALWAYS_ALLOWING_COOKIES,
+				de->bv = ACCEPT_ALWAYS;
+				HTUserMsg2(ALWAYS_ALLOWING_COOKIES,
 					      de->domain);
-				sleep(MessageSecs);
 				return(HT_NO_DATA);
 
 			    case 'C':
-			    case 7:	/* Ctrl-G */
-			    case 3:	/* Ctrl-C */
 				/*
 				 *  Cancelled. - FM
 				 */
-				_statusline(CANCELLED);
-				sleep(MessageSecs);
+			      reject:
+				HTUserMsg(CANCELLED);
 				return(HT_NO_DATA);
 
 			    case 'D':
@@ -2069,9 +2460,9 @@ PRIVATE int LYHandleCookies ARGS4 (
 				    HTList_delete(de->cookie_list);
 				    de->cookie_list = NULL;
 				    HTList_removeObject(domain_list, de);
-				    de = NULL;
+				    FREE(de);
 				    HTProgress(DOMAIN_EATEN);
-				    sleep(MessageSecs);
+				    LYSleepMsg();
 				    break;
 				}
 Delete_all_cookies_in_domain:
@@ -2092,7 +2483,7 @@ Delete_all_cookies_in_domain:
 				    cl = next;
 				}
 				HTProgress(DOMAIN_COOKIES_EATEN);
-				sleep(MessageSecs);
+				LYSleepMsg();
 				/*
 				 *  If a default accept/reject
 				 *  choice is set, we're done. - FM
@@ -2109,21 +2500,20 @@ Delete_all_cookies_in_domain:
 				    HTList_delete(de->cookie_list);
 				    de->cookie_list = NULL;
 				    HTList_removeObject(domain_list, de);
-				    de = NULL;
+				    FREE(de);
 				    HTProgress(DOMAIN_EATEN);
-				    sleep(MessageSecs);
+				    LYSleepMsg();
 				}
 				break;
 
 			    case 'P':
 				/*
-				 *  Set to prompt for cookie acceptence
+				 *  Set to prompt for cookie acceptance
 				 *  from this domain. - FM
 				 */
 				de->bv = QUERY_USER;
-				_user_message(PROMTING_TO_ALLOW_COOKIES,
-					      de->domain);
-				sleep(MessageSecs);
+				HTUserMsg2(PROMPTING_TO_ALLOW_COOKIES,
+					   de->domain);
 				return(HT_NO_DATA);
 
 			    case 'V':
@@ -2132,15 +2522,16 @@ Delete_all_cookies_in_domain:
 				 *  from this domain. - FM
 				 */
 				de->bv = REJECT_ALWAYS;
-				_user_message(NEVER_ALLOWING_COOKIES,
-					      de->domain);
-				sleep(MessageSecs);
+				HTUserMsg2(NEVER_ALLOWING_COOKIES,
+					   de->domain);
 				if ((!HTList_isEmpty(de->cookie_list)) &&
 				    HTConfirm(DELETE_ALL_COOKIES_IN_DOMAIN))
 				    goto Delete_all_cookies_in_domain;
 				return(HT_NO_DATA);
 
 			    default:
+				if (LYCharIsINTERRUPT(ch))
+				    goto reject;
 				continue;
 			}
 			break;
@@ -2151,14 +2542,15 @@ Delete_all_cookies_in_domain:
 	}
 	if (HTList_isEmpty(domain_list)) {
 	    /*
-	     *	There are no more domains left,
-	     *	so delete the domain_list. - FM
+	     *	There are no more domains left.
+	     *	Don't delete the domain_list, otherwise
+	     *  atexit may be called multiple times. - kw
 	     */
-	    HTList_delete(domain_list);
-	    domain_list = NULL;
 	    HTProgress(ALL_COOKIES_EATEN);
-	    sleep(MessageSecs);
+	    LYSleepMsg();
 	}
+	FREE(domain);
+	FREE(lynxID);
 	return(HT_NO_DATA);
     }
 
@@ -2173,9 +2565,10 @@ Delete_all_cookies_in_domain:
 			   format_out,
 			   sink, anAnchor);
     if (!target || target == NULL) {
-	sprintf(buf, CANNOT_CONVERT_I_TO_O,
+	HTSprintf0(&buf, CANNOT_CONVERT_I_TO_O,
 		HTAtom_name(format_in), HTAtom_name(format_out));
 	HTAlert(buf);
+	FREE(buf);
 	return(HT_NOT_LOADED);
     }
 
@@ -2183,22 +2576,25 @@ Delete_all_cookies_in_domain:
      *	Load HTML strings into buf and pass buf
      *	to the target for parsing and rendering. - FM
      */
-    sprintf(buf, "<HEAD>\n<TITLE>%s</title>\n</HEAD>\n<BODY>\n",
+#define PUTS(buf)    (*target->isa->put_block)(target, buf, strlen(buf))
+
+
+    HTSprintf0(&buf, "<html>\n<head>\n<title>%s</title>\n</head>\n<body>\n",
 		 COOKIE_JAR_TITLE);
-    (*target->isa->put_block)(target, buf, strlen(buf));
+    PUTS(buf);
+    HTSprintf0(&buf, "<h1>%s (%s)%s<a href=\"%s%s\">%s</a></h1>\n",
+	LYNX_NAME, LYNX_VERSION,
+	HELP_ON_SEGMENT,
+	helpfilepath, COOKIE_JAR_HELP, COOKIE_JAR_TITLE);
+    PUTS(buf);
 
-    sprintf(buf, "<H1>%s</H1>\n", REACHED_COOKIE_JAR_PAGE);
-    (*target->isa->put_block)(target, buf, strlen(buf));
-    sprintf(buf, "<H2>%s Version %s</H2>\n", LYNX_NAME, LYNX_VERSION);
-    (*target->isa->put_block)(target, buf, strlen(buf));
+    HTSprintf0(&buf, "<note>%s\n", ACTIVATE_TO_GOBBLE);
+    PUTS(buf);
+    HTSprintf0(&buf, "%s</note>\n", OR_CHANGE_ALLOW);
+    PUTS(buf);
 
-    sprintf(buf, "<NOTE>%s\n", ACTIVATE_TO_GOBBLE);
-    (*target->isa->put_block)(target, buf, strlen(buf));
-    sprintf(buf, "%s</NOTE>\n", OR_CHANGE_ALLOW);
-    (*target->isa->put_block)(target, buf, strlen(buf));
-
-    sprintf(buf, "<DL COMPACT>\n");
-    (*target->isa->put_block)(target, buf, strlen(buf));
+    HTSprintf0(&buf, "<dl compact>\n");
+    PUTS(buf);
     for (dl = domain_list; dl != NULL; dl = dl->next) {
 	de = dl->object;
 	if (de == NULL)
@@ -2210,21 +2606,23 @@ Delete_all_cookies_in_domain:
 	/*
 	 *  Show the domain link and 'allow' setting. - FM
 	 */
-	sprintf(buf, "<DT><A HREF=\"LYNXCOOKIE://%s/\">Domain=%s</A>\n",
-		      de->domain, de->domain);
-	(*target->isa->put_block)(target, buf, strlen(buf));
+	HTSprintf0(&buf, "<dt>%s<dd><a href=\"LYNXCOOKIE://%s/\">Domain=%s</a>\n",
+		      de->domain, de->domain, de->domain);
+	PUTS(buf);
 	switch (de->bv) {
 	    case (ACCEPT_ALWAYS):
-		sprintf(buf, COOKIES_ALWAYS_ALLOWED);
+		HTSprintf0(&buf, COOKIES_ALWAYS_ALLOWED);
 		break;
 	    case (REJECT_ALWAYS):
-		sprintf(buf, COOKIES_NEVER_ALLOWED);
+		HTSprintf0(&buf, COOKIES_NEVER_ALLOWED);
 		break;
 	    case (QUERY_USER):
-		sprintf(buf, COOKIES_ALLOWED_VIA_PROMPT);
-	    break;
+		HTSprintf0(&buf, COOKIES_ALLOWED_VIA_PROMPT);
+		break;
 	}
-	(*target->isa->put_block)(target, buf, strlen(buf));
+	PUTS(buf);
+	HTSprintf0(&buf, "\n");
+	PUTS(buf);
 
 	/*
 	 *  Show the domain's cookies. - FM
@@ -2251,11 +2649,16 @@ Delete_all_cookies_in_domain:
 	    } else {
 		StrAllocCopy(value, NO_VALUE);
 	    }
-	    sprintf(buf, "<DD><A HREF=\"LYNXCOOKIE://%s/%s\">%s=%s</A>\n",
+	    HTSprintf0(&buf, "<dd><a href=\"LYNXCOOKIE://%s/%s\">%s=%s</a>\n",
 			 de->domain, co->lynxID, name, value);
 	    FREE(name);
 	    FREE(value);
-	    (*target->isa->put_block)(target, buf, strlen(buf));
+	    PUTS(buf);
+
+	    if (co->flags & COOKIE_FLAG_FROM_FILE) {
+		HTSprintf0(&buf, "%s\n", gettext("(from a previous session)"));
+	        PUTS(buf);
+	    }
 
 	    /*
 	     *	Show the path, port, secure and discard setting. - FM
@@ -2266,19 +2669,19 @@ Delete_all_cookies_in_domain:
 	    } else {
 		StrAllocCopy(path, "/");
 	    }
-	    sprintf(buf, "<DD>Path=%s\n<DD>Port: %d Secure: %s Discard: %s\n",
+	    HTSprintf0(&buf, "<dd>Path=%s\n<dd>Port: %d Secure: %s Discard: %s\n",
 			 path, co->port,
 			 ((co->flags & COOKIE_FLAG_SECURE) ? "YES" : "NO"),
 			 ((co->flags & COOKIE_FLAG_DISCARD) ? "YES" : "NO"));
 	    FREE(path);
-	    (*target->isa->put_block)(target, buf, strlen(buf));
+	    PUTS(buf);
 
 	    /*
 	     *	Show the list of acceptable ports, if present. - FM
 	     */
 	    if (co->PortList) {
-		sprintf(buf, "<DD>PortList=\"%s\"\n", co->PortList);
-		(*target->isa->put_block)(target, buf, strlen(buf));
+		HTSprintf0(&buf, "<dD>PortList=\"%s\"\n", co->PortList);
+		PUTS(buf);
 	    }
 
 	    /*
@@ -2289,13 +2692,13 @@ Delete_all_cookies_in_domain:
 		LYEntify(&Address, FALSE);
 		StrAllocCopy(Title, co->commentURL);
 		LYEntify(&Title, TRUE);
-		sprintf(buf,
-			"<DD>CommentURL: <A href=\"%s\">%s</A>\n",
+		HTSprintf0(&buf,
+			"<dd>CommentURL: <a href=\"%s\">%s</a>\n",
 			Address,
 			Title);
 		FREE(Address);
 		FREE(Title);
-		(*target->isa->put_block)(target, buf, strlen(buf));
+		PUTS(buf);
 	    }
 
 	    /*
@@ -2304,37 +2707,197 @@ Delete_all_cookies_in_domain:
 	    if (co->comment) {
 		StrAllocCopy(comment, co->comment);
 		LYEntify(&comment, TRUE);
-		sprintf(buf, "<DD>Comment: %s\n", comment);
+		HTSprintf0(&buf, "<dd>Comment: %s\n", comment);
 		FREE(comment);
-		(*target->isa->put_block)(target, buf, strlen(buf));
+		PUTS(buf);
 	    }
 
 	    /*
 	     *	Show the Maximum Gobble Date. - FM
 	     */
-	    sprintf(buf, "<DD><EM>Maximum Gobble Date:</EM> %s%s",
-			 ((co->expires > 0 &&
-			   !(co->flags & COOKIE_FLAG_DISCARD))
+	    HTSprintf0(&buf, "<dd><em>%s</em> %s%s",
+	    		 gettext("Maximum Gobble Date:"),
+			 ((co->flags & COOKIE_FLAG_EXPIRES_SET)
 					    ?
 			ctime(&co->expires) : END_OF_SESSION),
-			 ((co->expires > 0 &&
-			   !(co->flags & COOKIE_FLAG_DISCARD))
+			 ((co->flags & COOKIE_FLAG_EXPIRES_SET)
 					    ?
 					 "" : "\n"));
-	    (*target->isa->put_block)(target, buf, strlen(buf));
+	    PUTS(buf);
 	}
-	sprintf(buf, "</DT>\n");
-	(*target->isa->put_block)(target, buf, strlen(buf));
+	HTSprintf0(&buf, "</dt>\n");
+	PUTS(buf);
     }
-    sprintf(buf, "</DL>\n</BODY>\n");
-    (*target->isa->put_block)(target, buf, strlen(buf));
+    HTSprintf0(&buf, "</dl>\n</body>\n</html>\n");
+    PUTS(buf);
 
     /*
      *	Free the target to complete loading of the
      *	Cookie Jar Page, and report a successful load. - FM
      */
     (*target->isa->_free)(target);
+    FREE(buf);
     return(HT_LOADED);
+}
+
+
+/*      cookie_domain_flag_set
+**      ----------------------
+**      All purpose function to handle setting domain flags for a
+**      comma-delimited list of domains.  cookie_domain_flags handles
+**      invcheck behavior, as well as accept/reject behavior. - BJP
+*/
+
+PUBLIC void cookie_domain_flag_set ARGS2(
+	char *, 	domainstr,
+	int, 		flag)
+{
+    domain_entry *de = NULL;
+    domain_entry *de2 = NULL;
+    HTList *hl = NULL;
+    char **str = typecalloc(char *);
+    char *dstr = NULL;
+    char *strsmall = NULL;
+    int isexisting = FALSE;
+
+    if (str == NULL) {
+	HTAlwaysAlert(gettext("Internal"),
+		      gettext("cookie_domain_flag_set error, aborting program"));
+	exit_immediately(EXIT_FAILURE);
+    }
+
+    /*
+     * Is this the first domain we're handling?  If so, initialize
+     * domain_list.
+     */
+
+    if (domain_list == NULL) {
+#ifdef LY_FIND_LEAKS
+	atexit(LYCookieJar_free);
+#endif
+	domain_list = HTList_new();
+	total_cookies = 0;
+    }
+
+    StrAllocCopy(dstr, domainstr);
+
+    *str = dstr;
+
+    while ((strsmall = LYstrsep(str, ",")) != 0) {
+
+	if (*strsmall == '\0')
+	    /* Never add a domain for empty string.  It would actually
+	     * make more sense to use strtok here. - kw */
+	    continue;
+
+	/*
+	 * Check the list of existing domains to see if this is a
+	 * re-setting of an already existing domains -- if so, just
+	 * change the behavior, if not, create a new domain entry.
+	 */
+
+	for (hl = domain_list; hl != NULL; hl = hl->next) {
+	    de2 = (domain_entry *)hl->object;
+	    if ((de2 != NULL && de2->domain != NULL) &&
+		!strcasecomp(strsmall, de2->domain)) {
+			isexisting = TRUE;
+			break;
+	    } else {
+		isexisting = FALSE;
+	    }
+	}
+
+	if(!isexisting) {
+	    de = typecalloc(domain_entry);
+
+	    if (de == NULL)
+		    outofmem(__FILE__, "cookie_domain_flag_set");
+
+	    switch(flag) {
+		case (FLAG_ACCEPT_ALWAYS): de->bv = ACCEPT_ALWAYS;
+					   de->invcheck_bv = DEFAULT_INVCHECK_BV;
+					   break;
+		case (FLAG_REJECT_ALWAYS): de->bv = REJECT_ALWAYS;
+					   de->invcheck_bv = DEFAULT_INVCHECK_BV;
+					   break;
+		case (FLAG_QUERY_USER):    de->bv = QUERY_USER;
+					   de->invcheck_bv = DEFAULT_INVCHECK_BV;
+					   break;
+		case (FLAG_INVCHECK_QUERY): de->invcheck_bv = INVCHECK_QUERY;
+					    de->bv = QUERY_USER;
+					    break;
+		case (FLAG_INVCHECK_STRICT): de->invcheck_bv = INVCHECK_STRICT;
+					     de->bv = QUERY_USER;
+					    break;
+		case (FLAG_INVCHECK_LOOSE): de->invcheck_bv = INVCHECK_LOOSE;
+					    de->bv = QUERY_USER;
+					    break;
+	    }
+
+	    StrAllocCopy(de->domain, strsmall);
+	    de->cookie_list = HTList_new();
+	    HTList_appendObject(domain_list, de);
+	} else {
+	    switch(flag) {
+		case (FLAG_ACCEPT_ALWAYS): de2->bv = ACCEPT_ALWAYS;
+					   break;
+		case (FLAG_REJECT_ALWAYS): de2->bv = REJECT_ALWAYS;
+					   break;
+		case (FLAG_QUERY_USER): de2->bv = QUERY_USER;
+					   break;
+		case (FLAG_INVCHECK_QUERY): de2->invcheck_bv = INVCHECK_QUERY;
+					   break;
+		case (FLAG_INVCHECK_STRICT): de2->invcheck_bv = INVCHECK_STRICT;
+					   break;
+		case (FLAG_INVCHECK_LOOSE): de2->invcheck_bv = INVCHECK_LOOSE;
+					   break;
+	    }
+	}
+    }
+
+    FREE(strsmall);
+    FREE(str);
+    FREE(dstr);
+}
+
+/*
+ * If any COOKIE_{ACCEPT,REJECT}_DOMAINS have been defined, process them. 
+ * These are comma delimited lists of domains.  - BJP
+ *
+ * And for query/strict/loose invalid cookie checking.  - BJP
+ */
+PUBLIC void LYConfigCookies NOARGS
+{
+    static CONST struct {
+	char **domain;
+	int flag;
+	int once;
+    } table[] = {
+	{ &LYCookieSAcceptDomains,	FLAG_ACCEPT_ALWAYS,   TRUE },
+	{ &LYCookieSRejectDomains,	FLAG_REJECT_ALWAYS,   TRUE },
+	{ &LYCookieSStrictCheckDomains, FLAG_INVCHECK_STRICT, TRUE },
+	{ &LYCookieSLooseCheckDomains,	FLAG_INVCHECK_LOOSE,  TRUE },
+	{ &LYCookieSQueryCheckDomains,	FLAG_INVCHECK_QUERY,  TRUE },
+	{ &LYCookieAcceptDomains,	FLAG_ACCEPT_ALWAYS,   FALSE },
+	{ &LYCookieRejectDomains,	FLAG_REJECT_ALWAYS,   FALSE },
+	{ &LYCookieStrictCheckDomains,	FLAG_INVCHECK_STRICT, FALSE },
+	{ &LYCookieLooseCheckDomains,	FLAG_INVCHECK_LOOSE,  FALSE },
+	{ &LYCookieQueryCheckDomains,	FLAG_INVCHECK_QUERY,  FALSE },
+    };
+    unsigned n;
+
+    for (n = 0; n < TABLESIZE(table); n++) {
+	if (*(table[n].domain) != NULL) {
+	    cookie_domain_flag_set(*(table[n].domain), table[n].flag);
+	    /*
+	     * Discard the value for system settings after we've used them.
+	     * The local settings will be merged with the contents of .lynxrc
+	     */
+	    if (table[n].once) {
+		FREE(*(table[n].domain));
+	    }
+	}
+    }
 }
 
 #ifdef GLOBALDEF_IS_MACRO

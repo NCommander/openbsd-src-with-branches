@@ -26,7 +26,7 @@ SOFTWARE.
 ************************************************************************/
 
 #ifndef lint
-static char rcsid[] = "$Id: bootpgw.c,v 1.4 1995/07/24 13:38:10 ws Exp $";
+static char rcsid[] = "$Id: bootpgw.c,v 1.4 2002/09/06 19:52:26 deraadt Exp $";
 #endif
 
 /*
@@ -51,6 +51,7 @@ static char rcsid[] = "$Id: bootpgw.c,v 1.4 1995/07/24 13:38:10 ws Exp $";
 #endif
 #include <stdlib.h>
 #include <signal.h>
+#include <poll.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -105,7 +106,7 @@ static void handle_request P((void));
  * IP port numbers for client and server obtained from /etc/services
  */
 
-u_short bootps_port, bootpc_port;
+in_port_t bootps_port, bootpc_port;
 
 
 /*
@@ -121,11 +122,6 @@ struct sockaddr_in serv_addr;	/* server address */
  * option defaults
  */
 int debug = 0;					/* Debugging flag (level) */
-struct timeval actualtimeout =
-{								/* fifteen minutes */
-	15 * 60L,					/* tv_sec */
-	0							/* tv_usec */
-};
 u_int maxhops = 4;				/* Number of hops allowed for requests. */
 u_int minwait = 3;				/* Number of seconds client must wait before
 						   its bootrequest packets are forwarded. */
@@ -151,18 +147,17 @@ struct in_addr my_ip_addr;
  * main server loop is started.
  */
 
-void
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char *argv[])
 {
-	struct timeval *timeout;
 	struct bootp *bp;
 	struct servent *servp;
 	struct hostent *hep;
 	char *stmp;
-	int n, ba_len, ra_len;
-	int nfound, readfds;
+	int n;
+	socklen_t ba_len, ra_len;
+	int nfound, timeout;
+	struct pollfd pfd[1];
 	int standalone;
 
 	progname = strrchr(argv[0], '/');
@@ -218,7 +213,7 @@ main(argc, argv)
 	 * Set defaults that might be changed by option switches.
 	 */
 	stmp = NULL;
-	timeout = &actualtimeout;
+	timeout = 15 * 60 * 1000;		/* fifteen minutes */
 	gethostname(myhostname, sizeof(myhostname));
 	hep = gethostbyname(myhostname);
 	if (!hep) {
@@ -297,13 +292,15 @@ main(argc, argv)
 						"%s: invalid timeout specification\n", progname);
 				break;
 			}
-			actualtimeout.tv_sec = (int32) (60 * n);
 			/*
-			 * If the actual timeout is zero, pass a NULL pointer
-			 * to select so it blocks indefinitely, otherwise,
-			 * point to the actual timeout value.
+			 * If the actual timeout is zero, pass INFTIM
+			 * to poll so it blocks indefinitely, otherwise,
+			 * set to the actual timeout value.
 			 */
-			timeout = (n > 0) ? &actualtimeout : NULL;
+			if (n > 0)
+				timeout = n * 60 * 1000;
+			else
+				timeout = INFTIM;
 			break;
 
 		case 'w':				/* wait time */
@@ -377,7 +374,7 @@ main(argc, argv)
 		/*
 		 * Nuke any timeout value
 		 */
-		timeout = NULL;
+		timeout = INFTIM;
 
 		/*
 		 * Here, bootpd would do:
@@ -399,9 +396,9 @@ main(argc, argv)
 		 */
 		servp = getservbyname("bootps", "udp");
 		if (servp) {
-			bootps_port = ntohs((u_short) servp->s_port);
+			bootps_port = ntohs((in_port_t) servp->s_port);
 		} else {
-			bootps_port = (u_short) IPPORT_BOOTPS;
+			bootps_port = (in_port_t) IPPORT_BOOTPS;
 			report(LOG_ERR,
 				   "udp/bootps: unknown service -- assuming port %d",
 				   bootps_port);
@@ -430,7 +427,7 @@ main(argc, argv)
 		report(LOG_ERR,
 			   "udp/bootpc: unknown service -- assuming port %d",
 			   IPPORT_BOOTPC);
-		bootpc_port = (u_short) IPPORT_BOOTPC;
+		bootpc_port = (in_port_t) IPPORT_BOOTPC;
 	}
 
 	/* no signal catchers */
@@ -438,18 +435,19 @@ main(argc, argv)
 	/*
 	 * Process incoming requests.
 	 */
+	pfd[0].fd = s;
+	pfd[0].events = POLLIN;
 	for (;;) {
-		readfds = 1 << s;
-		nfound = select(s + 1, (fd_set *)&readfds, NULL, NULL, timeout);
+		nfound = poll(pfd, 1, timeout);
 		if (nfound < 0) {
 			if (errno != EINTR) {
-				report(LOG_ERR, "select: %s", get_errmsg());
+				report(LOG_ERR, "poll: %s", get_errmsg());
 			}
 			continue;
 		}
-		if (!(readfds & (1 << s))) {
+		if (!(pfd[0].revents & POLLIN)) {
 			report(LOG_INFO, "exiting after %ld minutes of inactivity",
-				   actualtimeout.tv_sec / 60);
+				   timeout / (60 * 1000));
 			exit(0);
 		}
 		ra_len = sizeof(clnt_addr);

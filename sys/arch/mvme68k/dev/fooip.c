@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: fooip.c,v 1.5 2002/03/14 01:26:37 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -40,7 +35,6 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
@@ -64,15 +58,18 @@ struct fooipsoftc {
 	struct fooipregs	*sc_regs;
 };
 
-void fooipattach __P((struct device *, struct device *, void *));
-int  fooipmatch __P((struct device *, void *, void *));
+void fooipattach(struct device *, struct device *, void *);
+int  fooipmatch(struct device *, void *, void *);
 
-struct cfdriver fooipcd = {
-	NULL, "fooip", fooipmatch, fooipattach,
-	DV_DULL, sizeof(struct fooipsoftc), 0
+struct cfattach fooip_ca = {
+	sizeof(struct fooipsoftc), fooipmatch, fooipattach
 };
 
-int  fooipintr __P((void *));
+struct cfdriver fooip_cd = {
+	NULL, "fooip", DV_DULL, 0
+};
+
+int  fooipintr(void *);
 
 int
 fooipmatch(parent, cf, args)

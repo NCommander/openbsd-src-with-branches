@@ -1,3 +1,5 @@
+/* $OpenBSD: ssl_engine_init.c,v 1.21 2003/03/14 09:28:14 ho Exp $ */
+
 /*                      _             _
 **  _ __ ___   ___   __| |    ___ ___| |  mod_ssl
 ** | '_ ` _ \ / _ \ / _` |   / __/ __| |  Apache Interface to OpenSSL
@@ -123,6 +125,9 @@ void ssl_init_Module(server_rec *s, pool *p)
     SSLSrvConfigRec *sc;
     server_rec *s2;
     char *cp;
+#ifdef __OpenBSD__
+    int SSLenabled = 0;
+#endif
 
     mc->nInitCount++;
 
@@ -161,7 +166,8 @@ void ssl_init_Module(server_rec *s, pool *p)
             sc->nPassPhraseDialogType = SSL_PPTYPE_BUILTIN;
 
         /* Open the dedicated SSL logfile */
-        ssl_log_open(s, s2, p);
+        if (!ap_server_is_chrooted())
+            ssl_log_open(s, s2, p);
     }
 
     /*
@@ -249,11 +255,31 @@ void ssl_init_Module(server_rec *s, pool *p)
 #endif
     if (mc->nInitCount == 1) {
         ssl_pphrase_Handle(s, p);
+#ifndef __OpenBSD__
         ssl_init_TmpKeysHandle(SSL_TKP_GEN, s, p);
+#endif
 #ifndef WIN32
         return;
 #endif
     }
+
+#ifdef __OpenBSD__
+    for (s2 = s; s2 != NULL; s2 = s2->next) {
+        sc = mySrvConfig(s2);
+       /* find out if anyone's actually doing SSL */
+        if (sc->bEnabled)
+            SSLenabled = 1;
+    }
+    if (SSLenabled) /* skip expensive bits if we're not doing SSL */
+      ssl_init_TmpKeysHandle(SSL_TKP_GEN, s, p);
+#endif
+
+    /*
+     * SSL external crypto device ("engine") support
+     */
+#ifdef SSL_EXPERIMENTAL_ENGINE
+    ssl_init_Engine(s, p);
+#endif
 
     /*
      * Warn the user that he should use the session cache.
@@ -279,6 +305,9 @@ void ssl_init_Module(server_rec *s, pool *p)
     /*
      *  allocate the temporary RSA keys and DH params
      */
+#ifdef __OpenBSD__
+    if (SSLenabled)  /* skip expensive bits if we're not doing SSL */
+#endif
     ssl_init_TmpKeysHandle(SSL_TKP_ALLOC, s, p);
 
     /*
@@ -449,6 +478,10 @@ void ssl_init_TmpKeysHandle(int action, server_rec *s, pool *p)
                 ssl_log(s, SSL_LOG_ERROR, "Init: Failed to load temporary 512 bit RSA private key");
                 ssl_die();
             }
+	    if (RSA_blinding_on ((RSA *)mc->pTmpKeys[SSL_TKPIDX_RSA512], NULL) != 1) {
+		ssl_log(s, SSL_LOG_ERROR, "Init: Failed to add blinding for temporary 512 bit RSA private key");
+                ssl_die();
+	    }
         }
 
         /* allocate 1024 bit RSA key */
@@ -463,6 +496,10 @@ void ssl_init_TmpKeysHandle(int action, server_rec *s, pool *p)
                 ssl_log(s, SSL_LOG_ERROR, "Init: Failed to load temporary 1024 bit RSA private key");
                 ssl_die();
             }
+	    if (RSA_blinding_on ((RSA *)mc->pTmpKeys[SSL_TKPIDX_RSA1024], NULL) != 1) {
+		ssl_log(s, SSL_LOG_ERROR, "Init: Failed to add blinding for temporary 1024 bit RSA private key");
+                ssl_die();
+	    }
         }
 
         ssl_log(s, SSL_LOG_INFO, "Init: Configuring temporary DH parameters (512/1024 bits)");
@@ -1110,4 +1147,3 @@ void ssl_init_ModuleKill(void *data)
 
     return;
 }
-

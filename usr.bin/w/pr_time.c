@@ -1,3 +1,5 @@
+/*	$OpenBSD: pr_time.c,v 1.10 2003/03/13 15:47:12 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,7 +30,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)pr_time.c	8.2 (Berkeley) 4/4/94";
+#else
+static char *rcsid = "$OpenBSD: pr_time.c,v 1.10 2003/03/13 15:47:12 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -59,25 +61,28 @@ pr_attime(started, now)
 	struct tm *tp;
 	time_t diff;
 	char fmt[20];
+	int  today;
 
+	today = localtime(now)->tm_yday;
 	tp = localtime(started);
 	diff = *now - *started;
 
 	/* If more than a week, use day-month-year. */
 	if (diff > SECSPERDAY * DAYSPERWEEK)
-		(void)strcpy(fmt, "%d%b%y");
+		(void)strlcpy(fmt, "%d%b%y", sizeof fmt);
 
 	/* If not today, use day-hour-am/pm. */
-	else if (*now / SECSPERDAY != *started / SECSPERDAY) {
-		(void)strcpy(fmt, __CONCAT("%a%", "I%p"));
+	else if (tp->tm_yday  != today ) {
+		(void)strlcpy(fmt, __CONCAT("%a%", "I%p"), sizeof fmt);
 	}
 
 	/* Default is hh:mm{am,pm}. */
 	else {
-		(void)strcpy(fmt, __CONCAT("%l:%", "M%p"));
+		(void)strlcpy(fmt, __CONCAT("%l:%", "M%p"), sizeof fmt);
 	}
 
-	(void)strftime(buf, sizeof(buf), fmt, tp);
+	(void)strftime(buf, sizeof(buf) -1, fmt, tp);
+	buf[sizeof buf - 1] = '\0';
 	(void)printf("%s", buf);
 }
 
@@ -89,9 +94,17 @@ void
 pr_idle(idle)
 	time_t idle;
 {
+	int days = idle / SECSPERDAY;
+
 	/* If idle more than 36 hours, print as a number of days. */
-	if (idle >= 36 * SECSPERHOUR)
-		(void)printf(" %ddays ", idle / SECSPERDAY);
+	if (idle >= 36 * SECSPERHOUR) {
+		if (days == 1)
+			printf("  %dday ", days);
+		else if (days < 10)
+			printf(" %ddays ", days);
+		else
+			printf("%ddays ", days);
+	}
 
 	/* If idle more than an hour, print as HH:MM. */
 	else if (idle >= SECSPERHOUR)

@@ -1,4 +1,4 @@
-/*	$PMDB: pmdb.h,v 1.26 2002/03/11 23:39:49 art Exp $	*/
+/*	$OpenBSD: pmdb.h,v 1.6 2003/05/15 00:11:03 jfb Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -27,6 +27,8 @@
 #include <sys/signal.h>		/* for NSIG */
 #include <sys/queue.h>
 #include <sys/ptrace.h>
+#include <sys/stat.h>
+
 #include <err.h>
 
 /* XXX - ugh, yuck, bleah. */
@@ -40,8 +42,10 @@
 
 struct breakpoint;
 struct callback;
+struct corefile;
 struct sym_table;
 struct sym_ops;
+struct reg;
 
 /* XXX - should be machdep some day. */
 typedef unsigned long reg;
@@ -59,6 +63,8 @@ struct pstate {
 	TAILQ_HEAD(,sym_table) ps_syms;	/* all symbols tables in a list */
 	struct sym_table *ps_sym_exe;	/* symbol table for the executable */
 	struct sym_ops *ps_sops;	/* operations on symbol tables */
+	struct stat exec_stat;		/* stat of the exec file */
+	struct corefile *ps_core;	/* core file data */
 	TAILQ_HEAD(,breakpoint) ps_bkpts; /* breakpoints */
 	TAILQ_HEAD(,callback) ps_sstep_cbs; /* single step actions */
 };
@@ -67,21 +73,29 @@ struct pstate {
 #define PSF_SYMBOLS	0x02		/* basic symbols loaded */
 #define PSF_KILL	0x04		/* kill this process asap */
 #define PSF_STEP	0x08		/* next continue should sstep */
+#define PSF_CORE	0x10		/* core file loaded */
+#define PSF_ATCH	0x20		/* process attached with PT_ATTACH */
 
 /* ps_sigstate */
 #define SS_STOP		0x00
 #define SS_IGNORE	0x01
 
 /* misc helper functions */
+int getexecpath(const char *, char *, size_t);
 int process_kill(struct pstate *);
-int read_from_pid(pid_t pid, off_t from, void *to, size_t size);
-int write_to_pid(pid_t pid, off_t to, void *from, size_t size);
 
 /* process.c */
 int process_load(struct pstate *);
+int process_setargv(struct pstate *, int, char **);
+int process_run(struct pstate *);
+int process_read(struct pstate *, off_t, void *, size_t);
+int process_write(struct pstate *, off_t, void *, size_t);
+int process_getregs(struct pstate *, struct reg *);
+
 int cmd_process_run(int, char **, void *);
 int cmd_process_cont(int, char **, void *);
 int cmd_process_kill(int, char **, void *);
+int cmd_process_setenv(int, char **, void *);
 
 /* signal.c */
 void init_sigstate(struct pstate *);

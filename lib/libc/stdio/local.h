@@ -1,4 +1,4 @@
-/*	$NetBSD: local.h,v 1.5 1995/02/02 02:10:05 jtc Exp $	*/
+/*	$OpenBSD: local.h,v 1.5 2002/09/14 22:03:14 dhartmei Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,8 +30,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)local.h	8.2 (Berkeley) 1/2/94
  */
 
 /*
@@ -43,22 +37,22 @@
  * in particular, macros and private variables.
  */
 
-int	__sflush __P((FILE *));
-FILE	*__sfp __P((void));
-int	__srefill __P((FILE *));
-int	__sread __P((void *, char *, int));
-int	__swrite __P((void *, char const *, int));
-fpos_t	__sseek __P((void *, fpos_t, int));
-int	__sclose __P((void *));
-void	__sinit __P((void));
-void	_cleanup __P((void));
-void	(*__cleanup) __P((void));
-void	__smakebuf __P((FILE *));
-int	__swhatbuf __P((FILE *, size_t *, int *));
-int	_fwalk __P((int (*)(FILE *)));
-int	__swsetup __P((FILE *));
-int	__sflags __P((const char *, int *));
+int	__sflush(FILE *);
+FILE	*__sfp(void);
+int	__srefill(FILE *);
+int	__sread(void *, char *, int);
+int	__swrite(void *, char const *, int);
+fpos_t	__sseek(void *, fpos_t, int);
+int	__sclose(void *);
+void	__sinit(void);
+void	_cleanup(void);
+void	__smakebuf(FILE *);
+int	__swhatbuf(FILE *, size_t *, int *);
+int	_fwalk(int (*)(FILE *));
+int	__swsetup(FILE *);
+int	__sflags(const char *, int *);
 
+extern void __atexit_register_cleanup(void (*)());
 extern int __sdidinit;
 
 /*

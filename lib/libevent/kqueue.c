@@ -1,3 +1,5 @@
+/*	$OpenBSD: kqueue.c,v 1.9 2003/06/19 18:52:12 mickey Exp $	*/
+
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -27,23 +29,40 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <sys/types.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#else
+#include <sys/_time.h>
+#endif
 #include <sys/queue.h>
 #include <sys/event.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <err.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 
 #ifdef USE_LOG
 #include "log.h"
 #else
 #define LOG_DBG(x)
-#define log_error(x)	perror(x)
+#define log_error	warn
+#endif
+
+#ifdef HAVE_INTTYPES_H
+#define INTPTR(x)	(intptr_t)x
+#else
+#define INTPTR(x)	x
 #endif
 
 #include "event.h"
@@ -70,7 +89,7 @@ int kq_del	(void *, struct event *);
 int kq_recalc	(void *, int);
 int kq_dispatch	(void *, struct timeval *);
 
-struct eventop kqops = {
+const struct eventop kqops = {
 	"kqueue",
 	kq_init,
 	kq_add,
@@ -85,12 +104,12 @@ kq_init(void)
 	int kq;
 
 	/* Disable kqueue when this environment variable is set */
-	if (getenv("EVENT_NOKQUEUE"))
+	if (!issetugid() && getenv("EVENT_NOKQUEUE"))
 		return (NULL);
 
 	memset(&kqop, 0, sizeof(kqop));
 
-	/* Initalize the kernel queue */
+	/* Initialize the kernel queue */
 	
 	if ((kq = kqueue()) == -1) {
 		log_error("kqueue");
@@ -99,7 +118,7 @@ kq_init(void)
 
 	kqop.kq = kq;
 
-	/* Initalize fields */
+	/* Initialize fields */
 	kqop.changes = malloc(NEVENT * sizeof(struct kevent));
 	if (kqop.changes == NULL)
 		return (NULL);
@@ -133,7 +152,7 @@ kq_insert(struct kqop *kqop, struct kevent *kev)
 		newchange = realloc(kqop->changes,
 				    nevents * sizeof(struct kevent));
 		if (newchange == NULL) {
-			log_error(__FUNCTION__": malloc");
+			log_error("%s: malloc", __func__);
 			return (-1);
 		}
 		kqop->changes = newchange;
@@ -146,7 +165,7 @@ kq_insert(struct kqop *kqop, struct kevent *kev)
 		 * the next realloc will pick it up.
 		 */
 		if (newresult == NULL) {
-			log_error(__FUNCTION__": malloc");
+			log_error("%s: malloc", __func__);
 			return (-1);
 		}
 		kqop->events = newchange;
@@ -156,8 +175,8 @@ kq_insert(struct kqop *kqop, struct kevent *kev)
 
 	memcpy(&kqop->changes[kqop->nchanges++], kev, sizeof(struct kevent));
 
-	LOG_DBG((LOG_MISC, 70, __FUNCTION__": fd %d %s%s",
-		 kev->ident, 
+	LOG_DBG((LOG_MISC, 70, "%s: fd %d %s%s",
+		 __func__, kev->ident, 
 		 kev->filter == EVFILT_READ ? "EVFILT_READ" : "EVFILT_WRITE",
 		 kev->flags == EV_DELETE ? " (del)" : ""));
 
@@ -183,7 +202,7 @@ kq_dispatch(void *arg, struct timeval *tv)
 	TIMEVAL_TO_TIMESPEC(tv, &ts);
 
 	res = kevent(kqop->kq, changes, kqop->nchanges,
-		     events, kqop->nevents, &ts);
+	    events, kqop->nevents, &ts);
 	kqop->nchanges = 0;
 	if (res == -1) {
 		if (errno != EINTR) {
@@ -194,7 +213,7 @@ kq_dispatch(void *arg, struct timeval *tv)
 		return (0);
 	}
 
-	LOG_DBG((LOG_MISC, 80, __FUNCTION__": kevent reports %d", res));
+	LOG_DBG((LOG_MISC, 80, "%s: kevent reports %d", __func__, res));
 
 	for (i = 0; i < res; i++) {
 		int which = 0;
@@ -216,7 +235,7 @@ kq_dispatch(void *arg, struct timeval *tv)
 			return (-1);
 		}
 
-		ev = events[i].udata;
+		ev = (struct event *)events[i].udata;
 
 		if (events[i].filter == EVFILT_READ) {
 			which |= EV_READ;
@@ -224,37 +243,18 @@ kq_dispatch(void *arg, struct timeval *tv)
 			which |= EV_WRITE;
 		} else if (events[i].filter == EVFILT_SIGNAL) {
 			which |= EV_SIGNAL;
-		} else
-			events[i].filter = 0;
+		}
 
 		if (!which)
 			continue;
 
+		if (!(ev->ev_events & EV_PERSIST)) {
+			ev->ev_flags &= ~EVLIST_X_KQINKERNEL;
+			event_del(ev);
+		}
+
 		event_active(ev, which,
 		    ev->ev_events & EV_SIGNAL ? events[i].data : 1);
-	}
-
-	for (i = 0; i < res; i++) {
-		/* XXX */
-		int ncalls, res;
-
-		if (events[i].flags & EV_ERROR || events[i].filter == NULL)
-			continue;
-
-		ev = events[i].udata;
-		if (ev->ev_events & EV_PERSIST)
-			continue;
-
-		ncalls = 0;
-		if (ev->ev_flags & EVLIST_ACTIVE) {
-			ncalls = ev->ev_ncalls;
-			res = ev->ev_res;
-		}
-		ev->ev_flags &= ~EVLIST_X_KQINKERNEL;
-		event_del(ev);
-
-		if (ncalls)
-			event_active(ev, res, ncalls);
 	}
 
 	return (0);
@@ -275,8 +275,8 @@ kq_add(void *arg, struct event *ev)
 		kev.filter = EVFILT_SIGNAL;
 		kev.flags = EV_ADD;
 		if (!(ev->ev_events & EV_PERSIST))
-			kev.filter |= EV_ONESHOT;
-		kev.udata = ev;
+			kev.flags |= EV_ONESHOT;
+		kev.udata = INTPTR(ev);
 		
 		if (kq_insert(kqop, &kev) == -1)
 			return (-1);
@@ -292,8 +292,10 @@ kq_add(void *arg, struct event *ev)
  		memset(&kev, 0, sizeof(kev));
 		kev.ident = ev->ev_fd;
 		kev.filter = EVFILT_READ;
-		kev.flags = EV_ADD | EV_ONESHOT;
-		kev.udata = ev;
+		kev.flags = EV_ADD;
+		if (!(ev->ev_events & EV_PERSIST))
+			kev.flags |= EV_ONESHOT;
+		kev.udata = INTPTR(ev);
 		
 		if (kq_insert(kqop, &kev) == -1)
 			return (-1);
@@ -305,8 +307,10 @@ kq_add(void *arg, struct event *ev)
  		memset(&kev, 0, sizeof(kev));
 		kev.ident = ev->ev_fd;
 		kev.filter = EVFILT_WRITE;
-		kev.flags = EV_ADD | EV_ONESHOT;
-		kev.udata = ev;
+		kev.flags = EV_ADD;
+		if (!(ev->ev_events & EV_PERSIST))
+			kev.flags |= EV_ONESHOT;
+		kev.udata = INTPTR(ev);
 		
 		if (kq_insert(kqop, &kev) == -1)
 			return (-1);

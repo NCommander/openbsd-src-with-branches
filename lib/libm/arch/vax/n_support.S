@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,7 +37,7 @@ _sccsid:
 /*
  * copysign(x,y),
  * logb(x),
- * scalb(x,N),
+ * scalbn(x,N),
  * finite(x),
  * drem(x,y),
  * Coded in vax assembly language by K.C. Ng,  3/14/85.
@@ -103,14 +99,14 @@ _finite:
 	ret
 
 /*
- * double scalb(x,N)
+ * double scalbn(x,N)
  * double x; double N;
  */
-	.globl	_scalb
+	.globl	_scalbn
 	.set	ERANGE,34
 	.text
 	.align	1
-_scalb:
+_scalbn:
 	.word	0x3c
 	movq	4(ap),r0
 	bicl3	$0xffff807f,r0,r3

@@ -1,5 +1,3 @@
-/*	$NetBSD: wsetup.c,v 1.4 1995/02/02 02:10:59 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,10 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)wsetup.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: wsetup.c,v 1.4 1995/02/02 02:10:59 jtc Exp $";
+static char rcsid[] = "$OpenBSD: wsetup.c,v 1.4 2002/04/29 06:36:12 espie Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -52,6 +43,7 @@ static char rcsid[] = "$NetBSD: wsetup.c,v 1.4 1995/02/02 02:10:59 jtc Exp $";
  * because either _flags does not include __SWR, or _buf is NULL.
  * _wsetup returns 0 if OK to write, nonzero otherwise.
  */
+int
 __swsetup(fp)
 	register FILE *fp;
 {
@@ -79,8 +71,11 @@ __swsetup(fp)
 	/*
 	 * Make a buffer if necessary, then set _w.
 	 */
-	if (fp->_bf._base == NULL)
+	if (fp->_bf._base == NULL) {
+		if ((fp->_flags & (__SSTR | __SALC)) == __SSTR)
+			return (EOF);
 		__smakebuf(fp);
+	}
 	if (fp->_flags & __SLBF) {
 		/*
 		 * It is line buffered, so make _lbfsize be -_bufsize

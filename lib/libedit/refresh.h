@@ -1,3 +1,6 @@
+/*	$OpenBSD: refresh.h,v 1.4 2002/02/16 21:27:26 millert Exp $	*/
+/*	$NetBSD: refresh.h,v 1.2 1997/01/11 06:48:08 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,12 +48,12 @@ typedef struct {
     int r_oldcv, r_newcv;	/* Vertical locations		*/
 } el_refresh_t;
 
-protected void	re_putc 		__P((EditLine *, int));
-protected void	re_clear_lines		__P((EditLine *));
-protected void	re_clear_display	__P((EditLine *));
-protected void	re_refresh		__P((EditLine *));
-protected void	re_refresh_cursor	__P((EditLine *));
-protected void	re_fastaddc		__P((EditLine *));
-protected void	re_goto_bottom		__P((EditLine *));
+protected void	re_putc(EditLine *, int);
+protected void	re_clear_lines(EditLine *);
+protected void	re_clear_display(EditLine *);
+protected void	re_refresh(EditLine *);
+protected void	re_refresh_cursor(EditLine *);
+protected void	re_fastaddc(EditLine *);
+protected void	re_goto_bottom(EditLine *);
 
 #endif /* _h_el_refresh */

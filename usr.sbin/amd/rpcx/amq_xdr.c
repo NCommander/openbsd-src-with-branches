@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,18 +32,15 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq_xdr.c	8.1 (Berkeley) 6/6/93
- *	$Id: amq_xdr.c,v 1.3 1994/12/08 21:41:23 christos Exp $
+ *	$Id: amq_xdr.c,v 1.4 2002/09/10 05:41:28 deraadt Exp $
  *
  */
 
 #include "am.h"
 #include "amq.h"
 
-
 bool_t
-xdr_amq_string(xdrs, objp)
-	XDR *xdrs;
-	amq_string *objp;
+xdr_amq_string(XDR *xdrs, amq_string *objp)
 {
 	if (!xdr_string(xdrs, objp, AMQ_STRLEN)) {
 		return (FALSE);
@@ -55,27 +48,17 @@ xdr_amq_string(xdrs, objp)
 	return (TRUE);
 }
 
-
-
-
 bool_t
-xdr_time_type(xdrs, objp)
-	XDR *xdrs;
-	time_type *objp;
+xdr_time_type(XDR *xdrs, time_type *objp)
 {
-	if (!xdr_long(xdrs, (long *) objp)) {
+	if (!xdr_int(xdrs, (int *) objp)) {
 		return (FALSE);
 	}
 	return (TRUE);
 }
 
-
-
-
 bool_t
-xdr_amq_mount_tree(xdrs, objp)
-	XDR *xdrs;
-	amq_mount_tree *objp;
+xdr_amq_mount_tree(XDR *xdrs, amq_mount_tree *objp)
 {
 	if (!xdr_amq_string(xdrs, &objp->mt_mountinfo)) {
 		return (FALSE);
@@ -110,35 +93,29 @@ xdr_amq_mount_tree(xdrs, objp)
 	if (!xdr_int(xdrs, &objp->mt_statfs)) {
 		return (FALSE);
 	}
-	if (!xdr_pointer(xdrs, (char **)&objp->mt_next, sizeof(amq_mount_tree), xdr_amq_mount_tree)) {
+	if (!xdr_pointer(xdrs, (char **)&objp->mt_next,
+	    sizeof(amq_mount_tree), xdr_amq_mount_tree)) {
 		return (FALSE);
 	}
-	if (!xdr_pointer(xdrs, (char **)&objp->mt_child, sizeof(amq_mount_tree), xdr_amq_mount_tree)) {
+	if (!xdr_pointer(xdrs, (char **)&objp->mt_child,
+	    sizeof(amq_mount_tree), xdr_amq_mount_tree)) {
 		return (FALSE);
 	}
 	return (TRUE);
 }
 
-
-
-
 bool_t
-xdr_amq_mount_tree_p(xdrs, objp)
-	XDR *xdrs;
-	amq_mount_tree_p *objp;
+xdr_amq_mount_tree_p(XDR *xdrs, amq_mount_tree_p *objp)
 {
-	if (!xdr_pointer(xdrs, (char **)objp, sizeof(amq_mount_tree), xdr_amq_mount_tree)) {
+	if (!xdr_pointer(xdrs, (char **)objp, sizeof(amq_mount_tree),
+	    xdr_amq_mount_tree)) {
 		return (FALSE);
 	}
 	return (TRUE);
 }
 
-
-
 bool_t
-xdr_amq_mount_info(xdrs, objp)
-	XDR *xdrs;
-	amq_mount_info *objp;
+xdr_amq_mount_info(XDR *xdrs, amq_mount_info *objp)
 {
 	if (!xdr_amq_string(xdrs, &objp->mi_type)) {
 		return (FALSE);
@@ -164,39 +141,30 @@ xdr_amq_mount_info(xdrs, objp)
 	return (TRUE);
 }
 
-
-
 bool_t
-xdr_amq_mount_info_list(xdrs, objp)
-	XDR *xdrs;
-	amq_mount_info_list *objp;
+xdr_amq_mount_info_list(XDR *xdrs, amq_mount_info_list *objp)
 {
-	if (!xdr_array(xdrs, (char **)&objp->amq_mount_info_list_val, (u_int *)&objp->amq_mount_info_list_len, ~0, sizeof(amq_mount_info), xdr_amq_mount_info)) {
+	if (!xdr_array(xdrs, (char **)&objp->amq_mount_info_list_val,
+	    (u_int *)&objp->amq_mount_info_list_len, ~0,
+	    sizeof(amq_mount_info), xdr_amq_mount_info)) {
 		return (FALSE);
 	}
 	return (TRUE);
 }
 
-
-
 bool_t
-xdr_amq_mount_tree_list(xdrs, objp)
-	XDR *xdrs;
-	amq_mount_tree_list *objp;
+xdr_amq_mount_tree_list(XDR *xdrs, amq_mount_tree_list *objp)
 {
-	if (!xdr_array(xdrs, (char **)&objp->amq_mount_tree_list_val, (u_int *)&objp->amq_mount_tree_list_len, ~0, sizeof(amq_mount_tree_p), xdr_amq_mount_tree_p)) {
+	if (!xdr_array(xdrs, (char **)&objp->amq_mount_tree_list_val,
+	    (u_int *)&objp->amq_mount_tree_list_len, ~0,
+	    sizeof(amq_mount_tree_p), xdr_amq_mount_tree_p)) {
 		return (FALSE);
 	}
 	return (TRUE);
 }
 
-
-
-
 bool_t
-xdr_amq_mount_stats(xdrs, objp)
-	XDR *xdrs;
-	amq_mount_stats *objp;
+xdr_amq_mount_stats(XDR *xdrs, amq_mount_stats *objp)
 {
 	if (!xdr_int(xdrs, &objp->as_drops)) {
 		return (FALSE);
@@ -216,13 +184,8 @@ xdr_amq_mount_stats(xdrs, objp)
 	return (TRUE);
 }
 
-
-
-
 bool_t
-xdr_amq_opt(xdrs, objp)
-	XDR *xdrs;
-	amq_opt *objp;
+xdr_amq_opt(XDR *xdrs, amq_opt *objp)
 {
 	if (!xdr_enum(xdrs, (enum_t *)objp)) {
 		return (FALSE);
@@ -230,13 +193,8 @@ xdr_amq_opt(xdrs, objp)
 	return (TRUE);
 }
 
-
-
-
 bool_t
-xdr_amq_setopt(xdrs, objp)
-	XDR *xdrs;
-	amq_setopt *objp;
+xdr_amq_setopt(XDR *xdrs, amq_setopt *objp)
 {
 	if (!xdr_amq_opt(xdrs, &objp->as_opt)) {
 		return (FALSE);
@@ -246,5 +204,3 @@ xdr_amq_setopt(xdrs, objp)
 	}
 	return (TRUE);
 }
-
-

@@ -1,4 +1,5 @@
-/*	$NetBSD: cltp_var.h,v 1.6 1995/03/26 20:35:15 jtc Exp $	*/
+/*	$OpenBSD: cltp_var.h,v 1.3 2002/03/14 01:27:12 millert Exp $	*/
+/*	$NetBSD: cltp_var.h,v 1.7 1996/02/13 22:09:03 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,16 +38,25 @@
 #define CLTPOVAL_DST	0xc2	/* Destination TSAP -- required */
 #define CLTPOVAL_CSM	0xc3	/* Checksum parameter -- optional */
 
-struct	cltpstat {
-	int	cltps_hdrops;
-	int	cltps_badsum;
-	int	cltps_badlen;
-	int	cltps_noport;
-	int	cltps_ipackets;
-	int	cltps_opackets;
+struct cltpstat {
+	int             cltps_hdrops;
+	int             cltps_badsum;
+	int             cltps_badlen;
+	int             cltps_noport;
+	int             cltps_ipackets;
+	int             cltps_opackets;
 };
 
 #ifdef _KERNEL
-struct	isopcb cltb;
-struct	cltpstat cltpstat;
+struct isopcb   cltb;
+struct cltpstat cltpstat;
+
+/* cltp_usrreq.c */
+void cltp_init(void);
+void cltp_input(struct mbuf *, ...);
+void cltp_notify(struct isopcb *);
+void cltp_ctlinput(int, struct sockaddr *, void *);
+int cltp_output(struct mbuf *, ...);
+int cltp_usrreq(struct socket *, int, struct mbuf *, struct mbuf *,
+		     struct mbuf *);
 #endif

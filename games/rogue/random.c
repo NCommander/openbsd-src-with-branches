@@ -1,3 +1,4 @@
+/*	$OpenBSD: random.c,v 1.4 2002/07/18 07:13:57 pjanzen Exp $	*/
 /*	$NetBSD: random.c,v 1.3 1995/04/22 10:28:06 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,9 +37,11 @@
 #if 0
 static char sccsid[] = "@(#)random.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: random.c,v 1.3 1995/04/22 10:28:06 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: random.c,v 1.4 2002/07/18 07:13:57 pjanzen Exp $";
 #endif
 #endif /* not lint */
+
+#include "rogue.h"
 
 /*
  * random.c
@@ -57,7 +56,7 @@ static char rcsid[] = "$NetBSD: random.c,v 1.3 1995/04/22 10:28:06 cgd Exp $";
  */
 
 static long rntb[32] = {
-	         3, 0x9a319039, 0x32d9c024, 0x9b663182, 0x5da1f342, 
+		 3, 0x9a319039, 0x32d9c024, 0x9b663182, 0x5da1f342,
 	0xde3b81e0, 0xdf0a6fb5, 0xf103bc02, 0x48f340fb, 0x7449e56b,
 	0xbeb1dbb0, 0xab5c5918, 0x946554fd, 0x8c2e680f, 0xeb3d799f,
 	0xb11ee0b7, 0x2d436b86, 0xda672e2a, 0x1588ca88, 0xe369735d,
@@ -74,11 +73,11 @@ static int rand_deg = 31;
 static int rand_sep = 3;
 static long *end_ptr = &rntb[32];
 
+void
 srrandom(x)
-int x;
+	int x;
 {
-	register int i;
-	long rrandom();
+	int i;
 
 	state[0] = (long) x;
 	if (rand_type != 0) {
@@ -115,10 +114,11 @@ rrandom()
 	return(i);
 }
 
+int
 get_rand(x, y)
-register int x, y;
+	int x, y;
 {
-	register int r, t;
+	int r, t;
 	long lr;
 
 	if (x > y) {
@@ -133,14 +133,15 @@ register int x, y;
 	return(r);
 }
 
+int
 rand_percent(percentage)
-register int percentage;
+	int percentage;
 {
 	return(get_rand(1, 100) <= percentage);
 }
 
+int
 coin_toss()
 {
-
 	return(((rrandom() & 01) ? 1 : 0));
 }

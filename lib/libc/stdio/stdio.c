@@ -1,5 +1,3 @@
-/*	$NetBSD: stdio.c,v 1.4 1995/02/02 02:10:40 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,10 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)stdio.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: stdio.c,v 1.4 1995/02/02 02:10:40 jtc Exp $";
+static char rcsid[] = "$OpenBSD: stdio.c,v 1.4 2001/07/09 06:57:44 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <fcntl.h>
@@ -52,6 +43,7 @@ static char rcsid[] = "$NetBSD: stdio.c,v 1.4 1995/02/02 02:10:40 jtc Exp $";
  * Small standard I/O/seek/close functions.
  * These maintain the `known seek offset' for seek optimisation.
  */
+int
 __sread(cookie, buf, n)
 	void *cookie;
 	char *buf;
@@ -69,6 +61,7 @@ __sread(cookie, buf, n)
 	return (ret);
 }
 
+int
 __swrite(cookie, buf, n)
 	void *cookie;
 	char const *buf;
@@ -92,7 +85,7 @@ __sseek(cookie, offset, whence)
 	register off_t ret;
 	
 	ret = lseek(fp->_file, (off_t)offset, whence);
-	if (ret == -1L)
+	if (ret == (off_t)-1)
 		fp->_flags &= ~__SOFF;
 	else {
 		fp->_flags |= __SOFF;
@@ -101,6 +94,7 @@ __sseek(cookie, offset, whence)
 	return (ret);
 }
 
+int
 __sclose(cookie)
 	void *cookie;
 {

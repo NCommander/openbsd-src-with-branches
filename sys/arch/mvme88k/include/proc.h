@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.h,v 1.8 2001/08/12 12:03:02 heko Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -19,11 +20,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,9 +39,11 @@
  *	@(#)proc.h	8.1 (Berkeley) 6/11/93
  *
  * from: Header: proc.h,v 1.6 92/11/26 02:04:41 torek Exp  (LBL)
- * $Id: proc.h,v 1.3 1995/06/30 03:10:32 build Exp build $
+ * $Id: proc.h,v 1.8 2001/08/12 12:03:02 heko Exp $
  */
 
+#ifndef __MACHINE_PROC_H__
+#define __MACHINE_PROC_H__
 #include <machine/pcb.h>
 #include <machine/mmu.h>
 
@@ -52,7 +51,13 @@
  * Machine-dependent part of the proc structure for VME1X7.
  */
 struct mdproc {
-	struct	trapframe *md_tf;	/* trap/syscall registers */
-	struct	fpstate *md_fpstate;	/* fpu state, if any; always resident */
-	int 	md_upte[UPAGES];	/* ptes for mapping u page */
+	struct   trapframe *md_tf;    /* trap/syscall registers */
+	struct   fpstate *md_fpstate; /* fpu state, if any; always resident */
+	int      md_upte[UPAGES];     /* ptes for mapping u page */
+	unsigned md_ss_addr;          /* single step address for ptrace */
+	unsigned md_ss_instr;         /* single step instruction for ptrace */
+	unsigned md_ss_taken_addr;    /* single step address for ptrace */
+	unsigned md_ss_taken_instr;   /* single step instruction for ptrace */
 };
+#endif /* __MACHINE_PROC_H__ */
+

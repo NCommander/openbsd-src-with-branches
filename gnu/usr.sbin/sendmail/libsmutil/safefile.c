@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -15,10 +15,10 @@
 #include <sm/io.h>
 #include <sm/errstring.h>
 
-SM_RCSID("@(#)$Sendmail: safefile.c,v 8.114 2001/09/08 01:21:03 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: safefile.c,v 8.124 2002/05/24 20:50:15 gshapiro Exp $")
 
 
-/*
+/*
 **  SAFEFILE -- return 0 if a file exists and is safe for a user.
 **
 **	Parameters:
@@ -58,7 +58,7 @@ safefile(fn, uid, gid, user, flags, mode, st)
 	bool checkpath;
 	struct stat stbuf;
 	struct stat fstbuf;
-	char fbuf[MAXPATHLEN + 1];
+	char fbuf[MAXPATHLEN];
 
 	if (tTd(44, 4))
 		sm_dprintf("safefile(%s, uid=%d, gid=%d, flags=%lx, mode=%o):\n",
@@ -206,6 +206,7 @@ safefile(fn, uid, gid, user, flags, mode, st)
 		{
 			int md = S_IWRITE|S_IEXEC;
 
+			ret = 0;
 			if (stbuf.st_uid == uid)
 				/* EMPTY */
 				;
@@ -237,9 +238,10 @@ safefile(fn, uid, gid, user, flags, mode, st)
 					md >>= 3;
 			}
 			if ((stbuf.st_mode & md) != md)
-				errno = EACCES;
+				ret = errno = EACCES;
 		}
-		ret = errno;
+		else
+			ret = errno;
 		if (tTd(44, 4))
 			sm_dprintf("\t[final dir %s uid %d mode %lo] %s\n",
 				dir, (int) stbuf.st_uid,
@@ -365,7 +367,7 @@ safefile(fn, uid, gid, user, flags, mode, st)
 		sm_dprintf("\tEACCES\n");
 	return EACCES;
 }
-/*
+/*
 **  SAFEDIRPATH -- check to make sure a path to a directory is safe
 **
 **	Safe means not writable and owned by the right folks.
@@ -404,7 +406,7 @@ safedirpath(fn, uid, gid, user, flags, level, offset)
 	char *saveptr = NULL;
 	char *p, *enddir;
 	register struct group *gr = NULL;
-	char s[MAXLINKPATHLEN + 1];
+	char s[MAXLINKPATHLEN];
 	struct stat stbuf;
 
 	/* make sure we aren't in a symlink loop */
@@ -484,13 +486,21 @@ safedirpath(fn, uid, gid, user, flags, level, offset)
 		/* Follow symlinks */
 		if (S_ISLNK(stbuf.st_mode))
 		{
+			int linklen;
 			char *target;
-			char buf[MAXPATHLEN + 1];
+			char buf[MAXPATHLEN];
 
 			memset(buf, '\0', sizeof buf);
-			if (readlink(s, buf, sizeof buf) < 0)
+			linklen = readlink(s, buf, sizeof buf);
+			if (linklen < 0)
 			{
 				ret = errno;
+				break;
+			}
+			if (linklen >= sizeof buf)
+			{
+				/* file name too long for buffer */
+				ret = errno = EINVAL;
 				break;
 			}
 
@@ -534,7 +544,7 @@ safedirpath(fn, uid, gid, user, flags, level, offset)
 			else
 			{
 				char *sptr;
-				char fullbuf[MAXLINKPATHLEN + 1];
+				char fullbuf[MAXLINKPATHLEN];
 
 				sptr = strrchr(s, '/');
 				if (sptr != NULL)
@@ -654,7 +664,7 @@ safedirpath(fn, uid, gid, user, flags, level, offset)
 			ret == 0 ? "OK" : sm_errstring(ret));
 	return ret;
 }
-/*
+/*
 **  SAFEOPEN -- do a file open with extra checking
 **
 **	Parameters:
@@ -737,7 +747,7 @@ safeopen(fn, omode, cmode, sff)
 	}
 	return fd;
 }
-/*
+/*
 **  SAFEFOPEN -- do a file open with extra checking
 **
 **	Parameters:
@@ -798,7 +808,8 @@ safefopen(fn, omode, cmode, sff)
 		errno = save_errno;
 		return NULL;
 	}
-	fp = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *) fd, fmode, NULL);
+	fp = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
+			(void *) &fd, fmode, NULL);
 	if (fp != NULL)
 		return fp;
 
@@ -812,7 +823,7 @@ safefopen(fn, omode, cmode, sff)
 	errno = save_errno;
 	return NULL;
 }
-/*
+/*
 **  FILECHANGED -- check to see if file changed after being opened
 **
 **	Parameters:
@@ -879,7 +890,7 @@ filechanged(fn, fd, stb)
 
 	return false;
 }
-/*
+/*
 **  DFOPEN -- determined file open
 **
 **	This routine has the semantics of open, except that it will

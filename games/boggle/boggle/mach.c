@@ -1,3 +1,4 @@
+/*	$OpenBSD: mach.c,v 1.6 2002/12/06 21:48:51 millert Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)mach.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: mach.c,v 1.6 2002/12/06 21:48:51 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +46,8 @@ static char rcsid[] = "$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $";
  *
  * Input is raw and unechoed
  */
+#include <sys/ioctl.h>
+
 #include <ctype.h>
 #include <curses.h>
 #include <fcntl.h>
@@ -70,34 +69,30 @@ int ncols, nlines;
 extern char *pword[], *mword[];
 extern int ngames, nmwords, npwords, tnmwords, tnpwords;
 
-static void	cont_catcher __P((int));
-static int	prwidth __P((char *[], int));
-static void	prword __P((char *[], int));
-static void	stop_catcher __P((int));
-static void	tty_cleanup __P((void));
-static int	tty_setup __P((void));
-static void	tty_showboard __P((char *));
-static void	winch_catcher __P((int));
+static void	cont_catcher(int);
+static int	prwidth(char *[], int);
+static void	prword(char *[], int);
+static void	stop_catcher(int);
+static void	tty_cleanup(void);
+static int	tty_setup(void);
+static void	tty_showboard(char *);
+static void	winch_catcher(int);
 
 /*
  * Do system dependent initialization
  * This is called once, when the program starts
  */
 int
-setup(sflag, seed)
-	int sflag;
-	time_t seed;
+setup(seed)
+	char *seed;
 {
-	extern int debug;
-
 	if (tty_setup() < 0)
 		return(-1);
 
-	if (!sflag)
-		time(&seed);
-	srandom(seed);
-	if (debug)
-		(void) printf("seed = %ld\n", seed);
+	if (seed != NULL)
+		srandom(atol(seed));
+	else
+		srandomdev();
 	return(0);
 }
 
@@ -140,9 +135,9 @@ results()
  
 	move(SCORE_LINE, SCORE_COL);
 	printw("Percentage: %0.2f%% (%0.2f%% over %d game%s)\n",
-        denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
-        denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
-        ngames, ngames > 1 ? "s" : "");
+	denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
+	denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
+	ngames, ngames > 1 ? "s" : "");
 }
 
 static void
@@ -170,8 +165,8 @@ char *
 getline(q)
 	char *q;
 {
-	register int ch, done;
-	register char *p;
+	int ch, done;
+	char *p;
 	int row, col;
 
 	p = q;
@@ -659,8 +654,7 @@ static void
 tty_showboard(b)
 	char *b;
 {
-	register int i;
-	int line;
+	int i, line;
 
 	clear();
 	move(BOARD_LINE, BOARD_COL);

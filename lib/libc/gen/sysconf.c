@@ -1,5 +1,3 @@
-/*	$NetBSD: sysconf.c,v 1.3 1995/03/04 01:56:09 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,11 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sysconf.c	8.2 (Berkeley) 3/20/94";
-#else
-static char rcsid[] = "$NetBSD: sysconf.c,v 1.3 1995/03/04 01:56:09 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: sysconf.c,v 1.4 1998/06/02 06:10:26 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -68,7 +58,6 @@ long
 sysconf(name)
 	int name;
 {
-	struct clockinfo clk;
 	struct rlimit rl;
 	size_t len;
 	int mib[2], value;
@@ -111,6 +100,16 @@ sysconf(name)
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_POSIX1;
 		break;
+
+/* 1003.1b */
+	case _SC_PAGESIZE:
+		mib[0] = CTL_HW;
+		mib[1] = HW_PAGESIZE;
+		break;
+	case _SC_FSYNC:
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_FSYNC;
+		goto yesno;
 
 /* 1003.2 */
 	case _SC_BC_BASE_MAX:
@@ -180,6 +179,13 @@ sysconf(name)
 	case _SC_2_UPE:
 		mib[0] = CTL_USER;
 		mib[1] = USER_POSIX2_UPE;
+		goto yesno;
+
+/* XPG 4.2 */
+	case _SC_XOPEN_SHM:
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_SYSVSHM;
+
 yesno:		if (sysctl(mib, 2, &value, &len, NULL, 0) == -1)
 			return (-1);
 		if (value == 0)

@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,27 +30,14 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/machAsmDefs.h>
+#include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)bcmp.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: bcmp.S,v 1.3 1994/12/15 17:24:57 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: bcmp.S,v 1.4 1996/08/19 08:16:11 tholo Exp $"
+#endif /* LIBC_SCCS */
 
 /* bcmp(s1, s2, n) */
-
-#ifdef MIPSEL
-#	define	LWHI	lwr
-#	define	LWLO	lwl
-#	define	SWHI	swr
-#	define	SWLO	swl
-#endif
-#ifdef MIPSEB
-#	define	LWHI	lwl
-#	define	LWLO	lwr
-#	define	SWHI	swl
-#	define	SWLO	swr
-#endif
 
 LEAF(bcmp)
 	.set	noreorder

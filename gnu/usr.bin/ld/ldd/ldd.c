@@ -1,3 +1,4 @@
+/*	$OpenBSD: ldd.c,v 1.12 2002/09/07 01:25:34 marc Exp $	*/
 /*	$NetBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -13,7 +14,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Paul Kranenburg.
+ *	This product includes software developed by Paul Kranenburg.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
@@ -44,8 +45,11 @@
 #include <string.h>
 #include <unistd.h>
 
-void
-usage()
+extern void scan_library(int, struct exec *, const char *, const char *,
+			 const char *); 
+
+static void
+usage(void)
 {
 	extern char *__progname;
 
@@ -54,15 +58,13 @@ usage()
 }
 
 int
-main(argc, argv)
-int	argc;
-char	*argv[];
+main(int argc, char *argv[])
 {
 	char		*fmt1 = NULL, *fmt2 = NULL;
 	int		rval;
 	int		c;
 
-	while ((c = getopt(argc, argv, "f:")) != EOF) {
+	while ((c = getopt(argc, argv, "f:")) != -1) {
 		switch (c) {
 		case 'f':
 			if (fmt1) {
@@ -86,11 +88,14 @@ char	*argv[];
 	}
 
 	/* ld.so magic */
-	setenv("LD_TRACE_LOADED_OBJECTS", "", 1);
+	if (setenv("LD_TRACE_LOADED_OBJECTS", "", 1) == -1)
+		err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS");
 	if (fmt1)
-		setenv("LD_TRACE_LOADED_OBJECTS_FMT1", fmt1, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_FMT1", fmt1, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_FMT1");
 	if (fmt2)
-		setenv("LD_TRACE_LOADED_OBJECTS_FMT2", fmt2, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_FMT2", fmt2, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_FMT2");
 
 	rval = 0;
 	while (argc--) {
@@ -104,10 +109,22 @@ char	*argv[];
 			argv++;
 			continue;
 		}
-		if (read(fd, &hdr, sizeof hdr) != sizeof hdr
-		    || (N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
+		if (read(fd, &hdr, sizeof hdr) != sizeof hdr) {
+			warnx("%s: not a dynamic executable", *argv);
+			(void)close(fd);
+			rval |= 1;
+			argv++;
+			continue;
+		}
+		if ((N_GETFLAG(hdr) & EX_DPMASK) == (EX_DYNAMIC | EX_PIC)) {
+			scan_library(fd, &hdr, *argv, fmt1, fmt2);
+			(void)close(fd);
+			argv++;
+			continue;
+		}
+		if ((N_GETFLAG(hdr) & EX_DPMASK) != EX_DYNAMIC
 #if 1 /* Compatibility */
-		    || hdr.a_entry < __LDPGSZ
+		    || hdr.a_entry < N_PAGSIZ(hdr)
 #endif
 		    ) {
 
@@ -119,7 +136,8 @@ char	*argv[];
 		}
 		(void)close(fd);
 
-		setenv("LD_TRACE_LOADED_OBJECTS_PROGNAME", *argv, 1);
+		if (setenv("LD_TRACE_LOADED_OBJECTS_PROGNAME", *argv, 1) == -1)
+			err(1, "cannot setenv LD_TRACE_LOADED_OBJECTS_PROGNAME");
 		if (fmt1 == NULL && fmt2 == NULL)
 			/* Default formats */
 			printf("%s:\n", *argv);
@@ -144,12 +162,12 @@ char	*argv[];
 			}
 			break;
 		case 0:
-			rval |= execl(*argv, *argv, NULL) != 0;
+			rval |= execl(*argv, *argv, (char *)NULL) != 0;
 			perror(*argv);
 			_exit(1);
 		}
 		argv++;
 	}
 
-	return rval;
+	return (rval ? 1 : 0);
 }

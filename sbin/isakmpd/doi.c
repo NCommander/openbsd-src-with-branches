@@ -1,7 +1,8 @@
-/*	$Id: doi.c,v 1.2 1998/08/11 15:03:18 niklas Exp $	*/
+/*	$OpenBSD: doi.c,v 1.5 1999/04/19 19:54:53 niklas Exp $	*/
+/*	$EOM: doi.c,v 1.4 1999/04/02 00:57:36 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -34,6 +30,8 @@
  */
 
 #include <sys/param.h>
+
+#include "sysdep.h"
 
 #include "doi.h"
 

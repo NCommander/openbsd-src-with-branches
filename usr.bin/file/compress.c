@@ -1,23 +1,59 @@
+/*	$OpenBSD: compress.c,v 1.9 2003/06/13 18:31:14 deraadt Exp $	*/
+
 /*
  * compress routines:
  *	zmagic() - returns 0 if not recognized, uncompresses and prints
  *		   information if recognized
  *	uncompress(method, old, n, newch) - uncompress old into new, 
  *					    using method, return sizeof new
- * $Id: compress.c,v 1.4 1995/05/21 00:13:28 christos Exp $
+ *
+ * Copyright (c) Ian F. Darwin 1986-1995.
+ * Software written by Ian F. Darwin and others;
+ * maintained 1995-present by Christos Zoulas and others.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice immediately at the beginning of the file, without modification,
+ *    this list of conditions, and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/wait.h>
 
 #include "file.h"
+#include <stdlib.h>
+#ifdef	HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#include <string.h>
+#ifdef	HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <err.h>
+#ifdef	HAVE_LIBZ
+#include <zlib.h>
+#endif
 
 static struct {
-   char *magic;
+   const char *magic;
    int   maglen;
-   char *argv[3];
+   const char *const argv[3];
    int	 silent;
 } compr[] = {
     { "\037\235", 2, { "uncompress", "-c", NULL }, 0 },	/* compressed */
@@ -31,7 +67,9 @@ static struct {
 static int ncompr = sizeof(compr) / sizeof(compr[0]);
 
 
-static int uncompress __P((int, const unsigned char *, unsigned char **, int));
+static int swrite(int, const void *, size_t);
+static int sread(int, void *, size_t);
+static int uncompress(int, const unsigned char *, unsigned char **, int);
 
 int
 zmagic(buf, nbytes)
@@ -62,6 +100,121 @@ int nbytes;
 	return 1;
 }
 
+/*
+ * `safe' write for sockets and pipes.
+ */
+static int
+swrite(int fd, const void *buf, size_t n)
+{
+	int rv;
+	size_t rn = n;
+
+	do
+		switch (rv = write(fd, buf, n)) {
+		case -1:
+			if (errno == EINTR)
+				continue;
+			return -1;
+		default:
+			n -= rv;
+			buf = ((const char *)buf) + rv;
+			break;
+		}
+	while (n > 0);
+	return rn;
+}
+
+/*
+ * `safe' read for sockets and pipes.
+ */
+static int
+sread(int fd, void *buf, size_t n)
+{
+	int rv;
+	size_t rn = n;
+
+	do
+		switch (rv = read(fd, buf, n)) {
+		case -1:
+			if (errno == EINTR)
+				continue;
+			return -1;
+		case 0:
+			return rn - n;
+		default:
+			n -= rv;
+			buf = ((char *)buf) + rv;
+			break;
+		}
+	while (n > 0);
+	return rn;
+}
+
+int
+pipe2file(int fd, void *startbuf, size_t nbytes)
+{
+	char buf[4096];
+	int r, tfd;
+
+	(void)strlcpy(buf, "/tmp/file.XXXXXXXXXX", sizeof buf);
+#ifndef HAVE_MKSTEMP
+	{
+		char *ptr = mktemp(buf);
+		tfd = open(ptr, O_RDWR|O_TRUNC|O_EXCL|O_CREAT, 0600);
+		r = errno;
+		(void)unlink(ptr);
+		errno = r;
+	}
+#else
+	tfd = mkstemp(buf);
+	r = errno;
+	(void)unlink(buf);
+	errno = r;
+#endif
+	if (tfd == -1) {
+		error("Can't create temporary file for pipe copy (%s)\n",
+		    strerror(errno));
+		/*NOTREACHED*/
+	}
+
+	if (swrite(tfd, startbuf, nbytes) != nbytes)
+		r = 1;
+	else {
+		while ((r = sread(fd, buf, sizeof(buf))) > 0)
+			if (swrite(tfd, buf, r) != r)
+				break;
+	}
+
+	switch (r) {
+	case -1:
+		error("Error copying from pipe to temp file (%s)\n",
+		    strerror(errno));
+		/*NOTREACHED*/
+	case 0:
+		break;
+	default:
+		error("Error while writing to temp file (%s)\n",
+		    strerror(errno));
+		/*NOTREACHED*/
+	}
+
+	/*
+	 * We duplicate the file descriptor, because fclose on a
+	 * tmpfile will delete the file, but any open descriptors
+	 * can still access the phantom inode.
+	 */
+	if ((fd = dup2(tfd, fd)) == -1) {
+		error("Couldn't dup destcriptor for temp file(%s)\n",
+		    strerror(errno));
+		/*NOTREACHED*/
+	}
+	(void)close(tfd);
+	if (lseek(fd, (off_t)0, SEEK_SET) == (off_t)-1) {
+		error("Couldn't seek on temp file (%s)\n", strerror(errno));
+		/*NOTREACHED*/
+	}
+	return fd;
+}
 
 static int
 uncompress(method, old, newch, n)
@@ -73,7 +226,7 @@ int n;
 	int fdin[2], fdout[2];
 
 	if (pipe(fdin) == -1 || pipe(fdout) == -1) {
-		error("cannot create pipe (%s).\n", strerror(errno));	
+		err(1, "cannot create pipe");	
 		/*NOTREACHED*/
 	}
 	switch (fork()) {
@@ -90,29 +243,28 @@ int n;
 		if (compr[method].silent)
 		    (void) close(2);
 
-		execvp(compr[method].argv[0], compr[method].argv);
-		error("could not execute `%s' (%s).\n", 
-		      compr[method].argv[0], strerror(errno));
+		execvp(compr[method].argv[0], (char *const *)compr[method].argv);
+		err(1, "could not execute `%s'", compr[method].argv[0]);
 		/*NOTREACHED*/
 	case -1:
-		error("could not fork (%s).\n", strerror(errno));
+		err(1, "could not fork");
 		/*NOTREACHED*/
 
 	default: /* parent */
 		(void) close(fdin[0]);
 		(void) close(fdout[1]);
 		if (write(fdin[1], old, n) != n) {
-			error("write failed (%s).\n", strerror(errno));
+			err(1, "write failed");
 			/*NOTREACHED*/
 		}
 		(void) close(fdin[1]);
 		if ((*newch = (unsigned char *) malloc(n)) == NULL) {
-			error("out of memory.\n");
+			err(1, "malloc");
 			/*NOTREACHED*/
 		}
 		if ((n = read(fdout[0], *newch, n)) <= 0) {
 			free(*newch);
-			error("read failed (%s).\n", strerror(errno));
+			err(1, "read failed");
 			/*NOTREACHED*/
 		}
 		(void) close(fdout[0]);

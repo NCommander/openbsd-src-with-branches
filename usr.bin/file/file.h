@@ -1,35 +1,54 @@
+/*	$OpenBSD: file.h,v 1.13 2003/06/13 18:31:14 deraadt Exp $	*/
+
 /*
  * file.h - definitions for file(1) program
- * @(#)$Id: file.h,v 1.7 1995/05/21 00:13:30 christos Exp $
  *
- * Copyright (c) Ian F. Darwin, 1987.
- * Written by Ian F. Darwin.
- *
- * This software is not subject to any license of the American Telephone
- * and Telegraph Company or of the Regents of the University of California.
- *
- * Permission is granted to anyone to use this software for any purpose on
- * any computer system, and to alter it and redistribute it freely, subject
- * to the following restrictions:
- *
- * 1. The author is not responsible for the consequences of use of this
- *    software, no matter how awful, even if they arise from flaws in it.
- *
- * 2. The origin of this software must not be misrepresented, either by
- *    explicit claim or by omission.  Since few users ever read sources,
- *    credits must appear in the documentation.
- *
- * 3. Altered versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.  Since few users
- *    ever read sources, credits must appear in the documentation.
- *
- * 4. This notice may not be removed or altered.
+ * Copyright (c) Ian F. Darwin 1986-1995.
+ * Software written by Ian F. Darwin and others;
+ * maintained 1995-present by Christos Zoulas and others.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice immediately at the beginning of the file, without modification,
+ *    this list of conditions, and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
+
+#ifndef __file_h__
+#define __file_h__
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <errno.h>
+#include <stdio.h>
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#elif defined(HAVE_INTTYPES_H)
+#include <inttypes.h>
+#endif
 
 #ifndef HOWMANY
 # define HOWMANY 8192		/* how much of the file to look at */
 #endif
-#define MAXMAGIS 1000		/* max entries in /etc/magic */
+#define MAXMAGIS 5000		/* max entries in /etc/magic */
 #define MAXDESC	50		/* max leng of text description */
 #define MAXstring 32		/* max leng of "string" types */
 
@@ -37,14 +56,15 @@ struct magic {
 	short flag;		
 #define INDIR	1		/* if '>(...)' appears,  */
 #define	UNSIGNED 2		/* comparison is unsigned */
+#define ADD	4		/* if '>&' appears,  */
 	short cont_level;	/* level of ">" */
 	struct {
-		char type;	/* byte short long */
-		long offset;	/* offset from indirection */
+		int8_t type;	/* byte short long */
+		int32_t offset;	/* offset from indirection */
 	} in;
-	long offset;		/* offset to magic number */
+	int32_t offset;		/* offset to magic number */
 	unsigned char reln;	/* relation (0=eq, '>'=gt, etc) */
-	char type;		/* int, short, long or string. */
+	int8_t type;		/* int, short, long or string. */
 	char vallen;		/* length of string value, if any */
 #define 			BYTE	1
 #define				SHORT	2
@@ -60,45 +80,33 @@ struct magic {
 	union VALUETYPE {
 		unsigned char b;
 		unsigned short h;
-		unsigned long l;
+		uint32_t l;
 		char s[MAXstring];
 		unsigned char hs[2];	/* 2 bytes of a fixed-endian "short" */
 		unsigned char hl[4];	/* 2 bytes of a fixed-endian "long" */
 	} value;		/* either number or string */
-	unsigned long mask;	/* mask before comparison with value */
+	uint32_t mask;	/* mask before comparison with value */
 	char nospflag;		/* supress space character */
 	char desc[MAXDESC];	/* description */
 };
 
-#include <stdio.h>	/* Include that here, to make sure __P gets defined */
-
-#ifndef __P
-# if __STDC__ || __cplusplus
-#  define __P(a) a
-# else
-#  define __P(a) ()
-#  define const
-# endif
-#endif
-
-extern int   apprentice		__P((char *, int));
-extern int   ascmagic		__P((unsigned char *, int));
-extern void  error		__P((const char *, ...));
-extern void  ckfputs		__P((const char *, FILE *));
+extern int   apprentice(char *, int);
+extern int   ascmagic(unsigned char *, int);
+extern void  ckfputs(const char *, FILE *);
 struct stat;
-extern int   fsmagic		__P((const char *, struct stat *));
-extern int   is_compress	__P((const unsigned char *, int *));
-extern int   is_tar		__P((unsigned char *, int));
-extern void  magwarn		__P((const char *, ...));
-extern void  mdump		__P((struct magic *));
-extern void  process		__P((const char *, int));
-extern void  showstr		__P((FILE *, const char *, int));
-extern int   softmagic		__P((unsigned char *, int));
-extern int   tryit		__P((unsigned char *, int, int));
-extern int   zmagic		__P((unsigned char *, int));
-extern void  ckfprintf		__P((FILE *, const char *, ...));
-extern unsigned long signextend	__P((struct magic *, unsigned long));
-
+extern int   fsmagic(const char *, struct stat *);
+extern int   is_compress(const unsigned char *, int *);
+extern int   is_tar(unsigned char *, int);
+extern void  mdump(struct magic *);
+extern void  process(const char *, int);
+extern void  showstr(FILE *, const char *, int);
+extern int   softmagic(unsigned char *, int);
+extern int   tryit(unsigned char *, int, int);
+extern int   zmagic(unsigned char *, int);
+extern void  ckfprintf(FILE *, const char *, ...);
+extern uint32_t signextend(struct magic *, uint32_t);
+extern int internatmagic(unsigned char *, int);
+extern void tryelf(int, unsigned char *, int);
 
 
 extern int errno;		/* Some unixes don't define this..	*/
@@ -118,7 +126,16 @@ extern int lflag;		/* follow symbolic links?		*/
 extern int optind;		/* From getopt(3)			*/
 extern char *optarg;
 
-#if !defined(__STDC__) || defined(sun) || defined(__sun__) || defined(__convex__)
+#if defined(sun) || defined(__sun__) || defined (__sun)
+# if defined(__svr4) || defined (__SVR4) || defined(__svr4__)
+#  define SOLARIS
+# else
+#  define SUNOS
+# endif
+#endif
+
+
+#if !defined(__STDC__) || defined(SUNOS) || defined(__convex__)
 extern int sys_nerr;
 extern char *sys_errlist[];
 #define strerror(e) \
@@ -129,3 +146,8 @@ extern char *sys_errlist[];
 #ifndef MAXPATHLEN
 #define	MAXPATHLEN	512
 #endif
+
+int	pipe2file(int, void *, size_t);
+void	error(const char *, ...);
+
+#endif /* __file_h__ */

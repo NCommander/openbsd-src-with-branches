@@ -1,3 +1,4 @@
+/*	$OpenBSD: chklabel.c,v 1.2 1998/08/22 08:49:16 smurph Exp $ */
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -32,7 +33,7 @@
 #include <sys/disklabel.h>
 #include <stdio.h>
 
-void cputobsdlabel __P((struct disklabel *lp, struct cpu_disklabel *clp));
+void cputobsdlabel(struct disklabel *lp, struct cpu_disklabel *clp);
 
 main(int argc, char *argv[])
 {

@@ -162,6 +162,8 @@ help(void) {
 "                 -c class            (specify query class)\n"
 "                 -k keyfile          (specify tsig key file)\n"
 "                 -y name:key         (specify named base64 tsig key)\n"
+"                 -4                  (force IPv4 query transport)\n"
+"                 -6                  (force IPv6 query transport)\n"
 "        d-opt    is of the form +keyword[=value], where keyword is:\n"
 "                 +[no]vc             (TCP mode)\n"
 "                 +[no]tcp            (TCP mode, alternate syntax)\n"
@@ -617,7 +619,7 @@ plus_option(char *option, isc_boolean_t is_batchfile,
 	char *cmd, *value, *ptr;
 	isc_boolean_t state = ISC_TRUE;
 
-	strncpy(option_store, option, sizeof(option_store));
+	strlcpy(option_store, option, sizeof(option_store));
 	option_store[sizeof(option_store)-1]=0;
 	ptr = option_store;
 	cmd=next_token(&ptr,"=");
@@ -716,8 +718,7 @@ plus_option(char *option, isc_boolean_t is_batchfile,
 				goto need_value;
 			if (!state)
 				goto invalid_option;
-			strncpy(domainopt, value, sizeof(domainopt));
-			domainopt[sizeof(domainopt)-1] = '\0';
+			strlcpy(domainopt, value, sizeof(domainopt));
 			break;
 		default:
 			goto invalid_option;
@@ -912,6 +913,18 @@ dash_option(char *option, char *next, dig_lookup_t **lookup,
 	case 'n':
 		nibble = ISC_TRUE;
 		return (ISC_FALSE);
+	case '4':
+		if (have_ipv4)
+			have_ipv6 = ISC_FALSE;
+		else
+			fatal("can't find v4 networking");
+		return (ISC_FALSE);
+	case '6':
+		if (have_ipv6)
+			have_ipv4 = ISC_FALSE;
+		else
+			fatal("can't find v6 networking");
+		return (ISC_FALSE);
 	}
 	if (value == NULL)
 		goto invalid_option;
@@ -946,8 +959,7 @@ dash_option(char *option, char *next, dig_lookup_t **lookup,
 		batchname = value;
 		return (value_from_next);
 	case 'k':
-		strncpy(keyfile, value, sizeof(keyfile));
-		keyfile[sizeof(keyfile)-1]=0;
+		strlcpy(keyfile, value, sizeof(keyfile));
 		return (value_from_next);
 	case 'p':
 		port = (in_port_t) parse_uint(value, "port number", MAXPORT);
@@ -1000,18 +1012,16 @@ dash_option(char *option, char *next, dig_lookup_t **lookup,
 		if (ptr == NULL) {
 			usage();
 		}
-		strncpy(keynametext, ptr, sizeof(keynametext));
-		keynametext[sizeof(keynametext)-1]=0;
+		strlcpy(keynametext, ptr, sizeof(keynametext));
 		ptr = next_token(&value, "");
 		if (ptr == NULL)
 			usage();
-		strncpy(keysecret, ptr, sizeof(keysecret));
-		keysecret[sizeof(keysecret)-1]=0;
+		strlcpy(keysecret, ptr, sizeof(keysecret));
 		return (value_from_next);
 	case 'x':
 		*lookup = clone_lookup(default_lookup, ISC_TRUE);
 		if (get_reverse(textname, value, nibble) == ISC_R_SUCCESS) {
-			strncpy((*lookup)->textname, textname,
+			strlcpy((*lookup)->textname, textname,
 				sizeof((*lookup)->textname));
 			debug("looking up %s", (*lookup)->textname);
 			(*lookup)->trace_root = ISC_TF((*lookup)->trace  ||
@@ -1113,7 +1123,7 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 		if (homedir != NULL)
 			snprintf(rcfile, sizeof(rcfile), "%s/.digrc", homedir);
 		else
-			strcpy(rcfile, ".digrc");
+			strlcpy(rcfile, ".digrc", sizeof(rcfile));
 		batchfp = fopen(rcfile, "r");
 		if (batchfp != NULL) {
 			while (fgets(batchline, sizeof(batchline),
@@ -1240,9 +1250,8 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 					printgreeting(argc, argv, lookup);
 					firstarg = ISC_FALSE;
 				}
-				strncpy(lookup->textname, rv[0], 
+				strlcpy(lookup->textname, rv[0], 
 					sizeof(lookup->textname));
-				lookup->textname[sizeof(lookup->textname)-1]=0;
 				lookup->trace_root = ISC_TF(lookup->trace  ||
 						     lookup->ns_search_only);
 				lookup->new_search = ISC_TRUE;
@@ -1298,7 +1307,7 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 		lookup->trace_root = ISC_TF(lookup->trace ||
 					    lookup->ns_search_only);
 		lookup->new_search = ISC_TRUE;
-		strcpy(lookup->textname, ".");
+		strlcpy(lookup->textname, ".", sizeof(lookup->textname));
 		lookup->rdtype = dns_rdatatype_ns;
 		lookup->rdtypeset = ISC_TRUE;
 		if (firstarg) {

@@ -1,3 +1,6 @@
+/*	$OpenBSD: chared.c,v 1.5 2003/05/01 21:11:21 avsm Exp $	*/
+/*	$NetBSD: chared.c,v 1.2 1997/01/11 06:47:48 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +34,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)chared.c	8.1 (Berkeley) 6/4/93";
+#else
+static const char rcsid[] = "$OpenBSD: chared.c,v 1.5 2003/05/01 21:11:21 avsm Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /* 
@@ -59,9 +62,9 @@ cv_undo(el, action, size, ptr)
     vu->action = action;
     vu->ptr    = ptr;
     vu->isize  = size;
-    (void) memcpy(vu->buf, vu->ptr, size);
+    (void)memcpy(vu->buf, vu->ptr, size);
 #ifdef DEBUG_UNDO
-    (void) fprintf(el->el_errfile, "Undo buffer \"%s\" size = +%d -%d\n",
+    (void)fprintf(el->el_errfile, "Undo buffer \"%s\" size = +%d -%d\n",
 		   vu->ptr, vu->isize, vu->dsize);
 #endif
 }
@@ -170,7 +173,7 @@ protected char *
 c__prev_word(p, low, n, wtest) 
     register char *p, *low;
     register int n;
-    int (*wtest) __P((int));
+    int (*wtest)(int);
 {
     p--;
 
@@ -197,7 +200,7 @@ protected char *
 c__next_word(p, high, n, wtest)
     register char *p, *high;
     register int n;
-    int (*wtest) __P((int));
+    int (*wtest)(int);
 {
     while (n--) {
 	while ((p < high) && !(*wtest)((unsigned char) *p)) 
@@ -219,7 +222,7 @@ cv_next_word(el, p, high, n, wtest)
     EditLine *el;
     register char *p, *high;
     register int n;
-    int (*wtest) __P((int));
+    int (*wtest)(int);
 {
     int test;
 
@@ -252,7 +255,7 @@ cv_prev_word(el, p, low, n, wtest)
     EditLine *el;
     register char *p, *low;
     register int n;
-    int (*wtest) __P((int));
+    int (*wtest)(int);
 {
     int test;
 
@@ -427,13 +430,13 @@ ch_init(el)
     EditLine *el;
 {
     el->el_line.buffer              = (char *)  el_malloc(EL_BUFSIZ);
-    (void) memset(el->el_line.buffer, 0, EL_BUFSIZ);
+    (void)memset(el->el_line.buffer, 0, EL_BUFSIZ);
     el->el_line.cursor              = el->el_line.buffer;
     el->el_line.lastchar            = el->el_line.buffer;
     el->el_line.limit  		    = &el->el_line.buffer[EL_BUFSIZ - 2];
 
     el->el_chared.c_undo.buf        = (char *)  el_malloc(EL_BUFSIZ);
-    (void) memset(el->el_chared.c_undo.buf, 0, EL_BUFSIZ);
+    (void)memset(el->el_chared.c_undo.buf, 0, EL_BUFSIZ);
     el->el_chared.c_undo.action     = NOP;
     el->el_chared.c_undo.isize      = 0;
     el->el_chared.c_undo.dsize      = 0;
@@ -444,7 +447,7 @@ ch_init(el)
     el->el_chared.c_vcmd.ins        = el->el_line.buffer;
 
     el->el_chared.c_kill.buf        = (char *)  el_malloc(EL_BUFSIZ);
-    (void) memset(el->el_chared.c_kill.buf, 0, EL_BUFSIZ);
+    (void)memset(el->el_chared.c_kill.buf, 0, EL_BUFSIZ);
     el->el_chared.c_kill.mark       = el->el_line.buffer;
     el->el_chared.c_kill.last       = el->el_chared.c_kill.buf;
 

@@ -1,8 +1,6 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mmaptest.c,v 1.3 2003/07/31 21:48:08 deraadt Exp $ */
 /*
  * Copyright (c) 2002 Marc Espie.
- *
- * Extensive code modifications for the OpenBSD project.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,13 +30,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <err.h>
+#include <unistd.h>
 
 /* 
  * Check for mmap/ftruncate interaction.  Specifically, ftruncate on
  * a short file may lose modifications made through an mmapped area.  
  */
 int 
-main()
+main(int argc, char *argv[])
 {
 	int i;
 	int fd;

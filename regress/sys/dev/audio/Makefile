@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 PROG=autest
 SRCS=autest.c adpcm.c law.c

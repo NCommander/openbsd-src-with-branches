@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_userdir.c,v 1.10 2003/07/18 21:16:37 david Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -93,6 +95,7 @@
 
 #include "httpd.h"
 #include "http_config.h"
+#include "http_main.h"
 
 module userdir_module;
 
@@ -182,6 +185,7 @@ static const char *set_user_dir(cmd_parms *cmd, void *dummy, char *arg)
             }
         }
         s_cfg->userdir = ap_pstrdup(cmd->pool, arg);
+        ap_server_strip_chroot(s_cfg->userdir, 1);
 #if defined(WIN32) || defined(OS2) || defined(NETWARE)
         /* These are incomplete paths, so we cannot canonicalize them yet.
          * but any backslashes will confuse the parser, later, so simply

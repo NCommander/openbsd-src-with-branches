@@ -1,3 +1,5 @@
+/*	$OpenBSD: termout.c,v 1.11 2003/06/03 02:56:19 millert Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)termout.c	4.3 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: termout.c,v 1.5 1995/10/10 04:18:01 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: termout.c,v 1.11 2003/06/03 02:56:19 millert Exp $";
 #endif /* not lint */
 
 #if defined(unix)
@@ -41,8 +39,11 @@ static char rcsid[] = "$Id: termout.c,v 1.5 1995/10/10 04:18:01 thorpej Exp $";
 #include <termios.h>
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <curses.h>
+#include <term.h>
 #if	defined(ultrix)
 /* Some version of this OS has a bad definition for nonl() */
 #undef	nl
@@ -152,7 +153,7 @@ int	where;		/* cursor address */
 {
 	char foo[100];
 
-	sprintf(foo, "ERR from %s at %d (%d, %d)\n",
+	snprintf(foo, sizeof foo, "ERR from %s at %d (%d, %d)\n",
 		from, where, ScreenLine(where), ScreenLineOffset(where));
 	OurExitString(foo, 1);
 	/* NOTREACHED */
@@ -162,9 +163,9 @@ int	where;		/* cursor address */
 
 static int
 WhereTermAttrByte(p)
-register int	p;
+int	p;
 {
-    register int i;
+    int i;
 
     i = p;
 
@@ -203,10 +204,10 @@ static void
 #endif	/* defined(NOT43) */
 SlowScreen()
 {
-    register int is, shouldbe, isattr, shouldattr;
-    register int pointer;
-    register int fieldattr, termattr;
-    register int columnsleft;
+    int is, shouldbe, isattr, shouldattr;
+    int pointer;
+    int fieldattr, termattr;
+    int columnsleft;
 
 #define	NORMAL		0		
 #define	HIGHLIGHT	1		/* Mask bits */
@@ -500,7 +501,7 @@ FastScreen()
  * In particular, we separate out the two cases from the beginning.
  */
     if ((Highest != HighestScreen()) || (Lowest != LowestScreen())) {
-	register int columnsleft;
+	int columnsleft;
 
 	move(ScreenLine(Lowest), ScreenLineOffset(Lowest));
 	p = &Host[Lowest];
@@ -542,7 +543,7 @@ FastScreen()
     } else {		/* Going from Lowest to Highest */
 	unsigned char tmpbuf[MAXNUMBERCOLUMNS+1];
 	ScreenImage *End = &Host[ScreenSize]-1-SaveCorner;
-	register unsigned char *tmp = tmpbuf, *tmpend = tmpbuf+NumberColumns;
+	unsigned char *tmp = tmpbuf, *tmpend = tmpbuf+NumberColumns;
 
 	*tmpend = 0;		/* terminate from the beginning */
 	move(0,0);
@@ -639,14 +640,8 @@ InitTerminal()
     
     InitMapping();		/* Go do mapping file (MAP3270) first */
     if (!screenInitd) { 	/* not initialized */
-#if	defined(unix)
-	char KSEbuffer[2050];
-	char *lotsofspace = KSEbuffer;
-	extern int abort();
-	extern char *tgetstr();
-#endif	/* defined(unix) */
 
-	if (initscr() == ERR) {	/* Initialize curses to get line size */
+	if (initscr() == NULL) {/* Initialize curses to get line size */
 	    ExitString("InitTerminal:  Error initializing curses", 1);
 	    /*NOTREACHED*/
 	}
@@ -684,22 +679,23 @@ InitTerminal()
 			 * be nice, but it messes us up.
 			 */
 	signal(SIGTSTP, SIG_DFL);
-	if ((myKS = tgetstr("ks", &lotsofspace)) != 0) {
-	    myKS = strsave(myKS);
+	if ((myKS = tigetstr("smkx")) != 0) {
+	    myKS = strdup(myKS);
 	    StringToTerminal(myKS);
 	}
-	if ((myKE = tgetstr("ke", &lotsofspace)) != 0) {
-	    myKE = strsave(myKE);
+	if ((myKE = tigetstr("rmkx")) != 0) {
+	    myKE = strdup(myKE);
 	}
-	if (tgetstr("md", &lotsofspace) && tgetstr("me", &lotsofspace)) {
-	   SO = strsave(tgetstr("md", &lotsofspace));
-	   SE = strsave(tgetstr("me", &lotsofspace));
+	/* XXX - why? */
+	if (tigetstr("bold") && tigetstr("sgr0")) {
+	   enter_standout_mode = strdup(tigetstr("bold"));
+	   exit_standout_mode = strdup(tigetstr("sgr0"));
 	}
 #endif
 	DoARefresh();
 	setconnmode();
-	if (VB && *VB) {
-	    bellSequence = VB;		/* use visual bell */
+	if (flash_screen && *flash_screen) {
+	    bellSequence = flash_screen;	/* use visual bell */
 	}
 	screenInitd = 1;
 	screenStopped = 0;		/* Not stopped */

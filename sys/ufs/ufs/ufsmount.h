@@ -1,3 +1,4 @@
+/*	$OpenBSD: ufsmount.h,v 1.8 2002/02/22 20:51:24 drahn Exp $	*/
 /*	$NetBSD: ufsmount.h,v 1.4 1994/12/21 20:00:23 mycroft Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,11 +48,14 @@ struct ufsmount {
 	struct	vnode *um_devvp;		/* block device mounted vnode */
 
 	union {					/* pointer to superblock */
-		struct	lfs *lfs;		/* LFS */
 		struct	fs *fs;			/* FFS */
+		struct	lfs *lfs;		/* LFS */
+		struct  m_ext2fs *e2fs;		/* EXT2FS */
 	} ufsmount_u;
 #define	um_fs	ufsmount_u.fs
 #define	um_lfs	ufsmount_u.lfs
+#define um_e2fs    ufsmount_u.e2fs
+#define um_e2fsb ufsmount_u.e2fs->s_es
 
 	struct	vnode *um_quotas[MAXQUOTAS];	/* pointer to quota files */
 	struct	ucred *um_cred[MAXQUOTAS];	/* quota file access cred */
@@ -67,6 +67,7 @@ struct ufsmount {
 	char	um_qflags[MAXQUOTAS];		/* quota specific flags */
 	struct	netexport um_export;		/* export information */
 	u_int64_t um_savedmaxfilesize;		/* XXX - limit maxfilesize */
+	struct  ufs_extattr_per_mount um_extattr;       /* extended attrs */
 };
 
 /*

@@ -1,5 +1,3 @@
-/*	$NetBSD: scandir.c,v 1.6 1995/02/25 08:51:42 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)scandir.c	8.3 (Berkeley) 1/2/94";
-#else
-static char rcsid[] = "$NetBSD: scandir.c,v 1.6 1995/02/25 08:51:42 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: scandir.c,v 1.6 2002/07/30 22:47:22 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -51,6 +41,8 @@ static char rcsid[] = "$NetBSD: scandir.c,v 1.6 1995/02/25 08:51:42 cgd Exp $";
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -69,8 +61,8 @@ int
 scandir(dirname, namelist, select, dcomp)
 	const char *dirname;
 	struct dirent ***namelist;
-	int (*select) __P((struct dirent *));
-	int (*dcomp) __P((const void *, const void *));
+	int (*select)(struct dirent *);
+	int (*dcomp)(const void *, const void *);
 {
 	register struct dirent *d, *p, **names;
 	register size_t nitems;
@@ -88,6 +80,10 @@ scandir(dirname, namelist, select, dcomp)
 	 * and dividing it by a multiple of the minimum size entry. 
 	 */
 	arraysz = (stb.st_size / 24);
+	if (arraysz > SIZE_T_MAX / sizeof(struct dirent *)) {
+		errno = ENOMEM;
+		return(-1);
+	}
 	names = (struct dirent **)malloc(arraysz * sizeof(struct dirent *));
 	if (names == NULL)
 		return(-1);
@@ -103,6 +99,7 @@ scandir(dirname, namelist, select, dcomp)
 		if (p == NULL)
 			return(-1);
 		p->d_ino = d->d_ino;
+		p->d_type = d->d_type;
 		p->d_reclen = d->d_reclen;
 		p->d_namlen = d->d_namlen;
 		bcopy(d->d_name, p->d_name, p->d_namlen + 1);
@@ -111,13 +108,19 @@ scandir(dirname, namelist, select, dcomp)
 		 * realloc the maximum size.
 		 */
 		if (++nitems >= arraysz) {
+			register struct dirent **nnames;
+			
 			if (fstat(dirp->dd_fd, &stb) < 0)
 				return(-1);	/* just might have grown */
 			arraysz = stb.st_size / 12;
-			names = (struct dirent **)realloc((char *)names,
+			nnames = (struct dirent **)realloc((char *)names,
 				arraysz * sizeof(struct dirent *));
-			if (names == NULL)
+			if (nnames == NULL) {
+				if (names)
+					free(names);
 				return(-1);
+			}
+			names = nnames;
 		}
 		names[nitems-1] = p;
 	}

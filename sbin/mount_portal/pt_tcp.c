@@ -1,8 +1,10 @@
+/*	$OpenBSD: pt_tcp.c,v 1.7 2003/06/02 20:06:16 millert Exp $	*/
 /*	$NetBSD: pt_tcp.c,v 1.9 1995/05/21 15:33:22 mycroft Exp $	*/
 
 /*
- * Copyright (c) 1992, 1993
+ * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * All rights reserved.
  *
  * This code is derived from software donated to Berkeley by
  * Jan-Simon Pendry.
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +34,14 @@
  * SUCH DAMAGE.
  *
  *	from: Id: pt_tcp.c,v 1.1 1992/05/25 21:43:09 jsp Exp
- *	@(#)pt_tcp.c	8.3 (Berkeley) 3/27/94
+ *	@(#)pt_tcp.c	8.5 (Berkeley) 4/28/95
  */
 
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <strings.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/syslog.h>
@@ -61,12 +59,8 @@
  * Some trailing suffix values have special meanings.
  * An unrecognised suffix is an error.
  */
-int portal_tcp(pcr, key, v, kso, fdp)
-struct portal_cred *pcr;
-char *key;
-char **v;
-int kso;
-int *fdp;
+int
+portal_tcp(struct portal_cred *pcr, char *key, char **v, int kso, int *fdp)
 {
 	char host[MAXHOSTNAMELEN];
 	char port[MAXHOSTNAMELEN];
@@ -85,7 +79,7 @@ int *fdp;
 	if (q == 0 || q - p >= sizeof(host))
 		return (EINVAL);
 	*q = '\0';
-	strcpy(host, p);
+	(void)strlcpy(host, p, sizeof(host));
 	p = q + 1;
 
 	q = strchr(p, '/');
@@ -93,7 +87,7 @@ int *fdp;
 		*q = '\0';
 	if (strlen(p) >= sizeof(port))
 		return (EINVAL);
-	strcpy(port, p);
+	(void)strlcpy(port, p, sizeof(port));
 	if (q) {
 		p = q + 1;
 		if (strcmp(p, "priv") == 0) {
@@ -110,7 +104,7 @@ int *fdp;
 		hp = gethostbyname(host);
 		if (hp == 0)
 			return (EINVAL);
-		ipp = (struct in_addr **) hp->h_addr_list;
+		ipp = (struct in_addr **)hp->h_addr_list;
 	} else {
 		ip[0] = &ina;
 		ip[1] = 0;
@@ -121,12 +115,13 @@ int *fdp;
 	if (sp != 0)
 		s_port = sp->s_port;
 	else {
-		s_port = htons(atoi(port));
-		if (s_port == 0)
+		s_port = strtoul(port, &p, 0);
+		if (s_port == 0 || *p != '\0')
 			return (EINVAL);
+		s_port = htons(s_port);
 	}
 
-	memset(&sain, 0, sizeof(sain));
+	(void)memset(&sain, 0, sizeof(sain));
 	sain.sin_len = sizeof(sain);
 	sain.sin_family = AF_INET;
 	sain.sin_port = s_port;
@@ -135,7 +130,7 @@ int *fdp;
 		int so;
 
 		if (priv)
-			so = rresvport((int *) 0);
+			so = rresvport(NULL);
 		else
 			so = socket(AF_INET, SOCK_STREAM, 0);
 		if (so < 0) {
@@ -148,7 +143,7 @@ int *fdp;
 			*fdp = so;
 			return (0);
 		}
-		(void) close(so);
+		(void)close(so);
 
 		ipp++;
 	}

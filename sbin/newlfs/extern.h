@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.5 2002/02/17 19:42:28 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1995/03/18 14:58:48 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,16 +29,16 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)extern.h	8.1 (Berkeley) 6/5/93
+ *	@(#)extern.h	8.2 (Berkeley) 5/24/95
  */
 
-u_long	cksum __P((void *, size_t));
-u_short	dkcksum __P((struct disklabel *));
-void	fatal __P((const char *fmt, ...));
-u_int	log2 __P((u_int));
-int	make_lfs
-	    __P((int, struct disklabel *, struct partition *, int, int, int));
-int	mkfs __P((struct partition *, char *, int, int));
+u_long	cksum(void *, size_t);
+u_short	dkcksum(struct disklabel *);
+void	fatal(const char *fmt, ...);
+u_int	log2(u_int);
+int	make_lfs(int, struct disklabel *, struct partition *, int,
+	    int, int, int);
+int	mkfs(struct partition *, char *, int, int);
 
 extern char	*progname;
 extern char	*special;

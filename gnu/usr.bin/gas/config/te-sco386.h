@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Machine specific defines for the SCO Unix V.3.2 ODT */
 #define scounix
 

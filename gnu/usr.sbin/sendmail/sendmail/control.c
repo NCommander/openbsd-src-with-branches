@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -10,7 +10,9 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: control.c,v 8.110 2001/08/27 16:59:13 ca Exp $")
+SM_RCSID("@(#)$Sendmail: control.c,v 8.118.4.3 2002/11/14 00:15:56 ca Exp $")
+
+#include <sm/fdset.h>
 
 /* values for cmd_code */
 #define CMDERROR	0	/* bad command */
@@ -46,7 +48,7 @@ static struct cmd	CmdTab[] =
 
 int ControlSocket = -1;
 
-/*
+/*
 **  OPENCONTROLSOCKET -- create/open the daemon control named socket
 **
 **	Creates and opens a named socket for external control over
@@ -90,6 +92,12 @@ opencontrolsocket()
 	ControlSocket = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (ControlSocket < 0)
 		return -1;
+	if (SM_FD_SETSIZE > 0 && ControlSocket >= SM_FD_SETSIZE)
+	{
+		clrcontrol();
+		errno = EINVAL;
+		return -1;
+	}
 
 	(void) unlink(ControlSocketName);
 	memset(&controladdr, '\0', sizeof controladdr);
@@ -150,7 +158,7 @@ opencontrolsocket()
 # endif /* NETUNIX */
 	return 0;
 }
-/*
+/*
 **  CLOSECONTROLSOCKET -- close the daemon control named socket
 **
 **	Close a named socket.
@@ -198,7 +206,7 @@ closecontrolsocket(fullclose)
 # endif /* NETUNIX */
 	return;
 }
-/*
+/*
 **  CLRCONTROL -- reset the control connection
 **
 **	Parameters:
@@ -220,7 +228,7 @@ clrcontrol()
 	ControlSocket = -1;
 # endif /* NETUNIX */
 }
-/*
+/*
 **  CONTROL_COMMAND -- read and process command from named socket
 **
 **	Read and process the command from the opened socket.
@@ -283,8 +291,8 @@ control_command(sock, e)
 				 TimeOuts.to_control);
 	}
 
-	s = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *) sock, SM_IO_RDWR,
-		       NULL);
+	s = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *) &sock,
+		       SM_IO_RDWR, NULL);
 	if (s == NULL)
 	{
 		int save_errno = errno;
@@ -369,7 +377,9 @@ control_command(sock, e)
 			**  precision (if bsize == 512)
 			*/
 
-			free = (long)((double) free * ((double) bsize / 1024));
+			if (free > 0)
+				free = (long)((double) free *
+					      ((double) bsize / 1024));
 
 			(void) sm_io_fprintf(s, SM_TIME_DEFAULT,
 					     "%d/%d/%ld/%d\r\n",

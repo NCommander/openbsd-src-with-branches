@@ -1,3 +1,4 @@
+/*	$OpenBSD: var.c,v 1.5 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: var.c,v 1.4 1995/09/28 10:35:01 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)var.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: var.c,v 1.4 1995/09/28 10:35:01 tls Exp $";
+static char rcsid[] = "$OpenBSD: var.c,v 1.5 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,6 +45,7 @@ static char rcsid[] = "$NetBSD: var.c,v 1.4 1995/09/28 10:35:01 tls Exp $";
 #include "var.h"
 #include "string.h"
 #include <stdlib.h>
+#include <string.h>
 
 struct var *
 var_set1(head, name, v)
@@ -55,8 +53,8 @@ struct var **head;
 char *name;
 struct value *v;
 {
-	register struct var **p;
-	register struct var *r;
+	struct var **p;
+	struct var *r;
 	struct value val;
 
 	/* do this first, easier to recover */
@@ -115,8 +113,8 @@ var_unset1(head, name)
 struct var **head;
 char *name;
 {
-	register struct var **p;
-	register struct var *r;
+	struct var **p;
+	struct var *r;
 
 	if (*(p = var_lookup1(head, name)) == 0)
 		return -1;
@@ -133,10 +131,10 @@ char *name;
 
 struct var **
 var_lookup1(p, name)
-register struct var **p;
-register char *name;
+struct var **p;
+char *name;
 {
-	register cmp;
+	int cmp;
 
 	while (*p != 0) {
 		if ((cmp = strcmp(name, (*p)->r_name)) < 0)
@@ -150,7 +148,7 @@ register char *name;
 }
 
 var_walk1(r, func, a)
-register struct var *r;
+struct var *r;
 int (*func)();
 long a;
 {

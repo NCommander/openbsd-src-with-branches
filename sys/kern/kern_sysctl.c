@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_sysctl.c,v 1.12 1995/10/07 06:28:27 mycroft Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.88 2003/08/23 19:21:15 deraadt Exp $	*/
+/*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,6 +44,7 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/proc.h>
+#include <sys/resourcevar.h>
 #include <sys/file.h>
 #include <sys/vnode.h>
 #include <sys/unistd.h>
@@ -54,30 +52,68 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/disklabel.h>
-#include <vm/vm.h>
+#include <sys/disk.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
+#include <sys/msgbuf.h>
+#include <sys/dkstat.h>
+#include <sys/vmmeter.h>
+#include <sys/namei.h>
+#include <sys/exec.h>
+#include <sys/mbuf.h>
+#include <sys/sensors.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
+#include <dev/rndvar.h>
 
-sysctlfn kern_sysctl;
-sysctlfn hw_sysctl;
-#ifdef DEBUG
-sysctlfn debug_sysctl;
+#ifdef DDB
+#include <ddb/db_var.h>
 #endif
-extern sysctlfn vm_sysctl;
-extern sysctlfn fs_sysctl;
-extern sysctlfn net_sysctl;
-extern sysctlfn cpu_sysctl;
+
+#ifdef SYSVMSG
+#include <sys/msg.h>
+#endif
+#ifdef SYSVSEM
+#include <sys/sem.h>
+#endif
+#ifdef SYSVSHM
+#include <sys/shm.h>
+#endif
+
+extern struct forkstat forkstat;
+extern struct nchstats nchstats;
+extern int nselcoll, fscale;
+extern struct disklist_head disklist;
+extern fixpt_t ccpu;
+extern  long numvnodes;
+
+int sysctl_diskinit(int, struct proc *);
+int sysctl_proc_args(int *, u_int, void *, size_t *, struct proc *);
+int sysctl_intrcnt(int *, u_int, void *, size_t *);
+int sysctl_sensors(int *, u_int, void *, size_t *, void *, size_t);
+int sysctl_emul(int *, u_int, void *, size_t *, void *, size_t);
 
 /*
- * Locking and stats
+ * Lock to avoid too many processes vslocking a large amount of memory
+ * at the same time.
  */
-static struct sysctl_lock {
-	int	sl_lock;
-	int	sl_want;
-	int	sl_locked;
-} memlock;
+struct lock sysctl_lock, sysctl_disklock;
+
+#if defined(KMEMSTATS) || defined(DIAGNOSTIC) || defined(FFS_SOFTUPDATES)
+struct lock sysctl_kmemlock;
+#endif
+
+void
+sysctl_init()
+{
+	lockinit(&sysctl_lock, PLOCK|PCATCH, "sysctl", 0, 0);
+	lockinit(&sysctl_disklock, PLOCK|PCATCH, "sysctl_disklock", 0, 0);
+
+#if defined(KMEMSTATS) || defined(DIAGNOSTIC) || defined(FFS_SOFTUPDATES)
+	lockinit(&sysctl_kmemlock, PLOCK|PCATCH, "sysctl_kmemlock", 0, 0);
+#endif
+}
 
 int
 sys___sysctl(p, v, retval)
@@ -94,48 +130,55 @@ sys___sysctl(p, v, retval)
 		syscallarg(size_t) newlen;
 	} */ *uap = v;
 	int error, dolock = 1;
-	size_t savelen, oldlen = 0;
+	size_t savelen = 0, oldlen = 0;
 	sysctlfn *fn;
 	int name[CTL_MAXNAME];
 
 	if (SCARG(uap, new) != NULL &&
-	    (error = suser(p->p_ucred, &p->p_acflag)))
+	    (error = suser(p, 0)))
 		return (error);
 	/*
 	 * all top-level sysctl names are non-terminal
 	 */
 	if (SCARG(uap, namelen) > CTL_MAXNAME || SCARG(uap, namelen) < 2)
 		return (EINVAL);
-	if (error =
-	    copyin(SCARG(uap, name), &name, SCARG(uap, namelen) * sizeof(int)))
+	error = copyin(SCARG(uap, name), name,
+		       SCARG(uap, namelen) * sizeof(int));
+	if (error)
 		return (error);
 
 	switch (name[0]) {
 	case CTL_KERN:
 		fn = kern_sysctl;
-		if (name[2] != KERN_VNODE)	/* XXX */
+		if (name[2] == KERN_VNODE)	/* XXX */
 			dolock = 0;
 		break;
 	case CTL_HW:
 		fn = hw_sysctl;
 		break;
 	case CTL_VM:
-		fn = vm_sysctl;
+		fn = uvm_sysctl;
 		break;
 	case CTL_NET:
 		fn = net_sysctl;
 		break;
-#ifdef notyet
 	case CTL_FS:
 		fn = fs_sysctl;
 		break;
-#endif
+	case CTL_VFS:
+		fn = vfs_sysctl;
+		break;
 	case CTL_MACHDEP:
 		fn = cpu_sysctl;
 		break;
 #ifdef DEBUG
 	case CTL_DEBUG:
 		fn = debug_sysctl;
+		break;
+#endif
+#ifdef DDB
+	case CTL_DDB:
+		fn = ddb_sysctl;
 		break;
 #endif
 	default:
@@ -146,35 +189,30 @@ sys___sysctl(p, v, retval)
 	    (error = copyin(SCARG(uap, oldlenp), &oldlen, sizeof(oldlen))))
 		return (error);
 	if (SCARG(uap, old) != NULL) {
-		if (!useracc(SCARG(uap, old), oldlen, B_WRITE))
-			return (EFAULT);
-		while (memlock.sl_lock) {
-			memlock.sl_want = 1;
-			sleep((caddr_t)&memlock, PRIBIO+1);
-			memlock.sl_locked++;
+		if ((error = lockmgr(&sysctl_lock, LK_EXCLUSIVE, NULL, p)) != 0)
+			return (error);
+		if (dolock) {
+			error = uvm_vslock(p, SCARG(uap, old), oldlen,
+			    VM_PROT_READ|VM_PROT_WRITE);
+			if (error) {
+				lockmgr(&sysctl_lock, LK_RELEASE, NULL, p);
+				return (error);
+			}
 		}
-		memlock.sl_lock = 1;
-		if (dolock)
-			vslock(SCARG(uap, old), oldlen);
 		savelen = oldlen;
 	}
-	error = (*fn)(name + 1, SCARG(uap, namelen) - 1, SCARG(uap, old),
+	error = (*fn)(&name[1], SCARG(uap, namelen) - 1, SCARG(uap, old),
 	    &oldlen, SCARG(uap, new), SCARG(uap, newlen), p);
 	if (SCARG(uap, old) != NULL) {
 		if (dolock)
-			vsunlock(SCARG(uap, old), savelen, B_WRITE);
-		memlock.sl_lock = 0;
-		if (memlock.sl_want) {
-			memlock.sl_want = 0;
-			wakeup((caddr_t)&memlock);
-		}
+			uvm_vsunlock(p, SCARG(uap, old), savelen);
+		lockmgr(&sysctl_lock, LK_RELEASE, NULL, p);
 	}
 	if (error)
 		return (error);
 	if (SCARG(uap, oldlenp))
 		error = copyout(&oldlen, SCARG(uap, oldlenp), sizeof(oldlen));
-	*retval = oldlen;
-	return (0);
+	return (error);
 }
 
 /*
@@ -185,6 +223,8 @@ int hostnamelen;
 char domainname[MAXHOSTNAMELEN];
 int domainnamelen;
 long hostid;
+char *disknames = NULL;
+struct diskstats *diskstats = NULL;
 #ifdef INSECURE
 int securelevel = -1;
 #else
@@ -194,6 +234,7 @@ int securelevel;
 /*
  * kernel related system variables.
  */
+int
 kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	int *name;
 	u_int namelen;
@@ -203,12 +244,37 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	size_t newlen;
 	struct proc *p;
 {
-	int error, level, inthostid;
-	extern char ostype[], osrelease[], version[];
+	int error, level, inthostid, oldsgap;
+	extern int somaxconn, sominconn;
+	extern int usermount, nosuidcoredump;
+	extern long cp_time[CPUSTATES];
+	extern int stackgap_random;
+#ifdef CRYPTO
+	extern int usercrypto;
+	extern int userasymcrypto;
+	extern int cryptodevallowsoft;
+#endif
 
-	/* all sysctl names at this level are terminal */
-	if (namelen != 1 && !(name[0] == KERN_PROC || name[0] == KERN_PROF))
-		return (ENOTDIR);		/* overloaded */
+	/* all sysctl names at this level are terminal except a ton of them */
+	if (namelen != 1) {
+		switch (name[0]) {
+		case KERN_PROC:
+		case KERN_PROF:
+		case KERN_MALLOCSTATS:
+		case KERN_TTY:
+		case KERN_POOL:
+		case KERN_PROC_ARGS:
+		case KERN_SYSVIPC_INFO:
+		case KERN_SEMINFO:
+		case KERN_SHMINFO:
+		case KERN_INTRCNT:
+		case KERN_WATCHDOG:
+		case KERN_EMUL:
+			break;
+		default:
+			return (ENOTDIR);	/* overloaded */
+		}
+	}
 
 	switch (name[0]) {
 	case KERN_OSTYPE:
@@ -216,7 +282,9 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	case KERN_OSRELEASE:
 		return (sysctl_rdstring(oldp, oldlenp, newp, osrelease));
 	case KERN_OSREV:
-		return (sysctl_rdint(oldp, oldlenp, newp, BSD));
+		return (sysctl_rdint(oldp, oldlenp, newp, OpenBSD));
+	case KERN_OSVERSION:
+		return (sysctl_rdstring(oldp, oldlenp, newp, osversion));
 	case KERN_VERSION:
 		return (sysctl_rdstring(oldp, oldlenp, newp, version));
 	case KERN_MAXVNODES:
@@ -225,25 +293,34 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return (sysctl_int(oldp, oldlenp, newp, newlen, &maxproc));
 	case KERN_MAXFILES:
 		return (sysctl_int(oldp, oldlenp, newp, newlen, &maxfiles));
+	case KERN_NFILES:
+		return (sysctl_rdint(oldp, oldlenp, newp, nfiles));
+	case KERN_TTYCOUNT:
+		return (sysctl_rdint(oldp, oldlenp, newp, tty_count));
+	case KERN_NUMVNODES:
+		return (sysctl_rdint(oldp, oldlenp, newp, numvnodes));
 	case KERN_ARGMAX:
 		return (sysctl_rdint(oldp, oldlenp, newp, ARG_MAX));
+	case KERN_NSELCOLL:
+		return (sysctl_rdint(oldp, oldlenp, newp, nselcoll));
 	case KERN_SECURELVL:
 		level = securelevel;
 		if ((error = sysctl_int(oldp, oldlenp, newp, newlen, &level)) ||
 		    newp == NULL)
 			return (error);
-		if (level < securelevel && p->p_pid != 1)
+		if ((securelevel > 0 || level < -1) &&
+		    level < securelevel && p->p_pid != 1)
 			return (EPERM);
 		securelevel = level;
 		return (0);
 	case KERN_HOSTNAME:
-		error = sysctl_string(oldp, oldlenp, newp, newlen,
+		error = sysctl_tstring(oldp, oldlenp, newp, newlen,
 		    hostname, sizeof(hostname));
 		if (newp && !error)
 			hostnamelen = newlen;
 		return (error);
 	case KERN_DOMAINNAME:
-		error = sysctl_string(oldp, oldlenp, newp, newlen,
+		error = sysctl_tstring(oldp, oldlenp, newp, newlen,
 		    domainname, sizeof(domainname));
 		if (newp && !error)
 			domainnamelen = newlen;
@@ -259,11 +336,17 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return (sysctl_rdstruct(oldp, oldlenp, newp, &boottime,
 		    sizeof(struct timeval)));
 	case KERN_VNODE:
-		return (sysctl_vnode(oldp, oldlenp));
+		return (sysctl_vnode(oldp, oldlenp, p));
 	case KERN_PROC:
 		return (sysctl_doproc(name + 1, namelen - 1, oldp, oldlenp));
+	case KERN_PROC_ARGS:
+		return (sysctl_proc_args(name + 1, namelen - 1, oldp, oldlenp,
+		     p));
 	case KERN_FILE:
 		return (sysctl_file(oldp, oldlenp));
+	case KERN_MBSTAT:
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &mbstat,
+		    sizeof(mbstat)));
 #ifdef GPROF
 	case KERN_PROF:
 		return (sysctl_doprof(name + 1, namelen - 1, oldp, oldlenp,
@@ -285,6 +368,125 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return (sysctl_rdint(oldp, oldlenp, newp, MAXPARTITIONS));
 	case KERN_RAWPARTITION:
 		return (sysctl_rdint(oldp, oldlenp, newp, RAW_PART));
+	case KERN_SOMAXCONN:
+		return (sysctl_int(oldp, oldlenp, newp, newlen, &somaxconn));
+	case KERN_SOMINCONN:
+		return (sysctl_int(oldp, oldlenp, newp, newlen, &sominconn));
+	case KERN_USERMOUNT:
+		return (sysctl_int(oldp, oldlenp, newp, newlen, &usermount));
+	case KERN_RND:
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &rndstats,
+		    sizeof(rndstats)));
+	case KERN_ARND:
+		return (sysctl_rdint(oldp, oldlenp, newp, arc4random()));
+	case KERN_NOSUIDCOREDUMP:
+		return (sysctl_int(oldp, oldlenp, newp, newlen, &nosuidcoredump));
+	case KERN_FSYNC:
+		return (sysctl_rdint(oldp, oldlenp, newp, 1));
+	case KERN_SYSVMSG:
+#ifdef SYSVMSG
+		return (sysctl_rdint(oldp, oldlenp, newp, 1));
+#else
+		return (sysctl_rdint(oldp, oldlenp, newp, 0));
+#endif
+	case KERN_SYSVSEM:
+#ifdef SYSVSEM
+		return (sysctl_rdint(oldp, oldlenp, newp, 1));
+#else
+		return (sysctl_rdint(oldp, oldlenp, newp, 0));
+#endif
+	case KERN_SYSVSHM:
+#ifdef SYSVSHM
+		return (sysctl_rdint(oldp, oldlenp, newp, 1));
+#else
+		return (sysctl_rdint(oldp, oldlenp, newp, 0));
+#endif
+	case KERN_MSGBUFSIZE:
+		/*
+		 * deal with cases where the message buffer has
+		 * become corrupted.
+		 */
+		if (!msgbufp || msgbufp->msg_magic != MSG_MAGIC)
+			return (ENXIO);
+		return (sysctl_rdint(oldp, oldlenp, newp, msgbufp->msg_bufs));
+	case KERN_MSGBUF:
+		/* see note above */
+		if (!msgbufp || msgbufp->msg_magic != MSG_MAGIC)
+			return (ENXIO);
+		return (sysctl_rdstruct(oldp, oldlenp, newp, msgbufp,
+		    msgbufp->msg_bufs + offsetof(struct msgbuf, msg_bufc)));
+	case KERN_MALLOCSTATS:
+		return (sysctl_malloc(name + 1, namelen - 1, oldp, oldlenp,
+		    newp, newlen, p));
+	case KERN_CPTIME:
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &cp_time,
+		    sizeof(cp_time)));
+	case KERN_NCHSTATS:
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &nchstats,
+		    sizeof(struct nchstats)));
+	case KERN_FORKSTAT:
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &forkstat,
+		    sizeof(struct forkstat)));
+	case KERN_TTY:
+		return (sysctl_tty(name + 1, namelen - 1, oldp, oldlenp,
+		    newp, newlen));
+	case KERN_FSCALE:
+		return (sysctl_rdint(oldp, oldlenp, newp, fscale));
+	case KERN_CCPU:
+		return (sysctl_rdint(oldp, oldlenp, newp, ccpu));
+	case KERN_NPROCS:
+		return (sysctl_rdint(oldp, oldlenp, newp, nprocs));
+	case KERN_POOL:
+		return (sysctl_dopool(name + 1, namelen - 1, oldp, oldlenp));
+	case KERN_STACKGAPRANDOM:
+		oldsgap = stackgap_random;
+
+		error = sysctl_int(oldp, oldlenp, newp, newlen, &stackgap_random);
+		/*
+		 * Safety harness.
+		 */
+		if ((stackgap_random < ALIGNBYTES && stackgap_random != 0) ||
+		    !powerof2(stackgap_random) ||
+		    stackgap_random > PAGE_SIZE * 2) {
+			stackgap_random = oldsgap;
+			return (EINVAL);
+		}
+		return (error);
+#if defined(SYSVMSG) || defined(SYSVSEM) || defined(SYSVSHM)  
+	case KERN_SYSVIPC_INFO:
+		return (sysctl_sysvipc(name + 1, namelen - 1, oldp, oldlenp));
+#endif
+#ifdef CRYPTO
+	case KERN_USERCRYPTO:
+		return (sysctl_int(oldp, oldlenp, newp, newlen, &usercrypto));
+	case KERN_USERASYMCRYPTO:
+		return (sysctl_int(oldp, oldlenp, newp, newlen,
+			    &userasymcrypto));
+	case KERN_CRYPTODEVALLOWSOFT:
+		return (sysctl_int(oldp, oldlenp, newp, newlen,
+			    &cryptodevallowsoft));
+#endif
+	case KERN_SPLASSERT:
+		return (sysctl_int(oldp, oldlenp, newp, newlen,
+		    &splassert_ctl));
+#ifdef SYSVSEM
+	case KERN_SEMINFO:
+		return (sysctl_sysvsem(name + 1, namelen - 1, oldp, oldlenp,
+		    newp, newlen));
+#endif
+#ifdef SYSVSHM
+	case KERN_SHMINFO:
+		return (sysctl_sysvshm(name + 1, namelen - 1, oldp, oldlenp,
+		    newp, newlen));
+#endif
+	case KERN_INTRCNT:
+		return (sysctl_intrcnt(name + 1, namelen - 1, oldp, oldlenp));
+	case KERN_WATCHDOG:
+		return (sysctl_wdog(name + 1, namelen - 1, oldp, oldlenp,
+		    newp, newlen));
+	case KERN_EMUL:
+		return (sysctl_emul(name + 1, namelen - 1, oldp, oldlenp,
+		    newp, newlen));
 	default:
 		return (EOPNOTSUPP);
 	}
@@ -294,6 +496,7 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 /*
  * hardware related system variables.
  */
+int
 hw_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	int *name;
 	u_int namelen;
@@ -304,9 +507,10 @@ hw_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	struct proc *p;
 {
 	extern char machine[], cpu_model[];
+	int err;
 
-	/* all sysctl names at this level are terminal */
-	if (namelen != 1)
+	/* all sysctl names at this level except sensors are terminal */
+	if (name[0] != HW_SENSORS && namelen != 1)
 		return (ENOTDIR);		/* overloaded */
 
 	switch (name[0]) {
@@ -322,9 +526,29 @@ hw_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return (sysctl_rdint(oldp, oldlenp, newp, ctob(physmem)));
 	case HW_USERMEM:
 		return (sysctl_rdint(oldp, oldlenp, newp,
-		    ctob(physmem - cnt.v_wire_count)));
+		    ctob(physmem - uvmexp.wired)));
 	case HW_PAGESIZE:
 		return (sysctl_rdint(oldp, oldlenp, newp, PAGE_SIZE));
+	case HW_DISKNAMES:
+		err = sysctl_diskinit(0, p);
+		if (err)
+			return err;
+		if (disknames)
+			return (sysctl_rdstring(oldp, oldlenp, newp,
+			    disknames));
+		else
+			return (sysctl_rdstring(oldp, oldlenp, newp, ""));
+	case HW_DISKSTATS:
+		err = sysctl_diskinit(1, p);
+		if (err)
+			return err;
+		return (sysctl_rdstruct(oldp, oldlenp, newp, diskstats,
+		    disk_count * sizeof(struct diskstats)));
+	case HW_DISKCOUNT:
+		return (sysctl_rdint(oldp, oldlenp, newp, disk_count));
+	case HW_SENSORS:
+		return (sysctl_sensors(name + 1, namelen - 1, oldp, oldlenp,
+		    newp, newlen));
 	default:
 		return (EOPNOTSUPP);
 	}
@@ -335,7 +559,8 @@ hw_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 /*
  * Debugging related system variables.
  */
-struct ctldebug debug0, debug1, debug2, debug3, debug4;
+extern struct ctldebug debug0, debug1;
+struct ctldebug debug2, debug3, debug4;
 struct ctldebug debug5, debug6, debug7, debug8, debug9;
 struct ctldebug debug10, debug11, debug12, debug13, debug14;
 struct ctldebug debug15, debug16, debug17, debug18, debug19;
@@ -379,6 +604,7 @@ debug_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
  * Validate parameters and get old / set new parameters
  * for an integer-valued sysctl function.
  */
+int
 sysctl_int(oldp, oldlenp, newp, newlen, valp)
 	void *oldp;
 	size_t *oldlenp;
@@ -403,6 +629,7 @@ sysctl_int(oldp, oldlenp, newp, newlen, valp)
 /*
  * As above, but read-only.
  */
+int
 sysctl_rdint(oldp, oldlenp, newp, val)
 	void *oldp;
 	size_t *oldlenp;
@@ -423,8 +650,57 @@ sysctl_rdint(oldp, oldlenp, newp, val)
 
 /*
  * Validate parameters and get old / set new parameters
+ * for an integer-valued sysctl function.
+ */
+int
+sysctl_quad(oldp, oldlenp, newp, newlen, valp)
+	void *oldp;
+	size_t *oldlenp;
+	void *newp;
+	size_t newlen;
+	int64_t *valp;
+{
+	int error = 0;
+
+	if (oldp && *oldlenp < sizeof(int64_t))
+		return (ENOMEM);
+	if (newp && newlen != sizeof(int64_t))
+		return (EINVAL);
+	*oldlenp = sizeof(int64_t);
+	if (oldp)
+		error = copyout(valp, oldp, sizeof(int64_t));
+	if (error == 0 && newp)
+		error = copyin(newp, valp, sizeof(int64_t));
+	return (error);
+}
+
+/*
+ * As above, but read-only.
+ */
+int
+sysctl_rdquad(oldp, oldlenp, newp, val)
+	void *oldp;
+	size_t *oldlenp;
+	void *newp;
+	int64_t val;
+{
+	int error = 0;
+
+	if (oldp && *oldlenp < sizeof(int64_t))
+		return (ENOMEM);
+	if (newp)
+		return (EPERM);
+	*oldlenp = sizeof(int64_t);
+	if (oldp)
+		error = copyout((caddr_t)&val, oldp, sizeof(int64_t));
+	return (error);
+}
+
+/*
+ * Validate parameters and get old / set new parameters
  * for a string-valued sysctl function.
  */
+int
 sysctl_string(oldp, oldlenp, newp, newlen, str, maxlen)
 	void *oldp;
 	size_t *oldlenp;
@@ -433,16 +709,52 @@ sysctl_string(oldp, oldlenp, newp, newlen, str, maxlen)
 	char *str;
 	int maxlen;
 {
+	return sysctl__string(oldp, oldlenp, newp, newlen, str, maxlen, 0);
+}
+
+int
+sysctl_tstring(oldp, oldlenp, newp, newlen, str, maxlen)
+	void *oldp;
+	size_t *oldlenp;
+	void *newp;
+	size_t newlen;
+	char *str;
+	int maxlen;
+{
+	return sysctl__string(oldp, oldlenp, newp, newlen, str, maxlen, 1);
+}
+
+int
+sysctl__string(oldp, oldlenp, newp, newlen, str, maxlen, trunc)
+	void *oldp;
+	size_t *oldlenp;
+	void *newp;
+	size_t newlen;
+	char *str;
+	int maxlen;
+	int trunc;
+{
 	int len, error = 0;
+	char c;
 
 	len = strlen(str) + 1;
-	if (oldp && *oldlenp < len)
-		return (ENOMEM);
+	if (oldp && *oldlenp < len) {
+		if (trunc == 0 || *oldlenp == 0)
+			return (ENOMEM);
+	}
 	if (newp && newlen >= maxlen)
 		return (EINVAL);
 	if (oldp) {
-		*oldlenp = len;
-		error = copyout(str, oldp, len);
+		if (trunc && *oldlenp < len) {
+			/* save & zap NUL terminator while copying */
+			c = str[*oldlenp-1];
+			str[*oldlenp-1] = '\0';
+			error = copyout(str, oldp, *oldlenp);
+			str[*oldlenp-1] = c;
+		} else {
+			*oldlenp = len;
+			error = copyout(str, oldp, len);
+		}
 	}
 	if (error == 0 && newp) {
 		error = copyin(newp, str, newlen);
@@ -454,11 +766,12 @@ sysctl_string(oldp, oldlenp, newp, newlen, str, maxlen)
 /*
  * As above, but read-only.
  */
+int
 sysctl_rdstring(oldp, oldlenp, newp, str)
 	void *oldp;
 	size_t *oldlenp;
 	void *newp;
-	char *str;
+	const char *str;
 {
 	int len, error = 0;
 
@@ -477,6 +790,7 @@ sysctl_rdstring(oldp, oldlenp, newp, str)
  * Validate parameters and get old / set new parameters
  * for a structure oriented sysctl function.
  */
+int
 sysctl_struct(oldp, oldlenp, newp, newlen, sp, len)
 	void *oldp;
 	size_t *oldlenp;
@@ -504,10 +818,12 @@ sysctl_struct(oldp, oldlenp, newp, newlen, sp, len)
  * Validate parameters and get old parameters
  * for a structure oriented sysctl function.
  */
+int
 sysctl_rdstruct(oldp, oldlenp, newp, sp, len)
 	void *oldp;
 	size_t *oldlenp;
-	void *newp, *sp;
+	void *newp;
+	const void *sp;
 	int len;
 {
 	int error = 0;
@@ -525,6 +841,7 @@ sysctl_rdstruct(oldp, oldlenp, newp, sp, len)
 /*
  * Get file structures.
  */
+int
 sysctl_file(where, sizep)
 	char *where;
 	size_t *sizep;
@@ -549,7 +866,8 @@ sysctl_file(where, sizep)
 		*sizep = 0;
 		return (0);
 	}
-	if (error = copyout((caddr_t)&filehead, where, sizeof(filehead)))
+	error = copyout((caddr_t)&filehead, where, sizeof(filehead));
+	if (error)
 		return (error);
 	buflen -= sizeof(filehead);
 	where += sizeof(filehead);
@@ -557,12 +875,13 @@ sysctl_file(where, sizep)
 	/*
 	 * followed by an array of file structures
 	 */
-	for (fp = filehead.lh_first; fp != 0; fp = fp->f_list.le_next) {
+	LIST_FOREACH(fp, &filehead, f_list) {
 		if (buflen < sizeof(struct file)) {
 			*sizep = where - start;
 			return (ENOMEM);
 		}
-		if (error = copyout((caddr_t)fp, where, sizeof (struct file)))
+		error = copyout((caddr_t)fp, where, sizeof (struct file));
+		if (error)
 			return (error);
 		buflen -= sizeof(struct file);
 		where += sizeof(struct file);
@@ -576,6 +895,7 @@ sysctl_file(where, sizep)
  */
 #define KERN_PROCSLOP	(5 * sizeof (struct kinfo_proc))
 
+int
 sysctl_doproc(name, namelen, where, sizep)
 	int *name;
 	u_int namelen;
@@ -590,12 +910,13 @@ sysctl_doproc(name, namelen, where, sizep)
 	struct eproc eproc;
 	int error = 0;
 
-	if (namelen != 2 && !(namelen == 1 && name[0] == KERN_PROC_ALL))
+	if (namelen != 2 && !(namelen == 1 &&
+	    (name[0] == KERN_PROC_ALL || name[0] == KERN_PROC_KTHREAD)))
 		return (EINVAL);
-	p = allproc.lh_first;
+	p = LIST_FIRST(&allproc);
 	doingzomb = 0;
 again:
-	for (; p != 0; p = p->p_list.le_next) {
+	for (; p != 0; p = LIST_NEXT(p, p_list)) {
 		/*
 		 * Skip embryonic processes.
 		 */
@@ -635,14 +956,21 @@ again:
 			if (p->p_cred->p_ruid != (uid_t)name[1])
 				continue;
 			break;
+
+		case KERN_PROC_ALL:
+			if (p->p_flag & P_SYSTEM)
+				continue;
+			break;
 		}
 		if (buflen >= sizeof(struct kinfo_proc)) {
 			fill_eproc(p, &eproc);
-			if (error = copyout((caddr_t)p, &dp->kp_proc,
-			    sizeof(struct proc)))
+			error = copyout((caddr_t)p, &dp->kp_proc,
+					sizeof(struct proc));
+			if (error)
 				return (error);
-			if (error = copyout((caddr_t)&eproc, &dp->kp_eproc,
-			    sizeof(eproc)))
+			error = copyout((caddr_t)&eproc, &dp->kp_eproc,
+					sizeof(eproc));
+			if (error)
 				return (error);
 			dp++;
 			buflen -= sizeof(struct kinfo_proc);
@@ -650,7 +978,7 @@ again:
 		needed += sizeof(struct kinfo_proc);
 	}
 	if (doingzomb == 0) {
-		p = zombproc.lh_first;
+		p = LIST_FIRST(&zombproc);
 		doingzomb++;
 		goto again;
 	}
@@ -669,34 +997,32 @@ again:
  * Fill in an eproc structure for the specified process.
  */
 void
-fill_eproc(p, ep)
-	register struct proc *p;
-	register struct eproc *ep;
+fill_eproc(struct proc *p, struct eproc *ep)
 {
-	register struct tty *tp;
+	struct tty *tp;
 
 	ep->e_paddr = p;
 	ep->e_sess = p->p_pgrp->pg_session;
 	ep->e_pcred = *p->p_cred;
 	ep->e_ucred = *p->p_ucred;
-	if (p->p_stat == SIDL || p->p_stat == SZOMB) {
+	if (p->p_stat == SIDL || P_ZOMBIE(p)) {
 		ep->e_vm.vm_rssize = 0;
 		ep->e_vm.vm_tsize = 0;
 		ep->e_vm.vm_dsize = 0;
 		ep->e_vm.vm_ssize = 0;
-		/* ep->e_vm.vm_pmap = XXX; */
+		bzero(&ep->e_pstats, sizeof(ep->e_pstats));
+		ep->e_pstats_valid = 0;
 	} else {
-		register struct vmspace *vm = p->p_vmspace;
+		struct vmspace *vm = p->p_vmspace;
 
-#ifdef pmap_resident_count
-		ep->e_vm.vm_rssize = pmap_resident_count(&vm->vm_pmap); /*XXX*/
-#else
-		ep->e_vm.vm_rssize = vm->vm_rssize;
-#endif
+		PHOLD(p);	/* need for pstats */
+		ep->e_vm.vm_rssize = vm_resident_count(vm);
 		ep->e_vm.vm_tsize = vm->vm_tsize;
 		ep->e_vm.vm_dsize = vm->vm_dsize;
 		ep->e_vm.vm_ssize = vm->vm_ssize;
-		ep->e_vm.vm_pmap = vm->vm_pmap;
+		ep->e_pstats = *p->p_stats;
+		ep->e_pstats_valid = 1;
+		PRELE(p);
 	}
 	if (p->p_pptr)
 		ep->e_ppid = p->p_pptr->p_pid;
@@ -714,9 +1040,517 @@ fill_eproc(p, ep)
 	ep->e_flag = ep->e_sess->s_ttyvp ? EPROC_CTTY : 0;
 	if (SESS_LEADER(p))
 		ep->e_flag |= EPROC_SLEADER;
-	if (p->p_wmesg)
-		strncpy(ep->e_wmesg, p->p_wmesg, WMESGLEN);
+	strncpy(ep->e_wmesg, p->p_wmesg ? p->p_wmesg : "", WMESGLEN);
+	ep->e_wmesg[WMESGLEN] = '\0';
 	ep->e_xsize = ep->e_xrssize = 0;
 	ep->e_xccount = ep->e_xswrss = 0;
+	strncpy(ep->e_login, ep->e_sess->s_login, MAXLOGNAME-1);
+	ep->e_login[MAXLOGNAME-1] = '\0';
+	strncpy(ep->e_emul, p->p_emul->e_name, EMULNAMELEN);
+	ep->e_emul[EMULNAMELEN] = '\0';
+	ep->e_maxrss = p->p_rlimit ? p->p_rlimit[RLIMIT_RSS].rlim_cur : 0;
 }
 
+int
+sysctl_proc_args(int *name, u_int namelen, void *oldp, size_t *oldlenp,
+    struct proc *cp)
+{
+	struct proc *vp;
+	pid_t pid;
+	int op;
+	struct ps_strings pss;
+	struct iovec iov;
+	struct uio uio;
+	int error;
+	size_t limit;
+	int cnt;
+	char **rargv, **vargv;		/* reader vs. victim */
+	char *rarg, *varg;
+	char *buf;
+
+	if (namelen > 2)
+		return (ENOTDIR);
+	if (namelen < 2)
+		return (EINVAL);
+
+	pid = name[0];
+	op = name[1];
+
+	switch (op) {
+	case KERN_PROC_ARGV:
+	case KERN_PROC_NARGV:
+	case KERN_PROC_ENV:
+	case KERN_PROC_NENV:
+		break;
+	default:
+		return (EOPNOTSUPP);
+	}
+
+	if ((vp = pfind(pid)) == NULL)
+		return (ESRCH);
+
+	if (P_ZOMBIE(vp) || (vp->p_flag & P_SYSTEM))
+		return (EINVAL);
+
+	/* Exiting - don't bother, it will be gone soon anyway */
+	if ((vp->p_flag & P_WEXIT))
+		return (ESRCH);
+
+	/* Execing - danger. */
+	if ((vp->p_flag & P_INEXEC))
+		return (EBUSY);
+
+	vp->p_vmspace->vm_refcnt++;	/* XXX */
+	buf = malloc(PAGE_SIZE, M_TEMP, M_WAITOK);
+
+	iov.iov_base = &pss;
+	iov.iov_len = sizeof(pss);
+	uio.uio_iov = &iov;
+	uio.uio_iovcnt = 1;	
+	uio.uio_offset = (off_t)PS_STRINGS;
+	uio.uio_resid = sizeof(pss);
+	uio.uio_segflg = UIO_SYSSPACE;
+	uio.uio_rw = UIO_READ;
+	uio.uio_procp = cp;
+
+	if ((error = uvm_io(&vp->p_vmspace->vm_map, &uio)) != 0)
+		goto out;
+
+	if (op == KERN_PROC_NARGV) {
+		error = sysctl_rdint(oldp, oldlenp, NULL, pss.ps_nargvstr);
+		goto out;
+	}
+	if (op == KERN_PROC_NENV) {
+		error = sysctl_rdint(oldp, oldlenp, NULL, pss.ps_nenvstr);
+		goto out;
+	}
+
+	if (op == KERN_PROC_ARGV) {
+		cnt = pss.ps_nargvstr;
+		vargv = pss.ps_argvstr;
+	} else {
+		cnt = pss.ps_nenvstr;
+		vargv = pss.ps_envstr;
+	}
+
+	/* -1 to have space for a terminating NUL */
+	limit = *oldlenp - 1;
+	*oldlenp = 0;
+
+	if (limit > 8 * PAGE_SIZE) {
+		/* Don't allow a denial of service. */
+		error = E2BIG;
+		goto out;
+	}
+
+	rargv = oldp;
+
+	/*
+	 * *oldlenp - number of bytes copied out into readers buffer.
+	 * limit - maximal number of bytes allowed into readers buffer.
+	 * rarg - pointer into readers buffer where next arg will be stored.
+	 * rargv - pointer into readers buffer where the next rarg pointer
+	 *  will be stored.
+	 * vargv - pointer into victim address space where the next argument
+	 *  will be read.
+	 */
+
+	/* space for cnt pointers and a NULL */
+	rarg = (char *)(rargv + cnt + 1);
+	*oldlenp += (cnt + 1) * sizeof(char **);
+
+	while (cnt > 0 && *oldlenp < limit) {
+		size_t len, vstrlen;
+
+		/* Write to readers argv */
+		if ((error = copyout(&rarg, rargv, sizeof(rarg))) != 0)
+			goto out;
+
+		/* read the victim argv */
+		iov.iov_base = &varg;
+		iov.iov_len = sizeof(varg);
+		uio.uio_iov = &iov;
+		uio.uio_iovcnt = 1;
+		uio.uio_offset = (off_t)(vaddr_t)vargv;
+		uio.uio_resid = sizeof(varg);
+		uio.uio_segflg = UIO_SYSSPACE;
+		uio.uio_rw = UIO_READ;
+		uio.uio_procp = cp;
+		if ((error = uvm_io(&vp->p_vmspace->vm_map, &uio)) != 0)
+			goto out;
+
+		if (varg == NULL)
+			break;
+
+		/*
+		 * read the victim arg. We must jump through hoops to avoid
+		 * crossing a page boundary too much and returning an error.
+		 */
+more:
+		len = PAGE_SIZE - (((vaddr_t)varg) & PAGE_MASK);
+		/* leave space for the terminating NUL */
+		iov.iov_base = buf;
+		iov.iov_len = len;
+		uio.uio_iov = &iov;
+		uio.uio_iovcnt = 1;
+		uio.uio_offset = (off_t)(vaddr_t)varg;
+		uio.uio_resid = len;
+		uio.uio_segflg = UIO_SYSSPACE;
+		uio.uio_rw = UIO_READ;
+		uio.uio_procp = cp;
+		if ((error = uvm_io(&vp->p_vmspace->vm_map, &uio)) != 0)
+			goto out;
+
+		for (vstrlen = 0; vstrlen < len; vstrlen++) {
+			if (buf[vstrlen] == '\0')
+				break;
+		}
+
+		/* Don't overflow readers buffer. */
+		if (*oldlenp + vstrlen + 1 >= limit) {
+			error = ENOMEM;
+			goto out;
+		}
+
+		if ((error = copyout(buf, rarg, vstrlen)) != 0)
+			goto out;
+
+		*oldlenp += vstrlen;
+		rarg += vstrlen;
+
+		/* The string didn't end in this page? */
+		if (vstrlen == len) {
+			varg += vstrlen;
+			goto more;
+		}
+
+		/* End of string. Terminate it with a NUL */
+		buf[0] = '\0';
+		if ((error = copyout(buf, rarg, 1)) != 0)
+			goto out;
+		*oldlenp += 1;
+		rarg += 1;
+
+		vargv++;
+		rargv++;
+		cnt--;
+	}
+
+	if (*oldlenp >= limit) {
+		error = ENOMEM;
+		goto out;
+	}
+
+	/* Write the terminating null */
+	rarg = NULL;
+	error = copyout(&rarg, rargv, sizeof(rarg));
+
+out:
+	uvmspace_free(vp->p_vmspace);
+	free(buf, M_TEMP);
+	return (error);
+}
+
+/*
+ * Initialize disknames/diskstats for export by sysctl. If update is set,
+ * then we simply update the disk statistics information.
+ */
+int
+sysctl_diskinit(update, p)
+	int update;
+	struct proc *p;
+{
+	struct diskstats *sdk;
+	struct disk *dk;
+	int i, tlen, l;
+
+	if ((i = lockmgr(&sysctl_disklock, LK_EXCLUSIVE, NULL, p)) != 0)
+		return i;
+
+	if (disk_change) {
+		for (dk = TAILQ_FIRST(&disklist), tlen = 0; dk;
+		    dk = TAILQ_NEXT(dk, dk_link))
+			tlen += strlen(dk->dk_name) + 1;
+		tlen++;
+
+		if (disknames)
+			free(disknames, M_SYSCTL);
+		if (diskstats)
+			free(diskstats, M_SYSCTL);
+		diskstats = NULL;
+		disknames = NULL;
+		diskstats = malloc(disk_count * sizeof(struct diskstats),
+		    M_SYSCTL, M_WAITOK);
+		disknames = malloc(tlen, M_SYSCTL, M_WAITOK);
+		disknames[0] = '\0';
+
+		for (dk = TAILQ_FIRST(&disklist), i = 0, l = 0; dk;
+		    dk = TAILQ_NEXT(dk, dk_link), i++) {
+			snprintf(disknames + l, tlen - l, "%s,",
+			    dk->dk_name ? dk->dk_name : "");
+			l += strlen(disknames + l);
+			sdk = diskstats + i;
+			sdk->ds_busy = dk->dk_busy;
+			sdk->ds_xfer = dk->dk_xfer;
+			sdk->ds_seek = dk->dk_seek;
+			sdk->ds_bytes = dk->dk_bytes;
+			sdk->ds_attachtime = dk->dk_attachtime;
+			sdk->ds_timestamp = dk->dk_timestamp;
+			sdk->ds_time = dk->dk_time;
+		}
+
+		/* Eliminate trailing comma */
+		if (l != 0)
+			disknames[l - 1] = '\0';
+		disk_change = 0;
+	} else if (update) {
+		/* Just update, number of drives hasn't changed */
+		for (dk = TAILQ_FIRST(&disklist), i = 0; dk;
+		    dk = TAILQ_NEXT(dk, dk_link), i++) {
+			sdk = diskstats + i;
+			sdk->ds_busy = dk->dk_busy;
+			sdk->ds_xfer = dk->dk_xfer;
+			sdk->ds_seek = dk->dk_seek;
+			sdk->ds_bytes = dk->dk_bytes;
+			sdk->ds_attachtime = dk->dk_attachtime;
+			sdk->ds_timestamp = dk->dk_timestamp;
+			sdk->ds_time = dk->dk_time;
+		}
+	}
+	lockmgr(&sysctl_disklock, LK_RELEASE, NULL, p);
+	return 0;
+}
+
+#if defined(SYSVMSG) || defined(SYSVSEM) || defined(SYSVSHM)
+int
+sysctl_sysvipc(name, namelen, where, sizep)
+	int *name;
+	u_int namelen;
+	void *where;
+	size_t *sizep;
+{
+#ifdef SYSVMSG
+	struct msg_sysctl_info *msgsi;
+#endif
+#ifdef SYSVSEM
+	struct sem_sysctl_info *semsi;
+#endif
+#ifdef SYSVSHM
+	struct shm_sysctl_info *shmsi;
+#endif
+	size_t infosize, dssize, tsize, buflen;
+	int i, nds, error, ret;
+	void *buf;
+
+	if (namelen != 1)
+		return (EINVAL);
+
+	buflen = *sizep;
+
+	switch (*name) {
+	case KERN_SYSVIPC_MSG_INFO:
+#ifdef SYSVMSG
+		infosize = sizeof(msgsi->msginfo);
+		nds = msginfo.msgmni;
+		dssize = sizeof(msgsi->msgids[0]);
+		break;
+#else
+		return (EOPNOTSUPP);
+#endif
+	case KERN_SYSVIPC_SEM_INFO:
+#ifdef SYSVSEM
+		infosize = sizeof(semsi->seminfo);
+		nds = seminfo.semmni;
+		dssize = sizeof(semsi->semids[0]);
+		break;
+#else
+		return (EOPNOTSUPP);
+#endif
+	case KERN_SYSVIPC_SHM_INFO:
+#ifdef SYSVSHM
+		infosize = sizeof(shmsi->shminfo);
+		nds = shminfo.shmmni;
+		dssize = sizeof(shmsi->shmids[0]);
+		break;
+#else
+		return (EOPNOTSUPP);
+#endif
+	default:
+		return (EINVAL);
+	}
+	tsize = infosize + (nds * dssize);
+
+	/* Return just the total size required. */
+	if (where == NULL) {
+		*sizep = tsize;
+		return (0);
+	}
+
+	/* Not enough room for even the info struct. */
+	if (buflen < infosize) {
+		*sizep = 0;
+		return (ENOMEM);
+	}
+	buf = malloc(min(tsize, buflen), M_TEMP, M_WAITOK);
+	bzero(buf, min(tsize, buflen));
+
+	switch (*name) { 
+#ifdef SYSVMSG
+	case KERN_SYSVIPC_MSG_INFO:
+		msgsi = (struct msg_sysctl_info *)buf;
+		msgsi->msginfo = msginfo;
+		break;
+#endif
+#ifdef SYSVSEM
+	case KERN_SYSVIPC_SEM_INFO:
+		semsi = (struct sem_sysctl_info *)buf;
+		semsi->seminfo = seminfo;
+		break;
+#endif
+#ifdef SYSVSHM
+	case KERN_SYSVIPC_SHM_INFO:
+		shmsi = (struct shm_sysctl_info *)buf;
+		shmsi->shminfo = shminfo;
+		break;
+#endif
+	}
+	buflen -= infosize;
+
+	ret = 0;
+	if (buflen > 0) {
+		/* Fill in the IPC data structures.  */
+		for (i = 0; i < nds; i++) {
+			if (buflen < dssize) {
+				ret = ENOMEM;
+				break;
+			}
+			switch (*name) { 
+#ifdef SYSVMSG
+			case KERN_SYSVIPC_MSG_INFO:
+				bcopy(&msqids[i], &msgsi->msgids[i], dssize);
+				break;
+#endif
+#ifdef SYSVSEM
+			case KERN_SYSVIPC_SEM_INFO:
+				if (sema[i] != NULL)
+					bcopy(sema[i], &semsi->semids[i],
+					    dssize);
+				else
+					bzero(&semsi->semids[i], dssize);
+				break;
+#endif
+#ifdef SYSVSHM
+			case KERN_SYSVIPC_SHM_INFO:
+				if (shmsegs[i] != NULL)
+					bcopy(shmsegs[i], &shmsi->shmids[i],
+					    dssize);
+				else
+					bzero(&shmsi->shmids[i], dssize);
+				break;
+#endif
+			}
+			buflen -= dssize;
+		}
+	}
+	*sizep -= buflen;
+	error = copyout(buf, where, *sizep);
+	free(buf, M_TEMP);
+	/* If copyout succeeded, use return code set earlier. */
+	return (error ? error : ret);
+}
+#endif /* SYSVMSG || SYSVSEM || SYSVSHM */
+
+int
+sysctl_intrcnt(int *name, u_int namelen, void *oldp, size_t *oldlenp)
+{
+	extern int intrcnt[], eintrcnt[];
+	extern char intrnames[], eintrnames[];
+	char *intrname;
+	int nintr, i;
+
+	nintr = (off_t)(eintrcnt - intrcnt);
+
+	if (name[0] != KERN_INTRCNT_NUM) {
+		if (namelen != 2)
+			return (ENOTDIR);
+		if (name[1] < 0 || name[1] >= nintr)
+			return (EINVAL);
+		i = name[1];
+	}
+
+	switch (name[0]) {
+	case KERN_INTRCNT_NUM:
+		return (sysctl_rdint(oldp, oldlenp, NULL, nintr));
+		break;
+	case KERN_INTRCNT_CNT:
+		return (sysctl_rdint(oldp, oldlenp, NULL, intrcnt[i]));
+	case KERN_INTRCNT_NAME:
+		intrname = intrnames;
+		while (i > 0) {
+			intrname += strlen(intrname) + 1;
+			i--;
+			if (intrname > eintrnames)
+				return (EINVAL);
+		}
+		return (sysctl_rdstring(oldp, oldlenp, NULL, intrname));
+	default:
+		return (EOPNOTSUPP);
+	}
+}
+
+int nsensors = 0;
+struct sensors_head sensors = SLIST_HEAD_INITIALIZER(&sensors);
+
+int
+sysctl_sensors(int *name, u_int namelen, void *oldp, size_t *oldlenp,
+    void *newp, size_t newlen)
+{
+	struct sensor *s = NULL;
+	int num;
+
+	if (namelen != 1)
+		return (ENOTDIR);
+
+	num = name[0];
+	if (num >= nsensors)
+		return (ENXIO);
+
+	SLIST_FOREACH(s, &sensors, list)
+		if (s->num == num)
+			break;
+
+	return (sysctl_rdstruct(oldp, oldlenp, newp, s, sizeof(struct sensor)));
+}
+
+int
+sysctl_emul(int *name, u_int namelen, void *oldp, size_t *oldlenp,
+    void *newp, size_t newlen)
+{
+	int enabled, error;
+	struct emul *e;
+
+	if (name[0] == KERN_EMUL_NUM) {
+		if (namelen != 1)
+			return (ENOTDIR);
+		return (sysctl_rdint(oldp, oldlenp, newp, nemuls));
+	}
+
+	if (namelen != 2)
+		return (ENOTDIR);
+	if (name[0] > nemuls || name[0] < 0)
+		return (EINVAL);
+	e = emulsw[name[0] - 1];
+
+	switch (name[1]) {
+	case KERN_EMUL_NAME:
+		return (sysctl_rdstring(oldp, oldlenp, newp, e->e_name));
+	case KERN_EMUL_ENABLED:
+		enabled = (e->e_flags & EMUL_ENABLED);
+		error = sysctl_int(oldp, oldlenp, newp, newlen,
+		    &enabled);
+		e->e_flags = (enabled & EMUL_ENABLED);
+		return (error);
+	default:
+		return (EINVAL);
+	}
+}

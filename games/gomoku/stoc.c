@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: stoc.c,v 1.6 2003/06/03 03:01:39 millert Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,10 +32,16 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)stoc.c	8.1 (Berkeley) 7/24/94";
+#else
+static char rcsid[] = "$OpenBSD: stoc.c,v 1.6 2003/06/03 03:01:39 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "gomoku.h"
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 char	*letters	= "<ABCDEFGHJKLMNOPQRST>";
@@ -49,10 +51,10 @@ struct mvstr {
 	char	*m_text;
 };
 static	struct	mvstr	mv[] = {
-	RESIGN,		"resign",
-	RESIGN,		"quit",
-	SAVE,		"save",
-	-1,		0
+	{RESIGN,	"resign" },
+	{RESIGN,	"quit" },
+	{SAVE,		"save" },
+	{-1,		0}
 };
 
 /*
@@ -63,22 +65,23 @@ stoc(s)
 	int s;
 {
 	static char buf[32];
-	register int i;
+	int i;
 
 	for (i = 0; mv[i].m_code >= 0; i++)
 		if (s == mv[i].m_code)
 			return(mv[i].m_text);
-	sprintf(buf, "%c%d", letters[s % BSZ1], s / BSZ1);
+	snprintf(buf, sizeof buf, "%c%d", letters[s % BSZ1], s / BSZ1);
 	return(buf);
 }
 
 /*
  * Turn the character form of a move into the spot number form.
  */
+int
 ctos(mp)
 	char *mp;
 {
-	register int i;
+	int i;
 
 	for (i = 0; mv[i].m_code >= 0; i++)
 		if (strcmp(mp, mv[i].m_text) == 0)
@@ -94,10 +97,11 @@ ctos(mp)
 /*
  * Turn a letter into a number.
  */
+int
 lton(c)
 	int c;
 {
-	register int i;
+	int i;
 
 	if (islower(c))
 		c = toupper(c);

@@ -1,3 +1,5 @@
+/* $OpenBSD: http_main.c,v 1.30 2003/07/08 09:51:23 david Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -102,6 +104,7 @@ int ap_main(int argc, char *argv[]);
 #include "http_vhost.h"
 #include "util_script.h"	/* to force util_script.c linking */
 #include "util_uri.h"
+#include "fdcache.h"
 #include "scoreboard.h"
 #include "multithread.h"
 #include <sys/stat.h>
@@ -122,6 +125,9 @@ int ap_main(int argc, char *argv[]);
 #endif
 #ifdef HAVE_BSTRING_H
 #include <bstring.h>		/* for IRIX, FD_SET calls bzero() */
+#endif
+#ifdef MOD_SSL
+#include <openssl/evp.h>
 #endif
 
 #ifdef MULTITHREAD
@@ -317,6 +323,9 @@ API_VAR_EXPORT char ap_coredump_dir[MAX_STRING_LEN]="";
 API_VAR_EXPORT array_header *ap_server_pre_read_config=NULL;
 API_VAR_EXPORT array_header *ap_server_post_read_config=NULL;
 API_VAR_EXPORT array_header *ap_server_config_defines=NULL;
+
+API_VAR_EXPORT int ap_server_chroot=1;
+API_VAR_EXPORT int is_chrooted=0;
 
 /* *Non*-shared http_main globals... */
 
@@ -1039,6 +1048,7 @@ static void accept_mutex_child_init_flock(pool *p)
 static void accept_mutex_init_flock(pool *p)
 {
     expand_lock_fname(p);
+    ap_server_strip_chroot(ap_lock_fname, 0);
     unlink(ap_lock_fname);
     flock_fd = ap_popenf_ex(p, ap_lock_fname, O_CREAT | O_WRONLY | O_EXCL, 0600, 1);
     if (flock_fd == -1) {
@@ -1445,7 +1455,7 @@ static void usage(char *bin)
     fprintf(stderr, "Usage: %s [-D name] [-d directory] [-f file]\n", bin);
 #endif
     fprintf(stderr, "       %s [-C \"directive\"] [-c \"directive\"]\n", pad);
-    fprintf(stderr, "       %s [-v] [-V] [-h] [-l] [-L] [-S] [-t] [-T] [-F]\n", pad);
+    fprintf(stderr, "       %s [-v] [-V] [-h] [-l] [-L] [-S] [-t] [-T] [-F] [-u]\n", pad);
     fprintf(stderr, "Options:\n");
 #ifdef SHARED_CORE
     fprintf(stderr, "  -R directory     : specify an alternate location for shared object files\n");
@@ -1470,6 +1480,7 @@ static void usage(char *bin)
     fprintf(stderr, "  -T               : run syntax check for config files (without docroot check)\n");
 #ifndef WIN32
     fprintf(stderr, "  -F               : run main process in foreground, for process supervisors\n");
+    fprintf(stderr, "  -u               : Unsecure mode. Do not chroot into ServerRoot.\n");
 #endif
 #ifdef WIN32
     fprintf(stderr, "  -n name          : name the Apache service for -k options below;\n");
@@ -2632,6 +2643,7 @@ static void clean_parent_exit(int code)
 #ifdef EAPI
     ap_kill_alloc_shared();
 #endif
+    fdcache_closeall();
     exit(code);
 }
 
@@ -3356,8 +3368,10 @@ static void set_signals(void)
 #elif defined(SA_RESETHAND)
 	sa.sa_flags = SA_RESETHAND;
 #endif
+#ifdef SIGSEGV_CHECK
 	if (sigaction(SIGSEGV, &sa, NULL) < 0)
 	    ap_log_error(APLOG_MARK, APLOG_WARNING, server_conf, "sigaction(SIGSEGV)");
+#endif /* SIGSEGV_CHECK */
 #ifdef SIGBUS
 	if (sigaction(SIGBUS, &sa, NULL) < 0)
 	    ap_log_error(APLOG_MARK, APLOG_WARNING, server_conf, "sigaction(SIGBUS)");
@@ -3409,7 +3423,9 @@ static void set_signals(void)
 	ap_log_error(APLOG_MARK, APLOG_WARNING, server_conf, "sigaction(SIGUSR1)");
 #else
     if (!one_process) {
+#ifdef SIGSEGV_CHECK
 	signal(SIGSEGV, sig_coredump);
+#endif /* SIGSEGV_CHECK */
 #ifdef SIGBUS
 	signal(SIGBUS, sig_coredump);
 #endif /* SIGBUS */
@@ -3883,7 +3899,7 @@ static int make_sock(pool *p, const struct sockaddr_in *server)
 	if (setsockopt(s, SOL_SOCKET, SO_ACCEPTFILTER, &af, sizeof(af)) < 0) {
             if (errno == ENOPROTOOPT) {
 	    	ap_log_error(APLOG_MARK, APLOG_INFO | APLOG_NOERRNO, server_conf,
-			 "socket option SO_ACCEPTFILTER unkown on this machine. Continuing.");
+			 "socket option SO_ACCEPTFILTER unknown on this machine. Continuing.");
 	     } else {
 	    	ap_log_error(APLOG_MARK, APLOG_WARNING | APLOG_INFO, server_conf,
 			 "make_sock: for %s, setsockopt: (SO_ACCEPTFILTER)", addr);
@@ -4346,6 +4362,8 @@ static void child_main(int child_num_arg)
     my_child_num = child_num_arg;
     requests_this_child = 0;
 
+    setproctitle("child");
+
     /* Get a sub pool for global allocations in this child, so that
      * we can have cleanups occur when the child exits.
      */
@@ -4386,7 +4404,7 @@ static void child_main(int child_num_arg)
 #endif
 	setuid(ap_user_id) == -1)) {
 	ap_log_error(APLOG_MARK, APLOG_ALERT, server_conf,
-		    "setuid: unable to change to uid: %ld", (long) ap_user_id);
+		    "setuid: unable to change to uid: %u", ap_user_id);
 	clean_child_exit(APEXIT_CHILDFATAL);
     }
 #endif
@@ -4407,7 +4425,9 @@ static void child_main(int child_num_arg)
     signal(SIGURG, timeout);
 #endif
 #endif
-    signal(SIGALRM, alrm_handler);
+    if (signal(SIGALRM, alrm_handler) == SIG_ERR) {
+	   fprintf(stderr, "installing signal handler for SIGALRM failed, errno %u\n", errno);
+	}
 #ifdef TPF
     signal(SIGHUP, just_die);
     signal(SIGTERM, just_die);
@@ -5227,11 +5247,61 @@ static void standalone_main(int argc, char **argv)
 	server_conf = ap_read_config(pconf, ptrans, ap_server_confname);
 	setup_listeners(pconf);
 	ap_clear_pool(plog);
-	ap_open_logs(server_conf, plog);
-	ap_log_pid(pconf, ap_pid_fname);
+
+	/* 
+	 * we cannot reopen the logfiles once we dropped permissions, 
+	 * we cannot write the pidfile (pointless anyway), and we can't
+	 * reload & reinit the modules.
+	 */
+
+	if (!is_chrooted) {
+	    ap_open_logs(server_conf, plog);
+	    ap_log_pid(pconf, ap_pid_fname);
+	}
 	ap_set_version();	/* create our server_version string */
 	ap_init_modules(pconf, server_conf);
+	ap_init_etag(pconf);
 	version_locked++;	/* no more changes to server_version */
+
+	if(!is_graceful && !is_chrooted)
+	    if (ap_server_chroot) {
+		if (geteuid()) {
+		    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 
+			server_conf, "can't run in secure mode if not "
+			"started with root privs.");
+		    exit(1);
+		}
+
+		/* initialize /dev/crypto, XXX check for -DSSL option */
+#ifdef MOD_SSL
+		OpenSSL_add_all_algorithms();
+#endif
+
+		if (chroot(ap_server_root) < 0) {
+		    ap_log_error(APLOG_MARK, APLOG_EMERG, server_conf,
+			"unable to chroot into %s!", ap_server_root);
+		    exit(1);
+		}
+		ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 
+		    server_conf, "chrooted in %s", ap_server_root);
+		chdir("/");
+		is_chrooted = 1;
+		setproctitle("parent [chroot %s]", ap_server_root);
+
+		if (setgroups(1, &ap_group_id) || setegid(ap_group_id) ||
+		    setgid(ap_group_id) || seteuid(ap_user_id) || 
+		    setuid(ap_user_id)) {
+			ap_log_error(APLOG_MARK, APLOG_CRIT, server_conf,
+			    "can't drop priviliges!");
+			exit(1);
+		} else
+		    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE,
+			server_conf, "changed to uid %u, gid %u",
+			ap_user_id, ap_group_id);
+		} else
+		    setproctitle("parent");
+
+
 	SAFE_ACCEPT(accept_mutex_init(pconf));
 	if (!is_graceful) {
 	    reinit_scoreboard(pconf);
@@ -5366,11 +5436,12 @@ static void standalone_main(int argc, char **argv)
 	    {
 		const char *pidfile = NULL;
 		pidfile = ap_server_root_relative (pconf, ap_pid_fname);
+		ap_server_strip_chroot(pidfile, 0);
 		if ( pidfile != NULL && unlink(pidfile) == 0)
 		    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO,
 				 server_conf,
-				 "removed PID file %s (pid=%ld)",
-				 pidfile, (long)getpid());
+				 "removed PID file %s (pid=%u)",
+				 pidfile, getpid());
 	    }
 
 	    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, server_conf,
@@ -5494,7 +5565,7 @@ int REALMAIN(int argc, char *argv[])
     ap_setup_prelinked_modules();
 
     while ((c = getopt(argc, argv,
-				    "D:C:c:xXd:Ff:vVlLR:StTh"
+				    "D:C:c:xXd:Ff:vVlLR:StThu"
 #ifdef DEBUG_SIGSTOP
 				    "Z:"
 #endif
@@ -5574,6 +5645,9 @@ int REALMAIN(int argc, char *argv[])
 	    break;
 	case 'h':
 	    usage(argv[0]);
+	case 'u':
+	    ap_server_chroot = 0;
+	    break;
 	case '?':
 	    usage(argv[0]);
 	}
@@ -5625,7 +5699,7 @@ int REALMAIN(int argc, char *argv[])
         memcpy(tpf_server_name, input_parms.parent.servname,
                INETD_SERVNAME_LENGTH);
         tpf_server_name[INETD_SERVNAME_LENGTH + 1] = '\0';
-        sprintf(tpf_mutex_key, "%.*x", TPF_MUTEX_KEY_SIZE - 1, getpid());
+        snprintf(tpf_mutex_key, sizeof(tpf_mutex_key), "%.*x", TPF_MUTEX_KEY_SIZE - 1, getpid());
         tpf_parent_pid = getppid();
         ap_open_logs(server_conf, plog);
         ap_tpf_zinet_checks(ap_standalone, tpf_server_name, server_conf);
@@ -5696,8 +5770,8 @@ int REALMAIN(int argc, char *argv[])
 	if (!geteuid() && setuid(ap_user_id) == -1) {
 #endif
 	    ap_log_error(APLOG_MARK, APLOG_ALERT, server_conf,
-			"setuid: unable to change to uid: %ld",
-			(long) ap_user_id);
+			"setuid: unable to change to uid: %u",
+			ap_user_id);
 	    exit(1);
 	}
 #endif
@@ -7230,8 +7304,8 @@ die_now:
 	if ( pidfile != NULL && unlink(pidfile) == 0)
 	    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO,
 			 server_conf,
-			 "removed PID file %s (pid=%ld)",
-			 pidfile, (long)getpid());
+			 "removed PID file %s (pid=%u)",
+			 pidfile, getpid());
     }
 
     if (pparent) {
@@ -8080,3 +8154,24 @@ const XML_LChar *suck_in_expat(void)
 }
 #endif /* USE_EXPAT */
 
+API_EXPORT(int) ap_server_strip_chroot(char *src, int force)
+{
+    char buf[MAX_STRING_LEN];
+
+    if(src != NULL && ap_server_chroot && (is_chrooted || force)) {
+	if (strncmp(ap_server_root, src, strlen(ap_server_root)) == 0) {
+	    strlcpy(buf, src+strlen(ap_server_root), MAX_STRING_LEN);
+	    strlcpy(src, buf, strlen(src));
+	} 
+    }
+}
+
+API_EXPORT(int) ap_server_is_chrooted()
+{
+    return(is_chrooted);
+}
+
+API_EXPORT(int) ap_server_chroot_desired()
+{
+    return(ap_server_chroot);
+}

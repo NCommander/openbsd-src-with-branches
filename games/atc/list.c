@@ -1,3 +1,4 @@
+/*	$OpenBSD: list.c,v 1.3 1999/07/31 20:08:30 pjanzen Exp $	*/
 /*	$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,7 +46,7 @@
 #if 0
 static char sccsid[] = "@(#)list.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $";
+static char rcsid[] = "$OpenBSD: list.c,v 1.3 1999/07/31 20:08:30 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,9 +55,14 @@ static char rcsid[] = "$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $";
 PLANE	*
 newplane()
 {
-	return ((PLANE *) calloc(1, sizeof (PLANE)));
+	PLANE *p;
+	
+	if ((p = (PLANE *) calloc(1, sizeof (PLANE))) == NULL)
+		loser(NULL, "Out of memory");
+	return (p);
 }
 
+void
 append(l, p)
 	LIST	*l;
 	PLANE	*p;
@@ -99,6 +101,7 @@ append(l, p)
 	}
 }
 
+void
 delete(l, p)
 	LIST	*l;
 	PLANE	*p;

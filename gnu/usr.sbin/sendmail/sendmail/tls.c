@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -10,7 +10,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: tls.c,v 8.72 2001/09/04 22:43:06 ca Exp $")
+SM_RCSID("@(#)$Sendmail: tls.c,v 8.79.4.4 2003/03/20 00:03:42 ca Exp $")
 
 #if STARTTLS
 #  include <openssl/err.h>
@@ -19,16 +19,22 @@ SM_RCSID("@(#)$Sendmail: tls.c,v 8.72 2001/09/04 22:43:06 ca Exp $")
 #  ifndef HASURANDOMDEV
 #   include <openssl/rand.h>
 #  endif /* ! HASURANDOMDEV */
-#  if SM_CONF_SHM
-#   include <sm/shm.h>
-#  endif /* SM_CONF_SHM */
 # if !TLS_NO_RSA
 static RSA *rsa_tmp = NULL;	/* temporary RSA key */
 static RSA *tmp_rsa_key __P((SSL *, int, int));
 # endif /* !TLS_NO_RSA */
+#  if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER < 0x00907000L
 static int	tls_verify_cb __P((X509_STORE_CTX *));
+#  else /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
+static int	tls_verify_cb __P((X509_STORE_CTX *, void *));
+#  endif /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
 
-static void	apps_ssl_info_cb __P((SSL *, int , int));
+# if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER < 0x00907000L
+#  define CONST097
+# else /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
+#  define CONST097 const
+# endif /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
+static void	apps_ssl_info_cb __P((CONST097 SSL *, int , int));
 
 # if !NO_DH
 static DH *get_dh512 __P((void));
@@ -63,7 +69,7 @@ get_dh512()
 # endif /* !NO_DH */
 
 
-/*
+/*
 **  TLS_RAND_INIT -- initialize STARTTLS random generator
 **
 **	Parameters:
@@ -139,6 +145,8 @@ tls_rand_init(randfile, logl)
 		      | SFF_NOGWFILES | SFF_NOWWFILES
 		      | SFF_NOGRFILES | SFF_NOWRFILES
 		      | SFF_MUSTOWN | SFF_ROOTOK | SFF_OPENASROOT;
+		if (DontLockReadFiles)
+			sff |= SFF_NOLOCK;
 		if ((fd = safeopen(randfile, O_RDONLY, 0, sff)) >= 0)
 		{
 			if (fstat(fd, &st) < 0)
@@ -248,7 +256,7 @@ tls_rand_init(randfile, logl)
 	return true;
 # endif /* ! HASURANDOMDEV */
 }
-/*
+/*
 **  INIT_TLS_LIBRARY -- Calls functions which setup TLS library for global use.
 **
 **	Parameters:
@@ -271,7 +279,7 @@ init_tls_library()
 
 	return tls_rand_init(RandFile, 7);
 }
-/*
+/*
 **  TLS_SET_VERIFY -- request client certificate?
 **
 **	Parameters:
@@ -315,28 +323,28 @@ tls_set_verify(ctx, ssl, vrfy)
 **  [due to permissions]
 */
 
-# define TLS_S_NONE	0x00000000	/* none yet  */
-# define TLS_S_CERT_EX	0x00000001	/* CERT file exists */
-# define TLS_S_CERT_OK	0x00000002	/* CERT file is ok */
-# define TLS_S_KEY_EX	0x00000004	/* KEY file exists */
-# define TLS_S_KEY_OK	0x00000008	/* KEY file is ok */
-# define TLS_S_CERTP_EX	0x00000010	/* CA CERT PATH exists */
-# define TLS_S_CERTP_OK	0x00000020	/* CA CERT PATH is ok */
-# define TLS_S_CERTF_EX	0x00000040	/* CA CERT FILE exists */
-# define TLS_S_CERTF_OK	0x00000080	/* CA CERT FILE is ok */
+# define TLS_S_NONE	0x00000000	/* none yet */
+# define TLS_S_CERT_EX	0x00000001	/* cert file exists */
+# define TLS_S_CERT_OK	0x00000002	/* cert file is ok */
+# define TLS_S_KEY_EX	0x00000004	/* key file exists */
+# define TLS_S_KEY_OK	0x00000008	/* key file is ok */
+# define TLS_S_CERTP_EX	0x00000010	/* CA cert path exists */
+# define TLS_S_CERTP_OK	0x00000020	/* CA cert path is ok */
+# define TLS_S_CERTF_EX	0x00000040	/* CA cert file exists */
+# define TLS_S_CERTF_OK	0x00000080	/* CA cert file is ok */
 
 # if _FFR_TLS_1
-#  define TLS_S_CERT2_EX	0x00001000	/* 2nd CERT file exists */
-#  define TLS_S_CERT2_OK	0x00002000	/* 2nd CERT file is ok */
-#  define TLS_S_KEY2_EX	0x00004000	/* 2nd KEY file exists */
-#  define TLS_S_KEY2_OK	0x00008000	/* 2nd KEY file is ok */
+#  define TLS_S_CERT2_EX	0x00001000	/* 2nd cert file exists */
+#  define TLS_S_CERT2_OK	0x00002000	/* 2nd cert file is ok */
+#  define TLS_S_KEY2_EX	0x00004000	/* 2nd key file exists */
+#  define TLS_S_KEY2_OK	0x00008000	/* 2nd key file is ok */
 # endif /* _FFR_TLS_1 */
 
 # define TLS_S_DH_OK	0x00200000	/* DH cert is ok */
 # define TLS_S_DHPAR_EX	0x00400000	/* DH param file exists */
 # define TLS_S_DHPAR_OK	0x00800000	/* DH param file is ok to use */
 
-/*
+/*
 **  TLS_OK_F -- can var be an absolute filename?
 **
 **	Parameters:
@@ -362,7 +370,7 @@ tls_ok_f(var, fn, srv)
 			  srv ? "Server" : "Client", fn);
 	return false;
 }
-/*
+/*
 **  TLS_SAFE_F -- is a file safe to use?
 **
 **	Parameters:
@@ -457,7 +465,7 @@ tls_safe_f(var, sff, srv)
 			ok = false;	\
 	}
 
-/*
+/*
 **  INITTLS -- initialize TLS
 **
 **	Parameters:
@@ -534,9 +542,9 @@ inittls(ctx, req, srv, certfile, keyfile, cacertpath, cacertfile, dhparam)
 		 TLS_S_CERT_EX, srv);
 	TLS_OK_F(keyfile, "KeyFile", bitset(TLS_I_KEY_EX, req),
 		 TLS_S_KEY_EX, srv);
-	TLS_OK_F(cacertpath, "CACERTPath", bitset(TLS_I_CERTP_EX, req),
+	TLS_OK_F(cacertpath, "CACertPath", bitset(TLS_I_CERTP_EX, req),
 		 TLS_S_CERTP_EX, srv);
-	TLS_OK_F(cacertfile, "CACERTFile", bitset(TLS_I_CERTF_EX, req),
+	TLS_OK_F(cacertfile, "CACertFile", bitset(TLS_I_CERTF_EX, req),
 		 TLS_S_CERTF_EX, srv);
 
 # if _FFR_TLS_1
@@ -977,7 +985,7 @@ inittls(ctx, req, srv, certfile, keyfile, cacertpath, cacertfile, dhparam)
 
 	return ok;
 }
-/*
+/*
 **  TLS_GET_INFO -- get information about TLS connection
 **
 **	Parameters:
@@ -1140,7 +1148,7 @@ tls_get_info(ssl, srv, host, mac, certreq)
 	}
 	return r;
 }
-/*
+/*
 **  ENDTLS -- shutdown secure connection
 **
 **	Parameters:
@@ -1194,7 +1202,7 @@ endtls(ssl, side)
 		**  For your server the problem is different, because it
 		**  receives the shutdown first (setting SSL_RECEIVED_SHUTDOWN),
 		**  then sends its response (SSL_SENT_SHUTDOWN), so for the
-		**  server the shutdown was successfull.
+		**  server the shutdown was successful.
 		**
 		**  As is by know, you would have to call SSL_shutdown() once
 		**  and ignore an SSL_ERROR_SYSCALL returned. Then call
@@ -1230,7 +1238,7 @@ endtls(ssl, side)
 }
 
 # if !TLS_NO_RSA
-/*
+/*
 **  TMP_RSA_KEY -- return temporary RSA key
 **
 **	Parameters:
@@ -1294,7 +1302,7 @@ tmp_rsa_key(s, export, keylength)
 	return rsa_tmp;
 }
 # endif /* !TLS_NO_RSA */
-/*
+/*
 **  APPS_SSL_INFO_CB -- info callback for TLS connections
 **
 **	Parameters:
@@ -1308,7 +1316,7 @@ tmp_rsa_key(s, export, keylength)
 
 static void
 apps_ssl_info_cb(s, where, ret)
-	SSL *s;
+	CONST097 SSL *s;
 	int where;
 	int ret;
 {
@@ -1366,7 +1374,7 @@ apps_ssl_info_cb(s, where, ret)
 		}
 	}
 }
-/*
+/*
 **  TLS_VERIFY_LOG -- log verify error for TLS certificates
 **
 **	Parameters:
@@ -1408,7 +1416,7 @@ tls_verify_log(ok, ctx)
 		  depth, buf, ok, X509_verify_cert_error_string(reason));
 	return 1;
 }
-/*
+/*
 **  TLS_VERIFY_CB -- verify callback for TLS certificates
 **
 **	Parameters:
@@ -1420,8 +1428,14 @@ tls_verify_log(ok, ctx)
 */
 
 static int
+#  if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER < 0x00907000L
 tls_verify_cb(ctx)
 	X509_STORE_CTX *ctx;
+#  else /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
+tls_verify_cb(ctx, unused)
+	X509_STORE_CTX *ctx;
+	void *unused;
+#  endif /* !defined() || OPENSSL_VERSION_NUMBER < 0x00907000L */
 {
 	int ok;
 
@@ -1434,7 +1448,7 @@ tls_verify_cb(ctx)
 	}
 	return ok;
 }
-/*
+/*
 **  TLSLOGERR -- log the errors from the TLS error stack
 **
 **	Parameters:

@@ -1,5 +1,3 @@
-/*	$NetBSD: ttyslot.c,v 1.5 1995/02/27 05:55:04 cgd Exp $	*/
-
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ttyslot.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: ttyslot.c,v 1.5 1995/02/27 05:55:04 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: ttyslot.c,v 1.3 1997/07/09 00:28:26 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ttyent.h>
@@ -56,13 +46,13 @@ ttyslot()
 	char *name;
 
 	setttyent();
-	for (cnt = 0; cnt < 3; ++cnt) 
-		if (name = ttyname(cnt)) {
-			if (p = strrchr(name, '/')) 
+	for (cnt = 0; cnt < 3; ++cnt)
+		if ((name = ttyname(cnt))) {
+			if ((p = strrchr(name, '/')))
 				++p;
 			else
 				p = name;
-			for (slot = 1; ttyp = getttyent(); ++slot)
+			for (slot = 1; (ttyp = getttyent()); ++slot)
 				if (!strcmp(ttyp->ty_name, p)) {
 					endttyent();
 					return(slot);

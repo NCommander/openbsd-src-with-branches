@@ -1,3 +1,6 @@
+/*	$OpenBSD: dump.c,v 1.9 2002/05/31 21:24:27 itojun Exp $	*/
+/*	$KAME: dump.c,v 1.10 2002/05/31 10:10:03 itojun Exp $	*/
+
 /*
  * Copyright (C) 1999 WIDE Project.
  * All rights reserved.
@@ -29,7 +32,9 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/socket.h>
 
+#include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/icmp6.h>
 
@@ -45,7 +50,8 @@ static FILE *fp;
 
 extern struct ifinfo *iflist;
 
-static char *sec2str __P((time_t));
+static void dump_interface_status(void);
+static char *sec2str(time_t);
 char *ifstatstr[] = {"IDLE", "DELAY", "PROBE", "DOWN", "TENTATIVE"};
 
 static void
@@ -62,27 +68,26 @@ dump_interface_status()
 		if (ifinfo->probeinterval) {
 			fprintf(fp, "%d\n", ifinfo->probeinterval);
 			fprintf(fp, "  probe timer: %d\n", ifinfo->probetimer);
-		}
-		else {
+		} else {
 			fprintf(fp, "infinity\n");
 			fprintf(fp, "  no probe timer\n");
 		}
 		fprintf(fp, "  interface status: %s\n",
-			ifinfo->active > 0 ? "active" : "inactive");
+		    ifinfo->active > 0 ? "active" : "inactive");
 		fprintf(fp, "  rtsold status: %s\n", ifstatstr[ifinfo->state]);
 		fprintf(fp, "  carrier detection: %s\n",
-			ifinfo->mediareqok ? "available" : "unavailable");
+		    ifinfo->mediareqok ? "available" : "unavailable");
 		fprintf(fp, "  probes: %d, dadcount = %d\n",
-			ifinfo->probes, ifinfo->dadcount);
+		    ifinfo->probes, ifinfo->dadcount);
 		if (ifinfo->timer.tv_sec == tm_max.tv_sec &&
 		    ifinfo->timer.tv_usec == tm_max.tv_usec)
 			fprintf(fp, "  no timer\n");
 		else {
 			fprintf(fp, "  timer: interval=%d:%d, expire=%s\n",
-				(int)ifinfo->timer.tv_sec,
-				(int)ifinfo->timer.tv_usec,
-				(ifinfo->expire.tv_sec < now.tv_sec) ? "expired"
-				: sec2str(ifinfo->expire.tv_sec - now.tv_sec));
+			    (int)ifinfo->timer.tv_sec,
+			    (int)ifinfo->timer.tv_usec,
+			    (ifinfo->expire.tv_sec < now.tv_sec) ? "expired"
+			    : sec2str(ifinfo->expire.tv_sec - now.tv_sec));
 		}
 		fprintf(fp, "  number of valid RAs: %d\n", ifinfo->racnt);
 	}
@@ -93,13 +98,11 @@ rtsold_dump_file(dumpfile)
 	char *dumpfile;
 {
 	if ((fp = fopen(dumpfile, "w")) == NULL) {
-		warnmsg(LOG_WARNING, __FUNCTION__, "open a dump file(%s)",
-			dumpfile, strerror(errno));
+		warnmsg(LOG_WARNING, __func__, "open a dump file(%s): %s",
+		    dumpfile, strerror(errno));
 		return;
 	}
-
 	dump_interface_status();
-
 	fclose(fp);
 }
 
@@ -111,6 +114,8 @@ sec2str(total)
 	int days, hours, mins, secs;
 	int first = 1;
 	char *p = result;
+	char *ep = &result[sizeof(result)];
+	int n;
 
 	days = total / 3600 / 24;
 	hours = (total / 3600) % 24;
@@ -119,17 +124,25 @@ sec2str(total)
 
 	if (days) {
 		first = 0;
-		p += sprintf(p, "%dd", days);
+		n = snprintf(p, ep - p, "%dd", days);
+		if (n < 0 || n >= ep - p)
+			return "?";
+		p += n;
 	}
 	if (!first || hours) {
 		first = 0;
-		p += sprintf(p, "%dh", hours);
+		n = snprintf(p, ep - p, "%dh", hours);
+		if (n < 0 || n >= ep - p)
+			return "?";
+		p += n;
 	}
 	if (!first || mins) {
 		first = 0;
-		p += sprintf(p, "%dm", mins);
+		n = snprintf(p, ep - p, "%dm", mins);
+		if (n < 0 || n >= ep - p)
+			return "?";
+		p += n;
 	}
-	sprintf(p, "%ds", secs);
-
+	snprintf(p, ep - p, "%ds", secs);
 	return(result);
 }

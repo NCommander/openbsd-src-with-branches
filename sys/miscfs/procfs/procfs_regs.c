@@ -1,3 +1,4 @@
+/*	$OpenBSD: procfs_regs.c,v 1.6 2002/03/11 15:39:27 art Exp $	*/
 /*	$NetBSD: procfs_regs.c,v 1.9 1995/08/13 09:06:07 mycroft Exp $	*/
 
 /*
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,16 +48,18 @@
 
 int
 procfs_doregs(curp, p, pfs, uio)
-	struct proc *curp;
-	struct proc *p;
+	struct proc *curp;		/* tracer */
+	struct proc *p;			/* traced */
 	struct pfsnode *pfs;
 	struct uio *uio;
 {
-#if defined(PT_GETREGS) || defined(PT_SETREGS)
 	int error;
 	struct reg r;
 	char *kv;
 	int kl;
+
+	if ((error = procfs_checkioperm(curp, p)) != 0)
+		return (error);
 
 	kl = sizeof(r);
 	kv = (char *) &r;
@@ -89,19 +88,13 @@ procfs_doregs(curp, p, pfs, uio)
 
 	uio->uio_offset = 0;
 	return (error);
-#else
-	return (EINVAL);
-#endif
 }
 
 int
-procfs_validregs(p)
+procfs_validregs(p, mp)
 	struct proc *p;
+	struct mount *mp;
 {
 
-#if defined(PT_SETREGS) || defined(PT_GETREGS)
 	return ((p->p_flag & P_SYSTEM) == 0);
-#else
-	return (0);
-#endif
 }

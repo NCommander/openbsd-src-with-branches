@@ -63,11 +63,20 @@ extern struct passwd *getpwuid (), *getpwnam ();
 #endif /* !HAVE_GETPW_DECLS */
 
 #if !defined (savestring)
-#  ifndef strcpy
-extern char *strcpy ();
-#  endif
-#define savestring(x) strcpy (xmalloc (1 + strlen (x)), (x))
-#endif /* !savestring */
+#include <stdio.h>
+static char *
+xstrdup(char *s) 
+{
+	char * cp;
+	cp = strdup(s);
+	if (cp == NULL) {
+		fprintf (stderr, "xstrdup: out of virtual memory\n"); 
+		exit (2);
+	}
+	return(cp);
+}
+#define savestring(x) xstrdup(x)
+#endif /* !savestring  */
 
 #if !defined (NULL)
 #  if defined (__STDC__)
@@ -244,7 +253,8 @@ tilde_expand (string)
 	  if ((result_index + len + 1) > result_size)
 	    result = xrealloc (result, 1 + (result_size += (len + 20)));
 
-	  strcpy (result + result_index, expansion);
+	  strlcpy (result + result_index, expansion,
+		   result_size - result_index);
 	  result_index += len;
 	}
       free (expansion);
@@ -293,8 +303,8 @@ glue_prefix_and_suffix (prefix, suffix, suffind)
   slen = strlen (suffix + suffind);
   ret = xmalloc (plen + slen + 1);
   if (plen)
-    strcpy (ret, prefix);
-  strcpy (ret + plen, suffix + suffind);
+    strlcpy (ret, prefix, plen + slen + 1);
+  strlcat (ret, suffix + suffind, plen + slen + 1);
   return ret;
 }
 
@@ -325,7 +335,7 @@ tilde_expand_word (filename)
 
       /* If there is no HOME variable, look up the directory in
 	 the password database. */
-      if (expansion == 0)
+      if (expansion == 0 || *expansion == '\0')
 	expansion = get_home_dir ();
 
       return (glue_prefix_and_suffix (expansion, filename, 1));
@@ -395,9 +405,10 @@ main (argc, argv)
       printf ("~expand: ");
       fflush (stdout);
 
-      if (!gets (line))
-	strcpy (line, "done");
-
+      if (!fgets (line, sizeof(line), stdin))
+	strlcpy (line, "done", sizeof(line));
+      else if (line[strlen(line) - 1] == '\n')
+	      line[strlen(line) - 1] = '\0';
       if ((strcmp (line, "done") == 0) ||
 	  (strcmp (line, "quit") == 0) ||
 	  (strcmp (line, "exit") == 0))

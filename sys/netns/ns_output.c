@@ -1,4 +1,5 @@
-/*	$NetBSD: ns_output.c,v 1.7 1995/06/13 08:37:07 mycroft Exp $	*/
+/*	$OpenBSD: ns_output.c,v 1.3 2002/03/15 18:19:53 millert Exp $	*/
+/*	$NetBSD: ns_output.c,v 1.8 1996/02/13 22:14:01 christos Exp $	*/
 
 /*
  * Copyright (c) 1984, 1985, 1986, 1987, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,6 +33,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/errno.h>
@@ -47,25 +45,33 @@
 
 #include <netns/ns.h>
 #include <netns/ns_if.h>
+#include <netns/ns_var.h>
 #include <netns/idp.h>
 #include <netns/idp_var.h>
+
+#include <machine/stdarg.h>
 
 int ns_hold_output = 0;
 int ns_copy_output = 0;
 int ns_output_cnt = 0;
 struct mbuf *ns_lastout;
 
-ns_output(m0, ro, flags)
-	struct mbuf *m0;
+int
+ns_output(struct mbuf *m0, ...)
+{
 	struct route *ro;
 	int flags;
-{
 	register struct idp *idp = mtod(m0, struct idp *);
 	register struct ifnet *ifp = 0;
 	int error = 0;
 	struct route idproute;
 	struct sockaddr_ns *dst;
-	extern int idpcksum;
+	va_list ap;
+
+	va_start(ap, m0);
+	ro = va_arg(ap, struct route *);
+	flags = va_arg(ap, int);
+	va_end(ap);
 
 	if (ns_hold_output) {
 		if (ns_lastout) {

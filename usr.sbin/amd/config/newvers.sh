@@ -16,11 +16,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -37,16 +33,13 @@
 # SUCH DAMAGE.
 #
 #	from: @(#)newvers.sh	8.1 (Berkeley) 6/6/93
-#	$Id: newvers.sh,v 1.3 1994/06/13 20:49:14 mycroft Exp $
+#	$Id: newvers.sh,v 1.3 1997/02/23 03:41:56 deraadt Exp $
 #
 PATH=/usr/ucb:/bin:/usr/bin:$PATH
 if [ $# -ne 3 ]; then echo "Usage: newvers program arch os" >&2; exit 1; fi
 version="version.$1"
 if [ ! -r $version ]; then echo 0 > $version; chmod 444 $version; fi
 v=`cat $version`
-u=${USER-${LOGNAME-root}}
-h=`hostname`
-#h=`expr "$h" : '\([^.]*\)'`
 t=`date`
 if [ ! -s "$d../config/RELEASE"  -o ! -s "$d../text/COPYRIGHT" ]; then
 	echo ERROR: config file missing >&2
@@ -74,7 +67,6 @@ sed \
 	$d../config/RELEASE
 cat << %%
  #${v}: ${t}\\n\\
-Built by ${u}@${h} for \\
 %%
 case "$2" in
 [aeiou]*) echo "an \\" ;;

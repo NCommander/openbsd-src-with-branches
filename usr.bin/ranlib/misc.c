@@ -1,3 +1,5 @@
+/*	$OpenBSD: misc.c,v 1.7 2003/06/03 02:56:14 millert Exp $	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +34,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)misc.c	5.2 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: misc.c,v 1.5 1995/06/27 00:28:40 jtc Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.7 2003/06/03 02:56:14 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -47,11 +45,12 @@ static char rcsid[] = "$Id: misc.c,v 1.5 1995/06/27 00:28:40 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include "pathnames.h"
+#include "extern.h"
 
-extern char	*archive;			/* archive name */
-char		*tname = "temporary file";
+char *tname = "temporary file";
 
-tmp()
+int
+tmp(void)
 {
 	static char *envtmp;
 	sigset_t set, oset;
@@ -65,9 +64,10 @@ tmp()
 	}
 
 	if (envtmp)
-		(void)snprintf(path, MAXPATHLEN, "%s/%s", envtmp, _NAME_RANTMP);
+		(void)snprintf(path, sizeof(path), "%s/%s", envtmp,
+		    _NAME_RANTMP);
 	else
-		bcopy(_PATH_RANTMP, path, sizeof(_PATH_RANTMP));
+		strlcpy(path, _PATH_RANTMP, sizeof(path));
 
 	sigemptyset(&set);
 	sigaddset(&set, SIGHUP);
@@ -77,40 +77,39 @@ tmp()
 	(void)sigprocmask(SIG_BLOCK, &set, &oset);
 	if ((fd = mkstemp(path)) == -1)
 		error(tname);
-        (void)unlink(path);
+   	(void)unlink(path);
 	(void)sigprocmask(SIG_SETMASK, &oset, (sigset_t *)NULL);
 	return(fd);
 }
 
 void *
-emalloc(len)
-	int len;
+emalloc(size_t len)
 {
-	char *p;
+	void *p;
 
-	if (!(p = malloc((u_int)len)))
+	if (!(p = malloc(len)))
 		error(archive);
 	return(p);
 }
 
-char *
-rname(path)
-	char *path;
+const char *
+rname(const char *path)
 {
-	register char *ind;
+	const char *ind;
 
-	return((ind = rindex(path, '/')) ? ind + 1 : path);
+	return((ind = strrchr(path, '/')) ? ind + 1 : path);
 }
 
-badfmt()
+void
+badfmt(void)
 {
 	errno = EFTYPE;
 	error(archive);
 }
 
-error(name)
-	char *name;
+void
+error(const char *name)
 {
-	(void)fprintf(stderr, "ranlib: %s: %s\n", name, strerror(errno));
-	exit(1);
+
+	err(1, "%s", name);
 }

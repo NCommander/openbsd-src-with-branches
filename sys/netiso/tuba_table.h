@@ -1,4 +1,5 @@
-/*	$NetBSD: tuba_table.h,v 1.3 1995/03/26 20:35:36 jtc Exp $	*/
+/*	$OpenBSD: tuba_table.h,v 1.3 2002/03/14 01:27:12 millert Exp $	*/
+/*	$NetBSD: tuba_table.h,v 1.4 1996/02/13 22:12:37 christos Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,15 +33,15 @@
  */
 
 struct tuba_cache {
-	struct	radix_node tc_nodes[2];		/* convenient lookup */
-	int	tc_refcnt;
-	int	tc_time;			/* last looked up */
-	int	tc_flags;
+	struct radix_node tc_nodes[2];	/* convenient lookup */
+	int             tc_refcnt;
+	int             tc_time;/* last looked up */
+	int             tc_flags;
 #define TCF_PERM	1
-	int	tc_index;
-	u_short	tc_sum;				/* cksum of nsap inc. length */
-	u_short	tc_ssum;			/* swab(tc_sum) */
-	struct	sockaddr_iso tc_siso;		/* for responding */
+	int             tc_index;
+	u_short         tc_sum;	/* cksum of nsap inc. length */
+	u_short         tc_ssum;/* swab(tc_sum) */
+	struct sockaddr_iso tc_siso;	/* for responding */
 };
 
 #define ADDCARRY(x)  (x >= 65535 ? x -= 65535 : x)
@@ -55,7 +52,35 @@ struct tuba_cache {
 	s.s = (b); t = s.c[0]; s.c[0] = s.c[1]; s.c[1] = t; a = s.s;}
 
 #ifdef _KERNEL
-extern	int	tuba_table_size;
-extern	struct	tuba_cache **tuba_table;
-extern	struct	radix_node_head *tuba_tree;
+extern int      tuba_table_size;
+extern struct tuba_cache **tuba_table;
+extern struct radix_node_head *tuba_tree;
+
+struct mbuf;
+struct tcpcb;
+struct isopcb;
+struct inpcb;
+struct sockaddr_iso;
+struct socket;
+
+/* tuba_subr.c */
+void tuba_init(void);
+int tuba_output(struct mbuf *, struct tcpcb *);
+void tuba_refcnt(struct isopcb *, int );
+void tuba_pcbdetach(void *);
+int tuba_pcbconnect(void *, struct mbuf *);
+void tuba_tcpinput(struct mbuf *, ...);
+int tuba_pcbconnect(void *, struct mbuf *);
+void tuba_slowtimo(void);
+void tuba_fasttimo(void);
+
+/* tuba_table.c */
+void tuba_timer(void *);
+void tuba_table_init(void);
+int tuba_lookup(struct sockaddr_iso *, int );
+
+/* tuba_usrreq.c */
+int tuba_usrreq(struct socket *, int, struct mbuf *, struct mbuf *,
+		     struct mbuf *);
+int tuba_ctloutput(int, struct socket *, int, int , struct mbuf **);
 #endif

@@ -1,3 +1,6 @@
+/*	$OpenBSD: key.c,v 1.6 2003/05/01 21:11:21 avsm Exp $	*/
+/*	$NetBSD: key.c,v 1.2 1997/01/11 06:47:58 lukem Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +34,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)key.c	8.1 (Berkeley) 6/4/93";
+#else
+static const char rcsid[] = "$OpenBSD: key.c,v 1.6 2003/05/01 21:11:21 avsm Exp $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -78,17 +81,15 @@ struct key_node_t {
     struct key_node_t *sibling;	/* ptr to another key with same prefix 	*/
 };
 
-private	int            node_trav	__P((EditLine *, key_node_t *, char *, 
-					     key_value_t *));
-private	int            node__try	__P((key_node_t *, char *, 
-					     key_value_t *, int));
-private	key_node_t    *node__get	__P((int));
-private	void	       node__put	__P((key_node_t *));
-private	int	       node__delete	__P((key_node_t **, char *));
-private	int	       node_lookup 	__P((EditLine *, char *, key_node_t *,
-					     int));
-private	int	       node_enum	__P((EditLine *, key_node_t *, int));
-private	int	       key__decode_char	__P((char *, int, int));
+private	int            node_trav(EditLine *, key_node_t *, char *, 
+			    key_value_t *);
+private	int            node__try(key_node_t *, char *, key_value_t *, int);
+private	key_node_t    *node__get(int);
+private	void	       node__put(key_node_t *);
+private	int	       node__delete(key_node_t **, char *);
+private	int	       node_lookup (EditLine *, char *, key_node_t *, int);
+private	int	       node_enum(EditLine *, key_node_t *, int);
+private	int	       key__decode_char(char *, int, int);
 
 #define KEY_BUFSIZ	EL_BUFSIZ
 
@@ -195,13 +196,13 @@ key_add(el, key, val, ntype)
     int          ntype;
 {
     if (key[0] == '\0') {
-	(void) fprintf(el->el_errfile, 
+	(void)fprintf(el->el_errfile, 
 		       "key_add: Null extended-key not allowed.\n");
 	return;
     }
 
     if (ntype == XK_CMD && val->cmd == ED_SEQUENCE_LEAD_IN) {
-	(void) fprintf(el->el_errfile,
+	(void)fprintf(el->el_errfile,
 		       "key_add: sequence-lead-in command not allowed\n");
 	return;
     }
@@ -211,7 +212,7 @@ key_add(el, key, val, ntype)
 	el->el_key.map = node__get(key[0]);	/* it is properly initialized */
 
     /* Now recurse through el->el_key.map */
-    (void) node__try(el->el_key.map, key, val, ntype);	
+    (void)node__try(el->el_key.map, key, val, ntype);	
     return;
 }
 
@@ -230,7 +231,7 @@ key_clear(el, map, in)
 	  el->el_map.alt[(unsigned char) *in] != ED_SEQUENCE_LEAD_IN) ||
 	 (map == el->el_map.alt && 
 	  el->el_map.key[(unsigned char) *in] != ED_SEQUENCE_LEAD_IN)))
-	(void) key_delete(el, in);
+	(void)key_delete(el, in);
 }
 
 
@@ -244,7 +245,7 @@ key_delete(el, key)
     char   *key;
 {
     if (key[0] == '\0') {
-	(void) fprintf(el->el_errfile, 
+	(void)fprintf(el->el_errfile, 
 		       "key_delete: Null extended-key not allowed.\n");
 	return -1;
     }
@@ -252,7 +253,7 @@ key_delete(el, key)
     if (el->el_key.map == NULL)
 	return 0;
 
-    (void) node__delete(&el->el_key.map, key);
+    (void)node__delete(&el->el_key.map, key);
     return 0;
 }
 
@@ -273,7 +274,7 @@ key_print(el, key)
     el->el_key.buf[0] =  '"';
     if (node_lookup(el, key, el->el_key.map, 1) <= -1)
 	/* key is not bound */
-	(void) fprintf(el->el_errfile, "Unbound extended key \"%s\"\n", key);
+	(void)fprintf(el->el_errfile, "Unbound extended key \"%s\"\n", key);
     return;
 }
 
@@ -379,7 +380,7 @@ node__try(ptr, str, val, ntype)
 	/* still more chars to go */
 	if (ptr->next == NULL)
 	    ptr->next = node__get(*str);	/* setup new node */
-	(void) node__try(ptr->next, str, val, ntype);
+	(void)node__try(ptr->next, str, val, ntype);
     }
     return 0;
 }
@@ -508,7 +509,7 @@ node_lookup(el, str, ptr, cnt)
 
     if (*str == 0) {
 	/* no more chars in str.  node_enum from here. */
-	(void) node_enum(el, ptr, cnt);
+	(void)node_enum(el, ptr, cnt);
 	return 0;
     }
     else {
@@ -557,15 +558,15 @@ node_enum(el, ptr, cnt)
     if (cnt >= KEY_BUFSIZ - 5) {	/* buffer too small */
 	el->el_key.buf[++cnt] = '"';
 	el->el_key.buf[++cnt] = '\0';
-	(void) fprintf(el->el_errfile, 
+	(void)fprintf(el->el_errfile, 
 		    "Some extended keys too long for internal print buffer");
-	(void) fprintf(el->el_errfile, " \"%s...\"\n", el->el_key.buf);
+	(void)fprintf(el->el_errfile, " \"%s...\"\n", el->el_key.buf);
 	return 0;
     }
 
     if (ptr == NULL) {
 #ifdef DEBUG_EDIT
-	(void) fprintf(el->el_errfile, "node_enum: BUG!! Null ptr passed\n!");
+	(void)fprintf(el->el_errfile, "node_enum: BUG!! Null ptr passed\n!");
 #endif
 	return -1;
     }
@@ -579,11 +580,11 @@ node_enum(el, ptr, cnt)
 	key_kprint(el, el->el_key.buf, &ptr->val, ptr->type);
     }
     else
-	(void) node_enum(el, ptr->next, ncnt + 1);
+	(void)node_enum(el, ptr->next, ncnt + 1);
 
     /* go to sibling if there is one */
     if (ptr->sibling)
-	(void) node_enum(el, ptr->sibling, cnt);
+	(void)node_enum(el, ptr->sibling, cnt);
     return 0;
 }
 
@@ -607,19 +608,19 @@ key_kprint(el, key, val, ntype)
 	switch (ntype) {
 	case XK_STR:
 	case XK_EXE:
-	    (void) fprintf(el->el_errfile, fmt, key, 
+	    (void)fprintf(el->el_errfile, fmt, key, 
 			   key__decode_str(val->str, unparsbuf, 
 					      ntype == XK_STR ? "\"\"" : "[]"));
 	    break;
 	case XK_CMD:
 	    for (fp = el->el_map.help; fp->name; fp++) 
 		if (val->cmd == fp->func) {
-		    (void) fprintf(el->el_errfile, fmt, key, fp->name);
+		    (void)fprintf(el->el_errfile, fmt, key, fp->name);
 		    break;
 		}
 #ifdef DEBUG_KEY
 	    if (fp->name == NULL) 
-		(void) fprintf(el->el_errfile, "BUG! Command not found.\n");
+		(void)fprintf(el->el_errfile, "BUG! Command not found.\n");
 #endif
 
 	    break;
@@ -628,7 +629,7 @@ key_kprint(el, key, val, ntype)
 	    break;
 	}
     else
-	(void) fprintf(el->el_errfile, fmt, key, "no input");
+	(void)fprintf(el->el_errfile, fmt, key, "no input");
 }
 
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: process.c,v 1.10 2002/09/07 07:58:21 maja Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -28,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: process.c,v 1.21 1996/08/22 17:04:07 moj Exp $";
+static char rcsid[] = "$OpenBSD: process.c,v 1.10 2002/09/07 07:58:21 maja Exp $";
 #endif
 
 #include "os.h"
@@ -48,8 +45,6 @@ extern u_char	buf[];
 extern int	DebugFlag;
 
 struct dllist dllist[MAXDL];		/* dump/load list		*/
-extern char	dl_mcst[];		/* Dump/Load Multicast		*/
-extern char	rc_mcst[];		/* Remote Console Multicast	*/
 
 void
 mopProcessInfo(pkt,index,moplen,dl_rpr,trans)
@@ -265,7 +260,7 @@ mopStartLoad(dst, src, dl_rpr, trans)
 	dllist[slot].a_lseek   = 0;
 
 	dllist[slot].count     = 0;
-	if (dllist[slot].dl_bsz >= 1492)
+	if ((dllist[slot].dl_bsz >= 1492) || (dllist[slot].dl_bsz == 0))
 		dllist[slot].dl_bsz = 1492;
 	if (dllist[slot].dl_bsz == 1030)	/* VS/uVAX 2000 needs this */
 		dllist[slot].dl_bsz = 1000;
@@ -348,10 +343,10 @@ mopNextLoad(dst, src, new_count, trans)
 		close(dllist[slot].ldfd);
 		dllist[slot].ldfd = 0;
 		dllist[slot].status = DL_STATUS_FREE;
-		sprintf(line,
+		snprintf(line,sizeof(line),
 			"%x:%x:%x:%x:%x:%x Load completed",
 			dst[0],dst[1],dst[2],dst[3],dst[4],dst[5]);
-		syslog(LOG_INFO, line);
+		syslog(LOG_INFO, "%s", line);
 		return;
 	}
 
@@ -387,7 +382,7 @@ mopNextLoad(dst, src, new_count, trans)
 			mopPutChar (pkt,&index,dllist[slot].count);
 			mopPutChar (pkt,&index,MOP_K_PLTP_HSN);
  			mopPutChar (pkt,&index,3);
-			mopPutMulti(pkt,&index,"ipc",3);
+			mopPutMulti(pkt,&index,(u_char *) "ipc",3);
 			mopPutChar (pkt,&index,MOP_K_PLTP_HSA);
 			mopPutChar (pkt,&index,6);
 			mopPutMulti(pkt,&index,src,6);
@@ -436,7 +431,7 @@ mopProcessDL(fd, ii, pkt, index, dst, src, trans, len)
 {
 	u_char  tmpc;
 	u_short moplen;
-	u_char  pfile[17], mopcode;
+	u_char  pfile[129], mopcode;
 	char    filename[FILENAME_MAX];
 	char    line[100];
 	int     i,nfd,iindex;
@@ -485,6 +480,8 @@ mopProcessDL(fd, ii, pkt, index, dst, src, trans, len)
 		rpr_pgty = mopGetChar(pkt,index);	/* Program Type */
 		
 		tmpc = mopGetChar(pkt,index);		/* Software ID Len */
+		if (tmpc > sizeof(pfile) - 1)
+			return;
 		for (i = 0; i < tmpc; i++) {
 			pfile[i] = mopGetChar(pkt,index);
 			pfile[i+1] = '\0';
@@ -498,8 +495,9 @@ mopProcessDL(fd, ii, pkt, index, dst, src, trans, len)
 			/* to ask. My solution is to use the ethernet addr */
 			/* as filename. Implementing a database would be   */
 			/* overkill.					   */
-			sprintf(pfile,"%02x%02x%02x%02x%02x%02x%c",
-				src[0],src[1],src[2],src[3],src[4],src[5],0);
+			snprintf((char *)pfile,sizeof pfile,
+			    "%02x%02x%02x%02x%02x%02x%c",
+			    src[0],src[1],src[2],src[3],src[4],src[5],0);
 		}
 		
 		tmpc = mopGetChar(pkt,index);		/* Processor */
@@ -511,31 +509,32 @@ mopProcessDL(fd, ii, pkt, index, dst, src, trans, len)
 		bcopy((char *)src, (char *)(dl_rpr->eaddr), 6);
 		mopProcessInfo(pkt,index,moplen,dl_rpr,trans);
 
-		sprintf(filename,"%s/%s.SYS", MOP_FILE_PATH, pfile);
+		snprintf(filename,sizeof(filename),
+			"%s/%s.SYS", MOP_FILE_PATH, pfile);
 		if ((mopCmpEAddr(dst,dl_mcst) == 0)) {
 			if ((nfd = open(filename, O_RDONLY, 0)) != -1) {
 				close(nfd);
 				mopSendASV(src, ii->eaddr, ii, trans);
-				sprintf(line,
+				snprintf(line,sizeof(line),
 					"%x:%x:%x:%x:%x:%x (%d) Do you have %s? (Yes)",
 					src[0],src[1],src[2],
 					src[3],src[4],src[5],trans,pfile);
 			} else {
-				sprintf(line,
+				snprintf(line,sizeof(line),
 					"%x:%x:%x:%x:%x:%x (%d) Do you have %s? (No)",
 					src[0],src[1],src[2],
 					src[3],src[4],src[5],trans,pfile);
 			}
-			syslog(LOG_INFO, line);
+			syslog(LOG_INFO, "%s", line);
 		} else {
 			if ((mopCmpEAddr(dst,ii->eaddr) == 0)) {
 				dl_rpr->ldfd = open(filename, O_RDONLY, 0);
 				mopStartLoad(src, ii->eaddr, dl_rpr, trans);
-				sprintf(line,
+				snprintf(line,sizeof(line),
 					"%x:%x:%x:%x:%x:%x Send me %s",
 					src[0],src[1],src[2],
 					src[3],src[4],src[5],pfile);
-				syslog(LOG_INFO, line);
+				syslog(LOG_INFO, "%s", line);
 			}
 		}
 		

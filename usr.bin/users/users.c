@@ -1,3 +1,4 @@
+/*	$OpenBSD: users.c,v 1.6 2002/09/17 19:37:40 deraadt Exp $	*/
 /*	$NetBSD: users.c,v 1.5 1994/12/20 15:58:19 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)users.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: users.c,v 1.5 1994/12/20 15:58:19 jtc Exp $";
+static char rcsid[] = "$OpenBSD: users.c,v 1.6 2002/09/17 19:37:40 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -55,21 +52,19 @@ static char rcsid[] = "$NetBSD: users.c,v 1.5 1994/12/20 15:58:19 jtc Exp $";
 
 typedef char	namebuf[UT_NAMESIZE];
 
-int scmp __P((const void *, const void *));
+int scmp(const void *, const void *);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	namebuf *names = NULL;
-	register int ncnt = 0;
-	register int nmax = 0;
+	int ncnt = 0;
+	int nmax = 0;
 	int cnt;
 	struct utmp utmp;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
 		case '?':
 		default:
@@ -114,8 +109,7 @@ main(argc, argv)
 }
 
 int
-scmp(p, q)
-	const void *p, *q;
+scmp(const void *p, const void *q)
 {
 	return(strncmp((char *) p, (char *) q, UT_NAMESIZE));
 }

@@ -3098,9 +3098,12 @@ get_program_header_size (abfd)
       return elf_tdata (abfd)->program_header_size;
     }
 
-  /* Assume we will need exactly two PT_LOAD segments: one for text
-     and one for data.  */
-  segs = 2;
+  /* We used to assume that two PT_LOAD segments would be enough,
+     code and data, with the change to pad the PLT and GOT, this is no
+     longer true. Now there can be several PT_LOAD sections. 7 seems
+     to be enough with BSS_PLT and .rodata-X, where we have text, data,
+     GOT, dynamic, PLT, bss */
+  segs = 7;
 
   s = bfd_get_section_by_name (abfd, ".interp");
   if (s != NULL && (s->flags & SEC_LOAD) != 0)
@@ -4535,7 +4538,9 @@ _bfd_elf_get_symtab_upper_bound (abfd)
   Elf_Internal_Shdr *hdr = &elf_tdata (abfd)->symtab_hdr;
 
   symcount = hdr->sh_size / get_elf_backend_data (abfd)->s->sizeof_sym;
-  symtab_size = (symcount - 1 + 1) * (sizeof (asymbol *));
+  symtab_size = (symcount + 1) * (sizeof (asymbol *));
+  if (symcount > 0)
+    symtab_size -= sizeof (asymbol *);
 
   return symtab_size;
 }
@@ -4555,7 +4560,9 @@ _bfd_elf_get_dynamic_symtab_upper_bound (abfd)
     }
 
   symcount = hdr->sh_size / get_elf_backend_data (abfd)->s->sizeof_sym;
-  symtab_size = (symcount - 1 + 1) * (sizeof (asymbol *));
+  symtab_size = (symcount + 1) * (sizeof (asymbol *));
+  if (symcount > 0)
+    symtab_size -= sizeof (asymbol *);
 
   return symtab_size;
 }

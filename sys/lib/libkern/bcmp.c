@@ -1,3 +1,5 @@
+/*	$OpenBSD: bcmp.c,v 1.5 2000/06/29 16:38:20 mickey Exp $	*/
+
 /*
  * Copyright (c) 1987 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,24 +31,29 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)bcmp.c	5.6 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: bcmp.c,v 1.5 1995/10/07 09:26:19 mycroft Exp $";
+static char *rcsid = "$OpenBSD: bcmp.c,v 1.5 2000/06/29 16:38:20 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <string.h>
+#else
+#include <lib/libkern/libkern.h>
+#endif
 
 /*
  * bcmp -- vax cmpc3 instruction
  */
+int
 bcmp(b1, b2, length)
 	const void *b1, *b2;
 	register size_t length;
 {
-	register char *p1, *p2;
+	register const char *p1, *p2;
 
 	if (length == 0)
 		return(0);
-	p1 = (char *)b1;
-	p2 = (char *)b2;
+	p1 = (const char *)b1;
+	p2 = (const char *)b2;
 	do
 		if (*p1++ != *p2++)
 			break;

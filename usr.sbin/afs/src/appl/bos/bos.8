@@ -103,8 +103,8 @@ has several subcommands:
 Add a new
 .Ar host
 to the CellServDB on the
-.Ar server.
-This make the database server consider
+.Ar server Ns .
+This makes the database server consider
 .Ar host
 as a peer and will use when they synchronize their databases (the
 database servers) need to be restarted.
@@ -113,12 +113,12 @@ database servers) need to be restarted.
 .Ic addkey
 .Fl server Ar server
 .Op Fl key Ar key
-.Op kvno Ar keyversionnumber
+.Op Fl kvno Ar keyversionnumber
 .Op Fl cell Ar cellname
 .Op Fl noauth
 .Op Fl localauth
 .Bd -filled -offset indent -compact
-Add a new AFS-key to the KeyFile.
+Add a new afs-key to the KeyFile.
 Add the ticket specified in
 .Ar key
 with
@@ -134,7 +134,7 @@ to the
 .Op Fl noauth
 .Op Fl localauth
 .Bd -filled -offset indent -compact
-Add a new user the the SuperUser file on the fileserver
+Add a new user the SuperUser file on the fileserver
 .Ar server ,
 thus giving that user the right to manage volumes and bosserver.
 .Ed
@@ -144,7 +144,7 @@ thus giving that user the right to manage volumes and bosserver.
 .Fl instance Ar serverprocessname
 .Fl type Ar servertype
 .Fl cmd Ar command
-.Op Fl notifier Ar notifier
+.Op Fl notifier Ar program
 .Op Fl cell Ar cellname
 .Op Fl noauth
 .Op Fl localauth
@@ -162,7 +162,7 @@ command.
 .Pp
 .Ic delete
 .Fl server Ar server
-.Fl instance Ar serverprocessname
+.Fl instance Ar instance
 .Op Fl cell Ar cellname
 .Op Fl noauth
 .Op Fl localauth
@@ -216,7 +216,8 @@ that resides on the
 .Ed
 .Pp
 .Ic getrestart
-.Fl server Ar "machine name"
+.Fl server Ar server
+.Op Fl dir Ar dest
 .Op Fl cell Ar cellname
 .Op Fl noauth
 .Op Fl localauth

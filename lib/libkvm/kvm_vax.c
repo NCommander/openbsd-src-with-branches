@@ -1,4 +1,6 @@
-/*	$NetBSD: kvm_vax.c,v 1.2 1995/04/25 15:41:11 ragge Exp $ */
+/*	$OpenBSD: kvm_vax.c,v 1.7 2001/12/05 02:23:11 art Exp $ */
+/*	$NetBSD: kvm_vax.c,v 1.3 1996/03/18 22:34:06 thorpej Exp $ */
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,8 +49,9 @@
 #include <nlist.h>
 #include <kvm.h>
 
-#include <vm/vm.h>
-#include <vm/vm_param.h>
+#include <uvm/uvm_extern.h>
+#include <machine/vmparam.h>
+#include <machine/pmap.h>
 
 #include <limits.h>
 #include <db.h>
@@ -116,19 +115,31 @@ _kvm_kvatop(kd, va, pa)
 	u_long va;
 	u_long *pa;
 {
-	register int end;
+	register u_long end;
 
 	if (va < KERNBASE) {
-		_kvm_err(kd, 0, "invalid address (%x<%x)", va, KERNBASE);
+		_kvm_err(kd, 0, "invalid address (%lx<%lx)", va, KERNBASE);
 		return (0);
 	}
 
 	end = kd->vmst->end;
 	if (va >= end) {
-		_kvm_err(kd, 0, "invalid address (%x>=%x)", va, end);
+		_kvm_err(kd, 0, "invalid address (%lx>=%lx)", va, end);
 		return (0);
 	}
 
 	*pa = (va - KERNBASE);
 	return (end - va);
+}
+
+/*  
+ * Translate a physical address to an offset in the crash dump
+ * XXX crashdumps not working yet anyway
+ */
+off_t
+_kvm_pa2off(kd, pa)
+	kvm_t	*kd;
+	u_long	pa;
+{
+	return(kd->dump_off+pa);
 }

@@ -1037,7 +1037,7 @@ API_EXPORT_NONSTD(char *) ap_pstrcat(pool *a,...)
     va_start(adummy, a);
 
     while ((argp = va_arg(adummy, char *)) != NULL) {
-	strcpy(cp, argp);
+	strlcpy(cp, argp, len + 1);
 	cp += strlen(argp);
     }
 
@@ -3096,12 +3096,8 @@ static void free_proc_chain(struct process_chain *procs)
 	if ((p->kill_how == kill_after_timeout)
 	    || (p->kill_how == kill_only_once)) {
 	    /* Subprocess may be dead already.  Only need the timeout if not. */
-	    if (ap_os_kill(p->pid, SIGTERM) == -1) {
-                p->kill_how = kill_never;
-            }
-            else {
-		need_timeout = 1;
-            }
+	    ap_os_kill(p->pid, SIGTERM);
+	    need_timeout = 1;
 	}
 	else if (p->kill_how == kill_always) {
 	    kill(p->pid, SIGKILL);

@@ -1,3 +1,5 @@
+/*	$OpenBSD: names.h,v 1.4 2003/03/11 21:26:26 ian Exp $	*/
+
 /*
  * Names.h - names and types used by ascmagic in file(1).
  * These tokens are here because they can appear anywhere in
@@ -5,27 +7,48 @@
  * appear at fixed offsets into the file. Don't make HOWMANY
  * too high unless you have a very fast CPU.
  *
- * Copyright (c) Ian F. Darwin, 1987.
- * Written by Ian F. Darwin.
- *
- * See LEGAL.NOTICE
- *
- * $Id: names.h,v 1.4 1995/04/28 19:23:56 christos Exp $
+ * Copyright (c) Ian F. Darwin 1986-1995.
+ * Software written by Ian F. Darwin and others;
+ * maintained 1995-present by Christos Zoulas and others.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice immediately at the beginning of the file, without modification,
+ *    this list of conditions, and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 /* these types are used to index the table 'types': keep em in sync! */
 #define L_C	0		/* first and foremost on UNIX */
-#define	L_FORT	1		/* the oldest one */
-#define L_MAKE	2		/* Makefiles */
-#define L_PLI	3		/* PL/1 */
-#define L_MACH	4		/* some kinda assembler */
-#define L_ENG	5		/* English */
-#define	L_PAS	6		/* Pascal */
-#define	L_MAIL	7		/* Electronic mail */
-#define	L_NEWS	8		/* Usenet Netnews */
+#define L_CC	1		/* Bjarne's postincrement */
+#define	L_FORT	2		/* the oldest one */
+#define L_MAKE	3		/* Makefiles */
+#define L_PLI	4		/* PL/1 */
+#define L_MACH	5		/* some kinda assembler */
+#define L_ENG	6		/* English */
+#define	L_PAS	7		/* Pascal */
+#define	L_MAIL	8		/* Electronic mail */
+#define	L_NEWS	9		/* Usenet Netnews */
 
 static char *types[] = {
 	"C program text",
+	"C++ program text",
 	"FORTRAN program text",
 	"make commands text" ,
 	"PL/1 program text",
@@ -43,6 +66,12 @@ static struct names {
 } names[] = {
 	/* These must be sorted by eye for optimal hit rate */
 	/* Add to this list only after substantial meditation */
+	{"//",		L_CC},
+	{"template",	L_CC},
+	{"virtual",	L_CC},
+	{"class",	L_CC},
+	{"public:",	L_CC},
+	{"private:",	L_CC},
 	{"/*",		L_C},	/* must precede "The", "the", etc. */
 	{"#include",	L_C},
 	{"char",	L_C},

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1999, 2001, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * This code is derived from software contributed by Frank Cusack
@@ -33,25 +33,35 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
 
 #include "config.h"
 
+#include <sys/types.h>
+#include <sys/param.h>
 #include <stdio.h>
 #ifdef STDC_HEADERS
-#include <stdlib.h>
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
 #endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
-#include <sys/param.h>
-#include <sys/types.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
 #include <pwd.h>
 #include <krb5.h>
 
@@ -59,8 +69,16 @@
 #include "sudo_auth.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: kerb5.c,v 1.10 1999/10/13 02:34:55 millert Exp $";
+static const char rcsid[] = "$Sudo: kerb5.c,v 1.18 2003/04/16 00:42:10 millert Exp $";
 #endif /* lint */
+
+#ifdef HAVE_HEIMDAL
+# define extract_name(c, p)		krb5_principal_get_comp_string(c, p, 0)
+# define krb5_free_data_contents(c, d)	krb5_data_free(d)
+# define ENCTYPE_DES_CBC_MD5		ETYPE_DES_CBC_MD5	/* XXX */
+#else
+# define extract_name(c, p)		(krb5_princ_component(c, p, 1)->data)
+#endif
 
 static int verify_krb_v5_tgt __P((krb5_context, krb5_ccache, char *));
 static struct _sudo_krb5_data {
@@ -87,16 +105,12 @@ kerb5_init(pw, promptp, auth)
 
     auth->data = (VOID *) &sudo_krb5_data; /* Stash all our data here */
 
-    if (error = krb5_init_context(&(sudo_krb5_data.sudo_context))) {
-	log_error(NO_EXIT|NO_MAIL, 
-		  "%s: unable to initialize context: %s", auth->name,
-		  error_message(error));
+    if ((error = krb5_init_context(&(sudo_krb5_data.sudo_context))))
 	return(AUTH_FAILURE);
-    }
     sudo_context = sudo_krb5_data.sudo_context;
 
-    if (error = krb5_parse_name(sudo_context, pw->pw_name,
-	&(sudo_krb5_data.princ))) {
+    if ((error = krb5_parse_name(sudo_context, pw->pw_name,
+	&(sudo_krb5_data.princ)))) {
 	log_error(NO_EXIT|NO_MAIL, 
 		  "%s: unable to parse '%s': %s", auth->name, pw->pw_name,
 		  error_message(error));
@@ -109,7 +123,7 @@ kerb5_init(pw, promptp, auth)
      * The API does not currently provide this unless the auth is standalone.
      */
 #if 1
-    if (error = krb5_unparse_name(sudo_context, princ, &pname)) {
+    if ((error = krb5_unparse_name(sudo_context, princ, &pname))) {
 	log_error(NO_EXIT|NO_MAIL,
 		  "%s: unable to unparse princ ('%s'): %s", auth->name,
 		  pw->pw_name, error_message(error));
@@ -124,7 +138,7 @@ kerb5_init(pw, promptp, auth)
 #endif
 
     /* For CNS compatibility */
-    if (error = krb5_cc_register(sudo_context, &krb5_mcc_ops, FALSE)) {
+    if ((error = krb5_cc_register(sudo_context, &krb5_mcc_ops, FALSE))) {
 	if (error != KRB5_CC_TYPE_EXISTS) {
 	    log_error(NO_EXIT|NO_MAIL, 
 		      "%s: unable to use Memory ccache: %s", auth->name,
@@ -135,8 +149,8 @@ kerb5_init(pw, promptp, auth)
 
     (void) snprintf(cache_name, sizeof(cache_name), "MEMORY:sudocc_%ld",
 		    (long) getpid());
-    if (error = krb5_cc_resolve(sudo_context, cache_name,
-	&(sudo_krb5_data.ccache))) {
+    if ((error = krb5_cc_resolve(sudo_context, cache_name,
+	&(sudo_krb5_data.ccache)))) {
 	log_error(NO_EXIT|NO_MAIL, 
 		  "%s: unable to resolve ccache: %s", auth->name,
 		  error_message(error));
@@ -144,7 +158,7 @@ kerb5_init(pw, promptp, auth)
     }
     ccache = sudo_krb5_data.ccache;
 
-    if (error = krb5_cc_initialize(sudo_context, ccache, princ)) {
+    if ((error = krb5_cc_initialize(sudo_context, ccache, princ))) {
 	log_error(NO_EXIT|NO_MAIL, 
 		  "%s: unable to initialize ccache: %s", auth->name,
 		  error_message(error));
@@ -166,7 +180,6 @@ kerb5_verify(pw, pass, auth)
     krb5_creds		creds;
     krb5_error_code	error;
     krb5_get_init_creds_opt opts;
-    char		cache_name[64];
 
     sudo_context = ((sudo_krb5_datap) auth->data)->sudo_context;
     princ = ((sudo_krb5_datap) auth->data)->princ;
@@ -176,9 +189,9 @@ kerb5_verify(pw, pass, auth)
     krb5_get_init_creds_opt_init(&opts);
 
     /* Note that we always obtain a new TGT to verify the user */
-    if (error = krb5_get_init_creds_password(sudo_context, &creds, princ,
+    if ((error = krb5_get_init_creds_password(sudo_context, &creds, princ,
 					     pass, krb5_prompter_posix,
-					     NULL, 0, NULL, &opts)) {
+					     NULL, 0, NULL, &opts))) {
 	if (error == KRB5KRB_AP_ERR_BAD_INTEGRITY) /* Bad password */
 	    return(AUTH_FAILURE);
 	/* Some other error */
@@ -189,7 +202,7 @@ kerb5_verify(pw, pass, auth)
     }
 
     /* Stash the TGT so we can verify it. */
-    if (error = krb5_cc_store_cred(sudo_context, ccache, &creds)) {
+    if ((error = krb5_cc_store_cred(sudo_context, ccache, &creds))) {
 	log_error(NO_EXIT|NO_MAIL, 
 		  "%s: unable to store credentials: %s", auth->name,
 		  error_message(error));
@@ -257,8 +270,8 @@ verify_krb_v5_tgt(sudo_context, ccache, auth_name)
      * Get the server principal for the local host.
      * (Use defaults of "host" and canonicalized local name.)
      */
-    if (error = krb5_sname_to_principal(sudo_context, NULL, NULL,
-					KRB5_NT_SRV_HST, &princ)) {
+    if ((error = krb5_sname_to_principal(sudo_context, NULL, NULL,
+					KRB5_NT_SRV_HST, &princ))) {
 	log_error(NO_EXIT|NO_MAIL, 
 		  "%s: unable to get host principal: %s", auth_name,
 		  error_message(error));
@@ -266,17 +279,15 @@ verify_krb_v5_tgt(sudo_context, ccache, auth_name)
     }
 
     /* Extract the name directly. Yow. */
-    strncpy(phost, krb5_princ_component(sudo_context, princ, 1)->data,
-	    sizeof(phost) - 1);
-    phost[sizeof(phost) - 1] = '\0';
+    strlcpy(phost, extract_name(sudo_context, princ), sizeof(phost));
 
     /*
      * Do we have host/<host> keys?
      * (use default keytab, kvno IGNORE_VNO to get the first match,
      * and enctype is currently ignored anyhow.)
      */
-    if (error = krb5_kt_read_service_key(sudo_context, NULL, princ, 0,
-					 ENCTYPE_DES_CBC_MD5, &keyblock)) {
+    if ((error = krb5_kt_read_service_key(sudo_context, NULL, princ, 0,
+					 ENCTYPE_DES_CBC_MD5, &keyblock))) {
 	/* Keytab or service key does not exist. */
 	log_error(NO_EXIT,
 		  "%s: host service key not found: %s", auth_name,
