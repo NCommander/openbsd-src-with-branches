@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.3 1997/02/10 01:33:58 downsj Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.4 1997/08/08 21:46:42 niklas Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.1 1994/10/14 18:26:39 cgd Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 
 /* Just a dummy */
 struct cpu_disklabel {
-	int	cd_dummy;			/* must have one element. */
+	/* EMPTY */
 };
 
 #endif /* _MACHINE_DISKLABEL_H_ */
