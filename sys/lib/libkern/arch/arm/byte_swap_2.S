@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: byte_swap_2.S,v 1.1.20.1 2002/07/02 06:50:59 lukem Exp $	*/
 
 /*-
