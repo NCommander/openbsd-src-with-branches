@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmoused.c,v 1.4 2001/08/31 22:34:54 jbm Exp $ */
+/* $OpenBSD: wsmoused.c,v 1.5 2001/09/20 21:22:16 miod Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -231,7 +231,7 @@ terminate(int sig)
 		mouse.mfd = -1;
 	}
 	unlink(pidfile);
-	exit(0);
+	_exit(0);
 }
 
 /* buttons status (for multiple click detection) */
