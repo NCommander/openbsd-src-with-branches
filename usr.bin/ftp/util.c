@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.15 1997/09/15 04:57:54 millert Exp $	*/
+/*	$OpenBSD: util.c,v 1.16 1997/11/25 08:10:34 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.12 1997/08/18 10:20:27 lukem Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: util.c,v 1.15 1997/09/15 04:57:54 millert Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.16 1997/11/25 08:10:34 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -57,6 +57,7 @@ static char rcsid[] = "$OpenBSD: util.c,v 1.15 1997/09/15 04:57:54 millert Exp $
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <tzfile.h>
 #include <unistd.h>
 
 #include "ftp_var.h"
@@ -564,7 +565,7 @@ remotemodtime(file, noisy)
 		timebuf.tm_hour = hour;
 		timebuf.tm_mday = day;
 		timebuf.tm_mon = mo - 1;
-		timebuf.tm_year = yy - 1900;
+		timebuf.tm_year = yy - TM_YEAR_BASE;
 		timebuf.tm_isdst = -1;
 		rtime = mktime(&timebuf);
 		if (rtime == -1 && (noisy || debug != 0))

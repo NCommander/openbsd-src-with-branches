@@ -1,4 +1,4 @@
-/*	$OpenBSD: chpass.c,v 1.8 1997/02/13 17:28:39 deraadt Exp $	*/
+/*	$OpenBSD: chpass.c,v 1.9 1997/06/17 20:49:55 kstailey Exp $	*/
 /*	$NetBSD: chpass.c,v 1.8 1996/05/15 21:50:43 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)chpass.c	8.4 (Berkeley) 4/2/94";
 #else 
-static char rcsid[] = "$OpenBSD: chpass.c,v 1.8 1997/02/13 17:28:39 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: chpass.c,v 1.9 1997/06/17 20:49:55 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -75,6 +75,8 @@ uid_t uid;
 int use_yp;
 int force_yp = 0;
 extern struct passwd *ypgetpwnam(), *ypgetpwuid();
+int _yp_check __P((char **));
+int pw_yp __P((struct passwd *, uid_t));
 #endif
 
 void	baduser __P((void));
