@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.28 2001/08/19 06:10:09 art Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.29 2001/11/06 19:53:20 miod Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -359,6 +359,9 @@ initclocks()
 		break;
 	case 1024:
 		shifthz = SHIFT_SCALE - 10;
+		break;
+	case 1200:
+		shifthz = SHIFT_SCALE - 11;
 		break;
 	default:
 		panic("weird hz");
