@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 1997/10/02 04:22:39 imp Exp $
+#	$OpenBSD: Makefile,v 1.15 1998/07/24 00:10:54 millert Exp $
 
 # Define SMALL to disable command line editing
 #CFLAGS+=-DSMALL
@@ -14,6 +14,9 @@ LDADD += -lsocks5
 PROG=	ftp
 SRCS=	cmds.c cmdtab.c complete.c domacro.c fetch.c ftp.c main.c ruserpass.c \
 	stringlist.c util.c
+
+# not really used at this moment
+CPPFLAGS+= -DINET6
 
 LDADD+=	-ledit -lcurses
 DPADD+=	${LIBEDIT} ${LIBCURSES}
