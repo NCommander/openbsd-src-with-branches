@@ -1,4 +1,4 @@
-/*	$OpenBSD: denode.h,v 1.12 2001/12/19 08:58:06 art Exp $	*/
+/*	$OpenBSD: denode.h,v 1.13 2002/03/14 01:27:09 millert Exp $	*/
 /*	$NetBSD: denode.h,v 1.24 1997/10/17 11:23:39 ws Exp $	*/
 
 /*-
@@ -198,8 +198,6 @@ struct denode {
 	 (dep)->de_FileSize = getulong((dp)->deFileSize), \
 	 (FAT32((dep)->de_pmp) ? DE_INTERNALIZE32((dep), (dp)) : 0))
 
-#define DE_EXTERNALIZE32(dp, dep)                     \
-         putushort((dp)->deHighClust, (dep)->de_StartCluster >> 16)
 #define DE_EXTERNALIZE(dp, dep)				\
 	(bcopy((dep)->de_Name, (dp)->deName, 11),	\
 	 (dp)->deAttributes = (dep)->de_Attributes,	\
@@ -213,7 +211,8 @@ struct denode {
 	 putushort((dp)->deStartCluster, (dep)->de_StartCluster), \
 	 putulong((dp)->deFileSize, \
 	     ((dep)->de_Attributes & ATTR_DIRECTORY) ? 0 : (dep)->de_FileSize),\
-	 (FAT32((dep)->de_pmp) ? DE_EXTERNALIZE32((dp), (dep)) : 0))
+	 putushort((dp)->deHighClust, \
+	     FAT32((dep)->de_pmp) ? (dep)->de_StartCluster >> 16 : 0))
 
 #define	de_forw		de_chain[0]
 #define	de_back		de_chain[1]
