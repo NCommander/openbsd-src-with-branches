@@ -10,7 +10,6 @@ SRCS=	cmds.c cmdtab.c disks.c dkstats.c fetch.c iostat.c keyboard.c \
 DPADD=	${LIBCURSES} ${LIBTERMLIB} ${LIBM} ${LIBKVM}
 LDADD=	-lcurses -ltermlib -lm -lkvm
 BINGRP=	kmem
-#BINMODE=2555
-BINMODE=555
+BINMODE=2555
 
 .include <bsd.prog.mk>
