@@ -1537,9 +1537,3 @@ linux_sys_sysinfo(p, v, retval)
 
 	return (copyout(&si, SCARG(uap, sysinfo), sizeof(si)));
 }
-
-int
-linux_sys_exit_group(struct proc *p, void *v, register_t *retval)
-{
-	return (sys_exit(p, v, retval));
-}
