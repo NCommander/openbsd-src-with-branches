@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 1997/02/23 19:10:50 downsj Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/04/21 07:32:11 downsj Exp $
 #	$NetBSD: Makefile,v 1.1 1995/07/18 04:13:06 briggs Exp $
 
 TOP=		${.CURDIR}/..
@@ -15,7 +15,7 @@ VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 VND_CRDEV=	/dev/r${VND}c
 PID!=		echo $$$$
-REALIMAGE!=	echo /tmp/image.${PID}
+REALIMAGE!=	echo /var/tmp/image.${PID}
 
 all: ${CBIN} ${IMAGE}
 	@echo "all done"
