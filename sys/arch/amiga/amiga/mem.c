@@ -64,8 +64,7 @@ caddr_t zeropage;
 int mmopen __P((dev_t, int, int, struct proc *));
 int mmclose __P((dev_t, int, int, struct proc *));
 int mmrw __P((dev_t, struct uio *, int));
-int mmmmap __P((dev_t, int, int));
-
+int mmmmap __P((dev_t, vm_offset_t, int));
 
 /*ARGSUSED*/
 int
@@ -232,7 +231,8 @@ unlock:
 int
 mmmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	vm_offset_t off;
+	int prot;
 {
 
 	return (EOPNOTSUPP);
