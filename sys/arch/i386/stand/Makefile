@@ -1,8 +1,7 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.4.4.1 1996/10/16 08:51:13 mickey Exp $
 #	@(#)Makefile	7.9 (Berkeley) 5/8/91
 
 S	= ${.CURDIR}/../../..
-SAREL	=
 I386	= ${.CURDIR}/..
 STAND=	/sys/stand
 INCPATH=-I. -I${SADIR} -I${S}
@@ -24,19 +23,16 @@ DEBUG+=	-DRPC_DEBUG
 CFLAGS=	-Wall -m386 -O2 -D_STANDALONE -DAT386 -O ${INCPATH}
 CPPFLAGS=	${DEBUG} ${INCPATH} -DRELOC=0x${RELOC}
 
+SAREL=
 .include "${S}/lib/libsa/Makefile.inc"
 LDADD=		${SALIB}
 DPADD=		${SALIB}
 
 SRCS=	srt0.S boot.c fs.c dev.c biosdev.c bios.S ${ZLIB} version.c
 
-CLEANFILES+=	*.o *.h bread[fwsc]d.c \
-		[fwsc]dboot boot[fwsc]d boot[fwsc]d.sym boot[fwsc]d.c
-
 OBJS=	srt0.o boot.o zlib.o
-OBJS+=	fs.o dev.o biosdev.o bios.o
+OBJS+=	fs.o dev.o biosdev.o bios.o netif.o
 #clock.o
-OBJS+=	machdep.o real_prot.o
 
 .PATH: ${S}/net
 # ${I386}/i386 ${I386}/isa ${S}/dev/isa ${S}/kern

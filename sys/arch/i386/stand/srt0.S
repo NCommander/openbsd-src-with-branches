@@ -51,7 +51,6 @@
 	.globl	_edata
 	.globl	_boot
 	.globl	__rtt
-	.globl	_exit
 	.globl	_bootdev
 	.globl	_boothowto
 	.globl	_cyloffset
@@ -106,7 +105,7 @@ start:
 	movl	%esi,%esp
 #endif
 	call	_boot
-	jmp	1f
+	jmp	__rtt
 
 	.data
 _bootdev:	.long	0
@@ -123,14 +122,6 @@ __rtt:
 	call	_wait
 	popl	%eax
 	movl	$-7,%eax
-	jmp	1f
-
-_exit:
-	pushl	$1000000
-	call	_wait
-	popl	%eax
-	movl	4(%esp),%eax
-1:
 #ifdef	REL
 #ifndef SMALL
 	call	_reset_cpu
@@ -174,42 +165,6 @@ ___divsi3:
 	idivl 8(%esp)
 	ret
 
-	#
-	# bzero (base,cnt)
-	#
-
-	.globl _bzero
-_bzero:
-	pushl	%edi
-	movl	8(%esp),%edi
-	movl	12(%esp),%ecx
-	movb	$0x00,%al
-	cld
-	rep
-	stosb
-	popl	%edi
-	ret
-
-	#
-	# bcopy (src,dst,cnt)
-	# NOTE: does not (yet) handle overlapped copies
-	#
-
-	.globl	_bcopy
-_bcopy:
-	pushl	%esi
-	pushl	%edi
-	movl	12(%esp),%esi
-	movl	16(%esp),%edi
-	movl	20(%esp),%ecx
-	cld
-	rep
-	movsb
-	popl	%edi
-	popl	%esi
-	ret
-
-	# insw(port,addr,cnt)
 	.globl	_insw
 _insw:
 	pushl	%edi
@@ -240,3 +195,4 @@ _outsw:
 	movl	%esi,%eax
 	popl	%esi
 	ret
+

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.c,v 1.1.2.1 1996/10/16 08:51:17 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -31,63 +31,15 @@
  * SUCH DAMAGE.
  *
  */
+
+#include <sys/types.h>
+#include <netinet/in.h>
 #include <stand.h>
+#include <netif.h>
 
-int biosstrategy __P((void *, int, daddr_t, size_t, void *, size_t *));
-int biosopen __P((struct open_file *, ...));
-int biosclose __P((struct open_file *));
-int biosioctl __P((struct open_file *, u_long, void *));
-
-struct devsw	devsw[] = {
-	{ "BIOS", biosstrategy, biosopen, biosclose, biosioctl },
-	{ NULL, NULL, NULL, NULL, NULL }
+struct netif_driver	netif_drivers[] = {
+	{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0 }
 };
 
-int	ndevsw = NENTS(devsw);
+int n_netif_drivers = NENTS(netif_drivers);
 
-void
-putchar(c)
-	int	c;
-{
-	extern int putc(int);
-
-	if (c == '\n')
-		putc('\r');
-	putc(c);
-}
-
-int                                                                 
-getchar()                                                                
-{
-	extern int getc();
-
-	int c = getc();
-
-	if (c == '\b' || c == '\177')
-		return(c);
-
-	if (c == '\r')
-		c = '\n';
-
-	putchar(c);
-
-	return(c);
-}
-
-void
-wait(n)
-	int	n;
-{
-	extern int ischar();
-	extern void usleep(int);
-	while (n-- && !ischar())
-		usleep(10);
-}
-
-
-/* pass dev_t to the open routines */
-int
-devopen(struct open_file *f, const char *fname, char **file)
-{
-	return 0;
-}

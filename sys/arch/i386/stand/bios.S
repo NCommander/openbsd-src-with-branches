@@ -345,3 +345,10 @@ ENTRY(usleep)
 	popl	%ebp
 	ret
 
+/*
+#
+#
+*/
+ENTRY(getsecs)
+	ret
+

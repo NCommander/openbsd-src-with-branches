@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: biosdev.c,v 1.1.2.1 1996/10/16 08:51:16 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -42,6 +42,7 @@ biosstrategy(void *devdata, int rw,
 	daddr_t blk, size_t size, void *buf, size_t *rsize)
 {
 
+	return -1;
 }
 
 int
