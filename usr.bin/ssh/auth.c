@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.13 2001/01/18 16:59:59 markus Exp $");
+RCSID("$OpenBSD: auth.c,v 1.14 2001/01/21 19:05:43 markus Exp $");
 
 #include "xmalloc.h"
 #include "match.h"
@@ -176,7 +176,7 @@ auth_root_allowed(void)
 		log("Root login accepted for forced command.");
 		return 1;
 	} else {
-		log("ROOT LOGIN REFUSED FROM %.200s", get_canonical_hostname());
+		log("ROOT LOGIN REFUSED FROM %.200s", get_remote_ipaddr());
 		return 0;
 	}
 }
