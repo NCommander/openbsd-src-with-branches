@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_conf.c,v 1.8 1997/11/06 05:58:26 csapuntz Exp $	*/
+/*	$OpenBSD: vfs_conf.c,v 1.9 1997/11/07 16:51:21 csapuntz Exp $	*/
 /*	$NetBSD: vfs_conf.c,v 1.21.4.1 1995/11/01 00:06:26 jtc Exp $	*/
 
 /*
@@ -52,6 +52,7 @@
 
 #ifdef CD9660
 #include <isofs/cd9660/iso.h>
+#include <isofs/cd9660/cd9660_extern.h>
 #endif
 
 #ifdef MFS
