@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc_obio.c,v 1.18 2003/10/26 15:15:26 miod Exp $	*/
+/*	$OpenBSD: wdc_obio.c,v 1.19 2003/10/26 15:23:40 drahn Exp $	*/
 /*	$NetBSD: wdc_obio.c,v 1.15 2001/07/25 20:26:33 bouyer Exp $	*/
 
 /*-
@@ -163,7 +163,7 @@ wdc_obio_attach(struct device *parent, struct device *self, void *aux)
 	}
 
 	if (use_dma)
-		printf(": DMA transfer");
+		printf(": DMA");
 
 	printf("\n");
 
