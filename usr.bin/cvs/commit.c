@@ -1,4 +1,4 @@
-/*	$OpenBSD: commit.c,v 1.9 2004/12/07 17:10:56 tedu Exp $	*/
+/*	$OpenBSD: commit.c,v 1.10 2004/12/08 17:22:48 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -109,6 +109,8 @@ cvs_commit(int argc, char **argv)
 		return (EX_DATAERR);
 
 	cvs_file_examine(cvs_files, cvs_commit_prepare, &cl);
+	if (TAILQ_EMPTY(&cl))
+		return (0);
 
 	if (msg == NULL) {
 		msg = cvs_logmsg_get(CVS_FILE_NAME(cvs_files), NULL, &cl, NULL);
