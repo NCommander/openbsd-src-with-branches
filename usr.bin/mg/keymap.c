@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.15 2002/02/08 21:21:11 deraadt Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.16 2002/02/20 23:37:24 art Exp $	*/
 
 /*
  * Keyboard maps.  This is character set dependent.  The terminal specific
@@ -139,6 +139,8 @@ static PF cXcar[] = {
 	rescan,			/* q */
 	rescan,			/* r */
 	savebuffers,		/* s */
+	NULL,			/* t */
+	undo,			/* u */
 };
 
 #ifndef NO_MACRO
@@ -170,7 +172,7 @@ static struct KEYMAPE (5 + IMAPEXT) cXmap = {
 			'=', '=', cXeq, NULL
 		},
 		{
-			'^', 's', cXcar, NULL
+			'^', 'u', cXcar, NULL
 		},
 	}
 };
