@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -427,8 +429,6 @@ struct pcvtinfo {			/* compile time option values */
 	u_int opsysrel;			/* Release */
 	u_int nscreens;			/* PCVT_NSCREENS */
 	u_int scanset;			/* PCVT_SCANSET */
-	u_int updatefast;		/* PCVT_UPDATEFAST */
-	u_int updateslow;		/* PCVT_UPDATESLOW */
 	u_int sysbeepf;			/* PCVT_SYSBEEPF */
 	u_int pcburst;			/* PCVT_PCBURST */
 	u_int kbd_fifo_sz;		/* PCVT_KBD_FIFO_SZ */
