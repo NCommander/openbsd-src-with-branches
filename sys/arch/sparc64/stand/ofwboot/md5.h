@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: md5.h,v 1.1 2000/08/20 14:58:38 mrg Exp $	*/
 
 /*

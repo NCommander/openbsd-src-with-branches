@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: boot.c,v 1.3 2001/05/31 08:55:19 mrg Exp $	*/
 #define DEBUG
 /*

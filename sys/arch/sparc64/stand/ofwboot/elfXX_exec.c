@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: elfXX_exec.c,v 1.2 2001/08/15 20:08:15 eeh Exp $	*/
 
 /*
