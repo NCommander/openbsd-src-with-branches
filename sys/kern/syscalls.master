@@ -37,6 +37,7 @@
 #include <sys/signal.h>
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
+#include <sys/poll.h>
 
 ; Reserved/unimplemented system calls in the range 0-150 inclusive
 ; are reserved for use in future Berkeley releases.
@@ -452,3 +453,5 @@
 250	STD		{ int sys_minherit(caddr_t addr, size_t len, \
 			    int inherit); }
 251	STD		{ int sys_rfork(int flags); }
+252	STD		{ int sys_poll(struct pollfd *fds, unsigned long nfds, \
+			    int timeout); }
