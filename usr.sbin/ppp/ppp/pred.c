@@ -26,7 +26,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: pred.c,v 1.10 2001/02/04 22:53:13 brian Exp $
+ *	$OpenBSD: pred.c,v 1.11 2001/06/19 10:24:57 brian Exp $
  */
 
 #include <sys/types.h>
@@ -340,6 +340,7 @@ const struct ccp_algorithm Pred1Algorithm = {
     Pred1DictSetup
   },
   {
+    0,
     Pred1InitOptsOutput,
     Pred1SetOptsOutput,
     Pred1InitOutput,
