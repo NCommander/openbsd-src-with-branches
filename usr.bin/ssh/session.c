@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.74.2.2 2001/09/27 19:03:55 jason Exp $");
+RCSID("$OpenBSD: session.c,v 1.74.2.3 2001/11/15 00:15:19 miod Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -875,18 +875,21 @@ do_child(Session *s, const char *command)
 		child_set_env(&env, &envsize, "TZ", getenv("TZ"));
 
 	/* Set custom environment options from RSA authentication. */
-	while (custom_environment) {
-		struct envstring *ce = custom_environment;
-		char *s = ce->s;
-		int i;
-		for (i = 0; s[i] != '=' && s[i]; i++);
-		if (s[i] == '=') {
-			s[i] = 0;
-			child_set_env(&env, &envsize, s, s + i + 1);
+	if (!options.use_login) {
+		while (custom_environment) {
+			struct envstring *ce = custom_environment;
+			char *s = ce->s;
+			int i;
+			for (i = 0; s[i] != '=' && s[i]; i++)
+				;
+			if (s[i] == '=') {
+				s[i] = 0;
+				child_set_env(&env, &envsize, s, s + i + 1);
+			}
+			custom_environment = ce->next;
+			xfree(ce->s);
+			xfree(ce);
 		}
-		custom_environment = ce->next;
-		xfree(ce->s);
-		xfree(ce);
 	}
 
 	snprintf(buf, sizeof buf, "%.50s %d %d",
