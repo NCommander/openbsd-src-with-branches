@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.30 2004/06/17 22:11:55 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.31 2004/06/22 03:15:33 avsm Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -22,7 +22,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: misc.c,v 1.30 2004/06/17 22:11:55 millert Exp $";
+static char const rcsid[] = "$OpenBSD: misc.c,v 1.31 2004/06/22 03:15:33 avsm Exp $";
 #endif
 
 /* vix 26jan87 [RCS has the rest of the log]
@@ -707,7 +707,7 @@ long get_gmtoff(time_t *clock, struct tm *local)
  *	opens a UNIX domain socket that crontab uses to poke cron.
  */
 int
-open_socket()
+open_socket(void)
 {
 	int		   sock;
 	mode_t		   omask;
