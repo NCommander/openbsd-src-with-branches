@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.16 1999/03/02 22:19:09 niklas Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.17 1999/03/12 17:49:37 deraadt Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -147,7 +147,7 @@ exit1(p, rv)
 	vm = p->p_vmspace;
 #ifdef SYSVSHM
 	if (vm->vm_shm)
-		shmexit(p);
+		shmexit(vm);
 #endif
 #ifdef SYSVSEM
 	semexit(p);
