@@ -1333,9 +1333,9 @@ US               gname=bin uname=bin mode=0555
 ..
 
 # ./usr/src
-src
+#src
 # ./usr/src
-..
+#..
 
 # ./usr
 ..
