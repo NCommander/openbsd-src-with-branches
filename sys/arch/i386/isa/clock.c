@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.19 1999/01/31 14:56:01 espie Exp $	*/
+/*	$OpenBSD: clock.c,v 1.20 1999/10/06 07:36:55 deraadt Exp $	*/
 /*	$NetBSD: clock.c,v 1.39 1996/05/12 23:11:54 mycroft Exp $	*/
 
 /*-
@@ -179,17 +179,23 @@ startrtclock()
 
 	findcpuspeed();		/* use the clock (while it's free)
 					to find the cpu speed */
+	initrtclock();
+
+	/* Check diagnostic status */
+	if ((s = mc146818_read(NULL, NVRAM_DIAG)) != 0)	/* XXX softc */
+		printf("RTC BIOS diagnostic error %b\n", (unsigned int) s, 
+		    NVRAM_DIAG_BITS);
+}
+
+void
+initrtclock()
+{
 	/* initialize 8253 clock */
 	outb(TIMER_MODE, TIMER_SEL0|TIMER_RATEGEN|TIMER_16BIT);
 
 	/* Correct rounding will buy us a better precision in timekeeping */
 	outb(IO_TIMER1, TIMER_DIV(hz) % 256);
 	outb(IO_TIMER1, TIMER_DIV(hz) / 256);
-
-	/* Check diagnostic status */
-	if ((s = mc146818_read(NULL, NVRAM_DIAG)) != 0)	/* XXX softc */
-		printf("RTC BIOS diagnostic error %b\n", (unsigned int) s, 
-		    NVRAM_DIAG_BITS);
 }
 
 int
