@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmstat.c,v 1.20 1999/10/26 15:43:22 art Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.21 2000/02/22 21:24:02 deraadt Exp $	*/
 /*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)vmstat.c	8.2 (Berkeley) 1/12/94";
 #endif
-static char rcsid[] = "$OpenBSD: vmstat.c,v 1.20 1999/10/26 15:43:22 art Exp $";
+static char rcsid[] = "$OpenBSD: vmstat.c,v 1.21 2000/02/22 21:24:02 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -212,14 +212,14 @@ int
 initkre()
 {
 	char *intrnamebuf, *cp;
-	int i;
+	int i, ret;
 	static int once = 0;
 
 	if (namelist[0].n_type == 0) {
-		if (kvm_nlist(kd, namelist)) {
+		if ((ret = kvm_nlist(kd, namelist)) == -1)
+			errx(1, "%s", kvm_geterr(kd));
+		else if (ret)
 			nlisterr(namelist);
-			return(0);
-		}
 		if (namelist[0].n_type == 0) {
 			error("No namelist");
 			return(0);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.13 1997/08/25 19:05:26 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.14 1997/11/04 12:20:19 kstailey Exp $	*/
 /*	$NetBSD: main.c,v 1.8 1996/05/10 23:16:36 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: main.c,v 1.13 1997/08/25 19:05:26 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.14 1997/11/04 12:20:19 kstailey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -96,7 +96,7 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	int ch;
+	int ch, ret;
 	char errbuf[_POSIX2_LINE_MAX];
 
 	while ((ch = getopt(argc, argv, "M:N:w:")) != -1)
@@ -148,10 +148,12 @@ main(argc, argv)
 		error("%s", errbuf);
 		exit(1);
 	}
-	if (kvm_nlist(kd, namelist)) {
+
+	if ((ret = kvm_nlist(kd, namelist)) == -1) 
+		errx(1, "%s", kvm_geterr(kd));
+	else if (ret)
 		nlisterr(namelist);
-		exit(1);
-	}
+
 	if (namelist[X_FIRST].n_type == 0)
 		errx(1, "couldn't read namelist");
 	signal(SIGINT, die);
