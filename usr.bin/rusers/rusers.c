@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusers.c,v 1.18 2001/11/06 20:51:19 millert Exp $	*/
+/*	$OpenBSD: rusers.c,v 1.19 2001/11/07 00:02:58 millert Exp $	*/
 
 /*
  * Copyright (c) 2001 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -55,7 +55,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: rusers.c,v 1.18 2001/11/06 20:51:19 millert Exp $";
+static const char rcsid[] = "$OpenBSD: rusers.c,v 1.19 2001/11/07 00:02:58 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -355,6 +355,8 @@ onehost(char *host)
 	struct timeval tv = { 25, 0 };
 	int error;
 	
+	memset(&sin, 0, sizeof sin);
+
 	hp = gethostbyname(host);
 	if (hp == NULL)
 		errx(1, "unknown host \"%s\"", host);
