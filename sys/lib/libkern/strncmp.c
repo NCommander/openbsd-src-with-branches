@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: strncmp.c,v 1.5 1997/11/07 15:56:50 niklas Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -35,11 +35,11 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)strncmp.c	5.6 (Berkeley) 1/26/91";*/
-static char *rcsid = "$OpenBSD: strncmp.c,v 1.4 1996/12/12 08:18:32 deraadt Exp $";
+static char *rcsid = "$OpenBSD: strncmp.c,v 1.5 1997/11/07 15:56:50 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
-#ifndef _KERNEL
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <string.h>
 #else
 #include <lib/libkern/libkern.h>
