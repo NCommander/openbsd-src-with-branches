@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: wsconsctl.c,v 1.1 2000/07/01 23:52:45 mickey Exp $	*/
 /*	$NetBSD: wsconsctl.c,v 1.2 1998/12/29 22:40:20 hannken Exp $ */
 
 /*-
@@ -46,7 +46,7 @@
 
 #define PATH_KEYBOARD		"/dev/wskbd0"
 #define PATH_MOUSE		"/dev/wsmouse0"
-#define PATH_DISPLAY		"/dev/ttyE0"
+#define PATH_DISPLAY		"/dev/ttyC0"
 
 extern const char *__progname;		/* from crt0.o */
 
