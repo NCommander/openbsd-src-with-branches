@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.h,v 1.3 2004/12/15 05:09:06 jfb Exp $	*/
+/*	$OpenBSD: rcs.h,v 1.4 2004/12/16 17:16:18 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -56,6 +56,11 @@
 
 /* delta flags */
 #define RCS_RD_DEAD   0x01     /* dead */
+
+
+
+#define RCSNUM_MAXNUM  USHRT_MAX
+#define RCSNUM_MAXLEN  64
 
 
 typedef struct rcs_num {
