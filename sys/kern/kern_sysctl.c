@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.29.4.14 2004/02/19 10:56:37 niklas Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.29.4.15 2004/03/14 22:08:21 niklas Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1219,7 +1219,9 @@ fill_kproc2(struct proc *p, struct kinfo_proc2 *ki)
 		ki->p_stat = p->p_stat;
 		ki->p_swtime = p->p_swtime;
 		ki->p_slptime = p->p_slptime;
+#ifndef MULTIPROCESSOR
 		ki->p_schedflags = p->p_schedflags;
+#endif
 		ki->p_holdcnt = p->p_holdcnt;
 		ki->p_priority = p->p_priority;
 		ki->p_usrpri = p->p_usrpri;

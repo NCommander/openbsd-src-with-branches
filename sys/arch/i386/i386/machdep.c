@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.124.2.24 2004/02/20 22:19:55 niklas Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.124.2.25 2004/04/21 09:33:08 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -3455,9 +3455,8 @@ cpu_initclocks()
 
 #ifdef MULTIPROCESSOR
 void
-need_resched()
+need_resched(struct cpu_info *ci)
 {
-	struct cpu_info *ci = curcpu();
 	ci->ci_want_resched = 1;
 	ci->ci_astpending = 1;
 }
