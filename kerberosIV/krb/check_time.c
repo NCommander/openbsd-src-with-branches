@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: check_time.c,v 1.4 1997/04/01 08:18:18 joda Exp $ */
 
 /*

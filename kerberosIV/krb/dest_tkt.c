@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: dest_tkt.c,v 1.11 1997/05/19 03:03:40 assar Exp $ */
 
 /* 

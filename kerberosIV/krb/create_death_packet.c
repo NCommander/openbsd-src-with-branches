@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: create_death_packet.c,v 1.8 1997/04/01 08:18:21 joda Exp $ */
 
 /*

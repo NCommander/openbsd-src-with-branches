@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: util.c,v 1.6 1996/10/05 00:18:34 joda Exp $ */
 
 /*

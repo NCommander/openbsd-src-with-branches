@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: get_ad_tkt.c,v 1.16 1997/05/30 17:43:34 bg Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: lsb_addr_comp.c,v 1.9 1997/04/01 08:18:37 joda Exp $ */
 
 /*

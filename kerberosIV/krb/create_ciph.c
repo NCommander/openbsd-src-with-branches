@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 
 /* $KTH: create_ciph.c,v 1.9 1997/04/01 08:18:20 joda Exp $ */
 

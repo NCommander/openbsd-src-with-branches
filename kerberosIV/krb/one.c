@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* 
   Copyright (C) 1989 by the Massachusetts Institute of Technology
 

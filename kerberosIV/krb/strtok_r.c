@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: strtok_r.c,v 1.4 1997/05/19 03:05:47 assar Exp $ */
 
 /*

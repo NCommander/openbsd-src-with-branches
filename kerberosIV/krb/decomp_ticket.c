@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: decomp_ticket.c,v 1.16 1997/04/01 08:18:22 joda Exp $ */
 
 /*

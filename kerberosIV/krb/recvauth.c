@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: recvauth.c,v 1.18 1997/07/05 01:35:15 assar Exp $ */
 
 /* 

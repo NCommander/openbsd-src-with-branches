@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: create_auth_reply.c,v 1.11 1997/04/01 08:18:20 joda Exp $ */
 
 /*

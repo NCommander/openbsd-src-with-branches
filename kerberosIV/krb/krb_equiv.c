@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: krb_equiv.c,v 1.13 1997/04/01 08:18:33 joda Exp $ */
 
 /*

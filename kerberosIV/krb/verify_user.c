@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $KTH: verify_user.c,v 1.8 1997/04/01 08:18:46 joda Exp $ */
 
 /*
