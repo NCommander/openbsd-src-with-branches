@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpu401.c,v 1.1 1999/01/02 00:02:42 niklas Exp $	*/
+/*	$OpenBSD: mpu401.c,v 1.2 1999/07/20 16:36:05 deraadt Exp $	*/
 /*	$NetBSD: mpu401.c,v 1.3 1998/11/25 22:17:06 augustss Exp $	*/
 
 /*
@@ -58,7 +58,9 @@
 
 #include <dev/isa/mpu401var.h>
 
+#ifndef splaudio
 #define splaudio() splbio()	/* XXX found in audio_if.h normally */
+#endif
 
 #ifdef AUDIO_DEBUG
 #define DPRINTF(x)	if (mpu401debug) printf x
