@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: mktemp.c,v 1.10 1997/10/07 22:21:34 millert Exp $";
+static char rcsid[] = "$OpenBSD: mktemp.c,v 1.11 1998/03/04 02:34:49 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -159,11 +159,13 @@ _gettemp(path, doopen, domkdir)
 		for (trv = start;;) {
 			if (!*trv)
 				return(0);
-			if (*trv == 'z')
+			if (*trv == 'Z')
 				*trv++ = 'a';
 			else {
 				if (isdigit(*trv))
 					*trv = 'a';
+				else if (*trv == 'z')	/* inc from z to A */
+					*trv = 'A';
 				else
 					++*trv;
 				break;
