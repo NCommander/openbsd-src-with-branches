@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.62 2002/11/22 13:40:06 art Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.63 2003/06/02 23:28:05 millert Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -654,7 +654,6 @@ sys_fpathconf(p, v, retval)
 		*retval = PIPE_BUF;
 		error = 0;
 		break;
-		return (0);
 
 	case DTYPE_VNODE:
 		vp = (struct vnode *)fp->f_data;
