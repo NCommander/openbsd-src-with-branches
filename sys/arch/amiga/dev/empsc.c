@@ -1,7 +1,9 @@
-/*	$OpenBSD: wesc.c,v 1.2 1996/03/30 22:18:24 niklas Exp $	*/
-/*	$NetBSD: wesc.c,v 1.12 1996/03/17 01:17:55 thorpej Exp $	*/
+/*	$OpenBSD$ */
+/*	$NetBSD: empsc.c,v 1.4 1996/04/05 15:53:41 is Exp $	*/
 
 /*
+
+ * Copyright (c) 1995 Sean Riddle, Bo Najdrovsky
  * Copyright (c) 1994 Michael L. Hitch
  * Copyright (c) 1982, 1990 The Regents of the University of California.
  * All rights reserved.
@@ -34,9 +36,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)dma.c
  */
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
@@ -44,108 +44,122 @@
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 #include <amiga/amiga/custom.h>
-#include <amiga/amiga/cc.h>
 #include <amiga/amiga/device.h>
 #include <amiga/amiga/isr.h>
-#include <amiga/dev/siopreg.h>
-#include <amiga/dev/siopvar.h>
+#include <amiga/dev/scireg.h>
+#include <amiga/dev/scivar.h>
 #include <amiga/dev/zbusvar.h>
 
-int wescprint __P((void *auxp, char *));
-void wescattach __P((struct device *, struct device *, void *));
-int wescmatch __P((struct device *, void *, void *));
-int wesc_dmaintr __P((struct siop_softc *));
+int empscprint __P((void *auxp, char *));
+void empscattach __P((struct device *, struct device *, void *));
+int empscmatch __P((struct device *, struct cfdata *, void *));
+int empsc_intr __P((struct sci_softc *));
 
-struct scsi_adapter wesc_scsiswitch = {
-	siop_scsicmd,
-	siop_minphys,
+struct scsi_adapter empsc_scsiswitch = {
+	sci_scsicmd,
+	sci_minphys,
 	0,			/* no lun support */
 	0,			/* no lun support */
 };
 
-struct scsi_device wesc_scsidev = {
+struct scsi_device empsc_scsidev = {
 	NULL,		/* use default error handler */
 	NULL,		/* do not have a start functio */
 	NULL,		/* have no async handler */
 	NULL,		/* Use default done routine */
 };
 
+#define QPRINTF
 
 #ifdef DEBUG
+extern int sci_debug;
 #endif
 
-struct cfattach wesc_ca = {
-	sizeof(struct siop_softc), wescmatch, wescattach
+extern int sci_data_wait;
+
+struct cfattach empsc_ca = {
+	sizeof(struct sci_softc), empscmatch, empscattach
 };
 
-struct cfdriver wesc_cd = {
-	NULL, "wesc", DV_DULL, NULL, 0
+struct cfdriver empsc_cd = {
+	NULL, "empsc", DV_DULL, NULL, 0
 };
 
 /*
- * if we are an MacroSystemsUS Warp Engine
+ * if this is an EMPLANT board
  */
 int
-wescmatch(pdp, match, auxp)
+empscmatch(pdp, match, auxp)
 	struct device *pdp;
 	void *match, *auxp;
 {
-	struct cfdata *cdp = match;
 	struct zbus_args *zap;
 
 	zap = auxp;
-	if (zap->manid == 2203 && zap->prodid == 19)
+
+	/*
+	 * Check manufacturer and product id.
+	 */
+	if (zap->manid == 2171 && ((zap->prodid == 21)||(zap->prodid==32)))
 		return(1);
-	return(0);
+	else
+		return(0);
 }
 
 void
-wescattach(pdp, dp, auxp)
+empscattach(pdp, dp, auxp)
 	struct device *pdp, *dp;
 	void *auxp;
 {
-	struct siop_softc *sc;
+	volatile u_char *rp;
+	struct sci_softc *sc;
 	struct zbus_args *zap;
-	siop_regmap_p rp;
 
 	printf("\n");
 
 	zap = auxp;
+	
+	sc = (struct sci_softc *)dp;
+	rp = zap->va + 0x5000;
 
-	sc = (struct siop_softc *)dp;
-	sc->sc_siopp = rp = zap->va + 0x40000;
+	sc->sci_data = rp;
+	sc->sci_odata = rp;
+	sc->sci_icmd = rp + 0x10;
+	sc->sci_mode = rp + 0x20;
+	sc->sci_tcmd = rp + 0x30;
+	sc->sci_bus_csr = rp + 0x40;
+	sc->sci_sel_enb = rp + 0x40;
+	sc->sci_csr = rp + 0x50;
+	sc->sci_dma_send = rp + 0x50;
+	sc->sci_idata = rp + 0x60;
+	sc->sci_trecv = rp + 0x60;
+	sc->sci_iack = rp + 0x70;
+	sc->sci_irecv = rp + 0x70;
+	sc->sc_isr.isr_intr = empsc_intr;
+	sc->sc_isr.isr_arg = sc;
+	sc->sc_isr.isr_ipl = 2;
+	add_isr(&sc->sc_isr);
 
-	/*
-	 * CTEST7 = SC0, TT1
-	 */
-	sc->sc_clock_freq = 50;		/* Clock = 50Mhz */
-	sc->sc_ctest7 = SIOP_CTEST7_SC0 | SIOP_CTEST7_TT1;
-	sc->sc_dcntl = 0x00;
+	scireset(sc);
 
 	sc->sc_link.adapter_softc = sc;
 	sc->sc_link.adapter_target = 7;
-	sc->sc_link.adapter = &wesc_scsiswitch;
-	sc->sc_link.device = &wesc_scsidev;
-	sc->sc_link.openings = 2;
-
-	siopinitialize(sc);
-
-	sc->sc_isr.isr_intr = wesc_dmaintr;
-	sc->sc_isr.isr_arg = sc;
-	sc->sc_isr.isr_ipl = 2;
-	add_isr (&sc->sc_isr);
+	sc->sc_link.adapter = &empsc_scsiswitch;
+	sc->sc_link.device = &empsc_scsidev;
+	sc->sc_link.openings = 1;
+	TAILQ_INIT(&sc->sc_xslist);
 
 	/*
 	 * attach all scsi units on us
 	 */
-	config_found(dp, &sc->sc_link, wescprint);
+	config_found(dp, &sc->sc_link, empscprint);
 }
 
 /*
  * print diag if pnp is NULL else just extra
  */
 int
-wescprint(auxp, pnp)
+empscprint(auxp, pnp)
 	void *auxp;
 	char *pnp;
 {
@@ -154,39 +168,15 @@ wescprint(auxp, pnp)
 	return(QUIET);
 }
 
-
 int
-wesc_dmaintr(sc)
-	struct siop_softc *sc;
+empsc_intr(dev)
+	struct sci_softc *dev;
 {
-	siop_regmap_p rp;
-	u_char istat;
+	u_char stat;
 
-	if (sc->sc_flags & SIOP_INTSOFF)
-		return (0);	/* interrupts are not active */
-	rp = sc->sc_siopp;
-	istat = rp->siop_istat;
-	if ((istat & (SIOP_ISTAT_SIP | SIOP_ISTAT_DIP)) == 0)
-		return (0);
-	/*
-	 * save interrupt status, DMA status, and SCSI status 0
-	 * (may need to deal with stacked interrupts?)
-	 */
-	sc->sc_sstat0 = rp->siop_sstat0;
-	sc->sc_istat = istat;
-	sc->sc_dstat = rp->siop_dstat;
-	siopintr(sc);
+	if ((*dev->sci_csr & SCI_CSR_INT) == 0)
+		return(0);
+	stat = *dev->sci_iack;
+	/* XXXX is: something is missing here, at least a: */
 	return(1);
 }
-
-#ifdef DEBUG
-void
-wesc_dump()
-{
-	int i;
-
-	for (i = 0; i < wesc_cd.cd_ndevs; ++i)
-		if (wesc_cd.cd_devs[i])
-			siop_dump(wesc_cd.cd_devs[i]);
-}
-#endif
