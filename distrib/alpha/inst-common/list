@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: list,v 1.4 1997/05/09 18:00:20 millert Exp $
+#	$OpenBSD: list,v 1.5 1997/05/16 01:37:09 millert Exp $
 #
 
 # copy the crunched binary, link to it, and kill it
@@ -25,7 +25,7 @@ LINK	raminst			bin/rm
 LINK	raminst			bin/sh
 LINK	raminst			bin/stty
 LINK	raminst			bin/sleep
-LINK	raminst			bin/sync
+#LINK	raminst			bin/sync
 LINK	raminst			bin/tar
 #LINK	raminst			bin/test
 #LINK	raminst			bin/[
