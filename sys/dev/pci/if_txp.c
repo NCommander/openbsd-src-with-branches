@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.74 2004/12/14 01:50:42 deraadt Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.75 2004/12/17 14:10:40 grange Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -1265,7 +1265,8 @@ txp_ioctl(ifp, command, data)
 			 * Multicast list has changed; set the hardware
 			 * filter accordingly.
 			 */
-			txp_set_filter(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				txp_set_filter(sc);
 			error = 0;
 		}
 		break;

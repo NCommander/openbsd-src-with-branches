@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc91cxx.c,v 1.17 2003/10/21 18:58:49 jmc Exp $	*/
+/*	$OpenBSD: smc91cxx.c,v 1.18 2004/05/12 06:35:10 tedu Exp $	*/
 /*	$NetBSD: smc91cxx.c,v 1.11 1998/08/08 23:51:41 mycroft Exp $	*/
 
 /*-
@@ -1059,7 +1059,8 @@ smc91cxx_ioctl(ifp, cmd, data)
 			 * Multicast list has changed; set the hardware
 			 * filter accordingly.
 			 */
-			smc91cxx_reset(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				smc91cxx_reset(sc);
 			error = 0;
 		}
 		break;

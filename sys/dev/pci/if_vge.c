@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vge.c,v 1.4 2004/12/26 05:58:25 pvalchev Exp $	*/
+/*	$OpenBSD: if_vge.c,v 1.5 2004/12/27 00:46:40 pvalchev Exp $	*/
 /*	$FreeBSD: if_vge.c,v 1.3 2004/09/11 22:13:25 wpaul Exp $	*/
 /*
  * Copyright (c) 2004
@@ -1803,8 +1803,10 @@ vge_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		error = (command == SIOCADDMULTI) ?
 		    ether_addmulti(ifr, &sc->arpcom) :
 		    ether_delmulti(ifr, &sc->arpcom);
+
 		if (error == ENETRESET) {
-			vge_setmulti(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				vge_setmulti(sc);
 			error = 0;
 		}
 		break;

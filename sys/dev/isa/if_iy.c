@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iy.c,v 1.18 2004/01/09 21:32:24 brad Exp $	*/
+/*	$OpenBSD: if_iy.c,v 1.19 2004/05/12 06:35:11 tedu Exp $	*/
 /*	$NetBSD: if_iy.c,v 1.4 1996/05/12 23:52:53 mycroft Exp $	*/
 /* #define IYDEBUG */
 /* #define IYMEMDEBUG */
@@ -1165,7 +1165,8 @@ iyioctl(ifp, cmd, data)
 			 * Multicast list has changed; set the hardware filter
 			 * accordingly.
 			 */
-			iy_mc_reset(sc); /* XXX */
+			if (ifp->if_flags & IFF_RUNNING)
+				iy_mc_reset(sc); /* XXX */
 			error = 0;
 		}
 		break;

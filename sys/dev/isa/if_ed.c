@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ed.c,v 1.52 2004/05/12 06:35:10 tedu Exp $	*/
+/*	$OpenBSD: if_ed.c,v 1.53 2004/06/06 17:56:36 mcbride Exp $	*/
 /*	$NetBSD: if_ed.c,v 1.105 1996/10/21 22:40:45 thorpej Exp $	*/
 
 /*
@@ -2499,8 +2499,10 @@ edioctl(ifp, cmd, data)
 			 * Multicast list has changed; set the hardware filter
 			 * accordingly.
 			 */
-			edstop(sc); /* XXX for ds_setmcaf? */
-			edinit(sc);
+			if (ifp->if_flags & IFF_RUNNING) {
+				edstop(sc);	/* XXX for ds_setmcaf? */
+				edinit(sc);
+			}
 			error = 0;
 		}
 		break;

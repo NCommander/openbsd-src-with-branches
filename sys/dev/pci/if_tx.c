@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tx.c,v 1.27 2003/08/19 14:01:35 mpech Exp $	*/
+/*	$OpenBSD: if_tx.c,v 1.28 2004/09/23 17:45:16 brad Exp $	*/
 /* $FreeBSD: src/sys/pci/if_tx.c,v 1.45 2001/02/07 20:11:02 semenu Exp $ */
 
 /*-
@@ -716,7 +716,8 @@ epic_ifioctl(ifp, command, data)
 		    ether_delmulti((struct ifreq *)data, &sc->arpcom);
 
 		if (error == ENETRESET) {
-			epic_set_mc_table(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				epic_set_mc_table(sc);
 			error = 0;
 		}
 #endif

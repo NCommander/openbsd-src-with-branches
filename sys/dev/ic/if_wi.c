@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.113 2004/11/23 21:12:23 fgsch Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.114 2004/12/22 02:19:11 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -127,7 +127,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.113 2004/11/23 21:12:23 fgsch Exp $";
+	"$OpenBSD: if_wi.c,v 1.114 2004/12/22 02:19:11 millert Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -1653,12 +1653,14 @@ wi_ioctl(ifp, command, data)
 		error = (command == SIOCADDMULTI) ?
 		    ether_addmulti(ifr, &sc->sc_arpcom) :
 		    ether_delmulti(ifr, &sc->sc_arpcom);
+
 		if (error == ENETRESET) {
 			/*
 			 * Multicast list has changed; set the hardware filter
 			 * accordingly.
 			 */
-			wi_setmulti(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				wi_setmulti(sc);
 			error = 0;
 		}
 		break;

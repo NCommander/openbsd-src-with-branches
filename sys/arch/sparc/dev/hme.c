@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.44 2004/09/28 00:21:23 brad Exp $	*/
+/*	$OpenBSD: hme.c,v 1.45 2004/09/29 07:35:11 miod Exp $	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -471,7 +471,8 @@ hmeioctl(ifp, cmd, data)
 			 * Multicast list has changed; set the hardware filter
 			 * accordingly.
 			 */
-			hme_mcreset(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				hme_mcreset(sc);
 			error = 0;
 		}
 		break;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.14 2003/06/27 01:50:52 jason Exp $	*/
+/*	$OpenBSD: be.c,v 1.15 2004/05/12 06:35:11 tedu Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -1026,7 +1026,8 @@ beioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			 * Multicast list has changed; set the hardware filter
 			 * accordingly.
 			 */
-			be_mcreset(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				be_mcreset(sc);
 			error = 0;
 		}
 		break;
