@@ -1,4 +1,4 @@
-/* $OpenBSD: assertion.h,v 1.3 2000/10/03 01:33:55 angelos Exp $ */
+/* $OpenBSD: assertion.h,v 1.4 2001/09/03 20:14:51 deraadt Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -167,6 +167,6 @@ extern void keynote_lex_remove(void *);
 extern void keynote_cleanup_kth(void);
 extern int keynote_retindex(char *);
 extern void knerror(char *);
-extern int knparse();
-extern int knlex();
+extern int knparse(void);
+extern int knlex(void);
 #endif /* __ASSERTION_H__ */
