@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.8 1999/04/20 19:29:12 mickey Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.9 1999/07/21 05:38:03 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998,1999 Michael Shalayeff
@@ -113,7 +113,6 @@ struct hpt_entry {
 };
 #ifdef _KERNEL
 extern struct hpt_entry *hpt_table;
-extern u_int hpt_hashsize;
 #endif /* _KERNEL */
 
 /*
