@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.20 2002/10/12 01:09:43 krw Exp $ */
+/*	$OpenBSD: if_ie.c,v 1.21 2003/01/28 01:37:52 jason Exp $ */
 
 /*-
  * Copyright (c) 1999 Steve Murphree, Jr. 
@@ -29,9 +29,6 @@
  *	University of Vermont and State Agricultural College and Garrett A.
  *	Wollman, by William F. Jolitz, and by the University of California,
  *	Berkeley, Lawrence Berkeley Laboratory, and its contributors.
- *    and
- *      This product includes software developed under OpenBSD by
- *	Theo de Raadt for Willowglen Singapore.
  * 4. Neither the names of the Universities nor the names of the authors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.

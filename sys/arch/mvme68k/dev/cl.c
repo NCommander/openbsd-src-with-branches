@@ -1,9 +1,8 @@
-/*	$OpenBSD: cl.c,v 1.27 2002/06/11 05:13:39 miod Exp $ */
+/*	$OpenBSD: cl.c,v 1.28 2002/06/12 03:49:54 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
  *
- *   
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
