@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.7 1996/06/14 04:41:08 tholo Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.8 1997/03/30 20:02:32 mickey Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -944,8 +944,6 @@ nfssvc_iod(p)
 		     * up to, but not including nfs_strategy().
 		     */
 		    if (nbp) {
-			if (nbp->b_flags & B_DELWRI)
-			    TAILQ_REMOVE(&bdirties, nbp, b_synclist);
 			nbp->b_flags &= ~(B_READ|B_DONE|B_ERROR|B_DELWRI);
 			reassignbuf(nbp, nbp->b_vp);
 			nbp->b_vp->v_numoutput++;
