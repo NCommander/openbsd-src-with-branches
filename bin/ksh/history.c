@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.13 2002/08/03 17:00:09 marc Exp $	*/
+/*	$OpenBSD: history.c,v 1.14 2002/09/06 19:45:14 deraadt Exp $	*/
 
 /*
  * command history
@@ -863,7 +863,7 @@ hist_init(s)
 		 * check on its validity
 		 */
 		if (base == MAP_FAILED || *base != HMAGIC1 || base[1] != HMAGIC2) {
-			if ((int)base !=  -1)
+			if (base != (unsigned char *)-1)
 				munmap((caddr_t)base, hsize);
 			hist_finish();
 			unlink(hname);
