@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: args.c,v 1.2 1996/06/26 05:34:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
@@ -37,7 +37,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)args.c	5.10 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$OpenBSD: args.c,v 1.1.1.1 1995/10/18 08:45:24 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: args.c,v 1.2 1996/06/26 05:34:27 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -49,6 +49,7 @@ static char rcsid[] = "$OpenBSD: args.c,v 1.1.1.1 1995/10/18 08:45:24 deraadt Ex
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include "indent_globs.h"
 
 /* profile types */
@@ -160,6 +161,10 @@ set_profile()
     char        fname[BUFSIZ];
     static char prof[] = ".indent.pro";
 
+    if (strlen(getenv("HOME")) + sizeof(prof) > sizeof(fname)) {
+	warnx("%s/%s: %s", getenv("HOME"), prof, strerror(ENAMETOOLONG));
+	return;
+    }
     sprintf(fname, "%s/%s", getenv("HOME"), prof);
     if ((f = fopen(option_source = fname, "r")) != NULL) {
 	scan_profile(f);
