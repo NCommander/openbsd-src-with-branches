@@ -49,8 +49,6 @@ int crypto_queue_max = CRYPTO_MAX_CACHED;
 struct cryptop *crp_req_queue = NULL;
 struct cryptop **crp_req_queue_tail = NULL;
 
-int crypto_invoke(struct cryptop *);
-
 /*
  * Create a new session.
  */
