@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.93 2002/03/14 01:27:04 millert Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.94 2002/03/14 20:31:31 mickey Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -357,6 +357,7 @@ main(framep)
 	s = splimp();
 	ifinit();
 	domaininit();
+	if_attachdomain();
 	splx(s);
 
 #ifdef GPROF
