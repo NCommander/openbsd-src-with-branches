@@ -1,3 +1,4 @@
+/*	$OpenBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 /*	$NetBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
 #! /bin/sh -
+#	$OpenBSD: makesyscalls.sh,v 1.18 1996/03/15 01:25:12 cgd Exp $
 #	$NetBSD: makesyscalls.sh,v 1.18 1996/03/15 01:25:12 cgd Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou

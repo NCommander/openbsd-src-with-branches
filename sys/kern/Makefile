@@ -1,4 +1,4 @@
-#	@(#)Makefile	8.2 (Berkeley) 3/21/94
+#	$OpenBSD$
 
 # Makefile for kernel tags files, init_sysent, etc.
 
