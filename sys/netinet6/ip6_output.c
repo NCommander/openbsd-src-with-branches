@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.32 2001/04/14 00:30:59 angelos Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.33 2001/05/16 12:53:36 ho Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -2334,7 +2334,7 @@ ip6_splithdr(m, exthdrs)
 		M_COPY_PKTHDR(mh, m);
 		MH_ALIGN(mh, sizeof(*ip6));
 		m->m_flags &= ~M_PKTHDR;
-		m->m_pkthdr.tdbi = NULL;
+		TAILQ_INIT(&m->m_pkthdr.tags);
 		m->m_len -= sizeof(*ip6);
 		m->m_data += sizeof(*ip6);
 		mh->m_next = m;
