@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.83 2001/07/08 18:05:41 brad Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.84 2001/07/16 05:02:10 jason Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -828,13 +828,6 @@ hifn_writeramaddr(sc, addr, data, slot)
 
 	bus_dmamap_sync(sc->sc_dmat, sc->sc_dmamap,
 	    BUS_DMASYNC_POSTREAD | BUS_DMASYNC_POSTWRITE);
-
-	if (dma->cmdr[slot].l & HIFN_D_VALID)
-		printf("cmd[%d] valid still set.\n", slot);
-	if (dma->srcr[slot].l & HIFN_D_VALID)
-		printf("source[%d] valid still set.\n", slot);
-	if (dma->dstr[slot].l & HIFN_D_VALID)
-		printf("dest[%d] valid still set.\n", slot);
 
 	if (dma->resr[slot].l & HIFN_D_VALID) {
 		printf("\n%s: writeramaddr error -- "
