@@ -185,3 +185,8 @@ struct mvmeprom_args {
 #define MVMEPROM_REG_NBARGEND	"a4"
 #define MVMEPROM_REG_ARGSTART	"a5"
 #define MVMEPROM_REG_ARGEND	"a6"
+
+#ifndef RB_NOSYM
+#define RB_NOSYM 0x400
+#endif
+
