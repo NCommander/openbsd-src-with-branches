@@ -123,7 +123,7 @@ timeout_add(new, to_ticks)
 	timeout_list_lock(&s);
 
 	/*
-	 * First we prepare the now timeout so that we can return right
+	 * First we prepare the new timeout so that we can return right
 	 * after the insertion in the queue (makes the code simpler).
 	 */
 
