@@ -1,4 +1,4 @@
-/*	$OpenBSD: sock.c,v 1.7 2004/11/09 20:43:22 krapht Exp $	*/
+/*	$OpenBSD: sock.c,v 1.8 2004/12/07 17:10:56 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -38,7 +38,6 @@
 #include "log.h"
 #include "sock.h"
 #include "cvsd.h"
-#include "event.h"
 
 
 volatile sig_atomic_t  cvs_sock_doloop;
