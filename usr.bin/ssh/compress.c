@@ -12,15 +12,15 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: compress.c,v 1.17 2001/12/29 21:56:01 stevesk Exp $");
+RCSID("$OpenBSD: compress.c,v 1.18 2002/03/16 11:24:53 markus Exp $");
 
 #include "log.h"
 #include "buffer.h"
 #include "zlib.h"
 #include "compress.h"
 
-static z_stream incoming_stream;
-static z_stream outgoing_stream;
+z_stream incoming_stream;
+z_stream outgoing_stream;
 static int compress_init_send_called = 0;
 static int compress_init_recv_called = 0;
 static int inflate_failed = 0;
