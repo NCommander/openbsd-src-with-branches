@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc.c,v 1.6 1997/08/01 23:39:23 deraadt Exp $	*/
+/*	$OpenBSD: asc.c,v 1.7 1998/01/28 13:46:04 pefo Exp $	*/
 /*	$NetBSD: asc.c,v 1.10 1994/12/05 19:11:12 dean Exp $	*/
 
 /*-
@@ -148,7 +148,6 @@
 
 
 #define	readback(a)	{ register int foo; foo = (a); }
-extern int system_type;
 
 /*
  * In 4ns ticks.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: picabus.c,v 1.7 1997/05/24 18:36:26 pefo Exp $	*/
+/*	$OpenBSD: picabus.c,v 1.8 1998/01/28 13:46:38 pefo Exp $	*/
 /*	$NetBSD: tc.c,v 1.2 1995/03/08 00:39:05 cgd Exp $	*/
 
 /*
@@ -69,8 +69,6 @@ caddr_t	pica_cvtaddr __P((struct confargs *));
 int	pica_matchname __P((struct confargs *, char *));
 int	pica_iointr __P((unsigned int, struct clockframe *));
 int	pica_clkintr __P((unsigned int, struct clockframe *));
-
-extern int system_type;
 
 /*
  *  Interrupt dispatch table.

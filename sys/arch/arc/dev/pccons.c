@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccons.c,v 1.15 1997/05/19 16:01:07 pefo Exp $	*/
+/*	$OpenBSD: pccons.c,v 1.16 1998/01/28 13:46:05 pefo Exp $	*/
 /*	$NetBSD: pccons.c,v 1.89 1995/05/04 19:35:20 cgd Exp $	*/
 
 /*-
@@ -81,8 +81,6 @@
 #include <dev/isa/isavar.h>
 #include <arc/isa/isa_machdep.h>
 #include <machine/kbdreg.h>
-
-extern int system_type;
 
 #define	XFREE86_BUG_COMPAT
 
