@@ -3,15 +3,15 @@
 #	from: @(#)Makefile	8.1 (Berkeley) 6/6/93
 
 PROG=	iostat
-.if (${MACHINE_ARCH} == "m68k")
-CFLAGS+=-D${MACHINE}
-.endif
+MAN=	iostat.8
 
 .PATH:	${.CURDIR}/../../usr.bin/vmstat
 
-CFLAGS+=-I${.CURDIR}/../../sys/arch -I${.CURDIR}/../../usr.bin/vmstat
+CFLAGS+=-I${.CURDIR}/../../usr.bin/vmstat
+
+# dkstats.c pulled in from ../../usr.bin/vmstat
 SRCS=	dkstats.c iostat.c
-MAN=	iostat.8
+
 DPADD=	${LIBKVM}
 LDADD=	-lkvm
 BINGRP=	kmem
