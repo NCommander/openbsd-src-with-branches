@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.39 2000/07/09 01:27:33 ho Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.40 2000/07/10 16:27:05 ho Exp $");
 
 #include "ssh.h"
 #include "cipher.h"
@@ -739,7 +739,7 @@ fill_default_options(Options * options)
 	if (options->rhosts_rsa_authentication == -1)
 		options->rhosts_rsa_authentication = 1;
 	if (options->fallback_to_rsh == -1)
-		options->fallback_to_rsh = 1;
+		options->fallback_to_rsh = 0;
 	if (options->use_rsh == -1)
 		options->use_rsh = 0;
 	if (options->batch_mode == -1)
