@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.33 2002/02/16 21:28:07 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.34 2002/02/19 19:39:40 millert Exp $	*/
 
 /*
  * main.c - Point-to-Point Protocol main module
@@ -23,7 +23,7 @@
 #if 0
 static char rcsid[] = "Id: main.c,v 1.49 1998/05/05 05:24:17 paulus Exp $";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.33 2002/02/16 21:28:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.34 2002/02/19 19:39:40 millert Exp $";
 #endif
 #endif
 
@@ -799,7 +799,7 @@ close_tty()
     restore_tty(ttyfd);
 
     if (tty_mode != (mode_t) -1)
-	chmod(devnam, tty_mode);
+	fchmod(ttyfd, tty_mode);
 
     close(ttyfd);
     ttyfd = -1;
