@@ -1,4 +1,4 @@
-/*	$OpenBSD: desktech.h,v 1.1 1996/09/05 08:01:15 pefo Exp $ */
+/*	$OpenBSD: desktech.h,v 1.2 1996/09/14 15:58:23 pefo Exp $ */
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -59,10 +59,10 @@
 
 #define	TYNE_P_ISA_MEM		(0x0100000000LL)	/* ISA Memory control */
 #define	TYNE_V_ISA_MEM		0xe1000000
-#define	TYNE_S_ISA_MEM		0x01000000
+#define	TYNE_S_ISA_MEM		0x00100000
 
 #define	TYNE_P_BOUNCE		(0x0100800000LL)	/* Dma bounce buffer */
 #define	TYNE_V_BOUNCE		0xe2000000
-#define	TYNE_S_BOUNCE		0x00020000
+#define	TYNE_S_BOUNCE		0x00100000
 
 #endif	/* _DESKTECH_H_ */
