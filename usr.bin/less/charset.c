@@ -1,4 +1,4 @@
-/*	$OpenBSD: charset.c,v 1.2 2001/01/29 01:58:00 niklas Exp $	*/
+/*	$OpenBSD: charset.c,v 1.3 2001/11/19 19:02:14 mpech Exp $	*/
 
 /*
  * Copyright (c) 1984,1985,1989,1994,1995  Mark Nudelman
@@ -278,12 +278,12 @@ prchar(c)
 
 	c &= 0377;
 	if (!control_char(c))
-		sprintf(buf, "%c", c);
+		snprintf(buf, sizeof buf, "%c", c);
 	else if (c == ESC)
-		sprintf(buf, "ESC");
+		snprintf(buf, sizeof buf, "ESC");
 	else if (c < 128 && !control_char(c ^ 0100))
-		sprintf(buf, "^%c", c ^ 0100);
+		snprintf(buf, sizeof buf, "^%c", c ^ 0100);
 	else
-		sprintf(buf, binfmt, c);
+		snprintf(buf, sizeof buf, binfmt, c);
 	return (buf);
 }

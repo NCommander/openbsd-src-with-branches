@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumprmt.c,v 1.17 2002/02/19 19:39:38 millert Exp $	*/
+/*	$OpenBSD: dumprmt.c,v 1.18 2002/02/21 16:16:26 millert Exp $	*/
 /*	$NetBSD: dumprmt.c,v 1.17 1997/06/05 16:10:47 mrg Exp $	*/
 
 /*-
@@ -95,10 +95,11 @@ int
 rmthost(host)
 	char *host;
 {
+	int len = strlen(host) + 1;
 
-	rmtpeer = malloc(strlen(host) + 1);
+	rmtpeer = malloc(len);
 	if (rmtpeer)
-		strcpy(rmtpeer, host);
+		strlcpy(rmtpeer, host, len);
 	else
 		rmtpeer = host;
 	signal(SIGPIPE, rmtconnaborted);

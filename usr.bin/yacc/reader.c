@@ -1,4 +1,4 @@
-/*	$OpenBSD: reader.c,v 1.10 2002/02/16 21:28:00 millert Exp $	*/
+/*	$OpenBSD: reader.c,v 1.11 2002/06/14 21:35:00 todd Exp $	*/
 
 /*	$NetBSD: reader.c,v 1.5 1996/03/19 03:21:43 jtc Exp $	*/
 
@@ -1275,7 +1275,7 @@ insert_empty_rule()
     bucket *bp, **bpp;
 
     assert(cache);
-    sprintf(cache, "$$%d", ++gensym);
+    snprintf(cache, cache_size, "$$%d", ++gensym);
     bp = make_bucket(cache);
     last_symbol->next = bp;
     last_symbol = bp;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conv.c,v 1.3 2001/07/12 05:17:10 deraadt Exp $	*/
+/*	$OpenBSD: conv.c,v 1.4 2001/12/30 08:17:32 pvalchev Exp $	*/
 /*	$NetBSD: conv.c,v 1.7 2001/12/07 15:14:29 bjh21 Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)conv.c	5.4 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$OpenBSD: conv.c,v 1.3 2001/07/12 05:17:10 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: conv.c,v 1.4 2001/12/30 08:17:32 pvalchev Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -91,7 +91,7 @@ conv_c(pr, p)
 		*pr->cchar = 'c';
 		(void)printf(pr->fmt, *p);
 	} else {
-		(void)sprintf(buf, "%03o", (int)*p);
+		(void)snprintf(buf, sizeof buf, "%03o", (int)*p);
 		str = buf;
 strpr:		*pr->cchar = 's';
 		(void)printf(pr->fmt, str);
