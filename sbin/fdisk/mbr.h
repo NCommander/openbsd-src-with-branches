@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.h,v 1.5 2001/01/28 00:51:47 weingart Exp $	*/
+/*	$OpenBSD: mbr.h,v 1.6 2001/08/12 12:03:01 heko Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -63,6 +63,7 @@ void MBR_make __P((mbr_t *, char *));
 void MBR_init __P((disk_t *, mbr_t *));
 int MBR_read __P((int, off_t, char *));
 int MBR_write __P((int, off_t, char *));
+void MBR_pcopy __P((disk_t *, mbr_t *));
 
 /* Sanity check */
 #include <machine/param.h>
