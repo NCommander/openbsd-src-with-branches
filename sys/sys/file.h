@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.19 2003/06/02 23:28:21 millert Exp $	*/
+/*	$OpenBSD: file.h,v 1.20 2003/07/18 23:02:58 tedu Exp $	*/
 /*	$NetBSD: file.h,v 1.11 1995/03/26 20:24:13 jtc Exp $	*/
 
 /*
@@ -43,6 +43,19 @@ struct uio;
 struct knote;
 struct stat;
 
+struct	fileops {
+	int	(*fo_read)(struct file *, off_t *, struct uio *,
+		    struct ucred *);
+	int	(*fo_write)(struct file *, off_t *, struct uio *,
+		    struct ucred *);
+	int	(*fo_ioctl)(struct file *, u_long, caddr_t,
+		    struct proc *);
+	int	(*fo_select)(struct file *, int, struct proc *);
+	int	(*fo_kqfilter)(struct file *, struct knote *);
+	int	(*fo_stat)(struct file *, struct stat *, struct proc *);
+	int	(*fo_close)(struct file *, struct proc *);
+};
+
 /*
  * Kernel descriptor table.
  * One entry for each open kernel vnode and socket.
@@ -60,23 +73,7 @@ struct file {
 	long	f_count;	/* reference count */
 	long	f_msgcount;	/* references from message queue */
 	struct	ucred *f_cred;	/* credentials associated with descriptor */
-	struct	fileops {
-		int	(*fo_read)(struct file *fp, off_t *, 
-					     struct uio *uio,
-					     struct ucred *cred);
-		int	(*fo_write)(struct file *fp, off_t *,
-					     struct uio *uio,
-					     struct ucred *cred);
-		int	(*fo_ioctl)(struct file *fp, u_long com,
-					    caddr_t data, struct proc *p);
-		int	(*fo_select)(struct file *fp, int which,
-					     struct proc *p);
-		int	(*fo_kqfilter)(struct file *fp,
-					     struct knote *kn);
-		int	(*fo_stat)(struct file *fp, struct stat *sb,
-					     struct proc *p);
-		int	(*fo_close)(struct file *fp, struct proc *p);
-	} *f_ops;
+	struct	fileops *f_ops;
 	off_t	f_offset;
 	void 	*f_data;	/* private data */
 	int	f_iflags;	/* internal flags */
