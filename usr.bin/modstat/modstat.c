@@ -1,4 +1,4 @@
-/* *	$OpenBSD: modstat.c,v 1.2 1996/06/21 11:40:09 mickey Exp $*/
+/* *	$OpenBSD: modstat.c,v 1.3 1996/06/26 05:37:15 deraadt Exp $*/
 /*
  * Copyright (c) 1993 Terrence R. Lambert.
  * All rights reserved.
@@ -50,8 +50,8 @@ void
 usage()
 {
 
-	fprintf(stderr, "usage:\n");
-	fprintf(stderr, "modstat [-i <module id>] [-n <module name>]\n");
+	fprintf(stderr,
+	    "usage: modstat [-i <module id>] [-n <module name>]\n");
 	exit(1);
 }
 
