@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gem_pci.c,v 1.11 2002/11/19 18:40:17 jason Exp $	*/
+/*	$OpenBSD: if_gem_pci.c,v 1.12 2002/11/20 00:31:03 jason Exp $	*/
 /*	$NetBSD: if_gem_pci.c,v 1.1 2001/09/16 00:11:42 eeh Exp $ */
 
 /*
@@ -44,8 +44,6 @@
 
 #include <machine/endian.h>
 
-#include <uvm/uvm_extern.h>
- 
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
