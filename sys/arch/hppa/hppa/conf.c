@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: conf.c,v 1.1 1998/11/09 13:00:56 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -100,7 +100,6 @@ cdev_decl(wscons);
 
 #include "com.h"
 cdev_decl(com);
-#include "gkd.h"
 
 #ifdef IPFILTER
 #define NIPF 1 
