@@ -109,7 +109,7 @@ rdist           type=dir mode=0775
 
 # ./mail
 /set type=file gname=guest uname=root mode=0600
-mail            type=dir uname=root gname=wheel mode=1777
+mail            type=dir uname=root gname=wheel mode=0755
 # ./mail
 ..
 
