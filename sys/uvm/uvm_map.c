@@ -1,5 +1,5 @@
-/*	$OpenBSD: uvm_map.c,v 1.19 2001/07/17 10:55:02 mts Exp $	*/
-/*	$NetBSD: uvm_map.c,v 1.68 1999/08/21 02:19:05 thorpej Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.20 2001/07/18 10:47:05 art Exp $	*/
+/*	$NetBSD: uvm_map.c,v 1.69 1999/09/12 01:17:37 chs Exp $	*/
 
 /* 
  * Copyright (c) 1997 Charles D. Cranor and Washington University.
