@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.33 1998/10/03 21:19:01 millert Exp $	*/
+/*	$OpenBSD: cd.c,v 1.34 1998/10/04 01:37:55 millert Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -728,15 +728,8 @@ cdioctl(dev, cmd, addr, flag, p)
 		return EIO;
 
 	switch (cmd) {
-	case DIOCGPDINFO: {
-			struct cpu_disklabel osdep;
-
-			cdgetdisklabel(dev, cd, (struct disklabel *)addr,
-			    &osdep, 1);
-			return 0;
-		}
-
 	case DIOCGDINFO:
+	case DIOCGPDINFO:
 		*(struct disklabel *)addr = *(cd->sc_dk.dk_label);
 		return 0;
 
