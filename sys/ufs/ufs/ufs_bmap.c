@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_bmap.c,v 1.12 2001/12/19 08:58:07 art Exp $	*/
+/*	$OpenBSD: ufs_bmap.c,v 1.13 2002/02/22 20:37:46 drahn Exp $	*/
 /*	$NetBSD: ufs_bmap.c,v 1.3 1996/02/09 22:36:00 christos Exp $	*/
 
 /*
@@ -246,7 +246,7 @@ ufs_getlbns(vp, bn, ap, nump)
 
 #ifdef DIAGNOSTIC
 	if (realbn < 0 && realbn > -NDADDR) {
-		panic ("ufs_getlbns: Invalid indirect block %d specified\n",
+		panic ("ufs_getlbns: Invalid indirect block %d specified",
 		    realbn);
 	}
 #endif

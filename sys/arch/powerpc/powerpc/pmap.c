@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.74 2002/09/10 18:29:43 art Exp $ */
+/*	$OpenBSD: pmap.c,v 1.76 2002/09/15 09:01:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001, 2002 Dale Rahn. All rights reserved.
@@ -1345,7 +1345,7 @@ pmap_steal_avail(size_t size, int align)
 			}
 		}
 	}
-	panic ("unable to allocate region with size %x align %x\n",
+	panic ("unable to allocate region with size %x align %x",
 	    size, align);
 }
 
