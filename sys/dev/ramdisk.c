@@ -1,4 +1,4 @@
-/*	$OpenBSD: ramdisk.c,v 1.12 2001/05/16 12:51:48 ho Exp $	*/
+/*	$OpenBSD: ramdisk.c,v 1.13 2001/06/27 04:45:57 art Exp $	*/
 /*	$NetBSD: ramdisk.c,v 1.8 1996/04/12 08:30:09 leo Exp $	*/
 
 /*
@@ -88,7 +88,7 @@
 #define RD_IS_CTRL(unit) (RD_PART(unit) == RAW_PART)
 #define	MAKERDDEV(maj, unit, part)	MAKEDISKDEV(maj, unit, part)
 
-#define	RDLABELDEV(dev)	(MAKERDDEV(major(dev), RD_UNIT(dev), RAW_PART))
+#define	RDLABELDEV(dev)	(MAKERDDEV(major(dev), RD_UNIT(minor(dev)), RAW_PART))
 
 /* autoconfig stuff... */
 
