@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.17 2001/07/06 14:37:11 ho Exp $	*/
+/*	$OpenBSD: init.c,v 1.18 2001/12/10 03:34:51 ho Exp $	*/
 /*	$EOM: init.c,v 1.25 2000/03/30 14:27:24 ho Exp $	*/
 
 /*
@@ -116,9 +116,6 @@ reinit (void)
 
   /* Reread config file.  */
   conf_reinit ();
-
-  /* Try again to link in libcrypto (good if we started without /usr).  */
-  libcrypto_init ();
 
   /* Set timezone */
   tzset ();
