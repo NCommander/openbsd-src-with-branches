@@ -1,4 +1,4 @@
-/*	$OpenBSD: midwayvar.h,v 1.2 1996/06/27 04:29:45 chuck Exp $	*/
+/*	$OpenBSD: midwayvar.h,v 1.3 1996/06/29 20:00:44 chuck Exp $	*/
 
 /*
  *
@@ -120,6 +120,7 @@ struct en_softc {
     u_int16_t atm_vci;		/* backpointer to VCI */
     u_int8_t atm_flags;		/* copy of atm_flags from atm_ph */
     u_int8_t oth_flags;		/* other flags */
+    u_int32_t raw_threshold;	/* for raw mode */
     struct ifqueue indma;	/* mbufs being dma'd now */
     struct ifqueue q;		/* mbufs waiting for dma now */
   } rxslot[EN_MAXNRX];		/* recv info */
