@@ -1,4 +1,4 @@
-/*	$OpenBSD: creatorvar.h,v 1.4 2002/07/26 16:57:16 jason Exp $	*/
+/*	$OpenBSD: creatorvar.h,v 1.5 2002/07/29 05:53:12 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net),
@@ -34,6 +34,8 @@
 
 #define FFB_CREATOR		0
 #define FFB_AFB			1
+
+#define	CREATOR_CFFLAG_NOACCEL	0x1
 
 struct creator_softc {
 	struct device sc_dv;
