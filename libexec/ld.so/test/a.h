@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 class B {
 public:
 	B();

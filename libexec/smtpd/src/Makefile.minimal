@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #######
 # Makefile.minimal
 # Make a completely minimal smtpd. Doesn't do reverse dns lookups on

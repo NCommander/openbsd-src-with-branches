@@ -1,4 +1,8 @@
+/*	$OpenBSD$	*/
+
 #include <stdio.h>
+const char *const libname = "libdep.so";
+
 
 void
 dep(const char *s)

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 void * _dl_malloc(int);
 

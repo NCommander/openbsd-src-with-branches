@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #	BSDI	$From: Makefile,v 1.2 1997/08/08 18:58:22 prb Exp $
 
 PROG=	login_lchpass

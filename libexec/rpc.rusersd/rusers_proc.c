@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  *  Copyright (c) 1993 John Brezak
  *  All rights reserved.
@@ -27,7 +29,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rusers_proc.c,v 1.6 1999/06/16 10:15:14 espie Exp $";
+static char rcsid[] = "$OpenBSD: rusers_proc.c,v 1.7 2001/01/17 19:23:27 deraadt Exp $";
 #endif /* not lint */
 
 #include <signal.h>

@@ -1,6 +1,7 @@
+/* $OpenBSD: smtpd.h,v 1.2 1998/06/03 08:57:12 beck Exp $ */
+
 /* Obtuse smtpd SMTP store daemon header file
  *
- * $Id: smtpd.h,v 1.1.1.1 1997/12/12 05:50:27 beck Exp $ 
  * 
  * Copyright (c) 1996, 1997 Obtuse Systems Corporation. All rights
  * reserved.

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
  * All rights reserved.
@@ -28,7 +30,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rwalld.c,v 1.2 1996/12/22 03:41:18 tholo Exp $";
+static char rcsid[] = "$OpenBSD: rwalld.c,v 1.3 2001/01/17 19:23:27 deraadt Exp $";
 #endif /* not lint */
 
 #include <unistd.h>

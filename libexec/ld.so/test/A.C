@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include "iostream.h"
 #include "a.h"
 

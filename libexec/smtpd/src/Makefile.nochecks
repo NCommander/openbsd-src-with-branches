@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 ###### 
 #Makefile.nochecks - set to build smtpd WITHOUT the address checking
 #functionality in address_check.c.
