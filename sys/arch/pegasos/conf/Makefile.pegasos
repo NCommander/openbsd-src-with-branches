@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.pegasos,v 1.1 2003/10/31 03:54:33 drahn Exp $
+#	$OpenBSD: Makefile.pegasos,v 1.2 2003/11/23 23:26:14 espie Exp $
 #
 # Makefile for OpenBSD PowerPC
 #
@@ -142,8 +142,7 @@ clean::
 		[Ee]rrs linterrs makelinks genassym genassym.o assym.h
 
 lint:
-	@lint -hbxncez -DGENERIC -Dvolatile= ${CPPFLAGS} -UKGDB \
-		${PEGASOS}/pegasos/Locore.c ${CFILES} ${PEGASOS}/pegasos/swapgeneric.c \
+	@lint -hbxncez -DGENERIC -Dvolatile= ${CPPFLAGS} -UKGDB ${CFILES} \
 		ioconf.c param.c | \
 		grep -v 'static function .* unused'
 
