@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ve.c,v 1.18 2002/04/28 15:17:09 miod Exp $ */
+/*	$OpenBSD: if_ve.c,v 1.19 2003/06/02 23:27:51 millert Exp $ */
 /*-
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1982, 1992, 1993
@@ -277,7 +277,7 @@ veattach(parent, self, aux)
 	lesc->sc_vec = ca->ca_vec;
 
 
-	/* get the first avaliable etherbuf */
+	/* get the first available etherbuf */
 	switch ((int)ca->ca_paddr) {
 	case 0xFFFF1200:
 		addr = (caddr_t)0xFD6C0000;

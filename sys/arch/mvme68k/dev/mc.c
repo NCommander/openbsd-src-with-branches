@@ -1,4 +1,4 @@
-/*	$OpenBSD: mc.c,v 1.10 2002/04/27 23:21:05 miod Exp $ */
+/*	$OpenBSD: mc.c,v 1.11 2003/06/02 05:09:14 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -222,7 +222,7 @@ mc_enableflashwrite(on)
 }
 /*
  * Function to check if we booted from flash or prom.
- * If we booted from PROM, flash mem is avaliable.
+ * If we booted from PROM, flash mem is available.
  */
 int 
 mc_hasflash(void)
