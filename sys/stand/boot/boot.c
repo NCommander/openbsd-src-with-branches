@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.19 1998/05/25 19:17:36 mickey Exp $	*/
+/*	$OpenBSD: boot.c,v 1.20 1998/05/30 01:44:17 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997,1998 Michael Shalayeff
@@ -39,9 +39,9 @@
 #include "cmd.h"
 
 static const char *const kernels[] = {
-	"/bsd",  "/bsd.gz",
-	"/obsd", "/obsd.gz",
-	"/bsd.old", "/bsd.old.gz",
+	"/bsd",
+	"/obsd",
+	"/bsd.old",
 	NULL
 };
 
