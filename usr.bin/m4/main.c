@@ -64,6 +64,7 @@ static char rcsid[] = "$OpenBSD: main.c,v 1.10 1998/06/02 20:46:40 deraadt Exp $
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stddef.h>
 #include <err.h>
 #include "mdef.h"
 #include "stdd.h"
@@ -196,7 +197,7 @@ main(argc,argv)
 	} else
 		for (; argc--; ++argv) {
 			p = *argv;
-			if (p[0] == '-' && p[1] == '\0')
+			if (p[0] == '-' && p[1] == EOS)
 				ifp = stdin;
 			else if ((ifp = fopen(p, "r")) == NULL)
 				err(1, "%s", p);
@@ -338,7 +339,7 @@ macro() {
 					errx(1, "missing right quote");
 				else {
 					chars[0] = l;
-					chars[1] = '\0';
+					chars[1] = EOS;
 					s = chars;
 				}
 				if (nlpar > 0) {

@@ -619,7 +619,7 @@ register int argc;
 			strncpy(lquote, argv[2], MAXCCHARS);
 		else {
 			lquote[0] = LQUOTE;
-			lquote[1] = '\0';
+			lquote[1] = EOS;
 		}
 		if (argc > 3) {
 			if (*argv[3])
@@ -627,8 +627,8 @@ register int argc;
 		} else
 			strcpy(rquote, lquote);
 	} else {
-		lquote[0] = LQUOTE, lquote[1] = '\0';
-		rquote[0] = RQUOTE, rquote[1] = '\0';
+		lquote[0] = LQUOTE, lquote[1] = EOS;
+		rquote[0] = RQUOTE, rquote[1] = EOS;
 	}
 }
 
@@ -648,11 +648,11 @@ register int argc;
 				strncpy(ecommt, argv[3], MAXCCHARS);
 		}
 		else
-			ecommt[0] = ECOMMT, ecommt[1] = '\0';
+			ecommt[0] = ECOMMT, ecommt[1] = EOS;
 	}
 	else {
-		scommt[0] = SCOMMT, scommt[1] = '\0';
-		ecommt[0] = ECOMMT, ecommt[1] = '\0';
+		scommt[0] = SCOMMT, scommt[1] = EOS;
+		ecommt[0] = ECOMMT, ecommt[1] = EOS;
 	}
 }
 
