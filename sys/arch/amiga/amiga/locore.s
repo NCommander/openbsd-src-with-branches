@@ -1217,15 +1217,6 @@ Lauexit:
 
 #include <m68k/m68k/support.s>
 
-ENTRY(qsetjmp)
-	movl	sp@(4),a0	| savearea pointer
-	lea	a0@(40),a0	| skip regs we do not save
-	movl	a6,a0@+		| save FP
-	movl	sp,a0@+		| save SP
-	movl	sp@,a0@		| and return address
-	moveq	#0,d0		| return 0
-	rts
-
 /*
  * The following primitives manipulate the run queues.
  * _whichqs tells which of the 32 queues _qs have processes
