@@ -10,7 +10,7 @@
  *
  * S/Key verification check, lookups, and authentication.
  * 
- * $OpenBSD: skeylogin.c,v 1.38 2001/06/20 22:15:45 millert Exp $
+ * $OpenBSD: skeylogin.c,v 1.39 2001/06/23 21:42:39 millert Exp $
  */
 
 #include <sys/param.h>
@@ -711,7 +711,7 @@ skey_unlock(mp)
 {
 	struct flock fl;
 
-	if (mp->logname == NULL)
+	if (mp->logname == NULL || mp->keyfile == NULL)
 		return(-1);
 
 	fl.l_start = mp->recstart;
