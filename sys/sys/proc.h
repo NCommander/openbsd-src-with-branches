@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.34 2000/11/16 20:02:20 provos Exp $	*/
+/*	$OpenBSD: proc.h,v 1.35 2001/02/27 09:07:54 csapuntz Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -338,6 +338,7 @@ extern struct proclist deadproc;	/* List of dead processes. */
 extern struct simplelock deadproc_slock;
 
 struct proc *initproc;			/* Process slots for init, pager. */
+extern struct proc *syncerproc;		/* filesystem syncer daemon */
 
 #define	NQS	32			/* 32 run queues. */
 int	whichqs;			/* Bit mask summary of non-empty Q's. */
