@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2000/09/03 18:41:15 espie Exp $
+#	$OpenBSD: Makefile,v 1.6 2001/01/28 19:34:32 niklas Exp $
 
 PROG=	rshd
 SRCS=	rshd.c
@@ -9,7 +9,7 @@ CFLAGS+= -Wall -Wno-unused
 
 .if (${KERBEROS:L} == "yes")
 SRCS+=	des_rw.c
-.PATH:	${.CURDIR}/../../usr.bin/rlogin
+.PATH:	${.CURDIR}/../../usr.bin/rsh
 CFLAGS+=-DKERBEROS
 DPADD+=	${LIBKRB} ${LIBDES}
 LDADD+=	-lkrb -ldes
