@@ -1,4 +1,4 @@
-/*	$OpenBSD: mt.c,v 1.11 1996/08/02 12:40:59 deraadt Exp $	*/
+/*	$OpenBSD: mt.c,v 1.12 1996/08/10 22:25:58 deraadt Exp $	*/
 /*	$NetBSD: mt.c,v 1.14.2.1 1996/05/27 15:12:11 mrg Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mt.c	8.2 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: mt.c,v 1.11 1996/08/02 12:40:59 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mt.c,v 1.12 1996/08/10 22:25:58 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -287,6 +287,8 @@ printreg(s, v, bits)
 		printf("%s=%o", s, v);
 	else
 		printf("%s=%x", s, v);
+	if (!bits)
+		return;
 	bits++;
 	if (v && bits) {
 		putchar('<');
