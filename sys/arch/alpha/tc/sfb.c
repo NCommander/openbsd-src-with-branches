@@ -1,4 +1,4 @@
-/*	$OpenBSD: sfb.c,v 1.10 1998/11/21 18:13:04 millert Exp $	*/
+/*	$OpenBSD: sfb.c,v 1.11 2000/08/04 16:45:47 ericj Exp $	*/
 /*	$NetBSD: sfb.c,v 1.7 1996/12/05 01:39:44 cgd Exp $	*/
 
 /*
@@ -98,7 +98,7 @@ struct wsscreen_list sfb_screenlist = {
 };
 
 int	sfbioctl __P((void *, u_long, caddr_t, int, struct proc *));
-int	sfbmmap __P((void *, off_t, int));
+paddr_t	sfbmmap __P((void *, off_t, int));
 
 static int      sfb_alloc_screen __P((void *, const struct wsscreen_descr *,
                                       void **, int *, int *, long *));
@@ -349,7 +349,7 @@ sfbioctl(v, cmd, data, flag, p)
 	return (-1);
 }
 
-int
+paddr_t
 sfbmmap(v, offset, prot)
 	void *v;
 	off_t offset;
