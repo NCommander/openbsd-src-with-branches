@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_detach.c,v 1.6 2000/01/06 07:15:05 d Exp $	*/
+/*	$OpenBSD: uthread_detach.c,v 1.7 2001/12/11 00:19:47 fgsch Exp $	*/
 /*
  * Copyright (c) 1995 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -66,7 +66,9 @@ pthread_detach(pthread_t pthread)
 			PTHREAD_NEW_STATE(joiner, PS_RUNNING);
 
 			/* Set the return value for the woken thread: */
-			joiner->error = ESRCH;
+			joiner->join_status.error = ESRCH;
+			joiner->join_status.ret = NULL;
+			joiner->join_status.thread = NULL;
 
 			/*
 			 * Disconnect the joiner from the thread being detached:
