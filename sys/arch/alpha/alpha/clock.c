@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.7 1997/01/24 19:56:19 niklas Exp $	*/
+/*	$OpenBSD: clock.c,v 1.8 1998/03/01 13:42:19 niklas Exp $	*/
 /*	$NetBSD: clock.c,v 1.14 1996/11/23 06:31:57 cgd Exp $	*/
 
 /*
@@ -59,6 +59,8 @@
 #define	SECYR	((unsigned)(365*SECDAY))	/* seconds per common year */
 
 #define	LEAPYEAR(year)	(((year) % 4) == 0)
+
+extern int schedhz;
 
 struct device *clockdev;
 const struct clockfns *clockfns;
@@ -131,6 +133,7 @@ cpu_initclocks()
 	 * isn't set at that time.
 	 */
 	set_clockintr();
+	schedhz = 16;
 
 	/*
 	 * Get the clock started.
