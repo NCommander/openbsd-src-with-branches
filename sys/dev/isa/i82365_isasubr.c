@@ -234,6 +234,21 @@ pcic_isa_chip_intr_disestablish(pch, ih)
 	pcic_write(h, PCIC_INTR, reg);
 }
 
+const char *
+pcic_isa_chip_intr_string(pch, ih)
+	pcmcia_chipset_handle_t pch;
+	void *ih;
+{
+	struct pcic_handle *h = (struct pcic_handle *)pch;
+	static char irqstr[64];
+
+	if (ih == NULL)
+		snprintf(irqstr, sizeof(irqstr), "couldn't establish interrupt");
+	else
+		snprintf(irqstr, sizeof(irqstr), "irq %d", h->ih_irq);
+	return (irqstr);
+}
+
 int
 pcic_intr_probe(v)
 	void *v;

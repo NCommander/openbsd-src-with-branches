@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmciavar.h,v 1.16 2002/03/14 03:16:07 millert Exp $	*/
+/*	$OpenBSD: pcmciavar.h,v 1.17 2002/11/19 18:36:18 jason Exp $	*/
 /*	$NetBSD: pcmciavar.h,v 1.5 1998/07/19 17:28:17 christos Exp $	*/
 
 /*
@@ -275,3 +275,4 @@ int	pcmcia_io_map(struct pcmcia_function *, int, bus_addr_t,
 void	*pcmcia_intr_establish(struct pcmcia_function *, int,
 	    int (*) (void *), void *, char *);
 void 	pcmcia_intr_disestablish(struct pcmcia_function *, void *);
+const char *pcmcia_intr_string(struct pcmcia_function *, void *);
