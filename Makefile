@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.57 2000/08/01 15:56:38 millert Exp $
+#	$OpenBSD: Makefile,v 1.58 2000/09/03 18:41:11 espie Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -168,6 +168,7 @@ cross-binutils-new:	cross-dirs
 	    (cd ${CROSSDIR}/usr/obj/gnu/usr.bin/binutils; \
 	    /bin/sh ${BSDSRCDIR}/gnu/usr.bin/binutils/configure \
 	    --prefix ${CROSSDIR}/usr \
+	    --disable-nls --disable-gdbtk --disable-commonbfdlib \
 	    --target `cat ${CROSSDIR}/TARGET_CANON` && \
 	    ${MAKE} CFLAGS=${CFLAGS} && ${MAKE} DESTDIR=${CROSSDIR} install)
 	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 755 \
