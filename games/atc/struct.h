@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: struct.h,v 1.3 1995/03/21 15:04:31 cgd Exp $	*/
 
 /*-
