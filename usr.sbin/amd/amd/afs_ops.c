@@ -1,4 +1,4 @@
-/*	$OpenBSD: afs_ops.c,v 1.10 2003/03/13 22:08:02 deraadt Exp $	*/
+/*	$OpenBSD: afs_ops.c,v 1.11 2003/06/02 23:36:51 millert Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -1518,8 +1518,8 @@ in_progrss:
 		return new_mp;
 	}
 
-	if (error && (cp->mp->am_mnt->mf_ops == &efs_ops))
-		cp->mp->am_error = error;
+	if (error && (new_mp->am_mnt->mf_ops == &efs_ops))
+		new_mp->am_error = error;
 
 	assign_error_mntfs(new_mp);
 
