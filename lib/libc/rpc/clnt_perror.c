@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: clnt_perror.c,v 1.5 1996/12/19 18:38:40 deraadt Exp $";
+static char *rcsid = "$OpenBSD: clnt_perror.c,v 1.6 1997/01/21 06:07:22 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -230,7 +230,7 @@ void
 clnt_pcreateerror(s)
 	char *s;
 {
-	(void) fprintf(stderr, "%s\n", clnt_spcreateerror(s));
+	(void) fprintf(stderr, "%s", clnt_spcreateerror(s));
 }
 
 static const char *const auth_errlist[] = {
