@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.126 2004/07/05 16:54:53 henning Exp $ */
+/*	$OpenBSD: rde.c,v 1.127 2004/07/13 17:57:20 jaredy Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1477,7 +1477,7 @@ network_add(struct network_config *nc, int flagstatic)
 	attrs.aspath = aspath_create(NULL, 0);
 	attrs.nexthop.s_addr = INADDR_ANY;
 	/* med = 0 */
-	/* lpref = 0 */
+	attrs.lpref = DEFAULT_LPREF;
 	attrs.origin = ORIGIN_IGP;
 	TAILQ_INIT(&attrs.others);
 
