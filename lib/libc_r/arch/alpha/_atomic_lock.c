@@ -1,5 +1,7 @@
-/*	$OpenBSD$	*/
-/* Atomic lock for alpha */
+/*	$OpenBSD: _atomic_lock.c,v 1.1 1998/11/20 11:15:35 d Exp $	*/
+/*
+ * Atomic lock for alpha
+ */
 
 #include "spinlock.h"
 
@@ -30,4 +32,11 @@ _atomic_lock(volatile register_t * lock)
 	} while (!success);
 
 	return old;
+}
+
+int
+_atomic_is_locked(volatile register_t * lock)
+{
+	
+	return *lock;
 }
