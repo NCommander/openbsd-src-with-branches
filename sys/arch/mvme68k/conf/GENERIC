@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.14 2000/01/27 03:14:28 smurph Exp $
+#	$OpenBSD: GENERIC,v 1.15 2001/02/18 17:41:01 deraadt Exp $
 
 machine		mvme68k m68k
 
@@ -96,9 +96,6 @@ ss*	at scsibus? target ? lun ?
 uk*	at scsibus? target ? lun ?
 
 pseudo-device	rd 2
-# for IPv6
-pseudo-device	gif		4
-#pseudo-device	faith		1
 
 #si0	at vmes0 addr 0xff200000 ipl 2 vec 0x40
 #nxdc0	at vmes0 addr 0xff00ee80 ipl 2 vec 0x44

@@ -1,4 +1,4 @@
-#	$OpenBSD: M187,v 1.6 2001/01/14 20:25:22 smurph Exp $
+#	$OpenBSD: M187,v 1.7 2001/03/07 02:00:08 miod Exp $
 
 machine mvme88k
 
@@ -66,6 +66,3 @@ cd*	at scsibus? target ? lun ?
 
 # ------------------------------ pseudo devices ------------------------
 pseudo-device	rd 	2
-# for IPv6
-pseudo-device	gif	4
-#pseudo-device	faith	1
