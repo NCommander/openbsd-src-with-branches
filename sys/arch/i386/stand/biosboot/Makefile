@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 1998/04/03 19:09:16 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.15 1998/04/13 00:37:40 deraadt Exp $
 
 PROG=	biosboot
 SRCS=	biosboot.S
@@ -7,6 +7,7 @@ LDFLAGS=-nostdlib -Ttext 0 -N -x -Bstatic
 INSTALL_STRIP=
 MAN=	biosboot.8
 SADIR=	${.CURDIR}/..
+CLEANFILES=	i386 machine
 
 all:	machine-links
 
