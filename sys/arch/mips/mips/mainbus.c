@@ -149,22 +149,6 @@ mbattach(parent, self, aux)
 		config_found(self, &nca, mbprint);
 	}
 #endif
-
-#ifdef galileo
-	if (system_type == GALILEO_G9) {
-		nca.ca_name = "localbus";
-		nca.ca_slot = 0;
-		nca.ca_offset = 0;
-		nca.ca_bus = &sc->sc_bus;
-		config_found(self, &nca, mbprint);
-
-		nca.ca_name = "galpcibr";
-		nca.ca_slot = 0;
-		nca.ca_offset = 0;
-		nca.ca_bus = &sc->sc_bus;
-		config_found(self, &nca, mbprint);
-	}
-#endif
 }
 
 static int

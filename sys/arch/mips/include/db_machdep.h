@@ -35,6 +35,7 @@
 #ifndef	_MACHINE_DB_MACHDEP_H_
 #define	_MACHINE_DB_MACHDEP_H_
 
+#include <machine/regnum.h>
 #include <machine/frame.h>
 #include <machine/trap.h>
 #include <vm/vm_param.h>
@@ -57,7 +58,7 @@ db_addr_t	next_instr_address __P((db_addr_t, boolean_t));
 #define	IS_BREAKPOINT_TRAP(type, code)	((type) == T_BREAK)
 #define IS_WATCHPOINT_TRAP(type, code)	(0)	/* XXX mips3 watchpoint */
 
-#define	PC_REGS(regs)	((db_addr_t)(regs)->pc)
+#define	PC_REGS(regs)	((db_addr_t)(regs)->reg[PC])
 #define DDB_REGS	(&ddb_regs)
 
 /*

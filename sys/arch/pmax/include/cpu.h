@@ -72,6 +72,7 @@ extern int cpu_arch;
  * referenced in generic code
  */
 #define	cpu_wait(p)			/* nothing */
+#define cpu_set_init_frame(p, fp)	/* nothing */
 #define	cpu_swapout(p)			panic("cpu_swapout: can't get here");
 
 /*

@@ -59,9 +59,6 @@
 #define	ALGOR_P4032		0x21	/* ALGORITHMICS P-4032 */
 #define	ALGOR_P5064		0x22	/* ALGORITHMICS P-5064 */
 
-#define	GALILEO_CLASS		0x30	/* Galileo PCI based Class */
-#define	GALILEO_G9		0x31	/* Galileo GT-64011 Eval board */
-
 extern int system_type;		/* Global system type indicator */
 
 #endif /* _MACHINE_ARCHTYPE_H_ */

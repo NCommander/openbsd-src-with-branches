@@ -73,8 +73,8 @@ typedef	long long		  int64_t;
 typedef	unsigned long long	u_int64_t;
 
 typedef int32_t			register_t;
-typedef int32_t			f_register_t;
 
 #define	__SWAP_BROKEN
+#define __FORK_BRAINDAMAGE
 
 #endif	/* _MACHINE_TYPES_H_ */
