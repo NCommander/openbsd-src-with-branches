@@ -1,4 +1,4 @@
-/*      $OpenBSD: trap.h,v 1.2 2004/08/08 14:21:27 pefo Exp $	*/
+/*      $OpenBSD: trap.h,v 1.3 2004/08/10 20:28:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -117,7 +117,7 @@ void trapDump __P((char *msg));
 
 #else
 
-#define	trapdebug_enter(x)
+#define	trapdebug_enter(x, y)
 
 #endif
 #endif /* _LOCORE */
