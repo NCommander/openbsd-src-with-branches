@@ -1,4 +1,4 @@
-/*	$OpenBSD: endian.h,v 1.4 2000/02/02 22:08:55 mickey Exp $	*/
+/*	$OpenBSD: endian.h,v 1.5 2001/03/02 20:45:21 jason Exp $	*/
 
 /*
  * Copyright (c) 1998-2000 Michael Shalayeff
@@ -34,6 +34,13 @@
 #define	_MACHINE_ENDIAN_H_
 
 #ifdef __GNUC__
+
+#define __swap64md(x) ({					\
+	u_int64_t __swap64md_x = (x);				\
+								\
+	(u_int64_t)__swap32md(__swap64md_x >> 32) |		\
+	(u_int64_t)__swap32md(__swap64md_x & 0xffffffff) << 32;	\
+})
 
 #define	__swap32md(x) ({			\
 	register u_int32_t __swap32md_x;	\
