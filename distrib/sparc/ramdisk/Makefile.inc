@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.12 2001/09/04 22:25:02 deraadt Exp $
-#	$OpenBSD: Makefile.inc,v 1.12 2001/09/04 22:25:02 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.13 2001/09/21 05:43:42 deraadt Exp $
 
 IMAGESIZE?=		4352
 GZIP?=			gzip
