@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.S,v 1.28 2004/01/13 14:15:56 miod Exp $	*/
+/*	$OpenBSD: process.S,v 1.29 2004/01/17 22:35:41 miod Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -328,5 +328,6 @@ ASENTRY(__savectx)
 	fldcr	r2,  fcr62
 	fldcr	r3,  fcr63
 	st	r2,  r14, PCB_FCR62
+	st	r3,  r14, PCB_FCR63
 	jmp.n	r1
-	 st	r3,  r14, PCB_FCR63
+	 ld 	r14, r14, PCB_R14	/* preserve r14 */
