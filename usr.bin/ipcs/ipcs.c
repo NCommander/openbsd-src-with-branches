@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipcs.c,v 1.19 2002/12/17 23:11:32 millert Exp $	*/
+/*	$OpenBSD: ipcs.c,v 1.20 2003/06/04 16:24:45 deraadt Exp $	*/
 /*	$NetBSD: ipcs.c,v 1.25 2000/06/16 03:58:20 simonb Exp $	*/
 
 /*-
@@ -871,7 +871,7 @@ usage(void)
 	extern char *__progname;
 
 	fprintf(stderr,
-	    "usage: %s [-abcmopqstMQST] [-C corefile] [-N namelist]\n",
+	    "usage: %s [-abcMmopQqSsTt] [-C core] [-N system]\n",
 	    __progname);
 	exit(1);
 }
