@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.7 1998/05/15 03:16:38 art Exp $	*/
+/*	$OpenBSD: main.c,v 1.8 1999/12/06 00:31:55 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1996/02/28 21:04:05 thorpej Exp $	*/
 
 /*
@@ -81,10 +81,10 @@ usage()
 	    prompt,
 #ifdef	AUTHENTICATION
 	    "[-8] [-E] [-K] [-L] [-S tos] [-X atype] [-a] [-c] [-d] [-e char]",
-	    "\n\t[-k realm] [-l user] [-f/-F] [-n tracefile] [-b hostalias ]",
+	    "\n\t[-k realm] [-l user] [-f/-F] [-n tracefile] [-b hostalias ] ",
 #else
 	    "[-8] [-E] [-L] [-S tos] [-a] [-c] [-d] [-e char] [-l user]",
-	    "\n\t[-n tracefile] [-b hostalias ]",
+	    "\n\t[-n tracefile] [-b hostalias ] ",
 #endif
 #if defined(TN3270) && defined(unix)
 # ifdef AUTHENTICATION
@@ -95,13 +95,11 @@ usage()
 #else
 	    "[-r] ",
 #endif
+	    "\n\t"
 #ifdef ENCRYPTION
-	    "[-x] [host-name [port]]"
-#else
-
-	    "[host-name [port]]"
+	    "[-x] "
 #endif
-	);
+	    "[host-name [port]]");
 	exit(1);
 }
 
