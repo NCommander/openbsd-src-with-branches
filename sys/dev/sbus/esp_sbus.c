@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: esp_sbus.c,v 1.14 2001/04/25 17:53:37 bouyer Exp $	*/
 
 /*-
