@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_spinlock.c,v 1.10 2001/08/30 17:47:57 todd Exp $	*/
+/*	$OpenBSD: uthread_spinlock.c,v 1.11 2001/09/04 22:17:45 fgsch Exp $	*/
 /*
  * Copyright (c) 1997 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -46,8 +46,7 @@ extern char *__progname;
 /*
  * Lock a location for the running thread. Yield to allow other
  * threads to run if this thread is blocked because the lock is
- * not available. Note that this function does not sleep. It
- * assumes that the lock will be available very soon.
+ * not available.
  */
 void
 _spinlock(spinlock_t *lck)
