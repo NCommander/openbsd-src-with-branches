@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_kbd.c,v 1.5 1996/05/07 07:22:30 deraadt Exp $	*/
+/*	$OpenBSD: pcvt_kbd.c,v 1.6 1996/05/25 22:17:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -530,6 +530,10 @@ r_entry:
 				goto query_kbd_id;
 			}
 			else if(response == KEYB_R_MF2ID2HP)
+			{
+				keyboard_type = KB_MFII;
+			}
+			else if(response == KEYB_R_MF2ID2TP)
 			{
 				keyboard_type = KB_MFII;
 			}
