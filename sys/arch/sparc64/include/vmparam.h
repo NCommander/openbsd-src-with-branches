@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.8 2002/03/14 01:26:45 millert Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.9 2002/06/15 17:23:31 art Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.18 2001/05/01 02:19:19 thorpej Exp $ */
 
 /*
@@ -153,8 +153,6 @@
 
 #define	VM_NFREELIST		1
 #define	VM_FREELIST_DEFAULT	0
-
-#define	__HAVE_PMAP_PHYSSEG
 
 /*
  * pmap specific data stored in the vm_physmem[] array
