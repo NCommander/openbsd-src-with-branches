@@ -1,4 +1,4 @@
-/*	$OpenBSD: openbsd.h,v 1.6 1998/03/03 21:21:16 niklas Exp $	*/
+/*	$OpenBSD: openbsd.h,v 1.7 1998/03/11 23:49:19 millert Exp $	*/
 
 /* OPENBSD_NATIVE is defined when gcc is integrated into the OpenBSD
    source tree so it can be configured appropriately when using the
@@ -61,6 +61,11 @@
 #define LINK_SPEC \
   "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
 
+/* This defines which switch letters take arguments. */
+#undef SWITCH_TAKES_ARG
+#define SWITCH_TAKES_ARG(CHAR) \
+  (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
+   || (CHAR) == 'R')
 
 /* We have atexit(3).  */
 
