@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: binstall.sh,v 1.5 1996/12/12 08:42:44 deraadt Exp $
+#	$OpenBSD: binstall.sh,v 1.1 1997/09/17 10:46:14 downsj Exp $
 #	$NetBSD: binstall.sh,v 1.3 1996/04/07 20:00:12 thorpej Exp $
 #
 
@@ -51,6 +51,11 @@ do
 	esac
 done
 
+INSTALLBOOT=${INSTALLBOOT:-$MDEC/installboot}
+if [ ! -x $INSTALLBOOT ]; then
+	INSTALLBOOT=/usr/mdec/installboot;
+fi	   
+
 DOIT=${TEST:+echo "=>"}
 
 if [ $# != 2 ]; then
@@ -94,8 +99,8 @@ case $WHAT in
 	vecho Target: $TARGET
 	$DOIT dd if=${MDEC}/boot of=$TARGET bs=32 skip=$SKIP
 	sync; sync; sync
-	vecho installboot ${VERBOSE:+-v} $TARGET ${MDEC}/bootxx $DEV
-	$DOIT installboot ${VERBOSE:+-v} $TARGET ${MDEC}/bootxx $DEV
+	vecho $INSTALLBOOT ${VERBOSE:+-v} $TARGET ${MDEC}/bootxx $DEV
+	$DOIT $INSTALLBOOT ${VERBOSE:+-v} $TARGET ${MDEC}/bootxx $DEV
 	;;
 
 "net")
