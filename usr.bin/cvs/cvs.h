@@ -223,7 +223,11 @@ typedef struct cvs_histfile {
 
 
 #ifdef CVS
+extern char *cvs_command;
 extern char *cvs_editor;
+
+extern int   cvs_cmdop;
+
 #endif
 
 
