@@ -32,13 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getpass.c,v 1.5 1997/07/09 00:28:22 millert Exp $";
+static char rcsid[] = "$OpenBSD: getpass.c,v 1.6 1999/12/08 04:26:13 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <fcntl.h>
 #include <paths.h>
 #include <pwd.h>
 #include <signal.h>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
 
