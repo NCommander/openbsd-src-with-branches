@@ -39,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.71 2000/11/06 23:13:26 markus Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.72 2000/11/12 19:50:38 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/dsa.h>
@@ -1020,7 +1020,7 @@ guess_identity_file_type(const char *filename)
 	int type = KEY_RSA1; /* default */
 
 	if (stat(filename, &st) < 0) {
-		perror(filename);
+		/* ignore this key */
 		return KEY_UNSPEC;
 	}
 	public = key_new(type);
