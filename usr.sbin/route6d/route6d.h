@@ -1,5 +1,7 @@
+/*	$OpenBSD$	*/
+
 /*
- * $Header: /cvsroot/kame/kame/kame/kame/route6d/route6d.h,v 1.1.1.1 1999/08/08 23:31:35 itojun Exp $
+ * KAME Header: /cvsroot/kame/kame/kame/kame/route6d/route6d.h,v 1.1.1.1 1999/08/08 23:31:35 itojun Exp
  */
 
 /*
