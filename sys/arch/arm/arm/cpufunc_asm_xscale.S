@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: cpufunc_asm_xscale.S,v 1.16 2002/08/17 16:36:32 thorpej Exp $	*/
 
 /*

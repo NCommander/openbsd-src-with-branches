@@ -1,3 +1,4 @@
+/*     $OpenBSD:$         */
   } =0
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
