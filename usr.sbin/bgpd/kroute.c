@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.103 2004/07/05 16:54:53 henning Exp $ */
+/*	$OpenBSD: kroute.c,v 1.104 2004/07/13 17:57:20 jaredy Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1166,8 +1166,10 @@ fetchtable(void)
 		if (rtm->rtm_flags & RTF_LLINFO)	/* arp cache */
 			continue;
 
+#ifdef RTF_MPATH
 		if (rtm->rtm_flags & RTF_MPATH)		/* multipath */
 			continue;
+#endif
 
 		if ((kr = calloc(1, sizeof(struct kroute_node))) == NULL) {
 			log_warn("fetchtable");
