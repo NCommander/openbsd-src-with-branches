@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: dh.c,v 1.2 2000/10/11 20:11:35 markus Exp $");
+RCSID("$OpenBSD: dh.c,v 1.3 2000/11/16 17:55:43 markus Exp $");
 
 #include "xmalloc.h"
 
@@ -87,7 +87,7 @@ parse_prime(int linenum, char *line, struct dhgroup *dhg)
 
 	return (1);
  fail:
-	fprintf(stderr, "Bad prime description in line %d\n", linenum);
+	error("Bad prime description in line %d\n", linenum);
 	return (0);
 }
 
