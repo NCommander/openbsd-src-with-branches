@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_command.c,v 1.7 1996/04/21 22:18:57 deraadt Exp $	*/
+/*	$OpenBSD: db_command.c,v 1.10 1997/01/16 08:03:56 kstailey Exp $	*/
 /*	$NetBSD: db_command.c,v 1.20 1996/03/30 22:30:05 christos Exp $	*/
 
 /* 
@@ -431,7 +431,7 @@ db_command_loop()
 			db_printf("\n");
 		db_output_line = 0;
 
-		db_printf("db> ");
+		db_printf("ddb> ");
 		(void) db_read_line();
 
 		db_command(&db_last_command, db_command_table);
