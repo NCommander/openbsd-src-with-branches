@@ -1,4 +1,4 @@
-/*	$OpenBSD: ui.h,v 1.4 1998/12/21 01:02:28 niklas Exp $	*/
+/*	$OpenBSD: monitor.h,v 1.1 2003/05/15 00:28:53 ho Exp $	*/
 
 /*
  * Copyright (c) 2003 Håkan Olsson.  All rights reserved.
@@ -45,7 +45,7 @@ enum monitor_reqtypes
 pid_t	monitor_init (void);
 void	monitor_loop (int);
 
-void	mm_send_fd (int, int);
+int	mm_send_fd (int, int);
 int	mm_receive_fd (int);
 
 struct stat;
