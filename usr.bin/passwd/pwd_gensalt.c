@@ -1,4 +1,4 @@
-/* $OpenBSD: pwd_gensalt.c,v 1.13 2002/05/27 21:12:54 itojun Exp $ */
+/* $OpenBSD: pwd_gensalt.c,v 1.14 2002/06/28 22:28:17 deraadt Exp $ */
 /*
  * Copyright 1997 Niels Provos <provos@physnet.uni-hamburg.de>
  * All rights reserved.
@@ -130,7 +130,7 @@ pwd_gensalt(char *salt, int saltlen, struct passwd *pwd, login_cap_t *lc, char t
 		strlcpy(salt, bcrypt_gensalt(rounds), saltlen);
 	} else {
 		strlcpy(salt, ":", saltlen);
-		warnx("Unkown option %s.", now);
+		warnx("Unknown option %s.", now);
 	}
 	return 1;
 }
