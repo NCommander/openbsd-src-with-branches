@@ -11,7 +11,7 @@
  *
  *
  * Copyright (c) 1999 Niels Provos.  All rights reserved.
- * Copyright (c) 1999,2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 1999, 2000 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: cipher.c,v 1.44 2001/05/28 22:51:10 markus Exp $");
+RCSID("$OpenBSD: cipher.c,v 1.45 2001/06/23 15:12:18 itojun Exp $");
 
 #include "xmalloc.h"
 #include "log.h"

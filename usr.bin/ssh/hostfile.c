@@ -11,7 +11,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  *
  *
- * Copyright (c) 1999,2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 1999, 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 1999 Niels Provos.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: hostfile.c,v 1.26 2001/04/12 19:15:24 markus Exp $");
+RCSID("$OpenBSD: hostfile.c,v 1.27 2001/06/23 15:12:18 itojun Exp $");
 
 #include "packet.h"
 #include "match.h"

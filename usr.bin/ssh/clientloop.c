@@ -35,7 +35,7 @@
  *
  *
  * SSH2 support added by Markus Friedl.
- * Copyright (c) 1999,2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 1999, 2000, 2001 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -59,7 +59,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.76 2001/06/20 13:56:39 markus Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.77 2001/06/23 15:12:18 itojun Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"

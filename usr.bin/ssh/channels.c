@@ -12,9 +12,8 @@
  * incompatible with the protocol description in the RFC file, it must be
  * called by a name other than "ssh" or "Secure Shell".
  *
- *
  * SSH2 support added by Markus Friedl.
- * Copyright (c) 1999,2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 1999, 2000, 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 1999 Dug Song.  All rights reserved.
  * Copyright (c) 1999 Theo de Raadt.  All rights reserved.
  *
@@ -40,7 +39,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: channels.c,v 1.126 2001/06/20 13:56:39 markus Exp $");
+RCSID("$OpenBSD: channels.c,v 1.127 2001/06/23 15:12:17 itojun Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"

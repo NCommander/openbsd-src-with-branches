@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kex.c,v 1.34 2001/04/30 15:50:46 markus Exp $");
+RCSID("$OpenBSD: kex.c,v 1.35 2001/06/23 15:12:18 itojun Exp $");
 
 #include <openssl/crypto.h>
 

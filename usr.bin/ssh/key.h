@@ -1,7 +1,7 @@
-/*	$OpenBSD: key.h,v 1.11 2001/03/12 22:02:01 markus Exp $	*/
+/*	$OpenBSD: key.h,v 1.12 2001/04/17 10:53:24 markus Exp $	*/
 
 /*
- * Copyright (c) 2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
