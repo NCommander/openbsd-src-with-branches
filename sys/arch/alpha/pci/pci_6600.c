@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_6600.c,v 1.5 2000/06/06 00:50:15 thorpej Exp $ */
+/* $OpenBSD: pci_6600.c,v 1.1 2000/11/16 04:50:18 ericj Exp $ */
 /* $NetBSD: pci_6600.c,v 1.5 2000/06/06 00:50:15 thorpej Exp $ */
 
 /*-
@@ -45,7 +45,6 @@
 #define _ALPHA_BUS_DMA_PRIVATE
 #include <machine/bus.h>
 #include <machine/rpb.h>
-#include <machine/alpha.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
