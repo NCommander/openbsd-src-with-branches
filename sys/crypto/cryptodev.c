@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.c,v 1.49 2002/06/12 17:25:38 markus Exp $	*/
+/*	$OpenBSD: cryptodev.c,v 1.50 2002/06/12 17:54:15 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -122,8 +122,8 @@ int	cryptodev_dokey(struct crypt_kop *kop, struct crparam kvp[]);
 int	cryptodev_cb(void *);
 int	cryptodevkey_cb(void *);
 
-int	usercrypto = 0;		/* userland may do crypto requests */
-int	userasymcrypto = 0;	/* userland may do asymmetric crypto reqs */
+int	usercrypto = 1;		/* userland may do crypto requests */
+int	userasymcrypto = 1;	/* userland may do asymmetric crypto reqs */
 int	cryptodevallowsoft = 0;	/* only use hardware crypto */
 
 /* ARGSUSED */
