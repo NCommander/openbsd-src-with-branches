@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.58 2002/05/08 19:24:42 millert Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.59 2002/06/11 08:19:17 art Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -117,6 +117,7 @@ cansignal(p, pc, q, signum)
 		case SIGKILL:
 		case SIGINT:
 		case SIGTERM:
+		case SIGALRM:
 		case SIGSTOP:
 		case SIGTTIN:
 		case SIGTTOU:
