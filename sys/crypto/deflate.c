@@ -1,4 +1,4 @@
-/* $OpenBSD: deflate.c,v 1.1 2001/07/05 12:04:31 jjbg Exp $ */
+/* $OpenBSD: deflate.c,v 1.2 2001/07/05 17:52:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -34,8 +34,8 @@
 
 #include <sys/types.h>
 #include <sys/malloc.h>
-#include <sys/systm.h>
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <net/zlib.h>
 #include <crypto/deflate.h>
 
