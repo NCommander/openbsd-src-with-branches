@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.23 2004/03/02 13:39:44 henning Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.24 2004/03/02 15:41:44 henning Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -62,8 +62,6 @@
 #include <netdb.h>
 #include <paths.h>
 #include <unistd.h>
-#include <setjmp.h>
-#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
