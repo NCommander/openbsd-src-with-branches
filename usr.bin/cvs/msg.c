@@ -224,5 +224,5 @@ cvsd_recvmsg(int fd, u_int *type, void *dst, size_t *len)
 
 	*type = msg.cm_type;
 
-	return (0);
+	return (1);
 }
