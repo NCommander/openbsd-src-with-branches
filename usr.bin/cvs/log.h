@@ -53,8 +53,9 @@
 #define LP_ERR      LP_ERROR
 #define LP_ALERT    5
 #define LP_ERRNO    6
+#define LP_ABORT    7
  
-#define LP_MAX      6
+#define LP_MAX      7
 #define LP_ALL      255
  
 /* filtering methods */
