@@ -38,7 +38,7 @@
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: bcopy.S,v 1.4 1996/08/19 08:16:12 tholo Exp $"
 #endif /* LIBC_SCCS */
 
 /* bcopy(s1, s2, n) */
@@ -57,7 +57,7 @@ LEAF(bcopy)
 	addu	t1, a1, a2		# t1 = end of to region
 1:
 	lb	v0, -1(t0)		# copy bytes backwards,
-	subu	t0, t0, 1		#   doesnt happen often so do slow way
+	subu	t0, t0, 1		#   doesn't happen often so do slow way
 	subu	t1, t1, 1
 	bne	t0, a0, 1b
 	sb	v0, 0(t1)

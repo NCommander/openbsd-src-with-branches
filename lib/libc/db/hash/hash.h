@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hash.h,v 1.4 1999/02/15 05:11:24 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -106,7 +106,7 @@ typedef struct htab	 {		/* Memory resident data structure */
 	int		cbucket;	/* Current bucket */
 	int		cndx;		/* Index of next item on cpage */
 	int		errno;		/* Error Number -- for DBM 
-					 * compatability */
+					 * compatibility */
 	int		new_file;	/* Indicates if fd is backing store 
 					 * or no */
 	int		save_file;	/* Indicates whether we need to flush 
