@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.32 2000/06/18 17:59:55 niklas Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.33 2000/07/07 15:57:02 art Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -164,7 +164,7 @@ fork1(p1, flags, stack, stacksize, retval)
 	}
 
 #if !defined(UVM)
-	if (flag & FORK_SHAREVM)
+	if (flags & FORK_SHAREVM)
 		return (EINVAL);
 #endif
 
