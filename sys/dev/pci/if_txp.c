@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.39 2001/05/30 14:41:59 jason Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.40 2001/06/05 02:15:19 jason Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -191,7 +191,7 @@ txp_attach(parent, self, aux)
 		return;
 	}
 	if (pci_mapreg_map(pa, TXP_PCI_LOMEM, PCI_MAPREG_TYPE_MEM, 0,
-	    &sc->sc_bt, &sc->sc_bh, NULL, &iosize)) {
+	    &sc->sc_bt, &sc->sc_bh, NULL, &iosize, 0)) {
 		printf(": can't map mem space %d\n", 0);
 		return;
 	}
