@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.31 1997/01/15 23:40:58 millert Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.32 1997/01/23 06:49:11 deraadt Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -1623,11 +1623,24 @@ void
 cwd(path)
 	char *path;
 {
+	FILE *message;
 
 	if (chdir(path) < 0)
 		perror_reply(550, path);
-	else
+	else {
+		if ((message = fopen(_PATH_CWDMESG, "r")) != NULL) {
+			char *cp, line[LINE_MAX];
+
+			while (fgets(line, sizeof(line), message) != NULL) {
+				if ((cp = strchr(line, '\n')) != NULL)
+					*cp = '\0';
+				lreply(250, "%s", line);
+			}
+			(void) fflush(stdout);
+			(void) fclose(message);
+		}
 		ack("CWD");
+	}
 }
 
 void
