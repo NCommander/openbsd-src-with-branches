@@ -1,4 +1,4 @@
-/*	$OpenBSD: lam.c,v 1.10 2003/12/09 00:55:18 mickey Exp $	*/
+/*	$OpenBSD: lam.c,v 1.11 2004/07/03 21:00:37 millert Exp $	*/
 /*	$NetBSD: lam.c,v 1.2 1994/11/14 20:27:42 jtc Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)lam.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: lam.c,v 1.10 2003/12/09 00:55:18 mickey Exp $";
+static const char rcsid[] = "$OpenBSD: lam.c,v 1.11 2004/07/03 21:00:37 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -175,7 +175,8 @@ pad(struct openfile *ip)
 	lp += (n < line + sizeof(line) - lp) ? n : strlen(lp);
 	if (ip->pad) {
 		n = snprintf(lp, line + sizeof(line) - lp, ip->format, "");
-		lp += (n < line + sizeof(line) - lp) ? n : strlen(lp);
+		if (n > 0)
+			lp += (n < line + sizeof(line) - lp) ? n : strlen(lp);
 	}
 	return (lp);
 }
@@ -206,7 +207,8 @@ gatherline(struct openfile *ip)
 	n = strlcpy(lp, ip->sepstring, line + sizeof(line) - lp);
 	lp += (n < line + sizeof(line) - lp) ? n : strlen(lp);
 	n = snprintf(lp, line + sizeof(line) - lp, ip->format, s);
-	lp += (n < line + sizeof(line) - lp) ? n : strlen(lp);
+	if (n > 0)
+		lp += (n < line + sizeof(line) - lp) ? n : strlen(lp);
 	return (lp);
 }
 
