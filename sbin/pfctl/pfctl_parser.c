@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.116 2002/12/05 14:10:45 henning Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.117 2002/12/06 00:47:32 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -755,7 +755,8 @@ print_rule(struct pf_rule *r, int verbose)
 					printf("%s) ", ic6->name);
 				break;
 			}
-		}
+		} else
+			printf("drop ");
 	} else {
 		printf("scrub ");
 	}
