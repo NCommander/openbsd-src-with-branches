@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.55 1997/11/19 23:44:21 deraadt Exp $
+#	$OpenBSD: rc,v 1.56 1997/11/23 11:54:16 maja Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -63,6 +63,7 @@ swapon -a
 
 umount -a >/dev/null 2>&1
 mount -a -t nonfs
+mount -uw /		# root on nfs requires this, others aren't hurt
 rm -f /fastboot		# XXX (root now writeable)
 
 # set flags on ttys.  (do early, in case they use tty for SLIP in netstart)
