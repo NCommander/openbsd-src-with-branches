@@ -17,8 +17,9 @@ bsd.own.mk		- define common variables
 bsd.port.mk		- building ports
 bsd.port.subdir.mk	- targets for building subdirectories for ports
 bsd.prog.mk		- building programs from source files
-bsd.sys.mk		- building bsd from the source tree
+bsd.regress.mk		- regression tests
 bsd.subdir.mk		- targets for building subdirectories
+bsd.sys.mk		- building bsd from the source tree
 
 Note, this file is not intended to replace reading through the .mk
 files for anything tricky.
