@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.48 2002/05/11 00:20:18 espie Exp $
+#	$OpenBSD: Makefile,v 1.49 2002/05/25 18:51:07 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -10,7 +10,7 @@ MAN=	sshd.8
 CFLAGS+=-DHAVE_LOGIN_CAP -DBSD_AUTH
 
 SRCS=	sshd.c auth-rhosts.c auth-passwd.c auth-rsa.c auth-rh-rsa.c \
-	sshpty.c sshlogin.c servconf.c serverloop.c \
+	sshpty.c sshlogin.c servconf.c serverloop.c uidswap.c \
 	auth.c auth1.c auth2.c auth-options.c session.c \
 	auth-chall.c auth2-chall.c groupaccess.c \
 	auth-skey.c auth-bsdauth.c monitor_mm.c monitor.c \
