@@ -112,6 +112,7 @@ procfs_checkioperm(p, t)
 	int error;
 
 	if ((t->p_cred->p_ruid != p->p_cred->p_ruid ||
+	    ISSET(t->p_flag, P_SUGIDEXEC) ||
 	    ISSET(t->p_flag, P_SUGID)) &&
 	    (error = suser(p->p_ucred, &p->p_acflag)) != 0)
 		return (error);

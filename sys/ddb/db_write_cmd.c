@@ -84,7 +84,7 @@ db_write_cmd(address, have_addr, count, modif)
 
 	while (db_expression(&new_value)) {
 	    old_value = db_get_value(addr, size, FALSE);
-	    db_printsym(addr, DB_STGY_ANY);
+	    db_printsym(addr, DB_STGY_ANY, db_printf);
 	    db_printf("\t\t%#8n\t=\t%#8n\n", old_value, new_value);
 	    db_put_value(addr, size, new_value);
 	    addr += size;

@@ -64,7 +64,7 @@
 
 #include <gnu/arch/i386/fpemul/fpu_emu.h>
 
-#define	EXCEPTION	_exception
+#define	EXCEPTION	_C_LABEL(exception)
 
 
 #define PARAM1	8(%ebp)

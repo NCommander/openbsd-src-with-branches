@@ -42,10 +42,9 @@ int db_read_token(void);
 void db_flush_lex(void);
 int db_lex(void);
 
-db_expr_t db_tok_number;
+extern db_expr_t db_tok_number;
 #define	TOK_STRING_SIZE		120 
-char	db_tok_string[TOK_STRING_SIZE];
-int	db_radix;
+extern char db_tok_string[TOK_STRING_SIZE];
 
 #define	tEOF		(-1)
 #define	tEOL		1

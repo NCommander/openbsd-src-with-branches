@@ -33,7 +33,8 @@
 #define _DDB_DB_INTERFACE_H_
 
 /* arch/<arch>/<arch>/db_trace.c */
-void db_stack_trace_cmd(db_expr_t, int, db_expr_t, char *);
+void db_stack_trace_print(db_expr_t, int, db_expr_t, char *,
+    int (*)(const char *, ...));
 
 /* arch/<arch>/<arch>/db_disasm.c */
 db_addr_t db_disasm(db_addr_t, boolean_t);

@@ -159,7 +159,8 @@ msdosfs_mount(mp, path, data, ndp, p)
 			/*
 			 * Process export requests.
 			 */
-			return (vfs_export(mp, &pmp->pm_export, &args.export));
+			return (vfs_export(mp, &pmp->pm_export, 
+			    &args.export_info));
 		}
 	}
 	/*

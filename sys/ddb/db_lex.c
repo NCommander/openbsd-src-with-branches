@@ -45,9 +45,13 @@
 #include <ddb/db_command.h>
 #include <ddb/db_sym.h>
 #include <ddb/db_extern.h>
+#include <ddb/db_var.h>
 
 char	db_line[120];
 char *	db_lp, *db_endlp;
+
+db_expr_t db_tok_number;
+char	db_tok_string[TOK_STRING_SIZE];
 
 int
 db_read_line()

@@ -1617,7 +1617,7 @@ start:
 			panic("union: locking against myself");
 #endif
 		un->un_flags |= UN_WANTED;
-		sleep((caddr_t)un, PINOD);
+		tsleep((caddr_t)un, PINOD, "unionlk", 0);
 		goto start;
 	}
 

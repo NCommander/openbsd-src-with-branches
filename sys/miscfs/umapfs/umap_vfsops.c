@@ -141,7 +141,7 @@ umapfs_mount(mp, path, data, ndp, p)
 #endif
 
 	amp = (struct umap_mount *) malloc(sizeof(struct umap_mount),
-				M_UFSMNT, M_WAITOK);	/* XXX */
+				M_MISCFSMNT, M_WAITOK);
 
 	/*
 	 * Save reference to underlying FS
@@ -198,7 +198,7 @@ umapfs_mount(mp, path, data, ndp, p)
 	 */
 	if (error) {
 		vrele(lowerrootvp);
-		free(amp, M_UFSMNT);	/* XXX */
+		free(amp, M_MISCFSMNT);
 		return (error);
 	}
 
@@ -291,7 +291,7 @@ umapfs_unmount(mp, mntflags, p)
 	/*
 	 * Finally, throw away the umap_mount structure
 	 */
-	free(mp->mnt_data, M_UFSMNT);	/* XXX */
+	free(mp->mnt_data, M_MISCFSMNT);
 	mp->mnt_data = 0;
 	return (0);
 }

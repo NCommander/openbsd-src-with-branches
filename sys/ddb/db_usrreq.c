@@ -38,8 +38,6 @@
 
 #include <ddb/db_var.h>
 
-extern int securelevel;
-
 int
 ddb_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	int	*name;

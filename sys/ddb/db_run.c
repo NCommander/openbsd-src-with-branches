@@ -49,6 +49,10 @@ db_breakpoint_t	db_not_taken_bkpt = 0;
 db_breakpoint_t	db_taken_bkpt = 0;
 #endif
 
+int		db_inst_count;
+int		db_load_count;
+int		db_store_count;
+
 #ifndef KGDB
 
 #include <ddb/db_lex.h>

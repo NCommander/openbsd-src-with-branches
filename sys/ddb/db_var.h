@@ -59,7 +59,6 @@
 }
 
 #ifdef	_KERNEL
-extern u_int	db_maxoff;
 extern int	db_radix;
 extern int	db_max_width;
 extern int	db_tab_stop_width;

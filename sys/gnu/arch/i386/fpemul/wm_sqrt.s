@@ -1,5 +1,5 @@
 	.file	"wm_sqrt.S"
-/*	$OpenBSD: wm_sqrt.s,v 1.1 1996/08/27 10:33:04 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*
  *  wm_sqrt.S
  *
@@ -88,7 +88,11 @@
 /*
 	Local storage:
  */
+#ifdef __ELF__
+	.align 16,0
+#else
 	.align 4,0
+#endif
 accum_3:
 	.long	0		/* ms word */
 accum_2:
@@ -110,11 +114,15 @@ fsqrt_arg_0:
 	.long	0		/* ls word, at most the ms bit is set */
 
 .text
+#ifdef __ELF__
+	.align 4,144
+#else
 	.align 2,144
+#endif
 
-.globl _wm_sqrt
+.globl _C_LABEL(wm_sqrt)
 
-_wm_sqrt:
+_C_LABEL(wm_sqrt):
 	pushl	%ebp
 	movl	%esp,%ebp
 	pushl	%esi

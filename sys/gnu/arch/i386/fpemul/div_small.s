@@ -71,11 +71,15 @@
 #include <gnu/arch/i386/fpemul/fpu_asm.h>
 
 .text
+#ifdef __ELF__
+	.align 4,144
+#else
 	.align 2,144
+#endif
 
-.globl _div_small
+.globl _C_LABEL(div_small)
 
-_div_small:
+_C_LABEL(div_small):
 	pushl	%ebp
 	movl	%esp,%ebp
 

@@ -82,9 +82,13 @@
 
 
 .text
+#ifdef __ELF__
+	.align 4,144
+#else
 	.align 2,144
-.globl _polynomial
-_polynomial:
+#endif
+.globl _C_LABEL(polynomial)
+_C_LABEL(polynomial):
 	pushl	%ebp
 	movl	%esp,%ebp
 	subl	$32,%esp

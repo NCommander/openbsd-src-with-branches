@@ -239,7 +239,7 @@ loop:
 
 
 /*
- * Try to find an existing null_node vnode refering
+ * Try to find an existing null_node vnode referring
  * to it, otherwise make a new null_node vnode which
  * contains a reference to the lower vnode.
  *

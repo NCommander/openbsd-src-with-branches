@@ -176,17 +176,12 @@ kernfs_root(mp, vpp)
 	printf("kernfs_root(mp = %p)\n", mp);
 #endif
 	kt = kernfs_findtarget(".", 1);
-	/* this should never happen */
-	if (kt == NULL) 
-		panic("kernfs_root: findtarget returned NULL\n");
-	
 	error = kernfs_allocvp(kt, mp, vpp);
-	/* this should never happen */
-	if (error) 
-		panic("kernfs_root: couldn't find root\n");
+	if (error)
+		return (error);
+	vn_lock(*vpp, LK_EXCLUSIVE, curproc);
 
-	return(0);
-	
+	return (0);
 }
 
 int

@@ -160,7 +160,7 @@ union_list_lock(ix)
 
 	if (unvplock[ix] & UN_LOCKED) {
 		unvplock[ix] |= UN_WANTED;
-		sleep((caddr_t) &unvplock[ix], PINOD);
+		tsleep((caddr_t) &unvplock[ix], PINOD, "unlstlk", 0);
 		return (1);
 	}
 
@@ -453,7 +453,7 @@ loop:
 			if (un->un_flags & UN_LOCKED) {
 				vrele(UNIONTOV(un));
 				un->un_flags |= UN_WANTED;
-				sleep((caddr_t)un, PINOD);
+				tsleep((caddr_t)un, PINOD, "unallvp", 0);
 				goto loop;
 			}
 			un->un_flags |= UN_LOCKED;

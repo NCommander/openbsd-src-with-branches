@@ -291,7 +291,7 @@ loop:
 
 
 /*
- * Try to find an existing umap_node vnode refering
+ * Try to find an existing umap_node vnode referring
  * to it, otherwise make a new umap_node vnode which
  * contains a reference to the target vnode.
  */

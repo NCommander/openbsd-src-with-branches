@@ -160,7 +160,8 @@ cd9660_mount(mp, path, data, ndp, p)
 	if (mp->mnt_flag & MNT_UPDATE) {
 		imp = VFSTOISOFS(mp);
 		if (args.fspec == 0)
-			return (vfs_export(mp, &imp->im_export, &args.export));
+			return (vfs_export(mp, &imp->im_export, 
+			    &args.export_info));
 	}
 	/*
 	 * Not an update, or updating the name: look up the name

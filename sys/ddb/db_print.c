@@ -46,8 +46,6 @@
 #include <ddb/db_output.h>
 #include <ddb/db_extern.h>
 
-extern unsigned int	db_maxoff;
-
 /*ARGSUSED*/
 void
 db_show_regs(addr, have_addr, count, modif)
