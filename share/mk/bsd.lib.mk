@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.lib.mk,v 1.38 2004/06/22 19:50:01 pvalchev Exp $
+#	$OpenBSD: bsd.lib.mk,v 1.40 2004/07/08 01:29:23 pvalchev Exp $
 #	$NetBSD: bsd.lib.mk,v 1.67 1996/01/17 20:39:26 mycroft Exp $
 #	@(#)bsd.lib.mk	5.26 (Berkeley) 5/2/91
 
@@ -75,7 +75,7 @@ SHLIB_MINOR=${minor}
 
 .S.o .s.o:
 .if (${MACHINE_ARCH} == "arm")
-	@echo ${COMPILE.S:Q} ${CFLAGS:M-[ID]*} ${AINC} ${.IMPSRC}
+	@echo ${COMPILE.S:Q} ${CPPFLAGS} ${CFLAGS:M-[ID]*} ${AINC} ${.IMPSRC}
 	@${COMPILE.S} ${CFLAGS:M-[ID]*} ${AINC} ${.IMPSRC} -o ${.TARGET}.o
 .else
 	@echo "${CPP} ${CPPFLAGS} ${CFLAGS:M-[ID]*} ${AINC} ${.IMPSRC} | \
