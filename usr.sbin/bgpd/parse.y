@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.36 2004/01/17 19:35:36 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.37 2004/01/22 21:09:00 henning Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -87,11 +87,9 @@ typedef struct {
 
 %}
 
-%token	SET
-%token	AS ROUTERID HOLDTIME YMIN LISTEN ON NO FIBUPDATE
+%token	AS ROUTERID HOLDTIME YMIN LISTEN ON FIBUPDATE
 %token	GROUP NEIGHBOR NETWORK
 %token	REMOTEAS DESCR LOCALADDR MULTIHOP PASSIVE MAXPREFIX ANNOUNCE
-%token	ERROR
 %token	DUMP MSG IN TABLE
 %token	LOG UPDATES
 %token	<v.string>	STRING
@@ -405,7 +403,6 @@ lookup(char *s)
 		{ "passive",		PASSIVE},
 		{ "remote-as",		REMOTEAS},
 		{ "router-id",		ROUTERID},
-		{ "set",		SET},
 		{ "table",		TABLE},
 		{ "updates",		UPDATES},
 	};
