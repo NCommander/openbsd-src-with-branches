@@ -1,6 +1,7 @@
-# $OpenBSD: Makefile,v 1.18 2003/02/05 06:39:46 marc Exp $
+# $OpenBSD: Makefile,v 1.19 2003/07/10 21:02:44 marc Exp $
 
-SUBDIR= cancel cancel2 close cwd execve fork group malloc_duel netdb pcap poll \
+SUBDIR= cancel cancel2 close closefrom cwd execve fork group \
+	malloc_duel netdb pcap poll \
 	preemption preemption_float pthread_cond_timedwait pthread_create \
 	pthread_join pthread_kill pthread_mutex pthread_specific readdir \
 	select setjmp signal sigdeliver siginfo sigmask signodefer sigsuspend \
