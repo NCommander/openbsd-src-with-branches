@@ -1,4 +1,4 @@
-/*	$OpenBSD: cinfo.c,v 1.3 2001/01/29 01:58:06 niklas Exp $	*/
+/*	$OpenBSD: cinfo.c,v 1.4 2001/05/23 21:55:32 art Exp $	*/
 
 /*
  *		Character class tables.
@@ -145,6 +145,6 @@ keyname(cp, k)
 		*cp = '\0';
 		return cp;
 	}
-	(VOID) strcpy(cp, np);
+	strcpy(cp, np);
 	return cp + strlen(cp);
 }

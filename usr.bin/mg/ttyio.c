@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyio.c,v 1.13 2001/01/29 01:58:10 niklas Exp $	*/
+/*	$OpenBSD: ttyio.c,v 1.14 2001/05/03 20:40:22 art Exp $	*/
 
 /*
  * POSIX terminal I/O.
@@ -202,7 +202,7 @@ typeahead()
 /*
  * panic - just exit, as quickly as we can.
  */
-VOID
+void
 panic(s)
 	char *s;
 {

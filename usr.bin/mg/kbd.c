@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.6 2001/05/23 16:14:00 art Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.7 2001/05/23 20:19:44 art Exp $	*/
 
 /*
  *	Terminal independent keyboard handling.
@@ -64,7 +64,7 @@ bsmap(f, n)
 }
 #endif /* BSMAP */
 
-VOID
+void
 ungetkey(c)
 	int     c;
 {
