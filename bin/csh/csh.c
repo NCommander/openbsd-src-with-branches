@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.c,v 1.2 1996/06/23 14:19:16 deraadt Exp $	*/
+/*	$OpenBSD: csh.c,v 1.3 1996/10/27 23:42:54 millert Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -44,13 +44,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)csh.c	8.2 (Berkeley) 10/12/93";
 #else
-static char rcsid[] = "$OpenBSD: csh.c,v 1.2 1996/06/23 14:19:16 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: csh.c,v 1.3 1996/10/27 23:42:54 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <pwd.h>
