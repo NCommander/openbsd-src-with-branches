@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.7 1996/09/04 22:33:48 niklas Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.8 1996/10/26 07:31:48 tholo Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -314,6 +314,10 @@ sys_fcntl(p, v, retval)
 			return (error);
 		if (fl.l_whence == SEEK_CUR)
 			fl.l_start += fp->f_offset;
+		else if (fl.l_whence != SEEK_END &&
+			 fl.l_whence != SEEK_SET &&
+			 fl.l_whence != 0)
+			return (EINVAL);
 		if (fl.l_start < 0)
 			return (EINVAL);
 		if (fl.l_type != F_RDLCK &&
