@@ -1,4 +1,4 @@
-/*	$OpenBSD: popen.c,v 1.10 1997/07/14 16:09:07 millert Exp $	*/
+/*	$OpenBSD: popen.c,v 1.11 1997/08/04 19:25:50 deraadt Exp $	*/
 /*	$NetBSD: popen.c,v 1.6 1997/05/13 06:48:42 mikel Exp $	*/
 
 /*
@@ -38,13 +38,14 @@
 #if 0
 static char sccsid[] = "@(#)popen.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: popen.c,v 1.10 1997/07/14 16:09:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: popen.c,v 1.11 1997/08/04 19:25:50 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include "rcv.h"
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <errno.h>
 #include "extern.h"
 
 #define READ 0
