@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.20 2003/09/29 11:23:38 jmc Exp $	*/
+/*	$OpenBSD: main.c,v 1.21 2003/12/22 22:17:38 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.6 1995/05/21 16:54:10 mycroft Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: main.c,v 1.20 2003/09/29 11:23:38 jmc Exp $";
+static const char rcsid[] = "$OpenBSD: main.c,v 1.21 2003/12/22 22:17:38 deraadt Exp $";
 #endif /* not lint */
 
 /* Many bug fixes are from Jim Guyton <guyton@rand-unix> */
@@ -370,6 +370,7 @@ put(int argc, char *argv[])
 		fd = open(argv[n], O_RDONLY);
 		if (fd < 0) {
 			warn("open: %s", argv[n]);
+			free(cp);
 			continue;
 		}
 		if (verbose)
