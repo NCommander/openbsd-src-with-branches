@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.19 2001/11/19 19:02:13 mpech Exp $	*/
+/*	$OpenBSD: io.c,v 1.20 2002/10/16 00:30:58 vincent Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -43,7 +43,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)calendar.c  8.3 (Berkeley) 3/25/94";
 #else
-static char rcsid[] = "$OpenBSD: io.c,v 1.19 2001/11/19 19:02:13 mpech Exp $";
+static char rcsid[] = "$OpenBSD: io.c,v 1.20 2002/10/16 00:30:58 vincent Exp $";
 #endif
 #endif /* not lint */
 
@@ -179,7 +179,7 @@ cal(void)
 						int l1 = strlen(prefix);
 						int l2 = strlen(p);
 						if ((cur_evt->ldesc =
-						    malloc(l1 + l2)) == NULL)
+						    malloc(l1 + l2 + 2)) == NULL)
 							err(1, "malloc");
 						sprintf(cur_evt->ldesc,
 						    "\t%s %s", prefix, p + 1);
