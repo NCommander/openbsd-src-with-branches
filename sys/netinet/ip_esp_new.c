@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp_new.c,v 1.45 1999/06/30 17:23:59 deraadt Exp $	*/
+/*	$OpenBSD: ip_esp_new.c,v 1.46 1999/10/06 22:27:57 jason Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -582,8 +582,7 @@ esp_new_input(struct mbuf *m, struct tdb *tdb)
 }
 
 int
-esp_new_output(struct mbuf *m, struct sockaddr_encap *gw, struct tdb *tdb,
-	       struct mbuf **mp)
+esp_new_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp)
 {
     struct enc_xform *espx = (struct enc_xform *) tdb->tdb_encalgxform;
     struct auth_hash *esph = (struct auth_hash *) tdb->tdb_authalgxform;

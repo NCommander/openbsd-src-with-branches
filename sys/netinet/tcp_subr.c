@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.18 1999/07/06 20:17:53 cmetz Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.19 1999/08/27 08:15:50 millert Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -830,9 +830,8 @@ tcp_signature_tdb_input(m, tdbp)
 }
 
 int
-tcp_signature_tdb_output(m, gw, tdbp, mp)
+tcp_signature_tdb_output(m, tdbp, mp)
 	struct mbuf *m;
-	struct sockaddr_encap *gw;
 	struct tdb *tdbp;
 	struct mbuf **mp;
 {
