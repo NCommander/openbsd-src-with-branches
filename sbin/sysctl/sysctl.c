@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.74 2001/07/05 08:42:15 jjbg Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.75 2001/07/13 23:51:35 mickey Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sysctl.c	8.5 (Berkeley) 5/9/95";
 #else
-static char *rcsid = "$OpenBSD: sysctl.c,v 1.74 2001/07/05 08:42:15 jjbg Exp $";
+static char *rcsid = "$OpenBSD: sysctl.c,v 1.75 2001/07/13 23:51:35 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -450,12 +450,13 @@ parse(string, flags)
 				(void)printf("%s = ", string);
 			(void)printf("%p\n", _ps.val);
 			return;
-		}
-		else if (mib[1] == VM_SWAPENCRYPT) {
+		} else if (mib[1] == VM_SWAPENCRYPT) {
 			len = sysctl_swpenc(string, &bufp, mib, flags, &type);
 			if (len < 0)
 				return;
 
+			break;
+		} else if (mib[1] == VM_NKMEMPAGES) {
 			break;
 		}
 		if (flags == 0)
