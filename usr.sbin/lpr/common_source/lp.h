@@ -1,4 +1,4 @@
-/*	$OpenBSD: lp.h,v 1.4 2001/11/01 18:02:33 mickey Exp $	*/
+/*	$OpenBSD: lp.h,v 1.5 2001/11/23 03:58:17 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -83,7 +83,6 @@ extern long	 XS;		/* flags to set for local mode */
 
 extern char	line[BUFSIZ];
 extern char	*bp;		/* pointer into printcap buffer */
-extern char	*name;		/* program name */
 extern char	*printer;	/* printer name */
 				/* host machine name */
 extern char	host[MAXHOSTNAMELEN];

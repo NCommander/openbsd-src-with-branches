@@ -1,4 +1,4 @@
-/*	$OpenBSD: lprm.c,v 1.7 2001/08/30 17:38:13 millert Exp $	*/
+/*	$OpenBSD: lprm.c,v 1.8 2001/11/23 03:58:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -44,7 +44,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)lprm.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: lprm.c,v 1.7 2001/08/30 17:38:13 millert Exp $";
+static const char rcsid[] = "$OpenBSD: lprm.c,v 1.8 2001/11/23 03:58:18 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -99,7 +99,7 @@ main(argc, argv)
 	uid = getuid();
 	euid = geteuid();
 	seteuid(uid);	/* be safe */
-	name = argv[0];
+
 	gethostname(host, sizeof(host));
 	openlog("lpd", 0, LOG_LPR);
 	if ((p = getpwuid(getuid())) == NULL)

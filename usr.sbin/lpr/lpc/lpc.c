@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpc.c,v 1.9 2001/08/30 17:38:13 millert Exp $	*/
+/*	$OpenBSD: lpc.c,v 1.10 2001/11/23 03:58:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -44,7 +44,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)lpc.c	8.3 (Berkeley) 4/28/95";
 #else
-static const char rcsid[] = "$OpenBSD: lpc.c,v 1.9 2001/08/30 17:38:13 millert Exp $";
+static const char rcsid[] = "$OpenBSD: lpc.c,v 1.10 2001/11/23 03:58:18 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -98,7 +98,6 @@ main(argc, argv)
 	euid = geteuid();
 	uid = getuid();
 	seteuid(uid);
-	name = argv[0];
 	openlog("lpd", 0, LOG_LPR);
 
 	if (--argc > 0) {
