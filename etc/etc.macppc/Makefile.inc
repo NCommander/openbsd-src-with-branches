@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.16 2000/08/08 01:08:07 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2001/09/01 16:13:48 drahn Exp $
 #	etc.macppc/Makefile.inc -- macppc-specific etc Makefile targets
 
 .ifdef DESTDIR
@@ -11,9 +11,10 @@ bsd:
 	cp ${.CURDIR}/../sys/arch/macppc/compile/GENERIC/bsd \
 	    ${DESTDIR}/snapshot/bsd
 
-# knows about  bsd.rd and bsdofw.rd
+# knows about  bsd.rd 
 distrib:
 	cp ${DESTDIR}/usr/mdec/ofwboot ${DESTDIR}/snapshot/ofwboot
+	cp ${DESTDIR}/usr/mdec/bsd.tbxi ${DESTDIR}/snapshot/bsd.tbxi
 	cd ${.CURDIR}/../distrib && make cleandir && \
 		make && make install
 	mkdir ${DESTDIR}/snapshot/boot
