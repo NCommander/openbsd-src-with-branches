@@ -1,4 +1,4 @@
-/*	$OpenBSD: get.h,v 1.6 2002/06/10 21:05:25 maja Exp $ */
+/*	$OpenBSD: get.h,v 1.7 2003/06/02 21:38:39 maja Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -23,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$OpenBSD: get.h,v 1.6 2002/06/10 21:05:25 maja Exp $
+ *	$OpenBSD: get.h,v 1.7 2003/06/02 21:38:39 maja Exp $
  *
  */
 
@@ -36,7 +36,7 @@ u_long	mopGetLong(u_char *,int *);
 void	mopGetMulti(u_char *,int *,u_char *,int);
 int	mopGetTrans(u_char *, int);
 void	mopGetHeader(u_char *, int *, u_char **, u_char **, u_short *,
-		     int *, int);
+	     int *, int);
 u_short	mopGetLength(u_char *, int);
 
 #endif /* _GET_H_ */
