@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.5 2002/06/09 05:27:50 todd Exp $	*/
+/*	$OpenBSD: util.c,v 1.6 2002/06/18 01:54:31 deraadt Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -76,7 +76,7 @@ uid_to_name(uid_t uid)
 	struct passwd *pw;
 
 	if ((pw = getpwuid(uid)) == NULL)
-		snprintf(buf, sizeof(buf), "uid %d", uid);
+		snprintf(buf, sizeof(buf), "uid %u", uid);
 	else
 		snprintf(buf, sizeof(buf), "%s", pw->pw_name);
 
