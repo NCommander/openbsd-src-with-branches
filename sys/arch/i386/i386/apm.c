@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.13 1997/10/22 23:37:10 mickey Exp $	*/
+/*	$OpenBSD: apm.c,v 1.14 1997/10/24 06:49:19 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1995 John T. Kohl.  All rights reserved.
@@ -620,7 +620,6 @@ apmprobe(parent, match, aux)
 	if (apm_cd.cd_ndevs ||
 	    strcmp(ba->bios_dev, "apm") ||
 	    ba->bios_apmp->apm_detail & APM_BIOS_PM_DISABLED ||
-	    ba->bios_apmp->apm_detail & APM_BIOS_PM_DISENGAGED ||
 	    !(ba->bios_apmp->apm_detail & APM_32BIT_SUPPORTED)) {
 #ifdef DEBUG
 		printf("%s: %x\n", ba->bios_dev, ba->bios_apmp->apm_detail);
