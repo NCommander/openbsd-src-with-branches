@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.1 1997/07/14 08:14:30 downsj Exp $	*/
+/*	$OpenBSD: version.c,v 1.2 1997/09/14 07:02:02 downsj Exp $	*/
 
 /*
  * Record major changes in the boot code here, and increment the version
@@ -14,6 +14,8 @@
  *
  * 2.3			Added CD9660 boot support.
  *
+ * 2.4			Added/fixed 425e support.
+ *
  */
 
-const char version[] = "2.3";
+const char version[] = "2.4";

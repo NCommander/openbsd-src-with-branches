@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.1 1997/07/14 08:14:25 downsj Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.2 1997/11/06 19:42:43 millert Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1997/06/28 07:20:25 thorpej Exp $	*/
 
 /*
@@ -82,6 +82,8 @@ getmachineid()
 			cp = "425t"; break;
 		case MMUID_425_S:
 			cp = "425s"; break;
+		case MMUID_425_E:
+			cp = "425e"; break;
 		default:
 			cp = "425"; break;
 		}
