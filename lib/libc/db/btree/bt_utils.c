@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_utils.c,v 1.5 2003/05/01 20:23:40 avsm Exp $	*/
+/*	$OpenBSD: bt_utils.c,v 1.6 2003/06/02 20:18:33 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -36,7 +36,7 @@
 #if 0
 static char sccsid[] = "@(#)bt_utils.c	8.8 (Berkeley) 7/20/94";
 #else
-static const char rcsid[] = "$OpenBSD: bt_utils.c,v 1.5 2003/05/01 20:23:40 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: bt_utils.c,v 1.6 2003/06/02 20:18:33 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -218,8 +218,8 @@ int
 __bt_defcmp(a, b)
 	const DBT *a, *b;
 {
-	register size_t len;
-	register u_char *p1, *p2;
+	size_t len;
+	u_char *p1, *p2;
 
 	/*
 	 * XXX
@@ -248,8 +248,8 @@ size_t
 __bt_defpfx(a, b)
 	const DBT *a, *b;
 {
-	register u_char *p1, *p2;
-	register size_t cnt, len;
+	u_char *p1, *p2;
+	size_t cnt, len;
 
 	cnt = 1;
 	len = MIN(a->size, b->size);
