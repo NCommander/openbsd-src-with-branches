@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcode.c,v 1.19 2003/12/02 13:43:02 otto Exp $	*/
+/*	$OpenBSD: bcode.c,v 1.20 2003/12/19 19:23:16 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: bcode.c,v 1.19 2003/12/02 13:43:02 otto Exp $";
+static const char rcsid[] = "$OpenBSD: bcode.c,v 1.20 2003/12/19 19:23:16 otto Exp $";
 #endif /* not lint */
 
 #include <ssl/ssl.h>
@@ -208,7 +208,6 @@ static const struct jump_entry jump_table_data[] = {
 	{ 'l',	load		},
 	{ 'n',	pop_printn	},
 	{ 'o',	set_obase	},
-	{ 'p',	print_tos	},
 	{ 'p',	print_tos	},
 	{ 'q',	quit		},
 	{ 'r',	swap		},
