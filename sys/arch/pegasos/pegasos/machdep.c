@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.1.2.2 2003/10/11 19:19:57 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.1 2003/10/31 03:54:33 drahn Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -792,6 +792,8 @@ void
 softtty()
 {
 }
+
+int netisr;
 
 /*
  * Soft networking interrupts.
