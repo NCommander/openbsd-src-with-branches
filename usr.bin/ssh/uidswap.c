@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: uidswap.c,v 1.15 2001/04/08 11:24:33 markus Exp $");
+RCSID("$OpenBSD: uidswap.c,v 1.16 2001/04/20 16:32:22 markus Exp $");
 
 #include "log.h"
 #include "uidswap.h"
@@ -109,6 +109,9 @@ restore_uid(void)
 void
 permanently_set_uid(struct passwd *pw)
 {
+	/* it's a no-op unless privileged */
+	if (!privileged)
+		return;
 	if (temporarily_use_uid_effective)
 		fatal("restore_uid: temporarily_use_uid effective");
 	if (setgid(pw->pw_gid) < 0)
