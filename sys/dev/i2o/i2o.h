@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2o.h,v 1.4 2001/06/27 06:06:28 nate Exp $	*/
+/*	$OpenBSD: i2o.h,v 1.5 2001/08/23 14:17:08 aaron Exp $	*/
 /*	$NetBSD: i2o.h,v 1.3 2001/03/20 13:01:48 ad Exp $	*/
 
 /*-
@@ -47,7 +47,7 @@
 #define	_I2O_I2O_H_
 
 /*
- * ================= Miscellenous definitions =================
+ * ================= Miscellaneous definitions =================
  */
 
 /* Organisation IDs */
