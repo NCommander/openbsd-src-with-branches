@@ -1,6 +1,8 @@
-#	$OpenBSD: Makefile,v 1.6 2000/04/02 18:47:50 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2002/01/01 23:05:30 art Exp $
 
 REGRESSTARGETS=do-cfman do-no3man do-scatman
+REGRESSSLOWTARGETS=${REGRESSTARGETS}
+
 do-cfman:
 	perl ${.CURDIR}/cfman /usr/share/man
 do-no3man:
