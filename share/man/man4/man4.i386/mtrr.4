@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mtrr.4,v 1.7 2001/06/11 01:28:07 millert Exp $
+.\"	$OpenBSD: mtrr.4,v 1.8 2001/06/23 07:04:15 pjanzen Exp $
 .\"
 .\" Pentium MTRR  driver for OpenBSD.
 .\" Copyright 1999 Matthieu Herrb <matthieu@openbsd.org>
@@ -114,7 +114,6 @@ flag may not be removed or updated.
 .Fa mo_arg[0]
 should be set to MEMRANGE_SET_UPDATE to update an existing
 or establish a new range, or to MEMRANGE_SET_REMOVE to remove a range.
-.Pp
 .Sh RETURN VALUES
 .Bl -tag -width Er
 .It Bq Er EOPNOTSUPP
