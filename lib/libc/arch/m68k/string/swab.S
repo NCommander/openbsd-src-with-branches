@@ -1,6 +1,9 @@
-/*	$NetBSD: swab.S,v 1.4 1995/11/17 20:21:28 thorpej Exp $	*/
-
 #include "DEFS.h"
+
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 ENTRY(swab)
 	movl	sp@(4),a0		| source

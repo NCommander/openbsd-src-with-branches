@@ -31,9 +31,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "$NetBSD: sigsetjmp.S,v 1.1 1995/12/09 13:26:46 ragge Exp $"
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD: sigsetjmp.S,v 1.1 1995/12/09 13:26:46 ragge Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * C library -- sigsetjmp, siglongjmp

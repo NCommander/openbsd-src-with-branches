@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +36,10 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)sigprocmask.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: sigprocmask.S,v 1.2 1996/05/16 11:16:12 pefo Exp $")
-#endif /* LIBC_SCCS and not lint */
-
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 LEAF(sigprocmask)	# sigprocmask(how, new, old) sigset_t *new, *old;
 	.set	reorder

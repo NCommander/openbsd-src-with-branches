@@ -1,5 +1,3 @@
-/*	$OpenBSD$	*/
-
 /*
  *
  * Copyright (c) 1992, 1993
@@ -36,13 +34,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * from: Header: _setjmp.s,v 1.1 91/07/06 16:45:53 torek Exp
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)_setjmp.s	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 /*
  * C library -- _setjmp, _longjmp

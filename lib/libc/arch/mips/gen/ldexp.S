@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,11 +36,10 @@
 
 #include <machine/asm.h>
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)ldexp.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: ldexp.S,v 1.2 1996/05/16 11:16:01 pefo Exp $")
-#endif /* LIBC_SCCS and not lint */
-
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD$"
+#endif /* LIBC_SCCS */
 
 #define DEXP_INF	0x7ff
 #define DEXP_BIAS	1023
