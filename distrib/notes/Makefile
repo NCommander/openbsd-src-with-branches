@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 1997/09/21 11:45:58 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 1998/04/06 21:42:11 marc Exp $
 
 NOPROG=
 NOMAN=
@@ -15,7 +15,7 @@ DEP=	$(SRC) $(.CURDIR)/mirrors $(.CURDIR)/$M/whatis $(.CURDIR)/$M/contents \
 all:	$(TARG)
 
 $(TARG): $(DEP)
-	cpp -I$(.CURDIR)/$M -DMACHINE=$M -Uunix -U$M -C -P $(SRC) > $@
+	cpp -I$(.CURDIR)/$M -DMACHINE=$M -Uunix -Ui386 -U$M -C -P $(SRC) > $@
 
 clean cleandir:
 	-/bin/rm -f INSTALL.*
