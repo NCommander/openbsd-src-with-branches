@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.44 2001/05/30 02:12:24 deraadt Exp $	*/
+/*	$OpenBSD: if.c,v 1.45 2001/06/08 04:19:25 angelos Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -576,6 +576,7 @@ if_down(ifp)
 	int i;
 
 	ifp->if_flags &= ~IFF_UP;
+	microtime(&ifp->if_lastchange);
 	for (ifa = ifp->if_addrlist.tqh_first; ifa != 0; ifa = ifa->ifa_list.tqe_next)
 		pfctlinput(PRC_IFDOWN, ifa->ifa_addr);
 	if_qflush(&ifp->if_snd);
@@ -608,6 +609,7 @@ if_up(ifp)
 	int i;
 
 	ifp->if_flags |= IFF_UP;
+	microtime(&ifp->if_lastchange);
 #ifdef notyet
 	/* this has no effect on IP, and will kill all ISO connections XXX */
 	for (ifa = ifp->if_addrlist.tqh_first; ifa != 0;

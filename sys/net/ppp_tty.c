@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp_tty.c,v 1.10 2001/03/09 14:56:44 aaron Exp $	*/
+/*	$OpenBSD: ppp_tty.c,v 1.11 2001/05/16 12:53:34 ho Exp $	*/
 /*	$NetBSD: ppp_tty.c,v 1.12 1997/03/24 21:23:10 christos Exp $	*/
 
 /*
@@ -535,7 +535,6 @@ pppasyncstart(sc)
 
 	    /* Calculate the FCS for the first mbuf's worth. */
 	    sc->sc_outfcs = pppfcs(PPP_INITFCS, mtod(m, u_char *), m->m_len);
-	    sc->sc_if.if_lastchange = time;
 	}
 
 	for (;;) {
