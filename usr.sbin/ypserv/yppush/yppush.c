@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppush.c,v 1.7 1997/05/01 22:14:46 niklas Exp $ */
+/*	$OpenBSD: yppush.c,v 1.8 1997/11/04 07:40:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: yppush.c,v 1.7 1997/05/01 22:14:46 niklas Exp $";
+static char rcsid[] = "$OpenBSD: yppush.c,v 1.8 1997/11/04 07:40:51 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -173,7 +173,7 @@ char *indata;
 		return;
 	}
 	if (transp->xp_port >= IPPORT_RESERVED) {
-		svcudp_destroy(transp);
+		clnt_destroy(transp);
 		fprintf(stderr, "yppush: Cannot allocate reserved port.\n");
 		return;
 	}
