@@ -1,10 +1,13 @@
-#	$OpenBSD: Makefile,v 1.8 1997/07/27 23:29:12 downsj Exp $
+#	$OpenBSD: Makefile,v 1.9 1997/09/23 07:12:42 downsj Exp $
 #	@(#)Makefile.in	8.75 (Berkeley) 10/23/96
 
-CFLAGS+=-I${.CURDIR} -I${.CURDIR}/../include -DUSE_OCURSES
-
-LDADD+=	-locurses -ltermcap
+CFLAGS+=-I${.CURDIR} -I${.CURDIR}/../include
+LDADD+=-lcurses -ltermlib
 DPADD+= ${LIBCURSES} ${LIBTERMLIB}
+
+#CFLAGS+=-I${.CURDIR} -I${.CURDIR}/../include -DUSE_OCURSES
+#LDADD+= -locurses -ltermcap
+#DPADD+= ${LIBOCURSES} ${LIBTERM}
 PROG=	vi
 
 SRCS=	cl_bsd.c cl_funcs.c cl_main.c cl_read.c cl_screen.c cl_term.c \
