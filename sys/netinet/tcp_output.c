@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.45 2002/01/14 03:11:55 provos Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.46 2002/01/14 19:58:18 provos Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -383,7 +383,7 @@ again:
 		len = tp->t_maxseg;
 		sendalot = 1;
 	}
-	if (SEQ_LT(tp->snd_nxt + len, tp->snd_una + so->so_snd.sb_cc))
+	if (off + len < so->so_snd.sb_cc)
 		flags &= ~TH_FIN;
 
 	win = sbspace(&so->so_rcv);
