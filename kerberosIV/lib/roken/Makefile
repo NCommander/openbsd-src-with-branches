@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2000/11/08 11:15:05 hin Exp $
+# $OpenBSD: Makefile,v 1.5 2001/01/09 02:41:18 angelos Exp $
 
 LIB	= roken
 
@@ -47,7 +47,7 @@ SRCS=	base64.c		\
 	socket.c		\
 	warnerr.c
 
-# These files have been omitted from kth-rkb:
+# These files have been omitted from kth-krb:
 # putenv.c, setenv.c, unsetenv.c, daemon.c, flock.c, getegid.c, getgid.c,
 # gethostname.c, gettimeofday.c, hstrerror.c, innetgr.c, mkstemp.c,
 # strcasecmp.c, strdup.c, strncasecmp.c, strsep.c, swab.c, vsyslog.c,
