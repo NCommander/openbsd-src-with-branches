@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_script.c,v 1.8 1999/01/11 05:12:22 millert Exp $	*/
+/*	$OpenBSD: exec_script.c,v 1.9 1999/10/18 17:07:11 deraadt Exp $	*/
 /*	$NetBSD: exec_script.c,v 1.13 1996/02/04 02:15:06 christos Exp $	*/
 
 /*
@@ -166,7 +166,6 @@ check_shell:
 #endif
 	    ) {
 		struct file *fp;
-		extern struct fileops vnops;
 
 #if defined(DIAGNOSTIC) && defined(FDSCRIPTS)
 		if (epp->ep_flags & EXEC_HASFD)
