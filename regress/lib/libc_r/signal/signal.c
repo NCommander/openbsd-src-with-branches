@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.c,v 1.1.1.1 2001/08/15 14:37:13 fgsch Exp $	*/
+/*	$OpenBSD: signal.c,v 1.2 2001/11/03 04:33:48 marc Exp $	*/
 /* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 /*
@@ -31,9 +31,12 @@ void
 handler(sig)
 	int sig;
 {
+	int save_errno = errno;
+
 	alarmed = 1;
 	alarm(1);
 	signal(SIGALRM, handler);
+	errno = save_errno;
 }
 
 int
