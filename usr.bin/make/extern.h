@@ -1,4 +1,4 @@
-/*	$OpenBSD: nonints.h,v 1.7 1998/12/05 00:06:28 espie Exp $	*/
+/*	$OpenBSD: extern.h,v 1.10 1999/11/11 11:42:19 espie Exp $	*/
 /*	$NetBSD: nonints.h,v 1.12 1996/11/06 17:59:19 christos Exp $	*/
 
 /*-
