@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-rsa.c,v 1.18 2002/04/02 20:11:38 markus Exp $");
+RCSID("$OpenBSD: ssh-rsa.c,v 1.19 2002/05/31 13:20:50 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -123,8 +123,8 @@ ssh_rsa_verify(
 		return -1;
 	}
 	if (BN_num_bits(key->rsa->n) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
-		error("ssh_rsa_verify: n too small: %d bits",
-		    BN_num_bits(key->rsa->n));
+		error("ssh_rsa_verify: RSA modulus too small: %d < minimum %d bits",
+		    BN_num_bits(key->rsa->n), SSH_RSA_MINIMUM_MODULUS_SIZE);
 		return -1;
 	}
 	buffer_init(&b);
