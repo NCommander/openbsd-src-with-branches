@@ -73,6 +73,8 @@ linux_sys_ioctl(p, v, retval)
 		return linux_ioctl_audio(p, uap, retval);
 	case 'T':
 		return linux_ioctl_termios(p, uap, retval);
+	case 'S':
+		return linux_ioctl_cdrom(p, uap, retval);
 	case 0x89:
 		return linux_ioctl_socket(p, uap, retval);
 	default:
