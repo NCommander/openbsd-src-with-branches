@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cache.c,v 1.6 2000/05/02 21:49:36 miod Exp $	*/
 /*	$NetBSD: cache.c,v 1.5 1996/11/20 18:57:24 gwr Exp $	*/
 
 /*-
@@ -57,7 +57,6 @@
 #include <machine/pte.h>
 #include <machine/control.h>
 #include <machine/machdep.h>
-#include <machine/vmparam.h>
 
 #define	CACHE_LINE	16	/* bytes */
 #define	VAC_FLUSH_INCR	512	/* bytes */

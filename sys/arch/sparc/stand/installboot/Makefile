@@ -1,9 +1,14 @@
-#	$OpenBSD: Makefile,v 1.3 1997/09/17 10:46:21 downsj Exp $
+#	$OpenBSD: Makefile,v 1.5 2000/05/25 21:55:07 deraadt Exp $
 
-BINDIR=	/usr/sbin
 
-PROG=	installboot
 MAN=	installboot.8
 MANSUBDIR=/sparc
+
+.if ${MACHINE} == "sparc"
+BINDIR=	/usr/sbin
+PROG=	installboot
+.else
+NOPROG=
+.endif
 
 .include <bsd.prog.mk>
