@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx.c,v 1.5 1998/02/27 12:07:34 deraadt Exp $	*/
+/*	$OpenBSD: ipx.c,v 1.6 2000/01/11 01:14:26 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)ns.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD: ipx.c,v 1.5 1998/02/27 12:07:34 deraadt Exp $";
+static char *rcsid = "$OpenBSD: ipx.c,v 1.6 2000/01/11 01:14:26 fgsch Exp $";
 #endif
 #endif /* not lint */
 
@@ -236,7 +236,7 @@ spx_stats(off, name)
 	ANY(spxstat.spxs_rcvwinupd, "rcvd window update packet", "");
 }
 #undef ANY
-#define ANY(x,y,z)  ((x) ? printf("\t%d %s%s%s\n",x,y,plural(x),z) : 0)
+#define ANY(x,y,z)  ((x) ? printf("\t%ld %s%s%s\n",x,y,plural(x),z) : 0)
 
 /*
  * Dump IPX statistics structure.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.19 2000/01/18 05:39:34 itojun Exp $	*/
+/*	$OpenBSD: if.c,v 1.20 2000/02/05 18:46:50 itojun Exp $	*/
 /*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)if.c	8.2 (Berkeley) 2/21/94";
 #else
-static char *rcsid = "$OpenBSD: if.c,v 1.19 2000/01/18 05:39:34 itojun Exp $";
+static char *rcsid = "$OpenBSD: if.c,v 1.20 2000/02/05 18:46:50 itojun Exp $";
 #endif
 #endif /* not lint */
 
@@ -327,7 +327,7 @@ intpr(interval, ifnetaddr)
 			}
 			ifaddraddr = (u_long)ifaddr.ifa.ifa_list.tqe_next;
 		}
-		printf("%8ld %5ld %8ld %5ld %5ld",
+		printf("%8lu %5lu %8lu %5lu %5lu",
 		    ifnet.if_ipackets, ifnet.if_ierrors,
 		    ifnet.if_opackets, ifnet.if_oerrors,
 		    ifnet.if_collisions);
