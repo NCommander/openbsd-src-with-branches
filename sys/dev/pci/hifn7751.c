@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.67 2001/06/14 23:51:18 deraadt Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.66 2001/06/12 15:40:31 niklas Exp $	*/
 
 /*
  * Invertex AEON / Hi/fn 7751 driver
@@ -1408,11 +1408,10 @@ hifn_process(crp)
 					m_copyback(cmd->src_m, enccrd->crd_inject,
 					    HIFN_IV_LENGTH, cmd->iv);
 				else if (crp->crp_flags & CRYPTO_F_IOV) {
-					if (crp->crp_iv == NULL) {
-						err = EINVAL;
-						goto errout;
-					}
-					bcopy(crp->crp_iv, cmd->iv, 8);
+					if (crp->crp_iv == NULL)
+						bzero(cmd->iv, 8);
+					else
+						bcopy(crp->crp_iv, cmd->iv, 8);
 				}
 			}
 		} else {
@@ -1422,11 +1421,10 @@ hifn_process(crp)
 				m_copydata(cmd->src_m, enccrd->crd_inject,
 				    HIFN_IV_LENGTH, cmd->iv);
 			else if (crp->crp_flags & CRYPTO_F_IOV) {
-				if (crp->crp_iv == NULL) {
-					err = EINVAL;
-					goto errout;
-				}
-				bcopy(crp->crp_iv, cmd->iv, 8);
+				if (crp->crp_iv == NULL)
+					bzero(cmd->iv, 8);
+				else
+					bcopy(crp->crp_iv, cmd->iv, 8);
 			}
 		}
 
