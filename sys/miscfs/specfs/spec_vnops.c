@@ -52,6 +52,7 @@
 #include <sys/disklabel.h>
 #include <sys/lockf.h>
 
+#include <miscfs/genfs/genfs.h>
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/genfs/genfs.h>
 

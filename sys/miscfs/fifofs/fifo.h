@@ -72,12 +72,12 @@ int	fifo_kqfilter(void *);
 #define fifo_abortop	fifo_badop
 int fifo_inactive(void *);
 #define fifo_reclaim	nullop
-#define fifo_lock       vop_generic_lock
-#define fifo_unlock     vop_generic_unlock
+#define fifo_lock	genfs_nolock
+#define fifo_unlock	genfs_nounlock
 int	fifo_bmap(void *);
 #define fifo_strategy	fifo_badop
 int	fifo_print(void *);
-#define fifo_islocked	vop_generic_islocked
+#define fifo_islocked	genfs_noislocked
 int	fifo_pathconf(void *);
 int	fifo_advlock(void *);
 #define fifo_reallocblks fifo_badop

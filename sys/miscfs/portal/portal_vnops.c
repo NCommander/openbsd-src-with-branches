@@ -63,6 +63,8 @@
 #include <sys/un.h>
 #include <sys/unpcb.h>
 #include <sys/syscallargs.h>
+
+#include <miscfs/genfs/genfs.h>
 #include <miscfs/portal/portal.h>
 
 static int portal_fileid = PORTAL_ROOTFILEID+1;
@@ -97,12 +99,12 @@ int	portal_readdir(void *);
 #define	portal_readlink	eopnotsupp
 int	portal_inactive(void *);
 int	portal_reclaim(void *);
-#define	portal_lock	vop_generic_lock
-#define	portal_unlock	vop_generic_unlock
+#define	portal_lock	genfs_nolock
+#define	portal_unlock	genfs_nounlock
 #define	portal_bmap	portal_badop
 #define	portal_strategy	portal_badop
 int	portal_print(void *);
-#define	portal_islocked	vop_generic_islocked
+#define	portal_islocked	genfs_noislocked
 int	portal_pathconf(void *);
 #define	portal_advlock	eopnotsupp
 #define	portal_bwrite	eopnotsupp

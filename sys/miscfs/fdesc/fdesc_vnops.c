@@ -66,6 +66,7 @@
 #include <sys/tty.h>
 
 #include <miscfs/fdesc/fdesc.h>
+#include <miscfs/genfs/genfs.h>
 
 #include <uvm/uvm_extern.h>
 
@@ -114,13 +115,13 @@ int	fdesc_readdir(void *);
 int	fdesc_readlink(void *);
 int	fdesc_inactive(void *);
 int	fdesc_reclaim(void *);
-#define	fdesc_lock	vop_generic_lock
-#define	fdesc_unlock	vop_generic_unlock
+#define	fdesc_lock	genfs_nolock
+#define	fdesc_unlock	genfs_nounlock
 #define	fdesc_bmap	fdesc_badop
 #define	fdesc_strategy	fdesc_badop
 int	fdesc_print(void *);
 int	fdesc_pathconf(void *);
-#define	fdesc_islocked	vop_generic_islocked
+#define	fdesc_islocked	genfs_noislocked
 #define	fdesc_advlock	eopnotsupp
 #define	fdesc_bwrite	eopnotsupp
 #define	fdesc_mmap	eopnotsupp

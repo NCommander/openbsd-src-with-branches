@@ -58,6 +58,8 @@
 #include <sys/buf.h>
 #include <sys/dirent.h>
 #include <sys/msgbuf.h>
+
+#include <miscfs/genfs/genfs.h>
 #include <miscfs/kernfs/kernfs.h>
 
 #include <uvm/uvm_extern.h>
@@ -145,12 +147,12 @@ int	kernfs_readdir(void *);
 #define	kernfs_readlink	eopnotsupp
 int	kernfs_inactive(void *);
 int	kernfs_reclaim(void *);
-#define	kernfs_lock	vop_generic_lock
-#define	kernfs_unlock	vop_generic_unlock
+#define	kernfs_lock	genfs_lock
+#define	kernfs_unlock	genfs_unlock
 #define	kernfs_bmap	kernfs_badop
 #define	kernfs_strategy	kernfs_badop
 int	kernfs_print(void *);
-#define	kernfs_islocked	vop_generic_islocked
+#define	kernfs_islocked	genfs_islocked
 int	kernfs_pathconf(void *);
 #define	kernfs_advlock	eopnotsupp
 #define	kernfs_blkatoff	eopnotsupp

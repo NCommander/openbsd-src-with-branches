@@ -55,9 +55,7 @@
 #include <sys/queue.h>
 #include <sys/lock.h>
 
-#if 0
 #include <miscfs/genfs/genfs.h>
-#endif
 #include <miscfs/union/union.h>
 
 
@@ -1657,11 +1655,7 @@ union_lock(v)
 	int drain = 0;
 #endif
 
-#if 0
 	genfs_nolock(ap);
-#else
-	vop_generic_lock(ap);
-#endif
 	/*
 	 * Need to do real lockmgr-style locking here.
 	 * in the mean time, draining won't work quite right,
@@ -1799,11 +1793,7 @@ union_unlock(v)
 	}
 #endif
 
-#if 0
 	genfs_nounlock(ap);
-#else
-	vop_generic_unlock(ap);
-#endif
 
 	return (0);
 }

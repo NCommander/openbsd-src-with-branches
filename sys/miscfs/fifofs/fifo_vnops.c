@@ -51,6 +51,8 @@
 #include <sys/errno.h>
 #include <sys/malloc.h>
 #include <sys/un.h>
+
+#include <miscfs/genfs/genfs.h>
 #include <miscfs/fifofs/fifo.h>
 
 /*
