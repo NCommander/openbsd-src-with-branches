@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: auth2-chall.c,v 1.19 2002/06/26 13:55:37 markus Exp $");
+RCSID("$OpenBSD: auth2-chall.c,v 1.20 2002/06/30 21:59:45 deraadt Exp $");
 
 #include "ssh2.h"
 #include "auth.h"
@@ -31,7 +31,6 @@ RCSID("$OpenBSD: auth2-chall.c,v 1.19 2002/06/26 13:55:37 markus Exp $");
 #include "packet.h"
 #include "xmalloc.h"
 #include "dispatch.h"
-#include "auth.h"
 #include "log.h"
 
 static int auth2_challenge_start(Authctxt *);
