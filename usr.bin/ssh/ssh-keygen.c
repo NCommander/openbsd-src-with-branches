@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.79 2001/08/02 16:14:05 jakob Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.80 2001/09/17 19:27:15 stevesk Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -159,7 +159,10 @@ do_convert_to_ssh2(struct passwd *pw)
 			exit(1);
 		}
 	}
-	key_to_blob(k, &blob, &len);
+	if (key_to_blob(k, &blob, &len) <= 0) {
+		fprintf(stderr, "key_to_blob failed\n");
+		exit(1);
+	}
 	fprintf(stdout, "%s\n", SSH_COM_PUBLIC_BEGIN);
 	fprintf(stdout,
 	    "Comment: \"%d-bit %s, converted from OpenSSH by %s@%s\"\n",
