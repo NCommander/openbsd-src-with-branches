@@ -8,7 +8,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keyscan.c,v 1.20 2001/03/05 15:37:27 deraadt Exp $");
+RCSID("$OpenBSD: ssh-keyscan.c,v 1.21 2001/03/06 01:06:03 millert Exp $");
 
 #include <sys/queue.h>
 #include <errno.h>
@@ -393,7 +393,7 @@ congreet(int s)
 {
 	char buf[80], *cp;
 	size_t bufsiz;
-	int n;
+	int n = 0;
 	con *c = &fdcon[s];
 
 	bufsiz = sizeof(buf);
