@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.106 2003/05/09 23:10:21 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.107 2003/06/02 23:27:49 millert Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -1020,6 +1020,8 @@ badladdr(addr)
 	nofault = (int *)0;
 	return (0);
 }
+
+int netisr;
 
 void
 netintr()

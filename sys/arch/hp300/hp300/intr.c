@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.10 2002/03/14 01:26:30 millert Exp $	*/
+/*	$OpenBSD: intr.c,v 1.11 2002/04/28 15:15:32 miod Exp $	*/
 /*	$NetBSD: intr.c,v 1.5 1998/02/16 20:58:30 thorpej Exp $	*/
 
 /*-
@@ -282,6 +282,8 @@ intr_dispatch(evec)
 	else
 		printf("intr_dispatch: stray level %d interrupt\n", ipl);
 }
+
+int netisr;
 
 void
 netintr()
