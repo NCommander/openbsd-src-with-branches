@@ -49,6 +49,7 @@
  * List of known MII OUIs
  */
 
+#define	MII_OUI_3COM	0x00105a	/* 3com */
 #define	MII_OUI_ALTIMA	0x0010a9	/* Altima Communications */
 #define	MII_OUI_AMD	0x00001a	/* Advanced Micro Devices */
 #define	MII_OUI_BROADCOM	0x001018	/* Broadcom Corporation */
