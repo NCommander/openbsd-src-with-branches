@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.h,v 1.15 2001/11/12 01:26:09 art Exp $	*/
+/*	$OpenBSD: uvm_map.h,v 1.20 2001/12/19 08:58:07 art Exp $	*/
 /*	$NetBSD: uvm_map.h,v 1.24 2001/02/18 21:19:08 chs Exp $	*/
 
 /* 
@@ -156,6 +156,7 @@ struct vm_map_entry {
 	u_int8_t		flags;		/* flags */
 
 #define UVM_MAP_STATIC		0x01		/* static map entry */
+#define UVM_MAP_KMEM		0x02		/* from kmem entry pool */
 
 };
 
