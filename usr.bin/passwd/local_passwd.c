@@ -150,9 +150,9 @@ local_passwd(uname, authenticated)
 	if (pfd < 0 || fcntl(pfd, F_SETFD, 1) == -1)
 		pw_error(_PATH_MASTERPASSWD, 1, 1);
 
-	/* Update master.passwd file and build .db version. */
+	/* Update master.passwd file and rebuild spwd.db. */
 	pw_copy(pfd, tfd, pw);
-	if (pw_mkdb(uname) < 0)
+	if (pw_mkdb(uname, 1) < 0)
 		pw_error((char *)NULL, 0, 1);
 
 	return(0);
