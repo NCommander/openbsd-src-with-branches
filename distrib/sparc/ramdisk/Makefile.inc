@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile.inc,v 1.3 1997/05/15 08:46:13 deraadt Exp $
-#	$OpenBSD: Makefile.inc,v 1.3 1997/05/15 08:46:13 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 1997/05/24 10:46:21 johns Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 1997/05/24 10:46:21 johns Exp $
 
-IMAGESIZE?=		8192 # 4Mb in 512 byte blocks
+IMAGESIZE?=		4480 # 4Mb in 512 byte blocks
 BOOT_INSTALLBOOT?=	/usr/mdec/bootxx
 GZIP?=			gzip
 GZIPFLAGS?=		-9v
