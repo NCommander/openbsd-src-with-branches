@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.42 2004/12/16 00:45:34 mcbride Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.43 2005/01/20 17:47:38 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -831,6 +831,7 @@ pfsyncioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			struct in_addr addr;
 
 			if (!(sc->sc_sync_ifp->if_flags & IFF_MULTICAST)) {
+				sc->sc_sync_ifp = NULL;
 				splx(s);
 				return (EADDRNOTAVAIL);
 			}
@@ -839,6 +840,7 @@ pfsyncioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 
 			if ((imo->imo_membership[0] =
 			    in_addmulti(&addr, sc->sc_sync_ifp)) == NULL) {
+				sc->sc_sync_ifp = NULL;
 				splx(s);
 				return (ENOBUFS);
 			}
