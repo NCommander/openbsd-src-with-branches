@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2003/12/17 04:23:37 millert Exp $
+#	$OpenBSD: Makefile,v 1.5 2003/12/17 05:01:06 millert Exp $
 
 S=${.CURDIR}/../../../..
 ZDST=${.OBJDIR}
@@ -6,4 +6,4 @@ ZDST=${.OBJDIR}
 .PATH: ${S}/lib/libz
 
 .include "${S}/lib/libz/Makefile"
-CFLAGS+=${CEXTRAFLAGS} ${AFLAGS}
+CFLAGS+=${CEXTRAFLAGS} ${AFLAGS} -I${S}
