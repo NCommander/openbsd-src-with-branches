@@ -1,4 +1,4 @@
-# 	$OpenBSD: RAMDISK,v 1.38 2005/02/15 11:03:46 jsg Exp $
+# 	$OpenBSD: RAMDISK,v 1.40 2005/03/05 01:49:02 miod Exp $
 
 # Machine architecture; required by config(8)
 machine		sparc64
@@ -22,6 +22,7 @@ option		DIAGNOSTIC	# internal consistency checks
 option		FFS		# UFS
 option		NFSCLIENT	# Network File System client
 option		CD9660		# ISO 9660 + Rock Ridge file system
+option		UDF		# UDF (DVD) file system
 option		INET		# IP + ICMP + TCP + UDP
 option		INET6		# IPv6 (needs INET)
 option		BOOT_CONFIG	# add support for boot -c
