@@ -1,4 +1,3 @@
-/*	$OpenBSD: cpus.h,v 1.4 1999/02/09 06:36:26 smurph Exp $ */
 /* 
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University
@@ -24,42 +23,26 @@
  * any improvements or extensions that they make and grant Carnegie Mellon 
  * the rights to redistribute these changes.
  */
-/*
- *
- * HISTORY
- */
-/* 
-  Versions Idents for 88k family chips 
- */
 
-#ifndef _M88K_CPUS_
-#define _M88K_CPUS_
+#ifndef	_M88K_CPU_NUMBER_
+#define _M88K_CPU_NUMBER_
+ 
+#ifdef	KERNEL
+#include <machine/param.h>
+extern unsigned number_cpus;
+#define cpu_number() 0
 
-/*
- * cpu Processor Identification Register (PID).
- */
-#ifndef ASSEMBLER
-union cpupid {
-   unsigned cpupid;
-   struct {
-      unsigned
-      /*empty*/:16,
-      arc:8,
-      version:7,
-      master:1;
-   } m88100;
-   struct {
-      unsigned
-      id:8,
-      type:3,
-      version:5,
-      /*empty*/:16;
-   } m88200;
-};
-#endif ASSEMBLER
-
-#define M88100 0
-#define M88200 5
-#define M88204 6
-
-#endif  _M88K_CPUS_
+#if 0 /* This seems to not work correctly. Hmm.... smurph */
+unsigned cpu_number(void);
+static inline unsigned cpu_number(void)
+{
+	unsigned cpu;
+   extern int cputyp;
+	if (cputyp != CPU_188 || number_cpus == 1) return 0;
+   asm("ldcr %0, cr18" : "=r" (cpu));
+	asm("clr  %0, %0, 0<4>" : "=r" (cpu));
+	return (cpu & 3);
+}
+#endif /* 0 */
+#endif /* KERNEL */
+#endif /* _M88K_CPU_NUMBER_ */
