@@ -1,4 +1,4 @@
-/* $OpenBSD: lemac.c,v 1.3 2002/05/07 19:28:59 nate Exp $ */
+/* $OpenBSD: lemac.c,v 1.4 2003/10/21 18:58:49 jmc Exp $ */
 /* $NetBSD: lemac.c,v 1.20 2001/06/13 10:46:02 wiz Exp $ */
 
 /*-
@@ -99,7 +99,11 @@ struct cfdriver lc_cd = {
 	NULL, "lc", DV_IFNET
 };
 
-static const u_int16_t lemac_allmulti_mctbl[16] = {
+static const u_int16_t lemac_allmulti_mctbl[LEMAC_MCTBL_SIZE/sizeof(u_int16_t)] = {
+	0xFFFFU, 0xFFFFU, 0xFFFFU, 0xFFFFU,
+	0xFFFFU, 0xFFFFU, 0xFFFFU, 0xFFFFU,
+	0xFFFFU, 0xFFFFU, 0xFFFFU, 0xFFFFU,
+	0xFFFFU, 0xFFFFU, 0xFFFFU, 0xFFFFU,
 	0xFFFFU, 0xFFFFU, 0xFFFFU, 0xFFFFU,
 	0xFFFFU, 0xFFFFU, 0xFFFFU, 0xFFFFU,
 	0xFFFFU, 0xFFFFU, 0xFFFFU, 0xFFFFU,
