@@ -1,4 +1,4 @@
-/*	$OpenBSD: externs.h,v 1.10 2002/03/25 10:52:32 hin Exp $	*/
+/*	$OpenBSD: externs.h,v 1.11 2003/06/03 02:56:18 millert Exp $	*/
 /* $KTH: externs.h,v 1.16 1997/11/29 02:28:35 joda Exp $ */
 
 /*
@@ -54,6 +54,7 @@ extern int
     skiprc,		/* Don't process the ~/.telnetrc file */
     eight,		/* use eight bit mode (binary in and/or out */
     binary,
+    family,		/* address family of peer */
     flushout,		/* flush output */
     connected,		/* Are we connected to the other side? */
     globalmode,		/* Mode tty should be in */
