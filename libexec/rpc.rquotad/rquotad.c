@@ -1,4 +1,4 @@
-/*	$OpenBSD: rquotad.c,v 1.7 2000/10/19 01:56:05 pjanzen Exp $	*/
+/*	$OpenBSD: rquotad.c,v 1.8 2001/01/17 19:23:26 deraadt Exp $	*/
 /*
  * by Manuel Bouyer (bouyer@ensta.fr)
  * 
@@ -211,7 +211,7 @@ initfs()
 
 	setfsent();
 	while ((fs = getfsent())) {
-		if (strcmp(fs->fs_vfstype, "ufs"))
+		if (strcmp(fs->fs_vfstype, "ffs"))
 			continue;
 		if (!hasquota(fs, &qfpathname))
 			continue;
