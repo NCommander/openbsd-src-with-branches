@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.6 1997/04/11 19:12:56 weingart Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.7 1997/04/15 08:32:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -441,6 +441,9 @@ bootparse(cmd)
 					break;
 				case 's':
 					boothowto |= RB_SINGLE;
+					break;
+				case 'd':
+					boothowto |= RB_KDB;
 					break;
 				}
 			}
