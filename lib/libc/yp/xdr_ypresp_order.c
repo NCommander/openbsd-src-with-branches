@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_ypresp_order.c,v 1.2 1996/07/01 07:09:06 deraadt Exp $";
+static char *rcsid = "$OpenBSD: xdr_ypresp_order.c,v 1.3 1996/08/19 08:35:06 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -46,9 +46,7 @@ static char *rcsid = "$OpenBSD: xdr_ypresp_order.c,v 1.2 1996/07/01 07:09:06 der
 #include <rpcsvc/ypclnt.h>
 
 bool_t
-xdr_ypresp_order(xdrs, objp)
-XDR *xdrs;
-struct ypresp_order *objp;
+xdr_ypresp_order(XDR *xdrs, struct ypresp_order *objp)
 {
 	if (!xdr_ypstat(xdrs, (ypstat *)&objp->stat)) {
 		return FALSE;

@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: yp_get_default_domain.c,v 1.2 1996/07/01 07:09:11 deraadt Exp $";
+static char *rcsid = "$OpenBSD: yp_get_default_domain.c,v 1.3 1996/08/19 08:35:09 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -50,8 +50,7 @@ static char *rcsid = "$OpenBSD: yp_get_default_domain.c,v 1.2 1996/07/01 07:09:1
 #include "ypinternal.h"
 
 int
-yp_get_default_domain(domp)
-	char          **domp;
+yp_get_default_domain(char **domp)
 {
 	*domp = NULL;
 	if (_yp_domain[0] == '\0')

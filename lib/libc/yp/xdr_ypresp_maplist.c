@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_ypresp_maplist.c,v 1.2 1996/07/01 07:09:05 deraadt Exp $";
+static char *rcsid = "$OpenBSD: xdr_ypresp_maplist.c,v 1.3 1996/08/19 08:35:05 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -46,9 +46,7 @@ static char *rcsid = "$OpenBSD: xdr_ypresp_maplist.c,v 1.2 1996/07/01 07:09:05 d
 #include <rpcsvc/ypclnt.h>
 
 bool_t
-xdr_ypresp_maplist(xdrs, objp)
-XDR *xdrs;
-struct ypresp_maplist *objp;
+xdr_ypresp_maplist(XDR *xdrs, struct ypresp_maplist *objp)
 {
 	if (!xdr_ypstat(xdrs, (ypstat *)&objp->stat)) {
 		return FALSE;

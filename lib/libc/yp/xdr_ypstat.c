@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_ypstat.c,v 1.3 1996/08/19 08:35:07 tholo Exp $";
+static char *rcsid = "$OpenBSD: xdr_ypstat.c,v 1.4 1996/12/14 06:49:45 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -46,9 +46,7 @@ static char *rcsid = "$OpenBSD: xdr_ypstat.c,v 1.3 1996/08/19 08:35:07 tholo Exp
 #include <rpcsvc/ypclnt.h>
 
 bool_t
-xdr_ypstat(xdrs, objp)
-XDR *xdrs;
-ypstat *objp;
+xdr_ypstat(XDR *xdrs, ypstat *objp)
 {
 	return xdr_enum(xdrs, (enum_t *)objp);
 }

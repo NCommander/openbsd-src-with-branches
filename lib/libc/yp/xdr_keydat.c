@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_keydat.c,v 1.3 1996/07/01 07:08:54 deraadt Exp $";
+static char *rcsid = "$OpenBSD: xdr_keydat.c,v 1.4 1996/08/19 08:34:58 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -46,9 +46,7 @@ static char *rcsid = "$OpenBSD: xdr_keydat.c,v 1.3 1996/07/01 07:08:54 deraadt E
 #include <rpcsvc/ypclnt.h>
 
 bool_t
-xdr_keydat(xdrs, objp)
-XDR *xdrs;
-keydat *objp;
+xdr_keydat(XDR *xdrs, keydat *objp)
 {
 	return xdr_bytes(xdrs, (char **)&objp->keydat_val,
 	    (u_int *)&objp->keydat_len, YPMAXRECORD);

@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_peername.c,v 1.2 1996/07/01 07:08:55 deraadt Exp $";
+static char *rcsid = "$OpenBSD: xdr_peername.c,v 1.3 1996/08/19 08:34:59 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -46,9 +46,7 @@ static char *rcsid = "$OpenBSD: xdr_peername.c,v 1.2 1996/07/01 07:08:55 deraadt
 #include <rpcsvc/ypclnt.h>
 
 bool_t
-xdr_peername(xdrs, objp)
-XDR *xdrs;
-peername *objp;
+xdr_peername(XDR *xdrs, peername *objp)
 {
 	return xdr_string(xdrs, objp, YPMAXPEER);
 }

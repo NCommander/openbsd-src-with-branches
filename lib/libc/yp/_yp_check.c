@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: _yp_check.c,v 1.2 1996/07/01 07:08:53 deraadt Exp $";
+static char *rcsid = "$OpenBSD: _yp_check.c,v 1.3 1996/08/19 08:34:57 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -50,8 +50,7 @@ static char *rcsid = "$OpenBSD: _yp_check.c,v 1.2 1996/07/01 07:08:53 deraadt Ex
 #include "ypinternal.h"
 
 int
-_yp_check(dom)
-	char          **dom;
+_yp_check(char **dom)
 {
 	char           *unused;
 

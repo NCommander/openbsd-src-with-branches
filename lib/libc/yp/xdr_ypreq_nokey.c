@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_ypreq_nokey.c,v 1.2 1996/07/01 07:09:02 deraadt Exp $";
+static char *rcsid = "$OpenBSD: xdr_ypreq_nokey.c,v 1.3 1996/08/19 08:35:03 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -46,9 +46,7 @@ static char *rcsid = "$OpenBSD: xdr_ypreq_nokey.c,v 1.2 1996/07/01 07:09:02 dera
 #include <rpcsvc/ypclnt.h>
 
 bool_t
-xdr_ypreq_nokey(xdrs, objp)
-XDR *xdrs;
-struct ypreq_nokey *objp;
+xdr_ypreq_nokey(XDR *xdrs, struct ypreq_nokey *objp)
 {
 	if (!xdr_domainname(xdrs, (domainname *)&objp->domain)) {
 		return FALSE;
