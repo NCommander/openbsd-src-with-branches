@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.130 2001/09/01 16:15:19 drahn Exp $
+#	$OpenBSD: Makefile,v 1.131 2001/09/20 22:17:41 hin Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -215,9 +215,6 @@ distribution-etc-root-var: distrib-dirs
 		${DESTDIR}/var/msgs/bounds
 	${INSTALL} -c -o ${BINOWN} -g utmp -m 664 /dev/null \
 		${DESTDIR}/var/run/utmp
-.ifndef NOMAKEDEV
-	(cd ${DESTDIR}/dev; ./MAKEDEV all)
-.endif
 .if ${MACHINE} == "vax"
 	(cd etc.vax; ${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 444 ${PCS} \
 	    ${DESTDIR}/)
