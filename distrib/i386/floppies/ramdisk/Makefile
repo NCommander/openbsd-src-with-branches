@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 1997/05/29 18:27:53 kstailey Exp $
+#	$OpenBSD: Makefile,v 1.23 1997/06/06 03:44:47 kstailey Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -34,7 +34,8 @@ ${FS}:	bsd.gz
 	mount ${VND_DEV} ${MOUNT_POINT}
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
 	    TARGDIR=${MOUNT_POINT} sh ${TOP}/runlist.sh ${LISTFLOPPY}
-	/usr/mdec/installboot -v ${MOUNT_POINT}/boot ${DESTDIR}/usr/mdec/biosboot ${VND_CRDEV}
+	/usr/mdec/installboot -v -s 18 -h 2 ${MOUNT_POINT}/boot \
+	    ${DESTDIR}/usr/mdec/biosboot ${VND_CRDEV}
 	@echo ""
 	@df -i ${MOUNT_POINT}
 	@echo ""
