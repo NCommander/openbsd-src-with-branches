@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.c,v 1.12 2002/08/20 02:50:43 drahn Exp $	*/
+/*	$OpenBSD: ofw_machdep.c,v 1.13 2002/09/06 13:56:51 drahn Exp $	*/
 /*	$NetBSD: ofw_machdep.c,v 1.1 1996/09/30 16:34:50 ws Exp $	*/
 
 /*
@@ -54,6 +54,7 @@
 
 #include <ukbd.h>
 #include <akbd.h>
+#include <zstty.h>
 #include <dev/usb/ukbdvar.h>
 #include <macppc/dev/akbdvar.h>
 
