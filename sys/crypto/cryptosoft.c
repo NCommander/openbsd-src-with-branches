@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/*	$OpenBSD$	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
