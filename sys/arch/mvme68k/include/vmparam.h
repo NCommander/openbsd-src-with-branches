@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.10 2001/09/22 18:00:10 miod Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.11 2001/11/30 17:37:43 art Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -132,7 +132,6 @@
 
 /* virtual sizes (bytes) for various kernel submaps */
 #define VM_MBUF_SIZE		(NMBCLUSTERS*MCLBYTES)
-#define VM_KMEM_SIZE		(NKMEMCLUSTERS*PAGE_SIZE)
 #define VM_PHYS_SIZE		(USRIOSIZE*PAGE_SIZE)
 
 /* # of kernel PT pages (initial only, can grow dynamically) */
