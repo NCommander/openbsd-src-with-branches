@@ -1,4 +1,4 @@
-/*	$OpenBSD: magmareg.h,v 1.4 2001/07/04 08:43:28 niklas Exp $	*/
+/*	$OpenBSD: magmareg.h,v 1.5 2002/01/25 02:37:43 jason Exp $	*/
 
 /* magmareg.h
  *
@@ -192,13 +192,6 @@ struct mbpp_softc {
 	int ms_nports;			/* parallel ports */
 	struct mbpp_port ms_port[MAGMA_MAX_BPP];
 };
-
-/*
- * useful macros
- */
-#define SET(t, f)	((t) |= (f))
-#define CLR(t, f)	((t) &= ~(f))
-#define ISSET(t, f)	((t) & (f))
 
 /* internal function prototypes */
 

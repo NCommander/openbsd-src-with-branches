@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.78 2002/01/23 07:14:41 ericj Exp $	*/
+/*	$OpenBSD: com.c,v 1.79 2002/01/25 21:23:38 mickey Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -137,11 +137,6 @@ void   com_kgdb_putc __P((void *, int));
 
 #define	DEVUNIT(x)	(minor(x) & 0x7f)
 #define	DEVCUA(x)	(minor(x) & 0x80)
-
-/* Macros to clear/set/test flags. */
-#define	SET(t, f)	(t) |= (f)
-#define	CLR(t, f)	(t) &= ~(f)
-#define	ISSET(t, f)	((t) & (f))
 
 int
 comspeed(freq, speed)

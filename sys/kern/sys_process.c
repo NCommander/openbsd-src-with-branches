@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_process.c,v 1.15 2002/01/02 02:38:42 art Exp $	*/
+/*	$OpenBSD: sys_process.c,v 1.16 2002/01/20 11:27:52 art Exp $	*/
 /*	$NetBSD: sys_process.c,v 1.55 1996/05/15 06:17:47 tls Exp $	*/
 
 /*-
@@ -70,11 +70,6 @@
 #include <machine/reg.h>
 
 #include <miscfs/procfs/procfs.h>
-
-/* Macros to clear/set/test flags. */
-#define	SET(t, f)	(t) |= (f)
-#define	CLR(t, f)	(t) &= ~(f)
-#define	ISSET(t, f)	((t) & (f))
 
 /*
  * Process debugging system call.

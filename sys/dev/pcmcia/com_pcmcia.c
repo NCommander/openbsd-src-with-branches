@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_pcmcia.c,v 1.28 2001/03/28 19:59:48 millert Exp $	*/
+/*	$OpenBSD: com_pcmcia.c,v 1.29 2001/08/17 21:52:16 deraadt Exp $	*/
 /*	$NetBSD: com_pcmcia.c,v 1.15 1998/08/22 17:47:58 msaitoh Exp $	*/
 
 /*
@@ -140,7 +140,6 @@
 #include <dev/isa/isareg.h>
 
 #define	com_lcr		com_cfcr
-#define	SET(t, f)	(t) |= (f)
 
 /* Devices that we need to match by CIS strings */
 struct com_pcmcia_product {

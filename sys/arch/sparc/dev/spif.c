@@ -1,4 +1,4 @@
-/*	$OpenBSD: spif.c,v 1.7 2000/06/02 15:53:22 jason Exp $	*/
+/*	$OpenBSD: spif.c,v 1.8 2001/10/05 15:50:30 jason Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -67,13 +67,6 @@
 #else
 # error "no suitable software interrupt bit"
 #endif
-
-/*
- * useful macros
- */
-#define	SET(t, f)	((t) |= (f))
-#define	CLR(t, f)	((t) &= ~(f))
-#define	ISSET(t, f)	((t) & (f))
 
 int	spifmatch	__P((struct device *, void *, void *));
 void	spifattach	__P((struct device *, struct device *, void *));
