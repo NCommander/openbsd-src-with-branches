@@ -1,4 +1,5 @@
-/* *	$OpenBSD: config.h,v 1.1.1.1 1995/10/18 08:45:55 deraadt Exp $*/
+/*	$OpenBSD: config.h,v 1.2 1996/06/10 11:21:27 niklas Exp $	*/
+
 /* config.h
  * This file was produced by running the config.h.SH script, which
  * gets its values from config.sh, which is generally produced by
