@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.92 2004/05/03 04:44:41 henning Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.93 2004/05/07 10:06:15 djm Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -386,7 +386,7 @@ reconfigure(char *conffile, struct bgpd_config *conf, struct mrt_head *mrt_l,
 		    &p->conf, sizeof(struct peer_config)) == -1)
 			return (-1);
 	while ((n = TAILQ_FIRST(&net_l)) != NULL) {
-		if (imsg_compose(&ibuf_rde, IMSG_RECONF_NETWORK, 0,
+		if (imsg_compose(&ibuf_rde, IMSG_NETWORK_ADD, 0,
 		    &n->net, sizeof(struct network_config)) == -1)
 			return (-1);
 		TAILQ_REMOVE(&net_l, n, network_l);
