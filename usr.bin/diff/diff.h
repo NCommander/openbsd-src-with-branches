@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.h,v 1.3 2003/06/25 03:02:33 tedu Exp $	*/
+/*	$OpenBSD: diff.h,v 1.4 2003/06/25 03:37:32 deraadt Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -117,7 +117,6 @@ void	*talloc(size_t);
 void	*ralloc(void *, size_t);
 char	*splice(char *, char *);
 char	*copytemp(void);
-void	catchsig(int);
 void	done(int);
 void	diffdir(char **);
 void	diffreg(void);

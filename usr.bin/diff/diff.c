@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.3 2003/06/25 03:02:33 tedu Exp $	*/
+/*	$OpenBSD: diff.c,v 1.4 2003/06/25 03:37:32 deraadt Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -215,13 +215,6 @@ done(int sig)
 	if (sig)
 		_exit(status);
 	exit(status);
-}
-
-void
-catchsig(int sigraised)
-{
-	/* print something? */
-	done(0);
 }
 
 void *
