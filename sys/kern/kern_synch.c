@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.42 2002/03/14 01:27:04 millert Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.43 2002/06/11 05:04:34 art Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -60,6 +60,9 @@
 
 u_char	curpriority;		/* usrpri of curproc */
 int	lbolt;			/* once a second sleep address */
+
+int whichqs;			/* Bit mask summary of non-empty Q's. */
+struct prochd qs[NQS];
 
 void scheduler_start(void);
 

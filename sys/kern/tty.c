@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.51 2002/03/14 01:27:05 millert Exp $	*/
+/*	$OpenBSD: tty.c,v 1.52 2002/06/11 05:06:18 art Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -164,6 +164,8 @@ u_char const char_type[] = {
 
 struct ttylist_head ttylist;	/* TAILQ_HEAD */
 int tty_count;
+
+int64_t tk_cancc, tk_nin, tk_nout, tk_rawcc;
 
 /*
  * Initial open of tty, or (re)entry to standard tty line discipline.

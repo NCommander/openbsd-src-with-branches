@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.43 2002/06/14 21:34:59 todd Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.44 2002/06/15 17:23:31 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -153,6 +153,11 @@ extern vaddr_t avail_end;
 #define BUFCACHEPERCENT 5
 #endif
 
+#ifdef	BUFPAGES
+int	bufpages = BUFPAGES;
+#else
+int	bufpages = 0;
+#endif
 int	bufcachepercent = BUFCACHEPERCENT;
 
 int	physmem;

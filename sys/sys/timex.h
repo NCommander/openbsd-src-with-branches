@@ -1,4 +1,4 @@
-/*	$OpenBSD: timex.h,v 1.6 2001/09/20 17:02:32 mpech Exp $	*/
+/*	$OpenBSD: timex.h,v 1.7 2002/03/14 01:27:14 millert Exp $	*/
 /*	$NetBSD: timex.h,v 1.2 1996/02/27 04:20:34 jonathan Exp $	*/
 
 /******************************************************************************
@@ -68,7 +68,7 @@
  *
  */
 #ifndef _SYS_TIMEX_H_
-#define _SYS_TIMEX_H_ 1
+#define _SYS_TIMEX_H_
 
 #ifndef MSDOS			/* Microsoft specific */
 #include <sys/syscall.h>

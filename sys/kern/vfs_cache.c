@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cache.c,v 1.6 2002/01/23 00:39:48 art Exp $	*/
+/*	$OpenBSD: vfs_cache.c,v 1.7 2002/07/02 04:23:25 ericj Exp $	*/
 /*	$NetBSD: vfs_cache.c,v 1.13 1996/02/04 02:18:09 christos Exp $	*/
 
 /*
@@ -77,6 +77,8 @@ struct	nchstats nchstats;		/* cache effectiveness statistics */
 int doingcache = 1;			/* 1 => enable the cache */
 
 struct pool nch_pool;
+
+u_long nextvnodeid;
 
 /*
  * Look for a the name in the cache. We don't do this

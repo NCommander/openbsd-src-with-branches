@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.56 2002/02/25 04:53:16 dhartmei Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.57 2002/03/14 01:27:05 millert Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -96,6 +96,11 @@ struct	pool mbpool;		/* mbuf pool */
 struct	pool mclpool;		/* mbuf cluster pool */
 
 struct vm_map *mb_map;
+
+int max_linkhdr;		/* largest link-level header */
+int max_protohdr;		/* largest protocol header */
+int max_hdr;			/* largest link+protocol header */
+int max_datalen;		/* MHLEN - max_hdr */
 
 void	*mclpool_alloc(struct pool *, int);
 void	mclpool_release(struct pool *, void *);
