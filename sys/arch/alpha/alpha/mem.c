@@ -213,7 +213,7 @@ mmmmap(dev, off, prot)
 	/*
 	 * Allow access only in RAM.
 	 */
-	if ((prot & alpha_pa_access(atop((paddr_t)off))) != prot)
+	if ((prot & alpha_pa_access(atop(off))) != prot)
 		return (-1);
 	return (alpha_btop(off));
 }
