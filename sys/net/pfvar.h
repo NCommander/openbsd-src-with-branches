@@ -293,6 +293,7 @@ struct pf_rule {
 #define PF_QNAME_SIZE		 16
 	char			 ifname[IFNAMSIZ];
 	char			 qname[PF_QNAME_SIZE];
+	char			 pqname[PF_QNAME_SIZE];
 #define	PF_ANCHOR_NAME_SIZE	 16
 	char			 anchorname[PF_ANCHOR_NAME_SIZE];
 	TAILQ_ENTRY(pf_rule)	 entries;
@@ -308,6 +309,7 @@ struct pf_rule {
 	u_int32_t		 states;
 	u_int32_t		 max_states;
 	u_int32_t		 qid;
+	u_int32_t		 pqid;
 	u_int32_t		 rt_listid;
 
 	u_int16_t		 nr;
