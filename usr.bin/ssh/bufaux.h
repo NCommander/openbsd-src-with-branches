@@ -39,4 +39,7 @@ void   *buffer_get_string(Buffer *, u_int *);
 void    buffer_put_string(Buffer *, const void *, u_int);
 void	buffer_put_cstring(Buffer *, const char *);
 
+#define buffer_skip_string(b) \
+    do { u_int l = buffer_get_int(b); buffer_consume(b, l); } while(0)
+
 #endif				/* BUFAUX_H */
