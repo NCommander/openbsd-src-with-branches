@@ -37,8 +37,8 @@
 #include "SYS.h"
 
 #if defined(SYSLIBC_SCCS)
-        .text
-        .asciz "$OpenBSD$"
+	.text
+	.asciz "$OpenBSD: sigprocmask.S,v 1.2 1996/08/19 08:13:41 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
 ENTRY(sigprocmask)

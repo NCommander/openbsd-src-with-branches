@@ -7,7 +7,7 @@
 
 #if defined(LIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: memcmp.S,v 1.2 1996/08/19 08:13:03 tholo Exp $"
 #endif
 
 ENTRY(memcmp)
@@ -40,8 +40,8 @@ L5:	movl	$4,%ecx			/* We know that one of the next	*/
 	repe
 	cmpsb
 L6:	movzbl  -1(%edi),%eax		/* Perform unsigned comparison	*/
-        movzbl  -1(%esi),%edx
-        subl    %edx,%eax
+	movzbl	-1(%esi),%edx
+	subl	%edx,%eax
 	popl	%esi
 	popl	%edi
 	ret

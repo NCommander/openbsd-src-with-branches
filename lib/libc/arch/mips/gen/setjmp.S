@@ -39,8 +39,8 @@
 #include <machine/regnum.h>
 
 #if defined(LIBC_SCCS) 
-        .text
-        .asciz "$OpenBSD$"
+	.text
+	.asciz "$OpenBSD: setjmp.S,v 1.5 1996/08/19 08:16:05 tholo Exp $"
 #endif /* LIBC_SCCS */
 
 /*
