@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_fault_i.h,v 1.8 2001/11/28 19:28:14 art Exp $	*/
+/*	$OpenBSD: uvm_fault_i.h,v 1.8.2.1 2002/02/02 03:28:26 art Exp $	*/
 /*	$NetBSD: uvm_fault_i.h,v 1.15 2001/09/15 20:36:45 chs Exp $	*/
 
 /*
@@ -41,11 +41,11 @@
 /*
  * uvm_fault_i.h: fault inline functions
  */
-static boolean_t uvmfault_lookup __P((struct uvm_faultinfo *, boolean_t));
-static boolean_t uvmfault_relock __P((struct uvm_faultinfo *));
-static void uvmfault_unlockall __P((struct uvm_faultinfo *, struct vm_amap *,
-			            struct uvm_object *, struct vm_anon *));
-static void uvmfault_unlockmaps __P((struct uvm_faultinfo *, boolean_t));
+static boolean_t uvmfault_lookup(struct uvm_faultinfo *, boolean_t);
+static boolean_t uvmfault_relock(struct uvm_faultinfo *);
+static void uvmfault_unlockall(struct uvm_faultinfo *, struct vm_amap *,
+			            struct uvm_object *, struct vm_anon *);
+static void uvmfault_unlockmaps(struct uvm_faultinfo *, boolean_t);
 
 /*
  * uvmfault_unlockmaps: unlock the maps

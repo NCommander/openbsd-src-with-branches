@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pdaemon.c,v 1.20.2.1 2002/01/31 22:55:51 niklas Exp $	*/
+/*	$OpenBSD: uvm_pdaemon.c,v 1.20.2.2 2002/02/02 03:28:27 art Exp $	*/
 /*	$NetBSD: uvm_pdaemon.c,v 1.42 2001/11/10 07:37:01 lukem Exp $	*/
 
 /*
@@ -95,9 +95,9 @@
  * local prototypes
  */
 
-void		uvmpd_scan __P((void));
-boolean_t	uvmpd_scan_inactive __P((struct pglist *));
-void		uvmpd_tune __P((void));
+static void		uvmpd_scan(void);
+static boolean_t	uvmpd_scan_inactive(struct pglist *);
+static void		uvmpd_tune(void);
 
 /*
  * uvm_wait: wait (sleep) for the page daemon to free some pages
@@ -325,7 +325,9 @@ uvm_aiodone_daemon(void *arg)
 		free = uvmexp.free;
 		while (bp != NULL) {
 			nbp = TAILQ_NEXT(bp, b_freelist);
+			s = splbio();	/* b_iodone must by called at splbio */
 			(*bp->b_iodone)(bp);
+			splx(s);
 			bp = nbp;
 		}
 		if (free <= uvmexp.reserve_kernel) {

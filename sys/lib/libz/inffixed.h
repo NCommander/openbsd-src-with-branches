@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* inffixed.h -- table for decoding fixed codes
  * Generated automatically by the maketree.c program
  */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_access.h,v 1.3 1996/03/11 11:15:55 mickey Exp $	*/
+/*	$OpenBSD: db_access.h,v 1.4 1996/04/21 22:18:54 deraadt Exp $	*/
 /*	$NetBSD: db_access.h,v 1.6 1994/10/09 08:29:57 mycroft Exp $	*/
 
 /* 
@@ -33,8 +33,8 @@
 /*
  * Data access functions for debugger.
  */
-db_expr_t db_get_value __P((db_addr_t, size_t, boolean_t));
-void db_put_value __P((db_addr_t, size_t, db_expr_t));
+db_expr_t db_get_value(db_addr_t, size_t, boolean_t);
+void db_put_value(db_addr_t, size_t, db_expr_t);
 
-void db_read_bytes __P((db_addr_t, size_t, char *));
-void db_write_bytes __P((db_addr_t, size_t, char *));
+void db_read_bytes(db_addr_t, size_t, char *);
+void db_write_bytes(db_addr_t, size_t, char *);

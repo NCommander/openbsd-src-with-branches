@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.h,v 1.17 2001/11/27 05:27:12 art Exp $	*/
+/*	$OpenBSD: inode.h,v 1.18 2001/12/10 04:45:32 art Exp $	*/
 /*	$NetBSD: inode.h,v 1.8 1995/06/15 23:22:50 cgd Exp $	*/
 
 /*
@@ -180,7 +180,7 @@ struct inode_vtbl {
 
 #ifndef _KERNEL
 /*
- * These are here purely for backwards compatibilty for userland.
+ * These are here purely for backwards compatibility for userland.
  * They allow direct references to FFS structures using the old names.
  */
 

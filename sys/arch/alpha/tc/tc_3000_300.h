@@ -1,5 +1,5 @@
-/*	$OpenBSD: tc_3000_300.h,v 1.2 1995/12/20 00:43:28 cgd Exp $	*/
-/*	$NetBSD: tc_3000_300.h,v 1.2 1995/12/20 00:43:28 cgd Exp $	*/
+/* $OpenBSD$ */
+/* $NetBSD: tc_3000_300.h,v 1.4 1998/10/22 01:03:09 briggs Exp $ */
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -60,3 +60,5 @@
 #define TC_3000_300_DEV_BOGUS	-1
 
 #define	TC_3000_300_NCOOKIES	5
+
+extern int	tc_3000_300_fb_cnattach(u_int64_t);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipe.h,v 1.8 2001/06/23 06:09:16 art Exp $	*/
+/*	$OpenBSD: pipe.h,v 1.9 2001/11/06 19:53:21 miod Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -85,7 +85,7 @@ struct pipe {
 };
 
 #ifdef _KERNEL
-void	pipe_init __P((void));
+void	pipe_init(void);
 #endif /* _KERNEL */
 
 #endif /* !_SYS_PIPE_H_ */

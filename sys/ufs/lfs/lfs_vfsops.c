@@ -1,4 +1,4 @@
-/*	$OpenBSD: lfs_vfsops.c,v 1.12 2000/02/07 04:57:18 assar Exp $	*/
+/*	$OpenBSD: lfs_vfsops.c,v 1.13 2001/02/20 01:50:12 assar Exp $	*/
 /*	$NetBSD: lfs_vfsops.c,v 1.11 1996/03/25 12:53:35 pk Exp $	*/
 
 /*
@@ -62,7 +62,7 @@
 #include <ufs/lfs/lfs.h>
 #include <ufs/lfs/lfs_extern.h>
 
-int lfs_mountfs __P((struct vnode *, struct mount *, struct proc *));
+int lfs_mountfs(struct vnode *, struct mount *, struct proc *);
 
 struct vfsops lfs_vfsops = {
 	lfs_mount,
@@ -77,7 +77,8 @@ struct vfsops lfs_vfsops = {
 	lfs_vptofh,
 	lfs_init,
 	lfs_sysctl,
-	ufs_check_export
+	ufs_check_export,
+	vfs_stdextattrctl
 };
 
 int
@@ -113,7 +114,7 @@ lfs_mount(mp, path, data, ndp, p)
 		return (error);
 
 	/* Until LFS can do NFS right.		XXX */
-	if (args.export.ex_flags & MNT_EXPORTED)
+	if (args.export_info.ex_flags & MNT_EXPORTED)
 		return (EINVAL);
 
 	/*
@@ -143,7 +144,8 @@ lfs_mount(mp, path, data, ndp, p)
 			/*
 			 * Process export requests.
 			 */
-			return (vfs_export(mp, &ump->um_export, &args.export));
+			return (vfs_export(mp, &ump->um_export, 
+			    &args.export_info));
 		}
 	}
 	/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_pcb.c,v 1.27 2002/01/21 05:33:14 itojun Exp $	*/
+/*	$OpenBSD: in6_pcb.c,v 1.26.4.1 2002/01/31 22:55:46 niklas Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -550,7 +550,7 @@ in6_pcbnotify(head, dst, fport_arg, src, lport_arg, cmd, cmdarg, notify)
 	uint lport_arg;
 	int cmd;
 	void *cmdarg;
-	void (*notify) __P((struct inpcb *, int));
+	void (*notify)(struct inpcb *, int);
 {
 	struct inpcb *inp, *ninp;
 	u_short fport = fport_arg, lport = lport_arg;
@@ -717,6 +717,8 @@ in6_setpeeraddr(inp, nam)
 	sin6->sin6_len = sizeof(struct sockaddr_in6);
 	sin6->sin6_port = inp->inp_fport;
 	sin6->sin6_addr = inp->inp_faddr6;
+	/* KAME hack: recover scopeid */
+	(void)in6_recoverscope(sin6, &inp->inp_faddr6, NULL);
 
 	return 0;
 }
