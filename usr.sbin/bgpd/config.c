@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.34 2004/03/31 10:26:34 henning Exp $ */
+/*	$OpenBSD: config.c,v 1.35 2004/04/27 04:37:53 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -30,8 +30,6 @@
 
 #include "bgpd.h"
 #include "session.h"
-
-void			*sconf;
 
 u_int32_t	get_bgpid(void);
 int		host_v4(const char *, struct bgpd_addr *, u_int8_t *);
