@@ -91,7 +91,6 @@ cvsroot_parse(const char *str)
 
 	for (i = 0; i < cvs_rcsz; i++) {
 		if (strcmp(str, cvs_rcache[i]->cr_str) == 0) {
-			printf("hitting cache for `%s'\n", str);
 			cvs_rcache[i]->cr_ref++;
 			return (cvs_rcache[i]);
 		}
