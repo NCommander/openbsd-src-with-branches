@@ -185,10 +185,6 @@ struct nlist nl[] = {
 	{ "_pfsyncstats" },
 #define N_PIMSTAT	59
 	{ "_pimstat" },
-#define N_DCCPSTAT	60
-	{ "_dccpstat" },
-#define	N_DCCPBTABLE	61
-	{ "_dccpbtable" },
 	{ ""},
 };
 
@@ -204,10 +200,6 @@ struct protox {
 	  tcp_stats,	"tcp" },
 	{ N_UDBTABLE,	N_UDPSTAT,	1,	protopr,
 	  udp_stats,	"udp" },
-#ifdef DCCP
-	{ N_DCCPBTABLE,	N_DCCPSTAT,	1,	protopr,
-	  dccp_stats,	"dccp" },
-#endif	
 	{ N_RAWIPTABLE,	N_IPSTAT,	1,	protopr,
 	  ip_stats,	"ip" },
 	{ -1,		N_ICMPSTAT,	1,	0,
@@ -240,10 +232,6 @@ struct protox ip6protox[] = {
 	  0,		"tcp" },
 	{ N_UDBTABLE,	N_UDPSTAT,	1,	ip6protopr,
 	  0,		"udp" },
-#ifdef DCCP
-	{ N_DCCPBTABLE,	N_DCCPSTAT,	1,	ip6protopr,
-	  dccp_stats,	"dccp" },
-#endif	
 	{ N_RAWIP6TABLE,N_IP6STAT,	1,	ip6protopr,
 	  ip6_stats,	"ip6" },
 	{ -1,		N_ICMP6STAT,	1,	0,

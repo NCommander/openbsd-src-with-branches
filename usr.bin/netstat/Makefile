@@ -13,6 +13,4 @@ INET6?=	yes
 CPPFLAGS+=	-DINET6
 .endif
 
-CPPFLAGS+=	-DDCCP
-
 .include <bsd.prog.mk>
