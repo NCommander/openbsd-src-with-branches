@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_netdb.c,v 1.4 2000/01/06 06:54:43 d Exp $	*/
+/*	$OpenBSD: netdb.c,v 1.1.1.1 2001/08/15 14:37:11 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -46,6 +46,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "test.h"
 
 static void test_serv()

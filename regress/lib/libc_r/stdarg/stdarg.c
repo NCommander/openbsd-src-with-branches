@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdarg.c,v 1.1.1.1 2001/08/15 14:37:16 fgsch Exp $	*/
+/*	$OpenBSD: stdarg.c,v 1.2 2001/08/15 14:48:31 fgsch Exp $	*/
 /* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 /*
@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include "test.h"
 
 #define EQ(v,exp) _CHECK(v, == exp, NULL) 

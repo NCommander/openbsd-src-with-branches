@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sock_2.c,v 1.6 2001/07/09 07:04:40 deraadt Exp $	*/
+/*	$OpenBSD: socket2.c,v 1.1.1.1 2001/08/15 14:37:10 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -51,6 +51,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include "test.h"
 
 struct sockaddr_in a_sout;

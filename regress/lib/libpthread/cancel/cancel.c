@@ -1,4 +1,4 @@
-/*	$OpenBSD: cancel.c,v 1.1.1.1 2001/08/15 14:37:10 fgsch Exp $	*/
+/*	$OpenBSD: cancel.c,v 1.2 2001/08/23 04:26:05 fgsch Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public Domain. */
 
 #include <pthread.h>
@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include "test.h"
 
 static pthread_cond_t cond;
