@@ -1,4 +1,4 @@
-/*	$OpenBSD: $	*/
+/*	$OpenBSD: cmds.c,v 1.8 1997/01/17 16:12:35 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cmds.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: $";
+static char rcsid[] = "$OpenBSD: cmds.c,v 1.8 1997/01/17 16:12:35 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -777,7 +777,7 @@ status(argc, argv)
 	register char *cp1, *cp2;
 	char prbuf[100];
 
-	if (argc == 1) {
+	if (argc == 1 || argc == 2 && !strcmp(argv[1], "all")) {
 		printer = prbuf;
 		while (cgetnext(&bp, printcapdb) > 0) {
 			cp1 = prbuf;
