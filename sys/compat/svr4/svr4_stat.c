@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_stat.c,v 1.10 1997/11/13 06:16:27 deraadt Exp $	 */
+/*	$OpenBSD: svr4_stat.c,v 1.11 1998/02/09 04:32:13 tholo Exp $	 */
 /*	$NetBSD: svr4_stat.c,v 1.21 1996/04/22 01:16:07 christos Exp $	 */
 
 /*
@@ -60,7 +60,7 @@
 #include <compat/svr4/svr4_time.h>
 #include <compat/svr4/svr4_socket.h>
 
-#ifdef sparc
+#ifdef __sparc__
 /* 
  * Solaris-2.4 on the sparc has the old stat call using the new
  * stat data structure...
