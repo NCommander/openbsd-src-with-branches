@@ -34,7 +34,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: log.c,v 1.23 2002/07/06 01:00:49 deraadt Exp $");
+RCSID("$OpenBSD: log.c,v 1.25 2003/01/11 18:29:43 markus Exp $");
 
 #include "log.h"
 #include "xmalloc.h"
@@ -230,6 +230,7 @@ fatal_remove_all_cleanups(void)
 		next_cu = cu->next;
 		xfree(cu);
 	}
+	fatal_cleanups = NULL;
 }
 
 /* Cleanup and exit */
