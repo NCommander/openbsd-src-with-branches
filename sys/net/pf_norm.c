@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.79 2004/02/10 18:49:10 henning Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.80 2004/03/09 21:44:41 mcbride Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -1362,8 +1362,8 @@ pf_normalize_tcp_init(struct mbuf *m, int off, struct pf_pdesc *pd,
 				}
 				/* FALLTHROUGH */
 			default:
-				hlen -= opt[1];
-				opt += opt[1];
+				hlen -= MAX(opt[1], 2);
+				opt += MAX(opt[1], 2);
 				break;
 			}
 		}
@@ -1473,8 +1473,8 @@ pf_normalize_tcp_stateful(struct mbuf *m, int off, struct pf_pdesc *pd,
 				}
 				/* FALLTHROUGH */
 			default:
-				hlen -= opt[1];
-				opt += opt[1];
+				hlen -= MAX(opt[1], 2);
+				opt += MAX(opt[1], 2);
 				break;
 			}
 		}
