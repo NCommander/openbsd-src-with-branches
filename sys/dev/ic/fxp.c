@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.31 2002/02/15 20:45:31 nordin Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.32 2002/03/14 01:26:54 millert Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -928,6 +928,7 @@ fxp_stats_update(arg)
 	if (sc->rx_idle_secs > FXP_MAX_RX_IDLE) {
 		sc->rx_idle_secs = 0;
 		fxp_init(sc);
+		splx(s);
 		return;
 	}
 	/*
