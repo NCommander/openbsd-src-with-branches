@@ -134,6 +134,17 @@ to
 overwriting
 .Pa bar
 if it already exists.
+.Pp
+.Cm mv -i -- -f bar ,
+.Cm mv -i ./-f bar
+.Pp
+Either of these commands will rename the file 
+.Pa -f 
+to 
+.Pa bar ,
+prompting for confirmation if 
+.Pa bar
+already exists.
 .Sh SEE ALSO
 .Xr cp 1 ,
 .Xr symlink 7
