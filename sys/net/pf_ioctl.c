@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.67 2003/06/03 12:34:04 henning Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.68 2003/06/08 09:41:08 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1085,8 +1085,8 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 		state->anchor.ptr = NULL;
 		state->rt_ifp = NULL;
 		state->creation = time.tv_sec;
-		state->packets = 0;
-		state->bytes = 0;
+		state->packets[0] = state->packets[1] = 0;
+		state->bytes[0] = state->bytes[1] = 0;
 		if (pf_insert_state(state)) {
 			pool_put(&pf_state_pl, state);
 			error = ENOMEM;
