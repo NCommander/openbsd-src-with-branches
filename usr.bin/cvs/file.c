@@ -290,11 +290,8 @@ cvs_file_get(const char *path, int flags)
 CVSFILE*
 cvs_file_getspec(char **fspec, int fsn, int flags)
 {
-	int i, c;
-	char common[MAXPATHLEN], *cp;
-	CVSFILE *cfp;
-
-	return (cfp);
+	/* XXX implement me */
+	return (NULL);
 }
 
 
