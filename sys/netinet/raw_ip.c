@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip.c,v 1.10 1997/07/24 00:31:14 deraadt Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.11 1998/05/18 21:11:04 provos Exp $	*/
 /*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
@@ -201,7 +201,8 @@ rip_output(m, va_alist)
 		 * and don't allow packet length sizes that will crash
 		 */
 		if ((ip->ip_hl != (sizeof (*ip) >> 2) && inp->inp_options) ||
-		    ip->ip_len > m->m_pkthdr.len) {
+		    ip->ip_len > m->m_pkthdr.len ||
+		    ip->ip_len < ip->ip_hl << 2) {
 			m_freem(m);
 			return (EINVAL);
 		}
