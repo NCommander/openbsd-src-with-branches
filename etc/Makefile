@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.85 1998/04/07 23:24:06 ryker Exp $
+#	$OpenBSD: Makefile,v 1.86 1998/05/05 21:51:51 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -131,8 +131,8 @@ distribution-etc-root-var: distrib-dirs
 		    ${DESTDIR}/etc/ppp; \
 		${INSTALL} -c -o root -g wheel -m 644 ppp.secret.sample \
 		    ${DESTDIR}/etc/ppp)
-	cd namedb; ${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 644 ${NAMEDB} \
-	    ${DESTDIR}/etc/namedb
+	cd namedb; ${INSTALL} -c -o named -g ${BINGRP} -m 644 ${NAMEDB} \
+	    ${DESTDIR}/var/named
 	/bin/rm -f ${DESTDIR}/etc/localtime
 	ln -s ${TZDIR}/${LOCALTIME} ${DESTDIR}/etc/localtime
 	/bin/rm -f ${DESTDIR}/etc/rmt
