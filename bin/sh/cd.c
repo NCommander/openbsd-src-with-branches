@@ -47,10 +47,12 @@ static char rcsid[] = "$OpenBSD: cd.c,v 1.7 1996/08/22 00:35:24 deraadt Exp $";
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+
 
 /*
  * The cd and pwd commands.
@@ -238,7 +240,7 @@ pwdcmd(argc, argv)
 
 
 
-#define MAXPWD 256
+#define MAXPWD MAXPATHLEN
 
 /*
  * Find out what the current directory is. If we already know the current
