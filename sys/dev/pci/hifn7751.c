@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.53 2000/11/22 17:51:14 mickey Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.54 2001/01/31 05:14:02 jason Exp $	*/
 
 /*
  * Invertex AEON / Hi/fn 7751 driver
@@ -491,10 +491,10 @@ hifn_enable_crypto(sc, pciid)
 		printf(": no encr/auth");
 		break;
 	case HIFN_PUSTAT_ENA_1:
-		printf(": DES enabled");
+		printf(": DES");
 		break;
 	case HIFN_PUSTAT_ENA_2:
-		printf(": fully enabled");
+		printf(": 3DES");
 		break;
 	default:
 		printf(": disabled");
