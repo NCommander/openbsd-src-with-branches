@@ -14,10 +14,9 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rhosts.c,v 1.25 2001/12/19 07:18:56 deraadt Exp $");
+RCSID("$OpenBSD: auth-rhosts.c,v 1.26 2002/01/29 14:32:03 markus Exp $");
 
 #include "packet.h"
-#include "xmalloc.h"
 #include "uidswap.h"
 #include "pathnames.h"
 #include "log.h"
