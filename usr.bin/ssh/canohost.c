@@ -12,11 +12,12 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: canohost.c,v 1.19 2001/01/29 19:42:33 markus Exp $");
+RCSID("$OpenBSD: canohost.c,v 1.20 2001/02/03 10:08:37 markus Exp $");
 
 #include "packet.h"
 #include "xmalloc.h"
 #include "log.h"
+#include "canohost.h"
 
 void	check_ip_options(int socket, char *ipaddr);
 

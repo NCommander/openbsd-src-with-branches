@@ -36,7 +36,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: authfile.c,v 1.25 2001/01/21 19:05:44 markus Exp $");
+RCSID("$OpenBSD: authfile.c,v 1.26 2001/01/28 22:27:05 stevesk Exp $");
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -49,6 +49,7 @@ RCSID("$OpenBSD: authfile.c,v 1.25 2001/01/21 19:05:44 markus Exp $");
 #include "key.h"
 #include "ssh.h"
 #include "log.h"
+#include "authfile.h"
 
 /* Version identification string for identity files. */
 static const char authfile_id_string[] =

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hostfile.h,v 1.6 2001/01/29 01:58:16 niklas Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -13,6 +13,9 @@
  */
 #ifndef HOSTFILE_H
 #define HOSTFILE_H
+
+int
+auth_rsa_read_key(char **cpp, u_int *bitsp, BIGNUM * e, BIGNUM * n);
 
 /*
  * Checks whether the given host is already in the list of our known hosts.

@@ -13,13 +13,15 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: mpaux.c,v 1.14 2000/09/07 20:27:52 deraadt Exp $");
+RCSID("$OpenBSD: mpaux.c,v 1.15 2000/12/19 23:17:57 markus Exp $");
 
 #include <openssl/bn.h>
 #include "getput.h"
 #include "xmalloc.h"
 
 #include <openssl/md5.h>
+
+#include "mpaux.h"
 
 void
 compute_session_id(u_char session_id[16],

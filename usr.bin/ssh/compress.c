@@ -12,11 +12,12 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: compress.c,v 1.11 2000/12/20 19:37:21 markus Exp $");
+RCSID("$OpenBSD: compress.c,v 1.12 2001/01/21 19:05:48 markus Exp $");
 
 #include "log.h"
 #include "buffer.h"
 #include "zlib.h"
+#include "compress.h"
 
 static z_stream incoming_stream;
 static z_stream outgoing_stream;

@@ -23,13 +23,15 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: hmac.c,v 1.5 2000/12/19 23:17:56 markus Exp $");
+RCSID("$OpenBSD: hmac.c,v 1.6 2001/01/21 19:05:49 markus Exp $");
 
 #include "xmalloc.h"
 #include "getput.h"
 #include "log.h"
 
 #include <openssl/hmac.h>
+
+#include "hmac.h"
 
 u_char *
 hmac(

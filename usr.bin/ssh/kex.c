@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kex.c,v 1.18 2001/01/21 19:05:49 markus Exp $");
+RCSID("$OpenBSD: kex.c,v 1.19 2001/02/04 15:32:23 stevesk Exp $");
 
 #include <openssl/crypto.h>
 #include <openssl/bio.h>
@@ -200,6 +200,7 @@ dh_new_group1(void)
 	return (dh_new_group_asc(gen, group1));
 }
 
+#ifdef DEBUG_KEX
 void
 dump_digest(u_char *digest, int len)
 {
@@ -211,6 +212,7 @@ dump_digest(u_char *digest, int len)
 	}
 	fprintf(stderr, "\n");
 }
+#endif
 
 u_char *
 kex_hash(
