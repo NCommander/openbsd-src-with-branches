@@ -586,7 +586,8 @@ adosfs_bmap(v)
 	} */ *sp = v;
 	struct anode *ap;
 	struct buf *flbp;
-	long nb, flblk, flblkoff, fcnt;
+	long nb, fcnt;
+	u_long flblk, flblkoff;
 	daddr_t *bnp;
 	daddr_t bn;
 	int error; 
