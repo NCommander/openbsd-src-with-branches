@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.174 2004/06/20 18:16:50 itojun Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.175 2004/07/16 09:26:07 markus Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -2792,8 +2792,13 @@ tcp_xmit_timer(tp, rtt)
 	short delta;
 	short rttmin;
 
-	tcpstat.tcps_rttupdated++;
 	--rtt;
+	if (rtt < 0)
+		rtt = 0;
+	if (rtt > TCP_RTT_MAX)
+		rtt = TCP_RTT_MAX;
+
+	tcpstat.tcps_rttupdated++;
 	if (tp->t_srtt != 0) {
 		/*
 		 * srtt is stored as fixed point with 3 bits after the
