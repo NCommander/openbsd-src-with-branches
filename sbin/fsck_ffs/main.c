@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.21 2002/04/23 18:54:12 espie Exp $	*/
+/*	$OpenBSD: main.c,v 1.22 2002/06/09 08:13:05 todd Exp $	*/
 /*	$NetBSD: main.c,v 1.22 1996/10/11 20:15:48 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/23/94";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.21 2002/04/23 18:54:12 espie Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.22 2002/06/09 08:13:05 todd Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,7 +64,8 @@ static char rcsid[] = "$OpenBSD: main.c,v 1.21 2002/04/23 18:54:12 espie Exp $";
 #include "extern.h"
 #include "fsutil.h"
 
-int	returntosingle;
+volatile sig_atomic_t returntosingle;
+
 int	argtoi(int, char *, char *, int);
 int	checkfilesys(char *, char *, long, int);
 int	docheck(struct fstab *);
@@ -317,8 +318,11 @@ checkfilesys(filesys, mntpt, auxdata, child)
 		resolved = 0;
 	ckfini(resolved); /* Don't mark fs clean if fsck needs to be re-run */
 	free(blockmap);
+	blockmap = NULL;
 	free(statemap);
+	statemap = NULL;
 	free((char *)lncntp);
+	lncntp = NULL;
 	if (!fsmodified)
 		return (0);
 	if (!preen)
