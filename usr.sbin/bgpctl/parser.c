@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.32 2004/01/20 13:11:39 henning Exp $ */
+/*	$OpenBSD: parser.c,v 1.1 2004/01/21 23:45:18 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -137,9 +137,9 @@ parse(int argc, char *argv[])
 
 		if (match->type == NOTOKEN)
 			break;
-			
+	
 		if (match->next == NULL)
-			break;		
+			break;
 
 		table = match->next;
 	}
