@@ -117,5 +117,9 @@
  * WARNING: Serial console is assumed to be at COM1 address
  * and CONUNIT must be 0.
  */
+#ifndef CONADDR
 #define	CONADDR	(0x3f8)
+#endif
+#ifndef CONUNIT
 #define	CONUNIT	(0)
+#endif
