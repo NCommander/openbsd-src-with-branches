@@ -220,7 +220,7 @@ hyper_ioctl(void *v, u_long cmd, caddr_t data, int flags, struct proc *p)
 		wdf->cmsize = 0;
 		break;
 	case WSDISPLAYIO_LINEBYTES:
-		*(u_int *)data = fb->fbwidth;
+		*(u_int *)data = (fb->fbwidth * fb->planes) >> 3;
 		break;
 	case WSDISPLAYIO_GVIDEO:
 	case WSDISPLAYIO_SVIDEO:
