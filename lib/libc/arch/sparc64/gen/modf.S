@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: modf.S,v 1.1 2001/08/29 01:45:24 art Exp $	*/
 /*	$NetBSD: modf.S,v 1.3 2000/11/01 23:32:41 eeh Exp $	*/
 
 /*
@@ -181,5 +181,5 @@ Lbig:
 	ldd	[%l0 + %lo(L0)], %f0	! return 0.0;
 #endif
 	ret
-	restore
+	 restore
 
