@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cache.c,v 1.12 2004/10/04 12:03:45 pedro Exp $	*/
+/*	$OpenBSD: vfs_cache.c,v 1.13 2004/12/26 21:22:13 miod Exp $	*/
 /*	$NetBSD: vfs_cache.c,v 1.13 1996/02/04 02:18:09 christos Exp $	*/
 
 /*
@@ -257,12 +257,9 @@ cache_enter(dvp, vp, cnp)
 	register struct namecache *ncp;
 	register struct nchashhead *ncpp;
 
-#ifdef DIAGNOSTIC
-	if (cnp->cn_namelen > NCHNAMLEN)
-		panic("cache_enter: name too long");
-#endif
-	if (!doingcache)
+	if (!doingcache || cnp->cn_namelen > NCHNAMLEN)
 		return;
+
 	/*
 	 * Free the cache slot at head of lru chain.
 	 */
