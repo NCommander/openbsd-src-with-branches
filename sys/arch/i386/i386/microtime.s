@@ -138,13 +138,22 @@ common_microtime:
 
 	ret
 
-#if defined(I586_CPU) && defined(NTP)
+#if defined(I586_CPU)
+	.data
+	.globl	_pentium_base_tsc
+	.comm	_pentium_base_tsc,8
+	.text
+
+#if defined (NTP)
 	.align	2, 0x90
 pentium_microtime:
 	cli
 	.byte	0x0f, 0x31	# RDTSC
+	subl	_pentium_base_tsc,%eax
+	sbbl	_pentium_base_tsc+4,%edx
 	divl	%ecx		# convert to usec
 	jmp	common_microtime
+#endif
 #endif
 
 #endif
