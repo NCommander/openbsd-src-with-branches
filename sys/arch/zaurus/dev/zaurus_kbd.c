@@ -1,4 +1,4 @@
-/* $OpenBSD: zaurus_kbd.c,v 1.4 2005/01/14 16:39:15 miod Exp $ */
+/* $OpenBSD: zaurus_kbd.c,v 1.5 2005/01/14 18:42:31 drahn Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
  *
@@ -220,6 +220,9 @@ zkbd_poll(void *v)
 	int pin;
 	int type;
 	int keysdown = 0;
+	int s;
+
+	s = spltty();
 
 	/* discharge all */
 	for (i = 0; i < sc->sc_nstrobe; i++) {
@@ -294,6 +297,8 @@ printf("key %d %s\n", i, sc->sc_keystate[i] ? "pressed" : "released");
 		timeout_add(&(sc->sc_roll_to), hz / 8); /* how long?*/
 	else 
 		timeout_del(&(sc->sc_roll_to)); /* always cancel? */
+
+	splx(s);
 }
 
 int
