@@ -1,4 +1,4 @@
-/*	$OpenBSD: an.c,v 1.36 2004/08/05 07:58:55 mickey Exp $	*/
+/*	$OpenBSD: an.c,v 1.37 2004/08/05 12:43:26 miod Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1112,7 +1112,7 @@ an_init_tx_ring(sc)
 		return (0);
 
 	for (i = 0; i < AN_TX_RING_CNT; i++) {
-		if (an_alloc_nicmem(sc, 1518 + 0x44, &id))
+		if (an_alloc_nicmem(sc, ETHER_MAX_LEN + 0x44, &id))
 			return(ENOMEM);
 		sc->an_rdata.an_tx_fids[i] = id;
 		sc->an_rdata.an_tx_ring[i] = 0;
