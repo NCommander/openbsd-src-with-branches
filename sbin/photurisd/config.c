@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: config.c,v 1.7 2001/01/28 22:45:07 niklas Exp $	*/
 
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
@@ -35,7 +35,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: config.c,v 1.6 2001/01/17 19:41:07 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: config.c,v 1.7 2001/01/28 22:45:07 niklas Exp $";
 #endif
 
 #define _CONFIG_C_
@@ -749,7 +749,7 @@ reconfig(int sig)
      init_identities(NULL, NULL);
 }
 
-sig_atomic_t wantconfig;
+volatile sig_atomic_t wantconfig;
 
 void
 sigconfig(int sig)
