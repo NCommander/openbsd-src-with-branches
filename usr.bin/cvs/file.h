@@ -132,6 +132,7 @@ int      cvs_file_chkign  (const char *);
 CVSFILE* cvs_file_get     (const char *, int);
 CVSFILE* cvs_file_getspec (char **, int, int);
 CVSFILE* cvs_file_create  (CVSFILE *, const char *, u_int, mode_t);
+CVSFILE* cvs_file_copy    (CVSFILE *);
 CVSFILE* cvs_file_find    (CVSFILE *, const char *);
 int      cvs_file_attach  (CVSFILE *, CVSFILE *);
 char*    cvs_file_getpath (CVSFILE *, char *, size_t);
