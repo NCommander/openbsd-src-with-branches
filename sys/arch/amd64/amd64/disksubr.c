@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.1 2004/01/28 01:39:38 mickey Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.2 2004/03/17 14:16:03 miod Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -285,6 +285,10 @@ donot:
 	if (msg) {
 #if defined(CD9660)
 		if (iso_disklabelspoof(dev, strat, lp) == 0)
+			msg = NULL;
+#endif
+#if defined(UDF)
+		if (msg && udf_disklabelspoof(dev, strat, lp) == 0)
 			msg = NULL;
 #endif
 		goto done;

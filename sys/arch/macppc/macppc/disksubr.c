@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.9 2003/10/16 05:03:22 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.10 2004/03/17 14:16:04 miod Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -366,6 +366,10 @@ found_disklabel:
 	if (msg) {
 #if defined(CD9660)
 		if (iso_disklabelspoof(dev, strat, lp) == 0)
+			msg = NULL;
+#endif
+#if defined(UDF)
+		if (msg && udf_disklabelspoof(dev, strat, lp) == 0)
 			msg = NULL;
 #endif
 		goto done;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.25 2004/12/01 23:03:51 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.26 2004/12/26 22:13:45 miod Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.22 1997/11/26 04:18:20 briggs Exp $	*/
 
 /*
@@ -423,6 +423,10 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 
 #if defined(CD9660)
 	if (msg != NULL && iso_disklabelspoof(dev, strat, lp) == 0)
+		msg = NULL;
+#endif
+#if defined(UDF)
+	if (msg && udf_disklabelspoof(dev, strat, lp) == 0)
 		msg = NULL;
 #endif
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.29 2003/08/23 22:52:40 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.30 2004/03/17 14:16:04 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -159,6 +159,11 @@ readdisklabel(dev, strat, lp, clp, spoofonly)
 	if (iso_disklabelspoof(dev, strat, lp) == 0)
 		return (NULL);
 #endif
+#if defined(UDF)
+	if (udf_disklabelspoof(dev, strat, lp) == 0)
+		return (NULL);
+#endif
+
 	if (clp->magic1 != DISKMAGIC || clp->magic2 != DISKMAGIC)
 		return ("no disk label");
 
