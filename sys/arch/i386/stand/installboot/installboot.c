@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.31 1998/04/20 07:25:15 mickey Exp $	*/
+/*	$OpenBSD: installboot.c,v 1.32 1998/04/25 18:32:35 millert Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -224,7 +224,7 @@ main(argc, argv)
 		/* Find OpenBSD partition. */
 		for (dp = mbr.dmbr_parts; dp < &mbr.dmbr_parts[NDOSPART]; dp++) {
 			if (dp->dp_size && dp->dp_typ == DOSPTYP_OPENBSD) {
-				startoff = dp->dp_start * dl.d_secsize;
+				startoff = (off_t)dp->dp_start * dl.d_secsize;
 				fprintf(stderr, "using MBR partition %d: "
 					"type %d (0x%02x) offset %d (0x%x)\n",
 					dp - mbr.dmbr_parts,
