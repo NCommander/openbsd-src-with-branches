@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 PROG=mksuncd
 BINDIR=/usr/bin
