@@ -1,5 +1,5 @@
+#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:44:47 deraadt Exp $
 #	from: @(#)Makefile	5.3 (Berkeley) 6/8/90
-#	$Id: Makefile,v 1.6 1994/02/10 01:55:04 cgd Exp $
 
 FILES=	dot.cshrc dot.login dot.mailrc dot.profile dot.rhosts
 NOOBJ=	noobj

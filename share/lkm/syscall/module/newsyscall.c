@@ -1,3 +1,4 @@
+/*	$OpenBSD: newsyscall.c,v 1.1.1.1 1995/10/18 08:44:21 deraadt Exp $	*/
 /*
  * Makefile for newsyscall
  *
@@ -34,7 +35,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: newsyscall.c,v 1.3 1994/12/24 13:26:51 cgd Exp $
  */
 #include <sys/param.h>
 #include <sys/ioctl.h>
