@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ne2000.c,v 1.1 1998/09/22 06:38:03 fgsch Exp $	*/
 /*	$NetBSD: ne2000.c,v 1.12 1998/06/10 01:15:50 thorpej Exp $	*/
 
 /*-
@@ -623,7 +623,7 @@ ne2000_read_hdr(sc, buf, hdr)
 	    buf, (u_int8_t *)hdr, sizeof(struct dp8390_ring),
 	    (nsc->sc_type == NE2000_TYPE_NE2000));
 #if BYTE_ORDER == BIG_ENDIAN
-	hdr->count = bswap16(hdr->count);
+	hdr->count = swap16(hdr->count);
 #endif
 }
 
