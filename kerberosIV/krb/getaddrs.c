@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrs.c,v 1.4 1997/12/09 14:43:58 art Exp $	*/
+/*	$OpenBSD: getaddrs.c,v 1.5 1997/12/09 20:01:38 deraadt Exp $	*/
 /* $KTH: getaddrs.c,v 1.20 1997/11/09 06:13:32 assar Exp $ */
 
 /*
@@ -44,6 +44,8 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <sys/sockio.h>
+
+#include <err.h>
 
 #ifndef MAX
 #define MAX(a,b) (((a)>(b))?(a):(b))
