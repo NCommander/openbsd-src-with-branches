@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.37 2000/04/20 12:26:35 itojun Exp $	*/
+/*	$OpenBSD: route.c,v 1.38 2000/07/27 20:12:25 angelos Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)route.c	8.3 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: route.c,v 1.37 2000/04/20 12:26:35 itojun Exp $";
+static char rcsid[] = "$OpenBSD: route.c,v 1.38 2000/07/27 20:12:25 angelos Exp $";
 #endif
 #endif /* not lint */
 
@@ -311,6 +311,8 @@ bad:			usage(*argv);
 			if (sa->sa_family != af)
 				continue;
 		}
+                if (sa->sa_family == AF_KEY)
+                        continue;  /* Don't flush SPD */
 		if (debugonly)
 			continue;
 		rtm->rtm_type = RTM_DELETE;
