@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.25 2000/04/10 07:06:17 csapuntz Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.26 2000/06/30 01:03:40 art Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -713,7 +713,7 @@ wdc_atapi_the_machine(chp, xfer, ctxt)
 
 	case DONE:
 		if (xfer->c_flags & C_POLL_MACHINE)
-			untimeout (wdc_atapi_timer_handler, xfer);
+			untimeout(wdc_atapi_timer_handler, xfer);
 
 		wdc_free_xfer(chp, xfer);
 		wdcstart(chp);
