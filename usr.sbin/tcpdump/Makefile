@@ -23,8 +23,7 @@
 PROG=	tcpdump
 MAN=	tcpdump.8
 
-CFLAGS+=-Wall -Werror -I${.CURDIR}/../../sbin/pfctl
-.PATH:	${.CURDIR}/../../sbin/pfctl
+CFLAGS+=-Wall -Werror
 
 CFLAGS+=-DCSLIP -DPPP -DHAVE_FDDI -DETHER_SERVICE -DRETSIGTYPE=void -DHAVE_NET_SLIP_H -DHAVE_ETHER_NTOHOST -DINET6
 .if (${MACHINE_ARCH} == "alpha") || (${MACHINE_ARCH} == "sparc") || \
@@ -49,7 +48,6 @@ SRCS=	tcpdump.c addrtoname.c \
 	print-ip6.c print-ip6opts.c print-icmp6.c print-dhcp6.c print-frag6.c \
 	print-bgp.c print-ospf6.c print-ripng.c print-rt6.c print-stp.c \
 	print-etherip.c print-lwres.c print-cdp.c print-pflog.c \
-	print-pfsync.c pf_print_state.c \
 	gmt2local.c savestr.c setsignal.c
 
 #SRCS+=	smbutil.c print-smb.c

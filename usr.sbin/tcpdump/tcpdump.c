@@ -98,7 +98,7 @@ struct printer {
 #define DLT_ATM_RFC1483 11
 #endif
 
-static const struct printer printers[] = {
+static struct printer printers[] = {
 	{ ether_if_print,	DLT_EN10MB },
 	{ ether_if_print,	DLT_IEEE802 },
 	{ sl_if_print,		DLT_SLIP },
@@ -111,14 +111,13 @@ static const struct printer printers[] = {
 	{ loop_if_print, 	DLT_LOOP },
 	{ enc_if_print, 	DLT_ENC },
 	{ pflog_if_print, 	DLT_PFLOG },
-	{ pfsync_if_print, 	DLT_PFSYNC },
 	{ NULL,			0 },
 };
 
 static pcap_handler
 lookup_printer(int type)
 {
-	const struct printer *p;
+	struct printer *p;
 
 	for (p = printers; p->f; ++p)
 		if (type == p->type)
