@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs.c,v 1.9 1997/02/16 14:39:37 mickey Exp $	*/
+/*	$OpenBSD: ufs.c,v 1.10 1997/03/25 20:30:44 niklas Exp $	*/
 /*	$NetBSD: ufs.c,v 1.16 1996/09/30 16:01:22 ws Exp $	*/
 
 /*-
@@ -695,7 +695,7 @@ ufs_readdir(f, name)
 			/* end of dir */
 		if (fp->f_seekp >= fp->f_di.di_size) {
 			*name = '\0';
-			return 0;
+			return -1;
 		}
 
 		do {
