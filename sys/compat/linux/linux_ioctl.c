@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_ioctl.c,v 1.8 2000/07/23 22:35:38 jasoni Exp $	*/
+/*	$OpenBSD: linux_ioctl.c,v 1.9 2001/04/09 06:53:45 tholo Exp $	*/
 /*	$NetBSD: linux_ioctl.c,v 1.14 1996/04/05 00:01:28 christos Exp $	*/
 
 /*
@@ -84,6 +84,8 @@ linux_sys_ioctl(p, v, retval)
 		return linux_ioctl_termios(p, uap, retval);
 	case 'S':
 		return linux_ioctl_cdrom(p, uap, retval);
+	case 'r':	/* VFAT ioctls; not yet support */
+		return (EINVAL);
 	case 0x89:
 		return linux_ioctl_socket(p, uap, retval);
 	case 0x03:
