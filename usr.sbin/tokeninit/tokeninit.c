@@ -1,4 +1,4 @@
-/*	$OpenBSD: tokeninit.c,v 1.1 2000/12/20 02:08:09 millert Exp $	*/
+/*	$OpenBSD: tokeninit.c,v 1.2 2000/12/20 20:08:22 markus Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -89,7 +89,7 @@ main(int argc, char **argv)
 	else
 		optstr = "fm:sv";
 
-    	while ((c = getopt(argc, argv, optstr)) != EOF)
+    	while ((c = getopt(argc, argv, optstr)) != -1)
 		switch (c) {
 		case 'f':	/* force initialize existing user account */
 			cmd |= TOKEN_FORCEINIT;
