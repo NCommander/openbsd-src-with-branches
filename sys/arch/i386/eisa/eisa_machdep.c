@@ -1,4 +1,4 @@
-/*	$OpenBSD: eisa_machdep.c,v 1.3.6.4 2002/03/28 10:31:04 niklas Exp $	*/
+/*	$OpenBSD: eisa_machdep.c,v 1.3.6.5 2003/05/13 19:42:07 ho Exp $	*/
 /*	$NetBSD: eisa_machdep.c,v 1.10.22.2 2000/06/25 19:36:58 sommerfeld Exp $	*/
 
 /*-
@@ -81,8 +81,8 @@
 
 #define _I386_BUS_DMA_PRIVATE
 #include <machine/bus.h>
+#include <machine/i8259.h>
 
-#include <i386/isa/icu.h>
 #include <dev/isa/isavar.h>
 #include <dev/eisa/eisavar.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.14.6.8 2003/05/13 19:42:08 ho Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.14.6.9 2003/05/15 04:08:02 niklas Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.28 1997/06/06 23:29:17 thorpej Exp $	*/
 
 /*-
@@ -92,6 +92,7 @@
 #define _I386_BUS_DMA_PRIVATE
 #include <machine/bus.h>
 #include <machine/pio.h>
+#include <machine/i8259.h>
 
 #include "bios.h"
 #if NBIOS > 0
@@ -99,7 +100,6 @@
 extern bios_pciinfo_t *bios_pciinfo;
 #endif
 
-#include <i386/isa/icu.h>
 #include <dev/isa/isavar.h>
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcireg.h>
