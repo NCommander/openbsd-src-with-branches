@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.77 2001/06/27 10:31:51 kjell Exp $ */
+/*	$OpenBSD: pf.c,v 1.78 2001/06/27 16:07:16 provos Exp $ */
 
 /*
  * Copyright (c) 2001, Daniel Hartmeier
@@ -70,7 +70,7 @@ struct pf_tree_node {
 		u_int16_t	 port[2];
 		u_int8_t	 proto;
 	}			 key;
-	struct pf_state		*state;
+	void			*state;
 	struct pf_tree_node	*left;
 	struct pf_tree_node	*right;
 	signed char		 balance;
