@@ -66,6 +66,7 @@ cvs_server(int argc, char **argv)
 {
 	ssize_t ret;
 	char reqbuf[128];
+	struct cvsroot *root;
 
 	if (argc != 1) {
 		return (EX_USAGE);
@@ -81,7 +82,7 @@ cvs_server(int argc, char **argv)
 	}
 
 
-	if (cvs_sock_connect(cvs_root->cr_dir) < 0) {
+	if (cvs_sock_connect(root->cr_dir) < 0) {
 		cvs_log(LP_ERR, "failed to connect to CVS server socket");
 		return (-1);
 	}
