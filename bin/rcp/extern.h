@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.2 1995/03/21 08:19:01 cgd Exp $	*/
+/*	$OpenBSD: extern.h,v 1.2 1996/06/23 14:20:55 deraadt Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1995/03/21 08:19:01 cgd Exp $	*/
 
 /*-
@@ -42,6 +42,7 @@ typedef struct {
 } BUF;
 
 extern int iamremote;
+extern char *__progname;
 
 BUF	*allocbuf __P((BUF *, int, int));
 char	*colon __P((char *));

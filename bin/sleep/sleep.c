@@ -1,4 +1,4 @@
-/*	$OpenBSD: sleep.c,v 1.9 2000/01/05 01:58:03 pjanzen Exp $	*/
+/*	$OpenBSD: sleep.c,v 1.10 2001/05/20 08:04:48 mickey Exp $	*/
 /*	$NetBSD: sleep.c,v 1.8 1995/03/21 09:11:11 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)sleep.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: sleep.c,v 1.9 2000/01/05 01:58:03 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: sleep.c,v 1.10 2001/05/20 08:04:48 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,6 +56,8 @@ static char rcsid[] = "$OpenBSD: sleep.c,v 1.9 2000/01/05 01:58:03 pjanzen Exp $
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+
+extern char *__progname;
 
 void usage __P((void));
 void alarmh __P((int));
@@ -129,8 +131,7 @@ main(argc, argv)
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: sleep seconds\n");
+	(void)fprintf(stderr, "usage: %s seconds\n", __progname);
 	exit(1);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cat.c,v 1.8 1997/06/18 18:37:56 kstailey Exp $	*/
+/*	$OpenBSD: cat.c,v 1.9 2000/01/22 20:24:45 deraadt Exp $	*/
 /*	$NetBSD: cat.c,v 1.11 1995/09/07 06:12:54 jtc Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cat.c	8.2 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$OpenBSD: cat.c,v 1.8 1997/06/18 18:37:56 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: cat.c,v 1.9 2000/01/22 20:24:45 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -63,6 +63,8 @@ static char rcsid[] = "$OpenBSD: cat.c,v 1.8 1997/06/18 18:37:56 kstailey Exp $"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+extern char *__progname;
 
 int bflag, eflag, nflag, sflag, tflag, vflag;
 int rval;
@@ -107,7 +109,7 @@ main(argc, argv)
 			break;
 		default:
 			(void)fprintf(stderr,
-			    "usage: cat [-benstuv] [-] [file ...]\n");
+			    "usage: %s [-benstuv] [-] [file ...]\n", __progname);
 			exit(1);
 		}
 	argv += optind;

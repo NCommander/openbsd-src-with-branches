@@ -1,4 +1,4 @@
-/*	$OpenBSD: rm.c,v 1.9 1999/01/02 08:38:58 deraadt Exp $	*/
+/*	$OpenBSD: rm.c,v 1.10 2001/06/08 13:40:20 millert Exp $	*/
 /*	$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rm.c	8.8 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$OpenBSD: rm.c,v 1.9 1999/01/02 08:38:58 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rm.c,v 1.10 2001/06/08 13:40:20 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,6 +64,8 @@ static char rcsid[] = "$OpenBSD: rm.c,v 1.9 1999/01/02 08:38:58 deraadt Exp $";
 #include <unistd.h>
 #include <pwd.h>
 #include <grp.h>
+
+extern char *__progname;
 
 int dflag, eval, fflag, iflag, Pflag, Wflag, stdin_ok;
 
@@ -437,7 +439,6 @@ checkdot(argv)
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: rm [-dfiPRrW] file ...\n");
+	(void)fprintf(stderr, "usage: %s [-dfiPRrW] file ...\n", __progname);
 	exit(1);
 }
