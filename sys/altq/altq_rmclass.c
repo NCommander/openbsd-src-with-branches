@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_rmclass.c,v 1.7 2002/12/16 17:27:20 henning Exp $	*/
+/*	$OpenBSD: altq_rmclass.c,v 1.8 2003/01/07 00:29:28 cloder Exp $	*/
 /*	$KAME: altq_rmclass.c,v 1.10 2001/02/09 07:20:40 kjc Exp $	*/
 
 /*
@@ -270,8 +270,10 @@ rmc_newclass(int pri, struct rm_ifdat *ifd, u_int nsecPerByte,
 		red_pkttime = nsecPerByte * pktsize  / 1000;
 
 		if (flags & RMCF_RED) {
-			cl->red_ = red_alloc(0, 0, 0, 0,
-					     red_flags, red_pkttime);
+			cl->red_ = red_alloc(0, 0,
+			    qlimit(cl->q_) * 10/100,
+			    qlimit(cl->q_) * 30/100,
+			    red_flags, red_pkttime);
 			if (cl->red_ != NULL)
 				qtype(cl->q_) = Q_RED;
 		}
