@@ -153,13 +153,9 @@
  * smaller units (fragments) only in the last direct block.  MAXBSIZE
  * primarily determines the size of buffers in the buffer pool.  It may be
  * made larger without any effect on existing file systems; however making
- * it smaller make make some file systems unmountable.
+ * it smaller makes some file systems unmountable.
  */
-#if defined(__i386__)
-#define	MAXBSIZE	16384		/* XXX MAXPHYS */
-#else
 #define	MAXBSIZE	MAXPHYS
-#endif
 #define MAXFRAG 	8
 
 /*
