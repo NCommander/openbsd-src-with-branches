@@ -1,10 +1,10 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dig.c,v 1.2 1997/03/12 10:41:48 downsj Exp $	*/
 
 #ifndef lint
 #if 0
 static char rcsid[] = "$From: dig.c,v 8.8 1996/05/21 07:32:40 vixie Exp $";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: dig.c,v 1.2 1997/03/12 10:41:48 downsj Exp $";
 #endif
 #endif
 
@@ -344,7 +344,7 @@ main(argc, argv)
 				fprintf(stderr, "dig: too many arguments\n");
 				exit(10);
 			}
-			*ax++ = *vtmp;
+			*ax++ = strdup(*vtmp);
 		}
 		vtmp++;
 	}
