@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.189 2001/12/08 02:24:06 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.190 2001/12/14 08:35:12 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -432,7 +432,6 @@ i386_proc0_tss_ldt_init()
 	struct pcb *pcb;
 	int x;
 
-	gdt_init();
 	curpcb = pcb = &proc0.p_addr->u_pcb;
 	pcb->pcb_flags = 0;
 	pcb->pcb_tss.tss_ioopt =
