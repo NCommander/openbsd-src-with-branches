@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.bsd-wrapper,v 1.4 1998/12/05 19:43:46 kstailey Exp $
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.5 1999/06/07 00:45:37 deraadt Exp $
 
 MAN=	lynx.1
 CLEANFILES=	lynx.1
@@ -66,8 +66,8 @@ helpinstall:
 	done
 
 install: maninstall helpinstall
-	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-	    lynx ${DESTDIR}/usr/bin/lynx
+	${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP} -o ${BINOWN} \
+	    -g ${BINGRP} -m ${BINMODE} lynx ${DESTDIR}/usr/bin/lynx
 
 distribution:
 	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${NONBINMODE} \
