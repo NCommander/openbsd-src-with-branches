@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: amigagraph.h,v 1.1.1.1 1996/11/29 23:36:29 is Exp $
+ * $OpenBSD: amigagraph.h,v 1.1 1997/01/16 09:26:24 niklas Exp $
  * $NetBSD: amigagraph.h,v 1.1.1.1 1996/11/29 23:36:29 is Exp $
  *
  * Copyright (c) 1996 Ignatios Souvatzis
@@ -77,4 +77,4 @@
 struct Window {
 	u_int8_t dum1[136];
 };
-#endif AMIGA_GRAPH_H
+#endif /* AMIGA_GRAPH_H */

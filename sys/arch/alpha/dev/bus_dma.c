@@ -1,4 +1,4 @@
-/* $OpenBSD: bus_dma.c,v 1.1.2.1 2001/04/18 16:00:40 niklas Exp $ */
+/* $OpenBSD: bus_dma.c,v 1.1.2.2 2001/07/04 10:14:32 niklas Exp $ */
 /* $NetBSD: bus_dma.c,v 1.40 2000/07/17 04:47:56 thorpej Exp $ */
 
 /*-
@@ -48,7 +48,6 @@
 #include <sys/mbuf.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
@@ -602,8 +601,8 @@ _bus_dmamem_map(t, segs, nsegs, size, kvap, flags)
 			if (size == 0)
 				panic("_bus_dmamem_map: size botch");
 			pmap_enter(pmap_kernel(), va, addr,
-			    VM_PROT_READ | VM_PROT_WRITE, 1,
-			    VM_PROT_READ | VM_PROT_WRITE);
+			    VM_PROT_READ | VM_PROT_WRITE,
+			    VM_PROT_READ | VM_PROT_WRITE | PMAP_WIRED);
 		}
 	}
 

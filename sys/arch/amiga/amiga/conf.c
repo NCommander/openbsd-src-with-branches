@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.26.4.1 2001/04/18 16:01:55 niklas Exp $	*/
+/*	$OpenBSD: conf.c,v 1.26.4.2 2001/07/04 10:14:55 niklas Exp $	*/
 /*	$NetBSD: conf.c,v 1.42 1997/01/07 11:35:03 mrg Exp $	*/
 
 /*-
@@ -117,7 +117,6 @@ cdev_decl(audio);
 	(dev_type_mmap((*)))enodev }
 
 #include "pf.h"
-cdev_decl(pf);
 
 #include <altq/altqconf.h>
 
