@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_cd9660.c,v 1.6 1997/04/19 20:10:13 deraadt Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.7 1997/08/20 05:10:18 millert Exp $	*/
 /*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
@@ -49,7 +49,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_cd9660.c	8.4 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.6 1997/04/19 20:10:13 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.7 1997/08/20 05:10:18 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -128,7 +128,7 @@ main(argc, argv)
 		if (errno == EOPNOTSUPP)
 			errx(1, "%s: Filesystem not supported by kernel", dir);
 		else
-			err(1, dir);
+			err(1, "%s", dir);
 	}
 	exit(0);
 }
