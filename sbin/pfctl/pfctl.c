@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.215 2004/05/05 23:16:03 frantzen Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.216 2004/05/19 17:50:51 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1312,7 +1312,7 @@ pfctl_show_anchors(int dev, int opts, char *anchorname)
 		sub[0] = 0;
 		if (pr.path[0]) {
 			strlcat(sub, pr.path, sizeof(sub));
-			strlcat(sub, ":", sizeof(sub));
+			strlcat(sub, "/", sizeof(sub));
 		}
 		strlcat(sub, pr.name, sizeof(sub));
 		printf("  %s\n", sub);
