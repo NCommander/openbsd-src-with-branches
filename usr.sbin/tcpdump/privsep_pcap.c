@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep_pcap.c,v 1.2 2004/02/05 22:12:06 otto Exp $ */
+/*	$OpenBSD: privsep_pcap.c,v 1.3 2004/04/08 12:38:00 avsm Exp $ */
 
 /*
  * Copyright (c) 2004 Can Erkin Acar
@@ -483,9 +483,10 @@ priv_pcap_dump_open(pcap_t *p, char *fname)
 	if (priv_fd < 0)
 		errx(1, "%s: called from privileged portion\n", __func__);
 
-	if (fname[0] == '-' && fname[1] == '\0')
+	if (fname[0] == '-' && fname[1] == '\0') {
 		f = stdout;
-	else {
+		priv_init_done();
+	} else {
 		write_command(priv_fd, PRIV_OPEN_OUTPUT);
 		fd = receive_fd(priv_fd);
 		must_read(priv_fd, &err, sizeof(err));
