@@ -1782,6 +1782,7 @@ union_advlock(v)
 	void *v;
 {
 	struct vop_advlock_args /* {
+		struct vnodeop_desc *a_desc;
 		struct vnode *a_vp;
 		caddr_t  a_id;
 		int  a_op;
