@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite.c,v 1.19 2001/11/06 19:53:14 miod Exp $	*/
+/*	$OpenBSD: ite.c,v 1.20 2002/03/14 01:26:35 millert Exp $	*/
 /*	$NetBSD: ite.c,v 1.32 1997/02/20 00:23:25 scottr Exp $	*/
 
 /*
@@ -1334,7 +1334,7 @@ itecngetc(dev)
 	return ite_pollforchar();
 }
 
-int
+void
 itecnputc(dev, c)
 	dev_t	dev;
 	int	c;
@@ -1347,6 +1347,4 @@ itecnputc(dev, c)
 	drawcursor();
 	if (mac68k_machine.serial_boot_echo)
 		zscnputc(mac68k_zsdev, c);
-
-	return c;
 }
