@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.9 1997/09/21 11:50:13 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.10 1997/10/31 22:20:45 deraadt Exp $
 #	etc.alpha/Makefile.inc -- alpha-specific etc Makefile targets
 
 .ifdef DESTDIR
@@ -22,5 +22,7 @@ distrib:
 
 boot:
 	cp ${DESTDIR}/usr/mdec/boot ${DESTDIR}/snapshot
+	cp ${DESTDIR}/usr/mdec/bootxx ${DESTDIR}/snapshot
+	cp ${DESTDIR}/usr/mdec/netboot ${DESTDIR}/snapshot
 
 .endif	# DESTDIR check
