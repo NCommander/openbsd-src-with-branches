@@ -551,13 +551,13 @@ cvs_sendfile(struct cvsroot *root, const char *path)
 		return (-1);
 	}
 
+	if (cvs_modetostr(st.st_mode, buf, sizeof(buf)) < 0)
+		return (-1);
+
 	fd = open(path, O_RDONLY, 0);
 	if (fd == -1) {
 		return (-1);
 	}
-
-	if (cvs_modetostr(st.st_mode, buf, sizeof(buf)) < 0)
-		return (-1);
 
 	cvs_sendln(root, buf);
 	snprintf(buf, sizeof(buf), "%lld\n", st.st_size);
@@ -565,6 +565,7 @@ cvs_sendfile(struct cvsroot *root, const char *path)
 
 	while ((ret = read(fd, buf, sizeof(buf))) != 0) {
 		if (ret == -1) {
+			(void)close(fd);
 			cvs_log(LP_ERRNO, "failed to read file `%s'", path);
 			return (-1);
 		}
