@@ -655,7 +655,7 @@ audio_drain(sc)
 		 * we can't interrupt this sleep, so we set a 1-minute
 		 * timeout.
 		 */
-		error = audio_sleep_timo(&sc->sc_wchan, "aud dr", 60*hz);
+		error = audio_sleep_timo(&sc->sc_wchan, "aud_dr", 60*hz);
 		if (error)
 			return (error);
 	}
