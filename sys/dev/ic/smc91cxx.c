@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc91cxx.c,v 1.14 2002/03/14 01:26:55 millert Exp $	*/
+/*	$OpenBSD: smc91cxx.c,v 1.15 2002/03/22 00:04:29 vincent Exp $	*/
 /*	$NetBSD: smc91cxx.c,v 1.11 1998/08/08 23:51:41 mycroft Exp $	*/
 
 /*-
@@ -973,9 +973,9 @@ smc91cxx_ioctl(ifp, cmd, data)
 		switch (ifa->ifa_addr->sa_family) {
 #ifdef INET
 		case AF_INET:
-		smc91cxx_init(sc);
-		arp_ifinit(&sc->sc_arpcom, ifa);
-		break;
+			smc91cxx_init(sc);
+			arp_ifinit(&sc->sc_arpcom, ifa);
+			break;
 #endif
 #ifdef NS
 		case AF_NS:
