@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: inode.c,v 1.3 1997/06/14 04:16:53 downsj Exp $	*/
 /*	$NetBSD: inode.c,v 1.1 1997/06/11 11:21:49 bouyer Exp $	*/
 
 /*
@@ -42,7 +42,7 @@ static char sccsid[] = "@(#)inode.c	8.5 (Berkeley) 2/8/95";
 #if 0
 static char rcsid[] = "$NetBSD: inode.c,v 1.1 1997/06/11 11:21:49 bouyer Exp $";
 #else
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: inode.c,v 1.3 1997/06/14 04:16:53 downsj Exp $";
 #endif
 #endif
 #endif /* not lint */
@@ -438,7 +438,7 @@ getinoinfo(inumber)
 		return (inp);
 	}
 	errexit("cannot find inode %d\n", inumber);
-	return ((struct inoinfo *)0);
+	return (NULL);
 }
 
 /*
