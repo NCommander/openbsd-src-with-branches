@@ -1,7 +1,7 @@
-/*	$OpenBSD: exec.c,v 1.1 1996/06/04 07:56:11 niklas Exp $	*/
+/*	$OpenBSD: exec.c,v 1.2 1996/06/04 08:43:41 niklas Exp $	*/
 
 #ifndef lint
-static const char *rcsid = "$OpenBSD: exec.c,v 1.1 1996/06/04 07:56:11 niklas Exp $";
+static const char *rcsid = "$OpenBSD: exec.c,v 1.2 1996/06/04 08:43:41 niklas Exp $";
 #endif
 
 /*
@@ -47,7 +47,7 @@ vsystem(const char *fmt, ...)
     }
 
     va_start(args, fmt);
-    if (vsnprintf(cmd, maxargs, fmt, args) > maxargs) {
+    if (vsnprintf(cmd, maxargs, fmt, args) >= maxargs) {
 	whinge("vsystem args are too long");
 	return 1;
     }
