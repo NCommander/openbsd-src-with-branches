@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt_common.c,v 1.10 2000/12/13 15:32:39 mickey Exp $	*/
+/*	$OpenBSD: gdt_common.c,v 1.11 2000/12/13 16:03:11 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -508,7 +508,9 @@ gdt_scsi_cmd(xs)
 	while ((xs = gdt_dequeue(gdt))) {
 		xs->error = XS_NOERROR;
 		ccb = NULL;
-
+		link = xs->sc_link;
+		target = link->target;
+ 
 		if (!gdt_polling && !(xs->flags & SCSI_POLL) &&
 		    gdt->sc_test_busy(gdt)) {
 			/*
