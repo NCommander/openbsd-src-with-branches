@@ -136,6 +136,13 @@ system calls.
 Modifications are private.
 .It Dv MAP_SHARED
 Modifications are shared.
+.It Dv MAP_COPY
+Modifications are private and unlike
+.Dv MAP_PRIVATE
+you don't see modifications made by others.
+This option is deprecated, shouldn't be used and behaves just like
+.Dv MAP_PRIVATE
+in the current implementation.
 .El
 .Pp
 The
