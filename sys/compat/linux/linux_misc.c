@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_misc.c,v 1.31 2000/07/23 22:35:38 jasoni Exp $	*/
+/*	$OpenBSD: linux_misc.c,v 1.32 2000/09/07 17:52:24 ericj Exp $	*/
 /*	$NetBSD: linux_misc.c,v 1.27 1996/05/20 01:59:21 fvdl Exp $	*/
 
 /*
@@ -625,7 +625,7 @@ linux_sys_mmap(p, v, retval)
 		lmap.lm_prot |= VM_PROT_READ;
  	SCARG(&cma,prot) = lmap.lm_prot;
 	SCARG(&cma,flags) = flags;
-	SCARG(&cma,fd) = lmap.lm_fd;
+	SCARG(&cma,fd) = flags & MAP_ANON ? -1 : lmap.lm_fd;
 	SCARG(&cma,pad) = 0;
 	SCARG(&cma,pos) = lmap.lm_pos;
 
