@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.9 2002/07/24 04:11:10 deraadt Exp $ */
+/*	$OpenBSD: syscall.h,v 1.10 2002/12/18 19:20:01 drahn Exp $ */
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist
@@ -59,6 +59,7 @@ int	_dl_fcntl(int, int, ...);
 int	_dl_getdirentries(int, char*, int, long *);
 long	_dl__syscall(quad_t, ...);
 int	_dl_sigprocmask(int, const sigset_t *, sigset_t *);
+int	_dl_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 
 static inline off_t
 _dl_lseek(int fildes, off_t offset, int whence)
