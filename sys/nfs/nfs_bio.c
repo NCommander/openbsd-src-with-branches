@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.34 2002/01/16 21:51:16 ericj Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.35 2002/02/08 08:20:49 csapuntz Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -565,8 +565,8 @@ nfs_asyncio(bp)
 	 */
 	s = splbio();
 	buf_dirty(bp);
-	splx(s);
 	biodone(bp);
+	splx(s);
 	return (0);
 }
 
@@ -726,6 +726,8 @@ nfs_doio(bp, p)
 	bp->b_resid = uiop->uio_resid;
 	if (must_commit)
 		nfs_clearcommit(vp->v_mount);
+	s = splbio();
 	biodone(bp);
+	splx(s);
 	return (error);
 }
