@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.1.2.1 1996/12/03 13:17:09 mickey Exp $	*/
+/*	$OpenBSD: installboot.c,v 1.1.2.2 1996/12/15 15:49:37 mickey Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -54,17 +54,14 @@ int	verbose, nowrite;
 char	*boot, *proto, *dev;
 struct nlist nl[] = {
 #define X_BLOCK_COUNT	0
-	{"_block_count"},
+	{{"_block_count"}},
 #define X_BLOCK_TABLE	1
-	{"_block_table"},
-#define X_ENTRY_POINT	2
-	{"_entry_point"},
-	{NULL}
+	{{"_block_table"}},
+	{{NULL}}
 };
 
 u_int8_t *block_count_p;	/* block count var. in prototype image */
 u_int8_t *block_table_p;	/* block number array in prototype image */
-u_int32_t *entry_point_p;	/* entry point for the /boot */
 int	maxblocknum;	/* size of this array */
 
 
@@ -230,7 +227,6 @@ loadprotoblocks(fname, size)
 	/* Calculate the symbols' locations within the proto file */
 	block_count_p = (u_int8_t *) (bp + nl[X_BLOCK_COUNT].n_value);
 	block_table_p = (u_int8_t *) (bp + nl[X_BLOCK_TABLE].n_value);
-	entry_point_p = (u_int32_t *) (bp + nl[X_ENTRY_POINT].n_value);
 	maxblocknum = *block_count_p;
 
 	if (verbose) {
@@ -319,8 +315,6 @@ int	devfd;
 		errx(1, "%s: bad magic: 0x%lx", boot, eh.a_midmag);
 	}
 
-	*entry_point_p = eh.a_entry;
-
 	if (fsync(fd) != 0)
 		err(1, "fsync: %s", boot);
 
@@ -385,10 +379,8 @@ int	devfd;
 	bt += record_block(bt, 0, 0, &dl);
 	*block_count_p = (bt - block_table_p) / 4;
 
-	if (verbose) {
+	if (verbose)
 		printf("%s: %d entries total\n", boot, *block_count_p);
-		printf("%s: entry point %#x\n", boot, *entry_point_p);
-	}
 
 	return 0;
 }
