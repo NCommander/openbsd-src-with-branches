@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkcsum.c,v 1.8 1999/07/24 23:04:34 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -51,7 +51,7 @@
 
 #define	b_cylin	b_resid
 
-dev_t dev_rawpart __P((struct device *));	/* XXX */
+dev_t dev_rawpart(struct device *);	/* XXX */
 
 extern u_int32_t bios_cksumlen;
 extern bios_diskinfo_t *bios_diskinfo;

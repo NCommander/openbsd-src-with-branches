@@ -198,7 +198,7 @@ void *
 eisa_intr_establish(ec, ih, type, level, func, arg, what)
 	eisa_chipset_tag_t ec;
 	eisa_intr_handle_t ih;
-	int type, level, (*func) __P((void *));
+	int type, level, (*func)(void *);
 	void *arg;
 	char *what;
 {

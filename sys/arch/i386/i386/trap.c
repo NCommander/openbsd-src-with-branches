@@ -91,10 +91,10 @@ extern struct emul emul_bsdos;
 
 #include "npx.h"
 
-static __inline void userret __P((struct proc *, int, u_quad_t));
-void trap __P((struct trapframe));
-int trapwrite __P((unsigned));
-void syscall __P((struct trapframe));
+static __inline void userret(struct proc *, int, u_quad_t);
+void trap(struct trapframe);
+int trapwrite(unsigned);
+void syscall(struct trapframe);
 
 /*
  * Define the code needed before returning to user mode, for

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.3 1996/05/07 07:21:35 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_trace.c,v 1.18 1996/05/03 19:42:01 christos Exp $	*/
 
 /* 
@@ -81,9 +81,9 @@ db_addr_t	db_syscall_symbol_value = 0;
 db_addr_t	db_kdintr_symbol_value = 0;
 boolean_t	db_trace_symbols_found = FALSE;
 
-void db_find_trace_symbols __P((void));
-int db_numargs __P((struct i386_frame *));
-void db_nextframe __P((struct i386_frame **, db_addr_t *, int *, int));
+void db_find_trace_symbols(void);
+int db_numargs(struct i386_frame *);
+void db_nextframe(struct i386_frame **, db_addr_t *, int *, int);
 
 void
 db_find_trace_symbols()

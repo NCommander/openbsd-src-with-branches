@@ -106,7 +106,7 @@
 #ifndef _LOCORE
 #define __HAVE_PMAP_PHYSSEG
 struct pmap_physseg {
-	struct pv_entry *pvent;
+	struct pv_head *pvhead;
 };
 #endif
 

@@ -75,7 +75,7 @@ extern int allowaperture;
 
 #if NMTRR > 0
 struct mem_range_softc mem_range_softc;
-static int mem_ioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
+static int mem_ioctl(dev_t, u_long, caddr_t, int, struct proc *);
 #endif
 
 /*ARGSUSED*/

@@ -81,8 +81,8 @@
 #include <machine/vm86.h>
 #endif
 
-static __inline struct trapframe *process_frame __P((struct proc *));
-static __inline struct save87 *process_fpframe __P((struct proc *));
+static __inline struct trapframe *process_frame(struct proc *);
+static __inline struct save87 *process_fpframe(struct proc *);
 
 static __inline struct trapframe *
 process_frame(p)
@@ -158,6 +158,8 @@ process_read_fpregs(p, regs)
 
 	return (0);
 }
+
+#ifdef PTRACE
 
 int
 process_write_regs(p, regs)
@@ -269,3 +271,5 @@ process_set_pc(p, addr)
 
 	return (0);
 }
+
+#endif	/* PTRACE */

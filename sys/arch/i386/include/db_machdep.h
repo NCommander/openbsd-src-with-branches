@@ -87,8 +87,8 @@ db_regs_t	ddb_regs;	/* register state */
 	 ((user) && (addr) < VM_MAX_ADDRESS))
 
 #if 0
-boolean_t 	db_check_access __P((vaddr_t, int, task_t));
-boolean_t	db_phys_eq __P((task_t, vaddr_t, task_t, vaddr_t));
+boolean_t 	db_check_access(vaddr_t, int, task_t);
+boolean_t	db_phys_eq(task_t, vaddr_t, task_t, vaddr_t);
 #endif
 
 /* macros for printing OS server dependent task name */
@@ -113,6 +113,6 @@ void		db_task_name(/* task_t */);
 
 #define db_thread_fp_used(thread)	((thread)->pcb->ims.ifps != 0)
 
-int kdb_trap __P((int, int, db_regs_t *));
+int kdb_trap(int, int, db_regs_t *);
 
 #endif	/* _I386_DB_MACHDEP_H_ */

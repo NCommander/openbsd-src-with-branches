@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.5.2.1 2001/04/18 16:07:25 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell
@@ -85,11 +85,11 @@
 #include <machine/pccons.h>
 #endif
 
-void wscnprobe __P((struct consdev *));
-void wscninit __P((struct consdev *));
-void wscnputc __P((dev_t, char));
-int wscngetc __P((dev_t));
-void wscnpollc __P((dev_t, int));
+void wscnprobe(struct consdev *);
+void wscninit(struct consdev *);
+void wscnputc(dev_t, char);
+int wscngetc(dev_t);
+void wscnpollc(dev_t, int);
 
 void
 wscnprobe(cp)

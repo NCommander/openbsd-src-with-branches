@@ -115,10 +115,10 @@ struct pchb_softc {
 	struct timeout sc_tmo;
 };
 
-int	pchbmatch __P((struct device *, void *, void *));
-void	pchbattach __P((struct device *, struct device *, void *));
+int	pchbmatch(struct device *, void *, void *);
+void	pchbattach(struct device *, struct device *, void *);
 
-int	pchb_print __P((void *, const char *));
+int	pchb_print(void *, const char *);
 
 struct cfattach pchb_ca = {
 	sizeof(struct pchb_softc), pchbmatch, pchbattach
@@ -128,7 +128,7 @@ struct cfdriver pchb_cd = {
 	NULL, "pchb", DV_DULL
 };
 
-void pchb_rnd __P((void *v));
+void pchb_rnd(void *v);
 
 int
 pchbmatch(parent, match, aux)

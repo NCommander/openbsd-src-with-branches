@@ -1,4 +1,4 @@
-/*	$OpenBSD: joy.c,v 1.3 1996/05/05 19:46:15 christos Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: joy.c,v 1.3 1996/05/05 19:46:15 christos Exp $	*/
 
 /*-
@@ -49,8 +49,8 @@
 #include <i386/isa/timerreg.h>
 #include <i386/isa/joyreg.h>
 
-int		joy_isapnp_probe __P((struct device *, void *, void *));
-void		joy_isapnp_attach __P((struct device *, struct device *, void *));
+int		joy_isapnp_probe(struct device *, void *, void *);
+void		joy_isapnp_attach(struct device *, struct device *, void *);
 
 struct cfattach joy_isapnp_ca = {
 	sizeof(struct joy_softc), joy_isapnp_probe, joy_isapnp_attach

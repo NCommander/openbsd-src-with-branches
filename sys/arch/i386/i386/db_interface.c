@@ -56,7 +56,7 @@ extern int trap_types;
 
 int	db_active = 0;
 
-void kdbprinttrap __P((int, int));
+void kdbprinttrap(int, int);
 
 /*
  * Print trap reason.

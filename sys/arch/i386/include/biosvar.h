@@ -237,18 +237,17 @@ struct bios_attach_args {
 struct consdev;
 struct proc;
 
-int bios_sysctl
-	__P((int *, u_int, void *, size_t *, void *, size_t, struct proc *));
+int bios_sysctl(int *, u_int, void *, size_t *, void *, size_t, struct proc *);
 
-void bioscnprobe __P((struct consdev *));
-void bioscninit __P((struct consdev *));
-void bioscnputc __P((dev_t, int));
-int bioscngetc __P((dev_t));
-void bioscnpollc __P((dev_t, int));
-void bios_getopt __P((void));
+void bioscnprobe(struct consdev *);
+void bioscninit(struct consdev *);
+void bioscnputc(dev_t, int);
+int bioscngetc(dev_t);
+void bioscnpollc(dev_t, int);
+void bios_getopt(void);
 
 /* bios32.c */
-int  bios32_service __P((u_int32_t, bios32_entry_t, bios32_entry_info_t));
+int  bios32_service(u_int32_t, bios32_entry_t, bios32_entry_info_t);
 
 extern u_int bootapiver;
 extern bios_memmap_t *bios_memmap;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_hppa.c,v 1.6 1999/04/20 20:01:02 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -45,7 +45,7 @@
 #include <machine/pdc.h>
 #include "dev_hppa.h"
 
-typedef void (*startfuncp) __P((int, int, int, int, int, int, caddr_t))
+typedef void (*startfuncp)(int, int, int, int, int, int, caddr_t)
     __attribute__ ((noreturn));
 
 void

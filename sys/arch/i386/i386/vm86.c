@@ -70,8 +70,8 @@
 #include <machine/sysarch.h>
 #include <machine/vm86.h>
 
-static void fast_intxx __P((struct proc *, int));
-static __inline int is_bitset __P((int, caddr_t));
+static void fast_intxx(struct proc *, int);
+static __inline int is_bitset(int, caddr_t);
 
 #define	CS(tf)		(*(u_short *)&tf->tf_cs)
 #define	IP(tf)		(*(u_short *)&tf->tf_eip)

@@ -71,13 +71,13 @@
 #include <machine/i82093var.h>
 #endif
 
-int findblkmajor __P((struct device *dv));
-char *findblkname __P((int));
+int findblkmajor(struct device *dv);
+char *findblkname(int);
 
-void rootconf __P((void));
-void swapconf __P((void));
-void setroot __P((void));
-void diskconf __P((void));
+void rootconf(void);
+void swapconf(void);
+void setroot(void);
+void diskconf(void);
 
 /*
  * The following several variables are related to

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_hppa.h,v 1.2 1998/09/29 07:30:59 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 
 #define IOPGSHIFT	11
@@ -39,5 +39,5 @@ extern pdcio_t pdc;
 extern int pdcbuf[];			/* PDC returns, pdc.c */
 extern struct  pz_device ctdev;		/* cartridge tape (boot) device path */
 
-int iodc_rw __P((char *, u_int, u_int, int func, struct pz_device *));
+int iodc_rw(char *, u_int, u_int, int func, struct pz_device *);
 

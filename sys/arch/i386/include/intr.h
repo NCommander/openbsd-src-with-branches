@@ -114,12 +114,12 @@ int iunmask[NIPL];	/* Bitmasks telling what interrupts are accepted. */
 #define IMASK(level) imask[IPL(level)]
 #define IUNMASK(level) iunmask[IPL(level)]
 
-extern void Xspllower __P((void));
+extern void Xspllower(void);
 
-static __inline int splraise __P((int));
-static __inline int spllower __P((int));
-#define SPLX_DECL void splx __P((int));
-static __inline void softintr __P((int, int));
+static __inline int splraise(int);
+static __inline int spllower(int);
+#define SPLX_DECL void splx(int);
+static __inline void softintr(int, int);
 
 /*
  * Raise current interrupt priority level, and return the old one.

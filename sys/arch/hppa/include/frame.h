@@ -35,8 +35,6 @@
 #ifndef _MACHINE_FRAME_H_
 #define _MACHINE_FRAME_H_
 
-#include <machine/reg.h>
-
 /*
  * Call frame definitions
  */

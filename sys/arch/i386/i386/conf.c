@@ -485,8 +485,8 @@ blktochr(dev)
  * disk driver name -> bdev major number table, which follows.
  * Note: floppies are not included as those are differentiated by the BIOS.
  */
-int findblkmajor __P((struct device *dv));
-dev_t dev_rawpart __P((struct device *));	/* XXX */
+int findblkmajor(struct device *dv);
+dev_t dev_rawpart(struct device *);	/* XXX */
 
 dev_t
 dev_rawpart(dv)

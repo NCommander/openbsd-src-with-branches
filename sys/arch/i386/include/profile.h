@@ -1,4 +1,4 @@
-/*	$OpenBSD: profile.h,v 1.3.14.2 2001/07/04 10:16:51 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: profile.h,v 1.6 1995/03/28 18:17:08 jtc Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 #define	_MCOUNT_DECL static __inline void _mcount
 
 #define	MCOUNT \
-extern void mcount __P((void)) __asm("mcount");				\
+extern void mcount(void) __asm("mcount");				\
 void									\
 mcount()								\
 {									\

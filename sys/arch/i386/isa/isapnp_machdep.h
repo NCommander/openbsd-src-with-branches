@@ -70,7 +70,7 @@
 /*
  * Functions provided to machine-independent ISA PnP code.
  */
-int	isapnp_map __P((struct isapnp_softc *));
-void	isapnp_unmap __P((struct isapnp_softc *));
-int	isapnp_map_readport __P((struct isapnp_softc *));
-void	isapnp_unmap_readport __P((struct isapnp_softc *));
+int	isapnp_map(struct isapnp_softc *);
+void	isapnp_unmap(struct isapnp_softc *);
+int	isapnp_map_readport(struct isapnp_softc *);
+void	isapnp_unmap_readport(struct isapnp_softc *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkboot.c,v 1.7.4.1 2001/04/18 16:06:58 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -43,7 +43,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mkboot.c,v 1.7.4.1 2001/04/18 16:06:58 niklas Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 #endif
 
@@ -71,11 +71,11 @@ static char rcsid[] = "$OpenBSD: mkboot.c,v 1.7.4.1 2001/04/18 16:06:58 niklas E
 #include <stdio.h>
 #include <ctype.h>
 
-int putfile __P((char *, int));
-void __dead usage __P((void));
-void bcddate __P((char *, char *));
-char *lifname __P((char *));
-int cksum __P((int, int *, int));
+int putfile(char *, int);
+void __dead usage(void);
+void bcddate(char *, char *);
+char *lifname(char *);
+int cksum(int, int *, int);
 
 char *to_file;
 int loadpoint, verbose;
