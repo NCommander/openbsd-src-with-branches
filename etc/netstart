@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: netstart,v 1.97 2004/05/29 07:01:03 deraadt Exp $
+#	$OpenBSD: netstart,v 1.98 2004/10/20 21:17:34 deraadt Exp $
 
 # Returns true if $1 contains only alphanumerics
 isalphanumeric() {
@@ -342,8 +342,7 @@ for hn in /etc/hostname.*; do
 	esac
 done
 
-# Use loopback, not the wire.
-route -qn add -host $hostname 127.0.0.1 > /dev/null
+# reject 127/8 other than 127.0.0.1
 route -qn add -net 127 127.0.0.1 -reject > /dev/null
 
 # Configure all the bridges.
