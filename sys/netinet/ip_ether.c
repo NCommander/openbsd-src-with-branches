@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.5 1999/12/25 07:25:25 angelos Exp $  */
+/*	$OpenBSD: ip_ether.c,v 1.6 2000/01/07 21:59:34 angelos Exp $  */
 
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
@@ -207,8 +207,8 @@ etherip_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 
     /* Some address family sanity checks */
     if ((tdb->tdb_src.sa.sa_family != 0) &&
-        ((tdb->tdb_src.sa.sa_family != AF_INET) ||
-	 (tdb->tdb_src.sa.sa_family != AF_INET6)))
+        (tdb->tdb_src.sa.sa_family != AF_INET) &&
+	(tdb->tdb_src.sa.sa_family != AF_INET6))
     {
         DPRINTF(("etherip_output(): IP in protocol-family <%d> attempted, aborting", tdb->tdb_src.sa.sa_family));
 	etheripstat.etherip_adrops++;
