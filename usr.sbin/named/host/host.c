@@ -1,4 +1,4 @@
-/*	$OpenBSD: host.c,v 1.2 1997/03/12 10:41:53 downsj Exp $	*/
+/*	$OpenBSD: host.c,v 1.3 1997/04/13 21:25:50 provos Exp $	*/
 
 /*
  * Copyright (c) 1985, 1989 Regents of the University of California.
@@ -476,7 +476,7 @@ bool classprint = FALSE;	/* print class value in non-verbose mode */
 	{\
 		(void) fprintf(stderr, "assertion botch: ");\
 		(void) fprintf(stderr, "%s(%d): ", __FILE__, __LINE__);\
-		(void) fprintf(stderr, "%s\n", "condition");\
+		(void) fprintf(stderr, "%s\n", #condition);\
 		exit(EX_SOFTWARE);\
 	}\
 }
