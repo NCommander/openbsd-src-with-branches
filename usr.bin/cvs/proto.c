@@ -129,6 +129,7 @@ struct cvs_req cvs_requests[] = {
 	{ CVS_REQ_VERSION,       "version",           CVS_REQF_RESP },
 	{ CVS_REQ_NOOP,          "noop",              CVS_REQF_RESP },
 	{ CVS_REQ_DIFF,          "diff",              CVS_REQF_RESP },
+	{ CVS_REQ_CI,            "ci",                CVS_REQF_RESP },
 };
 
 

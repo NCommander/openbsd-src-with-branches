@@ -287,12 +287,21 @@ int
 cvs_logmsg_send(struct cvsroot *root, const char *msg)
 {
 	const char *mp, *np;
+	char buf[256];
 
-	for (np = msg;; np = strchr(np, '\n')) {
-		if (np == NULL)
-			break;
+	if (cvs_sendarg(root, "-m", 0) < 0)
+		return (-1);
 
-		if (cvs_sendarg(root, np, (np == msg) ? 0 : 1) < 0)
+	for (np = msg; np != NULL; np = strchr(np, '\n')) {
+		if (*np == '\n')
+			np++;
+
+		/* XXX ghetto */
+		strlcpy(buf, np, sizeof(buf));
+		mp = strchr(buf, '\n');
+		if (mp != NULL)
+			*mp = '\0';
+		if (cvs_sendarg(root, buf, (np == msg) ? 0 : 1) < 0)
 			return (-1);
 	}
 
