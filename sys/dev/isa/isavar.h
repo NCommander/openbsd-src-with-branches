@@ -1,4 +1,4 @@
-/*	$OpenBSD: isavar.h,v 1.36 1999/06/22 16:28:27 espie Exp $	*/
+/*	$OpenBSD: isavar.h,v 1.37 1999/07/05 20:08:37 deraadt Exp $	*/
 /*	$NetBSD: isavar.h,v 1.26 1997/06/06 23:43:57 thorpej Exp $	*/
 
 /*-
@@ -155,11 +155,14 @@ struct isabus_attach_args;
  */
 struct isapnp_softc;
 
-#if (__i386__ != 1)
+#if (__i386__ != 1 && __alpha__ != 1)
 ERROR: COMPILING ISAPNP FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
 #endif
 #if __i386__
 #include <i386/isa/isapnp_machdep.h>
+#endif
+#if __alpha__
+#include <alpha/isa/isapnp_machdep.h>
 #endif
 #endif	/* NISAPNP */
 
