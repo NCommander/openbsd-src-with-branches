@@ -65,9 +65,6 @@ extern	unsigned imen;		/* interrupt mask enable */
 
 /*
  * Interrupt Control offset into Interrupt descriptor table (IDT)
- * XXX ICU_OFFSET is actually a property of our architecture not of the ICU
- * XXX and therefore ought to use the architecture manifest constant IDTVECOFF
- * XXX for its definition instead.
  */
 #define	ICU_OFFSET	32		/* 0-31 are processor exceptions */
 #define	ICU_LEN		16		/* 32-47 are ISA interrupts */

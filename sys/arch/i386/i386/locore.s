@@ -1653,7 +1653,7 @@ ENTRY(cpu_switch)
 	 */
 	movl	$0,_C_LABEL(curproc)
 
-	movl	$IPL_NONE,_C_LABEL(cpl)	# spl0()
+	movl	$0,_C_LABEL(cpl)	# spl0()
 	call	_C_LABEL(Xspllower)	# process pending interrupts
 
 switch_search:

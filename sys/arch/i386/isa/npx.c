@@ -537,7 +537,7 @@ npxdna(p)
 	}
 
 #ifdef DIAGNOSTIC
-	if (cpl != IPL_NONE || npx_nointr != 0)
+	if (cpl != 0 || npx_nointr != 0)
 		panic("npxdna: masked");
 #endif
 
@@ -612,7 +612,7 @@ npxsave()
 {
 
 #ifdef DIAGNOSTIC
-	if (cpl != IPL_NONE || npx_nointr != 0)
+	if (cpl != 0 || npx_nointr != 0)
 		panic("npxsave: masked");
 #endif
 	iprintf(("Fork"));
