@@ -493,7 +493,6 @@ of_display_console()
 	int stdout_node;
 	int display_node;
 	int err;
-	int backlight_control[2];
 	u_int32_t memtag, iotag;
 	struct ppc_pci_chipset pa;
 	struct {
@@ -546,9 +545,8 @@ of_display_console()
 			panic(": no address");
 		}
 	}
-	len = OF_getprop(stdout_node, "backlight-control",
-	    backlight_control, sizeof(backlight_control));
-	if (len > 0)
+
+	if (OF_finddevice("/backlight") != NULL)
 		cons_backlight_available = 1;
 
 	memtag = ofw_make_tag(NULL, pcibus(addr[0].phys_hi),
