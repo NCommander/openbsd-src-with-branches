@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: linux_types.h,v 1.4 1995/08/21 03:42:11 mycroft Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 #define LINUX_TCGETS		_LINUX_IO('T', 1)
 #define LINUX_TCSETS		_LINUX_IO('T', 2)
 #define LINUX_TCSETSW		_LINUX_IO('T', 3)

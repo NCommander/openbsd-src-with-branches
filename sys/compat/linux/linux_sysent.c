@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * System call switch table.
  *

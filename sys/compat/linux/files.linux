@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: files.linux,v 1.4 1996/03/08 04:55:59 mycroft Exp $
 #
 # Config.new file description for machine-independent Linux compat code.

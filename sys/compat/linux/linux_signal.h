@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* 	$NetBSD: linux_signal.h,v 1.4 1995/08/27 20:51:51 fvdl Exp $	*/
 
 /*
