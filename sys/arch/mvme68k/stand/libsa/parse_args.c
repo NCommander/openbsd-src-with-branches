@@ -1,8 +1,8 @@
-/*	$OpenBSD: parse_args.c,v 1.4 1997/04/22 16:01:20 gvf Exp $ */
+/*	$OpenBSD: parse_args.c,v 1.5 2003/06/04 16:36:14 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
