@@ -1,6 +1,6 @@
 %{
-/*	$OpenBSD: scan.l,v 1.6 1996/10/23 22:37:59 niklas Exp $	*/
-/*	$NetBSD: scan.l,v 1.11 1996/11/13 18:42:18 gwr Exp $	*/
+/*	$OpenBSD: scan.l,v 1.7 1997/01/18 02:24:18 briggs Exp $	*/
+/*	$NetBSD: scan.l,v 1.13 1997/02/02 21:12:37 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -90,6 +90,7 @@ build		return BUILD;
 compile-with	return COMPILE_WITH;
 config		return CONFIG;
 define		return DEFINE;
+defopt		return DEFOPT;
 device		return DEVICE;
 disable		return DISABLE;
 dumps		return DUMPS;
