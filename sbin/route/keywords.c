@@ -26,6 +26,7 @@ struct keytab keywords[] = {
 	{"inet", K_INET},
 	{"inet6", K_INET6},
 	{"ipx", K_IPX},
+	{"label", K_LABEL},
 	{"link", K_LINK},
 	{"llinfo", K_LLINFO},
 	{"lock", K_LOCK},
