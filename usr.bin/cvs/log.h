@@ -1,6 +1,6 @@
 /*	$OpenBSD$	*/
 /*
- * Copyright (c) 2004 Jean-Francois Brousseau <jfb@fugusec.net>
+ * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,5 +67,6 @@ void  cvs_log_cleanup (void);
 int   cvs_log_filter  (u_int, u_int);
 int   cvs_log         (u_int, const char *, ...);
 int   cvs_vlog        (u_int, const char *, va_list);
+int   cvs_printf      (const char *, ...);
 
 #endif /* LOG_H */
