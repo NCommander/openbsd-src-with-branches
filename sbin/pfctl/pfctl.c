@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.196 2003/12/19 16:12:43 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.197 2003/12/31 11:18:24 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1339,7 +1339,7 @@ pfctl_show_anchors(int dev, int opts, char *anchorname)
 				warn("DIOCGETANCHOR");
 				return (-1);
 			}
-			if (!(opts & PF_OPT_VERBOSE) && 
+			if (!(opts & PF_OPT_VERBOSE) &&
 			    !strcmp(pa.name, PF_RESERVED_ANCHOR))
 				continue;
 			printf("  %s\n", pa.name);
