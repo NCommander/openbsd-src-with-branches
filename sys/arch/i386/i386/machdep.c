@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.81 1998/02/22 21:35:27 niklas Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.82 1998/02/26 20:53:24 weingart Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -746,7 +746,10 @@ void
 identifycpu()
 {
 	extern char cpu_vendor[];
-	extern int cpu_id, cpu_feature;
+	extern int cpu_id;
+#if defined(I586_CPU) || defined(I686_CPU)
+	extern int cpu_feature;
+#endif
 	const char *name, *modifier, *vendorname;
 	const char *cpu_device = "cpu0";
 	int class = CPUCLASS_386, vendor, i, max;
