@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.h,v 1.18 2003/07/22 21:50:21 millert Exp $	*/
+/*	$OpenBSD: common.h,v 1.19 2003/07/28 18:35:36 otto Exp $	*/
 
 #define DEBUGGING
 
@@ -37,7 +37,7 @@ typedef long    LINENUM;	/* must be signed */
 
 /* globals */
 
-extern int 	filemode;
+extern int	filemode;
 
 extern char	buf[MAXLINELEN];/* general purpose buffer */
 
