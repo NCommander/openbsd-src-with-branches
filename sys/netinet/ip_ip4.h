@@ -38,15 +38,16 @@
  * Not quite all the functionality of RFC-1853, but the main idea is there.
  */
 
-struct ip4stat {
-	u_int32_t	ip4s_ipackets;	/* total input packets */
-	u_int32_t	ip4s_opackets;	/* total output packets */
-	u_int32_t	ip4s_hdrops;	/* packet shorter than header shows */
-	u_int32_t	ip4s_badlen;
-	u_int32_t	ip4s_notip4;
-	u_int32_t	ip4s_qfull;
-	u_int64_t	ip4s_ibytes;
-	u_int64_t	ip4s_obytes;
+struct ip4stat
+{
+    u_int32_t	ip4s_ipackets;		/* total input packets */
+    u_int32_t	ip4s_opackets;		/* total output packets */
+    u_int32_t	ip4s_hdrops;		/* packet shorter than header shows */
+    u_int32_t	ip4s_badlen;
+    u_int32_t	ip4s_notip4;
+    u_int32_t	ip4s_qfull;
+    u_int64_t   ip4s_ibytes;
+    u_int64_t   ip4s_obytes;
 };
 
 #define IP4_DEFAULT_TTL    0
