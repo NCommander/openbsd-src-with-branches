@@ -351,13 +351,10 @@ clattach(parent, self, aux)
 		sc->sc_pcctwo->pcc2_sccerr = 0x01; /* clear errors */
 
 		/* enable all interrupts at ca_ipl */
-		sc->sc_pcctwo->pcc2_sccirq = 0x10 | (ca->ca_ipl & 0x7);
-		sc->sc_pcctwo->pcc2_scctx  = 0x10 | (ca->ca_ipl & 0x7);
-		sc->sc_pcctwo->pcc2_sccrx  = 0x10 | (ca->ca_ipl & 0x7);
+		sc->sc_pcctwo->pcc2_sccirq = PCC2_IRQ_IEN | (ca->ca_ipl & 0x7);
+		sc->sc_pcctwo->pcc2_scctx  = PCC2_IRQ_IEN | (ca->ca_ipl & 0x7);
+		sc->sc_pcctwo->pcc2_sccrx  = PCC2_IRQ_IEN | (ca->ca_ipl & 0x7);
 		break;
-	default:	
-		/* oops */
-		panic ("cl driver on unknown bus\n");
 	}
 
 	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_txintrcnt);
