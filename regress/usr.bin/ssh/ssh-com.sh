@@ -1,3 +1,6 @@
+#	$OpenBSD: $
+#	Placed in the Public Domain.
+
 tid="connect to ssh.com server"
 
 #TEST_COMBASE=/path/to/ssh/com/binaries

@@ -1,3 +1,6 @@
+#	$OpenBSD: $
+#	Placed in the Public Domain.
+
 tid="yes pipe head"
 
 for p in 1 2; do

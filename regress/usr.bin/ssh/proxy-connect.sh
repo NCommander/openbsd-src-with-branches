@@ -1,3 +1,6 @@
+#	$OpenBSD: $
+#	Placed in the Public Domain.
+
 tid="proxy connect"
 
 for p in 1 2; do

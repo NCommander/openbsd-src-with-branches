@@ -1,3 +1,6 @@
+#	$OpenBSD: $
+#	Placed in the Public Domain.
+
 tid="local and remote forwarding"
 
 start_sshd

@@ -1,3 +1,6 @@
+#	$OpenBSD: $
+#	Placed in the Public Domain.
+
 tid="sshd version with different protocol combinations"
 
 # we just start sshd in inetd mode and check the banner

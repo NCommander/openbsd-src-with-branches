@@ -1,3 +1,6 @@
+#	$OpenBSD: $
+#	Placed in the Public Domain.
+
 tid="simple agent test"
 
 SSH_AUTH_SOCK=/nonexistant ssh-add -l > /dev/null 2>&1
