@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.21 2001/06/23 03:30:38 matthieu Exp $ */
+/*	$OpenBSD: conf.c,v 1.22 2001/06/25 03:20:13 kjell Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -189,6 +189,8 @@ cdev_decl(audio);
 #include "pf.h"
 cdev_decl(pf);
 
+#include <altq/altqconf.h>
+
 struct cdevsw cdevsw[] = {
         cdev_cn_init(1,cn),             /* 0: virtual console */
         cdev_ctty_init(1,ctty),         /* 1: controlling terminal */
@@ -274,6 +276,7 @@ struct cdevsw cdevsw[] = {
 #else
 	cdev_notdef(),
 #endif
+	cdev_altq_init(NALTQ,altq),	/* 72: ALTQ control interface */
 };
 int nchrdev = sizeof cdevsw / sizeof cdevsw[0];
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.9 2001/04/01 06:25:33 mickey Exp $	*/
+/*	$OpenBSD: conf.c,v 1.10 2001/06/25 03:19:55 kjell Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -117,6 +117,8 @@ cdev_decl(com);
 #include "pf.h"
 cdev_decl(pf);
 
+#include <altq/altqconf.h>
+
 struct cdevsw   cdevsw[] =
 {
 	cdev_cn_init(1,cn),		/*  0: virtual console */
@@ -157,6 +159,7 @@ struct cdevsw   cdevsw[] =
 #else
 	cdev_notdef(),			/* 32 */
 #endif
+	cdev_altq_init(NALTQ,altq),	/* 33: ALTQ control interface */
 	cdev_lkm_dummy(),
 	cdev_lkm_dummy(),
 	cdev_lkm_dummy(),
