@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.114 2000/05/02 12:44:38 markus Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.115 2000/05/03 10:21:49 markus Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -256,21 +256,6 @@ key_regeneration_alarm(int sig)
 	signal(SIGALRM, key_regeneration_alarm);
 	alarm(options.key_regeneration_time);
 	errno = save_errno;
-}
-
-char *
-chop(char *s)
-{
-	char *t = s;
-	while (*t) {
-		if(*t == '\n' || *t == '\r') {
-			*t = '\0';
-			return s;
-		}
-		t++;
-	}
-	return s;
-
 }
 
 void
