@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.70 2003/06/23 02:33:39 cedric Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.71 2003/06/27 11:38:23 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -945,6 +945,15 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 					newrule->pqid = newrule->qid;
 			}
 #endif
+			if (newrule->tagname[0])
+				if ((newrule->tag =
+				    pf_tagname2tag(newrule->tagname)) == 0)
+					error = EBUSY;
+			if (newrule->match_tagname[0])
+				if ((newrule->match_tag = pf_tagname2tag(
+				    newrule->match_tagname)) == 0)
+					error = EBUSY;
+
 			if (newrule->rt && !newrule->direction)
 				error = EINVAL;
 			if (pf_dynaddr_setup(&newrule->src.addr, newrule->af))
