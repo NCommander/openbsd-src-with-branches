@@ -1,4 +1,4 @@
-/*	$OpenBSD: kex.h,v 1.29 2002/02/14 23:41:01 markus Exp $	*/
+/*	$OpenBSD: kex.h,v 1.31 2002/05/16 22:02:50 markus Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -79,7 +79,7 @@ struct Enc {
 struct Mac {
 	char	*name;
 	int	enabled;
-	EVP_MD	*md;
+	const EVP_MD	*md;
 	int	mac_len;
 	u_char	*key;
 	int	key_len;
