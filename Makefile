@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.52 1999/12/22 21:25:24 mickey Exp $
+#	$OpenBSD: Makefile,v 1.53 2000/03/01 03:56:41 todd Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -83,6 +83,10 @@ build:
 	    ${SUDO} ${MAKE} install)
 	(cd ${.CURDIR}/gnu/lib && ${MAKE} depend && ${MAKE} && \
 	    ${SUDO} ${MAKE} install)
+.if (${KERBEROS} == "yes")
+	(cd ${.CURDIR}/kerberosIV/lib && ${MAKE} depend && ${MAKE} && \
+	    ${SUDO} ${MAKE} install)
+.endif
 	(cd ${.CURDIR}/gnu/usr.bin/perl && \
 	    ${MAKE} -f Makefile.bsd-wrapper config.sh && \
 	    ${MAKE} -f Makefile.bsd-wrapper depend && \
@@ -90,12 +94,6 @@ build:
 	    ${SUDO} ${MAKE} -f Makefile.bsd-wrapper install.lib)
 .if (${MACHINE_ARCH} == "mips")
 	ldconfig
-.endif
-.if (${KERBEROS} == "yes")
-	(cd ${.CURDIR}/kerberosIV && ${MAKE} SUDO=${SUDO} build)
-.if (${MACHINE_ARCH} == "mips")
-	ldconfig
-.endif
 .endif
 	${MAKE} depend && ${MAKE} && ${SUDO} ${MAKE} install
 
