@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.19 1999/07/15 14:11:05 art Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.21 2000/02/21 20:00:09 art Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -117,9 +117,7 @@ exit1(p, rv)
 	if (p->p_pid == 1)
 		panic("init died (signal %d, exit %d)",
 		    WTERMSIG(rv), WEXITSTATUS(rv));
-#ifdef PGINPROF
-	vmsizmon();
-#endif
+
 	if (p->p_flag & P_PROFIL)
 		stopprofclock(p);
 	MALLOC(p->p_ru, struct rusage *, sizeof(struct rusage),
