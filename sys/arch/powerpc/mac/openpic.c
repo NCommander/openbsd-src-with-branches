@@ -222,6 +222,8 @@ fakeintr(arg)
 	return 0;
 }
 
+void nameinterrupt( int replace, char *newstr);
+
 /*
  * Register an interrupt handler.
  */
@@ -246,6 +248,7 @@ openpic_intr_establish(lcv, irq, type, level, ih_fun, ih_arg, name)
 printf("mac_intr_establish, hI %d L %d ", irq, type);
 #endif
 
+	nameinterrupt(irq, name);
 	irq = mapirq(irq);
 #if 0
 printf("vI %d ", irq);
