@@ -1,4 +1,4 @@
-/*	$OpenBSD: procmap.c,v 1.14 2004/02/23 21:01:22 tedu Exp $ */
+/*	$OpenBSD: procmap.c,v 1.15 2004/03/15 09:13:10 tedu Exp $ */
 /*	$NetBSD: pmap.c,v 1.1 2002/09/01 20:32:44 atatat Exp $ */
 
 /*
@@ -908,7 +908,7 @@ load_name_cache(kvm_t *kd)
 
 	ncpp = &_ncpp;
 
-	for (i = 0; i <= nchash; i++) {
+	for (i = 0; i < nchash; i++) {
 		ncpp = &nchashtbl[i];
 		oncp = NULL;
 		LIST_FOREACH(ncp, ncpp, nc_hash) {
