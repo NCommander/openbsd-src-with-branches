@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: setvbuf.c,v 1.4 2002/09/14 22:03:14 dhartmei Exp $";
+static char rcsid[] = "$OpenBSD: setvbuf.c,v 1.5 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -43,13 +43,9 @@ static char rcsid[] = "$OpenBSD: setvbuf.c,v 1.4 2002/09/14 22:03:14 dhartmei Ex
  * a buffer.
  */
 int
-setvbuf(fp, buf, mode, size)
-	register FILE *fp;
-	char *buf;
-	register int mode;
-	register size_t size;
+setvbuf(FILE *fp, char *buf, int mode, size_t size)
 {
-	register int ret, flags;
+	int ret, flags;
 	size_t iosize;
 	int ttyflag;
 

@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: wbuf.c,v 1.5 2001/07/09 06:57:45 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: wbuf.c,v 1.6 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -44,11 +44,9 @@ static char rcsid[] = "$OpenBSD: wbuf.c,v 1.5 2001/07/09 06:57:45 deraadt Exp $"
  * or if c=='\n' and the file is line buffered.
  */
 int
-__swbuf(c, fp)
-	register int c;
-	register FILE *fp;
+__swbuf(int c, FILE *fp)
 {
-	register int n;
+	int n;
 
 	/*
 	 * In case we cannot write, or longjmp takes us out early,

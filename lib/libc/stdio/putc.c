@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: putc.c,v 1.4 1998/11/20 11:18:48 d Exp $";
+static char rcsid[] = "$OpenBSD: putc.c,v 1.5 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -44,9 +44,7 @@ static char rcsid[] = "$OpenBSD: putc.c,v 1.4 1998/11/20 11:18:48 d Exp $";
 #undef putc_unlocked
 
 int
-putc_unlocked(c, fp)
-	int c;
-	register FILE *fp;
+putc_unlocked(int c, FILE *fp)
 {
 	if (cantwrite(fp)) {
 		errno = EBADF;
@@ -61,9 +59,7 @@ putc_unlocked(c, fp)
 #undef putc
 
 int
-putc(c, fp)
-	int c;
-	FILE *fp;
+putc(int c, FILE *fp)
 {
 	int ret;
 

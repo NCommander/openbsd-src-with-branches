@@ -31,16 +31,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: setbuf.c,v 1.2 1996/08/19 08:33:04 tholo Exp $";
+static char rcsid[] = "$OpenBSD: setbuf.c,v 1.3 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 #include "local.h"
 
 void
-setbuf(fp, buf)
-	FILE *fp;
-	char *buf;
+setbuf(FILE *fp, char *buf)
 {
 	(void) setvbuf(fp, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
 }

@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: wsetup.c,v 1.4 2002/04/29 06:36:12 espie Exp $";
+static char rcsid[] = "$OpenBSD: wsetup.c,v 1.5 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -44,8 +44,7 @@ static char rcsid[] = "$OpenBSD: wsetup.c,v 1.4 2002/04/29 06:36:12 espie Exp $"
  * _wsetup returns 0 if OK to write, nonzero otherwise.
  */
 int
-__swsetup(fp)
-	register FILE *fp;
+__swsetup(FILE *fp)
 {
 	/* make sure stdio is set up */
 	if (!__sdidinit)

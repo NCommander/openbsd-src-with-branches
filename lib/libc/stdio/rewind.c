@@ -31,15 +31,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: rewind.c,v 1.2 1996/08/19 08:33:02 tholo Exp $";
+static char rcsid[] = "$OpenBSD: rewind.c,v 1.3 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
 #include <stdio.h>
 
 void
-rewind(fp)
-	register FILE *fp;
+rewind(FILE *fp)
 {
 	(void) fseek(fp, 0L, SEEK_SET);
 	clearerr(fp);

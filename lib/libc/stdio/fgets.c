@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fgets.c,v 1.5 2003/06/02 20:18:37 millert Exp $";
+static char rcsid[] = "$OpenBSD: fgets.c,v 1.6 2003/10/08 10:29:55 avsm Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -45,10 +45,7 @@ static char rcsid[] = "$OpenBSD: fgets.c,v 1.5 2003/06/02 20:18:37 millert Exp $
  * Do not return NULL if n == 1.
  */
 char *
-fgets(buf, n, fp)
-	char *buf;
-	register int n;
-	register FILE *fp;
+fgets(char *buf, int n, FILE *fp)
 {
 	size_t len;
 	char *s;

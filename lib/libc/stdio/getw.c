@@ -31,14 +31,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getw.c,v 1.2 1996/08/19 08:32:53 tholo Exp $";
+static char rcsid[] = "$OpenBSD: getw.c,v 1.3 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 
 int
-getw(fp)
-	FILE *fp;
+getw(FILE *fp)
 {
 	int x;
 

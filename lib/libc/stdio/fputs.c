@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fputs.c,v 1.3 1999/08/07 17:35:58 millert Exp $";
+static char rcsid[] = "$OpenBSD: fputs.c,v 1.4 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -42,9 +42,7 @@ static char rcsid[] = "$OpenBSD: fputs.c,v 1.3 1999/08/07 17:35:58 millert Exp $
  * Write the given string to the given file.
  */
 int
-fputs(s, fp)
-	const char *s;
-	FILE *fp;
+fputs(const char *s, FILE *fp)
 {
 	struct __suio uio;
 	struct __siov iov;

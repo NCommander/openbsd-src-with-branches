@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fileno.c,v 1.2 1996/08/19 08:32:34 tholo Exp $";
+static char rcsid[] = "$OpenBSD: fileno.c,v 1.3 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -42,8 +42,7 @@ static char rcsid[] = "$OpenBSD: fileno.c,v 1.2 1996/08/19 08:32:34 tholo Exp $"
 #undef fileno
 
 int
-fileno(fp)
-	FILE *fp;
+fileno(FILE *fp)
 {
 	return (__sfileno(fp));
 }

@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: flags.c,v 1.3 1996/08/19 08:32:37 tholo Exp $";
+static char rcsid[] = "$OpenBSD: flags.c,v 1.4 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -45,11 +45,9 @@ static char rcsid[] = "$OpenBSD: flags.c,v 1.3 1996/08/19 08:32:37 tholo Exp $";
  * Return 0 on error.
  */
 int
-__sflags(mode, optr)
-	register const char *mode;
-	int *optr;
+__sflags(const char *mode, int *optr)
 {
-	register int ret, m, o;
+	int ret, m, o;
 
 	switch (*mode++) {
 

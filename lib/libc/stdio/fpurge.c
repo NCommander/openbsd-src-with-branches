@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fpurge.c,v 1.2 1996/08/19 08:32:42 tholo Exp $";
+static char rcsid[] = "$OpenBSD: fpurge.c,v 1.3 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
@@ -44,8 +44,7 @@ static char rcsid[] = "$OpenBSD: fpurge.c,v 1.2 1996/08/19 08:32:42 tholo Exp $"
  * given FILE's buffer empty.
  */
 int
-fpurge(fp)
-	register FILE *fp;
+fpurge(FILE *fp)
 {
 	if (!fp->_flags) {
 		errno = EBADF;

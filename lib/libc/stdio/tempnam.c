@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: tempnam.c,v 1.11 2002/02/16 21:27:24 millert Exp $";
+static char rcsid[] = "$OpenBSD: tempnam.c,v 1.12 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -45,8 +45,7 @@ __warn_references(tempnam,
 extern char *_mktemp(char *);
 
 char *
-tempnam(dir, pfx)
-	const char *dir, *pfx;
+tempnam(const char *dir, const char *pfx)
 {
 	int sverrno;
 	char *f, *name;

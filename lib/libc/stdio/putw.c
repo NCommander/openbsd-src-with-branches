@@ -31,16 +31,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: putw.c,v 1.3 2001/07/09 06:57:44 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: putw.c,v 1.4 2003/06/02 20:18:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 #include "fvwrite.h"
 
 int
-putw(w, fp)
-	int w;
-	FILE *fp;
+putw(int w, FILE *fp)
 {
 	struct __suio uio;
 	struct __siov iov;

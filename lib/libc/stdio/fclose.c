@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fclose.c,v 1.2 1996/08/19 08:32:19 tholo Exp $";
+static char rcsid[] = "$OpenBSD: fclose.c,v 1.3 2003/06/02 20:18:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
@@ -40,10 +40,9 @@ static char rcsid[] = "$OpenBSD: fclose.c,v 1.2 1996/08/19 08:32:19 tholo Exp $"
 #include "local.h"
 
 int
-fclose(fp)
-	register FILE *fp;
+fclose(FILE *fp)
 {
-	register int r;
+	int r;
 
 	if (fp->_flags == 0) {	/* not open! */
 		errno = EBADF;
