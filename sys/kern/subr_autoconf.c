@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_autoconf.c,v 1.9 1996/07/02 06:51:59 niklas Exp $	*/
+/*	$OpenBSD: subr_autoconf.c,v 1.10 1996/07/02 22:21:24 deraadt Exp $	*/
 /*	$NetBSD: subr_autoconf.c,v 1.21 1996/04/04 06:06:18 cgd Exp $	*/
 
 /*
@@ -68,8 +68,6 @@ extern struct cfdata cfdata[];
 extern short cfroots[];
 
 #define	ROOT ((struct device *)NULL)
-
-struct device *config_make_softc __P((struct device *, struct cfdata *));
 
 struct matchinfo {
 	cfmatch_t fn;
