@@ -438,8 +438,8 @@ user_dsa_key_allowed(struct passwd *pw, Key *key)
 			}
 		}
 		if (fail) {
-			log(buf);
 			fclose(f);
+			log("%s",buf);
 			restore_uid();
 			return 0;
 		}

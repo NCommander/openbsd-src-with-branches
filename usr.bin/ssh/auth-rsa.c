@@ -179,8 +179,8 @@ auth_rsa(struct passwd *pw, BIGNUM *client_n)
 		}
 		if (fail) {
 			fclose(f);
-			log(buf);
-			packet_send_debug(buf);
+			log("%s",buf);
+			packet_send_debug("%s",buf);
 			restore_uid();
 			return 0;
 		}

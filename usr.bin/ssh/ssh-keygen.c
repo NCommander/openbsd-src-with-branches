@@ -123,13 +123,13 @@ do_convert_to_ssh2(struct passwd *pw)
 		exit(1);
 	}
 	dsa_make_key_blob(k, &blob, &len);
-	fprintf(stdout, SSH_COM_MAGIC_BEGIN "\n");
+	fprintf(stdout, "%s\n", SSH_COM_MAGIC_BEGIN);
 	fprintf(stdout,
 	    "Comment: \"%d-bit DSA, converted from openssh by %s@%s\"\n",
 	    BN_num_bits(k->dsa->p),
 	    pw->pw_name, hostname);
 	dump_base64(stdout, blob, len);
-	fprintf(stdout, SSH_COM_MAGIC_END "\n");
+	fprintf(stdout, "%s\n", SSH_COM_MAGIC_END);
 	key_free(k);
 	xfree(blob);
 	exit(0);
