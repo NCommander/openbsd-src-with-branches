@@ -242,6 +242,11 @@ control_dispatch_imsg(int fd, short event, void *bula)
 		case IMSG_CTL_SHOW_NBR:
 			ospfe_nbr_ctl(c);
 			break;
+		case IMSG_CTL_SHOW_RIB:
+			c->ibuf.pid = imsg.hdr.pid;
+			ospfe_imsg_compose_rde(imsg.hdr.type, 0, imsg.hdr.pid,
+			    imsg.data, imsg.hdr.len - IMSG_HEADER_SIZE);
+			break;
 		default:
 			log_debug("control_dispatch_imsg: "
 			    "error handling imsg %d", imsg.hdr.type);
