@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -33,7 +35,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: photuris_spi_needed.c,v 1.1 1998/11/14 23:37:27 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: photuris_spi_needed.c,v 1.2 2000/12/15 02:50:39 provos Exp $";
 #endif
 
 #include <stdio.h>

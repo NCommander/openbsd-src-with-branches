@@ -1,3 +1,4 @@
+/*	$OpenBSD: util.c,v 1.8 2000/03/14 08:11:53 sato Exp $ */
 /*	$NetBSD: util.c,v 1.8 2000/03/14 08:11:53 sato Exp $ */
 
 /*-

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=   startkey
 SRCS=   startkey.c
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -33,7 +35,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: spi.c,v 1.6 2000/12/15 01:06:51 provos Exp $";
+static char rcsid[] = "$OpenBSD: spi.c,v 1.7 2000/12/15 02:50:39 provos Exp $";
 #endif
 
 #define _SPI_C_

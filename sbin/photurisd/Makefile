@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=   photurisd
 LDADD=	-lcrypto -ldes
 DPADD=	${LIBCRYPTO} ${LIBDES}

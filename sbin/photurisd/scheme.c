@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1997-2000 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -33,7 +35,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: scheme.c,v 1.3 2000/12/11 21:21:18 provos Exp $";
+static char rcsid[] = "$OpenBSD: scheme.c,v 1.4 2000/12/15 02:50:39 provos Exp $";
 #endif
 
 #define _SCHEME_C_
