@@ -1,4 +1,4 @@
-/*	$OpenBSD: sock.c,v 1.8 2004/12/07 17:10:56 tedu Exp $	*/
+/*	$OpenBSD: sock.c,v 1.9 2005/01/27 20:45:18 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -43,7 +43,7 @@
 volatile sig_atomic_t  cvs_sock_doloop;
 
 
-char     *cvsd_sock_path = CVSD_SOCK_PATH;
+char     *cvsd_sock_path;
 
 /* daemon API */
 #ifdef CVSD
