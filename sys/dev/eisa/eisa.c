@@ -1,4 +1,4 @@
-/*	$OpenBSD: eisa.c,v 1.5 1996/11/23 21:46:31 kstailey Exp $	*/
+/*	$OpenBSD: eisa.c,v 1.6 1996/11/28 23:27:38 niklas Exp $	*/
 /*	$NetBSD: eisa.c,v 1.15 1996/10/21 22:31:01 thorpej Exp $	*/
 
 /*
@@ -140,6 +140,7 @@ eisaattach(parent, self, aux)
 		bus_space_handle_t slotioh;
 		int i;
 
+		ea.ea_dmat = eba->eba_dmat;
 		ea.ea_iot = iot;
 		ea.ea_memt = memt;
 		ea.ea_ec = ec;
