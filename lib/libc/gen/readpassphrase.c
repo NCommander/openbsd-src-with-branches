@@ -26,7 +26,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getpass.c,v 1.7 2000/01/13 19:36:21 millert Exp $";
+static char rcsid[] = "$OpenBSD: readpassphrase.c,v 1.1 2000/11/21 00:48:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ctype.h>
@@ -107,8 +107,8 @@ readpassphrase(prompt, buf, bufsiz, flags)
 		}
 	}
 	*p = '\0';
-	(void)write(output, "\n", 1);
 	if (echo) {
+		(void)write(output, "\n", 1);
 		term.c_lflag |= ECHO;
 		(void)tcsetattr(input, TCSAFLUSH|TCSASOFT, &term);
 	}
