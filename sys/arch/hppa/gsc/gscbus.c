@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscbus.c,v 1.15 2001/11/05 17:25:57 art Exp $	*/
+/*	$OpenBSD: gscbus.c,v 1.16 2001/12/02 04:03:57 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -261,7 +261,7 @@ gsc_intr(v)
 			printf("gsc_intr: calling %p for irq %d\n", v, i);
 #endif
 			iv->evcnt.ev_count++;
-			s = splx(iv->pri);
+			s = splraise(iv->pri);
 			ret = (iv->handler)(iv->arg);
 			splx(s);
 #ifdef GSCDEBUG_INTR
