@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.6 1996/12/23 13:22:45 mickey Exp $	*/
+/*	$OpenBSD: options.c,v 1.7 1997/01/02 10:50:20 mickey Exp $	*/
 
 /*
  * options.c - handles option processing for PPP.
@@ -20,7 +20,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: options.c,v 1.6 1996/12/23 13:22:45 mickey Exp $";
+static char rcsid[] = "$OpenBSD: options.c,v 1.7 1997/01/02 10:50:20 mickey Exp $";
 #endif
 
 #include <ctype.h>
@@ -643,7 +643,7 @@ option_error __V((char *fmt, ...))
     int n;
     char buf[256];
           
-#if __STDC__
+#ifdef __STDC__
     va_start(args, fmt);
 #else
     char *fmt;

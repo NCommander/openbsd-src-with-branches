@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.5 1997/07/19 07:11:41 deraadt Exp $	*/
+/*	$OpenBSD: common.c,v 1.6 1997/07/24 01:10:33 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)common.c	8.5 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: common.c,v 1.5 1997/07/19 07:11:41 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: common.c,v 1.6 1997/07/24 01:10:33 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -359,14 +359,14 @@ delay(n)
 	(void) select(0, (fd_set *)0, (fd_set *)0, (fd_set *)0, &tdelay);
 }
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
 void
-#if __STDC__
+#ifdef __STDC__
 fatal(const char *msg, ...)
 #else
 fatal(msg, va_alist)
@@ -375,7 +375,7 @@ fatal(msg, va_alist)
 #endif
 {
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, msg);
 #else
 	va_start(ap);

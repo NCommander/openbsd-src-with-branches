@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.7 1997/01/18 02:24:13 briggs Exp $	*/
+/*	$OpenBSD: config.h,v 1.8 1997/07/06 03:54:04 downsj Exp $	*/
 /*	$NetBSD: config.h,v 1.30 1997/02/02 21:12:30 thorpej Exp $	*/
 
 /*
@@ -63,7 +63,7 @@
 #endif /* ...STDC */
 #endif /* ...BSD */
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdlib.h>
 #include <unistd.h>
 #endif

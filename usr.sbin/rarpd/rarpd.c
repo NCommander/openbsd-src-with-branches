@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.9 1997/03/29 04:01:58 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.10 1997/06/22 22:56:34 deraadt Exp $ */
 /*	$NetBSD: rarpd.c,v 1.12 1996/03/21 18:28:23 jtc Exp $	*/
 
 /*
@@ -28,7 +28,7 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rarpd.c,v 1.9 1997/03/29 04:01:58 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.10 1997/06/22 22:56:34 deraadt Exp $";
 #endif
 
 
@@ -803,14 +803,14 @@ ipaddrtonetmask(addr)
 	/* NOTREACHED */
 }
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
 void
-#if __STDC__
+#ifdef __STDC__
 err(int fatal, const char *fmt,...)
 #else
 err(fmt, va_alist)
@@ -820,7 +820,7 @@ va_dcl
 #endif
 {
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -841,7 +841,7 @@ va_dcl
 }
 
 void
-#if __STDC__
+#ifdef __STDC__
 debug(const char *fmt,...)
 #else
 debug(fmt, va_alist)
@@ -852,7 +852,7 @@ va_dcl
 	va_list ap;
 
 	if (dflag) {
-#if __STDC__
+#ifdef __STDC__
 		va_start(ap, fmt);
 #else
 		va_start(ap);
