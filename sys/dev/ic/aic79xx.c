@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: aic79xx.c,v 1.1 2004/05/20 03:11:45 marco Exp $	*/
 /*
  * Core routines and tables shareable across OS platforms.
  *
@@ -37,8 +37,6 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGES.
- *
- * $Id: aic79xx.c,v 1.3 2004/05/18 08:07:31 openbsd-devel Exp $
  *
  * Additional copyrights by:
  * Milos Urbanek
