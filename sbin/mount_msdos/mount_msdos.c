@@ -1,5 +1,5 @@
-/*	$OpenBSD: mount_msdos.c,v 1.14 1996/04/13 05:35:47 cgd Exp $	*/
-/*	$NetBSD: mount_msdos.c,v 1.14 1996/04/13 05:35:47 cgd Exp $	*/
+/*	$OpenBSD: mount_msdos.c,v 1.5 1996/06/23 14:31:27 deraadt Exp $	*/
+/*	$NetBSD: mount_msdos.c,v 1.16 1996/10/24 00:12:50 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.14 1996/04/13 05:35:47 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.5 1996/06/23 14:31:27 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -52,6 +52,7 @@ static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.14 1996/04/13 05:35:47 cgd Ex
 
 const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
+	MOPT_UPDATE,
 	{ NULL }
 };
 
