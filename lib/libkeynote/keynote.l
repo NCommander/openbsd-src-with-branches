@@ -674,7 +674,16 @@ keynote_evaluate_authorizer(struct assertion *as, int flag)
 }
 
 /*
- * Parse a private key.
+ * Exportable front-end to keynote_get_private_key().
+ */
+char *
+kn_get_string(char *buf)
+{
+    return keynote_get_private_key(buf);
+}
+
+/*
+ * Parse a private key -- actually, it can deal with any kind of string.
  */
 char *
 keynote_get_private_key(char *buf)
