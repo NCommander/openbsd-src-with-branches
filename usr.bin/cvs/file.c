@@ -410,7 +410,6 @@ int
 cvs_file_attach(CVSFILE *parent, CVSFILE *file)
 {
 	struct cvs_dir *dp;
-	struct cvs_ent *ent;
 
 	if (parent->cf_type != DT_DIR)
 		return (-1);
@@ -744,10 +743,7 @@ static CVSFILE*
 cvs_file_lget(const char *path, int flags, CVSFILE *parent)
 {
 	int cwd;
-	size_t len;
-	char buf[32];
 	struct stat st;
-	struct tm lmtm;
 	CVSFILE *cfp;
 	struct cvs_ent *ent;
 
