@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.31 2000/01/08 04:51:16 deraadt Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.32 2001/06/23 01:54:38 kjell Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -33,6 +33,7 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <paths.h>
 #include <sys/types.h>
