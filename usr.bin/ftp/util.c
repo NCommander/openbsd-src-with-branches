@@ -152,7 +152,7 @@ setpeer(argc, argv)
 		curtype = TYPE_A;
 		type = 0;
 		if (autologin)
-			(void)login(argv[1], NULL, NULL);
+			(void)ftp_login(argv[1], NULL, NULL);
 
 #if (defined(unix) || defined(BSD)) && NBBY == 8
 /*
@@ -207,7 +207,7 @@ setpeer(argc, argv)
  * login to remote host, using given username & password if supplied
  */
 int
-login(host, user, pass)
+ftp_login(host, user, pass)
 	const char *host;
 	char *user, *pass;
 {

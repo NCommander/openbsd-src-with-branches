@@ -17,8 +17,8 @@ SRCS=	cmds.c cmdtab.c complete.c domacro.c fetch.c ftp.c main.c ruserpass.c \
 
 CPPFLAGS+= -DINET6
 
-LDADD+=	-ledit -lcurses
-DPADD+=	${LIBEDIT} ${LIBCURSES}
+LDADD+=	-ledit -lcurses -lutil
+DPADD+=	${LIBEDIT} ${LIBCURSES} ${LIBUTIL}
 
 #COPTS+= -Wall -Wconversion -Wstrict-prototypes -Wmissing-prototypes
 

@@ -112,7 +112,7 @@ void	intr(void);
 int	isurl(const char *);
 void	list_vertical(StringList *);
 void	lcd(int, char **);
-int	login(const char *, char *, char *);
+int	ftp_login(const char *, char *, char *);
 void	lostpeer(void);
 void	lpwd(int, char **);
 void	ls(int, char **);
