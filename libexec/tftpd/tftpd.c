@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.32 2004/01/27 02:25:30 deraadt Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.33 2004/04/17 19:45:44 henning Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)tftpd.c	5.13 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$OpenBSD: tftpd.c,v 1.32 2004/01/27 02:25:30 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: tftpd.c,v 1.33 2004/04/17 19:45:44 henning Exp $";
 #endif /* not lint */
 
 /*
@@ -468,8 +468,10 @@ validate_access(char *filename, int mode)
 		return (serrno + 100);
 	}
 	file = fdopen(fd, (mode == RRQ)? "r":"w");
-	if (file == NULL)
+	if (file == NULL) {
+		close(fd);
 		return (errno + 100);
+	}
 	return (0);
 }
 
