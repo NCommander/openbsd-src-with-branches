@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.14 2002/01/24 20:31:08 miod Exp $	*/
+/*	$OpenBSD: clock.c,v 1.15 2002/03/14 01:26:28 millert Exp $	*/
 /*	$NetBSD: clock.c,v 1.25 1997/01/02 20:59:42 is Exp $	*/
 
 /*
@@ -521,8 +521,8 @@ clockunmmap(dev, addr, p)
 
 	if (addr == 0)
 		return(EINVAL);		/* XXX: how do we deal with this? */
-	rv = vm_deallocate(p->p_vmspace->vm_map, (vm_offset_t)addr, PAGE_SIZE);
-	return(rv == KERN_SUCCESS ? 0 : EINVAL);
+	uvm_deallocate(p->p_vmspace->vm_map, (vm_offset_t)addr, PAGE_SIZE);
+	return (0);
 }
 
 startclock()
