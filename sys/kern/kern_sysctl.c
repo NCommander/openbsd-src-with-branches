@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.73 2002/07/06 19:14:20 nordin Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.74 2002/08/23 15:33:12 art Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -312,7 +312,6 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 			domainnamelen = newlen;
 		return (error);
 	case KERN_HOSTID:
-		splassert(IPL_NET);
 		inthostid = hostid;  /* XXX assumes sizeof long <= sizeof int */
 		error =  sysctl_int(oldp, oldlenp, newp, newlen, &inthostid);
 		hostid = inthostid;
