@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.62 2002/05/21 19:10:38 jason Exp $
+#	$OpenBSD: GENERIC,v 1.63 2002/06/04 19:44:20 jason Exp $
 # 	$NetBSD: GENERIC32,v 1.18 2001/07/20 00:07:12 eeh Exp $
 
 machine		sparc64
@@ -24,7 +24,9 @@ cpu0	at mainbus0
 
 sbus0	at mainbus0				# Ultra 1
 psycho*	at mainbus0
-pci*	at psycho?				# Ultra 5
+pci*	at psycho?				#
+schizo*	at mainbus0
+pci*	at schizo?				#
 pci*	at ppb?
 ppb*	at pci? dev ? function ?
 ebus*	at pci?
