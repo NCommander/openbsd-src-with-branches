@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccom.c,v 1.17 1997/12/26 09:35:40 deraadt Exp $	*/
+/*	$OpenBSD: pccom.c,v 1.18 1998/01/19 06:48:24 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*-
@@ -153,6 +153,8 @@ extern int kgdb_debug_init;
 #elif NPCCOM_ISA
 #define IS_ISA(parent) \
 	!strcmp((parent)->dv_cfdata->cf_driver->cd_name, "isa")
+#elif NPCCOM_ISAPNP
+#define IS_ISA(parent) 0
 #endif
 
 #if NPCCOM_ISAPNP
