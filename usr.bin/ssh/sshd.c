@@ -14,7 +14,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.111 2000/04/27 08:01:28 markus Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.112 2000/05/01 18:50:59 markus Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -186,6 +186,7 @@ sigterm_handler(int sig)
 {
 	log("Received signal %d; terminating.", sig);
 	close_listen_socks();
+	unlink(options.pid_file);
 	exit(255);
 }
 
