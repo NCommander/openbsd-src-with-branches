@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.19 1998/05/18 21:10:59 provos Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.20 1998/11/25 11:47:17 niklas Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -277,7 +277,7 @@ extern int esp_new_output(struct mbuf *, struct sockaddr_encap *, struct tdb *,
 extern struct mbuf *esp_new_input(struct mbuf *, struct tdb *);
 
 /* Padding */
-extern caddr_t m_pad(struct mbuf *, int);
+extern caddr_t m_pad(struct mbuf *, int, int);
 
 /* Replay window */
 extern int checkreplaywindow32(u_int32_t, u_int32_t, u_int32_t *, u_int32_t,
