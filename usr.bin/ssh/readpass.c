@@ -32,7 +32,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readpass.c,v 1.14 2001/02/08 19:30:52 itojun Exp $");
+RCSID("$OpenBSD: readpass.c,v 1.15 2001/04/18 21:57:41 markus Exp $");
 
 #include "xmalloc.h"
 #include "cli.h"
@@ -43,7 +43,7 @@ RCSID("$OpenBSD: readpass.c,v 1.14 2001/02/08 19:30:52 itojun Exp $");
 #include "ssh.h"
 
 char *
-ssh_askpass(char *askpass, char *msg)
+ssh_askpass(char *askpass, const char *msg)
 {
 	pid_t pid;
 	size_t len;
