@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 1997/08/14 14:00:20 downsj Exp $
 #
 # Makefile for OpenBSD top-3.4.
 
@@ -16,7 +16,7 @@ CLEANFILES+=	sigdesc.h
 
 .depend commands.o: sigdesc.h
 
-sigdesc.h:
+sigdesc.h:	sigconv.awk
 	awk -f ${.CURDIR}/sigconv.awk /usr/include/sys/signal.h > sigdesc.h
 
 .include <bsd.prog.mk>
