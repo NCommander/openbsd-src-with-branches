@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc.yppasswdd.c,v 1.15 2003/06/26 07:53:26 deraadt Exp $	*/
+/*	$OpenBSD: rpc.yppasswdd.c,v 1.16 2003/07/06 21:57:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: rpc.yppasswdd.c,v 1.15 2003/06/26 07:53:26 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rpc.yppasswdd.c,v 1.16 2003/07/06 21:57:27 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -53,7 +53,6 @@ void    sig_child(int);
 
 int     noshell, nogecos, nopw, domake;
 char    make_arg[1024] = "make";
-char   *progname = "yppasswdd";
 char   *tempname;
 char   *dir;
 
