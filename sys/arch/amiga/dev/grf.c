@@ -317,7 +317,7 @@ grfselect(dev, rw, p)
 paddr_t
 grfmmap(dev, off, prot)
 	dev_t dev;
-	off_t off
+	off_t off;
 	int prot;
 {
 	struct grf_softc *gp;
