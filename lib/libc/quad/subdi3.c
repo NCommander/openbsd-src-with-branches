@@ -32,14 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: subdi3.c,v 1.2 1996/08/19 08:30:45 tholo Exp $";
+static char rcsid[] = "$OpenBSD: subdi3.c,v 1.3 2003/06/02 20:18:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include "quad.h"
 
 /*
  * Subtract two quad values.  This is trivial since a one-bit carry
- * from a single u_long difference x-y occurs if and only if (x-y) > x.
+ * from a single u_int difference x-y occurs if and only if (x-y) > x.
  */
 quad_t
 __subdi3(a, b)

@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fixsfdi.c,v 1.3 1996/08/19 08:30:24 tholo Exp $";
+static char rcsid[] = "$OpenBSD: fixsfdi.c,v 1.4 2003/06/02 20:18:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include "quad.h"
@@ -43,8 +43,7 @@ static char rcsid[] = "$OpenBSD: fixsfdi.c,v 1.3 1996/08/19 08:30:24 tholo Exp $
  *
  * N.B.: must use new ANSI syntax (sorry).
  */
-/* LONGLONG */
-long long
+quad_t
 __fixsfdi(float x)
 {
 	if (x < 0)
