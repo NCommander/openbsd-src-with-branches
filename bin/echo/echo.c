@@ -52,6 +52,7 @@ static char rcsid[] = "$OpenBSD: echo.c,v 1.6 1995/03/21 09:04:27 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 
+/* ARGSUSED */
 int
 main(argc, argv)
 	int argc;
@@ -68,11 +69,12 @@ main(argc, argv)
 		nflag = 0;
 
 	while (*argv) {
-		(void)printf("%s", *argv);
+		(void)fputs(*argv, stdout); 
 		if (*++argv)
 			putchar(' ');
 	}
 	if (!nflag)
 		putchar('\n');
-	exit(0);
+
+	return 0;
 }
