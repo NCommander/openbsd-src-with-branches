@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.4 2004/02/21 03:37:16 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 2004/02/22 05:16:30 deraadt Exp $
 
-.if (${MACHINE} == "i386")
+.if (${MACHINE} == "i386" || ${MACHINE} == "amd64")
 PROG=	mount_ntfs
 SRCS=	mount_ntfs.c getmntopts.c
 .else
