@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:34 hin Exp $
 
 PROG	= kdb_init
 
@@ -8,7 +8,7 @@ KRBDEPTH=../..
 .PATH:	${KRBSRC}/admin
 
 CFLAGS	+= -I. -I${KRBSRC}/lib/kadm -I${KRBSRC}/lib/kdb
-LDADD	+= ${LIBROKEN} -lkrb -lkafs -ldes -lkdb
+LDADD	+= ${LIBROKEN} -lkafs -lkdb -ldes -lkrb
 
 SRCS	= kdb_init.c
 

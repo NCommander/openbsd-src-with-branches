@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:34 hin Exp $
 
 PROG	= kprop
 
@@ -8,7 +8,7 @@ KRBDEPTH=../..
 .PATH:	${KRBSRC}/slave ${KRBSRC}/lib/sl
 
 CFLAGS	+= -I. -I${KRBSRC}/lib/kadm -I${KRBSRC}/lib/krb -I${KRBSRC}/lib/kdb
-LDADD	+= ${LIBROKEN} -lkrb -lkafs -ldes -lkadm -lcom_err -lkdb -lacl
+LDADD	+= ${LIBROKEN} -lkafs -lkdb -lkadm -lkrb -ldes -lcom_err -lacl
 
 SRCS	= kprop.c
 
