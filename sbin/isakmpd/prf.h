@@ -1,8 +1,9 @@
-/*	$OpenBSD: prf.h,v 1.3 1998/11/17 11:10:19 niklas Exp $	*/
+/*	$OpenBSD: prf.h,v 1.4 2001/01/26 12:12:52 niklas Exp $	*/
 /*	$EOM: prf.h,v 1.1 1998/07/11 20:06:22 provos Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
