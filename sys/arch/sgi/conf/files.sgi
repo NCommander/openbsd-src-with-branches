@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sgi,v 1.1 2004/08/06 21:12:18 pefo Exp $
+#	$OpenBSD: files.sgi,v 1.2 2004/08/10 07:30:56 mickey Exp $
 #
 # maxpartitions must be first item in files.${ARCH}
 #
@@ -19,7 +19,7 @@ file	arch/sgi/dev/wscons_machdep.c	wsdisplay
 include "dev/mii/files.mii"
 
 #
-#	Machine-independent ATAPI drivers 
+#	Machine-independent ATAPI drivers
 #
 
 include "dev/atapiscsi/files.atapiscsi"
