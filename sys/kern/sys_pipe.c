@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.37 2001/07/05 07:15:07 art Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.38 2001/09/19 20:50:58 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -143,6 +143,8 @@ sys_opipe(p, v, retval)
 	rpipe->pipe_peer = wpipe;
 	wpipe->pipe_peer = rpipe;
 
+	FILE_SET_MATURE(rf);
+	FILE_SET_MATURE(wf);
 	return (0);
 free3:
 	ffree(rf);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.19 2001/08/11 10:57:22 art Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.20 2001/09/11 20:05:26 miod Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.41 2000/05/23 02:19:20 enami Exp $	*/
 
 /*
@@ -390,10 +390,7 @@ sys_mmap(p, v, retval)
 
 	if ((flags & MAP_ANON) == 0) {
 
-		if (fd < 0 || fd >= fdp->fd_nfiles)
-			return(EBADF);		/* failed range check? */
-		fp = fdp->fd_ofiles[fd];	/* convert to file pointer */
-		if (fp == NULL)
+		if ((fp = fd_getfile(fdp, fd)) == NULL)
 			return(EBADF);
 
 		if (fp->f_type != DTYPE_VNODE)

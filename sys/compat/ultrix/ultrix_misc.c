@@ -1,4 +1,4 @@
-/*	$OpenBSD: ultrix_misc.c,v 1.18 2001/05/16 12:50:21 ho Exp $	*/
+/*	$OpenBSD: ultrix_misc.c,v 1.19 2001/07/27 21:29:53 miod Exp $	*/
 /*	$NetBSD: ultrix_misc.c,v 1.23 1996/04/07 17:23:04 jonathan Exp $	*/
 
 /*
@@ -344,8 +344,7 @@ ultrix_sys_mmap(p, v, retval)
 	 * Special case: if fd refers to /dev/zero, map as MAP_ANON.  (XXX)
 	 */
 	fdp = p->p_fd;
-	if ((unsigned)SCARG(&ouap, fd) < fdp->fd_nfiles &&		/*XXX*/
-	    (fp = fdp->fd_ofiles[SCARG(&ouap, fd)]) != NULL &&		/*XXX*/
+	if ((fp = fd_getfile(fdp, SCARG(&ouap, fd))) != NULL &&		/*XXX*/
 	    fp->f_type == DTYPE_VNODE &&				/*XXX*/
 	    (vp = (struct vnode *)fp->f_data)->v_type == VCHR &&	/*XXX*/
 	    iszerodev(vp->v_rdev)) {					/*XXX*/

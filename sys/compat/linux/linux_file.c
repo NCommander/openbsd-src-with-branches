@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_file.c,v 1.16 2000/11/10 15:33:09 provos Exp $	*/
+/*	$OpenBSD: linux_file.c,v 1.17 2001/07/03 15:32:34 jasoni Exp $	*/
 /*	$NetBSD: linux_file.c,v 1.15 1996/05/20 01:59:09 fvdl Exp $	*/
 
 /*
@@ -390,9 +390,8 @@ linux_sys_fcntl(p, v, retval)
 		 * does not exist.
 		 */
 		fdp = p->p_fd;
-		if ((u_int)fd >= fdp->fd_nfiles ||
-		    (fp = fdp->fd_ofiles[fd]) == NULL)
-			return EBADF;
+		if ((fp = fd_getfile(fdp, fd)) == NULL)
+			return (EBADF);
 		if (fp->f_type == DTYPE_SOCKET) {
 			cmd = cmd == LINUX_F_SETOWN ? F_SETOWN : F_GETOWN;
 			break;
