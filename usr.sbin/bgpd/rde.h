@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.31 2004/02/26 16:16:41 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.32 2004/02/27 20:53:56 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -215,6 +215,7 @@ void		 rde_send_kroute(struct prefix *, struct prefix *);
 void		 rde_send_nexthop(struct bgpd_addr *, int);
 void		 rde_generate_updates(struct prefix *, struct prefix *);
 u_int16_t	 rde_local_as(void);
+int		 rde_noevaluate(void);
 
 /* rde_attr.c */
 void		 attr_init(struct attr_flags *);
