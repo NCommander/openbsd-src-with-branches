@@ -1,4 +1,4 @@
-/*	$OpenBSD: monitor.h,v 1.4 2002/05/12 23:53:45 djm Exp $	*/
+/*	$OpenBSD: monitor.h,v 1.5 2002/06/06 01:09:41 stevesk Exp $	*/
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -59,7 +59,7 @@ struct monitor {
 	struct mm_master	*m_zback;
 	struct mm_master	*m_zlib;
 	struct Kex		**m_pkex;
-	int			 m_pid;
+	pid_t			 m_pid;
 };
 
 struct monitor *monitor_init(void);
