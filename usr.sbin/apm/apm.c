@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.5 2001/07/06 21:08:00 mickey Exp $	*/
+/*	$OpenBSD: apm.c,v 1.6 2001/11/14 22:20:22 miod Exp $	*/
 
 /*
  *  Copyright (c) 1996 John T. Kohl
@@ -279,6 +279,7 @@ main(int argc, char *argv[])
 				}
 				break;
 			default:
+				break;
 		}
 		switch (reply.newstate) {
 		case SUSPEND:
@@ -288,6 +289,7 @@ main(int argc, char *argv[])
 			printf("System will enter standby mode momentarily.\n");
 			break;
 		default:
+			break;
 		}
 	} else
 		errx(rval, "cannot get reply from APM daemon");
