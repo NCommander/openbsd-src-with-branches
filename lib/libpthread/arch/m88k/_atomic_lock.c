@@ -1,4 +1,5 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.3 2003/10/26 14:50:26 miod Exp $	*/
+
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  *
