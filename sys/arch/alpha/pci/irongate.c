@@ -1,4 +1,4 @@
-/*	$OpenBSD: irongate.c,v 1.2 2001/04/17 14:53:33 art Exp $	*/
+/*	$OpenBSD: irongate.c,v 1.3 2001/06/26 20:46:18 art Exp $	*/
 /* $NetBSD: irongate.c,v 1.3 2000/11/29 06:29:10 thorpej Exp $ */
 
 /*-
@@ -97,6 +97,7 @@ irongate_init(struct irongate_config *icp, int mallocsafe)
 	irongate_pci_init(&icp->ic_pc, icp);
 	alpha_pci_chipset = &icp->ic_pc;
 	alpha_pci_chipset->pc_name = "irongate";
+	alpha_pci_chipset->pc_mem = IRONGATE_MEM_BASE;
 	alpha_pci_chipset->pc_mem = IRONGATE_MEM_BASE;
 	alpha_pci_chipset->pc_bwx = 1;
 

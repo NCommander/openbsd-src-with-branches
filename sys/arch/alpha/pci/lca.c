@@ -1,4 +1,4 @@
-/*	$OpenBSD: lca.c,v 1.10 2001/02/16 16:02:52 jason Exp $	*/
+/*	$OpenBSD: lca.c,v 1.11 2001/06/26 20:46:18 art Exp $	*/
 /*	$NetBSD: lca.c,v 1.14 1996/12/05 01:39:35 cgd Exp $	*/
 
 /*-
@@ -169,6 +169,7 @@ lca_init(lcp, mallocsafe)
 	alpha_pci_chipset = &lcp->lc_pc;
 	alpha_pci_chipset->pc_name = "lca";
 	alpha_pci_chipset->pc_mem = LCA_PCI_SPARSE;
+	alpha_pci_chipset->pc_dense = LCA_PCI_DENSE;
 	alpha_pci_chipset->pc_bwx = 0;
 
 	/*
