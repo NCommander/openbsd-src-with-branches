@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftree.c,v 1.4 1996/10/27 06:45:11 downsj Exp $	*/
+/*	$OpenBSD: ftree.c,v 1.5 1997/06/04 00:15:16 millert Exp $	*/
 /*	$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)ftree.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$OpenBSD: ftree.c,v 1.4 1996/10/27 06:45:11 downsj Exp $";
+static char rcsid[] = "$OpenBSD: ftree.c,v 1.5 1997/06/04 00:15:16 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -328,10 +328,10 @@ ftree_arg()
 			else if ((ftcur = ftcur->fow) == NULL)
 				return(-1);
 			if (ftcur->chflg) {
-				/* First chdir() back... */
-				if (chdir(cwdpt) < 0) {
-					syswarn(1, errno, "Can't chdir to %s",
-					    cwdpt);
+				/* First fchdir() back... */
+				if (fchdir(cwdfd) < 0) {
+					syswarn(1, errno,
+					  "Can't fchdir to starting directory");
 					return(-1);
 				}
 				if (chdir(ftcur->fname) < 0) {
