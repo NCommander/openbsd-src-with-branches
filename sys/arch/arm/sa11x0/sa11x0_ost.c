@@ -1,4 +1,4 @@
-/*	$OpenBSD: sa11x0_ost.c,v 1.4 2005/01/11 21:00:17 deraadt Exp $ */
+/*	$OpenBSD: sa11x0_ost.c,v 1.5 2005/01/24 22:57:16 drahn Exp $ */
 /*	$NetBSD: sa11x0_ost.c,v 1.11 2003/07/15 00:24:51 lukem Exp $	*/
 
 /*
@@ -361,17 +361,4 @@ delay(usecs)
 		usecs -= delta;
 		otick = tick;
 	}
-}
-
-void
-resettodr()
-{
-}
-
-void
-inittodr(base)
-	time_t base;
-{
-	time.tv_sec = base;
-	time.tv_usec = 0;
 }
