@@ -1,4 +1,4 @@
-/*	$OpenBSD: xy.c,v 1.16 2002/03/14 01:26:46 millert Exp $	*/
+/*	$OpenBSD: xy.c,v 1.17 2002/05/30 11:03:52 art Exp $	*/
 /* $NetBSD: xy.c,v 1.11 1996/10/13 03:47:40 christos Exp $ */
 
 /*
@@ -1353,7 +1353,7 @@ xyc_submit_iorq(xycsc, iorq, type)
 			return XY_ERR_AOK;	/* success */
 		case XY_SUB_WAIT:
 			while (iorq->iopb->done == 0) {
-				sleep(iorq, PRIBIO);
+				tsleep(iorq, PRIBIO, "xyciorq", 0);
 			}
 			return (iorq->errno);
 		case XY_SUB_POLL:		/* steal controller */
@@ -1385,7 +1385,7 @@ xyc_submit_iorq(xycsc, iorq, type)
 		return (XY_ERR_AOK);	/* success */
 	case XY_SUB_WAIT:
 		while (iorq->iopb->done == 0) {
-			sleep(iorq, PRIBIO);
+			tsleep(iorq, PRIBIO, "xyciorq", 0);
 		}
 		return (iorq->errno);
 	case XY_SUB_POLL:
