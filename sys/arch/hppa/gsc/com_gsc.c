@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_gsc.c,v 1.11 2002/02/05 04:09:41 mickey Exp $	*/
+/*	$OpenBSD: com_gsc.c,v 1.12 2002/03/14 01:26:31 millert Exp $	*/
 
 /*
  * Copyright (c) 1998-2002 Michael Shalayeff
@@ -94,7 +94,7 @@ com_gsc_attach(parent, self, aux)
 
 	regs = (struct com_gsc_regs *)ga->ga_hpa;
 	if (sc->sc_iobase != CONADDR) {
-		regs->reset = 0xd0;
+		/*regs->reset = 0xd0;*/
 		DELAY(1000);
 	}
 
