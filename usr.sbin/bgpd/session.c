@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.14 2003/12/20 14:33:09 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.15 2003/12/20 15:06:31 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -156,7 +156,9 @@ session_main(struct bgpd_config *config, int pipe_m2s[2], int pipe_s2r[2])
 	if (chroot(pw->pw_dir) < 0)
 		fatal("chroot failed", errno);
 	chdir("/");
+
 	setproctitle("session engine");
+	bgpd_process = PROC_SE;
 
 	if ((sock = setup_listener()) < 0)
 		fatal("listener setup failed", 0);
