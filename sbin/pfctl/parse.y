@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.398 2003/07/10 05:25:27 cedric Exp $	*/
+/*	$OpenBSD: parse.y,v 1.399 2003/07/11 08:29:34 cedric Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -669,7 +669,7 @@ scrubrule	: SCRUB dir logquick interface af proto fromto scrub_opts
 				r.rule_flag |= PFRULE_RANDOMID;
 			if ($8.reassemble_tcp) {
 				if (r.direction != PF_INOUT) {
-					yyerror("reassmble tcp rules can not "
+					yyerror("reassemble tcp rules can not "
 					    "specify direction");
 					YYERROR;
 				}
