@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: vfprintf.c,v 1.8 1998/08/14 21:39:42 deraadt Exp $";
+static char *rcsid = "$OpenBSD: vfprintf.c,v 1.9 1999/08/22 17:06:35 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -1079,13 +1079,14 @@ __grow_type_table(typetable, tablesize)
 	if (*tablesize == STATIC_ARG_TBL_SIZE) {
 		*typetable = (unsigned char *)
 		    malloc (sizeof (unsigned char) * newsize);
+		/* XXX unchecked */
 		bcopy (oldtable, *typetable, *tablesize);
 	} else {
 		*typetable = (unsigned char *)
-		    realloc (typetable, sizeof (unsigned char) * newsize);
+		    realloc (*typetable, sizeof (unsigned char) * newsize);
 		/* XXX unchecked */
 	}
-	memset (&typetable [*tablesize], T_UNUSED, (newsize - *tablesize));
+	memset (*typetable + *tablesize, T_UNUSED, (newsize - *tablesize));
 
 	*tablesize = newsize;
 	return(0);
