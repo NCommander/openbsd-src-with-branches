@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.208 2001/11/09 19:08:35 markus Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.209 2001/11/10 13:19:45 markus Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -202,8 +202,11 @@ close_listen_socks(void)
 static void
 sighup_handler(int sig)
 {
+	int save_errno = errno;
+
 	received_sighup = 1;
 	signal(SIGHUP, sighup_handler);
+	errno = save_errno;
 }
 
 /*
