@@ -1,3 +1,4 @@
+/*	$OpenBSD: mms.c,v 1.24 1996/05/12 23:12:18 mycroft Exp $	*/
 /*	$NetBSD: mms.c,v 1.24 1996/05/12 23:12:18 mycroft Exp $	*/
 
 /*-

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=		kcon
 DEVICE=		/dev/ttyC0
 CFLAGS+= 	-I${.CURDIR}/../keycap -DKEYB_DEVICE=\"${DEVICE}\"

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=	kbdio
 SRCS=	kbdio.y lex.l
 

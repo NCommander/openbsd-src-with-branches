@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=		fontedit
 CLEANFILES+=	core.fontedit fontedit.core
 

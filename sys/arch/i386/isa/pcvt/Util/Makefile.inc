@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile.inc,v 1.3 1995/10/07 21:51:42 jtc Exp $
 #	$NetBSD: Makefile.inc,v 1.3 1995/10/07 21:51:42 jtc Exp $
 
 ECHO	?=	echo

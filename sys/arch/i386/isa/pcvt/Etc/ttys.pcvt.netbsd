@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #---------------------------------------------------------------------------
 #
 #	sample /etc/ttys file for pcvt driver and pcvt25 terminal emulation

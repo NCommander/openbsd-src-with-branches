@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 LIB	=	keycap
 CAPDIR	=	/usr/share/misc
 CAPPATH	=	$(CAPDIR)/keycap.pcvt

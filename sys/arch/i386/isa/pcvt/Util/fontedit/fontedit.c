@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * fontedit
  *	Fonteditor for VT220

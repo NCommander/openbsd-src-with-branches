@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 SUBDIR= 	keycap cursor fontedit fonts kcon loadfont scon \
 		userkeys vttest ispcvt mcon pcvtdoc fed
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: joy.c,v 1.3 1996/05/05 19:46:15 christos Exp $	*/
 /*	$NetBSD: joy.c,v 1.3 1996/05/05 19:46:15 christos Exp $	*/
 
 /*-

@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=	vgaio
 MAN8=	vgaio.${MAN8EXT}
 
