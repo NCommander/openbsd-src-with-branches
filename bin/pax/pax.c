@@ -1,4 +1,4 @@
-/*	$OpenBSD: pax.c,v 1.24 2003/06/13 17:51:14 millert Exp $	*/
+/*	$OpenBSD: pax.c,v 1.25 2003/10/20 06:22:27 jmc Exp $	*/
 /*	$NetBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)pax.c	8.2 (Berkeley) 4/18/94";
 #else
-static const char rcsid[] = "$OpenBSD: pax.c,v 1.24 2003/06/13 17:51:14 millert Exp $";
+static const char rcsid[] = "$OpenBSD: pax.c,v 1.25 2003/10/20 06:22:27 jmc Exp $";
 #endif
 #endif /* not lint */
 
@@ -281,7 +281,7 @@ main(int argc, char **argv)
 		break;
 	case APPND:
 		if (gzip_program != NULL)
-			err(1, "can not gzip while appending");
+			errx(1, "can not gzip while appending");
 		append();
 		break;
 	case COPY:
