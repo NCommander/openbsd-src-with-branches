@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lkm.c,v 1.14 1997/02/06 13:09:13 deraadt Exp $	*/
+/*	$OpenBSD: kern_lkm.c,v 1.15 1997/05/29 22:42:00 mickey Exp $	*/
 /*	$NetBSD: kern_lkm.c,v 1.31 1996/03/31 21:40:27 christos Exp $	*/
 
 /*
@@ -60,6 +60,8 @@
 #include <sys/syscall.h>
 
 #ifdef DDB
+#include <vm/vm.h>
+
 #include <machine/db_machdep.h>
 #include <ddb/db_sym.h>
 #endif
