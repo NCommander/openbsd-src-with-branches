@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.20 2002/01/14 01:56:50 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.21 2002/01/16 20:50:16 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -481,8 +481,7 @@ where = 3;
 	(void)power4e_get_eth_addr();
 
 #ifdef PPC_VECTOR_SUPPORTED
-        pool_init(&ppc_vecpl, sizeof(struct vreg), 16, 0, 0, "ppcvec",
-		    0, NULL, NULL, M_SUBPROC);
+        pool_init(&ppc_vecpl, sizeof(struct vreg), 16, 0, 0, "ppcvec", NULL);
 #endif /* PPC_VECTOR_SUPPORTED */
 
 }

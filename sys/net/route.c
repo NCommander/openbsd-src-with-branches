@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.26 2001/12/10 06:10:53 jason Exp $	*/
+/*	$OpenBSD: route.c,v 1.27 2001/12/18 23:07:49 deraadt Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -886,7 +886,7 @@ rt_timer_init()
 
 #if 0
 	pool_init(&rttimer_pool, sizeof(struct rttimer), 0, 0, 0, "rttmrpl",
-	    0, NULL, NULL, M_RTABLE);
+	    NULL);
 #endif
 
 	LIST_INIT(&rttimer_queue_head);

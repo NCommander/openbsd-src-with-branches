@@ -1,4 +1,4 @@
-/* $OpenBSD: rf_openbsdkintf.c,v 1.11 2001/12/08 22:10:01 tdeval Exp $	*/
+/* $OpenBSD: rf_openbsdkintf.c,v 1.12 2001/12/29 21:51:18 tdeval Exp $	*/
 /* $NetBSD: rf_netbsdkintf.c,v 1.109 2001/07/27 03:30:07 oster Exp $	*/
 /*-
  * Copyright (c) 1996, 1997, 1998 The NetBSD Foundation, Inc.
@@ -1641,8 +1641,7 @@ raidinit(raidPtr)
 
 	rs = &raid_softc[unit];
 	pool_init(&rs->sc_cbufpool, sizeof(struct raidbuf), 0,
-		0, 0, "raidpl", 0, NULL, NULL, M_RAIDFRAME);
-
+		0, 0, "raidpl", NULL);
 	
 	/* XXX should check return code first... */
 	rs->sc_flags |= RAIDF_INITED;
