@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  *
  *     from: @(#)misc-proto.h  8.1 (Berkeley) 6/4/93
- *     $OpenBSD: misc-proto.h,v 1.3 1998/03/12 04:48:52 art Exp $
+ *     $OpenBSD: misc-proto.h,v 1.4 2001/05/25 10:23:07 hin Exp $
  *     $NetBSD: misc-proto.h,v 1.5 1996/02/24 01:15:23 jtk Exp $
  */
 
@@ -90,4 +90,5 @@ int telnet_spin (void);
 char *telnet_getenv (const char *);
 char *telnet_gets (char *, char *, int, int);
 void printsub(int direction, unsigned char *pointer, int length);
+void esetenv(const char *, const char *, int);
 #endif
