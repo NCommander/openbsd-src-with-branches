@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp-proxy.c,v 1.14 2001/08/28 19:57:29 beck Exp $ */
+/*	$OpenBSD: ftp-proxy.c,v 1.15 2001/09/05 20:40:10 beck Exp $ */
 
 /*
  * Copyright (c) 1996-2001
@@ -211,7 +211,7 @@ drop_privs()
 	}
 
 	if (Group != NULL) {
-		gr = getgrnam(User);
+		gr = getgrnam(Group);
 		if (gr == NULL) {
 			syslog(LOG_ERR, "can't find group %s", Group);
 			exit(EX_USAGE);
