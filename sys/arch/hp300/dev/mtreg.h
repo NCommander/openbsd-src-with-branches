@@ -1,7 +1,7 @@
-/*	$OpenBSD: mtreg.h,v 1.2 1997/01/12 15:12:55 downsj Exp $	*/
+/*	$OpenBSD: mtreg.h,v 1.3 2001/06/27 05:44:46 nate Exp $	*/
 /*	$NetBSD: mtreg.h,v 1.1 1995/10/02 00:28:22 thorpej Exp $	*/
 
-/* 
+/*
  * Copyright (c) 1992, The University of Utah and
  * the Computer Systems Laboratory at the University of Utah (CSL).
  * All rights reserved.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.12 2003/06/02 23:27:45 millert Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.13 2004/05/20 09:20:41 kettenis Exp $	*/
 /*	$NetBSD: sys_machdep.c,v 1.17 1997/05/19 10:15:00 veego Exp $	*/
 
 /*
@@ -133,7 +133,7 @@ cachectl(p, req, addr, len)
 					ICPP(pa);
 				}
 				break;
-			
+
 			case CC_EXTPURGE|CC_PURGE:
 			case CC_PURGE:
 				if (doall)
@@ -153,7 +153,7 @@ cachectl(p, req, addr, len)
 				else if (inc == NBPG)
 					DCFP(pa);
 				break;
-				
+
 			default:
 				error = EINVAL;
 				break;
@@ -204,7 +204,7 @@ sys_sysarch(p, v, retval)
 {
 #if 0 /* unused */
 	struct sys_sysarch_args /* {
-		syscallarg(int) op; 
+		syscallarg(int) op;
 		syscallarg(char *) parms;
 	} */ *uap = v;
 #endif
