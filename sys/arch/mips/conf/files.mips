@@ -1,0 +1,9 @@
+#	$OpenBSD$
+
+file	arch/mips/mips/clock.c
+file	arch/mips/mips/cpu_ecoff.c
+file	arch/mips/mips/disksubr.c
+file	arch/mips/mips/mem.c
+file	arch/mips/mips/minidebug.c
+file	arch/mips/mips/process_machdep.c
+file	arch/mips/mips/sys_machdep.c
