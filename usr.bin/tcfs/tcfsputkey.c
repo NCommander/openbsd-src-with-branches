@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcfsputkey.c,v 1.10 2000/06/20 08:59:53 fgsch Exp $	*/
+/*	$OpenBSD: tcfsputkey.c,v 1.11 2000/06/20 18:15:57 aaron Exp $	*/
 
 /*
  *	Transparent Cryptographic File System (TCFS) for NetBSD 
@@ -30,7 +30,7 @@
 extern char *optarg;
 extern int optind;
 char *putkey_usage=
-"usage: tcfsputkey [-k][-f fliesystem-label][-g group][-p mount-point]\n";
+"usage: tcfsputkey [-k] [-f filesystem-label] [-g group] [-p mount-point]\n";
 
 int
 putkey_main(int argc, char *argv[])
