@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.1.2.8 2003/05/15 04:08:02 niklas Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.1.2.9 2004/06/07 19:35:42 art Exp $	*/
 /* $NetBSD: lapic.c,v 1.1.2.8 2000/02/23 06:10:50 sommerfeld Exp $ */
 
 /*-
@@ -239,7 +239,8 @@ lapic_calibrate_timer(ci)
 	int i;
 	char tbuf[9];
 
-	printf("%s: calibrating local timer\n", ci->ci_dev.dv_xname);
+	if (mp_verbose)
+		printf("%s: calibrating local timer\n", ci->ci_dev.dv_xname);
 
 	/*
 	 * Configure timer to one-shot, interrupt masked,
