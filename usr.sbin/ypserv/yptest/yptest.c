@@ -1,4 +1,4 @@
-/*	$OpenBSD: yptest.c,v 1.4 1996/05/30 09:53:33 deraadt Exp $ */
+/*	$OpenBSD: yptest.c,v 1.5 1996/06/26 21:26:40 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: yptest.c,v 1.4 1996/05/30 09:53:33 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: yptest.c,v 1.5 1996/06/26 21:26:40 maja Exp $";
 #endif
 
 #include <stdio.h>
@@ -45,8 +45,8 @@ static char rcsid[] = "$OpenBSD: yptest.c,v 1.4 1996/05/30 09:53:33 deraadt Exp 
 
 static int
 yptest_foreach(status,key,keylen,val,vallen,data)
-int status,keylen,vallen,*data;
-char *key,*val;
+int status,keylen,vallen;
+char *key,*val,*data;
 {
   if (status == 2)
     return(0);
