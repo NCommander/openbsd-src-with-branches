@@ -13,16 +13,10 @@ CFLAGS += -I${KRBSRC}/lib/kafs
 
 SRCS=	afssys_openbsd.c \
 	afskrb.c \
+	$(afskrb5_c) \
 	common.c \
 	kafs_locl.h \
 	afssysdefs.h
-
-.include <bsd.own.mk> # for KERBEROS5
-
-.if (${KERBEROS5:L} == "yes")
-SRCS+=	afskrb5.c
-CFLAGS+=-DKRB5 -I${DESTDIR}/usr/include/kerberosV
-.endif
 
 MAN=	kafs.3
 MLINKS=	kafs.3 k_hasafs.3 \
