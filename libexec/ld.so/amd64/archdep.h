@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.1 2004/02/10 14:18:14 drahn Exp $	*/
+/*	$OpenBSD: archdep.h,v 1.2 2004/02/27 17:36:15 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -41,8 +41,6 @@
 #include <machine/reloc.h>
 #include "syscall.h"
 #include "util.h"
-
-#define RTLD_TEXT_PLT
 
 static inline void *
 _dl_mmap(void *addr, unsigned int len, unsigned int prot,

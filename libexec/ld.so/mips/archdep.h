@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.5 2003/02/15 22:43:06 drahn Exp $ */
+/*	$OpenBSD: archdep.h,v 1.6 2003/06/09 16:10:04 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -35,6 +35,8 @@
 #include "syscall.h"
 #include "resolve.h"
 #include "util.h"
+
+#define RTLD_PROTECT_PLT
 
 #define	DL_MALLOC_ALIGN	4	/* Arch constraint or otherwise */
 

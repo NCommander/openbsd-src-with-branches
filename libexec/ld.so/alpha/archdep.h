@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.10 2003/06/09 16:10:03 deraadt Exp $ */
+/*	$OpenBSD: archdep.h,v 1.11 2003/07/09 21:01:10 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -40,6 +40,8 @@
 #include <machine/reloc.h>
 #include "syscall.h"
 #include "util.h"
+
+#define RTLD_PROTECT_PLT
 
 static inline void
 RELOC_REL(Elf64_Rel *r, const Elf64_Sym *s, Elf64_Addr *p, unsigned long v)
