@@ -1170,6 +1170,7 @@ toolong(signo)
 {
 	struct syslog_data sdata = SYSLOG_DATA_INIT;
 
+	/* XXX signal races */
 	reply(421,
 	    "Timeout (%d seconds): closing control connection.", timeout);
 	if (logging)
