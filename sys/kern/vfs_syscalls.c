@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.49 1998/12/21 13:08:49 art Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.50 1998/12/23 10:53:06 art Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -729,17 +729,7 @@ sys_fchdir(p, v, retval)
 		error = ENOTDIR;
 	else
 		error = VOP_ACCESS(vp, VEXEC, p->p_ucred, p);
-	while (!error && (mp = vp->v_mountedhere) != NULL) {
-		if (mp->mnt_flag & MNT_MLOCK) {
-			mp->mnt_flag |= MNT_MWAIT;
-			sleep((caddr_t)mp, PVFS);
-			continue;
-		}
-		if ((error = VFS_ROOT(mp, &tdp)) != 0)
-			break;
-		vput(vp);
-		vp = tdp;
-	}
+
 	while (!error && (mp = vp->v_mountedhere) != NULL) {
 		if (vfs_busy(mp, 0, 0, p)) 
 			continue;
