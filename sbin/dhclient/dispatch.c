@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.28 2004/05/05 23:07:47 deraadt Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.29 2004/06/22 01:10:49 canacar Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -468,7 +468,7 @@ interface_link_status(char *ifname)
 	struct ifmediareq ifmr;
 	int sock;
 
-	if ((sock = socket (AF_INET, SOCK_DGRAM, 0)) == -1)
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 		error("Can't create socket");
 
 	memset(&ifmr, 0, sizeof(ifmr));
