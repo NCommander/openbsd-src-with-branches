@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2001/06/28 14:26:42 todd Exp $
+# $OpenBSD: Makefile,v 1.5 2001/07/18 20:24:18 deraadt Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -15,6 +15,6 @@ LDADD+=	-lhdb -lkadm5srv -lkrb5 -lkrb -ldes ${LIBROKEN} -lasn1 -lcrypto \
 
 .include <bsd.prog.mk>
 
-.if (${ELF_TOOLCHAIN:L} == "yes")
+.if (${ELF_TOOLCHAIN:L} == "yes" && ${MACHINE_ARCH} != "sparc64")
 LDADD+= -ldl
 .endif
