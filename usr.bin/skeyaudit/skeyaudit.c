@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyaudit.c,v 1.14 2002/05/29 15:32:10 millert Exp $	*/
+/*	$OpenBSD: skeyaudit.c,v 1.15 2003/03/14 04:29:04 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -96,8 +96,6 @@ main(int argc, char **argv)
 		}
 		if (ch == -1)
 			errx(-1, "cannot open %s", _PATH_SKEYDIR);
-		else
-			(void)fclose(key.keyfile);
 	} else {
 		if ((pw = getpwuid(getuid())) == NULL)
 			errx(1, "no passwd entry for uid %u", getuid());
