@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.96 2004/01/06 04:22:59 tedu Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.97 2004/01/09 03:01:03 tedu Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -1617,7 +1617,7 @@ vfs_free_netcred(rn, w)
 {
 	register struct radix_node_head *rnh = (struct radix_node_head *)w;
 
-	(*rnh->rnh_deladdr)(rn->rn_key, rn->rn_mask, rnh);
+	(*rnh->rnh_deladdr)(rn->rn_key, rn->rn_mask, rnh, NULL);
 	free(rn, M_NETADDR);
 	return (0);
 }

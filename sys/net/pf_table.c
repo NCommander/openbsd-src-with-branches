@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_table.c,v 1.47 2004/03/09 21:44:41 mcbride Exp $	*/
+/*	$OpenBSD: pf_table.c,v 1.48 2004/04/09 19:30:41 frantzen Exp $	*/
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -937,9 +937,9 @@ pfr_unroute_kentry(struct pfr_ktable *kt, struct pfr_kentry *ke)
 	s = splsoftnet();
 	if (KENTRY_NETWORK(ke)) {
 		pfr_prepare_network(&mask, ke->pfrke_af, ke->pfrke_net);
-		rn = rn_delete(&ke->pfrke_sa, &mask, head);
+		rn = rn_delete(&ke->pfrke_sa, &mask, head, NULL);
 	} else
-		rn = rn_delete(&ke->pfrke_sa, NULL, head);
+		rn = rn_delete(&ke->pfrke_sa, NULL, head, NULL);
 	splx(s);
 
 	if (rn == NULL) {
