@@ -1,4 +1,4 @@
-/* $OpenBSD: policy.c,v 1.74 2004/06/14 09:55:42 ho Exp $	 */
+/* $OpenBSD: policy.c,v 1.75 2004/06/20 15:24:05 ho Exp $	 */
 /* $EOM: policy.c,v 1.49 2000/10/24 13:33:39 niklas Exp $ */
 
 /*
@@ -2264,7 +2264,8 @@ keynote_cert_get_key(void *scert, void *keyp)
 
 	kl = kn_get_licensees(kid, sid);
 	while (kl) {
-		if (kl->key_alg == KEYNOTE_ALGORITHM_RSA) {
+		if (kl->key_alg == KEYNOTE_ALGORITHM_RSA ||
+		    kl->key_alg == KEYNOTE_ALGORITHM_X509) {
 			*(RSA **)keyp = RSAPublicKey_dup(kl->key_key);
 			break;
 		}
