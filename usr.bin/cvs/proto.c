@@ -279,11 +279,13 @@ cvs_connect(struct cvsroot *root)
 		return (-1);
 	}
 
+#if 0
 	root->cr_srverr = fdopen(errfd[0], "r");
 	if (root->cr_srverr == NULL) {
 		cvs_log(LP_ERR, "failed to create pipe stream");
 		return (-1);
 	}
+#endif
 
 	/* make the streams line-buffered */
 	(void)setvbuf(root->cr_srvin, NULL, _IOLBF, 0);
