@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: swaplist.c,v 1.8 1998/10/08 10:00:31 mrg Exp $	*/
 
 /*
