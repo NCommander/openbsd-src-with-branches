@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.15 2001/06/29 06:55:36 drahn Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.16 2001/07/09 03:30:20 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -199,17 +199,6 @@ openpic_collect_preconf_intr()
 }
 
 int
-prog_switch (void *arg)
-{
-#ifdef DDB
-        Debugger();
-#else
-	printf("programmer button pressed, debugger not available\n");
-#endif
-	return 1;
-}
-
-static int
 fakeintr(arg)
 	void *arg;
 {
