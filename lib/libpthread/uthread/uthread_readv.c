@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_readv.c,v 1.5 2001/08/21 19:24:53 fgsch Exp $	*/
+/*	$OpenBSD: uthread_readv.c,v 1.6 2004/01/01 08:19:33 brad Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -62,6 +62,7 @@ readv(int fd, const struct iovec * iov, int iovcnt)
 			/* File is not open for read: */
 			errno = EBADF;
 			_FD_UNLOCK(fd, FD_READ);
+			_thread_leave_cancellation_point();
 			return (-1);
 		}
 
