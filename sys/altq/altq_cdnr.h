@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_cdnr.h,v 1.2 2002/11/26 01:03:34 henning Exp $	*/
+/*	$OpenBSD: altq_cdnr.h,v 1.3 2002/12/16 09:18:05 kjc Exp $	*/
 /*	$KAME: altq_cdnr.h,v 1.6 2000/12/14 08:12:45 thorpej Exp $	*/
 
 /*
@@ -63,7 +63,7 @@ struct tc_action {
 #define	tca_next	tca_un.un_next
 
 #define	TCACODE_NONE	0	/* action is not set */
-#define	TCACODE_PASS	1 	/* pass this packet */
+#define	TCACODE_PASS	1	/* pass this packet */
 #define	TCACODE_DROP	2	/* discard this packet */
 #define	TCACODE_RETURN	3	/* do not process this packet */
 #define	TCACODE_MARK	4	/* mark dscp */

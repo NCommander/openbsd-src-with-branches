@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_subr.c,v 1.12 2002/11/29 07:51:54 kjc Exp $	*/
+/*	$OpenBSD: altq_subr.c,v 1.13 2002/12/16 09:18:05 kjc Exp $	*/
 /*	$KAME: altq_subr.c,v 1.11 2002/01/11 08:11:49 kjc Exp $	*/
 
 /*
@@ -199,7 +199,7 @@ altq_assert(file, line, failedexpr)
 
 /*
  * internal representation of token bucket parameters
- *	rate: 	byte_per_unittime << 32
+ *	rate:	byte_per_unittime << 32
  *		(((bits_per_sec) / 8) << 32) / machclk_freq
  *	depth:	byte << 32
  *

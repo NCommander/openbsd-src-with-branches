@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_cdnr.c,v 1.5 2002/11/26 01:03:34 henning Exp $	*/
+/*	$OpenBSD: altq_cdnr.c,v 1.6 2002/12/16 09:18:05 kjc Exp $	*/
 /*	$KAME: altq_cdnr.c,v 1.8 2000/12/14 08:12:45 thorpej Exp $	*/
 
 /*
@@ -519,7 +519,7 @@ element_destroy(cb)
 
 /*
  * internal representation of token bucket parameters
- *	rate: 	byte_per_unittime << 32
+ *	rate:	byte_per_unittime << 32
  *		(((bits_per_sec) / 8) << 32) / machclk_freq
  *	depth:	byte << 32
  *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_altq.h,v 1.5 2002/10/08 05:12:08 kjc Exp $	*/
+/*	$OpenBSD: if_altq.h,v 1.6 2002/11/26 01:03:34 henning Exp $	*/
 /*	$KAME: if_altq.h,v 1.6 2001/01/29 19:59:09 itojun Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ struct tb_regulator {
 #define	ALTQF_DRIVER1	 0x40	/* driver specific */
 
 /* if_altqflags set internally only: */
-#define	ALTQF_CANTCHANGE 	(ALTQF_READY)
+#define	ALTQF_CANTCHANGE	(ALTQF_READY)
 
 /* altq_dequeue 2nd arg */
 #define	ALTDQ_REMOVE		1	/* dequeue mbuf from the queue */
