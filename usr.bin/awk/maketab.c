@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: maketab.c,v 1.2 1997/08/25 16:17:12 kstailey Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -78,7 +78,7 @@ struct xx
 	{ PRINTF, "awkprintf", "printf" },
 	{ PRINT, "printstat", "print" },
 	{ CLOSE, "closefile", "closefile" },
-	{ DELETE, "adelete", "adelete" },
+	{ DELETE, "awkdelete", "awkdelete" },
 	{ SPLIT, "split", "split" },
 	{ ASSIGN, "assign", " = " },
 	{ ADDEQ, "assign", " += " },
