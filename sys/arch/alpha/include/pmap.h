@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.h,v 1.8 2001/03/16 14:10:23 art Exp $ */
+/* $OpenBSD: pmap.h,v 1.9 2001/08/18 20:50:18 art Exp $ */
 /* $NetBSD: pmap.h,v 1.37 2000/11/19 03:16:35 thorpej Exp $ */
 
 /*-
@@ -193,6 +193,7 @@ void	pmap_tlb_shootdown_q_drain(u_long, boolean_t);
  
 #define	pmap_resident_count(pmap)	((pmap)->pm_stats.resident_count)
 #define	pmap_wired_count(pmap)		((pmap)->pm_stats.wired_count)
+#define pmap_update()			/* nothing */
 
 extern	pt_entry_t *VPT;		/* Virtual Page Table */
 

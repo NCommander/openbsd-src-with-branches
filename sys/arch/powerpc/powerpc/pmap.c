@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.48 2001/11/28 13:47:39 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.49 2001/11/28 14:13:06 art Exp $	*/
 /*	$NetBSD: pmap.c,v 1.1 1996/09/30 16:34:52 ws Exp $	*/
 
 /*
@@ -936,15 +936,6 @@ pmap_copy(dst_pmap, src_pmap, dst_addr, len, src_addr)
 	struct pmap *dst_pmap, *src_pmap;
 	vm_offset_t dst_addr, src_addr;
 	vm_size_t len;
-{
-}
-
-/*
- * Require that all active physical maps contain no
- * incorrect entries NOW.
- */
-void
-pmap_update()
 {
 }
 
