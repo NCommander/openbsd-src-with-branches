@@ -211,4 +211,5 @@ char *linux_syscallnames[] = {
 	"#188 (unimplemented getpmsg)",		/* 188 = unimplemented getpmsg */
 	"#189 (unimplemented putpmsg)",		/* 189 = unimplemented putpmsg */
 	"vfork",			/* 190 = vfork */
+	"ugetrlimit",			/* 191 = ugetrlimit */
 };

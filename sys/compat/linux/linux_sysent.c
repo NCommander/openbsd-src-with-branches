@@ -170,10 +170,10 @@ struct sysent linux_sysent[] = {
 	    linux_sys_sigpending },		/* 73 = sigpending */
 	{ 2, s(struct compat_43_sys_sethostname_args),
 	    compat_43_sys_sethostname },	/* 74 = sethostname */
-	{ 2, s(struct compat_43_sys_setrlimit_args),
-	    compat_43_sys_setrlimit },		/* 75 = setrlimit */
-	{ 2, s(struct compat_43_sys_getrlimit_args),
-	    compat_43_sys_getrlimit },		/* 76 = getrlimit */
+	{ 2, s(struct linux_sys_setrlimit_args),
+	    linux_sys_setrlimit },		/* 75 = setrlimit */
+	{ 2, s(struct linux_sys_getrlimit_args),
+	    linux_sys_getrlimit },		/* 76 = getrlimit */
 	{ 2, s(struct sys_getrusage_args),
 	    sys_getrusage },			/* 77 = getrusage */
 	{ 2, s(struct sys_gettimeofday_args),
@@ -417,5 +417,7 @@ struct sysent linux_sysent[] = {
 	    sys_nosys },			/* 189 = unimplemented putpmsg */
 	{ 0, 0,
 	    sys_vfork },			/* 190 = vfork */
+	{ 2, s(struct linux_sys_ugetrlimit_args),
+	    linux_sys_ugetrlimit },		/* 191 = ugetrlimit */
 };
 
