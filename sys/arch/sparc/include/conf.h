@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.15 2002/07/10 22:08:47 mickey Exp $	*/
+/*	$OpenBSD: conf.h,v 1.16 2002/08/12 10:44:04 miod Exp $	*/
 /*	$NetBSD: conf.h,v 1.8 1996/12/31 07:12:43 mrg Exp $	*/
 
 /*
@@ -59,6 +59,9 @@ cdev_decl(xd);
 
 bdev_decl(xy);
 cdev_decl(xy);
+
+bdev_decl(presto);
+cdev_decl(presto);
 
 /* open, close, write, ioctl */
 #define	cdev_bpp_init(c,n) { \
