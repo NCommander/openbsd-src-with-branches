@@ -1,4 +1,4 @@
-/*	$OpenBSD: eso.c,v 1.6 1999/12/04 21:39:29 deraadt Exp $	*/
+/*	$OpenBSD: eso.c,v 1.7 1999/12/05 18:35:33 espie Exp $	*/
 /*	$NetBSD: eso.c,v 1.3 1999/08/02 17:37:43 augustss Exp $	*/
 
 /*
@@ -235,7 +235,7 @@ eso_attach(parent, self, aux)
 
 	sc->sc_revision = PCI_REVISION(pa->pa_class);
 
-	if (sc->sc_revision <=
+	if (sc->sc_revision <
 	    sizeof (eso_rev2model) / sizeof (eso_rev2model[0]))
 		printf(": %s", eso_rev2model[sc->sc_revision]);
 	else
