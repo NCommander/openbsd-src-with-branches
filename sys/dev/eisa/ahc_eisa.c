@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_eisa.c,v 1.10 1996/10/21 22:30:58 thorpej Exp $	*/
+/*	$OpenBSD: ahc_eisa.c,v 1.7 1996/11/28 23:27:37 niklas Exp $	*/
 /*	$NetBSD: ahc_eisa.c,v 1.10 1996/10/21 22:30:58 thorpej Exp $	*/
   
 /*
@@ -32,7 +32,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: ahc_eisa.c,v 1.6 1996/11/12 20:30:08 niklas Exp $
+ *	$Id: ahc_eisa.c,v 1.7 1996/11/28 23:27:37 niklas Exp $
  */
 
 #if defined(__FreeBSD__)
@@ -370,7 +370,7 @@ ahc_eisa_attach(parent, self, aux)
 		type = AHC_284;
 #endif
 	} else {
-		panic("ahc_eisa_attach: Unknown device type %s\n",
+		panic("ahc_eisa_attach: Unknown device type %s",
 		      ea->ea_idstring);
 	}
 	printf(": %s\n", model);
