@@ -1,4 +1,4 @@
-/*	$OpenBSD: win.c,v 1.8 1996/02/08 21:07:57 mycroft Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: win.c,v 1.8 1996/02/08 21:07:57 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)win.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: win.c,v 1.8 1996/02/08 21:07:57 mycroft Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 

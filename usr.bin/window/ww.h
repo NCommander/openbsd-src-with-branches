@@ -1,5 +1,5 @@
-/*	$OpenBSD: ww.h,v 1.4 1996/06/26 05:43:34 deraadt Exp $	*/
-/*	$NetBSD: ww.h,v 1.8 1996/02/08 21:48:51 mycroft Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: ww.h,v 1.9 1996/10/12 23:46:23 christos Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -46,7 +46,6 @@
 #endif
 #include <setjmp.h>
 #include <sys/types.h>
-#include <machine/endian.h>
 
 #define NWW	30		/* maximum number of windows */
 
@@ -315,15 +314,6 @@ void wwalarm();
 void wwquit();
 char **wwalloc();
 char *wwerror();
-
-	/* c library functions */
-char *malloc();
-char *calloc();
-char *getenv();
-char *tgetstr();
-char *rindex();
-char *strcpy();
-char *strcat();
 
 #undef MIN
 #undef MAX

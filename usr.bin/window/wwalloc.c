@@ -1,4 +1,4 @@
-/*	$OpenBSD: wwalloc.c,v 1.3 1995/09/28 10:35:10 tls Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: wwalloc.c,v 1.3 1995/09/28 10:35:10 tls Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwalloc.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: wwalloc.c,v 1.3 1995/09/28 10:35:10 tls Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 

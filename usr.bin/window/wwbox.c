@@ -1,4 +1,4 @@
-/*	$OpenBSD: wwbox.c,v 1.3 1995/09/28 10:35:11 tls Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: wwbox.c,v 1.3 1995/09/28 10:35:11 tls Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)wwbox.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: wwbox.c,v 1.3 1995/09/28 10:35:11 tls Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 

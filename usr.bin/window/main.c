@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.4 1996/06/26 05:43:17 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: main.c,v 1.6 1996/02/08 20:45:01 mycroft Exp $	*/
 
 /*
@@ -47,13 +47,15 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.4 1996/06/26 05:43:17 deraadt Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
 #include "defs.h"
 #include <paths.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "string.h"
 #include "char.h"
 #include "local.h"

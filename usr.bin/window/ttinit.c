@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttinit.c,v 1.3 1995/09/28 10:34:50 tls Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ttinit.c,v 1.3 1995/09/28 10:34:50 tls Exp $	*/
 
 /*
@@ -41,10 +41,11 @@
 #if 0
 static char sccsid[] = "@(#)ttinit.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: ttinit.c,v 1.3 1995/09/28 10:34:50 tls Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
+#include <stdlib.h>
 #include "ww.h"
 #include "tt.h"
 

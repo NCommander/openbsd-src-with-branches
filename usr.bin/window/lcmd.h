@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcmd.h,v 1.3 1995/09/28 10:34:22 tls Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: lcmd.h,v 1.3 1995/09/28 10:34:22 tls Exp $	*/
 
 /*

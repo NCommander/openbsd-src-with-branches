@@ -1,4 +1,4 @@
-/*	$OpenBSD: wwopen.c,v 1.6 1996/02/08 21:08:04 mycroft Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: wwopen.c,v 1.6 1996/02/08 21:08:04 mycroft Exp $	*/
 
 /*
@@ -41,10 +41,11 @@
 #if 0
 static char sccsid[] = "@(#)wwopen.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: wwopen.c,v 1.6 1996/02/08 21:08:04 mycroft Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
+#include <stdlib.h>
 #include "ww.h"
 #include <sys/types.h>
 #include <sys/socket.h>

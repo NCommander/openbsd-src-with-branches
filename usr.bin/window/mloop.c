@@ -1,4 +1,4 @@
-/*	$OpenBSD: mloop.c,v 1.5 1996/02/08 20:45:03 mycroft Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mloop.c,v 1.5 1996/02/08 20:45:03 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)mloop.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: mloop.c,v 1.5 1996/02/08 20:45:03 mycroft Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
