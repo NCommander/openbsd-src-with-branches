@@ -180,7 +180,7 @@ biosattach(parent, self, aux)
 #if NAPM > 0
 	if (apm) {
 		struct bios_attach_args ba;
-#ifdef DEBUG
+#if defined(DEBUG) || defined(APMDEBUG)
 		printf("apminfo: %x, code %x/%x[%x], data %x[%x], entry %x\n",
 		    apm->apm_detail, apm->apm_code32_base,
 		    apm->apm_code16_base, apm->apm_code_len,
