@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  *
  * $FreeBSD: src/sys/dev/aic7xxx/aic7xxx.c,v 1.40 2000/01/07 23:08:17 gibbs Exp $
- * $OpenBSD: aic7xxx.c,v 1.23 2000/08/02 18:50:17 aaron Exp $
+ * $OpenBSD: aic7xxx.c,v 1.24 2000/12/06 15:46:51 mickey Exp $
  */
 /*
  * A few notes on features of the driver.
@@ -4984,6 +4984,7 @@ bus_reset:
 
 				/* Will clear us from the bus */
 				restart_sequencer(ahc);
+				splx(s);
 				return;
 			} 
 
