@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ip_rcmd_pxy.c,v 1.3 2000/02/16 22:34:20 kjell Exp $	*/
 
 /*
  * Simple RCMD transparent proxy for in-kernel use.  For use with the NAT

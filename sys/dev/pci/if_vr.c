@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.5 1999/08/05 23:03:47 jason Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.7 2000/02/15 02:28:15 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1836,8 +1836,18 @@ vr_ioctl(ifp, command, data)
 		break;
 	case SIOCADDMULTI:
 	case SIOCDELMULTI:
-		vr_setmulti(sc);
-		error = 0;
+		error = (command == SIOCADDMULTI) ?
+		    ether_addmulti(ifr, &sc->arpcom) :
+		    ether_delmulti(ifr, &sc->arpcom);
+
+		if (error == ENETRESET) {
+			/*
+			 * Multicast list has changed; set the hardware
+			 * filter accordingly.
+			 */
+			vr_setmulti(sc);
+			error = 0;
+		}
 		break;
 	case SIOCGIFMEDIA:
 	case SIOCSIFMEDIA:

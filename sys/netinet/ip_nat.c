@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ip_nat.c,v 1.27 2000/02/16 22:34:19 kjell Exp $	*/
 
 /*
  * Copyright (C) 1995-1998 by Darren Reed.

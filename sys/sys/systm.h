@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.36 1999/12/02 00:23:35 deraadt Exp $	*/
+/*	$OpenBSD: systm.h,v 1.37 2000/01/02 06:31:28 assar Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -78,6 +78,7 @@ extern const char *panicstr;	/* panic message */
 extern char version[];		/* system version */
 extern char copyright[];	/* system copyright */
 
+extern int ncpus;		/* number of CPUs */
 extern int nblkdev;		/* number of entries in bdevsw */
 extern int nchrdev;		/* number of entries in cdevsw */
 #if !defined(UVM)

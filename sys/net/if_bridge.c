@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.24 2000/01/15 20:02:36 angelos Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.26 2000/02/19 08:59:05 niklas Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -556,6 +556,7 @@ bridge_ifdetach(ifp)
 			bridge_rtdelete(bsc, ifp);
 			bridge_flushrule(bif);
 			free(bif, M_DEVBUF);
+			ifp->if_bridge = NULL;
 			break;
 		}
 }

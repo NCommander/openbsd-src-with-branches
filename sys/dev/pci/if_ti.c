@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti.c,v 1.8 1999/10/28 03:26:33 jason Exp $	*/
+/*	$OpenBSD: if_ti.c,v 1.11 2000/02/15 03:54:29 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2292,8 +2292,8 @@ int ti_ioctl(ifp, command, data)
 	caddr_t			data;
 {
 	struct ti_softc		*sc = ifp->if_softc;
-	struct ifreq		*ifr = (struct ifreq *) data;
-	struct ifaddr		*ifa = (struct ifaddr *) data;
+	struct ifreq		*ifr = (struct ifreq *)data;
+	struct ifaddr		*ifa = (struct ifaddr *)data;
 	int			s, error = 0;
 	struct ti_cmd_desc	cmd;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.44 2000/01/28 19:45:04 art Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.46 2000/01/31 19:57:18 deraadt Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -128,6 +128,7 @@ struct	vnode *rootvp, *swapdev_vp;
 int	boothowto;
 struct	timeval boottime;
 struct	timeval runtime;
+int	ncpus =  1;
 
 /* XXX return int so gcc -Werror won't complain */
 int	main __P((void *));
