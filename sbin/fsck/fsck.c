@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsck.c,v 1.12 2002/10/17 13:15:21 brad Exp $	*/
+/*	$OpenBSD: fsck.c,v 1.13 2003/06/02 20:06:14 millert Exp $	*/
 /*	$NetBSD: fsck.c,v 1.7 1996/10/03 20:06:30 christos Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
  *
  */
 
-static char rcsid[] = "$NetBSD: fsck.c,v 1.7 1996/10/03 20:06:30 christos Exp $";
+static const char rcsid[] = "$OpenBSD$";
 
 #include <sys/param.h>
 #include <sys/mount.h>
