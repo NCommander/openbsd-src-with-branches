@@ -190,20 +190,16 @@ openpic_collect_preconf_intr()
 {
 	int i;
 	for (i = 0; i < ppc_configed_intr_cnt; i++) {
+#ifdef DEBUG
 		printf("\n\t%s irq %d level %d fun %x arg %x",
-			ppc_configed_intr[i].ih_what,
-			ppc_configed_intr[i].ih_irq,
-			ppc_configed_intr[i].ih_level,
-			ppc_configed_intr[i].ih_fun,
-			ppc_configed_intr[i].ih_arg
-			);
-		openpic_intr_establish(NULL,
-			ppc_configed_intr[i].ih_irq,
-			IST_LEVEL,
-			ppc_configed_intr[i].ih_level,
-			ppc_configed_intr[i].ih_fun,
-			ppc_configed_intr[i].ih_arg,
-			ppc_configed_intr[i].ih_what);
+		    ppc_configed_intr[i].ih_what, ppc_configed_intr[i].ih_irq,
+		    ppc_configed_intr[i].ih_level, ppc_configed_intr[i].ih_fun,
+		    ppc_configed_intr[i].ih_arg);
+#endif
+		openpic_intr_establish(NULL, ppc_configed_intr[i].ih_irq,
+		    IST_LEVEL, ppc_configed_intr[i].ih_level,
+		    ppc_configed_intr[i].ih_fun, ppc_configed_intr[i].ih_arg,
+		    ppc_configed_intr[i].ih_what);
 	}
 }
 
