@@ -1,4 +1,5 @@
-/*	$NetBSD: cpu.h,v 1.12 1995/06/28 02:56:01 cgd Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.8 1998/06/04 03:49:48 jason Exp $	*/
+/*	$NetBSD: cpu.h,v 1.15 1996/03/23 20:28:19 jonathan Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -44,8 +45,27 @@
 #include <machine/machConst.h>
 
 /*
- * Exported definitions unique to pmax/mips cpu support.
+ * Exported definitions unique to OpenBSD/mips cpu support.
  */
+
+/*
+ * Macros to find the CPU architecture we're on at run-time,
+ * or if possible, at compile-time.
+ */
+
+#if (MIPS1 + MIPS3) == 1
+#ifdef MIPS1
+# define CPUISMIPS3	0
+#endif /* mips1 */
+
+#ifdef MIPS3
+#  define CPUISMIPS3	 1
+#endif /* mips1 */
+
+#else /* run-time test */
+extern int cpu_arch;
+#define CPUISMIPS3	(cpu_arch == 3)
+#endif /* run-time test */
 
 /*
  * definitions of cpu-dependent requirements
@@ -64,9 +84,23 @@ struct clockframe {
 	int	sr;	/* status register at time of interrupt */
 };
 
-#define	CLKF_USERMODE(framep)	((framep)->sr & MACH_SR_KU_PREV)
-#define	CLKF_BASEPRI(framep)	\
-	((~(framep)->sr & (MACH_INT_MASK | MACH_SR_INT_ENA_PREV)) == 0)
+/*
+ * A port must provde CLKF_USERMODE() and CLKF_BASEPRI() for use
+ * in machine-independent code. These differ on r4000 and r3000 systems;
+ * provide them in the port-dependent file that includes this one, using
+ * the macros below.
+ */
+
+/* r3000 versions */
+#define	CLKF_USERMODE_R3K(framep)	((framep)->sr & MIPS_SR_KU_PREV)
+#define	CLKF_BASEPRI_R3K(framep)	\
+	((~(framep)->sr & (MIPS_INT_MASK | MIPS_SR_INT_ENA_PREV)) == 0)
+
+/* r4000 versions */
+#define	CLKF_USERMODE_R4K(framep)	((framep)->sr & MIPS_SR_KSU_USER)
+#define	CLKF_BASEPRI_R4K(framep)	\
+	((~(framep)->sr & (MIPS_INT_MASK | MIPS_SR_INT_ENAB)) == 0)
+
 #define	CLKF_PC(framep)		((framep)->pc)
 #define	CLKF_INTR(framep)	(0)
 
@@ -78,7 +112,7 @@ struct clockframe {
 
 /*
  * Give a profiling tick to the current process when the user profiling
- * buffer pages are invalid.  On the PMAX, request an ast to send us
+ * buffer pages are invalid.  On the MIPS, request an ast to send us
  * through trap, marking the proc as needing a profiling tick.
  */
 #define	need_proftick(p)	{ (p)->p_flag |= P_OWEUPC; aston(); }
@@ -118,41 +152,77 @@ union cpuprid {
  * CTL_MACHDEP definitions.
  */
 #define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
+#define CPU_LED_BLINK		2
+#define	CPU_MAXID		3	/* number of valid machdep ids */
 
 #define CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
 	{ "console_device", CTLTYPE_STRUCT }, \
+	{ "led_blink", CTLTYPE_INT }, \
 }
+
 
 /*
  * MIPS CPU types (cp_imp).
  */
-#define	MIPS_R2000	0x01
-#define	MIPS_R3000	0x02
-#define	MIPS_R6000	0x03
-#define	MIPS_R4000	0x04
-#define	MIPS_R6000A	0x06
+#define	MIPS_R2000	0x01	/* MIPS R2000 CPU		ISA I   */
+#define	MIPS_R3000	0x02	/* MIPS R3000 CPU		ISA I   */
+#define	MIPS_R6000	0x03	/* MIPS R6000 CPU		ISA II	*/
+#define	MIPS_R4000	0x04	/* MIPS R4000/4400 CPU		ISA III	*/
+#define MIPS_R3LSI	0x05	/* LSI Logic R3000 derivate	ISA I	*/
+#define	MIPS_R6000A	0x06	/* MIPS R6000A CPU		ISA II	*/
+#define	MIPS_R3IDT	0x07	/* IDT R3000 derivate		ISA I	*/
+#define	MIPS_R10000	0x09	/* MIPS R10000/T5 CPU		ISA IV  */
+#define	MIPS_R4200	0x0a	/* MIPS R4200 CPU (ICE)		ISA III */
+#define MIPS_UNKC1	0x0b	/* unnanounced product cpu	ISA III */
+#define MIPS_UNKC2	0x0c	/* unnanounced product cpu	ISA III */
+#define	MIPS_R8000	0x10	/* MIPS R8000 Blackbird/TFP	ISA IV  */
+#define	MIPS_R4600	0x20	/* QED R4600 Orion		ISA III */
+#define	MIPS_R3SONY	0x21	/* Sony R3000 based CPU		ISA I   */
+#define	MIPS_R3TOSH	0x22	/* Toshiba R3000 based CPU	ISA I	*/
+#define	MIPS_R3NKK	0x23	/* NKK R3000 based CPU		ISA I   */
+
 
 /*
  * MIPS FPU types
  */
-#define	MIPS_R2010	0x02
-#define	MIPS_R3010	0x03
-#define	MIPS_R6010	0x04
-#define	MIPS_R4010	0x05
+#define	MIPS_SOFT	0x00	/* Software emulation		ISA I   */
+#define	MIPS_R2360	0x01	/* MIPS R2360 FPC		ISA I   */
+#define	MIPS_R2010	0x02	/* MIPS R2010 FPC		ISA I   */
+#define	MIPS_R3010	0x03	/* MIPS R3010 FPC		ISA I   */
+#define	MIPS_R6010	0x04	/* MIPS R6010 FPC		ISA II  */
+#define	MIPS_R4010	0x05	/* MIPS R4000/R4400 FPC		ISA II  */
+#define MIPS_R31LSI	0x06	/* LSI Logic derivate		ISA I	*/
+#define	MIPS_R10010	0x09	/* MIPS R10000/T5 FPU		ISA IV  */
+#define	MIPS_R4210	0x0a	/* MIPS R4200 FPC (ICE)		ISA III */
+#define MIPS_UNKF1	0x0b	/* unnanounced product cpu	ISA III */
+#define	MIPS_R8000	0x10	/* MIPS R8000 Blackbird/TFP	ISA IV  */
+#define	MIPS_R4600	0x20	/* QED R4600 Orion		ISA III */
+#define	MIPS_R3SONY	0x21	/* Sony R3000 based FPU		ISA I   */
+#define	MIPS_R3TOSH	0x22	/* Toshiba R3000 based FPU	ISA I	*/
+#define	MIPS_R3NKK	0x23	/* NKK R3000 based FPU		ISA I   */
 
-#ifdef _KERNEL
-union	cpuprid cpu;
-union	cpuprid fpu;
-u_int	machDataCacheSize;
-u_int	machInstCacheSize;
-extern	struct intr_tab intr_tab[];
-#endif
+/*
+ * XXX port-dependent code should define cpu_id and fpu_id variables
+ * and machine-dependent cache descriptor variables.
+ */
 
 /*
  * Enable realtime clock (always enabled).
  */
 #define	enablertclock()
+
+/* Stuff from the NetBSD mips tree TTTTT */
+#define CLKF_USERMODE(framep)   CLKF_USERMODE_R3K(framep)
+#define CLKF_BASEPRI(framep)    CLKF_BASEPRI_R3K(framep)
+
+#ifdef _KERNEL
+union   cpuprid cpu_id;
+union   cpuprid fpu_id;
+u_int   machDataCacheSize;
+u_int   machInstCacheSize;
+extern  struct intr_tab intr_tab[];
+#endif
+/* End of stuff from the NetBSD mips tree TTTTT */
 
 #endif /* _CPU_H_ */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +38,7 @@
 
 #include <xfs/xfs_locl.h>
 
-RCSID("$arla: xfs_vfsops-openbsd.c,v 1.16 2003/06/02 18:26:50 lha Exp $");
+RCSID("$Id: xfs_vfsops-openbsd.c,v 1.1 1999/04/30 01:59:01 art Exp $");
 
 #include <xfs/xfs_common.h>
 #include <xfs/xfs_message.h>
@@ -47,10 +52,9 @@ RCSID("$arla: xfs_vfsops-openbsd.c,v 1.16 2003/06/02 18:26:50 lha Exp $");
 static vop_t **xfs_dead_vnodeop_p;
 
 int
-xfs_make_dead_vnode(struct mount *mp, struct vnode **vpp)
+make_dead_vnode(struct mount *mp, struct vnode **vpp)
 {
-    NNPFSDEB(XDEBNODE, ("make_dead_vnode mp = %lx\n",
-		      (unsigned long)mp));
+    XFSDEB(XDEBNODE, ("make_dead_vnode mp = %p\n", mp));
 
     return getnewvnode(VT_NON, mp, xfs_dead_vnodeop_p, vpp);
 }
@@ -59,9 +63,6 @@ static struct vnodeopv_entry_desc xfs_dead_vnodeop_entries[] = {
     {&vop_default_desc, (vop_t *) xfs_eopnotsupp},
     {&vop_lookup_desc,	(vop_t *) xfs_dead_lookup},
     {&vop_reclaim_desc, (vop_t *) xfs_returnzero},
-    {&vop_lock_desc,	(vop_t *) vop_generic_lock},
-    {&vop_unlock_desc,	(vop_t *) vop_generic_unlock},
-    {&vop_islocked_desc,(vop_t *) vop_generic_islocked},
     {NULL, NULL}};
 
 static struct vnodeopv_desc xfs_dead_vnodeop_opv_desc =
@@ -72,7 +73,7 @@ extern struct vnodeopv_desc xfs_vnodeop_opv_desc;
 static int
 xfs_init(struct vfsconf *vfs)
 {
-    NNPFSDEB(XDEBVFOPS, ("xfs_init\n"));
+    XFSDEB(XDEBVFOPS, ("xfs_init\n"));
     vfs_opv_init_explicit(&xfs_vnodeop_opv_desc);
     vfs_opv_init_default(&xfs_vnodeop_opv_desc);
     vfs_opv_init_explicit(&xfs_dead_vnodeop_opv_desc);
@@ -80,12 +81,24 @@ xfs_init(struct vfsconf *vfs)
     return 0;
 }
 
+static int
+xfs_sysctl (int *name, u_int namelen, void *oldp, size_t *oldlenp,
+	    void *newp, size_t newlen, struct proc *p)
+{
+    XFSDEB(XDEBVFOPS, ("xfs_sysctl\n"));
+    return EOPNOTSUPP;
+}
+
+static int
+xfs_checkexp(struct mount *mp, struct mbuf *nam, int *exflagsp,
+	     struct ucred **credanonp)
+{
+    XFSDEB(XDEBVFOPS, ("xfs_checkexp\n"));
+    return (EOPNOTSUPP);
+}
+
 struct vfsops xfs_vfsops = {
-#ifdef HAVE_STRUCT_VFSOPS_VFS_MOUNT
-    xfs_mount_common,
-#else
-    xfs_mount_caddr,
-#endif
+    xfs_mount,
     xfs_start,
     xfs_unmount,
     xfs_root,
@@ -96,10 +109,8 @@ struct vfsops xfs_vfsops = {
     xfs_fhtovp,
     xfs_vptofh,
     xfs_init,
-    NULL,
-#ifdef HAVE_STRUCT_VFSOPS_VFS_CHECKEXP
-    xfs_checkexp,               /* checkexp */
-#endif
+    xfs_sysctl,
+    xfs_checkexp
 };
 
 static struct vfsconf xfs_vfc = {
@@ -135,7 +146,7 @@ vfs_register (struct vfsconf *vfs)
     vfs->vfc_next = NULL;
 
     /* Call vfs_init() */
-    NNPFSDEB(XDEBVFOPS, ("calling vfs_init\n"));
+    XFSDEB(XDEBVFOPS, ("calling vfs_init\n"));
     (*(vfs->vfc_vfsops->vfs_init)) (vfs);
 
     /* done! */

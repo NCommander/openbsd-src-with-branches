@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: utsname.h,v 1.6 1994/06/29 06:46:11 cgd Exp $	*/
 
 /*-

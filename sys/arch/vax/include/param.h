@@ -1,10 +1,8 @@
-/*      $NetBSD: param.h,v 1.12 1995/08/13 00:45:21 mycroft Exp $    */
-
+/*	$OpenBSD: param.h,v 1.10 1997/10/02 15:44:40 niklas Exp $ */
+/*      $NetBSD: param.h,v 1.24 1997/08/05 13:28:51 ragge Exp $    */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
- *
- * Modified for VAX 940213/Ragge
  *
  * This code is derived from software contributed to Berkeley by
  * William Jolitz.
@@ -43,49 +41,58 @@
 #ifndef _VAX_PARAM_H_
 #define _VAX_PARAM_H_
 
-#include "machine/macros.h"
-#include "psl.h"
+#include <machine/macros.h>
+#include <machine/psl.h>
 
 /*
  * Machine dependent constants for VAX.
  */
 
-#define MACHINE		"vax"
-#define MID_MACHINE	MID_VAX
-#define UNIX		"vmunix"
+#define	_MACHINE	vax
+#define	MACHINE		"vax"
+#define	_MACHINE_ARCH	vax
+#define	MACHINE_ARCH	"vax"
+#define	MID_MACHINE	MID_VAX
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value
  * for all data types (int, long, ...).   The result is u_int and
  * must be cast to any desired pointer type.
+ *
+ * ALIGNED_POINTER is a boolean macro that checks whether an address
+ * is valid to fetch data elements of type t from on this architecture.
+ * This does not reflect the optimal alignment, just the possibility
+ * (within reasonable limits). 
+ *
  */
 
-#define ALIGNBYTES	(sizeof(int) - 1)
-#define ALIGN(p)	(((u_int)(p) + ALIGNBYTES) &~ ALIGNBYTES)
+#define ALIGNBYTES		(sizeof (int) - 1)
+#define ALIGN(p)		(((u_int)(p) + ALIGNBYTES) & ~ALIGNBYTES)
+#define ALIGNED_POINTER(p,t)	((((u_long)(p)) & (sizeof (t) - 1)) == 0)
 
-#define	PGSHIFT	 9                             /* LOG2(NBPG) */
-#define	NBPG     (1<<PGSHIFT)                  /* (1 << PGSHIFT) bytes/page */
-#define	PGOFSET	 (NBPG-1)	               /* byte offset into page */
-#define	NPTEPG	 (NBPG/(sizeof (struct pte)))
+#define	PGSHIFT	 9				/* log2(NBPG) */
+#define	NBPG     (1 << PGSHIFT)			/* (1 << PGSHIFT) bytes/page */
+#define	PGOFSET	 (NBPG - 1)			/* byte offset into page */
+#define	NPTEPG	 (NBPG / (sizeof (struct pte)))
 
-#define	KERNBASE     0x80000000	               /* start of kernel virtual */
-#define	BTOPKERNBASE ((u_long)KERNBASE >> PGSHIFT)
+#define	KERNBASE	0x80000000		/* start of kernel virtual */
+#define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
 
-#define	DEV_BSHIFT   9		               /* log2(DEV_BSIZE) */
-#define	DEV_BSIZE    (1 << DEV_BSHIFT)
+#define	DEV_BSHIFT	9			/* log2(DEV_BSIZE) */
+#define	DEV_BSIZE	(1 << DEV_BSHIFT)
 
 #define BLKDEV_IOSIZE 2048
-#define	MAXPHYS	      (63 * 1024)     /* max raw I/O transfer size */
+#define	MAXPHYS		(63 * 1024)		/* max raw I/O transfer size */
 
-#define	CLSIZELOG2    1
-#define	CLSIZE	      2
+#define	CLSIZELOG2	1
+#define	CLSIZE		2
 
 /* NOTE: SSIZE, SINCR and UPAGES must be multiples of CLSIZE */
 #define	SSIZE	4		/* initial stack size/NBPG */
 #define	SINCR	4		/* increment of stack/NBPG */
 
 #define	UPAGES	16		/* pages of u-area */
-#define USPACE  (NBPG*UPAGES)
+#define USPACE  (NBPG * UPAGES)
 
 /*
  * Constants related to network buffer management.
@@ -118,7 +125,7 @@
  */ 
 
 #ifndef NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(2048*1024/CLBYTES)
+#define	NKMEMCLUSTERS	(2048 * 1024 / CLBYTES)
 #endif
 
 /*
@@ -132,6 +139,7 @@
 /* clicks to bytes */
 #define	ctob(x)		((x) << PGSHIFT)
 #define	btoc(x)		(((x) + PGOFSET) >> PGSHIFT)
+#define	btop(x)		(((unsigned)(x)) >> PGSHIFT)
 
 /* bytes to disk blocks */
 #define	btodb(x)	((x) >> DEV_BSHIFT)
@@ -144,28 +152,15 @@
  * For now though just use DEV_BSIZE.
  */
 
-#define	bdbtofsb(bn)	((bn) / (BLKDEV_IOSIZE/DEV_BSIZE))
+#define	bdbtofsb(bn)	((bn) / (BLKDEV_IOSIZE / DEV_BSIZE))
 
-/*
- * Mach derived conversion macros
- */
-
-#define vax_round_pdr(x)	((((unsigned)(x)) + NBPDR - 1) & ~(NBPDR-1))
-#define vax_trunc_pdr(x)	((unsigned)(x) & ~(NBPDR-1))
-#define vax_round_page(x)	((((unsigned)(x)) + NBPG - 1) & ~(NBPG-1))
-#define vax_trunc_page(x)	((unsigned)(x) & ~(NBPG-1))
-#define vax_btod(x)		((unsigned)(x) >> PDRSHIFT)
-#define vax_dtob(x)		((unsigned)(x) << PDRSHIFT)
-#define vax_btop(x)		((unsigned)(x) >> PGSHIFT)
-#define vax_ptob(x)		((unsigned)(x) << PGSHIFT)
-
-#define splx(reg)                                       \
-({                                                      \
-        register int val;                               \
-        asm __volatile ("mfpr $0x12,%0;mtpr %1,$0x12"	\
-                        : "=g" (val)                    \
-                        : "g" (reg));                   \
-        val;                                            \
+#define splx(reg)					\
+({							\
+        int val;					\
+							\
+        asm __volatile ("mfpr $0x12,%0; mtpr %1,$0x12"	\
+                        : "&=g" (val) : "g" (reg));	\
+        val;						\
 })
 
 
@@ -173,23 +168,34 @@
 #define splsoftclock()  splx(8)		/* IPL08 */
 #define splsoftnet()    splx(0xc)	/* IPL0C */
 #define	splddb()	splx(0xf)	/* IPL0F */
-#define spl4()          splx(0x14)	/* IPL14 */
 #define splbio()        splx(0x15)	/* IPL15 */
 #define splnet()        splx(0x15)	/* IPL15 */
 #define spltty()        splx(0x15)	/* IPL15 */
-#define splimp()        splx(0x16)	/* IPL16 */
+#define splimp()        splx(0x17)	/* IPL17 */
 #define splclock()      splx(0x18)	/* IPL18 */
 #define splhigh()       splx(0x1f)	/* IPL1F */
 #define	splstatclock()	splclock()
 
-#define	ovbcopy(x,y,z)	bcopy(x,y,z)	/* This should work i hope... */
+/* These are better to use when playing with VAX buses */
+#define	spl4()		splx(0x14)
+#define	spl5()		splx(0x15)
+#define	spl6()		splx(0x16)
+#define	spl7()		splx(0x17)
 
+#define	ovbcopy(x,y,z)	bcopy(x, y, z)
+
+#if !defined(VAX410) && !defined(VAX43)
 #define vmapbuf(p,q)
 #define vunmapbuf(p,q)
-
-#if !defined(VAX630) && !defined(VAX410)
-#define todr()          mfpr(PR_TODR)
 #endif
-#define	DELAY(x) {int N=todr()+(x/1000)+1;while(todr()!=N);}
+
+#ifdef _KERNEL
+/* Prototype needed for delay() */
+#ifndef	_LOCORE
+void	delay __P((int));
+#endif
+
+#define	DELAY(x) delay(x)
+#endif /* _KERNEL */
 
 #endif /* _VAX_PARAM_H_ */

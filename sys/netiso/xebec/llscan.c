@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: llscan.c,v 1.5 1994/06/29 06:41:05 cgd Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+/*	$OpenBSD: pcvt_sup.c,v 1.14 1999/11/25 21:00:36 aaron Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
  *
@@ -107,7 +109,7 @@ static u_short getrand ( void );
  *	execute vga ioctls
  *---------------------------------------------------------------------------*/
 int
-vgaioctl(Dev_t dev, int cmd, caddr_t data, int flag)
+vgaioctl(Dev_t dev, u_long cmd, caddr_t data, int flag)
 {
 	if(minor(dev) >= PCVT_NSCREENS)
 		return -1;
@@ -222,6 +224,24 @@ vgaioctl(Dev_t dev, int cmd, caddr_t data, int flag)
 				return EINVAL;
 			break;
 
+		case SETSCROLLSIZE:
+			if (*(u_short *)data < 2)
+				scrollback_pages = 2;
+			else if (*(u_short *)data > 100)
+				scrollback_pages = 100;
+			else
+				scrollback_pages = *(u_short *)data;
+
+			reallocate_scrollbuffer(vsp, scrollback_pages);
+			break;
+
+		case TOGGLEPCDISP:
+			if (vsp->screen_rowsize == 25) {
+				pcdisp = !pcdisp;
+				set_2ndcharset();
+			}
+			break;
+
 		case TIOCSWINSZ:
 			/* do nothing here */
 			break;
@@ -252,28 +272,14 @@ vgapcvtid(struct pcvtid *data)
 static void
 vgapcvtinfo(struct pcvtinfo *data)
 {
-#if PCVT_NETBSD
 	data->opsys	= CONF_NETBSD;
-	data->opsysrel	= PCVT_NETBSD;
-#elif PCVT_FREEBSD
-	data->opsys	= CONF_FREEBSD;
-	data->opsysrel	= PCVT_FREEBSD;
-#else
-	data->opsys	= CONF_UNKNOWNOPSYS;
-	data->opsysrel	= 0;
-#endif
+	data->opsysrel	= OpenBSD;
 
 	data->nscreens	= PCVT_NSCREENS;
 	data->scanset	= PCVT_SCANSET;
-	data->updatefast= PCVT_UPDATEFAST;
-	data->updateslow= PCVT_UPDATESLOW;
 	data->sysbeepf	= PCVT_SYSBEEPF;
 
-#if PCVT_NETBSD || PCVT_FREEBSD >= 200
 	data->pcburst	= PCVT_PCBURST;
-#else
-	data->pcburst	= 1;
-#endif
 
 #if PCVT_KBD_FIFO
 	data->kbd_fifo_sz = PCVT_KBD_FIFO_SZ;
@@ -283,9 +289,6 @@ vgapcvtinfo(struct pcvtinfo *data)
 
 	data->compile_opts = (0
 
-#if PCVT_VT220KEYB
-	| CONF_VT220KEYB
-#endif
 #if PCVT_SCREENSAVER
 	| CONF_SCREENSAVER
 #endif
@@ -300,12 +303,6 @@ vgapcvtinfo(struct pcvtinfo *data)
 #endif
 #if PCVT_24LINESDEF
 	| CONF_24LINESDEF
-#endif
-#if PCVT_EMU_MOUSE
-	| CONF_EMU_MOUSE
-#endif
-#if PCVT_SHOWKEYS
-	| CONF_SHOWKEYS
 #endif
 #if PCVT_KEYBDID
 	| CONF_KEYBDID
@@ -354,9 +351,6 @@ vgapcvtinfo(struct pcvtinfo *data)
 #endif
 #if PCVT_MDAFASTSCROLL
 	| CONF_MDAFASTSCROLL
-#endif
-#if PCVT_SLOW_INTERRUPT
-	| CONF_SLOW_INTERRUPT
 #endif
 #if PCVT_NO_LED_UPDATE
 	| CONF_NO_LED_UPDATE
@@ -609,7 +603,6 @@ vid_getscreen(struct screeninfo *data, Dev_t dev)
 	/* screen size */
 	data->screen_size = vgacs[(vs[device].vga_charset)].screen_size;
 	/* pure VT mode or HP/VT mode */
-	data->pure_vt_mode = vs[device].vt_pure_mode;
 	data->vga_family = vga_family;		/* manufacturer, family */
 	data->vga_type = vga_type;		/* detected chipset type */
 	data->vga_132 = can_do_132col;		/* 132 column support */
@@ -653,53 +646,25 @@ vid_setscreen(struct screeninfo *data, Dev_t dev)
 	if(screen != current_video_screen)
 		return;		/* XXX should say "EAGAIN" here */
 
-	if((data->screen_size != -1) || (data->force_24lines != -1))
-	{
+	if((data->screen_size != -1) || (data->force_24lines != -1)) {
 		if(data->screen_size == -1)
 			data->screen_size =
 				vgacs[(vs[screen].vga_charset)].screen_size;
 
 		if(data->force_24lines != -1)
-		{
 			vs[screen].force24 = data->force_24lines;
-
-			if(vs[screen].force24)
-			{
-				swritefkl(2,(u_char *)"FORCE24 ENABLE *",
-					  &vs[screen]);
-			}
-			else
-			{
-				swritefkl(2,(u_char *)"FORCE24 ENABLE  ",
-					  &vs[screen]);
-			}
-		}
 
 		if((data->screen_size == SIZ_25ROWS) ||
 		   (data->screen_size == SIZ_28ROWS) ||
 		   (data->screen_size == SIZ_35ROWS) ||
 		   (data->screen_size == SIZ_40ROWS) ||
 		   (data->screen_size == SIZ_43ROWS) ||
-		   (data->screen_size == SIZ_50ROWS))
-		{
+		   (data->screen_size == SIZ_50ROWS)) {
 			if(data->screen_no == -1)
 				set_screen_size(vsp, data->screen_size);
 			else
 				set_screen_size(&vs[minor(dev)],
 						data->screen_size);
-		}
-	}
-
-	if(data->pure_vt_mode != -1)
-	{
-		if((data->pure_vt_mode == M_HPVT) ||
-		   (data->pure_vt_mode == M_PUREVT))
-		{
-			if(data->screen_no == -1)
-				set_emulation_mode(vsp, data->pure_vt_mode);
-			else
-				set_emulation_mode(&vs[minor(dev)],
-						   data->pure_vt_mode);
 		}
 	}
 }
@@ -717,6 +682,8 @@ set_screen_size(struct video_state *svsp, int size)
 		if(vgacs[i].screen_size == size)
 		{
 			set_charset(svsp, i);
+			pcdisp = 0;
+			set_2ndcharset();
 			clr_parms(svsp); 	/* escape parameter init */
 			svsp->state = STATE_INIT; /* initial state */
 			svsp->scrr_beg = 0;	/* start of scrolling region */
@@ -737,15 +704,6 @@ set_screen_size(struct video_state *svsp, int size)
 					svsp->screen_rows;
 			}
 
-			/* screen_rows already calculated in set_charset() */
-			if(svsp->vt_pure_mode == M_HPVT && svsp->labels_on)
-			{
-				if(svsp->which_fkl == SYS_FKL)
-					sw_sfkl(svsp);
-				else if(svsp->which_fkl == USR_FKL)
-					sw_ufkl(svsp);
-			}
-
 			svsp->scrr_len = svsp->screen_rows;
 			svsp->scrr_end = svsp->scrr_len - 1;
 
@@ -754,9 +712,44 @@ set_screen_size(struct video_state *svsp, int size)
 				pgsignal(svsp->vs_tty->t_pgrp, SIGWINCH, 1);
 #endif /* PCVT_SIGWINCH */
 
+			reallocate_scrollbuffer(svsp, scrollback_pages);
 			break;
 		}
  	}
+}
+
+/*---------------------------------------------------------------------------*
+ *	resize the scrollback buffer to the specified number of "pages"
+ *---------------------------------------------------------------------------*/
+void
+reallocate_scrollbuffer(struct video_state *svsp, int pages)
+{
+	int i, s;
+
+	s = splhigh();
+	if (Scrollbuffer)
+		free(Scrollbuffer, M_DEVBUF);
+
+	if ((Scrollbuffer = (u_short *)malloc(svsp->maxcol *
+	     	svsp->screen_rows * pages * CHR, M_DEVBUF, M_NOWAIT)) == NULL)
+	{
+		printf("pcvt: scrollback memory malloc
+			failed\n");
+	}
+	else
+	{
+ 		for (i = 0; i < PCVT_NSCREENS; i++)
+		{
+			vs[i].Scrollback = Scrollbuffer;
+			vs[i].scr_offset = 0;
+			vs[i].scrolling = 0;
+			vs[i].max_off = svsp->screen_rows * pages - 1;
+		}
+		bcopy(svsp->Crtat, svsp->Scrollback, svsp->screen_rows *
+		      svsp->maxcol * CHR);
+		svsp->scr_offset = svsp->row;
+	}
+	splx(s);
 }
 
 /*---------------------------------------------------------------------------*
@@ -865,42 +858,30 @@ vgapaletteio(unsigned idx, struct rgb *val, int writeit)
  *
  *	update asynchronous: cursor, cursor pos displ, sys load, keyb scan
  *
- *	arg is:
- *		UPDATE_START = 0 = do update; requeue
- *		UPDATE_STOP  = 1 = suspend updates
- *		UPDATE_KERN  = 2 = do update for kernel printfs
- *
  *---------------------------------------------------------------------------*/
 void
-async_update(int arg)
+async_update()
 {
+	static int lastadr = 0;
 	static int lastpos = 0;
-	static int counter = PCVT_UPDATESLOW;
-
-#ifdef XSERVER
-	/* need a method to suspend the updates */
-
-	if(arg == UPDATE_STOP)
-	{
-		untimeout((TIMEOUT_FUNC_T)async_update, UPDATE_START);
-		return;
-	}
-#endif /* XSERVER */
 
 	/* first check if update is possible */
 
+	if(vsp->vt_status & VT_GRAFX)
+		return;
+
 	if(chargen_access)		/* does someone load characters? */
-		goto async_update_exit;	/*  yes, do not update anything */
+		return;			/*  yes, do not update anything */
 
 #if PCVT_SCREENSAVER
-	if(reset_screen_saver && (counter == PCVT_UPDATESLOW))
+	if(reset_screen_saver)
 	{
 		pcvt_scrnsv_reset();	/* yes, do it */
 		reset_screen_saver = 0;	/* re-init */
 	}
 	else if(scrnsv_active)		/* is the screen not blanked? */
 	{
-		goto async_update_exit;	/* do not update anything */
+		return;			/* do not update anything */
 	}
 #endif /* PCVT_SCREENSAVER */
 
@@ -908,158 +889,25 @@ async_update(int arg)
 	/* this takes place on EVERY virtual screen (if not in X mode etc...)*/
 	/*-------------------------------------------------------------------*/
 
-	if ( cursor_pos_valid &&
-	    (lastpos != (vsp->Crtat + vsp->cur_offset - Crtat)))
+	if (cursor_pos_valid)
 	{
-		lastpos = vsp->Crtat + vsp->cur_offset - Crtat;
-	 	outb(addr_6845, CRTC_CURSORH);	/* high register */
-		outb(addr_6845+1, ((lastpos) >> 8));
-		outb(addr_6845, CRTC_CURSORL);	/* low register */
-		outb(addr_6845+1, (lastpos));
-	}
-
-	if (arg == UPDATE_KERN)		/* Magic arg: for kernel printfs */
-		return;
-
-	if(--counter)			/* below is possible update */
-		goto async_update_exit;	/*  just now and then ..... */
-	counter = PCVT_UPDATESLOW;	/* caution, see screensaver above !! */
-
-	/*-------------------------------------------------------------------*/
-	/* this takes place ONLY on screen 0 if in HP mode, labels on, !X    */
-	/*-------------------------------------------------------------------*/
-
-	/* additional processing for HP necessary ? */
-
-	if((vs[0].vt_pure_mode == M_HPVT) && (vs[0].labels_on))
-	{
-		static volatile u_char buffer[] =
-		       "System Load: 1min: 0.00 5min: 0.00 15min: 0.00";
-		register int tmp, i;
-#if PCVT_SHOWKEYS
-		extern u_char rawkeybuf[80];
-
-		if(keyboard_show)
+		if (lastadr != (vsp->Crtat - Crtat))
 		{
-			for(i = 0; i < 80; i++)
-			{
-				*((vs[0].Crtat+((vs[0].screen_rows+2)
-					* vs[0].maxcol))+i) =
-				 user_attr | rawkeybuf[i];
-			}
+			lastadr = vsp->Crtat - Crtat;
+		 	outb(addr_6845, CRTC_STARTADRH);	/* high register */
+			outb(addr_6845+1, ((lastadr) >> 8));
+			outb(addr_6845, CRTC_STARTADRL);	/* low register */
+			outb(addr_6845+1, (lastadr));
 		}
-		else
+
+		if (lastpos != (lastadr + vsp->cur_offset))
 		{
-#endif	/* PCVT_SHOWKEYS */
-
-		/* display load averages in last line (taken from tty.c) */
-			i = 18;
-#ifdef NEW_AVERUNNABLE
-	 		tmp = (averunnable.ldavg[0] * 100 + FSCALE / 2)
-				>> FSHIFT;
-#else
-			tmp = (averunnable[0] * 100 + FSCALE / 2) >> FSHIFT;
-#endif
-
-			buffer[i++] =
-				((((tmp/100)/10) == 0) ?
-				 ' ' :
-				 ((tmp/100)/10) + '0');
-			buffer[i++] = ((tmp/100)%10) + '0';
-			buffer[i++] = '.';
-			buffer[i++] = ((tmp%100)/10) + '0';
-			buffer[i++] = ((tmp%100)%10) + '0';
-			i += 6;
-#ifdef NEW_AVERUNNABLE
-	 		tmp = (averunnable.ldavg[1] * 100 + FSCALE / 2)
-				>> FSHIFT;
-#else
-			tmp = (averunnable[1] * 100 + FSCALE / 2) >> FSHIFT;
-#endif
-			buffer[i++] = ((((tmp/100)/10) == 0) ?
-				       ' ' :
-				       ((tmp/100)/10) + '0');
-			buffer[i++] = ((tmp/100)%10) + '0';
-			buffer[i++] = '.';
-			buffer[i++] = ((tmp%100)/10) + '0';
-			buffer[i++] = ((tmp%100)%10) + '0';
-			i += 7;
-#ifdef NEW_AVERUNNABLE
-	 		tmp = (averunnable.ldavg[2] * 100 + FSCALE / 2)
-				>> FSHIFT;
-#else
-			tmp = (averunnable[2] * 100 + FSCALE / 2) >> FSHIFT;
-#endif
-			buffer[i++] = ((((tmp/100)/10) == 0) ?
-				       ' ' :
-				       ((tmp/100)/10) + '0');
-			buffer[i++] = ((tmp/100)%10) + '0';
-			buffer[i++] = '.';
-			buffer[i++] = ((tmp%100)/10) + '0';
-			buffer[i++] = ((tmp%100)%10) + '0';
-			buffer[i] = '\0';
-
-			for(i = 0; buffer[i]; i++)
-			{
-				*((vs[0].Crtat +
-				   ((vs[0].screen_rows + 2) * vs[0].maxcol)
-				   ) + i
-				  ) = user_attr | buffer[i];
-			}
-
-#if PCVT_SHOWKEYS
-			for(; i < 77; i++)
-			{
-				*((vs[0].Crtat +
-				   ((vs[0].screen_rows + 2) * vs[0].maxcol)
-				   ) + i
-				  ) = user_attr | ' ';
-			}
-
+			lastpos = lastadr + vsp->cur_offset;
+		 	outb(addr_6845, CRTC_CURSORH);	/* high register */
+			outb(addr_6845+1, ((lastpos) >> 8));
+			outb(addr_6845, CRTC_CURSORL);	/* low register */
+			outb(addr_6845+1, (lastpos));
 		}
-#endif	/* PCVT_SHOWKEYS */
-	}
-
-	/*-------------------------------------------------------------------*/
-	/* this takes place on EVERY screen which is in HP mode, labels on,!X*/
-	/*-------------------------------------------------------------------*/
-
-	if((vsp->vt_pure_mode == M_HPVT) && (vsp->labels_on))
-	{
-		register int col = vsp->col+1;
-		register u_short *p = vsp->Crtat +
-				(vsp->screen_rows * vsp->maxcol);
-
-		/* update column display between labels */
-
-		if(vsp->maxcol == SCR_COL132)
-		{
-			p += (SCR_COL132 - SCR_COL80)/2;
-
-			if(col >= 100)
-			{
-				*(p + LABEL_COLU) = user_attr | '1';
-				col -= 100;
-			}
-			else
-			{
-				*(p + LABEL_COLU) = user_attr | '0';
-			}
-		}
-		*(p + LABEL_COLH) = user_attr | ((col/10) + '0');
-		*(p + LABEL_COLL) = user_attr | ((col%10) + '0');
-
-		/* update row display between labels */
-
-		*(p + LABEL_ROWH) = (user_attr | (((vsp->row+1)/10) + '0'));
-		*(p + LABEL_ROWL) = (user_attr | (((vsp->row+1)%10) + '0'));
-	}
-
-async_update_exit:
-
- 	if(arg == UPDATE_START)
-	{
-	   timeout((TIMEOUT_FUNC_T)async_update, UPDATE_START, PCVT_UPDATEFAST);
 	}
 }
 
@@ -1083,8 +931,6 @@ set_charset(struct video_state *svsp, int curvgacs)
 	oldrows = svsp->screen_rows;
 	newsize = sizetab[(vgacs[curvgacs].screen_size)];
 	newrows = newsize;
-	if (svsp->vt_pure_mode == M_HPVT)
-		newrows -= 3;
 	if (newrows == 25 && svsp->force24)
 		newrows = 24;
 	if (newrows < oldrows) {
@@ -1102,11 +948,11 @@ set_charset(struct video_state *svsp, int curvgacs)
 		}
 		if (newrows < newsize)
 			fillw(user_attr | ' ',
-			      svsp->Crtat + newrows * svsp->maxcol,
+			      (caddr_t)(svsp->Crtat + newrows * svsp->maxcol),
 			      (newsize - newrows) * svsp->maxcol);
 	} else if (oldrows < newsize)
 		fillw(user_attr | ' ',
-		      svsp->Crtat + oldrows * svsp->maxcol,
+		      (caddr_t)(svsp->Crtat + oldrows * svsp->maxcol),
 		      (newsize - oldrows) * svsp->maxcol);
 
 	svsp->screen_rowsize = newsize;
@@ -1775,9 +1621,16 @@ set_2ndcharset(void)
 		inb(GN_INPSTAT1M);
 
 	/* select color plane enable reg, caution: set ATC access bit ! */
-
 	outb(ATC_INDEX, (ATC_COLPLEN | ATC_ACCESS));
-	outb(ATC_DATAW, 0x07);		/* disable plane 3 */
+
+	if (!pcdisp) {
+		outb(ATC_DATAW, 0x07);		/* disable plane 3 */
+		sgr_tab_color[02] = (BG_BROWN | FG_LIGHTGREY);
+	}
+	else {
+		outb(ATC_DATAW, 0x0F);		/* enable plane 3 */
+		sgr_tab_color[02] = (BG_BLACK | FG_CYAN);
+	}
 }
 
 #if PCVT_SCREENSAVER
@@ -1789,9 +1642,8 @@ set_2ndcharset(void)
 static u_short
 getrand(void)
 {
-#if !PCVT_FREEBSD
 	extern struct timeval time; /* time-of-day register */
-#endif
+
 	static unsigned long seed = 1;
 	register u_short res = (u_short)seed;
 	seed = seed * 1103515245L + time.tv_sec;
@@ -1921,7 +1773,7 @@ scrnsv_timedout(void *arg)
 	{
 		/* second call, now blank the screen */
 		/* fill screen with blanks */
-		fillw(/* (BLACK<<8) + */ ' ', vsp->Crtat, scrnsv_size / 2);
+		fillw(/* (BLACK<<8) + */ ' ', (caddr_t)(vsp->Crtat), scrnsv_size / 2);
 
 #if PCVT_PRETTYSCRNS
 		scrnsv_current = vsp->Crtat;

@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.13 1995/04/10 13:10:51 mycroft Exp $	*/
+/*	$OpenBSD: mem.c,v 1.10 1999/11/22 19:21:57 matthieu Exp $	*/
+/*	$NetBSD: mem.c,v 1.17 1997/06/10 18:51:31 veego Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -45,18 +46,26 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
-#include <sys/buf.h>
 #include <sys/systm.h>
-#include <sys/uio.h>
+#include <sys/buf.h>
+#include <sys/conf.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
+#include <sys/uio.h>
 
 #include <machine/cpu.h>
 
 #include <vm/vm.h>
 
 extern u_int lowram;
-caddr_t zeropage;
+extern char *extiobase;
+static caddr_t devzeropage;
+
+int	mmopen __P((dev_t, int, int));
+int	mmclose __P((dev_t, int, int));
+int	mmrw __P((dev_t, struct uio *, int));
+int	mmmmap __P((dev_t, int, int));
+int	mmioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
 
 /*ARGSUSED*/
 int
@@ -65,7 +74,15 @@ mmopen(dev, flag, mode)
 	int flag, mode;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
@@ -85,9 +102,9 @@ mmrw(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t o, v;
-	register int c;
-	register struct iovec *iov;
+	vm_offset_t o, v;
+	int c;
+	struct iovec *iov;
 	int error = 0;
 	static int physlock;
 
@@ -116,16 +133,18 @@ mmrw(dev, uio, flags)
 /* minor device 0 is physical memory */
 		case 0:
 			v = uio->uio_offset;
-#ifndef DEBUG
-			/* allow reads only in RAM (except for DEBUG) */
+
+			/*
+			 * Only allow reads in physical RAM.
+			 */
 			if (v >= 0xFFFFFFFC || v < lowram) {
 				error = EFAULT;
 				goto unlock;
 			}
-#endif
+
 			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
 			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+			    VM_PROT_READ : VM_PROT_WRITE, TRUE, 0);
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
@@ -140,6 +159,17 @@ mmrw(dev, uio, flags)
 			if (!kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
 				return (EFAULT);
+
+			/*
+			 * Don't allow reading intio or dio
+			 * device space.  This could lead to
+			 * corruption of device registers.
+			 */
+			if (ISIIOVA(v) ||
+			    ((caddr_t)v >= extiobase &&
+			    (caddr_t)v < (extiobase + (EIOMAPSIZE * NBPG))))
+				return (EFAULT);
+
 			error = uiomove((caddr_t)v, c, uio);
 			continue;
 
@@ -158,22 +188,14 @@ mmrw(dev, uio, flags)
 			/*
 			 * On the first call, allocate and zero a page
 			 * of memory for use with /dev/zero.
-			 *
-			 * XXX on the hp300 we already know where there
-			 * is a global zeroed page, the null segment table.
 			 */
-			if (zeropage == NULL) {
-#if CLBYTES == NBPG
-				extern caddr_t Segtabzero;
-				zeropage = Segtabzero;
-#else
-				zeropage = (caddr_t)
+			if (devzeropage == NULL) {
+				devzeropage = (caddr_t)
 				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
-#endif
+				bzero(devzeropage, CLBYTES);
 			}
 			c = min(iov->iov_len, CLBYTES);
-			error = uiomove(zeropage, c, uio);
+			error = uiomove(devzeropage, c, uio);
 			continue;
 
 		default:
@@ -210,13 +232,22 @@ mmmmap(dev, off, prot)
 	 */
 	if (minor(dev) != 0)
 		return (-1);
+
 	/*
 	 * Allow access only in RAM.
-	 *
-	 * XXX could be extended to allow access to IO space but must
-	 * be very careful.
 	 */
-	if ((unsigned)off < lowram || (unsigned)off >= 0xFFFFFFFC)
+	if ((u_int)off < lowram || (u_int)off >= 0xFFFFFFFC)
 		return (-1);
-	return (hp300_btop(off));
+	return (m68k_btop((u_int)off));
+}
+
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
+	return (EOPNOTSUPP);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: hp.c,v 1.4 1995/09/16 15:43:25 ragge Exp $ */
+/*	$OpenBSD: hp.c,v 1.3 1997/05/29 00:04:22 niklas Exp $ */
+/*	$NetBSD: hp.c,v 1.5 1996/02/17 18:23:22 ragge Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -38,11 +39,11 @@
 
 #include "lib/libsa/stand.h"
 
-#include "../mba/mbareg.h"
-#include "../mba/hpreg.h"
-
 #include "../include/pte.h"
 #include "../include/macros.h"
+
+#include "../mba/mbareg.h"
+#include "../mba/hpreg.h"
 
 #include "vaxstand.h"
 
@@ -62,7 +63,7 @@ struct	hp_softc {
 
 struct	disklabel hplabel;
 struct	hp_softc hp_softc;
-char io_buf[MAXBSIZE];
+char io_buf[DEV_BSIZE];
 daddr_t part_offset;
 
 hpopen(f, adapt, ctlr, unit, part)
@@ -132,7 +133,7 @@ hpstrategy(hs, func, dblk, size, buf, rsize)
 	pfnum = (u_int)buf >> PGSHIFT;
 
 	for(mapnr = 0, nsize = size; (nsize + NBPG) > 0; nsize -= NBPG)
-		mr->mba_map[mapnr++] = PG_V | pfnum++;
+		*(int *)&mr->mba_map[mapnr++] = PG_V | pfnum++;
 
 	mr->mba_var = ((u_int)buf & PGOFSET);
 	mr->mba_bc = (~size) + 1;

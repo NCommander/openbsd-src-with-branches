@@ -29,7 +29,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: intr.c,v 1.5 1995/09/26 20:16:26 phil Exp $
+ *	$Id: intr.c,v 1.4 1999/05/24 23:09:06 jason Exp $
  */
 
 #define DEFINE_SPLX
@@ -177,6 +177,12 @@ softnet()
 #endif
 	if (isr & (1 << NETISR_IP)) ipintr();
 #endif
+#ifdef INET6
+	if (isr & (1 << NETISR_IPV6)) ip6intr();
+#endif
+#ifdef NETATALK
+	if (isr & (1 << NETISR_ATALK)) atintr();
+#endif
 #ifdef IMP
 	if (isr & (1 << NETISR_IMP)) impintr();
 #endif
@@ -192,6 +198,10 @@ softnet()
 #include "ppp.h"
 #if NPPP > 0
 	if (isr & (1 << NETISR_PPP)) pppintr();
+#endif
+#include "bridge.h"
+#if NBRIDGE > 0
+	if (isr & (1 << NETISR_BRIDGE)) bridgeintr();
 #endif
 }
 

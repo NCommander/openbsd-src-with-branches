@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis
  *
@@ -57,8 +59,11 @@ static char *id =
  *	
  *---------------------------------------------------------------------------*/
 
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <machine/pcvt_ioctl.h>
@@ -76,9 +81,20 @@ int tf = 0;
 int xf = 0;
 int sf = 0;
 
+void usage __P((void));
+void showtypeamatic __P((int));
+void listcurrent __P((int));
+void setrepeat __P((int, int));
+void settypeam __P((int, int, int));
+void remapkeys __P((int, char *));
+void set_lock __P((char keyflag[], int));
+void set_shift __P((char keyflag[], int));
+void set_char __P((char keyflag[], int));
+
 /*---------------------------------------------------------------------------*
  *	main entry
  *---------------------------------------------------------------------------*/
+int
 main(argc, argv)
 int argc;
 char *argv[];
@@ -92,10 +108,10 @@ char *argv[];
 	
 	int rate = -1;
 	int delay = -1;
-	char *map;
+	char *map = NULL;
 	int kbfd;
 	
-	while((c = getopt(argc, argv, "Rd:lm:opr:st:x")) != EOF)
+	while((c = getopt(argc, argv, "Rd:lm:opr:st:x")) != -1)
 	{
 		switch(c)
 		{
@@ -166,7 +182,7 @@ char *argv[];
 
 	if((kbfd = open(KEYB_DEVICE, 0)) < 0)
 	{
-		perror("kcon: keyboard open failiure");
+		perror("kcon: keyboard open failure");
 		exit(1);
 	}
 
@@ -222,10 +238,10 @@ char *argv[];
 /*---------------------------------------------------------------------------*
  *	display usage info & exit
  *---------------------------------------------------------------------------*/
+void
 usage() 
 {
-	fprintf(stderr, "\nkcon: keyboard control and remapping utility for pcvt video driver\n");
-	fprintf(stderr, "usage: [-R] [-d delay] [-l] [-m map] [-o] [-p] [-r rate] [-t +/-] [-x]\n");
+	fprintf(stderr, "usage: [-lopxR] [-d delay] [-m map] [-r rate] [-t +/-]\n");
 	fprintf(stderr, "       -R   full reset of keyboard\n");
 	fprintf(stderr, "       -d   delay until a key is repeated (range: 0...3 => 250...1000ms)\n");
 	fprintf(stderr, "       -l   produce listing of current keyboard mapping\n");
@@ -235,14 +251,15 @@ usage()
 	fprintf(stderr, "       -r   chars/second repeat value (range: 0...31 => 30...2 chars/sec)\n");
 	fprintf(stderr, "       -s   show, display the current keyboard typematic values\n");
 	fprintf(stderr, "       -t   switch repeat on(+) or off(-)\n");	
-	fprintf(stderr, "       -x   set hexadecimal output for listing\n\n");
+	fprintf(stderr, "       -x   set hexadecimal output for listing\n");
 	exit(1);
 }
 
 /*---------------------------------------------------------------------------*
  *	convert control char in string to printable values
  *---------------------------------------------------------------------------*/
-char *showcntrl(s)
+char *
+showcntrl(s)
 u_char *s;
 {
 	static char res_str[80];
@@ -278,6 +295,7 @@ u_char *s;
 /*---------------------------------------------------------------------------*
  *	list the current keyboard mapping
  *---------------------------------------------------------------------------*/
+void
 listcurrent(kbfd)
 int kbfd;
 {
@@ -391,6 +409,7 @@ int kbfd;
 /*---------------------------------------------------------------------------*
  *	show delay and rate values for keyboard
  *---------------------------------------------------------------------------*/
+void
 showtypeamatic(kbfd)
 int kbfd;
 {
@@ -448,14 +467,15 @@ int kbfd;
 	delay = ((cur_typemat_val & 0x60) >> 5);
 	rate = cur_typemat_val & 0x1f;
 
-	printf("\nDisplaying the current keyboard typematic values:\n\n");
+	printf("Displaying the current keyboard typematic values:\n");
 	printf("The delay-until-repeat time is [ %s ] milliseconds\n",delaytab[delay]);
-	printf("The repeat-rate is [ %s ] characters per second\n\n",ratetab[rate]);
+	printf("The repeat-rate is [ %s ] characters per second\n",ratetab[rate]);
 }
 
 /*---------------------------------------------------------------------------*
  *	set repeat feature on/off
  *---------------------------------------------------------------------------*/
+void
 setrepeat(kbfd, tf)
 int kbfd;
 int tf;
@@ -477,6 +497,7 @@ int tf;
 /*---------------------------------------------------------------------------*
  *	set delay and rate values for keyboard
  *---------------------------------------------------------------------------*/
+void
 settypeam(kbfd, delay, rate)
 int kbfd;
 int delay;
@@ -513,6 +534,7 @@ int rate;
 /*---------------------------------------------------------------------------*
  *	remap keyboard from keycap entry
  *---------------------------------------------------------------------------*/
+void
 remapkeys(kbfd, map)
 int kbfd;
 char *map;
@@ -563,11 +585,12 @@ char *map;
 /*---------------------------------------------------------------------------*
  *	care for lock keys
  *---------------------------------------------------------------------------*/
+void
 set_lock(keyflag, kbfd)
 char keyflag[];
 int kbfd;
 {
-	int i, j;
+	int i;
 	char cap[16];
 	struct kbd_ovlkey entry;
 
@@ -576,10 +599,10 @@ int kbfd;
 		u_short	typ;
 	} lock[] =
 	{
-		"ca",	KBD_CAPS,
-		"sh",	KBD_SHFTLOCK,
-		"nl",	KBD_NUMLOCK,
-		"sc",	KBD_SCROLL
+		{ "ca",	KBD_CAPS },
+		{ "sh",	KBD_SHFTLOCK },
+		{ "nl",	KBD_NUMLOCK },
+		{ "sc",	KBD_SCROLL }
 	};
 
 	
@@ -615,6 +638,7 @@ int kbfd;
 /*---------------------------------------------------------------------------*
  *	care for shifting keys
  *---------------------------------------------------------------------------*/
+void
 set_shift(keyflag, kbfd)
 char keyflag[];
 int kbfd;
@@ -628,10 +652,10 @@ int kbfd;
 		u_short	typ;
 	} shift[] =
 	{
-		'm',	KBD_META,
-		'l',	KBD_ALTGR,
-		'h',	KBD_SHIFT,
-		't',	KBD_CTL
+		{ 'm',	KBD_META },
+		{ 'l',	KBD_ALTGR },
+		{ 'h',	KBD_SHIFT },
+		{ 't',	KBD_CTL }
 	};
 
 	for(i = 0; i < 4; i++)
@@ -668,6 +692,7 @@ int kbfd;
 /*---------------------------------------------------------------------------*
  *	care for normal keys
  *---------------------------------------------------------------------------*/
+void
 set_char(keyflag, kbfd)
 char keyflag[];
 int kbfd;
@@ -683,11 +708,11 @@ int kbfd;
 		char	*addr;
 		char	ch;
 	} standard[] = {
-		0,			'D',
-		&entry.unshift[0],	'K',
-		&entry.shift[0],	'S',
-		&entry.ctrl[0],		'C',
-		&entry.altgr[0],	'A'
+		{ 0,			'D' },
+		{ &entry.unshift[0],	'K' },
+		{ &entry.shift[0],	'S' },
+		{ &entry.ctrl[0],	'C' },
+		{ &entry.altgr[0],	'A' }
 	};				
 	
 	for(i = 1; i < KBDMAXKEYS; i++)
@@ -720,7 +745,7 @@ int kbfd;
 			else
 			{	
 				addr_str = standard[j].addr;
-				if(new_str = kgetstr(cap, &addr_str))
+				if((new_str = kgetstr(cap, &addr_str)))
 				{
 					if(strlen(new_str) > KBDMAXOVLKEYSIZE)
 					{

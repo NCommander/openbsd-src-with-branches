@@ -1,4 +1,4 @@
-/*	$NetBSD: conf.c,v 1.20 1995/10/05 01:53:02 jonathan Exp $	*/
+/*	$NetBSD: conf.c,v 1.23 1996/09/07 12:40:38 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -46,21 +46,19 @@
 #include <sys/conf.h>
 #include <sys/vnode.h>
 
-int	ttselect	__P((dev_t, int, struct proc *));
-
 #include "vnd.h"
-bdev_decl(vnd);
 bdev_decl(sw);
 #include "rz.h"
 bdev_decl(rz);
 #include "tz.h"
 bdev_decl(tz);
 #include "sd.h"
-bdev_decl(sd);
 #include "st.h"
-bdev_decl(st);
+#include "ss.h"
+#include "uk.h"
 #include "ccd.h"
-bdev_decl(ccd);
+#include "rd.h"
+bdev_decl(rd);
 
 struct bdevsw	bdevsw[] =
 {
@@ -89,6 +87,7 @@ struct bdevsw	bdevsw[] =
 	bdev_disk_init(NRZ,rz),		/* 22: ?? old SCSI disk */ /*XXX*/
 	bdev_notdef(),			/* 23: mscp */
 	bdev_disk_init(NCCD,ccd),	/* 24: concatenated disk driver */
+	bdev_disk_init(NRD,rd),		/* 25: ram disk driver */
 };
 int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 
@@ -103,31 +102,17 @@ int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
 dev_t	swapdev = makedev(4, 0);
 
 
-cdev_decl(cn);
 cdev_decl(sw);
-cdev_decl(ctty);
 #define	mmread	mmrw
 #define	mmwrite	mmrw
 dev_type_read(mmrw);
 cdev_decl(mm);
 #include "pty.h"
-#define ptstty ptytty
-#define ptsioctl ptyioctl
-cdev_decl(pts);
-#define ptctty ptytty
-#define ptcioctl ptyioctl
-cdev_decl(ptc);
-cdev_decl(log);
-cdev_decl(fd);
-cdev_decl(sd);
-cdev_decl(st);
-cdev_decl(vnd);
-cdev_decl(ccd);
 #include "bpfilter.h"
-cdev_decl(bpf);
 #include "dtop.h"
 cdev_decl(dtop);
-#include "dc.h"
+#include "dc_ioasic.h"
+#include "dc_ds.h"
 cdev_decl(dc);
 #include "scc.h"
 cdev_decl(scc);
@@ -145,10 +130,31 @@ cdev_decl(cfb);
 cdev_decl(xcfb);
 #include "mfb.h"
 cdev_decl(mfb);
+cdev_decl(rd);
+dev_decl(filedesc,open);
 
+#ifdef XFS
+#include <xfs/nxfs.h>
+cdev_decl(xfs_dev);
+#endif
+
+#ifdef IPFILTER
+#define NIPF 1
+#else
+#define NIPF 0
+#endif
+
+#if (NDC_DS > 0) || (NDC_IOASIC > 0)
+# define NDC 1
+#else
+# define NDC 0
+#endif
 
 /* a framebuffer with an attached mouse: */
-/* open, close, ioctl, select, mmap */
+/* open, close, ioctl, poll, mmap */
+
+/* dev_init(c,n,select) in cdev_fbm_init(c,n) should be dev_init(c,n,poll) */
+/* see also dev/fb_userreq.c TTTTT */
 
 #define	cdev_fbm_init(c,n) { \
 	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
@@ -166,7 +172,7 @@ struct cdevsw	cdevsw[] =
         cdev_tty_init(NPTY,pts),        /* 4: pseudo-tty slave */
         cdev_ptc_init(NPTY,ptc),        /* 5: pseudo-tty master */
 	cdev_log_init(1,log),		/* 6: /dev/klog */
-	cdev_fd_init(1,fd),		/* 7: file descriptor pseudo-dev */
+	cdev_fd_init(1,filedesc),	/* 7: file descriptor pseudo-dev */
 	cdev_notdef(),			/* 8: old 2100/3100 frame buffer */
 	cdev_notdef(),			/* 9: old slot for SCSI disk */
 	cdev_tape_init(NTZ,tz),		/* 10: SCSI tape */
@@ -212,7 +218,11 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),		/* 48: Ultrix /dev/trace */
 	cdev_notdef(),		/* 49: sm (sysV shm?) */
 	cdev_notdef(),		/* 50 sg */
+#ifdef XFS
+	cdev_xfs_init(NXFS,xfs_dev), /* 51: xfs communication device */
+#else
 	cdev_notdef(),		/* 51: sh tty */
+#endif
 	cdev_notdef(),		/* 52: its */
 	cdev_notdef(),		/* 53: nodev */
 	cdev_notdef(),		/* 54: nodev */
@@ -249,6 +259,11 @@ struct cdevsw	cdevsw[] =
 	cdev_tty_init(NRASTERCONSOLE,rcons), /* 85: rcons pseudo-dev */
 	cdev_fbm_init(NFB,fb),	/* 86: frame buffer pseudo-device */
 	cdev_disk_init(NCCD,ccd),	/* 87: concatenated disk driver */
+	cdev_random_init(1,random),     /* 88: random data source */
+	cdev_uk_init(NUK,uk),           /* 89: unknown SCSI */
+	cdev_ss_init(NSS,ss),           /* 90: SCSI scanner */
+	cdev_gen_ipf(NIPF,ipl),		/* 91: ip filtering */
+	cdev_disk_init(NRD,rd),		/* 92: ram disk driver */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 
@@ -375,6 +390,11 @@ static int chrtoblktbl[] =  {
 	/* 85 */	NODEV,
 	/* 86 */	NODEV,
 	/* 87 */	24,
+	/* 88 */	NODEV,
+	/* 89 */	NODEV,
+	/* 90 */	NODEV,
+	/* 91 */	NODEV,
+	/* 92 */	25,		/* rd */
 };
 
 /*
@@ -386,10 +406,29 @@ chrtoblk(dev)
 {
 	int blkmaj;
 
-	if (major(dev) >= nchrdev)
+	if (major(dev) >= nchrdev || 
+	    major(dev) > sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]))
 		return (NODEV);
 	blkmaj = chrtoblktbl[major(dev)];
 	if (blkmaj == NODEV)
 		return (NODEV);
 	return (makedev(blkmaj, minor(dev)));
+}
+
+/*
+ * Convert a character device number to a block device number.
+ */
+dev_t
+blktochr(dev)
+        dev_t dev;
+{
+        int blkmaj = major(dev);
+        int i;
+
+        if (blkmaj >= nblkdev)
+                return (NODEV);
+        for (i = 0; i < sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]); i++)
+                if (blkmaj == chrtoblktbl[i])
+                        return (makedev(i, minor(dev)));
+        return (NODEV);
 }

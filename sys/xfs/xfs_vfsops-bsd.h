@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,67 +36,45 @@
  * SUCH DAMAGE.
  */
 
-/* $arla: xfs_vfsops-bsd.h,v 1.14 2002/09/07 10:46:09 lha Exp $ */
+/* $Id: xfs_vfsops-bsd.h,v 1.1 1999/04/30 01:59:01 art Exp $ */
 
 #ifndef _xfs_vfsops_bsd_h
 #define _xfs_vfsops_bsd_h
 
 int
-xfs_mount_caddr(struct mount *mp, const char *user_path, caddr_t user_data,
-		struct nameidata *ndp, d_thread_t *p);
+xfs_mount(struct mount * mp,
+	  const char *user_path,
+	  caddr_t user_data,
+	  struct nameidata * ndp,
+	  struct proc * p);
 
 int
-xfs_start(struct mount * mp, int flags, d_thread_t * p);
+xfs_start(struct mount * mp, int flags, struct proc * p);
 
 int
-xfs_unmount(struct mount * mp, int mntflags, d_thread_t *p);
+xfs_unmount(struct mount * mp, int mntflags, struct proc *p);
 
 int
 xfs_root(struct mount *mp, struct vnode **vpp);
 
 int
-xfs_quotactl(struct mount *mp, int cmd, uid_t uid, caddr_t arg, d_thread_t *p);
+xfs_quotactl(struct mount *mp, int cmd, uid_t uid, caddr_t arg, struct proc *p);
 
 int
-xfs_statfs(struct mount *mp, struct statfs *sbp, d_thread_t *p);
+xfs_statfs(struct mount *mp, struct statfs *sbp, struct proc *p);
 
 int
-xfs_sync(struct mount *mp, int waitfor, struct ucred *cred, d_thread_t *p);
+xfs_sync(struct mount *mp, int waitfor, struct ucred *cred, struct proc *p);
 
 int
 xfs_vget(struct mount * mp,
-#ifdef __APPLE__
-	 void *ino,
-#else
 	 ino_t ino,
-#endif
 	 struct vnode ** vpp);
 
-#ifdef HAVE_STRUCT_VFSOPS_VFS_CHECKEXP
 int
 xfs_fhtovp(struct mount * mp,
 	   struct fid * fhp,
 	   struct vnode ** vpp);
-#else
-int
-xfs_fhtovp(struct mount * mp,
-	   struct fid * fhp,
-	   struct mbuf * nam,
-	   struct vnode ** vpp,
-	   int *exflagsp,
-	   struct ucred ** credanonp);
-#endif
-
-struct mbuf;
-int
-xfs_checkexp (struct mount *mp,
-#ifdef __FreeBSD__
-	      struct sockaddr *nam,
-#else
-	      struct mbuf *nam,
-#endif
-	      int *exflagsp,
-	      struct ucred **credanonp);
 
 int
 xfs_vptofh(struct vnode * vp,

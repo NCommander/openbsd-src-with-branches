@@ -1,3 +1,4 @@
+/*	$OpenBSD: mem.c,v 1.7 1998/08/31 17:42:42 millert Exp $	*/
 /*	$NetBSD: mem.c,v 1.19 1995/08/08 21:09:01 gwr Exp $	*/
 
 /*
@@ -47,44 +48,61 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
-#include <sys/buf.h>
 #include <sys/systm.h>
-#include <sys/uio.h>
+#include <sys/buf.h>
+#include <sys/conf.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
+#include <sys/uio.h>
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
 #include <vm/vm_map.h>
 
+#include <machine/conf.h>
 #include <machine/cpu.h>
+#include <machine/eeprom.h>
+#include <machine/machdep.h>
 #include <machine/pte.h>
 #include <machine/pmap.h>
 
-extern int eeprom_uio();
-extern vm_offset_t avail_start, avail_end;
+extern int ledrw __P((struct uio *));
 
-vm_offset_t vmmap;	/* XXX - poor name...
-                     * It is a virtual page, not a map.
-                     */
-caddr_t zeropage;
-
+static caddr_t devzeropage;
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -208,14 +226,19 @@ mmrw(dev, uio, flags)
 			 * On the first call, allocate and zero a page
 			 * of memory for use with /dev/zero.
 			 */
-			if (zeropage == NULL) {
-				zeropage = (caddr_t)
+			if (devzeropage == NULL) {
+				devzeropage = (caddr_t)
 				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
+				bzero(devzeropage, CLBYTES);
 			}
 			c = min(iov->iov_len, CLBYTES);
-			error = uiomove(zeropage, c, uio);
+			error = uiomove(devzeropage, c, uio);
 			continue;
+
+/* minor device 13 (/dev/leds) accesses the blinkenlights */
+		case 13:
+			error = ledrw(uio);
+			return(error);
 
 		default:
 			return (ENXIO);
@@ -291,4 +314,16 @@ mmmmap(dev, off, prot)
 	}
 
 	return (-1);
+}
+
+/*ARGSUSED*/
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
+	return (EOPNOTSUPP);
 }

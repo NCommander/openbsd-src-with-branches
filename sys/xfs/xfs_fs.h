@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +36,7 @@
  * SUCH DAMAGE.
  */
 
-/* $arla: xfs_fs.h,v 1.22 2002/12/19 09:49:19 lha Exp $ */
+/* $Id: xfs_fs.h,v 1.14 1999/02/26 00:44:54 lha Exp $ */
 
 #ifndef _xfs_h
 #define _xfs_h
@@ -42,42 +47,37 @@
 #include <xfs/xfs_node.h>
 #include <xfs/xfs_attr.h>
 
-#define NNNPFS 2 /* maximal number of filesystems on a single device */
+#define NXFS 2 /* maximal number of filesystems on a single device */
 
 /*
  * Filesystem struct.
  */
-
 struct xfs {
     u_int status;		       /* Inited, opened or mounted */
-#define NNPFS_MOUNTED	0x1
+#define XFS_MOUNTED	0x1
     struct mount *mp;
     struct xfs_node *root;
     u_int nnodes;
     int fd;
-    struct xfs_nodelist_head nodehead;
 };
 
 #ifdef __osf__
-#ifdef HAVE_STRUCT_MOUNT_M_INFO
-#define VFS_TO_NNPFS(v)      ((struct xfs *) ((v)->m_info))
+#define VFS_TO_XFS(v)      ((struct xfs *) ((v)->m_data))
 #else
-#define VFS_TO_NNPFS(v)      ((struct xfs *) ((v)->m_data))
+#define VFS_TO_XFS(v)      ((struct xfs *) ((v)->mnt_data))
 #endif
-#else
-#define VFS_TO_NNPFS(v)      ((struct xfs *) ((v)->mnt_data))
-#endif
-#define NNPFS_TO_VFS(x)      ((x)->mp)
+#define XFS_TO_VFS(x)      ((x)->mp)
 
-#define NNPFS_FROM_VNODE(vp) VFS_TO_NNPFS((vp)->v_mount)
-#define NNPFS_FROM_XNODE(xp) NNPFS_FROM_VNODE(XNODE_TO_VNODE(xp))
+#define XFS_FROM_VNODE(vp) VFS_TO_XFS((vp)->v_mount)
+#define XFS_FROM_XNODE(xp) XFS_FROM_VNODE(XNODE_TO_VNODE(xp))
 
 extern struct xfs xfs[];
 
 extern struct vnodeops xfs_vnodeops;
 
+struct xfs_node *xfs_node_find(struct xfs *, struct xfs_handle *);
 int new_xfs_node(struct xfs *, struct xfs_msg_node *, struct xfs_node **,
-		 d_thread_t *);
+		 struct proc *);
 void free_xfs_node(struct xfs_node *);
 int free_all_xfs_nodes(struct xfs *, int, int);
 
@@ -88,9 +88,18 @@ void xfs_dnlc_purge(struct vnode *);
 int xfs_dnlc_lookup(struct vnode *, xfs_componentname *, struct vnode **);
 int xfs_dnlc_lookup_name(struct vnode *, const char *, struct vnode **);
 
-void vattr2xfs_attr(const struct vattr *, struct xfs_attr *);
-void xfs_attr2vattr(const struct xfs_attr *, struct vattr *, int);
+void
+xfs_cnp_init (xfs_componentname *ndp,
+	      const char *name,
+	      struct vnode *vp,
+	      struct vnode *dvp,
+	      struct proc *proc,
+	      struct ucred *cred,
+	      int nameiop);
 
-int xfs_has_pag(const struct xfs_node *, xfs_pag_t);
+void vattr2xfs_attr(const struct vattr *, struct xfs_attr *);
+void xfs_attr2vattr(const struct xfs_attr *, struct vattr *);
+
+int xfs_has_pag(const struct xfs_node *, pag_t);
 
 #endif				       /* _xfs_h */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: exec.h,v 1.4 1995/09/23 14:57:40 ragge Exp $	*/
 /*	$NetBSD: exec.h,v 1.4 1995/09/23 14:57:40 ragge Exp $	*/
 
 /*
@@ -45,5 +46,9 @@ struct relocation_info_vax {
 			  r_copy :  1;	/* run time copy */
 };
 #define relocation_info	relocation_info_vax
+
+#define _NLIST_DO_AOUT
+
+#define _KERN_DO_AOUT
 
 #endif  /* _VAX_EXEC_H_ */

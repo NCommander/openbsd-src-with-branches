@@ -1,3 +1,4 @@
+/*	$OpenBSD: fs.h,v 1.7 1997/11/06 05:59:21 csapuntz Exp $	*/
 /*	$NetBSD: fs.h,v 1.6 1995/04/12 21:21:02 mycroft Exp $	*/
 
 /*
@@ -198,8 +199,8 @@ struct fs {
 	int32_t	 fs_npsect;		/* # sectors/track including spares */
 	int32_t	 fs_interleave;		/* hardware sector interleave */
 	int32_t	 fs_trackskew;		/* sector 0 skew, per track */
-	int32_t	 fs_headswitch;		/* head switch time, usec */
-	int32_t	 fs_trkseek;		/* track-to-track seek, usec */
+/* fs_id takes the space of the unused fs_headswitch and fs_trkseek fields */
+	int32_t  fs_id[2];		/* unique filesystem id */
 /* sizes determined by number of cylinder groups and their sizes */
 	daddr_t  fs_csaddr;		/* blk addr of cyl grp summary area */
 	int32_t	 fs_cssize;		/* size of cyl grp summary area */
@@ -220,7 +221,7 @@ struct fs {
 	int8_t	 fs_fmod;		/* super block modified flag */
 	int8_t	 fs_clean;		/* file system is clean flag */
 	int8_t	 fs_ronly;		/* mounted read-only flag */
-	int8_t	 fs_flags;		/* currently unused flag */
+	int8_t	 fs_flags;		/* see FS_ below */
 	u_char	 fs_fsmnt[MAXMNTLEN];	/* name mounted on */
 /* these fields retain the current block allocation info */
 	int32_t	 fs_cgrotor;		/* last cg searched */
@@ -265,6 +266,12 @@ struct fs {
  */
 #define FS_OPTTIME	0	/* minimize allocation time */
 #define FS_OPTSPACE	1	/* minimize disk fragmentation */
+
+/* 
+ * Filesystem flags.
+ */
+#define FS_UNCLEAN    0x01   /* filesystem not clean at mount */
+#define FS_DOSOFTDEP  0x02   /* filesystem using soft dependencies */
 
 /*
  * Rotational layout table format types
@@ -481,13 +488,19 @@ struct ocg {
  * Determining the size of a file block in the file system.
  */
 #define blksize(fs, ip, lbn) \
-	(((lbn) >= NDADDR || (ip)->i_size >= ((lbn) + 1) << (fs)->fs_bshift) \
+	(((lbn) >= NDADDR || (ip)->i_ffs_size >= ((lbn) + 1) << (fs)->fs_bshift) \
 	    ? (fs)->fs_bsize \
-	    : (fragroundup(fs, blkoff(fs, (ip)->i_size))))
+	    : (fragroundup(fs, blkoff(fs, (ip)->i_ffs_size))))
 #define dblksize(fs, dip, lbn) \
 	(((lbn) >= NDADDR || (dip)->di_size >= ((lbn) + 1) << (fs)->fs_bshift) \
 	    ? (fs)->fs_bsize \
 	    : (fragroundup(fs, blkoff(fs, (dip)->di_size))))
+
+#define sblksize(fs, size, lbn) \
+        (((lbn) >= NDADDR || (size) >= ((lbn) + 1) << (fs)->fs_bshift) \
+            ? (fs)->fs_bsize \
+            : (fragroundup(fs, blkoff(fs, (size)))))
+
 
 /*
  * Number of disk sectors per block/fragment; assumes DEV_BSIZE byte

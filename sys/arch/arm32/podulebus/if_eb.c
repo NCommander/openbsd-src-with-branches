@@ -73,11 +73,6 @@
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
 #include "bpfilter.h"
 #if NBPFILTER > 0
 #include <net/bpf.h>
@@ -523,7 +518,7 @@ eb_claimirq(sc)
 
 	dprintf(("eb_claimirq(%d)\n", sc->sc_irq));
 	if (irq_claim(sc->sc_irq, &sc->sc_ih))
-		panic("Cannot install IRQ handler for IRQ %d\n", sc->sc_irq);
+		panic("Cannot install IRQ handler for IRQ %d", sc->sc_irq);
 
 	sc->sc_irqclaimed = 1;
 }
@@ -541,7 +536,7 @@ eb_releaseirq(sc)
 
 	dprintf(("eb_releaseirq(%d)\n", sc->sc_irq));
 	if (irq_release(sc->sc_irq, &sc->sc_ih))
-		panic("Cannot release IRQ handler for IRQ %d\n", sc->sc_irq);
+		panic("Cannot release IRQ handler for IRQ %d", sc->sc_irq);
 
 	sc->sc_irqclaimed = 0;
 }
@@ -1361,18 +1356,6 @@ ebread(sc, buf, len)
 		bpf_tap(sc->sc_arpcom.ac_if.if_bpf, buf, len + sizeof(struct ether_header));
 /*		bpf_mtap(sc->sc_arpcom.ac_if.if_bpf, m);*/
 
-		/*
-		 * Note that the interface cannot be in promiscuous mode if
-		 * there are no BPF listeners.  And if we are in promiscuous
-		 * mode, we have to check if this packet is really ours.
-		 */
-		if ((sc->sc_arpcom.ac_if.if_flags & IFF_PROMISC) &&
-		    (eh->ether_dhost[0] & 1) == 0 && /* !mcast and !bcast */
-		    bcmp(eh->ether_dhost, sc->sc_arpcom.ac_enaddr,
-			    sizeof(eh->ether_dhost)) != 0) {
-			m_freem(m);
-			return;
-		}
 	}
 #endif
 
@@ -1464,6 +1447,11 @@ eb_ioctl(ifp, cmd, data)
 
 	s = splimp();
 
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
+
 	switch (cmd) {
 
 	case SIOCSIFADDR:
@@ -1477,25 +1465,6 @@ eb_ioctl(ifp, cmd, data)
 			dprintf(("Interface eb is coming up (AF_INET)\n"));
 			eb_init(sc);
 			break;
-#endif
-#ifdef NS
-		/* XXX - This code is probably wrong. */
-		case AF_NS:
-		    {
-			register struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				bcopy(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			/* Set new address. */
-			dprintf(("Interface eb is coming up (AF_NS)\n"));
-			eb_init(sc);
-			break;
-		    }
 #endif
 		default:
 			dprintf(("Interface eb is coming up (default)\n"));

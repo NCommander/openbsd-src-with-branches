@@ -302,7 +302,7 @@ xdgetdisklabel(xd, b)
 
 	err = readdisklabel(MAKEDISKDEV(0, xd->sc_dev.dv_unit, RAW_PART),
 			    xddummystrat,
-			    xd->sc_dk.dk_label, xd->sc_dk.dk_cpulabel);
+			    xd->sc_dk.dk_label, xd->sc_dk.dk_cpulabel, 0);
 	if (err) {
 		printf("%s: %s\n", xd->sc_dev.dv_xname, err);
 		return(XD_ERR_FAIL);
@@ -1034,7 +1034,7 @@ xdstrategy(bp)
 	 * completion. */
 
 	if (bounds_check_with_label(bp, xd->sc_dk.dk_label,
-		(xd->flags & XD_WLABEL) != 0) <= 0)
+	 	xd->sc_dk.dk_cpulabel, (xd->flags & XD_WLABEL) != 0) <= 0)
 		goto done;
 
 	/*
@@ -1537,7 +1537,7 @@ xdc_submit_iorq(xdcsc, iorqno, type)
 int
 xdc_piodriver(xdcsc, iorqno, freeone)
 	struct xdc_softc *xdcsc;
-	char    iorqno;
+	int     iorqno;
 	int     freeone;
 
 {

@@ -1,21 +1,45 @@
+/*	$OpenBSD: dbl_float.h,v 1.3 1998/07/02 19:04:56 mickey Exp $	*/
+
 /*
-  (c) Copyright 1986 HEWLETT-PACKARD COMPANY
-  To anyone who acknowledges that this file is provided "AS IS"
-  without any express or implied warranty:
-      permission to use, copy, modify, and distribute this file
-  for any purpose is hereby granted without fee, provided that
-  the above copyright notice and this notice appears in all
-  copies, and that the name of Hewlett-Packard Company not be
-  used in advertising or publicity pertaining to distribution
-  of the software without specific, written prior permission.
-  Hewlett-Packard Company makes no representations about the
-  suitability of this software for any purpose.
-*/
-/*
- * @(#)dbl_float.h: $Revision: 2.9.88.1 $ $Date: 93/12/07 15:05:32 $
- * $Locker:  $
- * 
+ * Copyright 1996 1995 by Open Software Foundation, Inc.   
+ *              All Rights Reserved 
+ *  
+ * Permission to use, copy, modify, and distribute this software and 
+ * its documentation for any purpose and without fee is hereby granted, 
+ * provided that the above copyright notice appears in all copies and 
+ * that both the copyright notice and this permission notice appear in 
+ * supporting documentation. 
+ *  
+ * OSF DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE 
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE. 
+ *  
+ * IN NO EVENT SHALL OSF BE LIABLE FOR ANY SPECIAL, INDIRECT, OR 
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT, 
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
+/*
+ * pmk1.1
+ */
+/*
+ * (c) Copyright 1986 HEWLETT-PACKARD COMPANY
+ *
+ * To anyone who acknowledges that this file is provided "AS IS" 
+ * without any express or implied warranty:
+ *     permission to use, copy, modify, and distribute this file 
+ * for any purpose is hereby granted without fee, provided that 
+ * the above copyright notice and this notice appears in all 
+ * copies, and that the name of Hewlett-Packard Company not be 
+ * used in advertising or publicity pertaining to distribution 
+ * of the software without specific, written prior permission.  
+ * Hewlett-Packard Company makes no representations about the 
+ * suitability of this software for any purpose.
+ */
+
+#include <sys/cdefs.h>
+
 /**************************************
  * Declare double precision functions *
  **************************************/
@@ -72,14 +96,14 @@
 /* varamount must be less than 64 */
 #define Dbl_rightshift_exponentmantissa(srcdstA, srcdstB, varamount)	\
     {if((varamount) >= 32) {						\
-        Dallp2(srcdstB) = Dexponentmantissap1(srcdstA) >> (varamount-32); \
+        Dallp2(srcdstB) = Dexponentmantissap1(srcdstA) >> ((varamount)-32); \
 	Dallp1(srcdstA) &= (1<<31);  /* clear exponentmantissa field */ \
     }									\
     else if(varamount > 0) {						\
 	Variable_shift_double(Dexponentmantissap1(srcdstA), Dallp2(srcdstB), \
 	(varamount), Dallp2(srcdstB));					\
 	Deposit_dexponentmantissap1(srcdstA,				\
-	    (Dexponentmantissap1(srcdstA)>>varamount));			\
+	    (Dexponentmantissap1(srcdstA)>>(varamount)));			\
     } }
 /* varamount must be less than 64 */
 #define Dbl_leftshift(srcdstA, srcdstB, varamount)			\
@@ -169,23 +193,23 @@
     (Dexponent(dbl_valueA)!=DBL_INFINITY_EXPONENT ||	\
     (Dmantissap1(dbl_valueA)==0 && Dmantissap2(dbl_valueB)==0))
 
-#define Dbl_islessthan(dbl_op1a,dbl_op1b,,dbl_op2a,dbl_op2b)	\
+#define Dbl_islessthan(dbl_op1a,dbl_op1b,dbl_op2a,dbl_op2b)	\
     (Dallp1(dbl_op1a) < Dallp1(dbl_op2a) ||			\
      (Dallp1(dbl_op1a) == Dallp1(dbl_op2a) &&			\
       Dallp2(dbl_op1b) < Dallp2(dbl_op2b)))
-#define Dbl_isgreaterthan(dbl_op1a,dbl_op1b,,dbl_op2a,dbl_op2b)	\
+#define Dbl_isgreaterthan(dbl_op1a,dbl_op1b,dbl_op2a,dbl_op2b)	\
     (Dallp1(dbl_op1a) > Dallp1(dbl_op2a) ||			\
      (Dallp1(dbl_op1a) == Dallp1(dbl_op2a) &&			\
       Dallp2(dbl_op1b) > Dallp2(dbl_op2b)))
-#define Dbl_isnotlessthan(dbl_op1a,dbl_op1b,,dbl_op2a,dbl_op2b)	\
+#define Dbl_isnotlessthan(dbl_op1a,dbl_op1b,dbl_op2a,dbl_op2b)	\
     (Dallp1(dbl_op1a) > Dallp1(dbl_op2a) ||			\
      (Dallp1(dbl_op1a) == Dallp1(dbl_op2a) &&			\
       Dallp2(dbl_op1b) >= Dallp2(dbl_op2b)))
-#define Dbl_isnotgreaterthan(dbl_op1a,dbl_op1b,,dbl_op2a,dbl_op2b) \
+#define Dbl_isnotgreaterthan(dbl_op1a,dbl_op1b,dbl_op2a,dbl_op2b) \
     (Dallp1(dbl_op1a) < Dallp1(dbl_op2a) ||			\
      (Dallp1(dbl_op1a) == Dallp1(dbl_op2a) &&			\
       Dallp2(dbl_op1b) <= Dallp2(dbl_op2b)))
-#define Dbl_isequal(dbl_op1a,dbl_op1b,,dbl_op2a,dbl_op2b)	\
+#define Dbl_isequal(dbl_op1a,dbl_op1b,dbl_op2a,dbl_op2b)	\
      ((Dallp1(dbl_op1a) == Dallp1(dbl_op2a)) &&			\
       (Dallp2(dbl_op1b) == Dallp2(dbl_op2b)))
 
@@ -353,7 +377,7 @@
 		{							\
 	        Variable_shift_double(Dallp1(srcdstA),Dallp2(srcdstB),	\
 		 shift-32, Extall(extent));				\
-	        if(Dallp2(srcdstB) << 64 - (shift)) Ext_setone_low(extent); \
+	        if(Dallp2(srcdstB) << (64 - (shift))) Ext_setone_low(extent); \
 	        }							\
 	    else Extall(extent) = Dallp2(srcdstB);			\
 	    Dallp2(srcdstB) = Dallp1(srcdstA) >> (shift - 32);		\
@@ -371,7 +395,7 @@
 	/* Small alignment is simpler.  Extension is easily set. */	\
 	if (shift > 0)							\
 	    {								\
-	    Extall(extent) = Dallp2(srcdstB) << 32 - (shift);		\
+	    Extall(extent) = Dallp2(srcdstB) << (32 - (shift));		\
 	    Variable_shift_double(Dallp1(srcdstA),Dallp2(srcdstB),shift, \
 	     Dallp2(srcdstB));						\
 	    Dallp1(srcdstA) >>= shift;					\
@@ -384,8 +408,8 @@
  * (due to the exponent becoming negative) during normalization.
  */
 #define Dbl_fix_overshift(srcdstA,srcdstB,shift,extent)			\
-	    Extall(extent) = Dallp2(srcdstB) << 32 - (shift);		\
-	    Dallp2(srcdstB) = (Dallp1(srcdstA) << 32 - (shift)) |	\
+	    Extall(extent) = Dallp2(srcdstB) << (32 - (shift));		\
+	    Dallp2(srcdstB) = (Dallp1(srcdstA) << (32 - (shift))) |	\
 		(Dallp2(srcdstB) >> (shift));				\
 	    Dallp1(srcdstA) = Dallp1(srcdstA) >> shift
 
@@ -500,7 +524,7 @@
     Dbl_clear_signexponent_set_hidden(opndp1);				\
     if (exponent >= (1-DBL_P)) {					\
 	if (exponent >= -31) {						\
-	    guard = (Dallp2(opndp2) >> -exponent) & 1;			\
+	    guard = (Dallp2(opndp2) >> (-(exponent))) & 1;		\
 	    if (exponent < 0) sticky |= Dallp2(opndp2) << (32+exponent); \
 	    if (exponent > -31) {					\
 		Variable_shift_double(opndp1,opndp2,1-exponent,opndp2);	\
@@ -512,10 +536,10 @@
 	    }								\
 	}								\
 	else {								\
-	    guard = (Dallp1(opndp1) >> -32-exponent) & 1;		\
+	    guard = (Dallp1(opndp1) >> (-32-(exponent))) & 1;		\
 	    if (exponent == -32) sticky |= Dallp2(opndp2);		\
-	    else sticky |= (Dallp2(opndp2) | Dallp1(opndp1) << 64+exponent); \
-	    Dallp2(opndp2) = Dallp1(opndp1) >> -31-exponent;		\
+	    else sticky |= (Dallp2(opndp2) | Dallp1(opndp1) << (64+(exponent))); \
+	    Dallp2(opndp2) = Dallp1(opndp1) >> (-31-(exponent));	\
 	    Dbl_setzerop1(opndp1);					\
 	}								\
 	inexact = guard | sticky;					\
@@ -526,3 +550,19 @@
 	Dbl_setzero(opndp1,opndp2);					\
 	inexact = sticky;						\
     }
+
+
+int dbl_fadd __P((dbl_floating_point *, dbl_floating_point*, dbl_floating_point*, unsigned int *));
+int dbl_fcmp __P((dbl_floating_point *, dbl_floating_point*, unsigned int, unsigned int *));
+int dbl_fdiv __P((dbl_floating_point *, dbl_floating_point *, dbl_floating_point *, unsigned int *));
+int dbl_fmpy __P((dbl_floating_point *, dbl_floating_point *, dbl_floating_point*, unsigned int *));
+int dbl_frem __P((dbl_floating_point *, dbl_floating_point *, dbl_floating_point*, unsigned int *));
+int dbl_fsqrt __P((dbl_floating_point *, dbl_floating_point *, unsigned int *));
+int dbl_fsub __P((dbl_floating_point *, dbl_floating_point *, dbl_floating_point*, unsigned int *));
+
+dbl_floating_point dbl_setoverflow __P((unsigned int));
+
+int sgl_to_dbl_fcnvff __P((sgl_floating_point *, dbl_floating_point *, unsigned int *));
+int dbl_to_sgl_fcnvff __P((dbl_floating_point *, sgl_floating_point *, unsigned int *));
+
+int dbl_frnd __P((dbl_floating_point *, dbl_floating_point *, unsigned int *));

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include "header.h"
 
 println(s) char *s; {

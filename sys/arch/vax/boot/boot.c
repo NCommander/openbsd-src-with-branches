@@ -1,4 +1,5 @@
-/*	$NetBSD: boot.c,v 1.4 1995/09/16 15:54:20 ragge Exp $ */
+/*	$OpenBSD: boot.c,v 1.4 1998/02/03 11:48:24 maja Exp $ */
+/*	$NetBSD: boot.c,v 1.7 1997/06/08 17:49:16 ragge Exp $ */
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
  * All rights reserved.
@@ -38,7 +39,9 @@
 #include "sys/reboot.h"
 #include "lib/libsa/stand.h"
 
-#include <a.out.h>
+#define V750UCODE(x)    ((x>>8)&255)
+
+#include <sys/exec.h>
 
 /*
  * Boot program... arguments passed in r10 and r11 determine
@@ -47,14 +50,16 @@
  */
 
 char line[100];
-volatile u_int devtype, bootdev;
+volatile int devtype, bootdev;
 extern	unsigned opendev;
+extern  unsigned *bootregs;
 
-main()
+Xmain()
 {
 	register howto asm("r11");
 	register bdev  asm("r10");
 	int io, retry, type;
+	extern	char vers[];
 
 	io=0;
 	bootdev=bdev;
@@ -63,19 +68,19 @@ main()
 	if ((howto & RB_ASKNAME) == 0) {
 		type = (devtype >> B_TYPESHIFT) & B_TYPEMASK;
 		if ((unsigned)type < ndevs && devsw[type].dv_name)
-			strcpy(line, "/netbsd");
+			strcpy(line, "/bsd");
 		else
 			howto |= RB_SINGLE|RB_ASKNAME;
 	}
 
 	for (retry = 0;;) {
 		if (io >= 0)
-			printf("\nNboot\n");
+			printf("\n%s\n", vers);
 		if (howto & RB_ASKNAME) {
 			printf(": ");
 			gets(line);
 			if (line[0] == 0) {
-				strcpy(line, "/netbsd");
+				strcpy(line, "/bsd");
 				printf(": %s\n", line);
 			}
 		} else
@@ -149,7 +154,7 @@ copyunix(howto, devtype, aio)
 	hoppabort((x.a_entry&0x7fffffff),howto, devtype, esym);
 	return;
 shread:
-	printf("Short read\n");
+	printf("\nShort read\n\n");
 	return;
 }
 
@@ -191,7 +196,7 @@ loadpcs()
 		if (*cp == ')' || *cp == ':')
 			break;
 	if (*cp) {
-		strncpy(pcs, line, 99);
+		bcopy(line, pcs, 99);
 		pcs[99] = 0;
 		i = cp - line + 1;
 	} else

@@ -1,56 +1,71 @@
+/*	$OpenBSD$	*/
+
 /*
-  (c) Copyright 1986 HEWLETT-PACKARD COMPANY
-  To anyone who acknowledges that this file is provided "AS IS"
-  without any express or implied warranty:
-      permission to use, copy, modify, and distribute this file
-  for any purpose is hereby granted without fee, provided that
-  the above copyright notice and this notice appears in all
-  copies, and that the name of Hewlett-Packard Company not be
-  used in advertising or publicity pertaining to distribution
-  of the software without specific, written prior permission.
-  Hewlett-Packard Company makes no representations about the
-  suitability of this software for any purpose.
-*/
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/impys.s,v $
- * $Revision: 1.11.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:28 $
+ * Copyright 1996 1995 by Open Software Foundation, Inc.   
+ *              All Rights Reserved 
+ *  
+ * Permission to use, copy, modify, and distribute this software and 
+ * its documentation for any purpose and without fee is hereby granted, 
+ * provided that the above copyright notice appears in all copies and 
+ * that both the copyright notice and this permission notice appear in 
+ * supporting documentation. 
+ *  
+ * OSF DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE 
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE. 
+ *  
+ * IN NO EVENT SHALL OSF BE LIABLE FOR ANY SPECIAL, INDIRECT, OR 
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT, 
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * 
+ */
+/*
+ * pmk1.1
+ */
+/*
+ * (c) Copyright 1986 HEWLETT-PACKARD COMPANY
+ *
+ * To anyone who acknowledges that this file is provided "AS IS" 
+ * without any express or implied warranty:
+ *     permission to use, copy, modify, and distribute this file 
+ * for any purpose is hereby granted without fee, provided that 
+ * the above copyright notice and this notice appears in all 
+ * copies, and that the name of Hewlett-Packard Company not be 
+ * used in advertising or publicity pertaining to distribution 
+ * of the software without specific, written prior permission.  
+ * Hewlett-Packard Company makes no representations about the 
+ * suitability of this software for any purpose.
  */
 
+#include <machine/asm.h>
 
-;****************************************************************************
-;
-;Implement an integer multiply routine for 32-bit operands and 64-bit product 
-;with operand values of zero (multiplicand only) and -2**31 treated specially.
-;The algorithm uses the absolute value of the multiplier, four bits at a time,
-;from right to left, to generate partial product.  Execution speed is more
-;important than program size in this implementation. 
-;
-;****************************************************************************
-;
-; Definitions - General registers
-;
-gr0	.equ		0		; General register zero
-pu	.equ		3		; upper part of product
-pl	.equ		4		; lower part of product
-op2	.equ		4		; multiplier
-op1	.equ		5		; multiplicand
-cnt	.equ		6		; count in multiply
-brindex	.equ		7		; index into the br. table
-sign	.equ		8		; sign of product
-pc	.equ		9		; carry bit of product, = 00...01
-pm	.equ	       10		; value of -1 used in shifting
+/****************************************************************************
+ *
+ * Implement an integer multiply routine for 32-bit operands and 64-bit product 
+ * with operand values of zero (multiplicand only) and -2**31 treated specially.
+ * The algorithm uses the absolute value of the multiplier, four bits at a time,
+ * from right to left, to generate partial product.  Execution speed is more
+ * important than program size in this implementation. 
+ *
+ ***************************************************************************/
+/*
+ * Definitions - General registers
+ */
+gr0	.equ		0		/* General register zero */
+pu	.equ		3		/* upper part of product */
+pl	.equ		4		/* lower part of product */
+op2	.equ		4		/* multiplier */
+op1	.equ		5		/* multiplicand */
+cnt	.equ		6		/* count in multiply */
+brindex	.equ		7		/* index into the br. table */
+sign	.equ		8		/* sign of product */
+pc	.equ		9		/* carry bit of product, = 00...01 */
+pm	.equ	       10		/* value of -1 used in shifting */
 
-;*****************************************************************************
-	.export impys,entry
-	.space $TEXT$
-	.subspa $CODE$
-	.align 4
-	.proc
-	.callinfo
-;
-;****************************************************************************
-impys	stws,ma		pu,4(sp)		; save registers on stack
+ENTRY(impys)
+	stws,ma		pu,4(sp)		; save registers on stack
 	stws,ma		pl,4(sp)		; save registers on stack
 	stws,ma		op1,4(sp)		; save registers on stack
 	stws,ma		cnt,4(sp)		; save registers on stack
@@ -61,8 +76,8 @@ impys	stws,ma		pu,4(sp)		; save registers on stack
 ;
 ;   Start multiply process
 ;
-	ldws		(arg1),op2		; get multiplier
-	ldws		(arg0),op1		; get multiplicand
+	ldws		0(arg1),op2		; get multiplier
+	ldws		0(arg0),op1		; get multiplicand
 	addi		-1,gr0,pm		; initialize pm to 111...1
 	comb,<		op2,gr0,mpyb		; br. if multiplier < 0
 	xor		op2,op1,sign		; sign(0) = sign of product
@@ -107,7 +122,7 @@ mtable						; two words per entry
 ;  ---- bits = 0011 ---- add op1, add 2*op1, shift 4 bits
 ;
 	addb,tr		op1,pu,sh4n-4		; add op1 & 2*op1, shift 
-	sh1add,nsv 	op1,pu,pu			;   product right 4 bits
+	sh1add,nsv 	op1,pu,pu		;   product right 4 bits
 ;
 ;  ----	bits = 0100 ---- shift 2, add op1, shift 2
 ;
@@ -280,7 +295,7 @@ signs	sub		0,pl,pl			; negate product if sign
 ;
 ;	finish
 ;
-fini	stws		pu,(arg2)		; save high part of result
+fini	stws		pu,0(arg2)		; save high part of result
 	stws		pl,4(arg2)		; save low part of result
 
 	ldws,mb		-4(sp),pm		; restore registers
@@ -293,5 +308,5 @@ fini	stws		pu,(arg2)		; save high part of result
 	bv		0(rp)			; return
 	ldws,mb		-4(sp),pu		; restore registers
 
-	.procend
+EXIT(impys)
 	.end

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: clockreg.h,v 1.5 1994/11/20 20:54:07 deraadt Exp $ */
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_signal.c,v 1.9 1995/10/07 06:27:12 mycroft Exp $	*/
+/*	$OpenBSD: linux_signal.c,v 1.3 1997/06/02 09:42:12 deraadt Exp $	*/
+/*	$NetBSD: linux_signal.c,v 1.10 1996/04/04 23:51:36 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -131,6 +132,13 @@ int linux_to_bsd_sig[] = {
 	0,
 };
 
+
+/* linux_signal.c */
+void linux_to_bsd_sigset __P((const linux_sigset_t *, sigset_t *));
+void bsd_to_linux_sigset __P((const sigset_t *, linux_sigset_t *));
+void linux_to_bsd_sigaction __P((struct linux_sigaction *, struct sigaction *));
+void bsd_to_linux_sigaction __P((struct sigaction *, struct linux_sigaction *));
+
 /*
  * Ok, we know that Linux and BSD signals both are just an unsigned int.
  * Don't bother to use the sigismember() stuff for now.
@@ -179,8 +187,8 @@ linux_to_bsd_sigaction(lsa, bsa)
 	struct sigaction *bsa;
 {
 
-	bsa->sa_handler = lsa->sa_handler;
-	linux_to_bsd_sigset(&bsa->sa_mask, &lsa->sa_mask);
+	bsa->sa_handler = lsa->sa__handler;
+	linux_to_bsd_sigset(&lsa->sa_mask, &bsa->sa_mask);
 	bsa->sa_flags = 0;
 	if ((lsa->sa_flags & LINUX_SA_ONSTACK) != 0)
 		bsa->sa_flags |= SA_ONSTACK;
@@ -200,8 +208,8 @@ bsd_to_linux_sigaction(bsa, lsa)
 	struct linux_sigaction *lsa;
 {
 
-	lsa->sa_handler = bsa->sa_handler;
-	bsd_to_linux_sigset(&lsa->sa_mask, &bsa->sa_mask);
+	lsa->sa__handler = bsa->sa_handler;
+	bsd_to_linux_sigset(&bsa->sa_mask, &lsa->sa_mask);
 	lsa->sa_flags = 0;
 	if ((bsa->sa_flags & SA_NOCLDSTOP) != 0)
 		lsa->sa_flags |= LINUX_SA_NOCLDSTOP;
@@ -238,6 +246,9 @@ linux_sys_sigaction(p, v, retval)
 	struct sys_sigaction_args sa;
 	caddr_t sg;
 	int error;
+
+	if (SCARG(uap, signum) < 0 || SCARG(uap, signum) >= LINUX_NSIG)
+		return (EINVAL);
 
 	sg = stackgap_init(p->p_emul);
 	nlsa = SCARG(uap, nsa);
@@ -296,6 +307,9 @@ linux_sys_signal(p, v, retval)
 	struct sys_sigaction_args sa_args;
 	struct sigaction *osa, *nsa, tmpsa;
 	int error;
+
+	if (SCARG(uap, sig) < 0 || SCARG(uap, sig) >= LINUX_NSIG)
+		return (EINVAL);
 
 	sg = stackgap_init(p->p_emul);
 	nsa = stackgap_alloc(&sg, sizeof *nsa);
@@ -420,7 +434,7 @@ linux_sys_sigsetmask(p, v, retval)
 	bsd_to_linux_sigset(&p->p_sigmask, (linux_sigset_t *)retval);
 
 	mask = SCARG(uap, mask);
-	bsd_to_linux_sigset(&mask, &bsdsig);
+	bsd_to_linux_sigset(&bsdsig, &mask);
 
 	splhigh();
 	p->p_sigmask = bsdsig & ~sigcantmask;
@@ -459,8 +473,9 @@ linux_sys_sigsuspend(p, v, retval)
 		syscallarg(int) mask;
 	} */ *uap = v;
 	struct sys_sigsuspend_args sa;
+	linux_sigset_t mask = SCARG(uap, mask);
 
-	linux_to_bsd_sigset(&SCARG(uap, mask), &SCARG(&sa, mask));
+	linux_to_bsd_sigset(&mask, &SCARG(&sa, mask));
 	return sys_sigsuspend(p, &sa, retval);
 }
 
@@ -496,6 +511,8 @@ linux_sys_kill(p, v, retval)
 	struct sys_kill_args ka;
 
 	SCARG(&ka, pid) = SCARG(uap, pid);
+	if (SCARG(uap, signum) < 0 || SCARG(uap, signum) >= LINUX_NSIG)
+		return (EINVAL);
 	SCARG(&ka, signum) = linux_to_bsd_sig[SCARG(uap, signum)];
 	return sys_kill(p, &ka, retval);
 }

@@ -68,6 +68,10 @@
 
 #include "zsc.h"
 #include "xd.h"
+#ifdef XFS
+#include <xfs/nxfs.h>
+cdev_decl(xfs_dev);
+#endif
 
 #if 0
 #include "bwtwo.h"
@@ -168,7 +172,11 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 48 */
 	cdev_notdef(),			/* 49 */
 	cdev_notdef(),			/* 50 */
+#ifdef XFS
+	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
+#else
 	cdev_notdef(),			/* 51 */
+#endif
 	cdev_notdef(),			/* 52 */
 	cdev_notdef(),			/* 53 */
 	cdev_notdef(),			/* 54: floppy disk */
@@ -389,14 +397,6 @@ static int chrtoblktbl[] = {
 	/*108 */	NODEV,
 	/*109 */	NODEV,
 	/*110 */	8,
-	/*111 */	NODEV,
-	/*112 */	NODEV,
-	/*113 */	NODEV,
-	/*114 */	NODEV,
-	/*115 */	NODEV,
-	/*116 */	NODEV,
-	/*117 */	NODEV,
-	/*118 */	NODEV,
 };
 
 /*
@@ -408,7 +408,8 @@ chrtoblk(dev)
 {
 	int blkmaj;
 
-	if (major(dev) >= nchrdev)
+	if (major(dev) >= nchrdev ||
+	    major(dev) > sizeof(chrtoblktbl)/sizeof(chrtoblktbl[0]))
 		return (NODEV);
 	blkmaj = chrtoblktbl[major(dev)];
 	if (blkmaj == NODEV)

@@ -1,4 +1,5 @@
-/*	$NetBSD: pmap_bootstrap.c,v 1.7 1995/10/05 06:54:12 thorpej Exp $	*/
+/*	$OpenBSD: pmap_bootstrap.c,v 1.5 1997/07/06 08:02:08 downsj Exp $	*/
+/*	$NetBSD: pmap_bootstrap.c,v 1.13 1997/06/10 18:56:50 veego Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -41,12 +42,18 @@
 
 #include <sys/param.h>
 #include <sys/msgbuf.h>
-#include <machine/pte.h>
-#include <hp300/hp300/clockreg.h>
-#include <machine/vmparam.h>
+#include <sys/proc.h>
+
+#include <machine/frame.h>
 #include <machine/cpu.h>
+#include <machine/hp300spu.h>
+#include <machine/vmparam.h>
+#include <machine/pte.h>
+
+#include <hp300/hp300/clockreg.h>
 
 #include <vm/vm.h>
+#include <vm/pmap.h>
 
 #define RELOC(v, t)	*((t*)((u_int)&(v) + firstpa))
 
@@ -56,14 +63,17 @@ extern char *extiobase, *proc0paddr;
 extern st_entry_t *Sysseg;
 extern pt_entry_t *Sysptmap, *Sysmap;
 extern vm_offset_t CLKbase, MMUbase;
+extern vm_offset_t pagezero;
 
 extern int maxmem, physmem;
 extern vm_offset_t avail_start, avail_end, virtual_avail, virtual_end;
 extern vm_size_t mem_size;
 extern int protection_codes[];
-#ifdef HAVEVAC
+#ifdef M68K_MMU_HP
 extern int pmap_aliasmask;
 #endif
+
+void	pmap_bootstrap __P((vm_offset_t, vm_offset_t));
 
 /*
  * Special purpose kernel virtual addresses, used for mapping
@@ -91,12 +101,12 @@ struct msgbuf	*msgbufp;
 void
 pmap_bootstrap(nextpa, firstpa)
 	vm_offset_t nextpa;
-	register vm_offset_t firstpa;
+	vm_offset_t firstpa;
 {
 	vm_offset_t kstpa, kptpa, iiopa, eiopa, kptmpa, lkptpa, p0upa;
 	u_int nptpages, kstsize;
-	register st_entry_t protoste, *ste;
-	register pt_entry_t protopte, *pte, *epte;
+	st_entry_t protoste, *ste;
+	pt_entry_t protopte, *pte, *epte;
 
 	/*
 	 * Calculate important physical addresses:
@@ -174,7 +184,7 @@ pmap_bootstrap(nextpa, firstpa)
 	 * likely be insufficient in the future (at least for the kernel).
 	 */
 	if (RELOC(mmutype, int) == MMU_68040) {
-		register int num;
+		int num;
 
 		/*
 		 * First invalidate the entire "segment table" pages
@@ -247,8 +257,8 @@ pmap_bootstrap(nextpa, firstpa)
 		while (pte < epte) {
 			*pte++ = PG_NV;
 		}
-                /*
-		 * Initialize the last to point to point to the page
+		/*
+		 * Initialize the last to point to the page
 		 * table page allocated earlier.
 		 */
 		*pte = lkptpa | PG_RW | PG_CI | PG_V;
@@ -302,16 +312,22 @@ pmap_bootstrap(nextpa, firstpa)
 	epte = &pte[nptpages * NPTEPG];
 	while (pte < epte)
 		*pte++ = PG_NV;
+
 	/*
-	 * Validate PTEs for kernel text (RO)
+	 * Save the physical address of `page zero'.  This is
+	 * a page of memory at the beginning of kernel text
+	 * not mapped at VA 0.  But, we might want to use it
+	 * for something later.
 	 */
-	pte = &((u_int *)kptpa)[hp300_btop(KERNBASE)];
-	epte = &pte[hp300_btop(hp300_trunc_page(&etext))];
-#if defined(KGDB) || defined(DDB)
-	protopte = firstpa | PG_RW | PG_V;	/* XXX RW for now */
-#else
-	protopte = firstpa | PG_RO | PG_V;
-#endif
+	RELOC(pagezero, vm_offset_t) = firstpa;
+
+	/*
+	 * Validate PTEs for kernel text (RO).  The first page
+	 * of kernel text remains invalid; see locore.s
+	 */
+	pte = &((u_int *)kptpa)[m68k_btop(KERNBASE + NBPG)];
+	epte = &pte[m68k_btop(m68k_trunc_page(&etext))];
+	protopte = (firstpa + NBPG) | PG_RO | PG_V;
 	while (pte < epte) {
 		*pte++ = protopte;
 		protopte += NBPG;
@@ -321,7 +337,7 @@ pmap_bootstrap(nextpa, firstpa)
 	 * by us so far (nextpa - firstpa bytes), and pages for proc0
 	 * u-area and page table allocated below (RW).
 	 */
-	epte = &((u_int *)kptpa)[hp300_btop(nextpa - firstpa)];
+	epte = &((u_int *)kptpa)[m68k_btop(nextpa - firstpa)];
 	protopte = (protopte & ~PG_PROT) | PG_RW;
 	/*
 	 * Enable copy-back caching of data pages
@@ -365,22 +381,22 @@ pmap_bootstrap(nextpa, firstpa)
 	 * Immediately follows `nptpages' of static kernel page table.
 	 */
 	RELOC(Sysmap, pt_entry_t *) =
-		(pt_entry_t *)hp300_ptob(nptpages * NPTEPG);
+		(pt_entry_t *)m68k_ptob(nptpages * NPTEPG);
 	/*
 	 * intiobase, intiolimit: base and end of internal (DIO) IO space.
 	 * IIOMAPSIZE pages prior to external IO space at end of static
 	 * kernel page table.
 	 */
 	RELOC(intiobase, char *) =
-		(char *)hp300_ptob(nptpages*NPTEPG - (IIOMAPSIZE+EIOMAPSIZE));
+		(char *)m68k_ptob(nptpages*NPTEPG - (IIOMAPSIZE+EIOMAPSIZE));
 	RELOC(intiolimit, char *) =
-		(char *)hp300_ptob(nptpages*NPTEPG - EIOMAPSIZE);
+		(char *)m68k_ptob(nptpages*NPTEPG - EIOMAPSIZE);
 	/*
 	 * extiobase: base of external (DIO-II) IO space.
 	 * EIOMAPSIZE pages at the end of the static kernel page table.
 	 */
 	RELOC(extiobase, char *) =
-		(char *)hp300_ptob(nptpages*NPTEPG - EIOMAPSIZE);
+		(char *)m68k_ptob(nptpages*NPTEPG - EIOMAPSIZE);
 	/*
 	 * CLKbase, MMUbase: important registers in internal IO space
 	 * accessed from assembly language.
@@ -410,26 +426,34 @@ pmap_bootstrap(nextpa, firstpa)
 	/*
 	 * VM data structures are now initialized, set up data for
 	 * the pmap module.
+	 *
+	 * Note about avail_end: msgbuf is initialized just after
+	 * avail_end in machdep.c.  Since the last page is used
+	 * for rebooting the system (code is copied there and
+	 * excution continues from copied code before the MMU
+	 * is disabled), the msgbuf will get trounced between
+	 * reboots if it's placed in the last physical page.
+	 * To work around this, we move avail_end back one more
+	 * page so the msgbuf can be preserved.
 	 */
 	RELOC(avail_start, vm_offset_t) = nextpa;
-	RELOC(avail_end, vm_offset_t) =
-		hp300_ptob(RELOC(maxmem, int))
-			/* XXX allow for msgbuf */
-			- hp300_round_page(sizeof(struct msgbuf));
-	RELOC(mem_size, vm_size_t) = hp300_ptob(RELOC(physmem, int));
+	RELOC(avail_end, vm_offset_t) = m68k_ptob(RELOC(maxmem, int)) -
+	    (m68k_round_page(sizeof(struct msgbuf)) + m68k_ptob(1));
+	RELOC(mem_size, vm_size_t) = m68k_ptob(RELOC(physmem, int));
 	RELOC(virtual_avail, vm_offset_t) =
 		VM_MIN_KERNEL_ADDRESS + (nextpa - firstpa);
 	RELOC(virtual_end, vm_offset_t) = VM_MAX_KERNEL_ADDRESS;
 
-#ifdef HAVEVAC
+#ifdef M68K_MMU_HP
 	/*
 	 * Determine VA aliasing distance if any
 	 */
-	if (RELOC(ectype, int) == EC_VIRT)
+	if (RELOC(ectype, int) == EC_VIRT) {
 		if (RELOC(machineid, int) == HP_320)
 			RELOC(pmap_aliasmask, int) = 0x3fff;	/* 16k */
 		else if (RELOC(machineid, int) == HP_350)
 			RELOC(pmap_aliasmask, int) = 0x7fff;	/* 32k */
+	}
 #endif
 
 	/*
@@ -438,7 +462,7 @@ pmap_bootstrap(nextpa, firstpa)
 	 * absolute "jmp" table.
 	 */
 	{
-		register int *kp;
+		int *kp;
 
 		kp = &RELOC(protection_codes, int);
 		kp[VM_PROT_NONE|VM_PROT_NONE|VM_PROT_NONE] = 0;
@@ -471,7 +495,7 @@ pmap_bootstrap(nextpa, firstpa)
 		 *	MAXKL2SIZE-1:	maps last-page page table
 		 */
 		if (RELOC(mmutype, int) == MMU_68040) {
-			register int num;
+			int num;
 			
 			kpm->pm_stfree = ~l2tobm(0);
 			num = roundup((nptpages + 1) * (NPTEPG / SG4_LEV3SIZE),

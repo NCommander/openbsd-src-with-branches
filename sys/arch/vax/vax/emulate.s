@@ -1,4 +1,5 @@
-/*	$NetBSD: emulate.s,v 1.1 1995/02/24 01:35:08 ragge Exp $ */
+/*	$OpenBSD: emulate.s,v 1.2 1997/05/29 00:05:18 niklas Exp $ */
+/*	$NetBSD: emulate.s,v 1.2 1997/03/15 16:14:25 ragge Exp $ */
 /*
  * Copyright (c) 1986, 1987 The Regents of the University of California.
  * All rights reserved.
@@ -37,7 +38,6 @@
  *	@(#)emulate.s	7.5 (Berkeley) 6/28/90
  */
 
-#if VAX630 || VAX650
 /*
  * String instruction emulation - MicroVAX only.  These routines are called
  * from locore.s when an "emulate" fault occurs on the MicroVAX.  They are
@@ -1208,8 +1208,6 @@ _EMcmpp3:
 _EMcmpp4:
 	return
 
-
-#endif UVAXII
 
 
 #ifdef notdef

@@ -1,8 +1,9 @@
-	$NetBSD: syscalls.master,v 1.2 1995/10/07 06:27:28 mycroft Exp $
+	$OpenBSD: syscalls.master,v 1.5 1998/02/17 01:48:07 millert Exp $
+;	$NetBSD: syscalls.master,v 1.2 1995/10/07 06:27:28 mycroft Exp $
 
 ;	@(#)syscalls.master	8.1 (Berkeley) 7/19/93
 
-; NetBSD COMPAT_OSF1 system call name/number "master" file.
+; OpenBSD COMPAT_OSF1 system call name/number "master" file.
 ; (See syscalls.conf to see what it is processed into.)
 ;
 ; Fields: number type [type-dependent ...]
@@ -35,7 +36,9 @@
 #include <sys/systm.h>
 #include <sys/signal.h>
 #include <sys/mount.h>
+#include <sys/poll.h>
 #include <sys/syscallargs.h>
+
 #include <compat/osf1/osf1_syscallargs.h>
 
 0	NOARGS		{ int sys_nosys(void); } syscall
@@ -84,7 +87,7 @@
 39	NOARGS		{ int sys_setpgid(int pid, int pgid); }
 40	UNIMPL		old lstat
 41	NOARGS		{ int sys_dup(u_int fd); }
-42	NOARGS		{ int sys_pipe(void); }
+42	NOARGS		{ int sys_opipe(void); }
 43	UNIMPL		set_program_attributes
 44	UNIMPL		profil
 45	STD		{ int osf1_sys_open(char *path, int flags, int mode); }
@@ -101,7 +104,7 @@
 56	NOARGS		{ int sys_revoke(char *path); }
 57	NOARGS		{ int sys_symlink(char *path, char *link); }
 58	NOARGS		{ int sys_readlink(char *path, char *buf, int count); }
-59	NOARGS		{ int sys_execve(char *path, char **argp, \
+59	STD		{ int osf1_sys_execve(char *path, char **argp, \
 			    char **envp); }
 60	NOARGS		{ int sys_umask(int newmask); }
 61	NOARGS		{ int sys_chroot(char *path); }
@@ -145,7 +148,8 @@
 92	STD		{ int osf1_sys_fcntl(int fd, int cmd, void *arg); }
 93	NOARGS		{ int sys_select(u_int nd, fd_set *in, fd_set *ou, \
                             fd_set *ex, struct timeval *tv); }
-94	UNIMPL		poll
+94	STD		{ int osf1_sys_poll(struct pollfd *fds, \
+			    unsigned int nfds, int timeout); }
 95	NOARGS		{ int sys_fsync(int fd); }
 96	NOARGS		{ int sys_setpriority(int which, int who, int prio); }
 97	STD		{ int osf1_sys_socket(int domain, int type, \
@@ -197,8 +201,9 @@
 130	STD		{ int osf1_sys_ftruncate(int fd, off_t length); }
 131	UNIMPL		flock
 132	STD		{ int osf1_sys_setgid(gid_t gid); }
-133	STD		{ int osf1_sys_sendto(int s, caddr_t buf, size_t len, \
-			    int flags, caddr_t to, int tolen); }
+133	STD		{ int osf1_sys_sendto(int s, const void *buf, \
+			    size_t len, int flags, const struct sockaddr *to, \
+			    int tolen); }
 134	NOARGS		{ int sys_shutdown(int s, int how); }
 135	UNIMPL		socketpair
 136	NOARGS		{ int sys_mkdir(char *path, int mode); }
@@ -280,7 +285,7 @@
 205	UNIMPL		semget
 206	UNIMPL		semop
 207	UNIMPL		uname
-208	UNIMPL		lchown
+208	NOARGS		{ int sys_lchown(char *path, int uid, int gid); }
 209	UNIMPL		shmat
 210	UNIMPL		shmctl
 211	UNIMPL		shmdt

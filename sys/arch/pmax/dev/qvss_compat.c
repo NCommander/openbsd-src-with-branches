@@ -1,4 +1,4 @@
-/*	$NetBSD: qvss_compat.c,v 1.2 1995/09/18 03:01:24 jonathan Exp $	*/
+/*	$NetBSD: qvss_compat.c,v 1.8 1997/05/25 10:53:33 jonathan Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -81,7 +81,7 @@
 
 #include <machine/fbio.h>
 #include <machine/fbvar.h>
-#include <pmax/dev/fbreg.h>
+#include <pmax/dev/fbreg.h>		/* XXX should be renamed fbvar.h */
 #include <pmax/dev/lk201.h>
 
 /*#include <pmax/stand/dec_prom.h>*/
@@ -89,54 +89,43 @@
 #include <pmax/pmax/cons.h>
 #include <pmax/pmax/pmaxtype.h>
 
-#include <dc.h>
-#include <scc.h>
-#include <dtop.h>
+#include "dc_ds.h"
+#include "dc_ioasic.h"
+#include "scc.h"
+#include "dtop.h"
 
 
 /*
  * Forward / extern references.
  */
 
-extern void pmEventQueueInit __P((pmEventQueue *qe));
-void fbKbdEvent(), fbMouseEvent(), fbMouseButtons(), fbScroll();
+#include <pmax/dev/qvssvar.h>			/* our own externs */
+
+struct termios; struct dcregs;
+#include <pmax/dev/dtopvar.h>			/* dtop console I/O decls */
+#include <pmax/tc/sccvar.h>			/* ioasic z8530 I/O decls */
+#include <pmax/dev/dcvar.h>			/* DZ-11 chip console I/O */
+
 extern int pmax_boardtype;
 
+/*
+ * Prototypes of local functions
+ */
+extern void pmEventQueueInit __P((pmEventQueue *qe));
+void	genKbdEvent __P((int ch));
+void	genMouseEvent __P((MouseReport *newRepPtr));
+void	genMouseButtons __P((MouseReport *newRepPtr));
+void	genConfigMouse __P((void));
+void	genDeconfigMouse __P((void));
+void	mouseInput __P((int cc));
 
-#if NDC > 0
-extern void (*dcDivertXInput)();
-extern void (*dcMouseEvent)();
-extern void (*dcMouseButtons)();
-#endif
+
 #if NSCC > 0
-extern void (*sccDivertXInput)();
-extern void (*sccMouseEvent)();
-extern void (*sccMouseButtons)();
-#endif
-#if NDTOP > 0
-extern void (*dtopDivertXInput)();
-extern void (*dtopMouseEvent)();
-extern void (*dtopMouseButtons)();
+extern void (*sccDivertXInput) __P((int cc));
+extern void (*sccMouseEvent) __P((int));
+extern void (*sccMouseButtons) __P((int));
 #endif
 
-
-#if 0 /*XXX*/
-#if NDC > 0
-#include <machine/dc7085cons.h>
-extern int dcGetc(), dcparam();
-extern void dcPutc();
-#endif
-#if NDTOP > 0
-#include <pmax/dev/dtopreg.h>
-extern void dtopKBDPutc();
-#endif
-#if NSCC > 0
-#include <pmax/dev/sccreg.h>
-extern int sccGetc(), sccparam();
-extern void sccPutc();
-#endif
-
-#endif /* 0 */
 extern struct fbinfo *firstfi;
 
 
@@ -146,6 +135,7 @@ extern struct fbinfo *firstfi;
  * are gone. Note that the QVSS/pm mapped event buffer includes the
  * fbu field initialized below.
  */
+void
 init_pmaxfbu(fi)
 	struct fbinfo *fi;
 {
@@ -154,7 +144,7 @@ init_pmaxfbu(fi)
 	register struct fbuaccess *fbu = NULL;
 
 	if (fi == NULL || fi->fi_fbu == NULL)
-		panic("init_pmaxfb: given null pointer to framebuffer\n");
+		panic("init_pmaxfb: given null pointer to framebuffer");
 
 	/* XXX don't rely on there being a pmax_fb struct */
 	fbu = fi->fi_fbu;
@@ -188,8 +178,7 @@ init_pmaxfbu(fi)
 
 	if (tty_rows != fbu->scrInfo.max_row ||
 	    tty_cols != fbu->scrInfo.max_col)
-		printf("framebuffer init: size mismatch",
-		       "given %dx%d, compute %dx%x\n",
+		printf("framebuffer init: size mismatch: given %dx%d, compute %dx%d\n",
 		       fbu->scrInfo.max_row, fbu->scrInfo.max_col,
 		       tty_rows, tty_cols);
 
@@ -471,6 +460,7 @@ fbMouseButtons(newRepPtr, fi)
  * address space.
  * Return errno if there was an error.
  */
+int
 fbmmap_fb(fi, dev, data, p)
 	struct fbinfo *fi;
 	dev_t dev;
@@ -485,9 +475,9 @@ fbmmap_fb(fi, dev, data, p)
 	struct fbuaccess *fbp;
 	register struct fbuaccess *fbu = fi->fi_fbu;
 
-	len = pmax_round_page(((vm_offset_t)fbu & PGOFSET) +
+	len = mips_round_page(((vm_offset_t)fbu & PGOFSET) +
 			      sizeof(struct fbuaccess)) +
-		pmax_round_page(fi->fi_type.fb_size);
+		mips_round_page(fi->fi_type.fb_size);
 	addr = (vm_offset_t)0x20000000;		/* XXX */
 	vn.v_type = VCHR;			/* XXX */
 	vn.v_specinfo = &si;			/* XXX */
@@ -509,7 +499,7 @@ fbmmap_fb(fi, dev, data, p)
 	/*
 	 * Map the frame buffer into the user's address space.
 	 */
-	fbu->scrInfo.bitmap = (char *)pmax_round_page(fbp + 1);
+	fbu->scrInfo.bitmap = (char *)mips_round_page(fbp + 1);
 	return (0);
 }
 
@@ -557,20 +547,28 @@ genConfigMouse()
 
 	s = spltty();
 	switch (pmax_boardtype) {
-#if NDC > 0
+#if NDC_IOASIC > 0
 	case DS_3MAX:
+		dcDivertXInput = genKbdEvent;
+		dcMouseEvent = (void (*) __P((int)))genMouseEvent;
+		dcMouseButtons = (void (*) __P((int)))genMouseButtons;
+		break;
+#endif /* NDC_IOASIC */
+
+#if NDC_DS > 0
 	case DS_PMAX:
 		dcDivertXInput = genKbdEvent;
-		dcMouseEvent = genMouseEvent;
-		dcMouseButtons = genMouseButtons;
+		dcMouseEvent = (void (*) __P((int)))genMouseEvent;
+		dcMouseButtons = (void (*) __P((int)))genMouseButtons;
 		break;
-#endif
-#if NSCC > 1
+#endif /* NDC_DS */
+
+#if NSCC > 0
 	case DS_3MIN:
 	case DS_3MAXPLUS:
-		sccDivertXInput = genKbdEvent;
-		sccMouseEvent = genMouseEvent;
-		sccMouseButtons = genMouseButtons;
+		sccDivertXInput = (void (*) __P((int)))genKbdEvent;
+		sccMouseEvent = (void (*) __P((int)))genMouseEvent;
+		sccMouseButtons = (void (*) __P((int)))genMouseButtons;
 		break;
 #endif
 #if NDTOP > 0
@@ -596,27 +594,37 @@ genDeconfigMouse()
 
 	s = spltty();
 	switch (pmax_boardtype) {
-#if NDC > 0
+#if NDC_IOASIC > 0
 	case DS_3MAX:
-	case DS_PMAX:
-		dcDivertXInput = (void (*)())0;
-		dcMouseEvent = (void (*)())0;
-		dcMouseButtons = (void (*)())0;
+
+		dcDivertXInput = (void (*) __P((int)) )0;
+		dcMouseEvent = (void (*) __P((int)) )0;
+		dcMouseButtons = (void (*) __P((int)) )0;
 		break;
-#endif
-#if NSCC > 1
+#endif  /* NDC_IOASIC */
+
+#if NDC_DS > 0
+	case DS_PMAX:
+		dcDivertXInput = (void (*) __P((int)) )0;
+		dcMouseEvent = (void (*) __P((int)) )0;
+		dcMouseButtons =  (void (*) __P((int)) )0;
+		break;
+#endif /* NDC_DS */
+
+#if NSCC > 0
 	case DS_3MIN:
 	case DS_3MAXPLUS:
-		sccDivertXInput = (void (*)())0;
-		sccMouseEvent = (void (*)())0;
-		sccMouseButtons = (void (*)())0;
+		sccDivertXInput = (void (*) __P((int)))0;
+		sccMouseEvent = (void (*) __P((int)))0;
+		sccMouseButtons = (void (*) __P((int)))0;
 		break;
 #endif
+
 #if NDTOP > 0
 	case DS_MAXINE:
-		dtopDivertXInput = (void (*)())0;
-		dtopMouseEvent = (void (*)())0;
-		dtopMouseButtons = (void (*)())0;
+		dtopDivertXInput = (void (*) __P((int)) )0;
+		dtopMouseEvent = (void (*) __P((MouseReport *)) )0;
+		dtopMouseButtons = (void (*) __P((MouseReport *)) )0;
 		break;
 #endif
 	default:

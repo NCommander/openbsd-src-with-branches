@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=	vgaio
 MAN8=	vgaio.${MAN8EXT}
 
@@ -9,6 +11,7 @@ YACC=	yacc
 
 LFLAGS+= -I
 LDADD=	-lm -ly -ll
+DPADD=	${LIBM} ${LIBY} ${LIBL}
 
 CFLAGS+= -I ${.CURDIR}/obj -I ${.CURDIR} -g
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_ktrace.c,v 1.20 1995/10/07 06:28:16 mycroft Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.10 1998/06/02 14:50:47 csapuntz Exp $	*/
+/*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -50,6 +51,13 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
+struct ktr_header *ktrgetheader __P((int));
+int ktrops __P((struct proc *, struct proc *, int, int, struct vnode *));
+int ktrsetchildren __P((struct proc *, struct proc *, int, int,
+			struct vnode *));
+void ktrwrite __P((struct vnode *, struct ktr_header *));
+int ktrcanset __P((struct proc *, struct proc *));
+
 struct ktr_header *
 ktrgetheader(type)
 	int type;
@@ -59,6 +67,7 @@ ktrgetheader(type)
 
 	MALLOC(kth, struct ktr_header *, sizeof (struct ktr_header), 
 		M_TEMP, M_WAITOK);
+	bzero(kth, sizeof (struct ktr_header));
 	kth->ktr_type = type;
 	microtime(&kth->ktr_time);
 	kth->ktr_pid = p->p_pid;
@@ -75,7 +84,7 @@ ktrsyscall(vp, code, argsize, args)
 {
 	struct	ktr_header *kth;
 	struct	ktr_syscall *ktp;
-	register len = sizeof(struct ktr_syscall) + argsize;
+	register unsigned int len = sizeof(struct ktr_syscall) + argsize;
 	struct proc *p = curproc;	/* XXX */
 	register_t *argp;
 	int i;
@@ -264,9 +273,9 @@ sys_ktrace(curp, v, retval)
 		syscallarg(int) pid;
 	} */ *uap = v;
 	register struct vnode *vp = NULL;
-	register struct proc *p;
+	struct proc *p = NULL;
 	struct pgrp *pg;
-	int facs = SCARG(uap, facs) & ~KTRFAC_ROOT;
+	int facs = SCARG(uap, facs) & ~((unsigned) KTRFAC_ROOT);
 	int ops = KTROP(SCARG(uap, ops));
 	int descend = SCARG(uap, ops) & KTRFLAG_DESCEND;
 	int ret = 0;
@@ -280,12 +289,13 @@ sys_ktrace(curp, v, retval)
 		 */
 		NDINIT(&nd, LOOKUP, FOLLOW, UIO_USERSPACE, SCARG(uap, fname),
 		    curp);
-		if (error = vn_open(&nd, FREAD|FWRITE, 0)) {
+		if ((error = vn_open(&nd, FREAD|FWRITE, 0)) != 0) {
 			curp->p_traceflag &= ~KTRFAC_ACTIVE;
 			return (error);
 		}
 		vp = nd.ni_vp;
-		VOP_UNLOCK(vp);
+
+		VOP_UNLOCK(vp, 0, curp);
 		if (vp->v_type != VREG) {
 			(void) vn_close(vp, FREAD|FWRITE, curp->p_ucred, curp);
 			curp->p_traceflag &= ~KTRFAC_ACTIVE;
@@ -301,8 +311,7 @@ sys_ktrace(curp, v, retval)
 				if (ktrcanset(curp, p)) {
 					p->p_tracep = NULL;
 					p->p_traceflag = 0;
-					(void) vn_close(vp, FREAD|FWRITE,
-						p->p_ucred, p);
+				        vrele(vp);
 				} else
 					error = EPERM;
 			}
@@ -391,9 +400,17 @@ ktrops(curp, p, ops, facs, vp)
 		}
 	}
 
+	/*
+	 * Emit an emulation record, every time there is a ktrace
+	 * change/attach request. 
+	 */
+	if (KTRPOINT(p, KTR_EMUL))
+		ktremul(p->p_tracep, p->p_emul->e_name);
+
 	return (1);
 }
 
+int
 ktrsetchildren(curp, top, ops, facs, vp)
 	struct proc *curp, *top;
 	int ops, facs;
@@ -425,6 +442,7 @@ ktrsetchildren(curp, top, ops, facs, vp)
 	/*NOTREACHED*/
 }
 
+void
 ktrwrite(vp, kth)
 	struct vnode *vp;
 	register struct ktr_header *kth;
@@ -451,9 +469,9 @@ ktrwrite(vp, kth)
 		aiov[1].iov_len = kth->ktr_len;
 		auio.uio_resid += kth->ktr_len;
 	}
-	VOP_LOCK(vp);
+	vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
 	error = VOP_WRITE(vp, &auio, IO_UNIT|IO_APPEND, p->p_ucred);
-	VOP_UNLOCK(vp);
+	VOP_UNLOCK(vp, 0, p);
 	if (!error)
 		return;
 	/*
@@ -479,6 +497,7 @@ ktrwrite(vp, kth)
  *
  * TODO: check groups.  use caller effective gid.
  */
+int
 ktrcanset(callp, targetp)
 	struct proc *callp, *targetp;
 {

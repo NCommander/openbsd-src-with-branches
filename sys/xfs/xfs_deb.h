@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +36,7 @@
  * SUCH DAMAGE.
  */
 
-/* $arla: xfs_deb.h,v 1.11 2002/09/07 10:45:59 lha Exp $ */
+/* $Id: xfs_deb.h,v 1.9 1998/12/22 13:16:19 lha Exp $ */
 
 #ifndef _xfs_deb_h
 #define _xfs_deb_h
@@ -51,10 +56,10 @@
 
 extern unsigned int xfsdeb;
 
-#ifdef NNPFS_DEBUG
-#define NNPFSDEB(mask, args) do { if (mask&xfsdeb) printf args; } while (0)
+#ifdef XFS_DEBUG
+#define XFSDEB(mask, args) do { if (mask&xfsdeb) printf args; } while (0)
 #else
-#define NNPFSDEB(mask, args) do { ; } while (0)
+#define XFSDEB(mask, args) do { ; } while (0)
 #endif
 
 #endif				       /* _xfs_deb_h */

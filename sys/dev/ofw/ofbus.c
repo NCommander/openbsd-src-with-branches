@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofbus.c,v 1.6 1999/10/28 04:25:25 rahnds Exp $	*/
 /*	$NetBSD: ofbus.c,v 1.3 1996/10/13 01:38:11 christos Exp $	*/
 
 /*
@@ -34,8 +35,14 @@
 #include <sys/param.h>
 #include <sys/device.h>
 
+#include <machine/autoconf.h>
 #include <dev/ofw/openfirm.h>
 
+/* a bit of a hack to prevent conflicts between ofdisk and sd/wd */
+#include "sd.h"
+
+int ofrprobe __P((struct device *, void *, void *));
+void ofrattach __P((struct device *, struct device *, void *));
 int ofbprobe __P((struct device *, void *, void *));
 void ofbattach __P((struct device *, struct device *, void *));
 static int ofbprint __P((void *, const char *));
@@ -49,7 +56,7 @@ struct cfdriver ofbus_cd = {
 };
 
 struct cfattach ofroot_ca = {
-	sizeof(struct device), ofbprobe, ofbattach
+	sizeof(struct device), ofrprobe, ofrattach
 };
  
 struct cfdriver ofroot_cd = {
@@ -78,6 +85,65 @@ ofbprint(aux, name)
 	return UNCONF;
 }
 
+int
+ofrprobe(parent, cf, aux)
+	struct device *parent;
+	void *cf, *aux;
+{
+	int node;
+	struct confargs *ca = aux;
+	
+	if (strcmp(ca->ca_name, ofroot_cd.cd_name) != 0)
+		return (0);
+
+	return 1; 
+}
+void
+ofrattach(parent, dev, aux)
+	struct device *parent, *dev;
+	void *aux;
+{
+	int child;
+	char name[5];
+	struct ofprobe *ofp = aux;
+	struct ofprobe probe;
+	int units;
+	int node;
+	char ofname[64];
+	int l;
+	
+        if (!(node = OF_peer(0)))
+                panic("No PROM root");
+        probe.phandle = node;
+	ofp = &probe;
+
+	ofbprint(ofp, 0);
+	printf("\n");
+
+	if ((l = OF_getprop(ofp->phandle, "model", ofname, sizeof ofname - 1)) < 0)
+	{
+		/* no system name? */
+	} else {
+		if (l >= sizeof ofname)
+			l = sizeof ofname - 1;
+		ofname[l] = 0;
+		systype(ofname);
+	}
+	ofw_intr_establish();
+		
+
+	for (child = OF_child(ofp->phandle); child; child = OF_peer(child)) {
+		/*
+		 * This is a hack to skip all the entries in the tree
+		 * that aren't devices (packages, openfirmware etc.).
+		 */
+		if (OF_getprop(child, "device_type", name, sizeof name) < 0)
+			continue;
+		probe.phandle = child;
+		probe.unit = 0;
+		config_found(dev, &probe, ofbprint);
+	}
+}
 int
 ofbprobe(parent, cf, aux)
 	struct device *parent;
@@ -113,10 +179,19 @@ ofbattach(parent, dev, aux)
 	 */
 	units = 1;
 	if (OF_getprop(ofp->phandle, "name", name, sizeof name) > 0) {
-		if (!strcmp(name, "scsi"))
+		if (!strcmp(name, "scsi")) {
+#if NSD > 0
+			units = 0; /* if sd driver in kernel, dont use ofw */
+#else
 			units = 7; /* What about wide or hostid != 7?	XXX */
-		else if (!strcmp(name, "ide"))
+#endif
+		} else if (!strcmp(name, "ide")) {
+#if NSD > 0
+			units = 0; /* if sd? driver in kernel, dont use ofw */
+#else 
 			units = 2;
+#endif
+		}
 	}
 	for (child = OF_child(ofp->phandle); child; child = OF_peer(child)) {
 		/*

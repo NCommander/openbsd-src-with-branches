@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm.h,v 1.7 1998/09/11 21:17:52 mickey Exp $	*/
 /*	$NetBSD: vm.h,v 1.13 1994/06/29 06:47:52 cgd Exp $	*/
 
 /*
@@ -32,11 +33,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)vm.h	8.2 (Berkeley) 12/13/93
+ *	@(#)vm.h	8.5 (Berkeley) 5/11/95
  */
 
 #ifndef VM_H
 #define VM_H
+
+/* XXX remove this later when the simple locks are not here! */
 
 typedef int vm_inherit_t;		/* XXX: inheritance codes */
 
@@ -58,15 +61,25 @@ typedef struct vm_page  *vm_page_t;
 struct pager_struct;
 typedef struct pager_struct *vm_pager_t;
 
+/*
+ *	MACH VM locking type mappings to kernel types
+ */
+#if !defined(UVM)
+typedef struct simplelock	simple_lock_data_t;
+typedef struct simplelock	*simple_lock_t;
+typedef struct lock		lock_data_t;
+typedef struct lock		*lock_t;
+#endif
+
 #include <sys/vmmeter.h>
 #include <sys/queue.h>
 #include <vm/vm_param.h>
-#include <vm/lock.h>
+#include <sys/lock.h>
 #include <vm/vm_prot.h>
+#include <vm/pmap.h>
 #include <vm/vm_inherit.h>
 #include <vm/vm_map.h>
 #include <vm/vm_object.h>
-#include <vm/pmap.h>
 #include <vm/vm_extern.h>
 
 /*
@@ -90,4 +103,11 @@ struct vmspace {
 	caddr_t	vm_daddr;	/* user virtual address of data XXX */
 	caddr_t vm_maxsaddr;	/* user VA at max stack growth */
 };
+
+#ifdef  pmap_resident_count
+#define vm_resident_count(vm) (pmap_resident_count((vm)->vm_map.pmap))
+#else
+#define vm_resident_count(vm) ((vm)->vm_rssize)
+#endif
+
 #endif /* VM_H */

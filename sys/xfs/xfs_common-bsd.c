@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2002 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,78 +36,30 @@
  * SUCH DAMAGE.
  */
 
+#ifdef XFS_DEBUG
 #include <xfs/xfs_locl.h>
 #include <xfs/xfs_common.h>
 #include <xfs/xfs_deb.h>
 
-RCSID("$arla: xfs_common-bsd.c,v 1.25 2002/12/18 16:32:03 lha Exp $");
+RCSID("$Id: xfs_common-bsd.c,v 1.7 1998/12/22 13:16:11 lha Exp $");
 
-#ifdef MALLOC_DEFINE
-MALLOC_DEFINE(M_NNPFS, "xfs-misc", "xfs misc");
-MALLOC_DEFINE(M_NNPFS_NODE, "xfs-node", "xfs node");
-MALLOC_DEFINE(M_NNPFS_LINK, "xfs-link", "xfs link");
-MALLOC_DEFINE(M_NNPFS_MSG, "xfs-msg", "xfs msg");
-#endif
-
-#ifdef NNPFS_DEBUG
 static u_int xfs_allocs;
 static u_int xfs_frees;
 
 void *
-xfs_alloc(u_int size, xfs_malloc_type type)
+xfs_alloc(u_int size)
 {
-    void *ret;
-
     xfs_allocs++;
-    NNPFSDEB(XDEBMEM, ("xfs_alloc: xfs_allocs - xfs_frees %d\n", 
+    XFSDEB(XDEBMEM, ("xfs_alloc: xfs_allocs - xfs_frees %d\n", 
 		     xfs_allocs - xfs_frees));
 
-    MALLOC(ret, void *, size, type, M_WAITOK);
-    return ret;
+    return malloc(size, M_TEMP, M_WAITOK); /* What kind? */
 }
 
 void
-xfs_free(void *ptr, u_int size, xfs_malloc_type type)
+xfs_free(void *ptr, u_int size)
 {
     xfs_frees++;
-    FREE(ptr, type);
+    free(ptr, M_TEMP);
 }
-
-#endif /* NNPFS_DEBUG */
-
-int
-xfs_suser(d_thread_t *p)
-{
-#if defined(HAVE_TWO_ARGUMENT_SUSER)
-    return suser (xfs_proc_to_cred(p), NULL);
-#else
-    return suser (p);
 #endif
-}
-
-/*
- * Print a `dev_t' in some readable format
- */
-
-#ifdef HAVE_KERNEL_DEVTONAME
-
-const char *
-xfs_devtoname_r (dev_t dev, char *buf, size_t sz)
-{
-    return devtoname (dev);
-}
-
-#else /* !HAVE_KERNEL_DEVTONAME */
-
-const char *
-xfs_devtoname_r (dev_t dev, char *buf, size_t sz)
-{
-#ifdef HAVE_KERNEL_SNPRINTF
-    snprintf (buf, sz, "%u/%u", major(dev), minor(dev));
-    return buf;
-#else
-    return "<unknown device>";
-#endif
-}
-
-#endif /* HAVE_KERNEL_DEVTONAME */

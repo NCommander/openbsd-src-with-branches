@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_socket.c,v 1.12 1995/10/07 06:27:13 mycroft Exp $	*/
+/*	$OpenBSD: linux_socket.c,v 1.16 1999/02/10 08:04:04 deraadt Exp $	*/
+/*	$NetBSD: linux_socket.c,v 1.14 1996/04/05 00:01:50 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -44,7 +45,11 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <net/if.h>
+#include <net/if_types.h>
+#include <net/if_dl.h>
 #include <netinet/in.h>
+#include <netinet/in_systm.h>
+#include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <sys/mount.h>
 #include <sys/proc.h>
@@ -70,6 +75,44 @@
  * calls to copy them in themselves. To make it look better, they
  * are copied to structures.
  */
+
+int linux_to_bsd_domain __P((int));
+int linux_socket __P((struct proc *, struct linux_socket_args *, register_t *));
+int linux_bind __P((struct proc *, struct linux_bind_args *, register_t *));
+int linux_connect __P((struct proc *, struct linux_connect_args *,
+    register_t *));
+int linux_listen __P((struct proc *, struct linux_listen_args *, register_t *));
+int linux_accept __P((struct proc *, struct linux_accept_args *, register_t *));
+int linux_getsockname __P((struct proc *, struct linux_getsockname_args *,
+    register_t *));
+int linux_getpeername __P((struct proc *, struct linux_getpeername_args *,
+    register_t *));
+int linux_socketpair __P((struct proc *, struct linux_socketpair_args *,
+    register_t *));
+int linux_send __P((struct proc *, struct linux_send_args *, register_t *));
+int linux_recv __P((struct proc *, struct linux_recv_args *, register_t *));
+int linux_sendto __P((struct proc *, struct linux_sendto_args *, register_t *));
+int linux_recvfrom __P((struct proc *, struct linux_recvfrom_args *,
+    register_t *));
+int linux_shutdown __P((struct proc *, struct linux_shutdown_args *,
+    register_t *));
+int linux_to_bsd_sopt_level __P((int));
+int linux_to_bsd_so_sockopt __P((int));
+int linux_to_bsd_ip_sockopt __P((int));
+int linux_to_bsd_tcp_sockopt __P((int));
+int linux_to_bsd_udp_sockopt __P((int));
+int linux_setsockopt __P((struct proc *, struct linux_setsockopt_args *,
+    register_t *));
+int linux_getsockopt __P((struct proc *, struct linux_getsockopt_args *,
+    register_t *));
+int linux_recvmsg __P((struct proc *, struct linux_recvmsg_args *,
+    register_t *));
+int linux_sendmsg __P((struct proc *, struct linux_sendmsg_args *,
+    register_t *));
+
+int linux_check_hdrincl __P((struct proc *, int, register_t *));
+int linux_sendto_hdrincl __P((struct proc *, struct sys_sendto_args *,
+    register_t *));
 
 /*
  * Convert between Linux and BSD socket domain values
@@ -140,7 +183,7 @@ linux_bind(p, uap, retval)
 		return error;
 
 	SCARG(&bba, s) = lba.s;
-	SCARG(&bba, name) = (caddr_t) lba.name;
+	SCARG(&bba, name) = (void *) lba.name;
 	SCARG(&bba, namelen) = lba.namelen;
 
 	return sys_bind(p, &bba, retval);
@@ -164,10 +207,50 @@ linux_connect(p, uap, retval)
 		return error;
 
 	SCARG(&bca, s) = lca.s;
-	SCARG(&bca, name) = (caddr_t) lca.name;
+	SCARG(&bca, name) = (void *) lca.name;
 	SCARG(&bca, namelen) = lca.namelen;
 
-	return sys_connect(p, &bca, retval);
+	error = sys_connect(p, &bca, retval);
+
+	if (error == EISCONN) {
+		struct sys_getsockopt_args bga;
+#if 0
+		struct sys_fcntl_args fca;
+#endif
+		void *status, *statusl;
+		int stat, statl = sizeof stat;
+		caddr_t sg;
+
+#if 0
+		SCARG(&fca, fd) = lca.s;
+		SCARG(&fca, cmd) = F_GETFL;
+		SCARG(&fca, arg) = 0;
+		if (sys_fcntl(p, &fca, retval) == -1 ||
+		    (*retval & O_NONBLOCK) == 0)
+			return error;
+#endif
+
+		sg = stackgap_init(p->p_emul);
+		status = stackgap_alloc(&sg, sizeof stat);
+		statusl = stackgap_alloc(&sg, sizeof statusl);
+
+		if ((error = copyout(&statl, statusl, sizeof statl)))
+			return error;
+
+		SCARG(&bga, s) = lca.s;
+		SCARG(&bga, level) = SOL_SOCKET;
+		SCARG(&bga, name) = SO_ERROR;
+		SCARG(&bga, val) = status;
+		SCARG(&bga, avalsize) = statusl;
+		
+		error = sys_getsockopt(p, &bga, retval);
+		if (error)
+			return error;
+		if ((error = copyin(status, &stat, sizeof stat)))
+			return error;
+		return stat;
+	}
+	return error;
 }
 
 int
@@ -345,6 +428,119 @@ linux_recv(p, uap, retval)
 }
 
 int
+linux_check_hdrincl(p, fd, retval)
+	struct proc *p;
+	int fd;
+	register_t *retval;
+{
+	struct sys_getsockopt_args /* {
+		int s;
+		int level;
+		int name;
+		caddr_t val;
+		int *avalsize;
+	} */ gsa;
+	int error;
+	caddr_t sg, val;
+	int *valsize;
+	int size_val = sizeof val;
+	int optval;
+
+	sg = stackgap_init(p->p_emul);
+	val = stackgap_alloc(&sg, sizeof(optval));
+	valsize = stackgap_alloc(&sg, sizeof(size_val));
+
+	if ((error = copyout(&size_val, valsize, sizeof(size_val))))
+		return (error);
+	SCARG(&gsa, s) = fd;
+	SCARG(&gsa, level) = IPPROTO_IP;
+	SCARG(&gsa, name) = IP_HDRINCL;
+	SCARG(&gsa, val) = val;
+	SCARG(&gsa, avalsize) = valsize;
+
+	if ((error = sys_getsockopt(p, &gsa, retval)))
+		return (error);
+	if ((error = copyin(val, &optval, sizeof(optval))))
+		return (error);
+	return (optval == 0);
+}
+
+/*
+ * linux_ip_copysize defines how many bytes we should copy
+ * from the beginning of the IP packet before we customize it for BSD.
+ * It should include all the fields we modify (ip_len and ip_off)
+ * and be as small as possible to minimize copying overhead.
+ */
+#define linux_ip_copysize      8
+
+int
+linux_sendto_hdrincl(p, bsa, retval)
+	struct proc *p;
+	struct sys_sendto_args *bsa;
+	register_t *retval;
+{
+	caddr_t sg;
+	struct sys_sendmsg_args ssa;
+	struct ip *packet, rpacket;
+	struct msghdr *msg, rmsg;
+	struct iovec *iov, riov[2];
+	int error;
+
+	/* Check the packet isn't too small before we mess with it */
+	if (SCARG(bsa, len) < linux_ip_copysize)
+		return EINVAL;
+
+	/*
+	 * Tweaking the user buffer in place would be bad manners.
+	 * We create a corrected IP header with just the needed length,
+	 * then use an iovec to glue it to the rest of the user packet
+	 * when calling sendmsg().
+	 */
+	sg = stackgap_init(p->p_emul);
+	packet = (struct ip *)stackgap_alloc(&sg, linux_ip_copysize);
+	msg = (struct msghdr *)stackgap_alloc(&sg, sizeof(*msg));
+	iov = (struct iovec *)stackgap_alloc(&sg, sizeof(*iov)*2);
+
+	/* Make a copy of the beginning of the packet to be sent */
+	if ((error = copyin(SCARG(bsa, buf), (caddr_t)&rpacket,
+	    linux_ip_copysize)))
+		return error;
+
+	/* Convert fields from Linux to BSD raw IP socket format */
+	rpacket.ip_len = SCARG(bsa, len);
+	error = copyout(&rpacket, packet, sizeof(packet));
+	if (error)
+		return (error);
+
+	riov[0].iov_base = (char *)packet;
+	riov[0].iov_len = linux_ip_copysize;
+	riov[1].iov_base = (caddr_t)SCARG(bsa, buf) + linux_ip_copysize;
+	riov[1].iov_len = SCARG(bsa, len) - linux_ip_copysize;
+
+	error = copyout(&riov[0], iov, sizeof(riov));
+	if (error)
+		return (error);
+
+	/* Prepare the msghdr and iovec structures describing the new packet */
+	rmsg.msg_name = (void *)SCARG(bsa, to);
+	rmsg.msg_namelen = SCARG(bsa, tolen);
+	rmsg.msg_iov = iov;
+	rmsg.msg_iovlen = 2;
+	rmsg.msg_control = NULL;
+	rmsg.msg_controllen = 0;
+	rmsg.msg_flags = 0;
+
+	error = copyout(&riov[0], iov, sizeof(riov));
+	if (error)
+		return (error);
+
+	SCARG(&ssa, s) = SCARG(bsa, s);
+	SCARG(&ssa, msg) = msg;
+	SCARG(&ssa, flags) = SCARG(bsa, flags);
+	return sys_sendmsg(p, &ssa, retval);
+}
+
+int
 linux_sendto(p, uap, retval)
 	struct proc *p;
 	struct linux_sendto_args /* {
@@ -368,9 +564,11 @@ linux_sendto(p, uap, retval)
 	SCARG(&bsa, buf) = lsa.msg;
 	SCARG(&bsa, len) = lsa.len;
 	SCARG(&bsa, flags) = lsa.flags;
-	SCARG(&bsa, to) = (caddr_t) lsa.to;
+	SCARG(&bsa, to) = (void *) lsa.to;
 	SCARG(&bsa, tolen) = lsa.tolen;
 
+	if (linux_check_hdrincl(p, lsa.s, retval) == 0)
+		return linux_sendto_hdrincl(p, &bsa, retval);
 	return sys_sendto(p, &bsa, retval);
 }
 
@@ -510,6 +708,8 @@ linux_to_bsd_ip_sockopt(lopt)
 		return IP_ADD_MEMBERSHIP;
 	case LINUX_IP_DROP_MEMBERSHIP:
 		return IP_DROP_MEMBERSHIP;
+	case LINUX_IP_HDRINCL:
+		return IP_HDRINCL;
 	default:
 		return -1;
 	}
@@ -578,20 +778,20 @@ linux_setsockopt(p, uap, retval)
 	SCARG(&bsa, valsize) = lsa.optlen;
 
 	switch (SCARG(&bsa, level)) {
-		case SOL_SOCKET:
-			name = linux_to_bsd_so_sockopt(lsa.optname);
-			break;
-		case IPPROTO_IP:
-			name = linux_to_bsd_ip_sockopt(lsa.optname);
-			break;
-		case IPPROTO_TCP:
-			name = linux_to_bsd_tcp_sockopt(lsa.optname);
-			break;
-		case IPPROTO_UDP:
-			name = linux_to_bsd_udp_sockopt(lsa.optname);
-			break;
-		default:
-			return EINVAL;
+	case SOL_SOCKET:
+		name = linux_to_bsd_so_sockopt(lsa.optname);
+		break;
+	case IPPROTO_IP:
+		name = linux_to_bsd_ip_sockopt(lsa.optname);
+		break;
+	case IPPROTO_TCP:
+		name = linux_to_bsd_tcp_sockopt(lsa.optname);
+		break;
+	case IPPROTO_UDP:
+		name = linux_to_bsd_udp_sockopt(lsa.optname);
+		break;
+	default:
+		return EINVAL;
 	}
 
 	if (name == -1)
@@ -629,20 +829,20 @@ linux_getsockopt(p, uap, retval)
 	SCARG(&bga, avalsize) = lga.optlen;
 
 	switch (SCARG(&bga, level)) {
-		case SOL_SOCKET:
-			name = linux_to_bsd_so_sockopt(lga.optname);
-			break;
-		case IPPROTO_IP:
-			name = linux_to_bsd_ip_sockopt(lga.optname);
-			break;
-		case IPPROTO_TCP:
-			name = linux_to_bsd_tcp_sockopt(lga.optname);
-			break;
-		case IPPROTO_UDP:
-			name = linux_to_bsd_udp_sockopt(lga.optname);
-			break;
-		default:
-			return EINVAL;
+	case SOL_SOCKET:
+		name = linux_to_bsd_so_sockopt(lga.optname);
+		break;
+	case IPPROTO_IP:
+		name = linux_to_bsd_ip_sockopt(lga.optname);
+		break;
+	case IPPROTO_TCP:
+		name = linux_to_bsd_tcp_sockopt(lga.optname);
+		break;
+	case IPPROTO_UDP:
+		name = linux_to_bsd_udp_sockopt(lga.optname);
+		break;
+	default:
+		return EINVAL;
 	}
 
 	if (name == -1)
@@ -650,6 +850,77 @@ linux_getsockopt(p, uap, retval)
 	SCARG(&bga, name) = name;
 
 	return sys_getsockopt(p, &bga, retval);
+}
+
+int
+linux_recvmsg(p, uap, retval)
+	struct proc *p;
+	struct linux_recvmsg_args /* {
+		syscallarg(int) s;
+		syscallarg(caddr_t) msg;
+		syscallarg(int) flags;
+	} */ *uap;
+	register_t *retval;
+{
+	struct linux_recvmsg_args lla;
+	struct sys_recvmsg_args bla;
+	int error;
+
+	if ((error = copyin((caddr_t) uap, (caddr_t) &lla, sizeof lla)))
+		return error;
+
+	SCARG(&bla, s) = lla.s;
+	SCARG(&bla, msg) = (struct msghdr *)lla.msg;
+	SCARG(&bla, flags) = lla.flags;
+
+	return sys_recvmsg(p, &bla, retval);
+}
+
+int
+linux_sendmsg(p, uap, retval)
+	struct proc *p;
+	struct linux_sendmsg_args /* {
+		syscallarg(int) s;
+		syscallarg(struct msghdr *) msg;
+		syscallarg(int) flags;
+	} */ *uap;
+	register_t *retval;
+{
+	struct linux_sendmsg_args lla;
+	struct sys_sendmsg_args bla;
+	int error;
+	caddr_t control;
+	int level;
+
+	if ((error = copyin((caddr_t) uap, (caddr_t) &lla, sizeof lla)))
+		return error;
+	SCARG(&bla, s) = lla.s;
+	SCARG(&bla, msg) = lla.msg;
+	SCARG(&bla, flags) = lla.flags;
+
+	error = copyin(lla.msg->msg_control, &control, sizeof(caddr_t));
+	if (error)
+		return error;
+	if (control == NULL)
+		goto done;
+	error = copyin(&((struct cmsghdr *)control)->cmsg_level,
+	    &level, sizeof(int));
+	if (error)
+		return error;
+	if (level == 1) {
+		/*
+		 * Linux thinks that SOL_SOCKET is 1; we know that it's really
+		 * 0xffff, of course.
+		 */
+		level = SOL_SOCKET;
+		/* XXX should use stack gap! */
+		error = copyout(&level, &((struct cmsghdr *)control)->
+		    cmsg_level, sizeof(int));
+		if (error)
+			return error;
+	}
+done:
+	return sys_sendmsg(p, &bla, retval);
 }
 
 /*
@@ -698,7 +969,114 @@ linux_sys_socketcall(p, v, retval)
 		return linux_setsockopt(p, SCARG(uap, args), retval);
 	case LINUX_SYS_getsockopt:
 		return linux_getsockopt(p, SCARG(uap, args), retval);
+	case LINUX_SYS_sendmsg:
+		return linux_sendmsg(p, SCARG(uap, args), retval);
+	case LINUX_SYS_recvmsg:
+		return linux_recvmsg(p, SCARG(uap, args), retval);
 	default:
 		return ENOSYS;
 	}
+}
+
+int
+linux_ioctl_socket(p, uap, retval)
+	register struct proc *p;
+	register struct linux_sys_ioctl_args /* {
+		syscallarg(int) fd;
+		syscallarg(u_long) com;
+		syscallarg(caddr_t) data;
+	} */ *uap;
+	register_t *retval;
+{
+	u_long com;
+	struct sys_ioctl_args ia;
+
+	com = SCARG(uap, com);
+	retval[0] = 0;
+
+	switch (com) {
+	case LINUX_FIOSETOWN:
+		SCARG(&ia, com) = FIOSETOWN;
+		break;
+	case LINUX_SIOCSPGRP:
+		SCARG(&ia, com) = SIOCSPGRP;
+		break;
+	case LINUX_FIOGETOWN:
+		SCARG(&ia, com) = FIOGETOWN;
+		break;
+	case LINUX_SIOCGPGRP:
+		SCARG(&ia, com) = SIOCGPGRP;
+		break;
+	case LINUX_SIOCATMARK:
+		SCARG(&ia, com) = SIOCATMARK;
+		break;
+#if 0
+	case LINUX_SIOCGSTAMP:
+		SCARG(&ia, com) = SIOCGSTAMP;
+		break;
+#endif
+	case LINUX_SIOCGIFCONF:
+		SCARG(&ia, com) = OSIOCGIFCONF;
+		break;
+	case LINUX_SIOCGIFFLAGS:
+		SCARG(&ia, com) = SIOCGIFFLAGS;
+		break;
+	case LINUX_SIOCGIFADDR:
+		SCARG(&ia, com) = OSIOCGIFADDR;
+		break;
+	case LINUX_SIOCGIFDSTADDR:
+		SCARG(&ia, com) = OSIOCGIFDSTADDR;
+		break;
+	case LINUX_SIOCGIFBRDADDR:
+		SCARG(&ia, com) = OSIOCGIFBRDADDR;
+		break;
+	case LINUX_SIOCGIFNETMASK:
+		SCARG(&ia, com) = OSIOCGIFNETMASK;
+		break;
+	case LINUX_SIOCGIFMETRIC:
+		SCARG(&ia, com) = SIOCGIFMETRIC;
+		break;
+	case LINUX_SIOCGIFMTU:
+		SCARG(&ia, com) = SIOCGIFMTU;
+		break;
+	case LINUX_SIOCADDMULTI:
+		SCARG(&ia, com) = SIOCADDMULTI;
+		break;
+	case LINUX_SIOCDELMULTI:
+		SCARG(&ia, com) = SIOCDELMULTI;
+		break;
+	case LINUX_SIOCGIFHWADDR: {
+		struct linux_ifreq *ifr = (struct linux_ifreq *)SCARG(&ia, data);
+		struct sockaddr_dl *sdl;
+		struct ifnet *ifp;
+		struct ifaddr *ifa;
+
+		/* 
+		 * Note that we don't actually respect the name in the ifreq
+		 * structure, as Linux interface names are all different.
+		 */
+		for (ifp = ifnet.tqh_first; ifp != 0;
+		    ifp = ifp->if_list.tqe_next) {
+			if (ifp->if_type != IFT_ETHER)
+				continue;
+			for (ifa = ifp->if_addrlist.tqh_first; ifa;
+			    ifa = ifa->ifa_list.tqe_next) {
+				if ((sdl = (struct sockaddr_dl *)ifa->ifa_addr) &&
+				    (sdl->sdl_family == AF_LINK) &&
+				    (sdl->sdl_type == IFT_ETHER)) {
+					return copyout(LLADDR(sdl),
+					    (caddr_t)&ifr->ifr_hwaddr.sa_data,
+					    LINUX_IFHWADDRLEN);
+				}
+			}
+		}
+		return ENOENT;
+	    }
+	default:
+		return EINVAL;
+	}
+
+	SCARG(&ia, fd) = SCARG(uap, fd);
+	SCARG(&ia, data) = SCARG(uap, data);
+	return sys_ioctl(p, &ia, retval);
 }

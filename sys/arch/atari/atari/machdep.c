@@ -1,4 +1,4 @@
-/*	$NetBSD: machdep.c,v 1.16 1995/10/07 06:25:28 mycroft Exp $	*/
+/*	$NetBSD: machdep.c,v 1.18 1996/01/04 22:21:47 jtc Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -90,6 +90,7 @@
 
 #include "ether.h"
 #include "ppp.h"
+#include "bridge.h"
 
 static void call_sicallbacks __P((void));
 static void alloc_sicallback __P((void));
@@ -114,10 +115,14 @@ int	safepri = PSL_LOWIPL;
 extern  int   freebufspace;
 extern	u_int lowram;
 
+#ifdef COMPAT_SUNOS
+extern struct emul emul_sunos;
+#endif
+
 /*
  * For the fpu emulation and the fpu driver
  */
-int	fputype;
+int	fputype = 0;
 
 /* the following is used externally (sysctl_hw) */
 char machine[] = "atari";
@@ -209,7 +214,6 @@ again:
 	    (name) = (type *)v; v = (caddr_t)((lim) = ((name)+(num)))
 /*	valloc(cfree, struct cblock, nclist); */
 	valloc(callout, struct callout, ncallout);
-	valloc(swapmap, struct map, nswapmap = maxproc * 2);
 #ifdef SYSVSHM
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif
@@ -350,13 +354,18 @@ again:
 	/*
 	 * Configure the system.
 	 */
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif
+	}
 	configure();
 }
 
 /*
  * Set registers on exec.
- * XXX Should clear registers except sp, pc,
- * but would break init; should be fixed soon.
  */
 void
 setregs(p, pack, stack, retval)
@@ -367,15 +376,42 @@ setregs(p, pack, stack, retval)
 {
 	struct frame *frame = (struct frame *)p->p_md.md_regs;
 	
+	frame->f_sr = PSL_USERSET;
 	frame->f_pc = pack->ep_entry & ~1;
-	frame->f_regs[SP] = stack;
+	frame->f_regs[D0] = 0;
+	frame->f_regs[D1] = 0;
+	frame->f_regs[D2] = 0;
+	frame->f_regs[D3] = 0;
+	frame->f_regs[D4] = 0;
+	frame->f_regs[D5] = 0;
+	frame->f_regs[D6] = 0;
+	frame->f_regs[D7] = 0;
+	frame->f_regs[A0] = 0;
+	frame->f_regs[A1] = 0;
 	frame->f_regs[A2] = (int)PS_STRINGS;
+	frame->f_regs[A3] = 0;
+	frame->f_regs[A4] = 0;
+	frame->f_regs[A5] = 0;
+	frame->f_regs[A6] = 0;
+	frame->f_regs[SP] = stack;
 
 	/* restore a null state frame */
 	p->p_addr->u_pcb.pcb_fpregs.fpf_null = 0;
 
-	if(fputype)
+	if (fputype)
 		m68881_restore(&p->p_addr->u_pcb.pcb_fpregs);
+
+#ifdef COMPAT_SUNOS
+	/*
+	 * SunOS' ld.so does self-modifying code without knowing
+	 * about the 040's cache purging needs.  So we need to uncache
+	 * writeable executable pages.
+	 */
+	if (p->p_emul == &emul_sunos)
+		p->p_md.md_flags |= MDP_UNCACHE_WX;
+	else
+		p->p_md.md_flags &= ~MDP_UNCACHE_WX;
+#endif
 }
 
 /*
@@ -510,7 +546,7 @@ sendsig(catcher, sig, mask, code)
 	 */
 	if ((psp->ps_flags & SAS_ALTSTACK) && oonstack == 0 &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sigframe *)(psp->ps_sigstk.ss_sp +
 		    psp->ps_sigstk.ss_size - sizeof(struct sigframe));
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else
@@ -763,15 +799,24 @@ void
 bootsync(void)
 {
 	if (waittime < 0) {
+		extern struct proc proc0;
+		/* defeat against panic in boot */
+		if (curproc == NULL)
+			curproc = &proc0;
 		waittime = 0;
 
 		vfs_shutdown();
 
 		/*
 		 * If we've been adjusting the clock, the todr
-		 * will be out of synch; adjust it now.
+		 * will be out of synch; adjust it now unless
+		 * the system was sitting in ddb.
 		 */
-		resettodr();
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
 	}
 }
 
@@ -784,8 +829,15 @@ boot(howto)
 		savectx(curproc->p_addr);
 
 	boothowto = howto;
-	if((howto&RB_NOSYNC) == 0)
+	if((howto & RB_NOSYNC) == 0)
 		bootsync();
+
+	/*
+	 * Call shutdown hooks. Do this _before_ anything might be
+	 * asked to the user in case nobody is there....
+	 */
+	doshutdownhooks();
+
 	splhigh();			/* extreme priority */
 	if(howto & RB_HALT) {
 		printf("halted\n\n");
@@ -794,6 +846,7 @@ boot(howto)
 	else {
 		if(howto & RB_DUMP)
 			dumpsys();
+
 		doboot();
 		/*NOTREACHED*/
 	}
@@ -1063,6 +1116,18 @@ netintr()
 		ipintr();
 	}
 #endif
+#ifdef INET6
+	if (netisr & (1 << NETISR_IPV6)) {
+		netisr &= ~(1 << NETISR_IPV6);
+		ip6intr();
+	}
+#endif
+#ifdef NETATALK
+	if (netisr & (1 << NETISR_ATALK)) {
+		netisr &= ~(1 << NETISR_ATALK);
+		atintr();
+	}
+#endif
 #ifdef NS
 	if (netisr & (1 << NETISR_NS)) {
 		netisr &= ~(1 << NETISR_NS);
@@ -1079,6 +1144,12 @@ netintr()
 	if (netisr & (1 << NETISR_PPP)) {
 		netisr &= ~(1 << NETISR_PPP);
 		pppintr();
+	}
+#endif
+#if NBRIDGE > 0
+	if (netisr & (1 << NETISR_BRIDGE)) {
+		netisr &= ~(1 << NETISR_BRIDGE);
+		bridgeintr();
 	}
 #endif
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2002 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +36,7 @@
  * SUCH DAMAGE.
  */
 
-/* $arla: xfs_vnodeops.h,v 1.25 2002/09/07 10:46:12 lha Exp $ */
+/* $Id: xfs_vnodeops.h,v 1.12 1999/02/06 03:51:12 assar Exp $ */
 
 #ifndef _xfs_vnodeops_h
 #define _xfs_vnodeops_h
@@ -48,88 +53,60 @@
 #define xfs_vfs_writelock(vp, proc) VREF((vp))
 #define xfs_vfs_unlock(vp, proc) vrele((vp))
 
-/* XXX - should this do anything? */
-
-#define xfs_vfs_vn_lock(vp, flags, proc) (0)
-
 #elif defined(HAVE_TWO_ARGUMENT_VOP_LOCK)
 
 #define xfs_vfs_readlock(vp, proc) vn_lock((vp), LK_SHARED | LK_RETRY)
 #define xfs_vfs_writelock(vp, proc) vn_lock((vp), LK_EXCLUSIVE | LK_RETRY)
 #define xfs_vfs_unlock(vp, proc) VOP_UNLOCK((vp), 0)
-#define xfs_vfs_vn_lock(vp, flags, proc) vn_lock((vp), (flags))
 
 #elif defined(HAVE_THREE_ARGUMENT_VOP_LOCK)
 
 #define xfs_vfs_readlock(vp, proc) vn_lock((vp), LK_SHARED | LK_RETRY, (proc))
 #define xfs_vfs_writelock(vp, proc) vn_lock((vp), LK_EXCLUSIVE | LK_RETRY, (proc))
 #define xfs_vfs_unlock(vp, proc) VOP_UNLOCK((vp), 0, (proc))
-#define xfs_vfs_vn_lock(vp, flags, proc) vn_lock((vp), (flags), (proc))
 
-#elif defined(HAVE_ONE_ARGUMENT_VOP_LOCK)
+#else
 
 #define xfs_vfs_readlock(vp, proc) VOP_LOCK((vp))
 #define xfs_vfs_writelock(vp, proc) VOP_LOCK((vp))
 #define xfs_vfs_unlock(vp, proc) VOP_UNLOCK((vp))
 
-/* XXX - should this do anything? */
-
-#define xfs_vfs_vn_lock(vp, flags, proc) (0)
-
-#else
-
-#error what kind of VOP_LOCK?
-
 #endif
 
 int
-xfs_open_valid(struct vnode *vp, struct ucred *cred, d_thread_t *p,
-	       u_int tok);
+xfs_open_valid(struct vnode * vp, struct ucred * cred, u_int tok);
 
 int
-xfs_attr_valid(struct vnode *vp, struct ucred *cred, d_thread_t *p,
-	       u_int tok);
+xfs_attr_valid(struct vnode * vp, struct ucred * cred, u_int tok);
 
 int
-xfs_fetch_rights(struct vnode *vp, struct ucred *cred, d_thread_t *p);
+xfs_fetch_rights(struct vnode * vp, struct ucred * cred);
 
 int
-xfs_data_valid(struct vnode *vp, struct ucred *cred, d_thread_t *p,
-	       u_int tok, uint32_t offset);
-
-int
-xfs_open_common(struct vnode *vp,
-		int mode,
-		struct ucred *cred,
-		d_thread_t *p);
+xfs_data_valid(struct vnode * vp, struct ucred * cred, u_int tok);
 
 int
 xfs_fsync_common(struct vnode *vp, struct ucred *cred,
-		 int waitfor, d_thread_t *proc);
+		 int waitfor, struct proc *proc);
 
 int
 xfs_close_common(struct vnode *vp, int fflag,
-		 d_thread_t *proc, struct ucred *cred);
+		 struct proc *proc, struct ucred *cred);
 
 int
-xfs_read_common(struct vnode *vp, struct uio *uio, int ioflag,
-		struct ucred *cred);
+xfs_read_common(struct vnode *vp, struct uio *uio, int ioflag, struct ucred *cred);
 
 int
-xfs_write_common(struct vnode *vp, struct uio *uiop, int ioflag,
-		 struct ucred *cred);
+xfs_write_common(struct vnode *vp, struct uio *uiop, int ioflag, struct ucred *cred);
 
 int
-xfs_getattr_common(struct vnode *vp, struct vattr *vap,
-		   struct ucred *cred, d_thread_t *p);
+xfs_getattr_common(struct vnode *vp, struct vattr *vap, struct ucred *cred);
 
 int
-xfs_setattr_common(struct vnode *vp, struct vattr *vap,
-		   struct ucred *cred, d_thread_t *p);
+xfs_setattr_common(struct vnode *vp, struct vattr *vap, struct ucred *cred);
 
 int
-xfs_access_common(struct vnode *vp, int mode,
-		  struct ucred *cred, d_thread_t *p);
+xfs_access_common(struct vnode *vp, int mode, struct ucred *cred);
 
 int
 xfs_lookup_common(struct vnode *dvp, 
@@ -137,18 +114,23 @@ xfs_lookup_common(struct vnode *dvp,
 		  struct vnode **vpp);
 
 int
+xfs_lookup_name(struct vnode *dvp, 
+		const char *name,
+		struct proc *proc,
+		struct ucred *cred,
+		struct vnode **vpp);
+
+int
 xfs_create_common(struct vnode *dvp,
 		  const char *name,
 		  struct vattr *vap, 
-		  struct ucred *cred,
-		  d_thread_t *p);
+		  struct ucred *cred);
 
 int
 xfs_remove_common(struct vnode *dvp, 
 		  struct vnode *vp, 
 		  const char *name,
-		  struct ucred *cred,
-		  d_thread_t *p);
+		  struct ucred *cred);
 
 int
 xfs_rename_common(struct vnode *fdvp, 
@@ -157,41 +139,38 @@ xfs_rename_common(struct vnode *fdvp,
 		  struct vnode *tdvp,
 		  struct vnode *tvp,
 		  const char *tname,
-		  struct ucred *cred,
-		  d_thread_t *p);
+		  struct ucred *cred);
 
 int
 xfs_mkdir_common(struct vnode *dvp, 
 		 const char *name,
 		 struct vattr *vap, 
-		 struct ucred *cred,
-		 d_thread_t *p);
+		 struct ucred *cred);
 
 int
 xfs_rmdir_common(struct vnode *dvp,
 		 struct vnode *vp,
 		 const char *name,
-		 struct ucred *cred,
-		 d_thread_t *p);
+		 struct ucred *cred);
 
 int
 xfs_readdir_common(struct vnode *vp, 
 		   struct uio *uiop, 
 		   struct ucred *cred,
-		   d_thread_t *p,
 		   int *eofflag);
 
 int
 xfs_link_common(struct vnode *dvp, 
 		struct vnode *vp, 
 		const char *name,
-		struct ucred *cred,
-		d_thread_t *p);
+		struct ucred *cred);
 
 int
 xfs_symlink_common(struct vnode *dvp,
 		   struct vnode **vpp,
-		   xfs_componentname *cnp,
+		   const char *name,
+		   struct proc *proc,
+		   struct ucred *cred,
 		   struct vattr *vap,
 		   char *target);
 
@@ -199,22 +178,18 @@ int
 xfs_readlink_common(struct vnode *vp, struct uio *uiop, struct ucred *cred);
 
 int
-xfs_inactive_common(struct vnode *vp, d_thread_t *p);
+xfs_inactive_common(struct vnode *vp, struct proc *p);
 
 int
 xfs_reclaim_common(struct vnode *vp);
 
 int
-xfs_eopnotsupp (struct vop_generic_args *ap);
+xfs_eopnotsupp (void *);
 
 int
-xfs_returnzero (struct vop_generic_args *ap);
+xfs_returnzero (void *v);
 
 void
 xfs_printnode_common (struct vnode *vp);
-
-size_t
-xfs_uio_end_length (struct uio *uio);
-
 
 #endif /* _xfs_vnodeops_h */

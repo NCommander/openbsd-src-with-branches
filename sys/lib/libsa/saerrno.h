@@ -1,3 +1,4 @@
+/*	$OpenBSD: saerrno.h,v 1.3 1996/09/23 14:19:03 mickey Exp $	*/
 /*	$NetBSD: saerrno.h,v 1.6 1995/09/18 21:19:45 pk Exp $	*/
 
 /*
@@ -37,6 +38,8 @@
 
 #include <sys/errno.h>
 
+extern int errno;
+
 /* special stand error codes */
 #define	EADAPT	(ELAST+1)	/* bad adaptor */
 #define	ECTLR	(ELAST+2)	/* bad controller */
@@ -51,3 +54,5 @@
 #define	EECC	(ELAST+11)	/* uncorrectable ecc error */
 #define	EHER	(ELAST+12)	/* hard error */
 #define	ESALAST	(ELAST+12)	/* */
+
+char	*strerror __P((int err));

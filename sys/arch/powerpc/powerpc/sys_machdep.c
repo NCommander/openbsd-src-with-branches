@@ -1,3 +1,4 @@
+/*	$OpenBSD:$	*/
 /*	$NetBSD: sys_machdep.c,v 1.1 1996/09/30 16:34:56 ws Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$NetBSD: tz.c,v 1.8 1995/09/18 03:04:55 jonathan Exp $	*/
+/*	$NetBSD: tz.c,v 1.15 1997/01/31 02:00:59 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -35,7 +35,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)tz.c	8.4 (Berkeley) 1/11/94
+ *	@(#)tz.c	8.5 (Berkeley) 6/2/95
  *
  * from: Header: /sprite/src/kernel/dev/RCS/devSCSITape.c,
  *	v 8.14 89/07/31 17:26:13 mendel Exp  SPRITE (Berkeley)
@@ -54,20 +54,31 @@
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
+#include <sys/proc.h>
 #include <sys/syslog.h>
 #include <sys/tprintf.h>
+#include <sys/device.h>
+
+#include <sys/conf.h>
+#include <machine/conf.h>
 
 #include <pmax/dev/device.h>
 #include <pmax/dev/scsi.h>
 
-int	tzprobe();
-void	tzstart(), tzdone();
+int	tzprobe __P(( void *sd /*struct pmax_scsi_device *sd*/));
+int	tzcommand __P((dev_t dev, int command, int code,
+		       int count, caddr_t data));
+void	tzstart __P((int unit));
+void	tzdone __P((int unit, int error, int resid, int status));
 
 struct	pmax_driver tzdriver = {
-	"tz", tzprobe, tzstart, tzdone,
+	"tz", tzprobe,
+	(void	(*) __P((struct ScsiCmd *cmd))) tzstart,
+	tzdone,
 };
 
 struct	tz_softc {
+	struct	device sc_dev;		/* new config glue */
 	struct	pmax_scsi_device *sc_sd;	/* physical unit info */
 	int	sc_flags;		/* see below */
 	int	sc_tapeid;		/* tape drive id */
@@ -105,31 +116,42 @@ struct	tz_softc {
 int	tzdebug = 0;
 #endif
 
-void tzstrategy __P((register struct buf *bp));
 
 /*
  * Test to see if device is present.
  * Return true if found and initialized ok.
  */
-tzprobe(sd)
-	struct pmax_scsi_device *sd;
+int
+tzprobe(xxxsd)
+	void *xxxsd;
 {
+
+	register struct pmax_scsi_device *sd = xxxsd;
+
 	register struct tz_softc *sc = &tz_softc[sd->sd_unit];
 	register int i;
 	ScsiInquiryData inqbuf;
-	ScsiClass7Sense *sp;
+
+	if (sd->sd_unit >= NTZ)
+		return (0);
 
 	/* init some parameters that don't change */
 	sc->sc_sd = sd;
 	sc->sc_cmd.sd = sd;
 	sc->sc_cmd.unit = sd->sd_unit;
 	sc->sc_cmd.flags = 0;
-	sc->sc_rwcmd.unitNumber = sd->sd_slave;
+	sc->sc_rwcmd.unitNumber = sd->sd_lun;
+
+	/* XXX set up device info */				/* XXX */
+	bzero(&sc->sc_dev, sizeof(sc->sc_dev));			/* XXX */
+	sprintf(sc->sc_dev.dv_xname, "tz%d", sd->sd_unit);	/* XXX */
+	sc->sc_dev.dv_unit = sd->sd_unit;			/* XXX */
+	sc->sc_dev.dv_class = DV_TAPE;				/* XXX */
 
 	/* try to find out what type of device this is */
 	sc->sc_flags = TZF_ALTCMD;	/* force use of sc_cdb */
 	sc->sc_cdb.len = sizeof(ScsiGroup0Cmd);
-	scsiGroup0Cmd(SCSI_INQUIRY, sd->sd_slave, 0, sizeof(inqbuf),
+	scsiGroup0Cmd(SCSI_INQUIRY, sd->sd_lun, 0, sizeof(inqbuf),
 		(ScsiGroup0Cmd *)sc->sc_cdb.cdb);
 	sc->sc_buf.b_flags = B_BUSY | B_READ;
 	sc->sc_buf.b_bcount = sizeof(inqbuf);
@@ -147,7 +169,7 @@ tzprobe(sd)
 
 	/* check for device ready to clear UNIT_ATTN */
 	sc->sc_cdb.len = sizeof(ScsiGroup0Cmd);
-	scsiGroup0Cmd(SCSI_TEST_UNIT_READY, sd->sd_slave, 0, 0,
+	scsiGroup0Cmd(SCSI_TEST_UNIT_READY, sd->sd_lun, 0, 0,
 		(ScsiGroup0Cmd *)sc->sc_cdb.cdb);
 	sc->sc_buf.b_flags = B_BUSY | B_READ;
 	sc->sc_buf.b_bcount = 0;
@@ -162,9 +184,9 @@ tzprobe(sd)
 	sc->sc_flags = TZF_ALIVE;
 	sc->sc_modelen = 12;
 	sc->sc_buf.b_flags = 0;
-	printf("tz%d at %s%d drive %d slave %d", sd->sd_unit,
+	printf("tz%d at %s%d drive %d lun %d", sd->sd_unit,
 		sd->sd_cdriver->d_name, sd->sd_ctlr, sd->sd_drive,
-		sd->sd_slave);
+		sd->sd_lun);
 	if (i == 5 && inqbuf.version == 1 && inqbuf.qualifier == 0x50) {
 		printf(" TK50\n");
 		sc->sc_tapeid = MT_ISTK50;
@@ -207,18 +229,21 @@ tzprobe(sd)
 		} else if (bcmp("HP35450A", pid, 8) == 0) {
 #if 0
 			/* XXX "extra" stat makes the HP drive happy at boot time */
-			stat = scsi_test_unit_rdy(ctlr, slave, unit);
+			stat = scsi_test_unit_rdy(ctlr, lun, unit);
 #endif
 			sc->sc_tapeid = MT_ISHPDAT;
 		} else if (bcmp("123107 SCSI", pid, 11) == 0) {
 			sc->sc_tapeid = MT_ISMFOUR;
 		} else {
 			printf("tz%d: assuming GENERIC SCSI tape device\n",
-				sd->sd_unit,
-				inqbuf.type, inqbuf.qualifier, inqbuf.version);
+				sd->sd_unit);
 			sc->sc_tapeid = 0;
 		}
 	}
+
+	sd->sd_devp = &sc->sc_dev;				/* XXX */
+	TAILQ_INSERT_TAIL(&alldevs, &sc->sc_dev, dv_list);	/* XXX */
+
 	return (1);
 
 bad:
@@ -231,6 +256,7 @@ bad:
 /*
  * Perform a special tape command on a SCSI Tape drive.
  */
+int
 tzcommand(dev, command, code, count, data)
 	dev_t dev;
 	int command;
@@ -252,7 +278,7 @@ tzcommand(dev, command, code, count, data)
 	sc->sc_cdb.len = sizeof(ScsiGroup0Cmd);
 	c = (ScsiGroup0Cmd *)sc->sc_cdb.cdb;
 	c->command = command;
-	c->unitNumber = sc->sc_sd->sd_slave;
+	c->unitNumber = sc->sc_sd->sd_lun;
 	c->highAddr = code;
 	c->midAddr = count >> 16;
 	c->lowAddr = count >> 8;
@@ -280,7 +306,7 @@ tzcommand(dev, command, code, count, data)
 	sc->sc_buf.b_flags = 0;
 	sc->sc_cmd.flags = 0;
 	if (sc->sc_buf.b_resid)
-		printf("tzcommand: resid %d\n", sc->sc_buf.b_resid); /* XXX */
+		printf("tzcommand: resid %ld\n", sc->sc_buf.b_resid); /* XXX */
 	if (error == 0)
 		switch (command) {
 		case SCSI_SPACE:
@@ -386,7 +412,7 @@ tzdone(unit, error, resid, status)
 			sc->sc_sense.sense[2] = SCSI_CLASS7_NO_SENSE;
 		} else if (!cold) {
 			ScsiClass7Sense *sp;
-			long resid;
+			long resid = 0;
 
 			sp = (ScsiClass7Sense *)sc->sc_sense.sense;
 			if (sp->error7 != 0x70)
@@ -412,7 +438,7 @@ tzdone(unit, error, resid, status)
 				}
 				if (sc->sc_blklen && sp->badBlockLen) {
 					tprintf(sc->sc_ctty,
-						"tz%d: Incorrect Block Length, expected %d got %d\n",
+						"tz%d: Incorrect Block Length, expected %d got %ld\n",
 						unit, sc->sc_blklen, resid);
 					break;
 				}
@@ -423,7 +449,7 @@ tzdone(unit, error, resid, status)
 					 * full record.
 					 */
 					tprintf(sc->sc_ctty,
-						"tz%d: Partial Read of Variable Length Tape Block, expected %d read %d\n",
+						"tz%d: Partial Read of Variable Length Tape Block, expected %ld read %ld\n",
 						unit, bp->b_bcount - resid,
 						bp->b_bcount);
 					bp->b_resid = 0;
@@ -473,7 +499,7 @@ tzdone(unit, error, resid, status)
 			 */
 			sc->sc_flags |= TZF_SENSEINPROGRESS;
 			sc->sc_cdb.len = sizeof(ScsiGroup0Cmd);
-			scsiGroup0Cmd(SCSI_REQUEST_SENSE, sc->sc_sd->sd_slave,
+			scsiGroup0Cmd(SCSI_REQUEST_SENSE, sc->sc_sd->sd_lun,
 				0, sizeof(sc->sc_sense.sense),
 				(ScsiGroup0Cmd *)sc->sc_cdb.cdb);
 			sc->sc_errbuf.b_flags = B_BUSY | B_PHYS | B_READ;
@@ -491,7 +517,7 @@ tzdone(unit, error, resid, status)
 		bp->b_resid = resid;
 	}
 
-	if (dp = bp->b_actf)
+	if ((dp = bp->b_actf) != 0)
 		dp->b_actb = bp->b_actb;
 	else
 		sc->sc_tab.b_actb = bp->b_actb;
@@ -509,6 +535,7 @@ tzdone(unit, error, resid, status)
 }
 
 /* ARGSUSED */
+int
 tzopen(dev, flags, type, p)
 	dev_t dev;
 	int flags, type;
@@ -663,9 +690,12 @@ tzopen(dev, flags, type, p)
 	return (0);
 }
 
-tzclose(dev, flag)
+int
+tzclose(dev, flag, mode, p)
 	dev_t dev;
-	int flag;
+	int flag, mode;
+	struct proc *p;
+	
 {
 	register struct tz_softc *sc = &tz_softc[tzunit(dev)];
 	int error = 0;
@@ -699,14 +729,15 @@ tzclose(dev, flag)
 }
 
 int
-tzread(dev, uio)
+tzread(dev, uio, iomode)
 	dev_t dev;
 	struct uio *uio;
+	int iomode;
 {
+#if 0
+	/*XXX*/ /* check for hardware write-protect? */
 	register struct tz_softc *sc = &tz_softc[tzunit(dev)];
 
-	/*XXX*/ /* check for hardware write-protect? */
-#if 0
 	if (sc->sc_type == SCSI_ROM_TYPE)
 		return (EROFS);
 
@@ -719,13 +750,14 @@ tzread(dev, uio)
 }
 
 int
-tzwrite(dev, uio)
+tzwrite(dev, uio, iomode)
 	dev_t dev;
 	struct uio *uio;
+	int iomode;
 {
+#if 0
 	register struct tz_softc *sc = &tz_softc[tzunit(dev)];
 
-#if 0
 	if (sc->sc_format_pid && sc->sc_format_pid != curproc->p_pid)
 		return (EPERM);
 #endif
@@ -735,14 +767,14 @@ tzwrite(dev, uio)
 }
 
 int
-tzioctl(dev, cmd, data, flag)
+tzioctl(dev, cmd, data, flag, p)
 	dev_t dev;
-	int cmd;
+	u_long cmd;
 	caddr_t data;
 	int flag;
+	struct proc *p;
 {
 	register struct tz_softc *sc = &tz_softc[tzunit(dev)];
-	register struct buf *bp = &sc->sc_buf;
 	struct mtop *mtop;
 	struct mtget *mtget;
 	int code, count;
@@ -841,8 +873,11 @@ tzstrategy(bp)
  * Non-interrupt driven, non-dma dump routine.
  */
 int
-tzdump(dev)
+tzdump(dev, blkno, va, size)
 	dev_t dev;
+	daddr_t blkno;
+	caddr_t va;
+	size_t size;
 {
 	/* Not implemented. */
 	return (ENXIO);

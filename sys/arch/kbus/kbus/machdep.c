@@ -136,6 +136,7 @@ static int _mapped;	/* TG: FIXME.  */
 extern char end[], _edata[];
 extern vm_offset_t   avail_start;
 extern vm_offset_t   avail_end;
+extern vm_size_t     mem_size;
 
 /*
  * dvmamap is used to manage DVMA memory. Note: this coincides with
@@ -328,11 +329,7 @@ long dumplo;
 int physmem;
 
 extern int bootdev;
-extern cyloffset;
-
-/* pmap_enter prototype */
-void pmap_enter __P((register pmap_t, vm_offset_t, register vm_offset_t,
-	vm_prot_t, boolean_t));
+extern int cyloffset;
 
 void
 cpu_startup(void)
@@ -508,7 +505,6 @@ allocsys(v)
 #define	valloclim(name, type, num, lim) \
 	    (name) = (type *)v; v = (caddr_t)((lim) = ((name)+(num)))
 	valloc(callout, struct callout, ncallout);
-	valloc(swapmap, struct map, nswapmap = maxproc * 2);
 #ifdef SYSVSHM
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif
@@ -518,11 +514,12 @@ allocsys(v)
 	 * memory. Insure a minimum of 16 buffers.
 	 * We allocate 1/2 as many swap buffer headers as file i/o buffers.
 	 */
-	if (bufpages == 0)
+	if (bufpages == 0) {
 		if (physmem < (2 * 1024 * 1024))
 			bufpages = physmem / 10 / CLSIZE;
 		else
 			bufpages = ((2 * 1024 * 1024 + physmem) / 40) / CLSIZE;
+	}
 
 	bufpages = min(NKMEMCLUSTERS*2/5, bufpages);  /* XXX ? - cgd */
 
@@ -1232,7 +1229,8 @@ cpu_exec_aout_makecmds(p, epp)
 	int error = ENOEXEC;
 
 #ifdef COMPAT_SUNOS
-	extern sunos_exec_aout_makecmds __P((struct proc *, struct exec_package *));
+	extern int sunos_exec_aout_makecmds __P((struct proc *,
+						 struct exec_package *));
 	if ((error = sunos_exec_aout_makecmds(p, epp)) == 0)
 		return 0;
 #endif
@@ -1424,7 +1422,7 @@ idprom_etheraddr(ether)
   int i;
 
   if (ea == NULL)
-    panic ("ERROR: ethernet address not set!\n");
+    panic ("ERROR: ethernet address not set!");
 
   for (i = 0; i < 6; i++)
     {
@@ -1435,7 +1433,7 @@ idprom_etheraddr(ether)
       else if (*ea >= 'A' && *ea <= 'F')
         c = *ea - 'A' + 10;
       else
-        panic ("Bad character for enet addr (%s)\n", ea);
+        panic ("Bad character for enet addr (%s)", ea);
       ea++;
       if (i == 5 && *ea == 0)
 	break;
@@ -1453,10 +1451,10 @@ idprom_etheraddr(ether)
       else if (*ea >= 'A' && *ea <= 'F')
         c |= *ea - 'A' + 10;
       else
-        panic ("Bad character for enet addr (%s)\n", ea);
+        panic ("Bad character for enet addr (%s)", ea);
       ea++;
       if (i != 5 && *ea != ':')
-        panic ("Bad character for enet addr (%s)\n", ea);
+        panic ("Bad character for enet addr (%s)", ea);
       ea++;
       *ether++ = c;
     }

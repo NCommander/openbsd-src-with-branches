@@ -1,4 +1,5 @@
-/*	$NetBSD: srt0.s,v 1.4 1995/09/16 16:20:20 ragge Exp $ */
+/*	$OpenBSD: srt0.s,v 1.5 1998/02/03 11:48:28 maja Exp $ */
+/*	$NetBSD: srt0.s,v 1.9 1997/03/22 12:47:32 ragge Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -40,24 +41,34 @@
  * position set in a.out header.
  */
 
-nisse:	.set	nisse,0		# pass -e nisse to ld gives OK start addr
-	.globl	nisse
+start0:	.set	start0,0	# passing -e start0 to ld gives OK start addr
+	.globl	start0
 
 _start:	.globl	_start
 	nop;nop;		# If we get called by calls, or something
-	movl	$_start, sp	# Probably safe place for stack
+
+	movl	r8, _memsz	# If we come from disk, save memsize
+	cmpl	ap, $-1		# Check if we are net-booted. XXX - kludge
+	beql	2f		# jump if not
+	ashl	$9,76(r11),_memsz # got memsize from rpb
+	movzbl	102(r11), r10	# Get bootdev from rpb.
+	movzwl	48(r11), r11	# Get howto
+
+2:	movl	$_start, sp	# Probably safe place for stack
 	subl2	$52, sp		# do not overwrite saved boot-registers
 
-	subl3   $_start, $_end, r0
-	moval   _start, r1
-	movl    $_start, r2
-	movc3	r0, (r1), (r2)	# should use movc5 instead, to clear bss.
-	
+	subl3	$_start, $_edata, r0
+	moval	_start, r1
+	subl3	$_start, $_end, r2
+	movl	$_start, r3
+	movc5	r0, (r1), $0, r2, (r3)
 	jsb	1f
 1:	movl    $relocated, (sp)   # return-address on top of stack
 	rsb                        # can be replaced with new address
 relocated:	                   # now relocation is done !!!
-	calls	$0,_main	# Were here!
+	movl	sp, _bootregs
+	calls	$0, _setup
+	calls	$0, _Xmain	# Were here!
 	halt			# no return
 
 	
@@ -67,4 +78,8 @@ _hoppabort: .word 0x0
         movl    8(ap), r11
         movl    0xc(ap), r10
 	movl	16(ap), r9
+	movl	_memsz,r8
         calls   $0,(r6)
+
+	.globl	_memsz
+_memsz:	.long	0x0

@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_dl.h,v 1.8 1995/03/26 20:30:13 jtc Exp $	*/
 /*	$NetBSD: if_dl.h,v 1.8 1995/03/26 20:30:13 jtc Exp $	*/
 
 /*

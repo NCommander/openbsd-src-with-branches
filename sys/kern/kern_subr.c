@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_subr.c,v 1.14 1995/05/31 20:41:44 cgd Exp $	*/
+/*	$OpenBSD: kern_subr.c,v 1.9 1999/04/28 09:28:15 art Exp $	*/
+/*	$NetBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -84,11 +85,20 @@ uiomove(cp, n, uio)
 			break;
 
 		case UIO_SYSSPACE:
+#if defined(UVM)
+			if (uio->uio_rw == UIO_READ)
+				error = kcopy(cp, iov->iov_base, cnt);
+			else
+				error = kcopy(iov->iov_base, cp, cnt);
+			if (error)
+				return(error);
+#else
 			if (uio->uio_rw == UIO_READ)
 				bcopy((caddr_t)cp, iov->iov_base, cnt);
 			else
 				bcopy(iov->iov_base, (caddr_t)cp, cnt);
 			break;
+#endif
 		}
 		iov->iov_base += cnt;
 		iov->iov_len -= cnt;
@@ -110,11 +120,19 @@ ureadc(c, uio)
 {
 	register struct iovec *iov;
 
-	if (uio->uio_resid <= 0)
-		panic("ureadc: non-positive resid");
+	if (uio->uio_resid == 0)
+#ifdef DIAGNOSTIC
+		panic("ureadc: zero resid");
+#else
+		return (EINVAL);
+#endif
 again:
 	if (uio->uio_iovcnt <= 0)
+#ifdef DIAGNOSTIC
 		panic("ureadc: non-positive iovcnt");
+#else
+		return (EINVAL);
+#endif
 	iov = uio->uio_iov;
 	if (iov->iov_len <= 0) {
 		uio->uio_iovcnt--;
@@ -129,7 +147,7 @@ again:
 		break;
 
 	case UIO_SYSSPACE:
-		*iov->iov_base = c;
+		*(char *)iov->iov_base = c;
 		break;
 	}
 	iov->iov_base++;
@@ -139,55 +157,12 @@ again:
 	return (0);
 }
 
-#ifdef vax	/* unused except by ct.c, other oddities XXX */
-/*
- * Get next character written in by user from uio.
- */
-int
-uwritec(uio)
-	struct uio *uio;
-{
-	register struct iovec *iov;
-	register int c;
-
-	if (uio->uio_resid <= 0)
-		return (-1);
-again:
-	if (uio->uio_iovcnt <= 0)
-		panic("ureadc: non-positive iovcnt");
-	iov = uio->uio_iov;
-	if (iov->iov_len == 0) {
-		uio->uio_iov++;
-		if (--uio->uio_iovcnt == 0)
-			return (-1);
-		goto again;
-	}
-	switch (uio->uio_segflg) {
-
-	case UIO_USERSPACE:
-		c = fubyte(iov->iov_base);
-		break;
-
-	case UIO_SYSSPACE:
-		c = *(u_char *) iov->iov_base;
-		break;
-	}
-	if (c < 0)
-		return (-1);
-	iov->iov_base++;
-	iov->iov_len--;
-	uio->uio_resid--;
-	uio->uio_offset++;
-	return (c);
-}
-#endif /* vax */
-
 /*
  * General routine to allocate a hash table.
  */
 void *
-hashinit(elements, type, hashmask)
-	int elements, type;
+hashinit(elements, type, flags, hashmask)
+	int elements, type, flags;
 	u_long *hashmask;
 {
 	long hashsize;
@@ -199,7 +174,7 @@ hashinit(elements, type, hashmask)
 	for (hashsize = 1; hashsize <= elements; hashsize <<= 1)
 		continue;
 	hashsize >>= 1;
-	hashtbl = malloc((u_long)hashsize * sizeof(*hashtbl), type, M_WAITOK);
+	hashtbl = malloc((u_long)hashsize * sizeof(*hashtbl), type, flags);
 	for (i = 0; i < hashsize; i++)
 		LIST_INIT(&hashtbl[i]);
 	*hashmask = hashsize - 1;
@@ -273,4 +248,70 @@ doshutdownhooks()
 	for (dp = shutdownhook_list.lh_first; dp != NULL; dp =
 	    dp->sfd_list.le_next)
 		(*dp->sfd_fn)(dp->sfd_arg);
+}
+
+/*
+ * "Power hook" types, functions, and variables.
+ */
+
+struct powerhook_desc {
+	LIST_ENTRY(powerhook_desc) sfd_list;
+	void	(*sfd_fn) __P((int, void *));
+	void	*sfd_arg;
+};
+
+LIST_HEAD(, powerhook_desc) powerhook_list;
+
+void *
+powerhook_establish(fn, arg)
+	void (*fn) __P((int, void *));
+	void *arg;
+{
+	struct powerhook_desc *ndp;
+
+	ndp = (struct powerhook_desc *)
+	    malloc(sizeof(*ndp), M_DEVBUF, M_NOWAIT);
+	if (ndp == NULL)
+		return NULL;
+
+	ndp->sfd_fn = fn;
+	ndp->sfd_arg = arg;
+	LIST_INSERT_HEAD(&powerhook_list, ndp, sfd_list);
+
+	return (ndp);
+}
+
+void
+powerhook_disestablish(vhook)
+	void *vhook;
+{
+#ifdef DIAGNOSTIC
+	struct powerhook_desc *dp;
+
+	for (dp = powerhook_list.lh_first; dp != NULL;
+	    dp = dp->sfd_list.le_next)
+                if (dp == vhook)
+			break;
+	if (dp == NULL)
+		panic("powerhook_disestablish: hook not established");
+#endif
+
+	LIST_REMOVE((struct powerhook_desc *)vhook, sfd_list);
+	free(vhook, M_DEVBUF);
+}
+
+/*
+ * Run power hooks.
+ */
+void
+dopowerhooks(why)
+	int why;
+{
+	struct powerhook_desc *dp;
+
+	for (dp = LIST_FIRST(&powerhook_list); 
+	     dp != NULL; 
+	     dp = LIST_NEXT(dp, sfd_list)) {
+		(*dp->sfd_fn)(why, dp->sfd_arg);
+	}
 }

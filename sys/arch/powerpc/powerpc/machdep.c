@@ -1,3 +1,4 @@
+/*	$OpenBSD: machdep.c,v 1.31 2000/01/14 05:42:17 rahnds Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -45,19 +46,33 @@
 #include <sys/reboot.h>
 #include <sys/syscallargs.h>
 #include <sys/syslog.h>
+#include <sys/extent.h>
 #include <sys/systm.h>
 #include <sys/user.h>
 
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
 
+#ifdef SYSVSHM
+#include <sys/shm.h>
+#endif
+#ifdef SYSVSEM
+#include <sys/sem.h>
+#endif
+#ifdef SYSVMSG
+#include <sys/msg.h>
+#endif
 #include <net/netisr.h>
 
 #include <machine/bat.h>
 #include <machine/pmap.h>
 #include <machine/powerpc.h>
 #include <machine/trap.h>
+#include <machine/autoconf.h>
+#include <machine/bus.h>
+#include <machine/pio.h>
 
+#include <powerpc/pci/mpc106reg.h>
 /*
  * Global variables used here and there
  */
@@ -66,13 +81,49 @@ struct pmap *curpm;
 struct proc *fpuproc;
 
 extern struct user *proc0paddr;
+extern int cold;
+
+/* 
+ * Declare these as initialized data so we can patch them.
+ */
+int	nswbuf = 0;
+#ifdef NBUF
+int	nbuf = NBUF;
+#else
+int	nbuf = 0;
+#endif
+#ifdef BUFPAGES
+int bufpages = BUFPAGES;
+#else
+int bufpages = 0;
+#endif
 
 struct bat battable[16];
 
-int astpending;
+#ifdef UVM
+/* ??? */
+vm_map_t exec_map = NULL;
+vm_map_t mb_map = NULL;
+vm_map_t phys_map = NULL;
+#endif
 
+int astpending;
+int ppc_malloc_ok = 0;
+
+#ifndef SYS_TYPE
+/* XXX Hardwire it for now */
+#define SYS_TYPE POWER4e
+#endif
+
+int system_type = SYS_TYPE;	/* XXX Hardwire it for now */
+
+char ofw_eth_addr[6];		/* Save address of first network ifc found */
 char *bootpath;
 char bootpathbuf[512];
+
+struct firmware *fw = NULL;
+
+void ofw_dbg(char *str);
 
 /*
  * We use the page just above the interrupt vector as message buffer
@@ -81,17 +132,22 @@ struct msgbuf *msgbufp = (struct msgbuf *)0x3000;
 int msgbufmapped = 1;		/* message buffer is always mapped */
 
 caddr_t allocsys __P((caddr_t));
+int power4e_get_eth_addr __P((void));
 
-static void fake_splx __P((int));
-static void fake_irq_establish __P((int, int, void (*)(void *), void *));
+/*
+ * Extent maps to manage I/O. Allocate storage for 8 regions in each,
+ * initially. Later devio_malloc_safe will indicate that it's save to
+ * use malloc() to dynamically allocate region descriptors.
+ */
+static long devio_ex_storage[EXTENT_FIXED_STORAGE_SIZE(8) / sizeof (long)];
+struct extent *devio_ex;
+static int devio_malloc_safe = 0;
 
-struct machvec machine_interface = {
-	fake_splx,
-	fake_irq_establish,
-};
+/* HACK - XXX */
+int segment8_mapped = 0;
 
-int cold = 1;
-
+extern int OF_stdout;
+extern int where;
 void
 initppc(startkernel, endkernel, args)
 	u_int startkernel, endkernel;
@@ -117,38 +173,41 @@ initppc(startkernel, endkernel, args)
 	proc0.p_addr = proc0paddr;
 	bzero(proc0.p_addr, sizeof *proc0.p_addr);
 	
+where = 3;
 	curpcb = &proc0paddr->u_pcb;
 	
 	curpm = curpcb->pcb_pmreal = curpcb->pcb_pm = pmap_kernel();
-	
-	/*
-	 * i386 port says, that this shouldn't be here,
-	 * but I really think the console should be initialized
-	 * as early as possible.
-	 */
-	consinit();
 
-#ifdef	__notyet__		/* Needs some rethinking regarding real/virtual OFW */
-	OF_set_callback(callback);
-#endif
 	/*
 	 * Initialize BAT registers to unmapped to not generate
 	 * overlapping mappings below.
 	 */
-	asm volatile ("mtibatu 0,%0" :: "r"(0));
-	asm volatile ("mtibatu 1,%0" :: "r"(0));
-	asm volatile ("mtibatu 2,%0" :: "r"(0));
-	asm volatile ("mtibatu 3,%0" :: "r"(0));
-	asm volatile ("mtdbatu 0,%0" :: "r"(0));
-	asm volatile ("mtdbatu 1,%0" :: "r"(0));
-	asm volatile ("mtdbatu 2,%0" :: "r"(0));
-	asm volatile ("mtdbatu 3,%0" :: "r"(0));
+	__asm__ volatile ("mtibatu 0,%0" :: "r"(0));
+	__asm__ volatile ("mtibatu 1,%0" :: "r"(0));
+	__asm__ volatile ("mtibatu 2,%0" :: "r"(0));
+	__asm__ volatile ("mtibatu 3,%0" :: "r"(0));
+	__asm__ volatile ("mtdbatu 0,%0" :: "r"(0));
+	__asm__ volatile ("mtdbatu 1,%0" :: "r"(0));
+	__asm__ volatile ("mtdbatu 2,%0" :: "r"(0));
+	__asm__ volatile ("mtdbatu 3,%0" :: "r"(0));
 	
 	/*
 	 * Set up initial BAT table to only map the lowest 256 MB area
 	 */
 	battable[0].batl = BATL(0x00000000, BAT_M);
 	battable[0].batu = BATU(0x00000000);
+
+#if 1
+	battable[1].batl = BATL(MPC106_V_ISA_IO_SPACE, BAT_I);
+	battable[1].batu = BATU(MPC106_P_ISA_IO_SPACE);
+	segment8_mapped = 1;
+	if(system_type == POWER4e) {
+		/* Map ISA I/O */
+		addbatmap(MPC106_V_ISA_IO_SPACE, MPC106_P_ISA_IO_SPACE, BAT_I);
+		battable[1].batl = BATL(0xbfffe000, BAT_I);
+		battable[1].batu = BATU(0xbfffe000);
+	}
+#endif
 
 	/*
 	 * Now setup fixed bat registers
@@ -157,11 +216,17 @@ initppc(startkernel, endkernel, args)
 	 * registers were cleared above.
 	 */
 	/* IBAT0 used for initial 256 MB segment */
-	asm volatile ("mtibatl 0,%0; mtibatu 0,%1"
+	__asm__ volatile ("mtibatl 0,%0; mtibatu 0,%1"
 		      :: "r"(battable[0].batl), "r"(battable[0].batu));
 	/* DBAT0 used similar */
-	asm volatile ("mtdbatl 0,%0; mtdbatu 0,%1"
+	__asm__ volatile ("mtdbatl 0,%0; mtdbatu 0,%1"
 		      :: "r"(battable[0].batl), "r"(battable[0].batu));
+
+#if 1
+	__asm__ volatile ("mtdbatl 1,%0; mtdbatu 1,%1"
+		      :: "r"(battable[1].batl), "r"(battable[1].batu));
+	__asm__ volatile ("sync;isync");
+#endif
 	
 	/*
 	 * Set up trap vectors
@@ -176,12 +241,14 @@ initppc(startkernel, endkernel, args)
 			 * This one is (potentially) installed during autoconf
 			 */
 			break;
+#if 1
 		case EXC_DSI:
 			bcopy(&dsitrap, (void *)EXC_DSI, (size_t)&dsisize);
 			break;
 		case EXC_ISI:
 			bcopy(&isitrap, (void *)EXC_ISI, (size_t)&isisize);
 			break;
+#endif
 		case EXC_DECR:
 			bcopy(&decrint, (void *)EXC_DECR, (size_t)&decrsize);
 			break;
@@ -205,11 +272,38 @@ initppc(startkernel, endkernel, args)
 
 	syncicache((void *)EXC_RST, EXC_LAST - EXC_RST + 0x100);
 
+
+#ifdef UVM
+	uvmexp.pagesize = 4096;
+	uvm_setpagesize();
+
+#else
+	vm_set_page_size();
+#endif
+
+	/*
+	 * Initialize pmap module.
+	 */
+	pmap_bootstrap(startkernel, endkernel);
+
 	/*
 	 * Now enable translation (and machine checks/recoverable interrupts).
 	 */
-	asm volatile ("mfmsr %0; ori %0,%0,%1; mtmsr %0; isync"
+	(fw->vmon)();
+
+	__asm__ volatile ("eieio; mfmsr %0; ori %0,%0,%1; mtmsr %0; sync;isync"
 		      : "=r"(scratch) : "K"(PSL_IR|PSL_DR|PSL_ME|PSL_RI));
+
+	/*                                                              
+	 * Look at arguments passed to us and compute boothowto.      
+	 * Default to SINGLE and ASKNAME if no args or
+	 * SINGLE and DFLTROOT if this is a ramdisk kernel.                     
+	 */                                                               
+#ifdef RAMDISK_HOOKS                                         
+	boothowto = RB_SINGLE | RB_DFLTROOT;
+#else
+	boothowto = RB_AUTOBOOT;
+#endif /* RAMDISK_HOOKS */
 
 	/*
 	 * Parse arg string.
@@ -237,6 +331,35 @@ initppc(startkernel, endkernel, args)
 		}
 	}			
 
+	/*
+	 * Set up extents for pci mappings
+	 * Is this too late?
+	 * 
+	 * what are good start and end values here??
+	 * 0x0 - 0x80000000 mcu bus
+	 * MAP A				MAP B
+	 * 0x80000000 - 0xbfffffff io		0x80000000 - 0xefffffff mem
+	 * 0xc0000000 - 0xffffffff mem		0xf0000000 - 0xffffffff io
+	 * 
+	 * of course bsd uses 0xe and 0xf
+	 * So the BSD PPC memory map will look like this
+	 * 0x0 - 0x80000000 memory (whatever is filled)
+	 * 0x80000000 - 0xdfffffff (pci space, memory or io)
+	 * 0xe0000000 - kernel vm segment
+	 * 0xf0000000 - kernel map segment (user space mapped here)
+	 */
+
+	devio_ex = extent_create("devio", 0x80000000, 0xffffffff, M_DEVBUF,
+		(caddr_t)devio_ex_storage, sizeof(devio_ex_storage),
+		EX_NOCOALESCE|EX_NOWAIT);
+
+	ofwconprobe();
+
+	/*
+	 * Now we can set up the console as mapping is enabled.
+         */
+	consinit();
+
 #if NIPKDB > 0
 	/*
 	 * Now trap to IPKDB
@@ -244,64 +367,25 @@ initppc(startkernel, endkernel, args)
 	ipkdb_init();
 	if (boothowto & RB_KDB)
 		ipkdb_connect(0);
+#else
+#ifdef DDB
+	if (boothowto & RB_KDB)
+		Debugger();
+#endif
 #endif
 
 	/*
-	 * Initialize pmap module.
+	 * Figure out ethernet address.
 	 */
-	pmap_bootstrap(startkernel, endkernel);
+	(void)power4e_get_eth_addr();
+
 }
-
-/*
- * This should probably be in autoconf!				XXX
- */
-int cpu;
-char cpu_model[80];
-char machine[] = "powerpc";	/* cpu architecture */
-
-void
-identifycpu()
+void ofw_dbg(char *str)
 {
-	int phandle, pvr;
-	char name[32];
-
-	/*
-	 * Find cpu type (Do it by OpenFirmware?)
-	 */
-	asm ("mfpvr %0" : "=r"(pvr));
-	cpu = pvr >> 16;
-	switch (cpu) {
-	case 1:
-		sprintf(cpu_model, "601");
-		break;
-	case 3:
-		sprintf(cpu_model, "603");
-		break;
-	case 4:
-		sprintf(cpu_model, "604");
-		break;
-	case 5:
-		sprintf(cpu_model, "602");
-		break;
-	case 6:
-		sprintf(cpu_model, "603e");
-		break;
-	case 7:
-		sprintf(cpu_model, "603ev");
-		break;
-	case 9:
-		sprintf(cpu_model, "604ev");
-		break;
-	case 20:
-		sprintf(cpu_model, "620");
-		break;
-	default:
-		sprintf(cpu_model, "Version %x", cpu);
-		break;
-	}
-	sprintf(cpu_model + strlen(cpu_model), " (Revision %x)", pvr & 0xffff);
-	printf("CPU: %s\n", cpu_model);
+	int i = strlen (str);
+	OF_write(OF_stdout, str, i);
 }
+
 
 void
 install_extint(handler)
@@ -316,13 +400,13 @@ install_extint(handler)
 	if (offset > 0x1ffffff)
 		panic("install_extint: too far away");
 #endif
-	asm volatile ("mfmsr %0; andi. %1, %0, %2; mtmsr %1"
+	__asm__ volatile ("mfmsr %0; andi. %1, %0, %2; mtmsr %1"
 		      : "=r"(omsr), "=r"(msr) : "K"((u_short)~PSL_EE));
 	extint_call = (extint_call & 0xfc000003) | offset;
 	bcopy(&extint, (void *)EXC_EXI, (size_t)&extsize);
 	syncicache((void *)&extint_call, sizeof extint_call);
 	syncicache((void *)EXC_EXI, (int)&extsize);
-	asm volatile ("mtmsr %0" :: "r"(omsr));
+	__asm__ volatile ("mtmsr %0" :: "r"(omsr));
 }
 
 /*
@@ -335,25 +419,30 @@ cpu_startup()
 	caddr_t v;
 	vm_offset_t minaddr, maxaddr;
 	int base, residual;
+	v = (caddr_t)proc0paddr + USPACE;
 	
 	proc0.p_addr = proc0paddr;
-	v = (caddr_t)proc0paddr + USPACE;
 
 	printf("%s", version);
-	identifycpu();
 	
 	printf("real mem = %d\n", ctob(physmem));
-	
+
 	/*
 	 * Find out how much space we need, allocate it,
 	 * and then give everything true virtual addresses.
 	 */
 	sz = (int)allocsys((caddr_t)0);
+#ifdef UVM
+	if ((v = (caddr_t)uvm_km_zalloc(kernel_map, round_page(sz))) == 0)
+		panic("startup: no room for tables");
+#else
 	if ((v = (caddr_t)kmem_alloc(kernel_map, round_page(sz))) == 0)
 		panic("startup: no room for tables");
+#endif
 	if (allocsys(v) - v != sz)
 		panic("startup: table size inconsistency");
-	
+
+#if !defined (UVM)
 	/*
 	 * Now allocate buffers proper.  They are different than the above
 	 * in that they usually occupy more virtual memory than physical.
@@ -362,7 +451,7 @@ cpu_startup()
 	buffer_map = kmem_suballoc(kernel_map, &minaddr, &maxaddr, sz, TRUE);
 	buffers = (char *)minaddr;
 	if (vm_map_find(buffer_map, vm_object_allocate(sz), (vm_offset_t)0,
-			&minaddr, sz, FALSE) != KERN_SUCCESS)
+	   &minaddr, sz, FALSE) != KERN_SUCCESS)
 		panic("startup: cannot allocate buffers");
 	base = bufpages / nbuf;
 	residual = bufpages % nbuf;
@@ -377,31 +466,49 @@ cpu_startup()
 		
 		curbuf = (vm_offset_t)buffers + i * MAXBSIZE;
 		curbufsize = CLBYTES * (i < residual ? base + 1 : base);
-		vm_map_pageable(buffer_map, curbuf, curbuf + curbufsize, FALSE);
+		vm_map_pageable(buffer_map, curbuf, curbuf + curbufsize,
+		    FALSE);
 		vm_map_simplify(buffer_map, curbuf);
 	}
+#endif
 
 	/*
 	 * Allocate a submap for exec arguments.  This map effectively
 	 * limits the number of processes exec'ing at any time.
 	 */
-	exec_map = kmem_suballoc(kernel_map, &minaddr, &maxaddr,
-				 16*NCARGS, TRUE);
+#ifdef UVM
+	exec_map = uvm_km_suballoc(kernel_map, &minaddr, &maxaddr, 16 * NCARGS,
+	    TRUE, FALSE, NULL);
+#else
+	exec_map = kmem_suballoc(kernel_map, &minaddr, &maxaddr, 16 * NCARGS,
+	    TRUE);
+#endif
 
 	/*
 	 * Allocate a submap for physio
 	 */
-	phys_map = kmem_suballoc(kernel_map, &minaddr, &maxaddr,
-				 VM_PHYS_SIZE, TRUE);
+#ifdef UVM
+	phys_map = uvm_km_suballoc(kernel_map, &minaddr, &maxaddr,
+	    VM_PHYS_SIZE, TRUE, FALSE, NULL);
+#else
+	phys_map = kmem_suballoc(kernel_map, &minaddr, &maxaddr, VM_PHYS_SIZE,
+	    TRUE);
+#endif
+	ppc_malloc_ok = 1;
 	
 	/*
 	 * Allocate mbuf pool.
 	 */
-	mclrefcnt = (char *)malloc(NMBCLUSTERS + CLBYTES/MCLBYTES,
-				   M_MBUF, M_NOWAIT);
+	mclrefcnt = (char *)malloc(NMBCLUSTERS + CLBYTES/MCLBYTES, M_MBUF,
+	    M_NOWAIT);
 	bzero(mclrefcnt, NMBCLUSTERS + CLBYTES/MCLBYTES);
+#ifdef UVM
+	mb_map = uvm_km_suballoc(kernel_map, (vm_offset_t *)&mbutl, &maxaddr,
+	    VM_MBUF_SIZE, FALSE, FALSE, NULL);
+#else
 	mb_map = kmem_suballoc(kernel_map, (vm_offset_t *)&mbutl, &maxaddr,
-			       VM_MBUF_SIZE, FALSE);
+	    VM_MBUF_SIZE, FALSE);
+#endif
 	
 	/*
 	 * Initialize callouts.
@@ -410,9 +517,14 @@ cpu_startup()
 	for (i = 1; i < ncallout; i++)
 		callout[i - 1].c_next = &callout[i];
 	
+#ifdef UVM
+	printf("avail mem = %d\n", ptoa(uvmexp.free));
+#else
 	printf("avail mem = %d\n", ptoa(cnt.v_free_count));
-	printf("using %d buffers containing %d bytes of memory\n",
-	       nbuf, bufpages * CLBYTES);
+#endif
+	printf("using %d buffers containing %d bytes of memory\n", nbuf,
+	    bufpages * CLBYTES);
+	
 	
 	/*
 	 * Set up the buffers.
@@ -420,22 +532,23 @@ cpu_startup()
 	bufinit();
 
 	/*
+	 * Configure devices.
+	 */
+	devio_malloc_safe = 1;
+	configure();
+	
+	/*
 	 * Now allow hardware interrupts.
 	 */
 	{
 		int msr;
 		
 		splhigh();
-		asm volatile ("mfmsr %0; ori %0, %0, %1; mtmsr %0"
+		__asm__ volatile ("mfmsr %0; ori %0, %0, %1; mtmsr %0"
 			      : "=r"(msr) : "K"(PSL_EE));
 	}
-	
-	/*
-	 * Configure devices.
-	 */
-	configure();
-	
 }
+	
 
 /*
  * Allocate space for system data structures.
@@ -448,7 +561,6 @@ allocsys(v)
 	v = (caddr_t)(((name) = (type *)v) + (num))
 
 	valloc(callout, struct callout, ncallout);
-	valloc(swapmap, struct map, nswapmap = maxproc * 2);
 #ifdef	SYSVSHM
 	valloc(shmsegs, struct shmid_ds, shminfo.shmmni);
 #endif
@@ -464,22 +576,37 @@ allocsys(v)
 	valloc(msqids, struct msqid_ds, msginfo.msgmni);
 #endif
 
+#ifndef BUFCACHEPERCENT
+#define BUFCACHEPERCENT 5
+#endif
 	/*
 	 * Decide on buffer space to use.
 	 */
 	if (bufpages == 0)
-		bufpages = (physmem / 20) / CLSIZE;
+		bufpages = (physmem / ((100 / BUFCACHEPERCENT) / CLSIZE));
 	if (nbuf == 0) {
 		nbuf = bufpages;
 		if (nbuf < 16)
 			nbuf = 16;
 	}
+	/* Restrict to at most 70% filled kvm */
+	if (nbuf * MAXBSIZE >
+	    (VM_MAX_KERNEL_ADDRESS - VM_MIN_KERNEL_ADDRESS) * 7 / 10)
+		nbuf = (VM_MAX_KERNEL_ADDRESS - VM_MIN_KERNEL_ADDRESS) /
+		    MAXBSIZE * 7 / 10;
+
+	/* More buffer pages than fits into the buffers is senseless.  */
+	if (bufpages > nbuf * MAXBSIZE / CLBYTES)
+		bufpages = nbuf * MAXBSIZE / CLBYTES;
+
 	if (nswbuf == 0) {
 		nswbuf = (nbuf / 2) & ~1;
 		if (nswbuf > 256)
 			nswbuf = 256;
 	}
+#if !defined(UVM)
 	valloc(swbuf, struct buf, nswbuf);
+#endif
 	valloc(buf, struct buf, nbuf);
 	
 	return v;
@@ -492,12 +619,12 @@ allocsys(v)
 void
 consinit()
 {
-	static int initted;
-	
-	if (initted)
+	static int cons_initted = 0;
+
+	if (cons_initted)
 		return;
-	initted = 1;
 	cninit();
+	cons_initted = 1;
 }
 
 /*
@@ -535,16 +662,19 @@ setregs(p, pack, stack, retval)
  * Send a signal to process.
  */
 void
-sendsig(catcher, sig, mask, code)
+sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	struct proc *p = curproc;
 	struct trapframe *tf;
 	struct sigframe *fp, frame;
 	struct sigacts *psp = p->p_sigacts;
 	int oldonstack;
+	int pa;
 	
 	frame.sf_signum = sig;
 	
@@ -564,24 +694,33 @@ sendsig(catcher, sig, mask, code)
 		fp = (struct sigframe *)tf->fixreg[1];
 	fp = (struct sigframe *)((int)(fp - 1) & ~0xf);
 	
-	frame.sf_code = code;
-	
 	/*
 	 * Generate signal context for SYS_sigreturn.
 	 */
 	frame.sf_sc.sc_onstack = oldonstack;
 	frame.sf_sc.sc_mask = mask;
+	frame.sf_sip = NULL;
 	bcopy(tf, &frame.sf_sc.sc_frame, sizeof *tf);
+	if (psp->ps_siginfo & sigmask(sig)) {
+		frame.sf_sip = &fp->sf_si;
+		initsiginfo(&frame.sf_si, sig, code, type, val);
+	}
 	if (copyout(&frame, fp, sizeof frame) != 0)
 		sigexit(p, SIGILL);
 	
+
 	tf->fixreg[1] = (int)fp;
 	tf->lr = (int)catcher;
 	tf->fixreg[3] = (int)sig;
-	tf->fixreg[4] = (int)code;
+	tf->fixreg[4] = (psp->ps_siginfo & sigmask(sig)) ? (int)&fp->sf_si : NULL;
 	tf->fixreg[5] = (int)&frame.sf_sc;
 	tf->srr0 = (int)(((char *)PS_STRINGS)
 			 - (p->p_emul->e_esigcode - p->p_emul->e_sigcode));
+
+#if WHEN_WE_ONLY_FLUSH_DATA_WHEN_DOING_PMAP_ENTER
+	pa = pmap_extract(vm_map_pmap(&p->p_vmspace->vm_map),tf->srr0);
+	syncicache(pa, (p->p_emul->e_esigcode - p->p_emul->e_sigcode));
+#endif
 }
 
 /*
@@ -637,31 +776,19 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	}
 }
 
-/*
- * Crash dump handling.
- */
-u_long dumpmag = 0x8fca0101;		/* magic number */
-int dumpsize = 0;			/* size of dump in pages */
-long dumplo = -1;			/* blocks */
-
 void
 dumpsys()
 {
 	printf("dumpsys: TBD\n");
 }
 
-int cpl;
-int clockpending, softclockpending, softnetpending;
-
 /*
  * Soft networking interrupts.
  */
 void
-softnet()
+softnet(isr)
+	int isr;
 {
-	int isr = netisr;
-
-	netisr = 0;
 #ifdef	INET
 #include "ether.h"
 #if NETHER > 0
@@ -670,6 +797,14 @@ softnet()
 #endif
 	if (isr & (1 << NETISR_IP))
 		ipintr();
+#endif
+#ifdef INET6
+	if (isr & (1 << NETISR_IPV6))
+		ip6intr();
+#endif
+#ifdef NETATALK
+	if (isr & (1 << NETISR_ATALK))
+		atintr();
 #endif
 #ifdef	IMP
 	if (isr & (1 << NETISR_IMP))
@@ -692,158 +827,18 @@ softnet()
 	if (isr & (1 << NETISR_PPP))
 		pppintr();
 #endif
+#include "bridge.h"
+#if NBRIDGE > 0
+	if (isr & (1 << NETISR_BRIDGE))
+		bridgeintr();
+#endif
 }
 
-/*
- * Stray interrupts.
- */
 void
-strayintr(irq)
-	int irq;
+lcsplx(ipl)
+	int ipl;
 {
-	log(LOG_ERR, "stray interrupt %d\n", irq);
-}
-
-int
-splraise(bits)
-	int bits;
-{
-	int old;
-	
-	old = cpl;
-	cpl |= bits;
-
-	if ((bits & SPLMACHINE) & ~old)
-		(*machine_interface.splx)(cpl & SPLMACHINE);
-
-	return old;
-}
-
-int
-splx(new)
-	int new;
-{
-	int pending, old = cpl;
-	int emsr, dmsr;
-	
-	asm ("mfmsr %0" : "=r"(emsr));
-	dmsr = emsr & ~PSL_EE;
-	
-	cpl = new;
-	
-	if ((new & SPLMACHINE) != (old & SPLMACHINE))
-		(*machine_interface.splx)(new & SPLMACHINE);
-
-	while (1) {
-		cpl = new;
-		
-		asm volatile ("mtmsr %0" :: "r"(dmsr));
-		if (clockpending && !(cpl & SPLCLOCK)) {
-			struct clockframe frame;
-			extern int intr_depth;
-			
-			cpl |= SPLCLOCK;
-			clockpending--;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			
-			/*
-			 * Fake a clock interrupt frame
-			 */
-			frame.pri = new;
-			frame.depth = intr_depth + 1;
-			frame.srr1 = 0;
-			frame.srr0 = (int)splx;
-			/*
-			 * Do standard timer interrupt stuff
-			 */
-			hardclock(&frame);
-			continue;
-		}
-		if (softclockpending && !(cpl & SPLSOFTCLOCK)) {
-			
-			cpl |= SPLSOFTCLOCK;
-			softclockpending = 0;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			
-			softclock();
-			continue;
-		}
-		if (softnetpending && !(cpl & SPLSOFTNET)) {
-			cpl |= SPLSOFTNET;
-			softnetpending = 0;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			softnet();
-			continue;
-		}
-		
-		asm volatile ("mtmsr %0" :: "r"(emsr));
-		
-		return old;
-	}
-}
-
-/*
- * This one is similar to the above, but returns with interrupts disabled.
- * It is intended for use during interrupt exit (as the name implies :-)).
- */
-void
-intr_return(level)
-	int level;
-{
-	int pending, old = cpl;
-	int emsr, dmsr;
-	
-	asm ("mfmsr %0" : "=r"(emsr));
-	dmsr = emsr & ~PSL_EE;
-	
-	cpl = level;
-	
-	if ((level & SPLMACHINE) != (old & SPLMACHINE))
-		(*machine_interface.splx)(level & SPLMACHINE);
-
-	while (1) {
-		cpl = level;
-		
-		asm volatile ("mtmsr %0" :: "r"(dmsr));
-		if (clockpending && !(cpl & SPLCLOCK)) {
-			struct clockframe frame;
-			extern int intr_depth;
-			
-			cpl |= SPLCLOCK;
-			clockpending--;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			
-			/*
-			 * Fake a clock interrupt frame
-			 */
-			frame.pri = level | (clockpending ? SPLSOFTCLOCK : 0);
-			frame.depth = intr_depth + 1;
-			frame.srr1 = 0;
-			frame.srr0 = (int)splx;
-			/*
-			 * Do standard timer interrupt stuff
-			 */
-			hardclock(&frame);
-			continue;
-		}
-		if (softclockpending && !(cpl & SPLSOFTCLOCK)) {
-			
-			cpl |= SPLSOFTCLOCK;
-			softclockpending = 0;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			
-			softclock();
-			continue;
-		}
-		if (softnetpending && !(cpl & SPLSOFTNET)) {
-			cpl |= SPLSOFTNET;
-			softnetpending = 0;
-			asm volatile ("mtmsr %0" :: "r"(emsr));
-			softnet();
-			continue;
-		}
-		break;
-	}
+	splx(ipl);
 }
 
 /*
@@ -864,13 +859,27 @@ boot(howto)
 	if (!cold && !(howto & RB_NOSYNC) && !syncing) {
 		syncing = 1;
 		vfs_shutdown();		/* sync */
-		resettodr();		/* set wall clock */
+#if 0
+		/* resettodr does not currently do anything, address
+		 * this later
+		 */
+		/*
+		 * If we've been adjusting the clock, the todr
+		 * will be out of synch; adjust it now unless
+		 * the system was sitting in ddb.
+		 */
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
+#endif
 	}
 	splhigh();
 	if (howto & RB_HALT) {
 		doshutdownhooks();
 		printf("halted\n\n");
-		ppc_exit();
+		(fw->exit)();
 	}
 	if (!cold && (howto & RB_DUMP))
 		dumpsys();
@@ -895,33 +904,458 @@ boot(howto)
 	if (ap[-2] == '-')
 		*ap1 = 0;
 #endif
-	ppc_boot(str);
+	OF_exit();
+	(fw->boot)(str);
+	printf("boot failed, spinning\n");
+	while(1) /* forever */;
 }
 
 /*
- * OpenFirmware callback routine
+ *  Get Ethernet address for the onboard ethernet chip.
+ */
+int
+power4e_get_eth_addr()
+{
+	int qhandle, phandle;
+	char name[32];
+
+	for (qhandle = OF_peer(0); qhandle; qhandle = phandle) {
+		if (OF_getprop(qhandle, "device_type", name, sizeof name) >= 0
+		    && !strcmp(name, "network")
+		    && OF_getprop(qhandle, "local-mac-address",
+				  &ofw_eth_addr, sizeof ofw_eth_addr) >= 0) {
+			return(0);
+		}
+		if (phandle = OF_child(qhandle))
+			continue;
+		while (qhandle) {
+			if (phandle = OF_peer(qhandle))
+				break;
+			qhandle = OF_parent(qhandle);
+		}
+	}
+	return(-1);
+}
+
+typedef void  (void_f) (void);
+void_f *pending_int_f = NULL;
+
+/* call the bus/interrupt controller specific pending interrupt handler
+ * would be nice if the offlevel interrupt code was handled here
+ * instead of being in each of the specific handler code
  */
 void
-callback(p)
-	void *p;
+do_pending_int()
 {
-	panic("callback");	/* for now			XXX */
+	if (pending_int_f != NULL) {
+		(*pending_int_f)();
+	}
 }
 
 /*
- * Fake routines for spl/interrupt handling before autoconfig
+ * set system type from string
  */
-static void
-fake_splx(new)
-	int new;
+void
+systype(char *name)
 {
+	/* this table may be order specific if substrings match several
+	 * computers but a longer string matches a specific 
+	 */
+	int i;
+	struct systyp {
+		char *name;
+		char *systypename;
+		int type;
+	} systypes[] = {
+		{ "MOT",	"(PWRSTK) MCG powerstack family", PWRSTK },
+		{ "V-I Power",	"(POWER4e) V-I ppc vme boards ",  POWER4e},
+		{ "iMac",	"(APPL) Apple iMac ",  APPL},
+		{ "PowerMac",	"(APPL) Apple PowerMac ",  APPL},
+		{ "PowerBook",	"(APPL) Apple Powerbook ",  APPL},
+		{ NULL,"",0}
+	};
+	for (i = 0; systypes[i].name != NULL; i++) {
+		if (strncmp( name , systypes[i].name,
+			strlen (systypes[i].name)) == 0)
+		{
+			system_type = systypes[i].type;
+			printf("recognized system type of %s as %s\n",
+				name, systypes[i].systypename);
+			break;
+		}
+	}
+	if (system_type == OFWMACH) {
+		printf("System type %snot recognized, good luck\n",
+			name);
+	}
+}
+/* 
+ * one attempt at interrupt stuff..
+ *
+ */
+#include <dev/pci/pcivar.h>
+typedef void     *(intr_establish_t) __P((void *, pci_intr_handle_t,
+            int, int (*func)(void *), void *, char *));
+typedef void     (intr_disestablish_t) __P((void *, void *));
+
+void *
+ppc_intr_establish(lcv, ih, level, func, arg, name)
+	void *lcv;
+	pci_intr_handle_t ih;
+	int level;
+	int (*func) __P((void *));
+	void *arg;
+	char *name;
+{
+	panic("ppc_intr_establish called before interrupt controller configured: driver %s", name);
 }
 
-static void
-fake_irq_establish(irq, level, handler, arg)
-	int irq, level;
-	void (*handler) __P((void *));
-	void *arg;
+intr_establish_t *intr_establish_func = ppc_intr_establish;;
+intr_disestablish_t *intr_disestablish_func;
+
+void
+ppc_intr_setup(intr_establish_t *establish, intr_disestablish_t *disestablish)
 {
-	panic("fake_irq_establish");
+	intr_establish_func = establish;
+	intr_disestablish_func = disestablish;
+}
+
+/*
+ * General functions to enable and disable interrupts
+ * without having inlined assembly code in many functions,
+ * should be moved into a header file for inlining the function
+ * so it is faster
+ */
+void
+ppc_intr_enable(void)
+{
+	u_int32_t emsr, dmsr;
+	__asm__ volatile("mfmsr %0" : "=r"(emsr));
+	dmsr = emsr | PSL_EE;
+	__asm__ volatile("mtmsr %0" :: "r"(dmsr));
+}
+
+void
+ppc_intr_disable(void)
+{
+	u_int32_t emsr, dmsr;
+	__asm__ volatile("mfmsr %0" : "=r"(emsr));
+	dmsr = emsr & ~PSL_EE;
+	__asm__ volatile("mtmsr %0" :: "r"(dmsr));
+}
+
+/* BUS functions */
+int
+bus_space_map(t, bpa, size, cacheable, bshp)
+	bus_space_tag_t t;
+	bus_addr_t bpa;
+	bus_size_t size;
+	int cacheable;
+	bus_space_handle_t *bshp;
+{
+	int error;
+	
+	if  (POWERPC_BUS_TAG_BASE(t) == 0) {
+		/* if bus has base of 0 fail. */
+		return 1;
+	}
+	bpa |= POWERPC_BUS_TAG_BASE(t);
+	if ((error = extent_alloc_region(devio_ex, bpa, size, EX_NOWAIT |
+		(ppc_malloc_ok ? EX_MALLOCOK : 0))))
+	{
+		return error;
+	}
+	if (error  = bus_mem_add_mapping(bpa, size, cacheable, bshp)) {
+		if (extent_free(devio_ex, bpa, size, EX_NOWAIT | 
+			(ppc_malloc_ok ? EX_MALLOCOK : 0)))
+		{
+			printf("bus_space_map: pa 0x%x, size 0x%x\n",
+				bpa, size);
+			printf("bus_space_map: can't free region\n");
+		}
+	}
+	return 0;
+}
+void bus_space_unmap __P((bus_space_tag_t t, bus_space_handle_t bsh,
+			  bus_size_t size));
+void
+bus_space_unmap(t, bsh, size)
+	bus_space_tag_t t;
+	bus_space_handle_t bsh;
+	bus_size_t size;
+{
+	bus_addr_t sva;
+	bus_size_t off, len;
+
+	/* should this verify that the proper size is freed? */
+	sva = trunc_page(bsh);
+	off = bsh - sva;
+	len = size+off;
+
+#ifdef UVM
+	uvm_km_free_wakeup(phys_map, sva, len);
+#else
+	kmem_free_wakeup(phys_map, sva, len);
+#endif
+#ifdef DESTROY_MAPPINGS
+	for (; len > 0; len -= NBPG) {
+		pmap_enter(vm_map_pmap(phys_map), vaddr, sva,
+			VM_PROT_READ | VM_PROT_WRITE, TRUE);
+		sva += NBPG;
+		vaddr += NBPG;
+	}
+#endif
+
+}
+
+int
+bus_mem_add_mapping(bpa, size, cacheable, bshp)
+	bus_addr_t bpa;
+	bus_size_t size;
+	int cacheable;
+	bus_space_handle_t *bshp;
+{
+	bus_addr_t vaddr;
+	bus_addr_t spa, epa;
+	bus_size_t off;
+	int len;
+
+	spa = trunc_page(bpa);
+	epa = bpa + size;
+	off = bpa - spa;
+	len = size+off;
+
+	if (epa <= spa) {
+		panic("bus_mem_add_mapping: overflow");
+	}
+	if (ppc_malloc_ok == 0) { 
+		bus_size_t alloc_size;
+
+		/* need to steal vm space before kernel vm is initialized */
+		alloc_size = trunc_page(size + NBPG);
+		ppc_kvm_size -= alloc_size;
+
+		vaddr = VM_MIN_KERNEL_ADDRESS + ppc_kvm_size;
+	} else {
+#ifdef UVM
+		vaddr = uvm_km_valloc_wait(phys_map, len);
+#else
+		vaddr = kmem_alloc_wait(phys_map, len);
+#endif
+	}
+	*bshp = vaddr + off;
+#ifdef DEBUG_BUS_MEM_ADD_MAPPING
+	printf("mapping %x size %x to %x vbase %x\n", 
+		bpa, size, *bshp, spa);
+#endif
+	for (; len > 0; len -= NBPG) {
+#if 0
+		pmap_enter(vm_map_pmap(phys_map), vaddr, spa,
+#else
+		pmap_enter(pmap_kernel(), vaddr, spa,
+#endif
+			VM_PROT_READ | VM_PROT_WRITE, TRUE, 0/* XXX */);
+		spa += NBPG;
+		vaddr += NBPG;
+	}
+	return 0;
+}
+void *
+mapiodev(pa, len)
+	paddr_t pa;
+	psize_t len;
+{
+	paddr_t spa;
+	vaddr_t vaddr, va;
+	int off;
+	int size;
+
+	spa = trunc_page(pa);
+	off = pa - spa;
+	size = round_page(off+len);
+#ifdef UVM
+	va = vaddr = uvm_km_valloc(phys_map, size);
+#else
+	va = vaddr = kmem_alloc(phys_map, size);
+#endif
+
+	if (va == 0) 
+		return NULL;
+
+	if (pa >= 0x80000000 && pa+len < 0x90000000) {
+		extern int segment8_mapped;
+		if (segment8_mapped) {
+			return (void *)pa;
+		}
+	}
+	for (; size > 0; size -= NBPG) {
+#if 0
+		pmap_enter(vm_map_pmap(phys_map), vaddr, spa,
+#else
+		pmap_enter(pmap_kernel(), vaddr, spa,
+#endif
+			VM_PROT_READ | VM_PROT_WRITE, TRUE, 0/* XXX */);
+		spa += NBPG;
+		vaddr += NBPG;
+	}
+	return (void*) (va+off);
+}
+
+/*
+ * probably should be ppc_space_copy
+ */
+
+#define _CONCAT(A,B) A ## B
+#define __C(A,B)	_CONCAT(A,B)
+
+#define BUS_SPACE_COPY_N(BYTES,TYPE) 					\
+void 									\
+__C(bus_space_copy_,BYTES)(v, h1, o1, h2, o2, c)			\
+	void *v;							\
+	bus_space_handle_t h1, h2;					\
+	bus_size_t o1, o2, c;						\
+{									\
+	TYPE val;							\
+	TYPE *src, *dst;						\
+	int i;								\
+									\
+	src = (TYPE *) (h1+o1);						\
+	dst = (TYPE *) (h2+o2);						\
+									\
+	if (h1 == h2 && o2 > o1) {					\
+		for (i = c; i > 0; i--) {				\
+			dst[i] = src[i];				\
+		}							\
+	} else {							\
+		for (i = 0; i < c; i++) {				\
+			dst[i] = src[i];				\
+		}							\
+	}								\
+}
+BUS_SPACE_COPY_N(1,u_int8_t)
+BUS_SPACE_COPY_N(2,u_int16_t)
+BUS_SPACE_COPY_N(4,u_int32_t)
+
+#define BUS_SPACE_SET_REGION_N(BYTES,TYPE)				\
+void									\
+__C(bus_space_set_region_,BYTES)(v, h, o, val, c)			\
+	void *v;							\
+	bus_space_handle_t h;						\
+	TYPE val;							\
+	bus_size_t c;							\
+{									\
+	TYPE *dst;							\
+	int i;								\
+									\
+	dst = (TYPE *) (h+o);						\
+	for (i = 0; i < c; i++) {					\
+		dst[i] = val;						\
+	}								\
+}
+
+BUS_SPACE_SET_REGION_N(1,u_int8_t)
+BUS_SPACE_SET_REGION_N(2,u_int16_t)
+BUS_SPACE_SET_REGION_N(4,u_int32_t)
+
+#define BUS_SPACE_READ_RAW_MULTI_N(BYTES,SHIFT,TYPE)			\
+void									\
+__C(bus_space_read_raw_multi_,BYTES)(bst, h, o, dst, size)		\
+	bus_space_tag_t bst;						\
+	bus_space_handle_t h;						\
+	bus_addr_t o;							\
+	TYPE *dst;							\
+	bus_size_t size;						\
+{									\
+	TYPE *src;							\
+	int i;								\
+	int count = size >> SHIFT;					\
+									\
+	src = (TYPE *)(h+o);						\
+	for (i = 0; i < count; i++) {					\
+		dst[i] = *src;						\
+		__asm__("eieio");					\
+	}								\
+}
+BUS_SPACE_READ_RAW_MULTI_N(1,0,u_int8_t)
+BUS_SPACE_READ_RAW_MULTI_N(2,1,u_int16_t)
+BUS_SPACE_READ_RAW_MULTI_N(4,2,u_int32_t)
+
+#define BUS_SPACE_WRITE_RAW_MULTI_N(BYTES,SHIFT,TYPE)			\
+void									\
+__C(bus_space_write_raw_multi_,BYTES)(bst, h, o, src, size)		\
+	bus_space_tag_t bst;						\
+	bus_space_handle_t h;						\
+	bus_addr_t o;							\
+	const TYPE *src;						\
+	bus_size_t size;						\
+{									\
+	int i;								\
+	TYPE *dst;							\
+	int count = size >> SHIFT;					\
+									\
+	dst = (TYPE *)(h+o);						\
+	for (i = 0; i < count; i++) {					\
+		*dst = src[i];						\
+		__asm__("eieio");					\
+	}								\
+}
+
+BUS_SPACE_WRITE_RAW_MULTI_N(1,0,u_int8_t)
+BUS_SPACE_WRITE_RAW_MULTI_N(2,1,u_int16_t)
+BUS_SPACE_WRITE_RAW_MULTI_N(4,2,u_int32_t)
+
+int
+bus_space_subregion(t, bsh, offset, size, nbshp)
+	bus_space_tag_t t;
+	bus_space_handle_t bsh;
+	bus_size_t offset, size;
+	bus_space_handle_t *nbshp;
+{
+	*nbshp = bsh + offset;
+	return (0);
+}
+
+int
+ppc_open_pci_bridge()
+{
+	char *
+	pci_bridges[] = {
+		"/pci",
+		NULL
+	};
+	int handle;
+	int i;
+
+	for (i = 0; pci_bridges[i] != NULL; i++) {
+		handle = OF_open(pci_bridges[i]);
+		if ( handle != -1) {
+			return handle;
+		}
+	}
+	return 0;
+}
+void
+ppc_close_pci_bridge(int handle)
+{
+	OF_close(handle);
+}
+
+/* bcopy(), error on fault */
+int
+kcopy(from, to, size)
+	const void *from;
+	void *to;
+	size_t size;
+{
+	faultbuf env;
+	register void *oldh = curproc->p_addr->u_pcb.pcb_onfault;
+
+	if (setfault(env)) {
+		curpcb->pcb_onfault = 0;
+		return EFAULT;
+	}
+	bcopy(from, to, size);
+	curproc->p_addr->u_pcb.pcb_onfault = oldh;
+
+	return 0;
 }

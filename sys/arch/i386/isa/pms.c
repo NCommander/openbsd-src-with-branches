@@ -1,6 +1,8 @@
-/*	$NetBSD: pms.c,v 1.23 1995/10/05 22:06:54 mycroft Exp $	*/
+/*	$OpenBSD: pms.c,v 1.24 1999/11/22 07:13:56 matthieu Exp $	*/
+/*	$NetBSD: pms.c,v 1.29 1996/05/12 23:12:42 mycroft Exp $	*/
 
 /*-
+ * Copyright (c) 1996, Jason Downs.
  * Copyright (c) 1994 Charles Hannum.
  * Copyright (c) 1992, 1993 Erik Forsberg.
  * All rights reserved.
@@ -46,12 +48,15 @@
 #include <sys/file.h>
 #include <sys/select.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/vnode.h>
 #include <sys/device.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 #include <machine/mouse.h>
+#include <machine/conf.h>
 
 #include <dev/isa/isavar.h>
 
@@ -66,7 +71,7 @@
 
 /* controller commands */
 #define	PMS_INT_ENABLE	0x47	/* enable controller interrupts */
-#define	PMS_INT_DISABLE	0x65	/* disable controller interrupts */
+#define	PMS_INT_DISABLE	0x45	/* disable controller interrupts */
 #define	PMS_AUX_ENABLE	0xa8	/* enable auxiliary port */
 #define	PMS_AUX_DISABLE	0xa7	/* disable auxiliary port */
 #define	PMS_AUX_TEST	0xa9	/* test auxiliary port */
@@ -93,9 +98,13 @@ struct pms_softc {		/* driver status information */
 
 	struct clist sc_q;
 	struct selinfo sc_rsel;
+	struct proc *sc_io;	/* process that opened pms (can get SIGIO) */
+	char   sc_async;	/* send SIGIO on input ready */
 	u_char sc_state;	/* mouse driver state */
 #define	PMS_OPEN	0x01	/* device is open */
 #define	PMS_ASLP	0x02	/* waiting for mouse data */
+	u_char sc_flags;	/* mouse driver flags */
+#define PMS_RAW		0x01	/* device is in raw mode */
 	u_char sc_status;	/* mouse button status */
 	int sc_x, sc_y;		/* accumulated motion in the X,Y axis */
 };
@@ -104,18 +113,33 @@ int pmsprobe __P((struct device *, void *, void *));
 void pmsattach __P((struct device *, struct device *, void *));
 int pmsintr __P((void *));
 
-struct cfdriver pmscd = {
-	NULL, "pms", pmsprobe, pmsattach, DV_TTY, sizeof(struct pms_softc)
+struct cfattach pms_ca = {
+	sizeof(struct pms_softc), pmsprobe, pmsattach,
 };
 
-#define	PMSUNIT(dev)	(minor(dev))
+struct cfdriver pms_cd = {
+	NULL, "pms", DV_TTY
+};
 
-static inline void
+#define	PMSUNIT(dev)	(minor(dev) / 2)
+#define PMSTYPE(dev)	(minor(dev) % 2)
+
+#define	FLUSHQ(q) {							\
+	if ((q)->c_cc)							\
+		ndflush(q, (q)->c_cc);					\
+}
+
+static __inline void pms_flush __P((void));
+static __inline void pms_dev_cmd __P((u_char));
+static __inline void pms_pit_cmd __P((u_char));
+static __inline void pms_aux_cmd __P((u_char));
+
+static __inline void
 pms_flush()
 {
 	u_char c;
 
-	while (c = inb(PMS_STATUS) & 0x03)
+	while ((c = inb(PMS_STATUS) & 0x03) != 0)
 		if ((c & PMS_OBUF_FULL) == PMS_OBUF_FULL) {
 			/* XXX - delay is needed to prevent some keyboards from
 			   wedging when the system boots */
@@ -124,7 +148,7 @@ pms_flush()
 		}
 }
 
-static inline void
+static __inline void
 pms_dev_cmd(value)
 	u_char value;
 {
@@ -135,7 +159,7 @@ pms_dev_cmd(value)
 	outb(PMS_DATA, value);
 }
 
-static inline void
+static __inline void
 pms_aux_cmd(value)
 	u_char value;
 {
@@ -144,7 +168,7 @@ pms_aux_cmd(value)
 	outb(PMS_CNTRL, value);
 }
 
-static inline void
+static __inline void
 pms_pit_cmd(value)
 	u_char value;
 {
@@ -155,28 +179,48 @@ pms_pit_cmd(value)
 	outb(PMS_DATA, value);
 }
 
+/*
+ * XXX needs more work yet.  We should have a `pckbd_attach_args' that
+ * provides the parent's io port and our irq.
+ */
 int
 pmsprobe(parent, match, aux)
 	struct device *parent;
 	void *match, *aux;
 {
-	struct isa_attach_args *ia = aux;
+	struct cfdata *cf = match;
 	u_char x;
 
-	if (ia->ia_iobase != 0x60)
-		return 0;
+	/*
+	 * We only attach to the keyboard controller via
+	 * the console drivers. (We really wish we could be the
+	 * child of a real keyboard controller driver.)
+	 */
+	if ((parent == NULL) ||
+	   ((strcmp(parent->dv_cfdata->cf_driver->cd_name, "pc") != 0) &&
+	    (strcmp(parent->dv_cfdata->cf_driver->cd_name, "vt") != 0)))
+		return (0);
 
-	pms_dev_cmd(PMS_RESET);
+	/* Can't wildcard IRQ. */
+	if (cf->cf_loc[0] == -1)
+		return (0);
+
+	/*pms_dev_cmd(PMS_RESET);*/
 	pms_aux_cmd(PMS_AUX_TEST);
-	delay(1000);
+	delay(4000);
 	x = inb(PMS_DATA);
 	pms_pit_cmd(PMS_INT_DISABLE);
 	if (x & 0x04)
-		return 0;
+		return (0);
 
-	ia->ia_iosize = PMS_NPORTS;
-	ia->ia_msize = 0;
-	return 1;
+	/* Make sure the IRQ is available. */
+	if (!isa_intr_check((isa_chipset_tag_t)0, cf->cf_loc[0], IST_EDGE)) {
+		printf ("%s%d: irq %d already in use\n", cf->cf_driver->cd_name,
+		    cf->cf_unit, cf->cf_loc[0]);
+		return (0);
+	}
+
+	return (1);
 }
 
 void
@@ -185,28 +229,35 @@ pmsattach(parent, self, aux)
 	void *aux;
 {
 	struct pms_softc *sc = (void *)self;
-	struct isa_attach_args *ia = aux;
+	int irq = self->dv_cfdata->cf_loc[0];
+	isa_chipset_tag_t ic = aux;			/* XXX */
 
+	printf(" irq %d", irq);
+#ifdef INTELLIMOUSE
+	printf(": IntelliMouse");
+#endif
 	printf("\n");
 
 	/* Other initialization was done by pmsprobe. */
 	sc->sc_state = 0;
 
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_TTY,
-	    pmsintr, sc);
+	sc->sc_ih = isa_intr_establish(ic, irq, IST_EDGE, IPL_TTY,
+	    pmsintr, sc, sc->sc_dev.dv_xname);
 }
 
 int
-pmsopen(dev, flag)
+pmsopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
 	int unit = PMSUNIT(dev);
 	struct pms_softc *sc;
 
-	if (unit >= pmscd.cd_ndevs)
+	if (unit >= pms_cd.cd_ndevs)
 		return ENXIO;
-	sc = pmscd.cd_devs[unit];
+	sc = pms_cd.cd_devs[unit];
 	if (!sc)
 		return ENXIO;
 
@@ -218,7 +269,10 @@ pmsopen(dev, flag)
 
 	sc->sc_state |= PMS_OPEN;
 	sc->sc_status = 0;
+	sc->sc_flags = (PMSTYPE(dev) ? PMS_RAW : 0);
 	sc->sc_x = sc->sc_y = 0;
+	sc->sc_async = 0;
+	sc->sc_io = p;
 
 	/* Enable interrupts. */
 	pms_dev_cmd(PMS_DEV_ENABLE);
@@ -231,24 +285,43 @@ pmsopen(dev, flag)
 	pms_dev_cmd(100);	/* 100 samples/sec */
 	pms_dev_cmd(PMS_SET_STREAM);
 #endif
+#ifdef INTELLIMOUSE
+	/* The Micro$oft IntelliMouse has a wheel that you can turn or
+	 * click stuck in between the left and right buttons.
+	 * By default this mouse acts like a two-button PS/2 mouse.
+	 * If you set the sampling rate to 200, then 100, then 80
+	 * it changes to a 4-byte-per-packet format and the wheel
+	 * acts like a middle button if you click it.  Turing the
+	 * wheel modifies the fourth byte in the packet.
+	 */
+	pms_dev_cmd(PMS_SET_SAMPLE);
+	pms_dev_cmd(200);	/* 200 samples/sec */
+	pms_dev_cmd(PMS_SET_SAMPLE);
+	pms_dev_cmd(100);	/* 100 samples/sec */
+	pms_dev_cmd(PMS_SET_SAMPLE);
+	pms_dev_cmd(80);	/* 80 samples/sec */
+#endif
 	pms_pit_cmd(PMS_INT_ENABLE);
 
 	return 0;
 }
 
 int
-pmsclose(dev, flag)
+pmsclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag;
+	int mode;
+	struct proc *p;
 {
-	struct pms_softc *sc = pmscd.cd_devs[PMSUNIT(dev)];
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
 
 	/* Disable interrupts. */
-	pms_dev_cmd(PMS_DEV_DISABLE);
+	/* pms_dev_cmd(PMS_DEV_DISABLE); */
 	pms_pit_cmd(PMS_INT_DISABLE);
 	pms_aux_cmd(PMS_AUX_DISABLE);
 
 	sc->sc_state &= ~PMS_OPEN;
+	sc->sc_io = NULL;
 
 	clfree(&sc->sc_q);
 
@@ -261,9 +334,9 @@ pmsread(dev, uio, flag)
 	struct uio *uio;
 	int flag;
 {
-	struct pms_softc *sc = pmscd.cd_devs[PMSUNIT(dev)];
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
 	int s;
-	int error;
+	int error = 0;
 	size_t length;
 	u_char buffer[PMS_CHUNK];
 
@@ -276,7 +349,8 @@ pmsread(dev, uio, flag)
 			return EWOULDBLOCK;
 		}
 		sc->sc_state |= PMS_ASLP;
-		if (error = tsleep((caddr_t)sc, PZERO | PCATCH, "pmsrea", 0)) {
+		error = tsleep((caddr_t)sc, PZERO | PCATCH, "pmsrea", 0);
+		if (error) {
 			sc->sc_state &= ~PMS_ASLP;
 			splx(s);
 			return error;
@@ -295,7 +369,7 @@ pmsread(dev, uio, flag)
 		(void) q_to_b(&sc->sc_q, buffer, length);
 
 		/* Copy the data to the user process. */
-		if (error = uiomove(buffer, length, uio))
+		if ((error = uiomove(buffer, length, uio)) != 0)
 			break;
 	}
 
@@ -303,18 +377,63 @@ pmsread(dev, uio, flag)
 }
 
 int
-pmsioctl(dev, cmd, addr, flag)
+pmswrite(dev, uio, flag)
+	dev_t dev;
+	struct uio *uio;
+	int flag;
+{
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
+	int i, n;
+	int error;
+	int s;
+	u_char wrbuf[32];
+
+
+	if (!(sc->sc_flags & PMS_RAW)) 
+	    return ENODEV;
+	
+	error = 0;
+	/* Only allow a small number of bytes per write. */
+	n = min(sizeof(wrbuf), uio->uio_resid);
+	error = uiomove(wrbuf, n, uio);
+	if (error)
+		return error;
+	s = spltty();
+	for(i = 0; i < n; i++)
+		pms_dev_cmd(wrbuf[i]);
+	splx(s);
+
+	return error;
+}
+
+int
+pmsioctl(dev, cmd, addr, flag, p)
 	dev_t dev;
 	u_long cmd;
 	caddr_t addr;
 	int flag;
+	struct proc *p;
 {
-	struct pms_softc *sc = pmscd.cd_devs[PMSUNIT(dev)];
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
 	struct mouseinfo info;
 	int s;
 	int error;
 
+	error = 0;
 	switch (cmd) {
+
+	case FIONBIO:		/* we will remove this someday (soon???) */
+		return (0);
+
+	case FIOASYNC:
+		sc->sc_async = *(int *)addr != 0;
+		break;
+
+	case TIOCSPGRP:
+		if (*(int *)addr != sc->sc_io->p_pgid)
+			return (EPERM);
+		break;
+
 	case MOUSEIOCREAD:
 		s = spltty();
 
@@ -345,7 +464,18 @@ pmsioctl(dev, cmd, addr, flag)
 		splx(s);
 		error = copyout(&info, addr, sizeof(struct mouseinfo));
 		break;
-
+	case MOUSEIOCSRAW:
+		if (!(sc->sc_flags & PMS_RAW)) {
+			FLUSHQ(&sc->sc_q);
+			sc->sc_flags |= PMS_RAW;
+		}
+		break;
+	case MOUSEIOCSCOOKED:
+		if (sc->sc_flags & PMS_RAW) {
+			FLUSHQ(&sc->sc_q);
+			sc->sc_flags &= ~PMS_RAW;
+		}
+		break;
 	default:
 		error = EINVAL;
 		break;
@@ -376,51 +506,77 @@ pmsintr(arg)
 		return 0;
 	}
 
-	switch (state) {
-
-	case 0:
-		buttons = inb(PMS_DATA);
-		if ((buttons & 0xc0) == 0)
+	if (!(sc->sc_flags & PMS_RAW)) {
+		switch (state) {
+		case 0:
+			buttons = inb(PMS_DATA);
+			if ((buttons & 0xc0) == 0)
+				++state;
+			break;
+		case 1:
+			dx = inb(PMS_DATA);
+			/* Bounding at -127 avoids a bug in XFree86. */
+			dx = (dx == -128) ? -127 : dx;
 			++state;
-		break;
+			break;
+		case 2:
+			dy = inb(PMS_DATA);
+			dy = (dy == -128) ? -127 : dy;
+#ifdef INTELLIMOUSE
+			++state;
+#else
+			state = 0;
+#endif
+			buttons = ((buttons & PS2LBUTMASK) << 2) |
+			  	((buttons & (PS2RBUTMASK | PS2MBUTMASK)) >> 1);
+			changed = ((buttons ^ sc->sc_status) & BUTSTATMASK) << 3;
+			sc->sc_status = buttons |
+			    (sc->sc_status & ~BUTSTATMASK) | changed;
 
-	case 1:
-		dx = inb(PMS_DATA);
-		/* Bounding at -127 avoids a bug in XFree86. */
-		dx = (dx == -128) ? -127 : dx;
-		++state;
-		break;
+			if (dx || dy || changed) {
+				/* Update accumulated movements. */
+				sc->sc_x += dx;
+				sc->sc_y += dy;
 
-	case 2:
-		dy = inb(PMS_DATA);
-		dy = (dy == -128) ? -127 : dy;
-		state = 0;
+				/* Add this event to the queue. */
+				buffer[0] = 0x80 | (buttons ^ BUTSTATMASK);
+				buffer[1] = dx;
+				buffer[2] = dy;
+				buffer[3] = buffer[4] = 0;
+				(void) b_to_q(buffer, sizeof buffer, &sc->sc_q);
 
-		buttons = ((buttons & PS2LBUTMASK) << 2) |
-			  ((buttons & (PS2RBUTMASK | PS2MBUTMASK)) >> 1);
-		changed = ((buttons ^ sc->sc_status) & BUTSTATMASK) << 3;
-		sc->sc_status = buttons | (sc->sc_status & ~BUTSTATMASK) | changed;
+				if (sc->sc_state & PMS_ASLP) {
+					sc->sc_state &= ~PMS_ASLP;
+					wakeup((caddr_t)sc);
+				}
+				selwakeup(&sc->sc_rsel);
+				if (sc->sc_async) {
+				    	psignal(sc->sc_io, SIGIO); 
+				}
 
-		if (dx || dy || changed) {
-			/* Update accumulated movements. */
-			sc->sc_x += dx;
-			sc->sc_y += dy;
-
-			/* Add this event to the queue. */
-			buffer[0] = 0x80 | (buttons ^ BUTSTATMASK);
-			buffer[1] = dx;
-			buffer[2] = dy;
-			buffer[3] = buffer[4] = 0;
-			(void) b_to_q(buffer, sizeof buffer, &sc->sc_q);
-
-			if (sc->sc_state & PMS_ASLP) {
-				sc->sc_state &= ~PMS_ASLP;
-				wakeup((caddr_t)sc);
 			}
-			selwakeup(&sc->sc_rsel);
+
+			break;
+#ifdef INTELLIMOUSE		/* discard fourth "wheel" byte */
+		case 3:
+			state = 0;
+			inb(PMS_DATA);
+			break;
+#endif
+		}
+	} else {
+		buffer[0] = inb(PMS_DATA);
+		(void) b_to_q(buffer, 1, &sc->sc_q);
+		
+		if (sc->sc_state & PMS_ASLP) {
+			sc->sc_state &= ~PMS_ASLP;
+			wakeup((caddr_t)sc);
+		}
+		selwakeup(&sc->sc_rsel);
+		if (sc->sc_async) {
+		    	psignal(sc->sc_io, SIGIO); 
 		}
 
-		break;
 	}
 
 	return -1;
@@ -432,7 +588,7 @@ pmsselect(dev, rw, p)
 	int rw;
 	struct proc *p;
 {
-	struct pms_softc *sc = pmscd.cd_devs[PMSUNIT(dev)];
+	struct pms_softc *sc = pms_cd.cd_devs[PMSUNIT(dev)];
 	int s;
 	int ret;
 

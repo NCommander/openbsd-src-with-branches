@@ -1,3 +1,4 @@
+/*	$OpenBSD: mman.h,v 1.6 1998/01/02 05:32:52 deraadt Exp $	*/
 /*	$NetBSD: mman.h,v 1.11 1995/03/26 20:24:23 jtc Exp $	*/
 
 /*-
@@ -62,6 +63,11 @@
 #define	MAP_HASSEMAPHORE 0x0200	/* region may contain semaphores */
 
 /*
+ * Error return from mmap()
+ */
+#define MAP_FAILED	((void *)-1)
+
+/*
  * Mapping type
  */
 #define	MAP_FILE	0x0000	/* map from file (default) */
@@ -76,19 +82,28 @@
 #define	MADV_WILLNEED	3	/* will need these pages */
 #define	MADV_DONTNEED	4	/* dont need these pages */
 
+/*
+ * Flags to msync
+ */
+#define	MS_ASYNC	0x01	/* perform asynchronous writes */
+#define	MS_SYNC		0x02	/* perform synchronous writes */
+#define	MS_INVALIDATE	0x04	/* invalidate cached data */
+
 #ifndef _KERNEL
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
 /* Some of these int's should probably be size_t's */
-caddr_t	mmap __P((caddr_t, size_t, int, int, int, off_t));
-int	mprotect __P((caddr_t, size_t, int));
-int	munmap __P((caddr_t, size_t));
-int	msync __P((caddr_t, size_t));
-int	mlock __P((caddr_t, size_t));
-int	munlock __P((caddr_t, size_t));
-int	madvise __P((caddr_t, size_t, int));
+void *	mmap __P((void *, size_t, int, int, int, off_t));
+int	mprotect __P((void *, size_t, int));
+int	munmap __P((void *, size_t));
+int	msync __P((void *, size_t, int));
+int	mlock __P((const void *, size_t));
+int	munlock __P((const void *, size_t));
+int	madvise __P((void *, size_t, int));
+int	mincore __P((void *, size_t, char *));
+int	minherit __P((void *, size_t, int));
 __END_DECLS
 
 #endif /* !_KERNEL */

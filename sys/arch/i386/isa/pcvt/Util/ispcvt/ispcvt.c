@@ -1,3 +1,5 @@
+/*	$OpenBSD: ispcvt.c,v 1.8 1999/11/26 02:11:15 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis
  *
@@ -54,12 +56,19 @@ static char *id =
  *
  *---------------------------------------------------------------------------*/
 
-#include <stdio.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <machine/pcvt_ioctl.h>
 
 #define DEFAULTFD 0
 
+void next __P((void));
+void usage __P((void));
+
+int
 main(argc,argv)
 int argc;
 char *argv[];
@@ -76,9 +85,9 @@ char *argv[];
 	int config = 0;	
 	int dflag = 0;
 	int fd;
-	char *device;
+	char *device = NULL;
 
-	while( (c = getopt(argc, argv, "vcd:")) != EOF)
+	while( (c = getopt(argc, argv, "vcd:")) != -1)
 	{
 		switch(c)
 		{
@@ -110,7 +119,7 @@ char *argv[];
 			{
 				char buffer[80];
 				strcpy(buffer,"ERROR opening ");
-				strcat(buffer,device);
+				strncat(buffer,device,sizeof(buffer) - strlen(buffer));
 				perror(buffer);
 			}
 			exit(1);
@@ -189,8 +198,6 @@ char *argv[];
 		fprintf(stderr,"Operating System     = %s\t", p);
 		fprintf(stderr,"OS Release Id        = %u\n", pcvtinfo.opsysrel);
 		fprintf(stderr,"PCVT_NSCREENS        = %u\t\t", pcvtinfo.nscreens);
-		fprintf(stderr,"PCVT_UPDATEFAST      = %u\n", pcvtinfo.updatefast);
-		fprintf(stderr,"PCVT_UPDATESLOW      = %u\t\t", pcvtinfo.updateslow);
 		fprintf(stderr,"PCVT_SYSBEEPF        = %u\n", pcvtinfo.sysbeepf);
 		fprintf(stderr,"PCVT_PCBURST         = %u\t\t", pcvtinfo.pcburst);
 		fprintf(stderr,"PCVT_KBD_FIFO_SZ     = %u\n\n", pcvtinfo.kbd_fifo_sz);
@@ -208,9 +215,6 @@ char *argv[];
 		next();
 		fprintf(stderr,"PCVT_CTRL_ALT_DEL    = %s",
 			(pcvtinfo.compile_opts & CONF_CTRL_ALT_DEL) ? "ON" : "OFF");
-		next();
-		fprintf(stderr,"PCVT_EMU_MOUSE       = %s",
-			(pcvtinfo.compile_opts & CONF_EMU_MOUSE) ? "ON" : "OFF");
 		next();
 		fprintf(stderr,"PCVT_INHIBIT_NUMLOCK = %s",
 			(pcvtinfo.compile_opts & CONF_INHIBIT_NUMLOCK) ? "ON" : "OFF");
@@ -251,23 +255,14 @@ char *argv[];
 		fprintf(stderr,"PCVT_SETCOLOR        = %s",
 			(pcvtinfo.compile_opts & CONF_SETCOLOR) ? "ON" : "OFF");
 		next();
-		fprintf(stderr,"PCVT_SHOWKEYS        = %s",
-			(pcvtinfo.compile_opts & CONF_SHOWKEYS) ? "ON" : "OFF");
-		next();
 		fprintf(stderr,"PCVT_SIGWINCH        = %s",
 			(pcvtinfo.compile_opts & CONF_SIGWINCH) ? "ON" : "OFF");
-		next();
-		fprintf(stderr,"PCVT_SLOW_INTERRUPT  = %s",
-			(pcvtinfo.compile_opts & CONF_SLOW_INTERRUPT) ? "ON" : "OFF");
 		next();
 		fprintf(stderr,"PCVT_SW0CNOUTP       = %s",
 			(pcvtinfo.compile_opts & CONF_SW0CNOUTP) ? "ON" : "OFF");
 		next();
 		fprintf(stderr,"PCVT_USEKBDSEC       = %s",
 			(pcvtinfo.compile_opts & CONF_USEKBDSEC) ? "ON" : "OFF");
-		next();
-		fprintf(stderr,"PCVT_VT220KEYB       = %s",
-			((u_int)pcvtinfo.compile_opts & (u_int)CONF_VT220KEYB) ? "ON" : "OFF");
 		next();
 		fprintf(stderr,"PCVT_WAITRETRACE     = %s",
 			(pcvtinfo.compile_opts & CONF_WAITRETRACE) ? "ON" : "OFF");
@@ -281,13 +276,13 @@ char *argv[];
 	{
 		fprintf(stderr,"BSD Version      = %u\n", pcvtinfo.opsys);
 		fprintf(stderr,"PCVT_NSCREENS    = %u\n", pcvtinfo.nscreens);
-		fprintf(stderr,"PCVT_UPDATEFAST  = %u\n", pcvtinfo.updatefast);
-		fprintf(stderr,"PCVT_UPDATESLOW  = %u\n", pcvtinfo.updateslow);
 		fprintf(stderr,"PCVT_SYSBEEPF    = %u\n", pcvtinfo.sysbeepf);
-		fprintf(stderr,"Compile options  = 0x%08X\n", pcvtinfo.compile_opts);
+		fprintf(stderr,"Compile options  = 0x%08X\n", (unsigned int)pcvtinfo.compile_opts);
 	}
+	exit(0);
 }
 
+void
 usage()
 {
 	fprintf(stderr,"\nispcvt - verify current video driver is the pcvt-driver\n");
@@ -298,6 +293,7 @@ usage()
 	exit(5);
 }
 
+void
 next()
 {
 	static int i = 0;

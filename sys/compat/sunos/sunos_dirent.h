@@ -1,3 +1,4 @@
+/*	$OpenBSD: sunos_dirent.h,v 1.1 1995/10/09 11:24:10 mycroft Exp $	 */
 /*	$NetBSD: sunos_dirent.h,v 1.1 1995/10/09 11:24:10 mycroft Exp $	 */
 
 /*
@@ -43,4 +44,4 @@ struct sunos_dirent {
 #define SUNOS_NAMEOFF(dp)       ((char *)&(dp)->d_name - (char *)dp)
 #define SUNOS_RECLEN(de,namlen) ALIGN((SUNOS_NAMEOFF(de) + (namlen) + 1))
 
-#endif /* !_SVR4_DIRENT_H_ */
+#endif /* !_SUNOS_DIRENT_H_ */

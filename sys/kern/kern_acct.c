@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_acct.c,v 1.41 1995/10/07 06:28:07 mycroft Exp $	*/
+/*	$OpenBSD: kern_acct.c,v 1.6 1998/05/17 10:47:35 deraadt Exp $	*/
+/*	$NetBSD: kern_acct.c,v 1.42 1996/02/04 02:15:12 christos Exp $	*/
 
 /*-
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -107,7 +108,7 @@ sys_acct(p, v, retval)
 	int error;
 
 	/* Make sure that the caller is root. */
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 		return (error);
 
 	/*
@@ -117,9 +118,9 @@ sys_acct(p, v, retval)
 	if (SCARG(uap, path) != NULL) {
 		NDINIT(&nd, LOOKUP, NOFOLLOW, UIO_USERSPACE, SCARG(uap, path),
 		    p);
-		if (error = vn_open(&nd, FWRITE, 0))
+		if ((error = vn_open(&nd, FWRITE|O_APPEND, 0)) != 0)
 			return (error);
-		VOP_UNLOCK(nd.ni_vp);
+		VOP_UNLOCK(nd.ni_vp, 0, p);
 		if (nd.ni_vp->v_type != VREG) {
 			vn_close(nd.ni_vp, FWRITE, p->p_ucred, p);
 			return (EACCES);
@@ -218,8 +219,7 @@ acct_process(p)
 	 */
 	VOP_LEASE(vp, p, p->p_ucred, LEASE_WRITE);
 	return (vn_rdwr(UIO_WRITE, vp, (caddr_t)&acct, sizeof (acct),
-	    (off_t)0, UIO_SYSSPACE, IO_APPEND|IO_UNIT, p->p_ucred,
-	    (int *)0, p));
+	    (off_t)0, UIO_SYSSPACE, IO_APPEND|IO_UNIT, p->p_ucred, NULL, p));
 }
 
 /*

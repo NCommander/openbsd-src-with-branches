@@ -1,4 +1,5 @@
-/*	$NetBSD: rcons_kern.c,v 1.2 1995/10/04 23:57:25 pk Exp $ */
+/*	$OpenBSD$ */
+/*	$NetBSD: rcons_kern.c,v 1.4 1996/03/14 19:02:33 christos Exp $ */
 
 /*
  * Copyright (c) 1991, 1993
@@ -50,6 +51,7 @@
 #include <sys/systm.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
+#include <sys/proc.h>
 #include <dev/rcons/raster.h>
 #include <dev/rcons/rcons.h>
 
@@ -60,6 +62,7 @@ static void rcons_belltmr(void *);
 #include "rcons_subr.h"
 
 static struct rconsole *mydevicep;
+static void rcons_output __P((struct tty *));
 
 void
 rcons_cnputc(c)
@@ -79,7 +82,7 @@ static void
 rcons_output(tp)
 	register struct tty *tp;
 {
-	register int s, n, i;
+	register int s, n;
 	char buf[OBUFSIZ];
 
 	s = spltty();
@@ -185,7 +188,7 @@ rcons_init(rc)
 		return;
 	}
 	rp->linelongs = rc->rc_linebytes >> 2;
-	rp->pixels = (u_long *)rc->rc_pixels;
+	rp->pixels = (u_int32_t *)rc->rc_pixels;
 
 	rc->rc_ras_blank = RAS_CLEAR;
 

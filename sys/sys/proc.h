@@ -1,4 +1,5 @@
-/*	$NetBSD: proc.h,v 1.41 1995/08/13 09:04:43 mycroft Exp $	*/
+/*	$OpenBSD: proc.h,v 1.26 2000/01/28 19:45:03 art Exp $	*/
+/*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
  * Copyright (c) 1986, 1989, 1991, 1993
@@ -74,12 +75,13 @@ struct	pgrp {
  */
 struct exec_package;
 struct ps_strings;
+union sigval;
 
 struct	emul {
 	char	e_name[8];		/* Symbolic name */
 	int	*e_errno;		/* Errno array */
 					/* Signal sending function */
-	void	(*e_sendsig) __P((sig_t, int, int, u_long));
+	void	(*e_sendsig) __P((sig_t, int, int, u_long, int, union sigval));
 	int	e_nosys;		/* Offset of the nosys() syscall */
 	int	e_nsysent;		/* Number of system call entries */
 	struct sysent *e_sysent;	/* System call array */
@@ -91,6 +93,7 @@ struct	emul {
 					/* Set registers before execution */
 	void	(*e_setregs) __P((struct proc *, struct exec_package *,
 				  u_long, register_t *));
+	int	(*e_fixup) __P((struct proc *, struct exec_package *));
 	char	*e_sigcode;		/* Start of sigcode */
 	char	*e_esigcode;		/* End of sigcode */
 };
@@ -123,7 +126,7 @@ struct	proc {
 #define	p_rlimit	p_limit->pl_rlimit
 
 	int	p_flag;			/* P_* flags. */
-	u_char	p_unused;		/* XXX: used to be emulation flag */
+	u_char	p_os;			/* OS tag */
 	char	p_stat;			/* S* process status. */
 	char	p_pad1[2];
 
@@ -138,7 +141,7 @@ struct	proc {
 #define	p_startzero	p_oppid
 
 	pid_t	p_oppid;	 /* Save parent pid during ptrace. XXX */
-	int	p_dupfd;	 /* Sideways return value from fdopen. XXX */
+	int	p_dupfd;	 /* Sideways return value from filedescopen. XXX */
 
 	/* scheduling */
 	u_int	p_estcpu;	 /* Time averaged value of p_cpticks. */
@@ -208,28 +211,32 @@ struct	proc {
 #define	SZOMB	5		/* Awaiting collection by parent. */
 
 /* These flags are kept in p_flag. */
-#define	P_ADVLOCK	0x00001	/* Process may hold a POSIX advisory lock. */
-#define	P_CONTROLT	0x00002	/* Has a controlling terminal. */
-#define	P_INMEM		0x00004	/* Loaded into memory. */
-#define	P_NOCLDSTOP	0x00008	/* No SIGCHLD when children stop. */
-#define	P_PPWAIT	0x00010	/* Parent is waiting for child to exec/exit. */
-#define	P_PROFIL	0x00020	/* Has started profiling. */
-#define	P_SELECT	0x00040	/* Selecting; wakeup/waiting danger. */
-#define	P_SINTR		0x00080	/* Sleep is interruptible. */
-#define	P_SUGID		0x00100	/* Had set id privileges since last exec. */
-#define	P_SYSTEM	0x00200	/* System proc: no sigs, stats or swapping. */
-#define	P_TIMEOUT	0x00400	/* Timing out during sleep. */
-#define	P_TRACED	0x00800	/* Debugged process being traced. */
-#define	P_WAITED	0x01000	/* Debugging process has waited for child. */
-#define	P_WEXIT		0x02000	/* Working on exiting. */
-#define	P_EXEC		0x04000	/* Process called exec. */
+#define	P_ADVLOCK	0x000001	/* Proc may hold a POSIX adv. lock. */
+#define	P_CONTROLT	0x000002	/* Has a controlling terminal. */
+#define	P_INMEM		0x000004	/* Loaded into memory. */
+#define	P_NOCLDSTOP	0x000008	/* No SIGCHLD when children stop. */
+#define	P_PPWAIT	0x000010	/* Parent waits for child exec/exit. */
+#define	P_PROFIL	0x000020	/* Has started profiling. */
+#define	P_SELECT	0x000040	/* Selecting; wakeup/waiting danger. */
+#define	P_SINTR		0x000080	/* Sleep is interruptible. */
+#define	P_SUGID		0x000100	/* Had set id privs since last exec. */
+#define	P_SYSTEM	0x000200	/* No sigs, stats or swapping. */
+#define	P_TIMEOUT	0x000400	/* Timing out during sleep. */
+#define	P_TRACED	0x000800	/* Debugged process being traced. */
+#define	P_WAITED	0x001000	/* Debugging proc has waited for child. */
+#define	P_WEXIT		0x002000	/* Working on exiting. */
+#define	P_EXEC		0x004000	/* Process called exec. */
 
 /* Should be moved to machine-dependent areas. */
-#define	P_OWEUPC	0x08000	/* Owe process an addupc() call at next ast. */
+#define	P_OWEUPC	0x008000	/* Owe proc an addupc() at next ast. */
 
 /* XXX Not sure what to do with these, yet. */
-#define	P_FSTRACE	0x10000	/* tracing via file system (elsewhere?) */
-#define	P_SSTEP		0x20000	/* process needs single-step fixup ??? */
+#define	P_FSTRACE	0x010000	/* tracing via fs (elsewhere?) */
+#define	P_SSTEP		0x020000	/* proc needs single-step fixup ??? */
+#define	P_SUGIDEXEC	0x040000	/* last execve() was set[ug]id */
+
+#define	P_NOCLDWAIT	0x080000	/* Let pid 1 wait for my children */
+#define	P_NOZOMBIE	0x100000	/* Pid 1 waits for me instead of dad */
 
 /*
  * MOVE TO ucred.h?
@@ -251,9 +258,10 @@ struct	pcred {
 /*
  * We use process IDs <= PID_MAX; PID_MAX + 1 must also fit in a pid_t,
  * as it is used to represent "no process group".
+ * We set PID_MAX to (SHRT_MAX - 1) so we don't break sys/compat.
  */
-#define	PID_MAX		30000
-#define	NO_PID		30001
+#define	PID_MAX		32766
+#define	NO_PID		(PID_MAX+1)
 
 #define SESS_LEADER(p)	((p)->p_session->s_leader == (p))
 #define	SESSHOLD(s)	((s)->s_count++)
@@ -262,11 +270,30 @@ struct	pcred {
 		FREE(s, M_SESSION);					\
 }
 
+#if defined(UVM)
+#define	PHOLD(p) {							\
+	if ((p)->p_holdcnt++ == 0 && ((p)->p_flag & P_INMEM) == 0)	\
+		uvm_swapin(p);						\
+}
+#else
 #define	PHOLD(p) {							\
 	if ((p)->p_holdcnt++ == 0 && ((p)->p_flag & P_INMEM) == 0)	\
 		swapin(p);						\
 }
+#endif
 #define	PRELE(p)	(--(p)->p_holdcnt)
+
+/*
+ * Flags to fork1().
+ */
+#define FORK_FORK	0x00000001
+#define FORK_VFORK	0x00000002
+#define FORK_RFORK	0x00000004
+#define FORK_PPWAIT	0x00000008
+#define FORK_SHAREFILES	0x00000010
+#define FORK_CLEANFILES	0x00000020
+#define FORK_NOZOMBIE	0x00000040
+#define FORK_SHAREVM	0x00000080
 
 #define	PIDHASH(pid)	(&pidhashtbl[(pid) & pidhash])
 extern LIST_HEAD(pidhashhead, proc) *pidhashtbl;
@@ -279,11 +306,12 @@ extern u_long pgrphash;
 extern struct proc *curproc;		/* Current running proc. */
 extern struct proc proc0;		/* Process slot for swapper. */
 extern int nprocs, maxproc;		/* Current and max number of procs. */
+extern int randompid;			/* fork() should create random pid's */
 
 LIST_HEAD(proclist, proc);
 extern struct proclist allproc;		/* List of all processes. */
 extern struct proclist zombproc;	/* List of zombie processes. */
-struct proc *initproc, *pageproc;	/* Process slots for init, pager. */
+struct proc *initproc;			/* Process slots for init, pager. */
 
 #define	NQS	32			/* 32 run queues. */
 int	whichqs;			/* Bit mask summary of non-empty Q's. */
@@ -303,13 +331,26 @@ int	leavepgrp __P((struct proc *p));
 void	mi_switch __P((void));
 void	pgdelete __P((struct pgrp *pgrp));
 void	procinit __P((void));
+void	remrunqueue __P((struct proc *));
 void	resetpriority __P((struct proc *));
 void	setrunnable __P((struct proc *));
 void	setrunqueue __P((struct proc *));
 void	sleep __P((void *chan, int pri));
+#if defined(UVM)
+void	uvm_swapin __P((struct proc *));  /* XXX: uvm_extern.h? */
+#else
 void	swapin __P((struct proc *));
+#endif
 int	tsleep __P((void *chan, int pri, char *wmesg, int timo));
 void	unsleep __P((struct proc *));
 void	wakeup __P((void *chan));
+void	exit1 __P((struct proc *, int));
+int	fork1 __P((struct proc *, int, void *, size_t, register_t *));
+void	kmeminit __P((void));
+void	rqinit __P((void));
+int	groupmember __P((gid_t, struct ucred *));
+void	cpu_switch __P((struct proc *));
+void	cpu_wait __P((struct proc *));
+void	cpu_exit __P((struct proc *));
 #endif	/* _KERNEL */
 #endif	/* !_SYS_PROC_H_ */

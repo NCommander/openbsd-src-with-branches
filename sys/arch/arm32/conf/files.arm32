@@ -53,8 +53,6 @@ file    arch/arm32/mainbus/fd.c			fdc needs-flag
 major   {fd = 17}
 
 # RAM disk driver
-pseudo-device	rd
-file	dev/ramdisk.c				rd needs-count
 file	arch/arm32/dev/rd_hooks.c		rd | ramdisk_hooks
 major   {rd = 18}
 
@@ -113,7 +111,6 @@ device eh: ether, ifnet
 attach eh at podulebus
 file	arch/arm32/podulebus/if_eh.c		eh
 
-device ie: ether, ifnet
 attach ie at podulebus
 file	arch/arm32/podulebus/if_ie.c		ie
 

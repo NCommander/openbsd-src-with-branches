@@ -1,4 +1,5 @@
-/*	$NetBSD: ecoff.h,v 1.1 1995/02/13 23:07:35 cgd Exp $	*/
+/*	$OpenBSD: ecoff.h,v 1.5 1996/07/29 22:58:39 niklas Exp $	*/
+/*	$NetBSD: ecoff.h,v 1.3 1996/05/09 23:47:25 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994 Adam Glass
@@ -34,17 +35,66 @@
 #define ECOFF_LDPGSZ 4096
 
 #define ECOFF_PAD \
-	u_short	ea_bldrev;				/* XXX */
+	u_short	bldrev;					/* XXX */
 
 #define ECOFF_MACHDEP \
-        u_int	ea_gprmask; \
-        u_int	ea_fprmask; \
-        u_long ea_gp_value
+        u_int	gprmask; \
+        u_int	fprmask; \
+        u_long	gp_value
 
 #define ECOFF_MAGIC_ALPHA		0603
-#define ECOFF_MAGIC_NETBSD_ALPHA	0605
-#define ECOFF_BADMAG(ex)					\
-	(ex->ef_magic != ECOFF_MAGIC_ALPHA &&			\
-	    ex->ef_magic != ECOFF_MAGIC_NETBSD_ALPHA)
+#define ECOFF_MAGIC_NATIVE_ALPHA	0605
+#define ECOFF_BADMAG(ep)						\
+	((ep)->f.f_magic != ECOFF_MAGIC_ALPHA &&			\
+	    (ep)->f.f_magic != ECOFF_MAGIC_NATIVE_ALPHA)
 
-#define ECOFF_SEGMENT_ALIGNMENT(eap) (eap->ea_vstamp < 23 ? 8 : 16)
+#define ECOFF_FLAG_EXEC			0002
+#define ECOFF_SEGMENT_ALIGNMENT(ep) \
+    (((ep)->f.f_flags & ECOFF_FLAG_EXEC) == 0 ? 8 : 16)
+
+struct ecoff_symhdr {
+	int16_t		magic;
+	int16_t		vstamp;
+	int32_t		lineMax;
+	int32_t		densenumMax;
+	int32_t		procMax;
+	int32_t		lsymMax;
+	int32_t		optsymMax;
+	int32_t		auxsymMax;
+	int32_t		lstrMax;
+	int32_t		estrMax;
+	int32_t		fdMax;
+	int32_t		rfdMax;
+	int32_t		esymMax;
+	long		linesize;
+	long		cbLineOffset;
+	long		cbDnOffset;
+	long		cbPdOffset;
+	long		cbSymOffset;
+	long		cbOptOffset;
+	long		cbAuxOffset;
+	long		cbSsOffset;
+	long		cbSsExtOffset;
+	long		cbFdOffset;
+	long		cbRfdOffset;
+	long		cbExtOffset;
+};
+
+struct ecoff_extsym {
+	long		es_value;
+	int		es_strindex;
+	unsigned	es_type:6;
+	unsigned	es_class:5;
+	unsigned	:1;
+	unsigned	es_symauxindex:20;
+	unsigned	es_jmptbl:1;
+	unsigned	es_cmain:1;
+	unsigned	es_weakext:1;
+	unsigned	:29;
+	int		es_indexfld;
+};
+
+#ifdef _KERNEL
+void cpu_exec_ecoff_setregs
+     __P((struct proc *, struct exec_package *, u_long, register_t *));
+#endif

@@ -1,4 +1,5 @@
-/*	$NetBSD: itevar.h,v 1.7 1995/03/28 18:16:12 jtc Exp $	*/
+/*	$OpenBSD: itevar.h,v 1.8 1997/02/06 00:14:41 downsj Exp $	*/
+/*	$NetBSD: itevar.h,v 1.14 1997/03/31 07:37:27 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -42,19 +43,8 @@
  *	@(#)itevar.h	8.1 (Berkeley) 6/10/93
  */
 
-#define UNIT(dev)       minor(dev)
-
-struct itesw {
-	int	ite_hwid;		/* Hardware id */
-	int	(*ite_init)();
-	int	(*ite_deinit)();
-	int	(*ite_clear)();
-	int	(*ite_putc)();
-	int	(*ite_cursor)();
-	int	(*ite_scroll)();
-	u_char	(*ite_readbyte)();
-	int	(*ite_writeglyph)();
-};
+#ifdef _KERNEL
+#define ITEUNIT(dev)       minor(dev)
 
 #define getbyte(ip, offset) \
 	((*(ip)->isw->ite_readbyte)(ip, offset))
@@ -65,10 +55,11 @@ struct itesw {
 #define writeglyph(ip, offset, fontbuf) \
 	((*(ip)->isw->ite_writeglyph)((ip), (offset), (fontbuf)))
 
-struct ite_softc {
+struct ite_data {
 	int	flags;
+	struct	tty *tty;
 	struct  itesw *isw;
-	struct  grf_softc *grf;
+	struct  grf_data *grf;
 	caddr_t regbase, fbbase;
 	short	curx, cury;
 	short   cursorx, cursory;
@@ -86,6 +77,24 @@ struct ite_softc {
 	char	imode, escape, fpd, hold;
 	caddr_t	devdata;			/* display dependent data */
 };
+
+struct itesw {
+	void	(*ite_init) __P((struct ite_data *));
+	void	(*ite_deinit) __P((struct ite_data *));
+	void	(*ite_clear) __P((struct ite_data *, int, int, int, int));
+	void	(*ite_putc) __P((struct ite_data *, int, int, int, int));
+	void	(*ite_cursor) __P((struct ite_data *, int));
+	void	(*ite_scroll) __P((struct ite_data *, int, int, int, int));
+	u_char	(*ite_readbyte) __P((struct ite_data *, int));
+	void	(*ite_writeglyph) __P((struct ite_data *, u_char *, u_char *));
+};
+
+struct ite_softc {
+	struct	device sc_dev;		/* generic device info */
+	struct	ite_data *sc_data;	/* terminal state info */
+	struct	grf_softc *sc_grf;	/* pointer to framebuffer */
+};
+#endif /* _KERNEL */
 
 /* Flags */
 #define ITE_ALIVE	0x01	/* hardware exists */
@@ -180,10 +189,29 @@ struct ite_softc {
 #define KBD_EXT_RIGHT_UP      0x93
 
 #define	TABSIZE		8
-#define	TABEND(u)	(ite_tty[u]->t_winsize.ws_col - TABSIZE)
+#define	TABEND(ip)	((ip)->tty ? ((ip)->tty->t_winsize.ws_col - TABSIZE) \
+			    : ((ip)->cols - TABSIZE))
 
 #ifdef _KERNEL
+extern	struct ite_data ite_cn;		/* ite_data for console device */
+extern	struct ite_data *kbd_ite;	/* XXX */
 extern	struct ite_softc ite_softc[];
 extern	struct itesw itesw[];
 extern	int nitesw;
+
+/* ite.c prototypes */
+void	ite_attach_grf __P((int, int));
+int	iteon __P((struct ite_data *, int));
+void	iteoff __P((struct ite_data *, int));
+void	itefilter __P((char, char));
+void	itecninit __P((struct grf_data *, struct itesw *));
+int	itecngetc __P((dev_t));
+void	itecnputc __P((dev_t, int));
+int	ite_major __P((void));
+
+/* ite_subr.c prototypes */
+void	ite_fontinfo __P((struct ite_data *));
+void	ite_fontinit __P((struct ite_data *));
+u_char	ite_readbyte __P((struct ite_data *, int));
+void	ite_writeglyph __P((struct ite_data *, u_char *, u_char *));
 #endif

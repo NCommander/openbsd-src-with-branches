@@ -1,17 +1,17 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.arc,v 1.12 1998/03/04 07:00:59 niklas Exp $
 
 #	@(#)Makefile.arc	8.2 (Berkeley) 2/16/94
 #
 # Makefile for 4.4 BSD
 #
 # This makefile is constructed from a machine description:
-#	config machineid
+#	config ``machineid''
 # Most changes should be made in the machine description
-#	/sys/arch/MACHINE/conf/``machineid''
+#	/sys/arch/arc/conf/``machineid''
 # after which you should do
-#	 config machineid
+#	 config ``machineid''
 # Machine generic makefile changes should be made in
-#	/sys/arch/MACHINE/conf/Makefile.``machinetype''
+#	/sys/arch/arc/conf/Makefile.``machinetype''
 # after which config should be rerun for all machines of that type.
 #
 # N.B.: NO DEPENDENCIES ON FOLLOWING FLAGS ARE VISIBLE TO MAKEFILE
@@ -23,20 +23,26 @@
 
 # DEBUG is set to -g by config if debugging is requested (config -g).
 # PROF is set to -pg by config if profiling is requested (config -p).
+
 AS?=	as
 CC?=	cc
 CPP?=	cpp
-LD=	ld.ok			# XXX TEMPORARY
+LD?=	ld
 STRIP?=	strip -d
 TOUCH?=	touch -f -c
 
 # source tree is located via $S relative to the compilation directory
 S=	../../../..
 ARC=	../..
+MIPS=	../../../mips
 
 INCLUDES=	-I. -I$S/arch -I$S
 CPPFLAGS=	${INCLUDES} ${IDENT} -D_KERNEL -Darc
-CFLAGS=		${DEBUG} -O2 -Werror -mno-abicalls -mips2 -mcpu=r4000
+CDIAGFLAGS=	-Werror -Wall -Wmissing-prototypes -Wstrict-prototypes \
+		-Wno-uninitialized -Wno-format -Wno-main
+
+CFLAGS=		${DEBUG} -O2 ${CDIAGFLAGS} -mno-abicalls -mips2 -mcpu=r4000 \
+		${COPTS}
 AFLAGS=		-x assembler-with-cpp -traditional-cpp -D_LOCORE
 
 ### find out what to use for libkern
@@ -93,9 +99,9 @@ SYSTEM_LD=	-@if [ X${DEBUG} = X-g ]; \
 		then strip=-X; \
 		else strip=-x; \
 		fi; \
-		echo ${LD} $$strip -N -o $@ -e start -Ttext 80080000 \
+		echo ${LD} $$strip -o $@ -e start -T ../../conf/ld.script \
 			'$${SYSTEM_OBJ}' vers.o; \
-		${LD} $$strip -N -o $@ -e start -Ttext 80080000 \
+		${LD} $$strip -o $@ -e start -T ../../conf/ld.script \
 			${SYSTEM_OBJ} vers.o
 #
 SYSTEM_LD_TAIL=	chmod 755 $@; \
@@ -109,25 +115,24 @@ newvers:
 	${CC} $(CFLAGS) -c vers.c
 
 clean::
-	rm -f eddep bsd bsd.gdb tags *.o locore.i [a-z]*.s \
-	    Errs errs linterrs makelinks genassym
+	rm -f eddep bsd bsd.gdb bsd.ecoff tags *.o locore.i [a-z]*.s \
+	    Errs errs linterrs makelinks 
 
 lint: /tmp param.c
 	@lint -hbxn -DGENERIC -Dvolatile= ${COPTS} ${PARAM} -UKGDB \
-	    ${ARC}/arc/Locore.c ${CFILES} ${ARC}/arc/swapgeneric.c \
-	    ioconf.c param.c
+	    ${CFILES} ioconf.c param.c
 
 symbols.sort: ${ARC}/arc/symbols.raw
 	grep -v '^#' ${ARC}/arc/symbols.raw \
 	    | sed 's/^	//' | sort -u > symbols.sort
 
-locore.o: ${ARC}/arc/locore.S ${ARC}/include/asm.h \
-	${ARC}/include/cpu.h ${ARC}/include/reg.h assym.h
+locore.o: ${ARC}/arc/locore.S ${MIPS}/include/asm.h \
+	${MIPS}/include/cpu.h ${MIPS}/include/reg.h assym.h
 	${NORMAL_S} -mips3 ${ARC}/arc/locore.S
 
-fp.o: ${ARC}/arc/fp.S ${ARC}/include/asm.h \
-	${ARC}/include/cpu.h ${ARC}/include/reg.h assym.h
-	${NORMAL_S} -mips3 ${ARC}/arc/fp.S
+fp.o: ${MIPS}/mips/fp.S ${MIPS}/include/asm.h \
+	${ARC}/include/cpu.h ${MIPS}/include/reg.h assym.h
+	${NORMAL_S} -mips3 ${MIPS}/mips/fp.S
 
 # the following are necessary because the files depend on the types of
 # cpu's included in the system configuration
@@ -138,14 +143,12 @@ uipc_domain.o uipc_proto.o vfs_conf.o: Makefile
 if_tun.o if_loop.o if_ethersubr.o: Makefile
 in_proto.o: Makefile
 
-assym.h: genassym
-	./genassym >assym.h
 
-genassym: genassym.o
-	${CC} -o $@ genassym.o
+assym.h: $S/kern/genassym.sh ${ARC}/arc/genassym.cf
+	sh $S/kern/genassym.sh ${CC} ${CFLAGS} ${CPPFLAGS} \
+	    ${PARAM} < ${ARC}/arc/genassym.cf > assym.h.tmp && \
+	    mv -f assym.h.tmp assym.h
 
-genassym.o: ${ARC}/arc/genassym.c
-	${CC} ${INCLUDES} ${IDENT} -D_KERNEL -Darc -c $<
 
 links:
 	egrep '#if' ${CFILES} | sed -f $S/conf/defines | \
@@ -177,7 +180,6 @@ depend:: .depend
 	mkdep ${AFLAGS} ${CPPFLAGS} ${ARC}/arc/locore.s
 	mkdep -a ${CFLAGS} ${CPPFLAGS} param.c ioconf.c ${CFILES}
 	mkdep -a ${AFLAGS} ${CPPFLAGS} ${SFILES}
-	mkdep -a ${CFLAGS} ${CPPFLAGS} ${PARAM} ${ARC}/arc/genassym.c
 
 %RULES
 

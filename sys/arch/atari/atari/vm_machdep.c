@@ -1,4 +1,4 @@
-/*	$NetBSD: vm_machdep.c,v 1.3 1995/05/14 19:09:10 leo Exp $	*/
+/*	$NetBSD: vm_machdep.c,v 1.4 1995/12/09 04:37:34 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -68,8 +68,11 @@
  * address in each process; in the future we will probably relocate
  * the frame pointers on the stack after copying.
  */
-cpu_fork(p1, p2)
+void
+cpu_fork(p1, p2, stack, stacksize)
 	register struct proc *p1, *p2;
+	void *stack;
+	size_t stacksize;
 {
 	register struct pcb *pcb = &p2->p_addr->u_pcb;
 	register struct trapframe *tf;
@@ -85,18 +88,23 @@ cpu_fork(p1, p2)
 
 	/*
 	 * Copy the trap frame, and arrange for the child to return directly
-	 * through return_to_user().
+	 * through return_to_user().  Note the inline cpu_set_kpc().
 	 */
 	tf = (struct trapframe *)((u_int)p2->p_addr + USPACE) - 1;
 	p2->p_md.md_regs = (int *)tf;
 	*tf = *(struct trapframe *)p1->p_md.md_regs;
+
+	/*
+	 * If specified, give the child a different stack.
+	 */
+	if (stack != NULL)
+		tf->tf_regs[15] = (u_int)stack + stacksize;
+
 	sf = (struct switchframe *)tf - 1;
 	sf->sf_pc = (u_int)proc_trampoline;
 	pcb->pcb_regs[6] = (int)child_return;	/* A2 */
 	pcb->pcb_regs[7] = (int)p2;		/* A3 */
 	pcb->pcb_regs[11] = (int)sf;		/* SSP */
-
-	return (0);
 }
 
 /*
@@ -110,9 +118,10 @@ cpu_fork(p1, p2)
  * should be invoked, to return to user mode.
  */
 void
-cpu_set_kpc(p, pc)
+cpu_set_kpc(p, pc, arg)
 	struct proc *p;
-	u_int32_t pc;
+	void (*pc) __P((void *));
+	void *arg;
 {
 	struct pcb *pcbp;
 	struct switchframe *sf;
@@ -121,8 +130,8 @@ cpu_set_kpc(p, pc)
 	pcbp = &p->p_addr->u_pcb;
 	sf = (struct switchframe *)pcbp->pcb_regs[11];
 	sf->sf_pc = (u_int)proc_trampoline;
-	pcbp->pcb_regs[6] = pc;			/* A2 */
-	pcbp->pcb_regs[7] = (int)p;		/* A3 */
+	pcbp->pcb_regs[6] = (int)pc;		/* A2 */
+	pcbp->pcb_regs[7] = (int)arg;		/* A3 */
 }
 
 /*
@@ -273,13 +282,13 @@ cpu_coredump(p, vp, cred, chdr)
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cseg, chdr->c_seghdrsize,
 	    (off_t)chdr->c_hdrsize, UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, (int *)NULL, p);
+	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	if (error)
 		return error;
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&md_core, sizeof(md_core),
 	    (off_t)(chdr->c_hdrsize + chdr->c_seghdrsize), UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, (int *)NULL, p);
+	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 
 	if (!error)
 		chdr->c_nseg++;

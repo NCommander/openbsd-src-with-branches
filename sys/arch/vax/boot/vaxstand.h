@@ -1,4 +1,5 @@
-/*	$NetBSD: vaxstand.h,v 1.3 1995/04/25 14:14:34 ragge Exp $ */
+/*	$OpenBSD: vaxstand.h,v 1.5 1998/02/03 11:48:30 maja Exp $ */
+/*	$NetBSD: vaxstand.h,v 1.6 1997/03/15 13:04:31 ragge Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -34,19 +35,19 @@
 
 #define MAXNMBA 8 /* Massbussadapters */
 #define MAXNUBA 8 /* Unibusadapters */
-#define MAXNBI  4 /* Bi-bussadapters */
 #define	MAXMBAU	8 /* Units on an mba */
-#define	MAXBIN	16 /* Bi-nodes */
 
 /* Variables used in autoconf */
 extern int nmba, nuba, nbi, nsbi, nuda;
-extern int *ubaaddr, *mbaaddr, *udaaddr, *uioaddr;
+extern int *ubaaddr, *mbaaddr, *udaaddr, *uioaddr, *biaddr;
+extern int cpunumber;
 
 /* devsw type definitions, used in bootxx and conf */
 #define SADEV(name,strategy,open,close,ioctl) \
-        { name, \
-         (int(*)(void *, int ,daddr_t , u_int , char *, u_int *))strategy, \
+        { (char *)name, \
+         (int(*)(void *, int ,daddr_t , size_t, void *, size_t *))strategy, \
          (int(*)(struct open_file *, ...))open, \
          (int(*)(struct open_file *))close, \
          (int(*)(struct open_file *,u_long, void *))ioctl}
 
+char *index();

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1992, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -62,8 +64,11 @@ static char *id =
  *
  *---------------------------------------------------------------------------*/
 
-#include <stdio.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "keycap.h"
 
@@ -73,7 +78,6 @@ static char *id =
 
 char	*getenv();
 
-static	FILE *pfp = NULL;	/* keycap data base file pointer */
 static	char *tbuf;
 static	int hopcount;		/* detect infinite loops in keycap, init 0 */
 
@@ -91,7 +95,7 @@ char *id,*cstr;
 	register char *c = cstr+n;
 
 	if (strncmp(id,cstr,n)==0 &&
-	    (*c==':' || *c=='|' || *c=='=' || *c=='#') || *c=='@') 
+	    (*c==':' || *c=='|' || *c=='=' || *c=='#' || *c=='@')) 
 	    	return c;
 	return 0;
 }
@@ -100,14 +104,13 @@ char *id,*cstr;
  * Get an entry for keyboard name in buffer bp from the keycap file.
  * Parse is very rudimentary, we just notice escaped newlines.
  *---------------------------------------------------------------------------*/
-kgetent(bp, name)
+int kgetent(bp, name)
 char *bp, *name;
 {
 	register char *cp;
 	register int c;
 	register int i = 0, cnt = 0;
 	char ibuf[KEYCAP_BUFSIZ];
-	char *cp2;
 	int tf;
 
 	tbuf = bp;

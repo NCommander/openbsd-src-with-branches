@@ -1,4 +1,5 @@
-/*	$NetBSD: pmap_bootstrap.c,v 1.17 1995/10/02 09:41:06 briggs Exp $	*/
+/*	$OpenBSD: pmap_bootstrap.c,v 1.11 1999/04/23 05:15:28 downsj Exp $	*/
+/*	$NetBSD: pmap_bootstrap.c,v 1.30 1997/01/07 07:44:01 scottr Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -40,14 +41,22 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/msgbuf.h>
 #include <sys/reboot.h>
+
+#include <vm/vm.h>
+
 #include <machine/pte.h>
 #include <mac68k/mac68k/clockreg.h>
 #include <machine/vmparam.h>
 #include <machine/cpu.h>
+#include <machine/pmap.h>
+#include <machine/autoconf.h>
 
-#include <vm/vm.h>
+#include <ufs/mfs/mfs_extern.h>
+
+#include "macrom.h"
 
 #define PA2VA(v, t)	(t)((u_int)(v) - firstpa)
 
@@ -64,8 +73,6 @@ extern vm_offset_t virtual_avail, virtual_end;
 extern vm_size_t mem_size;
 extern int protection_codes[];
 
-extern vm_offset_t reserve_dumppages __P((vm_offset_t));
-
 /*
  * These are used to map the RAM:
  */
@@ -76,10 +83,14 @@ extern int		nbnumranges;
 extern u_long	nbphys[];
 extern u_long	nblog[];
 extern   signed long	nblen[];
-#define VIDMAPSIZE	btoc(mac68k_round_page(mac68k_vidlen))
-extern u_int32_t	mac68k_vidlen;
+#define VIDMAPSIZE	btoc(m68k_round_page(vidlen))
 extern u_int32_t	mac68k_vidlog;
 extern u_int32_t	mac68k_vidphys;
+extern u_int32_t	videoaddr;
+extern u_int32_t	videorowbytes;
+extern u_int32_t	videosize;
+static int		vidlen;
+static u_int32_t	newvideoaddr;
 
 extern caddr_t	ROMBase;
 
@@ -100,18 +111,23 @@ struct msgbuf	*msgbufp;
  * This is called with the MMU either on or off.  If it's on, we assume
  * that it's mapped with the same PA <=> LA mapping that we eventually
  * want.  The page sizes and the protections will be wrong, anyway.
+ *
+ * nextpa is the first address following the loaded kernel.  On a IIsi
+ * on 12 May 1996, that was 0xf9000 beyond firstpa.
  */
 void
 pmap_bootstrap(nextpa, firstpa)
 	vm_offset_t nextpa;
 	register vm_offset_t firstpa;
 {
-	vm_offset_t kstpa, kptpa, vidpa, iiopa, nbpa, rompa;
+	vm_offset_t kstpa, kptpa, vidpa, iiopa, rompa;
 	vm_offset_t kptmpa, lkptpa, p0upa;
 	u_int nptpages, kstsize;
 	int i;
 	register st_entry_t protoste, *ste;
 	register pt_entry_t protopte, *pte, *epte;
+
+	vidlen = ((videosize >> 16) & 0xffff) * videorowbytes + PGOFSET;
 
 	/*
 	 * Calculate important physical addresses:
@@ -124,9 +140,6 @@ pmap_bootstrap(nextpa, firstpa)
 	 *
 	 *	vidpa		internal video space for some machines
 	 *			PT pages		VIDMAPSIZE pages
-	 *
-	 *	nbpa 		NuBus IO space
-	 *			PT pages		NBMAPSIZE pages
 	 *
 	 *	rompa 		ROM space
 	 *			PT pages		ROMMAPSIZE pages
@@ -153,12 +166,10 @@ pmap_bootstrap(nextpa, firstpa)
 	nextpa += kstsize * NBPG;
 	kptpa = nextpa;
 	nptpages = Sysptsize +
-		(IIOMAPSIZE + NBMAPSIZE + ROMMAPSIZE + VIDMAPSIZE
-		 + NPTEPG - 1) / NPTEPG;
+		(IIOMAPSIZE + ROMMAPSIZE + VIDMAPSIZE + NPTEPG - 1) / NPTEPG;
 	nextpa += nptpages * NBPG;
 	vidpa = nextpa - VIDMAPSIZE * sizeof(pt_entry_t);
-	nbpa  = vidpa  - NBMAPSIZE  * sizeof(pt_entry_t);
-	rompa = nbpa   - ROMMAPSIZE * sizeof(pt_entry_t);
+	rompa = vidpa  - ROMMAPSIZE * sizeof(pt_entry_t);
 	iiopa = rompa  - IIOMAPSIZE * sizeof(pt_entry_t);
 	kptmpa = nextpa;
 	nextpa += NBPG;
@@ -168,9 +179,12 @@ pmap_bootstrap(nextpa, firstpa)
 	nextpa += USPACE;
 
 	if (nextpa > high[0]) {
-		printf("Failure in BSD boot.  nextpa=0x%x, high[0]=0x%x.\n",
+		printf("Failure in BSD boot.  nextpa=0x%lx, high[0]=0x%lx.\n",
 			nextpa, high[0]);
-		panic("You're hosed!\n");
+		printf("You're hosed!  Try booting with 32-bit addressing ");
+		printf("enabled in the memory control panel.\n");
+		printf("Older machines may need Mode32 to get that option.\n");
+		panic("Cannot work with the current memory mappings.");
 	}
 
 	/*
@@ -324,8 +338,8 @@ pmap_bootstrap(nextpa, firstpa)
 	/*
 	 * Validate PTEs for kernel text (RO)
 	 */
-	pte = &(PA2VA(kptpa, u_int *))[mac68k_btop(KERNBASE)];
-	epte = &pte[mac68k_btop(mac68k_trunc_page(&etext))];
+	pte = &(PA2VA(kptpa, u_int *))[m68k_btop(KERNBASE)];
+	epte = &pte[m68k_btop(m68k_trunc_page(&etext))];
 #if defined(KGDB) || defined(DDB)
 	protopte = firstpa | PG_RW | PG_V;	/* XXX RW for now */
 #else
@@ -340,7 +354,7 @@ pmap_bootstrap(nextpa, firstpa)
 	 * by us so far (nextpa - firstpa bytes), and pages for proc0
 	 * u-area and page table allocated below (RW).
 	 */
-	epte = &(PA2VA(kptpa, u_int *))[mac68k_btop(nextpa - firstpa)];
+	epte = &(PA2VA(kptpa, u_int *))[m68k_btop(nextpa - firstpa)];
 	protopte = (protopte & ~PG_PROT) | PG_RW;
 	/*
 	 * Enable copy-back caching of data pages
@@ -360,32 +374,24 @@ pmap_bootstrap(nextpa, firstpa)
 	 */
 	pte = PA2VA(iiopa, u_int *);
 	epte = PA2VA(rompa, u_int *);
-	protopte = INTIOBASE | PG_RW | PG_CI | PG_V;
+	protopte = IOBase | PG_RW | PG_CI | PG_V;
 	while (pte < epte) {
 		*pte++ = protopte;
 		protopte += NBPG;
 	}
 
 	pte = PA2VA(rompa, u_int *);
-	epte = PA2VA(nbpa, u_int *);
+	epte = PA2VA(vidpa, u_int *);
 	protopte = ((u_int) ROMBase) | PG_RO | PG_V;
 	while (pte < epte) {
 		*pte++ = protopte;
 		protopte += NBPG;
 	}
 
-	pte = PA2VA(nbpa, u_int *);
-	epte = pte + NBMAPSIZE;
-	protopte = NBBASE | PG_RW | PG_V | PG_CI;
-	while (pte < epte) {
-		*pte++ = protopte;
-		protopte += NBPG;
-	}
-
-	if (mac68k_vidlog) {
+	if (vidlen) {
 		pte = PA2VA(vidpa, u_int *);
 		epte = pte + VIDMAPSIZE;
-		protopte = mac68k_vidphys | PG_RW | PG_V | PG_CI;
+		protopte = (mac68k_vidphys & ~PGOFSET) | PG_RW | PG_V | PG_CI;
 		while (pte < epte) {
 			*pte++ = protopte;
 			protopte += NBPG;
@@ -407,21 +413,21 @@ pmap_bootstrap(nextpa, firstpa)
 	 * Sysmap: kernel page table (as mapped through Sysptmap)
 	 * Immediately follows `nptpages' of static kernel page table.
 	 */
-	Sysmap = (pt_entry_t *)mac68k_ptob(nptpages * NPTEPG);
+	Sysmap = (pt_entry_t *)m68k_ptob(nptpages * NPTEPG);
 
-	IOBase = (u_long)mac68k_ptob(nptpages*NPTEPG -
-			(IIOMAPSIZE + ROMMAPSIZE + NBMAPSIZE + VIDMAPSIZE));
+	IOBase = (u_long)m68k_ptob(nptpages*NPTEPG -
+			(IIOMAPSIZE + ROMMAPSIZE + VIDMAPSIZE));
 
-	ROMBase = (char *)mac68k_ptob(nptpages*NPTEPG -
-					(ROMMAPSIZE + NBMAPSIZE + VIDMAPSIZE));
+	ROMBase = (char *)m68k_ptob(nptpages*NPTEPG -
+					(ROMMAPSIZE + VIDMAPSIZE));
 
-	NuBusBase = (u_long)mac68k_ptob(nptpages*NPTEPG -
-						(NBMAPSIZE + VIDMAPSIZE));
-
-	if (mac68k_vidlog)
-		mac68k_vidlog = (u_int32_t)
-				mac68k_ptob(nptpages*NPTEPG - VIDMAPSIZE)
+	if (vidlen) {
+		newvideoaddr = (u_int32_t)
+				m68k_ptob(nptpages*NPTEPG - VIDMAPSIZE)
 				+ (mac68k_vidphys & PGOFSET);
+		if (mac68k_vidlog)
+			mac68k_vidlog = newvideoaddr;
+	}
 
 	/*
 	 * Setup u-area for process 0.
@@ -444,7 +450,7 @@ pmap_bootstrap(nextpa, firstpa)
 	 * VM data structures are now initialized, set up data for
 	 * the pmap module.
 	 */
-	avail_next = avail_start = mac68k_round_page(nextpa);
+	avail_next = avail_start = m68k_round_page(nextpa);
 	avail_remaining = 0;
 	avail_range = -1;
 	for (i = 0; i < numranges; i++) {
@@ -455,9 +461,9 @@ pmap_bootstrap(nextpa, firstpa)
 			avail_remaining += (high[i] - low[i]);
 		}
 	}
-	physmem = mac68k_btop(avail_remaining + nextpa - firstpa);
-	avail_remaining -= mac68k_round_page(sizeof(struct msgbuf));
-	high[numranges - 1] -= mac68k_round_page(sizeof(struct msgbuf));
+	physmem = m68k_btop(avail_remaining + nextpa - firstpa);
+	avail_remaining -= m68k_round_page(sizeof(struct msgbuf));
+	high[numranges - 1] -= m68k_round_page(sizeof(struct msgbuf));
 
 	/* XXX -- this doesn't look correct to me. */
 	while (high[numranges - 1] < low[numranges - 1]) {
@@ -465,11 +471,11 @@ pmap_bootstrap(nextpa, firstpa)
 		high[numranges - 1] -= low[numranges] - high[numranges];
 	}
 
-	avail_remaining = mac68k_trunc_page(avail_remaining);
+	avail_remaining = m68k_trunc_page(avail_remaining);
 	avail_end = avail_start + avail_remaining;
-	avail_remaining = mac68k_btop(avail_remaining);
+	avail_remaining = m68k_btop(avail_remaining);
 
-	mem_size = mac68k_ptob(physmem);
+	mem_size = m68k_ptob(physmem);
 	virtual_avail = VM_MIN_KERNEL_ADDRESS + (nextpa - firstpa);
 	virtual_end = VM_MAX_KERNEL_ADDRESS;
 
@@ -531,7 +537,8 @@ pmap_bootstrap(nextpa, firstpa)
 	 * Allocate some fixed, special purpose kernel virtual addresses
 	 */
 	{
-		vm_offset_t va = virtual_avail;
+		extern vm_offset_t	tmp_vpages[];
+		vm_offset_t	va = virtual_avail;
 
 		CADDR1 = (caddr_t)va;
 		va += NBPG;
@@ -539,9 +546,11 @@ pmap_bootstrap(nextpa, firstpa)
 		va += NBPG;
 		vmmap = (caddr_t)va;
 		va += NBPG;
+		tmp_vpages[0] = va;
+		va += NBPG;
 		msgbufp = (struct msgbuf *)va;
 		va += NBPG;
-		virtual_avail = reserve_dumppages(va);
+		virtual_avail = va;
 	}
 }
 
@@ -549,22 +558,23 @@ void
 bootstrap_mac68k(tc)
 	int	tc;
 {
+	extern void	zs_init __P((void));
 	extern caddr_t	esym;
-	extern u_long	videoaddr, boothowto;
-	u_long		newvideoaddr = 0;
 	vm_offset_t	nextpa;
 	caddr_t		oldROMBase;
 
 	if (mac68k_machine.do_graybars)
-		printf("Bootstrapping NetBSD/mac68k.\n");
+		printf("Bootstrapping OpenBSD/mac68k.\n");
 
 	oldROMBase = ROMBase;
+	mac68k_vidphys = videoaddr;
 
-	if ((tc & 0x80000000) && (mmutype == MMU_68030)) {
+	if (((tc & 0x80000000) && (mmutype == MMU_68030)) ||
+	    ((tc & 0x8000) && (mmutype == MMU_68040))) {
 
 		if (mac68k_machine.do_graybars)
 			printf("Getting mapping from MMU.\n");
-		get_mapping();
+		(void) get_mapping();
 		if (mac68k_machine.do_graybars)
 			printf("Done.\n");
 	} else {
@@ -574,16 +584,16 @@ bootstrap_mac68k(tc)
 		low[0] = 0;
 		high[0] = mac68k_machine.mach_memsize * (1024 * 1024);
 		if (mac68k_machine.do_graybars)
-			printf("Faked range to byte 0x%x.\n", high[0]);
+			printf("Faked range to byte 0x%lx.\n", high[0]);
 	}
-	nextpa = load_addr + ((int)esym + NBPG - 1) & PG_FRAME;
+	nextpa = load_addr + (((int)esym + NBPG - 1) & PG_FRAME);
 
 #if MFS
 	if (boothowto & RB_MINIROOT) {
 		int	v;
 		boothowto |= RB_DFLTROOT;
-		nextpa = mac68k_round_page(nextpa);
-		if ((v = mfs_initminiroot(nextpa-load_addr)) == 0) {
+		nextpa = m68k_round_page(nextpa);
+		if ((v = mfs_initminiroot((caddr_t) nextpa-load_addr)) == 0) {
 			printf("Error loading miniroot.\n");
 		}
 		printf("Loaded %d byte miniroot.\n", v);
@@ -599,25 +609,34 @@ bootstrap_mac68k(tc)
 	if (mac68k_machine.do_graybars)
 		printf("Pmap bootstrapped.\n");
 
-	if (mac68k_vidlog)
-		newvideoaddr = mac68k_vidlog;
-	else {
-		if (NBBASE <= videoaddr && videoaddr <= NBTOP)
-			newvideoaddr = videoaddr - NBBASE + NuBusBase;
-		else
-			panic("Don't know how to relocate video!\n");
-	}
+	if (!vidlen)
+		panic("Don't know how to relocate video!");
 
 	if (mac68k_machine.do_graybars)
-		printf("Moving ROMBase from 0x%x to 0x%x.\n",
+		printf("Moving ROMBase from %p to %p.\n",
 			oldROMBase, ROMBase);
 
 	mrg_fixupROMBase(oldROMBase, ROMBase);
 
 	if (mac68k_machine.do_graybars)
-		printf("Video address 0x%x -> 0x%x.\n",
-			videoaddr, newvideoaddr);
+		printf("Video address 0x%lx -> 0x%lx.\n",
+			(unsigned long) videoaddr,
+			(unsigned long) newvideoaddr);
 
 	mac68k_set_io_offsets(IOBase);
+
+	/*
+	 * If the serial ports are going (for console or 'echo'), then
+	 * we need to make sure the IO change gets propagated properly.
+	 * This resets the base addresses for the 8530 (serial) driver.
+	 *
+	 * WARNING!!! No printfs() (etc) BETWEEN zs_init() and the end
+	 * of this function (where we start using the MMU, so the new
+	 * address is correct.
+	 */
+	if (   (mac68k_machine.serial_boot_echo)
+	    || (mac68k_machine.serial_console))
+		zs_init();
+
 	videoaddr = newvideoaddr;
 }

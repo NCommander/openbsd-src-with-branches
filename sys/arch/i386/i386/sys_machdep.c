@@ -1,4 +1,4 @@
-/*	$NetBSD: sys_machdep.c,v 1.25.2.1 1995/10/15 06:54:02 mycroft Exp $	*/
+/*	$NetBSD: sys_machdep.c,v 1.28 1996/05/03 19:42:29 christos Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -59,6 +59,10 @@
 #include <vm/vm.h>
 #include <vm/vm_kern.h>
 
+#if defined(UVM)
+#include <uvm/uvm_extern.h>
+#endif
+
 #include <machine/cpu.h>
 #include <machine/cpufunc.h>
 #include <machine/gdt.h>
@@ -66,11 +70,36 @@
 #include <machine/reg.h>
 #include <machine/sysarch.h>
 
+#ifdef VM86
+#include <machine/vm86.h>
+#endif
+
 extern vm_map_t kernel_map;
+
+#ifdef USER_LDT
+int i386_get_ldt __P((struct proc *, char *, register_t *));
+int i386_set_ldt __P((struct proc *, char *, register_t *));
+#endif
+int i386_iopl __P((struct proc *, char *, register_t *));
+int i386_get_ioperm __P((struct proc *, char *, register_t *));
+int i386_set_ioperm __P((struct proc *, char *, register_t *));
 
 #ifdef TRACE
 int	nvualarm;
 
+void
+vdoualarm(arg)
+	int arg;
+{
+	register struct proc *p;
+
+	p = pfind(arg);
+	if (p)
+		psignal(p, 16);
+	nvualarm--;
+}
+
+int
 sys_vtrace(p, v, retval)
 	struct proc *p;
 	void *v;
@@ -80,7 +109,6 @@ sys_vtrace(p, v, retval)
 		syscallarg(int) request;
 		syscallarg(int) value;
 	} */ *uap = v;
-	int vdoualarm();
 
 	switch (SCARG(uap, request)) {
 
@@ -112,17 +140,6 @@ sys_vtrace(p, v, retval)
 	}
 	return (0);
 }
-
-vdoualarm(arg)
-	int arg;
-{
-	register struct proc *p;
-
-	p = pfind(arg);
-	if (p)
-		psignal(p, 16);
-	nvualarm--;
-}
 #endif
 
 #ifdef USER_LDT
@@ -139,8 +156,13 @@ i386_user_cleanup(pcb)
 	pcb->pcb_ldt_sel = GSEL(GLDT_SEL, SEL_KPL);
 	if (pcb == curpcb)
 		lldt(pcb->pcb_ldt_sel);
+#if defined(UVM)
+	uvm_km_free(kernel_map, (vaddr_t)pcb->pcb_ldt,
+	    (pcb->pcb_ldt_len * sizeof(union descriptor))); 
+#else
 	kmem_free(kernel_map, (vm_offset_t)pcb->pcb_ldt,
 	    (pcb->pcb_ldt_len * sizeof(union descriptor))); 
+#endif
 	pcb->pcb_ldt = 0;
 }
 
@@ -156,7 +178,7 @@ i386_get_ldt(p, args, retval)
 	union descriptor *lp;
 	struct i386_get_ldt_args ua;
 
-	if (error = copyin(args, &ua, sizeof(ua)))
+	if ((error = copyin(args, &ua, sizeof(ua))) != 0)
 		return (error);
 
 #ifdef	DEBUG
@@ -181,7 +203,8 @@ i386_get_ldt(p, args, retval)
 	lp += ua.start;
 	num = min(ua.num, nldt - ua.start);
 
-	if (error = copyout(lp, ua.desc, num * sizeof(union descriptor)))
+	error = copyout(lp, ua.desc, num * sizeof(union descriptor));
+	if (error)
 		return (error);
 
 	*retval = num;
@@ -201,7 +224,7 @@ i386_set_ldt(p, args, retval)
 	struct i386_set_ldt_args ua;
 	union descriptor desc;
 
-	if (error = copyin(args, &ua, sizeof(ua)))
+	if ((error = copyin(args, &ua, sizeof(ua))) != 0)
 		return (error);
 
 #ifdef	DEBUG
@@ -230,7 +253,11 @@ i386_set_ldt(p, args, retval)
 		while ((ua.start + ua.num) > pcb->pcb_ldt_len)
 			pcb->pcb_ldt_len *= 2;
 		new_len = pcb->pcb_ldt_len * sizeof(union descriptor);
+#if defined(UVM)
+		new_ldt = (union descriptor *)uvm_km_alloc(kernel_map, new_len);
+#else
 		new_ldt = (union descriptor *)kmem_alloc(kernel_map, new_len);
+#endif
 		bcopy(old_ldt, new_ldt, old_len);
 		bzero((caddr_t)new_ldt + old_len, new_len - old_len);
 		pcb->pcb_ldt = new_ldt;
@@ -244,7 +271,11 @@ i386_set_ldt(p, args, retval)
 			lldt(pcb->pcb_ldt_sel);
 
 		if (old_ldt != ldt)
+#if defined(UVM)
+			uvm_km_free(kernel_map, (vaddr_t)old_ldt, old_len);
+#else
 			kmem_free(kernel_map, (vm_offset_t)old_ldt, old_len);
+#endif
 #ifdef DEBUG
 		printf("i386_set_ldt(%d): new_ldt=%x\n", p->p_pid, new_ldt);
 #endif
@@ -254,10 +285,11 @@ i386_set_ldt(p, args, retval)
 		savectx(curpcb);
 	fsslot = IDXSEL(pcb->pcb_fs);
 	gsslot = IDXSEL(pcb->pcb_gs);
+	error = 0;
 
 	/* Check descriptors for access violations. */
 	for (i = 0, n = ua.start; i < ua.num; i++, n++) {
-		if (error = copyin(&ua.desc[i], &desc, sizeof(desc)))
+		if ((error = copyin(&ua.desc[i], &desc, sizeof(desc))) != 0)
 			return (error);
 
 		switch (desc.sd.sd_type) {
@@ -269,6 +301,14 @@ i386_set_ldt(p, args, retval)
 			/* Can't replace in use descriptor with gate. */
 			if (n == fsslot || n == gsslot)
 				return (EBUSY);
+			break;
+		case SDT_MEMEC:
+		case SDT_MEMEAC:
+		case SDT_MEMERC:
+		case SDT_MEMERAC:
+			/* Must be "present" if executable and conforming. */
+			if (desc.sd.sd_p == 0)
+				return (EACCES);
 			break;
 		case SDT_MEMRO:
 		case SDT_MEMROA:
@@ -303,7 +343,7 @@ i386_set_ldt(p, args, retval)
 
 	/* Now actually replace the descriptors. */
 	for (i = 0, n = ua.start; i < ua.num; i++, n++) {
-		if (error = copyin(&ua.desc[i], &desc, sizeof(desc)))
+		if ((error = copyin(&ua.desc[i], &desc, sizeof(desc))) != 0)
 			goto out;
 
 		pcb->pcb_ldt[n] = desc;
@@ -317,6 +357,10 @@ out:
 }
 #endif	/* USER_LDT */
 
+#ifdef APERTURE
+extern int allowaperture;
+#endif
+
 int
 i386_iopl(p, args, retval)
 	struct proc *p;
@@ -327,10 +371,17 @@ i386_iopl(p, args, retval)
 	struct trapframe *tf = p->p_md.md_regs;
 	struct i386_iopl_args ua;
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 		return error;
+#ifdef APERTURE
+	if (!allowaperture && securelevel > 0)
+		return EPERM;
+#else
+	if (securelevel > 0)
+		return EPERM;
+#endif
 
-	if (error = copyin(args, &ua, sizeof(ua)))
+	if ((error = copyin(args, &ua, sizeof(ua))) != 0)
 		return error;
 
 	if (ua.iopl)
@@ -351,7 +402,7 @@ i386_get_ioperm(p, args, retval)
 	struct pcb *pcb = &p->p_addr->u_pcb;
 	struct i386_get_ioperm_args ua;
 
-	if (error = copyin(args, &ua, sizeof(ua)))
+	if ((error = copyin(args, &ua, sizeof(ua))) != 0)
 		return (error);
 
 	return copyout(pcb->pcb_iomap, ua.iomap, sizeof(pcb->pcb_iomap));
@@ -367,10 +418,10 @@ i386_set_ioperm(p, args, retval)
 	struct pcb *pcb = &p->p_addr->u_pcb;
 	struct i386_set_ioperm_args ua;
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
 		return error;
 
-	if (error = copyin(args, &ua, sizeof(ua)))
+	if ((error = copyin(args, &ua, sizeof(ua))) != 0)
 		return (error);
 
 	return copyin(ua.iomap, pcb->pcb_iomap, sizeof(pcb->pcb_iomap));
@@ -410,6 +461,12 @@ sys_sysarch(p, v, retval)
 	case I386_SET_IOPERM: 
 		error = i386_set_ioperm(p, SCARG(uap, parms), retval);
 		break;
+
+#ifdef VM86
+	case I386_VM86:
+		error = i386_vm86(p, SCARG(uap, parms), retval);
+		break;
+#endif
 
 	default:
 		error = EINVAL;

@@ -1,6 +1,6 @@
-/*	$OpenBSD: xfs_pioctl.h,v 1.4 2000/09/11 14:26:53 art Exp $	*/
+/*	$OpenBSD: xfs_pioctl.h,v 1.2 1998/09/17 20:47:15 art Exp $	*/
 /*
- * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -125,10 +125,6 @@
 #define VIOC_AVIATOR		_VICEIOCTL(56)
 
 #define VIOC_XFSDEBUG_PRINT	_VICEIOCTL(57)
-
-#define VIOC_CALCULATE_CACHE	_VICEIOCTL(58)
-
-#define VIOC_BREAKCALLBACK	_VICEIOCTL(59)
 
 /*
  * GETCELLSTATUS flags

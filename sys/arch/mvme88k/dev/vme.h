@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: vme.h,v 1.2 1998/12/15 05:52:31 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -35,10 +35,18 @@
 #endif
 struct vmesoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
-#if 1
+	void *		sc_vaddr;
 	struct intrhand sc_abih;       /* `abort' switch */
-#endif
+};
+
+struct vmessoftc {
+	struct device		sc_dev;
+	struct vmesoftc		*sc_vme;
+};
+
+struct vmelsoftc {
+	struct device		sc_dev;
+	struct vmesoftc		*sc_vme;
 };
 
 /*
@@ -180,8 +188,8 @@ struct vme2reg {
 #define	VME2_MASTERCTL_AM24UB	0x3b	/* A24 Non-priv. Block Transfer */
 #define	VME2_MASTERCTL_AM24UP	0x3a	/* A24 Non-priv. Program Access */
 #define	VME2_MASTERCTL_AM24UD	0x39	/* A24 Non-priv. Data Access */
-#define	VME2_MASTERCTL_AM16S	0x2d	/* A16 Supervisory Access */
-#define	VME2_MASTERCTL_AM16U	0x29	/* A16 Non-priv. Access */
+#define	VME2_MASTERCTL_AM16S		0x2d	/* A16 Supervisory Access */
+#define	VME2_MASTERCTL_AM16U		0x29	/* A16 Non-priv. Access */
 #define	VME2_MASTERCTL_AM32SB	0x0f	/* A32 Supervisory Block Transfer */
 #define	VME2_MASTERCTL_AM32SP	0x0e	/* A32 Supervisory Program Access */
 #define	VME2_MASTERCTL_AM32SD	0x0d	/* A32 Supervisory Data Access */
@@ -220,8 +228,13 @@ struct vme2reg {
 /*58*/	volatile u_long		vme2_t2cmp;
 /*5c*/	volatile u_long		vme2_t2count;
 /*60*/	volatile u_long		vme2_tctl;
+#define VME2_TCTL1_CEN		0x01
+#define VME2_TCTL1_COC		0x02
+#define VME2_TCTL1_COVF		0x04
+#define VME2_TCTL1_OVF		0xf0
 #define VME2_TCTL_SCON		0x40000000	/* we are SCON */
 #define VME2_TCTL_SYSFAIL	0x20000000	/* light SYSFAIL led */
+#define VME2_TCTL_SRST		0x00800000	/* system reset */
 /*64*/	volatile u_long		vme2_prescale;
 /*68*/	volatile u_long		vme2_irqstat;
 /*6c*/	volatile u_long		vme2_irqen;
@@ -297,6 +310,7 @@ struct vme2reg {
 #define VME2_IRQL4_VME2SHIFT	4
 #define VME2_IRQL4_VME1SHIFT	0
 /*88*/	volatile u_long		vme2_vbr;
+#define VME2_SYSFAIL       (1 << 22)
 #define VME2_VBR_0SHIFT		28
 #define VME2_VBR_1SHIFT		24
 #define VME2_VBR_GPOXXXX	0x00ffffff
@@ -322,8 +336,8 @@ struct vme2reg {
 #define VME2_A16BASE	0xffff0000UL
 #define VME2_A24BASE	0xff000000UL
 
-caddr_t	vmepmap __P((struct vmesoftc *sc, caddr_t vmeaddr, int len,
+void * vmepmap __P((struct vmesoftc *sc, void * vmeaddr, int len,
 	    int bustype));
-caddr_t	vmemap __P((struct vmesoftc *sc, caddr_t vmeaddr, int len,
+void * vmemap __P((struct vmesoftc *sc, void * vmeaddr, int len,
 	    int bustype));
 int	vmerw __P((struct vmesoftc *sc, struct uio *uio, int flags, int bus));

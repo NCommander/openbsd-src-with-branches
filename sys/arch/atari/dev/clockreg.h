@@ -1,4 +1,4 @@
-/*	$NetBSD: clockreg.h,v 1.3 1995/06/28 04:30:40 cgd Exp $	*/
+/*	$NetBSD: clockreg.h,v 1.4 1996/01/06 20:11:07 leo Exp $	*/
 
 /*
  * Copyright (c) 1995 Leo Weppelman.
@@ -50,22 +50,6 @@ struct rtc {
  * Pull in general mc146818 definitions
  */
 #include <dev/ic/mc146818reg.h>
-
-__inline__ u_int mc146818_read(rtc, regno)
-void	*rtc;
-u_int	regno;
-{
-	((struct rtc *)rtc)->rtc_regno = regno;
-	return(((struct rtc *)rtc)->rtc_data & 0377);
-}
-
-__inline__ void mc146818_write(rtc, regno, value)
-void	*rtc;
-u_int	regno, value;
-{
-	((struct rtc *)rtc)->rtc_regno = regno;
-	((struct rtc *)rtc)->rtc_data  = value;
-}
 
 /*
  * Some useful constants/macros

@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,15 +36,33 @@
  * SUCH DAMAGE.
  */
 
-/* $arla: xfs_syscalls.h,v 1.29 2003/01/19 20:53:54 lha Exp $ */
+/* $Id: xfs_syscalls.h,v 1.16 1999/03/27 04:16:47 assar Exp $ */
 
 #ifndef  __xfs_syscalls
 #define  __xfs_syscalls
 
 #include <xfs/xfs_common.h>
 #include <xfs/xfs_message.h>
+#ifdef HAVE_SYS_SYSCALLARGS_H
+#include <sys/syscallargs.h>
+#endif
 
-#include <afssysdefs.h>
+/*
+ * XXX
+ */
+
+#ifndef SCARG
+#define SCARG(a, b) ((a)->b.datum)
+#define syscallarg(x)   union { x datum; register_t pad; }
+#endif
+
+#ifndef syscallarg
+#define syscallarg(x)   x
+#endif
+
+#ifndef HAVE_REGISTER_T
+typedef int register_t;
+#endif
 
 struct sys_pioctl_args {
     syscallarg(int) operation;
@@ -47,14 +70,6 @@ struct sys_pioctl_args {
     syscallarg(int) a_opcode;
     syscallarg(struct ViceIoctl *) a_paramsP;
     syscallarg(int) a_followSymlinks;
-};
-
-#define NNPFS_FHMAXDATA 40
-
-struct xfs_fhandle_t {
-    u_short	len;
-    u_short	pad;
-    char	fhdata[NNPFS_FHMAXDATA];
 };
 
 struct xfs_fh_args {
@@ -66,27 +81,13 @@ struct xfs_fh_args {
 int xfs_install_syscalls(void);
 int xfs_uninstall_syscalls(void);
 int xfs_stat_syscalls(void);
-xfs_pag_t xfs_get_pag(struct ucred *);
+pag_t xfs_get_pag(struct ucred *);
 
 int xfs_setpag_call(struct ucred **ret_cred);
-int xfs_pioctl_call(d_thread_t *proc,
+int xfs_pioctl_call(struct proc *proc,
 		    struct sys_pioctl_args *args,
 		    register_t *return_value);
 
-int xfspioctl(syscall_d_thread_t *proc, void *varg, register_t *retval);
-
-int xfs_setgroups(syscall_d_thread_t *p, void *varg, register_t *retval);
-
-extern int (*old_setgroups_func)(syscall_d_thread_t *, void *, register_t *);
-extern int xfs_syscall_num; /* The old syscall number */
-
-
-#ifndef HAVE_KERNEL_SYS_LKMNOSYS
-#define sys_lkmnosys nosys
-#endif
-
-#ifndef SYS_MAXSYSCALL
-#define SYS_MAXSYSCALL nsysent
-#endif
+int sys_xfspioctl(struct proc *proc, void *varg, register_t *retval);
 
 #endif				       /* __xfs_syscalls */

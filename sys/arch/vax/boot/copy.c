@@ -1,4 +1,5 @@
-/*	$NetBSD: copy.c,v 1.2 1995/09/29 16:35:00 ragge Exp $ */
+/*	$OpenBSD: copy.c,v 1.4 1998/02/03 11:48:26 maja Exp $ */
+/*	$NetBSD: copy.c,v 1.4 1997/02/12 18:00:42 ragge Exp $ */
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
  * All rights reserved.
@@ -38,7 +39,9 @@
 #include "sys/reboot.h"
 #include "lib/libsa/stand.h"
 
-#include <a.out.h>
+#include "vaxstand.h"
+
+#include <sys/exec.h>
 
 char line[100];
 volatile u_int devtype, bootdev;
@@ -53,7 +56,7 @@ static int  	partlist[8];
 int fill_buffer (void);
 int write_disk (void);
 
-main()
+Xmain()
 {
 	int adapt, ctlr, unit, part;
 	int res, i, loops;
@@ -107,7 +110,7 @@ again:
 	printf("Specify the device to read from as xx(N,?), where\n");
 	printf("xx is the device-name, ? is file/partition number\n");
 	printf("and N is the unit-number, e.g.\n");
-	printf("\"tms(0,1)\" for the first TMSCP-tape (TK50),\n");
+	printf("\"mt(0,1)\" for the first TMSCP-tape (TK50),\n");
 	printf("\"ra(2,0)\" for the third MSCP-disk/floppy (RX33/RX50)\n");
 	printf("\n");
 	printf("device to read from ? ");

@@ -13,7 +13,6 @@ maxusers	8
 options		TIMEZONE=0	# time zone to adjust RTC time by
 options		DST=0		# daylight savings time used by RTC
 options		SWAPPAGER	# paging; REQUIRED
-options		VNODEPAGER	# mmap() of files
 options		DEVPAGER	# mmap() of devices
 
 # CPU options
@@ -60,7 +59,7 @@ options		INET		# IP + ICMP + TCP + UDP
 options		COMPAT_43
 options		COMPAT_10
 options		COMPAT_09
-options         TCP_COMPAT_42   # TCP bug compatibility with 4.2BSD
+#options         TCP_COMPAT_42   # TCP bug compatibility with 4.2BSD
 
 # Shared memory options
 

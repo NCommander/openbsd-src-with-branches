@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1994 Hellmuth Michaelis
  *
@@ -63,7 +65,7 @@ char *argv[];
 	long freq = -1;
 	int no = -1;
 	
-	while( (c = getopt(argc, argv, "f:n:")) != EOF)
+	while( (c = getopt(argc, argv, "f:n:")) != -1)
 	{
 		switch(c)
 		{

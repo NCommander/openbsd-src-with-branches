@@ -1,3 +1,4 @@
+/*	$OpenBSD: ns_error.h,v 1.6 1995/03/26 20:36:20 jtc Exp $	*/
 /*	$NetBSD: ns_error.h,v 1.6 1995/03/26 20:36:20 jtc Exp $	*/
 
 /*

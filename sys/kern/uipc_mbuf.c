@@ -1,4 +1,5 @@
-/*	$NetBSD: uipc_mbuf.c,v 1.13 1994/10/30 21:48:06 cgd Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.18 1999/12/05 07:30:31 angelos Exp $	*/
+/*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1991, 1993
@@ -35,6 +36,18 @@
  *	@(#)uipc_mbuf.c	8.2 (Berkeley) 1/4/94
  */
 
+/*
+%%% portions-copyright-nrl-95
+Portions of this software are Copyright 1995-1998 by Randall Atkinson,
+Ronald Lee, Daniel McDonald, Bao Phan, and Chris Winters. All Rights
+Reserved. All rights under this copyright have been assigned to the US
+Naval Research Laboratory (NRL). The NRL Copyright Notice and License
+Agreement Version 1.1 (January 17, 1995) applies to these portions of the
+software.
+You should have received a copy of the license with this software. If you
+didn't get a copy, you may request one from <license@ipv6.nrl.navy.mil>.
+*/
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
@@ -47,11 +60,18 @@
 #include <sys/domain.h>
 #include <sys/protosw.h>
 
+#include <machine/cpu.h>
+
 #include <vm/vm.h>
+
+#if defined(UVM)
+#include <uvm/uvm_extern.h>
+#endif
 
 extern	vm_map_t mb_map;
 struct	mbuf *mbutl;
 char	*mclrefcnt;
+int	needqueuedrain;
 
 void
 mbinit()
@@ -59,7 +79,7 @@ mbinit()
 	int s;
 
 	s = splimp();
-	if (m_clalloc(max(4096/CLBYTES, 1), M_DONTWAIT) == 0)
+	if (m_clalloc(max(4096 / CLBYTES, 1), M_DONTWAIT) == 0)
 		goto bad;
 	splx(s);
 	return;
@@ -73,23 +93,35 @@ bad:
  * Must be called at splimp.
  */
 /* ARGSUSED */
+int
 m_clalloc(ncl, nowait)
 	register int ncl;
 	int nowait;
 {
-	static int logged;
+	volatile static struct timeval lastlogged;
+	struct timeval curtime, logdiff;
 	register caddr_t p;
 	register int i;
-	int npg;
+	int npg, s;
 
 	npg = ncl * CLSIZE;
+#if defined(UVM)
+	p = (caddr_t)uvm_km_kmemalloc(mb_map, uvmexp.mb_object, ctob(npg),
+	    nowait ? 0 : UVM_KMF_NOWAIT);
+#else
 	p = (caddr_t)kmem_malloc(mb_map, ctob(npg), !nowait);
+#endif
 	if (p == NULL) {
-		if (logged == 0) {
-			logged++;
+		s = splclock();
+		curtime = time;
+		splx(s);
+		timersub(&curtime, &lastlogged, &logdiff);
+		if (logdiff.tv_sec >= 60) {
+			lastlogged = curtime;
 			log(LOG_ERR, "mb_map full\n");
 		}
-		return (0);
+		m_reclaim();
+		return (mclfree != NULL);
 	}
 	ncl = ncl * CLBYTES / MCLBYTES;
 	for (i = 0; i < ncl; i++) {
@@ -112,8 +144,13 @@ m_retry(i, t)
 {
 	register struct mbuf *m;
 
+	if (i & M_DONTWAIT) {
+		needqueuedrain = 1;
+		setsoftnet();
+		return (NULL);
+	}
 	m_reclaim();
-#define m_retry(i, t)	(struct mbuf *)0
+#define m_retry(i, t)	NULL
 	MGET(m, i, t);
 #undef m_retry
 	return (m);
@@ -128,19 +165,26 @@ m_retryhdr(i, t)
 {
 	register struct mbuf *m;
 
+	if (i & M_DONTWAIT) {
+		needqueuedrain = 1;
+		setsoftnet();
+		return (NULL);
+	}
 	m_reclaim();
-#define m_retryhdr(i, t) (struct mbuf *)0
+#define m_retryhdr(i, t) NULL
 	MGETHDR(m, i, t);
 #undef m_retryhdr
 	return (m);
 }
 
+void
 m_reclaim()
 {
 	register struct domain *dp;
 	register struct protosw *pr;
 	int s = splimp();
 
+	needqueuedrain = 0;
 	for (dp = domains; dp; dp = dp->dom_next)
 		for (pr = dp->dom_protosw; pr < dp->dom_protoswNPROTOSW; pr++)
 			if (pr->pr_drain)
@@ -181,8 +225,8 @@ m_getclr(nowait, type)
 	register struct mbuf *m;
 
 	MGET(m, nowait, type);
-	if (m == 0)
-		return (0);
+	if (m == NULL)
+		return (NULL);
 	bzero(mtod(m, caddr_t), MLEN);
 	return (m);
 }
@@ -207,7 +251,7 @@ m_freem(m)
 		return;
 	do {
 		MFREE(m, n);
-	} while (m = n);
+	} while ((m = n) != NULL);
 }
 
 /*
@@ -227,9 +271,9 @@ m_prepend(m, len, how)
 	struct mbuf *mn;
 
 	MGET(mn, how, m->m_type);
-	if (mn == (struct mbuf *)NULL) {
+	if (mn == NULL) {
 		m_freem(m);
-		return ((struct mbuf *)NULL);
+		return (NULL);
 	}
 	if (m->m_flags & M_PKTHDR) {
 		M_COPY_PKTHDR(mn, m);
@@ -261,29 +305,31 @@ m_copym(m, off0, len, wait)
 	struct mbuf *top;
 	int copyhdr = 0;
 
-	if (off < 0 || len < 0)
-		panic("m_copym");
+	if (off < 0)
+		panic("m_copym: off %d < 0", off);
+	if (len < 0)
+		panic("m_copym: len %d < 0", len);
 	if (off == 0 && m->m_flags & M_PKTHDR)
 		copyhdr = 1;
 	while (off > 0) {
-		if (m == 0)
-			panic("m_copym");
+		if (m == NULL)
+			panic("m_copym: null mbuf");
 		if (off < m->m_len)
 			break;
 		off -= m->m_len;
 		m = m->m_next;
 	}
 	np = &top;
-	top = 0;
+	top = NULL;
 	while (len > 0) {
-		if (m == 0) {
+		if (m == NULL) {
 			if (len != M_COPYALL)
-				panic("m_copym");
+				panic("m_copym: %d not M_COPYALL", len);
 			break;
 		}
 		MGET(n, wait, m->m_type);
 		*np = n;
-		if (n == 0)
+		if (n == NULL)
 			goto nospace;
 		if (copyhdr) {
 			M_COPY_PKTHDR(n, m);
@@ -296,7 +342,10 @@ m_copym(m, off0, len, wait)
 		n->m_len = min(len, m->m_len - off);
 		if (m->m_flags & M_EXT) {
 			n->m_data = m->m_data + off;
-			mclrefcnt[mtocl(m->m_ext.ext_buf)]++;
+			if (!m->m_ext.ext_ref)
+				mclrefcnt[mtocl(m->m_ext.ext_buf)]++;
+			else
+				(*(m->m_ext.ext_ref))(m);
 			n->m_ext = m->m_ext;
 			n->m_flags |= M_EXT;
 		} else
@@ -308,19 +357,96 @@ m_copym(m, off0, len, wait)
 		m = m->m_next;
 		np = &n->m_next;
 	}
-	if (top == 0)
+	if (top == NULL)
 		MCFail++;
 	return (top);
 nospace:
 	m_freem(top);
 	MCFail++;
-	return (0);
+	return (NULL);
+}
+
+/*
+ * m_copym2() is like m_copym(), except it COPIES cluster mbufs, instead
+ * of merely bumping the reference count.
+ */
+struct mbuf *
+m_copym2(m, off0, len, wait)
+	register struct mbuf *m;
+	int off0, wait;
+	register int len;
+{
+	register struct mbuf *n, **np;
+	register int off = off0;
+	struct mbuf *top;
+	int copyhdr = 0;
+
+	if (len < 0)
+		panic("m_copym2: len %d < 0", len);
+	if (off < 0)
+		panic("m_copym2: off %d < 0", off);
+	if (off == 0 && m->m_flags & M_PKTHDR)
+		copyhdr = 1;
+	while (off > 0) {
+		if (m == NULL)
+			panic("m_copym2: null mbuf");
+		if (off < m->m_len)
+			break;
+		off -= m->m_len;
+		m = m->m_next;
+	}
+	np = &top;
+	top = NULL;
+	while (len > 0) {
+		if (m == NULL) {
+			if (len != M_COPYALL)
+				panic("m_copym2: %d != M_COPYALL", len);
+			break;
+		}
+		MGET(n, wait, m->m_type);
+		*np = n;
+		if (n == NULL)
+			goto nospace;
+		if (copyhdr) {
+			M_COPY_PKTHDR(n, m);
+			if (len == M_COPYALL)
+				n->m_pkthdr.len -= off0;
+			else
+				n->m_pkthdr.len = len;
+			copyhdr = 0;
+		}
+		n->m_len = min(len, m->m_len - off);
+		if ((m->m_flags & M_EXT) && (n->m_len > MHLEN)) {
+			/* This is a cheesy hack. */
+			MCLGET(n, wait);
+			if (n->m_flags & M_EXT)
+				bcopy(mtod(m, caddr_t) + off, mtod(n, caddr_t),
+				    (unsigned)n->m_len);
+			else
+				goto nospace;
+		} else
+			bcopy(mtod(m, caddr_t) + off, mtod(n, caddr_t),
+			    (unsigned)n->m_len);
+		if (len != M_COPYALL)
+			len -= n->m_len;
+		off = 0;
+		m = m->m_next;
+		np = &n->m_next;
+	}
+	if (top == NULL)
+		MCFail++;
+	return (top);
+nospace:
+	m_freem(top);
+	MCFail++;
+	return (NULL);
 }
 
 /*
  * Copy data from an mbuf chain starting "off" bytes from the beginning,
  * continuing for "len" bytes, into the indicated buffer.
  */
+void
 m_copydata(m, off, len, cp)
 	register struct mbuf *m;
 	register int off;
@@ -329,19 +455,21 @@ m_copydata(m, off, len, cp)
 {
 	register unsigned count;
 
-	if (off < 0 || len < 0)
-		panic("m_copydata");
+	if (off < 0)
+		panic("m_copydata: off %d < 0", off);
+	if (len < 0)
+		panic("m_copydata: len %d < 0", len);
 	while (off > 0) {
-		if (m == 0)
-			panic("m_copydata");
+		if (m == NULL)
+			panic("m_copydata: null mbuf in skip");
 		if (off < m->m_len)
 			break;
 		off -= m->m_len;
 		m = m->m_next;
 	}
 	while (len > 0) {
-		if (m == 0)
-			panic("m_copydata");
+		if (m == NULL)
+			panic("m_copydata: null mbuf");
 		count = min(m->m_len - off, len);
 		bcopy(mtod(m, caddr_t) + off, cp, count);
 		len -= count;
@@ -356,6 +484,7 @@ m_copydata(m, off, len, cp)
  * Both chains must be of the same type (e.g. MT_DATA).
  * Any m_pkthdr is not updated.
  */
+void
 m_cat(m, n)
 	register struct mbuf *m, *n;
 {
@@ -383,7 +512,7 @@ m_adj(mp, req_len)
 {
 	register int len = req_len;
 	register struct mbuf *m;
-	register count;
+	register int count;
 
 	if ((m = mp) == NULL)
 		return;
@@ -417,7 +546,7 @@ m_adj(mp, req_len)
 		count = 0;
 		for (;;) {
 			count += m->m_len;
-			if (m->m_next == (struct mbuf *)0)
+			if (m->m_next == NULL)
 				break;
 			m = m->m_next;
 		}
@@ -445,7 +574,7 @@ m_adj(mp, req_len)
 			}
 			count -= m->m_len;
 		}
-		while (m = m->m_next)
+		while ((m = m->m_next) != NULL)
 			m->m_len = 0;
 	}
 }
@@ -485,7 +614,7 @@ m_pullup(n, len)
 		if (len > MHLEN)
 			goto bad;
 		MGET(m, M_DONTWAIT, n->m_type);
-		if (m == 0)
+		if (m == NULL)
 			goto bad;
 		m->m_len = 0;
 		if (n->m_flags & M_PKTHDR) {
@@ -497,7 +626,7 @@ m_pullup(n, len)
 	do {
 		count = min(min(max(len, max_protohdr), space), n->m_len);
 		bcopy(mtod(n, caddr_t), mtod(m, caddr_t) + m->m_len,
-		  (unsigned)count);
+		    (unsigned)count);
 		len -= count;
 		m->m_len += count;
 		n->m_len -= count;
@@ -508,7 +637,7 @@ m_pullup(n, len)
 			n = m_free(n);
 	} while (len > 0 && n);
 	if (len > 0) {
-		(void) m_free(m);
+		(void)m_free(m);
 		goto bad;
 	}
 	m->m_next = n;
@@ -516,7 +645,140 @@ m_pullup(n, len)
 bad:
 	m_freem(n);
 	MPFail++;
-	return (0);
+	return (NULL);
+}
+
+/*
+ * m_pullup2() works like m_pullup, save that len can be <= MCLBYTES.
+ * m_pullup2() only works on values of len such that MHLEN < len <= MCLBYTES,
+ * it calls m_pullup() for values <= MHLEN.  It also only coagulates the
+ * reqested number of bytes.  (For those of us who expect unwieldly option
+ * headers.     
+ *		      
+ * KEBE SAYS:  Remember that dtom() calls with data in clusters does not work!
+ */
+struct mbuf *   
+m_pullup2(n, len)       
+	register struct mbuf *n;
+	int len;
+{
+	register struct mbuf *m;
+	register int count;
+	int space; 
+	if (len <= MHLEN)
+		return m_pullup(n, len);
+ 
+	if ((n->m_flags & M_EXT) != 0 &&
+	    n->m_data + len < &n->m_data[MCLBYTES] && n->m_next) {
+		if (n->m_len >= len)
+			return (n);
+		m = n;
+		n = n->m_next;
+		len -= m->m_len;
+	} else {
+		if (len > MCLBYTES)
+			goto bad;
+		MGET(m, M_DONTWAIT, n->m_type);
+		if (m == NULL)
+			goto bad; 
+		MCLGET(m, M_DONTWAIT);
+		if ((m->m_flags & M_EXT) == 0)
+			goto bad;
+		m->m_len = 0;
+		if (n->m_flags & M_PKTHDR) {
+			/* M_COPY_PKTHDR(m, n);*//* Too many adverse side effects. */
+			m->m_pkthdr = n->m_pkthdr;
+			m->m_flags = (n->m_flags & M_COPYFLAGS) | M_EXT;
+			n->m_flags &= ~M_PKTHDR;
+			/* n->m_data is cool. */
+		}
+	}
+
+	do {
+		count = min(len, n->m_len);
+		bcopy(mtod(n, caddr_t), mtod(m, caddr_t) + m->m_len,
+		    (unsigned)count);
+		len -= count;
+		m->m_len += count;
+		n->m_len -= count;
+		space -= count;
+		if (n->m_len)
+			n->m_data += count;
+		else
+			n = m_free(n);
+	} while (len > 0 && n);
+	if (len > 0) {
+		(void)m_free(m);
+		goto bad;
+	}	 
+	m->m_next = n;
+		
+	return (m);
+bad:	    
+	m_freem(n);
+	MPFail++;
+	return (NULL);
+}
+
+/*
+ * Inject a new mbuf chain of length siz in mbuf chain m0 at
+ * position len0. Returns a pointer to the first injected mbuf, or
+ * NULL on failure (m0 is left undisturbed). Note that if there is
+ * enough space for an object of size siz in the appropriate position,
+ * no memory will be allocated. Also, there will be no data movement in
+ * the first len0 bytes (pointers to that will remain valid).
+ *
+ * XXX It is assumed that siz is less than the size of an mbuf at the moment.
+ */
+struct mbuf *
+m_inject(m0, len0, siz, wait)
+	register struct mbuf *m0;
+	int len0, siz, wait;
+{
+	register struct mbuf *m, *n, *n2 = NULL, *n3;
+	unsigned len = len0, remain;
+
+	if ((siz >= MHLEN) || (len0 <= 0))
+	        return (NULL);
+	for (m = m0; m && len > m->m_len; m = m->m_next)
+		len -= m->m_len;
+	if (m == NULL)
+		return (NULL);
+	remain = m->m_len - len;
+	if (remain == 0) {
+	        if ((m->m_next) &&  (M_LEADINGSPACE(m->m_next) >= siz)) {
+		        m->m_next->m_len += siz;
+			m0->m_pkthdr.len += siz;
+			m->m_next->m_data -= siz;
+			return m->m_next;
+		}
+	} else {
+	        n2 = m_copym2(m, len, remain, wait);
+		if (n2 == NULL)
+		        return (NULL);
+	}
+
+	MGET(n, wait, MT_DATA);
+	if (n == NULL) {
+	        if (n2)
+		        m_freem(n2);
+		return (NULL);
+	}
+
+	n->m_len = siz;
+	m0->m_pkthdr.len += siz;
+	m->m_len -= remain; /* Trim */
+	if (n2)	{
+	        for (n3 = n; n3->m_next != NULL; n3 = n3->m_next)
+		        ;
+		n3->m_next = n2;
+	} else
+	        n3 = n;
+	for (; n3->m_next != NULL; n3 = n3->m_next)
+	        ;
+	n3->m_next = m->m_next;
+	m->m_next = n;
+	return n;
 }
 
 /*
@@ -530,19 +792,20 @@ m_split(m0, len0, wait)
 	int len0, wait;
 {
 	register struct mbuf *m, *n;
-	unsigned len = len0, remain;
+	unsigned len = len0, remain, olen;
 
 	for (m = m0; m && len > m->m_len; m = m->m_next)
 		len -= m->m_len;
-	if (m == 0)
-		return (0);
+	if (m == NULL)
+		return (NULL);
 	remain = m->m_len - len;
 	if (m0->m_flags & M_PKTHDR) {
 		MGETHDR(n, wait, m0->m_type);
-		if (n == 0)
-			return (0);
-		n->m_pkthdr.rcvif = m0->m_pkthdr.rcvif;
-		n->m_pkthdr.len = m0->m_pkthdr.len - len0;
+		if (n == NULL)
+			return (NULL);
+		n->m_pkthdr = m0->m_pkthdr;
+		n->m_pkthdr.len -= len0;
+		olen = m0->m_pkthdr.len;
 		m0->m_pkthdr.len = len0;
 		if (m->m_flags & M_EXT)
 			goto extpacket;
@@ -550,28 +813,32 @@ m_split(m0, len0, wait)
 			/* m can't be the lead packet */
 			MH_ALIGN(n, 0);
 			n->m_next = m_split(m, len, wait);
-			if (n->m_next == 0) {
+			if (n->m_next == NULL) {
 				(void) m_free(n);
-				return (0);
+				m0->m_pkthdr.len = olen;
+				return (NULL);
 			} else
 				return (n);
 		} else
 			MH_ALIGN(n, remain);
 	} else if (remain == 0) {
 		n = m->m_next;
-		m->m_next = 0;
+		m->m_next = NULL;
 		return (n);
 	} else {
 		MGET(n, wait, m->m_type);
-		if (n == 0)
-			return (0);
+		if (n == NULL)
+			return (NULL);
 		M_ALIGN(n, remain);
 	}
 extpacket:
 	if (m->m_flags & M_EXT) {
 		n->m_flags |= M_EXT;
 		n->m_ext = m->m_ext;
-		mclrefcnt[mtocl(m->m_ext.ext_buf)]++;
+		if(!m->m_ext.ext_ref)
+			mclrefcnt[mtocl(m->m_ext.ext_buf)]++;
+		else
+			(*(m->m_ext.ext_ref))(m);
 		m->m_ext.ext_size = 0; /* For Accounting XXXXXX danger */
 		n->m_data = m->m_data + len;
 	} else {
@@ -580,7 +847,7 @@ extpacket:
 	n->m_len = remain;
 	m->m_len = len;
 	n->m_next = m->m_next;
-	m->m_next = 0;
+	m->m_next = NULL;
 	return (n);
 }
 /*
@@ -591,10 +858,10 @@ m_devget(buf, totlen, off0, ifp, copy)
 	char *buf;
 	int totlen, off0;
 	struct ifnet *ifp;
-	void (*copy)();
+	void (*copy) __P((const void *, void *, size_t));
 {
 	register struct mbuf *m;
-	struct mbuf *top = 0, **mp = &top;
+	struct mbuf *top = NULL, **mp = &top;
 	register int off = off0, len;
 	register char *cp;
 	char *epkt;
@@ -610,18 +877,18 @@ m_devget(buf, totlen, off0, ifp, copy)
 		totlen -= 2 * sizeof(u_int16_t);
 	}
 	MGETHDR(m, M_DONTWAIT, MT_DATA);
-	if (m == 0)
-		return (0);
+	if (m == NULL)
+		return (NULL);
 	m->m_pkthdr.rcvif = ifp;
 	m->m_pkthdr.len = totlen;
 	m->m_len = MHLEN;
 
 	while (totlen > 0) {
-		if (top) {
+		if (top != NULL) {
 			MGET(m, M_DONTWAIT, MT_DATA);
-			if (m == 0) {
+			if (m == NULL) {
 				m_freem(top);
-				return (0);
+				return (NULL);
 			}
 			m->m_len = MLEN;
 		}
@@ -637,16 +904,17 @@ m_devget(buf, totlen, off0, ifp, copy)
 			 * Place initial small packet/header at end of mbuf.
 			 */
 			if (len < m->m_len) {
-				if (top == 0 && len + max_linkhdr <= m->m_len)
+				if (top == NULL &&
+				    len + max_linkhdr <= m->m_len)
 					m->m_data += max_linkhdr;
 				m->m_len = len;
 			} else
 				len = m->m_len;
 		}
 		if (copy)
-			copy(cp, mtod(m, caddr_t), (unsigned)len);
+			copy(cp, mtod(m, caddr_t), (size_t)len);
 		else
-			bcopy(cp, mtod(m, caddr_t), (unsigned)len);
+			bcopy(cp, mtod(m, caddr_t), (size_t)len);
 		cp += len;
 		*mp = m;
 		mp = &m->m_next;
@@ -656,3 +924,67 @@ m_devget(buf, totlen, off0, ifp, copy)
 	}
 	return (top);
 }
+
+void
+m_zero(m)
+	struct mbuf *m;
+{
+	while (m) {
+		if (m->m_flags & M_PKTHDR)
+			bzero((void *)m + sizeof(struct m_hdr) +
+			    sizeof(struct pkthdr), MHLEN);
+		else
+			bzero((void *)m + sizeof(struct m_hdr), MLEN);
+		if ((m->m_flags & M_EXT) &&
+		    (m->m_ext.ext_free == NULL) &&
+		    !mclrefcnt[mtocl((m)->m_ext.ext_buf)])
+			bzero(m->m_ext.ext_buf, m->m_ext.ext_size);
+		m = m->m_next;
+	}
+}
+
+/*
+ * Apply function f to the data in an mbuf chain starting "off" bytes from the
+ * beginning, continuing for "len" bytes.
+ */
+int
+m_apply(m, off, len, f, fstate)
+	struct mbuf *m;
+	int off;
+	int len;
+	/* fstate, data, len */
+	int (*f)(caddr_t, caddr_t, unsigned int);
+	caddr_t fstate;
+{
+	int rval;
+	unsigned int count;
+
+	if (len < 0)
+		panic("m_apply: len %d < 0", len);
+	if (off < 0)
+		panic("m_apply: off %d < 0", off);
+	while (off > 0) {
+		if (m == NULL)
+			panic("m_apply: null mbuf in skip");
+		if (off < m->m_len)
+			break;
+		off -= m->m_len;
+		m = m->m_next;
+	}
+	while (len > 0) {
+		if (m == NULL)
+			panic("m_apply: null mbuf");
+		count = min(m->m_len - off, len);
+
+		rval = f(fstate, mtod(m, caddr_t) + off, count);
+		if (rval)
+			return (rval);
+
+		len -= count;
+		off = 0;
+		m = m->m_next;
+	}
+
+	return (0);
+}
+

@@ -1,3 +1,5 @@
+/* $NetBSD: lk201.c,v 1.6 1997/05/25 05:26:00 jonathan Exp $ */
+
 /*
  * The LK201 keycode mapping routine is here, along with initialization
  * functions for the keyboard and mouse.
@@ -5,6 +7,7 @@
 
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/syslog.h>
 #include <sys/select.h>
 #include <dev/cons.h>
@@ -12,6 +15,7 @@
 #include <machine/pmioctl.h>
 
 #include <pmax/dev/lk201.h>
+#include <pmax/dev/lk201var.h>
 
 
 /* Exported functions */
@@ -319,8 +323,6 @@ LKgetc(dev)
 {
 	register int c;
 
-	extern  sccGetc();
-
 #if 0
 /*XXX*/ printf("LK-201 getc 0x%x( [%d %d]) in_dev [%d %d]\n",
 	       raw_kbd_getc,
@@ -329,7 +331,7 @@ LKgetc(dev)
 #endif
 
 	if (raw_kbd_getc == NULL) {
-		panic("Reading from LK-201 before keyboard driver diverted\n");
+		panic("Reading from LK-201 before keyboard driver diverted");
 		return (-1);
 	}
 
@@ -389,6 +391,6 @@ MouseInit(mdev, putc, getc)
 	 * For some reason, the mouse doesn't see this command if it comes
 	 * too soon after a self test.
 	 */
-	DELAY(100);
+	DELAY(150);
 	(*putc)(mdev, MOUSE_INCREMENTAL);
 }

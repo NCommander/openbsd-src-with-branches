@@ -1,3 +1,4 @@
+/*	$OpenBSD: adosglue.h,v 1.4 1994/12/28 09:27:45 chopps Exp $	*/
 /*	$NetBSD: adosglue.h,v 1.4 1994/12/28 09:27:45 chopps Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.18.2.1 1995/10/12 05:42:01 jtc Exp $	*/
+/*	$OpenBSD: param.h,v 1.26 2000/01/06 03:34:39 smurph Exp $	*/
+/*	$NetBSD: param.h,v 1.23 1996/03/17 01:02:29 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -44,15 +45,20 @@
 #define BSD4_3	1
 #define BSD4_4	1
 
-#define NetBSD	199511		/* NetBSD version (year & month). */
-#define NetBSD1_1 1		/* NetBSD 1.1 */
+#define OpenBSD	199912		/* OpenBSD version (year & month). */
+#define OpenBSD2_6 1		/* OpenBSD 2.6 */
 
 #ifndef NULL
+#ifdef 	__GNUG__
+#define	NULL	__null
+#else
 #define	NULL	0
 #endif
+#endif
 
-#ifndef LOCORE
+#ifndef _LOCORE
 #include <sys/types.h>
+#include <sys/simplelock.h>
 #endif
 
 /*
@@ -70,7 +76,8 @@
 #define	MAXUPRC		CHILD_MAX	/* max simultaneous processes */
 #define	NCARGS		ARG_MAX		/* max bytes for an exec function */
 #define	NGROUPS		NGROUPS_MAX	/* max number groups */
-#define	NOFILE		OPEN_MAX	/* max open files per process */
+#define	NOFILE		OPEN_MAX	/* max open files per process (soft) */
+#define	NOFILE_MAX	1024		/* max open files per process (hard) */
 #define	NOGROUP		65535		/* marker for empty group set member */
 #define MAXHOSTNAMELEN	256		/* max hostname size */
 
@@ -111,17 +118,16 @@
 #define	PRIMASK	0x0ff
 #define	PCATCH	0x100		/* OR'd with pri for tsleep to check signals */
 
-#define	NZERO	0		/* default "nice" */
-
 #define	NBPW	sizeof(int)	/* number of bytes per word (integer) */
 
 #define	CMASK	022		/* default file mask: S_IWGRP|S_IWOTH */
 #define	NODEV	(dev_t)(-1)	/* non-existent device */
-
+#define NETDEV	(dev_t)(-2)	/* network device (for nfs swap) */
+	
 /*
  * Clustering of hardware pages on machines with ridiculously small
  * page sizes is done here.  The paging subsystem deals with units of
- * CLSIZE pte's describing NBPG (from machine/machparam.h) pages each.
+ * CLSIZE pte's describing NBPG (from machine/param.h) pages each.
  */
 #define	CLBYTES		(CLSIZE*NBPG)
 #define	CLOFSET		(CLSIZE*NBPG-1)	/* for clusters, like PGOFSET */
@@ -152,9 +158,11 @@
  * smaller units (fragments) only in the last direct block.  MAXBSIZE
  * primarily determines the size of buffers in the buffer pool.  It may be
  * made larger without any effect on existing file systems; however making
- * it smaller make make some file systems unmountable.
+ * it smaller makes some file systems unmountable.
  */
-#define	MAXBSIZE	16384 /* XXX MAXPHYS */
+#ifndef MAXBSIZE	/* XXX temp until sun3 DMA chaining */
+#define	MAXBSIZE	MAXPHYS
+#endif
 #define MAXFRAG 	8
 
 /*
@@ -219,3 +227,19 @@
  */
 #define	FSHIFT	11		/* bits to right of fixed binary point */
 #define FSCALE	(1<<FSHIFT)
+
+/*
+ * rfork() options.
+ *
+ * XXX currently, operations without RFPROC set are not supported.
+ */
+#define RFNAMEG		(1<<0)	/* UNIMPL new plan9 `name space' */
+#define RFENVG		(1<<1)	/* UNIMPL copy plan9 `env space' */
+#define RFFDG		(1<<2)	/* copy fd table */
+#define RFNOTEG		(1<<3)	/* UNIMPL create new plan9 `note group' */
+#define RFPROC		(1<<4)	/* change child (else changes curproc) */
+#define RFMEM		(1<<5)	/* share `address space' */
+#define RFNOWAIT	(1<<6)	/* parent need not wait() on child */ 
+#define RFCNAMEG	(1<<10) /* UNIMPL zero plan9 `name space' */
+#define RFCENVG		(1<<11) /* UNIMPL zero plan9 `env space' */
+#define RFCFDG		(1<<12)	/* zero fd table */

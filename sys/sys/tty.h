@@ -1,4 +1,5 @@
-/*	$NetBSD: tty.h,v 1.28 1995/03/26 20:24:57 jtc Exp $	*/
+/*	$OpenBSD: tty.h,v 1.2 1996/03/03 12:12:32 niklas Exp $	*/
+/*	$NetBSD: tty.h,v 1.30.4.1 1996/06/02 09:08:13 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -42,6 +43,7 @@
 
 #include <sys/termios.h>
 #include <sys/select.h>		/* For struct selinfo. */
+#include <sys/queue.h>
 
 #ifndef REAL_CLISTS
 /*
@@ -49,7 +51,7 @@
  * exactly the same behaviour as in true clists.
  * if c_cq is NULL, the ring buffer has no TTY_QUOTE functionality
  * (but, saves memory and cpu time)
- * 
+ *
  * *DON'T* play with c_cs, c_ce, c_cq, or c_cl outside tty_subr.c!!!
  */
 struct clist {
@@ -81,6 +83,7 @@ struct clist {
  * (low, high, timeout).
  */
 struct tty {
+	TAILQ_ENTRY(tty) tty_link;	/* Link in global tty list. */
 	struct	clist t_rawq;		/* Device raw input queue. */
 	long	t_rawcc;		/* Raw input queue statistics. */
 	struct	clist t_canq;		/* Device canonical queue. */
@@ -191,7 +194,14 @@ struct speedtab {
 #define	isbackground(p, tp)						\
 	(isctty((p), (tp)) && (p)->p_pgrp != (tp)->t_pgrp)
 
+/*
+ * ttylist_head is defined here so that user-land has access to it.
+ */
+TAILQ_HEAD(ttylist_head, tty);		/* the ttylist is a TAILQ */
+
 #ifdef _KERNEL
+
+extern	int tty_count;			/* number of ttys in global ttylist */
 extern	struct ttychars ttydefaults;
 
 /* Symbolic sleep message strings. */
@@ -238,7 +248,26 @@ int	 ttysleep __P((struct tty *tp,
 int	 ttywait __P((struct tty *tp));
 int	 ttywflush __P((struct tty *tp));
 
+void	tty_init __P((void));
+void	tty_attach __P((struct tty *));
+void	tty_detach __P((struct tty *));
 struct tty *ttymalloc __P((void));
 void	 ttyfree __P((struct tty *));
 u_char	*firstc           __P((struct clist *clp, int *c));
+
+int	cttyopen __P((dev_t, int, int, struct proc *));
+int	cttyread __P((dev_t, struct uio *, int));
+int	cttywrite __P((dev_t, struct uio *, int));
+int	cttyioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
+int	cttyselect __P((dev_t, int, struct proc *));
+
+int	clalloc __P((struct clist *, int, int));
+void	clfree __P((struct clist *));
+
+#if defined(COMPAT_43) || defined(COMPAT_SUNOS) || defined(COMPAT_SVR4) || \
+    defined(COMPAT_FREEBSD)
+# define COMPAT_OLDTTY
+int 	ttcompat __P((struct tty *, u_long, caddr_t, int, struct proc *));
+#endif
+
 #endif

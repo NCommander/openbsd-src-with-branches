@@ -1,4 +1,5 @@
-/*	$NetBSD: pmap.h,v 1.10 1995/03/26 20:39:07 jtc Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.11 1999/09/03 18:02:26 art Exp $	*/
+/*	$NetBSD: pmap.h,v 1.16 1996/03/31 22:15:32 pk Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -86,52 +87,122 @@ typedef struct pmap_statistics	*pmap_statistics_t;
 
 #include <machine/pmap.h>
 
+/*
+ * PMAP_PGARG hack
+ *
+ * operations that take place on managed pages used to take PAs.
+ * this caused us to translate the PA back to a page (or pv_head).
+ * PMAP_NEW avoids this by passing the vm_page in (pv_head should be
+ * pointed to by vm_page (or be a part of it)).
+ *
+ * applies to: pmap_page_protect, pmap_is_referenced, pmap_is_modified,
+ * pmap_clear_reference, pmap_clear_modify.
+ *
+ * the latter two functions are boolean_t in PMAP_NEW.  they return
+ * TRUE if something was cleared.
+ */
+#if defined(PMAP_NEW)
+#define PMAP_PGARG(PG) (PG)
+#else
+#define PMAP_PGARG(PG) (VM_PAGE_TO_PHYS(PG))
+#endif
+
+#ifndef PMAP_EXCLUDE_DECLS	/* Used in Sparc port to virtualize pmap mod */
 #ifdef _KERNEL
 __BEGIN_DECLS
 void		*pmap_bootstrap_alloc __P((int));
+#if 0
+/* Does not belong here! */
 void		 pmap_bootstrap( /* machine dependent */ );
-void		 pmap_change_wiring __P((pmap_t, vm_offset_t, boolean_t));
-void		 pmap_clear_modify __P((vm_offset_t pa));
-void		 pmap_clear_reference __P((vm_offset_t pa));
+#endif
+void		 pmap_change_wiring __P((pmap_t, vaddr_t, boolean_t));
+
+#if defined(PMAP_NEW)
+#if !defined(pmap_clear_modify)
+boolean_t	 pmap_clear_modify __P((struct vm_page *));
+#endif
+#if !defined(pmap_clear_reference)
+boolean_t	 pmap_clear_reference __P((struct vm_page *));
+#endif
+#else	/* PMAP_NEW */
+void		 pmap_clear_modify __P((paddr_t pa));
+void		 pmap_clear_reference __P((paddr_t pa));
+#endif	/* PMAP_NEW */
+
 void		 pmap_collect __P((pmap_t));
-void		 pmap_copy __P((pmap_t,
-		    pmap_t, vm_offset_t, vm_size_t, vm_offset_t));
-void		 pmap_copy_page __P((vm_offset_t, vm_offset_t));
-pmap_t		 pmap_create __P((vm_size_t));
+void		 pmap_copy __P((pmap_t, pmap_t, vaddr_t, vsize_t, vaddr_t));
+void		 pmap_copy_page __P((paddr_t, paddr_t));
+#if defined(PMAP_NEW)
+struct pmap 	 *pmap_create __P((void));
+#else
+pmap_t		 pmap_create __P((vsize_t));
+#endif
 void		 pmap_destroy __P((pmap_t));
 void		 pmap_enter __P((pmap_t,
-		    vm_offset_t, vm_offset_t, vm_prot_t, boolean_t));
-vm_offset_t	 pmap_extract __P((pmap_t, vm_offset_t));
-#ifndef	MACHINE_NONCONTIG
-void		 pmap_init __P((vm_offset_t, vm_offset_t));
+		    vaddr_t, paddr_t, vm_prot_t, boolean_t, vm_prot_t));
+paddr_t		 pmap_extract __P((pmap_t, vaddr_t));
+#if defined(PMAP_NEW) && defined(PMAP_GROWKERNEL)
+vaddr_t		 pmap_growkernel __P((vaddr_t));
+#endif
+
+#if !defined(MACHINE_NONCONTIG) && !defined(MACHINE_NEW_NONCONTIG)
+void		 pmap_init __P((paddr_t, paddr_t));
 #else
 void		 pmap_init __P((void));
 #endif
-boolean_t	 pmap_is_modified __P((vm_offset_t pa));
-boolean_t	 pmap_is_referenced __P((vm_offset_t pa));
-vm_offset_t	 pmap_map __P((vm_offset_t, vm_offset_t, vm_offset_t, int));
-void		 pmap_page_protect __P((vm_offset_t, vm_prot_t));
+
+#if defined(PMAP_NEW)
+void		 pmap_kenter_pa __P((vaddr_t, paddr_t, vm_prot_t));
+void		 pmap_kenter_pgs __P((vaddr_t, struct vm_page **, int));
+void		 pmap_kremove __P((vaddr_t, vsize_t));
+#if !defined(pmap_is_modified)
+boolean_t	 pmap_is_modified __P((struct vm_page *));
+#endif
+#if !defined(pmap_is_referenced)
+boolean_t	 pmap_is_referenced __P((struct vm_page *));
+#endif
+#else	/* PMAP_NEW */
+boolean_t	 pmap_is_modified __P((paddr_t pa));
+boolean_t	 pmap_is_referenced __P((paddr_t pa));
+#endif	/* PMAP_NEW */
+
+#if !defined(MACHINE_NEW_NONCONTIG)
+#ifndef pmap_page_index
+int		 pmap_page_index __P((paddr_t));
+#endif
+#endif /* ! MACHINE_NEW_NONCONTIG */
+
+#if defined(PMAP_NEW)
+void		 pmap_page_protect __P((struct vm_page *, vm_prot_t));
+#else
+void		 pmap_page_protect __P((paddr_t, vm_prot_t));
+#endif
+
 void		 pmap_pageable __P((pmap_t,
-		    vm_offset_t, vm_offset_t, boolean_t));
-vm_offset_t	 pmap_phys_address __P((int));
+		    vaddr_t, vaddr_t, boolean_t));
+#if !defined(pmap_phys_address)
+paddr_t		 pmap_phys_address __P((int));
+#endif
 void		 pmap_pinit __P((pmap_t));
 void		 pmap_protect __P((pmap_t,
-		    vm_offset_t, vm_offset_t, vm_prot_t));
+		    vaddr_t, vaddr_t, vm_prot_t));
 void		 pmap_reference __P((pmap_t));
 void		 pmap_release __P((pmap_t));
-void		 pmap_remove __P((pmap_t, vm_offset_t, vm_offset_t));
+void		 pmap_remove __P((pmap_t, vaddr_t, vaddr_t));
 void		 pmap_update __P((void));
-void		 pmap_zero_page __P((vm_offset_t));
+void		 pmap_zero_page __P((paddr_t));
 
 #ifdef MACHINE_NONCONTIG
-u_int		 pmap_free_pages __P(());
-void		 pmap_init __P(());
-boolean_t	 pmap_next_page __P(());
-void		 pmap_startup __P(());
-vm_offset_t	 pmap_steal_memory __P(());
-void		 pmap_virtual_space __P(());
+u_int		 pmap_free_pages __P((void));
+boolean_t	 pmap_next_page __P((paddr_t *));
+#endif
+#if defined(MACHINE_NEW_NONCONTIG) && defined(PMAP_STEAL_MEMORY)
+vaddr_t		 pmap_steal_memory __P((vsize_t, paddr_t *, paddr_t *));
+#else
+void		 pmap_virtual_space __P((vaddr_t *, vaddr_t *));
 #endif
 __END_DECLS
-#endif
+#endif	/* kernel*/
+#endif  /* PMAP_EXCLUDE_DECLS */
 
 #endif /* _PMAP_VM_ */

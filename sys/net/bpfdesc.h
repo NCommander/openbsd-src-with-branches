@@ -1,3 +1,4 @@
+/*	$OpenBSD: bpfdesc.h,v 1.4 1998/06/26 09:13:13 deraadt Exp $	*/
 /*	$NetBSD: bpfdesc.h,v 1.11 1995/09/27 18:30:42 thorpej Exp $	*/
 
 /*
@@ -66,6 +67,7 @@ struct bpf_d {
 
 	struct bpf_if *	bd_bif;		/* interface descriptor */
 	u_long		bd_rtout;	/* Read timeout in 'ticks' */
+	u_long		bd_rdStart;	/* when the read started */
 	struct bpf_insn *bd_filter; 	/* filter code */
 	u_long		bd_rcount;	/* number of packets received */
 	u_long		bd_dcount;	/* number of packets dropped */
@@ -76,6 +78,8 @@ struct bpf_d {
 	int		bd_async;	/* non-zero if packet reception should generate signal */
 	int		bd_sig;		/* signal to send upon packet reception */
 	pid_t		bd_pgid;	/* process or group id for signal */
+	uid_t		bd_siguid;	/* uid for process that set pgid */
+	uid_t		bd_sigeuid;	/* euid for process that set pgid */
 #if BSD < 199103
 	u_char		bd_selcoll;	/* true if selects collide */
 	int		bd_timedout;
@@ -101,3 +105,4 @@ struct bpf_if {
 #ifdef _KERNEL
 int	 bpf_setf __P((struct bpf_d *, struct bpf_program *));
 #endif
+

@@ -1,20 +1,42 @@
+/*	$OpenBSD: fcnvff.c,v 1.3 1998/07/02 19:05:18 mickey Exp $	*/
+
 /*
-  (c) Copyright 1986 HEWLETT-PACKARD COMPANY
-  To anyone who acknowledges that this file is provided "AS IS"
-  without any express or implied warranty:
-      permission to use, copy, modify, and distribute this file
-  for any purpose is hereby granted without fee, provided that
-  the above copyright notice and this notice appears in all
-  copies, and that the name of Hewlett-Packard Company not be
-  used in advertising or publicity pertaining to distribution
-  of the software without specific, written prior permission.
-  Hewlett-Packard Company makes no representations about the
-  suitability of this software for any purpose.
-*/
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/fcnvff.c,v $
- * $Revision: 2.8.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:09 $
+ * Copyright 1996 1995 by Open Software Foundation, Inc.   
+ *              All Rights Reserved 
+ *  
+ * Permission to use, copy, modify, and distribute this software and 
+ * its documentation for any purpose and without fee is hereby granted, 
+ * provided that the above copyright notice appears in all copies and 
+ * that both the copyright notice and this permission notice appear in 
+ * supporting documentation. 
+ *  
+ * OSF DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE 
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE. 
+ *  
+ * IN NO EVENT SHALL OSF BE LIABLE FOR ANY SPECIAL, INDIRECT, OR 
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT, 
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * 
+ */
+/*
+ * pmk1.1
+ */
+/*
+ * (c) Copyright 1986 HEWLETT-PACKARD COMPANY
+ *
+ * To anyone who acknowledges that this file is provided "AS IS" 
+ * without any express or implied warranty:
+ *     permission to use, copy, modify, and distribute this file 
+ * for any purpose is hereby granted without fee, provided that 
+ * the above copyright notice and this notice appears in all 
+ * copies, and that the name of Hewlett-Packard Company not be 
+ * used in advertising or publicity pertaining to distribution 
+ * of the software without specific, written prior permission.  
+ * Hewlett-Packard Company makes no representations about the 
+ * suitability of this software for any purpose.
  */
 
 #include "../spmath/float.h"
@@ -26,11 +48,12 @@
  *  Single Floating-point to Double Floating-point 
  */
 /*ARGSUSED*/
-sgl_to_dbl_fcnvff(srcptr,nullptr,dstptr,status)
+int
+sgl_to_dbl_fcnvff(srcptr,dstptr,status)
 
 sgl_floating_point *srcptr;
 dbl_floating_point *dstptr;
-unsigned int *nullptr, *status;
+unsigned int *status;
 {
 	register unsigned int src, resultp1, resultp2;
 	register int src_exponent;
@@ -112,11 +135,12 @@ unsigned int *nullptr, *status;
  *  Double Floating-point to Single Floating-point 
  */
 /*ARGSUSED*/
-dbl_to_sgl_fcnvff(srcptr,nullptr,dstptr,status)
+int
+dbl_to_sgl_fcnvff(srcptr,dstptr,status)
 
 dbl_floating_point *srcptr;
 sgl_floating_point *dstptr;
-unsigned int *nullptr, *status;
+unsigned int *status;
 {
         register unsigned int srcp1, srcp2, result;
         register int src_exponent, dest_exponent, dest_mantissa;
@@ -232,10 +256,12 @@ unsigned int *nullptr, *status;
                          */
 			Sgl_setwrapped_exponent(result,dest_exponent,ovfl);
 			*dstptr = result;
-			if (inexact) 
+			if (inexact) {
 			    if (Is_inexacttrap_enabled())
 				return(OVERFLOWEXCEPTION|INEXACTEXCEPTION);
-			    else Set_inexactflag();
+			    else
+				Set_inexactflag();
+			}
                         return(OVERFLOWEXCEPTION);
                 }
                 Set_overflowflag();
@@ -259,10 +285,12 @@ unsigned int *nullptr, *status;
                          */
 			Sgl_setwrapped_exponent(result,dest_exponent,unfl);
 			*dstptr = result;
-			if (inexact) 
+			if (inexact) {
 			    if (Is_inexacttrap_enabled())
 				return(UNDERFLOWEXCEPTION|INEXACTEXCEPTION);
-			    else Set_inexactflag();
+			    else
+				Set_inexactflag();
+			}
                         return(UNDERFLOWEXCEPTION);
                 }
                  /* 
@@ -276,8 +304,9 @@ unsigned int *nullptr, *status;
         /* 
          * Trap if inexact trap is enabled
          */
-        if (inexact)
+        if (inexact) {
         	if (Is_inexacttrap_enabled()) return(INEXACTEXCEPTION);
         	else Set_inexactflag();
+	}
         return(NOEXCEPTION);
 }

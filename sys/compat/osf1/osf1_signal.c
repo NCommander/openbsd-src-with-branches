@@ -1,3 +1,5 @@
+/*	$OpenBSD: osf1_signal.c,v 1.7 1998/12/22 07:58:45 deraadt Exp $	*/
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/namei.h>
@@ -144,7 +146,7 @@ osf1_to_bsd_sigaction(osa, bsa)
 	struct sigaction *bsa;
 {
 
-	bsa->sa_handler = osa->sa_handler;
+	bsa->sa_handler = osa->sa__handler;
 	osf1_to_bsd_sigset(&osa->sa_mask, &bsa->sa_mask);
 	bsa->sa_flags = 0;
 	if ((osa->sa_flags & OSF1_SA_ONSTACK) != 0)
@@ -155,8 +157,12 @@ osf1_to_bsd_sigaction(osa, bsa)
 		bsa->sa_flags |= SA_RESETHAND;
 	if ((osa->sa_flags & OSF1_SA_NOCLDSTOP) != 0)
 		bsa->sa_flags |= SA_NOCLDSTOP;
+	if ((osa->sa_flags & OSF1_SA_NOCLDWAIT) != 0)
+		bsa->sa_flags |= SA_NOCLDWAIT;
 	if ((osa->sa_flags & OSF1_SA_NODEFER) != 0)
 		bsa->sa_flags |= SA_NODEFER;
+	if ((osa->sa_flags & OSF1_SA_SIGINFO) != 0)
+		bsa->sa_flags |= SA_SIGINFO;
 }
 
 void
@@ -165,19 +171,23 @@ bsd_to_osf1_sigaction(bsa, osa)
 	struct osf1_sigaction *osa;
 {
 
-	osa->sa_handler = bsa->sa_handler;
+	osa->sa__handler = bsa->sa_handler;
 	bsd_to_osf1_sigset(&bsa->sa_mask, &osa->sa_mask);
 	osa->sa_flags = 0;
 	if ((bsa->sa_flags & SA_ONSTACK) != 0)
-		osa->sa_flags |= SA_ONSTACK;
+		osa->sa_flags |= OSF1_SA_ONSTACK;
 	if ((bsa->sa_flags & SA_RESTART) != 0)
-		osa->sa_flags |= SA_RESTART;
+		osa->sa_flags |= OSF1_SA_RESTART;
 	if ((bsa->sa_flags & SA_NOCLDSTOP) != 0)
-		osa->sa_flags |= SA_NOCLDSTOP;
+		osa->sa_flags |= OSF1_SA_NOCLDSTOP;
+	if ((bsa->sa_flags & SA_NOCLDWAIT) != 0)
+		osa->sa_flags |= OSF1_SA_NOCLDWAIT;
 	if ((bsa->sa_flags & SA_NODEFER) != 0)
-		osa->sa_flags |= SA_NODEFER;
+		osa->sa_flags |= OSF1_SA_NODEFER;
 	if ((bsa->sa_flags & SA_RESETHAND) != 0)
-		osa->sa_flags |= SA_RESETHAND;
+		osa->sa_flags |= OSF1_SA_RESETHAND;
+	if ((bsa->sa_flags & SA_SIGINFO) != 0)
+		osa->sa_flags |= OSF1_SA_SIGINFO;
 }
 
 void
@@ -186,7 +196,7 @@ osf1_to_bsd_sigaltstack(oss, bss)
 	struct sigaltstack *bss;
 {
 
-	bss->ss_base = oss->ss_sp;
+	bss->ss_sp = oss->ss_sp;
 	bss->ss_size = oss->ss_size;
 	bss->ss_flags = 0;
 
@@ -202,7 +212,7 @@ bsd_to_osf1_sigaltstack(bss, oss)
 	struct osf1_sigaltstack *oss;
 {
 
-	oss->ss_sp = bss->ss_base;
+	oss->ss_sp = bss->ss_sp;
 	oss->ss_size = bss->ss_size;
 	oss->ss_flags = 0;
 
@@ -228,6 +238,9 @@ osf1_sys_sigaction(p, v, retval)
 	struct sys_sigaction_args sa;
 	caddr_t sg;
 	int error;
+
+	if (SCARG(uap, signum) < 0 || SCARG(uap, signum) >= OSF1_NSIG)
+		return (EINVAL);
 
 	sg = stackgap_init(p->p_emul);
 	nosa = SCARG(uap, nsa);
@@ -329,16 +342,16 @@ osf1_sys_signal(p, v, retval)
 		syscallarg(int) signum;
 		syscallarg(osf1_sig_t) handler;
 	} */ *uap = v;
-	int signum = osf1_to_bsd_sig[OSF1_SIGNO(SCARG(uap, signum))];
-	int error;
+	int signum, error;
 	caddr_t sg = stackgap_init(p->p_emul);
 
-	if (signum <= 0 || signum >= OSF1_NSIG) {
+	if (SCARG(uap, signum) < 0 || SCARG(uap, signum) >= OSF1_NSIG)
 		if (OSF1_SIGCALL(SCARG(uap, signum)) == OSF1_SIGNAL_MASK ||
 		    OSF1_SIGCALL(SCARG(uap, signum)) == OSF1_SIGDEFER_MASK)
 			*retval = (int)OSF1_SIG_ERR;
 		return EINVAL;
 	}
+	int signum = osf1_to_bsd_sig[signum];
 
 	switch (OSF1_SIGCALL(SCARG(uap, signum))) {
 	case OSF1_SIGDEFER_MASK:
@@ -550,6 +563,8 @@ osf1_sys_kill(p, v, retval)
 	} */ *uap = v;
 	struct sys_kill_args ka;
 
+	if (SCARG(uap, signum) < 0 || SCARG(uap, signum) >= OSF1_NSIG)
+		return (EINVAL);
 	SCARG(&ka, pid) = SCARG(uap, pid);
 	SCARG(&ka, signum) = osf1_to_bsd_sig[SCARG(uap, signum)];
 	return sys_kill(p, &ka, retval);

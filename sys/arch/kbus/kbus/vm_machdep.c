@@ -67,8 +67,10 @@
  * address in each process; in the future we will probably relocate
  * the frame pointers on the stack after copying.
  */
-cpu_fork(p1, p2)
+cpu_fork(p1, p2, stack, stacksize)
 	register struct proc *p1, *p2;
+	void *stack;
+	size_t stacksize;
 {
 	struct user *up = p2->p_addr;
 	int foo, offset, addr, i;
@@ -92,7 +94,7 @@ cpu_fork(p1, p2)
 	for (i=0; i < UPAGES; i++)
 	  pmap_enter(&p2->p_vmspace->vm_pmap, USRSTACK+i*NBPG,
 	     pmap_extract(pmap_kernel(), ((int)p2->p_addr)+i*NBPG),
-	     VM_PROT_READ, TRUE);
+	     VM_PROT_READ, TRUE, 0);
 
 	pmap_activate(&p2->p_vmspace->vm_pmap, &up->u_pcb);
 
@@ -167,7 +169,8 @@ pagemove(from, to, size)
 		pmap_remove(pmap_kernel(),
 		    (vm_offset_t)from, (vm_offset_t)from + PAGE_SIZE);
 		pmap_enter(pmap_kernel(),
-		    (vm_offset_t)to, pa, VM_PROT_READ|VM_PROT_WRITE, 1);
+		    (vm_offset_t)to, pa, VM_PROT_READ | VM_PROT_WRITE, 1,
+		    VM_PROT_READ | VM_PROT_WRITE);
 		from += PAGE_SIZE;
 		to += PAGE_SIZE;
 		size -= PAGE_SIZE;
@@ -210,9 +213,8 @@ vmapbuf(bp, sz)
 		 * pmap_enter distributes this mapping to all
 		 * contexts... maybe we should avoid this extra work
 		 */
-		pmap_enter(pmap_kernel(), kva,
-			   pa,
-			   VM_PROT_READ|VM_PROT_WRITE, 1);
+		pmap_enter(pmap_kernel(), kva, pa,
+			   VM_PROT_READ | VM_PROT_WRITE, 1, 0);
 
 		addr += PAGE_SIZE;
 		kva += PAGE_SIZE;
@@ -256,8 +258,10 @@ vunmapbuf(bp, sz)
  * the first element in struct user.
  */
 void
-cpu_fork(p1, p2)
+cpu_fork(p1, p2, stack, stacksize)
 	register struct proc *p1, *p2;
+	void *stack;
+	size_t stacksize;
 {
 	register struct pcb *opcb = &p1->p_addr->u_pcb;
 	register struct pcb *npcb = &p2->p_addr->u_pcb;
@@ -313,6 +317,12 @@ cpu_fork(p1, p2)
 
 	/* Copy parent's trapframe */
 	*tf2 = *(struct trapframe *)((int)opcb + USPACE - sizeof(*tf2));
+
+	/*
+	 * If specified, give the child a different stack.
+	 */
+	if (stack != NULL)
+		tf2->tf_out[6] = (u_int)stack + stacksize;
 
 	/* Duplicate efforts of syscall(), but slightly differently */
 	if (tf2->tf_global[1] & SYSCALL_G2RFLAG) {
@@ -381,9 +391,10 @@ cpu_swapin(p)
  * (Note that cpu_fork(), above, uses an open-coded version of this.)
  */
 void
-cpu_set_kpc(p, pc)
+cpu_set_kpc(p, pc, arg)
 	struct proc *p;
-	void (*pc) __P((struct proc *));
+	void (*pc) __P((void *));
+	void *arg;
 {
 	struct pcb *pcb;
 	struct rwindow *rp;
@@ -392,7 +403,7 @@ cpu_set_kpc(p, pc)
 
 	rp = (struct rwindow *)((u_int)pcb + TOPFRAMEOFF);
 	rp->rw_local[0] = (int)pc;		/* Function to call */
-	rp->rw_local[1] = (int)p;		/* and its argument */
+	rp->rw_local[1] = (int)arg;		/* and its argument */
 
 	/*
 	 * Frob PCB:
@@ -464,13 +475,13 @@ cpu_coredump(p, vp, cred, chdr)
 	cseg.c_size = chdr->c_cpusize;
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cseg, chdr->c_seghdrsize,
 	    (off_t)chdr->c_hdrsize, UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, (int *)NULL, p);
+	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	if (error)
 		return error;
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&md_core, sizeof(md_core),
 	    (off_t)(chdr->c_hdrsize + chdr->c_seghdrsize), UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, (int *)NULL, p);
+	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
 	if (!error)
 		chdr->c_nseg++;
 

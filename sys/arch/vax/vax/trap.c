@@ -1,4 +1,5 @@
-/*      $NetBSD: trap.c,v 1.13 1995/07/05 08:39:48 ragge Exp $     */
+/*      $OpenBSD: trap.c,v 1.10 1998/05/11 16:19:13 niklas Exp $     */
+/*      $NetBSD: trap.c,v 1.28 1997/07/28 21:48:33 ragge Exp $     */
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -34,29 +35,47 @@
 		
 
 
-#include "sys/types.h"
-#include "sys/param.h"
-#include "sys/proc.h"
-#include "sys/user.h"
-#include "sys/syscall.h"
-#include "sys/systm.h"
-#include "sys/signalvar.h"
-#include "sys/exec.h"
-#include "vm/vm.h"
-#include "vm/vm_kern.h"
-#include "vm/vm_page.h"
-#include "vax/include/mtpr.h"
-#include "vax/include/pte.h"
-#include "vax/include/pcb.h"
-#include "vax/include/trap.h"
-#include "vax/include/pmap.h"
-#include "kern/syscalls.c"
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/proc.h>
+#include <sys/user.h>
+#include <sys/syscall.h>
+#include <sys/systm.h>
+#include <sys/signalvar.h>
+#include <sys/exec.h>
 
+#include <vm/vm.h>
+#include <vm/vm_kern.h>
+#include <vm/vm_page.h>
+
+#include <machine/mtpr.h>
+#include <machine/pte.h>
+#include <machine/pcb.h>
+#include <machine/trap.h>
+#include <machine/pmap.h>
+
+#ifdef DDB
+#include <machine/db_machdep.h>
+#endif
+#include <kern/syscalls.c>
+#ifdef KTRACE
+#include <sys/ktrace.h>
+#endif
 
 extern 	int want_resched,whichqs;
-volatile int startsysc=0,ovalidstart=0,faultdebug=0,haltfault=0;
+#ifdef TRAPDEBUG
+volatile int startsysc=0,faultdebug=0;
+#endif
 
+static	void userret __P((struct proc *, u_int, u_int));
+void	arithflt __P((struct trapframe *));
+void	syscall __P((struct trapframe *));
+void	showregs __P((struct trapframe *));
+void	showstate __P((struct proc *));
+void	stray __P((int, int));
+void	printstack __P((u_int *, u_int *));
 
+void
 userret(p, pc, psl)
 	struct proc *p;
 	u_int pc, psl;
@@ -71,13 +90,13 @@ userret(p, pc, psl)
                  * Since we are curproc, clock will normally just change
                  * our priority without moving us from one queue to another
                  * (since the running process is not on a queue.)
-                 * If that happened after we setrq ourselves but before we
-                 * swtch()'ed, we might not be on the queue indicated by
+                 * If that happened after we setrunqueue ourselves but before
+		 * we swtch()'ed, we might not be on the queue indicated by
                  * our priority.
                  */
                 s=splstatclock();
                 setrunqueue(curproc);
-                cpu_switch();
+                mi_switch();
                 splx(s);
                 while ((sig = CURSIG(curproc)) != 0)
                         postsig(sig);
@@ -91,7 +110,7 @@ char *traptypes[]={
 	"privileged instruction",
 	"reserved operand",
 	"breakpoint instruction",
-	"Nothing",
+	"XFC instruction",
 	"system call ",
 	"arithmetic trap",
 	"asynchronous system trap",
@@ -108,84 +127,95 @@ char *traptypes[]={
 };
 int no_traps = 18;
 
+void
 arithflt(frame)
 	struct trapframe *frame;
 {
-	u_int	sig, type=frame->trap,trapsig=1,s;
-	u_int	rv, addr,*i,j;
-	struct	proc *p=curproc;
+	u_int	sig, type = frame->trap, trapsig=1, s;
+	u_int	rv, addr;
+	struct	proc *p = curproc;
 	struct	pmap *pm;
 	vm_map_t map;
 	vm_prot_t ftype;
 	extern vm_map_t	pte_map;
-	
-	if((frame->psl & PSL_U) == PSL_U) {
-		type|=T_USER;
+	int	typ;
+	caddr_t	v;
+	union sigval sv;
+
+	if ((frame->psl & PSL_U) == PSL_U) {
+		type |= T_USER;
 		p->p_addr->u_pcb.framep = frame; 
 	}
 
-	type&=~(T_WRITE|T_PTEFETCH);
+	type &= ~(T_WRITE|T_PTEFETCH);
 
 
-
-if(frame->trap==7) goto fram;
-if(faultdebug)printf("Trap: type %x, code %x, pc %x, psl %x\n",
-		frame->trap, frame->code, frame->pc, frame->psl);
+#ifdef TRAPDEBUG
+	if (frame->trap == 7)
+		goto fram;
+	if (faultdebug)
+		printf("Trap: type %x, code %x, pc %x, psl %x\n",
+		    frame->trap, frame->code, frame->pc, frame->psl);
 fram:
-	switch(type){
+#endif
+	switch (type) {
 
 	default:
 faulter:
 #ifdef DDB
-		if (kdb_trap(frame))
-			return;
+		kdb_trap(frame);
 #endif
-		panic("trap: adr %x",frame->code);
+		printf("Trap: type %x, code %x, pc %x, psl %x\n",
+		    frame->trap, frame->code, frame->pc, frame->psl);
+		showregs(frame);
+		panic("trap: adr %x", frame->code);
 	case T_KSPNOTVAL:
 		goto faulter;
 
 	case T_TRANSFLT|T_USER:
 	case T_TRANSFLT: /* Translation invalid - may be simul page ref */
-		if(frame->trap&T_PTEFETCH){
+		if (frame->trap & T_PTEFETCH) {
 			u_int	*ptep, *pte, *pte1;
 
-			if(frame->code<0x40000000)
-				ptep=(u_int *)p->p_addr->u_pcb.P0BR;
+			if (frame->code < 0x40000000)
+				ptep = (u_int *)p->p_addr->u_pcb.P0BR;
 			else
-				ptep=(u_int *)p->p_addr->u_pcb.P1BR;
-			pte1=(u_int *)trunc_page(&ptep[(frame->code
-				&0x3fffffff)>>PG_SHIFT]);
-			pte=(u_int*)&Sysmap[((u_int)pte1&0x3fffffff)>>PG_SHIFT];	
-			if(*pte&PG_SREF){ /* Yes, simulated */
-				s=splhigh();
+				ptep = (u_int *)p->p_addr->u_pcb.P1BR;
+			pte1 = (u_int *)trunc_page(&ptep[(frame->code &
+			    0x3fffffff) >> PGSHIFT]);
+			pte = (u_int*)&Sysmap[((u_int)pte1 & 0x3fffffff) >>
+			    PGSHIFT];	
+			if (*pte & PG_SREF) { /* Yes, simulated */
+				s = splhigh();
 
-				*pte|=PG_REF|PG_V;*pte&=~PG_SREF;pte++;
-				*pte|=PG_REF|PG_V;*pte&=~PG_SREF;
-				mtpr(0,PR_TBIA);
+				*pte |= PG_REF|PG_V; *pte &= ~PG_SREF; pte++;
+				*pte |= PG_REF|PG_V; *pte &= ~PG_SREF;
+				mtpr(0, PR_TBIA);
 				splx(s);
 				goto uret;
 			}
 		} else {
 			u_int   *ptep, *pte;
 
-			frame->code=trunc_page(frame->code);
-			if(frame->code<0x40000000){
-				ptep=(u_int *)p->p_addr->u_pcb.P0BR;
-				pte=&ptep[(frame->code>>PG_SHIFT)];
-			} else if(frame->code>0x7fffffff){
-				pte=(u_int *)&Sysmap[((u_int)frame->code&
-					0x3fffffff)>>PG_SHIFT];
+			frame->code = trunc_page(frame->code);
+			if (frame->code < 0x40000000) {
+				ptep = (u_int *)p->p_addr->u_pcb.P0BR;
+				pte = &ptep[(frame->code >> PGSHIFT)];
+			} else if (frame->code > 0x7fffffff) {
+				pte = (u_int *)&Sysmap[((u_int)frame->code &
+				    0x3fffffff) >> PGSHIFT];
 			} else {
-				ptep=(u_int *)p->p_addr->u_pcb.P1BR;
-				pte=&ptep[(frame->code&0x3fffffff)>>PG_SHIFT];
+				ptep = (u_int *)p->p_addr->u_pcb.P1BR;
+				pte = &ptep[(frame->code & 0x3fffffff) >>
+				    PGSHIFT];
 			}
-			if(*pte&PG_SREF){
-				s=splhigh();
-				*pte|=PG_REF|PG_V;*pte&=~PG_SREF;pte++;
-				*pte|=PG_REF|PG_V;*pte&=~PG_SREF;
-			/*	mtpr(frame->code,PR_TBIS); */
-			/*	mtpr(frame->code+NBPG,PR_TBIS); */
-				mtpr(0,PR_TBIA);
+			if (*pte & PG_SREF) {
+				s = splhigh();
+				*pte |= PG_REF|PG_V; *pte &= ~PG_SREF; pte++;
+				*pte |= PG_REF|PG_V; *pte &= ~PG_SREF;
+			/*	mtpr(frame->code, PR_TBIS); */
+			/*	mtpr(frame->code + NBPG, PR_TBIS); */
+				mtpr(0, PR_TBIA);
 				splx(s);
 				goto uret;
 			}
@@ -193,88 +223,110 @@ faulter:
 		/* Fall into... */
 	case T_ACCFLT:
 	case T_ACCFLT|T_USER:
-if(faultdebug)printf("trap accflt type %x, code %x, pc %x, psl %x\n",
-                        frame->trap, frame->code, frame->pc, frame->psl);
+#ifdef TRAPDEBUG
+		if (faultdebug)
+			printf("trap accflt type %x, code %x, pc %x, psl %x\n",
+                            frame->trap, frame->code, frame->pc, frame->psl);
+#endif
+		if (!p)
+			panic("trap: access fault without process");
+		pm = &p->p_vmspace->vm_pmap;
+		if (frame->trap&T_PTEFETCH) {
+			u_int faultaddr;
+			u_int testaddr = (u_int)frame->code & 0x3fffffff;
+			int P0 = 0, P1 = 0, SYS = 0;
 
-		if(!p) panic("trap: access fault without process");
-		pm=&p->p_vmspace->vm_pmap;
-		if(frame->trap&T_PTEFETCH){
-			u_int faultaddr,testaddr=(u_int)frame->code&0x3fffffff;
-			int P0=0,P1=0,SYS=0;
+			if (frame->code == testaddr)
+				P0++;
+			else if (frame->code > 0x7fffffff)
+				SYS++;
+			else
+				P1++;
 
-			if(frame->code==testaddr) P0++;
-			else if(frame->code>0x7fffffff) SYS++;
-			else P1++;
+			if (P0) {
+				faultaddr = (u_int)pm->pm_pcb->P0BR +
+				    ((testaddr >> PGSHIFT) << 2);
+			} else if (P1) {
+				faultaddr = (u_int)pm->pm_pcb->P1BR +
+				    ((testaddr >> PGSHIFT) << 2);
+			} else
+				panic("pageflt: PTE fault in SPT");
 
-			if(P0){
-				faultaddr=(u_int)pm->pm_pcb->P0BR+
-					((testaddr>>PG_SHIFT)<<2);
-			} else if(P1){
-				faultaddr=(u_int)pm->pm_pcb->P1BR+
-					((testaddr>>PG_SHIFT)<<2);
-			} else panic("pageflt: PTE fault in SPT\n");
-	
-			faultaddr&=~PAGE_MASK;
-			rv = vm_fault(pte_map, faultaddr, 
-				VM_PROT_WRITE|VM_PROT_READ, FALSE);
+			rv = vm_fault(pte_map, faultaddr & ~PAGE_MASK, 
+			    VM_PROT_WRITE|VM_PROT_READ, FALSE);
 			if (rv != KERN_SUCCESS) {
-	
-				sig=SIGSEGV;
+				typ = SEGV_MAPERR;
+				v = (caddr_t)faultaddr;
+				sig = SIGSEGV;
 				goto bad;
-			} else trapsig=0;
-/*			return; /* We don't know if it was a trap only for PTE*/
-/*			break; */
+			} else
+				trapsig = 0;
 		}
-		addr=(frame->code& ~PAGE_MASK);
-		if((frame->pc>(unsigned)0x80000000)&&
-			(frame->code>(unsigned)0x80000000)){
-			map=kernel_map;
+		addr = (frame->code & ~PAGE_MASK);
+		if ((frame->pc >= (u_int)KERNBASE) &&
+		    (frame->code >= (u_int)KERNBASE)) {
+			map = kernel_map;
 		} else {
-			map= &p->p_vmspace->vm_map;
+			map = &p->p_vmspace->vm_map;
 		}
-		if(frame->trap&T_WRITE) ftype=VM_PROT_WRITE|VM_PROT_READ;
-		else ftype = VM_PROT_READ;
+		if (frame->trap & T_WRITE)
+			ftype = VM_PROT_WRITE|VM_PROT_READ;
+		else
+			ftype = VM_PROT_READ;
 
 		rv = vm_fault(map, addr, ftype, FALSE);
 		if (rv != KERN_SUCCESS) {
-			if(frame->pc>(u_int)0x80000000){
-				if(p->p_addr->u_pcb.iftrap){
-					frame->pc=(int)p->p_addr->u_pcb.iftrap;
+			if (frame->pc >= (u_int)KERNBASE) {
+				if (p->p_addr->u_pcb.iftrap) {
+					frame->pc =
+					    (int)p->p_addr->u_pcb.iftrap;
 					return;
 				}
-				printf("Segv in kernel mode: rv %d\n",rv);
+				printf("Segv in kernel mode: rv %d\n", rv);
 				goto faulter;
 			}
-			sig=SIGSEGV;
-		} else trapsig=0;
+			typ = SEGV_MAPERR;
+			v = (caddr_t)frame->code;
+			sig = SIGSEGV;
+		} else
+			trapsig=0;
 		break;
 
 	case T_PTELEN:
 	case T_PTELEN|T_USER:	/* Page table length exceeded */
-		pm=&p->p_vmspace->vm_pmap;
-if(faultdebug)printf("trap ptelen type %x, code %x, pc %x, psl %x\n",
-                        frame->trap, frame->code, frame->pc, frame->psl);
-		if(frame->code<0x40000000){ /* P0 */
+		pm = &p->p_vmspace->vm_pmap;
+#ifdef TRAPDEBUG
+		if (faultdebug)
+			printf("trap ptelen type %x, code %x, pc %x, psl %x\n",
+                            frame->trap, frame->code, frame->pc, frame->psl);
+#endif
+		if (frame->code < 0x40000000) { /* P0 */
 			int i;
 
-			if (p->p_vmspace == 0){
+			if (p->p_vmspace == 0) {
 				printf("no vmspace in fault\n");
 				goto faulter;
 			}
 			i = p->p_vmspace->vm_tsize + p->p_vmspace->vm_dsize;
-			if (i > (frame->code >> PAGE_SHIFT)){
+			if (i > (frame->code >> PAGE_SHIFT)) {
 				pmap_expandp0(pm, i << 1);
 				trapsig = 0;
 			} else {
+				typ = SEGV_MAPERR;
+				v = (caddr_t)0xdeadbeef;	/* XXX */
 				sig = SIGSEGV;
 			}
-		} else if (frame->code > 0x7fffffff){ /* System, segv */
+		} else if (frame->code > 0x7fffffff) { /* System, segv */
+			typ = SEGV_MAPERR;
+			v = (caddr_t)0xdeadbeef;		/* XXX */
 			sig = SIGSEGV;
 		} else { /* P1 */
 			int i;
 
 			i = (u_int)(p->p_vmspace->vm_maxsaddr);
-			if (frame->code < i){
+			if (frame->code < i) {
+				typ = SEGV_MAPERR;
+				v = (caddr_t)0xdeadbeef;	/* XXX */
 				sig = SIGSEGV;
 			} else {
 				pmap_expandp1(pm);
@@ -285,6 +337,8 @@ if(faultdebug)printf("trap ptelen type %x, code %x, pc %x, psl %x\n",
 
 	case T_BPTFLT|T_USER:
 	case T_TRCTRAP|T_USER:
+		typ = TRAP_BRKPT;
+		v = (caddr_t)0xdeadbeef;		/* XXX */
 		sig = SIGTRAP;
 		frame->psl &= ~PSL_T;
 		break;
@@ -292,24 +346,44 @@ if(faultdebug)printf("trap ptelen type %x, code %x, pc %x, psl %x\n",
 	case T_PRIVINFLT|T_USER:
 	case T_RESADFLT|T_USER:
 	case T_RESOPFLT|T_USER:
-		sig=SIGILL;
+		typ = ILL_ILLOPC;
+		v = (caddr_t)0xdeadbeef;		/* XXX */
+		sig = SIGILL;
+		break;
+
+	case T_XFCFLT|T_USER:
+		typ = 0; 				/* XXX/MAJA */
+		v = (caddr_t)0;				/* XXX/MAJA */
+		sig = SIGEMT;
 		break;
 
 	case T_ARITHFLT|T_USER:
-		sig=SIGFPE;
+		typ = FPE_FLTINV;			/* XXX? */
+		v = (caddr_t)0;
+		sig = SIGFPE;
 		break;
 
 	case T_ASTFLT|T_USER:
-		mtpr(AST_NO,PR_ASTLVL);
-		trapsig=0;
+		mtpr(AST_NO, PR_ASTLVL);
+		trapsig = 0;
 		break;
+
+#ifdef DDB
+	case T_KDBTRAP:
+		kdb_trap(frame);
+		return;
+#endif
 	}
 bad:
-	if(trapsig) trapsignal(curproc, sig, frame->code);
+	if (trapsig) {
+		sv.sival_ptr = v;
+		trapsignal(curproc, sig, frame->code, typ, sv);
+	}
 uret:
 	userret(curproc, frame->pc, frame->psl);
 };
 
+void
 showstate(p)
 	struct proc *p;
 {
@@ -319,9 +393,9 @@ if(p){
 		p->p_vmspace->vm_tsize, p->p_vmspace->vm_dsize,p->p_vmspace->
 		vm_ssize);
 	printf("virt text %x, virt data %x, max stack %x\n",
-		p->p_vmspace->vm_taddr,p->p_vmspace->vm_daddr,
-		p->p_vmspace->vm_maxsaddr);
-	printf("kernel uarea %x, end uarea %x\n",p->p_addr, 
+		(u_int)p->p_vmspace->vm_taddr, (u_int)p->p_vmspace->vm_daddr,
+		(u_int)p->p_vmspace->vm_maxsaddr);
+	printf("kernel uarea %x, end uarea %x\n",(u_int)p->p_addr, 
 		(u_int)p->p_addr + USPACE);
 } else {
 	printf("No process\n");
@@ -343,24 +417,27 @@ setregs(p, pack, stack, retval)
 
 	exptr = p->p_addr->u_pcb.framep;
 	exptr->pc = pack->ep_entry + 2;
-	mtpr(stack, PR_USP);
+	exptr->sp = stack;
 	retval[0] = retval[1] = 0;
 }
 
+void
 syscall(frame)
 	struct	trapframe *frame;
 {
 	struct sysent *callp;
 	int nsys;
-	int err,rval[2],args[8],sig;
+	int err, rval[2], args[8];
 	struct trapframe *exptr;
-	struct proc *p=curproc;
+	struct proc *p = curproc;
 
-if(startsysc)printf("trap syscall %s pc %x, psl %x, ap %x, pid %d, frame %x\n",
-               syscallnames[frame->code], frame->pc, frame->psl,frame->ap,
+#ifdef TRAPDEBUG
+if(startsysc)printf("trap syscall %s pc %x, psl %x, sp %x, pid %d, frame %x\n",
+               syscallnames[frame->code], frame->pc, frame->psl,frame->sp,
 		curproc->p_pid,frame);
+#endif
 
-	p->p_addr->u_pcb.framep = frame;
+	exptr = p->p_addr->u_pcb.framep = frame;
 	callp = p->p_emul->e_sysent;
 	nsys = p->p_emul->e_nsysent;
 
@@ -379,65 +456,66 @@ if(startsysc)printf("trap syscall %s pc %x, psl %x, ap %x, pid %d, frame %x\n",
 
 	rval[0]=0;
 	rval[1]=frame->r1;
-	if(callp->sy_narg)
-		copyin((char*)frame->ap+4, args, callp->sy_argsize);
-
+	if(callp->sy_narg) {
+		err = copyin((char*)frame->ap+4, args, callp->sy_argsize);
+		if (err) {
+#ifdef KTRACE
+			if (KTRPOINT(p, KTR_SYSCALL))
+				ktrsyscall(p->p_tracep, frame->code,
+				    callp->sy_argsize, args);
+#endif
+			goto bad;
+		}
+	}
+#ifdef KTRACE
+	if (KTRPOINT(p, KTR_SYSCALL))
+		ktrsyscall(p->p_tracep, frame->code, callp->sy_argsize, args);
+#endif
 	err=(*callp->sy_call)(curproc,args,rval);
-	exptr=curproc->p_addr->u_pcb.framep;
+	exptr = curproc->p_addr->u_pcb.framep;
 
+#ifdef TRAPDEBUG
 if(startsysc)
-	printf("retur %s pc %x, psl %x, ap %x, pid %d, v{rde %d r0 %d, r1 %d, frame %x\n",
-               syscallnames[exptr->code], exptr->pc, exptr->psl,exptr->ap,
+	printf("retur %s pc %x, psl %x, sp %x, pid %d, v{rde %d r0 %d, r1 %d, frame %x\n",
+               syscallnames[exptr->code], exptr->pc, exptr->psl,exptr->sp,
                 curproc->p_pid,err,rval[0],rval[1],exptr);
+#endif
 
-	switch(err){
+bad:
+	switch (err) {
 	case 0:
-		exptr->r1=rval[1];
-		exptr->r0=rval[0];
+		exptr->r1 = rval[1];
+		exptr->r0 = rval[0];
 		exptr->psl &= ~PSL_C;
 		break;
+
 	case EJUSTRETURN:
 		return;
+
 	case ERESTART:
-		exptr->pc=exptr->pc-2;
+		exptr->pc = exptr->pc-2;
 		break;
+
 	default:
-		exptr->r0=err;
+		exptr->r0 = err;
 		exptr->psl |= PSL_C;
 		break;
 	}
 	userret(curproc, exptr->pc, exptr->psl);
+#ifdef KTRACE
+	if (KTRPOINT(p, KTR_SYSRET))
+		ktrsysret(p->p_tracep, frame->code, err, rval[0]);
+#endif
 }
 
-stray(scb, vec){
+void
+stray(scb, vec)
+	int scb, vec;
+{
 	printf("stray interrupt scb %d, vec 0x%x\n", scb, vec);
 }
 
-struct inta {
-	char pushr[2];	/* pushr $3f */
-	char pushl[2];	/* pushl $? */
-	char nop;	/* nop, for foolish gcc */
-	char calls[3];	/* $1,? */
-	u_int hoppaddr; /* jump for calls */
-	char popr[2];	/* popr $0x3f */
-	char rei;	/* rei */
-} intasm = {0xbb, 0x3f, 0xdd, 0, 1, 0xfb, 1, 0xef, 0, 0xba, 0x3f, 2};
-
-u_int
-settrap(plats, nyrut,arg)
-	u_int plats;  /* Pointer to place to copy interrupt routine */
-	u_int nyrut;  /* Pointer to new routine to jump to */
-	u_int arg;    /* arg number to pass to routine. */
-{
-	struct inta *introut;
-
-	introut=(void *)((plats&0xfffffffc)+4);
-	bcopy(&intasm, introut, sizeof(struct inta));
-	introut->pushl[1]=arg;
-	introut->hoppaddr=nyrut-(u_int)&introut->popr[0];
-	return (u_int)introut;
-}
-
+void
 printstack(loaddr, highaddr)
 	u_int *loaddr, *highaddr;
 {
@@ -447,9 +525,10 @@ printstack(loaddr, highaddr)
 
 	for (;tmp < highaddr;tmp += 4)
 		printf("%8x:  %8x  %8x  %8x  %8x\n",
-		    tmp, *tmp, *(tmp + 1), *(tmp + 2), *(tmp + 3));
+		    (int)tmp, *tmp, *(tmp + 1), *(tmp + 2), *(tmp + 3));
 }
 
+void
 showregs(frame)
 	struct trapframe *frame;
 {

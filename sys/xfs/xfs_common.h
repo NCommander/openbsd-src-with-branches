@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,49 +36,21 @@
  * SUCH DAMAGE.
  */
 
-/* $arla: xfs_common.h,v 1.19 2002/12/18 12:32:10 lha Exp $ */
+/* $Id: xfs_common.h,v 1.7 1998/11/02 01:51:14 assar Exp $ */
 
 #ifndef _xfs_common_h
 #define _xfs_common_h
 
-#if defined(MALLOC_DECLARE)
-MALLOC_DECLARE(M_NNPFS);
-MALLOC_DECLARE(M_NNPFS_NODE);
-MALLOC_DECLARE(M_NNPFS_LINK);
-MALLOC_DECLARE(M_NNPFS_MSG);
-#elif !defined(M_NNPFS)
-#define M_NNPFS M_TEMP
-#define M_NNPFS_NODE M_TEMP
-#define M_NNPFS_LINK M_TEMP
-#define M_NNPFS_MSG M_TEMP
-#endif
-
-
-#ifdef NNPFS_DEBUG
-void *xfs_alloc(u_int size, xfs_malloc_type type);
-void xfs_free(void *, u_int size, xfs_malloc_type type);
+#ifdef XFS_DEBUG
+void *xfs_alloc(u_int size);
+void xfs_free(void *, u_int size);
 #else
 #ifdef __osf__
-#define xfs_alloc(a,t) malloc((a), BUCKETINDEX(a), t, M_WAITOK)
+#define xfs_alloc(a) malloc((a), BUCKETINDEX(a), M_TEMP, M_WAITOK)
 #else
-#define xfs_alloc(a,t) malloc((a), t, M_WAITOK)
+#define xfs_alloc(a) malloc((a), M_TEMP, M_WAITOK)
 #endif
-#define xfs_free(a, size,t) free(a, t)
-#endif /* NNPFS_DEBUG */
-
-int xfs_suser(d_thread_t *p);
-
-#ifndef HAVE_KERNEL_MEMCPY
-void *
-memcpy (void *s1, const void *s2, size_t n);
-#endif
-
-const char *
-xfs_devtoname_r (dev_t dev, char *buf, size_t sz);
-
-#ifndef HAVE_KERNEL_STRLCPY
-size_t
-strlcpy (char *dst, const char *src, size_t dst_sz);
-#endif
+#define xfs_free(a, size) free(a, M_TEMP)
+#endif /* XFS_DEBUG */
 
 #endif /* _xfs_common_h */

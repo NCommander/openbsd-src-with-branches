@@ -1,4 +1,5 @@
-/*	$NetBSD: Locore.c,v 1.1 1996/09/30 16:34:58 ws Exp $	*/
+/*	$OpenBSD:$	*/
+/*	$NetBSD: Locore.c,v 1.1 1997/04/16 20:29:11 thorpej Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -30,17 +31,21 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stand.h>
-#include <openfirm.h>
 
-#include <machine/cpu.h>
+#include <lib/libsa/stand.h>
+#include <powerpc/stand/openfirm.h>
+
+/*
+#include "machine/cpu.h"
+*/
 
 static int (*openfirmware)(void *);
 
-static void
-setup();
+static void setup __P((void));
 
-#define __dead
+#ifdef XCOFF_GLUE
+asm (".text; .globl _entry; _entry: .long _start,0,0");
+#endif
 
 __dead void
 _start(vpd, res, openfirm, arg, argl)
@@ -50,17 +55,47 @@ _start(vpd, res, openfirm, arg, argl)
 	char *arg;
 	int argl;
 {
-	extern char etext;
+	extern char etext[];
 
-#ifdef	FIREPOWERBUGS
-	syncicache((void *)RELOC, &etext - (char *)RELOC);
+#ifdef	FIRMWORKSBUGS
+	syncicache((void *)RELOC, etext - (char *)RELOC);
 #endif
 	openfirmware = openfirm;	/* Save entry to Open Firmware */
+#if 0
+	patch_dec_intr();
+#endif
 	setup();
 	main(arg, argl);
 	exit();
 }
 
+#if 0
+void handle_decr_intr();
+__asm (	"	.globl handle_decr_intr\n"
+	"	.type handle_decr_intr@function\n"
+	"handle_decr_intr:\n"
+	"	rfi\n");
+
+
+patch_dec_intr()
+{
+	int time;
+	unsigned int *decr_intr = (unsigned int *)0x900;
+	unsigned int br_instr;
+
+	/* this hack is to prevent unexected Decrementer Exceptions
+	 * when Apple openfirmware enables interrupts
+	 */
+	time = 0x40000000;
+	asm("mtdec %0" :: "r"(time));
+	/* we assume that handle_decr_intr is in the first 128 Meg */
+	br_instr = (18 << 23) | (unsigned int)handle_decr_intr;
+	*decr_intr = br_instr;
+
+
+
+}
+#endif
 __dead void
 _rtt()
 {
@@ -330,9 +365,12 @@ OF_claim(virt, size, align)
 		1,
 	};
 
-#ifdef	FIREPOWERBUGS
+/*
+#ifdef	FIRMWORKSBUGS
+*/
+#if 0
 	/*
-	 * Bug with FirePower machines (actually Firmworks OFW)
+	 * Bug with Firmworks OFW
 	 */
 	if (virt)
 		return virt;
@@ -342,6 +380,9 @@ OF_claim(virt, size, align)
 	args.align = align;
 	if (openfirmware(&args) == -1)
 		return (void *)-1;
+	if (virt != 0) {
+		return virt;
+	}
 	return args.baseaddr;
 }
 
@@ -385,7 +426,7 @@ OF_milliseconds()
 	return args.ms;
 }
 
-#ifdef	__notyet__
+#ifdef __notyet__
 void
 OF_chain(virt, size, entry, arg, len)
 	void *virt;
@@ -427,11 +468,58 @@ OF_chain(virt, size, entry, arg, len)
 {
 	/*
 	 * This is a REALLY dirty hack till the firmware gets this going
-	 */
 	OF_release(virt, size);
+	 */
 	entry(0, 0, openfirmware, arg, len);
 }
 #endif
+
+int
+#ifdef	__STDC__
+OF_call_method(char *method, int ihandle, int nargs, int nreturns, ...)
+#else
+OF_call_method(method, ihandle, nargs, nreturns, va_alist)
+	char *method;
+	int ihandle;
+	int nargs;
+	int nreturns;
+	va_dcl
+#endif
+{
+	va_list ap;
+	static struct {
+		char *name;
+		int nargs;
+		int nreturns;
+		char *method;
+		int ihandle;
+		int args_n_results[12];
+	} args = {
+		"call-method",
+		2,
+		1,
+	};
+	int *ip, n;
+
+	if (nargs > 6)
+		return -1;
+	args.nargs = nargs + 2;
+	args.nreturns = nreturns + 1;
+	args.method = method;
+	args.ihandle = ihandle;
+	va_start(ap, nreturns);
+	for (ip = args.args_n_results + (n = nargs); --n >= 0;)
+		*--ip = va_arg(ap, int);
+
+	if (openfirmware(&args) == -1)
+		return -1;
+	if (args.args_n_results[nargs])
+		return args.args_n_results[nargs];
+	for (ip = args.args_n_results + nargs + (n = args.nreturns); --n > 0;)
+		*va_arg(ap, int *) = *--ip;
+	va_end(ap);
+	return 0;
+}
 
 static int stdin;
 static int stdout;
@@ -444,7 +532,8 @@ setup()
 	if ((chosen = OF_finddevice("/chosen")) == -1)
 		_rtt();
 	if (OF_getprop(chosen, "stdin", &stdin, sizeof(stdin)) != sizeof(stdin)
-	    || OF_getprop(chosen, "stdout", &stdout, sizeof(stdout)) != sizeof(stdout))
+	    || OF_getprop(chosen, "stdout", &stdout, sizeof(stdout)) !=
+	    sizeof(stdout))
 		_rtt();
 }
 
@@ -462,11 +551,11 @@ putchar(c)
 int
 getchar()
 {
-	unsigned char ch;
+	unsigned char ch = '\0';
 	int l;
 
 	while ((l = OF_read(stdin, &ch, 1)) != 1)
-		if (l != -2)
+		if (l != -2 && l != 0)
 			return -1;
 	return ch;
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: linux_ipc.h,v 1.1 1995/02/28 23:25:47 fvdl Exp $	*/
 
 /*

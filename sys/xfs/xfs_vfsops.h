@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +36,7 @@
  * SUCH DAMAGE.
  */
 
-/* $arla: xfs_vfsops.h,v 1.17 2003/06/02 18:27:10 lha Exp $ */
+/* $Id: xfs_vfsops.h,v 1.10 1999/03/09 15:40:24 assar Exp $ */
 
 #ifndef _xfs_vfsops_h
 #define _xfs_vfsops_h
@@ -39,16 +44,9 @@
 int
 xfs_mount_common(struct mount *mp,
 		 const char *user_path,
-		 void *user_data,
+		 caddr_t user_data,
 		 struct nameidata *ndp,
-		 d_thread_t *p);
-
-int
-xfs_mount_common_sys(struct mount *mp,
-		     const char *path,
-		     void *data,
-		     struct nameidata *ndp,
-		     d_thread_t *p);
+		 struct proc *p);
 
 int
 xfs_unmount_common(struct mount *mp, int mntflags);
@@ -56,20 +54,24 @@ xfs_unmount_common(struct mount *mp, int mntflags);
 int
 xfs_root_common(struct mount *mp,
 		struct vnode **vpp,
-		d_thread_t *proc,
+		struct proc *proc,
 		struct ucred *cred);
 
 int
-xfs_fhlookup (d_thread_t *proc,
-	      struct xfs_fhandle_t *fhp,
+xfs_fhlookup (struct proc *proc,
+	      fsid_t fsid,
+	      long fileid,
+	      long gen,
 	      struct vnode **vpp);
 
 int
-xfs_fhopen (d_thread_t *proc,
-	    struct xfs_fhandle_t *fhp,
+xfs_fhopen (struct proc *proc,
+	    fsid_t fsid,
+	    long fileid,
+	    long gen,
 	    int flags,
 	    register_t *retval);
 
-int xfs_make_dead_vnode(struct mount *mp, struct vnode **vpp);
+int make_dead_vnode(struct mount *mp, struct vnode **vpp);
 
 #endif				       /* _xfs_vfsops_h */

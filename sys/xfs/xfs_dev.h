@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  *
@@ -14,7 +14,12 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Kungliga Tekniska
+ *      Högskolan and its contributors.
+ *
+ * 4. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +36,7 @@
  * SUCH DAMAGE.
  */
 
-/* $arla: xfs_dev.h,v 1.19 2003/01/19 20:53:52 lha Exp $ */
+/* $Id: xfs_dev.h,v 1.9 1999/04/06 13:58:13 lha Exp $ */
 
 #ifndef _xfs_dev_h
 #define _xfs_dev_h
@@ -63,15 +68,15 @@ struct xfs_channel {
     int status;
 #define CHANNEL_OPENED	0x1
 #define CHANNEL_WAITING 0x2
-    d_thread_t *proc;
 };
 
-extern struct xfs_channel xfs_channel[NNNPFS];
+extern struct xfs_channel xfs_channel[NXFS];
 
 /*
  * These are variant dependent
  */
 
+int xfs_func_is_devopen(void*);
 void xfs_select_wakeup(struct xfs_channel *);
 
 int xfs_install_device(void);
@@ -92,10 +97,10 @@ void
 xfs_initq(struct xfs_link *q);
 
 int
-xfs_emptyq(const struct xfs_link *q);
+xfs_emptyq(struct xfs_link *q);
 
 int
-xfs_onq(const struct xfs_link *link);
+xfs_onq(struct xfs_link *link);
 
 void
 xfs_appendq(struct xfs_link *q, struct xfs_link *p);
@@ -107,19 +112,20 @@ int
 xfs_devopen_common(dev_t dev);
 
 #ifndef __osf__ /* XXX - we should do the same for osf */
-int xfs_devopen(dev_t dev, int flag, int devtype, d_thread_t *proc);
-int xfs_devclose(dev_t dev, int flag, int devtype, d_thread_t *proc);
-int xfs_devioctl(dev_t dev, u_long cmd, caddr_t data, int flags,
-		 d_thread_t *p);
-#ifdef HAVE_THREE_ARGUMENT_SELRECORD
-int xfs_devselect(dev_t dev, int which, void *wql, d_thread_t *p);
-#else
-int xfs_devselect(dev_t dev, int which, d_thread_t *p);
+int xfs_devopen(dev_t dev, int flag, int devtype, struct proc *proc);
+int xfs_devclose(dev_t dev, int flag, int devtype, struct proc *proc);
+int xfs_devioctl(dev_t dev,
+#if  defined(__NetBSD__) || defined(__OpenBSD__)
+		 u_long cmd,
+#else /* if defined(__FreeBSD__) */
+		 int cmd,
 #endif
+		 caddr_t data, int flags, struct proc *p);
+int xfs_devselect(dev_t dev, int which, struct proc *p);
 #endif /* ! __osf__ */
 
 int
-xfs_devclose_common(dev_t dev, d_thread_t *p);
+xfs_devclose_common(dev_t dev, struct proc *p);
 
 int
 xfs_devread(dev_t dev, struct uio * uiop, int ioflag);
@@ -131,31 +137,27 @@ int
 xfs_message_send(int fd, struct xfs_message_header * message, u_int size);
 
 int
-xfs_message_rpc(int fd, struct xfs_message_header * message, u_int size,
-		d_thread_t *p);
+xfs_message_rpc(int fd, struct xfs_message_header * message, u_int size);
 
 int
 xfs_message_receive(int fd,
 		    struct xfs_message_header *message,
 		    u_int size,
-		    d_thread_t *p);
+		    struct proc *p);
 
 int
 xfs_message_wakeup(int fd,
 		   struct xfs_message_wakeup *message,
 		   u_int size,
-		   d_thread_t *p);
+		   struct proc *p);
 
 int
 xfs_message_wakeup_data(int fd,
 			struct xfs_message_wakeup_data * message,
 			u_int size,
-			d_thread_t *p);
+			struct proc *p);
 
 int
 xfs_uprintf_device(void);
-
-int
-xfs_is_xfs_dev (dev_t dev);
 
 #endif /* _xfs_dev_h */

@@ -1,7 +1,8 @@
-/*	$NetBSD: mainbus.c,v 1.4 1995/08/03 01:01:26 cgd Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.7 1996/11/23 21:44:50 kstailey Exp $	*/
+/*	$NetBSD: mainbus.c,v 1.15 1996/12/05 01:39:28 cgd Exp $	*/
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -34,6 +35,7 @@
 
 #include <machine/autoconf.h>
 #include <machine/rpb.h>
+#include <machine/cpuconf.h>
 
 struct mainbus_softc {
 	struct	device sc_dv;
@@ -41,12 +43,21 @@ struct mainbus_softc {
 };
 
 /* Definition of the mainbus driver. */
+#ifdef __BROKEN_INDIRECT_CONFIG
 static int	mbmatch __P((struct device *, void *, void *));
+#else
+static int	mbmatch __P((struct device *, struct cfdata *, void *));
+#endif
 static void	mbattach __P((struct device *, struct device *, void *));
-static int	mbprint __P((void *, char *));
-struct cfdriver mainbuscd =
-    { NULL, "mainbus", mbmatch, mbattach, DV_DULL,
-	sizeof (struct mainbus_softc) };
+static int	mbprint __P((void *, const char *));
+
+struct cfattach mainbus_ca = {
+	sizeof(struct mainbus_softc), mbmatch, mbattach
+};
+
+struct cfdriver mainbus_cd = {
+	NULL, "mainbus", DV_DULL
+};
 
 void	mb_intr_establish __P((struct confargs *, int (*)(void *), void *));
 void	mb_intr_disestablish __P((struct confargs *));
@@ -54,12 +65,22 @@ caddr_t	mb_cvtaddr __P((struct confargs *));
 int	mb_matchname __P((struct confargs *, char *));
 
 static int
+#ifdef __BROKEN_INDIRECT_CONFIG
 mbmatch(parent, cfdata, aux)
+#else
+mbmatch(parent, cf, aux)
+#endif
 	struct device *parent;
+#ifdef __BROKEN_INDIRECT_CONFIG
 	void *cfdata;
+#else
+	struct cfdata *cf;
+#endif
 	void *aux;
 {
+#ifdef __BROKEN_INDIRECT_CONFIG
 	struct cfdata *cf = cfdata;
+#endif
 
 	/*
 	 * Only one mainbus, but some people are stupid...
@@ -81,10 +102,10 @@ mbattach(parent, self, aux)
 {
 	struct mainbus_softc *sc = (struct mainbus_softc *)self;
 	struct confargs nca;
-	struct pcs *pcsp;
 	int i, cpuattachcnt;
-	extern int cputype, ncpus;
-	extern char *cpu_iobus;
+	struct pcs* pcsp;
+	extern int ncpus;
+	extern const struct cpusw *cpu_fn_switch;
 
 	printf("\n");
 
@@ -100,8 +121,6 @@ mbattach(parent, self, aux)
 	 */
 	cpuattachcnt = 0;
 	for (i = 0; i < hwrpb->rpb_pcs_cnt; i++) {
-		struct pcs *pcsp;
-
 		pcsp = (struct pcs *)((char *)hwrpb + hwrpb->rpb_pcs_off +
 		    (i * hwrpb->rpb_pcs_size));
 		if ((pcsp->pcs_flags & PCS_PP) == 0)
@@ -111,36 +130,35 @@ mbattach(parent, self, aux)
 		nca.ca_slot = 0;
 		nca.ca_offset = 0;
 		nca.ca_bus = &sc->sc_bus;
-		if (config_found(self, &nca, mbprint))
+		if (config_found(self, &nca, mbprint) != NULL)
 			cpuattachcnt++;
 	}
 	if (ncpus != cpuattachcnt)
 		printf("WARNING: %d cpus in machine, %d attached\n",
 			ncpus, cpuattachcnt);
 
-	if (cpu_iobus != NULL) {
-		nca.ca_name = cpu_iobus;
+	if ((*cpu_fn_switch->iobus_name)() != NULL) {
+		char iobus_name[16];
+
+		strncpy(iobus_name, (*cpu_fn_switch->iobus_name)(), 16);
+		nca.ca_name = iobus_name;
 		nca.ca_slot = 0;
 		nca.ca_offset = 0;
 		nca.ca_bus = &sc->sc_bus;
 		config_found(self, &nca, mbprint);
 	}
-
-	/*
-	 * XXX: note that the following should be at various places in
-	 * machdep.c.
-	 */
-	/* WEIRD: Note that the "LCA" CPU attches the PCI bus directly... */
 }
 
 static int
 mbprint(aux, pnp)
 	void *aux;
-	char *pnp;
+	const char *pnp;
 {
+	struct confargs *ca = aux;
 
 	if (pnp)
-		return (QUIET);
+		printf("%s at %s", ca->ca_name, pnp);
+
 	return (UNCONF);
 }
 

@@ -1,3 +1,4 @@
+#	$OpenBSD: $ 
 PROG=	prtvid
 NOMAN=
 
