@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.4.2.8 2003/03/28 00:38:22 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1683,6 +1683,7 @@ int wb_ioctl(ifp, command, data)
 		default:
 			wb_init(sc);
 		}
+		break;
 	case SIOCSIFFLAGS:
 		if (ifp->if_flags & IFF_UP) {
 			wb_init(sc);

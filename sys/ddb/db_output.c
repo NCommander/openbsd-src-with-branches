@@ -33,7 +33,7 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
-#include <machine/stdarg.h>
+#include <sys/stdarg.h>
 
 #include <dev/cons.h>
 

@@ -342,7 +342,7 @@ ne2000_detect(nsc)
 	delay(5000);
 
 	/*
-	 * Generic probe routine for testing for the existance of a DS8390.
+	 * Generic probe routine for testing for the existence of a DS8390.
 	 * Must be performed  after the NIC has just been reset.  This
 	 * works by looking at certain register values that are guaranteed
 	 * to be initialized a certain way after power-up or reset.
@@ -621,7 +621,7 @@ ne2000_write_mbuf(sc, m, buf)
 }
 
 /*
- * Given a source and destination address, copy 'amout' of a packet from
+ * Given a source and destination address, copy 'amount' of a packet from
  * the ring buffer into a linear destination buffer.  Takes into account
  * ring-wrap.
  */

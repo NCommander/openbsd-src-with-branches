@@ -37,8 +37,10 @@ void db_force_whitespace(void);
 void db_putchar(int);
 int db_print_position(void);
 int db_printf(const char *, ...)
-    __kprintf_attribute__((__format__(__kprintf__,1,2)));
+    __attribute__((__format__(__kprintf__,1,2)));
 void db_end_line(int);
+
+extern int db_log;
 
 /*
  * This is a replacement for the non-standard %z, %n and %r printf formats

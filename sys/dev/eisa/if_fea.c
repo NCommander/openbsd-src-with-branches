@@ -65,8 +65,6 @@
 
 #include <net/if_fddi.h>
 
-#include <uvm/uvm_extern.h>
-
 #include <machine/cpu.h>
 #include <machine/bus.h>
 

@@ -270,6 +270,7 @@ struct wsmouse_calibcoords {
 #define		WSDISPLAY_TYPE_XVIDEO	37	/* Xvideo */
 #define		WSDISPLAY_TYPE_SUNCG12	38	/* Sun cgtwelve */
 #define		WSDISPLAY_TYPE_MGX	39	/* SMS MGX */
+#define		WSDISPLAY_TYPE_SB_P9000	40	/* Tadpole SPARCbook P9000 */
 
 /* Basic display information.  Not applicable to all display types. */
 struct wsdisplay_fbinfo {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ramdisk.c,v 1.11.2.5 2003/03/28 00:38:10 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ramdisk.c,v 1.8 1996/04/12 08:30:09 leo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 /*
- * This implements a general-puspose RAM-disk.
+ * This implements a general-purpose RAM-disk.
  * See ramdisk.h for notes on the config types.
  *
  * Note that this driver provides the same functionality
@@ -75,7 +75,7 @@
  * XXX: the "control" unit is (base unit + 16).
  * We should just use the cdev as the "control", but
  * that interferes with the security stuff preventing
- * simulatneous use of raw and block devices.
+ * simultaneous use of raw and block devices.
  *
  * XXX Assumption: 16 RAM-disks are enough!
  */
@@ -110,7 +110,7 @@ struct disklabel *rdgetdisklabel(dev_t dev, struct rd_softc *sc);
  * XXX - that practice is questionable...
  */
 struct cfdriver rd_cd = {
-	NULL, "rd", DV_DULL, NULL, 0
+	NULL, "rd", DV_DULL
 };
 
 void rdstrategy(struct buf *bp);

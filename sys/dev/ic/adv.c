@@ -53,8 +53,6 @@
 #include <machine/bus.h>
 #include <machine/intr.h>
 
-#include <uvm/uvm_extern.h>
-
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.3.4.6 2003/05/13 19:35:11 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: qe.c,v 1.16 2001/03/30 17:30:18 christos Exp $	*/
 
 /*-
@@ -216,20 +216,16 @@ qeattach(parent, self, aux)
 		return;
 	}
 
-	if (sbus_bus_map(sa->sa_bustag,
-	    sa->sa_reg[0].sbr_slot,
+	if (sbus_bus_map(sa->sa_bustag, sa->sa_reg[0].sbr_slot,
 	    (bus_addr_t)sa->sa_reg[0].sbr_offset,
-	    (bus_size_t)sa->sa_reg[0].sbr_size,
-	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_cr) != 0) {
+	    (bus_size_t)sa->sa_reg[0].sbr_size, 0, 0, &sc->sc_cr) != 0) {
 		printf("%s: cannot map registers\n", self->dv_xname);
 		return;
 	}
 
-	if (sbus_bus_map(sa->sa_bustag,
-	    sa->sa_reg[1].sbr_slot,
+	if (sbus_bus_map(sa->sa_bustag, sa->sa_reg[1].sbr_slot,
 	    (bus_addr_t)sa->sa_reg[1].sbr_offset,
-	    (bus_size_t)sa->sa_reg[1].sbr_size,
-	    BUS_SPACE_MAP_LINEAR, 0, &sc->sc_mr) != 0) {
+	    (bus_size_t)sa->sa_reg[1].sbr_size, 0, 0, &sc->sc_mr) != 0) {
 		printf("%s: cannot map registers\n", self->dv_xname);
 		return;
 	}
@@ -246,8 +242,8 @@ qeattach(parent, self, aux)
 	qestop(sc);
 
 	/* Note: no interrupt level passed */
-	if (bus_intr_establish(sa->sa_bustag, 0, IPL_NET, 0, qeintr, sc) ==
-	    NULL) {
+	if (bus_intr_establish(sa->sa_bustag, 0, IPL_NET, 0, qeintr, sc,
+	    self->dv_xname) == NULL) {
 		printf(": no interrupt established\n");
 		return;
 	}

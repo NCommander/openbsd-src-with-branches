@@ -316,7 +316,7 @@ struct pcmciadevs pcmcia_ed_devs[]={
       { "ed", 0, "Ethernet", "Adapter", "2.0", NULL, (void *) -1,
 	(void *)&pcmcia_dlink },
 #if 0
-      /* not quite right for ethernet adress */
+      /* not quite right for ethernet address */
       { "ed", 0, "PMX   ", "PE-200", "ETHERNET", "R01", (void *)-1,
         (void *)&pcmcia_dlink },
 #endif

@@ -291,8 +291,7 @@ sm_pcmcia_ascii_enaddr(cisstr, myla)
 		/* Bogus address! */
 		return (0);
 	}
-	bcopy(cisstr, enaddr_str, 12);
-	bzero(myla, sizeof(myla));
+	bcopy(cisstr, enaddr_str, sizeof enaddr_str);
 	for (i = 0; i < 6; i++) {
 		for (j = 0; j < 2; j++) {
 			/* Convert to upper case. */

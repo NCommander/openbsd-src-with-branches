@@ -35,7 +35,7 @@
 
 /*
  * This file defines the interface between the machine-dependent
- * module and the machine-indepenedent ncr5380sbc.c module.
+ * module and the machine-independent ncr5380sbc.c module.
  */
 
 #define SCI_CLR_INTR(sc)	(*(sc)->sci_iack)

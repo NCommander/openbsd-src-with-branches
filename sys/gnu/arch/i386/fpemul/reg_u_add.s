@@ -118,7 +118,7 @@ xOp1_not_denorm:
 	jnz	FPU_Arith_exit
 
 xOp2_not_denorm:
-#endif DENORM_OPERAND
+#endif /* DENORM_OPERAND */
 
 /*	xorl	%ecx,%ecx*/
 	movl	EXP(%esi),%ecx
@@ -156,7 +156,7 @@ L_accum_loaded:
 
 	testl	$0x80000000,SIGH(%esi)
 	je	L_bugged
-#endif PARANOID
+#endif /* PARANOID */
 
 /* The number to be shifted is in %eax:%ebx:%edx*/
 	cmpw	$32,%cx		/* shrd only works for 0..31 bits */
@@ -240,7 +240,7 @@ L_bugged:
 	call	EXCEPTION
 	pop	%ebx
 	jmp	L_exit
-#endif PARANOID
+#endif /* PARANOID */
 
 
 L_exit:

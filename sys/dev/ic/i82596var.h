@@ -148,7 +148,7 @@
  *
  * The front-end is required to manage the SCP and ISCP structures. i.e.
  * allocate room for them on the board's memory, and arrange to point the
- * chip at the SCB stucture, the offset of which is passed to the MI
+ * chip at the SCB structure, the offset of which is passed to the MI
  * driver in `sc_scb'.
  *
  * The following functions provide the glue necessary to deal with
@@ -186,7 +186,7 @@ struct ie_softc {
 	bus_space_handle_t bh;	/* bus-space handle of card memory */
 
 	const char *sc_type;	/* (MD) hardware type */
-	int	sc_vers;	/* (MD) hardvare version */
+	int	sc_vers;	/* (MD) hardware version */
 	int	sc_irq;		/* (MD) irq in md format */
 	void	*sc_iobase;	/* (MD) KVA of base of 24 bit addr space */
 	u_long	sc_maddr;	/* (MD) base of chip's RAM (16bit addr space) */

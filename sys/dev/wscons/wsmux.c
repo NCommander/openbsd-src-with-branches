@@ -294,7 +294,7 @@ wsmuxioctl(dev, cmd, data, flag, p)
 }
 
 int
-wsmuxselect(dev, events, p)
+wsmuxpoll(dev, events, p)
 	dev_t dev;
 	int events;
 	struct proc *p;

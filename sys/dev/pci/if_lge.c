@@ -512,7 +512,7 @@ void lge_attach(parent, self, aux)
 	if (!(command & PCI_COMMAND_IO_ENABLE)) {
 		printf("%s: failed to enable I/O ports!\n",
 		       sc->sc_dv.dv_xname);
-		error = ENXIO;;
+		error = ENXIO;
 		goto fail;
 	}
 	/*
@@ -1245,7 +1245,7 @@ int lge_encap(sc, m_head, txidx)
 			tot_len += m->m_len;
 			f = &cur_tx->lge_frags[frag];
 			f->lge_fraglen = m->m_len;
-			f->lge_fragptr_lo = vtophys(mtod(m, vm_offset_t));
+			f->lge_fragptr_lo = vtophys(mtod(m, vaddr_t));
 			f->lge_fragptr_hi = 0;
 			frag++;
 		}

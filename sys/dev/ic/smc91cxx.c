@@ -357,7 +357,7 @@ smc91cxx_init(sc)
 	s = splnet();
 
 	/*
-	 * This resets the registersmostly to defaults, but doesn't
+	 * This resets the registers mostly to defaults, but doesn't
 	 * affect the EEPROM.  After the reset cycle, we pause briefly
 	 * for the chip to recover.
 	 *

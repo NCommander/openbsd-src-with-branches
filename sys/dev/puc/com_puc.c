@@ -49,7 +49,9 @@
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pucvar.h>
 
+#ifdef i386
 #include <dev/isa/isavar.h>	/* XXX */
+#endif
 
 #include "com.h"
 #ifdef i386

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.19.2.10 2003/05/13 19:21:28 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -433,7 +433,7 @@ m_copyback(m0, off, len, cp)
 	struct	mbuf *m0;
 	register int off;
 	register int len;
-	caddr_t cp;
+	const void *cp;
 {
 	register int mlen;
 	register struct mbuf *m = m0, *n;
@@ -865,7 +865,7 @@ m_split(m0, len0, wait)
 	}
 extpacket:
 	if (m->m_flags & M_EXT) {
-		n->m_flags |= M_EXT;
+		n->m_ext = m->m_ext;
 		MCLADDREFERENCE(m, n);
 		n->m_data = m->m_data + len;
 	} else {

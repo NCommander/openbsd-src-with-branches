@@ -70,11 +70,8 @@
 #include <linux/kernel.h>
 */
 
-#if defined(__FreeBSD__)
-#define I387 (*(union i387_union *)&(((struct pcb *)curproc->p_addr)->pcb_savefpu))
-#else
-#define I387 (*(union i387_union *)&(((struct pcb *)curproc->p_addr)->pcb_savefpu.gplemu))
-#endif
+#define	I387			(curproc->p_addr->u_pcb.pcb_savefpu.gplemu)
+
 #define FPU_info		(I387.soft.frame)
 
 #define FPU_CS			(*(unsigned short *) &(FPU_info->tf_cs))

@@ -505,7 +505,7 @@ rf_ReconstructInPlace(RF_Raid_t *raidPtr, RF_RowCol_t row, RF_RowCol_t col)
 #ifdef	RAIDDEBUG
 			printf("RAIDFRAME: Unable to reconstruct to disk at:\n"
 			    "      Row: %d Col: %d   Reconstruction already"
-			    " occuring !\n", row, col);
+			    " occurring !\n", row, col);
 #endif	/* RAIDDEBUG */
 
 			RF_UNLOCK_MUTEX(raidPtr->mutex);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: iop.c,v 1.17.2.3 2003/03/28 00:38:10 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: iop.c,v 1.12 2001/03/21 14:27:05 ad Exp $	*/
 
 /*-
@@ -690,7 +690,7 @@ iop_reconfigure(struct iop_softc *sc, u_int chgind)
 		DPRINTF(("iop_reconfigure: out of memory\n"));
 		return (ENOMEM);
 	}
-	bzero(sc->sc_tidmap, sizeof(sc->sc_tidmap));
+	bzero(sc->sc_tidmap, sc->sc_nlctent * sizeof(struct iop_tidmap));
 
 	/* Allow 1 queued command per device while we're configuring. */
 	iop_adjqparam(sc, 1);

@@ -1,4 +1,4 @@
-#	$OpenBSD: files.pci,v 1.64.2.7 2003/03/28 00:38:21 niklas Exp $
+#	$OpenBSD$
 #	$NetBSD: files.pci,v 1.20 1996/09/24 17:47:15 christos Exp $
 #
 # Config file and device description for machine-independent PCI code.
@@ -228,6 +228,10 @@ file	dev/pci/if_lmc_common.c		lmc
 file	dev/pci/if_lmc_media.c		lmc
 file	dev/pci/if_lmc_obsd.c		lmc
 
+# Myson Century MTD800/MTD803/MTD891
+attach	mtd at pci with mtd_pci
+file	dev/pci/if_mtd_pci.c		mtd_pci
+
 # RealTek 8129/8139
 attach	rl at pci with rl_pci
 file	dev/pci/if_rl_pci.c		rl_pci
@@ -331,6 +335,11 @@ file	dev/pci/noct.c			noct
 device	ises: crypto
 attach	ises at pci
 file	dev/pci/ises.c			ises
+
+# Safenet SafeXcel 1141
+device	safe: crypto
+attach	safe at pci
+file	dev/pci/safe.c			safe
 
 # Winbond W89C840F ethernet
 device	wb: ether, ifnet, mii, ifmedia, mii_phy

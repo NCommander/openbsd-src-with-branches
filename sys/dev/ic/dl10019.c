@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl10019.c,v 1.1.4.1 2001/05/14 22:23:41 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -58,7 +58,6 @@
 #endif
 
 #include <machine/bus.h>
-#include <machine/intr.h>
 
 #include <dev/mii/miivar.h>
 #include <dev/mii/mii.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.29.2.9 2003/05/16 00:29:43 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -137,6 +137,7 @@ struct emul ELFNAMEEND(emul) = {
 	ELFNAME2(exec,fixup),
 	sigcode,
 	esigcode,
+	EMUL_ENABLED | EMUL_NATIVE,
 };
 
 /*
@@ -862,6 +863,7 @@ ELFNAME(os_pt_note)(struct proc *p, struct exec_package *epp, Elf_Ehdr *eh,
 
 	for (ph = hph;  ph < &hph[eh->e_phnum]; ph++) {
 		if (ph->p_type != PT_NOTE ||
+		    ph->p_filesz > 1024 ||
 		    ph->p_filesz < sizeof(Elf_Note) + name_size)
 			continue;
 

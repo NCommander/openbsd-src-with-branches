@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4280.c,v 1.8.2.7 2003/03/28 00:38:20 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cs4280.c,v 1.5 2000/06/26 04:56:23 simonb Exp $	*/
 
 /*
@@ -71,8 +71,6 @@ int cs4280debug = 0;
 #include <sys/fcntl.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/types.h>
-#include <sys/systm.h>
 
 #include <dev/pci/pcidevs.h>
 #include <dev/pci/pcivar.h>
@@ -294,7 +292,6 @@ struct audio_device cs4280_device = {
 const struct pci_matchid cs4280_devices[] = {
 	{ PCI_VENDOR_CIRRUS, PCI_PRODUCT_CIRRUS_CS4280 },
 	{ PCI_VENDOR_CIRRUS, PCI_PRODUCT_CIRRUS_CS4610 },
-	{ PCI_VENDOR_CIRRUS, PCI_PRODUCT_CIRRUS_CS4614 },
 	{ PCI_VENDOR_CIRRUS, PCI_PRODUCT_CIRRUS_CS4615 },
 };
 

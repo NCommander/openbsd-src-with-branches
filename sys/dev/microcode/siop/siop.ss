@@ -33,13 +33,13 @@ ARCH 720
 
 ; offsets in siop_common_xfer
 ABSOLUTE t_id = 40;
-ABSOLUTE t_msg_in = 48;
-ABSOLUTE t_ext_msg_in = 56;
-ABSOLUTE t_ext_msg_data = 64;
-ABSOLUTE t_msg_out = 72;
-ABSOLUTE t_cmd = 80;
-ABSOLUTE t_status = 88;
-ABSOLUTE t_data = 96;
+ABSOLUTE t_msg_in = 56;
+ABSOLUTE t_ext_msg_in = 64;
+ABSOLUTE t_ext_msg_data = 72;
+ABSOLUTE t_msg_out = 80;
+ABSOLUTE t_cmd = 88;
+ABSOLUTE t_status = 96;
+ABSOLUTE t_data = 104;
 
 ;; interrupt codes
 ; interrupts that need a valid DSA

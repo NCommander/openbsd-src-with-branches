@@ -1,4 +1,4 @@
-/*	$OpenBSD: ad1848.c,v 1.19.4.6 2003/03/28 00:38:15 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ad1848.c,v 1.45 1998/01/30 02:02:38 augustss Exp $	*/
 
 /*
@@ -80,7 +80,6 @@
 #include <machine/bus.h>
 
 #include <sys/audioio.h>
-#include <uvm/uvm_extern.h>
 
 #include <dev/audio_if.h>
 #include <dev/auconv.h>
@@ -1648,8 +1647,14 @@ ad1848_malloc(addr, direction, size, pool, flags)
 	int flags;
 {
 	struct ad1848_softc *sc = addr;
+	int drq;
 
-	return isa_malloc(sc->sc_isa, 1, size, pool, flags);
+	if (sc->sc_mode == AUMODE_RECORD)
+		drq = sc->sc_recdrq == -1 ? sc->sc_drq : sc->sc_recdrq;
+	else
+		drq = sc->sc_drq;
+
+	return isa_malloc(sc->sc_isa, drq, size, pool, flags);
 }
 
 void

@@ -95,6 +95,6 @@ file	dev/sbus/apio.c			apio | lpt_apio needs-flag
 
 # STP4020 SBus to PCMCIA bridge
 device	stp: pcmciabus
-attach	stp at sbus
+attach	stp at sbus with stp_sbus
 file	dev/sbus/stp4020.c		stp
 

@@ -41,7 +41,7 @@
  * PCMCIA attachment for BayStack 650 802.11FH PCMCIA card,
  * based on the AMD 79c930 802.11 controller chip.
  *
- * This attachment can probably be trivally adapted for other FH and
+ * This attachment can probably be trivially adapted for other FH and
  * DS cards based on the same chipset.
  */
 

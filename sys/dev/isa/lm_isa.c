@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm_isa.c,v 1.1.2.1 2003/05/12 20:00:33 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: lm_isa.c,v 1.9 2002/11/15 14:55:44 ad Exp $ */
 
 /*-
@@ -73,12 +73,6 @@ lm_isa_match(struct device *parent, void *match, void *aux)
 	struct isa_attach_args *ia = aux;
 	int iobase;
 	int rv;
-
-	/* Must supply an address */
-	if (ia->ipa_nio < 1) {
-		DPRINTF(("%s: ipa_nio=%d\n", __func__, ia->ipa_nio));
-		return (0);
-	}
 
 #ifdef __NetBSD__
 	if (ISA_DIRECT_CONFIG(ia))

@@ -40,8 +40,6 @@
 #include <sys/extent.h>
 #include <sys/malloc.h>
 
-#include <uvm/uvm_extern.h>
-
 #include <machine/bus.h>
 #include <machine/intr.h>
 

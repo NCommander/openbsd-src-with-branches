@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_subr.c,v 1.10.2.6 2003/03/28 00:41:26 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
 
 int
 uiomove(cp, n, uio)
-	register caddr_t cp;
+	register void *cp;
 	register int n;
 	register struct uio *uio;
 {
@@ -99,7 +99,7 @@ uiomove(cp, n, uio)
 		iov->iov_len -= cnt;
 		uio->uio_resid -= cnt;
 		uio->uio_offset += cnt;
-		cp += cnt;
+		cp = (caddr_t)cp + cnt;
 		n -= cnt;
 	}
 	return (error);
@@ -164,16 +164,14 @@ hashinit(elements, type, flags, hashmask)
 	int elements, type, flags;
 	u_long *hashmask;
 {
-	long hashsize;
+	u_long hashsize, i;
 	LIST_HEAD(generic, generic) *hashtbl;
-	int i;
 
 	if (elements <= 0)
 		panic("hashinit: bad cnt");
-	for (hashsize = 1; hashsize <= elements; hashsize <<= 1)
+	for (hashsize = 1; hashsize < elements; hashsize <<= 1)
 		continue;
-	hashsize >>= 1;
-	hashtbl = malloc((u_long)hashsize * sizeof(*hashtbl), type, flags);
+	hashtbl = malloc(hashsize * sizeof(*hashtbl), type, flags);
 	if (hashtbl == NULL)
 		return NULL;
 	for (i = 0; i < hashsize; i++)

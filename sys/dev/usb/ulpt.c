@@ -41,7 +41,7 @@
 
 /*
  * Printer Class spec:
- *   http://www.usb.org/developers/data/devclass/usbprint11.pdf
+ *   http://www.usb.org/developers/devclass_docs/usbprint11.pdf
  */
 
 #include <sys/param.h>

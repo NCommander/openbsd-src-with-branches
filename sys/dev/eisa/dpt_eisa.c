@@ -209,6 +209,6 @@ dpt_eisa_attach(parent, self, aux)
 		return;	
 	}
 
-	/* Now attach to the bus-independant code */
+	/* Now attach to the bus-independent code */
 	dpt_init(sc, intrstr);
 }

@@ -307,7 +307,7 @@ static __inline__ int
 tcic_read_aux_1(iot, ioh, auxreg, reg)
 	bus_space_tag_t iot;
 	bus_space_handle_t ioh;
-	int auxreg;
+	int auxreg, reg;
 {
 	int mode, val;
 	mode = bus_space_read_1(iot, ioh, TCIC_R_MODE);

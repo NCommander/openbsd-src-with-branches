@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_acct.c,v 1.7.8.3 2001/11/13 23:04:23 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_acct.c,v 1.42 1996/02/04 02:15:12 christos Exp $	*/
 
 /*-
@@ -100,13 +100,13 @@ sys_acct(p, v, retval)
 	register_t *retval;
 {
 	struct sys_acct_args /* {
-		syscallarg(char *) path;
+		syscallarg(const char *) path;
 	} */ *uap = v;
 	struct nameidata nd;
 	int error;
 
 	/* Make sure that the caller is root. */
-	if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+	if ((error = suser(p, 0)) != 0)
 		return (error);
 
 	/*

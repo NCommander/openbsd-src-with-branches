@@ -93,6 +93,10 @@ device amphy: mii_phy
 attach amphy at mii
 file dev/mii/amphy.c				amphy
 
+device acphy: mii_phy
+attach acphy at mii
+file dev/mii/acphy.c				acphy
+
 device nsgphy: mii_phy
 attach nsgphy at mii
 file dev/mii/nsgphy.c				nsgphy

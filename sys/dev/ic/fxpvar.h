@@ -34,7 +34,7 @@
  */
 
 /*
- * Misc. defintions for the Intel EtherExpress Pro/100B PCI Fast
+ * Misc. definitions for the Intel EtherExpress Pro/100B PCI Fast
  * Ethernet driver
  */
 

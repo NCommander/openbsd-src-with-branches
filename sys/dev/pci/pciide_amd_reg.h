@@ -46,9 +46,9 @@
 
 /*
  * The AMD756 chip revision D2 has a bug affecting DMA (but not UDMA)
- * modes.  The workaround documented by AMD is to not use DMA on any 
+ * modes.  The workaround documented by AMD is to not use DMA on any
  * drive which does not support UDMA modes.
- * 
+ *
  * See: http://www.amd.com/products/cpg/athlon/techdocs/pdf/22591.pdf
  */
 #define	AMD756_CHIPREV_DISABLEDMA(product, rev)	\

@@ -43,12 +43,13 @@
 struct siop_xfer {
 	struct siop_common_xfer siop_tables;
 	/* u_int32_t resel[sizeof(load_dsa) / sizeof(load_dsa[0])]; */
-	u_int32_t resel[25];
-} __attribute__((__packed__));
+	/* Add some entries to make size 384 bytes (256+128) */
+	u_int32_t resel[36];
+} __packed;
 
 /*
- * This decribes a command handled by the SCSI controller
- * These are chained in either a free list or a active list
+ * This describes a command handled by the SCSI controller
+ * These are chained in either a free list or an active list
  * We have one queue per target
  */
 
@@ -136,7 +137,7 @@ struct siop_softc {
 };
 
 /* defs for sc_flags */
-#define SCF_CHAN_NOSLOT	0x0001		/* channel out of sheduler slot */
+#define SCF_CHAN_NOSLOT	0x0001		/* channel out of scheduler slot */
 
 void    siop_attach(struct siop_softc *);
 int	siop_intr(void *);

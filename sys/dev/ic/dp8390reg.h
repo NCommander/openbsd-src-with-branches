@@ -1,4 +1,4 @@
-/*	$OpenBSD: dp8390reg.h,v 1.8 2000/05/29 17:08:51 fgsch Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: dp8390reg.h,v 1.3 1997/04/29 04:32:08 scottr Exp $	*/
 
 /*
@@ -512,7 +512,7 @@
 #define ED_RSR_PHY	0x20
 
 /*
- * DIS: Receiver Disabled.  Set to indicate that the receiver has enetered
+ * DIS: Receiver Disabled.  Set to indicate that the receiver has entered
  * monitor mode.  Cleared when the receiver exits monitor mode.
  */
 #define ED_RSR_DIS	0x40

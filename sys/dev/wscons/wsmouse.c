@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmouse.c,v 1.6.2.5 2003/03/28 00:38:33 niklas Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: wsmouse.c,v 1.12 2000/05/01 07:36:58 takemura Exp $ */
 
 /*
@@ -638,7 +638,7 @@ wsmouse_do_ioctl(sc, cmd, data, flag, p)
 #endif /* NWSMOUSE > 0 */
 
 int
-wsmouseselect(dev, events, p)
+wsmousepoll(dev, events, p)
 	dev_t dev;
 	int events;
 	struct proc *p;

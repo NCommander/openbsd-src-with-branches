@@ -364,7 +364,7 @@ isp_pci_probe(struct device *parent, void *match, void *aux)
         if (pa->pa_id == PCI_QLOGIC_ISP12160) {
 		pcireg_t subvid =
 		    pci_conf_read(pa->pa_pc, pa->pa_tag, PCI_SUBVEND_0);
-		if (subvid == AMI_RAID_SUBVENDOR_ID) {
+		if (PCI_VENDOR(subvid) == AMI_RAID_SUBVENDOR_ID) {
 			return (0);
                 }
 	}
@@ -681,8 +681,8 @@ isp_pci_attach(struct device *parent, struct device *self, void *aux)
 	printf(": %s\n", intrstr);
 
 	if (IS_FC(isp)) {
-		DEFAULT_NODEWWN(isp) = 0x400000007F000003;
-		DEFAULT_PORTWWN(isp) = 0x400000007F000003;
+		DEFAULT_NODEWWN(isp) = 0x400000007F000003ULL;
+		DEFAULT_PORTWWN(isp) = 0x400000007F000003ULL;
 	}
 
 	isp->isp_confopts = self->dv_cfdata->cf_flags;

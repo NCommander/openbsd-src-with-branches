@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prof.c,v 1.6.16.4 2003/05/13 19:21:28 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: subr_prof.c,v 1.12 1996/04/22 01:38:50 christos Exp $	*/
 
 /*-
@@ -154,9 +154,9 @@ sys_profil(p, v, retval)
 	register_t *retval;
 {
 	register struct sys_profil_args /* {
-		syscallarg(char *) samples;
-		syscallarg(u_int) size;
-		syscallarg(u_int) offset;
+		syscallarg(caddr_t) samples;
+		syscallarg(size_t) size;
+		syscallarg(u_long) offset;
 		syscallarg(u_int) scale;
 	} */ *uap = v;
 	register struct uprof *upp;

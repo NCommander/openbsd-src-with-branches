@@ -1,4 +1,4 @@
-/*	$OpenBSD: hil.c,v 1.9.2.2 2003/05/13 19:34:57 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -326,7 +326,7 @@ hil_process_poll(struct hil_softc *sc, u_int8_t stat, u_int8_t c)
 			if (c == HIL_RECONFIG) {
 				/*
 				 * Remember that a configuration event
-				 * occured; it will be processed upon
+				 * occurred; it will be processed upon
 				 * leaving polled mode...
 				 */
 				sc->sc_cpending = 1;

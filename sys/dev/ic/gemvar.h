@@ -111,7 +111,7 @@ struct gem_txthresh_tab {
 struct gem_stats {
 	u_long		ts_tx_uf;	/* transmit underflow errors */
 	u_long		ts_tx_to;	/* transmit jabber timeouts */
-	u_long		ts_tx_ec;	/* excessve collision count */
+	u_long		ts_tx_ec;	/* excessive collision count */
 	u_long		ts_tx_lc;	/* late collision count */
 };
 

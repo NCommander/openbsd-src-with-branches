@@ -1,4 +1,4 @@
-/*	$OpenBSD: aria.c,v 1.5.6.2 2002/03/28 12:11:35 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995, 1996 Roland C. Dowdeswell.  All rights reserved.
@@ -66,7 +66,6 @@
 #include <sys/device.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
-#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/pio.h>

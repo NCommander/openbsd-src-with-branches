@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.11.4.6 2003/03/28 00:41:27 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -656,6 +656,7 @@ unp_externalize(rights)
 #endif
 
 restart:
+	fdplock(p->p_fd, p);
 	if (error != 0) {
 		rp = ((struct file **)CMSG_DATA(cm));
 		for (i = 0; i < nfds; i++) {
@@ -696,6 +697,7 @@ restart:
 				 */
 				error = EMSGSIZE;
 			}
+			fdpunlock(p->p_fd);
 			goto restart;
 		}
 
@@ -726,6 +728,7 @@ restart:
 	cm->cmsg_len = CMSG_LEN(nfds * sizeof(int));
 	rights->m_len = CMSG_SPACE(nfds * sizeof(int));
  out:
+	fdpunlock(p->p_fd);
 	free(fdp, M_TEMP);
 	return (error);
 }
@@ -739,7 +742,6 @@ unp_internalize(control, p)
 	struct cmsghdr *cm = mtod(control, struct cmsghdr *);
 	struct file **rp, *fp;
 	int i, error;
-	struct mbuf *n = NULL;
 	int nfds, *ip, fd, neededspace;
 
 	if (cm->cmsg_type != SCM_RIGHTS || cm->cmsg_level != SOL_SOCKET ||
@@ -801,8 +803,6 @@ fail:
 		fp->f_msgcount--;
 		unp_rights--;
 	}
-	if (n)
-		m_freem(n);
 
 	return (error);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4281.c,v 1.2.4.6 2002/03/28 15:35:57 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$Tera: cs4281.c,v 1.18 2000/12/27 14:24:45 tacha Exp $	*/
 
 /*
@@ -47,8 +47,6 @@
 #include <sys/malloc.h>
 #include <sys/fcntl.h>
 #include <sys/device.h>
-#include <sys/types.h>
-#include <sys/systm.h>
 
 #include <dev/pci/pcidevs.h>
 #include <dev/pci/pcivar.h>
@@ -326,7 +324,7 @@ cs4281_attach(parent, self, aux)
 	    &pci_pwrmgmt_cap_reg, 0)) {
 		pcireg_t reg;
 
-		pci_pwrmgmt_csr_reg = pci_pwrmgmt_cap_reg + 4;
+		pci_pwrmgmt_csr_reg = pci_pwrmgmt_cap_reg + PCI_PMCSR;
 		reg = pci_conf_read(pa->pa_pc, pa->pa_tag, pci_pwrmgmt_csr_reg);
 		if ((reg & PCI_PMCSR_STATE_MASK) != PCI_PMCSR_STATE_D0) {
 			pci_conf_write(pc, pa->pa_tag, pci_pwrmgmt_csr_reg,

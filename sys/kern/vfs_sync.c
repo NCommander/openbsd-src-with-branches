@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.11.2.6 2002/03/28 11:43:04 niklas Exp $  */
+/*       $OpenBSD$  */
 
 /*
  *  Portions of this code are:
@@ -325,6 +325,7 @@ sync_fsync(v)
 	void *v;
 {
 	struct vop_fsync_args /* {
+		struct vnodeop_desc *a_desc;
 		struct vnode *a_vp;
 		struct ucred *a_cred;
 		int a_waitfor;
@@ -371,6 +372,7 @@ sync_inactive(v)
 	void *v;
 {
 	struct vop_inactive_args /* {
+		struct vnodeop_desc *a_desc;
 		struct vnode *a_vp;
 		struct proc *a_p;
 	} */ *ap = v;
@@ -398,6 +400,7 @@ sync_print(v)
 
 {
 	struct vop_print_args /* {
+		struct vnodeop_desc *a_desc;
 		struct vnode *a_vp;
 	} */ *ap = v;
 	struct vnode *vp = ap->a_vp;

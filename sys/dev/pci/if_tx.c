@@ -678,6 +678,7 @@ epic_ifioctl(ifp, command, data)
 			epic_init(sc);		
 			break;
 		}
+		break;
 	}
 #endif /* __FreeBSD__ */
 

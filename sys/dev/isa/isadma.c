@@ -722,7 +722,7 @@ isa_free(addr, pool)
 		;
 	m = *mp;
 	if (!m) {
-		printf("isa_free: freeing unallocted memory\n");
+		printf("isa_free: freeing unallocated memory\n");
 		return;
 	}
 	*mp = m->next;
@@ -742,7 +742,7 @@ isa_mappage(mem, off, prot)
 	for(m = isa_mem_head; m && m->kva != (caddr_t)mem; m = m->next)
 		;
 	if (!m) {
-		printf("isa_mappage: mapping unallocted memory\n");
+		printf("isa_mappage: mapping unallocated memory\n");
 		return -1;
 	}
 	return (isa_dmamem_mmap(m->isadev, m->chan, m->addr, m->size, off,

@@ -106,7 +106,7 @@ struct dp8390_softc {
  * Compile-time config flags
  */
 /*
- * This sets the default for enabling/disablng the transceiver.
+ * This sets the default for enabling/disabling the transceiver.
  */
 #define DP8390_DISABLE_TRANSCEIVER	0x0001
 

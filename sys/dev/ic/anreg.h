@@ -1,4 +1,4 @@
-/*	$OpenBSD: anreg.h,v 1.6.4.2 2001/07/04 10:40:37 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -185,7 +185,7 @@
 #define AN_EV_CMD		0x0010	/* command completed */
 #define AN_EV_ALLOC		0x0008	/* async alloc/reclaim completed */
 #define AN_EV_TX_EXC		0x0004	/* async xmit completed with failure */
-#define AN_EV_TX		0x0002	/* async xmit completed succesfully */
+#define AN_EV_TX		0x0002	/* async xmit completed successfully */
 #define AN_EV_RX		0x0001	/* async rx completed */
 
 #define AN_INTRS	\

@@ -1837,7 +1837,7 @@ yds_init(sc_)
 		delay(1);
 	}
 	if (to == AC97_TIMEOUT) {
-		printf("%s: no AC97 avaliable\n", sc->sc_dev.dv_xname);
+		printf("%s: no AC97 available\n", sc->sc_dev.dv_xname);
 		return -1;
 	}
 

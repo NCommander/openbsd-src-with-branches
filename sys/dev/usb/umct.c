@@ -38,7 +38,7 @@
 
 /*
  * MCT USB-RS232 Interface Controller
- * http://www.mct.com.tw/p_u232.html
+ * http://www.mct.com.tw/prod/rs232.html
  * http://www.dlink.com/products/usb/dsbs25
  */
 

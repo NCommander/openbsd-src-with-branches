@@ -71,10 +71,8 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 #include <sys/systm.h>
+#include <sys/user.h>
 #include <machine/cpu.h>
-#if defined(__FreeBSD__)
-#include <machine/md_var.h>
-#endif
 #include <machine/pcb.h>
 
 #include <gnu/arch/i386/fpemul/fpu_emu.h>

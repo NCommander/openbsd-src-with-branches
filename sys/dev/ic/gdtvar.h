@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdtvar.h,v 1.2.2.4 2003/03/28 00:38:13 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -28,6 +28,8 @@
  * This driver would not have written if it was not for the hardware donations
  * from both ICP-Vortex and Öko.neT.  I want to thank them for their support.
  */
+
+#define GDT_CMD_RESERVE	4	/* Internal driver cmd reserve. */
 
 #define GDT_IOCTL_DUMMY _IOWR('B', 32, struct gdt_dummy)
 struct gdt_dummy {
@@ -296,6 +298,8 @@ struct gdt_softc {
 	TAILQ_HEAD(, gdt_ucmd) sc_ucmdq;
 	LIST_HEAD(, scsi_xfer) sc_queue;
 	struct scsi_xfer *sc_queuelast;
+
+	int	sc_ndevs;
 
 	u_int16_t sc_cmd_len;
 	u_int16_t sc_cmd_off;

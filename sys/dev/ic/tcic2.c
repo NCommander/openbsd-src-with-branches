@@ -322,7 +322,7 @@ tcic_attach(sc)
 {
 	int i, reg;
 
-	/* set more chipset dependend parameters in the softc. */
+	/* set more chipset-dependent parameters in the softc. */
 	switch (sc->chipid) {
 	case TCIC_CHIPID_DB86084_1:
 	case TCIC_CHIPID_DB86084A:

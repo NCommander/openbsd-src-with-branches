@@ -226,7 +226,7 @@ Static const struct aue_type aue_devs[] = {
 };
 #define aue_lookup(v, p) ((struct aue_type *)usb_lookup(aue_devs, v, p))
 
-USB_DECLARE_DRIVER(aue);
+USB_DECLARE_DRIVER_CLASS(aue, DV_IFNET);
 
 Static void aue_reset_pegasus_II(struct aue_softc *sc);
 Static int aue_tx_list_init(struct aue_softc *);

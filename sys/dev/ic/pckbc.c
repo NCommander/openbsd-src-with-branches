@@ -743,7 +743,7 @@ pckbc_start(t, slot)
 }
 
 /*
- * Handle command responses coming in asynchonously,
+ * Handle command responses coming in asynchronously,
  * return nonzero if valid response.
  * to be called at spltty()
  */

@@ -62,8 +62,6 @@
 #endif
 #include <net/if_fddi.h>
 
-#include <uvm/uvm_extern.h>
-
 #include <dev/pci/pcidevs.h>
 #include <dev/pci/pcivar.h>
 #include <dev/ic/pdqvar.h>

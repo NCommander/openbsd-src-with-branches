@@ -68,8 +68,6 @@
 
 #include <dev/pci/pcidevs.h>
 
-#include <uvm/uvm_extern.h>
-
 #include <dev/ic/adwlib.h>
 #include <dev/microcode/adw/adwmcode.h>
 #include <dev/ic/adw.h>
@@ -1461,8 +1459,8 @@ AdwASC38C1600Cabling(iot, ioh, cfg)
 
 	/*
 	 * Each ASC-38C1600 function has two connectors. Only an HVD device
-	 * can not be connected to either connector. An LVD device or SE device
-	 * may be connected to either connecor. If an SE device is connected,
+	 * cannot be connected to either connector. An LVD device or SE device
+	 * may be connected to either connector. If an SE device is connected,
 	 * then at most Ultra speed (20 MHz) can be used on both connectors.
 	 *
 	 * If an HVD device is attached, return an error.

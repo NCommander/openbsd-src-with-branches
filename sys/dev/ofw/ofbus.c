@@ -167,9 +167,6 @@ ofbprobe(parent, cf, aux)
 	return 1;
 }
 
-#ifdef __powerpc__
-void uni_n_config(int);
-#endif /* __powerpc__ */
 void
 ofbattach(parent, dev, aux)
 	struct device *parent, *dev;
@@ -206,10 +203,6 @@ ofbattach(parent, dev, aux)
 			units = 2;
 #endif
 
-#ifdef __powerpc__
-		} else if (!strcmp(name, "uni-n")) {
-			uni_n_config(ofp->phandle);
-#endif /* __powerpc__ */
 		}
 	}
 	for (child = OF_child(ofp->phandle); child; child = OF_peer(child)) {

@@ -1100,7 +1100,7 @@ ncr5380_reselect(sc)
 	 * then raise SEL, and finally drop BSY.  Only then is the
 	 * data bus required to have valid selection ID bits set.
 	 * Wait for: SEL==1, BSY==0 before reading the data bus.
-	 * While this theoretically can happen, we are aparently
+	 * While this theoretically can happen, we are apparently
 	 * never fast enough to get here before BSY drops.
 	 */
 	timo = ncr5380_wait_nrq_timo;

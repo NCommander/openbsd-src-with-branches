@@ -89,7 +89,7 @@
 
 /* Interrupt Status Register */
 #define CD1190_ISR		0x0c
-#define CD1190_ISR_INTERRUPT	(1<<7) /* Interrupt Has Occured */
+#define CD1190_ISR_INTERRUPT	(1<<7) /* Interrupt Has Occurred */
 #define CD1190_ISR_ACK		(1<<3) /* Unsolicited ACK */
 #define CD1190_ISR_FIFO		(1<<2) /* FIFO Thresh/Time */
 #define CD1190_ISR_SIGNAL	(1<<1) /* Signal Status */

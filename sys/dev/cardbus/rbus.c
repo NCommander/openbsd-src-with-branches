@@ -130,7 +130,7 @@ rbus_space_alloc_subregion(rbt, substart, subend, addr, size, mask, align, flags
       /* maybe, the resister is overflowed. */
       
       if (extent_alloc_subregion(rbt->rb_ext, addr, addr + size, size,
-				 0, 0, 0, exflags, (u_long *)&result)) {
+				 1, 0, 0, exflags, (u_long *)&result)) {
 	return 1;
       }
     } else {
@@ -235,7 +235,7 @@ rbus_new_body(bt, parent, ex, start, end, offset, flags)
   /* sanity check */
   if (parent != NULL) {
     if (start < parent->rb_start || end > parent->rb_end) {
-      /* out of range: [start, size] should be containd in parent space */
+      /* out of range: [start, size] should be contained in parent space */
       return 0;
       /* Should I invoke panic? */
     }
@@ -359,7 +359,7 @@ rbus_new_root_share(bt, ex, start, size, offset)
 {
   /* sanity check */
   if (start < ex->ex_start || start + size > ex->ex_end) {
-    /* out of range: [start, size] should be containd in parent space */
+    /* out of range: [start, size] should be contained in parent space */
     return 0;
     /* Should I invoke panic? */
   }

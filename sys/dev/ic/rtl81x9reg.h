@@ -442,6 +442,7 @@ struct rl_softc {
 
 /* D-Link device IDs */
 #define DLINK_DEVICEID_8139			0x1300
+#define DLINK_DEVICEID_8139_2			0x1340
 
 /*
  * PCI low memory base and low I/O base register, and

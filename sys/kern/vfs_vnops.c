@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.23.2.7 2002/03/28 11:43:04 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -50,6 +50,7 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/cdio.h>
+#include <sys/poll.h>
 
 #include <uvm/uvm_extern.h>
 
@@ -57,14 +58,14 @@ int	vn_read(struct file *fp, off_t *off, struct uio *uio,
 	    struct ucred *cred);
 int	vn_write(struct file *fp, off_t *off, struct uio *uio, 
 	    struct ucred *cred);
-int	vn_select(struct file *fp, int which, struct proc *p);
+int	vn_poll(struct file *fp, int events, struct proc *p);
 int	vn_kqfilter(struct file *fp, struct knote *kn);
 int 	vn_closefile(struct file *fp, struct proc *p);
 int	vn_ioctl(struct file *fp, u_long com, caddr_t data,
 	    struct proc *p);
 
 struct 	fileops vnops =
-	{ vn_read, vn_write, vn_ioctl, vn_select, vn_kqfilter, vn_statfile,
+	{ vn_read, vn_write, vn_ioctl, vn_poll, vn_kqfilter, vn_statfile,
 	  vn_closefile };
 
 /*
@@ -467,17 +468,16 @@ vn_ioctl(fp, com, data, p)
 }
 
 /*
- * File table vnode select routine.
+ * File table vnode poll routine.
  */
 int
-vn_select(fp, which, p)
+vn_poll(fp, events, p)
 	struct file *fp;
-	int which;
+	int events;
 	struct proc *p;
 {
 
-	return (VOP_SELECT(((struct vnode *)fp->f_data), which, fp->f_flag,
-			   fp->f_cred, p));
+	return (VOP_POLL(((struct vnode *)fp->f_data), events, p));
 }
 
 /*
@@ -498,7 +498,7 @@ vn_lock(struct vnode *vp, int flags, struct proc *p)
 		if (vp->v_flag & VXLOCK) {
 			vp->v_flag |= VXWANT;
 			simple_unlock(&vp->v_interlock);
-			tsleep((caddr_t)vp, PINOD, "vn_lock", 0);
+			tsleep(vp, PINOD, "vn_lock", 0);
 			error = ENOENT;
 		} else {
 			error = VOP_LOCK(vp, flags | LK_INTERLOCK, p);

@@ -1038,7 +1038,6 @@ struct sf_softc {
 	void			*sf_intrhand;	/* interrupt handler cookie */
 	struct sf_type		*sf_info;	/* Starfire adapter info */
 	struct sf_type		*sf_pinfo;
-	u_int8_t		sf_unit;	/* interface number */
 	u_int8_t		sf_type;
 	u_int8_t		sf_phy_addr;
 	u_int8_t		sf_want_auto;

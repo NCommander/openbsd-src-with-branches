@@ -324,7 +324,7 @@
 
 
 /*
- * SCSI Iquiry structure
+ * SCSI Inquiry structure
  */
 
 typedef struct

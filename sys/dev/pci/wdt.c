@@ -579,7 +579,7 @@ wdt_sched (struct wdt_softc *wdt, struct proc *p)
 	 * if the counters aren't reloaded within wdt->timeout_secs
 	 * seconds.
 	 */
-	if ((error = suser(p->p_ucred, &p->p_acflag)))
+	if ((error = suser(p, 0)))
 		return(error);
 
 	/* block out the timeout handler */

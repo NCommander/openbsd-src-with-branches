@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vfsops.c,v 1.19.2.8 2003/05/13 19:21:27 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cd9660_vfsops.c,v 1.26 1997/06/13 15:38:58 pk Exp $	*/
 
 /*-
@@ -62,7 +62,7 @@
 #include <isofs/cd9660/iso_rrip.h>
 #include <isofs/cd9660/cd9660_node.h>
 
-struct vfsops cd9660_vfsops = {
+const struct vfsops cd9660_vfsops = {
 	cd9660_mount,
 	cd9660_start,
 	cd9660_unmount,

@@ -207,7 +207,11 @@ awi_wep_getnwkey(sc, nwkey)
 #ifdef __FreeBSD__
 	suerr = suser(curproc);
 #else
+#ifdef __OpenBSD__
+	suerr = suser(curproc, 0);
+#else
 	suerr = suser(curproc->p_ucred, &curproc->p_acflag);
+#endif
 #endif
 	error = 0;
 	for (i = 0; i < IEEE80211_WEP_NKID; i++) {

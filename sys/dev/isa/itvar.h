@@ -1,7 +1,7 @@
 /*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 2003 Julien Bordet <zejames@greygats.org>
+ * Copyright (c) 2003 Julien Bordet <zejames@greyhats.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

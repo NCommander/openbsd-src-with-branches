@@ -44,8 +44,6 @@
 
 #include <machine/endian.h>
 
-#include <uvm/uvm_extern.h>
- 
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>

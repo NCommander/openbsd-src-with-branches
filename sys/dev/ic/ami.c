@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.8.2.8 2003/05/13 19:34:59 ho Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -54,8 +54,6 @@
 #include <sys/malloc.h>
 
 #include <machine/bus.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsi_disk.h>
@@ -819,7 +817,7 @@ ami_stimeout(v)
 		break;
 	case AMI_CCB_FREE:
 	case AMI_CCB_READY:
-		panic("ami_stimeout(%p) botch", cmd->acc_id);
+		panic("ami_stimeout(%d) botch", cmd->acc_id);
 	}
 	AMI_UNLOCK_AMI(sc, lock);
 }

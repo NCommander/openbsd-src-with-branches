@@ -1436,7 +1436,7 @@ struct tr_softc *sc;
 
 
 /*
- * copy out the packet byte-by-byte in resonably optimal fashion
+ * copy out the packet byte-by-byte in reasonably optimal fashion
  */
 int
 tr_mbcopy(sc, dhb, m0)
@@ -1470,7 +1470,7 @@ struct mbuf *m0;
  * We copy the trailer information and then all the normal
  * data into mbufs.
  *
- * called from tr_rint - receive interupt routine
+ * called from tr_rint - receive interrupt routine
  */
 struct mbuf *
 tr_get(sc, totlen, ifp)

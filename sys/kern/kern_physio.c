@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_physio.c,v 1.7.2.7 2002/03/28 11:43:04 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_physio.c,v 1.28 1997/05/19 10:43:28 pk Exp $	*/
 
 /*-
@@ -95,7 +95,7 @@ physio(strategy, bp, dev, flags, minphys, uio)
 		/* [mark the buffer wanted] */
 		bp->b_flags |= B_WANTED;
 		/* [wait until the buffer is available] */
-		tsleep((caddr_t)bp, PRIBIO+1, "physbuf", 0);
+		tsleep(bp, PRIBIO+1, "physbuf", 0);
 	}
 
 	/* Mark it busy, so nobody else will use it. */
@@ -179,7 +179,7 @@ physio(strategy, bp, dev, flags, minphys, uio)
 
 			/* [wait for the transfer to complete] */
 			while ((bp->b_flags & B_DONE) == 0)
-				tsleep((caddr_t) bp, PRIBIO + 1, "physio", 0);
+				tsleep(bp, PRIBIO + 1, "physio", 0);
 
 			/* Mark it busy again, so nobody else will use it. */
 			bp->b_flags |= B_BUSY;
@@ -280,7 +280,7 @@ void
 putphysbuf(bp)
 	struct buf *bp;
 {
-	/* XXXCDC: is this necesary? */
+	/* XXXCDC: is this necessary? */
 	if (bp->b_vp)
 		brelvp(bp);
 

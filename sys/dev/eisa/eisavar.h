@@ -55,7 +55,7 @@ struct eisabus_attach_args;
  * Machine-dependent definitions.
  */
 #if (__alpha__ + __i386__ + __arc__ + __hppa__ != 1)
-ERROR: COMPILING FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
+#error COMPILING FOR UNSUPPORTED MACHINE, OR MORE THAN ONE.
 #endif
 #if __alpha__
 #include <alpha/eisa/eisa_machdep.h>

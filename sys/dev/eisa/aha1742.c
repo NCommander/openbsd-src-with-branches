@@ -564,7 +564,7 @@ ahbintr(arg)
 	for (;;) {
 		/*
 		 * First get all the information and then
-		 * acknowlege the interrupt
+		 * acknowledge the interrupt
 		 */
 		ahbstat = bus_space_read_1(iot, ioh, G2INTST);
 		mboxval = bus_space_read_4(iot, ioh, MBOXIN0);

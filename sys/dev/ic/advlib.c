@@ -80,7 +80,7 @@
 /*                                Static functions                            */
 /******************************************************************************/
 
-/* Initializzation routines */
+/* Initialization routines */
 static u_int32_t AscLoadMicroCode(bus_space_tag_t, bus_space_handle_t,
 					u_int16_t, u_int16_t *, u_int16_t);
 static void AscInitLram(ASC_SOFTC *);
@@ -239,7 +239,7 @@ static void DvcDelayNanoSecond(u_int32_t);
 
 
 /******************************************************************************/
-/*                            Initializzation routines                        */
+/*                            Initialization routines                         */
 /******************************************************************************/
 
 /*
@@ -576,7 +576,7 @@ AscInitFromASC_SOFTC(sc)
 
 /*
  * - Initialize RISC chip
- * - Intialize Lram
+ * - Initialize Lram
  * - Load uCode into Lram
  * - Enable Interrupts
  */

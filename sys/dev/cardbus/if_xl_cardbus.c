@@ -170,6 +170,7 @@ const struct xl_cardbus_product {
 	{ 0,
 	  0,
 	  0,
+	  0,
 	  NULL },
 };
 
@@ -275,7 +276,7 @@ xl_cardbus_attach(parent, self, aux)
 	    command);
   
  	/*
-	 * set latency timmer
+	 * set latency timer
 	 */
 	bhlc = cardbus_conf_read(cc, cf, ca->ca_tag, CARDBUS_BHLC_REG);
 	if (CARDBUS_LATTIMER(bhlc) < 0x20) {

@@ -161,7 +161,6 @@ SYSCTL_INT(_hw_bt848, OID_AUTO, slow_msp_audio, CTLFLAG_RW, &bt848_slow_msp_audi
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcidevs.h>
 
-#define BKTR_DEBUG
 #ifdef BKTR_DEBUG
 int bktr_debug = 1;
 #define DPR(x)	(bktr_debug ? printf x : 0)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bio.c,v 1.1 2002/06/09 22:03:43 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2002 Niklas Hallqvist.  All rights reserved.
@@ -50,7 +50,7 @@ struct bio_softc {
 void	bioattach(int);
 int	bioclose(dev_t, int, int, struct proc *);
 int	bioioctl(dev_t, u_long, caddr_t, int, struct proc *);
-int	bioopen(dev_t, int, int, struct proc *);;
+int	bioopen(dev_t, int, int, struct proc *);
 
 int	bio_delegate_ioctl(struct bio_mapping *, u_long, caddr_t);
 struct bio_mapping *bio_lookup(char *);

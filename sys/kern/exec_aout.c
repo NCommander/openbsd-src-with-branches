@@ -41,6 +41,9 @@
 #include <uvm/uvm_extern.h>
 
 #if defined(_KERN_DO_AOUT)
+#if defined(COMPAT_AOUT)
+void aout_compat_setup(struct exec_package *epp);
+#endif
 
 /*
  * exec_aout_makecmds(): Check if it's an a.out-format executable.
@@ -89,6 +92,9 @@ exec_aout_makecmds(p, epp)
 
 	if (error)
 		kill_vmcmds(&epp->ep_vmcmds);
+#ifdef COMPAT_AOUT
+	aout_compat_setup(epp);
+#endif
 
 	return error;
 }

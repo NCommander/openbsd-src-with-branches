@@ -366,7 +366,7 @@ dpt_init(sc, intrstr)
 		model[i++] = ei->ei_suffix[j];
 	model[i] = '\0';
 
-	/* Find the cannonical name for the board */
+	/* Find the canonical name for the board */
 	for (i = 0; dpt_cname[i] != NULL; i += 2)
 		if (memcmp(ei->ei_model, dpt_cname[i], 6) == 0)
 			break;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr.c,v 1.50.2.8 2003/04/19 19:17:49 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ncr.c,v 1.63 1997/09/23 02:39:15 perry Exp $	*/
 
 /**************************************************************************
@@ -1466,7 +1466,7 @@ static	void	ncr_attach	(pcici_t tag, int unit);
 
 #if 0
 static char ident[] =
-	"\n$OpenBSD: ncr.c,v 1.50.2.8 2003/04/19 19:17:49 niklas Exp $\n";
+	"\n$OpenBSD$\n";
 #endif
 
 static const u_long	ncr_version = NCR_VERSION	* 11
@@ -5902,7 +5902,7 @@ static void ncr_timeout (void *arg)
 **		scntl3:	(see the manual)
 **
 **	current script command:
-**		dsp:	script adress (relative to start of script).
+**		dsp:	script address (relative to start of script).
 **		dbc:	first word of script command.
 **
 **	First 16 register of the chip:

@@ -72,8 +72,6 @@
 #include <netns/ns_if.h>
 #endif
 
-#include <uvm/uvm_extern.h>
-
 #include <machine/cpu.h>
 #include <machine/intr.h>
 #include <machine/pio.h>
