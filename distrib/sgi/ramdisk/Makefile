@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 1997/09/26 02:20:41 millert Exp $
+#	$OpenBSD: Makefile,v 1.10 2004/08/06 22:30:02 pefo Exp $
 
 REV=		${OSrev}
 
