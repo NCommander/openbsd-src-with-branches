@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.4 1995/04/23 10:33:19 cgd Exp $	*/
+/*	$OpenBSD: conf.c,v 1.2 1996/06/23 14:31:31 deraadt Exp $	*/
 /*	$NetBSD: conf.c,v 1.4 1995/04/23 10:33:19 cgd Exp $	*/
 
 /*
@@ -137,7 +137,7 @@ qelem *q0;
 void regerror(s)
 const char *s;
 {
-	syslog(LOG_ERR, "%s:%s: regcomp %s: %s",
+	syslog(LOG_ERR, "%s:%d: regcomp %s: %s",
 			conf_file, curp->p_lno, curp->p_key, s);
 }
 

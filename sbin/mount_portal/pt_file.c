@@ -1,4 +1,4 @@
-/*	$OpenBSD: pt_file.c,v 1.7 1995/06/06 19:54:30 mycroft Exp $	*/
+/*	$OpenBSD: pt_file.c,v 1.2 1996/06/23 14:31:36 deraadt Exp $	*/
 /*	$NetBSD: pt_file.c,v 1.7 1995/06/06 19:54:30 mycroft Exp $	*/
 
 /*
@@ -62,7 +62,6 @@ int *fdp;
 	int fd;
 	char pbuf[MAXPATHLEN];
 	int error;
-	int i;
 
 	pbuf[0] = '/';
 	strcpy(pbuf+1, key + (v[1] ? strlen(v[1]) : 0));
