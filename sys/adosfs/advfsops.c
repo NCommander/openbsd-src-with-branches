@@ -99,7 +99,8 @@ adosfs_mount(mp, path, data, ndp, p)
 	if (mp->mnt_flag & MNT_UPDATE) {
 		amp = VFSTOADOSFS(mp);
 		if (args.fspec == 0)
-			return (vfs_export(mp, &amp->export, &args.export));
+			return (vfs_export(mp, &amp->export, 
+			    &args.export_info));
 	}
 	/*
 	 * Not an update, or updating the name: look up the name

@@ -1077,7 +1077,7 @@ loadstore_address:
 			  register_name(i.branch_format.ra));
 branch_displacement:
 		db_printsym(iadr + sizeof(alpha_instruction) +
-		    (signed_immediate << 2), DB_STGY_PROC);
+		    (signed_immediate << 2), DB_STGY_PROC, db_printf);
 		break;
 	default:
 		/*
