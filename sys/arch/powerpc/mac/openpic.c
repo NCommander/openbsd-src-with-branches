@@ -46,6 +46,11 @@
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/systm.h>
+#ifdef UVM
+#include <vm/vm.h>
+#include <vm/vm_kern.h>
+#include <uvm/uvm.h>
+#endif
 
 #include <machine/autoconf.h>
 #include <machine/intr.h>
