@@ -1,4 +1,4 @@
-/*	$OpenBSD: mman.h,v 1.16 2003/06/02 23:28:21 millert Exp $	*/
+/*	$OpenBSD: mman.h,v 1.17 2003/07/01 23:23:04 tedu Exp $	*/
 /*	$NetBSD: mman.h,v 1.11 1995/03/26 20:24:23 jtc Exp $	*/
 
 /*-
@@ -69,6 +69,7 @@
  */
 #define	MAP_FILE	0x0000	/* map from file (default) */
 #define	MAP_ANON	0x1000	/* allocated from memory, swap space */
+#define	MAP_FLAGMASK	0x17f7
 
 /*
  * Advice to madvise
