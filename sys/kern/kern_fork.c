@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.30 2000/03/03 11:46:09 art Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.31 2000/03/23 16:54:44 art Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -384,6 +384,9 @@ again:
 	} else if (flags & FORK_RFORK) {
 		forkstat.cntrfork++;
 		forkstat.sizrfork += vm->vm_dsize + vm->vm_ssize;
+	} else {
+		forkstat.cntkthread++;
+		forkstat.sizkthread += vm->vm_dsize + vm->vm_ssize;
 	}
 
 	/*
