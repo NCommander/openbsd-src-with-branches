@@ -1,3 +1,4 @@
+/*	$OpenBSD: db_disasm.c,v 1.5 2001/03/08 00:02:17 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -29,10 +30,14 @@
  * m88k disassembler for use in ddb
  */
 
+#include <sys/types.h>
+
 #include <machine/db_machdep.h>
+
 #include <ddb/db_sym.h>		/* DB_STGY_PROC, db_printsym() */
 #include <ddb/db_access.h>	/* db_get_value() */
 #include <ddb/db_output.h>	/* db_printf() */
+#include <ddb/db_interface.h>
 
 static char *instwidth[4] = {
 	".d", "  ", ".h", ".b"
@@ -78,11 +83,35 @@ static char *ctrlreg[64] = {
 	"fcr63(FPCR)"
 };
 
-#define printval(x)  if (x<0) db_printf ("-0x%X", -x); else db_printf("0x%X",x)
+#define printval(x) \
+	do { \
+		if ((x) < 0) \
+			db_printf("-0x%X", -(x)); \
+		else \
+			db_printf("0x%X", (x));	\
+	} while (0)
+
+/* prototypes */
+void oimmed __P((int, char *, long));
+void ctrlregs __P((int, char *, long));
+void printsod __P((int));
+void sindou __P((int, char *, long));
+void jump __P((int, char *, long));
+void instset __P((int, char *, long));
+void symofset __P((int, int, int));
+void obranch __P((int, char *, long));
+void brcond __P((int, char *, long));
+void otrap __P((int, char *, long));
+void obit __P((int, char *, long));
+void bitman __P((int, char *, long));
+void immem __P((int, char *, long));
+void nimmem __P((int, char *, long));
+void lognim __P((int, char *, long));
+void onimmed __P((int, char *, long));
 
 /* Handlers immediate integer arithmetic instructions */      
-static void
-oimmed(long inst, char  *opcode, long iadr)
+void
+oimmed(int inst, char  *opcode, long iadr)
 {
   register int Linst = inst & 0177777;
   register int Hinst = inst >> 16;
@@ -102,8 +131,8 @@ oimmed(long inst, char  *opcode, long iadr)
 
 
 /* Handles instructions dealing with control registers */
-static void
-ctrlregs(long inst, char *opcode, long iadr)
+void
+ctrlregs(int inst, char *opcode, long iadr)
 {
   register int L6inst = (inst >> 11) & 037;
   register int creg = (inst >> 5) & 077;
@@ -121,7 +150,7 @@ ctrlregs(long inst, char *opcode, long iadr)
 }
 
 
-static void
+void
 printsod(int t)
 {
   if ( t == 0 ) 
@@ -131,7 +160,7 @@ printsod(int t)
 }
 
 /* Handles floating point instructions */
-static void
+void
 sindou(int inst, char *opcode, long iadr)
 {
   register int rs2 = inst & 037;
@@ -159,8 +188,8 @@ sindou(int inst, char *opcode, long iadr)
 }
 
 
-static void
-jump(long inst, char *opcode, long iadr)
+void
+jump(int inst, char *opcode, long iadr)
 {
   register int rs2 = inst & 037;
   register int Nbit = ( inst >> 10 ) & 01;
@@ -175,8 +204,8 @@ jump(long inst, char *opcode, long iadr)
 
 
 /* Handles ff1, ff0, tbnd and rte instructions */ 
-static void
-instset(long inst, char *opcode, long iadr)
+void
+instset(int inst, char *opcode, long iadr)
 {
   register int rs2 = inst & 037;
   register int rs1 = ( inst >> 16 ) & 037;
@@ -195,7 +224,7 @@ instset(long inst, char *opcode, long iadr)
     db_printf("\t\tr%-3d,r%-3d",rs1,rs2);
 }
 
-static void
+void
 symofset(int  disp, int  bit, int iadr)
 {
   long addr;
@@ -211,7 +240,7 @@ symofset(int  disp, int  bit, int iadr)
   return;
 }
 
-static void
+void
 obranch(int inst, char *opcode, long iadr)
 {
   int cond = ( inst >> 26 ) & 01;
@@ -229,7 +258,7 @@ obranch(int inst, char *opcode, long iadr)
 
 
 /* Handles branch on conditions instructions */
-static void
+void
 brcond(int inst, char *opcode, long iadr)
 {
   int cond = ( inst >> 26 ) & 1;
@@ -258,11 +287,11 @@ brcond(int inst, char *opcode, long iadr)
   }
 
   db_printf("r%-3d,", rs);
-  symofset(disp,16, iadr);
+  symofset(disp, 16, iadr);
 }
 
 
-static void
+void
 otrap(int inst, char *opcode, long iadr)
 {
   int vecno = inst & 0777;
@@ -291,7 +320,7 @@ otrap(int inst, char *opcode, long iadr)
 
 
 /* Handles 10 bit immediate bit field operations */
-static void
+void
 obit(int inst, char *opcode, long iadr)
 {
   int rs = ( inst >> 16 ) & 037;
@@ -316,7 +345,7 @@ obit(int inst, char *opcode, long iadr)
 
 
 /* Handles triadic mode bit field instructions */
-static void
+void
 bitman(int inst, char *opcode, long iadr)
 {
   
@@ -329,7 +358,7 @@ bitman(int inst, char *opcode, long iadr)
 
 
 /* Handles immediate load/store/exchange instructions */
-static void
+void
 immem(int inst, char *opcode, long iadr)
 {
   register int immed  = inst & 0xFFFF;
@@ -360,7 +389,7 @@ immem(int inst, char *opcode, long iadr)
 
 
 /* Handles triadic mode load/store/exchange instructions */
-static void
+void
 nimmem(int inst, char *opcode, long iadr)
 {
   register int scaled  = (inst >> 9) & 01;
@@ -420,7 +449,7 @@ nimmem(int inst, char *opcode, long iadr)
 
 
 /* Handles triadic mode logical instructions */
-static void
+void
 lognim(int inst, char *opcode, long iadr)
 {
   register int rd   = (inst >> 21) & 037;
@@ -437,7 +466,7 @@ lognim(int inst, char *opcode, long iadr)
 
 
 /* Handles triadic mode arithmetic instructions */
-static void
+void
 onimmed(int inst, char *opcode, long iadr)
 {
   register int rd   = (inst >> 21) & 037;
@@ -474,7 +503,7 @@ onimmed(int inst, char *opcode, long iadr)
 
 static struct opdesc {
     unsigned mask, match;
-    void (*opfun) ();
+    void (*opfun) __P((int, char *, long));
     char *farg;
 } opdecode[] = {
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.7 1999/05/06 17:19:46 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1995/03/21 09:02:16 cgd Exp $	*/
 
 /*-
@@ -13,7 +14,7 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
+ *    must display the following acknowledgment:
  *	This product includes software developed by the University of
  *	California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
@@ -37,13 +38,14 @@
 
 typedef struct {
 	char *p_end;			/* pointer to NULL at end of path */
-	char *target_end;               /* pointer to end of target base */
-	char p_path[MAXPATHLEN + 1];	/* pointer to the start of a path */
+	char *target_end;		/* pointer to end of target base */
+	char p_path[MAXPATHLEN];	/* pointer to the start of a path */
 } PATH_T;
 
 extern PATH_T to;
 extern uid_t myuid;
-extern int iflag, pflag, myumask;
+extern int fflag, iflag, pflag, myumask;
+extern char *__progname;
 
 #include <sys/cdefs.h>
 
@@ -53,5 +55,6 @@ int	copy_file __P((FTSENT *, int));
 int	copy_link __P((FTSENT *, int));
 int	copy_special __P((struct stat *, int));
 int	setfile __P((struct stat *, int));
+int	setlink __P((struct stat *));
 void	usage __P((void));
 __END_DECLS

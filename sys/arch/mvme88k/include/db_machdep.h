@@ -1,3 +1,4 @@
+/*	$OpenBSD: db_machdep.h,v 1.12 2001/08/26 14:31:07 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -33,20 +34,17 @@
  */
 
 #ifndef  _M88K_DB_MACHDEP_H_
-#define  _M88K_DB_MACHDEP_H_ 1
+#define  _M88K_DB_MACHDEP_H_
 
-#include <sys/types.h>
-#include <vm/vm_prot.h>
-#include <vm/vm_param.h>
-#include <vm/vm_inherit.h>
-#include <vm/lock.h>
 #include <machine/pcb.h>	/* m88100_saved_state */
 #include <machine/psl.h>
 #include <machine/trap.h>
 
-#define BKPT_SIZE        (4)                /* number of bytes in bkpt inst. */
-#define BKPT_INST       (0xF000D082U)             /* tb0, 0,r0, vector 132 */
-#define BKPT_SET(inst)  (BKPT_INST)
+#include <vm/vm_param.h>
+
+#define BKPT_SIZE	(4)		/* number of bytes in bkpt inst. */
+#define BKPT_INST	(0xF000D082U)	/* tb0, 0,r0, vector 132 */
+#define BKPT_SET(inst)	(BKPT_INST)
 
 /* Entry trap for the debugger - used for inline assembly breaks*/
 #define ENTRY_ASM       	"tb0 0, r0, 132"
@@ -96,9 +94,18 @@ extern int db_noisy;
 extern int quiet_db_read_bytes;
 
 /* These versions are not constantly doing SPL */
-#define	cnmaygetc	db_getc
-#define	cngetc		db_getc
-#define	cnputc		db_putc
+/*#define	cnmaygetc	db_getc*/
+/*#define	cngetc		db_getc*/
+/*#define	cnputc		db_putc*/
+
+unsigned inst_load __P((unsigned));
+unsigned inst_store __P((unsigned));
+boolean_t inst_branch __P((unsigned));
+db_addr_t next_instr_address __P((db_addr_t, unsigned));
+db_addr_t branch_taken __P((u_int, db_addr_t,
+    db_expr_t (*) __P((db_regs_t *, int)), db_regs_t *));
+int ddb_break_trap __P((int type, db_regs_t *eframe));
+int ddb_entry_trap __P((int level, db_regs_t *eframe));
 
 /* breakpoint/watchpoint foo */
 #define IS_BREAKPOINT_TRAP(type,code) ((type)==T_KDB_BREAK)
@@ -167,5 +174,7 @@ extern int quiet_db_read_bytes;
 #endif	/* __GNUC__ */
 
 #define	db_printf_enter	db_printing
+
+int m88k_print_instruction __P((unsigned iadr, long inst));
 
 #endif	/* _M88K_DB_MACHDEP_H_ */

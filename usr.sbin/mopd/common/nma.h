@@ -1,3 +1,5 @@
+/*	$OpenBSD: nma.h,v 1.2 1996/09/21 19:11:46 maja Exp $ */
+
 /*
  * Copyright (c) 1995 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: nma.h,v 1.3 1995/09/28 13:36:55 moj Exp $
+ *	$OpenBSD: nma.h,v 1.2 1996/09/21 19:11:46 maja Exp $
  *
  */
 
@@ -43,4 +45,4 @@ char	*nmaGetDevice __P((int));
 __END_DECLS
 #endif
 
-#endif _NMA_H_
+#endif /* _NMA_H_ */

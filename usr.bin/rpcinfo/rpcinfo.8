@@ -1,5 +1,5 @@
+.\"	$OpenBSD: rpcinfo.8,v 1.7 2000/07/31 16:55:36 deraadt Exp $
 .\"	from: @(#)rpcinfo.8c	2.2 88/08/03 4.0 RPCSRC; from 1.24 88/02/25 SMI
-.\"	$Id: rpcinfo.8,v 1.3 1993/08/01 07:29:21 mycroft Exp $
 .\"
 .Dd December 17, 1987
 .Dt RPCINFO 8
@@ -18,7 +18,7 @@
 .Op Ar version
 .Nm rpcinfo
 .Op Fl n Ar portnum
-.Fl t Ar host 
+.Fl t Ar host
 .Ar program
 .Op Ar version
 .Nm rpcinfo
@@ -27,21 +27,26 @@
 .Nm rpcinfo
 .Fl d
 .Ar program version
-.Sh DESCRIPTION
 .Nm rpcinfo
+.Fl s
+.Ar program version port
+.Sh DESCRIPTION
+.Nm
 makes an
 .Tn RPC
 call to an
 .Tn RPC
 server and reports what it finds.
-.Sh OPTIONS
-.Bl -tag -width indent
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl p
 Probe the portmapper on
 .Ar host ,
 and print a list of all registered
 .Tn RPC
-programs.  If
+programs.
+If
 .Ar host
 is not specified, it defaults to the value returned by
 .Xr hostname 1 .
@@ -90,7 +95,19 @@ service of the specified
 .Ar program
 and
 .Ar version .
-This option can be exercised only by the super-user.
+Registrations which point at ports numbered below 1024 can only be
+deleted by the superuser.
+.It Fl s
+Create a registration for the
+.Tn RPC
+service of the specified
+.Ar program
+and
+.Ar version ,
+located at port
+.Ar port .
+Registrations which point at ports numbered below 1024 can only be
+created (or changed) by the superuser.
 .El
 .Pp
 The
@@ -100,17 +117,17 @@ argument can be either a name or a number.
 If a
 .Ar version
 is specified,
-.Nm rpcinfo
+.Nm
 attempts to call that version of the specified
 .Ar program .
 Otherwise,
-.Nm rpcinfo
+.Nm
 attempts to find all the registered version
 numbers for the specified
 .Ar program
 by calling version 0 (which is presumed not
 to exist; if it does exist,
-.Ar rpcinfo
+.Nm
 attempts to obtain this information by calling
 an extremely high version
 number instead) and attempts to call each registered version.
@@ -158,7 +175,7 @@ service use:
 .Sh BUGS
 In releases prior to SunOS 3.0, the Network File System (NFS) did not
 register itself with the portmapper;
-.Nm rpcinfo
+.Nm
 cannot be used to make
 .Tn RPC
 calls to the

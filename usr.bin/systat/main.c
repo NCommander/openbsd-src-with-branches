@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.6 1995/05/06 06:25:07 jtc Exp $	*/
+/*	$OpenBSD: main.c,v 1.15 2001/05/04 16:48:34 ericj Exp $	*/
+/*	$NetBSD: main.c,v 1.8 1996/05/10 23:16:36 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1992, 1993
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/05/06 06:25:07 jtc Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.15 2001/05/04 16:48:34 ericj Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -51,8 +52,12 @@ static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/05/06 06:25:07 jtc Exp $";
 #include <err.h>
 #include <nlist.h>
 #include <signal.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <limits.h>
 
 #include "systat.h"
 #include "extern.h"
@@ -65,9 +70,11 @@ static struct nlist namelist[] = {
 	{ "_stathz" },
 	{ "" }
 };
-static int     dellave;
+static double     dellave;
 
 kvm_t *kd;
+char	*memf = NULL;
+char	*nlistf = NULL;
 sig_t	sigtstpdfl;
 double avenrun[3];
 int     col;
@@ -78,44 +85,75 @@ char    c;
 char    *namp;
 char    hostname[MAXHOSTNAMELEN];
 WINDOW  *wnd;
-int     CMDLINE;
+long	CMDLINE;
 
 static	WINDOW *wload;			/* one line window for load average */
 
-void
+static void usage __P((void));
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	char errbuf[80];
+	int ch, ret;
+	char errbuf[_POSIX2_LINE_MAX];
 
-	argc--, argv++;
+	while ((ch = getopt(argc, argv, "M:N:w:")) != -1)
+		switch(ch) {
+                case 'M':
+                        memf = optarg;
+                        break;
+                case 'N':
+                        nlistf = optarg;
+                        break;
+                case 'w':
+                        if ((naptime = atoi(optarg)) <= 0)
+                                errx(1, "interval <= 0.");
+                        break;
+                case '?':
+                default:
+                        usage();
+                }
+        argc -= optind;
+        argv += optind;
+        /*
+         * Discard setgid privileges if not the running kernel so that bad
+         * guys can't print interesting stuff from kernel memory.
+         */
+        if (nlistf != NULL || memf != NULL) {
+		setegid(getgid());
+                setgid(getgid());
+	}
+
 	while (argc > 0) {
-		if (argv[0][0] == '-') {
-			struct cmdtab *p;
-
-			p = lookup(&argv[0][1]);
-			if (p == (struct cmdtab *)-1)
-				errx(1, "ambiguous request: %s", &argv[0][1]);
-			if (p == 0)
-				errx(1, "unknown request: %s", &argv[0][1]);
-			curcmd = p;
-		} else {
+		if (isdigit(argv[0][0])) {
 			naptime = atoi(argv[0]);
 			if (naptime <= 0)
 				naptime = 5;
+		} else {
+			struct cmdtab *p;
+
+			p = lookup(&argv[0][0]);
+			if (p == (struct cmdtab *)-1)
+				errx(1, "ambiguous request: %s", &argv[0][0]);
+			if (p == 0)
+				errx(1, "unknown request: %s", &argv[0][0]);
+			curcmd = p;
 		}
 		argc--, argv++;
 	}
-	kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
+	kd = kvm_openfiles(nlistf, memf, NULL, O_RDONLY, errbuf);
 	if (kd == NULL) {
 		error("%s", errbuf);
 		exit(1);
 	}
-	if (kvm_nlist(kd, namelist)) {
+
+	if ((ret = kvm_nlist(kd, namelist)) == -1) 
+		errx(1, "%s", kvm_geterr(kd));
+	else if (ret)
 		nlisterr(namelist);
-		exit(1);
-	}
+
 	if (namelist[X_FIRST].n_type == 0)
 		errx(1, "couldn't read namelist");
 	signal(SIGINT, die);
@@ -155,12 +193,23 @@ main(argc, argv)
 	dellave = 0.0;
 
 	signal(SIGALRM, display);
+	signal(SIGWINCH, resize);
 	display(0);
 	noecho();
 	crmode();
 	keyboard();
 	/*NOTREACHED*/
 }
+
+static void
+usage()
+{
+	fprintf(stderr, "usage: systat [-M core] [-N system] [-w wait]\n");
+	fprintf(stderr,
+	    "              [iostat|mbufs|netstat|pigs|swap|vmstat]\n");
+	exit(1);
+}
+
 
 void
 labels()
@@ -195,7 +244,7 @@ display(signo)
 			c = '>';
 			dellave = -dellave;
 		}
-		if (dellave < 0.1)
+		if (dellave < 0.05)
 			c = '|';
 		dellave = avenrun[0];
 		wmove(wload, 0, 0); wclrtoeol(wload);
@@ -227,20 +276,37 @@ void
 die(signo)
 	int signo;
 {
-	move(CMDLINE, 0);
-	clrtoeol();
-	refresh();
-	endwin();
+	if (wnd) {
+		move(CMDLINE, 0);
+		clrtoeol();
+		refresh();
+		endwin();
+	}
 	exit(0);
 }
 
-#if __STDC__
+void
+resize(signo)
+	int signo;
+{
+	sigset_t mask, oldmask;
+
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGALRM);
+	sigprocmask(SIG_BLOCK, &mask, &oldmask);
+	clearok(curscr, TRUE);
+	wrefresh(curscr);
+	sigprocmask(SIG_SETMASK, &oldmask, NULL);
+}
+
+
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
-#if __STDC__
+#ifdef __STDC__
 void
 error(const char *fmt, ...)
 #else
@@ -253,7 +319,7 @@ error(fmt, va_alist)
 	va_list ap;
 	char buf[255];
 	int oy, ox;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -261,7 +327,7 @@ error(fmt, va_alist)
 
 	if (wnd) {
 		getyx(stdscr, oy, ox);
-		(void) vsprintf(buf, fmt, ap);
+		(void) vsnprintf(buf, sizeof buf, fmt, ap);
 		clrtoeol();
 		standout();
 		mvaddstr(CMDLINE, 0, buf);

@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.10 1995/04/10 13:15:26 mycroft Exp $	*/
+/*	$OpenBSD: mem.c,v 1.13 2001/06/27 04:22:37 art Exp $	*/
+/*	$NetBSD: mem.c,v 1.22 1999/03/27 00:30:07 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -47,6 +48,7 @@
 #include <sys/param.h>
 #include <sys/conf.h>
 #include <sys/buf.h>
+#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
@@ -55,23 +57,41 @@
 
 #include <vm/vm.h>
 
-caddr_t zeropage;
+#include <uvm/uvm_extern.h>
+
+extern u_long maxaddr;
+
+static caddr_t devzeropage;
+
+#define mmread	mmrw
+#define mmwrite	mmrw
+cdev_decl(mm);
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -84,11 +104,12 @@ mmrw(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t o, v;
-	register int c;
-	register struct iovec *iov;
+	vaddr_t o, v;
+	int c;
+	struct iovec *iov;
 	int error = 0;
 	static int physlock;
+	vm_prot_t prot;
 
 	if (minor(dev) == 0) {
 		/* lock against other uses of shared vmmap */
@@ -115,28 +136,31 @@ mmrw(dev, uio, flags)
 /* minor device 0 is physical memory */
 		case 0:
 			v = uio->uio_offset;
-#if !defined(DEBUG) && 0 /* BG -- serial test needs this. */
-			/* allow reads only in RAM (except for DEBUG) */
-			if (v >= 0x008FFFFC || v < 0) {
+
+			/*
+			 * Only allow reads in physical RAM.
+			 */
+			if (v >= maxaddr || v < 0) {
 				error = EFAULT;
 				goto unlock;
 			}
-#endif
-			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
-			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+
+			prot = uio->uio_rw == UIO_READ ? VM_PROT_READ :
+			    VM_PROT_WRITE;
+			pmap_enter(pmap_kernel(), (vaddr_t)vmmap,
+			    trunc_page(v), prot, prot|PMAP_WIRED);
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
-			pmap_remove(pmap_kernel(), (vm_offset_t)vmmap,
-			    (vm_offset_t)vmmap + NBPG);
+			pmap_remove(pmap_kernel(), (vaddr_t)vmmap,
+			    (vaddr_t)vmmap + NBPG);
 			continue;
 
 /* minor device 1 is kernel memory */
 		case 1:
 			v = uio->uio_offset;
 			c = min(iov->iov_len, MAXPHYS);
-			if (!kernacc((caddr_t)v, c,
+			if (!uvm_kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
 				return (EFAULT);
 			error = uiomove((caddr_t)v, c, uio);
@@ -154,13 +178,18 @@ mmrw(dev, uio, flags)
 				c = iov->iov_len;
 				break;
 			}
-			if (zeropage == NULL) {
-				zeropage = (caddr_t)
-				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
+
+			/*
+			 * On the first call, allocate and zero a page
+			 * of memory for use with /dev/zero.
+			 */
+			if (devzeropage == NULL) {
+				devzeropage = (caddr_t)
+				    malloc(PAGE_SIZE, M_TEMP, M_WAITOK);
+				bzero(devzeropage, PAGE_SIZE);
 			}
-			c = min(iov->iov_len, CLBYTES);
-			error = uiomove(zeropage, c, uio);
+			c = min(iov->iov_len, PAGE_SIZE);
+			error = uiomove(devzeropage, c, uio);
 			continue;
 
 		default:
@@ -168,7 +197,7 @@ mmrw(dev, uio, flags)
 		}
 		if (error)
 			break;
-		iov->iov_base += c;
+		iov->iov_base = (caddr_t)iov->iov_base + c;
 		iov->iov_len -= c;
 		uio->uio_offset += c;
 		uio->uio_resid -= c;
@@ -197,13 +226,23 @@ mmmmap(dev, off, prot)
 	 */
 	if (minor(dev) != 0)
 		return (-1);
+
 	/*
-	 * Allow access only in RAM.
-	 *
-	 * XXX could be extended to allow access to IO space but must
-	 * be very careful.
-	if ((unsigned)off < lowram || (unsigned)off >= 0xFFFFFFFC)
-		return (-1);
+	 * Only allow access to physical RAM.
 	 */
-	return (mac68k_btop(off));
+	if ((u_int)off >= maxaddr)
+		return (-1);
+
+	return (m68k_btop((u_int)off));
+}
+
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
+	return (EOPNOTSUPP);
 }

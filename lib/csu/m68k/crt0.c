@@ -1,3 +1,4 @@
+/*	$OpenBSD: crt0.c,v 1.3 1999/08/20 14:11:35 niklas Exp $	*/
 /*	$NetBSD: crt0.c,v 1.14 1995/06/03 13:16:11 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -32,7 +33,7 @@
 
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "%W% (Erasmus) %G%";
+static char rcsid[] = "$OpenBSD: crt0.c,v 1.3 1999/08/20 14:11:35 niklas Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -87,7 +88,7 @@ asm("eprol:");
 #ifdef MCRT0
 	atexit(_mcleanup);
 	monstartup((u_long)&eprol, (u_long)&etext);
-#endif MCRT0
+#endif /* MCRT0 */
 
 asm ("__callmain:");		/* Defined for the benefit of debuggers */
 	exit(main(kfp->kargc, argv, environ));

@@ -1,3 +1,5 @@
+/*	$OpenBSD: parse.c,v 1.5 1999/02/07 20:54:09 aaron Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)parse.c	5.6 (Berkeley) 3/9/91";*/
-static char rcsid[] = "$Id: parse.c,v 1.3 1994/05/20 15:57:26 pk Exp $";
+static char rcsid[] = "$OpenBSD: parse.c,v 1.5 1999/02/07 20:54:09 aaron Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -46,26 +48,26 @@ static char rcsid[] = "$Id: parse.c,v 1.3 1994/05/20 15:57:26 pk Exp $";
 
 FU *endfu;					/* format at end-of-data */
 
+void
 addfile(name)
 	char *name;
 {
 	register char *p;
 	FILE *fp;
-	int ch;
-	char buf[2048 + 1];
+	size_t len;
 
 	if (!(fp = fopen(name, "r"))) {
 		(void)fprintf(stderr, "hexdump: can't read %s.\n", name);
 		exit(1);
 	}
-	while (fgets(buf, sizeof(buf), fp)) {
-		if (!(p = index(buf, '\n'))) {
-			(void)fprintf(stderr, "hexdump: line too long.\n");
-			while ((ch = getchar()) != '\n' && ch != EOF);
+	while ((p = fgetln(fp, &len))) {
+		if (*(p + len - 1) == '\n')
+			*(p + len - 1) = '\0';
+		else {
+			(void)fprintf(stderr, "hexdump: incomplete line.\n");
 			continue;
 		}
-		*p = '\0';
-		for (p = buf; *p && isspace(*p); ++p);
+		for (; *p && isspace(*p); ++p);
 		if (!*p || *p == '#')
 			continue;
 		add(p);
@@ -73,6 +75,7 @@ addfile(name)
 	(void)fclose(fp);
 }
 
+void
 add(fmt)
 	char *fmt;
 {
@@ -145,9 +148,13 @@ add(fmt)
 		escape(tfu->fmt);
 		p++;
 	}
+	/* no single fu in fmt */
+	if (tfs->nextfu == NULL)
+		badfmt(fmt);
 }
 
 static char *spec = ".#-+ 0123456789";
+int
 size(fs)
 	FS *fs;
 {
@@ -169,7 +176,7 @@ size(fs)
 			 * skip any special chars -- save precision in
 			 * case it's a %s format.
 			 */
-			while (index(spec + 1, *++fmt));
+			while (strchr(spec + 1, *++fmt));
 			if (*fmt == '.' && isdigit(*++fmt)) {
 				prec = atoi(fmt);
 				while (isdigit(*++fmt));
@@ -201,6 +208,7 @@ size(fs)
 	return(cursize);
 }
 
+void
 rewrite(fs)
 	FS *fs;
 {
@@ -241,10 +249,10 @@ rewrite(fs)
 			if (fu->bcnt) {
 				sokay = USEBCNT;
 				/* skip to conversion character */
-				for (++p1; index(spec, *p1); ++p1);
+				for (++p1; strchr(spec, *p1); ++p1);
 			} else {
 				/* skip any special chars, field width */
-				while (index(spec + 1, *++p1));
+				while (strchr(spec + 1, *++p1));
 				if (*p1 == '.' && isdigit(*++p1)) {
 					sokay = USEPREC;
 					prec = atoi(p1);
@@ -441,6 +449,7 @@ sw2:					switch(fu->bcnt) {
 }
 
 
+void
 escape(p1)
 	register char *p1;
 {
@@ -483,6 +492,7 @@ escape(p1)
 	}
 }
 
+void
 badcnt(s)
 	char *s;
 {
@@ -491,6 +501,7 @@ badcnt(s)
 	exit(1);
 }
 
+void
 badsfmt()
 {
 	(void)fprintf(stderr,
@@ -498,6 +509,7 @@ badsfmt()
 	exit(1);
 }
 
+void
 badfmt(fmt)
 	char *fmt;
 {
@@ -505,6 +517,7 @@ badfmt(fmt)
 	exit(1);
 }
 
+void
 badconv(ch)
 	char *ch;
 {

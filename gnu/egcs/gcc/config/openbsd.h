@@ -83,7 +83,7 @@ Boston, MA 02111-1307, USA.  */
 /* LIB_SPEC appropriate for OpenBSD.  Select the appropriate libc, 
    depending on profiling and threads.  Basically, 
    -lc(_r)?(_p)?, select _r for threads, and _p for p or pg.  */
-#define OBSD_LIB_SPEC "-lc%{pthread:_r}%{p:_p}%{!p:%{pg:_p}}"
+#define OBSD_LIB_SPEC "%{!shared:-lc%{pthread:_r}%{p:_p}%{!p:%{pg:_p}}}"
 
 #ifndef OBSD_HAS_CORRECT_SPECS
 
@@ -116,10 +116,10 @@ Boston, MA 02111-1307, USA.  */
 #undef LINK_SPEC
 #ifdef OBSD_NO_DYNAMIC_LIBRARIES
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{assert*}"
+  "%{g:%{!nostdlib:-L/usr/lib/debug}} %{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{assert*}"
 #else
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
+  "%{g:%{!nostdlib:-L/usr/lib/debug}} %{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}}} %{shared:-Bshareable -x} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
 #endif
 
 #undef LIB_SPEC

@@ -1,4 +1,5 @@
-/*	$NetBSD: in_var.h,v 1.15 1995/06/12 00:47:37 mycroft Exp $	*/
+/*	$OpenBSD: in_var.h,v 1.3 1999/12/08 06:50:19 itojun Exp $	*/
+/*	$NetBSD: in_var.h,v 1.16 1996/02/13 23:42:15 christos Exp $	*/
 
 /*
  * Copyright (c) 1985, 1986, 1993
@@ -34,6 +35,9 @@
  *
  *	@(#)in_var.h	8.1 (Berkeley) 6/10/93
  */
+
+#ifndef _NETINET_IN_VAR_H_
+#define _NETINET_IN_VAR_H_
 
 #include <sys/queue.h>
 
@@ -79,6 +83,7 @@ struct	in_aliasreq {
 TAILQ_HEAD(in_ifaddrhead, in_ifaddr);
 extern	struct	in_ifaddrhead in_ifaddr;
 extern	struct	ifqueue	ipintrq;		/* ip packet input queue */
+extern	int	inetctlerrmap[];
 void	in_socktrim __P((struct sockaddr_in *));
 
 
@@ -208,7 +213,13 @@ struct in_multistep {
 int	in_ifinit __P((struct ifnet *,
 	    struct in_ifaddr *, struct sockaddr_in *, int));
 struct	in_multi *in_addmulti __P((struct in_addr *, struct ifnet *));
-int	in_delmulti __P((struct in_multi *));
+void	in_delmulti __P((struct in_multi *));
 void	in_ifscrub __P((struct ifnet *, struct in_ifaddr *));
 int	in_control __P((struct socket *, u_long, caddr_t, struct ifnet *));
 #endif
+
+
+/* INET6 stuff */
+#include <netinet6/in6_var.h>
+
+#endif /* _NETINET_IN_VAR_H_ */

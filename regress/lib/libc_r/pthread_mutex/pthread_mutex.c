@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_pthread_mutex.c,v 1.7 2001/03/13 00:04:38 d Exp $	*/
+/*	$OpenBSD: pthread_mutex.c,v 1.1.1.1 2001/08/15 14:37:12 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -44,6 +44,7 @@
 #include <pthread.h>
 #include <pthread_np.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "test.h"
 
 int contention_variable;

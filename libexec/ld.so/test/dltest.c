@@ -1,13 +1,14 @@
+/*	$OpenBSD: dltest.c,v 1.3 2001/05/14 22:18:23 niklas Exp $	*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <dlfcn.h>
 #include <ctype.h>
 #include <elf_abi.h>
-#include <machine/reloc.h>
 #include <nlist.h>
-#include "../powerpc/archdep.h"
-#include "../resolve.h"
+#include "archdep.h"
+#include "resolve.h"
 
 typedef void (*func_t)(const char *);
 

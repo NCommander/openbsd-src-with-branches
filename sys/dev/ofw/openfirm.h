@@ -1,3 +1,4 @@
+/*	$OpenBSD: openfirm.h,v 1.4 2001/06/25 23:04:39 drahn Exp $	*/
 /*	$NetBSD: openfirm.h,v 1.1 1996/09/30 16:35:10 ws Exp $	*/
 
 /*
@@ -39,13 +40,15 @@
 
 int openfirmware __P((void *));
 
-extern char *OF_buf;
+extern char OF_buf[];
 
 int OF_peer __P((int phandle));
 int OF_child __P((int phandle));
 int OF_parent __P((int phandle));
 int OF_instance_to_package __P((int ihandle));
 int OF_getprop __P((int handle, char *prop, void *buf, int buflen));
+int OF_setprop __P((int, char *, const void *, int));
+int OF_nextprop __P((int, char *, void *));
 int OF_finddevice __P((char *name));
 int OF_instance_to_path __P((int ihandle, char *buf, int buflen));
 int OF_package_to_path __P((int phandle, char *buf, int buflen));
@@ -59,12 +62,16 @@ int OF_seek __P((int handle, u_quad_t pos));
 void OF_boot __P((char *bootspec)) __attribute__((__noreturn__));
 void OF_enter __P((void));
 void OF_exit __P((void)) __attribute__((__noreturn__));
+int OF_interpret __P((char *cmd, int nreturns, ...));
+#if 0
 void (*OF_set_callback __P((void (*newfunc)(void *)))) ();
+#endif
 
 /*
  * Some generic routines for OpenFirmware handling.
  */
 int ofnmmatch __P((char *cp1, char *cp2));
+void ofw_intr_establish(void);
 
 /*
  * Generic OpenFirmware probe argument.

@@ -804,6 +804,7 @@ maintainer-clean-recursive:
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
 	  test "$$subdir" = "." && dot_seen=yes; \
+	  true; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -1078,10 +1079,10 @@ $(OPTIONAL_BACKENDS): $(BFD_H) $(BFD_H_DEPS) $(LOCAL_H_DEPS)
 # Install BFD include file, and others that it needs.
 install-data-local: $(BFD_H)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(includedir)
-	$(INSTALL_DATA) $(BFD_H) $(includedir)/bfd.h
-	$(INSTALL_DATA) $(INCDIR)/ansidecl.h $(includedir)/ansidecl.h
-	$(INSTALL_DATA) $(INCDIR)/bfdlink.h $(includedir)/bfdlink.h
+	$(mkinstalldirs) $(DESTDIR)$(includedir)
+	$(INSTALL_DATA) $(BFD_H) $(DESTDIR)$(includedir)/bfd.h
+	$(INSTALL_DATA) $(INCDIR)/ansidecl.h $(DESTDIR)$(includedir)/ansidecl.h
+	$(INSTALL_DATA) $(INCDIR)/bfdlink.h $(DESTDIR)$(includedir)/bfdlink.h
 
 # Have to get rid of DEP1 here so that "$?" later includes all of $(CFILES).
 DEP: dep.sed $(CFILES) $(HFILES) bfd.h
@@ -1124,7 +1125,7 @@ host-aout.lo: Makefile
 aout-params.h: gen-aout
 	./gen-aout host > aout-params.h
 gen-aout: $(srcdir)/gen-aout.c Makefile
-	$(CC) -o gen-aout $(CFLAGS) $(LFLAGS) $(srcdir)/gen-aout.c
+	$(CC) -o gen-aout $(CSEARCH) $(CFLAGS) $(LFLAGS) $(srcdir)/gen-aout.c
 
 $(BFD_H): stmp-bfd-h ; @true
 

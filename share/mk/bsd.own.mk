@@ -1,13 +1,40 @@
-#	$NetBSD: bsd.own.mk,v 1.21.2.1 1995/10/12 06:27:48 cgd Exp $
+#	$OpenBSD: bsd.own.mk,v 1.58 2001/09/25 13:04:30 drahn Exp $
+#	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
-# Defining `SKEY' causes support for S/key authentication to be compiled in.
-SKEY=		yes
-# Defining `KERBEROS' causes support for Kerberos authentication to be
-# compiled in.
-#KERBEROS=	yes
-# Defining 'KERBEROS5' causes support for Kerberos5 authentication to be
-# compiled in.
-#KERBEROS5=	yes
+# Host-specific overrides
+.if defined(MAKECONF) && exists(${MAKECONF})
+.include "${MAKECONF}"
+.elif exists(/etc/mk.conf)
+.include "/etc/mk.conf"
+.endif
+
+# Set `WARNINGS' to `yes' to add appropriate warnings to each compilation
+WARNINGS?=	no
+# Set `SKEY' to `yes' to build with support for S/key authentication.
+SKEY?=		yes
+# Set `KERBEROS' to `yes' to build with support for Kerberos authentication.
+KERBEROS?=	yes
+# Set `KERBEROS5' to `yes' to build with support for Kerberos5 authentication.
+KERBEROS5?=	yes
+# Set `YP' to `yes' to build with support for NIS/YP.
+YP?=		yes
+# Set `TCP_WRAPPERS' to `yes' to build certain networking daemons with
+# integrated support for libwrap.
+TCP_WRAPPERS?=	yes
+# Set `AFS` to `yes' to build with AFS support.
+.if (${MACHINE_ARCH} == "m88k")
+AFS?=		no
+.else
+AFS?=		yes
+.endif
+# Set `DEBUGLIBS' to `yes' to build libraries with debugging symbols
+DEBUGLIBS?=	no
+# Set toolchain for libdl and other "differences"
+.if (${MACHINE_ARCH} == "alpha" || ${MACHINE_ARCH} == "powerpc" || ${MACHINE_ARCH} == "sparc64")
+ELF_TOOLCHAIN?=	yes
+.else
+ELF_TOOLCHAIN?=	no
+.endif
 
 # where the system object and source trees are kept; can be configurable
 # by the user in case they want them in ~/foosrc and ~/fooobj, for example
@@ -15,17 +42,31 @@ BSDSRCDIR?=	/usr/src
 BSDOBJDIR?=	/usr/obj
 
 BINGRP?=	bin
-BINOWN?=	bin
+BINOWN?=	root
 BINMODE?=	555
 NONBINMODE?=	444
+DIRMODE?=	755
 
 # Define MANZ to have the man pages compressed (gzip)
 #MANZ=		1
 
+# Define MANPS to have PostScript manual pages generated
+#MANPS=		1
+
+SHAREDIR?=	/usr/share
+SHAREGRP?=	bin
+SHAREOWN?=	root
+SHAREMODE?=	${NONBINMODE}
+
 MANDIR?=	/usr/share/man/cat
 MANGRP?=	bin
-MANOWN?=	bin
+MANOWN?=	root
 MANMODE?=	${NONBINMODE}
+
+PSDIR?=		/usr/share/man/ps
+PSGRP?=		bin
+PSOWN?=		root
+PSMODE?=	${NONBINMODE}
 
 LIBDIR?=	/usr/lib
 LINTLIBDIR?=	/usr/libdata/lint
@@ -35,16 +76,30 @@ LIBMODE?=	${NONBINMODE}
 
 DOCDIR?=        /usr/share/doc
 DOCGRP?=	bin
-DOCOWN?=	bin
+DOCOWN?=	root
 DOCMODE?=       ${NONBINMODE}
+
+LKMDIR?=	/usr/lkm
+LKMGRP?=	${BINGRP}
+LKMOWN?=	${BINOWN}
+LKMMODE?=	${NONBINMODE}
 
 NLSDIR?=	/usr/share/nls
 NLSGRP?=	bin
-NLSOWN?=	bin
+NLSOWN?=	root
 NLSMODE?=	${NONBINMODE}
 
-COPY?=		-c
-STRIP?=		-s
+# Shared files for system gnu configure, not used yet
+GNUSYSTEM_AUX_DIR?=${BSDSRCDIR}/share/gnu
+
+INSTALL_COPY?=	-c
+.ifndef DEBUG
+INSTALL_STRIP?=	-s
+.endif
+
+# This may be changed for _single filesystem_ configurations (such as
+# routers and other embedded systems); normal systems should leave it alone!
+STATIC?=	-static
 
 # Define SYS_INCLUDE to indicate whether you want symbolic links to the system
 # source (``symlinks''), or a separate copy (``copies''); (latter useful
@@ -53,15 +108,33 @@ STRIP?=		-s
 
 # don't try to generate PIC versions of libraries on machines
 # which don't support PIC.
-.if (${MACHINE_ARCH} == "mips") || (${MACHINE_ARCH} == "alpha") || \
-    (${MACHINE_ARCH} == "vax")
+.if (${MACHINE_ARCH} == "vax") || \
+    (${MACHINE_ARCH} == "hppa") || (${MACHINE_ARCH} == "m88k")
 NOPIC=
 .endif
 
-# Alpha doesn't have a working profiling support
-.if (${MACHINE_ARCH} == "alpha")
+#pic relocation flags.
+.if (${MACHINE_ARCH} == "sparc64")
+PICFLAG=-fPIC
+ASPICFLAG=-KPIC
+.else
+ASPICFLAG=-k
+.endif
+
+# don't try to generate PROFILED versions of libraries on machines
+# which don't support profiling.
+# to add this back use the following line
+.if (${MACHINE_ARCH} == "m88k")
+#.if 0
 NOPROFILE=
 .endif
 
 # No lint, for now.
 NOLINT=
+
+BSD_OWN_MK=Done
+
+.PHONY: spell clean cleandir obj manpages print all \
+	depend beforedepend afterdepend cleandepend \
+	all lint cleanman nlsinstall cleannls includes \
+	beforeinstall realinstall maninstall afterinstall install

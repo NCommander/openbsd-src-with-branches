@@ -1,4 +1,4 @@
-.\"	$NetBSD: gettimeofday.2,v 1.5 1995/02/27 12:33:33 cgd Exp $
+.\"	$OpenBSD: gettimeofday.2,v 1.10 2000/04/15 11:46:03 aaron Exp $
 .\"
 .\" Copyright (c) 1980, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -31,11 +31,11 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)gettimeofday.2	8.1 (Berkeley) 6/4/93
+.\"     @(#)gettimeofday.2	8.2 (Berkeley) 5/26/95
 .\"
-.Dd June 4, 1993
+.Dd May 26, 1995
 .Dt GETTIMEOFDAY 2
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm gettimeofday ,
 .Nm settimeofday
@@ -45,32 +45,38 @@
 .Ft int
 .Fn gettimeofday "struct timeval *tp" "struct timezone *tzp"
 .Ft int
-.Fn settimeofday "struct timeval *tp" "struct timezone *tzp"
+.Fn settimeofday "const struct timeval *tp" "const struct timezone *tzp"
 .Sh DESCRIPTION
 .Bf -symbolic
 Note: timezone is no longer used; this information is kept outside
 the kernel.
 .Ef
+.Pp
 The system's notion of the current Greenwich time and the current time
 zone is obtained with the
 .Fn gettimeofday
 call, and set with the
 .Fn settimeofday
-call.  The time is expressed in seconds and microseconds
-since midnight (0 hour), January 1, 1970.  The resolution of the system
-clock is hardware dependent, and the time may be updated continuously or
-in ``ticks.''  If
+call.
+The time is expressed in seconds and microseconds
+since midnight (0 hour), January 1, 1970.
+The resolution of the system clock is hardware dependent, and the time
+may be updated continuously or in
+.Dq ticks .
+If
 .Fa tp
 or
 .Fa tzp
-is NULL, the associated time
+is
+.Dv NULL ,
+the associated time
 information will not be returned or set.
 .Pp
 The structures pointed to by
 .Fa tp
 and
 .Fa tzp
-are defined in 
+are defined in
 .Ao Pa sys/time.h Ac
 as:
 .Pp
@@ -86,7 +92,7 @@ struct timezone {
 };
 .Ed
 .Pp
-The 
+The
 .Fa timezone
 structure indicates the local time zone
 (measured in minutes of time westward from Greenwich),
@@ -94,20 +100,28 @@ and a flag that, if nonzero, indicates that
 Daylight Saving time applies locally during
 the appropriate part of the year.
 .Pp
-Only the super-user may set the time of day or time zone.
-.Sh RETURN
+Only the superuser may set the time of day or time zone.
+If the system securelevel is greater than 1 (see
+.Xr init 8 ) ,
+the time may only be advanced.
+This limitation is imposed to prevent a malicious superuser
+from setting arbitrary time stamps on files.
+The system time can still be adjusted backwards using the
+.Xr adjtime 2
+system call even when the system is secure.
+.Sh RETURN VALUES
 A 0 return value indicates that the call succeeded.
-A -1 return value indicates an error occurred, and in this
+A \-1 return value indicates an error occurred, and in this
 case an error code is stored into the global variable
 .Va errno .
 .Sh ERRORS
 The following error codes may be set in
 .Va errno :
-.Bl -tag -width Er
+.Bl -tag -width [EFAULT]
 .It Bq Er EFAULT
 An argument address referenced invalid memory.
 .It Bq Er EPERM
-A user other than the super-user attempted to set the time.
+A user other than the superuser attempted to set the time.
 .El
 .Sh SEE ALSO
 .Xr date 1 ,

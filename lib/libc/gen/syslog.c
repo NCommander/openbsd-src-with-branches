@@ -1,5 +1,3 @@
-/*	$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1983, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,17 +32,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)syslog.c	8.4 (Berkeley) 3/18/94";
-#else
-static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: syslog.c,v 1.10 2001/06/27 00:58:54 lebel Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/syslog.h>
 #include <sys/uio.h>
+#include <sys/un.h>
 #include <netdb.h>
 
 #include <errno.h>
@@ -55,7 +50,7 @@ static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp 
 #include <time.h>
 #include <unistd.h>
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -63,18 +58,21 @@ static char rcsid[] = "$NetBSD: syslog.c,v 1.10 1995/08/31 16:28:01 mycroft Exp 
 
 static int	LogFile = -1;		/* fd for log */
 static int	connected;		/* have done connect */
+static int	opened;			/* have done openlog() */
 static int	LogStat = 0;		/* status bits, set by openlog() */
 static const char *LogTag = NULL;	/* string to tag the entry with */
 static int	LogFacility = LOG_USER;	/* default facility code */
 static int	LogMask = 0xff;		/* mask of priorities to be logged */
 extern char	*__progname;		/* Program name, from crt0. */
 
+static void	disconnectlog __P((void)); /* disconnect from syslogd */
+static void	connectlog __P((void));	/* (re)connect to syslogd */
 /*
  * syslog, vsyslog --
  *	print message on log file; output is intended for syslogd(8).
  */
 void
-#if __STDC__
+#ifdef __STDC__
 syslog(int pri, const char *fmt, ...)
 #else
 syslog(pri, fmt, va_alist)
@@ -85,7 +83,7 @@ syslog(pri, fmt, va_alist)
 {
 	va_list ap;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -144,7 +142,9 @@ vsyslog(pri, fmt, ap)
 	
 #define	DEC()	\
 	do {					\
-		if (prlen >= tbuf_left)		\
+		if (prlen < 0)			\
+			prlen = 0;		\
+		else if (prlen >= tbuf_left)	\
 			prlen = tbuf_left - 1;	\
 		p += prlen;			\
 		tbuf_left -= prlen;		\
@@ -183,7 +183,7 @@ vsyslog(pri, fmt, ap)
 	 * We wouldn't need this mess if printf handled %m, or if 
 	 * strerror() had been invented before syslog().
 	 */
-	for (t = fmt_cpy, fmt_left = FMT_LEN; ch = *fmt; ++fmt) {
+	for (t = fmt_cpy, fmt_left = FMT_LEN; (ch = *fmt); ++fmt) {
 		if (ch == '%' && fmt[1] == 'm') {
 			++fmt;
 			prlen = snprintf(t, fmt_left, "%s",
@@ -217,8 +217,18 @@ vsyslog(pri, fmt, ap)
 	}
 
 	/* Get connected, output the message to the local logger. */
-	if (!connected)
-		openlog(LogTag, LogStat | LOG_NDELAY, 0);
+	if (!opened)
+		openlog(LogTag, LogStat, 0);
+	connectlog();
+	if (send(LogFile, tbuf, cnt, 0) >= 0)
+		return;
+
+	/*
+	 * If the send() failed, the odds are syslogd was restarted.
+	 * Make one (only) attempt to reconnect to /dev/log.
+	 */
+	disconnectlog();
+	connectlog();
 	if (send(LogFile, tbuf, cnt, 0) >= 0)
 		return;
 
@@ -241,7 +251,45 @@ vsyslog(pri, fmt, ap)
 	}
 }
 
-static struct sockaddr SyslogAddr;	/* AF_UNIX address of local logger */
+static void
+disconnectlog()
+{
+	/*
+	 * If the user closed the FD and opened another in the same slot,
+	 * that's their problem.  They should close it before calling on
+	 * system services.
+	 */
+	if (LogFile != -1) {
+		close(LogFile);
+		LogFile = -1;
+	}
+	connected = 0;		/* retry connect */
+}
+
+static void
+connectlog()
+{
+	struct sockaddr_un SyslogAddr;	/* AF_UNIX address of local logger */
+
+	if (LogFile == -1) {
+		if ((LogFile = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
+			return;
+		(void)fcntl(LogFile, F_SETFD, 1);
+	}
+	if (LogFile != -1 && !connected) {
+		memset(&SyslogAddr, '\0', sizeof(SyslogAddr));
+		SyslogAddr.sun_len = sizeof(SyslogAddr);
+		SyslogAddr.sun_family = AF_UNIX;
+		strlcpy(SyslogAddr.sun_path, _PATH_LOG,
+		    sizeof(SyslogAddr.sun_path));
+		if (connect(LogFile, (struct sockaddr *)&SyslogAddr,
+		    sizeof(SyslogAddr)) == -1) {
+			(void)close(LogFile);
+			LogFile = -1;
+		} else
+			connected = 1;
+	}
+}
 
 void
 openlog(ident, logstat, logfac)
@@ -254,22 +302,10 @@ openlog(ident, logstat, logfac)
 	if (logfac != 0 && (logfac &~ LOG_FACMASK) == 0)
 		LogFacility = logfac;
 
-	if (LogFile == -1) {
-		SyslogAddr.sa_family = AF_UNIX;
-		(void)strncpy(SyslogAddr.sa_data, _PATH_LOG,
-		    sizeof(SyslogAddr.sa_data));
-		if (LogStat & LOG_NDELAY) {
-			if ((LogFile = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
-				return;
-			(void)fcntl(LogFile, F_SETFD, 1);
-		}
-	}
-	if (LogFile != -1 && !connected)
-		if (connect(LogFile, &SyslogAddr, sizeof(SyslogAddr)) == -1) {
-			(void)close(LogFile);
-			LogFile = -1;
-		} else
-			connected = 1;
+	if (LogStat & LOG_NDELAY)	/* open immediately */
+		connectlog();
+
+	opened = 1;	/* ident and facility has been set */
 }
 
 void

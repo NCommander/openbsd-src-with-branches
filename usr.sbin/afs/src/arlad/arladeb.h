@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -38,7 +37,7 @@
  */
 
 /*
- * $KTH: arladeb.h,v 1.16 1998/05/23 05:25:47 assar Exp $
+ * $Id: arladeb.h,v 1.22 2000/08/24 21:44:32 lha Exp $
  */
 
 #ifndef _arladeb_h
@@ -46,8 +45,12 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <log.h>
 
 #include <roken.h>
+
+extern Log_method* arla_log_method;
+extern Log_unit* arla_log_unit;
 
 /* masks */
 #define ADEBANY		0xffffffff
@@ -62,13 +65,19 @@
 #define ADEBKERNEL	0x00000100      /* kernel interface */
 #define ADEBMSG		0x00000200	/* messages */
 #define ADEBFBUF	0x00000400	/* fbuf */
+#define ADEBDISCONN	0x00000800	/* disconn */
 #define ADEBWARN	0x08000000      /* don't ignore warning */
 #define ADEBERROR	0x10000000      /* don't ignore error */
+#define ADEBVLOG	0x20000000	/* venuslog output */
+
+extern struct units arla_deb_units[];
 
 void arla_log(unsigned level, char *fmt, ...);
 void arla_loginit(char *log);
 int arla_log_set_level (const char *s);
+void arla_log_set_level_num (unsigned level);
 void arla_log_get_level (char *s, size_t len);
+unsigned arla_log_get_level_num (void);
 void arla_log_print_levels (FILE *f);
 
 void
@@ -114,5 +123,14 @@ void
 arla_vwarnx (unsigned level, const char *fmt, va_list args)
 __attribute__ ((format (printf, 2, 0)))
 ;
+
+void
+arla_warnx_with_fid (unsigned level, const VenusFid *fid, const char *fmt, ...)
+__attribute__ ((format (printf, 3, 4)));
+
+void
+arla_vwarnx_with_fid (unsigned level, const VenusFid *fid, const char *fmt,
+		      va_list args)
+__attribute__ ((format (printf, 3, 0)));
 
 #endif				       /* _arladeb_h */

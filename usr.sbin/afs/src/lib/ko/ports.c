@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -45,15 +44,17 @@
 #include <config.h>
 #endif
 #include <roken.h>
-#include <stdio.h>
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
+#include <stdio.h>
 
-RCSID("$KTH: ports.c,v 1.5 1998/06/07 05:44:38 map Exp $") ;
+#include "ports.h"
+
+RCSID("$Id: ports.c,v 1.8 1999/12/31 05:38:41 assar Exp $") ;
 
 typedef struct {
      const char *name;		/* Name of the service */
@@ -84,9 +85,13 @@ Port ports[] = {
  */
 
 void
-initports (void)
+ports_init (void)
 {
+     static int inited = 0;
      int i;
+
+     if (inited)
+	 return;
 
      for (i = 0; i < sizeof (ports) / sizeof (*ports); ++i) {
 	  struct servent *service;
@@ -101,4 +106,22 @@ initports (void)
 	  } else
 	       *(ports[i].port) = ntohs (service->s_port);
      }
+     inited = 1;
+}
+
+/*
+ * port -> name
+ */
+
+const char *
+ports_num2name (int port)
+{
+     int i;
+
+     for (i = 0; i < sizeof (ports) / sizeof (*ports); ++i) {
+
+	 if (*(ports[i].port) == port)
+	     return ports[i].name;
+     }
+     return NULL;
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * rtld entry pseudo code - turn into assembler and tweak it
  */

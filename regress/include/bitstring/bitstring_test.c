@@ -1,3 +1,4 @@
+/*	$OpenBSD: bitstring_test.c,v 1.4 1995/04/29 05:44:35 cgd Exp $	*/
 /*	$NetBSD: bitstring_test.c,v 1.4 1995/04/29 05:44:35 cgd Exp $	*/
 
 /*
@@ -26,11 +27,12 @@
 int TEST_LENGTH;
 #define DECL_TEST_LENGTH	37	/* a mostly random number */
 
+int
 main(int argc, char *argv[])
 {
   void clearbits();
   void printbits();
-  int b, i;
+  int i;
   bitstr_t *bs;
   bitstr_t bit_decl(bss, DECL_TEST_LENGTH);
 

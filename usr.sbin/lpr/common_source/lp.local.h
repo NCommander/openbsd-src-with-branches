@@ -1,3 +1,5 @@
+/*	$OpenBSD: lp.local.h,v 1.2 1997/01/17 16:11:36 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -43,7 +45,7 @@
 #define	DEFLP		"lp"
 #define DEFLOCK		"lock"
 #define DEFSTAT		"status"
-#define	DEFMX		1000
+#define	DEFMX		0
 #define DEFMAXCOPIES	0
 #define DEFFF		"\f"
 #define DEFWIDTH	132

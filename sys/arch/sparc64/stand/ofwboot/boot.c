@@ -1,5 +1,5 @@
+/*	$OpenBSD: boot.c,v 1.3 2001/08/20 19:55:33 jason Exp $	*/
 /*	$NetBSD: boot.c,v 1.3 2001/05/31 08:55:19 mrg Exp $	*/
-#define DEBUG
 /*
  * Copyright (c) 1997, 1999 Eduardo E. Horvath.  All rights reserved.
  * Copyright (c) 1997 Jason R. Thorpe.  All rights reserved.
@@ -68,19 +68,8 @@
  * this list is used in sequence, to find a kernel.
  */
 char *kernels[] = {
-	"netbsd ",
-	"netbsd.gz ",
-	"netbsd.old ",
-	"netbsd.old.gz ",
-	"onetbsd ",
-	"onetbsd.gz ",
-	"vmunix ",
-#ifdef notyet
-	"netbsd.pl ",
-	"netbsd.pl.gz ",
-	"netbsd.el ",
-	"netbsd.el.gz ",
-#endif
+	"bsd ",
+	"obsd ",
 	NULL
 };
 

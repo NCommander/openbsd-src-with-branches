@@ -1,3 +1,5 @@
+/*	$OpenBSD: timed.c,v 1.9 2001/04/07 19:58:07 ho Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -42,7 +44,7 @@ static char sccsid[] = "@(#)timed.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
 
 #ifdef sgi
-#ident "$Revision: 1.5 $"
+#ident "$Revision: 1.9 $"
 #endif /* sgi */
 
 #define TSPTYPES
@@ -55,6 +57,9 @@ static char sccsid[] = "@(#)timed.c	5.1 (Berkeley) 5/11/93";
 #include <math.h>
 #include <sys/types.h>
 #include <sys/times.h>
+#ifdef HAVENIS
+#include <netgroup.h>
+#endif /* HAVENIS */
 #ifdef sgi
 #include <unistd.h>
 #include <sys/syssgi.h>
@@ -92,7 +97,7 @@ static struct nets {
 struct hosttbl hosttbl[NHOSTS+1];	/* known hosts */
 
 static struct goodhost {		/* hosts that we trust */
-	char	name[MAXHOSTNAMELEN+1];
+	char	name[MAXHOSTNAMELEN];
 	struct goodhost *next;
 	char	perm;
 } *goodhosts;
@@ -100,7 +105,7 @@ static struct goodhost {		/* hosts that we trust */
 static char *goodgroup;			/* net group of trusted hosts */
 static void checkignorednets(void);
 static void pickslavenet(struct netinfo *);
-static void add_good_host(char*,char);
+static void add_good_host(const char*,char);
 
 #ifdef sgi
 char *timetrim_fn;
@@ -137,7 +142,7 @@ main(int argc, char **argv)
 	int nflag, iflag;
 	struct timeval ntime;
 	struct servent *srvp;
-	char buf[BUFSIZ], *cp, *cplim;
+	char *inbuf = NULL, *cp, *cplim;
 	struct ifconf ifc;
 	struct ifreq ifreq, ifreqf, *ifr;
 	register struct netinfo *ntp;
@@ -147,7 +152,8 @@ main(int argc, char **argv)
 	struct nets *nt;
 	struct sockaddr_in server;
 	u_short port;
-	char c;
+	int inlen = 8192;
+	int c;
 	extern char *optarg;
 	extern int optind, opterr;
 #ifdef sgi
@@ -166,9 +172,7 @@ main(int argc, char **argv)
 #endif /* HAVENIS */
 #endif /* sgi */
 
-#ifdef lint
 	ntip = NULL;
-#endif
 
 	on = 1;
 	nflag = OFF;
@@ -183,7 +187,7 @@ main(int argc, char **argv)
 #endif /* sgi */
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "Mtdn:i:F:G:P:")) != EOF) {
+	while ((c = getopt(argc, argv, "Mtdn:i:F:G:P:")) != -1) {
 		switch (c) {
 		case 'M':
 			Mflag = 1;
@@ -384,20 +388,37 @@ main(int argc, char **argv)
 		if (0 == (nt->net & 0xff000000))
 		    nt->net <<= 8;
 	}
-	ifc.ifc_len = sizeof(buf);
-	ifc.ifc_buf = buf;
-	if (ioctl(sock, SIOCGIFCONF, (char *)&ifc) < 0) {
-		perror("timed: get interface configuration");
-		exit(1);
+	while (1) {
+		char *ninbuf;
+
+		ifc.ifc_len = inlen;
+		ninbuf = realloc(inbuf, inlen);
+		if (ninbuf == NULL) {
+			if (inbuf)
+				free(inbuf);
+			close(sock);
+			return (-1);
+		}
+		ifc.ifc_buf = inbuf = ninbuf;
+		if (ioctl(sock, SIOCGIFCONF, (char *)&ifc) < 0) {
+			(void) close(sock);
+			free(inbuf);
+			perror("timed: get interface configuration");
+			exit(1);
+		}
+		if (ifc.ifc_len + sizeof(ifreq) < inlen)
+			break;
+		inlen *= 2;
 	}
+
 	ntp = NULL;
 #ifdef sgi
 #define size(p)	(sizeof(*ifr) - sizeof(ifr->ifr_name))  /* XXX hack. kludge */
 #else
 #define size(p)	max((p).sa_len, sizeof(p))
 #endif
-	cplim = buf + ifc.ifc_len; /*skip over if's with big ifr_addr's */
-	for (cp = buf; cp < cplim;
+	cplim = inbuf + ifc.ifc_len; /*skip over if's with big ifr_addr's */
+	for (cp = inbuf; cp < cplim;
 			cp += sizeof (ifr->ifr_name) + size(ifr->ifr_addr)) {
 		ifr = (struct ifreq *)cp;
 		if (ifr->ifr_addr.sa_family != AF_INET)
@@ -421,7 +442,7 @@ main(int argc, char **argv)
 			continue;
 		}
 
-
+		((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr = ntp->my_addr;
 		if (ioctl(sock, SIOCGIFNETMASK, (char *)&ifreq) < 0) {
 			perror("get netmask");
 			continue;
@@ -430,6 +451,8 @@ main(int argc, char **argv)
 			&ifreq.ifr_addr)->sin_addr.s_addr;
 
 		if (ifreqf.ifr_flags & IFF_BROADCAST) {
+			((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr =
+				ntp->my_addr;
 			if (ioctl(sock, SIOCGIFBRDADDR, (char *)&ifreq) < 0) {
 				perror("get broadaddr");
 				continue;
@@ -440,6 +463,8 @@ main(int argc, char **argv)
 			ntp->net = ntp->my_addr;
 			ntp->net.s_addr &= ntp->mask;
 		} else {
+			((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr =
+				ntp->my_addr;
 			if (ioctl(sock, SIOCGIFDSTADDR,
 						(char *)&ifreq) < 0) {
 				perror("get destaddr");
@@ -452,10 +477,10 @@ main(int argc, char **argv)
 		ntp->dest_addr.sin_port = port;
 
 		for (nt = nets; nt; nt = nt->next) {
-			if (ntp->net.s_addr == nt->net)
+			if (ntohl(ntp->net.s_addr) == nt->net)
 				break;
 		}
-		if (nflag && !nt || iflag && nt)
+		if ((nflag && !nt) || (iflag && nt))
 			continue;
 
 		ntp->next = NULL;
@@ -467,13 +492,14 @@ main(int argc, char **argv)
 		ntip = ntp;
 		ntp = NULL;
 	}
+
 	if (ntp)
 		(void) free((char *)ntp);
 	if (nettab == NULL) {
 		fprintf(stderr, "timed: no network usable\n");
 		exit(1);
 	}
-
+	free(inbuf);
 
 #ifdef sgi
 	(void)schedctl(RENICE,0,10);	   /* run fast to get good time */
@@ -568,9 +594,7 @@ main(int argc, char **argv)
 		slave();
 	}
 	/* NOTREACHED */
-#ifdef lint
 	return(0);
-#endif
 }
 
 
@@ -589,7 +613,7 @@ suppress(struct sockaddr_in *addr,
 	if (trace)
 		fprintf(fd, "suppress: %s\n", name);
 	tgt = *addr;
-	(void)strcpy(tname, name);
+	strlcpy(tname, name, sizeof tname);
 
 	while (0 != readmsg(TSP_ANY, ANYADDR, &wait, net)) {
 		if (trace)
@@ -599,7 +623,7 @@ suppress(struct sockaddr_in *addr,
 
 	syslog(LOG_NOTICE, "suppressing false master %s", tname);
 	msg.tsp_type = TSP_QUIT;
-	(void)strcpy(msg.tsp_name, hostname);
+	strlcpy(msg.tsp_name, hostname, sizeof msg.tsp_name);
 	(void)acksend(&msg, &tgt, tname, TSP_ACK, 0, 1);
 }
 
@@ -616,7 +640,7 @@ lookformaster(struct netinfo *ntp)
 
 	/* look for master */
 	resp.tsp_type = TSP_MASTERREQ;
-	(void)strcpy(resp.tsp_name, hostname);
+	strlcpy(resp.tsp_name, hostname, sizeof resp.tsp_name);
 	answer = acksend(&resp, &ntp->dest_addr, ANYADDR,
 			 TSP_MASTERACK, ntp, 0);
 	if (answer != 0 && !good_host_name(answer->tsp_name)) {
@@ -671,7 +695,7 @@ lookformaster(struct netinfo *ntp)
 	}
 
 	ntp->status = SLAVE;
-	(void)strcpy(mastername, answer->tsp_name);
+	strlcpy(mastername, answer->tsp_name, sizeof mastername);
 	masteraddr = from;
 
 	/*
@@ -689,7 +713,7 @@ lookformaster(struct netinfo *ntp)
 	if (answer != NULL &&
 	    strcmp(answer->tsp_name, mastername) != 0) {
 		conflict.tsp_type = TSP_CONFLICT;
-		(void)strcpy(conflict.tsp_name, hostname);
+		strlcpy(conflict.tsp_name, hostname, sizeof conflict.tsp_name);
 		if (!acksend(&conflict, &masteraddr, mastername,
 			     TSP_ACK, 0, 0)) {
 			syslog(LOG_ERR,
@@ -751,8 +775,8 @@ setstatus()
 	status &= ~IGNORE;
 	if (trace)
 		fprintf(fd,
-			"\tnets=%d masters=%d slaves=%d ignored=%d delay2=%d\n",
-			nnets, nmasternets, nslavenets, nignorednets, delay2);
+		    "\tnets=%d masters=%d slaves=%d ignored=%d delay2=%ld\n",
+		    nnets, nmasternets, nslavenets, nignorednets, delay2);
 }
 
 void
@@ -859,7 +883,7 @@ addnetname(char *name)
 
 /* note a host as trustworthy */
 static void
-add_good_host(char* name,
+add_good_host(const char* name,
 	      char perm)		/* 1=not part of the netgroup */
 {
 	register struct goodhost *ghp;
@@ -891,9 +915,11 @@ get_goodgroup(int force)
 # define NG_DELAY (30*60*CLK_TCK)	/* 30 minutes */
 	static unsigned long last_update = -NG_DELAY;
 	unsigned long new_update;
+#ifdef HAVENIS
 	struct hosttbl *htp;
 	struct goodhost *ghp, **ghpp;
-	char *mach, *usr, *dom;
+	const char *mach, *usr, *dom;
+#endif
 	struct tms tm;
 
 

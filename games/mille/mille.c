@@ -1,3 +1,4 @@
+/*	$OpenBSD: mille.c,v 1.9 2001/03/08 21:18:35 deraadt Exp $	*/
 /*	$NetBSD: mille.c,v 1.4 1995/03/24 05:01:48 cgd Exp $	*/
 
 /*
@@ -43,36 +44,35 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mille.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: mille.c,v 1.4 1995/03/24 05:01:48 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mille.c,v 1.9 2001/03/08 21:18:35 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 # include	"mille.h"
 # include	<signal.h>
-# ifdef attron
-#	include	<term.h>
-# endif	attron
 
 /*
  * @(#)mille.c	1.3 (Berkeley) 5/10/83
  */
 
-void	rub();
-
+int
 main(ac, av)
-reg int		ac;
-reg char	*av[]; {
+	int	ac;
+	char	*av[];
+{
+	bool	restore;
 
-	reg bool	restore;
+	/* revoke */
+	setegid(getgid());
+	setgid(getgid());
 
-	/* run as the user */
-	setuid(getuid());
-
+#ifdef DEBUG
 	if (strcmp(av[0], "a.out") == 0) {
 		outf = fopen("q", "w");
 		setbuf(outf, (char *)NULL);
 		Debug = TRUE;
 	}
+#endif
 	restore = FALSE;
 	switch (ac) {
 	  case 2:
@@ -82,20 +82,20 @@ reg char	*av[]; {
 		break;
 	  default:
 		printf("usage: milles [ restore_file ]\n");
-		exit(-1);
+		exit(1);
 		/* NOTREACHED */
 	}
 	Play = PLAYER;
 	initscr();
+	if ((LINES < 24) || (COLS < 80)) {
+		endwin();
+		fprintf(stderr, "Screen must be at least 24x80\n");
+		exit(1);
+	}
 	delwin(stdscr);
 	stdscr = Board = newwin(BOARD_Y, BOARD_X, 0, 0);
 	Score = newwin(SCORE_Y, SCORE_X, 0, 40);
 	Miles = newwin(MILES_Y, MILES_X, 17, 0);
-#ifdef attron
-	idlok(Board, TRUE);
-	idlok(Score, TRUE);
-	idlok(Miles, TRUE);
-#endif
 	leaveok(Score, TRUE);
 	leaveok(Miles, TRUE);
 	clearok(curscr, TRUE);
@@ -146,8 +146,9 @@ reg char	*av[]; {
  * quit.
  */
 void
-rub() {
-
+rub(dummy)
+	int dummy;
+{
 	(void)signal(SIGINT, SIG_IGN);
 	if (getyn(REALLYPROMPT))
 		die(0);
@@ -157,9 +158,10 @@ rub() {
 /*
  *	Time to go beddy-by
  */
+void
 die(code)
-int code; {
-
+	int code;
+{
 	(void)signal(SIGINT, SIG_IGN);
 	if (outf)
 		fflush(outf);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.6 2000/07/19 19:27:36 mickey Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1995/03/21 09:06:24 cgd Exp $	*/
 
 /*-
@@ -35,6 +36,8 @@
  *	@(#)extern.h	8.1 (Berkeley) 5/31/93
  */
 
+extern char *__progname;
+
 int	 acccmp __P((const FTSENT *, const FTSENT *));
 int	 revacccmp __P((const FTSENT *, const FTSENT *));
 int	 modcmp __P((const FTSENT *, const FTSENT *));
@@ -46,9 +49,10 @@ int	 revstatcmp __P((const FTSENT *, const FTSENT *));
 int	 sizecmp __P((const FTSENT *, const FTSENT *));
 int	 revsizecmp __P((const FTSENT *, const FTSENT *));
 
-char	*flags_to_string __P((u_long, char *));
-void	 prcopy __P((char *, char *, int));
+int	 putname __P((char *));
 void	 printcol __P((DISPLAY *));
+void	 printacol __P((DISPLAY *));
 void	 printlong __P((DISPLAY *));
 void	 printscol __P((DISPLAY *));
+void	 printstream __P((DISPLAY *));
 void	 usage __P((void));

@@ -1,18 +1,20 @@
-/*	$OpenBSD: test_group.c,v 1.2 2000/01/08 09:01:29 d Exp $	*/
+/*	$OpenBSD: group.c,v 1.3 2001/09/11 04:57:32 pvalchev Exp $	*/
+
 /* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 /*
  * Test getgrgid_r() across multiple threads to see if the members list changes.
  */
 
+#include <sys/types.h>
+#include <grp.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <grp.h>
-#include <sys/types.h>
+#include <stdlib.h>
 #include "test.h"
 
-struct group * getgrgid_r(gid_t, struct group *);
+int	getgrgid_r(gid_t, struct group *, char *, size_t, struct group **);
 
 char fail[] = "fail";
 
@@ -22,14 +24,15 @@ volatile int done_count;
 pthread_mutex_t display;
 pthread_mutex_t display2;
 
-void*
-test(void* arg)
+void *
+test(void *arg)
 {
-	gid_t gid = (int)arg;
+	gid_t gid = *(gid_t *)arg;
 	gid_t ogid;
 	struct group grpbuf;
 	struct group *grp;
 	char **p;
+	char buffer[5000];
 	char buf[2048];
 	char *cpy[128];
 	int i;
@@ -46,7 +49,7 @@ test(void* arg)
 
 	/* Call getgrgid_r() */
 	printf("gid %d\n", gid);
-	CHECKn(grp = getgrgid_r(gid, &grpbuf));
+	CHECKr(getgrgid_r(gid, &grpbuf, buffer, sizeof(buffer), &grp));
 
 	/* Test for non-alteration of group structure */
 	ASSERT(grp->gr_name != fail);
@@ -152,7 +155,10 @@ main()
 
 	/* Get separate threads to do a group open separately */
 	for (gid = 0; gid < NGRPS; gid++) {
-		CHECKr(pthread_create(&thread[gid], NULL, test, (void *)gid));
+		int *n = (int *)malloc(sizeof(int));
+		*n = gid;
+
+		CHECKr(pthread_create(&thread[gid], NULL, test, (void *)n));
 	}
 
 	/* Allow all threads to run their first part */

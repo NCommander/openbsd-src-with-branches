@@ -1,3 +1,4 @@
+/*	$OpenBSD: dol.c,v 1.5 2000/10/30 17:16:46 millert Exp $	*/
 /*	$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)dol.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $";
+static char rcsid[] = "$OpenBSD: dol.c,v 1.5 2000/10/30 17:16:46 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,7 +48,7 @@ static char rcsid[] = "$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -606,11 +607,12 @@ Dgetdol()
 	    stderror(ERR_SYNTAX);
     }
     else {
-	if (subscr > 0)
+	if (subscr > 0) {
 	    if (subscr > upb)
 		lwb = 1, upb = 0;
 	    else
 		lwb = upb = subscr;
+	}
 	unDredc(c);
     }
     if (dimen) {
@@ -757,7 +759,7 @@ setDolp(cp)
 		dolmcnt--;
 	    else
 		break;
-        } else {
+	} else {
 	    int didmod = 0;
 
 	    do {
@@ -850,10 +852,9 @@ heredoc(term)
     register Char *lbp, *obp, *mbp;
     Char  **vp;
     bool    quoted;
-    char   *tmp;
+    char   tmp[] = "/tmp/sh.XXXXXXXX";
 
-    tmp = short2str(shtemp);
-    if (open(tmp, O_RDWR | O_CREAT | O_TRUNC, 0600) < 0)
+    if (mkstemp(tmp) < 0)
 	stderror(ERR_SYSTEM, tmp, strerror(errno));
     (void) unlink(tmp);		/* 0 0 inode! */
     Dv[0] = term;

@@ -1,4 +1,8 @@
 #!./perl
+#	$OpenBSD: installperl,v 1.12 2000/04/06 17:03:58 millert Exp $
+#
+# This is hacked up, in order to support DESTDIR and INSTALL_STRIP.
+#
 
 BEGIN {
     require 5.004;
@@ -28,7 +32,7 @@ use File::Copy ();
 use File::Path ();
 use ExtUtils::Packlist;
 use Config;
-use subs qw(unlink link chmod);
+use subs qw(unlink link chmod cmd);
 
 # override the ones in the rest of the script
 sub mkpath {
@@ -122,14 +126,38 @@ die "Patchlevel of perl ($patchlevel)",
     "and patchlevel of config.sh ($Config{'PERL_VERSION'}) don't match\n"
 	if $patchlevel != $Config{'PERL_VERSION'};
 
-# Fetch some frequently-used items from %Config
-my $installbin = $Config{installbin};
-my $installscript = $Config{installscript};
-my $installprivlib = $Config{installprivlib};
-my $installarchlib = $Config{installarchlib};
-my $installsitelib = $Config{installsitelib};
-my $installsitearch = $Config{installsitearch};
-my $installman1dir = $Config{installman1dir};
+my $installbin;
+my $installscript;
+my $installprivlib;
+my $installarchlib;
+my $installsitelib;
+my $installsitearch;
+my $installman1dir;
+my $installdest = $ENV{"DESTDIR"};
+
+$installdest =~ s:/+$::;
+if ($installdest ne '') {
+    # Fetch some frequently-used items from %Config, prefixing with DESTDIR.
+    $installbin = "$installdest/$Config{installbin}";
+    $installscript = "$installdest/$Config{installscript}";
+    $installprivlib = "$installdest/$Config{installprivlib}";
+    $installarchlib = "$installdest/$Config{installarchlib}";
+    $installsitelib = "$installdest/$Config{installsitelib}";
+    $installsitearch = "$installdest/$Config{installsitearch}";
+    $installman1dir = "$installdest/$Config{installman1dir}";
+    # Also whack $mainperldir.
+    $mainperldir = "$installdest/$mainperldir";
+} else {
+    # Fetch some frequently-used items from %Config
+    $installbin = $Config{installbin};
+    $installscript = $Config{installscript};
+    $installprivlib = $Config{installprivlib};
+    $installarchlib = $Config{installarchlib};
+    $installsitelib = $Config{installsitelib};
+    $installsitearch = $Config{installsitearch};
+    $installman1dir = $Config{installman1dir};
+}
+
 my $man1ext = $Config{man1ext};
 my $libperl = $Config{libperl};
 # Shared library and dynamic loading suffixes.
@@ -206,8 +234,17 @@ if ($Is_W32 or $Is_Cygwin) {
 # This will be used to store the packlist
 my $packlist = ExtUtils::Packlist->new("$installarchlib/.packlist");
 
-# First we install the version-numbered executables.
+# Get the install command from the environment
+my $installcmd;
+if (defined($ENV{"INSTALL"})) {
+    $installcmd = $ENV{"INSTALL"}
+	. " " . $ENV{"INSTALL_COPY"}
+	. " " . $ENV{"INSTALL_STRIP"};
+} else {
+    $installcmd = "cp";
+}
 
+# First we install the version-numbered executables.
 if ($Is_VMS) {
     safe_unlink("$installbin/$perl$exe_ext");
     copy("perl$exe_ext", "$installbin/$perl$exe_ext");
@@ -228,7 +265,8 @@ elsif ($^O eq 'mpeix') {
 }
 elsif ($^O ne 'dos') {
     safe_unlink("$installbin/$perl_verbase$ver$exe_ext");
-    copy("perl$exe_ext", "$installbin/$perl_verbase$ver$exe_ext");
+    #copy("perl$exe_ext", "$installbin/$perl_verbase$ver$exe_ext");
+    cmd("$installcmd perl$exe_ext $installbin/$perl_verbase$ver$exe_ext");
     strip("$installbin/$perl_verbase$ver$exe_ext");
     chmod(0755, "$installbin/$perl_verbase$ver$exe_ext");
 }
@@ -239,7 +277,8 @@ else {
 
 safe_unlink("$installbin/s$perl_verbase$ver$exe_ext");
 if ($d_dosuid) {
-    copy("suidperl$exe_ext", "$installbin/s$perl_verbase$ver$exe_ext");
+    #copy("suidperl$exe_ext", "$installbin/s$perl_verbase$ver$exe_ext");
+    cmd("$installcmd suidperl$exe_ext $installbin/s$perl_verbase$ver$exe_ext");
     chmod(04711, "$installbin/s$perl_verbase$ver$exe_ext");
 }
 
@@ -276,7 +315,9 @@ if ($Is_VMS) {  # We did core file selection during build
 }
 else {
     # [als] hard-coded 'libperl' name... not good!
-    @corefiles = <*.h libperl*.*>;
+    #@corefiles = <*.h libperl*.*>;
+    @corefiles = <*.h>;
+    push(@corefiles,<libperl*.*>) unless defined($ENV{"NOLIBINSTALL"});
 
     # AIX needs perl.exp installed as well.
     push(@corefiles,'perl.exp') if $^O eq 'aix';
@@ -361,7 +402,8 @@ if ($Config{installusrbinperl} && $Config{installusrbinperl} eq 'define' &&
 
 if (!$versiononly && ! samepath($installbin, 'x2p')) {
     safe_unlink("$installbin/a2p$exe_ext");
-    copy("x2p/a2p$exe_ext", "$installbin/a2p$exe_ext");
+    #copy("x2p/a2p$exe_ext", "$installbin/a2p$exe_ext");
+    cmd("$installcmd x2p/a2p$exe_ext $installbin/a2p$exe_ext");
     chmod(0755, "$installbin/a2p$exe_ext");
 }
 
@@ -559,6 +601,15 @@ sub link {
         $packlist->{$to} = { type => 'file' };
     }
     $success;
+}
+
+sub cmd {
+    my($cmd) = @_;
+    print STDERR "  $cmd\n";
+    unless ($nonono) {
+	system $cmd;
+	warn "Command failed!!!\n" if $?;
+    }
 }
 
 sub chmod {

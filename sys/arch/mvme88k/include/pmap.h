@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmap.h,v 1.15 2001/08/12 21:34:48 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -15,11 +16,9 @@
 #define _MACHINE_PMAP_H_
 #define OMRON_PMAP
 
-#include <machine/psl.h>		/* get standard goodies		*/
-#include <vm/vm_param.h>
-#include <vm/vm_prot.h>			/* vm_prot_t 			*/
 #include <machine/mmu.h>		/* batc_template_t, BATC_MAX, etc.*/
 #include <machine/pcb.h>		/* pcb_t, etc.*/
+#include <machine/psl.h>		/* get standard goodies		*/
 
 typedef struct sdt_entry *sdt_ptr_t;
 
@@ -32,8 +31,11 @@ struct pmap {
     sdt_ptr_t		sdt_paddr;	/* physical pointer to sdt */
     sdt_ptr_t		sdt_vaddr;	/* virtual pointer to sdt */
     int			ref_count;	/* reference count */
-
+    simple_lock_data_t	lock;
     struct pmap_statistics stats;	/* pmap statistics */
+    
+    /* cpus using of this pmap; NCPU must be <= 32 */
+    unsigned long      cpus_using;
 
 #ifdef DEBUG
     pmap_t		next;
@@ -47,33 +49,35 @@ struct pmap {
 
 }; 
 
-#include <vm/vm.h>
-
 #define PMAP_NULL ((pmap_t) 0)
-
 extern	pmap_t	kernel_pmap;
 
-#define PMAP_ACTIVATE(pmap, th, my_cpu)	_pmap_activate(pmap, th, my_cpu)
-#define PMAP_DEACTIVATE(pmap, th, my_cpu) _pmap_deactivate(pmap, th, my_cpu)
-
-#define PMAP_CONTEXT(pmap, thread)
-
-#define pmap_resident_count(pmap) ((pmap)->stats.resident_count)
-
-/* Used in builtin/device_pager.c */
-#define pmap_phys_address(frame)        ((vm_offset_t) (M88K_PTOB(frame)))
-
-/* Used in kern/mach_timedev.c */
-#define pmap_phys_to_frame(phys)        ((int) (M88K_BTOP(phys)))
-
-/*
- * Since Our PCB has no infomation about the mapping,
- * we have nothing to do in PMAP_PCB_INITIALIZE.
- * XXX
+/* 	The PV (Physical to virtual) List.
+ *
+ * For each vm_page_t, pmap keeps a list of all currently valid virtual
+ * mappings of that page. An entry is a pv_entry_t; the list is the
+ * pv_head_table. This is used by things like pmap_remove, when we must
+ * find and remove all mappings for a particular physical page.
  */
-/* Used in machine/pcb.c */
-#define PMAP_PCB_INITIALIZE(x)
+typedef  struct pv_entry {
+   struct pv_entry   *next;      /* next pv_entry */
+   pmap_t      pmap;    /* pmap where mapping lies */
+   vm_offset_t va;      /* virtual address for mapping */
+} *pv_entry_t;
 
+#ifdef	_KERNEL
+
+extern struct pmap	kernel_pmap_store;
+extern caddr_t vmmap;
+
+#define	pmap_kernel()		(&kernel_pmap_store)
+#define pmap_resident_count(pmap) ((pmap)->stats.resident_count)
+/* Used in builtin/device_pager.c */
+#define pmap_phys_address(frame)        ((vm_offset_t) (ptoa(frame)))
+
+#define PMAP_ACTIVATE(proc)	pmap_activate(proc)
+#define PMAP_DEACTIVATE(proc)	pmap_deactivate(proc)
+#define PMAP_CONTEXT(pmap, thread)
 /*
  * Modes used when calling pmap_cache_fulsh().
  */
@@ -88,11 +92,11 @@ extern	pmap_t	kernel_pmap;
 /*** Prototypes for public functions defined in pmap.c ********************/
 /**************************************************************************/
 
-void _pmap_activate(pmap_t pmap, pcb_t, int my_cpu);
-void _pmap_deactivate(pmap_t pmap, pcb_t, int my_cpu);
-void pmap_activate(pmap_t my_pmap, pcb_t);
-void pmap_deactivate(pmap_t pmap, pcb_t);
-int pmap_check_transaction(pmap_t pmap, vm_offset_t va, vm_prot_t type);
+vm_offset_t pmap_map(
+		vm_offset_t virt,
+		vm_offset_t start,
+		vm_offset_t end,
+		vm_prot_t prot);
 
 vm_offset_t pmap_map_batc(
       vm_offset_t virt,
@@ -100,15 +104,6 @@ vm_offset_t pmap_map_batc(
       vm_offset_t end,
       vm_prot_t prot,
       unsigned cmode);
-
-#ifdef JUNK
-int pmap_attribute(
-    pmap_t pmap,
-    vm_offset_t address,
-    vm_size_t size,
-    vm_machine_attribute_t attribute,
-    vm_machine_attribute_val_t* value);  /* IN/OUT */
-#endif /* JUNK */
 
 void pmap_bootstrap(
     vm_offset_t load_start, /* IN */
@@ -122,12 +117,9 @@ void pmap_cache_ctrl(pmap_t pmap, vm_offset_t s, vm_offset_t e, unsigned mode);
 void pmap_zero_page(vm_offset_t phys);
 void pmap_remove_all(vm_offset_t phys);
 vm_offset_t pmap_extract_unlocked(pmap_t pmap, vm_offset_t va);
-pmap_t pmap_kernel(void);
 void copy_to_phys(vm_offset_t srcva, vm_offset_t dstpa, int bytecount);
 void copy_from_phys(vm_offset_t srcpa, vm_offset_t dstva, int bytecount);
 void pmap_redzone(pmap_t pmap, vm_offset_t va);
-boolean_t pmap_verify_free(vm_offset_t phys);
-boolean_t pmap_valid_page(vm_offset_t p);
 void icache_flush(vm_offset_t pa);
 void pmap_dcache_flush(pmap_t pmap, vm_offset_t va);
 void pmap_cache_flush(pmap_t pmap, vm_offset_t virt, int bytes, int mode);
@@ -163,5 +155,6 @@ void pmap_print_trace (pmap_t pmap, vm_offset_t va, boolean_t long_format);
     boolean_t v);           /* is valid ? */
 #endif
 #endif /* 0 */
+#endif	/* _KERNEL */
 
 #endif /* endif  _MACHINE_PMAP_H_ */

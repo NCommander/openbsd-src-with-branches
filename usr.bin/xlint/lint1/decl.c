@@ -1,3 +1,4 @@
+/*	$OpenBSD: decl.c,v 1.4 1998/07/29 03:14:48 millert Exp $	*/
 /*	$NetBSD: decl.c,v 1.11 1995/10/02 17:34:16 jpo Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: decl.c,v 1.11 1995/10/02 17:34:16 jpo Exp $";
+static char rcsid[] = "$OpenBSD: decl.c,v 1.4 1998/07/29 03:14:48 millert Exp $";
 #endif
 
 #include <sys/param.h>
@@ -1426,7 +1427,7 @@ sym_t *
 dname(sym)
 	sym_t	*sym;
 {
-	scl_t	sc;
+	scl_t	sc = NOSCL;
 
 	if (sym->s_scl == NOSCL) {
 		dcs->d_rdcsym = NULL;
@@ -1556,7 +1557,7 @@ mktag(tag, kind, decl, semi)
 	tspec_t	kind;
 	int	decl, semi;
 {
-	scl_t	scl;
+	scl_t	scl = NOSCL;
 	type_t	*tp;
 
 	if (kind == STRUCT) {
@@ -2003,7 +2004,7 @@ isredec(dsym, warn)
  * Checks if two types are compatible. Returns 0 if not, otherwise 1.
  *
  * ignqual	ignore qualifiers of type; used for function params
- * promot	promote left type; used for comparision of params of
+ * promot	promote left type; used for comparison of params of
  *		old style function definitions with params of prototypes.
  * *warn	set to 1 if an old style function declaration is not
  *		compatible with a prototype
@@ -3089,7 +3090,7 @@ glchksz(sym)
 	if (sym->s_def == TDEF) {
 		if (sym->s_type->t_tspec == FUNC)
 			/*
-			 * this can happen if an syntax error occured
+			 * this can happen if an syntax error occurred
 			 * after a function declaration
 			 */
 			return;

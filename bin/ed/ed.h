@@ -1,3 +1,4 @@
+/*	$OpenBSD: ed.h,v 1.6 2001/01/16 03:04:45 deraadt Exp $	*/
 /*	$NetBSD: ed.h,v 1.23 1995/03/21 09:04:40 cgd Exp $	*/
 
 /* ed.h: type and constant definitions for the ed editor. */
@@ -34,7 +35,7 @@
 # include <sys/param.h>		/* for MAXPATHLEN */
 #endif
 #include <errno.h>
-#if defined(sun) || defined(__NetBSD__)
+#if defined(sun) || defined(__NetBSD__) || defined(__OpenBSD__)
 # include <limits.h>
 #endif
 #include <regex.h>
@@ -115,7 +116,7 @@ if (--mutex == 0) { \
 #define STRTOL(i, p) { \
 	if (((i = strtol(p, &p, 10)) == LONG_MIN || i == LONG_MAX) && \
 	    errno == ERANGE) { \
-		sprintf(errmsg, "number out of range"); \
+		seterrmsg("number out of range"); \
 	    	i = 0; \
 		return ERR; \
 	} \
@@ -130,15 +131,15 @@ if ((i) > (n)) { \
 	SPL1(); \
 	if ((b) != NULL) { \
 		if ((ts = (char *) realloc((b), ti += max((i), MINBUFSZ))) == NULL) { \
-			fprintf(stderr, "%s\n", strerror(errno)); \
-			sprintf(errmsg, "out of memory"); \
+			perror(NULL); \
+			seterrmsg("out of memory"); \
 			SPL0(); \
 			return err; \
 		} \
 	} else { \
 		if ((ts = (char *) malloc(ti += max((i), MINBUFSZ))) == NULL) { \
-			fprintf(stderr, "%s\n", strerror(errno)); \
-			sprintf(errmsg, "out of memory"); \
+			perror(NULL); \
+			seterrmsg("out of memory"); \
 			SPL0(); \
 			return err; \
 		} \
@@ -155,8 +156,8 @@ if ((i) > (n)) { \
 	char *ts; \
 	SPL1(); \
 	if ((ts = (char *) realloc((b), ti += max((i), MINBUFSZ))) == NULL) { \
-		fprintf(stderr, "%s\n", strerror(errno)); \
-		sprintf(errmsg, "out of memory"); \
+		perror(NULL); \
+		seterrmsg("out of memory"); \
 		SPL0(); \
 		return err; \
 	} \
@@ -246,7 +247,7 @@ int is_legal_filename __P((char *));
 int join_lines __P((long, long));
 int mark_line_node __P((line_t *, int));
 int move_lines __P((long));
-line_t *next_active_node __P(());
+line_t *next_active_node __P((void));
 long next_addr __P((void));
 int open_sbuf __P((void));
 char *parse_char_class __P((char *));
@@ -262,6 +263,7 @@ long read_stream __P((FILE *, long));
 int search_and_replace __P((pattern_t *, int, int));
 int set_active_node __P((line_t *));
 void set_des_key __P((char *));
+void seterrmsg __P((char *));
 void signal_hup __P((int));
 void signal_int __P((int));
 char *strip_escapes __P((char *));
@@ -288,7 +290,7 @@ extern int sigflags;
 /* global vars */
 extern long addr_last;
 extern long current_addr;
-extern char errmsg[];
+extern char errmsg[MAXPATHLEN + 40];
 extern long first_addr;
 extern int lineno;
 extern long second_addr;

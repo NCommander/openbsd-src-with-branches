@@ -1,3 +1,4 @@
+/*	$OpenBSD: ls.h,v 1.3 1999/02/20 18:59:25 deraadt Exp $	*/
 /*	$NetBSD: ls.h,v 1.7 1995/03/21 09:06:33 cgd Exp $	*/
 
 /*
@@ -46,10 +47,12 @@ extern int f_accesstime;	/* use time of last access */
 extern int f_flags;		/* show flags associated with a file */
 extern int f_inode;		/* print inode */
 extern int f_longform;		/* long listing format */
+extern int f_nonprint;		/* show unprintables as ? */
 extern int f_sectime;		/* print the real time for all files */
 extern int f_size;		/* list size in short listing */
 extern int f_statustime;	/* use time of last mode change */
 extern int f_type;		/* add type character for non-regular files */
+extern int f_typedir;		/* add type character for directories */
 
 typedef struct {
 	FTSENT *list;

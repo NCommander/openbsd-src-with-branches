@@ -1,3 +1,4 @@
+/*	$OpenBSD: ctags.h,v 1.3 1995/03/26 20:14:07 glass Exp $	*/
 /*	$NetBSD: ctags.h,v 1.3 1995/03/26 20:14:07 glass Exp $	*/
 
 /*

@@ -1,4 +1,5 @@
-/*	$NetBSD: biz22.c,v 1.3 1994/12/08 09:31:31 jtc Exp $	*/
+/*	$OpenBSD: biz22.c,v 1.5 2001/07/12 05:17:24 deraadt Exp $	*/
+/*	$NetBSD: biz22.c,v 1.6 1997/02/11 09:24:11 mrg Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)biz22.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: biz22.c,v 1.3 1994/12/08 09:31:31 jtc Exp $";
+static char rcsid[] = "$OpenBSD: biz22.c,v 1.5 2001/07/12 05:17:24 deraadt Exp $";
 #endif /* not lint */
 
 #include "tip.h"
@@ -47,6 +48,9 @@ static char rcsid[] = "$NetBSD: biz22.c,v 1.3 1994/12/08 09:31:31 jtc Exp $";
 static	void sigALRM();
 static	int timeout = 0;
 static	jmp_buf timeoutbuf;
+
+static	int cmd(), detect();
+void	biz22_disconnect();
 
 /*
  * Dial up on a BIZCOMP Model 1022 with either
@@ -59,7 +63,6 @@ biz_dialer(num, mod)
 {
 	register int connected = 0;
 	char cbuf[40];
-	static int cmd(), detect();
 
 	if (boolean(value(VERBOSE)))
 		printf("\nstarting call...");
@@ -71,15 +74,13 @@ biz_dialer(num, mod)
 		printf("can't initialize bizcomp...");
 		return (0);
 	}
-	strcpy(cbuf, "\02.\r");
+	(void)strcpy(cbuf, "\02.\r");
 	cbuf[1] = *mod;
 	if (cmd(cbuf)) {
 		printf("can't set dialing mode...");
 		return (0);
 	}
-	strcpy(cbuf, "\02D");
-	strcat(cbuf, num);
-	strcat(cbuf, "\r");
+	(void)snprintf(cbuf, sizeof(cbuf), "\02D%s\r", num);
 	write(FD, cbuf, strlen(cbuf));
 	if (!detect("7\r")) {
 		printf("can't get dial tone...");
@@ -97,7 +98,7 @@ biz_dialer(num, mod)
 	if (timeout) {
 		char line[80];
 
-		sprintf(line, "%d second dial timeout",
+		(void)sprintf(line, "%ld second dial timeout",
 			number(value(DIALTIMEOUT)));
 		logent(value(HOST), num, "biz1022", line);
 	}
@@ -107,6 +108,7 @@ biz_dialer(num, mod)
 	return (connected);
 }
 
+int
 biz22w_dialer(num, acu)
 	char *num, *acu;
 {
@@ -114,6 +116,7 @@ biz22w_dialer(num, acu)
 	return (biz_dialer(num, "W"));
 }
 
+int
 biz22f_dialer(num, acu)
 	char *num, *acu;
 {
@@ -121,15 +124,15 @@ biz22f_dialer(num, acu)
 	return (biz_dialer(num, "V"));
 }
 
+void
 biz22_disconnect()
 {
-	int rw = 2;
-
 	write(FD, DISCONNECT_CMD, 4);
 	sleep(2);
-	ioctl(FD, TIOCFLUSH, &rw);
+	tcflush(FD, TCIOFLUSH);
 }
 
+void
 biz22_abort()
 {
 

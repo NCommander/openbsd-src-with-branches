@@ -6,7 +6,8 @@
 #include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
-	RCSID("$NetBSD: swab.S,v 1.9 1995/04/28 22:58:16 jtc Exp $")
+	.text
+	.asciz "$OpenBSD$"
 #endif
 
 /*

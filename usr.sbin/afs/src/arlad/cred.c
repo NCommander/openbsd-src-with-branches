@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -42,7 +41,7 @@
  */
 
 #include "arla_local.h"
-RCSID("$KTH: cred.c,v 1.22 1998/06/08 22:26:59 map Exp $");
+RCSID("$Id: cred.c,v 1.32 2000/02/20 04:23:49 assar Exp $");
 
 #define CREDCACHESIZE 101
 
@@ -122,7 +121,7 @@ cred_init (unsigned nentries)
 }
 
 static CredCacheEntry *
-internal_get (long cell, pag_t cred, int type)
+internal_get (long cell, xfs_pag_t cred, int type)
 {
     CredCacheEntry *e;
     CredCacheEntry key;
@@ -134,7 +133,7 @@ internal_get (long cell, pag_t cred, int type)
     e = (CredCacheEntry *)hashtabsearch (credhtab, (void *)&key);
 
     if (e == NULL && type == CRED_NONE) {
-	e = cred_add (cred, type, 0, cell, 0, NULL, 0);
+	e = cred_add (cred, type, 0, cell, 0, NULL, 0, 0);
     }
 
     if (e != NULL)
@@ -144,7 +143,7 @@ internal_get (long cell, pag_t cred, int type)
 }
 
 CredCacheEntry *
-cred_get (long cell, pag_t cred, int type)
+cred_get (long cell, xfs_pag_t cred, int type)
 {
     if (type == CRED_ANY) {
 	CredCacheEntry *e;
@@ -200,8 +199,9 @@ get_free_cred (void)
 }
 
 CredCacheEntry *
-cred_add (pag_t cred, int type, int securityindex, long cell,
-	  time_t expire, void *cred_data, size_t cred_data_sz)
+cred_add (xfs_pag_t cred, int type, int securityindex, long cell,
+	  time_t expire, void *cred_data, size_t cred_data_sz,
+	  uid_t uid)
 {
     void *data;
     CredCacheEntry *e;
@@ -222,7 +222,8 @@ cred_add (pag_t cred, int type, int securityindex, long cell,
     e->securityindex = securityindex;
     e->cell          = cell;
     e->expire        = expire;
-    e->cred_data = data;
+    e->cred_data     = data;
+    e->uid           = uid;
 
     old = hashtabsearch (credhtab, e);
     if (old != NULL)
@@ -235,7 +236,7 @@ cred_add (pag_t cred, int type, int securityindex, long cell,
 
 #if KERBEROS
 CredCacheEntry *
-cred_add_krb4 (pag_t cred, CREDENTIALS *c)
+cred_add_krb4 (xfs_pag_t cred, uid_t uid, CREDENTIALS *c)
 {
     CredCacheEntry *ce;
     char *cellname;
@@ -245,12 +246,15 @@ cred_add_krb4 (pag_t cred, CREDENTIALS *c)
 	cellname = strdup (c->realm);
     else
 	cellname = strdup (c->instance);
+    if (cellname == NULL)
+	return NULL;
     strlwr (cellname);
     cellnum = cell_name2num(cellname);
     free (cellname);
-    assert (cellnum != -1);
+    if (cellnum == -1)
+	return NULL;
 
-    ce = cred_add (cred, CRED_KRB4, 2, cellnum, -1, c, sizeof(*c));
+    ce = cred_add (cred, CRED_KRB4, 2, cellnum, -1, c, sizeof(*c), uid);
     return ce;
 }
 #endif
@@ -275,6 +279,24 @@ cred_delete (CredCacheEntry *ce)
 void
 cred_expire (CredCacheEntry *ce)
 {
+    const char *cell_name = cell_num2name (ce->cell);
+    struct passwd *pwd = getpwuid (ce->uid);
+    const char *user_name;
+
+    if (pwd != NULL)
+	user_name = pwd->pw_name;
+    else
+	user_name = "<who-are-you?>";
+
+    if (cell_name != NULL)
+	arla_warnx (ADEBWARN,
+		    "Credentials for %s (%u) in cell %s has expired",
+		    user_name, (unsigned)ce->uid, cell_name);
+    else
+	arla_warnx (ADEBWARN,
+		    "Credentials for %s (%u) in cell unknown %ld has expired",
+		    user_name, (unsigned)ce->uid, ce->cell);
+
     cred_delete (ce);
 }
 
@@ -282,7 +304,7 @@ static Bool
 remove_entry (void *ptr, void *arg)
 {
     CredCacheEntry *ce = (CredCacheEntry *)ptr;
-    pag_t *cred = (pag_t *)arg;
+    xfs_pag_t *cred = (xfs_pag_t *)arg;
 
     if (ce->cred == *cred)
 	cred_delete (ce);
@@ -290,7 +312,7 @@ remove_entry (void *ptr, void *arg)
 }
 
 void
-cred_remove (pag_t cred)
+cred_remove (xfs_pag_t cred)
 {
     hashtabforeach (credhtab, remove_entry, &cred);
 }
@@ -299,19 +321,18 @@ static Bool
 print_cred (void *ptr, void *arg)
 {
     CredCacheEntry *e = (CredCacheEntry *)ptr;
-    FILE *f = (FILE *)arg;
 
-    fprintf (f, "cred = %u, type = %d, securityindex = %d\n"
-	     "cell = %ld, refcount = %u, killme = %d\n\n",
+    arla_log(ADEBVLOG, "cred = %u, type = %d, securityindex = %d, "
+	     "cell = %ld, refcount = %u, killme = %d, uid = %lu",
 	     e->cred, e->type, e->securityindex, e->cell, e->refcount,
-	     e->flags.killme);
+	     e->flags.killme, (unsigned long)e->uid);
     return FALSE;
 }
 
 void
-cred_status (FILE *f)
+cred_status (void)
 {
-    fprintf (f, "%u(%u) credentials\n",
+    arla_log(ADEBVLOG, "%u(%u) credentials",
 	     nactive_credentials, ncredentials);
-    hashtabforeach (credhtab, print_cred, f);
+    hashtabforeach (credhtab, print_cred, NULL);
 }

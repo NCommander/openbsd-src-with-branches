@@ -1,4 +1,5 @@
-/*	$NetBSD: extern.h,v 1.7 1995/03/21 09:11:16 cgd Exp $	*/
+/*	$OpenBSD: extern.h,v 1.3 1996/06/23 14:21:50 deraadt Exp $	*/
+/*	$NetBSD: extern.h,v 1.8 1996/05/07 18:20:06 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -35,6 +36,8 @@
  *	@(#)extern.h	8.1 (Berkeley) 5/31/93
  */
 
+extern char *__progname;
+
 int	c_cchars __P((const void *, const void *));
 int	c_modes __P((const void *, const void *));
 int	csearch __P((char ***, struct info *));
@@ -47,4 +50,4 @@ void	optlist __P((void));
 void	print __P((struct termios *, struct winsize *, int, enum FMT));
 void	usage __P((void));
 
-extern struct cchar cchars1[], cchars2[];
+extern const struct cchar cchars1[], cchars2[];

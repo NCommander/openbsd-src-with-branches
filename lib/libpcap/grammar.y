@@ -1,8 +1,8 @@
 %{
-/*	$NetBSD: grammar.y,v 1.2 1995/03/06 11:38:27 mycroft Exp $	*/
+/*	$OpenBSD: grammar.y,v 1.7 2000/04/26 21:25:53 jakob Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,25 +23,34 @@
  *
  */
 #ifndef lint
-static char rcsid[] =
-    "@(#) Header: grammar.y,v 1.39 94/06/14 20:09:25 leres Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/lib/libpcap/grammar.y,v 1.7 2000/04/26 21:25:53 jakob Exp $ (LBL)";
 #endif
 
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 
+#ifdef __STDC__
+struct mbuf;
+struct rtentry;
+#endif
+
 #include <net/if.h>
-#include <net/bpf.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
 #include <stdio.h>
-#include <pcap.h>
-#include <pcap-namedb.h>
+
+#include "pcap-int.h"
 
 #include "gencode.h"
+#include <pcap-namedb.h>
+
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
+#endif
 
 #define QSET(q, p, d, a) (q).proto = (p),\
 			 (q).dir = (d),\
@@ -55,11 +64,14 @@ static void
 yyerror(char *msg)
 {
 	++n_errors;
-	bpf_error(msg);
+	bpf_error("%s", msg);
 	/* NOTREACHED */
 }
 
 #ifndef YYBISON
+int yyparse(void);
+
+int
 pcap_parse()
 {
 	return (yyparse());
@@ -70,7 +82,7 @@ pcap_parse()
 
 %union {
 	int i;
-	u_long h;
+	bpf_u_int32 h;
 	u_char *e;
 	char *s;
 	struct stmt *stmt;
@@ -91,20 +103,21 @@ pcap_parse()
 %type	<rblk>	other
 
 %token  DST SRC HOST GATEWAY
-%token  NET PORT LESS GREATER PROTO BYTE
-%token  ARP RARP IP TCP UDP ICMP
-%token  DECNET LAT MOPRC MOPDL
+%token  NET MASK PORT LESS GREATER PROTO PROTOCHAIN BYTE
+%token  ARP RARP IP TCP UDP ICMP IGMP IGRP PIM
+%token  ATALK DECNET LAT SCA MOPRC MOPDL
 %token  TK_BROADCAST TK_MULTICAST
 %token  NUM INBOUND OUTBOUND
 %token  LINK
 %token	GEQ LEQ NEQ
-%token	ID EID HID
+%token	ID EID HID HID6
 %token	LSH RSH
 %token  LEN
+%token  IPV6 ICMPV6 AH ESP
 
 %type	<s> ID
 %type	<e> EID
-%type	<h> HID
+%type	<s> HID HID6
 %type	<i> NUM
 
 %left OR AND
@@ -135,26 +148,44 @@ and:	  AND			{ $$ = $<blk>0; }
 or:	  OR			{ $$ = $<blk>0; }
 	;
 id:	  nid
-	| pnum			{ $$.b = gen_ncode((u_long)$1,
+	| pnum			{ $$.b = gen_ncode(NULL, (bpf_u_int32)$1,
 						   $$.q = $<blk>0.q); }
 	| paren pid ')'		{ $$ = $2; }
 	;
 nid:	  ID			{ $$.b = gen_scode($1, $$.q = $<blk>0.q); }
+	| HID '/' NUM		{ $$.b = gen_mcode($1, NULL, $3,
+				    $$.q = $<blk>0.q); }
+	| HID MASK HID		{ $$.b = gen_mcode($1, $3, 0,
+				    $$.q = $<blk>0.q); }
 	| HID			{
 				  /* Decide how to parse HID based on proto */
 				  $$.q = $<blk>0.q;
 				  switch ($$.q.proto) {
 				  case Q_DECNET:
-					$$.b =
-					    gen_ncode(__pcap_atodn((char *)$1),
-					    $$.q);
+					$$.b = gen_ncode($1, 0, $$.q);
 					break;
 				  default:
-					$$.b =
-					    gen_ncode(__pcap_atoin((char *)$1),
-					    $$.q);
+					$$.b = gen_ncode($1, 0, $$.q);
 					break;
 				  }
+				}
+	| HID6 '/' NUM		{
+#ifdef INET6
+				  $$.b = gen_mcode6($1, NULL, $3,
+				    $$.q = $<blk>0.q);
+#else
+				  bpf_error("'ip6addr/prefixlen' not supported "
+					"in this configuration");
+#endif /*INET6*/
+				}
+	| HID6			{
+#ifdef INET6
+				  $$.b = gen_mcode6($1, 0, 128,
+				    $$.q = $<blk>0.q);
+#else
+				  bpf_error("'ip6addr' not supported "
+					"in this configuration");
+#endif /*INET6*/
 				}
 	| EID			{ $$.b = gen_ecode($1, $$.q = $<blk>0.q); }
 	| not id		{ gen_not($2.b); $$ = $2; }
@@ -167,7 +198,7 @@ pid:	  nid
 	| qid and id		{ gen_and($1.b, $3.b); $$ = $3; }
 	| qid or id		{ gen_or($1.b, $3.b); $$ = $3; }
 	;
-qid:	  pnum			{ $$.b = gen_ncode((u_long)$1,
+qid:	  pnum			{ $$.b = gen_ncode(NULL, (bpf_u_int32)$1,
 						   $$.q = $<blk>0.q); }
 	| pid
 	;
@@ -178,6 +209,7 @@ head:	  pqual dqual aqual	{ QSET($$.q, $1, $2, $3); }
 	| pqual dqual		{ QSET($$.q, $1, $2, Q_DEFAULT); }
 	| pqual aqual		{ QSET($$.q, $1, Q_DEFAULT, $2); }
 	| pqual PROTO		{ QSET($$.q, $1, Q_DEFAULT, Q_PROTO); }
+	| pqual PROTOCHAIN	{ QSET($$.q, $1, Q_DEFAULT, Q_PROTOCHAIN); }
 	| pqual ndaqual		{ QSET($$.q, $1, Q_DEFAULT, $2); }
 	;
 rterm:	  head id		{ $$ = $2; }
@@ -216,10 +248,19 @@ pname:	  LINK			{ $$ = Q_LINK; }
 	| TCP			{ $$ = Q_TCP; }
 	| UDP			{ $$ = Q_UDP; }
 	| ICMP			{ $$ = Q_ICMP; }
+	| IGMP			{ $$ = Q_IGMP; }
+	| IGRP			{ $$ = Q_IGRP; }
+	| PIM			{ $$ = Q_PIM; }
+	| ATALK			{ $$ = Q_ATALK; }
 	| DECNET		{ $$ = Q_DECNET; }
 	| LAT			{ $$ = Q_LAT; }
+	| SCA			{ $$ = Q_SCA; }
 	| MOPDL			{ $$ = Q_MOPDL; }
 	| MOPRC			{ $$ = Q_MOPRC; }
+	| IPV6			{ $$ = Q_IPV6; }
+	| ICMPV6		{ $$ = Q_ICMPV6; }
+	| AH			{ $$ = Q_AH; }
+	| ESP			{ $$ = Q_ESP; }
 	;
 other:	  pqual TK_BROADCAST	{ $$ = gen_broadcast($1); }
 	| pqual TK_MULTICAST	{ $$ = gen_multicast($1); }

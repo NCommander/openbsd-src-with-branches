@@ -1,5 +1,5 @@
-.\" Copyright (c) 1990, 1991 The Regents of the University of California.
-.\" All rights reserved.
+.\" Copyright (c) 1990, 1991, 1993
+.\"    The Regents of the University of California.  All rights reserved.
 .\"
 .\" This code is derived from software contributed to Berkeley by
 .\" the American National Standards Committee X3, on Information
@@ -33,10 +33,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)atoi.3	5.3 (Berkeley) 6/29/91
-.\"	$Id: atoi.3,v 1.2 1993/08/01 07:44:34 mycroft Exp $
+.\"	$OpenBSD: atoi.3,v 1.4 1999/09/13 07:14:13 deraadt Exp $
 .\"
-.Dd June 29, 1991
+.Dd June 4, 1993
 .Dt ATOI 3
 .Os
 .Sh NAME
@@ -52,16 +51,27 @@ string to integer
 The
 .Fn atoi
 function converts the initial portion of the string pointed to by
-.Em nptr
+.Fa nptr
 to
-.Em integer
+.Li integer
 representation.
 .Pp
 It is equivalent to:
-.Pp
 .Bd -literal -offset indent
 (int)strtol(nptr, (char **)NULL, 10);
 .Ed
+.Sh CAVEATS
+.Nm
+does no overflow checking, handles unsigned numbers poorly,
+and handles strings containing trailing extra characters
+(like
+.Dq "123abc" Ns )
+poorly.
+Careful use of
+.Xr strtol 3
+and
+.Xr strtoul 3
+can alleviate these problems.
 .Sh SEE ALSO
 .Xr atof 3 ,
 .Xr atol 3 ,

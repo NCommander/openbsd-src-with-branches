@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_readdir.c,v 1.4 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: readdir.c,v 1.1.1.1 2001/08/15 14:37:12 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -45,6 +45,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "test.h"
 
 int

@@ -1,4 +1,5 @@
-/*	$NetBSD: cmds.c,v 1.3 1995/08/31 22:20:18 jtc Exp $	*/
+/*	$OpenBSD: cmds.c,v 1.5 1997/06/23 22:21:45 millert Exp $	*/
+/*	$NetBSD: cmds.c,v 1.4 1996/05/10 23:16:32 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1992, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)cmds.c	8.2 (Berkeley) 4/29/95";
 #endif
-static char rcsid[] = "$NetBSD: cmds.c,v 1.3 1995/08/31 22:20:18 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cmds.c,v 1.5 1997/06/23 22:21:45 millert Exp $";
 #endif /* not lint */
 
 #include <stdlib.h>
@@ -54,9 +55,12 @@ command(cmd)
 {
         register struct cmdtab *p;
         register char *cp;
-	int interval, omask;
+	int interval;
+	sigset_t mask, omask;
 
-	omask = sigblock(sigmask(SIGALRM));
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGALRM);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
         for (cp = cmd; *cp && !isspace(*cp); cp++)
                 ;
         if (*cp)
@@ -143,7 +147,7 @@ command(cmd)
 	if (curcmd->c_cmd == 0 || !(*curcmd->c_cmd)(cmd, cp))
 		error("%s: Unknown command.", cmd);
 done:
-	sigsetmask(omask);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
 }
 
 struct cmdtab *
@@ -157,7 +161,7 @@ lookup(name)
 	longest = 0;
 	nmatches = 0;
 	found = (struct cmdtab *) 0;
-	for (c = cmdtab; p = c->c_name; c++) {
+	for (c = cmdtab; (p = c->c_name); c++) {
 		for (q = name; *q == *p++; q++)
 			if (*q == 0)		/* exact match? */
 				return (c);
@@ -170,7 +174,7 @@ lookup(name)
 				nmatches++;
 		}
 	}
-	if (nmatches != 1)
+	if (nmatches > 1)
 		return ((struct cmdtab *)-1);
 	return (found);
 }

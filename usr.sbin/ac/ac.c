@@ -14,7 +14,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: ac.c,v 1.3 1994/05/01 04:39:35 cgd Exp $";
+static char rcsid[] = "$Id: ac.c,v 1.8 2001/05/05 07:12:50 mickey Exp $";
 #endif
 
 #include <sys/types.h>
@@ -104,7 +104,9 @@ file(name)
 {
 	FILE *fp;
 
-	if ((fp = fopen(name, "r")) == NULL)
+	if (strcmp(name, "-") == 0)
+		fp = stdin;
+	else if ((fp = fopen(name, "r")) == NULL)
 		err(1, "%s", name);
 	/* in case we want to discriminate */
 	if (strcmp(_PATH_WTMP, name))
@@ -129,8 +131,7 @@ add_tty(name)
 		tp->ret = 0;
 		name++;
 	}
-	(void)strncpy(tp->name, name, sizeof (tp->name) - 1);
-	tp->name[sizeof (tp->name) - 1] = '\0';
+	strlcpy(tp->name, name, sizeof (tp->name));
 	if ((rcp = strchr(tp->name, '*')) != NULL) {	/* wild card */
 		*rcp = '\0';
 		tp->len = strlen(tp->name);	/* match len bytes only */
@@ -195,7 +196,7 @@ update_user(head, name, secs)
 	struct user_list *up;
 
 	for (up = head; up != NULL; up = up->next) {
-		if (strncmp(up->name, name, sizeof (up->name)) == 0) {
+		if (strncmp(up->name, name, sizeof (up->name) - 1) == 0) {
 			up->secs += secs;
 			Total += secs;
 			return head;
@@ -210,8 +211,7 @@ update_user(head, name, secs)
 	if ((up = NEW(struct user_list)) == NULL)
 		err(1, "malloc");
 	up->next = head;
-	(void)strncpy(up->name, name, sizeof (up->name) - 1);
-	up->name[sizeof (up->name) - 1] = '\0';	/* paranoid! */
+	strlcpy(up->name, name, sizeof (up->name));
 	up->secs = secs;
 	Total += secs;
 	return up;
@@ -226,7 +226,7 @@ main(argc, argv)
 	int c;
 
 	fp = NULL;
-	while ((c = getopt(argc, argv, "Dc:dpt:w:")) != EOF) {
+	while ((c = getopt(argc, argv, "Dc:dpt:w:")) != -1) {
 		switch (c) {
 #ifdef DEBUG
 		case 'D':
@@ -420,8 +420,7 @@ log_in(head, up)
 		/*
 		 * this allows us to pick the right logout
 		 */
-		(void)strncpy(up->ut_line, Console, sizeof (up->ut_line) - 1);
-		up->ut_line[sizeof (up->ut_line) - 1] = '\0'; /* paranoid! */
+		strlcpy(up->ut_line, Console, sizeof (up->ut_line));
 	}
 #endif
 	/*
@@ -460,7 +459,7 @@ ac(fp)
 	struct utmp_list *lp, *head = NULL;
 	struct utmp usr;
 	struct tm *ltm;
-	time_t secs;
+	time_t secs = 0;
 	int day = -1;
 	
 	while (fread((char *)&usr, sizeof(usr), 1, fp) == 1) {
@@ -499,12 +498,12 @@ ac(fp)
 			break;
 		default:
 			/*
-			 * if they came in on tty[p-y]*, then it is only
+			 * if they came in on a pseudo-tty, then it is only
 			 * a login session if the ut_host field is non-empty
 			 */
 			if (*usr.ut_name) {
 				if (strncmp(usr.ut_line, "tty", 3) != 0 ||
-				    strchr("pqrstuvwxy", usr.ut_line[3]) == 0 ||
+				    strchr("pqrstuvwxyzPQRST", usr.ut_line[3]) != 0 ||
 				    *usr.ut_host != '\0')
 					head = log_in(head, &usr);
 			} else
@@ -513,7 +512,8 @@ ac(fp)
 		}
 	}
 	(void)fclose(fp);
-	usr.ut_time = time((time_t *)0);
+	if (!(Flags & AC_W))
+		usr.ut_time = time((time_t *)0);
 	(void)strcpy(usr.ut_line, "~");
 	
 	if (Flags & AC_D) {
@@ -547,11 +547,14 @@ ac(fp)
 void
 usage()
 {
+	extern char *__progname;
 	(void)fprintf(stderr,
 #ifdef CONSOLE_TTY
-	    "ac [-dp] [-c console] [-t tty] [-w wtmp] [users ...]\n");
+	    "%s [-d | -p] [-c console] [-t tty] [-w wtmp] [users ...]\n",
+	    __progname);
 #else
-	    "ac [-dp] [-t tty] [-w wtmp] [users ...]\n");
+	    "%s [-d | -p] [-t tty] [-w wtmp] [users ...]\n",
+	    __progname);
 #endif
 	exit(1);
 }

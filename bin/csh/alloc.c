@@ -1,3 +1,4 @@
+/*	$OpenBSD: alloc.c,v 1.5 2001/06/25 04:41:24 art Exp $	*/
 /*	$NetBSD: alloc.c,v 1.6 1995/03/21 09:02:23 cgd Exp $	*/
 
 /*-
@@ -37,14 +38,14 @@
 #if 0
 static char sccsid[] = "@(#)alloc.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: alloc.c,v 1.6 1995/03/21 09:02:23 cgd Exp $";
+static char rcsid[] = "$OpenBSD: alloc.c,v 1.5 2001/06/25 04:41:24 art Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -125,6 +126,6 @@ showall(v, t)
     struct command *t;
 {
     memtop = (char *) sbrk(0);
-    (void) fprintf(cshout, "Allocated memory from 0x%lx to 0x%lx (%ld).\n",
-	    (unsigned long) membot, (unsigned long) memtop, memtop - membot);
+    (void) fprintf(cshout, "Allocated memory from 0x%lx to 0x%lx (%d).\n",
+	    (unsigned long) membot, (unsigned long) memtop, (int)(memtop - membot));
 }

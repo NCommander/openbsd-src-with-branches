@@ -1,5 +1,3 @@
-/*	$NetBSD: getprotoent.c,v 1.4 1995/02/25 06:20:35 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getprotoent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getprotoent.c,v 1.4 1995/02/25 06:20:35 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: getprotoent.c,v 1.3 1998/03/16 05:06:59 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -80,20 +74,25 @@ endprotoent()
 struct protoent *
 getprotoent()
 {
-	char *p;
-	register char *cp, **q;
+	char *p, *cp, **q, *endp;
+	long l;
+	size_t len;
 
 	if (protof == NULL && (protof = fopen(_PATH_PROTOCOLS, "r" )) == NULL)
 		return (NULL);
 again:
-	if ((p = fgets(line, BUFSIZ, protof)) == NULL)
+	if ((p = fgetln(protof, &len)) == NULL)
 		return (NULL);
+	if (p[len-1] == '\n')
+		len--;
+	if (len >= sizeof(line) || len == 0)
+		goto again;
+	p = memcpy(line, p, len);
+	line[len] = '\0';
 	if (*p == '#')
 		goto again;
-	cp = strpbrk(p, "#\n");
-	if (cp == NULL)
-		goto again;
-	*cp = '\0';
+	if ((cp = strchr(p, '#')) != NULL)
+		*cp = '\0';
 	proto.p_name = p;
 	cp = strpbrk(p, " \t");
 	if (cp == NULL)
@@ -104,7 +103,10 @@ again:
 	p = strpbrk(cp, " \t");
 	if (p != NULL)
 		*p++ = '\0';
-	proto.p_proto = atoi(cp);
+	l = strtol(cp, &endp, 10);
+	if (endp == cp || *endp != '\0' || l < 0 || l >= INT_MAX)
+		goto again;
+	proto.p_proto = l;
 	q = proto.p_aliases = proto_aliases;
 	if (p != NULL) {
 		cp = p;

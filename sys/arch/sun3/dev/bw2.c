@@ -1,4 +1,5 @@
-/*	$NetBSD: bw2.c,v 1.4 1995/04/10 07:05:56 mycroft Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: bw2.c,v 1.8 1996/10/13 03:47:25 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -51,14 +52,17 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/mman.h>
 #include <sys/tty.h>
+#include <sys/conf.h>
 
 #include <vm/vm.h>
 
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <machine/fbio.h>
 #include <machine/autoconf.h>
@@ -81,39 +85,45 @@ struct bw2_softc {
 static void	bw2attach __P((struct device *, struct device *, void *));
 static int	bw2match __P((struct device *, void *, void *));
 
-struct cfdriver bwtwocd = {
-	NULL, "bwtwo", bw2match, bw2attach,
-	DV_DULL, sizeof(struct bw2_softc) };
+struct cfattach bwtwo_ca = {
+	sizeof(struct bw2_softc), bw2match, bw2attach
+};
+
+struct cfdriver bwtwo_cd = {
+	NULL, "bwtwo", DV_DULL
+};
 
 /* XXX we do not handle frame buffer interrupts */
 
-/* frame buffer generic driver */
-int bw2open(), bw2close(), bw2ioctl(), bw2mmap();
-
-static int  bw2gvideo __P((struct fbdevice *, int *));
+static int	bw2gvideo __P((struct fbdevice *, int *));
 static int	bw2svideo __P((struct fbdevice *, int *));
 
 static struct fbdriver bw2fbdriver = {
 	bw2open, bw2close, bw2mmap,
-	enoioctl, /* gattr */
+	(void *)enoioctl, /* gattr */
 	bw2gvideo, bw2svideo,
-	enoioctl, enoioctl };
+	(void *)enoioctl, (void *)enoioctl /* getcmap, putcmap */
+};
 
 static int
 bw2match(parent, vcf, args)
 	struct device *parent;
 	void *vcf, *args;
 {
+#if 0
 	struct cfdata *cf = vcf;
+#endif
 	struct confargs *ca = args;
 	int x;
 
+#if 0	/* XXX - Assume only one is in use anyway... */
 	/*
 	 * This driver only supports one unit because the
 	 * system enable register is used for blanking.
 	 */
 	if (cf->cf_unit != 0)
 		return (0);
+#endif
 
 	if (ca->ca_paddr == -1) {
 		if (cpu_machine_id == SUN3_MACH_50)
@@ -139,7 +149,6 @@ bw2attach(parent, self, args)
 	struct fbdevice *fb = &sc->sc_fb;
 	struct confargs *ca = args;
 	struct fbtype *fbt;
-	int ramsize;
 
 	sc->sc_phys = ca->ca_paddr;
 
@@ -182,7 +191,7 @@ bw2open(dev, flags, mode, p)
 {
 	int unit = minor(dev);
 
-	if (unit >= bwtwocd.cd_ndevs || bwtwocd.cd_devs[unit] == NULL)
+	if (unit >= bwtwo_cd.cd_ndevs || bwtwo_cd.cd_devs[unit] == NULL)
 		return (ENXIO);
 	return (0);
 }
@@ -205,7 +214,7 @@ bw2ioctl(dev, cmd, data, flags, p)
 	int flags;
 	struct proc *p;
 {
-	struct bw2_softc *sc = bwtwocd.cd_devs[minor(dev)];
+	struct bw2_softc *sc = bwtwo_cd.cd_devs[minor(dev)];
 
 	return (fbioctlfb(&sc->sc_fb, cmd, data));
 }
@@ -219,7 +228,7 @@ bw2mmap(dev, off, prot)
 	dev_t dev;
 	int off, prot;
 {
-	struct bw2_softc *sc = bwtwocd.cd_devs[minor(dev)];
+	struct bw2_softc *sc = bwtwo_cd.cd_devs[minor(dev)];
 
 	if (off & PGOFSET)
 		return (-1);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: rbootd.c,v 1.7 2001/01/19 17:53:18 deraadt Exp $	*/
 /*	$NetBSD: rbootd.c,v 1.5 1995/10/06 05:12:17 thorpej Exp $	*/
 
 /*
@@ -54,7 +55,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)rbootd.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: rbootd.c,v 1.5 1995/10/06 05:12:17 thorpej Exp $";
+static char rcsid[] = "$OpenBSD: rbootd.c,v 1.7 2001/01/19 17:53:18 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -78,8 +79,9 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	int c, fd, omask, maxfds;
+	int c, fd, maxfds;
 	fd_set rset;
+	sigset_t hmask, omask;
 
 	/*
 	 *  Close any open file descriptors.
@@ -98,7 +100,7 @@ main(argc, argv)
 	/*
 	 *  Parse any arguments.
 	 */
-	while ((c = getopt(argc, argv, "adi:")) != EOF)
+	while ((c = getopt(argc, argv, "adi:")) != -1)
 		switch(c) {
 		    case 'a':
 			BootAny++;
@@ -114,7 +116,7 @@ main(argc, argv)
 		if (ConfigFile == NULL)
 			ConfigFile = argv[optind];
 		else {
-			warnx("too many config files (`%s' ignored)\n",
+			warnx("too many config files (`%s' ignored)",
 			    argv[optind]);
 		}
 	}
@@ -151,7 +153,8 @@ main(argc, argv)
 
 		if ((IntfName = BpfGetIntfName(&errmsg)) == NULL) {
 			syslog(LOG_NOTICE, "restarted (??)");
-			syslog(LOG_ERR, errmsg);
+			/* BpfGetIntfName() returns safe names, using %m */
+			syslog(LOG_ERR, "%s", errmsg);
 			Exit(0);
 		}
 	}
@@ -199,7 +202,9 @@ main(argc, argv)
 	/*
 	 *  Initial configuration.
 	 */
-	omask = sigblock(sigmask(SIGHUP));	/* prevent reconfig's */
+	sigemptyset(&hmask);
+	sigaddset(&hmask, SIGHUP);
+	sigprocmask(SIG_BLOCK, &hmask, &omask);	/* prevent reconfig's */
 	if (GetBootFiles() == 0)		/* get list of boot files */
 		Exit(0);
 	if (ParseConfig() == 0)			/* parse config file */
@@ -212,7 +217,7 @@ main(argc, argv)
 	 */
 	fd = BpfOpen();
 
-	(void) sigsetmask(omask);		/* allow reconfig's */
+	sigprocmask(SIG_SETMASK, &omask, NULL);	/* allow reconfig's */
 
 	/*
 	 *  Main loop: receive a packet, determine where it came from,
@@ -257,7 +262,7 @@ main(argc, argv)
 				if (DbgFp != NULL)	/* display packet */
 					DispPkt(&rconn,DIR_RCVD);
 
-				omask = sigblock(sigmask(SIGHUP));
+				sigprocmask(SIG_BLOCK, &hmask, &omask);
 
 				/*
 				 *  If we do not restrict service, set the
@@ -272,13 +277,13 @@ main(argc, argv)
 					syslog(LOG_INFO,
 					       "%s: boot packet ignored",
 					       EnetStr(&rconn));
-					(void) sigsetmask(omask);
+					sigprocmask(SIG_SETMASK, &omask, NULL);
 					continue;
 				}
 
 				ProcessPacket(&rconn,client);
 
-				(void) sigsetmask(omask);
+				sigprocmask(SIG_SETMASK, &omask, NULL);
 			}
 		}
 	}
@@ -363,6 +368,7 @@ void
 Exit(sig)
 	int sig;
 {
+	/* XXX race */
 	if (sig > 0)
 		syslog(LOG_ERR, "going down on signal %d", sig);
 	else
@@ -392,6 +398,7 @@ void
 ReConfig(signo)
 	int signo;
 {
+	/* XXX race */
 	syslog(LOG_NOTICE, "reconfiguring boot server");
 
 	FreeConns();
@@ -419,6 +426,8 @@ void
 DebugOff(signo)
 	int signo;
 {
+	/* XXX race */
+
 	if (DbgFp != NULL)
 		(void) fclose(DbgFp);
 
@@ -442,6 +451,7 @@ void
 DebugOn(signo)
 	int signo;
 {
+	/* XXX race */
 	if (DbgFp == NULL) {
 		if ((DbgFp = fopen(DbgFile, "w")) == NULL)
 			syslog(LOG_ERR, "can't open debug file (%s)", DbgFile);

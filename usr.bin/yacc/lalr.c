@@ -1,5 +1,48 @@
+/*	$OpenBSD: lalr.c,v 1.3 1996/06/26 05:44:37 deraadt Exp $	*/
+/*	$NetBSD: lalr.c,v 1.4 1996/03/19 03:21:33 jtc Exp $	*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed by the University of
+ *	California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #ifndef lint
-static char rcsid[] = "$Id: lalr.c,v 1.3 1993/08/02 17:56:38 mycroft Exp $";
+#if 0
+static char sccsid[] = "@(#)lalr.c	5.3 (Berkeley) 6/1/90";
+#else
+static char rcsid[] = "$OpenBSD: lalr.c,v 1.3 1996/06/26 05:44:37 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 #include "defs.h"
@@ -25,6 +68,21 @@ short *from_state;
 short *to_state;
 
 short **transpose();
+void set_state_table __P((void));
+void set_accessing_symbol __P((void));
+void set_shift_table __P((void));
+void set_reduction_table __P((void));
+void set_maxrhs __P((void));
+void initialize_LA __P((void));
+void set_goto_map __P((void));
+void initialize_F __P((void));
+void build_relations __P((void));
+void compute_FOLLOWS __P((void));
+void compute_lookaheads __P((void));
+int map_goto __P((int, int));
+void digraph __P((short **));
+void add_lookback_edge __P((int, int, int));
+void traverse __P((int));
 
 static int infinity;
 static int maxrhs;
@@ -37,7 +95,7 @@ static short *INDEX;
 static short *VERTICES;
 static int top;
 
-
+void
 lalr()
 {
     tokensetsize = WORDSIZE(ntokens);
@@ -56,7 +114,7 @@ lalr()
 }
 
 
-
+void
 set_state_table()
 {
     register core *sp;
@@ -67,7 +125,7 @@ set_state_table()
 }
 
 
-
+void
 set_accessing_symbol()
 {
     register core *sp;
@@ -78,7 +136,7 @@ set_accessing_symbol()
 }
 
 
-
+void
 set_shift_table()
 {
     register shifts *sp;
@@ -89,7 +147,7 @@ set_shift_table()
 }
 
 
-
+void
 set_reduction_table()
 {
     register reductions *rp;
@@ -100,7 +158,7 @@ set_reduction_table()
 }
 
 
-
+void
 set_maxrhs()
 {
   register short *itemp;
@@ -128,7 +186,7 @@ set_maxrhs()
 }
 
 
-
+void
 initialize_LA()
 {
   register int i, j, k;
@@ -165,7 +223,7 @@ initialize_LA()
     }
 }
 
-
+void
 set_goto_map()
 {
   register shifts *sp;
@@ -263,7 +321,7 @@ int symbol;
 }
 
 
-
+void
 initialize_F()
 {
   register int i;
@@ -340,7 +398,7 @@ initialize_F()
 }
 
 
-
+void
 build_relations()
 {
   register int i;
@@ -432,7 +490,7 @@ build_relations()
   FREE(states);
 }
 
-
+void
 add_lookback_edge(stateno, ruleno, gotono)
 int stateno, ruleno, gotono;
 {
@@ -517,13 +575,13 @@ int n;
 }
 
 
-
+void
 compute_FOLLOWS()
 {
   digraph(includes);
 }
 
-
+void
 compute_lookaheads()
 {
   register int i, n;
@@ -557,7 +615,7 @@ compute_lookaheads()
   FREE(F);
 }
 
-
+void
 digraph(relation)
 short **relation;
 {
@@ -584,7 +642,7 @@ short **relation;
 }
 
 
-
+void
 traverse(i)
 register int i;
 {

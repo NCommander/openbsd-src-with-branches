@@ -1,3 +1,4 @@
+/*	$OpenBSD: script.c,v 1.14 2001/01/11 19:26:01 deraadt Exp $	*/
 /*	$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)script.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $";
+static char rcsid[] = "$OpenBSD: script.c,v 1.14 2001/01/11 19:26:01 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -63,6 +64,9 @@ static char rcsid[] = "$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $";
 #include <tzfile.h>
 #include <unistd.h>
 
+#include <util.h>
+#include <err.h>
+
 FILE	*fscript;
 int	master, slave;
 int	child, subchild;
@@ -71,13 +75,14 @@ char	*fname;
 
 struct	termios tt;
 
-__dead	void done __P((void));
+__dead	void done __P((int));
 	void dooutput __P((void));
 	void doshell __P((void));
-	void err __P((const char *, ...));
 	void fail __P((void));
 	void finish __P((int));
 	void scriptflush __P((int));
+	void handlesigwinch __P((int));
+
 
 int
 main(argc, argv)
@@ -91,7 +96,7 @@ main(argc, argv)
 	char ibuf[BUFSIZ];
 
 	aflg = 0;
-	while ((ch = getopt(argc, argv, "a")) != EOF)
+	while ((ch = getopt(argc, argv, "a")) != -1)
 		switch(ch) {
 		case 'a':
 			aflg = 1;
@@ -110,12 +115,12 @@ main(argc, argv)
 		fname = "typescript";
 
 	if ((fscript = fopen(fname, aflg ? "a" : "w")) == NULL)
-		err("%s: %s", fname, strerror(errno));
+		err(1, "%s", fname);
 
 	(void)tcgetattr(STDIN_FILENO, &tt);
 	(void)ioctl(STDIN_FILENO, TIOCGWINSZ, &win);
 	if (openpty(&master, &slave, NULL, &tt, &win) == -1)
-		err("openpty: %s", strerror(errno));
+		err(1, "openpty");
 
 	(void)printf("Script started, output file is %s\n", fname);
 	rtt = tt;
@@ -123,6 +128,7 @@ main(argc, argv)
 	rtt.c_lflag &= ~ECHO;
 	(void)tcsetattr(STDIN_FILENO, TCSAFLUSH, &rtt);
 
+	(void)signal(SIGWINCH, handlesigwinch);
 	(void)signal(SIGCHLD, finish);
 	child = fork();
 	if (child < 0) {
@@ -144,7 +150,7 @@ main(argc, argv)
 	(void)fclose(fscript);
 	while ((cc = read(STDIN_FILENO, ibuf, BUFSIZ)) > 0)
 		(void)write(master, ibuf, cc);
-	done();
+	done(0);
 }
 
 void
@@ -152,15 +158,38 @@ finish(signo)
 	int signo;
 {
 	register int die, pid;
-	union wait status;
+	int save_errno = errno;
+	int status, e;
 
-	die = 0;
-	while ((pid = wait3((int *)&status, WNOHANG, 0)) > 0)
-		if (pid == child)
+	die = e = 0;
+	while ((pid = wait3(&status, WNOHANG, 0)) > 0)
+		if (pid == child) {
 			die = 1;
+			if (WIFEXITED(status))
+                                e = WEXITSTATUS(status);
+                        else
+                                e = 1;
+		}
 
 	if (die)
-		done();
+		done(e);
+	errno = save_errno;
+}
+
+void
+handlesigwinch(signo)
+	int signo;
+{
+	struct winsize win;
+	pid_t pgrp;
+	int save_errno = errno;
+
+	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &win) != -1) {
+	    ioctl(slave, TIOCSWINSZ, &win);
+	    if (ioctl(slave, TIOCGPGRP, &pgrp) != -1)
+	    	killpg(pgrp, SIGWINCH);
+	}
+	errno = save_errno;
 }
 
 void
@@ -188,17 +217,21 @@ dooutput()
 		(void)fwrite(obuf, 1, cc, fscript);
 		outcc += cc;
 	}
-	done();
+	done(0);
 }
 
+/* XXX totally illegal race */
 void
 scriptflush(signo)
 	int signo;
 {
+	int save_errno = errno;
+
 	if (outcc) {
 		(void)fflush(fscript);
 		outcc = 0;
 	}
+	errno = save_errno;
 }
 
 void
@@ -213,7 +246,7 @@ doshell()
 	(void)close(master);
 	(void)fclose(fscript);
 	login_tty(slave);
-	execl(shell, "sh", "-i", NULL);
+	execl(shell, shell, "-i", (char *)NULL);
 	perror(shell);
 	fail();
 }
@@ -223,11 +256,12 @@ fail()
 {
 
 	(void)kill(0, SIGTERM);
-	done();
+	done(1);
 }
 
 void
-done()
+done(eval)
+	int eval;
 {
 	time_t tvec;
 
@@ -240,34 +274,6 @@ done()
 		(void)tcsetattr(STDIN_FILENO, TCSAFLUSH, &tt);
 		(void)printf("Script done, output file is %s\n", fname);
 	}
-	exit(0);
+	exit(eval);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(const char *fmt, ...)
-#else
-err(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "script: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-	exit(1);
-	/* NOTREACHED */
-}

@@ -1,5 +1,3 @@
-/*	$NetBSD: getrpcport.c,v 1.5 1995/06/03 22:37:24 mycroft Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)getrpcport.c 1.3 87/08/11 SMI";*/
-/*static char *sccsid = "from: @(#)getrpcport.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: getrpcport.c,v 1.5 1995/06/03 22:37:24 mycroft Exp $";
-#endif
+static char *rcsid = "$OpenBSD: getrpcport.c,v 1.4 1996/08/19 08:31:36 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * Copyright (c) 1985 by Sun Microsystems, Inc.
@@ -42,11 +38,14 @@ static char *rcsid = "$NetBSD: getrpcport.c,v 1.5 1995/06/03 22:37:24 mycroft Ex
 #include <stdio.h>
 #include <string.h>
 #include <rpc/rpc.h>
+#include <rpc/pmap_clnt.h>
 #include <netdb.h>
 #include <sys/socket.h>
 
+int
 getrpcport(host, prognum, versnum, proto)
 	char *host;
+	int prognum, versnum, proto;
 {
 	struct sockaddr_in addr;
 	struct hostent *hp;
@@ -57,6 +56,6 @@ getrpcport(host, prognum, versnum, proto)
 	addr.sin_len = sizeof(struct sockaddr_in);
 	addr.sin_family = AF_INET;
 	addr.sin_port =  0;
-	bcopy(hp->h_addr, (char *) &addr.sin_addr, hp->h_length);
+	memcpy((char *)&addr.sin_addr, hp->h_addr, hp->h_length);
 	return (pmap_getport(&addr, prognum, versnum, proto));
 }

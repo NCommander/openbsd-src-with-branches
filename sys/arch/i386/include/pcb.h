@@ -1,4 +1,5 @@
-/*	$NetBSD: pcb.h,v 1.20 1995/10/11 04:20:16 mycroft Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.6 2001/03/22 23:36:52 niklas Exp $	*/
+/*	$NetBSD: pcb.h,v 1.21 1996/01/08 13:51:42 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -53,6 +54,8 @@
 #include <machine/npx.h>
 #include <machine/sysarch.h>
 
+#define	NIOPORTS	1024		/* # of ports we allow to be mapped */
+
 struct pcb {
 	struct	i386tss pcb_tss;
 #define	pcb_cr3	pcb_tss.tss_cr3
@@ -65,7 +68,7 @@ struct pcb {
         union	descriptor *pcb_ldt;	/* per process (user) LDT */
         int	pcb_ldt_len;		/*      number of LDT entries */
 	int	pcb_cr0;		/* saved image of CR0 */
-	struct	save87 pcb_savefpu;	/* floating point state for 287/387 */
+	union	fsave87 pcb_savefpu;	/* floating point state for 287/387 */
 	struct	emcsts pcb_saveemc;	/* Cyrix EMC state */
 /*
  * Software pcb (extension)
@@ -73,7 +76,12 @@ struct pcb {
 	int	pcb_flags;
 #define	PCB_USER_LDT	0x01		/* has user-set LDT */
 	caddr_t	pcb_onfault;		/* copyin/out fault recovery */
-	u_long	pcb_iomap[1024/32];	/* I/O bitmap */
+	int	vm86_eflags;		/* virtual eflags for vm86 mode */
+	int	vm86_flagmask;		/* flag mask for vm86 mode */
+	void	*vm86_userp;		/* XXX performance hack */
+	struct pmap *pcb_pmap;		/* back pointer to our pmap */
+	u_long	pcb_iomap[NIOPORTS/32];	/* I/O bitmap */
+	u_char	pcb_iomap_pad;	/* required; must be 0xff, says intel */
 };
 
 /*    

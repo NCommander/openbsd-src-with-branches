@@ -1,8 +1,10 @@
+/*	$OpenBSD$	*/
+
 
 #include "iodesc.h"
 
 struct netif {
-	void *devdata;
+	void *nif_devdata;
 };
 
 ssize_t		netif_get __P((struct iodesc *, void *, size_t, time_t));

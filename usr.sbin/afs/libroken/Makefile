@@ -1,15 +1,18 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.4 2000/09/11 14:40:27 art Exp $
 LIB	= roken
 # roken stuff
-SRCS	= base64.c getarg.c k_getpwuid.c k_getpwnam.c signal.o tm2time.c \
-	  verify.c inaddr2str.c mini_inetd.c get_window_size.c warnerr.c \
-	  snprintf.c resolve.c parse_units.c strnlen.c strtok_r.c strupr.c
+SRCS	= copy_basename.c base64.c emalloc.c eefile.c efile.c estrdup.c \
+	  getarg.c k_getpwuid.c k_getpwnam.c signal.c tm2time.c verify.c \
+	  inaddr2str.c mini_inetd.c get_window_size.c warnerr.c snprintf.c \
+	  parse_units.c strnlen.c strupr.c strlwr.c strmatch.c \
+	  erealloc.c str2inaddr.c
+
 # util stuff
-SRCS	+= atom.c date_rfc822.c efile.c fnameutil.c freelist.c hash.c ip.c \
-	   list.c log.c mem.c mmaptime.c prio.c strmatch.c strsplit.c \
-	   strutil.c timeprio.c timeval.c
+SRCS	+= hash.c heap.c list.c log.c mmaptime.c
+
 # sl stuff
 SRCS	+= sl.c
+
 CFLAGS	+= -DHAVE_CONFIG_H -I${.CURDIR}/../src/lib/roken \
 	   -I${.CURDIR}/../src/util -I${.CURDIR}/../src/include \
 	   -I${.CURDIR}/../src/lib/sl

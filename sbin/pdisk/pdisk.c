@@ -33,6 +33,8 @@
 #ifdef __linux__
 #include <getopt.h>
 #include <malloc.h>
+#elif defined(__OpenBSD__)
+#include <stdlib.h>
 #else
 // for malloc() & free()
 #include <stdlib.h>
@@ -120,6 +122,7 @@ void do_display_entry(partition_map_header *map);
 void do_examine_patch_partition(partition_map_header *map);
 int do_expert(partition_map_header *map, char *name);
 void do_rename_partition(partition_map_header *map);
+void do_change_type(partition_map_header *map);
 void do_reorder(partition_map_header *map);
 void do_write_partition_map(partition_map_header *map);
 void edit(char *name, int ask_logical_size);
@@ -139,7 +142,7 @@ void print_top_notes();
 int
 main(int argc, char **argv)
 {
-#ifdef __linux__
+#if defined(__linux__) || defined (__OpenBSD__)
     int name_index;
 #else
     printf("This app uses the SIOUX console library\n");
@@ -167,7 +170,7 @@ main(int argc, char **argv)
 		VERSION, get_version_string());
     }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__OpenBSD__)
     name_index = get_options(argc, argv);
 
     if (vflag) {
@@ -203,7 +206,7 @@ main(int argc, char **argv)
 
     SIOUXSettings.autocloseonquit = 1;
     //printf("Processing stopped: Choose 'Quit' from the file menu to quit.\n\n");
-    exit(0);
+    return (0);
 #endif
 }
 
@@ -444,6 +447,68 @@ get_options(int argc, char **argv)
 }
 #endif
 
+#ifdef __OpenBSD__
+int
+get_options(int argc, char **argv)
+{
+    int c;
+    extern int optind;
+    extern char *optarg;
+    int flag = 0;
+
+    lflag = LFLAG_DEFAULT;
+    lfile = NULL;
+    vflag = VFLAG_DEFAULT;
+    hflag = HFLAG_DEFAULT;
+    dflag = DFLAG_DEFAULT;
+    rflag = RFLAG_DEFAULT;
+    aflag = AFLAG_DEFAULT;
+    pflag = PFLAG_DEFAULT;
+    interactive = INTERACT_DEFAULT;
+    cflag = CFLAG_DEFAULT;
+
+    optind = 1;	// reset option scanner logic
+    while ((c = getopt(argc, argv, "hlvdric")) != -1) {
+	switch (c) {
+	case 'h':
+	    hflag = (HFLAG_DEFAULT)?0:1;
+	    break;
+	case 'l':
+	    lflag = (LFLAG_DEFAULT)?0:1;
+	    break;
+	case 'v':
+	    vflag = (VFLAG_DEFAULT)?0:1;
+	    break;
+	case 'd':
+	    dflag = (DFLAG_DEFAULT)?0:1;
+	    break;
+	case 'c':
+	    cflag = (CFLAG_DEFAULT)?0:1;
+	    break;
+	case 'r':
+	    rflag = (RFLAG_DEFAULT)?0:1;
+	    break;
+	case 'i':
+	    interactive = (INTERACT_DEFAULT)?0:1;
+	    break;
+	case 'a':
+	    aflag = (AFLAG_DEFAULT)?0:1;
+	    break;
+	case kLogicalOption:
+	    pflag = (PFLAG_DEFAULT)?0:1;
+	    break;
+	default:
+	    flag = 1;
+	    break;
+	}
+    }
+    if (flag) {
+	usage("bad arguments");
+    }
+    return optind;
+}
+#endif
+
 
 void
 print_edit_notes()
@@ -495,11 +560,12 @@ edit(char *name, int ask_logical_size)
 	    printf("  P    (print ordered by base address)\n");
 	    printf("  i    initialize partition map\n");
 	    printf("  s    change size of partition map\n");
-	    printf("  c    create new partition (standard MkLinux type)\n");
+	    printf("  c    create new partition (standard OpenBSD type)\n");
 	    printf("  C    (create with type also specified)\n");
 	    printf("  n    (re)name a partition\n");
 	    printf("  d    delete a partition\n");
 	    printf("  r    reorder partition entry in map\n");
+	    printf("  t    change a partition's type\n");
 	    if (!rflag) {
 		printf("  w    write the partition table\n");
 	    }
@@ -544,6 +610,10 @@ edit(char *name, int ask_logical_size)
 	case 'S':
 	case 's':
 	    do_change_map_size(map);
+	    break;
+	case 'T':
+	case 't':
+	    do_change_type(map);
 	    break;
 	case 'X':
 	case 'x':
@@ -719,6 +789,49 @@ do_rename_partition(partition_map_header *map)
     return;
 }
 
+void
+do_change_type(partition_map_header *map)
+{
+    partition_map * entry;
+    long index;
+    char *type = NULL;
+
+    if (map == NULL) {
+	bad_input("No partition map exists");
+	return;
+    }
+
+    if (!rflag && map->writeable == 0) {
+	printf("The map is not writeable.\n");
+    }
+
+    if (get_number_argument("Partition number: ", &index, kDefault) == 0) {
+	bad_input("Bad partition number");
+	return;
+    }
+
+    entry = find_entry_by_disk_address(index, map);
+
+    if (entry == NULL ) {
+        printf("No such partition\n");
+	goto out;
+    }
+
+    printf("Existing partition type ``%s''.\n", entry->data->dpme_type);
+    if (get_string_argument("New type of partition: ", &type, 1) == 0) {
+	bad_input("Bad type");
+	goto out;
+    }
+
+    strncpy(entry->data->dpme_type, type, DPISTRLEN);
+    map->changed = 1;
+
+out:
+    if (type)
+        free(type);
+    return;
+}
+
 
 void
 do_delete_partition(partition_map_header *map)
@@ -872,7 +985,9 @@ do_expert(partition_map_header *map, char *name)
 	    do_examine_patch_partition(map);
 	    break;
 	default:
+#ifndef __OpenBSD__
 	do_error:
+#endif
 	    bad_input("No such command (%c)", command);
 	    break;
 	}

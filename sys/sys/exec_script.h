@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: exec_script.h,v 1.6 1995/03/26 20:24:11 jtc Exp $	*/
 
 /*
@@ -32,6 +33,8 @@
 
 #define	EXEC_SCRIPT_MAGIC	"#!"
 #define	EXEC_SCRIPT_MAGICLEN	2
+
+#define	SETUIDSCRIPTS		/* they are secure, so enable them */
 
 #ifdef _KERNEL
 

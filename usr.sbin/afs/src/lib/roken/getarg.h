@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1997, 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
@@ -37,7 +36,7 @@
  * SUCH DAMAGE. 
  */
 
-/* $KTH: getarg.h,v 1.5 1998/08/23 22:47:26 assar Exp $ */
+/* $Id: getarg.h,v 1.8 2000/08/06 14:01:27 lha Exp $ */
 
 #ifndef __GETARG_H__
 #define __GETARG_H__
@@ -50,6 +49,7 @@
 #define ARG_TRANSLONG   0x4    /* Incompatible with {SHORT,LONG}ARG */
 #define ARG_SWITCHLESS  0x8    /* No switches */
 #define ARG_SUBOPTION   0xF    /* For manpage generation */
+#define ARG_USEFIRST	0x10   /* Use first partial found instead of failing */
 
 #define ARG_GNUSTYLE (ARG_LONGARG|ARG_SHORTARG)
 #define ARG_AFSSTYLE (ARG_TRANSLONG|ARG_SWITCHLESS)
@@ -59,7 +59,7 @@ struct getargs{
     char short_name;
     enum { arg_end = 0, arg_integer, arg_string, 
 	   arg_flag, arg_negative_flag, arg_strings,
-           arg_generic } type;
+           arg_generic_string } type;
     void *value;
     const char *help;
     const char *arg_help;
@@ -82,6 +82,7 @@ int getarg(struct getargs *args,
 
 void arg_printusage (struct getargs *args,
 		     const char *progname,
-		     const char *extra_string);
+		     const char *extra_string,
+		     int style);
 
 #endif /* __GETARG_H__ */

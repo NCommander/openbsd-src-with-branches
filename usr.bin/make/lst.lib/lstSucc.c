@@ -1,8 +1,10 @@
-/*	$NetBSD: lstSucc.c,v 1.4 1995/06/14 15:21:42 christos Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstSucc.c,v 1.4 1998/12/05 00:06:33 espie Exp $	*/
+/*	$NetBSD: lstSucc.c,v 1.5 1996/11/06 17:59:52 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -36,20 +38,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstSucc.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstSucc.c,v 1.4 1995/06/14 15:21:42 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstSucc.c --
  *	return the successor to a given node
  */
 
 #include	"lstInt.h"
+#include	<stddef.h>
 
 /*-
  *-----------------------------------------------------------------------
@@ -57,23 +52,17 @@ static char rcsid[] = "$NetBSD: lstSucc.c,v 1.4 1995/06/14 15:21:42 christos Exp
  *	Return the sucessor to the given node on its list.
  *
  * Results:
- *	The successor of the node, if it exists (note that on a circular
- *	list, if the node is the only one in the list, it is its own
- *	successor).
- *
- * Side Effects:
- *	None.
+ *	The successor of the node, if it exists.
  *
  *-----------------------------------------------------------------------
  */
 LstNode
-Lst_Succ (ln)
+Lst_Succ(ln)
     LstNode	ln;
 {
-    if (ln == NILLNODE) {
-	return (NILLNODE);
-    } else {
-	return ((LstNode) ((ListNode) ln)->nextPtr);
-    }
+    if (ln == NULL)
+	return NULL;
+    else
+	return ln->nextPtr;
 }
 

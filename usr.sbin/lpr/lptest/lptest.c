@@ -1,3 +1,6 @@
+/*	$OpenBSD: lptest.c,v 1.3 1997/01/17 16:12:48 millert Exp $ */
+/*	$NetBSD: lptest.c,v 1.5 1996/03/21 18:13:20 jtc Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,13 +36,17 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)lptest.c	8.1 (Berkeley) 6/6/93";
+#if 0
+static const char sccsid[] = "@(#)lptest.c	8.1 (Berkeley) 6/6/93";
+#else
+static const char rcsid[] = "$OpenBSD: lptest.c,v 1.3 1997/01/17 16:12:48 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include <stdlib.h>
@@ -48,13 +55,13 @@ static char sccsid[] = "@(#)lptest.c	8.1 (Berkeley) 6/6/93";
 /*
  * lptest -- line printer test program (and other devices).
  */
-void
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
 	int len, count;
-	register i, j, fc, nc;
+	int i, j, fc, nc;
 	char outbuf[BUFSIZ];
 
 	setbuf(stdout, outbuf);

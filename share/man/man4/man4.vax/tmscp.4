@@ -1,3 +1,6 @@
+.\"	$OpenBSD: tmscp.4,v 1.6 1999/07/09 13:35:40 aaron Exp $
+.\"	$NetBSD: tmscp.4,v 1.4 1996/03/03 17:14:06 thorpej Exp $
+.\"
 .\" Copyright (c) 1986, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -30,19 +33,18 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)tmscp.4	6.2 (Berkeley) 3/27/91
-.\"	$Id: tmscp.4,v 1.2 1993/08/01 07:35:59 mycroft Exp $
 .\"
-.Dd March 27, 1991
+.Dd January 7, 1996
 .Dt TMSCP 4 vax
-.Os BSD 4.3
+.Os
 .Sh NAME
 .Nm tmscp
 .Nd
 .Tn DEC TMSCP
 magtape interface
 .Sh SYNOPSIS
-.Cd "controller tmscp0 at uba? csr 0174500 vector tmscpintr"
-.Cd "tape tms0 at tmscp0 drive 0"
+.Cd "tmscp0 at uba? csr 0174500"
+.Cd "tms0 at tmscp0 drive ?"
 .Sh DESCRIPTION
 Tape controllers compatible with the
 .Tn DEC
@@ -53,14 +55,14 @@ such as the
 .Tn TU81
 and the
 .Tn TK50
-provide a standard tape drive interface 
+provide a standard tape drive interface
 as described in
 .Xr mtio 4 .
 The controller communicates with the host through a packet
 oriented protocol.
 Consult the file
 .Aq Pa vax/tmscp.h
-for a detailed 
+for a detailed
 description of this protocol.
 .Sh DIAGNOSTICS
 .Bl -diag
@@ -79,15 +81,18 @@ driver state are printed.
 An unexpected interrupt was received (e.g. when no
 .Tn I/O
 was
-pending).  The interrupt is ignored.
+pending).
+The interrupt is ignored.
 .Pp
 .It tmscp%d:  interrupt in unknown state %d ignored.
 An interrupt was received when the driver was in an unknown
-internal state.  Indicates a hardware problem or a driver bug.
+internal state.
+Indicates a hardware problem or a driver bug.
 .Pp
 .It tmscp%d:  fatal error (0%o).
 The controller detected a ``fatal error'' in the status returned
-to the host.  The contents of the status register are displayed.
+to the host.
+The contents of the status register are displayed.
 .Pp
 .It OFFLINE.
 (Additional status information given after a hard
@@ -120,6 +125,8 @@ errors may be:
 .Xr mt 1 ,
 .Xr tar 1 ,
 .Xr tp 1 ,
+.Xr ht 4 ,
+.Xr mt 4 ,
 .Xr mtio 4 ,
 .Xr tm 4 ,
 .Xr ts 4 ,
@@ -130,3 +137,7 @@ The
 .Nm
 driver appeared in
 .Bx 4.3 .
+.Sh BUGS
+Should be synced together with the
+.Tn MSCP
+devices.

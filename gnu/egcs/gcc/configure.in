@@ -525,11 +525,11 @@ changequote([,])dnl
 		;;
 	*-*-openbsd*)
 		tm_file=${cpu_type}/openbsd.h
-		tmake_file="t-libc-ok t-openbsd"
+		tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
 		# avoid surprises, always provide an xm-openbsd file 
 		xm_file=${cpu_type}/xm-openbsd.h
-		# don't depend on processor x-fragments as well
-		xmake_file=none
+		# for egcs in tree, we use our own fragment
+		xmake_file=x-openbsd
  		if test x$enable_threads = xyes; then
  			thread_file='posix'
 			tmake_file="${tmake_file} t-openbsd-thread"
@@ -638,6 +638,7 @@ changequote([,])dnl
 		# default x-alpha is only appropriate for dec-osf.
 		target_cpu_default="MASK_GAS"
 		tmake_file="alpha/t-ieee"
+		gas=yes gnu_ld=yes
 		;;
 		
 	alpha*-dec-osf*)
@@ -1180,6 +1181,8 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-*-openbsd*)
 changequote([,])dnl
+		# needed to unconfuse gdb
+		tmake_file="t-libc-ok t-openbsd i386/t-openbsd"
 		# we need collect2 until our bug is fixed...
 		use_collect2=yes
 		;;
@@ -2051,6 +2054,7 @@ changequote([,])dnl
        use_collect2=yes
 		;;
 	m68k*-*-openbsd*)
+		tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
 		float_format=m68k
 		# we need collect2 until our bug is fixed...
 		use_collect2=yes
@@ -2381,11 +2385,10 @@ changequote([,])dnl
 		;;
 	mips*el-*-openbsd*)	# mips little endian
 		target_cpu_default="MASK_GAS|MASK_ABICALLS"
-		tm_file=mips/openbsd.h
 		;;
 	mips*-*-openbsd*)		# mips big endian
 		target_cpu_default="MASK_GAS|MASK_ABICALLS"
-		tm_file=mips/openbsd-be.h
+		tm_file="mips/openbsd-be.h ${tm_file}"
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 		tm_file="mips/news4.h ${tm_file}"
@@ -3041,6 +3044,12 @@ changequote([,])dnl
 	sparc-*-openbsd*)
 		# we need collect2 until our bug is fixed...
 		use_collect2=yes
+		tmake_file="t-libc-ok t-openbsd sparc/t-openbsd"
+		;;
+	sparc64-*-openbsd*)
+		tm_file=sparc/openbsd64.h
+		xm_file=sparc/xm-sp64.h
+		gas=yes gnu_ld=yes
 		;;
 	sparc-*-bsd*)
 		tm_file=sparc/bsd.h
@@ -3282,6 +3291,8 @@ changequote([,])dnl
 		;;
 	vax-*-openbsd*)
 		tmake_file="${tmake_file} vax/t-openbsd"
+		float_format=vax
+		use_collect2=yes
 		;;
 	vax-*-ultrix*)			# vaxen running ultrix
 		tm_file="${tm_file} vax/ultrix.h"

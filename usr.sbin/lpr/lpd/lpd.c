@@ -1,3 +1,6 @@
+/*	$OpenBSD: lpd.c,v 1.20 2001/09/04 23:35:59 millert Exp $ */
+/*	$NetBSD: lpd.c,v 1.7 1996/04/24 14:54:06 mrg Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -33,13 +36,17 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)lpd.c	8.4 (Berkeley) 4/17/94";
+#if 0
+static const char sccsid[] = "@(#)lpd.c	8.7 (Berkeley) 5/10/95";
+#else
+static const char rcsid[] = "$OpenBSD: lpd.c,v 1.20 2001/09/04 23:35:59 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -77,7 +84,9 @@ static char sccsid[] = "@(#)lpd.c	8.4 (Berkeley) 4/17/94";
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <netdb.h>
 #include <unistd.h>
@@ -95,6 +104,8 @@ static char sccsid[] = "@(#)lpd.c	8.4 (Berkeley) 4/17/94";
 #include "pathnames.h"
 #include "extern.h"
 
+extern int __ivaliduser __P((FILE *, in_addr_t, const char *, const char *));
+
 int	lflag;				/* log requests flag */
 int	from_remote;			/* from remote socket */
 
@@ -103,6 +114,7 @@ static void       mcleanup __P((int));
 static void       doit __P((void));
 static void       startup __P((void));
 static void       chkhost __P((struct sockaddr_in *));
+static int	  ckqueue __P((char *));
 
 uid_t	uid, euid;
 
@@ -111,17 +123,24 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	int f, funix, finet, options, fromlen;
+	int f, lfd, funix, finet, options, fromlen;
 	fd_set defreadfds;
+	int maxfd = 0;
 	struct sockaddr_un un, fromunix;
 	struct sockaddr_in sin, frominet;
-	int omask, lfd;
+	sigset_t mask, omask;
 
 	euid = geteuid();	/* these shouldn't be different */
 	uid = getuid();
 	options = 0;
 	gethostname(host, sizeof(host));
-	name = argv[0];
+
+	name = "lpd";
+
+	if (euid != 0) {
+		fprintf(stderr,"lpd: must run as root\n");
+		exit(1);
+	}
 
 	while (--argc > 0) {
 		argv++;
@@ -178,8 +197,13 @@ main(argc, argv)
 		syslog(LOG_ERR, "socket: %m");
 		exit(1);
 	}
-#define	mask(s)	(1 << ((s) - 1))
-	omask = sigblock(mask(SIGHUP)|mask(SIGINT)|mask(SIGQUIT)|mask(SIGTERM));
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGHUP);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGQUIT);
+	sigaddset(&mask, SIGTERM);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
+	(void) umask(07);
 	signal(SIGHUP, mcleanup);
 	signal(SIGINT, mcleanup);
 	signal(SIGQUIT, mcleanup);
@@ -194,19 +218,26 @@ main(argc, argv)
 		syslog(LOG_ERR, "ubind: %m");
 		exit(1);
 	}
-	sigsetmask(omask);
+	(void) umask(0);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
 	FD_ZERO(&defreadfds);
 	FD_SET(funix, &defreadfds);
+	if (funix > maxfd)
+		maxfd = funix;
 	listen(funix, 5);
 	finet = socket(AF_INET, SOCK_STREAM, 0);
 	if (finet >= 0) {
 		struct servent *sp;
 
-		if (options & SO_DEBUG)
+		if (options & SO_DEBUG) {
 			if (setsockopt(finet, SOL_SOCKET, SO_DEBUG, 0, 0) < 0) {
 				syslog(LOG_ERR, "setsockopt (SO_DEBUG): %m");
 				mcleanup(0);
 			}
+		}
+		f = 1;
+		(void) setsockopt(finet, SOL_SOCKET, SO_REUSEADDR, &f,
+		    sizeof(f));
 		sp = getservbyname("printer", "tcp");
 		if (sp == NULL) {
 			syslog(LOG_ERR, "printer/tcp: unknown service");
@@ -220,6 +251,8 @@ main(argc, argv)
 			mcleanup(0);
 		}
 		FD_SET(finet, &defreadfds);
+		if (finet > maxfd)
+			maxfd = finet;
 		listen(finet, 5);
 	}
 	/*
@@ -232,7 +265,7 @@ main(argc, argv)
 		fd_set readfds;
 
 		FD_COPY(&defreadfds, &readfds);
-		nfds = select(20, &readfds, 0, 0, 0);
+		nfds = select(maxfd + 1, &readfds, 0, 0, 0);
 		if (nfds <= 0) {
 			if (nfds < 0 && errno != EINTR)
 				syslog(LOG_WARNING, "select: %m");
@@ -246,6 +279,10 @@ main(argc, argv)
 			domain = AF_INET, fromlen = sizeof(frominet);
 			s = accept(finet,
 			    (struct sockaddr *)&frominet, &fromlen);
+			if (frominet.sin_port == htons(20)) {
+				close(s);
+				continue;
+			}
 		}
 		if (s < 0) {
 			if (errno != EINTR)
@@ -260,8 +297,10 @@ main(argc, argv)
 			signal(SIGTERM, SIG_IGN);
 			(void) close(funix);
 			(void) close(finet);
-			dup2(s, 1);
-			(void) close(s);
+			if (s != STDOUT_FILENO) {
+				dup2(s, STDOUT_FILENO);
+				(void) close(s);
+			}
 			if (domain == AF_INET) {
 				from_remote = 1;
 				chkhost(&frominet);
@@ -278,10 +317,12 @@ static void
 reapchild(signo)
 	int signo;
 {
-	union wait status;
+	int status;
+	int save_errno = errno;
 
-	while (wait3((int *)&status, WNOHANG, 0) > 0)
+	while (waitpid((pid_t)-1, &status, WNOHANG) > 0)
 		;
+	errno = save_errno;
 }
 
 static void
@@ -317,8 +358,8 @@ char	*cmdnames[] = {
 static void
 doit()
 {
-	register char *cp;
-	register int n;
+	char *cp;
+	int n;
 
 	for (;;) {
 		cp = cbuf;
@@ -336,7 +377,7 @@ doit()
 		if (lflag) {
 			if (*cp >= '\1' && *cp <= '\5')
 				syslog(LOG_INFO, "%s requests %s %s",
-					from, cmdnames[*cp], cp+1);
+					from, cmdnames[(int)*cp], cp+1);
 			else
 				syslog(LOG_INFO, "bad request (%d) from %s",
 					*cp, from);
@@ -426,18 +467,24 @@ static void
 startup()
 {
 	char *buf;
-	register char *cp;
+	char *cp;
 	int pid;
 
 	/*
 	 * Restart the daemons.
 	 */
 	while (cgetnext(&buf, printcapdb) > 0) {
+		if (ckqueue(buf) <= 0) {
+			free(buf);
+			continue;	/* no work to do for this printer */
+		}
 		for (cp = buf; *cp; cp++)
 			if (*cp == '|' || *cp == ':') {
 				*cp = '\0';
 				break;
 			}
+		if (lflag)
+			syslog(LOG_INFO, "work for %s", buf);
 		if ((pid = fork()) < 0) {
 			syslog(LOG_WARNING, "startup: cannot fork");
 			mcleanup(0);
@@ -446,8 +493,35 @@ startup()
 			printer = buf;
 			cgetclose();
 			printjob();
+			/* NOTREACHED */
 		}
+		else free(buf);
 	}
+}
+
+/*
+ * Make sure there's some work to do before forking off a child
+ */
+static int
+ckqueue(cap)
+	char *cap;
+{
+	struct dirent *d;
+	DIR *dirp;
+	char *spooldir;
+
+	if (cgetstr(cap, "sd", &spooldir) == -1)
+		spooldir = _PATH_DEFSPOOL;
+	if ((dirp = opendir(spooldir)) == NULL)
+		return (-1);
+	while ((d = readdir(dirp)) != NULL) {
+		if (d->d_name[0] != 'c' || d->d_name[1] != 'f')
+			continue;	/* daemon control files only */
+		closedir(dirp);
+		return (1);		/* found something */
+	}
+	closedir(dirp);
+	return (0);
 }
 
 #define DUMMY ":nobody::"
@@ -459,14 +533,10 @@ static void
 chkhost(f)
 	struct sockaddr_in *f;
 {
-	register struct hostent *hp;
-	register FILE *hostf;
+	struct hostent *hp;
+	FILE *hostf;
 	int first = 1;
-	extern char *inet_ntoa();
-
-	f->sin_port = ntohs(f->sin_port);
-	if (f->sin_family != AF_INET || f->sin_port >= IPPORT_RESERVED)
-		fatal("Malformed from address");
+	int good = 0;
 
 	/* Need real hostname for temporary filenames */
 	hp = gethostbyaddr((char *)&f->sin_addr,
@@ -475,9 +545,22 @@ chkhost(f)
 		fatal("Host name for your address (%s) unknown",
 			inet_ntoa(f->sin_addr));
 
-	(void) strncpy(fromb, hp->h_name, sizeof(fromb));
-	from[sizeof(fromb) - 1] = '\0';
+	(void) strlcpy(fromb, hp->h_name, sizeof(fromb));
 	from = fromb;
+
+	/* Check for spoof, ala rlogind */
+	hp = gethostbyname(fromb);
+	if (!hp)
+		fatal("hostname for your address (%s) unknown",
+		    inet_ntoa(f->sin_addr));
+	for (; good == 0 && hp->h_addr_list[0] != NULL; hp->h_addr_list++) {
+		if (!bcmp(hp->h_addr_list[0], (caddr_t)&f->sin_addr,
+		    sizeof(f->sin_addr)))
+			good = 1;
+	}
+	if (good == 0)
+		fatal("address for your hostname (%s) not matched",
+		    inet_ntoa(f->sin_addr));
 
 	hostf = fopen(_PATH_HOSTSEQUIV, "r");
 again:
@@ -497,15 +580,3 @@ again:
 	fatal("Your host does not have line printer access");
 	/*NOTREACHED*/
 }
-
-
-
-
-
-
-
-
-
-
-
-

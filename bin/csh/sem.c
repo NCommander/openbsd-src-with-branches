@@ -1,3 +1,4 @@
+/*	$OpenBSD: sem.c,v 1.7 2001/05/11 18:38:44 mickey Exp $	*/
 /*	$NetBSD: sem.c,v 1.9 1995/09/27 00:38:50 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)sem.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: sem.c,v 1.9 1995/09/27 00:38:50 jtc Exp $";
+static char rcsid[] = "$OpenBSD: sem.c,v 1.7 2001/05/11 18:38:44 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,7 +50,7 @@ static char rcsid[] = "$NetBSD: sem.c,v 1.9 1995/09/27 00:38:50 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -166,11 +167,12 @@ execute(t, wanttty, pipein, pipeout)
 	     * Check if we have a builtin function and remember which one.
 	     */
 	    bifunc = isbfunc(t);
- 	    if (noexec) {
+	    if (noexec) {
 		/*
 		 * Continue for builtins that are part of the scripting language
 		 */
-		if (bifunc->bfunct != dobreak   && bifunc->bfunct != docontin &&
+		if (bifunc &&
+		    bifunc->bfunct != dobreak   && bifunc->bfunct != docontin &&
 		    bifunc->bfunct != doelse    && bifunc->bfunct != doend    &&
 		    bifunc->bfunct != doforeach && bifunc->bfunct != dogoto   &&
 		    bifunc->bfunct != doif      && bifunc->bfunct != dorepeat &&
@@ -305,7 +307,7 @@ execute(t, wanttty, pipein, pipeout)
 		    bool    ignint = 0;
 
 		    if (nosigchld) {
-		        sigprocmask(SIG_SETMASK, &csigset, NULL);
+			sigprocmask(SIG_SETMASK, &csigset, NULL);
 			nosigchld = 0;
 		    }
 
@@ -450,7 +452,7 @@ execute(t, wanttty, pipein, pipeout)
     }
     /*
      * Fall through for all breaks from switch
-     * 
+     *
      * If there will be no more executions of this command, flush all file
      * descriptors. Places that turn on the F_REPEAT bit are responsible for
      * doing donefds after the last re-execution
@@ -463,16 +465,6 @@ static void
 vffree(i)
 int i;
 {
-    register Char **v;
-
-    if ((v = gargv) != NULL) {
-	gargv = 0;
-	xfree((ptr_t) v);
-    }
-    if ((v = pargv) != NULL) {
-	pargv = 0;
-	xfree((ptr_t) v);
-    }
     _exit(i);
 }
 
@@ -488,7 +480,7 @@ int i;
  *
  * I don't know what is best to do. I think that Ambiguous is better
  * than restructuring the command vector, because the user can get
- * unexpected results. In any case, the command vector restructuring 
+ * unexpected results. In any case, the command vector restructuring
  * code is present and the user can choose it by setting noambiguous
  */
 static Char *
@@ -547,7 +539,7 @@ doio(t, pipein, pipeout)
 	return;
     if ((flags & F_READ) == 0) {/* F_READ already done */
 	if (t->t_dlef) {
-	    char    tmp[MAXPATHLEN+1];
+	    char    tmp[MAXPATHLEN];
 
 	    /*
 	     * so < /dev/std{in,out,err} work
@@ -556,8 +548,7 @@ doio(t, pipein, pipeout)
 	    (void) dcopy(SHOUT, 1);
 	    (void) dcopy(SHERR, 2);
 	    cp = splicepipe(t, t->t_dlef);
-	    (void) strncpy(tmp, short2str(cp), MAXPATHLEN);
-	    tmp[MAXPATHLEN] = '\0';
+	    strlcpy(tmp, short2str(cp), sizeof tmp);
 	    xfree((ptr_t) cp);
 	    if ((fd = open(tmp, O_RDONLY)) < 0)
 		stderror(ERR_SYSTEM, tmp, strerror(errno));
@@ -580,11 +571,10 @@ doio(t, pipein, pipeout)
 	}
     }
     if (t->t_drit) {
-	char    tmp[MAXPATHLEN+1];
+	char    tmp[MAXPATHLEN];
 
 	cp = splicepipe(t, t->t_drit);
-	(void) strncpy(tmp, short2str(cp), MAXPATHLEN);
-	tmp[MAXPATHLEN] = '\0';
+	strlcpy(tmp, short2str(cp), sizeof tmp);
 	xfree((ptr_t) cp);
 	/*
 	 * so > /dev/std{out,err} work

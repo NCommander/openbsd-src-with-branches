@@ -1,3 +1,4 @@
+/*	$OpenBSD: sub.c,v 1.6 1997/09/01 18:29:31 deraadt Exp $	*/
 /*	$NetBSD: sub.c,v 1.4 1995/03/21 09:04:50 cgd Exp $	*/
 
 /* sub.c: This file contains the substitution routines for the ed 
@@ -32,7 +33,7 @@
 #if 0
 static char *rcsid = "@(#)sub.c,v 1.1 1994/02/01 00:34:44 alm Exp";
 #else
-static char rcsid[] = "$NetBSD: sub.c,v 1.4 1995/03/21 09:04:50 cgd Exp $";
+static char rcsid[] = "$OpenBSD: sub.c,v 1.6 1997/09/01 18:29:31 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -87,7 +88,8 @@ extract_subst_template()
 
 	if (*ibufp == '%' && *(ibufp + 1) == delimiter) {
 		ibufp++;
-		if (!rhbuf) sprintf(errmsg, "no previous substitution");
+		if (!rhbuf)
+			seterrmsg("no previous substitution");
 		return rhbuf;
 	}
 	while (*ibufp != delimiter) {
@@ -101,7 +103,7 @@ extract_subst_template()
 			;
 		else if (!isglobal) {
 			while ((n = get_tty_line()) == 0 ||
-			    n > 0 && ibuf[n - 1] != '\n')
+			    (n > 0 && ibuf[n - 1] != '\n'))
 				clearerr(stdin);
 			if (n < 0)
 				return NULL;
@@ -164,7 +166,7 @@ search_and_replace(pat, gflag, kth)
 	}
 	current_addr = xa;
 	if  (nsubs == 0 && !(gflag & GLB)) {
-		sprintf(errmsg, "no match");
+		seterrmsg("no match");
 		return ERR;
 	} else if ((gflag & (GPR | GLS | GNP)) &&
 	    display_lines(current_addr, current_addr, gflag) < 0)
@@ -192,7 +194,7 @@ substitute_matching_text(pat, lp, gflag, kth)
 
 	if ((txt = get_sbuf_line(lp)) == NULL)
 		return ERR;
-	if (isbinary) 
+	if (isbinary)
 		NUL_TO_NEWLINE(txt, lp->len);
 	eot = txt + lp->len;
 	if (!regexec(pat, txt, SE_MAX, rm, 0)) {
@@ -217,12 +219,12 @@ substitute_matching_text(pat, lp, gflag, kth)
 				off += i;
 			}
 			txt += rm[0].rm_eo;
-		} while (*txt && (!changed || (gflag & GSG) && rm[0].rm_eo) &&
+		} while (*txt && (!changed || ((gflag & GSG) && rm[0].rm_eo)) &&
 		    !regexec(pat, txt, SE_MAX, rm, REG_NOTBOL));
 		i = eot - txt;
 		REALLOC(rbuf, rbufsz, off + i + 2, ERR);
 		if (i > 0 && !rm[0].rm_eo && (gflag & GSG)) {
-			sprintf(errmsg, "infinite substitution loop");
+			seterrmsg("infinite substitution loop");
 			return  ERR;
 		}
 		if (isbinary)

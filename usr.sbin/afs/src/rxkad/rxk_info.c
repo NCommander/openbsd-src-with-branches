@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -39,7 +38,7 @@
 
 #include "rxkad_locl.h"
 
-RCSID("$KTH: rxk_info.c,v 1.3 1998/02/22 11:49:55 assar Exp $");
+RCSID("$Id: rxk_info.c,v 1.3 1998/02/22 11:49:55 assar Exp $");
 
 int32
 rxkad_GetServerInfo(struct rx_connection *con,

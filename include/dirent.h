@@ -1,3 +1,4 @@
+/*	$OpenBSD: dirent.h,v 1.5 1999/06/11 22:47:48 espie Exp $	*/
 /*	$NetBSD: dirent.h,v 1.9 1995/03/26 20:13:37 jtc Exp $	*/
 
 /*-
@@ -39,6 +40,13 @@
 #define _DIRENT_H_
 
 /*
+ * POSIX doesn't mandate this, but X/Open XPG 4.2 does.
+ */
+#ifndef _POSIX_SOURCE
+#include <sys/types.h>
+#endif
+
+/*
  * The kernel defines the format of directory entries returned by 
  * the getdirentries(2) system call.
  */
@@ -74,7 +82,11 @@ typedef struct _dirdesc {
 #define __DTF_READALL	0x0008	/* everything has been read */
 
 #ifndef NULL
+#ifdef 	__GNUG__
+#define	NULL	__null
+#else
 #define	NULL	0
+#endif
 #endif
 
 #endif /* _POSIX_SOURCE */
@@ -97,6 +109,7 @@ int scandir __P((const char *, struct dirent ***,
 int alphasort __P((const void *, const void *));
 int getdirentries __P((int, char *, int, long *));
 #endif /* not POSIX */
+int readdir_r __P((DIR *, struct dirent *, struct dirent **));
 __END_DECLS
 
 #endif /* !_KERNEL */

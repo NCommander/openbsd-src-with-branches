@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: util.c,v 1.5 1996/10/23 22:38:02 niklas Exp $	*/
+/*	$NetBSD: util.c,v 1.5 1996/08/31 20:58:29 mycroft Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -40,14 +43,13 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)util.c	8.1 (Berkeley) 6/6/93
- *	$Id: util.c,v 1.1 1995/04/28 06:55:28 cgd Exp $
  */
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -58,7 +60,7 @@
 static void nomem __P((void));
 static void vxerror __P((const char *, int, const char *, va_list));
 
-/* 
+/*
  * Malloc, with abort on error.
  */
 void *
@@ -69,10 +71,11 @@ emalloc(size)
 
 	if ((p = malloc(size)) == NULL)
 		nomem();
+	memset(p, 0, size);
 	return (p);
 }
 
-/* 
+/*
  * Realloc, with abort on error.
  */
 void *
@@ -95,33 +98,27 @@ nomem()
 }
 
 /*
- * Prepend the compilation directory to a file name.
+ * Prepend the source path to a file name.
  */
 char *
-path(file)
+sourcepath(file)
 	const char *file;
 {
 	register char *cp;
-#define	CDIR "../compile/"
 
-	if (file == NULL) {
-		cp = emalloc(sizeof(CDIR) + strlen(confdirbase));
-		(void)sprintf(cp, "%s%s", CDIR, confdirbase);
-	} else {
-		cp = emalloc(sizeof(CDIR) + strlen(confdirbase) + 1 +
-		    strlen(file));
-		(void)sprintf(cp, "%s%s/%s", CDIR, confdirbase, file);
-	}
+	cp = emalloc(strlen(srcdir) + 1 + strlen(file) + 1);
+	(void)sprintf(cp, "%s/%s", srcdir, file);
 	return (cp);
 }
 
 static struct nvlist *nvhead;
 
 struct nvlist *
-newnv(name, str, ptr, i)
+newnv(name, str, ptr, i, next)
 	const char *name, *str;
 	void *ptr;
 	int i;
+	struct nvlist *next;
 {
 	register struct nvlist *nv;
 
@@ -129,7 +126,7 @@ newnv(name, str, ptr, i)
 		nv = emalloc(sizeof(*nv));
 	else
 		nvhead = nv->nv_next;
-	nv->nv_next = NULL;
+	nv->nv_next = next;
 	nv->nv_name = name;
 	if (ptr == NULL)
 		nv->nv_str = str;
@@ -175,7 +172,7 @@ nvfreel(nv)
  * and line number.
  */
 void
-#if __STDC__
+#ifdef __STDC__
 error(const char *fmt, ...)
 #else
 error(fmt, va_alist)
@@ -186,7 +183,7 @@ error(fmt, va_alist)
 	va_list ap;
 	extern const char *yyfile;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -200,7 +197,7 @@ error(fmt, va_alist)
  * find out about it until later).
  */
 void
-#if __STDC__
+#ifdef __STDC__
 xerror(const char *file, int line, const char *fmt, ...)
 #else
 xerror(file, line, fmt, va_alist)
@@ -212,7 +209,7 @@ xerror(file, line, fmt, va_alist)
 {
 	va_list ap;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -242,7 +239,7 @@ vxerror(file, line, fmt, ap)
  * Internal error, abort.
  */
 __dead void
-#if __STDC__
+#ifdef __STDC__
 panic(const char *fmt, ...)
 #else
 panic(fmt, va_alist)
@@ -252,7 +249,7 @@ panic(fmt, va_alist)
 {
 	va_list ap;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);

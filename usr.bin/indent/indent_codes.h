@@ -1,6 +1,8 @@
+/* *	$OpenBSD: indent_codes.h,v 1.2 1996/06/26 05:34:29 deraadt Exp $*/
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
- * Copyright (c) 1980 The Regents of the University of California.
+ * Copyright (c) 1980, 1993
+ *	The Regents of the University of California.
  * Copyright (c) 1976 Board of Trustees of the University of Illinois.
  * All rights reserved.
  *
@@ -32,8 +34,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)indent_codes.h	5.7 (Berkeley) 6/1/90
- *	$Id: indent_codes.h,v 1.2 1993/08/01 18:14:35 mycroft Exp $
+ *	from: @(#)indent_codes.h	8.1 (Berkeley) 6/6/93
  */
 
 #define newline		1

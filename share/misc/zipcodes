@@ -1,3 +1,5 @@
+#	$OpenBSD: zipcodes,v 1.5 2001/07/13 22:24:53 mickey Exp $
+
 # Zip Code : Location
 #	@(#)zipcodes	5.1 (Berkeley) 2/8/91
 00401:Pleasantville, NY
@@ -3713,32 +3715,32 @@
 10312:Staten Island, NY
 10313:Staten Island, NY
 10314:Staten Island, NY
-10400:Bronx, NY
-10451:Bronx, NY
-10452:Bronx, NY
-10453:Bronx, NY
-10454:Bronx, NY
-10455:Bronx, NY
-10456:Bronx, NY
-10457:Bronx, NY
-10458:Bronx, NY
-10459:Bronx, NY
-10460:Bronx, NY
-10461:Bronx, NY
-10462:Bronx, NY
-10463:Bronx, NY
-10464:Bronx, NY
-10465:Bronx, NY
-10466:Bronx, NY
-10467:Bronx, NY
-10468:Bronx, NY
-10469:Bronx, NY
-10470:Bronx, NY
-10471:Bronx, NY
-10472:Bronx, NY
-10473:Bronx, NY
-10474:Bronx, NY
-10475:Bronx, NY
+10400:The Bronx, NY
+10451:The Bronx, NY
+10452:The Bronx, NY
+10453:The Bronx, NY
+10454:The Bronx, NY
+10455:The Bronx, NY
+10456:The Bronx, NY
+10457:The Bronx, NY
+10458:The Bronx, NY
+10459:The Bronx, NY
+10460:The Bronx, NY
+10461:The Bronx, NY
+10462:The Bronx, NY
+10463:The Bronx, NY
+10464:The Bronx, NY
+10465:The Bronx, NY
+10466:The Bronx, NY
+10467:The Bronx, NY
+10468:The Bronx, NY
+10469:The Bronx, NY
+10470:The Bronx, NY
+10471:The Bronx, NY
+10472:The Bronx, NY
+10473:The Bronx, NY
+10474:The Bronx, NY
+10475:The Bronx, NY
 10501:Amawalk, NY
 10502:Ardsley, NY
 10503:Ardsley-On-Hudson, NY
@@ -8592,7 +8594,7 @@
 20908:Silver Spring, MD
 20910:Silver Spring, MD
 20911:Silver Spring, MD
-20912:Silver Spring, MD
+20912:Takoma Park, MD
 20997:Suburb Maryland Fac, MD
 21001:Aberdeen, MD
 21005:Aberdeen Proving Ground, MD
@@ -22038,6 +22040,7 @@
 50011:Ames, IA
 50012:Ames, IA
 50013:Ames, IA
+50014:Ames, IA
 50015:Ankeny, IA
 50020:Anita, IA
 50021:Ankeny, IA
@@ -39557,14 +39560,16 @@
 94297:Sacramento, CA
 94298:Sacramento, CA
 94299:Sacramento, CA
-94300:Palo Alto, CA
 94301:Palo Alto, CA
 94302:Palo Alto, CA
 94303:Palo Alto, CA
 94304:Palo Alto, CA
-94305:Palo Alto, CA
+94305:Stanford, CA
 94306:Palo Alto, CA
+94307:Palo Alto, CA
+94308:Palo Alto, CA
 94309:Palo Alto, CA
+94310:Palo Alto, CA
 94400:San Mateo, CA
 94401:San Mateo, CA
 94402:San Mateo, CA
@@ -39962,6 +39967,7 @@
 95334:Livingston, CA
 95335:Long Barn, CA
 95336:Manteca, CA
+95337:Manteca, CA
 95338:Mariposa, CA
 95339:Merced, CA
 95340:Merced, CA

@@ -1,3 +1,5 @@
+/*	$OpenBSD: acksend.c,v 1.3 2001/04/07 20:00:15 ho Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -56,7 +58,7 @@ xmit(int type,
 	msg.tsp_type = type;
 	msg.tsp_seq = seq;
 	msg.tsp_vers = TSPVERSION;
-	(void)strcpy(msg.tsp_name, hostname);
+	strlcpy(msg.tsp_name, hostname, sizeof msg.tsp_name);
 	bytenetorder(&msg);
 	if (sendto(sock, (char *)&msg, sizeof(struct tsp), 0,
 		   (struct sockaddr*)addr, sizeof(struct sockaddr)) < 0) {

@@ -1,3 +1,4 @@
+/*	$OpenBSD: clnt.h,v 1.4 1998/03/19 00:27:17 millert Exp $	*/
 /*	$NetBSD: clnt.h,v 1.6 1995/04/29 05:27:58 cgd Exp $	*/
 
 /*
@@ -134,7 +135,7 @@ typedef struct __rpc_client {
 		void		(*cl_destroy) __P((struct __rpc_client *));
 		/* the ioctl() of rpc */
 		bool_t          (*cl_control) __P((struct __rpc_client *, u_int,
-				    char *));
+				    void *));
 	} *cl_ops;
 	caddr_t			cl_private;	/* private stuff */
 } CLIENT;
@@ -238,7 +239,7 @@ typedef struct __rpc_client {
  * By convention, procedure 0 takes null arguments and returns them
  */
 
-#define NULLPROC ((u_long)0)
+#define NULLPROC ((u_int)0)
 
 /*
  * Below are the client handle creation routines for the various
@@ -279,7 +280,7 @@ __END_DECLS
  *	struct sockaddr_in *raddr;
  *	u_long prog;
  *	u_long version;
- *	register int *sockp;
+ *	int *sockp;
  *	u_int sendsz;
  *	u_int recvsz;
  */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: correct.c,v 1.5 2001/04/07 20:00:15 ho Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -58,7 +60,7 @@ correct(long avdelta)
 {
 	struct hosttbl *htp;
 	int corr;
-	struct timeval adjlocal;
+	struct timeval adjlocal, tmptv;
 	struct tsp to;
 	struct tsp *answer;
 
@@ -76,14 +78,20 @@ correct(long avdelta)
 			    || corr >= MAXADJ*1000
 			    || corr <= -MAXADJ*1000) {
 				htp->need_set = 0;
-				(void)gettimeofday(&to.tsp_time,0);
-				timeradd(&to.tsp_time, &adjlocal, &to.tsp_time);
+				(void)gettimeofday(&tmptv,0);
+				timeradd(&tmptv, &adjlocal, &tmptv);
+				to.tsp_time.tv_sec = tmptv.tv_sec;
+				to.tsp_time.tv_usec = tmptv.tv_usec;
 				to.tsp_type = TSP_SETTIME;
 			} else {
-				mstotvround(&to.tsp_time, corr);
+				tmptv.tv_sec = to.tsp_time.tv_sec ;
+				tmptv.tv_usec = to.tsp_time.tv_usec ;
+				mstotvround(&tmptv, corr);
+				to.tsp_time.tv_sec = tmptv.tv_sec;
+				to.tsp_time.tv_usec = tmptv.tv_usec;
 				to.tsp_type = TSP_ADJTIME;
 			}
-			(void)strcpy(to.tsp_name, hostname);
+			strlcpy(to.tsp_name, hostname, sizeof to.tsp_name);
 			answer = acksend(&to, &htp->addr, htp->name,
 					 TSP_ACK, 0, 0);
 			if (!answer) {
@@ -161,7 +169,7 @@ adjclock(struct timeval *corr)
 		}
 	} else {
 		syslog(LOG_WARNING,
-		       "clock correction %d sec too large to adjust",
+		       "clock correction %ld sec too large to adjust",
 		       adj.tv_sec);
 		(void) gettimeofday(&now, 0);
 		timeradd(&now, corr, &now);

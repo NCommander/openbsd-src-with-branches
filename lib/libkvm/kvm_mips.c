@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_mips.c,v 1.6 2001/05/18 09:08:38 art Exp $ */
+/*	$NetBSD: kvm_mips.c,v 1.3 1996/03/18 22:33:44 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,8 +39,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
+#if 0
 static char sccsid[] = "@(#)kvm_mips.c	8.1 (Berkeley) 6/4/93";
+#else
+static char *rcsid = "$OpenBSD: kvm_mips.c,v 1.6 2001/05/18 09:08:38 art Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
+
 /*
  * MIPS machine dependent routines for kvm.  Hopefully, the forthcoming 
  * vm code will one day obsolete this module.
@@ -59,7 +67,7 @@ static char sccsid[] = "@(#)kvm_mips.c	8.1 (Berkeley) 6/4/93";
 
 #include "kvm_private.h"
 
-#include <machine/machConst.h>
+#include <machine/cpu.h>
 #include <machine/pte.h>
 #include <machine/pmap.h>
 
@@ -140,7 +148,7 @@ _kvm_kvatop(kd, va, pa)
 	    va >= VM_MIN_KERNEL_ADDRESS + vm->Sysmapsize * NBPG)
 		goto invalid;
 	if (va < VM_MIN_KERNEL_ADDRESS) {
-		*pa = MACH_CACHED_TO_PHYS(va);
+		*pa = CACHED_TO_PHYS(va);
 		return (NBPG - offset);
 	}
 	addr = (u_long)(vm->Sysmap + ((va - VM_MIN_KERNEL_ADDRESS) >> PGSHIFT));
@@ -148,8 +156,7 @@ _kvm_kvatop(kd, va, pa)
 	 * Can't use KREAD to read kernel segment table entries.
 	 * Fortunately it is 1-to-1 mapped so we don't have to. 
 	 */
-	if (lseek(kd->pmfd, (off_t)addr, 0) < 0 ||
-	    read(kd->pmfd, (char *)&pte, sizeof(pte)) < 0)
+	if (_kvm_pread(kd, kd->pmfd, (char *)&pte, sizeof(pte), (off_t)addr) < 0)
 		goto invalid;
 	if (!(pte & PG_V))
 		goto invalid;
@@ -157,6 +164,15 @@ _kvm_kvatop(kd, va, pa)
 	return (NBPG - offset);
 
 invalid:
-	_kvm_err(kd, 0, "invalid address (%x)", va);
+	_kvm_err(kd, 0, "invalid address (%lx)", va);
 	return (0);
+}
+
+off_t
+_kvm_pa2off(kd, pa)
+	kvm_t *kd;
+	u_long pa;
+{
+	_kvm_err(kd, 0, "pa2off not yet implemented!");
+	return 0;
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: msgs.c,v 1.3 1998/04/28 22:13:30 pjanzen Exp $	*/
 /*	$NetBSD: msgs.c,v 1.3 1994/12/09 02:14:22 jtc Exp $	*/
 
 /*
@@ -37,18 +38,18 @@
 #if 0
 static char sccsid[] = "@(#)msgs.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: msgs.c,v 1.3 1994/12/09 02:14:22 jtc Exp $";
+static char rcsid[] = "$OpenBSD: msgs.c,v 1.3 1998/04/28 22:13:30 pjanzen Exp $";
 #endif /* not lint */
 
-/* 
+/*
  * A package to display what is happening every MSG_INTERVAL seconds
  * if we are slow connecting.
  */
 
+#include "talk.h"
 #include <sys/time.h>
 #include <signal.h>
 #include <stdio.h>
-#include "talk.h"
 
 #define MSG_INTERVAL 4
 
@@ -56,11 +57,13 @@ char	*current_state;
 int	current_line = 0;
 
 void
-disp_msg()
+disp_msg(dummy)
+	int dummy;
 {
 	message(current_state);
 }
 
+void
 start_msgs()
 {
 	struct itimerval itimer;
@@ -72,6 +75,7 @@ start_msgs()
 	setitimer(ITIMER_REAL, &itimer, (struct itimerval *)0);
 }
 
+void
 end_msgs()
 {
 	struct itimerval itimer;

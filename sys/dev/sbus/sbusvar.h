@@ -1,3 +1,4 @@
+/*	$OpenBSD: sbusvar.h,v 1.3 2001/08/20 19:34:10 jason Exp $	*/
 /*	$NetBSD: sbusvar.h,v 1.11 2000/11/01 06:18:45 eeh Exp $ */
 
 /*-

@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -37,13 +36,32 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: kernel.h,v 1.2 1998/02/19 05:48:20 assar Exp $ */
+/* $Id: kernel.h,v 1.7 2000/06/07 10:11:15 lha Exp $ */
 
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
-void kernel_interface (char *device);
+struct kernel_args {
+    unsigned num_workers;
+};
+
+void kernel_interface (struct kernel_args *args);
+
+void
+kernel_opendevice (const char *dev);
 
 extern int kernel_fd;
+
+unsigned long
+kernel_highworkers(void);
+
+unsigned long
+kernel_usedworkers(void);
+
+ssize_t
+kern_read (int fd, void *data, size_t len);
+
+ssize_t
+kern_write (int fd, const void *data, size_t len);
 
 #endif /* _KERNEL_H_ */

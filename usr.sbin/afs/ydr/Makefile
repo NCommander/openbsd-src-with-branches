@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.2 1999/02/15 04:20:42 art Exp $
 SRCS		+= main.c output.c symbol.c types.c lex.c parse.c
 CLEANFILES	+= lex.c parse.c parse.h y.tab.h
 CFLAGS		+= -I. -I${.CURDIR}/../src/util -I${.CURDIR}/../src/lib/roken \
@@ -18,5 +18,12 @@ parse.h: y.tab.h
 	-@ln -s y.tab.h parse.h
 
 y.tab.h: parse.c
+
+lex.o: parse.h
+
+.if (${MACHINE_ARCH} == "m68k")
+output.o: output.c
+	${CC} -c ${CFLAGS} -O1 ${.IMPSRC}
+.endif
 
 .include <bsd.prog.mk>

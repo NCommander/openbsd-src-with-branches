@@ -1,7 +1,10 @@
+/*	$OpenBSD: faithd.h,v 1.5 2000/10/06 02:46:59 itojun Exp $	*/
+/*	$KAME: faithd.h,v 1.7 2001/07/02 14:36:48 itojun Exp $	*/
+
 /*
  * Copyright (C) 1997 and 1998 WIDE Project.
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +16,7 @@
  * 3. Neither the name of the project nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,13 +39,15 @@ extern int ftp_active __P((int, int, int *, int *));
 extern int ftp_passive __P((int, int, int *, int *));
 extern void rsh_relay __P((int, int));
 extern void rsh_dual_relay __P((int, int));
-extern void exit_error __P((const char *fmt, ...));
-extern void exit_success __P((const char *fmt, ...));
-extern void exit_failure __P((const char *fmt, ...));
+extern void exit_success __P((const char *, ...))
+	__attribute__((__format__(__printf__, 1, 2)));
+extern void exit_failure __P((const char *, ...))
+	__attribute__((__format__(__printf__, 1, 2)));
 
 #define DEFAULT_PORT_NAME	"telnet"
-#define DEFAULT_PATH	"/usr/local/v6/libexec/telnetd"
+#define DEFAULT_DIR	"/usr/libexec"
 #define DEFAULT_NAME	"telnetd"
+#define DEFAULT_PATH	(DEFAULT_DIR "/" DEFAULT_NAME)
 
 #define FTP_PORT	21
 #define RLOGIN_PORT	513
@@ -62,7 +67,5 @@ extern void exit_failure __P((const char *fmt, ...));
 #define NUMARG	2
 
 #define UC(b)	(((int)b)&0xff)
-
-#define ERRSTR	strerror(errno)
 
 #define FAITH_TIMEOUT	(30 * 60)	/*second*/

@@ -1,9 +1,11 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pcnfsd_test.c,v 1.2 1995/07/25 22:21:01 gwr Exp $	*/
 
 /* RE_SID: @(%)/usr/dosnfs/shades_SCCS/unix/pcnfsd/v2/src/SCCS/s.pcnfsd_test.c 1.2 92/01/27 18:00:39 SMI */
+
 #include <stdio.h>
 #include <rpc/rpc.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "pcnfsd.h"
 
 CLIENT *cl;
@@ -249,7 +251,7 @@ FILE *fp;
 		return(1);
 	}
 
-	sprintf(filenamebuff, "%s/%s", spooldirbuff, tag1);
+	snprintf(filenamebuff, sizeof filenamebuff, "%s/%s", spooldirbuff, tag1);
 
 	fp = fopen(filenamebuff, "w");
 	if(fp == NULL) {

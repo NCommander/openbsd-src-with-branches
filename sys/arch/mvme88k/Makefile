@@ -1,42 +1,35 @@
-#	from: @(#)Makefile	7.3 (Berkeley) 6/9/91
-#	$Id: Makefile,v 1.1 1995/03/12 07:06:11 build Exp build $
-S=${BSDSRCDIR}/sys
-COMM=	$S/vm/*.[ch] $S/ufs/*.[ch] $S/sys/*.h $S/compat/sunos/*.[ch] \
-	$S/nfs/*.[ch] $S/netns/*.[ch] $S/netiso/*.[ch] \
-	$S/netiso/xebec/*.[ch] $S/netinet/*.[ch] $S/netccitt/*.[ch] \
-	$S/net/*.[ch] $S/miscfs/*/*.[ch] $S/kern/*.[ch] $S/dev/*.[ch] \
-	$S/scsi/*.[ch] $S/lib/libkern/m88k/*.[ch] $S/lib/libkern/*.[ch]
+#	$OpenBSD: Makefile,v 1.8 1997/10/19 22:35:57 etheisen Exp $
 
-# Makefile for m88k tags file
+# from: @(#)Makefile	8.1 (Berkeley) 6/11/93
+#
+# Makefile for mvme88k links, tags file
 
-all:
-	@echo "make tags or links only"
+NOPROG=	noprog
+NOMAN=	noman
+NOOBJ=	noobj
 
-TM88K=	$S/arch/m88k/tags
-SM88K=	$S/arch/m88k/m88k/*.[ch] $S/arch/m88k/include/*.h \
-	$S/arch/m88k/dev/*.[ch]
-AM88K=	$S/arch/m88k/m88k/*.s
+SYSTAGS= ${.CURDIR}/tags
+SUBDIR=	stand 
+DIRS=	conf dev include mvme88k
 
-# Directories in which to place m88k tags links
-DM88K=	m88k dev include
+links::
+	-for i in ${DIRS}; do \
+		echo $$i ; \
+		cd ${.CURDIR} ; \
+	    (cd $$i && { rm -f tags; ln -s ${SYSTAGS} tags; }) done
 
-TAGS:
-	-etags -dt ${COMM} ${SM88K} ${AM88K}
-	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${AM88K} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
-	    >> ${TM88K}/tags
+MVME88K=/sys/arch/mvme88k/dev/*.[ch] /sys/arch/mvme88k/include/*.[ch] \
+	/sys/arch/mvme88k/mvme88k/*.[ch]
+AMVME88K=/sys/arch/mvme88k/mvme88k/*.s
 
 tags:
-	-ctags -dtf ${TM88K} ${COMM} ${SM88K}
-	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${AM88K} | \
+	-ctags -wdt ${COMM} ${MVME88K}
+	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${AMVME88K} | \
 	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
-	    >> ${TM88K}
-	sort -o ${TM88K} ${TM88K}
+		>> tags
+	sort -o tags tags
 
-links:
-	-for i in ${DM88K}; do \
-	    rm -f $$i/tags; rm -f $$i/TAGS ; \
-	    ln -s ../tags $$i/tags; ln -s ../TAGS $$i/TAGS; done
+obj:	_SUBDIRUSE
 
 .include <bsd.prog.mk>
-
+.include <bsd.subdir.mk>

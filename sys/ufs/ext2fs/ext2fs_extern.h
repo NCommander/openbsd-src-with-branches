@@ -1,8 +1,8 @@
-/*	$NetBSD: ffs_extern.h,v 1.5 1996/09/01 23:49:18 mycroft Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_extern.h,v 1.9 2001/06/23 02:07:51 csapuntz Exp $	*/
+/*	$NetBSD: ext2fs_extern.h,v 1.1 1997/06/11 09:33:55 bouyer Exp $	*/
 
 /*-
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -35,6 +35,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)ffs_extern.h	8.3 (Berkeley) 4/16/94
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 struct buf;
@@ -50,33 +51,38 @@ struct ucred;
 struct ufsmount;
 struct uio;
 struct vnode;
+struct vfsconf;
 struct mbuf;
 struct componentname;
+
+extern struct pool ext2fs_inode_pool;		/* memory pool for inodes */
 
 __BEGIN_DECLS
 
 /* ext2fs_alloc.c */
-int ext2fs_alloc __P((struct inode *, daddr_t, daddr_t , struct ucred *,
-		   daddr_t *));
-int ext2fs_realloccg __P((struct inode *, daddr_t, daddr_t, int, int ,
-		       struct ucred *, struct buf **));
+int ext2fs_alloc __P((struct inode *, ufs_daddr_t, ufs_daddr_t , struct ucred *,
+		   ufs_daddr_t *));
+int ext2fs_realloccg __P((struct inode *, ufs_daddr_t, ufs_daddr_t, int, int,
+			  struct ucred *, struct buf **));
 int ext2fs_reallocblks __P((void *));
-int ext2fs_valloc __P((void *));
-daddr_t ext2fs_blkpref __P((struct inode *, daddr_t, int, daddr_t *));
-void ext2fs_blkfree __P((struct inode *, daddr_t));
-int ext2fs_vfree __P((void *));
+int ext2fs_inode_alloc(struct inode *pip, int mode, struct ucred *, 
+    struct vnode **);
+daddr_t ext2fs_blkpref __P((struct inode *, ufs_daddr_t, int, ufs_daddr_t *));
+void ext2fs_blkfree __P((struct inode *, ufs_daddr_t));
+int ext2fs_inode_free(struct inode *pip, ino_t ino, int mode);
 
 /* ext2fs_balloc.c */
-int ext2fs_balloc __P((struct inode *, daddr_t, int, struct ucred *,
-		    struct buf **, int));
+int ext2fs_buf_alloc(struct inode *, daddr_t, int, struct ucred *,
+			struct buf **, int);
 
 /* ext2fs_bmap.c */
 int ext2fs_bmap __P((void *));
 
 /* ext2fs_inode.c */
-void ext2fs_init __P((void));
-int ext2fs_update __P((void *));
-int ext2fs_truncate __P((void *));
+int ext2fs_init __P((struct vfsconf *));
+int ext2fs_update(struct inode *ip, struct timespec *atime,
+    struct timespec *mtime, int waitfor);
+int ext2fs_truncate(struct inode *, off_t, int, struct ucred *);
 int ext2fs_inactive __P((void *));
 
 /* ext2fs_lookup.c */
@@ -91,7 +97,7 @@ int ext2fs_dirempty __P((struct inode *, ino_t, struct ucred *));
 int ext2fs_checkpath __P((struct inode *, struct inode *, struct ucred *));
 
 /* ext2fs_subr.c */
-int ext2fs_blkatoff __P((void *));
+int ext2fs_bufatoff(struct inode *, off_t, char **, struct buf **);
 void ext2fs_fragacct __P((struct m_ext2fs *, int, int32_t[], int));
 #ifdef DIAGNOSTIC
 void	ext2fs_checkoverlap __P((struct buf *, struct inode *));
@@ -99,8 +105,8 @@ void	ext2fs_checkoverlap __P((struct buf *, struct inode *));
 
 /* ext2fs_vfsops.c */
 int ext2fs_mountroot __P((void));
-int ext2fs_mount __P((struct mount *, const char *, void *, struct nameidata *,
-		   struct proc *));
+int ext2fs_mount __P((struct mount *, const char *, void *,
+		   struct nameidata *, struct proc *));
 int ext2fs_reload __P((struct mount *, struct ucred *, struct proc *));
 int ext2fs_mountfs __P((struct vnode *, struct mount *, struct proc *));
 int ext2fs_unmount __P((struct mount *, int, struct proc *));
@@ -108,11 +114,12 @@ int ext2fs_flushfiles __P((struct mount *, int, struct proc *));
 int ext2fs_statfs __P((struct mount *, struct statfs *, struct proc *));
 int ext2fs_sync __P((struct mount *, int, struct ucred *, struct proc *));
 int ext2fs_vget __P((struct mount *, ino_t, struct vnode **));
-int ext2fs_fhtovp __P((struct mount *, struct fid *, struct mbuf *,
-		    struct vnode **, int *, struct ucred **));
+int ext2fs_fhtovp __P((struct mount *, struct fid *, struct vnode **));
 int ext2fs_vptofh __P((struct vnode *, struct fid *));
 int ext2fs_sbupdate __P((struct ufsmount *, int));
 int ext2fs_cgupdate __P((struct ufsmount *, int));
+int ext2fs_sysctl __P((int *, u_int, void *, size_t *, void *, size_t,
+		       struct proc *));
 
 /* ext2fs_readwrite.c */
 int ext2fs_read __P((void *));
@@ -133,13 +140,13 @@ int ext2fs_rmdir __P((void *));
 int ext2fs_symlink __P((void *));
 int ext2fs_readlink __P((void *));
 int ext2fs_advlock __P((void *));
-int ext2fs_vinit __P(( struct mount *, int (**specops) __P((void *)),
-                       int (**fifoops) __P((void *)), struct vnode **));
+int ext2fs_vinit __P((struct mount *, int (**specops) __P((void *)),
+                      int (**fifoops) __P((void *)), struct vnode **));
 int ext2fs_makeinode __P((int, struct vnode *, struct vnode **,
                           struct componentname *cnp));
+int ext2fs_fsync __P((void *));
 int ext2fs_reclaim __P((void *));
 
-#define ext2fs_fsync genfs_fsync
 __END_DECLS
 
 #define IS_EXT2_VNODE(vp)   (vp->v_tag == VT_EXT2FS)

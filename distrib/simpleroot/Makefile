@@ -1,5 +1,6 @@
-# Revision is 2.1
-REV=		21
+#	$OpenBSD: Makefile,v 1.13 1998/06/27 20:52:12 todd Exp $
+
+REV=		${OSrev}
 
 ARCHDIR=	${.CURDIR}/../${MACHINE}/simpleroot
 
@@ -8,14 +9,16 @@ ARCHDIR=	${.CURDIR}/../${MACHINE}/simpleroot
 .endif
 
 MOUNT_POINT?=	/mnt
-VND?=		vnd0
+VND?=		svnd0
 VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 DISKTYPE=	simpleroot
 PID!=		echo $$$$
-REALIMAGE!=	echo /var/tmp/image.${PID}
-IMAGE?=		/var/tmp/simpleroot${REV}.fs
+IMAGEDIR?=	/var/tmp
+REALIMAGE!=	echo ${IMAGEDIR}/image.${PID}
+IMAGE?=		${IMAGEDIR}/simpleroot${REV}.fs
 NEWFSOPTS?=
+GZIP?=
 
 LIST=		${ARCHDIR}/list
 
@@ -32,22 +35,31 @@ all:
 .ifdef BOOT_DISKLABEL
 	disklabel -B ${BOOT_DISKLABEL} ${VND} ${DISKTYPE}
 .endif
-	newfs ${NEWFSOPTS} ${VND_RDEV} ${DISKTYPE}
+	newfs ${NEWFSOPTS} ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}
 .ifdef BOOT_INSTALLBOOT
-	/usr/mdec/installboot -v ${MOUNT_POINT} ${BOOT_INSTALLBOOT} ${VND}
+	/usr/mdec/installboot -v ${MOUNT_POINT}/boot ${BOOT_INSTALLBOOT} ${VND}
 .endif
 	cd ${DESTDIR} && tar cf - `cat ${LIST}` | ( cd ${MOUNT_POINT}; \
-	  tar xpf - ) && \
+	  tar xpf - )
+	cp ${.CURDIR}/install.sh ${MOUNT_POINT}/install
+	chmod 755 ${MOUNT_POINT}/install
+	sed "/^VERSION=/s/=.*/=${REV}/" < ${.CURDIR}/install.sub \
+	  > ${MOUNT_POINT}/install.sub
+	sed -e "s/^ARCH=ARCH$/ARCH=`arch -s`/" \
+	    ${.CURDIR}/../${MACHINE}/install.md > ${MOUNT_POINT}/install.md
+	mkdir -p ${MOUNT_POINT}/mnt2
+.if exists(/sbin/ldconfig)
+	/usr/sbin/chroot ${MOUNT_POINT} /sbin/ldconfig
+.endif
 	( cd ${MOUNT_POINT} && \
 	tar cf - .??* * | ${GZIP} ${GZIPFLAGS} \
-	  > /var/tmp/simpleroot${REV}.tar${GZIPEXT} )
+	  > ${IMAGEDIR}/simpleroot${REV}.tar${GZIPEXT} )
 	@echo ""
 	@df -i ${MOUNT_POINT}
 	@echo ""
 	umount ${MOUNT_POINT}
-	vnconfig -u ${VND_DEV}
-	cat /*bin/* > /dev/null
+	vnconfig -u ${VND}
 	cp ${REALIMAGE} ${IMAGE}
 .if (${GZIP} == "gzip")
 	${GZIP} ${IMAGE}
@@ -61,6 +73,9 @@ unconfig:
 
 clean cleandir:
 	/bin/rm -f core ${IMAGE}
+
+beforeinstall:
+	cp ${IMAGE} ${DESTDIR}/snapshot
 
 .endif	# DESTDIR check
 .include <bsd.obj.mk>

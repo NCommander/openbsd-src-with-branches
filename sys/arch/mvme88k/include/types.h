@@ -1,4 +1,5 @@
 /*	$NetBSD: types.h,v 1.7 1995/07/05 17:46:11 pk Exp $ */
+/*	$OpenBSD: types.h,v 1.8 2001/08/06 20:48:49 miod Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -50,10 +51,6 @@
 #include <sys/cdefs.h>
 
 #if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
-typedef struct _physadr {
-	short r[1];
-} *physadr;
-
 typedef struct label_t {
 	int val[22];
 } label_t;
@@ -62,6 +59,11 @@ typedef struct label_t {
 typedef	unsigned long	vm_offset_t;
 typedef	unsigned long	vm_size_t;
 
+typedef unsigned long	vaddr_t;
+typedef unsigned long	paddr_t;
+typedef unsigned long	vsize_t;
+typedef unsigned long	psize_t;
+
 /*
  * Basic integral types.  Omit the typedef if
  * not possible for a machine/compiler combination.
@@ -69,15 +71,17 @@ typedef	unsigned long	vm_size_t;
 #define	__BIT_TYPES_DEFINED__
 typedef	__signed char		   int8_t;
 typedef	unsigned char		 u_int8_t;
+typedef	unsigned char		  uint8_t;
 typedef	short			  int16_t;
 typedef	unsigned short		u_int16_t;
+typedef	unsigned short		 uint16_t;
 typedef	int			  int32_t;
 typedef	unsigned int		u_int32_t;
+typedef	unsigned int		 uint32_t;
 typedef	long long		  int64_t;
 typedef	unsigned long long	u_int64_t;
+typedef	unsigned long long	 uint64_t;
 
 typedef int32_t			register_t;
-
-#define	__BDEVSW_DUMP_OLD_TYPE
 
 #endif	/* _MACHTYPES_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: if_ppp.h,v 1.9 1995/07/04 06:28:22 paulus Exp $	*/
+/*	$OpenBSD: if_ppp.h,v 1.5 2000/03/21 23:31:27 mickey Exp $	*/
+/*	$NetBSD: if_ppp.h,v 1.11 1996/03/15 02:28:05 paulus Exp $	*/
 
 /*
  * if_ppp.h - Point-to-Point Protocol definitions.
@@ -19,8 +20,8 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#ifndef _IF_PPP_H_
-#define _IF_PPP_H_
+#ifndef _NET_IF_PPP_H_
+#define _NET_IF_PPP_H_
 
 /*
  * Packet sizes
@@ -111,6 +112,8 @@ struct ifpppcstatsreq {
 #define PPPIOCGNPMODE	_IOWR('t', 76, struct npioctl) /* get NP mode */
 #define PPPIOCSNPMODE	_IOW('t', 75, struct npioctl)  /* set NP mode */
 #define PPPIOCGIDLE	_IOR('t', 74, struct ppp_idle) /* get idle time */
+#define PPPIOCSPASS	_IOW('t', 71, struct bpf_program) /* set pass filter */
+#define PPPIOCSACTIVE	_IOW('t', 70, struct bpf_program) /* set active filt */
 
 /* PPPIOC[GS]MTU are alternatives to SIOC[GS]IFMTU, used under Ultrix */
 #define PPPIOCGMTU	_IOR('t', 73, int)	/* get interface MTU */
@@ -123,8 +126,10 @@ struct ifpppcstatsreq {
 #define SIOCGPPPSTATS	_IOWR('i', 123, struct ifpppstatsreq)
 #define SIOCGPPPCSTATS	_IOWR('i', 122, struct ifpppcstatsreq)
 
-#if !defined(ifr_mtu)
-#define ifr_mtu	ifr_ifru.ifru_metric
+#ifdef _KERNEL
+void pppattach __P((void));
+int pppoutput __P((struct ifnet *, struct mbuf *, struct sockaddr *,
+		   struct rtentry *));
+void pppintr __P((void));
 #endif
-
-#endif /* _IF_PPP_H_ */
+#endif /* _NET_IF_PPP_H_ */

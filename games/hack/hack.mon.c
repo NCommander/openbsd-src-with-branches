@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.mon.c,v 1.4 2001/01/28 23:41:44 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.mon.c,v 1.3 1995/03/23 08:30:57 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.mon.c,v 1.4 2001/01/28 23:41:44 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -137,7 +139,7 @@ char *name;
 		u.uhp = -1;
 	}
 	if(u.uhp < 1) done_in_by(mtmp);
-	/* flags.botlx = 1;		/* should we show status line ? */
+	/* flags.botlx = 1; */		/* should we show status line ? */
 }
 
 dochugw(mtmp) register struct monst *mtmp; {
@@ -170,7 +172,7 @@ register struct monst *mtmp;
 		panic("bad monster %c (%d)",mdat->mlet,mdat->mlevel);
 
 	/* regenerate monsters */
-	if((!(moves%20) || index(MREGEN, mdat->mlet)) &&
+	if((!(moves%20) || strchr(MREGEN, mdat->mlet)) &&
 	    mtmp->mhp < mtmp->mhpmax)
 		mtmp->mhp++;
 
@@ -182,8 +184,8 @@ register struct monst *mtmp;
 		/* Nymphs and Leprechauns do not easily wake up */
 		if(cansee(mtmp->mx,mtmp->my) &&
 			(!Stealth || (mdat->mlet == 'e' && rn2(10))) &&
-			(!index("NL",mdat->mlet) || !rn2(50)) &&
-			(Aggravate_monster || index("d1", mdat->mlet)
+			(!strchr("NL",mdat->mlet) || !rn2(50)) &&
+			(Aggravate_monster || strchr("d1", mdat->mlet)
 				|| (!rn2(7) && !mtmp->mimic)))
 			mtmp->msleep = 0;
 		else return(0);
@@ -196,7 +198,7 @@ register struct monst *mtmp;
 	if(mtmp->mconf && !rn2(50)) mtmp->mconf = 0;
 
 	/* some monsters teleport */
-	if(mtmp->mflee && index("tNL", mdat->mlet) && !rn2(40)){
+	if(mtmp->mflee && strchr("tNL", mdat->mlet) && !rn2(40)){
 		rloc(mtmp);
 		return(0);
 	}
@@ -219,7 +221,7 @@ register struct monst *mtmp;
 		mtmp->mflee ||
 		mtmp->mconf ||
 		(mtmp->minvis && !rn2(3)) ||
-		(index("BIuy", mdat->mlet) && !rn2(4)) ||
+		(strchr("BIuy", mdat->mlet) && !rn2(4)) ||
 		(mdat->mlet == 'L' && !u.ugold && (mtmp->mgold || rn2(2))) ||
 		(!mtmp->mcansee && !rn2(4)) ||
 		mtmp->mpeaceful
@@ -229,7 +231,7 @@ register struct monst *mtmp;
 			return(tmp == 2);
 	}
 
-	if(!index("Ea", mdat->mlet) && nearby &&
+	if(!strchr("Ea", mdat->mlet) && nearby &&
 	 !mtmp->mpeaceful && u.uhp > 0 && !scared) {
 		if(mhitu(mtmp))
 			return(1);	/* monster died (e.g. 'y' or 'F') */
@@ -265,7 +267,7 @@ register struct monst *mtmp;
 #ifndef NOWORM
 	if(mtmp->wormno)
 		goto not_special;
-#endif NOWORM
+#endif /* NOWORM */
 
 	/* my dog gets a special treatment */
 	if(mtmp->mtame) {
@@ -299,7 +301,7 @@ register struct monst *mtmp;
 	}
 
 	/* spit fire ('D') or use a wand ('1') when appropriate */
-	if(index("D1", msym))
+	if(strchr("D1", msym))
 		inrange(mtmp);
 
 	if(msym == 'U' && !mtmp->mcan && canseemon(mtmp) &&
@@ -316,7 +318,7 @@ not_special:
 	appr = 1;
 	if(mtmp->mflee) appr = -1;
 	if(mtmp->mconf || Invis ||  !mtmp->mcansee ||
-		(index("BIy", msym) && !rn2(3)))
+		(strchr("BIy", msym) && !rn2(3)))
 		appr = 0;
 	omx = mtmp->mx;
 	omy = mtmp->my;
@@ -344,8 +346,8 @@ not_special:
 	}
 
 	/* look for gold or jewels nearby */
-	likegold = (index("LOD", msym) != NULL);
-	likegems = (index("ODu", msym) != NULL);
+	likegold = (strchr("LOD", msym) != NULL);
+	likegems = (strchr("ODu", msym) != NULL);
 	likeobjs = mtmp->mhide;
 #define	SRCHRADIUS	25
 	{ xchar mind = SRCHRADIUS;		/* not too far away */
@@ -384,7 +386,7 @@ not_special:
 	cnt = mfndpos(mtmp,poss,info,
 		msym == 'u' ? NOTONL :
 		(msym == '@' || msym == '1') ? (ALLOW_SSM | ALLOW_TRAPS) :
-		index(UNDEAD, msym) ? NOGARLIC : ALLOW_TRAPS);
+		strchr(UNDEAD, msym) ? NOGARLIC : ALLOW_TRAPS);
 		/* ALLOW_ROCK for some monsters ? */
 	chcnt = 0;
 	chi = -1;
@@ -402,7 +404,7 @@ not_special:
 		}
 #else
 		nearer = (DIST(nx,ny,gx,gy) < DIST(nix,niy,gx,gy));
-#endif STUPID
+#endif /* STUPID */
 		if((appr == 1 && nearer) || (appr == -1 && !nearer) ||
 			!mmoved ||
 			(!appr && !rn2(++chcnt))){
@@ -431,7 +433,7 @@ not_special:
 		mtmp->mtrack[0].y = omy;
 #ifndef NOWORM
 		if(mtmp->wormno) worm_move(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 	} else {
 		if(msym == 'u' && rn2(2)){
 			rloc(mtmp);
@@ -439,7 +441,7 @@ not_special:
 		}
 #ifndef NOWORM
 		if(mtmp->wormno) worm_nomove(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 	}
 postmov:
 	if(mmoved == 1) {
@@ -596,7 +598,7 @@ register struct monst *mtmp;
 	if(mtmp->isgd) gddead();
 #ifndef NOWORM
 	if(mtmp->wormno) wormdead(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 	monfree(mtmp);
 }
 
@@ -662,7 +664,7 @@ register struct monst *mtmp;
 {
 #ifdef lint
 #define	NEW_SCORING
-#endif lint
+#endif /* lint */
 	register int tmp,tmp2,nk,x,y;
 	register struct permonst *mdat;
 	extern long newuexp();
@@ -687,7 +689,7 @@ register struct monst *mtmp;
 	    extern char fut_geno[];
 	    u.nr_killed[tmp]++;
 	    if((nk = u.nr_killed[tmp]) > MAXMONNO &&
-		!index(fut_geno, mdat->mlet))
+		!strchr(fut_geno, mdat->mlet))
 		    charcat(fut_geno,  mdat->mlet);
 	}
 
@@ -700,9 +702,9 @@ register struct monst *mtmp;
 	/* give experience points */
 	tmp = 1 + mdat->mlevel * mdat->mlevel;
 	if(mdat->ac < 3) tmp += 2*(7 - mdat->ac);
-	if(index("AcsSDXaeRTVWU&In:P", mdat->mlet))
+	if(strchr("AcsSDXaeRTVWU&In:P", mdat->mlet))
 		tmp += 2*mdat->mlevel;
-	if(index("DeV&P",mdat->mlet)) tmp += (7*mdat->mlevel);
+	if(strchr("DeV&P",mdat->mlet)) tmp += (7*mdat->mlevel);
 	if(mdat->mlevel > 6) tmp += 50;
 	if(mdat->mlet == ';') tmp += 1000;
 
@@ -724,7 +726,7 @@ register struct monst *mtmp;
 	}
 	/* note: ul is not necessarily the future value of u.ulevel */
 	/* ------- end of recent valuation change ------- */
-#endif NEW_SCORING
+#endif /* NEW_SCORING */
 
 	more_experienced(tmp,0);
 	flags.botl = 1;
@@ -752,12 +754,12 @@ register struct monst *mtmp;
 		mksobj_at(WORM_TOOTH, x, y);
 		stackobj(fobj);
 	} else
-#endif	NOWORM
-	if(!letter(tmp) || (!index("mw", tmp) && !rn2(3))) tmp = 0;
+#endif /* NOWORM */
+	if(!letter(tmp) || (!strchr("mw", tmp) && !rn2(3))) tmp = 0;
 
 	if(ACCESSIBLE(levl[x][y].typ))	/* might be mimic in wall or dead eel*/
 	    if(x != u.ux || y != u.uy)	/* might be here after swallowed */
-		if(index("NTVm&",mdat->mlet) || rn2(5)) {
+		if(strchr("NTVm&",mdat->mlet) || rn2(5)) {
 		register struct obj *obj2 = mkobj_at(tmp,x,y);
 		if(cansee(x,y))
 			atl(x,y,obj2->olet);
@@ -795,7 +797,7 @@ register struct permonst *mdat;
 	if(mdat == mtmp->data) return(0);	/* still the same monster */
 #ifndef NOWORM
 	if(mtmp->wormno) wormdead(mtmp);	/* throw tail away */
-#endif NOWORM
+#endif /* NOWORM */
 	if (u.ustuck == mtmp) {
 		if (u.uswallow) {
 			u.uswallow = 0;
@@ -819,7 +821,7 @@ register struct permonst *mdat;
 #ifndef NOWORM
 	if(mdat->mlet == 'w' && getwn(mtmp)) initworm(mtmp);
 			/* perhaps we should clear mtmp->mtame here? */
-#endif NOWORM
+#endif /* NOWORM */
 	unpmon(mtmp);	/* necessary for 'I' and to force pmon */
 	pmon(mtmp);
 	return(1);

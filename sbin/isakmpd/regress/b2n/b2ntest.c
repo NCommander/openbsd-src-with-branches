@@ -1,7 +1,9 @@
-/*	$Id: b2ntest.c,v 1.4 1998/07/16 19:31:55 provos Exp $	*/
+/*	$OpenBSD: b2ntest.c,v 1.4 2001/01/26 12:04:19 niklas Exp $	*/
+/*	$EOM: b2ntest.c,v 1.4 1998/07/16 19:31:55 provos Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -214,7 +216,8 @@ main (void)
   b2n_div_r (d, n, m);
   CMP_FAIL (d, "0xab");
 
-  printf ("\nTesting: b2n_div: 0x0800000000000000000000004000000000000001 / 0xffab09909a00: ");
+  printf ("\nTesting: b2n_div: "
+	  "0x0800000000000000000000004000000000000001 / 0xffab09909a00: ");
   b2n_set_str (n, "0x0800000000000000000000004000000000000001");
   b2n_set_str (m, "0xffab09909a00");
   b2n_div_q (d, n, m);
@@ -226,7 +229,8 @@ main (void)
   CMP_FAIL (n, "0x18083e83a98647cedae0b3e69a5e");
   CMP_FAIL (m, "0x5b8bf98cac01");
 
-  printf ("\nTesting: b2n_div: 0x0800000000000000000000004000000000000001 / 0x7b: ");
+  printf ("\nTesting: b2n_div: "
+	  "0x0800000000000000000000004000000000000001 / 0x7b: ");
   b2n_set_str (n, "0x0800000000000000000000004000000000000001");
   b2n_set_str (m, "0x7b");
   b2n_div (n, m, n, m);

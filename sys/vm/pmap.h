@@ -1,4 +1,5 @@
-/*	$NetBSD: pmap.h,v 1.10 1995/03/26 20:39:07 jtc Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.21 2001/07/31 13:30:17 art Exp $	*/
+/*	$NetBSD: pmap.h,v 1.36 1999/11/13 00:24:39 thorpej Exp $	*/
 
 /* 
  * Copyright (c) 1991, 1993
@@ -86,52 +87,80 @@ typedef struct pmap_statistics	*pmap_statistics_t;
 
 #include <machine/pmap.h>
 
+/*
+ * Flags passed to pmap_enter().  Note the bottom 3 bits are VM_PROT_*
+ * bits, used to indicate the access type that was made (to seed modified
+ * and referenced information).
+ */
+#define	PMAP_WIRED	0x00000010	/* wired mapping */
+#define	PMAP_CANFAIL	0x00000020	/* can fail if resource shortage */
+
+#ifndef PMAP_EXCLUDE_DECLS	/* Used in Sparc port to virtualize pmap mod */
 #ifdef _KERNEL
 __BEGIN_DECLS
 void		*pmap_bootstrap_alloc __P((int));
-void		 pmap_bootstrap( /* machine dependent */ );
-void		 pmap_change_wiring __P((pmap_t, vm_offset_t, boolean_t));
-void		 pmap_clear_modify __P((vm_offset_t pa));
-void		 pmap_clear_reference __P((vm_offset_t pa));
-void		 pmap_collect __P((pmap_t));
-void		 pmap_copy __P((pmap_t,
-		    pmap_t, vm_offset_t, vm_size_t, vm_offset_t));
-void		 pmap_copy_page __P((vm_offset_t, vm_offset_t));
-pmap_t		 pmap_create __P((vm_size_t));
-void		 pmap_destroy __P((pmap_t));
-void		 pmap_enter __P((pmap_t,
-		    vm_offset_t, vm_offset_t, vm_prot_t, boolean_t));
-vm_offset_t	 pmap_extract __P((pmap_t, vm_offset_t));
-#ifndef	MACHINE_NONCONTIG
-void		 pmap_init __P((vm_offset_t, vm_offset_t));
-#else
-void		 pmap_init __P((void));
+#ifndef pmap_activate
+void		pmap_activate __P((struct proc *));
 #endif
-boolean_t	 pmap_is_modified __P((vm_offset_t pa));
-boolean_t	 pmap_is_referenced __P((vm_offset_t pa));
-vm_offset_t	 pmap_map __P((vm_offset_t, vm_offset_t, vm_offset_t, int));
-void		 pmap_page_protect __P((vm_offset_t, vm_prot_t));
-void		 pmap_pageable __P((pmap_t,
-		    vm_offset_t, vm_offset_t, boolean_t));
-vm_offset_t	 pmap_phys_address __P((int));
+#ifndef pmap_deactivate
+void		pmap_deactivate __P((struct proc *));
+#endif
+void		pmap_unwire __P((pmap_t, vaddr_t));
+
+#if !defined(pmap_clear_modify)
+boolean_t	 pmap_clear_modify __P((struct vm_page *));
+#endif
+#if !defined(pmap_clear_reference)
+boolean_t	 pmap_clear_reference __P((struct vm_page *));
+#endif
+
+void		 pmap_collect __P((pmap_t));
+void		 pmap_copy __P((pmap_t, pmap_t, vaddr_t, vsize_t, vaddr_t));
+void		 pmap_copy_page __P((paddr_t, paddr_t));
+struct pmap 	 *pmap_create __P((void));
+void		 pmap_destroy __P((pmap_t));
+int		 pmap_enter __P((pmap_t, vaddr_t, paddr_t, vm_prot_t, int));
+boolean_t	 pmap_extract __P((pmap_t, vaddr_t, paddr_t *));
+#if defined(PMAP_GROWKERNEL)
+vaddr_t		 pmap_growkernel __P((vaddr_t));
+#endif
+
+void		 pmap_init __P((void));
+
+void		 pmap_kenter_pa __P((vaddr_t, paddr_t, vm_prot_t));
+void		 pmap_kenter_pgs __P((vaddr_t, struct vm_page **, int));
+void		 pmap_kremove __P((vaddr_t, vsize_t));
+#if !defined(pmap_is_modified)
+boolean_t	 pmap_is_modified __P((struct vm_page *));
+#endif
+#if !defined(pmap_is_referenced)
+boolean_t	 pmap_is_referenced __P((struct vm_page *));
+#endif
+void		 pmap_page_protect __P((struct vm_page *, vm_prot_t));
+
+#if !defined(pmap_phys_address)
+paddr_t		 pmap_phys_address __P((int));
+#endif
 void		 pmap_pinit __P((pmap_t));
 void		 pmap_protect __P((pmap_t,
-		    vm_offset_t, vm_offset_t, vm_prot_t));
+		    vaddr_t, vaddr_t, vm_prot_t));
 void		 pmap_reference __P((pmap_t));
 void		 pmap_release __P((pmap_t));
-void		 pmap_remove __P((pmap_t, vm_offset_t, vm_offset_t));
+void		 pmap_remove __P((pmap_t, vaddr_t, vaddr_t));
 void		 pmap_update __P((void));
-void		 pmap_zero_page __P((vm_offset_t));
+void		 pmap_zero_page __P((paddr_t));
 
-#ifdef MACHINE_NONCONTIG
-u_int		 pmap_free_pages __P(());
-void		 pmap_init __P(());
-boolean_t	 pmap_next_page __P(());
-void		 pmap_startup __P(());
-vm_offset_t	 pmap_steal_memory __P(());
-void		 pmap_virtual_space __P(());
+#if defined(PMAP_STEAL_MEMORY)
+vaddr_t		 pmap_steal_memory __P((vsize_t, vaddr_t *, vaddr_t *));
+#else
+void		 pmap_virtual_space __P((vaddr_t *, vaddr_t *));
+#endif
+
+#if defined(PMAP_FORK)
+void		 pmap_fork __P((pmap_t, pmap_t));
 #endif
 __END_DECLS
-#endif
+#endif	/* kernel*/
+#endif  /* PMAP_EXCLUDE_DECLS */
 
 #endif /* _PMAP_VM_ */

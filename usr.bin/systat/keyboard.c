@@ -1,3 +1,4 @@
+/*	$OpenBSD: keyboard.c,v 1.6 2000/07/10 03:10:17 millert Exp $	*/
 /*	$NetBSD: keyboard.c,v 1.2 1995/01/20 08:51:59 jtc Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)keyboard.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: keyboard.c,v 1.2 1995/01/20 08:51:59 jtc Exp $";
+static char rcsid[] = "$OpenBSD: keyboard.c,v 1.6 2000/07/10 03:10:17 millert Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -47,18 +48,20 @@ static char rcsid[] = "$NetBSD: keyboard.c,v 1.2 1995/01/20 08:51:59 jtc Exp $";
 #include "systat.h"
 #include "extern.h"
 
-int
+void
 keyboard()
 {
         char ch, line[80];
-	int oldmask;
+	sigset_t mask, omask;
 
         for (;;) {
                 col = 0;
                 move(CMDLINE, 0);
                 do {
                         refresh();
-                        ch = getch() & 0177;
+                        if ((ch = getch()) == ERR)
+				exit(1);
+                        ch &= 0177;
                         if (ch == 0177 && ferror(stdin)) {
                                 clearerr(stdin);
                                 continue;
@@ -66,21 +69,23 @@ keyboard()
                         if (ch >= 'A' && ch <= 'Z')
                                 ch += 'a' - 'A';
                         if (col == 0) {
-#define	mask(s)	(1 << ((s) - 1))
-                                if (ch == CTRL('l')) {
-					oldmask = sigblock(mask(SIGALRM));
-					wrefresh(curscr);
-					sigsetmask(oldmask);
+				switch (ch) {
+				case CTRL('l'):
+				case CTRL('g'):
+					sigemptyset(&mask);
+					sigaddset(&mask, SIGALRM);
+					sigprocmask(SIG_BLOCK, &mask, &omask);
+					if (ch == CTRL('l'))
+						wrefresh(curscr);
+					else
+						status();
+					sigprocmask(SIG_SETMASK, &omask, NULL);
                                         continue;
-                                }
-				if (ch == CTRL('g')) {
-					oldmask = sigblock(mask(SIGALRM));
-					status();
-					sigsetmask(oldmask);
+				case ':':
+					break;
+				default:
 					continue;
 				}
-                                if (ch != ':')
-                                        continue;
                                 move(CMDLINE, 0);
                                 clrtoeol();
                         }
@@ -109,6 +114,11 @@ keyboard()
                                 clrtoeol();
                                 continue;
                         }
+			if (col >= sizeof(line) - 1) {
+				/* line too long */
+				beep();
+				continue;
+			}
                         if (isprint(ch) || ch == ' ') {
                                 line[col] = ch;
                                 mvaddch(CMDLINE, col, ch);
@@ -116,9 +126,11 @@ keyboard()
                         }
                 } while (col == 0 || (ch != '\r' && ch != '\n'));
                 line[col] = '\0';
-		oldmask = sigblock(mask(SIGALRM));
+		sigemptyset(&mask);
+		sigaddset(&mask, SIGALRM);
+		sigprocmask(SIG_BLOCK, &mask, &omask);
                 command(line + 1);
-		sigsetmask(oldmask);
+		sigprocmask(SIG_SETMASK, &omask, NULL);
         }
 	/*NOTREACHED*/
 }

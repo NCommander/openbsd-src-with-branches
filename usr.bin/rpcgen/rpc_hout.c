@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpc_hout.c,v 1.4 1997/07/25 21:05:39 mickey Exp $	*/
 /*	$NetBSD: rpc_hout.c,v 1.4 1995/06/11 21:49:55 pk Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -115,17 +116,17 @@ char* name;
 int pointerp;
 {
 
-  f_print(fout,"#ifdef __cplusplus \n");
+  f_print(fout,"#ifdef __cplusplus\n");
     f_print(fout, "extern \"C\" bool_t xdr_%s(XDR *, %s%s);\n",
 	name,
 	name, pointerp ? ("*") : "");
-  f_print(fout,"#elif __STDC__ \n");
+  f_print(fout,"#elif defined(__STDC__)\n");
     f_print(fout, "extern  bool_t xdr_%s(XDR *, %s%s);\n",
 	name,
 	name, pointerp ? ("*") : "");
-  f_print(fout,"#else /* Old Style C */ \n");
+  f_print(fout,"#else /* Old Style C */\n");
     f_print(fout, "bool_t xdr_%s();\n", name);
-  f_print(fout,"#endif /* Old Style C */ \n\n");
+  f_print(fout,"#endif /* Old Style C */\n\n");
 }
 
 
@@ -284,10 +285,10 @@ pprogramdef(def)
 				f_print(fout,"\n#ifdef __cplusplus\n");
 				ext="extern \"C\" ";
 			}else if ( i== 1){
-				f_print(fout,"\n#elif __STDC__\n");
+				f_print(fout,"\n#elif defined(__STDC__)\n");
 				ext="extern  "  ;
 			}else{
-				f_print(fout,"\n#else /* Old Style C */ \n");
+				f_print(fout,"\n#else /* Old Style C */\n");
 				ext="extern  ";
 			}
 			
@@ -304,7 +305,7 @@ pprogramdef(def)
 			}
 
 		}
-		f_print(fout,"#endif /* Old Style C */ \n");
+		f_print(fout,"#endif /* Old Style C */\n");
 	}
 }
 
@@ -382,7 +383,10 @@ penumdef(def)
 				f_print(fout, " = %s + %d", last, count++);
 			}
 		}
-		f_print(fout, ",\n");
+		if (l->next)
+			f_print(fout, ",\n");
+		else
+			f_print(fout, "\n");
 	}
 	f_print(fout, "};\n");
 	f_print(fout, "typedef enum %s %s;\n", name, name);

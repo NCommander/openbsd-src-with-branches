@@ -1,3 +1,4 @@
+/*	$OpenBSD: cribcur.h,v 1.3 1995/03/21 15:08:48 cgd Exp $	*/
 /*	$NetBSD: cribcur.h,v 1.3 1995/03/21 15:08:48 cgd Exp $	*/
 
 /*

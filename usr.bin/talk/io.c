@@ -1,3 +1,4 @@
+/*	$OpenBSD: io.c,v 1.9 1999/03/03 20:43:30 millert Exp $	*/
 /*	$NetBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $	*/
 
 /*
@@ -37,74 +38,83 @@
 #if 0
 static char sccsid[] = "@(#)io.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $";
+static char rcsid[] = "$OpenBSD: io.c,v 1.9 1999/03/03 20:43:30 millert Exp $";
 #endif /* not lint */
 
 /*
- * This file contains the I/O handling and the exchange of 
+ * This file contains the I/O handling and the exchange of
  * edit characters. This connection itself is established in
  * ctl.c
  */
 
+#include "talk.h"
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <stdio.h>
 #include <errno.h>
-#include <string.h>
-#include "talk.h"
+#include <unistd.h>
 
 #define A_LONG_TIME 10000000
-#define STDIN_MASK (1<<fileno(stdin))	/* the bit mask for standard
-					   input */
 
 /*
  * The routine to do the actual talking
  */
+void
 talk()
 {
-	register int read_template, sockt_mask;
-	int read_set, nb;
+	fd_set read_template, read_set;
+	int nb;
 	char buf[BUFSIZ];
 	struct timeval wait;
+	int maxfd = 0;
 
+#if defined(NCURSES_VERSION) || defined(beep)
+	message("Connection established");
+	beep();
+	beep();
+	beep();
+#else
 	message("Connection established\007\007\007");
+#endif
 	current_line = 0;
-	sockt_mask = (1<<sockt);
 
 	/*
-	 * Wait on both the other process (sockt_mask) and 
+	 * Wait on both the other process (sockt_mask) and
 	 * standard input ( STDIN_MASK )
 	 */
-	read_template = sockt_mask | STDIN_MASK;
+	FD_ZERO(&read_template);
+	FD_SET(fileno(stdin), &read_template);
+	if (fileno(stdin) > maxfd)
+		maxfd = fileno(stdin);
+	FD_SET(sockt, &read_template);
+	if (sockt > maxfd)
+		maxfd = sockt;
 	for (;;) {
 		read_set = read_template;
 		wait.tv_sec = A_LONG_TIME;
 		wait.tv_usec = 0;
-		nb = select(32, &read_set, 0, 0, &wait);
+		nb = select(maxfd + 1, &read_set, 0, 0, &wait);
 		if (nb <= 0) {
 			if (errno == EINTR) {
 				read_set = read_template;
 				continue;
 			}
 			/* panic, we don't know what happened */
-			p_error("Unexpected error from select");
-			quit();
+			quit("Unexpected error from select", 1);
 		}
-		if (read_set & sockt_mask) { 
+		if (FD_ISSET(sockt, &read_set)) {
 			/* There is data on sockt */
 			nb = read(sockt, buf, sizeof buf);
-			if (nb <= 0) {
-				message("Connection closed. Exiting");
-				quit();
-			}
+			if (nb <= 0)
+				quit("Connection closed.  Exiting", 0);
 			display(&his_win, buf, nb);
 		}
-		if (read_set & STDIN_MASK) {
+		if (FD_ISSET(fileno(stdin), &read_set)) {
 			/*
 			 * We can't make the tty non_blocking, because
 			 * curses's output routines would screw up
 			 */
-			ioctl(0, FIONREAD, (struct sgttyb *) &nb);
+			ioctl(0, FIONREAD, &nb);
 			nb = read(0, buf, nb);
 			display(&my_win, buf, nb);
 			/* might lose data here because sockt is non-blocking */
@@ -113,28 +123,10 @@ talk()
 	}
 }
 
-extern	int errno;
-extern	int sys_nerr;
-
-/*
- * p_error prints the system error message on the standard location
- * on the screen and then exits. (i.e. a curses version of perror)
- */
-p_error(string) 
-	char *string;
-{
-	wmove(my_win.x_win, current_line%my_win.x_nlines, 0);
-	wprintw(my_win.x_win, "[%s : %s (%d)]\n",
-	    string, strerror(errno), errno);
-	wrefresh(my_win.x_win);
-	move(LINES-1, 0);
-	refresh();
-	quit();
-}
-
 /*
  * Display string in the standard location
  */
+void
 message(string)
 	char *string;
 {

@@ -1,4 +1,5 @@
-/*	$NetBSD: dkbad.c,v 1.3 1994/10/27 04:15:19 cgd Exp $	*/
+/*	$OpenBSD: dkbad.c,v 1.4 1996/02/02 18:05:59 mycroft Exp $	*/
+/*	$NetBSD: dkbad.c,v 1.4 1996/02/02 18:05:59 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -40,9 +41,9 @@
 
 
 #ifndef NOBADSECT
-#include "sys/param.h"
-#include "sys/buf.h"
-#include "sys/dkbad.h"
+#include <sys/param.h>
+#include <sys/buf.h>
+#include <sys/dkbad.h>
 
 /*
  * Search the bad sector table looking for
@@ -57,7 +58,7 @@ isbad(bt, cyl, trk, sec)
 	register long blk, bblk;
 
 	blk = ((long)cyl << 16) + (trk << 8) + sec;
-	for (i = 0; i < 126; i++) {
+	for (i = 0; i < NBT_BAD; i++) {
 		bblk = ((long)bt->bt_bad[i].bt_cyl << 16) + bt->bt_bad[i].bt_trksec;
 		if (blk == bblk)
 			return (i);

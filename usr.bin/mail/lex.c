@@ -1,3 +1,6 @@
+/*	$OpenBSD: lex.c,v 1.22 2001/01/16 05:36:08 millert Exp $	*/
+/*	$NetBSD: lex.c,v 1.10 1997/05/17 19:55:13 pk Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,8 +35,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)lex.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: lex.c,v 1.5 1994/11/28 20:03:33 jtc Exp $";
+#if 0
+static char sccsid[] = "@(#)lex.c	8.2 (Berkeley) 4/20/95";
+#else
+static char rcsid[] = "$OpenBSD: lex.c,v 1.22 2001/01/16 05:36:08 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -49,6 +55,8 @@ static char rcsid[] = "$Id: lex.c,v 1.5 1994/11/28 20:03:33 jtc Exp $";
 
 char	*prompt = "& ";
 
+const struct cmd *com;	/* command we are running */
+
 /*
  * Set up editing on the given file name.
  * If the first character of name is %, we are considered to be
@@ -60,45 +68,44 @@ setfile(name)
 	char *name;
 {
 	FILE *ibuf;
-	int i;
+	int i, fd;
 	struct stat stb;
 	char isedit = *name != '%';
 	char *who = name[1] ? name + 1 : myname;
+	char tempname[PATHSIZE];
 	static int shudclob;
-	extern char *tempMesg;
-	extern int errno;
 
-	if ((name = expand(name)) == NOSTR)
-		return -1;
+	if ((name = expand(name)) == NULL)
+		return(-1);
 
 	if ((ibuf = Fopen(name, "r")) == NULL) {
 		if (!isedit && errno == ENOENT)
 			goto nomail;
-		perror(name);
+		warn("%s", name);
 		return(-1);
 	}
 
 	if (fstat(fileno(ibuf), &stb) < 0) {
-		perror("fstat");
-		Fclose(ibuf);
-		return (-1);
+		warn("fstat");
+		(void)Fclose(ibuf);
+		return(-1);
 	}
 
 	switch (stb.st_mode & S_IFMT) {
 	case S_IFDIR:
-		Fclose(ibuf);
+		(void)Fclose(ibuf);
 		errno = EISDIR;
-		perror(name);
-		return (-1);
+		warn("%s", name);
+		return(-1);
 
 	case S_IFREG:
 		break;
 
 	default:
-		Fclose(ibuf);
+		(void)Fclose(ibuf);
 		errno = EINVAL;
-		perror(name);
-		return (-1);
+		warn("%s", name);
+		return(-1);
 	}
 
 	/*
@@ -121,40 +128,81 @@ setfile(name)
 	if ((i = open(name, 1)) < 0)
 		readonly++;
 	else
-		close(i);
+		(void)close(i);
 	if (shudclob) {
-		fclose(itf);
-		fclose(otf);
+		(void)fclose(itf);
+		(void)fclose(otf);
 	}
 	shudclob = 1;
 	edit = isedit;
 	strcpy(prevfile, mailname);
-	if (name != mailname)
-		strcpy(mailname, name);
+	if (name != mailname) {
+		strncpy(mailname, name, sizeof(mailname) - 1);
+		mailname[sizeof(mailname) - 1] = '\0';
+	}
 	mailsize = fsize(ibuf);
-	if ((otf = fopen(tempMesg, "w")) == NULL) {
-		perror(tempMesg);
-		exit(1);
-	}
-	(void) fcntl(fileno(otf), F_SETFD, 1);
-	if ((itf = fopen(tempMesg, "r")) == NULL) {
-		perror(tempMesg);
-		exit(1);
-	}
-	(void) fcntl(fileno(itf), F_SETFD, 1);
-	rm(tempMesg);
-	setptr(ibuf);
+	(void)snprintf(tempname, sizeof(tempname),
+	    "%s/mail.RxXXXXXXXXXX", tmpdir);
+	if ((fd = mkstemp(tempname)) == -1 ||
+	    (otf = fdopen(fd, "w")) == NULL)
+		err(1, "%s", tempname);
+	(void)fcntl(fileno(otf), F_SETFD, 1);
+	if ((itf = fopen(tempname, "r")) == NULL)
+		err(1, "%s", tempname);
+	(void)fcntl(fileno(itf), F_SETFD, 1);
+	(void)rm(tempname);
+	setptr(ibuf, 0);
 	setmsize(msgCount);
-	Fclose(ibuf);
+	/*
+	 * New mail may have arrived while we were reading
+	 * the mail file, so reset mailsize to be where
+	 * we really are in the file...
+	 */
+	mailsize = ftell(ibuf);
+	(void)Fclose(ibuf);
 	relsesigs();
 	sawcom = 0;
 	if (!edit && msgCount == 0) {
 nomail:
 		fprintf(stderr, "No mail for %s\n", who);
-		return -1;
+		return(-1);
 	}
 	return(0);
 }
+
+/*
+ * Incorporate any new mail that has arrived since we first
+ * started reading mail.
+ */
+int
+incfile()
+{
+	int newsize;
+	int omsgCount = msgCount;
+	FILE *ibuf;
+
+	ibuf = Fopen(mailname, "r");
+	if (ibuf == NULL)
+		return(-1);
+	holdsigs();
+	if (!spool_lock())
+		return(-1);
+	newsize = fsize(ibuf);
+	/* make sure mail box has grown and is non-empty */
+	if (newsize == 0 || newsize <= mailsize) {
+		spool_unlock();
+		relsesigs();
+		return(newsize == mailsize ? 0 : -1);
+	}
+	setptr(ibuf, mailsize);
+	setmsize(msgCount);
+	mailsize = ftell(ibuf);
+	(void)Fclose(ibuf);
+	spool_unlock();
+	relsesigs();
+	return(msgCount - omsgCount);
+}
+
 
 int	*msgvec;
 int	reset_on_stop;			/* do a reset() if stopped */
@@ -166,19 +214,18 @@ int	reset_on_stop;			/* do a reset() if stopped */
 void
 commands()
 {
-	int eofloop = 0;
-	register int n;
+	int n;
+	volatile int eofloop = 0;
 	char linebuf[LINESIZE];
-	void intr(), stop(), hangup();
 
 	if (!sourcing) {
 		if (signal(SIGINT, SIG_IGN) != SIG_IGN)
-			signal(SIGINT, intr);
+			(void)signal(SIGINT, intr);
 		if (signal(SIGHUP, SIG_IGN) != SIG_IGN)
-			signal(SIGHUP, hangup);
-		signal(SIGTSTP, stop);
-		signal(SIGTTOU, stop);
-		signal(SIGTTIN, stop);
+			(void)signal(SIGHUP, hangup);
+		(void)signal(SIGTSTP, stop);
+		(void)signal(SIGTTOU, stop);
+		(void)signal(SIGTTIN, stop);
 	}
 	setexit();
 	for (;;) {
@@ -186,9 +233,11 @@ commands()
 		 * Print the prompt, if needed.  Clear out
 		 * string space, and flush the output.
 		 */
-		if (!sourcing && value("interactive") != NOSTR) {
+		if (!sourcing && value("interactive") != NULL) {
+			if ((value("autoinc") != NULL) && (incfile() > 0))
+				puts("New mail has arrived.");
 			reset_on_stop = 1;
-			printf(prompt);
+			printf("%s", prompt);
 		}
 		fflush(stdout);
 		sreset();
@@ -219,10 +268,10 @@ commands()
 				unstack();
 				continue;
 			}
-			if (value("interactive") != NOSTR &&
-			    value("ignoreeof") != NOSTR &&
+			if (value("interactive") != NULL &&
+			    value("ignoreeof") != NULL &&
 			    ++eofloop < 25) {
-				printf("Use \"quit\" to quit.\n");
+				puts("Use \"quit\" to quit.");
 				continue;
 			}
 			break;
@@ -247,11 +296,11 @@ execute(linebuf, contxt)
 {
 	char word[LINESIZE];
 	char *arglist[MAXARGC];
-	struct cmd *com;
-	register char *cp, *cp2;
-	register int c;
-	int muvec[2];
+	char *cp, *cp2;
+	int c, muvec[2];
 	int e = 1;
+
+	com = NULL;
 
 	/*
 	 * Strip the white space away from the beginning
@@ -266,14 +315,14 @@ execute(linebuf, contxt)
 		;
 	if (*cp == '!') {
 		if (sourcing) {
-			printf("Can't \"!\" while sourcing\n");
+			puts("Can't \"!\" while sourcing");
 			goto out;
 		}
 		shell(cp+1);
 		return(0);
 	}
 	cp2 = word;
-	while (*cp && index(" \t0123456789$^.:/-+*'\"", *cp) == NOSTR)
+	while (*cp && strchr(" \t0123456789$^.:/-+*'\"", *cp) == NULL)
 		*cp2++ = *cp++;
 	*cp2 = '\0';
 
@@ -299,7 +348,7 @@ execute(linebuf, contxt)
 	 */
 
 	if ((com->c_argtype & F) == 0)
-		if (cond == CRCV && !rcvmode || cond == CSEND && rcvmode)
+		if ((cond == CRCV && !rcvmode) || (cond == CSEND && rcvmode))
 			return(0);
 
 	/*
@@ -329,13 +378,60 @@ execute(linebuf, contxt)
 		goto out;
 	}
 	switch (com->c_argtype & ~(F|P|I|M|T|W|R)) {
+	case MSGLIST|STRLIST:
+		/*
+		 * A message list defaulting to nearest forward
+		 * legal message.
+		 */
+		if (msgvec == 0) {
+			puts("Illegal use of \"message list\"");
+			break;
+		}
+		/*
+		 * remove leading blanks.
+		 */
+		while (isspace(*cp))
+			cp++;
+
+		if (isdigit(*cp) || *cp == ':') {
+			if ((c = getmsglist(cp, msgvec, com->c_msgflag)) < 0)
+				break;
+			/* position to next space - past the message list */
+			while (!isspace(*cp))
+				cp++;
+			/* position to next non-space */
+			while (isspace(*cp))
+				cp++;
+		} else {
+			c = 0; /* no message list */
+		}
+
+		if (c  == 0) {
+			*msgvec = first(com->c_msgflag,
+				com->c_msgmask);
+			msgvec[1] = NULL;
+		}
+		if (*msgvec == NULL) {
+			puts("No applicable messages");
+			break;
+		}
+		/*
+		 * Just the straight string, with
+		 * leading blanks removed.
+		 */
+		while (isspace(*cp))
+			cp++;
+
+		e = (*com->c_func2)(msgvec, cp);
+		break;
+
 	case MSGLIST:
 		/*
 		 * A message list defaulting to nearest forward
 		 * legal message.
 		 */
 		if (msgvec == 0) {
-			printf("Illegal use of \"message list\"\n");
+			puts("Illegal use of \"message list\"");
 			break;
 		}
 		if ((c = getmsglist(cp, msgvec, com->c_msgflag)) < 0)
@@ -346,7 +442,7 @@ execute(linebuf, contxt)
 			msgvec[1] = NULL;
 		}
 		if (*msgvec == NULL) {
-			printf("No applicable messages\n");
+			puts("No applicable messages");
 			break;
 		}
 		e = (*com->c_func)(msgvec);
@@ -358,7 +454,7 @@ execute(linebuf, contxt)
 		 * if none exist.
 		 */
 		if (msgvec == 0) {
-			printf("Illegal use of \"message list\"\n");
+			puts("Illegal use of \"message list\"");
 			break;
 		}
 		if (getmsglist(cp, msgvec, com->c_msgflag) < 0)
@@ -381,7 +477,7 @@ execute(linebuf, contxt)
 		 * A vector of strings, in shell style.
 		 */
 		if ((c = getrawlist(cp, arglist,
-				sizeof arglist / sizeof *arglist)) < 0)
+				sizeof(arglist) / sizeof(*arglist))) < 0)
 			break;
 		if (c < com->c_minargs) {
 			printf("%s requires at least %d arg(s)\n",
@@ -405,7 +501,7 @@ execute(linebuf, contxt)
 		break;
 
 	default:
-		panic("Unknown argtype");
+		errx(1, "Unknown argtype");
 	}
 
 out:
@@ -415,14 +511,16 @@ out:
 	 */
 	if (e) {
 		if (e < 0)
-			return 1;
+			return(1);
 		if (loading)
-			return 1;
+			return(1);
 		if (sourcing)
 			unstack();
-		return 0;
+		return(0);
 	}
-	if (value("autoprint") != NOSTR && com->c_argtype & P)
+	if (com == NULL)
+		return(0);
+	if (value("autoprint") != NULL && com->c_argtype & P)
 		if ((dot->m_flag & MDELETED) == 0) {
 			muvec[0] = dot - &message[0] + 1;
 			muvec[1] = 0;
@@ -443,8 +541,8 @@ setmsize(sz)
 {
 
 	if (msgvec != 0)
-		free((char *) msgvec);
-	msgvec = (int *) calloc((unsigned) (sz + 1), sizeof *msgvec);
+		(void)free(msgvec);
+	msgvec = (int *)calloc(sz + 1, sizeof(*msgvec));
 }
 
 /*
@@ -452,14 +550,16 @@ setmsize(sz)
  * to the passed command "word"
  */
 
-struct cmd *
+const struct cmd *
 lex(word)
 	char word[];
 {
-	register struct cmd *cp;
-	extern struct cmd cmdtab[];
+	extern const struct cmd cmdtab[];
+	const struct cmd *cp;
 
-	for (cp = &cmdtab[0]; cp->c_name != NOSTR; cp++)
+	if (word[0] == '#')
+		word = "#";
+	for (cp = &cmdtab[0]; cp->c_name != NULL; cp++)
 		if (isprefix(word, cp->c_name))
 			return(cp);
 	return(NONE);
@@ -473,7 +573,7 @@ int
 isprefix(as1, as2)
 	char *as1, *as2;
 {
-	register char *s1, *s2;
+	char *s1, *s2;
 
 	s1 = as1;
 	s2 = as2;
@@ -509,10 +609,10 @@ intr(s)
 	close_all_files();
 
 	if (image >= 0) {
-		close(image);
+		(void)close(image);
 		image = -1;
 	}
-	fprintf(stderr, "Interrupt\n");
+	fputs("Interrupt\n", stderr);
 	reset(0);
 }
 
@@ -524,11 +624,14 @@ stop(s)
 	int s;
 {
 	sig_t old_action = signal(s, SIG_DFL);
+	sigset_t nset;
 
-	sigsetmask(sigblock(0) & ~sigmask(s));
-	kill(0, s);
-	sigblock(sigmask(s));
-	signal(s, old_action);
+	(void)sigemptyset(&nset);
+	(void)sigaddset(&nset, s);
+	(void)sigprocmask(SIG_UNBLOCK, &nset, NULL);
+	(void)kill(0, s);
+	(void)sigprocmask(SIG_BLOCK, &nset, NULL);
+	(void)signal(s, old_action);
 	if (reset_on_stop) {
 		reset_on_stop = 0;
 		reset(0);
@@ -557,11 +660,11 @@ announce()
 {
 	int vec[2], mdot;
 
-	mdot = newfileinfo();
+	mdot = newfileinfo(0);
 	vec[0] = mdot;
 	vec[1] = 0;
 	dot = &message[mdot - 1];
-	if (msgCount > 0 && value("noheader") == NOSTR) {
+	if (msgCount > 0 && value("noheader") == NULL) {
 		inithdr++;
 		headers(vec);
 		inithdr = 0;
@@ -573,23 +676,24 @@ announce()
  * Return a likely place to set dot.
  */
 int
-newfileinfo()
+newfileinfo(omsgCount)
+	int omsgCount;
 {
-	register struct message *mp;
-	register int u, n, mdot, d, s;
-	char fname[BUFSIZ], zname[BUFSIZ], *ename;
+	struct message *mp;
+	int u, n, mdot, d, s;
+	char fname[PATHSIZE], zname[PATHSIZE], *ename;
 
-	for (mp = &message[0]; mp < &message[msgCount]; mp++)
+	for (mp = &message[omsgCount]; mp < &message[msgCount]; mp++)
 		if (mp->m_flag & MNEW)
 			break;
 	if (mp >= &message[msgCount])
-		for (mp = &message[0]; mp < &message[msgCount]; mp++)
+		for (mp = &message[omsgCount]; mp < &message[msgCount]; mp++)
 			if ((mp->m_flag & MREAD) == 0)
 				break;
 	if (mp < &message[msgCount])
 		mdot = mp - &message[0] + 1;
 	else
-		mdot = 1;
+		mdot = omsgCount + 1;
 	s = d = 0;
 	for (mp = &message[0], n = 0, u = 0; mp < &message[msgCount]; mp++) {
 		if (mp->m_flag & MNEW)
@@ -602,16 +706,17 @@ newfileinfo()
 			s++;
 	}
 	ename = mailname;
-	if (getfold(fname) >= 0) {
-		strcat(fname, "/");
+	if (getfold(fname, sizeof(fname)) >= 0) {
+		strncat(fname, "/", sizeof(fname) - strlen(fname) - 1);
 		if (strncmp(fname, mailname, strlen(fname)) == 0) {
-			sprintf(zname, "+%s", mailname + strlen(fname));
+			(void)snprintf(zname, sizeof(zname), "+%s",
+			    mailname + strlen(fname));
 			ename = zname;
 		}
 	}
 	printf("\"%s\": ", ename);
 	if (msgCount == 1)
-		printf("1 message");
+		fputs("1 message", stdout);
 	else
 		printf("%d messages", msgCount);
 	if (n > 0)
@@ -623,8 +728,8 @@ newfileinfo()
 	if (s > 0)
 		printf(" %d saved", s);
 	if (readonly)
-		printf(" [Read only]");
-	printf("\n");
+		fputs(" [Read only]", stdout);
+	putchar('\n');
 	return(mdot);
 }
 
@@ -634,8 +739,8 @@ newfileinfo()
 
 /*ARGSUSED*/
 int
-pversion(e)
-	int e;
+pversion(v)
+	void *v;
 {
 	extern char *version;
 
@@ -650,7 +755,7 @@ void
 load(name)
 	char *name;
 {
-	register FILE *in, *oldin;
+	FILE *in, *oldin;
 
 	if ((in = Fopen(name, "r")) == NULL)
 		return;
@@ -662,5 +767,5 @@ load(name)
 	loading = 0;
 	sourcing = 0;
 	input = oldin;
-	Fclose(in);
+	(void)Fclose(in);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: openfirm.h,v 1.1 2000/08/20 14:58:42 mrg Exp $	*/
 
 /*

@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.shk.c,v 1.5 2001/01/28 23:41:45 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.shk.c,v 1.3 1995/03/23 08:31:31 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.shk.c,v 1.5 2001/01/28 23:41:45 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -28,7 +30,7 @@ shk_move(){ return(0); }
 replshk(mtmp,mtmp2) struct monst *mtmp, *mtmp2; {}
 char *shkname(){ return(""); }
 
-#else QUEST
+#else /* QUEST */
 #include	"hack.mfndpos.h"
 #include	"def.mkroom.h"
 #include	"def.eshk.h"
@@ -203,7 +205,8 @@ register roomno = inroom(u.ux,u.uy);
 		    /* He seems to be new here */
 		    ESHK(shopkeeper)->visitct = 0;
 		    ESHK(shopkeeper)->following = 0;
-		    (void) strncpy(ESHK(shopkeeper)->customer,plname,PL_NSIZ);
+		    (void) strncpy(ESHK(shopkeeper)->customer,plname,PL_NSIZ-1);
+		    ESHK(shopkeeper)->customer[PL_NSIZ-1] = '\0';
 		    NOTANGRY(shopkeeper) = 1;
 		}
 		if(!ESHK(shopkeeper)->following) {
@@ -428,8 +431,8 @@ int pass, tmp;
 }
 
 /* return 1 if paid successfully */
-/*        0 if not enough money */
-/*       -1 if object could not be found (but was paid) */
+/*	  0 if not enough money */
+/*	 -1 if object could not be found (but was paid) */
 static
 dopayobj(bp) register struct bill_x *bp; {
 register struct obj *obj;
@@ -607,7 +610,7 @@ register struct bill_x *bp;
 		return;
 	if(ESHK(shopkeeper)->billct == BILLSZ ||
 	  ((tmp = shtypes[rooms[ESHK(shopkeeper)->shoproom].rtype-8]) && tmp != obj->olet)
-	  || index("_0", obj->olet)) {
+	  || strchr("_0", obj->olet)) {
 		pline("%s seems not interested.", Monnam(shopkeeper));
 		return;
 	}
@@ -719,7 +722,7 @@ register int tmp, ac;
 #ifdef MAIL
 		if(obj->otyp == SCR_MAIL)
 			tmp = rnd(5);
-#endif MAIL
+#endif /* MAIL */
 		break;
 	case POTION_SYM:
 		tmp = 10*rnd(50);
@@ -908,7 +911,7 @@ register struct monst *shkp;
 #ifdef STUPID
 		    /* cater for stupid compilers */
 		    register int zz;
-#endif STUPID
+#endif /* STUPID */
 		    if(uondoor && (ib = sobj_at(ICE_BOX, nx, ny))) {
 			nix = nx; niy = ny; chi = i; break;
 		    }
@@ -919,7 +922,7 @@ register struct monst *shkp;
 			(appr && (zz = GDIST(nix,niy)) && zz > GDIST(nx,ny))
 #else
 			(appr && GDIST(nx,ny) < GDIST(nix,niy))
-#endif STUPID
+#endif /* STUPID */
 			) {
 			    nix = nx;
 			    niy = ny;
@@ -973,7 +976,7 @@ register int fall;
 	}
     }
 }
-#endif QUEST
+#endif /* QUEST */
 
 online(x,y) {
 	return(x==u.ux || y==u.uy ||
@@ -984,9 +987,9 @@ online(x,y) {
 follower(mtmp)
 register struct monst *mtmp;
 {
-	return( mtmp->mtame || index("1TVWZi&, ", mtmp->data->mlet)
+	return( mtmp->mtame || strchr("1TVWZi&, ", mtmp->data->mlet)
 #ifndef QUEST
 		|| (mtmp->isshk && ESHK(mtmp)->following)
-#endif QUEST
+#endif /* QUEST */
 		);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: sunos_machdep.c,v 1.7 1995/10/10 21:18:01 gwr Exp $	*/
+/*	$OpenBSD: sunos_machdep.c,v 1.12 2001/05/15 01:43:16 millert Exp $	*/
+/*	$NetBSD: sunos_machdep.c,v 1.12 1996/10/13 03:19:22 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -57,6 +58,7 @@
 #include <sys/buf.h>
 
 #include <sys/syscallargs.h>
+#include <compat/sunos/sunos.h>
 #include <compat/sunos/sunos_syscallargs.h>
 
 #include <machine/reg.h>
@@ -93,10 +95,12 @@ struct sunos_sigframe {
  * SIG_DFL for "dangerous" signals.
  */
 void
-sunos_sendsig(catcher, sig, mask, code)
+sunos_sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	register struct proc *p = curproc;
 	register struct sunos_sigframe *fp;
@@ -134,19 +138,19 @@ sunos_sendsig(catcher, sig, mask, code)
 	fsize = sizeof(struct sunos_sigframe);
 	if ((psp->ps_flags & SAS_ALTSTACK) && oonstack == 0 &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sunos_sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sunos_sigframe *)(psp->ps_sigstk.ss_sp +
 		    psp->ps_sigstk.ss_size - sizeof(struct sunos_sigframe));
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else
 		fp = (struct sunos_sigframe *)frame->f_regs[SP] - 1;
-	if ((unsigned)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize)) 
-		(void)grow(p, (unsigned)fp);
+	if ((vaddr_t)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize)) 
+		(void)uvm_grow(p, (unsigned)fp);
 #ifdef DEBUG
 	if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
-		printf("sunos_sendsig(%d): sig %d ssp %x usp %x scp %x ft %d\n",
+		printf("sunos_sendsig(%d): sig %d ssp %p usp %p scp %p ft %d\n",
 		       p->p_pid, sig, &oonstack, fp, &fp->sf_sc, ft);
 #endif
-	if (useracc((caddr_t)fp, fsize, B_WRITE) == 0) {
+	if (uvm_useracc((caddr_t)fp, fsize, B_WRITE) == 0) {
 #ifdef DEBUG
 		if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
 			printf("sunos_sendsig(%d): useracc failed on sig %d\n",
@@ -170,7 +174,7 @@ sunos_sendsig(catcher, sig, mask, code)
 	kfp.sf_signum = sig;
 	kfp.sf_code = code;
 	kfp.sf_scp = &fp->sf_sc;
-	kfp.sf_addr = ~0;		/* means: not computable */
+	kfp.sf_addr = (u_int)val.sival_ptr;
 
 	/*
 	 * Build the signal context to be used by sigreturn.
@@ -193,8 +197,8 @@ sunos_sendsig(catcher, sig, mask, code)
 	frame->f_regs[SP] = (int)fp;
 #ifdef DEBUG
 	if (sigdebug & SDB_FOLLOW)
-		printf("sunos_sendsig(%d): sig %d scp %x sc_sp %x\n",
-		       p->p_pid, sig, kfp.sf_sc.sc_sp);
+		printf("sunos_sendsig(%d): sig %d scp %p sc_sp %x\n",
+		       p->p_pid, sig, &fp->sf_sc,kfp.sf_sc.sc_sp);
 #endif
 
 	/* have the user-level trampoline code sort out what registers it
@@ -232,7 +236,7 @@ sunos_sys_sigreturn(p, v, retval)
 	scp = (struct sunos_sigcontext *) SCARG(uap, sigcntxp);
 #ifdef DEBUG
 	if (sigdebug & SDB_FOLLOW)
-		printf("sunos_sigreturn: pid %d, scp %x\n", p->p_pid, scp);
+		printf("sunos_sigreturn: pid %d, scp %p\n", p->p_pid, scp);
 #endif
 	if ((int)scp & 1)
 		return (EINVAL);
@@ -240,7 +244,7 @@ sunos_sys_sigreturn(p, v, retval)
 	 * Test and fetch the context structure.
 	 * We grab it all at once for speed.
 	 */
-	if (useracc((caddr_t)scp, sizeof(*scp), B_WRITE) == 0 ||
+	if (uvm_useracc((caddr_t)scp, sizeof(*scp), B_WRITE) == 0 ||
 	    copyin((caddr_t)scp, (caddr_t)&tsigc, sizeof(tsigc)))
 		return (EINVAL);
 	scp = &tsigc;

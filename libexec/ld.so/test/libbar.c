@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <stdio.h>
 
 extern void dltest(const char *);

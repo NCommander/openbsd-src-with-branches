@@ -1,7 +1,9 @@
-/*	$Id: hash.c,v 1.7 1998/07/25 22:04:35 niklas Exp $	*/
+/*	$OpenBSD: hash.c,v 1.7 2001/06/29 20:38:15 angelos Exp $	*/
+/*	$EOM: hash.c,v 1.10 1999/04/17 23:20:34 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,7 +40,10 @@
 #include <md5.h>
 #include <sha1.h>
 
+#include "sysdep.h"
+
 #include "hash.h"
+#include "log.h"
 
 void hmac_init (struct hash *, unsigned char *, int);
 void hmac_final (unsigned char *, struct hash *);
@@ -74,11 +79,13 @@ hash_get (enum hashes hashtype)
 {
   int i;
 
+  LOG_DBG ((LOG_CRYPTO, 60, "hash_get: requested algorithm %d", hashtype));
+
   for (i = 0; i < sizeof hashes / sizeof hashes[0]; i++)
     if (hashtype == hashes[i].type)
       return &hashes[i];
 
-  return NULL;
+  return 0;
 }
 
 /*
@@ -93,6 +100,7 @@ hmac_init (struct hash *hash, unsigned char *okey, int len)
   int i, blocklen = HMAC_BLOCKLEN;
   unsigned char key[HMAC_BLOCKLEN];
 
+  memset (key, 0, blocklen);
   if (len > blocklen) 
     {
       /* Truncate key down to blocklen */
@@ -102,18 +110,17 @@ hmac_init (struct hash *hash, unsigned char *okey, int len)
     }
   else
     {
-      memset (key, 0, blocklen);
       memcpy (key, okey, len);
     }
 
   /* HMAC I and O pad computation */
-  for (i=0; i < blocklen; i++)
+  for (i = 0; i < blocklen; i++)
     key[i] ^= HMAC_IPAD_VAL;
 
   hash->Init (hash->ctx);
   hash->Update (hash->ctx, key, blocklen);
 
-  for (i=0; i < blocklen; i++)
+  for (i = 0; i < blocklen; i++)
     key[i] ^= (HMAC_IPAD_VAL ^ HMAC_OPAD_VAL);
 
   hash->Init (hash->ctx2);

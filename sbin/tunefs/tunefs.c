@@ -1,3 +1,4 @@
+/*	$OpenBSD: tunefs.c,v 1.13 2001/05/18 08:27:57 mickey Exp $	*/
 /*	$NetBSD: tunefs.c,v 1.10 1995/03/18 15:01:31 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tunefs.c	8.2 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$NetBSD: tunefs.c,v 1.10 1995/03/18 15:01:31 cgd Exp $";
+static char rcsid[] = "$OpenBSD: tunefs.c,v 1.13 2001/05/18 08:27:57 mickey Exp $";
 #endif
 #endif /* not lint */
 
@@ -80,6 +81,9 @@ void bwrite(daddr_t, char *, int);
 int bread(daddr_t, char *, int);
 void getsb(struct fs *, char *);
 void usage __P((void));
+void printfs __P((void));
+
+extern char *__progname;
 
 int
 main(argc, argv)
@@ -105,7 +109,8 @@ again:
 		if (*special != '/') {
 			if (*special == 'r')
 				special++;
-			(void)sprintf(device, "%s/%s", _PATH_DEV, special);
+			(void)snprintf(device, sizeof(device), "%s/%s",
+				       _PATH_DEV, special);
 			special = device;
 			goto again;
 		}
@@ -121,6 +126,10 @@ again:
 			case 'A':
 				Aflag++;
 				continue;
+
+			case 'p':
+				printfs();
+				return (0);
 
 			case 'a':
 				name = "maximum contiguous block count";
@@ -163,6 +172,20 @@ again:
 				sblock.fs_maxbpg = i;
 				continue;
 
+			case 'f':
+				name = "average file size";
+				if (argc < 1)
+					errx(10, "-f: missing %s", name);
+				argc--, argv++;
+				i = atoi(*argv);
+				if (i < 0)
+					errx(10, "%s must be >= 0 (was %s)",
+					    name, *argv);
+				warnx("%s changes from %d to %d",
+				    name, sblock.fs_avgfilesize, i);
+				sblock.fs_avgfilesize = i;
+				continue;
+
 			case 'm':
 				name = "minimum percentage of free space";
 				if (argc < 1)
@@ -181,6 +204,24 @@ again:
 				    sblock.fs_optim == FS_OPTTIME)
 					warnx(OPTWARN, "space", "<", MINFREE);
 				continue;
+
+			case 'n':
+				name = "expected number of files per directory";
+				if (argc < 1)
+					errx(10, "-n: missing %s", name);
+				argc--, argv++;
+				i = atoi(*argv);
+				if (i < 0)
+					errx(10, "%s must be >= 0 (was %s)",
+					    name, *argv);
+				warnx("%s changes from %d to %d",
+				    name, sblock.fs_avgfpdir, i);
+				sblock.fs_avgfpdir = i;
+				continue;
+
+			case 's':
+				errx(1, "See mount(8) for details about"
+				      " how to enable soft updates.");
 
 			case 'o':
 				name = "optimization preference";
@@ -224,20 +265,25 @@ again:
 			bwrite(fsbtodb(&sblock, cgsblock(&sblock, i)),
 			    (char *)&sblock, SBSIZE);
 	close(fi);
-	exit(0);
+	return (0);
 }
 
 void
 usage()
 {
-
-	fprintf(stderr, "Usage: tunefs tuneup-options special-device\n");
-	fprintf(stderr, "where tuneup-options are:\n");
-	fprintf(stderr, "\t-a maximum contiguous blocks\n");
-	fprintf(stderr, "\t-d rotational delay between contiguous blocks\n");
-	fprintf(stderr, "\t-e maximum blocks per file in a cylinder group\n");
-	fprintf(stderr, "\t-m minimum percentage of free space\n");
-	fprintf(stderr, "\t-o optimization preference (`space' or `time')\n");
+	fprintf(stderr,
+		"Usage: %s tuneup-options special-device\n"
+		"where tuneup-options are:\n"
+		"\t-A modify all backups of the super-block\n"
+		"\t-a maximum contiguous blocks\n"
+		"\t-d rotational delay between contiguous blocks\n"
+		"\t-e maximum blocks per file in a cylinder group\n"
+		"\t-f expected average file size\n"
+		"\t-m minimum percentage of free space\n"
+		"\t-n expected number of files per directory\n"
+		"\t-o optimization preference (`space' or `time')\n"
+		"\t-p no change - just prints current tuneable settings\n",
+		__progname);
 	exit(2);
 }
 
@@ -255,6 +301,31 @@ getsb(fs, file)
 	if (fs->fs_magic != FS_MAGIC)
 		err(5, "%s: bad magic number", file);
 	dev_bsize = fs->fs_fsize / fsbtodb(fs, 1);
+}
+
+void
+printfs()
+{
+	warnx("maximum contiguous block count: (-a)               %d",
+	      sblock.fs_maxcontig);
+	warnx("rotational delay between contiguous blocks: (-d)   %d ms",
+	      sblock.fs_rotdelay);
+	warnx("maximum blocks per file in a cylinder group: (-e)  %d",
+	      sblock.fs_maxbpg);
+	warnx("expected average file size: (-f)                   %d",
+	      sblock.fs_avgfilesize);
+	warnx("minimum percentage of free space: (-m)             %d%%",
+	      sblock.fs_minfree);
+	warnx("expected number of files per directory: (-n)       %d",
+	      sblock.fs_avgfpdir);
+	warnx("optimization preference: (-o)                      %s",
+	      sblock.fs_optim == FS_OPTSPACE ? "space" : "time");
+	if (sblock.fs_minfree >= MINFREE &&
+	    sblock.fs_optim == FS_OPTSPACE)
+		warnx(OPTWARN, "time", ">=", MINFREE);
+	if (sblock.fs_minfree < MINFREE &&
+	    sblock.fs_optim == FS_OPTTIME)
+		warnx(OPTWARN, "space", "<", MINFREE);
 }
 
 void

@@ -1,6 +1,8 @@
+/* *	$OpenBSD: indent_globs.h,v 1.5 2001/01/08 07:14:42 pjanzen Exp $*/
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
- * Copyright (c) 1980 The Regents of the University of California.
+ * Copyright (c) 1980, 1993
+ *	The Regents of the University of California.
  * Copyright (c) 1976 Board of Trustees of the University of Illinois.
  * All rights reserved.
  *
@@ -32,8 +34,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)indent_globs.h	5.11 (Berkeley) 2/26/91
- *	$Id: indent_globs.h,v 1.2 1993/08/01 18:14:34 mycroft Exp $
+ *	from: @(#)indent_globs.h	8.1 (Berkeley) 6/6/93
  */
 
 #define BACKSLASH '\\'
@@ -56,32 +57,40 @@ FILE       *output;		/* the output file */
 
 #define CHECK_SIZE_CODE \
 	if (e_code >= l_code) { \
-	    register nsize = l_code-s_code+400; \
+	    register int nsize = l_code-s_code+400; \
 	    codebuf = (char *) realloc(codebuf, nsize); \
+	    if (codebuf == NULL) \
+		    err(1, NULL); \
 	    e_code = codebuf + (e_code-s_code) + 1; \
 	    l_code = codebuf + nsize - 5; \
 	    s_code = codebuf + 1; \
 	}
 #define CHECK_SIZE_COM \
 	if (e_com >= l_com) { \
-	    register nsize = l_com-s_com+400; \
+	    register int nsize = l_com-s_com+400; \
 	    combuf = (char *) realloc(combuf, nsize); \
+	    if (combuf == NULL) \
+		    err(1, NULL); \
 	    e_com = combuf + (e_com-s_com) + 1; \
 	    l_com = combuf + nsize - 5; \
 	    s_com = combuf + 1; \
 	}
 #define CHECK_SIZE_LAB \
 	if (e_lab >= l_lab) { \
-	    register nsize = l_lab-s_lab+400; \
+	    register int nsize = l_lab-s_lab+400; \
 	    labbuf = (char *) realloc(labbuf, nsize); \
+	    if (labbuf == NULL) \
+		    err(1, NULL); \
 	    e_lab = labbuf + (e_lab-s_lab) + 1; \
 	    l_lab = labbuf + nsize - 5; \
 	    s_lab = labbuf + 1; \
 	}
 #define CHECK_SIZE_TOKEN \
 	if (e_token >= l_token) { \
-	    register nsize = l_token-s_token+400; \
+	    register int nsize = l_token-s_token+400; \
 	    tokenbuf = (char *) realloc(tokenbuf, nsize); \
+	    if (tokenbuf == NULL) \
+		    err(1, NULL); \
 	    e_token = tokenbuf + (e_token-s_token) + 1; \
 	    l_token = tokenbuf + nsize - 5; \
 	    s_token = tokenbuf + 1; \
@@ -218,7 +227,7 @@ struct parser_state {
     float       cstk[STACKSIZE];/* used to store case stmt indentation levels */
     int         box_com;	/* set to true when we are in a "boxed"
 				 * comment. In that case, the first non-blank
-				 * char should be lined up with the / in /* */
+				 * char should be lined up with the / in rem */
     int         comment_delta,
                 n_comment_delta;
     int         cast_mask;	/* indicates which close parens close off
@@ -309,3 +318,25 @@ int         ifdef_level;
 int	    rparen_count;
 struct parser_state state_stack[5];
 struct parser_state match_state[5];
+
+int compute_code_target __P((void));
+int compute_label_target __P((void));
+int count_spaces __P((int, char *));
+void diag __P((int, char *, ...));
+void dump_line __P((void));
+int eqin __P((char *, char *));
+void fill_buffer __P((void));
+int pad_output __P((int, int));
+void scan_profile __P((FILE *));
+void set_defaults __P((void));
+void set_option __P((char *));
+void addkey __P((char *, int));
+void set_profile __P((void));
+char   *chfont __P((struct fstate *, struct fstate *, char *));
+void parsefont __P((struct fstate *, char *));
+void writefdef __P((struct fstate *, int));
+int lexi __P((void));
+void reduce __P((void));
+void parse __P((int));
+void pr_comment __P((void));
+void bakcopy __P((void));

@@ -1,4 +1,4 @@
-#	@(#)Make.tags.inc	8.1 (Berkeley) 6/11/93
+#	$OpenBSD: Make.tags.inc,v 1.5 1997/02/24 14:19:55 niklas Exp $
 
 # Common files for "make tags".
 # Included by the Makefile for each architecture.
@@ -7,12 +7,22 @@
 # there is a struct tag with the same name (eg., vmmeter).  The real
 # solution would probably be for ctags to generate "struct vmmeter" tags.
 
-COMM=	/sys/conf/*.[ch] \
-	/sys/dev/*.[ch] /sys/dev/scsi/*.[ch] \
-	/sys/kern/*.[ch] /sys/libkern/*.[ch] \
+COMM=	/sys/adosfs/*.[ch] \
+	/sys/compat/*/*.[ch] \
+	/sys/conf/*.[ch] \
+	/sys/ddb/*.[ch] \
+	/sys/dev/*.[ch] /sys/dev/*/*.[ch] \
+	/sys/isofs/*/*.[ch] \
+	/sys/kern/*.[ch] \
+	/sys/lib/libkern/*.[ch] \
 	/sys/miscfs/*/*.[ch] \
-	/sys/net/*.[ch] /sys/netccitt/*.[ch] /sys/netinet/*.[ch] \
-	/sys/netiso/*.[ch] /sys/netns/*.[ch] \
-	/sys/nfs/*.[ch] /sys/sys/*.[ch] \
+	/sys/net/*.[ch] \
+	/sys/netccitt/*.[ch] \
+	/sys/netinet/*.[ch] \
+	/sys/netiso/*.[ch] \
+	/sys/netns/*.[ch] \
+	/sys/nfs/*.[ch] \
+	/sys/scsi/*.[ch] \
 	/sys/ufs/*/*.[ch] \
-	/sys/vm/*.[ch]
+	/sys/vm/*.[ch] \
+	/sys/sys/*.[ch]

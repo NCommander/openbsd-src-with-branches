@@ -1,3 +1,4 @@
+.\"	$OpenBSD: mopa.out.1,v 1.8 2000/04/15 11:46:00 aaron Exp $
 .\"
 .\" Copyright (c) 1996 Mats O Jansson.  All rights reserved.
 .\"
@@ -26,34 +27,36 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" @(#) $Id: mopa.out.1,v 1.2 1996/08/13 18:30:12 moj Exp $
+.\" @(#) $OpenBSD: mopa.out.1,v 1.8 2000/04/15 11:46:00 aaron Exp $
 .\"
 .Dd August 11, 1996
 .Dt MOPA.OUT 1
+.Os
 .Sh NAME
 .Nm mopa.out
-.Nd Create MOP image from a a.out file
+.Nd create MOP image from an a.out file
 .Sh SYNOPSIS
 .Nm mopa.out
 .Ar infile
 .Ar outfile
 .Sh DESCRIPTION
-.Nm mopa.out
+.Nm
 is used to convert an a.out file to a MOP-image.
 .Pp
 This program will check if
 .Xr a.out 5
-machine-id is recognized. If not it will try to swap the
+machine ID is recognized.
+If not it will try to swap the
 .Xr a.out 5
-header, and try again. 
+header, and try again.
 .Sh BUGS
-This program just supports the VAX machine-id for now. 
+This program just supports the VAX machine ID for now.
 .Sh SEE ALSO
-.Xr a.out 5 ,
 .Xr mopchk 1 ,
-.Xr mopd 8 ,
 .Xr mopprobe 1 ,
-.Xr moptrace 1 
+.Xr moptrace 1 ,
+.Xr a.out 5 ,
+.Xr mopd 8
 .Sh AUTHORS
-Lloyd Parkes.
+Lloyd Parkes
 

@@ -1,4 +1,4 @@
-.\"	$NetBSD: printf.3,v 1.5 1995/02/02 01:15:49 jtc Exp $
+.\"	$OpenBSD: printf.3,v 1.35 2001/06/23 15:00:25 provos Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -45,10 +45,12 @@
 .Nm fprintf ,
 .Nm sprintf ,
 .Nm snprintf ,
+.Nm asprintf ,
 .Nm vprintf ,
-.Nm vfprintf,
+.Nm vfprintf ,
 .Nm vsprintf ,
-.Nm vsnprintf
+.Nm vsnprintf ,
+.Nm vasprintf
 .Nd formatted output conversion
 .Sh SYNOPSIS
 .Fd #include <stdio.h>
@@ -60,35 +62,42 @@
 .Fn sprintf "char *str" "const char *format" ...
 .Ft int
 .Fn snprintf "char *str" "size_t size" "const char *format" ...
-.\" .Ft int
-.\" .Fn smprintf "const char *format" ...
+.Ft int
+.Fn asprintf "char **ret" "const char *format" ...
 .Fd #include <stdarg.h>
 .Ft int
 .Fn vprintf "const char *format" "va_list ap"
 .Ft int
 .Fn vfprintf "FILE *stream" "const char *format" "va_list ap"
 .Ft int
-.Fn vsprintf "char *str" "char *format" "va_list ap"
+.Fn vsprintf "char *str" "const char *format" "va_list ap"
 .Ft int
 .Fn vsnprintf "char *str" "size_t size" "const char *format" "va_list ap"
-.\" .Ft int
-.\" .Fn vsmprintf "const char *format" "va_list ap"
+.Ft int
+.Fn vasprintf "char **ret" "const char *format" "va_list ap"
 .Sh DESCRIPTION
 The
 .Fn printf
-family of functions produces output according to a
+family of functions produce output according to the given
 .Fa format
 as described below.
-.Fn Printf
+This format may contain
+.Dq conversion specifiers ;
+the results of such conversions, if any, depend on the arguments
+following the
+.Fa format
+string.
+.Pp
+The
+.Fn printf
 and
 .Fn vprintf
-write output to
-.Em stdout,
-the standard output stream;
+functions write output to the standard output stream,
+.Em stdout ;
 .Fn fprintf
 and
 .Fn vfprintf
-write output to the given output
+write output to the supplied stream pointer
 .Fa stream ;
 .Fn sprintf ,
 .Fn snprintf ,
@@ -96,46 +105,51 @@ write output to the given output
 and
 .Fn vsnprintf
 write to the character string
-.Fa str .
-.\" .IR str ;
-.\" and
-.\" .I smprintf
-.\" and
-.\" .I vsmprintf
-.\" dynamically allocate a new string with
-.\" .IR malloc .
+.Fa str ;
+.Fn asprintf
+and
+.Fn vasprintf
+write to a dynamically allocated string that is stored in
+.Fa ret .
+.Pp
 These functions write the output under the control of a
 .Fa format
 string that specifies how subsequent arguments
 (or arguments accessed via the variable-length argument facilities of
 .Xr stdarg 3 )
 are converted for output.
-.\" Except for
-.\" .I smprintf
-.\" and
-.\" .IR vsmprintf ,
-.\" all of these functions return
-These functions return
-the number of characters printed
+.Pp
+These functions return the number of characters printed
 (not including the trailing
 .Ql \e0
-used to end output to strings).
-.\" .I Smprintf
-.\" and
-.\" .I vsmprintf
-.\" return a pointer to a string of an appropriate length;
-.\" this pointer should be passed to
-.\" .I free
-.\" to release the associated storage
-.\" when it is no longer needed.
-.\" If sufficient space is not avaliable,
-.\" .I smprintf
-.\" and
-.\" .I vsmprintf
-.\" will return
-.\" .SM
-.\" .BR
-.Fn Snprintf
+used to end output to strings),
+except for
+.Fn snprintf
+and
+.Fn vsnprintf ,
+which return the number of characters that would have been printed if the
+.Fa size
+were unlimited
+.Po
+again, not including the final
+.Ql \e0
+.Pc .
+.Pp
+.Fn asprintf
+and
+.Fn vasprintf
+return a pointer to a buffer sufficiently large to hold the string in the
+.Fa ret
+argument.
+This pointer should be passed to
+.Xr free 3
+to release the allocated storage when it is no longer needed.
+If sufficient space cannot be allocated, these functions
+will return \-1 and set
+.Fa ret
+to be a null pointer.
+.Pp
+.Fn snprintf
 and
 .Fn vsnprintf
 will write at most
@@ -149,7 +163,8 @@ if the return value is greater than or equal to the
 .Fa size
 argument, the string was too short
 and some of the printed characters were discarded.
-.Fn Sprintf
+.Pp
+.Fn sprintf
 and
 .Fn vsprintf
 effectively assume an infinite
@@ -160,11 +175,10 @@ ordinary
 .\" multibyte
 characters (not
 .Cm % ) ,
-which are copied unchanged to the output stream;
+which are copied unchanged to the output stream,
 and conversion specifications, each of which results
 in fetching zero or more subsequent arguments.
-Each conversion specification is introduced by
-the character
+Each conversion specification is introduced by the character
 .Cm % .
 The arguments must correspond properly (after type promotion)
 with the conversion specifier.
@@ -173,14 +187,22 @@ After the
 the following appear in sequence:
 .Bl -bullet
 .It
+An optional field, consisting of a decimal digit string followed by a
+.Cm $
+specifying the next argument to access.
+If this field is not provided, the argument following the last
+argument accessed will be used.
+Arguments are numbered starting at
+.Cm 1 .
+.It
 Zero or more of the following flags:
 .Bl -hyphen
 .It
-A
-.Cm #
+A hash
+.Ql Cm #
 character
 specifying that the value should be converted to an ``alternate form''.
-For 
+For
 .Cm c ,
 .Cm d ,
 .Cm i ,
@@ -190,7 +212,7 @@ For
 and
 .Cm u ,
 conversions, this option has no effect.
-For 
+For
 .Cm o
 conversions, the precision of the number is increased to force the first
 character of the output string to a zero (except if a zero value is printed
@@ -230,11 +252,10 @@ For all conversions except
 .Cm n ,
 the converted value is padded on the left with zeros rather than blanks.
 If a precision is given with a numeric conversion
-.Pf ( Mc d ,
+.Pf ( Cm d ,
 .Cm i ,
 .Cm o ,
 .Cm u ,
-.Cm i ,
 .Cm x ,
 and
 .Cm X ) ,
@@ -284,8 +305,9 @@ the field width.
 An optional precision, in the form of a period
 .Sq Cm \&.
 followed by an
-optional digit string.  If the digit string is omitted, the precision
-is taken as zero.  This gives the minimum number of digits to appear for
+optional digit string.
+If the digit string is omitted, the precision is taken as zero.
+This gives the minimum number of digits to appear for
 .Cm d ,
 .Cm i ,
 .Cm o ,
@@ -318,13 +340,13 @@ specifying that a following
 or
 .Cm X
 conversion corresponds to a
-.Em short int
+.Li short int
 or
-.Em unsigned short int
+.Li unsigned short int
 argument, or that a following
 .Cm n
 conversion corresponds to a pointer to a
-.Em short int
+.Li short int
 argument.
 .It
 The optional character
@@ -337,18 +359,18 @@ The optional character
 .Cm x ,
 or
 .Cm X
-conversion applies to a pointer to a
-.Em long int
+conversion corresponds to a
+.Li long int
 or
-.Em unsigned long int
+.Li unsigned long int
 argument, or that a following
 .Cm n
 conversion corresponds to a pointer to a
-.Em long int
+.Li long int
 argument.
 .It
-The optional character
-.Cm q ,
+The optional character sequence
+.Cm \&ll ,
 specifying that a following
 .Cm d ,
 .Cm i ,
@@ -358,14 +380,16 @@ specifying that a following
 or
 .Cm X
 conversion corresponds to a
-.Em quad int
+.Li quad int
 or
-.Em unsigned quad int
+.Li unsigned quad int
 argument, or that a following
 .Cm n
 conversion corresponds to a pointer to a
-.Em quad int
-argument.
+.Li quad int
+argument.  The use of
+.Cm q
+has been depreciated as conversion character.
 .It
 The character
 .Cm L
@@ -377,13 +401,11 @@ specifying that a following
 or
 .Cm G
 conversion corresponds to a
-.Em long double
+.Li long double
 argument (but note that long double values are not currently supported
 by the
 .Tn VAX
-and
-.Tn Tahoe
-compilers).
+compiler).
 .It
 A character that specifies the type of conversion to be applied.
 .El
@@ -391,20 +413,24 @@ A character that specifies the type of conversion to be applied.
 A field width or precision, or both, may be indicated by
 an asterisk
 .Ql *
+or an asterisk followed by one or more decimal digits and a
+.Ql $
 instead of a
 digit string.
 In this case, an
-.Em int
+.Li int
 argument supplies the field width or precision.
 A negative field width is treated as a left adjustment flag followed by a
 positive field width; a negative precision is treated as though it were
 missing.
+If a single format directive mixes positional (nn$) and
+non-positional arguments, the results are undefined.
 .Pp
 The conversion specifiers and their meanings are:
 .Bl -tag -width "diouxX"
 .It Cm diouxX
 The
-.Em int
+.Li int
 (or appropriate variant) argument is converted to signed decimal
 .Pf ( Cm d
 and
@@ -417,7 +443,8 @@ or unsigned hexadecimal
 .Pf ( Cm x
 and
 .Cm X )
-notation.  The letters
+notation.
+The letters
 .Cm abcdef
 are used for
 .Cm x
@@ -431,7 +458,7 @@ appear; if the converted value requires fewer digits, it is padded on
 the left with zeros.
 .It Cm DOU
 The
-.Em long int
+.Li long int
 argument is converted to signed decimal, unsigned octal, or unsigned
 decimal, as if the format had been
 .Cm ld ,
@@ -442,7 +469,7 @@ respectively.
 These conversion characters are deprecated, and will eventually disappear.
 .It Cm eE
 The
-.Em double
+.Li double
 argument is rounded and converted in the style
 .Sm off
 .Pf [\-]d Cm \&. No ddd Cm e No \\*(Pmdd
@@ -464,7 +491,7 @@ The exponent always contains at least two digits; if the value is zero,
 the exponent is 00.
 .It Cm f
 The
-.Em double
+.Li double
 argument is rounded and converted to decimal notation in the style
 .Sm off
 .Pf [-]ddd Cm \&. No ddd ,
@@ -474,9 +501,9 @@ is equal to the precision specification.
 If the precision is missing, it is taken as 6; if the precision is
 explicitly zero, no decimal-point character appears.
 If a decimal point appears, at least one digit appears before it.
-.It Cm g
+.It Cm gG
 The
-.Em double
+.Li double
 argument is converted in style
 .Cm f
 or
@@ -497,29 +524,29 @@ Trailing zeros are removed from the fractional part of the result; a
 decimal point appears only if it is followed by at least one digit.
 .It Cm c
 The
-.Em int
+.Li int
 argument is converted to an
-.Em unsigned char ,
+.Li unsigned char ,
 and the resulting character is written.
 .It Cm s
 The
-.Dq Em char *
+.Li char *
 argument is expected to be a pointer to an array of character type (pointer
 to a string).
 Characters from the array are written up to (but not including)
 a terminating
-.Dv NUL
+.Tn NUL
 character;
 if a precision is specified, no more than the number specified are
 written.
 If a precision is given, no null character
 need be present; if the precision is not specified, or is greater than
 the size of the array, the array must contain a terminating
-.Dv NUL
+.Tn NUL
 character.
 .It Cm p
 The
-.Dq Em void *
+.Li void *
 pointer argument is printed in hexadecimal (as if by
 .Ql %#x
 or
@@ -527,33 +554,33 @@ or
 .It Cm n
 The number of characters written so far is stored into the
 integer indicated by the
-.Dq Em int *
+.Li int *
 (or variant) pointer argument.
 No argument is converted.
 .It Cm %
 A
 .Ql %
-is written. No argument is converted. The complete conversion specification
-is
+is written.
+No argument is converted.
+The complete conversion specification is
 .Ql %% .
 .El
 .Pp
 In no case does a non-existent or small field width cause truncation of
 a field; if the result of a conversion is wider than the field width, the
 field is expanded to contain the conversion result.
-.Pp
 .Sh EXAMPLES
-.br
 To print a date and time in the form `Sunday, July 3, 10:02',
 where
-.Em weekday
+.Va weekday
 and
-.Em month
+.Va month
 are pointers to strings:
 .Bd -literal -offset indent
 #include <stdio.h>
+
 fprintf(stdout, "%s, %s %d, %.2d:%.2d\en",
-	weekday, month, day, hour, min);
+    weekday, month, day, hour, min);
 .Ed
 .Pp
 To print \*(Pi
@@ -561,6 +588,7 @@ to five decimal places:
 .Bd -literal -offset indent
 #include <math.h>
 #include <stdio.h>
+
 fprintf(stdout, "pi = %.5f\en", 4 * atan(1.0));
 .Ed
 .Pp
@@ -569,16 +597,19 @@ To allocate a 128 byte string and print into it:
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-char *newfmt(const char *fmt, ...)
+
+char *
+newfmt(const char *fmt, ...)
 {
-		char *p;
-		va_list ap;
-		if ((p = malloc(128)) == NULL)
-			return (NULL);
-		va_start(ap, fmt);
-		(void) vsnprintf(p, 128, fmt, ap);
-		va_end(ap);
-		return (p);
+	char *p;
+	va_list ap;
+
+	if ((p = malloc(128)) == NULL)
+		return (NULL);
+	va_start(ap, fmt);
+	(void) vsnprintf(p, 128, fmt, ap);
+	va_end(ap);
+	return (p);
 }
 .Ed
 .Sh SEE ALSO
@@ -593,16 +624,24 @@ The
 .Fn vfprintf ,
 and
 .Fn vsprintf
-functions
-conform to
+functions conform to
 .St -ansiC .
 .Sh HISTORY
 The functions
 .Fn snprintf
 and
 .Fn vsnprintf
-are new to this release.
-.Sh BUGS
+first appeared in
+.Bx 4.4 .
+.Pp
+The functions
+.Fn asprintf
+and
+.Fn vasprintf
+first appeared in the GNU C library.
+This implementation first appeared in
+.Ox 2.3 .
+.Sh CAVEATS
 The conversion formats
 .Cm \&%D ,
 .Cm \&%O ,
@@ -636,5 +675,36 @@ callers must be careful not to overflow the actual space;
 this is often impossible to assure.
 For safety, programmers should use the
 .Fn snprintf
-interface instead.
-Unfortunately, this interface is not portable.
+and
+.Fn asprintf
+family of interfaces instead.
+Unfortunately, the
+.Fn snprintf
+interface is not available on older
+systems and the
+.Fn asprintf
+interface is not portable.
+.Pp
+It is important never to pass a string with user-supplied data as a
+format without using
+.Ql %s .
+An attacker can put format specifiers in the string to mangle your stack,
+leading to a possible security hole.
+This holds true even if you have built the string
+.Dq by hand
+using a function like
+.Fn snprintf ,
+as the resulting string may still contain user-supplied conversion specifiers
+for later interpolation by
+.Fn printf .
+.Pp
+Be sure to use the proper secure idiom:
+.Bd -literal -offset indent
+snprintf(buffer, sizeof(buffer), "%s", string);
+.Ed
+.Pp
+There is no way for printf to know the size of each argument passed.
+If you use positional arguments you must ensure that all parameters, up to the
+last positionally specified parameter, are used in the format string.
+This allows for the format string to be parsed for this information.
+Failure to do this will mean your code is non-portable and liable to fail.

@@ -1,6 +1,38 @@
+/*	$OpenBSD: setjmp.S,v 1.3 1999/03/22 02:40:12 rahnds Exp $	*/
 /* kernel version of this file, does not have signal goop */
 /* int setjmp(jmp_buf env) */
 
+/*
+ * Copyright (c) 1996 Dale Rahn. All rights reserved.
+ *
+ *   
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed by Dale Rahn.
+ * 4. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */  
+
+#include <machine/asm.h>
 #define JMP_r1	0x04
 #define JMP_r14	0x08
 #define JMP_r15	0x0c
@@ -27,8 +59,7 @@
 #define JMP_sig	0x60
 
 
-.globl setjmp
-setjmp:
+ENTRY(_C_LABEL(setjmp))
 	stw 31, JMP_r31(3)
 	/* r1, r14-r30 */
 	stw 1,  JMP_r1 (3)
@@ -63,9 +94,7 @@ setjmp:
 	blr
 
 
-.extern sigsetmask
-.globl longjmp
-longjmp:
+ENTRY(_C_LABEL(longjmp))
 	lwz 31, JMP_r31(3)
 	/* r1, r14-r30 */
 	lwz 1,  JMP_r1 (3)

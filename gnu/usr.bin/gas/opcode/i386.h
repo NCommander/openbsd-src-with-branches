@@ -1,3 +1,4 @@
+/* $OpenBSD: i386.h,v 1.5 1998/07/03 18:43:34 weingart Exp $ */
 /* i386-opcode.h -- Intel 80386 opcode table
    Copyright (C) 1989, 1991, Free Software Foundation.
 
@@ -17,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GAS; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    
-/* $Id: i386.h,v 1.3 1995/02/05 12:57:30 mycroft Exp $ */
 
 static const template i386_optab[] = {
 
@@ -27,7 +27,7 @@ static const template i386_optab[] = {
 { "mov", 2, 0x88, _, DW|Modrm, Reg, Reg|Mem, 0 },
 { "mov", 2, 0xb0, _, ShortFormW, Imm, Reg, 0 },
 { "mov", 2, 0xc6, _,  W|Modrm,  Imm, Reg|Mem, 0 },
-{ "mov", 2, 0x8c, _, D|Modrm,  SReg3|SReg2, Reg16|Mem16, 0 },
+{ "mov", 2, 0x8c, _, D|Modrm,  SReg3|SReg2, WordReg|WordMem, 0 },
 /* move to/from control debug registers */
 { "mov", 2, 0x0f20, _, D|Modrm, Control, Reg32, 0},
 { "mov", 2, 0x0f21, _, D|Modrm, Debug, Reg32, 0},
@@ -497,6 +497,7 @@ static const template i386_optab[] = {
 
 /* exchange %st<n> with %st0 */
 {"fxch", 1, 0xd9c8, _, ShortForm, FloatReg, 0, 0},
+{"fxch",   0, 0xd9c9, _, 0,			0, 0, 0},	     /* alias for fxch %st(1) */
 
 /* comparison (without pop) */
 {"fcom", 1, 0xd8d0, _, ShortForm, FloatReg, 0, 0},
@@ -732,6 +733,46 @@ static const template i386_optab[] = {
 /* Pentium extensions */
 {"cpuid", 0, 0x0fa2, _, NoModrm, 0, 0, 0},
 
+/* Pentium extensions */
+{"wrmsr", 0, 0x0f30, _, NoModrm, 0, 0, 0},
+{"rdtsc", 0, 0x0f31, _, NoModrm, 0, 0, 0}, 
+{"rdmsr", 0, 0x0f32, _, NoModrm, 0, 0, 0}, 
+{"cmpxchg8b", 1, 0x0fc7, 1, Modrm, Mem, 0, 0},
+  
+/* Pentium Pro extensions */
+{"rdpmc", 0, 0x0f33, _, NoModrm, 0, 0, 0},
+
+{"cmovo",  2, 0x0f40, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovno", 2, 0x0f41, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovb",  2, 0x0f42, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovae", 2, 0x0f43, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmove",  2, 0x0f44, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovne", 2, 0x0f45, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovbe", 2, 0x0f46, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmova",  2, 0x0f47, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovs",  2, 0x0f48, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovns", 2, 0x0f49, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovp",  2, 0x0f4a, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovnp", 2, 0x0f4b, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovl",  2, 0x0f4c, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovge", 2, 0x0f4d, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovle", 2, 0x0f4e, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovg",  2, 0x0f4f, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+
+{"fcmovb", 2, 0xdac0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmove", 2, 0xdac8, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovbe",2, 0xdad0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovu", 2, 0xdad8, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovnb", 2, 0xdbc0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovne", 2, 0xdbc8, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovnbe",2, 0xdbd0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovnu", 2, 0xdbd8, _, ShortForm, FloatReg, FloatAcc, 0},
+
+{"fcomi",  2, 0xdbf0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fucomi", 2, 0xdbe8, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcomip", 2, 0xdff0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fucomip",2, 0xdfe8, _, ShortForm, FloatReg, FloatAcc, 0},
+
 {"", 0, 0, 0, 0, 0, 0, 0}	/* sentinal */
 };
 #undef _
@@ -757,6 +798,7 @@ static const reg_entry i386_regtab[] = {
   {"ds", SReg2, 3}, {"fs", SReg3, 4}, {"gs", SReg3, 5},
   /* control registers */
   {"cr0", Control, 0},   {"cr2", Control, 2},   {"cr3", Control, 3},
+  {"cr4", Control, 4},
   /* debug registers */
   {"db0", Debug, 0},   {"db1", Debug, 1},   {"db2", Debug, 2},
   {"db3", Debug, 3},   {"db6", Debug, 6},   {"db7", Debug, 7},

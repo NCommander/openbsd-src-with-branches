@@ -1,3 +1,5 @@
+/*	$OpenBSD: ccp.h,v 1.4 1997/09/05 04:32:34 millert Exp $	*/
+
 /*
  * ccp.h - Definitions for PPP Compression Control Protocol.
  *
@@ -24,12 +26,19 @@
  * OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS,
  * OR MODIFICATIONS.
  *
- * $Id: ccp.h,v 1.1 1995/07/04 23:54:07 paulus Exp $
+ * Id: ccp.h,v 1.8 1998/03/25 01:25:03 paulus Exp $
  */
 
 typedef struct ccp_options {
     u_int bsd_compress: 1;	/* do BSD Compress? */
+    u_int deflate: 1;		/* do Deflate? */
+    u_int predictor_1: 1;	/* do Predictor-1? */
+    u_int predictor_2: 1;	/* do Predictor-2? */
+    u_int deflate_correct: 1;	/* use correct code for deflate? */
+    u_int deflate_draft: 1;	/* use draft RFC code for deflate? */
     u_short bsd_bits;		/* # bits/code for BSD Compress */
+    u_short deflate_size;	/* lg(window size) for Deflate */
+    short method;		/* code for chosen compression method */
 } ccp_options;
 
 extern fsm ccp_fsm[];
@@ -38,14 +47,4 @@ extern ccp_options ccp_gotoptions[];
 extern ccp_options ccp_allowoptions[];
 extern ccp_options ccp_hisoptions[];
 
-void ccp_init __P((int unit));
-void ccp_open __P((int unit));
-void ccp_close __P((int unit));
-void ccp_lowerup __P((int unit));
-void ccp_lowerdown __P((int));
-void ccp_input __P((int unit, u_char *pkt, int len));
-void ccp_protrej __P((int unit));
-int  ccp_printpkt __P((u_char *pkt, int len,
-			  void (*printer) __P((void *, char *, ...)),
-			  void *arg));
-void ccp_datainput __P((int unit, u_char *pkt, int len));
+extern struct protent ccp_protent;

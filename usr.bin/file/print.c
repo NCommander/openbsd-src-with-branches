@@ -1,3 +1,5 @@
+/*	$OpenBSD: print.c,v 1.5 1997/08/24 18:33:12 millert Exp $	*/
+
 /*
  * print.c - debugging printout routines
  *
@@ -28,7 +30,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#if __STDC__
+#ifdef __STDC__
 # include <stdarg.h>
 #else
 # include <varargs.h>
@@ -36,11 +38,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <err.h>
 #include "file.h"
 
 #ifndef lint
-static char *moduleid =
-	"@(#)$Id: print.c,v 1.8 1995/04/30 19:39:40 christos Exp $";
+static char *moduleid = "$OpenBSD: print.c,v 1.5 1997/08/24 18:33:12 millert Exp $";
 #endif  /* lint */
 
 #define SZOF(a)	(sizeof(a) / sizeof(a[0]))
@@ -58,7 +60,7 @@ struct magic *m;
 		       m->offset);
 
 	if (m->flag & INDIR)
-		(void) fprintf(stderr, "(%s,%ld),",
+		(void) fprintf(stderr, "(%s,%d),",
 			       (m->in.type >= 0 && m->in.type < SZOF(typ)) ? 
 					typ[(unsigned char) m->in.type] :
 					"*bad*",
@@ -68,8 +70,8 @@ struct magic *m;
 		       (m->type >= 0 && m->type < SZOF(typ)) ? 
 				typ[(unsigned char) m->type] : 
 				"*bad*");
-	if (m->mask != ~0L)
-		(void) fprintf(stderr, " & %.8lx", m->mask);
+	if (m->mask != ~0)
+		(void) fprintf(stderr, " & %.8x", m->mask);
 
 	(void) fprintf(stderr, ",%c", m->reln);
 
@@ -82,7 +84,7 @@ struct magic *m;
 	    case LELONG:
 	    case BESHORT:
 	    case BELONG:
-		    (void) fprintf(stderr, "%ld", m->value.l);
+		    (void) fprintf(stderr, "%d", m->value.l);
 		    break;
 	    case STRING:
 		    showstr(stderr, m->value.s, -1);
@@ -117,12 +119,12 @@ ckfputs(str, fil)
     FILE *fil;
 {
 	if (fputs(str,fil) == EOF)
-		error("write failed.\n");
+		err(1, "write failed");
 }
 
 /*VARARGS*/
 void
-#if __STDC__
+#ifdef __STDC__
 ckfprintf(FILE *f, const char *fmt, ...)
 #else
 ckfprintf(va_alist)
@@ -130,7 +132,7 @@ ckfprintf(va_alist)
 #endif
 {
 	va_list va;
-#if __STDC__
+#ifdef __STDC__
 	va_start(va, fmt);
 #else
 	FILE *f;
@@ -141,64 +143,6 @@ ckfprintf(va_alist)
 #endif
 	(void) vfprintf(f, fmt, va);
 	if (ferror(f))
-		error("write failed.\n");
+		err(1, "write failed");
 	va_end(va);
-}
-
-/*
- * error - print best error message possible and exit
- */
-/*VARARGS*/
-void
-#if __STDC__
-error(const char *f, ...)
-#else
-error(va_alist)
-	va_dcl
-#endif
-{
-	va_list va;
-#if __STDC__
-	va_start(va, f);
-#else
-	const char *f;
-	va_start(va);
-	f = va_arg(va, const char *);
-#endif
-	/* cuz we use stdout for most, stderr here */
-	(void) fflush(stdout); 
-
-	if (progname != NULL) 
-		(void) fprintf(stderr, "%s: ", progname);
-	(void) vfprintf(stderr, f, va);
-	va_end(va);
-	exit(1);
-}
-
-/*VARARGS*/
-void
-#if __STDC__
-magwarn(const char *f, ...)
-#else
-magwarn(va_alist)
-	va_dcl
-#endif
-{
-	va_list va;
-#if __STDC__
-	va_start(va, f);
-#else
-	const char *f;
-	va_start(va);
-	f = va_arg(va, const char *);
-#endif
-	/* cuz we use stdout for most, stderr here */
-	(void) fflush(stdout); 
-
-	if (progname != NULL) 
-		(void) fprintf(stderr, "%s: %s, %d: ", 
-			       progname, magicfile, lineno);
-	(void) vfprintf(stderr, f, va);
-	va_end(va);
-	fputc('\n', stderr);
 }

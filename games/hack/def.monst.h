@@ -1,3 +1,5 @@
+/*	$OpenBSD: def.monst.h,v 1.2 2001/01/28 23:41:42 niklas Exp $*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  *
@@ -37,7 +39,7 @@ struct monst {
 	Bitfield(mnamelth,6);	/* length of name (following mxlth) */
 #ifndef NOWORM
 	Bitfield(wormno,5);	/* at most 31 worms on any level */
-#endif NOWORM
+#endif /* NOWORM */
 	unsigned mtrapseen;	/* bitmap of traps we've been trapped in */
 	long mlstmv;	/* prevent two moves at once */
 	struct obj *minvent;

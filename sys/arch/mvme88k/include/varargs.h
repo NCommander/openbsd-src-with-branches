@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* This file has local changes by MOTOROLA
 Thu Sep  9 09:06:29 CDT 1993 Dale Rahn (drahn@pacific)
 	* (gstdarg.h, gvarargs.h) C-Front requires all builtins to

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: alloc.c,v 1.1 2000/08/20 14:58:37 mrg Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/* $OpenBSD: defs.h,v 1.5 1999/12/24 09:08:49 agc Exp $ */
 /* $NetBSD: defs.h,v 1.5 1999/12/24 09:08:49 agc Exp $ */
 
 /*

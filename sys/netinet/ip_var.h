@@ -1,4 +1,5 @@
-/*	$NetBSD: ip_var.h,v 1.14 1995/06/12 00:47:47 mycroft Exp $	*/
+/*	$OpenBSD: ip_var.h,v 1.19 2001/06/09 07:03:42 angelos Exp $	*/
+/*	$NetBSD: ip_var.h,v 1.16 1996/02/13 23:43:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -35,17 +36,45 @@
  *	@(#)ip_var.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NETINET_IP_VAR_H_
+#define _NETINET_IP_VAR_H_
+
+#include <sys/queue.h>
+
 /*
  * Overlay for ip header used by other protocols (tcp, udp).
  */
 struct ipovly {
-	caddr_t  ih_next, ih_prev;	/* for protocol sequence q's */
-	u_int8_t ih_x1;			/* (unused) */
-	u_int8_t ih_pr;			/* protocol */
-	int16_t	 ih_len;		/* protocol length */
-	struct	 in_addr ih_src;	/* source internet address */
-	struct	 in_addr ih_dst;	/* destination internet address */
+	u_int8_t  ih_x1[9];		/* (unused) */
+	u_int8_t  ih_pr;		/* protocol */
+	u_int16_t ih_len;		/* protocol length */
+	struct	  in_addr ih_src;	/* source internet address */
+	struct	  in_addr ih_dst;	/* destination internet address */
 };
+
+/*
+ * Ip (reassembly or sequence) queue structures.
+ *
+ * XXX -- The following explains why the ipqe_m field is here, for TCP's use:
+ * We want to avoid doing m_pullup on incoming packets but that
+ * means avoiding dtom on the tcp reassembly code.  That in turn means
+ * keeping an mbuf pointer in the reassembly queue (since we might
+ * have a cluster).  As a quick hack, the source & destination
+ * port numbers (which are no longer needed once we've located the
+ * tcpcb) are overlayed with an mbuf pointer.
+ */
+LIST_HEAD(ipqehead, ipqent);
+struct ipqent {
+	LIST_ENTRY(ipqent) ipqe_q;
+	union {
+		struct ip	*_ip;
+		struct tcphdr	*_tcp;
+	} _ipqe_u1;
+	struct mbuf	*ipqe_m;	/* mbuf contains packet */
+	u_int8_t	ipqe_mff;	/* for IP fragmentation */
+};
+#define	ipqe_ip		_ipqe_u1._ip
+#define	ipqe_tcp	_ipqe_u1._tcp
 
 /*
  * Ip reassembly queue structure.  Each fragment
@@ -54,40 +83,12 @@ struct ipovly {
  * be reclaimed if memory becomes tight.
  */
 struct ipq {
-	struct	  ipq *next, *prev;	/* to other reass headers */
+	LIST_ENTRY(ipq) ipq_q;		/* to other reass headers */
 	u_int8_t  ipq_ttl;		/* time for reass q to live */
 	u_int8_t  ipq_p;		/* protocol of this fragment */
 	u_int16_t ipq_id;		/* sequence id for reassembly */
-	struct	  ipasfrag *ipq_next, *ipq_prev;
-					/* to ip headers of fragments */
+	struct	  ipqehead ipq_fragq;	/* to ip fragment queue */
 	struct	  in_addr ipq_src, ipq_dst;
-};
-
-/*
- * Ip header, when holding a fragment.
- *
- * Note: ipf_next must be at same offset as ipq_next above
- */
-struct	ipasfrag {
-#if BYTE_ORDER == LITTLE_ENDIAN
-	u_int8_t  ip_hl:4,
-		  ip_v:4;
-#endif
-#if BYTE_ORDER == BIG_ENDIAN
-	u_int8_t  ip_v:4,
-		  ip_hl:4;
-#endif
-	u_int8_t  ipf_mff;		/* XXX overlays ip_tos: use low bit
-					 * to avoid destroying tos;
-					 * copied from (ip_off&IP_MF) */
-	int16_t	  ip_len;
-	u_int16_t ip_id;
-	int16_t	  ip_off;
-	u_int8_t  ip_ttl;
-	u_int8_t  ip_p;
-	u_int16_t ip_sum;
-	struct	  ipasfrag *ipf_next, *ipf_prev;
-					/* list of fragments */
 };
 
 /*
@@ -141,6 +142,12 @@ struct	ipstat {
 	u_long	ips_badvers;		/* ip version != 4 */
 	u_long	ips_rawout;		/* total raw ip packets generated */
 	u_long	ips_badfrags;		/* malformed fragments (bad length) */
+	u_long	ips_rcvmemdrop;		/* frags dropped for lack of memory */
+	u_long	ips_toolong;		/* ip length > max ip packet size */
+	u_long	ips_nogif;		/* no match gif found */
+	u_long	ips_badaddr;		/* invalid address on header */
+	u_long	ips_inhwcsum;		/* hardware checksummed on input */
+	u_long	ips_outhwcsum;		/* hardware checksummed on output */
 };
 
 #ifdef _KERNEL
@@ -149,17 +156,20 @@ struct	ipstat {
 #define	IP_RAWOUTPUT		0x2		/* raw ip header exists */
 #define	IP_ROUTETOIF		SO_DONTROUTE	/* bypass routing tables */
 #define	IP_ALLOWBROADCAST	SO_BROADCAST	/* can send broadcast packets */
+#define	IP_MTUDISC		0x0400		/* pmtu discovery, set DF */
 
 struct	  ipstat ipstat;
-struct	  ipq	 ipq;			/* ip reass. queue */
-u_int16_t ip_id;				/* ip packet ctr, for ids */
+LIST_HEAD(ipqhead, ipq)	ipq;		/* ip reass. queue */
 int	  ip_defttl;			/* default IP ttl */
 
+int   ip_mtudisc;		/* mtu discovery */
+u_int ip_mtudisc_timeout;	/* seconds to timeout mtu discovery */
+struct rttimer_queue *ip_mtudisc_timeout_q;
+
 int	 ip_ctloutput __P((int, struct socket *, int, int, struct mbuf **));
-void	 ip_deq __P((struct ipasfrag *));
 int	 ip_dooptions __P((struct mbuf *));
 void	 ip_drain __P((void));
-void	 ip_enq __P((struct ipasfrag *, struct ipasfrag *));
+void	 ip_flush __P((void));
 void	 ip_forward __P((struct mbuf *, int));
 void	 ip_freef __P((struct ipq *));
 void	 ip_freemoptions __P((struct ip_moptions *));
@@ -167,13 +177,16 @@ int	 ip_getmoptions __P((int, struct ip_moptions *, struct mbuf **));
 void	 ip_init __P((void));
 int	 ip_mforward __P((struct mbuf *, struct ifnet *));
 int	 ip_optcopy __P((struct ip *, struct ip *));
-int	 ip_output __P((struct mbuf *,
-	    struct mbuf *, struct route *, int, struct ip_moptions *));
+int	 ip_output __P((struct mbuf *, ...));
 int	 ip_pcbopts __P((struct mbuf **, struct mbuf *));
-struct ip *
-	 ip_reass __P((struct ipasfrag *, struct ipq *));
+struct mbuf *
+	 ip_reass __P((struct ipqent *, struct ipq *));
+struct in_ifaddr *
+	 in_iawithaddr __P((struct in_addr, struct mbuf *));
 struct in_ifaddr *
 	 ip_rtaddr __P((struct in_addr));
+u_int16_t	
+	 ip_randomid __P((void));
 int	 ip_setmoptions __P((int, struct ip_moptions **, struct mbuf *));
 void	 ip_slowtimo __P((void));
 struct mbuf *
@@ -181,10 +194,12 @@ struct mbuf *
 void	 ip_stripoptions __P((struct mbuf *, struct mbuf *));
 int	 ip_sysctl __P((int *, u_int, void *, size_t *, void *, size_t));
 void	 ipintr __P((void));
+void	 ipv4_input __P((struct mbuf *));
 int	 rip_ctloutput __P((int, struct socket *, int, int, struct mbuf **));
 void	 rip_init __P((void));
-void	 rip_input __P((struct mbuf *));
-int	 rip_output __P((struct mbuf *, struct socket *, u_long));
+void	 rip_input __P((struct mbuf *, ...));
+int	 rip_output __P((struct mbuf *, ...));
 int	 rip_usrreq __P((struct socket *,
 	    int, struct mbuf *, struct mbuf *, struct mbuf *));
-#endif
+#endif /* _KERNEL */
+#endif /* _NETINET_IP_VAR_H_ */

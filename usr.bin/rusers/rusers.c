@@ -1,3 +1,5 @@
+/*	$OpenBSD: rusers.c,v 1.12 2001/06/18 22:19:04 deraadt Exp $	*/
+
 /*-
  *  Copyright (c) 1993 John Brezak
  *  All rights reserved.
@@ -27,18 +29,19 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rusers.c,v 1.10 1993/12/10 19:33:58 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: rusers.c,v 1.12 2001/06/18 22:19:04 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <err.h>
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <rpc/rpc.h>
+#include <rpc/pmap_clnt.h>
 #include <arpa/inet.h>
-#include <utmp.h>
 #include <stdlib.h>
 
 /*
@@ -49,9 +52,10 @@ static char rcsid[] = "$Id: rusers.c,v 1.10 1993/12/10 19:33:58 jtc Exp $";
 #include <rpcsvc/rnusers.h>	/* Old version */
 
 #define MAX_INT 0x7fffffff
+/* Preferred formatting */
 #define HOST_WIDTH 20
 #define LINE_WIDTH 8
-char *argv0;
+#define NAME_WIDTH 8
 
 struct timeval timeout = { 25, 0 };
 int longopt;
@@ -61,6 +65,8 @@ struct host_list {
 	struct host_list *next;
 	struct in_addr addr;
 } *hosts;
+
+extern char *__progname;
 
 int
 search_host(struct in_addr addr)
@@ -82,10 +88,8 @@ remember_host(struct in_addr addr)
 {
 	struct host_list *hp;
 
-	if (!(hp = (struct host_list *)malloc(sizeof(struct host_list)))) {
-		fprintf(stderr, "%s: no memory.\n", argv0);
-		exit(1);
-	}
+	if (!(hp = (struct host_list *)malloc(sizeof(struct host_list))))
+		err(1, NULL);
 	hp->addr.s_addr = addr.s_addr;
 	hp->next = hosts;
 	hosts = hp;
@@ -94,11 +98,13 @@ remember_host(struct in_addr addr)
 int
 rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 {
-	int x, idle;
-	char date[32], idle_time[64], remote[64], local[64];
+	int x, idle, i;
+	char date[32], idle_time[64], remote[RNUSERS_MAXHOSTLEN + 1];
+	char local[HOST_WIDTH + LINE_WIDTH + 2];
+	char utline[RNUSERS_MAXLINELEN + 1];
 	struct hostent *hp;
-	struct utmpidlearr *up = (struct utmpidlearr *)replyp;
-	char *host;
+	utmpidlearr *up = (utmpidlearr *)replyp;
+	char *host, *tmp;
 	int days, hours, minutes, seconds;
 	
 	if (search_host(raddrp->sin_addr))
@@ -118,9 +124,14 @@ rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 		printf("%-*.*s ", HOST_WIDTH, HOST_WIDTH, host);
 	
 	for (x = 0; x < up->uia_cnt; x++) {
-		strncpy(date,
-			&(ctime((time_t *)&(up->uia_arr[x]->ui_utmp.ut_time))[4]),
-			sizeof(date)-1);
+		strlcpy(date,
+		    &(ctime((time_t *)&(up->uia_arr[x]->ui_utmp.ut_time))[4]),
+		    sizeof(date));
+		/* ctime() adds a trailing \n.  Trimming it is only
+		 * mandatory if the output formatting changes.
+		 */
+		if ((tmp = strchr(date, '\n')) != NULL)
+			*tmp = '\0';
 
 		idle = up->uia_arr[x]->ui_idle;
 		sprintf(idle_time, "   :%02d", idle);
@@ -138,36 +149,41 @@ rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 			seconds %= 60;
 			if (idle > 60)
 				sprintf(idle_time, "%2d:%02d",
-					minutes, seconds);
+				    minutes, seconds);
 			if (idle >= (60*60))
 				sprintf(idle_time, "%2d:%02d:%02d",
-					hours, minutes, seconds);
+				    hours, minutes, seconds);
 			if (idle >= (24*60*60))
 				sprintf(idle_time, "%d days, %d:%02d:%02d",
-					days, hours, minutes, seconds);
+				    days, hours, minutes, seconds);
 		}
 
 		strncpy(remote, up->uia_arr[x]->ui_utmp.ut_host,
 		    sizeof(remote)-1);
+		remote[sizeof(remote) - 1] = '\0';
 		if (strlen(remote) != 0)
-			sprintf(remote, "(%.16s)",
+			snprintf(remote, sizeof(remote), "(%.16s)",
 			    up->uia_arr[x]->ui_utmp.ut_host);
 
 		if (longopt) {
 			strncpy(local, host, sizeof(local));
-			local[HOST_WIDTH + LINE_WIDTH + 1 -
-			    strlen(up->uia_arr[x]->ui_utmp.ut_line) - 1] = 0;
+			strncpy(utline, up->uia_arr[x]->ui_utmp.ut_line,
+			    sizeof(utline) - 1);
+			utline[sizeof(utline) - 1] = '\0';
+			i = sizeof(local) - strlen(utline) - 2;
+			if (i < 0)
+				i = 0;
+			local[i] = '\0';
 			strcat(local, ":");
-			strcat(local, up->uia_arr[x]->ui_utmp.ut_line);
+			strlcat(local, utline, sizeof(local));
 
-			printf("%-8.8s %-*.*s %-12.12s %8s %.18s\n",
+			printf("%-*.*s %-*.*s %-12.12s %8s %.18s\n",
+			    NAME_WIDTH, RNUSERS_MAXUSERLEN,
 			    up->uia_arr[x]->ui_utmp.ut_name,
-			    HOST_WIDTH+LINE_WIDTH+1, HOST_WIDTH+LINE_WIDTH+1, local,
-			    date,
-			    idle_time,
-			    remote);
+			    HOST_WIDTH+LINE_WIDTH+1, HOST_WIDTH+LINE_WIDTH+1,
+			    local, date, idle_time, remote);
 		} else
-			printf("%0.8s ",
+			printf("%.*s ", RNUSERS_MAXUSERLEN,
 			    up->uia_arr[x]->ui_utmp.ut_name);
 	}
 	if (!longopt)
@@ -180,67 +196,60 @@ rusers_reply(char *replyp, struct sockaddr_in *raddrp)
 void
 onehost(char *host)
 {
-	struct utmpidlearr up;
+	utmpidlearr up;
 	CLIENT *rusers_clnt;
 	struct sockaddr_in addr;
 	struct hostent *hp;
 	
 	hp = gethostbyname(host);
-	if (hp == NULL) {
-		fprintf(stderr, "%s: unknown host \"%s\"\n",
-			argv0, host);
-		exit(1);
-	}
+	if (hp == NULL)
+		errx(1, "unknown host \"%s\"", host);
 
 	rusers_clnt = clnt_create(host, RUSERSPROG, RUSERSVERS_IDLE, "udp");
 	if (rusers_clnt == NULL) {
-		clnt_pcreateerror(argv0);
+		clnt_pcreateerror(__progname);
 		exit(1);
 	}
 
 	bzero((char *)&up, sizeof(up));
 	if (clnt_call(rusers_clnt, RUSERSPROC_NAMES, xdr_void, NULL,
 	    xdr_utmpidlearr, &up, timeout) != RPC_SUCCESS) {
-		clnt_perror(rusers_clnt, argv0);
+		clnt_perror(rusers_clnt, __progname);
+		clnt_destroy(rusers_clnt);
 		exit(1);
 	}
 	addr.sin_addr.s_addr = *(int *)hp->h_addr;
 	rusers_reply((char *)&up, &addr);
+	clnt_destroy(rusers_clnt);
 }
 
 void
 allhosts(void)
 {
-	struct utmpidlearr up;
+	utmpidlearr up;
 	enum clnt_stat clnt_stat;
 
 	bzero((char *)&up, sizeof(up));
 	clnt_stat = clnt_broadcast(RUSERSPROG, RUSERSVERS_IDLE,
 	    RUSERSPROC_NAMES, xdr_void, NULL, xdr_utmpidlearr,
-	    &up, rusers_reply);
-	if (clnt_stat != RPC_SUCCESS && clnt_stat != RPC_TIMEDOUT) {
-		fprintf(stderr, "%s: %s\n", argv0, clnt_sperrno(clnt_stat));
-		exit(1);
-	}
+	    (char *)&up, rusers_reply);
+	if (clnt_stat != RPC_SUCCESS && clnt_stat != RPC_TIMEDOUT)
+		errx(1, "%s", clnt_sperrno(clnt_stat));
 }
 
-void usage(void)
+void
+usage(void)
 {
-	fprintf(stderr, "Usage: %s [-la] [hosts ...]\n", argv0);
+	fprintf(stderr, "Usage: %s [-la] [hosts ...]\n", __progname);
 	exit(1);
 }
 
-void main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 	int ch;
 	extern int optind;
 	
-	if (!(argv0 = rindex(argv[0], '/')))
-		argv0 = argv[0];
-	else
-		argv0++;
-
-
 	while ((ch = getopt(argc, argv, "al")) != -1)
 		switch (ch) {
 		case 'a':

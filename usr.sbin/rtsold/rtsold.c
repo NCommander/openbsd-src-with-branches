@@ -1,3 +1,6 @@
+/*	$OpenBSD: rtsold.c,v 1.9 2000/10/06 02:46:58 itojun Exp $	*/
+/*	$KAME: rtsold.c,v 1.32 2001/07/09 22:34:07 itojun Exp $	*/
+
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.
@@ -29,7 +32,9 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/socket.h>
 
+#include <net/if.h>
 #include <net/if_dl.h>
 
 #include <netinet/in.h>
@@ -44,11 +49,13 @@
 #include <errno.h>
 #include <err.h>
 #include <stdarg.h>
+#include <ifaddrs.h>
 #include "rtsold.h"
 
 struct ifinfo *iflist;
 struct timeval tm_max =	{0x7fffffff, 0x7fffffff};
-int dflag;
+int aflag = 0;
+int dflag = 0;
 static int log_upto = 999;
 static int fflag = 0;
 
@@ -79,10 +86,13 @@ int main __P((int argc, char *argv[]));
 /* static variables and functions */
 static int mobile_node = 0;
 static int do_dump;
-static char *dumpfilename = "/var/tmp/rtsold.dump"; /* XXX: should be configurable */
+static char *dumpfilename = "/var/run/rtsold.dump"; /* XXX: should be configurable */
 static char *pidfilename = "/var/run/rtsold.pid"; /* should be configurable */
 
 static int ifconfig __P((char *ifname));
+#if 0
+static int ifreconfig __P((char *ifname));
+#endif
 static int make_packet __P((struct ifinfo *ifinfo));
 static struct timeval *rtsol_check_timer __P((void));
 static void TIMEVAL_ADD __P((struct timeval *a, struct timeval *b,
@@ -90,15 +100,19 @@ static void TIMEVAL_ADD __P((struct timeval *a, struct timeval *b,
 static void TIMEVAL_SUB __P((struct timeval *a, struct timeval *b,
 			     struct timeval *result));
 
-static void rtsold_set_dump_file __P(());
+static void rtsold_set_dump_file __P((void));
 static void usage __P((char *progname));
+static char **autoifprobe __P((void));
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	int s, ch;
+	int s, maxfd, ch;
+#if 0
+	int rtsock;
+#endif
 	int once = 0;
 	struct timeval *timeout;
 	struct fd_set fdset;
@@ -114,35 +128,60 @@ main(argc, argv)
 	if (argv0 && argv0[strlen(argv0) - 1] != 'd') {
 		fflag = 1;
 		once = 1;
-		opts = "dD";
+		opts = "adD";
 	} else
-		opts = "dDfm1";
+		opts = "adDfm1";
 
 	while ((ch = getopt(argc, argv, opts)) != -1) {
-		switch(ch) {
-		 case 'd':
-			 dflag = 1;
-			 break;
-		 case 'D':
-			 dflag = 2;
-			 break;
-		 case 'f':
-			 fflag = 1;
-			 break;
-		 case 'm':
-			 mobile_node = 1;
-			 break;
-		 case '1':
-			 once = 1;
-			 break;
-		 default:
-			 usage(argv0);
+		switch (ch) {
+		case 'a':
+			aflag = 1;
+			break;
+		case 'd':
+			dflag = 1;
+			break;
+		case 'D':
+			dflag = 2;
+			break;
+		case 'f':
+			fflag = 1;
+			break;
+		case 'm':
+			mobile_node = 1;
+			break;
+		case '1':
+			once = 1;
+			break;
+		default:
+			usage(argv0);
+			/*NOTREACHED*/
 		}
 	}
 	argc -= optind;
 	argv += optind;
-	if (argc == 0)
+
+	if (aflag) {
+		int i;
+
+		if (argc != 0) {
+			usage(argv0);
+			/*NOTREACHED*/
+		}
+
+		argv = autoifprobe();
+		if (!argv) {
+			errx(1, "could not autoprobe interface");
+			/*NOTREACHED*/
+		}
+
+		for (i = 0; argv[i]; i++)
+			;
+		argc = i;
+	}
+	if (argc == 0) {
 		usage(argv0);
+		/*NOTREACHED*/
+	}
 
 	/* set log level */
 	if (dflag == 0)
@@ -159,33 +198,61 @@ main(argc, argv)
 			setlogmask(LOG_UPTO(log_upto));
 	}
 
+#ifndef HAVE_ARC4RANDOM
 	/* random value initilization */
 	srandom((u_long)time(NULL));
+#endif
 
 	/* warn if accept_rtadv is down */
 	if (!getinet6sysctl(IPV6CTL_ACCEPT_RTADV))
 		warnx("kernel is configured not to accept RAs");
+	/* warn if forwarding is up */
+	if (getinet6sysctl(IPV6CTL_FORWARDING))
+		warnx("kernel is configured as a router, not a host");
 
 	/* initialization to dump internal status to a file */
-	if (signal(SIGUSR1, (void *)rtsold_set_dump_file) < 0)
+	if (signal(SIGUSR1, (void *)rtsold_set_dump_file) < 0) {
 		errx(1, "failed to set signal for dump status");
+		/*NOTREACHED*/
+	}
+
+	/*
+	 * Open a socket for sending RS and receiving RA.
+	 * This should be done before calling ifinit(), since the function
+	 * uses the socket.
+	 */
+	if ((s = sockopen()) < 0) {
+		errx(1, "failed to open a socket");
+		/*NOTREACHED*/
+	}
+	maxfd = s;
+#if 0
+	if ((rtsock = rtsock_open()) < 0) {
+		errx(1, "failed to open a socket");
+		/*NOTREACHED*/
+	}
+	if (rtsock > maxfd)
+		maxfd = rtsock;
+#endif
 
 	/* configuration per interface */
-	if (ifinit())
+	if (ifinit()) {
 		errx(1, "failed to initilizatoin interfaces");
+		/*NOTREACHED*/
+	}
 	while (argc--) {
-		if (ifconfig(*argv))
-			errx(1, "failed to initilize %s", *argv);
+		if (ifconfig(*argv)) {
+			errx(1, "failed to initialize %s", *argv);
+			/*NOTREACHED*/
+		}
 		argv++;
 	}
 
-	/* open a socket for sending RS and receiving RA */
-	if ((s = sockopen()) < 0)
-		errx(1, "failed to open a socket");
-
 	/* setup for probing default routers */
-	if (probe_init())
+	if (probe_init()) {
 		errx(1, "failed to setup for probing routers");
+		/*NOTREACHED*/
+	}
 
 	if (!fflag)
 		daemon(0, 0);		/* act as a daemon */
@@ -197,7 +264,7 @@ main(argc, argv)
 
 		if ((fp = fopen(pidfilename, "w")) == NULL)
 			warnmsg(LOG_ERR, __FUNCTION__,
-				"failed to open a log file(%s)",
+				"failed to open a log file(%s): %s",
 				pidfilename, strerror(errno));
 		else {
 			fprintf(fp, "%d\n", pid);
@@ -207,8 +274,10 @@ main(argc, argv)
 
 	FD_ZERO(&fdset);
 	FD_SET(s, &fdset);
+#if 0
+	FD_SET(rtsock, &fdset);
+#endif
 	while (1) {		/* main loop */
-		extern int errno;
 		int e;
 		struct fd_set select_fd = fdset;
 
@@ -234,8 +303,8 @@ main(argc, argv)
 			if (ifi == NULL)
 				break;
 		}
-
-		if ((e = select(s + 1, &select_fd, NULL, NULL, timeout)) < 1) {
+		e = select(maxfd + 1, &select_fd, NULL, NULL, timeout);
+		if (e < 1) {
 			if (e < 0 && errno != EINTR) {
 				warnmsg(LOG_ERR, __FUNCTION__, "select: %s",
 				       strerror(errno));
@@ -244,7 +313,11 @@ main(argc, argv)
 		}
 
 		/* packet reception */
-		if (FD_ISSET(s, &fdset))
+#if 0
+		if (FD_ISSET(rtsock, &select_fd))
+			rtsock_input(rtsock);
+#endif
+		if (FD_ISSET(s, &select_fd))
 			rtsol_input(s);
 	}
 	/* NOTREACHED */
@@ -267,11 +340,13 @@ ifconfig(char *ifname)
 	if (find_ifinfo(sdl->sdl_index)) {
 		warnmsg(LOG_ERR, __FUNCTION__,
 			"interface %s was already cofigured", ifname);
+		free(sdl);
 		return(-1);
 	}
 
 	if ((ifinfo = malloc(sizeof(*ifinfo))) == NULL) {
 		warnmsg(LOG_ERR, __FUNCTION__, "memory allocation failed");
+		free(sdl);
 		return(-1);
 	}
 	memset(ifinfo, 0, sizeof(*ifinfo));
@@ -316,10 +391,37 @@ ifconfig(char *ifname)
 	return(0);
 
   bad:
-	free(ifinfo);
 	free(ifinfo->sdl);
+	free(ifinfo);
 	return(-1);
 }
+
+#if 0
+static int
+ifreconfig(char *ifname)
+{
+	struct ifinfo *ifi, *prev;
+	int rv;
+
+	prev = NULL;
+	for (ifi = iflist; ifi; ifi = ifi->next) {
+		if (strncmp(ifi->ifname, ifname, sizeof(ifi->ifname)) == 0)
+			break;
+		prev = ifi;
+	}
+	prev->next = ifi->next;
+
+	rv = ifconfig(ifname);
+
+	/* reclaim it after ifconfig() in case ifname is pointer inside ifi */
+	if (ifi->rs_data)
+		free(ifi->rs_data);
+	free(ifi->sdl);
+	free(ifi);
+
+	return rv;
+}
+#endif
 
 struct ifinfo *
 find_ifinfo(int ifindex)
@@ -391,7 +493,7 @@ rtsol_check_timer()
 				       "state = %d", ifinfo->ifname,
 				       ifinfo->state);
 
-			switch(ifinfo->state) {
+			switch (ifinfo->state) {
 			case IFS_DOWN:
 			case IFS_TENTATIVE:
 				/* interface_up returns 0 on success */
@@ -469,8 +571,8 @@ rtsol_check_timer()
 		TIMEVAL_SUB(&rtsol_timer, &now, &returnval);
 
 	if (dflag > 1)
-		warnmsg(LOG_DEBUG, __FUNCTION__, "New timer is %d:%08d",
-		       returnval.tv_sec, returnval.tv_usec);
+		warnmsg(LOG_DEBUG, __FUNCTION__, "New timer is %ld:%08ld",
+			(long)returnval.tv_sec, (long)returnval.tv_usec);
 
 	return(&returnval);
 }
@@ -504,12 +606,27 @@ rtsol_timer_update(struct ifinfo *ifinfo)
 			ifinfo->timer = tm_max;	/* stop timer(valid?) */
 		break;
 	case IFS_DELAY:
+#ifndef HAVE_ARC4RANDOM
 		interval = random() % (MAX_RTR_SOLICITATION_DELAY * MILLION);
+#else
+		interval = arc4random() % (MAX_RTR_SOLICITATION_DELAY * MILLION);
+#endif
 		ifinfo->timer.tv_sec = interval / MILLION;
 		ifinfo->timer.tv_usec = interval % MILLION;
 		break;
 	case IFS_PROBE:
-		ifinfo->timer.tv_sec = RTR_SOLICITATION_INTERVAL;
+		if (ifinfo->probes < MAX_RTR_SOLICITATIONS)
+			ifinfo->timer.tv_sec = RTR_SOLICITATION_INTERVAL;
+		else {
+			/*
+			 * After sending MAX_RTR_SOLICITATIONS solicitations,
+			 * we're just waiting for possible replies; there
+			 * will be no more solicatation.  Thus, we change
+			 * the timer value to MAX_RTR_SOLICITATION_DELAY based
+			 * on RFC 2461, Section 6.3.7.
+			 */
+			ifinfo->timer.tv_sec = MAX_RTR_SOLICITATION_DELAY;
+		}
 		break;
 	default:
 		warnmsg(LOG_ERR, __FUNCTION__,
@@ -585,10 +702,13 @@ rtsold_set_dump_file()
 static void
 usage(char *progname)
 {
-	if (progname && progname[strlen(progname) - 1] != 'd')
-		fprintf(stderr, "usage: rtsol [-dD] interfaces\n");
-	else
-		fprintf(stderr, "usage: rtsold [-dDfm1] interfaces\n");
+	if (progname && progname[strlen(progname) - 1] != 'd') {
+		fprintf(stderr, "usage: rtsol [-dD] interfaces...\n");
+		fprintf(stderr, "usage: rtsol [-dD] -a\n");
+	} else {
+		fprintf(stderr, "usage: rtsold [-adDfm1] interfaces...\n");
+		fprintf(stderr, "usage: rtsold [-dDfm1] -a\n");
+	}
 	exit(1);
 }
 
@@ -614,7 +734,67 @@ warnmsg(priority, func, msg, va_alist)
 		}
 	} else {
 		snprintf(buf, sizeof(buf), "<%s> %s", func, msg);
-		vsyslog(priority, buf, ap);
+		msg = buf;
+		vsyslog(priority, msg, ap);
 	}
 	va_end(ap);
+}
+
+static char **
+autoifprobe()
+{
+#ifndef HAVE_GETIFADDRS
+	errx(1, "-a is not available with the configuration");
+#else
+	static char ifname[IFNAMSIZ + 1];
+	static char *argv[2];
+	struct ifaddrs *ifap, *ifa, *target;
+
+	if (getifaddrs(&ifap) != 0)
+		return NULL;
+
+	target = NULL;
+	/* find an ethernet */
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+		if ((ifa->ifa_flags & IFF_UP) == 0)
+			continue;
+		if ((ifa->ifa_flags & IFF_POINTOPOINT) != 0)
+			continue;
+		if ((ifa->ifa_flags & IFF_LOOPBACK) != 0)
+			continue;
+		if ((ifa->ifa_flags & IFF_MULTICAST) == 0)
+			continue;
+
+		if (ifa->ifa_addr->sa_family != AF_INET6)
+			continue;
+
+		if (target && strcmp(target->ifa_name, ifa->ifa_name) == 0)
+			continue;
+
+		if (!target)
+			target = ifa;
+		else {
+			/* if we find multiple candidates, failure. */
+			if (dflag > 1)
+				warnx("multiple interfaces found");
+			target = NULL;
+			break;
+		}
+	}
+
+	if (target) {
+		strncpy(ifname, target->ifa_name, sizeof(ifname) - 1);
+		ifname[sizeof(ifname) - 1] = '\0';
+		argv[0] = ifname;
+		argv[1] = NULL;
+
+		if (dflag > 0)
+			warnx("probing %s", argv[0]);
+	}
+	freeifaddrs(ifap);
+	if (target)
+		return argv;
+	else
+		return (char **)NULL;
+#endif
 }

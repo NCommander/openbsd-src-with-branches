@@ -1,3 +1,4 @@
+/* *	$OpenBSD: md.h,v 1.4 2000/02/01 21:01:39 espie Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -27,23 +28,26 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: md.h,v 1.9 1995/01/17 06:41:45 mycroft Exp $
  */
 
 
-#if defined(CROSS_LINKER) && defined(XHOST) && XHOST==sparc
+#if defined(CROSS_LINKER) 
+#include <sys/endian.h>
+
+#if BYTE_ORDER != LITTLE_ENDIAN
 #define NEED_SWAP
 #endif
+#endif
 
-#define	MAX_ALIGNMENT		(sizeof (long))
+#define	MAX_ALIGNMENT		(sizeof (double))
 
-#ifdef NetBSD
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #define PAGSIZ			__LDPGSZ
 #else
 #define PAGSIZ			4096
 #endif
 
-#if defined(NetBSD) || defined(CROSS_LINKER)
+#if defined(__NetBSD__) || defined(__OpenBSD__) || defined(CROSS_LINKER)
 
 #define N_SET_FLAG(ex,f)	(oldmagic || N_GETMAGIC(ex)==QMAGIC ? (0) : \
 					N_SETMAGIC(ex,			\

@@ -1,4 +1,5 @@
-/*	$NetBSD: stdlib.h,v 1.24 1995/03/22 01:08:31 jtc Exp $	*/
+/*	$OpenBSD: stdlib.h,v 1.12 2000/04/03 23:23:48 millert Exp $	*/
+/*	$NetBSD: stdlib.h,v 1.25 1995/12/27 21:19:08 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -49,7 +50,10 @@ typedef	_BSD_SIZE_T_	size_t;
 #endif
 
 #ifdef	_BSD_WCHAR_T_
+/* in C++, wchar_t is a built-in type */
+#ifndef __cplusplus
 typedef	_BSD_WCHAR_T_	wchar_t;
+#endif
 #undef	_BSD_WCHAR_T_
 #endif
 
@@ -72,7 +76,11 @@ typedef struct {
 
 
 #ifndef	NULL
+#ifdef 	__GNUG__
+#define NULL	__null
+#else
 #define	NULL	0
+#endif
 #endif
 
 #define	EXIT_FAILURE	1
@@ -85,7 +93,7 @@ typedef struct {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void	 abort __P((void));
+__dead void	 abort __P((void));
 int	 abs __P((int));
 int	 atexit __P((void (*)(void)));
 double	 atof __P((const char *));
@@ -95,7 +103,7 @@ void	*bsearch __P((const void *, const void *, size_t,
 	    size_t, int (*)(const void *, const void *)));
 void	*calloc __P((size_t, size_t));
 div_t	 div __P((int, int));
-void	 exit __P((int));
+__dead void	 exit __P((int));
 void	 free __P((void *));
 char	*getenv __P((const char *));
 long	 labs __P((long));
@@ -104,6 +112,7 @@ void	*malloc __P((size_t));
 void	 qsort __P((void *, size_t, size_t,
 	    int (*)(const void *, const void *)));
 int	 rand __P((void));
+int	 rand_r __P((unsigned int *));
 void	*realloc __P((void *, size_t));
 void	 srand __P((unsigned));
 double	 strtod __P((const char *, char **));
@@ -127,16 +136,17 @@ void  *alloca __P((size_t));
 #endif /* __GNUC__ */ 
 
 char	*getbsize __P((int *, long *));
-char	*cgetcap __P((char *, char *, int));
+char	*cgetcap __P((char *, const char *, int));
 int	 cgetclose __P((void));
-int	 cgetent __P((char **, char **, char *));
+int	 cgetent __P((char **, char **, const char *));
 int	 cgetfirst __P((char **, char **));
-int	 cgetmatch __P((char *, char *));
+int	 cgetmatch __P((char *, const char *));
 int	 cgetnext __P((char **, char **));
-int	 cgetnum __P((char *, char *, long *));
-int	 cgetset __P((char *));
-int	 cgetstr __P((char *, char *, char **));
-int	 cgetustr __P((char *, char *, char **));
+int	 cgetnum __P((char *, const char *, long *));
+int	 cgetset __P((const char *));
+int	 cgetusedb __P((int));
+int	 cgetstr __P((char *, const char *, char **));
+int	 cgetustr __P((char *, const char *, char **));
 
 int	 daemon __P((int, int));
 char	*devname __P((int, int));
@@ -165,11 +175,12 @@ int	 radixsort __P((const unsigned char **, int, const unsigned char *,
 int	 sradixsort __P((const unsigned char **, int, const unsigned char *,
 	    unsigned));
 
-char	*initstate __P((unsigned, char *, int));
+char	*initstate __P((unsigned int, char *, size_t));
 long	 random __P((void));
 char	*realpath __P((const char *, char *));
-char	*setstate __P((char *));
-void	 srandom __P((unsigned));
+char	*setstate __P((const char *));
+void	 srandom __P((unsigned int));
+void	 srandomdev __P((void));
 
 int	 putenv __P((const char *));
 int	 setenv __P((const char *, const char *, int));
@@ -190,6 +201,10 @@ long	 mrand48 __P((void));
 long	 nrand48 __P((unsigned short[3]));
 unsigned short *seed48 __P((unsigned short[3]));
 void	 srand48 __P((long));
+
+u_int32_t arc4random __P((void));
+void	arc4random_stir __P((void));
+void	arc4random_addrandom __P((unsigned char *, int));
 #endif /* !_ANSI_SOURCE && !_POSIX_SOURCE */
 
 __END_DECLS

@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1998 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -40,11 +39,11 @@
 /*
  * testlwp
  *
- * Checks if lwp seams to work, and demostrates how to use lwp.
- * Give multiple commands om the argumentline to run several
- * tests on the same time.
+ * Checks if lwp seems to work, and demostrates how to use lwp.  Give
+ * multiple commands on the command line to run several tests at the
+ * same time.
  * 
- * $KTH: testlwp.c,v 1.2 1998/07/15 12:50:58 map Exp $
+ * $Id: testlwp.c,v 1.3 2000/09/11 14:41:10 art Exp $
  *
  */
 
@@ -175,7 +174,7 @@ SelectConsumer(void *foo)
     }
 }
 
-void
+static void
 startSelectPC (char *progname)
 {
     int pid;
@@ -199,7 +198,7 @@ startSelectPC (char *progname)
 	if (dup2(pipa[1], 0) == -1)
 	    err(1, "dup2");
 	close(pipa[1]);
-	execl(progname, "testlwp", "selectproducer", NULL);
+	execl(progname, "testlwp", "selectproducer", (char *)NULL);
 	err(1, "execl");
     default:
 	break;
@@ -299,9 +298,12 @@ int main(int argc, char **argv)
 	} else if (strcasecmp("cancel", argv[1]) == 0) {
 	    yaEndlessLoop();	 
 	} else if (strcasecmp("version", argv[1]) == 0) {
-	    printf("Version: $KTH: testlwp.c,v 1.2 1998/07/15 12:50:58 map Exp $\n");
+	    printf("Version: "
+		   "$Id: testlwp.c,v 1.3 2000/09/11 14:41:10 art Exp $\n");
+	    exit (0);
 	} else {
 	    printf("unknown command %s\n", argv[1]);
+	    exit (1);
 	}
 
 	argc--;

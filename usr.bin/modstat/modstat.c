@@ -1,3 +1,5 @@
+/*	$OpenBSD: modstat.c,v 1.13 2001/07/18 17:17:39 pvalchev Exp $	*/
+
 /*
  * Copyright (c) 1993 Terrence R. Lambert.
  * All rights reserved.
@@ -29,20 +31,20 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: modstat.c,v 1.6 1995/06/27 00:18:19 jtc Exp $
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <err.h>
-#include <string.h>
-#include <a.out.h>
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/conf.h>
 #include <sys/mount.h>
 #include <sys/lkm.h>
-#include <sys/file.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <err.h>
+#include <fcntl.h>
+#include <string.h>
+#include <a.out.h>
 #include <errno.h>
 #include "pathnames.h"
 
@@ -50,8 +52,7 @@ void
 usage()
 {
 
-	fprintf(stderr, "usage:\n");
-	fprintf(stderr, "modstat [-i <module id>] [-n <module name>]\n");
+	fprintf(stderr, "usage: modstat [-i moduleid] [-n modulename]\n");
 	exit(1);
 }
 
@@ -70,12 +71,19 @@ dostat(devfd, modnum, modname)
 	int modnum;
 	char *modname;
 {
+	char name[MAXLKMNAME];
 	struct lmc_stat	sbuf;
 
-	if (modname != NULL)
-		strcpy(sbuf.name, modname);
-
+	bzero(&name, sizeof name);
+	bzero(&sbuf, sizeof sbuf);
 	sbuf.id = modnum;
+	sbuf.name = name;
+
+	if (modname != NULL) {
+		if (strlen(modname) >= sizeof(name))
+			return 4;
+		strlcpy(sbuf.name, modname, sizeof(name));
+	}
 
 	if (ioctl(devfd, LMSTAT, &sbuf) == -1) {
 		switch (errno) {
@@ -89,45 +97,26 @@ dostat(devfd, modnum, modname)
 		}
 	}
 
-	/*
-	 * Decode this stat buffer...
-	 */
-	printf("%-7s %3d %3d %08x %04x %8x %3d %s\n",
-	    type_names[sbuf.type],
-	    sbuf.id,		/* module id */
-	    sbuf.offset,	/* offset into modtype struct */
-	    sbuf.area,		/* address module loaded at */
-	    sbuf.size,		/* size in pages(K) */
-	    sbuf.private,	/* kernel address of private area */
-	    sbuf.ver,		/* Version; always 1 for now */
-	    sbuf.name		/* name from private area */
-	);
+	/* Decode this stat buffer... */
+	printf("%-7s %3d %3ld %08lx %04lx %8lx %3ld %s\n",
+	    type_names[sbuf.type], sbuf.id, sbuf.offset,
+	    (long)sbuf.area, (long)sbuf.size, (long)sbuf.private,
+	    (long)sbuf.ver, sbuf.name);
 
-	/*
-	 * Done (success).
-	 */
 	return 0;
 }
 
 int devfd;
-
-void
-cleanup()
-{
-
-	close(devfd);
-}
 
 int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	int c;
-	int modnum = -1;
+	int c, modnum = -1;
 	char *modname = NULL;
 
-	while ((c = getopt(argc, argv, "i:n:")) != EOF) {
+	while ((c = getopt(argc, argv, "i:n:")) != -1) {
 		switch (c) {
 		case 'i':
 			modnum = atoi(optarg);
@@ -135,10 +124,8 @@ main(argc, argv)
 		case 'n':
 			modname = optarg;
 			break;	/* name */
-		case '?':
-			usage();
 		default:
-			printf("default!\n");
+			usage();
 			break;
 		}
 	}
@@ -152,25 +139,21 @@ main(argc, argv)
 	 * Open the virtual device device driver for exclusive use (needed
 	 * to ioctl() to retrive the loaded module(s) status).
 	 */
-	if ((devfd = open(_PATH_LKM, O_RDONLY, 0)) == -1)
+	if ((devfd = open(_PATH_LKM, O_RDONLY)) == -1)
 		err(2, _PATH_LKM);
 
-	atexit(cleanup);
+	setegid(getgid());
+	setgid(getgid());
 
-	printf("Type    Id  Off Loadaddr Size Info     Rev Module Name\n");
+	printf("Type     Id Off Loadaddr Size Info     Rev Module Name\n");
 
-	/*
-	 * Oneshot?
-	 */
 	if (modnum != -1 || modname != NULL) {
 		if (dostat(devfd, modnum, modname))
 			exit(3);
 		exit(0);
 	}
 
-	/*
-	 * Start at 0 and work up until "EINVAL".
-	 */
+	/* Start at 0 and work up until we receive EINVAL. */
  	for (modnum = 0; dostat(devfd, modnum, NULL) < 2; modnum++)
  		;
 

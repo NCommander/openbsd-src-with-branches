@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: proto.h,v 1.8 1999/07/14 13:37:24 millert Exp $	*/
 
 /*
  * prototypes for PD-KSH
@@ -45,6 +45,7 @@ int 	c_unset		ARGS((char **wp));
 int 	c_ulimit	ARGS((char **wp));
 int 	c_times		ARGS((char **wp));
 int 	timex		ARGS((struct op *t, int f));
+void	timex_hook	ARGS((struct op *t, char ** volatile *app));
 int 	c_exec		ARGS((char **wp));
 int 	c_builtin	ARGS((char **wp));
 /* c_test.c */
@@ -73,9 +74,11 @@ int 	define		ARGS((const char *name, struct op *t));
 void 	builtin		ARGS((const char *name, int (*func)(char **)));
 struct tbl *	findcom	ARGS((const char *name, int flags));
 void 	flushcom	ARGS((int all));
-char *	search		ARGS((const char *name, const char *path, int mode));
-int	search_access	ARGS((const char *path, int mode));
+char *	search		ARGS((const char *name, const char *path, int mode,
+			      int *errnop));
+int	search_access	ARGS((const char *path, int mode, int *errnop));
 int	pr_menu		ARGS((char *const *ap));
+int	pr_list		ARGS((char *const *ap));
 /* expr.c */
 int 	evaluate	ARGS((const char *expr, long *rval, int error_ok));
 int	v_evaluate	ARGS((struct tbl *vp, const char *expr, volatile int error_ok));
@@ -89,7 +92,7 @@ int 	c_fc	 	ARGS((register char **wp));
 void	sethistsize	ARGS((int n));
 void	sethistfile	ARGS((const char *name));
 # ifdef EASY_HISTORY
-void 	histappend	ARGS((const char *cmd, int nl_seperate));
+void 	histappend	ARGS((const char *cmd, int nl_separate));
 # endif
 char **	histpos	 	ARGS((void));
 int 	histN	 	ARGS((void));
@@ -111,6 +114,12 @@ void 	shellf		ARGS((const char *fmt, ...))
 				GCC_FUNC_ATTR(format(printf, 1, 2));
 void 	shprintf	ARGS((const char *fmt, ...))
 				GCC_FUNC_ATTR(format(printf, 1, 2));
+#ifdef KSH_DEBUG
+void 	kshdebug_init_	ARGS((void));
+void 	kshdebug_printf_ ARGS((const char *fmt, ...))
+				GCC_FUNC_ATTR(format(printf, 1, 2));
+void 	kshdebug_dump_	ARGS((const char *str, const void *mem, int nbytes));
+#endif /* KSH_DEBUG */
 int	can_seek	ARGS((int fd));
 void	initio		ARGS((void));
 int	ksh_dup2	ARGS((int ofd, int nfd, int errok));
@@ -124,10 +133,10 @@ void	coproc_init	ARGS((void));
 void	coproc_read_close ARGS((int fd));
 void	coproc_readw_close ARGS((int fd));
 void	coproc_write_close ARGS((int fd));
-int	get_coproc_fd	ARGS((int mode, const char **emsgp));
-void	cleanup_coproc	ARGS((int reuse));
+int	coproc_getfd	ARGS((int mode, const char **emsgp));
+void	coproc_cleanup	ARGS((int reuse));
 #endif /* KSH */
-struct temp *maketemp	ARGS((Area *ap));
+struct temp *maketemp	ARGS((Area *ap, Temp_type type, struct temp **tlist));
 /* jobs.c */
 void 	j_init		ARGS((int mflagset));
 void 	j_exit		ARGS((void));
@@ -150,9 +159,12 @@ Source * pushs		ARGS((int type, Area *areap));
 void	set_prompt	ARGS((int to, Source *s));
 void 	pprompt		ARGS((const char *cp, int ntruncate));
 /* mail.c */
+#ifdef KSH
 void 	mcheck		ARGS((void));
+void 	mcset		ARGS((long interval));
 void 	mbset		ARGS((char *p));
 void 	mpset		ARGS((char *mptoparse));
+#endif /* KSH */
 /* main.c */
 int 	include		ARGS((const char *name, int argc, char **argv,
 			      int intr_ok));
@@ -162,6 +174,7 @@ void 	unwind		ARGS((int i)) GCC_FUNC_ATTR(noreturn);
 void 	newenv		ARGS((int type));
 void 	quitenv		ARGS((void));
 void	cleanup_parents_env ARGS((void));
+void	cleanup_proc_env ARGS((void));
 void 	aerror		ARGS((Area *ap, const char *msg))
 				GCC_FUNC_ATTR(noreturn);
 /* misc.c */
@@ -188,7 +201,7 @@ int	ksh_getopt	ARGS((char **argv, Getopt *go, const char *options));
 void	print_value_quoted ARGS((const char *s));
 void	print_columns	ARGS((struct shf *shf, int n,
 			      char *(*func)(void *, int, char *, int),
-			      void *arg, int max_width));
+			      void *arg, int max_width, int prefcol));
 int	strip_nuls	ARGS((char *buf, int nbytes));
 char	*str_zcpy	ARGS((char *dst, const char *src, int dsize));
 int	blocking_read	ARGS((int fd, char *buf, int nbytes));
@@ -215,8 +228,10 @@ struct tbl **	tsort	ARGS((struct table *tp));
 /* trace.c */
 /* trap.c */
 void	inittraps	ARGS((void));
+#ifdef KSH
 void	alarm_init	ARGS((void));
-Trap *	gettrap		ARGS((const char *name));
+#endif /* KSH */
+Trap *	gettrap		ARGS((const char *name, int igncase));
 RETSIGTYPE trapsig	ARGS((int i));
 void	intrcheck	ARGS((void));
 int	fatal_trap_check ARGS((void));
@@ -236,6 +251,7 @@ char *	snptreef	ARGS((char *s, int n, const char *fmt, ...));
 struct op *	tcopy	ARGS((struct op *t, Area *ap));
 char *	wdcopy		ARGS((const char *wp, Area *ap));
 char *	wdscan		ARGS((const char *wp, int c));
+char *	wdstrip		ARGS((const char *wp));
 void 	tfree		ARGS((struct op *t, Area *ap));
 /* var.c */
 void 	newblock	ARGS((void));
@@ -245,17 +261,18 @@ struct tbl *	global	ARGS((const char *n));
 struct tbl *	local	ARGS((const char *n, bool_t copy));
 char *	str_val		ARGS((struct tbl *vp));
 long 	intval		ARGS((struct tbl *vp));
-void 	setstr		ARGS((struct tbl *vq, const char *s));
+int 	setstr		ARGS((struct tbl *vq, const char *s, int error_ok));
 struct tbl *setint_v	ARGS((struct tbl *vq, struct tbl *vp));
 void 	setint		ARGS((struct tbl *vq, long n));
 int	getint		ARGS((struct tbl *vp, long *nump));
-struct tbl *	typeset	ARGS((const char *var, int set, int clr, int field, int base));
+struct tbl *	typeset	ARGS((const char *var, Tflag set, Tflag clr, int field, int base));
 void 	unset		ARGS((struct tbl *vp, int array_ref));
 char  * skip_varname	ARGS((const char *s, int aok));
 char	*skip_wdvarname ARGS((const char *s, int aok));
 int	is_wdvarname	ARGS((const char *s, int aok));
 int	is_wdvarassign	ARGS((const char *s));
 char **	makenv		ARGS((void));
+void	change_random	ARGS((void));
 int	array_ref_len	ARGS((const char *cp));
 char *	arrayname	ARGS((const char *str));
 void    set_array	ARGS((const char *var, int reset, char **vals));

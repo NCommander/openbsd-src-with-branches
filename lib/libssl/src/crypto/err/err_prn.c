@@ -57,46 +57,46 @@
  */
 
 #include <stdio.h>
-#include "lhash.h"
-#include "crypto.h"
+#include <openssl/lhash.h>
+#include <openssl/crypto.h>
 #include "cryptlib.h"
-#include "buffer.h"
-#include "err.h"
-#include "crypto.h"
+#include <openssl/buffer.h>
+#include <openssl/err.h>
+#include <openssl/crypto.h>
 
 #ifndef NO_FP_API
-void ERR_print_errors_fp(fp)
-FILE *fp;
+void ERR_print_errors_fp(FILE *fp)
 	{
 	unsigned long l;
 	char buf[200];
-	char *file,*data;
+	const char *file,*data;
 	int line,flags;
 	unsigned long es;
 
 	es=CRYPTO_thread_id();
 	while ((l=ERR_get_error_line_data(&file,&line,&data,&flags)) != 0)
 		{
-		fprintf(fp,"%lu:%s:%s:%d:%s\n",es,ERR_error_string(l,buf),
+		ERR_error_string_n(l, buf, sizeof buf);
+		fprintf(fp,"%lu:%s:%s:%d:%s\n",es,buf,
 			file,line,(flags&ERR_TXT_STRING)?data:"");
 		}
 	}
 #endif
 
-void ERR_print_errors(bp)
-BIO *bp;
+void ERR_print_errors(BIO *bp)
 	{
 	unsigned long l;
 	char buf[256];
 	char buf2[256];
-	char *file,*data;
+	const char *file,*data;
 	int line,flags;
 	unsigned long es;
 
 	es=CRYPTO_thread_id();
 	while ((l=ERR_get_error_line_data(&file,&line,&data,&flags)) != 0)
 		{
-		sprintf(buf2,"%lu:%s:%s:%d:",es,ERR_error_string(l,buf),
+		ERR_error_string_n(l, buf, sizeof buf);
+		sprintf(buf2,"%lu:%s:%s:%d:",es,buf,
 			file,line);
 		BIO_write(bp,buf2,strlen(buf2));
 		if (flags & ERR_TXT_STRING)

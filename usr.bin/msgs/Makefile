@@ -1,8 +1,7 @@
-#	$NetBSD: Makefile,v 1.6 1995/09/28 06:57:37 tls Exp $
-#	@(#)Makefile	8.2 (Berkeley) 4/28/95
+#	$OpenBSD: Makefile,v 1.5 1997/09/21 11:50:11 deraadt Exp $
 
 PROG=	msgs
-DPADD=	${LIBTERM}
-LDADD=	-ltermlib
+DPADD=	${LIBTERMLIB}
+LDADD=	-lcurses
 
 .include <bsd.prog.mk>

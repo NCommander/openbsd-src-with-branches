@@ -1,3 +1,5 @@
+/*	$OpenBSD: rstatd.c,v 1.5 2001/01/28 19:34:31 niklas Exp $	*/
+
 /*-
  * Copyright (c) 1993, John Brezak
  * All rights reserved.
@@ -32,13 +34,16 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: rstatd.c,v 1.6 1995/01/13 06:14:31 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: rstatd.c,v 1.5 2001/01/28 19:34:31 niklas Exp $";
 #endif /* not lint */
 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <stdio.h>
 #include <rpc/rpc.h>
 #include <signal.h>
 #include <syslog.h>
+#include <stdlib.h>
 #include <rpcsvc/rstat.h>
 
 extern void rstat_service();
@@ -49,50 +54,51 @@ int closedown = 20;	/* how long to wait before going dormant */
 void
 cleanup()
 {
-        (void) pmap_unset(RSTATPROG, RSTATVERS_TIME);
-        (void) pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
-        (void) pmap_unset(RSTATPROG, RSTATVERS_ORIG);
-        exit(0);
+	(void) pmap_unset(RSTATPROG, RSTATVERS_TIME);	/* XXX signal races */
+	(void) pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
+	(void) pmap_unset(RSTATPROG, RSTATVERS_ORIG);
+	_exit(0);
 }
 
+int
 main(argc, argv)
-        int argc;
-        char *argv[];
+	int argc;
+	char *argv[];
 {
 	SVCXPRT *transp;
-        int sock = 0;
-        int proto = 0;
+	int sock = 0;
+	int proto = 0;
 	struct sockaddr_in from;
 	int fromlen;
-        
-        if (argc == 2)
-                closedown = atoi(argv[1]);
-        if (closedown <= 0)
-                closedown = 20;
 
-        /*
-         * See if inetd started us
-         */
+	if (argc == 2)
+		closedown = atoi(argv[1]);
+	if (closedown <= 0)
+		closedown = 20;
+
+	/*
+	 * See if inetd started us
+	 */
 	fromlen = sizeof(from);
-        if (getsockname(0, (struct sockaddr *)&from, &fromlen) < 0) {
-                from_inetd = 0;
-                sock = RPC_ANYSOCK;
-                proto = IPPROTO_UDP;
-        }
+	if (getsockname(0, (struct sockaddr *)&from, &fromlen) < 0) {
+		from_inetd = 0;
+		sock = RPC_ANYSOCK;
+		proto = IPPROTO_UDP;
+	}
 
-        if (!from_inetd) {
-                daemon(0, 0);
+	if (!from_inetd) {
+		daemon(0, 0);
 
-                (void)pmap_unset(RSTATPROG, RSTATVERS_TIME);
-                (void)pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
-                (void)pmap_unset(RSTATPROG, RSTATVERS_ORIG);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_TIME);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_ORIG);
 
 		(void) signal(SIGINT, cleanup);
 		(void) signal(SIGTERM, cleanup);
 		(void) signal(SIGHUP, cleanup);
-        }
-        
-        openlog("rpc.rstatd", LOG_CONS|LOG_PID, LOG_DAEMON);
+	}
+
+	openlog("rpc.rstatd", LOG_CONS|LOG_PID, LOG_DAEMON);
 
 	transp = svcudp_create(sock);
 	if (transp == NULL) {
@@ -112,7 +118,7 @@ main(argc, argv)
 		exit(1);
 	}
 
-        svc_run();
+	svc_run();
 	syslog(LOG_ERR, "svc_run returned");
 	exit(1);
 }

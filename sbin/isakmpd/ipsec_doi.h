@@ -1,7 +1,8 @@
-/*	$Id: ipsec_doi.h,v 1.8 1998/08/02 20:12:02 niklas Exp $	*/
+/*	$OpenBSD: ipsec_doi.h,v 1.5 1999/04/19 19:54:54 niklas Exp $	*/
+/*	$EOM: ipsec_doi.h,v 1.10 1999/04/02 00:57:51 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,7 +40,10 @@
 #include "ipsec_fld.h"
 #include "ipsec_num.h"
 
-/* The SPI size of all IPSEC protocols.  XXX Correct?  */
+/* The SPI size of all IPsec protocols.  XXX Correct?  */
 #define IPSEC_SPI_SIZE 4
+
+/* The low limit if valid SPI values.  */
+#define IPSEC_SPI_LOW 0x100
 
 #endif /* _IPSEC_DOI_H_ */

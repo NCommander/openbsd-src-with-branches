@@ -1,7 +1,9 @@
-/*	$Id: gmp_util.h,v 1.1 1998/08/03 19:32:36 provos Exp $	*/
+/*	$OpenBSD: gmp_util.h,v 1.5 2000/04/07 22:10:30 niklas Exp $	*/
+/*	$EOM: gmp_util.h,v 1.4 2000/05/08 13:42:11 ho Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2000 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,8 +38,10 @@
 #ifndef _GMP_UTIL_H_
 #define _GMP_UTIL_H_
 
-u_int32_t mpz_sizeinoctets (mpz_ptr);
-void mpz_getraw (u_int8_t *, mpz_ptr, u_int32_t);
-void mpz_setraw (mpz_ptr, u_int8_t *, u_int32_t);
+#include "math_mp.h"
+
+u_int32_t mpz_sizeinoctets (math_mp_t);
+void mpz_getraw (u_int8_t *, math_mp_t, u_int32_t);
+void mpz_setraw (math_mp_t, u_int8_t *, u_int32_t);
 
 #endif /* _GMP_UTIL_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: bpf.c,v 1.5 1995/10/06 05:12:12 thorpej Exp $	*/
+/*	$OpenBSD$	*/
+/*	$NetBSD: bpf.c,v 1.5.2.1 1995/11/14 08:45:42 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988, 1992 The University of Utah and the Center
@@ -48,7 +49,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)bpf.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: bpf.c,v 1.5 1995/10/06 05:12:12 thorpej Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -235,7 +236,7 @@ BpfGetIntfName(errmsg)
 		*errmsg = errbuf;
 
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		(void) strcpy(errbuf, "bpf: socket: %m");
+		(void) strlcpy(errbuf, "bpf: socket: %m", sizeof(errbuf));
 		return(NULL);
 	}
 	ifc.ifc_len = sizeof ibuf;
@@ -244,13 +245,15 @@ BpfGetIntfName(errmsg)
 #ifdef OSIOCGIFCONF
 	if (ioctl(fd, OSIOCGIFCONF, (char *)&ifc) < 0 ||
 	    ifc.ifc_len < sizeof(struct ifreq)) {
-		(void) strcpy(errbuf, "bpf: ioctl(OSIOCGIFCONF): %m");
+		(void) strlcpy(errbuf, "bpf: ioctl(OSIOCGIFCONF): %m",
+		    sizeof (errbuf));
 		return(NULL);
 	}
 #else
 	if (ioctl(fd, SIOCGIFCONF, (char *)&ifc) < 0 ||
 	    ifc.ifc_len < sizeof(struct ifreq)) {
-		(void) strcpy(errbuf, "bpf: ioctl(SIOCGIFCONF): %m");
+		(void) strlcpy(errbuf, "bpf: ioctl(SIOCGIFCONF): %m",
+		    sizeof(errbuf));
 		return(NULL);
 	}
 #endif
@@ -261,7 +264,8 @@ BpfGetIntfName(errmsg)
 	minunit = 666;
 	for (; ifrp < ifend; ++ifrp) {
 		if (ioctl(fd, SIOCGIFFLAGS, (char *)ifrp) < 0) {
-			(void) strcpy(errbuf, "bpf: ioctl(SIOCGIFFLAGS): %m");
+			(void) strlcpy(errbuf, "bpf: ioctl(SIOCGIFFLAGS): %m",
+			    sizeof(errbuf));
 			return(NULL);
 		}
 
@@ -288,7 +292,8 @@ BpfGetIntfName(errmsg)
 
 	(void) close(fd);
 	if (mp == 0) {
-		(void) strcpy(errbuf, "bpf: no interfaces found");
+		(void) strlcpy(errbuf, "bpf: no interfaces found",
+		    sizeof(errbuf));
 		return(NULL);
 	}
 
@@ -350,7 +355,7 @@ BpfRead(rconn, doread)
 			syslog(LOG_ERR, "bpf: large packet dropped (%d bytes)",
 			       caplen);
 		else {
-			rconn->rmplen = htons(caplen);
+			rconn->rmplen = caplen;
 			bcopy((char *)&bhp->bh_tstamp, (char *)&rconn->tstamp,
 			      sizeof(struct timeval));
 			bcopy((char *)bp + hdrlen, (char *)&rconn->rmp, caplen);
@@ -379,7 +384,7 @@ int
 BpfWrite(rconn)
 	RMPCONN *rconn;
 {
-	if (write(BpfFd, (char *)&rconn->rmp, ntohs(rconn->rmplen)) < 0) {
+	if (write(BpfFd, (char *)&rconn->rmp, rconn->rmplen) < 0) {
 		syslog(LOG_ERR, "write: %s: %m", EnetStr(rconn));
 		return(0);
 	}

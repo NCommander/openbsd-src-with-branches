@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.pager.c,v 1.6 2001/01/28 23:41:45 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.pager.c,v 1.4 1995/03/23 08:31:16 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.pager.c,v 1.6 2001/01/28 23:41:45 niklas Exp $";
 #endif /* not lint */
 
 /* This file contains the command routine dowhatis() and a pager. */
@@ -36,7 +38,7 @@ dowhatis()
 		if(q != '\t')
 		while(fgets(buf,BUFSZ,fp))
 		    if(*buf == q) {
-			ep = index(buf, '\n');
+			ep = strchr(buf, '\n');
 			if(ep) *ep = 0;
 			/* else: bad data file */
 			/* Expand tab 'by hand' */
@@ -82,7 +84,7 @@ int strip;	/* nr of chars to be stripped from each line (0 or 1) */
 	bufr = (char *) alloc((unsigned) CO);
 	bufr[CO-1] = 0;
 	while(fgets(bufr,CO-1,fp) && (!strip || *bufr == '\t') && !got_intrup){
-		ep = index(bufr, '\n');
+		ep = strchr(bufr, '\n');
 		if(ep)
 			*ep = 0;
 		if(page_line(bufr+strip)) {
@@ -114,7 +116,7 @@ readnews() {
 	set_whole_screen();
 	return(ret);		/* report whether we did docrt() */
 }
-#endif NEWS
+#endif /* NEWS */
 
 set_pager(mode)
 register int mode;	/* 0: open  1: wait+close  2: close */
@@ -286,9 +288,9 @@ dohelp()
 	char c;
 
 	pline ("Long or short help? ");
-	while (((c = readchar ()) != 'l') && (c != 's') && !index(quitchars,c))
+	while (((c = readchar ()) != 'l') && (c != 's') && !strchr(quitchars,c))
 		bell ();
-	if (!index(quitchars, c))
+	if (!strchr(quitchars, c))
 		(void) page_file((c == 'l') ? HELP : SHELP, FALSE);
 	return(0);
 }
@@ -301,7 +303,7 @@ boolean silent;
       {
 	/* use external pager; this may give security problems */
 
-	register int fd = open(fnam, 0);
+	register int fd = open(fnam, O_RDONLY);
 
 	if(fd < 0) {
 		if(!silent) pline("Cannot open %s.", fnam);
@@ -324,7 +326,7 @@ boolean silent;
 	}
 	(void) close(fd);
       }
-#else DEF_PAGER
+#else /* DEF_PAGER */
       {
 	FILE *f;			/* free after Robert Viduya */
 
@@ -337,7 +339,7 @@ boolean silent;
 	}
 	page_more(f, 0);
       }
-#endif DEF_PAGER
+#endif /* DEF_PAGER */
 
 	return(1);
 }
@@ -356,7 +358,7 @@ register char *str;
 	}
 	return(0);
 }
-#endif SHELL
+#endif /* SHELL */
 
 #ifdef NOWAITINCLUDE
 union wait {		/* used only for the cast  (union wait *) 0  */
@@ -374,21 +376,26 @@ union wait {		/* used only for the cast  (union wait *) 0  */
 #include	<sys/wait.h>
 #else
 #include	<wait.h>
-#endif BSD
-#endif NOWAITINCLUDE
+#endif /* BSD */
+#endif /* NOWAITINCLUDE */
 
 child(wt) {
 	int status;
 	register int f;
+	char *home;
 
 	f = fork();
 	if(f == 0){		/* child */
 		settty((char *) 0);		/* also calls end_screen() */
-		(void) setuid(getuid());
-		(void) setgid(getgid());
+		/* revoke */
+		setegid(getgid());
+		setgid(getgid());
 #ifdef CHDIR
-		(void) chdir(getenv("HOME"));
-#endif CHDIR
+		home = getenv("HOME");
+		if (home == NULL || *home == '\0')
+			home = "/";
+		(void) chdir(home);
+#endif /* CHDIR */
 		return(1);
 	}
 	if(f == -1) {	/* cannot fork */
@@ -404,9 +411,9 @@ child(wt) {
 	(void) signal(SIGINT,done1);
 #ifdef WIZARD
 	if(wizard) (void) signal(SIGQUIT,SIG_DFL);
-#endif WIZARD
+#endif /* WIZARD */
 	if(wt) getret();
 	docrt();
 	return(0);
 }
-#endif UNIX
+#endif /* UNIX */

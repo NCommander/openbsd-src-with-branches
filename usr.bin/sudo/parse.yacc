@@ -1,6 +1,6 @@
 %{
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2000 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * This code is derived from software contributed by Chris Jepeway
@@ -79,7 +79,7 @@
 #endif /* HAVE_LSEARCH */
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: parse.yacc,v 1.166 1999/10/07 21:20:57 millert Exp $";
+static const char rcsid[] = "$Sudo: parse.yacc,v 1.173 2000/03/24 23:58:58 millert Exp $";
 #endif /* lint */
 
 /*
@@ -90,6 +90,7 @@ int errorlineno = -1;
 int clearaliases = TRUE;
 int printmatches = FALSE;
 int pedantic = FALSE;
+int keepall = FALSE;
 
 /*
  * Alias types
@@ -188,7 +189,7 @@ void
 yyerror(s)
     char *s;
 {
-    /* Save the line the first error occured on. */
+    /* Save the line the first error occurred on. */
     if (errorlineno == -1)
 	errorlineno = sudolineno ? sudolineno - 1 : 0;
     if (s) {
@@ -214,7 +215,6 @@ yyerror(s)
 %token <command> COMMAND		/* absolute pathname w/ optional args */
 %token <string>  ALIAS			/* an UPPERCASE alias name */
 %token <string>  NTWKADDR		/* w.x.y.z */
-%token <string>  FQHOST			/* foo.bar.com */
 %token <string>  NETGROUP		/* a netgroup (+NAME) */
 %token <string>  USERGROUP		/* a usergroup (%NAME) */
 %token <string>  WORD			/* a word */
@@ -242,6 +242,8 @@ yyerror(s)
 %type <BOOLEAN>	 cmnd
 %type <BOOLEAN>	 host
 %type <BOOLEAN>	 runasuser
+%type <BOOLEAN>	 oprunasuser
+%type <BOOLEAN>	 runaslist
 %type <BOOLEAN>	 user
 
 %%
@@ -289,14 +291,16 @@ defaults_list	:	defaults_entry
 		|	defaults_entry ',' defaults_list
 
 defaults_entry	:	WORD {
-			    if (defaults_matches && !set_default($1, NULL, 1)) {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, NULL, 1)) {
 				yyerror(NULL);
 				YYERROR;
 			    }
 			    free($1);
 			}
 		|	'!' WORD {
-			    if (defaults_matches && !set_default($2, NULL, 0)) {
+			    if (defaults_matches == TRUE &&
+				!set_default($2, NULL, 0)) {
 				yyerror(NULL);
 				YYERROR;
 			    }
@@ -304,7 +308,8 @@ defaults_entry	:	WORD {
 			}
 		|	WORD '=' WORD {
 			    /* XXX - need to support quoted values */
-			    if (defaults_matches && !set_default($1, $3, 1)) {
+			    if (defaults_matches == TRUE &&
+				!set_default($1, $3, 1)) {
 				yyerror(NULL);
 				YYERROR;
 			    }
@@ -351,21 +356,14 @@ host		:	ALL {
 			    free($1);
 			}
 		|	NETGROUP {
-			    if (netgr_matches($1, user_host, NULL))
+			    if (netgr_matches($1, user_host, user_shost, NULL))
 				$$ = TRUE;
 			    else
 				$$ = -1;
 			    free($1);
 			}
 		|	WORD {
-			    if (strcasecmp(user_shost, $1) == 0)
-				$$ = TRUE;
-			    else
-				$$ = -1;
-			    free($1);
-			}
-		|	FQHOST {
-			    if (strcasecmp(user_host, $1) == 0)
+			    if (hostname_matches(user_shost, user_host, $1) == 0)
 				$$ = TRUE;
 			    else
 				$$ = -1;
@@ -409,6 +407,9 @@ cmndspec	:	runasspec nopasswd opcmnd {
 			     * the user was listed in sudoers.  Also, we
 			     * need to be able to tell whether or not a
 			     * user was listed for this specific host.
+			     *
+			     * If keepall is set and the user matches then
+			     * we need to keep entries around too...
 			     */
 			    if (user_matches != -1 && host_matches != -1 &&
 				cmnd_matches != -1 && runas_matches != -1)
@@ -416,6 +417,8 @@ cmndspec	:	runasspec nopasswd opcmnd {
 			    else if (user_matches != -1 && (top == 1 ||
 				(top == 2 && host_matches != -1 &&
 				match[0].host == -1)))
+				pushcp;
+			    else if (user_matches == TRUE && keepall)
 				pushcp;
 			    cmnd_matches = -1;
 			}
@@ -462,17 +465,22 @@ runasspec	:	/* empty */ {
 				runas_matches = (strcmp(*user_runas,
 				    def_str(I_RUNAS_DEF)) == 0);
 			}
-		|	RUNAS runaslist { ; }
-		;
-
-runaslist	:	oprunasuser
-		|	runaslist ',' oprunasuser
-		;
-
-oprunasuser	:	runasuser {
-			    if ($1 != -1)
-				runas_matches = $1;
+		|	RUNAS runaslist {
+			    runas_matches = ($2 == TRUE ? TRUE : FALSE);
 			}
+		;
+
+runaslist	:	oprunasuser { ; }
+		|	runaslist ',' oprunasuser {
+			    /* Later entries override earlier ones. */
+			    if ($3 != -1)
+				$$ = $3;
+			    else
+				$$ = $1;
+			}
+		;
+
+oprunasuser	:	runasuser { ; }
 		|	'!' {
 			    if (printmatches == TRUE) {
 				if (in_alias == TRUE)
@@ -482,8 +490,8 @@ oprunasuser	:	runasuser {
 				    append_runas("!", ", ");
 			    }
 			} runasuser {
-			    if ($3 != -1)
-				runas_matches = ! $3;
+			    /* Set $$ to the negation of runasuser */
+			    $$ = ($3 == -1 ? -1 : ! $3);
 			}
 
 runasuser	:	WORD {
@@ -522,7 +530,7 @@ runasuser	:	WORD {
 				    user_matches == TRUE)
 				    append_runas($1, ", ");
 			    }
-			    if (netgr_matches($1, NULL, *user_runas))
+			    if (netgr_matches($1, NULL, NULL, *user_runas))
 				$$ = TRUE;
 			    else
 				$$ = -1;
@@ -717,7 +725,6 @@ runasaliases	:	runasalias
 		;
 
 runasalias	:	ALIAS {
-			    push;
 			    if (printmatches == TRUE) {
 				in_alias = TRUE;
 				/* Allocate space for ga_list if necessary. */
@@ -726,10 +733,9 @@ runasalias	:	ALIAS {
 				ga_list[ga_list_len-1].alias = estrdup($1);
 			    }
 			} '=' runaslist {
-			    if ((runas_matches != -1 || pedantic) &&
-				!add_alias($1, RUNAS_ALIAS, runas_matches))
+			    if (($4 != -1 || pedantic) &&
+				!add_alias($1, RUNAS_ALIAS, $4))
 				YYERROR;
-			    pop;
 			    free($1);
 
 			    if (printmatches == TRUE)
@@ -778,7 +784,7 @@ user		:	WORD {
 			    free($1);
 			}
 		|	NETGROUP {
-			    if (netgr_matches($1, NULL, user_name))
+			    if (netgr_matches($1, NULL, NULL, user_name))
 				$$ = TRUE;
 			    else
 				$$ = -1;

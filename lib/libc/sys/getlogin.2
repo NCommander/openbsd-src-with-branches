@@ -1,3 +1,4 @@
+.\"	$OpenBSD: getlogin.2,v 1.10 2001/02/01 01:43:24 deraadt Exp $
 .\"	$NetBSD: getlogin.2,v 1.4 1995/02/27 12:33:03 cgd Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993
@@ -35,7 +36,7 @@
 .\"
 .Dd June 9, 1993
 .Dt GETLOGIN 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm getlogin ,
 .Nm setlogin
@@ -49,9 +50,8 @@
 .Sh DESCRIPTION
 The
 .Fn getlogin
-routine
-returns the login name of the user associated with the current session,
-as previously set by
+routine returns the login name of the user associated with the current
+session, as previously set by
 .Fn setlogin .
 The name is normally associated with a login shell
 at the time a session is created,
@@ -61,10 +61,10 @@ for example when
 .Xr su 1
 is used.)
 .Pp
-.Fn Setlogin
+.Fn setlogin
 sets the login name of the user associated with the current session to
 .Fa name .
-This call is restricted to the super-user, and
+This call is restricted to the superuser, and
 is normally used only when a new session is being created on behalf
 of the named user
 (for example, at login time, or when a remote shell is invoked).
@@ -76,9 +76,10 @@ If the name has not been set, it returns
 .Dv NULL .
 If a call to
 .Fn setlogin
-succeeds, a value of 0 is returned.  If
+succeeds, a value of 0 is returned.
+If
 .Fn setlogin
-fails, a value of -1 is returned and an error code is
+fails, a value of \-1 is returned and an error code is
 placed in the global location
 .Va errno .
 .Sh ERRORS
@@ -95,12 +96,12 @@ The
 parameter
 pointed to a string that was too long.
 Login names are limited to
-.Dv MAXLOGNAME
+.Dv MAXLOGNAME-1
 (from
 .Ao Pa sys/param.h Ac )
-characters, currently 12.
+characters, currently 31.
 .It Bq Er EPERM
-The caller tried to set the login name and was not the super-user.
+The caller tried to set the login name and was not the superuser.
 .El
 .Sh SEE ALSO
 .Xr setsid 2
@@ -125,4 +126,5 @@ Portable programs should probably still make this check.
 .Sh HISTORY
 The
 .Fn getlogin
-function first appeared in 4.4BSD.
+function first appeared in
+.Bx 4.2 .

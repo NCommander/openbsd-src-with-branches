@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_arc.h,v 1.3 2000/04/26 21:02:02 jakob Exp $	*/
 /*	$NetBSD: if_arc.h,v 1.5 1995/06/07 00:14:04 cgd Exp $	*/
 
 /*
@@ -35,6 +36,9 @@
  * from: NetBSD: if_ether.h,v 1.10 1994/06/29 06:37:55 cgd Exp
  *       @(#)if_ether.h	8.1 (Berkeley) 6/10/93
  */
+
+#ifndef _NETINET_IF_ARC_H_
+#define _NETINET_IF_ARC_H_
 
 /*
  * Arcnet address - 1 octets
@@ -92,6 +96,8 @@ struct	arc_header {
 #define	ARCTYPE_BANIAN		247	/* Banyan Vines */
 #define	ARCTYPE_IPX		250	/* Novell IPX */
 
+#define	ARCTYPE_INET6		0xc4	/* IPng */
+
 #define	ARCMTU			507
 #define	ARCMIN			0
 
@@ -120,4 +126,5 @@ void	arc_input __P((struct ifnet *, struct mbuf *));
 int	arc_output __P((struct ifnet *, struct mbuf *, struct sockaddr *,
 	    struct rtentry *));
 int	arc_isphds __P((int));
-#endif
+#endif /* _KERNEL */
+#endif /* _NETINET_IF_ARC_H_ */

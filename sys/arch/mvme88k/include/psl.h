@@ -1,3 +1,4 @@
+/*	$OpenBSD: psl.h,v 1.8 2001/03/09 05:44:40 smurph Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -44,58 +45,6 @@
 #ifndef __M88K_M88100_PSL_H__
 #define __M88K_M88100_PSL_H__
 
-/* needs major cleanup - XXX nivas */
-
-#if 0
-spl0 is a function by itself. I really am serious about the clean up
-above...
-#define spl0()		spln(0)
-#endif /* 0 */
-#define spl1()		setipl(1)
-#define spl2()		setipl(2)
-#define spl3()		setipl(3)
-#define spl4()		setipl(4)
-#define spl5()		setipl(5)
-#define spl6()		setipl(6)
-#define spl7()		setipl(7)
-
-/*
- * IPL levels.
- * We use 6 as IPL_HIGH so that abort can be programmed at 7 so that
- * it is always possible to break into the system unless interrupts
- * are disabled.
- */
-
-#define IPL_NONE	0
-#define IPL_SOFTCLOCK	1
-#define IPL_SOFTNET	1
-#define IPL_BIO		2
-#define IPL_NET		3
-#define IPL_TTY		3
-#define IPL_CLOCK	5
-#define IPL_STATCLOCK	5
-#define IPL_IMP		6
-#define IPL_VM		6
-#define IPL_HIGH	6
-#define IPL_SCHED	6
-#define IPL_NMI		7
-#define IPL_ABORT	7
-
-#define splnone		spl0
-#define splsoftclock()	setipl(IPL_SOFTCLOCK)
-#define splsoftnet()	setipl(IPL_SOFTNET)
-#define splbio()	setipl(IPL_BIO)
-#define splnet()	setipl(IPL_NET)
-#define spltty()	setipl(IPL_TTY)
-#define splclock()	setipl(IPL_CLOCK)
-#define splstatclock()	setipl(IPL_STATCLOCK)
-#define splimp()	setipl(IPL_IMP)
-#define splvm()		setipl(IPL_VM)
-#define splhigh()	setipl(IPL_HIGH)
-#define splsched()	setipl(IPL_SCHED)
-
-#define splx(x)		((x) ? setipl((x)) : spl0())
-
 /* 
  * 88100 control registers
  */
@@ -119,26 +68,16 @@ above...
 #define PSR_MXM		0x00000004U	/* misaligned access enable */
 #define PSR_IND		0x00000002U	/* interrupt disable */
 #define PSR_SFRZ	0x00000001U	/* shadow freeze */
-
 /*
  *	This is used in ext_int() and hard_clock().
  */
 #define PSR_IPL		0x00001000	/* for basepri */
-#define PSR_IPL_LOG	12		/* = log2(PSR_IPL) */
-
-#define PSR_MODE_LOG	31		/* = log2(PSR_MODE) */
-#define PSR_BO_LOG	30		/* = log2(PSR_BO) */
-#define PSR_SER_LOG	29		/* = log2(PSR_SER) */
-#define PSR_SFD1_LOG	3		/* = log2(PSR_SFD1) */
-#define PSR_MXM_LOG	2		/* = log2(PSR_MXM) */
-#define PSR_IND_LOG	1		/* = log2(PSR_IND) */
-#define PSR_SFRZ_LOG	0		/* = log2(PSR_SFRZ) */
 
 #define PSR_SUPERVISOR	(PSR_MODE | PSR_SFD)
 #define PSR_USER	(PSR_SFD)
 #define PSR_SET_BY_USER	(PSR_BO | PSR_SER | PSR_C | PSR_MXM)
 
-#ifndef	ASSEMBLER
+#ifndef	_LOCORE
 struct psr {
     unsigned
 	psr_mode: 1,

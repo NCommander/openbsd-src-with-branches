@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_arp.h,v 1.3 1999/07/30 22:22:19 fgsch Exp $	*/
 /*	$NetBSD: if_arp.h,v 1.8 1995/03/08 02:56:52 cgd Exp $	*/
 
 /*
@@ -35,6 +36,8 @@
  *	@(#)if_arp.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NET_IF_ARP_H_
+#define _NET_IF_ARP_H_
 /*
  * Address Resolution Protocol.
  *
@@ -48,6 +51,7 @@
 struct	arphdr {
 	u_int16_t ar_hrd;	/* format of hardware address */
 #define ARPHRD_ETHER 	1	/* ethernet hardware format */
+#define ARPHRD_IEEE802 	6	/* IEEE 802 hardware format */
 #define ARPHRD_FRELAY 	15	/* frame relay hardware format */
 	u_int16_t ar_pro;	/* format of protocol address */
 	u_int8_t  ar_hln;	/* length of hardware address */
@@ -85,3 +89,4 @@ struct arpreq {
 #define	ATF_PERM	0x04	/* permanent entry */
 #define	ATF_PUBL	0x08	/* publish entry (respond for other host) */
 #define	ATF_USETRAILERS	0x10	/* has requested trailers */
+#endif /* _NET_IF_ARP_H_ */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: networkdelta.c,v 1.3 2001/04/07 20:00:16 ho Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -216,13 +218,13 @@ median(float a,				/* initial guess for the median */
 		aa = (sumx/sum-a)*AMP;
 		if (npts >= 2) {	/* guess was too low */
 			am = a;
-			aa = xp + max(0.0, aa);;
+			aa = xp + max(0.0, aa);
 			if (aa > ap)
 				aa = (a + ap)/2;
 
 		} else if (npts <= -2) {  /* guess was two high */
 			ap = a;
-			aa = xm + min(0.0, aa);;
+			aa = xm + min(0.0, aa);
 			if (aa < am)
 				aa = (a + am)/2;
 
@@ -250,7 +252,7 @@ median(float a,				/* initial guess for the median */
 		else
 			a = (xm+a)/2;
 
-	} else 	if (npts != 0) {	/* odd number of points */
+	} else	if (npts != 0) {	/* odd number of points */
 		if (npts > 0)
 			a = xp;
 		else

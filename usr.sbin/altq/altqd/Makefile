@@ -1,7 +1,8 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.2 2001/08/03 17:57:14 jakob Exp $
 #	$NetBSD: Makefile,v 1.3 2001/01/11 13:15:06 enami Exp $
 
 .include <bsd.own.mk>
+.include <bsd.obj.mk>
 
 PROG=	altqd
 MAN=	altqd.8 altq.conf.5

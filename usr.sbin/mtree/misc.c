@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.8 1997/07/25 20:12:14 mickey Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/07 21:26:23 cgd Exp $	*/
 
 /*-
@@ -54,19 +55,23 @@ typedef struct _key {
 
 /* NB: the following table must be sorted lexically. */
 static KEY keylist[] = {
-	"cksum",	F_CKSUM,	NEEDVALUE,
-	"gid",		F_GID,		NEEDVALUE,
-	"gname",	F_GNAME,	NEEDVALUE,
-	"ignore",	F_IGN,		0,
-	"link",		F_SLINK,	NEEDVALUE,
-	"mode",		F_MODE,		NEEDVALUE,
-	"nlink",	F_NLINK,	NEEDVALUE,
-	"optional",	F_OPT,		0,
-	"size",		F_SIZE,		NEEDVALUE,
-	"time",		F_TIME,		NEEDVALUE,
-	"type",		F_TYPE,		NEEDVALUE,
-	"uid",		F_UID,		NEEDVALUE,
-	"uname",	F_UNAME,	NEEDVALUE,
+	{"cksum",	F_CKSUM,	NEEDVALUE},
+	{"flags",	F_FLAGS,	NEEDVALUE},
+	{"gid",		F_GID,		NEEDVALUE},
+	{"gname",	F_GNAME,	NEEDVALUE},
+	{"ignore",	F_IGN,		0},
+	{"link",	F_SLINK,	NEEDVALUE},
+	{"md5digest",	F_MD5,		NEEDVALUE},
+	{"mode",	F_MODE,		NEEDVALUE},
+	{"nlink",	F_NLINK,	NEEDVALUE},
+	{"optional",	F_OPT,		0},
+	{"rmd160digest",F_RMD160,	NEEDVALUE},
+	{"sha1digest",	F_SHA1,		NEEDVALUE},
+	{"size",	F_SIZE,		NEEDVALUE},
+	{"time",	F_TIME,		NEEDVALUE},
+	{"type",	F_TYPE,		NEEDVALUE},
+	{"uid",		F_UID,		NEEDVALUE},
+	{"uname",	F_UNAME,	NEEDVALUE},
 };
 
 u_int
@@ -81,7 +86,7 @@ parsekey(name, needvaluep)
 	k = (KEY *)bsearch(&tmp, keylist, sizeof(keylist) / sizeof(KEY),
 	    sizeof(KEY), keycompare);
 	if (k == NULL)
-		err("unknown keyword %s", name);
+		error("unknown keyword %s", name);
 
 	if (needvaluep)
 		*needvaluep = k->flags & NEEDVALUE ? 1 : 0;
@@ -95,28 +100,29 @@ keycompare(a, b)
 	return (strcmp(((KEY *)a)->name, ((KEY *)b)->name));
 }
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
 void
-#if __STDC__
-err(const char *fmt, ...)
+#ifdef __STDC__
+error(const char *fmt, ...)
 #else
-err(fmt, va_alist)
+error(fmt, va_alist)
 	char *fmt;
         va_dcl
 #endif
 {
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
 #endif
-	(void)fprintf(stderr, "mtree: ");
+	(void)fflush(NULL);
+	(void)fprintf(stderr, "\nmtree: ");
 	(void)vfprintf(stderr, fmt, ap);
 	va_end(ap);
 	(void)fprintf(stderr, "\n");

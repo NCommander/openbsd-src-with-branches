@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 #include <sys/param.h>
 #include <sys/reboot.h>
@@ -10,11 +12,11 @@
 char prom_bootdev[32];
 char *prom_bootfile;
 int prom_boothow;
-int debug;
+int debug = 0;
 
 /*
  * Get useful info from the PROM bootparams struct, i.e.:
- * arg[0] = sd(0,0,0)netbsd
+ * arg[0] = sd(0,0,0)bsd
  * arg[1] = -sa
  */
 
@@ -59,13 +61,15 @@ prom_get_boot_info()
 				break;
 			case 'd':
 				prom_boothow |= RB_KDB;
-				debug = 1;
+				debug++;
 				break;
 			}
 		}
 	}
-#ifdef	DEBUG
-	printf("promboot: device=\"%s\" file=\"%s\" how=0x%x\n",
-		   prom_bootdev, prom_bootfile, prom_boothow);
-#endif
+
+	if (debug) {
+		printf("Debug level %d - enter c to continue...", debug);
+		/* This will print "\nAbort at ...\n" */
+		asm("	trap #0");
+	}
 }

@@ -1,3 +1,6 @@
+/*	$OpenBSD: tn3270.c,v 1.2 1996/03/27 19:33:12 niklas Exp $	*/
+/*	$NetBSD: tn3270.c,v 1.5 1996/02/28 21:04:18 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,20 +34,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)tn3270.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: tn3270.c,v 1.3 1994/02/25 03:00:48 cgd Exp $";
-#endif /* not lint */
-
-#include <sys/types.h>
-#include <arpa/telnet.h>
-
-#include "general.h"
-
-#include "defines.h"
-#include "ring.h"
-#include "externs.h"
-#include "fdset.h"
+#include "telnet_locl.h"
 
 #if	defined(TN3270)
 
@@ -243,7 +233,7 @@ Push3270()
     if (save) {
 	if (Ifrontp+save > Ibuf+sizeof Ibuf) {
 	    if (Ibackp != Ibuf) {
-		memcpy(Ibuf, Ibackp, Ifrontp-Ibackp);
+		memmove(Ibuf, Ibackp, Ifrontp-Ibackp);
 		Ifrontp -= (Ibackp-Ibuf);
 		Ibackp = Ibuf;
 	    }

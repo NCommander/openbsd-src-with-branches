@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)kvm_mkdb.8	8.1 (Berkeley) 6/9/93
-.\"	$Id: kvm_mkdb.8,v 1.6 1994/06/11 07:57:39 mycroft Exp $
+.\"	$Id: kvm_mkdb.8,v 1.6 1999/06/05 22:17:14 aaron Exp $
 .\"
 .Dd June 9, 1993
 .Dt KVM_MKDB 8
@@ -40,31 +40,41 @@
 .Nd create kernel database
 .Sh SYNOPSIS
 .Nm kvm_mkdb
+.Op Fl v
 .Op file
 .Sh DESCRIPTION
-.Nm Kvm_mkdb
+.Nm kvm_mkdb
 creates a database in
 .Pa /var/db
 containing information about the specified file.
 If no file is specified,
-.Pa /netbsd
+.Pa /bsd
 is used by default.
-The file is named ``kvm_filename.db'', where ``filename'' is the
-name of the file read.
+The file is named
+.Pa kvm_filename.db ,
+where
+.Ar filename
+is the name of the file read.
 Various library routines consult this database.
 The only information currently stored is the kernel namelist, which is
 used by the
 .Xr kvm_nlist 3
-function, however, in the future the database may contain other static
+function.
+However, in the future the database may contain other static
 information about the current system.
+.Pp
+The
+.Fl v
+option yields slightly more verbose operation.
 .Sh FILES
-.Bl -tag -width /var/db/kvm_netbsd.db -compact
-.It Pa /netbsd
-.It Pa /var/db/kvm_netbsd.db
+.Bl -tag -width /var/db/kvm_bsd.db -compact
+.It Pa /bsd
+.It Pa /var/db/kvm_bsd.db
 .El
 .Sh SEE ALSO
 .Xr kvm_nlist 3
 .Sh HISTORY
 The
 .Nm kvm_mkdb
-utility first appeared in 4.4BSD.
+utility first appeared in
+.Bx 4.4 .

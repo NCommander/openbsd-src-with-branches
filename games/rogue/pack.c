@@ -1,3 +1,4 @@
+/*	$OpenBSD: pack.c,v 1.5 2001/08/10 18:32:46 pjanzen Exp $	*/
 /*	$NetBSD: pack.c,v 1.3 1995/04/22 10:27:54 cgd Exp $	*/
 
 /*
@@ -60,16 +61,15 @@ static char rcsid[] = "$NetBSD: pack.c,v 1.3 1995/04/22 10:27:54 cgd Exp $";
 
 char *curse_message = "you can't, it appears to be cursed";
 
-extern short levitate;
-
 object *
 add_to_pack(obj, pack, condense)
-object *obj, *pack;
+	object *obj, *pack;
+	int condense;
 {
 	object *op;
 
 	if (condense) {
-		if (op = check_duplicate(obj, pack)) {
+		if ((op = check_duplicate(obj, pack))) {
 			free_object(obj);
 			return(op);
 		} else {
@@ -90,8 +90,9 @@ object *obj, *pack;
 	return(obj);
 }
 
+void
 take_from_pack(obj, pack)
-object *obj, *pack;
+	object *obj, *pack;
 {
 	while (pack->next_object != obj) {
 		pack = pack->next_object;
@@ -105,7 +106,7 @@ object *obj, *pack;
 
 object *
 pick_up(row, col, status)
-short *status;
+	short row, col, *status;
 {
 	object *obj;
 
@@ -150,6 +151,7 @@ short *status;
 	return(obj);
 }
 
+void
 drop()
 {
 	object *obj, *new;
@@ -214,7 +216,7 @@ drop()
 
 object *
 check_duplicate(obj, pack)
-object *obj, *pack;
+	object *obj, *pack;
 {
 	object *op;
 
@@ -246,10 +248,11 @@ object *obj, *pack;
 	return(0);
 }
 
+short
 next_avail_ichar()
 {
-	register object *obj;
-	register i;
+	object *obj;
+	int i;
 	boolean ichars[26];
 
 	for (i = 0; i < 26; i++) {
@@ -268,14 +271,16 @@ next_avail_ichar()
 	return('?');
 }
 
+void
 wait_for_ack()
 {
 	while (rgetchar() != ' ') ;
 }
 
+short
 pack_letter(prompt, mask)
-char *prompt;
-unsigned short mask;
+	char *prompt;
+	unsigned short mask;
 {
 	short ch;
 	unsigned short tmask = mask;
@@ -310,6 +315,7 @@ unsigned short mask;
 	return(ch);
 }
 
+void
 take_off()
 {
 	char desc[DCOLS];
@@ -333,14 +339,15 @@ take_off()
 	}
 }
 
+void
 wear()
 {
 	short ch;
-	register object *obj;
+	object *obj;
 	char desc[DCOLS];
 
 	if (rogue.armor) {
-		message("your already wearing some", 0);
+		message("you're already wearing some", 0);
 		return;
 	}
 	ch = pack_letter("wear what?", ARMOR);
@@ -365,8 +372,9 @@ wear()
 	(void) reg_move();
 }
 
+void
 unwear(obj)
-object *obj;
+	object *obj;
 {
 	if (obj) {
 		obj->in_use_flags &= (~BEING_WORN);
@@ -374,18 +382,20 @@ object *obj;
 	rogue.armor = (object *) 0;
 }
 
+void
 do_wear(obj)
-object *obj;
+	object *obj;
 {
 	rogue.armor = obj;
 	obj->in_use_flags |= BEING_WORN;
 	obj->identified = 1;
 }
 
+void
 wield()
 {
 	short ch;
-	register object *obj;
+	object *obj;
 	char desc[DCOLS];
 
 	if (rogue.weapon && rogue.weapon->is_cursed) {
@@ -419,15 +429,17 @@ wield()
 	}
 }
 
+void
 do_wield(obj)
-object *obj;
+	object *obj;
 {
 	rogue.weapon = obj;
 	obj->in_use_flags |= BEING_WIELDED;
 }
 
+void
 unwield(obj)
-object *obj;
+	object *obj;
 {
 	if (obj) {
 		obj->in_use_flags &= (~BEING_WIELDED);
@@ -435,10 +447,11 @@ object *obj;
 	rogue.weapon = (object *) 0;
 }
 
+void
 call_it()
 {
 	short ch;
-	register object *obj;
+	object *obj;
 	struct id *id_table;
 	char buf[MAX_TITLE_LENGTH+2];
 
@@ -457,14 +470,16 @@ call_it()
 	}
 	id_table = get_id_table(obj);
 
-	if (get_input_line("call it:","",buf,id_table[obj->which_kind].title,1,1)) {
+	if (get_input_line("call it:", "", buf, sizeof(buf),
+	    id_table[obj->which_kind].title, 1, 1)) {
 		id_table[obj->which_kind].id_status = CALLED;
 		(void) strcpy(id_table[obj->which_kind].title, buf);
 	}
 }
 
+short
 pack_count(new_obj)
-object *new_obj;
+	object *new_obj;
 {
 	object *obj;
 	short count = 0;
@@ -492,8 +507,8 @@ object *new_obj;
 
 boolean
 mask_pack(pack, mask)
-object *pack;
-unsigned short mask;
+	object *pack;
+	unsigned short mask;
 {
 	while (pack->next_object) {
 		pack = pack->next_object;
@@ -504,9 +519,10 @@ unsigned short mask;
 	return(0);
 }
 
+boolean
 is_pack_letter(c, mask)
-short *c;
-unsigned short *mask;
+	short *c;
+	unsigned short *mask;
 {
 	if (((*c == '?') || (*c == '!') || (*c == ':') || (*c == '=') ||
 		(*c == ')') || (*c == ']') || (*c == '/') || (*c == ','))) {
@@ -542,11 +558,13 @@ unsigned short *mask;
 	return(((*c >= 'a') && (*c <= 'z')) || (*c == CANCEL) || (*c == LIST));
 }
 
+boolean
 has_amulet()
 {
 	return(mask_pack(&rogue.pack, AMULET));
 }
 
+void
 kick_into_pack()
 {
 	object *obj;
@@ -556,7 +574,7 @@ kick_into_pack()
 	if (!(dungeon[rogue.row][rogue.col] & OBJECT)) {
 		message("nothing here", 0);
 	} else {
-		if (obj = pick_up(rogue.row, rogue.col, &stat)) {
+		if ((obj = pick_up(rogue.row, rogue.col, &stat))) {
 			get_desc(obj, desc);
 			if (obj->what_is == GOLD) {
 				message(desc, 0);

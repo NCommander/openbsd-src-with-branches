@@ -1,0 +1,15 @@
+#	$OpenBSD: Makefile.inc,v 1.3 1997/05/18 13:17:06 niklas Exp $
+
+IMAGESIZE=		4352
+GZIP?=			gzip
+GZIPFLAGS?=		-9v
+GZIPEXT?=		.gz
+MAKEFLOPPY=		1
+RAWLABEL=
+#STRIP=			echo
+#NEWFS_WILL_FAIL=	true
+#NEWFSOPTS_RD= -t ffs -m 0 -o space -f 1024 -i 16384 -c 4 -s 8192
+HOSTCCFLAGS=		-DDEBUG -O0
+#HOSTCCFLAGS=		-DBROKEN_NMAGIC -DDEBUG
+BOOT=			${DESTDIR}/boot
+BOOTXX=			${DESTDIR}/usr/mdec/sdboot

@@ -58,14 +58,11 @@
 
 #include <stdio.h>
 #include "cryptlib.h"
-#include "buffer.h"
-#include "asn1_mac.h"
+#include <openssl/buffer.h>
+#include <openssl/asn1_mac.h>
 
 #ifndef NO_FP_API
-int ASN1_i2d_fp(i2d,out,x)
-int (*i2d)();
-FILE *out;
-unsigned char *x;
+int ASN1_i2d_fp(int (*i2d)(), FILE *out, unsigned char *x)
         {
         BIO *b;
         int ret;
@@ -82,17 +79,14 @@ unsigned char *x;
         }
 #endif
 
-int ASN1_i2d_bio(i2d,out,x)
-int (*i2d)();
-BIO *out;
-unsigned char *x;
+int ASN1_i2d_bio(int (*i2d)(), BIO *out, unsigned char *x)
 	{
 	char *b;
 	unsigned char *p;
 	int i,j=0,n,ret=1;
 
 	n=i2d(x,NULL);
-	b=(char *)Malloc(n);
+	b=(char *)OPENSSL_malloc(n);
 	if (b == NULL)
 		{
 		ASN1err(ASN1_F_ASN1_I2D_BIO,ERR_R_MALLOC_FAILURE);
@@ -114,6 +108,6 @@ unsigned char *x;
 		j+=i;
 		n-=i;
 		}
-	Free((char *)b);
+	OPENSSL_free(b);
 	return(ret);
 	}

@@ -1,4 +1,5 @@
-/*	$NetBSD: tipout.c,v 1.3 1994/12/08 09:31:12 jtc Exp $	*/
+/*	$OpenBSD: tipout.c,v 1.6 1997/09/01 23:24:27 deraadt Exp $	*/
+/*	$NetBSD: tipout.c,v 1.5 1996/12/29 10:34:12 cgd Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)tipout.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: tipout.c,v 1.3 1994/12/08 09:31:12 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tipout.c,v 1.6 1997/09/01 23:24:27 deraadt Exp $";
 #endif /* not lint */
 
 #include "tip.h"
@@ -75,7 +76,7 @@ intEMT()
 	char reply;
 
 	read(fildes[0], &c, 1);
-	while (c != '\n') {
+	while (c != '\n' && pline - line < sizeof(line)) {
 		*pline++ = c;
 		read(fildes[0], &c, 1);
 	}
@@ -83,14 +84,14 @@ intEMT()
 	if (boolean(value(SCRIPT)) && fscript != NULL)
 		fclose(fscript);
 	if (pline == line) {
-		boolean(value(SCRIPT)) = FALSE;
+		setboolean(value(SCRIPT), FALSE);
 		reply = 'y';
 	} else {
 		if ((fscript = fopen(line, "a")) == NULL)
 			reply = 'n';
 		else {
 			reply = 'y';
-			boolean(value(SCRIPT)) = TRUE;
+			setboolean(value(SCRIPT), TRUE);
 		}
 	}
 	write(repdes[1], &reply, 1);
@@ -110,20 +111,21 @@ void
 intSYS()
 {
 
-	boolean(value(BEAUTIFY)) = !boolean(value(BEAUTIFY));
+	setboolean(value(BEAUTIFY), !boolean(value(BEAUTIFY)));
 	longjmp(sigbuf, 1);
 }
 
 /*
  * ****TIPOUT   TIPOUT****
  */
+void
 tipout()
 {
 	char buf[BUFSIZ];
 	register char *cp;
 	register int cnt;
 	extern int errno;
-	int omask;
+	sigset_t mask, omask;
 
 	signal(SIGINT, SIG_IGN);
 	signal(SIGQUIT, SIG_IGN);
@@ -133,21 +135,29 @@ tipout()
 	signal(SIGHUP, intTERM);	/* for dial-ups */
 	signal(SIGSYS, intSYS);		/* beautify toggle */
 	(void) setjmp(sigbuf);
-	for (omask = 0;; sigsetmask(omask)) {
+	sigprocmask(SIG_BLOCK, NULL, &omask);
+	for (;;) {
+		sigprocmask(SIG_SETMASK, &omask, NULL);
 		cnt = read(FD, buf, BUFSIZ);
 		if (cnt <= 0) {
 			/* lost carrier */
 			if (cnt < 0 && errno == EIO) {
-				sigblock(sigmask(SIGTERM));
+				sigemptyset(&mask);
+				sigaddset(&mask, SIGTERM);
+				sigprocmask(SIG_BLOCK, &mask, NULL);
 				intTERM();
 				/*NOTREACHED*/
 			}
 			continue;
 		}
-#define	ALLSIGS	sigmask(SIGEMT)|sigmask(SIGTERM)|sigmask(SIGIOT)|sigmask(SIGSYS)
-		omask = sigblock(ALLSIGS);
+		sigemptyset(&mask);
+		sigaddset(&mask, SIGEMT);
+		sigaddset(&mask, SIGTERM);
+		sigaddset(&mask, SIGIOT);
+		sigaddset(&mask, SIGSYS);
+		sigprocmask(SIG_BLOCK, &mask, NULL);
 		for (cp = buf; cp < buf + cnt; cp++)
-			*cp &= 0177;
+			*cp &= STRIP_PAR;
 		write(1, buf, cnt);
 		if (boolean(value(SCRIPT)) && fscript != NULL) {
 			if (!boolean(value(BEAUTIFY))) {

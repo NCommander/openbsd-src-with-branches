@@ -1,8 +1,9 @@
+#	$OpenBSD: Makefile,v 1.6 2001/08/01 21:46:09 markus Exp $
 #	$NetBSD: Makefile,v 1.5 1995/04/20 22:37:12 cgd Exp $
 
-# missing: bin libexec sbin usr.bin usr.sbin share games gnu
+# missing: libexec bin usr.sbin share games gnu
 
-SUBDIR+= include lib sys
+SUBDIR+= etc bin include lib sbin sys share usr.bin
 
 regress: _SUBDIRUSE
 

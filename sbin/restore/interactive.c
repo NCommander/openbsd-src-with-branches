@@ -1,4 +1,5 @@
-/*	$NetBSD: interactive.c,v 1.9 1995/03/18 14:59:44 cgd Exp $	*/
+/*	$OpenBSD: interactive.c,v 1.11 2001/01/19 17:57:41 deraadt Exp $	*/
+/*	$NetBSD: interactive.c,v 1.10 1997/03/19 08:42:52 lukem Exp $	*/
 
 /*
  * Copyright (c) 1985, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)interactive.c	8.3 (Berkeley) 9/13/94";
 #else
-static char rcsid[] = "$NetBSD: interactive.c,v 1.9 1995/03/18 14:59:44 cgd Exp $";
+static char rcsid[] = "$OpenBSD: interactive.c,v 1.11 2001/01/19 17:57:41 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -53,6 +54,7 @@ static char rcsid[] = "$NetBSD: interactive.c,v 1.9 1995/03/18 14:59:44 cgd Exp 
 #include <setjmp.h>
 #include <glob.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -155,7 +157,7 @@ loop:
 			fprintf(stderr, "%s: not a directory\n", name);
 			break;
 		}
-		(void) strcpy(curdir, name);
+		(void)strlcpy(curdir, name, sizeof curdir);
 		break;
 	/*
 	 * Delete elements from the extraction list.
@@ -314,6 +316,7 @@ getcmd(curdir, cmd, name, ap)
 	static char input[BUFSIZ];
 	char output[BUFSIZ];
 #	define rawname input	/* save space by reusing input buffer */
+	int globretval;
 
 	/*
 	 * Check to see if still processing arguments.
@@ -325,13 +328,13 @@ getcmd(curdir, cmd, name, ap)
 	/*
 	 * Read a command line and trim off trailing white space.
 	 */
-	do	{
-		fprintf(stderr, "restore > ");
-		(void) fflush(stderr);
-		(void) fgets(input, BUFSIZ, terminal);
+	do {
+		(void)fprintf(stderr, "%s > ", __progname);
+		(void)fflush(stderr);
+		(void)fgets(input, BUFSIZ, terminal);
 	} while (!feof(terminal) && input[0] == '\n');
 	if (feof(terminal)) {
-		(void) strcpy(cmd, "quit");
+		(void)strcpy(cmd, "quit");
 		return;
 	}
 	for (cp = &input[strlen(input) - 2]; *cp == ' ' || *cp == '\t'; cp--)
@@ -346,7 +349,7 @@ getcmd(curdir, cmd, name, ap)
 	 * If no argument, use curdir as the default.
 	 */
 	if (*cp == '\0') {
-		(void) strcpy(name, curdir);
+		(void)strlcpy(name, curdir, MAXPATHLEN);
 		return;
 	}
 	nextarg = cp;
@@ -369,20 +372,36 @@ getnext:
 		 * For relative pathnames, prepend the current directory to
 		 * it then canonicalize and return it.
 		 */
-		(void) strcpy(output, curdir);
-		(void) strcat(output, "/");
-		(void) strcat(output, rawname);
+		snprintf(output, sizeof(output), "%s/%s", curdir, rawname);
 		canon(output, name);
 	}
-	if (glob(name, GLOB_ALTDIRFUNC, NULL, &ap->glob) < 0)
-		fprintf(stderr, "%s: out of memory\n", ap->cmd);
+	if ((globretval = glob(name, GLOB_ALTDIRFUNC | GLOB_NOESCAPE,
+	    NULL, &ap->glob)) < 0) {
+		fprintf(stderr, "%s: %s: ", ap->cmd, name);
+		switch (globretval) {
+		case GLOB_NOSPACE:
+			fprintf(stderr, "out of memory\n");
+			break;
+		case GLOB_NOMATCH:
+			fprintf(stderr, "no filename match.\n");
+			break;
+		case GLOB_ABORTED:
+			fprintf(stderr, "glob() aborted.\n");
+			break;
+		default:
+			fprintf(stderr, "unknown error!\n");
+			break;
+		}
+	}
+
 	if (ap->glob.gl_pathc == 0)
 		return;
 	ap->freeglob = 1;
 	ap->argcnt = ap->glob.gl_pathc;
 
 retnext:
-	strcpy(name, ap->glob.gl_pathv[ap->glob.gl_pathc - ap->argcnt]);
+	strlcpy(name, ap->glob.gl_pathv[ap->glob.gl_pathc - ap->argcnt],
+	    MAXPATHLEN);
 	if (--ap->argcnt == 0) {
 		ap->freeglob = 0;
 		globfree(&ap->glob);
@@ -428,7 +447,7 @@ copynext(input, output)
 		 */
 		quote = *cp++;
 		while (*cp != quote && *cp != '\0')
-			*bp++ = *cp++ | 0200;
+			*bp++ = *cp++;
 		if (*cp++ == '\0') {
 			fprintf(stderr, "missing %c\n", quote);
 			cp--;
@@ -450,12 +469,12 @@ canon(rawname, canonname)
 	register char *cp, *np;
 
 	if (strcmp(rawname, ".") == 0 || strncmp(rawname, "./", 2) == 0)
-		(void) strcpy(canonname, "");
+		(void)strcpy(canonname, "");
 	else if (rawname[0] == '/')
-		(void) strcpy(canonname, ".");
+		(void)strcpy(canonname, ".");
 	else
-		(void) strcpy(canonname, "./");
-	(void) strcat(canonname, rawname);
+		(void)strcpy(canonname, "./");
+	(void)strlcat(canonname, rawname, MAXPATHLEN);
 	/*
 	 * Eliminate multiple and trailing '/'s
 	 */
@@ -477,14 +496,14 @@ canon(rawname, canonname)
 			np++;
 		if (np - cp == 1 && *cp == '.') {
 			cp--;
-			(void) strcpy(cp, np);
+			(void)strcpy(cp, np);
 			np = cp;
 		}
 		if (np - cp == 2 && strncmp(cp, "..", 2) == 0) {
 			cp--;
 			while (cp > &canonname[1] && *--cp != '/')
 				/* find beginning of name */;
-			(void) strcpy(cp, np);
+			(void)strcpy(cp, np);
 			np = cp;
 		}
 	}
@@ -498,12 +517,12 @@ printlist(name, basename)
 	char *name;
 	char *basename;
 {
-	register struct afile *fp, *list, *listp;
+	register struct afile *fp, *list, *listp = NULL;
 	register struct direct *dp;
 	struct afile single;
 	RST_DIR *dirp;
 	int entries, len, namelen;
-	char locname[MAXPATHLEN + 1];
+	char locname[MAXPATHLEN];
 
 	dp = pathsearch(name);
 	if (dp == NULL || (!dflag && TSTINO(dp->d_ino, dumpmap) == 0) ||
@@ -521,7 +540,7 @@ printlist(name, basename)
 		}
 	} else {
 		entries = 0;
-		while (dp = rst_readdir(dirp))
+		while ((dp = rst_readdir(dirp)))
 			entries++;
 		rst_closedir(dirp);
 		list = (struct afile *)malloc(entries * sizeof(struct afile));
@@ -534,10 +553,10 @@ printlist(name, basename)
 		fprintf(stderr, "%s:\n", name);
 		entries = 0;
 		listp = list;
-		(void) strncpy(locname, name, MAXPATHLEN);
-		(void) strncat(locname, "/", MAXPATHLEN);
-		namelen = strlen(locname);
-		while (dp = rst_readdir(dirp)) {
+		namelen = snprintf(locname, sizeof(locname), "%s/", name);
+		if (namelen >= sizeof(locname))
+			namelen = sizeof(locname) - 1;
+		while ((dp = rst_readdir(dirp))) {
 			if (dp == NULL)
 				break;
 			if (!dflag && TSTINO(dp->d_ino, dumpmap) == 0)
@@ -551,7 +570,7 @@ printlist(name, basename)
 				fprintf(stderr, "%s%s: name exceeds %d char\n",
 					locname, dp->d_name, MAXPATHLEN);
 			} else {
-				(void) strncat(locname, dp->d_name,
+				(void)strncat(locname, dp->d_name,
 				    (int)dp->d_namlen);
 				mkentry(locname, dp, listp++);
 				entries++;
@@ -647,7 +666,7 @@ formatf(list, nentry)
 {
 	register struct afile *fp, *endlist;
 	int width, bigino, haveprefix, havepostfix;
-	int i, j, w, precision, columns, lines;
+	int i, j, w, precision = 0, columns, lines;
 
 	width = 0;
 	haveprefix = 0;
@@ -773,8 +792,11 @@ void
 onintr(signo)
 	int signo;
 {
+	int save_errno = errno;
+
 	if (command == 'i' && runshell)
-		longjmp(reset, 1);
-	if (reply("restore interrupted, continue") == FAIL)
-		exit(1);
+		longjmp(reset, 1);	/* XXX signal/longjmp reentrancy */
+	if (reply("restore interrupted, continue") == FAIL)	/* XXX signal race */
+		_exit(1);
+	errno = save_errno;
 }

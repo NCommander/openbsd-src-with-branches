@@ -1,4 +1,5 @@
-/*	$NetBSD: cons.h,v 1.11 1995/04/24 21:34:04 gwr Exp $	*/
+/*	$OpenBSD: cons.h,v 1.7 2001/03/01 20:54:33 provos Exp $	*/
+/*	$NetBSD: cons.h,v 1.14 1996/03/14 19:08:35 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -53,6 +54,8 @@ struct consdev {
 		    __P((dev_t, int));
 	void	(*cn_pollc)	/* turn on and off polling */
 		    __P((dev_t, int));
+	void	(*cn_bell)	/* ring bell */
+		    __P((dev_t, u_int, u_int, u_int));
 	dev_t	cn_dev;		/* major/minor of device */
 	int	cn_pri;		/* pecking order; the higher the better */
 };
@@ -71,15 +74,23 @@ struct consdev {
 extern	struct consdev constab[];
 extern	struct consdev *cn_tab;
 
+struct knote;
+
 void	cninit __P((void));
+int	cnset __P((dev_t));
 int	cnopen __P((dev_t, int, int, struct proc *));
 int	cnclose __P((dev_t, int, int, struct proc *));
 int	cnread __P((dev_t, struct uio *, int));
 int	cnwrite __P((dev_t, struct uio *, int));
 int	cnioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
 int	cnselect __P((dev_t, int, struct proc *));
+int	cnkqfilter __P((dev_t, struct knote *));
 int	cngetc __P((void));
-int	cnputc __P((int));
+void	cnputc __P((int));
+void	cnpollc __P((int));
+void	cnbell __P((u_int, u_int, u_int));
+void	cnrint __P((void));
+void	nullcnpollc __P((dev_t, int));
 
 /* console-specific types */
 #define	dev_type_cnprobe(n)	void n __P((struct consdev *))
@@ -87,13 +98,18 @@ int	cnputc __P((int));
 #define	dev_type_cngetc(n)	int n __P((dev_t))
 #define	dev_type_cnputc(n)	void n __P((dev_t, int))
 #define	dev_type_cnpollc(n)	void n __P((dev_t, int))
+#define	dev_type_cnbell(n)	void n __P((dev_t, u_int, u_int, u_int))
 
 #define	cons_decl(n) \
 	dev_decl(n,cnprobe); dev_decl(n,cninit); dev_decl(n,cngetc); \
-	dev_decl(n,cnputc); dev_decl(n,cnpollc)
+	dev_decl(n,cnputc); dev_decl(n,cnpollc); dev_decl(n,cnbell);
 
 #define	cons_init(n) { \
 	dev_init(1,n,cnprobe), dev_init(1,n,cninit), dev_init(1,n,cngetc), \
 	dev_init(1,n,cnputc), dev_init(1,n,cnpollc) }
+
+#define cons_init_bell(n) { \
+	dev_init(1,n,cnprobe), dev_init(1,n,cninit), dev_init(1,n,cngetc), \
+	dev_init(1,n,cnputc), dev_init(1,n,cnpollc), dev_init(1,n,cnbell) }
 
 #endif

@@ -1,5 +1,49 @@
+/*	$OpenBSD: reader.c,v 1.7 2001/07/12 05:17:33 deraadt Exp $	*/
+
+/*	$NetBSD: reader.c,v 1.5 1996/03/19 03:21:43 jtc Exp $	*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed by the University of
+ *	California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #ifndef lint
-static char rcsid[] = "$Id: reader.c,v 1.3 1993/08/02 17:56:49 mycroft Exp $";
+#if 0
+static char sccsid[] = "@(#)reader.c	5.7 (Berkeley) 1/20/91";
+#else
+static char rcsid[] = "$NetBSD: reader.c,v 1.5 1996/03/19 03:21:43 jtc Exp $";
+#endif
 #endif /* not lint */
 
 #include "defs.h"
@@ -35,9 +79,47 @@ bucket **plhs;
 int name_pool_size;
 char *name_pool;
 
+void cachec __P((int));
+void get_line __P((void));
+char * dup_line __P((void));
+void skip_comment __P((void));
+int nextc __P((void));
+int keyword __P((void));
+void copy_ident __P((void));
+void copy_text __P((void));
+void copy_union __P((void));
+int hexval __P((int)); 
+bucket * get_literal __P((void));
+int is_reserved __P((char *));
+bucket * get_name __P((void));
+int get_number __P((void));
+char * get_tag __P((void));
+void declare_tokens __P((int));
+void declare_types __P((void));
+void declare_start __P((void));
+void handle_expect __P((void));
+void read_declarations __P((void));
+void initialize_grammar __P((void));
+void expand_items __P((void));
+void expand_rules __P((void));
+void advance_to_start __P((void));
+void start_rule __P((bucket *, int));
+void end_rule __P((void));
+void insert_empty_rule __P((void));
+void add_symbol __P((void));
+void copy_action __P((void));
+int mark_symbol __P((void));
+void read_grammar __P((void));
+void free_tags __P((void));
+void pack_names __P((void));
+void check_symbols __P((void));
+void pack_symbols __P((void));
+void pack_grammar __P((void));
+void print_grammar __P((void));
+
 char line_format[] = "#line %d \"%s\"\n";
 
-
+void
 cachec(c)
 int c;
 {
@@ -53,6 +135,7 @@ int c;
 }
 
 
+void
 get_line()
 {
     register FILE *f = input_file;
@@ -117,6 +200,7 @@ dup_line()
 }
 
 
+void
 skip_comment()
 {
     register char *s;
@@ -250,6 +334,8 @@ keyword()
 	    return (UNION);
 	if (strcmp(cache, "ident") == 0)
 	    return (IDENT);
+	if (strcmp(cache, "expect") == 0)
+	    return (EXPECT);
     }
     else
     {
@@ -269,9 +355,11 @@ keyword()
     }
     syntax_error(lineno, line, t_cptr);
     /*NOTREACHED*/
+    return (0);
 }
 
 
+void
 copy_ident()
 {
     register int c;
@@ -301,6 +389,7 @@ copy_ident()
 }
 
 
+void
 copy_text()
 {
     register int c;
@@ -432,6 +521,7 @@ loop:
 }
 
 
+void
 copy_union()
 {
     register int c;
@@ -801,6 +891,7 @@ get_tag()
     if (c == EOF) unexpected_EOF();
     if (c != '>')
 	illegal_tag(t_lineno, t_line, t_cptr);
+    FREE(t_line);
     ++cptr;
 
     for (i = 0; i < ntags; ++i)
@@ -823,11 +914,11 @@ get_tag()
     strcpy(s, cache);
     tag_table[ntags] = s;
     ++ntags;
-    FREE(t_line);
     return (s);
 }
 
 
+void
 declare_tokens(assoc)
 int assoc;
 {
@@ -890,6 +981,52 @@ int assoc;
 }
 
 
+/*
+ * %expect requires special handling
+ * as it really isn't part of the yacc
+ * grammar only a flag for yacc proper.
+ */
+void
+declare_expect(assoc)
+int assoc;
+{
+    register int c;
+
+    if (assoc != EXPECT) ++prec;
+
+    /*
+     * Stay away from nextc - doesn't
+     * detect EOL and will read to EOF.
+     */
+    c = *++cptr;
+    if (c == EOF) unexpected_EOF();
+
+    for(;;)
+    {
+        if (isdigit(c))
+        {
+	    SRexpect = get_number();
+            break;
+        }
+        /*
+         * Looking for number before EOL.
+         * Spaces, tabs, and numbers are ok,
+         * words, punc., etc. are syntax errors.
+         */
+        else if (c == '\n' || isalpha(c) || !isspace(c))
+        {
+            syntax_error(lineno, line, cptr);
+        }
+        else
+        {
+            c = *++cptr;
+            if (c == EOF) unexpected_EOF();
+        }
+    }
+}
+
+
+void
 declare_types()
 {
     register int c;
@@ -918,6 +1055,7 @@ declare_types()
 }
 
 
+void
 declare_start()
 {
     register int c;
@@ -936,6 +1074,7 @@ declare_start()
 }
 
 
+void
 read_declarations()
 {
     register int c, k;
@@ -973,6 +1112,10 @@ read_declarations()
 	    declare_tokens(k);
 	    break;
 
+	case EXPECT:
+	    declare_expect(k);
+            break;
+
 	case TYPE:
 	    declare_types();
 	    break;
@@ -985,6 +1128,7 @@ read_declarations()
 }
 
 
+void
 initialize_grammar()
 {
     nitems = 4;
@@ -1016,6 +1160,7 @@ initialize_grammar()
 }
 
 
+void
 expand_items()
 {
     maxitems += 300;
@@ -1024,6 +1169,7 @@ expand_items()
 }
 
 
+void
 expand_rules()
 {
     maxrules += 100;
@@ -1036,6 +1182,7 @@ expand_rules()
 }
 
 
+void
 advance_to_start()
 {
     register int c;
@@ -1086,6 +1233,7 @@ advance_to_start()
 }
 
 
+void
 start_rule(bp, s_lineno)
 register bucket *bp;
 int s_lineno;
@@ -1101,6 +1249,7 @@ int s_lineno;
 }
 
 
+void
 end_rule()
 {
     register int i;
@@ -1120,6 +1269,7 @@ end_rule()
 }
 
 
+void
 insert_empty_rule()
 {
     register bucket *bp, **bpp;
@@ -1136,7 +1286,7 @@ insert_empty_rule()
 	expand_items();
     bpp = pitem + nitems - 1;
     *bpp-- = bp;
-    while (bpp[0] = bpp[-1]) --bpp;
+    while ((bpp[0] = bpp[-1])) --bpp;
 
     if (++nrules >= maxrules)
 	expand_rules();
@@ -1149,6 +1299,7 @@ insert_empty_rule()
 }
 
 
+void
 add_symbol()
 {
     register int c;
@@ -1180,6 +1331,7 @@ add_symbol()
 }
 
 
+void
 copy_action()
 {
     register int c;
@@ -1309,6 +1461,7 @@ loop:
     case ';':
 	if (depth > 0) goto loop;
 	fprintf(f, "\nbreak;\n");
+	FREE(a_line);
 	return;
 
     case '{':
@@ -1318,6 +1471,7 @@ loop:
     case '}':
 	if (--depth > 0) goto loop;
 	fprintf(f, "\nbreak;\n");
+	FREE(a_line);
 	return;
 
     case '\'':
@@ -1447,6 +1601,7 @@ mark_symbol()
 }
 
 
+void
 read_grammar()
 {
     register int c;
@@ -1480,6 +1635,7 @@ read_grammar()
 }
 
 
+void
 free_tags()
 {
     register int i;
@@ -1495,6 +1651,7 @@ free_tags()
 }
 
 
+void
 pack_names()
 {
     register bucket *bp;
@@ -1513,13 +1670,14 @@ pack_names()
     {
 	p = t;
 	s = bp->name;
-	while (*t++ = *s++) continue;
+	while ((*t++ = *s++)) continue;
 	FREE(bp->name);
 	bp->name = p;
     }
 }
 
 
+void
 check_symbols()
 {
     register bucket *bp;
@@ -1538,6 +1696,7 @@ check_symbols()
 }
 
 
+void
 pack_symbols()
 {
     register bucket *bp;
@@ -1662,6 +1821,7 @@ pack_symbols()
 }
 
 
+void
 pack_grammar()
 {
     register int i, j;
@@ -1721,6 +1881,7 @@ pack_grammar()
 }
 
 
+void
 print_grammar()
 {
     register int i, j, k;
@@ -1757,6 +1918,7 @@ print_grammar()
 }
 
 
+void
 reader()
 {
     write_section(banner);

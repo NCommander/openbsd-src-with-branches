@@ -1,58 +1,59 @@
 /* ====================================================================
- * Copyright (c) 1996-1998 The Apache Group.  All rights reserved.
+ * The Apache Software License, Version 1.1
+ *
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. All advertising materials mentioning features or use of this
- *    software must display the following acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Apache Server" and "Apache Group" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. For written permission, please contact
- *    apache@apache.org.
+ * 4. The names "Apache" and "Apache Software Foundation" must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
  *
- * 5. Products derived from this software may not be called "Apache"
- *    nor may "Apache" appear in their names without prior written
- *    permission of the Apache Group.
+ * 5. Products derived from this software may not be called "Apache",
+ *    nor may "Apache" appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
  *
- * 6. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by the Apache Group
- *    for use in the Apache HTTP server project (http://www.apache.org/)."
- *
- * THIS SOFTWARE IS PROVIDED BY THE APACHE GROUP ``AS IS'' AND ANY
- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE APACHE GROUP OR
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
  * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  * ====================================================================
  *
  * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Group and was originally based
- * on public domain software written at the National Center for
- * Supercomputing Applications, University of Illinois, Urbana-Champaign.
- * For more information on the Apache Group and the Apache HTTP server
- * project, please see <http://www.apache.org/>.
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
  *
+ * Portions of this software are based upon public domain software
+ * originally written at the National Center for Supercomputing Applications,
+ * University of Illinois, Urbana-Champaign.
  */
 
 /* FTP routines for Apache proxy */
@@ -60,6 +61,7 @@
 #include "mod_proxy.h"
 #include "http_main.h"
 #include "http_log.h"
+#include "http_core.h"
 
 #define AUTODETECT_PWD
 
@@ -77,7 +79,7 @@ static int decodeenc(char *x)
     for (i = 0, j = 0; x[i] != '\0'; i++, j++) {
 /* decode it if not already done */
 	ch = x[i];
-	if (ch == '%' && isxdigit(x[i + 1]) && isxdigit(x[i + 2])) {
+	if (ch == '%' && ap_isxdigit(x[i + 1]) && ap_isxdigit(x[i + 2])) {
 	    ch = ap_proxy_hex2c(&x[i + 1]);
 	    i += 2;
 	}
@@ -97,15 +99,11 @@ static int ftp_check_string(const char *x)
 
     for (i = 0; x[i] != '\0'; i++) {
 	ch = x[i];
-	if (ch == '%' && isxdigit(x[i + 1]) && isxdigit(x[i + 2])) {
+	if (ch == '%' && ap_isxdigit(x[i + 1]) && ap_isxdigit(x[i + 2])) {
 	    ch = ap_proxy_hex2c(&x[i + 1]);
 	    i += 2;
 	}
-#ifndef CHARSET_EBCDIC
-	if (ch == '\015' || ch == '\012' || (ch & 0x80))
-#else /*CHARSET_EBCDIC*/
-	if (ch == '\r' || ch == '\n' || (os_toascii[ch] & 0x80))
-#endif /*CHARSET_EBCDIC*/
+	if (ch == CR || ch == LF || (OS_ASC(ch) & 0x80))
 	    return 0;
     }
     return 1;
@@ -139,7 +137,8 @@ int ap_proxy_ftp_canon(request_rec *r, char *url)
     strp = strchr(url, ';');
     if (strp != NULL) {
 	*(strp++) = '\0';
-	parms = ap_proxy_canonenc(p, strp, strlen(strp), enc_parm, r->proxyreq);
+	parms = ap_proxy_canonenc(p, strp, strlen(strp), enc_parm,
+				  r->proxyreq);
 	if (parms == NULL)
 	    return HTTP_BAD_REQUEST;
     }
@@ -152,15 +151,15 @@ int ap_proxy_ftp_canon(request_rec *r, char *url)
     if (!ftp_check_string(path))
 	return HTTP_BAD_REQUEST;
 
-    if (!r->proxyreq && r->args != NULL) {
+    if (r->proxyreq == NOT_PROXY && r->args != NULL) {
 	if (strp != NULL) {
-	    strp = ap_proxy_canonenc(p, r->args, strlen(r->args), enc_parm, 1);
+	    strp = ap_proxy_canonenc(p, r->args, strlen(r->args), enc_parm, STD_PROXY);
 	    if (strp == NULL)
 		return HTTP_BAD_REQUEST;
 	    parms = ap_pstrcat(p, parms, "?", strp, NULL);
 	}
 	else {
-	    strp = ap_proxy_canonenc(p, r->args, strlen(r->args), enc_fpath, 1);
+	    strp = ap_proxy_canonenc(p, r->args, strlen(r->args), enc_fpath, STD_PROXY);
 	    if (strp == NULL)
 		return HTTP_BAD_REQUEST;
 	    path = ap_pstrcat(p, path, "?", strp, NULL);
@@ -290,7 +289,7 @@ static long int send_dir(BUFF *f, request_rec *r, cache_req *c, char *cwd)
 	path[n-1] = '\0';
 
     /* print "ftp://host/" */
-    n = ap_snprintf(buf, sizeof(buf), "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n"
+    n = ap_snprintf(buf, sizeof(buf), DOCTYPE_HTML_3_2
 		"<HTML><HEAD><TITLE>%s%s</TITLE>\n"
 		"<BASE HREF=\"%s%s\"></HEAD>\n"
 		"<BODY><H2>Directory of "
@@ -322,8 +321,11 @@ static long int send_dir(BUFF *f, request_rec *r, cache_req *c, char *cwd)
     while (!con->aborted) {
 	n = ap_bgets(buf, sizeof buf, f);
 	if (n == -1) {		/* input error */
-	    if (c != NULL)
+	    if (c != NULL) {
+		ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+		    "proxy: error reading from %s", c->url);
 		c = ap_proxy_cache_error(c);
+	    }
 	    break;
 	}
 	if (n == 0)
@@ -382,8 +384,11 @@ static long int send_dir(BUFF *f, request_rec *r, cache_req *c, char *cwd)
 	o = 0;
 	total_bytes_sent += n;
 
-	if (c != NULL && c->fp && ap_bwrite(c->fp, buf, n) != n)
+	if (c != NULL && c->fp && ap_bwrite(c->fp, buf, n) != n) {
+	    ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+		"proxy: error writing to %s", c->tempfile);
 	    c = ap_proxy_cache_error(c);
+	}
 
 	while (n && !r->connection->aborted) {
 	    w = ap_bwrite(con->client, &buf[o], n);
@@ -413,7 +418,7 @@ static long int send_dir(BUFF *f, request_rec *r, cache_req *c, char *cwd)
  */
 static int ftp_unauthorized (request_rec *r, int log_it)
 {
-    r->proxyreq = 0;
+    r->proxyreq = NOT_PROXY;
     /* Log failed requests if they supplied a password
      * (log username/password guessing attempts)
      */
@@ -503,7 +508,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
      */
     if ((password = ap_table_get(r->headers_in, "Authorization")) != NULL
 	&& strcasecmp(ap_getword(r->pool, &password, ' '), "Basic") == 0
-	&& (password = ap_uudecode(r->pool, password))[0] != ':') {
+	&& (password = ap_pbase64decode(r->pool, password))[0] != ':') {
 	/* Note that this allocation has to be made from r->connection->pool
 	 * because it has the lifetime of the connection.  The other allocations
 	 * are temporary and can be tossed away any time.
@@ -531,9 +536,11 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 /* check if ProxyBlock directive on this host */
     destaddr.s_addr = ap_inet_addr(host);
     for (i = 0; i < conf->noproxies->nelts; i++) {
-	if ((npent[i].name != NULL && strstr(host, npent[i].name) != NULL)
-	    || destaddr.s_addr == npent[i].addr.s_addr || npent[i].name[0] == '*')
-	    return ap_proxyerror(r, /*HTTP_FORBIDDEN*/ "Connect to remote machine blocked");
+        if (destaddr.s_addr == npent[i].addr.s_addr ||
+            (npent[i].name != NULL &&
+              (npent[i].name[0] == '*' || strstr(host, npent[i].name) != NULL)))
+            return ap_proxyerror(r, HTTP_FORBIDDEN,
+                                 "Connect to remote machine blocked");
     }
 
     Explain2("FTP: connect to %s:%d", host, port);
@@ -547,7 +554,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
     server.sin_port = htons(port);
     err = ap_proxy_host2addr(host, &server_hp);
     if (err != NULL)
-	return ap_proxyerror(r, err);	/* give up */
+	return ap_proxyerror(r, HTTP_INTERNAL_SERVER_ERROR, err);
 
     sock = ap_psocket(p, PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == -1) {
@@ -556,6 +563,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	return HTTP_INTERNAL_SERVER_ERROR;
     }
 
+#if !defined(TPF) && !defined(BEOS)
     if (conf->recv_buffer_size > 0
 	&& setsockopt(sock, SOL_SOCKET, SO_RCVBUF,
 		       (const char *) &conf->recv_buffer_size, sizeof(int))
@@ -563,6 +571,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	    ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
 			 "setsockopt(SO_RCVBUF): Failed to set ProxyReceiveBufferSize, using default");
     }
+#endif
 
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *) &one,
 		   sizeof(one)) == -1) {
@@ -598,7 +607,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 #endif
     if (i == -1) {
 	ap_pclosesocket(p, sock);
-	return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ ap_pstrcat(r->pool,
+	return ap_proxyerror(r, HTTP_BAD_GATEWAY, ap_pstrcat(r->pool,
 				"Could not connect to remote machine: ",
 				strerror(errno), NULL));
     }
@@ -620,7 +629,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
     Explain1("FTP: returned status %d", i);
     if (i == -1) {
 	ap_kill_timeout(r);
-	return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+			     "Error reading from remote server");
     }
 #if 0
     if (i == 120) {
@@ -636,12 +646,12 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	 *     Retry-After  = "Retry-After" ":" ( HTTP-date | delta-seconds )
 	 */
 	ap_set_header("Retry-After", ap_psprintf(p, "%u", 60*wait_mins);
-	return ap_proxyerror(r, /*HTTP_SERVICE_UNAVAILABLE*/ resp);
+	return ap_proxyerror(r, HTTP_SERVICE_UNAVAILABLE, resp);
     }
 #endif
     if (i != 220) {
 	ap_kill_timeout(r);
-	return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ resp);
+	return ap_proxyerror(r, HTTP_BAD_GATEWAY, resp);
     }
 
     Explain0("FTP: connected.");
@@ -664,7 +674,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
     Explain1("FTP: returned status %d", i);
     if (i == -1) {
 	ap_kill_timeout(r);
-	return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+			     "Error reading from remote server");
     }
     if (i == 530) {
 	ap_kill_timeout(r);
@@ -694,11 +705,13 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	Explain1("FTP: returned status %d", i);
 	if (i == -1) {
 	    ap_kill_timeout(r);
-	    return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	    return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+				 "Error reading from remote server");
 	}
 	if (i == 332) {
 	    ap_kill_timeout(r);
-	    return ap_proxyerror(r, /*HTTP_UNAUTHORIZED*/ "Need account for login");
+	    return ap_proxyerror(r, HTTP_UNAUTHORIZED,
+				 "Need account for login");
 	}
 	/* @@@ questionable -- we might as well return a 403 Forbidden here */
 	if (i == 530) {
@@ -738,7 +751,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	Explain1("FTP: returned status %d", i);
 	if (i == -1) {
 	    ap_kill_timeout(r);
-	    return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	    return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+				 "Error reading from remote server");
 	}
 	if (i == 550) {
 	    ap_kill_timeout(r);
@@ -765,7 +779,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 
     if (parms[0] != 'a') {
 	/* set type to image */
-	/* TM - Added \015\012 to the end of TYPE I, otherwise it hangs the
+	/* TM - Added CRLF to the end of TYPE I, otherwise it hangs the
 	   connection */
 	ap_bputs("TYPE I" CRLF, f);
 	ap_bflush(f);
@@ -781,7 +795,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	Explain1("FTP: returned status %d", i);
 	if (i == -1) {
 	    ap_kill_timeout(r);
-	    return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	    return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+				 "Error reading from remote server");
 	}
 	if (i != 200 && i != 504) {
 	    ap_kill_timeout(r);
@@ -802,6 +817,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	return HTTP_INTERNAL_SERVER_ERROR;
     }
 
+#if !defined (TPF) && !defined(BEOS)
     if (conf->recv_buffer_size) {
 	if (setsockopt(dsock, SOL_SOCKET, SO_RCVBUF,
 	       (const char *) &conf->recv_buffer_size, sizeof(int)) == -1) {
@@ -809,6 +825,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 			 "setsockopt(SO_RCVBUF): Failed to set ProxyReceiveBufferSize, using default");
 	}
     }
+#endif
 
     ap_bputs("PASV" CRLF, f);
     ap_bflush(f);
@@ -862,9 +879,10 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 
 	    if (i == -1) {
 		ap_kill_timeout(r);
-		return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ ap_pstrcat(r->pool,
-				"Could not connect to remote machine: ",
-				strerror(errno), NULL));
+		return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+				     ap_pstrcat(r->pool,
+						"Could not connect to remote machine: ",
+						strerror(errno), NULL));
 	    }
 	    else {
 		pasvmode = 1;
@@ -952,7 +970,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 		Explain1("FTP: returned status %d", i);
 		if (i == -1) {
 		    ap_kill_timeout(r);
-		    return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+		    return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+					 "Error reading from remote server");
 		}
 		if (i == 550) {
 		    ap_kill_timeout(r);
@@ -990,7 +1009,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
     Explain1("FTP: PWD returned status %d", i);
     if (i == -1 || i == 421) {
 	ap_kill_timeout(r);
-	return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+			     "Error reading from remote server");
     }
     if (i == 550) {
 	ap_kill_timeout(r);
@@ -1034,7 +1054,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
     Explain1("FTP: returned status %d", rc);
     if (rc == -1) {
 	ap_kill_timeout(r);
-	return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+			     "Error reading from remote server");
     }
     if (rc == 550) {
 	Explain0("FTP: RETR failed, trying LIST instead");
@@ -1054,7 +1075,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	Explain1("FTP: returned status %d", rc);
 	if (rc == -1) {
 	    ap_kill_timeout(r);
-	    return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	    return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+				 "Error reading from remote server");
 	}
 	if (rc == 550) {
 	    ap_kill_timeout(r);
@@ -1080,7 +1102,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	Explain1("FTP: PWD returned status %d", i);
 	if (i == -1 || i == 421) {
 	    ap_kill_timeout(r);
-	    return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	    return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+				 "Error reading from remote server");
 	}
 	if (i == 550) {
 	    ap_kill_timeout(r);
@@ -1098,7 +1121,8 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	rc = ftp_getrc(f);
 	Explain1("FTP: returned status %d", rc);
 	if (rc == -1)
-	    return ap_proxyerror(r, /*HTTP_BAD_GATEWAY*/ "Error reading from remote server");
+	    return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+				 "Error reading from remote server");
     }
     ap_kill_timeout(r);
     if (rc != 125 && rc != 150 && rc != 226 && rc != 250)
@@ -1110,15 +1134,18 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
     resp_hdrs = ap_make_table(p, 2);
     c->hdrs = resp_hdrs;
 
+    ap_table_setn(resp_hdrs, "Date", ap_gm_timestr_822(r->pool, r->request_time));
+    ap_table_setn(resp_hdrs, "Server", ap_get_server_version());
+
     if (parms[0] == 'd')
-	ap_table_set(resp_hdrs, "Content-Type", "text/html");
+	ap_table_setn(resp_hdrs, "Content-Type", "text/html");
     else {
 	if (r->content_type != NULL) {
-	    ap_table_set(resp_hdrs, "Content-Type", r->content_type);
+	    ap_table_setn(resp_hdrs, "Content-Type", r->content_type);
 	    Explain1("FTP: Content-Type set to %s", r->content_type);
 	}
 	else {
-	    ap_table_set(resp_hdrs, "Content-Type", "text/plain");
+	    ap_table_setn(resp_hdrs, "Content-Type", ap_default_type(r));
 	}
 	if (parms[0] != 'a' && size != NULL) {
 	    /* We "trust" the ftp server to really serve (size) bytes... */
@@ -1126,12 +1153,22 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	    Explain1("FTP: Content-Length set to %s", size);
 	}
     }
+    if (r->content_encoding != NULL && r->content_encoding[0] != '\0') {
+	Explain1("FTP: Content-Encoding set to %s", r->content_encoding);
+	ap_table_setn(resp_hdrs, "Content-Encoding", r->content_encoding);
+    }
 
 /* check if NoCache directive on this host */
-    for (i = 0; i < conf->nocaches->nelts; i++) {
-	if ((ncent[i].name != NULL && strstr(host, ncent[i].name) != NULL)
-	    || destaddr.s_addr == ncent[i].addr.s_addr || ncent[i].name[0] == '*')
-	    nocache = 1;
+    if (nocache == 0) {
+	for (i = 0; i < conf->nocaches->nelts; i++) {
+	    if (destaddr.s_addr == ncent[i].addr.s_addr ||
+	        (ncent[i].name != NULL &&
+		  (ncent[i].name[0] == '*' ||
+		   strstr(host, ncent[i].name) != NULL))) {
+	       nocache = 1;
+	       break;
+	    }
+	}
     }
 
     i = ap_proxy_cache_update(c, resp_hdrs, 0, nocache);
@@ -1168,18 +1205,17 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 	ap_bpushfd(data, dsock, dsock);
     }
 
-#ifdef CHARSET_EBCDIC
-/*    bsetflag(data, B_ASCII2EBCDIC|B_EBCDIC2ASCII, 0);*/
-#endif /*CHARSET_EBCDIC*/
-
     ap_hard_timeout("proxy receive", r);
 /* send response */
 /* write status line */
     if (!r->assbackwards)
 	ap_rvputs(r, "HTTP/1.0 ", r->status_line, CRLF, NULL);
     if (c != NULL && c->fp != NULL
-	&& ap_bvputs(c->fp, "HTTP/1.0 ", r->status_line, CRLF, NULL) == -1)
-	c = ap_proxy_cache_error(c);
+	&& ap_bvputs(c->fp, "HTTP/1.0 ", r->status_line, CRLF, NULL) == -1) {
+	    ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+		"proxy: error writing CRLF to %s", c->tempfile);
+	    c = ap_proxy_cache_error(c);
+    }
 
 /* send headers */
     tdo.req = r;
@@ -1188,8 +1224,11 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 
     if (!r->assbackwards)
 	ap_rputs(CRLF, r);
-    if (c != NULL && c->fp != NULL && ap_bputs(CRLF, c->fp) == -1)
+    if (c != NULL && c->fp != NULL && ap_bputs(CRLF, c->fp) == -1) {
+	ap_log_rerror(APLOG_MARK, APLOG_ERR, c->req,
+	    "proxy: error writing CRLF to %s", c->tempfile);
 	c = ap_proxy_cache_error(c);
+    }
 
     ap_bsetopt(r->connection->client, BO_BYTECT, &zero);
     r->sent_bodyct = 1;
@@ -1208,6 +1247,7 @@ int ap_proxy_ftp_handler(request_rec *r, cache_req *c, char *url)
 
 	/* XXX: we checked for 125||150||226||250 above. This is redundant. */
 	if (rc != 226 && rc != 250)
+            /* XXX: we no longer log an "error writing to c->tempfile" - should we? */
 	    c = ap_proxy_cache_error(c);
     }
     else {

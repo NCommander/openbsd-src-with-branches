@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.1 1995/08/17 16:37:17 thorpej Exp $
+#	$OpenBSD: Makefile,v 1.3 1996/06/23 14:29:59 deraadt Exp $
 
 PROG=	ccdconfig
 MAN=	ccdconfig.8
@@ -6,7 +6,7 @@ MAN=	ccdconfig.8
 BINGRP=	kmem
 BINMODE=2555
 
-DPADD=	${LIBKVM}
-LDADD=	-lkvm
+DPADD=	${LIBKVM} ${LIBUTIL}
+LDADD=	-lkvm -lutil
 
 .include <bsd.prog.mk>

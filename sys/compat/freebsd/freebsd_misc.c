@@ -1,4 +1,5 @@
-/*	$NetBSD: freebsd_misc.c,v 1.1 1995/10/10 01:19:33 mycroft Exp $	*/
+/*	$OpenBSD: freebsd_misc.c,v 1.6 1999/02/10 08:05:21 deraadt Exp $	*/
+/*	$NetBSD: freebsd_misc.c,v 1.2 1996/05/03 17:03:10 christos Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -42,33 +43,11 @@
 
 #include <sys/syscallargs.h>
 
+#include <compat/freebsd/freebsd_signal.h>
 #include <compat/freebsd/freebsd_syscallargs.h>
 #include <compat/freebsd/freebsd_util.h>
 #include <compat/freebsd/freebsd_rtprio.h>
 #include <compat/freebsd/freebsd_timex.h>
-
-int
-freebsd_sys_msync(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
-{
-	struct freebsd_sys_msync_args /* {
-		syscallarg(caddr_t) addr;
-		syscallarg(size_t) len;
-		syscallarg(int) flags;
-	} */ *uap = v;
-	struct sys_msync_args bma;
-
-	/*
-	 * FreeBSD-2.0-RELEASE's msync(2) is compatible with NetBSD's.
-	 * FreeBSD-2.0.5-RELEASE's msync(2) has addtional argument `flags',
-	 * but syscall number is not changed. :-<
-	 */
-	SCARG(&bma, addr) = SCARG(uap, addr);
-	SCARG(&bma, len) = SCARG(uap, len);
-	return sys_msync(p, &bma, retval); /* XXX - simply ignores `flags' */
-}
 
 /* just a place holder */
 
@@ -78,11 +57,13 @@ freebsd_sys_rtprio(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#ifdef notyet
 	struct freebsd_sys_rtprio_args /* {
 		syscallarg(int) function;
 		syscallarg(pid_t) pid;
 		syscallarg(struct freebsd_rtprio *) rtp;
 	} */ *uap = v;
+#endif
 
 	return ENOSYS;	/* XXX */
 }
@@ -93,9 +74,37 @@ freebsd_ntp_adjtime(p, v, retval)
 	void *v;
 	register_t *retval;
 {
+#ifdef notyet
 	struct freebsd_ntp_adjtime_args /* {
 		syscallarg(struct freebsd_timex *) tp;
 	} */ *uap = v;
+#endif
 
 	return ENOSYS;	/* XXX */
+}
+
+/*
+ * Argh.
+ * The syscalls.master mechanism cannot handle a system call that is in
+ * two spots in the table.
+ */
+int
+freebsd_sys_poll2(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	return (sys_poll(p, v, retval));
+}
+
+/*
+ * Our madvise is currently dead (always returns EOPNOTSUPP).
+ */
+int
+freebsd_sys_madvise(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	return (0);
 }

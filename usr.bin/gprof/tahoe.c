@@ -1,3 +1,4 @@
+/*	$OpenBSD: tahoe.c,v 1.2 1996/06/26 05:34:01 deraadt Exp $	*/
 /*	$NetBSD: tahoe.c,v 1.5 1995/04/19 07:16:27 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)tahoe.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: tahoe.c,v 1.5 1995/04/19 07:16:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: tahoe.c,v 1.2 1996/06/26 05:34:01 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -210,7 +211,7 @@ reladdr( modep )
     cp += 1;			/* skip over the mode */
     switch ( mode ) {
 	default:
-	    fprintf( stderr , "[reladdr] not relative address\n" );
+	    warnx("[reladdr] not relative address");
 	    return (unsigned long) modep;
 	case byterel:
 	    return (unsigned long) ( cp + sizeof *cp + *cp );
@@ -225,6 +226,7 @@ reladdr( modep )
     }
 }
 
+void
 findcall( parentp , p_lowpc , p_highpc )
     nltype		*parentp;
     unsigned long	p_lowpc;

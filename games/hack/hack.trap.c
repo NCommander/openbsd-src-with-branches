@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.trap.c,v 1.3 2001/01/28 23:41:46 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.trap.c,v 1.3 1995/03/23 08:31:44 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.trap.c,v 1.3 2001/01/28 23:41:46 niklas Exp $";
 #endif /* not lint */
 
 #include	"hack.h"
@@ -160,7 +162,7 @@ mintrap(mtmp) register struct monst *mtmp; {
 	    mtmp->mtrapseen |= (1 << tt);
 	    switch (tt) {
 		case BEAR_TRAP:
-			if(index(mlarge, mtmp->data->mlet)) {
+			if(strchr(mlarge, mtmp->data->mlet)) {
 				if(in_sight)
 				  pline("%s is caught in a bear trap!",
 					Monnam(mtmp));
@@ -172,7 +174,7 @@ mintrap(mtmp) register struct monst *mtmp; {
 			break;
 		case PIT:
 			/* there should be a mtmp/data -> floating */
-			if(!index("EywBfk'& ", mtmp->data->mlet)) { /* ab */
+			if(!strchr("EywBfk'& ", mtmp->data->mlet)) { /* ab */
 				mtmp->mtrapped = 1;
 				if(in_sight)
 				  pline("%s falls in a pit!", Monnam(mtmp));
@@ -343,7 +345,7 @@ dotele() {
 	if(
 #ifdef WIZARD
 	   !wizard &&
-#endif WIZARD
+#endif /* WIZARD */
 		      (!Teleportation || u.ulevel < 6 ||
 			(pl_character[0] != 'W' && u.ulevel < 10))) {
 		pline("You are not able to teleport at will.");

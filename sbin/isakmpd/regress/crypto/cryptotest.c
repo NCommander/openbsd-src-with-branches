@@ -1,7 +1,9 @@
-/*	$Id: cryptotest.c,v 1.5 1998/10/07 16:40:49 niklas Exp $	*/
+/*	$OpenBSD: cryptotest.c,v 1.5 2001/01/27 12:03:38 niklas Exp $	*/
+/*	$EOM: cryptotest.c,v 1.5 1998/10/07 16:40:49 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -77,7 +79,8 @@ special_test_blf (void)
   u_int8_t *akey = "0123456789ABCDEFF0E1D2C3B4A59687";
   u_int8_t *aiv = "FEDCBA9876543210";
   u_int8_t data[] = "7654321 Now is the time for \0\0\0"; /* len 29 */
-  u_int8_t *acipher = "6B77B4D63006DEE605B156E27403979358DEB9E7154616D959F1652BD5FF92CCE7";
+  u_int8_t *acipher
+    = "6B77B4D63006DEE605B156E27403979358DEB9E7154616D959F1652BD5FF92CCE7";
   u_int8_t key[16], cipher[32], iv[8];
   struct crypto_xf *xf;
   struct keystate *ks;
@@ -132,6 +135,16 @@ main (void)
   return 1;
 }
 
+ void
+dump_buf (u_int8_t *buf, size_t len)
+{
+  int i;
+
+  for (i = 0; i < len; i++)
+    printf ("%02x ", buf[i]);
+  printf ("\n");
+}
+
 void
 test_crypto (enum transform which)
 {
@@ -153,6 +166,7 @@ test_crypto (enum transform which)
   SET_KEY (buf, sizeof (buf));
   crypto_init_iv (ks, buf, xf->blocksize);
   crypto_encrypt (ks, buf, sizeof (buf));
+  dump_buf (buf, sizeof buf);
   crypto_decrypt (ks, buf, sizeof (buf));
   if (!verify_buf (buf, sizeof (buf)))
     printf ("FAILED ");

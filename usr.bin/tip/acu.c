@@ -1,4 +1,5 @@
-/*	$NetBSD: acu.c,v 1.3 1994/12/08 09:30:39 jtc Exp $	*/
+/*	$OpenBSD: acu.c,v 1.5 2000/04/20 06:19:33 deraadt Exp $	*/
+/*	$NetBSD: acu.c,v 1.4 1996/12/29 10:34:03 cgd Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)acu.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: acu.c,v 1.3 1994/12/08 09:30:39 jtc Exp $";
+static char rcsid[] = "$OpenBSD: acu.c,v 1.5 2000/04/20 06:19:33 deraadt Exp $";
 #endif /* not lint */
 
 #include "tip.h"
@@ -69,11 +70,11 @@ connect()
 	register char *cp = PN;
 	char *phnum, string[256];
 	FILE *fd;
-	int tried = 0;
+	volatile int tried = 0;
 
 	if (!DU) {		/* regular connect message */
 		if (CM != NOSTR)
-			pwrite(FD, CM, size(CM));
+			parwrite(FD, CM, size(CM));
 		logent(value(HOST), "", DV, "call completed");
 		return (NOSTR);
 	}
@@ -89,7 +90,7 @@ connect()
 		printf("\ncall aborted\n");
 		logent(value(HOST), "", "", "call aborted");
 		if (acu != NOACU) {
-			boolean(value(VERBOSE)) = FALSE;
+			setboolean(value(VERBOSE), FALSE);
 			if (conflag)
 				disconnect(NOSTR);
 			else
@@ -101,20 +102,19 @@ connect()
 		return ("unknown ACU type");
 	if (*cp != '@') {
 		while (*cp) {
-			for (phnum = cp; *cp && *cp != ','; cp++)
-				;
-			if (*cp)
+			phnum = cp;
+			cp = strpbrk(cp, ",");
+			if (*cp != '\0')
 				*cp++ = '\0';
-			
-			if (conflag = (*acu->acu_dialer)(phnum, CU)) {
-				if (CM != NOSTR)
-					pwrite(FD, CM, size(CM));
-				logent(value(HOST), phnum, acu->acu_name,
-					"call completed");
-				return (NOSTR);
-			} else
-				logent(value(HOST), phnum, acu->acu_name,
-					"call failed");
+
+			if (strlen(phnum) == 0)
+				continue;
+
+			conflag = (*acu->acu_dialer)(phnum, CU);
+			if (conflag)
+				break;
+
+			logent(value(HOST), phnum, acu->acu_name, "call failed");
 			tried++;
 		}
 	} else {
@@ -123,47 +123,44 @@ connect()
 			return ("can't open phone number file");
 		}
 		while (fgets(string, sizeof(string), fd) != NOSTR) {
-			for (cp = string; !any(*cp, " \t\n"); cp++)
-				;
-			if (*cp == '\n') {
-				fclose(fd);
-				return ("unrecognizable host name");
-			}
-			*cp++ = '\0';
-			if (strcmp(string, value(HOST)))
-				continue;
-			while (any(*cp, " \t"))
-				cp++;
-			if (*cp == '\n') {
-				fclose(fd);
-				return ("missing phone number");
-			}
-			for (phnum = cp; *cp && *cp != ',' && *cp != '\n'; cp++)
-				;
-			if (*cp)
+			cp = &string[strcspn(string, " \t\n")];
+			if (*cp != '\0')
 				*cp++ = '\0';
+
+			if (strcmp(string, value(HOST)) != 0)
+				continue;
+
+			cp += strspn(cp, " \t\n");
+			phnum = cp;
+			*(cp + strcspn(cp, ",\n")) = '\0';
+
+			if (strlen(phnum) == 0)
+				continue;
+
+			conflag = (*acu->acu_dialer)(phnum, CU);
+			if (conflag)
+				break;
 			
-			if (conflag = (*acu->acu_dialer)(phnum, CU)) {
-				fclose(fd);
-				if (CM != NOSTR)
-					pwrite(FD, CM, size(CM));
-				logent(value(HOST), phnum, acu->acu_name,
-					"call completed");
-				return (NOSTR);
-			} else
-				logent(value(HOST), phnum, acu->acu_name,
-					"call failed");
+			logent(value(HOST), phnum, acu->acu_name, "call failed");
 			tried++;
 		}
 		fclose(fd);
 	}
-	if (!tried)
+	if (conflag) {
+		if (CM != NOSTR)
+			parwrite(FD, CM, size(CM));
+		logent(value(HOST), phnum, acu->acu_name, "call completed");
+		return (NOSTR);
+	} else if (!tried) {
 		logent(value(HOST), "", acu->acu_name, "missing phone number");
-	else
+		return ("missing phone number");
+	} else {
 		(*acu->acu_abort)();
-	return (tried ? "call failed" : "missing phone number");
+		return ("call failed");
+	}
 }
 
+void
 disconnect(reason)
 	char *reason;
 {

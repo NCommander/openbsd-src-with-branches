@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_select.c,v 1.4 1999/11/28 12:31:42 d Exp $	*/
+/*	$OpenBSD: select.c,v 1.1.1.1 2001/08/15 14:37:13 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -44,6 +44,7 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "test.h"
 
 #define NLOOPS 10000

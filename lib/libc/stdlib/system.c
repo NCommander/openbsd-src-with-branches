@@ -32,8 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)system.c	5.10 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: system.c,v 1.10 1995/06/14 05:20:01 jtc Exp $";
+static char *rcsid = "$OpenBSD: system.c,v 1.3 1996/09/15 09:31:52 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -51,20 +50,24 @@ system(command)
 {
 	pid_t pid;
 	sig_t intsave, quitsave;
-	int omask;
+	sigset_t mask, omask;
 	int pstat;
-	char *argp[] = {"sh", "-c", (char *) command, NULL};
+	char *argp[] = {"sh", "-c", NULL, NULL};
 
 	if (!command)		/* just checking... */
 		return(1);
 
-	omask = sigblock(sigmask(SIGCHLD));
+	argp[2] = (char *)command;
+
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
 	switch(pid = vfork()) {
 	case -1:			/* error */
-		(void)sigsetmask(omask);
+		sigprocmask(SIG_SETMASK, &omask, NULL);
 		return(-1);
 	case 0:				/* child */
-		(void)sigsetmask(omask);
+		sigprocmask(SIG_SETMASK, &omask, NULL);
 		execve(_PATH_BSHELL, argp, environ);
 		_exit(127);
 	}
@@ -72,7 +75,7 @@ system(command)
 	intsave = signal(SIGINT, SIG_IGN);
 	quitsave = signal(SIGQUIT, SIG_IGN);
 	pid = waitpid(pid, (int *)&pstat, 0);
-	(void)sigsetmask(omask);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
 	(void)signal(SIGINT, intsave);
 	(void)signal(SIGQUIT, quitsave);
 	return(pid == -1 ? -1 : pstat);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cpufunc.h,v 1.6 2000/07/05 14:19:29 hugh Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.8 1994/10/27 04:15:59 cgd Exp $	*/
 
 /*
@@ -40,15 +41,30 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
-static __inline int bdb(void)
-{
-	extern int bdb_exists;
+static __inline void invlpg __P((u_int));
+static __inline void lidt __P((void *));
+static __inline void lldt __P((u_short));
+static __inline void ltr __P((u_short));
+static __inline void lcr0 __P((u_int));
+static __inline u_int rcr0 __P((void));
+static __inline u_int rcr2 __P((void));
+static __inline void lcr3 __P((u_int));
+static __inline u_int rcr3 __P((void));
+static __inline void lcr4 __P((u_int));
+static __inline u_int rcr4 __P((void));
+static __inline void tlbflush __P((void));
+static __inline void disable_intr __P((void));
+static __inline void enable_intr __P((void));
+static __inline void wbinvd __P((void));
+static __inline void wrmsr __P((u_int, u_int64_t));
+static __inline u_int64_t rdmsr __P((u_int));
+static __inline void breakpoint __P((void));
 
-	if (!bdb_exists)
-		return (0);
-	__asm __volatile("int $3");
-	return (1);
-}
+static __inline void 
+invlpg(u_int addr)
+{ 
+        __asm __volatile("invlpg (%0)" : : "r" (addr) : "memory");
+}  
 
 static __inline void
 lidt(void *p)
@@ -105,6 +121,20 @@ rcr3(void)
 }
 
 static __inline void
+lcr4(u_int val)
+{
+	__asm __volatile("movl %0,%%cr4" : : "r" (val));
+}
+
+static __inline u_int
+rcr4(void)
+{
+	u_int val;
+	__asm __volatile("movl %%cr4,%0" : "=r" (val));
+	return val;
+}
+
+static __inline void
 tlbflush(void)
 {
 	u_int val;
@@ -129,6 +159,35 @@ static __inline void
 enable_intr(void)
 {
 	__asm __volatile("sti");
+}
+
+static __inline void
+wbinvd(void)
+{
+        __asm __volatile("wbinvd");
+}
+
+
+static __inline void
+wrmsr(u_int msr, u_int64_t newval)
+{
+        __asm __volatile(".byte 0x0f, 0x30" : : "A" (newval), "c" (msr));
+}
+
+static __inline u_int64_t
+rdmsr(u_int msr)
+{
+        u_int64_t rv;
+
+        __asm __volatile(".byte 0x0f, 0x32" : "=A" (rv) : "c" (msr));
+        return (rv);
+}
+
+/* Break into DDB/KGDB. */
+static __inline void
+breakpoint(void)
+{
+	__asm __volatile("int $3");
 }
 
 #endif /* !_I386_CPUFUNC_H_ */

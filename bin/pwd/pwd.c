@@ -1,3 +1,4 @@
+/*	$OpenBSD: pwd.c,v 1.5 1997/01/15 23:40:24 millert Exp $	*/
 /*	$NetBSD: pwd.c,v 1.7 1995/03/21 09:08:18 cgd Exp $	*/
 
 /*
@@ -43,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pwd.c	8.3 (Berkeley) 4/1/94";
 #else
-static char rcsid[] = "$NetBSD: pwd.c,v 1.7 1995/03/21 09:08:18 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pwd.c,v 1.5 1997/01/15 23:40:24 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,6 +52,8 @@ static char rcsid[] = "$NetBSD: pwd.c,v 1.7 1995/03/21 09:08:18 cgd Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+extern	char *__progname;
 
 void usage __P((void));
 
@@ -69,11 +72,10 @@ main(argc, argv)
 	 * there's no way to display a logical path after forking.  We don't
 	 * document either flag, only adding -P for future portability.
 	 */
-	while ((ch = getopt(argc, argv, "P")) != EOF)
+	while ((ch = getopt(argc, argv, "P")) != -1)
 		switch (ch) {
 		case 'P':
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -84,7 +86,7 @@ main(argc, argv)
 		usage();
 
 	if ((p = getcwd(NULL, 0)) == NULL)
-		err(1, NULL);
+		err(1, "getcwd");
 	(void)printf("%s\n", p);
 	exit(0);
 }
@@ -92,7 +94,6 @@ main(argc, argv)
 void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: pwd\n");
+	(void)fprintf(stderr, "usage: %s\n", __progname);
 	exit(1);
 }

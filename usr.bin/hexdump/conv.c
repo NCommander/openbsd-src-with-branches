@@ -1,3 +1,5 @@
+/*	$OpenBSD: conv.c,v 1.2 1996/06/26 05:34:17 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -33,13 +35,15 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)conv.c	5.4 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: conv.c,v 1.2 1993/08/01 18:14:50 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: conv.c,v 1.2 1996/06/26 05:34:17 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <ctype.h>
+#include <stdio.h>
 #include "hexdump.h"
 
+void
 conv_c(pr, p)
 	PR *pr;
 	u_char *p;
@@ -90,6 +94,7 @@ strpr:		*pr->cchar = 's';
 	}
 }
 
+void
 conv_u(pr, p)
 	PR *pr;
 	u_char *p;

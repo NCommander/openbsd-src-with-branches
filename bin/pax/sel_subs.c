@@ -1,3 +1,4 @@
+/*	$OpenBSD: sel_subs.c,v 1.7 1997/08/17 23:05:09 millert Exp $	*/
 /*	$NetBSD: sel_subs.c,v 1.5 1995/03/21 09:07:42 cgd Exp $	*/
 
 /*-
@@ -41,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)sel_subs.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: sel_subs.c,v 1.5 1995/03/21 09:07:42 cgd Exp $";
+static char rcsid[] = "$OpenBSD: sel_subs.c,v 1.7 1997/08/17 23:05:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,9 +53,7 @@ static char rcsid[] = "$NetBSD: sel_subs.c,v 1.5 1995/03/21 09:07:42 cgd Exp $";
 #include <pwd.h>
 #include <grp.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <string.h>
-#include <strings.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include "pax.h"
@@ -82,7 +81,7 @@ static GRPT **grptb = NULL;		/* group selection table */
  *	0 if this archive member should be processed, 1 if it should be skipped
  */
 
-#if __STDC__
+#ifdef __STDC__
 int
 sel_chk(register ARCHD *arcn)
 #else
@@ -113,7 +112,7 @@ sel_chk(arcn)
  *	0 if added ok, -1 otherwise;
  */
 
-#if __STDC__
+#ifdef __STDC__
 int
 usr_add(register char *str)
 #else
@@ -134,8 +133,8 @@ usr_add(str)
 		return(-1);
 	if ((usrtb == NULL) &&
  	    ((usrtb = (USRT **)calloc(USR_TB_SZ, sizeof(USRT *))) == NULL)) {
-                warn(1, "Unable to allocate memory for user selection table");
-                return(-1);
+		paxwarn(1, "Unable to allocate memory for user selection table");
+		return(-1);
 	}
 
 	/*
@@ -148,16 +147,12 @@ usr_add(str)
 		if ((str[0] == '\\') && (str[1] == '#'))
 			++str;
 		if ((pw = getpwnam(str)) == NULL) {
-                	warn(1, "Unable to find uid for user: %s", str);
-                	return(-1);
+			paxwarn(1, "Unable to find uid for user: %s", str);
+			return(-1);
 		}
 		uid = (uid_t)pw->pw_uid;
-        } else
-#		ifdef NET2_STAT
-		uid = (uid_t)atoi(str+1);
-#		else
-		uid = (uid_t)strtoul(str+1, (char **)NULL, 10);
-#		endif
+	} else
+		uid = (uid_t)strtoul(str+1, NULL, 10);
 	endpwent();
 
 	/*
@@ -165,11 +160,11 @@ usr_add(str)
 	 */
 	indx = ((unsigned)uid) % USR_TB_SZ;
 	if ((pt = usrtb[indx]) != NULL) {
-                while (pt != NULL) {
-                        if (pt->uid == uid)
+		while (pt != NULL) {
+			if (pt->uid == uid)
 				return(0);
-                        pt = pt->fow;
-                }
+			pt = pt->fow;
+		}
 	}
 
 	/*
@@ -181,8 +176,8 @@ usr_add(str)
 		usrtb[indx] = pt;
 		return(0);
 	}
-        warn(1, "User selection table out of memory");
-        return(-1);
+	paxwarn(1, "User selection table out of memory");
+	return(-1);
 }
 
 /*
@@ -192,7 +187,7 @@ usr_add(str)
  *	0 if this archive member should be processed, 1 if it should be skipped
  */
 
-#if __STDC__
+#ifdef __STDC__
 static int
 usr_match(register ARCHD *arcn)
 #else
@@ -226,7 +221,7 @@ usr_match(arcn)
  *	0 if added ok, -1 otherwise;
  */
 
-#if __STDC__
+#ifdef __STDC__
 int
 grp_add(register char *str)
 #else
@@ -247,8 +242,8 @@ grp_add(str)
 		return(-1);
 	if ((grptb == NULL) &&
  	    ((grptb = (GRPT **)calloc(GRP_TB_SZ, sizeof(GRPT *))) == NULL)) {
-                warn(1, "Unable to allocate memory fo group selection table");
-                return(-1);
+		paxwarn(1, "Unable to allocate memory fo group selection table");
+		return(-1);
 	}
 
 	/*
@@ -261,16 +256,12 @@ grp_add(str)
 		if ((str[0] == '\\') && (str[1] == '#'))
 			++str;
 		if ((gr = getgrnam(str)) == NULL) {
-                	warn(1,"Cannot determine gid for group name: %s", str);
-                	return(-1);
+			paxwarn(1,"Cannot determine gid for group name: %s", str);
+			return(-1);
 		}
 		gid = (gid_t)gr->gr_gid;
-        } else
-#		ifdef NET2_STAT
-		gid = (gid_t)atoi(str+1);
-#		else
-		gid = (gid_t)strtoul(str+1, (char **)NULL, 10);
-#		endif
+	} else
+		gid = (gid_t)strtoul(str+1, NULL, 10);
 	endgrent();
 
 	/*
@@ -278,11 +269,11 @@ grp_add(str)
 	 */
 	indx = ((unsigned)gid) % GRP_TB_SZ;
 	if ((pt = grptb[indx]) != NULL) {
-                while (pt != NULL) {
-                        if (pt->gid == gid)
+		while (pt != NULL) {
+			if (pt->gid == gid)
 				return(0);
-                        pt = pt->fow;
-                }
+			pt = pt->fow;
+		}
 	}
 
 	/*
@@ -294,8 +285,8 @@ grp_add(str)
 		grptb[indx] = pt;
 		return(0);
 	}
-        warn(1, "Group selection table out of memory");
-        return(-1);
+	paxwarn(1, "Group selection table out of memory");
+	return(-1);
 }
 
 /*
@@ -305,7 +296,7 @@ grp_add(str)
  *	0 if this archive member should be processed, 1 if it should be skipped
  */
 
-#if __STDC__
+#ifdef __STDC__
 static int
 grp_match(register ARCHD *arcn)
 #else
@@ -361,7 +352,7 @@ grp_match(arcn)
  *	0 if the time range was added to the list, -1 otherwise
  */
 
-#if __STDC__
+#ifdef __STDC__
 int
 trng_add(register char *str)
 #else
@@ -380,7 +371,7 @@ trng_add(str)
 	 * throw out the badly formed time ranges
 	 */
 	if ((str == NULL) || (*str == '\0')) {
-		warn(1, "Empty time range string");
+		paxwarn(1, "Empty time range string");
 		return(-1);
 	}
 
@@ -407,7 +398,7 @@ trng_add(str)
 			++dot;
 			continue;
 		}
-		warn(1, "Improperly specified time range: %s", str);
+		paxwarn(1, "Improperly specified time range: %s", str);
 		goto out;
 	}
 
@@ -415,7 +406,7 @@ trng_add(str)
 	 * allocate space for the time range and store the limits
 	 */
 	if ((pt = (TIME_RNG *)malloc(sizeof(TIME_RNG))) == NULL) {
-		warn(1, "Unable to allocate memory for time range");
+		paxwarn(1, "Unable to allocate memory for time range");
 		return(-1);
 	}
 
@@ -438,7 +429,7 @@ trng_add(str)
 				pt->flgs |= CMPCTME;
 				break;
 			default:
-				warn(1, "Bad option %c with time range %s",
+				paxwarn(1, "Bad option %c with time range %s",
 				    *flgpt, str);
 				goto out;
 			}
@@ -449,13 +440,13 @@ trng_add(str)
 	/*
 	 * start off with the current time
 	 */
-	pt->low_time = pt->high_time = time((time_t *)NULL);
+	pt->low_time = pt->high_time = time(NULL);
 	if (*str != '\0') {
 		/*
 		 * add lower limit
 		 */
 		if (str_sec(str, &(pt->low_time)) < 0) {
-			warn(1, "Illegal lower time range %s", str);
+			paxwarn(1, "Illegal lower time range %s", str);
 			(void)free((char *)pt);
 			goto out;
 		}
@@ -467,7 +458,7 @@ trng_add(str)
 		 * add upper limit
 		 */
 		if (str_sec(up_pt, &(pt->high_time)) < 0) {
-			warn(1, "Illegal upper time range %s", up_pt);
+			paxwarn(1, "Illegal upper time range %s", up_pt);
 			(void)free((char *)pt);
 			goto out;
 		}
@@ -478,7 +469,7 @@ trng_add(str)
 		 */
 		if (pt->flgs & HASLOW) {
 			if (pt->low_time > pt->high_time) {
-				warn(1, "Upper %s and lower %s time overlap",
+				paxwarn(1, "Upper %s and lower %s time overlap",
 					up_pt, str);
 				(void)free((char *)pt);
 				return(-1);
@@ -496,7 +487,7 @@ trng_add(str)
 	return(0);
 
     out:
-	warn(1, "Time range format is: [yy[mm[dd[hh]]]]mm[.ss][/[c][m]]");
+	paxwarn(1, "Time range format is: [yy[mm[dd[hh]]]]mm[.ss][/[c][m]]");
 	return(-1);
 }
 
@@ -507,7 +498,7 @@ trng_add(str)
  *	0 if this archive member should be processed, 1 if it should be skipped
  */
 
-#if __STDC__
+#ifdef __STDC__
 static int
 trng_match(register ARCHD *arcn)
 #else
@@ -582,7 +573,7 @@ trng_match(arcn)
  *	0 if converted ok, -1 otherwise
  */
 
-#if __STDC__
+#ifdef __STDC__
 static int
 str_sec(register char *str, time_t *tval)
 #else

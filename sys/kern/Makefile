@@ -1,18 +1,19 @@
-#	@(#)Makefile	8.2 (Berkeley) 3/21/94
+#	$OpenBSD: Makefile,v 1.7 1997/02/24 14:19:55 niklas Exp $
 
 # Makefile for kernel tags files, init_sysent, etc.
 
-ARCH=	hp300 i386 luna68k news3400 pmax sparc tahoe vax
+ARCH=	alpha amiga atari hp300 i386 m68k mac68k mvme68k mvme88k pc532 \
+	pica pmax sparc sun3 vax
 
-all:
-	@echo "make tags, make links or init_sysent.c only"
+all:	init_sysent.c vnode_if.c
 
 SYSCALLSRC = makesyscalls.sh syscalls.conf syscalls.master
-init_sysent.c syscalls.c ../sys/syscall.h: ${SYSCALLSRC}
-	-mv -f init_sysent.c init_sysent.c.bak
-	-mv -f syscalls.c syscalls.c.bak
-	-mv -f ../sys/syscall.h ../sys/syscall.h.bak
+init_sysent.c syscalls.c ../sys/syscall.h ../sys/syscallargs.h: ${SYSCALLSRC}
 	sh makesyscalls.sh syscalls.conf syscalls.master
+
+VNODEIFSRC = vnode_if.sh vnode_if.src
+vnode_if.c ../sys/vnode_if.h: ${VNODEIFSRC}
+	sh vnode_if.sh vnode_if.src
 
 # Kernel tags:
 # Tags files are built in the top-level directory for each architecture,
@@ -27,25 +28,36 @@ SYSTAGS=/var/db/sys_tags
 SYSDIR=/sys
 
 # Directories in which to place tags links (other than machine-dependent)
-DGEN=	conf \
-	dev dev/scsi \
-	hp hp/dev hp/hpux \
-	kern libkern \
+DGEN=	adosfs \
+	compat compat/common compat/freebsd compat/hpux compat/ibcs2 \
+	compat/linux compat/osf1 compat/sunos compat/svr4 compat/ultrix \
+	conf \
+	ddb \
+	dev dev/eisa dev/ic dev/isa dev/pci dev/pcmcia dev/cardbus dev/rcons \
+	dev/sun dev/tc \
+	gnu \
+	isofs isofs/cd9660 \
+	kern \
+	lib libkern \
 	miscfs miscfs/deadfs miscfs/fdesc miscfs/fifofs miscfs/kernfs \
-	miscfs/lofs miscfs/nullfs miscfs/portal miscfs/procfs \
+	miscfs/nullfs miscfs/portal miscfs/procfs \
 	miscfs/specfs miscfs/umapfs miscfs/union \
-	net netccitt netinet netiso netns nfs scripts sys \
+	msdosfs \
+	net netccitt netinet netiso netns \
+	nfs \
+	scsi \
+	sys \
 	ufs ufs/ffs ufs/lfs ufs/mfs ufs/ufs \
 	vm
 
 tags::
 	-for i in ${ARCH}; do \
-	    (cd ../$$i && make ${MFLAGS} tags); done
+	    (cd ../arch/$$i && make ${MFLAGS} tags); done
 
 links::
 	rm -f ${SYSTAGS}
-	ln -s ${SYSDIR}/${MACHINE}/tags ${SYSTAGS}
+	ln -s ${SYSDIR}/arch/${MACHINE}/tags ${SYSTAGS}
 	-for i in ${DGEN}; do \
 	    (cd ../$$i && { rm -f tags; ln -s ${SYSTAGS} tags; }) done
 	-for i in ${ARCH}; do \
-	    (cd ../$$i && make ${MFLAGS} SYSTAGS=${SYSTAGS} links); done
+	    (cd ../arch/$$i && make ${MFLAGS} SYSTAGS=${SYSTAGS} links); done

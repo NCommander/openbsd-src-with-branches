@@ -1,4 +1,5 @@
-/*	$NetBSD: pmap.h,v 1.9 1995/05/11 16:53:03 jtc Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.7 2001/05/11 23:24:57 millert Exp $	*/
+/*	$NetBSD: pmap.h,v 1.13 1997/06/10 18:58:19 veego Exp $	*/
 
 /* 
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -43,9 +44,10 @@
 #ifndef	_HP300_PMAP_H_
 #define	_HP300_PMAP_H_
 
+#include <machine/cpu.h>
 #include <machine/pte.h>
 
-#if defined(HP380)
+#if defined(M68040)
 #define HP_SEG_SIZE	(mmutype == MMU_68040 ? 0x40000 : NBSEG)
 #else
 #define HP_SEG_SIZE	NBSEG
@@ -91,13 +93,11 @@ typedef struct pmap	*pmap_t;
 /*
  * Macros for speed
  */
-#define PMAP_ACTIVATE(pmapp, pcbp, iscurproc) \
-	if ((pmapp)->pm_stchanged) { \
-		(pcbp)->pcb_ustp = hp300_btop((vm_offset_t)(pmapp)->pm_stpa); \
-		if (iscurproc) \
-			loadustp((pcbp)->pcb_ustp); \
-		(pmapp)->pm_stchanged = FALSE; \
-	}
+#define PMAP_ACTIVATE(pmap, loadhw)					\
+{									\
+        if ((loadhw))							\
+                loadustp(m68k_btop((paddr_t)(pmap)->pm_stpa));		\
+}
 #define PMAP_DEACTIVATE(pmapp, pcbp)
 
 /*
@@ -107,7 +107,7 @@ typedef struct pmap	*pmap_t;
 struct pv_entry {
 	struct pv_entry	*pv_next;	/* next pv_entry */
 	struct pmap	*pv_pmap;	/* pmap where mapping lies */
-	vm_offset_t	pv_va;		/* virtual address for mapping */
+	vaddr_t		pv_va;		/* virtual address for mapping */
 	st_entry_t	*pv_ptste;	/* non-zero if VA maps a PT page */
 	struct pmap	*pv_ptpmap;	/* if pv_ptste, pmap for PT page */
 	int		pv_flags;	/* flags */
@@ -135,27 +135,26 @@ struct pv_page {
 	struct pv_entry pvp_pv[NPVPPG];
 };
 
-#ifdef	_KERNEL
-#if defined(HP320) || defined(HP350)
-#define	HAVEVAC				/* include cheezy VAC support */
-#endif
-
 extern struct pmap	kernel_pmap_store;
 
 #define pmap_kernel()	(&kernel_pmap_store)
 #define	active_pmap(pm) \
 	((pm) == pmap_kernel() || (pm) == curproc->p_vmspace->vm_map.pmap)
+#define	active_user_pmap(pm) \
+	(curproc && \
+	 (pm) != pmap_kernel() && (pm) == curproc->p_vmspace->vm_map.pmap)
 
 extern struct pv_entry	*pv_table;	/* array of entries, one per page */
-
-#define pmap_page_index(pa)		atop(pa - vm_first_phys)
-#define pa_to_pvh(pa)			(&pv_table[pmap_page_index(pa)])
 
 #define	pmap_resident_count(pmap)	((pmap)->pm_stats.resident_count)
 #define	pmap_wired_count(pmap)		((pmap)->pm_stats.wired_count)
 
 extern pt_entry_t	*Sysmap;
 extern char		*vmmap;		/* map for mem, dumps, etc. */
-#endif /* _KERNEL */
+
+#ifdef M68K_MMU_HP
+void	pmap_prefer __P((vaddr_t, vaddr_t *));
+#define	PMAP_PREFER(foff, vap)	pmap_prefer((foff), (vap))
+#endif
 
 #endif /* !_HP300_PMAP_H_ */

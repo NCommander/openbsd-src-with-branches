@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Format of a lesskey file:
  *

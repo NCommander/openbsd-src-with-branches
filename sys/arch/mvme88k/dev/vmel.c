@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: vmel.c,v 1.4 2001/06/14 21:30:35 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -37,6 +37,7 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
 #include <mvme88k/dev/vme.h>
@@ -50,11 +51,6 @@
 void vmelattach __P((struct device *, struct device *, void *));
 int  vmelmatch __P((struct device *, void *, void *));
 
-struct vmelsoftc {
-	struct device		sc_dev;
-	struct vmesoftc		*sc_vme;
-};
-
 struct cfattach vmel_ca = {
         sizeof(struct vmelsoftc), vmelmatch, vmelattach
 };
@@ -62,6 +58,14 @@ struct cfattach vmel_ca = {
 struct cfdriver vmel_cd = {
         NULL, "vmel", DV_DULL, 0
 };
+
+int vmelscan __P((struct device *, void *, void*));
+int vmelopen __P((dev_t, int, int));
+int vmelclose __P((dev_t, int, int));
+int vmelioctl __P((dev_t, int, caddr_t, int, struct proc *));
+int vmelread __P((dev_t, struct uio *, int));
+int vmelwrite __P((dev_t, struct uio *, int));
+int vmelmmap __P((dev_t, int, int));
 
 int
 vmelmatch(parent, cf, args)
@@ -123,8 +127,6 @@ vmelioctl(dev, cmd, data, flag, p)
 	int     cmd, flag;
 	struct proc *p;
 {
-	int unit = minor(dev);
-	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
 	int error = 0;
 
 	switch (cmd) {
@@ -166,11 +168,11 @@ vmelmmap(dev, off, prot)
 {
 	int unit = minor(dev);
 	struct vmelsoftc *sc = (struct vmelsoftc *) vmel_cd.cd_devs[unit];
-	caddr_t pa;
+	void * pa;
 
-	pa = vmepmap(sc->sc_vme, (caddr_t)off, NBPG, BUS_VMEL);
+	pa = vmepmap(sc->sc_vme, (void *)off, NBPG, BUS_VMEL);
 	printf("vmel %x pa %x\n", off, pa);
 	if (pa == NULL)
 		return (-1);
-	return (m88k_btop(pa));
+	return (atop(pa));
 }

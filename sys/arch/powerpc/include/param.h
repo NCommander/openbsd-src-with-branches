@@ -1,3 +1,4 @@
+/*	$OpenBSD: param.h,v 1.17 2001/07/09 02:14:05 mickey Exp $	*/
 /*	$NetBSD: param.h,v 1.1 1996/09/30 16:34:28 ws Exp $	*/
 
 /*-
@@ -31,6 +32,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef	_POWERPC_PARAM_H_
+#define	_POWERPC_PARAM_H_
+
 #ifdef	_KERNEL
 #ifndef	_LOCORE
 #include <machine/cpu.h>
@@ -40,57 +44,48 @@
 /*
  * Machine dependent constants for PowerPC (32-bit only currently)
  */
-#define	MACHINE		"powerpc"
 #define	MACHINE_ARCH	"powerpc"
-#define	MID_MACHINE	MID_POWERPC
+#define	_MACHINE_ARCH	powerpc
+
+#define	MID_MACHINE	0	/* None but has to be defined */
 
 #define	ALIGNBYTES	(sizeof(double) - 1)
 #define	ALIGN(p)	(((u_int)(p) + ALIGNBYTES) & ~ALIGNBYTES)
+#define ALIGNED_POINTER(p,t)	((((u_long)(p)) & (sizeof(t)-1)) == 0)
 
 #define	PGSHIFT		12
-#if 0
-#define	NBPG		(1 << PGSHIFT)	/* Page size */
-#endif
 #define	NBPG		4096
 #define	PGOFSET		(NBPG - 1)
+#define PAGE_SIZE	NBPG
+#define PAGE_MASK	PGOFSET
+#define PAGE_SHIFT	PGSHIFT
 
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
 #define	DEV_BSIZE	(1 << DEV_BSHIFT)
 #define	BLKDEV_IOSIZE	NBPG
 #define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
 
-#define	CLSIZELOG2	0
-#define	CLSIZE		(1 << CLSIZELOG2)
-
 #define	UPAGES		4
 #define	USPACE		(UPAGES * NBPG)
 
-#define	KERNBASE	0x100000
-
 /*
  * Constants related to network buffer management.
- * MCLBYTES must be no larger than CLBYTES (the software page size), and,
+ * MCLBYTES must be no larger than the software page size, and,
  * on machines that exchange pages of input or output buffers with mbuf
  * clusters (MAPPED_MBUFS), MCLBYTES must also be an integral multiple
  * of the hardware page size.
  */
-#define	MSIZE		128		/* size of an mbuf */
+#define	MSIZE		256		/* size of an mbuf */
 #define	MCLSHIFT	11		/* convert bytes to m_buf clusters */
 #define	MCLBYTES	(1 << MCLSHIFT)	/* size of a m_buf cluster */
+#define	MCLOFSET	(MCLBYTES - 1)
 
 #ifndef NMBCLUSTERS
 #ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
 #else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
+#define	NMBCLUSTERS	1024		/* map size, max cluster allocation */
 #endif
-#endif
-
-/*
- * Size of kernel malloc arena in CLBYTES-sized logical pages.
- */
-#ifndef	NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(128 * 1024 * 1024 / CLBYTES)
 #endif
 
 /*
@@ -111,6 +106,12 @@
 #define	btodb(x)	((x) >> DEV_BSHIFT)
 
 /*
+ * Mach derived conversion macros
+ */
+#define powerpc_btop(x)	((unsigned)(x) >> PGSHIFT)
+#define powerpc_ptob(x)	((unsigned)(x) << PGSHIFT)
+
+/*
  * Segment handling stuff
  */
 #define	SEGMENT_LENGTH	0x10000000
@@ -128,9 +129,6 @@
 /*
  * Some system constants
  */
-#ifndef	HTABENTS
-#define	HTABENTS	1024	/* Number of hashslots in HTAB */
-#endif
 #ifndef	NPMAPS
 #define	NPMAPS		32768	/* Number of pmaps in system */
 #endif
@@ -139,3 +137,5 @@
  * Temporary kludge till we do (ov)bcopy in assembler
  */
 #define	ovbcopy	bcopy
+
+#endif	/* _POWERPC_PARAM_H_ */

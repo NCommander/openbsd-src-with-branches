@@ -1,3 +1,4 @@
+/*	$OpenBSD: systemname.c,v 1.2 1998/08/19 07:42:10 pjanzen Exp $	*/
 /*	$NetBSD: systemname.c,v 1.3 1995/04/22 10:59:32 cgd Exp $	*/
 
 /*
@@ -37,11 +38,11 @@
 #if 0
 static char sccsid[] = "@(#)systemname.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: systemname.c,v 1.3 1995/04/22 10:59:32 cgd Exp $";
+static char rcsid[] = "$OpenBSD: systemname.c,v 1.2 1998/08/19 07:42:10 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
+#include "trek.h"
 
 /*
 **  RETRIEVE THE STARSYSTEM NAME
@@ -54,10 +55,11 @@ static char rcsid[] = "$NetBSD: systemname.c,v 1.3 1995/04/22 10:59:32 cgd Exp $
 **	starsystems, etc.
 */
 
-char *systemname(q1)
-struct quad	*q1;
+const char *
+systemname(q1)
+     const struct quad	*q1;
 {
-	register struct quad	*q;
+	const struct quad	*q;
 	register int		i;
 
 	q = q1;

@@ -1,4 +1,5 @@
-/*	$NetBSD: v3451.c,v 1.3 1994/12/08 09:31:48 jtc Exp $	*/
+/*	$OpenBSD: v3451.c,v 1.4 1997/04/02 01:47:07 millert Exp $	*/
+/*	$NetBSD: v3451.c,v 1.6 1997/02/11 09:24:20 mrg Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)v3451.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: v3451.c,v 1.3 1994/12/08 09:31:48 jtc Exp $";
+static char rcsid[] = "$OpenBSD: v3451.c,v 1.4 1997/04/02 01:47:07 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -47,19 +48,19 @@ static char rcsid[] = "$NetBSD: v3451.c,v 1.3 1994/12/08 09:31:48 jtc Exp $";
 
 static	jmp_buf Sjbuf;
 
+static	int expect(), notin(), prefix();
+static	void vawrite(), alarmtr();
+
+int
 v3451_dialer(num, acu)
 	register char *num;
 	char *acu;
 {
 	sig_t func;
 	int ok;
-	int slow = number(value(BAUDRATE)) < 1200, rw = 2;
+	int slow = number(value(BAUDRATE)) < 1200;
 	char phone[50];
-#ifdef ACULOG
-	char line[80];
-#endif
-	static int expect();
-	static void vawrite();
+	struct termios cntrl;
 
 	/*
 	 * Get in synch
@@ -75,7 +76,9 @@ v3451_dialer(num, acu)
 #endif
 		return (0);
 	}
-	ioctl(FD, TIOCHPCL, 0);
+	tcgetattr(FD, &cntrl);
+	term.c_cflag |= HUPCL;
+	tcsetattr(FD, TCSANOW, &cntrl);
 	sleep(1);
 	vawrite("D\r", 2 + slow);
 	if (!expect("NUMBER?")) {
@@ -85,8 +88,7 @@ v3451_dialer(num, acu)
 #endif
 		return (0);
 	}
-	strcpy(phone, num);
-	strcat(phone, "\r");
+	(void)snprintf(phone, sizeof phone, "%s\r", num);
 	vawrite(phone, 1 + slow);
 	if (!expect(phone)) {
 		printf("Vadic will not accept phone number\n");
@@ -121,16 +123,18 @@ v3451_dialer(num, acu)
 #endif
 		return (0);
 	}
-	ioctl(FD, TIOCFLUSH, &rw);
+	tcflush(FD, TCIOFLUSH);
 	return (1);
 }
 
+void
 v3451_disconnect()
 {
 
 	close(FD);
 }
 
+void
 v3451_abort()
 {
 
@@ -147,15 +151,13 @@ vawrite(cp, delay)
 		write(FD, cp, 1);
 }
 
-static
+static int
 expect(cp)
 	register char *cp;
 {
 	char buf[300];
 	register char *rp = buf;
 	int timeout = 30, online = 0;
-	static int notin();
-	static void alarmtr();
 
 	if (strcmp(cp, "\"\"") == 0)
 		return (1);
@@ -198,7 +200,6 @@ static int
 notin(sh, lg)
 	char *sh, *lg;
 {
-	static int prefix();
 
 	for (; *lg; lg++)
 		if (prefix(sh, lg))
@@ -206,7 +207,7 @@ notin(sh, lg)
 	return (1);
 }
 
-static
+static int
 prefix(s1, s2)
 	register char *s1, *s2;
 {

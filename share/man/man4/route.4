@@ -1,3 +1,4 @@
+.\"	$OpenBSD: route.4,v 1.7 2001/03/01 16:11:19 aaron Exp $
 .\"	$NetBSD: route.4,v 1.3 1994/11/30 16:22:31 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
@@ -37,7 +38,7 @@
 .Dt ROUTE 4
 .Os
 .Sh NAME
-.Nm route 
+.Nm route
 .Nd kernel packet forwarding database
 .Sh SYNOPSIS
 .Fd #include <sys/socket.h>
@@ -78,14 +79,14 @@ Normally the protocol specifies the route
 through each interface as a
 .Dq direct
 connection to the destination host
-or network.  If the route is direct, the transport layer of
-a protocol family usually requests the packet be sent to the
-same host specified in the packet.  Otherwise, the interface
-is requested to address the packet to the gateway listed in the routing entry
-(i.e. the packet is forwarded).
+or network.
+If the route is direct, the transport layer of a protocol family usually
+requests the packet be sent to the same host specified in the packet.
+Otherwise, the interface is requested to address the packet to the gateway
+listed in the routing entry (i.e., the packet is forwarded).
 .Pp
 When routing a packet,
-the kernel will attempt to find 
+the kernel will attempt to find
 the most specific route matching the destination.
 (If there are two different mask and value-under-the-mask pairs
 that match, the more specific is the one with more bits in the mask.
@@ -99,9 +100,9 @@ A wildcard routing entry is specified with a zero
 destination address value, and a mask of all zeroes.
 Wildcard routes will be used
 when the system fails to find other routes matching the
-destination.  The combination of wildcard
-routes and routing redirects can provide an economical
-mechanism for routing traffic.
+destination.
+The combination of wildcard routes and routing redirects can provide
+an economical mechanism for routing traffic.
 .Pp
 One opens the channel for passing routing control messages
 by using the socket call shown in the synopsis above:
@@ -116,7 +117,7 @@ to a specific address family by specifying which one is desired.
 There can be more than one routing socket open per system.
 .Pp
 Messages are formed by a header followed by a small
-number of sockadders (now variable length particularly
+number of sockaddrs (now variable length particularly
 in the
 .Tn ISO
 case), interpreted by position, and delimited
@@ -130,10 +131,11 @@ bit mask within the header, and the sequence is least significant
 to most significant bit within the vector.
 .Pp
 Any messages sent to the kernel are returned, and copies are sent
-to all interested listeners.  The kernel will provide the process
-id. for the sender, and the sender may use an additional sequence
-field to distinguish between outstanding messages.  However,
-message replies may be lost when kernel buffers are exhausted.
+to all interested listeners.
+The kernel will provide the process id.
+for the sender, and the sender may use an additional sequence
+field to distinguish between outstanding messages.
+However, message replies may be lost when kernel buffers are exhausted.
 .Pp
 The kernel may reject certain messages, and will indicate this
 by filling in the
@@ -154,7 +156,7 @@ In the current implementation, all routing process run locally,
 and the values for
 .Ar rtm_errno
 are available through the normal
-.Em errno
+.Va errno
 mechanism, even if the routing reply message is lost.
 .Pp
 A process may avoid the expense of reading replies to
@@ -167,23 +169,18 @@ at the
 .Dv SOL_SOCKET
 level is to be turned off.
 A process may ignore all messages from the routing socket
-by doing a 
+by doing a
 .Xr shutdown 2
 system call for further input.
 .Pp
 If a route is in use when it is deleted,
 the routing entry will be marked down and removed from the routing table,
 but the resources associated with it will not
-be reclaimed until all references to it are released. 
+be reclaimed until all references to it are released.
 User processes can obtain information about the routing
 entry to a specific destination by using a
 .Dv RTM_GET
-message,
-or by reading the
-.Pa /dev/kmem
-device, or by issuing a
-.Xr getkerninfo 2
-system call.
+message.
 .Pp
 Messages include:
 .Bd -literal
@@ -222,8 +219,8 @@ struct rt_metrics {
     u_long rmx_mtu;       /* MTU for this path */
     u_long rmx_hopcount;  /* max hops expected */
     u_long rmx_expire;    /* lifetime for route, e.g. redirect */
-    u_long rmx_recvpipe;  /* inbound delay-bandwith product */
-    u_long rmx_sendpipe;  /* outbound delay-bandwith product */
+    u_long rmx_recvpipe;  /* inbound delay-bandwidth product */
+    u_long rmx_sendpipe;  /* outbound delay-bandwidth product */
     u_long rmx_ssthresh;  /* outbound gateway buffer limit */
     u_long rmx_rtt;       /* estimated round trip time */
     u_long rmx_rttvar;    /* estimated rtt variance */

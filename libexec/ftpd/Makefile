@@ -1,21 +1,29 @@
-#	$NetBSD: Makefile,v 1.12 1995/04/11 02:44:45 cgd Exp $
+#	$OpenBSD: Makefile,v 1.18 2000/09/03 18:41:14 espie Exp $
+#	$NetBSD: Makefile,v 1.13 1996/02/16 02:07:41 cgd Exp $
 #	@(#)Makefile	8.2 (Berkeley) 4/4/94
 
 PROG=	ftpd
-CFLAGS+=-DHASSETPROCTITLE -DSKEY
-SRCS=	ftpd.c ftpcmd.c logwtmp.c popen.c
+CFLAGS+=-DHASSETPROCTITLE -Dunix
+SRCS=	ftpd.c ftpcmd.c logutmp.c logwtmp.c popen.c
 MAN=	ftpd.8
 CLEANFILES+=ftpcmd.c y.tab.h
-.PATH:	${.CURDIR}/../../usr.bin/ftp ${.CURDIR}/../../usr.bin/login
 
-LDADD+= -lcrypt -lskey
-DPADD+= ${LIBCRYPT} ${LIBSKEY}
+.include <bsd.own.mk>
 
-.if defined(KERBEROS)
-SRCS+= klogin.c
-CFLAGS+= -DKERBEROS
-LDADD+= -lkrb -ldes
-DPADD+= ${LIBKRB} ${LIBDES}
+# our internal version of ls.
+
+LSDIR	= ${.CURDIR}/../../bin/ls
+.PATH:	${LSDIR}
+SRCS	+= ls.c cmp.c print.c util.c
+CFLAGS	+= -I${LSDIR}
+
+# not really used
+CPPFLAGS+=-DINET6
+
+.if (${TCP_WRAPPERS:L} == "yes")
+CFLAGS+=-DTCPWRAPPERS
+LDADD+=	-lwrap
+DPADD+=	${LIBWRAP}
 .endif
 
 .include <bsd.prog.mk>

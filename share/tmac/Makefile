@@ -1,26 +1,15 @@
+#	$OpenBSD: Makefile,v 1.5 2000/04/11 20:13:11 millert Exp $
 #	from: @(#)Makefile	6.13 (Berkeley) 3/20/91
-#	$Id: Makefile,v 1.12 1995/04/20 02:05:51 mycroft Exp $
 
-BINDIR= /usr/share
 FILES=	tmac.andoc
-MSRCS=  doc doc-ditroff doc-common doc-nroff doc-syms
 LINKS=	${BINDIR}/tmac/tmac.andoc ${BINDIR}/tmac/tmac.an
 NOOBJ=	noobj
 
-STRIP_SED = ../me/strip.sed
-
-# old macros not currently installed...
-OFILES=	tmac.an.v6compat tmac.an6n tmac.an6t tmac.a tmac.cp tmac.doc.old
+SUBDIR=	mdoc
 
 all clean cleandir depend lint tags:
 
 realinstall:
-	for i in ${MSRCS}; do \
-		rm -f ${DESTDIR}${BINDIR}/tmac/tmac.$$i; \
-		sed -f ${STRIP_SED} < $$i > ${DESTDIR}${BINDIR}/tmac/tmac.$$i; \
-		chown ${BINOWN}:${BINGRP} ${DESTDIR}${BINDIR}/tmac/tmac.$$i; \
-		chmod 444 ${DESTDIR}${BINDIR}/tmac/tmac.$$i; \
-	done
 	install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${FILES} \
 		${DESTDIR}${BINDIR}/tmac
 

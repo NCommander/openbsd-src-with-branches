@@ -1,3 +1,6 @@
+/*	$OpenBSD: lpr.c,v 1.19 1997/07/25 20:12:13 mickey Exp $ */
+/*	$NetBSD: lpr.c,v 1.10 1996/03/21 18:12:25 jtc Exp $	*/
+
 /*
  * Copyright (c) 1983, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -38,13 +41,17 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1989, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-static char sccsid[] = "@(#)lpr.c	8.3 (Berkeley) 3/30/94";
+#if 0
+static const char sccsid[] = "@(#)lpr.c	8.4 (Berkeley) 4/28/95";
+#else
+static const char rcsid[] = "$OpenBSD: lpr.c,v 1.19 1997/07/25 20:12:13 mickey Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -56,6 +63,7 @@ static char sccsid[] = "@(#)lpr.c	8.3 (Berkeley) 3/30/94";
 
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -103,24 +111,23 @@ static void	 chkprinter __P((char *));
 static void	 cleanup __P((int));
 static void	 copy __P((int, char []));
 static void	 fatal2 __P((const char *, ...));
-static char	*itoa __P((int));
 static char	*linked __P((char *));
 static char	*lmktemp __P((char *, int, int));
 static void	 mktemps __P((void));
 static int	 nfile __P((char *));
 static int	 test __P((char *));
+static char	*itoa __P((int));
 
 uid_t	uid, euid;
 
-void
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
 {
 	struct passwd *pw;
 	struct group *gptr;
-	extern char *itoa();
-	register char *arg, *cp;
+	char *arg, *cp;
 	char buf[BUFSIZ];
 	int i, f;
 	struct stat stb;
@@ -256,8 +263,14 @@ main(argc, argv)
 			}
 		}
 	}
-	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
+
+	if (printer == NULL) {
+		char *p;
+
 		printer = DEFLP;
+		if ((p = getenv("PRINTER")) != NULL)
+			printer = p;
+	}
 	chkprinter(printer);
 	if (SC && ncopies > 1)
 		fatal2("multiple copies are not allowed");
@@ -292,7 +305,7 @@ main(argc, argv)
 	/*
 	 * Check to make sure queuing is enabled if userid is not root.
 	 */
-	(void) sprintf(buf, "%s/%s", SD, LO);
+	(void) snprintf(buf, sizeof(buf), "%s/%s", SD, LO);
 	if (userid && stat(buf, &stb) == 0 && (stb.st_mode & 010))
 		fatal2("Printer queue is disabled");
 	/*
@@ -310,7 +323,7 @@ main(argc, argv)
 			if (argc == 1)
 				jobname = "stdin";
 			else
-				jobname = (arg = rindex(argv[1], '/')) ? arg+1 : argv[1];
+				jobname = (arg = strrchr(argv[1], '/')) ? arg+1 : argv[1];
 		}
 		card('J', jobname);
 		card('C', class);
@@ -337,7 +350,8 @@ main(argc, argv)
 			continue;	/* file unreasonable */
 
 		if (sflag && (cp = linked(arg)) != NULL) {
-			(void) sprintf(buf, "%d %d", statb.st_dev, statb.st_ino);
+			(void) snprintf(buf, sizeof(buf), "%d %d", statb.st_dev,
+					statb.st_ino);
 			card('S', buf);
 			if (format == 'p')
 				card('T', title ? title : arg);
@@ -353,17 +367,14 @@ main(argc, argv)
 		}
 		if (sflag)
 			printf("%s: %s: not linked, copying instead\n", name, arg);
-		seteuid(euid);
 		if ((i = open(arg, O_RDONLY)) < 0) {
-			seteuid(uid);
 			printf("%s: cannot open %s\n", name, arg);
-			continue;
+		} else {
+			copy(i, arg);
+			(void) close(i);
+			if (f && unlink(arg) < 0)
+				printf("%s: %s: not removed\n", name, arg);
 		}
-		copy(i, arg);
-		(void) close(i);
-		if (f && unlink(arg) < 0)
-			printf("%s: %s: not removed\n", name, arg);
-		seteuid(uid);
 	}
 
 	if (nact) {
@@ -399,6 +410,7 @@ main(argc, argv)
 		exit(0);
 	}
 	cleanup(0);
+	return (1);
 	/* NOTREACHED */
 }
 
@@ -410,7 +422,7 @@ copy(f, n)
 	int f;
 	char n[];
 {
-	register int fd, i, nr, nc;
+	int fd, i, nr, nc;
 	char buf[BUFSIZ];
 
 	if (format == 'p')
@@ -431,7 +443,8 @@ copy(f, n)
 			nc -= BUFSIZ;
 			nr++;
 			if (MX > 0 && nr > MX) {
-				printf("%s: %s: copy file is too large\n", name, n);
+				printf("%s: %s: copy file is too large\n",
+				       name, n);
 				break;
 			}
 		}
@@ -449,18 +462,16 @@ copy(f, n)
  */
 static char *
 linked(file)
-	register char *file;
+	char *file;
 {
-	register char *cp;
-	static char buf[BUFSIZ];
-	register int ret;
+	char *cp;
+	static char nfile[MAXPATHLEN];
+	int ret;
 
 	if (*file != '/') {
-		seteuid(euid);
-		if (getcwd(buf, BUFSIZ) == NULL) {
-			seteuid(uid);
+		if (getcwd(nfile, sizeof(nfile)) == NULL)
 			return(NULL);
-		}
+
 		while (file[0] == '.') {
 			switch (file[1]) {
 			case '/':
@@ -468,7 +479,7 @@ linked(file)
 				continue;
 			case '.':
 				if (file[2] == '/') {
-					if ((cp = rindex(buf, '/')) != NULL)
+					if ((cp = strrchr(nfile, '/')) != NULL)
 						*cp = '\0';
 					file += 3;
 					continue;
@@ -476,9 +487,9 @@ linked(file)
 			}
 			break;
 		}
-		strcat(buf, "/");
-		strcat(buf, file);
-		file = buf;
+		strncat(nfile, "/", sizeof(nfile) - strlen(nfile) - 1);
+		strncat(nfile, file, sizeof(nfile) - strlen(nfile) - 1);
+		file = nfile;
 	}
 	seteuid(euid);
 	ret = symlink(file, dfname);
@@ -491,15 +502,15 @@ linked(file)
  */
 static void
 card(c, p2)
-	register int c;
-	register char *p2;
+	int c;
+	char *p2;
 {
 	char buf[BUFSIZ];
-	register char *p1 = buf;
-	register int len = 2;
+	char *p1 = buf;
+	int len = 2;
 
 	*p1++ = c;
-	while ((c = *p2++) != '\0') {
+	while ((c = *p2++) != '\0' && len < sizeof(buf)) {
 		*p1++ = (c == '\n') ? ' ' : c;
 		len++;
 	}
@@ -514,7 +525,7 @@ static int
 nfile(n)
 	char *n;
 {
-	register int f;
+	int f;
 	int oldumask = umask(0);		/* should block signals */
 
 	seteuid(euid);
@@ -547,7 +558,7 @@ static void
 cleanup(signo)
 	int signo;
 {
-	register i;
+	int i;
 
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGINT, SIG_IGN);
@@ -583,15 +594,14 @@ test(file)
 	char *file;
 {
 	struct exec execb;
-	register int fd;
-	register char *cp;
+	int fd;
+	char *cp;
 
-	seteuid(euid);
-	if (access(file, 4) < 0) {
-		printf("%s: cannot access %s\n", name, file);
+	if ((fd = open(file, O_RDONLY)) < 0) {
+		printf("%s: cannot open %s\n", name, file);
 		goto bad;
 	}
-	if (stat(file, &statb) < 0) {
+	if (fstat(fd, &statb) < 0) {
 		printf("%s: cannot stat %s\n", name, file);
 		goto bad;
 	}
@@ -603,10 +613,6 @@ test(file)
 		printf("%s: %s is an empty file\n", name, file);
 		goto bad;
  	}
-	if ((fd = open(file, O_RDONLY)) < 0) {
-		printf("%s: cannot open %s\n", name, file);
-		goto bad;
-	}
 	if (read(fd, &execb, sizeof(execb)) == sizeof(execb) &&
 	    !N_BADMAG(execb)) {
 			printf("%s: %s is an executable program and is unprintable",
@@ -616,7 +622,7 @@ test(file)
 	}
 	(void) close(fd);
 	if (rflag) {
-		if ((cp = rindex(file, '/')) == NULL) {
+		if ((cp = strrchr(file, '/')) == NULL) {
 			if (access(".", 2) == 0)
 				return(1);
 		} else {
@@ -634,7 +640,6 @@ test(file)
 	}
 	return(0);
 bad:
-	seteuid(uid);
 	return(-1);
 }
 
@@ -643,10 +648,10 @@ bad:
  */
 static char *
 itoa(i)
-	register int i;
+	int i;
 {
 	static char b[10] = "########";
-	register char *p;
+	char *p;
 
 	p = &b[8];
 	do
@@ -688,12 +693,12 @@ chkprinter(s)
 static void
 mktemps()
 {
-	register int len, fd, n;
-	register char *cp;
+	int len, fd, n;
+	char *cp;
 	char buf[BUFSIZ];
 	char *lmktemp();
 
-	(void) sprintf(buf, "%s/.seq", SD);
+	(void) snprintf(buf, sizeof(buf), "%s/.seq", SD);
 	seteuid(euid);
 	if ((fd = open(buf, O_RDWR|O_CREAT, 0661)) < 0) {
 		printf("%s: cannot create %s\n", name, buf);
@@ -719,7 +724,7 @@ mktemps()
 	inchar = strlen(SD) + 3;
 	n = (n + 1) % 1000;
 	(void) lseek(fd, (off_t)0, 0);
-	sprintf(buf, "%03d\n", n);
+	snprintf(buf, sizeof(buf), "%03d\n", n);
 	(void) write(fd, buf, strlen(buf));
 	(void) close(fd);	/* unlocks as well */
 }
@@ -732,22 +737,22 @@ lmktemp(id, num, len)
 	char	*id;
 	int	num, len;
 {
-	register char *s;
+	char *s;
 
 	if ((s = malloc(len)) == NULL)
 		fatal2("out of memory");
-	(void) sprintf(s, "%s/%sA%03d%s", SD, id, num, host);
+	(void) snprintf(s, len, "%s/%sA%03d%s", SD, id, num, host);
 	return(s);
 }
 
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
 static void
-#if __STDC__
+#ifdef __STDC__
 fatal2(const char *msg, ...)
 #else
 fatal2(msg, va_alist)
@@ -756,7 +761,7 @@ fatal2(msg, va_alist)
 #endif
 {
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, msg);
 #else
 	va_start(ap);

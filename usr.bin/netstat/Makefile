@@ -1,13 +1,19 @@
-#	$NetBSD: Makefile,v 1.11 1995/10/03 21:42:34 thorpej Exp $
-#	from: @(#)Makefile	8.1 (Berkeley) 6/12/93
+#	$OpenBSD: Makefile,v 1.9 2000/06/14 01:05:04 itojun Exp $
 
 PROG=	netstat
-SRCS=	if.c inet.c iso.c main.c mbuf.c mroute.c ns.c route.c \
-	tp_astring.c unix.c
+SRCS=	if.c inet.c inet6.c ipx.c iso.c main.c mbuf.c mroute.c ns.c route.c \
+	tp_astring.c unix.c atalk.c mroute6.c
 .PATH:	${.CURDIR}/../../sys/netiso
 BINGRP=	kmem
 BINMODE=2555
 LDADD=	-lkvm
 DPADD=	${LIBKVM}
+INET6?=	yes
+
+.if (${INET6} != "no")
+CPPFLAGS+=	-DINET6
+.endif
+
+CPPFLAGS+=	-DKAME_SCOPEID
 
 .include <bsd.prog.mk>

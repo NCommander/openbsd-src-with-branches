@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote.y,v 1.10 2001/07/18 22:41:01 deraadt Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -8,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -44,15 +43,23 @@
 %nonassoc UNARYMINUS DEREF OPENNUM OPENFLT
 %start grammarswitch
 %{
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
-#include <regex.h>
-#include "environment.h"
-#include "signature.h"
+#include <math.h>
+
+#if STDC_HEADERS
+#include <string.h>
+#endif /* STDC_HEADERS */
+
+#include "header.h"
+#include "keynote.h"
+#include "assertion.h"
 
 static int *keynote_kth_array = (int *) NULL;
 static int keylistcount = 0;
@@ -64,18 +71,6 @@ static int   checkexception(int);
 static char *my_lookup(char *);
 static int   intpow(int, int);
 static int   get_kth(int);
-
-extern int keynote_in_action_authorizers(void *, int);
-extern int knlex();
-
-extern int keynote_exceptionflag, keynote_donteval;
-extern char **keynote_values, *keynote_privkey;
-extern struct keylist *keynote_keypred_keylist;
-extern struct environment *keynote_temp_list;
-extern struct environment *keynote_init_list;
-extern int knlineno, keynote_used_variable;
- 
-void knerror(char *);
 %}
 %%
 
@@ -514,8 +509,12 @@ stringexp: str EQ str {
 		  memset(pmatch, 0, sizeof(pmatch));
 		  memset(grp, 0, sizeof(grp));
 
+#if HAVE_REGCOMP
 		  if (regcomp(&preg, $3, REG_EXTENDED))
 		  {
+#else /* HAVE_REGCOMP */
+#error "This system does not have regcomp()."
+#endif /* HAVE_REGCOMP */
 		      free($1);
 		      free($3);
 		      keynote_exceptionflag = 1;
@@ -530,11 +529,11 @@ stringexp: str EQ str {
 		      $$ = (i == 0 ? 1 : 0);
 		      if (i == 0)
 		      {
-#ifdef NO_SNPRINTF
-			  sprintf(grp, "%d", preg.re_nsub);
-#else /* NO_SNPRINTF */
-			  snprintf(grp, 3, "%d", preg.re_nsub);
-#endif /* NO_SNPRINTF */
+#if !defined(HAVE_SNPRINTF)
+			  sprintf(grp, "%lu", (unsigned long)preg.re_nsub);
+#else /* !HAVE_SNPRINTF */
+			  snprintf(grp, 3, "%lu", (unsigned long)preg.re_nsub);
+#endif /* !HAVE_SNPRINTF */	
 			  if (keynote_env_add("_0", grp, &keynote_temp_list,
 					      1, 0) != RESULT_TRUE)
 			  {
@@ -558,11 +557,11 @@ stringexp: str EQ str {
 			      strncpy(gr, $1 + pmatch[i].rm_so,
 				      pmatch[i].rm_eo - pmatch[i].rm_so);
 			      gr[pmatch[i].rm_eo - pmatch[i].rm_so] = '\0';
-#ifdef NO_SNPRINTF
+#if !defined(HAVE_SNPRINTF)
 			      sprintf(grp, "_%d", i);
-#else /* NO_SNPRINTF */
+#else /* !HAVE_SNPRINTF */
 			      snprintf(grp, 3, "_%d", i);
-#endif /* NO_SNPRINTF */
+#endif /* !HAVE_SNPRINTF */
 			      if (keynote_env_add(grp, gr, &keynote_temp_list,
 						  1, 0) == -1)
 			      {
@@ -743,33 +742,55 @@ my_lookup(char *s)
     }
 
     /* Temporary list (regexp results) */
-    ret = keynote_env_lookup(s, &keynote_temp_list, 1);
-    if (ret != (char *) NULL)
-      return ret;
-    else
-      if (keynote_errno != 0)
-	return (char *) NULL;
+    if (keynote_temp_list != NULL)
+    {
+	ret = keynote_env_lookup(s, &keynote_temp_list, 1);
+	if (ret != (char *) NULL)
+	  return ret;
+	else
+	  if (keynote_errno != 0)
+	    return (char *) NULL;
+    }
 
     /* Local-Constants */
-    ret = keynote_env_lookup(s, &keynote_init_list, 1);
-    if (ret != (char *) NULL)
-      return ret;
-    else
-      if (keynote_errno != 0)
-	return (char *) NULL;
+    if (keynote_init_list != NULL)
+    {
+	ret = keynote_env_lookup(s, &keynote_init_list, 1);
+	if (ret != (char *) NULL)
+	  return ret;
+	else
+	  if (keynote_errno != 0)
+	    return (char *) NULL;
+    }
 
-    keynote_used_variable = 1;
-
-    /* Action environment */
-    ret = keynote_env_lookup(s, ks->ks_env_table, HASHTABLESIZE);
-    if (ret != (char *) NULL)
-      return ret;
-    else
-      if (keynote_errno != 0)
-	return (char *) NULL;
+    if ((ks != NULL) && (ks->ks_env_table != NULL))
+    {
+	/* Action environment */
+	ret = keynote_env_lookup(s, ks->ks_env_table, HASHTABLESIZE);
+	if (ret != (char *) NULL)
+	{
+	    keynote_used_variable = 1;
+	    return ret;
+	}
+	else
+	  if (keynote_errno != 0)
+	    return (char *) NULL;
+    }
 
     /* Regex table */
-    return keynote_env_lookup(s, &(ks->ks_env_regex), 1);
+    if ((ks != NULL) && (ks->ks_env_regex != NULL))
+    {
+	ret = keynote_env_lookup(s, &(ks->ks_env_regex), 1);
+	if (ret != (char *) NULL)
+	{
+	    keynote_used_variable = 1;
+	    return ret;
+	}
+
+	return (char *) NULL;
+    }
+
+    return (char *) NULL;
 }
 
 /*
@@ -825,7 +846,7 @@ isfloatstring(char *s)
     int i, point = 0;
     
     for (i = strlen(s) - 1; i >= 0; i--)
-      if (!isdigit(s[i]))
+      if (!isdigit((int) s[i]))
       {
 	  if (s[i] == '.')
 	  {

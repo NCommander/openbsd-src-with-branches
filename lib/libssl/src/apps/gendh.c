@@ -1,4 +1,5 @@
 /* apps/gendh.c */
+/* obsoleted by dhparam.c */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,41 +57,38 @@
  * [including the GNU Public Licence.]
  */
 
+#ifndef NO_DH
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "apps.h"
-#include "bio.h"
-#include "rand.h"
-#include "err.h"
-#include "bn.h"
-#include "dh.h"
-#include "x509.h"
-#include "pem.h"
+#include <openssl/bio.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
+#include <openssl/bn.h>
+#include <openssl/dh.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/engine.h>
 
 #define DEFBITS	512
 #undef PROG
 #define PROG gendh_main
 
-#ifndef NOPROTO
-static void MS_CALLBACK dh_cb(int p, int n, char *arg);
-static long dh_load_rand(char *names);
-#else
-static void MS_CALLBACK dh_cb();
-static long dh_load_rand();
-#endif
+static void MS_CALLBACK dh_cb(int p, int n, void *arg);
 
-int MAIN(argc, argv)
-int argc;
-char **argv;
+int MAIN(int, char **);
+
+int MAIN(int argc, char **argv)
 	{
-	char buffer[200];
+	ENGINE *e = NULL;
 	DH *dh=NULL;
 	int ret=1,num=DEFBITS;
 	int g=2;
 	char *outfile=NULL;
-	char *inrand=NULL,*randfile;
+	char *inrand=NULL;
+	char *engine=NULL;
 	BIO *out=NULL;
 
 	apps_startup();
@@ -115,6 +113,11 @@ char **argv;
 			g=3; */
 		else if (strcmp(*argv,"-5") == 0)
 			g=5;
+		else if (strcmp(*argv,"-engine") == 0)
+			{
+			if (--argc < 1) goto bad;
+			engine= *(++argv);
+			}
 		else if (strcmp(*argv,"-rand") == 0)
 			{
 			if (--argc < 1) goto bad;
@@ -130,15 +133,34 @@ char **argv;
 bad:
 		BIO_printf(bio_err,"usage: gendh [args] [numbits]\n");
 		BIO_printf(bio_err," -out file - output the key to 'file\n");
-		BIO_printf(bio_err," -2    use 2 as the generator value\n");
-	/*	BIO_printf(bio_err," -3    use 3 as the generator value\n"); */
-		BIO_printf(bio_err," -5    use 5 as the generator value\n");
-		BIO_printf(bio_err," -rand file:file:...\n");
+		BIO_printf(bio_err," -2        - use 2 as the generator value\n");
+	/*	BIO_printf(bio_err," -3        - use 3 as the generator value\n"); */
+		BIO_printf(bio_err," -5        - use 5 as the generator value\n");
+		BIO_printf(bio_err," -engine e - use engine e, possibly a hardware device.\n");
+		BIO_printf(bio_err," -rand file%cfile%c...\n", LIST_SEPARATOR_CHAR, LIST_SEPARATOR_CHAR);
 		BIO_printf(bio_err,"           - load the file (or the files in the directory) into\n");
 		BIO_printf(bio_err,"             the random number generator\n");
 		goto end;
 		}
 		
+	if (engine != NULL)
+		{
+		if((e = ENGINE_by_id(engine)) == NULL)
+			{
+			BIO_printf(bio_err,"invalid engine \"%s\"\n",
+				engine);
+			goto end;
+			}
+		if(!ENGINE_set_default(e, ENGINE_METHOD_ALL))
+			{
+			BIO_printf(bio_err,"can't use that engine\n");
+			goto end;
+			}
+		BIO_printf(bio_err,"engine \"%s\" set.\n", engine);
+		/* Free our "structural" reference. */
+		ENGINE_free(e);
+		}
+
 	out=BIO_new(BIO_s_file());
 	if (out == NULL)
 		{
@@ -147,7 +169,15 @@ bad:
 		}
 
 	if (outfile == NULL)
+		{
 		BIO_set_fp(out,stdout,BIO_NOCLOSE);
+#ifdef VMS
+		{
+		BIO *tmpbio = BIO_new(BIO_f_linebuffer());
+		out = BIO_push(tmpbio, out);
+		}
+#endif
+		}
 	else
 		{
 		if (BIO_write_filename(out,outfile) <= 0)
@@ -157,28 +187,21 @@ bad:
 			}
 		}
 
-	randfile=RAND_file_name(buffer,200);
-	if ((randfile == NULL)|| !RAND_load_file(randfile,1024L*1024L))
-		BIO_printf(bio_err,"unable to load 'random state'\n");
-
-	if (inrand == NULL)
-		BIO_printf(bio_err,"warning, not much extra random data, consider using the -rand option\n");
-	else
+	if (!app_RAND_load_file(NULL, bio_err, 1) && inrand == NULL)
 		{
-		BIO_printf(bio_err,"%ld semi-random bytes loaded\n",
-			dh_load_rand(inrand));
+		BIO_printf(bio_err,"warning, not much extra random data, consider using the -rand option\n");
 		}
+	if (inrand != NULL)
+		BIO_printf(bio_err,"%ld semi-random bytes loaded\n",
+			app_RAND_load_files(inrand));
 
-	BIO_printf(bio_err,"Generating DH parameters, %d bit long strong prime, generator of %d\n",num,g);
+	BIO_printf(bio_err,"Generating DH parameters, %d bit long safe prime, generator %d\n",num,g);
 	BIO_printf(bio_err,"This is going to take a long time\n");
-	dh=DH_generate_parameters(num,g,dh_cb,(char *)bio_err);
+	dh=DH_generate_parameters(num,g,dh_cb,bio_err);
 		
 	if (dh == NULL) goto end;
 
-	if (randfile == NULL)
-		BIO_printf(bio_err,"unable to write 'random state'\n");
-	else
-		RAND_write_file(randfile);
+	app_RAND_write_file(NULL, bio_err);
 
 	if (!PEM_write_bio_DHparams(out,dh))
 		goto end;
@@ -186,15 +209,12 @@ bad:
 end:
 	if (ret != 0)
 		ERR_print_errors(bio_err);
-	if (out != NULL) BIO_free(out);
+	if (out != NULL) BIO_free_all(out);
 	if (dh != NULL) DH_free(dh);
 	EXIT(ret);
 	}
 
-static void MS_CALLBACK dh_cb(p,n,arg)
-int p;
-int n;
-char *arg;
+static void MS_CALLBACK dh_cb(int p, int n, void *arg)
 	{
 	char c='*';
 
@@ -203,33 +223,9 @@ char *arg;
 	if (p == 2) c='*';
 	if (p == 3) c='\n';
 	BIO_write((BIO *)arg,&c,1);
-	BIO_flush((BIO *)arg);
+	(void)BIO_flush((BIO *)arg);
 #ifdef LINT
 	p=n;
 #endif
 	}
-
-static long dh_load_rand(name)
-char *name;
-	{
-	char *p,*n;
-	int last;
-	long tot=0;
-
-	for (;;)
-		{
-		last=0;
-		for (p=name; ((*p != '\0') && (*p != LIST_SEPARATOR_CHAR)); p++);
-		if (*p == '\0') last=1;
-		*p='\0';
-		n=name;
-		name=p+1;
-		if (*n == '\0') break;
-
-		tot+=RAND_load_file(n,1);
-		if (last) break;
-		}
-	return(tot);
-	}
-
-
+#endif

@@ -1,9 +1,12 @@
-.\" Copyright (c) 1990, 1991 The Regents of the University of California.
-.\" All rights reserved.
+.\"	$OpenBSD: grf.4,v 1.5 2001/05/11 01:24:20 millert Exp $
+.\"
+.\" Copyright (c) 1990, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
 .\"
 .\" This code is derived from software contributed to Berkeley by
 .\" the Systems Programming Group of the University of Utah Computer
 .\" Science Department.
+.\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
@@ -32,10 +35,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)grf.4	5.3 (Berkeley) 7/31/91
-.\"	$Id: grf.4,v 1.2 1993/08/01 07:56:31 mycroft Exp $
+.\"     from: @(#)grf.4	8.1 (Berkeley) 6/9/93
 .\"
-.Dd July 31, 1991
+.Dd June 9, 1993
 .Dt GRF 4 hp300
 .Os
 .Sh NAME
@@ -86,8 +88,9 @@ such as that used for the X Window System servers, has also been successful.
 Examples of some frame buffer operations can be found in
 the device dependent X Window system sources, for example the
 .Pa /usr/src/new/X/libhp.fb
-directory.  These files contain examples of device dependent color map
-initialization, frame buffer operations, bit moving routines etc.
+directory.
+These files contain examples of device dependent color map initialization, 
+frame buffer operations, bit moving routines etc.
 .Pp
 The basic programming of the
 .Nm grf Ns ?
@@ -129,8 +132,9 @@ Graphics On
 .Pp
 Turn graphics on by enabling
 .Tn CRT
-output.  The screen will come on, displaying
-whatever is in the frame buffer, using whatever colormap is in place.
+output.  
+The screen will come on, displaying whatever is in the frame buffer, using 
+whatever colormap is in place.
 .It Dv GRFIOCOFF
 Graphics Off
 .Pp
@@ -141,8 +145,8 @@ are not affected.
 .It Dv GRFIOCMAP
 Map Device to user space
 .Pp
-Map in control registers and framebuffer space. Once the device file is
-mapped, the frame buffer structure is accessible.
+Map in control registers and framebuffer space.
+Once the device file is mapped, the frame buffer structure is accessible.
 .It Dv GRFIOCUNMAP
 Unmap Device
 .Pp
@@ -150,7 +154,7 @@ Unmap control registers and framebuffer space.
 .El
 .Pp
 For further information about the use of ioctl see the man page.
-.Sh EXAMPLE
+.Sh EXAMPLES
 This short code fragment is an example of opening some graphics device and
 mapping in the control and frame buffer space:
 .Bd -literal
@@ -204,11 +208,6 @@ Invalid ioctl specification.
 .Xr ioctl 2 ,
 .Xr dv 4 ,
 .Xr gb 4 ,
+.Xr hil 4 ,
 .Xr rb 4 ,
-.Xr tc 4 ,
-.Xr hil 4
-.Sh HISTORY
-The
-.Nm
-driver
-.Ud
+.Xr tc 4

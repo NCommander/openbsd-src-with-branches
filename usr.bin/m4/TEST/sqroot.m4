@@ -1,3 +1,4 @@
+#	$OpenBSD: sqroot.m4,v 1.4 1995/09/28 05:38:01 tls Exp $
 #	$NetBSD: sqroot.m4,v 1.4 1995/09/28 05:38:01 tls Exp $
 #
 # Copyright (c) 1989, 1993

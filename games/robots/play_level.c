@@ -1,3 +1,4 @@
+/*	$OpenBSD: play_level.c,v 1.4 1999/12/18 11:18:13 pjanzen Exp $	*/
 /*	$NetBSD: play_level.c,v 1.3 1995/04/22 10:09:03 cgd Exp $	*/
 
 /*
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)play_level.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: play_level.c,v 1.3 1995/04/22 10:09:03 cgd Exp $";
+static char rcsid[] = "$OpenBSD: play_level.c,v 1.4 1999/12/18 11:18:13 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,10 +48,10 @@ static char rcsid[] = "$NetBSD: play_level.c,v 1.3 1995/04/22 10:09:03 cgd Exp $
  * play_level:
  *	Let the player play the current level
  */
+void
 play_level()
 {
 	register COORD	*cp;
-	register int	y, x, bonus;
 
 	move(My_pos.y, My_pos.x);
 	addch(PLAYER);
@@ -62,27 +63,24 @@ play_level()
 		addch(ROBOT);
 	}
 	refresh();
-# ifdef DEBUG
+#ifdef DEBUG
 	standout();
 	move(Min.y, Min.x);
 	addch(inch());
 	move(Max.y, Max.x);
 	addch(inch());
 	standend();
-# endif DEBUG
-	setjmp(End_move);
-	flush_in();
+#endif /* DEBUG */
+	flushinp();
 	while (!Dead && Num_robots > 0) {
 		move(My_pos.y, My_pos.x);
 		if (!jumping())
 			refresh();
 		get_move();
-		if (Real_time)
-			alarm(0);
 		if (Field[My_pos.y][My_pos.x] != 0)
 			Dead = TRUE;
 		if (!Dead)
-			move_robots(FALSE);
+			move_robots();
 		if (Was_bonus) {
 			move(Y_PROMPT, X_PROMPT);
 			clrtoeol();

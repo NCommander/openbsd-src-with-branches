@@ -1,8 +1,8 @@
-/*	$NetBSD: preen.c,v 1.12 1996/05/11 14:27:50 mycroft Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: preen.c,v 1.3 1997/06/14 04:16:58 downsj Exp $	*/
+/*	$NetBSD: preen.c,v 1.2 1997/09/14 14:27:30 lukem Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -34,14 +34,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)preen.c	8.3 (Berkeley) 12/6/94";
-#else
-static char rcsid[] = "$NetBSD: preen.c,v 1.12 1996/05/11 14:27:50 mycroft Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -79,9 +71,9 @@ checkfstab(preen, maxrun, docheck, chkit)
 	int preen, maxrun;
 	int (*docheck)(), (*chkit)();
 {
-	register struct fstab *fsp;
-	register struct disk *dk, *nextdisk;
-	register struct part *pt;
+	struct fstab *fsp;
+	struct disk *dk, *nextdisk;
+	struct part *pt;
 	int ret, pid, retcode, passno, sumstatus, status;
 	long auxdata;
 	char *name;
@@ -202,8 +194,8 @@ struct disk *
 finddisk(name)
 	char *name;
 {
-	register struct disk *dk, **dkp;
-	register char *p;
+	struct disk *dk, **dkp;
+	char *p;
 	size_t len;
 
 	for (p = name + strlen(name) - 1; p >= name; --p)
@@ -243,7 +235,7 @@ addpart(name, fsname, auxdata)
 	long auxdata;
 {
 	struct disk *dk = finddisk(name);
-	register struct part *pt, **ppt = &dk->part;
+	struct part *pt, **ppt = &dk->part;
 
 	for (pt = dk->part; pt; ppt = &pt->next, pt = pt->next)
 		if (strcmp(pt->name, name) == 0) {
@@ -271,10 +263,10 @@ addpart(name, fsname, auxdata)
 
 int
 startdisk(dk, checkit)
-	register struct disk *dk;
+	struct disk *dk;
 	int (*checkit)();
 {
-	register struct part *pt = dk->part;
+	struct part *pt = dk->part;
 
 	dk->pid = fork();
 	if (dk->pid < 0) {

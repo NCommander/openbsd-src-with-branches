@@ -1,3 +1,6 @@
+/*	$OpenBSD: hash.c,v 1.8 2000/11/15 01:47:13 angelos Exp $	*/
+/*	$NetBSD: hash.c,v 1.4 1996/11/07 22:59:43 gwr Exp $	*/
+
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -40,13 +43,23 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)hash.c	8.1 (Berkeley) 6/6/93
- *	$Id: hash.c,v 1.1 1995/04/28 06:55:07 cgd Exp $
  */
 
 #include <sys/param.h>
 #include <stdlib.h>
 #include <string.h>
 #include "config.h"
+
+/*
+ * These are really for MAKE_BOOTSTRAP but harmless.
+ * XXX - Why not just use malloc in here, anyway?
+ */
+#ifndef	ALIGNBYTES
+#define	ALIGNBYTES 3
+#endif
+#ifndef ALIGN
+#define	ALIGN(p)	(((long)(p) + ALIGNBYTES) &~ ALIGNBYTES)
+#endif
 
 /*
  * Interned strings are kept in a hash table.  By making each string
@@ -237,6 +250,39 @@ ht_new()
 }
 
 /*
+ * Remove.
+ */
+int
+ht_remove(ht, nam)
+	register struct hashtab *ht;
+	register const char *nam;
+{
+	register struct hashent *hp, *thp;
+	register u_int h;
+
+	h = hash(nam);
+	hp = ht->ht_tab[h & ht->ht_mask];
+	while (hp && hp->h_name == nam)	{
+	        ht->ht_tab[h & ht->ht_mask] = hp->h_next;
+		/* XXX free hp ? */
+		hp = ht->ht_tab[h & ht->ht_mask];
+	}
+
+	if ((hp = ht->ht_tab[h & ht->ht_mask]) == NULL)
+	        return (0);
+
+	for (thp = hp->h_next; thp != NULL; thp = hp->h_next) {
+	        if (thp->h_name == nam) {
+		        hp->h_next = thp->h_next;
+			/* XXX free thp ? */
+		} else
+		        hp = thp;
+	}
+
+	return (0);
+}
+
+/*
  * Insert and/or replace.
  */
 int
@@ -260,6 +306,8 @@ ht_insrep(ht, nam, val, replace)
 	}
 	*hpp = hp = newhashent(nam, h);
 	hp->h_value = val;
+	if (++ht->ht_used > ht->ht_lim)
+		ht_expand(ht);
 	return (0);
 }
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 #include <sys/param.h>
 #include <machine/mon.h>
@@ -6,7 +8,7 @@
 
 /*
  * Open the device named by the combined device/file name
- * given as the "fname" arg, something like: "sd()netbsd"
+ * given as the "fname" arg, something like: "sd()bsd"
  *
  * However, Sun PROMs don't really let you choose which
  * device you will talk to.  You can only open the device

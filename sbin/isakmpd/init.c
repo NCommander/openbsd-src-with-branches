@@ -1,7 +1,9 @@
-/*	$Id: init.c,v 1.10 1998/09/12 19:34:36 niklas Exp $	*/
+/*	$OpenBSD: init.c,v 1.16 2001/06/25 00:00:44 ho Exp $	*/
+/*	$EOM: init.c,v 1.25 2000/03/30 14:27:24 ho Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999, 2000 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 2000 Angelos D. Keromytis.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,14 +37,19 @@
 
 /* XXX This file could easily be built dynamically instead.  */
 
+#include "sysdep.h"
+
 #include "app.h"
+#include "cert.h"
 #include "conf.h"
-#include "cookie.h"
+#include "connection.h"
 #include "doi.h"
 #include "exchange.h"
 #include "init.h"
 #include "ipsec.h"
 #include "isakmp_doi.h"
+#include "libcrypto.h"
+#include "log.h"
 #include "math_group.h"
 #include "sa.h"
 #include "timer.h"
@@ -50,18 +57,38 @@
 #include "udp.h"
 #include "ui.h"
 
+#ifdef USE_POLICY
+#include "policy.h"
+#endif
+
 void
-init ()
+init (void)
 {
+  log_init ();
   app_init ();
-  conf_init ();
   doi_init ();
   exchange_init ();
   group_init ();
   ipsec_init ();
   isakmp_doi_init ();
+  libcrypto_init ();
+
+  tzset ();
+
   timer_init ();
-  cookie_init ();	/* Depends on properly setup timer queue */
+
+  /* The following group are depending on timer_init having run.  */
+  conf_init ();
+  connection_init ();
+
+#ifdef USE_POLICY
+  /* policy_init depends on conf_init having run.  */
+  policy_init ();
+#endif
+
+  /* Depends on conf_init and policy_init having run */
+  cert_init ();
+
   sa_init ();
   transport_init ();
   udp_init ();

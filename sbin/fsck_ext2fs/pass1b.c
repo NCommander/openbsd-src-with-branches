@@ -1,8 +1,8 @@
-/*	$NetBSD: pass1b.c,v 1.10 1996/09/23 16:18:37 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: pass1b.c,v 1.3 1997/06/14 04:16:55 downsj Exp $	*/
+/*	$NetBSD: pass1b.c,v 1.2 1997/09/14 14:27:26 lukem Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -35,14 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pass1b.c	8.1 (Berkeley) 6/5/93";
-#else
-static char rcsid[] = "$NetBSD: pass1b.c,v 1.10 1996/09/23 16:18:37 christos Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/param.h>
 #include <sys/time.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>
@@ -58,8 +50,8 @@ static  struct dups *duphead;
 void
 pass1b()
 {
-	register int c, i;
-	register struct ext2fs_dinode *dp;
+	int c, i;
+	struct ext2fs_dinode *dp;
 	struct inodesc idesc;
 	ino_t inumber;
 
@@ -85,9 +77,9 @@ pass1b()
 
 static int
 pass1bcheck(idesc)
-	register struct inodesc *idesc;
+	struct inodesc *idesc;
 {
-	register struct dups *dlp;
+	struct dups *dlp;
 	int nfrags, res = KEEPON;
 	daddr_t blkno = idesc->id_blkno;
 

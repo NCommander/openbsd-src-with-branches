@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: play.c,v 1.3 1995/04/22 10:28:04 cgd Exp $	*/
 
 /*
@@ -40,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)play.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: play.c,v 1.3 1995/04/22 10:28:04 cgd Exp $";
+static char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 
@@ -61,10 +62,7 @@ static char rcsid[] = "$NetBSD: play.c,v 1.3 1995/04/22 10:28:04 cgd Exp $";
 boolean interrupted = 0;
 char *unknown_command = "unknown command";
 
-extern short party_room, bear_trap;
-extern char hit_message[];
-extern boolean wizard, trap_door;
-
+void
 play_level()
 {
 	short ch;

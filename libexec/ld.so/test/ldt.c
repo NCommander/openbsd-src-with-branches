@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <stdio.h>
 main()
 {

@@ -1,5 +1,3 @@
-/*	$NetBSD: vfscanf.c,v 1.14 1995/03/22 00:57:02 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,16 +35,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)vfscanf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: vfscanf.c,v 1.14 1995/03/22 00:57:02 jtc Exp $";
+static char rcsid[] = "$OpenBSD: vfscanf.c,v 1.6 1998/01/20 21:25:39 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -101,6 +96,7 @@ static u_char *__sccl();
 /*
  * vfscanf
  */
+int
 __svfscanf(fp, fmt0, ap)
 	register FILE *fp;
 	char const *fmt0;
@@ -133,13 +129,9 @@ __svfscanf(fp, fmt0, ap)
 		if (c == 0)
 			return (nassigned);
 		if (isspace(c)) {
-			for (;;) {
-				if (fp->_r <= 0 && __srefill(fp))
-					return (nassigned);
-				if (!isspace(*fp->_p))
-					break;
+			while ((fp->_r > 0 || __srefill(fp) == 0) &&
+			    isspace(*fp->_p))
 				nread++, fp->_r--, fp->_p++;
-			}
 			continue;
 		}
 		if (c != '%')
@@ -359,7 +351,7 @@ literal:
 		case CT_CCL:
 			/* scan a (nonempty) character class (sets NOSKIP) */
 			if (width == 0)
-				width = ~0;	/* `infinity' */
+				width = (size_t)~0;	/* `infinity' */
 			/* take only those things in the class */
 			if (flags & SUPPRESS) {
 				n = 0;
@@ -400,7 +392,7 @@ literal:
 		case CT_STRING:
 			/* like CCL, but zero-length string OK, & no NOSKIP */
 			if (width == 0)
-				width = ~0;
+				width = (size_t)~0;
 			if (flags & SUPPRESS) {
 				n = 0;
 				while (!isspace(*fp->_p)) {

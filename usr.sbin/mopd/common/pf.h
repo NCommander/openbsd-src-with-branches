@@ -1,3 +1,5 @@
+/*	$OpenBSD: pf.h,v 1.2 1996/09/21 19:11:54 maja Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: pf.h,v 1.4 1995/10/13 19:30:46 moj Exp $
+ *	$OpenBSD: pf.h,v 1.2 1996/09/21 19:11:54 maja Exp $
  *
  */
 
@@ -53,4 +55,4 @@ int	pfWrite    __P((int, u_char *, int, int));
 __END_DECLS
 #endif
 
-#endif _PF_H_
+#endif /* _PF_H_ */

@@ -1,6 +1,5 @@
-/*	$OpenBSD$	*/
 /*
- * Copyright (c) 1995, 1996, 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -41,36 +40,55 @@
  * Our cache of volume information.
  */
 
-/* $KTH: volcache.h,v 1.13 1998/07/29 21:29:10 assar Exp $ */
+/* $Id: volcache.h,v 1.27 2000/07/11 22:24:37 assar Exp $ */
 
 #ifndef _VOLCACHE_
 #define _VOLCACHE_
 
 #include <stdio.h>
 #include <cred.h>
+#include <list.h>
+#include "vldb.h"
 
 #define BACKSUFFIX ".backup"
 #define ROSUFFIX   ".readonly"
+
+/*
+ * index for number into a VolCacheEntry
+ */
 
 struct num_ptr {
     int32_t cell;
     u_int32_t vol;
     struct volcacheentry *ptr;
+    int32_t type;
 };
+
+/*
+ * index for name into a VolCacheEntry
+ */
 
 struct name_ptr {
     int32_t cell;
     char name[VLDB_MAXNAMELEN];
     struct volcacheentry *ptr;
+    int32_t type;
 };
 
 struct volcacheentry {
-    vldbentry entry;
+    nvldbentry entry;
     AFSVolSync volsync;
     int32_t cell;
-    unsigned refcount;
+    unsigned refcount;		/* number of files refererring this */
+    unsigned vol_refs;		/* number of volumes refing this */
+    time_t last_fetch;
+    Listitem *li;
+    VenusFid mp_fid;		/* pointing to this volume */
+    VenusFid parent_fid;	/* .. of this volume */
+    struct volcacheentry *parent; /* parent volume */
     struct {
-	unsigned validp : 1;
+	unsigned validp  : 1;
+	unsigned stablep : 1;
     } flags;
     struct name_ptr name_ptr[MAXTYPES];
     struct num_ptr num_ptr[MAXTYPES];
@@ -78,29 +96,64 @@ struct volcacheentry {
 
 typedef struct volcacheentry VolCacheEntry;
 
+/*
+ * This is magic cookie for the dump of the volcache.
+ * It's supposed not to be able to be confused with an old-style
+ * dump (with no header)
+ */
+
+#define VOLCACHE_MAGIC_COOKIE	0x00120100
+
+/*
+ * current version number of the dump file
+ */
+
+#define VOLCACHE_VERSION	0x2
+
 const char *volcache_get_rootvolume (void);
 
 void volcache_set_rootvolume (const char *volname);
 
 void volcache_init (unsigned nentries, Bool recover);
 
-VolCacheEntry *volcache_getbyname (const char *volname,
-				   int32_t cell,
-				   CredCacheEntry *ce);
+int volcache_getbyname (const char *volname,
+			int32_t cell,
+			CredCacheEntry *ce,
+			VolCacheEntry **e,
+			int *type);
 
-VolCacheEntry *volcache_getbyid (u_int32_t id,
-				 int32_t cell,
-				 CredCacheEntry *ce);
+int volcache_getbyid (u_int32_t id,
+		      int32_t cell,
+		      CredCacheEntry *ce,
+		      VolCacheEntry **e,
+		      int *type);
 
 void volcache_update_volsync (VolCacheEntry *e, AFSVolSync volsync);
 
 void volcache_free (VolCacheEntry *e);
 
+void volcache_volref (VolCacheEntry *e, VolCacheEntry *parent);
+
+void volcache_volfree (VolCacheEntry *e);
+
 void volcache_invalidate (u_int32_t id, int32_t cell);
 
-void volcache_status (FILE *f);
+void volcache_invalidate_ve (VolCacheEntry *ve);
+
+int volume_make_uptodate (VolCacheEntry *e, CredCacheEntry *ce);
+
+Bool volcache_reliable (u_int32_t id, int32_t cell);
+
+const char *volcache_getname (u_int32_t id, int32_t cell);
+
+void volcache_status (void);
 
 int
 volcache_store_state (void);
+
+int
+volcache_volid2bit (const VolCacheEntry *ve, u_int32_t volid);
+
+enum { VOLCACHE_OLD = 120 };
 
 #endif /* _VOLCACHE_ */

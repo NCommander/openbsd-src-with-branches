@@ -1,151 +1,140 @@
-.\"	$NetBSD: at.1,v 1.6 1995/03/25 18:13:29 glass Exp $
-.\"
-.\"
-.\" Copyright (c) 1993 Christopher G. Demetriou
-.\" All rights reserved.
-.\"
-.\" Redistribution and use in source and binary forms, with or without
-.\" modification, are permitted provided that the following conditions
-.\" are met:
-.\" 1. Redistributions of source code must retain the above copyright
-.\"    notice, this list of conditions and the following disclaimer.
-.\" 2. Redistributions in binary form must reproduce the above copyright
-.\"    notice, this list of conditions and the following disclaimer in the
-.\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"      This product includes software developed by Christopher G. Demetriou.
-.\" 3. The name of the author may not be used to endorse or promote products
-.\"    derived from this software without specific prior written permission
-.\"
-.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-.\" IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-.\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-.\"
-.\"
-.Dd December 5, 1993
-.Dt "AT" 1
-.Os NetBSD 0.9a
+.\" $OpenBSD: at.1,v 1.17 2000/11/10 05:10:21 aaron Exp $
+.\" $FreeBSD: at.man,v 1.6 1997/02/22 19:54:05 peter Exp $
+.Dd April 12, 1995
+.Dt AT 1
+.Os
 .Sh NAME
-.Nm at, batch, atq, atrm
-.Nd queue, examine, or delete jobs for later execution
-.\"
+.Nm at ,
+.Nm atq ,
+.Nm atrm ,
+.Nm batch
+.Nd queue, examine or delete jobs for later execution
 .Sh SYNOPSIS
 .Nm at
+.Op Fl V
 .Op Fl q Ar queue
 .Op Fl f Ar file
-.Op Fl m
+.Op Fl mldbv
 .Ar time
-.Pp
+.Nm at
+.Op Fl V
+.Fl c Ar job Op Ar job ...
 .Nm atq
+.Op Fl V
 .Op Fl q Ar queue
 .Op Fl v
-.Pp
 .Nm atrm
+.Op Fl V
 .Ar job
 .Op Ar job ...
-.Pp
 .Nm batch
+.Op Fl V
+.Op Fl q Ar queue
 .Op Fl f Ar file
-.Op Fl m
+.Op Fl mv
+.Op Ar time
 .Sh DESCRIPTION
-The
 .Nm at
 and
 .Nm batch
-utilities read commands from the standard input or a specified file
-which are to be executed at a later time, using
+read commands from standard input or a specified file which
+are to be executed at a later time, using
 .Xr sh 1 .
 .Pp
-The functions of the commands are as follows:
-.Bl -tag -width indent
+The related programs are as follows:
+.Bl -tag -width Ds
 .It Nm at
 Executes commands at a specified time.
 .It Nm atq
-Lists the user's pending jobs, unless the user is
-the superuser.  In that case, everybody's jobs are
-listed.
+Lists the user's pending jobs, unless the user is the superuser.
+In that case, all users' jobs are listed.
 .It Nm atrm
 Deletes jobs.
 .It Nm batch
-executes commands when system load levels  permit.
-In other words, it executes the commands when the load
-average drops below a specified level.
+Executes commands when system load levels permit.
+In other words, when
+the load average drops below 1.5, or the value specified in the invocation of
+.Nm atrun .
 .El
 .Pp
-For both
-.Nm at
-and
-.Nm batch ,
-the working directory, environment (except for the variables
-.Nm TERM ,
-.Nm TERMCAP ,
-.Nm DISPLAY ,
-and
-.Nm _ )
-and the umask are retained from the time of invocation.  The user
-will be mailed the standard output and standard error from
-his commands if any output is generated.  If
-.Nm at
-is executed from a
-.Xr su 1
-shell, the owner of the login shell will receive the mail.
-.Sh OPTIONS
+The options are as follows:
 .Bl -tag -width indent
-The available options are as follows:
+.It Fl V
+Prints the version number to standard error.
 .It Fl q Ar queue
-Use the specified queue.  A queue designation consists
-of a single letter; valid queue designation range from
-.Ar a
+Uses the specified queue.
+A queue designation consists of a single letter.
+Valid queue designations range from
+.Sy a
 to
-.Ar l .
+.Sy z
+and
+.Sy A
+to
+.Sy Z .
 The
-.Ar a
-queue is the default, and
-.Ar b
-is the batch queue.  Queues with higher letters run with
-increased niceness.  If
+.Sy c
+queue is the default for
+.Nm at
+and the
+.Sy E
+queue for
+.Nm batch .
+Queues with higher letters run with increased niceness.
+If a job is submitted to a queue designated with an uppercase letter, it
+is treated as if it had been submitted to batch at that time.
+If
 .Nm atq
-is given a specific queue, it will only show jobs pending
-in that queue.
+is given a specific queue, it will only show jobs pending in that queue.
 .It Fl m
-Send mail to the user when the job has completed, even if
-there was no output.
+Send mail to the user when the job has completed, even if there was no
+output.
 .It Fl f Ar file
 Reads the job from
 .Ar file
-rather than the standard input.
+rather than standard input.
+.It Fl l
+An alias for
+.Nm atq .
+.It Fl d
+An alias for
+.Nm atrm .
+.It Fl b
+An alias for
+.Nm batch .
 .It Fl v
-Shows completed but not yet deleted jobs in the queue.
-.Sh TIME SPECIFICATION
-.Nm At
-allows some moderately complex time specifications.
+For
+.Nm atq ,
+shows completed but not yet deleted jobs in the queue.
+Otherwise shows the time the job will be executed.
+.It Fl c
+Prints the jobs listed on the command line to standard output.
+.El
+.Pp
+.Nm at
+allows some moderately complex
+.Ar time
+specifications.
 It accepts times of the form
 .Ar HHMM
 or
 .Ar HH:MM
-to run a job at a specific time of day.  If
-that time is already passed, the next day is assumed.
+to run a job at a specific time of day.
+(If that time is already past, the next day is assumed.)
 You may also specify
-.Nm midnight ,
-.Nm noon ,
+.Sy midnight ,
+.Sy noon ,
 or
-.Nm teatime
-(4PM) and you can give a time of day suffixed with
-.Nm AM
+.Sy teatime
+(4pm)
+and you can have a time-of-day suffixed with
+.Dq AM
 or
-.Nm PM
-for running in the morning or the evening.  You can
-also specify the date on which the job will be run
+.Dq PM
+for running in the morning or the evening.
+You can also say what day the job will be run,
 by giving a date in the form
-.Ar month-name day
+.Ar \%month-name day
 with an optional
 .Ar year ,
 or giving a date of the form
@@ -153,64 +142,145 @@ or giving a date of the form
 .Ar MM/DD/YY
 or
 .Ar DD.MM.YY .
-You can also give times like
-.Nm now +
-.Ar count time-units ,
-where the time units can be
-.Nm minutes, hours, days,
-or
-.Nm weeks
-You can suffix the time with
-.Nm today
-to run the job today, or
-.Nm tomorrow
-to run the job tomorrow.
 .Pp
-For example, to run a job at 4PM three days from now, you
-would specify a time of
-.Nm 4PM + 3 days .
-To run a job at 10:00AM on on July 31, you would specify
-a time of
-.Nm 10AM Jul 31 .
-Finally, to run a job at 1AM tomorrow, you would specify
-a time of
-.Nm 1AM tomorrow .
+The year may be given as two or four digits.
+If the year is given as two digits, it is taken to occur as soon as
+possible in the future, which may be in the next century --
+unless it's last year, in which case it's considered to be
+a typo.
+.Pp
+The specification of a date must follow the specification of
+the time of day.
+You can also give times like
+.Op Sq now
+.Sy + Ar count \%time-units ,
+where the time-units can be
+.Sy minutes ,
+.Sy hours ,
+.Sy days ,
+or
+.Sy weeks
+and you can tell
+.Nm at
+to run the job today by suffixing the time with
+.Sy today
+and to run the job tomorrow by suffixing the time with
+.Sy tomorrow .
+.Pp
+For example, to run a job at 4pm three days from now, you would do
+.Ic at 4pm + 3 days .
+To run a job at 10:00am on July 31, you would do
+.Ic at 10am Jul 31 .
+To run a job at 1am tomorrow, you would do
+.Ic at 1am tomorrow .
+.Pp
+For both
+.Nm at
+and
+.Nm batch ,
+commands are read from standard input or the file specified
+with the
+.Fl f
+option and executed.
+The working directory, the environment (except for the variables
+.Ev TERM ,
+.Ev TERMCAP ,
+.Ev DISPLAY ,
+and
+.Ev _ ) ,
+and the
+.Ar umask
+are retained from the time of invocation.
+An
+.Nm at
+or
+.Nm batch
+command invoked from a
+.Xr su 1
+shell will retain the current user ID.
+The user will be mailed standard error and standard output from his
+commands, if any.
+Mail will be sent using the command
+.Xr sendmail 8 .
+If
+.Nm at
+is executed from a
+.Xr su 1
+shell, the owner of the login shell will receive the mail.
+.Pp
+The superuser may use these commands in any case.
+For other users, permission to use at is determined by the files
+.Pa /var/at/at.allow
+and
+.Pa /var/at/at.deny .
+.Pp
+If the file
+.Pa /var/at/at.allow
+exists, only usernames mentioned in it are allowed to use
+.Nm at .
+If
+.Pa /var/at/at.allow
+does not exist,
+.Pa /var/at/at.deny
+is checked.
+Every username not mentioned in it is then allowed to use
+.Nm at .
+If neither exists, only the superuser is allowed use of
+.Nm at .
+.Pp
+An empty
+.Pa /var/at/at.deny
+means that every user is allowed use these commands.
+This is the default configuration.
 .Sh FILES
-.Bl -tag -width /var/at/lockfile -compact
+.Bl -tag -width /var/at/.lockfile -compact
 .It Pa /var/at/jobs
-Directory containing job files
+directory containing job files
 .It Pa /var/at/spool
-Directory containing output spool files
-.It Pa /var/at/lockfile
-Job-creation lock file.
+directory containing output spool files
 .It Pa /var/run/utmp
+login records
+.It Pa /var/at/at.allow
+allow permission control
+.It Pa /var/at/at.deny
+deny permission control
+.It Pa /var/at/.lockfile
+job-creation lock file
 .El
 .Sh SEE ALSO
-.Xr cron 8 ,
 .Xr nice 1 ,
 .Xr sh 1 ,
-.Xr atrun 8
-.Sh AUTHOR
-.Bl -tag
-Thomas Koenig, ig25@rz.uni-karlsruhe.de
-.El
+.Xr umask 2 ,
+.Xr atrun 8 ,
+.Xr cron 8 ,
+.Xr sendmail 8
+.Sh AUTHORS
+.Nm at
+was mostly written by Thomas Koenig <ig25@rz.uni-karlsruhe.de>.
+The time parsing routines are by David Parsons <orc@pell.chi.il.us>.
 .Sh BUGS
-Traditional access control to
+If the file
+.Pa /var/run/utmp
+is not available or corrupted, or if the user is not logged on at the
+time
+.Nm at
+is invoked, the mail is sent to the user ID found
+in the environment variable
+.Ev LOGNAME .
+If that is undefined or empty, the current user ID is assumed.
+.Pp
 .Nm at
 and
 .Nm batch
-via the files
-.Pa /var/at/at.allow
-and
-.Pa /var/at/at.deny
-is not implemented.
+as presently implemented are not suitable when users are competing for
+resources.
+If this is the case for your site, you might want to consider another
+batch system, such as
+.Nm nqs .
 .Pp
-If the file
-.Pa /var/run/utmp
-is not available or corrupted, or if the user is not
-logged in at the time
+.Nm atq
+always prints the year as two digits.
+Since
 .Nm at
-is invoked, the mail is sent to the userid found in the
-environment variable
-.Nm LOGNAME .
-If that is undefined or empty, the current userid is assumed.
+only permits submission of jobs in the future, it is somewhat
+clear which century the job will run in.

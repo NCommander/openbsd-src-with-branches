@@ -1,6 +1,6 @@
 #!/bin/sh -
-#
-#	$NetBSD: MAKEDEV,v 1.17 1995/10/09 02:23:07 chopps Exp $
+#	$OpenBSD: MAKEDEV,v 1.49 2001/06/25 03:19:47 kjell Exp $
+#	$NetBSD: MAKEDEV,v 1.21 1996/05/19 21:03:49 veego Exp $
 #
 # Copyright (c) 1990 The Regents of the University of California.
 # All rights reserved.
@@ -33,13 +33,14 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
+#	@(#)MAKEDEV	5.5 (Berkeley) 5/28/91
 #	from:
 #	hp300/MAKEDEV (1/15/94), from:
 #	@(#)MAKEDEV	5.5 (Berkeley) 5/28/91
 #
 # Device "make" file.  Valid arguments:
-#	all	makes all known devices, including local devices,
-#		Tries to make the ``standard'' number of each.
+#	all	makes all known devices, including local devices.
+#		Tries to make the ``standard'' number of each type.
 #	fd	makes fd/* for the fdescfs.
 #	floppy	devices needed for install floppies
 #	std	standard devices
@@ -49,11 +50,12 @@
 #	st*	SCSI tapes
 #
 # Disks:
-#	fd*	Floppy disks
-#	sd*	SCSI disks, includes flopticals
-#	cd*	SCSI cdrom discs
+#	fd*	Floppy disk drives (3 1/2", 5 1/4")
+#	sd*	SCSI disks
+#	cd*	SCSI cdrom drives
 #	vnd*	"file" pseudo-disks
-#	ccd*	concatenated disk driver
+#	ccd*	concatenated disk devices
+#	wd*	ISA "winchester" disk drives (ST506,IDE,ESDI,RLL,...)
 #
 # Console ports:
 #	ttye*	ite bitmapped consoles
@@ -64,12 +66,15 @@
 # Terminal ports:
 #	tty00	standard serial port.
 #	ttyA*	mfc serial ports
+#	ttyB*	ISA COM ports
 #
 # Pseudo terminals:
 #	pty*	set of 16 master and slave pseudo terminals
 #
 # Printers:
 #	par*	motherboard parallel port
+#	lpt*	stock lp
+#	lpa*	interruptless lp
 #
 # Special purpose devices:
 #	grf*	custom chip (grf0), Retina Z2/Z3 (grf1/grf2),
@@ -78,40 +83,111 @@
 #	kbd	Amiga keyboard
 #	view*	generic interface to graphic displays.
 #	aconf	autoconfig information (not yet)
-#	lkm	loadable kernel modules interface.
+#	lkm	loadable kernel modules interface
 #	bpf*	Berkeley Packet Filter
 #	tun*	network tunnel driver
+#	ss*	SCSI scanners
+#	uk*	SCSI Unknown device
+#	*random	inkernal random data source
+#	audio*	one unit of the audio device. Unit 0 is custom chip audio.
+#	joy*	amiga joysticks
+#	altq	ALTQ control interface
 
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+this=$0
 umask 77
+
+# default shell support functions
+add ()
+{
+	tmp=0
+	while [ "$1" ]
+	do
+		tmp=$(( $1 + $tmp ))
+		shift
+	done
+	echo $tmp
+}
+mult ()
+{
+	echo "$(( $1 * $2 ))"
+}
+hex ()
+{
+	case $1 in
+		[0-9]) echo -n $1;;
+		10) echo -n a;;
+		11) echo -n b;;
+		12) echo -n c;;
+		13) echo -n d;;
+		14) echo -n e;;
+		15) echo -n f;;
+	esac
+}
+trunc ()
+{
+	# XXX pdksh can't seem to deal with locally scoped variables
+	# in ${foo#$bar} expansions
+	arg1="$1"
+	arg2="$2"
+	echo ${arg1#$arg2}
+}
+unt()
+{
+	# XXX pdksh can't seem to deal with locally scoped variables
+	# in ${foo#$bar} expansions
+	arg1="$1"
+	tmp="${arg1#[a-z]*}"
+	while [ "$tmp" != "$arg1" ]
+	do
+		arg1=$tmp
+		tmp="${arg1#[a-z]*}"
+	done
+	tmp="${arg1%*[a-z]}"
+	while [ "$tmp" != "$arg1" ]
+	do
+		arg1=$tmp
+		tmp="${arg1%*[a-z]}"
+	done
+	echo $arg1
+}
+
 for i
 do
+
+unit=`unt $i`
+[ "$unit" ] || unit=0
+
 case $i in
 all)
-	sh MAKEDEV std fd st0 ttye0 ttye1 ttye2 ttye3 ttye4 mouse0 mouse1
-	sh MAKEDEV tty00 ttyA0 ttyA1 grf0 grf1 grf2 grf3 grf4 grf5
-	sh MAKEDEV kbd sd0 sd1 sd2 sd3 sd4 sd5 sd6 sd7 sd8 sd9 vnd0 vnd1 vnd2
-	sh MAKEDEV vnd3 vnd4 view00 view01 view02 view03 view04 view05 pty0 
-	sh MAKEDEV vnd5 vnd6 cd0 fd0 fd1 fd2 fd3 bpf0 bpf1 bpf2 bpf3
-	sh MAKEDEV ccd0 ccd1 ccd2 ccd3
-	sh MAKEDEV tun0 tun1 par0 lkm local
+	sh $this std fd st0 st1 ttye0 ttye1 ttye2 ttye3 ttye4 ttye5 ttye6
+	sh $this mouse0 mouse1 joy0 joy1 tty00 ttyA0 ttyA1
+	sh $this ttyB0 ttyB1 ttyB2 ttyB3 ttyB4 ttyB5 ttyB6 ttyB7 ttyB8 ttyB9
+	sh $this grf0 grf1 grf2 grf3 grf4 grf5 grf6
+	sh $this kbd sd0 sd1 sd2 sd3 sd4 sd5 sd6 sd7 sd8 sd9
+	sh $this vnd0 vnd1 vnd2 vnd3 vnd4 vnd5 vnd6 cd0 cd1 fd0 fd1 fd2 fd3
+	sh $this bpf0 bpf1 bpf2 bpf3 bpf4 bpf5 bpf6 bpf7 bpf8 bpf9
+	sh $this view00 view01 view02 view03 view04 view05 pty0 pty1
+	sh $this lpa0 lpa1 lpt0 lpt1 lpt2
+	sh $this ccd0 ccd1 ccd2 ccd3 wd0 wd1 ch0 uk0 uk1
+	sh $this pf tun0 tun1 par0 lkm ss0 random audio0 xfs0 altq local
 	;;
 
-floppy)
-	sh MAKEDEV std kbd pty0 tty00 ttyA0 ttyA1 tun0 tun1
-	sh MAKEDEV grf0 grf1 grf2 grf3 grf4 grf5 ttye0 ttye1 ttye2 ttye3 ttye4
-	sh MAKEDEV cd0 sd0 sd1 sd2 sd3 sd4 sd5 sd6 sd7 sd8 sd9 st0
-	sh MAKEDEV fd0 fd1 fd2 fd3 
+floppy|ramdisk)
+	sh $this std kbd pty0 tty00 ttyA0 ttyA1 ttyB0 ttyB1
+	sh $this ttye0 ttye1 ttye2 ttye3 ttye4 ttye5 ttye6
+	sh $this cd0 cd1 sd0 sd1 sd2 sd3 st0 st1
+	sh $this fd0 fd1 wd0 wd1 rd0 random
 	;;
 
 std)
 	rm -f console drum kmem mem reload null zero tty
-	rm -f klog stdin stdout stderr
+	rm -f klog stdin stdout stderr ksyms
 	mknod console		c 0 0
-	mknod drum		c 3 0	; chmod 640 drum ; chgrp kmem drum
-	mknod kmem		c 2 1	; chmod 640 kmem ; chgrp kmem kmem
-	mknod mem		c 2 0	; chmod 640 mem ; chgrp kmem mem
-	mknod reload		c 2 20	; chmod 640 mem ; chgrp kmem mem
+	mknod drum		c 3 0	; chmod 640 drum ; chown root.kmem drum
+	mknod kmem		c 2 1	; chmod 640 kmem ; chown root.kmem kmem
+	mknod mem		c 2 0	; chmod 640 mem ; chown root.kmem mem
+	mknod reload		c 2 20	; chmod 600 reload
 	mknod zero		c 2 12	; chmod 666 zero
 	mknod null		c 2 2	; chmod 666 null
 	mknod tty		c 1 0	; chmod 666 tty
@@ -119,6 +195,7 @@ std)
 	mknod stdin		c 21 0	; chmod 666 stdin
 	mknod stdout		c 21 1	; chmod 666 stdout
 	mknod stderr		c 21 2	; chmod 666 stderr
+	mknod ksyms		c 42 0  ; chmod 640 ksyms ; chown root.kmem ksyms
 	;;
 
 fd)
@@ -128,7 +205,7 @@ fd)
 		mknod $i c 21 $i
 		i=$(($i+1))
 		done)
-	chown -R bin.bin fd
+	chown -R root.wheel fd
 	chmod 555 fd
 	chmod 666 fd/*
 	;;
@@ -150,11 +227,11 @@ st*)
 		mknod nr${name}${unit}	c $chr `expr $unit '*' 16 + 1`
 		mknod er${name}${unit}	c $chr `expr $unit '*' 16 + 2`
 		mknod enr${name}${unit}	c $chr `expr $unit '*' 16 + 3`
-		chgrp operator ${name}${unit} n${name}${unit} \
+		chown root.operator ${name}${unit} n${name}${unit} \
 			e$name$unit en$name$unit \
 			r${name}${unit} nr${name}${unit} \
 			er${name}${unit} enr${name}${unit} 
-		chmod 640 ${name}${unit} n${name}${unit} \
+		chmod 660 ${name}${unit} n${name}${unit} \
 			e$name$unit en$name$unit \
 			r${name}${unit} nr${name}${unit} \
 			er${name}${unit} enr${name}${unit} 
@@ -175,7 +252,7 @@ fd*)
 		mknod fd${unit}b b 2 `expr $unit '*' 16 + 1`
 		mknod rfd${unit}a c 18 `expr $unit '*' 16`
 		mknod rfd${unit}b c 18 `expr $unit '*' 16 + 1`
-		chgrp operator fd$unit? rfd$unit?
+		chown root.operator fd$unit? rfd$unit?
 		chmod 640 fd$unit? rfd$unit?
 		;;
 	*)
@@ -185,20 +262,19 @@ fd*)
 	umask 77
 	;;
 
-sd*|vnd*|ccd*)
+sd*|ccd*|wd*|rd*)
 	umask 2 ; unit=`expr $i : '.*[^0-9]\([0-9]*\)'`
 	case $i in
 	sd*) name=sd; blk=4; chr=8;;
-	vnd*) name=vnd; blk=6; chr=19;;
+	rd*) name=rd; blk=16; chr=41;;
 	ccd*) name=ccd; blk=8; chr=7;;
+	wd*) name=wd; blk=0; chr=37;;
 	esac
 	rm -f $name$unit? r$name$unit?
 	case $unit in
 	0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15)
 		mknod ${name}${unit}c	b $blk `expr $unit '*' 16 + 2`
 		mknod r${name}${unit}c	c $chr `expr $unit '*' 16 + 2`
-		if [ $name != cd -a $name != vnd ]
-		then
 		mknod ${name}${unit}a	b $blk `expr $unit '*' 16 + 0`
 		mknod ${name}${unit}b	b $blk `expr $unit '*' 16 + 1`
 		mknod ${name}${unit}d	b $blk `expr $unit '*' 16 + 3`
@@ -229,8 +305,7 @@ sd*|vnd*|ccd*)
 		mknod r${name}${unit}n	c $chr `expr $unit '*' 16 + 13`
 		mknod r${name}${unit}o	c $chr `expr $unit '*' 16 + 14`
 		mknod r${name}${unit}p	c $chr `expr $unit '*' 16 + 15`
-		fi
-		chgrp operator ${name}${unit}[a-p] r${name}${unit}[a-p]
+		chown root.operator ${name}${unit}[a-p] r${name}${unit}[a-p]
 		chmod 640 ${name}${unit}[a-p] r${name}${unit}[a-p]
 		;;
 	*)
@@ -240,8 +315,67 @@ sd*|vnd*|ccd*)
 	umask 77
 	;;
 
-cd*)
+vnd*)
+	umask 2 ; unit=`expr $i : 'vnd\(.*\)'`
+	for name in vnd svnd; do
+		blk=6; chr=19;
+		case $name in
+		vnd)	off=0;;
+		svnd)	off=128;;
+		esac
+		rm -f $name$unit? r$name$unit?
+		mknod ${name}${unit}a	b $blk `expr $unit '*' 16 + $off + 0`
+		mknod ${name}${unit}b	b $blk `expr $unit '*' 16 + $off + 1`
+		mknod ${name}${unit}c	b $blk `expr $unit '*' 16 + $off + 2`
+		mknod ${name}${unit}d	b $blk `expr $unit '*' 16 + $off + 3`
+		mknod ${name}${unit}e	b $blk `expr $unit '*' 16 + $off + 4`
+		mknod ${name}${unit}f	b $blk `expr $unit '*' 16 + $off + 5`
+		mknod ${name}${unit}g	b $blk `expr $unit '*' 16 + $off + 6`
+		mknod ${name}${unit}h	b $blk `expr $unit '*' 16 + $off + 7`
+		mknod ${name}${unit}i	b $blk `expr $unit '*' 16 + $off + 8`
+		mknod ${name}${unit}j	b $blk `expr $unit '*' 16 + $off + 9`
+		mknod ${name}${unit}k	b $blk `expr $unit '*' 16 + $off + 10`
+		mknod ${name}${unit}l	b $blk `expr $unit '*' 16 + $off + 11`
+		mknod ${name}${unit}m	b $blk `expr $unit '*' 16 + $off + 12`
+		mknod ${name}${unit}n	b $blk `expr $unit '*' 16 + $off + 13`
+		mknod ${name}${unit}o	b $blk `expr $unit '*' 16 + $off + 14`
+		mknod ${name}${unit}p	b $blk `expr $unit '*' 16 + $off + 15`
+		mknod r${name}${unit}a	c $chr `expr $unit '*' 16 + $off + 0`
+		mknod r${name}${unit}b	c $chr `expr $unit '*' 16 + $off + 1`
+		mknod r${name}${unit}c	c $chr `expr $unit '*' 16 + $off + 2`
+		mknod r${name}${unit}d	c $chr `expr $unit '*' 16 + $off + 3`
+		mknod r${name}${unit}e	c $chr `expr $unit '*' 16 + $off + 4`
+		mknod r${name}${unit}f	c $chr `expr $unit '*' 16 + $off + 5`
+		mknod r${name}${unit}g	c $chr `expr $unit '*' 16 + $off + 6`
+		mknod r${name}${unit}h	c $chr `expr $unit '*' 16 + $off + 7`
+		mknod r${name}${unit}i	c $chr `expr $unit '*' 16 + $off + 8`
+		mknod r${name}${unit}j	c $chr `expr $unit '*' 16 + $off + 9`
+		mknod r${name}${unit}k	c $chr `expr $unit '*' 16 + $off + 10`
+		mknod r${name}${unit}l	c $chr `expr $unit '*' 16 + $off + 11`
+		mknod r${name}${unit}m	c $chr `expr $unit '*' 16 + $off + 12`
+		mknod r${name}${unit}n	c $chr `expr $unit '*' 16 + $off + 13`
+		mknod r${name}${unit}o	c $chr `expr $unit '*' 16 + $off + 14`
+		mknod r${name}${unit}p	c $chr `expr $unit '*' 16 + $off + 15`
+		chown root.operator ${name}${unit}[a-p] r${name}${unit}[a-p]
+		chmod 640 ${name}${unit}[a-p] r${name}${unit}[a-p]
+	done
+	umask 77
+	;;
+
+ch*)
 	umask 2 ; unit=`expr $i : '..\(.*\)'`
+	case $i in
+	ch*) name=ch;  chr=40;;
+	esac
+	rm -f $name$unit
+	mknod $name$unit	c $chr $unit
+	chown root.operator $name$unit
+	chmod 660 $name$unit
+	umask 77
+	;;
+
+cd*)
+	umask 2 ; unit=`expr $i : '.*cd\(.*\)'`
 	case $i in
 	cd*) name=cd; blk=7; chr=9;;
 	esac
@@ -249,9 +383,10 @@ cd*)
 	case $unit in
 	0|1|2|3|4|5|6)
 		mknod ${name}${unit}a   b $blk `expr $unit '*' 8 + 0`
-		mknod ${name}${unit}d   b $blk `expr $unit '*' 8 + 3`
+		mknod ${name}${unit}c   b $blk `expr $unit '*' 8 + 2`
 		mknod r${name}${unit}a  c $chr `expr $unit '*' 8 + 0`
-		chgrp operator ${name}${unit}[a-h] r${name}${unit}[a-h]
+		mknod r${name}${unit}c  c $chr `expr $unit '*' 8 + 2`
+		chown root.operator ${name}${unit}[a-h] r${name}${unit}[a-h]
 		chmod 640 ${name}${unit}[a-h] r${name}${unit}[a-h]
 		;;
 	*)
@@ -268,10 +403,11 @@ tty0*|ttyA*)
 	case $type in
 	0)	case $unit in
 		0)	
-			rm -f tty0${unit} ttym${unit}
+			rm -f tty0${unit} cua0${unit}
 			mknod tty0${unit} c 12 0
-			mknod ttym${unit} c 12 128
-			chown uucp:wheel tty0${unit} ttym${unit}
+			mknod cua0${unit} c 12 128
+			chown uucp.dialer tty0${unit} cua0${unit}
+			chmod 660 tty0${unit} cua0${unit}
 			;;
 		*)
 			echo bad unit for tty0 in: $i
@@ -283,7 +419,8 @@ tty0*|ttyA*)
 			rm -f ttyA${unit} ttyM${unit}
 			mknod ttyA${unit} c 17 $unit
 			mknod ttyM${unit} c 17 `expr 128 + $unit`
-			chown uucp:wheel ttyA${unit} ttyM${unit}
+			chown uucp.dialer ttyA${unit} ttyM${unit}
+			chmod 660 ttyA${unit} ttyM${unit}
 			;;
 		*)
 			echo bad unit for ttyA in: $i
@@ -315,7 +452,7 @@ ttye*)
 	rm -f ttye${unit}
 	rm -f ite*
 	case $unit in
-	0|1|2|3|4)
+	0|1|2|3|4|5|6)
 		mknod ttye${unit} c 13 ${unit}
 		;;
 	*)
@@ -328,11 +465,21 @@ grf*)
 	unit=`expr $i : 'grf\(.*\)'`
 	rm -f grf${unit}
 	case $unit in
-	0|1|2|3|4|5)
+	0|1|2|3|4|5|6)
 		mknod grf${unit} c 10 ${unit}; chmod 666 grf${unit}
 		;;
 	*)
 		echo bad unit for grf in: $i
+		;;
+	esac
+# for those that need it, also make overlay and image devices:
+	rm -f grfov${unit} grfim${unit}
+	case $unit in
+	4)
+		unitov=`expr $unit + 16`
+		unitim=`expr $unit + 32`
+		mknod grfov${unit} c 10 ${unitov}; chmod 666 grf${unit}
+		mknod grfim${unit} c 10 ${unitim}; chmod 666 grf${unit}
 		;;
 	esac
 	;;
@@ -354,6 +501,18 @@ mouse*)
 	esac
 	;;
 
+joy*)
+	unit=`expr $i : 'joy\(.*\)'`
+	rm -f joy${unit}
+	case $unit in
+	0|1)
+		mknod joy${unit} c 43 ${unit}; chmod 666 mouse${unit}
+		;;
+	*)
+		echo bad unit for joy in: $i
+		;;
+	esac
+	;;
 kbd)
 	rm -f kbd
 	mknod kbd c 14 0
@@ -380,20 +539,32 @@ pty*)
 	1) offset=16 name=q;;
 	2) offset=32 name=r;;
 	3) offset=48 name=s;;
-# Note that telnetd, rlogind, and xterm (at least) only look at p-s.
 	4) offset=64 name=t;;
+	5) offset=80 name=u;;
+	6) offset=96 name=v;;
+	7) offset=112 name=w;;
+	8) offset=128 name=x;;
+	9) offset=144 name=y;;
+	10) offset=160 name=z;;
+	11) offset=176 name=P;;
+	12) offset=192 name=Q;;
+	13) offset=208 name=R;;
+	14) offset=224 name=S;;
+	15) offset=240 name=T;;
 	*) echo bad unit for pty in: $i;;
 	esac
 	case $class in
-	0|1|2|3|4)
+	0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15)
 		umask 0
-		(i=0; while [ $i -lt 16 ]; do
-			eval `printf "rm -f tty%s%x; mknod tty%s%x c 4 %d; \
-			    rm -f pty%s%x; mknod pty%s%x c 5 %d" $name $i \
-			    $name $i $offset $name $i $name $i $offset`
-			offset=$(($offset+1))
-			i=$(($i+1))
-			done)
+		n=0
+		while [ $n -lt 16 ]
+                do
+                        nam=$name`hex $n`
+                        rm -f {tty,pty}$nam
+                        mknod tty$nam c 4 "$(( $offset + $n ))"
+                        mknod pty$nam c 5 "$(( $offset + $n ))"
+                        n="$(( $n + 1 ))"
+                done
 		umask 77
 		;;
 	esac
@@ -404,6 +575,33 @@ bpf*)
 	rm -f bpf$unit
 	mknod bpf$unit c 22 $unit
 	chown root.wheel bpf$unit
+	;;
+
+pf)
+	rm -f pf
+	mknod pf c 34 0
+	chown root.wheel pf
+	chmod 600 pf
+	;;
+
+ttyB*)
+	unit=`expr $i : '....\(.*\)'`
+	rm -f ttyB$unit cuaB$unit
+	mknod ttyB$unit c 32 $unit
+	mknod cuaB$unit c 32 `expr $unit + 128`
+	chown uucp.dialer ttyB$unit cuaB$unit
+	chmod 660 ttyB$unit cuaB$unit
+	;;
+
+lpt*|lpa*)
+	unit=`expr $i : '...\(.*\)'`
+	case $i in
+	lpt*) name=lpt; flags=0;;
+	lpa*) name=lpa; flags=128;;
+	esac
+	rm -f $name$unit
+	mknod $name$unit c 33 `expr $unit + $flags`
+	chown root.wheel $name$unit
 	;;
 
 tun*)
@@ -417,13 +615,84 @@ tun*)
 lkm)
         rm -f lkm
         mknod lkm c 24 0
-        chown root:kmem lkm
+        chown root.kmem lkm
         chmod 640 lkm
         ;;
 
+ss*)
+	unit=`expr $i : 'ss\(.*\)'`
+	rm -f ss$unit
+	mknod ss$unit c 25 $unit
+	chown root.operator ss$unit
+	chmod 440 ss$unit
+#	backwards compatibility with older PINTs
+	rm -f scan$unit
+	ln -s ss$unit scan$unit
+	;;
+
+
+random|srandom|urandom|prandom|arandom)
+	rm -f random urandom srandom prandom arandom
+	mknod  random c 35 0
+	mknod srandom c 35 1
+	mknod urandom c 35 2
+	mknod prandom c 35 3
+	mknod arandom c 35 4
+	chown root.wheel random srandom urandom prandom arandom
+	chmod 644 random srandom urandom prandom arandom
+	;;
+
+uk*)
+	unit=`expr $i : 'uk\(.*\)'`
+	rm -f uk$unit
+	mknod uk$unit c 36 $unit
+	chown root.operator uk$unit
+	chmod 640 uk$unit
+	;;
+
+audio*)
+        major=39
+        audio=audio$unit
+        sound=sound$unit
+        mixer=mixer$unit
+        audioctl=audioctl$unit
+        rm -f $audio $sound $mixer $audioctl                             
+        mknod $sound    c $major $unit
+        mknod $audio    c $major $(($unit + 128))
+        mknod $mixer    c $major $(($unit + 16))
+        mknod $audioctl c $major $(($unit + 192))
+        chown root.wheel $audio $sound $mixer $audioctl
+        chmod 666 $audio $sound $mixer $audioctl
+        [ -e audio ] || ln -s $audio audio
+        [ -e mixer ] || ln -s $mixer mixer
+        [ -e sound ] || ln -s $sound sound
+        [ -e audioctl ] || ln -s $audioctl audioctl
+        ;;
+
+
+xfs*)
+	rm -f xfs$unit
+	mknod xfs$unit c 51 $unit 
+	chmod 600 xfs$unit 
+	chown root.wheel xfs$unit
+	;;
+
+altq)
+	mkdir -p altq
+	chmod 755 altq
+	unit=0
+	for dev in altq cbq wfq afm fifoq red rio localq hfsc \
+	    cdnr blue priq; do
+		rm -f altq/$dev
+		mknod altq/$dev c 52 $unit
+		chmod 644 altq/$dev
+		unit=$(($unit + 1))
+	done
+	;;
+
 local)
 	umask 0
-	sh MAKEDEV.local
+	test -s MAKEDEV.local && sh $this.local
 	umask 77
 	;;
 

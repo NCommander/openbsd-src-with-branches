@@ -56,21 +56,15 @@
  * [including the GNU Public Licence.]
  */
 
+#ifndef NO_RSA
 #include <stdio.h>
 #include "cryptlib.h"
-#include "bn.h"
-#include "rsa.h"
-#include "objects.h"
-#include "asn1_mac.h"
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#include <openssl/objects.h>
+#include <openssl/asn1_mac.h>
 
-/*
- * ASN1err(ASN1_F_D2I_RSAPUBLICKEY,ASN1_R_LENGTH_MISMATCH);
- * ASN1err(ASN1_F_I2D_RSAPUBLICKEY,ASN1_R_UNKNOWN_ATTRIBUTE_TYPE);
- */
-
-int i2d_RSAPublicKey(a,pp)
-RSA *a;
-unsigned char **pp;
+int i2d_RSAPublicKey(RSA *a, unsigned char **pp)
 	{
 	BIGNUM *num[2];
 	ASN1_INTEGER bs;
@@ -99,7 +93,7 @@ unsigned char **pp;
 	ASN1_put_object(&p,1,tot,V_ASN1_SEQUENCE,V_ASN1_UNIVERSAL);
 
 	bs.type=V_ASN1_INTEGER;
-	bs.data=(unsigned char *)Malloc(max+4);
+	bs.data=(unsigned char *)OPENSSL_malloc(max+4);
 	if (bs.data == NULL)
 		{
 		ASN1err(ASN1_F_I2D_RSAPUBLICKEY,ERR_R_MALLOC_FAILURE);
@@ -111,8 +105,14 @@ unsigned char **pp;
 		bs.length=BN_bn2bin(num[i],bs.data);
 		i2d_ASN1_INTEGER(&bs,&p);
 		}
-	Free((char *)bs.data);
+	OPENSSL_free(bs.data);
 	*pp=p;
 	return(t);
 	}
+#else /* !NO_RSA */
 
+# if PEDANTIC
+static void *dummy=&dummy;
+# endif
+
+#endif

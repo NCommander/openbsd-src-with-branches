@@ -1,3 +1,4 @@
+/*	$OpenBSD: mille.h,v 1.4 1999/09/25 15:52:20 pjanzen Exp $	*/
 /*	$NetBSD: mille.h,v 1.5 1995/03/24 05:01:51 cgd Exp $	*/
 
 /*
@@ -36,10 +37,17 @@
  */
 
 # include	<sys/types.h>
+# include	<sys/uio.h>
+# include	<sys/stat.h>
 # include	<ctype.h>
+# include	<err.h>
+# include	<errno.h>
 # include	<curses.h>
-# include	<termios.h>
+# include	<fcntl.h>
+# include	<stdlib.h>
 # include	<string.h>
+# include	<termios.h>
+# include	<unistd.h>
 
 /*
  * @(#)mille.h	1.1 (Berkeley) 4/1/82
@@ -54,7 +62,7 @@
 
 # define	HAND_SZ		7	/* number of cards in a hand	*/
 # define	DECK_SZ		101	/* number of cards in decks	*/
-# define	NUM_SAFE	4	/* number of saftey cards	*/
+# define	NUM_SAFE	4	/* number of safety cards	*/
 # define	NUM_MILES	5	/* number of milestones types	*/
 # define	NUM_CARDS	20	/* number of types of cards	*/
 # define	BOARD_Y		17	/* size of board screen		*/
@@ -153,17 +161,7 @@
 # ifdef	SYSV
 # define	srandom(x)	srand(x)
 # define	random()	rand()
-
-# ifndef	attron
-#	define	erasechar()	_tty.c_cc[VERASE]
-#	define	killchar()	_tty.c_cc[VKILL]
-# endif
-# else
-# ifndef	erasechar
-#	define	erasechar()	_tty.sg_erase
-#	define	killchar()	_tty.sg_kill
-# endif
-# endif	SYSV
+# endif		/* SYSV */
 
 typedef struct {
 	bool	coups[NUM_SAFE];
@@ -202,7 +200,7 @@ typedef struct {
 # define	nextplay()	(Play = other(Play))
 # define	nextwin(x)	(1 - x)
 # define	opposite(x)	(Opposite[x])
-# define	issafety(x)	(x >= C_GAS_SAFE)
+# define	is_safety(x)	(x >= C_GAS_SAFE)
 
 /*
  * externals
@@ -210,13 +208,15 @@ typedef struct {
 
 extern bool	Debug, Finished, Next, On_exit, Order, Saved;
 
-extern char	*C_fmt, **C_name, *Fromfile, Initstr[];
+extern char	Initstr[], *C_fmt;
+extern const char	*const *C_name, *Fromfile;
 
-extern int	Card_no, End, Handstart, Movetype, Numcards[], Numgos,
-		Numneed[], Numseen[NUM_CARDS], Play, Value[], Window;
+extern int	Card_no, End, Handstart, Movetype, Numgos,
+		Numneed[], Numseen[NUM_CARDS], Play, Window;
+extern const int	Numcards[], Value[];
 
-extern CARD	Deck[DECK_SZ], Discard, Opposite[NUM_CARDS], Sh_discard,
-		*Topcard;
+extern CARD	Deck[DECK_SZ], Discard, Sh_discard, *Topcard;
+extern const CARD	Opposite[NUM_CARDS];
 
 extern FILE	*outf;
 
@@ -228,4 +228,42 @@ extern WINDOW	*Board, *Miles, *Score;
  * functions
  */
 
-CARD	getcard();
+void	account __P((CARD));
+void	calcmove __P((void));
+int	canplay __P((const PLAY *, const PLAY *, CARD));
+int	check_ext __P((bool));
+void	check_go __P((void));
+void	check_more __P((void));
+void	die __P((int));
+void	domove __P((void));
+bool	error __P((char *, ...));
+void	finalscore __P((PLAY *));
+CARD	getcard __P((void));
+void	getmove __P((void));
+int	getyn __P((int));
+int	haspicked __P((const PLAY *));
+void	init __P((void));
+int	is_repair __P((CARD));
+int	main __P((int, char **));
+void	newboard __P((void));
+void	newscore __P((void));
+int	onecard __P((const PLAY *));
+int	playcard __P((PLAY *));
+void	prboard __P((void));
+void	prompt __P((int));
+void	prscore __P((bool));
+int	readch __P((void));
+bool	rest_f __P((const char *));
+int	roll __P((int, int));
+void	rub __P((int));
+int	safety __P((CARD));
+bool	save __P((void));
+void	show_card __P((int, int, CARD, CARD *));
+void	show_score __P((int, int, int, int *));
+void	shuffle __P((void));
+void	sort __P((CARD *));
+bool	varpush __P((int, ssize_t __P((int, const struct iovec *, int))));
+#ifdef EXTRAP
+void	extrapolate __P((PLAY *));
+void	undoex __P((void));
+#endif

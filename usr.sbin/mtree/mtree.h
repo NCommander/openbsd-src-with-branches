@@ -1,3 +1,4 @@
+/*	$OpenBSD: mtree.h,v 1.6 1997/07/18 05:46:13 millert Exp $	*/
 /*	$NetBSD: mtree.h,v 1.7 1995/03/07 21:26:27 cgd Exp $	*/
 
 /*-
@@ -48,31 +49,39 @@ typedef struct _node {
 	struct _node	*prev, *next;		/* left, right */
 	off_t	st_size;			/* size */
 	struct timespec	st_mtimespec;		/* last modification time */
-	u_long	cksum;				/* check sum */
+	u_int32_t cksum;			/* check sum */
+	char	*md5digest;			/* MD5 digest */
+	char	*rmd160digest;			/* RIPEMD-160 digest */
+	char	*sha1digest;			/* SHA-1 digest */
 	char	*slink;				/* symbolic link reference */
 	uid_t	st_uid;				/* uid */
 	gid_t	st_gid;				/* gid */
 #define	MBITS	(S_ISUID|S_ISGID|S_ISTXT|S_IRWXU|S_IRWXG|S_IRWXO)
 	mode_t	st_mode;			/* mode */
 	nlink_t	st_nlink;			/* link count */
+	u_int32_t file_flags;			/* file flags */
 
-#define	F_CKSUM	0x0001				/* check sum */
-#define	F_DONE	0x0002				/* directory done */
-#define	F_GID	0x0004				/* gid */
-#define	F_GNAME	0x0008				/* group name */
-#define	F_IGN	0x0010				/* ignore */
-#define	F_MAGIC	0x0020				/* name has magic chars */
-#define	F_MODE	0x0040				/* mode */
-#define	F_NLINK	0x0080				/* number of links */
-#define	F_OPT	0x0100				/* existence optional */
-#define	F_SIZE	0x0200				/* size */
-#define	F_SLINK	0x0400				/* link count */
-#define	F_TIME	0x0800				/* modification time */
-#define	F_TYPE	0x1000				/* file type */
-#define	F_UID	0x2000				/* uid */
-#define	F_UNAME	0x4000				/* user name */
-#define	F_VISIT	0x8000				/* file visited */
-	u_short	flags;				/* items set */
+#define	F_CKSUM		0x00001			/* check sum */
+#define	F_DONE		0x00002			/* directory done */
+#define	F_GID		0x00004			/* gid */
+#define	F_GNAME		0x00008			/* group name */
+#define	F_IGN		0x00010			/* ignore */
+#define	F_MAGIC		0x00020			/* name has magic chars */
+#define	F_MD5		0x00040			/* MD5 digest */
+#define	F_MODE		0x00080			/* mode */
+#define	F_NLINK		0x00100			/* number of links */
+#define F_OPT		0x00200			/* existence optional */
+#define	F_RMD160	0x00400			/* RIPEMD-160 digest */
+#define	F_SHA1		0x00800			/* SHA-1 digest */
+#define	F_SIZE		0x01000			/* size */
+#define	F_SLINK		0x02000			/* link count */
+#define	F_TIME		0x04000			/* modification time */
+#define	F_TYPE		0x08000			/* file type */
+#define	F_UID		0x10000			/* uid */
+#define	F_UNAME		0x20000			/* user name */
+#define	F_VISIT		0x40000			/* file visited */
+#define	F_FLAGS		0x80000			/* file flags */
+	u_int32_t flags;			/* items set */
 
 #define	F_BLOCK	0x001				/* block special */
 #define	F_CHAR	0x002				/* char special */

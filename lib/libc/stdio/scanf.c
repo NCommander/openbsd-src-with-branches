@@ -1,5 +1,3 @@
-/*	$NetBSD: scanf.c,v 1.4 1995/02/02 02:10:29 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,20 +35,18 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)scanf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: scanf.c,v 1.4 1995/02/02 02:10:29 jtc Exp $";
+static char rcsid[] = "$OpenBSD: scanf.c,v 1.3 1997/07/25 20:30:10 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
-#if __STDC__
+#ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
-#if __STDC__
+int
+#ifdef __STDC__
 scanf(char const *fmt, ...)
 #else
 scanf(fmt, va_alist)
@@ -61,7 +57,7 @@ scanf(fmt, va_alist)
 	int ret;
 	va_list ap;
 
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);

@@ -36,17 +36,20 @@
 
 #include "SYS.h"
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	ASMSTR("from: @(#)setlogin.s	8.1 (Berkeley) 6/4/93")
-	ASMSTR("$Id: setlogin.S,v 1.3 1994/12/15 17:25:17 mycroft Exp $")
-#endif /* LIBC_SCCS and not lint */
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 LEAF(setlogin)
+	.set	reorder
 	li	v0, SYS_setlogin		# setlogin(name)
 	syscall
+
 	bne	a3, zero, 1f
 	sw	zero, _C_LABEL(__logname_valid)	# in getlogin()
 	j	ra
 1:
-	j	_C_LABEL(cerror)
+	la	t9, _C_LABEL(cerror)
+	jr	t9
 END(setlogin)

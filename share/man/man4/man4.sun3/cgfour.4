@@ -1,3 +1,4 @@
+.\"	$OpenBSD: cgfour.4,v 1.4 2001/01/29 02:11:12 niklas Exp $
 .\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -46,10 +47,19 @@
 .Sh SYNOPSIS
 .Cd "cgfour0 at obmem0 addr ?"
 .Sh DESCRIPTION
-The 
+The
 .Nm
-is a memory based color frame buffer.
-It supports the minimal ioctl's needed to run X11.
+is a memory based color frame buffer with overlay plane.
+Its pixel memory and control planes can be mapped into a user
+process address space by using the
+.Xr mmap 2
+system call.
+The
+.Nm
+driver supports the minimal
+.Xr ioctl 2 Ns s
+needed to run
+.Xr X 1 .
 .Sh SEE ALSO
 .Xr bwtwo 4 ,
 .Xr cgtwo 4

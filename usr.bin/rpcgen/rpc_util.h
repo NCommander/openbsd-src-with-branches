@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpc_util.h,v 1.3 1997/10/11 21:10:42 deraadt Exp $	*/
 /*	$NetBSD: rpc_util.h,v 1.3 1995/06/11 21:50:10 pk Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -78,7 +79,7 @@ extern int logflag;
 extern int newstyle;
 extern int Cflag;     /* C++ flag */
 extern int tirpcflag; /* flag for generating tirpc code */
-extern int inline; /* if this is 0, then do not generate inline code */
+extern int doinline; /* if this is 0, then do not generate inline code */
 extern int callerflag;
 
 /*

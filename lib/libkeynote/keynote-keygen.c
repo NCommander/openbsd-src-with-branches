@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote-keygen.c,v 1.16 2001/09/03 20:14:51 deraadt Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -8,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -20,38 +19,43 @@
  * PURPOSE.
  */
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
-#include <fcntl.h>
-
-#ifdef WIN32
 #include <ctype.h>
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
 
+#if STDC_HEADERS
+#include <string.h>
+#endif /* STDC_HEADERS */
+
+#if HAVE_FCNTL_H
+#include <fcntl.h>
+#endif /* HAVE_FCNTL_H */
+
+#if HAVE_IO_H
+#include <io.h>
+#elif HAVE_UNISTD_H
+#include <unistd.h>
+#endif /* HAVE_IO_H */
+
+#include "header.h"
+#include "keynote.h"
+#include "assertion.h"
 #include "signature.h"
 
-#define DEFAULT_PUBLIC    0x10001
-
 void
-usage(void)
+keygenusage(void)
 {
     fprintf(stderr, "Arguments:\n");
     fprintf(stderr, "\t<AlgorithmName> <keysize> "
-	    "<PublicKeyFile> <PrivateKeyFile> [<printf-offset> "
-	    "<print-length>]\n");
+	    "<PublicKeyFile> <PrivateKeyFile> [<print-offset>] "
+	    "[<print-length>]\n");
 }
-
-#define SEED_LEN	40
-#define RND_BYTES	1024
-
-#define KEY_PRINT_OFFSET      12
-#define KEY_PRINT_LENGTH      50
 
 /*
  * Print the specified number of spaces.
@@ -96,12 +100,8 @@ print_key(FILE *fp, char *algname, char *key, int start, int length)
     fprintf(fp, "\"\n");
 }
 
-#ifdef WIN32
 void
-#else
-int
-#endif
-main(int argc, char *argv[])
+keynote_keygen(int argc, char *argv[])
 {
     int begin = KEY_PRINT_OFFSET, prlen = KEY_PRINT_LENGTH;
 #if defined(CRYPTO) || defined(PGPLIB)
@@ -112,15 +112,12 @@ main(int argc, char *argv[])
     DSA *dsa;
     RSA *rsa;
     FILE *fp;
-#if defined(KEYNOTERNDFILENAME)
-    int fd, cnt = RND_BYTES;
-#endif /* KEYNOTERNDFILENAME */
 #endif /* CRYPTO || PGPLIB */
     char *algname;
 
     if ((argc != 5) && (argc != 6) && (argc != 7))
     {
-	usage();
+	keygenusage();
 	exit(0);
     }
 
@@ -133,7 +130,7 @@ main(int argc, char *argv[])
 	if (algname == (char *) NULL)
 	{
 	    perror("calloc()");
-	    exit(-1);
+	    exit(1);
 	}
 
 	strcpy(algname, argv[1]);
@@ -148,7 +145,7 @@ main(int argc, char *argv[])
 	if (begin <= -1)
 	{
 	    fprintf(stderr, "Erroneous value for print-offset parameter.\n");
-	    exit(-1);
+	    exit(1);
 	}
     }
 
@@ -158,15 +155,16 @@ main(int argc, char *argv[])
 	if (prlen <= 0)
 	{
 	    fprintf(stderr, "Erroneous value for print-length parameter.\n");
-	    exit(-1);
+	    exit(1);
 	}
     }
 
     if (strlen(algname) + 2 > prlen)
     {
 	fprintf(stderr, "Parameter ``print-length'' should be larger "
-		"than the length of AlgorithmName (%d)\n", strlen(algname));
-	exit(-1);
+		"than the length of AlgorithmName (%lu)\n",
+		(unsigned long) strlen(algname));
+	exit(1);
     }
 
 #if defined(CRYPTO) || defined(PGPLIB)
@@ -176,58 +174,15 @@ main(int argc, char *argv[])
     if (len <= 0)
     {
 	fprintf(stderr, "Invalid specified keysize %d\n", len);
-	exit(-1);
+	exit(1);
     }
-#endif /* CRYPTO || PGPLIB */
-
-#if defined(CRYPTO)
-#if defined(KEYNOTERNDFILENAME)
-    fd = open(KEYNOTERNDFILENAME, O_RDONLY, 0);
-    if (fd < 0)
-    {
-	perror("open(\"/dev/urandom\")");
-	exit(-1);
-    }
-
-    for (h = 0; h < 5; h++)
-    {
-	if (read(fd, seed, SEED_LEN) <= 0)
-	{
-	    perror("read()");
-	    exit(-1);
-	}
-
-	RAND_seed(seed, SEED_LEN);
-    }
-
-    if (read(fd, seed, SEED_LEN) < SEED_LEN)
-    {
-	perror("read()");
-	exit(-1);
-    }
-
-    close(fd);
-
-    /* Make sure we read RND_BYTES bytes */
-    do
-    {
-        if ((fd = RAND_load_file(KEYNOTERNDFILENAME, cnt)) <= 0)
-        {
-	    perror("RAND_load_file()");
-	    exit(-1);
-        }
-
-	cnt -= fd;
-    } while (cnt > 0);
-
-#else /* KEYNOTERNDFILENAME */
-#error "No RNG available!"
-#endif /* KEYNOTERNDFILENAME */
 
     if ((alg == KEYNOTE_ALGORITHM_DSA) &&
 	(ienc == INTERNAL_ENC_ASN1) &&
 	((enc == ENCODING_HEX) || (enc == ENCODING_BASE64)))
     {
+        RAND_bytes(seed, SEED_LEN);
+
 	dsa = DSA_generate_parameters(len, seed, SEED_LEN, &counter, &h, NULL
 #if SSLEAY_VERSION_NUMBER >= 0x0900
 				      , NULL
@@ -237,13 +192,13 @@ main(int argc, char *argv[])
 	if (dsa == (DSA *) NULL)
 	{
 	    ERR_print_errors_fp(stderr);
-	    exit(-1);
+	    exit(1);
 	}
 
 	if (DSA_generate_key(dsa) != 1)
 	{
 	    ERR_print_errors_fp(stderr);
-	    exit(-1);
+	    exit(1);
 	}
 
 	dc.dec_algorithm = KEYNOTE_ALGORITHM_DSA;
@@ -253,7 +208,7 @@ main(int argc, char *argv[])
 	if (foo == (char *) NULL)
 	{
 	    fprintf(stderr, "Error encoding key (errno %d)\n", keynote_errno);
-	    exit(-1);
+	    exit(1);
 	}
 
 	if (!strcmp(argv[3], "-"))
@@ -263,8 +218,8 @@ main(int argc, char *argv[])
 	    fp = fopen(argv[3], "w");
 	    if (fp == (FILE *) NULL)
 	    {
-		perror("fopen()");
-		exit(-1);
+		perror(argv[3]);
+		exit(1);
 	    }
 	}
 
@@ -278,7 +233,7 @@ main(int argc, char *argv[])
 	if (foo == (char *) NULL)
 	{
 	    fprintf(stderr, "Error encoding key (errno %d)\n", keynote_errno);
-	    exit(-1);
+	    exit(1);
 	}
 
 	if (!strcmp(argv[4], "-"))
@@ -292,8 +247,8 @@ main(int argc, char *argv[])
 	    fp = fopen(argv[4], "w");
 	    if (fp == (FILE *) NULL)
 	    {
-		perror("fopen()");
-		exit(-1);
+		perror(argv[4]);
+		exit(1);
 	    }
 	}
 
@@ -302,7 +257,7 @@ main(int argc, char *argv[])
 	if (privalgname == (char *) NULL)
 	{
 	    perror("calloc()");
-	    exit(-1);
+	    exit(1);
 	}
 	sprintf(privalgname, "%s%s", KEYNOTE_PRIVATE_KEY_PREFIX, algname);
 	print_key(fp, privalgname, foo, begin, prlen);
@@ -328,7 +283,7 @@ main(int argc, char *argv[])
 	if (rsa == (RSA *) NULL)
 	{
 	    ERR_print_errors_fp(stderr);
-	    exit(-1);
+	    exit(1);
 	}
 
 	dc.dec_algorithm = KEYNOTE_ALGORITHM_RSA;
@@ -338,7 +293,7 @@ main(int argc, char *argv[])
 	if (foo == (char *) NULL)
 	{
 	    fprintf(stderr, "Error encoding key (errno %d)\n", keynote_errno);
-	    exit(-1);
+	    exit(1);
 	}
 
 	if (!strcmp(argv[3], "-"))
@@ -348,8 +303,8 @@ main(int argc, char *argv[])
 	    fp = fopen(argv[3], "w");
 	    if (fp == (FILE *) NULL)
 	    {
-		perror("fopen()");
-		exit(-1);
+		perror(argv[3]);
+		exit(1);
 	    }
 	}
 
@@ -363,7 +318,7 @@ main(int argc, char *argv[])
 	if (foo == (char *) NULL)
 	{
 	    fprintf(stderr, "Error encoding key (errno %d)\n", keynote_errno);
-	    exit(-1);
+	    exit(1);
 	}
 
 	if (!strcmp(argv[4], "-"))
@@ -377,8 +332,8 @@ main(int argc, char *argv[])
 	    fp = fopen(argv[4], "w");
 	    if (fp == (FILE *) NULL)
 	    {
-		perror("fopen()");
-		exit(-1);
+		perror(argv[4]);
+		exit(1);
 	    }
 	}
 
@@ -387,7 +342,7 @@ main(int argc, char *argv[])
 	if (privalgname == (char *) NULL)
 	{
 	    perror("calloc()");
-	    exit(-1);
+	    exit(1);
 	}
 	sprintf(privalgname, "%s%s", KEYNOTE_PRIVATE_KEY_PREFIX, algname);
 	print_key(fp, privalgname, foo, begin, prlen);
@@ -404,5 +359,5 @@ main(int argc, char *argv[])
 #endif /* CRYPTO */
 
     fprintf(stderr, "Unknown/unsupported algorithm [%s]\n", algname);
-    exit(-1);
+    exit(1);
 }

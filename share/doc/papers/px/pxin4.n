@@ -1,3 +1,5 @@
+.\"	$OpenBSD$
+.\"
 .\" Copyright (c) 1979 The Regents of the University of California.
 .\" All rights reserved.
 .\"

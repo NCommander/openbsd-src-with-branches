@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_cancel.c,v 1.4 2001/01/16 21:47:12 brad Exp $	*/
+/*	$OpenBSD: cancel.c,v 1.2 2001/08/23 04:26:05 fgsch Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public Domain. */
 
 #include <pthread.h>
@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include "test.h"
 
 static pthread_cond_t cond;
@@ -34,9 +35,9 @@ void v() {
 }
 
 void
-c1handler(void *fd)
+c1handler(void *arg)
 {
-	CHECKe(close((int)fd));
+	CHECKe(close(*(int *)arg));
 	v();
 }
 
@@ -52,7 +53,7 @@ child1fn(arg)
 	CHECKr(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL));
 	/* something that will block */
 	CHECKe(fd = open("/dev/tty", O_RDONLY));
-	pthread_cleanup_push(c1handler, (void *)fd);
+	pthread_cleanup_push(c1handler, (void *)&fd);
 	v();
 	while (1) {
 		CHECKe(len = read(fd, &buf, sizeof buf));

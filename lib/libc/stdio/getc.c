@@ -1,5 +1,3 @@
-/*	$NetBSD: getc.c,v 1.5 1995/02/02 02:09:52 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,13 +35,22 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getc.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: getc.c,v 1.5 1995/02/02 02:09:52 jtc Exp $";
+static char rcsid[] = "$OpenBSD: getc.c,v 1.2 1996/08/19 08:32:51 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
+
+/*
+ * A subroutine version of the macro getc_unlocked.
+ */
+#undef getc_unlocked
+
+int
+getc_unlocked(fp)
+	FILE *fp;
+{
+	return (__sgetc(fp));
+}
 
 /*
  * A subroutine version of the macro getc.
@@ -54,5 +61,10 @@ int
 getc(fp)
 	register FILE *fp;
 {
-	return (__sgetc(fp));
+	int c;
+
+	flockfile(fp);
+	c = __sgetc(fp);
+	funlockfile(fp);
+	return (c);
 }

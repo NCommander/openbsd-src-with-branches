@@ -1,4 +1,4 @@
-/*	$NetBSD: search.h,v 1.5 1995/02/27 13:22:58 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1990, 1993

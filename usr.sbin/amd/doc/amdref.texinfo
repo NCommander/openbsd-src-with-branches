@@ -36,7 +36,7 @@
 @c OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 @c
 @c	from: @(#)amdref.texinfo	8.1 (Berkeley) 6/6/93
-@c	$Id: amdref.texinfo,v 1.4 1995/03/22 17:18:01 mycroft Exp $
+@c	$Id: amdref.texinfo,v 1.3 1998/05/24 20:51:01 todd Exp $
 @c
 @setfilename amdref.info
 @c @setfilename /usr/local/emacs/info/amd
@@ -45,6 +45,11 @@
 @end tex
 
 @settitle 4.4 BSD Automounter Reference Manual
+@dircategory Miscellaneous
+@direntry
+* Amdref: (amdref).                 4.4 BSD Automounter Reference Manual
+@end direntry
+
 @titlepage
 @sp 6
 @center @titlefont{Amd}
@@ -1389,8 +1394,14 @@ Don't make a connection on datagram transports.
 No close-to-open consistency.
 @item nodevs
 Don't allow local special devices on this filesystem.
+@item nolooklease
+When nqnfs is selected, disable the automatic acquiring of leases on
+lookups.
 @item nosuid
 Don't allow set-uid or set-gid executables on this filesystem.
+@item nqnfs
+Enable leasing extensions to the NFS protocol know as Not Quite NFS.
+Only supported by the 4.4BSD NFS implementation.
 @item quota
 Enable quota checking on this mount.
 @item resvport
@@ -2225,7 +2236,7 @@ which would return a symbolic link pointing to @file{/home/charm/jsp}.
 
 @node     Symbolic Link Filesystem II, Automount Filesystem, Program Filesystem, Filesystem Types
 @comment  node-name,  next,  previous,  up
-@section Symbolic Link Filesystem II (@samp{type:=link})
+@section Symbolic Link Filesystem II (@samp{type:=linkx})
 @cindex Symbolic link filesystem II
 @cindex Referencing an existing part of the local name space
 @cindex Mounting an existing part of the local name space

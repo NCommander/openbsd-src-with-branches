@@ -1,3 +1,4 @@
+/*	$OpenBSD: pigs.c,v 1.7 2001/05/04 16:48:34 ericj Exp $	*/
 /*	$NetBSD: pigs.c,v 1.3 1995/04/29 05:54:50 cgd Exp $	*/
 
 /*-
@@ -37,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)pigs.c	8.2 (Berkeley) 9/23/93";
 #endif
-static char rcsid[] = "$NetBSD: pigs.c,v 1.3 1995/04/29 05:54:50 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pigs.c,v 1.7 2001/05/04 16:48:34 ericj Exp $";
 #endif /* not lint */
 
 /*
@@ -55,6 +56,7 @@ static char rcsid[] = "$NetBSD: pigs.c,v 1.3 1995/04/29 05:54:50 cgd Exp $";
 #include <math.h>
 #include <nlist.h>
 #include <pwd.h>
+#include <err.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -116,8 +118,8 @@ showpigs()
         qsort(pt, nproc + 1, sizeof (struct p_times), compar);
 	y = 1;
 	i = nproc + 1;
-	if (i > wnd->maxy-1)
-		i = wnd->maxy-1;
+	if (i > wnd->_maxy-1)
+		i = wnd->_maxy-1;
 	for (k = 0; i > 0 && pt[k].pt_pctcpu > 0.01; i--, y++, k++) {
 		if (pt[k].pt_kp == NULL) {
 			uname = "";
@@ -131,7 +133,7 @@ showpigs()
 		wmove(wnd, y, 0);
 		wclrtoeol(wnd);
 		mvwaddstr(wnd, y, 0, uname);
-		sprintf(pidname, "%10.10s", pname, 0);
+		snprintf(pidname, sizeof pidname, "%10.10s", pname);
 		mvwaddstr(wnd, y, 9, pidname);
 		wmove(wnd, y, 20);
 		for (j = pt[k].pt_pctcpu*factor + 0.5; j > 0; j--)
@@ -156,12 +158,13 @@ int
 initpigs()
 {
 	fixpt_t ccpu;
+	int ret;
 
 	if (namelist[X_FIRST].n_type == 0) {
-		if (kvm_nlist(kd, namelist)) {
+		if ((ret = kvm_nlist(kd, namelist)) == -1)
+			errx(1, "%s", kvm_geterr(kd));
+		else if (ret)
 			nlisterr(namelist);
-		        return(0);
-		}
 		if (namelist[X_FIRST].n_type == 0) {
 			error("namelist failed");
 			return(0);
@@ -189,7 +192,7 @@ fetchpigs()
 
 	if (namelist[X_FIRST].n_type == 0)
 		return;
-	if ((kpp = kvm_getprocs(kd, KERN_PROC_ALL, 0, &nproc)) == NULL) {
+	if ((kpp = kvm_getprocs(kd, KERN_PROC_KTHREAD, 0, &nproc)) == NULL) {
 		error("%s", kvm_geterr(kd));
 		if (pt)
 			free(pt);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: doexec.c,v 1.3 1995/04/20 22:43:13 cgd Exp $	*/
 /*	$NetBSD: doexec.c,v 1.3 1995/04/20 22:43:13 cgd Exp $	*/
 
 /*
@@ -49,4 +50,6 @@ main(argc, argv)
 		printf("%s\n", strerror(errno));
 		exit(1);
 	}
+
+	exit(0);
 }

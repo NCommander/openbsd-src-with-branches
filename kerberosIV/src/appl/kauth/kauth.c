@@ -118,8 +118,8 @@ zrefresh(void)
 	return -1;
     case 0:
 	/* Child */
-	execlp("zrefresh", "zrefresh", 0);
-	execl(BINDIR "/zrefresh", "zrefresh", 0);
+	execlp("zrefresh", "zrefresh", (char *)NULL);
+	execl(BINDIR "/zrefresh", "zrefresh", (char *)NULL);
 	exit(1);
     default:
 	/* Parent */
@@ -315,7 +315,8 @@ main(int argc, char **argv)
 	}while(f < 0);
 	close(f);
 	unlink(tf);
-	setenv("KRBTKFILE", tf, 1);
+	if(setenv("KRBTKFILE", tf, 1) != 0)
+	    errx(1, "cannot set KRBTKFILE");
 	krb_set_tkt_string (tf);
     }
     

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* frags.c - manage frags -
 
    Copyright (C) 1987, 1990, 1991, 1992 Free Software Foundation, Inc.
@@ -19,7 +21,7 @@
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef lint
-static char rcsid[] = "$Id: frags.c,v 1.3 1993/10/02 20:57:31 pk Exp $";
+static char rcsid[] = "$OpenBSD: frags.c,v 1.1.1.1 1995/10/18 08:38:58 deraadt Exp $";
 #endif
 
 #include "as.h"

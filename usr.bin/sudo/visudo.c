@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1998-2000 Todd C. Miller <Todd.Miller@courtesan.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,7 +81,7 @@ extern int stat		__P((const char *, struct stat *));
 #endif /* POSIX_SIGNALS && !SA_RESETHAND */
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: visudo.c,v 1.116 1999/11/09 20:12:20 millert Exp $";
+static const char rcsid[] = "$Sudo: visudo.c,v 1.126 2000/03/23 04:38:22 millert Exp $";
 #endif /* lint */
 
 /*
@@ -93,7 +93,8 @@ static RETSIGTYPE Exit		__P((int));
 static void setup_signals	__P((void));
 int command_matches		__P((char *, char *, char *, char *));
 int addr_matches		__P((char *));
-int netgr_matches		__P((char *, char *, char *));
+int hostname_matches		__P((char *, char *, char *));
+int netgr_matches		__P((char *, char *, char *, char *));
 int usergr_matches		__P((char *, char *));
 void init_parser		__P((void));
 void yyrestart			__P((FILE *));
@@ -121,7 +122,7 @@ main(argc, argv)
     char **argv;
 {
     char buf[MAXPATHLEN*2];		/* buffer used for copying files */
-    char *Editor = EDITOR;		/* editor to use (default is EDITOR */
+    char *Editor;			/* editor to use */
     int sudoers_fd;			/* sudoers file descriptor */
     int stmp_fd;			/* stmp file descriptor */
     int n;				/* length parameter */
@@ -158,55 +159,48 @@ main(argc, argv)
 	exit(1);
     }
 
-#ifdef ENV_EDITOR
-    /*
-     * If we are allowing EDITOR and VISUAL envariables set Editor
-     * base on whichever exists...
-     */
-    if (!(Editor = getenv("EDITOR")))
-	if (!(Editor = getenv("VISUAL")))
-	    Editor = EDITOR;
-#endif /* ENV_EDITOR */
+    /* Setup defaults data structures. */
+    init_defaults();
 
     /*
-     * Open sudoers temp file and grab a lock.
+     * Open sudoers, lock it and stat it.  
+     * sudoers_fd must remain open throughout in order to hold the lock.
      */
-    stmp_fd = open(stmp, O_WRONLY | O_CREAT, 0600);
-    if (stmp_fd < 0) {
-	(void) fprintf(stderr, "%s: %s\n", Argv[0], strerror(errno));
-	exit(1);
+    sudoers_fd = open(sudoers, O_RDWR | O_CREAT, SUDOERS_MODE);
+    if (sudoers_fd == -1) {
+	(void) fprintf(stderr, "%s: %s: %s\n", Argv[0], sudoers,
+	    strerror(errno));
+	Exit(-1);
     }
-    if (!lock_file(stmp_fd, SUDO_TLOCK)) {
+    if (!lock_file(sudoers_fd, SUDO_TLOCK)) {
 	(void) fprintf(stderr, "%s: sudoers file busy, try again later.\n",
 	    Argv[0]);
 	exit(1);
     }
-#ifdef HAVE_FTRUNCATE
-    if (ftruncate(stmp_fd, 0) == -1) {
+#ifdef HAVE_FSTAT
+    if (fstat(sudoers_fd, &sudoers_sb) == -1) {
 #else
-    if (truncate(stmp, 0) == -1) {
+    if (stat(sudoers, &sudoers_sb) == -1) {
 #endif
-	(void) fprintf(stderr, "%s: can't truncate %s: %s\n", Argv[0],
-	    stmp, strerror(errno));
+	(void) fprintf(stderr, "%s: can't stat %s: %s\n",
+	    Argv[0], sudoers, strerror(errno));
 	Exit(-1);
+    }
+
+    /*
+     * Open sudoers temp file.
+     */
+    stmp_fd = open(stmp, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (stmp_fd < 0) {
+	(void) fprintf(stderr, "%s: %s: %s\n", Argv[0], stmp, strerror(errno));
+	exit(1);
     }
 
     /* Install signal handlers to clean up stmp if we are killed. */
     setup_signals();
 
-    (void) memset(&sudoers_sb, 0, sizeof(sudoers_sb));
-    if (stat(sudoers, &sudoers_sb) == -1 && errno != ENOENT) {
-	(void) fprintf(stderr, "%s: %s\n", Argv[0], strerror(errno));
-	Exit(-1);
-    }
-    sudoers_fd = open(sudoers, O_RDONLY);
-    if (sudoers_fd == -1 && errno != ENOENT) {
-	(void) fprintf(stderr, "%s: %s\n", Argv[0], strerror(errno));
-	Exit(-1);
-    }
-
     /* Copy sudoers -> stmp and reset the mtime */
-    if (sudoers_fd != -1) {
+    if (sudoers_sb.st_size) {
 	while ((n = read(sudoers_fd, buf, sizeof(buf))) > 0)
 	    if (write(stmp_fd, buf, n) != n) {
 		(void) fprintf(stderr, "%s: Write failed: %s\n", Argv[0],
@@ -214,10 +208,28 @@ main(argc, argv)
 		Exit(-1);
 	    }
 
-	(void) close(sudoers_fd);
-    }
-    (void) close(stmp_fd);
-    (void) touch(stmp, sudoers_sb.st_mtime);
+	(void) close(stmp_fd);
+	(void) touch(stmp, sudoers_sb.st_mtime);
+
+	/* Parse sudoers to pull in editor and env_editor conf values. */
+	if ((yyin = fopen(stmp, "r"))) {
+	    yyout = stdout;
+	    init_parser();
+	    yyparse();
+	    parse_error = FALSE;
+	    yyrestart(yyin);
+	    fclose(yyin);
+	}
+    } else
+	(void) close(stmp_fd);
+
+    /*
+     * If we are allowing EDITOR and VISUAL envariables set Editor
+     * base on whichever exists...
+     */
+    if (!def_flag(I_ENV_EDITOR) ||
+	(!(Editor = getenv("EDITOR")) && !(Editor = getenv("VISUAL"))))
+	Editor = estrdup(def_str(I_EDITOR));
 
     /*
      * Edit the temp file and parse it (for sanity checking)
@@ -273,6 +285,7 @@ main(argc, argv)
 	    }
 
 	    /* Clean slate for each parse */
+	    user_runas = NULL;
 	    init_defaults();
 	    init_parser();
 
@@ -295,9 +308,11 @@ main(argc, argv)
 	 */
 	if (parse_error == TRUE) {
 	    switch (whatnow()) {
-		case 'q' :	parse_error = FALSE;	/* ignore parse error */
+		case 'Q' :	parse_error = FALSE;	/* ignore parse error */
 				break;
-		case 'x' :	Exit(0);
+		case 'x' :	if (sudoers_sb.st_size == 0)
+				    unlink(sudoers);
+				Exit(0);
 				break;
 	    }
 	    yyrestart(yyin);	/* reset lexer */
@@ -369,7 +384,7 @@ main(argc, argv)
 	}
     }
 
-    return(0);
+    exit(0);
 }
 
 /*
@@ -394,6 +409,13 @@ addr_matches(n)
 }
 
 int
+hostname_matches(s, l, p)
+    char *s, *l, *p;
+{
+    return(TRUE);
+}
+
+int
 usergr_matches(g, u)
     char *g, *u;
 {
@@ -401,10 +423,16 @@ usergr_matches(g, u)
 }
 
 int
-netgr_matches(n, h, u)
-    char *n, *h, *u;
+netgr_matches(n, h, sh, u)
+    char *n, *h, *sh, *u;
 {
     return(TRUE);
+}
+
+void
+set_fqdn()
+{
+    return;
 }
 
 /*
@@ -422,17 +450,21 @@ whatnow()
 	for (c = choice; c != '\n' && c != EOF;)
 	    c = getchar();
 
-	if (choice == 'e' || choice == 'x' || choice == 'Q')
-	    break;
-	else {
-	    (void) puts("Options are:");
-	    (void) puts("  (e)dit sudoers file again");
-	    (void) puts("  e(x)it without saving changes to sudoers file");
-	    (void) puts("  (Q)uit and save changes to sudoers file (DANGER!)\n");
+	switch (choice) {
+	    case EOF:
+		choice = 'x';
+		/* FALLTHROUGH */
+	    case 'e':
+	    case 'x':
+	    case 'Q':
+		return(choice);
+	    default:
+		(void) puts("Options are:");
+		(void) puts("  (e)dit sudoers file again");
+		(void) puts("  e(x)it without saving changes to sudoers file");
+		(void) puts("  (Q)uit and save changes to sudoers file (DANGER!)\n");
 	}
     }
-
-    return(choice);
 }
 
 /*
@@ -475,10 +507,10 @@ Exit(sig)
 {
     (void) unlink(stmp);
 
-    if (sig > 0)
+    if (sig > 0)	/* XXX signal race */
 	(void) fprintf(stderr, "%s exiting, caught signal %d.\n", Argv[0], sig);
 
-    exit(-sig);
+    exit(-sig);		/* XXX for signal case, should be _exit() */
 }
 
 static void

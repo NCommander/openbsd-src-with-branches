@@ -1,4 +1,5 @@
-/*	$NetBSD: stdio.h,v 1.16 1995/03/25 02:51:02 jtc Exp $	*/
+/*	$OpenBSD: stdio.h,v 1.17 2001/08/30 17:47:57 todd Exp $	*/
+/*	$NetBSD: stdio.h,v 1.18 1996/04/25 18:29:21 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -41,36 +42,34 @@
 #ifndef	_STDIO_H_
 #define	_STDIO_H_
 
-#if !defined(_ANSI_SOURCE) && !defined(__STRICT_ANSI_)
+#if !defined(_ANSI_SOURCE) && !defined(__STRICT_ANSI__)
 #include <sys/types.h>
 #endif
 
 #include <sys/cdefs.h>
-
 #include <machine/ansi.h>
+
 #ifdef	_BSD_SIZE_T_
 typedef	_BSD_SIZE_T_	size_t;
 #undef	_BSD_SIZE_T_
 #endif
 
-#ifndef NULL
-#define	NULL	0
+#ifdef	_BSD_OFF_T_
+typedef	_BSD_OFF_T_	off_t;
+#undef	_BSD_OFF_T_
 #endif
 
-/*      
- * This is fairly grotesque, but pure ANSI code must not inspect the
- * innards of an fpos_t anyway.  The library internally uses off_t,
- * which we assume is exactly as big as eight chars.
- */
-#if !defined(_ANSI_SOURCE) && !defined(__STRICT_ANSI__)
-typedef off_t fpos_t;
+#ifndef NULL
+#ifdef 	__GNUG__
+#define	NULL	__null
 #else
-typedef struct __sfpos {
-	long long _pos;			/* XXX must be the same as off_t */
-} fpos_t;
+#define	NULL	0
+#endif
 #endif
 
 #define	_FSTDIO			/* Define for new stdio with functions. */
+
+typedef off_t fpos_t;		/* stdio file position type */
 
 /*
  * NB: to fit things in six character monocase externals, the stdio
@@ -160,6 +159,7 @@ __END_DECLS
 #define	__SNPT	0x0800		/* do not do fseek() optimisation */
 #define	__SOFF	0x1000		/* set iff _offset is in fact correct */
 #define	__SMOD	0x2000		/* true => fgetln modified _p text */
+#define	__SALC	0x4000		/* allocate string space dynamically */
 
 /*
  * The following three definitions are for ANSI C, which took them
@@ -187,7 +187,7 @@ __END_DECLS
 
 /* System V/ANSI C; this is the wrong way to do this, do *not* use these. */
 #ifndef _ANSI_SOURCE
-#define	P_tmpdir	"/var/tmp/"
+#define	P_tmpdir	"/tmp/"
 #endif
 #define	L_tmpnam	1024	/* XXX must be == PATH_MAX */
 #define	TMP_MAX		308915776
@@ -226,15 +226,19 @@ size_t	 fread __P((void *, size_t, size_t, FILE *));
 FILE	*freopen __P((const char *, const char *, FILE *));
 int	 fscanf __P((FILE *, const char *, ...));
 int	 fseek __P((FILE *, long, int));
+int	 fseeko __P((FILE *, off_t, int));
 int	 fsetpos __P((FILE *, const fpos_t *));
 long	 ftell __P((FILE *));
+off_t	 ftello __P((FILE *));
 size_t	 fwrite __P((const void *, size_t, size_t, FILE *));
 int	 getc __P((FILE *));
 int	 getchar __P((void));
 char	*gets __P((char *));
-#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
+#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE) && !defined(__SYS_ERRLIST)
+#define __SYS_ERRLIST
+
 extern int sys_nerr;			/* perror(3) external variables */
-extern const char *const sys_errlist[];
+extern char *sys_errlist[];
 #endif
 void	 perror __P((const char *));
 int	 printf __P((const char *, ...));
@@ -266,10 +270,31 @@ __END_DECLS
 
 __BEGIN_DECLS
 char	*ctermid __P((char *));
+char	*ctermid_r __P((char *));
 char	*cuserid __P((char *));
 FILE	*fdopen __P((int, const char *));
 int	 fileno __P((FILE *));
+void	 flockfile __P((FILE *));
+int	 ftrylockfile __P((FILE *));
+void	 funlockfile __P((FILE *));
+void	 _flockfile_debug __P((FILE *, char *, int));
+int	 getc_unlocked __P((FILE *));
+int	 putc_unlocked __P((int, FILE *));
+int	 getchar_unlocked __P((void));
+int	 putchar_unlocked __P((int));
 __END_DECLS
+
+#ifndef _POSIX_THREADS
+#  define flockfile(fp)			/* nothing */
+#  define ftrylockfile(fp)		(0)
+#  define funlockfile(fp)		/* nothing */
+#  define _flockfile_debug(fp,f,l)	/* nothing */
+#endif
+
+#if 0 /* defined(DEBUG_FLOCKFILE) && defined(_POSIX_THREADS) */
+#  define flockfile(fp)		_flockfile_debug(fp, __FILE__, __LINE__)
+#endif
+
 #endif /* not ANSI */
 
 /*
@@ -277,6 +302,8 @@ __END_DECLS
  */
 #if !defined (_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
 __BEGIN_DECLS
+int	 asprintf __P((char **, const char *, ...))
+		__attribute__((__format__ (printf, 2, 3)));
 char	*fgetln __P((FILE *, size_t *));
 int	 fpurge __P((FILE *));
 int	 getw __P((FILE *));
@@ -287,13 +314,15 @@ void	 setbuffer __P((FILE *, char *, int));
 int	 setlinebuf __P((FILE *));
 char	*tempnam __P((const char *, const char *));
 int	 snprintf __P((char *, size_t, const char *, ...))
-		__attribute__((format (printf, 3, 4)));
+		__attribute__((__format__ (printf, 3, 4)));
+int	 vasprintf __P((char **, const char *, _BSD_VA_LIST_))
+		__attribute__((__format__ (printf, 2, 0)));
 int	 vsnprintf __P((char *, size_t, const char *, _BSD_VA_LIST_))
-		__attribute__((format (printf, 3, 0)));
+		__attribute__((__format__ (printf, 3, 0)));
 int	 vscanf __P((const char *, _BSD_VA_LIST_))
-		__attribute__((format (scanf, 1, 0)));
+		__attribute__((__format__ (scanf, 1, 0)));
 int	 vsscanf __P((const char *, const char *, _BSD_VA_LIST_))
-		__attribute__((format (scanf, 2, 0)));
+		__attribute__((__format__ (scanf, 2, 0)));
 __END_DECLS
 
 /*
@@ -359,17 +388,35 @@ static __inline int __sputc(int _c, FILE *_p) {
 
 #define	feof(p)		__sfeof(p)
 #define	ferror(p)	__sferror(p)
+
+#ifndef _POSIX_THREADS
 #define	clearerr(p)	__sclearerr(p)
+#endif
 
 #ifndef _ANSI_SOURCE
 #define	fileno(p)	__sfileno(p)
 #endif
 
 #ifndef lint
+#ifndef _POSIX_THREADS
 #define	getc(fp)	__sgetc(fp)
+#endif /* _POSIX_THREADS */
+#define	getc_unlocked(fp)	__sgetc(fp)
+/*
+ * The macro implementations of putc and putc_unlocked are not
+ * fully POSIX compliant; they do not set errno on failure
+ */
+#ifndef _POSIX_SOURCE
+#ifndef _POSIX_THREADS
 #define putc(x, fp)	__sputc(x, fp)
+#endif /* _POSIX_THREADS */
+#define putc_unlocked(x, fp)	__sputc(x, fp)
+#endif /* _POSIX_SOURCE */
 #endif /* lint */
 
 #define	getchar()	getc(stdin)
 #define	putchar(x)	putc(x, stdout)
+#define getchar_unlocked()	getc_unlocked(stdin)
+#define putchar_unlocked(c)	putc_unlocked(c, stdout)
+
 #endif /* _STDIO_H_ */

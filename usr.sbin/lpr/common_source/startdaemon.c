@@ -1,3 +1,5 @@
+/*	$OpenBSD: startdaemon.c,v 1.3 1997/01/17 16:11:38 millert Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +34,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "@(#)startdaemon.c	8.2 (Berkeley) 4/17/94";
+#if 0
+static const char sccsid[] = "@(#)startdaemon.c	8.2 (Berkeley) 4/17/94";
+#else
+static const char rcsid[] = "$OpenBSD: startdaemon.c,v 1.3 1997/01/17 16:11:38 millert Exp $";
+#endif
 #endif /* not lint */
 
 
@@ -61,7 +67,7 @@ startdaemon(printer)
 	char *printer;
 {
 	struct sockaddr_un un;
-	register int s, n;
+	int s, n;
 	char buf[BUFSIZ];
 
 	s = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -83,7 +89,10 @@ startdaemon(printer)
 		return(0);
 	}
 	seteuid(uid);
-	(void) sprintf(buf, "\1%s\n", printer);
+	if (snprintf(buf, sizeof buf, "\1%s\n", printer) > sizeof buf-1) {
+		close(s);
+		return (0);
+	}
 	n = strlen(buf);
 	if (write(s, buf, n) != n) {
 		perr("write");

@@ -58,21 +58,101 @@
 
 #include <stdio.h>
 #include "cryptlib.h"
-#include "bn.h"
-#include "dh.h"
+#include <openssl/bn.h>
+#include <openssl/dh.h>
+#include <openssl/engine.h>
 
-char *DH_version="Diffie-Hellman part of SSLeay 0.9.0b 29-Jun-1998";
+const char *DH_version="Diffie-Hellman" OPENSSL_VERSION_PTEXT;
 
-DH *DH_new()
+static DH_METHOD *default_DH_method;
+static int dh_meth_num = 0;
+static STACK_OF(CRYPTO_EX_DATA_FUNCS) *dh_meth = NULL;
+
+void DH_set_default_openssl_method(DH_METHOD *meth)
+{
+	ENGINE *e;
+	/* We'll need to notify the "openssl" ENGINE of this
+	 * change too. We won't bother locking things down at
+	 * our end as there was never any locking in these
+	 * functions! */
+	if(default_DH_method != meth)
+		{
+		default_DH_method = meth;
+		e = ENGINE_by_id("openssl");
+		if(e)
+			{
+			ENGINE_set_DH(e, meth);
+			ENGINE_free(e);
+			}
+		}
+}
+
+DH_METHOD *DH_get_default_openssl_method(void)
+{
+	if(!default_DH_method) default_DH_method = DH_OpenSSL();
+	return default_DH_method;
+}
+
+#if 0
+DH_METHOD *DH_set_method(DH *dh, DH_METHOD *meth)
+{
+        DH_METHOD *mtmp;
+        mtmp = dh->meth;
+        if (mtmp->finish) mtmp->finish(dh);
+        dh->meth = meth;
+        if (meth->init) meth->init(dh);
+        return mtmp;
+}
+#else
+int DH_set_method(DH *dh, ENGINE *engine)
+{
+	ENGINE *mtmp;
+	DH_METHOD *meth;
+	mtmp = dh->engine;
+	meth = ENGINE_get_DH(mtmp);
+	if (!ENGINE_init(engine))
+		return 0;
+	if (meth->finish) meth->finish(dh);
+	dh->engine= engine;
+	meth = ENGINE_get_DH(engine);
+	if (meth->init) meth->init(dh);
+	/* SHOULD ERROR CHECK THIS!!! */
+	ENGINE_finish(mtmp);
+	return 1;
+}
+#endif
+
+DH *DH_new(void)
+{
+	return DH_new_method(NULL);
+}
+
+#if 0
+DH *DH_new_method(DH_METHOD *meth)
+#else
+DH *DH_new_method(ENGINE *engine)
+#endif
 	{
+	DH_METHOD *meth;
 	DH *ret;
+	ret=(DH *)OPENSSL_malloc(sizeof(DH));
 
-	ret=(DH *)Malloc(sizeof(DH));
 	if (ret == NULL)
 		{
 		DHerr(DH_F_DH_NEW,ERR_R_MALLOC_FAILURE);
 		return(NULL);
 		}
+	if(engine)
+		ret->engine = engine;
+	else
+		{
+		if((ret->engine=ENGINE_get_default_DH()) == NULL)
+			{
+			OPENSSL_free(ret);
+			return NULL;
+			}
+		}
+	meth = ENGINE_get_DH(ret->engine);
 	ret->pad=0;
 	ret->version=0;
 	ret->p=NULL;
@@ -80,21 +160,78 @@ DH *DH_new()
 	ret->length=0;
 	ret->pub_key=NULL;
 	ret->priv_key=NULL;
+	ret->q=NULL;
+	ret->j=NULL;
+	ret->seed = NULL;
+	ret->seedlen = 0;
+	ret->counter = NULL;
+	ret->method_mont_p=NULL;
+	ret->references = 1;
+	ret->flags=meth->flags;
+	CRYPTO_new_ex_data(dh_meth,ret,&ret->ex_data);
+	if ((meth->init != NULL) && !meth->init(ret))
+		{
+		CRYPTO_free_ex_data(dh_meth,ret,&ret->ex_data);
+		OPENSSL_free(ret);
+		ret=NULL;
+		}
 	return(ret);
 	}
 
-void DH_free(r)
-DH *r;
+void DH_free(DH *r)
 	{
+	DH_METHOD *meth;
+	int i;
+	if(r == NULL) return;
+	i = CRYPTO_add(&r->references, -1, CRYPTO_LOCK_DH);
+#ifdef REF_PRINT
+	REF_PRINT("DH",r);
+#endif
+	if (i > 0) return;
+#ifdef REF_CHECK
+	if (i < 0)
+		{
+		fprintf(stderr,"DH_free, bad reference count\n");
+		abort();
+	}
+#endif
+
+	meth = ENGINE_get_DH(r->engine);
+	if(meth->finish) meth->finish(r);
+	ENGINE_finish(r->engine);
+
+	CRYPTO_free_ex_data(dh_meth, r, &r->ex_data);
+
 	if (r->p != NULL) BN_clear_free(r->p);
 	if (r->g != NULL) BN_clear_free(r->g);
+	if (r->q != NULL) BN_clear_free(r->q);
+	if (r->j != NULL) BN_clear_free(r->j);
+	if (r->seed) OPENSSL_free(r->seed);
+	if (r->counter != NULL) BN_clear_free(r->counter);
 	if (r->pub_key != NULL) BN_clear_free(r->pub_key);
 	if (r->priv_key != NULL) BN_clear_free(r->priv_key);
-	Free(r);
+	OPENSSL_free(r);
 	}
 
-int DH_size(dh)
-DH *dh;
+int DH_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
+	     CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func)
+        {
+	dh_meth_num++;
+	return(CRYPTO_get_ex_new_index(dh_meth_num-1,
+		&dh_meth,argl,argp,new_func,dup_func,free_func));
+        }
+
+int DH_set_ex_data(DH *d, int idx, void *arg)
+	{
+	return(CRYPTO_set_ex_data(&d->ex_data,idx,arg));
+	}
+
+void *DH_get_ex_data(DH *d, int idx)
+	{
+	return(CRYPTO_get_ex_data(&d->ex_data,idx));
+	}
+
+int DH_size(DH *dh)
 	{
 	return(BN_num_bytes(dh->p));
 	}

@@ -1,3 +1,5 @@
+/*	$OpenBSD: dl.h,v 1.2 1996/09/21 19:11:29 maja Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -26,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: dl.h,v 1.4 1995/10/13 19:28:38 moj Exp $
+ *	$OpenBSD: dl.h,v 1.2 1996/09/21 19:11:29 maja Exp $
  *
  */
 
@@ -41,4 +43,4 @@ void	mopDumpDL       __P((FILE *, u_char *, int));
 __END_DECLS
 #endif
 
-#endif _DL_H_
+#endif /* _DL_H_ */

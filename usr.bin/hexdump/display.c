@@ -1,3 +1,5 @@
+/*	$OpenBSD: display.c,v 1.5 1998/12/16 01:28:24 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)display.c	5.11 (Berkeley) 3/9/91";*/
-static char rcsid[] = "$Id: display.c,v 1.2 1993/08/01 18:14:49 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: display.c,v 1.5 1998/12/16 01:28:24 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -132,6 +134,7 @@ static off_t savaddress;		/* saved address/offset in stream */
 	} \
 }
 
+void
 display()
 {
 	extern FU *endfu;
@@ -143,7 +146,7 @@ display()
 	off_t saveaddress;
 	u_char savech, *savebp, *get();
 
-	while (bp = get())
+	while ((bp = get()))
 	    for (fs = fshead, savebp = bp, saveaddress = address; fs;
 		fs = fs->nextfs, bp = savebp, address = saveaddress)
 		    for (fu = fs->nextfu; fu; fu = fu->nextfu) {
@@ -186,6 +189,7 @@ display()
 	}
 }
 
+void
 bpad(pr)
 	PR *pr;
 {
@@ -199,8 +203,9 @@ bpad(pr)
 	pr->flags = F_BPAD;
 	*pr->cchar = 's';
 	for (p1 = pr->fmt; *p1 != '%'; ++p1);
-	for (p2 = ++p1; *p1 && index(spec, *p1); ++p1);
-	while (*p2++ = *p1++);
+	for (p2 = ++p1; *p1 && strchr(spec, *p1); ++p1);
+	while ((*p2++ = *p1++))
+		;
 }
 
 static char **_argv;
@@ -214,6 +219,7 @@ get()
 	static u_char *curp, *savp;
 	register int n;
 	int need, nread;
+	int valid_save = 0;
 	u_char *tmpp;
 
 	if (!curp) {
@@ -224,6 +230,7 @@ get()
 		curp = savp;
 		savp = tmpp;
 		address = savaddress += blocksize;
+		valid_save = 1;
 	}
 	for (need = blocksize, nread = 0;;) {
 		/*
@@ -234,7 +241,8 @@ get()
 		if (!length || ateof && !next((char **)NULL)) {
 			if (need == blocksize)
 				return((u_char *)NULL);
-			if (vflag != ALL && !bcmp(curp, savp, nread)) {
+			if (vflag != ALL && valid_save &&
+			    !bcmp(curp, savp, nread)) {
 				if (vflag != DUP)
 					(void)printf("*\n");
 				return((u_char *)NULL);
@@ -256,7 +264,7 @@ get()
 		if (length != -1)
 			length -= n;
 		if (!(need -= n)) {
-			if (vflag == ALL || vflag == FIRST ||
+			if (vflag == ALL || vflag == FIRST || !valid_save ||
 			    bcmp(curp, savp, blocksize)) {
 				if (vflag == DUP || vflag == FIRST)
 					vflag = WAIT;
@@ -276,10 +284,11 @@ get()
 
 extern off_t skip;			/* bytes to skip */
 
+int
 next(argv)
 	char **argv;
 {
-	extern int errno, exitval;
+	extern int exitval;
 	static int done;
 	int statok;
 
@@ -312,11 +321,11 @@ next(argv)
 	/* NOTREACHED */
 }
 
+void
 doskip(fname, statok)
 	char *fname;
 	int statok;
 {
-	extern int errno;
 	struct stat sbuf;
 
 	if (statok) {
@@ -352,10 +361,9 @@ emalloc(size)
 	return(p);
 }
 
+void
 nomem()
 {
-	extern int errno;
-
 	(void)fprintf(stderr, "hexdump: %s.\n", strerror(errno));
 	exit(1);
 }

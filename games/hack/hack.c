@@ -1,9 +1,11 @@
+/*	$OpenBSD: hack.c,v 1.3 2001/01/28 23:41:43 niklas Exp $	*/
+
 /*
  * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.c,v 1.3 1995/03/23 08:29:50 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hack.c,v 1.3 2001/01/28 23:41:43 niklas Exp $";
 #endif /* not lint */
 
 #include "hack.h"
@@ -34,7 +36,7 @@ unsee() {
 	if(seehx){
 		seehx = 0;
 	} else
-#endif QUEST
+#endif /* QUEST */
 	for(x = u.ux-1; x < u.ux+2; x++)
 	  for(y = u.uy-1; y < u.uy+2; y++) {
 		if(!isok(x, y)) continue;
@@ -68,7 +70,7 @@ seeoff(mode)	/* 1 to redo @, 0 to leave them */
 	if(seehx) {
 		seehx = 0;
 	} else
-#endif QUEST
+#endif /* QUEST */
 	if(!mode) {
 		for(x = u.ux-1; x < u.ux+2; x++)
 			for(y = u.uy-1; y < u.uy+2; y++) {
@@ -301,7 +303,7 @@ domove()
 			}
 			nose1(oldx-u.dx,oldy-u.dy);
 		}
-#endif QUEST
+#endif /* QUEST */
 	} else {
 		pru();
 	}
@@ -380,7 +382,7 @@ pickup(all)
 			char c;
 
 			pline("Pick up %s ? [ynaq]", doname(obj));
-			while(!index("ynaq ", (c = readchar())))
+			while(!strchr("ynaq ", (c = readchar())))
 				bell();
 			if(c == 'q') return;
 			if(c == 'n') continue;
@@ -476,12 +478,12 @@ register struct monst *mtmp;
 #ifdef lint
 	/* suppress "used before set" message */
 	x0 = y0 = 0;
-#endif lint
+#endif /* lint */
 	if(Blind || flags.run == 0) return;
 	if(flags.run == 1 && levl[u.ux][u.uy].typ == ROOM) return;
 #ifdef QUEST
 	if(u.ux0 == u.ux+u.dx && u.uy0 == u.uy+u.dy) goto stop;
-#endif QUEST
+#endif /* QUEST */
 	for(x = u.ux-1; x <= u.ux+1; x++) for(y = u.uy-1; y <= u.uy+1; y++){
 		if(x == u.ux && y == u.uy) continue;
 		if(!levl[x][y].typ) continue;
@@ -531,7 +533,7 @@ register struct monst *mtmp;
 	}
 #ifdef QUEST
 	if(corrct > 0 && (flags.run == 4 || flags.run == 5)) goto stop;
-#endif QUEST
+#endif /* QUEST */
 	if(corrct > 1 && flags.run == 2) goto stop;
 	if((flags.run == 1 || flags.run == 3) && !noturn && !m0 && i0 &&
 		(corrct == 1 || (corrct == 2 && i0 == 1))) {
@@ -571,7 +573,7 @@ register struct monst *mtmp;
 	for(x = u.ux-1; x <= u.ux+1; x++) for(y = u.uy-1; y <= u.uy+1; y++){
 		if(x == u.ux && y == u.uy) continue;
 		if((mtmp = m_at(x,y)) && !mtmp->mimic && !mtmp->mtame &&
-			!mtmp->mpeaceful && !index("Ea", mtmp->data->mlet) &&
+			!mtmp->mpeaceful && !strchr("Ea", mtmp->data->mlet) &&
 			!mtmp->mfroz && !mtmp->msleep &&  /* aplvax!jcn */
 			(!mtmp->minvis || See_invisible))
 			return(1);
@@ -627,7 +629,7 @@ cansee(x,y) xchar x,y; {
 		y <= seehy) return(1);
 	return(0);
 }
-#endif QUEST
+#endif /* QUEST */
 
 sgn(a) register int a; {
 	return((a > 0) ? 1 : (a == 0) ? 0 : -1);
@@ -682,7 +684,7 @@ setsee()
 	    if(seehx == u.ux) for(y = u.uy-1; y <= u.uy+1; y++) prl(seehx+1,y);
 	}
 }
-#endif QUEST
+#endif /* QUEST */
 
 nomul(nval)
 register nval;

@@ -1,5 +1,48 @@
+/*	$OpenBSD: output.c,v 1.5 2001/02/26 00:03:32 tholo Exp $	*/
+/*	$NetBSD: output.c,v 1.4 1996/03/19 03:21:41 jtc Exp $	*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed by the University of
+ *	California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #ifndef lint
-static char rcsid[] = "$Id: output.c,v 1.3 1993/08/02 17:56:43 mycroft Exp $";
+#if 0
+static char sccsid[] = "@(#)output.c	5.7 (Berkeley) 5/24/93";
+#else
+static char rcsid[] = "$OpenBSD: output.c,v 1.5 2001/02/26 00:03:32 tholo Exp $";
+#endif
 #endif /* not lint */
 
 #include "defs.h"
@@ -20,7 +63,33 @@ static short *check;
 static int lowzero;
 static int high;
 
+void output_prefix __P((void));
+void output_rule_data __P((void));
+void output_yydefred __P((void));
+void output_actions __P((void));
+void token_actions __P((void));
+void goto_actions __P((void));
+int default_goto __P((int));
+void save_column __P((int, int));
+void sort_actions __P((void));
+void pack_table __P((void));
+int matching_vector __P((int));
+int pack_vector __P((int));
+void output_base __P((void));
+void output_table __P((void));
+void output_check __P((void));
+int is_C_identifier __P((char *));
+void output_defines __P((void));
+void output_stored_text __P((void));
+void output_debug __P((void));
+void output_stype __P((void));
+void output_trailing_text __P((void));
+void output_semantic_actions __P((void));
+void free_itemsets __P((void));
+void free_shifts __P((void));
+void free_reductions __P((void));
 
+void
 output()
 {
     free_itemsets();
@@ -44,6 +113,7 @@ output()
 }
 
 
+void
 output_prefix()
 {
     if (symbol_prefix == NULL)
@@ -71,11 +141,15 @@ output_prefix()
 	++outline;
 	fprintf(code_file, "#define yyss %sss\n", symbol_prefix);
 	++outline;
+	fprintf(code_file, "#define yysslim %ssslim\n", symbol_prefix);
+	++outline;
 	fprintf(code_file, "#define yyssp %sssp\n", symbol_prefix);
 	++outline;
 	fprintf(code_file, "#define yyvs %svs\n", symbol_prefix);
 	++outline;
 	fprintf(code_file, "#define yyvsp %svsp\n", symbol_prefix);
+	++outline;
+	fprintf(code_file, "#define yystacksize %sstacksize\n", symbol_prefix);
 	++outline;
 	fprintf(code_file, "#define yylhs %slhs\n", symbol_prefix);
 	++outline;
@@ -104,6 +178,7 @@ output_prefix()
 }
 
 
+void
 output_rule_data()
 {
     register int i;
@@ -151,6 +226,7 @@ output_rule_data()
 }
 
 
+void
 output_yydefred()
 {
     register int i, j;
@@ -178,6 +254,7 @@ output_yydefred()
 }
 
 
+void
 output_actions()
 {
     nvectors = 2*nstates + nvars;
@@ -206,6 +283,7 @@ output_actions()
 }
 
 
+void
 token_actions()
 {
     register int i, j;
@@ -290,6 +368,7 @@ token_actions()
     FREE(actionrow);
 }
 
+void
 goto_actions()
 {
     register int i, j, k;
@@ -359,6 +438,7 @@ int symbol;
 
 
 
+void
 save_column(symbol, default_state)
 int symbol;
 int default_state;
@@ -401,6 +481,7 @@ int default_state;
     width[symno] = sp1[-1] - sp[0] + 1;
 }
 
+void
 sort_actions()
 {
   register int i;
@@ -436,6 +517,7 @@ sort_actions()
 }
 
 
+void
 pack_table()
 {
     register int i;
@@ -617,6 +699,7 @@ int vector;
 
 
 
+void
 output_base()
 {
     register int i, j;
@@ -683,6 +766,7 @@ output_base()
 
 
 
+void
 output_table()
 {
     register int i;
@@ -715,6 +799,7 @@ output_table()
 
 
 
+void
 output_check()
 {
     register int i;
@@ -777,6 +862,7 @@ char *name;
 }
 
 
+void
 output_defines()
 {
     register int c, i;
@@ -829,6 +915,7 @@ output_defines()
 }
 
 
+void
 output_stored_text()
 {
     register int c;
@@ -856,6 +943,7 @@ output_stored_text()
 }
 
 
+void
 output_debug()
 {
     register int i, j, k, max;
@@ -889,11 +977,11 @@ output_debug()
     symnam[0] = "end-of-file";
 
     if (!rflag) ++outline;
-    fprintf(output_file, "#if YYDEBUG\nchar *%sname[] = {", symbol_prefix);
+    fprintf(output_file, "#if YYDEBUG\n#if defined(__cplusplus) || __STDC__\nconst char * const %sname[] =\n#else\nchar *%sname[] =\n#endif\n\t{", symbol_prefix, symbol_prefix);
     j = 80;
     for (i = 0; i <= max; ++i)
     {
-	if (s = symnam[i])
+	if ((s = symnam[i]) != '\0')
 	{
 	    if (s[0] == '"')
 	    {
@@ -1015,7 +1103,7 @@ output_debug()
     FREE(symnam);
 
     if (!rflag) ++outline;
-    fprintf(output_file, "char *%srule[] = {\n", symbol_prefix);
+    fprintf(output_file, "#if defined(__cplusplus) || __STDC__\nconst char * const %srule[] =\n#else\nchar *%srule[] =\n#endif\n\t{", symbol_prefix, symbol_prefix);
     for (i = 2; i < nrules; ++i)
     {
 	fprintf(output_file, "\"%s :", symbol_name[rlhs[i]]);
@@ -1070,6 +1158,7 @@ output_debug()
 }
 
 
+void
 output_stype()
 {
     if (!unionized && ntags == 0)
@@ -1080,6 +1169,7 @@ output_stype()
 }
 
 
+void
 output_trailing_text()
 {
     register int c, last;
@@ -1137,6 +1227,7 @@ output_trailing_text()
 }
 
 
+void
 output_semantic_actions()
 {
     register int c, last;
@@ -1174,6 +1265,7 @@ output_semantic_actions()
 }
 
 
+void
 free_itemsets()
 {
     register core *cp, *next;
@@ -1187,6 +1279,7 @@ free_itemsets()
 }
 
 
+void
 free_shifts()
 {
     register shifts *sp, *next;
@@ -1201,6 +1294,7 @@ free_shifts()
 
 
 
+void
 free_reductions()
 {
     register reductions *rp, *next;

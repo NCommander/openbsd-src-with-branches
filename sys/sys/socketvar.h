@@ -1,4 +1,5 @@
-/*	$NetBSD: socketvar.h,v 1.16 1995/08/17 02:57:39 mycroft Exp $	*/
+/*	$OpenBSD: socketvar.h,v 1.22 2001/06/22 14:11:00 deraadt Exp $	*/
+/*	$NetBSD: socketvar.h,v 1.18 1996/02/09 18:25:38 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -70,6 +71,8 @@ struct socket {
 	short	so_timeo;		/* connection timeout */
 	u_short	so_error;		/* error affecting connection */
 	pid_t	so_pgid;		/* pgid for signals */
+	uid_t	so_siguid;		/* uid of process who set so_pgid */
+	uid_t	so_sigeuid;		/* euid of process who set so_pgid */
 	u_long	so_oobmark;		/* chars to oob mark */
 /*
  * Variables for socket buffering.
@@ -92,10 +95,13 @@ struct socket {
 #define	SB_SEL		0x08		/* someone is selecting */
 #define	SB_ASYNC	0x10		/* ASYNC I/O, need signals */
 #define	SB_NOINTR	0x40		/* operations not interruptible */
+#define	SB_KNOTE	0x80		/* kernel note attached */
 
-	caddr_t	so_tpcb;		/* Wisc. protocol control block XXX */
+	void	*so_internal;		/* Space for svr4 stream data */
 	void	(*so_upcall) __P((struct socket *so, caddr_t arg, int waitf));
 	caddr_t	so_upcallarg;		/* Arg for above */
+	uid_t	so_euid;		/* who opened the socket */
+	uid_t	so_ruid;		/* who opened the socket */
 };
 
 /*
@@ -108,12 +114,13 @@ struct socket {
 #define	SS_CANTSENDMORE		0x010	/* can't send more data to peer */
 #define	SS_CANTRCVMORE		0x020	/* can't receive more data from peer */
 #define	SS_RCVATMARK		0x040	/* at mark on input */
+#define	SS_ISDISCONNECTED	0x800	/* socket disconnected from peer */
 
 #define	SS_PRIV			0x080	/* privileged for broadcast, raw... */
 #define	SS_NBIO			0x100	/* non-blocking ops */
 #define	SS_ASYNC		0x200	/* async i/o notify */
 #define	SS_ISCONFIRMING		0x400	/* deciding to accept connection req */
-
+#define	SS_CONNECTOUT		0x1000	/* connect, not accept, at this end */
 
 /*
  * Macros for sockets and socket buffering.
@@ -122,7 +129,8 @@ struct socket {
 /*
  * Do we need to notify the other side when I/O is possible?
  */
-#define	sb_notify(sb)	(((sb)->sb_flags & (SB_WAIT|SB_SEL|SB_ASYNC)) != 0)
+#define	sb_notify(sb)	(((sb)->sb_flags & (SB_WAIT|SB_SEL|SB_ASYNC| \
+    SB_KNOTE)) != 0)
 
 /*
  * How much space is there in a socket buffer (so->so_snd or so->so_rcv)?
@@ -146,11 +154,10 @@ struct socket {
 
 /* can we write something to so? */
 #define	sowriteable(so) \
-    (sbspace(&(so)->so_snd) >= (so)->so_snd.sb_lowat && \
+    ((sbspace(&(so)->so_snd) >= (so)->so_snd.sb_lowat && \
 	(((so)->so_state&SS_ISCONNECTED) || \
-	  ((so)->so_proto->pr_flags&PR_CONNREQUIRED)==0) || \
-     ((so)->so_state & SS_CANTSENDMORE) || \
-     (so)->so_error)
+	  ((so)->so_proto->pr_flags&PR_CONNREQUIRED)==0)) || \
+    ((so)->so_state & SS_CANTSENDMORE) || (so)->so_error)
 
 /* adjust counters in sb reflecting allocation of m */
 #define	sballoc(sb, m) { \
@@ -195,26 +202,33 @@ struct socket {
 
 #ifdef _KERNEL
 u_long	sb_max;
-/* to catch callers missing new second argument to sonewconn: */
-#define	sonewconn(head, connstatus)	sonewconn1((head), (connstatus))
-struct	socket *sonewconn1 __P((struct socket *head, int connstatus));
+struct	socket *sonewconn __P((struct socket *head, int connstatus));
 
 /* strings for sleep message: */
 extern	char netio[], netcon[], netcls[];
 
+struct mbuf;
+struct sockaddr;
+struct proc;
+struct msghdr;
+struct stat;
+struct knote;
+
 /*
  * File operations on sockets.
  */
-int	soo_read __P((struct file *fp, struct uio *uio, struct ucred *cred));
-int	soo_write __P((struct file *fp, struct uio *uio, struct ucred *cred));
+int	soo_read __P((struct file *fp, off_t *, struct uio *uio, 
+	    struct ucred *cred));
+int	soo_write __P((struct file *fp, off_t *, struct uio *uio,
+	    struct ucred *cred));
 int	soo_ioctl __P((struct file *fp, u_long cmd, caddr_t data,
 	    struct proc *p));
 int	soo_select __P((struct file *fp, int which, struct proc *p));
+int	soo_kqfilter __P((struct file *fp, struct knote *kn));
 int 	soo_close __P((struct file *fp, struct proc *p));
-
-struct mbuf;
-struct sockaddr;
-
+int	soo_stat __P((struct file *, struct stat *, struct proc *));
+int	uipc_usrreq __P((struct socket *, int , struct mbuf *,
+			 struct mbuf *, struct mbuf *));
 void	sbappend __P((struct sockbuf *sb, struct mbuf *m));
 int	sbappendaddr __P((struct sockbuf *sb, struct sockaddr *asa,
 	    struct mbuf *m0, struct mbuf *control));
@@ -223,6 +237,8 @@ int	sbappendcontrol __P((struct sockbuf *sb, struct mbuf *m0,
 void	sbappendrecord __P((struct sockbuf *sb, struct mbuf *m0));
 void	sbcheck __P((struct sockbuf *sb));
 void	sbcompress __P((struct sockbuf *sb, struct mbuf *m, struct mbuf *n));
+struct mbuf *
+	sbcreatecontrol __P((caddr_t p, int size, int type, int level));
 void	sbdrop __P((struct sockbuf *sb, int len));
 void	sbdroprecord __P((struct sockbuf *sb));
 void	sbflush __P((struct sockbuf *sb));
@@ -241,7 +257,7 @@ int	soconnect __P((struct socket *so, struct mbuf *nam));
 int	soconnect2 __P((struct socket *so1, struct socket *so2));
 int	socreate __P((int dom, struct socket **aso, int type, int proto));
 int	sodisconnect __P((struct socket *so));
-int	sofree __P((struct socket *so));
+void	sofree __P((struct socket *so));
 int	sogetopt __P((struct socket *so, int level, int optname,
 	    struct mbuf **mp));
 void	sohasoutofband __P((struct socket *so));
@@ -250,8 +266,7 @@ void	soisconnecting __P((struct socket *so));
 void	soisdisconnected __P((struct socket *so));
 void	soisdisconnecting __P((struct socket *so));
 int	solisten __P((struct socket *so, int backlog));
-struct socket *
-	sonewconn1 __P((struct socket *head, int connstatus));
+struct socket *sonewconn __P((struct socket *head, int connstatus));
 void	soqinsque __P((struct socket *head, struct socket *so, int q));
 int	soqremque __P((struct socket *so, int q));
 int	soreceive __P((struct socket *so, struct mbuf **paddr, struct uio *uio,
@@ -264,4 +279,10 @@ int	sosetopt __P((struct socket *so, int level, int optname,
 	    struct mbuf *m0));
 int	soshutdown __P((struct socket *so, int how));
 void	sowakeup __P((struct socket *so, struct sockbuf *sb));
+int	sockargs __P((struct mbuf **, caddr_t, socklen_t, int));
+
+int	sendit __P((struct proc *, int, struct msghdr *, int, register_t *));
+int	recvit __P((struct proc *, int, struct msghdr *, caddr_t,
+		    register_t *));
+
 #endif /* _KERNEL */
