@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.5 2001/11/15 03:59:08 jason Exp $	*/
+/*	$OpenBSD: conf.h,v 1.6 2001/12/11 23:19:02 miod Exp $	*/
 /*	$NetBSD: conf.h,v 1.9 2001/03/26 12:33:26 lukem Exp $	*/
 
 /*-
@@ -97,3 +97,11 @@ cdev_decl(sabtty);
 cdev_decl(pcons);
 
 cdev_decl(com);
+
+cdev_decl(usb);
+cdev_decl(uhid);
+cdev_decl(ugen);
+cdev_decl(ulpt);
+cdev_decl(urio);
+cdev_decl(ucom);
+cdev_decl(uscanner);
