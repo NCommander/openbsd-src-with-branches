@@ -278,11 +278,9 @@ trap(type, frame)
 		break;
 
 	case T_IBREAK | T_USER:
-		/* XXX */
-		frame->tf_iioq_head = frame->tf_iioq_tail;
-		frame->tf_iioq_tail += 4;
 	case T_DBREAK | T_USER:
 		/* pass to user debugger */
+		trapsignal(p, SIGTRAP, type &~ T_USER, TRAP_BRKPT, sv);
 		break;
 
 	case T_EXCEPTION | T_USER: {

@@ -46,6 +46,7 @@ typedef struct scr_table {
 /* Number of scatter/gather entries */
 /* XXX Ensure alignment of siop_xfer's. */
 #define SIOP_NSG	17	/* XXX (MAXPHYS/NBPG + 1) */
+#define SIOP_MAXFER	((SIOP_NSG - 1) * PAGE_SIZE)
 
 /*
  * This structure interfaces the SCRIPT with the driver; it describes a full

@@ -1512,11 +1512,11 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 			if ((!psk->psk_af || state->af == psk->psk_af)
 			    && (!psk->psk_proto || psk->psk_proto ==
 			    state->proto) &&
-			    PF_MATCHA(psk->psk_src.not,
+			    PF_MATCHA(psk->psk_src.neg,
 			    &psk->psk_src.addr.v.a.addr,
 			    &psk->psk_src.addr.v.a.mask,
 			    &state->lan.addr, state->af) &&
-			    PF_MATCHA(psk->psk_dst.not,
+			    PF_MATCHA(psk->psk_dst.neg,
 			    &psk->psk_dst.addr.v.a.addr,
 			    &psk->psk_dst.addr.v.a.mask,
 			    &state->ext.addr, state->af) &&

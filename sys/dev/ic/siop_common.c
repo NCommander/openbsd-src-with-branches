@@ -706,6 +706,9 @@ void
 siop_minphys(bp)
 	struct buf *bp;
 {
+	if (bp->b_bcount > SIOP_MAXFER)
+		bp->b_bcount = SIOP_MAXFER;
+
 	minphys(bp);
 }
 
