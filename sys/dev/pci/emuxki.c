@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxki.c,v 1.17 2004/04/14 17:06:17 brad Exp $	*/
+/*	$OpenBSD: emuxki.c,v 1.18 2004/04/14 21:36:41 mickey Exp $	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -1610,7 +1610,7 @@ emuxki_resched_timer(struct emuxki_softc *sc)
 
 	if (timerate & ~EMU_TIMER_RATE_MASK)
 		timerate = 0;
-	bus_space_write_4(sc->sc_iot, sc->sc_ioh, EMU_TIMER, timerate);
+	bus_space_write_2(sc->sc_iot, sc->sc_ioh, EMU_TIMER, timerate);
 	if (!active && (sc->timerstate & EMU_TIMER_STATE_ENABLED)) {
 		bus_space_write_4(sc->sc_iot, sc->sc_ioh, EMU_INTE,
 			bus_space_read_4(sc->sc_iot, sc->sc_ioh, EMU_INTE) &
