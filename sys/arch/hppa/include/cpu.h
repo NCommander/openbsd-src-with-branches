@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.37 2003/07/30 21:24:19 mickey Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.38 2003/10/05 14:13:28 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000-2002 Michael Shalayeff
@@ -139,7 +139,6 @@ extern int cpu_hvers;
 	(((t)? pdcache : fdcache) (HPPA_SID_KERNEL,(vaddr_t)(a),(s)))
 
 extern int want_resched;
-extern u_int cpu_itmr, cpu_hzticks;
 
 #define DELAY(x) delay(x)
 
