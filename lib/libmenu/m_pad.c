@@ -23,77 +23,60 @@
 +-----------------------------------------------------------------------------*/
 
 /***************************************************************************
-* Module m_new                                                             *
-* Creation and destruction of new menus                                    *
+* Module m_pad                                                             *
+* Control menus padding character                                          *
 ***************************************************************************/
 
 #include "menu.priv.h"
 
-MODULE_ID("Id: m_new.c,v 1.6 1997/10/21 08:44:31 juergen Exp $")
+MODULE_ID("Id: m_pad.c,v 1.1 1997/10/21 08:48:28 juergen Exp $")
+
+/* Macro to redraw menu if it is posted and changed */
+#define Refresh_Menu(menu) \
+   if ( (menu) && ((menu)->status & _POSTED) )\
+   {\
+      _nc_Draw_Menu( menu );\
+      _nc_Show_Menu( menu );\
+   }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  MENU *new_menu(ITEM **items)
+|   Function      :  int set_menu_pad(MENU *menu, int pad)
 |   
-|   Description   :  Creates a new menu connected to the item pointer
-|                    array items and returns a pointer to the new menu.
-|                    The new menu is initialized with the values from the
-|                    default menu.
+|   Description   :  Set the character to be used to separate the item name
+|                    from its description. This must be a printable 
+|                    character.
 |
-|   Return Values :  NULL on error
+|   Return Values :  E_OK              - success
+|                    E_BAD_ARGUMENT    - an invalid value has been passed
 +--------------------------------------------------------------------------*/
-MENU *new_menu(ITEM ** items)
+int set_menu_pad(MENU *menu, int pad)
 {
-  MENU *menu = (MENU *)calloc(1,sizeof(MENU));
-  
-  if (menu)
-    {
-      *menu = _nc_Default_Menu;
-      menu->rows = menu->frows;
-      menu->cols = menu->fcols;
-      if (items && *items)
-	{
-	  if (!_nc_Connect_Items(menu,items))
-	    {
-	      free(menu);
-	      menu = (MENU *)0;
-	    }
-	}
-    }
+  bool do_refresh = (menu != (MENU*)0);
 
-  if (!menu)
-    SET_ERROR(E_SYSTEM_ERROR);
-
-  return(menu);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int free_menu(MENU *menu)  
-|   
-|   Description   :  Disconnects menu from its associated item pointer 
-|                    array and frees the storage allocated for the menu.
-|
-|   Return Values :  E_OK               - success
-|                    E_BAD_ARGUMENT     - Invalid menu pointer passed
-|                    E_POSTED           - Menu is already posted
-+--------------------------------------------------------------------------*/
-int free_menu(MENU * menu)
-{
-  if (!menu)
+  if (!isprint((unsigned char)pad))
     RETURN(E_BAD_ARGUMENT);
   
-  if ( menu->status & _POSTED )
-    RETURN(E_POSTED);
+  Normalize_Menu( menu );
+  menu->pad = pad;
   
-  if (menu->items) 
-    _nc_Disconnect_Items(menu);
-  
-  if ((menu->status & _MARK_ALLOCATED) && menu->mark)
-    free(menu->mark);
+  if (do_refresh)
+      Refresh_Menu( menu );
 
-  free(menu);
   RETURN(E_OK);
 }
 
-/* m_new.c ends here */
+/*---------------------------------------------------------------------------
+|   Facility      :  libnmenu  
+|   Function      :  int menu_pad(const MENU *menu)
+|   
+|   Description   :  Return the value of the padding character
+|
+|   Return Values :  The pad character
++--------------------------------------------------------------------------*/
+int menu_pad(const MENU * menu)
+{
+  return (Normalize_Menu( menu ) -> pad);
+}
+
+/* m_pad.c ends here */

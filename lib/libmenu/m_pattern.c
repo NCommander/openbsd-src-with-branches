@@ -23,77 +23,87 @@
 +-----------------------------------------------------------------------------*/
 
 /***************************************************************************
-* Module m_new                                                             *
-* Creation and destruction of new menus                                    *
+* Module m_pattern                                                         *
+* Pattern matching handling                                                *
 ***************************************************************************/
 
 #include "menu.priv.h"
 
-MODULE_ID("Id: m_new.c,v 1.6 1997/10/21 08:44:31 juergen Exp $")
+MODULE_ID("Id: m_pattern.c,v 1.1 1997/10/21 08:44:31 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  MENU *new_menu(ITEM **items)
+|   Function      :  char *menu_pattern(const MENU *menu)
 |   
-|   Description   :  Creates a new menu connected to the item pointer
-|                    array items and returns a pointer to the new menu.
-|                    The new menu is initialized with the values from the
-|                    default menu.
+|   Description   :  Return the value of the pattern buffer.
 |
-|   Return Values :  NULL on error
+|   Return Values :  NULL          - if there is no pattern buffer allocated
+|                    EmptyString   - if there is a pattern buffer but no
+|                                    pattern is stored
+|                    PatternString - as expected
 +--------------------------------------------------------------------------*/
-MENU *new_menu(ITEM ** items)
+char *menu_pattern(const MENU * menu)
 {
-  MENU *menu = (MENU *)calloc(1,sizeof(MENU));
-  
-  if (menu)
-    {
-      *menu = _nc_Default_Menu;
-      menu->rows = menu->frows;
-      menu->cols = menu->fcols;
-      if (items && *items)
-	{
-	  if (!_nc_Connect_Items(menu,items))
-	    {
-	      free(menu);
-	      menu = (MENU *)0;
-	    }
-	}
-    }
-
-  if (!menu)
-    SET_ERROR(E_SYSTEM_ERROR);
-
-  return(menu);
+  return (menu ? (menu->pattern ? menu->pattern : "") : (char *)0);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  int free_menu(MENU *menu)  
+|   Function      :  int set_menu_pattern(MENU *menu, const char *p)
 |   
-|   Description   :  Disconnects menu from its associated item pointer 
-|                    array and frees the storage allocated for the menu.
+|   Description   :  Set the match pattern for a menu and position to the
+|                    first item that matches.
 |
-|   Return Values :  E_OK               - success
-|                    E_BAD_ARGUMENT     - Invalid menu pointer passed
-|                    E_POSTED           - Menu is already posted
+|   Return Values :  E_OK              - success
+|                    E_BAD_ARGUMENT    - invalid menu or pattern pointer
+|                    E_NOT_CONNECTED   - no items connected to menu
+|                    E_BAD_STATE       - menu in user hook routine
+|                    E_NO_MATCH        - no item matches pattern
 +--------------------------------------------------------------------------*/
-int free_menu(MENU * menu)
+int set_menu_pattern(MENU *menu, const char *p)
 {
-  if (!menu)
+  ITEM *matchitem;
+  int   matchpos;
+  
+  if (!menu || !p)	
     RETURN(E_BAD_ARGUMENT);
   
-  if ( menu->status & _POSTED )
-    RETURN(E_POSTED);
+  if (!(menu->items))
+    RETURN(E_NOT_CONNECTED);
   
-  if (menu->items) 
-    _nc_Disconnect_Items(menu);
+  if ( menu->status & _IN_DRIVER )
+    RETURN(E_BAD_STATE);
   
-  if ((menu->status & _MARK_ALLOCATED) && menu->mark)
-    free(menu->mark);
-
-  free(menu);
+  Reset_Pattern(menu);
+  
+  if (!(*p))
+    {
+      pos_menu_cursor(menu);
+      RETURN(E_OK);
+    }
+  
+  if (menu->status & _LINK_NEEDED) 
+    _nc_Link_Items(menu);
+  
+  matchpos  = menu->toprow;
+  matchitem = menu->curitem;
+  assert(matchitem);
+  
+  while(*p)
+    {
+      if ( !isprint(*p) || 
+	  (_nc_Match_Next_Character_In_Item_Name(menu,*p,&matchitem) != E_OK) )
+	{
+	  Reset_Pattern(menu);
+	  pos_menu_cursor(menu);
+	  RETURN(E_NO_MATCH);
+	}
+      p++;
+    }			
+  
+  /* This is reached if there was a match. So we position to the new item */
+  Adjust_Current_Item(menu,matchpos,matchitem);
   RETURN(E_OK);
 }
 
-/* m_new.c ends here */
+/* m_pattern.c ends here */

@@ -23,77 +23,41 @@
 +-----------------------------------------------------------------------------*/
 
 /***************************************************************************
-* Module m_new                                                             *
-* Creation and destruction of new menus                                    *
+* Module m_scale                                                           *
+* Menu scaling routine                                                     *
 ***************************************************************************/
 
 #include "menu.priv.h"
 
-MODULE_ID("Id: m_new.c,v 1.6 1997/10/21 08:44:31 juergen Exp $")
+MODULE_ID("Id: m_scale.c,v 1.1 1997/10/21 08:44:31 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  MENU *new_menu(ITEM **items)
+|   Function      :  int scale_menu(const MENU *menu)
 |   
-|   Description   :  Creates a new menu connected to the item pointer
-|                    array items and returns a pointer to the new menu.
-|                    The new menu is initialized with the values from the
-|                    default menu.
+|   Description   :  Returns the minimum window size necessary for the
+|                    subwindow of menu.  
 |
-|   Return Values :  NULL on error
+|   Return Values :  E_OK                  - success
+|                    E_BAD_ARGUMENT        - invalid menu pointer
+|                    E_NOT_CONNECTED       - no items are connected to menu
 +--------------------------------------------------------------------------*/
-MENU *new_menu(ITEM ** items)
+int scale_menu(const MENU *menu, int *rows, int *cols)
 {
-  MENU *menu = (MENU *)calloc(1,sizeof(MENU));
+  if (!menu) 
+    RETURN( E_BAD_ARGUMENT );
   
-  if (menu)
+  if (menu->items && *(menu->items))
     {
-      *menu = _nc_Default_Menu;
-      menu->rows = menu->frows;
-      menu->cols = menu->fcols;
-      if (items && *items)
-	{
-	  if (!_nc_Connect_Items(menu,items))
-	    {
-	      free(menu);
-	      menu = (MENU *)0;
-	    }
-	}
+      if (rows)
+	*rows = menu->height;
+      if (cols)
+	*cols = menu->width;
+      RETURN(E_OK);
     }
-
-  if (!menu)
-    SET_ERROR(E_SYSTEM_ERROR);
-
-  return(menu);
+  else
+    RETURN( E_NOT_CONNECTED );
 }
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int free_menu(MENU *menu)  
-|   
-|   Description   :  Disconnects menu from its associated item pointer 
-|                    array and frees the storage allocated for the menu.
-|
-|   Return Values :  E_OK               - success
-|                    E_BAD_ARGUMENT     - Invalid menu pointer passed
-|                    E_POSTED           - Menu is already posted
-+--------------------------------------------------------------------------*/
-int free_menu(MENU * menu)
-{
-  if (!menu)
-    RETURN(E_BAD_ARGUMENT);
-  
-  if ( menu->status & _POSTED )
-    RETURN(E_POSTED);
-  
-  if (menu->items) 
-    _nc_Disconnect_Items(menu);
-  
-  if ((menu->status & _MARK_ALLOCATED) && menu->mark)
-    free(menu->mark);
+/* m_scale.c ends here */
 
-  free(menu);
-  RETURN(E_OK);
-}
-
-/* m_new.c ends here */

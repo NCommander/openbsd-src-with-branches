@@ -23,77 +23,50 @@
 +-----------------------------------------------------------------------------*/
 
 /***************************************************************************
-* Module m_new                                                             *
-* Creation and destruction of new menus                                    *
+* Module m_sub                                                             *
+* Menus subwindow association routines                                     *
 ***************************************************************************/
 
 #include "menu.priv.h"
 
-MODULE_ID("Id: m_new.c,v 1.6 1997/10/21 08:44:31 juergen Exp $")
+MODULE_ID("Id: m_sub.c,v 1.1 1997/10/21 08:44:31 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  MENU *new_menu(ITEM **items)
+|   Function      :  int set_menu_sub(MENU *menu, WINDOW *win)
 |   
-|   Description   :  Creates a new menu connected to the item pointer
-|                    array items and returns a pointer to the new menu.
-|                    The new menu is initialized with the values from the
-|                    default menu.
+|   Description   :  Sets the subwindow of the menu.
 |
-|   Return Values :  NULL on error
+|   Return Values :  E_OK           - success
+|                    E_POSTED       - menu is already posted
 +--------------------------------------------------------------------------*/
-MENU *new_menu(ITEM ** items)
+int set_menu_sub(MENU *menu, WINDOW *win)
 {
-  MENU *menu = (MENU *)calloc(1,sizeof(MENU));
-  
   if (menu)
     {
-      *menu = _nc_Default_Menu;
-      menu->rows = menu->frows;
-      menu->cols = menu->fcols;
-      if (items && *items)
-	{
-	  if (!_nc_Connect_Items(menu,items))
-	    {
-	      free(menu);
-	      menu = (MENU *)0;
-	    }
-	}
+      if ( menu->status & _POSTED )
+	RETURN(E_POSTED);
+      menu->usersub = win;
+      _nc_Calculate_Item_Length_and_Width(menu);
     }
-
-  if (!menu)
-    SET_ERROR(E_SYSTEM_ERROR);
-
-  return(menu);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int free_menu(MENU *menu)  
-|   
-|   Description   :  Disconnects menu from its associated item pointer 
-|                    array and frees the storage allocated for the menu.
-|
-|   Return Values :  E_OK               - success
-|                    E_BAD_ARGUMENT     - Invalid menu pointer passed
-|                    E_POSTED           - Menu is already posted
-+--------------------------------------------------------------------------*/
-int free_menu(MENU * menu)
-{
-  if (!menu)
-    RETURN(E_BAD_ARGUMENT);
+  else
+    _nc_Default_Menu.usersub = win;
   
-  if ( menu->status & _POSTED )
-    RETURN(E_POSTED);
-  
-  if (menu->items) 
-    _nc_Disconnect_Items(menu);
-  
-  if ((menu->status & _MARK_ALLOCATED) && menu->mark)
-    free(menu->mark);
-
-  free(menu);
   RETURN(E_OK);
 }
 
-/* m_new.c ends here */
+/*---------------------------------------------------------------------------
+|   Facility      :  libnmenu  
+|   Function      :  WINDOW *menu_sub(const MENU *menu)
+|   
+|   Description   :  Returns a pointer to the subwindow of the menu
+|
+|   Return Values :  NULL on error, otherwise a pointer to the window
++--------------------------------------------------------------------------*/
+WINDOW *menu_sub(const MENU * menu)
+{
+  const MENU* m = Normalize_Menu(menu);
+  return Get_Menu_Window(m);
+}
+
+/* m_sub.c ends here */

@@ -23,77 +23,72 @@
 +-----------------------------------------------------------------------------*/
 
 /***************************************************************************
-* Module m_new                                                             *
-* Creation and destruction of new menus                                    *
+* Module m_item_top                                                        *
+* Set and get top menus item                                               *
 ***************************************************************************/
 
 #include "menu.priv.h"
 
-MODULE_ID("Id: m_new.c,v 1.6 1997/10/21 08:44:31 juergen Exp $")
+MODULE_ID("Id: m_item_top.c,v 1.1 1997/10/21 08:44:31 juergen Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  MENU *new_menu(ITEM **items)
+|   Function      :  int set_top_row(MENU *menu, int row)
 |   
-|   Description   :  Creates a new menu connected to the item pointer
-|                    array items and returns a pointer to the new menu.
-|                    The new menu is initialized with the values from the
-|                    default menu.
+|   Description   :  Makes the speified row the top row in the menu
 |
-|   Return Values :  NULL on error
+|   Return Values :  E_OK             - success
+|                    E_BAD_ARGUMENT   - not a menu pointer or invalid row
+|                    E_NOT_CONNECTED  - there are no items for the menu
 +--------------------------------------------------------------------------*/
-MENU *new_menu(ITEM ** items)
+int set_top_row(MENU * menu, int row)
 {
-  MENU *menu = (MENU *)calloc(1,sizeof(MENU));
+  ITEM *item;
   
   if (menu)
     {
-      *menu = _nc_Default_Menu;
-      menu->rows = menu->frows;
-      menu->cols = menu->fcols;
-      if (items && *items)
-	{
-	  if (!_nc_Connect_Items(menu,items))
-	    {
-	      free(menu);
-	      menu = (MENU *)0;
-	    }
-	}
+      if ( menu->status & _IN_DRIVER )
+	RETURN(E_BAD_STATE);
+      if (menu->items == (ITEM **)0)
+	RETURN(E_NOT_CONNECTED);
+      
+      if ((row<0) || (row > (menu->rows - menu->arows)))
+	RETURN(E_BAD_ARGUMENT);
     }
-
-  if (!menu)
-    SET_ERROR(E_SYSTEM_ERROR);
-
-  return(menu);
+  else
+    RETURN(E_BAD_ARGUMENT);
+  
+  if (row != menu->toprow)
+    {
+      if (menu->status & _LINK_NEEDED) 
+	_nc_Link_Items(menu);
+      
+      item = menu->items[ (menu->opt&O_ROWMAJOR) ? (row*menu->cols) : row ];
+      assert(menu->pattern);
+      Reset_Pattern(menu);
+      _nc_New_TopRow_and_CurrentItem(menu, row, item);
+    }
+  
+    RETURN(E_OK);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  int free_menu(MENU *menu)  
+|   Function      :  int top_row(const MENU *)
 |   
-|   Description   :  Disconnects menu from its associated item pointer 
-|                    array and frees the storage allocated for the menu.
+|   Description   :  Return the top row of the menu
 |
-|   Return Values :  E_OK               - success
-|                    E_BAD_ARGUMENT     - Invalid menu pointer passed
-|                    E_POSTED           - Menu is already posted
+|   Return Values :  The row number or ERR if there is no row
 +--------------------------------------------------------------------------*/
-int free_menu(MENU * menu)
+int top_row(const MENU * menu)
 {
-  if (!menu)
-    RETURN(E_BAD_ARGUMENT);
-  
-  if ( menu->status & _POSTED )
-    RETURN(E_POSTED);
-  
-  if (menu->items) 
-    _nc_Disconnect_Items(menu);
-  
-  if ((menu->status & _MARK_ALLOCATED) && menu->mark)
-    free(menu->mark);
-
-  free(menu);
-  RETURN(E_OK);
+  if (menu && menu->items && *(menu->items))
+    {
+      assert( (menu->toprow>=0) && (menu->toprow < menu->rows) );
+      return menu->toprow;
+    }
+  else
+    return(ERR);
 }
 
-/* m_new.c ends here */
+/* m_item_top.c ends here */
