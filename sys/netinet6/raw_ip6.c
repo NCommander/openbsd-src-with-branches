@@ -480,8 +480,10 @@ rip6_output(struct mbuf *m, ...)
 	}
 
 	flags = 0;
+#ifdef IN6P_MINMTU
 	if (in6p->in6p_flags & IN6P_MINMTU)
 		flags |= IPV6_MINMTU;
+#endif
 
 	error = ip6_output(m, optp, &in6p->in6p_route, flags,
 	    in6p->in6p_moptions, &oifp);

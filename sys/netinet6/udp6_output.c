@@ -262,8 +262,10 @@ udp6_output(in6p, m, addr6, control)
 		}
 
 		flags = 0;
+#ifdef IN6P_MINMTU
 		if (in6p->in6p_flags & IN6P_MINMTU)
 			flags |= IPV6_MINMTU;
+#endif
 
 		udp6stat.udp6s_opackets++;
 		error = ip6_output(m, in6p->in6p_outputopts, &in6p->in6p_route,
