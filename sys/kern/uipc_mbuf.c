@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.8 1999/01/07 22:28:01 deraadt Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.9 1999/02/26 04:49:07 art Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -364,8 +364,6 @@ nospace:
 /*
  * m_copym2() is like m_copym(), except it COPIES cluster mbufs, instead
  * of merely bumping the reference count.
- *
- * The hope is to obsolete this function someday.
  */
 struct mbuf *
 m_copym2(m, off0, len, wait)
