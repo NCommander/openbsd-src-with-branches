@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.57 1999/12/05 22:09:18 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.58 1999/12/06 07:14:36 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -1486,9 +1486,9 @@ ipsp_address(union sockaddr_union sa)
 	case AF_INET:
 	    return inet_ntoa4(sa.sin.sin_addr);
 
-#if INET6
+#if 0 /*INET6*/
 	case AF_INET6:
-	    return inet_ntoa6(sa.sin6.s6_addr);
+	    return inet_ntoa6(sa.sin6.sin6_addr);
 #endif /* INET6 */
 
 	default:
