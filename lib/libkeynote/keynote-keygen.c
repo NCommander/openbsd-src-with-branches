@@ -1,4 +1,4 @@
-/* $OpenBSD: keynote-keygen.c,v 1.11 2000/09/27 00:09:54 angelos Exp $ */
+/* $OpenBSD: keynote-keygen.c,v 1.12 2001/03/08 21:50:11 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -162,7 +162,7 @@ keynote_keygen(int argc, char *argv[])
     if (strlen(algname) + 2 > prlen)
     {
 	fprintf(stderr, "Parameter ``print-length'' should be larger "
-		"than the length of AlgorithmName (%d)\n", strlen(algname));
+		"than the length of AlgorithmName (%lu)\n", strlen(algname));
 	exit(1);
     }
 
