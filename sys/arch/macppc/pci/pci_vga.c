@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: pci_vga.c,v 1.1 1997/10/11 11:29:31 pefo Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.13 2001/06/27 04:37:20 art Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.14 2001/07/09 03:54:40 mickey Exp $	*/
 /*	$NetBSD: vga.c,v 1.3 1996/12/02 22:24:54 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
 #include <dev/wscons/wscons_raster.h>
 #include <dev/rcons/raster.h>
 
-#include <arch/powerpc/pci/vgafbvar.h>
+#include <arch/macppc/pci/vgafbvar.h>
 
 /* parameters set by OF to detect console */
 extern int cons_displaytype;
