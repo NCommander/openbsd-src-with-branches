@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.18 1997/05/11 20:01:57 millert Exp $
+#	$OpenBSD: Makefile,v 1.19 1997/05/14 18:39:00 niklas Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -105,3 +105,4 @@ clean cleandir:
 	    bsd bsd.rd bsd.gz floppy*.fs rdsetroot
 
 .include <bsd.obj.mk>
+.include <bsd.subdir.mk>
