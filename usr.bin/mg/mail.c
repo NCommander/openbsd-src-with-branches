@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mail.c,v 1.1 2003/05/05 11:12:07 vincent Exp $ */
 /*
  * This file is in the public domain.
  *
@@ -70,6 +70,7 @@ mail(int f, int n)
 		curbp->b_modes[1] = name_mode("mail-mode");
 	}
 	curbp->b_nmodes = 1;
+	curwp->w_flag |= WFMODE;
 	return (TRUE);
 }
 
