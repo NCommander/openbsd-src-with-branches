@@ -1,4 +1,4 @@
-/*	$OpenBSD: advfsops.c,v 1.15 1999/05/31 17:34:44 millert Exp $	*/
+/*	$OpenBSD: advfsops.c,v 1.16 2000/02/07 04:57:15 assar Exp $	*/
 /*	$NetBSD: advfsops.c,v 1.24 1996/12/22 10:10:12 cgd Exp $	*/
 
 /*
@@ -665,11 +665,9 @@ adosfs_fhtovp(mp, fhp, vpp)
 	struct vnode **vpp;
 {
 	struct ifid *ifhp = (struct ifid *)fhp;
-	struct adosfsmount *amp = VFSTOADOSFS(mp);
 #if 0
 	struct anode *ap;
 #endif
-	struct netcred *np;
 	struct vnode *nvp;
 	int error;
 
@@ -690,8 +688,6 @@ adosfs_fhtovp(mp, fhp, vpp)
 	}
 #endif
 	*vpp = nvp;
-	*exflagsp = np->netc_exflags;
-	*credanonp = &np->netc_anon;
 	return(0);
 }
 
