@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.43 2001/05/05 22:33:28 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.44 2001/05/17 18:41:47 provos Exp $	*/
 /*	$NetBSD: machdep.c,v 1.95 1997/08/27 18:31:17 is Exp $	*/
 
 /*
@@ -843,6 +843,9 @@ boot(howto)
 	/* If rebooting and a dump is requested do it. */
 	if (howto & RB_DUMP)
 		dumpsys();
+
+	/* Run any shutdown hooks. */
+	doshutdownhooks();
 
 	if (howto & RB_HALT) {
 		printf("System halted.\n\n");
