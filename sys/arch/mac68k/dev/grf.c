@@ -1,4 +1,4 @@
-/*	$OpenBSD: grf.c,v 1.10 2001/05/08 17:30:39 aaron Exp $	*/
+/*	$OpenBSD: grf.c,v 1.11 2001/05/10 07:59:05 art Exp $	*/
 /*	$NetBSD: grf.c,v 1.41 1997/02/24 06:20:04 scottr Exp $	*/
 
 /*
@@ -57,6 +57,7 @@
 #include <sys/malloc.h>
 #include <sys/mman.h>
 #include <sys/proc.h>
+#include <sys/resourcevar.h>
 #include <sys/vnode.h>
 #include <sys/systm.h>
 
