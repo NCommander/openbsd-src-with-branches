@@ -74,7 +74,7 @@ db_randomsym(lenp)
 
 		/* don't show symtab name if there are less than 3 of 'em */
 	if (db_nsymtabs < 3)
-		while(*p++ != ':');
+		while(*q++ != ':');
 
 		/* strlen(q) && ignoring underscores and colons */
 	for ((*lenp) = 0, p = q; *p; p++)
