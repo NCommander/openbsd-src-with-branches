@@ -914,11 +914,7 @@ decapsulate:
 	}
 
 	s = splimp();
-	if (IF_QFULL(inq)) {
-		IF_DROP(inq);
-		m_freem(m);
-	} else
-		IF_ENQUEUE(inq, m);
+	IF_INPUT_ENQUEUE(inq, m);
 	splx(s);
 }
 
@@ -931,7 +927,7 @@ ether_sprintf(ap)
 	u_char *ap;
 {
 	int i;
-	static char etherbuf[18];
+	static char etherbuf[ETHER_ADDR_LEN * 3];
 	char *cp = etherbuf;
 
 	for (i = 0; i < ETHER_ADDR_LEN; i++) {

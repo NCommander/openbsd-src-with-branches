@@ -31,8 +31,8 @@
  *	@(#)float.h	7.1 (Berkeley) 5/8/90
  */
 
-#ifndef _MACHINE_FLOAT_H_
-#define _MACHINE_FLOAT_H_
+#ifndef _HPPA_FLOAT_H_
+#define _HPPA_FLOAT_H_
 
 #include <sys/cdefs.h>
 

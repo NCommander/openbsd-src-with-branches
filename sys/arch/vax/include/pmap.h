@@ -142,6 +142,8 @@ extern	struct pmap kernel_pmap_store;
 	    :: "r"(__pa): "r0","r1","r2","r3","r4","r5");		\
 } while (0)
 
+#define pmap_proc_iflush(p,va,len)	/* nothing */
+
 /* Prototypes */
 void	pmap_bootstrap(void);
 vaddr_t pmap_map(vm_offset_t, vm_offset_t, vm_offset_t, int);

@@ -768,7 +768,6 @@ struct dc_softc {
 	bus_space_read_4(sc->dc_btag, sc->dc_bhandle, reg)
 
 #define DC_TIMEOUT		1000
-#define ETHER_ALIGN		2
 
 /*
  * General constants that are fun to know.

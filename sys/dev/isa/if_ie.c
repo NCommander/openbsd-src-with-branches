@@ -128,7 +128,6 @@ iomem, and to make 16-pointers, we subtract sc_maddr and and with 0xffff.
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #ifdef INET
@@ -1502,11 +1501,17 @@ iestart(ifp)
 			    sc->xchead);
 #endif
 
+		len = 0;
 		buffer = sc->xmit_cbuffs[sc->xchead];
-		for (m = m0; m != 0; m = m->m_next) {
+
+		for (m = m0; m != NULL && (len + m->m_len) < IE_TBUF_SIZE;
+		    m = m->m_next) {
 			bcopy(mtod(m, caddr_t), buffer, m->m_len);
 			buffer += m->m_len;
+			len += m->m_len;
 		}
+		if (m != NULL)
+			printf("%s: tbuf overflow\n", sc->sc_dev.dv_xname);
 
 		m_freem(m0);
 

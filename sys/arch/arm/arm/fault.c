@@ -235,8 +235,6 @@ data_abort_handler(trapframe_t *tf)
 	if (__predict_false(data_aborts[fsr & FAULT_TYPE_MASK].func != NULL)) {
 		if ((data_aborts[fsr & FAULT_TYPE_MASK].func)(tf, fsr, far, p,
 		    &sd)) {
-			printf("data abort trap fsr %x far %x pc %x\n",
-			fsr, far, tf->tf_pc);
 			goto do_trapsignal;
 		}
 		goto out;
@@ -451,7 +449,7 @@ do_trapsignal:
 out:
 	/* If returning to user mode, make sure to invoke userret() */
 	if (user)
-		userret(p);
+		userret(p, tf->tf_pc, p->p_sticks);
 }
 
 /*
@@ -785,7 +783,7 @@ prefetch_abort_handler(trapframe_t *tf)
 do_trapsignal:
 
 out:
-	userret(p);
+	userret(p, tf->tf_pc, p->p_sticks);
 }
 
 /*

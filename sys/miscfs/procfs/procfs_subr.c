@@ -214,6 +214,8 @@ procfs_rw(v)
 	/* Do not permit games to be played with init(8) */
 	if (p->p_pid == 1 && securelevel > 0 && uio->uio_rw == UIO_WRITE)
 		return (EPERM);
+	if (uio->uio_offset < 0)
+		return (EINVAL);
 
 	switch (pfs->pfs_type) {
 	case Pnote:

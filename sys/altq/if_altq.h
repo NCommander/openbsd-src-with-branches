@@ -47,6 +47,7 @@ struct	ifaltq {
 	int	ifq_len;
 	int	ifq_maxlen;
 	int	ifq_drops;
+	int	ifq_congestion;
 
 	/* alternate queueing related fields */
 	int	altq_type;		/* discipline type */

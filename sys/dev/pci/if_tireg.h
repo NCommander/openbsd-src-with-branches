@@ -768,8 +768,6 @@ struct ti_tx_desc {
  * boundary.
  */
 
-#define ETHER_ALIGN 2
-
 #define TI_FRAMELEN		1518
 #define TI_JUMBO_FRAMELEN	9018
 #define TI_JUMBO_MTU		(TI_JUMBO_FRAMELEN-ETHER_HDR_LEN-ETHER_CRC_LEN)

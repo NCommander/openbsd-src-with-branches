@@ -53,6 +53,15 @@
 
 #include <dev/ic/ac97.h>
 
+/*
+ * XXX > 4GB kaboom: define kvtop as a truncated vtophys.  Will not
+ * do the right thing on machines with more than 4 gig of ram.
+ */
+#if defined(__amd64__)
+#include <uvm/uvm_extern.h>	/* for vtophys */
+#define kvtop(va)		(int)vtophys((vaddr_t)(va))
+#endif
+
 /* 12.1.10 NAMBAR - native audio mixer base address register */
 #define	AUICH_NAMBAR	0x10
 /* 12.1.11 NABMBAR - native audio bus mastering base address register */
@@ -403,8 +412,10 @@ auich_attach(parent, self, aux)
 		    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_INTEL_82801DB_ACA) {
 			/* MSI 845G Max never return AUICH_PCR */
 			sc->sc_ignore_codecready = 1;
-		} else
+		} else {
+			printf("%s: reset failed!\n", sc->sc_dev.dv_xname);
 			return;
+		}
 	}
 
 	sc->host_if.arg = sc;

@@ -167,6 +167,8 @@ static const struct usb_devno uplcom_devs[] = {
 	{ USB_VENDOR_TDK, USB_PRODUCT_TDK_UPA9664 },
 	/* Ericsson DCU-10 & DCU-11, made by Susteen, Inc. */
 	{ USB_VENDOR_SUSTEEN, USB_PRODUCT_SUSTEEN_DCU11 },
+	/* Sitecom USB to Serial. */
+	{ USB_VENDOR_SITECOM, USB_PRODUCT_SITECOM_CN104 },
 };
 #define uplcom_lookup(v, p) usb_lookup(uplcom_devs, v, p)
 

@@ -103,9 +103,11 @@ static u_int32_t ppc_curfreq;
 
 
 int
-ppc_cpuspeed(void *oldp, size_t *oldlenp, void *newp, size_t newlen)
+ppc_cpuspeed(int *freq)
 {
-	return (sysctl_rdint(oldp, oldlenp, newp, ppc_curfreq));
+	*freq = ppc_curfreq;
+
+	return (0);
 }
 
 

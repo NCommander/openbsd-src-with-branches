@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_var.h,v 1.9.2.4 2003/05/13 19:36:18 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: udp_var.h,v 1.12 1996/02/13 23:44:41 christos Exp $	*/
 
 /*
@@ -85,6 +85,14 @@ struct	udpstat {
 	{ "baddynamic", CTLTYPE_STRUCT }, \
 	{ "recvspace",  CTLTYPE_INT }, \
 	{ "sendspace",  CTLTYPE_INT }, \
+}
+
+#define UDPCTL_VARS { \
+	NULL, \
+	&udpcksum, \
+	NULL, \
+	&udp_recvspace, \
+	&udp_sendspace, \
 }
 
 #ifdef _KERNEL

@@ -92,7 +92,7 @@ uvm_meter()
 
 /*
  * uvm_loadav: compute a tenex style load average of a quantity on
- * 1, 5, and 15 minute internvals.
+ * 1, 5, and 15 minute intervals.
  */
 static void
 uvm_loadav(avg)

@@ -167,7 +167,7 @@ lofn_attach(parent, self, aux)
 
 	crypto_kregister(sc->sc_cid, algs, lofn_kprocess);
 
-	printf(": %s\n", intrstr);
+	printf(": PK, %s\n", intrstr);
 
 	return;
 
@@ -546,12 +546,12 @@ lofn_feed(sc)
 		q = SIMPLEQ_FIRST(&sc->sc_queue);
 		if (q->q_start(sc, q) == 0) {
 			sc->sc_current = q;
-			SIMPLEQ_REMOVE_HEAD(&sc->sc_queue, q, q_next);
+			SIMPLEQ_REMOVE_HEAD(&sc->sc_queue, q_next);
 			sc->sc_ier |= LOFN_IER_DONE;
 			WRITE_REG(sc, LOFN_REL_IER, sc->sc_ier);
 			break;
 		} else {
-			SIMPLEQ_REMOVE_HEAD(&sc->sc_queue, q, q_next);
+			SIMPLEQ_REMOVE_HEAD(&sc->sc_queue, q_next);
 			free(q, M_DEVBUF);
 		}
 	}

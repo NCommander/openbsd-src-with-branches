@@ -330,12 +330,6 @@ __elf_fdnlist(fd, list)
 	/* calculate section header table size */
 	shdr_size = ehdr.e_shentsize * ehdr.e_shnum;
 
-	/* Make sure it's not too big to mmap */
-	if (shdr_size > SIZE_T_MAX) {
-		errno = EFBIG;
-		return (-1);
-	}
-
 	/* mmap section header table */
 	shdr = (Elf_Shdr *)mmap(NULL, (size_t)shdr_size, PROT_READ,
 	    MAP_SHARED|MAP_FILE, fd, (off_t) ehdr.e_shoff);
@@ -371,12 +365,6 @@ __elf_fdnlist(fd, list)
 	else
 		munmap((caddr_t)shdr, shdr_size);
 
-	/* Check for files too large to mmap. */
-	/* XXX is this really possible? */
-	if (symstrsize > SIZE_T_MAX) {
-		errno = EFBIG;
-		return (-1);
-	}
 	/*
 	 * Map string table into our address space.  This gives us
 	 * an easy way to randomly access all the strings, without

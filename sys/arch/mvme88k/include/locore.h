@@ -52,7 +52,7 @@ void _doboot(void);
 vaddr_t get_slave_stack(void);
 void slave_pre_main(void);
 int slave_main(void);
-int intr_findvec(int start, int end);
+int intr_findvec(int, int, int);
 void bugsyscall(void);
 void myetheraddr(u_char *cp);
 void dosoftint(void);

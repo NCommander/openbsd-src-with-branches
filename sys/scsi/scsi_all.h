@@ -226,6 +226,8 @@ struct scsi_inquiry_data {
 #define SID_ISO		0xC0
 	u_int8_t response_format;
 	u_int8_t additional_length;
+#define SID_INQUIRY_HDR	5	/* Bytes up to & including additional_length */
+#define SID_SCSI2_ALEN	31	/* Additional bytes of basic SCSI2 info */
 	u_int8_t unused[2];
 	u_int8_t flags;
 #define	SID_SftRe	0x01

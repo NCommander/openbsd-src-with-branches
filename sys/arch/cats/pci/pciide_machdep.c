@@ -59,7 +59,7 @@ pciide_machdep_compat_intr_establish(dev, pa, chan, func, arg)
 	struct device *dev;
 	struct pci_attach_args *pa;
 	int chan;
-	int (*func) __P((void *));
+	int (*func) (void *);
 	void *arg;
 {
 #if NISA > 0

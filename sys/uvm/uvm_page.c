@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.6.4.9 2003/05/13 19:36:58 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_page.c,v 1.44 2000/11/27 08:40:04 chs Exp $	*/
 
 /* 
@@ -464,6 +464,7 @@ uvm_pageboot_alloc(size)
 		 */
 		pmap_kenter_pa(vaddr, paddr, VM_PROT_READ|VM_PROT_WRITE);
 	}
+	pmap_update(pmap_kernel());
 	return(addr);
 #endif	/* PMAP_STEAL_MEMORY */
 }

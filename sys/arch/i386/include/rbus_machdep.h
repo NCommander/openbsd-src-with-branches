@@ -37,9 +37,6 @@
 
 struct pci_attach_args;		/* XXX */
 
-void _bus_space_unmap(bus_space_tag_t, bus_space_handle_t,
-			     bus_size_t, bus_addr_t *);
-
 #define md_space_map(bt, physaddr, size, flags, bshp) \
 	_bus_space_map((bt), (physaddr), (size), (flags), (bshp))
 

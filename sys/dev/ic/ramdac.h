@@ -40,9 +40,7 @@
 #ifndef _DEV_IC_RAMDAC_H
 #define _DEV_IC_RAMDAC_H
 
-#include <dev/rcons/raster.h>
 #include <dev/wscons/wsconsio.h>
-#include <dev/wscons/wscons_raster.h>
 
 struct ramdac_cookie;
 

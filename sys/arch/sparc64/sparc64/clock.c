@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.3.4.5 2003/03/27 23:42:37 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: clock.c,v 1.41 2001/07/24 19:29:25 eeh Exp $ */
 
 /*
@@ -895,6 +895,7 @@ inittodr(base)
 	time_t base;
 {
 	int badbase = 0, waszero = base == 0;
+	char *bad = NULL;
 
 	if (base < 5 * SECYR) {
 		/*
@@ -909,13 +910,13 @@ inittodr(base)
 	}
 
 	if (todr_handle &&
-		(todr_gettime(todr_handle, (struct timeval *)&time) != 0 ||
-		time.tv_sec == 0)) {
-		printf("WARNING: bad date in battery clock");
+	    (todr_gettime(todr_handle, (struct timeval *)&time) != 0 ||
+	    time.tv_sec == 0)) {
 		/*
 		 * Believe the time in the file system for lack of
 		 * anything better, resetting the clock.
 		 */
+		bad = "WARNING: bad date in battery clock";
 		time.tv_sec = base;
 		if (!badbase)
 			resettodr();
@@ -928,10 +929,16 @@ inittodr(base)
 			deltat = -deltat;
 		if (waszero || deltat < 2 * SECDAY)
 			return;
+#ifndef SMALL_KERNEL
 		printf("WARNING: clock %s %ld days",
 		    time.tv_sec < base ? "lost" : "gained", deltat / SECDAY);
+		bad = "";
+#endif
 	}
-	printf(" -- CHECK AND RESET THE DATE!\n");
+	if (bad) {
+		printf("%s", bad);
+		printf(" -- CHECK AND RESET THE DATE!\n");
+	}
 }
 
 /*

@@ -39,7 +39,7 @@
 #define _LINUX_EMULDATA_H
 
 /*
- * This is auxillary data the linux compat code
+ * This is auxiliary data the linux compat code
  * needs to do its work.  A pointer to it is
  * stored in the emuldata field of the proc
  * structure.

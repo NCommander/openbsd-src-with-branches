@@ -653,11 +653,7 @@ fddi_input(ifp, fh, m)
 	}
 
 	s = splimp();
-	if (IF_QFULL(inq)) {
-		IF_DROP(inq);
-		m_freem(m);
-	} else
-		IF_ENQUEUE(inq, m);
+	IF_INPUT_ENQUEUE(inq, m);
 	splx(s);
 }
 /*

@@ -45,8 +45,6 @@
 #include <mvme88k/dev/bugttyfunc.h>
 
 #include "bugtty.h"
-#include "cl.h"
-#include "dart.h"
 
 int bugttymatch(struct device *parent, void *self, void *aux);
 void bugttyattach(struct device *parent, struct device *self, void *aux);
@@ -60,10 +58,7 @@ struct cfdriver bugtty_cd = {
 };
 
 /* prototypes */
-int bugttycnprobe(struct consdev *cp);
-int bugttycninit(struct consdev *cp);
-int bugttycngetc(dev_t dev);
-void bugttycnputc(dev_t dev, char c);
+cons_decl(bugtty);
 
 struct tty *bugttytty(dev_t dev);
 int bugttymctl(dev_t dev, int bits, int how);
@@ -91,22 +86,8 @@ bugttymatch(parent, self, aux)
 	/*
 	 * Do not attach if a suitable console driver has been attached.
 	 */
-#if NCL > 0
-	{
-		extern struct cfdriver cl_cd;
-
-		if (cl_cd.cd_ndevs != 0)
-			return (0);
-	}
-#endif
-#if NDART > 0
-	{
-		extern struct cfdriver dart_cd;
-
-		if (dart_cd.cd_ndevs != 0)
-			return (0);
-	}
-#endif
+	if (cn_tab != NULL && cn_tab->cn_probe != bugttycnprobe)
+		return (0);
 
 	ca->ca_ipl = IPL_TTY;
 	return (1);
@@ -318,19 +299,14 @@ void
 bugtty_chkinput()
 {
 	struct tty *tp;
-	int rc = 0;
-	tp = bugtty_tty[0]; /* Kinda ugly hack */
-	if (tp == NULL )
+
+	tp = bugtty_tty[0]; /* assumes console is the first port */
+	if (tp == NULL)
 		return;
 
-	if ((rc = buginstat()) != 0) {
-		while (buginstat() != 0) {
-			u_char c = buginchr() & 0xff;
-			(*linesw[tp->t_line].l_rint)(c, tp);
-		}
-		/*
-		wakeup(tp);
-		*/
+	while (buginstat() != 0) {
+		u_char c = buginchr() & 0xff;
+		(*linesw[tp->t_line].l_rint)(c, tp);
 	}
 }
 
@@ -456,7 +432,7 @@ bugttystop(tp, flag)
 /*
  * bugtty is the last possible choice for a console device.
  */
-int
+void
 bugttycnprobe(cp)
 	struct consdev *cp;
 {
@@ -469,15 +445,13 @@ bugttycnprobe(cp)
 
 	cp->cn_dev = makedev(maj, 0);
 	cp->cn_pri = CN_NORMAL;
-	return (1);
 }
 
-int
+void
 bugttycninit(cp)
 	struct consdev *cp;
 {
 	/* Nothing to do */
-	return 0;
 }
 
 int

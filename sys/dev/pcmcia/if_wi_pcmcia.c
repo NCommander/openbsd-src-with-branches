@@ -244,6 +244,18 @@ static const struct wi_pcmcia_product {
 	{ PCMCIA_VENDOR_SIEMENS,
 	  PCMCIA_PRODUCT_SIEMENS_SS1021,
 	  PCMCIA_CIS_SIEMENS_SS1021
+	},
+	{ PCMCIA_VENDOR_MICROSOFT,
+	  PCMCIA_PRODUCT_MICROSOFT_MN520,
+	  PCMCIA_CIS_MICROSOFT_MN520
+	},
+	{ PCMCIA_VENDOR_ADAPTEC2,
+	  PCMCIA_PRODUCT_ADAPTEC2_AWN8030,
+	  PCMCIA_CIS_ADAPTEC2_AWN8030
+	},
+	{ PCMCIA_VENDOR_ASUS,
+	  PCMCIA_PRODUCT_ASUS_WL_100,
+	  PCMCIA_CIS_ASUS_WL_100
 	}
 };
 
@@ -349,8 +361,10 @@ wi_pcmcia_attach(parent, self, aux)
 		goto bad;
 	}
 
-	wi_attach(sc, &wi_func_io);
-	return;
+	if (wi_attach(sc, &wi_func_io) == 0)
+		return;
+
+	pcmcia_intr_disestablish(psc->sc_pf, sc->sc_ih);
 
 bad:
 	if (state > 2)

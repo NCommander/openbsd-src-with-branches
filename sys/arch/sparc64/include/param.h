@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.4.4.4 2003/03/27 23:42:36 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: param.h,v 1.25 2001/05/30 12:28:51 mrg Exp $ */
 
 /*
@@ -182,14 +182,7 @@ extern int nbpg, pgofset, pgshift;
 #define	MCLSHIFT	11		/* log2(MCLBYTES) */
 #define	MCLBYTES	(1 << MCLSHIFT)	/* enough for whole Ethernet packet */
 #define	MCLOFSET	(MCLBYTES - 1)
-
-#ifndef NMBCLUSTERS
-#ifdef GATEWAY
-#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
-#else
-#define	NMBCLUSTERS	1024		/* map size, max cluster allocation */
-#endif
-#endif
+#define	NMBCLUSTERS	4096		/* map size, max cluster allocation */
 
 #define MSGBUFSIZE	NBPG
 

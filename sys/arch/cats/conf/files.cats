@@ -60,8 +60,6 @@ file	arch/cats/cats/cats_machdep.c
 # library functions
 
 file	arch/arm/arm/disksubr.c			disk
-#file	arch/arm/arm/disksubr_acorn.c		disk
-file	arch/arm/arm/disksubr_mbr.c		disk
 
 # ISA Plug 'n Play autoconfiguration glue.
 file	arch/arm/footbridge/isa/isapnp_machdep.c	isapnp

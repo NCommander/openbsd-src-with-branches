@@ -191,6 +191,8 @@ void	pmap_tlb_shootdown_q_drain(u_long, boolean_t);
 #define	pmap_wired_count(pmap)		((pmap)->pm_stats.wired_count)
 #define pmap_update(pmap)		/* nothing (yet) */
 
+#define pmap_proc_iflush(p, va, len)	/* nothing */
+
 extern	pt_entry_t *VPT;		/* Virtual Page Table */
 
 #define	PMAP_STEAL_MEMORY		/* enable pmap_steal_memory() */

@@ -79,14 +79,7 @@
 #define	MCLSHIFT	11		/* convert bytes to m_buf clusters */
 #define	MCLBYTES	(1 << MCLSHIFT)	/* size of a m_buf cluster */
 #define	MCLOFSET	(MCLBYTES - 1)
-
-#ifndef NMBCLUSTERS
-#ifdef GATEWAY
-#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
-#else
-#define	NMBCLUSTERS	1024		/* map size, max cluster allocation */
-#endif
-#endif
+#define	NMBCLUSTERS	4096		/* map size, max cluster allocation */
 
 /*
  * pages ("clicks") to disk blocks

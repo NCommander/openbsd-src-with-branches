@@ -127,20 +127,16 @@ struct filterops *sysfilt_ops[] = {
 	&sig_filtops,			/* EVFILT_SIGNAL */
 };
 
-/* XXX - call this on startup instead. */
 void kqueue_init(void);
-
-int kqueue_initialized;
 
 void
 kqueue_init(void)
 {
+
 	pool_init(&kqueue_pool, sizeof(struct kqueue), 0, 0, 0, "kqeuepl",
 	    &pool_allocator_nointr);
 	pool_init(&knote_pool, sizeof(struct knote), 0, 0, 0, "knotepl",
 	    &pool_allocator_nointr);
-
-	kqueue_initialized = 1;
 }
 
 int
@@ -313,9 +309,6 @@ sys_kqueue(struct proc *p, void *v, register_t *retval)
 	struct kqueue *kq;
 	struct file *fp;
 	int fd, error;
-
-	if (!kqueue_initialized)
-		kqueue_init();
 
 	error = falloc(p, &fp, &fd);
 	if (error)

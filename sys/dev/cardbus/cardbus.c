@@ -253,7 +253,7 @@ cardbus_read_tuples(ca, cis_ptr, tuples, len)
 		break;
 	    }
 	    while((p = SIMPLEQ_FIRST(&rom_image)) != NULL) {
-		SIMPLEQ_REMOVE_HEAD(&rom_image, p, next);
+		SIMPLEQ_REMOVE_HEAD(&rom_image, next);
 		free(p, M_DEVBUF);
 	    }
 	out:

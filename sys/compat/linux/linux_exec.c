@@ -459,6 +459,14 @@ exec_linux_aout_prep_qmagic(p, epp)
 }
 
 int
+exec_linux_elf32_makecmds(struct proc *p, struct exec_package *epp)
+{
+	if (!(emul_linux_elf.e_flags & EMUL_ENABLED))
+		return (ENOEXEC);
+	return exec_elf32_makecmds(p, epp);
+}
+
+int
 linux_elf_probe(p, epp, itp, pos, os)
 	struct proc *p;
 	struct exec_package *epp;

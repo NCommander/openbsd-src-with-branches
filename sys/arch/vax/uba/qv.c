@@ -137,7 +137,6 @@
 #include "sys/map.h"
 #include "sys/buf.h"
 #include "sys/vm.h"
-#include "sys/clist.h"
 #include "sys/file.h"
 #include "sys/uio.h"
 #include "sys/kernel.h"

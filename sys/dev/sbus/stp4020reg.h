@@ -42,7 +42,8 @@
 #define	_STP4020_REG_H
 
 /*
- * STP4020: SBus/PCMCIA bridge supporting two Type-3 PCMCIA cards.
+ * STP4020: SBus/PCMCIA bridge supporting one Type-3 PCMCIA card, or up to
+ * two Type-1 and Type-2 PCMCIA cards..
  * Programming information source:
  *	- http://www.sun.com/microelectronics/datasheets/stp4020/
  *	- SunOS 5.5 header file

@@ -97,7 +97,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/bus.h>

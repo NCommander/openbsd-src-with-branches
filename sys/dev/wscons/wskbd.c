@@ -203,6 +203,8 @@ struct wskbd_softc {
 #define MOD_ONESET(id, mask)	(((id)->t_modifiers & (mask)) != 0)
 #define MOD_ALLSET(id, mask)	(((id)->t_modifiers & (mask)) == (mask))
 
+keysym_t ksym_upcase(keysym_t);
+
 int	wskbd_match(struct device *, void *, void *);
 void	wskbd_attach(struct device *, struct device *, void *);
 int	wskbd_detach(struct device *, int);
@@ -1429,7 +1431,7 @@ internal_command(sc, type, ksym, ksym2)
 		if (sc->sc_displaydv != NULL)
 			wsdisplay_reset(sc->sc_displaydv, WSDISPLAY_RESETCLOSE);
 		return (1);
-#ifdef __i386__
+#if defined(__i386__) || defined(__amd64__)
 	case KS_Cmd_KbdReset:
 		if (kbd_reset == 1) {
 			kbd_reset = 0;
@@ -1472,7 +1474,7 @@ wskbd_translate(id, type, value)
 	struct wskbd_softc *sc = id->t_sc;
 	keysym_t ksym, res, *group;
 	struct wscons_keymap kpbuf, *kp;
-	int iscommand = 0;
+	int gindex, iscommand = 0;
 
 	if (type == WSCONS_EVENT_ALL_KEYS_UP) {
 		id->t_modifiers &= ~(MOD_SHIFT_L | MOD_SHIFT_R
@@ -1589,10 +1591,20 @@ wskbd_translate(id, type, value)
 		group = & kp->group1[0];
 
 	if ((id->t_modifiers & MOD_NUMLOCK) &&
-	    KS_GROUP(group[1]) == KS_GROUP_Keypad)
-		ksym = group[!MOD_ONESET(id, MOD_ANYSHIFT)];
-	else
-		ksym = group[MOD_ONESET(id, MOD_CAPSLOCK|MOD_ANYSHIFT)];
+	    KS_GROUP(group[1]) == KS_GROUP_Keypad) {
+		gindex = !MOD_ONESET(id, MOD_ANYSHIFT);
+		ksym = group[gindex];
+	} else {
+		/* CAPS alone should only affect letter keys */
+		if ((id->t_modifiers & (MOD_CAPSLOCK | MOD_ANYSHIFT)) ==
+		    MOD_CAPSLOCK) {
+			gindex = 0;
+			ksym = ksym_upcase(group[0]);
+		} else {
+			gindex = MOD_ONESET(id, MOD_ANYSHIFT);
+			ksym = group[gindex];
+		}
+	}
 
 	/* Process compose sequence and dead accents */
 	res = KS_voidSymbol;
@@ -1627,12 +1639,24 @@ wskbd_translate(id, type, value)
 	}
 
 	if (id->t_composelen > 0) {
-		id->t_composebuf[2 - id->t_composelen] = res;
-		if (--id->t_composelen == 0) {
-			res = wskbd_compose_value(id->t_composebuf);
-			update_modifier(id, 0, 0, MOD_COMPOSE);
-		} else {
-			return (0);
+		/*
+		 * If the compose key also serves as AltGr (i.e. set to both
+		 * KS_Multi_key and KS_Mode_switch), and would provide a valid,
+		 * distinct combination as AltGr, leave compose mode.
+	 	 */
+		if (id->t_composelen == 2 && group == &kp->group2[0]) {
+			if (kp->group1[gindex] != kp->group2[gindex])
+				id->t_composelen = 0;
+		}
+
+		if (id->t_composelen != 0) {
+			id->t_composebuf[2 - id->t_composelen] = res;
+			if (--id->t_composelen == 0) {
+				res = wskbd_compose_value(id->t_composebuf);
+				update_modifier(id, 0, 0, MOD_COMPOSE);
+			} else {
+				return (0);
+			}
 		}
 	}
 

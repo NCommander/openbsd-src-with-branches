@@ -228,6 +228,10 @@ device	mgx: wsemuldisplaydev, rasops8, wsemul_sun
 attach	mgx at sbus
 file	arch/sparc/dev/mgx.c		mgx
 
+device	rfx: wsemuldisplaydev, rasops8, wsemul_sun
+attach	rfx at sbus
+file	arch/sparc/dev/rfx.c		rfx
+
 # device definition in sys/conf/files
 attach le at sbus, ledma, lebuffer, obio
 file	arch/sparc/dev/if_le.c		le

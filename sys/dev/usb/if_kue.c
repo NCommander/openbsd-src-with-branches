@@ -1148,8 +1148,17 @@ kue_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		break;
 	case SIOCADDMULTI:
 	case SIOCDELMULTI:
-		kue_setmulti(sc);
-		error = 0;
+		error = (command == SIOCADDMULTI) ?
+		    ether_addmulti(ifr, &sc->arpcom) :
+		    ether_delmulti(ifr, &sc->arpcom);
+		if (error == ENETRESET) {
+			/*
+			 * Multicast list has changed; set the hardware
+			 * filter accordingly.
+			 */
+			kue_setmulti(sc);
+			error = 0;
+		}
 		break;
 	default:
 		error = EINVAL;

@@ -104,3 +104,7 @@ file dev/mii/nsgphy.c				nsgphy
 device urlphy: mii_phy
 attach urlphy at mii
 file dev/mii/urlphy.c				urlphy
+
+device rgephy: mii_phy
+attach rgephy at mii
+file dev/mii/rgephy.c				rgephy

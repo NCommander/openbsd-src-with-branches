@@ -92,8 +92,6 @@ typedef void (timeout_t)(void *);
 
 #define	m_pktlen(m)		((m)->m_pkthdr.len)
 
-extern int pfaltq_running;
-
 struct ifnet; struct mbuf;
 struct pf_altq; struct pf_qstats;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.21.8.5 2003/03/27 23:19:21 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: locore.s,v 1.91 1998/11/11 06:41:25 thorpej Exp $	*/
 
 /*
@@ -518,7 +518,7 @@ Lnocache0:
 
 /*
  * Create a fake exception frame so that cpu_fork() can copy it.
- * main() nevers returns; we exit to user mode from a forked process
+ * main() never returns; we exit to user mode from a forked process
  * later on.
  */
 	clrw	sp@-			| vector offset/frame type
@@ -879,8 +879,9 @@ ENTRY_NOPROFILE(trap12)
 	movl	d1,sp@-			| push length
 	movl	a1,sp@-			| push addr
 	movl	d0,sp@-			| push command
+	movl	_C_LABEL(curproc),sp@-	| push proc pointer
 	jbsr	_C_LABEL(cachectl)	| do it
-	lea	sp@(12),sp		| pop args
+	lea	sp@(16),sp		| pop args
 	jra	_ASM_LABEL(rei)		| all done
 
 /*

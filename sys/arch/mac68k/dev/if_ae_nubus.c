@@ -44,6 +44,8 @@
  *	Kinetics EtherPort SE/30
  */
 
+#define	AE_OLD_GET_ENADDR
+
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/errno.h>

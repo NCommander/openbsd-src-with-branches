@@ -38,6 +38,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _DEV_ISA_ISADMAVAR_H
+#define _DEV_ISA_ISADMAVAR_H
+
 /* XXX for now... */
 #ifndef __ISADMA_COMPAT
 #define __ISADMA_COMPAT
@@ -93,3 +96,5 @@ int	   isa_drq_isfree(struct device *, int);
 void      *isa_malloc(struct device *, int, size_t, int, int);
 void	   isa_free(void *, int);
 paddr_t	   isa_mappage(void *, off_t, int);
+
+#endif /* _DEV_ISA_ISADMAVAR_H */

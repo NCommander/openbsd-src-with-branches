@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txpreg.h,v 1.22.2.4 2001/11/13 21:10:02 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell <aaron@monkey.org>.
@@ -435,9 +435,6 @@ struct txp_tcpseg_desc {
 #define	TXP_RXFILT_BROADCAST	0x0004	/* broadcast packets */
 #define	TXP_RXFILT_PROMISC	0x0008	/* promiscuous mode */
 #define	TXP_RXFILT_HASHMULTI	0x0010	/* use multicast filter */
-
-/* multicast polynomial */
-#define	TXP_POLYNOMIAL		0x04c11db7
 
 /*
  * boot record (pointers to rings)

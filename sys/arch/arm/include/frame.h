@@ -164,7 +164,7 @@ struct frame {
 };
 
 #ifdef _KERNEL
-void validate_trapframe __P((trapframe_t *, int));
+void validate_trapframe (trapframe_t *, int);
 #endif /* _KERNEL */
 
 #else /* _LOCORE */

@@ -3,7 +3,6 @@
 
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles Hannum.
- * Copyright (c) 1995 Paul Kranenburg.
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
  *
@@ -1363,7 +1362,7 @@ loop:
 		}
 		/*FALLTHROUGH*/
 	case SEEKCOMPLETE:
-		disk_unbusy(&fd->sc_dk, 0);	/* no data on seek */
+		disk_unbusy(&fd->sc_dk, 0, 0);	/* no data on seek */
 
 		/* Make sure seek really happened. */
 		if (fdc->sc_nstat != 2 || (st0 & 0xf8) != 0x20 ||
@@ -1391,7 +1390,8 @@ loop:
 	case IOCOMPLETE: /* IO DONE, post-analyze */
 		timeout_del(&fdc->fdctimeout_to);
 
-		disk_unbusy(&fd->sc_dk, (bp->b_bcount - bp->b_resid));
+		disk_unbusy(&fd->sc_dk, (bp->b_bcount - bp->b_resid),
+		    (bp->b_flags & B_READ));
 
 		if (fdc->sc_nstat != 7 || st1 != 0 ||
 		    ((st0 & 0xf8) != 0 &&

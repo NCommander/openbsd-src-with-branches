@@ -158,11 +158,6 @@ int	       audioprint(void *, const char *);
 #define ISDEVAUDIOCTL(x)	(AUDIODEV((x)) == AUDIOCTL_DEVICE)
 #define ISDEVMIXER(x)		(AUDIODEV((x)) == MIXER_DEVICE)
 
-#if !defined(__i386__) && !defined(__sparc64__) && !defined(__powerpc__) && !defined(__hppa__) && !defined(__arm__)
-#define splaudio splbio		/* XXX */
-#define IPL_AUDIO IPL_BIO	/* XXX */
-#endif
-
 /*
  * USB Audio specification defines 12 channels:
  *	L R C LFE Ls Rs Lc Rc S Sl Sr T

@@ -73,6 +73,7 @@
 comp_t	encode_comp_t(u_long, u_long);
 int	acct_start(void);
 void	acct_thread(void *);
+void	acct_shutdown(void);
 
 /*
  * Accounting vnode pointer, and saved vnode pointer.
@@ -332,5 +333,16 @@ acct_thread(void *arg)
 			kthread_exit(0);
 		}
 		tsleep(&acct_proc, PPAUSE, "acct", acctchkfreq *hz);
+	}
+}
+
+void
+acct_shutdown(void)
+{
+
+	if (acctp != NULL || savacctp != NULL) {
+		vn_close((acctp != NULL ? acctp : savacctp), FWRITE,
+		    NOCRED, NULL);
+		acctp = savacctp = NULL;
 	}
 }

@@ -132,6 +132,8 @@ extern struct pv_entry	*pv_table;	/* array of entries, one per page */
 extern pt_entry_t	*Sysmap;
 extern char		*vmmap;		/* map for mem, dumps, etc. */
 
+void	pmap_proc_iflush(struct proc *, vaddr_t, vsize_t);
+
 #ifdef M68K_MMU_HP
 void	pmap_prefer(vaddr_t, vaddr_t *);
 #define	PMAP_PREFER(foff, vap)	pmap_prefer((foff), (vap))

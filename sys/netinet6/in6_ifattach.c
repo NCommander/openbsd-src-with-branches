@@ -37,7 +37,8 @@
 #include <sys/sockio.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
-#include <sys/md5k.h>
+
+#include <crypto/md5.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>

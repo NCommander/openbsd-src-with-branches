@@ -81,6 +81,13 @@ struct espstat
 	{ "udpencap_port", CTLTYPE_INT }, \
 }
 
+#define ESPCTL_VARS { \
+	NULL, \
+	&esp_enable, \
+	&udpencap_enable, \
+	&udpencap_port, \
+}
+
 #ifdef _KERNEL
 extern int esp_enable;
 extern int udpencap_enable;

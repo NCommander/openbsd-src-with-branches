@@ -3,7 +3,7 @@
 .if ${MACHINE} == "i386"
 SUBDIR=	etc libsa libz mbr
 .endif
-SUBDIR+= biosboot installboot boot
+SUBDIR+= biosboot installboot boot pxeboot
 
 test-fd0:
 	sudo mount /dev/fd0a /mnt

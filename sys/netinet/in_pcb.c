@@ -693,12 +693,13 @@ in_losing(inp)
 			(void) rtrequest(RTM_DELETE, rt_key(rt),
 				rt->rt_gateway, rt_mask(rt), rt->rt_flags,
 				(struct rtentry **)0);
-		else
 		/*
 		 * A new route can be allocated
 		 * the next time output is attempted.
+		 * rtfree() needs to be called in anycase because the inp
+		 * is still holding a reference to rt.
 		 */
-			rtfree(rt);
+		rtfree(rt);
 	}
 }
 

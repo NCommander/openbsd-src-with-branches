@@ -89,16 +89,13 @@ procfs_domeminfo(struct proc *curp, struct proc *p, struct pfsnode *pfs,
 		PGTOKB(uvmexp.swpages),
 		PGTOKB(uvmexp.swpages - uvmexp.swpginuse));
 
-	if (len == 0)
+	if (len == 0 || len <= uio->uio_offset || uio->uio_resid == 0)
 		return 0;
 
 	len -= uio->uio_offset;
 	cp = buf + uio->uio_offset;
 	len = imin(len, uio->uio_resid);
-	if (len <= 0)
-		error = 0;
-	else
-		error = uiomove(cp, len, uio);
+	error = uiomove(cp, len, uio);
 	return error;
 }
 
@@ -113,7 +110,7 @@ procfs_docpuinfo(struct proc *curp, struct proc *p, struct pfsnode *pfs,
 	if (procfs_getcpuinfstr(buf, &len) < 0)
 		return EIO;
 
-	if (len == 0)
+	if (len == 0 || uio->uio_offset > sizeof(buf))
 		return 0;
 
 	len -= uio->uio_offset;

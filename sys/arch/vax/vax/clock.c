@@ -265,7 +265,7 @@ generic_clkwrite()
 }
 #endif
 
-#if VAX630 || VAX410 || VAX43 || VAX8200 || VAX46
+#if VAX630 || VAX410 || VAX43 || VAX8200 || VAX46 || VAX48 || VAX49
 
 volatile short *clk_page;	/* where the chip is mapped in virtual memory */
 int	clk_adrshift;	/* how much to multiply the in-page address with */

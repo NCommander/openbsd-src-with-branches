@@ -272,7 +272,7 @@ msdosfs_mountfs(devvp, mp, p, argp)
 	u_int8_t SecPerClust;
 	int	ronly, error;
 	int	bsize = 0, dtype = 0, tmp;
-	u_long dirsperblk;
+	uint32_t dirsperblk;
 
 	/*
 	 * Disallow multiple mounts of the same device.

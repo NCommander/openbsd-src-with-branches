@@ -33,7 +33,7 @@
 
 #include <ddb/db_var.h>
 
-int	db_log;
+int	db_log = 1;
 
 int
 ddb_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)

@@ -115,7 +115,7 @@ _rpb:
 	NOVEC;				# Unused, 7C
 	NOVEC;				# Unused, 80
 	NOVEC;				# Unused, 84
-	INTVEC(astintr,	KSTACK)		# Asynchronous Sustem Trap, AST
+	INTVEC(astintr,	KSTACK)		# Asynchronous System Trap, AST
 	NOVEC;				# Unused, 8C
 	NOVEC;				# Unused, 90
 	NOVEC;				# Unused, 94

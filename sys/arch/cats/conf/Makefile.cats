@@ -44,7 +44,7 @@ CDIAGFLAGS=	-Werror -Wall -Wstrict-prototypes -Wmissing-prototypes \
 CMACHFLAGS= -ffreestanding
 #CMACHFLAGS=	-march=armv4 -mtune=strongarm -ffreestanding
 .if ${IDENT:M-DNO_PROPOLICE}
-CMACHFLAGS+=	-msoft-float -fno-stack-protector
+CMACHFLAGS+=	-fno-stack-protector
 .endif
 CMACHFLAGS+=	-msoft-float -fno-builtin-printf -fno-builtin-log
 

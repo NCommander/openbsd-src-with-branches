@@ -712,7 +712,7 @@ ubarelse(uh, amr)
 		wakeup((caddr_t)&uh->uh_mrwant);
 	}
 	while ((uu = uh->uh_resq.sqh_first)) {
-		SIMPLEQ_REMOVE_HEAD(&uh->uh_resq, uu, uu_resq);
+		SIMPLEQ_REMOVE_HEAD(&uh->uh_resq, uu_resq);
 		if ((*uu->uu_ready)(uu) == 0)
 			break;
 	}

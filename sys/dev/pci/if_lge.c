@@ -764,18 +764,12 @@ int lge_newbuf(sc, c, m)
 	if (m == NULL) {
 		MGETHDR(m_new, M_DONTWAIT, MT_DATA);
 		if (m_new == NULL) {
-			printf("%s: no memory for rx list "
-			       "-- packet dropped!\n", sc->sc_dv.dv_xname);
 			return(ENOBUFS);
 		}
 
 		/* Allocate the jumbo buffer */
 		buf = lge_jalloc(sc);
 		if (buf == NULL) {
-#ifdef LGE_VERBOSE
-			printf("%s: jumbo allocation failed "
-			       "-- packet dropped!\n", sc->sc_dv.dv_xname);
-#endif
 			m_freem(m_new);
 			return(ENOBUFS);
 		}
@@ -1002,9 +996,6 @@ void lge_rxeof(sc, cnt)
 			    ifp, NULL);
 			lge_newbuf(sc, &LGE_RXTAIL(sc), m);
 			if (m0 == NULL) {
-				printf("%s: no receive buffers "
-				       "available -- packet dropped!\n",
-				       sc->sc_dv.dv_xname);
 				ifp->if_ierrors++;
 				continue;
 			}

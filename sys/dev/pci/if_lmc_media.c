@@ -74,7 +74,6 @@
 #include "bpfilter.h"
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <uvm/uvm_extern.h>

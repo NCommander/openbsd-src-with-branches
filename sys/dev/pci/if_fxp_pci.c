@@ -98,6 +98,7 @@ const struct pci_matchid fxp_pci_devices[] = {
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VE_3 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VE_4 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VE_5 },
+	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VE_6 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VM_0 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VM_1 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VM_2 },
@@ -105,6 +106,9 @@ const struct pci_matchid fxp_pci_devices[] = {
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VM_4 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_VM_5 },
 	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100_M },
+	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_PRO_100 },
+	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_82801E_LAN_1 },
+	{ PCI_VENDOR_INTEL, PCI_PRODUCT_INTEL_82801E_LAN_2 },
 };
 
 /*
@@ -196,6 +200,23 @@ fxp_pci_attach(parent, self, aux)
 		sc->not_82557 = 0;
 		break;
 	}
+
+	/*
+	 * Cards for which we should WRITE TO THE EEPROM
+	 * to turn off dynamic standby mode to avoid
+	 * a problem where the card will fail to resume when
+	 * entering the IDLE state. We use this nasty if statement
+	 * and corresponding pci dev numbers directly so that people
+	 * know not to add new cards to this unless you are really
+	 * certain what you are doing and are not going to end up
+	 * killing people's eeproms.
+	 */
+	if ((PCI_VENDOR(pa->pa_id) == PCI_VENDOR_INTEL) &&
+	    (PCI_PRODUCT(pa->pa_id) == 0x2449 || 
+	    (PCI_PRODUCT(pa->pa_id) > 0x1030 && 
+	    PCI_PRODUCT(pa->pa_id) < 0x1039) || 
+	    (PCI_PRODUCT(pa->pa_id) == 0x1229 && (rev == 8 || rev == 9))))
+		sc->sc_flags |= FXPF_DISABLE_STANDBY;
 
 	/* enable bus mastering */
 	pci_conf_write(pa->pa_pc, pa->pa_tag, PCI_COMMAND_STATUS_REG,

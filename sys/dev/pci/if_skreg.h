@@ -1447,4 +1447,3 @@ struct skc_attach_args {
 
 #define SK_MAXUNIT	256
 #define SK_TIMEOUT	1000
-#define ETHER_ALIGN	2

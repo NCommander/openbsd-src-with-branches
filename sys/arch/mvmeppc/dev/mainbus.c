@@ -109,10 +109,17 @@ mbattach(struct device *parent, struct device *self, void *aux)
 	config_found(self, &nca, mbprint);
 
 	/*
+	 * Attach the BUG terminal services if necessary.
+	 */
+	nca.ca_name = "bugtty";
+	nca.ca_bus = &sc->sc_bus;
+	config_found(self, &nca, mbprint);
+
+	/*
 	 * Find and attach the PCI Northbridge. It will find and attach
 	 * everything.
 	 */
-	nca.ca_name = "mpcpcibr";
+	nca.ca_name = "raven";
 	nca.ca_bus = &sc->sc_bus;
 	config_found(self, &nca, mbprint);
 }

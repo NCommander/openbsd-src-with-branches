@@ -76,7 +76,7 @@ __volatile int footbridge_ipending;
 
 void footbridge_intr_dispatch(struct clockframe *frame);
 
-const struct evcnt *footbridge_pci_intr_evcnt __P((void *, pci_intr_handle_t));
+const struct evcnt *footbridge_pci_intr_evcnt (void *, pci_intr_handle_t);
 
 void footbridge_do_pending(void);
 

@@ -71,8 +71,6 @@ struct umass_scsi_softc {
 };
 
 
-#define SHORT_INQUIRY_LENGTH    36 /* XXX */
-
 #define UMASS_SCSIID_HOST	0x00
 #define UMASS_SCSIID_DEVICE	0x01
 
@@ -222,24 +220,6 @@ umass_scsi_cmd(struct scsi_xfer *xs)
 	    (sc_link->quirks & SDEV_NOMODESENSE)) {
 		xs->error = XS_TIMEOUT;
 		goto done;
-	}
-
-	if (cmd->opcode == START_STOP &&
-	    (sc->sc_quirks & UMASS_QUIRK_NO_START_STOP)) {
-		xs->error = XS_NOERROR;
-		goto done;
-	}
-
-	if (cmd->opcode == INQUIRY &&
-	    (sc->sc_quirks & UMASS_QUIRK_FORCE_SHORT_INQUIRY)) {
-			/*
-			 * Some drives wedge when asked for full inquiry
-			 * information.
-			 */
-		memcpy(&trcmd, cmd, sizeof(trcmd));
-		trcmd.bytes[4] = SHORT_INQUIRY_LENGTH;
-		cmd = &trcmd;
-		xs->datalen = SHORT_INQUIRY_LENGTH;
 	}
 
 	dir = DIR_NONE;

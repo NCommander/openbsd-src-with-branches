@@ -67,7 +67,7 @@ extern BootConfig bootconfig;
 #define BOOTOPT_TYPE_HEXINT		4
 #define BOOTOPT_TYPE_MASK		7
 
-int get_bootconf_option __P((char *string, char *option, int type, void *result));
+int get_bootconf_option (char *string, char *option, int type, void *result);
 
 extern char *boot_args;
 extern char *boot_file;

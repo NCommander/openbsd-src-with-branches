@@ -57,6 +57,13 @@
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
+#include "carp.h"
+#if NCARP > 0
+#include <netinet/in.h>
+#include <netinet/in_var.h>
+#include <netinet/ip_carp.h>
+#endif
+
 /*
  * Media to register setting conversion table.  Order matters.
  * XXX 802.3 doesn't specify ANAR or ANLPAR bits for 1000base.
@@ -332,6 +339,10 @@ mii_phy_statusmsg(sc)
 		s = splnet();
 		rt_ifmsg(ifp);
 		splx(s);
+#if NCARP > 0
+		if (ifp->if_carp)
+			carp_carpdev_state(ifp->if_carp);
+#endif
 	}
 }
 

@@ -141,7 +141,8 @@ macppc_cardbus_init(pci_chipset_tag_t pc, pcitag_t tag)
 	}
 
 	if (PCI_VENDOR(x) == PCI_VENDOR_TI &&
-	    PCI_PRODUCT(x) == PCI_PRODUCT_TI_PCI1410) {
+	    (PCI_PRODUCT(x) == PCI_PRODUCT_TI_PCI1410 ||
+	    PCI_PRODUCT(x) == PCI_PRODUCT_TI_PCI1510)) {
 		/* dont mess with the bus numbers or latency timer */
 
 		/* Route INTA to MFUNC0 */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.9.2.8 2003/05/13 19:42:08 ho Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: param.h,v 1.29 1996/03/04 05:04:26 cgd Exp $	*/
 
 /*-
@@ -113,10 +113,7 @@
 #define	MCLSHIFT	11		/* convert bytes to m_buf clusters */
 #define	MCLBYTES	(1 << MCLSHIFT)	/* size of a m_buf cluster */
 #define	MCLOFSET	(MCLBYTES - 1)	/* offset within a m_buf cluster */
-
-#ifndef NMBCLUSTERS
-#define	NMBCLUSTERS	2048		/* map size, max cluster allocation */
-#endif
+#define	NMBCLUSTERS	6144		/* map size, max cluster allocation */
 
 /*
  * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized

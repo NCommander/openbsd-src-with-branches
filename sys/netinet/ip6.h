@@ -108,6 +108,7 @@ struct ip6_hdr {
 #define IP6TOS_ECT		0x02	/* ECN-capable transport */
 #endif
 
+#ifdef _KERNEL
 /*
  * for IPv6 pseudo header checksum
  * XXX nonstandard
@@ -119,6 +120,7 @@ struct ip6_hdr_pseudo {
 	u_int8_t	ip6ph_zero[3];
 	u_int8_t	ip6ph_nxt;
 } __packed;
+#endif
 
 /*
  * Extension Headers

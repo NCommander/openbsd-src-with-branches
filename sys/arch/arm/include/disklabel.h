@@ -100,8 +100,6 @@ struct dos_partition {
 #define DOSPTYP_OPENBSD	0xa6		/* OpenBSD partition type */
 #define DOSPTYP_NETBSD	0xa9		/* NetBSD partition type */
 
-#include <sys/dkbad.h>
-
 /* Isolate the relevant bits to get sector and cylinder. */
 #define	DPSECT(s)	((s) & 0x3f)
 #define	DPCYL(c, s)	((c) + (((s) & 0xc0) << 2))
@@ -140,12 +138,12 @@ struct cpu_disklabel {
 struct buf;
 struct disklabel;
 /* for readdisklabel.  rv != 0 -> matches, msg == NULL -> success */
-int	mbr_label_read __P((dev_t, void (*)(struct buf *), struct disklabel *,
-	    struct cpu_disklabel *, char **, int *, int *));
+int	mbr_label_read (dev_t, void (*)(struct buf *), struct disklabel *,
+	    struct cpu_disklabel *, char **, int *, int *);
 
 /* for writedisklabel.  rv == 0 -> dosen't match, rv > 0 -> success */
-int	mbr_label_locate __P((dev_t, void (*)(struct buf *),
-	    struct disklabel *, struct cpu_disklabel *, int *, int *));
+int	mbr_label_locate (dev_t, void (*)(struct buf *),
+	    struct disklabel *, struct cpu_disklabel *, int *, int *);
 #endif /* _KERNEL */
 
 #endif /* _ARM_DISKLABEL_H_ */

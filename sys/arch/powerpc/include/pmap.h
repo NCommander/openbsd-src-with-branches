@@ -133,6 +133,8 @@ void switchexit(struct proc *);
 int pte_spill_v(struct pmap *pm, u_int32_t va, u_int32_t dsisr, int exec_fault);
 #define pmap_copy(dst_pmap, src_pmap, dst_addr, len, src_addr) ;
 
+void pmap_proc_iflush(struct proc *proc, vaddr_t va, vsize_t len);
+
 #endif	/* _KERNEL */
 #endif	/* _LOCORE */
 #endif	/* _POWERPC_PMAP_H_ */

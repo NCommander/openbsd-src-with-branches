@@ -182,6 +182,8 @@ fxp_cardbus_attach(parent, self, aux)
 	sc->sc_enabled = 0;
 #endif
 
+	sc->not_82557 = 1;
+
 	Cardbus_function_enable(csc->ct);
 
 	fxp_cardbus_setup(sc);

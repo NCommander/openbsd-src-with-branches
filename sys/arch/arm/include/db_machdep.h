@@ -101,8 +101,8 @@ extern db_regs_t		ddb_regs;	/* register state */
 #define SOFTWARE_SSTEP
 
 db_addr_t	db_branch_taken(u_int inst, db_addr_t pc, db_regs_t *regs);
-int kdb_trap __P((int, db_regs_t *));
-void db_machine_init __P((void));
+int kdb_trap (int, db_regs_t *);
+void db_machine_init (void);
 
 #define branch_taken(ins, pc, fun, regs) \
 				db_branch_taken((ins), (pc), (regs))
@@ -111,7 +111,7 @@ void db_machine_init __P((void));
 #define DB_ELFSIZE 32
 #define DB_NO_AOUT
 
-void db_show_panic_cmd	__P((db_expr_t, int, db_expr_t, char *));
-void db_show_frame_cmd	__P((db_expr_t, int, db_expr_t, char *));
+void db_show_panic_cmd	(db_expr_t, int, db_expr_t, char *);
+void db_show_frame_cmd	(db_expr_t, int, db_expr_t, char *);
 
 #endif	/* _ARM_DB_MACHDEP_H_ */

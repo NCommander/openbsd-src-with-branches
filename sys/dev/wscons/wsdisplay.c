@@ -1151,11 +1151,18 @@ wsdisplay_internal_ioctl(sc, scr, cmd, data, flag, p)
 		return (0);
 
 	case WSDISPLAYIO_SBURNER:
-		error = EINVAL;
-		if (d->flags & (WSDISPLAY_BURN_VBLANK | WSDISPLAY_BURN_KBD |
-		    WSDISPLAY_BURN_MOUSE | WSDISPLAY_BURN_OUTPUT)) {
+		if (d->flags & ~(WSDISPLAY_BURN_VBLANK | WSDISPLAY_BURN_KBD |
+		    WSDISPLAY_BURN_MOUSE | WSDISPLAY_BURN_OUTPUT))
+			error = EINVAL;
+		else {
 			error = 0;
 			sc->sc_burnflags = d->flags;
+			/* disable timeout if necessary */
+			if ((sc->sc_burnflags & (WSDISPLAY_BURN_OUTPUT |
+			    WSDISPLAY_BURN_KBD | WSDISPLAY_BURN_MOUSE)) == 0) {
+				if (sc->sc_burnout)
+					timeout_del(&sc->sc_burner);
+			}
 		}
 		if (d->on) {
 			error = 0;

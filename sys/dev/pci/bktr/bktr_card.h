@@ -54,8 +54,8 @@
  *  options BKTR_OVERRIDE_CARD  <card type>
  *  eg options BKTR_OVERRIDE CARD=1
  *
- * or using the sysclt  hw.bt848.card
- *  eg sysctl -w hw.bt848.card=1
+ * or using the sysctl  hw.bt848.card
+ *  eg sysctl hw.bt848.card=1
  *
  * where <card type> is one of the following card defines.
  */

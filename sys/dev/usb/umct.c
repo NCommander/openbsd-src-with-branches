@@ -149,6 +149,8 @@ static const struct usb_devno umct_devs[] = {
 	{ USB_VENDOR_MCT, USB_PRODUCT_MCT_SITECOM_USB232 },
 	/* D-Link DU-H3SP USB BAY Hub Products */
 	{ USB_VENDOR_MCT, USB_PRODUCT_MCT_DU_H3SP_USB232 },
+	/* BELKIN F5U109 */
+	{ USB_VENDOR_BELKIN, USB_PRODUCT_BELKIN_F5U109 },
 };
 #define umct_lookup(v, p) usb_lookup(umct_devs, v, p)
 
@@ -445,7 +447,8 @@ umct_set_baudrate(struct umct_softc *sc, u_int rate)
 	uDWord arate;
 	u_int val;
 
-	if (sc->sc_product == USB_PRODUCT_MCT_SITECOM_USB232) {
+	if (sc->sc_product == USB_PRODUCT_MCT_SITECOM_USB232 ||
+	    sc->sc_product == USB_PRODUCT_BELKIN_F5U109) {
 		switch (rate) {
 		case    300: val = 0x01; break;
 		case    600: val = 0x02; break;

@@ -673,7 +673,7 @@ lf_split(lock1, lock2)
 	 * the encompassing lock
 	 */
 	splitlock = pool_get(&lockfpool, PR_WAITOK);
-	memcpy(splitlock, lock1, sizeof (*splitlock));
+	memcpy(splitlock, lock1, sizeof(*splitlock));
 	splitlock->lf_start = lock2->lf_end + 1;
 	splitlock->lf_block.tqe_next = NULL;
 	TAILQ_INIT(&splitlock->lf_blkhd);

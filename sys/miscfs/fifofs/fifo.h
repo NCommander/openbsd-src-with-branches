@@ -64,8 +64,8 @@ int	fifo_kqfilter(void *);
 #define fifo_readdir	fifo_badop
 #define fifo_readlink	fifo_badop
 #define fifo_abortop	fifo_badop
-int fifo_inactive(void *);
-#define fifo_reclaim	nullop
+int	fifo_inactive(void *);
+int	fifo_reclaim(void *);
 #define fifo_lock       vop_generic_lock
 #define fifo_unlock     vop_generic_unlock
 int	fifo_bmap(void *);

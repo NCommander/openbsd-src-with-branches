@@ -296,11 +296,11 @@ vs_scsicmd(xs)
 		iopb = miopb;
 	} else {
 		cqep = vs_getcqe(sc);
+		if (cqep == NULL) {
+			xs->error = XS_DRIVER_STUFFUP;
+			return (TRY_AGAIN_LATER);
+		}
 		iopb = vs_getiopb(sc);
-	}
-	if (cqep == NULL) {
-		xs->error = XS_DRIVER_STUFFUP;
-		return (TRY_AGAIN_LATER);
 	}
 
 	/* s = splbio();*/
@@ -443,7 +443,7 @@ vs_chksense(xs)
 	*/
 	xs->status = riopb->iopb_STATUS >> 8;
 #ifdef SDEBUG
-	scsi_print_sense(xs, 2);
+	scsi_print_sense(xs);
 #endif   
 	splx(s);
 }
@@ -474,7 +474,7 @@ vs_getiopb(sc)
 	int slot;
 
 	if (mcsb->mcsb_QHDP == 0) {
-		slot = NUM_CQE;
+		slot = NUM_CQE - 1;
 	} else {
 		slot = mcsb->mcsb_QHDP - 1;
 	}

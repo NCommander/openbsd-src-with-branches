@@ -696,19 +696,26 @@ report:
 
 	switch (encl) {
 	case HIFN_PUSTAT_ENA_0:
-		offtbl = "LZS-only";
+		offtbl = "LZS";
 		break;
 	case HIFN_PUSTAT_ENA_1:
-		offtbl = "DES";
+		offtbl = "LZS DES";
 		break;
 	case HIFN_PUSTAT_ENA_2:
-		offtbl = "3DES";
+		offtbl = "LZS 3DES ARC4 MD5 SHA1";
 		break;
 	default:
 		offtbl = "disabled";
 		break;
 	}
-	printf(": %s, ", offtbl);
+	printf(": %s", offtbl);
+	if (sc->sc_flags & HIFN_HAS_RNG)
+		printf(" RNG");
+	if (sc->sc_flags & HIFN_HAS_AES)
+		printf(" AES");
+	if (sc->sc_flags & HIFN_HAS_PUBLIC)
+		printf(" PK");
+	printf(", ");
 
 	return (0);
 }
@@ -1943,6 +1950,11 @@ hifn_process(struct cryptop *crp)
 	if (crp == NULL || crp->crp_callback == NULL) {
 		hifnstats.hst_invalid++;
 		return (EINVAL);
+	}
+
+	if (crp->crp_ilen == 0) {
+		err = EINVAL;
+		goto errout;
 	}
 
 	card = HIFN_CARD(crp->crp_sid);

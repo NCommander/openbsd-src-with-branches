@@ -409,7 +409,7 @@ vsbus_dma_intr(void)
 		return;
 	}
 	vsbus_active = 1;
-	SIMPLEQ_REMOVE_HEAD(&vsbus_dma, vd, vd_q);
+	SIMPLEQ_REMOVE_HEAD(&vsbus_dma, vd_q);
 	(*vd->vd_go)(vd->vd_arg);
 }
 

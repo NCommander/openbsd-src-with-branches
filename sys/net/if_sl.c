@@ -883,6 +883,8 @@ slinput(c, tp)
 			sc->sc_if.if_ierrors++;
 			sc->sc_if.if_iqdrops++;
 			m_freem(m);
+			if (!ipintrq.ifq_congestion)
+				if_congestion(&ipintrq);
 		} else {
 			IF_ENQUEUE(&ipintrq, m);
 			schednetisr(NETISR_IP);

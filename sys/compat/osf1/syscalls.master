@@ -106,7 +106,11 @@
 48	NOARGS		{ int sys_sigprocmask(int how, sigset_t mask); }
 49	NOARGS		{ int sys_getlogin(char *namebuf, u_int namelen); }
 50	NOARGS		{ int sys_setlogin(const char *namebuf); }
+#ifdef	ACCOUNTING
 51	NOARGS		{ int sys_acct(const char *path); }
+#else
+51	UNIMPL		acct
+#endif
 52	UNIMPL		sigpending
 53	STD		{ int osf1_sys_classcntl(int opcode, int arg1, \
 			    int arg2, int arg3); }

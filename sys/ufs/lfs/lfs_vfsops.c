@@ -216,7 +216,6 @@ lfs_mountfs(devvp, mp, p)
 	struct mount *mp;
 	struct proc *p;
 {
-	extern struct vnode *rootvp;
 	register struct lfs *fs;
 	register struct ufsmount *ump;
 	struct vnode *vp;

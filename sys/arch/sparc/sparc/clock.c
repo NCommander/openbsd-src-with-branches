@@ -899,6 +899,7 @@ inittodr(base)
 	struct clockreg *cl = clockreg;
 	int sec, min, hour, day, mon, year;
 	int badbase = 0, waszero = base == 0;
+	char *bad = NULL;
 
 	if (base < 5 * SECYR) {
 		/*
@@ -933,11 +934,11 @@ inittodr(base)
 forward:
 #endif
 	if (time.tv_sec == 0) {
-		printf("WARNING: bad date in battery clock");
 		/*
 		 * Believe the time in the file system for lack of
 		 * anything better, resetting the clock.
 		 */
+		bad = "WARNING: bad date in battery clock";
 		time.tv_sec = base;
 		if (!badbase)
 			resettodr();
@@ -948,10 +949,17 @@ forward:
 			deltat = -deltat;
 		if (waszero || deltat < 2 * SECDAY)
 			return;
+		
+#ifndef SMALL_KERNEL
 		printf("WARNING: clock %s %d days",
 		    time.tv_sec < base ? "lost" : "gained", deltat / SECDAY);
+		bad = "";
+#endif
 	}
-	printf(" -- CHECK AND RESET THE DATE!\n");
+	if (bad) {
+		printf("%s", bad);
+		printf(" -- CHECK AND RESET THE DATE!\n");
+	}
 }
 
 /*

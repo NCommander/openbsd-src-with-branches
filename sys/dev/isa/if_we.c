@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_we.c,v 1.7.6.2 2002/03/28 12:11:35 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_we.c,v 1.11 1998/07/05 06:49:14 jonathan Exp $	*/
 
 /*-
@@ -94,7 +94,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/bus.h>

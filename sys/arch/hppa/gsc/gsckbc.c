@@ -427,9 +427,8 @@ gsckbc_intr_establish(struct pckbc_softc *sc, pckbc_slot_t slot)
 {
 	struct gsckbc_softc *gsc = (void *)sc;
 
-	gsc->sc_ih = gsc_intr_establish(
-	    (struct gsc_softc *)sc->sc_dv.dv_parent,
-	    IPL_TTY, gsc->sc_irq, gsckbcintr, sc, sc->sc_dv.dv_xname);
+	gsc->sc_ih = gsc_intr_establish((struct gsc_softc *)sc->sc_dv.dv_parent,
+	    gsc->sc_irq, IPL_TTY, gsckbcintr, sc, sc->sc_dv.dv_xname);
 }
 
 /*

@@ -105,7 +105,8 @@
 #define GLB1		0xfff86003
 #define GLB2		0xfff86005
 #define GLB3		0xfff86007
-#define M188_SYSCON	0x00000040
+#define	M188_LRST	0x00000080
+#define	M188_SYSCONNEG	0x00000040
 #define UCSR_REG	0xfff87000
 #define GLBRES_REG	0xfff8700C
 

@@ -49,6 +49,7 @@
  */
 
 void uvm_km_init(vaddr_t, vaddr_t);
+void uvm_km_page_init(void);
 void uvm_km_pgremove(struct uvm_object *, vaddr_t, vaddr_t);
 void uvm_km_pgremove_intrsafe(struct uvm_object *, vaddr_t, vaddr_t);
 

@@ -1013,7 +1013,8 @@ ccdintr(cs, bp)
 	 */
 	if (bp->b_flags & B_ERROR)
 		bp->b_resid = bp->b_bcount;
-	disk_unbusy(&cs->sc_dkdev, (bp->b_bcount - bp->b_resid));
+	disk_unbusy(&cs->sc_dkdev, (bp->b_bcount - bp->b_resid),
+	    (bp->b_flags & B_READ));
 	biodone(bp);
 }
 

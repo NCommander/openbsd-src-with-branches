@@ -984,7 +984,8 @@ sdintr(arg, stat)
 		return;
 	}
 
-	disk_unbusy(&sc->sc_dkdev, (bp->b_bcount - bp->b_resid));
+	disk_unbusy(&sc->sc_dkdev, (bp->b_bcount - bp->b_resid),
+	    (bp->b_flags & B_READ));
 
 	if (stat) {
 #ifdef DEBUG

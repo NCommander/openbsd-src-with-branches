@@ -77,8 +77,8 @@ typedef struct {
 #define RTC_ADDR_CENT     	0xc1
 
 #ifdef _KERNEL
-int cmos_read __P((int));
-int cmos_write __P((int, int));
+int cmos_read (int);
+int cmos_write (int, int);
 #endif /* _KERNEL */
 
 /* End of rtc.h */

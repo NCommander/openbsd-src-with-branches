@@ -85,7 +85,7 @@ struct zschan {
 };
 /*
  * The zsdevice structure is not used on the mac68k port as the
- * chip is wired up weird. Channel B & A are interspursed with
+ * chip is wired up weird. Channel B & A are interspersed with
  * the data & control bytes
 struct zsdevice {
 	/! Yes, they are backwards. !/

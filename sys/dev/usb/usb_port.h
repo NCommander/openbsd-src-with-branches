@@ -79,6 +79,7 @@ MALLOC_DECLARE(M_USBHC);
 #define UMODEM_DEBUG 1
 #define UAUDIO_DEBUG 1
 #define AUE_DEBUG 1
+#define AXE_DEBUG 1
 #define CUE_DEBUG 1
 #define KUE_DEBUG 1
 #define URL_DEBUG 1
@@ -250,9 +251,9 @@ int __CONCAT(dname,_detach)(struct device *self, int flags)
 
 typedef struct proc *usb_proc_ptr;
 
-#define UCOMBUSCF_PORTNO		-1
+#define UCOMBUSCF_PORTNO		0
 #define UCOMBUSCF_PORTNO_DEFAULT	-1
-#define UHIDBUSCF_REPORTID		-1
+#define UHIDBUSCF_REPORTID		0
 #define UHIDBUSCF_REPORTID_DEFAULT	-1
 
 #define bswap32(x)		swap32(x)

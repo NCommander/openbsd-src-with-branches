@@ -72,12 +72,16 @@ static int ext2fs_checksb(struct ext2fs *, int);
 
 extern struct vnodeopv_desc ext2fs_vnodeop_opv_desc;
 extern struct vnodeopv_desc ext2fs_specop_opv_desc;
+#ifdef FIFO
 extern struct vnodeopv_desc ext2fs_fifoop_opv_desc;
+#endif
 
 struct vnodeopv_desc *ext2fs_vnodeopv_descs[] = {
 	&ext2fs_vnodeop_opv_desc,
 	&ext2fs_specop_opv_desc,
+#ifdef FIFO
 	&ext2fs_fifoop_opv_desc,
+#endif
 	NULL,
 };
 
@@ -119,7 +123,6 @@ ext2fs_init(vfsp)
 int
 ext2fs_mountroot()
 {
-	extern struct vnode *rootvp;
 	register struct m_ext2fs *fs;
         struct mount *mp;
 	struct proc *p = curproc;	/* XXX */
@@ -487,7 +490,6 @@ ext2fs_mountfs(devvp, mp, p)
 	struct partinfo dpart;
 	int error, i, size, ronly;
 	struct ucred *cred;
-	extern struct vnode *rootvp;
 
 	dev = devvp->v_rdev;
 	cred = p ? p->p_ucred : NOCRED;

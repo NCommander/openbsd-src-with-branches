@@ -149,8 +149,8 @@ int ufs_makeinode(int, struct vnode *, struct vnode **,
 /*
  * Soft dependency function prototypes.
  */
-void  softdep_setup_directory_add(struct buf *, struct inode *, off_t,
-          long, struct buf *);
+int  softdep_setup_directory_add(struct buf *, struct inode *, off_t,
+          long, struct buf *, int);
 void  softdep_change_directoryentry_offset(struct inode *, caddr_t,
           caddr_t, caddr_t, int);
 void  softdep_setup_remove(struct buf *,struct inode *, struct inode *,

@@ -40,7 +40,7 @@ void db_examine_cmd(db_expr_t, int, db_expr_t, char *);
 void db_examine(db_addr_t, char *, int);
 void db_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_print_loc_and_inst(db_addr_t);
-void db_strcpy(char *, char *);
+size_t db_strlcpy(char *, const char *, size_t);
 void db_search_cmd(db_expr_t, boolean_t, db_expr_t, char *);
 void db_search(db_addr_t, int, db_expr_t, db_expr_t, db_expr_t);
 

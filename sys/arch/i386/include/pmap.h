@@ -365,6 +365,8 @@ extern int pmap_pg_g;			/* do we support PG_G? */
 #define pmap_phys_address(ppn)		i386_ptob(ppn)
 #define pmap_valid_entry(E) 		((E) & PG_V) /* is PDE or PTE valid? */
 
+#define pmap_proc_iflush(p,va,len)	/* nothing */
+
 
 /*
  * Prototypes

@@ -48,7 +48,7 @@
  * there are other COMPAT_* options that need these old functions.
  */
 
-#ifdef SYSVSEM
+#if defined(SYSVSEM) && !defined(__LP64__)
 int
 compat_10_sys_semsys(p, v, retval)
 	struct proc *p;

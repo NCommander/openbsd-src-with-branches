@@ -62,7 +62,7 @@
 
 #if defined (__OpenBSD__)
 #include <sys/timeout.h>
-#include <sys/md5k.h>
+#include <crypto/md5.h>
 #else
 #include <sys/md5.h>
 #endif
@@ -636,6 +636,8 @@ sppp_input(struct ifnet *ifp, struct mbuf *m)
 		if (debug)
 			log(LOG_DEBUG, SPP_FMT "protocol queue overflow\n",
 				SPP_ARGS(ifp));
+		if (!inq->ifq_congestion)
+			if_congestion(inq);
 		goto drop;
 	}
 	IF_ENQUEUE(inq, m);

@@ -438,6 +438,7 @@ struct cdevsw	cdevsw[] =
 #else
 	cdev_notdef(),			/* 74 */
 #endif
+	cdev_ptm_init(NPTY,ptm),	/* 75: pseudo-tty ptm device */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

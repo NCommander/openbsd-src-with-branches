@@ -144,7 +144,9 @@ wdc_ata_bio(struct ata_drive_datas *drvp, struct ata_bio *ata_bio)
 		xfer->c_flags |= C_POLL;
 	if (!(ata_bio->flags & ATA_POLL) &&
 	    (drvp->drive_flags & (DRIVE_DMA | DRIVE_UDMA)) &&
-	    (ata_bio->flags & ATA_SINGLE) == 0)
+	    (ata_bio->flags & ATA_SINGLE) == 0 &&
+	    (ata_bio->bcount > 512 ||
+	    (chp->wdc->quirks & WDC_QUIRK_NOSHORTDMA) == 0))
 		xfer->c_flags |= C_DMA;
 	xfer->drive = drvp->drive;
 	xfer->cmd = ata_bio;

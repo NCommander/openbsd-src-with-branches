@@ -523,8 +523,7 @@
 /* syscall: "semget" ret: "int" args: "key_t" "int" "int" */
 #define	SYS_semget	221
 
-/* syscall: "semop" ret: "int" args: "int" "struct sembuf *" "u_int" */
-#define	SYS_semop	222
+				/* 222 is compat_35 semop */
 
 				/* 223 is obsolete sys_semconfig */
 				/* 224 is compat_23 omsgctl */
@@ -546,8 +545,7 @@
 /* syscall: "shmdt" ret: "int" args: "const void *" */
 #define	SYS_shmdt	230
 
-/* syscall: "shmget" ret: "int" args: "key_t" "int" "int" */
-#define	SYS_shmget	231
+				/* 231 is compat_35 shmget */
 
 /* syscall: "clock_gettime" ret: "int" args: "clockid_t" "struct timespec *" */
 #define	SYS_clock_gettime	232
@@ -676,4 +674,10 @@
 /* syscall: "sigaltstack" ret: "int" args: "const struct sigaltstack *" "struct sigaltstack *" */
 #define	SYS_sigaltstack	288
 
-#define	SYS_MAXSYSCALL	289
+/* syscall: "shmget" ret: "int" args: "key_t" "size_t" "int" */
+#define	SYS_shmget	289
+
+/* syscall: "semop" ret: "int" args: "int" "struct sembuf *" "size_t" */
+#define	SYS_semop	290
+
+#define	SYS_MAXSYSCALL	291

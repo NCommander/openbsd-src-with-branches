@@ -86,7 +86,7 @@ db_stack_trace_print(addr, have_addr, count, modif, pr)
 	int             have_addr;
 	db_expr_t       count;
 	char            *modif;
-	int		(*pr) __P((const char *, ...));
+	int		(*pr) (const char *, ...);
 {
 	u_int32_t	*frame, *lastframe;
 	char c, *cp = modif;

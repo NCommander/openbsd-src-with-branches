@@ -36,6 +36,7 @@ typedef __builtin_va_list __gnuc_va_list;
 #define va_end		__builtin_va_end
 #define va_arg		__builtin_va_arg
 #define va_copy(d,s)	__builtin_va_copy((d),(s))
+#define __va_copy(d,s)	__builtin_va_copy((d),(s))
 
 
 typedef __gnuc_va_list va_list;

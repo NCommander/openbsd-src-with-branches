@@ -214,6 +214,7 @@ struct cdevsw	cdevsw[] =
 #else
 	cdev_lkm_dummy(),		/* 51 */
 #endif
+	cdev_ptm_init(NPTY,ptm),	/* 52: pseudo-tty ptm device */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

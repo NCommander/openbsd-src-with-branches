@@ -387,6 +387,13 @@ setroot()
 	printf("boot device: %s\n",
 	    (bootdv) ? bootdv->dv_xname : "<unknown>");
 
+	/*
+	 * If 'swap generic' and we could not determine the boot device,
+	 * ask the user.
+	 */
+	if (mountroot == NULL && bootdv == NULL)
+		boothowto |= RB_ASKNAME;
+
 	if (boothowto & RB_ASKNAME) {
 		for (;;) {
 			printf("root device ");

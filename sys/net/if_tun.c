@@ -729,7 +729,7 @@ tunwrite(dev, uio, ioflag)
 		error = uiomove(mtod (m, caddr_t), m->m_len, uio);
 		*mp = m;
 		mp = &m->m_next;
-		if (uio->uio_resid > 0) {
+		if (error == 0 && uio->uio_resid > 0) {
 			MGET (m, M_DONTWAIT, MT_DATA);
 			if (m == 0) {
 				error = ENOBUFS;
@@ -807,6 +807,8 @@ tunwrite(dev, uio, ioflag)
 		splx(s);
 		ifp->if_collisions++;
 		m_freem(top);
+		if (!ifq->ifq_congestion)
+			if_congestion(ifq);
 		return ENOBUFS;
 	}
 	IF_ENQUEUE(ifq, top);

@@ -248,6 +248,7 @@ typedef enum {
 	CPUARM_xxx,
 	CPUPPC_603e,
 	CPUPPC_xxx,
+	CPUI960_302,
 	CPUSUBTYPE__last
 } AAC_CpuSubType;
 

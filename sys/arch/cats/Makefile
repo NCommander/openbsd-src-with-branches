@@ -25,6 +25,6 @@ links:
 	    cd $$i && rm -f tags; ln -s ../tags tags; done
 
 
-SUBDIR=	compile include
+SUBDIR=
 
 .include <bsd.subdir.mk>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.23.4.8 2003/05/16 00:29:40 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: conf.c,v 1.40 1996/04/11 19:20:03 thorpej Exp $ */
 
 /*
@@ -260,6 +260,7 @@ struct cdevsw	cdevsw[] =
 	cdev_ksyms_init(NKSYMS,ksyms),	/* 122: Kernel symbols device */
 	cdev_disk_init(NRAID,raid),     /* 123: RAIDframe disk driver */
 	cdev_ses_init(NSES,ses),	/* 124: SCSI SES or SAF-TE device */
+	cdev_ptm_init(NPTY,ptm),	/* 125: pseudo-tty ptm device */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

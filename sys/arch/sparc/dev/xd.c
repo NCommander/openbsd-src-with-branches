@@ -1738,7 +1738,8 @@ xdc_reset(xdcsc, quiet, blastmode, error, xdsc)
 				    iorq->buf->b_bcount);
 			    disk_unbusy(&xdcsc->reqs[lcv].xd->sc_dk,
 				(xdcsc->reqs[lcv].buf->b_bcount -
-				xdcsc->reqs[lcv].buf->b_resid));
+				xdcsc->reqs[lcv].buf->b_resid),
+				(xdcsc->reqs[lcv].buf->b_flags & B_READ));
 			    biodone(iorq->buf);
 			    XDC_FREE(xdcsc, lcv);	/* add to free list */
 			    break;
@@ -1943,7 +1944,8 @@ xdc_remove_iorq(xdcsc)
 				    (vaddr_t) bp->b_un.b_addr,
 				    bp->b_bcount);
 			disk_unbusy(&iorq->xd->sc_dk,
-			    (bp->b_bcount - bp->b_resid));
+			    (bp->b_bcount - bp->b_resid),
+			    (bp->b_flags & B_READ));
 			XDC_FREE(xdcsc, rqno);
 			biodone(bp);
 			break;

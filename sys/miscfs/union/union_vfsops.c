@@ -113,23 +113,19 @@ union_mount(mp, path, data, ndp, p)
 	/*
 	 * Find upper node.
 	 */
-	NDINIT(ndp, LOOKUP, FOLLOW|WANTPARENT,
-	       UIO_USERSPACE, args.target, p);
+	NDINIT(ndp, LOOKUP, FOLLOW, UIO_USERSPACE, args.target, p);
 
 	if ((error = namei(ndp)) != 0)
 		goto bad;
 
 	upperrootvp = ndp->ni_vp;
-	vrele(ndp->ni_dvp);
-	ndp->ni_dvp = NULL;
 
 	if (upperrootvp->v_type != VDIR) {
 		error = EINVAL;
 		goto bad;
 	}
 	
-	um = (struct union_mount *) malloc(sizeof(struct union_mount),
-				M_MISCFSMNT, M_WAITOK);
+	um = malloc(sizeof(struct union_mount), M_MISCFSMNT, M_WAITOK);
 
 	/*
 	 * Keep a held reference to the target vnodes.
@@ -203,7 +199,7 @@ union_mount(mp, path, data, ndp, p)
 	 */
 	mp->mnt_flag |= (um->um_uppervp->v_mount->mnt_flag & MNT_RDONLY);
 
-	mp->mnt_data = (qaddr_t)um;
+	mp->mnt_data = um;
 	vfs_getnewfsid(mp);
 
 	(void) copyinstr(path, mp->mnt_stat.f_mntonname, MNAMELEN - 1, &size);

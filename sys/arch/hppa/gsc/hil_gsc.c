@@ -81,8 +81,8 @@ hil_gsc_attach(struct device *parent, struct device *self, void *aux)
 
 	hil_attach(sc, hil_is_console);
 
-	gsc_intr_establish((struct gsc_softc *)parent, IPL_TTY,
-	    ga->ga_irq, hil_intr, sc, sc->sc_dev.dv_xname);
+	gsc_intr_establish((struct gsc_softc *)parent, ga->ga_irq, IPL_TTY,
+	    hil_intr, sc, sc->sc_dev.dv_xname);
 
 	startuphook_establish(hil_attach_deferred, sc);
 }

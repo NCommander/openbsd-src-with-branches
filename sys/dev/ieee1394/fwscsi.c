@@ -301,7 +301,6 @@ fwscsi_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_adapter_link.adapter_softc = sc;
 	sc->sc_adapter_link.flags = 0;
 	sc->sc_adapter_link.inquiry_flags = 0;
-	sc->sc_adapter_link.inquiry_flags2 = 0;
 	sc->sc_adapter_link.quirks |= SDEV_NOTAGS | SDEV_ONLYBIG;
 
 	sc->sc_speed = fwsc->sc_sc1394.sc1394_link_speed;

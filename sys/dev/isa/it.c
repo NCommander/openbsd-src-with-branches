@@ -313,7 +313,9 @@ it_generic_fanrpm(struct it_softc *sc, struct sensor *sensors)
 				break;
 		}
 
-		if (sdata == 0xff || sdata == 0) {
+		if (sdata == 0xff) {
+			sensors[i].flags |= SENSOR_FINVALID;
+		} else if (sdata == 0) {
 			sensors[i].value = 0;
 		} else {
 			sensors[i].value = 1350000 / (sdata << divisor);

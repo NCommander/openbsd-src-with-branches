@@ -85,6 +85,7 @@ struct tcphdr {
 #define	   TCPOLEN_TSTAMP_APPA		(TCPOLEN_TIMESTAMP+2) /* appendix A */
 #define	TCPOPT_SIGNATURE	19
 #define	   TCPOLEN_SIGNATURE		18
+#define	   TCPOLEN_SIGLEN		(TCPOLEN_SIGNATURE+2) /* padding */
 
 #define	MAX_TCPOPTLEN		40	/* Absolute maximum TCP options len */
 

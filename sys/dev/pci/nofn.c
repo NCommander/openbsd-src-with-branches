@@ -48,7 +48,7 @@
 #include <crypto/cryptodev.h>
 #include <crypto/cryptosoft.h>
 #include <dev/rndvar.h>
-#include <sys/md5k.h>
+#include <crypto/md5.h>
 #include <crypto/sha1.h>
 
 #include <dev/pci/pcireg.h>
@@ -176,12 +176,12 @@ nofn_attach(parent, self, aux)
 		break;
 	}
 
-	printf(": %s", intrstr);
+	printf(":");
 	if (sc->sc_flags & NOFN_FLAGS_PK)
-		printf(", pk");
+		printf(" PK");
 	if (sc->sc_flags & NOFN_FLAGS_RNG)
-		printf(", rng");
-	printf("\n");
+		printf(" RNG");
+	printf(", %s\n", intrstr);
 
 	REG_WRITE_4(sc, NOFN_PCI_INT_MASK, sc->sc_intrmask);
 
@@ -417,7 +417,7 @@ nofn_pk_feed(sc)
 		q = SIMPLEQ_FIRST(&sc->sc_pk_queue);
 		if (q->q_start(sc, q) == 0) {
 			sc->sc_pk_current = q;
-			SIMPLEQ_REMOVE_HEAD(&sc->sc_pk_queue, q, q_next);
+			SIMPLEQ_REMOVE_HEAD(&sc->sc_pk_queue, q_next);
 
 			r = PK_READ_4(sc, NOFN_PK_IER);
 			r &= PK_IER_RRDY; /* preserve */
@@ -425,7 +425,7 @@ nofn_pk_feed(sc)
 			PK_WRITE_4(sc, NOFN_PK_IER, r);
 			break;
 		} else {
-			SIMPLEQ_REMOVE_HEAD(&sc->sc_pk_queue, q, q_next);
+			SIMPLEQ_REMOVE_HEAD(&sc->sc_pk_queue, q_next);
 			free(q, M_DEVBUF);
 		}
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: debug.h,v 1.4.10.1 2002/03/28 10:31:05 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -33,6 +33,6 @@
 extern char  *const reg_names[];
 extern const size_t nregs;
 
-int debug_init(void);
+void debug_init(void);
 void dump_regs(u_int, u_int);
 void dump_mem(char *, void *, size_t);

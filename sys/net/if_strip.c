@@ -1266,6 +1266,8 @@ stripinput(c, tp)
 		IF_DROP(&ipintrq);
 		sc->sc_if.if_ierrors++;
 		sc->sc_if.if_iqdrops++;
+		if (!ipintrq.ifq_congestion)
+			if_congestion(&ipintrq);
 		m_freem(m);
 	} else {
 		IF_ENQUEUE(&ipintrq, m);

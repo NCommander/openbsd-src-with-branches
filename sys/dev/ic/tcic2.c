@@ -482,7 +482,7 @@ tcic_event_thread(arg)
 			(void) tsleep(&h->events, PWAIT, "tcicev", 0);
 			continue;
 		}
-		SIMPLEQ_REMOVE_HEAD(&h->events, pe, pe_q);
+		SIMPLEQ_REMOVE_HEAD(&h->events, pe_q);
 		splx(s);
 
 		switch (pe->pe_type) {

@@ -92,6 +92,7 @@
 #define	IPL_CLOCK	2	/* disable clock interrupts */
 #define	IPL_HIGH	3	/* disable all interrupts */
 #define	IPL_SERIAL	1	/* disable serial interrupts */
+#define	IPL_AUDIO	1	/* disable audio interrupts */
 
 #define	IPL_SOFTSERIAL	0	/* serial software interrupts */
 #define	IPL_SOFTNET	1	/* network software interrupts */
@@ -133,7 +134,8 @@ _splraise(s)
 #define splimp()                _splraise(ALPHA_PSL_IPL_IO)
 #define spltty()                _splraise(ALPHA_PSL_IPL_IO)
 #define splserial()             _splraise(ALPHA_PSL_IPL_IO)
-#define	splvm()			_splraise(ALPHA_PSL_IPL_IO)
+#define splaudio()		_splraise(ALPHA_PSL_IPL_IO)
+#define splvm()			_splraise(ALPHA_PSL_IPL_IO)
 #define splclock()              _splraise(ALPHA_PSL_IPL_CLOCK)
 #define splstatclock()          _splraise(ALPHA_PSL_IPL_CLOCK)
 #define splhigh()               _splraise(ALPHA_PSL_IPL_HIGH)

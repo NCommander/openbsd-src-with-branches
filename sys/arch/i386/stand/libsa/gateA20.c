@@ -43,6 +43,16 @@
 
 
 /*
+ * "Probe"-style routine (no parameters) to turn A20 on
+ */
+void
+gateA20on(void)
+{
+	gateA20(1);
+}
+
+
+/*
  * Gate A20 for high memory
  */
 void

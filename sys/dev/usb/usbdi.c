@@ -811,7 +811,7 @@ usb_transfer_complete(usbd_xfer_handle xfer)
 			       xfer, SIMPLEQ_FIRST(&pipe->queue));
 		xfer->busy_free = XFER_BUSY;
 #endif
-		SIMPLEQ_REMOVE_HEAD(&pipe->queue, xfer, next);
+		SIMPLEQ_REMOVE_HEAD(&pipe->queue, next);
 	}
 	DPRINTFN(5,("usb_transfer_complete: repeat=%d new head=%p\n",
 		    repeat, SIMPLEQ_FIRST(&pipe->queue)));

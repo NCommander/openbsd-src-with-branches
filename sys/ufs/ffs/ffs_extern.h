@@ -154,6 +154,7 @@ int ffs_read(void *);
 int ffs_write(void *);
 int ffs_fsync(void *);
 int ffs_reclaim(void *);
+int ffsfifo_reclaim(void *);
 
 
 /*

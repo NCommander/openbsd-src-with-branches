@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp_var.h,v 1.4.10.4 2003/03/28 00:06:54 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: icmp_var.h,v 1.8 1995/03/26 20:32:19 jtc Exp $	*/
 
 /*
@@ -74,6 +74,16 @@ struct	icmpstat {
 	{ "rediraccept", CTLTYPE_INT }, \
 	{ "redirtimeout", CTLTYPE_INT }, \
 	{ "tstamprepl", CTLTYPE_INT }, \
+}
+
+#define ICMPCTL_VARS { \
+	NULL, \
+	&icmpmaskrepl, \
+	&icmpbmcastecho, \
+	&icmperrppslim, \
+	&icmp_rediraccept, \
+	NULL, \
+	&icmptstamprepl, \
 }
 
 #ifdef _KERNEL

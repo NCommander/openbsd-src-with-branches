@@ -1943,6 +1943,26 @@ pmap_init()
 	pmap_initialized = 1;
 }
 
+void
+pmap_proc_iflush(struct proc *p, vaddr_t addr, vsize_t len)
+{
+	paddr_t pa;
+	vsize_t clen;
+
+	while (len > 0) {
+		clen = round_page(addr) - addr;
+		if (clen > len)
+			clen = len;
+
+		if (pmap_extract(p->p_vmspace->vm_map.pmap, addr, &pa)) {
+			syncicache((void *)pa, clen);
+		}
+
+		len -= clen;
+		addr += clen;
+	}
+}
+
 /* 
  * There are two routines, pte_spill_r and pte_spill_v
  * the _r version only handles kernel faults which are not user

@@ -38,7 +38,8 @@
  */
 
 /*
- * STP4020: SBus/PCMCIA bridge supporting two Type-3 PCMCIA cards.
+ * STP4020: SBus/PCMCIA bridge supporting one Type-3 PCMCIA card, or up to
+ * two Type-1 and Type-2 PCMCIA cards..
  */
 
 /*
@@ -49,6 +50,8 @@ struct stp4020_socket {
 	int		flags;
 #define STP4020_SOCKET_BUSY	0x0001
 #define STP4020_SOCKET_SHUTDOWN	0x0002
+#define	STP4020_SOCKET_ENABLING	0x0004
+	int		sense;
 	int		sock;		/* Socket number (0 or 1) */
 	bus_space_tag_t	tag;		/* socket control space */
 	bus_space_handle_t	regs;	/* 			*/
@@ -69,8 +72,8 @@ struct stp4020_softc {
 	bus_space_tag_t	sc_bustag;
 	pcmcia_chipset_tag_t	sc_pct;	/* Chipset methods */
 
-	struct proc	*event_thread;		/* event handling thread */
-	SIMPLEQ_HEAD(, stp4020_event)	events;	/* Pending events for thread */
+	struct proc	*event_thread;	/* event handling thread */
+	unsigned int	events;		/* sockets with pending events */
 
 	struct stp4020_socket sc_socks[STP4020_NSOCK];
 };

@@ -53,7 +53,7 @@ typedef u_int32_t	bpf_u_int32;
 #define BPF_WORDALIGN(x) (((x) + (BPF_ALIGNMENT - 1)) & ~(BPF_ALIGNMENT - 1))
 
 #define BPF_MAXINSNS 512
-#define BPF_MAXBUFSIZE 0x80000
+#define BPF_MAXBUFSIZE (2 * 1024 * 1024)
 #define BPF_MINBUFSIZE 32
 
 /*
@@ -169,6 +169,7 @@ struct bpf_hdr {
 #define DLT_PPP_BSDOS	16	/* BSD/OS Point-to-point Protocol */
 #define DLT_OLD_PFLOG	17	/* Packet filter logging, old (XXX remove?) */
 #define DLT_PFSYNC	18	/* Packet filter state syncing */
+#define DLT_PPP_ETHER	51	/* PPP over Ethernet; session only, w/o ether header */
 #define DLT_IEEE802_11	105	/* IEEE 802.11 wireless */
 #define DLT_PFLOG	117	/* Packet filter logging, by pcap people */
 
@@ -235,7 +236,7 @@ struct bpf_insn {
 	u_int16_t code;
 	u_char 	  jt;
 	u_char 	  jf;
-	int32_t	  k;
+	u_int32_t k;
 };
 
 /*

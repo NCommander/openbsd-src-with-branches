@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pager.c,v 1.4.4.8 2003/03/28 00:08:48 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_pager.c,v 1.36 2000/11/27 18:26:41 chs Exp $	*/
 
 /*
@@ -189,6 +189,7 @@ enter:
 		pmap_enter(vm_map_pmap(pager_map), cva, VM_PAGE_TO_PHYS(pp),
 		    prot, PMAP_WIRED | prot);
 	}
+	pmap_update(vm_map_pmap(pager_map));
 
 	UVMHIST_LOG(maphist, "<- done (KVA=0x%x)", kva,0,0,0);
 	return(kva);
@@ -239,6 +240,7 @@ remove:
 	if (entries)
 		uvm_unmap_detach(entries, 0);
 
+	pmap_update(pmap_kernel());
 	UVMHIST_LOG(maphist,"<- done",0,0,0,0);
 }
 

@@ -91,10 +91,11 @@ longrun_update(void *arg)
 }
 
 int
-longrun_cpuspeed(void *oldp, size_t *oldlenp, void *newp, size_t newlen)
+longrun_cpuspeed(int *freq)
 {
 	longrun_update(NULL);	/* force update */
-	return (sysctl_rdint(oldp, oldlenp, newp, pentium_mhz));
+	*freq = pentium_mhz;
+	return (0);
 }
 
 /*
@@ -106,20 +107,10 @@ longrun_cpuspeed(void *oldp, size_t *oldlenp, void *newp, size_t newlen)
  * levels selectable.
  */
 int
-longrun_setperf(void *oldp, size_t *oldlenp, void *newp, size_t newlen)
+longrun_setperf(int high)
 {
-	int error;
 	uint32_t eflags, mode;
  	union msrinfo msrinfo;
-	static uint32_t high = 100;
-
-	if (newp == NULL)
-		return (EINVAL);
-	if ((error = sysctl_int(oldp, oldlenp, newp, newlen, &high)))
-		return (error);
-
-	if (high > 100)
-		high = 100;
 
 	if (high >= 50)
 		mode = 1;	/* power */

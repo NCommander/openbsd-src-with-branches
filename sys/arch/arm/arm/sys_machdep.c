@@ -53,8 +53,8 @@
 #include <machine/sysarch.h>
 
 /* Prototypes */
-static int arm32_sync_icache __P((struct proc *, char *, register_t *));
-static int arm32_drain_writebuf __P((struct proc *, char *, register_t *));
+static int arm32_sync_icache (struct proc *, char *, register_t *);
+static int arm32_drain_writebuf (struct proc *, char *, register_t *);
 
 static int
 arm32_sync_icache(p, args, retval)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uba.c,v 1.1.8.5 2003/03/27 23:52:20 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: uba.c,v 1.57 2001/04/26 19:16:07 ragge Exp $	*/
 /*
  * Copyright (c) 1996 Jonathan Stone.
@@ -93,7 +93,7 @@ uba_done(struct uba_softc *uh)
 	struct uba_unit *uu;
  
 	while ((uu = SIMPLEQ_FIRST(&uh->uh_resq))) {
-		SIMPLEQ_REMOVE_HEAD(&uh->uh_resq, uu, uu_resq);
+		SIMPLEQ_REMOVE_HEAD(&uh->uh_resq, uu_resq);
 		if ((*uu->uu_ready)(uu) == 0) {
 			SIMPLEQ_INSERT_HEAD(&uh->uh_resq, uu, uu_resq);
 			break;

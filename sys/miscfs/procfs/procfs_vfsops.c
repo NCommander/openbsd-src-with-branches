@@ -102,10 +102,10 @@ procfs_mount(mp, path, data, ndp, p)
 	pmnt = (struct procfsmount *) malloc(sizeof(struct procfsmount),
 	    M_MISCFSMNT, M_WAITOK);
 
-	mp->mnt_data = (qaddr_t)pmnt;
+	mp->mnt_data = pmnt;
 	vfs_getnewfsid(mp);
 
-	(void) copyinstr(path, mp->mnt_stat.f_mntonname, MNAMELEN, &size);
+	(void) copyinstr(path, mp->mnt_stat.f_mntonname, MNAMELEN - 1, &size);
 	bzero(mp->mnt_stat.f_mntonname + size, MNAMELEN - size);
 	bzero(mp->mnt_stat.f_mntfromname, MNAMELEN);
 	bcopy("procfs", mp->mnt_stat.f_mntfromname, sizeof("procfs"));

@@ -1533,6 +1533,8 @@ ppp_inproc(sc, m)
 	if (sc->sc_flags & SC_DEBUG)
 	    printf("%s: input queue full\n", ifp->if_xname);
 	ifp->if_iqdrops++;
+	if (!inq->ifq_congestion)
+		if_congestion(inq);
 	goto bad;
     }
     IF_ENQUEUE(inq, m);

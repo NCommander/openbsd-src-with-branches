@@ -49,4 +49,7 @@ void	 rijndael_set_key_enc_only(rijndael_ctx *, u_char *, int);
 void	 rijndael_decrypt(rijndael_ctx *, u_char *, u_char *);
 void	 rijndael_encrypt(rijndael_ctx *, u_char *, u_char *);
 
+int	rijndaelKeySetupEnc(unsigned int [], const unsigned char [], int);
+int	rijndaelKeySetupDec(unsigned int [], const unsigned char [], int);
+
 #endif /* __RIJNDAEL_H */

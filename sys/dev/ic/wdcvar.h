@@ -163,6 +163,8 @@ struct wdc_softc { /* Per controller state */
 	u_int8_t      UDMA_cap; /* highest UDMA mode supported */
 	int nchannels;	/* Number of channels on this controller */
 	struct channel_softc **channels;  /* channels-specific datas (array) */
+	u_int16_t quirks;		/* per-device oddities */
+#define WDC_QUIRK_NOSHORTDMA	0x0001	/* can't do short DMA transfers */
 
 #if 0
 	/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.19.8.5 2003/03/27 23:28:43 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cpu.h,v 1.45 1997/02/10 22:13:40 scottr Exp $	*/
 
 /*
@@ -322,6 +322,9 @@ int	suline(caddr_t, caddr_t);
 void	savectx(struct pcb *);
 void	proc_trampoline(void);
 void	loadustp(int);
+
+/* sys_machdep.c */
+int	cachectl(struct proc *, int, vaddr_t, int);
 
 /* vm_machdep.c */
 void	physaccess(caddr_t, caddr_t, register int, register int);

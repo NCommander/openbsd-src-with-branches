@@ -279,7 +279,6 @@ struct aue_softc {
 };
 
 #define AUE_TIMEOUT		1000
-#define ETHER_ALIGN		2
 #define AUE_BUFSZ		1536
 #define AUE_MIN_FRAMELEN	60
 #define AUE_TX_TIMEOUT		10000 /* ms */

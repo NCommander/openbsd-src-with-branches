@@ -124,6 +124,12 @@ device	aue: ether, ifnet, mii, ifmedia
 attach	aue at uhub
 file	dev/usb/if_aue.c		aue
 
+# Ethernet adapters
+# ASIX Electronics AX88172
+device	axe: ether, ifnet, mii, ifmedia
+attach	axe at uhub
+file	dev/usb/if_axe.c		axe
+
 # CATC USB-EL1201A
 device	cue: ether, ifnet, ifmedia
 attach	cue at uhub

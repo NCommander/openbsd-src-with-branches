@@ -298,7 +298,7 @@ union_lookup(v)
 
 	/*
 	 * do the lookup in the upper level.
-	 * if that level comsumes additional pathnames,
+	 * if that level consumes additional pathnames,
 	 * then assume that something special is going
 	 * on and just return that vnode.
 	 */
@@ -1722,7 +1722,7 @@ start:
 			panic("union: locking against myself");
 #endif
 		un->un_flags |= UN_WANTED;
-		tsleep((caddr_t)&un->un_flags, PINOD, "unionlk2", 0);
+		tsleep(&un->un_flags, PINOD, "unionlk2", 0);
 		goto start;
 	}
 
@@ -1780,7 +1780,7 @@ union_unlock(v)
 
 	if (un->un_flags & UN_WANTED) {
 		un->un_flags &= ~UN_WANTED;
-		wakeup((caddr_t)&un->un_flags);
+		wakeup(&un->un_flags);
 	}
 
 #ifdef DIAGNOSTIC

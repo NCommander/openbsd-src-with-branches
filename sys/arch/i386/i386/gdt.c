@@ -94,13 +94,16 @@ void gdt_put_slot(int);
 static __inline void
 gdt_lock()
 {
-	lockmgr(&gdt_lock_store, LK_EXCLUSIVE, &gdt_simplelock, curproc);
+	if (curproc != NULL)
+		lockmgr(&gdt_lock_store, LK_EXCLUSIVE, &gdt_simplelock,
+		    curproc);
 }
 
 static __inline void
 gdt_unlock()
 {
-	lockmgr(&gdt_lock_store, LK_RELEASE, &gdt_simplelock, curproc);
+	if (curproc != NULL)
+		lockmgr(&gdt_lock_store, LK_RELEASE, &gdt_simplelock, curproc);
 }
 
 /* XXX needs spinlocking if we ever mean to go finegrained. */

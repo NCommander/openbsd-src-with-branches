@@ -23,15 +23,17 @@
  * 	Utah $Hdr: signal.h 1.3 94/12/16$
  */
 
+#ifndef	_HPPA_SIGNAL_H_
+#define	_HPPA_SIGNAL_H_
+
 /*
  * Machine-dependent signal definitions
  */
 
 typedef int sig_atomic_t;
 
-#ifndef _POSIX_SOURCE
-#include <machine/trap.h>	/* codes for SIGILL, SIGFPE */
-#endif
+#ifndef _ANSI_SOURCE
+#include <machine/trap.h>
 
 /*
  * Information pushed on stack when a signal is delivered.
@@ -51,3 +53,5 @@ struct	sigcontext {
 	unsigned	sc_regs[32];
 	unsigned	sc_fpregs[64];
 };
+#endif  /* !_ANSI_SOURCE */
+#endif  /* !_HPPA_SIGNAL_H_ */

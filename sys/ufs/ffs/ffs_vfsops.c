@@ -110,7 +110,6 @@ struct pool ffs_ino_pool;
 int
 ffs_mountroot()
 {
-	extern struct vnode *rootvp;
 	struct fs *fs;
 	struct mount *mp;
 	struct proc *p = curproc;	/* XXX */
@@ -630,7 +629,6 @@ ffs_mountfs(devvp, mp, p)
 	int32_t *lp;
 	size_t strsize;
 	struct ucred *cred;
-	extern struct vnode *rootvp;
 	u_int64_t maxfilesize;					/* XXX */
 
 	dev = devvp->v_rdev;

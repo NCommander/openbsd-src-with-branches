@@ -220,6 +220,6 @@ ppc_intr_disable(void)
 	return (emsr & PSL_EE);
 }
 
-int ppc_cpuspeed(void *oldp, size_t *oldlenp, void *newp, size_t newlen);
+int ppc_cpuspeed(int *);
 
 #endif	/* _POWERPC_CPU_H_ */

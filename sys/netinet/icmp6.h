@@ -621,6 +621,30 @@ struct icmp6stat {
 	{ 0, 0 }, \
 }
 
+#define ICMPV6CTL_VARS { \
+	NULL, \
+	NULL, \
+	&icmp6_rediraccept, \
+	&icmp6_redirtimeout, \
+	NULL, \
+	NULL, \
+	&nd6_prune, \
+	NULL, \
+	&nd6_delay, \
+	&nd6_umaxtries, \
+	&nd6_mmaxtries, \
+	&nd6_useloopback, \
+	NULL, \
+	&icmp6_nodeinfo, \
+	&icmp6errppslim, \
+	&nd6_maxnudhint, \
+	&icmp6_mtudisc_hiwat, \
+	&icmp6_mtudisc_lowat, \
+	&nd6_debug, \
+	NULL, \
+	NULL, \
+}
+
 #define RTF_PROBEMTU	RTF_PROTO1
 
 #ifdef _KERNEL

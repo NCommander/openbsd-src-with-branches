@@ -25,7 +25,7 @@ SRCS+=	adddi3.c anddi3.c ashldi3.c ashrdi3.c cmpdi2.c divdi3.c iordi3.c \
 .endif
 
 # Other stuff
-SRCS+=	md5.c getsn.c srandom.c bcd.c
+SRCS+=	getsn.c srandom.c bcd.c strchr.c
 
 # Files to clean up
 CLEANFILES+= lib${LIB}.o lib${LIB}.po

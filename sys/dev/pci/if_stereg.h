@@ -458,7 +458,6 @@ struct ste_desc_onefrag {
 #define STE_TIMEOUT		1000
 #define STE_MIN_FRAMELEN	60
 #define STE_PACKET_SIZE		1536
-#define ETHER_ALIGN		2
 #define STE_RX_LIST_CNT		128
 #define STE_TX_LIST_CNT		256
 #define STE_INC(x, y)		(x) = (x + 1) % y

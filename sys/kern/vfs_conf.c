@@ -242,7 +242,7 @@ static struct vfsconf vfsconflist[] = {
  * Initially the size of the list, vfs_init will set maxvfsconf
  * to the highest defined type number.
  */
-int maxvfsconf = sizeof(vfsconflist) / sizeof (struct vfsconf);
+int maxvfsconf = sizeof(vfsconflist) / sizeof(struct vfsconf);
 struct vfsconf *vfsconf = vfsconflist;
 
 

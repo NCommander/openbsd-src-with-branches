@@ -284,8 +284,8 @@ struct {								\
 	(listelm)->field.sqe_next = (elm);				\
 } while (0)
 
-#define SIMPLEQ_REMOVE_HEAD(head, elm, field) do {			\
-	if (((head)->sqh_first = (elm)->field.sqe_next) == NULL)	\
+#define SIMPLEQ_REMOVE_HEAD(head, field) do {			\
+	if (((head)->sqh_first = (head)->sqh_first->field.sqe_next) == NULL) \
 		(head)->sqh_last = &(head)->sqh_first;			\
 } while (0)
 
@@ -326,7 +326,7 @@ struct {								\
 	    (var) != TAILQ_END(head);					\
 	    (var) = TAILQ_NEXT(var, field))
 
-#define TAILQ_FOREACH_REVERSE(var, head, field, headname)		\
+#define TAILQ_FOREACH_REVERSE(var, head, headname, field)		\
 	for((var) = TAILQ_LAST(head, headname);				\
 	    (var) != TAILQ_END(head);					\
 	    (var) = TAILQ_PREV(var, headname, field))

@@ -246,7 +246,7 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 	struct disklabel minilabel, fallbacklabel;
 
 	/* minimal requirements for archtypal disk label */
-	if (lp->d_secsize == 0)
+	if (lp->d_secsize < DEV_BSIZE)
 		lp->d_secsize = DEV_BSIZE;
 	if (lp->d_secperunit == 0)
 		lp->d_secperunit = 0x1fffffff;

@@ -402,8 +402,10 @@ igmp_joingroup(inm)
 
 	if (!IN_LOCAL_GROUP(inm->inm_addr.s_addr) &&
 	    (inm->inm_ifp->if_flags & IFF_LOOPBACK) == 0) {
-		if ((i = rti_fill(inm)) == -1)
+		if ((i = rti_fill(inm)) == -1) {
+			splx(s);
 			return;
+		}
 		igmp_sendpkt(inm, i, 0);
 		inm->inm_state = IGMP_DELAYING_MEMBER;
 		inm->inm_timer = IGMP_RANDOM_DELAY(

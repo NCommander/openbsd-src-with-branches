@@ -37,13 +37,6 @@
 #define	_CATS_PARAM_H_
 
 /*
- * Machine dependent constants for ARM6+ processors
- */
-
-#define	_MACHINE	cats
-#define	MACHINE		"cats"
-
-/*
  * cats boot dmesg is bigger than 4k
  */
 #ifndef MSGBUFSIZE
@@ -51,5 +44,8 @@
 #endif
 
 #include <arm/param.h>
+
+#define	_MACHINE	cats
+#define	MACHINE		"cats"
 
 #endif	/* _CATS_PARAM_H_ */

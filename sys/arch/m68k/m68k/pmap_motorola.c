@@ -2696,6 +2696,15 @@ pmap_ptpage_delref(ptpva)
 	return (rv);
 }
 
+void
+pmap_proc_iflush(p, va, len)
+	struct proc	*p;
+	vaddr_t		va;
+	vsize_t		len;
+{
+	(void)cachectl(p, 0x80000004, va, len);
+}
+
 #ifdef DEBUG
 /*
  * pmap_pvdump:

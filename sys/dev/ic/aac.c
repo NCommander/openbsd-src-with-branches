@@ -1132,7 +1132,7 @@ aac_sync_command(sc, command, arg0, arg1, arg2, arg3, sp)
 
 	/* spin waiting for the command to complete */
 	for (i = 0; i < AAC_IMMEDIATE_TIMEOUT * 1000; i++) {
-		if (AAC_GET_ISTATUS(sc) & AAC_DB_SYNC_COMMAND);
+		if (AAC_GET_ISTATUS(sc) & AAC_DB_SYNC_COMMAND)
 			break;
 		DELAY(1000);
 	}

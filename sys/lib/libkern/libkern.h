@@ -167,6 +167,8 @@ int	 strcmp(const char *, const char *);
 int	 strncmp(const char *, const char *, size_t);
 int	 strncasecmp(const char *, const char *, size_t);
 int	 getsn(char *, int);
+char	*strchr(const char *, int);
+char	*strrchr(const char *, int);
 
 extern u_int8_t const __bcd2bin[], __bin2bcd[];
 #define	bcd2bin(b)	(__bcd2bin[(b)&0xff])

@@ -41,8 +41,8 @@
 #define BSD4_3	1
 #define BSD4_4	1
 
-#define OpenBSD	200311		/* OpenBSD version (year & month). */
-#define OpenBSD3_4 1		/* OpenBSD 3.4 */
+#define OpenBSD	200405		/* OpenBSD version (year & month). */
+#define OpenBSD3_5 1		/* OpenBSD 3.5 */
 
 #ifndef NULL
 #ifdef 	__GNUG__
@@ -152,7 +152,7 @@
  * infinite loops reasonably quickly.
  */
 #define	MAXPATHLEN	PATH_MAX
-#define MAXSYMLINKS	32
+#define MAXSYMLINKS	SYMLOOP_MAX
 
 /* Macros to set/clear/test flags. */
 #ifdef _KERNEL

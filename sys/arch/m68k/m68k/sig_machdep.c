@@ -246,14 +246,9 @@ sendsig(catcher, sig, mask, code, type, val)
 		 * Process has trashed its stack; give it an illegal
 		 * instruction to halt it in its tracks.
 		 */
-		SIGACTION(p, SIGILL) = SIG_DFL;
-		sig = sigmask(SIGILL);
-		p->p_sigignore &= ~sig;
-		p->p_sigcatch &= ~sig;
-		p->p_sigmask &= ~sig;
-		psignal(p, SIGILL);
 		free((caddr_t)kfp, M_TEMP);
-		return;
+		sigexit(p, SIGILL);
+		/* NOTREACHED */
 	}
 	frame->f_regs[SP] = (int)fp;
 #ifdef DEBUG

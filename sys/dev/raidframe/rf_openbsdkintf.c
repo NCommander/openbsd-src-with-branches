@@ -3563,5 +3563,6 @@ rf_disk_unbusy(RF_RaidAccessDesc_t *desc)
 
 	bp = (struct buf *)desc->bp;
 	disk_unbusy(&raid_softc[desc->raidPtr->raidid].sc_dkdev,
-			    (bp->b_bcount - bp->b_resid));
+			    (bp->b_bcount - bp->b_resid),
+			    (bp->b_flags & B_READ));
 }

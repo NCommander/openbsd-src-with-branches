@@ -546,7 +546,7 @@ of_display_console()
 		}
 	}
 
-	if (OF_finddevice("/backlight") != 0)
+	if (OF_getnodebyname(0, "backlight") != 0)
 		cons_backlight_available = 1;
 
 	memtag = ofw_make_tag(NULL, pcibus(addr[0].phys_hi),
@@ -594,7 +594,8 @@ of_display_console()
 #endif
 	}
 
-	of_setbrightness(DEFAULT_BRIGHTNESS);
+	if (cons_backlight_available == 1)
+		of_setbrightness(DEFAULT_BRIGHTNESS);
 #endif
 }
 

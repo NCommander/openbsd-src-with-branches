@@ -143,4 +143,7 @@
 #define	SIOCIFDESTROY	 _IOW('i', 121, struct ifreq)	/* destroy clone if */
 #define	SIOCIFGCLONERS	_IOWR('i', 120, struct if_clonereq) /* get cloners */
 
+#define	SIOCSIFDESCR	 _IOW('i', 128, struct ifreq)	/* set ifnet descr */
+#define	SIOCGIFDESCR	_IOWR('i', 129, struct ifreq)	/* get ifnet descr */
+
 #endif /* !_SYS_SOCKIO_H_ */

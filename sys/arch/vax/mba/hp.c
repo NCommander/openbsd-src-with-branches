@@ -1,4 +1,4 @@
-/*	$OpenBSD: hp.c,v 1.9.8.3 2003/03/27 23:52:19 niklas Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: hp.c,v 1.22 2000/02/12 16:09:33 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -416,7 +416,8 @@ hper2:
 		    sc->sc_dev.dv_xname, mbasr);
 
 	BUFQ_FIRST(&md->md_q)->b_resid = 0;
-	disk_unbusy(&sc->sc_disk, BUFQ_FIRST(&md->md_q)->b_bcount);
+	disk_unbusy(&sc->sc_disk, BUFQ_FIRST(&md->md_q)->b_bcount,
+	    (BUFQ_FIRST(&md->md_q)->b_flags & B_READ));
 	return XFER_FINISH;
 }
 

@@ -150,6 +150,8 @@ uvm_init()
 	uao_create(VM_MAX_KERNEL_ADDRESS - VM_MIN_KERNEL_ADDRESS,
 	    UAO_FLAG_KERNSWAP);
 
+	uvm_km_page_init();
+
 	/*
 	 * done!
 	 */

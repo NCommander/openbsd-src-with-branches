@@ -689,7 +689,7 @@ usb_get_next_event(struct usb_event *ue)
 	}
 #endif
 	*ue = ueq->ue;
-	SIMPLEQ_REMOVE_HEAD(&usb_events, ueq, next);
+	SIMPLEQ_REMOVE_HEAD(&usb_events, next);
 	free(ueq, M_USBDEV);
 	usb_nevents--;
 	return (1);

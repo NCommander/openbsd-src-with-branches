@@ -157,7 +157,6 @@ softintr_establish(int ipl, void (*func)(void *), void *arg)
 		sih->sih_siq = &soft_intrq[si];
 		sih->sih_pending = 0;
 	}
-printf("softintr_establish ipl 0x%x si %d\n", ipl, si);
 	return (sih);
 }
 

@@ -70,7 +70,7 @@
 #define	M_IFADDR	9	/* interface address */
 #define	M_SOOPTS	10	/* socket options */
 #define	M_SYSCTL	11	/* sysctl buffers (persistent storage) */
-#define	M_NAMEI		12	/* namei path name buffer */
+/* 12 - free */
 /* 13 - free */
 #define	M_IOCTLOPS	14	/* ioctl data buffer */
 /* 15-18 - free */
@@ -188,7 +188,7 @@
 	"ifaddr",	/* 9 M_IFADDR */ \
 	"soopts",	/* 10 M_SOOPTS */ \
 	"sysctl",	/* 11 M_SYSCTL */ \
-	"namei",	/* 12 M_NAMEI */ \
+	NULL, \
 	NULL, \
 	"ioctlops",	/* 14 M_IOCTLOPS */ \
 	NULL, \

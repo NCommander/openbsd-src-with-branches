@@ -165,6 +165,7 @@ struct cdevsw   cdevsw[] =
 	cdev_audio_init(NAUDIO,audio),	/* 35: /dev/audio */
 	cdev_crypto_init(NCRYPTO,crypto), /* 36: /dev/crypto */
 	cdev_ses_init(NSES,ses),	/* 37: SCSI SES/SAF-TE */
+	cdev_ptm_init(NPTY,ptm),	/* 38: pseudo-tty ptm device */
 	cdev_lkm_dummy(),
 	cdev_lkm_dummy(),
 	cdev_lkm_dummy(),

@@ -90,7 +90,6 @@ const struct vfsops mfs_vfsops = {
 int
 mfs_mountroot()
 {
-	extern struct vnode *rootvp;
 	register struct fs *fs;
 	struct mount *mp;
 	struct proc *p = curproc;	/* XXX */

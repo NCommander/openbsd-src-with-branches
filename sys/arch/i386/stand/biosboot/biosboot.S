@@ -572,8 +572,8 @@ err_print2:
 err_stop:
 	call	Lmessage
 stay_stopped:
-	cli
-	hlt
+	sti				/* Ensure Ctl-Alt-Del will work */
+	hlt				/* (don't require power cycle) */
 	jmp	stay_stopped		/* Just to make sure :-) */
 
 exec_boot:

@@ -63,7 +63,7 @@
 #include <machine/psl.h>
 #include <machine/reg.h>
 
-#define	process_frame(p)	(struct frame *)&((p)->p_md.md_regs)
+#define	process_frame(p)	(struct frame *)((p)->p_md.md_regs)
 #define	process_fpframe(p)	&((p)->p_addr->u_pcb.pcb_fpregs)
 
 int

@@ -24,7 +24,7 @@
 #ifndef _CRYPTO_XFORM_H_
 #define _CRYPTO_XFORM_H_
 
-#include <sys/md5k.h>
+#include <crypto/md5.h>
 #include <crypto/sha1.h>
 #include <crypto/rmd160.h>
 #include <crypto/sha2.h>

@@ -114,6 +114,8 @@
 #define WDCC_READDMA_EXT	0x25 /* read 48-bit addressing with DMA */
 #define WDCC_WRITEDMA_EXT	0x35 /* write 48-bit addressing with DMA */
 
+#define WDCC_FLUSHCACHE_EXT	0xea /* 48-bit addressing flush cache */
+
 /* Subcommands for SET_FEATURES (features register ) */
 #define WDSF_8BIT_PIO_EN	0x01 /* Enable 8bit PIO (CFA featureset) */
 #define WDSF_EN_WR_CACHE	0x02

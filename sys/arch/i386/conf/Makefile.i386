@@ -1,5 +1,4 @@
 #	$OpenBSD$
-#	$NetBSD: Makefile.i386,v 1.67 1996/05/11 16:12:11 mycroft Exp $
 
 # Makefile for OpenBSD
 #

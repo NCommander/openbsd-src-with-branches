@@ -1742,11 +1742,8 @@ nd6_output(ifp, origifp, m0, dst, rt0)
 			    1)) != NULL)
 			{
 				rt->rt_refcnt--;
-				if (rt->rt_ifp != ifp) {
-					/* XXX: loop care? */
-					return nd6_output(ifp, origifp, m0,
-					    dst, rt);
-				}
+				if (rt->rt_ifp != ifp)
+					senderr(EHOSTUNREACH);
 			} else
 				senderr(EHOSTUNREACH);
 		}

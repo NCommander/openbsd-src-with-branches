@@ -40,6 +40,8 @@
 #include <machine/intr.h>
 #include <machine/powerpc.h>
 
+#include "bugtty.h"
+
 void resettodr(void);
 void decr_intr(struct clockframe *);
 void calc_delayconst(void);
@@ -345,6 +347,12 @@ decr_intr(struct clockframe *frame)
 			lasttb += ticks_per_intr;
 			intrcnt[PPC_CLK_IRQ]++;
 			hardclock(frame);
+#if NBUGTTY > 0
+			{
+				extern void bugtty_chkinput(void);
+				bugtty_chkinput();
+			}
+#endif
 		}
 
 		while (nstats-- > 0)

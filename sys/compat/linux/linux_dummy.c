@@ -115,7 +115,6 @@ DUMMY(chown);			/* #212 */
 DUMMY(setfsgid);		/* #216 */
 DUMMY(pivot_root);		/* #217 */
 DUMMY(mincore);			/* #218 */
-DUMMY(madvise);			/* #219 */
 DUMMY(fadvise64);		/* #250 */
 
 #define DUMMY_XATTR(s)							\

@@ -75,6 +75,11 @@ struct ipcomp {
 	{ "enable", CTLTYPE_INT}, \
 }
 
+#define IPCOMPCTL_VARS { \
+	NULL, \
+	&ipcomp_enable, \
+}
+
 #ifdef _KERNEL
 extern int ipcomp_enable;
 extern struct ipcompstat ipcompstat;

@@ -166,7 +166,7 @@ sendsig(sig_t catcher, int sig, int returnmask, u_long code, int type,
 	 * we do a new trampoline version it might change then
 	 */
 	tf->tf_r0 = sig;
-	tf->tf_r1 = code;
+	tf->tf_r1 = (int)frame.sf_sip;
 	tf->tf_r2 = (int)frame.sf_scp;
 	tf->tf_pc = (int)frame.sf_handler;
 	tf->tf_usr_sp = (int)fp;

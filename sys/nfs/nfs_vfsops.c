@@ -658,7 +658,7 @@ nfs_mount(mp, path, data, ndp, p)
 		return (error);
 	bzero(&hst[len], MNAMELEN - len);
 	/* sockargs() call must be after above copyin() calls */
-	error = sockargs(&nam, (caddr_t)args.addr, args.addrlen, MT_SONAME);
+	error = sockargs(&nam, args.addr, args.addrlen, MT_SONAME);
 	if (error)
 		return (error);
 	args.fh = nfh;

@@ -221,7 +221,7 @@ process_read_fpregs(p, regs)
 			process_xmm_to_s87(&frame->sv_xmm, &s87);
 			memcpy(regs, &s87, sizeof(*regs));
  		} else
-			bcopy(frame, regs, sizeof(*frame));
+			bcopy(frame, regs, sizeof(*regs));
 	} else
 		bzero(regs, sizeof(*regs));
 

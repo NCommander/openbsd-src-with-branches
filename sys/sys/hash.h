@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash.h,v 1.1 2002/06/11 22:27:03 ericj Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2001 Tobias Weingartner
@@ -33,7 +33,7 @@
  * Note: SMALL_KERNEL might be used to shrink these, right now I
  * do not see the point, as my kernel did not grow appreciably when
  * I switched to these from other inline code.  This may have to be
- * revisited when/if these functions become more prevalant in the
+ * revisited when/if these functions become more prevalent in the
  * kernel.
  */
 

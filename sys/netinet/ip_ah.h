@@ -86,6 +86,11 @@ struct ah
 	{ "enable", CTLTYPE_INT }, \
 }
 
+#define AHCTL_VARS { \
+	NULL, \
+	&ah_enable, \
+}
+
 #ifdef _KERNEL
 extern int ah_enable;
 extern struct ahstat ahstat;

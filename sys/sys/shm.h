@@ -166,7 +166,7 @@ __BEGIN_DECLS
 void *shmat(int, const void *, int);
 int shmctl(int, int, struct shmid_ds *);
 int shmdt(const void *);
-int shmget(key_t, int, int);
+int shmget(key_t, size_t, int);
 __END_DECLS
 
 #endif /* !_KERNEL */

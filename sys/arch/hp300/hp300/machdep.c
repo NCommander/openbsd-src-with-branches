@@ -43,7 +43,6 @@
 #include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/timeout.h>
-#include <sys/clist.h>
 #include <sys/conf.h>
 #include <sys/exec.h>
 #include <sys/file.h>
@@ -744,7 +743,9 @@ boot(howto)
 
 	/* If system is cold, just halt. */
 	if (cold) {
-		howto |= RB_HALT;
+		/* (Unless the user explicitly asked for reboot.) */
+		if ((howto & RB_USERREQ) == 0)
+			howto |= RB_HALT;
 		goto haltsys;
 	}
 

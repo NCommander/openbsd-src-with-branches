@@ -756,16 +756,11 @@ int ti_newbuf_std(sc, i, m, dmamap)
 
 	if (m == NULL) {
 		MGETHDR(m_new, M_DONTWAIT, MT_DATA);
-		if (m_new == NULL) {
-			printf("%s: mbuf allocation failed "
-			    "-- packet dropped!\n", sc->sc_dv.dv_xname);
+		if (m_new == NULL)
 			return(ENOBUFS);
-		}
 
 		MCLGET(m_new, M_DONTWAIT);
 		if (!(m_new->m_flags & M_EXT)) {
-			printf("%s: cluster allocation failed "
-			    "-- packet dropped!\n", sc->sc_dv.dv_xname);
 			m_freem(m_new);
 			return(ENOBUFS);
 		}
@@ -829,11 +824,8 @@ int ti_newbuf_mini(sc, i, m, dmamap)
 
 	if (m == NULL) {
 		MGETHDR(m_new, M_DONTWAIT, MT_DATA);
-		if (m_new == NULL) {
-			printf("%s: mbuf allocation failed "
-			    "-- packet dropped!\n", sc->sc_dv.dv_xname);
+		if (m_new == NULL)
 			return(ENOBUFS);
-		}
 		m_new->m_len = m_new->m_pkthdr.len = MHLEN;
 		m_adj(m_new, ETHER_ALIGN);
 
@@ -875,18 +867,13 @@ int ti_newbuf_jumbo(sc, i, m)
 
 		/* Allocate the mbuf. */
 		MGETHDR(m_new, M_DONTWAIT, MT_DATA);
-		if (m_new == NULL) {
-			printf("%s: mbuf allocation failed "
-			    "-- packet dropped!\n", sc->sc_dv.dv_xname);
+		if (m_new == NULL)
 			return(ENOBUFS);
-		}
 
 		/* Allocate the jumbo buffer */
 		buf = ti_jalloc(sc);
 		if (buf == NULL) {
 			m_freem(m_new);
-			printf("%s: jumbo allocation failed "
-			    "-- packet dropped!\n", sc->sc_dv.dv_xname);
 			return(ENOBUFS);
 		}
 
@@ -1179,6 +1166,7 @@ void ti_setmulti(sc)
  
 	ifp = &sc->arpcom.ac_if;
 
+allmulti:
 	if (ifp->if_flags & IFF_ALLMULTI) {
 		TI_DO_CMD(TI_CMD_SET_ALLMULTI, TI_CMD_CODE_ALLMULTI_ENB, 0);
 		return;
@@ -1201,6 +1189,13 @@ void ti_setmulti(sc)
 	/* Now program new ones. */
 	ETHER_FIRST_MULTI(step, ac, enm);
 	while (enm != NULL) {
+		if (bcmp(enm->enm_addrlo, enm->enm_addrhi, ETHER_ADDR_LEN)) {
+			/* Re-enable interrupts. */
+			CSR_WRITE_4(sc, TI_MB_HOSTINTR, intrs);
+
+			ifp->if_flags |= IFF_ALLMULTI;
+			goto allmulti;
+		}
 		mc = malloc(sizeof(struct ti_mc_entry), M_DEVBUF, M_NOWAIT);
 		if (mc == NULL)
 			panic("ti_setmulti");

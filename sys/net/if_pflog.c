@@ -197,11 +197,9 @@ pflog_packet(struct pfi_kif *kif, struct mbuf *m, sa_family_t af, u_int8_t dir,
 	} else {
 		hdr.rulenr = htonl(am->nr);
 		hdr.subrulenr = htonl(rm->nr);
-		if (ruleset != NULL)
-			memcpy(hdr.ruleset, ruleset->name,
+		if (ruleset != NULL && ruleset->anchor != NULL)
+			strlcpy(hdr.ruleset, ruleset->anchor->name,
 			    sizeof(hdr.ruleset));
-
-			
 	}
 	hdr.dir = dir;
 

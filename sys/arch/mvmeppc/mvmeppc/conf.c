@@ -180,6 +180,7 @@ struct cdevsw cdevsw[] = {
         cdev_notdef(),                  /* 52 */ 
         cdev_notdef(),                  /* 53 */ 
 	cdev_disk_init(NRAID,raid),	/* 54: RAIDframe disk driver */
+	cdev_ptm_init(NPTY,ptm),	/* 55: pseudo-tty ptm device */
 };
 int nchrdev = sizeof cdevsw / sizeof cdevsw[0];
 

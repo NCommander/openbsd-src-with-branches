@@ -77,7 +77,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <sys/kernel.h>
@@ -596,7 +595,7 @@ bah_start(ifp)
 	 * bah_ram_ptr[0*2] = mtod(m, u_char *)[0];
 	 */
 	bah_ram_ptr[1 * 2] = mtod(m, u_char *)[1];
-	m_adj(m, 2);
+	m_adj(m, ETHER_ALIGN);
 		
 	/* get total length left at this point */
 	tlen = m->m_pkthdr.len;

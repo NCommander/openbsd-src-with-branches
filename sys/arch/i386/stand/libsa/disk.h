@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.h,v 1.1.10.1 2002/03/28 10:31:05 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -49,4 +49,3 @@ extern struct diskinfo *bootdev_dip;
 void dump_diskinfo(void);
 
 #endif /* _DISKPROBE_H */
-

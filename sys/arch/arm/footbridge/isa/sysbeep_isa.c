@@ -45,9 +45,9 @@
 #include <dev/isa/pcppivar.h>
 
 /* Prototypes */
-int sysbeep_isa_match __P((struct device *parent, void *cf, void *aux));
-void sysbeep_isa_attach __P((struct device *parent, struct device *self, void *aux));
-void sysbeep_isa __P((int pitch, int period));
+int sysbeep_isa_match (struct device *parent, void *cf, void *aux);
+void sysbeep_isa_attach (struct device *parent, struct device *self, void *aux);
+void sysbeep_isa (int pitch, int period);
 
 /* device attach structure */
 struct cfattach sysbeep_isa_ca = {

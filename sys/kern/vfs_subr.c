@@ -1617,7 +1617,7 @@ vfs_free_netcred(rn, w)
 {
 	register struct radix_node_head *rnh = (struct radix_node_head *)w;
 
-	(*rnh->rnh_deladdr)(rn->rn_key, rn->rn_mask, rnh);
+	(*rnh->rnh_deladdr)(rn->rn_key, rn->rn_mask, rnh, NULL);
 	free(rn, M_NETADDR);
 	return (0);
 }
@@ -1790,6 +1790,12 @@ vfs_unmountall(void)
 void
 vfs_shutdown()
 {
+#ifdef ACCOUNTING
+	extern void acct_shutdown(void);
+
+	acct_shutdown();
+#endif
+
 	/* XXX Should suspend scheduling. */
 	(void) spl0();
 

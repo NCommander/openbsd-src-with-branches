@@ -246,6 +246,8 @@ extern int		pmap_debug_level; /* Only exists if PMAP_DEBUG */
 
 #define pmap_phys_address(ppn)		(arm_ptob((ppn)))
 
+#define pmap_proc_iflush(p, va, len)	/* nothing */
+
 /*
  * Functions that we need to export
  */

@@ -67,7 +67,7 @@
 #define LINUX_N_BSSADDR(x,m) (LINUX_N_DATADDR(x,m) + (x).a_data)
 
 int exec_linux_aout_makecmds(struct proc *, struct exec_package *);
-int exec_linux_elf_makecmds(struct proc *, struct exec_package *);
+int exec_linux_elf32_makecmds(struct proc *, struct exec_package *);
 
 int linux_elf_probe(struct proc *, struct exec_package *, char *,
     u_long *, u_int8_t *);

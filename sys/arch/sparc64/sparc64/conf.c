@@ -121,6 +121,7 @@ cdev_decl(xfs_dev);
 #include "inet.h"
 
 #include "systrace.h"
+#include "hotplug.h"
 
 struct bdevsw	bdevsw[] =
 {
@@ -291,6 +292,8 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 120 */
 	cdev_disk_init(NRAID,raid),	/* 121: RAIDframe disk driver */
 	cdev_tty_init(NPCONS,pcons),	/* 122: PROM console */
+	cdev_ptm_init(NPTY,ptm),	/* 123: pseudo-tty ptm device */
+	cdev_hotplug_init(NHOTPLUG,hotplug), /* 124: devices hot plugging */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

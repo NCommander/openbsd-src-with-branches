@@ -159,7 +159,7 @@ kthread_run_deferred_queue(void)
 	struct kthread_q *kq;
 
 	while ((kq = SIMPLEQ_FIRST(&kthread_q)) != NULL) {
-		SIMPLEQ_REMOVE_HEAD(&kthread_q, kq, kq_q);
+		SIMPLEQ_REMOVE_HEAD(&kthread_q, kq_q);
 		(*kq->kq_func)(kq->kq_arg);
 		free(kq, M_TEMP);
 	}

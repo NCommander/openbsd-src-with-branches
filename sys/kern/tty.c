@@ -63,6 +63,8 @@
 #include <uvm/uvm_extern.h>
 #include <dev/rndvar.h>
 
+#include "pty.h"
+
 static int ttnread(struct tty *);
 static void ttyblock(struct tty *);
 void ttyunblock(struct tty *);
@@ -1115,7 +1117,7 @@ filt_ttyread(struct knote *kn, long hint)
 	s = spltty();
 	kn->kn_data = ttnread(tp);
 	splx(s);
-	if (!ISSET(tp->t_state, CLOCAL) && !ISSET(tp->t_state, TS_CARR_ON)) {
+	if (!ISSET(tp->t_cflag, CLOCAL) && !ISSET(tp->t_state, TS_CARR_ON)) {
 		kn->kn_flags |= EV_EOF;
 		return (1);
 	}
@@ -2371,7 +2373,11 @@ sysctl_tty(name, namelen, oldp, oldlenp, newp, newlen)
 		free(ttystats, M_SYSCTL);
 		return (err);
 	default:
+#if NPTY > 0
+		return (sysctl_pty(name, namelen, oldp, oldlenp, newp, newlen));
+#else
 		return (EOPNOTSUPP);
+#endif
 	}
 	/* NOTREACHED */
 }
