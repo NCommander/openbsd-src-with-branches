@@ -1,4 +1,4 @@
-/*	$OpenBSD: encap.c,v 1.14 1997/07/27 23:30:31 niklas Exp $	*/
+/*	$OpenBSD: encap.c,v 1.15 1997/07/28 18:53:21 provos Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -868,7 +868,7 @@ encap_sendnotify(int subtype, struct tdb *tdbp)
 	default:
 #ifdef ENCDEBUG
 	    if (encdebug)
-	      log(LOG_WARNING, "encap_sendnotify(): unknown subtype %d", subtype);
+	      log(LOG_WARNING, "encap_sendnotify(): unknown subtype %d\n", subtype);
 #endif /* ENCDEBUG */
 	    return;
     }
@@ -876,7 +876,7 @@ encap_sendnotify(int subtype, struct tdb *tdbp)
     m = m_gethdr(M_DONTWAIT, MT_DATA);
     if (m == NULL)
     {
-	log(LOG_ERR, "encap_sendnotify(): m_gethdr() returned NULL");
+	log(LOG_ERR, "encap_sendnotify(): m_gethdr() returned NULL\n");
 	return;
     }
     
