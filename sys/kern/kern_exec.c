@@ -127,8 +127,6 @@ check_exec(p, epp)
 	if ((vp->v_mount->mnt_flag & MNT_NOSUID) ||
 	    (p->p_flag & P_TRACED) || p->p_fd->fd_refcnt > 1)
 		epp->ep_vap->va_mode &= ~(VSUID | VSGID);
-	if (p->p_flag & P_TRACED && (epp->ep_vap->va_flags & IMMUTABLE))
-		goto bad1;
 
 	/* check access.  for root we have to see if any exec bit on */
 	if ((error = VOP_ACCESS(vp, VEXEC, p->p_ucred, p)) != 0)
