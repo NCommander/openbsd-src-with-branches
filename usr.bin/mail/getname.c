@@ -1,4 +1,4 @@
-/*	$OpenBSD: getname.c,v 1.4 1996/06/08 19:48:23 christos Exp $	*/
+/*	$OpenBSD: getname.c,v 1.2 1996/06/11 12:53:40 deraadt Exp $	*/
 /*	$NetBSD: getname.c,v 1.4 1996/06/08 19:48:23 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)getname.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: getname.c,v 1.4 1996/06/08 19:48:23 christos Exp $";
+static char rcsid[] = "$OpenBSD: getname.c,v 1.2 1996/06/11 12:53:40 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,8 +58,8 @@ getname(uid)
 	struct passwd *pw;
 
 	if ((pw = getpwuid(uid)) == NULL)
-		return NOSTR;
-	return pw->pw_name;
+		return(NOSTR);
+	return(pw->pw_name);
 }
 
 /*
@@ -73,6 +73,6 @@ getuserid(name)
 	struct passwd *pw;
 
 	if ((pw = getpwnam(name)) == NULL)
-		return -1;
-	return pw->pw_uid;
+		return(-1);
+	return(pw->pw_uid);
 }
