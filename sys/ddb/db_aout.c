@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_aout.c,v 1.15 1997/02/07 08:32:15 mickey Exp $	*/
+/*	$OpenBSD: db_aout.c,v 1.16 1997/05/29 03:28:43 mickey Exp $	*/
 /*	$NetBSD: db_aout.c,v 1.14 1996/02/27 20:54:43 gwr Exp $	*/
 
 /* 
@@ -365,6 +365,7 @@ X_db_stub_xh(sym, xh)
 	xh->a_syms = *(int *)sym->private;
 	xh->a_data = 0;
 	if (sym->id != 0) {	/* lkm */
+#ifdef LKM
 		struct lkm_table *p;
 		for (p = lkm_list(NULL);
 		     p != NULL && p->sym_id != sym->id; p = lkm_list(p))
@@ -376,6 +377,9 @@ X_db_stub_xh(sym, xh)
 #ifdef DIAGNOSTIC
 		else
 			printf("X_db_stub_xh: no lkm for symtab (ghost?)\n");
+#endif
+#else
+		panic("X_db_stub_zh: symtab w/o lkm itself");
 #endif
 	}
 }
