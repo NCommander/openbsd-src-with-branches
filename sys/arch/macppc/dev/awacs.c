@@ -1,4 +1,4 @@
-/*	$OpenBSD: awacs.c,v 1.5 2001/09/25 00:13:18 drahn Exp $	*/
+/*	$OpenBSD: awacs.c,v 1.6 2001/10/31 11:00:24 art Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-
@@ -152,16 +152,13 @@ struct audio_hw_if awacs_hw_if = {
 	awacs_set_port,
 	awacs_get_port,
 	awacs_query_devinfo,
-	NULL,			/* allocm_old */
+	awacs_allocm,		/* allocm */
 	NULL,			/* freem */
-	NULL,			/* round_buffersize_old */
+	awacs_round_buffersize,	/* round_buffersize */
 	awacs_mappage,
 	awacs_get_props,
 	awacs_trigger_output,
-	awacs_trigger_input,
-	awacs_allocm,
-	awacs_round_buffersize,
-
+	awacs_trigger_input
 };
 
 struct audio_device awacs_device = {
