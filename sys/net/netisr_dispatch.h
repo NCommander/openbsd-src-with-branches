@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: netisr_dispatch.h,v 1.2 2000/07/02 04:40:47 cgd Exp $ */
 
 /*
