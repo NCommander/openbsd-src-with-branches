@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2000/11/19 20:20:25 millert Exp $
+#	$OpenBSD: Makefile,v 1.11 2000/12/14 13:48:25 art Exp $
 #	$NetBSD: Makefile,v 1.17 1997/04/17 07:27:46 thorpej Exp $
 
 S=	${.CURDIR}/../../../..
@@ -28,9 +28,10 @@ ${PROG}.nosym: ${PROG}.sym
 	cp ${PROG}.sym ${PROG}.nosym
 	strip ${PROG}.nosym
 
-${PROG}: ${PROG}.nosym ${HEADERSIZE_PROG}
-	dd if=${PROG}.nosym of=${PROG} \
-	    bs=`./${HEADERSIZE_PROG} ${BOOT_RELOC} ${PROG}.nosym` skip=1
+${PROG}: ${PROG}.nosym #${HEADERSIZE_PROG}
+	objcopy --output-target=binary ${PROG}.nosym ${PROG}
+#	dd if=${PROG}.nosym of=${PROG} \
+#	    bs=`./${HEADERSIZE_PROG} ${BOOT_RELOC} ${PROG}.nosym` skip=1
 
 # no lint here (yet?)
 lint:
