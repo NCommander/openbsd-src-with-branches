@@ -1,4 +1,4 @@
-/*	$OpenBSD: null_vfsops.c,v 1.17 2003/08/14 07:46:39 mickey Exp $	*/
+/*	$OpenBSD: null_vfsops.c,v 1.18 2004/03/03 06:01:49 tedu Exp $	*/
 /*	$NetBSD: null_vfsops.c,v 1.38 2002/09/21 18:09:29 christos Exp $	*/
 
 /*
@@ -191,6 +191,7 @@ nullfs_mount(mp, path, data, ndp, p)
 	if (error) {
 		vput(lowerrootvp);
 		free(nmp->nullm_node_hashtbl, M_CACHE);
+		free(nmp, M_UFSMNT);
 		return (error);
 	}
 	/*
