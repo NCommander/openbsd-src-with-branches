@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.43 2002/06/11 05:04:34 art Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.44 2002/07/03 21:19:08 miod Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -895,15 +895,15 @@ db_show_all_procs(addr, haddr, count, modif)
 	switch (*mode) {
 
 	case 'a':
-		db_printf("  PID  %-10s  %18s  %18s  %18s\n",
+		db_printf("   PID  %-10s  %18s  %18s  %18s\n",
 		    "COMMAND", "STRUCT PROC *", "UAREA *", "VMSPACE/VM_MAP");
 		break;
 	case 'n':
-		db_printf("  PID  %5s  %5s  %5s  S  %10s  %-9s  %-16s\n",
+		db_printf("   PID  %5s  %5s  %5s  S  %10s  %-9s  %-16s\n",
 		    "PPID", "PGRP", "UID", "FLAGS", "WAIT", "COMMAND");
 		break;
 	case 'w':
-		db_printf("  PID  %-16s  %-8s  %18s  %s\n",
+		db_printf("   PID  %-16s  %-8s  %18s  %s\n",
 		    "COMMAND", "EMUL", "WAIT-CHANNEL", "WAIT-MSG");
 		break;
 	}
