@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.91 2003/01/23 19:27:19 mickey Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.92 2003/02/12 21:49:05 markus Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -124,7 +124,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.91 2003/01/23 19:27:19 mickey Exp $";
+	"$OpenBSD: if_wi.c,v 1.92 2003/02/12 21:49:05 markus Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -720,6 +720,8 @@ wi_rxeof(sc)
 				    sizeof(struct ether_header), len)) {
 					if (sc->sc_arpcom.ac_if.if_flags & IFF_DEBUG)
 						printf(WI_PRT_FMT ": Error decrypting incoming packet.\n", WI_PRT_ARG(sc));
+					m_freem(m);
+					ifp->if_ierrors++;  
 					return;
 				}
 				len -= IEEE80211_WEP_IVLEN +
@@ -2138,8 +2140,9 @@ wi_do_hostdecrypt(struct wi_softc *sc, caddr_t buf, int len)
 	if ((dat[0] != crc) && (dat[1] != crc >> 8) &&
 	    (dat[2] != crc >> 16) && (dat[3] != crc >> 24)) {
 		if (sc->sc_arpcom.ac_if.if_flags & IFF_DEBUG)
-			printf(WI_PRT_FMT ": wi_do_hostdecrypt: iv mismatch\n",
-			    WI_PRT_ARG(sc));
+			printf(WI_PRT_FMT ": wi_do_hostdecrypt: iv mismatch: "
+			    "0x%02x%02x%02x%02x vs. 0x%x\n", WI_PRT_ARG(sc),
+			    dat[3], dat[2], dat[1], dat[0], crc);
 		return -1;
 	}
 
