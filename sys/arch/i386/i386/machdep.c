@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.302 2004/06/28 20:51:02 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.303 2004/07/02 16:29:55 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1143,8 +1143,8 @@ cyrix3_cpu_setup(cpu_device, model, step)
 	const char *cpu_device;
 	int model, step;
 {
-	u_int64_t msreg;
 #if defined(I686_CPU)
+	u_int64_t msreg;
 	unsigned int val;
 #if !defined(SMALL_KERNEL)
 	extern void (*pagezero)(void *, size_t);
