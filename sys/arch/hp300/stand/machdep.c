@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.5 1997/04/16 11:26:36 downsj Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.6 1997/07/13 07:21:50 downsj Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1997/06/28 07:20:25 thorpej Exp $	*/
 
 /*
@@ -49,7 +49,7 @@
 char *
 getmachineid()
 {
-	extern int machineid;
+	extern int machineid, mmuid;
 	char *cp;
 
 	switch (machineid) {
@@ -74,9 +74,25 @@ getmachineid()
 	case HP_400:
 		cp = "400"; break;
 	case HP_425:
-		cp = "425"; break;
+		switch (mmuid) {
+		case MMUID_425_T:
+			cp = "425t"; break;
+		case MMUID_425_S:
+			cp = "425s"; break;
+		default:
+			cp = "425"; break;
+		}
+		break;
 	case HP_433:
-		cp = "433"; break;
+		switch (mmuid) {
+		case MMUID_433_T:
+			cp = "433t"; break;
+		case MMUID_433_S:
+			cp = "433s"; break;
+		default:
+			cp = "433"; break;
+		}
+		break;
 	default:
 		cp = "???"; break;
 	}
