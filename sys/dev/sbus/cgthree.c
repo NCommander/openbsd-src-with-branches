@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgthree.c,v 1.9 2002/02/23 05:47:50 jason Exp $	*/
+/*	$OpenBSD: cgthree.c,v 1.10 2002/02/24 18:51:29 jason Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -182,7 +182,7 @@ struct wsdisplay_accessops cgthree_accessops = {
 	NULL,	/* load_font */
 	NULL,	/* scrollback */
 	NULL,	/* getchar */
-	cgthree_burner,
+	NULL,	/* burner */
 };
 
 int	cgthreematch	__P((struct device *, void *, void *));
