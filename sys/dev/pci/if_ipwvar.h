@@ -82,7 +82,7 @@ struct ipw_tx_radiotap_header {
 	((1 << IEEE80211_RADIOTAP_FLAGS) |				\
 	 (1 << IEEE80211_RADIOTAP_CHANNEL))
 
-#define IPW_MAX_NSEG	6
+#define IPW_MAX_NSEG	1
 
 struct ipw_softc {
 	struct device			sc_dev;
