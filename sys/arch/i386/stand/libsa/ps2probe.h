@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ps2probe.h,v 1.1 2001/08/18 15:34:17 mickey Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-static __inline int
+static __inline void
 ps2probe(void)
 {
 	char *p;
@@ -43,7 +43,5 @@ ps2probe(void)
 			 : "0" (0xc000)
 			 : "%ecx", "cc");
 	if (!(r & 0xff))
-		return p[2];
-	else
-		return 0;
+		ps2model = (p[2] << 8) | p[3];
 }
