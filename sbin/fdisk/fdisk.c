@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.22 1997/09/29 23:16:59 mickey Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.23 1997/09/29 23:33:35 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -136,7 +136,7 @@ main(argc, argv)
 
 	/* Parse mbr template, to pass on later */
 	if((fd = open(mbrfile, O_RDONLY)) < 0)
-		err(1, "open");
+		err(1, "open mbr file");
 	MBR_read(fd, 0, mbr_buf);
 	close(fd);
 	MBR_parse(mbr_buf, &mbr);
