@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.18 2004/11/19 22:10:24 miod Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.19 2004/11/19 22:11:54 miod Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -964,7 +964,6 @@ ext_intr_openpic()
 		}
 
 		irq = virq[realirq];
-		intrcnt[realirq]++;
 
 		/* XXX check range */
 

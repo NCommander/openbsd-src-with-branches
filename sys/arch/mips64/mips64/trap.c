@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.18 2004/11/11 19:00:37 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.19 2004/12/06 20:12:24 miod Exp $	*/
 /* tracked to 1.23 */
 
 /*
@@ -143,7 +143,6 @@ extern void idle __P((void));
 int  kdb_trap(int, db_regs_t *);
 #endif
 
-extern u_long intrcnt[];
 extern void MipsSwitchFPState(struct proc *, struct trap_frame *);
 extern void MipsSwitchFPState16(struct proc *, struct trap_frame *);
 extern void MipsFPTrap(u_int, u_int, u_int, union sigval);

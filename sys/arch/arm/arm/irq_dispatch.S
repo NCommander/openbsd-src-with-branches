@@ -1,4 +1,4 @@
-/*	$OpenBSD: irq_dispatch.S,v 1.1 2004/02/01 05:09:48 drahn Exp $	*/
+/*	$OpenBSD: irq_dispatch.S,v 1.2 2004/02/01 06:10:33 drahn Exp $	*/
 /*	$NetBSD: irq_dispatch.S,v 1.5 2003/10/30 08:57:24 scw Exp $	*/
 
 /*
@@ -139,17 +139,3 @@ _C_LABEL(astpending):
 	.global _C_LABEL(current_intr_depth)
 _C_LABEL(current_intr_depth):
 	.word	0
-
-	/*
-	 * XXX Provide intrnames/intrcnt for legacy code, but
-	 * don't actually use them.
-	 */
-
-	.global _C_LABEL(intrnames), _C_LABEL(eintrnames)
-	.global _C_LABEL(intrcnt), _C_LABEL(eintrcnt)
-_C_LABEL(intrnames): 
-_C_LABEL(eintrnames):
-
-	.global _C_LABEL(intrcnt), _C_LABEL(sintrcnt), _C_LABEL(eintrcnt)
-_C_LABEL(intrcnt):
-_C_LABEL(eintrcnt):

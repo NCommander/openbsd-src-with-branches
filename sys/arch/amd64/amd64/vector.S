@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.4 2004/06/28 01:52:24 deraadt Exp $	*/
+/*	$OpenBSD: vector.S,v 1.5 2004/07/10 14:21:40 art Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -726,18 +726,6 @@ _C_LABEL(ioapic_level_stubs):
 #endif
 
 	.data
-/*
- * Symbols that vmstat -i wants, even though they're not used.
- */
-	.globl	_C_LABEL(intrnames)
-_C_LABEL(intrnames):
-	.globl	_C_LABEL(eintrnames)
-_C_LABEL(eintrnames):
-
-	.globl	_C_LABEL(intrcnt)
-_C_LABEL(intrcnt):
-	.globl	_C_LABEL(eintrcnt)
-_C_LABEL(eintrcnt):
 
 /*
  * Soft interrupt handlers

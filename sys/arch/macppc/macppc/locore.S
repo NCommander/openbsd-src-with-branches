@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.18 2004/06/28 02:49:10 aaron Exp $	*/
+/*	$OpenBSD: locore.S,v 1.19 2004/11/17 20:09:50 miod Exp $	*/
 /*	$NetBSD: locore.S,v 1.2 1996/10/16 19:33:09 ws Exp $	*/
 
 /*
@@ -1153,19 +1153,6 @@ _C_LABEL(sigcode):
 	li	%r0,SYS_exit
 	sc				/* exit(errno) */
 _C_LABEL(esigcode):
-
-
-
-	.data
-/* Some bogus data, to keep vmstat happy, for now. */
-	.globl	_C_LABEL(intrnames), _C_LABEL(eintrnames)
-	.globl	_C_LABEL(intrcnt), _C_LABEL(eintrcnt)
-_C_LABEL(intrnames):
-	.long	0
-_C_LABEL(eintrnames):
-_C_LABEL(intrcnt):
-	.long	0
-_C_LABEL(eintrcnt):
 
 
 #ifdef DDB
