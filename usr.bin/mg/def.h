@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.21 2001/05/24 10:43:16 art Exp $	*/
+/*	$OpenBSD: def.h,v 1.22 2002/01/08 12:29:27 millert Exp $	*/
 
 /*
  * This file is the general header file for all parts
@@ -283,7 +283,6 @@ int	 ttputc			__P((int));
 void	 ttflush		__P((void));
 int	 ttgetc			__P((void));
 int	 ttwait			__P((int));
-void	 setttysize		__P((void));
 int	 typeahead		__P((void));
 
 /* dir.c */
