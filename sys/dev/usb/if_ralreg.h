@@ -70,6 +70,11 @@
 #define RAL_TXRX_CSR21	0x046a	/* XXX not documented */
 
 /*
+ * Security registers.
+ */
+#define RAL_SEC_CSR0	0x0480	/* Shared key 0, word 0 */
+
+/*
  * PHY registers.
  */
 #define RAL_PHY_CSR2	0x04c4	/* Tx MAC configuration */
