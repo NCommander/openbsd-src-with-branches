@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.20 1996/09/24 11:36:55 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.21 1996/09/30 11:28:35 deraadt Exp $	*/
 /*	$NetBSD: disklabel.c,v 1.30 1996/03/14 19:49:24 ghudson Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: disklabel.c,v 1.20 1996/09/24 11:36:55 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: disklabel.c,v 1.21 1996/09/30 11:28:35 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -1458,7 +1458,7 @@ usage()
 	char blank[] = "                             ";
 
 #if NUMBOOT == 1
-	boot = " [-B [-b xxboot]]"
+	boot = " [-B [-b xxboot]]";
 #elif NUMBOOT == 2
 	boot = " [-B [-b xxboot [-s bootxx]]]";
 #endif
