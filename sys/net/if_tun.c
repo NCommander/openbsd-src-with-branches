@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.45 2003/01/07 09:00:34 kjc Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.46 2003/04/18 05:26:13 jason Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -151,7 +151,7 @@ tunattach(n)
 		tunctl[i].tun_flags = TUN_INITED;
 
 		ifp = &tunctl[i].tun_if;
-		sprintf(ifp->if_xname, "tun%d", i);
+		snprintf(ifp->if_xname, sizeof ifp->if_xname, "tun%d", i);
 		ifp->if_softc = &tunctl[i];
 		ifp->if_mtu = TUNMTU;
 		ifp->if_ioctl = tun_ioctl;

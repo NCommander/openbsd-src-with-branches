@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.113 2003/03/11 16:06:25 markus Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.114 2003/03/31 22:59:47 millert Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -206,7 +206,7 @@ bridgeattach(n)
 		LIST_INIT(&sc->sc_iflist);
 		LIST_INIT(&sc->sc_spanlist);
 		ifp = &sc->sc_if;
-		sprintf(ifp->if_xname, "bridge%d", i);
+		snprintf(ifp->if_xname, sizeof ifp->if_xname, "bridge%d", i);
 		ifp->if_softc = sc;
 		ifp->if_mtu = ETHERMTU;
 		ifp->if_ioctl = bridge_ioctl;

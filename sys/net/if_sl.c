@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sl.c,v 1.17 2002/09/11 05:38:47 itojun Exp $	*/
+/*	$OpenBSD: if_sl.c,v 1.18 2003/01/07 09:00:33 kjc Exp $	*/
 /*	$NetBSD: if_sl.c,v 1.39.4.1 1996/06/02 16:26:31 thorpej Exp $	*/
 
 /*
@@ -206,7 +206,8 @@ slattach(n)
 	bzero(sl_softc, n * sizeof(struct sl_softc));
 	for (sc = sl_softc; i < nsl; sc++) {
 		sc->sc_unit = i;		/* XXX */
-		sprintf(sc->sc_if.if_xname, "sl%d", i++);
+		snprintf(sc->sc_if.if_xname, sizeof sc->sc_if.if_xname,
+		    "sl%d", i++);
 		sc->sc_if.if_softc = sc;
 		sc->sc_if.if_mtu = SLMTU;
 		sc->sc_if.if_flags =
