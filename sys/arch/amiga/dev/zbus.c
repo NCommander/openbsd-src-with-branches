@@ -1,4 +1,4 @@
-/*	$OpenBSD: zbus.c,v 1.8 1997/01/16 09:25:35 niklas Exp $	*/
+/*	$OpenBSD: zbus.c,v 1.9 1997/09/11 07:39:55 niklas Exp $	*/
 /*	$NetBSD: zbus.c,v 1.33 1997/03/27 23:50:39 veego Exp $	*/
 
 /*
@@ -107,6 +107,8 @@ static struct aconfdata aconftab[] = {
 	{ "ed",		1023,	254 },
 	/* Village Tronic Ariadne */
 	{ "le",		2167,	201},
+	/* Village Tronic Ariadne II */
+	{ "ne",		2167,	202},
 	/* bsc/Alf Data */
 	{ "Tandem",	2092,    6 },	/* Tandem AT disk controler */
 	{ "mfc",	2092,	16 },
