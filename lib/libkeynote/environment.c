@@ -1,4 +1,4 @@
-/* $OpenBSD: environment.c,v 1.2 1999/05/31 20:09:58 angelos Exp $ */
+/* $OpenBSD: environment.c,v 1.3 1999/10/01 01:08:29 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -743,6 +743,7 @@ kn_get_failed(int sessid, int type, int num)
 	    case KEYNOTE_ERROR_ANY:
 		if ((as->as_error != 0) ||
 		    ((as->as_sigresult != SIGRESULT_TRUE) &&
+		     !(as->as_sigresult == SIGRESULT_UNTOUCHED) &&
 		     !(as->as_flags & ASSERT_FLAG_LOCAL)))
 		  if (num-- == 0)  /* Return it if it's the num-th found */
 		    return as->as_id;
@@ -762,6 +763,7 @@ kn_get_failed(int sessid, int type, int num)
 
 	    case KEYNOTE_ERROR_SIGNATURE:
 		if ((as->as_sigresult != SIGRESULT_TRUE) &&
+		    !(as->as_sigresult == SIGRESULT_UNTOUCHED) &&
 		    !(as->as_flags & ASSERT_FLAG_LOCAL))
 		  if (num-- == 0)
 		    return as->as_id;
