@@ -1431,8 +1431,6 @@ SuffApplyTransform(tGn, sGn, t, s)
     /* Record last child for expansion purposes.  */
     ln = Lst_Last(&tGn->children);
 
-    if (Lst_IsEmpty(&tGn->commands))
-	tGn->type |= OP_IS_SUFFIX;
     /* Pass the buck to Make_HandleUse to apply the rule.  */
     Make_HandleUse(gn, tGn);
 

@@ -512,8 +512,7 @@ Make_Update(cgn)
     for (ln = Lst_First(&cgn->iParents); ln != NULL; ln = Lst_Adv(ln)) {
 	pgn = (GNode *)Lst_Datum(ln);
 	if (pgn->make) {
-	    if (pgn->type & OP_IS_SUFFIX)
-		Varq_Set(IMPSRC_INDEX, cname, pgn);
+	    Varq_Set(IMPSRC_INDEX, cname, pgn);
 	    Varq_Set(PREFIX_INDEX, cpref, pgn);
 	}
     }
