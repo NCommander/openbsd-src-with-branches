@@ -1,4 +1,4 @@
-/*	$OpenBSD: eisa_machdep.h,v 1.3 2002/03/14 01:26:31 millert Exp $	*/
+/*	$OpenBSD: eisa_machdep.h,v 1.4 2002/03/14 03:15:53 millert Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -29,6 +29,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _EISA_MACHDEP_H_
+#define _EISA_MACHDEP_H_
 
 /*
  * Types provided to machine-independent EISA code.
@@ -69,3 +72,4 @@ struct hppa_eisa_chipset {
 #define	eisa_intr_disestablish(c, h)					\
     (*(c)->ec_intr_disestablish)((c)->ec_v, (h))
 
+#endif /* _EISA_MACHDEP_H_ */

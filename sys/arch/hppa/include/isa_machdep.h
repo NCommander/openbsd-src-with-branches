@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.h,v 1.3 2002/03/14 01:26:32 millert Exp $	*/
+/*	$OpenBSD: isa_machdep.h,v 1.4 2002/03/14 03:15:53 millert Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
