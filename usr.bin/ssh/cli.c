@@ -1,4 +1,4 @@
-/*	$OpenBSD: cli.c,v 1.12 2001/05/06 17:52:07 mouring Exp $	*/
+/*	$OpenBSD: cli.c,v 1.13 2001/05/06 21:23:31 markus Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: cli.c,v 1.12 2001/05/06 17:52:07 mouring Exp $");
+RCSID("$OpenBSD: cli.c,v 1.13 2001/05/06 21:23:31 markus Exp $");
 
 #include "xmalloc.h"
 #include "log.h"
@@ -81,7 +81,7 @@ cli_close(void)
 	return;
 }
 
-void
+static void
 intrcatch(int sig)
 {
 	intr = 1;

@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-add.c,v 1.37 2001/05/02 16:41:20 markus Exp $");
+RCSID("$OpenBSD: ssh-add.c,v 1.38 2001/06/06 23:19:35 markus Exp $");
 
 #include <openssl/evp.h>
 
@@ -51,7 +51,7 @@ RCSID("$OpenBSD: ssh-add.c,v 1.37 2001/05/02 16:41:20 markus Exp $");
 
 /* we keep a cache of one passphrases */
 static char *pass = NULL;
-void
+static void
 clear_pass(void)
 {
 	if (pass) {
@@ -61,7 +61,7 @@ clear_pass(void)
 	}
 }
 
-void
+static void
 delete_file(AuthenticationConnection *ac, const char *filename)
 {
 	Key *public;
@@ -81,7 +81,7 @@ delete_file(AuthenticationConnection *ac, const char *filename)
 }
 
 /* Send a request to remove all identities. */
-void
+static void
 delete_all(AuthenticationConnection *ac)
 {
 	int success = 1;
@@ -97,7 +97,7 @@ delete_all(AuthenticationConnection *ac)
 		fprintf(stderr, "Failed to remove all identities.\n");
 }
 
-void
+static void
 add_file(AuthenticationConnection *ac, const char *filename)
 {
 	struct stat st;
@@ -143,7 +143,7 @@ add_file(AuthenticationConnection *ac, const char *filename)
 	key_free(private);
 }
 
-void
+static void
 list_identities(AuthenticationConnection *ac, int do_fp)
 {
 	Key *key;
