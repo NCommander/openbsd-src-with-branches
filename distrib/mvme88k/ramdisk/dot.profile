@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: dot.profile,v 1.2 2000/01/30 01:21:21 deraadt Exp $
+#	$OpenBSD: dot.profile,v 1.3 2000/10/25 16:38:17 millert Exp $
 #
 # Copyright (c) 1994 Christopher G. Demetriou
 # All rights reserved.
@@ -37,7 +37,6 @@ export TERM=vt200
 umask 022
 
 set -o emacs # emacs-style command line editing
-alias dmesg="cat /kern/msgbuf"
 
 # set up some sane defaults
 echo 'erase ^?, werase ^H, kill ^U, intr ^C, status ^T'
