@@ -1915,7 +1915,7 @@ Thu Mar 16 01:33:58 2000  Jeffrey A Law  (law@cygnus.com)
 	(REQUIRED_OFILES): Add partition.o.
 	(partition.o): New rule.
 	* partition.c: New file.
-
+	
 2000-03-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* hashtab.c (htab_create): Set del_f.
@@ -4899,7 +4899,7 @@ Thu Feb 11 22:20:47 1993  Fred Fish  (fnf@cygnus.com)
 	* cplus-dem.c (string_prepends):  Used now, remove #if 0.
 	* cplus-dem.c (demangle_signature):  Call demangle_qualified
 	with prepending.
-	* cplus-dem.c (gnu_special):  Recognize static data members that
+	* cplus_dem.c (gnu_special):  Recognize static data members that
 	use qualified names.
 	* cplus-dem.c (demangle_qualified):  Accumulate qualifiers in a
 	temporary buffer and the prepend or append them to the result,

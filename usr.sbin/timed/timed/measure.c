@@ -1,3 +1,5 @@
+/*	$OpenBSD: measure.c,v 1.12 2003/08/19 19:41:21 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,14 +33,12 @@
 static char sccsid[] = "@(#)measure.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
 
-#ifdef sgi
-#ident "$Revision: 1.5 $"
-#endif
-
 #include "globals.h"
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <signal.h>
+#include <poll.h>
 
 #define MSEC_DAY	(SECDAY*1000)
 
@@ -64,29 +60,27 @@ static n_short seqno = 0;
  * ICMP timestamp messages.
  */
 int					/* status val defined in globals.h */
-measure(u_long maxmsec,			/* wait this many msec at most */
-	u_long wmsec,			/* msec to wait for an answer */
-	char *hname,
-	struct sockaddr_in *addr,
-	int print)			/* print complaints on stderr */
+measure(u_long maxmsec, u_long wmsec, char *hname, struct sockaddr_in *addr,
+    int print)
 {
-	int length;
+	socklen_t length;
 	int measure_status;
 	int rcvcount, trials;
 	int cc, count;
-	fd_set ready;
+	struct pollfd pfd[1];
 	long sendtime, recvtime, histime1, histime2;
 	long idelta, odelta, total;
 	long min_idelta, min_odelta;
 	struct timeval tdone, tcur, ttrans, twait, tout;
 	u_char packet[PACKET_IN], opacket[64];
-	register struct icmp *icp = (struct icmp *) packet;
-	register struct icmp *oicp = (struct icmp *) opacket;
+	struct icmp *icp = (struct icmp *) packet;
+	struct icmp *oicp = (struct icmp *) opacket;
 	struct ip *ip = (struct ip *) packet;
 
 	min_idelta = min_odelta = 0x7fffffff;
 	measure_status = HOSTDOWN;
 	measure_delta = HOSTDOWN;
+	trials = 0;
 	errno = 0;
 
 	/* open raw socket used to measure time differences */
@@ -97,21 +91,25 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 			goto quit;
 		}
 	}
-	    
 
 	/*
 	 * empty the icmp input queue
 	 */
-	FD_ZERO(&ready);
+	pfd[0].fd = sock_raw;
+	pfd[0].events = POLLIN;
 	for (;;) {
-		tout.tv_sec = tout.tv_usec = 0;
-		FD_SET(sock_raw, &ready);
-		if (select(sock_raw+1, &ready, 0,0, &tout)) {
+		if (poll(pfd, 1, 0)) {
 			length = sizeof(struct sockaddr_in);
+			siginterrupt(SIGINT, 1);
 			cc = recvfrom(sock_raw, (char *)packet, PACKET_IN, 0,
-				      0,&length);
-			if (cc < 0)
+			    0, &length);
+			if (cc < 0) {
+				if (errno == EINTR && gotintr)
+					goto bail;
+				siginterrupt(SIGINT, 0);
 				goto quit;
+			}
+			siginterrupt(SIGINT, 0);
 			continue;
 		}
 		break;
@@ -129,12 +127,6 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 	oicp->icmp_rtime = 0;
 	oicp->icmp_ttime = 0;
 	oicp->icmp_seq = seqno;
-
-	FD_ZERO(&ready);
-
-#ifdef sgi
-	sginap(1);			/* start at a clock tick */
-#endif /* sgi */
 
 	(void)gettimeofday(&tdone, 0);
 	mstotvround(&tout, maxmsec);
@@ -158,14 +150,19 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 			oicp->icmp_cksum = in_cksum((u_short*)oicp,
 						    sizeof(*oicp));
 
+			siginterrupt(SIGINT, 1);
 			count = sendto(sock_raw, opacket, sizeof(*oicp), 0,
 				       (struct sockaddr*)addr,
 				       sizeof(struct sockaddr));
 			if (count < 0) {
+				if (errno == EINTR && gotintr)
+					goto bail;
+				siginterrupt(SIGINT, 0);
 				if (measure_status == HOSTDOWN)
 					measure_status = UNREACHABLE;
 				goto quit;
 			}
+			siginterrupt(SIGINT, 0);
 			++oicp->icmp_seq;
 
 			timeradd(&tcur, &twait, &ttrans);
@@ -178,20 +175,25 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 			if (tout.tv_sec < 0)
 				tout.tv_sec = 0;
 
-			FD_SET(sock_raw, &ready);
-			count = select(sock_raw+1, &ready, (fd_set *)0,
-				       (fd_set *)0, &tout);
+			count = poll(pfd, 1,
+			    tout.tv_sec * 1000 + tout.tv_usec / 1000);
 			(void)gettimeofday(&tcur, (struct timezone *)0);
 			if (count <= 0)
 				break;
 
 			length = sizeof(struct sockaddr_in);
+			siginterrupt(SIGINT, 1);
 			cc = recvfrom(sock_raw, (char *)packet, PACKET_IN, 0,
 				      0,&length);
-			if (cc < 0)
+			if (cc < 0) {
+				if (errno == EINTR && gotintr)
+					goto bail;
+				siginterrupt(SIGINT, 0);
 				goto quit;
+			}
+			siginterrupt(SIGINT, 0);
 
-			/* 
+			/*
 			 * got something.  See if it is ours
 			 */
 			icp = (struct icmp *)(packet + (ip->ip_hl << 2));
@@ -201,7 +203,6 @@ measure(u_long maxmsec,			/* wait this many msec at most */
 			    || icp->icmp_seq < seqno
 			    || icp->icmp_seq >= oicp->icmp_seq)
 				continue;
-
 
 			sendtime = ntohl(icp->icmp_otime);
 			recvtime = ((tcur.tv_sec % SECDAY) * 1000 +
@@ -269,7 +270,7 @@ quit:
 		if (trace) {
 			fprintf(fd,
 				"measured delta %4d, %d trials to %-15s %s\n",
-			   	measure_delta, trials,
+				measure_delta, trials,
 				inet_ntoa(addr->sin_addr), hname);
 		}
 	} else if (print) {
@@ -291,11 +292,10 @@ quit:
 	}
 
 	return(measure_status);
+bail:
+	siginterrupt(SIGINT, 0);
+	return (0);
 }
-
-
-
-
 
 /*
  * round a number of milliseconds into a struct timeval
@@ -303,13 +303,12 @@ quit:
 void
 mstotvround(struct timeval *res, long x)
 {
-#ifndef sgi
 	if (x < 0)
 		x = -((-x + 3)/5);
 	else
 		x = (x+3)/5;
 	x *= 5;
-#endif /* sgi */
+
 	res->tv_sec = x/1000;
 	res->tv_usec = (x-res->tv_sec*1000)*1000;
 	if (res->tv_usec < 0) {

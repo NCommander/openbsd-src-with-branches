@@ -31,11 +31,11 @@
 extern int nbufs;
 extern int bufspace;
 extern int pr_type;
+extern int nohelp;
 extern int plusoption;
 extern int swindow;
 extern int sc_height;
 extern int secure;
-extern int dohelp;
 extern int any_display;
 extern char openquote;
 extern char closequote;
@@ -498,18 +498,21 @@ opt_x(type, s)
 		tabdefault = tabstops[ntabstops-1] - tabstops[ntabstops-2];
 		break;
 	case QUERY:
-		strcpy(msg, "Tab stops ");
+		strlcpy(msg, "Tab stops ", sizeof(msg));
 		if (ntabstops > 2)
 		{
 			for (i = 1;  i < ntabstops;  i++)
 			{
 				if (i > 1)
-					strcat(msg, ",");
-				sprintf(msg+strlen(msg), "%d", tabstops[i]);
+					strlcat(msg, ",", sizeof(msg));
+				snprintf(msg+strlen(msg),
+				    sizeof(msg)-strlen(msg), "%d", tabstops[i]);
 			}
-			sprintf(msg+strlen(msg), " and then ");
+			snprintf(msg+strlen(msg), sizeof(msg)-strlen(msg),
+			    " and then ");
 		}
-		sprintf(msg+strlen(msg), "every %d spaces",
+		snprintf(msg+strlen(msg), sizeof(msg)-strlen(msg),
+		    "every %d spaces",
 			tabdefault);
 		p.p_string = msg;
 		error("%s", &p);
@@ -569,6 +572,8 @@ opt_query(type, s)
 	int type;
 	char *s;
 {
+	if (nohelp)
+		return;
 	switch (type)
 	{
 	case QUERY:
@@ -576,7 +581,20 @@ opt_query(type, s)
 		error("Use \"h\" for help", NULL_PARG);
 		break;
 	case INIT:
-		dohelp = 1;
+		/*
+		 * This is "less -?".
+		 * It rather ungracefully grabs control,
+		 * does the initializations normally done in main,
+		 * shows the help file and exits.
+		 */
+		raw_mode(1);
+		get_term();
+		open_getchr();
+		init();
+		any_display = TRUE;
+		help(1);
+		quit(QUIT_OK);
+		/*NOTREACHED*/
 	}
 }
 

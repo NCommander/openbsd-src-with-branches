@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,19 +27,75 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)global.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: global.c,v 1.3 1994/02/25 03:20:49 cgd Exp $";
-#endif /* not lint */
-
-/*
- * Allocate global variables.  We do this
- * by including the header file that defines
- * them all as externs, but first we define
- * the keyword "extern" to be nothing, so that
- * we will actually allocate the space.
+/* a *lot* of ugly global definitions that really should be removed...
  */
 
-#include "defs.h"
-#define extern
-#include "ext.h"
+#include "telnetd.h"
+
+/* RCSID("$KTH: global.c,v 1.12 1997/05/11 06:29:59 assar Exp $"); */
+
+/*
+ * Telnet server variable declarations
+ */
+char	options[256];
+char	do_dont_resp[256];
+char	will_wont_resp[256];
+int	linemode;	/* linemode on/off */
+int	flowmode;	/* current flow control state */
+int	restartany;	/* restart output on any character state */
+#ifdef DIAGNOSTICS
+int	diagnostic;	/* telnet diagnostic capabilities */
+#endif /* DIAGNOSTICS */
+
+slcfun	slctab[NSLC + 1];	/* slc mapping table */
+
+char	terminaltype[41];
+
+/*
+ * I/O data buffers, pointers, and counters.
+ */
+char	ptyobuf[BUFSIZ+NETSLOP], *pfrontp, *pbackp;
+
+char	netibuf[BUFSIZ], *netip;
+
+char	netobuf[BUFSIZ+NETSLOP], *nfrontp, *nbackp;
+char	*neturg;		/* one past last bye of urgent data */
+
+int	pcc, ncc;
+
+int	ourpty, net;
+int	SYNCHing;		/* we are in TELNET SYNCH mode */
+
+/*
+ * The following are some clocks used to decide how to interpret
+ * the relationship between various variables.
+ */
+
+struct clocks_t clocks;
+
+
+/* whether to log unauthenticated login attempts */
+int log_unauth;
+
+/* do not print warning if connection is not encrypted */
+int no_warn;
+
+/*
+ * This function appends data to nfrontp and advances nfrontp.
+ */
+
+int
+output_data (const char *format, ...)
+{
+  va_list args;
+  size_t remaining;
+  int n;
+
+  va_start(args, format);
+  remaining = BUFSIZ - (nfrontp - netobuf);
+  if ((n = vsnprintf(nfrontp, remaining, format, args)) >= remaining || n < 0)
+    n = strlen(nfrontp);
+  nfrontp += n;
+  va_end(args);
+  return n;
+}

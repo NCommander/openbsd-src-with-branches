@@ -1,4 +1,5 @@
-/*	$NetBSD: ns_if.h,v 1.7 1995/06/13 08:37:02 mycroft Exp $	*/
+/*	$OpenBSD: ns_if.h,v 1.3 2003/05/14 02:02:56 itojun Exp $	*/
+/*	$NetBSD: ns_if.h,v 1.8 1996/02/13 22:13:54 christos Exp $	*/
 
 /*
  * Copyright (c) 1984, 1985, 1986, 1987, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -56,8 +53,8 @@ struct ns_ifaddr {
 struct	ns_aliasreq {
 	char	ifra_name[IFNAMSIZ];		/* if name, e.g. "en0" */
 	struct	sockaddr_ns ifra_addr;
-	struct	sockaddr_ns ifra_broadaddr;
-#define ifra_dstaddr ifra_broadaddr
+	struct	sockaddr_ns ifra_dstaddr;
+#define ifra_broadaddr ifra_dstaddr
 };
 /*
  * Given a pointer to an ns_ifaddr (ifaddr),
@@ -66,8 +63,7 @@ struct	ns_aliasreq {
 
 #define	IA_SNS(ia) (&(((struct ns_ifaddr *)(ia))->ia_addr))
 
-/* This is not the right place for this but where is? */
-#define	ETHERTYPE_NS	0x0600
+#include <net/ethertypes.h>
 
 #ifdef	NSIP
 struct nsip_req {
@@ -81,5 +77,4 @@ struct nsip_req {
 TAILQ_HEAD(ns_ifaddrhead, ns_ifaddr);
 extern	struct	ns_ifaddrhead ns_ifaddr;
 extern	struct	ifqueue	nsintrq;	/* XNS input packet queue */
-struct	ns_ifaddr *ns_iaonnetof();
 #endif

@@ -91,6 +91,8 @@ static void OP_EX PARAMS ((int, int));
 static void OP_MS PARAMS ((int, int));
 static void OP_XS PARAMS ((int, int));
 static void OP_3DNowSuffix PARAMS ((int, int));
+static void OP_xcrypt2 PARAMS ((int, int));
+static void OP_xcrypt PARAMS ((int, int));
 static void OP_SIMD_Suffix PARAMS ((int, int));
 static void SIMD_Fixup PARAMS ((int, int));
 static void BadOp PARAMS ((void));
@@ -293,6 +295,8 @@ fetch_data (info, addr)
 #define XS OP_XS, v_mode
 #define None OP_E, 0
 #define OPSUF OP_3DNowSuffix, 0
+#define OPXCRYPT OP_xcrypt, 0
+#define OPXCRYPT2 OP_xcrypt2, 0
 #define OPSIMD OP_SIMD_Suffix, 0
 
 #define cond_jump_flag NULL, cond_jump_mode
@@ -942,8 +946,8 @@ static const struct dis386 dis386_twobyte[] = {
   { "btS",		Ev, Gv, XX },
   { "shldS",		Ev, Gv, Ib },
   { "shldS",		Ev, Gv, CL },
-  { "(bad)",		XX, XX, XX },
-  { "(bad)",		XX, XX, XX },
+  { "",			OPXCRYPT2, XX, XX },
+  { "",			OPXCRYPT, XX, XX },
   /* a8 */
   { "pushT",		gs, XX, XX },
   { "popT",		gs, XX, XX },
@@ -3972,6 +3976,27 @@ OP_XS (bytemode, sizeflag)
     BadOp ();
 }
 
+static struct {
+     unsigned char opc;
+     char *name;
+} xcrypt[] = {
+  {  0xc0, "xstore-rng" },
+  {  0xc8, "xcrypt-ecb" },
+  {  0xd0, "xcrypt-cbc" },
+  {  0xd8, "xcrypt-ctr" },
+  {  0xe0, "xcrypt-cfb" },
+  {  0xe8, "xcrypt-ofb" },
+};
+
+static struct {
+     unsigned char opc;
+     char *name;
+} xcrypt2[] = {
+  {  0xc0, "montmul" },
+  {  0xc8, "xsha1" },
+  {  0xd0, "xsha256" },
+};
+
 static const char *const Suffix3DNow[] = {
 /* 00 */	NULL,		NULL,		NULL,		NULL,
 /* 04 */	NULL,		NULL,		NULL,		NULL,
@@ -4064,6 +4089,54 @@ OP_3DNowSuffix (bytemode, sizeflag)
       op2out[0] = '\0';
       BadOp ();
     }
+}
+
+static void
+OP_xcrypt (bytemode, sizeflag)
+     int bytemode ATTRIBUTE_UNUSED;
+     int sizeflag ATTRIBUTE_UNUSED;
+{
+  const char *mnemonic = NULL;
+  unsigned int i;
+
+  FETCH_DATA (the_info, codep + 1);
+  /* VIA C3 xcrypt-* & xmove-* instructions are specified by an opcode
+     suffix in the place where an 8-bit immediate would normally go.
+     ie. the last byte of the instruction.  */
+  obufp = obuf + strlen(obuf);
+
+  for (i = 0; i < sizeof(xcrypt) / sizeof(xcrypt[0]); i++)
+    if (xcrypt[i].opc == (*codep & 0xff))
+      mnemonic = xcrypt[i].name;
+  codep++;
+  if (mnemonic)
+    oappend (mnemonic);
+  else
+    BadOp();
+}
+
+static void
+OP_xcrypt2 (bytemode, sizeflag)
+     int bytemode ATTRIBUTE_UNUSED;
+     int sizeflag ATTRIBUTE_UNUSED;
+{
+  const char *mnemonic = NULL;
+  unsigned int i;
+
+  FETCH_DATA (the_info, codep + 1);
+  /* VIA C3 xcrypt2 instructions are specified by an opcode
+     suffix in the place where an 8-bit immediate would normally go.
+     ie. the last byte of the instruction.  */
+  obufp = obuf + strlen(obuf);
+
+  for (i = 0; i < sizeof(xcrypt2) / sizeof(xcrypt2[0]); i++)
+    if (xcrypt2[i].opc == (*codep & 0xff))
+      mnemonic = xcrypt2[i].name;
+  codep++;
+  if (mnemonic)
+    oappend (mnemonic);
+  else
+    BadOp();
 }
 
 static const char *simd_cmp_op[] = {

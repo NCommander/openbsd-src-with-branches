@@ -149,10 +149,9 @@ main(int argc, char **argv)
     Log_method *method;
     int ret = 0;
     
-    setprogname(argv[0]);
     tzset();
 
-    method = log_open (getprogname(), "/dev/stderr:notime");
+    method = log_open (__progname, "/dev/stderr:notime");
     if (method == NULL)
 	errx (1, "log_open failed");
     cell_init(0, method);

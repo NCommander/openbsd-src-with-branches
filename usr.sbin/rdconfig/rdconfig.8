@@ -1,4 +1,4 @@
-.\"
+.\"	$OpenBSD: rdconfig.8,v 1.7 2002/11/14 02:57:28 deraadt Exp $
 .\"	$NetBSD: rdconfig.8,v 1.1.1.1 1995/10/08 22:40:41 gwr Exp $
 .\"
 .\" Copyright (c) 1995 Gordon W. Ross
@@ -28,24 +28,24 @@
 .\"
 .Dd July 8, 1993
 .Dt RDCONFIG 8
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm rdconfig
 .Nd configure RAM disks
 .Sh SYNOPSIS
-.Nm rdconfig Fl c
-.Op Fl v
+.Nm rdconfig
 .Ar special_file
 .Ar 512-byte-blocks
 .Sh DESCRIPTION
 The
 .Nm rdconfig
 command configures RAM disk devices.
-It will associate the special file 
+It will associate the special file
 .Ar special_file
 with a range of user-virtual memory allocated by the
 .Nm rdconfig
-process itself.  The
+process itself.
+The
 .Nm rdconfig
 command should be run in the background.
 If successful, the command will not return.
@@ -60,17 +60,16 @@ process started earlier.
 .It Pa /dev/rd??
 .El
 .Sh EXAMPLES
-.Pp
-.Dl rdconfig /dev/rd0a 2048 &
+.Dl # rdconfig /dev/rd0a 2048 &
 .Pp
 Configures the RAM disk
 .Pa rd0a
 with one megabyte of user-space memory.
+.Sh SEE ALSO
+.Xr mount 8 ,
+.Xr swapon 8 ,
+.Xr umount 8
 .Sh BUGS
 The special device will become inoperative if the
 .Nm rdconfig
 process is killed while the special device is open.
-.Sh SEE ALSO
-.Xr swapon 8 ,
-.Xr mount 8 ,
-.Xr umount 8 .

@@ -9,8 +9,8 @@
 #define HTPARSE_H
 
 #ifndef HTUTILS_H
-#include "HTUtils.h"
-#endif /* HTUTILS_H */
+#include <HTUtils.h>
+#endif
 
 /*
 **  The following are flag bits which may be ORed together to form
@@ -21,15 +21,27 @@
 #define PARSE_PATH               4
 #define PARSE_ANCHOR             2
 #define PARSE_PUNCTUATION        1
+
 #define PARSE_ALL               31
+#define PARSE_ALL_WITHOUT_ANCHOR  (PARSE_ALL ^ PARSE_ANCHOR)
 
 /*
-**  The following are valid mask values. The terms are the BNF names
+**  Additional flag bits for more details on components already
+**  covered by the above.  The PARSE_PATH above doesn't really
+**  strictly refer to the path component in the sense of the URI
+**  specs only, but rather to that combined with a possible query
+**  component. - kw
+*/
+#define PARSE_STRICTPATH        32
+#define PARSE_QUERY             64
+
+/*
+**  The following are valid mask values.  The terms are the BNF names
 **  in the URL document.
 */
-#define URL_XALPHAS     (unsigned char) 1
-#define URL_XPALPHAS    (unsigned char) 2
-#define URL_PATH        (unsigned char) 4
+#define URL_XALPHAS     UCH(1)
+#define URL_XPALPHAS    UCH(2)
+#define URL_PATH        UCH(4)
 
 
 /*	Strip white space off a string.				HTStrip()
@@ -61,6 +73,15 @@ extern char * HTParse PARAMS((
 	CONST char *	relatedName,
 	int		wanted));
 
+/*	HTParseAnchor(), fast HTParse() specialization
+**	----------------------------------------------
+**
+** On exit,
+**	returns		A pointer within input string (probably to its end '\0')
+*/
+extern CONST char * HTParseAnchor PARAMS((
+	CONST char *	aName));
+
 /*	Simplify a filename.				HTSimplify()
 **	--------------------
 **
@@ -68,7 +89,7 @@ extern char * HTParse PARAMS((
 **  be replaced by "" , and the seqeunce "/./" which may be replaced by "/".
 **  Simplification helps us recognize duplicate filenames.
 **
-**	Thus, 	/etc/junk/../fred 	becomes	/etc/fred
+**	Thus,	/etc/junk/../fred	becomes /etc/fred
 **		/etc/junk/./fred	becomes	/etc/junk/fred
 **
 **      but we should NOT change
@@ -83,7 +104,7 @@ extern void HTSimplify PARAMS((
 **	-------------------
 **
 ** This function creates and returns a string which gives an expression of
-** one address as related to another. Where there is no relation, an absolute
+** one address as related to another.  Where there is no relation, an absolute
 ** address is retured.
 **
 **  On entry,
@@ -104,26 +125,39 @@ extern char * HTRelative PARAMS((
 **		-------------------------------------
 **
 **	This function takes a pointer to a string in which
-**	some characters may be unacceptable unescaped.
+**	some characters may be unacceptable are unescaped.
 **	It returns a string which has these characters
 **	represented by a '%' character followed by two hex digits.
 **
-**	Unlike HTUnEscape(), this routine returns a malloced string.
+**	Unlike HTUnEscape(), this routine returns a malloc'd string.
 */
 extern char * HTEscape PARAMS((
 	CONST char *	str,
 	unsigned char	mask));
 
+/*		Escape unsafe characters using %		HTEscapeUnsafe()
+**		--------------------------------
+**
+**	This function takes a pointer to a string in which
+**	some characters may be that may be unsafe are unescaped.
+**	It returns a string which has these characters
+**	represented by a '%' character followed by two hex digits.
+**
+**	Unlike HTUnEscape(), this routine returns a malloc'd string.
+*/
+extern char * HTEscapeUnsafe PARAMS((
+	CONST char *	str));
+
 /*	Escape undesirable characters using % but space to +.	HTEscapeSP()
 **	-----------------------------------------------------
 **
 **	This function takes a pointer to a string in which
-**	some characters may be unacceptable unescaped.
+**	some characters may be unacceptable are unescaped.
 **	It returns a string which has these characters
 **	represented by a '%' character followed by two hex digits,
 **	except that spaces are converted to '+' instead of %2B.
 **
-**	Unlike HTUnEscape(), this routine returns a malloced string.
+**	Unlike HTUnEscape(), this routine returns a malloc'd string.
 */
 extern char * HTEscapeSP PARAMS((
 	CONST char *	str,
@@ -158,10 +192,7 @@ extern char * HTUnEscapeSome PARAMS((
 **  Turn a string which is not a RFC 822 token into a quoted-string. - KW
 */
 extern void HTMake822Word PARAMS((
-	char **		str));
+	char **		str,
+	int		quoted));
 
 #endif  /* HTPARSE_H */
-
-/*
-   end of HTParse
-    */

@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+** Copyright (c) 1999-2002 Sendmail, Inc. and its suppliers.
 **	All rights reserved.
 **
 ** By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
 */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: smdb1.c,v 8.51 2001/05/10 01:23:58 ca Exp $")
+SM_RCSID("@(#)$Sendmail: smdb1.c,v 8.58 2002/05/24 23:09:11 gshapiro Exp $")
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -35,7 +35,7 @@ struct smdb_db1_cursor
 };
 typedef struct smdb_db1_cursor SMDB_DB1_CURSOR;
 
-/*
+/*
 **  SMDB_TYPE_TO_DB1_TYPE -- Translates smdb database type to db1 type.
 **
 **	Parameters:
@@ -63,7 +63,7 @@ smdb_type_to_db1_type(type)
 	/* Should never get here thanks to test in smdb_db_open() */
 	return DB_HASH;
 }
-/*
+/*
 **  SMDB_PUT_FLAGS_TO_DB1_FLAGS -- Translates smdb put flags to db1 put flags.
 **
 **	Parameters:
@@ -90,7 +90,7 @@ smdb_put_flags_to_db1_flags(flags)
 
 	return return_flags;
 }
-/*
+/*
 **  SMDB_CURSOR_GET_FLAGS_TO_SMDB1
 **
 **	Parameters:
@@ -151,16 +151,18 @@ int
 smdb1_close(database)
 	SMDB_DATABASE *database;
 {
+	int result;
 	SMDB_DB1_DATABASE *db1 = (SMDB_DB1_DATABASE *) database->smdb_impl;
 	DB *db = ((SMDB_DB1_DATABASE *) database->smdb_impl)->smdb1_db;
 
+	result = db->close(db);
 	if (db1->smdb1_lock_fd != -1)
 		(void) close(db1->smdb1_lock_fd);
 
 	free(db1);
 	database->smdb_impl = NULL;
 
-	return db->close(db);
+	return result;
 }
 
 int
@@ -395,7 +397,7 @@ smdb1_cursor(database, cursor, flags)
 
 	return SMDBE_OK;
 }
-/*
+/*
 **  SMDB_DB_OPEN -- Opens a db1 database.
 **
 **	Parameters:
@@ -432,6 +434,7 @@ smdb_db_open(database, db_name, mode, mode_mask, sff, type, user_info,
 	SMDB_USER_INFO *user_info;
 	SMDB_DBPARAMS *db_params;
 {
+	bool lockcreated = false;
 	int db_fd;
 	int lock_fd;
 	int result;
@@ -443,14 +446,14 @@ smdb_db_open(database, db_name, mode, mode_mask, sff, type, user_info,
 	BTREEINFO btree_info;
 	DBTYPE db_type;
 	struct stat stat_info;
-	char db_file_name[SMDB_MAX_NAME_LEN];
+	char db_file_name[MAXPATHLEN];
 
 	if (type == NULL ||
 	    (strncmp(SMDB_TYPE_HASH, type, SMDB_TYPE_HASH_LEN) != 0 &&
 	     strncmp(SMDB_TYPE_BTREE, type, SMDB_TYPE_BTREE_LEN) != 0))
 		return SMDBE_UNKNOWN_DB_TYPE;
 
-	result = smdb_add_extension(db_file_name, SMDB_MAX_NAME_LEN,
+	result = smdb_add_extension(db_file_name, sizeof db_file_name,
 				    db_name, SMDB1_FILE_EXTENSION);
 	if (result != SMDBE_OK)
 		return result;
@@ -460,15 +463,21 @@ smdb_db_open(database, db_name, mode, mode_mask, sff, type, user_info,
 	if (result != SMDBE_OK)
 		return result;
 
+	if (stat_info.st_mode == ST_MODE_NOFILE &&
+	    bitset(mode, O_CREAT))
+		lockcreated = true;
+
 	lock_fd = -1;
-# if O_EXLOCK
-	mode |= O_EXLOCK;
-# else /* O_EXLOCK */
 	result = smdb_lock_file(&lock_fd, db_name, mode, sff,
 				SMDB1_FILE_EXTENSION);
 	if (result != SMDBE_OK)
 		return result;
-# endif /* O_EXLOCK */
+
+	if (lockcreated)
+	{
+		mode |= O_TRUNC;
+		mode &= ~(O_CREAT|O_EXCL);
+	}
 
 	*database = NULL;
 
@@ -499,7 +508,7 @@ smdb_db_open(database, db_name, mode, mode_mask, sff, type, user_info,
 	}
 
 	db_type = smdb_type_to_db1_type(type);
-	db = dbopen(db_file_name, mode, 0644, db_type, params);
+	db = dbopen(db_file_name, mode, DBMMODE, db_type, params);
 	if (db != NULL)
 	{
 		db_fd = db->fd(db);

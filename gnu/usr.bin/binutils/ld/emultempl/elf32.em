@@ -87,6 +87,125 @@ static char *gld${EMULATION_NAME}_get_script
   PARAMS ((int *isfile));
 
 EOF
+case ${target} in
+  *-*-openbsd*)
+    cat >>e${EMULATION_NAME}.c <<EOF
+#include <sys/types.h>
+#include <dirent.h>
+
+/* Search a directory for a .so file.  */
+
+static char *
+gld${EMULATION_NAME}_search_dir (dirname, filename)
+     const char *dirname;
+     const char *filename;
+{
+  const char *dot;
+  unsigned int len;
+  char *found;
+  int max_maj, max_min;
+  DIR *dir;
+  struct dirent *entry;
+  unsigned int dirnamelen;
+  char *full_path;
+  int statval;
+  struct stat st;
+
+  dot = strchr (filename, '.');
+  len = strlen (filename);
+  found = NULL;
+  max_maj = max_min = 0;
+
+  dir = opendir (dirname);
+  if (dir == NULL)
+    return NULL;
+  dirnamelen = strlen (dirname);
+  
+  while ((entry = readdir (dir)) != NULL)
+    {
+      const char *s;
+      char *eptr, *eptr1;
+      int found_maj, found_min;
+
+      if (strncmp (entry->d_name, "lib", 3) != 0
+	  || strncmp (entry->d_name + 3, filename, len) != 0)
+	continue;
+
+      /* We accept libfoo.so without a version number, even though the
+         native linker does not.  This is more convenient for packages
+         which just generate .so files for shared libraries, as on ELF
+         systems.  */
+      if (strncmp (entry->d_name + 3 + len, ".so", 3) != 0)
+	continue;
+
+      if (entry->d_name[6 + len] == '\0')
+	;
+      else if (entry->d_name[6 + len] == '.'
+	       && ISDIGIT ((unsigned char) entry->d_name[7 + len]))
+	;
+      else
+	continue;
+
+      for (s = entry->d_name + 6 + len; *s != '\0'; s++)
+	if (*s != '.' && ! ISDIGIT ((unsigned char) *s))
+	  break;
+      if (*s != '\0')
+	continue;
+
+      /* We've found a .so file.  Work out the major and minor
+	 version numbers.  */
+      found_maj = -1;
+      found_min = -1;
+
+      /* do allow libN.so */
+      if (entry->d_name[6 + len] == '.') {
+	found_maj = strtoul (entry->d_name + 7 + len, &eptr, 10);
+
+	/* do not support libN.so. or libN.so.X */
+	if (*eptr != '.' || ((entry->d_name + 3 + len) == eptr)) 
+	  continue;
+
+	found_min = strtoul (eptr+1, &eptr1, 10);
+
+	/* do not support libN.so.X. or libN.so.X.Y.[anything] */
+	if (*eptr1 != '\0' || (eptr+1 == eptr1)) 
+	  continue;
+      }
+
+      /* Make sure the file really exists (ignore broken symlinks).  */
+      full_path = xmalloc (dirnamelen + 1 + strlen (entry->d_name) + 1);
+      sprintf (full_path, "%s/%s", dirname, entry->d_name);
+      statval = stat (full_path, &st);
+      free (full_path);
+      if (statval != 0)
+	continue;
+
+      /* We've found a match for the name we are searching for.  See
+	 if this is the version we should use.  */
+      if (found == NULL
+	  || (found_maj > max_maj)
+	  || (found_maj == max_maj
+	      && (found_min > max_min)))
+	{
+	  if (found != NULL)
+	    free (found);
+	  found = (char *) xmalloc (dirnamelen + strlen (entry->d_name) + 2);
+	  sprintf (found, "%s/%s", dirname, entry->d_name);
+	  max_maj = found_maj;
+	  max_min = found_min;
+	}
+    }
+
+  closedir (dir);
+
+  return found;
+}
+
+EOF
+    ;;
+esac
+cat >>e${EMULATION_NAME}.c <<EOF
+EOF
 
 # Import any needed special functions and/or overrides.
 #
@@ -266,7 +385,7 @@ gld${EMULATION_NAME}_try_needed (name, force)
      int force;
 {
   bfd *abfd;
-  const char *soname;
+  char *soname;
 
   abfd = bfd_openr (name, bfd_get_target (output_bfd));
   if (abfd == NULL)
@@ -359,7 +478,7 @@ cat >>e${EMULATION_NAME}.c <<EOF
     einfo ("%F%P:%B: bfd_stat failed: %E\n", abfd);
 
   /* First strip off everything before the last '/'.  */
-  soname = lbasename (abfd->filename);
+  soname = xstrdup (lbasename (abfd->filename));
 
   if (trace_file_tries)
     info_msg (_("found %s at %s\n"), soname, name);
@@ -370,6 +489,7 @@ cat >>e${EMULATION_NAME}.c <<EOF
     {
       /* Return TRUE to indicate that we found the file, even though
          we aren't going to do anything with it.  */
+      free(soname);
       return TRUE;
     }
 
@@ -684,7 +804,7 @@ gld${EMULATION_NAME}_after_open ()
 	 rpath_link, rpath, then the environment variable
 	 LD_LIBRARY_PATH (native only), then the DT_RPATH/DT_RUNPATH
 	 entries (native only), then the linker script LIB_SEARCH_DIRS.
-	 We do not search using the -L arguments.
+	 We look at the -L arguments to build search path.
 
 	 We search twice.  The first time, we skip objects which may
 	 introduce version mismatches.  The second time, we force
@@ -696,7 +816,7 @@ gld${EMULATION_NAME}_after_open ()
 EOF
 if [ "x${USE_LIBPATH}" = xyes ] ; then
 cat >>e${EMULATION_NAME}.c <<EOF
-	  const char *lib_path;
+	  char *lib_path;
 	  struct bfd_link_needed_list *rp;
 	  int found;
 EOF
@@ -716,15 +836,38 @@ EOF
 fi
 if [ "x${NATIVE}" = xyes ] ; then
 cat >>e${EMULATION_NAME}.c <<EOF
-	  if (command_line.rpath_link == NULL
+	  if (getenv("LD_RUN_PATH") != NULL
+	      && command_line.rpath_link == NULL
 	      && command_line.rpath == NULL)
 	    {
-	      lib_path = (const char *) getenv ("LD_RUN_PATH");
+	      lib_path = getenv ("LD_RUN_PATH");
 	      if (gld${EMULATION_NAME}_search_needed (lib_path, l->name,
 						      force))
 		break;
 	    }
-	  lib_path = (const char *) getenv ("LD_LIBRARY_PATH");
+
+	  len = strlen(search_head->name);
+	  lib_path = xstrdup(search_head->name);
+	  for (search = search_head->next; search != NULL;
+	       search = search->next)
+	    {
+	      size_t nlen;
+
+	      nlen = strlen(search->name);
+	      lib_path = xrealloc(lib_path, len + nlen + 2);
+	      lib_path[len] = ':';
+	      strcpy(lib_path + len + 1, search->name);
+	      len += nlen + 1;
+	    }
+
+	  if (gld${EMULATION_NAME}_search_needed (lib_path, l->name, force))
+	    {
+	      free(lib_path);
+	      break;
+	    }
+	  free(lib_path);
+
+	  lib_path = getenv ("LD_LIBRARY_PATH");
 	  if (gld${EMULATION_NAME}_search_needed (lib_path, l->name, force))
 	    break;
 EOF
@@ -976,7 +1119,17 @@ gld${EMULATION_NAME}_open_dynamic_archive (arch, search, entry)
     return FALSE;
 
   filename = entry->filename;
-
+EOF
+case ${target} in
+  *-*-openbsd*)
+    cat >>e${EMULATION_NAME}.c <<EOF
+  string = gld${EMULATION_NAME}_search_dir(search->name, filename);
+  if (string == NULL)
+    return FALSE;
+EOF
+   ;;
+  *)
+    cat >>e${EMULATION_NAME}.c <<EOF
   /* This allocates a few bytes too many when EXTRA_SHLIB_EXTENSION
      is defined, but it does not seem worth the headache to optimize
      away those two bytes of space.  */
@@ -990,6 +1143,10 @@ gld${EMULATION_NAME}_open_dynamic_archive (arch, search, entry)
 
   sprintf (string, "%s/lib%s%s.so", search->name, filename, arch);
 
+EOF
+    ;;
+esac
+cat >>e${EMULATION_NAME}.c <<EOF
 #ifdef EXTRA_SHLIB_EXTENSION
   /* Try the .so extension first.  If that fails build a new filename
      using EXTRA_SHLIB_EXTENSION.  */
@@ -1482,6 +1639,8 @@ fi
 echo '  ; else if (link_info.shared) return'	       >> e${EMULATION_NAME}.c
 sed $sc ldscripts/${EMULATION_NAME}.xs                 >> e${EMULATION_NAME}.c
 fi
+echo '  ; else if (config.data_bss_contig == TRUE) return' >> e${EMULATION_NAME}.c
+sed $sc ldscripts/${EMULATION_NAME}.xz                 >> e${EMULATION_NAME}.c
 if test -n "$GENERATE_COMBRELOC_SCRIPT" ; then
 echo '  ; else if (link_info.combreloc) return'        >> e${EMULATION_NAME}.c
 sed $sc ldscripts/${EMULATION_NAME}.xc                 >> e${EMULATION_NAME}.c
@@ -1523,6 +1682,10 @@ cat >>e${EMULATION_NAME}.c <<EOF
     return "ldscripts/${EMULATION_NAME}.xs";
 EOF
 fi
+cat >>e${EMULATION_NAME}.c <<EOF
+  else if (config.data_bss_contig == TRUE)
+    return "ldscripts/${EMULATION_NAME}.xz";
+EOF
 if test -n "$GENERATE_COMBRELOC_SCRIPT" ; then
 cat >>e${EMULATION_NAME}.c <<EOF
   else if (link_info.combreloc)

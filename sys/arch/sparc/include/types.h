@@ -1,4 +1,5 @@
-/*	$NetBSD: types.h,v 1.7 1995/07/05 17:46:11 pk Exp $ */
+/*	$OpenBSD: types.h,v 1.13 2003/01/13 06:08:08 art Exp $	*/
+/*	$NetBSD: types.h,v 1.11 1996/12/10 23:19:38 pk Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -50,17 +47,15 @@
 #include <sys/cdefs.h>
 
 #if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
-typedef struct _physadr {
-	short r[1];
-} *physadr;
-
 typedef struct label_t {
 	int val[2];
 } label_t;
 #endif
 
-typedef	unsigned long	vm_offset_t;
-typedef	unsigned long	vm_size_t;
+typedef unsigned long	vaddr_t;
+typedef unsigned long	paddr_t;
+typedef unsigned long	vsize_t;
+typedef unsigned long	psize_t;
 
 /*
  * Basic integral types.  Omit the typedef if
@@ -69,13 +64,18 @@ typedef	unsigned long	vm_size_t;
 #define	__BIT_TYPES_DEFINED__
 typedef	__signed char		   int8_t;
 typedef	unsigned char		 u_int8_t;
+typedef	unsigned char		  uint8_t;
 typedef	short			  int16_t;
 typedef	unsigned short		u_int16_t;
+typedef	unsigned short		 uint16_t;
 typedef	int			  int32_t;
 typedef	unsigned int		u_int32_t;
+typedef	unsigned int		 uint32_t;
 typedef	long long		  int64_t;
 typedef	unsigned long long	u_int64_t;
+typedef	unsigned long long	 uint64_t;
 
 typedef int32_t			register_t;
+
 
 #endif	/* _MACHTYPES_H_ */

@@ -1,3 +1,4 @@
+/* *	$OpenBSD: general.h,v 1.6 1997/02/17 08:58:46 deraadt Exp $*/
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +28,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)general.h	4.2 (Berkeley) 4/26/91
- *	$Id: general.h,v 1.2 1993/08/01 18:05:25 mycroft Exp $
  */
 
 /*
@@ -49,7 +45,8 @@
 #define	ClearArray(x)		memset((char *)x, 0, sizeof x)
 #endif	/* defined(unix) */
 
-#if	defined(unix)		/* Define BSD equivalent mem* functions */
+/* Define BSD equivalent mem* functions */
+#if	defined(unix) && !(defined(__NetBSD__) || defined(__OpenBSD__))
 #define	memcpy(dest,src,n)	bcopy(src,dest,n)
 #define	memmove(dest,src,n)	bcopy(src,dest,n)
 #define	memset(s,c,n)		if (c == 0) { \
@@ -63,4 +60,6 @@
 				    } \
 				}
 #define	memcmp(s1,s2,n)		bcmp(s1,s2,n)
-#endif	/* defined(unix) */
+#else /* !(defined(unix) && !(defined(__NetBSD__) || defined(__OpenBSD__))) */
+#include <string.h>
+#endif	/* !(defined(unix) && !(defined(__NetBSD__) || defined(__OpenBSD__))) */

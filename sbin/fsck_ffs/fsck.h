@@ -1,4 +1,5 @@
-/*	$NetBSD: fsck.h,v 1.10 1995/04/12 21:24:09 mycroft Exp $	*/
+/*	$OpenBSD: fsck.h,v 1.13 2003/08/25 23:28:15 tedu Exp $	*/
+/*	$NetBSD: fsck.h,v 1.13 1996/10/11 20:15:46 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -66,7 +63,7 @@ struct bufarea {
 		daddr_t	*b_indir;		/* indirect block */
 		struct	fs *b_fs;		/* super block */
 		struct	cg *b_cg;		/* cylinder group */
-		struct	dinode *b_dinode;	/* inode block */
+		struct	ufs1_dinode *b_dinode;	/* inode block */
 	} b_un;
 	char	b_dirty;
 };
@@ -79,7 +76,7 @@ struct bufarea sblk;		/* file system superblock */
 struct bufarea cgblk;		/* cylinder group blocks */
 struct bufarea *pdirbp;		/* current directory contents */
 struct bufarea *pbp;		/* current inode block */
-struct bufarea *getdatablk();
+struct bufarea *getdatablk(daddr_t, long);
 
 #define	dirty(bp)	(bp)->b_dirty = 1
 #define	initbarea(bp) \
@@ -96,7 +93,8 @@ enum fixstate {DONTKNOW, NOFIX, FIX, IGNORE};
 
 struct inodesc {
 	enum fixstate id_fix;	/* policy on fixing errors */
-	int (*id_func)();	/* function to be applied to blocks of inode */
+	int (*id_func)		/* function to be applied to blocks of inode */
+(struct inodesc *);
 	ino_t id_number;	/* inode number described */
 	ino_t id_parent;	/* for DATA nodes, their parent */
 	daddr_t id_blkno;	/* current block number being examined */
@@ -114,16 +112,16 @@ struct inodesc {
 
 /*
  * Linked list of duplicate blocks.
- * 
+ *
  * The list is composed of two parts. The first part of the
  * list (from duplist through the node pointed to by muldup)
- * contains a single copy of each duplicate block that has been 
+ * contains a single copy of each duplicate block that has been
  * found. The second part of the list (from muldup to the end)
  * contains duplicate blocks that have been found more than once.
  * To check if a block has been found as a duplicate it is only
- * necessary to search from duplist through muldup. To find the 
+ * necessary to search from duplist through muldup. To find the
  * total number of times that a block has been found as a duplicate
- * the entire list must be searched for occurences of the block
+ * the entire list must be searched for occurrences of the block
  * in question. The following diagram shows a sample list where
  * w (found twice), x (found once), y (found three times), and z
  * (found once) are duplicate block numbers:
@@ -154,6 +152,7 @@ struct zlncnt *zlnhead;		/* head of zero link count list */
  */
 struct inoinfo {
 	struct	inoinfo *i_nexthash;	/* next entry in hash chain */
+	struct	inoinfo	*i_child, *i_sibling, *i_parentp;
 	ino_t	i_number;		/* inode number of this entry */
 	ino_t	i_parent;		/* inode number of parent */
 	ino_t	i_dotdot;		/* inode number of `..' */
@@ -161,9 +160,9 @@ struct inoinfo {
 	u_int	i_numblks;		/* size of block array in bytes */
 	daddr_t	i_blks[1];		/* actually longer */
 } **inphead, **inpsort;
-long numdirs, listmax, inplast;
 
-char	*cdevname;		/* name of device being checked */
+extern long numdirs, listmax, inplast;
+
 long	dev_bsize;		/* computed value of DEV_BSIZE */
 long	secsize;		/* actual disk sector size */
 char	nflag;			/* assume a no response */
@@ -174,13 +173,15 @@ int	cvtlevel;		/* convert to newer file system format */
 int	doinglevel1;		/* converting to new cylinder group format */
 int	doinglevel2;		/* converting to new inode format */
 int	newinofmt;		/* filesystem has new inode format */
-char	preen;			/* just fix normal inconsistencies */
-char	hotroot;		/* checking root device */
+char    usedsoftdep;            /* just fix soft dependency inconsistencies */
+int	preen;			/* just fix normal inconsistencies */
+char    resolved;               /* cleared if unresolved changes => not clean */
 char	havesb;			/* superblock has been read */
 char	skipclean;		/* skip clean file systems if preening */
 int	fsmodified;		/* 1 => write done to file system */
 int	fsreadfd;		/* file descriptor for reading file system */
 int	fswritefd;		/* file descriptor for writing file system */
+int	rerun;			/* rerun fsck.  Only used in non-preen mode */
 
 daddr_t	maxfsblock;		/* number of blocks in the file system */
 char	*blockmap;		/* ptr to primary blk allocation map */
@@ -198,7 +199,7 @@ daddr_t	n_blks;			/* number of blocks in use */
 daddr_t	n_files;		/* number of files in use */
 
 #define	clearinode(dp)	(*(dp) = zino)
-struct	dinode zino;
+struct	ufs1_dinode zino;
 
 #define	setbmap(blkno)	setbit(blockmap, blkno)
 #define	testbmap(blkno)	isset(blockmap, blkno)
@@ -210,8 +211,10 @@ struct	dinode zino;
 #define	ALTERED	0x08
 #define	FOUND	0x10
 
-time_t time();
-struct dinode *ginode();
-struct inoinfo *getinoinfo();
-void getblk();
-ino_t allocino();
+struct ufs1_dinode *ginode(ino_t);
+struct inoinfo *getinoinfo(ino_t);
+void getblk(struct bufarea *, daddr_t, long);
+ino_t allocino(ino_t, int);
+
+int	(*info_fn)(char *, int);
+char	*info_filesys;

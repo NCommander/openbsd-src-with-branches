@@ -1,3 +1,4 @@
+/*	$OpenBSD: setovfl.c,v 1.5 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,24 +12,18 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/setovfl.c,v $
- * $Revision: 1.7.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:57 $
- */
+/* @(#)setovfl.c: Revision: 1.7.88.1 Date: 93/12/07 15:06:57 */
 
-
-#include "../spmath/float.h"
-#include "../spmath/sgl_float.h"
-#include "../spmath/dbl_float.h"
-
-sgl_floating_point 
+#include "float.h"
+#include "sgl_float.h"
+#include "dbl_float.h"
 
 /*ARGSUSED*/
+sgl_floating_point
 sgl_setoverflow(sign)
-
-unsigned int sign;
+	unsigned int sign;
 {
+	sgl_floating_point result;
 
 	/* set result to infinity or largest number */
 	/* ignore for now
@@ -55,18 +50,16 @@ unsigned int sign;
 		case ROUNDZERO:
 			Sgl_setlargest(result,sign);
 	}
-	return(result);
 	*/
+	return(result);
 }
 
-dbl_floating_point 
-
 /*ARGSUSED*/
-dbl_setoverflow(sign) 
-
-unsigned int sign;
+dbl_floating_point
+dbl_setoverflow(sign)
+	unsigned int sign;
 {
-
+	dbl_floating_point result;
 
 	/* set result to infinity or largest number */
 	/* ignore for now
@@ -93,6 +86,6 @@ unsigned int sign;
 		case ROUNDZERO:
 			Dbl_setlargest(result,sign);
 	}
-	return(result);
 	*/
+	return(result);
 }

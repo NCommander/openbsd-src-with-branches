@@ -1,4 +1,5 @@
-/*	$NetBSD: exec.h,v 1.57 1995/10/10 01:27:07 mycroft Exp $	*/
+/*	$OpenBSD: exec.h,v 1.21 2003/06/02 23:28:21 millert Exp $	*/
+/*	$NetBSD: exec.h,v 1.59 1996/02/09 18:25:09 christos Exp $	*/
 
 /*-
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -19,11 +20,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,6 +38,9 @@
  *
  *	@(#)exec.h	8.3 (Berkeley) 1/21/94
  */
+
+#ifndef _SYS_EXEC_H_
+#define _SYS_EXEC_H_
 
 /*
  * The following structure is found at the top of the user stack of each
@@ -60,24 +60,28 @@ struct ps_strings {
 /*
  * Address of ps_strings structure (in user space).
  */
+#ifdef MACHINE_STACK_GROWS_UP
+#define	PS_STRINGS	((struct ps_strings *)(USRSTACK))
+#else
 #define	PS_STRINGS \
 	((struct ps_strings *)(USRSTACK - sizeof(struct ps_strings)))
+#endif
 
 /*
  * Below the PS_STRINGS and sigtramp, we may require a gap on the stack
  * (used to copyin/copyout various emulation data structures).
  */
-#if defined(COMPAT_SUNOS) || defined(COMPAT_ULTRIX) || \
-    defined(COMPAT_IBCS2) || defined(COMPAT_SVR4) || defined(COMPAT_OSF1) || \
-    defined(COMPAT_LINUX) || defined(COMPAT_FREEBSD)
-#define	STACKGAPLEN	400	/* plenty enough for now */
-#else
-#define	STACKGAPLEN	0
-#endif
+#define	STACKGAPLEN	512	/* plenty enough for now */
+
+#ifdef MACHINE_STACK_GROWS_UP
 #define	STACKGAPBASE_UNALIGNED	\
-	((caddr_t)PS_STRINGS - szsigcode - STACKGAPLEN)
+	((caddr_t)PS_STRINGS + sizeof(struct ps_strings))
+#else
+#define	STACKGAPBASE_UNALIGNED	\
+	((caddr_t)PS_STRINGS - STACKGAPLEN)
+#endif
 #define	STACKGAPBASE		\
-	((caddr_t)(((unsigned long) STACKGAPBASE_UNALIGNED) & ~ALIGNBYTES))
+	((caddr_t)ALIGN(STACKGAPBASE_UNALIGNED))
 
 /*
  * the following structures allow execve() to put together processes
@@ -95,21 +99,36 @@ struct ps_strings {
 struct proc;
 struct exec_package;
 
-typedef int (*exec_makecmds_fcn) __P((struct proc *, struct exec_package *));
+typedef int (*exec_makecmds_fcn)(struct proc *, struct exec_package *);
 
 struct execsw {
 	u_int	es_hdrsz;		/* size of header for this format */
 	exec_makecmds_fcn es_check;	/* function to check exec format */
+	struct emul *es_emul;		/* emulation */
 };
+
+struct exec_vmcmd {
+	int	(*ev_proc)(struct proc *p, struct exec_vmcmd *cmd);
+				/* procedure to run for region of vmspace */
+	u_long	ev_len;		/* length of the segment to map */
+	u_long	ev_addr;	/* address in the vmspace to place it at */
+	struct	vnode *ev_vp;	/* vnode pointer for the file w/the data */
+	u_long	ev_offset;	/* offset in the file for the data */
+	u_int	ev_prot;	/* protections for segment */
+	int	ev_flags;
+#define VMCMD_RELATIVE  0x0001  /* ev_addr is relative to base entry */
+#define VMCMD_BASE      0x0002  /* marks a base entry */
+};
+
+#define	EXEC_DEFAULT_VMCMD_SETSIZE	8	/* # of cmds in set to start */
 
 /* exec vmspace-creation command set; see below */
 struct exec_vmcmd_set {
 	u_int	evs_cnt;
 	u_int	evs_used;
 	struct	exec_vmcmd *evs_cmds;
+	struct	exec_vmcmd evs_start[EXEC_DEFAULT_VMCMD_SETSIZE];
 };
-
-#define	EXEC_DEFAULT_VMCMD_SETSIZE	5	/* # of cmds in set to start */
 
 struct exec_package {
 	char	*ep_name;		/* file's name */
@@ -133,6 +152,9 @@ struct exec_package {
 	int	ep_fd;			/* a file descriptor we're holding */
 	struct  emul *ep_emul;		/* os emulation */
 	void	*ep_emul_arg;		/* emulation argument */
+	void	*ep_emul_argp;		/* emulation argument pointer */
+	char	*ep_interp;		/* name of interpreter if any */
+	u_long	ep_interp_pos;		/* interpreter load position */
 };
 #define	EXEC_INDIR	0x0001		/* script handling already done */
 #define	EXEC_HASFD	0x0002		/* holding a shell script */
@@ -140,43 +162,40 @@ struct exec_package {
 #define	EXEC_SKIPARG	0x0008		/* don't copy user-supplied argv[0] */
 #define	EXEC_DESTR	0x0010		/* destructive ops performed */
 
-struct exec_vmcmd {
-	int	(*ev_proc) __P((struct proc *p, struct exec_vmcmd *cmd));
-				/* procedure to run for region of vmspace */
-	u_long	ev_len;		/* length of the segment to map */
-	u_long	ev_addr;	/* address in the vmspace to place it at */
-	struct	vnode *ev_vp;	/* vnode pointer for the file w/the data */
-	u_long	ev_offset;	/* offset in the file for the data */
-	u_int	ev_prot;	/* protections for segment */
-};
-
 #ifdef _KERNEL
 /*
  * funtions used either by execve() or the various cpu-dependent execve()
  * hooks.
  */
-void	kill_vmcmd		__P((struct exec_vmcmd **));
-int	exec_makecmds		__P((struct proc *, struct exec_package *));
-int	exec_runcmds		__P((struct proc *, struct exec_package *));
-void	vmcmdset_extend		__P((struct exec_vmcmd_set *));
-void	kill_vmcmds		__P((struct exec_vmcmd_set *evsp));
-int	vmcmd_map_pagedvn	__P((struct proc *, struct exec_vmcmd *));
-int	vmcmd_map_readvn	__P((struct proc *, struct exec_vmcmd *));
-int	vmcmd_map_zero		__P((struct proc *, struct exec_vmcmd *));
-void	*copyargs		__P((struct exec_package *, struct ps_strings *,
-				     void *, void *));
-void	setregs			__P((struct proc *, struct exec_package *,
-				     u_long, register_t *));
+int	exec_makecmds(struct proc *, struct exec_package *);
+int	exec_runcmds(struct proc *, struct exec_package *);
+void	vmcmdset_extend(struct exec_vmcmd_set *);
+void	kill_vmcmds(struct exec_vmcmd_set *evsp);
+int	vmcmd_map_pagedvn(struct proc *, struct exec_vmcmd *);
+int	vmcmd_map_readvn(struct proc *, struct exec_vmcmd *);
+int	vmcmd_map_zero(struct proc *, struct exec_vmcmd *);
+void	*copyargs(struct exec_package *,
+				    struct ps_strings *,
+				    void *, void *);
+void	setregs(struct proc *, struct exec_package *,
+				    u_long, register_t *);
+int	check_exec(struct proc *, struct exec_package *);
+int	exec_setup_stack(struct proc *, struct exec_package *);
+int	exec_process_vmcmds(struct proc *, struct exec_package *);
 
 #ifdef DEBUG
-void	new_vmcmd __P((struct exec_vmcmd_set *evsp,
-		    int (*proc) __P((struct proc *p, struct exec_vmcmd *)),
+void	new_vmcmd(struct exec_vmcmd_set *evsp,
+		    int (*proc)(struct proc *p, struct exec_vmcmd *),
 		    u_long len, u_long addr, struct vnode *vp, u_long offset,
-		    u_int prot));
+		    u_int prot, int flags);
 #define	NEW_VMCMD(evsp,proc,len,addr,vp,offset,prot) \
-	new_vmcmd(evsp,proc,len,addr,vp,offset,prot);
+	new_vmcmd(evsp,proc,len,addr,vp,offset,prot, 0);
+#define NEW_VMCMD2(evsp,proc,len,addr,vp,offset,prot,flags) \
+	new_vmcmd(evsp,proc,len,addr,vp,offset,prot,flags)
 #else	/* DEBUG */
-#define	NEW_VMCMD(evsp,proc,len,addr,vp,offset,prot) { \
+#define NEW_VMCMD(evsp,proc,len,addr,vp,offset,prot) \
+	NEW_VMCMD2(evsp,proc,len,addr,vp,offset,prot,0)
+#define	NEW_VMCMD2(evsp,proc,len,addr,vp,offset,prot,flags) do { \
 	struct exec_vmcmd *vcp; \
 	if ((evsp)->evs_used >= (evsp)->evs_cnt) \
 		vmcmdset_extend(evsp); \
@@ -185,11 +204,20 @@ void	new_vmcmd __P((struct exec_vmcmd_set *evsp,
 	vcp->ev_len = (len); \
 	vcp->ev_addr = (addr); \
 	if ((vcp->ev_vp = (vp)) != NULLVP) \
-                VREF(vp); \
-        vcp->ev_offset = (offset); \
-        vcp->ev_prot = (prot); \
-}
-#endif /* EXEC_DEBUG */
+		VREF(vp); \
+	vcp->ev_offset = (offset); \
+	vcp->ev_prot = (prot); \
+	vcp->ev_flags = (flags); \
+} while (0)
+
+#endif /* DEBUG */
+
+/* Initialize an empty vmcmd set */
+#define VMCMDSET_INIT(vmc) do { \
+	(vmc)->evs_cnt = EXEC_DEFAULT_VMCMD_SETSIZE; \
+	(vmc)->evs_cmds = (vmc)->evs_start; \
+	(vmc)->evs_used = 0; \
+} while (0)	
 
 /*
  * Exec function switch:
@@ -209,3 +237,5 @@ extern int	exec_maxhdrsz;
 
 #include <sys/exec_aout.h>
 #include <machine/exec.h>
+
+#endif /* !_SYS_EXEC_H_ */

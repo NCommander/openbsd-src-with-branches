@@ -1,4 +1,5 @@
-/*	$NetBSD: hilvar.h,v 1.8 1994/10/26 07:24:16 cgd Exp $	*/
+/*	$OpenBSD: hilvar.h,v 1.5 2002/03/14 01:26:30 millert Exp $	*/
+/*	$NetBSD: hilvar.h,v 1.14 1997/04/01 19:29:10 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -95,7 +92,7 @@ struct hilloopdev {
 #define HIL_ASLEEP	0x40	/* process awaiting input on device */
 #define HIL_DERROR	0x80	/* loop has reconfigured, reality altered */
 
-struct hilloop {
+struct hil_softc {
 	struct	hil_dev	*hl_addr;	/* base of hardware registers */
 	u_char 	hl_cmddone;		/* */
 	u_char 	hl_cmdending;		/* */
@@ -117,3 +114,28 @@ struct hilloop {
 #define KBD_RAW		0x01		/* keyboard is raw */
 #define KBD_AR1		0x02		/* keyboard auto-repeat rate 1 */
 #define KBD_AR2		0x04		/* keyboard auto-repeat rate 2 */
+
+#ifdef _KERNEL
+void	kbdbell(int);
+void	kbdenable(int);
+void	kbddisable(int);
+int	kbdgetc(int *);
+void	kbdcninit(void);
+
+int	kbdnmi(void);
+
+void	hilsoftinit(int, struct hil_dev *);
+void	hilinit(int, struct hil_dev *);
+
+void	send_hil_cmd(struct hil_dev *, u_char,
+				u_char *, u_char, u_char *);
+void	send_hildev_cmd(struct hil_softc *, char, char);
+
+void	polloff(struct hil_dev *);
+void	pollon(struct hil_dev *);
+
+#ifdef COMPAT_HPUX
+int	hpuxhilioctl(dev_t, int, caddr_t, int);
+int	hildevno(dev_t);
+#endif /* COMPAT_HPUX */
+#endif /* _KERNEL */

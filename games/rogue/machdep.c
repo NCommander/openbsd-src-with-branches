@@ -1,3 +1,4 @@
+/*	$OpenBSD: machdep.c,v 1.9 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: machdep.c,v 1.5 1995/04/28 23:49:22 mycroft Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)machdep.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: machdep.c,v 1.5 1995/04/28 23:49:22 mycroft Exp $";
+static const char rcsid[] = "$OpenBSD: machdep.c,v 1.9 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,63 +53,19 @@ static char rcsid[] = "$NetBSD: machdep.c,v 1.5 1995/04/28 23:49:22 mycroft Exp 
  *
  */
 
-/* Included in this file are all system dependent routines.  Extensive use
- * of #ifdef's will be used to compile the appropriate code on each system:
- *
- *    UNIX:        all UNIX systems.
- *    UNIX_BSD4_2: UNIX BSD 4.2 and later, UTEK, (4.1 BSD too?)
- *    UNIX_SYSV:   UNIX system V
- *    UNIX_V7:     UNIX version 7
- *
- * All UNIX code should be included between the single "#ifdef UNIX" at the
- * top of this file, and the "#endif" at the bottom.
- * 
- * To change a routine to include a new UNIX system, simply #ifdef the
- * existing routine, as in the following example:
- *
- *   To make a routine compatible with UNIX system 5, change the first
- *   function to the second:
- *
- *      md_function()
- *      {
- *         code;
- *      }
- *
- *      md_function()
- *      {
- *      #ifdef UNIX_SYSV
- *         sys5code;
- *      #else
- *         code;
- *      #endif
- *      }
- *
- * Appropriate variations of this are of course acceptible.
- * The use of "#elseif" is discouraged because of non-portability.
- * If the correct #define doesn't exist, "UNIX_SYSV" in this case, make it up
- * and insert it in the list at the top of the file.  Alter the CFLAGS
- * in you Makefile appropriately.
- *
- */
+/* Included in this file are all system dependent routines. */
 
-#ifdef UNIX
-
-#include <stdio.h>
 #include <sys/types.h>
-#include <sys/file.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <pwd.h>
-
-#ifdef UNIX_BSD4_2
-#include <sys/time.h>
-#endif
-
-#ifdef UNIX_SYSV
 #include <time.h>
-#endif
 
 #include <signal.h>
+#include <stdlib.h>
 #include <termios.h>
+#include <unistd.h>
 #include "rogue.h"
 #include "pathnames.h"
 
@@ -128,6 +81,7 @@ static char rcsid[] = "$NetBSD: machdep.c,v 1.5 1995/04/28 23:49:22 mycroft Exp 
  * big deal.
  */
 
+void
 md_slurp()
 {
 	(void)fpurge(stdin);
@@ -149,6 +103,7 @@ md_slurp()
  * input, this is not usually critical.
  */
 
+void
 md_heed_signals()
 {
 	signal(SIGINT, onintr);
@@ -168,6 +123,7 @@ md_heed_signals()
  * file, corruption.
  */
 
+void
 md_ignore_signals()
 {
 	signal(SIGQUIT, SIG_IGN);
@@ -186,7 +142,7 @@ md_ignore_signals()
 
 int
 md_get_file_id(fname)
-char *fname;
+	const char *fname;
 {
 	struct stat sbuf;
 
@@ -206,7 +162,7 @@ char *fname;
 
 int
 md_link_count(fname)
-char *fname;
+	char *fname;
 {
 	struct stat sbuf;
 
@@ -228,10 +184,11 @@ char *fname;
  * saved-game files and play them.  
  */
 
+void
 md_gct(rt_buf)
-struct rogue_time *rt_buf;
+	struct rogue_time *rt_buf;
 {
-	struct tm *t, *localtime();
+	struct tm *t;
 	time_t seconds;
 
 	time(&seconds);
@@ -261,9 +218,10 @@ struct rogue_time *rt_buf;
  * saved-games that have been modified.
  */
 
+void
 md_gfmt(fname, rt_buf)
-char *fname;
-struct rogue_time *rt_buf;
+	char *fname;
+	struct rogue_time *rt_buf;
 {
 	struct stat sbuf;
 	time_t seconds;
@@ -294,7 +252,7 @@ struct rogue_time *rt_buf;
 
 boolean
 md_df(fname)
-char *fname;
+	const char *fname;
 {
 	if (unlink(fname)) {
 		return(0);
@@ -330,8 +288,9 @@ md_gln()
  * delaying execution, which is useful to this program at some times.
  */
 
+void
 md_sleep(nsecs)
-int nsecs;
+	int nsecs;
 {
 	(void) sleep(nsecs);
 }
@@ -342,17 +301,6 @@ int nsecs;
  * values are strings, and each string is identified by a name.  The names
  * of the values needed, and their use, is as follows:
  *
- *   TERMCAP
- *     The name of the users's termcap file, NOT the termcap entries
- *     themselves.  This is used ONLY if the program is compiled with
- *     CURSES defined (-DCURSES).  Even in this case, the program need
- *     not find a string for TERMCAP.  If it does not, it will use the
- *     default termcap file as returned by md_gdtcf();
- *   TERM
- *     The name of the users's terminal.  This is used ONLY if the program
- *     is compiled with CURSES defined (-DCURSES).  In this case, the string
- *     value for TERM must be found, or the routines in curses.c cannot
- *     function, and the program will quit.
  *   ROGUEOPTS
  *     A string containing the various game options.  This need not be
  *     defined.
@@ -365,20 +313,15 @@ int nsecs;
  *
  * If your system does not provide a means of searching for these values,
  * you will have to do it yourself.  None of the values above really need
- * to be defined except TERM when the program is compiled with CURSES
- * defined.  In this case, as a bare minimum, you can check the 'name'
- * parameter, and if it is "TERM" find the terminal name and return that,
- * else return zero.  If the program is not compiled with CURSES, you can
- * get by with simply always returning zero.  Returning zero indicates
- * that their is no defined value for the given string.
+ * to be defined.  You can get by simply always returning zero, which
+ * indicates that there is no defined value for the given string.
  */
 
 char *
 md_getenv(name)
-char *name;
+	const char *name;
 {
 	char *value;
-	char *getenv();
 
 	value = getenv(name);
 
@@ -395,9 +338,8 @@ char *name;
 
 char *
 md_malloc(n)
-int n;
+	int n;
 {
-	char *malloc();
 	char *t;
 
 	t = malloc(n);
@@ -422,6 +364,7 @@ int n;
  * exactly the same way given the same input.
  */
 
+int
 md_gseed()
 {
 	return(getpid());
@@ -434,8 +377,9 @@ md_gseed()
  * hang when it should quit.
  */
 
+void
 md_exit(status)
-int status;
+	int status;
 {
 	exit(status);
 }
@@ -451,17 +395,22 @@ int status;
  * the lock is released.
  */
 
+void
 md_lock(l)
-boolean l;
+	boolean l;
 {
+	extern gid_t gid, egid;
 	static int fd;
 	short tries;
 
 	if (l) {
+		setegid(egid);
 		if ((fd = open(_PATH_SCOREFILE, O_RDONLY)) < 1) {
-			message("cannot lock score file", 0);
+			setegid(gid);
+			messagef(0, "cannot lock score file");
 			return;
 		}
+		setegid(gid);
 		for (tries = 0; tries < 5; tries++)
 			if (!flock(fd, LOCK_EX|LOCK_NB))
 				return;
@@ -474,118 +423,31 @@ boolean l;
 /* md_shell():
  *
  * This function spawns a shell for the user to use.  When this shell is
- * terminated, the game continues.  Since this program may often be run
- * setuid to gain access to privileged files, care is taken that the shell
- * is run with the user's REAL user id, and not the effective user id.
- * The effective user id is restored after the shell completes.
+ * terminated, the game continues.
+ *
+ * It is important that the game not give the shell the privileges the
+ * game uses to access the scores file. This version of the game runs
+ * with privileges low by default; only the saved gid (if setgid) or uid
+ * (if setuid) will be privileged, but that privilege is discarded by
+ * exec().
  */
 
+void
 md_shell(shell)
-char *shell;
+	const char *shell;
 {
-	long w[2];
+	int w;
+	pid_t pid;
 
-	if (!fork()) {
-		int uid;
-
-		uid = getuid();
-		setuid(uid);
-		execl(shell, shell, 0);
-	}
-	wait(w);
-}
-
-/* If you have a viable curses/termlib library, then use it and don't bother
- * implementing the routines below.  And don't compile with -DCURSES.
- */
-
-#ifdef CURSES
-
-/* md_cbreak_no_echo_nonl:
- *
- * This routine sets up some terminal characteristics.  The tty-driver
- * must be told to:
- *   1.)  Not echo input.
- *   2.)  Transmit input characters immediately upon typing. (cbreak mode)
- *   3.)  Move the cursor down one line, without changing column, and
- *        without generating a carriage-return, when it
- *        sees a line-feed.  This is only necessary if line-feed is ever
- *        used in the termcap 'do' (cursor down) entry, in which case,
- *        your system should must have a way of accomplishing this.
- *
- * When the parameter 'on' is true, the terminal is set up as specified
- * above.  When this parameter is false, the terminal is restored to the
- * original state.
- *
- * Raw mode should not to be used.  Keyboard signals/events/interrupts should
- * be sent, although they are not strictly necessary.  See notes in
- * md_heed_signals().
- *
- * This function must be implemented for rogue to run properly if the
- * program is compiled with CURSES defined to use the enclosed curses
- * emulation package.  If you are not using this, then this routine is
- * totally unnecessary.
- * 
- * Notice that information is saved between calls.  This is used to
- * restore the terminal to an initial saved state.
- *
- */
-
-md_cbreak_no_echo_nonl(on)
-boolean on;
-{
-	struct termios tty_buf;
-	static struct termios tty_save;
-
-	if (on) {
-		tcgetattr(0, &tty_buf);
-		tty_save = tty_buf;
-		tty_buf.c_lflag &= ~(ICANON | ECHO);
-		tty_buf.c_oflag &= ~ONLCR;
-		tty_buf.c_cc[VMIN] = 1;
-		tty_buf.c_cc[VTIME] = 2;
-		tcsetattr(0, TCSADRAIN, &tty_buf);
-	} else {
-		tcsetattr(0, TCSADRAIN, &tty_save);
+	pid = fork();
+	switch(pid) {
+	case -1:
+		break;
+	case 0:
+		execl(shell, shell, (char *)NULL);
+		_exit(255);
+	default:
+		waitpid(pid, &w, 0);
+		break;
 	}
 }
-
-/* md_gdtcf(): (Get Default Termcap File)
- *
- * This function is called ONLY when the program is compiled with CURSES
- * defined.  If you use your system's curses/termlib library, this function
- * won't be called.  On most UNIX systems, "/etc/termcap" suffices.
- *
- * If their is no such termcap file, then return 0, but in that case, you
- * must have a TERMCAP file returned from md_getenv("TERMCAP").  The latter
- * will override the value returned from md_gdtcf().  If the program is
- * compiled with CURSES defined, and md_gdtcf() returns 0, and
- * md_getenv("TERMCAP") returns 0, the program will have no terminal
- * capability information and will quit.
- */
-
-char *
-md_gdtcf()
-{
-	return("/etc/termcap");
-}
-
-/* md_tstp():
- *
- * This function puts the game to sleep and returns to the shell.  This
- * only applies to UNIX 4.2 and 4.3.  For other systems, the routine should
- * be provided as a do-nothing routine.  md_tstp() will only be referenced
- * in the code when compiled with CURSES defined.
- *
- */
-
-md_tstp()
-{
-#ifdef UNIX_BSD4_2
-	kill(0, SIGTSTP);
-#endif
-}
-
-#endif
-
-#endif

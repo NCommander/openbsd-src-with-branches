@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_getloadavg.c,v 1.5 2003/07/18 23:05:13 david Exp $ */
+/*	$NetBSD: kvm_getloadavg.c,v 1.2 1996/03/18 22:33:31 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,7 +31,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
+#if 0
 static char sccsid[] = "@(#)kvm_getloadavg.c	8.1 (Berkeley) 6/4/93";
+#else
+static char *rcsid = "$OpenBSD: kvm_getloadavg.c,v 1.5 2003/07/18 23:05:13 david Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -40,12 +43,12 @@ static char sccsid[] = "@(#)kvm_getloadavg.c	8.1 (Berkeley) 6/4/93";
 #include <sys/resource.h>
 #include <sys/proc.h>
 #include <sys/sysctl.h>
-#include <vm/vm_param.h>
 
 #include <db.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <nlist.h>
+#include <stdlib.h>
 #include <kvm.h>
 
 #include "kvm_private.h"
@@ -65,10 +68,7 @@ static struct nlist nl[] = {
  * Return number of samples retrieved, or -1 on error.
  */
 int
-kvm_getloadavg(kd, loadavg, nelem)
-	kvm_t *kd;
-	double loadavg[];
-	int nelem;
+kvm_getloadavg(kvm_t *kd, double loadavg[], int nelem)
 {
 	struct loadavg loadinfo;
 	struct nlist *p;
@@ -78,7 +78,8 @@ kvm_getloadavg(kd, loadavg, nelem)
 		return (getloadavg(loadavg, nelem));
 
 	if (kvm_nlist(kd, nl) != 0) {
-		for (p = nl; p->n_type != 0; ++p);
+		for (p = nl; p->n_type != 0; ++p)
+			;
 		_kvm_err(kd, kd->program,
 		    "%s: no such symbol", p->n_name);
 		return (-1);

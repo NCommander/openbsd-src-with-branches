@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000, 2001, 2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: debug.c,v 1.25 2001/09/04 22:41:27 ca Exp $")
+SM_RCSID("@(#)$Sendmail: debug.c,v 1.29 2003/01/10 00:26:06 ca Exp $")
 
 /*
 **  libsm debugging and tracing
@@ -77,6 +77,29 @@ sm_debug_setfile(fp)
 }
 
 /*
+**  SM_DEBUG_CLOSE -- Close debug file pointer.
+**
+**	Parameters:
+**		none.
+**
+**	Returns:
+**		none.
+**
+**	Side Effects:
+**		Closes SmDebugOutput.
+*/
+
+void
+sm_debug_close()
+{
+	if (SmDebugOutput != NULL && SmDebugOutput != smioout)
+	{
+		sm_io_close(SmDebugOutput, SM_TIME_DEFAULT);
+		SmDebugOutput = NULL;
+	}
+}
+
+/*
 **  SM_DPRINTF -- printf() for debug output.
 **
 **	Parameters:
@@ -97,6 +120,8 @@ sm_dprintf(fmt, va_alist)
 {
 	SM_VA_LOCAL_DECL
 
+	if (SmDebugOutput == NULL)
+		return;
 	SM_VA_START(ap, fmt);
 	sm_io_vfprintf(SmDebugOutput, SmDebugOutput->f_timeout, fmt, ap);
 	SM_VA_END(ap);

@@ -1,4 +1,5 @@
-/*	$NetBSD: kbdmap.h,v 1.5 1995/03/28 18:16:17 jtc Exp $	*/
+/*	$OpenBSD: kbdmap.h,v 1.3 1997/01/12 15:12:53 downsj Exp $	*/
+/*	$NetBSD: kbdmap.h,v 1.7 1996/10/05 05:22:11 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -52,16 +49,22 @@ struct kbdmap {
 #define KBD_SPECIAL	0x00		/* user defined */
 #define KBD_US		0x1F		/* US ASCII */
 #define KBD_UK		0x17		/* United Kingdom */
+#define KBD_SE		0x0e		/* Swedish */
 
 #define KBD_DEFAULT	KBD_US		/* default type */
 
 #ifdef _KERNEL
 /* XXX: ITE interface */
-char	*kbd_keymap;
-char	*kbd_shiftmap;
-char	*kbd_ctrlmap;
-char	*kbd_ctrlshiftmap;
-char	**kbd_stringmap;
+extern	char *kbd_keymap;
+extern	char *kbd_shiftmap;
+extern	char *kbd_ctrlmap;
+extern	char *kbd_ctrlshiftmap;
+extern	char **kbd_stringmap;
+
+/* XXX: itecngetc() interface */
+extern	char *kbd_cn_keymap;
+extern	char *kbd_cn_shiftmap;
+extern	char *kbd_cn_ctrlmap;
 
 extern struct kbdmap kbd_map[];
 #endif

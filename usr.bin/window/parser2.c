@@ -1,3 +1,4 @@
+/*	$OpenBSD: parser2.c,v 1.4 2001/11/19 19:02:18 mpech Exp $	*/
 /*	$NetBSD: parser2.c,v 1.3 1995/09/28 10:34:32 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)parser2.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: parser2.c,v 1.3 1995/09/28 10:34:32 tls Exp $";
+static char rcsid[] = "$OpenBSD: parser2.c,v 1.4 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,16 +52,16 @@ static char rcsid[] = "$NetBSD: parser2.c,v 1.3 1995/09/28 10:34:32 tls Exp $";
  */
 p_function(name, v, flag)
 char *name;
-register struct value *v;
+struct value *v;
 {
 	struct value t;
-	register struct lcmd_tab *c = 0;
-	register struct alias *a = 0;
-	register struct lcmd_arg *ap;		/* this arg */
+	struct lcmd_tab *c = 0;
+	struct alias *a = 0;
+	struct lcmd_arg *ap;			/* this arg */
 	struct lcmd_arg *lp = 0;		/* list arg */
-	register i;
+	int i;
 	struct value av[LCMD_NARG + 1];
-	register struct value *vp;
+	struct value *vp;
 
 	if (name != 0)
 		if (c = lcmd_lookup(name))

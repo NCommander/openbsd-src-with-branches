@@ -1,5 +1,3 @@
-/*	$NetBSD: sscanf.c,v 1.6 1995/02/02 02:10:38 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,19 +31,12 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sscanf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: sscanf.c,v 1.6 1995/02/02 02:10:38 jtc Exp $";
+static char rcsid[] = "$OpenBSD: sscanf.c,v 1.5 2002/02/19 19:39:37 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 #include <string.h>
-#if __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "local.h"
 
 /* ARGSUSED */
@@ -63,14 +50,8 @@ eofread(cookie, buf, len)
 	return (0);
 }
 
-#if __STDC__
+int
 sscanf(const char *str, char const *fmt, ...)
-#else
-sscanf(str, fmt, va_alist)
-	const char *str;
-	char *fmt;
-	va_dcl
-#endif
 {
 	int ret;
 	va_list ap;
@@ -82,11 +63,7 @@ sscanf(str, fmt, va_alist)
 	f._read = eofread;
 	f._ub._base = NULL;
 	f._lb._base = NULL;
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	ret = __svfscanf(&f, fmt, ap);
 	va_end(ap);
 	return (ret);

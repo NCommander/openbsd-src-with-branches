@@ -39,13 +39,15 @@ RCSID("$KTH: print_version.c,v 1.6 2003/01/02 15:32:50 joda Exp $");
 
 #include "print_version.h"
 
+char *__progname;
+
 void
 print_version(const char *progname)
 {
     const char *package_list = VERSIONLIST;
     
     if(progname == NULL)
-	progname = getprogname();
+	progname = __progname;
     
     if(*package_list == '\0')
 	package_list = "no version information";

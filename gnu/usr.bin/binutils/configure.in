@@ -633,6 +633,9 @@ case "${target}" in
   mips*-dec-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
+  mips*-*-openbsd*)
+    noconfigdirs="$noconfigdirs target-libgloss target-libffi ${libgcj}"
+    ;;
   mips*-*-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
@@ -690,6 +693,9 @@ case "${target}" in
     ;;
   v850ea-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    ;;
+  vax-*-openbsd*)
+    noconfigdirs="$noconfigdirs ld gas gprof ${libgcj}"
     ;;
   vax-*-vms)
     noconfigdirs="$noconfigdirs bfd binutils gdb ld target-newlib opcodes target-libgloss ${libgcj}"
@@ -1740,6 +1746,8 @@ for item in ${target_configdirs} ; do
   olditem=${item}
 done
 serialization_dependencies=serdep.tmp
+# override on OpenBSD
+serialization_dependencies=/dev/null
 AC_SUBST_FILE(serialization_dependencies)
 
 # Base args.  Strip norecursion, cache-file, srcdir, host, build,

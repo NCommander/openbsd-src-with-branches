@@ -1,3 +1,6 @@
+/*	$OpenBSD: rdate.c,v 1.21 2004/02/16 21:25:41 jakob Exp $	*/
+/*	$NetBSD: rdate.c,v 1.4 1996/03/16 12:37:45 pk Exp $	*/
+
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -26,56 +29,82 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *	$Id: rdate.c,v 1.1 1994/06/02 22:55:07 deraadt Exp $
  */
 
 /*
  * rdate.c: Set the date from the specified host
- * 
- * 	Uses the rfc868 time protocol at socket 37.
+ *
+ *	Uses the rfc868 time protocol at socket 37.
  *	Time is returned as the number of seconds since
  *	midnight January 1st 1900.
  */
 #ifndef lint
-static char rcsid[] = "$Id: rdate.c,v 1.1 1994/06/02 22:55:07 deraadt Exp $";
+#if 0
+from: static char rcsid[] = "$NetBSD: rdate.c,v 1.3 1996/02/22 06:59:18 thorpej Exp $";
+#else
+static const char rcsid[] = "$OpenBSD: rdate.c,v 1.21 2004/02/16 21:25:41 jakob Exp $";
+#endif
 #endif				/* lint */
 
-#include <sys/types.h>
 #include <sys/param.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+
 #include <stdio.h>
 #include <ctype.h>
+#include <err.h>
 #include <string.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
+#include <unistd.h>
+#include <time.h>
 
-/* seconds from midnight Jan 1900 - 1970 */
-#if __STDC__
-#define DIFFERENCE 2208988800UL
+/* there are systems without libutil; for portability */
+#ifndef NO_UTIL
+#include <util.h>
 #else
-#define DIFFERENCE 2208988800
+#define logwtmp(a,b,c)
 #endif
 
-int
-main(argc, argv)
-	int             argc;
-	char           *argv[];
+void rfc868time_client (const char *, int, struct timeval *, struct timeval *, int);
+void ntp_client (const char *, int, struct timeval *, struct timeval *, int);
+
+extern char    *__progname;
+
+void
+usage(void)
 {
-	int             pr = 0, silent = 0, s;
-	time_t          tim;
+	(void) fprintf(stderr, "Usage: %s [-46acnpsv] host\n", __progname);
+	(void) fprintf(stderr, "  -4: use IPv4 only\n");
+	(void) fprintf(stderr, "  -6: use IPv6 only\n");
+	(void) fprintf(stderr, "  -a: use adjtime instead of instant change\n");
+	(void) fprintf(stderr, "  -c: correct leap second count\n");
+	(void) fprintf(stderr, "  -n: use SNTP instead of RFC868 time protocol\n");
+	(void) fprintf(stderr, "  -p: just print, don't set\n");
+	(void) fprintf(stderr, "  -s: just set, don't print\n");
+	(void) fprintf(stderr, "  -v: verbose output\n");
+}
+
+int
+main(int argc, char **argv)
+{
+	int             pr = 0, silent = 0, ntp = 0, verbose = 0;
+	int		slidetime = 0, corrleaps = 0;
 	char           *hname;
-	struct hostent *hp;
-	struct protoent *pp, ppp;
-	struct servent *sp, ssp;
-	struct sockaddr_in sa;
-	extern char    *__progname;
 	extern int      optind;
 	int             c;
+	int		family = PF_UNSPEC;
 
-	while ((c = getopt(argc, argv, "ps")) != -1)
+	struct timeval new, adjust;
+
+	while ((c = getopt(argc, argv, "46psancv")) != -1)
 		switch (c) {
+		case '4':
+			family = PF_INET;
+			break;
+
+		case '6':
+			family = PF_INET6;
+			break;
+
 		case 'p':
 			pr++;
 			break;
@@ -84,58 +113,73 @@ main(argc, argv)
 			silent++;
 			break;
 
+		case 'a':
+			slidetime++;
+			break;
+
+		case 'n':
+			ntp++;
+			break;
+
+		case 'c':
+			corrleaps = 1;
+			break;
+
+		case 'v':
+			verbose++;
+			break;
+
 		default:
-			goto usage;
+			usage();
+			return 1;
 		}
 
 	if (argc - 1 != optind) {
-usage:
-		(void) fprintf(stderr, "Usage: %s [-ps] host\n", __progname);
-		return (1);
+		usage();
+		return 1;
 	}
 	hname = argv[optind];
 
-	if ((hp = gethostbyname(hname)) == NULL) {
-		fprintf(stderr, "%s: ", __progname);
-		herror(hname);
-		exit(1);
-	}
-
-	if ((sp = getservbyname("time", "tcp")) == NULL) {
-		sp = &ssp;
-		sp->s_port = 37;
-		sp->s_proto = "tcp";
-	}
-	if ((pp = getprotobyname(sp->s_proto)) == NULL) {
-		pp = &ppp;
-		pp->p_proto = 6;
-	}
-	if ((s = socket(AF_INET, SOCK_STREAM, pp->p_proto)) == -1)
-		err(1, "Could not create socket");
-
-	bzero(&sa, sizeof sa);
-	sa.sin_family = AF_INET;
-	sa.sin_port = sp->s_port;
-
-	memcpy(&(sa.sin_addr.s_addr), hp->h_addr, hp->h_length);
-
-	if (connect(s, (struct sockaddr *) & sa, sizeof(sa)) == -1)
-		err(1, "Could not connect socket");
-
-	if (read(s, &tim, sizeof(time_t)) != sizeof(time_t))
-		err(1, "Could not read data");
-
-	(void) close(s);
-	tim = ntohl(tim) - DIFFERENCE;
+	if (ntp)
+		ntp_client(hname, family, &new, &adjust, corrleaps);
+	else
+		rfc868time_client(hname, family, &new, &adjust, corrleaps);
 
 	if (!pr) {
-		struct timeval  tv;
-		tv.tv_sec = tim;
-		tv.tv_usec = 0;
-		if (settimeofday(&tv, NULL) == -1)
-			err(1, "Could not set time of day");
+		if (!slidetime) {
+			logwtmp("|", "date", "");
+			if (settimeofday(&new, NULL) == -1)
+				err(1, "Could not set time of day");
+			logwtmp("{", "date", "");
+		} else {
+			if (adjtime(&adjust, NULL) == -1)
+				err(1, "Could not adjust time of day");
+		}
 	}
-	if (!silent)
-		(void) fputs(ctime(&tim), stdout);
+
+	if (!silent) {
+		struct tm      *ltm;
+		char		buf[80];
+		time_t		tim = new.tv_sec;
+		double		adjsec;
+
+		ltm = localtime(&tim);
+		(void) strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y\n", ltm);
+		(void) fputs(buf, stdout);
+
+		adjsec  = adjust.tv_sec + adjust.tv_usec / 1.0e6;
+
+		if (slidetime || verbose) {
+			if (ntp)
+				(void) fprintf(stdout,
+				   "%s: adjust local clock by %.6f seconds\n",
+				   __progname, adjsec);
+			else
+				(void) fprintf(stdout,
+				   "%s: adjust local clock by %ld seconds\n",
+				   __progname, adjust.tv_sec);
+		}
+	}
+
 	return 0;
 }

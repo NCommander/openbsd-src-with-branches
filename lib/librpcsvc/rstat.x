@@ -1,3 +1,5 @@
+/*	$OpenBSD: rstat.x,v 1.3 2003/06/19 10:10:19 deraadt Exp $	*/
+
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -5,23 +7,23 @@
  * may copy or modify Sun RPC without charge, but are not authorized
  * to license or distribute it to anyone else except as part of a product or
  * program developed by the user.
- * 
+ *
  * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
  * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
+ *
  * Sun RPC is provided with no support and without any obligation on the
  * part of Sun Microsystems, Inc. to assist in its use, correction,
  * modification or enhancement.
- * 
+ *
  * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
  * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
  * OR ANY PART THEREOF.
- * 
+ *
  * In no event will Sun Microsystems, Inc. be liable for any lost revenue
  * or profits or other special, indirect and consequential damages, even if
  * Sun has been advised of the possibility of such damages.
- * 
+ *
  * Sun Microsystems, Inc.
  * 2550 Garcia Avenue
  * Mountain View, California  94043
@@ -37,8 +39,8 @@
 %/*
 % * Scale factor for scaled integers used to count load averages.
 % */
-%#define FSHIFT  8               /* bits to right of fixed binary point */
-%#define FSCALE  (1<<FSHIFT)
+%#define FSHIFT	8		/* bits to right of fixed binary point */
+%#define FSCALE	(1<<FSHIFT)
 %
 %#endif /* ndef FSCALE */
 
@@ -47,7 +49,7 @@
 %#ifndef lint
 %/*static char sccsid[] = "from: @(#)rstat.x 1.2 87/09/18 Copyr 1987 Sun Micro";*/
 %/*static char sccsid[] = "from: @(#)rstat.x	2.2 88/08/01 4.0 RPCSRC";*/
-%static char rcsid[] = "$Id: rstat.x,v 1.1 1995/01/12 19:39:55 jtc Exp $";
+%static char rcsid[] = "$OpenBSD: rstat.x,v 1.3 2003/06/19 10:10:19 deraadt Exp $";
 %#endif /* not lint */
 
 #endif /* def RPC_HDR */
@@ -76,7 +78,7 @@ struct statstime {				/* RSTATVERS_TIME */
 	int if_oerrors;
 	int if_collisions;
 	unsigned int v_swtch;
-	int avenrun[3];         /* scaled by FSCALE */
+	int avenrun[3];		/* scaled by FSCALE */
 	rstat_timeval boottime;
 	rstat_timeval curtime;
 	int if_opackets;

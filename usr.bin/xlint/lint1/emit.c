@@ -1,3 +1,4 @@
+/*	$OpenBSD: emit.c,v 1.4 2002/02/19 19:39:39 millert Exp $	*/
 /*	$NetBSD: emit.c,v 1.2 1995/07/03 21:24:00 cgd Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: emit.c,v 1.2 1995/07/03 21:24:00 cgd Exp $";
+static char rcsid[] = "$OpenBSD: emit.c,v 1.4 2002/02/19 19:39:39 millert Exp $";
 #endif
 
 #include <stdio.h>
@@ -49,7 +50,7 @@ static	FILE	*lout;
 /* output buffer data */
 ob_t	ob;
 
-static	void	outxbuf __P((void));
+static	void	outxbuf(void);
 
 
 /*
@@ -163,18 +164,10 @@ outqchar(c)
 		case '\r':
 			outchar('r');
 			break;
-#ifdef __STDC__
 		case '\v':
-#else
-		case '\013':
-#endif
 			outchar('v');
 			break;
-#ifdef __STDC__
 		case '\a':
-#else
-		case '\007':
-#endif
 			outchar('a');
 			break;
 		default:
@@ -209,9 +202,10 @@ void
 outint(i)
 	int	i;
 {
-	if ((ob.o_end - ob.o_nxt) < 3 * sizeof (int))
+	if ((ob.o_end - ob.o_nxt) < 12)
 		outxbuf();
-	ob.o_nxt += sprintf(ob.o_nxt, "%d", i);
+	snprintf(ob.o_nxt, ob.o_end - ob.o_nxt, "%d", i);
+	ob.o_nxt += strlen(ob.o_nxt);
 }
 
 /*

@@ -1,4 +1,4 @@
-/*	$PMDB: aout_syms.c,v 1.17 2002/03/11 21:46:12 art Exp $	*/
+/*	$OpenBSD: aout_syms.c,v 1.9 2002/07/22 01:20:50 art Exp $	*/
 /*
  * Copyright (c) 2002 Federico Schwindt <fgsch@openbsd.org>
  * All rights reserved. 
@@ -24,6 +24,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
+#include <sys/param.h>
+#include <sys/ptrace.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,21 +36,11 @@
 #include <string.h>
 #include <err.h>
 
-#include <sys/param.h>
-#include <sys/ptrace.h>
-#include <sys/mman.h>
-
-#include <sys/types.h>
 #include <a.out.h>
 #include <link.h>
 
 #include "pmdb.h"
 #include "symbol.h"
-
-#if defined(__OpenBSD__) && (OpenBSD < 200106)
-/* OpenBSD prior to 2.9 have a broken pread on big-endian archs. */
-#define IGNORE_PREAD_ERRORS
-#endif
 
 struct aout_symbol_handle {
 	struct sym_table	ash_st;
@@ -54,7 +49,6 @@ struct aout_symbol_handle {
 	u_int32_t	ash_strsize;
 	struct nlist   *ash_symtab;
 	int		ash_symsize;
-	int		ash_offs;
 };
 
 #define ASH_TO_ST(ash) (&(ash)->ash_st)
@@ -78,32 +72,33 @@ int
 sym_check_aout(const char *name, struct pstate *ps)
 {
 	struct exec ahdr;
+	int error = 0;
 	int fd;
 
 	if ((fd = open(name, O_RDONLY)) < 0)
-		return (-1);
+		return (1);
 
 	if (pread(fd, &ahdr, sizeof(ahdr), 0) != sizeof(ahdr)) {
-#ifndef IGNORE_PREAD_ERRORS
-		return (-1);
-#endif
+		error = 1;
 	}
 
-	if (N_BADMAG(ahdr)) {
-		return (-1);
+	if (!error && N_BADMAG(ahdr)) {
+		error = 1;
 	}
 
 	close(fd);
 
-	ps->ps_sops = &aout_sops;
+	if (!error)
+		ps->ps_sops = &aout_sops;
 
-	return (0);
+	return (error);
 }
 
 struct sym_table *
 aout_open(const char *name)
 {
 	struct aout_symbol_handle *ash;
+	struct stat sb;
 	u_int32_t symoff, stroff;
 	struct exec ahdr;
 
@@ -120,10 +115,8 @@ aout_open(const char *name)
 	}
 
 	if (pread(ash->ash_fd, &ahdr, sizeof(ahdr), 0) != sizeof(ahdr)) {
-#ifndef IGNORE_PREAD_ERRORS
 		warn("pread(header)");
 		goto fail;
-#endif
 	}
 
 	if (N_BADMAG(ahdr)) {
@@ -131,16 +124,24 @@ aout_open(const char *name)
 		goto fail;
 	}
 
+	/* Don't go further for stripped files. */
+	if (fstat(ash->ash_fd, &sb) < 0 || N_SYMOFF(ahdr) == sb.st_size ||
+	    N_STROFF(ahdr) == sb.st_size)
+		goto fail;
+
 	symoff = N_SYMOFF(ahdr);
 	ash->ash_symsize = ahdr.a_syms;
 	stroff = N_STROFF(ahdr);
 
+	if (ahdr.a_syms == 0) {
+		warnx("No symbol table");
+		goto fail;
+	}
+
 	if (pread(ash->ash_fd, &ash->ash_strsize, sizeof(u_int32_t),
 	    stroff) != sizeof(u_int32_t)) {
-#ifndef IGNORE_PREAD_ERRORS
 		warn("pread(strsize)");
 		goto fail;
-#endif
 	}
 
 	if ((ash->ash_strtab = mmap(NULL, ash->ash_strsize, PROT_READ,
@@ -184,7 +185,7 @@ aout_name_and_off(struct sym_table *st, reg pc, reg *offs)
 	int nsyms, i;
 	char *symn;
 
-#define SYMVAL(S) (unsigned long)((S)->n_value + ash->ash_offs)
+#define SYMVAL(S) (unsigned long)((S)->n_value + st->st_offs)
 
 	nsyms = ash->ash_symsize / sizeof(struct nlist);
 
@@ -252,8 +253,7 @@ restart:
 
 	if (s == NULL) {
 		if (first) {
-			asprintf(&sname, "_%s", sname);
-			if (sname != NULL) {
+			if (asprintf(&sname, "_%s", sname) != -1) {
 				first = 0;
 				goto restart;
 			}
@@ -262,7 +262,7 @@ restart:
 		return (-1);
 	}
 
-	*res = s->n_value + ST_TO_ASH(st)->ash_offs;
+	*res = s->n_value + st->st_offs;
 	return (0);
 }
 
@@ -272,7 +272,6 @@ restart:
 void
 aout_update(struct pstate *ps)
 {
-	pid_t pid = ps->ps_pid;
 	struct _dynamic dyn;
 	struct so_debug sdeb;
 	struct section_dispatch_table sdt;
@@ -285,9 +284,9 @@ aout_update(struct pstate *ps)
 		warnx("Can't find __DYNAMIC");
 		return;
 	}
-	addr = s->n_value + ST_TO_ASH(ps->ps_sym_exe)->ash_offs;
+	addr = s->n_value + ps->ps_sym_exe->st_offs;
 
-	if (read_from_pid(pid, addr, &dyn, sizeof(dyn)) < 0) {
+	if (process_read(ps, addr, &dyn, sizeof(dyn)) < 0) {
 		warn("Can't read __DYNAMIC");
 		return;
 	}
@@ -297,7 +296,7 @@ aout_update(struct pstate *ps)
 		return;
 	}
 
-	if (read_from_pid(pid, (off_t)(reg)dyn.d_debug, &sdeb, sizeof(sdeb)) < 0) {
+	if (process_read(ps, (off_t)(reg)dyn.d_debug, &sdeb, sizeof(sdeb)) < 0) {
 		warn("Can't read __DYNAMIC.d_debug");
 		return;
 	}
@@ -307,23 +306,22 @@ aout_update(struct pstate *ps)
 		return;
 	}
 
-	if (read_from_pid(pid, (off_t)(reg)dyn.d_un.d_sdt, &sdt, sizeof(sdt)) < 0) {
+	if (process_read(ps, (off_t)(reg)dyn.d_un.d_sdt, &sdt, sizeof(sdt)) < 0) {
 		warn("Can't read section dispatch table");
 		return;
 	}
 
 	somp = (off_t)(reg)sdt.sdt_loaded;
 	while (somp) {
-		struct sym_table *st;
 		char fname[MAXPATHLEN];
 		int i;
 
-		if (read_from_pid(pid, somp, &som, sizeof(som)) < 0) {
+		if (process_read(ps, somp, &som, sizeof(som)) < 0) {
 			warn("Can't read so_map");
 			break;
 		}
 		somp = (off_t)(reg)som.som_next;
-		if (read_from_pid(pid, (off_t)(reg)som.som_path, fname,
+		if (process_read(ps, (off_t)(reg)som.som_path, fname,
 		    sizeof(fname)) < 0) {
 			warn("Can't read so filename");
 			continue;
@@ -338,11 +336,7 @@ aout_update(struct pstate *ps)
 			continue;
 		}
 
-		st = st_open(ps, fname);
-		if (st == NULL) {
+		if (st_open(ps, fname, (reg)som.som_addr) == NULL)
 			warn("symbol loading failed");
-			continue;
-		}
-		ST_TO_ASH(st)->ash_offs = (int)som.som_addr;
 	}
 }

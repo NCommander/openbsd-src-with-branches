@@ -1,4 +1,5 @@
-/*	$NetBSD: hil_keymaps.c,v 1.5 1994/10/26 07:24:13 cgd Exp $	*/
+/*	$OpenBSD: hil_keymaps.c,v 1.4 1997/04/16 11:56:07 downsj Exp $	*/
+/*	$NetBSD: hil_keymaps.c,v 1.7 1997/03/31 07:34:22 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -238,22 +235,101 @@ char	uk_ctrlshiftmap[] = {
 };
 #endif
 
+#ifdef SE_KEYBOARD
+char	se_keymap[] = {
+	NULL,	'<',	'\'',	ESC,	NULL,	DEL,	NULL,	NULL,  
+	'\n',	'\t',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,  
+	NULL,	'\n',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,  
+	NULL,	'\t',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	'\b',	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	ESC,	'\r',	NULL,	'\n',	'0',	'.',	',',	'+',
+	'1',	'2',	'3',	'-',	'4',	'5',	'6',	'*',
+	'7',	'8',	'9',	'/',	'E',	'(',	')',	'^',
+	'1',	'2',	'3',	'4',	'5',	'6',	'7',	'8',
+	'9',	'0',	'+',	'`',	'}',	'~',	'|',	'{',
+	',',	'.',	'-',	'\040',	'o',	'p',	'k',	'l',
+	'q',	'w',	'e',	'r',	't',	'y',	'u',	'i',
+	'a',	's',	'd',	'f',	'g',	'h',	'j',	'm',
+	'z',	'x',	'c',	'v',	'b',	'n',	NULL,	NULL
+};
+
+char	se_shiftmap[] = {
+	NULL,	'>',	'*',	DEL,	NULL,	DEL,	NULL,	NULL,
+	'\n',	'\t',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	'\n',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	'\t',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	DEL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	ESC,	'\r',	NULL,	'\n',	'0',	'.',	',',	'+',
+	'1',	'2',	'3',	'-',	'4',	'5',	'6',	'*',
+	'7',	'8',	'9',	'-',	'`',	'*',	'\\',	'>',
+	'!',	'\"',	'#',	'$',	'%',	'&',	'/',	'(',
+	')',	'=',	'?',	'@',	']',	'^',	'\\',	'[',
+	';',	':',	'_',	'\040',	'O',	'P',	'K',	'L',
+	'Q',	'W',	'E',	'R',	'T',	'Y',	'U',	'I',
+	'A',	'S',	'D',	'F',	'G',	'H',	'J',	'M',
+	'Z',	'X',	'C',	'V',	'B',	'N',	NULL,	NULL
+};
+
+char	se_ctrlmap[] = {
+	NULL,	'`',	'\034',	ESC,	NULL,	DEL,	NULL,	NULL,
+	'\n',	'\t',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	'\n',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	'\t',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	'\b',	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	ESC,	'\r',	NULL,	'\n',	'0',	'.',	',',	'+',
+	'1',	'2',	'3',	'-',	'4',	'5',	'6',	'*',
+	'7',	'8',	'9',	'/',	'E',	'(',	')',	'\036',
+	'1',	'2',	'3',	'4',	'5',	'6',	'7',	'8',
+	'9',	'0',	'-',	'=',	'\033',	'\035',	';',	'\'',
+	',',	'.',	'/',	'\040',	'\017',	'\020',	'\013',	'\014',
+	'\021',	'\027',	'\005',	'\022',	'\024',	'\031',	'\025',	'\011',
+	'\001',	'\023',	'\004',	'\006',	'\007',	'\010',	'\012',	'\015',
+	'\032',	'\030',	'\003',	'\026',	'\002',	'\016',	NULL,	NULL
+};
+
+char	se_ctrlshiftmap[] = {
+	NULL,	'~',	'|',	DEL,	NULL,	DEL,	NULL,	NULL,
+	'\n',	'\t',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	'\n',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	'\t',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	DEL,	NULL,
+	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+	ESC,	'\r',	NULL,	'\n',	'0',	'.',	',',	'+',
+	'1',	'2',	'3',	'-',	'4',	'5',	'6',	'*',
+	'7',	'8',	'9',	'/',	'`',	'|',	'\034',	'~',
+	'!',	'\000',	'#',	'$',	'%',	'\036',	'&',	'*',
+	'(',	')',	'\037',	'+',	'{',	'}',	':',	'\"',
+	'<',	'>',	'?',	'\040',	'\017',	'\020',	'\013',	'\014',
+	'\021',	'\027',	'\005',	'\022',	'\024',	'\031',	'\025',	'\011',
+	'\001',	'\023',	'\004',	'\006',	'\007',	'\010',	'\012',	'\015',
+	'\032',	'\030',	'\003',	'\026',	'\002',	'\016',	NULL,	NULL
+};
+#endif
+
 /*
  * The keyboard map table.
  * Lookup is by hardware returned language code.
  */
 struct kbdmap kbd_map[] = {
-	KBD_US,		"US ASCII",
-	us_keymap,	us_shiftmap,	us_ctrlmap,	us_ctrlshiftmap,
-	us_stringmap,
+	{ KBD_US, "US ASCII",
+	    us_keymap, us_shiftmap, us_ctrlmap, us_ctrlshiftmap, us_stringmap },
 
 #ifdef UK_KEYBOARD
-	KBD_UK,		"United Kingdom",
-	uk_keymap,	uk_shiftmap,	uk_ctrlmap,	uk_ctrlshiftmap,
-	us_stringmap,
+	{ KBD_UK,  "United Kingdom",
+	    uk_keymap, uk_shiftmap, uk_ctrlmap, uk_ctrlshiftmap, us_stringmap },
 #endif
 
-	0,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,
+#ifdef SE_KEYBOARD
+	{ KBD_SE,  "Swedish",
+	    se_keymap, se_shiftmap, se_ctrlmap, se_ctrlshiftmap, us_stringmap },
+#endif
+
+	{ 0,  NULL, NULL,  NULL,  NULL,  NULL, NULL },
 };

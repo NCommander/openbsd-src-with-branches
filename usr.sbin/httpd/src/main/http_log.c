@@ -1,3 +1,5 @@
+/*	$OpenBSD: http_log.c,v 1.14 2003/08/21 13:11:35 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -187,7 +189,7 @@ static int error_log_child(void *cmd, child_info *pinfo)
     child_pid = spawnl(P_NOWAIT, SHELL_PATH, SHELL_PATH, "/c", (char *)cmd, NULL);
     return(child_pid);
 #else    
-    execl(SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, NULL);
+    execl(SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, (char *)NULL);
 #endif    
     exit(1);
     /* NOT REACHED */
@@ -314,6 +316,9 @@ static void log_error_core(const char *file, int line, int level,
 			   const char *fmt, va_list args)
 {
     char errstr[MAX_STRING_LEN];
+#ifndef AP_UNSAFE_ERROR_LOG_UNESCAPED
+    char scratch[MAX_STRING_LEN];
+#endif
     size_t len;
     int save_errno = errno;
     FILE *logf;
@@ -445,7 +450,14 @@ static void log_error_core(const char *file, int line, int level,
     }
 #endif
 
+#ifndef AP_UNSAFE_ERROR_LOG_UNESCAPED
+    if (ap_vsnprintf(scratch, sizeof(scratch) - len, fmt, args)) {
+        len += ap_escape_errorlog_item(errstr + len, scratch,
+                                       sizeof(errstr) - len);
+    }
+#else
     len += ap_vsnprintf(errstr + len, sizeof(errstr) - len, fmt, args);
+#endif
 
     /* NULL if we are logging to syslog */
     if (logf) {
@@ -511,7 +523,8 @@ API_EXPORT(void) ap_log_pid(pool *p, char *fname)
 
     fname = ap_server_root_relative(p, fname);
     mypid = getpid();
-    if (mypid != saved_pid && stat(fname, &finfo) == 0) {
+    if (!ap_server_chroot_desired() && mypid != saved_pid 
+      && stat(fname, &finfo) == 0) {
       /* USR1 and HUP call this on each restart.
        * Only warn on first time through for this pid.
        *
@@ -611,7 +624,7 @@ static int piped_log_spawn(piped_log *pl)
 	ap_cleanup_for_exec();
 	signal(SIGCHLD, SIG_DFL);	/* for HPUX */
 	signal(SIGHUP, SIG_IGN);
-	execl(SHELL_PATH, SHELL_PATH, "-c", pl->program, NULL);
+	execl(SHELL_PATH, SHELL_PATH, "-c", pl->program, (char *)NULL);
 	fprintf(stderr,
 	    "piped_log_spawn: unable to exec %s -c '%s': %s\n",
 	    SHELL_PATH, pl->program, strerror (errno));
@@ -768,7 +781,7 @@ static int piped_log_child(void *cmd, child_info *pinfo)
     child_pid = spawnl(P_NOWAIT, SHELL_PATH, SHELL_PATH, "/c", (char *)cmd, NULL);
     return(child_pid);
 #else
-    execl (SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, NULL);
+    execl (SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, (char *)NULL);
 #endif
     perror("exec");
     fprintf(stderr, "Exec of shell for logging failed!!!\n");

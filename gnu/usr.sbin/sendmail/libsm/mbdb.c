@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2001-2002 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: mbdb.c,v 1.21 2001/03/16 00:38:43 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: mbdb.c,v 1.40 2003/12/10 03:19:07 gshapiro Exp $")
 
 #include <sys/param.h>
 
@@ -17,6 +17,7 @@ SM_RCSID("@(#)$Sendmail: mbdb.c,v 1.21 2001/03/16 00:38:43 gshapiro Exp $")
 #include <pwd.h>
 #include <stdlib.h>
 #include <setjmp.h>
+#include <unistd.h>
 
 #include <sm/limits.h>
 #include <sm/conf.h>
@@ -26,6 +27,9 @@ SM_RCSID("@(#)$Sendmail: mbdb.c,v 1.21 2001/03/16 00:38:43 gshapiro Exp $")
 #include <sm/heap.h>
 #include <sm/mbdb.h>
 #include <sm/string.h>
+# ifdef EX_OK
+#  undef EX_OK			/* for SVr4.2 SMP */
+# endif /* EX_OK */
 #include <sm/sysexits.h>
 
 #if LDAPMAP
@@ -110,7 +114,9 @@ sm_mbdb_initialize(mbdb)
 		if (strlen(t->mbdb_typename) == namelen &&
 		    strncmp(name, t->mbdb_typename, namelen) == 0)
 		{
-			err = t->mbdb_initialize(arg);
+			err = EX_OK;
+			if (t->mbdb_initialize != NULL)
+				err = t->mbdb_initialize(arg);
 			if (err == EX_OK)
 				SmMbdbType = t;
 			return err;
@@ -137,7 +143,8 @@ sm_mbdb_initialize(mbdb)
 void
 sm_mbdb_terminate()
 {
-	SmMbdbType->mbdb_terminate();
+	if (SmMbdbType->mbdb_terminate != NULL)
+		SmMbdbType->mbdb_terminate();
 }
 
 /*
@@ -159,7 +166,11 @@ sm_mbdb_lookup(name, user)
 	char *name;
 	SM_MBDB_T *user;
 {
-	return SmMbdbType->mbdb_lookup(name, user);
+	int ret = EX_NOUSER;
+
+	if (SmMbdbType->mbdb_lookup != NULL)
+		ret = SmMbdbType->mbdb_lookup(name, user);
+	return ret;
 }
 
 /*
@@ -207,6 +218,20 @@ sm_mbdb_frompw(user, pw)
 **		none.
 */
 
+#if _FFR_HANDLE_ISO8859_GECOS
+static char Latin1ToASCII[128] =
+{
+	32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
+	32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33,
+	99, 80, 36, 89, 124, 36, 34, 99, 97, 60, 45, 45, 114, 45, 111, 42,
+	50, 51, 39, 117, 80, 46, 44, 49, 111, 62, 42, 42, 42, 63, 65, 65,
+	65, 65, 65, 65, 65, 67, 69, 69, 69, 69, 73, 73, 73, 73, 68, 78, 79,
+	79, 79, 79, 79, 88, 79, 85, 85, 85, 85, 89, 80, 66, 97, 97, 97, 97,
+	97, 97, 97, 99, 101, 101, 101, 101, 105, 105, 105, 105, 100, 110,
+	111, 111, 111, 111, 111, 47, 111, 117, 117, 117, 117, 121, 112, 121
+};
+#endif /* _FFR_HANDLE_ISO8859_GECOS */
+
 void
 sm_pwfullname(gecos, user, buf, buflen)
 	register char *gecos;
@@ -237,7 +262,14 @@ sm_pwfullname(gecos, user, buf, buflen)
 			bp += strlen(bp);
 		}
 		else
-			*bp++ = *p;
+		{
+#if _FFR_HANDLE_ISO8859_GECOS
+			if ((unsigned char) *p >= 128)
+				*bp++ = Latin1ToASCII[(unsigned char) *p - 128];
+			else
+#endif /* _FFR_HANDLE_ISO8859_GECOS */
+				*bp++ = *p;
+		}
 	}
 	*bp = '\0';
 }
@@ -435,10 +467,6 @@ mbdb_ldap_initialize(arg)
 		}
 		LDAPLMAP.ldap_base = new;
 	}
-
-	/* No connection yet, connect */
-	if (!sm_ldap_start(MBDB_LDAP_LABEL, &LDAPLMAP))
-		return EX_UNAVAILABLE;
 	return EX_OK;
 }
 
@@ -487,6 +515,12 @@ mbdb_ldap_lookup(name, user)
 		return EX_TEMPFAIL;
 	}
 
+	if (LDAPLMAP.ldap_pid != getpid())
+	{
+		/* re-open map in this child process */
+		LDAPLMAP.ldap_ld = NULL;
+	}
+
 	if (LDAPLMAP.ldap_ld == NULL)
 	{
 		/* map not open, try to open now */
@@ -510,7 +544,7 @@ mbdb_ldap_lookup(name, user)
 		return EX_TEMPFAIL;
 	}
 
-	/* Get results (all if MF_NOREWRITE, otherwise one by one) */
+	/* Get results */
 	ret = ldap_result(LDAPLMAP.ldap_ld, msgid, 1,
 			  (LDAPLMAP.ldap_timeout.tv_sec == 0 ? NULL :
 			   &(LDAPLMAP.ldap_timeout)),
@@ -567,7 +601,10 @@ mbdb_ldap_lookup(name, user)
 		{
 			errno = sm_ldap_geterrno(LDAPLMAP.ldap_ld);
 			if (errno == LDAP_SUCCESS)
+			{
+				ldap_memfree(attr);
 				continue;
+			}
 
 			/* Must be an error */
 			errno += E_LDAPBASE;
@@ -665,9 +702,7 @@ mbdb_ldap_lookup(name, user)
 
 skip:
 		ldap_value_free(vals);
-# if USING_NETSCAPE_LDAP
 		ldap_memfree(attr);
-# endif /* USING_NETSCAPE_LDAP */
 	}
 
 	errno = sm_ldap_geterrno(LDAPLMAP.ldap_ld);
@@ -694,9 +729,7 @@ skip:
 	save_errno = errno;
 	if (attr != NULL)
 	{
-# if USING_NETSCAPE_LDAP
 		ldap_memfree(attr);
-# endif /* USING_NETSCAPE_LDAP */
 		attr = NULL;
 	}
 	if (LDAPLMAP.ldap_res != NULL)
@@ -736,13 +769,6 @@ static void
 mbdb_ldap_terminate()
 {
 	sm_ldap_close(&LDAPLMAP);
-	if (LDAPLMAP.ldap_base != MBDB_DEFAULT_LDAP_BASEDN)
-	{
-		if (LDAPLMAP.ldap_host != MBDB_DEFAULT_LDAP_SERVER)
-			LDAPLMAP.ldap_host = NULL;
-		sm_free(LDAPLMAP.ldap_base);
-		LDAPLMAP.ldap_base = NULL;
-	}
 }
 # endif /* _LDAP_EXAMPLE_ */
 #endif /* LDAPMAP */

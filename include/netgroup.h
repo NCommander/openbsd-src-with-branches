@@ -1,3 +1,4 @@
+/* * $OpenBSD: netgroup.h,v 1.4 2002/02/16 21:27:17 millert Exp $*/
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -28,7 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: netgroup.h,v 1.1 1994/12/03 00:00:58 christos Exp $
  */
 #ifndef _NETGROUP_H_
 #define	_NETGROUP_H_
@@ -58,11 +58,22 @@ struct netgroup {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void	setnetgrent	__P((const char *));
-int	getnetgrent	__P((const char **, const char **, const char **));
-void	endnetgrent	__P((void));
-int	innetgr		__P((const char *, const char *, const char *,
-			     const char *));
+void	setnetgrent(const char *);
+int	getnetgrent(const char **, const char **, const char **);
+void	endnetgrent(void);
+int	innetgr(const char *, const char *, const char *, const char *);
+#ifdef _NETGROUP_PRIVATE
+struct stringlist;
+
+struct stringlist *_ng_sl_init(void);
+void	_ng_sl_add(struct stringlist *, char *);
+void	_ng_sl_free(struct stringlist *, int);
+char    *_ng_sl_find(struct stringlist *, char *);
+char    *_ng_makekey(const char *, const char *, size_t);
+int	_ng_parse(char **, char **, struct netgroup **);
+void	_ng_print(char *, size_t, const struct netgroup *);
+#endif /* _NETGROUP_PRIVATE */
+
 __END_DECLS
 
 #endif /* !_NETGROUP_H_ */

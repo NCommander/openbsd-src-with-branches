@@ -1,3 +1,4 @@
+/*	$OpenBSD: abandon.c,v 1.4 2002/05/31 04:21:30 pjanzen Exp $	*/
 /*	$NetBSD: abandon.c,v 1.3 1995/04/22 10:58:24 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,11 +34,12 @@
 #if 0
 static char sccsid[] = "@(#)abandon.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: abandon.c,v 1.3 1995/04/22 10:58:24 cgd Exp $";
+static char rcsid[] = "$OpenBSD: abandon.c,v 1.4 2002/05/31 04:21:30 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
+#include <stdio.h>
+#include "trek.h"
 
 /*
 **  Abandon Ship
@@ -64,23 +62,29 @@ static char rcsid[] = "$NetBSD: abandon.c,v 1.3 1995/04/22 10:58:24 cgd Exp $";
 **	is at least one starbase, you are returned to the
 **	Federation in a prisoner of war exchange.  Of course, this
 **	can't happen unless you have taken some prisoners.
-**
-**	Uses trace flag 40
 */
 
-abandon()
+void
+abandon(v)
+	int v;
 {
-	register struct quad	*q;
-	register int		i;
-	int			j;
-	register struct event	*e;
+	struct quad	*q;
+	int		i;
+	int		j;
+	struct event	*e;
 
 	if (Ship.ship == QUEENE)
-		return (printf("You may not abandon ye Faire Queene\n"));
+	{
+		printf("You may not abandon ye Faire Queene\n");
+		return;
+	}
 	if (Ship.cond != DOCKED)
 	{
 		if (damaged(SHUTTLE))
-			return (out(SHUTTLE));
+		{
+			out(SHUTTLE);
+			return;
+		}
 		printf("Officers escape in shuttlecraft\n");
 		/* decide on fate of crew */
 		q = &Quad[Ship.quadx][Ship.quady];
@@ -154,7 +158,7 @@ abandon()
 			if (Sect[Ship.sectx][Ship.secty] == EMPTY)
 			{
 				Sect[Ship.sectx][Ship.secty] = QUEENE;
-				dock();
+				dock(0);
 				compkldist(0);
 				return;
 			}

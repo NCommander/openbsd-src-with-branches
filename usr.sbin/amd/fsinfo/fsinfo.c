@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)fsinfo.c	8.1 (Berkeley) 6/6/93
- *	$Id: fsinfo.c,v 1.3 1994/06/13 20:50:19 mycroft Exp $
+ *	$Id: fsinfo.c,v 1.6 2002/08/04 23:04:31 pvalchev Exp $
  */
 
 #ifndef lint
@@ -67,7 +63,6 @@ int verbose;
 char idvbuf[1024];
 
 char **g_argv;
-char *progname;
 
 /*
  * Output file prefixes
@@ -90,21 +85,10 @@ char *v[];
 	int ch;
 	int usage = 0;
 	char *iptr = idvbuf;
+	int iptr_size = sizeof(idvbuf);
+	size_t l;
 
-	/*
-	 * Determine program name
-	 */
-	if (v[0]) {
-		progname = strrchr(v[0], '/');
-		if (progname && progname[1])
-			progname++;
-		else
-			progname = v[0];
-	}
-	if (!progname)
-		progname = "fsinfo";
-
-	while ((ch = getopt(c, v, "a:b:d:e:f:h:m:D:U:I:qv")) != EOF)
+	while ((ch = getopt(c, v, "a:b:d:e:f:h:m:D:U:I:qv")) != -1)
 	switch (ch) {
 	case 'a':
 		autodir = optarg;
@@ -120,7 +104,7 @@ char *v[];
 		dumpset_pref = optarg;
 		break;
 	case 'h':
-		strncpy(hostname, optarg, sizeof(hostname)-1);
+		strlcpy(hostname, optarg, sizeof(hostname));
 		break;
 	case 'e':
 		if (exportfs_pref)
@@ -144,8 +128,14 @@ char *v[];
 		verbose = 1;
 		break;
 	case 'I': case 'D': case 'U':
-		sprintf(iptr, "-%c%s ", ch, optarg);
-		iptr += strlen(iptr);
+		l = snprintf(iptr, iptr_size, "-%c%s ", ch, optarg);
+		if (l >= iptr_size || l < 0)
+			usage++;
+		else {
+			l = strlen(iptr);
+			iptr_size -= l;
+			iptr += strlen(iptr);
+		}
 		break;
 	default:
 		usage++;
@@ -165,7 +155,7 @@ char *v[];
 "\
 Usage: %s [-v] [-a autodir] [-h hostname] [-b bootparams] [-d dumpsets]\n\
 \t[-e exports] [-f fstabs] [-m automounts]\n\
-\t[-I dir] [-D|-U string[=string]] config ...\n", progname);
+\t[-I dir] [-D|-U string[=string]] config ...\n", __progname);
 		exit(1);
 	}
 
@@ -190,9 +180,9 @@ static char *find_username()
 			u = pw->pw_name;
 	}
 	if (!u)
-		u = getenv("USER");
-	if (!u)
 		u = getenv("LOGNAME");
+	if (!u)
+		u = getenv("USER");
 	if (!u)
 		u = "root";
 
@@ -202,9 +192,10 @@ static char *find_username()
 /*
  * MAIN
  */
+int
 main(argc, argv)
-int argc;
-char *argv[];
+	int argc;
+	char *argv[];
 {
 	/*
 	 * Process arguments
@@ -214,10 +205,8 @@ char *argv[];
 	/*
 	 * If no hostname given then use the local name
 	 */
-	if (!*hostname && gethostname(hostname, sizeof(hostname)) < 0) {
-		perror("gethostname");
-		exit(1);
-	}
+	if (!*hostname && gethostname(hostname, sizeof(hostname)) < 0)
+		err(1, "gethostname");
 
 	/*
 	 * Get the username
@@ -269,5 +258,5 @@ char *argv[];
 
 	col_cleanup(1);
 
-	exit(errors);
+	return (errors);
 }

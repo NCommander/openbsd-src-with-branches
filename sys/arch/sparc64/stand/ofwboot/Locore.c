@@ -1,3 +1,4 @@
+/*	$OpenBSD: Locore.c,v 1.4 2002/03/14 03:16:01 millert Exp $	*/
 /*	$NetBSD: Locore.c,v 1.1 2000/08/20 14:58:36 mrg Exp $	*/
 
 /*
@@ -36,18 +37,18 @@
 
 #include <machine/cpu.h>
 
-vaddr_t OF_claim_virt __P((vaddr_t vaddr, int len));
-vaddr_t OF_alloc_virt __P((int len, int align));
-int OF_free_virt __P((vaddr_t vaddr, int len));
-int OF_unmap_virt __P((vaddr_t vaddr, int len));
-vaddr_t OF_map_phys __P((paddr_t paddr, off_t size, vaddr_t vaddr, int mode));
-paddr_t OF_alloc_phys __P((int len, int align));
-paddr_t OF_claim_phys __P((paddr_t phys, int len));
-int OF_free_phys __P((paddr_t paddr, int len));
+vaddr_t OF_claim_virt(vaddr_t vaddr, int len);
+vaddr_t OF_alloc_virt(int len, int align);
+int OF_free_virt(vaddr_t vaddr, int len);
+int OF_unmap_virt(vaddr_t vaddr, int len);
+vaddr_t OF_map_phys(paddr_t paddr, off_t size, vaddr_t vaddr, int mode);
+paddr_t OF_alloc_phys(int len, int align);
+paddr_t OF_claim_phys(paddr_t phys, int len);
+int OF_free_phys(paddr_t paddr, int len);
 
 extern int openfirmware(void *);
 
-void setup __P((void));
+void setup(void);
 
 #if 0
 #ifdef XCOFF_GLUE
@@ -407,7 +408,7 @@ OF_chain(virt, size, entry, arg, len)
 			(unsigned long)romp, (unsigned long)romp);
 	}
 	entry(0, arg, len, (unsigned long)romp, (unsigned long)romp);
-	panic("OF_chain: kernel returned!\n");
+	panic("OF_chain: kernel returned!");
 	__asm("ta 2" : :);
 }
 
@@ -813,15 +814,15 @@ OF_claim(virt, size, align)
  */
 
 	paddr_t paddr;
-	void* newvirt = NULL;
+	void * newvirt = NULL;
 
 	if (virt == NULL) {
-		if ((virt = (void*)OF_alloc_virt(size, align)) == (void*)-1) {
+		if ((virt = (void *)OF_alloc_virt(size, align)) == (void *)-1) {
 			printf("OF_alloc_virt(%d,%d) failed w/%x\n", size, align, virt);
 			return (void *)-1;
 		}
 	} else {
-		if ((newvirt = (void*)OF_claim_virt((vaddr_t)virt, size)) == (void*)-1) {
+		if ((newvirt = (void *)OF_claim_virt((vaddr_t)virt, size)) == (void *)-1) {
 			printf("OF_claim_virt(%x,%d) failed w/%x\n", virt, size, newvirt);
 			return (void *)-1;
 		}

@@ -1,3 +1,4 @@
+/*	$OpenBSD: spec_hit.c,v 1.5 2002/07/18 07:13:57 pjanzen Exp $	*/
 /*	$NetBSD: spec_hit.c,v 1.3 1995/04/22 10:28:29 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)spec_hit.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: spec_hit.c,v 1.3 1995/04/22 10:28:29 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: spec_hit.c,v 1.5 2002/07/18 07:13:57 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,45 +58,35 @@ static char rcsid[] = "$NetBSD: spec_hit.c,v 1.3 1995/04/22 10:28:29 cgd Exp $";
 short less_hp = 0;
 boolean being_held;
 
-extern short cur_level, max_level, blind, levitate, ring_exp;
-extern long level_points[];
-extern boolean detect_monster, mon_disappeared;
-extern boolean sustain_strength, maintain_armor;
-extern char *you_can_move_again;
-
+void
 special_hit(monster)
-object *monster;
+	object *monster;
 {
-	if ((monster->m_flags & CONFUSED) && rand_percent(66)) {
+	if ((monster->m_flags & CONFUSED) && rand_percent(66))
 		return;
-	}
-	if (monster->m_flags & RUSTS) {
+	if (wizard && rand_percent(50))
+		return;
+	if (monster->m_flags & RUSTS)
 		rust(monster);
-	}
-	if ((monster->m_flags & HOLDS) && !levitate) {
+	if ((monster->m_flags & HOLDS) && !levitate)
 		being_held = 1;
-	}
-	if (monster->m_flags & FREEZES) {
+	if (monster->m_flags & FREEZES)
 		freeze(monster);
-	}
-	if (monster->m_flags & STINGS) {
+	if (monster->m_flags & STINGS)
 		sting(monster);
-	}
-	if (monster->m_flags & DRAINS_LIFE) {
+	if (monster->m_flags & DRAINS_LIFE)
 		drain_life();
-	}
-	if (monster->m_flags & DROPS_LEVEL) {
+	if (monster->m_flags & DROPS_LEVEL)
 		drop_level();
-	}
-	if (monster->m_flags & STEALS_GOLD) {
+	if (monster->m_flags & STEALS_GOLD)
 		steal_gold(monster);
-	} else if (monster->m_flags & STEALS_ITEM) {
+	else if (monster->m_flags & STEALS_ITEM) 
 		steal_item(monster);
-	}
 }
 
+void
 rust(monster)
-object *monster;
+	object *monster;
 {
 	if ((!rogue.armor) || (get_armor_class(rogue.armor) <= 1) ||
 		(rogue.armor->which_kind == LEATHER)) {
@@ -107,18 +94,19 @@ object *monster;
 	}
 	if ((rogue.armor->is_protected) || maintain_armor) {
 		if (monster && (!(monster->m_flags & RUST_VANISHED))) {
-			message("the rust vanishes instantly", 0);
+			messagef(0, "the rust vanishes instantly");
 			monster->m_flags |= RUST_VANISHED;
 		}
 	} else {
 		rogue.armor->d_enchant--;
-		message("your armor weakens", 0);
+		messagef(0, "your armor weakens");
 		print_stats(STAT_ARMOR);
 	}
 }
 
+void
 freeze(monster)
-object *monster;
+	object *monster;
 {
 	short freeze_percent = 99;
 	short i, n;
@@ -133,7 +121,7 @@ object *monster;
 
 	if (freeze_percent > 10) {
 		monster->m_flags |= FREEZING_ROGUE;
-		message("you are frozen", 1);
+		messagef(1, "you are frozen");
 
 		n = get_rand(4, 8);
 		for (i = 0; i < n; i++) {
@@ -145,13 +133,14 @@ object *monster;
 			}
 			killed_by((object *)0, HYPOTHERMIA);
 		}
-		message(you_can_move_again, 1);
+		messagef(1, "%s", you_can_move_again);
 		monster->m_flags &= (~FREEZING_ROGUE);
 	}
 }
 
+void
 steal_gold(monster)
-object *monster;
+	object *monster;
 {
 	int amount;
 
@@ -165,16 +154,17 @@ object *monster;
 		amount = rogue.gold;
 	}
 	rogue.gold -= amount;
-	message("your purse feels lighter", 0);
+	messagef(0, "your purse feels lighter");
 	print_stats(STAT_GOLD);
 	disappear(monster);
 }
 
+void
 steal_item(monster)
-object *monster;
+	object *monster;
 {
 	object *obj;
-	short i, n, t;
+	short i, n, t = 0;
 	char desc[80];
 	boolean has_something = 0;
 
@@ -209,13 +199,12 @@ object *monster;
 			}
 		}
 	}
-	(void) strcpy(desc, "she stole ");
 	if (obj->what_is != WEAPON) {
 		t = obj->quantity;
 		obj->quantity = 1;
 	}
-	get_desc(obj, desc+10);
-	message(desc, 0);
+	get_desc(obj, desc, sizeof(desc));
+	messagef(0, "she stole %s", desc);
 
 	obj->quantity = ((obj->what_is != WEAPON) ? t : 1);
 
@@ -224,8 +213,9 @@ DSPR:
 	disappear(monster);
 }
 
+void
 disappear(monster)
-object *monster;
+	object *monster;
 {
 	short row, col;
 
@@ -241,8 +231,9 @@ object *monster;
 	mon_disappeared = 1;
 }
 
+void
 cough_up(monster)
-object *monster;
+	object *monster;
 {
 	object *obj;
 	short row, col, i, n;
@@ -285,11 +276,13 @@ object *monster;
 	free_object(obj);
 }
 
+boolean
 try_to_cough(row, col, obj)
-short row, col;
-object *obj;
+	short row, col;
+	object *obj;
 {
-	if ((row < MIN_ROW) || (row > (DROWS-2)) || (col < 0) || (col>(DCOLS-1))) {
+	if ((row < MIN_ROW) ||
+	    (row > (DROWS-2)) || (col < 0) || (col>(DCOLS-1))) {
 		return(0);
 	}
 	if ((!(dungeon[row][col] & (OBJECT | STAIRS | TRAP))) &&
@@ -304,8 +297,9 @@ object *obj;
 	return(0);
 }
 
+boolean
 seek_gold(monster)
-object *monster;
+	object *monster;
 {
 	short i, j, rn, s;
 
@@ -336,8 +330,9 @@ object *monster;
 	return(0);
 }
 
+boolean
 gold_at(row, col)
-short row, col;
+	short row, col;
 {
 	if (dungeon[row][col] & OBJECT) {
 		object *obj;
@@ -350,38 +345,38 @@ short row, col;
 	return(0);
 }
 
+void
 check_gold_seeker(monster)
-object *monster;
+	object *monster;
 {
 	monster->m_flags &= (~SEEKS_GOLD);
 }
 
+boolean
 check_imitator(monster)
-object *monster;
+	object *monster;
 {
-	char msg[80];
-
 	if (monster->m_flags & IMITATES) {
 		wake_up(monster);
 		if (!blind) {
 			mvaddch(monster->row, monster->col,
 					get_dungeon_char(monster->row, monster->col));
 			check_message();
-			sprintf(msg, "wait, that's a %s!", mon_name(monster));
-			message(msg, 1);
+			messagef(1, "wait, that's a %s!", mon_name(monster));
 		}
 		return(1);
 	}
 	return(0);
 }
 
+boolean
 imitating(row, col)
-register short row, col;
+	short row, col;
 {
 	if (dungeon[row][col] & MONSTER) {
-		object *object_at(), *monster;
+		object *monster;
 
-		if (monster = object_at(&level_monsters, row, col)) {
+		if ((monster = object_at(&level_monsters, row, col))) {
 			if (monster->m_flags & IMITATES) {
 				return(1);
 			}
@@ -390,11 +385,11 @@ register short row, col;
 	return(0);
 }
 
+void
 sting(monster)
-object *monster;
+	object *monster;
 {
 	short sting_chance = 35;
-	char msg[80];
 
 	if ((rogue.str_current <= 3) || sustain_strength) {
 		return;
@@ -405,14 +400,14 @@ object *monster;
 		sting_chance -= (6 * ((rogue.exp + ring_exp) - 8));
 	}
 	if (rand_percent(sting_chance)) {
-		sprintf(msg, "the %s's bite has weakened you",
-		mon_name(monster));
-		message(msg, 0);
+		messagef(0, "the %s's bite has weakened you",
+		    mon_name(monster));
 		rogue.str_current--;
 		print_stats(STAT_STRENGTH);
 	}
 }
 
+void
 drop_level()
 {
 	int hp;
@@ -432,6 +427,7 @@ drop_level()
 	add_exp(1, 0);
 }
 
+void
 drain_life()
 {
 	short n;
@@ -442,7 +438,7 @@ drain_life()
 	n = get_rand(1, 3);		/* 1 Hp, 2 Str, 3 both */
 
 	if ((n != 2) || (!sustain_strength)) {
-		message("you feel weaker", 0);
+		messagef(0, "you feel weaker");
 	}
 	if (n != 2) {
 		rogue.hp_max--;
@@ -460,11 +456,10 @@ drain_life()
 	print_stats((STAT_STRENGTH | STAT_HP));
 }
 
+boolean
 m_confuse(monster)
-object *monster;
+	object *monster;
 {
-	char msg[80];
-
 	if (!rogue_can_see(monster->row, monster->col)) {
 		return(0);
 	}
@@ -474,16 +469,17 @@ object *monster;
 	}
 	if (rand_percent(55)) {
 		monster->m_flags &= (~CONFUSES);
-		sprintf(msg, "the gaze of the %s has confused you", mon_name(monster));
-		message(msg, 1);
+		messagef(1, "the gaze of the %s has confused you",
+		    mon_name(monster));
 		cnfs();
 		return(1);
 	}
 	return(0);
 }
 
+boolean
 flame_broil(monster)
-object *monster;
+	object *monster;
 {
 	short row, col, dir;
 
@@ -508,8 +504,9 @@ object *monster;
 	return(1);
 }
 
+int
 get_dir(srow, scol, drow, dcol)
-short srow, scol, drow, dcol;
+	short srow, scol, drow, dcol;
 {
 	if (srow == drow) {
 		if (scol < dcol) {

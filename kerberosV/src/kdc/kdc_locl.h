@@ -43,7 +43,7 @@
 extern krb5_context context;
 
 extern int require_preauth;
-extern sig_atomic_t exit_flag;
+extern volatile sig_atomic_t exit_flag;
 extern size_t max_request;
 extern time_t kdc_warn_pwexpire;
 extern struct dbinfo {
@@ -62,12 +62,18 @@ extern krb5_boolean encode_as_rep_as_tgs_rep;
 extern krb5_boolean check_ticket_addresses;
 extern krb5_boolean allow_null_ticket_addresses;
 extern krb5_boolean allow_anonymous;
+enum { TRPOLICY_ALWAYS_CHECK,
+       TRPOLICY_ALLOW_PER_PRINCIPAL, 
+       TRPOLICY_ALWAYS_HONOUR_REQUEST };
+extern int trpolicy;
 extern int enable_524;
 extern int enable_v4_cross_realm;
 
 #ifdef KRB4
 extern char *v4_realm;
 extern int enable_v4;
+extern int enable_524;
+extern int enable_v4_cross_realm;
 extern krb5_boolean enable_kaserver;
 #endif
 

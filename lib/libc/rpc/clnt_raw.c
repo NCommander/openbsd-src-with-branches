@@ -1,5 +1,3 @@
-/*	$NetBSD: clnt_raw.c,v 1.3 1995/02/25 03:01:40 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)clnt_raw.c 1.22 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)clnt_raw.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: clnt_raw.c,v 1.3 1995/02/25 03:01:40 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: clnt_raw.c,v 1.9 2001/03/03 06:50:28 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * clnt_raw.c
@@ -46,6 +42,7 @@ static char *rcsid = "$NetBSD: clnt_raw.c,v 1.3 1995/02/25 03:01:40 cgd Exp $";
  * any interference from the kernal.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <rpc/rpc.h>
 
@@ -62,12 +59,13 @@ static struct clntraw_private {
 	u_int	mcnt;
 } *clntraw_private;
 
-static enum clnt_stat	clntraw_call();
-static void		clntraw_abort();
-static void		clntraw_geterr();
-static bool_t		clntraw_freeres();
-static bool_t		clntraw_control();
-static void		clntraw_destroy();
+static enum clnt_stat	clntraw_call(CLIENT *, u_long, xdrproc_t, caddr_t,
+			    xdrproc_t, caddr_t, struct timeval);
+static void		clntraw_abort(CLIENT *);
+static void		clntraw_geterr(CLIENT *, struct rpc_err *);
+static bool_t		clntraw_freeres(CLIENT *, xdrproc_t, caddr_t);
+static bool_t		clntraw_control(CLIENT *, u_int, void *);
+static void		clntraw_destroy(CLIENT *);
 
 static struct clnt_ops client_ops = {
 	clntraw_call,
@@ -88,15 +86,15 @@ clntraw_create(prog, vers)
 	u_long prog;
 	u_long vers;
 {
-	register struct clntraw_private *clp = clntraw_private;
+	struct clntraw_private *clp = clntraw_private;
 	struct rpc_msg call_msg;
 	XDR *xdrs = &clp->xdr_stream;
 	CLIENT	*client = &clp->client_object;
 
-	if (clp == 0) {
+	if (clp == NULL) {
 		clp = (struct clntraw_private *)calloc(1, sizeof (*clp));
-		if (clp == 0)
-			return (0);
+		if (clp == NULL)
+			return (NULL);
 		clntraw_private = clp;
 	}
 	/*
@@ -126,6 +124,7 @@ clntraw_create(prog, vers)
 	return (client);
 }
 
+/* ARGSUSED */
 static enum clnt_stat 
 clntraw_call(h, proc, xargs, argsp, xresults, resultsp, timeout)
 	CLIENT *h;
@@ -136,13 +135,13 @@ clntraw_call(h, proc, xargs, argsp, xresults, resultsp, timeout)
 	caddr_t resultsp;
 	struct timeval timeout;
 {
-	register struct clntraw_private *clp = clntraw_private;
-	register XDR *xdrs = &clp->xdr_stream;
+	struct clntraw_private *clp = clntraw_private;
+	XDR *xdrs = &clp->xdr_stream;
 	struct rpc_msg msg;
 	enum clnt_stat status;
 	struct rpc_err error;
 
-	if (clp == 0)
+	if (clp == NULL)
 		return (RPC_FAILED);
 call_again:
 	/*
@@ -152,7 +151,7 @@ call_again:
 	XDR_SETPOS(xdrs, 0);
 	((struct rpc_msg *)clp->mashl_callmsg)->rm_xid ++ ;
 	if ((! XDR_PUTBYTES(xdrs, clp->mashl_callmsg, clp->mcnt)) ||
-	    (! XDR_PUTLONG(xdrs, &proc)) ||
+	    (! XDR_PUTLONG(xdrs, (long *)&proc)) ||
 	    (! AUTH_MARSHALL(h->cl_auth, xdrs)) ||
 	    (! (*xargs)(xdrs, argsp))) {
 		return (RPC_CANTENCODEARGS);
@@ -173,8 +172,14 @@ call_again:
 	msg.acpted_rply.ar_verf = _null_auth;
 	msg.acpted_rply.ar_results.where = resultsp;
 	msg.acpted_rply.ar_results.proc = xresults;
-	if (! xdr_replymsg(xdrs, &msg))
+	if (! xdr_replymsg(xdrs, &msg)) {
+		/* xdr_replymsg() may have left some things allocated */
+		int op = xdrs->x_op;
+		xdrs->x_op = XDR_FREE;
+		xdr_replymsg(xdrs, &msg);
+		xdrs->x_op = op;
 		return (RPC_CANTDECODERES);
+	}
 	_seterr_reply(&msg, &error);
 	status = error.re_status;
 
@@ -202,23 +207,22 @@ call_again:
 }
 
 static void
-clntraw_geterr()
+clntraw_geterr(CLIENT *clnt, struct rpc_err *err)
 {
 }
 
-
+/* ARGSUSED */
 static bool_t
 clntraw_freeres(cl, xdr_res, res_ptr)
 	CLIENT *cl;
 	xdrproc_t xdr_res;
 	caddr_t res_ptr;
 {
-	register struct clntraw_private *clp = clntraw_private;
-	register XDR *xdrs = &clp->xdr_stream;
+	struct clntraw_private *clp = clntraw_private;
+	XDR *xdrs = &clp->xdr_stream;
 	bool_t rval;
 
-	if (clp == 0)
-	{
+	if (clp == NULL) {
 		rval = (bool_t) RPC_FAILED;
 		return (rval);
 	}
@@ -227,17 +231,17 @@ clntraw_freeres(cl, xdr_res, res_ptr)
 }
 
 static void
-clntraw_abort()
+clntraw_abort(CLIENT *clnt)
 {
 }
 
 static bool_t
-clntraw_control()
+clntraw_control(CLIENT *clnt, u_int i, void *v)
 {
 	return (FALSE);
 }
 
 static void
-clntraw_destroy()
+clntraw_destroy(CLIENT *clnt)
 {
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: msg.c,v 1.4 2002/02/19 19:39:39 millert Exp $	*/
 /*	$NetBSD: msg.c,v 1.2 1995/07/03 21:24:56 cgd Exp $	*/
 
 /*
@@ -32,17 +33,13 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: msg.c,v 1.2 1995/07/03 21:24:56 cgd Exp $";
+static char rcsid[] = "$OpenBSD: msg.c,v 1.4 2002/02/19 19:39:39 millert Exp $";
 #endif
 
 #include <string.h>
 
 #include <stdio.h>
-#ifdef __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 #include "lint2.h"
 
@@ -68,27 +65,14 @@ static	const	char *msgs[] = {
 	"%s function value must be declared before use  \t%s  ::  %s",/* 17 */
 };
 
-static	const	char *basename __P((const char *));
+static	const	char *basename(const char *);
 
-#ifdef __STDC__
 void
 msg(int n, ...)
 {
-#else
-void
-msg(va_alist)
-	va_dcl
-	int	n;
-{
-#endif
 	va_list	ap;
 
-#ifdef __STDC__
 	va_start(ap, n);
-#else
-	va_start(ap);
-	n = va_arg(ap, int);
-#endif
 
 	(void)vprintf(msgs[n], ap);
 	(void)printf("\n");
@@ -146,10 +130,10 @@ mkpos(posp)
 	if (len > blen)
 		buf = xrealloc(buf, blen = len);
 	if (line != 0) {
-		(void)sprintf(buf, "%s%s(%hu)",
+		(void)snprintf(buf, blen, "%s%s(%hu)",
 			      fn, qm ? "?" : "", line);
 	} else {
-		(void)sprintf(buf, "%s", fn);
+		(void)snprintf(buf, blen, "%s", fn);
 	}
 
 	return (buf);

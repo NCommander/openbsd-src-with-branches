@@ -1,4 +1,5 @@
-/*	$NetBSD: clockreg.h,v 1.3 1994/10/26 08:46:56 cgd Exp $	*/
+/*	$OpenBSD: clockreg.h,v 1.5 1997/06/26 22:00:55 gene Exp $	*/
+/*	$NetBSD: clockreg.h,v 1.5 1996/04/01 05:16:52 scottr Exp $	*/
 
 /*-
  * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
@@ -34,20 +35,30 @@
  *
  */
 /*
-   Clock defines and things.
-   MacII clock characteristics used.
-*/
-
-
-#include "../include/limits.h"	/* to get CLK_TCK */
+ *  Clock defines and things.
+ *  MacII clock characteristics used.
+ */
 
 
 #define CLK_SPEED	0.0000012766	/* time to complete a clock (3 MHz) */
-#define CLK_INTERVAL	13055		/* clocks to hit CLK_TCK ticks per sec */
-			/* 7526 for 120 Hz. */
-			/* 13055 for 60 Hz. */
-#define CLK_INTH	(CLK_INTERVAL >> 8)
-#define CLK_INTL	(CLK_INTERVAL & 0xff)
+
+/*
+ * Calculate clocks needed to hit HZ ticks/sec.
+ *
+ * The VIA clock speed is 1.2766us, so the timer value needed is:
+ *
+ *                    1       1,000,000us     1
+ *  CLK_INTERVAL = -------- * ----------- * ------
+ *                 1.2766us       1s          HZ
+ *
+ * While it may be tempting to simplify the following further, we can run
+ * into integer overflow problems.  Also note:  do *not* define HZ to be
+ * less than 12; overflow will occur, yielding invalid results.
+ */
+#define CLK_INTERVAL	((int)((((100000000L / HZ) * 100) / 12766)))
+
+#define CLK_INTH	((CLK_INTERVAL >> 8) & 0xff)	/* high byte */
+#define CLK_INTL	(CLK_INTERVAL & 0xff)		/* low byte */
 
 #if !defined(PRF_INTERVAL)
 #define PRF_INTERVAL CLK_INTERVAL

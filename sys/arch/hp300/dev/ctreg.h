@@ -1,4 +1,5 @@
-/*	$NetBSD: ctreg.h,v 1.4 1994/10/26 07:23:29 cgd Exp $	*/
+/*	$OpenBSD: ctreg.h,v 1.5 2003/06/02 23:27:44 millert Exp $	*/
+/*	$NetBSD: ctreg.h,v 1.6 1996/02/09 18:00:35 scottr Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -117,7 +114,7 @@ struct ct_describe {
 		d_access:16,	/* unit: access time param (1/100-sec) */
 		d_maxint:8,	/* unit: maximum interleave */
 		d_fvbyte:8,	/* unit: fixed volume byte */
-		d_rvbyte:8,	/* unit: removeable volume byte */
+		d_rvbyte:8,	/* unit: removable volume byte */
 		d_maxcyl:24,	/* volume: maximum cylinder */
 		d_maxhead:8,	/* volume: maximum head */
 		d_maxsect:16,	/* volume: maximum sector on track */
@@ -165,7 +162,7 @@ struct ct_describe {
 #define	C_SSM		0x3e
 #define	C_WFM		0x49
 #define	C_UNLOAD	0x4a
-#define	C_REL		0x140
+#define C_REL		0xc0
 
 #define	C_CMD		0x05
 #define	C_EXEC		0x0e

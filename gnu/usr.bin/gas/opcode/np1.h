@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Print GOULD NPL instructions for GDB, the GNU debugger.
    Copyright (C) 1986, 1987, 1989 Free Software Foundation, Inc.
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.9 2003/06/04 17:34:44 millert Exp $	*/
+
 /* flex - tool to generate fast lexical analyzers */
 
 /*-
@@ -11,19 +13,24 @@
  * to contract no. DE-AC03-76SF00098 between the United States
  * Department of Energy and the University of California.
  *
- * Redistribution and use in source and binary forms are permitted provided
- * that: (1) source distributions retain this entire copyright notice and
- * comment, and (2) distributions including binaries display the following
- * acknowledgement:  ``This product includes software developed by the
- * University of California, Berkeley and its contributors'' in the
- * documentation or other materials provided with the distribution and in
- * all advertising materials mentioning features or use of this software.
- * Neither the name of the University nor the names of its contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University nor the names of its contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE.
  */
 
 #ifndef lint
@@ -32,7 +39,7 @@ char copyright[] =
  All rights reserved.\n";
 #endif /* not lint */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/main.c,v 1.9 1995/05/05 05:35:34 jtc Exp $ */
+/* $Header: /spare/open/cvs/src/usr.bin/lex/main.c,v 1.9 2003/06/04 17:34:44 millert Exp $ */
 
 
 #include "flexdef.h"
@@ -284,8 +291,8 @@ void check_options()
 			else
 				suffix = "c";
 
-			sprintf( outfile_path, outfile_template,
-				prefix, suffix );
+			snprintf( outfile_path, sizeof outfile_path,
+				outfile_template, prefix, suffix );
 
 			outfilename = outfile_path;
 			}
@@ -585,7 +592,7 @@ int argc;
 char **argv;
 	{
 	int i, sawcmpflag;
-	char *arg, *mktemp();
+	char *arg;
 
 	printstats = syntaxerror = trace = spprdflt = caseins = false;
 	lex_compat = C_plus_plus = backing_up_report = ddebug = fulltbl = false;
@@ -1133,7 +1140,7 @@ _( "%s [-bcdfhilnpstvwBFILTV78+? -C[aefFmr] -ooutput -Pprefix -Sskeleton]\n" ),
 
 	if ( ! did_outfilename )
 		{
-		sprintf( outfile_path, outfile_template,
+		snprintf( outfile_path, sizeof outfile_path, outfile_template,
 			prefix, C_plus_plus ? "cc" : "c" );
 		outfilename = outfile_path;
 		}

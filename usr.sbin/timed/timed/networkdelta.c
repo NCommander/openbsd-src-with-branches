@@ -1,3 +1,5 @@
+/*	$OpenBSD: networkdelta.c,v 1.6 2003/06/02 23:36:55 millert Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,10 +32,6 @@
 #ifndef lint
 static char sccsid[] = "@(#)networkdelta.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
-
-#ifdef sgi
-#ident "$Revision: 1.3 $"
-#endif
 
 #include "globals.h"
 
@@ -66,7 +60,7 @@ static long median(float, float*, long*, long*, unsigned int);
  *	bad values.
  */
 long
-networkdelta()
+networkdelta(void)
 {
 	struct hosttbl *htp;
 	long med;
@@ -152,10 +146,7 @@ networkdelta()
  *	in <<Numerical Recipes>>.
  */
 static long
-median(float a,				/* initial guess for the median */
-       float *eps_ptr,			/* spacing near the median */
-       long *x, long *xlim,		/* the data */
-       unsigned int gnuf)		/* good enough estimate */
+median(float a, float *eps_ptr, long *x, long *xlim, unsigned int gnuf)
 {
 	long *xptr;
 	float ap = LONG_MAX;		/* bounds on the median */
@@ -216,13 +207,13 @@ median(float a,				/* initial guess for the median */
 		aa = (sumx/sum-a)*AMP;
 		if (npts >= 2) {	/* guess was too low */
 			am = a;
-			aa = xp + max(0.0, aa);;
+			aa = xp + max(0.0, aa);
 			if (aa > ap)
 				aa = (a + ap)/2;
 
 		} else if (npts <= -2) {  /* guess was two high */
 			ap = a;
-			aa = xm + min(0.0, aa);;
+			aa = xm + min(0.0, aa);
 			if (aa < am)
 				aa = (a + am)/2;
 
@@ -250,7 +241,7 @@ median(float a,				/* initial guess for the median */
 		else
 			a = (xm+a)/2;
 
-	} else 	if (npts != 0) {	/* odd number of points */
+	} else	if (npts != 0) {	/* odd number of points */
 		if (npts > 0)
 			a = xp;
 		else

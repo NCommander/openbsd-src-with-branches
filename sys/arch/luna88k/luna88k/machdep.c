@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.136 2004/03/10 23:02:54 tom Exp $	*/
+/* $OpenBSD: machdep.c,v 1.10 2004/08/24 12:59:51 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -118,6 +118,11 @@ void load_u_area(struct proc *);
 void dumpconf(void);
 void luna88k_ext_int(u_int v, struct trapframe *eframe);
 void powerdown(void);
+void get_fuse_rom_data(void);
+void get_nvram_data(void);
+char *nvram_by_symbol(char *);
+void get_autoboot_device(void);			/* in disksubr.c */
+int clockintr(void *);				/* in clock.c */
 
 /*
  * *int_mask_reg[CPU]
@@ -139,6 +144,24 @@ unsigned int *volatile clock_reg[MAX_CPUS] = {
 	(unsigned int *)OBIO_CLOCK2,
 	(unsigned int *)OBIO_CLOCK3
 };
+
+/*
+ * FUSE ROM and NVRAM data
+ */
+struct fuse_rom_byte {
+	u_int32_t h;
+	u_int32_t l;
+};
+#define FUSE_ROM_BYTES        (FUSE_ROM_SPACE / sizeof(struct fuse_rom_byte))
+char fuse_rom_data[FUSE_ROM_BYTES];
+
+#define NNVSYM		8
+#define NVSYMLEN	16
+#define NVVALLEN	16
+struct nvram_t {
+	char symbol[NVSYMLEN];
+	char value[NVVALLEN];
+} nvram[NNVSYM];
 
 volatile vaddr_t obiova;
 
@@ -201,15 +224,14 @@ char  cpu_model[120];
 extern char *esym;
 #endif
 
-int machtype = LUNA_88K2;	/* XXX: aoyama */
+int machtype = LUNA_88K;	/* may be overwritten in cpu_startup() */
 int cputyp = CPU_88100;		/* XXX: aoyama */
-int boothowto = RB_ASKNAME;	/* XXX: should be set in boot loader and locore.S */
+int boothowto;			/* XXX: should be set in boot loader and locore.S */
 int bootdev;			/* XXX: should be set in boot loader and locore.S */
-int cpuspeed;
-double cycles_per_microsecond;	/* used in locore.S:delay() */
+int cpuspeed = 33;		/* safe guess */
 int sysconsole = 1;		/* 0 = ttya, 1 = keyboard/mouse, used in dev/sio.c */
 u_int16_t dipswitch = 0;	/* set in locore.S */
-int hwplanemask;		/* set in luna88k_bootstrap() */
+int hwplanebits;		/* set in locore.S */
 
 int netisr;
 
@@ -238,10 +260,7 @@ extern struct user *proc0paddr;
  * configure a kernel without romtty since we do not necessarily need a
  * full-blown console driver.
  */
-void romttycnprobe(struct consdev *);
-void romttycninit(struct consdev *);
-void romttycnputc(dev_t, int);
-int  romttycngetc(dev_t);
+cons_decl(romtty);
 extern void nullcnpollc(dev_t, int);
 
 struct consdev romttycons = {
@@ -261,24 +280,15 @@ struct consdev romttycons = {
 void
 consinit()
 {
-#ifdef ROM_CONSOLE
-	extern struct consdev *cn_tab;
-#endif
 	/*
 	 * Initialize the console before we print anything out.
 	 */
-#ifdef ROM_CONSOLE
-	cn_tab = &romttycons;
-	/* cninit(); */
-#else /* from NetBSD/luna68k */
 	if (sysconsole == 0) {
                 syscnattach(0);
         } else {
                 omfb_cnattach();
                 ws_cnattach();
         }
-	/* cninit(); */	/* XXX: this should be later? */
-#endif
 
 #if defined(DDB)
 	db_machine_init();
@@ -344,22 +354,14 @@ size_memory()
 int
 getcpuspeed()
 {
-	double clock_mhz;
-
 	switch(machtype) {
 	case LUNA_88K:
-		clock_mhz = 25.0;
-		break;
+		return 25;
 	case LUNA_88K2:
-		clock_mhz = 33.0;
-		break;
+		return 33;
 	default:
 		panic("getcpuspeed: can not determine CPU speed");
-		break;
 	}
-
-	cycles_per_microsecond = clock_mhz;
-	return (int)clock_mhz;
 }
 
 void
@@ -412,13 +414,23 @@ cpu_startup()
 
 	/*
 	 * Initialize error message buffer (at end of core).
-	 * avail_end was pre-decremented in mvme_bootstrap() to compensate.
+	 * avail_end was pre-decremented in luna88k_bootstrap() to compensate.
 	 */
 	for (i = 0; i < btoc(MSGBUFSIZE); i++)
 		pmap_kenter_pa((paddr_t)msgbufp + i * NBPG,
 		    avail_end + i * NBPG, VM_PROT_READ | VM_PROT_WRITE);
 	pmap_update(pmap_kernel());
 	initmsgbuf((caddr_t)msgbufp, round_page(MSGBUFSIZE));
+
+	/* Determine the machine type from FUSE ROM data */
+	get_fuse_rom_data();
+	if (strncmp(fuse_rom_data, "MNAME=LUNA88K+", 14) == 0) {
+		machtype = LUNA_88K2;
+	}
+
+        /* Determine the 'auto-boot' device from NVRAM data */
+        get_nvram_data();
+        get_autoboot_device();
 
 	/*
 	 * Good {morning,afternoon,evening,night}.
@@ -448,27 +460,18 @@ cpu_startup()
 	}
 
 	/*
-	 * Get frame buffer depth from ROM work area.
+	 * Check frame buffer depth.
 	 */
-	{
-		int depth;
-
-		depth = *((volatile int *)0x00001114);
-		printf("frame buffer depth = %d\n", depth);
-		switch (depth) {
-		case 1:
-			hwplanemask = 0x01;
-			break;
-		case 4:
-			hwplanemask = 0x0f;
-			break;
-		case 8:
-			hwplanemask = 0xff;
-			break;
-		default:
-			hwplanemask = 0;	/* No frame buffer */
-			break;
-		}
+	switch (hwplanebits) {
+	case 0:				/* No frame buffer */
+	case 1:
+	case 4:
+	case 8:
+		break;
+	default:
+		printf("unexpected frame buffer depth = %d\n", hwplanebits);
+		hwplanebits = 0;
+		break;
 	}
 
 #if 0 /* just for test */
@@ -1273,16 +1276,7 @@ luna88k_ext_int(u_int v, struct trapframe *eframe)
 
 		switch(cur_int) {
 		case CLOCK_INT_LEVEL:
-			/* increment intr counter */
-			intrcnt[M88K_CLK_IRQ]++;
-
-			*clock_reg[cpu] = 0xFFFFFFFFU;  /* reset clock */
-
-			/*
-			if (clock_enabled[cpu])
-				sys_clock_interrupt(USERMODE(eframe[EF_EPSR]));
-			*/
-			hardclock((void *)eframe);
+			clockintr((void *)eframe);
 			break;
 		case 5:
 		case 4:
@@ -1309,7 +1303,6 @@ out:
 	 * was taken.
 	 */
 	setipl(eframe->tf_mask);
-	flush_pipeline();		/* XXX: need this? */
 }
 
 int
@@ -1369,38 +1362,6 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return (EOPNOTSUPP);
 	}
 	/*NOTREACHED*/
-}
-
-/*
- * insert an element into a queue
- */
-
-void
-_insque(velement, vhead)
-	void *velement, *vhead;
-{
-	struct prochd *element, *head;
-	element = velement;
-	head = vhead;
-	element->ph_link = head->ph_link;
-	head->ph_link = (struct proc *)element;
-	element->ph_rlink = (struct proc *)head;
-	((struct prochd *)(element->ph_link))->ph_rlink=(struct proc *)element;
-}
-
-/*
- * remove an element from a queue
- */
-
-void
-_remque(velement)
-	void *velement;
-{
-	struct prochd *element;
-	element = velement;
-	((struct prochd *)(element->ph_link))->ph_rlink = element->ph_rlink;
-	((struct prochd *)(element->ph_rlink))->ph_link = element->ph_link;
-	element->ph_rlink = (struct proc *)0;
 }
 
 int
@@ -1514,29 +1475,6 @@ spl0()
 
 	return (x);
 }
-
-#ifdef EH_DEBUG
-
-void
-MY_info(f, p, flags, s)
-	struct trapframe  *f;
-	caddr_t     p;
-	int         flags;
-	char        *s;
-{
-	regdump(f);
-	printf("proc %x flags %x type %s\n", p, flags, s);
-}
-
-void
-MY_info_done(f, flags)
-	struct trapframe  *f;
-	int         flags;
-{
-	regdump(f);
-}
-
-#endif
 
 void
 nmihand(void *framep)
@@ -1706,15 +1644,14 @@ luna88k_bootstrap()
 #ifdef DEBUG
 	printf("LUNA88K boot: memory from 0x%x to 0x%x\n", avail_start, avail_end);
 #endif
-	pmap_bootstrap((vaddr_t)trunc_page((unsigned)&kernelstart) /* = loadpt */,
-		       &avail_start, &avail_end, &virtual_avail,
-		       &virtual_end);
+	pmap_bootstrap((vaddr_t)trunc_page((unsigned)&kernelstart));
+
 	/*
 	 * Tell the VM system about available physical memory.
 	 * luna88k only has one segment.
 	 */
 	uvm_page_physload(atop(avail_start), atop(avail_end),
-			  atop(avail_start), atop(avail_end),VM_FREELIST_DEFAULT);
+	    atop(avail_start), atop(avail_end),VM_FREELIST_DEFAULT);
 
 	/* Initialize cached PTEs for u-area mapping. */
 	save_u_area(&proc0, (vaddr_t)proc0paddr);
@@ -1837,4 +1774,79 @@ powerdown(void)
 	DELAY(100000);
 	p1->cntrl = (PIO1_POWER << 1) | PIO1_DISABLE;
 	*(volatile u_int8_t *)&p1->portC;
+}
+
+/* Get data from FUSE ROM */
+
+void
+get_fuse_rom_data(void)
+{
+	int i;
+	struct fuse_rom_byte *p = (struct fuse_rom_byte *)FUSE_ROM_ADDR;
+
+	for (i = 0; i < FUSE_ROM_BYTES; i++) {
+		fuse_rom_data[i] =
+		    (char)((((p->h) >> 24) & 0x000000f0) |
+		           (((p->l) >> 28) & 0x0000000f));
+		p++;                                                                            
+	}
+}
+
+/* Get data from NVRAM */
+
+void
+get_nvram_data(void)
+{
+	int i, j;
+	u_int8_t *page;
+	char buf[NVSYMLEN], *data;
+
+	if (machtype == LUNA_88K) {
+		data = (char *)(NVRAM_ADDR + 0x80);
+
+		for (i = 0; i < NNVSYM; i++) {
+			for (j = 0; j < NVSYMLEN; j++) {
+				buf[j] = *data;
+				data += 4;
+			}
+			strlcpy(nvram[i].symbol, buf, sizeof(nvram[i].symbol));
+
+			for (j = 0; j < NVVALLEN; j++) {
+				buf[j] = *data;
+				data += 4;
+			}
+			strlcpy(nvram[i].value, buf, sizeof(nvram[i].value));
+		}
+	} else if (machtype == LUNA_88K2) {
+		page = (u_int8_t *)(NVRAM_ADDR_88K2 + 0x20);
+
+		for (i = 0; i < NNVSYM; i++) {
+			*page = (u_int8_t)i;
+
+			data = (char *)NVRAM_ADDR_88K2;
+			strlcpy(nvram[i].symbol, data, sizeof(nvram[i].symbol));
+
+			data = (char *)(NVRAM_ADDR_88K2 + 0x10);
+			strlcpy(nvram[i].value, data, sizeof(nvram[i].value));
+		}
+	}
+}
+
+char *
+nvram_by_symbol(symbol)
+	char *symbol;
+{
+	char *value;
+	int i;
+
+	value = NULL;
+
+	for (i = 0; i < NNVSYM; i++) {
+		if (strncmp(nvram[i].symbol, symbol, NVSYMLEN) == 0) {
+			value = nvram[i].value;
+			break;
+		}
+	}
+
+	return value;
 }

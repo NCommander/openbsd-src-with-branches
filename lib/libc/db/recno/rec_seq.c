@@ -1,7 +1,7 @@
-/*	$NetBSD: rec_seq.c,v 1.6 1995/02/27 13:25:24 cgd Exp $	*/
+/*	$OpenBSD: rec_seq.c,v 1.5 2003/05/01 20:23:40 avsm Exp $	*/
 
 /*-
- * Copyright (c) 1991, 1993
+ * Copyright (c) 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,9 +31,9 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)rec_seq.c	8.2 (Berkeley) 9/7/93";
+static char sccsid[] = "@(#)rec_utils.c	8.6 (Berkeley) 7/16/94";
 #else
-static char rcsid[] = "$NetBSD: rec_seq.c,v 1.6 1995/02/27 13:25:24 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: rec_seq.c,v 1.5 2003/05/01 20:23:40 avsm Exp $";
 #endif
 #endif /* not lint */
 
@@ -88,8 +84,8 @@ __rec_seq(dbp, key, data, flags)
 			goto einval;
 		break;
 	case R_NEXT:
-		if (ISSET(t, B_SEQINIT)) {
-			nrec = t->bt_rcursor + 1;
+		if (F_ISSET(&t->bt_cursor, CURS_INIT)) {
+			nrec = t->bt_cursor.rcursor + 1;
 			break;
 		}
 		/* FALLTHROUGH */
@@ -97,14 +93,14 @@ __rec_seq(dbp, key, data, flags)
 		nrec = 1;
 		break;
 	case R_PREV:
-		if (ISSET(t, B_SEQINIT)) {
-			if ((nrec = t->bt_rcursor - 1) == 0)
+		if (F_ISSET(&t->bt_cursor, CURS_INIT)) {
+			if ((nrec = t->bt_cursor.rcursor - 1) == 0)
 				return (RET_SPECIAL);
 			break;
 		}
 		/* FALLTHROUGH */
 	case R_LAST:
-		if (!ISSET(t, R_EOF | R_INMEM) &&
+		if (!F_ISSET(t, R_EOF | R_INMEM) &&
 		    t->bt_irec(t, MAX_REC_NUMBER) == RET_ERROR)
 			return (RET_ERROR);
 		nrec = t->bt_nrecs;
@@ -115,7 +111,7 @@ einval:		errno = EINVAL;
 	}
 	
 	if (t->bt_nrecs == 0 || nrec > t->bt_nrecs) {
-		if (!ISSET(t, R_EOF | R_INMEM) &&
+		if (!F_ISSET(t, R_EOF | R_INMEM) &&
 		    (status = t->bt_irec(t, nrec)) != RET_SUCCESS)
 			return (status);
 		if (t->bt_nrecs == 0 || nrec > t->bt_nrecs)
@@ -125,11 +121,11 @@ einval:		errno = EINVAL;
 	if ((e = __rec_search(t, nrec - 1, SEARCH)) == NULL)
 		return (RET_ERROR);
 
-	SET(t, B_SEQINIT);
-	t->bt_rcursor = nrec;
+	F_SET(&t->bt_cursor, CURS_INIT);
+	t->bt_cursor.rcursor = nrec;
 
 	status = __rec_ret(t, e, nrec, key, data);
-	if (ISSET(t, B_DB_LOCK))
+	if (F_ISSET(t, B_DB_LOCK))
 		mpool_put(t->bt_mp, e->page, 0);
 	else
 		t->bt_pinned = e->page;

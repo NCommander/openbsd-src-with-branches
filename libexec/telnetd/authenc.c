@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,55 +27,49 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)authenc.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: authenc.c,v 1.1 1994/02/25 03:20:42 cgd Exp $";
-#endif /* not lint */
-
-#if	defined(AUTHENTICATION)
 #include "telnetd.h"
-#include <libtelnet/misc.h>
 
-	int
-net_write(str, len)
-	unsigned char *str;
-	int len;
+/* RCSID("$KTH: authenc.c,v 1.10 2000/11/15 23:20:43 assar Exp $"); */
+
+int
+telnet_net_write(unsigned char *str, int len)
 {
-	if (nfrontp + len < netobuf + BUFSIZ) {
-		bcopy((void *)str, (void *)nfrontp, len);
-		nfrontp += len;
-		return(len);
-	}
-	return(0);
+    if (nfrontp + len < netobuf + BUFSIZ) {
+	memmove(nfrontp, str, len);
+	nfrontp += len;
+	return(len);
+    }
+    return(0);
 }
 
-	void
-net_encrypt()
+#ifdef AUTHENTICATION
+void
+net_encrypt(void)
 {
+#ifdef ENCRYPTION
+    char *s = (nclearto > nbackp) ? nclearto : nbackp;
+    if (s < nfrontp && encrypt_output) {
+	(*encrypt_output)((unsigned char *)s, nfrontp - s);
+    }
+    nclearto = nfrontp;
+#endif
 }
 
-	int
-telnet_spin()
+int
+telnet_spin(void)
 {
-	ttloop();
-	return(0);
+    return ttloop();
 }
 
-	char *
-telnet_getenv(val)
-	char *val;
+char *
+telnet_getenv(const char *val)
 {
-	extern char *getenv();
-	return(getenv(val));
+    return(getenv(val));
 }
 
-	char *
-telnet_gets(prompt, result, length, echo)
-	char *prompt;
-	char *result;
-	int length;
-	int echo;
+char *
+telnet_gets(char *prompt, char *result, int length, int echo)
 {
-	return((char *)0);
+    return NULL;
 }
-#endif	/* defined(AUTHENTICATION) */
+#endif

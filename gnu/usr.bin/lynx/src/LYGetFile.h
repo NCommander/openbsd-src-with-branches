@@ -1,19 +1,23 @@
-
 #ifndef LYGETFILE_H
 #define LYGETFILE_H
+
+#include <LYStructs.h>
 
 #define NOT_FOUND 0
 #define NORMAL 1
 #define NULLFILE 3
 
-extern BOOLEAN getfile PARAMS((document *doc));
+extern int getfile PARAMS((DocInfo *doc));
+extern void srcmode_for_next_retrieval PARAMS((int));
 extern int follow_link_number PARAMS((
 	int		c,
 	int		cur,
-	document *	doc,
+	DocInfo *	doc,
 	int *		num));
 extern void add_trusted PARAMS((char *str, int type));
 extern BOOLEAN exec_ok PARAMS((CONST char *source, CONST char *linkpath, int type));
+
+extern char * WWW_Download_File;
 
 /* values for follow_link_number() */
 #define DO_LINK_STUFF		1

@@ -1,7 +1,9 @@
-/*	$Id: b2ntest.c,v 1.4 1998/07/16 19:31:55 provos Exp $	*/
+/*	$OpenBSD: b2ntest.c,v 1.7 2002/06/09 08:13:07 todd Exp $	*/
+/*	$EOM: b2ntest.c,v 1.4 1998/07/16 19:31:55 provos Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -45,7 +42,9 @@
 
 #include "math_2n.h"
 
-#define CMP_FAIL(n,x) b2n_sprint (buf, n); if (strcmp (buf, (x))) \
+#define BUFSIZE 200
+
+#define CMP_FAIL(n,x) b2n_snprint (buf, BUFSIZE, n); if (strcmp (buf, (x))) \
     printf ("FAILED: %s != %s ", buf, x); else printf ("OKAY ");
 
 int
@@ -53,7 +52,7 @@ main (void)
 {
   int i;
   b2n_t n, m, d, r;
-  char buf[200];
+  char buf[BUFSIZE];
 
   b2n_init (n);
   b2n_init (m);
@@ -81,7 +80,7 @@ main (void)
   b2n_set_ui (m, 0);
   b2n_add (n, n, m);
   CMP_FAIL (n, "0x9090900000000000000000");
-  
+
   printf ("\nTesting: b2n_lshift: ");
   b2n_set_str (m, "0x808b8080c0");
   b2n_lshift (n, m, 3);
@@ -154,13 +153,13 @@ main (void)
   CMP_FAIL (n, "0x40005001040511");
 
   b2n_set_str (m, "0x12329");
-  printf ("\nTesting: sigbit: 0x12329: %d, %s", 
+  printf ("\nTesting: sigbit: 0x12329: %d, %s",
 	  b2n_sigbit(m), b2n_sigbit(m) == 17 ? "OKAY" : "FAILED");
   b2n_set_ui (m, 0);
-  printf ("\nTesting: sigbit: 0x0: %d, %s", 
+  printf ("\nTesting: sigbit: 0x0: %d, %s",
 	  b2n_sigbit(m), b2n_sigbit(m) == 0 ? "OKAY" : "FAILED");
   b2n_set_str (m, "0x7f3290000");
-  printf ("\nTesting: sigbit: 0x7f3290000: %d, %s", 
+  printf ("\nTesting: sigbit: 0x7f3290000: %d, %s",
 	  b2n_sigbit(m), b2n_sigbit(m) == 35 ? "OKAY" : "FAILED");
 
   printf ("\nTesting: b2n_cmp: ");
@@ -214,7 +213,8 @@ main (void)
   b2n_div_r (d, n, m);
   CMP_FAIL (d, "0xab");
 
-  printf ("\nTesting: b2n_div: 0x0800000000000000000000004000000000000001 / 0xffab09909a00: ");
+  printf ("\nTesting: b2n_div: "
+	  "0x0800000000000000000000004000000000000001 / 0xffab09909a00: ");
   b2n_set_str (n, "0x0800000000000000000000004000000000000001");
   b2n_set_str (m, "0xffab09909a00");
   b2n_div_q (d, n, m);
@@ -226,7 +226,8 @@ main (void)
   CMP_FAIL (n, "0x18083e83a98647cedae0b3e69a5e");
   CMP_FAIL (m, "0x5b8bf98cac01");
 
-  printf ("\nTesting: b2n_div: 0x0800000000000000000000004000000000000001 / 0x7b: ");
+  printf ("\nTesting: b2n_div: "
+	  "0x0800000000000000000000004000000000000001 / 0x7b: ");
   b2n_set_str (n, "0x0800000000000000000000004000000000000001");
   b2n_set_str (m, "0x7b");
   b2n_div (n, m, n, m);
@@ -269,7 +270,7 @@ main (void)
 
   printf ("\nTesting: b2n_random: ");
   b2n_random (m, 155);
-  b2n_sprint (buf, m);
+  b2n_snprint (buf, BUFSIZE, m);
   printf ("%s, %d", buf, b2n_sigbit(m));
 
   printf ("\nTesting: b2n_sqrt: ");

@@ -1,14 +1,10 @@
-#	@(#)Makefile	8.2 (Berkeley) 8/16/94
-#
-# This Makefile is ONLY correct for 4.4BSD style source trees.  If you're
-# not using a system with that setup, it's not going to work.  Read the
-# files README and PORT/README for information on building nvi for other
-# systems.
+#	$OpenBSD: Makefile,v 1.11 2004/01/30 23:14:25 jmc Exp $
 
-SUBDIR= common
+SUBDIR= build
 
 .if make(install)
-SUBDIR+=USD.doc/edit USD.doc/exref USD.doc/vi.ref USD.doc/vitut
+SUBDIR+= docs/USD.doc/edit docs/USD.doc/exref
+SUBDIR+= docs/USD.doc/vi.ref docs/USD.doc/vitut
 .endif
 
 .include <bsd.subdir.mk>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: emit2.c,v 1.3 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: emit2.c,v 1.2 1995/07/03 21:24:44 cgd Exp $	*/
 
 /*
@@ -32,16 +33,16 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: emit2.c,v 1.2 1995/07/03 21:24:44 cgd Exp $";
+static char rcsid[] = "$OpenBSD: emit2.c,v 1.3 2002/02/16 21:27:59 millert Exp $";
 #endif
 
 #include <err.h>
 
 #include "lint2.h"
 
-static	void	outtype __P((type_t *));
-static	void	outdef __P((hte_t *, sym_t *));
-static	void	dumpname __P((hte_t *));
+static	void	outtype(type_t *);
+static	void	outdef(hte_t *, sym_t *);
+static	void	dumpname(hte_t *);
 
 /*
  * Write type into the output buffer.
@@ -191,7 +192,7 @@ dumpname(hte)
 
 	/*
 	 * If there is a definition, write it. Otherwise write a tentative
-	 * definition. This is neccessary because more than one tentative
+	 * definition. This is necessary because more than one tentative
 	 * definition is allowed (except with sflag).
 	 */
 	def = NULL;

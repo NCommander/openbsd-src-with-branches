@@ -1,4 +1,5 @@
-/*	$NetBSD: ns_error.c,v 1.5 1994/06/29 06:41:36 cgd Exp $	*/
+/*	$OpenBSD: ns_error.c,v 1.3 2003/06/02 23:28:19 millert Exp $	*/
+/*	$NetBSD: ns_error.c,v 1.6 1996/02/13 22:13:53 christos Exp $	*/
 
 /*
  * Copyright (c) 1984, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,12 +41,20 @@
 #include <sys/time.h>
 #include <sys/kernel.h>
 
+#include <net/if.h>
 #include <net/route.h>
 
 #include <netns/ns.h>
 #include <netns/ns_pcb.h>
+#include <netns/ns_if.h>
+#include <netns/ns_var.h>
 #include <netns/idp.h>
+#include <netns/idp_var.h>
 #include <netns/ns_error.h>
+#include <netns/sp.h>
+#include <netns/spidp.h>
+#include <netns/spp_timer.h>
+#include <netns/spp_var.h>
 
 #ifdef lint
 #define NS_ERRPRINTFS 1
@@ -63,9 +68,11 @@
 int	ns_errprintfs = 0;
 #endif
 
+int
 ns_err_x(c)
+	int c;
 {
-	register u_short *w, *lim, *base = ns_errstat.ns_es_codes;
+	u_short *w, *lim, *base = ns_errstat.ns_es_codes;
 	u_short x = c;
 
 	/*
@@ -87,15 +94,16 @@ ns_err_x(c)
  * Generate an error packet of type error
  * in response to bad packet.
  */
-
+void
 ns_error(om, type, param)
 	struct mbuf *om;
 	int type;
+	int param;
 {
-	register struct ns_epidp *ep;
+	struct ns_epidp *ep;
 	struct mbuf *m;
 	struct idp *nip;
-	register struct idp *oip = mtod(om, struct idp *);
+	struct idp *oip = mtod(om, struct idp *);
 	extern int idpcksum;
 
 	/*
@@ -166,6 +174,7 @@ freeit:
 	m_freem(om);
 }
 
+void
 ns_printhost(p)
 register struct ns_addr *p;
 {
@@ -183,12 +192,15 @@ register struct ns_addr *p;
 /*
  * Process a received NS_ERR message.
  */
+void
 ns_err_input(m)
 	struct mbuf *m;
 {
-	register struct ns_errp *ep;
-	register struct ns_epidp *epidp = mtod(m, struct ns_epidp *);
-	register int i;
+	struct ns_errp *ep;
+#ifdef NS_ERRPRINTFS
+	struct ns_epidp *epidp = mtod(m, struct ns_epidp *);
+#endif
+	int i;
 	int type, code, param;
 
 	/*
@@ -264,11 +276,11 @@ ns_err_input(m)
 #endif
 		switch(ep->ns_err_idp.idp_pt) {
 		case NSPROTO_SPP:
-			spp_ctlinput(code, (caddr_t)ep);
+			spp_ctlinput(code, NULL, ep);
 			break;
 
 		default:
-			idp_ctlinput(code, (caddr_t)ep);
+			idp_ctlinput(code, NULL, ep);
 		}
 		
 		goto freeit;
@@ -296,11 +308,12 @@ nstime()
 }
 #endif
 
+int
 ns_echo(m)
 struct mbuf *m;
 {
-	register struct idp *idp = mtod(m, struct idp *);
-	register struct echo {
+	struct idp *idp = mtod(m, struct idp *);
+	struct echo {
 	    struct idp	ec_idp;
 	    u_short		ec_op; /* Operation, 1 = request, 2 = reply */
 	} *ec = (struct echo *)idp;

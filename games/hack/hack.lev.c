@@ -1,43 +1,100 @@
+/*	$OpenBSD: hack.lev.c,v 1.5 2003/03/16 21:22:35 camield Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.lev.c,v 1.3 1995/03/23 08:30:32 cgd Exp $";
+static const char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
-#include "hack.h"
-#include "def.mkroom.h"
 #include <stdio.h>
-extern struct monst *restmonchn();
-extern struct obj *restobjchn();
+#include <stdlib.h>
+#include <unistd.h>
+#include "hack.h"
+
 extern struct obj *billobjs;
-extern char *itoa();
 extern char SAVEF[];
 extern int hackpid;
 extern xchar dlevel;
 extern char nul[];
 
 #ifndef NOWORM
-#include	"def.wseg.h"
 extern struct wseg *wsegs[32], *wheads[32];
 extern long wgrowtime[32];
-#endif NOWORM
+#endif /* NOWORM */
 
 boolean level_exists[MAXLEVEL+1];
 
-savelev(fd,lev)
-int fd;
-xchar lev;
+void
+savelev(int fd, xchar lev)
 {
 #ifndef NOWORM
-	register struct wseg *wtmp, *wtmp2;
-	register tmp;
-#endif NOWORM
+	struct wseg *wtmp, *wtmp2;
+	int tmp;
+#endif /* NOWORM */
 
-	if(fd < 0) panic("Save on bad file!");	/* impossible */
-	if(lev >= 0 && lev <= MAXLEVEL)
-		level_exists[lev] = TRUE;
+	if (fd < 0)
+		panic("Save on bad file!");	/* impossible */
+	if (lev >= 0 && lev <= MAXLEVEL)
+		level_exists[(int)lev] = TRUE;
 
 	bwrite(fd,(char *) &hackpid,sizeof(hackpid));
 	bwrite(fd,(char *) &lev,sizeof(lev));
@@ -57,7 +114,7 @@ xchar lev;
 #ifndef QUEST
 	bwrite(fd,(char *) rooms,sizeof(rooms));
 	bwrite(fd,(char *) doors,sizeof(doors));
-#endif QUEST
+#endif /* QUEST */
 	fgold = 0;
 	ftrap = 0;
 	fmon = 0;
@@ -72,24 +129,21 @@ xchar lev;
 		wsegs[tmp] = 0;
 	}
 	bwrite(fd,(char *) wgrowtime,sizeof(wgrowtime));
-#endif NOWORM
+#endif /* NOWORM */
 }
 
-bwrite(fd,loc,num)
-register fd;
-register char *loc;
-register unsigned num;
+void
+bwrite(int fd, char *loc, unsigned int num)
 {
 /* lint wants the 3rd arg of write to be an int; lint -p an unsigned */
 	if(write(fd, loc, (int) num) != num)
 		panic("cannot write %u bytes to file #%d", num, fd);
 }
 
-saveobjchn(fd,otmp)
-register fd;
-register struct obj *otmp;
+void
+saveobjchn(int fd, struct obj *otmp)
 {
-	register struct obj *otmp2;
+	struct obj *otmp2;
 	unsigned xl;
 	int minusone = -1;
 
@@ -104,11 +158,10 @@ register struct obj *otmp;
 	bwrite(fd, (char *) &minusone, sizeof(int));
 }
 
-savemonchn(fd,mtmp)
-register fd;
-register struct monst *mtmp;
+void
+savemonchn(int fd, struct monst *mtmp)
 {
-	register struct monst *mtmp2;
+	struct monst *mtmp2;
 	unsigned xl;
 	int minusone = -1;
 	struct permonst *monbegin = &mons[0];
@@ -127,11 +180,10 @@ register struct monst *mtmp;
 	bwrite(fd, (char *) &minusone, sizeof(int));
 }
 
-savegoldchn(fd,gold)
-register fd;
-register struct gold *gold;
+void
+savegoldchn(int fd, struct gold *gold)
 {
-	register struct gold *gold2;
+	struct gold *gold2;
 	while(gold) {
 		gold2 = gold->ngold;
 		bwrite(fd, (char *) gold, sizeof(struct gold));
@@ -141,11 +193,10 @@ register struct gold *gold;
 	bwrite(fd, nul, sizeof(struct gold));
 }
 
-savetrapchn(fd,trap)
-register fd;
-register struct trap *trap;
+void
+savetrapchn(int fd, struct trap *trap)
 {
-	register struct trap *trap2;
+	struct trap *trap2;
 	while(trap) {
 		trap2 = trap->ntrap;
 		bwrite(fd, (char *) trap, sizeof(struct trap));
@@ -155,16 +206,15 @@ register struct trap *trap;
 	bwrite(fd, nul, sizeof(struct trap));
 }
 
-getlev(fd,pid,lev)
-int fd,pid;
-xchar lev;
+void
+getlev(int fd, int pid, xchar lev)
 {
-	register struct gold *gold;
-	register struct trap *trap;
+	struct gold *gold;
+	struct trap *trap;
 #ifndef NOWORM
-	register struct wseg *wtmp;
-#endif NOWORM
-	register tmp;
+	struct wseg *wtmp;
+#endif /* NOWORM */
+	int tmp;
 	long omoves;
 	int hpid;
 	xchar dlvl;
@@ -192,14 +242,14 @@ xchar lev;
 
 	/* regenerate animals while on another level */
 	{ long tmoves = (moves > omoves) ? moves-omoves : 0;
-	  register struct monst *mtmp, *mtmp2;
+	  struct monst *mtmp, *mtmp2;
 	  extern char genocided[];
 
 	  for(mtmp = fmon; mtmp; mtmp = mtmp2) {
 		long newhp;		/* tmoves may be very large */
 
 		mtmp2 = mtmp->nmon;
-		if(index(genocided, mtmp->data->mlet)) {
+		if(strchr(genocided, mtmp->data->mlet)) {
 			mondead(mtmp);
 			continue;
 		}
@@ -210,7 +260,7 @@ xchar lev;
 		}
 
 		newhp = mtmp->mhp +
-			(index(MREGEN, mtmp->data->mlet) ? tmoves : tmoves/20);
+			(strchr(MREGEN, mtmp->data->mlet) ? tmoves : tmoves/20);
 		if(newhp > mtmp->mhpmax)
 			mtmp->mhp = mtmp->mhpmax;
 		else
@@ -243,7 +293,7 @@ xchar lev;
 #ifndef QUEST
 	mread(fd, (char *)rooms, sizeof(rooms));
 	mread(fd, (char *)doors, sizeof(doors));
-#endif QUEST
+#endif /* QUEST */
 #ifndef NOWORM
 	mread(fd, (char *)wsegs, sizeof(wsegs));
 	for(tmp = 1; tmp < 32; tmp++) if(wsegs[tmp]){
@@ -256,15 +306,13 @@ xchar lev;
 		}
 	}
 	mread(fd, (char *)wgrowtime, sizeof(wgrowtime));
-#endif NOWORM
+#endif /* NOWORM */
 }
 
-mread(fd, buf, len)
-register fd;
-register char *buf;
-register unsigned len;
+void
+mread(int fd, char *buf, unsigned len)
 {
-	register int rlen;
+	int rlen;
 	extern boolean restoring;
 
 	rlen = read(fd, buf, (int) len);
@@ -278,6 +326,7 @@ register unsigned len;
 	}
 }
 
+void
 mklev()
 {
 	extern boolean in_mklev;

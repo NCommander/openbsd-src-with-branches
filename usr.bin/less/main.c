@@ -31,7 +31,7 @@ public int	wscroll;
 public char *	progname;
 public int	quitting;
 public int	secure;
-public int	dohelp;
+public int	ismore;
 
 #if LOGFILE
 public int	logfile = -1;
@@ -57,6 +57,7 @@ static char consoleTitle[256];
 extern int	missing_cap;
 extern int	know_dumb;
 
+extern char *	__progname;
 
 /*
  * Entry point.
@@ -93,11 +94,11 @@ main(argc, argv)
 		char *path  = getenv("HOMEPATH");
 		if (drive != NULL && path != NULL)
 		{
-			char *env = (char *) ecalloc(strlen(drive) + 
-					strlen(path) + 6, sizeof(char));
-			strcpy(env, "HOME=");
-			strcat(env, drive);
-			strcat(env, path);
+			size_t len = strlen(drive) + strlen(path) + 6;
+			char *env = (char *) ecalloc(len, sizeof(char));
+			strlcpy(env, "HOME=", len);
+			strlcat(env, drive, len);
+			strlcat(env, path, len);
 			putenv(env);
 		}
 	}
@@ -108,6 +109,7 @@ main(argc, argv)
 	 * Process command line arguments and LESS environment arguments.
 	 * Command line arguments override environment arguments.
 	 */
+	ismore = !strcmp(__progname, "more");
 	is_tty = isatty(1);
 	get_term();
 	init_cmds();
@@ -115,7 +117,14 @@ main(argc, argv)
 	init_charset();
 	init_line();
 	init_option();
-	s = lgetenv("LESS");
+	if (ismore) {
+		scan_option("-E");
+		scan_option("-G");
+		scan_option("-L");
+		scan_option("-m");
+		s = lgetenv("MORE");
+	} else
+		s = lgetenv("LESS");
 	if (s != NULL)
 		scan_option(save(s));
 
@@ -158,8 +167,6 @@ main(argc, argv)
 	 * to "register" them with the ifile system.
 	 */
 	ifile = NULL_IFILE;
-	if (dohelp)
-		ifile = get_ifile(FAKE_HELPFILE, ifile);
 	while (argc-- > 0)
 	{
 		char *filename;
@@ -214,7 +221,7 @@ main(argc, argv)
 		quit(QUIT_OK);
 	}
 
-	if (missing_cap && !know_dumb)
+	if (missing_cap && !know_dumb && !ismore)
 		error("WARNING: terminal is not fully functional", NULL_PARG);
 	init_mark();
 	open_getchr();
@@ -277,9 +284,11 @@ save(s)
 	char *s;
 {
 	register char *p;
+	size_t len;
 
-	p = (char *) ecalloc(strlen(s)+1, sizeof(char));
-	strcpy(p, s);
+	len = strlen(s)+1, sizeof(char);
+	p = (char *) ecalloc(len, sizeof(char));
+	strlcpy(p, s, len);
 	return (p);
 }
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: ite_subr.c,v 1.5 1994/10/26 07:24:35 cgd Exp $	*/
+/*	$OpenBSD: ite_subr.c,v 1.4 1997/04/16 11:56:11 downsj Exp $	*/
+/*	$NetBSD: ite_subr.c,v 1.8 1997/03/31 07:37:26 scottr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,23 +39,22 @@
  *	@(#)ite_subr.c	8.2 (Berkeley) 1/12/94
  */
 
-#include "ite.h"
-#if NITE > 0
-
 #include <sys/param.h>
 #include <sys/conf.h>
 #include <sys/proc.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/systm.h>
+#include <sys/device.h>
 
 #include <hp300/dev/itevar.h>
 #include <hp300/dev/itereg.h>
 
 #include <machine/cpu.h>
 
+void
 ite_fontinfo(ip)
-	struct ite_softc *ip;
+	struct ite_data *ip;
 {
 	u_long fontaddr = getword(ip, getword(ip, FONTROM) + FONTADDR);
 
@@ -89,8 +85,9 @@ ite_fontinfo(ip)
 	}
 }
 
+void
 ite_fontinit(ip)
-	register struct ite_softc *ip;
+	struct ite_data *ip;
 {
 	int bytewidth = (((ip->ftwidth - 1) / 8) + 1);
 	int glyphsize = bytewidth * ip->ftheight;
@@ -118,17 +115,18 @@ ite_fontinit(ip)
  */
 u_char
 ite_readbyte(ip, disp)
-	struct ite_softc *ip;
+	struct ite_data *ip;
 	int disp;
 {
 	return((u_char) *(((u_char *)ip->regbase) + disp));
 }
 
+void
 ite_writeglyph(ip, fbmem, glyphp)
-	register struct ite_softc *ip;
-	register u_char *fbmem, *glyphp;
+	struct ite_data *ip;
+	u_char *fbmem, *glyphp;
 {
-	register int bn;
+	int bn;
 	int l, b;
 
 	for (l = 0; l < ip->ftheight; l++) {
@@ -149,4 +147,3 @@ ite_writeglyph(ip, fbmem, glyphp)
 		fbmem += ip->fbwidth;
 	}
 }
-#endif

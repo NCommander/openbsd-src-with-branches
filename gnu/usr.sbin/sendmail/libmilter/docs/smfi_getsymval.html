@@ -1,6 +1,9 @@
 <html>
 <head><title>smfi_getsymval</title></head>
 <body>
+<!--
+$Sendmail: smfi_getsymval.html,v 1.10 2003/03/05 19:57:54 ca Exp $
+-->
 <h1>smfi_getsymval</h1>
 
 <table border="0" cellspacing=4 cellpadding=4>
@@ -37,7 +40,11 @@ Get the value of a sendmail macro.
 	<td>The opaque context structure.
 	</td></tr>
     <tr valign="top"><td>symname</td>
-	<td>The name of a sendmail macro, optinally enclosed in braces ("{" and "}").  <a href="#notes">See below</a> for default macros.
+	<td>The name of a sendmail macro.
+	Single letter macros can optionally be enclosed in braces ("{" and "}"),
+	longer macro names must be enclosed in braces, just as in a
+	<tt>sendmail.cf</tt> file.
+	<a href="#notes">See below</a> for default macros.
 	</td></tr>
     </table>
 </td></tr>
@@ -82,11 +89,11 @@ sendmail distribution.
 
 <hr size="1">
 <font size="-1">
-Copyright (c) 2000 Sendmail, Inc. and its suppliers.
+Copyright (c) 2000, 2002-2003 Sendmail, Inc. and its suppliers.
 All rights reserved.
 <br>
 By using this file, you agree to the terms and conditions set
-forth in the <a href="LICENSE.txt">LICENSE</a>.
+forth in the LICENSE.
 </font>
 </body>
 </html>

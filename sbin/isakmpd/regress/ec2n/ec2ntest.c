@@ -1,4 +1,5 @@
-/*	$Id: ec2ntest.c,v 1.3 1998/07/16 09:21:59 niklas Exp $	*/
+/*	$OpenBSD: ec2ntest.c,v 1.4 2002/01/23 17:43:24 ho Exp $	*/
+/*	$EOM: ec2ntest.c,v 1.3 1998/07/16 09:21:59 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -46,7 +42,9 @@
 #include "math_2n.h"
 #include "math_ec2n.h"
 
-#define CMP_FAIL(n,x) b2n_sprint (buf, n); if (strcmp (buf, (x))) \
+#define BUFSIZE 200
+
+#define CMP_FAIL(n,x) b2n_snprint (buf, BUFSIZE, n); if (strcmp (buf, (x))) \
     printf ("FAILED: %s != %s ", buf, x); else printf ("OKAY ");
 
 int
@@ -55,7 +53,7 @@ main (void)
   b2n_t k;
   ec2np_t p, q, r;
   ec2ng_t g;
-  char buf[200];
+  char buf[BUFSIZE];
 
   b2n_init (k);
   ec2np_init (p);

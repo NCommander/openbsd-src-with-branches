@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Machine specific defines for the dpx2 machine */
 #define dpx2
 #define TC_M68K

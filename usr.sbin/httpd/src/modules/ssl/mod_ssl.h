@@ -284,6 +284,7 @@
 #define SSL_MUTEX_LOCK_MODE (_S_IREAD|_S_IWRITE )
 #endif
 #if defined(USE_SYSVSEM_SERIALIZED_ACCEPT) ||\
+    defined(__OpenBSD__) ||\
     (defined(__FreeBSD__) && defined(__FreeBSD_version) &&\
      __FreeBSD_version >= 300000) ||\
     (defined(LINUX) && defined(__GLIBC__) && defined(__GLIBC_MINOR__) &&\
@@ -831,9 +832,6 @@ void         ssl_compat_variables(request_rec *);
 /*  Utility Functions  */
 char        *ssl_util_server_root_relative(pool *, char *, char *);
 char        *ssl_util_vhostid(pool *, server_rec *);
-void         ssl_util_strupper(char *);
-void         ssl_util_uuencode(char *, const char *, BOOL);
-void         ssl_util_uuencode_binary(unsigned char *, const unsigned char *, int, BOOL);
 FILE        *ssl_util_ppopen(server_rec *, pool *, char *);
 int          ssl_util_ppopen_child(void *, child_info *);
 void         ssl_util_ppclose(server_rec *, pool *, FILE *);

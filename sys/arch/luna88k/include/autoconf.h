@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.11 2003/09/16 20:52:19 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.2 2004/07/23 15:31:34 miod Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -67,13 +67,12 @@ extern	struct device *bootdv; /* boot device */
 void	*mapiodev(void *pa, int size);
 void	unmapiodev(void *kva, int size);
 
-struct device *getdevunit(char *name, int unit);
-
 /* taken from NetBSD/luna68k */
 
 struct mainbus_attach_args {
         const char *ma_name;
         paddr_t    ma_addr;
         int        ma_ilvl;
+	int	   ma_machine;
 };
 #endif

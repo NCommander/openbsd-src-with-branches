@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.9 1995/03/18 14:59:46 cgd Exp $	*/
+/*	$OpenBSD: main.c,v 1.14 2003/07/28 06:13:26 tedu Exp $	*/
+/*	$NetBSD: main.c,v 1.13 1997/07/01 05:37:51 lukem Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,11 +40,12 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.3 (Berkeley) 9/13/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.9 1995/03/18 14:59:46 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: main.c,v 1.14 2003/07/28 06:13:26 tedu Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 
 #include <ufs/ffs/fs.h>
@@ -55,13 +53,12 @@ static char rcsid[] = "$NetBSD: main.c,v 1.9 1995/03/18 14:59:46 cgd Exp $";
 #include <protocols/dumprestore.h>
 
 #include <err.h>
-#include <errno.h>
+#include <paths.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "pathnames.h"
 #include "restore.h"
 #include "extern.h"
 
@@ -77,26 +74,36 @@ ino_t	maxino;
 time_t	dumptime;
 time_t	dumpdate;
 FILE 	*terminal;
+char	*tmpdir;
 
-static void obsolete __P((int *, char **[]));
-static void usage __P((void));
+static void obsolete(int *, char **[]);
+static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch;
 	ino_t ino;
-	char *inputdev = _PATH_DEFTAPE;
+	char *inputdev;
 	char *symtbl = "./restoresymtable";
 	char *p, name[MAXPATHLEN];
+
+	/* Temp files should *not* be readable.  We set permissions later. */
+	(void)umask(077);
 
 	if (argc < 2)
 		usage();
 
+	if ((inputdev = getenv("TAPE")) == NULL)
+		inputdev = _PATH_DEFTAPE;
+	if ((tmpdir = getenv("TMPDIR")) == NULL)
+		tmpdir = _PATH_TMP;
+	if ((tmpdir = strdup(tmpdir)) == NULL)
+		err(1, NULL);
+	for (p = tmpdir + strlen(tmpdir) - 1; p >= tmpdir && *p == '/'; p--)
+		;
 	obsolete(&argc, &argv);
-	while ((ch = getopt(argc, argv, "b:cdf:himNRrs:tvxy")) != EOF)
+	while ((ch = getopt(argc, argv, "b:cdf:himNRrs:tvxy")) != -1)
 		switch(ch) {
 		case 'b':
 			/* Change default tape blocksize. */
@@ -160,9 +167,9 @@ main(argc, argv)
 		errx(1, "none of i, R, r, t or x options specified");
 
 	if (signal(SIGINT, onintr) == SIG_IGN)
-		(void) signal(SIGINT, SIG_IGN);
+		(void)signal(SIGINT, SIG_IGN);
 	if (signal(SIGTERM, onintr) == SIG_IGN)
-		(void) signal(SIGTERM, SIG_IGN);
+		(void)signal(SIGTERM, SIG_IGN);
 	setlinebuf(stderr);
 
 	atexit(cleanup);
@@ -193,11 +200,11 @@ main(argc, argv)
 			/*
 			 * This is an incremental dump tape.
 			 */
-			vprintf(stdout, "Begin incremental restore\n");
+			Vprintf(stdout, "Begin incremental restore\n");
 			initsymtable(symtbl);
 			extractdirs(1);
 			removeoldleaves();
-			vprintf(stdout, "Calculate node updates.\n");
+			Vprintf(stdout, "Calculate node updates.\n");
 			treescan(".", ROOTINO, nodeupdates);
 			findunreflinks();
 			removeoldnodes();
@@ -205,10 +212,10 @@ main(argc, argv)
 			/*
 			 * This is a level zero dump tape.
 			 */
-			vprintf(stdout, "Begin level 0 restore\n");
-			initsymtable((char *)0);
+			Vprintf(stdout, "Begin level 0 restore\n");
+			initsymtable(NULL);
 			extractdirs(1);
-			vprintf(stdout, "Calculate extraction list.\n");
+			Vprintf(stdout, "Calculate extraction list.\n");
 			treescan(".", ROOTINO, nodeupdates);
 		}
 		createleaves(symtbl);
@@ -216,7 +223,7 @@ main(argc, argv)
 		setdirmodes(FORCE);
 		checkrestore();
 		if (dflag) {
-			vprintf(stdout, "Verify the directory structure\n");
+			Vprintf(stdout, "Verify the directory structure\n");
 			treescan(".", ROOTINO, verifyfile);
 		}
 		dumpsymtable(symtbl, (long)1);
@@ -240,9 +247,9 @@ main(argc, argv)
 	case 't':
 		setup();
 		extractdirs(0);
-		initsymtable((char *)0);
+		initsymtable(NULL);
 		while (argc--) {
-			canon(*argv++, name);
+			canon(*argv++, name, sizeof name);
 			ino = dirlookup(name);
 			if (ino == 0)
 				continue;
@@ -255,9 +262,9 @@ main(argc, argv)
 	case 'x':
 		setup();
 		extractdirs(1);
-		initsymtable((char *)0);
+		initsymtable(NULL);
 		while (argc--) {
-			canon(*argv++, name);
+			canon(*argv++, name, sizeof name);
 			ino = dirlookup(name);
 			if (ino == 0)
 				continue;
@@ -272,19 +279,18 @@ main(argc, argv)
 			checkrestore();
 		break;
 	}
-	exit(0);
-	/* NOTREACHED */
+	return (0);
 }
 
 static void
-usage()
+usage(void)
 {
 
-	(void)fprintf(stderr, "usage: restore -i [-chmvy] [-b blocksize] [-f file] [-s fileno]\n");
-	(void)fprintf(stderr, "       restore -R [-cvy] [-b blocksize] [-f file] [-s fileno]\n");
-	(void)fprintf(stderr, "       restore -r [-cvy] [-b blocksize] [-f file] [-s fileno]\n");
-	(void)fprintf(stderr, "       restore -t [-chvy] [-b blocksize] [-f file] [-s fileno] [file ...]\n");
-	(void)fprintf(stderr, "       restore -x [-chmvy] [-b blocksize] [-f file] [-s fileno] [file ...]\n");
+	(void)fprintf(stderr, "usage: %s -i [-chmvy] [-b blocksize] [-f file] [-s fileno]\n", __progname);
+	(void)fprintf(stderr, "       %s -R [-cvy] [-b blocksize] [-f file] [-s fileno]\n", __progname);
+	(void)fprintf(stderr, "       %s -r [-cvy] [-b blocksize] [-f file] [-s fileno]\n", __progname);
+	(void)fprintf(stderr, "       %s -t [-chvy] [-b blocksize] [-f file] [-s fileno] [file ...]\n", __progname);
+	(void)fprintf(stderr, "       %s -x [-chmvy] [-b blocksize] [-f file] [-s fileno] [file ...]\n", __progname);
 	exit(1);
 }
 
@@ -294,12 +300,11 @@ usage()
  *	getopt(3) will like.
  */
 static void
-obsolete(argcp, argvp)
-	int *argcp;
-	char **argvp[];
+obsolete(int *argcp, char **argvp[])
 {
 	int argc, flags;
 	char *ap, **argv, *flagsp, **nargv, *p;
+	size_t len;
 
 	/* Setup. */
 	argv = *argvp;
@@ -327,11 +332,12 @@ obsolete(argcp, argvp)
 				warnx("option requires an argument -- %c", *ap);
 				usage();
 			}
-			if ((nargv[0] = malloc(strlen(*argv) + 2 + 1)) == NULL)
+			len = strlen(*argv) + 2 + 1;
+			if ((nargv[0] = malloc(len)) == NULL)
 				err(1, NULL);
 			nargv[0][0] = '-';
 			nargv[0][1] = *ap;
-			(void)strcpy(&nargv[0][2], *argv);
+			(void)strlcpy(&nargv[0][2], *argv, len-2);
 			++argv;
 			++nargv;
 			break;
@@ -352,7 +358,8 @@ obsolete(argcp, argvp)
 	}
 
 	/* Copy remaining arguments. */
-	while (*nargv++ = *argv++);
+	while ((*nargv++ = *argv++))
+		;
 
 	/* Update argument count. */
 	*argcp = nargv - *argvp - 1;

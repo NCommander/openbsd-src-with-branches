@@ -8,44 +8,47 @@
 **		strings written must be less than buffer size.
 */
 
-#include "HTUtils.h"
-#include "tcp.h"
-#include "LYCurses.h"
-#include "HTFWriter.h"
-#include "HTSaveToFile.h"
+#include <HTUtils.h>
+#include <LYCurses.h>
+#include <HTFWriter.h>
+#include <HTSaveToFile.h>
 
-#include "HTFormat.h"
-#include "UCDefs.h"
-#include "HTAlert.h"
-#include "HTFile.h"
-#include "HTPlain.h"
-#include "HTFile.h"
-#ifdef VMS
-#include "HTVMSUtils.h"
-#endif /* VMS */
-#ifdef DOSPATH
-#include "HTDOS.h"
+#ifdef WIN_EX
+#include <HTParse.h>
 #endif
 
-#include "LYStrings.h"
-#include "LYUtils.h"
-#include "LYGlobalDefs.h"
-#include "LYSignal.h"
-#include "LYSystem.h"
-#include "GridText.h"
-#include "LYexit.h"
-#include "LYLeaks.h"
-#include "LYKeymap.h"
+#ifdef _WIN_CC
+extern int exec_command(char * cmd, int wait_flag); /* xsystem.c */
+#endif
+
+#include <HTFormat.h>
+#include <UCDefs.h>
+#include <HTAlert.h>
+#include <HTFile.h>
+#include <HTPlain.h>
+
+#include <LYStrings.h>
+#include <LYUtils.h>
+#include <LYGlobalDefs.h>
+#include <LYClean.h>
+#include <GridText.h>
+#include <LYExtern.h>
+#include <LYexit.h>
+#include <LYLeaks.h>
+#include <LYKeymap.h>
+
+#ifdef USE_PERSISTENT_COOKIES
+#include <LYCookie.h>
+#endif
 
 PUBLIC char * WWW_Download_File=NULL; /* contains the name of the temp file
 				      ** which is being downloaded into
 				      */
-PUBLIC char LYCancelDownload=FALSE;   /* exported to HTFormat.c in libWWW */
+PUBLIC BOOLEAN LYCancelDownload=FALSE;   /* exported to HTFormat.c in libWWW */
 
 #ifdef VMS
-extern BOOLEAN HadVMSInterrupt;      /* flag from cleanup_sig() 	*/
 PRIVATE char * FIXED_RECORD_COMMAND = NULL;
-#ifdef USE_COMMAND_FILE 	     /* Keep this as an option. - FM	*/
+#ifdef USE_COMMAND_FILE		     /* Keep this as an option. - FM	*/
 #define FIXED_RECORD_COMMAND_MASK "@Lynx_Dir:FIXED512 %s"
 #else
 #define FIXED_RECORD_COMMAND_MASK "%s"
@@ -57,9 +60,6 @@ PUBLIC HTStream* HTSaveToFile PARAMS((
 	HTPresentation *       pres,
 	HTParentAnchor *       anchor,
 	HTStream *	       sink));
-
-#define FREE(x) if (x) {free(x); x = NULL;}
-
 
 /*	Stream Object
 **	-------------
@@ -76,7 +76,7 @@ struct _HTStream {
 	HTParentAnchor *	anchor;     /* Original stream's anchor. */
 	HTStream *		sink;	    /* Original stream's sink.	 */
 #ifdef FNAMES_8_3
-	int			idash; /* remember position to become '.'*/
+	BOOLEAN			idash; /* remember position to become '.'*/
 #endif
 };
 
@@ -93,7 +93,9 @@ struct _HTStream {
 */
 PRIVATE void HTFWriter_put_character ARGS2(HTStream *, me, char, c)
 {
-    putc(c, me->fp);
+    if (me->fp) {
+	putc(c, me->fp);
+    }
 }
 
 /*	String handling
@@ -103,7 +105,9 @@ PRIVATE void HTFWriter_put_character ARGS2(HTStream *, me, char, c)
 */
 PRIVATE void HTFWriter_put_string ARGS2(HTStream *, me, CONST char*, s)
 {
-    fputs(s, me->fp);
+    if (me->fp) {
+	fputs(s, me->fp);
+    }
 }
 
 /*	Buffer write.  Buffers can (and should!) be big.
@@ -111,7 +115,9 @@ PRIVATE void HTFWriter_put_string ARGS2(HTStream *, me, CONST char*, s)
 */
 PRIVATE void HTFWriter_write ARGS3(HTStream *, me, CONST char*, s, int, l)
 {
-    fwrite(s, 1, l, me->fp);
+    if (me->fp) {
+	fwrite(s, 1, l, me->fp);
+    }
 }
 
 
@@ -126,16 +132,22 @@ PRIVATE void HTFWriter_write ARGS3(HTStream *, me, CONST char*, s, int, l)
 */
 PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 {
-    FILE *fp = NULL;
     int len;
     char *path = NULL;
     char *addr = NULL;
     int status;
-    BOOL use_gzread = NO;
+    BOOL use_zread = NO;
+    BOOLEAN found = FALSE;
+#ifdef WIN_EX
+    HANDLE cur_handle;
 
-    fflush(me->fp);
+    cur_handle = GetForegroundWindow();
+#endif
+
+    if (me->fp)
+	fflush(me->fp);
     if (me->end_command) {		/* Temp file */
-	fclose(me->fp);
+	LYCloseTempFP(me->fp);
 #ifdef VMS
 	if (0 == strcmp(me->end_command, "SaveVMSBinaryFile")) {
 	/*
@@ -143,7 +155,7 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 	 *  we want to convert to fixed records format. - FM
 	 */
 #ifdef USE_COMMAND_FILE
-	    system(FIXED_RECORD_COMMAND);
+	    LYSystem(FIXED_RECORD_COMMAND);
 #else
 	    LYVMS_FixedLengthRecords(FIXED_RECORD_COMMAND);
 #endif /* USE_COMMAND_FILE */
@@ -151,7 +163,6 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 
 	    if (me->remove_command) {
 		/* NEVER REMOVE THE FILE unless during an abort!*/
-		/* system(me->remove_command); */
 		FREE(me->remove_command);
 	    }
 	} else
@@ -162,29 +173,38 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 	     *	a temporary file for uncompression. - FM
 	     */
 	    if (me->anchor->FileCache != NULL) {
-		BOOL skip_loadfile = (me->viewer_command != NULL);
+		BOOL skip_loadfile = (BOOL) (me->viewer_command != NULL);
 		/*
 		 *  Save the path with the "gz" or "Z" suffix trimmed,
 		 *  and remove any previous uncompressed copy. - FM
 		 */
 		StrAllocCopy(path, me->anchor->FileCache);
-		if ((len = strlen(path)) > 2) {
-		    if (!strcasecomp((char *)&path[len-2], "gz")) {
+		if ((len = strlen(path)) > 3 &&
+		    !strcasecomp(&path[len-2], "gz")) {
 #ifdef USE_ZLIB
-			if (!skip_loadfile) {
-			    use_gzread = YES;
-			} else
+		    if (!skip_loadfile) {
+			use_zread = YES;
+		    } else
 #endif /* USE_ZLIB */
-			{
-			    path[len-3] = '\0';
-			    remove(path);
-			}
-		    } else if (!strcasecomp((char *)&path[len-1], "Z")) {
-			path[len-2] = '\0';
+		    {
+			path[len-3] = '\0';
 			remove(path);
 		    }
+		} else if (len > 4 && !strcasecomp(&path[len-3], "bz2")) {
+#ifdef USE_BZLIB
+		    if (!skip_loadfile) {
+			use_zread = YES;
+		    } else
+#endif /* USE_BZLIB */
+		    {
+			path[len-4] = '\0';
+			remove(path);
+		    }
+		} else if (len > 2 && !strcasecomp(&path[len-1], "Z")) {
+		    path[len-2] = '\0';
+		    remove(path);
 		}
-		if (!use_gzread) {
+		if (!use_zread) {
 		    if (!dump_output_immediately) {
 			/*
 			 *  Tell user what's happening. - FM
@@ -195,22 +215,20 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 		     *	Uncompress it. - FM
 		     */
 		    if (me->end_command && me->end_command[0])
-			system(me->end_command);
-		    fp = fopen(me->anchor->FileCache, "r");
+			LYSystem(me->end_command);
+		    found = LYCanReadFile(me->anchor->FileCache);
 		}
-		if (fp != NULL) {
+		if (found) {
 		    /*
 		     *	It's still there with the "gz" or "Z" suffix,
 		     *	so the uncompression failed. - FM
 		     */
-		    fclose(fp);
-		    fp = NULL;
 		    if (!dump_output_immediately) {
 			lynx_force_repaint();
-			refresh();
+			LYrefresh();
 		    }
 		    HTAlert(ERROR_UNCOMPRESSING_TEMP);
-		    remove(me->anchor->FileCache);
+		    LYRemoveTemp(me->anchor->FileCache);
 		    FREE(me->anchor->FileCache);
 		} else {
 		    /*
@@ -227,11 +245,13 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 		     */
 		    if (skip_loadfile) {
 			char *new_path = NULL;
-			if (me->idash > 1 && path[me->idash] == '-') {
+			char *the_dash = me->idash ? strrchr(path, '-') : 0;
+			if (the_dash != 0) {
+			    unsigned off = (the_dash - path);
 			    StrAllocCopy(new_path, path);
-			    new_path[me->idash] = '.';
-			    if (strlen(new_path + me->idash) > 4)
-				new_path[me->idash + 4] = '\0';
+			    new_path[off] = '.';
+			    if (strlen(new_path + off) > 4)
+				new_path[off + 4] = '\0';
 			    if (rename(path, new_path) == 0) {
 				FREE(path);
 				path = new_path;
@@ -241,18 +261,9 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 			}
 		    }
 #endif /* FNAMES_8_3 */
-		    StrAllocCopy(addr, "file://localhost");
-#ifdef DOSPATH
-		    StrAllocCat(addr, "/");
-		    StrAllocCat(addr, HTDOS_wwwName(path));
-#else
-#ifdef VMS
-		    StrAllocCat(addr, HTVMS_wwwName(path));
-#else
-		    StrAllocCat(addr, path);
-#endif /* VMS */
-#endif /* DOSPATH */
-		    if (!use_gzread) {
+		    LYLocalFileToURL (&addr, path);
+		    if (!use_zread) {
+			LYRenamedTemp(me->anchor->FileCache, path);
 			StrAllocCopy(me->anchor->FileCache, path);
 			StrAllocCopy(me->anchor->content_encoding, "binary");
 		    }
@@ -285,7 +296,7 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 			/*
 			 *  Tell user what's happening. - FM
 			 */
-			_user_message(WWW_USING_MESSAGE, addr);
+			HTUserMsg2(WWW_USING_MESSAGE, addr);
 		    }
 
 		    if (skip_loadfile) {
@@ -299,36 +310,42 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 			 *  (or even the same!).  We can skip this
 			 *  needless duplication by using the
 			 *  viewer_command which has already been
-			 *  determind when the HTCompressed stream was
+			 *  determined when the HTCompressed stream was
 			 *  created. - kw
 			 */
 			FREE(me->end_command);
-			me->end_command = (char *)calloc (
-			    (strlen (me->viewer_command) + 10 +
-			     strlen(me->anchor->FileCache))
-			    * sizeof (char),1);
-			if (me->end_command == NULL)
-			    outofmem(__FILE__, "HTFWriter_free (HTCompressed)");
 
-			sprintf(me->end_command,
-				me->viewer_command, me->anchor->FileCache,
-				"", "", "", "", "", "");
+			HTAddParam(&(me->end_command), me->viewer_command, 1, me->anchor->FileCache);
+			HTEndParam(&(me->end_command), me->viewer_command, 1);
+
 			if (!dump_output_immediately) {
 			    /*
 			     *	Tell user what's happening. - FM
 			     */
 			    HTProgress(me->end_command);
+#ifndef WIN_EX
 			    stop_curses();
+#endif
 			}
-			system(me->end_command);
-
+#ifdef _WIN_CC
+			exec_command(me->end_command, FALSE);
+#else
+			LYSystem(me->end_command);
+#endif
 			if (me->remove_command) {
 			    /* NEVER REMOVE THE FILE unless during an abort!!!*/
-			    /* system(me->remove_command); */
 			    FREE(me->remove_command);
 			}
-			if (!dump_output_immediately)
+			if (!dump_output_immediately) {
+#ifdef WIN_EX
+			    if (focus_window) {
+				HTInfoMsg(gettext("Set focus1"));
+				status = SetForegroundWindow(cur_handle);
+			    }
+#else
 			    start_curses();
+#endif
+			}
 		    } else
 		    status = HTLoadFile(addr,
 					me->anchor,
@@ -350,7 +367,6 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 	    }
 	    if (me->remove_command) {
 		/* NEVER REMOVE THE FILE unless during an abort!!!*/
-		/* system(me->remove_command); */
 		FREE(me->remove_command);
 	    }
 	} else if (strcmp(me->end_command, "SaveToFile")) {
@@ -363,17 +379,30 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 		 *  Tell user what's happening. - FM
 		 */
 		_HTProgress(me->end_command);
+#ifndef WIN_EX
 		stop_curses();
+#endif
 	    }
-	    system(me->end_command);
+#ifdef _WIN_CC
+	    exec_command(me->end_command, FALSE);
+#else
+	    LYSystem(me->end_command);
+#endif
 
 	    if (me->remove_command) {
 		/* NEVER REMOVE THE FILE unless during an abort!!!*/
-		/* system(me->remove_command); */
 		FREE(me->remove_command);
 	    }
-	    if (!dump_output_immediately)
+	    if (!dump_output_immediately) {
+#ifdef WIN_EX
+		if (focus_window) {
+		    HTInfoMsg(gettext("Set focus2"));
+		    status = SetForegroundWindow(cur_handle);
+		}
+#else
 		start_curses();
+#endif
+	    }
 	} else {
 	    /*
 	     *	It's a file we saved to disk for handling
@@ -381,8 +410,17 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 	     */
 	    if (me->remove_command) {
 		/* NEVER REMOVE THE FILE unless during an abort!!!*/
-		/* system(me->remove_command); */
 		FREE(me->remove_command);
+	    }
+	    if (!dump_output_immediately) {
+#ifdef WIN_EX
+		if (focus_window) {
+		    HTInfoMsg(gettext("Set focus3"));
+		    status = SetForegroundWindow(cur_handle);
+		}
+#else
+		start_curses();
+#endif
 	    }
 	}
 	FREE(me->end_command);
@@ -393,23 +431,26 @@ PRIVATE void HTFWriter_free ARGS1(HTStream *, me)
 	if (me->anchor->FileCache)
 	    remove(me->anchor->FileCache);
 	FREE(me);
-#ifndef NOSIGHUP
-	(void) signal(SIGHUP, SIG_DFL);
-#endif /* NOSIGHUP */
-	(void) signal(SIGTERM, SIG_DFL);
-#ifndef VMS
-	(void) signal(SIGINT, SIG_DFL);
-#endif /* !VMS */
-#ifdef SIGTSTP
-	if (no_suspend)
-	  (void) signal(SIGTSTP,SIG_DFL);
-#endif /* SIGTSTP */
-	exit(0);
+#ifdef USE_PERSISTENT_COOKIES
+	/*
+	 *  We want to save cookies picked up when in source
+	 *  mode.  ...
+	 */
+	if (persistent_cookies)
+	    LYStoreCookies(LYCookieSaveFile);
+#endif /* USE_PERSISTENT_COOKIES */
+	exit_immediately(EXIT_SUCCESS);
     }
 
     FREE(me);
     return;
 }
+
+#ifdef VMS
+#  define REMOVE_COMMAND "delete/noconfirm/nolog %s;"
+#else
+#  define REMOVE_COMMAND "%s"
+#endif /* VMS */
 
 /*	Abort writing
 **	-------------
@@ -418,17 +459,26 @@ PRIVATE void HTFWriter_abort ARGS2(
 	HTStream *,	me,
 	HTError,	e GCC_UNUSED)
 {
-    if (TRACE)
-	fprintf(stderr,"HTFWriter_abort called\n");
-
-    fclose(me->fp);
+    CTRACE((tfp,"HTFWriter_abort called\n"));
+    LYCloseTempFP(me->fp);
     FREE(me->viewer_command);
     if (me->end_command) {		/* Temp file */
-	if (TRACE)
-	    fprintf(stderr, "HTFWriter: Aborting: file not executed.\n");
+	CTRACE((tfp, "HTFWriter: Aborting: file not executed or saved.\n"));
 	FREE(me->end_command);
 	if (me->remove_command) {
-	    system(me->remove_command);
+#ifdef VMS
+	    LYSystem(me->remove_command);
+#else
+	    chmod(me->remove_command, 0600);		/* Ignore errors */
+	    if (0 != unlink(me->remove_command)) {
+		char buf[560];
+
+		sprintf(buf, "%.60s '%.400s': %.60s",
+			gettext("Error deleting file"),
+			me->remove_command, LYStrerror(errno));
+		HTAlert(buf);
+	    }
+#endif
 	    FREE(me->remove_command);
 	}
     }
@@ -460,7 +510,7 @@ PUBLIC HTStream* HTFWriter_new ARGS1(FILE *, fp)
     if (!fp)
 	return NULL;
 
-    me = (HTStream*)calloc(sizeof(*me),1);
+    me = typecalloc(HTStream);
     if (me == NULL)
 	outofmem(__FILE__, "HTFWriter_new");
     me->isa = &HTFWriter;
@@ -474,18 +524,93 @@ PUBLIC HTStream* HTFWriter_new ARGS1(FILE *, fp)
     return me;
 }
 
+PRIVATE void chrcat ARGS2(
+	char *,		result,
+	int,		ch)
+{
+    result += strlen(result);
+    *result++ = (char)ch;
+    *result = 0;
+}
+
 /*	Make system command from template
 **	---------------------------------
 **
 **	See mailcap spec for description of template.
 */
-/* @@ to be written.  sprintfs will do for now.  */
+PRIVATE char *mailcap_substitute ARGS3(
+	HTParentAnchor *,	anchor,
+	HTPresentation *,	pres,
+	char *,			fnam)
+{
+    int pass;
+    int skip;
+    size_t need = 0;
+    char *result = 0;
+    char *s;
+    char *repl;
 
-#ifndef VMS
-#define REMOVE_COMMAND "/bin/rm -f %s"
-#else
-#define REMOVE_COMMAND "delete/noconfirm/nolog %s;"
-#endif /* VMS */
+    for (pass = 0; pass < 2; pass++) {
+	for (s = pres->command; *s; s++) {
+	    if (*s == '%') {
+		repl = 0;
+		skip = 0;
+		if (s[1] == 't') {
+		    repl = pres->rep->name;
+		    skip = 1;
+		} else if (s[1] == 's') {
+		    repl = fnam;
+		    skip = 1;
+		} else if (!strncasecomp(s+1, "{charset}", 9)) {
+		    repl = anchor->charset;
+		    skip = 9;
+		} else if (!strncasecomp(s+1, "{encoding}", 10)) {
+		    repl = anchor->content_encoding;
+		    skip = 10;
+		}
+		if (skip != 0) {
+		    if (repl == 0)
+			repl = "";
+		    if (pass) {
+			strcat(result, repl);
+		    } else {
+			need += strlen(repl);
+		    }
+		    s += skip;
+		} else {
+		    if (pass) {
+			chrcat(result, *s);
+		    } else {
+			need++;
+		    }
+		}
+	    } else {
+		if (pass) {
+		    chrcat(result, *s);
+		} else {
+		    need++;
+		}
+	    }
+	}
+	if (pass == 0) {
+	    if ((result = malloc(need + 1)) == 0)
+		outofmem(__FILE__, "mailcap_substitute");
+	    *result = 0;
+	}
+    }
+#if defined(UNIX)
+    /* if we don't have a "%s" token, expect to provide the file via stdin */
+    if (strstr(pres->command, "%s") == 0) {
+	char *prepend = 0;
+	char *format = "( %s ) < %s";
+	HTSprintf(&prepend, "( %s", pres->command); /* ...avoid quoting */
+	HTAddParam(&prepend, format, 2, fnam); /* ...to quote if needed */
+	FREE(result);
+	result = prepend;
+    }
+#endif
+    return result;
+}
 
 /*	Take action using a system command
 **	----------------------------------
@@ -501,17 +626,14 @@ PUBLIC HTStream* HTSaveAndExecute ARGS3(
 	HTParentAnchor *,	anchor,
 	HTStream *,		sink)
 {
-    char fnam[256];
+    char fnam[LY_MAXPATH];
     CONST char *suffix;
-    char *cp;
     HTStream* me;
-    FILE *fp = NULL;
 
     if (traversal) {
 	LYCancelledFetch = TRUE;
 	return(NULL);
     }
-
 #if defined(EXEC_LINKS) || defined(EXEC_SCRIPTS)
     if (pres->quality == 999.0) { /* exec link */
 	if (dump_output_immediately) {
@@ -519,24 +641,25 @@ PUBLIC HTStream* HTSaveAndExecute ARGS3(
 	    return(NULL);
 	}
 	if (no_exec) {
-	    _statusline(EXECUTION_DISABLED);
-	    sleep(AlertSecs);
+	    HTAlert(EXECUTION_DISABLED);
 	    return HTPlainPresent(pres, anchor, sink);
 	}
-	if (!local_exec)
+	if (!local_exec) {
 	    if (local_exec_on_local_files &&
 		(LYJumpFileURL ||
 		 !strncmp(anchor->address,"file://localhost",16))) {
 		/* allow it to continue */
+		;
 	    } else {
-		char buf[512];
+		char *buf = 0;
 
-		sprintf(buf, EXECUTION_DISABLED_FOR_FILE,
-			     key_for_func(LYK_OPTIONS));
-		_statusline(buf);
-		sleep(AlertSecs);
+		HTSprintf0(&buf, EXECUTION_DISABLED_FOR_FILE,
+			   key_for_func(LYK_OPTIONS));
+		HTAlert(buf);
+		FREE(buf);
 		return HTPlainPresent(pres, anchor, sink);
 	    }
+	}
     }
 #endif /* EXEC_LINKS || EXEC_SCRIPTS */
 
@@ -544,7 +667,7 @@ PUBLIC HTStream* HTSaveAndExecute ARGS3(
 	return(HTSaveToFile(pres, anchor, sink));
     }
 
-    me = (HTStream*)calloc(sizeof(*me),1);
+    me = typecalloc(HTStream);
     if (me == NULL)
 	outofmem(__FILE__, "HTSaveAndExecute");
     me->isa = &HTFWriter;
@@ -553,61 +676,78 @@ PUBLIC HTStream* HTSaveAndExecute ARGS3(
     me->anchor = anchor;
     me->sink = sink;
 
-    if (anchor->FileCache) {
-	strcpy(fnam, anchor->FileCache);
-	FREE(anchor->FileCache);
-	if ((fp = fopen(fnam, "r")) != NULL) {
-	    fclose(fp);
-	    fp = NULL;
-	    remove(fnam);
-	}
-    } else {
-	/*
-	 *  Lynx routine to create a temporary filename
+    if (LYCachedTemp(fnam, &(anchor->FileCache))) {
+	/*  This used to be LYNewBinFile(fnam); changed to a different call
+	 *  so that the open fp gets registered in the list keeping track of
+	 *  temp files, equivalent to when LYOpenTemp() gets called below.
+	 *  This avoids a file descriptor leak caused by LYCloseTempFP()
+	 *  not being able to find the fp.  The binary suffix is expected
+	 *  to not be used, it's only for fallback in unusual error cases. - kw
 	 */
-SaveAndExecute_tempname:
-	tempname (fnam, NEW_FILE);
+	me->fp = LYOpenTempRewrite(fnam, BIN_SUFFIX, BIN_W);
+    } else {
+#if defined(WIN_EX) && !defined(__CYGWIN__)	/* 1998/01/04 (Sun) */
+	if (!strncmp(anchor->address,"file://localhost",16)) {
+
+	    /* 1998/01/23 (Fri) 17:38:26 */
+	    unsigned char *cp, *view_fname;
+
+#define IS_SJIS_HI1(hi) ((0x81<=hi)&&(hi<=0x9F))	/* 1st lev. */
+#define IS_SJIS_HI2(hi) ((0xE0<=hi)&&(hi<=0xEF))	/* 2nd lev. */
+
+	    me->fp = NULL;
+
+	    view_fname = fnam + 3;
+	    LYstrncpy(view_fname, anchor->address + 17, sizeof(fnam) - 5);
+	    HTUnEscape(view_fname);
+
+	    if (strchr(view_fname, ':')==NULL) {
+		fnam[0] = windows_drive[0];
+		fnam[1] = windows_drive[1];
+		fnam[2] = '/';
+		view_fname = fnam;
+	    }
+
+	    /* 1998/04/21 (Tue) 11:04:16 */
+	    cp = view_fname;
+	    while (*cp) {
+		if (IS_SJIS_HI1(*cp) || IS_SJIS_HI2(*cp)) {
+		    cp += 2;
+		    continue;
+		} else if (*cp == '/') {
+		    *cp = '\\';
+		}
+		cp++;
+	    }
+	    if (strchr(view_fname, ' '))
+		view_fname = (unsigned char *) quote_pathname(view_fname);
+
+	    StrAllocCopy(me->viewer_command, pres->command);
+
+	    me->end_command = mailcap_substitute(anchor, pres, view_fname);
+	    me->remove_command = NULL;
+
+	    return me;
+	}
+#endif
 	/*
 	 *  Check for a suffix.
+	 *  Save the file under a suitably suffixed name.
 	 */
-	if (((cp = strrchr(fnam, '.')) != NULL) &&
-#ifdef VMS
-	    NULL == strchr(cp, ']') &&
-#endif /* VMS */
-	    NULL == strchr(cp, '/')) {
-	    /*
-	     *	Save the file under a suitably suffixed name.
-	     */
-	    *cp = '\0';
-	    if (!strcasecomp(pres->rep->name, "text/html")) {
-		strcat(fnam, HTML_SUFFIX);
-	    } else if (!strcasecomp(pres->rep->name, "text/plain")) {
-		strcat(fnam, ".txt");
-	    } else if (!strcasecomp(pres->rep->name,
-				    "application/octet-stream")) {
-		strcat(fnam, ".bin");
-	    } else if ((suffix = HTFileSuffix(pres->rep, anchor->content_encoding))
-		       && *suffix == '.') {
-		strcat(fnam, suffix);
-		/*
-		 *  It's not one of the suffixes checked for a
-		 *  spoof in tempname(), so check it now. - FM
-		 */
-		if (strcmp(suffix, HTML_SUFFIX) &&
-		    strcmp(suffix, ".txt") &&
-		    strcmp(suffix, ".bin") &&
-		    (fp = fopen(fnam, "r")) != NULL) {
-		    fclose(fp);
-		    fp = NULL;
-		    goto SaveAndExecute_tempname;
-		}
-	    } else {
-		*cp = '.';
-	    }
+	if (!strcasecomp(pres->rep->name, "text/html")) {
+	    suffix = HTML_SUFFIX;
+	} else if (!strncasecomp(pres->rep->name, "text/", 5)) {
+	    suffix = TEXT_SUFFIX;
+	} else if (!strncasecomp(pres->rep->name, "application/", 12)) {
+	    suffix = BIN_SUFFIX;
+	} else if ((suffix = HTFileSuffix(pres->rep,
+					  anchor->content_encoding)) == 0
+		    || *suffix != '.') {
+	    suffix = HTML_SUFFIX;
 	}
+	me->fp = LYOpenTemp(fnam, suffix, BIN_W);
     }
 
-    me->fp = LYNewBinFile (fnam);
     if (!me->fp) {
 	HTAlert(CANNOT_OPEN_TEMP);
 	FREE(me);
@@ -618,24 +758,14 @@ SaveAndExecute_tempname:
     /*
      *	Make command to process file.
      */
-    me->end_command = (char *)calloc (
-			(strlen (pres->command) + 10 + strlen(fnam))
-			 * sizeof (char),1);
-    if (me->end_command == NULL)
-	outofmem(__FILE__, "HTSaveAndExecute");
-
-    sprintf(me->end_command, pres->command, fnam, "", "", "", "", "", "");
+    me->end_command = mailcap_substitute(anchor, pres, fnam);
 
     /*
      *	Make command to delete file.
      */
-    me->remove_command = (char *)calloc (
-			(strlen (REMOVE_COMMAND) + 10 + strlen(fnam))
-			 * sizeof (char),1);
-    if (me->remove_command == NULL)
-	outofmem(__FILE__, "HTSaveAndExecute");
-
-    sprintf(me->remove_command, REMOVE_COMMAND, fnam);
+    me->remove_command = 0;
+    HTAddParam(&(me->remove_command), REMOVE_COMMAND, 1, fnam);
+    HTEndParam(&(me->remove_command), REMOVE_COMMAND, 1);
 
     StrAllocCopy(anchor->FileCache, fnam);
     return me;
@@ -664,14 +794,13 @@ PUBLIC HTStream* HTSaveToFile ARGS3(
 	HTStream *,		sink)
 {
     HTStream * ret_obj;
-    char fnam[256];
+    char fnam[LY_MAXPATH];
     CONST char * suffix;
     char *cp;
-    int c=0;
+    int c = 0;
     BOOL IsBinary = TRUE;
-    FILE *fp = NULL;
 
-    ret_obj = (HTStream*)calloc(sizeof(* ret_obj),1);
+    ret_obj = typecalloc(HTStream);
     if (ret_obj == NULL)
 	outofmem(__FILE__, "HTSaveToFile");
     ret_obj->isa = &HTFWriter;
@@ -694,8 +823,7 @@ PUBLIC HTStream* HTSaveToFile ARGS3(
 	if (traversal ||
 	    (no_download && !override_no_download && no_disk_save)) {
 	    if (!traversal) {
-		_statusline(CANNOT_DISPLAY_FILE);
-		sleep(AlertSecs);
+		HTAlert(CANNOT_DISPLAY_FILE);
 	    }
 	    LYCancelDownload = TRUE;
 	    if (traversal)
@@ -704,17 +832,17 @@ PUBLIC HTStream* HTSaveToFile ARGS3(
 	    return(NULL);
 	}
 
-	if (((cp=strchr((char *)pres->rep->name, ';')) != NULL) &&
+	if (((cp = strchr(pres->rep->name, ';')) != NULL) &&
 	    strstr((cp+1), "charset") != NULL) {
-	    _user_message(WRONG_CHARSET_D_OR_C, (char *)pres->rep->name);
-	} else if (*((char *)pres->rep->name) != '\0')	{
-	    _user_message(UNMAPPED_TYPE_D_OR_C, (char *)pres->rep->name);
+	    _user_message(MSG_DOWNLOAD_OR_CANCEL, pres->rep->name);
+	} else if (*(pres->rep->name) != '\0')	{
+	    _user_message(MSG_DOWNLOAD_OR_CANCEL, pres->rep->name);
 	} else {
 	    _statusline(CANNOT_DISPLAY_FILE_D_OR_C);
 	}
 
-	while(TOUPPER(c)!='C' && TOUPPER(c)!='D' && c!=7) {
-	    c=LYgetch();
+	while (c != 'D' && c != 'C' && !LYCharIsINTERRUPT(c)) {
+	    c = LYgetch_single();
 #ifdef VMS
 	    /*
 	     *	'C'ancel on Control-C or Control-Y and
@@ -730,7 +858,7 @@ PUBLIC HTStream* HTSaveToFile ARGS3(
 	/*
 	 *  Cancel on 'C', 'c' or Control-G or Control-C.
 	 */
-	if (TOUPPER(c)=='C' || c==7 || c==3) {
+	if (c == 'C' || LYCharIsINTERRUPT(c)) {
 	    _statusline(CANCELLING_FILE);
 	    LYCancelDownload = TRUE;
 	    FREE(ret_obj);
@@ -741,58 +869,38 @@ PUBLIC HTStream* HTSaveToFile ARGS3(
     /*
      *	Set up a 'D'ownload.
      */
-    if (anchor->FileCache) {
-	strcpy(fnam, anchor->FileCache);
-	FREE(anchor->FileCache);
-	if ((fp = fopen(fnam, "r")) != NULL) {
-	    fclose(fp);
-	    fp = NULL;
-	    remove(fnam);
-	}
+    if (LYCachedTemp(fnam, &(anchor->FileCache))) {
+	/*  This used to be LYNewBinFile(fnam); changed to a different call
+	 *  so that the open fp gets registered in the list keeping track of
+	 *  temp files, equivalent to when LYOpenTemp() gets called below.
+	 *  This avoids a file descriptor leak caused by LYCloseTempFP()
+	 *  not being able to find the fp.  The binary suffix is expected
+	 *  to not be used, it's only for fallback in unusual error cases. - kw
+	 */
+	ret_obj->fp = LYOpenTempRewrite(fnam, BIN_SUFFIX, BIN_W);
     } else {
 	/*
-	 *  Lynx routine to create a temporary filename
-	 */
-SaveToFile_tempname:
-	tempname(fnam, NEW_FILE);
-	/*
 	 *  Check for a suffix.
+	 *  Save the file under a suitably suffixed name.
 	 */
-	if (((cp=strrchr(fnam, '.')) != NULL) &&
-#ifdef VMS
-	    NULL == strchr(cp, ']') &&
-#endif /* VMS */
-	    NULL == strchr(cp, '/')) {
-	    /*
-	     *	Save the file under a suitably suffixed name.
-	     */
-	    *cp = '\0';
-	    if (!strcasecomp(pres->rep->name, "text/html")) {
-		strcat(fnam, HTML_SUFFIX);
-	    } else if (!strcasecomp(pres->rep->name, "text/plain")) {
-		strcat(fnam, ".txt");
-	    } else if (!strcasecomp(pres->rep->name,
-				    "application/octet-stream")) {
-		strcat(fnam, ".bin");
-	    } else if ((suffix = HTFileSuffix(pres->rep,
-					      anchor->content_encoding)) && *suffix == '.') {
-		strcat(fnam, suffix);
-		/*
-		 *  It's not one of the suffixes checked for a
-		 *  spoof in tempname(), so check it now. - FM
-		 */
-		if (strcmp(suffix, HTML_SUFFIX) &&
-		    strcmp(suffix, ".txt") &&
-		    strcmp(suffix, ".bin") &&
-		    (fp = fopen(fnam, "r")) != NULL) {
-		    fclose(fp);
-		    fp = NULL;
-		    goto SaveToFile_tempname;
-		}
-	    } else {
-		*cp = '.';
-	    }
+	if (!strcasecomp(pres->rep->name, "text/html")) {
+	    suffix = HTML_SUFFIX;
+	} else if (!strncasecomp(pres->rep->name, "text/", 5)) {
+	    suffix = TEXT_SUFFIX;
+	} else if (!strncasecomp(pres->rep->name, "application/", 12)) {
+	    suffix = BIN_SUFFIX;
+	} else if ((suffix = HTFileSuffix(pres->rep,
+					  anchor->content_encoding)) == 0
+		    || *suffix != '.') {
+	    suffix = HTML_SUFFIX;
 	}
+	ret_obj->fp = LYOpenTemp(fnam, suffix, BIN_W);
+    }
+
+    if (!ret_obj->fp) {
+	HTAlert(CANNOT_OPEN_OUTPUT);
+	FREE(ret_obj);
+	return NULL;
     }
 
     if (0==strncasecomp(pres->rep->name, "text/", 5) ||
@@ -805,13 +913,6 @@ SaveToFile_tempname:
 	 */
 	IsBinary = FALSE;
 
-    ret_obj->fp = LYNewBinFile (fnam);
-    if (!ret_obj->fp) {
-	HTAlert(CANNOT_OPEN_OUTPUT);
-	FREE(ret_obj);
-	return NULL;
-    }
-
     /*
      *	Any "application/foo" or other non-"text/foo" types that
      *	are actually text but not checked, above, will be treated
@@ -819,41 +920,27 @@ SaveToFile_tempname:
      *	Unix folks don't need to know this, but we'll show it to
      *	them, too. - FM
      */
-    user_message("Content-type: %s", pres->rep->name);
-    sleep(MessageSecs);
+    HTUserMsg2(CONTENT_TYPE_MSG, pres->rep->name);
 
     StrAllocCopy(WWW_Download_File,fnam);
 
     /*
      *	Make command to delete file.
      */
-    ret_obj->remove_command = (char *)calloc (
-			(strlen (REMOVE_COMMAND) + 10+ strlen(fnam))
-			 * sizeof (char),1);
-    if (ret_obj->remove_command == NULL)
-	outofmem(__FILE__, "HTSaveToFile");
-
-    sprintf(ret_obj->remove_command, REMOVE_COMMAND, fnam);
+    ret_obj->remove_command = 0;
+    HTAddParam(&(ret_obj->remove_command), REMOVE_COMMAND, 1, fnam);
+    HTEndParam(&(ret_obj->remove_command), REMOVE_COMMAND, 1);
 
 #ifdef VMS
     if (IsBinary && UseFixedRecords) {
-	ret_obj->end_command = (char *)calloc (sizeof(char)*20,1);
-	if (ret_obj->end_command == NULL)
-	    outofmem(__FILE__, "HTSaveToFile");
-	sprintf(ret_obj->end_command, "SaveVMSBinaryFile");
-	FIXED_RECORD_COMMAND = (char *)calloc (
-		(strlen (FIXED_RECORD_COMMAND_MASK) + 10 + strlen(fnam))
-		* sizeof (char),1);
-	if (FIXED_RECORD_COMMAND == NULL)
-	    outofmem(__FILE__, "HTSaveToFile");
-	sprintf(FIXED_RECORD_COMMAND,
-		FIXED_RECORD_COMMAND_MASK, fnam, "", "", "", "", "", "");
+	StrAllocCopy(ret_obj->end_command, "SaveVMSBinaryFile");
+	FIXED_RECORD_COMMAND = 0;
+	HTAddParam(&FIXED_RECORD_COMMAND, FIXED_RECORD_COMMAND_MASK, 1, fnam);
+	HTEndParam(&FIXED_RECORD_COMMAND, FIXED_RECORD_COMMAND_MASK, 1);
+
     } else {
 #endif /* VMS */
-    ret_obj->end_command = (char *)calloc (sizeof(char)*12,1);
-    if (ret_obj->end_command == NULL)
-	outofmem(__FILE__, "HTSaveToFile");
-    sprintf(ret_obj->end_command, "SaveToFile");
+    StrAllocCopy(ret_obj->end_command, "SaveToFile");
 #ifdef VMS
     }
 #endif /* VMS */
@@ -872,6 +959,8 @@ Prepend_BASE:
 	 *  Note that the markup will be technically invalid if a DOCTYPE
 	 *  declaration, or HTML or HEAD tags, are present, and thus the
 	 *  file may need editing for perfection. - FM
+	 *
+	 *  Add timestamp (last reload).
 	 */
 	char *temp = NULL;
 
@@ -881,15 +970,26 @@ Prepend_BASE:
 	    StrAllocCopy(temp, anchor->content_location);
 	}
 	if (temp) {
-	    collapse_spaces(temp);
+	    LYRemoveBlanks(temp);
 	    if (!is_url(temp)) {
 		FREE(temp);
 	    }
 	}
 
 	fprintf(ret_obj->fp,
-		"<!-- X-URL: %s -->\n<BASE HREF=\"%s\">\n\n",
-		anchor->address, (temp ? temp : anchor->address));
+		"<!-- X-URL: %s -->\n", anchor->address);
+	if (anchor->date && *anchor->date) {
+	    fprintf(ret_obj->fp,
+		"<!-- Date: %s -->\n", anchor->date);
+	    if (anchor->last_modified && *anchor->last_modified
+			&& strcmp(anchor->last_modified, anchor->date)
+			&& strcmp(anchor->last_modified, "Thu, 01 Jan 1970 00:00:01 GMT")) {
+		fprintf(ret_obj->fp,
+		    "<!-- Last-Modified: %s -->\n", anchor->last_modified);
+	    }
+	}
+	fprintf(ret_obj->fp,
+		"<BASE HREF=\"%s\">\n\n", (temp ? temp : anchor->address));
 	FREE(temp);
     }
     if (LYPrependCharsetToSource &&
@@ -908,8 +1008,8 @@ Prepend_BASE:
 
 	if (anchor->charset && *anchor->charset) {
 	    StrAllocCopy(temp, anchor->charset);
-	    collapse_spaces(temp);
-		fprintf(ret_obj->fp,
+	    LYRemoveBlanks(temp);
+	    fprintf(ret_obj->fp,
 		"<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=%s\">\n\n",
 		temp);
 	}
@@ -932,16 +1032,16 @@ PUBLIC HTStream* HTCompressed ARGS3(
     HTPresentation *Pres = NULL;
     int n, i;
     BOOL can_present = FALSE;
-    char fnam[256];
+    char fnam[LY_MAXPATH];
+    char temp[LY_MAXPATH];	/* actually stores just a suffix */
+    CONST char *program;
     CONST char *suffix;
     char *uncompress_mask = NULL;
     char *compress_suffix = "";
-    char *cp;
     CONST char *middle;
-    FILE *fp = NULL;
 
     /*
-     *	Deal with any inappropriate invokations of this function,
+     *	Deal with any inappropriate invocations of this function,
      *	or a download request, in which case we won't bother to
      *	uncompress the file. - FM
      */
@@ -963,30 +1063,43 @@ PUBLIC HTStream* HTCompressed ARGS3(
 	     *	We have a presentation mapping for it. - FM
 	     */
 	    can_present = TRUE;
-	    if (!strcasecomp(anchor->content_encoding, "x-gzip") ||
-		!strcasecomp(anchor->content_encoding, "gzip")) {
+	    if ((!strcasecomp(anchor->content_encoding, "x-gzip") ||
+		 !strcasecomp(anchor->content_encoding, "gzip")) &&
+		 (program = HTGetProgramPath(ppGZIP)) != NULL) {
 		/*
 		 *  It's compressed with the modern gzip. - FM
 		 */
-		StrAllocCopy(uncompress_mask, GZIP_PATH);
+		StrAllocCopy(uncompress_mask, program);
 		StrAllocCat(uncompress_mask, " -d --no-name %s");
 		compress_suffix = "gz";
-	    } else if (!strcasecomp(anchor->content_encoding, "x-compress") ||
-		       !strcasecomp(anchor->content_encoding, "compress")) {
+		break;
+	    }
+	    if ((!strcasecomp(anchor->content_encoding, "x-bzip2") ||
+		 !strcasecomp(anchor->content_encoding, "bzip2")) &&
+		(program = HTGetProgramPath(ppBZIP2)) != NULL) {
+		StrAllocCopy(uncompress_mask, program);
+		StrAllocCat(uncompress_mask, " -d %s");
+		compress_suffix = "bz2";
+		break;
+	    }
+	    if ((!strcasecomp(anchor->content_encoding, "x-compress") ||
+		 !strcasecomp(anchor->content_encoding, "compress")) &&
+		(program = HTGetProgramPath(ppUNCOMPRESS)) != NULL) {
 		/*
 		 *  It's compressed the old fashioned Unix way. - FM
 		 */
-		StrAllocCopy(uncompress_mask, UNCOMPRESS_PATH);
+		StrAllocCopy(uncompress_mask, program);
 		StrAllocCat(uncompress_mask, " %s");
 		compress_suffix = "Z";
+		break;
 	    }
 	    break;
 	}
     }
-    if (can_present == FALSE || 		 /* no presentation mapping */
+    if (can_present == FALSE ||			 /* no presentation mapping */
 	uncompress_mask == NULL ||		    /* not gzip or compress */
 	strchr(anchor->content_type, ';') ||		   /* wrong charset */
-	HTOutputFormat == HTAtom_for("www/download") || 	/* download */
+	HTOutputFormat == HTAtom_for("www/download") ||		/* download */
 	!strcasecomp(pres->rep_out->name, "www/download") ||	/* download */
 	(traversal &&	   /* only handle html or plain text for traversals */
 	 strcasecomp(anchor->content_type, "text/html") &&
@@ -996,7 +1109,15 @@ PUBLIC HTStream* HTCompressed ARGS3(
 	 *  and pass it back to be handled as that type. - FM
 	 */
 	if (strchr(anchor->content_encoding, '/') == NULL) {
-	    StrAllocCopy(type, "application/");
+	    /*
+	     *  Use "x-" prefix, none of the types we are likely to
+	     *  construct here are official.  That is we generate
+	     *  "application/x-gzip" and so on. - kw
+	     */
+	    if (!strncasecomp(anchor->content_encoding, "x-", 2))
+		StrAllocCopy(type, "application/");
+	    else
+		StrAllocCopy(type, "application/x-");
 	    StrAllocCat(type, anchor->content_encoding);
 	} else {
 	    StrAllocCopy(type, anchor->content_encoding);
@@ -1012,7 +1133,7 @@ PUBLIC HTStream* HTCompressed ARGS3(
      *	Set up the stream structure for uncompressing and then
      *	handling based on the uncompressed Content-Type.- FM
      */
-    me = (HTStream*)calloc(sizeof(*me),1);
+    me = typecalloc(HTStream);
     if (me == NULL)
 	outofmem(__FILE__, "HTCompressed");
     me->isa = &HTFWriter;
@@ -1020,76 +1141,59 @@ PUBLIC HTStream* HTCompressed ARGS3(
     me->output_format = pres->rep_out;
     me->anchor = anchor;
     me->sink = sink;
+#ifdef FNAMES_8_3
+    me->idash = FALSE;
+#endif
 
     /*
      *	Remove any old versions of the file. - FM
      */
     if (anchor->FileCache) {
-	while ((fp = fopen(anchor->FileCache, "r")) != NULL) {
-	    fclose(fp);
-	    remove(anchor->FileCache);
-	}
+	LYRemoveTemp(anchor->FileCache);
 	FREE(anchor->FileCache);
     }
 
     /*
      *	Get a new temporary filename and substitute a suitable suffix. - FM
      */
-Compressed_tempname:
-    tempname(fnam, NEW_FILE);
-    if ((cp = strrchr(fnam, '.')) != NULL) {
-	middle = NULL;
-	if (!strcasecomp(anchor->content_type, "text/html")) {
-	    middle = HTML_SUFFIX;
-	    middle++;		/* point to 'h' of .htm(l) - kw */
-	} else if (!strcasecomp(anchor->content_type, "text/plain")) {
-	    middle = "txt";
-	} else if (!strcasecomp(anchor->content_type,
-				"application/octet-stream")) {
-	    middle = "bin";
-	} else if ((suffix =
-		    HTFileSuffix(HTAtom_for(anchor->content_type), NULL)) &&
-		   *suffix == '.') {
+    middle = NULL;
+    if (!strcasecomp(anchor->content_type, "text/html")) {
+	middle = HTML_SUFFIX;
+	middle++;		/* point to 'h' of .htm(l) - kw */
+    } else if (!strncasecomp(anchor->content_type, "text/", 5)) {
+	middle = TEXT_SUFFIX + 1;
+    } else if (!strncasecomp(anchor->content_type, "application/", 12)) {
+	middle = BIN_SUFFIX + 1;
+    } else if ((suffix =
+		HTFileSuffix(HTAtom_for(anchor->content_type), NULL)) &&
+	       *suffix == '.') {
 #if defined(VMS) || defined(FNAMES_8_3)
-	    if (strchr(suffix + 1, '.') == NULL)
+	if (strchr(suffix + 1, '.') == NULL)
 #endif
-		middle = suffix + 1;
-	}
-	if (middle) {
-	    *cp = '\0';
+	    middle = suffix + 1;
+    }
+
+    temp[0] = 0;		/* construct the suffix */
+    if (middle) {
 #ifdef FNAMES_8_3
-	    me->idash = strlen(fnam);	  /* remember position of '-'  - kw */
-	    strcat(fnam, "-");	/* NAME-htm,  NAME-txt, etc. - hack for DOS */
+	me->idash = TRUE;	/* remember position of '-'  - kw */
+	strcat(temp, "-");	/* NAME-htm,  NAME-txt, etc. - hack for DOS */
 #else
-	    strcat(fnam, ".");	/* NAME.html, NAME-txt etc. */
+	strcat(temp, ".");	/* NAME.html, NAME-txt etc. */
 #endif /* FNAMES_8_3 */
-	    strcat(fnam, middle);
+	strcat(temp, middle);
 #ifdef VMS
-	    strcat(fnam, "-");	/* NAME.html-gz, NAME.txt-gz, NAME.txt-Z etc.*/
+	strcat(temp, "-");	/* NAME.html-gz, NAME.txt-gz, NAME.txt-Z etc.*/
 #else
-	    strcat(fnam, ".");	/* NAME-htm.gz (DOS), NAME.html.gz (UNIX)etc.*/
+	strcat(temp, ".");	/* NAME-htm.gz (DOS), NAME.html.gz (UNIX)etc.*/
 #endif /* VMS */
-	} else {
-	    *(cp + 1) = '\0';
-	}
-    } else {
-	strcat(fnam, ".");
     }
-    strcat(fnam, compress_suffix);
-    /*
-     *	It's not one of the suffixes checked for a
-     *	spoof in tempname(), so check it now. - FM
-     */
-    if ((fp = fopen(fnam, "r")) != NULL) {
-	fclose(fp);
-	fp = NULL;
-	goto Compressed_tempname;
-    }
+    strcat(temp, compress_suffix);
 
     /*
      *	Open the file for receiving the compressed input stream. - FM
      */
-    me->fp = LYNewBinFile (fnam);
+    me->fp = LYOpenTemp (fnam, temp, BIN_W);
     if (!me->fp) {
 	HTAlert(CANNOT_OPEN_TEMP);
 	FREE(uncompress_mask);
@@ -1119,33 +1223,39 @@ Compressed_tempname:
     /*
      *	Make command to process file. - FM
      */
-#ifdef USE_ZLIB
-    if (compress_suffix[0] == 'g' && /* must be gzip */
-	!me->viewer_command) {
+#ifdef USE_BZLIB
+    if (compress_suffix[0] == 'b'	/* must be bzip2 */
+	&& !me->viewer_command) {
 	/*
-	 *  We won't call gzip externally, so we don't need to supply
-	 *  a command for it. - kw
+	 * We won't call bzip2 externally, so we don't need to supply a command
+	 * for it.
+	 */
+	StrAllocCopy(me->end_command, "");
+    } else
+#endif
+#ifdef USE_ZLIB
+    if (compress_suffix[0] == 'g'	/* must be gzip */
+	&& !me->viewer_command) {
+	/*
+	 * We won't call gzip or compress externally, so we don't need to
+	 * supply a command for it.
 	 */
 	StrAllocCopy(me->end_command, "");
     } else
 #endif /* USE_ZLIB */
     {
-	me->end_command = (char *)calloc(1, (strlen(uncompress_mask) + 10 +
-					     strlen(fnam)) * sizeof(char));
-	if (me->end_command == NULL)
-	    outofmem(__FILE__, "HTCompressed");
-	sprintf(me->end_command, uncompress_mask, fnam, "", "", "", "", "", "");
+	me->end_command = 0;
+	HTAddParam(&(me->end_command), uncompress_mask, 1, fnam);
+	HTEndParam(&(me->end_command), uncompress_mask, 1);
     }
     FREE(uncompress_mask);
 
     /*
      *	Make command to delete file. - FM
      */
-    me->remove_command = (char *)calloc(1, (strlen(REMOVE_COMMAND) + 10 +
-					    strlen(fnam)) * sizeof(char));
-    if (me->remove_command == NULL)
-	outofmem(__FILE__, "HTCompressed");
-    sprintf(me->remove_command, REMOVE_COMMAND, fnam);
+    me->remove_command = 0;
+    HTAddParam(&(me->remove_command), REMOVE_COMMAND, 1, fnam);
+    HTEndParam(&(me->remove_command), REMOVE_COMMAND, 1);
 
     /*
      *	Save the filename and return the structure. - FM
@@ -1164,7 +1274,7 @@ PUBLIC HTStream* HTDumpToStdout ARGS3(
 	HTStream *,		sink GCC_UNUSED)
 {
     HTStream * ret_obj;
-    ret_obj = (HTStream*)calloc(sizeof(* ret_obj),1);
+    ret_obj = typecalloc(HTStream);
     if (ret_obj == NULL)
 	outofmem(__FILE__, "HTDumpToStdout");
     ret_obj->isa = &HTFWriter;
@@ -1247,7 +1357,7 @@ PUBLIC unsigned long LYVMS_FixedLengthRecords ARGS1(char *, filename)
     /* RMS supplies a user-mode channel (see FAB$L_FOP FAB$V_UFO doc) */
     channel = (unsigned short) fab.fab$l_stv;
 
-    /* set up ACP interface strutures */
+    /* set up ACP interface structures */
     /* file information block, passed by descriptor; it's okay to start with
        an empty FIB after RMS has accessed the file for us */
     fib_dsc.len = sizeof fib;
@@ -1265,7 +1375,7 @@ PUBLIC unsigned long LYVMS_FixedLengthRecords ARGS1(char *, filename)
     attr_rqst_list[2].atr$l_addr = 0;
     /* file "record" attributes */
     memset((void *)&recattr, 0, sizeof recattr);
-    fchars = 0; 	/* file characteristics */
+    fchars = 0;		/* file characteristics */
 
     /* get current attributes */
     sts = sys$qiow(0, channel, IO$_ACCESS, iosb, (void(*)())0, 0,

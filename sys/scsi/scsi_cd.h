@@ -1,4 +1,5 @@
-/*	$NetBSD: scsi_cd.h,v 1.5 1994/12/28 19:42:58 mycroft Exp $	*/
+/*	$OpenBSD: scsi_cd.h,v 1.5 1999/07/20 06:21:59 csapuntz Exp $	*/
+/*	$NetBSD: scsi_cd.h,v 1.6 1996/03/19 03:06:39 mycroft Exp $	*/
 
 /*
  * Written by Julian Elischer (julian@tfs.com)
@@ -19,194 +20,67 @@
 #ifndef	_SCSI_SCSI_CD_H
 #define _SCSI_SCSI_CD_H 1
 
+struct scsi_cd_write_params_page {
+	u_int8_t page_code;
+	u_int8_t page_len;
+	u_int8_t write_type;
+#define WRITE_TYPE_DUMMY	0x10	/* do not actually write blocks */
+#define WRITE_TYPE_MASK		0x0f	/* session write type */
+	u_int8_t track_mode;
+#define TRACK_MODE_MULTI_SESS	0xc0	/* multisession write type */
+#define TRACK_MODE_FP		0x20	/* fixed packet (if in packet mode) */
+#define TRACK_MODE_COPY		0x10	/* 1st higher gen of copy prot track */
+#define TRACK_MODE_PREEPMPASIS	0x01	/* audio w/ preemphasis (audio) */
+#define TRACK_MODE_INCREMENTAL	0x01	/* incremental data track (data) */
+#define TRACK_MODE_ALLOW_COPY	0x02	/* digital copy is permitted */
+#define TRACK_MODE_DATA		0x04	/* this is a data track */
+#define TRACK_MODE_4CHAN	0x08	/* four channel audio */
+	u_int8_t dbtype;
+#define DBTYPE_MASK		0x0f	/* data block type */
+	u_int8_t reserved1[2];
+	u_int8_t host_appl_code;
+#define HOST_APPL_CODE_MASK	0x3f	/* host application code of disk */
+	u_int8_t session_format;
+	u_int8_t reserved2;
+	u_int8_t packet_size[4];
+	u_int8_t audio_pause_len[2];
+	u_int8_t media_cat_number[16];
+	u_int8_t isrc[14];
+	u_int8_t sub_header[4];
+	u_int8_t vendir_unique[4];
+};
+
+#ifdef CDDA
 /*
- *	Define two bits always in the same place in byte 2 (flag byte)
+ * There are 2352 bytes in a CD digital audio frame.  One frame is 1/75 of a
+ * second, at 44.1kHz sample rate, 16 bits/sample, 2 channels.
+ *
+ * The frame data have the two channels interleaved, with the left
+ * channel first.  Samples are little endian 16-bit signed values.
  */
-#define	CD_RELADDR	0x01
-#define	CD_MSF		0x02
+#define CD_DA_BLKSIZ		2352	/* # bytes in CD-DA frame */
+#ifndef CD_NORMAL_DENSITY_CODE
+#define CD_NORMAL_DENSITY_CODE	0x00	/* from Toshiba CD-ROM specs */
+#endif
+#ifndef CD_DA_DENSITY_CODE
+#define CD_DA_DENSITY_CODE	0x82	/* from Toshiba CD-ROM specs */
+#endif
+#endif /* CDDA */
 
-/*
- * SCSI command format
- */
-
-struct scsi_read_capacity_cd {
-	u_int8_t opcode;
-	u_char	byte2;
-	u_char	addr_3;	/* Most Significant */
-	u_char	addr_2;
-	u_char	addr_1;
-	u_char	addr_0;	/* Least Significant */
-	u_char	unused[3];
-	u_char	control;
+union scsi_cd_pages {
+	struct scsi_cd_write_params_page write_params;
+	struct cd_audio_page audio;
 };
 
-struct scsi_pause {
-	u_char	opcode;
-	u_char	byte2;
-	u_char	unused[6];
-	u_char	resume;
-	u_char	control;
-};
-#define	PA_PAUSE	1
-#define PA_RESUME	0
-
-struct scsi_play_msf {
-	u_char	opcode;
-	u_char	byte2;
-	u_char	unused;
-	u_char	start_m;
-	u_char	start_s;
-	u_char	start_f;
-	u_char	end_m;
-	u_char	end_s;
-	u_char	end_f;
-	u_char	control;
-};
-
-struct scsi_play_track {
-	u_char	opcode;
-	u_char	byte2;
-	u_char	unused[2];
-	u_char	start_track;
-	u_char	start_index;
-	u_char	unused1;
-	u_char	end_track;
-	u_char	end_index;
-	u_char	control;
-};
-
-struct scsi_play {
-	u_char	opcode;
-	u_char	byte2;
-	u_char	blk_addr[4];
-	u_char	unused;
-	u_char	xfer_len[2];
-	u_char	control;
-};
-
-struct scsi_play_big {
-	u_char	opcode;
-	u_char	byte2;	/* same as above */
-	u_char	blk_addr[4];
-	u_char	xfer_len[4];
-	u_char	unused;
-	u_char	control;
-};
-
-struct scsi_play_rel_big {
-	u_char	opcode;
-	u_char	byte2;	/* same as above */
-	u_char	blk_addr[4];
-	u_char	xfer_len[4];
-	u_char	track;
-	u_char	control;
-};
-
-struct scsi_read_header {
-	u_char	opcode;
-	u_char	byte2;
-	u_char	blk_addr[4];
-	u_char	unused;
-	u_char	data_len[2];
-	u_char	control;
-};
-
-struct scsi_read_subchannel {
-	u_char	opcode;
-	u_char	byte2;
-	u_char	byte3;
-#define	SRS_SUBQ	0x40
-	u_char	subchan_format;
-	u_char	unused[2];
-	u_char	track;
-	u_char	data_len[2];
-	u_char	control;
-};
-
-struct scsi_read_toc {
-	u_char	opcode;
-	u_char	byte2;
-	u_char	unused[4];
-	u_char	from_track;
-	u_char	data_len[2];
-	u_char	control;
-};
-;
-
-struct scsi_read_cd_capacity {
-	u_char	opcode;
-	u_char	byte2;
-	u_char	addr_3;	/* Most Significant */
-	u_char	addr_2;
-	u_char	addr_1;
-	u_char	addr_0;	/* Least Significant */
-	u_char	unused[3];
-	u_char	control;
-};
-
-/*
- * Opcodes
- */
-
-#define READ_CD_CAPACITY	0x25	/* slightly different from disk */
-#define READ_SUBCHANNEL		0x42	/* cdrom read Subchannel */
-#define READ_TOC		0x43	/* cdrom read TOC */
-#define READ_HEADER		0x44	/* cdrom read header */
-#define PLAY			0x45	/* cdrom play  'play audio' mode */
-#define PLAY_MSF		0x47	/* cdrom play Min,Sec,Frames mode */
-#define PLAY_TRACK		0x48	/* cdrom play track/index mode */
-#define PLAY_TRACK_REL		0x49	/* cdrom play track/index mode */
-#define PAUSE			0x4b	/* cdrom pause in 'play audio' mode */
-#define PLAY_BIG		0xa5	/* cdrom pause in 'play audio' mode */
-#define PLAY_TRACK_REL_BIG	0xa9	/* cdrom play track/index mode */
-
-
-struct scsi_read_cd_cap_data {
-	u_char	addr_3;	/* Most significant */
-	u_char	addr_2;
-	u_char	addr_1;
-	u_char	addr_0;	/* Least significant */
-	u_char	length_3;	/* Most significant */
-	u_char	length_2;
-	u_char	length_1;
-	u_char	length_0;	/* Least significant */
-};
-
-union cd_pages {
-	struct audio_page {
-		u_char	page_code;
-#define	CD_PAGE_CODE	0x3F
-#define	AUDIO_PAGE	0x0e
-#define	CD_PAGE_PS	0x80
-		u_char	param_len;
-		u_char	flags;
-#define		CD_PA_SOTC	0x02
-#define		CD_PA_IMMED	0x04
-		u_char	unused[2];
-		u_char	format_lba;
-#define		CD_PA_FORMAT_LBA	0x0F
-#define		CD_PA_APR_VALID	0x80
-		u_char	lb_per_sec[2];
-		struct	port_control {
-			u_char	channels;
-#define	CHANNEL 0x0F
-#define	CHANNEL_0 1
-#define	CHANNEL_1 2
-#define	CHANNEL_2 4
-#define	CHANNEL_3 8
-#define	LEFT_CHANNEL	CHANNEL_0
-#define	RIGHT_CHANNEL	CHANNEL_1
-			u_char	volume;
-		} port[4];
-#define	LEFT_PORT	0
-#define	RIGHT_PORT	1
-	} audio;
-};
-
-struct cd_mode_data {
+struct scsi_cd_mode_data {
 	struct scsi_mode_header header;
 	struct scsi_blk_desc blk_desc;
-	union cd_pages page;
+	union scsi_cd_pages page;
 };
+
+#define AUDIOPAGESIZE \
+	(sizeof(struct scsi_mode_header) + sizeof(struct scsi_blk_desc) \
+	    + sizeof(struct cd_audio_page))
+
 #endif /*_SCSI_SCSI_CD_H*/
 

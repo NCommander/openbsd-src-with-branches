@@ -1,4 +1,5 @@
-/*	$NetBSD: idp_var.h,v 1.6 1995/03/26 20:36:17 jtc Exp $	*/
+/*	$OpenBSD: idp_var.h,v 1.3 2002/03/14 01:27:13 millert Exp $	*/
+/*	$NetBSD: idp_var.h,v 1.7 1996/02/13 22:13:47 christos Exp $	*/
 
 /*
  * Copyright (c) 1984, 1985, 1986, 1987, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,5 +44,18 @@ struct	idpstat {
 };
 
 #ifdef _KERNEL
-struct	idpstat	idpstat;
+struct nspcb;
+struct mbuf;
+struct socket;
+struct idpstat	idpstat;
+
+void idp_input(struct mbuf *, ...);
+void idp_abort(struct nspcb *);
+void idp_drop(struct nspcb *, int);
+int idp_output(struct mbuf *, ...);
+int idp_ctloutput(int, struct socket *, int , int, struct mbuf **);
+int idp_usrreq(struct socket *, int, struct mbuf *, struct mbuf *,
+		    struct mbuf *);
+int idp_raw_usrreq(struct socket *, int, struct mbuf *, struct mbuf *,
+			struct mbuf *);
 #endif

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: installboot.8,v 1.10 2003/06/02 23:30:16 millert Exp $
 .\" Copyright (c) 1986, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +10,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,11 +27,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)installboot.8	7.2 (Berkeley) 3/16/91
-.\"	$Id: installboot.8,v 1.2 1993/08/01 07:34:42 mycroft Exp $
 .\"
 .Dd March 16, 1991
-.Dt INSTALLBOOT 8
-.Os BSD 4.3t
+.Dt INSTALLBOOT 8 vax
+.Os
 .Sh NAME
 .Nm installboot
 .Nd installs a boot program in a file system
@@ -42,8 +38,8 @@
 .Nm installboot
 .Ar bootblock bootprog special
 .Sh DESCRIPTION
-.Xr Installboot
-concatentates
+.Nm installboot
+concatenates
 .Ar bootblock
 and
 .Ar bootprog
@@ -60,22 +56,23 @@ boot blocks
 .It Pa /usr/mdec/boot??
 boot programs
 .El
-.Sh SEE ALSO
-.Xr newfs 8 ,
-.Xr dd 1
 .Sh EXAMPLES
 .Bd -literal -offset indent -compact
 cd /usr/mdec
 installboot raboot bootra /dev/ra0a
 .Ed
-.Sh BUGS
-There is no convenient way to determine the names of the boot blocks
-and boot programs without
-.Em a priori
-knowledge of one's make of disk.
+.Sh SEE ALSO
+.Xr dd 1 ,
+.Xr newfs 8
 .Sh HISTORY
 The
 .Nm
 command appeared in
 .Bx 4.3 tahoe .
+.Sh AUTHORS
 This manual page was written by Geoff Collyer.
+.Sh BUGS
+There is no convenient way to determine the names of the boot blocks
+and boot programs without
+.Em a priori
+knowledge of one's make of disk.

@@ -1,27 +1,19 @@
-# $OpenBSD: PackingList.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# ex:ts=8 sw=4:
+# $OpenBSD: PackingList.pm,v 1.20 2004/08/06 08:06:01 espie Exp $
 #
-# Copyright (c) 2003 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 use strict;
 use warnings;
@@ -48,38 +40,89 @@ sub read
 	} else {
 		$plist = new $a;
 	}
-	while (<$fh>) {
-		next if m/^\s*$/;
-		next if defined $code and !&$code;
-		chomp;
-		OpenBSD::PackingElement::Factory($_, $plist);
-	}
+	$code = \&defaultCode if !defined $code;
+	&$code($fh,
+		sub {
+			local $_ = shift;
+			next if m/^\s*$/;
+			chomp;
+			OpenBSD::PackingElement::Factory($_, $plist);
+		});
 	return $plist;
 }
 
-sub OpenBSD::PackingList::DirrmOnly
+sub defaultCode
 {
-	m/^\@cwd/ || m/^\@dirrm/ || m/^\@name/;
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		&$cont($_);
+	}
 }
 
-sub OpenBSD::PackingList::FilesOnly
+sub DirrmOnly
 {
-	m/^\@cwd/ || m/^\@name/ || !m/^\@/;
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		next unless m/^\@(?:cwd|dirrm|dir|fontdir|mandir|name)\b/ || m/^\@(?:sample|extra)\b.*\/$/ || m/^[^\@].*\/$/;
+		&$cont($_);
+	}
 }
 
-sub OpenBSD::PackingList::ConflictOnly
+sub FilesOnly
 {
-	m/^\@pkgcfl/ || m/^\@option/ || m/^\@name/;
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+	    	next unless m/^\@(?:cwd|name|info|man|file|lib)\b/ || !m/^\@/;
+		&$cont($_);
+	}
+}
+
+sub ConflictOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+	    	next unless m/^\@(?:pkgcfl|option|name)\b/;
+		&$cont($_);
+	}
+}
+
+sub SharedStuffOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+MAINLOOP:
+	while (<$fh>) {
+		if (m/^\@shared\b/) {
+			&$cont($_);
+			while(<$fh>) {
+				redo MAINLOOP unless m/^\@(?:md5|size|symlink|link)\b/;
+				    m/^\@size\b/ || m/^\@symlink\b/ || 
+				    m/^\@link\b/;
+				&$cont($_);
+			}
+		} else {
+			next unless m/^\@(?:cwd|dirrm|name)\b/;
+		}
+		&$cont($_);
+	}
 }
 
 sub write
 {
 	my ($self, $fh) = @_;
-	$self->{name}->write($fh);
-	if (defined $self->{'no-default-conflict'}) {
-		$self->{'no-default-conflict'}->write($fh);
+
+	if (defined $self->{cvstags}) {
+		for my $item (@{$self->{cvstags}}) {
+			$item->write($fh);
+		}
 	}
-	$self->{extrainfo}->write($fh);
+	for my $unique_item (qw(name no-default-conflict extrainfo arch)) {
+		$self->{$unique_item}->write($fh) if defined $self->{$unique_item};
+	}
 	for my $listname (qw(pkgcfl pkgdep newdepend libdepend items)) {
 		if (defined $self->{$listname}) {
 			for my $item (@{$self->{$listname}}) {
@@ -128,15 +171,33 @@ sub addunique
 	$plist->{$category} = $object;
 }
 
+sub has
+{
+	my ($plist, $name) = @_;
+	return defined $plist->{$name};
+}
+
+sub get
+{
+	my ($plist, $name) = @_;
+	return $plist->{$name};
+}
+
 sub pkgname($)
 {
 	my $self = shift;
 	return $self->{name}->{name};
 }
 
-# allows the autoloader to work correctly
-sub DESTROY
+sub pkgbase($)
 {
+	my $self = shift;
+
+	if (defined $self->{localbase}) {
+		return $self->{localbase}->{name};
+	} else {
+		return '/usr/local';
+	}
 }
 
 1;

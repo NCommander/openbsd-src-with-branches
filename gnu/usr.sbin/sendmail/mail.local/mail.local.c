@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -18,17 +18,26 @@ SM_IDSTR(copyright,
      Copyright (c) 1990, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n")
 
-SM_IDSTR(id, "@(#)$Sendmail: mail.local.c,v 8.232 2001/09/08 01:21:04 gshapiro Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: mail.local.c,v 8.251 2003/11/03 18:38:29 ca Exp $")
 
 #include <stdlib.h>
 #include <sm/errstring.h>
 #include <sm/io.h>
+#include <sm/limits.h>
 # include <unistd.h>
 # ifdef EX_OK
 #  undef EX_OK		/* unistd.h may have another use for this */
 # endif /* EX_OK */
+# define LOCKFILE_PMODE 0
 #include <sm/mbdb.h>
 #include <sm/sysexits.h>
+
+#ifndef HASHSPOOL
+# define HASHSPOOL	0
+#endif /* ! HASHSPOOL */
+#ifndef HASHSPOOLMD5
+# define HASHSPOOLMD5	0
+#endif /* ! HASHSPOOLMD5 */
 
 /*
 **  This is not intended to work on System V derived systems
@@ -61,9 +70,14 @@ SM_IDSTR(id, "@(#)$Sendmail: mail.local.c,v 8.232 2001/09/08 01:21:04 gshapiro E
 #include <sm/conf.h>
 #include <sendmail/pathnames.h>
 
-
-/* additional mode for open() */
-# define EXTRA_MODE 0
+#if HASHSPOOL
+# define HASH_NONE	0
+# define HASH_USER	1
+# if HASHSPOOLMD5
+#  define HASH_MD5	2
+#  include <openssl/md5.h>
+# endif /* HASHSPOOLMD5 */
+#endif /* HASHSPOOL */
 
 
 #ifndef LOCKTO_RM
@@ -132,6 +146,15 @@ bool	LMTPMode = false;
 bool	BounceQuota = false;		/* permanent error when over quota */
 char	*HomeMailFile = NULL;		/* store mail in homedir */
 
+#if HASHSPOOL
+int	HashType = HASH_NONE;
+int	HashDepth = 0;
+bool	StripRcptDomain = true;
+#else /* HASHSPOOL */
+# define StripRcptDomain true
+#endif /* HASHSPOOL */
+char	SpoolPath[MAXPATHLEN];
+
 void	deliver __P((int, char *));
 int	e_to_sys __P((int));
 void	notifybiff __P((char *));
@@ -141,6 +164,9 @@ int	lockmbox __P((char *));
 void	unlockmbox __P((void));
 void	mailerr __P((const char *, const char *, ...));
 void	flush_error __P((void));
+#if HASHSPOOL
+const char	*hashname __P((char *));
+#endif /* HASHSPOOL */
 
 
 int
@@ -172,7 +198,17 @@ main(argc, argv)
 # endif /* LOG_MAIL */
 
 	from = NULL;
+	if (sm_strlcpy(SpoolPath, _PATH_MAILDIR, sizeof(SpoolPath)) >=
+	    sizeof(SpoolPath))
+	{
+		mailerr("421", "Configuration error: _PATH_MAILDIR too large");
+		exit(EX_CONFIG);
+	}
+#if HASHSPOOL
+	while ((ch = getopt(argc, argv, "7bdD:f:h:r:lH:p:n")) != -1)
+#else /* HASHSPOOL */
 	while ((ch = getopt(argc, argv, "7bdD:f:h:r:l")) != -1)
+#endif /* HASHSPOOL */
 	{
 		switch(ch)
 		{
@@ -214,6 +250,62 @@ main(argc, argv)
 		  case 'l':
 			LMTPMode = true;
 			break;
+
+
+#if HASHSPOOL
+		  case 'H':
+			if (optarg == NULL || *optarg == '\0')
+			{
+				mailerr(NULL, "-H: missing hashinfo");
+				usage();
+			}
+			switch(optarg[0])
+			{
+			  case 'u':
+				HashType = HASH_USER;
+				break;
+
+# if HASHSPOOLMD5
+			  case 'm':
+				HashType = HASH_MD5;
+				break;
+# endif /* HASHSPOOLMD5 */
+
+			  default:
+				mailerr(NULL, "-H: unknown hash type");
+				usage();
+			}
+			if (optarg[1] == '\0')
+			{
+				mailerr(NULL, "-H: invalid hash depth");
+				usage();
+			}
+			HashDepth = atoi(&optarg[1]);
+			if ((HashDepth <= 0) || ((HashDepth * 2) >= MAXPATHLEN))
+			{
+				mailerr(NULL, "-H: invalid hash depth");
+				usage();
+			}
+			break;
+
+		  case 'p':
+			if (optarg == NULL || *optarg == '\0')
+			{
+				mailerr(NULL, "-p: missing spool path");
+				usage();
+			}
+			if (sm_strlcpy(SpoolPath, optarg, sizeof(SpoolPath)) >=
+			    sizeof(SpoolPath))
+			{
+				mailerr(NULL, "-p: invalid spool path");
+				usage();
+			}
+			break;
+
+		  case 'n':
+			StripRcptDomain = false;
+			break;
+#endif /* HASHSPOOL */
 
 		  case '?':
 		  default:
@@ -519,7 +611,7 @@ dolmtp()
 						"Nested MAIL command");
 					continue;
 				}
-				if (sm_strncasecmp(buf+5, "from:", 5) != 0 ||
+				if (sm_strncasecmp(buf + 5, "from:", 5) != 0 ||
 				    ((return_path = parseaddr(buf + 10,
 							      false)) == NULL))
 				{
@@ -582,7 +674,7 @@ dolmtp()
 				}
 				if (sm_strncasecmp(buf + 5, "to:", 3) != 0 ||
 				    ((rcpt_addr[rcpt_num] = parseaddr(buf + 8,
-								      true)) == NULL))
+								      StripRcptDomain)) == NULL))
 				{
 					mailerr("501 5.5.4",
 						"Syntax error in parameters");
@@ -656,6 +748,8 @@ store(from, inbody)
 	(void) sm_strlcpy(tmpbuf, _PATH_LOCTMP, sizeof tmpbuf);
 	if ((fd = mkstemp(tmpbuf)) < 0 || (fp = fdopen(fd, "w+")) == NULL)
 	{
+		if (fd >= 0)
+			(void) close(fd);
 		mailerr("451 4.3.0", "Unable to open temporary file");
 		return -1;
 	}
@@ -851,12 +945,12 @@ deliver(fd, name)
 	int exitval;
 	char *p;
 	char *errcode;
-	off_t curoff;
+	off_t curoff, cursize;
 #ifdef CONTENTLENGTH
 	off_t headerbytes;
 	int readamount;
 #endif /* CONTENTLENGTH */
-	char biffmsg[100], buf[8*1024];
+	char biffmsg[100], buf[8 * 1024];
 	SM_MBDB_T user;
 
 	/*
@@ -903,6 +997,7 @@ deliver(fd, name)
 	**  Also, clear out any bogus characters.
 	*/
 
+#if !HASHSPOOL
 	if (strlen(name) > 40)
 		name[40] = '\0';
 	for (p = name; *p != '\0'; p++)
@@ -912,12 +1007,22 @@ deliver(fd, name)
 		else if (!isprint(*p))
 			*p = '.';
 	}
+#endif /* !HASHSPOOL */
 
 
 	if (HomeMailFile == NULL)
 	{
-		if (sm_snprintf(path, sizeof(path), "%s/%s",
-				_PATH_MAILDIR, name) >= sizeof(path))
+		if (sm_strlcpyn(path, sizeof(path), 
+#if HASHSPOOL
+				4,
+#else /* HASHSPOOL */
+				3,
+#endif /* HASHSPOOL */
+				SpoolPath, "/",
+#if HASHSPOOL
+				hashname(name),
+#endif /* HASHSPOOL */
+				name) >= sizeof(path))
 		{
 			exitval = EX_UNAVAILABLE;
 			mailerr("550 5.1.1", "%s: Invalid mailbox path", name);
@@ -994,7 +1099,7 @@ tryagain:
 		mode |= S_IRGRP|S_IWGRP;
 #endif /* MAILGID */
 
-		mbfd = open(path, O_APPEND|O_CREAT|O_EXCL|O_WRONLY|EXTRA_MODE,
+		mbfd = open(path, O_APPEND|O_CREAT|O_EXCL|O_WRONLY,
 			    mode);
 		save_errno = errno;
 
@@ -1035,7 +1140,12 @@ tryagain:
 			mbfd = -1;
 		}
 	}
-	else if (sb.st_nlink != 1 || !S_ISREG(sb.st_mode))
+	else if (sb.st_nlink != 1)
+	{
+		mailerr("550 5.2.0", "%s: too many links", path);
+		goto err0;
+	}
+	else if (!S_ISREG(sb.st_mode))
 	{
 		mailerr("550 5.2.0", "%s: irregular file", path);
 		goto err0;
@@ -1059,7 +1169,7 @@ tryagain:
 #ifdef DEBUG
 	fprintf(stderr, "new euid = %d\n", (int) geteuid());
 #endif /* DEBUG */
-	mbfd = open(path, O_APPEND|O_WRONLY|EXTRA_MODE, 0);
+	mbfd = open(path, O_APPEND|O_WRONLY, 0);
 	if (mbfd < 0)
 	{
 		mailerr("450 4.2.0", "%s: %s", path, sm_errstring(errno));
@@ -1127,7 +1237,7 @@ tryagain:
 		goto err1;
 	}
 
-	/* Get the starting offset of the new message for biff. */
+	/* Get the starting offset of the new message */
 	curoff = lseek(mbfd, (off_t) 0, SEEK_END);
 	(void) sm_snprintf(biffmsg, sizeof(biffmsg), "%s@%lld\n",
 			   name, (LONGLONG_T) curoff);
@@ -1195,16 +1305,32 @@ tryagain:
 	{
 		mailerr("450 4.2.0", "%s: %s", path, sm_errstring(errno));
 err3:
-		(void) setreuid(0, 0);
 #ifdef DEBUG
 		fprintf(stderr, "reset euid = %d\n", (int) geteuid());
 #endif /* DEBUG */
-		(void) ftruncate(mbfd, curoff);
+		if (mbfd >= 0)
+			(void) ftruncate(mbfd, curoff);
 err1:		if (mbfd >= 0)
 			(void) close(mbfd);
-err0:		unlockmbox();
+err0:		(void) setreuid(0, 0);
+		unlockmbox();
 		return;
 	}
+
+	/*
+	**  Save the current size so if the close() fails below
+	**  we can make sure no other process has changed the mailbox
+	**  between the failed close and the re-open()/re-lock().
+	**  If something else has changed the size, we shouldn't
+	**  try to truncate it as we may do more harm then good
+	**  (e.g., truncate a later message delivery).
+	*/
+
+	if (fstat(mbfd, &sb) < 0)
+		cursize = 0;
+	else
+		cursize = sb.st_size;
+
 
 	/* Close and check -- NFS doesn't write until the close. */
 	if (close(mbfd))
@@ -1215,7 +1341,32 @@ err0:		unlockmbox();
 			errcode = "552 5.2.2";
 #endif /* EDQUOT */
 		mailerr(errcode, "%s: %s", path, sm_errstring(errno));
-		(void) truncate(path, curoff);
+		mbfd = open(path, O_WRONLY, 0);
+		if (mbfd < 0 ||
+		    cursize == 0
+		    || flock(mbfd, LOCK_EX) < 0 ||
+		    fstat(mbfd, &sb) < 0 ||
+		    sb.st_size != cursize ||
+		    sb.st_nlink != 1 ||
+		    !S_ISREG(sb.st_mode) ||
+		    sb.st_dev != fsb.st_dev ||
+		    sb.st_ino != fsb.st_ino ||
+# if HAS_ST_GEN && 0		/* AFS returns random values for st_gen */
+		    sb.st_gen != fsb.st_gen ||
+# endif /* HAS_ST_GEN && 0 */
+		    sb.st_uid != fsb.st_uid
+		   )
+		{
+			/* Don't use a bogus file */
+			if (mbfd >= 0)
+			{
+				(void) close(mbfd);
+				mbfd = -1;
+			}
+		}
+
+		/* Attempt to truncate back to pre-write size */
+		goto err3;
 	}
 	else
 		notifybiff(biffmsg);
@@ -1313,7 +1464,7 @@ lockmbox(path)
 			errno = 0;
 			return EX_TEMPFAIL;
 		}
-		fd = open(LockName, O_WRONLY|O_EXCL|O_CREAT, 0);
+		fd = open(LockName, O_WRONLY|O_EXCL|O_CREAT, LOCKFILE_PMODE);
 		if (fd >= 0)
 		{
 			/* defeat lock checking programs which test pid */
@@ -1447,6 +1598,79 @@ flush_error()
 	}
 }
 
+#if HASHSPOOL
+const char *
+hashname(name)
+	char *name;
+{
+	static char p[MAXPATHLEN];
+	int i;
+	int len;
+	char *str;
+# if HASHSPOOLMD5
+	char Base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_";
+	MD5_CTX ctx;
+	unsigned char md5[18];
+#  if MAXPATHLEN <= 24
+    ERROR _MAXPATHLEN <= 24
+#  endif /* MAXPATHLEN <= 24 */
+	char b64[24];
+	MD5_LONG bits;
+	int j;
+# endif /* HASHSPOOLMD5 */
+
+	if (HashType == HASH_NONE || HashDepth * 2 >= MAXPATHLEN)
+	{
+		p[0] = '\0';
+		return p;
+	}
+
+	switch(HashType)
+	{
+	  case HASH_USER:
+		str = name;
+		break;
+
+# if HASHSPOOLMD5
+	  case HASH_MD5:
+		MD5_Init(&ctx);
+		MD5_Update(&ctx, name, strlen(name));
+		MD5_Final(md5, &ctx);
+		md5[16] = 0;
+		md5[17] = 0;
+
+		for (i = 0; i < 6; i++)
+		{
+			bits = (unsigned) md5[(3 * i)] << 16;
+			bits |= (unsigned) md5[(3 * i) + 1] << 8;
+			bits |= (unsigned) md5[(3 * i) + 2];
+
+			for (j = 3; j >= 0; j--)
+			{
+				b64[(4 * i) + j] = Base64[(bits & 0x3f)];
+				bits >>= 6;
+			}
+		}
+		b64[22] = '\0';
+		str = b64;
+		break;
+# endif /* HASHSPOOLMD5 */
+	}
+
+	len = strlen(str);
+	for (i = 0; i < HashDepth; i++)
+	{
+		if (i < len)
+			p[i * 2] = str[i];
+		else
+			p[i * 2] = '_';
+		p[(i * 2) + 1] = '/';
+	}
+	p[HashDepth * 2] = '\0';
+	return p;
+}
+#endif /* HASHSPOOL */
+
 /*
  * e_to_sys --
  *	Guess which errno's are temporary.  Gag me.
@@ -1563,11 +1787,7 @@ e_to_sys(num)
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *

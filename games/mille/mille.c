@@ -1,3 +1,4 @@
+/*	$OpenBSD: mille.c,v 1.13 2002/12/06 21:48:51 millert Exp $	*/
 /*	$NetBSD: mille.c,v 1.4 1995/03/24 05:01:48 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,36 +40,31 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mille.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: mille.c,v 1.4 1995/03/24 05:01:48 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mille.c,v 1.13 2002/12/06 21:48:51 millert Exp $";
 #endif
 #endif /* not lint */
 
 # include	"mille.h"
 # include	<signal.h>
-# ifdef attron
-#	include	<term.h>
-# endif	attron
 
 /*
  * @(#)mille.c	1.3 (Berkeley) 5/10/83
  */
 
-void	rub();
-
+int
 main(ac, av)
-reg int		ac;
-reg char	*av[]; {
+	int	ac;
+	char	*av[];
+{
+	bool	restore;
 
-	reg bool	restore;
-
-	/* run as the user */
-	setuid(getuid());
-
+#ifdef DEBUG
 	if (strcmp(av[0], "a.out") == 0) {
 		outf = fopen("q", "w");
 		setbuf(outf, (char *)NULL);
 		Debug = TRUE;
 	}
+#endif
 	restore = FALSE;
 	switch (ac) {
 	  case 2:
@@ -82,29 +74,25 @@ reg char	*av[]; {
 		break;
 	  default:
 		printf("usage: milles [ restore_file ]\n");
-		exit(-1);
+		exit(1);
 		/* NOTREACHED */
 	}
 	Play = PLAYER;
 	initscr();
+	if ((LINES < 24) || (COLS < 80)) {
+		endwin();
+		fprintf(stderr, "Screen must be at least 24x80\n");
+		exit(1);
+	}
 	delwin(stdscr);
 	stdscr = Board = newwin(BOARD_Y, BOARD_X, 0, 0);
 	Score = newwin(SCORE_Y, SCORE_X, 0, 40);
 	Miles = newwin(MILES_Y, MILES_X, 17, 0);
-#ifdef attron
-	idlok(Board, TRUE);
-	idlok(Score, TRUE);
-	idlok(Miles, TRUE);
-#endif
 	leaveok(Score, TRUE);
 	leaveok(Miles, TRUE);
 	clearok(curscr, TRUE);
-# ifndef PROF
-	srandom(getpid());
-# else
-	srandom(0);
-# endif
-	crmode();
+	srandomdev();
+	cbreak();
 	noecho();
 	signal(SIGINT, rub);
 	for (;;) {
@@ -146,8 +134,9 @@ reg char	*av[]; {
  * quit.
  */
 void
-rub() {
-
+rub(dummy)
+	int dummy;
+{
 	(void)signal(SIGINT, SIG_IGN);
 	if (getyn(REALLYPROMPT))
 		die(0);
@@ -157,9 +146,10 @@ rub() {
 /*
  *	Time to go beddy-by
  */
+void
 die(code)
-int code; {
-
+	int code;
+{
 	(void)signal(SIGINT, SIG_IGN);
 	if (outf)
 		fflush(outf);

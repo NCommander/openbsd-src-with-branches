@@ -1,3 +1,4 @@
+.\"	$OpenBSD: dd.1,v 1.15 2003/07/28 16:36:20 todd Exp $
 .\"	$NetBSD: dd.1,v 1.5 1995/03/21 09:04:04 cgd Exp $
 .\"
 .\" Copyright (c) 1990, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -44,61 +41,26 @@
 .Nd convert and copy a file
 .Sh SYNOPSIS
 .Nm dd
-.Op operands ...
+.Op Ar operands ...
 .Sh DESCRIPTION
 The
 .Nm
-utility copies the standard input to the standard output.
+utility copies the standard input to the standard output, applying any
+specified conversions.
 Input data is read and written in 512-byte blocks.
 If input reads are short, input from multiple reads are aggregated
 to form the output block.
 When finished,
-.Nm dd
+.Nm
 displays the number of complete and partial input and output blocks
 and truncated input records to the standard error output.
 .Pp
 The following operands are available:
 .Bl -tag -width of=file
-.It Cm bs= Ns Ar n
-Set both input and output block size, superseding the
-.Cm ibs
-and
-.Cm obs
-operands.
-If no conversion values other than
-.Cm noerror ,
-.Cm notrunc
-or
-.Cm sync
-are specified, then each input block is copied to the output as a
-single block without any aggregation of short blocks.
-.It Cm cbs= Ns Ar n
-Set the conversion record size to
-.Va n
-bytes.
-The conversion record size is required by the record oriented conversion
-values.
-.It Cm count= Ns Ar n
-Copy only
-.Va n
-input blocks.
-.It Cm files= Ns Ar n
-Copy
-.Va n
-input files before terminating.
-This operand is only applicable when the input device is a tape.
-.It Cm ibs= Ns Ar n
-Set the input block size to
-.Va n
-bytes instead of the default 512.
 .It Cm if= Ns Ar file
 Read input from
 .Ar file
 instead of the standard input.
-.It Cm obs= Ns Ar n
-Set the output block size to
-.Va n
-bytes instead of the default 512.
 .It Cm of= Ns Ar file
 Write output to
 .Ar file
@@ -108,13 +70,51 @@ Any regular output file is truncated unless the
 conversion value is specified.
 If an initial portion of the output file is skipped (see the
 .Cm seek
-operand)
+operand),
 the output file is truncated at that point.
+.It Cm ibs= Ns Ar n
+Set the input block size to
+.Ar n
+bytes instead of the default 512.
+.It Cm obs= Ns Ar n
+Set the output block size to
+.Ar n
+bytes instead of the default 512.
+.It Cm bs= Ns Ar n
+Set both the input and output block size to
+.Ar n
+bytes, superseding the
+.Cm ibs
+and
+.Cm obs
+operands.
+If no conversion values other than
+.Cm noerror ,
+.Cm notrunc ,
+or
+.Cm sync
+are specified, then each input block is copied to the output as a
+single block without any aggregation of short blocks.
+.It Cm cbs= Ns Ar n
+Set the conversion record size to
+.Ar n
+bytes.
+The conversion record size is required by the record oriented conversion
+values.
+.It Cm count= Ns Ar n
+Copy only
+.Ar n
+input blocks.
+.It Cm files= Ns Ar n
+Copy
+.Ar n
+input files before terminating.
+This operand is only applicable when the input device is a tape.
 .It Cm seek= Ns Ar n
 Seek
-.Va n
+.Ar n
 blocks from the beginning of the output before copying.
-On non-tape devices, a
+On non-tape devices, an
 .Xr lseek 2
 operation is used.
 Otherwise, existing blocks are read and the data discarded.
@@ -128,9 +128,9 @@ end of file to the specified offset is filled with blocks of
 bytes.
 .It Cm skip= Ns Ar n
 Skip
-.Va n
+.Ar n
 blocks from the beginning of the input before copying.
-On input which supports seeks, a
+On input which supports seeks, an
 .Xr lseek 2
 operation is used.
 Otherwise, input data is read and discarded.
@@ -138,11 +138,13 @@ For pipes, the correct number of bytes is read.
 For all other devices, the correct number of blocks is read without
 distinguishing between a partial or complete block being read.
 .It Xo
-.Cm conv=
-.Ns Cm value Ns Op \&, Cm value \&...
+.Sm off
+.Cm conv= Ar value Oo ,
+.Sm on
+.Ar value ... Oc
 .Xc
 Where
-.Cm value
+.Ar value
 is one of the symbols from the following list.
 .Bl -tag -width unblock
 .It Cm ascii , oldascii
@@ -179,7 +181,7 @@ length is specified by the
 operand.
 Input records shorter than the conversion record size are padded with spaces.
 Input records longer than the conversion record size are truncated.
-The number of truncated input records, if any, are reported to the standard
+The number of truncated input records, if any, is reported to the standard
 error output at the completion of the copy.
 .It Cm ebcdic , ibm , oldebcdic , oldibm
 The same as the
@@ -275,15 +277,23 @@ appended.
 .El
 .Pp
 Where sizes are specified, a decimal number of bytes is expected.
-If the number ends with a ``b'', ``k'', ``m'' or ``w'', the number
-is multiplied by 512, 1024 (1K), 1048576 (1M) or the number of bytes
+If the number ends with a
+.Sq b ,
+.Sq k ,
+.Sq m ,
+or
+.Sq w ,
+the number
+is multiplied by 512, 1024 (1K), 1048576 (1M), or the number of bytes
 in an integer, respectively.
-Two or more numbers may be separated by an ``x'' to indicate a product.
+Two or more numbers may be separated by an
+.Sq x
+to indicate a product.
 .Pp
 When finished,
-.Nm dd
+.Nm
 displays the number of complete and partial input and output blocks,
-truncated input records and odd-length byte-swapping blocks to the
+truncated input records, and odd-length byte-swapping blocks to the
 standard error output.
 A partial input block is one where less than the input block size
 was read.
@@ -304,34 +314,42 @@ This means that the final output block may be shorter than the output
 block size.
 .Pp
 If
-.Nm dd
+.Nm
 receives a
 .Dv SIGINFO
-(see the ``status'' argument for
+(see the
+.Dq status
+argument for
 .Xr stty 1 )
 signal, the current input and output block counts will
 be written to the standard error output
 in the same format as the standard completion message.
 If
-.Nm dd
+.Nm
 receives a
 .Dv SIGINT
 signal, the current input and output block counts will
 be written to the standard error output
 in the same format as the standard completion message and
-.Nm dd
+.Nm
 will exit.
 .Pp
 The
-.Nm dd
-utility exits 0 on success and >0 if an error occurred.
+.Nm
+utility exits 0 on success or >0 if an error occurred.
+.Sh EXAMPLES
+.Li # dd if=floppy34.fs of=/dev/rfd0c bs=32k
+.Pp
+Write an
+.Ox
+floppy image to a floppy disk.
 .Sh SEE ALSO
 .Xr cp 1 ,
 .Xr mt 1 ,
 .Xr tr 1
 .Sh STANDARDS
 The
-.Nm dd
+.Nm
 utility is expected to be a superset of the
 .St -p1003.2
 standard.
@@ -342,7 +360,7 @@ operand and the
 .Cm ebcdic ,
 .Cm ibm ,
 .Cm oldascii ,
-.Cm oldebcdic
+.Cm oldebcdic ,
 and
 .Cm oldibm
 values are extensions to the

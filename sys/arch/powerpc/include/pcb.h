@@ -1,3 +1,4 @@
+/*	$OpenBSD: pcb.h,v 1.8 2002/03/14 01:26:42 millert Exp $	*/
 /*	$NetBSD: pcb.h,v 1.1 1996/09/30 16:34:29 ws Exp $	*/
 
 /*-
@@ -30,10 +31,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef	_MACHINE_PCB_H_
-#define	_MACHINE_PCB_H_
+#ifndef	_POWERPC_PCB_H_
+#define	_POWERPC_PCB_H_
 
-typedef int faultbuf[24];
+#include <machine/reg.h>
+
+
+typedef struct __faultbuf {
+	int	pc;
+	int	sr;
+	int	sp;
+	int	cr;
+	int	regs[20];
+} faultbuf;
 
 struct pcb {
 	struct pmap *pcb_pm;	/* pmap of our vmspace */
@@ -47,16 +57,17 @@ struct pcb {
 		double fpr[32];
 		double fpcsr;	/* FPCSR stored as double for easier access */
 	} pcb_fpu;		/* Floating point processor */
+	struct vreg *pcb_vr;    /* Vector unit */
 };
 
 struct md_coredump {
-	struct trapframe frame;
-	/* Need to add FPU regs here */
+	struct reg regs;
 };
 
 #ifdef	_KERNEL
 extern struct pcb *curpcb;
 extern struct pmap *curpm;
 extern struct proc *fpuproc;
+int  setfault(faultbuf *env);
 #endif
-#endif	/* _MACHINE_PCB_H_ */
+#endif	/* _POWERPC_PCB_H_ */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,7 +13,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: findfp.c,v 1.58 2001/08/31 21:02:50 ca Exp $")
+SM_RCSID("@(#)$Sendmail: findfp.c,v 1.66 2002/02/20 02:40:24 ca Exp $")
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/param.h>
@@ -47,7 +47,7 @@ SM_FILE_T SmFtStdiofd_def =
 	SM_TIME_BLOCK, "stdiofd" };
 
 /* A string file type */
-SM_FILE_T _SmFtString_def =
+SM_FILE_T SmFtString_def =
     {SmFileMagic, 0, 0, 0, (SMRW|SMNBF), -1, {0, 0}, 0, 0, 0,
 	sm_strclose, sm_strread, sm_strseek, sm_strwrite,
 	sm_stropen, sm_strsetinfo, sm_strgetinfo, SM_TIME_FOREVER,
@@ -110,6 +110,7 @@ struct sm_glue smglue = { &smuglue, 3, SmIoF };
 */
 
 static struct sm_glue *sm_moreglue_x __P((int));
+static SM_FILE_T empty;
 
 static struct sm_glue *
 sm_moreglue_x(n)
@@ -117,20 +118,15 @@ sm_moreglue_x(n)
 {
 	register struct sm_glue *g;
 	register SM_FILE_T *p;
-	static SM_FILE_T empty;
 
-	g = (struct sm_glue *) sm_pmalloc_x(sizeof(*g) + ALIGNBYTES +
+	g = (struct sm_glue *) sm_pmalloc_x(sizeof(*g) + SM_ALIGN_BITS +
 					    n * sizeof(SM_FILE_T));
-	p = (SM_FILE_T *) ALIGN(g + 1);
+	p = (SM_FILE_T *) SM_ALIGN(g + 1);
 	g->gl_next = NULL;
 	g->gl_niobs = n;
 	g->gl_iobs = p;
 	while (--n >= 0)
-	{
 		*p++ = empty;
-		p->f_type = NULL;
-		p->sm_magic = NULL;
-	}
 	return g;
 }
 
@@ -198,13 +194,10 @@ found:
 	fp->f_setinfo = t->f_setinfo;	/* assign setinfo function */
 	fp->f_getinfo = t->f_getinfo;	/* assign getinfo function */
 	fp->f_type = t->f_type;		/* file type */
-	fp->f_self = fp;		/* self reference for future use */
 
 	fp->f_ub.smb_base = NULL;	/* no ungetc buffer */
 	fp->f_ub.smb_size = 0;		/* no size for no ungetc buffer */
 
-	fp->f_lb.smb_base = NULL;	/* no line buffer */
-	fp->f_lb.smb_size = 0;		/* no size for no line buffer */
 	if (fp->f_timeout == SM_TIME_DEFAULT)
 		fp->f_timeout = SM_TIME_FOREVER;
 	else
@@ -255,6 +248,10 @@ sm_init()
 {
 	if (Sm_IO_DidInit)	/* paranoia */
 		return;
+
+	/* more paranoia: initialize pointers in a static variable */
+	empty.f_type = NULL;
+	empty.sm_magic = NULL;
 
 	/* make sure we clean up on exit */
 	atexit(sm_cleanup);		/* conservative */

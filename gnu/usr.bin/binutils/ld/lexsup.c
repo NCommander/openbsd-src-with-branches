@@ -223,6 +223,9 @@ static const struct ld_option ld_options[] =
   { {"omagic", no_argument, NULL, 'N'},
       'N', NULL, N_("Do not page align data, do not make text readonly"),
       EXACTLY_TWO_DASHES },
+  { {"Zmagic", no_argument, NULL, 'Z'},
+      'Z', NULL, N_("Do not page align got/plt, old style executable"),
+      EXACTLY_TWO_DASHES },
   { {"no-omagic", no_argument, NULL, OPTION_NO_OMAGIC},
       '\0', NULL, N_("Page align data, make text readonly"), EXACTLY_TWO_DASHES },
   { {"output", required_argument, NULL, 'o'},
@@ -783,6 +786,9 @@ parse_args (argc, argv)
 	case 'n':
 	  config.magic_demand_paged = FALSE;
 	  config.dynamic_link = FALSE;
+	  break;
+	case 'Z':
+	  config.data_bss_contig = TRUE;
 	  break;
 	case OPTION_NO_DEFINE_COMMON:
 	  command_line.inhibit_common_definition = TRUE;

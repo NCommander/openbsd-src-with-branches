@@ -1,5 +1,3 @@
-/*	$NetBSD: setvbuf.c,v 1.7 1995/02/02 02:10:34 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,10 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)setvbuf.c	8.2 (Berkeley) 11/16/93";
-#endif
-static char rcsid[] = "$NetBSD: setvbuf.c,v 1.7 1995/02/02 02:10:34 jtc Exp $";
+static char rcsid[] = "$OpenBSD: setvbuf.c,v 1.4 2002/09/14 22:03:14 dhartmei Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -51,6 +42,7 @@ static char rcsid[] = "$NetBSD: setvbuf.c,v 1.7 1995/02/02 02:10:34 jtc Exp $";
  * Set one of the three kinds of buffering, optionally including
  * a buffer.
  */
+int
 setvbuf(fp, buf, mode, size)
 	register FILE *fp;
 	char *buf;
@@ -159,7 +151,7 @@ nbf:
 		/* begin/continue reading, or stay in intermediate state */
 		fp->_w = 0;
 	}
-	__cleanup = _cleanup;
+	__atexit_register_cleanup(_cleanup);
 
 	return (ret);
 }

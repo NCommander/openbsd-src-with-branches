@@ -1,3 +1,4 @@
+.\" $OpenBSD: kgmon.8,v 1.6 2003/06/02 23:36:53 millert Exp $
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +10,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,28 +27,31 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)kgmon.8	8.1 (Berkeley) 6/6/93
-.\"	$Id: kgmon.8,v 1.6 1994/06/11 08:04:24 mycroft Exp $
+.\"	$Id: kgmon.8,v 1.6 2003/06/02 23:36:53 millert Exp $
 .\"
 .Dd June 6, 1993
 .Dt KGMON 8
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm kgmon
 .Nd generate a dump of the operating system's profile buffers
 .Sh SYNOPSIS
 .Nm kgmon
 .Op Fl bhpr
-.Op Fl M core
-.Op Fl N system
+.Op Fl M Ar core
+.Op Fl N Ar system
 .Sh DESCRIPTION
-.Nm Kgmon
+.Nm kgmon
 is a tool used when profiling the operating system.
 When no arguments are supplied,
 .Nm kgmon
-indicates the state of operating system profiling as running,
-off, or not configured.
+indicates the state of operating system profiling as
+.Dq running ,
+.Dq off ,
+or
+.Dq not configured
 (see
-.Xr config 8 )
+.Xr config 8 ) .
 If the
 .Fl p
 flag is specified,
@@ -72,7 +72,7 @@ Dump the contents of the profile buffers into a
 .Pa gmon.out
 file.
 .It Fl r
-Reset all the profile buffers. 
+Reset all the profile buffers.
 If the
 .Fl p
 flag is also specified, the
@@ -80,13 +80,15 @@ flag is also specified, the
 file is generated before the buffers are reset.
 .It Fl M
 Extract values associated with the name list from the specified core
-instead of the default ``/dev/kmem''.
+instead of the default
+.Pa /dev/kmem .
 .It Fl N
 Extract the name list from the specified system instead of the
-default ``/netbsd''.
+default
+.Pa /bsd .
 .El
 .Pp
-If neither 
+If neither
 .Fl b
 nor
 .Fl h
@@ -99,23 +101,23 @@ the operating system profile buffers will be dumped,
 and profiling will be immediately resumed.
 .Sh FILES
 .Bl -tag -width /dev/kmemx -compact
-.It Pa /netbsd
-the default system
+.It Pa /bsd
+default system
 .It Pa /dev/kmem
-the default memory
+default memory
 .El
-.Sh SEE ALSO
-.Xr gprof 1 ,
-.Xr config 8
 .Sh DIAGNOSTICS
 Users with only read permission on
 .Pa /dev/kmem
 cannot change the state
-of profiling collection. 
-They can get a 
+of profiling collection.
+They can get a
 .Pa gmon.out
 file with the warning that the data may be
 inconsistent if profiling is in progress.
+.Sh SEE ALSO
+.Xr gprof 1 ,
+.Xr config 8
 .Sh HISTORY
 The
 .Nm

@@ -490,9 +490,10 @@ static int SSL_sendwithtimeout(BUFF *fb, const char *buf, int len)
     struct timeval tv;
     int err = WSAEWOULDBLOCK;
     int rv;
-    int retry;
     int sock = fb->fd;
+    int retry;
     SSL *ssl;
+
 
     ssl = ap_ctx_get(fb->ctx, "ssl");
 
@@ -513,7 +514,7 @@ static int SSL_sendwithtimeout(BUFF *fb, const char *buf, int len)
                 FD_ZERO(&fdset);
                 FD_SET((unsigned int)sock, &fdset);
                 tv.tv_usec = 0;
-                rv = select(FD_SETSIZE, NULL, &fdset, NULL, &tv);
+                rv = select(sock + 1, NULL, &fdset, NULL, &tv);
                 if (rv == SOCKET_ERROR)
                     err = WSAGetLastError();
                 else if (rv == 0) {
@@ -570,7 +571,7 @@ static int SSL_recvwithtimeout(BUFF *fb, char *buf, int len)
                 FD_ZERO(&fdset);
                 FD_SET((unsigned int)sock, &fdset);
                 tv.tv_usec = 0;
-                rv = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
+                rv = select(sock + 1, &fdset, NULL, NULL, &tv);
                 if (rv == SOCKET_ERROR)
                     err = WSAGetLastError();
                 else if (rv == 0) {

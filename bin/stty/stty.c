@@ -1,3 +1,4 @@
+/*	$OpenBSD: stty.c,v 1.10 2003/06/02 23:32:09 millert Exp $	*/
 /*	$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)stty.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $";
+static char rcsid[] = "$OpenBSD: stty.c,v 1.10 2003/06/02 23:32:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,9 +59,7 @@ static char rcsid[] = "$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $";
 #include "extern.h"
 
 int
-main(argc, argv) 
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct info i;
 	enum FMT fmt;
@@ -91,7 +86,6 @@ main(argc, argv)
 		case 'g':
 			fmt = GFLAG;
 			break;
-		case '?':
 		default:
 			goto args;
 		}
@@ -99,10 +93,10 @@ main(argc, argv)
 args:	argc -= optind;
 	argv += optind;
 
-	if (ioctl(i.fd, TIOCGETD, &i.ldisc) < 0)
-		err(1, "TIOCGETD");
 	if (tcgetattr(i.fd, &i.t) < 0)
-		err(1, "tcgetattr");
+		errx(1, "not a terminal");
+	if (ioctl(i.fd, TIOCGETD, &i.ldisc) < 0	)
+		err(1, "TIOCGETD");
 	if (ioctl(i.fd, TIOCGWINSZ, &i.win) < 0)
 		warn("TIOCGWINSZ");
 
@@ -119,7 +113,7 @@ args:	argc -= optind;
 		gprint(&i.t, &i.win, i.ldisc);
 		break;
 	}
-	
+
 	for (i.set = i.wset = 0; *argv; ++argv) {
 		if (ksearch(&argv, &i))
 			continue;
@@ -154,13 +148,13 @@ args:	argc -= optind;
 		err(1, "tcsetattr");
 	if (i.wset && ioctl(i.fd, TIOCSWINSZ, &i.win) < 0)
 		warn("TIOCSWINSZ");
-	exit(0);
+	return (0);
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: stty: [-a|-e|-g] [-f file] [options]\n");
+	fprintf(stderr, "usage: %s [-a|-e|-g] [-f file] [operands]\n",
+	    __progname);
 	exit (1);
 }

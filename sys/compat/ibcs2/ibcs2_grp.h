@@ -1,3 +1,4 @@
+/*	$OpenBSD: ibcs2_grp.h,v 1.2 1994/10/26 02:52:55 cgd Exp $	*/
 /*	$NetBSD: ibcs2_grp.h,v 1.2 1994/10/26 02:52:55 cgd Exp $	*/
 
 /*

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: modstat.8,v 1.10 2001/09/19 20:11:26 miod Exp $
+.\"
 .\" Copyright (c) 1993 Christopher G. Demetriou
 .\" All rights reserved.
 .\"
@@ -23,11 +25,10 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: modstat.8,v 1.2 1994/01/29 01:43:33 jtc Exp $
 .\"
 .Dd June 7, 1993
 .Dt MODSTAT 8
-.Os NetBSD 0.8a
+.Os
 .Sh NAME
 .Nm modstat
 .Nd display status of loaded kernel modules
@@ -42,28 +43,26 @@ utility displays the status of any loadable kernel modules
 present in the kernel.
 .Pp
 The options are as follows:
-.Bl -tag -width indent
+.Bl -tag -width Ds
 .It Fl i Ar id
 Display the status of only the module with this ID.
 .It Fl n Ar name
 Display the status of only the module with this name.
 .El
-.Sh DIAGNOSTICS
+.Pp
 The
 .Nm
 utility exits with a status of 0 on success
-and with a nonzero status if an error occurs.
+or with a nonzero status if an error occurred.
 .Sh SEE ALSO
 .Xr lkm 4 ,
-.Xr modunload 8 ,
-.Xr modstat 8
+.Xr modload 8 ,
+.Xr modunload 8
 .Sh HISTORY
 The
 .Nm
 command was designed to be similar in functionality
 to the corresponding command in
 .Tn "SunOS 4.1.3" .
-.Sh AUTHOR
-.Bl -tag
-Terrence R. Lambert, terry@cs.weber.edu
-.El
+.Sh AUTHORS
+.An Terrence R. Lambert Aq terry@cs.weber.edu

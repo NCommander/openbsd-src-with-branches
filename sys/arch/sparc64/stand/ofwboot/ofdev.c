@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofdev.c,v 1.5 2003/04/06 18:54:20 ho Exp $	*/
 /*	$NetBSD: ofdev.c,v 1.1 2000/08/20 14:58:41 mrg Exp $	*/
 
 /*
@@ -79,7 +80,7 @@ filename(str, ppart)
 		/* ...look whether there is a device with this name */
 		dhandle = OF_finddevice(str);
 #ifdef NOTDEF_DEBUG
-		printf("filename: OF_finddevice(%s) sez %x\n",
+		printf("filename: OF_finddevice(%s) says %x\n",
 		       str, dhandle);
 #endif
 		*cp = savec;
@@ -177,7 +178,7 @@ devclose(of)
 static struct devsw devsw[1] = {
 	"OpenFirmware",
 	strategy,
-	(int (*)__P((struct open_file *, ...)))nodev,
+	(int (*)(struct open_file *, ...))nodev,
 	devclose,
 	noioctl
 };
@@ -399,17 +400,17 @@ devopen(of, name, file)
 #ifdef NOTDEF_DEBUG
 	printf("devopen: you want %s\n", name);
 #endif
-	strcpy(fname, name);
+	strlcpy(fname, name, sizeof fname);
 	cp = filename(fname, &partition);
 	if (cp) {
-		strcpy(buf, cp);
+		strlcpy(buf, cp, sizeof buf);
 		*cp = 0;
 	}
 	if (!cp || !*buf)
-		strcpy(buf, DEFAULT_KERNEL);
+		strlcpy(buf, DEFAULT_KERNEL, sizeof buf);
 	if (!*fname)
-		strcpy(fname, bootdev);
-	strcpy(opened_name, fname);
+		strlcpy(fname, bootdev, sizeof fname);
+	strlcpy(opened_name, fname, sizeof opened_name);
 	if (partition) {
 		cp = opened_name + strlen(opened_name);
 		*cp++ = ':';
@@ -417,8 +418,8 @@ devopen(of, name, file)
 		*cp = 0;
 	}
 	if (*buf != '/')
-		strcat(opened_name, "/");
-	strcat(opened_name, buf);
+		strlcat(opened_name, "/", sizeof opened_name);
+	strlcat(opened_name, buf, sizeof opened_name);
 	*file = opened_name + strlen(fname) + 1;
 #ifdef NOTDEF_DEBUG
 	printf("devopen: trying %s\n", fname);
@@ -464,11 +465,13 @@ devopen(of, name, file)
 			     LABELSECTOR, DEV_BSIZE, buf, &read) != 0
 		    || read != DEV_BSIZE
 		    || (errmsg = getdisklabel(buf, &label))) {
-			if (errmsg) printf("devopen: getdisklabel sez %s\n", errmsg);
+#ifdef NOTDEF_DEBUG
+			if (errmsg) printf("devopen: getdisklabel says %s\n", errmsg);
+#endif
 			/* Else try MBR partitions */
 			errmsg = search_label(&ofdev, 0, buf, &label, 0);
 			if (errmsg) { 
-				printf("devopen: search_label sez %s\n", errmsg);
+				printf("devopen: search_label says %s\n", errmsg);
 				error = ERDLAB;
 			}
 			if (error && error != ERDLAB)

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: shf.c,v 1.7 2000/11/21 23:12:04 millert Exp $	*/
 
 /*
  *  Shell file I/O routines
@@ -33,18 +33,32 @@ shf_open(name, oflags, mode, sflags)
 	int mode;
 	int sflags;
 {
+	struct shf *shf;
+	int bsize = sflags & SHF_UNBUF ? (sflags & SHF_RD ? 1 : 0) : SHF_BSIZE;
 	int fd;
 
+	/* Done before open so if alloca fails, fd won't be lost. */
+	shf = (struct shf *) alloc(sizeof(struct shf) + bsize, ATEMP);
+	shf->areap = ATEMP;
+	shf->buf = (unsigned char *) &shf[1];
+	shf->bsize = bsize;
+	shf->flags = SHF_ALLOCS;
+	/* Rest filled in by reopen. */
+
 	fd = open(name, oflags, mode);
-	if (fd < 0)
+	if (fd < 0) {
+		afree(shf, shf->areap);
 		return NULL;
+	}
 	if ((sflags & SHF_MAPHI) && fd < FDBASE) {
 		int nfd;
 
 		nfd = ksh_dupbase(fd, FDBASE);
 		close(fd);
-		if (nfd < 0)
+		if (nfd < 0) {
+			afree(shf, shf->areap);
 			return NULL;
+		}
 		fd = nfd;
 	}
 	sflags &= ~SHF_ACCMODE;
@@ -52,7 +66,7 @@ shf_open(name, oflags, mode, sflags)
 		  : ((oflags & O_ACCMODE) == O_WRONLY ? SHF_WR
 		     : SHF_RDWR);
 
-	return shf_fdopen(fd, sflags, (struct shf *) 0);
+	return shf_reopen(fd, sflags, shf);
 }
 
 /* Set up the shf structure for a file descriptor.  Doesn't fail. */
@@ -343,7 +357,6 @@ shf_emptybuf(shf, flags)
 		shf->rp = nbuf + (shf->rp - shf->buf);
 		shf->wp = nbuf + (shf->wp - shf->buf);
 		shf->rbsize += shf->wbsize;
-		shf->wbsize += shf->wbsize;
 		shf->wnleft += shf->wbsize;
 		shf->wbsize *= 2;
 		shf->buf = nbuf;
@@ -558,6 +571,14 @@ shf_getse(buf, bsize, shf)
 		shf->rnleft -= ncopy;
 		buf += ncopy;
 		bsize -= ncopy;
+#ifdef OS2
+		if (end && buf > orig_buf + 1 && buf[-2] == '\r') {
+			buf--;
+			bsize++;
+			buf[-1] = '\n';
+		}
+#endif
+
 	} while (!end && bsize);
 	*buf = '\0';
 	return buf;
@@ -689,7 +710,10 @@ shf_write(buf, nbytes, shf)
 	if (nbytes < 0)
 		internal_errorf(1, "shf_write: nbytes %d", nbytes);
 
-	if ((ncopy = shf->wnleft)) {
+	/* Don't buffer if buffer is empty and we're writting a large amount. */
+	if ((ncopy = shf->wnleft)
+	    && (shf->wp != shf->buf || nbytes < shf->wnleft))
+	{
 		if (ncopy > nbytes)
 			ncopy = nbytes;
 		memcpy(shf->wp, buf, ncopy);
@@ -815,7 +839,7 @@ shf_smprintf(fmt, va_alist)
  *  this out...
  *
  *	For shorts, we want sign extend for %d but not for %[oxu] - on 16 bit
- *  machines it don't matter.  Assmumes C compiler has converted shorts to
+ *  machines it don't matter.  Assumes C compiler has converted shorts to
  *  ints before pushing them.
  */
 #define POP_INT(f, s, a) (((f) & FL_LONG) ?				\
@@ -898,7 +922,7 @@ shf_vfprintf(shf, fmt, args)
 		 *	This will accept flags/fields in any order - not
 		 *  just the order specified in printf(3), but this is
 		 *  the way _doprnt() seems to work (on bsd and sysV).
-		 *  The only resriction is that the format character must
+		 *  The only restriction is that the format character must
 		 *  come last :-).
 		 */
 		flags = field = precision = 0;
@@ -1059,7 +1083,7 @@ shf_vfprintf(shf, fmt, args)
 			char *p;
 
 			/*
-			 *	This could proabably be done better,
+			 *	This could probably be done better,
 			 *  but it seems to work.  Note that gcvt()
 			 *  is not used, as you cannot tell it to
 			 *  not strip the zeros.
@@ -1079,7 +1103,7 @@ shf_vfprintf(shf, fmt, args)
 			 *  This is the same as
 			 *	expo = ceil(log10(fpnum))
 			 *  but doesn't need -lm.  This is an
-			 *  aproximation as expo is rounded up.
+			 *  approximation as expo is rounded up.
 			 */
 			(void) frexp(fpnum, &expo);
 			expo = my_ceil(expo / LOG2_10);
@@ -1098,11 +1122,11 @@ shf_vfprintf(shf, fmt, args)
 					precision = 0;
 			}
 			if (tmp)
-				*--s = '-';
+				*s++ = '-';
 			else if (flags & FL_PLUS)
-				*--s = '+';
+				*s++ = '+';
 			else if (flags & FL_BLANK)
-				*--s = ' ';
+				*s++ = ' ';
 
 			if (style == 'e')
 				*s++ = *p++;

@@ -1,42 +1,42 @@
-# $OpenBSD: PackageName.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# ex:ts=8 sw=4:
+# $OpenBSD: PackageName.pm,v 1.4 2004/02/20 19:11:28 espie Exp $
 #
-# Copyright (c) 2003 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 use strict;
 use warnings;
 package OpenBSD::PackageName;
+
+sub url2pkgname($)
+{
+	my $name = $_[0];
+	$name =~ s|.*/||;
+	$name =~ s|\.tgz$||;
+
+	return $name;
+}
 
 sub new
 {
 	my ($class, $name) = @_;
 	my $self = { name => $name };
 # remove irrelevant filesystem info
-	$name =~ s|.*/||;
-	$name =~ s|\.tgz||;
-	$self->{pkgname} = $name;
+	my $pkgname = url2pkgname($name);
+	$self->{pkgname} = $pkgname;
 # cut pkgname into pieces
-	my @list = splitname($name);
+	my @list = splitname($pkgname);
 	$self->{stem} = $list[0];
 	$self->{version} = $list[1];
 	$self->{flavors} = [];
@@ -56,6 +56,29 @@ sub splitname
 	} else {
 		return ($_);
 	}
+}
+
+sub is_stem
+{
+	local $_ = shift;
+	if (m/\-\d/) {
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+sub findstem
+{
+	my ($k, @list) = @_;
+	my @r = ();
+	for my $n (@list) {
+		my $stem = (splitname $n)[0];
+		if ($k eq $stem) {
+			push(@r, $n);
+		}
+	}
+	return @r;
 }
 
 # all the shit that does handle package specifications
@@ -192,11 +215,6 @@ sub subpattern_match
 
 	my ($stemspec, $vspec, $flavorspec);
 
-	# first, handle special characters (shell -> perl)
-	$p =~ s/\./\\\./g;
-	$p =~ s/\+/\\\+/g;
-	$p =~ s/\*/\.\*/g;
-	$p =~ s/\?/\./g;
 
 	# then, guess at where the version number is if any,
 	
@@ -207,14 +225,24 @@ sub subpattern_match
 	if ($p =~ m/\-((?:\>|\>\=|\<|\<\=)?\d[^-]*)/) {
 		($stemspec, $vspec, $flavorspec) = ($`, $1, $');
 	# `any version' matcher
-	} elsif ($p =~ m/\-(\.\*)/) {
-		($stemspec, $vspec, $flavorspec) = ($`, $1, $');
+	} elsif ($p =~ m/\-\*/) {
+		($stemspec, $vspec, $flavorspec) = ($`, '*', $');
 	# okay, so no version marker. Assume no flavor spec.
 	} else {
 		($stemspec, $vspec, $flavorspec) = ($p, '', '');
 	}
 
-	$p = "$stemspec-\.\*" if $vspec ne '';
+	$stemspec =~ s/\./\\\./g;
+	$stemspec =~ s/\+/\\\+/g;
+	$stemspec =~ s/\*/\.\*/g;
+	$stemspec =~ s/\?/\./g;
+	$vspec =~ s/\./\\\./g;
+	$vspec =~ s/\+/\\\+/g;
+	$vspec =~ s/\*/\.\*/g;
+	$vspec =~ s/\?/\./g;
+
+	$p = $stemspec;
+	$p.="-.*" if $vspec ne '';
 
 	# First trim down the list
 	my @l = grep {/^$p$/} @$list;

@@ -1,3 +1,5 @@
+/* $OpenBSD: http_core.c,v 1.17 2004/06/07 04:24:00 brad Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -236,6 +238,9 @@ static void *merge_core_dir_configs(pool *a, void *basev, void *newv)
     if (new->ap_auth_name) {
         conf->ap_auth_name = new->ap_auth_name;
     }
+    if (new->ap_auth_nonce) {
+        conf->ap_auth_nonce = new->ap_auth_nonce;
+    }
     if (new->ap_requires) {
         conf->ap_requires = new->ap_requires;
     }
@@ -349,6 +354,7 @@ static void *merge_core_dir_configs(pool *a, void *basev, void *newv)
     if (new->cgi_command_args != AP_FLAG_UNSET) {
         conf->cgi_command_args = new->cgi_command_args;
     }
+    ap_server_strip_chroot(conf->d, 0);
 
     return (void*)conf;
 }
@@ -575,6 +581,31 @@ API_EXPORT(const char *) ap_auth_name(request_rec *r)
     conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
 						   &core_module); 
     return conf->ap_auth_name;
+}
+
+API_EXPORT(const char *) ap_auth_nonce(request_rec *r)
+{
+    core_dir_config *conf;
+    conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+                                                   &core_module);
+    if (conf->ap_auth_nonce)
+       return conf->ap_auth_nonce;
+
+    /* Ideally we'd want to mix in some per-directory style
+     * information; as we are likely to want to detect replay
+     * across those boundaries and some randomness. But that
+     * is harder due to the adhoc nature of .htaccess memory
+     * structures, restarts and forks.
+     *
+     * But then again - you should use AuthDigestRealmSeed in your config
+     * file if you care. So the adhoc value should do.
+     */
+    return ap_psprintf(r->pool,"%pp%pp%pp%pp%pp",
+           (void *)&((r->connection->local_addr).sin_addr ),
+           (void *)ap_user_name,
+           (void *)ap_listeners,
+           (void *)ap_server_argv0,
+           (void *)ap_pid_fname);
 }
 
 API_EXPORT(const char *) ap_default_type(request_rec *r)
@@ -826,16 +857,27 @@ API_EXPORT(const char *) ap_get_server_name(request_rec *r)
 API_EXPORT(unsigned) ap_get_server_port(const request_rec *r)
 {
     unsigned port;
+    unsigned cport = ntohs(r->connection->local_addr.sin_port);
     core_dir_config *d =
       (core_dir_config *)ap_get_module_config(r->per_dir_config, &core_module);
     
-    port = r->server->port ? r->server->port : ap_default_port(r);
-
     if (d->use_canonical_name == USE_CANONICAL_NAME_OFF
-	|| d->use_canonical_name == USE_CANONICAL_NAME_DNS) {
-        return r->hostname ? ntohs(r->connection->local_addr.sin_port)
-			   : port;
+        || d->use_canonical_name == USE_CANONICAL_NAME_DNS) {
+        
+        /* With UseCanonicalName Off Apache will form self-referential
+         * URLs using the hostname and port supplied by the client if
+         * any are supplied (otherwise it will use the canonical name).
+         */
+        port = r->parsed_uri.port_str ? r->parsed_uri.port : 
+          cport ? cport :
+            r->server->port ? r->server->port :
+              ap_default_port(r);
+    } else { /* d->use_canonical_name == USE_CANONICAL_NAME_ON */
+        port = r->server->port ? r->server->port : 
+          cport ? cport :
+            ap_default_port(r);
     }
+
     /* default */
     return port;
 }
@@ -1218,7 +1260,7 @@ static const char *set_document_root(cmd_parms *cmd, void *dummy, char *arg)
 	    return "DocumentRoot must be a directory";
 	}
     }
-    
+    ap_server_strip_chroot(arg, 1);
     conf->ap_document_root = arg;
     return NULL;
 }
@@ -1229,6 +1271,7 @@ API_EXPORT(void) ap_custom_response(request_rec *r, int status, char *string)
 	ap_get_module_config(r->per_dir_config, &core_module);
     int idx;
 
+    ap_server_strip_chroot(conf->d, 0);
     if(conf->response_code_strings == NULL) {
         conf->response_code_strings = 
 	    ap_pcalloc(r->pool,
@@ -1571,6 +1614,7 @@ static const char *dirsection(cmd_parms *cmd, void *dummy, const char *arg)
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 1);
     cmd->override = OR_ALL|ACCESS_CONF;
 
     if (thiscmd->cmd_data) { /* <DirectoryMatch> */
@@ -1578,6 +1622,7 @@ static const char *dirsection(cmd_parms *cmd, void *dummy, const char *arg)
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 1);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED|USE_ICASE);
     }
 #if defined(HAVE_DRIVE_LETTERS) || defined(NETWARE)
@@ -1652,6 +1697,7 @@ static const char *urlsection(cmd_parms *cmd, void *dummy, const char *arg)
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 0);
     cmd->override = OR_ALL|ACCESS_CONF;
 
     if (thiscmd->cmd_data) { /* <LocationMatch> */
@@ -1659,6 +1705,7 @@ static const char *urlsection(cmd_parms *cmd, void *dummy, const char *arg)
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 0);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED);
     }
 
@@ -1720,6 +1767,7 @@ static const char *filesection(cmd_parms *cmd, core_dir_config *c,
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 1);
     /* Only if not an .htaccess file */
     if (!old_path) {
 	cmd->override = OR_ALL|ACCESS_CONF;
@@ -1730,6 +1778,7 @@ static const char *filesection(cmd_parms *cmd, core_dir_config *c,
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 1);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED|USE_ICASE);
     }
     else {
@@ -2103,13 +2152,29 @@ static const char *set_user(cmd_parms *cmd, void *dummy, char *arg)
         return err;
     }
 
+    /*
+     * This is, again, tricky. on restarts, we cannot use uname2id.
+     * keep the old settings for the main server.
+     * barf out on user directives in <VirtualHost> sections.
+     */ 
+
     if (!cmd->server->is_virtual) {
-	ap_user_name = arg;
-	cmd->server->server_uid = ap_user_id = ap_uname2id(arg);
+	if (!ap_server_is_chrooted()) {
+	    ap_user_name = arg;
+	    ap_user_id = ap_uname2id(arg);
+	}
+	cmd->server->server_uid = ap_user_id;
     }
     else {
         if (ap_suexec_enabled) {
-	    cmd->server->server_uid = ap_uname2id(arg);
+	    if (ap_server_is_chrooted()) {
+		fprintf(stderr, "cannot look up uids once chrooted. Thus, User "
+		    "directives inside <VirtualHost> and restarts aren't "
+		    "possible together. Please stop httpd and start a new "
+		    "one\n");
+		exit(1);
+	    } else
+		cmd->server->server_uid = ap_uname2id(arg);
 	}
 	else {
 	    cmd->server->server_uid = ap_user_id;
@@ -2146,11 +2211,21 @@ static const char *set_group(cmd_parms *cmd, void *dummy, char *arg)
     }
 
     if (!cmd->server->is_virtual) {
-	cmd->server->server_gid = ap_group_id = ap_gname2id(arg);
+	if (!ap_server_is_chrooted()) {
+	    ap_group_id = ap_gname2id(arg);
+	}
+	cmd->server->server_gid = ap_group_id;
     }
     else {
         if (ap_suexec_enabled) {
-	    cmd->server->server_gid = ap_gname2id(arg);
+	    if (ap_server_is_chrooted()) {
+		fprintf(stderr, "cannot look up gids once chrooted. Thus, Group"
+		    " directives inside <VirtualHost> and restarts aren't "
+		    "possible together. Please stop httpd and start a new "
+		    "one\n");
+		exit(1);
+	    } else
+		cmd->server->server_gid = ap_gname2id(arg);
 	}
 	else {
 	    cmd->server->server_gid = ap_group_id;
@@ -2173,14 +2248,26 @@ static const char *set_server_root(cmd_parms *cmd, void *dummy, char *arg)
 
     arg = ap_os_canonical_filename(cmd->pool, arg);
 
-    if (!ap_is_directory(arg)) {
-        return "ServerRoot must be a valid directory";
+    /*
+     * This is a bit tricky. On startup we are not chrooted here.
+     * On restarts (graceful or not) we are (unless we're in unsecure mode).
+     * if we would strip off the chroot prefix, nothing (not even "/")
+     * would last.
+     * it's pointless to test wether ServerRoot is a directory if we are
+     * already chrooted into that. 
+     * Of course it's impossible to change ServerRoot without a full restart.
+     * should we abort with an error if ap_server_root != arg?
+     */
+
+    if (!ap_server_is_chrooted()) {
+	if (!ap_is_directory(arg)) {
+	    return "ServerRoot must be a valid directory";
+	}
+	/* ServerRoot is never '/' terminated */
+	while (strlen(ap_server_root) > 1 && ap_server_root[strlen(ap_server_root)-1] == '/')
+	    ap_server_root[strlen(ap_server_root)-1] = '\0';
+	ap_cpystrn(ap_server_root, arg, sizeof(ap_server_root));
     }
-    /* ServerRoot is never '/' terminated */
-    while (strlen(ap_server_root) > 1 && ap_server_root[strlen(ap_server_root)-1] == '/')
-        ap_server_root[strlen(ap_server_root)-1] = '\0';
-    ap_cpystrn(ap_server_root, arg,
-	       sizeof(ap_server_root));
     return NULL;
 }
 
@@ -2763,14 +2850,14 @@ API_EXPORT(const char *) ap_psignature(const char *prefix, request_rec *r)
 	return ap_pstrcat(r->pool, prefix, "<ADDRESS>" SERVER_BASEVERSION
 			  " Server at <A HREF=\"mailto:",
 			  r->server->server_admin, "\">",
-			  ap_escape_html(r->pool, ap_get_server_name(r)), 
-			  "</A> Port ", sport,
+			  ap_escape_html(r->pool, ap_get_server_name(r)),
+                          "</A> Port ", sport,
 			  "</ADDRESS>\n", NULL);
     }
     return ap_pstrcat(r->pool, prefix, "<ADDRESS>" SERVER_BASEVERSION
-		      " Server at ", 
-		      ap_escape_html(r->pool, ap_get_server_name(r)), 
-		      " Port ", sport,
+		      " Server at ",
+                      ap_escape_html(r->pool, ap_get_server_name(r)),
+                      " Port ", sport,
 		      "</ADDRESS>\n", NULL);
 }
 
@@ -2785,6 +2872,28 @@ static const char *set_authname(cmd_parms *cmd, void *mconfig, char *word1)
     aconfig->ap_auth_name = ap_escape_quotes(cmd->pool, word1);
     return NULL;
 }
+
+/*
+ * Load an authorisation nonce into our location configuration, and
+ * force it to be in the 0-9/A-Z realm.
+ */
+static const char *set_authnonce (cmd_parms *cmd, void *mconfig, char *word1)
+{
+    core_dir_config *aconfig = (core_dir_config *)mconfig;
+    size_t i;
+
+    aconfig->ap_auth_nonce = ap_escape_quotes(cmd->pool, word1);
+
+    if (strlen(aconfig->ap_auth_nonce) > 510)
+       return "AuthDigestRealmSeed length limited to 510 chars for browser compatibility";
+
+    for(i=0;i<strlen(aconfig->ap_auth_nonce );i++)
+       if (!ap_isalnum(aconfig->ap_auth_nonce [i]))
+         return "AuthDigestRealmSeed limited to 0-9 and A-Z range for browser compatibility";
+
+    return NULL;
+}
+
 
 #ifdef _OSD_POSIX /* BS2000 Logon Passwd file */
 static const char *set_bs2000_account(cmd_parms *cmd, void *dummy, char *name)
@@ -3400,6 +3509,9 @@ static const command_rec core_cmds[] = {
   "An HTTP authorization type (e.g., \"Basic\")" },
 { "AuthName", set_authname, NULL, OR_AUTHCFG, TAKE1,
   "The authentication realm (e.g. \"Members Only\")" },
+{ "AuthDigestRealmSeed", set_authnonce, NULL, OR_AUTHCFG, TAKE1,
+  "An authentication token which should be different for each logical realm. "\
+  "A random value or the servers IP may be a good choise.\n" },
 { "Require", require, NULL, OR_AUTHCFG, RAW_ARGS,
   "Selects which authenticated users or groups may access a protected space" },
 { "Satisfy", satisfy, NULL, OR_AUTHCFG, TAKE1,

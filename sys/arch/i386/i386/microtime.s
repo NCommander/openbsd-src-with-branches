@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: microtime.s,v 1.16 1995/04/17 12:06:47 cgd Exp $	*/
 
 /*-
@@ -12,17 +13,13 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * IMPLIED WArRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
@@ -45,10 +42,20 @@
  * overridden (i.e. it is 100Hz).
  */
 #ifndef HZ
-ENTRY(microtime)
+ENTRY(i8254_microtime)
+
+#if defined(I586_CPU) || defined(I686_CPU)
+	movl	_C_LABEL(pentium_mhz), %ecx
+	testl	%ecx, %ecx
+	jne	pentium_microtime
+#else
+	xorl	%ecx,%ecx
+#endif
+	movb	$(TIMER_SEL0|TIMER_LATCH),%al
+
+	pushfl
 	cli				# disable interrupts
 
-	movb	$(TIMER_SEL0|TIMER_LATCH),%al
 	outb	%al,$TIMER_MODE		# latch timer 0's counter
 
 	# Read counter value into ecx, LSB first
@@ -62,7 +69,7 @@ ENTRY(microtime)
 	# timer chip doesn't let us atomically read the current counter
 	# value and the output state (i.e., overflow state).  We have
 	# to read the ICU interrupt request register (IRR) to see if the
-	# overflow has occured.  Because we lack atomicity, we use
+	# overflow has occurred.  Because we lack atomicity, we use
 	# the (very accurate) heuristic that we do not check for
 	# overflow if the value read is close to 0.
 	# E.g., if we just checked the IRR, we might read a non-overflowing
@@ -86,7 +93,7 @@ ENTRY(microtime)
 
 	movl	$11932,%edx	# counter limit
 
-	testb	$IRQ_BIT(0),_ipending + IRQ_BYTE(0)
+	testb	$IRQ_BIT(0),_C_LABEL(ipending) + IRQ_BYTE(0)
 	jnz	1f
 
 	cmpl	$12,%ecx	# check for potential overflow
@@ -111,10 +118,11 @@ ENTRY(microtime)
 	leal	(%edx,%eax,8),%eax	# a = 8a + d = 3433d
 	shrl	$12,%eax		# a = a/4096 = 3433d/4096
 
-	movl	_time,%edx	# get time.tv_sec
-	addl	_time+4,%eax	# add time.tv_usec
+common_microtime:
+	movl	_C_LABEL(time),%edx	# get time.tv_sec
+	addl	_C_LABEL(time)+4,%eax	# add time.tv_usec
 
-	sti			# enable interrupts
+	popfl			# enable interrupts
 	
 	cmpl	$1000000,%eax	# carry in timeval?
 	jb	3f
@@ -126,4 +134,32 @@ ENTRY(microtime)
 	movl	%eax,4(%ecx)	# tvp->tv_usec = usec
 
 	ret
+
+#if defined(I586_CPU) || defined(I686_CPU)
+	.data
+	.globl	_C_LABEL(pentium_base_tsc)
+	.comm	_C_LABEL(pentium_base_tsc),8
+	.text
+
+	.align	2, 0x90
+pentium_microtime:
+	pushfl
+	cli
+	rdtsc
+	subl	_C_LABEL(pentium_base_tsc),%eax
+	sbbl	_C_LABEL(pentium_base_tsc)+4,%edx
+	/*
+	 * correct the high word first so we won't
+	 * receive a result overflow aka div/0 fault
+	 */
+	pushl	%eax
+	movl	%edx, %eax
+	shll	$16, %edx
+	divw	%cx
+	movzwl	%dx, %edx
+	popl	%eax
+	divl	%ecx
+	jmp	common_microtime
+#endif
+
 #endif

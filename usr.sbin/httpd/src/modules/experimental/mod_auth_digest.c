@@ -100,7 +100,7 @@
  * Name: digest_auth_module
  * ConfigStart
 
-    RULE_DEV_RANDOM=`./helpers/CutRule DEV_RANDOM $file`
+    RULE_DEV_RANDOM=`sh ./helpers/CutRule DEV_RANDOM $file`
     if [ "$RULE_DEV_RANDOM" = "default" ]; then
 	if [ -r "/dev/random" ]; then
 	    RULE_DEV_RANDOM="/dev/random"
@@ -108,9 +108,9 @@
 	    RULE_DEV_RANDOM="/dev/urandom"
 	else
 	    RULE_DEV_RANDOM="truerand"
-	    if helpers/TestCompile func randbyte; then
+	    if sh helpers/TestCompile func randbyte; then
 		:
-	    elif helpers/TestCompile lib rand randbyte; then
+	    elif sh helpers/TestCompile lib rand randbyte; then
 		:
 	    else
 		echo "      (mod_auth_digest) truerand library missing!"
@@ -137,6 +137,7 @@
 #include "http_core.h"
 #include "http_request.h"
 #include "http_log.h"
+#include "http_main.h"
 #include "http_protocol.h"
 #include "ap_config.h"
 #include "ap_ctype.h"
@@ -541,6 +542,7 @@ static const char *set_digest_file(cmd_parms *cmd, void *config,
 				   const char *file)
 {
     ((digest_config_rec *) config)->pwfile = file;
+    ap_server_strip_chroot(((digest_config_rec *) config)->pwfile, 1);
     return NULL;
 }
 
@@ -548,6 +550,7 @@ static const char *set_group_file(cmd_parms *cmd, void *config,
 				  const char *file)
 {
     ((digest_config_rec *) config)->grpfile = file;
+    ap_server_strip_chroot(((digest_config_rec *) config)->grpfile, 1);
     return NULL;
 }
 
@@ -1632,10 +1635,12 @@ static int authenticate_digest_user(request_rec *r)
 		/* or '*' matches empty path in scheme://host */
 	        && !(d_uri.path && !r_uri.path && resp->psd_request_uri->hostname
 		    && d_uri.path[0] == '*' && d_uri.path[1] == '\0'))
+#if 0
 	    /* check that query matches */
 	    || (d_uri.query != r_uri.query
 		&& (!d_uri.query || !r_uri.query
 		    || strcmp(d_uri.query, r_uri.query)))
+#endif
 	    ) {
 	    ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, r,
 			  "Digest: uri mismatch - <%s> does not match "

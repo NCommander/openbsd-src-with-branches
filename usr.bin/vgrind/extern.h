@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.4 2003/02/19 07:32:36 deraadt Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1994/11/17 08:27:59 jtc Exp $	*/
 
 /*
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,8 +35,8 @@
 
 typedef int boolean;
 
-extern boolean	 _escaped;             /* if last character was an escape */
-extern char    *_start;                /* start of the current string */
+extern boolean	 x_escaped;             /* if last character was an escape */
+extern char    *x_start;                /* start of the current string */
 extern char    *l_acmbeg;              /* string introducing a comment */
 extern char    *l_acmend;              /* string ending a comment */
 extern char    *l_blkbeg;              /* string begining of a block */
@@ -60,8 +57,8 @@ extern char    *language;              /* the language indicator */
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern int      STRNCMP __P((char *, char *, int));
-extern char    *convexp __P((char *));
-extern char    *expmatch __P((char *, char *, char *));
+extern int      STRNCMP(char *, char *, int);
+extern char    *convexp(char *);
+extern char    *expmatch(char *, char *, char *);
 __END_DECLS
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: basename.c,v 1.5 2003/06/03 02:56:06 millert Exp $	*/
 /*	$NetBSD: basename.c,v 1.9 1995/09/02 05:29:46 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)basename.c	8.4 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$NetBSD: basename.c,v 1.9 1995/09/02 05:29:46 jtc Exp $";
+static char rcsid[] = "$OpenBSD: basename.c,v 1.5 2003/06/03 02:56:06 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -52,29 +49,19 @@ static char rcsid[] = "$NetBSD: basename.c,v 1.9 1995/09/02 05:29:46 jtc Exp $";
 #include <locale.h>
 #include <unistd.h>
 
-void usage __P((void));
+void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	char *p;
-	int ch;
 
 	setlocale(LC_ALL, "");
 
-	while ((ch = getopt(argc, argv, "")) != -1)
-		switch(ch) {
-		case '?':
-		default:
-			usage();
-		}
-	argc -= optind;
-	argv += optind;
-
-	if (argc != 1 && argc != 2)
+	if (argc != 2 && argc != 3)
 		usage();
+	argc--;
+	argv++;
 
 	/*
 	 * (1) If string is // it is implementation defined whether steps (2)
@@ -87,9 +74,8 @@ main(argc, argv)
 	for (p = *argv;; ++p) {
 		if (!*p) {
 			if (p > *argv)
-				(void)printf("/\n");
-			else
-				(void)printf("\n");
+				(void)putchar('/');
+			(void)putchar('\n');
 			exit(0);
 		}
 		if (*p != '/')
@@ -134,12 +120,12 @@ main(argc, argv)
 				p[off] = '\0';
 		}
 	}
-	(void)printf("%s\n", p);
+	(void)puts(p);
 	exit(0);
 }
 
 void
-usage()
+usage(void)
 {
 
 	(void)fprintf(stderr, "usage: basename string [suffix]\n");

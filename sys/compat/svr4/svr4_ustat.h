@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_ustat.h,v 1.3 1994/10/29 00:43:30 christos Exp $	 */
 /*	$NetBSD: svr4_ustat.h,v 1.3 1994/10/29 00:43:30 christos Exp $	 */
 
 /*

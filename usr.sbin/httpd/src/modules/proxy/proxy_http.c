@@ -368,7 +368,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         /* Create a "Via:" request header entry and merge it */
         i = ap_get_server_port(r);
         if (ap_is_default_port(i, r)) {
-            strcpy(portstr, "");
+            strlcpy(portstr, "", sizeof(portstr));
         }
         else {
             ap_snprintf(portstr, sizeof portstr, ":%d", i);
@@ -533,7 +533,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
             /* Create a "Via:" response header entry and merge it */
             i = ap_get_server_port(r);
             if (ap_is_default_port(i, r)) {
-                strcpy(portstr, "");
+                strlcpy(portstr, "", sizeof(portstr));
             }
             else {
                 ap_snprintf(portstr, sizeof portstr, ":%d", i);
@@ -561,6 +561,13 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         content_length = ap_table_get(resp_hdrs, "Content-Length");
         if (content_length != NULL) {
             c->len = ap_strtol(content_length, NULL, 10);
+
+	    if (c->len < 0) {
+		ap_kill_timeout(r);
+		return ap_proxyerror(r, HTTP_BAD_GATEWAY, ap_pstrcat(r->pool,
+				     "Invalid Content-Length from remote server",
+                                      NULL));
+	    }
         }
 
     }

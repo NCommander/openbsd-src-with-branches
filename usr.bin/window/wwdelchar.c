@@ -1,4 +1,5 @@
-/*	$NetBSD: wwdelchar.c,v 1.3 1995/09/28 10:35:21 tls Exp $	*/
+/*	$OpenBSD: wwdelchar.c,v 1.5 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$NetBSD: wwdelchar.c,v 1.4 1996/02/08 21:49:00 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)wwdelchar.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwdelchar.c,v 1.3 1995/09/28 10:35:21 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwdelchar.c,v 1.5 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,16 +45,16 @@ static char rcsid[] = "$NetBSD: wwdelchar.c,v 1.3 1995/09/28 10:35:21 tls Exp $"
 #include "tt.h"
 
 wwdelchar(w, row, col)
-register struct ww *w;
+struct ww *w;
 {
-	register i;
+	int i;
 	int nvis;
 
 	/*
 	 * First, shift the line.
 	 */
 	{
-		register union ww_char *p, *q;
+		union ww_char *p, *q;
 
 		p = &w->ww_buf[row][col];
 		q = p + 1;
@@ -80,10 +77,10 @@ register struct ww *w;
 	 * Now find out how much is actually changed, and fix wwns.
 	 */
 	{
-		register union ww_char *buf;
-		register char *win;
-		register union ww_char *ns;
-		register char *smap;
+		union ww_char *buf;
+		char *win;
+		union ww_char *ns;
+		unsigned char *smap;
 		char touched;
 
 		nvis = 0;
@@ -117,7 +114,7 @@ register struct ww *w;
 	 * Can/Should we use delete character?
 	 */
 	if (tt.tt_delchar != 0 && nvis > (wwncol - col) / 2) {
-		register union ww_char *p, *q;
+		union ww_char *p, *q;
 
 		xxdelchar(row, col);
 		p = &wwos[row][col];

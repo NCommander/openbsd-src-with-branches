@@ -1,4 +1,5 @@
-/*	$NetBSD: exec.h,v 1.7 1994/10/26 08:46:29 cgd Exp $	*/
+/*	$OpenBSD: exec.h,v 1.7 2001/01/22 14:51:04 art Exp $	*/
+/*	$NetBSD: exec.h,v 1.8 1996/05/05 06:17:40 briggs Exp $	*/
 
 /*-
  * Copyright (C) 1993	Allen K. Briggs, Chris P. Caputo,
@@ -33,25 +34,5 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef _MACHINE_EXEC_H
-#define _MACHINE_EXEC_H
 
-#define __LDPGSZ	8192
-
-/* #define cpu_exec_makecmds(p,epp)	ENOEXEC */
-
-/* Relocation format. */
-struct relocation_info_mac68k {
-	int r_address;			/* offset in text or data segment */
-	unsigned int r_symbolnum : 24,	/* ordinal number of add symbol */
-			 r_pcrel :  1,	/* 1 if value should be pc-relative */
-			r_length :  2,	/* log base 2 of value's width */
-			r_extern :  1,	/* 1 if need to add symbol to value */
-		       r_baserel :  1,	/* linkage table relative */
-		      r_jmptable :  1,	/* relocate to jump table */
-		      r_relative :  1,	/* load address relative */
-			  r_copy :  1;	/* run time copy */
-};
-#define relocation_info	relocation_info_mac68k
-
-#endif
+#include <m68k/exec.h>

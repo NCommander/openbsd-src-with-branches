@@ -1,7 +1,7 @@
-/*	$NetBSD: appletalk.h,v 1.2 1995/03/06 19:09:51 mycroft Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
  *
  * AppleTalk protocol formats (courtesy Bill Croft of Stanford/SUMEX).
  *
- * @(#) Header: appletalk.h,v 1.10 94/06/14 20:11:44 leres Exp (LBL)
+ * @(#) $Header: /cvs/src/usr.sbin/tcpdump/appletalk.h,v 1.6 1997/07/23 02:59:00 denny Exp $ (LBL)
  */
 
 struct LAP {
@@ -78,7 +78,7 @@ struct atATP {
 	u_char	control;
 	u_char	bitmap;
 	u_short	transID;
-	int32	userData;
+	int32_t userData;
 };
 
 #define	atpReqCode	0x40
@@ -123,6 +123,12 @@ struct atNBPtuple {
 #define	nbpBrRq		0x10
 #define	nbpLkUp		0x20
 #define	nbpLkUpReply	0x30
+#define	nbpFwd		0x40
+/* The following are not standard, but netatalk uses them. */
+#define	nbpNATLKrgstr	0xc0
+#define	nbpNATLKunrgstr	0xd0
+#define	nbpNATLKok	0xe0
+#define	nbpNATLKerr	0xf0
 
 #define	nbpNIS		2
 #define	nbpTupleMax	15

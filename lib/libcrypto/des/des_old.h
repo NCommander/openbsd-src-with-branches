@@ -88,14 +88,14 @@
  *
  */
 
-#ifndef HEADER_DES_H
-#define HEADER_DES_H
+#ifndef HEADER_DES_OLD_H
+#define HEADER_DES_OLD_H
 
 #ifdef OPENSSL_NO_DES
 #error DES is disabled.
 #endif
 
-#ifndef HEADER_NEW_DES_H
+#ifndef HEADER_DES_H
 #error You must include des.h, not des_old.h directly.
 #endif
 

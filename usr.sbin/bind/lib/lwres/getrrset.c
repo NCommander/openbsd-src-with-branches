@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2000-2002  Internet Software Consortium.
+ * Copyright (C) 2000-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: getrrset.c,v 1.11.2.2 2002/08/05 06:57:16 marka Exp $ */
+/* $ISC: getrrset.c,v 1.11.2.4 2003/10/09 07:32:55 marka Exp $ */
 
 #include <config.h>
 
@@ -48,7 +48,7 @@ lwresult_to_result(lwres_result_t lwresult) {
 
 static void *
 sane_malloc(size_t size) {
-	if (size == 0)
+	if (size == 0U)
 		size = 1;
 	return (malloc(size));
 }
@@ -131,8 +131,7 @@ lwres_getrrsetbyname(const char *hostname, unsigned int rdclass,
 		result = ERRSET_NOMEMORY;
 		goto fail;
 	}
-	strncpy(rrset->rri_name, response->realname, response->realnamelen);
-	rrset->rri_name[response->realnamelen] = 0;
+	strlcpy(rrset->rri_name, response->realname, response->realnamelen + 1);
 
 	if ((response->flags & LWRDATA_VALIDATED) != 0)
 		rrset->rri_flags |= RRSET_VALIDATED;

@@ -1,5 +1,3 @@
-/*	$NetBSD: ftell.c,v 1.6 1995/03/22 18:19:51 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,10 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ftell.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: ftell.c,v 1.6 1995/03/22 18:19:51 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ftell.c,v 1.3 2000/02/21 22:11:22 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -48,17 +39,17 @@ static char rcsid[] = "$NetBSD: ftell.c,v 1.6 1995/03/22 18:19:51 jtc Exp $";
 #include "local.h"
 
 /*
- * ftell: return current offset.
+ * ftello: return current offset.
  */
-long
-ftell(fp)
+off_t
+ftello(fp)
 	register FILE *fp;
 {
 	register fpos_t pos;
 
 	if (fp->_seek == NULL) {
 		errno = ESPIPE;			/* historic practice */
-		return (-1L);
+		return ((off_t)-1);
 	}
 
 	/*
@@ -92,3 +83,20 @@ ftell(fp)
 	}
 	return (pos);
 }
+
+/*
+ * ftell() returns a long and sizeof(off_t) != sizeof(long) on all arches
+ */
+#if defined(__alpha__) && defined(__indr_reference)
+__indr_reference(ftello, ftell);
+#else
+long
+ftell(fp)
+	register FILE *fp;
+{
+	long pos;
+
+	pos = (long)ftello(fp);
+	return(pos);
+}
+#endif

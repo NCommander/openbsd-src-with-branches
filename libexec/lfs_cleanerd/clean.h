@@ -1,3 +1,5 @@
+/*	$OpenBSD: clean.h,v 1.4 2002/02/17 19:42:26 millert Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,8 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)clean.h	8.1 (Berkeley) 6/4/93
- *	$Id: clean.h,v 1.1 1994/06/08 18:42:12 mycroft Exp $
+ *	@(#)clean.h	8.2 (Berkeley) 5/4/95
  */
 
 /*
@@ -105,17 +102,17 @@ typedef struct fs_info {
 	(i) % (fs)->lfs_sepb)
 
 __BEGIN_DECLS
-int	 dump_summary __P((struct lfs *, SEGSUM *, u_long, daddr_t **));
-void	 err __P((const int, const char *, ...));
-int	 fs_getmntinfo __P((struct statfs **, char *, const char *));
-int	 get __P((int, off_t, void *, size_t));
-FS_INFO	*get_fs_info __P((struct statfs *, int));
-int 	 lfs_segmapv __P((FS_INFO *, int, caddr_t, BLOCK_INFO **, int *));
-int	 mmap_segment __P((FS_INFO *, int, caddr_t *, int));
-void	 munmap_segment __P((FS_INFO *, caddr_t, int));
-void	 reread_fs_info __P((FS_INFO *, int));
-void	 toss __P((void *, int *, size_t,
-	      int (*)(const void *, const void *, const void *), void *));
+int	 dump_summary(struct lfs *, SEGSUM *, u_long, daddr_t **);
+void	 err(const int, const char *, ...);
+int	 fs_getmntinfo(struct statfs **, char *, const char *);
+int	 get(int, off_t, void *, size_t);
+FS_INFO	*get_fs_info(struct statfs *, int);
+int 	 lfs_segmapv(FS_INFO *, int, caddr_t, BLOCK_INFO **, int *);
+int	 mmap_segment(FS_INFO *, int, caddr_t *, int);
+void	 munmap_segment(FS_INFO *, caddr_t, int);
+void	 reread_fs_info(FS_INFO *, int);
+void	 toss(void *, int *, size_t,
+	      int (*)(const void *, const void *, const void *), void *);
 
 /*
  * USEFUL DEBUGGING FUNCTIONS:
@@ -154,10 +151,10 @@ void	 toss __P((void *, int *, size_t,
 	fflush(stdout); \
 }
 
-void	 dump_super __P((struct lfs *));
-void	 dump_cleaner_info __P((void *));
-void	 print_SEGSUM __P(( struct lfs *, SEGSUM *));
-void	 print_CLEANERINFO __P((CLEANERINFO *));
+void	 dump_super(struct lfs *);
+void	 dump_cleaner_info(void *);
+void	 print_SEGSUM( struct lfs *, SEGSUM *);
+void	 print_CLEANERINFO(CLEANERINFO *);
 #else
 #define	PRINT_FINFO(fp, ip)
 #define	PRINT_INODE(b, bip)

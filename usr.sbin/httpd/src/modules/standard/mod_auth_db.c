@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_auth_db.c,v 1.11 2003/07/18 21:16:37 david Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -95,6 +97,7 @@
 #include "http_config.h"
 #include "http_core.h"
 #include "http_log.h"
+#include "http_main.h"
 #include "http_protocol.h"
 #include <db.h>
 
@@ -169,6 +172,8 @@ static char *get_db_pw(request_rec *r, char *user, const char *auth_dbpwfile)
 
     q.data = user;
     q.size = strlen(q.data);
+
+    ap_server_strip_chroot(auth_dbpwfile, 1);
 
 #if defined(DB3) || defined(DB4)
     if (   db_create(&f, NULL, 0) != 0 

@@ -1,6 +1,6 @@
 ## Toplevel Makefile for cross-compilation of perl
 #
-## $Id: Makefile,v 1.3 2004/04/07 21:33:01 millert Exp $
+## $Id: Makefile,v 1.2 2003/12/03 03:02:24 millert Exp $
 
 export TOPDIR=${shell pwd}
 include $(TOPDIR)/config

@@ -1,3 +1,4 @@
+/*	$OpenBSD: convert.c,v 1.5 2003/04/06 18:50:38 deraadt Exp $	*/
 /*	$NetBSD: convert.c,v 1.2 1995/03/24 03:58:34 cgd Exp $	*/
 
 /*
@@ -26,8 +27,8 @@ char	Newpfile[] = DEST/newcharacs";		/* new format file */
 /
 / RETURN VALUE: none
 /
-/ MODULES CALLED: time(), exit(), fread(), fopen(), srandom(), floor(), 
-/	random(), strcmp(), fwrite(), strcpy(), fclose(), fprintf()
+/ MODULES CALLED: time(), exit(), fread(), fopen(), srandomdev(), floor(), 
+/	random(), strcmp(), fwrite(), strlcpy(), fclose(), fprintf()
 /
 / GLOBAL INPUTS: _iob[], Oldplayer, Newplayer
 /
@@ -58,7 +59,7 @@ FILE	*oldcharac, *newcharac;		/* to open old and new files */
 	exit(1);
 	}
 
-    srandom((unsigned) time((long *) NULL));	/* prime random numbers */
+    srandomdev();	/* prime random numbers */
 
     while (fread((char *) &Oldplayer, sizeof(struct oldplayer), 1, oldcharac) == 1)
 	/* read and convert old structures into new */
@@ -165,9 +166,12 @@ FILE	*oldcharac, *newcharac;		/* to open old and new files */
 	Newplayer.p_virgin = Oldplayer.o_virgin;
 	Newplayer.p_blindness = Oldplayer.o_blindness;
 
-	strcpy(Newplayer.p_name, Oldplayer.o_name);
-	strcpy(Newplayer.p_password, Oldplayer.o_password);
-	strcpy(Newplayer.p_login, Oldplayer.o_login);
+	strlcpy(Newplayer.p_name, Oldplayer.o_name,
+		sizeof Newplayer.p_name);
+	strlcpy(Newplayer.p_password, Oldplayer.o_password,
+		sizeof Newplayer.p_password);
+	strlcpy(Newplayer.p_login, Oldplayer.o_login,
+		sizeof Newplayer.p_login);
 
 	/* write new structure */
 	fwrite((char *) &Newplayer, sizeof(Newplayer), 1, newcharac);

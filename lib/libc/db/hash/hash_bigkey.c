@@ -1,4 +1,4 @@
-/*	$NetBSD: hash_bigkey.c,v 1.5 1995/02/27 13:22:16 cgd Exp $	*/
+/*	$OpenBSD: hash_bigkey.c,v 1.12 2003/06/02 20:18:33 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +36,7 @@
 #if 0
 static char sccsid[] = "@(#)hash_bigkey.c	8.3 (Berkeley) 5/31/94";
 #else
-static char rcsid[] = "$NetBSD: hash_bigkey.c,v 1.5 1995/02/27 13:22:16 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: hash_bigkey.c,v 1.12 2003/06/02 20:18:33 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -78,8 +74,8 @@ static char rcsid[] = "$NetBSD: hash_bigkey.c,v 1.5 1995/02/27 13:22:16 cgd Exp 
 #include "page.h"
 #include "extern.h"
 
-static int collect_key __P((HTAB *, BUFHEAD *, int, DBT *, int));
-static int collect_data __P((HTAB *, BUFHEAD *, int, int));
+static int collect_key(HTAB *, BUFHEAD *, int, DBT *, int);
+static int collect_data(HTAB *, BUFHEAD *, int, int);
 
 /*
  * Big_insert
@@ -127,19 +123,32 @@ __big_insert(hashp, bufp, key, val)
 		if (!bufp)
 			return (-1);
 		n = p[0];
-		if (!key_size)
-			if (FREESPACE(p)) {
-				move_bytes = MIN(FREESPACE(p), val_size);
+		if (!key_size) {
+			space = FREESPACE(p);
+			if (space) {
+				move_bytes = MIN(space, val_size);
+				/*
+				 * If the data would fit exactly in the
+				 * remaining space, we must overflow it to the
+				 * next page; otherwise the invariant that the
+				 * data must end on a page with FREESPACE
+				 * non-zero would fail.
+				 */
+				if (space == val_size && val_size == val->size)
+					goto toolarge;
 				off = OFFSET(p) - move_bytes;
-				p[n] = off;
 				memmove(cp + off, val_data, move_bytes);
 				val_data += move_bytes;
 				val_size -= move_bytes;
+				p[n] = off;
 				p[n - 2] = FULL_KEY_DATA;
 				FREESPACE(p) = FREESPACE(p) - move_bytes;
 				OFFSET(p) = off;
-			} else
+			} else {
+			toolarge:
 				p[n - 2] = FULL_KEY;
+			}
+		}
 		p = (u_int16_t *)bufp->page;
 		cp = bufp->page;
 		bufp->flags |= BUF_MOD;
@@ -250,12 +259,12 @@ __big_delete(hashp, bufp)
 	n -= 2;
 	bp[0] = n;
 	FREESPACE(bp) = hashp->BSIZE - PAGE_META(n);
-	OFFSET(bp) = hashp->BSIZE - 1;
+	OFFSET(bp) = hashp->BSIZE;
 
 	bufp->flags |= BUF_MOD;
 	if (rbufp)
 		__free_ovflpage(hashp, rbufp);
-	if (last_bfp != rbufp)
+	if (last_bfp && last_bfp != rbufp)
 		__free_ovflpage(hashp, last_bfp);
 
 	hashp->NKEYS--;
@@ -437,7 +446,7 @@ __big_return(hashp, bufp, ndx, val, set_current)
 		}
 
 	val->size = collect_data(hashp, bufp, (int)len, set_current);
-	if (val->size == -1)
+	if (val->size == (size_t)-1)
 		return (-1);
 	if (save_p->addr != save_addr) {
 		/* We are pretty short on buffers. */
@@ -516,7 +525,7 @@ __big_keydata(hashp, bufp, key, val, set)
 	int set;
 {
 	key->size = collect_key(hashp, bufp, 0, val, set);
-	if (key->size == -1)
+	if (key->size == (size_t)-1)
 		return (-1);
 	key->data = (u_char *)hashp->tmp_key;
 	return (0);
@@ -596,10 +605,10 @@ __big_split(hashp, op, np, big_keyp, addr, obucket, ret)
 		return (-1);
 	change = (__call_hash(hashp, key.data, key.size) != obucket);
 
-	if (ret->next_addr = __find_last_page(hashp, &big_keyp)) {
+	if ((ret->next_addr = __find_last_page(hashp, &big_keyp))) {
 		if (!(ret->nextp =
 		    __get_buf(hashp, ret->next_addr, big_keyp, 0)))
-			return (-1);;
+			return (-1);
 	} else
 		ret->nextp = NULL;
 

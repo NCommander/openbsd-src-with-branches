@@ -1,3 +1,4 @@
+/*	$OpenBSD: char.h,v 1.3 1997/07/23 14:36:47 kstailey Exp $	*/
 /*	$NetBSD: char.h,v 1.6 1995/03/21 09:02:29 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -70,7 +67,7 @@ extern unsigned char _cmap_lower[], _cmap_upper[];
 #define letter(c)	(((c) & QUOTE) ? 0 : \
 			 (isalpha((unsigned char) (c)) || (c) == '_'))
 #define alnum(c)	(((c) & QUOTE) ? 0 : \
-		         (isalnum((unsigned char) (c)) || (c) == '_'))
+			 (isalnum((unsigned char) (c)) || (c) == '_'))
 #ifdef NLS
 #define Isspace(c)	(((c) & QUOTE) ? 0 : isspace((unsigned char) (c)))
 #define Isdigit(c)	(((c) & QUOTE) ? 0 : isdigit((unsigned char) (c)))

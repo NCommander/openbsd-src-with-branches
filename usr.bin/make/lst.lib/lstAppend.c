@@ -1,8 +1,10 @@
-/*	$NetBSD: lstAppend.c,v 1.4 1995/06/14 15:20:44 christos Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: lstAppend.c,v 1.15 2003/06/03 02:56:12 millert Exp $	*/
+/*	$NetBSD: lstAppend.c,v 1.5 1996/11/06 17:59:31 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,84 +34,72 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstAppend.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstAppend.c,v 1.4 1995/06/14 15:20:44 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstAppend.c --
  *	Add a new node with a new datum after an existing node
  */
 
-#include	"lstInt.h"
+#include "lstInt.h"
+#include <sys/types.h>
+#include <stddef.h>
+#include "memory.h"
 
 /*-
  *-----------------------------------------------------------------------
  * Lst_Append --
  *	Create a new node and add it to the given list after the given node.
  *
- * Results:
- *	SUCCESS if all went well.
- *
  * Side Effects:
  *	A new ListNode is created and linked in to the List. The lastPtr
  *	field of the List will be altered if ln is the last node in the
  *	list. lastPtr and firstPtr will alter if the list was empty and
- *	ln was NILLNODE.
+ *	ln was NULL.
  *
  *-----------------------------------------------------------------------
  */
-ReturnStatus
-Lst_Append (l, ln, d)
-    Lst	  	l;	/* affected list */
-    LstNode	ln;	/* node after which to append the datum */
-    ClientData	d;	/* said datum */
+void
+Lst_Append(Lst l, LstNode after, void *d)
 {
-    register List 	list;
-    register ListNode	lNode;
-    register ListNode	nLNode;
-    
-    if (LstValid (l) && (ln == NILLNODE && LstIsEmpty (l))) {
-	goto ok;
-    }
-    
-    if (!LstValid (l) || LstIsEmpty (l)  || ! LstNodeValid (ln, l)) {
-	return (FAILURE);
-    }
-    ok:
-    
-    list = (List)l;
-    lNode = (ListNode)ln;
+    LstNode	nLNode;
 
-    PAlloc (nLNode, ListNode);
+    if (after == NULL && !Lst_IsEmpty(l))
+	return;
+
+    if (after != NULL && Lst_IsEmpty(l))
+	return;
+
+    PAlloc(nLNode, LstNode);
     nLNode->datum = d;
-    nLNode->useCount = nLNode->flags = 0;
-    
-    if (lNode == NilListNode) {
-	if (list->isCirc) {
-	    nLNode->nextPtr = nLNode->prevPtr = nLNode;
-	} else {
-	    nLNode->nextPtr = nLNode->prevPtr = NilListNode;
-	}
-	list->firstPtr = list->lastPtr = nLNode;
+
+    if (after == NULL) {
+	nLNode->nextPtr = nLNode->prevPtr = NULL;
+	l->firstPtr = l->lastPtr = nLNode;
     } else {
-	nLNode->prevPtr = lNode;
-	nLNode->nextPtr = lNode->nextPtr;
-	
-	lNode->nextPtr = nLNode;
-	if (nLNode->nextPtr != NilListNode) {
+	nLNode->prevPtr = after;
+	nLNode->nextPtr = after->nextPtr;
+
+	after->nextPtr = nLNode;
+	if (nLNode->nextPtr != NULL)
 	    nLNode->nextPtr->prevPtr = nLNode;
-	}
-	
-	if (lNode == list->lastPtr) {
-	    list->lastPtr = nLNode;
-	}
+
+	if (after == l->lastPtr)
+	    l->lastPtr = nLNode;
     }
-    
-    return (SUCCESS);
 }
 
+void
+Lst_AtEnd(Lst l, void *d)
+{
+    LstNode	ln;
+
+    PAlloc(ln, LstNode);
+    ln->datum = d;
+
+    ln->prevPtr = l->lastPtr;
+    ln->nextPtr = NULL;
+    if (l->lastPtr == NULL)
+	l->firstPtr = ln;
+    else
+	l->lastPtr->nextPtr = ln;
+    l->lastPtr = ln;
+}

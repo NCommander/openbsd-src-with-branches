@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.5 1995/05/01 14:14:11 mycroft Exp $	*/
+/*	$OpenBSD: signal.h,v 1.3 2000/08/05 22:07:32 niklas Exp $	*/
+/*	$NetBSD: signal.h,v 1.6 1996/01/08 13:51:43 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -65,6 +62,7 @@ struct	sigcontext {
 	int	sc_edx;
 	int	sc_ecx;
 	int	sc_eax;
+	/* XXX */
 	int	sc_eip;
 	int	sc_cs;
 	int	sc_eflags;
@@ -73,6 +71,9 @@ struct	sigcontext {
 
 	int	sc_onstack;		/* sigstack state to restore */
 	int	sc_mask;		/* signal mask to restore */
+
+	int	sc_trapno;		/* XXX should be above */
+	int	sc_err;
 };
 
 #define sc_sp sc_esp

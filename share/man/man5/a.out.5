@@ -1,3 +1,4 @@
+.\"	$OpenBSD: a.out.5,v 1.13 2003/06/02 23:30:14 millert Exp $
 .\"	$NetBSD: a.out.5,v 1.8 1994/11/30 19:31:09 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -43,23 +40,22 @@
 .Nm a.out
 .Nd format of executable binary files
 .Sh SYNOPSIS
+.Fd #include <sys/types.h>
 .Fd #include <a.out.h>
 .Sh DESCRIPTION
 The include file
 .Aq Pa a.out.h
 declares three structures and several macros.
-The structures describe the format of
-executable machine code files
-.Pq Sq binaries
+The structures describe the format of executable machine code files
+.Pq Dq binaries
 on the system.
 .Pp
 A binary file consists of up to 7 sections.
 In order, these sections are:
 .Bl -tag -width "text relocations"
 .It exec header
-Contains parameters used by the kernel
-to load a binary file into memory and execute it,
-and by the link editor
+Contains parameters used by the kernel to load a binary file into memory
+and execute it, and by the link editor
 .Xr ld 1
 to combine a binary file with other binary files.
 This section is the only mandatory one.
@@ -77,7 +73,7 @@ Like the text relocation section, but for data segment pointers.
 .It symbol table
 Contains records used by the link editor
 to cross reference the addresses of named variables and functions
-.Pq Sq symbols
+.Pq Dq symbols
 between binary files.
 .It string table
 Contains the character strings corresponding to the symbol names.
@@ -88,14 +84,14 @@ Every binary file begins with an
 structure:
 .Bd -literal -offset indent
 struct exec {
-	unsigned long	a_midmag;
-	unsigned long	a_text;
-	unsigned long	a_data;
-	unsigned long	a_bss;
-	unsigned long	a_syms;
-	unsigned long	a_entry;
-	unsigned long	a_trsize;
-	unsigned long	a_drsize;
+	u_int32_t	a_midmag;
+	u_int32_t	a_text;
+	u_int32_t	a_data;
+	u_int32_t	a_bss;
+	u_int32_t	a_syms;
+	u_int32_t	a_entry;
+	u_int32_t	a_trsize;
+	u_int32_t	a_drsize;
 };
 .Ed
 .Pp
@@ -103,56 +99,59 @@ The fields have the following functions:
 .Bl -tag -width a_trsize
 .It Fa a_midmag
 This field is stored in network byte-order so that binaries for
-for machines with alternate byte orders can be distinguished.
+machines with alternate byte orders can be distinguished.
 It has a number of sub-components accessed by the macros
-.Dv N_GETFLAG() ,
-.Dv N_GETMID() , and
-.Dv N_GETMAGIC() ,
+.Fn N_GETFLAG ,
+.Fn N_GETMID ,
+and
+.Fn N_GETMAGIC ,
 and set by the macro
-.Dv N_SETMAGIC().
+.Fn N_SETMAGIC .
 .Pp
 The macro
-.Dv N_GETFLAG()
+.Fn N_GETFLAG
 returns a few flags:
 .Bl -tag -width EX_DYNAMIC
 .It Dv EX_DYNAMIC
-indicates that the executable requires the services of the run-time link editor.
+Indicates that the executable requires the services of the run-time link editor.
 .It Dv EX_PIC
-indicates that the object contains position independent code. This flag is
-set by
+Indicates that the object contains position independent code.
+This flag is set by
 .Xr as 1
 when given the
-.Sq -k
+.Fl k
 flag and is preserved by
 .Xr ld 1
 if necessary.
 .El
 .Pp
-If both EX_DYNAMIC and EX_PIC are set, the object file is a position indendent
-executable image (eg. a shared library), which is to be loaded into the
+If both
+.Dv EX_DYNAMIC
+and
+.Dv EX_PIC
+are set, the object file is a position independent
+executable image (e.g., a shared library), which is to be loaded into the
 process address space by the run-time link editor.
 .Pp
 The macro
-.Dv N_GETMID()
-returns the machine-id.
+.Fn N_GETMID
+returns the machine ID.
 This indicates which machine(s) the binary is intended to run on.
 .Pp
-.Dv N_GETMAGIC()
+.Fn N_GETMAGIC
 specifies the magic number, which uniquely identifies binary files
 and distinguishes different loading conventions.
 The field must contain one of the following values:
 .Bl -tag -width ZMAGIC
 .It Dv OMAGIC
-The text and data segments immediately follow the header
-and are contiguous.
+The text and data segments immediately follow the header and are contiguous.
 The kernel loads both text and data segments into writable memory.
 .It Dv NMAGIC
 As with
 .Dv OMAGIC ,
 text and data segments immediately follow the header and are contiguous.
-However, the kernel loads the text into read-only memory
-and loads the data into writable memory at the next
-page boundary after the text.
+However, the kernel loads the text into read-only memory and loads the data
+into writable memory at the next page boundary after the text.
 .It Dv ZMAGIC
 The kernel loads individual pages on demand from the binary.
 The header, text segment and data segment are all
@@ -166,7 +165,7 @@ Contains the size of the text segment in bytes.
 Contains the size of the data segment in bytes.
 .It Fa a_bss
 Contains the number of bytes in the
-.Sq bss segment
+.Dq BSS segment
 and is used by the kernel to set the initial break
 .Pq Xr brk 2
 after the data segment.
@@ -190,21 +189,26 @@ The
 include file defines several macros which use an
 .Fa exec
 structure to test consistency or to locate section offsets in the binary file.
-.Bl -tag -width N_BADMAG(exec)
+.Bl -tag -width N_TRELOFF(exec)
 .It Fn N_BADMAG exec
-Nonzero if the
+Non-zero if the
 .Fa a_magic
 field does not contain a recognized value.
 .It Fn N_TXTOFF exec
-The byte offset in the binary file of the beginning of the text segment.
+The byte offset of the beginning of the text segment.
+.It Fn N_DATOFF exec
+The byte offset of the beginning of the data segment.
+.It Fn N_DRELOFF exec
+The byte offset of the beginning of the data relocation table.
+.It Fn N_TRELOFF exec
+The byte offset of the beginning of the text relocation table.
 .It Fn N_SYMOFF exec
 The byte offset of the beginning of the symbol table.
 .It Fn N_STROFF exec
 The byte offset of the beginning of the string table.
 .El
 .Pp
-Relocation records have a standard format which
-is described by the
+Relocation records have a standard format which is described by the
 .Fa relocation_info
 structure:
 .Bd -literal -offset indent
@@ -232,8 +236,7 @@ and data relocation offsets from the start of the data segment.
 The link editor adds the value that is already stored at this offset
 into the new value that it computes using this relocation record.
 .It Fa r_symbolnum
-Contains the ordinal number of a symbol structure
-in the symbol table (it is
+Contains the ordinal number of a symbol structure in the symbol table (it is
 .Em not
 a byte offset).
 After the link editor resolves the absolute address for this symbol,
@@ -242,8 +245,7 @@ it adds that address to the pointer that is undergoing relocation.
 .Fa r_extern
 bit is clear, the situation is different; see below.)
 .It Fa r_pcrel
-If this is set,
-the link editor assumes that it is updating a pointer
+If this is set, the link editor assumes that it is updating a pointer
 that is part of a machine code instruction using pc-relative addressing.
 The address of the relocated pointer is implicitly added
 to its value when the running program uses it.
@@ -257,12 +259,12 @@ the link editor must use a symbol address to update the pointer.
 When the
 .Fa r_extern
 bit is clear, the relocation is
-.Sq local ;
+.Dq local ;
 the link editor updates the pointer to reflect
 changes in the load addresses of the various segments,
 rather than changes in the value of a symbol (except when
 .Fa r_baserel
-is also set (see below).
+is also set, see below).
 In this case, the content of the
 .Fa r_symbolnum
 field is an
@@ -282,18 +284,18 @@ If set, the symbol, as identified by the
 field, is to be relocated to an offset into the Procedure Linkage Table.
 .It Fa r_relative
 If set, this relocation is relative to the (run-time) load address of the
-image this object file is going to be a part of. This type of relocation
-only occurs in shared objects.
+image this object file is going to be a part of.
+This type of relocation only occurs in shared objects.
 .It Fa r_copy
 If set, this relocation record identifies a symbol whose contents should
 be copied to the location given in
-.Fa r_address.
-The copying is done by the run-time link-editor from a suitable data
+.Fa r_address .
+The copying is done by the run-time link editor from a suitable data
 item in a shared object.
 .El
 .Pp
 Symbols map names to addresses (or more generally, strings to values).
-Since the link-editor adjusts addresses,
+Since the link editor adjusts addresses,
 a symbol's name must be used to stand for its address
 until an absolute value has been assigned.
 Symbols consist of a fixed-length record in the symbol table
@@ -317,24 +319,21 @@ struct nlist {
 The fields are used as follows:
 .Bl -tag -width n_un.n_strx
 .It Fa n_un.n_strx
-Contains a byte offset into the string table
-for the name of this symbol.
+Contains a byte offset into the string table for the name of this symbol.
 When a program accesses a symbol table with the
 .Xr nlist 3
-function,
-this field is replaced with the
+function, this field is replaced with the
 .Fa n_un.n_name
 field, which is a pointer to the string in memory.
 .It Fa n_type
-Used by the link editor to determine
-how to update the symbol's value.
+Used by the link editor to determine how to update the symbol's value.
 The
 .Fa n_type
 field is broken down into three sub-fields using bitmasks.
 The link editor treats symbols with the
 .Dv N_EXT
 type bit set as
-.Sq external
+.Dq external
 symbols and permits references to them from other binary files.
 The
 .Dv N_TYPE
@@ -346,10 +345,9 @@ The link editor must locate an external symbol with the same name
 in another binary file to determine the absolute value of this symbol.
 As a special case, if the
 .Fa n_value
-field is nonzero and no binary file in the link-edit defines this symbol,
-the link-editor will resolve this symbol to an address
-in the bss segment,
-reserving an amount of bytes equal to
+field is non-zero and no binary file in the link-edit defines this symbol,
+the link editor will resolve this symbol to an address
+in the BSS segment, reserving an amount of bytes equal to
 .Fa n_value .
 If this symbol is undefined in more than one binary file
 and the binary files do not agree on the size,
@@ -370,7 +368,7 @@ addresses; to recover the file offsets, it is necessary
 to identify the loaded address of the beginning of the corresponding
 section and subtract it, then add the offset of the section.
 .It Dv N_BSS
-A bss symbol; like text or data symbols but
+A BSS symbol; like text or data symbols but
 has no corresponding offset in the binary file.
 .It Dv N_FN
 A filename symbol.
@@ -379,7 +377,7 @@ the other symbols from a binary file when
 merging binary files.
 The name of the symbol is the filename given to the link editor,
 and its value is the first text address from that binary file.
-Filename symbols are not needed for link-editing or loading,
+Filename symbols are not needed for link editing or loading,
 but are useful for debuggers.
 .El
 .Pp
@@ -394,7 +392,8 @@ the values are described in
 This field provides information on the nature of the symbol independent of
 the symbol's location in terms of segments as determined by the
 .Fa n_type
-field. Currently, the lower 4 bits of the
+field.
+Currently, the lower 4 bits of the
 .Fa n_other
 field hold one of two values:
 .Dv AUX_FUNC
@@ -418,13 +417,13 @@ Reserved for use by debuggers; passed untouched by the link editor.
 Different debuggers use this field for different purposes.
 .It Fa n_value
 Contains the value of the symbol.
-For text, data and bss symbols, this is an address;
+For text, data and BSS symbols, this is an address;
 for other symbols (such as debugger symbols),
 the value may be arbitrary.
 .El
 .Pp
 The string table consists of an
-.Em unsigned long
+.Em u_int32_t
 length followed by null-terminated symbol strings.
 The length represents the size of the entire table in bytes,
 so its minimum value (or the offset of the first string)
@@ -437,17 +436,16 @@ is always 4 on 32-bit machines.
 .Xr execve 2 ,
 .Xr nlist 3 ,
 .Xr core 5 ,
-.Xr dbx 5 ,
-.Xr stab 5 ,
-.Xr link 5
+.Xr link 5 ,
+.Xr stab 5
 .Sh HISTORY
 The
 .Pa a.out.h
 include file appeared in
-.At v7 .
+.At v3 .
 .Sh BUGS
 Nobody seems to agree on what
-.Em bss
+.Em BSS
 stands for.
 .Pp
 New binary file formats may be supported in the future,

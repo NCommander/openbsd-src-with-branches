@@ -1,3 +1,4 @@
+.\"	$OpenBSD: getmntopts.3,v 1.6 2003/05/23 12:41:13 jmc Exp $
 .\"	$NetBSD: getmntopts.3,v 1.2 1995/03/18 14:56:56 cgd Exp $
 .\"
 .\" Copyright (c) 1994
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,7 +32,7 @@
 .\"
 .Dd March 27, 1994
 .Dt GETMNTOPTS 3
-.Os BSD 4.4
+.Os
 .Sh NAME
 .Nm getmntopts
 .Nd scan mount options
@@ -45,22 +42,22 @@
 .Fn getmntopts "char *options" "struct mntopt *mopts" "int *flagp"
 .Sh DESCRIPTION
 The
-.Nm getmntopts
+.Fn getmntopts
 function takes a comma separated option list and a list
 of valid option names, and computes the bitmask
 corresponding to the requested set of options.
 .Pp
 The string
-.Dv options
+.Ar options
 is broken down into a sequence of comma separated tokens.
 Each token is looked up in the table described by
-.Dv mopts
+.Ar mopts
 and the bits in
 the word referenced by
-.Dv flagp
+.Ar flagp
 are updated.
 The flag word is not initialized by
-.Nm getmntopt .
+.Fn getmntopts .
 The table,
 .Dv mopts ,
 has the following format:
@@ -75,12 +72,12 @@ struct mntopt {
 The members of this structure are:
 .Bl -tag -width m_inverse
 .It Fa m_option
-the option name,
+The option name,
 for example
 .Dq suid .
 .It Fa m_inverse
-tells
-.Nm getmntopts
+Tells
+.Fn getmntopts
 that the name has the inverse meaning of the
 bit.
 For example,
@@ -93,7 +90,7 @@ are inverted, so the
 .Dv m_inverse
 flag should be set.
 .It Fa m_flag
-the value of the bit to be set or cleared in
+The value of the bit to be set or cleared in
 the flag word when the option is recognized.
 The bit is set when the option is discovered,
 but cleared if the option name was preceded
@@ -152,7 +149,7 @@ struct mntopt mopts[] = {
 .Ed
 .Sh DIAGNOSTICS
 The
-.Nm getmntopts
+.Fn getmntopts
 function displays an error message and exits if an
 unrecognized option is encountered.
 .Sh SEE ALSO
@@ -161,5 +158,5 @@ unrecognized option is encountered.
 .Sh HISTORY
 The
 .Fn getmntopts
-function appeared in 
+function appeared in
 .Bx 4.4 .

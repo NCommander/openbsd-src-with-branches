@@ -38,6 +38,8 @@ RCSID("$arla: sl.c,v 1.9 2003/02/01 19:19:01 lha Exp $");
 
 #include "sl_locl.h"
 
+extern char *__progname;
+
 static size_t __attribute__ ((unused))
 print_sl (FILE *stream, int mdoc, int longp, SL_cmd *c)
 {
@@ -62,6 +64,7 @@ mandoc_template(SL_cmd *cmds,
     char timestr[64], cmd[64];
     const char *p;
     time_t t;
+    extern char *__progname;
 
     printf(".\\\" Things to fix:\n");
     printf(".\\\"   * correct section, and operating system\n");
@@ -71,8 +74,8 @@ mandoc_template(SL_cmd *cmds,
     t = time(NULL);
     strftime(timestr, sizeof(timestr), "%b %d, %Y", localtime(&t));
     printf(".Dd %s\n", timestr);
-    p = strrchr(getprogname(), '/');
-    if(p) p++; else p = getprogname();
+    p = strrchr(__progname, '/');
+    if(p) p++; else p = __progname;
     strncpy(cmd, p, sizeof(cmd));
     cmd[sizeof(cmd)-1] = '\0';
     strupr(cmd);

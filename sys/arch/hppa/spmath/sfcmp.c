@@ -1,3 +1,4 @@
+/*	$OpenBSD: sfcmp.c,v 1.5 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,26 +12,23 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/sfcmp.c,v $
- * $Revision: 1.7.88.2 $	$Author: runyan $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/08 13:28:43 $
- */
+/* @(#)sfcmp.c: Revision: 1.7.88.2 Date: 93/12/08 13:28:43 */
 
-#include "../spmath/float.h"
-#include "../spmath/sgl_float.h"
-    
+#include "float.h"
+#include "sgl_float.h"
+
 /*
  * sgl_cmp: compare two values
  */
+int
 sgl_fcmp(leftptr, rightptr, cond, status)
     sgl_floating_point *leftptr, *rightptr;
     unsigned int cond; /* The predicate to be tested */
     unsigned int *status;
-    {
+{
     register unsigned int left, right;
     register int xorresult;
-        
+
     /* Create local copies of the numbers */
     left = *leftptr;
     right = *rightptr;
@@ -38,21 +36,21 @@ sgl_fcmp(leftptr, rightptr, cond, status)
      * Test for NaN
      */
     if(    (Sgl_exponent(left) == SGL_INFINITY_EXPONENT)
-        || (Sgl_exponent(right) == SGL_INFINITY_EXPONENT) )
+	|| (Sgl_exponent(right) == SGL_INFINITY_EXPONENT) )
 	{
-	/* Check if a NaN is involved.  Signal an invalid exception when 
+	/* Check if a NaN is involved.  Signal an invalid exception when
 	 * comparing a signaling NaN or when comparing quiet NaNs and the
 	 * low bit of the condition is set */
-        if( (  (Sgl_exponent(left) == SGL_INFINITY_EXPONENT)
-	    && Sgl_isnotzero_mantissa(left) 
+	if( (  (Sgl_exponent(left) == SGL_INFINITY_EXPONENT)
+	    && Sgl_isnotzero_mantissa(left)
 	    && (Exception(cond) || Sgl_isone_signaling(left)))
 	   ||
 	    (  (Sgl_exponent(right) == SGL_INFINITY_EXPONENT)
-	    && Sgl_isnotzero_mantissa(right) 
+	    && Sgl_isnotzero_mantissa(right)
 	    && (Exception(cond) || Sgl_isone_signaling(right)) ) )
 	    {
 	    if( Is_invalidtrap_enabled() ) {
-	    	Set_status_cbit(Unordered(cond));
+		Set_status_cbit(Unordered(cond));
 		return(INVALIDEXCEPTION);
 	    }
 	    else Set_invalidflag();
@@ -61,7 +59,7 @@ sgl_fcmp(leftptr, rightptr, cond, status)
 	    }
 	/* All the exceptional conditions are handled, now special case
 	   NaN compares */
-        else if( ((Sgl_exponent(left) == SGL_INFINITY_EXPONENT)
+	else if( ((Sgl_exponent(left) == SGL_INFINITY_EXPONENT)
 	    && Sgl_isnotzero_mantissa(left))
 	   ||
 	    ((Sgl_exponent(right) == SGL_INFINITY_EXPONENT)
@@ -77,12 +75,12 @@ sgl_fcmp(leftptr, rightptr, cond, status)
      * special equal case */
     Sgl_xortointp1(left,right,xorresult);
     if( xorresult < 0 )
-        {
-        /* left negative => less, left positive => greater.
-         * equal is possible if both operands are zeros. */
-        if( Sgl_iszero_exponentmantissa(left) 
+	{
+	/* left negative => less, left positive => greater.
+	 * equal is possible if both operands are zeros. */
+	if( Sgl_iszero_exponentmantissa(left)
 	  && Sgl_iszero_exponentmantissa(right) )
-            {
+	    {
 	    Set_status_cbit(Equal(cond));
 	    }
 	else if( Sgl_isone_sign(left) )
@@ -93,17 +91,17 @@ sgl_fcmp(leftptr, rightptr, cond, status)
 	    {
 	    Set_status_cbit(Greaterthan(cond));
 	    }
-        }
+	}
     /* Signs are the same.  Treat negative numbers separately
      * from the positives because of the reversed sense.  */
     else if( Sgl_all(left) == Sgl_all(right) )
-        {
-        Set_status_cbit(Equal(cond));
-        }
+	{
+	Set_status_cbit(Equal(cond));
+	}
     else if( Sgl_iszero_sign(left) )
-        {
-        /* Positive compare */
-        if( Sgl_all(left) < Sgl_all(right) )
+	{
+	/* Positive compare */
+	if( Sgl_all(left) < Sgl_all(right) )
 	    {
 	    Set_status_cbit(Lessthan(cond));
 	    }
@@ -113,18 +111,18 @@ sgl_fcmp(leftptr, rightptr, cond, status)
 	    }
 	}
     else
-        {
-        /* Negative compare.  Signed or unsigned compares
-         * both work the same.  That distinction is only
-         * important when the sign bits differ. */
-        if( Sgl_all(left) > Sgl_all(right) )
+	{
+	/* Negative compare.  Signed or unsigned compares
+	 * both work the same.  That distinction is only
+	 * important when the sign bits differ. */
+	if( Sgl_all(left) > Sgl_all(right) )
 	    {
 	    Set_status_cbit(Lessthan(cond));
 	    }
-        else
+	else
 	    {
 	    Set_status_cbit(Greaterthan(cond));
 	    }
-        }
+	}
 	return(NOEXCEPTION);
-    }
+}

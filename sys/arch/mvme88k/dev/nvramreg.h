@@ -1,3 +1,5 @@
+/*	$OpenBSD: nvramreg.h,v 1.6 2003/10/11 22:08:57 miod Exp $ */
+
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -19,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -48,41 +46,44 @@
 
 /*
  * Mostek MK48T08 clock.
- * 
+ *
  * This chip is 8k in size.
  * The first TOD clock starts at offset 0x1FF8. The following structure
  * describes last 2K of it's 8K address space. The first 6K of the NVRAM
  * space is used for various things as follows:
  * 	0000-0fff	User Area
- *	1000-10ff	Networking Area 
+ *	1000-10ff	Networking Area
  *	1100-16f7	Operating System Area
  *	16f8-1ef7	ROM Debugger Area
  *	1ef8-1ff7	Configuration Area (Ethernet address etc)
  *	1ff8-1fff	TOD clock
  */
 
-struct clockreg {
-	volatile u_char	cl_csr;		/* control register */
-	volatile u_char	cl_sec;		/* seconds (0..59; BCD) */
-	volatile u_char	cl_min;		/* minutes (0..59; BCD) */
-	volatile u_char	cl_hour;	/* hour (0..23; BCD) */
-	volatile u_char	cl_wday;	/* weekday (1..7) */
-	volatile u_char	cl_mday;	/* day in month (1..31; BCD) */
-	volatile u_char	cl_month;	/* month (1..12; BCD) */
-	volatile u_char	cl_year;	/* year (0..99; BCD) */
-};
+/*
+ * On MVME188, these offsets need shifting two bits, as they are 32 bit
+ * registers.
+ */
+#define	CLK_CSR		0		/* control register */
+#define	CLK_SEC		1		/* seconds (0..59; BCD) */
+#define	CLK_MIN		2		/* minutes (0..59; BCD) */
+#define	CLK_HOUR	3		/* hour (0..23; BCD) */
+#define	CLK_WDAY	4		/* weekday (1..7) */
+#define	CLK_DAY		5		/* day in month (1..31; BCD) */
+#define	CLK_MONTH	6		/* month (1..12; BCD) */
+#define	CLK_YEAR	7		/* year (0..99; BCD) */
+#define	CLK_NREG	8
 
-/* bits in cl_csr */
+/* csr bits */
 #define	CLK_WRITE	0x80		/* want to write */
 #define	CLK_READ	0x40		/* want to read (freeze clock) */
 
-struct clockreg *clockreg;
-
 /*
- * Motorola chose the year `00' as their base count, so that
- * cl_year == 0 means 1900.
+ * Motorola chose the year `1900' as their base count. It has already
+ * wrapped by now...
  */
 #define	YEAR0	00
 
-#define NVRAMSIZE	0x8000
-#define NVRAM_TOD_OFF	0x1ff8 /* offset of tod in NVRAM space */
+#define SBC_NVRAM_TOD_OFF	0x1ff8 /* offset of tod in NVRAM space */
+#define M188_NVRAM_TOD_OFF	0x1fe0 /* offset of tod in NVRAM space */
+#define MK48T02_SIZE	2 * 1024
+#define MK48T08_SIZE	8 * 1024

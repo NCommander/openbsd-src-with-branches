@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)info_ndbm.c	8.1 (Berkeley) 6/6/93
- *	$Id: info_ndbm.c,v 1.3 1994/06/13 20:47:24 mycroft Exp $
+ *	$Id: info_ndbm.c,v 1.3 2002/07/18 02:14:45 deraadt Exp $
  */
 
 /*
@@ -51,13 +47,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-static int search_ndbm P((DBM *db, char *key, char **val));
-static int search_ndbm(db, key, val)
-DBM *db;
-char *key;
-char **val;
+static int
+search_ndbm(DBM *db, char *key, char **val)
 {
 	datum k, v;
+
 	k.dptr = key;
 	k.dsize = strlen(key) + 1;
 	v = dbm_fetch(db, k);
@@ -68,13 +62,8 @@ char **val;
 	return ENOENT;
 }
 
-int ndbm_search P((mnt_map *m, char *map, char *key, char **pval, time_t *tp));
-int ndbm_search(m, map, key, pval, tp)
-mnt_map *m;
-char *map;
-char *key;
-char **pval;
-time_t *tp;
+int
+ndbm_search(mnt_map *m, char *map, char *key, char **pval, time_t *tp)
 {
 	DBM *db;
 
@@ -82,6 +71,7 @@ time_t *tp;
 	if (db) {
 		struct stat stb;
 		int error;
+
 		error = fstat(dbm_pagfno(db), &stb);
 		if (!error && *tp < stb.st_mtime) {
 			*tp = stb.st_mtime;
@@ -96,10 +86,8 @@ time_t *tp;
 	return errno;
 }
 
-int ndbm_init P((char *map, time_t *tp));
-int ndbm_init(map, tp)
-char *map;
-time_t *tp;
+int
+ndbm_init(char *map, time_t *tp)
 {
 	DBM *db;
 

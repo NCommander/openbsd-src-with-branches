@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002, 2004 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990
  * 	 The Regents of the University of California.  All rights reserved.
@@ -11,7 +11,7 @@
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: io.h,v 1.19 2001/07/10 21:56:46 gshapiro Exp $
+ *	$Sendmail: io.h,v 1.24 2004/03/03 19:14:49 ca Exp $
  */
 
 /*-
@@ -33,6 +33,17 @@
 #define SM_IO_APPENDRW	5	/* read-write from eof */
 #define SM_IO_RDWRTR	6	/* read-write with truncation indicated */
 
+# define SM_IO_BINARY	0x0	/* binary mode: not used in Unix */
+#define SM_IS_BINARY(mode)	(((mode) & SM_IO_BINARY) != 0)
+#define SM_IO_MODE(mode)	((mode) & 0x0f)
+
+#define SM_IO_RDWR_B	(SM_IO_RDWR|SM_IO_BINARY)
+#define SM_IO_RDONLY_B	(SM_IO_RDONLY|SM_IO_BINARY)
+#define SM_IO_WRONLY_B	(SM_IO_WRONLY|SM_IO_BINARY)
+#define SM_IO_APPEND_B	(SM_IO_APPEND|SM_IO_BINARY)
+#define SM_IO_APPENDRW_B	(SM_IO_APPENDRW|SM_IO_BINARY)
+#define SM_IO_RDWRTR_B	(SM_IO_RDWRTR|SM_IO_BINARY)
+
 /* for sm_io_fseek, et al api's (exposed) */
 #define SM_IO_SEEK_SET	0
 #define SM_IO_SEEK_CUR	1
@@ -46,6 +57,7 @@
 #define SM_IO_WHAT_ISTYPE	5
 #define SM_IO_IS_READABLE	6
 #define SM_IO_WHAT_TIMEOUT	7
+#define SM_IO_WHAT_SIZE		8
 
 /* info flags (exposed) */
 #define SM_IO_FTYPE_CREATE	1
@@ -111,13 +123,12 @@ struct sm_file
 	off_t		(*f_seek)  __P((SM_FILE_T *, off_t, int));
 	ssize_t		(*f_write) __P((SM_FILE_T *, const char *, size_t));
 	int		(*f_open) __P((SM_FILE_T *, const void *, int,
-				const void *));
+					const void *));
 	int		(*f_setinfo) __P((SM_FILE_T *, int , void *));
 	int		(*f_getinfo) __P((SM_FILE_T *, int , void *));
 	int		f_timeout;
 	int		f_timeoutstate;   /* either blocking or non-blocking */
 	char		*f_type;	/* for by-type lookups */
-	void		*f_self;	/* self for reference */
 	struct sm_file	*f_flushfp;	/* flush this before reading parent */
 	struct sm_file	*f_modefp;	/* sync mode with this fp */
 
@@ -129,9 +140,6 @@ struct sm_file
 	/* tricks to meet minimum requirements even when malloc() fails */
 	unsigned char	f_ubuf[3];	/* guarantee an ungetc() buffer */
 	unsigned char	f_nbuf[1];	/* guarantee a getc() buffer */
-
-	/* separate buffer for fgetln() when line crosses buffer boundary */
-	struct smbuf	f_lb;		/* buffer for fgetln() */
 
 	/* Unix stdio files get aligned to block boundaries on fseek() */
 	int		f_blksize;	/* stat.st_blksize (may be != bf.size) */
@@ -224,8 +232,7 @@ __END_DECLS
 #define SMOFF		0x004000	/* set iff offset is in fact correct */
 #define SMALC		0x010000	/* allocate string space dynamically */
 
-#define SMACCESSMASK	0x0070
-#define SMMODEMASK	0x011C
+#define SMMODEMASK	0x0070	/* read/write mode */
 
 /* defines for timeout constants */
 #define SM_TIME_IMMEDIATE	(0)

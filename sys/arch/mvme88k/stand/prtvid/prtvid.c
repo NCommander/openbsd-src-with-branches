@@ -1,3 +1,4 @@
+/*	$OpenBSD:	$ */
 #include <stdio.h>
 #define __DBINTERFACE_PRIVATE
 #include <db.h>
@@ -27,7 +28,7 @@ main(argc, argv)
 	    (char *)&(pvid->vid_osa_u) - (char *)pvid);
 	printf("vid_osa_l	%x	%x\n", pvid->vid_osa_l,
 	    (char *)&(pvid->vid_osa_l) - (char *)pvid);
-	printf("vid_vd %x\n",
+	printf("vid_vd 		%x	%x\n", pvid->vid_vd, 
 	    (char *)&(pvid->vid_vd) - (char *)pvid);
 	printf("vid_cas		%x	%x\n", pvid->vid_cas,
 	    (char *)&(pvid->vid_cas) - (char *)pvid);

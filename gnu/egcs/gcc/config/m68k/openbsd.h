@@ -36,9 +36,8 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time target specifications */
 #define CPP_PREDEFINES "-D__unix__ -D__m68k__ -D__mc68000__ -D__mc68020__ -D__OpenBSD__ -Asystem(unix) -Asystem(OpenBSD) -Acpu(m68k) -Amachine(m68k)"
 
-/* TODO: activate subtarget types when gas is updated.
+#undef ASM_SPEC
 #define ASM_SPEC "%| %{m68030} %{m68040} %{m68060} %{fpic:-k} %{fPIC:-k -K}"
- */
 
 /* Layout of source language data types.  */
 
@@ -59,6 +58,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 #define STRUCTURE_SIZE_BOUNDARY 16
+
+/* optimize_reg_copy_3() is known to misbehave with some constructs */
+#define	BROKEN_OPTIMIZE_REG_COPY_3_P
 
 /* Specific options for DBX Output.  */
 

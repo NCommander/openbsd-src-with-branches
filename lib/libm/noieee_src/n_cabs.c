@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,7 +41,7 @@ static char sccsid[] = "@(#)cabs.c	8.1 (Berkeley) 6/4/93";
  * Required system supported functions :
  *	copysign(x,y)
  *	finite(x)
- *	scalb(x,N)
+ *	scalbn(x,N)
  *	sqrt(x)
  *
  * Method :
@@ -152,9 +148,9 @@ double x, y;
 	         return (copysign(x,one));
 	else if(finite(y))
 	         return(x);		   /* x is NaN, y is finite */
-#if !defined(vax)&&!defined(tahoe)
+#if !defined(__vax__)&&!defined(tahoe)
 	else if(y!=y) return(y);  /* x and y is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+#endif	/* !defined(__vax__)&&!defined(tahoe) */
 	else return(copysign(y,one));   /* y is INF */
 }
 
@@ -208,12 +204,12 @@ double x, y;
 		if(x == zero) return(zero);
 		if(y == zero) return(x);
 		exp= logb(x);
-		x=scalb(x,-exp);
+		x=scalbn(x,-exp);
 		if(exp-(int)logb(y) > ibig ) 
 			/* raise inexact flag and return |x| */
-		   { one+small; return(scalb(x,exp)); }
-		else y=scalb(y,-exp);
-		return(scalb(sqrt(x*x+y*y),exp));
+		   { one+small; return(scalbn(x,exp)); }
+		else y=scalbn(y,-exp);
+		return(scalbn(sqrt(x*x+y*y),exp));
 	    }
 
 	    else if(y==y)   	   /* y is +-INF */

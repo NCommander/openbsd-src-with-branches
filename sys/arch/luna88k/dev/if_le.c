@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.12 2000/08/28 22:03:01 miod Exp $	*/
+/*	$OpenBSD: if_le.c,v 1.3 2004/07/27 12:36:32 miod Exp $	*/
 /*	$NetBSD: if_le.c,v 1.33 1996/11/20 18:56:52 gwr Exp $	*/
 
 /*-
@@ -39,8 +39,6 @@
 
 /* based on OpenBSD: sys/arch/sun3/dev/if_le.c */
 
-#include "bpfilter.h"
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
@@ -58,6 +56,7 @@
 #include <net/if_media.h>
 
 #include <machine/autoconf.h>
+#include <machine/board.h>
 #include <machine/cpu.h>
 
 #include <dev/ic/am7990reg.h>
@@ -164,16 +163,23 @@ le_attach(parent, self, aux)
 
 	am7990_config(sc);
 
-        isrlink_autovec(am7990_intr, (void *)sc, ma->ma_ilvl, ISRPRI_NET);
+        isrlink_autovec(am7990_intr, (void *)sc, ma->ma_ilvl, ISRPRI_NET,
+	    self->dv_xname);
 }
 
 /*
- * Taken from NetBSD/luna68k
+ * Partially taken from NetBSD/luna68k
  * 
- * LUNA-88K2 (and LUNA-88K?) has 16Kbit NVSRAM on its ethercard, whose
- * contents are accessible 4bit-wise by ctl register operation.  The
- * register is mapped at 0xF1000008.
+ * LUNA-88K has FUSE ROM, which contains MAC address.  The FUSE ROM
+ * contents are stored in fuse_rom_data[] during cpu_startup(). 
+ * 
+ * LUNA-88K2 has 16Kbit NVSRAM on its ethercard, whose contents are
+ * accessible 4bit-wise by ctl register operation.  The register is
+ * mapped at 0xF1000008.
  */
+
+extern int machtype;
+extern char fuse_rom_data[];
 
 hide void
 myetheraddr(ether)
@@ -182,23 +188,48 @@ myetheraddr(ether)
         unsigned i, loc;
 	volatile struct { u_int32_t ctl; } *ds1220;
 
-	ds1220 = (void *)0xF1000008;
-	loc = 12;
-	for (i = 0; i < 6; i++) {
-		unsigned u, l, hex;
+	switch (machtype) {
+	case LUNA_88K:
+		/*
+		 * fuse_rom_data[] begins with "ENADDR=00000Axxxxxx"
+		 */
+		loc = 7;
+		for (i = 0; i < 6; i++) {
+			int u, l;
 
-		ds1220->ctl = (loc) << 16;
-		u = 0xf0 & (ds1220->ctl >> 12);
-		ds1220->ctl = (loc + 1) << 16;
-		l = 0x0f & (ds1220->ctl >> 16);
-		hex = (u < '9') ? l : l + 9;
+			u = fuse_rom_data[loc];
+			u = (u < 'A') ? u & 0xf : u - 'A' + 10;
+			l = fuse_rom_data[loc + 1];
+			l = (l < 'A') ? l & 0xf : l - 'A' + 10;
+		
+			ether[i] = l | (u << 4);
+			loc += 2;
+		}
+		break;
+	case LUNA_88K2: 
+		ds1220 = (void *)0xF1000008;
+		loc = 12;
+		for (i = 0; i < 6; i++) {
+			unsigned u, l, hex;
 
-		ds1220->ctl = (loc + 2) << 16;
-		u = 0xf0 & (ds1220->ctl >> 12);
-		ds1220->ctl = (loc + 3) << 16;
-		l = 0x0f & (ds1220->ctl >> 16);
+			ds1220->ctl = (loc) << 16;
+			u = 0xf0 & (ds1220->ctl >> 12);
+			ds1220->ctl = (loc + 1) << 16;
+			l = 0x0f & (ds1220->ctl >> 16);
+			hex = (u < '9') ? l : l + 9;
 
-		ether[i] = ((u < '9') ? l : l + 9) | (hex << 4);
-		loc += 4;
+			ds1220->ctl = (loc + 2) << 16;
+			u = 0xf0 & (ds1220->ctl >> 12);
+			ds1220->ctl = (loc + 3) << 16;
+			l = 0x0f & (ds1220->ctl >> 16);
+
+			ether[i] = ((u < '9') ? l : l + 9) | (hex << 4);
+			loc += 4;
+		}
+		break;
+	default:
+		ether[0] = 0x00; ether[1] = 0x00; ether[2] = 0x0a;
+		ether[3] = 0xDE; ether[4] = 0xAD; ether[5] = 0x00;
+		break;
 	}
 }

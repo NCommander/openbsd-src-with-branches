@@ -1,3 +1,5 @@
+/*	$OpenBSD: regex.c,v 1.5 2003/06/02 20:18:40 millert Exp $	*/
+
 /*-
  * Copyright (c) 1992 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +41,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char sccsid[] = "from: @(#)regex.c	5.1 (Berkeley) 3/29/92";*/
-static char rcsid[] = "$Id: regex.c,v 1.5 1995/06/05 19:42:25 pk Exp $";
+static char rcsid[] = "$OpenBSD: regex.c,v 1.5 2003/06/02 20:18:40 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -56,34 +54,40 @@ static regexp *re_regexp;
 static int re_goterr;
 static char *re_errstr;
 
+static void re_error(const char *);
+
 char *
-re_comp(s)
-	const char *s;
+re_comp(const char *s)
 {
 	if (s == NULL)
 		return (NULL);
-	if (re_regexp)
+	if (re_regexp) {
 		free(re_regexp);
-	if (re_errstr)
+		re_regexp = NULL;
+	}
+	if (re_errstr) {
 		free(re_errstr);
+		re_errstr = NULL;
+	}
+	v8_setregerror(re_error);
+
 	re_goterr = 0;
-	re_regexp = regcomp(s);
+	re_regexp = v8_regcomp(s);
 	return (re_goterr ? re_errstr : NULL);
 }
 
 int
-re_exec(s)
-	const char *s;
+re_exec(const char *s)
 {
 	int rc;
 
 	re_goterr = 0;
-	rc = regexec(re_regexp, s);
+	rc = v8_regexec(re_regexp, s);
 	return (re_goterr ? -1 : rc);
 }
 
-void
-regerror(s)
+static void
+re_error(s)
 	const char *s;
 {
 	re_goterr = 1;

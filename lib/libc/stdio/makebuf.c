@@ -1,5 +1,3 @@
-/*	$NetBSD: makebuf.c,v 1.5 1995/02/02 02:10:08 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,10 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)makebuf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: makebuf.c,v 1.5 1995/02/02 02:10:08 jtc Exp $";
+static char rcsid[] = "$OpenBSD: makebuf.c,v 1.4 2002/09/14 22:03:14 dhartmei Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -78,7 +69,7 @@ __smakebuf(fp)
 		fp->_bf._size = 1;
 		return;
 	}
-	__cleanup = _cleanup;
+	__atexit_register_cleanup(_cleanup);
 	flags |= __SMBF;
 	fp->_bf._base = fp->_p = p;
 	fp->_bf._size = size;
@@ -105,8 +96,8 @@ __swhatbuf(fp, bufsize, couldbetty)
 	}
 
 	/* could be a tty iff it is a character device */
-	*couldbetty = (st.st_mode & S_IFMT) == S_IFCHR;
-	if (st.st_blksize <= 0) {
+	*couldbetty = S_ISCHR(st.st_mode);
+	if (st.st_blksize == 0) {
 		*bufsize = BUFSIZ;
 		return (__SNPT);
 	}
@@ -116,8 +107,10 @@ __swhatbuf(fp, bufsize, couldbetty)
 	 * __sseek is mainly paranoia.)  It is safe to set _blksize
 	 * unconditionally; it will only be used if __SOPT is also set.
 	 */
-	*bufsize = st.st_blksize;
-	fp->_blksize = st.st_blksize;
+	if ((fp->_flags & __SSTR) == 0) {
+		*bufsize = st.st_blksize;
+		fp->_blksize = st.st_blksize;
+	}
 	return ((st.st_mode & S_IFMT) == S_IFREG && fp->_seek == __sseek ?
 	    __SOPT : __SNPT);
 }

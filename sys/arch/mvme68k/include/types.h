@@ -1,10 +1,5 @@
-/*	$NetBSD: types.h,v 1.2 1994/10/26 02:33:58 cgd Exp $	*/
-
-#ifndef _MACHINE_TYPES_H_
-#define _MACHINE_TYPES_H_
+/*	$OpenBSD: types.h,v 1.5 2001/08/06 20:47:03 miod Exp $ */
 
 #include <m68k/types.h>
 
-#define	__BDEVSW_DUMP_OLD_TYPE
-
-#endif
+#define	__HAVE_EVCOUNT

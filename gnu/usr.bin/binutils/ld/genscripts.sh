@@ -110,13 +110,6 @@ if [ "x${LIB_PATH}" = "x" ] && [ "x${USE_LIBPATH}" = xyes ] ; then
   LIB_PATH=${LIB_PATH}${LIB_PATH2}
 fi
 
-
-# Always search $(tooldir)/lib, aka /usr/local/TARGET/lib, except for
-# sysrooted configurations.
-if [ "x${use_sysroot}" != "xyes" ] ; then
-  LIB_PATH=${tool_lib}:${LIB_PATH}
-fi
-
 LIB_SEARCH_DIRS=`echo ${LIB_PATH} | sed -e 's/:/ /g' -e 's/\([^ ][^ ]*\)/SEARCH_DIR(\\"\1\\");/g'`
 
 # Generate 5 or 6 script files from a master script template in
@@ -227,7 +220,16 @@ if test -n "$GENERATE_SHLIB_SCRIPT"; then
     rm -f ${COMBRELOC}
     COMBRELOC=
   fi
+  unset CREATE_SHLIB
 fi
+
+LD_FLAG=Z
+DATA_ALIGNMENT=${DATA_ALIGNMENT_}
+RELOCATING=" "
+( echo "/* Script for -Z: traditional binaries with no PLT/GOT padding */"
+  . ${srcdir}/emulparams/${EMULATION_NAME}.sh
+  . ${srcdir}/scripttempl/${SCRIPT_NAME}.sc
+) | sed -e '/^ *$/d;s/[ 	]*$//' > ldscripts/${EMULATION_NAME}.xz
 
 case " $EMULATION_LIBPATH " in
     *" ${EMULATION_NAME} "*) COMPILE_IN=true;;

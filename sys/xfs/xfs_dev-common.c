@@ -106,7 +106,7 @@ xfs_devopen_common(dev_t dev)
 
     chan->message_buffer = xfs_alloc(MAX_XMSG_SIZE, M_NNPFS_MSG);
 
-    /* initalize the queues if they have not been initialized before */
+    /* initialize the queues if they have not been initialized before */
     xfs_initq(&chan->sleepq);
     xfs_initq(&chan->messageq);
 

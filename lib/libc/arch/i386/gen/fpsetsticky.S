@@ -5,6 +5,11 @@
 
 #include <machine/asm.h>
 
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif
+
 ENTRY(fpsetsticky)
 	subl $28,%esp
 

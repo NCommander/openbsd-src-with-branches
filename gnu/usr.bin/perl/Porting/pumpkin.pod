@@ -1650,4 +1650,4 @@ All opinions expressed herein are those of the authorZ<>(s).
 
 =head1 LAST MODIFIED
 
-$Id: pumpkin.pod,v 1.7 2004/04/07 21:33:01 millert Exp $
+$Id: pumpkin.pod,v 1.6 2003/12/03 03:02:26 millert Exp $

@@ -116,7 +116,8 @@ REALLY_SET_LIB_PATH = \
   $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # This is the list of directories to be built for the build system.
-BUILD_CONFIGDIRS = libiberty
+#BUILD_CONFIGDIRS = libiberty
+BUILD_CONFIGDIRS = 
 # Build programs are put under this directory.
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
@@ -551,7 +552,8 @@ EXTRA_GCC_FLAGS = \
 
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS)
 
-configure-host: @configure_host_modules@
+CONFIGURE_HOST_MODULES= @configure_host_modules@
+configure-host: ${CONFIGURE_HOST_MODULES}
 configure-target: @configure_target_modules@
 
 # This is a list of the targets for which we can do a clean-{target}.
@@ -644,11 +646,12 @@ CLEAN_X11_MODULES = \
 # The target built for a native build.
 # This list only includes modules actually being configured and built.
 .PHONY: all.normal
+ALL_HOST_MODULES= @all_host_modules@
 all.normal: @all_build_modules@ \
-	@all_host_modules@ \
+	${ALL_HOST_MODULES} \
 	@all_target_modules@
 
-all-host: @all_host_modules@
+all-host: ${ALL_HOST_MODULES}
 all-target: @all_target_modules@
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
@@ -1197,7 +1200,8 @@ mail-report-with-warnings.log: warning.log
 # Installation targets.
 
 .PHONY: install uninstall
-install: installdirs @install_host_modules@ @install_target_modules@
+INSTALL_MODULES= @install_host_modules@ @install_target_modules@
+install: installdirs ${INSTALL_MODULES}
 
 install-target: @install_target_modules@
 
@@ -7396,13 +7400,15 @@ all-bootstrap: maybe-all-libiberty maybe-all-texinfo maybe-all-bison maybe-all-b
 # GDB needs to know that the simulator is being built.
 configure-gdb: maybe-configure-tcl maybe-configure-tk maybe-configure-sim
 GDB_TK = @GDB_TK@
-all-gdb: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-mmalloc maybe-all-readline maybe-all-bison maybe-all-byacc maybe-all-sim $(gdbnlmrequirements) $(GDB_TK)
-install-gdb: maybe-install-tcl maybe-install-tk maybe-install-itcl maybe-install-tix maybe-install-libgui
+#all-gdb: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-mmalloc maybe-all-readline maybe-all-bison maybe-all-byacc maybe-all-sim $(gdbnlmrequirements) $(GDB_TK)
+all-gdb: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-readline maybe-all-bison maybe-all-byacc maybe-all-sim $(gdbnlmrequirements) $(GDB_TK)
+#install-gdb: maybe-install-tcl maybe-install-tk maybe-install-itcl maybe-install-tix maybe-install-libgui
 configure-libgui: maybe-configure-tcl maybe-configure-tk
 all-libgui: maybe-all-tcl maybe-all-tk maybe-all-itcl
 
 # Host modules specific to binutils.
-configure-bfd: configure-libiberty
+#configure-bfd: configure-libiberty
+configure-bfd: 
 all-bfd: maybe-all-libiberty maybe-all-intl
 all-binutils: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-flex maybe-all-bison maybe-all-byacc maybe-all-intl
 # We put install-opcodes before install-binutils because the installed

@@ -1,20 +1,15 @@
-/*	$NetBSD: tolower_.c,v 1.7 1995/05/11 23:04:04 jtc Exp $	*/
-
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#if defined(LIBC_RCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: tolower_.c,v 1.7 1995/05/11 23:04:04 jtc Exp $";
-#endif /* LIBC_RCS and not lint */
+#if defined(LIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD: tolower_.c,v 1.6 2002/12/13 23:16:38 millert Exp $";
+#endif /* LIBC_SCCS and not lint */
 
-#include <stdio.h>
+#define _ANSI_LIBRARY
 #include <ctype.h>
-
-#if EOF != -1
-#error "EOF != -1"
-#endif
+#include <stdio.h>
 
 const short _C_tolower_[1 + 256] = {
 	EOF,
@@ -56,8 +51,9 @@ const short *_tolower_tab_ = _C_tolower_;
 
 #undef tolower
 int
-tolower(c)
-	int c;
+tolower(int c)
 {
+	if ((unsigned int)c > 0177)
+		return(c);
 	return((_tolower_tab_ + 1)[c]);
 }

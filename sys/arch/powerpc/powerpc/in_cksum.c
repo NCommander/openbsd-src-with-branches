@@ -1,3 +1,4 @@
+/*	$OpenBSD: in_cksum.c,v 1.5 2002/09/15 09:01:59 deraadt Exp $	*/
 /*	$NetBSD: in_cksum.c,v 1.1 1996/09/30 16:34:47 ws Exp $	*/
 
 /*
@@ -31,7 +32,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/mbuf.h>
+#include <netinet/in.h>
 
 /*
  * First cut for in_cksum.
@@ -45,9 +48,7 @@
 #define	ADDCARRY	do { while (sum > 0xffff) REDUCE; } while (0)
 
 int
-in_cksum(m, len)
-	struct mbuf *m;
-	int len;
+in_cksum(struct mbuf *m, int len)
 {
 	u_char *w;
 	u_int sum = 0;

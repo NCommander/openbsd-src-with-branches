@@ -777,7 +777,8 @@ fi
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl tix libgui zlib"
+#host_libs="intl mmalloc opcodes bfd readline tcl tk itcl tix libgui zlib"
+host_libs="intl opcodes bfd readline tcl tk itcl tix libgui zlib"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -796,8 +797,7 @@ libgcj="target-libffi \
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
 #
-target_libs="target-libiberty \
-		target-libgloss \
+target_libs=" target-libgloss \
 		target-newlib \
 		target-libstdc++-v3 \
 		target-libf2c \
@@ -982,6 +982,13 @@ no)
   # Make sure we get it printed in the list of not supported target libs.
   noconfigdirs="$noconfigdirs ${libgcj}"
   ;;
+esac
+
+case "${target}" in
+  *-*-openbsd.*)
+noconfigdirs="$noconfigdirs target-libiberty"
+    noconfigdirs="$noconfigdirs gdb"
+   ;;
 esac
 
 case "${target}" in
@@ -2401,6 +2408,9 @@ for item in ${target_configdirs} ; do
   olditem=${item}
 done
 serialization_dependencies=serdep.tmp
+# override on OpenBSD
+serialization_dependencies=/dev/null
+
 
 
 # Base args.  Strip norecursion, cache-file, srcdir, host, build,

@@ -1,3 +1,5 @@
+/*	$OpenBSD: mtab_bsd.c,v 1.3 1996/10/27 23:22:16 millert Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,15 +34,11 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mtab_bsd.c	8.1 (Berkeley) 6/6/93
- *	$Id: mtab_bsd.c,v 1.5 1994/06/13 20:49:10 mycroft Exp $
- *
  */
 
 #include "am.h"
 
 #ifdef READ_MTAB_BSD_STYLE
-
-#include <sys/mount.h>
 
 static struct mntent *mnt_dup(mp)
 struct statfs *mp;
@@ -54,7 +48,7 @@ struct statfs *mp;
 
 	new_mp->mnt_fsname = strdup(mp->f_mntfromname);
 	new_mp->mnt_dir = strdup(mp->f_mntonname);
-#ifndef __NetBSD__
+#if !defined(__NetBSD__) && !defined(__OpenBSD__)
 	switch (mp->f_type) {
 	case MOUNT_UFS:  ty = MTAB_TYPE_UFS; break;
 	case MOUNT_NFS:  ty = MTAB_TYPE_NFS; break;

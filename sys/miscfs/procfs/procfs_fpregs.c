@@ -1,3 +1,4 @@
+/*	$OpenBSD: procfs_fpregs.c,v 1.6 2003/06/02 23:28:11 millert Exp $	*/
 /*	$NetBSD: procfs_fpregs.c,v 1.4 1995/08/13 09:06:05 mycroft Exp $	*/
 
 /*
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,8 +48,8 @@
 
 int
 procfs_dofpregs(curp, p, pfs, uio)
-	struct proc *curp;
-	struct proc *p;
+	struct proc *curp;		/* tracer */
+	struct proc *p;			/* traced */
 	struct pfsnode *pfs;
 	struct uio *uio;
 {
@@ -62,8 +59,11 @@ procfs_dofpregs(curp, p, pfs, uio)
 	char *kv;
 	int kl;
 
+	if ((error = procfs_checkioperm(curp, p)) != 0)
+		return (error);
+
 	kl = sizeof(r);
-	kv = (char *) &r;
+	kv = (char *)&r;
 
 	kv += uio->uio_offset;
 	kl -= uio->uio_offset;
@@ -72,7 +72,7 @@ procfs_dofpregs(curp, p, pfs, uio)
 
 	PHOLD(p);
 
-	if (kl < 0)
+	if (uio->uio_offset > (off_t)sizeof(r))
 		error = EINVAL;
 	else
 		error = process_read_fpregs(p, &r);
@@ -95,8 +95,9 @@ procfs_dofpregs(curp, p, pfs, uio)
 }
 
 int
-procfs_validfpregs(p)
+procfs_validfpregs(p, mp)
 	struct proc *p;
+	struct mount *mp;
 {
 
 #if defined(PT_SETFPREGS) || defined(PT_GETFPREGS)

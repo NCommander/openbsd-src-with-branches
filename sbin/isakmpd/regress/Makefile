@@ -1,7 +1,8 @@
-#	$Id: Makefile,v 1.7 1998/08/11 20:32:01 provos Exp $
+#	$OpenBSD: Makefile,v 1.8 2001/07/01 19:25:11 niklas Exp $
+#	$EOM: Makefile,v 1.8 1999/07/17 20:44:13 niklas Exp $
 
 #
-# Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+# Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -11,11 +12,6 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by Ericsson Radio Systems.
-# 4. The name of the author may not be used to endorse or promote products
-#    derived from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 # IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -33,6 +29,6 @@
 # This code was written under funding by Ericsson Radio Systems.
 #
 
-SUBDIR=	asn b2n crypto dh ec2n exchange group hmac pkcs prf rsakeygen x509
+SUBDIR=	b2n crypto dh ec2n exchange group hmac prf rsakeygen util x509
 
 .include <bsd.subdir.mk>

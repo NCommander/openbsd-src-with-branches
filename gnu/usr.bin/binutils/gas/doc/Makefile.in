@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -127,48 +127,14 @@ MANCONF = -Dman
 
 TEXI2POD = perl $(top_srcdir)/../etc/texi2pod.pl
 
-POD2MAN = pod2man --center="GNU Development Tools" \
-	--release="binutils-$(VERSION)" --section=1
+POD2MAN = pod2man --center="GNU Development Tools" 	--release="binutils-$(VERSION)" --section=1
 
 
 man_MANS = as.1
 
 info_TEXINFOS = as.texinfo 
 
-CPU_DOCS = \
-	c-a29k.texi \
-	c-alpha.texi \
-	c-arc.texi \
-	c-arm.texi \
-	c-d10v.texi \
-	c-cris.texi \
-	c-h8300.texi \
-	c-h8500.texi \
-	c-hppa.texi \
-	c-i370.texi \
-	c-i386.texi \
-	c-i860.texi \
-	c-i960.texi \
-	c-ip2k.texi \
-	c-m32r.texi \
-	c-m68hc11.texi \
-	c-m68k.texi \
-	c-m88k.texi \
-	c-mips.texi \
-	c-mmix.texi \
-	c-msp430.texi \
-	c-ns32k.texi \
-	c-pdp11.texi \
-	c-pj.texi \
-	c-ppc.texi \
-	c-sh.texi \
-	c-sh64.texi \
-	c-sparc.texi \
-        c-tic54x.texi \
-	c-vax.texi \
-	c-v850.texi \
-	c-xtensa.texi \
-	c-z8k.texi
+CPU_DOCS =  	c-a29k.texi 	c-alpha.texi 	c-arc.texi 	c-arm.texi 	c-d10v.texi 	c-cris.texi 	c-h8300.texi 	c-h8500.texi 	c-hppa.texi 	c-i370.texi 	c-i386.texi 	c-i860.texi 	c-i960.texi 	c-ip2k.texi 	c-m32r.texi 	c-m68hc11.texi 	c-m68k.texi 	c-m88k.texi 	c-mips.texi 	c-mmix.texi 	c-msp430.texi 	c-ns32k.texi 	c-pdp11.texi 	c-pj.texi 	c-ppc.texi 	c-sh.texi 	c-sh64.texi 	c-sparc.texi         c-tic54x.texi 	c-vax.texi 	c-v850.texi 	c-xtensa.texi 	c-z8k.texi
 
 
 # This one isn't ready for prime time yet.  Not even a little bit.
@@ -195,7 +161,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -353,10 +319,10 @@ uninstall-man1:
 	done
 install-man: $(MANS)
 	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-man1
+#	$(MAKE) $(AM_MAKEFLAGS) install-man1
 uninstall-man:
 	@$(NORMAL_UNINSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) uninstall-man1
+#	$(MAKE) $(AM_MAKEFLAGS) uninstall-man1
 tags: TAGS
 TAGS:
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ttzapple.c,v 1.5 2003/04/05 01:39:50 pvalchev Exp $	*/
 /*	$NetBSD: ttzapple.c,v 1.3 1995/09/28 10:34:57 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)ttzapple.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: ttzapple.c,v 1.3 1995/09/28 10:34:57 tls Exp $";
+static char rcsid[] = "$OpenBSD: ttzapple.c,v 1.5 2003/04/05 01:39:50 pvalchev Exp $";
 #endif
 #endif /* not lint */
 
@@ -115,8 +112,8 @@ zz_putc(c)
 }
 
 zz_write(p, n)
-	register char *p;
-	register n;
+	char *p;
+	int n;
 {
 	if (tt.tt_nmodes != tt.tt_modes)
 		zz_setmodes(tt.tt_nmodes);
@@ -127,9 +124,9 @@ zz_write(p, n)
 }
 
 zz_move(row, col)
-	register row, col;
+	int row, col;
 {
-	register x;
+	int x;
 
 	if (tt.tt_row == row) {
 same_row:
@@ -333,7 +330,7 @@ zz_set_token(t, s, n)
 	if (zz_debug) {
 		char buf[100];
 		zz_setmodes(WWM_REV);
-		(void) sprintf(buf, "%02x=", t);
+		(void) snprintf(buf, sizeof(buf), "%02x=", t);
 		ttputs(buf);
 		tt.tt_col += 3;
 	}
@@ -353,7 +350,7 @@ zz_put_token(t, s, n)
 	if (zz_debug) {
 		char buf[100];
 		zz_setmodes(WWM_REV);
-		(void) sprintf(buf, "%02x>", t);
+		(void) snprintf(buf, sizeof(buf), "%02x>", t);
 		ttputs(buf);
 		tt.tt_col += 3;
 	}
@@ -363,13 +360,13 @@ zz_put_token(t, s, n)
 zz_rint(p, n)
 	char *p;
 {
-	register i;
-	register char *q;
+	int i;
+	char *q;
 
 	if (!zz_ecc)
 		return n;
 	for (i = n, q = p; --i >= 0;) {
-		register c = (unsigned char) *p++;
+		int c = (unsigned char) *p++;
 
 		if (zz_lastc == 0) {
 			switch (c) {
@@ -417,11 +414,11 @@ zz_rint(p, n)
 }
 
 zz_checksum(p, n)
-	register char *p;
-	register n;
+	char *p;
+	int n;
 {
 	while (--n >= 0) {
-		register c = *p++ & 0x7f;
+		int c = *p++ & 0x7f;
 		c ^= zz_sum;
 		zz_sum = c << 1 | c >> 11 & 1;
 	}

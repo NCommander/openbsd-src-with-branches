@@ -110,6 +110,9 @@ int BN_add_word(BIGNUM *a, BN_ULONG w)
 	BN_ULONG l;
 	int i;
 
+	if ((w & BN_MASK2) == 0)
+		return(1);
+
 	if (a->neg)
 		{
 		a->neg=0;
@@ -142,6 +145,9 @@ int BN_add_word(BIGNUM *a, BN_ULONG w)
 int BN_sub_word(BIGNUM *a, BN_ULONG w)
 	{
 	int i;
+
+	if ((w & BN_MASK2) == 0)
+		return(1);
 
 	if (BN_is_zero(a) || a->neg)
 		{

@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sock_1.c,v 1.4 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: socket1.c,v 1.1.1.1 2001/08/15 14:37:10 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -60,9 +60,8 @@ pthread_attr_t attr;
 
 static int counter = 0;
 
-void *
-sock_connect(arg)
-	void *arg;
+static void *
+sock_connect(void *arg)
 {
 	char buf[1024];
 	int fd;
@@ -102,9 +101,8 @@ sock_connect(arg)
 	return(NULL);
 }
 
-void *
-sock_write(arg)
-	void *arg;
+static void *
+sock_write(void *arg)
 {
 	int fd = *(int *)arg;
 
@@ -112,9 +110,8 @@ sock_write(arg)
 	return(NULL);
 }
 
-void *
-sock_accept(arg)
-	void *arg;
+static void *
+sock_accept(void *arg)
 {
 	pthread_t thread;
 	struct sockaddr a_sin;
@@ -173,7 +170,7 @@ sock_accept(arg)
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	pthread_t thread;
 

@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -59,7 +55,7 @@ static char sccsid[] = "@(#)support.c	8.1 (Berkeley) 6/4/93";
  * IEEE 754 recommended functions:
  * (a) copysign(x,y) 
  *              returns x with the sign of y. 
- * (b) scalb(x,N) 
+ * (b) scalbn(x,N) 
  *              returns  x * (2**N), for integer values N.
  * (c) logb(x) 
  *              returns the unbiased exponent of x, a signed integer in 
@@ -76,18 +72,18 @@ static char sccsid[] = "@(#)support.c	8.1 (Berkeley) 6/4/93";
 
 #include "mathimpl.h"
 
-#if defined(vax)||defined(tahoe)      /* VAX D format */
+#if defined(__vax__)||defined(tahoe)      /* VAX D format */
 #include <errno.h>
     static const unsigned short msign=0x7fff , mexp =0x7f80 ;
     static const short  prep1=57, gap=7, bias=129           ;   
     static const double novf=1.7E38, nunf=3.0E-39, zero=0.0 ;
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
     static const unsigned short msign=0x7fff, mexp =0x7ff0  ;
     static const short prep1=54, gap=4, bias=1023           ;
     static const double novf=1.7E308, nunf=3.0E-308,zero=0.0;
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 
-double scalb(x,N)
+double scalbn(x,N)
 double x; int N;
 {
         int k;
@@ -100,19 +96,19 @@ double x; int N;
 
         if( x == zero )  return(x); 
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
         if( (k= *px & mexp ) != ~msign ) {
             if (N < -260)
 		return(nunf*nunf);
 	    else if (N > 260) {
 		return(copysign(infnan(ERANGE),x));
 	    }
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
         if( (k= *px & mexp ) != mexp ) {
             if( N<-2100) return(nunf*nunf); else if(N>2100) return(novf+novf);
             if( k == 0 ) {
-                 x *= scalb(1.0,(int)prep1);  N -= prep1; return(scalb(x,N));}
-#endif	/* defined(vax)||defined(tahoe) */
+                 x *= scalbn(1.0,(int)prep1);  N -= prep1; return(scalbn(x,N));}
+#endif	/* defined(__vax__)||defined(tahoe) */
 
             if((k = (k>>gap)+ N) > 0 )
                 if( k < (mexp>>gap) ) *px = (*px&~mexp) | (k<<gap);
@@ -120,7 +116,7 @@ double x; int N;
             else
                 if( k > -prep1 ) 
                                         /* gradual underflow */
-                    {*px=(*px&~mexp)|(short)(1<<gap); x *= scalb(1.0,k-1);}
+                    {*px=(*px&~mexp)|(short)(1<<gap); x *= scalbn(1.0,k-1);}
                 else
                 return(nunf*nunf);
             }
@@ -139,9 +135,9 @@ double x,y;
                         *py=(unsigned short *) &y;
 #endif	/* national */
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
         if ( (*px & mexp) == 0 ) return(x);
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 
         *px = ( *px & msign ) | ( *py & ~msign );
         return(x);
@@ -157,9 +153,9 @@ double x;
         short *px=(short *) &x, k;
 #endif	/* national */
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
         return (int)(((*px&mexp)>>gap)-bias);
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
         if( (k= *px & mexp ) != mexp )
             if ( k != 0 )
                 return ( (k>>gap) - bias );
@@ -171,21 +167,21 @@ double x;
             return(x);
         else
             {*px &= msign; return(x);}
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 }
 
 finite(x)
 double x;    
 {
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
         return(1);
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
 #ifdef national
         return( (*((short *) &x+3 ) & mexp ) != mexp );
 #else	/* national */
         return( (*((short *) &x ) & mexp ) != mexp );
 #endif	/* national */
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 }
 
 double drem(x,p)
@@ -210,30 +206,30 @@ double x,p;
 
         *pp &= msign ;
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
         if( ( *px & mexp ) == ~msign )	/* is x a reserved operand? */
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
         if( ( *px & mexp ) == mexp )
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 		return  (x-p)-(x-p);	/* create nan if x is inf */
 	if (p == zero) {
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
 		return(infnan(EDOM));
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
 		return zero/zero;
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 	}
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
         if( ( *pp & mexp ) == ~msign )	/* is p a reserved operand? */
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
         if( ( *pp & mexp ) == mexp )
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 		{ if (p != p) return p; else return x;}
 
         else  if ( ((*pp & mexp)>>gap) <= 1 ) 
                 /* subnormal p, or almost subnormal p */
-            { double b; b=scalb(1.0,(int)prep1);
+            { double b; b=scalbn(1.0,(int)prep1);
               p *= b; x = drem(x,p); x *= b; return(drem(x,p)/b);}
         else  if ( p >= novf/2)
             { p /= 2 ; x /= 2; return(drem(x,p)*2);}
@@ -248,20 +244,20 @@ double x,p;
                         tmp = dp ;
                         *pt += k ;
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
                         if( x < tmp ) *pt -= 128 ;
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
                         if( x < tmp ) *pt -= 16 ;
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 
                         x -= tmp ;
                     }
                 if ( x > hp )
                     { x -= p ;  if ( x >= hp ) x -= p ; }
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
 		if (x)
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 			*px ^= sign;
                 return( x);
 
@@ -276,22 +272,22 @@ double x;
         double t;
 	double const zero=0.0;
         int m,n,i;
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
         int k=54;
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
         int k=51;
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 
     /* sqrt(NaN) is NaN, sqrt(+-0) = +-0 */
         if(x!=x||x==zero) return(x);
 
     /* sqrt(negative) is invalid */
         if(x<zero) {
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
 		return (infnan(EDOM));	/* NaN */
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
 		return(zero/zero);
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 	}
 
     /* sqrt(INF) is INF */
@@ -299,8 +295,8 @@ double x;
 
     /* scale x to [1,4) */
         n=logb(x);
-        x=scalb(x,-n);
-        if((m=logb(x))!=0) x=scalb(x,-m);       /* subnormal number */
+        x=scalbn(x,-n);
+        if((m=logb(x))!=0) x=scalbn(x,-m);       /* subnormal number */
         m += n; 
         n = m/2;
         if((n+n)!=m) {x *= 2; m -=1; n=m/2;}
@@ -331,7 +327,7 @@ double x;
                 b=1.0+r/4;   if(b>1.0) t=1;
                 if(t>=0) q+=r; }
             
-end:        return(scalb(q,n));
+end:        return(scalbn(q,n));
 }
 
 #if 0

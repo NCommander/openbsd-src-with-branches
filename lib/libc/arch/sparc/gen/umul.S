@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +29,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * from: Header: umul.s,v 1.4 92/06/25 13:24:05 torek Exp
- * $Id: umul.S,v 1.1 1993/10/07 00:21:41 cgd Exp $
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)umul.s	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD: umul.S,v 1.4 2003/04/22 19:57:57 jason Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * Unsigned multiply.  Returns %o0 * %o1 in %o1%o0 (i.e., %o1 holds the
@@ -59,6 +53,11 @@
  */
 
 #include "DEFS.h"
+#ifndef STRONG_SPARC
+.weak .umul
+#else
+FUNC(__umul)
+#endif
 FUNC(.umul)
 	or	%o0, %o1, %o4
 	mov	%o0, %y		! multiplier -> Y
@@ -143,7 +142,7 @@ FUNC(.umul)
 	add	%o4, %o0, %o4	! %o4 += %o0 (add y to upper half)
 1:	rd	%y, %o0		! get lower half of product
 	retl
-	addcc	%o4, %g0, %o1	! put upper half in place and set Z for %o1==0
+	 addcc	%o4, %g0, %o1	! put upper half in place and set Z for %o1==0
 
 Lmul_shortway:
 	/*
@@ -185,4 +184,4 @@ Lmul_shortway:
 	srl	%o5, 20, %o5	! shift low bits right 20
 	or	%o5, %o0, %o0
 	retl
-	addcc	%g0, %g0, %o1	! %o1 = zero, and set Z
+	 addcc	%g0, %g0, %o1	! %o1 = zero, and set Z

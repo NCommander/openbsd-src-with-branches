@@ -1,3 +1,4 @@
+/*	$OpenBSD: banner.c,v 1.11 2003/10/01 05:59:37 cloder Exp $	*/
 /*	$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)banner.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $";
+static char rcsid[] = "$OpenBSD: banner.c,v 1.11 2003/10/01 05:59:37 cloder Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,7 +61,7 @@ static char rcsid[] = "$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $";
 #define NBYTES 9271
 
 /* Pointers into data_table for each ASCII char */
-int asc_ptr[NCHARS] = {
+const int asc_ptr[NCHARS] = {
 /* ^@ */   0,      0,      0,      0,      0,      0,      0,      0,
 /* ^H */   0,      0,      0,      0,      0,      0,      0,      0,
 /* ^P */   0,      0,      0,      0,      0,      0,      0,      0,
@@ -91,7 +88,7 @@ int asc_ptr[NCHARS] = {
  * is the next elt in array) and goto second
  * next element in array.
  */
-char data_table[NBYTES] = {
+const char data_table[NBYTES] = {
 /*             0     1     2     3     4     5     6     7     8     9 */
 /*    0 */   129,  227,  130,   34,    6,   90,   19,  129,   32,   10, 
 /*   10 */    74,   40,  129,   31,   12,   64,   53,  129,   30,   14, 
@@ -1030,28 +1027,26 @@ int	debug, i, j, linen, max, nchars, pc, term, trace, x, y;
 int	width = DWIDTH;	/* -w option: scrunch letters to 80 columns */
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 { 
 	int ch;
 
-	while ((ch = getopt(argc, argv, "w:td")) != EOF)
-		switch(ch) {
-		case 'w':
-			width = atoi(optarg);
-			if (width <= 0)
-				width = 80;
-			break;
+	while ((ch = getopt(argc, argv, "w:tdh")) != -1)
+		switch (ch) {
 		case 'd':
 			debug = 1;
 			break;
 		case 't':
 			trace = 1;
 			break;
-		case '?':
+		case 'w':
+			width = atoi(optarg);
+			if (width <= 0)
+				errx(1, "illegal argument for -w option");
+			break;
+		case '?': case 'h':
 		default:
-			fprintf(stderr, "usage: banner [-w width]\n");
+			(void)fprintf(stderr, "usage: banner [-w width]\n");
 			exit(1);
 		}
 	argc -= optind;
@@ -1064,10 +1059,10 @@ main(argc, argv)
 
 	/* Have now read in the data. Next get the message to be printed. */
 	if (*argv) {
-		strcpy(message, *argv);
+		strlcpy(message, *argv, sizeof message);
 		while (*++argv) {
-			strcat(message, " ");
-			strcat(message, *argv);
+			strlcat(message, " ", sizeof message);
+			strlcat(message, *argv, sizeof message);
 		}
 		nchars = strlen(message);
 	} else {
@@ -1126,7 +1121,7 @@ main(argc, argv)
 		max = 0;
 		linen = 0;
 		while (!term) {
-			if (pc < 0 || pc > NBYTES) {
+			if (pc < 0 || pc >= NBYTES) {
 				printf("bad pc: %d\n",pc);
 				exit(1);
 			}

@@ -1,4 +1,4 @@
-/*	$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp $	*/
+/*	$OpenBSD: bt_overflow.c,v 1.6 2003/05/01 20:23:40 avsm Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,9 +34,9 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)bt_overflow.c	8.4 (Berkeley) 6/20/94";
+static char sccsid[] = "@(#)bt_overflow.c	8.5 (Berkeley) 7/16/94";
 #else
-static char rcsid[] = "$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: bt_overflow.c,v 1.6 2003/05/01 20:23:40 avsm Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -87,13 +83,14 @@ __ovfl_get(t, p, ssz, buf, bufsz)
 	BTREE *t;
 	void *p;
 	size_t *ssz;
-	char **buf;
+	void **buf;
 	size_t *bufsz;
 {
 	PAGE *h;
 	pgno_t pg;
 	size_t nb, plen;
 	u_int32_t sz;
+	void *tp;
 
 	memmove(&pg, p, sizeof(pgno_t));
 	memmove(&sz, (char *)p + sizeof(pgno_t), sizeof(u_int32_t));
@@ -105,9 +102,10 @@ __ovfl_get(t, p, ssz, buf, bufsz)
 #endif
 	/* Make the buffer bigger as necessary. */
 	if (*bufsz < sz) {
-		*buf = (char *)(*buf == NULL ? malloc(sz) : realloc(*buf, sz));
-		if (*buf == NULL)
+		tp = (char *)(*buf == NULL ? malloc(sz) : realloc(*buf, sz));
+		if (tp == NULL)
 			return (RET_ERROR);
+		*buf = tp;
 		*bufsz = sz;
 	}
 

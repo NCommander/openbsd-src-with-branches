@@ -1,4 +1,5 @@
-.\" $NetBSD: audioctl.1,v 1.5 1997/10/18 12:05:22 lukem Exp $
+.\" $OpenBSD: audioctl.1,v 1.18 2004/07/06 02:46:06 vincent Exp $
+.\" $NetBSD: audioctl.1,v 1.7 1998/04/27 16:55:23 augustss Exp $
 .\" Copyright (c) 1997 The NetBSD Foundation, Inc.
 .\" All rights reserved.
 .\"
@@ -23,7 +24,7 @@
 .\" THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
 .\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 .\" TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS 
+.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
 .\" BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 .\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 .\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -39,60 +40,77 @@
 .Nm audioctl
 .Nd control audio device
 .Sh SYNOPSIS
-.Nm
+.Nm audioctl
 .Op Fl f Ar file
 .Op Fl n
 .Fl a
-.Nm ""
+.Nm audioctl
 .Op Fl f Ar file
 .Op Fl n
-.Ar name ...
-.Nm ""
+.Ar name
+.Op Ar ...
+.Nm audioctl
 .Op Fl f Ar file
 .Op Fl n
-.Fl w
-.Ar name=value ...
+.Ar name Ns = Ns Ar value
+.Op Ar ...
 .Sh DESCRIPTION
-The 
+The
 .Nm
 command displays or sets various audio system driver variables.
-If a list of variables is present on the command line, then
+If a list of variables is present on the command line,
 .Nm
 prints the current value of those variables for the specified device.
-If the 
-.Fl a
-flag is specified, all variables for the device are printed.
-If the
-.Fl w
-flag is specified
+By default,
 .Nm
-attempts to set the specified variables to the given values.
+operates on the
+.Pa /dev/audioctl
+device.
 .Pp
-The
-.Fl f
-flag can be used to give an alternative audio control device, the default is
-.Pa /dev/audioctl .
-.Pp
-The
-.Fl n
-flag suppresses printing of the variable name.
-.Sh EXAMPLES
-To set the playing sampling rate to 11025 you can enter
-.Dl audioctl -w play.sample_rate=11025
-Note that many of the variables that can be inspected and changed
-with
-.Nm
-are reset when the device is opened.  This can be circumvented
-like this
-.Dl (cat file.au; audioctl -f /dev/stdout -a) > /dev/audio
-or
-.Dl (audioctl -f /dev/stdout -w blocksize=1024; cat file.au) > /dev/audio
+The options are as follows:
+.Bl -tag -width "name=valueXX"
+.It Fl a
+Print all device variables and their current values.
+.It Fl f Ar file
+Specify an alternative audio control device.
+.It Fl n
+Suppress printing of the variable name.
+.It Ar name Ns = Ns Ar value
+Attempt to set the specified variable
+.Ar name
+to
+.Ar value .
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width AUDIOCTLDEVICE
+.It Ev AUDIOCTLDEVICE
+Audio control device to use.
+.El
 .Sh FILES
 .Bl -tag -width /dev/audioctl
 .It Pa /dev/audioctl
-audio device
+default audio control device
 .El
+.Sh EXAMPLES
+To set the playing sampling rate to 11025 you can enter:
+.Pp
+.Dl $ audioctl play.sample_rate=11025
+.Pp
+Note that many of the variables that can be inspected and changed
+are reset when the
+.Pa /dev/audio
+device is opened.
+This can be circumvented like so:
+.Pp
+.Dl $ (cat file.au; audioctl -f /dev/audioctl -a) \*(Gt /dev/audio
+or
+.Bd -literal -offset indent -compact
+$ (audioctl -f /dev/audioctl blocksize=1024; cat file.au) \e
+	\*(Gt /dev/audio
+.Ed
 .Sh SEE ALSO
+.Xr aucat 1 ,
+.Xr cdio 1 ,
 .Xr mixerctl 1 ,
 .Xr audio 4 ,
 .Xr sysctl 8

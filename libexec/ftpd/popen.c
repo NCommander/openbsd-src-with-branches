@@ -1,3 +1,4 @@
+/*	$OpenBSD: popen.c,v 1.19 2003/06/11 14:24:46 deraadt Exp $	*/
 /*	$NetBSD: popen.c,v 1.5 1995/04/11 02:45:00 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,9 +36,10 @@
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)popen.c	8.3 (Berkeley) 4/6/94";
+static const char sccsid[] = "@(#)popen.c	8.3 (Berkeley) 4/6/94";
 #else
-static char rcsid[] = "$NetBSD: popen.c,v 1.5 1995/04/11 02:45:00 cgd Exp $";
+static const char rcsid[] =
+    "$OpenBSD: popen.c,v 1.19 2003/06/11 14:24:46 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,8 +52,10 @@ static char rcsid[] = "$NetBSD: popen.c,v 1.5 1995/04/11 02:45:00 cgd Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <unistd.h>
 
+#include <netinet/in.h>
 #include "extern.h"
 
 /*
@@ -63,54 +63,68 @@ static char rcsid[] = "$NetBSD: popen.c,v 1.5 1995/04/11 02:45:00 cgd Exp $";
  * may create a pipe to a hidden program as a side effect of a list or dir
  * command.
  */
-static int *pids;
+static pid_t *pids;
 static int fds;
 
+#define MAX_ARGV	100
+#define MAX_GARGV	1000
+
 FILE *
-ftpd_popen(program, type)
-	char *program, *type;
+ftpd_popen(char *program, char *type)
 {
 	char *cp;
 	FILE *iop;
-	int argc, gargc, pdes[2], pid;
-	char **pop, *argv[100], *gargv[1000];
+	int argc, gargc, pdes[2];
+	pid_t pid;
+	char **pop, *argv[MAX_ARGV], *gargv[MAX_GARGV];
 
-	if (*type != 'r' && *type != 'w' || type[1])
+	if ((*type != 'r' && *type != 'w') || type[1])
 		return (NULL);
 
 	if (!pids) {
 		if ((fds = getdtablesize()) <= 0)
 			return (NULL);
-		if ((pids = (int *)malloc((u_int)(fds * sizeof(int)))) == NULL)
+		if ((pids = (pid_t *)malloc((u_int)(fds * sizeof(pid_t)))) == NULL)
 			return (NULL);
-		memset(pids, 0, fds * sizeof(int));
+		memset(pids, 0, fds * sizeof(pid_t));
 	}
 	if (pipe(pdes) < 0)
 		return (NULL);
 
 	/* break up string into pieces */
-	for (argc = 0, cp = program;; cp = NULL)
+	for (argc = 0, cp = program;argc < MAX_ARGV-1; cp = NULL)
 		if (!(argv[argc++] = strtok(cp, " \t\n")))
 			break;
+	argv[MAX_ARGV-1] = NULL;
 
 	/* glob each piece */
 	gargv[0] = argv[0];
 	for (gargc = argc = 1; argv[argc]; argc++) {
 		glob_t gl;
-		int flags = GLOB_BRACE|GLOB_NOCHECK|GLOB_QUOTE|GLOB_TILDE;
 
 		memset(&gl, 0, sizeof(gl));
-		if (glob(argv[argc], flags, NULL, &gl))
-			gargv[gargc++] = strdup(argv[argc]);
-		else
-			for (pop = gl.gl_pathv; *pop; pop++)
+		if (glob(argv[argc],
+		    GLOB_BRACE|GLOB_NOCHECK|GLOB_QUOTE|GLOB_TILDE|GLOB_LIMIT,
+		    NULL, &gl)) {
+			if (gargc < MAX_GARGV-1) {
+				gargv[gargc++] = strdup(argv[argc]);
+				if (gargv[gargc -1] == NULL)
+					fatal ("Out of memory.");
+			}
+
+		} else
+			for (pop = gl.gl_pathv; *pop && gargc < MAX_GARGV-1; pop++) {
 				gargv[gargc++] = strdup(*pop);
+				if (gargv[gargc - 1] == NULL)
+					fatal ("Out of memory.");
+			}
 		globfree(&gl);
 	}
 	gargv[gargc] = NULL;
 
 	iop = NULL;
-	switch(pid = vfork()) {
+
+	switch (pid = fork()) {
 	case -1:			/* error */
 		(void)close(pdes[0]);
 		(void)close(pdes[1]);
@@ -131,6 +145,17 @@ ftpd_popen(program, type)
 			}
 			(void)close(pdes[1]);
 		}
+		closelog();
+
+		if (strcmp(gargv[0], "/bin/ls") == 0) {
+			extern int optreset;
+			extern int ls_main(int, char **);
+
+			/* reset getopt for ls_main */
+			optreset = optind = 1;
+			exit(ls_main(gargc, gargv));
+		}
+
 		execv(gargv[0], gargv);
 		_exit(1);
 	}
@@ -151,10 +176,9 @@ pfree:	for (argc = 1; gargv[argc] != NULL; argc++)
 }
 
 int
-ftpd_pclose(iop)
-	FILE *iop;
+ftpd_pclose(FILE *iop)
 {
-	int fdes, omask, status;
+	int fdes, status;
 	pid_t pid;
 	sigset_t sigset, osigset;
 
@@ -175,7 +199,7 @@ ftpd_pclose(iop)
 	sigprocmask(SIG_SETMASK, &osigset, NULL);
 	pids[fdes] = 0;
 	if (pid < 0)
-		return (pid);
+		return (-1);
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
 	return (1);

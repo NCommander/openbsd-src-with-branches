@@ -1,4 +1,5 @@
-/*	$NetBSD: dcmreg.h,v 1.4 1994/10/26 07:23:37 cgd Exp $	*/
+/*	$OpenBSD: dcmreg.h,v 1.3 1997/01/12 15:12:23 downsj Exp $	*/
+/*	$NetBSD: dcmreg.h,v 1.5 1996/02/24 00:55:05 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -250,8 +247,7 @@ struct	dcmpreg {
 #define RX_MASK		0xff
 
 /*
- * WARNING: Serial console is assumed to be the lowest select-code card
- * and that card must be logical unit 0 in the kernel.  Also, CONUNIT must
- * be 1, the port affected by the REMOTE/LOCAL switch.
+ * DCM console caveat: only port 1 is affected by the remote switch, and
+ * thus the only supported console port on a given DCM card.
  */
-#define CONUNIT	(1)
+#define DCMCONSPORT	1

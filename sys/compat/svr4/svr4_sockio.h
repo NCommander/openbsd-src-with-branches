@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_sockio.h,v 1.2 1995/07/04 23:00:13 christos Exp $	 */
 /*	$NetBSD: svr4_sockio.h,v 1.2 1995/07/04 23:00:13 christos Exp $	 */
 
 /*

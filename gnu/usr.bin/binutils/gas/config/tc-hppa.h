@@ -68,7 +68,7 @@
 #define TARGET_FORMAT "som"
 #endif
 
-#if defined(TE_LINUX) || defined(TE_NetBSD)
+#if defined(TE_LINUX) || defined(TE_NetBSD) || defined(TE_OpenBSD)
 /* Define to compile in an extra assembler option, -c, which enables a
    warning (once per file) when a comment is encountered.
    The hppa comment char is a `;' which tends to occur in random C asm
@@ -77,7 +77,7 @@
 #define WARN_COMMENTS 1
 #endif
 
-#ifdef TE_NetBSD
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
 /* XXX the original OpenBSD code has labels without colons,
    so this is required, for now -- fredette@netbsd.org */
 /* Labels are not required to have a colon for a suffix.  */

@@ -182,7 +182,7 @@ void print_arelt_descr
   PARAMS ((FILE *, bfd *, bfd_boolean));
 
 char *make_tempname
-  PARAMS ((char *));
+  PARAMS ((char *, int));
 
 bfd_vma parse_vma
   PARAMS ((const char *, const char *));

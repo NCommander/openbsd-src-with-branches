@@ -1,4 +1,4 @@
-# Copyright (C) 1998-2002  Internet Software Consortium.
+# Copyright (C) 1998-2003  Internet Software Consortium.
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +13,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-AC_REVISION($Revision: 1.294.2.16 $)
+AC_REVISION($Revision: 1.7 $)
 
 AC_INIT(lib/dns/name.c)
 AC_PREREQ(2.13)
@@ -81,7 +81,7 @@ AC_SUBST(PERL)
 #
 # Special processing of paths depending on whether --prefix,
 # --sysconfdir or --localstatedir arguments were given.  What's
-# desired is some compatability with the way previous versions
+# desired is some compatibility with the way previous versions
 # of BIND built; they defaulted to /usr/local for most parts of
 # the installation, but named.boot/named.conf was in /etc
 # and named.pid was in /var/run.
@@ -455,7 +455,7 @@ case "$use_randomdev" in
 	unspec)
 		case "$host" in
 			*-openbsd*)
-				devrandom=/dev/srandom
+				devrandom=/dev/arandom
 				;;
 			*)
 				devrandom=/dev/random
@@ -477,6 +477,11 @@ case "$use_randomdev" in
 		AC_MSG_RESULT(using "$use_randomdev")
 		;;
 esac
+
+#
+# Do we have arc4random() ?
+#
+AC_CHECK_FUNC(arc4random, AC_DEFINE(HAVE_ARC4RANDOM))
 
 #
 # Begin pthreads checking.
@@ -520,9 +525,11 @@ case $host in
 	use_threads=false ;;
 *-freebsd*)
 	use_threads=false ;;
-*-bsdi*)
-	# Thread signals do not appear to work reliably on BSDI.
+*-bsdi[234]*)
+	# Thread signals do not work reliably on some versions of BSD/OS.
 	use_threads=false ;;
+*-bsdi5*)
+	use_threads=true ;;
 *-linux*)
    	# Threads are disabled on Linux by default because most
 	# Linux kernels produce unusable core dumps from multithreaded
@@ -630,6 +637,9 @@ then
 
 	AC_CHECK_FUNC(pthread_attr_getstacksize,
 		      AC_DEFINE(HAVE_PTHREAD_ATTR_GETSTACKSIZE),)
+
+	AC_CHECK_FUNC(pthread_attr_setstacksize,
+		      AC_DEFINE(HAVE_PTHREAD_ATTR_SETSTACKSIZE),)
 
 	#
 	# Additional OS-specific issues related to pthreads and sigwait.
@@ -1399,6 +1409,8 @@ AC_SUBST(ISC_LWRES_GETNAMEINFOPROTO)
 #
 # Look for a sysctl call to get the list of network interfaces.
 #
+case $ac_cv_header_sys_sysctl_h in
+yes)
 AC_MSG_CHECKING(for interface list sysctl)
 AC_EGREP_CPP(found_rt_iflist, [
 #include <sys/param.h>
@@ -1411,6 +1423,8 @@ found_rt_iflist
 	[AC_MSG_RESULT(yes)
 	 AC_DEFINE(HAVE_IFLIST_SYSCTL)],
 	[AC_MSG_RESULT(no)])
+;;
+esac
 
 #
 # Check for some other useful functions that are not ever-present.
@@ -1426,34 +1440,33 @@ AC_MSG_CHECKING(for correctly declared strsep())
 AC_TRY_LINK([#include <string.h>], [char *sp; char *foo = strsep(&sp, ".");],
 	[AC_MSG_RESULT(yes); ISC_PLATFORM_NEEDSTRSEP="#undef ISC_PLATFORM_NEEDSTRSEP"],
 	[AC_MSG_RESULT(no); ISC_PLATFORM_NEEDSTRSEP="#define ISC_PLATFORM_NEEDSTRSEP 1"])
+AC_SUBST(ISC_PLATFORM_NEEDSTRSEP)
+
+AC_CHECK_FUNC(strlcpy,
+	[ISC_PLATFORM_NEEDSTRLCPY="#undef ISC_PLATFORM_NEEDSTRLCPY"],
+	[ISC_PLATFORM_NEEDSTRLCPY="#define ISC_PLATFORM_NEEDSTRLCPY 1"])
+AC_SUBST(ISC_PLATFORM_NEEDSTRLCPY)
+
+AC_CHECK_FUNC(strlcat,
+	[ISC_PLATFORM_NEEDSTRLCAT="#undef ISC_PLATFORM_NEEDSTRLCAT"],
+	[ISC_PLATFORM_NEEDSTRLCAT="#define ISC_PLATFORM_NEEDSTRLCAT 1"])
+AC_SUBST(ISC_PLATFORM_NEEDSTRLCAT)
 
 AC_CHECK_FUNC(vsnprintf,
 	[ISC_PLATFORM_NEEDVSNPRINTF="#undef ISC_PLATFORM_NEEDVSNPRINTF"],
 	[ISC_EXTRA_OBJS="$ISC_EXTRA_OBJS print.$O"
 	 ISC_EXTRA_SRCS="$ISC_EXTRA_SRCS print.c"
 	 ISC_PLATFORM_NEEDVSNPRINTF="#define ISC_PLATFORM_NEEDVSNPRINTF 1"])
-AC_SUBST(ISC_PLATFORM_NEEDSTRSEP)
 AC_SUBST(ISC_PLATFORM_NEEDVSNPRINTF)
+
 AC_CHECK_FUNC(strerror, AC_DEFINE(HAVE_STRERROR))
 
 AC_SUBST(ISC_EXTRA_OBJS)
 AC_SUBST(ISC_EXTRA_SRCS)
 
 #
-# Determine the printf format characters to use when printing
-# values of type isc_int64_t.  We make the assumption that platforms
-# where a "long long" is the same size as a "long" (e.g., Alpha/OSF1)
-# want "%ld" and everyone else can use "%lld".  Win32 uses "%I64d",
-# but that's defined elsewhere since we don't use configure on Win32.
-#
-AC_MSG_CHECKING(printf format modifier for 64-bit integers)
-AC_TRY_RUN([main() { exit(!(sizeof(long long int) == sizeof(long int))); }],
-	[AC_MSG_RESULT(l)
-	ISC_PLATFORM_QUADFORMAT='#define ISC_PLATFORM_QUADFORMAT "l"'],
-	[AC_MSG_RESULT(ll)
-	ISC_PLATFORM_QUADFORMAT='#define ISC_PLATFORM_QUADFORMAT "ll"'],
-	[AC_MSG_RESULT(assuming target platform uses ll)
-	ISC_PLATFORM_QUADFORMAT='#define ISC_PLATFORM_QUADFORMAT "ll"'])
+# All platforms use %lld for "long long", regardless of its size.
+ISC_PLATFORM_QUADFORMAT='#define ISC_PLATFORM_QUADFORMAT "ll"'
 AC_SUBST(ISC_PLATFORM_QUADFORMAT)
 
 #
@@ -1470,6 +1483,11 @@ case "$enable_linux_caps" in
 		;;
 esac
 AC_CHECK_HEADERS(sys/prctl.h)
+
+#
+# Time Zone Stuff
+#
+AC_CHECK_FUNC(tzset, AC_DEFINE(HAVE_TZSET))
 
 #
 # BSD/OS, and perhaps some others, don't define rlim_t.
@@ -1770,9 +1788,6 @@ AC_OUTPUT(
 	lib/lwres/unix/Makefile
 	lib/lwres/unix/include/Makefile
 	lib/lwres/unix/include/lwres/Makefile
-	lib/lwres/win32/Makefile
-	lib/lwres/win32/include/Makefile
-	lib/lwres/win32/include/lwres/Makefile
 	lib/tests/Makefile
 	lib/tests/include/Makefile
 	lib/tests/include/tests/Makefile

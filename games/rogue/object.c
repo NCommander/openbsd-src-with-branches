@@ -1,3 +1,4 @@
+/*	$OpenBSD: object.c,v 1.8 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: object.c,v 1.3 1995/04/22 10:27:50 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)object.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: object.c,v 1.3 1995/04/22 10:27:50 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: object.c,v 1.8 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -65,49 +62,54 @@ object *free_list = (object *) 0;
 char *fruit = (char *) 0;
 
 fighter rogue = {
-	INIT_AW,	/* armor, weapon */
-	INIT_RINGS,	/* rings */
-	INIT_HP,	/* Hp current,max */
-	INIT_STR,	/* Str current,max */
+	INIT_AW,	/* armor */
+	INIT_AW,	/* weapon */
+	INIT_RINGS,	/* left ring */
+	INIT_RINGS,	/* right ring */
+	INIT_HP,	/* Hp current */
+	INIT_HP,	/* Hp max */
+	INIT_STR,	/* Str current */
+	INIT_STR,	/* Str max */
 	INIT_PACK,	/* pack */
 	INIT_GOLD,	/* gold */
-	INIT_EXP,	/* exp level,points */
+	INIT_EXPLEVEL,	/* exp level */
+	INIT_EXP,	/* exp points */
 	0, 0,		/* row, col */
 	INIT_CHAR,	/* char */
 	INIT_MOVES	/* moves */
 };
 
 struct id id_potions[POTIONS] = {
-{100, "blue \0                           ", "of increase strength ", 0},
-{250, "red \0                            ", "of restore strength ", 0},
-{100, "green \0                          ", "of healing ", 0},
-{200, "grey \0                           ", "of extra healing ", 0},
- {10, "brown \0                          ", "of poison ", 0},
-{300, "clear \0                          ", "of raise level ", 0},
- {10, "pink \0                           ", "of blindness ", 0},
- {25, "white \0                          ", "of hallucination ", 0},
-{100, "purple \0                         ", "of detect monster ", 0},
-{100, "black \0                          ", "of detect things ", 0},
- {10, "yellow \0                         ", "of confusion ", 0},
- {80, "plaid \0                          ", "of levitation ", 0},
-{150, "burgundy \0                       ", "of haste self ", 0},
-{145, "beige \0                          ", "of see invisible ", 0}
+{100, "blue ",     "of increase strength ", 0},
+{250, "red ",      "of restore strength ", 0},
+{100, "green ",    "of healing ", 0},
+{200, "grey ",     "of extra healing ", 0},
+ {10, "brown ",    "of poison ", 0},
+{300, "clear ",    "of raise level ", 0},
+ {10, "pink ",     "of blindness ", 0},
+ {25, "white ",    "of hallucination ", 0},
+{100, "purple ",   "of detect monster ", 0},
+{100, "black ",    "of detect things ", 0},
+ {10, "yellow ",   "of confusion ", 0},
+ {80, "plaid ",    "of levitation ", 0},
+{150, "burgundy ", "of haste self ", 0},
+{145, "beige ",    "of see invisible ", 0}
 };
 
 struct id id_scrolls[SCROLS] = {
-{505, "                                   ", "of protect armor ", 0},
-{200, "                                   ", "of hold monster ", 0},
-{235, "                                   ", "of enchant weapon ", 0},
-{235, "                                   ", "of enchant armor ", 0},
-{175, "                                   ", "of identify ", 0},
-{190, "                                   ", "of teleportation ", 0},
- {25, "                                   ", "of sleep ", 0},
-{610, "                                   ", "of scare monster ", 0},
-{210, "                                   ", "of remove curse ", 0},
- {80, "                                   ", "of create monster ",0},
- {25, "                                   ", "of aggravate monster ",0},
-{180, "                                   ", "of magic mapping ", 0},
- {90, "                                   ", "of confuse monster ", 0}
+{505, "", "of protect armor ", 0},
+{200, "", "of hold monster ", 0},
+{235, "", "of enchant weapon ", 0},
+{235, "", "of enchant armor ", 0},
+{175, "", "of identify ", 0},
+{190, "", "of teleportation ", 0},
+ {25, "", "of sleep ", 0},
+{610, "", "of scare monster ", 0},
+{210, "", "of remove curse ", 0},
+ {80, "", "of create monster ",0},
+ {25, "", "of aggravate monster ",0},
+{180, "", "of magic mapping ", 0},
+ {90, "", "of confuse monster ", 0}
 };
 
 struct id id_weapons[WEAPONS] = {
@@ -132,38 +134,34 @@ struct id id_armors[ARMORS] = {
 };
 
 struct id id_wands[WANDS] = {
-	 {25, "                                 ", "of teleport away ",0},
-	 {50, "                                 ", "of slow monster ", 0},
-	  {8, "                                 ", "of invisibility ",0},
-	 {55, "                                 ", "of polymorph ",0},
-	  {2, "                                 ", "of haste monster ",0},
-	 {20, "                                 ", "of magic missile ",0},
-	 {20, "                                 ", "of cancellation ",0},
-	  {0, "                                 ", "of do nothing ",0},
-	 {35, "                                 ", "of drain life ",0},
-	 {20, "                                 ", "of cold ",0},
-	 {20, "                                 ", "of fire ",0}
+	 {25, "", "of teleport away ",0},
+	 {50, "", "of slow monster ", 0},
+	  {8, "", "of invisibility ",0},
+	 {55, "", "of polymorph ",0},
+	  {2, "", "of haste monster ",0},
+	 {20, "", "of magic missile ",0},
+	 {20, "", "of cancellation ",0},
+	  {0, "", "of do nothing ",0},
+	 {35, "", "of drain life ",0},
+	 {20, "", "of cold ",0},
+	 {20, "", "of fire ",0}
 };
 
 struct id id_rings[RINGS] = {
-	 {250, "                                 ", "of stealth ",0},
-	 {100, "                                 ", "of teleportation ", 0},
-	 {255, "                                 ", "of regeneration ",0},
-	 {295, "                                 ", "of slow digestion ",0},
-	 {200, "                                 ", "of add strength ",0},
-	 {250, "                                 ", "of sustain strength ",0},
-	 {250, "                                 ", "of dexterity ",0},
-	  {25, "                                 ", "of adornment ",0},
-	 {300, "                                 ", "of see invisible ",0},
-	 {290, "                                 ", "of maintain armor ",0},
-	 {270, "                                 ", "of searching ",0},
+	 {250, "", "of stealth ",0},
+	 {100, "", "of teleportation ", 0},
+	 {255, "", "of regeneration ",0},
+	 {295, "", "of slow digestion ",0},
+	 {200, "", "of add strength ",0},
+	 {250, "", "of sustain strength ",0},
+	 {250, "", "of dexterity ",0},
+	  {25, "", "of adornment ",0},
+	 {300, "", "of see invisible ",0},
+	 {290, "", "of maintain armor ",0},
+	 {270, "", "of searching ",0},
 };
 
-extern short cur_level, max_level;
-extern short party_room;
-extern char *error_file;
-extern boolean is_wood[];
-
+void
 put_objects()
 {
 	short i, n;
@@ -186,6 +184,7 @@ put_objects()
 	put_gold();
 }
 
+void
 put_gold()
 {
 	short i, j;
@@ -215,9 +214,10 @@ put_gold()
 	}
 }
 
+void
 plant_gold(row, col, is_maze)
-short row, col;
-boolean is_maze;
+	short row, col;
+	boolean is_maze;
 {
 	object *obj;
 
@@ -232,8 +232,10 @@ boolean is_maze;
 	(void) add_to_pack(obj, &level_objects, 0);
 }
 
+void
 place_at(obj, row, col)
-object *obj;
+	object *obj;
+	short row, col;
 {
 	obj->row = row;
 	obj->col = col;
@@ -243,8 +245,8 @@ object *obj;
 
 object *
 object_at(pack, row, col)
-register object *pack;
-short row, col;
+	object *pack;
+	short row, col;
 {
 	object *obj = (object *) 0;
 
@@ -255,7 +257,7 @@ short row, col;
 			obj = obj->next_object;
 		}
 		if (!obj) {
-			message("object_at(): inconsistent", 1);
+			messagef(1, "object_at(): inconsistent");
 		}
 	}
 	return(obj);
@@ -263,6 +265,7 @@ short row, col;
 
 object *
 get_letter_object(ch)
+	int ch;
 {
 	object *obj;
 
@@ -274,8 +277,9 @@ get_letter_object(ch)
 	return(obj);
 }
 
+void
 free_stuff(objlist)
-object *objlist;
+	object *objlist;
 {
 	object *obj;
 
@@ -287,11 +291,11 @@ object *objlist;
 	}
 }
 
-char *
+const char *
 name_of(obj)
-object *obj;
+	const object *obj;
 {
-	char *retstring;
+	const char *retstring;
 
 	switch(obj->what_is) {
 	case SCROL:
@@ -409,8 +413,9 @@ gr_what_is()
 	return(what_is);
 }
 
+void
 gr_scroll(obj)
-object *obj;
+	object *obj;
 {
 	short percent;
 
@@ -447,8 +452,9 @@ object *obj;
 	}
 }
 
+void
 gr_potion(obj)
-object *obj;
+	object *obj;
 {
 	short percent;
 
@@ -487,9 +493,10 @@ object *obj;
 	}
 }
 
+void
 gr_weapon(obj, assign_wk)
-object *obj;
-int assign_wk;
+	object *obj;
+	int assign_wk;
 {
 	short percent;
 	short i;
@@ -511,13 +518,13 @@ int assign_wk;
 	percent = get_rand(1, 96);
 	blessing = get_rand(1, 3);
 
-	if (percent <= 16) {
-		increment = 1;
-	} else if (percent <= 32) {
-		increment = -1;
-		obj->is_cursed = 1;
-	}
 	if (percent <= 32) {
+		if (percent <= 16) {
+			increment = 1;
+		} else {
+			increment = -1;
+			obj->is_cursed = 1;
+		}
 		for (i = 0; i < blessing; i++) {
 			if (coin_toss()) {
 				obj->hit_enchant += increment;
@@ -552,8 +559,9 @@ int assign_wk;
 	}
 }
 
+void
 gr_armor(obj)
-object *obj;
+	object *obj;
 {
 	short percent;
 	short blessing;
@@ -578,17 +586,19 @@ object *obj;
 	}
 }
 
+void
 gr_wand(obj)
-object *obj;
+	object *obj;
 {
 	obj->what_is = WAND;
 	obj->which_kind = get_rand(0, (WANDS - 1));
 	obj->class = get_rand(3, 7);
 }
 
+void
 get_food(obj, force_ration)
-object *obj;
-boolean force_ration;
+	object *obj;
+	boolean force_ration;
 {
 	obj->what_is = FOOD;
 
@@ -599,6 +609,7 @@ boolean force_ration;
 	}
 }
 
+void
 put_stairs()
 {
 	short row, col;
@@ -607,8 +618,9 @@ put_stairs()
 	dungeon[row][col] |= STAIRS;
 }
 
+int
 get_armor_class(obj)
-object *obj;
+	const object *obj;
 {
 	if (obj) {
 		return(obj->class + obj->d_enchant);
@@ -625,8 +637,8 @@ alloc_object()
 		obj = free_list;
 		free_list = free_list->next_object;
 	} else if (!(obj = (object *) md_malloc(sizeof(object)))) {
-			message("cannot allocate object, saving game", 0);
-			save_into_file(error_file);
+		messagef(0, "cannot allocate object, saving game");
+		save_into_file(error_file);
 	}
 	obj->quantity = 1;
 	obj->ichar = 'L';
@@ -637,13 +649,15 @@ alloc_object()
 	return(obj);
 }
 
+void
 free_object(obj)
-object *obj;
+	object *obj;
 {
 	obj->next_object = free_list;
 	free_list = obj;
 }
 
+void
 make_party()
 {
 	short n;
@@ -656,6 +670,7 @@ make_party()
 	}
 }
 
+void
 show_objects()
 {
 	object *obj;
@@ -671,7 +686,8 @@ show_objects()
 		rc = get_mask_char(obj->what_is);
 
 		if (dungeon[row][col] & MONSTER) {
-			if (monster = object_at(&level_monsters, row, col)) {
+			if ((monster =
+			    object_at(&level_monsters, row, col))) {
 				monster->trail_char = rc;
 			}
 		}
@@ -693,6 +709,7 @@ show_objects()
 	}
 }
 
+void
 put_amulet()
 {
 	object *obj;
@@ -702,8 +719,9 @@ put_amulet()
 	rand_place(obj);
 }
 
+void
 rand_place(obj)
-object *obj;
+	object *obj;
 {
 	short row, col;
 
@@ -711,20 +729,22 @@ object *obj;
 	place_at(obj, row, col);
 }
 
+void
 c_object_for_wizard()
 {
 	short ch, max, wk;
 	object *obj;
 	char buf[80];
 
+	max = 0;
 	if (pack_count((object *) 0) >= MAX_PACK_COUNT) {
-		message("pack full", 0);
+		messagef(0, "pack full");
 		return;
 	}
-	message("type of object?", 0);
+	messagef(0, "type of object?");
 
 	while (r_index("!?:)]=/,\033", (ch = rgetchar()), 0) == -1) {
-		sound_bell();
+		beep();
 	}
 	check_message();
 
@@ -767,7 +787,7 @@ c_object_for_wizard()
 	}
 	if ((ch != ',') && (ch != ':')) {
 GIL:
-		if (get_input_line("which kind?", "", buf, "", 0, 1)) {
+		if (get_input_line("which kind?", "", buf, sizeof(buf), "", 0, 1)) {
 			wk = get_number(buf);
 			if ((wk >= 0) && (wk <= max)) {
 				obj->which_kind = (unsigned short) wk;
@@ -775,7 +795,7 @@ GIL:
 					gr_ring(obj, 0);
 				}
 			} else {
-				sound_bell();
+				beep();
 				goto GIL;
 			}
 		} else {
@@ -783,7 +803,7 @@ GIL:
 			return;
 		}
 	}
-	get_desc(obj, buf);
-	message(buf, 0);
+	get_desc(obj, buf, sizeof(buf));
+	messagef(0, "%s", buf);
 	(void) add_to_pack(obj, &rogue.pack, 1);
 }

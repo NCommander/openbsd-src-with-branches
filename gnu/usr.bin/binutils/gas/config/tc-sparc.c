@@ -307,7 +307,7 @@ sparc_target_format ()
     init_default_arch ();
 
 #ifdef OBJ_AOUT
-#ifdef TE_NetBSD
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
   return "a.out-sparc-netbsd";
 #else
 #ifdef TE_SPARCAOUT

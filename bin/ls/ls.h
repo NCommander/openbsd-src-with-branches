@@ -1,3 +1,4 @@
+/*	$OpenBSD: ls.h,v 1.6 2003/07/02 21:19:33 deraadt Exp $	*/
 /*	$NetBSD: ls.h,v 1.7 1995/03/21 09:06:33 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,12 +41,15 @@ extern long blocksize;		/* block size units */
 
 extern int f_accesstime;	/* use time of last access */
 extern int f_flags;		/* show flags associated with a file */
+extern int f_humanval;		/* show human-readable file sizes */
 extern int f_inode;		/* print inode */
 extern int f_longform;		/* long listing format */
+extern int f_nonprint;		/* show unprintables as ? */
 extern int f_sectime;		/* print the real time for all files */
 extern int f_size;		/* list size in short listing */
 extern int f_statustime;	/* use time of last mode change */
 extern int f_type;		/* add type character for non-regular files */
+extern int f_typedir;		/* add type character for directories */
 
 typedef struct {
 	FTSENT *list;
@@ -72,3 +72,5 @@ typedef struct {
 	char *flags;
 	char data[1];
 } NAMES;
+
+int	ls_main(int, char *[]);
