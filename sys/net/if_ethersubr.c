@@ -80,13 +80,15 @@
 #endif
 
 #ifdef LLC
+#include <netccitt/x25.h>
+#include <netccitt/pk.h>
+#include <netccitt/pk_extern.h>
 #include <netccitt/dll.h>
 #include <netccitt/llc_var.h>
 #endif
 
 #if defined(LLC) && defined(CCITT)
 #include <sys/socketvar.h>
-#include <netccitt/x25.h>
 #endif
 
 u_char	etherbroadcastaddr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
