@@ -1,4 +1,4 @@
-/*	$OpenBSD: m_item_opt.c,v 1.4 1998/07/24 16:39:02 millert Exp $	*/
+/*	$OpenBSD: m_item_opt.c,v 1.5 1999/02/24 06:37:12 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -101,7 +101,7 @@ int item_opts_off(ITEM *item, Item_Options  opts)
     RETURN(E_BAD_ARGUMENT);
   else
     {
-      Normalize_Item(citem);
+      Normalize_Item(citem);    
       opts = citem->opt & ~(opts & ALL_ITEM_OPTS);
       return set_item_opts( item, opts );
     }

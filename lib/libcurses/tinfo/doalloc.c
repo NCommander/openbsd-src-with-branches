@@ -1,4 +1,4 @@
-/*	$OpenBSD: doalloc.c,v 1.2 1999/03/02 06:23:28 millert Exp $	*/
+/*	$OpenBSD: doalloc.c,v 1.3 1999/03/15 19:12:23 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998 Free Software Foundation, Inc.                        *
@@ -64,7 +64,7 @@ char *_nc_strdup(const char *src)
 {
     char *dst;
     if (src != 0) {
-	*dst = typeMalloc(char, strlen(src) + 1);
+	dst = typeMalloc(char, strlen(src) + 1);
 	if (dst != 0) {
 	    (void)strcpy(dst, src);
 	}
