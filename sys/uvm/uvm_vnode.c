@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_vnode.c,v 1.17 2001/08/06 14:03:05 art Exp $	*/
+/*	$OpenBSD: uvm_vnode.c,v 1.18 2001/08/11 10:57:22 art Exp $	*/
 /*	$NetBSD: uvm_vnode.c,v 1.33 2000/05/19 03:45:05 thorpej Exp $	*/
 
 /*
@@ -287,7 +287,7 @@ uvn_attach(arg, accessprot)
 	 */
 #ifdef DEBUG
 	if (vp->v_type == VBLK)
-		printf("used_vnode_size = %qu\n", (long long)used_vnode_size);
+		printf("used_vnode_size = %llu\n", (long long)used_vnode_size);
 #endif
 
 	/*
