@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.19.8.2 2001/07/04 10:19:34 niklas Exp $ */
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt
@@ -72,8 +72,6 @@
 #include <sys/conf.h>
 #include <sys/vnode.h>
 
-int	ttselect	__P((dev_t, int, struct proc *));
-
 #include "st.h"
 #include "sd.h"
 #include "cd.h"
@@ -85,7 +83,6 @@ bdev_decl(xd);
 #include "vnd.h"
 #include "ccd.h"
 #include "rd.h"
-bdev_decl(rd);
 
 struct bdevsw	bdevsw[] =
 {
@@ -168,12 +165,8 @@ cdev_decl(xfs_dev);
 cdev_decl(ksyms);
 
 cdev_decl(xd);
-cdev_decl(rd);
-
-dev_decl(filedesc,open);
 
 #include "bpfilter.h"
-
 #include "tun.h"
 
 #include "pf.h"

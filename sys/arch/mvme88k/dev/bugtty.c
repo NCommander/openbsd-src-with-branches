@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.7 2001/03/09 05:44:38 smurph Exp $ */
+/*	$OpenBSD$ */
 /* Copyright (c) 1998 Steve Murphree, Jr. 
  * Copyright (c) 1995 Dale Rahn.
  * All rights reserved.
@@ -164,7 +164,7 @@ int
 	case DMGET:
 		break;
 	}
-	(void)splx(s);
+	splx(s);
 
 	bits = 0;
 	/* proper defaults? */

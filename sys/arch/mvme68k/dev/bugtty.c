@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.3 1996/04/28 11:05:59 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -144,7 +144,7 @@ bugttymctl(dev, bits, how)
 	case DMGET:
 		break;
 	}
-	(void)splx(s);
+	splx(s);
 
 	bits = 0;
 	/* proper defaults? */

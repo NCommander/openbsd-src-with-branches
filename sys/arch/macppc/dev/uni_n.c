@@ -110,8 +110,8 @@ uni_n_config(int handle)
 				baseaddr = mapiodev(address, NBPG);
 				ctladdr = (void*)(baseaddr + 0x20);
 				*ctladdr |= 0x02;
+				return baseaddr;
 			}
-		return baseaddr;
 		}
 	}
 	return 0;

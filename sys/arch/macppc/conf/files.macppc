@@ -242,3 +242,10 @@ include "dev/pcmcia/files.pcmcia"
 # Machine-independent USB drivers
 #
 include "dev/usb/files.usb"
+
+# Sun HME Ethernet controllers
+device  hme: ether, ifnet, mii, ifmedia
+file    dev/ic/hme.c                   
+
+attach	hme at pci with hme_pci
+file	dev/pci/if_hme_pci.c		hme_pci

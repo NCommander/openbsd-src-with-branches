@@ -45,3 +45,5 @@ cdev_decl(mm);
 
 
 cdev_decl(zs);
+
+cdev_decl(crypto);

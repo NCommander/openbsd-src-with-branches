@@ -202,7 +202,7 @@ main()
 	parseargs(bootline, &boothowto);
 	for (;;) {
 		if (boothowto & RB_ASKNAME) {
-			printf("Boot: ");
+			printf("Boot (or \"exit\"): ");
 			gets(bootline);
 			parseargs(bootline, &boothowto);
 		}

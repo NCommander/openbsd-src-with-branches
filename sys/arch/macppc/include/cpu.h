@@ -41,8 +41,10 @@
 static __inline void
 syncicache(void *from, int len)
 {
-	int l = len;
+	int l;
 	char *p = from;
+	len = len + (((u_int32_t) from) & (CACHELINESIZE-1));
+	l = len;
 	
 	do {
 		__asm__ __volatile__ ("dcbst 0,%0" :: "r"(p));
@@ -58,4 +60,15 @@ syncicache(void *from, int len)
 	__asm__ __volatile__ ("isync");
 }
 
+/* 
+ * CTL_MACHDEP definitions.
+ */
+#define CPU_ALLOWAPERTURE	1	/* allow mmap of /dev/xf86 */
+#define	CPU_MAXID		2	/* number of valid machdep ids */
+
+
+#define	CTL_MACHDEP_NAMES { \
+	{ 0, 0 }, \
+	{ "allowaperture", CTLTYPE_INT }, \
+}
 #endif	/* _MACHINE_CPU_H_ */

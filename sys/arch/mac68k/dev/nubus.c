@@ -35,7 +35,6 @@
 #include <sys/device.h>
 #include <sys/buf.h>
 #include <sys/conf.h>
-#include <sys/dmap.h>
 
 #include <uvm/uvm_extern.h>
 
@@ -832,6 +831,7 @@ nubus_mapin(paddr, sz)
 		pa += NBPG;
 	} while ((sz -= NBPG) > 0);
 #endif
+	pmap_update(pmap_kernel());
 
 	return ((char*)retval);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_space.c,v 1.4.4.3 2001/11/13 21:00:53 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: bus_space.c,v 1.5 1999/03/26 23:41:30 mycroft Exp $	*/
 
 /*-
@@ -45,7 +45,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/extent.h>
-#include <sys/map.h>
 
 #include <machine/bus.h>
 
@@ -182,6 +181,7 @@ bus_mem_add_mapping(bpa, size, flags, bshp)
 			*pte |= PG_CI;
 		TBIA();
 	}
+	pmap_update(pmap_kernel());
  
 	return 0;
 }

@@ -185,14 +185,10 @@ OF_call_method_1(method, ihandle, nargs, va_alist)
 		*--ip = va_arg(ap, int);
 	va_end(ap);
 	ofw_stack();
-	if (openfirmware(&args) == -1) {
-		va_end(ap);
+	if (openfirmware(&args) == -1)
 		return -1;
-	}
-	if (args.args_n_results[nargs]) {
-		va_end(ap);
+	if (args.args_n_results[nargs])
 		return -1;
-	}
 	return args.args_n_results[nargs + 1];
 }
 

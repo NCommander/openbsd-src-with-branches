@@ -75,7 +75,7 @@ GLOBAL(sigcode)
 GLOBAL(sigcodetrap)
 	trap	#1		| special syscall entry	(2 bytes)
 	movl	d0,sp@(4)	| save errno		(4 bytes)
-	moveq	#1,d0		| syscall == exit	(2 bytes)
+	moveq	#SYS_exit,d0	| syscall == exit	(2 bytes)
 	trap	#0		| exit(errno)		(2 bytes)
 	.align	2
 GLOBAL(esigcode)

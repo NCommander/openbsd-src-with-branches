@@ -178,6 +178,7 @@ pagemove(from, to, size)
 		to += PAGE_SIZE;
 		size -= PAGE_SIZE;
 	}
+	pmap_update(pmap_kernel());
 }
 
 /*
@@ -270,6 +271,7 @@ vmapbuf(bp, siz)
 		addr += PAGE_SIZE;
 		kva += PAGE_SIZE;
 	}
+	pmap_update(pmap_kernel());
 }
 
 /*

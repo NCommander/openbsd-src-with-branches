@@ -112,6 +112,7 @@ mappedcopyin(fromp, top, count)
 		len = min(count, (PAGE_SIZE - off));
 		pmap_enter(pmap_kernel(), kva, upa, VM_PROT_READ,
 			   VM_PROT_READ|PMAP_WIRED);
+		pmap_update(pmap_kernel());
 		if (len == PAGE_SIZE && alignable && off == 0)
 			copypage((caddr_t)kva, top);
 		else
@@ -122,6 +123,7 @@ mappedcopyin(fromp, top, count)
 		off = 0;
 	}
 	pmap_remove(pmap_kernel(), kva, kva + PAGE_SIZE);
+	pmap_update(pmap_kernel());
 	return (0);
 }
 
@@ -164,6 +166,7 @@ mappedcopyout(fromp, top, count)
 		pmap_enter(pmap_kernel(), kva, upa,
 		    VM_PROT_READ|VM_PROT_WRITE,
 		    VM_PROT_READ|VM_PROT_WRITE|PMAP_WIRED);
+		pmap_update(pmap_kernel());
 		if (len == PAGE_SIZE && alignable && off == 0)
 			copypage(fromp, (caddr_t)kva);
 		else
@@ -174,5 +177,6 @@ mappedcopyout(fromp, top, count)
 		off = 0;
 	}
 	pmap_remove(pmap_kernel(), kva, kva + PAGE_SIZE);
+	pmap_update(pmap_kernel());
 	return (0);
 }
