@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.11 1996/06/11 10:15:54 deraadt Exp $ */
+/*	$OpenBSD: machdep.c,v 1.12 1996/07/27 11:40:42 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -1104,9 +1104,14 @@ boot(howto)
 		vfs_shutdown();
 		/*
 		 * If we've been adjusting the clock, the todr
-		 * will be out of synch; adjust it now.
+		 * will be out of synch; adjust it now unless
+		 * the system was sitting in ddb.
 		 */
-		resettodr();
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
 	}
 	splhigh();			/* extreme priority */
 	if (howto&RB_HALT) {
