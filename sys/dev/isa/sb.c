@@ -1,5 +1,5 @@
-/*	$OpenBSD: sb.c,v 1.9 1996/04/21 22:24:30 deraadt Exp $	*/
-/*	$NetBSD: sb.c,v 1.35 1996/04/29 20:03:29 christos Exp $	*/
+/*	$OpenBSD: sb.c,v 1.10 1996/05/07 07:37:37 deraadt Exp $	*/
+/*	$NetBSD: sb.c,v 1.36 1996/05/12 23:53:33 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -44,6 +44,7 @@
 #include <sys/proc.h>
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <sys/audioio.h>

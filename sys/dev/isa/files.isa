@@ -1,5 +1,5 @@
-#	$OpenBSD: files.isa,v 1.8 1996/04/21 22:23:23 deraadt Exp $
-#	$NetBSD: files.isa,v 1.20 1996/05/07 01:50:09 thorpej Exp $
+#	$OpenBSD: files.isa,v 1.16 1996/05/10 12:33:24 deraadt Exp $
+#	$NetBSD: files.isa,v 1.21 1996/05/16 03:45:55 mycroft Exp $
 #
 # Config.new file and device description for machine-independent ISA code.
 # Included by ports that need it.  Requires that the SCSI files be
