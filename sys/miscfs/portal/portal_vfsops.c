@@ -1,4 +1,4 @@
-/*	$OpenBSD: portal_vfsops.c,v 1.16 2003/04/14 17:54:06 tedu Exp $	*/
+/*	$OpenBSD: portal_vfsops.c,v 1.17 2003/06/02 23:28:10 millert Exp $	*/
 /*	$NetBSD: portal_vfsops.c,v 1.14 1996/02/09 22:40:41 christos Exp $	*/
 
 /*
@@ -261,7 +261,7 @@ portal_statfs(mp, sbp, p)
 #define portal_checkexp ((int (*)(struct mount *, struct mbuf *,	\
 	int *, struct ucred **))eopnotsupp)
 
-struct vfsops portal_vfsops = {
+const struct vfsops portal_vfsops = {
 	portal_mount,
 	portal_start,
 	portal_unmount,

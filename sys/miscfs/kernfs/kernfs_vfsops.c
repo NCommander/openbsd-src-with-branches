@@ -1,4 +1,4 @@
-/*	$OpenBSD: kernfs_vfsops.c,v 1.23 2003/06/02 23:28:10 millert Exp $	*/
+/*	$OpenBSD: kernfs_vfsops.c,v 1.24 2003/08/11 10:19:24 mickey Exp $	*/
 /*	$NetBSD: kernfs_vfsops.c,v 1.26 1996/04/22 01:42:27 christos Exp $	*/
 
 /*
@@ -209,7 +209,7 @@ kernfs_statfs(mp, sbp, p)
 	return (0);
 }
 
-struct vfsops kernfs_vfsops = {
+const struct vfsops kernfs_vfsops = {
 	kernfs_mount,
 	kernfs_start,
 	kernfs_unmount,
