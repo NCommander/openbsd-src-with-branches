@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.5 2004/02/25 00:16:04 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.6 2004/02/27 23:45:23 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 /*
  * Setup the system to run on the current machine.
  *
- * Configure() is called at boot time and initializes the vba 
+ * cpu_configure() is called at boot time and initializes the vba 
  * device tables and the memory controller monitoring.  Available
  * devices are determined (from possibilities mentioned in ioconf.c),
  * and the drivers are initialized.
