@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.21 1999/07/06 20:17:53 cmetz Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.22 1999/11/04 11:24:24 ho Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -1077,6 +1077,8 @@ tcp_setpersist(tp)
 	/*
 	 * Start/restart persistance timer.
 	 */
+	if (t < tp->t_rttmin)
+		t = tp->t_rttmin;
 	TCPT_RANGESET(tp->t_timer[TCPT_PERSIST],
 	    t * tcp_backoff[tp->t_rxtshift],
 	    TCPTV_PERSMIN, TCPTV_PERSMAX);
