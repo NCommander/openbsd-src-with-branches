@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.25 2000/03/21 04:53:13 angelos Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.26 2000/06/03 13:04:39 itojun Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -122,6 +122,8 @@ int	tcbhashsize = TCBHASHSIZE;
 #ifdef INET6
 extern int ip6_defhlim;
 #endif /* INET6 */
+
+struct tcpstat tcpstat;		/* tcp statistics */
 
 /*
  * Tcp initialization
