@@ -48,7 +48,7 @@ static char rcsid[] = "$OpenBSD: keyboard.c,v 1.2 1996/06/26 05:40:07 deraadt Ex
 #include "systat.h"
 #include "extern.h"
 
-int
+void
 keyboard()
 {
         char ch, line[80];
