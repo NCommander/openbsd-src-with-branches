@@ -1,4 +1,4 @@
-/*	$OpenBSD: mntopts.h,v 1.2 1996/06/23 14:31:11 deraadt Exp $	*/
+/*	$OpenBSD: mntopts.h,v 1.3 1997/03/02 09:38:30 millert Exp $	*/
 /*	$NetBSD: mntopts.h,v 1.3 1995/03/18 14:56:59 cgd Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ struct mntopt {
 
 /* User-visible MNT_ flags. */
 #define MOPT_ASYNC		{ "async",	0, MNT_ASYNC }
-#define MOPT_NOATIME		{ "atime",	1, MNT_NOATIME }
+#define MOPT_NOATIME		{ "accesstime",	1, MNT_NOATIME }
 #define MOPT_NODEV		{ "dev",	1, MNT_NODEV }
 #define MOPT_NOEXEC		{ "exec",	1, MNT_NOEXEC }
 #define MOPT_NOSUID		{ "suid",	1, MNT_NOSUID }
