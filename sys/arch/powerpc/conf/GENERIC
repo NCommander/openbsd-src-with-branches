@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.34 2001/05/29 01:20:43 drahn Exp $
+#	$OpenBSD: GENERIC,v 1.35 2001/06/17 03:44:03 drahn Exp $
 #
 # PPC GENERIC config file
 #
@@ -17,6 +17,8 @@ option		PPC_MPC106_BUG
 option		PCIVERBOSE
 option		USBVERBOSE
 option		WSEMUL_NO_DUMB
+
+option		USER_PCICONF	# user-space PCI configuration
 
 include "../../../conf/GENERIC"
 
