@@ -4,5 +4,6 @@
 
 PROG=	strfile
 MAN=	strfile.8
+CC=	${HOSTCC}
 
 .include <bsd.prog.mk>
