@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.11 2001/12/10 06:10:53 jason Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.12 2001/12/26 22:36:31 mickey Exp $	*/
 /*
  * Synchronous PPP/Cisco link level subroutines.
  * Keepalive protocol implemented in both Cisco and PPP modes.
@@ -703,10 +703,10 @@ sppp_output(struct ifnet *ifp, struct mbuf *m,
 
 		if (! IF_QFULL (&sp->pp_fastq) &&
 		    ((ip->ip_tos & IPTOS_LOWDELAY) ||
-	    	    ((ip->ip_p == IPPROTO_TCP &&
-	    	    m->m_len >= sizeof (struct ip) + sizeof (struct tcphdr) &&
-	    	    (INTERACTIVE (ntohs (tcp->th_sport))) ||
-	    	     INTERACTIVE (ntohs (tcp->th_dport))))))
+	    	     (ip->ip_p == IPPROTO_TCP &&
+	    	      m->m_len >= sizeof (struct ip) + sizeof (struct tcphdr) &&
+	    	      (INTERACTIVE (ntohs (tcp->th_sport)) ||
+	    	       INTERACTIVE (ntohs (tcp->th_dport))))))
 			ifq = &sp->pp_fastq;
 	}
 #endif
