@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.c,v 1.17 2004/04/21 09:11:58 canacar Exp $ */
+/*	$OpenBSD: dhcpd.c,v 1.18 2004/05/04 20:28:40 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -115,6 +115,8 @@ main(int argc, char *argv[])
 	/* Default DHCP/BOOTP ports. */
 	server_port = htons(SERVER_PORT);
 	client_port = htons(CLIENT_PORT);
+
+	tzset();
 
 	time(&cur_time);
 	if (!readconf())
