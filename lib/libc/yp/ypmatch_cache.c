@@ -30,7 +30,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: ypmatch_cache.c,v 1.7 1998/01/20 18:40:27 deraadt Exp $";
+static char *rcsid = "$OpenBSD: ypmatch_cache.c,v 1.8 2002/07/20 01:35:35 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -58,6 +58,9 @@ ypmatch_add(const char *map, const char *key, u_int keylen, char *val,
 {
 	struct ypmatch_ent *ep;
 	time_t t;
+
+	if (keylen == 0 || vallen == 0)
+		return (0);
 
 	(void)time(&t);
 
