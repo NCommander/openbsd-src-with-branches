@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.35 2002/06/12 12:36:14 hugh Exp $ */
+/*	$OpenBSD: conf.c,v 1.36 2002/06/24 10:41:13 hugh Exp $ */
 /*	$NetBSD: conf.c,v 1.44 1999/10/27 16:38:54 ragge Exp $	*/
 
 /*-
@@ -109,7 +109,6 @@ bdev_decl(ry);
 #include "cd.h"
 
 #include "ksyms.h"
-cdev_decl(ksyms);
 
 struct bdevsw	bdevsw[] =
 {

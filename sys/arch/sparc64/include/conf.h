@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.10 2002/01/30 23:58:03 jason Exp $	*/
+/*	$OpenBSD: conf.h,v 1.11 2002/06/24 19:00:33 mickey Exp $	*/
 /*	$NetBSD: conf.h,v 1.9 2001/03/26 12:33:26 lukem Exp $	*/
 
 /*-
@@ -43,10 +43,7 @@ cdev_decl(mm);
 
 cdev_decl(crypto);
 
-cdev_decl(ksyms);
-
 cdev_decl(openprom);
-
 
 /* open, close, ioctl */
 #define cdev_openprom_init(c,n) { \
