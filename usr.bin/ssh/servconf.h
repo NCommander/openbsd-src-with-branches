@@ -1,4 +1,4 @@
-/*	$OpenBSD: servconf.h,v 1.67 2003/12/23 16:12:10 jakob Exp $	*/
+/*	$OpenBSD: servconf.h,v 1.68 2004/04/27 09:46:37 djm Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -33,6 +33,7 @@
 #define	PERMIT_NO_PASSWD	2
 #define	PERMIT_YES		3
 
+#define DEFAULT_AUTH_FAIL_MAX	6	/* Default for MaxAuthTries */
 
 typedef struct {
 	u_int num_ports;
@@ -114,6 +115,7 @@ typedef struct {
 	int	max_startups_begin;
 	int	max_startups_rate;
 	int	max_startups;
+	int	max_authtries;
 	char   *banner;			/* SSH-2 banner message */
 	int	use_dns;
 	int	client_alive_interval;	/*

@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.52 2004/05/08 00:01:37 deraadt Exp $");
+RCSID("$OpenBSD: auth.c,v 1.53 2004/05/11 19:01:43 deraadt Exp $");
 
 #include <libgen.h>
 
@@ -161,7 +161,7 @@ auth_log(Authctxt *authctxt, int authenticated, char *method, char *info)
 	/* Raise logging level */
 	if (authenticated == 1 ||
 	    !authctxt->valid ||
-	    authctxt->failures >= AUTH_FAIL_LOG ||
+	    authctxt->failures >= options.max_authtries / 2 ||
 	    strcmp(method, "password") == 0)
 		authlog = logit;
 
