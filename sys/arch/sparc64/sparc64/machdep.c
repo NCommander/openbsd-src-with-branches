@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.26 2001/11/24 17:53:41 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.27 2001/12/04 23:22:42 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -1268,7 +1268,7 @@ _bus_dmamap_load_mbuf(t, map, m, flags)
 			/* Exceeded the size of our dmamap */
 			map->_dm_type = 0;
 			map->_dm_source = NULL;
-			return E2BIG;
+			return (EFBIG);
 		}
 	}
 
@@ -1337,7 +1337,7 @@ _bus_dmamap_load_uio(t, map, uio, flags)
 			/* Exceeded the size of our dmamap */
 			map->_dm_type = 0;
 			map->_dm_source = NULL;
-			return (E2BIG);
+			return (EFBIG);
 		}
 	}
 
