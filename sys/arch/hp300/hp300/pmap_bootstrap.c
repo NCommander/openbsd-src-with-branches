@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_bootstrap.c,v 1.19 2004/12/30 21:22:19 miod Exp $	*/
+/*	$OpenBSD: pmap_bootstrap.c,v 1.20 2004/12/30 21:26:15 miod Exp $	*/
 /*	$NetBSD: pmap_bootstrap.c,v 1.13 1997/06/10 18:56:50 veego Exp $	*/
 
 /* 
@@ -115,7 +115,7 @@ pmap_init_md()
 	 */
 	addr = (vaddr_t) intiobase;
 	if (uvm_map(kernel_map, &addr,
-		    m68k_ptob(IIOMAPSIZE+EIOMAPSIZE),
+		    m68k_ptob(IIOMAPSIZE + eiomapsize),
 		    NULL, UVM_UNKNOWN_OFFSET, 0,
 		    UVM_MAPFLAG(UVM_PROT_NONE, UVM_PROT_NONE,
 				UVM_INH_NONE, UVM_ADV_RANDOM,
