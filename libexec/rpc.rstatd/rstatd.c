@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstatd.c,v 1.7 2001/11/18 23:45:39 deraadt Exp $	*/
+/*	$OpenBSD: rstatd.c,v 1.8 2002/02/16 21:27:31 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, John Brezak
@@ -34,13 +34,14 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rstatd.c,v 1.7 2001/11/18 23:45:39 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rstatd.c,v 1.8 2002/02/16 21:27:31 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <signal.h>
 #include <syslog.h>
