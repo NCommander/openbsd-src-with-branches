@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap.c,v 1.6 1999/07/20 04:49:55 deraadt Exp $	*/
+/*	$OpenBSD: pcap.c,v 1.7 2001/12/17 22:29:47 dugsong Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998
@@ -32,11 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Header: /cvs/src/lib/libpcap/pcap.c,v 1.6 1999/07/20 04:49:55 deraadt Exp $ (LBL)";
-#endif
 
 #include <sys/types.h>
 
