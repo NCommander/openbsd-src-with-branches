@@ -35,4 +35,4 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-int fvmeintrestablish __P((struct device *, int, int, struct intrhand *));
+int fvmeintrestablish(struct device *, int, int, struct intrhand *);

@@ -98,8 +98,8 @@ struct isp_sbussoftc {
 };
 
 
-static int isp_match __P((struct device *, void *, void *));
-static void isp_sbus_attach __P((struct device *, struct device *, void *));
+static int isp_match(struct device *, void *, void *);
+static void isp_sbus_attach(struct device *, struct device *, void *);
 struct cfattach isp_sbus_ca = {
 	sizeof (struct isp_sbussoftc), isp_match, isp_sbus_attach
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lebuffer.c,v 1.3 1998/07/05 09:24:23 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: lebuffer.c,v 1.3 1997/05/24 20:16:28 pk Exp $ */
 
 /*
@@ -49,9 +49,9 @@
 #include <sparc/dev/lebuffervar.h>
 #include <sparc/dev/dmareg.h>/*XXX*/
 
-int	lebufprint __P((void *, const char *));
-int	lebufmatch __P((struct device *, void *, void *));
-void	lebufattach __P((struct device *, struct device *, void *));
+int	lebufprint(void *, const char *);
+int	lebufmatch(struct device *, void *, void *);
+void	lebufattach(struct device *, struct device *, void *);
 
 struct cfattach lebuffer_ca = {
 	sizeof(struct lebuf_softc), lebufmatch, lebufattach

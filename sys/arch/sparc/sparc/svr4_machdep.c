@@ -55,7 +55,7 @@
 #include <machine/trap.h>
 #include <machine/svr4_machdep.h>
 
-static void svr4_getsiginfo __P((union svr4_siginfo *, int, u_long, int, caddr_t));
+static void svr4_getsiginfo(union svr4_siginfo *, int, u_long, int, caddr_t);
 
 #ifdef DEBUG
 extern int sigdebug;
@@ -66,7 +66,7 @@ extern int sigpid;
 #endif
 
 #ifdef DEBUG_SVR4
-static void svr4_printcontext __P((const char *, struct svr4_ucontext *));
+static void svr4_printcontext(const char *, struct svr4_ucontext *);
 
 static void
 svr4_printcontext(fun, uc)

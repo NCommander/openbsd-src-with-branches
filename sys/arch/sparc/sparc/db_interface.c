@@ -159,8 +159,8 @@ int	db_active = 0;
 
 extern char *trap_type[];
 
-void kdb_kbd_trap __P((struct trapframe *));
-void db_prom_cmd __P((db_expr_t, int, db_expr_t, char *));
+void kdb_kbd_trap(struct trapframe *);
+void db_prom_cmd(db_expr_t, int, db_expr_t, char *);
 
 /*
  * Received keyboard interrupt sequence.

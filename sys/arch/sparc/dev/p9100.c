@@ -99,9 +99,9 @@ struct fbdriver p9100fbdriver = {
 extern int fbnode;
 extern struct tty *fbconstty;
 
-void p9100loadcmap __P((struct p9100_softc *, int, int));
-void p9100_set_video __P((struct p9100_softc *, int));
-int p9100_get_video __P((struct p9100_softc *));
+void p9100loadcmap(struct p9100_softc *, int, int);
+void p9100_set_video(struct p9100_softc *, int);
+int p9100_get_video(struct p9100_softc *);
 
 /*
  * System control and command registers

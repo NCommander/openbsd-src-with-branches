@@ -90,11 +90,11 @@ struct cgtwo_softc {
 };
 
 /* autoconfiguration driver */
-static void	cgtwoattach __P((struct device *, struct device *, void *));
-static int	cgtwomatch __P((struct device *, void *, void *));
-static void	cgtwounblank __P((struct device *));
-int		cgtwogetcmap __P((struct cgtwo_softc *, struct fbcmap *));
-int		cgtwoputcmap __P((struct cgtwo_softc *, struct fbcmap *));
+static void	cgtwoattach(struct device *, struct device *, void *);
+static int	cgtwomatch(struct device *, void *, void *);
+static void	cgtwounblank(struct device *);
+int		cgtwogetcmap(struct cgtwo_softc *, struct fbcmap *);
+int		cgtwoputcmap(struct cgtwo_softc *, struct fbcmap *);
 
 struct cfattach cgtwo_ca = {
 	sizeof(struct cgtwo_softc), cgtwomatch, cgtwoattach
@@ -305,7 +305,7 @@ cgtwoioctl(dev, cmd, data, flags, p)
 		break;
 
 	case FBIOSVIDEO:
-		sc->sc_reg->video_enab = (*(int*)data) & 1;
+		sc->sc_reg->video_enab = (*(int *)data) & 1;
 		break;
 
 	default:

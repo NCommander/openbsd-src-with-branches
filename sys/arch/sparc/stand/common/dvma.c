@@ -96,7 +96,7 @@ dvma_mapout(char *addr, size_t len)
 	return ((char *)va);
 }
 
-extern char *alloc __P((int));
+extern char *alloc(int);
 
 char *
 dvma_alloc(int len)

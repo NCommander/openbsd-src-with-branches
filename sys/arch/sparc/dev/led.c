@@ -1,4 +1,4 @@
-/*	$OpenBSD: led.c,v 1.5.6.1 2001/05/14 21:37:07 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -52,9 +52,9 @@
 #include <sparc/sparc/cpuvar.h>
 #include <sparc/dev/led.h>
 
-int	ledmatch	__P((struct device *, void *, void *));
-void	ledattach	__P((struct device *, struct device *, void *));
-void	led_cycle	__P((void *));
+int	ledmatch(struct device *, void *, void *);
+void	ledattach(struct device *, struct device *, void *);
+void	led_cycle(void *);
 
 struct cfattach led_ca = {
 	sizeof (struct led_softc), ledmatch, ledattach

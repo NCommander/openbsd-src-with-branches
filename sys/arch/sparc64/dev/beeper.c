@@ -66,8 +66,8 @@ struct beeper_softc {
 
 #define	BEEP_REG	0
 
-int	beeper_match __P((struct device *, void *, void *));
-void	beeper_attach __P((struct device *, struct device *, void *));
+int	beeper_match(struct device *, void *, void *);
+void	beeper_attach(struct device *, struct device *, void *);
 
 struct cfattach beeper_ca = {
 	sizeof(struct beeper_softc), beeper_match, beeper_attach

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbus.c,v 1.8.4.1 2001/11/13 21:04:17 niklas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: sbus.c,v 1.17 1997/06/01 22:10:39 pk Exp $ */
 
 /*
@@ -63,12 +63,12 @@
 #include <sparc/dev/xboxvar.h>
 #include <sparc/dev/dmareg.h>
 
-int sbus_print __P((void *, const char *));
-void sbusreset __P((int));
+int sbus_print(void *, const char *);
+void sbusreset(int);
 
 /* autoconfiguration driver */
-void	sbus_attach __P((struct device *, struct device *, void *));
-int	sbus_match __P((struct device *, void *, void *));
+void	sbus_attach(struct device *, struct device *, void *);
+int	sbus_match(struct device *, void *, void *);
 
 struct cfattach sbus_ca = {
 	sizeof(struct sbus_softc), sbus_match, sbus_attach

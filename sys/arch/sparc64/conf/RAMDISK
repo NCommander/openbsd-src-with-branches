@@ -96,6 +96,7 @@ cd*	at scsibus? target ? lun ?	# SCSI CD-ROMs
 # Media Independent Interface (mii) drivers)
 nsphy*	at mii? phy ?				# NS and compatible PHYs
 qsphy*	at mii? phy ?				# Quality Semi QS6612 PHYs
+dcphy*	at mii? phy ?				# Digital clone PHYs
 ukphy*	at mii? phy ?				# Unknown PHYs
 
 pseudo-device	rd	2	# ramdisk

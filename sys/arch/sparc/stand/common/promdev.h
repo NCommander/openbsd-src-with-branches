@@ -41,8 +41,8 @@ struct promdata {
 #define DT_NET		2
 #define DT_BYTE		3
 	/* Hooks for netif.c */
-	int	(*xmit) __P((struct promdata *, void *, size_t));
-	int	(*recv) __P((struct promdata *, void *, size_t));
+	int	(*xmit)(struct promdata *, void *, size_t);
+	int	(*recv)(struct promdata *, void *, size_t);
 };
 
 #define LOADADDR	((caddr_t)0x4000)
@@ -58,12 +58,12 @@ extern int	hz;
 extern int	cputyp, nbpg, pgofset, pgshift;
 extern int	debug;
 
-extern void	prom_init __P((void));
+extern void	prom_init(void);
 
 /* Note: dvma_*() routines are for "oldmon" machines only */
-extern char	*dvma_mapin __P((char *, size_t));
-extern char	*dvma_mapout __P((char *, size_t));
-extern char	*dvma_alloc __P((int));
+extern char	*dvma_mapin(char *, size_t);
+extern char	*dvma_mapout(char *, size_t);
+extern char	*dvma_alloc(int);
 
 /*
  * duplicates from pmap.c for mapping device on "oldmon" machines.

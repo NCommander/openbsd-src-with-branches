@@ -61,8 +61,8 @@
 #include <sparc/fpu/fpu_emu.h>
 #include <sparc/fpu/fpu_extern.h>
 
-static int round __P((register struct fpemu *, register struct fpn *));
-static int toinf __P((struct fpemu *, int));
+static int round(register struct fpemu *, register struct fpn *);
+static int toinf(struct fpemu *, int);
 
 /*
  * Round a number (algorithm from Motorola MC68882 manual, modified for

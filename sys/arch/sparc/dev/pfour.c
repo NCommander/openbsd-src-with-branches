@@ -56,8 +56,8 @@ struct pfour_softc {
 	int	nothing;
 };
 
-static int	pfourmatch __P((struct device *, void *, void *));
-static void	pfourattach __P((struct device *, struct device *, void *));
+static int	pfourmatch(struct device *, void *, void *);
+static void	pfourattach(struct device *, struct device *, void *);
 struct cfdriver pfourcd = { NULL, "pfour", pfourmatch, pfourattach,
 	DV_DULL, sizeof(struct pfour_softc)
 };

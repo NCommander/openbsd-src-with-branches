@@ -110,9 +110,9 @@ static struct fbdriver cgthreefbdriver = {
 extern int fbnode;
 extern struct tty *fbconstty;
 
-static void cgthreeloadcmap __P((struct cgthree_softc *, int, int));
-static void cgthree_set_video __P((struct cgthree_softc *, int));
-static int cgthree_get_video __P((struct cgthree_softc *));
+static void cgthreeloadcmap(struct cgthree_softc *, int, int);
+static void cgthree_set_video(struct cgthree_softc *, int);
+static int cgthree_get_video(struct cgthree_softc *);
 
 /* Video control parameters */
 struct cg3_videoctrl {

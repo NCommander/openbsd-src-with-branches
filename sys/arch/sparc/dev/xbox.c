@@ -53,10 +53,10 @@
 #include <sparc/dev/xboxreg.h>
 #include <sparc/dev/xboxvar.h>
 
-int	xboxmatch	__P((struct device *, void *, void *));
-void	xboxattach	__P((struct device *, struct device *, void *));
-int	xboxprint	__P((void *, const char *));
-void	xbox_fix_range	__P((struct xbox_softc *sc, struct sbus_softc *sbp));
+int	xboxmatch(struct device *, void *, void *);
+void	xboxattach(struct device *, struct device *, void *);
+int	xboxprint(void *, const char *);
+void	xbox_fix_range(struct xbox_softc *sc, struct sbus_softc *sbp);
 
 struct cfattach xbox_ca = {
 	sizeof (struct xbox_softc), xboxmatch, xboxattach

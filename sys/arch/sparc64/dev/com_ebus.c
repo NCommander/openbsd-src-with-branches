@@ -52,8 +52,8 @@
 
 cdev_decl(com); /* XXX this belongs elsewhere */
 
-int	com_ebus_match __P((struct device *, void *, void *));
-void	com_ebus_attach __P((struct device *, struct device *, void *));
+int	com_ebus_match(struct device *, void *, void *);
+void	com_ebus_attach(struct device *, struct device *, void *);
 
 struct cfattach com_ebus_ca = {
 	sizeof(struct com_softc), com_ebus_match, com_ebus_attach

@@ -63,6 +63,6 @@ struct auxio_softc {
  * as AUXREG_VA depends on NBPG which is not a constant.
  */
 volatile u_char *auxio_reg;
-unsigned int auxregbisc __P((int, int));
-void auxio_led_blink __P((void *));
+unsigned int auxregbisc(int, int);
+void auxio_led_blink(void *);
 #endif

@@ -127,8 +127,8 @@ struct pmap_physseg {
 #if defined (_KERNEL) && !defined(_LOCORE)
 struct vm_map;
 #define		dvma_mapin(map,va,len,canwait)	dvma_mapin_space(map,va,len,canwait,0)
-vaddr_t		dvma_mapin_space __P((struct vm_map *, vaddr_t, int, int, int));
-void		dvma_mapout __P((vaddr_t, vaddr_t, int));
+vaddr_t		dvma_mapin_space(struct vm_map *, vaddr_t, int, int, int);
+void		dvma_mapout(vaddr_t, vaddr_t, int);
 #endif
 
 #endif /* _SPARC_VMPARAM_H_ */

@@ -71,8 +71,8 @@ struct ebus_softc {
 	int				sc_nintmap;
 };
 
-bus_dma_tag_t ebus_alloc_dma_tag __P((struct ebus_softc *, bus_dma_tag_t));
-bus_space_tag_t ebus_alloc_bus_tag __P((struct ebus_softc *, int));
+bus_dma_tag_t ebus_alloc_dma_tag(struct ebus_softc *, bus_dma_tag_t);
+bus_space_tag_t ebus_alloc_bus_tag(struct ebus_softc *, int);
 
 #define ebus_bus_map(t, bt, a, s, f, v, hp) \
 	bus_space_map2(t, bt, a, s, f, v, hp)

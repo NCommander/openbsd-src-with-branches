@@ -125,6 +125,6 @@
 #ifndef _LOCORE
 volatile u_char *auxio_reg;	/* Copy of AUXIO_REG */
 u_char auxio_regval;
-unsigned int auxregbisc __P((int, int));
+unsigned int auxregbisc(int, int);
 #endif
 

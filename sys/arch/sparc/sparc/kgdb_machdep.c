@@ -114,8 +114,8 @@
 #define	setpte4(va, pte)	sta(va, ASI_PTE, pte)
 #endif
 
-static __inline void kgdb_copy __P((char *, char *, int));
-static __inline void kgdb_zero __P((char *, int));
+static __inline void kgdb_copy(char *, char *, int);
+static __inline void kgdb_zero(char *, int);
 
 /*
  * This little routine exists simply so that bcopy() can be debugged.

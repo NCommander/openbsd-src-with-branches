@@ -1,4 +1,4 @@
-/*	$OpenBSD: ms.c,v 1.6 1997/08/08 08:25:19 downsj Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ms.c,v 1.10 1996/09/12 01:36:18 mrg Exp $ */
 
 /*
@@ -84,8 +84,8 @@ struct ms_softc {
 	int	ms_dx;			/* delta-x */
 	int	ms_dy;			/* delta-y */
 	struct	tty *ms_mouse;		/* downlink for output to mouse */
-	void	(*ms_open) __P((struct tty *));	/* enable dataflow */
-	void	(*ms_close) __P((struct tty *));/* disable dataflow */
+	void	(*ms_open)(struct tty *);	/* enable dataflow */
+	void	(*ms_close)(struct tty *);/* disable dataflow */
 	volatile int ms_ready;		/* event queue is ready */
 	struct	evvar ms_events;	/* event queue state */
 } ms_softc;
@@ -98,8 +98,8 @@ struct ms_softc {
 void
 ms_serial(tp, iopen, iclose)
 	struct tty *tp;
-	void (*iopen) __P((struct tty *));
-	void (*iclose) __P((struct tty *));
+	void (*iopen)(struct tty *);
+	void (*iclose)(struct tty *);
 {
 
 	ms_softc.ms_mouse = tp;

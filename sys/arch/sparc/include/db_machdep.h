@@ -86,8 +86,8 @@ db_regs_t		ddb_regs;	/* register state */
 
 #define DB_MACHINE_COMMANDS
 
-void db_machine_init __P((void));
-int kdb_trap __P((int, struct trapframe *));
+void db_machine_init(void);
+int kdb_trap(int, struct trapframe *);
 
 /*
  * We use a.out symbols in DDB.

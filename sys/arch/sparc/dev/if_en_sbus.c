@@ -84,8 +84,8 @@ struct en_sbus_softc {
  * prototypes
  */
 
-static	int en_sbus_match __P((struct device *, void *, void *));
-static	void en_sbus_attach __P((struct device *, struct device *, void *));
+static	int en_sbus_match(struct device *, void *, void *);
+static	void en_sbus_attach(struct device *, struct device *, void *);
 
 /*
  * SBUS autoconfig attachments

@@ -62,8 +62,9 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/ctlreg.h>
-#include <machine/pte.h>
 
 #include <sparc/sparc/asm.h>
 #include <sparc/sparc/cache.h>

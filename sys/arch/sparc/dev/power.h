@@ -57,4 +57,4 @@
 volatile u_char *power_reg;
 #endif
 
-void powerdown __P((void));		/* power off function */
+void powerdown(void);		/* power off function */

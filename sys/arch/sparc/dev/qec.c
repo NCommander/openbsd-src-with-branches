@@ -63,11 +63,11 @@
 #include <sparc/dev/qecreg.h>
 #include <sparc/dev/qecvar.h>
 
-int	qecprint	__P((void *, const char *));
-int	qecmatch	__P((struct device *, void *, void *));
-void	qecattach	__P((struct device *, struct device *, void *));
-void	qec_fix_range	__P((struct qec_softc *, struct sbus_softc *));
-void	qec_translate	__P((struct qec_softc *, struct confargs *));
+int	qecprint(void *, const char *);
+int	qecmatch(struct device *, void *, void *);
+void	qecattach(struct device *, struct device *, void *);
+void	qec_fix_range(struct qec_softc *, struct sbus_softc *);
+void	qec_translate(struct qec_softc *, struct confargs *);
 
 struct cfattach qec_ca = {
 	sizeof(struct qec_softc), qecmatch, qecattach

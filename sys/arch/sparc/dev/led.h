@@ -1,4 +1,4 @@
-/*	$OpenBSD: led.h,v 1.4 2001/01/30 03:55:10 jason Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -44,4 +44,4 @@ struct led_softc {
 };
 extern struct led_softc *led_sc;
 
-void	led_cycle	__P((void *));
+void	led_cycle(void *);
