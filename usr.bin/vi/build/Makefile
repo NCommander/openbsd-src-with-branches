@@ -1,6 +1,6 @@
-#	$NetBSD: Makefile,v 1.2 1996/05/20 05:01:36 mrg Exp $
+#	$OpenBSD$
 #
-# from: @(#)Makefile.in	8.56 (Berkeley) 5/18/96
+# From	@(#)Makefile.in	8.63 (Berkeley) 6/19/96
 
 CFLAGS+=-I${.CURDIR} -I${.CURDIR}/../include
 
