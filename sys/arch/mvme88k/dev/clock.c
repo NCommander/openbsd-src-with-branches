@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.30 2004/04/24 19:51:47 miod Exp $ */
+/*	$OpenBSD: clock.c,v 1.31 2004/07/02 14:00:42 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1995 Theo de Raadt
@@ -597,10 +597,13 @@ void
 delay(int us)
 {
 	if (brdtyp == BRD_188) {
+		extern int cpuspeed;
+
 		/*
 		 * Unable to use a real timer, use a tight loop.
+		 * XXX not accurate!
 		 */
-		volatile int c = (25 * us) / 3;	/* XXX not accurate! */
+		volatile int c = (3 * us) / (cpuspeed == 25 ? 4 : 5);
 		while (--c > 0)
 			;
 	} else {
