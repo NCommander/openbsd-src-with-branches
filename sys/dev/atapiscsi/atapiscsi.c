@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.30 2000/08/11 03:59:47 csapuntz Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.32 2000/10/29 18:42:50 deraadt Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -706,7 +706,7 @@ wdc_atapi_the_machine(chp, xfer, ctxt)
 			   xfer->endticks && (ticks - xfer->endticks >= 0));
 
 	if (xfer->timeout != -1) 
-		xfer->endticks = max((xfer->timeout * 1000) / hz, 1) + ticks;
+		xfer->endticks = max((xfer->timeout * hz) / 1000, 1) + ticks;
 
 	if (xfer->claim_irq) claim_irq = xfer->claim_irq;
 
