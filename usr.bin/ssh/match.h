@@ -1,3 +1,5 @@
+/*	$OpenBSD: match.h,v 1.6 2001/01/29 01:58:17 niklas Exp $	*/
+
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -26,6 +28,6 @@ int     match_pattern(const char *s, const char *pattern);
  * indicate negation).  Returns -1 if negation matches, 1 if there is
  * a positive match, 0 if there is no match at all.
  */
-int     match_hostname(const char *host, const char *pattern, unsigned int len);
+int     match_hostname(const char *host, const char *pattern, u_int len);
 
 #endif

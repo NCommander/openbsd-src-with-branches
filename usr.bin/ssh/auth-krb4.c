@@ -23,12 +23,19 @@
  */
 
 #include "includes.h"
+RCSID("$OpenBSD: auth-krb4.c,v 1.23 2001/01/22 08:15:00 markus Exp $");
+
+#include "ssh.h"
+#include "ssh1.h"
 #include "packet.h"
 #include "xmalloc.h"
-#include "ssh.h"
+#include "log.h"
 #include "servconf.h"
+#include "auth.h"
 
-RCSID("$OpenBSD: auth-krb4.c,v 1.18 2000/09/07 20:27:49 deraadt Exp $");
+#ifdef AFS
+#include "radix.h"
+#endif
 
 #ifdef KRB4
 char *ticket = NULL;
@@ -46,7 +53,7 @@ auth_krb4_password(struct passwd * pw, const char *password)
 	AUTH_DAT adata;
 	KTEXT_ST tkt;
 	struct hostent *hp;
-	unsigned long faddr;
+	u_long faddr;
 	char localhost[MAXHOSTNAMELEN];
 	char phost[INST_SZ];
 	char realm[REALM_SZ];

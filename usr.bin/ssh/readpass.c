@@ -32,11 +32,11 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readpass.c,v 1.11 2000/06/20 01:39:44 markus Exp $");
+RCSID("$OpenBSD: readpass.c,v 1.14 2001/02/08 19:30:52 itojun Exp $");
 
 #include "xmalloc.h"
-#include "ssh.h"
 #include "cli.h"
+#include "readpass.h"
 
 /*
  * Reads a passphrase from /dev/tty with echo turned off.  Returns the

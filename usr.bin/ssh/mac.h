@@ -1,5 +1,6 @@
+/*      $OpenBSD: mac.h,v 1.1 2001/02/11 12:59:24 markus Exp $   */
 /*
- * Copyright (c) 2000 Markus Friedl.  All rights reserved.
+ * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,33 +23,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-RCSID("$OpenBSD: hmac.c,v 1.3 2000/06/20 01:39:41 markus Exp $");
-
-#include "xmalloc.h"
-#include "ssh.h"
-#include "getput.h"
-
-#include <openssl/hmac.h>
-
-unsigned char *
-hmac(
-    EVP_MD *evp_md,
-    unsigned int seqno,
-    unsigned char *data, int datalen,
-    unsigned char *key, int keylen)
-{
-	HMAC_CTX c;
-	static unsigned char m[EVP_MAX_MD_SIZE];
-	unsigned char b[4];
-
-	if (key == NULL)
-		fatal("hmac: no key");
-	HMAC_Init(&c, key, keylen, evp_md);
-	PUT_32BIT(b, seqno);
-	HMAC_Update(&c, b, sizeof b);
-	HMAC_Update(&c, data, datalen);
-	HMAC_Final(&c, m, NULL);
-	HMAC_cleanup(&c);
-	return(m);
-}
+int	mac_valid(const char *names);
+int	mac_init(Mac *mac, char *name);
+u_char	*mac_compute(Mac *mac, u_int32_t seqno, u_char *data, int datalen);

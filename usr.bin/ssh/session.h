@@ -1,3 +1,5 @@
+/*	$OpenBSD: session.h,v 1.5 2001/01/29 01:58:18 niklas Exp $	*/
+
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -28,7 +30,7 @@
 void	do_authenticated(struct passwd * pw);
 
 /* SSH2 */
-void	do_authenticated2(void);
+void	do_authenticated2(Authctxt *ac);
 int	session_open(int id);
 void	session_input_channel_req(int id, void *arg);
 void	session_close_by_pid(pid_t pid, int status);

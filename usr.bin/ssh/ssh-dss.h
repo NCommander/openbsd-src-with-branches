@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.5 2000/09/07 20:27:55 deraadt Exp $	*/
+/*	$OpenBSD: ssh-dss.h,v 1.3 2001/01/29 01:58:18 niklas Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -23,74 +23,19 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef DSA_H
+#define DSA_H
 
-#include "includes.h"
-RCSID("$OpenBSD: util.c,v 1.5 2000/09/07 20:27:55 deraadt Exp $");
+int
+ssh_dss_sign(
+    Key *key,
+    u_char **sigp, int *lenp,
+    u_char *data, int datalen);
 
-#include "ssh.h"
+int
+ssh_dss_verify(
+    Key *key,
+    u_char *signature, int signaturelen,
+    u_char *data, int datalen);
 
-char *
-chop(char *s)
-{
-	char *t = s;
-	while (*t) {
-		if(*t == '\n' || *t == '\r') {
-			*t = '\0';
-			return s;
-		}
-		t++;
-	}
-	return s;
-
-}
-
-void
-set_nonblock(int fd)
-{
-	int val;
-	val = fcntl(fd, F_GETFL, 0);
-	if (val < 0) {
-		error("fcntl(%d, F_GETFL, 0): %s", fd, strerror(errno));
-		return;
-	}
-	if (val & O_NONBLOCK) {
-		debug("fd %d IS O_NONBLOCK", fd);
-		return;
-	}
-	debug("fd %d setting O_NONBLOCK", fd);
-	val |= O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, val) == -1)
-		if (errno != ENODEV)
-			error("fcntl(%d, F_SETFL, O_NONBLOCK): %s",
-			    fd, strerror(errno));
-}
-
-/* Characters considered whitespace in strsep calls. */
-#define WHITESPACE " \t\r\n"
-
-char *
-strdelim(char **s)
-{
-	char *old;
-	int wspace = 0;
-
-	if (*s == NULL)
-		return NULL;
-
-	old = *s;
-
-	*s = strpbrk(*s, WHITESPACE "=");
-	if (*s == NULL)
-		return (old);
-
-	/* Allow only one '=' to be skipped */
-	if (*s[0] == '=')
-		wspace = 1;
-	*s[0] = '\0';
-
-	*s += strspn(*s + 1, WHITESPACE) + 1;
-	if (*s[0] == '=' && !wspace)
-		*s += strspn(*s + 1, WHITESPACE) + 1;
-
-	return (old);
-}
+#endif
