@@ -1,9 +1,10 @@
-/*       $OpenBSD: vfs_default.c,v 1.14 2001/12/10 02:19:34 art Exp $  */
+/*       $OpenBSD: vfs_default.c,v 1.7 2001/06/25 03:28:03 csapuntz Exp $  */
+
 
 /*
  *    Portions of this code are:
  *
- * Copyright (c) 1982, 1986, 1989, 1993
+ * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
  * All or some portions of this file are derived from material licensed
@@ -48,11 +49,9 @@
 #include <sys/vnode.h>
 #include <sys/namei.h>
 #include <sys/malloc.h>
-#include <sys/pool.h>
 #include <sys/event.h>
 #include <miscfs/specfs/specdev.h>
 
-#include <uvm/uvm.h>
 
 extern struct simplelock spechash_slock;
 
@@ -310,11 +309,4 @@ int
 lease_check(void *v)
 {
 	return (0);
-}
-
-int
-vop_generic_mmap(v)
-	void *v;
-{
-	return 0;
 }

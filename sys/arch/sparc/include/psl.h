@@ -203,6 +203,11 @@ SPLHOLD(spltty, PIL_TTY)
 SPLHOLD(splimp, 7)
 SPLHOLD(splvm, 7)
 
+/*
+ * remove.
+ */
+SPLHOLD(splpmap, 7)
+
 SPLHOLD(splclock, PIL_CLOCK)
 
 /* fd hardware interrupts are at level 11 */

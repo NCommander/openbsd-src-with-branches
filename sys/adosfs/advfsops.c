@@ -557,7 +557,6 @@ adosfs_vget(mp, an, vpp)
 
 	*vpp = vp;		/* return vp */
 	brelse(bp);		/* release buffer */
-	vp->v_size = ap->fsize;
 	return (0);
 }
 

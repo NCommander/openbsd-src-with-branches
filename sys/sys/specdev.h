@@ -121,4 +121,3 @@ int	spec_advlock	__P((void *));
 #define	spec_reallocblks spec_badop
 #define	spec_bwrite	vop_generic_bwrite
 #define spec_revoke     vop_generic_revoke
-#define	spec_mmap	spec_badop

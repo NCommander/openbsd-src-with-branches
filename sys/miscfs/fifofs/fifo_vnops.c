@@ -103,8 +103,7 @@ struct vnodeopv_entry_desc fifo_vnodeop_entries[] = {
 	{ &vop_pathconf_desc, fifo_pathconf },		/* pathconf */
 	{ &vop_advlock_desc, fifo_advlock },		/* advlock */
 	{ &vop_bwrite_desc, fifo_bwrite },		/* bwrite */
-	{ &vop_mmap_desc, fifo_mmap },
-	{ NULL, NULL }
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void *)))NULL }
 };
 
 void	filt_fifordetach(struct knote *kn);

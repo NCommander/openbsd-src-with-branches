@@ -84,7 +84,6 @@ int	dead_print	__P((void *));
 #define dead_pathconf	dead_ebadf
 #define dead_advlock	dead_ebadf
 #define dead_bwrite	nullop
-#define dead_mmap	dead_badop
 
 int	chkvnlock __P((struct vnode *));
 
@@ -125,8 +124,7 @@ struct vnodeopv_entry_desc dead_vnodeop_entries[] = {
 	{ &vop_pathconf_desc, dead_pathconf },	/* pathconf */
 	{ &vop_advlock_desc, dead_advlock },	/* advlock */
 	{ &vop_bwrite_desc, dead_bwrite },	/* bwrite */
-	{ &vop_mmap_desc, dead_mmap },
-	{ NULL, NULL }
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void *)))NULL }
 };
 struct vnodeopv_desc dead_vnodeop_opv_desc =
 	{ &dead_vnodeop_p, dead_vnodeop_entries };

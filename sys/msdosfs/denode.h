@@ -91,8 +91,6 @@
  *   things.
  */
 
-#include <miscfs/genfs/genfs.h>
-
 /*
  * Internal pseudo-offset for (nonexistent) directory entry for the root
  * dir in the root dir
@@ -137,7 +135,6 @@ struct fatcache {
  * contained within a vnode.
  */
 struct denode {
-	struct genfs_node de_gnode;
 	struct denode *de_next;	/* Hash chain forward */
 	struct denode **de_prev; /* Hash chain back */
 	struct vnode *de_vnode;	/* addr of vnode we are part of */
@@ -314,5 +311,4 @@ void reinsert __P((struct denode *));
 int removede __P((struct denode *, struct denode *));
 int uniqdosname __P((struct denode *, struct componentname *, u_char *));
 int findwin95 __P((struct denode *));
-int msdosfs_gop_alloc __P((struct vnode *, off_t, off_t, int, struct ucred *));
 #endif	/* _KERNEL */

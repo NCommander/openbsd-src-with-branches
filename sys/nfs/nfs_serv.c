@@ -1663,6 +1663,8 @@ nfsrv_remove(nfsd, slp, procp, mrq)
 			error = EBUSY;
 			goto out;
 		}
+		if (vp->v_flag & VTEXT)
+			uvm_vnp_uncache(vp);
 out:
 		if (!error) {
 			error = VOP_REMOVE(nd.ni_dvp, nd.ni_vp, &nd.ni_cnd);
@@ -3274,10 +3276,11 @@ nfsrv_access(vp, flags, cred, rdonly, p, override)
 			}
 		}
 		/*
-		 * If the vnode is in use as a process's text,
-		 * we can't allow writing.
+		 * If there's shared text associated with
+		 * the inode, try to free it up once.  If
+		 * we fail, we can't allow writing.
 		 */
-		if ((vp->v_flag & VTEXT))
+		if ((vp->v_flag & VTEXT) && !uvm_vnp_uncache(vp))
 			return (ETXTBSY);
 	}
 	error = VOP_ACCESS(vp, flags, cred, p);

@@ -93,8 +93,7 @@ struct vnodeopv_entry_desc mfs_vnodeop_entries[] = {
 	{ &vop_pathconf_desc, mfs_pathconf },		/* pathconf */
 	{ &vop_advlock_desc, mfs_advlock },		/* advlock */
 	{ &vop_bwrite_desc, mfs_bwrite },		/* bwrite */
-	{ &vop_mmap_desc, mfs_mmap },
-	{ NULL, NULL }
+	{ (struct vnodeop_desc*)NULL, (int(*) __P((void *)))NULL }
 };
 struct vnodeopv_desc mfs_vnodeop_opv_desc =
 	{ &mfs_vnodeop_p, mfs_vnodeop_entries };

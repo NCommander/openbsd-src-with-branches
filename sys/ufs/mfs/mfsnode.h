@@ -87,4 +87,3 @@ struct mfsnode {
 #define	mfs_truncate	mfs_badop
 #define	mfs_update	nullop
 #define	mfs_bwrite	vop_generic_bwrite
-#define mfs_mmap	mfs_badop

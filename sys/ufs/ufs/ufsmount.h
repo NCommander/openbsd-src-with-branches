@@ -64,7 +64,6 @@ struct ufsmount {
 	struct	vnode *um_quotas[MAXQUOTAS];	/* pointer to quota files */
 	struct	ucred *um_cred[MAXQUOTAS];	/* quota file access cred */
 	u_long	um_nindir;			/* indirect ptrs per block */
-	u_long	um_lognindir;			/* log2 of um_nindir */
 	u_long	um_bptrtodb;			/* indir ptr to disk block */
 	u_long	um_seqinc;			/* inc between seq blocks */
 	time_t	um_btime[MAXQUOTAS];		/* block quota time limit */

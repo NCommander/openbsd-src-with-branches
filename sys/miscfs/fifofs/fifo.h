@@ -80,7 +80,6 @@ int	fifo_pathconf	__P((void *));
 int	fifo_advlock	__P((void *));
 #define fifo_reallocblks fifo_badop
 #define fifo_bwrite	nullop
-#define fifo_mmap	fifo_badop
 
 void 	fifo_printinfo __P((struct vnode *));
 
