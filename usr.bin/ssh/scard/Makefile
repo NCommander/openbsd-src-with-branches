@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.35 2001/06/28 02:32:32 hin Exp $
+#	$OpenBSD: Makefile,v 1.1 2001/06/28 21:55:28 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -11,7 +11,6 @@ clean:
 	rm -f ${CARDLET}
 
 install: ${CARDLET}
-	echo "installing ${CARDLET} into ${DESTDIR}${DATADIR}"; \
 	install -c -m ${LIBMODE} -o ${LIBOWN} -g ${LIBGRP} \
 	    ${CARDLET} ${DESTDIR}${DATADIR}
 
