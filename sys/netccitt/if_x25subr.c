@@ -771,13 +771,7 @@ pk_rtattach(so, m0)
 	((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
 #define transfer_sockbuf(s, f, l) \
 	while ((m = (s)->sb_mb) != NULL) \
-		{ \
-			(s)->sb_mb = m->m_nextpkt; \
-			SB_EMPTY_FIXUP((s)); \
-			m->m_nextpkt = 0; \
-			sbfree((s), m); \
-			f; \
-		}
+		{(s)->sb_mb = m->m_act; m->m_act = 0; sbfree((s), m); f;}
 
 	if (rt)
 		rt->rt_refcnt--;

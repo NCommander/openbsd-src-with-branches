@@ -409,7 +409,7 @@ tcp_usrreq(so, req, m, nam, control)
 	 * marker if URG set.  Possibly send more data.
 	 */
 	case PRU_SEND:
-		sbappendstream(&so->so_snd, m);
+		sbappend(&so->so_snd, m);
 		error = tcp_output(tp);
 		break;
 
@@ -457,7 +457,7 @@ tcp_usrreq(so, req, m, nam, control)
 		 * of data past the urgent section.
 		 * Otherwise, snd_up should be one lower.
 		 */
-		sbappendstream(&so->so_snd, m);
+		sbappend(&so->so_snd, m);
 		tp->snd_up = tp->snd_una + so->so_snd.sb_cc;
 		tp->t_force = 1;
 		error = tcp_output(tp);
