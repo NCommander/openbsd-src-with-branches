@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.22 2001/02/19 09:49:52 camield Exp $	*/
+/*	$OpenBSD: exec.c,v 1.24 2001/07/19 16:46:27 millert Exp $	*/
 
 /*
  * execute command tree
@@ -450,17 +450,13 @@ comexec(t, tp, ap, flags)
 	int volatile flags;
 {
 	int i;
-	int rv = 0;
+	volatile int rv = 0;
 	register char *cp;
 	register char **lastp;
 	static struct op texec; /* Must be static (XXX but why?) */
 	int type_flags;
 	int keepasn_ok;
 	int fcflags = FC_BI|FC_FUNC|FC_PATH;
-
-#ifdef __GNUC__
-	(void)&rv;
-#endif
 
 #ifdef KSH
 	/* snag the last argument for $_ XXX not the same as at&t ksh,
