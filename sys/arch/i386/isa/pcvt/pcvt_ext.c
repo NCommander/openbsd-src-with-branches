@@ -2330,7 +2330,8 @@ switch_screen(int n, int oldgrafx, int newgrafx)
 		if(vsp->force24 && (vsp->vt_pure_mode == M_PUREVT) &&
 			(vgacs[vsp->vga_charset].screen_size == SIZ_25ROWS))
 		{
-			fillw(' ', (caddr_t)vsp->Crtat + vsp->screen_rows * vsp->maxcol,
+			fillw(' ', (caddr_t)
+				(vsp->Crtat + vsp->screen_rows * vsp->maxcol),
 				vsp->maxcol);
 		}
 	}

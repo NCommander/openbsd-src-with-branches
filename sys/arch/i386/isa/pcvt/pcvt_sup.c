@@ -1087,11 +1087,11 @@ set_charset(struct video_state *svsp, int curvgacs)
 		}
 		if (newrows < newsize)
 			fillw(user_attr | ' ',
-			      (caddr_t)svsp->Crtat + newrows * svsp->maxcol,
+			      (caddr_t)(svsp->Crtat + newrows * svsp->maxcol),
 			      (newsize - newrows) * svsp->maxcol);
 	} else if (oldrows < newsize)
 		fillw(user_attr | ' ',
-		      (caddr_t)svsp->Crtat + oldrows * svsp->maxcol,
+		      (caddr_t)(svsp->Crtat + oldrows * svsp->maxcol),
 		      (newsize - oldrows) * svsp->maxcol);
 
 	svsp->screen_rowsize = newsize;
@@ -1906,7 +1906,7 @@ scrnsv_timedout(void *arg)
 	{
 		/* second call, now blank the screen */
 		/* fill screen with blanks */
-		fillw(/* (BLACK<<8) + */ ' ', (caddr_t)vsp->Crtat, scrnsv_size / 2);
+		fillw(/* (BLACK<<8) + */ ' ', (caddr_t)(vsp->Crtat), scrnsv_size / 2);
 
 #if PCVT_PRETTYSCRNS
 		scrnsv_current = vsp->Crtat;
