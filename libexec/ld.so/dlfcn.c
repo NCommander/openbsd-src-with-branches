@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.27 2003/06/09 16:10:03 deraadt Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.28 2003/06/22 21:39:01 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -111,9 +111,9 @@ dlopen(const char *libname, int how)
 
 	if (_dl_debug_map->r_brk) {
 		_dl_debug_map->r_state = RT_ADD;
-		(*((void (*)())_dl_debug_map->r_brk))();
+		(*((void (*)(void))_dl_debug_map->r_brk))();
 		_dl_debug_map->r_state = RT_CONSISTENT;
-		(*((void (*)())_dl_debug_map->r_brk))();
+		(*((void (*)(void))_dl_debug_map->r_brk))();
 	}
 	return((void *)object);
 }
@@ -176,9 +176,9 @@ dlclose(void *handle)
 
 	if (_dl_debug_map->r_brk) {
 		_dl_debug_map->r_state = RT_DELETE;
-		(*((void (*)())_dl_debug_map->r_brk))();
+		(*((void (*)(void))_dl_debug_map->r_brk))();
 		_dl_debug_map->r_state = RT_CONSISTENT;
-		(*((void (*)())_dl_debug_map->r_brk))();
+		(*((void (*)(void))_dl_debug_map->r_brk))();
 	}
 	return (retval);
 }
