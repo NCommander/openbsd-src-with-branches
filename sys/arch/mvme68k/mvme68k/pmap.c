@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.27 2001/07/25 13:25:32 art Exp $ */
+/*	$OpenBSD: pmap.c,v 1.28 2001/09/19 20:50:56 mickey Exp $ */
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -131,9 +131,7 @@
 
 #include <machine/pte.h>
 
-#include <vm/vm.h>
-#include <vm/vm_page.h>
-
+#include <uvm/uvm_extern.h>
 #include <uvm/uvm.h>
 
 #include <machine/cpu.h>
@@ -267,6 +265,9 @@ void pmap_enter_ptpage	__P((pmap_t, vm_offset_t));
 void pmap_ptpage_addref __P((vaddr_t));
 int  pmap_ptpage_delref __P((vaddr_t));
 void pmap_collect1	__P((pmap_t, vm_offset_t, vm_offset_t));
+void pmap_pinit		__P((struct pmap *));
+void pmap_release	__P((struct pmap *));
+
 
 #ifdef DEBUG
 void pmap_pvdump	__P((vm_offset_t));
