@@ -731,10 +731,10 @@ void
 usage()
 {
 	(void)fprintf(stderr,
-	    "usage: %s [-AVadegimnptv46] [-o output] [-P port] [-r <seconds>] [host [port]]\n"
-	    "       %s host:[/path/]file[/]\n"
-	    "       %s ftp://[user:password@]host[:port]/file[/]\n"
-	    "       %s http://host[:port]/file\n",
+	    "usage: %s [-46AadegimnptVv] [-P port] [-r seconds] [host [port]]\n"
+	    "       %s [-o output] ftp://[user:password@]host[:port]/file[/]\n"
+	    "       %s [-o output] http://host[:port]/file\n"
+	    "       %s [-o output] host:[/path/]file[/]\n",
 	    __progname, __progname, __progname, __progname);
 	exit(1);
 }
