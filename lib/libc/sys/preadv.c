@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: preadv.c,v 1.1 2000/04/20 06:34:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -34,7 +34,7 @@
  */
 
 #if defined(SYSLIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: lseek.c,v 1.6 1998/11/20 11:18:53 d Exp $";
+static char rcsid[] = "$OpenBSD: preadv.c,v 1.1 2000/04/20 06:34:37 deraadt Exp $";
 #endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -53,6 +53,7 @@ preadv(fd, iovp, iovcnt, offset)
 	int iovcnt;
 	off_t offset;
 {
+	extern off_t __syscall();
 	quad_t q;
 	int rv;
 

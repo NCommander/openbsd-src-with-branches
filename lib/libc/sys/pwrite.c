@@ -1,4 +1,4 @@
-/*	$OpenBSD$	 */
+/*	$OpenBSD: pwrite.c,v 1.1 2000/04/20 06:34:37 deraadt Exp $	 */
 
 /*
  * Copyright (c) 1992, 1993
@@ -34,7 +34,7 @@
  */
 
 #if defined(SYSLIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: lseek.c,v 1.6 1998/11/20 11:18:53 d Exp $";
+static char rcsid[] = "$OpenBSD: pwrite.c,v 1.1 2000/04/20 06:34:37 deraadt Exp $";
 #endif /* SYSLIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -52,6 +52,7 @@ pwrite(fd, buf, nbyte, offset)
 	size_t nbyte;
 	off_t offset;
 {
+	extern off_t __syscall();
 	quad_t q;
 	int rv;
 
