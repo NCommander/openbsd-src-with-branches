@@ -1,4 +1,4 @@
-/*	$OpenBSD: itecons.c,v 1.2 1998/07/08 21:34:35 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -162,8 +162,7 @@ ite_getc(dev)
 	dev_t dev;
 {
 	static int stash = 0;
-	register int err;
-	register int c, l;
+	register int err, c, l;
 
 	if (kyiodc == NULL)
 		return(0x100);
