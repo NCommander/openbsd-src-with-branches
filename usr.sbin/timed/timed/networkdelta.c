@@ -1,4 +1,4 @@
-/*	$OpenBSD: networkdelta.c,v 1.5 2002/06/18 00:40:31 ericj Exp $	*/
+/*	$OpenBSD: networkdelta.c,v 1.6 2003/06/02 23:36:55 millert Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
@@ -60,7 +60,7 @@ static long median(float, float*, long*, long*, unsigned int);
  *	bad values.
  */
 long
-networkdelta()
+networkdelta(void)
 {
 	struct hosttbl *htp;
 	long med;
@@ -146,10 +146,7 @@ networkdelta()
  *	in <<Numerical Recipes>>.
  */
 static long
-median(float a,				/* initial guess for the median */
-       float *eps_ptr,			/* spacing near the median */
-       long *x, long *xlim,		/* the data */
-       unsigned int gnuf)		/* good enough estimate */
+median(float a, float *eps_ptr, long *x, long *xlim, unsigned int gnuf)
 {
 	long *xptr;
 	float ap = LONG_MAX;		/* bounds on the median */

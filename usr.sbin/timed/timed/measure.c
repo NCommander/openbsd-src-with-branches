@@ -1,4 +1,4 @@
-/*	$OpenBSD: measure.c,v 1.8 2002/09/06 19:28:01 deraadt Exp $	*/
+/*	$OpenBSD: measure.c,v 1.9 2003/06/02 23:36:55 millert Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
@@ -58,11 +58,8 @@ static n_short seqno = 0;
  * ICMP timestamp messages.
  */
 int					/* status val defined in globals.h */
-measure(u_long maxmsec,			/* wait this many msec at most */
-	u_long wmsec,			/* msec to wait for an answer */
-	char *hname,
-	struct sockaddr_in *addr,
-	int print)			/* print complaints on stderr */
+measure(u_long maxmsec, u_long wmsec, char *hname, struct sockaddr_in *addr,
+    int print)
 {
 	socklen_t length;
 	int measure_status;
