@@ -1,4 +1,4 @@
-/*	$OpenBSD: dk.c,v 1.6 2002/03/15 18:19:52 millert Exp $	*/
+/*	$OpenBSD: dk.c,v 1.7 2003/01/14 11:40:18 mickey Exp $	*/
 
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
@@ -76,7 +76,7 @@ dkopen(struct open_file *f, ...)
 		if (debug)
 			printf ("dkopen: %s\n", st);
 #endif
-		return ERDLAB;
+		/* we do not know if it's a disk or net, but do not fail */
 	} else {
 		register u_int i;
 
