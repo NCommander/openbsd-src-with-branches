@@ -1,5 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.16 2001/06/08 03:53:46 angelos Exp $ */
-
+/*	$OpenBSD: ip_ipip.c,v 1.17 2001/06/19 00:48:23 deraadt Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -18,8 +17,9 @@
  *
  * Copyright (C) 1995, 1996, 1997, 1998, 1999 by John Ioannidis,
  * Angelos D. Keromytis and Niels Provos.
- *	
- * Permission to use, copy, and modify this software without fee
+ * Copyright (c) 2001, Angelos D. Keromytis.
+ *
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
