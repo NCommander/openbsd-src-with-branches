@@ -1,4 +1,5 @@
 %{
+/*	$OpenBSD$	*/
 /*
  *  CU sudo version 1.5.3
  *
@@ -26,7 +27,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: parse.lex,v 1.69 1996/11/14 02:37:16 millert Exp $";
+static char rcsid[] = "Id: parse.lex,v 1.69 1996/11/14 02:37:16 millert Exp $";
 #endif /* lint */
 
 #include "config.h"

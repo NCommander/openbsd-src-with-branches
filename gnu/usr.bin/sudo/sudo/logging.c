@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * CU sudo version 1.5.3 (based on Root Group sudo version 1.1)
  *
@@ -37,7 +39,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: logging.c,v 1.2 1996/11/17 16:34:00 millert Exp $";
+static char rcsid[] = "Id: logging.c,v 1.87 1997/08/06 18:58:06 millert Exp $";
 #endif /* lint */
 
 #include "config.h"
@@ -374,7 +376,7 @@ void log_error(code)
 	    oldend = end;
 	    end = strchr(oldend, ' ');
 
-	    if (end) {
+	    if (maxlen > 0 && end) {
 		*end = '\0';
 		if (strlen(beg) > maxlen) {
 		    /* too far, need to back up & print the line */

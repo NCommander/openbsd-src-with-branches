@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  *  CU sudo version 1.5.3
  *
@@ -17,7 +19,7 @@
  *
  *  Please send bugs, changes, problems to sudo-bugs@courtesan.com
  *
- *  $Id: pathnames.h,v 1.23 1996/11/14 02:37:16 millert Exp $
+ *  Id: pathnames.h,v 1.23 1996/11/14 02:37:16 millert Exp $
  */
 
 /*
