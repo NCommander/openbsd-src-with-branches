@@ -1,5 +1,6 @@
-#	$OpenBSD: Makefile,v 1.2 1996/08/26 08:41:23 downsj Exp $
+#	$OpenBSD: Makefile,v 1.4 1997/03/30 19:22:42 provos Exp $
 
+LDSTATIC=	${STATIC}
 PROG=	encrypt
 SRCS= encrypt.c pwd_gensalt.c
 .PATH: ${.CURDIR}/../passwd
