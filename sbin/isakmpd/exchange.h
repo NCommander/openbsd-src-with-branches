@@ -1,4 +1,4 @@
-/* $OpenBSD: exchange.h,v 1.26 2004/05/03 21:23:51 hshoexer Exp $	 */
+/* $OpenBSD: exchange.h,v 1.27 2004/06/20 15:24:05 ho Exp $	 */
 /* $EOM: exchange.h,v 1.28 2000/09/28 12:54:28 niklas Exp $	 */
 
 /*
@@ -75,7 +75,7 @@ struct exchange {
 	void           *finalize_arg;
 
 	/* When several SA's are being negotiated we keep them here.  */
-	                TAILQ_HEAD(sa_head, sa) sa_list;
+	TAILQ_HEAD(sa_head, sa) sa_list;
 
 	/*
 	 * The event that will occur when it has taken too long time to try to
