@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.22 2004/06/20 18:35:12 henning Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.23 2004/07/03 17:19:59 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -79,6 +79,10 @@ print_set(struct filter_set *set)
 			printf("med %u ", set->med);
 		if (set->flags & SET_NEXTHOP)
 			printf("nexthop %s ", inet_ntoa(set->nexthop));
+		if (set->flags & SET_NEXTHOP_REJECT)
+			printf("nexthop reject ");
+		if (set->flags & SET_NEXTHOP_BLACKHOLE)
+			printf("nexthop blackhole ");
 		if (set->flags & SET_PREPEND)
 			printf("prepend-self %u ", set->prepend);
 		printf("}");
