@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.c,v 1.15 2003/08/14 19:00:12 jason Exp $ */
+/* $OpenBSD: ip_ipcomp.c,v 1.16 2004/06/26 17:34:16 markus Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -398,7 +398,6 @@ ipcomp_output(m, tdb, mp, skip, protoff)
 
 		hdr.af = tdb->tdb_dst.sa.sa_family;
 		hdr.spi = tdb->tdb_spi;
-		hdr.flags |= M_COMP;
 
 		m1.m_next = m;
 		m1.m_len = ENC_HDRLEN;
