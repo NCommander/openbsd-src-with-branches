@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile.inc,v 1.1 1997/04/13 17:17:52 mickey Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 1997/04/14 10:57:11 deraadt Exp $
 #	$NetBSD: Makefile.inc,v 1.1 1995/07/18 04:13:14 briggs Exp $
 #
 
@@ -26,7 +26,8 @@ do_files:
 	    TARGDIR=${MOUNT_POINT} sh ${TOP}/runlist.sh ${LISTS}
 
 clean cleandir:
-	/bin/rm -f core ${IMAGE} ${CBIN} ${CBIN}.mk ${CBIN}.cache *.o *.lo *.c
+	/bin/rm -f core ${IMAGE} ${CBIN} ${CBIN}.mk ${CBIN}.cache *.o *.lo *.c \
+	    bsd bsd.rd bsd.gz floppy-*.fs 
 
 .include <bsd.obj.mk>
 .include <bsd.subdir.mk>
