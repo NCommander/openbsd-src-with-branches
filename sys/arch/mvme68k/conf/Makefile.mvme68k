@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.mvme68k,v 1.22 2003/05/23 22:16:16 tedu Exp $
+#	$OpenBSD: Makefile.mvme68k,v 1.23 2003/07/22 19:39:50 otto Exp $
 
 # This makefile is constructed from a machine description:
 #	config machineid
@@ -47,6 +47,7 @@ CMACHFLAGS+=	-msoft-float
 .if ${IDENT:M-DNO_PROPOLICE}
 CMACHFLAGS+=	-fno-stack-protector
 .endif
+CMACHFLAGS+=	-fno-builtin-printf -fno-builtin-log
 
 COPTS?=		-O2
 CFLAGS=		${DEBUG} ${COPTS} ${CWARNFLAGS} ${CMACHFLAGS} ${PIPE}
