@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt.c,v 1.20 1997/01/17 17:15:15 kstailey Exp $	*/
+/*	$OpenBSD: bt.c,v 1.21 1997/01/22 22:47:50 deraadt Exp $	*/
 /*	$NetBSD: bt.c,v 1.10 1996/05/12 23:51:54 mycroft Exp $	*/
 
 #undef BTDIAG
@@ -358,7 +358,7 @@ btattach(parent, self, aux)
 	sc->sc_iobase = ia->ia_iobase;
 
 	if (sc->sc_drq != DRQUNK)
-		isa_dmacascade(sc->sc_drq);
+		isadma_cascade(sc->sc_drq);
 
 	bt_inquire_setup_information(sc);
 	bt_init(sc);
