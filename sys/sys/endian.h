@@ -1,4 +1,4 @@
-/*	$OpenBSD: endian.h,v 1.1 1997/11/09 23:04:58 niklas Exp $	*/
+/*	$OpenBSD: endian.h,v 1.2 1997/11/10 10:29:14 niklas Exp $	*/
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -50,9 +50,6 @@
 
 #define BIG_ENDIAN	4321
 #define PDP_ENDIAN	3412
-
-typedef u_int32_t in_addr_t;
-typedef u_int16_t in_port_t;
 
 #ifdef __GNUC__
 
