@@ -1,3 +1,4 @@
+/*	$OpenBSD: ioasic.c,v 1.4.4.1 1996/06/05 00:39:05 cgd Exp $	*/
 /*	$NetBSD: ioasic.c,v 1.4.4.1 1996/06/05 00:39:05 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: wscons_rinit.c,v 1.1 1996/04/12 02:00:54 cgd Exp $ */
 /*	$NetBSD: wscons_rinit.c,v 1.1 1996/04/12 02:00:54 cgd Exp $ */
 
 /*

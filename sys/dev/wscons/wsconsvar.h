@@ -1,3 +1,4 @@
+/*	$OpenBSD: wsconsvar.h,v 1.2 1996/04/12 06:10:36 cgd Exp $	*/
 /*	$NetBSD: wsconsvar.h,v 1.2 1996/04/12 06:10:36 cgd Exp $	*/
 
 /*

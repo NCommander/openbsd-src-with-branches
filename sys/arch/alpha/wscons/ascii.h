@@ -1,3 +1,4 @@
+/*	$OpenBSD: ascii.h,v 1.1 1996/04/12 02:00:42 cgd Exp $	*/
 /*	$NetBSD: ascii.h,v 1.1 1996/04/12 02:00:42 cgd Exp $	*/
 
 #define	ASCII_BEL	0x07		/* bell */

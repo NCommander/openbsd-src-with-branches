@@ -1,3 +1,4 @@
+/*	$OpenBSD: sioreg.h,v 1.1 1996/04/23 14:10:53 cgd Exp $	*/
 /*	$NetBSD: sioreg.h,v 1.1 1996/04/23 14:10:53 cgd Exp $	*/
 
 /*

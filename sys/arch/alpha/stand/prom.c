@@ -1,3 +1,4 @@
+/*	$OpenBSD: prom.c,v 1.1 1995/11/23 02:39:07 cgd Exp $	*/
 /*	$NetBSD: prom.c,v 1.1 1995/11/23 02:39:07 cgd Exp $	*/
 
 /*  

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cia_bus_mem.c,v 1.2.4.2 1996/06/13 18:15:01 cgd Exp $	*/
 /*	$NetBSD: cia_bus_mem.c,v 1.2.4.2 1996/06/13 18:15:01 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: installboot.c,v 1.2 1995/12/20 00:17:49 cgd Exp $ */
 /*	$NetBSD: installboot.c,v 1.2 1995/12/20 00:17:49 cgd Exp $ */
 
 /*

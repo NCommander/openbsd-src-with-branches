@@ -1,3 +1,4 @@
+/*	$OpenBSD: espvar.h,v 1.3 1995/12/20 00:40:26 cgd Exp $	*/
 /*	$NetBSD: espvar.h,v 1.3 1995/12/20 00:40:26 cgd Exp $	*/
 
 /*

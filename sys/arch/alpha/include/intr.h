@@ -1,3 +1,4 @@
+/*	$OpenBSD: intr.h,v 1.1 1996/04/12 01:42:17 cgd Exp $	*/
 /*	$NetBSD: intr.h,v 1.1 1996/04/12 01:42:17 cgd Exp $	*/
 
 /*

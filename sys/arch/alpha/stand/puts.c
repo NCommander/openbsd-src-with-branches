@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 
 void
 puts(s)

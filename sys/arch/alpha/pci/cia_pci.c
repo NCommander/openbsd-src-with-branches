@@ -1,3 +1,4 @@
+/*	$OpenBSD: cia_pci.c,v 1.2 1996/04/12 23:37:10 cgd Exp $	*/
 /*	$NetBSD: cia_pci.c,v 1.2 1996/04/12 23:37:10 cgd Exp $	*/
 
 /*

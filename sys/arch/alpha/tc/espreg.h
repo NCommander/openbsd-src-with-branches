@@ -1,3 +1,4 @@
+/*	$OpenBSD: espreg.h,v 1.2 1995/12/20 00:40:25 cgd Exp $	*/
 /*	$NetBSD: espreg.h,v 1.2 1995/12/20 00:40:25 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: apecs_pci.c,v 1.6 1996/04/12 06:08:09 cgd Exp $	*/
 /*	$NetBSD: apecs_pci.c,v 1.6 1996/04/12 06:08:09 cgd Exp $	*/
 
 /*

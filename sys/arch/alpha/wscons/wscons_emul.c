@@ -1,3 +1,4 @@
+/*	$OpenBSD: wscons_emul.c,v 1.2 1996/04/12 06:10:29 cgd Exp $	*/
 /*	$NetBSD: wscons_emul.c,v 1.2 1996/04/12 06:10:29 cgd Exp $	*/
 
 /*

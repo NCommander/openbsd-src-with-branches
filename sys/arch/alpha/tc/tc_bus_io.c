@@ -1,3 +1,4 @@
+/*	$OpenBSD: tc_bus_io.c,v 1.1.4.1 1996/06/13 17:41:51 cgd Exp $	*/
 /*	$NetBSD: tc_bus_io.c,v 1.1.4.1 1996/06/13 17:41:51 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: isafcns_jensen.c,v 1.2 1996/04/12 01:54:04 cgd Exp $	*/
 /*	$NetBSD: isafcns_jensen.c,v 1.2 1996/04/12 01:54:04 cgd Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ciavar.h,v 1.3.4.1 1996/06/10 00:04:12 cgd Exp $	*/
 /*	$NetBSD: ciavar.h,v 1.3.4.1 1996/06/10 00:04:12 cgd Exp $	*/
 
 /*

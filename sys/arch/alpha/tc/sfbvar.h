@@ -1,3 +1,4 @@
+/*	$OpenBSD: sfbvar.h,v 1.1 1996/05/01 21:15:51 cgd Exp $	*/
 /*	$NetBSD: sfbvar.h,v 1.1 1996/05/01 21:15:51 cgd Exp $	*/
 
 /*

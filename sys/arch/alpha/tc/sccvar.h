@@ -1,3 +1,4 @@
+/*	$OpenBSD: sccvar.h,v 1.2 1995/08/03 00:52:23 cgd Exp $	*/
 /*	$NetBSD: sccvar.h,v 1.2 1995/08/03 00:52:23 cgd Exp $	*/
 
 /* 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: apecsvar.h,v 1.3 1996/04/12 06:08:14 cgd Exp $	*/
 /*	$NetBSD: apecsvar.h,v 1.3 1996/04/12 06:08:14 cgd Exp $	*/
 
 /*

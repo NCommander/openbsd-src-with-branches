@@ -1,3 +1,4 @@
+/*	$OpenBSD: devopen.c,v 1.1 1995/11/23 02:39:37 cgd Exp $	*/
 /*	$NetBSD: devopen.c,v 1.1 1995/11/23 02:39:37 cgd Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD: wscons_rops.c,v 1.1 1996/04/12 02:00:55 cgd Exp $ */
 /*	$NetBSD: wscons_rops.c,v 1.1 1996/04/12 02:00:55 cgd Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: apecs_lca_bus_io.c,v 1.2.4.1 1996/06/13 18:14:55 cgd Exp $	*/
 /*	$NetBSD: apecs_lca_bus_io.c,v 1.2.4.1 1996/06/13 18:14:55 cgd Exp $	*/
 
 /*

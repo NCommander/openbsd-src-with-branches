@@ -1,3 +1,4 @@
+/*	$OpenBSD: intrcnt.h,v 1.4.4.2 1996/06/05 03:42:24 cgd Exp $	*/
 /*	$NetBSD: intrcnt.h,v 1.4.4.2 1996/06/05 03:42:24 cgd Exp $	*/
 
 /*

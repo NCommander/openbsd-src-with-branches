@@ -1,3 +1,4 @@
+/*	$OpenBSD: wscons_raster.h,v 1.1 1996/04/12 02:00:51 cgd Exp $ */
 /*	$NetBSD: wscons_raster.h,v 1.1 1996/04/12 02:00:51 cgd Exp $ */
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcds.c,v 1.9.4.2 1996/06/05 01:32:26 cgd Exp $	*/
 /*	$NetBSD: tcds.c,v 1.9.4.2 1996/06/05 01:32:26 cgd Exp $	*/
 
 /*

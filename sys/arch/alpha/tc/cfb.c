@@ -1,3 +1,4 @@
+/*	$OpenBSD: cfb.c,v 1.1 1996/05/01 23:25:03 cgd Exp $	*/
 /*	$NetBSD: cfb.c,v 1.1 1996/05/01 23:25:03 cgd Exp $	*/
 
 /*
