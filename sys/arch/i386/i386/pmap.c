@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.38 2001/03/22 23:36:51 niklas Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.39 2001/04/10 06:59:13 niklas Exp $	*/
 /*	$NetBSD: pmap.c,v 1.84 2000/02/21 02:01:24 chs Exp $	*/
 
 /*
@@ -2915,10 +2915,9 @@ pmap_write_protect(pmap, sva, eva, prot)
  */
 
 void
-pmap_change_wiring(pmap, va, wired)
+pmap_unwire(pmap, va)
 	struct pmap *pmap;
 	vaddr_t va;
-	boolean_t wired;
 {
 	pt_entry_t *ptes;
 
