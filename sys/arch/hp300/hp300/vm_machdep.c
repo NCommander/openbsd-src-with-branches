@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.16 2000/06/08 22:25:18 niklas Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.17 2001/05/04 22:48:59 aaron Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.47 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -233,7 +233,7 @@ pagemove(from, to, size)
 	paddr_t pa;
 
 #ifdef DEBUG
-	if (size & CLOFSET)
+	if ((size & PAGE_MASK) != 0)
 		panic("pagemove");
 #endif
 	while (size > 0) {

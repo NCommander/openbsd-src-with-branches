@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.20 2001/03/12 23:03:25 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.21 2001/04/29 19:00:03 miod Exp $	*/
 
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -508,7 +508,7 @@ pagemove(caddr_t from, caddr_t to, size_t size)
 	register vm_offset_t pa;
 
 #ifdef DEBUG
-	if (size & CLOFSET)
+	if ((size & PAGE_MASK) != 0)
 		panic("pagemove");
 #endif
 	while (size > 0) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.9 1999/11/22 19:22:00 matthieu Exp $ */
+/*	$OpenBSD: mem.c,v 1.11 2001/04/05 20:39:39 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -206,16 +206,10 @@ mmrw(dev, uio, flags)
 			 * is a global zeroed page, the null segment table.
 			 */
 			if (devzeropage == NULL) {
-#if CLBYTES == NBPG
 				extern caddr_t Segtabzero;
 				devzeropage = Segtabzero;
-#else
-				devzeropage = (caddr_t)
-				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(devzeropage, CLBYTES);
-#endif
 			}
-			c = min(iov->iov_len, CLBYTES);
+			c = min(iov->iov_len, PAGE_SIZE);
 			error = uiomove(devzeropage, c, uio);
 			continue;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.10 2000/06/08 10:12:15 art Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.11 2000/06/08 22:25:20 niklas Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -252,8 +252,10 @@ pagemove(from, to, size)
 {
 	pt_entry_t *fpte, *tpte;
 
-	if (size % CLBYTES)
+#ifdef DIAGNOSTIC
+	if ((size & PAGE_MASK) != 0)
 		panic("pagemove");
+#endif
 	fpte = kvtopte(from);
 	tpte = kvtopte(to);
 	if(((int)from & CpuCacheAliasMask) != ((int)to & CpuCacheAliasMask)) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.3 1999/11/22 19:21:58 matthieu Exp $	*/
+/*	$OpenBSD: mem.c,v 1.4 1999/11/26 18:01:01 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998,1999 Michael Shalayeff
@@ -261,7 +261,7 @@ mmrw(dev, uio, flags)
 				c = iov->iov_len;
 				break;
 			}
-			c = min(iov->iov_len, CLBYTES);
+			c = min(iov->iov_len, PAGE_SIZE);
 			error = uiomove(zeropage, c, uio);
 			continue;
 		default:

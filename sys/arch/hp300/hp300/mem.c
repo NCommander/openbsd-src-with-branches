@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.11 1999/12/14 18:24:02 downsj Exp $	*/
+/*	$OpenBSD: mem.c,v 1.12 2001/05/04 22:48:59 aaron Exp $	*/
 /*	$NetBSD: mem.c,v 1.25 1999/03/27 00:30:06 mycroft Exp $	*/
 
 /*
@@ -202,10 +202,10 @@ mmrw(dev, uio, flags)
 			 */
 			if (devzeropage == NULL) {
 				devzeropage = (caddr_t)
-				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(devzeropage, CLBYTES);
+				    malloc(PAGE_SIZE, M_TEMP, M_WAITOK);
+				bzero(devzeropage, PAGE_SIZE);
 			}
-			c = min(iov->iov_len, CLBYTES);
+			c = min(iov->iov_len, PAGE_SIZE);
 			error = uiomove(devzeropage, c, uio);
 			continue;
 

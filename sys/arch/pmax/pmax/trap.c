@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.22 2000/11/10 18:15:41 art Exp $	*/
+/*	$OpenBSD: trap.c,v 1.23 2001/04/03 20:25:35 art Exp $	*/
 /*	$NetBSD: trap.c,v 1.50 1996/10/13 21:37:49 jonathan Exp $	*/
 
 /*
@@ -574,7 +574,7 @@ trap(statusReg, causeReg, vadr, pc, args)
 			if (rv == KERN_SUCCESS) {
 				unsigned nss;
 
-				nss = clrnd(btoc(USRSTACK-(unsigned)va));
+				nss = btoc(USRSTACK-(unsigned)va);
 				if (nss > vm->vm_ssize)
 					vm->vm_ssize = nss;
 			} else if (rv == KERN_PROTECTION_FAILURE)
