@@ -152,7 +152,6 @@ nfs_connect(nmp, rep)
 	struct sockaddr *saddr;
 	struct sockaddr_in *sin;
 	struct mbuf *m;
-	u_int16_t tport;
 
 	nmp->nm_so = (struct socket *)0;
 	saddr = mtod(nmp->nm_nam, struct sockaddr *);
@@ -169,18 +168,33 @@ nfs_connect(nmp, rep)
 	 * disclosure through UDP port capture.
 	 */
 	if (saddr->sa_family == AF_INET) {
+		struct mbuf *mopt;
+		int *ip;
+
+		MGET(mopt, M_WAIT, MT_SOOPTS);
+		mopt->m_len = sizeof(int);
+		ip = mtod(mopt, int *);
+		*ip = IP_PORTRANGE_LOW;
+		error = sosetopt(so, IPPROTO_IP, IP_PORTRANGE, mopt);
+		if (error)
+			goto bad;
+
 		MGET(m, M_WAIT, MT_SONAME);
 		sin = mtod(m, struct sockaddr_in *);
 		sin->sin_len = m->m_len = sizeof (struct sockaddr_in);
 		sin->sin_family = AF_INET;
 		sin->sin_addr.s_addr = INADDR_ANY;
-		/* XXX should do random allocation */
-		tport = IPPORT_RESERVED - 1;
-		sin->sin_port = htons(tport);
-		while ((error = sobind(so, m)) == EADDRINUSE &&
-		       --tport > IPPORT_RESERVED / 2)
-			sin->sin_port = htons(tport);
+		sin->sin_port = htons(0);
+		error = sobind(so, m);
 		m_freem(m);
+		if (error)
+			goto bad;
+
+		MGET(mopt, M_WAIT, MT_SOOPTS);
+		mopt->m_len = sizeof(int);
+		ip = mtod(mopt, int *);
+		*ip = IP_PORTRANGE_DEFAULT;
+		error = sosetopt(so, IPPROTO_IP, IP_PORTRANGE, mopt);
 		if (error)
 			goto bad;
 	}
