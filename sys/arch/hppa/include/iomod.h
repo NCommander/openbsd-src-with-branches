@@ -1,4 +1,4 @@
-/*	$OpenBSD: iomod.h,v 1.9 2001/12/02 04:10:25 mickey Exp $	*/
+/*	$OpenBSD: iomod.h,v 1.10 2002/03/14 01:26:32 millert Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -151,10 +151,10 @@
 struct pagezero {
 	/* [0x000] Initialize Vectors */
 	int	ivec_special;		/* must be zero */
-	int	(*ivec_mempf)(void); /* powerfail recovery software */
+	int	(*ivec_mempf)(void);	/* powerfail recovery software */
 	int	(*ivec_toc)(void);	/* exec'd after Transfer Of Control */
 	u_int	ivec_toclen;		/* bytes of ivec_toc code */
-	int	(*ivec_rendz)(void); /* exec'd after Rendezvous Signal */
+	int	(*ivec_rendz)(void);	/* exec'd after Rendezvous Signal */
 	u_int	ivec_mempflen;		/* bytes of ivec_mempf code */
 	u_int	ivec_resv[2];		/* (reserved) */
 	u_int	ivec_mbz;		/* must be zero */

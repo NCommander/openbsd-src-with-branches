@@ -1,4 +1,4 @@
-/*	$OpenBSD: sboot.h,v 1.2 2001/07/04 08:09:31 niklas Exp $	*/
+/*	$OpenBSD: sboot.h,v 1.3 2002/03/14 01:26:41 millert Exp $	*/
 
 /*
  * Copyright (c) 1995 Charles D. Cranor and Seth Widoff
@@ -45,7 +45,7 @@ extern caddr_t end;
 
 #define NULL ((char *)0)
 
-void bcopy(const void *, void *, size_t);		/* libc_sa */
+void bcopy(const void *, void *, size_t);	/* libc_sa */
 void *memset(void *, int, size_t);		/* libc_sa */
 int printf(const char *, ...);			/* libc_sa */
 

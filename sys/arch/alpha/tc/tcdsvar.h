@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcdsvar.h,v 1.6 2002/03/14 01:26:28 millert Exp $	*/
+/*	$OpenBSD: tcdsvar.h,v 1.7 2002/03/14 03:15:51 millert Exp $	*/
 /*	$NetBSD: tcdsvar.h,v 1.5 1996/11/13 21:13:38 cgd Exp $	*/
 
 /*
@@ -35,7 +35,7 @@ struct tcds_slotconfig {
 	int	sc_slot;
 	struct tcds_softc *sc_tcds;		/* to frob TCDS regs */
 	struct esp_softc *sc_esp;		/* to frob child's regs */
-	int	(*sc_intrhand)(void *);	/* intr. handler */
+	int	(*sc_intrhand)(void *);		/* intr. handler */
 	void	*sc_intrarg;			/* intr. handler arg. */
 
 	/*

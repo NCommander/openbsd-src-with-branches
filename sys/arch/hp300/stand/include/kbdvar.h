@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbdvar.h,v 1.1 1997/07/14 08:14:36 downsj Exp $	*/
+/*	$OpenBSD: kbdvar.h,v 1.2 2002/03/14 01:26:31 millert Exp $	*/
 /*	$NetBSD: kbdvar.h,v 1.1 1997/04/14 19:00:13 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@
 
 struct kbdsw {
 	int	(*k_getc)(void);	/* get character */
-	void	(*k_nmi)(void);	/* handle non-maskable interrupt */
+	void	(*k_nmi)(void);		/* handle non-maskable interrupt */
 	int	(*k_init)(void);	/* probe/initialize keyboard */
 };
 
