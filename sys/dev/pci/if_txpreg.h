@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txpreg.h,v 1.30 2001/06/23 04:18:02 jason Exp $ */
+/*	$OpenBSD: if_txpreg.h,v 1.31 2001/08/24 21:11:14 jason Exp $ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell <aaron@monkey.org>.
@@ -157,6 +157,7 @@
 #define	TXP_CMD_FILTER_TABLE_MODE_WRITE		0x3d
 #define	TXP_CMD_FILTER_TCL_WRITE		0x3e
 #define	TXP_CMD_FILTER_TBL_READ			0x3f
+#define	TXP_CMD_VERSIONS_READ			0x43
 #define	TXP_CMD_FILTER_DEFINE			0x45
 #define	TXP_CMD_ADD_WAKEUP_PKT			0x46
 #define	TXP_CMD_ADD_SLEEP_PKT			0x47
