@@ -1,3 +1,7 @@
+# $OpenBSD$
+#
+# csh login file
+
 set tterm='?'$TERM
 set noglob
 onintr finish

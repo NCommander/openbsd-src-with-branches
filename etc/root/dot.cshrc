@@ -1,3 +1,7 @@
+# $OpenBSD$
+#
+# csh initialization
+
 umask 022
 alias mail Mail
 set history=1000

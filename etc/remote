@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	from: @(#)remote	8.1 (Berkeley) 6/10/93
 #
 # remote -- remote host description database

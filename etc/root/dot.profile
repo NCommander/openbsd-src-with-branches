@@ -1,3 +1,7 @@
+# $OpenBSD$
+#
+# sh/ksh initialization
+
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 export PATH
 HOME=/root
