@@ -1783,12 +1783,15 @@ x_expand(c)
 
 	x_goto(xbuf + start);
 	x_delete(end - start, FALSE);
-	for (i = 0; i < nwords; i++)
-		if (x_ins(words[i]) < 0 || (i < nwords - 1 && x_ins(space) < 0))
+	for (i = 0; i < nwords;) {
+		if (x_escape(words[i], strlen(words[i]), x_emacs_putbuf) < 0 ||
+		    (++i < nwords && x_ins(space) < 0))
 		{
 			x_e_putc(BEL);
 			return KSTD;
 		}
+	}
+	x_adjust();
 
 	return KSTD;
 }
