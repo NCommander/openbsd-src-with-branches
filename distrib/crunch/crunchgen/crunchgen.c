@@ -822,8 +822,8 @@ void top_makefile_rules(FILE *outmk)
 
     fprintf(outmk, "%s: %s.o $(CRUNCHED_OBJS)\n", 
 	    execfname, execfname);
-    fprintf(outmk, "\t$(CC) -static -nostdlib -o %s %s.o %s/scrt0.o $(CRUNCHED_OBJS) $(LIBS) -lgcc -lc -lgcc\n",
-	    execfname, execfname, libdir);
+    fprintf(outmk, "\t$(CC) -static -o %s %s.o $(CRUNCHED_OBJS) $(LIBS)\n",
+	    execfname, execfname);
     fprintf(outmk, "\t$(STRIP) %s\n", execfname);
     fprintf(outmk, "all: objs exe\nobjs: $(SUBMAKE_TARGETS)\n");
     fprintf(outmk, "exe: %s\n", execfname);
