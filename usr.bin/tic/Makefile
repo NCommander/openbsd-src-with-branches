@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1 1998/07/24 19:37:33 millert Exp $
+#	$OpenBSD: Makefile,v 1.2 1998/08/12 20:09:17 art Exp $
 
 PROG=	tic
 SRCS=	dump_entry.c tic.c
-MAN=	tic.1 captoinfo.1tbl
+MAN=	tic.1 captoinfo.1tbl infotocap.1
 LINKS=	${BINDIR}/tic ${BINDIR}/infotocap ${BINDIR}/tic ${BINDIR}/captoinfo
 DPADD=	${LIBCURSES}
 LDADD=	-lcurses
