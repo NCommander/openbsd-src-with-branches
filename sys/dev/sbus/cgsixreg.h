@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgsixreg.h,v 1.2 2002/07/30 18:07:02 jason Exp $	*/
+/*	$OpenBSD: cgsixreg.h,v 1.3 2002/07/30 23:03:30 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -221,6 +221,7 @@ struct cgsix_softc {
 	union bt_cmap sc_cmap;
 	void *sc_ih;
 	u_int sc_mode;
+	int *sc_crowp, *sc_ccolp;
 };
 
 #define	CG6_USER_FBC	0x70000000
