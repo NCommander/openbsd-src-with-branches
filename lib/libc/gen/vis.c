@@ -32,12 +32,13 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: vis.c,v 1.8 2002/02/19 19:39:36 millert Exp $";
+static char rcsid[] = "$OpenBSD: vis.c,v 1.9 2002/07/01 07:48:50 pjanzen Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <limits.h>
 #include <ctype.h>
+#include <string.h>
 #include <vis.h>
 
 #define	isoctal(c)	(((u_char)(c)) >= '0' && ((u_char)(c)) <= '7')
