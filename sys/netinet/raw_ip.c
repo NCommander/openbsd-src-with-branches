@@ -155,7 +155,6 @@ rip_output(m, va_alist)
 	u_long dst;
 	register struct ip *ip;
 	register struct inpcb *inp;
-	struct mbuf *opts;
 	int flags;
 	va_list ap;
 
@@ -181,17 +180,25 @@ rip_output(m, va_alist)
 		ip->ip_src = inp->inp_laddr;
 		ip->ip_dst.s_addr = dst;
 		ip->ip_ttl = MAXTTL;
-		opts = inp->inp_options;
 	} else {
 		ip = mtod(m, struct ip *);
+		/*
+		 * don't allow both user specified and setsockopt options,
+		 * and don't allow packet length sizes that will crash
+		 */
+		if ((ip->ip_hl != (sizeof (*ip) >> 2) && inp->inp_options) ||
+		    ip->ip_len > m->m_pkthdr.len) {
+			m_freem(m);
+			return (EINVAL);
+		}
 		if (ip->ip_id == 0)
 			ip->ip_id = htons(ip_id++);
-		opts = NULL;
 		/* XXX prevent ip_output from overwriting header fields */
 		flags |= IP_RAWOUTPUT;
 		ipstat.ips_rawout++;
 	}
-	return (ip_output(m, opts, &inp->inp_route, flags, inp->inp_moptions));
+	return (ip_output(m, inp->inp_options, &inp->inp_route, flags,
+	    inp->inp_moptions));
 }
 
 /*
