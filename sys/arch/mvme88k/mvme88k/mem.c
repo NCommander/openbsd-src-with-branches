@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.3 1999/02/09 06:36:30 smurph Exp $ */
+/*	$OpenBSD: mem.c,v 1.4 1999/09/03 18:01:31 art Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -194,5 +194,17 @@ mmmmap(dev, off, prot)
         int off, prot;
 {
 
+	return (EOPNOTSUPP);
+}
+
+/*ARGSUSED*/
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
 	return (EOPNOTSUPP);
 }
