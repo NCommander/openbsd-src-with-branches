@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pcibios.c,v 1.1 1999/11/17 01:16:37 thorpej Exp $	*/
 
 /*-
