@@ -1,4 +1,4 @@
-/*	$OpenBSD: p9100.c,v 1.5 2001/11/01 12:13:46 art Exp $	*/
+/*	$OpenBSD: p9100.c,v 1.6 2001/11/06 19:53:16 miod Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -99,9 +99,9 @@ struct fbdriver p9100fbdriver = {
 extern int fbnode;
 extern struct tty *fbconstty;
 
-void p9100loadcmap __P((struct p9100_softc *, int, int));
-void p9100_set_video __P((struct p9100_softc *, int));
-int p9100_get_video __P((struct p9100_softc *));
+void p9100loadcmap(struct p9100_softc *, int, int);
+void p9100_set_video(struct p9100_softc *, int);
+int p9100_get_video(struct p9100_softc *);
 
 /*
  * System control and command registers

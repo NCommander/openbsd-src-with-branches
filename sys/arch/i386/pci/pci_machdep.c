@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.21 2001/09/11 20:05:24 miod Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.22 2001/11/06 19:53:14 miod Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.28 1997/06/06 23:29:17 thorpej Exp $	*/
 
 /*-
@@ -486,7 +486,7 @@ void *
 pci_intr_establish(pc, ih, level, func, arg, what)
 	pci_chipset_tag_t pc;
 	pci_intr_handle_t ih;
-	int level, (*func) __P((void *));
+	int level, (*func)(void *);
 	void *arg;
 	char *what;
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccons.h,v 1.5 1997/03/03 12:01:17 downsj Exp $	*/
+/*	$OpenBSD: pccons.h,v 1.6 2001/01/30 00:00:32 aaron Exp $	*/
 /*	$NetBSD: pccons.h,v 1.4 1996/02/02 18:06:06 mycroft Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ typedef struct {
 #define CONSOLE_SET_BLANK		_IOW('t',130,int)
 
 #ifdef _KERNEL
-int pccnattach	__P((void));
+int pccnattach(void);
 
 #if (NPCCONSKBD > 0)
 int pcconskbd_cnattach	_P((pckbc_tag_t, pckbc_slot_t));

@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.10 2001/06/24 17:05:43 miod Exp $	*/
+/*	$OpenBSD: psl.h,v 1.11 2001/11/23 00:47:47 miod Exp $	*/
 /*	$NetBSD: psl.h,v 1.14 1998/11/24 17:07:54 kleink Exp $	*/
 
 /*-
@@ -48,9 +48,9 @@
 
 #ifndef __GNUC__
 /* No inline, use the real functions in locore.s */
-extern int _getsr __P((void));
-extern int _spl __P((int new));
-extern int _splraise __P((int new));
+extern int _getsr(void);
+extern int _spl(int new);
+extern int _splraise(int new);
 #else	/* GNUC */
 /*
  * Define inline functions for PSL manipulation.
@@ -61,9 +61,12 @@ extern int _splraise __P((int new));
  * (See the GCC extensions info document.)
  */
 
-static __inline int _getsr __P((void));
-static __inline int _spl __P((int));
-static __inline int _splraise __P((int));
+static __inline int _getsr(void);
+static __inline int _spl(int);
+static __inline int _splraise(int);
+
+/* SPL asserts */
+#define	splassert(wantipl)	/* nothing */
 
 /* Get current sr value. */
 static __inline int

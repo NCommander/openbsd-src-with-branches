@@ -1,4 +1,4 @@
-/*	$OpenBSD: rawfs.c,v 1.2 1997/04/22 16:02:20 gvf Exp $ */
+/*	$OpenBSD: rawfs.c,v 1.1 1998/12/15 06:09:51 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Gordon W. Ross
@@ -55,7 +55,7 @@ struct cfile {
 };
 
 static int
-rawfs_get_block __P((struct open_file *));
+rawfs_get_block(struct open_file *);
 
 int	rawfs_open(path, f)
 	char *path;

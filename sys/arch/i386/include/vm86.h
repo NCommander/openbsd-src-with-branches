@@ -81,15 +81,15 @@ struct vm86_struct {
 #define VCPU_586		5
 
 #ifdef _KERNEL
-int i386_vm86 __P((struct proc *, char *, register_t *));
-void vm86_gpfault __P((struct proc *, int));
-void vm86_return __P((struct proc *, int));
-static __inline void clr_vif __P((struct proc *));
-static __inline void set_vif __P((struct proc *));
-static __inline void set_vflags __P((struct proc *, int));
-static __inline int get_vflags __P((struct proc *));
-static __inline void set_vflags_short __P((struct proc *, int));
-static __inline int get_vflags_short __P((struct proc *));
+int i386_vm86(struct proc *, char *, register_t *);
+void vm86_gpfault(struct proc *, int);
+void vm86_return(struct proc *, int);
+static __inline void clr_vif(struct proc *);
+static __inline void set_vif(struct proc *);
+static __inline void set_vflags(struct proc *, int);
+static __inline int get_vflags(struct proc *);
+static __inline void set_vflags_short(struct proc *, int);
+static __inline int get_vflags_short(struct proc *);
 
 static __inline void
 clr_vif(p)
@@ -182,5 +182,5 @@ get_vflags_short(p)
 	return (flags);
 }
 #else
-int i386_vm86 __P((struct vm86_struct *vmcp));
+int i386_vm86(struct vm86_struct *vmcp);
 #endif

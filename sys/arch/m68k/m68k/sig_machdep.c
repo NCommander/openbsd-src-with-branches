@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.6 2001/06/27 04:39:06 art Exp $	*/
+/*	$OpenBSD: sig_machdep.c,v 1.7 2001/11/06 19:53:14 miod Exp $	*/
 /*	$NetBSD: sig_machdep.c,v 1.3 1997/04/30 23:28:03 gwr Exp $	*/
 
 /*
@@ -93,8 +93,8 @@
 
 extern int fputype;
 extern short exframesize[];
-void	m68881_save __P((struct fpframe *));
-void	m68881_restore __P((struct fpframe *));
+void	m68881_save(struct fpframe *);
+void	m68881_restore(struct fpframe *);
 
 #define SS_RTEFRAME	1
 #define SS_FPSTATE	2
@@ -292,7 +292,7 @@ sendsig(catcher, sig, mask, code, type, val)
  * Return to previous pc and psl as specified by
  * context left by sendsig. Check carefully to
  * make sure that the user has not modified the
- * psl to gain improper priviledges or to cause
+ * psl to gain improper privileges or to cause
  * a machine fault.
  */
 int

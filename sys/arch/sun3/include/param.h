@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.28 2001/11/30 20:59:12 miod Exp $	*/
+/*	$OpenBSD: param.h,v 1.29 2001/12/05 01:57:15 provos Exp $	*/
 /*	$NetBSD: param.h,v 1.34 1996/03/04 05:04:40 cgd Exp $	*/
 
 /*
@@ -93,7 +93,7 @@
 #if defined(_KERNEL) && !defined(_LOCORE)
 #include <machine/cpu.h>
 
-extern void _delay __P((unsigned));
+extern void _delay(unsigned);
 #define delay(us)	_delay((us)<<8)
 #define	DELAY(n)	delay(n)
 #endif	/* _KERNEL && !_LOCORE */

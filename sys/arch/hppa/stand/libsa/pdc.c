@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdc.c,v 1.9 1999/04/20 20:01:02 mickey Exp $	*/
+/*	$OpenBSD: pdc.c,v 1.10 1999/05/06 02:27:44 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -444,10 +444,10 @@ fcacheall()
 	if (debug)
 		printf("pdc_cache:\nic={%u,%x,%x,%u,%u,%u}\n"
 		       "dc={%u,%x,%x,%u,%u,%u}\n",
-		       pdc_cacheinfo.ic_size, *(u_int*)&pdc_cacheinfo.ic_conf, 
+		       pdc_cacheinfo.ic_size, *(u_int *)&pdc_cacheinfo.ic_conf, 
 		       pdc_cacheinfo.ic_base, pdc_cacheinfo.ic_stride, 
 		       pdc_cacheinfo.ic_count, pdc_cacheinfo.ic_loop,
-		       pdc_cacheinfo.dc_size, *(u_int*)&pdc_cacheinfo.ic_conf, 
+		       pdc_cacheinfo.dc_size, *(u_int *)&pdc_cacheinfo.ic_conf, 
 		       pdc_cacheinfo.dc_base, pdc_cacheinfo.dc_stride, 
 		       pdc_cacheinfo.dc_count, pdc_cacheinfo.dc_loop);
 #endif

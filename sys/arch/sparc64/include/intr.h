@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: intr.h,v 1.1 2001/08/18 04:16:40 jason Exp $	*/
 /*	$NetBSD: intr.h,v 1.8 2001/01/14 23:50:30 thorpej Exp $ */
 
 /*-
@@ -46,7 +46,7 @@
 #define	IPL_NET		PIL_NET		/* network */
 #define	IPL_SOFTSERIAL	4		/* serial */
 #define	IPL_TTY		PIL_TTY		/* terminal */
-#define	IPL_IMP		PIL_IMP		/* memory allocation */
+#define	IPL_VM		PIL_VM		/* memory allocation */
 #define	IPL_AUDIO	PIL_AUD		/* audio */
 #define	IPL_CLOCK	PIL_CLOCK	/* clock */
 #define	IPL_SERIAL	PIL_SER		/* serial */
@@ -55,10 +55,10 @@
 #define	IPL_HIGH	PIL_HIGH	/* everything */
 
 void *
-softintr_establish __P((int level, void (*fun)(void *), void *arg));
+softintr_establish(int level, void (*fun)(void *), void *arg);
 
 void
-softintr_disestablish __P((void *cookie));
+softintr_disestablish(void *cookie);
 
 void
-softintr_schedule __P((void *cookie));
+softintr_schedule(void *cookie);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_memrw.c,v 1.6 1997/10/07 10:57:37 niklas Exp $	*/
+/*	$OpenBSD: db_memrw.c,v 1.7 2001/11/06 19:53:13 miod Exp $	*/
 /*	$NetBSD: db_memrw.c,v 1.7 1997/06/10 18:24:34 veego Exp $	*/
 
 /*-
@@ -57,9 +57,9 @@
 #include <machine/cpu.h>
 #include <machine/pte.h>
 
-char db_read_data __P((char *src));
-void db_write_text __P((char *dst, int ch));
-void db_write_data __P((char *dst, int ch));
+char db_read_data(char *src);
+void db_write_text(char *dst, int ch);
+void db_write_data(char *dst, int ch);
 
 /*
  * Read one byte somewhere in the kernel.

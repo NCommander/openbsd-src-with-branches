@@ -1,4 +1,4 @@
-/*	$OpenBSD: cache.c,v 1.13 2000/03/17 21:54:07 deraadt Exp $	*/
+/*	$OpenBSD: cache.c,v 1.14 2001/12/05 14:40:48 art Exp $	*/
 /*	$NetBSD: cache.c,v 1.34 1997/09/26 22:17:23 pk Exp $	*/
 
 /*
@@ -62,8 +62,9 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/ctlreg.h>
-#include <machine/pte.h>
 
 #include <sparc/sparc/asm.h>
 #include <sparc/sparc/cache.h>

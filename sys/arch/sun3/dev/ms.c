@@ -1,4 +1,4 @@
-/*	$OpenBSD: ms.c,v 1.3 1997/08/19 11:48:08 kstailey Exp $	*/
+/*	$OpenBSD: ms.c,v 1.4 1997/08/19 23:09:34 kstailey Exp $	*/
 /*	$NetBSD: ms.c,v 1.6 1996/05/17 19:32:09 gwr Exp $	*/
 
 /*
@@ -141,14 +141,14 @@ struct zsops zsops_ms;
  * Definition of the driver for autoconfig.
  ****************************************************************/
 
-static int	ms_match __P((struct device *, void *, void *));
-static void	ms_attach __P((struct device *, struct device *, void *));
+static int	ms_match(struct device *, void *, void *);
+static void	ms_attach(struct device *, struct device *, void *);
 
-static void	ms_input __P((register struct ms_softc *, register int));
-static void	ms_rxint __P((register struct zs_chanstate *));
-static void	ms_txint __P((register struct zs_chanstate *));
-static void	ms_stint __P((register struct zs_chanstate *));
-static void	ms_softint __P((struct zs_chanstate *));
+static void	ms_input(register struct ms_softc *, register int);
+static void	ms_rxint(register struct zs_chanstate *);
+static void	ms_txint(register struct zs_chanstate *);
+static void	ms_stint(register struct zs_chanstate *);
+static void	ms_softint(struct zs_chanstate *);
 
 struct cfattach ms_ca = {
 	sizeof(struct ms_softc), ms_match, ms_attach

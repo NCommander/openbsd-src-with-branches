@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.9 2000/01/06 03:21:43 smurph Exp $
+#	$OpenBSD: Makefile,v 1.10 2000/01/24 05:20:56 smurph Exp $
 
-RELOC=0x3F0000
+RELOC=0x6F0000
 SIZE?=	size
 
 S=	${.CURDIR}/../../../..

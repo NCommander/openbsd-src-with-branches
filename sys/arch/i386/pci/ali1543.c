@@ -1,5 +1,5 @@
 /*	$OpenBSD$	*/
-/*	$NetBSD: ali1543.c,v 1.1 2001/08/27 08:21:21 haya Exp $	*/
+/*	$NetBSD: ali1543.c,v 1.2 2001/09/13 14:00:52 tshiozak Exp $	*/
 
 /*
  * Copyright (c) 2001

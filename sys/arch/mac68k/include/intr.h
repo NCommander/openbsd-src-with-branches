@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.4 2001/06/24 17:05:37 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.5 2001/11/23 00:47:43 miod Exp $	*/
 /*	$NetBSD: intr.h,v 1.8 1997/11/07 07:33:18 scottr Exp $	*/
 
 /*
@@ -35,6 +35,9 @@
 /*
  * spl functions; all but spl0 are done in-line
  */
+
+/* SPL asserts */
+#define	splassert(wantipl)	/* nothing */
 
 #define _spl(s)								\
 ({									\
@@ -139,7 +142,7 @@ extern volatile u_int8_t ssir;
 #define	setsoftadb()	siron(SIR_ADB)
 
 /* locore.s */
-int	spl0 __P((void));
+int	spl0(void);
 #endif /* _KERNEL */
 
 #endif /* _MAC68K_INTR_H_ */

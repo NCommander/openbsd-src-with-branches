@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootxx.c,v 1.4 2001/01/13 05:19:01 smurph Exp $ */
+/*	$OpenBSD: bootxx.c,v 1.1 2001/06/26 21:58:01 smurph Exp $ */
 
 /*
  * Copyright (c) 1994 Paul Kranenburg
@@ -86,7 +86,7 @@ main()
 		_rtt();
 	}
 
-	addr = (char*)STAGE2_RELOC;
+	addr = (char *)STAGE2_RELOC;
 	error = copyboot(&f, addr);
 	f.f_dev->dv_close(&f);
 	if (!error) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vectors.s,v 1.2 1996/05/26 18:36:36 briggs Exp $	*/
+/*	$OpenBSD: vectors.s,v 1.3 2001/05/08 17:30:41 aaron Exp $	*/
 |	$NetBSD: vectors.s,v 1.9 1997/09/03 06:16:24 scottr Exp $
 
 | Copyright (c) 1988 University of Utah
@@ -46,7 +46,7 @@
 	VECTOR(badtrap) ; VECTOR(badtrap) ;	\
 	VECTOR(badtrap) ; VECTOR(badtrap)
 
-	.text
+	.data
 GLOBAL(vectab)
 	VECTOR_UNUSED		/* 0: NOT USED (reset SSP) */
 	VECTOR_UNUSED		/* 1: NOT USED (reset PC) */
