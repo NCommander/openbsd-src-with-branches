@@ -1,4 +1,4 @@
-/* *	$OpenBSD: md.h,v 1.2 1996/09/30 22:29:31 deraadt Exp $*/
+/* *	$OpenBSD: md.h,v 1.3 1998/03/26 19:47:35 niklas Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -34,6 +34,9 @@
  * SPARC machine dependent definitions
  */
 
+#if defined(CROSS_LINKER) && defined(XHOST) && XHOST==i386
+#define NEED_SWAP
+#endif
 
 #define	MAX_ALIGNMENT	(sizeof (double))
 
