@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth1.c,v 1.53 2003/09/23 20:17:11 markus Exp $");
+RCSID("$OpenBSD: auth1.c,v 1.54 2003/11/04 08:54:09 djm Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -70,7 +70,6 @@ do_authloop(Authctxt *authctxt)
 	u_int dlen;
 	u_int ulen;
 	int type = 0;
-	struct passwd *pw = authctxt->pw;
 
 	debug("Attempting authentication for %s%.100s.",
 	    authctxt->valid ? "" : "illegal user ", authctxt->user);
