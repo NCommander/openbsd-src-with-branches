@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx.h,v 1.14 2000/12/06 17:19:01 deraadt Exp $	*/
+/*	$OpenBSD: ipx.h,v 1.15 2002/03/14 01:27:12 millert Exp $	*/
 
 /*-
  *
@@ -193,7 +193,7 @@ struct ipx {
 	{ 0, 0 }, \
 	{ 0, 0 }, \
 	{ "spx", CTLTYPE_NODE }, \
-};
+}
 
 #ifdef _KERNEL
 
