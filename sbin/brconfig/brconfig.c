@@ -1,4 +1,4 @@
-/*	$OpenBSD: brconfig.c,v 1.28 2004/01/01 00:02:06 deraadt Exp $	*/
+/*	$OpenBSD: brconfig.c,v 1.29 2004/03/02 21:01:00 tdeval Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -123,6 +123,11 @@ main(int argc, char *argv[])
 
 	if (strcmp(brdg, "-a") == 0)
 		return bridge_show_all(sock);
+
+	if (strlen(brdg) >= IFNAMSIZ) {
+		warnx("%s is not a bridge", brdg);
+		return (EX_USAGE);
+	}
 
 	if (!is_bridge(sock, brdg)) {
 		if (errno == ENXIO)
