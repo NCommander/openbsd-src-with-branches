@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_icmp.c,v 1.7 1997/06/05 15:05:41 deraadt Exp $	*/
+/*	$OpenBSD: ip_icmp.c,v 1.8 1998/01/06 01:38:36 deraadt Exp $	*/
 /*	$NetBSD: ip_icmp.c,v 1.19 1996/02/13 23:42:22 christos Exp $	*/
 
 /*
@@ -597,7 +597,7 @@ icmp_send(m, opts)
 		    buf, inet_ntoa(ip->ip_src));
 	}
 #endif
-	(void) ip_output(m, opts, NULL, 0, NULL);
+	(void) ip_output(m, opts, NULL, 0, NULL, NULL);
 }
 
 n_time
