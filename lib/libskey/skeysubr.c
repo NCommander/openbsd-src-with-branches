@@ -9,7 +9,7 @@
  *
  * S/Key misc routines.
  *
- * $OpenBSD: skeysubr.c,v 1.26 2003/04/03 17:48:50 millert Exp $
+ * $OpenBSD: skeysubr.c,v 1.27 2003/06/26 23:19:53 deraadt Exp $
  */
 
 #include <stdio.h>
@@ -184,7 +184,7 @@ keycrunch_sha1(char *result, char *seed, char *passwd)
 	/* Crunch the key through SHA1 */
 	SHA1Init(&sha);
 	SHA1Update(&sha, (unsigned char *)buf, buflen);
-	SHA1Final(NULL, &sha);
+	SHA1Pad(&sha);
 
 	/* Fold 160 to 64 bits */
 	sha.state[0] ^= sha.state[2];
