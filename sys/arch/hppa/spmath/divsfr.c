@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
  *              All Rights Reserved 
@@ -38,9 +40,10 @@
  */
 
 
-#include "../spmath/md.h"
+#include "md.h"
 
-VOID divsfr(opnd1,opnd2,result)
+void
+divsfr(opnd1,opnd2,result)
 
 int opnd1, opnd2;
 struct mdsfu_register *result;

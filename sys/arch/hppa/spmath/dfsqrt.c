@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
  *              All Rights Reserved 
@@ -45,10 +47,12 @@
  */
 
 /*ARGSUSED*/
+int
 dbl_fsqrt(srcptr,nullptr,dstptr,status)
 
 dbl_floating_point *srcptr, *dstptr;
-unsigned int *nullptr, *status;
+void *nullptr;
+unsigned int *status;
 {
 	register unsigned int srcp1, srcp2, resultp1, resultp2;
 	register unsigned int newbitp1, newbitp2, sump1, sump2;

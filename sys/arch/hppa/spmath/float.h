@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
  *              All Rights Reserved 
@@ -431,7 +433,7 @@ typedef int VOID;
 #define Set_exceptiontype(object,value) Bitfield_deposit(value, 0, 6,object)
 #define Set_parmfield(object,value) Bitfield_deposit(value, 23, 3,object)
 #define Set_exceptiontype_and_instr_field(exception,instruction,object) \
-    object = exception << 26 | instruction
+    object = ((exception) << 26) | (instruction)
 
 /* Declare the condition field
  *

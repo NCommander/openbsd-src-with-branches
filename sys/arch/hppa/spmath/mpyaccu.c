@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
  *              All Rights Reserved 
@@ -40,7 +42,8 @@
 
 #include "../spmath/md.h"
 
-VOID mpyaccu(opnd1,opnd2,result)
+void
+mpyaccu(opnd1,opnd2,result)
 
 unsigned int opnd1, opnd2;
 struct mdsfu_register *result;

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
  *              All Rights Reserved 
@@ -44,7 +46,7 @@
 /*
  *  Single Precision Floating-point Remainder
  */
-
+int
 sgl_frem(srcptr1,srcptr2,dstptr,status)
 
 sgl_floating_point *srcptr1, *srcptr2, *dstptr;
