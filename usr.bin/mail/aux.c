@@ -1,4 +1,4 @@
-/*	$OpenBSD: aux.c,v 1.2 1996/06/11 12:53:32 deraadt Exp $	*/
+/*	$OpenBSD: aux.c,v 1.3 1997/01/17 07:12:44 millert Exp $	*/
 /*	$NetBSD: aux.c,v 1.4 1996/06/08 19:48:10 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)aux.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: aux.c,v 1.2 1996/06/11 12:53:32 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: aux.c,v 1.3 1997/01/17 07:12:44 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -578,7 +578,7 @@ name1(mp, reptype)
 	if (reptype == 0 && (cp = hfield("sender", mp)) != NOSTR)
 		return cp;
 	ibuf = setinput(mp);
-	namebuf[0] = 0;
+	namebuf[0] = '\0';
 	if (readline(ibuf, linebuf, LINESIZE) < 0)
 		return(savestr(namebuf));
 newname:

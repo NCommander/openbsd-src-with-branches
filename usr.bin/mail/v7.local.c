@@ -60,15 +60,18 @@ static char rcsid[] = "$OpenBSD: v7.local.c,v 1.2 1996/06/11 12:53:53 deraadt Ex
  * mail is queued).
  */
 void
-findmail(user, buf)
+findmail(user, buf, buflen)
 	char *user, *buf;
+	int buflen;
 {
 	char *mbox;
 
 	if (!(mbox = getenv("MAIL")))
-		(void)sprintf(buf, "%s/%s", _PATH_MAILDIR, user);
-	else
-		(void)strcpy(buf, mbox);
+		(void)snprintf(buf, sizeof buf, "%s/%s", _PATH_MAILDIR, user);
+	else {
+		(void)strncpy(buf, mbox, sizeof buf - 1);
+		buf[sizeof buf - 1] = '\0';
+	}
 }
 
 /*
@@ -97,6 +100,6 @@ username()
 		return np;
 	if ((np = getname(uid = getuid())) != NOSTR)
 		return np;
-	printf("Cannot associate a name with uid %d\n", uid);
+	printf("Cannot associate a name with uid %u\n", (unsigned)uid);
 	return NOSTR;
 }

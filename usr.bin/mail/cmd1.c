@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd1.c,v 1.3 1996/06/11 12:53:32 deraadt Exp $	*/
+/*	$OpenBSD: cmd1.c,v 1.4 1997/03/29 03:01:44 millert Exp $	*/
 /*	$NetBSD: cmd1.c,v 1.5 1996/06/08 19:48:11 christos Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)cmd1.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: cmd1.c,v 1.3 1996/06/11 12:53:32 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: cmd1.c,v 1.4 1997/03/29 03:01:44 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -462,10 +462,10 @@ int
 folders(v)
 	void *v;
 {
-	char dirname[BUFSIZ];
+	char dirname[PATHSIZE];
 	char *cmd;
 
-	if (getfold(dirname) < 0) {
+	if (getfold(dirname, sizeof dirname) < 0) {
 		printf("No value set for \"folder\"\n");
 		return 1;
 	}

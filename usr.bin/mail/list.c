@@ -1,4 +1,4 @@
-/*	$OpenBSD: list.c,v 1.2 1996/06/11 12:53:43 deraadt Exp $	*/
+/*	$OpenBSD: list.c,v 1.3 1997/01/17 07:12:49 millert Exp $	*/
 /*	$NetBSD: list.c,v 1.4 1996/06/08 19:48:30 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)list.c	8.2 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$OpenBSD: list.c,v 1.2 1996/06/11 12:53:43 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: list.c,v 1.3 1997/01/17 07:12:49 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -685,7 +685,7 @@ matchsender(str, mesg)
  * previous search string.
  */
 
-char lastscan[128];
+char lastscan[STRINGLEN];
 int
 matchsubj(str, mesg)
 	char *str;
@@ -697,8 +697,11 @@ matchsubj(str, mesg)
 	str++;
 	if (strlen(str) == 0)
 		str = lastscan;
-	else
-		strcpy(lastscan, str);
+	else {
+		strncpy(lastscan, str, sizeof lastscan-1);
+		lastscan[sizeof lastscan-1] = '\0';
+	}
+
 	mp = &message[mesg-1];
 	
 	/*
