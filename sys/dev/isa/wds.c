@@ -1,4 +1,4 @@
-/*	$OpenBSD: wds.c,v 1.13 1998/01/18 18:48:40 niklas Exp $	*/
+/*	$OpenBSD: wds.c,v 1.14 1999/01/07 06:14:49 niklas Exp $	*/
 /*	$NetBSD: wds.c,v 1.13 1996/11/03 16:20:31 mycroft Exp $	*/
 
 #undef	WDSDIAG
@@ -71,7 +71,6 @@
 
 #include <machine/bus.h>
 #include <machine/intr.h>
-#include <machine/pio.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
