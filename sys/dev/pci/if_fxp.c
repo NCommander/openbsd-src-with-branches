@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp.c,v 1.8 1998/01/05 13:35:20 deraadt Exp $	*/
+/*	$OpenBSD: if_fxp.c,v 1.9 1998/01/07 11:03:29 deraadt Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -369,7 +369,6 @@ fxp_attach(parent, self, aux)
 		printf("\n");
 		return;
 	}
-	printf(": %s\n", intrstr);
 
 	/* Do generic parts of attach. */
 	if (fxp_attach_common(sc, enaddr)) {
