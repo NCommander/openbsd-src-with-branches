@@ -26,11 +26,6 @@
 #ifndef _SYS_LIMITS_H_
 #define _SYS_LIMITS_H_
 
-/* Protect against direct inclusion from userland. */
-#if !defined(_KERNEL) && !defined(_LIMITS_H_)
-# error "<sys/limits.h> is not meant to be used directly from userland"
-#endif
-
 /* Common definitions for limits.h. */
 
 /*
