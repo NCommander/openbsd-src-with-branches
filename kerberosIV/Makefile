@@ -17,6 +17,10 @@ SUBDIR+=man doc
 
 .include <bsd.own.mk> # for AFS
 
+.if (${AFS} == "yes")
+SUBDIR+=afslog
+.endif
+
 build:
 	(cd ${.CURDIR}/include && ${MAKE} includes)
 	${MAKE} cleandir
