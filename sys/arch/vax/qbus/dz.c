@@ -1,4 +1,4 @@
-/*	$OpenBSD: dz.c,v 1.10 2003/06/02 23:27:58 millert Exp $	*/
+/*	$OpenBSD: dz.c,v 1.11 2004/07/07 23:10:46 deraadt Exp $	*/
 /*	$NetBSD: dz.c,v 1.23 2000/06/04 02:14:12 matt Exp $	*/
 /*
  * Copyright (c) 1996  Ken C. Wellsch.  All rights reserved.
@@ -83,7 +83,7 @@
 #define DML_RI		TIOCM_RI
 #define DML_BRK		0100000		/* no equivalent, we will mask */
 
-static struct speedtab dzspeedtab[] =
+static const struct speedtab dzspeedtab[] =
 {
   {       0,	0		},
   {      50,	DZ_LPR_B50	},

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhu.c,v 1.10 2003/06/02 23:27:58 millert Exp $	*/
+/*	$OpenBSD: dhu.c,v 1.11 2004/07/07 23:10:45 deraadt Exp $	*/
 /*	$NetBSD: dhu.c,v 1.19 2000/06/04 06:17:01 matt Exp $	*/
 /*
  * Copyright (c) 2003, Hugh Graham.
@@ -109,7 +109,7 @@ struct	dhu_softc {
 /* a baud rate from the same group.  So limiting to B is likely */
 /* best, although clone boards like the ABLE QHV allow all settings. */
 
-static struct speedtab dhuspeedtab[] = {
+static const struct speedtab dhuspeedtab[] = {
   {       0,	0		},	/* Groups  */
   {      50,	DHU_LPR_B50	},	/* A	   */
   {      75,	DHU_LPR_B75	},	/* 	 B */

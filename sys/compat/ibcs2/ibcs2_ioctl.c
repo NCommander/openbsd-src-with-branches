@@ -1,4 +1,4 @@
-/*	$OpenBSD: ibcs2_ioctl.c,v 1.10 2002/02/14 22:57:18 pvalchev Exp $	*/
+/*	$OpenBSD: ibcs2_ioctl.c,v 1.11 2002/03/14 01:26:50 millert Exp $	*/
 /*	$NetBSD: ibcs2_ioctl.c,v 1.12 1996/08/10 09:08:26 mycroft Exp $	*/
 
 /*
@@ -72,7 +72,7 @@
  * iBCS2 ioctl calls.
  */
 
-static struct speedtab sptab[] = {
+static const struct speedtab sptab[] = {
 	{ 0, 0 },
 	{ 50, 1 },
 	{ 75, 2 },
@@ -93,7 +93,7 @@ static struct speedtab sptab[] = {
 	{ -1, -1 }
 };
 
-static u_long s2btab[] = { 
+static const u_long s2btab[] = { 
 	0,
 	50,
 	75,
