@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.10 1997/04/23 20:33:06 deraadt Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.11 1997/04/28 21:10:06 millert Exp $	*/
 /*	$NetBSD: fetch.c,v 1.8 1997/04/21 18:45:47 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fetch.c,v 1.10 1997/04/23 20:33:06 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fetch.c,v 1.11 1997/04/28 21:10:06 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -448,7 +448,9 @@ bad_ftp_url:
 				continue;
 			}
 			*pass++ = '\0';
-			cp = strpbrk(pass, ":@/");
+			/* XXX - assumes no '@' in pathname */
+			if ((cp = strrchr(pass, '@')) == NULL)
+				cp = strpbrk(pass, ":@/");
 			if (cp == NULL || *cp == '/') {
 				portnum = pass;
 				pass = NULL;
