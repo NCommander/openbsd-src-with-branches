@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapgeneric.c,v 1.3 1997/10/13 13:43:01 pefo Exp $	*/
+/*	$OpenBSD: swapgeneric.c,v 1.1 2001/09/01 15:44:20 drahn Exp $	*/
 /*	$NetBSD: swapgeneric.c,v 1.1 1996/09/30 16:34:55 ws Exp $	*/
 
 /*-
@@ -49,8 +49,6 @@ dev_t	rootdev = NODEV;
 dev_t	dumpdev = NODEV;
 
 struct	swdevt swdevt[] = {
-	{ NODEV, 0, 0 },		/* Setup by autoconf.c/disksubr.c */
-	{ NODEV, 0, 0 },
-	{ NODEV, 0, 0 },
-	{ NODEV, 0, 0 },
+	{ NODEV, 0, 0 },	/* to be filled in */
+	{ NODEV, 0, 0 }
 };
