@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext.h,v 1.8 1998/07/28 20:18:19 marc Exp $	*/
+/*	$OpenBSD: ext.h,v 1.9 2000/11/16 19:00:19 millert Exp $	*/
 /*	$NetBSD: ext.h,v 1.6 1996/02/28 20:38:13 thorpej Exp $	*/
 
 /*
@@ -120,7 +120,7 @@ extern void
 #ifdef DIAGNOSTICS
 	printoption P((char *, int)),
 	printdata P((char *, char *, int)),
-	printsub P((char, unsigned char *, int)),
+	printsub P((int, unsigned char *, int)),
 #endif
 	ptyflush P((void)),
 	putchr P((int)),

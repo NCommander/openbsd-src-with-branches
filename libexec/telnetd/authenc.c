@@ -1,4 +1,4 @@
-/*	$OpenBSD: authenc.c,v 1.2 1996/03/28 23:21:54 niklas Exp $	*/
+/*	$OpenBSD: authenc.c,v 1.3 1998/03/12 04:53:07 art Exp $	*/
 /*	$NetBSD: authenc.c,v 1.3 1996/02/28 20:38:08 thorpej Exp $	*/
 
 /*-
@@ -39,7 +39,7 @@
 static char sccsid[] = "@(#)authenc.c	8.2 (Berkeley) 5/30/95";
 static char rcsid[] = "$NetBSD: authenc.c,v 1.3 1996/02/28 20:38:08 thorpej Exp $";
 #else
-static char rcsid[] = "$OpenBSD: authenc.c,v 1.2 1996/03/28 23:21:54 niklas Exp $";
+static char rcsid[] = "$OpenBSD: authenc.c,v 1.3 1998/03/12 04:53:07 art Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,7 +48,7 @@ static char rcsid[] = "$OpenBSD: authenc.c,v 1.2 1996/03/28 23:21:54 niklas Exp 
 #include <libtelnet/misc.h>
 
 	int
-net_write(str, len)
+telnet_net_write(str, len)
 	unsigned char *str;
 	int len;
 {
@@ -81,7 +81,7 @@ telnet_spin()
 
 	char *
 telnet_getenv(val)
-	char *val;
+	const char *val;
 {
 	extern char *getenv(const char *);
 	return(getenv(val));

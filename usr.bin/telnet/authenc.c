@@ -1,4 +1,4 @@
-/*	$OpenBSD: authenc.c,v 1.2 1996/03/27 19:32:57 niklas Exp $	*/
+/*	$OpenBSD: authenc.c,v 1.3 1998/03/12 04:57:27 art Exp $	*/
 /*	$NetBSD: authenc.c,v 1.5 1996/02/28 21:03:52 thorpej Exp $	*/
 
 /*-
@@ -39,7 +39,7 @@
 #if	defined(AUTHENTICATION) || defined(ENCRYPTION)
 
 	int
-net_write(str, len)
+telnet_net_write(str, len)
 	unsigned char *str;
 	int len;
 {
@@ -71,7 +71,7 @@ telnet_spin()
 
 	char *
 telnet_getenv(val)
-	char *val;
+	const char *val;
 {
 	return((char *)env_getvalue((unsigned char *)val));
 }
