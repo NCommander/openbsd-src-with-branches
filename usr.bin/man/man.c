@@ -1,4 +1,4 @@
-/*	$OpenBSD: man.c,v 1.14 1999/07/28 01:17:56 deraadt Exp $	*/
+/*	$OpenBSD: man.c,v 1.15 1999/10/18 01:46:36 aaron Exp $	*/
 /*	$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)man.c	8.17 (Berkeley) 1/31/95";
 #else
-static char rcsid[] = "$OpenBSD: man.c,v 1.14 1999/07/28 01:17:56 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: man.c,v 1.15 1999/10/18 01:46:36 aaron Exp $";
 #endif
 #endif /* not lint */
 
@@ -561,7 +561,8 @@ build_page(fmt, pathp)
 		intmpp = addlist("_intmp");
 
 	/* Move to the printf(3) format string. */
-	for (; *fmt && isspace(*fmt); ++fmt);
+	for (; *fmt && isspace(*fmt); ++fmt)
+		;
 
 	/*
 	 * Get a temporary file and build a version of the file
@@ -681,8 +682,10 @@ check_pager(name)
 	 * if the user uses "more", we make it "more -s"; watch out for
 	 * PAGER = "mypager /usr/ucb/more"
 	 */
-	for (p = name; *p && !isspace(*p); ++p);
-	for (; p > name && *p != '/'; --p);
+	for (p = name; *p && !isspace(*p); ++p)
+		;
+	for (; p > name && *p != '/'; --p)
+		;
 	if (p != name)
 		++p;
 
