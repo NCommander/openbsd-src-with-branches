@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.3 1997/08/08 08:27:31 downsj Exp $	*/
+/*	$OpenBSD: mem.c,v 1.4 1998/08/31 17:42:41 millert Exp $	*/
 /*	$NetBSD: mem.c,v 1.13 1996/03/30 21:12:16 christos Exp $ */
 
 /*
@@ -158,9 +158,15 @@ mmrw(dev, uio, flags)
 				c = min(iov->iov_len, prom_vend - prom_vstart);
 			} else {
 				c = min(iov->iov_len, MAXPHYS);
+#if defined(UVM)
+				if (!uvm_kernacc((caddr_t)v, c,
+				    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
+					return (EFAULT);
+#else
 				if (!kernacc((caddr_t)v, c,
 				    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
 					return (EFAULT);
+#endif
 			}
 			error = uiomove((caddr_t)v, c, uio);
 			continue;
