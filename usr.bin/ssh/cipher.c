@@ -35,7 +35,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: cipher.c,v 1.71 2004/07/28 09:40:29 markus Exp $");
+RCSID("$OpenBSD: cipher.c,v 1.72 2004/12/22 02:13:19 djm Exp $");
 
 #include "xmalloc.h"
 #include "log.h"
@@ -115,7 +115,7 @@ cipher_by_name(const char *name)
 {
 	Cipher *c;
 	for (c = ciphers; c->name != NULL; c++)
-		if (strcasecmp(c->name, name) == 0)
+		if (strcmp(c->name, name) == 0)
 			return c;
 	return NULL;
 }
@@ -168,8 +168,10 @@ cipher_number(const char *name)
 	Cipher *c;
 	if (name == NULL)
 		return -1;
-	c = cipher_by_name(name);
-	return (c==NULL) ? -1 : c->number;
+	for (c = ciphers; c->name != NULL; c++)
+		if (strcasecmp(c->name, name) == 0)
+			return c->number;
+	return -1;
 }
 
 char *
