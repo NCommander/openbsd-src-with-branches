@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.17 2003/02/18 13:14:43 jmc Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.18 2003/02/26 21:54:44 drahn Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -979,7 +979,7 @@ mpc_intr_string(lcv, ih)
 {
 	static char str[16];
 
-	sprintf(str, "irq %d", ih);
+	snprintf(str, sizeof str, "irq %d", ih);
 	return(str);
 }
 
