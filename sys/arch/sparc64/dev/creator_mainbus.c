@@ -1,4 +1,4 @@
-/*	$OpenBSD: creator_mainbus.c,v 1.6 2003/03/27 18:17:58 jason Exp $	*/
+/*	$OpenBSD: creator_mainbus.c,v 1.7 2003/06/02 20:24:09 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net),
@@ -43,6 +43,7 @@
 #include <dev/wscons/wsdisplayvar.h>
 #include <dev/wscons/wscons_raster.h>
 #include <dev/rasops/rasops.h>
+#include <machine/fbvar.h>
 
 #include <sparc64/dev/creatorreg.h>
 #include <sparc64/dev/creatorvar.h>
