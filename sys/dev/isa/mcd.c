@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcd.c,v 1.31 2002/05/24 13:31:11 art Exp $ */
+/*	$OpenBSD: mcd.c,v 1.32 2003/04/06 15:28:25 krw Exp $ */
 /*	$NetBSD: mcd.c,v 1.60 1998/01/14 12:14:41 drochner Exp $	*/
 
 /*
@@ -1241,7 +1241,7 @@ mcdintr(arg)
 
 		/* Return buffer. */
 		bp->b_resid = 0;
-		disk_unbusy(&sc->sc_dk, bp->b_bcount);
+		disk_unbusy(&sc->sc_dk, bp->b_bcount, (bp->b_flags & B_READ));
 		biodone(bp);
 
 		mcdstart(sc);
