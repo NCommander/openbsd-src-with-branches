@@ -1,4 +1,4 @@
-$OpenBSD: README,v 1.1 1997/06/03 14:28:16 kstailey Exp $	-*- text -*-
+$OpenBSD: README,v 1.2 1997/06/21 19:33:12 mickey Exp $	-*- text -*-
 
 		     Notes on Adding a System Call
 
@@ -7,7 +7,7 @@ commit them separately so that the correct RCS stuff shows up in the
 generated files.
 
 Don't forget to increment the minor number of src/lib/libc/shlib_version
-when one adds a syscall.
+when adding a syscall.
 
 		      Note on Adding a Sysctl Entry
 
