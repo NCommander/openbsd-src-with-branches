@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kex.c,v 1.15 2000/12/19 23:17:56 markus Exp $");
+RCSID("$OpenBSD: kex.c,v 1.16 2000/12/20 19:37:22 markus Exp $");
 
 #include "ssh.h"
 #include "ssh2.h"
@@ -465,6 +465,7 @@ choose_hostkeyalg(Kex *k, char *client, char *server)
 	k->hostkey_type = key_type_from_name(hostkeyalg);
 	if (k->hostkey_type == KEY_UNSPEC)
 		fatal("bad hostkey alg '%s'", hostkeyalg);
+	xfree(hostkeyalg);
 }
 
 Kex *
