@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kex.c,v 1.48 2002/03/18 17:50:31 provos Exp $");
+RCSID("$OpenBSD: kex.c,v 1.49 2002/03/26 23:14:51 markus Exp $");
 
 #include <openssl/crypto.h>
 
@@ -46,7 +46,7 @@ RCSID("$OpenBSD: kex.c,v 1.48 2002/03/18 17:50:31 provos Exp $");
 
 /* Use privilege separation for sshd */
 int use_privsep;
-struct monitor *monitor;
+struct monitor *pmonitor;
 
 
 /* prototype */
