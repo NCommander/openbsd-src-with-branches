@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.3 1999/04/20 17:31:30 millert Exp $	*/
+/*	$OpenBSD: parse.c,v 1.4 1999/12/08 23:09:46 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -240,6 +240,11 @@ void defn(Cell *v, Node *vl, Node *st)	/* turn on FCN bit in definition, */
 		SYNTAX( "`%s' is an array name and a function name", v->nval );
 		return;
 	}
+	if (isarg(v->nval) != -1) {
+		SYNTAX( "`%s' is both function name and argument name", v->nval );
+		return;
+	}
+
 	v->tval = FCN;
 	v->sval = (char *) st;
 	n = 0;	/* count arguments */
