@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.16 2000/10/17 15:21:59 deraadt Exp $
+#	$OpenBSD: install.md,v 1.17 2001/01/25 19:18:41 deraadt Exp $
 #
 #
 # Copyright rc) 1996 The NetBSD Foundation, Inc.
@@ -45,8 +45,8 @@ MDSETS="kernel"
 
 md_set_term() {
 	test -n "$TERM" && return
-	echo -n "Specify terminal type [vt100]: "
-	getresp vt100
+	echo -n "Specify terminal type [vt220]: "
+	getresp vt220
 	TERM=$resp
 	export TERM
 }
