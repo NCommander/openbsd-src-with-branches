@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.7 2001/01/30 01:18:37 mickey Exp $
+#	$OpenBSD: Makefile,v 1.8 2001/09/01 16:21:16 drahn Exp $
 
 .if ${MACHINE} == "i386" || ${MACHINE} == "alpha" || ${MACHINE} == "hppa" || \
-    ${MACHINE} == "macppc"
+    ${MACHINE} == "macppc" || ${MACHINE} == "sparc64"
 
 PROG=	wsconsctl
 SRCS=	display.c keyboard.c keysym.c map_parse.y map_scan.l \
