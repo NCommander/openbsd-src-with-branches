@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.5 2000/06/18 00:14:40 itojun Exp $
+#	$OpenBSD: Makefile,v 1.10 2001/05/29 01:31:11 millert Exp $
 #
 #  Makefile for configuration files.
 #
-#	$Sendmail: Makefile,v 8.40 2000/02/01 22:07:15 gshapiro Exp $
+#	$Sendmail: Makefile,v 8.40.8.5 2001/04/12 22:39:52 gshapiro Exp $
 #
 
 #
@@ -26,9 +26,8 @@ RM=	rm -f
 	$(CHMOD) $(ROMODE) $@
 
 ALL=	clientproto.cf openbsd-proto.cf courtesan.cf courtesan-nonet.cf \
-	courtesan-lists.cf  openbsd-lists.cf gandalf.cf saruman.cf alatar.cf \
-	nettan.cf waldorf.cf lucifier.cf elbereth.cf corpse.cf knecht.cf \
-	openbsd-proto-IPv4only.cf 
+	courtesan-lists.cf  openbsd-lists.cf gandalf.cf alatar.cf \
+	nettan.cf waldorf.cf lucifier.cf elbereth.cf corpse.cf knecht.cf
 
 all: $(ALL)
 
@@ -37,11 +36,9 @@ clean cleandir:
 
 depend install:
 
-distribution: openbsd-proto.cf openbsd-proto-IPv4only.cf
+distribution: openbsd-proto.cf
 	${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 644 openbsd-proto.cf \
 	    ${DESTDIR}/etc/mail/sendmail.cf
-	${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 644 \
-	    openbsd-proto-IPv4only.cf ${DESTDIR}/etc/mail/sendmail-IPv4only.cf
 
 # this is overkill, but....
 M4FILES=\
@@ -113,7 +110,6 @@ M4FILES=\
 	${CFDIR}/ostype/aix4.m4 \
 	${CFDIR}/ostype/altos.m4 \
 	${CFDIR}/ostype/amdahl-uts.m4 \
-	${CFDIR}/ostype/aux.m4 \
 	${CFDIR}/ostype/bsd4.3.m4 \
 	${CFDIR}/ostype/bsd4.4.m4 \
 	${CFDIR}/ostype/bsdi.m4 \
