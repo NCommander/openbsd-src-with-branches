@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.4.2.7 2003/05/16 00:29:40 niklas Exp $
+#	$OpenBSD: genassym.cf,v 1.4.2.8 2003/06/07 11:14:44 ho Exp $
 #	$NetBSD: genassym.cf,v 1.2 1997/06/28 19:59:04 pk Exp $
 
 #
@@ -84,6 +84,7 @@ member	p_wchan
 member	p_vmspace
 
 export	SRUN
+export	SONPROC
 
 # VM structure fields
 define	VM_PMAP		offsetof(struct vmspace, vm_map.pmap)
