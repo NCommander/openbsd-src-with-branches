@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.9 2000/04/07 22:06:11 niklas Exp $
+#	$OpenBSD: Makefile,v 1.12 2001/01/27 12:03:38 niklas Exp $
 #	$EOM: Makefile,v 1.16 2000/09/28 12:53:27 niklas Exp $
 
 #
 # Copyright (c) 1999 Niels Provos.  All rights reserved.
-# Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.
+# Copyright (c) 1999, 2001 Niklas Hallqvist.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -50,6 +50,14 @@ CFLAGS+=	-I${TOPSRC} -I${TOPSRC}/sysdep/${OS} -I${TOPOBJ} -Wall \
 		-DUSE_X509
 NOMAN=
 DEBUG=		-g
+
+.if ${FEATURES:Mgmp} == "gmp"
+CFLAGS+=	-DMP_FLAVOUR=MP_FLAVOUR_GMP
+LDADD+=		-lgmp
+DPADD+=		${LIBGMP}
+.else
+CFLAGS+=	-DMP_FLAVOUR=MP_FLAVOUR_OPENSSL
+.endif
 
 .include "${TOPSRC}/sysdep/${OS}/Makefile.sysdep"
 

@@ -1,8 +1,8 @@
-/*	$OpenBSD: udp.c,v 1.23 2000/10/16 23:27:23 niklas Exp $	*/
-/*	$EOM: udp.c,v 1.52 2000/10/15 22:02:55 niklas Exp $	*/
+/*	$OpenBSD: udp.c,v 1.29 2001/04/09 22:09:53 ho Exp $	*/
+/*	$EOM: udp.c,v 1.57 2001/01/26 10:09:57 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999, 2001 Niklas Hallqvist.  All rights reserved.
  * Copyright (c) 2000 Angelos D. Keromytis.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,6 @@
 #include "udp.h"
 #include "util.h"
 
-#define BACKLOG 16
 #define UDP_SIZE 65536
 
 /* If a system doesn't have SO_REUSEPORT, SO_REUSEADDR will have to do.  */
@@ -455,13 +454,13 @@ udp_init ()
     port = htons (udp_default_port);
   else
     {
-      s = getservbyname("isakmp", "udp");
+      s = getservbyname ("isakmp", "udp");
       port = s ? s->s_port : htons (UDP_DEFAULT_PORT);
     }
 
   LIST_INIT (&udp_listen_list);
 
-  /* Bind the ISAKMP UDP port on all network interfaces we have. */
+  /* Bind the ISAKMP UDP port on all network interfaces we have.  */
   /* XXX need to check errors */
   if_map (udp_bind_if, &port);
 
@@ -620,7 +619,7 @@ udp_decode_ids (struct transport *t)
     }
 #else
   strcpy (idsrc, inet_ntoa (((struct udp_transport *)t)->src.sin_addr));
-  strcpy (iddst, inet_ntoa (((struct udp_transport *)t)->src.sin_addr));
+  strcpy (iddst, inet_ntoa (((struct udp_transport *)t)->dst.sin_addr));
 #endif /* HAVE_GETNAMEINFO */
 
   sprintf (result, "src: %s dst: %s", idsrc, iddst);

@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.28 2000/10/07 06:57:16 niklas Exp $
+#	$OpenBSD: Makefile,v 1.34 2001/03/23 16:14:34 markus Exp $
 #	$EOM: Makefile,v 1.78 2000/10/15 21:33:42 niklas Exp $
 
 #
 # Copyright (c) 1998, 1999, 2000 Niklas Hallqvist.  All rights reserved.
-# Copyright (c) 2000 Håkan Olsson.  All rights reserved.
+# Copyright (c) 2000, 2001 Håkan Olsson.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -49,10 +49,12 @@ OS=		openbsd
 #OS=		netbsd
 #OS=		freebsd
 #OS=		linux
+#OS=		bsdi
 
 # Compile-time configuration of otherwise optional features
-#FEATURES=	tripledes blowfish cast policy x509 ec aggressive debug gmp
-FEATURES=	tripledes blowfish cast policy x509 ec aggressive debug
+#FEATURES=	tripledes des blowfish cast policy x509 ec aggressive debug gmp
+#FEATURES+=	
+FEATURES=	tripledes des blowfish cast policy x509 ec aggressive debug
 #FEATURES=
 
 .PATH:		${.CURDIR}/sysdep/${OS}
@@ -128,7 +130,7 @@ SUBDIR=		apps
 
 .if ${FEATURES} != ""
 FEATURES_UC!=	echo ${FEATURES} | tr '[:lower:]' '[:upper:]'
-CFLAGS+=	${FEATURES_UC:S/^/-DUSE_/}
+CFLAGS+=	${FEATURES_UC:S/^/-DUSE_/g}
 .endif
 
 .if make(install)

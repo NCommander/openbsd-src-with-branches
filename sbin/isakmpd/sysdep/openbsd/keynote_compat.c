@@ -1,4 +1,4 @@
-/*	$OpenBSD: keynote_compat.c,v 1.1 2000/10/15 19:18:26 niklas Exp $	*/
+/*	$OpenBSD: keynote_compat.c,v 1.3 2000/12/12 01:49:48 niklas Exp $	*/
 /*	$EOM: keynote_compat.c,v 1.1 2000/10/15 19:18:26 niklas Exp $	*/
 
 /*
