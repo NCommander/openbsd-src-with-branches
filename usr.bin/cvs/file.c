@@ -74,6 +74,7 @@ static const char *cvs_ign_std[] = {
 	"*.depend",
 	"CVS",
 	"core",
+	".#*",
 #ifdef OLD_SMELLY_CRUFT
 	"RCSLOG",
 	"tags",
@@ -81,7 +82,6 @@ static const char *cvs_ign_std[] = {
 	"RCS",
 	"SCCS",
 	"#*",
-	".#*",
 	",*",
 #endif
 };
