@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.75 2001/07/06 13:31:07 ho Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.76 2001/08/05 11:02:03 angelos Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -1263,17 +1263,14 @@ pfkeyv2_send(struct socket *socket, void *message, int len)
 	case SADB_FLUSH:
 	    rval = 0;
 
-	    if (smsg->sadb_msg_satype == SADB_SATYPE_UNSPEC)
-	    {
-		s = spltdb();
-		while ((ipo = TAILQ_FIRST(&ipsec_policy_head)) != NULL)
-		  ipsec_delete_policy(ipo);
-		splx(s);
-	    }
-
 	    switch(smsg->sadb_msg_satype)
 	    {
 		case SADB_SATYPE_UNSPEC:
+		    s = spltdb();
+		    while ((ipo = TAILQ_FIRST(&ipsec_policy_head)) != NULL)
+		      ipsec_delete_policy(ipo);
+		    splx(s);
+		    /* Fall through */
 		case SADB_SATYPE_AH:
 		case SADB_SATYPE_ESP:
 		case SADB_X_SATYPE_IPIP:
