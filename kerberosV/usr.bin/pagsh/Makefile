@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2001/05/25 08:20:34 hin Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -9,6 +9,6 @@ PROG=	pagsh
 NOMAN=
 
 CFLAGS+=-I${KRB5SRC}/lib/roken
-LDADD+=	${LIBROKEN} -lkrb5 -ldes -lkafs -lkrb
+LDADD+=	-lkrb5 -ldes -lkafs -lkrb ${LIBROKEN} -lasn1 -lcrypto -lcom_err
 
 .include <bsd.prog.mk>
