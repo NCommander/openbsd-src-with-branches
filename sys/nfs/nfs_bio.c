@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.15 1999/02/26 03:16:25 art Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.16 2000/06/23 02:14:40 mickey Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -271,7 +271,6 @@ again:
 				goto again;
 			}
 		}
-		vp->v_lastr = lbn;
 		diff = (on >= bp->b_validend) ? 0 : (bp->b_validend - on);
 		if (diff < n)
 			n = diff;
