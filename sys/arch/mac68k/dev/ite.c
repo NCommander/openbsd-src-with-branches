@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite.c,v 1.15 1997/04/14 17:56:45 gene Exp $	*/
+/*	$OpenBSD: ite.c,v 1.16 1997/11/14 03:40:58 gene Exp $	*/
 /*	$NetBSD: ite.c,v 1.32 1997/02/20 00:23:25 scottr Exp $	*/
 
 /*
@@ -67,7 +67,6 @@
 
 #include <machine/bus.h>
 #include <machine/cpu.h>
-#include <machine/macinfo.h>
 #include <machine/frame.h>
 #include <machine/viareg.h>
 
