@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint) 
-static char *rcsid = "$OpenBSD: svc.c,v 1.16 2003/12/31 03:27:23 millert Exp $";
+static char *rcsid = "$OpenBSD: svc.c,v 1.17 2005/01/08 19:17:39 krw Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -59,7 +59,7 @@ static int xportssize;
  * The services list
  * Each entry represents a set of procedures (an rpc program).
  * The dispatch routine takes request structs and runs the
- * apropriate procedure.
+ * appropriate procedure.
  */
 static struct svc_callout {
 	struct svc_callout *sc_next;
