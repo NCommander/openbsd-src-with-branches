@@ -1,4 +1,4 @@
-/*	$OpenBSD: isakmp_cfg.c,v 1.13 2002/06/08 17:35:06 ho Exp $	*/
+/*	$OpenBSD: isakmp_cfg.c,v 1.21 2002/07/16 11:15:53 markus Exp $	*/
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
@@ -156,6 +156,7 @@ cfg_initiator_send_ATTR (struct message *msg)
 		attrlen += ISAKMP_ATTR_SZ + LEN6;			\
 		break;							\
 	      default:							\
+		break;							\
 	      }								\
           free (sa);							\
         } while (0)
