@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wireg.h,v 1.22 2002/06/23 10:33:21 deraadt Exp $	*/
+/*	$OpenBSD: if_wireg.h,v 1.23 2002/06/26 21:34:01 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -92,7 +92,7 @@
 
 #define CSR_WRITE_4(sc, reg, val)				\
 	bus_space_write_4(sc->wi_btag, sc->wi_bhandle,		\
-	    sc->sc_pci ? reg * 2: reg),				\
+	    (sc->sc_pci ? reg * 2: reg),			\
 	     WI_BIG_ENDIAN_POSSIBLE ? htole32(val) : (val))
 #define CSR_WRITE_2(sc, reg, val)				\
 	bus_space_write_2(sc->wi_btag, sc->wi_bhandle,		\
