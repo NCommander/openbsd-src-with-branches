@@ -1,4 +1,4 @@
-/*	$OpenBSD: glob.c,v 1.10 2003/06/02 23:32:07 millert Exp $	*/
+/*	$OpenBSD: glob.c,v 1.11 2003/06/11 21:09:50 deraadt Exp $	*/
 /*	$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)glob.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: glob.c,v 1.10 2003/06/02 23:32:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: glob.c,v 1.11 2003/06/11 21:09:50 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -522,7 +522,7 @@ ginit(void)
 }
 
 void
-rscan(Char **t, void (*f)())
+rscan(Char **t, void (*f)(int))
 {
     Char *p;
 
