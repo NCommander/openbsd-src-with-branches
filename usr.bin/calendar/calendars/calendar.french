@@ -1,7 +1,7 @@
 /*
  * French calendar file(s)
  *
- * $FreeBSD$
+ * $OpenBSD$
  */
 
 #ifndef _calendar_french_
