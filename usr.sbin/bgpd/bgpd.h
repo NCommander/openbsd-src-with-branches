@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.70 2004/01/17 18:27:19 henning Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.71 2004/01/17 19:35:36 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -246,6 +246,7 @@ struct kif {
 	u_short			 ifindex;
 	int			 flags;
 	char			 ifname[IFNAMSIZ];
+	u_int8_t		 link_state;
 };
 
 struct session_up {
