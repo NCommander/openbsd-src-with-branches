@@ -186,12 +186,13 @@ main(argc, argv)
 				ret = 1;
 				goto bail;
 			}
-			if (!strncmp(host, "http://", strlen("http://"))) {
+			if (!strncmp(host, "http://", sizeof("http://") - 1)) {
 				http_fetch(host);
 				goto bail;
 			}
-			if (strncmp(host, "ftp://", strlen("ftp://")) == 0) {
-				host += strlen("ftp://");
+			if (strncmp(host, "ftp://", sizeof("ftp://") - 1) ==
+			    0) {
+				host += sizeof("ftp://") - 1;
 				p = strchr(host, '/');
 			}
 			else
@@ -212,7 +213,7 @@ main(argc, argv)
 				ret = 1;
 				goto bail;
 			}
-			*argv = strchr(argv[0], ':') + 1;
+			*argv = p + 1;
 			do {
 				dir = *argv;
 				p = strrchr(dir, '/');
