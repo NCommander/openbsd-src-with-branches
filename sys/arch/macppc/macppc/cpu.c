@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.14 2003/10/15 17:50:16 drahn Exp $ */
+/*	$OpenBSD: cpu.c,v 1.15 2003/10/16 05:03:22 deraadt Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -79,7 +79,7 @@ struct cfattach cpu_ca = {
 };
 
 struct cfdriver cpu_cd = {
-	NULL, "cpu", DV_DULL, NULL, 0
+	NULL, "cpu", DV_DULL
 };
 
 void config_l2cr(int cpu);

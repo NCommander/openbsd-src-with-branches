@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.8 2003/10/15 17:50:16 drahn Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.9 2003/10/16 05:03:22 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -49,7 +49,7 @@ struct cfattach mainbus_ca = {
 	sizeof(struct mainbus_softc), mbmatch, mbattach
 };
 struct cfdriver mainbus_cd = {
-	NULL, "mainbus", DV_DULL, NULL, 0
+	NULL, "mainbus", DV_DULL
 };
 
 void	mb_intr_establish(struct confargs *, int (*)(void *), void *);
