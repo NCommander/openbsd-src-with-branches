@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.59 2003/10/04 23:15:06 deraadt Exp $	*/
+/*	$OpenBSD: route.c,v 1.60 2003/10/07 19:48:07 tedu Exp $	*/
 /*	$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)route.c	8.3 (Berkeley) 3/9/94";
 #else
-static char *rcsid = "$OpenBSD: route.c,v 1.59 2003/10/04 23:15:06 deraadt Exp $";
+static char *rcsid = "$OpenBSD: route.c,v 1.60 2003/10/07 19:48:07 tedu Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,6 +62,7 @@ static char *rcsid = "$OpenBSD: route.c,v 1.59 2003/10/04 23:15:06 deraadt Exp $
 
 #include <arpa/inet.h>
 
+#include <err.h>
 #include <limits.h>
 #include <netdb.h>
 #include <stdio.h>
