@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsd.c,v 1.8 1997/08/18 03:11:26 millert Exp $	*/
+/*	$OpenBSD: nfsd.c,v 1.9 1997/09/05 18:29:34 deraadt Exp $	*/
 /*	$NetBSD: nfsd.c,v 1.19 1996/02/18 23:18:56 mycroft Exp $	*/
 
 /*
@@ -227,7 +227,6 @@ main(argc, argv, envp)
 		(void)signal(SIGINT, SIG_IGN);
 		(void)signal(SIGQUIT, SIG_IGN);
 		(void)signal(SIGSYS, nonfs);
-		(void)signal(SIGTERM, SIG_IGN);
 	}
 	(void)signal(SIGCHLD, reapchild);
 
