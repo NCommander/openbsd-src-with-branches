@@ -1,8 +1,8 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.boot,v 1.2 1997/09/21 11:43:32 deraadt Exp $
 #
 # a very simple makefile...
 #
-# You only want to use this if you aren't running NetBSD.
+# You only want to use this if you aren't running OpenBSD.
 #
 CC=gcc -O
 CFLAGS= -I. -DMAKE_BOOTSTRAP
