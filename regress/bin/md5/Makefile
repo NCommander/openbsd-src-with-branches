@@ -1,9 +1,6 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2001/06/04 23:08:18 millert Exp $
 
-NOMAN=
-NOPROG=
-
-regress: t1 t2 t3 t4 t5 t6 t7
+REGRESSTARGETS=t1 t2 t3 t4 t5 t6 t7
 
 t1: t1.out
 	@cmp -s ${.CURDIR}/testsuite.md5 t1.out || \
@@ -51,4 +48,4 @@ t5.out:
 .PHONY: t1 t2 t3 t4 t5 t6 t7 regress
 CLEANFILES+=t1.out t2.out t3.out t5.out
 
-.include <bsd.prog.mk>
+.include <bsd.regress.mk>
