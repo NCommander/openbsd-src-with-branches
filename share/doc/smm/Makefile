@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile,v 1.5 2004/02/10 07:28:36 jmc Exp $
+#	$OpenBSD: Makefile,v 1.6 2004/04/09 12:10:04 jmc Exp $
 #	from: @(#)Makefile	8.1 (Berkeley) 6/10/93
 
 # Missing or not installed:
-# 02.config 14.uucpimpl
-# 15.uucpnet 16.security 18.net
+# 02.config 14.uucpimpl 15.uucpnet 16.security
 
 DOCDIR=	/usr/share/doc/smm
 FILES=	00.contents Makefile Title
