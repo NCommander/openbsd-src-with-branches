@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.23 2000/06/30 23:32:14 itojun Exp $	*/
+/*	$OpenBSD: main.c,v 1.24 2000/12/13 15:52:58 camield Exp $	*/
 /*	$NetBSD: main.c,v 1.9 1996/05/07 02:55:02 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)main.c	8.4 (Berkeley) 3/1/94";
 #else
-static char *rcsid = "$OpenBSD: main.c,v 1.23 2000/06/30 23:32:14 itojun Exp $";
+static char *rcsid = "$OpenBSD: main.c,v 1.24 2000/12/13 15:52:58 camield Exp $";
 #endif
 #endif /* not lint */
 
@@ -171,6 +171,10 @@ struct nlist nl[] = {
 	{ "_mf6ctable" },
 #define N_MIF6TABLE	50
 	{ "_mif6table" },
+#define N_MBPOOL	51
+	{ "_mbpool" },
+#define N_MCLPOOL	52
+	{ "_mclpool" },
 	{ ""},
 };
 
@@ -433,7 +437,8 @@ main(argc, argv)
 		exit(1);
 	}
 	if (mflag) {
-		mbpr(nl[N_MBSTAT].n_value);
+		mbpr(nl[N_MBSTAT].n_value, nl[N_MBPOOL].n_value,
+		    nl[N_MCLPOOL].n_value);
 		exit(0);
 	}
 	if (pflag) {
