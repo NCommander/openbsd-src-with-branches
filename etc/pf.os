@@ -1,4 +1,4 @@
-# $OpenBSD: pf.os,v 1.10 2003/09/06 01:37:07 frantzen Exp $
+# $OpenBSD: pf.os,v 1.11 2003/12/03 23:55:34 deraadt Exp $
 # passive OS fingerprinting
 # -------------------------
 #
@@ -149,6 +149,10 @@
 # problems spotted, to the maintainers: lcamtuf@coredump.cx,
 # frantzen@openbsd.org and bugs@openbsd.org with a tcpdump packet
 # capture of the relevant SYN packet(s)
+#
+# A test and submission page is available at 
+# http://lcamtuf.coredump.cx/p0f-help/
+#
 #
 # WARNING WARNING WARNING
 # -----------------------
