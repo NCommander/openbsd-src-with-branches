@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.9 2003/10/16 05:03:22 deraadt Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.1 2003/10/31 03:54:33 drahn Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -95,14 +95,6 @@ mbattach(struct device *parent, struct device *self, void *aux)
 	/* Set up Openfirmware.*/
 	if (system_type != POWER4e) { /* for now */
 		nca.ca_name = "ofroot";
-		nca.ca_bus = &sc->sc_bus;
-		config_found(self, &nca, mbprint);
-	}
-
-	/* The following machines have an ISA bus */
-	/* Do ISA first so the interrupt controller is set up! */
-	if (system_type == POWER4e) {
-		nca.ca_name = "isabr";
 		nca.ca_bus = &sc->sc_bus;
 		config_found(self, &nca, mbprint);
 	}
