@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_inode.c,v 1.20 2003/12/28 17:20:16 tedu Exp $	*/
+/*	$OpenBSD: ufs_inode.c,v 1.21 2004/01/20 03:44:06 tedu Exp $	*/
 /*	$NetBSD: ufs_inode.c,v 1.7 1996/05/11 18:27:52 mycroft Exp $	*/
 
 /*
@@ -87,7 +87,8 @@ ufs_inactive(v)
 	struct vnode *vp = ap->a_vp;
 	struct inode *ip = VTOI(vp);
 	struct proc *p = ap->a_p;
-	int mode, error = 0;
+	mode_t mode;
+	int error = 0;
 	extern int prtactive;
 
 	if (prtactive && vp->v_usecount != 0)

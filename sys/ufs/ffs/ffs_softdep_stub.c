@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep_stub.c,v 1.5 2003/05/26 18:33:17 tedu Exp $	*/
+/*	$OpenBSD: ffs_softdep_stub.c,v 1.6 2004/05/07 01:40:16 tedu Exp $	*/
 
 /*
  * Copyright 1998 Marshall Kirk McKusick. All Rights Reserved.
@@ -148,7 +148,7 @@ void
 softdep_freefile(pvp, ino, mode)
 		struct vnode *pvp;
 		ino_t ino;
-		int mode;
+		mode_t mode;
 {
 
 	panic("softdep_freefile called");
