@@ -1,4 +1,4 @@
-/*	$OpenBSD: yacc.c,v 1.3 2000/07/25 19:26:23 deraadt Exp $	*/
+/*	$OpenBSD: yacc.c,v 1.4 2001/08/23 14:17:08 aaron Exp $	*/
 /*	$NetBSD: yacc.c,v 1.3 1995/03/26 20:14:12 glass Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)yacc.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: yacc.c,v 1.3 2000/07/25 19:26:23 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: yacc.c,v 1.4 2001/08/23 14:17:08 aaron Exp $";
 #endif
 #endif /* not lint */
 
@@ -89,7 +89,7 @@ y_entries()
 			break;
 		case '/':
 			if (GETC(==, '*'))
-				skip_comment();
+				skip_comment('*');
 			else
 				(void)ungetc(c, inf);
 			break;
