@@ -1,4 +1,4 @@
-/*	$OpenBSD: ises.c,v 1.7 2001/06/12 15:40:32 niklas Exp $	*/
+/*	$OpenBSD: ises.c,v 1.8 2001/06/23 18:30:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Håkan Olsson (ho@crt.se)
@@ -463,14 +463,16 @@ ises_initstate(void *v)
 
 		/* Register ourselves with crypto framework. */
 #ifdef notyet
-		crypto_register(sc->sc_cid, CRYPTO_3DES_CBC,
+		crypto_register(sc->sc_cid, CRYPTO_3DES_CBC, 0, 0,
 		    ises_newsession, ises_freesession, ises_process);
-		crypto_register(sc->sc_cid, CRYPTO_DES_CBC, NULL, NULL, NULL);
-		crypto_register(sc->sc_cid, CRYPTO_MD5_HMAC, NULL, NULL, NULL);
-		crypto_register(sc->sc_cid, CRYPTO_SHA1_HMAC, NULL, NULL,
-		    NULL);
-		crypto_register(sc->sc_cid, CRYPTO_RIPEMD160_HMAC, NULL, NULL,
-		    NULL);
+		crypto_register(sc->sc_cid, CRYPTO_DES_CBC, 0, 0,
+		    NULL, NULL, NULL);
+		crypto_register(sc->sc_cid, CRYPTO_MD5_HMAC, 0, 0,
+		    NULL, NULL, NULL);
+		crypto_register(sc->sc_cid, CRYPTO_SHA1_HMAC, 0, 0,
+		    NULL, NULL, NULL);
+		crypto_register(sc->sc_cid, CRYPTO_RIPEMD160_HMAC, 0, 0,
+		    NULL, NULL, NULL);
 #endif
 
 		return;
