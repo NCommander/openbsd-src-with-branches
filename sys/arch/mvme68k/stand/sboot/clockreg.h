@@ -1,4 +1,4 @@
-/*	$NetBSD: clockreg.h,v 1.1.1.1 1995/07/25 23:12:29 chuck Exp $ */
+/*	$Id$ */
 
 /*
  * Copyright (c) 1992, 1993
