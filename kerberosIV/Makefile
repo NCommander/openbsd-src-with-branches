@@ -1,12 +1,12 @@
-# $OpenBSD: Makefile,v 1.30 2000/08/31 19:48:56 hin Exp $
+# $OpenBSD: Makefile,v 1.31 2000/09/04 18:02:42 hin Exp $
 
 SUBDIR	= lib usr.bin usr.sbin libexec doc
 
 build:
 	${MAKE} includes
 	${MAKE} depend
-	( cd ${.CURDIR}/lib && ${MAKE} && ${MAKE} install )
+	cd ${.CURDIR}/lib && ${MAKE} && ${SUDO} ${MAKE} install
 	${MAKE}
-	${MAKE} install
+	${SUDO} ${MAKE} install
 
 .include <bsd.subdir.mk>
