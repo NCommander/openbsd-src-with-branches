@@ -1,9 +1,9 @@
-#	$OpenBSD$
+#	$OpenBSD: crontab,v 1.3 1996/05/26 10:25:18 deraadt Exp $
 #
 # /var/cron/tabs/root - root's crontab
 #
 SHELL=/bin/sh
-PATH=/etc:/bin:/sbin:/usr/bin:/usr/sbin
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
 HOME=/var/log
 #
 #minute	hour	mday	month	wday	command
