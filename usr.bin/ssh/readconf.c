@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.111 2003/05/15 14:55:25 djm Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.112 2003/05/16 03:27:12 djm Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -544,6 +544,8 @@ parse_string:
 		goto parse_string;
 
 	case oProxyCommand:
+		if (s == NULL)
+			fatal("%.200s line %d: Missing argument.", filename, linenum);
 		charptr = &options->proxy_command;
 		len = strspn(s, WHITESPACE "=");
 		if (*activep && *charptr == NULL)
