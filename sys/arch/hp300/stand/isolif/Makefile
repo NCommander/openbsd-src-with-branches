@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1 1997/07/14 08:14:52 downsj Exp $
+#	$OpenBSD: Makefile,v 1.1 1997/09/15 06:20:55 downsj Exp $
 
 PROG=	isolif
 MAN=	isolif.8
+MANSUBDIR=/hp300
 
 CFLAGS+=	-I${.CURDIR}/../include
 
