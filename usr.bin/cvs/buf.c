@@ -341,13 +341,13 @@ cvs_buf_fappend(BUF *b, const char *fmt, ...)
 	va_list vap;
 
 	va_start(vap, fmt);
-
 	ret = vasprintf(&str, fmt, vap);
+	va_end(vap);
+
 	if (ret == -1) {
 		cvs_log(LP_ERRNO, "failed to format data");
 		return (-1);
 	}
-	va_end(vap);
 
 	ret = cvs_buf_append(b, str, ret);
 	free(str);

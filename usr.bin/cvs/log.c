@@ -295,9 +295,7 @@ cvs_printf(const char *fmt, ...)
 	va_list vap;
 
 	va_start(vap, fmt);
-
 	ret = vprintf(fmt, vap);
-
 	va_end(vap);
 
 	return (ret);
