@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.59 2003/02/12 14:41:07 jason Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.60 2003/04/23 01:36:52 jason Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -122,6 +122,7 @@ mbinit()
 {
 	vaddr_t minaddr, maxaddr;
 
+	minaddr = vm_map_min(kernel_map);
 	mb_map = uvm_km_suballoc(kernel_map, &minaddr, &maxaddr,
 	    nmbclust*(MCLBYTES), VM_MAP_INTRSAFE, FALSE, NULL);
 
