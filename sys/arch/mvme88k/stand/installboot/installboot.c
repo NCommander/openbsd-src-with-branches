@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.5 2002/03/14 01:26:40 millert Exp $ */
+/*	$OpenBSD: installboot.c,v 1.6 2002/03/14 03:15:57 millert Exp $ */
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -121,7 +121,7 @@ main(argc, argv)
 	boot = argv[optind];
 	proto = argv[optind + 1];
 	dev = argv[optind + 2];
-	strcpy(cdev, dev);
+	strlcpy(cdev, dev, sizeof cdev);
 	cdev[strlen(cdev)-1] = 'c';
 	
 	if (verbose) {
@@ -423,7 +423,7 @@ char *bootproto;
 
 
 	pcpul->version = 1;
-	strcpy(pcpul->vid_id, "M88K");
+	memcpy(pcpul->vid_id, "M88K", sizeof pcpul->vid_id);
 
 	fstat(exe_file, &stat);
 

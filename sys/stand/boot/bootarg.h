@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootarg.h,v 1.8 1999/08/25 00:54:18 mickey Exp $	*/
+/*	$OpenBSD: bootarg.h,v 1.9 2002/03/14 01:27:13 millert Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -50,7 +50,7 @@ typedef struct _boot_args {
 
 #if defined(_KERNEL) || defined(_STANDALONE)
 extern void *bootargv;
-extern int bootargc;                                                     
+extern int bootargc;
 extern bootarg_t *bootargp;
 #endif
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1999/09/27 19:30:00 smurph Exp $
+#	$OpenBSD: Makefile,v 1.1 2001/06/26 21:58:06 smurph Exp $
 
 LIB=sa
 
@@ -21,7 +21,7 @@ SRC_sa=	alloc.c memcpy.c exit.c getfile.c gets.c globals.c \
 	lseek.c open.c nullfs.c read.c fstat.c \
 	ufs.c cread.c
 
-SRC_kern= ashrdi3.c bzero.c strcpy.c
+SRC_kern= ashrdi3.c bzero.c
 
 SRC_mvme= exec_mvme.c
 

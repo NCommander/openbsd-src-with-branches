@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_hppa.c,v 1.7 2003/04/15 18:07:32 mickey Exp $	*/
+/*	$OpenBSD: dev_hppa.c,v 1.8 2003/04/16 07:20:50 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -219,7 +219,8 @@ char *
 ttyname(fd)
 	int fd;
 {
-	sprintf(ttyname_buf, "%s%d", cdevs[major(cn_tab->cn_dev)],
+	snprintf(ttyname_buf, sizeof ttyname_buf, "%s%d",
+	    cdevs[major(cn_tab->cn_dev)],
 	    minor(cn_tab->cn_dev));
 	return (ttyname_buf);
 }

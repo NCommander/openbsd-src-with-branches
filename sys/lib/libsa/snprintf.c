@@ -1,14 +1,9 @@
-/*	$OpenBSD: iodesc.h,v 1.2 1996/09/23 14:18:56 mickey Exp $	*/
-/*	$NetBSD: iodesc.h,v 1.4 1995/09/23 03:31:50 gwr Exp $	*/
+/*	$OpenBSD: printf.c,v 1.18 2003/05/20 19:23:01 jason Exp $	*/
+/*	$NetBSD: printf.c,v 1.10 1996/11/30 04:19:21 gwr Exp $	*/
 
-/*
- * Copyright (c) 1993 Adam Glass
- * Copyright (c) 1992 Regents of the University of California.
- * All rights reserved.
- *
- * This software was developed by the Computer Systems Engineering group
- * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
- * contributed to Berkeley.
+/*-
+ * Copyright (c) 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -21,7 +16,7 @@
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
  *	This product includes software developed by the University of
- *	California, Lawrence Berkeley Laboratory and its contributors.
+ *	California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
@@ -37,19 +32,52 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ *	@(#)printf.c	8.1 (Berkeley) 6/11/93
  */
 
-#ifndef __SYS_LIBNETBOOT_IODESC_H
-#define __SYS_LIBNETBOOT_IODESC_H
+#include <sys/cdefs.h>
+#include <sys/types.h>
+#include <machine/stdarg.h>
 
-struct iodesc {
-	struct	in_addr destip;		/* dest. ip addr, net order */
-	struct	in_addr myip;		/* local ip addr, net order */
-	u_short	destport;		/* dest. port, net order */
-	u_short	myport;			/* local port, net order */
-	u_long	xid;			/* transaction identification */
-	u_char	myea[6];		/* my ethernet address */
-	struct netif *io_netif;
-};
+#include "stand.h"
 
-#endif /* __SYS_LIBNETBOOT_IODESC_H */
+extern void kprintn(void (*)(int), u_long, int);
+extern void kdoprnt(void (*)(int), const char *, va_list);
+
+#ifndef	STRIPPED
+static void sputchar(int);
+
+static char *sbuf, *sbuf_end;
+static size_t sbuf_len;
+
+void
+sputchar(c)
+	int c;
+{
+	if (sbuf < sbuf_end)
+		*sbuf = c;
+	sbuf++;
+}
+
+int
+snprintf(char *buf, size_t len, const char *fmt, ...)
+{
+	va_list ap;
+
+	sbuf = buf;
+	sbuf_len = len;
+	sbuf_end = sbuf + len;
+	va_start(ap, fmt);
+	kdoprnt(sputchar, fmt, ap);
+	va_end(ap);
+
+	if (sbuf < sbuf_end)
+		*sbuf = '\0';
+	else if (len > 0)
+		*(sbuf_end - 1) = '\0';
+
+	return sbuf - buf;
+}
+
+#endif	/* STRIPPED */

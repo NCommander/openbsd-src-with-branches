@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.23 2000/06/08 01:51:32 mickey Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.24 2001/09/11 06:06:15 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -167,7 +167,8 @@ char *
 ttyname(fd)
 	int fd;
 {
-	sprintf(ttyname_buf, "%s%d", cdevs[major(cn_tab->cn_dev)],
+	snprintf(ttyname_buf, sizeof ttyname_buf, "%s%d",
+	    cdevs[major(cn_tab->cn_dev)],
 	    minor(cn_tab->cn_dev));
 	return (ttyname_buf);
 }

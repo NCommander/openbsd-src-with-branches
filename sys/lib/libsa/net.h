@@ -1,8 +1,8 @@
-/*	$OpenBSD: net.h,v 1.4 2002/03/14 01:27:07 millert Exp $	*/
+/*	$OpenBSD: net.h,v 1.5 2002/03/14 03:16:10 millert Exp $	*/
 /*	$NetBSD: net.h,v 1.10 1995/10/20 00:46:30 cgd Exp $	*/
 
 /*
- * Copyright (c) 1993 Adam Glass 
+ * Copyright (c) 1993 Adam Glass
  * Copyright (c) 1992 Regents of the University of California.
  * All rights reserved.
  *

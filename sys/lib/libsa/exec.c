@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.21 1998/04/27 18:38:25 millert Exp $	*/
+/*	$OpenBSD: exec.c,v 1.22 1998/07/14 14:26:18 mickey Exp $	*/
 /*	$NetBSD: exec.c,v 1.15 1996/10/13 02:29:01 christos Exp $	*/
 
 /*-
@@ -138,7 +138,7 @@ exec(path, loadaddr, howto)
 			sz = i - sizeof(int);
 			addr += sizeof(int);
 			if (read(io, addr, sz) != sz)
-                	goto shread;
+				goto shread;
 			addr += sz;
 		}
 
@@ -166,7 +166,7 @@ exec(path, loadaddr, howto)
 
 #ifdef EXEC_DEBUG
         printf("loadaddr=%p etxt=%p daddr=%p ssym=%p esym=%p\n",
-	    	loadaddr, etxt, daddr, ssym, esym);
+	    loadaddr, etxt, daddr, ssym, esym);
         printf("\n\nReturn to boot...\n");
         getchar();
 #endif
