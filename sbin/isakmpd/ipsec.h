@@ -1,8 +1,8 @@
-/*	$OpenBSD: ipsec.h,v 1.5 1999/02/26 03:44:04 niklas Exp $	*/
-/*	$EOM: ipsec.h,v 1.33 1999/03/31 14:19:52 niklas Exp $	*/
+/*	$OpenBSD: ipsec.h,v 1.6 1999/03/31 14:27:37 niklas Exp $	*/
+/*	$EOM: ipsec.h,v 1.34 1999/04/02 00:57:49 niklas Exp $	*/
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
