@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.c,v 1.25 2001/08/18 05:39:03 drahn Exp $	*/
+/*	$OpenBSD: ofw_machdep.c,v 1.1 2001/09/01 15:44:20 drahn Exp $	*/
 /*	$NetBSD: ofw_machdep.c,v 1.1 1996/09/30 16:34:50 ws Exp $	*/
 
 /*
@@ -44,7 +44,6 @@
 #include <sys/systm.h>
 
 #include <vm/vm.h>
-#include <vm/vm_kern.h>
 
 #include <machine/powerpc.h>
 #include <machine/autoconf.h>
