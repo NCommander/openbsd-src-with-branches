@@ -1,4 +1,4 @@
-/*      $OpenBSD: asm.h,v 1.6 1997/05/11 16:23:42 pefo Exp $	*/
+/*      $OpenBSD: asm.h,v 1.1 1998/01/28 11:14:37 pefo Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -177,9 +177,6 @@ x: ;				\
  */
 #define END(x) \
 	.end x
-
-#define STAND_FRAME_SIZE	24
-#define STAND_RA_OFFSET		20
 
 /*
  * Macros to panic and printf from assembly language.
