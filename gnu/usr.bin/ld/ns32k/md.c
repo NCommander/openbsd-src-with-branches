@@ -1,3 +1,4 @@
+/*	$OpenBSD: md.c,v 1.6 1994/11/30 06:20:42 phil Exp $  */
 /*	$NetBSD: md.c,v 1.6 1994/11/30 06:20:42 phil Exp $  */
 /*
  * Copyright (c) 1993 Paul Kranenburg

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.11 1995/10/09 00:11:24 pk Exp $
 #	$NetBSD: Makefile,v 1.11 1995/10/09 00:11:24 pk Exp $
 
 PROG=	ld.so

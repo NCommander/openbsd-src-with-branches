@@ -1,3 +1,4 @@
+/* *	$OpenBSD: md.c,v 1.1 1997/04/23 21:24:41 rahnds Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -27,7 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: md.c,v 1.6 1996/01/12 03:21:43 drahn Exp $
  */
 
 #include <sys/param.h>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*	$NetBSD: ldd.c,v 1.12 1995/10/09 00:14:41 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg

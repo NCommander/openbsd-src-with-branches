@@ -1,5 +1,5 @@
+/* * $OpenBSD: md.h,v 1.1 1997/04/23 21:24:41 rahnds Exp $*/
 /*
- * $Id: md.h,v 1.3 1997/04/23 20:43:45 drahn Exp drahn $
  *	- m68k dependent definitions
  */
 
