@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_cap.c,v 1.3 2000/09/16 18:06:01 millert Exp $	*/
+/*	$OpenBSD: login_cap.c,v 1.4 2000/11/10 15:33:03 provos Exp $	*/
 
 /*-
  * Copyright (c) 1995,1997 Berkeley Software Design, Inc. All rights reserved.
@@ -146,6 +146,10 @@ login_getstyle(lc, style, atype)
 
 	f1 = 0;
 	f2 = 0;
+
+	/* Silently convert 's/key' -> 'skey' */
+	if (style && strcmp(style, "s/key") == 0)
+		style = "skey";
 
     	if (!atype || !(auths = login_getcapstr(lc, atype, NULL, NULL)))
 		auths = login_getcapstr(lc, "auth", "", NULL);
