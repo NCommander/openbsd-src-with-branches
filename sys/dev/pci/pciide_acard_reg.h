@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: pciide_acard_reg.h,v 1.1 2001/04/21 16:36:38 tsutsui Exp $	*/
 
 /*
