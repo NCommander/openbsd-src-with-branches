@@ -1,4 +1,4 @@
-/*	$OpenBSD: exception_vectors2.h,v 1.1 1999/09/27 20:46:17 smurph Exp $ */
+/*	$OpenBSD: exception_vectors2.h,v 1.2 2001/01/14 20:25:24 smurph Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1991, 1992 Carnegie Mellon University
@@ -164,4 +164,4 @@
 /* vector 0x82 (#130) */  word   _m197_break
 /* vector 0x83 (#131) */  word   _m197_trace
 /* vector 0x84 (#132) */  word   _m197_entry
-#endif __MACHINE_EXECPTION_VECTORS2_H__
+#endif /* __MACHINE_EXECPTION_VECTORS2_H__ */

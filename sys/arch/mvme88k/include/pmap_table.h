@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_table.h,v 1.5 1999/09/27 20:46:19 smurph Exp $ */
+/*	$OpenBSD: pmap_table.h,v 1.6 2001/01/14 20:25:24 smurph Exp $ */
 /* 
  * Mach Operating System
  * Copyright (c) 1992 Carnegie Mellon University
@@ -45,5 +45,5 @@ typedef struct {
 typedef pmap_table_entry *pmap_table_t;
 
 pmap_table_t pmap_table_build __P((unsigned memory_size));
-#endif __MACHINE_PAMP_TABLE_H__
+#endif /* __MACHINE_PAMP_TABLE_H__ */
 

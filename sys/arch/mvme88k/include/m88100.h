@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88100.h,v 1.6 2001/02/01 03:38:17 smurph Exp $ */
+/*	$OpenBSD: m88100.h,v 1.7 2001/03/07 23:37:16 miod Exp $ */
 /* 
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University
@@ -73,4 +73,4 @@ struct dmt_reg {
 };
 #endif 
 
-#endif __MACHINE_M88100_H__
+#endif /* __MACHINE_M88100_H__ */

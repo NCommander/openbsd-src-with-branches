@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukc.h,v 1.3 2001/01/24 20:12:27 art Exp $ */
+/*	$OpenBSD: ukc.h,v 1.4 2001/02/04 20:42:12 maja Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -152,6 +152,6 @@ void	process_history __P((int, char *));
 #define UC_FIND 'f'
 #define UC_SHOW 's'
 
-#endif _UTIL_H
+#endif /* _UTIL_H */
 
 

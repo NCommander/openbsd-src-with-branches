@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.h,v 1.2 1997/09/29 23:33:34 mickey Exp $	*/
+/*	$OpenBSD: disk.h,v 1.3 1997/10/16 01:47:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -54,5 +54,5 @@ int DISK_close __P((int));
 int DISK_getmetrics __P((disk_t *, DISK_metrics *));
 int DISK_printmetrics __P((disk_t *));
 
-#endif _DISK_H
+#endif /* _DISK_H */
 

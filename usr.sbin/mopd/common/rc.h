@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rc.h,v 1.2 1996/09/21 19:12:08 maja Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -28,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$OpenBSD: rc.h,v 1.1.1.1 1996/09/21 13:49:16 maja Exp $
+ *	$OpenBSD: rc.h,v 1.2 1996/09/21 19:12:08 maja Exp $
  *
  */
 
@@ -43,4 +43,4 @@ void	mopDumpRC        __P((FILE *, u_char *, int));
 __END_DECLS
 #endif
 
-#endif _RC_H_
+#endif /* _RC_H_ */

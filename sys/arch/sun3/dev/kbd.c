@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.6 2001/06/27 05:44:51 nate Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.7 2001/08/08 22:42:11 miod Exp $	*/
 /*	$NetBSD: kbd.c,v 1.8 1996/05/17 19:32:06 gwr Exp $	*/
 
 /*
@@ -440,7 +440,7 @@ kbdioctl(dev, cmd, data, flag, p)
 	case KIOCGETKEY:	/* Get keymap entry (old format) */
 		error = kbd_oldkeymap(ks, cmd, (struct okiockey *)data);
 		break;
-#endif	KIOCGETKEY */
+#endif	/* KIOCGETKEY */
 
 	case KIOCSKEY:  	/* Set keymap entry */
 		/* Don't let just anyone hose the keyboard. */

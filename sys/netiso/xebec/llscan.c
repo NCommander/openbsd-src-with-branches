@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: llscan.c,v 1.2 1996/03/04 10:37:07 mickey Exp $	*/
 /*	$NetBSD: llscan.c,v 1.5 1994/06/29 06:41:05 cgd Exp $	*/
 
 /*
@@ -382,7 +382,7 @@ again:
 			getstr('"', '"');
 			TVAL.FSTRING.address = stash(buffer[currentbuf]);
 			break;
-#endif T_FSTRING
+#endif /* T_FSTRING */
 
 		case '(':
 			t->llterm = T_PREDICATE;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.6 2000/12/28 21:21:24 smurph Exp $ */
+/*	$OpenBSD: pcb.h,v 1.7 2001/01/12 07:29:27 smurph Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Mach Operating System
@@ -105,4 +105,4 @@ struct md_coredump {
 	struct	trapframe md_tf;
 };
 
-#endif _M88K_PCB_H_
+#endif /* _M88K_PCB_H_ */

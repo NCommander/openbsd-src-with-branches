@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.6 2001/01/14 20:25:23 smurph Exp $ */
+/*	$OpenBSD: disklabel.h,v 1.7 2001/08/11 23:51:50 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1995 Dale Rahn.
@@ -120,5 +120,4 @@ struct cpu_disklabel {
 	u_long		magic2;
 	u_char		cfg_4[192];
 };
-
 #endif /* __MACHINE_DISKLABEL_H__ */

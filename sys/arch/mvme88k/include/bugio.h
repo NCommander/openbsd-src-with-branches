@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugio.h,v 1.7 2001/01/14 20:25:23 smurph Exp $ */
+/*	$OpenBSD: bugio.h,v 1.8 2001/03/09 05:44:40 smurph Exp $ */
 #ifndef __MACHINE_BUGIO_H__
 #define __MACHINE_BUGIO_H__
 #include "sys/cdefs.h"
@@ -97,5 +97,5 @@ void bugreturn	__P((void));
 int bugfork	__P((int cpu, unsigned address));
 void bugbrdid	__P((struct bugbrdid *));
 void bugnetctrl	__P((struct bugniocall *));
-#endif __MACHINE_BUGIO_H__
+#endif /* __MACHINE_BUGIO_H__ */
 

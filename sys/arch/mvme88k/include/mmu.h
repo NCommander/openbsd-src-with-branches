@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmu.h,v 1.9 2001/06/27 04:29:19 art Exp $ */
+/*	$OpenBSD: mmu.h,v 1.10 2001/08/07 23:57:58 miod Exp $ */
 /*
  * Ashura Project
  */
@@ -265,5 +265,5 @@ extern u_int kvtop __P((vm_offset_t));
 #define DMA_CACHE_INV		0x3
 extern void dma_cachectl(vm_offset_t, int, int);
 
-#endif __MACHINE_MMU_H__
+#endif /* __MACHINE_MMU_H__ */
 

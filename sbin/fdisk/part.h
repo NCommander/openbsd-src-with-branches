@@ -1,4 +1,4 @@
-/*	$OpenBSD: part.h,v 1.6 2000/07/01 21:49:12 mickey Exp $	*/
+/*	$OpenBSD: part.h,v 1.7 2001/05/18 07:15:18 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -56,5 +56,5 @@ void PRT_fix_BN __P((disk_t *, prt_t *, int));
 /* This does bs/ns -> CHS */
 void PRT_fix_CHS __P((disk_t *, prt_t *, int));
 
-#endif _PART_H
+#endif /* _PART_H */
 

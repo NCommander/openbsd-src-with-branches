@@ -1,4 +1,4 @@
-/*	$OpenBSD: showmount.c,v 1.6 1997/02/11 18:10:57 deraadt Exp $	*/
+/*	$OpenBSD: showmount.c,v 1.7 1997/09/11 11:09:56 deraadt Exp $	*/
 /*	$NetBSD: showmount.c,v 1.7 1996/05/01 18:14:10 cgd Exp $	*/
 
 /*
@@ -41,14 +41,14 @@
 static char copyright[] =
 "@(#) Copyright (c) 1989, 1993, 1995\n\
 	The Regents of the University of California.  All rights reserved.\n";
-#endif not lint
+#endif /* not lint */
 
 #ifndef lint
 #if 0
 static char sccsid[] = "@(#)showmount.c	8.3 (Berkeley) 3/29/95";
 #endif
-static char rcsid[] = "$OpenBSD: showmount.c,v 1.6 1997/02/11 18:10:57 deraadt Exp $";
-#endif not lint
+static char rcsid[] = "$OpenBSD: showmount.c,v 1.7 1997/09/11 11:09:56 deraadt Exp $";
+#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/file.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88110.h,v 1.3 2001/03/07 23:37:16 miod Exp $ */
+/*	$OpenBSD: m88110.h,v 1.4 2001/03/09 05:44:40 smurph Exp $ */
 
 #ifndef	__MACHINE_M88110_H__
 #define	__MACHINE_M88110_H__
@@ -232,4 +232,4 @@ unsigned get_dpar (void);
 
 #endif	/* _LOCORE */
 
-#endif __MACHINE_M88110_H__
+#endif /* __MACHINE_M88110_H__ */

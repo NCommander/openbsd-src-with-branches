@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubavar.h,v 1.7 1997/05/29 00:05:10 niklas Exp $	*/
+/*	$OpenBSD: ubavar.h,v 1.8 2000/04/27 03:14:52 bjc Exp $	*/
 /*	$NetBSD: ubavar.h,v 1.21 1999/01/19 21:04:48 ragge Exp $	*/
 
 /*
@@ -182,4 +182,4 @@ void	ubareset __P((int));
 int	ubasetup __P((struct uba_softc *, struct buf *, int));
 
 #endif /* _KERNEL */
-#endif !_LOCORE
+#endif /* !_LOCORE */

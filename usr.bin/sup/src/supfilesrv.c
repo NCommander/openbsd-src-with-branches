@@ -1,4 +1,4 @@
-/*	$OpenBSD: supfilesrv.c,v 1.23 2001/05/07 02:08:02 millert Exp $	*/
+/*	$OpenBSD: supfilesrv.c,v 1.24 2001/05/07 19:26:02 millert Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -246,10 +246,10 @@
 #include <sys/ttyloc.h>
 #include <access.h>
 #include <sys/viceioctl.h>
-#else	CMUCS
+#else /* CMUCS */
 #define ACCESS_CODE_OK		0
 #define ACCESS_CODE_BADPASSWORD (-2)
-#endif  CMUCS
+#endif /*  CMUCS */
 
 #ifdef __linux__
 # include <sys/vfs.h>
