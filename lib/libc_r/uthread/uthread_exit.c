@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_exit.c,v 1.13 2001/08/21 19:24:53 fgsch Exp $	*/
+/*	$OpenBSD: uthread_exit.c,v 1.14 2001/12/11 00:19:47 fgsch Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -226,11 +226,9 @@ pthread_exit(void *status)
 		pthread->join_status.error = 0;
 		pthread->join_status.thread = NULL;
 
-#ifdef notyet
 		/* Make this thread collectable by the garbage collector. */
 		PTHREAD_ASSERT(((curthread->attr.flags & PTHREAD_DETACHED) ==
 		    0), "Cannot join a detached thread");
-#endif
 		curthread->attr.flags |= PTHREAD_DETACHED;
 	}
 
