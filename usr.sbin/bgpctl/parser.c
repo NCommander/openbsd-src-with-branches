@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.5 2004/03/11 16:34:21 henning Exp $ */
+/*	$OpenBSD: parser.c,v 1.6 2004/05/21 11:52:32 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -299,7 +299,7 @@ show_valid_args(const struct token table[])
 	for (i = 0; table[i].type != ENDTOKEN; i++) {
 		switch (table[i].type) {
 		case NOTOKEN:
-			fprintf(stderr, "  (nothing)\n");
+			fprintf(stderr, "  <cr>\n");
 			break;
 		case KEYWORD:
 		case FLAG:
