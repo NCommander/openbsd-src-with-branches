@@ -202,6 +202,7 @@ mbattach(pdp, dp, auxp)
 	config_found(dp, "par", simple_devprint);
 	config_found(dp, "kbd", simple_devprint);
 	config_found(dp, "ms", simple_devprint);
+	config_found(dp, "ms", simple_devprint);
 	config_found(dp, "grfcc", simple_devprint);
 	config_found(dp, "fdc", simple_devprint);
 	if (is_a4000() || is_a1200())
