@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.36 2001/09/20 18:31:44 dhartmei Exp $	*/
+/*	$OpenBSD: parse.y,v 1.37 2001/09/28 14:12:15 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -183,7 +183,8 @@ ruleset		: /* empty */
 
 varset		: STRING PORTUNARY STRING
 		{
-			printf("%s = %s\n", $1, $3);
+			if (pf->opts & PF_OPT_VERBOSE)			
+				printf("%s = %s\n", $1, $3);
 			if (symset($1, $3) == -1) {
 				yyerror("cannot store variable %s", $1);
 				YYERROR;
