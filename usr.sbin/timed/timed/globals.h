@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1985 The Regents of the University of California.
  * All rights reserved.
@@ -34,7 +36,7 @@
  */
 
 #ifdef sgi
-#ident "$Revision: 1.3 $"
+#ident "$Revision: 1.1.1.1 $"
 #endif
 
 #include <sys/param.h>

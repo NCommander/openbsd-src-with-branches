@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +38,7 @@ static char sccsid[] = "@(#)cksum.c	5.2 (Berkeley) 5/11/93";
 #endif /* not lint */
 
 #ifdef sgi
-#ident "$Revision: 1.1 $"
+#ident "$Revision: 1.1.1.1 $"
 #endif
 
 #include <sys/types.h>
