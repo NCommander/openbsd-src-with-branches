@@ -104,6 +104,7 @@ maxpartitions	{ return MAXPARTITIONS; }
 minor		{ return MINOR; }
 on		{ return ON; }
 options		{ return OPTIONS; }
+option		{ return OPTIONS; }
 "pseudo-device"	{ return PSEUDO_DEVICE; }
 root		{ return ROOT; }
 swap		{ return SWAP; }
