@@ -1,4 +1,4 @@
-/*	$OpenBSD: hosts_access.c,v 1.1 1997/02/26 03:06:52 downsj Exp $	*/
+/*	$OpenBSD: hosts_access.c,v 1.2 1997/03/29 04:14:56 millert Exp $	*/
 
  /*
   * This module implements a simple access control language that is based on
@@ -23,7 +23,7 @@
 #if 0
 static char sccsid[] = "@(#) hosts_access.c 1.21 97/02/12 02:13:22";
 #else
-static char rcsid[] = "$OpenBSD: hosts_access.c,v 1.1 1997/02/26 03:06:52 downsj Exp $";
+static char rcsid[] = "$OpenBSD: hosts_access.c,v 1.2 1997/03/29 04:14:56 millert Exp $";
 #endif
 #endif
 
@@ -318,9 +318,9 @@ char   *net_tok;
 char   *mask_tok;
 char   *string;
 {
-    unsigned long net;
-    unsigned long mask;
-    unsigned long addr;
+    in_addr_t net;
+    in_addr_t mask;
+    in_addr_t addr;
 
     /*
      * Disallow forms other than dotted quad: the treatment that inet_addr()
