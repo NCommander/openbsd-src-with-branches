@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth1.c,v 1.17 2001/02/13 22:49:40 markus Exp $");
+RCSID("$OpenBSD: auth1.c,v 1.18 2001/02/22 21:59:43 markus Exp $");
 
 #include "xmalloc.h"
 #include "rsa.h"
@@ -27,7 +27,6 @@ RCSID("$OpenBSD: auth1.c,v 1.17 2001/02/13 22:49:40 markus Exp $");
 
 /* import */
 extern ServerOptions options;
-extern char *forced_command;
 
 /*
  * convert ssh auth msg type into description
