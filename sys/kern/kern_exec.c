@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.8 1997/02/18 00:16:05 deraadt Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.9 1997/03/29 20:10:01 tholo Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -478,6 +478,14 @@ sys_execve(p, v, retval)
 		p->p_flag &= ~P_SUGID;
 	p->p_cred->p_svuid = p->p_ucred->cr_uid;
 	p->p_cred->p_svgid = p->p_ucred->cr_gid;
+
+	if (p->p_flag & P_SUGIDEXEC) {
+		int s = splclock();
+		untimeout(realitexpire, (void *)p);
+		timerclear(&p->p_realtimer.it_interval);
+		timerclear(&p->p_realtimer.it_value);
+		splx(s);
+	}
 
 	kmem_free_wakeup(exec_map, (vm_offset_t) argp, NCARGS);
 
