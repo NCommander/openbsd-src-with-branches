@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.47 2002/11/27 13:31:09 mickey Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.48 2002/11/27 19:39:15 millert Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -462,14 +462,14 @@ restart:
 		mp = &top;
 		space -= clen;
 		do {
-		    if (uio == NULL) {
-			/*
-			 * Data is prepackaged in "top".
-			 */
-			resid = 0;
-			if (flags & MSG_EOR)
-				top->m_flags |= M_EOR;
-		    } else do {
+			if (uio == NULL) {
+				/*
+				 * Data is prepackaged in "top".
+				 */
+				resid = 0;
+				if (flags & MSG_EOR)
+					top->m_flags |= M_EOR;
+			} else do {
 				if (top == 0) {
 					MGETHDR(m, M_WAIT, MT_DATA);
 					mlen = MHLEN;
