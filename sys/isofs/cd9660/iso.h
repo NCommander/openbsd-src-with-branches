@@ -1,4 +1,4 @@
-/*	$OpenBSD: iso.h,v 1.6 1997/11/06 05:58:13 csapuntz Exp $	*/
+/*	$OpenBSD: iso.h,v 1.7 1997/11/08 17:21:09 niklas Exp $	*/
 /*	$NetBSD: iso.h,v 1.20 1997/07/07 22:45:34 cgd Exp $	*/
 
 /*-
@@ -98,7 +98,8 @@ struct iso_primary_descriptor {
 	char application_data		[ISODCL (884, 1395)];
 	char unused5			[ISODCL (1396, 2048)];
 };
-#define ISO_DEFAULT_BLOCK_SIZE		2048
+#define ISO_DEFAULT_BLOCK_SHIFT		11
+#define ISO_DEFAULT_BLOCK_SIZE		(1<<ISO_DEFAULT_BLOCK_SHIFT)
 
 struct iso_directory_record {
 	char length			[ISODCL (1, 1)]; /* 711 */
