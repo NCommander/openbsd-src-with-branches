@@ -41,6 +41,27 @@
 
 #include <netinet6/ipsec.h>
 
+#if ( __FreeBSD_cc_version < 440000 )
+/* We need in_addr_t & in_port_t */
+typedef u_int32_t in_addr_t;
+typedef u_int16_t in_port_t;
+#endif
+#if ( __FreeBSD__ < 4 )
+/* We need socklen_t too. */
+typedef u_int32_t socklen_t;
+#endif
+
+/* Map extensions to values from /usr/include/net/pfkeyv2.h */
+#if ( SADB_EALG_MAX == 7 )
+/* FreeBSD 4.2 */
+#define SADB_X_EALG_BLF			SADB_EALG_BLOWFISHCBC
+#define SADB_X_EALG_CAST		SADB_EALG_CAST128CBC
+#else if ( SADB_EALG_MAX == 12 )
+/* FreeBSD 4.4 */
+#define SADB_X_EALG_BLF			SADB_X_EALG_BLOWFISHCBC
+#define SADB_X_EALG_CAST		SADB_X_EALG_CAST128CBC
+#endif
+
 #if 0
 /* OpenSSL differs from OpenBSD very slightly... */
 
