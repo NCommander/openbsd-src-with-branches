@@ -1,3 +1,4 @@
+/*	$OpenBSD: ldexp.c,v 1.1 1998/12/15 07:10:31 smurph Exp $	*/
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +36,6 @@
  * SUCH DAMAGE.
  *
  * from: Header: ldexp.c,v 1.1 91/07/07 04:28:19 torek Exp
- * $Id: ldexp.c,v 1.1 1997/03/25 17:07:04 rahnds Exp $
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)

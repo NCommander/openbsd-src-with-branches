@@ -1,5 +1,7 @@
+/*	$OpenBSD$	*/
+
 #ifndef lint
-static char rcsid[] = "$Id: infinity.c,v 1.1 1997/03/25 17:07:01 rahnds Exp $";
+static char rcsid[] = "$OpenBSD: infinity.c,v 1.1 1998/12/15 07:10:30 smurph Exp $";
 #endif /* not lint */
 
 /* infinity.c */

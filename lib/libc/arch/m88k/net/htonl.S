@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -38,7 +40,7 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 	.text
 	/*.asciz "from: @(#)htonl.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: htonl.S,v 1.1 1997/03/25 17:07:09 rahnds Exp $"
+	.asciz "$OpenBSD: htonl.S,v 1.1 1998/12/15 07:10:31 smurph Exp $"
 #endif /* LIBC_SCCS and not lint */
 
 /* netorder = htonl(hostorder) */

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -38,7 +40,7 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 	.data
 	/*.asciz "from: @(#)sbrk.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: sbrk.S,v 1.1 1998/12/15 07:10:33 smurph Exp $"
+	.asciz "$OpenBSD: sbrk.S,v 1.2 1999/02/09 05:23:37 smurph Exp $"
 	.text
 #endif /* LIBC_SCCS and not lint */
 
