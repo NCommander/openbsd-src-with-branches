@@ -1,4 +1,4 @@
-/*	$OpenBSD: memprobe.c,v 1.5 1997/04/17 17:21:16 weingart Exp $	*/
+/*	$OpenBSD: memprobe.c,v 1.6 1997/08/04 21:49:42 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -52,11 +52,13 @@ memprobe()
 	 */
 	for(ram = 1024; ram < 512*1024; ram += 4){
 
-		printf("Probing memory: %d KB\r", ram-1024);
-		if(addrprobe(ram)) break;
+		if(!(ram % 1024))
+			printf("Probing memory: %d KB\r", ram-1024);
+		if(addrprobe(ram))
+			break;
 	}
 
-	printf("\n");
+	printf("Found %d KB extended memory.\n", ram-1024);
 	extmem = ram - 1024;
 }
 
