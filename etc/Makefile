@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.126 2001/06/26 13:29:11 dhartmei Exp $
+#	$OpenBSD: Makefile,v 1.127 2001/06/26 16:52:39 kjell Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -208,10 +208,6 @@ distribution-etc-root-var: distrib-dirs
 		${DESTDIR}/var/msgs/bounds
 	${INSTALL} -c -o ${BINOWN} -g utmp -m 664 /dev/null \
 		${DESTDIR}/var/run/utmp
-.if (${MACHINE_ARCH} == "mips")
-	(cd etc.${MACHINE}; ${INSTALL} -c -o ${BINOWN} -g wheel -m 444 \
-	    ld.so.conf ${DESTDIR}/etc)
-.endif
 .ifndef NOMAKEDEV
 	(cd ${DESTDIR}/dev; ./MAKEDEV all)
 .endif
