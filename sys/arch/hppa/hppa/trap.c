@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.58 2003/01/09 20:48:56 mickey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.59 2003/01/22 18:16:34 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -49,8 +49,8 @@
 
 #include <machine/autoconf.h>
 
+#include <machine/db_machdep.h>	/* XXX always needed for inst_store() */
 #ifdef DDB
-#include <machine/db_machdep.h>
 #ifdef TRAPDEBUG
 #include <ddb/db_output.h>
 #endif
