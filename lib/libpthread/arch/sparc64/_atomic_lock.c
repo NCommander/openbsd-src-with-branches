@@ -1,6 +1,6 @@
-/*	$OpenBSD: _atomic_lock.c,v 1.2 2002/10/11 19:08:41 marc Exp $	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.3 2003/01/31 22:10:52 deraadt Exp $	*/
 /*
- * Atomic lock for sparc
+ * Atomic lock for sparc64
  */
  
 #include "spinlock.h"
