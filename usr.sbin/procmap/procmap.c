@@ -1,4 +1,4 @@
-/*	$OpenBSD: procmap.c,v 1.7 2004/02/18 04:07:35 deraadt Exp $ */
+/*	$OpenBSD: procmap.c,v 1.8 2004/02/18 04:32:17 tedu Exp $ */
 /*	$NetBSD: pmap.c,v 1.1 2002/09/01 20:32:44 atatat Exp $ */
 
 /*
@@ -954,7 +954,7 @@ usage(void)
 static pid_t
 strtopid(const char *str)
 {
-	pid_t pid;
+	unsigned long pid;
 	char *endptr;
 
 	errno = 0;
