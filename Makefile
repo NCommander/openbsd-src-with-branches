@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.53 2000/03/01 03:56:41 todd Exp $
+#	$OpenBSD: Makefile,v 1.54 2000/03/10 22:05:49 niklas Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -93,7 +93,7 @@ build:
 	    ${MAKE} -f Makefile.bsd-wrapper perl.lib && \
 	    ${SUDO} ${MAKE} -f Makefile.bsd-wrapper install.lib)
 .if (${MACHINE_ARCH} == "mips")
-	ldconfig
+	ldconfig -R
 .endif
 	${MAKE} depend && ${MAKE} && ${SUDO} ${MAKE} install
 
