@@ -1,4 +1,4 @@
-#	$OpenBSD: list,v 1.8 1998/09/13 03:13:11 rahnds Exp $
+#	$OpenBSD: list,v 1.9 1998/09/15 05:45:50 rahnds Exp $
 
 SRCDIRS distrib/special
 SRCDIRS usr.bin bin sbin usr.sbin gnu/usr.bin
@@ -89,7 +89,7 @@ SYMLINK	/tmp/hosts			etc/hosts
 COPYDIR	${DESTDIR}/etc/ppp		etc/ppp
 
 # and the common installation tools
-COPY    ${TOPDIR}/inst-common/termcap.vt        usr/share/misc/termcap
+COPY    ${TOPDIR}/common/termcap.vt        usr/share/misc/termcap
 COPY	${DESTDIR}/usr/share/misc/scsi_modes	usr/share/misc/scsi_modes
 
 # and the installation tools
