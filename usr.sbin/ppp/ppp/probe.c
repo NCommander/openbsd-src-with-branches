@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: probe.c,v 1.3 2000/02/27 01:38:28 brian Exp $
+ *	$OpenBSD: probe.c,v 1.4 2001/08/19 23:22:18 brian Exp $
  */
 
 #include <sys/time.h>
@@ -56,7 +56,7 @@ ipv6_available(void)
 {
   int s;
 
-  if ((s = ID0socket(AF_INET6, SOCK_DGRAM, 0)) == -1)
+  if ((s = ID0socket(PF_INET6, SOCK_DGRAM, 0)) == -1)
     return 0;
 
   close(s);
