@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.169 2003/07/15 17:12:38 cedric Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.170 2003/07/19 13:08:58 cedric Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -782,7 +782,7 @@ print_tabledef(const char *name, int flags, int addrs,
 			continue;
 		}
 		printf(" {");
-		for(;;) {
+		for (;;) {
 			for (h = ti->host; h != NULL; h = h->next) {
 				printf(h->not ? " !" : " ");
 				print_addr(&h->addr, h->af, 0);
