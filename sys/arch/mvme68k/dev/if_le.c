@@ -818,9 +818,9 @@ leioctl(ifp, cmd, data)
 	register struct lereg1 *ler1;
 	int s = splnet(), error = 0;
 
-	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+	if ((error = ether_ioctl(ifp, &sc->sc_ac, cmd, data)) > 0) {
 		splx(s);
-		retun error;
+		return error;
 	}
 
 	switch (cmd) {
