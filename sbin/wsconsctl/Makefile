@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2000/07/01 23:52:45 mickey Exp $
+#	$OpenBSD: Makefile,v 1.2 2000/07/02 02:09:19 mickey Exp $
 
 .if ${MACHINE} == "alpha" || ${MACHINE} == "hppa"
 
@@ -21,5 +21,6 @@ NOPROG=yes
 .endif
 
 MAN=	wsconsctl.8
+MANSUBDIR=	alpha hppa
 
 .include <bsd.prog.mk>
