@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcd.c,v 1.9 2003/06/03 03:01:39 millert Exp $	*/
+/*	$OpenBSD: bcd.c,v 1.10 2003/07/10 00:03:01 david Exp $	*/
 /*	$NetBSD: bcd.c,v 1.6 1995/04/24 12:22:23 cgd Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)bcd.c	8.2 (Berkeley) 3/20/94";
 #else
-static char rcsid[] = "$OpenBSD: bcd.c,v 1.9 2003/06/03 03:01:39 millert Exp $";
+static char rcsid[] = "$OpenBSD: bcd.c,v 1.10 2003/07/10 00:03:01 david Exp $";
 #endif
 #endif /* not lint */
 
@@ -127,9 +127,7 @@ u_short holes[256] = {
 void	printcard(char *);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	char cardline[80];
 
@@ -150,8 +148,7 @@ main(argc, argv)
 #define	COLUMNS	48
 
 void
-printcard(str)
-	char *str;
+printcard(char *str)
 {
 	static const char rowchars[] = "   123456789";
 	int	i, row;

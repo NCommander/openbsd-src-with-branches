@@ -1,4 +1,4 @@
-/*	$OpenBSD: banner.c,v 1.10 2003/06/03 03:01:38 millert Exp $	*/
+/*	$OpenBSD: banner.c,v 1.11 2003/10/01 05:59:37 cloder Exp $	*/
 /*	$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)banner.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: banner.c,v 1.10 2003/06/03 03:01:38 millert Exp $";
+static char rcsid[] = "$OpenBSD: banner.c,v 1.11 2003/10/01 05:59:37 cloder Exp $";
 #endif
 #endif /* not lint */
 
@@ -1027,9 +1027,7 @@ int	debug, i, j, linen, max, nchars, pc, term, trace, x, y;
 int	width = DWIDTH;	/* -w option: scrunch letters to 80 columns */
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 { 
 	int ch;
 
