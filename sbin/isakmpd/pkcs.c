@@ -1,4 +1,4 @@
-/*	$OpenBSD: pkcs.c,v 1.6 1999/02/26 03:49:16 niklas Exp $	*/
+/*	$OpenBSD: pkcs.c,v 1.7 1999/03/24 16:13:56 niklas Exp $	*/
 /*	$EOM: pkcs.c,v 1.12 1999/02/25 11:39:18 niklas Exp $	*/
 
 /*
@@ -342,7 +342,7 @@ pkcs_generate_prime (mpz_ptr p, u_int32_t bits)
   i = tmp = 0;
   while (bits > 0)
     {
-      tmp = sysdep_random();
+      tmp = sysdep_random ();
 
       if (i++ == 0)
 	{ 
