@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.62 1999/12/27 03:05:52 angelos Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.63 2000/01/09 23:02:15 angelos Exp $	*/
 
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
@@ -1060,6 +1060,9 @@ tdb_delete(struct tdb *tdbp, int delchain, int expflags)
     
     if (tdbp->tdb_xform)
       (*(tdbp->tdb_xform->xf_zeroize))(tdbp);
+
+    while (tdbp->tdb_access)
+      delete_flow(tdbp->tdb_access, tdbp);
 
     while (tdbp->tdb_flow)
     {
