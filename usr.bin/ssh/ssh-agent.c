@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh-agent.c,v 1.75 2001/12/19 07:18:56 deraadt Exp $	*/
+/*	$OpenBSD: ssh-agent.c,v 1.76 2001/12/27 18:22:16 markus Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -36,7 +36,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-agent.c,v 1.75 2001/12/19 07:18:56 deraadt Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.76 2001/12/27 18:22:16 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/md5.h>
@@ -562,7 +562,7 @@ process_message(SocketEntry *e)
 	u_char *cp;
 	if (buffer_len(&e->input) < 5)
 		return;		/* Incomplete message. */
-	cp = (u_char *) buffer_ptr(&e->input);
+	cp = buffer_ptr(&e->input);
 	msg_len = GET_32BIT(cp);
 	if (msg_len > 256 * 1024) {
 		shutdown(e->fd, SHUT_RDWR);
