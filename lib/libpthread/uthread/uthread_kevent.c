@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_kevent.c,v 1.2 2001/08/21 19:24:53 fgsch Exp $	*/
+/*	$OpenBSD: uthread_kevent.c,v 1.3 2001/12/08 17:08:07 fgsch Exp $	*/
 
 /*-
  * Copyright (c) 2000 Jonathan Lemon <jlemon@flugsvamp.com>
@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD: uthread_kevent.c,v 1.5 2001/04/10 04:19:20 deischen Exp $
+ * $FreeBSD: uthread_kevent.c,v 1.6 2001/12/08 00:53:37 sobomax Exp $
  */
 
 #include <unistd.h>
