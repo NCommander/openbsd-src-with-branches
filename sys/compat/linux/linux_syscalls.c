@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * System call names.
  *
@@ -31,7 +33,7 @@ char *linux_syscallnames[] = {
 	"umount",			/* 22 = umount */
 	"setuid",			/* 23 = setuid */
 	"getuid",			/* 24 = getuid */
-	"#25 (unimplemented stime)",		/* 25 = unimplemented stime */
+	"stime",			/* 25 = stime */
 	"#26 (unimplemented ptrace)",		/* 26 = unimplemented ptrace */
 	"alarm",			/* 27 = alarm */
 	"#28 (obsolete ofstat)",		/* 28 = obsolete ofstat */
