@@ -1,4 +1,4 @@
-/*	$OpenBSD: makedefs.c,v 1.4 2003/03/16 21:22:36 camield Exp $	*/
+/*	$OpenBSD: makedefs.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,11 +62,12 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD$";
+static const char rcsid[] = "$OpenBSD: makedefs.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>

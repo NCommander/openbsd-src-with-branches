@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.tty.c,v 1.6 2003/03/16 21:22:36 camield Exp $	*/
+/*	$OpenBSD: hack.tty.c,v 1.7 2003/05/19 06:30:56 pjanzen Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)hack.tty.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD$";
+static const char rcsid[] = "$OpenBSD: hack.tty.c,v 1.7 2003/05/19 06:30:56 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -109,6 +109,7 @@ static const char rcsid[] = "$OpenBSD$";
 #include	"hack.h"
 #include	<stdio.h>
 #include	<stdarg.h>
+#include	<stdlib.h>
 #include	<termios.h>
 
 /*
