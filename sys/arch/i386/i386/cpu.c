@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.1.2.9 2003/05/17 19:15:20 niklas Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.1.2.10 2004/03/14 22:08:20 niklas Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -214,6 +214,7 @@ cpu_attach(parent, self, aux)
 	cpu_info[cpunum] = ci;
 #endif
 
+	ci->ci_self = ci;
 	ci->ci_apicid = caa->cpu_number;
 #ifdef MULTIPROCESSOR
 	ci->ci_cpuid = ci->ci_apicid;
