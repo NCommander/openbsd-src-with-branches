@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.h,v 1.7 1997/08/21 22:04:32 mickey Exp $	*/
+/*	$OpenBSD: cmd.h,v 1.8 1997/08/22 20:15:04 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -32,7 +32,17 @@
  *
  */
 
-struct cmd_table;
+
+struct cmd_table {
+	char *cmd_name;
+	char cmd_type;
+#define CMDT_CMD 0
+#define CMDT_VAR 1
+#define CMDT_SET 2
+#define CMDT_MDC 3
+	int (*cmd_exec) __P((void));
+};
+
 struct cmd_state {
 	char bootdev[16]; /* device */
 	char image[MAXPATHLEN - 16]; /* image */
