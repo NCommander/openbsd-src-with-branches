@@ -1,4 +1,4 @@
-/*	$OpenBSD: uni_n.c,v 1.3 2001/05/29 01:20:44 drahn Exp $	*/
+/*	$OpenBSD: uni_n.c,v 1.4 2001/06/25 23:29:57 drahn Exp $	*/
 
 /*
  * Copyright (c) 1998-2001 Dale Rahn. All rights reserved.
@@ -32,6 +32,8 @@
 
 #include <sys/param.h>
 #include <sys/device.h>
+#include <sys/systm.h>
+
 #include <machine/bus.h>
 #include <machine/autoconf.h>
 
