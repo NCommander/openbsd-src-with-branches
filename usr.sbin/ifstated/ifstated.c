@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifstated.c,v 1.6 2004/02/12 00:19:42 henning Exp $	*/
+/*	$OpenBSD: ifstated.c,v 1.7 2004/02/12 01:43:48 henning Exp $	*/
 
 /*
  * Copyright (c) 2004 Marco Pfatschbacher <mpf@openbsd.org>
@@ -78,7 +78,7 @@ void	logit(int level, const char *fmt, ...);
 void
 usage(void)
 {
-	fprintf(stderr, "usage: ifstated [-dhinv] [-f config]");
+	fprintf(stderr, "usage: ifstated [-dhinv] [-f config]\n");
 	exit(1);
 }
 
