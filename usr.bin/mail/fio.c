@@ -1,4 +1,4 @@
-/*	$OpenBSD: fio.c,v 1.13 1997/09/04 20:44:04 millert Exp $	*/
+/*	$OpenBSD: fio.c,v 1.14 1997/11/14 00:23:47 millert Exp $	*/
 /*	$NetBSD: fio.c,v 1.8 1997/07/07 22:57:55 phil Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)fio.c	8.2 (Berkeley) 4/20/95";
 #else
-static char rcsid[] = "$OpenBSD: fio.c,v 1.13 1997/09/04 20:44:04 millert Exp $";
+static char rcsid[] = "$OpenBSD: fio.c,v 1.14 1997/11/14 00:23:47 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -120,7 +120,8 @@ setptr(ibuf, offset)
 		(void)fwrite(linebuf, sizeof(*linebuf), count, otf);
 		if (ferror(otf))
 			err(1, "/tmp");
-		linebuf[count - 1] = '\0';
+		if (count)
+			linebuf[count - 1] = '\0';
 		if (maybe && linebuf[0] == 'F' && ishead(linebuf)) {
 			msgCount++;
 			if (append(&this, mestmp))
