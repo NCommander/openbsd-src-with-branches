@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphyreg.h,v 1.6 2002/04/08 20:55:29 nate Exp $	*/
+/*	$OpenBSD: brgphyreg.h,v 1.7 2003/10/13 16:18:56 krw Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -59,7 +59,7 @@
 
 #define BRGPHY_MII_BMSR		0x01
 #define BRGPHY_BMSR_EXTSTS	0x0100	/* Extended status present */
-#define BRGPHY_BMSR_PRESUB	0x0040	/* Preamble surpression */
+#define BRGPHY_BMSR_PRESUB	0x0040	/* Preamble suppression */
 #define BRGPHY_BMSR_ACOMP	0x0020	/* Autoneg complete */
 #define BRGPHY_BMSR_RFAULT	0x0010	/* Remote fault condition occurred */
 #define BRGPHY_BMSR_ANEG	0x0008	/* Autoneg capable */

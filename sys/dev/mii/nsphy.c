@@ -1,4 +1,4 @@
-/*	$OpenBSD: nsphy.c,v 1.10 2001/10/05 18:26:48 nate Exp $	*/
+/*	$OpenBSD: nsphy.c,v 1.11 2002/03/14 01:26:58 millert Exp $	*/
 /*	$NetBSD: nsphy.c,v 1.25 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -196,7 +196,7 @@ nsphy_service(sc, mii, cmd)
 		reg |= PCR_LED4MODE;
 
 		/*
-		 * Make sure Carrier Intgrity Monitor function is
+		 * Make sure Carrier Integrity Monitor function is
 		 * disabled (normal for Node operation, but sometimes
 		 * it's not set?!)
 		 */
