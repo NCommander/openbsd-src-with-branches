@@ -1,4 +1,4 @@
-/* *      $OpenBSD: extern.h,v 1.7 1996/12/23 04:58:08 millert Exp $*/
+/* *      $OpenBSD: extern.h,v 1.8 1997/11/13 08:30:32 deraadt Exp $*/
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -51,8 +51,10 @@ int	 queryuser __P((char **));
 void	 show_path __P((int));
 
 PLAN	*c_amin __P((char *));
+PLAN	*c_anewer __P((char *));
 PLAN	*c_atime __P((char *));
 PLAN	*c_cmin __P((char *));
+PLAN	*c_cnewer __P((char *));
 PLAN	*c_ctime __P((char *));
 PLAN	*c_depth __P((void));
 PLAN	*c_empty __P((void));
