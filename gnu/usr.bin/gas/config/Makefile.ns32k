@@ -1,4 +1,0 @@
-#	$OpenBSD$
-
-CFLAGS+=	-DPIC -DNS32532 -DNS32381
-SRCS+=		tc-ns32k.c atof-ieee.c
