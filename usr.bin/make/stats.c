@@ -1,5 +1,5 @@
 /* $OpenPackages$ */
-/* $OpenBSD$ */
+/* $OpenBSD: stats.c,v 1.2 2001/05/23 12:34:49 espie Exp $ */
 
 /*
  * Copyright (c) 1999 Marc Espie.
@@ -40,11 +40,14 @@
 #include "stats.h"
 
 #ifdef HAS_STATS
-#include <stdio.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/resource.h>
+#include "memory.h"
 
 static void print_stats(void);
 void Init_Stats(void);

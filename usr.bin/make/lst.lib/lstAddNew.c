@@ -31,11 +31,7 @@
  */
 
 #include	"lstInt.h"
-
-#ifndef lint
-UNUSED
-static char rcsid[] = "$OpenBSD: lstAppend.c,v 1.4 1998/12/05 00:06:31 espie Exp $";
-#endif /* not lint */
+#include	<stddef.h>
 
 /* Add datum to the end of a list only if it wasn't there already.
  * Returns false if datum was already there.

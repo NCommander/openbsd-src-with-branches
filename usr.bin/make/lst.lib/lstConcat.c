@@ -44,16 +44,9 @@
  */
 
 #include "lstInt.h"
+#include <sys/types.h>
+#include <stddef.h>
 #include "memory.h"
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstConcat.c 8.1 (Berkeley) 6/6/93";
-#else
-UNUSED
-static char rcsid[] = "$OpenBSD: lstConcat.c,v 1.4 1998/12/05 00:06:31 espie Exp $";
-#endif
-#endif /* not lint */
 
 /*-
  *-----------------------------------------------------------------------

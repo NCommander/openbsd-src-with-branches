@@ -44,15 +44,8 @@
  */
 
 #include	"lstInt.h"
+#include	<stdlib.h>
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstRemove.c 8.1 (Berkeley) 6/6/93";
-#else
-UNUSED
-static char rcsid[] = "$OpenBSD: lstRemove.c,v 1.4 1998/12/05 00:06:32 espie Exp $";
-#endif
-#endif /* not lint */
 
 /*-
  *-----------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: arch.c,v 1.16 1999/10/05 22:06:23 espie Exp $ */
+/*	$OpenBSD: arch.c,v 1.45 2001/05/23 12:34:39 espie Exp $ */
 /*	$NetBSD: arch.c,v 1.17 1996/11/06 17:58:59 christos Exp $	*/
 
 /*
@@ -75,6 +75,7 @@
  *
  */
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <ar.h>
 #include <assert.h>

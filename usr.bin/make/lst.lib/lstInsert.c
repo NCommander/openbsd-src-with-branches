@@ -44,16 +44,9 @@
  */
 
 #include "lstInt.h"
+#include <sys/types.h>
+#include <stdlib.h>
 #include "memory.h"
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstInsert.c 8.1 (Berkeley) 6/6/93";
-#else
-UNUSED
-static char rcsid[] = "$OpenBSD: lstInsert.c,v 1.4 1998/12/05 00:06:32 espie Exp $";
-#endif
-#endif /* not lint */
 
 /*-
  *-----------------------------------------------------------------------
