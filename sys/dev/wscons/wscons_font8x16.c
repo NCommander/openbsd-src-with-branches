@@ -1,4 +1,4 @@
-#include <sys/types.h>
+/*	$OpenBSD$	*/
 
 /*
  *  Copyright (c) 1992, 1993, 1994 Hellmuth Michaelis and Joerg Wunsch
@@ -42,6 +42,8 @@
  * Translated to wscons format by Dale Rahn using a program.
  * cleaned up a couple of characters by hand afterword.
  */
+
+#include <sys/types.h>
 
 #include <dev/rcons/raster.h>
 #include "dev/wscons/wscons_raster.h"
