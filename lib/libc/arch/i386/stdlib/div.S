@@ -6,7 +6,8 @@
 #include <machine/asm.h>
 
 #if defined(LIBC_SCCS)
-RCSID("$NetBSD: div.S,v 1.5 1995/04/28 22:59:46 jtc Exp $")
+	.text
+	.asciz "$OpenBSD$"
 #endif
 
 ENTRY(div)

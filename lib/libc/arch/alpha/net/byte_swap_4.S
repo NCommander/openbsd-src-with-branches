@@ -1,5 +1,3 @@
-/*	$NetBSD: byte_swap_4.S,v 1.1 1996/04/17 22:36:49 cgd Exp $	*/
-
 /*
  * Copyright (c) 1996 Carnegie-Mellon University.
  * All rights reserved.
@@ -28,6 +26,11 @@
  */
 
 #include "DEFS.h"
+
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif
 
 #ifndef NAME
 #define	NAME byte_swap_4

@@ -1,5 +1,3 @@
-/*	$NetBSD: brk.S,v 1.2 1995/11/04 00:23:04 cgd Exp $	*/
-
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
  * All rights reserved.
@@ -28,6 +26,11 @@
  */
 
 #include "SYS.h"
+
+#if defined(SYSLIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif /* SYSLIBC_SCCS */
 
 	.globl	_end
 IMPORT(curbrk, 8)

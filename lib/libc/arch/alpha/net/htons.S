@@ -1,5 +1,3 @@
-/*	$NetBSD: htons.S,v 1.1 1996/04/17 22:36:54 cgd Exp $	*/
-
 /*
  * Copyright (c) 1996 Carnegie-Mellon University.
  * All rights reserved.
@@ -26,6 +24,11 @@
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
+
+#if defined(LIBC_SCCS)
+	.text
+	.asciz "$OpenBSD$"
+#endif
 
 #define	NAME	htons
 
