@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.1 2004/01/28 01:39:39 mickey Exp $ */
+/*	$OpenBSD: wscons_machdep.c,v 1.2 2004/10/05 14:33:15 miod Exp $ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell
@@ -71,7 +71,7 @@
 #include <dev/ic/i8042reg.h>
 #include <dev/ic/pckbcvar.h>
 #endif
-#include "pckbd.h"     /* for pckbc_machdep_cnattach */
+#include "pckbd.h"
 #include "ukbd.h"
 #if (NPCKBD > 0) || (NUKBD > 0)
 #include <dev/wscons/wskbdvar.h>
