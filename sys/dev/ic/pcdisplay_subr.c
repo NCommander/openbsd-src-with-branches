@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: pcdisplay_subr.c,v 1.2 2001/02/02 20:25:39 aaron Exp $ */
 /* $NetBSD: pcdisplay_subr.c,v 1.16 2000/06/08 07:01:19 cgd Exp $ */
 
 /*
@@ -37,6 +37,7 @@
 #include <dev/ic/mc6845reg.h>
 #include <dev/ic/pcdisplayvar.h>
 
+#include <dev/wscons/wsconsio.h>
 #include <dev/wscons/wsdisplayvar.h>
 
 void
