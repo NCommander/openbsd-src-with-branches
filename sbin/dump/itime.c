@@ -1,4 +1,4 @@
-/*	$OpenBSD: itime.c,v 1.3 1997/07/05 05:35:56 millert Exp $	*/
+/*	$OpenBSD: itime.c,v 1.4 1998/02/08 19:24:08 deraadt Exp $	*/
 /*	$NetBSD: itime.c,v 1.4 1997/04/15 01:09:50 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)itime.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: itime.c,v 1.3 1997/07/05 05:35:56 millert Exp $";
+static char rcsid[] = "$OpenBSD: itime.c,v 1.4 1998/02/08 19:24:08 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -211,8 +211,7 @@ putdumptime()
 		(struct dumpdates *)calloc(1, sizeof(struct dumpdates));
 	nddates += 1;
   found:
-	(void) strncpy(dtwalk->dd_name, fname, sizeof(dtwalk->dd_name) - 1);
-	dtwalk->dd_name[sizeof(dtwalk->dd_name) - 1] = '\0';
+	(void) strlcpy(dtwalk->dd_name, fname, sizeof(dtwalk->dd_name));
 	dtwalk->dd_level = level;
 	dtwalk->dd_ddate = spcl.c_date;
 
