@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.16 2002/02/16 21:27:50 millert Exp $	*/
+/*	$OpenBSD: server.c,v 1.17 2002/02/19 19:39:38 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -35,11 +35,14 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)server.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: server.c,v 1.16 2002/02/16 21:27:50 millert Exp $";
+static char *rcsid = "$OpenBSD: server.c,v 1.17 2002/02/19 19:39:38 millert Exp $";
 #endif /* not lint */
 
 #include <sys/wait.h>
+
 #include <stdarg.h>
+#include <libgen.h>
+
 #include "defs.h"
 
 #define	ack() 	(void) write(rem, "\0\n", 2)
@@ -281,7 +284,7 @@ install(src, dest, destdir, opts)
 			rname++;
 		destdir = 1;
 	} else {
-		rname = xbasename(target);
+		rname = basename(target);
 	}
 	if (debug)
 		printf("target = %s, rname = %s\n", target, rname);
