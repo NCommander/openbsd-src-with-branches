@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.5 2002/02/19 19:39:38 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.6 2003/06/02 20:06:16 millert Exp $	*/
 /*	$NetBSD: misc.c,v 1.2 1995/03/18 14:58:51 cgd Exp $	*/
 
 /*-
@@ -34,11 +34,10 @@
 #if 0
 static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: misc.c,v 1.5 2002/02/19 19:39:38 millert Exp $";
+static char rcsid[] = "$OpenBSD: misc.c,v 1.6 2003/06/02 20:06:16 millert Exp $";
 #endif
 #endif /* not lint */
 
-#include <sys/types.h>
 #include <sys/types.h>
 #include <sys/disklabel.h>
 #include <stdarg.h>
