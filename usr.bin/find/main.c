@@ -145,6 +145,6 @@ static void
 usage()
 {
 	(void)fprintf(stderr,
-	    "usage: find [-HdhXxW] [-f file] [file ...] expression\n");
+	    "usage: find [-HdhXxW] [-f file] file [...] [expression]\n");
 	exit(1);
 }
