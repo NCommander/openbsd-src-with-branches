@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: xd.c,v 1.10 1997/01/16 04:03:55 kstailey Exp $	*/
 /*	$NetBSD: xd.c,v 1.10 1996/10/13 03:47:39 christos Exp $	*/
 
 /*
@@ -1036,7 +1036,7 @@ xdstrategy(bp)
 	 * completion. */
 
 	if (bounds_check_with_label(bp, xd->sc_dk.dk_label,
-		(xd->flags & XD_WLABEL) != 0) <= 0)
+	    xd->sc_dk.dk_cpulabel, (xd->flags & XD_WLABEL) != 0) <= 0)
 		goto done;
 
 	/*
