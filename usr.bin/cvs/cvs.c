@@ -112,7 +112,7 @@ static struct cvs_cmd {
 	},
 	{
 		"diff",     { "di",  "dif" }, cvs_diff,
-		"",
+		"[-cilu] [-D date] [-r rev] ...",
 		"Show differences between revisions",
 	},
 	{
