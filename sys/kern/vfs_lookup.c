@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.24 2003/05/06 20:42:51 tedu Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.25 2003/06/02 23:28:07 millert Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -53,6 +53,9 @@
 #ifdef KTRACE
 #include <sys/ktrace.h>
 #endif
+
+#include <dev/systrace.h>
+#include "systrace.h"
 
 /*
  * Convert a pathname into a pointer to a locked inode.
@@ -126,6 +129,10 @@ namei(ndp)
 #ifdef KTRACE
 	if (KTRPOINT(cnp->cn_proc, KTR_NAMEI))
 		ktrnamei(cnp->cn_proc, cnp->cn_pnbuf);
+#endif
+#if NSYSTRACE > 0
+	if (ISSET(cnp->cn_proc->p_flag, P_SYSTRACE))
+		systrace_namei(ndp);
 #endif
 
 	/*
