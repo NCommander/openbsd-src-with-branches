@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.39 1999/07/21 05:58:25 csapuntz Exp $	*/
+/*	$OpenBSD: cd.c,v 1.40 1999/08/10 23:09:49 deraadt Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -766,6 +766,7 @@ cdioctl(dev, cmd, addr, flag, p)
 		case DIOCLOCK:
 		case DIOCEJECT:
 		case SCIOCIDENTIFY:
+		case OSCIOCIDENTIFY:
 		case SCIOCCOMMAND:
 		case SCIOCDEBUG:
 		case CDIOCLOADUNLOAD:
