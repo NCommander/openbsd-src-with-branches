@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpemu.S,v 1.2 2000/01/11 10:14:22 mickey Exp $	*/
+/*	$OpenBSD: fpemu.S,v 1.3 2001/03/29 00:05:19 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -83,7 +83,7 @@ $fpemu_stack
 /*
  * fpu_emulate(iir)
  */
-ENTRY(fpu_emulate)
+LEAF_ENTRY(fpu_emulate)
 
 	extru	arg0, 22, 2, arg3
 	extru	arg0, 18, 3, r31
