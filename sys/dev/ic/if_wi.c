@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.76 2002/08/08 18:53:10 millert Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.77 2002/08/13 03:49:51 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -124,7 +124,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.76 2002/08/08 18:53:10 millert Exp $";
+	"$OpenBSD: if_wi.c,v 1.77 2002/08/13 03:49:51 millert Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -1617,7 +1617,8 @@ wi_ioctl(ifp, command, data)
 			break;
 		}
 		error = wi_get_debug(sc, &wreq);
-		error = copyout(&wreq, ifr->ifr_data, sizeof(wreq));
+		if (error == 0)
+			error = copyout(&wreq, ifr->ifr_data, sizeof(wreq));
 		break;
 	case SIOCSPRISM2DEBUG:
 		error = copyin(ifr->ifr_data, &wreq, sizeof(wreq));
