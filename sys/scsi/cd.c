@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.67 2003/01/17 04:30:06 jason Exp $	*/
+/*	$OpenBSD: cd.c,v 1.68 2003/04/06 03:02:44 krw Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -667,6 +667,7 @@ cdstart(v)
 		 *  fit in a "small" cdb, use it.
 		 */
 		if (!(sc_link->flags & SDEV_ATAPI) &&
+		    !(sc_link->quirks & SDEV_ONLYBIG) && 
 		    ((blkno & 0x1fffff) == blkno) &&
 		    ((nblks & 0xff) == nblks)) {
 			/*
