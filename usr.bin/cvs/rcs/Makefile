@@ -1,11 +1,11 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2005/03/05 18:50:43 jfb Exp $
 
 .PATH:	${.CURDIR}/..
 
 PROG=	rcs
 MAN=	rcs.1
 
-SRCS=	rcsprog.c buf.c log.c rcs.c rcsnum.c
+SRCS=	rcsprog.c buf.c log.c rcs.c rcsnum.c strtab.c
 
 BINDIR=	/usr/bin
 
