@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.178 2003/03/04 09:49:22 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.179 2003/03/08 19:03:44 beck Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -217,6 +217,8 @@ distribution-etc-root-var: distrib-dirs
 		${DESTDIR}/var/log/messages
 	${INSTALL} -c -o ${BINOWN} -g wheel -m 600 /dev/null \
 		${DESTDIR}/var/log/secure
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 664 /dev/null \
+		${DESTDIR}/var/log/sendmail.st
 	${INSTALL} -c -o ${BINOWN} -g wheel -m 644 /dev/null \
 		${DESTDIR}/var/log/wtmp
 	${INSTALL} -c -o ${BINOWN} -g wheel -m 640 /dev/null \
