@@ -1,7 +1,7 @@
-/*	$OpenBSD: pl.c,v 1.8 2003/04/04 08:56:01 avsm Exp $	*/
+/*	$OpenBSD: pl.c,v 1.9 2003/07/04 17:31:19 avsm Exp $	*/
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: pl.c,v 1.8 2003/04/04 08:56:01 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: pl.c,v 1.9 2003/07/04 17:31:19 avsm Exp $";
 #endif
 
 /*
@@ -67,6 +67,8 @@ check_list(char *home, package_t *pkg)
 				tmp->next = p->next;
 				tmp->prev = p;
 				p->next = tmp;
+				if (pkg->tail == p)
+					pkg->tail = tmp;
 				p = tmp;
 			}
 			break;
