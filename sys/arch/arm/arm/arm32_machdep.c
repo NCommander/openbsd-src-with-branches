@@ -1,4 +1,4 @@
-/*	$OpenBSD: arm32_machdep.c,v 1.4 2004/02/26 04:58:38 drahn Exp $	*/
+/*	$OpenBSD: arm32_machdep.c,v 1.5 2004/05/19 03:17:06 drahn Exp $	*/
 /*	$NetBSD: arm32_machdep.c,v 1.42 2003/12/30 12:33:15 pk Exp $	*/
 
 /*
@@ -252,6 +252,11 @@ cpu_startup()
 	 * is initialised
 	 */
 	pmap_postinit();
+
+	/*
+	 * Allow per-board specific initialization
+	 */
+	board_startup();
 
 	/*
 	 * Initialize error message buffer (at end of core).
