@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.20 2003/07/09 21:01:10 drahn Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.21 2003/08/12 18:53:44 jason Exp $	*/
 /*	$NetBSD: rtld_start.S,v 1.5 2001/08/14 22:17:48 eeh Exp $	*/
 
 /*
@@ -91,6 +91,7 @@
 
 	.section	".text"
 	.align	16
+	.register %g2,#scratch
 
 _ENTRY(_dl_start)
 	sub	%g0, %g0, %fp		! clear frame
