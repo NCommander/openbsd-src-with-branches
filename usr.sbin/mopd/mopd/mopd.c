@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopd.c,v 1.4 1998/03/04 20:21:59 deraadt Exp $ */
+/*	$OpenBSD: mopd.c,v 1.5 2002/02/16 21:28:04 millert Exp $ */
 
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: mopd.c,v 1.4 1998/03/04 20:21:59 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mopd.c,v 1.5 2002/02/16 21:28:04 millert Exp $";
 #endif
 
 /*
@@ -82,8 +82,9 @@ main(argc, argv)
 	int     argc;
 	char  **argv;
 {
-	int	c, pid, devnull, f;
+	int	c, devnull, f;
 	char   *interface;
+	pid_t	pid;
 
 	extern int optind;
 	extern char version[];

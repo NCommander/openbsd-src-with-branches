@@ -1,4 +1,4 @@
-/*	$OpenBSD: shutdown.c,v 1.23 2001/11/05 07:39:17 mpech Exp $	*/
+/*	$OpenBSD: shutdown.c,v 1.24 2002/02/16 21:27:38 millert Exp $	*/
 /*	$NetBSD: shutdown.c,v 1.9 1995/03/18 15:01:09 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)shutdown.c	8.2 (Berkeley) 2/16/94";
 #else
-static char rcsid[] = "$OpenBSD: shutdown.c,v 1.23 2001/11/05 07:39:17 mpech Exp $";
+static char rcsid[] = "$OpenBSD: shutdown.c,v 1.24 2002/02/16 21:27:38 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -229,13 +229,13 @@ main(argc, argv)
 #else
 	(void)setpriority(PRIO_PROCESS, 0, PRIO_MIN);
 	{
-		int forkpid;
+		pid_t forkpid;
 
 		forkpid = fork();
 		if (forkpid == -1)
 			err(1, "fork");
 		if (forkpid) {
-			(void)printf("shutdown: [pid %d]\n", forkpid);
+			(void)printf("shutdown: [pid %ld]\n", (long)forkpid);
 			exit(0);
 		}
 	}

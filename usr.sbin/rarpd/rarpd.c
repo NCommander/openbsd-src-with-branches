@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.34 2002/02/19 19:39:40 millert Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.35 2002/03/14 16:44:25 mpech Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -28,7 +28,7 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rarpd.c,v 1.34 2002/02/19 19:39:40 millert Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.35 2002/03/14 16:44:25 mpech Exp $";
 #endif
 
 
@@ -118,11 +118,12 @@ main(argc, argv)
 	int     argc;
 	char  **argv;
 {
-	int     op, pid, devnull, f;
+	int     op, devnull, f;
 	char   *ifname, *hostname;
 	extern char *__progname;
 	extern char *optarg;
 	extern int optind, opterr;
+	pid_t pid;
 
 	/* All error reporting is done through syslogs. */
 	openlog(__progname, LOG_PID | LOG_CONS, LOG_DAEMON);
