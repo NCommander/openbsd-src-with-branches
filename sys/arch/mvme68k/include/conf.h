@@ -4,7 +4,7 @@
  * All rights reserved.
  *
  * Permission to redistribute, use, copy, and modify this software
- * without fee is hereby granted, provided that the following
+ * is hereby granted without fee, provided that the following
  * conditions are met:
  *
  * 1. This entire notice is included in all source code copies of any

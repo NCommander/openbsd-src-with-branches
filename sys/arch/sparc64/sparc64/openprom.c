@@ -217,13 +217,15 @@ openpromioctl(dev, cmd, data, flags, p)
 		s = splhigh();
 		error = OF_nextprop(node, name, nextprop);
 		splx(s);
-		if (error == 0) {
-			op->op_buflen = 0;
-			error = subyte(op->op_buf, 0);
-			break;
-		}
 		if (error == -1) {
 			error = EINVAL;
+			break;
+		}
+		if (error == 0) {
+			char nul = '\0';
+
+			op->op_buflen = 0;
+			error = copyout(&nul, op->op_buf, sizeof(char));
 			break;
 		}
 		len = strlen(nextprop);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.h,v 1.13.2.1 2002/01/31 22:55:18 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 #ifndef _MACHINE_LOCORE_H_
 #define _MACHINE_LOCORE_H_
@@ -50,13 +50,7 @@ void dae_print(unsigned *eframe);
 void data_access_emulation(unsigned *eframe);
 #endif 
 
-unsigned spl(void);
 unsigned getipl(void);
-#ifdef DDB
-unsigned db_spl(void);
-unsigned db_getipl(void);
-#endif
-
 
 /* machdep.c */
 

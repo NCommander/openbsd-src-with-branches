@@ -45,6 +45,9 @@
  *	@(#)frame.h	8.1 (Berkeley) 6/11/93
  */
 
+#ifndef _SPARC64_FRAME_H_
+#define _SPARC64_FRAME_H_
+
 /*
  * Sparc stack frame format.
  *
@@ -133,3 +136,4 @@ struct frame64 {
  */
 #define BIAS	(2048-1)
 
+#endif /* _SPARC64_FRAME_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgtwo.c,v 1.18.2.1 2002/06/11 03:38:15 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgtwo.c,v 1.22 1997/05/24 20:16:12 pk Exp $ */
 
 /*
@@ -264,6 +264,7 @@ cgtwoattach(parent, self, args)
 	    round_page(sc->sc_sunfb.sf_fbsize));
 	sc->sc_sunfb.sf_ro.ri_hw = sc;
 	fbwscons_init(&sc->sc_sunfb, isconsole);
+	fbwscons_setcolormap(&sc->sc_sunfb, cgtwo_setcolor);
 
 	cgtwo_stdscreen.capabilities = sc->sc_sunfb.sf_ro.ri_caps;
 	cgtwo_stdscreen.nrows = sc->sc_sunfb.sf_ro.ri_rows;
@@ -274,7 +275,7 @@ cgtwoattach(parent, self, args)
 
 	if (isconsole) {
 		fbwscons_console_init(&sc->sc_sunfb, &cgtwo_stdscreen, -1,
-		    cgtwo_setcolor, cgtwo_burner);
+		    cgtwo_burner);
 	}
 
 	waa.console = isconsole;
@@ -299,7 +300,7 @@ cgtwo_ioctl(v, cmd, data, flags, p)
 
 	switch (cmd) {
 	case WSDISPLAYIO_GTYPE:
-		*(u_int *)data = WSDISPLAY_TYPE_UNKNOWN;
+		*(u_int *)data = WSDISPLAY_TYPE_SUNCG2;
 		break;
 	case WSDISPLAYIO_GINFO:
 		wdf = (struct wsdisplay_fbinfo *)data;

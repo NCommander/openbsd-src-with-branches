@@ -4,6 +4,7 @@
 RELOC=0x39F000
 .PATH:	${.CURDIR}/../../vax ${.CURDIR}/../common
 
+CFLAGS+=	-fno-stack-protector
 CPPFLAGS+=-I. -I${.CURDIR}/../../../../ -I${.CURDIR}/../../ -I${.CURDIR}/../common -I${.CURDIR}/../../include
 CPPFLAGS+=-DRELOC=${RELOC}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: magmareg.h,v 1.4.4.1 2002/01/31 22:55:22 niklas Exp $	*/
+/*	$OpenBSD$	*/
 
 /* magmareg.h
  *
@@ -90,7 +90,7 @@ struct magma_board_info {
 struct cd1400 {
 	__volatile u_char *cd_reg;	/* chip registers */
 	int cd_chiprev;			/* chip revision */
-	int cd_clock;			/* clock speed in Mhz */
+	int cd_clock;			/* clock speed in MHz */
 	int cd_parmode;			/* parallel mode operation */
 };
 

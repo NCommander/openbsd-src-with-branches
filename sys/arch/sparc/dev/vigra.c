@@ -206,9 +206,11 @@ vigraattach(parent, self, args)
 
 	isconsole = node == fbnode;
 
-	if (ca->ca_ra.ra_nreg < VIGRA_NREG)
-		panic("expected %d registers, got %d",
-		    VIGRA_NREG, ca->ca_ra.ra_nreg);
+	if (ca->ca_ra.ra_nreg < VIGRA_NREG) {
+		printf("\n%s: expected %d registers, got %d",
+		    self->dv_xname, VIGRA_NREG, ca->ca_ra.ra_nreg);
+		return;
+	}
 
 	sc->sc_regs = mapiodev(&ca->ca_ra.ra_reg[VIGRA_REG_G300], 0,
 	    sizeof(*sc->sc_regs));
@@ -243,6 +245,7 @@ vigraattach(parent, self, args)
 	 */
 	fbwscons_init(&sc->sc_sunfb,
 	    isconsole && (sc->sc_sunfb.sf_width != 800));
+	fbwscons_setcolormap(&sc->sc_sunfb, vigra_setcolor);
 
 	vigra_stdscreen.capabilities = sc->sc_sunfb.sf_ro.ri_caps;
 	vigra_stdscreen.nrows = sc->sc_sunfb.sf_ro.ri_rows;
@@ -263,7 +266,7 @@ vigraattach(parent, self, args)
 		}
 
 		fbwscons_console_init(&sc->sc_sunfb, &vigra_stdscreen, row,
-		    vigra_setcolor, vigra_burner);
+		    vigra_burner);
 	}
 
 	sbus_establish(&sc->sc_sd, &sc->sc_sunfb.sf_dev);

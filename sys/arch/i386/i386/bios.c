@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.47 2001/11/06 19:53:14 miod Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -388,7 +388,7 @@ bios32_service(service, e, ei)
 		return 0;
 
 	base = 0;
-	__asm __volatile("lcall (%4)"
+	__asm __volatile("lcall *(%4)"
 	    : "+a" (service), "+b" (base), "=c" (count), "=d" (off)
 	    : "D" (&bios32_entry)
 	    : "%esi", "cc", "memory");

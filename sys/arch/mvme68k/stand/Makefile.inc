@@ -1,3 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.2 1995/11/07 08:50:33 deraadt Exp $
+#	$OpenBSD$
 
 MDEC_DIR?=/usr/mdec
+CFLAGS+=	-fno-stack-protector

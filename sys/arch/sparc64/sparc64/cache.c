@@ -85,7 +85,7 @@ cache_enable()
 	 * Anyway, sun4u ECC is generated in the E$, so we can't disable that
 	 * and expect to use any RAM.
 	 */
-	cacheinfo.c_enabled = 1; /* enable cache flusing */
+	cacheinfo.c_enabled = 1; /* enable cache flushing */
 }
 
 /*

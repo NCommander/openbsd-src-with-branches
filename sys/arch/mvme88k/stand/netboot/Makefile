@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 1999/09/27 19:30:01 smurph Exp $
+#	$OpenBSD$
 
 SIZE?=	size
 STRIP?= strip
@@ -35,7 +35,7 @@ netboot.bin: netboot
 	${STRIP} netboot
 	dd ibs=32 skip=1 if=netboot of=$@
 #	dd ibs=38 skip=1 if=netboot of=$@
-	chown ${LIBOWN}.${LIBGRP} netboot.bin
+	chown ${LIBOWN}:${LIBGRP} netboot.bin
 	chmod ${LIBMODE} netboot.bin
 
 install:

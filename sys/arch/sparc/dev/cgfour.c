@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgfour.c,v 1.12.2.1 2002/06/11 03:38:15 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cgfour.c,v 1.13 1997/05/24 20:16:06 pk Exp $	*/
 
 /*
@@ -246,6 +246,7 @@ cgfourattach(parent, self, args)
 	    PFOUR_COLOR_OFF_COLOR, round_page(sc->sc_sunfb.sf_fbsize));
 	sc->sc_sunfb.sf_ro.ri_hw = sc;
 	fbwscons_init(&sc->sc_sunfb, isconsole);
+	fbwscons_setcolormap(&sc->sc_sunfb, cgfour_setcolor);
 
 	cgfour_stdscreen.capabilities = sc->sc_sunfb.sf_ro.ri_caps;
 	cgfour_stdscreen.nrows = sc->sc_sunfb.sf_ro.ri_rows;
@@ -256,7 +257,7 @@ cgfourattach(parent, self, args)
 
 	if (isconsole) {
 		fbwscons_console_init(&sc->sc_sunfb, &cgfour_stdscreen, -1,
-		    cgfour_setcolor, cgfour_burner);
+		    cgfour_burner);
 	}
 
 	waa.console = isconsole;
@@ -281,7 +282,7 @@ cgfour_ioctl(v, cmd, data, flags, p)
 
 	switch (cmd) {
 	case WSDISPLAYIO_GTYPE:
-		*(u_int *)data = WSDISPLAY_TYPE_UNKNOWN;
+		*(u_int *)data = WSDISPLAY_TYPE_SUNCG4;
 		break;
 	case WSDISPLAYIO_GINFO:
 		wdf = (struct wsdisplay_fbinfo *)data;

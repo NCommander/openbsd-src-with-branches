@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.33.4.1 2002/06/11 03:35:55 art Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -34,9 +34,9 @@
 #include <lib/libsa/stand.h>
 #include <machine/biosvar.h>
 
-#define	EXEC_AOUT
+#define	EXEC_ELF
 
-#define	DEFAULT_KERNEL_ADDRESS	0x100000
+#define	DEFAULT_KERNEL_ADDRESS	0
 
 void gateA20(int);
 

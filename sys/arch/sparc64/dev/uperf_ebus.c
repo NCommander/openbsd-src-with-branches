@@ -128,7 +128,7 @@ uperf_ebus_attach(parent, self, aux)
 	char *model;
 	u_int32_t id;
 
-	sc->sc_bus_t = ea->ea_bustag;
+	sc->sc_bus_t = ea->ea_memtag;
 	sc->sc_usc.usc_cookie = sc;
 	sc->sc_usc.usc_getcntsrc = uperf_ebus_getcntsrc;
 	sc->sc_usc.usc_setcntsrc = uperf_ebus_setcntsrc;

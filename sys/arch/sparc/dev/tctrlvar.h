@@ -39,7 +39,10 @@
 #ifndef _SPARC_DEV_TCTRLVAR_H
 #define	_SPARC_DEV_TCTRLVAR_H
 
-extern void tadpole_powerdown(void);
-extern void tadpole_set_video(int enabled);
+void tadpole_powerdown(void);
+int tadpole_get_brightness(void);
+int tadpole_get_video(void);
+void tadpole_set_brightness(int value);
+void tadpole_set_video(int enabled);
 
 #endif /* _SPARC_DEV_TCTRLVAR_H */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.11.2.1 2002/06/11 03:38:16 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cpu.h,v 1.24 1997/03/15 22:25:15 pk Exp $ */
 
 /*
@@ -54,13 +54,15 @@
 #define CPU_LED_BLINK	1	/* int: twiddle the power LED */
  		/*	2	   formerly int: vsyncblank */
 #define CPU_CPUTYPE	3	/* int: cpu type */
-#define CPU_MAXID	4	/* 3 valid machdep IDs */
+#define CPU_V8MUL	4
+#define CPU_MAXID	5	/* 4 valid machdep IDs */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
 	{ "led_blink", CTLTYPE_INT }, \
 	{ 0, 0 }, \
 	{ "cputype", CTLTYPE_INT }, \
+	{ "v8mul", CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL

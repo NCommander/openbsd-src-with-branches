@@ -180,13 +180,13 @@ in_cksum48:	popl	%edi			# restore %edi
 
 in_cksum49:	pushl	%edi			# len - bytes checksummed
 		pushl	$warning		# push warning string
-		call	_printf			# printf()
+		call	_C_LABEL(printf)	# printf()
 		leal	8(%esp), %esp		#
 		jmp	in_cksum48		#
 
 		.data
 
-		.align	2
+		.align	4
 
 table1:		.long	in_cksum8		# 4-byte aligned
 		.long	in_cksum4		# checksum 3 bytes

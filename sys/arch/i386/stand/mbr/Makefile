@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.12 2000/05/25 21:55:01 deraadt Exp $
+#	$OpenBSD$
 #
 
 PROG=	mbr
 SRCS=	mbr.S
 AFLAGS+=-I${.CURDIR} -I${.CURDIR}/../../.. #-Wa,-a
 LD=ld
-LDFLAGS=-nostdlib -Ttext 0 -x -N -s -Bstatic
+LDFLAGS=-nostdlib -Ttext 0 -x -N -s -Bstatic -e start
 
 NOMAN=
 #MAN+=	mbr.8
@@ -21,7 +21,7 @@ ${PROG}: $(OBJS) $(DPADD)
 	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS) $(LDADD)
 	@size $(PROG)
 	@if [ -x ${.OBJDIR}/${PROG} ]; then \
-		dd if=${.OBJDIR}/${PROG} of=${.OBJDIR}/.tmp ibs=32 skip=1 2>/dev/null; \
+		objcopy -O binary ${PROG} ${.OBJDIR}/.tmp;\
 		mv -f ${.OBJDIR}/.tmp ${.OBJDIR}/${PROG}; \
 		ls -l ${.OBJDIR}/${PROG}; \
 	fi

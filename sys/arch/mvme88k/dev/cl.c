@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.18.2.2 2002/06/11 03:37:09 art Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -59,7 +59,7 @@
 #include <ddb/db_var.h>
 #endif
 
-#define splcl()	splx(IPL_TTY)
+#define splcl()	spltty()
 
 /* min timeout 0xa, what is a good value */
 #define CL_TIMEOUT	0x10
@@ -1338,6 +1338,7 @@ clccparam(sc, par, channel)
 	sc->cl_reg->cl_cor4 = ints | CL_FIFO_CNT;
 	sc->cl_reg->cl_cor5 = ints | CL_FIFO_CNT;
 
+	splx(s);
 	return imask;
 }
 

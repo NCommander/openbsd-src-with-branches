@@ -23,6 +23,7 @@ maxusers	32
 
 option		SCSITERSE
 option		SMALL_KERNEL
+option		NO_PROPOLICE
 option		TIMEZONE=0	# time zone to adjust RTC time by
 option		DST=0		# daylight saving time used by RTC
 #makeoptions	DEBUG="-g"	# compile full symbol table

@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.12.2.1 2002/06/11 03:35:54 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -142,7 +142,7 @@ splraise(ncpl)
 
 	if (ncpl > ocpl)
 		cpl = ncpl;
-	__asm __volatile("");
+	__asm __volatile("":::"memory");
 	return (ocpl);
 }
 
@@ -155,7 +155,7 @@ void									\
 splx(ncpl)								\
 	int ncpl;							\
 {									\
-	__asm __volatile("");						\
+	__asm __volatile("":::"memory");				\
 	cpl = ncpl;							\
 	if (ipending & IUNMASK(ncpl))					\
 		Xspllower();						\
@@ -226,7 +226,8 @@ static __inline void
 softintr(mask)
 	int mask;
 {
-	__asm __volatile("orl %0,_ipending" : : "ir" (mask));
+	__asm __volatile("orl %1, %0" : "=m"(ipending) : "ir" (mask));
+
 }
 
 #define	setsoftast()	(astpending = 1)

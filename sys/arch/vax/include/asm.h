@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.5 2000/04/26 03:08:40 bjc Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: asm.h,v 1.9 1999/01/15 13:31:28 bouyer Exp $ */
 /*
  * Copyright (c) 1982, 1993
@@ -102,10 +102,20 @@
 #define ALTENTRY(x)		.globl _C_LABEL(x); _C_LABEL(x):
 #define RCSID(x)		.text; .asciz x
 
-#ifdef __ELF__
+#ifdef	__ELF__
 #define	WEAK_ALIAS(alias,sym)						\
 	.weak alias;							\
 	alias = sym
+#else
+#ifdef	__STDC__
+#define	WEAK_ALIAS(alias,sym)						\
+	.weak _##alias;							\
+	_##alias = _##sym
+#else
+#define	WEAK_ALIAS(alias,sym)						\
+	.weak _/**/alias;						\
+	_/**/alias = _/**/sym
+#endif
 #endif
 
 #ifdef __STDC__

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.c,v 1.1 2001/02/18 17:41:08 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -1418,7 +1418,7 @@ sshintr(sc)
 }
 
 /*
- * This is based on the Progressive Peripherals 33Mhz Zeus driver and will
+ * This is based on the Progressive Peripherals 33MHz Zeus driver and will
  * not be correct for other 53c710 boards.
  *
  */
