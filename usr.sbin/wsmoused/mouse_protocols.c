@@ -1,4 +1,4 @@
-/* $OpenBSD: mouse_protocols.c,v 1.6 2002/02/15 02:33:49 deraadt Exp $ */
+/* $OpenBSD: mouse_protocols.c,v 1.7 2002/09/06 19:44:46 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -79,7 +79,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <syslog.h>
-#include <varargs.h>
 
 #include "wsmoused.h"
 #include "mouse_protocols.h"
