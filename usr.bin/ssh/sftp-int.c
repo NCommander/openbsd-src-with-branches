@@ -602,6 +602,7 @@ do_ls_dir(struct sftp_conn *conn, char *path, char *strip_path, int lflag)
 			width = ws.ws_col;
 
 		columns = width / (m + 2);
+		columns = MAX(columns, 1);
 		colspace = width / columns;
 	}
 
@@ -688,6 +689,7 @@ do_globbed_ls(struct sftp_conn *conn, char *path, char *strip_path,
 			width = ws.ws_col;
 
 		columns = width / (m + 2);
+		columns = MAX(columns, 1);
 		colspace = width / columns;
 	}
 
