@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.c,v 1.14 2002/07/09 15:22:27 provos Exp $	*/
+/*	$OpenBSD: filter.c,v 1.15 2002/07/19 14:38:57 itojun Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -352,8 +352,7 @@ filter_ask(struct intercept_tlq *tls, struct filterq *fls,
 	*pflags = 0;
 
 	if ((policy = systrace_findpolnr(policynr)) == NULL)
-		errx(1, "%s:%d: no policy %d\n", __func__, __LINE__,
-		    policynr);
+		errx(1, "%s:%d: no policy %d", __func__, __LINE__, policynr);
 
 	if (!allow)
 		printf("%s\n", output);
