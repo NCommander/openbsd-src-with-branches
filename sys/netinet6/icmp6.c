@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.60 2002/06/08 21:22:02 itojun Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.61 2002/06/09 14:38:39 itojun Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1621,9 +1621,10 @@ ni6_nametodns(name, namelen, old)
 			while (i > 0) {
 				if (!isalnum(*p) && *p != '-')
 					goto fail;
-				if (isupper(*p))
-					*cp++ = tolower(*p++);
-				else
+				if (isupper(*p)) {
+					*cp++ = tolower(*p);
+					p++;
+				} else
 					*cp++ = *p++;
 				i--;
 			}
