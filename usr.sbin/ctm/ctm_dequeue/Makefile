@@ -1,3 +1,5 @@
+# $OpenBSD$
+
 PROG=           ctm_dequeue
 SRCS=           ctm_dequeue.c error.c
 NOMAN=          yes

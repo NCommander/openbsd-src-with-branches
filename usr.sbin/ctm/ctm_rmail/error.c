@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Routines for logging error messages or other informative messages.
  *

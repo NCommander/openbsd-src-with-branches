@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Macros for processing command arguments.
  *

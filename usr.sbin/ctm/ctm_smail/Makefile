@@ -1,3 +1,5 @@
+# $OpenBSD$
+
 PROG=           ctm_smail
 SRCS=           ctm_smail.c error.c
 NOMAN=          1

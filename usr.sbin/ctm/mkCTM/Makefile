@@ -1,7 +1,7 @@
+# $OpenBSD$
 
 PROG=	mkctm
 SRCS=	mkctm.c
-LDADD= -lmd
 CFLAGS+= -Wall
 
 test:	mkctm
