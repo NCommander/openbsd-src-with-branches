@@ -299,8 +299,7 @@ gmac_attach(parent, self, aux)
 	}
 #endif /* __OpenBSD__ */
 
-	printf(": %s", intrstr);
-	printf(": address %s\n", ether_sprintf(laddr));
+	printf(": %s, address %s\n", intrstr, ether_sprintf(laddr));
 
 	gmac_reset(sc);
 	gmac_init_mac(sc);
