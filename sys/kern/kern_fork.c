@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.69 2004/06/13 21:49:26 niklas Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.70 2004/06/24 19:35:24 tholo Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -345,6 +345,9 @@ fork1(struct proc *p1, int exitsig, int flags, void *stack, size_t stacksize,
 	p2->p_stat = SRUN;
 	setrunqueue(p2);
 	SCHED_UNLOCK(s);
+
+	timeout_set(&p2->p_stats->p_virt_to, virttimer_trampoline, p2);
+	timeout_set(&p2->p_stats->p_prof_to, proftimer_trampoline, p2);
 
 	/*
 	 * Now can be swapped.
