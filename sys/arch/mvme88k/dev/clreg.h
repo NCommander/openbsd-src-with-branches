@@ -1,4 +1,4 @@
-/*	$OpenBSD: clreg.h,v 1.3 2003/06/04 16:36:15 deraadt Exp $ */
+/*	$OpenBSD: clreg.h,v 1.4 2003/10/11 22:08:57 miod Exp $ */
 
 /* Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -167,3 +167,4 @@ struct clreg {
  * Cirrus chip base address on the mvme1x7 boards.
  */
 #define CD2400_BASE_ADDR	0xfff45000
+#define CD2400_SECONDARY_ADDR	0xfff45200
