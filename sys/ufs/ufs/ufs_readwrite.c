@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_readwrite.c,v 1.12 1997/11/06 05:59:28 csapuntz Exp $	*/
+/*	$OpenBSD: ufs_readwrite.c,v 1.13 1998/03/01 08:07:13 niklas Exp $	*/
 /*	$NetBSD: ufs_readwrite.c,v 1.9 1996/05/11 18:27:57 mycroft Exp $	*/
 
 /*-
@@ -261,7 +261,11 @@ WRITE(v)
 			xfersize = size;
 
 		error =
-		    uiomove((char *)bp->b_data + blkoffset, (int)xfersize, uio);
+		    uiomove((char *)bp->b_data + blkoffset, xfersize, uio);
+
+		if (error != 0)
+			bzero((char *)bp->b_data + blkoffset, xfersize);
+
 #ifdef LFS_READWRITE
 		(void)VOP_BWRITE(bp);
 #else
