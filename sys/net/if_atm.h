@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atm.h,v 1.1 1996/06/21 15:13:39 chuck Exp $       */
+/*      $OpenBSD: if_atm.h,v 1.1 1996/06/22 01:47:35 chuck Exp $       */
 
 /*
  *
@@ -63,8 +63,14 @@ struct atm_pseudohdr {
 					to comer */
 
 /* pseudo ioctl */
-#define SIOCATMENA	_IOWR('a', 122, struct atm_pseudohdr) /* enable */
-#define SIOCATMDIS	_IOWR('a', 123, struct atm_pseudohdr) /* disable */
+
+struct atm_pseudoioctl {
+  struct atm_pseudohdr aph;
+  struct socket *asock;
+};
+
+#define SIOCATMENA	_IOWR('a', 122, struct atm_pseudoioctl) /* enable */
+#define SIOCATMDIS	_IOWR('a', 123, struct atm_pseudoioctl) /* disable */
 
 /*
  * XXX forget all the garbage in if_llc.h and do it the easy way
