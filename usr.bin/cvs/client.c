@@ -232,8 +232,8 @@ cvs_client_sendreq(u_int rid, const char *arg, int resp)
 		return (-1);
 	}
 
-	snprintf(cvs_client_buf, sizeof(cvs_client_buf), "%s %s\n", reqp,
-	    (arg == NULL) ? "" : arg);
+	snprintf(cvs_client_buf, sizeof(cvs_client_buf), "%s%s%s\n", reqp,
+	    (arg == NULL) ? "" : " ", (arg == NULL) ? "" : arg);
 
 	rbp = cvs_client_buf;
 
