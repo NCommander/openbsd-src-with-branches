@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcvt_sup.c,v 1.10 1999/09/29 22:29:10 aaron Exp $	*/
+/*	$OpenBSD: pcvt_sup.c,v 1.11 1999/10/16 18:56:36 aaron Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch.
@@ -109,7 +109,7 @@ static u_short getrand ( void );
  *	execute vga ioctls
  *---------------------------------------------------------------------------*/
 int
-vgaioctl(Dev_t dev, int cmd, caddr_t data, int flag)
+vgaioctl(Dev_t dev, u_long cmd, caddr_t data, int flag)
 {
 	if(minor(dev) >= PCVT_NSCREENS)
 		return -1;
