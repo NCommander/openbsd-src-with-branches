@@ -1,4 +1,4 @@
-/*	$OpenBSD: ises.c,v 1.16 2001/09/21 19:41:13 ho Exp $	*/
+/*	$OpenBSD: ises.c,v 1.17 2001/11/05 17:25:58 art Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Håkan Olsson (ho@crt.se)
@@ -245,7 +245,7 @@ ises_attach(struct device *parent, struct device *self, void *aux)
 
 	bzero(&isesstats, sizeof(isesstats));
 
-	sc->sc_cid = crypto_get_driverid();
+	sc->sc_cid = crypto_get_driverid(0);
 
 	if (sc->sc_cid < 0)
 		goto fail;
