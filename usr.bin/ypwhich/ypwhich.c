@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypwhich.c,v 1.14 2002/08/04 00:51:14 deraadt Exp $	*/
+/*	$OpenBSD: ypwhich.c,v 1.15 2003/06/02 04:00:17 deraadt Exp $	*/
 /*	$NetBSD: ypwhich.c,v 1.6 1996/05/13 02:43:48 thorpej Exp $	*/
 
 /*
@@ -28,7 +28,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: ypwhich.c,v 1.14 2002/08/04 00:51:14 deraadt Exp $";
+static char rcsid[] = "$Id: ypwhich.c,v 1.15 2003/06/02 04:00:17 deraadt Exp $";
 #endif
 
 #include <sys/param.h>
@@ -66,7 +66,9 @@ struct ypalias {
 	{ "ethers", "ethers.byname" },
 };
 
-void
+int	bind_host(char *dom, struct sockaddr_in *sin);
+
+static void
 usage(void)
 {
 	fprintf(stderr,
