@@ -1,4 +1,4 @@
-/*	$OpenBSD: isavar.h,v 1.27 1998/01/20 18:40:33 niklas Exp $	*/
+/*	$OpenBSD: isavar.h,v 1.28 1998/04/26 21:02:48 provos Exp $	*/
 /*	$NetBSD: isavar.h,v 1.26 1997/06/06 23:43:57 thorpej Exp $	*/
 
 /*-
@@ -443,6 +443,7 @@ int isapnp_config __P((bus_space_tag_t, bus_space_tag_t,
 void isapnp_unconfig __P((bus_space_tag_t, bus_space_tag_t,
     struct isa_attach_args *));
 
+void isapnp_isa_attach_hook __P((struct isa_softc *));
 #ifdef DEBUG_ISAPNP
 void isapnp_print_mem __P((const char *, const struct isapnp_region *));
 void isapnp_print_io __P((const char *, const struct isapnp_region *));
