@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: packet.c,v 1.91 2002/03/18 17:16:38 markus Exp $");
+RCSID("$OpenBSD: packet.c,v 1.92 2002/03/19 10:49:35 markus Exp $");
 
 #include "xmalloc.h"
 #include "buffer.h"
@@ -644,7 +644,7 @@ packet_send2(void)
 		/* will wrap if extra_pad+padlen > 255 */
 		extra_pad  = roundup(extra_pad, block_size);
 		pad = extra_pad - ((len + padlen) % extra_pad);
-		debug("packet_send2: adding %d (len %d padlen %d extra_pad %d)",
+		debug3("packet_send2: adding %d (len %d padlen %d extra_pad %d)",
 		    pad, len, padlen, extra_pad);
 		padlen += pad;
 		extra_pad = 0;
