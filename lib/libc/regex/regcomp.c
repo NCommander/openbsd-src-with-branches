@@ -41,7 +41,7 @@
 #if 0
 static char sccsid[] = "@(#)regcomp.c	8.5 (Berkeley) 3/20/94";
 #else
-static char rcsid[] = "$OpenBSD: regcomp.c,v 1.7 2001/11/01 23:27:28 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: regcomp.c,v 1.8 2002/02/16 21:27:24 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -1285,8 +1285,7 @@ register char *cp;
 	}
 	cs->multis = np;
 
-	(void) strcpy(cs->multis + oldend - 1, cp);
-	cs->multis[cs->smultis - 1] = '\0';
+	strlcpy(cs->multis + oldend - 1, cp, cs->smultis - oldend + 1);
 }
 
 /*
