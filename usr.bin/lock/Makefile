@@ -1,8 +1,10 @@
-#	$OpenBSD: Makefile,v 1.5 1997/03/26 00:35:27 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 1997/04/19 21:26:26 millert Exp $
 
 PROG=	lock
 BINOWN= root
 BINMODE=4555
+DPADD=	${LIBUTIL}
+LDADD=	-lutil
 
 .include <bsd.own.mk>
 
