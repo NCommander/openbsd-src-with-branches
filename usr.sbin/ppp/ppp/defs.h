@@ -15,7 +15,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * $OpenBSD: defs.h,v 1.14 2000/04/07 23:46:39 brian Exp $
+ * $OpenBSD: defs.h,v 1.15 2000/06/13 09:57:51 brian Exp $
  *
  *	TODO:
  */
@@ -114,3 +114,4 @@ extern int MakeArgs(char *, char **, int, int);
 extern const char *NumStr(long, char *, size_t);
 extern const char *HexStr(long, char *, size_t);
 extern const char *ex_desc(int);
+extern void SetTitle(const char *);
