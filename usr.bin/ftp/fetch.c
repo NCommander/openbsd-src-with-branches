@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.19 1998/05/13 10:42:38 deraadt Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.20 1998/05/13 10:46:12 deraadt Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: fetch.c,v 1.19 1998/05/13 10:42:38 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fetch.c,v 1.20 1998/05/13 10:46:12 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -639,7 +639,7 @@ parsed_url:
 			continue;
 		}
 
-		if (!verbose)
+		if (verbose)
 			fprintf(ttyout, "Retrieving %s/%s\n", dir ? dir : "", file);
 
 		if (dirhasglob) {
