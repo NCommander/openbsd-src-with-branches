@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.25 2002/12/23 09:36:59 grange Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.26 2003/01/14 23:53:25 avsm Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -484,7 +484,7 @@ device_dump(int argc, char *argv[])
 	if ((error = ioctl(fd, ATAIOGETTRACE, &agt)) == -1)
 		err(1, "ATAIOGETTRACE failed");
 
-	write(1, agt.buf, agt.bytes_copied);
+	write(STDOUT_FILENO, agt.buf, agt.bytes_copied);
 	fprintf(stderr, "%d bytes written\n", agt.bytes_copied);
 
 	return;
