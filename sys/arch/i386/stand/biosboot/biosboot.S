@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosboot.S,v 1.5 1997/04/14 10:58:31 deraadt Exp $	*/
+/*	$OpenBSD: biosboot.S,v 1.7 1997/04/15 08:00:44 deraadt Exp $	*/
 
 	.file	"bootbios.S"
 
@@ -12,14 +12,7 @@
 #define data32  .byte 0x66
 
 /* Better use 32, 48 does not seem to compile */
-#define	BLKCNT	28		/* Max without colliding with the partition table */
-#if 0
-#ifdef	DEBUG
-#define	BLKCNT	32
-#else
-#define	BLKCNT	48
-#endif
-#endif
+#define	BLKCNT	20	/* Max without colliding with the partition table */
 
 #define BOOTSEG		0x07c0	/* boot loaded here */
 #define BOOTSTACK	0xfffc	/* stack starts here */
