@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.5 1997/09/21 11:50:23 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.6 1997/10/13 07:45:34 downsj Exp $
 #	etc.hp300/Makefile.inc -- hp300-specific etc Makefile targets
 
 .ifdef DESTDIR
@@ -9,7 +9,7 @@ bsd:
 	cd ${.CURDIR}/../sys/arch/hp300/compile/GENERIC && \
 	    make clean && make depend && make
 	cp ${.CURDIR}/../sys/arch/hp300/compile/GENERIC/bsd \
-	    ${DESTDIR}/snapshot/bsd-gen
+	    ${DESTDIR}/snapshot/bsd
 
 bsd-dl:
 	cd ${.CURDIR}/../sys/arch/hp300/conf && config DISKLESS
