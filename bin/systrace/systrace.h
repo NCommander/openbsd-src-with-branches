@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.h,v 1.16 2002/10/09 03:52:10 itojun Exp $	*/
+/*	$OpenBSD: systrace.h,v 1.17 2002/10/16 14:43:33 itojun Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -72,6 +72,8 @@ struct filter {
 		uid_t p_uid;
 		gid_t p_gid;
 	} match_predicate;
+
+	struct elevate elevate;
 };
 
 TAILQ_HEAD(filterq, filter);

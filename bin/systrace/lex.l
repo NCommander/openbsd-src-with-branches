@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.l,v 1.9 2002/08/04 04:15:50 provos Exp $	*/
+/*	$OpenBSD: lex.l,v 1.10 2002/10/09 03:52:10 itojun Exp $	*/
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -89,6 +89,8 @@ true		{ return TRUE; }
 if		{ return IF; }
 user		{ return USER; }
 group		{ return GROUP; }
+as		{ return AS; }
+":"		{ return COLON; }
 ","		{ return COMMA; }
 "="		{ return EQUAL; }
 "!="		{ return NEQUAL; }
