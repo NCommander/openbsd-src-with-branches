@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_sh.c,v 1.15 2003/01/04 22:36:07 deraadt Exp $	*/
+/*	$OpenBSD: c_sh.c,v 1.17 2003/03/13 08:51:21 deraadt Exp $	*/
 
 /*
  * built-in Bourne commands
@@ -309,7 +309,7 @@ c_read(wp)
 	 * coproc can be started with same output, however, this means eof
 	 * can't be detected...  This is why it is closed here.
 	 * If this call is removed, remove the eof check below, too.
-	* coproc_readw_close(fd);
+	 * coproc_readw_close(fd);
 	 */
 #endif /* KSH */
 
