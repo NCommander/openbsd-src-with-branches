@@ -1,4 +1,4 @@
-/*	$OpenBSD: readconf.h,v 1.64 2004/07/11 17:48:47 deraadt Exp $	*/
+/*	$OpenBSD: readconf.h,v 1.65 2005/03/01 10:09:52 djm Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -112,6 +112,8 @@ typedef struct {
 
 	char	*control_path;
 	int	control_master;
+
+	int	hash_known_hosts;
 }       Options;
 
 
