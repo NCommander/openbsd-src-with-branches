@@ -27,9 +27,11 @@ SUBDIR+= mount_umap
 SUBDIR+= mount_union
 
 .if   make(clean) || make(cleandir)
-SUBDIR+= bim edlabel fdisk
+SUBDIR+= bim config_slot edlabel fdisk pcmcia_cntrl
 .elif ${MACHINE} == "i386"
+SUBDIR+= config_slot
 SUBDIR+= fdisk
+SUBDIR+= pcmcia_cntrl
 .elif ${MACHINE} == "pc532"
 SUBDIR+= bim
 .elif ${MACHINE} == "sun3"
