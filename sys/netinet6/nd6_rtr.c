@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_rtr.c,v 1.7 2000/06/13 04:12:40 itojun Exp $	*/
+/*	$OpenBSD: nd6_rtr.c,v 1.8 2001/02/07 11:43:55 itojun Exp $	*/
 /*	$KAME: nd6_rtr.c,v 1.97 2001/02/07 11:09:13 itojun Exp $	*/
 
 /*
@@ -807,7 +807,6 @@ prelist_remove(pr)
 
 	/* unlink ndpr_entry from nd_prefix list */
 	LIST_REMOVE(pr, ndpr_entry);
-	splx(s);
 
 	/* free list of routers that adversed the prefix */
 	for (pfr = pr->ndpr_advrtrs.lh_first; pfr; pfr = next) {
@@ -815,6 +814,8 @@ prelist_remove(pr)
 
 		free(pfr, M_IP6NDP);
 	}
+	splx(s);
+
 	free(pr, M_IP6NDP);
 
 	pfxlist_onlink_check();
