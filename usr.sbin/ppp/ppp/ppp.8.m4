@@ -25,7 +25,7 @@ changecom(,)dnl
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ppp.8.m4,v 1.1 2001/08/09 02:27:13 jsyn Exp $
+.\" $OpenBSD: ppp.8.m4,v 1.2 2001/08/19 23:22:18 brian Exp $
 .\"
 .Dd September 20, 1995
 .Dt PPP 8
@@ -5681,7 +5681,7 @@ closes a network level connection.
 .It Pa /var/log/ppp.log
 Logging and debugging information file.
 Note, this name is specified in
-.Pa /etc/syslogd.conf .
+.Pa /etc/syslog.conf .
 See
 .Xr syslog.conf 5
 for further details.
