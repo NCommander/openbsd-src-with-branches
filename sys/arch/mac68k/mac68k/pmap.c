@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.8 1997/02/10 12:01:49 downsj Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.9 1997/02/10 12:16:56 downsj Exp $	*/
 /*	$NetBSD: pmap.c,v 1.28 1996/10/21 05:42:27 scottr Exp $	*/
 
 /* 
@@ -107,7 +107,6 @@
 #include <vm/vm_page.h>
 
 #include <machine/cpu.h>
-#include <machine/macinfo.h>
 
 #ifdef PMAPSTATS
 struct {

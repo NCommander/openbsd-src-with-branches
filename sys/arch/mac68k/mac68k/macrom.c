@@ -1,4 +1,4 @@
-/*	$OpenBSD: macrom.c,v 1.17 1997/11/30 06:36:42 gene Exp $	*/
+/*	$OpenBSD: macrom.c,v 1.18 1997/11/30 18:25:38 gene Exp $	*/
 /*	$NetBSD: macrom.c,v 1.31 1997/03/01 17:20:34 scottr Exp $	*/
 
 /*-
@@ -60,7 +60,6 @@
 #include "macrom.h"
 #include <sys/malloc.h>
 #include <machine/cpu.h>
-#include <machine/macinfo.h>
 
 #include <machine/frame.h>
 
