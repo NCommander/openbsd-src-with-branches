@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.4 2002/06/07 01:00:55 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.5 2002/06/08 15:45:31 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -36,8 +36,6 @@
 
 #include <powerpc/cpu.h>
 
-u_int32_t ppc_set_msr(u_int32_t);
-u_int32_t ppc_get_msr(void);
 void install_extint(void (*)(void));
 
 #endif	/* _MACHINE_CPU_H_ */
