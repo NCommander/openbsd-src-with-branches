@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: sio_pic.c,v 1.28 2000/06/06 03:10:13 thorpej Exp $ */
 
 /*-
