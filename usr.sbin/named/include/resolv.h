@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * ++Copyright++ 1983, 1987, 1989, 1993
  * -
@@ -55,7 +57,7 @@
 
 /*
  *	@(#)resolv.h	8.1 (Berkeley) 6/2/93
- *	$Id: resolv.h,v 8.17 1996/11/26 10:11:20 vixie Exp $
+ *	$From: resolv.h,v 8.17 1996/11/26 10:11:20 vixie Exp $
  */
 
 #ifndef _RESOLV_H_
