@@ -32,7 +32,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readpass.c,v 1.19 2001/06/24 05:35:33 markus Exp $");
+RCSID("$OpenBSD: readpass.c,v 1.20 2001/07/02 22:29:20 markus Exp $");
 
 #include <readpassphrase.h>
 
@@ -56,10 +56,14 @@ ssh_askpass(char *askpass, const char *msg)
 		error("ssh_askpass: fflush: %s", strerror(errno));
 	if (askpass == NULL)
 		fatal("internal error: askpass undefined");
-	if (pipe(p) < 0)
-		fatal("ssh_askpass: pipe: %s", strerror(errno));
-	if ((pid = fork()) < 0)
-		fatal("ssh_askpass: fork: %s", strerror(errno));
+	if (pipe(p) < 0) {
+		error("ssh_askpass: pipe: %s", strerror(errno));
+		return xstrdup("");
+	}
+	if ((pid = fork()) < 0) {
+		error("ssh_askpass: fork: %s", strerror(errno));
+		return xstrdup("");
+	}
 	if (pid == 0) {
 		seteuid(getuid());
 		setuid(getuid());
