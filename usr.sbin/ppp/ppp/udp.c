@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: udp.c,v 1.8 2000/11/07 23:32:18 brian Exp $
+ *	$OpenBSD: udp.c,v 1.9 2001/03/24 01:06:09 brian Exp $
  */
 
 #include <sys/types.h>
@@ -154,6 +154,7 @@ udp_device2iov(struct device *d, struct iovec *iov, int *niov,
 static const struct device baseudpdevice = {
   UDP_DEVICE,
   "udp",
+  0,
   { CD_NOTREQUIRED, 0 },
   NULL,
   NULL,

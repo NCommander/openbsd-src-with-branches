@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: tcp.c,v 1.9 2000/06/13 09:57:51 brian Exp $
+ *	$OpenBSD: tcp.c,v 1.10 2001/03/24 01:06:08 brian Exp $
  */
 
 #include <sys/types.h>
@@ -100,6 +100,7 @@ tcp_OpenConnection(const char *name, char *host, char *port)
 static struct device tcpdevice = {
   TCP_DEVICE,
   "tcp",
+  0,
   { CD_NOTREQUIRED, 0 },
   NULL,
   NULL,

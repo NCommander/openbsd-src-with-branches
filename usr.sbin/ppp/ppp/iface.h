@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: iface.h,v 1.5 2000/02/27 01:38:26 brian Exp $
+ *	$OpenBSD: iface.h,v 1.6 2001/03/28 09:52:56 brian Exp $
  */
 
 struct ifa_msghdr;
@@ -39,6 +39,7 @@ struct iface {
   char *name;			/* Interface name (malloc'd) */
   int index;			/* Interface index */
   int flags;			/* Interface flags (IFF_*) */
+  int mtu;			/* struct tuninfo MTU */
 
   int in_addrs;			/* How many in_addr's */
   struct iface_addr *in_addr;	/* Array of addresses (malloc'd) */

@@ -16,7 +16,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- *  $OpenBSD: physical.c,v 1.28 2000/11/28 22:59:53 brian Exp $
+ *  $OpenBSD: physical.c,v 1.29 2001/03/24 01:06:03 brian Exp $
  *
  */
 
@@ -756,6 +756,12 @@ int
 physical_IsSync(struct physical *p)
 {
    return p->cfg.speed == 0;
+}
+
+u_short
+physical_DeviceMTU(struct physical *p)
+{
+  return p->handler ? p->handler->mtu : 0;
 }
 
 const char *physical_GetDevice(struct physical *p)
