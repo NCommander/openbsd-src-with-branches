@@ -708,7 +708,6 @@ writedisklabel(dev, strat, lp, osdep)
 	(*strat)(bp);
 	error = biowait(bp);
 
-done:
 	bp->b_flags |= B_INVAL;
 	brelse(bp);
 	return (error);
