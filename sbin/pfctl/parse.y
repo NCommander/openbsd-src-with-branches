@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.57 2002/03/27 18:16:22 mickey Exp $	*/
+/*	$OpenBSD: parse.y,v 1.58 2002/04/17 19:06:18 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -272,7 +272,7 @@ pfrule		: action dir log quick interface route af proto fromto flags icmpspec ke
 					    "%d chars)", PF_RULE_LABEL_SIZE-1);
 					YYERROR;
 				}
-				strcpy(r.label, $16);
+				strlcpy(r.label, $16, sizeof(r.label));
 				free($16);
 			}
 
