@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_file.c,v 1.7 2002/11/29 20:15:43 deraadt Exp $ */
+/*	$OpenBSD: kvm_file.c,v 1.8 2003/06/02 20:18:40 millert Exp $ */
 /*	$NetBSD: kvm_file.c,v 1.5 1996/03/18 22:33:18 thorpej Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #else
-static char *rcsid = "$OpenBSD: kvm_file.c,v 1.7 2002/11/29 20:15:43 deraadt Exp $";
+static char *rcsid = "$OpenBSD: kvm_file.c,v 1.8 2003/06/02 20:18:40 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -69,10 +69,13 @@ static char *rcsid = "$OpenBSD: kvm_file.c,v 1.7 2002/11/29 20:15:43 deraadt Exp
 #define KREAD(kd, addr, obj) \
 	(kvm_read(kd, addr, obj, sizeof(*obj)) != sizeof(*obj))
 
+static int kvm_deadfiles(kvm_t *kd, int op, int arg, long filehead_o,
+    int nfiles);
+
 /*
  * Get file structures.
  */
-static
+static int
 kvm_deadfiles(kd, op, arg, filehead_o, nfiles)
 	kvm_t *kd;
 	int op, arg, nfiles;
