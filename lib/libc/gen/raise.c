@@ -28,15 +28,14 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: raise.c,v 1.2 1996/08/19 08:25:33 tholo Exp $";
+static char rcsid[] = "$OpenBSD: raise.c,v 1.3 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <signal.h>
 #include <unistd.h>
 
 int
-raise(s)
-	int s;
+raise(int s)
 {
 	return(kill(getpid(), s));
 }

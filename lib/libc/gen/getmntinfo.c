@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getmntinfo.c,v 1.4 1999/06/01 15:31:13 millert Exp $";
+static char rcsid[] = "$OpenBSD: getmntinfo.c,v 1.5 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -39,9 +39,7 @@ static char rcsid[] = "$OpenBSD: getmntinfo.c,v 1.4 1999/06/01 15:31:13 millert 
  * Return information about mounted filesystems.
  */
 int
-getmntinfo(mntbufp, flags)
-	struct statfs **mntbufp;
-	int flags;
+getmntinfo(struct statfs **mntbufp, int flags)
 {
 	static struct statfs *mntbuf;
 	static int mntsize;

@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getpagesize.c,v 1.3 2003/06/02 20:18:34 millert Exp $";
+static char rcsid[] = "$OpenBSD: getpagesize.c,v 1.4 2003/06/25 21:15:04 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -36,7 +36,7 @@ static char rcsid[] = "$OpenBSD: getpagesize.c,v 1.3 2003/06/02 20:18:34 millert
 #include <unistd.h>
 
 int
-getpagesize()
+getpagesize(void)
 {
 	static int pagsz;
 

@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: pwcache.c,v 1.5 2001/06/27 00:58:54 lebel Exp $";
+static char rcsid[] = "$OpenBSD: pwcache.c,v 1.6 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -42,9 +42,7 @@ static char rcsid[] = "$OpenBSD: pwcache.c,v 1.5 2001/06/27 00:58:54 lebel Exp $
 #define	MASK	(NCACHE - 1)		/* bits to store with */
 
 char *
-user_from_uid(uid, nouser)
-	uid_t uid;
-	int nouser;
+user_from_uid(uid_t uid, int nouser)
 {
 	static struct ncache {
 		uid_t	uid;
@@ -74,9 +72,7 @@ user_from_uid(uid, nouser)
 }
 
 char *
-group_from_gid(gid, nogroup)
-	gid_t gid;
-	int nogroup;
+group_from_gid(gid_t gid, int nogroup)
 {
 	static struct ncache {
 		gid_t	gid;
