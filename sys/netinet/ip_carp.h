@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.h,v 1.2 2003/10/31 09:00:32 mcbride Exp $	*/
+/*	$OpenBSD: ip_carp.h,v 1.3 2003/11/07 23:38:48 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -43,7 +43,7 @@ struct carp_header {
 	u_int16_t	carp_cksum;
 	u_int32_t	carp_counter[2];
 	unsigned char	carp_md[20];	/* sha1 message digest */
-} __attribute__((__packed__));
+} __packed;
 
 #define	CARP_DFLTTL		255
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: siopvar.h,v 1.8 2003/10/14 22:37:48 krw Exp $ */
+/*	$OpenBSD: siopvar.h,v 1.9 2003/10/21 18:58:49 jmc Exp $ */
 /*	$NetBSD: siopvar.h,v 1.18 2002/04/23 20:41:15 bouyer Exp $ */
 
 /*
@@ -45,7 +45,7 @@ struct siop_xfer {
 	/* u_int32_t resel[sizeof(load_dsa) / sizeof(load_dsa[0])]; */
 	/* Add some entries to make size 384 bytes (256+128) */
 	u_int32_t resel[36];
-} __attribute__((__packed__));
+} __packed;
 
 /*
  * This describes a command handled by the SCSI controller
