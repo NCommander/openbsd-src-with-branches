@@ -10,9 +10,8 @@
 /*
  * This function provides 64-bit offset padding.
  */
-void *
-mquery(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
+int
+mquery(int flags, void **addr, size_t size, int fd, off_t off)
 {
-	return((void *)(long)__syscall((quad_t)SYS_mquery, addr, len, prot,
-	    flags, fd, 0, offset));
+	return(__syscall((quad_t)SYS_mquery, flags, addr, size, fd, off));
 }

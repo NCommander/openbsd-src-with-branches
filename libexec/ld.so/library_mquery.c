@@ -445,6 +445,7 @@ retry:
 	for (ld = lowld; ld != NULL; ld = ld->next) {
 		off_t foff;
 		int fd, flags;
+		int error;
 
 		/*
 		 * We don't want to provide the fd/off hint for anything
@@ -472,13 +473,13 @@ retry:
 		 * adjust the base mapping address to match this free mapping
 		 * and restart the process again.
 		 */
-		ld->start = _dl_mquery(ld->start, ROUND_PG(ld->size), ld->prot,
-		    flags, fd, foff);
-		if (_dl_check_error(ld->start)) {
+		error = _dl_mquery(flags, &ld->start, ROUND_PG(ld->size), fd,
+		    foff);
+		if (_dl_check_error(error)) {
 			ld->start = (void *)(LOFF + ld->moff);
-			ld->start = _dl_mquery(ld->start, ROUND_PG(ld->size),
-			    ld->prot, flags & ~MAP_FIXED, fd, foff);
-			if (_dl_check_error(ld->start))
+			error = _dl_mquery(0, &ld->start, ROUND_PG(ld->size),
+			    fd, foff);
+			if (_dl_check_error(error))
 				goto fail;
 		}
 

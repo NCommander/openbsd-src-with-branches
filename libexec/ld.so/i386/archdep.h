@@ -56,14 +56,11 @@ _dl_mmap(void *addr, unsigned int len, unsigned int prot,
 		flags, fd, 0, offset));
 }
 
-static inline void *
-_dl_mquery(void *addr, unsigned int len, unsigned int prot,
-	unsigned int flags, int fd, off_t offset)
+static inline int
+_dl_mquery(int flags, void **addr, size_t size, int fd, off_t off)
 {
-	return((void *)_dl__syscall((quad_t)SYS_mquery, addr, len, prot,
-		flags, fd, 0, offset));
+        return(_dl__syscall((quad_t)SYS_mquery, flags, addr, size, fd, off));
 }
-
 
 static inline void
 RELOC_REL(Elf32_Rel *r, const Elf32_Sym *s, Elf32_Addr *p, unsigned long v)

@@ -123,7 +123,7 @@ int	munlockall(void);
 int	madvise(void *, size_t, int);
 int	mincore(void *, size_t, char *);
 int	minherit(void *, size_t, int);
-void *	mquery(void *, size_t, int, int, int, off_t);
+int	mquery(int flags, void **addr, size_t size, int fd, off_t off);
 __END_DECLS
 
 #endif /* !_KERNEL */
