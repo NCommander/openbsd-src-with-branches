@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uthread_error.c,v 1.2 1999/11/25 07:01:30 d Exp $	*/
 /*
  * Copyright (c) 1995 John Birrell <jb@cimlogic.com.au>.
  * Copyright (c) 1994 by Chris Provenzano, proven@mit.edu
@@ -39,7 +39,8 @@
 #include "pthread_private.h"
 extern	int	errno;
 
-int * __error()
+int *
+__error(void)
 {
 	int	*p_errno;
 	if (_thread_run == _thread_initial) {
