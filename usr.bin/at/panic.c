@@ -1,4 +1,4 @@
-/*	$OpenBSD: panic.c,v 1.3 1996/08/03 20:16:57 millert Exp $	*/
+/*	$OpenBSD: panic.c,v 1.4 1997/03/01 23:40:09 millert Exp $	*/
 /*	$NetBSD: panic.c,v 1.2 1995/03/25 18:13:33 glass Exp $	*/
 
 /*
@@ -42,7 +42,7 @@
 /* File scope variables */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: panic.c,v 1.3 1996/08/03 20:16:57 millert Exp $";
+static char rcsid[] = "$OpenBSD: panic.c,v 1.4 1997/03/01 23:40:09 millert Exp $";
 #endif
 
 /* External variables */
@@ -95,10 +95,11 @@ void
 usage(void)
 {
 	/* Print usage and exit.  */
-	(void)fprintf(stderr,   "Usage: at [-V] [-q x] [-f file] [-m] time\n"
-				"       at [-V] -c job [job ...]\n"
-				"       atq [-V] [-q x] [-v]\n"
-				"       atrm [-V] job [job ...]\n"
-				"       batch [-V] [-f file] [-m]\n");
+	(void)fprintf(stderr,
+	    "Usage: at [-V] [-q queue] [-f file] [-mldbv] time\n"
+	    "       at [-V] -c job [job ...]\n"
+	    "       atq [-V] [-q queue] [-v]\n"
+	    "       atrm [-V] job [job ...]\n"
+	    "       batch [-V] [-q queue] [-f file] [-mv]\n");
 	exit(EXIT_FAILURE);
 }
