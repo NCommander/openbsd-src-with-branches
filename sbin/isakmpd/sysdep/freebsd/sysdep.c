@@ -1,4 +1,4 @@
-/*	$Id: sysdep.c,v 1.2 2000/12/12 00:29:35 niklas Exp $	*/
+/*	$OpenBSD: sysdep.c,v 1.1 2001/01/26 11:34:03 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.

@@ -1,4 +1,4 @@
-#	$Id: GNUmakefile.sysdep,v 1.2 2000/03/14 17:37:38 ho Exp $
+#	$OpenBSD: GNUmakefile.sysdep,v 1.1 2001/01/26 11:34:01 niklas Exp $
 
 #
 # Copyright (c) 1999 Håkan Olsson.  All rights reserved.

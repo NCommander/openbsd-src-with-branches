@@ -1,4 +1,4 @@
-/*	$Id: ike_phase_1.h,v 1.1 1999/04/16 21:24:43 niklas Exp $	*/
+/*	$OpenBSD: ike_phase_1.h,v 1.1 1999/04/19 19:59:53 niklas Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.

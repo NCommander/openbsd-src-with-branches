@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* 
  * Created by Martin Rinman, rinman@erlang.ericsson.se 
  * Copyright (C) 1998 Ericsson Radio Systems AB 

@@ -1,4 +1,4 @@
-/*	$Id: klips.h,v 1.6 2000/12/12 00:29:17 niklas Exp $	*/
+/*	$OpenBSD: klips.h,v 1.1 2001/01/26 11:34:04 niklas Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.

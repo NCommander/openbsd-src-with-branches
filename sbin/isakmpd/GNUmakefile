@@ -1,4 +1,4 @@
-#    $Id: GNUmakefile,v 1.20 2000/05/08 14:39:55 ho Exp $
+#    $OpenBSD: GNUmakefile,v 1.1 2001/01/26 12:09:22 niklas Exp $
 
 #
 # Copyright (c) 1998, 1999, 2000 Niklas Hallqvist.  All rights reserved.

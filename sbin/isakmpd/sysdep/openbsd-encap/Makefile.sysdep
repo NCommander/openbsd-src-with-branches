@@ -1,4 +1,4 @@
-#	$Id: Makefile.sysdep,v 1.10 2000/10/15 22:22:41 niklas Exp $
+#	$OpenBSD: Makefile.sysdep,v 1.1 2001/01/26 11:34:08 niklas Exp $
 
 #
 # Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.
