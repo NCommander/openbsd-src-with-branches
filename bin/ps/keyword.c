@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyword.c,v 1.11 1997/09/03 13:51:40 kstailey Exp $	*/
+/*	$OpenBSD: keyword.c,v 1.12 1997/11/06 15:59:54 kstailey Exp $	*/
 /*	$NetBSD: keyword.c,v 1.12.6.1 1996/05/30 21:25:13 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)keyword.c	8.5 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: keyword.c,v 1.11 1997/09/03 13:51:40 kstailey Exp $";
+static char rcsid[] = "$OpenBSD: keyword.c,v 1.12 1997/11/06 15:59:54 kstailey Exp $";
 #endif
 #endif /* not lint */
 
@@ -223,6 +223,8 @@ parsefmt(p)
 
 		while ((cp = strsep(&p, FMTSEP)) != NULL && *cp == '\0')
 			/* void */;
+		if (!cp)
+			break;
 		if (!(v = findvar(cp)) || v->parsed == 1)
 			continue;
 		v->parsed = 1;
