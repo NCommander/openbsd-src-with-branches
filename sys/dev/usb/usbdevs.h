@@ -627,6 +627,7 @@
 #define	USB_PRODUCT_COREGA_WLAN_USB_USB_11	0x000c		/* WirelessLAN USB-11 */
 #define	USB_PRODUCT_COREGA_FETHER_USB_TXS	0x000d		/* FEther USB-TXS */
 #define	USB_PRODUCT_COREGA_WLANUSB	0x0012		/* Wireless LAN Stick-11 */
+#define	USB_PRODUCT_COREGA_FETHER_USB_TXC	0x9601		/* FEther USB-TXC */
 
 /* Creative Labs products */
 #define	USB_PRODUCT_CREATIVE_NOMAD_II	0x1002		/* Nomad II */

@@ -839,6 +839,12 @@ const struct usb_knowndev usb_knowndevs[] = {
 	    "Wireless LAN Stick-11",
 	},
 	{
+	    USB_VENDOR_COREGA, USB_PRODUCT_COREGA_FETHER_USB_TXC,
+	    0,
+	    "Corega",
+	    "FEther USB-TXC",
+	},
+	{
 	    USB_VENDOR_CREATIVE, USB_PRODUCT_CREATIVE_NOMAD_II,
 	    0,
 	    "Creative Labs",
