@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)regexec.c	8.3 (Berkeley) 3/20/94";
 #else
-static char rcsid[] = "$OpenBSD: regexec.c,v 1.7 1997/04/30 05:51:10 tholo Exp $";
+static char rcsid[] = "$OpenBSD: regexec.c,v 1.8 2003/06/02 20:18:36 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -151,14 +151,10 @@ static char rcsid[] = "$OpenBSD: regexec.c,v 1.7 1997/04/30 05:51:10 tholo Exp $
  * have been prototyped.
  */
 int				/* 0 success, REG_NOMATCH failure */
-regexec(preg, string, nmatch, pmatch, eflags)
-const regex_t *preg;
-const char *string;
-size_t nmatch;
-regmatch_t pmatch[];
-int eflags;
+regexec(const regex_t *preg, const char *string, size_t nmatch,
+    regmatch_t pmatch[], int eflags)
 {
-	register struct re_guts *g = preg->re_g;
+	struct re_guts *g = preg->re_g;
 #ifdef REDEBUG
 #	define	GOODFLAGS(f)	(f)
 #else
