@@ -95,8 +95,8 @@ struct bits {
 };
 
 static union {
-	struct	sockaddr u_sa;
-	u_short	u_data[128];
+	struct		sockaddr u_sa;
+	u_int32_t	u_data[64];
 } pt_u;
 
 int	do_rtent = 0;
