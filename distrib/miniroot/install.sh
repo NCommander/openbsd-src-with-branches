@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD: install.sh,v 1.12 1997/05/17 21:16:46 millert Exp $
+#	$OpenBSD: install.sh,v 1.13 1997/09/23 22:39:25 niklas Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -264,7 +264,7 @@ case "$resp" in
 			resp=`cat /etc/myname`
 		fi
 		while [ "X${resp}" = X"" ]; do
-			echo -n "Enter system hostname: [$resp] "
+			echo -n "Enter system hostname (short form): [$resp] "
 			getresp "$resp"
 		done
 		hostname $resp
