@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.17 1998/01/10 23:41:19 csapuntz Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.18 1998/01/11 02:10:44 csapuntz Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -137,7 +137,7 @@ vntblinit()
 
 /*
  * Mark a mount point as busy. Used to synchornize access and to delay
- * unmounting. Interlock is not released n failure.
+ * unmounting. Interlock is not released on failure.
  */
 
 int
