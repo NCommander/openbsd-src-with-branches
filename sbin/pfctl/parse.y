@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.367 2003/04/15 11:29:24 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.368 2003/04/25 17:36:33 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -756,7 +756,8 @@ tabledef	: TABLE '<' STRING '>' table_opts {
 			}
 			pfctl_define_table($3, $5.flags, $5.init_addr,
 			    (pf->opts & PF_OPT_NOACTION) || !(pf->loadopt &
-				(PFCTL_FLAG_TABLE | PFCTL_FLAG_ALL)));
+				(PFCTL_FLAG_TABLE | PFCTL_FLAG_ALL)),
+				pf->anchor, pf->ruleset);
 		}
 		;
 
