@@ -1,4 +1,4 @@
-/*	$OpenBSD: smpprobe.c,v 1.1 1998/02/24 22:07:46 weingart Exp $	*/
+/*	$OpenBSD: smpprobe.c,v 1.2 1998/04/18 07:39:55 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -52,7 +52,7 @@ typedef struct _mp_float {
 } mp_float_t;
 
 
-static int
+static __inline int
 mp_checksum(ptr, len)
 	u_int8_t *ptr;
 	int len;
