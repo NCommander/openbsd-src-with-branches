@@ -1,4 +1,5 @@
-/*	$OpenBSD: p9000.c,v 1.3 2003/06/28 17:05:33 miod Exp $	*/
+/*	$OpenBSD: p9000.c,v 1.4 2003/11/07 10:16:45 jmc Exp $	*/
+
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  *
@@ -557,7 +558,7 @@ void
 p9000_ras_init(struct p9000_softc *sc)
 {
 	/*
-	 * Setup safe defaults for the parameter and drawing engine, in
+	 * Setup safe defaults for the parameter and drawing engines, in
 	 * order to minimize the operations to do for ri_ops.
 	 */
 
