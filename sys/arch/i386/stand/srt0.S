@@ -45,108 +45,75 @@
  * Small relocating version for "micro" boot
  */
 
+#include <machine/psl.h>
+
 	.globl	_end
 	.globl	_edata
 	.globl	_boot
 	.globl	__rtt
 	.globl	_exit
 	.globl	_bootdev
+	.globl	_boothowto
 	.globl	_cyloffset
+	.globl	_cnvmem
+	.globl	_extmem
 #define	NOP	inb $0x84,%al ; inb $0x84,%al
 
-#ifdef SMALL
-	/* where the disklabel goes if we have one */
-	.globl	_disklabel
-_disklabel:
-	.space 512
-	#.set _scsisn, RELOC+0x60
-	#.globl _scsisn
-#endif
-
-	.globl	entry
-	.set entry,0
 	.globl	start
 
-#if	defined(REL) && !defined(SMALL)
-
-	/* relocate program and enter at symbol "start" */
-
-	#movl	$entry-RELOC,%esi	# from beginning of ram
-	movl	$0,%esi
-	#movl	$entry,%edi		# to relocated area
-	movl	RELOC,%edi		# to relocated area
-	# movl	$_edata-RELOC,%ecx	# this much
-	movl	$64*1024,%ecx
-	cld
-	rep
-	movsb
-	# relocate program counter to relocation base
-	pushl	$start
-	ret
-#endif
-
 start:
+	/* First, reset the PSL. */
+	pushl	$PSL_MBO
+	popfl
 
-	/* setup stack pointer */
+	#cmpl	8, (%esp)
+	#jne	1f
 
-#ifdef REL
-	leal	4(%esp),%eax	/* ignore old pc */
-	movl	RELOC-3*4,%ebx
-	/* copy boot parameters */
-	pushl	$3*4
-	pushl	%ebx
-	pushl	%eax
-	call	_bcopy
-	movl	%ebx,%esp
-#else
+	movl    4(%esp), %eax
+	movl	%eax, _boothowto
+	movl    8(%esp),%eax
+	movl    %eax, _bootdev
+	movl    12(%esp),%eax
+	movl    %eax, _cyloffset
+	movl    16(%esp),%eax
+	movl    %eax, _esym
+	movl	28(%esp), %eax
+	movl	%eax, _cnvmem
+	movl	32(%esp), %eax
+	movl	%eax, _extmem
+
 	/* save old stack state */
 	movl	%esp,savearea
 	movl	%ebp,savearea+4
-	movl	RELOC-0x2400,%esp
-#endif
+
+#if 0
+	/* setup stack pointer */
+	movl	_end, %eax
+	addl	$10000, %eax
+	movl	%eax, %esp
 
 	/* clear memory as needed */
-
 	movl	%esp,%esi
-#ifdef	REL
-
-	/*
-	 * Clear Bss and up to 64K heap
-	 */
-	movl	$64*1024,%ebx
-	movl	$_end,%eax	# should be movl $_end-_edata but ...
-	subl	$_edata,%eax
-	#addl	%ebx,%eax
-	pushl	%eax
-	pushl	$_edata
-	call	_bzero
-
-	/*
-	 * Clear 64K of stack
-	 */
-	movl	%esi,%eax
-	subl	%ebx,%eax
-	subl	$5*4,%ebx
-	pushl	%ebx
-	pushl	%eax
-	call	_bzero
-#else
 	movl	$_edata,%edx
+
 	movl	%esp,%eax
 	subl	%edx,%eax
 	pushl	%edx
 	pushl	%esp
 	call	_bzero
-#endif
 
-	call	_kbdreset	/* resets keyboard and gatea20 brain damage */
+	#call	_kbdreset	/* resets keyboard and gatea20 brain damage */
 	movl	%esi,%esp
+#endif
 	call	_boot
 	jmp	1f
 
 	.data
 _bootdev:	.long	0
+_boothowto:	.long	0
 _cyloffset:	.long	0
+_cnvmem:	.long	0
+_extmem:	.long	0
 savearea:	.long	0,0	# sp & bp to return to
 	.text
 	.globl _wait

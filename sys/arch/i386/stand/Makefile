@@ -1,115 +1,75 @@
-#	$NetBSD: Makefile,v 1.6 1996/02/01 22:31:28 mycroft Exp $
+#	$OpenBSD$
 #	@(#)Makefile	7.9 (Berkeley) 5/8/91
 
 S	= ${.CURDIR}/../../..
+SAREL	=
 I386	= ${.CURDIR}/..
-CSH	= csh
-RMHDR	= ${CSH} ${.CURDIR}/../boot/rmaouthdr
 STAND=	/sys/stand
-INCPATH=-I${.CURDIR} -I${S} -I${S}/arch -I${S}/ufs -I${S} -I${STAND}
+INCPATH=-I. -I${SADIR} -I${S}
 VPATH=	${STAND}
 STANDDIR= ${DESTDIR}/usr/mdec
 
-AFLAGS+=	-v -Wa,-a -D_LOCORE
-CFLAGS+=	-m386 -O6 -D_STANDALONE -DAT386 -O ${INCPATH}
-#CPPFLAGS+=	${INCPATH} -D_KERNEL -DRELOC=0x${RELOC}
-CPPFLAGS+=	${INCPATH} -DRELOC=0x${RELOC}
-LDADD+=		${LIBC}
+DEBUG=	-g -DDEBUG
+DEBUG+=	-DARP_DEBUG
+DEBUG+=	-DRARP_DEBUG
+DEBUG+=	-DNET_DEBUG
+DEBUG+=	-DNETIF_DEBUG
+DEBUG+=	-DETHER_DEBUG
+DEBUG+=	-DEXEC_DEBUG
+DEBUG+=	-DBOOTP_DEBUG
+DEBUG+=	-DNFS_DEBUG
+DEBUG+=	-DRPC_DEBUG
 
-RELOC=	98000
-RELOC2=	98200
+# AFLAGS=	-v -Wa,-a
+CFLAGS=	-Wall -m386 -O2 -D_STANDALONE -DAT386 -O ${INCPATH}
+CPPFLAGS=	${DEBUG} ${INCPATH} -DRELOC=0x${RELOC}
 
-DRIVERS=cga.c fd.c kbd.c wd.c sd.c cd.c
-ZLIB=	zlib.c
-BOOTS=	fdbootblk.S wdbootblk.S sdbootblk.c cdbootblk.S
-SRCS=	boot.c prf.c srt0.S ${BOOTS} ${ZLIB} ${DRIVERS}
+.include "${S}/lib/libsa/Makefile.inc"
+LDADD=		${SALIB}
+DPADD=		${SALIB}
 
-CLEANFILES+=	*.o conf[fwsc]d.c bread[fwsc]d.c \
+SRCS=	srt0.S boot.c fs.c dev.c biosdev.c bios.S ${ZLIB} version.c
+
+CLEANFILES+=	*.o *.h bread[fwsc]d.c \
 		[fwsc]dboot boot[fwsc]d boot[fwsc]d.sym boot[fwsc]d.c
 
-WDOBJS=	wsrt0.o boot.o bmap.o cga.o fs.o kbd.o prf.o wd.o breadwd.o clock.o
-FDOBJS=	wsrt0.o boot.o bmap.o cga.o fs.o kbd.o prf.o fd.o breadfd.o clock.o
-SDOBJS=	wsrt0.o boot.o bmap.o cga.o fs.o kbd.o prf.o sd.o breadsd.o clock.o
-CDOBJS=	wsrt0.o boot.o bmap.o cga.o fs.o kbd.o prf.o cd.o breadcd.o clock.o
+OBJS=	srt0.o boot.o zlib.o
+OBJS+=	fs.o dev.o biosdev.o bios.o
+#clock.o
+OBJS+=	machdep.o real_prot.o
 
-.PATH: ${I386}/isa ${S}/net
+.PATH: ${S}/net
+# ${I386}/i386 ${I386}/isa ${S}/dev/isa ${S}/kern
 
-ALL=	wdboot bootwd fdboot bootfd # sdboot bootsd cdboot bootcd
-all:	${ALL}
+ALL=	boot
+all:	config ${ALL}
+
+config:
+	@rm -f i386 machine
+	@ln -fs ${I386} i386
+	@ln -fs ${I386}/include machine
 
 # startups
 
-wsrt0.o: ${.CURDIR}/srt0.S
-	${CC} -c ${CPPFLAGS} ${AFLAGS} -DREL -DSMALL -o ${.TARGET} ${.CURDIR}/srt0.S
-
-relsrt0.o: ${.CURDIR}/srt0.c
-	${CC} -c ${CFLAGS} -DREL -o ${.TARGET} ${.CURDIR}/srt0.S
+srt0.o: ${.CURDIR}/srt0.S
+	${CC} -c ${CPPFLAGS} ${AFLAGS} -o ${.TARGET} ${.CURDIR}/srt0.S
 
 # getting booted from disc
 
-wdboot: wdbootblk.o
-	${LD} -N -T ${RELOC} wdbootblk.o
-	rm -f ${.TARGET}
-	strip a.out
-	${RMHDR} a.out ${.TARGET}
-	rm -f a.out
-	ls -l ${.TARGET}
-
-bootwd.sym bootwd:	${WDOBJS}
-	${LD} -T ${RELOC2} ${WDOBJS} ${LDADD}
-	cp a.out bootwd.sym
-	size a.out
-	rm -f $@; strip a.out; ${RMHDR} a.out $@; rm -f a.out; ls -l $@
-
-fdboot: fdbootblk.o
-	${LD} -N -T ${RELOC} fdbootblk.o
-	rm -f $@; strip a.out; ${RMHDR} a.out $@; rm -f a.out; ls -l $@
-
-bootfd.sym bootfd:	${FDOBJS}
-	${LD} -N -T ${RELOC2} ${FDOBJS} ${LDADD}
-	cp a.out bootfd.sym
-	size a.out
-	rm -f $@; strip a.out; ${RMHDR} a.out $@; rm -f a.out; ls -l $@
-
-sdboot:	sdbootblk.o
-	${LD} -N -T 7c00 sdbootblk.o
-	rm -f $@; strip a.out; ${RMHDR} a.out $@; rm -f a.out; ls -l $@
-
-bootsd.sym bootsd:	${SDOBJS}
-	${LD} -N -T ${RELOC2} ${SDOBJS} ${LDADD}
-	cp a.out bootsd.sym
-	size a.out
-	rm -f $@; strip a.out; ${RMHDR} a.out $@; rm -f a.out; ls -l $@
-
-breadwd.o: breadwd.c breadxx.o
-breadfd.o: breadfd.c breadxx.o
-breadsd.o: breadsd.c breadxx.o
-
-breadxx.o:
-	touch breadxx.o
-
-breadwd.c: ${.CURDIR}/breadxx.c
-	@rm -f breadwd.c
-	sed -e 's/XX/wd/' -e 's/xx/wd/g' < ${.CURDIR}/breadxx.c >> breadwd.c
-
-breadfd.c: ${.CURDIR}/breadxx.c
-	rm -f breadfd.c
-	sed -e 's/XX/fd/' -e 's/xx/fd/g' < ${.CURDIR}/breadxx.c >> breadfd.c
-
-breadsd.c: ${.CURDIR}/breadxx.c
-	rm -f breadsd.c
-	sed -e 's/XX/as/' -e 's/xx/as/g' < ${.CURDIR}/breadxx.c >> breadsd.c
-
-#clean:
-
-.MAKE:  make.out                      
-make.out::
-	rm -f ${OBJS}
-	${MAKE} ${.MAKEFLAGS} ${OBJS} > make.out
-
+boot:	${OBJS} ${DPADD} version.o
+	${LD} -o $@ -N -T 0x90000 ${OBJS} ${LDADD} version.o
+	size $@
+	ls -l $@
 
 install: ${ALL}
 	install -c ${ALL} ${STANDDIR}
 
+make.out::
+	rm -f ${OBJS}
+	${MAKE} ${.MAKEFLAGS} ${OBJS} > make.out
+
+clean::
+
 .include <bsd.prog.mk>
 
+.MAKE:  make.out                      

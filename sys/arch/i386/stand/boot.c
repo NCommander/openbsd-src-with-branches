@@ -52,9 +52,8 @@ static char rcsid[] = "$NetBSD: boot.c,v 1.6 1994/10/27 04:21:49 cgd Exp $";
 #include <sys/param.h>
 #include <sys/reboot.h>
 #include <a.out.h>
-#include "saio.h"
 #include <sys/disklabel.h>
-#include <ufs/ufs/dinode.h>
+#include <stand.h>
 
 /*
  * Boot program, loaded by boot block from remaing 7.5K of boot area.
@@ -63,47 +62,58 @@ static char rcsid[] = "$NetBSD: boot.c,v 1.6 1994/10/27 04:21:49 cgd Exp $";
  * or if an error is encounter, try alternate files.
  */
 
-char *files[] = { "bsd", "obsd", "bsd.old",
+char *kernels[] = { "bsd.z", "obsd.z", "bsd.old.z",
+		  "bsd", "obsd", "bsd.old",
 		  "vmunix", "ovmunix", "vmunix.old",
-		  "boot", 0};
+		  NULL };
+
 int	retry = 0;
 extern struct disklabel disklabel;
-extern	int bootdev, cyloffset;
+extern	int bootdev, boothowto, cyloffset;
+extern	int cnvmem, extmem;
+extern	char version[];
 static unsigned char *biosparams = (char *) 0x9ff00; /* XXX */
-/* XXX fake environ */
-char	**environ = NULL;
+int	esym;
 
 #ifndef HZ
 #define HZ 100
 #endif
 int	hz = HZ;
 
+void	copyunix (char*, int, long);
+void	wait (int);
+
+struct disklabel disklabel;
+
 /*
  * Boot program... loads /boot out of filesystem indicated by arguements.
  * We assume an autoboot unless we detect a misconfiguration.
  */
-
+void
 boot(dev, unit, off)
 {
 	register struct disklabel *lp;
 	register int io;
-	register char **bootfile = files;
+	register char **bootfile = kernels;
 	int howto = 0;
-	extern int scsisn; /* XXX */
-
 
 	/* init system clock */
-	startrtclock();
+	/* startrtclock(); */
 
 	/* are we a disk, if so look at disklabel and do things */
 	lp = &disklabel;
-#if 0
-	if (lp->d_type == DTYPE_SCSI)		/* XXX */
-		off = htonl(scsisn);		/* XXX */
+
+#ifdef	DEBUG
+	printf("cyl %x %x hd %x sect %x ",
+		biosparams[0], biosparams[1], biosparams[2], biosparams[0xe]);
+	printf("dev %x unit %x off %d\n", dev, unit, off);
 #endif
 
-/*printf("cyl %x %x hd %x sect %x ", biosparams[0], biosparams[1], biosparams[2], biosparams[0xe]);
-	printf("dev %x unit %x off %d\n", dev, unit, off);*/
+	printf("\n"
+		">> OpenBSD BOOT: %d/%d k [%s]\n"
+		"use ? for file list, or carriage return for defaults\n"
+		"use hd(1,a)/bsd to boot sd0 when wd0 is also installed\n",
+		cnvmem, extmem, version);
 
 	if (lp->d_magic == DISKMAGIC) {
 	    /*
@@ -143,15 +153,9 @@ screwed:
 
 	for (;;) {
 
-/*printf("namei %s", *bootfile);*/
-		io = namei(*bootfile);
-		if (io > 2) {
-			copyunix(io, howto, off);
-		} else
-			printf("File not found");
+		copyunix(*bootfile, howto, off);
 
-		printf(" - didn't load %s, ",*bootfile);
-		if(*++bootfile == 0) bootfile = files;
+		if(*++bootfile == NULL) bootfile = kernels;
 		printf("will try %s\n", *bootfile);
 
 		wait(1<<((retry++) + 10));
@@ -159,66 +163,37 @@ screwed:
 }
 
 /*ARGSUSED*/
-copyunix(io, howto, cyloff)
-	register io;
+void
+copyunix(name, howto, off)
+	char	*name;
+	int	howto;
+	long	off;
 {
-	struct exec x;
-	int i;
-	char *addr,c;
-	struct dinode fil;
-	int off;
+	int	f;
+	struct stat sb;
+	char	*addr = NULL, *loadaddr;
 
-	fetchi(io, &fil);
-/*printf("mode %o ", fil.di_mode);*/
-	i = iread(&fil, 0,  (char *)&x, sizeof x);
-	off = sizeof x;
-	if (i != sizeof x || N_GETMAGIC(x) != ZMAGIC) {
-		printf("Not an executable format");
+	printf("loading %s: ", name);
+
+	/* read file */
+	if (stat(name, &sb) < 0)
 		return;
-	}
 
-	if (roundup(x.a_text, 4096) + x.a_data + x.a_bss > (unsigned)&fil) {
-		printf("File too big to load");
+	if ((f = open(name, 1)) < 0)
 		return;
-	}
 
-	off = 4096;
-	if (iread(&fil, off, (char *)0, x.a_text) != x.a_text)
-		goto shread;
-	off += x.a_text;
+	/* exec */
+	execz(addr, loadaddr, 0);
 
-	addr = (char *)x.a_text;
-	while ((int)addr & CLOFSET)
-		*addr++ = 0;
-	
-	if (iread(&fil, off, addr, x.a_data) != x.a_data)
-		goto shread;
-
-	addr += x.a_data;
-
-	if ((void *)(addr + x.a_bss) > (void *)&fil) {
-		printf("Warning: bss overlaps bootstrap");
-		x.a_bss = (unsigned)addr - (unsigned)&fil;
-	}
-	bzero(addr, x.a_bss);
-
-	/* mask high order bits corresponding to relocated system base */
-	x.a_entry &= ~0xfff00000;
-
-	/*if (scankbd()) {
-		printf("Operator abort");
-		kbdreset();
-		return;
-	}*/
-
-	/* howto, bootdev, cyl */
-	/*printf("entry %x [%x] ", x.a_entry, *(int *) x.a_entry);*/
-	bcopy(0x9ff00, 0x300, 0x20); /* XXX */
-	i = (*((int (*)()) x.a_entry))(howto, bootdev, off);
-
-	if (i) printf("Program exits with %d", i) ; 
 	return;
-shread:
-	printf("Read of file is incomplete");
-	return;
+}
+
+int
+zread(f, loadaddr, size)
+	int	f;
+	void	*loadaddr;
+	size_t	size;
+{
+
+	return -1;
 }
