@@ -94,10 +94,10 @@ fi
 # use it as a backup root filesystem to be updated daily.
 [ "X$ROOTBACKUP" = X1 ] && {
 	rootdev=`awk '$2 == "/" && $1 ~ /^\/dev\// && $3 == "ffs" && \
-	    $4 == "rw" \
+	    $4 ~ /rw/ \
 		 { print substr($1, 6) }' < /etc/fstab`
 	rootbak=`awk '$2 == "/altroot" && $1 ~ /^\/dev\// && $3 == "ffs" && \
-	    $4 == "xx" \
+	    $4 ~ /xx/ \
 		{ print substr($1, 6) }' < /etc/fstab`
 	[ X$rootdev != X -a X$rootbak != X ] && {
 		sync
