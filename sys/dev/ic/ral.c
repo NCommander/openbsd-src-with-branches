@@ -1,4 +1,4 @@
-/*	$OpenBSD: ral.c,v 1.1 2005/02/15 20:51:20 damien Exp $  */
+/*	$OpenBSD: ral.c,v 1.2 2005/02/17 17:26:30 damien Exp $  */
 
 /*-
  * Copyright (c) 2005
@@ -579,6 +579,8 @@ ral_free_tx_ring(struct ral_softc *sc, struct ral_tx_ring *ring)
 		bus_dmamap_sync(sc->sc_dmat, ring->map, 0,
 		    ring->map->dm_mapsize, BUS_DMASYNC_POSTWRITE);
 		bus_dmamap_unload(sc->sc_dmat, ring->map);
+		bus_dmamem_unmap(sc->sc_dmat, (caddr_t)ring->desc,
+		    ring->count * RAL_TX_DESC_SIZE);
 		bus_dmamem_free(sc->sc_dmat, &ring->seg, 1);
 	}
 
@@ -740,6 +742,8 @@ ral_free_rx_ring(struct ral_softc *sc, struct ral_rx_ring *ring)
 		bus_dmamap_sync(sc->sc_dmat, ring->map, 0,
 		    ring->map->dm_mapsize, BUS_DMASYNC_POSTWRITE);
 		bus_dmamap_unload(sc->sc_dmat, ring->map);
+		bus_dmamem_unmap(sc->sc_dmat, (caddr_t)ring->desc,
+		    ring->count * RAL_RX_DESC_SIZE);
 		bus_dmamem_free(sc->sc_dmat, &ring->seg, 1);
 	}
 
