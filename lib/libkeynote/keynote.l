@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD$ */
+/* $OpenBSD: keynote.l,v 1.3 1999/10/01 01:08:30 angelos Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -47,7 +47,6 @@
 #endif
 
 #include "k.tab.h"
-#include "header.h"
 #include "keynote.h"
 #include "assertion.h"
 
