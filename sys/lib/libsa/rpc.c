@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rpc.c,v 1.2 1996/04/19 16:09:53 niklas Exp $	*/
 /*	$NetBSD: rpc.c,v 1.12 1996/02/26 23:05:26 gwr Exp $	*/
 
 /*
@@ -56,7 +56,7 @@
 
 #include <string.h>
 
-#include "rpcv2.h"
+#include <nfs/rpcv2.h>
 
 #include "stand.h"
 #include "net.h"
