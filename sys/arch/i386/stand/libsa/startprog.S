@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: startprog.S,v 1.1 1997/03/31 03:12:17 weingart Exp $	*/
 
 #include <machine/asm.h>
 
@@ -32,7 +32,7 @@ ENTRY(startprog)
 
 	# push on our entry address
 	movl	$0x8, %ebx		# segment
-	pushw	%bx
+	pushl	%bx
 	pushl	%ecx
 
 	# convert over the other data segs
