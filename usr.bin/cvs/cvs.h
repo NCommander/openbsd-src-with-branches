@@ -278,7 +278,7 @@ int              cvs_hist_append  (CVSHIST *, struct cvs_hent *);
 
 /* from util.c */
 int    cvs_readrepo   (const char *, char *, size_t);
-int    cvs_splitpath  (const char *, char *, size_t, char *, size_t);
+int    cvs_splitpath  (const char *, char *, size_t, char **);
 int    cvs_modetostr  (mode_t, char *, size_t);
 int    cvs_strtomode  (const char *, mode_t *);
 int    cvs_mkadmin    (struct cvs_file *, mode_t);
