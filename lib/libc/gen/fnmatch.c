@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: fnmatch.c,v 1.11 1995/02/27 03:43:06 cgd Exp $";
+static char rcsid[] = "$OpenBSD: fnmatch.c,v 1.2 1996/08/19 08:22:44 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -147,7 +147,7 @@ rangematch(pattern, test, flags)
 	 * consistency with the regular expression syntax.
 	 * J.T. Conklin (conklin@ngai.kaleida.com)
 	 */
-	if (negate = (*pattern == '!' || *pattern == '^'))
+	if ((negate = (*pattern == '!' || *pattern == '^')))
 		++pattern;
 	
 	for (ok = 0; (c = *pattern++) != ']';) {

@@ -33,7 +33,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getgrent.c,v 1.5 1996/09/15 10:09:10 tholo Exp $";
+static char rcsid[] = "$OpenBSD: getgrent.c,v 1.6 1997/01/25 04:59:42 downsj Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
@@ -70,7 +70,7 @@ static int	__ypcurrentlen;
 struct group *
 getgrent()
 {
-	if (!_gr_fp && !start_gr() || !grscan(0, 0, NULL))
+	if ((!_gr_fp && !start_gr()) || !grscan(0, 0, NULL))
 		return(NULL);
 	return(&_gr_group);
 }

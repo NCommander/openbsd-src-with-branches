@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: popen.c,v 1.5 1997/06/22 20:01:48 tholo Exp $";
+static char rcsid[] = "$OpenBSD: popen.c,v 1.6 1997/06/22 23:18:55 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -64,7 +64,7 @@ popen(program, type)
 	FILE *iop;
 	int pdes[2], pid;
 
-	if (*type != 'r' && *type != 'w' || type[1]) {
+	if ((*type != 'r' && *type != 'w') || type[1] != '\0') {
 		errno = EINVAL;
 		return (NULL);
 	}

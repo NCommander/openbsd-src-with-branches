@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: getgrouplist.c,v 1.3 1996/08/19 08:23:32 tholo Exp $";
+static char rcsid[] = "$OpenBSD: getgrouplist.c,v 1.4 1996/09/15 09:31:01 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -66,7 +66,7 @@ getgrouplist(uname, agroup, groups, grpcnt)
 	 * Scan the group file to find additional groups.
 	 */
 	setgrent();
-	while (grp = getgrent()) {
+	while ((grp = getgrent())) {
 		if (grp->gr_gid == agroup)
 			continue;
 		for (i = 0; grp->gr_mem[i]; i++) {
