@@ -408,9 +408,7 @@ dispatch_imsg(struct imsgbuf *ibuf, int idx, struct mrt_head *mrtc)
 				if (imsg.hdr.len != IMSG_HEADER_SIZE +
 				    sizeof(struct bgpd_addr))
 					logit(LOG_CRIT, "wrong imsg len");
-				else if (kr_nexthop_add(
-				    ((struct bgpd_addr *)imsg.data)->v4.s_addr)
-				    == -1)
+				else if (kr_nexthop_add(imsg.data) == -1)
 					return (-1);
 			break;
 		case IMSG_NEXTHOP_REMOVE:
@@ -420,8 +418,7 @@ dispatch_imsg(struct imsgbuf *ibuf, int idx, struct mrt_head *mrtc)
 				if (imsg.hdr.len != IMSG_HEADER_SIZE +
 				    sizeof(struct bgpd_addr))
 					logit(LOG_CRIT, "wrong imsg len");
-				else kr_nexthop_delete(
-				    ((struct bgpd_addr *)imsg.data)->v4.s_addr);
+				else kr_nexthop_delete(imsg.data);
 			break;
 		case IMSG_CTL_RELOAD:
 			if (idx != PFD_PIPE_SESSION)
