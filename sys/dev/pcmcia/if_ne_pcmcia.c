@@ -419,6 +419,10 @@ const struct ne2000dev {
       PCMCIA_CIS_NETGEAR_FA411,
       0, -1, { 0x00, 0x40, 0xf4 } },
 
+    { PCMCIA_VENDOR_BELKIN, PCMCIA_PRODUCT_BELKIN_F5D5020,
+      PCMCIA_CIS_BELKIN_F5D5020,
+      0, -1, { 0x00, 0x30, 0xbd } },
+
 #if 0
     /* the rest of these are stolen from the linux pcnet pcmcia device
        driver.  Since I don't know the manfid or cis info strings for
