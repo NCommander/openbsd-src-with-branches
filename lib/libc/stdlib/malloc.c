@@ -5,10 +5,11 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
  * ----------------------------------------------------------------------------
- *
- * $Id: malloc.c,v 1.10 1996/01/22 00:01:44 julian Exp $
- *
  */
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD$";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * Defining EXTRA_SANITY will enable some checks which are related

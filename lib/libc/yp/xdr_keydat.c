@@ -1,5 +1,3 @@
-/*    $OpenBSD: xdr_keydat.c,v 1.2 1996/05/22 02:08:32 deraadt Exp $   */
-
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
@@ -32,8 +30,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD$";
-#endif
+static char *rcsid = "$OpenBSD: xdr_keydat.c,v 1.3 1996/07/01 07:08:54 deraadt Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>
