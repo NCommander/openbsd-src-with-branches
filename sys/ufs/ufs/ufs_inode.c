@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_inode.c,v 1.23 2004/10/10 14:16:59 pedro Exp $	*/
+/*	$OpenBSD: ufs_inode.c,v 1.24 2004/11/06 04:24:55 tedu Exp $	*/
 /*	$NetBSD: ufs_inode.c,v 1.7 1996/05/11 18:27:52 mycroft Exp $	*/
 
 /*
@@ -58,21 +58,6 @@
 
 u_long	nextgennumber;		/* Next generation number to assign. */
 
-#if 0
-void
-ufs_init()
-{
-	static int done = 0;
-
-	if (done)
-		return;
-	done = 1;
-	ufs_ihashinit();
-	ufs_quota_init();
-
-	return;
-}
-#endif
 /*
  * Last reference to an inode.  If necessary, write or delete it.
  */
