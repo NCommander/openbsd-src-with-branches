@@ -1,6 +1,6 @@
-/*	$OpenBSD: trees.c,v 1.3 1998/08/08 20:57:28 millert Exp $	*/
+/*	$OpenBSD: trees.c,v 1.5 2002/03/12 00:25:57 millert Exp $	*/
 /* trees.c -- output deflated data using Huffman coding
- * Copyright (C) 1995-1998 Jean-loup Gailly
+ * Copyright (C) 1995-2002 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
