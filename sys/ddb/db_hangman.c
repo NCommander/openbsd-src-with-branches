@@ -72,6 +72,10 @@ db_randomsym(lenp)
 		/* choose random symbol from the table */
 	q = db_qualify(X_db_isym(stab, db_random(X_db_nsyms(stab))),stab->name);
 
+		/* don't show symtab name if there are less than 3 of 'em */
+	if (db_nsymtabs < 3)
+		while(*p++ != ':');
+
 		/* strlen(q) && ignoring underscores and colons */
 	for ((*lenp) = 0, p = q; *p; p++)
 		if (ISALPHA(*p))
