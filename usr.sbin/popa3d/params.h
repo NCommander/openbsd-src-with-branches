@@ -1,4 +1,4 @@
-/* $OpenBSD: params.h,v 1.2 2001/08/21 20:04:12 camield Exp $ */
+/* $OpenBSD: params.h,v 1.3 2001/08/21 20:20:06 camield Exp $ */
 
 /*
  * Global POP daemon parameters.
@@ -151,7 +151,7 @@
 #define SYSLOG_IDENT			"popa3d"
 #define SYSLOG_OPTIONS			LOG_PID
 #define SYSLOG_FACILITY			LOG_DAEMON
-#define SYSLOG_PRIORITY			LOG_NOTICE
+#define SYSLOG_PRIORITY			LOG_INFO
 
 /*
  * There's probably no reason to touch anything below this comment.
