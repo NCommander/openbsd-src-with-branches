@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.29 1999/01/08 00:38:30 deraadt Exp $	*/
+/*	$OpenBSD: route.c,v 1.30 1999/02/24 22:56:01 angelos Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)route.c	8.3 (Berkeley) 3/19/94";
 #else
-static char rcsid[] = "$OpenBSD: route.c,v 1.29 1999/01/08 00:38:30 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: route.c,v 1.30 1999/02/24 22:56:01 angelos Exp $";
 #endif
 #endif /* not lint */
 
@@ -122,7 +122,7 @@ usage(cp)
 	if (cp)
 		(void) fprintf(stderr, "route: botched keyword: %s\n", cp);
 	(void) fprintf(stderr,
-	    "usage: route [ -nqv ] cmd [[ -<qualifers> ] args ]\n");
+	    "usage: route [ -nqv ] cmd [[ -<modifiers> ] args ]\n");
 	(void) fprintf(stderr,
 	    "keywords: get, add, change, delete, show, flush, monitor.\n");
 	exit(1);
