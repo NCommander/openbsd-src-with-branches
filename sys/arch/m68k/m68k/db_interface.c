@@ -1,5 +1,5 @@
-/*	$OpenBSD: db_interface.c,v 1.7 1997/01/19 03:58:35 briggs Exp $	*/
-/*	$NetBSD: db_interface.c,v 1.23 1997/01/15 23:11:47 gwr Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.8 1997/01/19 13:53:11 niklas Exp $	*/
+/*	$NetBSD: db_interface.c,v 1.24 1997/02/18 22:27:32 gwr Exp $	*/
 
 /* 
  * Mach Operating System
@@ -50,6 +50,7 @@
 extern label_t	*db_recover;
 
 int	db_active = 0;
+db_regs_t	ddb_regs;
 
 static void kdbprinttrap __P((int, int));
 
