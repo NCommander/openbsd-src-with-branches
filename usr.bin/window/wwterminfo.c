@@ -1,4 +1,4 @@
-/*	$OpenBSD: wwterminfo.c,v 1.4 1997/02/25 00:05:10 downsj Exp $	*/
+/*	$OpenBSD: wwterminfo.c,v 1.5 1998/01/03 12:30:47 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1982, 1993
@@ -40,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)wwterminfo.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: wwterminfo.c,v 1.4 1997/02/25 00:05:10 downsj Exp $";
+static char rcsid[] = "$OpenBSD: wwterminfo.c,v 1.5 1998/01/03 12:30:47 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -106,6 +106,7 @@ wwterminfoend()
 		execl(_PATH_RM, _PATH_RM, "-rf", wwterminfopath, 0);
 		_exit(0);
 	default:
+		wait(NULL);
 		return 0;
 	}
 }
