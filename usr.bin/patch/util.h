@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.11 2003/08/15 08:00:51 otto Exp $	*/
+/*	$OpenBSD: util.h,v 1.12 2003/10/31 20:20:45 millert Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -44,4 +44,4 @@ void		set_signals(int);
 void		ignore_signals(void);
 void		makedirs(const char *, bool);
 void		version(void);
-void            my_exit(int) __attribute__((noreturn));
+void		my_exit(int) __attribute__((noreturn));

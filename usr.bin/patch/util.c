@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.26 2003/08/15 08:00:51 otto Exp $	*/
+/*	$OpenBSD: util.c,v 1.27 2003/10/31 20:20:45 millert Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char     rcsid[] = "$OpenBSD: util.c,v 1.26 2003/08/15 08:00:51 otto Exp $";
+static const char rcsid[] = "$OpenBSD: util.c,v 1.27 2003/10/31 20:20:45 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
