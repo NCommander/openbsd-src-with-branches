@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.22 2000/05/24 13:44:17 ho Exp $	*/
+/*	$OpenBSD: audio.c,v 1.23 2000/07/19 09:04:37 csapuntz Exp $	*/
 /*	$NetBSD: audio.c,v 1.105 1998/09/27 16:43:56 christos Exp $	*/
 
 /*
@@ -2003,7 +2003,7 @@ audio_pint(v)
 
 	blksize = cb->blksize;
 
-	add_audio_randomness(cb);
+	add_audio_randomness((long)cb);
 
 	cb->outp += blksize;
 	if (cb->outp >= cb->end)
@@ -2126,7 +2126,7 @@ audio_rint(v)
         if (!sc->sc_open)
         	return;         /* ignore interrupt if not open */
 
-	add_audio_randomness(cb);
+	add_audio_randomness((long)cb);
 
 	blksize = cb->blksize;
 
