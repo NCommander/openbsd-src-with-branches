@@ -25,7 +25,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: monitor.c,v 1.5 2002/03/19 21:12:48 markus Exp $");
+RCSID("$OpenBSD: monitor.c,v 1.6 2002/03/21 18:38:33 stevesk Exp $");
 
 #include <openssl/dh.h>
 
@@ -349,7 +349,7 @@ monitor_read(struct monitor *monitor, struct mon_table *ent,
 		return ret;
 	}
 
-	fatal("%s: unsupported request: %d\n", __FUNCTION__, type);
+	fatal("%s: unsupported request: %d", __FUNCTION__, type);
 
 	/* NOTREACHED */
 	return (-1);
