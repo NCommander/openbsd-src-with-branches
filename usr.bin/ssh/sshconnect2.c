@@ -28,7 +28,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect2.c,v 1.6 2000/05/03 17:55:21 markus Exp $");
+RCSID("$OpenBSD: sshconnect2.c,v 1.7 2000/05/06 17:45:37 markus Exp $");
 
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
@@ -405,7 +405,7 @@ ssh_userauth2(const char *server_user, char *host)
 		xfree(reply);
 	} else {
 		/* payload empty for ssh-2.0.13 ?? */
-		log("buggy server: service_accept w/o service");
+		debug("buggy server: service_accept w/o service");
 	}
 	packet_done();
 	debug("got SSH2_MSG_SERVICE_ACCEPT");
