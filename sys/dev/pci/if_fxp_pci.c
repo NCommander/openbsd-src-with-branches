@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_pci.c,v 1.6 2001/06/13 23:19:16 jason Exp $	*/
+/*	$OpenBSD: if_fxp_pci.c,v 1.7 2001/08/03 23:28:49 chris Exp $	*/
 
 /*
  * Copyright (c) 1995, David Greenman
@@ -137,6 +137,7 @@ fxp_pci_attach(parent, self, aux)
 		return;
 	}
 	sc->sc_st = iot;
+	sc->sc_dmat = pa->pa_dmat;
 
 	/*
 	 * Allocate our interrupt.
