@@ -1,4 +1,4 @@
-/*	$OpenBSD: netif.c,v 1.3 1996/10/29 08:44:09 mickey Exp $	*/
+/*	$OpenBSD: netif.c,v 1.4 1996/12/08 15:15:52 niklas Exp $	*/
 /*	$NetBSD: netif.c,v 1.7 1996/10/13 02:29:03 christos Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/types.h>
 #include <sys/cdefs.h>
 #include <sys/mount.h>
-#include <time.h>
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
