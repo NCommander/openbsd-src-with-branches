@@ -1,4 +1,4 @@
-/*	$OpenBSD: hfs.c,v 1.1 2001/02/09 05:09:06 drahn Exp $	*/
+/*	$OpenBSD: hfs.c,v 1.1 2001/02/09 05:22:05 drahn Exp $	*/
 /*	$NetBSD: hfs.c,v 1.1 2000/11/14 11:25:35 tsubai Exp $	*/
 
 /*-

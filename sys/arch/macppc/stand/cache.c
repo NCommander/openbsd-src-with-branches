@@ -1,4 +1,4 @@
-/*	$OpenBSD:$	*/
+/*	$OpenBSD: cache.c,v 1.2 1999/11/09 06:30:15 rahnds Exp $	*/
 #define CACHELINESIZE   32                      /* For now              XXX */
 
 void
