@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.118 2005/03/26 23:04:34 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.119 2005/03/28 14:40:04 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -762,8 +762,12 @@ kroute_validate(struct kroute *kr)
 		    kr->ifindex, inet_ntoa(kr->prefix),
 		    kr->prefixlen);
 		return (1);
-	} else
-		return (kif->k.link_state != LINK_STATE_DOWN);
+	}
+
+	if (!(kif->k.flags & IFF_UP))
+		return (0);
+
+	return (kif->k.link_state != LINK_STATE_DOWN);
 }
 
 void
