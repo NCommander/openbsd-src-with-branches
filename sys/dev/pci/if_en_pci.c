@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_en_pci.c,v 1.5 1997/05/07 00:17:40 niklas Exp $	*/
+/*	$OpenBSD: if_en_pci.c,v 1.6 1998/01/07 11:03:27 deraadt Exp $	*/
 
 /*
  *
@@ -221,7 +221,7 @@ void *aux;
   scp->sc_ih = pci_intr_establish(scp->en_pc, ih, IPL_NET, en_intr, sc,
       sc->sc_dev.dv_xname);
   if (scp->sc_ih == NULL) {
-    printf(": couldn't establish interrupt\n");
+    printf(": couldn't establish interrupt");
     if (intrstr != NULL)
       printf(" at %s", intrstr);
     printf("\n");
