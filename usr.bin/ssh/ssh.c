@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.169 2002/03/26 11:37:05 markus Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.170 2002/04/22 21:04:52 markus Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -791,10 +791,10 @@ x11_get_proto(char **_proto, char **_data)
 			 * XXX: "localhost" match to determine FamilyLocal
 			 *      is not perfect.
 			 */
-			snprintf(line, sizeof line, "%.100s list unix:%s 2>"
+			snprintf(line, sizeof line, "%s list unix:%s 2>"
 			    _PATH_DEVNULL, options.xauth_location, display+10);
 		else
-			snprintf(line, sizeof line, "%.100s list %.200s 2>"
+			snprintf(line, sizeof line, "%s list %.200s 2>"
 			    _PATH_DEVNULL, options.xauth_location, display);
 		debug2("x11_get_proto %s", line);
 		f = popen(line, "r");
