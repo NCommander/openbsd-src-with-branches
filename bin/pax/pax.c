@@ -1,4 +1,4 @@
-/*	$OpenBSD: pax.c,v 1.6 1997/03/02 09:46:49 tholo Exp $	*/
+/*	$OpenBSD: pax.c,v 1.7 1997/04/05 22:36:17 millert Exp $	*/
 /*	$NetBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $	*/
 
 /*-
@@ -48,7 +48,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pax.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$OpenBSD: pax.c,v 1.6 1997/03/02 09:46:49 tholo Exp $";
+static char rcsid[] = "$OpenBSD: pax.c,v 1.7 1997/04/05 22:36:17 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -249,7 +249,7 @@ main(argc, argv)
 	 * parse options, determine operational mode, general init
 	 */
 	options(argc, argv);
-        if ((gen_init() < 0) || (tty_init() < 0))
+	if ((gen_init() < 0) || (tty_init() < 0))
 		return(exit_val);
 
 	/*
