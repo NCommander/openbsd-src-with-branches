@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.13 2002/01/28 19:24:03 fgsch Exp $
+# $OpenBSD: Makefile.inc,v 1.14 2002/01/28 22:53:54 pvalchev Exp $
 # $FreeBSD: Makefile.inc,v 1.6 1999/08/28 00:03:02 peter Exp $
 
 # POSIX thread man files
@@ -27,6 +27,7 @@ MAN+=	\
 	pthread_join.3 \
 	pthread_key_create.3 \
 	pthread_key_delete.3 \
+	pthread_kill.3 \
 	pthread_main_np.3 \
 	pthread_mutexattr.3 \
 	pthread_mutex_destroy.3 \
