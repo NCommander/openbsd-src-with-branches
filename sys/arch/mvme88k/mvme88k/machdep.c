@@ -1,4 +1,4 @@
-/* $OpenBSD$	*/
+/* $OpenBSD: machdep.c,v 1.18.2.10 2003/03/27 23:32:18 niklas Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -418,7 +418,8 @@ void
 identifycpu()
 {
 	cpuspeed = getcpuspeed();
-	sprintf(cpu_model, "Motorola MVME%x, %dMHz", brdtyp, cpuspeed);
+	snprintf(cpu_model, sizeof cpu_model,
+	    "Motorola MVME%x, %dMHz", brdtyp, cpuspeed);
 	printf("\nModel: %s\n", cpu_model);
 }
 

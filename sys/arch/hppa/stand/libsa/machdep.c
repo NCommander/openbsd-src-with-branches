@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: machdep.c,v 1.5.4.2 2003/03/27 23:26:54 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Michael Shalayeff
@@ -54,7 +54,7 @@ machdep()
 
 #ifdef PDCDEBUG
 	if (debug) {
-		register int i;
+		int i;
 
 		printf("SSTOR:\n");
 		printf("pri_boot=");	DEVPATH_PRINT(&sstor.ss_pri_boot);

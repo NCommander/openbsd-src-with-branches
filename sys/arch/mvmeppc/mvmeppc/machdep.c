@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: machdep.c,v 1.2.2.6 2003/03/27 23:52:17 niklas Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -1410,8 +1410,8 @@ nameinterrupt(replace, newstr)
 		src+=1; /* skip the NUL */
 	}
 
-	strcat(intrname[replace], "/");
-	strcat(intrname[replace], newstr);
+	strlcat(intrname[replace], "/", sizeof intrname[replace]);
+	strlcat(intrname[replace], newstr, sizeof intrname[replace]);
 
 	p = intrnames;
 	for (i = 0; i < NENTRIES; i++) {

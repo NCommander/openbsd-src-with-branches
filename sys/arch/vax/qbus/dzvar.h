@@ -1,4 +1,4 @@
-/*	$OpenBSD: dzvar.h,v 1.1.8.2 2001/07/04 10:24:31 niklas Exp $	*/
+/*	$OpenBSD: dzvar.h,v 1.1.8.3 2001/10/31 03:08:01 nate Exp $	*/
 /*	$NetBSD: dzvar.h,v 1.8 2000/06/04 02:14:12 matt Exp $	*/
 /*
  * Copyright (c) 1996  Ken C. Wellsch.  All rights reserved.
@@ -58,6 +58,7 @@ struct	dz_softc {
 	bus_space_handle_t sc_ioh;
 	int		sc_type;	/* DZ11 or DZV11? */
 	int		sc_rxint;	/* Receive interrupt count XXX */
+	int		sc_openings;	/* # of times we've been opened */
 	u_char		sc_brk;		/* Break asserted on some lines */
 	u_char		sc_dsr;		/* DSR set bits if no mdm ctrl */
 	struct dz_linestate {
