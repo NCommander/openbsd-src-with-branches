@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: obio.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*

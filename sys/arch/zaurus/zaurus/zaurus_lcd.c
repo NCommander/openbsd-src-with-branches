@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: lubbock_lcd.c,v 1.1 2003/08/09 19:38:53 bsh Exp $ */
 
 /*

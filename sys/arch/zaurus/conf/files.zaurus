@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	$NetBSD: files.pxaarm,v 1.17 2003/02/17 20:51:53 ichiro Exp $
 #
 # First try for arm-specific configuration info
