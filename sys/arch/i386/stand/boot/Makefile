@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1.2.2 1996/12/15 15:49:35 mickey Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/03/31 23:06:20 mickey Exp $
 
 PROG=	boot
 SRCS=	srt0.S boot.c cmd.c conf.c
@@ -6,7 +6,7 @@ CFLAGS+=$(SACFLAGS) -I${.CURDIR}/../../../../lib/libsa -I${.CURDIR}/../libsa
 AFLAGS+=-Wa,-R
 # AFLAGS+=-Wa,-a
 LD=ld
-LDFLAGS+=-Ttext $(START) -z -x -e start_boot -Bstatic
+LDFLAGS+=-nostdlib -Ttext $(START) -z -x -e start_boot -Bstatic
 MAN=	boot.8
 
 LDADD=	-L../libsa -lsa -L../libz -lz
