@@ -1,9 +1,11 @@
-/*	$NetBSD: _catgets.c,v 1.2 1996/05/16 21:51:22 cgd Exp $	*/
-
 /*
  * Written by J.T. Conklin, 10/05/94
  * Public domain.
  */
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD$";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/cdefs.h>
 
