@@ -82,7 +82,6 @@ cvs_init(int argc, char **argv)
 	u_int i;
 	char path[MAXPATHLEN];
 	RCSFILE *rfp;
-	struct stat st;
 	struct cvsroot *root;
 
 	if (argc != 1)
