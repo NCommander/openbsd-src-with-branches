@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.179 2003/03/08 19:03:44 beck Exp $
+#	$OpenBSD: Makefile,v 1.180 2003/03/10 21:08:44 millert Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	US/Pacific
@@ -279,9 +279,11 @@ release: distribution snap_pre snap_md
 	-cp ${DESTDIR}/snapshot/INSTALL.* ${RELEASEDIR}
 	-cp ${DESTDIR}/snapshot/*.fs ${DESTDIR}/snapshot/*.fs.gz ${RELEASEDIR}
 	-cd ${RELEASEDIR}; \
-		md5 bsd!(*.gz) *boot* *BOOT* INSTALL.* *.fs *.gz *.tgz > MD5
+		md5 bsd!(*.gz) *boot* *BOOT* INSTALL.* *.fs *.iso *.gz *.tgz \
+		    > MD5
 	-cd ${RELEASEDIR}; \
-		cksum bsd!(*.gz) *boot* *BOOT* INSTALL.* *.fs *.gz *.tgz > CKSUM
+		cksum bsd!(*.gz) *boot* *BOOT* INSTALL.* *.fs *.iso *.gz *.tgz \
+		    > CKSUM
 .if defined(MACHINE_HAS_TOOLS)
 	mkdir -p ${RELEASEDIR}/tools
 	cp ${DESTDIR}/snapshot/tools/* ${RELEASEDIR}/tools
