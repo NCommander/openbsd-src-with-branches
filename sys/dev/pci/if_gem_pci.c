@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_gem_pci.c,v 1.1 2001/09/16 00:11:42 eeh Exp $ */
 
 /*
